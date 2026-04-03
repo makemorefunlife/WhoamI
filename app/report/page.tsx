@@ -1,268 +1,269 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { generateCombinedReport } from "@/lib/combined/generate";
 
 export default function ReportPage() {
   const searchParams = useSearchParams();
 
   const [report, setReport] = useState<any>(null);
-  const [survey, setSurvey] = useState<any>(null);
-  const [saju, setSaju] = useState<any>(null);
-  const [combined, setCombined] = useState<any>(null);
+  const [interpretations, setInterpretations] = useState<
+    Record<string, string>
+  >({});
+  const [patternsForView, setPatternsForView] = useState<
+    Record<string, string>
+  >({});
   const [inviteUrl, setInviteUrl] = useState("");
+  const [relationship, setRelationship] = useState("");
+  const [hasRelationship, setHasRelationship] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [creatingInvite, setCreatingInvite] = useState(false);
 
   const reportId = searchParams.get("id") || "";
+  const shareUrl = reportId ? `/report?id=${reportId}` : "";
 
-  const shareUrl = useMemo(() => {
-    if (typeof window === "undefined" || !reportId) return "";
-    return `${window.location.origin}/report?id=${reportId}`;
-  }, [reportId]);
+  const normalizeYN = (value: any): string => {
+    const v = String(value ?? "")
+      .trim()
+      .toUpperCase();
+    if (v === "Y" || v === "YES") return "Y";
+    if (v === "N" || v === "NO") return "N";
+    return "";
+  };
+
+  const getPattern = (a: any, b: any, c: any) => {
+    return `${normalizeYN(a)}${normalizeYN(b)}${normalizeYN(c)}`;
+  };
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        if (!reportId) {
-          alert("report id 없음");
-          setLoading(false);
-          return;
-        }
+    const fetchData = async () => {
+      if (!reportId) return;
 
-        // report 가져오기
-        const { data: reportData, error: reportError } = await supabase
-          .from("reports")
-          .select("*")
-          .eq("id", reportId)
-          .single();
+      const { data: reportData } = await supabase
+        .from("reports")
+        .select("*")
+        .eq("id", reportId)
+        .maybeSingle();
 
-        if (reportError) {
-          console.error(reportError);
-          setLoading(false);
-          return;
-        }
+      setReport(reportData);
 
-        setReport(reportData);
+      const { data: responseData, error: responseError } = await supabase
+        .from("survey_responses")
+        .select("answers")
+        .eq("report_id", reportId)
+        .maybeSingle();
 
-        // 설문 가져오기
-        const { data: surveyData } = await supabase
-          .from("survey_responses")
-          .select("*")
-          .eq("report_id", reportId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        setSurvey(surveyData);
-
-        // 만세력
-        if (reportData?.birth_date && reportData?.birth_time) {
-          const res = await fetch("/api/saju", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              birthDate: reportData.birth_date,
-              birthTime: reportData.birth_time,
-              reportId,
-            }),
-          });
-
-          const sajuData = await res.json();
-
-          if (res.ok) {
-            setSaju(sajuData.saju);
-
-            const combinedResult = generateCombinedReport(
-              surveyData,
-              sajuData.sajuInterpretation,
-            );
-
-            setCombined(combinedResult);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+      if (responseError) {
+        console.error("answers 가져오기 실패:", responseError);
       }
+
+      if (responseData?.answers) {
+        const ans = responseData.answers;
+
+        console.log("raw answers:", ans);
+
+        const patterns: Record<string, string> = {
+          mbti: getPattern(ans.q1, ans.q2, ans.q3),
+          disc: getPattern(ans.q4, ans.q5, ans.q6),
+          enneagram: getPattern(ans.q7, ans.q8, ans.q9),
+          riasec: getPattern(ans.q10, ans.q11, ans.q12),
+          pss: getPattern(ans.q13, ans.q14, ans.q15),
+          tci: getPattern(ans.q16, ans.q17, ans.q18),
+        };
+
+        console.log("computed patterns:", patterns);
+
+        setPatternsForView(patterns);
+
+        const result: Record<string, string> = {};
+
+        for (const [domain, pattern] of Object.entries(patterns)) {
+          if (
+            !pattern ||
+            pattern.length !== 3 ||
+            pattern.includes("undefined")
+          ) {
+            result[domain] = "패턴 계산 실패";
+            continue;
+          }
+
+          const { data, error } = await supabase
+            .from("pattern_base")
+            .select("interpretation")
+            .eq("domain", domain)
+            .eq("pattern", pattern.trim())
+            .maybeSingle();
+
+          console.log("lookup:", { domain, pattern, data, error });
+
+          result[domain] = data?.interpretation || "해석 없음";
+        }
+
+        setInterpretations(result);
+      } else {
+        console.log("answers 없음");
+      }
+
+      const { data: invites } = await supabase
+        .from("invites")
+        .select("*")
+        .or(`accepted_report_id.eq.${reportId},from_report_id.eq.${reportId}`);
+
+      if (invites && invites.length > 0) {
+        setHasRelationship(true);
+
+        if (invites[0].relationship_result) {
+          setRelationship(invites[0].relationship_result);
+        }
+      }
+
+      setLoading(false);
     };
 
-    fetchAll();
+    fetchData();
   }, [reportId]);
 
-  const interpretationsList = survey?.interpretations
-    ? (Object.values(survey.interpretations) as string[])
-    : [];
-
-  // 🔹 리포트 링크 복사
   const handleCopy = async () => {
-    if (!shareUrl) {
-      alert("링크 생성 중입니다.");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      alert("리포트 링크 복사 완료");
-    } catch (err) {
-      alert("복사 실패");
-    }
+    if (!shareUrl) return alert("링크 없음");
+    await navigator.clipboard.writeText(shareUrl);
+    alert("복사 완료");
   };
 
-  // 🔹 초대 생성
   const handleCreateInvite = async () => {
-    if (!reportId) return;
+    const res = await fetch("/api/invite/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reportId }),
+    });
 
-    setCreatingInvite(true);
+    const data = await res.json();
 
-    try {
-      const res = await fetch("/api/invite/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ reportId }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "초대 생성 실패");
-        return;
-      }
-
-      const token = data.invite?.invite_token;
-
-      const fullUrl = `${window.location.origin}/invite?token=${token}`;
-      setInviteUrl(fullUrl);
-    } catch (err) {
-      console.error(err);
-      alert("초대 생성 오류");
-    } finally {
-      setCreatingInvite(false);
-    }
-  };
-
-  // 🔹 초대 링크 복사
-  const handleCopyInvite = async () => {
-    if (!inviteUrl) {
-      alert("초대 링크 없음");
+    if (!res.ok) {
+      alert(data.error);
       return;
     }
 
-    try {
-      await navigator.clipboard.writeText(inviteUrl);
-      alert("초대 링크 복사 완료");
-    } catch (err) {
-      alert("복사 실패");
+    const token = data.invite.invite_token;
+
+    let origin = "";
+    if (typeof window !== "undefined") {
+      origin = window.location.origin;
     }
+
+    const url = `${origin}/?token=${token}`;
+    setInviteUrl(url);
   };
 
-  if (loading) {
-    return (
-      <main className="p-8">
-        <p>로딩 중...</p>
-      </main>
-    );
-  }
+  const handleRelationship = async () => {
+    const { data: invites } = await supabase
+      .from("invites")
+      .select("*")
+      .or(`accepted_report_id.eq.${reportId},from_report_id.eq.${reportId}`);
+
+    if (!invites || invites.length === 0) {
+      alert("관계 없음");
+      return;
+    }
+
+    const invite = invites[0];
+    const inviteToken = invite.invite_token;
+
+    const res = await fetch("/api/relationship/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inviteToken }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error);
+      return;
+    }
+
+    setRelationship(data.relationship);
+  };
+
+  if (loading) return <div className="p-8">로딩중...</div>;
+
+  const labelMap: Record<string, string> = {
+    mbti: "MBTI",
+    disc: "DISC",
+    enneagram: "ENNEAGRAM",
+    riasec: "RIASEC",
+    pss: "PSS",
+    tci: "TCI",
+  };
 
   return (
     <main className="p-8 space-y-6">
       <h1 className="text-2xl font-bold">리포트</h1>
 
-      {/* 핵심 결과 */}
-      {combined && (
-        <div className="bg-yellow-50 p-4 rounded">
-          <p>{combined.now}</p>
-          <p>{combined.sajuView}</p>
-          <p>{combined.suggestion}</p>
-        </div>
-      )}
+      <div className="border p-4 rounded space-y-3">
+        <h2 className="font-semibold">분석 결과</h2>
 
-      {/* 기본 정보 */}
-      <div className="bg-gray-100 p-4 rounded">
-        <p>{report?.birth_date}</p>
-        <p>{report?.birth_time}</p>
+        {Object.entries(labelMap).map(([key]) => (
+          <div key={key}>
+            <p>{interpretations[key] || "해석 없음"}</p>
+          </div>
+        ))}
       </div>
 
-      {/* 설문 */}
-      {survey && (
-        <div className="bg-gray-100 p-4 rounded">
-          <p>{survey.q1}</p>
-          <p>{survey.q2}</p>
-          <p>{survey.q3}</p>
-          <p>{survey.q4}</p>
-          <p>{survey.q5}</p>
-          <p>{survey.q6}</p>
-        </div>
-      )}
-
-      {/* 해석 */}
-      {interpretationsList.length > 0 && (
-        <div className="bg-blue-50 p-4 rounded">
-          {interpretationsList.map((text, idx) => (
-            <p key={idx}>{text}</p>
-          ))}
-        </div>
-      )}
-
-      {/* 만세력 */}
-      {saju && (
-        <div className="bg-purple-50 p-4 rounded">
-          <p>{saju.yearPillar}</p>
-          <p>{saju.monthPillar}</p>
-          <p>{saju.dayPillar}</p>
-          <p>{saju.hourPillar}</p>
-        </div>
-      )}
-
-      {/* 🔥 리포트 공유 */}
       <div className="border p-4 rounded">
-        <p className="text-sm break-all">{shareUrl}</p>
-
         <QRCodeSVG value={shareUrl} size={160} />
 
         <button
           onClick={handleCopy}
           className="bg-black text-white px-4 py-2 mt-2 rounded"
         >
-          리포트 링크 복사
+          링크 복사
         </button>
       </div>
 
-      {/* 🔥 친구 초대 (자기 리포트만 가능) */}
       {report?.report_type === "self" && (
         <div className="border p-4 rounded">
-          {!inviteUrl && (
-            <button
-              onClick={handleCreateInvite}
-              disabled={creatingInvite}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              {creatingInvite ? "생성 중..." : "친구 초대 만들기"}
-            </button>
-          )}
+          <button
+            onClick={handleCreateInvite}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            친구 초대 만들기
+          </button>
 
-          {report?.report_type === "self" && !inviteUrl && (
+          {inviteUrl && (
             <>
-              <p className="text-sm break-all">{inviteUrl}</p>
-
-              <QRCodeSVG value={inviteUrl} size={160} />
+              <p className="mt-2 text-sm break-all">{inviteUrl}</p>
 
               <button
-                onClick={handleCopyInvite}
-                className="bg-black text-white px-4 py-2 mt-2 rounded"
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteUrl);
+                  alert("초대 링크 복사됨");
+                }}
+                className="bg-black text-white px-3 py-1 rounded mt-2"
               >
                 초대 링크 복사
               </button>
+
+              <QRCodeSVG value={inviteUrl} size={160} />
             </>
           )}
+        </div>
+      )}
+
+      {hasRelationship && (
+        <div className="border p-4 rounded">
+          <button
+            onClick={handleRelationship}
+            className="bg-purple-600 text-white px-4 py-2 rounded"
+          >
+            관계 분석 보기
+          </button>
+
+          {relationship && <p className="mt-3">{relationship}</p>}
         </div>
       )}
     </main>

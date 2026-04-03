@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
@@ -8,12 +8,21 @@ export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const inviteToken = searchParams.get("invite") || "";
+  const inviteTokenFromUrl = searchParams.get("token") || "";
 
+  const [inviteToken, setInviteToken] = useState("");
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [birthTime, setBirthTime] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // 🔥 URL에서 token 가져와서 저장
+  useEffect(() => {
+    if (inviteTokenFromUrl) {
+      localStorage.setItem("inviteToken", inviteTokenFromUrl);
+      setInviteToken(inviteTokenFromUrl);
+    }
+  }, [inviteTokenFromUrl]);
 
   const title = useMemo(() => {
     return inviteToken ? "관계 리포트 시작하기" : "ahaitsme";
@@ -64,7 +73,12 @@ export default function Home() {
       localStorage.setItem("inviteToken", inviteToken);
     }
 
-    router.push("/survey");
+    // 🔥 token 유지해서 survey로 이동
+    if (inviteToken) {
+      router.push(`/survey?token=${inviteToken}`);
+    } else {
+      router.push("/survey");
+    }
   };
 
   return (
