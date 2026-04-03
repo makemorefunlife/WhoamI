@@ -6,8 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 
 export default function ReportContent() {
-    console.log("🔥 NEW CODE RUNNING");
-    
   const searchParams = useSearchParams();
 
   const [report, setReport] = useState<any>(null);
@@ -140,10 +138,8 @@ export default function ReportContent() {
       {/* 결과 */}
       <div className="border p-4 rounded space-y-2">
         <h2 className="font-semibold">분석 결과</h2>
-        {Object.entries(interpretations).map(([key, value]) => (
-          <p key={key}>
-            {key}: {value}
-          </p>
+        {Object.values(interpretations).map((value, idx) => (
+          <p key={idx}>{value}</p>
         ))}
       </div>
 
