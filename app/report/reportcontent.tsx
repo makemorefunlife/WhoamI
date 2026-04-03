@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 
 export default function ReportContent() {
+    console.log("🔥 NEW CODE RUNNING");
+    
   const searchParams = useSearchParams();
 
   const [report, setReport] = useState<any>(null);
@@ -19,7 +21,23 @@ export default function ReportContent() {
   const shareUrl = reportId ? `/report?id=${reportId}` : "";
 
   // ---------------------------
-  // 데이터 불러오기
+  // 패턴 계산 함수 (기존 로직 유지)
+  // ---------------------------
+  const normalizeYN = (value: any): string => {
+    const v = String(value ?? "")
+      .trim()
+      .toUpperCase();
+    if (v === "Y" || v === "YES") return "Y";
+    if (v === "N" || v === "NO") return "N";
+    return "";
+  };
+
+  const getPattern = (a: any, b: any, c: any) => {
+    return `${normalizeYN(a)}${normalizeYN(b)}${normalizeYN(c)}`;
+  };
+
+  // ---------------------------
+  // 데이터 불러오기 (해석 복구)
   // ---------------------------
   useEffect(() => {
     const fetchData = async () => {
@@ -42,14 +60,34 @@ export default function ReportContent() {
       if (responseData?.answers) {
         const ans = responseData.answers;
 
-        const result: Record<string, string> = {
-          mbti: `${ans.q1}${ans.q2}${ans.q3}`,
-          disc: `${ans.q4}${ans.q5}${ans.q6}`,
-          enneagram: `${ans.q7}${ans.q8}${ans.q9}`,
-          riasec: `${ans.q10}${ans.q11}${ans.q12}`,
-          pss: `${ans.q13}${ans.q14}${ans.q15}`,
-          tci: `${ans.q16}${ans.q17}${ans.q18}`,
+        // ✅ 패턴 생성 (기존 방식)
+        const patterns: Record<string, string> = {
+          mbti: getPattern(ans.q1, ans.q2, ans.q3),
+          disc: getPattern(ans.q4, ans.q5, ans.q6),
+          enneagram: getPattern(ans.q7, ans.q8, ans.q9),
+          riasec: getPattern(ans.q10, ans.q11, ans.q12),
+          pss: getPattern(ans.q13, ans.q14, ans.q15),
+          tci: getPattern(ans.q16, ans.q17, ans.q18),
         };
+
+        // ✅ DB에서 해석 가져오기 (핵심 복구)
+        const result: Record<string, string> = {};
+
+        for (const [domain, pattern] of Object.entries(patterns)) {
+          if (!pattern || pattern.length !== 3) {
+            result[domain] = "패턴 오류";
+            continue;
+          }
+
+          const { data } = await supabase
+            .from("pattern_base")
+            .select("interpretation")
+            .eq("domain", domain)
+            .eq("pattern", pattern.trim())
+            .maybeSingle();
+
+          result[domain] = data?.interpretation || "해석 없음";
+        }
 
         setInterpretations(result);
       }
@@ -61,7 +99,7 @@ export default function ReportContent() {
   }, [reportId]);
 
   // ---------------------------
-  // 친구 초대 생성
+  // 친구 초대 생성 (기존 유지)
   // ---------------------------
   const handleCreateInvite = async () => {
     const res = await fetch("/api/invite/create", {
@@ -93,12 +131,12 @@ export default function ReportContent() {
   if (loading) return <div className="p-8">로딩중...</div>;
 
   // ---------------------------
-  // UI
+  // UI (그대로 유지)
   // ---------------------------
   return (
     <main className="p-8 space-y-6">
-      {" "}
       <h1 className="text-2xl font-bold">리포트</h1>
+
       {/* 결과 */}
       <div className="border p-4 rounded space-y-2">
         <h2 className="font-semibold">분석 결과</h2>
@@ -108,11 +146,13 @@ export default function ReportContent() {
           </p>
         ))}
       </div>
+
       {/* QR */}
       <div className="border p-4 rounded">
         <h2 className="font-semibold">공유 QR</h2>
         <QRCodeSVG value={shareUrl} size={160} />
       </div>
+
       {/* 친구 초대 */}
       <div className="border p-4 rounded">
         <h2 className="font-semibold">친구와 궁합 보기</h2>
