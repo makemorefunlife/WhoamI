@@ -8,7 +8,105 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const mode = body.mode;
 
+    // ============================================================
+    // 🔥 모드 1: 설문 세부 해석 (detailed_survey)
+    // ============================================================
+    if (mode === "detailed_survey") {
+      const { patterns } = body;
+      const detailedSurveyPrompt = `
+당신은 심리 분석 전문가입니다. 아래는 18문항 설문 결과(Y/N 패턴)입니다.
+
+## 입력 데이터
+- MBTI (q1-q3): ${patterns?.mbti || "N/A"}
+- DISC (q4-q6): ${patterns?.disc || "N/A"}
+- 에니어그램 (q7-q9): ${patterns?.enneagram || "N/A"}
+- RIASEC (q10-q12): ${patterns?.riasec || "N/A"}
+- PSS/PHQ-9 (q13-q15): ${patterns?.pss || "N/A"}
+- TCI (q16-q18): ${patterns?.tci || "N/A"}
+
+## 출력 요청
+각 영역별로 5-10문장으로 작성해주세요. "너는 ~하는 스타일이야" 형식으로, 구체적인 행동 예시를 포함해주세요.
+
+### MBTI - 사고 방식
+### DISC - 에너지 방향
+### 에니어그램 - 핵심 동기
+### RIASEC - 직업 흥미
+### PSS/PHQ-9 - 현재 상태 (스트레스/불안/우울)
+### TCI - 기질·성격
+
+마지막에 종합 분석을 작성해주세요:
+- 현재 너의 강점 (2-3가지)
+- 주의할 점 (2-3가지)
+- 스트레스 상황에서의 패턴
+- 관계에서 보이는 특징
+
+말투는 다정하지만 핵심을 찌르는 친구처럼. 전문용어는 피하고 일상 언어로 써주세요.
+`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: detailedSurveyPrompt }],
+        temperature: 0.7,
+        max_tokens: 3000,
+      });
+
+      return Response.json({ report: completion.choices[0].message.content });
+    }
+
+    // ============================================================
+    // 🔥 모드 2: 통합 보고서 (integrated)
+    // ============================================================
+    if (mode === "integrated") {
+      const { detailedSurvey, sajuData, astrologyText } = body;
+
+      let sajuText = "";
+      if (sajuData) {
+        sajuText = `
+[사주 기질 해석 - DB 기반]
+- 일간(핵심 성향): ${sajuData.dayStemData?.meaning_ko || sajuData.dayStemData?.metaphor_ko || "정보 없음"}
+- 일지(내면 기반): ${sajuData.dayBranchData?.meaning_ko || "정보 없음"}
+- 일간 강점: ${sajuData.dayStemData?.strength_ko || "정보 없음"}
+- 일간 약점: ${sajuData.dayStemData?.weakness_ko || "정보 없음"}
+- 일간 조언: ${sajuData.dayStemData?.advice_ko || "정보 없음"}
+- 지장간(숨겨진 성향): ${sajuData.hiddenStemsData?.map((h: any) => h.meaning_ko).join(" / ") || "정보 없음"}
+- 십성(관계 스타일): ${sajuData.tenGods?.map((t: any) => `${t.pillar}: ${t.godData?.meaning_ko}`).join(" / ") || "정보 없음"}
+- 12운성(인생 흐름): ${sajuData.twelveStageData?.meaning_ko || "정보 없음"}
+- 관계 패턴: ${sajuData.relations?.map((r: any) => r.interpretation).join(" / ") || "정보 없음"}
+`;
+      }
+
+      const integratedPrompt = `
+당신은 20년 경력의 명리학 전문가이자 15년 경력의 서양 점성학 전문가, 그리고 조직 심리 코치입니다.
+
+## [설문 기반 세부 해석 — 현재의 너]
+${detailedSurvey || "(없음)"}
+
+## [사주 기반 타고난 기질]
+${sajuText || "(사주 정보 없음)"}
+
+## [점성학 기반 타고난 기질]
+${astrologyText || "(점성학 정보 없음)"}
+
+위 데이터를 바탕으로 하나의 통합 보고서를 작성해주세요.
+현재의 모습과 타고난 기질을 자연스럽게 연결해주세요.
+말투는 다정하게, 하지만 너무 분석적으로 말하지 마세요.
+`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: integratedPrompt }],
+        temperature: 0.7,
+        max_tokens: 4000,
+      });
+
+      return Response.json({ report: completion.choices[0].message.content });
+    }
+
+    // ============================================================
+    // 기존 코드 (free 모드 + 통합 모드 호환 유지)
+    // ============================================================
     let userInput = "";
 
     if (body?.data) {
@@ -19,9 +117,9 @@ export async function POST(req: Request) {
       return Response.json({ error: "No input data" }, { status: 400 });
     }
 
-    const mode = body?.mode === "integrated" ? "integrated" : "free";
+    const existingMode = body?.mode === "integrated" ? "integrated" : "free";
 
-    if (mode === "integrated") {
+    if (existingMode === "integrated") {
       const integratedPrompt = `
 너는 설문·사주·점성학(또는 출생 맥락) 데이터를 하나의 이야기로 엮는 분석가야.
 전문용어는 필요할 때만 짧게 쓰고, 평소 말처럼 풀어서 설명해.
@@ -49,8 +147,7 @@ ${userInput}
         max_tokens: 6000,
       });
 
-      const report =
-        completion.choices[0].message.content?.trim() || "";
+      const report = completion.choices[0].message.content?.trim() || "";
 
       return Response.json({
         report,
@@ -60,6 +157,9 @@ ${userInput}
       });
     }
 
+    // ============================================================
+    // 무료 모드 (free)
+    // ============================================================
     const hookTemplates = [
       "이거 그냥 재미로 볼 수 있는데, 생각보다 꽤 정확하게 나온다",
       "이거 가볍게 시작해도 생각보다 설명이 잘 되는 편이다",
@@ -280,4 +380,3 @@ ${userInput}
     return Response.json({ error: "LLM error" }, { status: 500 });
   }
 }
-

@@ -15,16 +15,17 @@ function formatTimeInput(t?: string | null) {
   return t.length >= 5 ? t.slice(0, 5) : t;
 }
 
-function parseBirthDateParts(
-  iso: string | null | undefined,
-): { y: string; mo: string; d: string } {
+function parseBirthDateParts(iso: string | null | undefined): {
+  y: string;
+  mo: string;
+  d: string;
+} {
   const s = String(iso ?? "").trim();
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
   if (!m) return { y: "", mo: "", d: "" };
   return { y: m[1], mo: m[2], d: m[3] };
 }
 
-/** 연·월·일 문자열로 YYYY-MM-DD (유효할 때만) */
 function buildISODateFromParts(y: string, mo: string, d: string): string {
   const ys = y.replace(/\D/g, "").slice(0, 4);
   if (ys.length !== 4) return "";
@@ -39,12 +40,13 @@ function buildISODateFromParts(y: string, mo: string, d: string): string {
   return `${ys}-${mp}-${dp}`;
 }
 
-/** 생년월일·출생 시각·출생 장소가 모두 있을 때만 사주 API 호출 */
-function hasCompleteBirthInfo(row: {
-  birth_date?: string | null;
-  birth_time?: string | null;
-  birth_place?: string | null;
-} | null): boolean {
+function hasCompleteBirthInfo(
+  row: {
+    birth_date?: string | null;
+    birth_time?: string | null;
+    birth_place?: string | null;
+  } | null,
+): boolean {
   if (!row) return false;
   const d = String(row.birth_date ?? "").trim();
   const t = String(row.birth_time ?? "").trim();
@@ -52,7 +54,6 @@ function hasCompleteBirthInfo(row: {
   return Boolean(d && t && p);
 }
 
-/** 무료 구간: 설문 해석만으로 /api/llm (mode: free) */
 function buildSurveyOnlyPrompt(interpretations: Record<string, string>) {
   const personality = Object.values(interpretations).filter(Boolean).join(", ");
   return `
@@ -63,7 +64,6 @@ ${personality || "(설문 해석 없음)"}
 `.trim();
 }
 
-/** 유료 통합: 설문 + 사주 구조 데이터 + 점성/맥락 텍스트 → /api/llm (mode: integrated) */
 function buildIntegratedPrompt({
   interpretations,
   sajuData,
@@ -91,9 +91,8 @@ function buildIntegratedPrompt({
   const hiddenBlock =
     Array.isArray(s?.hiddenStemsData) && s.hiddenStemsData.length > 0
       ? s.hiddenStemsData
-          .map(
-            (h: any) =>
-              `${h.stem_code ?? ""} — ${h.meaning_ko ?? ""}`.trim(),
+          .map((h: any) =>
+            `${h.stem_code ?? ""} — ${h.meaning_ko ?? ""}`.trim(),
           )
           .join("\n")
       : "(없음)";
@@ -157,17 +156,13 @@ export default function ReportContent() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const [freeSummary, setFreeSummary] = useState<string | null>(null);
-  /** 무료 LLM 응답에서 split된 뒷부분(업그레이드 훅 문구) */
   const [paidSummary, setPaidSummary] = useState<string | null>(null);
-  /** 유료 통합 보고서(/api/llm mode: integrated) */
   const [unifiedReport, setUnifiedReport] = useState<string | null>(null);
-  /** 유료 + 생년월일시장소 충족 시 /api/saju 호출 여부 및 성공 여부 */
   const [sajuStatus, setSajuStatus] = useState<{
     attempted: boolean;
     ok: boolean;
   }>({ attempted: false, ok: false });
 
-  /** 결제 완료 후 심화 결과 패널 공개 여부(인트로 애니메이션 이후) */
   const [paidPanelOpen, setPaidPanelOpen] = useState(false);
   const [shareUrlForQr, setShareUrlForQr] = useState("");
   const [showCoordSheet, setShowCoordSheet] = useState(false);
@@ -186,8 +181,7 @@ export default function ReportContent() {
   const displayName = report?.name?.trim() || "당신";
   const isDbPaid = report?.payment_status === "paid";
   const showPaidUnified =
-    Boolean(unifiedReport) &&
-    (!isDbPaid || (isDbPaid && sajuStatus.ok));
+    Boolean(unifiedReport) && (!isDbPaid || (isDbPaid && sajuStatus.ok));
   const showPaidSection = Boolean(
     isDbPaid && paidPanelOpen && showPaidUnified && unifiedReport,
   );
@@ -261,7 +255,6 @@ export default function ReportContent() {
     }
   }, [reportId, sheetDate, sheetTime, sheetPlace, sheetGender, router]);
 
-  // [추가] 공유 (기존 fetch/저장 로직 없음)
   async function handleShare() {
     const url =
       typeof window !== "undefined"
@@ -320,6 +313,7 @@ export default function ReportContent() {
         .maybeSingle();
 
       let localInterpretations: Record<string, string> = {};
+      let localPatterns: any = null; 
 
       if (responseData?.answers) {
         const ans = responseData.answers;
@@ -333,23 +327,25 @@ export default function ReportContent() {
           tci: getPattern(ans.q16, ans.q17, ans.q18),
         };
 
+        localPatterns = patterns;
+
         for (const key of Object.keys(patterns)) {
           const pattern = patterns[key];
-
+      
           const { data } = await supabase
             .from("pattern_base")
             .select("interpretation")
             .eq("domain", key)
             .eq("pattern", pattern.trim())
             .maybeSingle();
-
+      
           localInterpretations[key] = data?.interpretation ?? "해석 없음";
         }
-
+      
         setInterpretations(localInterpretations);
       }
 
-      // 🔥 사주 구조 데이터: 생년월일·시간·장소가 모두 있을 때만 /api/saju 호출
+      // 🔥 사주 구조 데이터
       let localSajuData: any = null;
 
       if (!paid) {
@@ -378,24 +374,56 @@ export default function ReportContent() {
         }
       }
 
-      // 🔥 점성/관계 등 보조 텍스트 (있으면 통합 프롬프트에 포함)
-      let localAstrology: string | null = null;
+      // 🔥 점성학 API 호출 (추가!)
+      let localAstrologyText: string | null = null;
+      if (paid && hasCompleteBirthInfo(reportData)) {
+        try {
+          const birthDateObj = new Date(reportData.birth_date);
+          const ar = await fetch("/api/astrology", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              year: birthDateObj.getFullYear(),
+              month: birthDateObj.getMonth() + 1,
+              day: birthDateObj.getDate(),
+              hour: reportData.birth_time
+                ? parseInt(reportData.birth_time.split(":")[0])
+                : 12,
+              minute: reportData.birth_time
+                ? parseInt(reportData.birth_time.split(":")[1])
+                : 0,
+              latitude: 37.5665, // TODO: 실제 위도로 대체
+              longitude: 126.978, // TODO: 실제 경도로 대체
+              timezone: 9,
+            }),
+          });
+          if (ar.ok) {
+            const astroData = await ar.json();
+            if (astroData.sun && astroData.moon && astroData.rising) {
+              localAstrologyText = `태양: ${astroData.sun}, 달: ${astroData.moon}, 라이징: ${astroData.rising}`;
+            }
+          }
+        } catch (e) {
+          console.error("점성학 API 실패:", e);
+        }
+      }
 
+      // 🔥 관계/보조 텍스트
+      let localRelationship: string | null = null;
       if (paid) {
         const res = await fetch("/api/relationship/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reportId }),
         });
-
         if (res.ok) {
           const data = await res.json();
-          localAstrology = data.relationship ?? data.astrology ?? null;
-          setRelationship(localAstrology);
+          localRelationship = data.relationship ?? data.astrology ?? null;
+          setRelationship(localRelationship);
         }
       }
 
-      // 🔥 LLM: 무료(설문만) vs 유료(설문+사주+점성 통합) — 각각 1회
+      // 🔥 LLM 호출
       try {
         if (!paid) {
           const promptData = buildSurveyOnlyPrompt(localInterpretations);
@@ -412,29 +440,39 @@ export default function ReportContent() {
           setPaidSummary(data.paid ?? null);
           setUnifiedReport(null);
         } else {
-          const promptData = buildIntegratedPrompt({
-            interpretations: localInterpretations,
-            sajuData: localSajuData ?? null,
-            astrologyText: localAstrology,
+          // 🔥 이미 정의된 patterns 사용
+          const detailedRes = await fetch("/api/llm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "detailed_survey",
+              patterns: localPatterns,  
+            }),
           });
-          const res = await fetch("/api/llm", {
+          const detailedData = await detailedRes.json();
+        
+          // 통합 보고서 생성
+          const combinedAstrology = [localAstrologyText, localRelationship]
+            .filter(Boolean)
+            .join("\n\n");
+        
+          const integratedRes = await fetch("/api/llm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               mode: "integrated",
-              userInput: promptData,
+              detailedSurvey: detailedData.report,
+              sajuData: localSajuData ?? null,
+              astrologyText: combinedAstrology || null,
             }),
           });
-          const data = await res.json();
-          const unified =
-            (typeof data.report === "string" && data.report) ||
-            (typeof data.full === "string" && data.full) ||
-            null;
-          // 사주 API 성공 시에만 통합 보고서(사주 포함)를 유지
-          setUnifiedReport(localSajuData ? unified : null);
+          const integratedData = await integratedRes.json();
+        
+          setUnifiedReport(integratedData.report);
           setFreeSummary(null);
           setPaidSummary(null);
         }
+        
       } catch (e) {
         console.error("GPT 실패", e);
       }
@@ -497,26 +535,26 @@ export default function ReportContent() {
             (isDbPaid && !(birthInfoComplete && sajuStatus.ok))) && (
             <GlassCard className="space-y-6">
               {isDbPaid && !(birthInfoComplete && sajuStatus.ok) && (
-                  <div className="space-y-2 rounded-xl border border-[var(--space-border)] bg-[var(--space-card)]/40 p-4">
-                    <p className="text-center text-sm font-medium text-[#FFD6A5]">
-                      사주 기질 분석
+                <div className="space-y-2 rounded-xl border border-[var(--space-border)] bg-[var(--space-card)]/40 p-4">
+                  <p className="text-center text-sm font-medium text-[#FFD6A5]">
+                    사주 기질 분석
+                  </p>
+                  {!birthInfoComplete && (
+                    <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
+                      생년월일, 시간, 장소를 입력하면 사주 기질 분석을 볼 수
+                      있습니다.
                     </p>
-                    {!birthInfoComplete && (
+                  )}
+                  {birthInfoComplete &&
+                    sajuStatus.attempted &&
+                    !sajuStatus.ok && (
                       <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                        생년월일, 시간, 장소를 입력하면 사주 기질 분석을 볼 수
-                        있습니다.
+                        사주 데이터를 불러오지 못했어요. 잠시 후 다시
+                        열어보세요.
                       </p>
                     )}
-                    {birthInfoComplete &&
-                      sajuStatus.attempted &&
-                      !sajuStatus.ok && (
-                        <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                          사주 데이터를 불러오지 못했어요. 잠시 후 다시
-                          열어보세요.
-                        </p>
-                      )}
-                  </div>
-                )}
+                </div>
+              )}
 
               {!isDbPaid && freeSummary && (
                 <>
@@ -564,34 +602,34 @@ export default function ReportContent() {
                 unifiedReport &&
                 showPaidUnified &&
                 !paidPanelOpen && (
-                <>
-                  <div className="space-y-4">
-                    <p className="text-center text-sm font-medium text-[#FFD6A5]">
-                      🌟 통합 분석 리포트
-                    </p>
-                    <p className="whitespace-pre-wrap text-left text-[15px] leading-relaxed text-[var(--space-text)]">
-                      {unifiedReport}
-                    </p>
-                  </div>
-
-                  {showDeepAnalysisCta && (
-                    <div className="space-y-4 border-t border-[var(--space-border)] pt-5">
-                      <p className="text-center text-sm text-[var(--space-text-muted)]">
-                        심화 분석을 시작할 준비가 되었습니다.
+                  <>
+                    <div className="space-y-4">
+                      <p className="text-center text-sm font-medium text-[#FFD6A5]">
+                        🌟 통합 분석 리포트
                       </p>
-                      <GlowButton
-                        type="button"
-                        className="w-full"
-                        onClick={() => {
-                          setDeepPhase("running");
-                        }}
-                      >
-                        심화 분석 시작하기
-                      </GlowButton>
+                      <p className="whitespace-pre-wrap text-left text-[15px] leading-relaxed text-[var(--space-text)]">
+                        {unifiedReport}
+                      </p>
                     </div>
-                  )}
-                </>
-              )}
+
+                    {showDeepAnalysisCta && (
+                      <div className="space-y-4 border-t border-[var(--space-border)] pt-5">
+                        <p className="text-center text-sm text-[var(--space-text-muted)]">
+                          심화 분석을 시작할 준비가 되었습니다.
+                        </p>
+                        <GlowButton
+                          type="button"
+                          className="w-full"
+                          onClick={() => {
+                            setDeepPhase("running");
+                          }}
+                        >
+                          심화 분석 시작하기
+                        </GlowButton>
+                      </div>
+                    )}
+                  </>
+                )}
 
               {showPaidSection && (
                 <div className="space-y-4 border-t border-[var(--space-border)] pt-6">
@@ -610,13 +648,13 @@ export default function ReportContent() {
             !paidSummary &&
             !(unifiedReport && showPaidUnified) &&
             !(isDbPaid && !(birthInfoComplete && sajuStatus.ok)) && (
-            <GlassCard>
-              <p className="text-center text-sm text-[var(--space-text-muted)]">
-                아직 보여줄 관측 데이터가 준비되지 않았어요. 잠시 후 다시
-                열어보세요.
-              </p>
-            </GlassCard>
-          )}
+              <GlassCard>
+                <p className="text-center text-sm text-[var(--space-text-muted)]">
+                  아직 보여줄 관측 데이터가 준비되지 않았어요. 잠시 후 다시
+                  열어보세요.
+                </p>
+              </GlassCard>
+            )}
 
           <div className="space-y-3">
             <button
@@ -684,7 +722,9 @@ export default function ReportContent() {
                   </span>
                   <div className="grid grid-cols-3 gap-2">
                     <label className="space-y-1">
-                      <span className="text-[10px] text-white/50">연도 (4자리)</span>
+                      <span className="text-[10px] text-white/50">
+                        연도 (4자리)
+                      </span>
                       <input
                         type="text"
                         inputMode="numeric"
