@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-1: #070b14;
+  --bg-2: #0b1220;
+  --bg-3: #10192b;
+
+  --card: rgba(255, 255, 255, 0.05);
+  --card-strong: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
+
+  --text-main: rgba(255, 255, 255, 0.95);
+  --text-sub: rgba(255, 255, 255, 0.7);
+
+  --blue: #67b7ff;
+  --purple: #8b7cff;
+  --warm: #f3a6ff;
+
+  --space-bg-deep: var(--bg-1);
+  --space-bg-mid: var(--bg-2);
+  --space-bg-high: var(--bg-3);
+  --space-accent: var(--blue);
+  --space-accent-sub: var(--purple);
+  --space-sub: var(--purple);
+  --space-text: var(--text-main);
+  --space-text-muted: var(--text-sub);
+  --space-border: var(--border);
+  --space-card: var(--card);
+  --space-warm-1: var(--warm);
+  --space-warm-2: #ffd6a5;
+  --background: var(--bg-1);
+  --foreground: var(--text-main);
 }
 
 @theme inline {
@@ -10,17 +37,304 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-space-accent: var(--space-accent);
+  --color-space-accent-sub: var(--space-accent-sub);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 100% 0%,
+      rgba(139, 124, 255, 0.12),
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse 100% 70% at 0% 100%,
+      rgba(103, 183, 255, 0.1),
+      transparent 45%
+    ),
+    linear-gradient(165deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+  color: var(--text-main);
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.space-text-main {
+  color: var(--space-text);
+}
+
+.space-text-muted {
+  color: var(--space-text-muted);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.92) opacity(0.75);
+}
+
+/* --- Space shell: single wrapper, CSS-only atmosphere --- */
+.space-shell {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: inherit;
+}
+
+/* Minimal star noise (single pseudo, many tiny dots via layered gradients) */
+.space-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.55) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.4) 0 0.8px, transparent 1.2px),
+    radial-gradient(circle at 62% 72%, rgba(139, 124, 255, 0.28) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 30% 80%, rgba(103, 183, 255, 0.25) 0 0.8px, transparent 1.5px),
+    radial-gradient(circle at 52% 44%, rgba(255, 255, 255, 0.35) 0 0.7px, transparent 1.2px);
+  opacity: 0.38;
+}
+
+/* One soft planet silhouette */
+.space-planet::after {
+  content: "";
+  position: absolute;
+  width: min(320px, 85vw);
+  height: min(320px, 85vw);
+  right: -12%;
+  top: 6%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.18),
+      rgba(103, 183, 255, 0.1) 38%,
+      rgba(255, 255, 255, 0.03) 62%,
+      transparent 74%
+    );
+  filter: blur(12px);
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+/* Thin orbit arcs — decorative only */
+.space-orbit {
+  pointer-events: none;
+  position: absolute;
+  inset: -5%;
+  opacity: 0.22;
+  background:
+    radial-gradient(
+      ellipse 55% 38% at 50% 108%,
+      transparent 62%,
+      rgba(103, 183, 255, 0.35) 63%,
+      transparent 64%
+    ),
+    radial-gradient(
+      ellipse 72% 48% at 108% 40%,
+      transparent 62%,
+      rgba(139, 124, 255, 0.22) 63%,
+      transparent 64%
+    );
+}
+
+/* Optional subtle “probe” — low-opacity float, no image */
+.space-probe {
+  pointer-events: none;
+  position: absolute;
+  left: 12%;
+  bottom: 22%;
+  width: 48px;
+  height: 14px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(103, 183, 255, 0.15),
+    rgba(243, 166, 255, 0.12),
+    transparent
+  );
+  filter: blur(1px);
+  opacity: 0.35;
+  animation: probeFloat 14s ease-in-out infinite;
+}
+
+@keyframes probeFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-8deg);
+  }
+  50% {
+    transform: translate(12px, -10px) rotate(4deg);
+  }
+}
+
+.glass-card {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.035) 100%
+  );
+  border: 1px solid var(--border);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glow-button {
+  background: linear-gradient(
+    135deg,
+    rgba(103, 183, 255, 0.96),
+    rgba(139, 124, 255, 0.94)
+  );
+  color: white;
+  box-shadow:
+    0 10px 32px rgba(103, 183, 255, 0.22),
+    0 0 20px rgba(139, 124, 255, 0.14);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.glow-button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 40px rgba(103, 183, 255, 0.28),
+    0 0 28px rgba(139, 124, 255, 0.2);
+}
+
+.glow-button:active {
+  transform: translateY(0);
+}
+
+.soft-outline {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.signal-line {
+  background: linear-gradient(
+    90deg,
+    rgba(103, 183, 255, 0),
+    rgba(103, 183, 255, 0.85),
+    rgba(243, 166, 255, 0.65),
+    rgba(103, 183, 255, 0)
+  );
+  height: 2px;
+  border-radius: 9999px;
+  filter: drop-shadow(0 0 6px rgba(103, 183, 255, 0.45));
+}
+
+/* Indeterminate signal bar for loading */
+.space-signal-bar {
+  height: 3px;
+  width: 100%;
+  max-width: 220px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.space-signal-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 38%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  animation: signalSweep 1.35s ease-in-out infinite;
+}
+
+@keyframes signalSweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(280%);
+    opacity: 0.65;
+  }
+}
+
+.fade-up {
+  animation: fadeUp 0.55s ease both;
+}
+
+.float-soft {
+  animation: floatSoft 5.5s ease-in-out infinite;
+}
+
+.pulse-soft {
+  animation: pulseSoft 2.6s ease-in-out infinite;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatSoft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulseSoft {
+  0%,
+  100% {
+    opacity: 0.78;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes space-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.animate-space-glow {
+  animation: space-glow-pulse 2.8s ease-in-out infinite;
 }

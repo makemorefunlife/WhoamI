@@ -1,11 +1,12 @@
-﻿"use client";
+"use client";
 
+// [추가] 스펙상 결과 URL — /report 와 동일 컴포넌트 (데이터 흐름 동일)
 import { Suspense } from "react";
-import ReportContent from "./reportcontent";
+import ReportContent from "../report/reportcontent";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import SpaceLoading from "@/components/space/SpaceLoading";
 
-export default function ReportPage() {
+export default function ResultPage() {
   return (
     <Suspense
       fallback={

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       .eq("invite_token", inviteToken)
       .single();
 
-    if (!invite || invite.status !== "accepted") {
+    if (!invite || invite.status !== "complete") {
       return NextResponse.json({ error: "연결 안됨" }, { status: 400 });
     }
 
