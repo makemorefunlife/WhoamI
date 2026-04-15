@@ -50,7 +50,7 @@ const QUESTIONS = [
   },
   {
     id: "q11",
-    text: "나는 복잡한 문제를 논리적으로 분해해서\n분석하는 게 더 편하다.",
+    text: "복잡한 문제는 논리적으로 따지는 게 편하다.",
   },
   {
     id: "q12",
@@ -105,7 +105,8 @@ export default function SurveyPage() {
     Object.fromEntries(Array.from({ length: 18 }, (_, i) => [`q${i + 1}`, ""])),
   );
 
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const busy = saving;
   const [advancing, setAdvancing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -127,14 +128,14 @@ export default function SurveyPage() {
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
 
     const reportId = localStorage.getItem("reportId");
     const inviteToken = localStorage.getItem("inviteToken");
 
     if (!reportId) {
       alert("reportId 없음. 처음부터 다시 시작해주세요.");
-      setLoading(false);
+      setSaving(false);
       return;
     }
 
@@ -148,7 +149,7 @@ export default function SurveyPage() {
     if (error) {
       console.error(error);
       alert("설문 저장 실패");
-      setLoading(false);
+      setSaving(false);
       return;
     }
 
@@ -172,17 +173,17 @@ export default function SurveyPage() {
         }
         console.error("invite complete:", message);
         alert(message);
-        setLoading(false);
+        setSaving(false);
         return;
       }
     }
 
-    setLoading(false);
+    setSaving(false);
     router.push(`/result?id=${reportId}`);
   };
 
   const pickAnswer = (opt: "Y" | "N") => {
-    if (loading || advancing) return;
+    if (busy || advancing) return;
     const next = { ...answers, [currentQuestion.id]: opt };
     setAnswers(next);
     if (currentIndex < 17) {
@@ -197,7 +198,7 @@ export default function SurveyPage() {
   };
 
   const goPrev = () => {
-    if (loading || advancing || currentIndex <= 0) return;
+    if (busy || advancing || currentIndex <= 0) return;
     setCurrentIndex((i) => i - 1);
   };
 
@@ -226,13 +227,18 @@ export default function SurveyPage() {
         </div>
       </div>
 
-      <main className="flex min-h-screen flex-col items-center px-5 pb-32 pt-32 text-[rgba(255,255,255,0.95)]">
-        <p className="mb-8 max-w-[420px] text-center text-sm leading-relaxed text-[rgba(255,255,255,0.7)]">
-          짧은 질문에 답하면 탐사 경로가 완성됩니다.
+      <main className="relative flex min-h-screen flex-col items-center px-5 pb-32 pt-32 text-[rgba(255,255,255,0.95)]">
+        <div
+          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.15)_0%,rgba(7,11,20,0.55)_55%,rgba(7,11,20,0.92)_100%)]"
+          aria-hidden
+        />
+
+        <p className="relative z-[1] mb-8 max-w-[420px] text-center text-sm leading-relaxed text-[rgba(255,255,255,0.55)]">
+          편하게, 떠오르는 대로 답해보세요.
         </p>
 
-        <div className="flex w-full max-w-[420px] flex-1 flex-col justify-center">
-          <GlassCard className="!py-9 sm:!py-10">
+        <div className="relative z-[2] flex w-full max-w-[420px] flex-1 flex-col justify-center">
+          <GlassCard className="!border-white/[0.12] !py-9 !shadow-[0_24px_80px_rgba(0,0,0,0.45),0_0_0_1px_rgba(103,183,255,0.12)] ring-1 ring-[#67B7FF]/15 sm:!py-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentQuestion.id}
@@ -252,7 +258,7 @@ export default function SurveyPage() {
               <button
                 type="button"
                 onClick={() => pickAnswer("Y")}
-                disabled={loading || advancing}
+                disabled={busy || advancing}
                 className={`min-h-[56px] flex-1 rounded-2xl border-2 py-4 text-base font-semibold tracking-wide transition-all disabled:opacity-50 ${
                   answers[currentQuestion.id as keyof typeof answers] === "Y"
                     ? "border-[#67B7FF]/70 bg-[#67B7FF]/18 text-white shadow-[0_0_28px_rgba(103,183,255,0.28)]"
@@ -264,7 +270,7 @@ export default function SurveyPage() {
               <button
                 type="button"
                 onClick={() => pickAnswer("N")}
-                disabled={loading || advancing}
+                disabled={busy || advancing}
                 className={`min-h-[56px] flex-1 rounded-2xl border-2 py-4 text-base font-semibold tracking-wide transition-all disabled:opacity-50 ${
                   answers[currentQuestion.id as keyof typeof answers] === "N"
                     ? "border-[#8B7CFF]/65 bg-[#8B7CFF]/16 text-white shadow-[0_0_26px_rgba(139,124,255,0.28)]"
@@ -284,7 +290,7 @@ export default function SurveyPage() {
             <button
               type="button"
               onClick={goPrev}
-              disabled={loading || advancing}
+              disabled={busy || advancing}
               className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-5 py-3.5 text-sm font-medium text-[rgba(255,255,255,0.75)] backdrop-blur-sm transition-all hover:border-[rgba(255,255,255,0.2)] hover:text-white disabled:opacity-40"
             >
               ← 이전
@@ -293,20 +299,6 @@ export default function SurveyPage() {
         </div>
       )}
 
-      {loading && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#070B14]/78 backdrop-blur-sm">
-          <div className="glass-card mx-6 max-w-sm rounded-[24px] px-8 py-10 text-center">
-            <div className="mx-auto mb-5 h-10 w-10 animate-spin rounded-full border-2 border-[rgba(255,255,255,0.12)] border-t-[#67B7FF]" />
-            <p className="text-sm font-medium text-[rgba(255,255,255,0.95)]">
-              신호를 해석하고 있습니다
-            </p>
-            <p className="mt-2 text-xs text-[rgba(255,255,255,0.6)]">
-              데이터를 전송하는 중이에요.
-            </p>
-            <div className="mt-6 space-signal-bar" />
-          </div>
-        </div>
-      )}
     </SpaceBackground>
   );
 }

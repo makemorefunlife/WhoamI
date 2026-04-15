@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: detailedSurveyPrompt }],
         temperature: 0.7,
-        max_tokens: 3000,
+        max_tokens: 5000,
       });
 
       return Response.json({ report: completion.choices[0].message.content });
@@ -86,11 +86,26 @@ ${detailedSurvey || "(없음)"}
 ## [사주 기반 타고난 기질]
 ${sajuText || "(사주 정보 없음)"}
 
-## [점성학 기반 타고난 기질]
-${astrologyText || "(점성학 정보 없음)"}
+## [출생 맥락·점성 보조 데이터 — 내부 참고]
+${astrologyText || "(해당 데이터 없음)"}
+
+## 출력 규칙 (필수)
+- 최종 글에서는 "태양", "달", "라이징", "ASC", "상승궁", "~자리"(별자리 고유명사) 같은 점성학 용어를 쓰지 마라. 위 출생 맥락은 행동·관계·감정의 일상어로만 풀어라.
+- 사주 용어(십성, 일간 등)도 과다 나열하지 말고, 체험과 선택으로 번역해 달라.
+- 반드시 ### 로 시작하는 소제목으로 섹션을 나눠라. 아래 순서를 참고하되 제목은 자연스럽게 바꿔도 된다.
+  ### 들어가며 — 한눈에 보는 핵심
+  ### 지금의 나 — 설문이 말하는 패턴
+  ### 타고난 기질의 바닥 — 사주·출생 맥락이 만나는 지점
+  ### 관계와 감정 — 가까워질 때·멀어질 때
+  ### 일과 에너지 — 몰입·지치는 지점
+  ### 스트레스와 회복
+  ### 앞으로의 선택지 — 조건 중심 제안
+  ### 마무리 — 오늘부터 시도할 한 가지
+- 각 섹션은 여러 문단으로 풍부하게 써라. 전체 분량은 인쇄 기준 약 12~15페이지 분량(매우 길게)에 가깝게. 빈 섹션은 두지 마라.
+- 데이터가 없는 영역은 다른 데이터와 연결해 추론하되, 단정적 예언은 피하고 경향·조건으로 써라.
 
 위 데이터를 바탕으로 하나의 통합 보고서를 작성해주세요.
-현재의 모습과 타고난 기질을 자연스럽게 연결해주세요.
+현재의 모습과 타고난 기질을 자연스럽게 한 흐름으로 연결해주세요.
 말투는 다정하게, 하지만 너무 분석적으로 말하지 마세요.
 `;
 
@@ -98,7 +113,7 @@ ${astrologyText || "(점성학 정보 없음)"}
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: integratedPrompt }],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 12000,
       });
 
       return Response.json({ report: completion.choices[0].message.content });
@@ -144,7 +159,7 @@ ${userInput}
           { role: "user", content: integratedPrompt },
         ],
         temperature: 0.65,
-        max_tokens: 6000,
+        max_tokens: 12000,
       });
 
       const report = completion.choices[0].message.content?.trim() || "";
@@ -301,37 +316,12 @@ ${userInput}
 
 ---
 
-[무료/유료 분리 규칙 - 매우 중요]
+[출력 끝 규칙]
 
-출력은 반드시 아래 구조로 끝내라.
-
-첫 4문단을 먼저 쓰고,
-그 다음 마지막에 아래 문장으로 시작하는 짧은 마무리를 붙여라:
-
-"이건 지금 보이는 흐름 정도야"
-
-이 문장은 반드시 그대로 써라.
-한 글자도 바꾸지 마라.
-
-그리고 그 뒤에 2~3문장 정도 더 붙여서
-비슷한 상황에서 반복되는 패턴이 더 있다는 느낌을 남겨라.
-강요하지 말고, 부드럽게 궁금해지게 만들어라.
-
-마무리 예시 흐름:
-이건 지금 보이는 흐름 정도야
-
-비슷한 상황 몇 개만 떠올려보면
-같은 패턴이 반복되는 경우가 많아
-
-그 부분까지 보면 더 또렷하게 이해될 거야
-
----
-
-[마무리 형식 규칙]
-
-- 마지막 2~3문장은 줄바꿈해서 써라
-- 한 줄에 한 문장씩 써라
-- 너무 딱딱하게 끝내지 마라
+- 위 4문단만 출력한다.
+- 네 번째 문단에서 끝낸다.
+- 그 뒤에 덧붙이는 문장·마무리·업그레이드 유도 문구는 절대 쓰지 마라.
+- 문단과 문단 사이에는 빈 줄 하나만 넣어 구분해라.
 `;
 
     const completion = await openai.chat.completions.create({
@@ -359,20 +349,9 @@ ${userInput}
 
     const fullText = completion.choices[0].message.content?.trim() || "";
 
-    const splitKeyword = "이건 지금 보이는 흐름 정도야";
-
-    let free = fullText;
-    let paid = "";
-
-    if (fullText.includes(splitKeyword)) {
-      const index = fullText.indexOf(splitKeyword);
-      free = fullText.slice(0, index).trim();
-      paid = fullText.slice(index).trim();
-    }
-
     return Response.json({
-      free,
-      paid,
+      free: fullText,
+      paid: "",
       full: fullText,
     });
   } catch (error) {

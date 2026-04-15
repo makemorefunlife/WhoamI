@@ -58,9 +58,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    if (reportId) {
+      const toResult = new URL("/result", request.nextUrl.origin);
+      toResult.searchParams.set("id", reportId);
+      toResult.searchParams.set("afterPayment", "1");
+      return NextResponse.redirect(toResult);
+    }
+
     const ok = new URL("/toss-test/success", request.nextUrl.origin);
     ok.searchParams.set("orderId", orderId);
-    if (reportId) ok.searchParams.set("reportId", reportId);
     return NextResponse.redirect(ok);
   }
 

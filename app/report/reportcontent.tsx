@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, Fragment, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { QRCodeSVG } from "qrcode.react";
+import { Orbit, Sparkles, Telescope } from "lucide-react";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
-import SpaceLoading from "@/components/space/SpaceLoading";
+import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
 
 function formatTimeInput(t?: string | null) {
   if (!t) return "";
@@ -62,6 +62,17 @@ ${personality || "(설문 해석 없음)"}
 
 위 설문 해석만을 근거로 분석해줘.
 `.trim();
+}
+
+function buildAstrologyContextForLlm(astro: {
+  sun: string;
+  moon: string;
+  rising: string;
+}) {
+  return `[출생 시점 도식에서 읽히는 세 축 — 최종 글에는 아래 라벨·별자리명을 그대로 쓰지 말 것]
+1) 삶에서 자기를 드러내고 추구하는 톤: "${astro.sun}" 계열 기질
+2) 안식·감정 반응의 리듬: "${astro.moon}" 계열 기질
+3) 낯선 사람에게 먼저 비치는 인상·접근 방식: "${astro.rising}" 계열 기질`;
 }
 
 function buildIntegratedPrompt({
@@ -137,10 +148,10 @@ ${twelveBlock}
 - 지지 관계(합·충·형·파·해 등)
 ${relationsBlock}
 
-[점성학·출생 맥락 / 보조 데이터]
+[출생 맥락·점성 보조 데이터 — 본문에는 점성 용어 없이 일상어로만]
 ${astrologyText?.trim() || "(별도 데이터 없음 — 설문·사주만으로 통합해줘)"}
 
-위 전체를 바탕으로 하나의 통합 보고서를 작성해줘.
+위 전체를 바탕으로 하나의 통합 보고서를 작성해줘. 별자리명·태양/달/라이징 같은 점성학 용어는 쓰지 말고 체험·행동으로 풀어줘.
 `.trim();
 }
 
@@ -163,8 +174,6 @@ export default function ReportContent() {
     ok: boolean;
   }>({ attempted: false, ok: false });
 
-  const [paidPanelOpen, setPaidPanelOpen] = useState(false);
-  const [shareUrlForQr, setShareUrlForQr] = useState("");
   const [showCoordSheet, setShowCoordSheet] = useState(false);
   const [sheetYear, setSheetYear] = useState("");
   const [sheetMonth, setSheetMonth] = useState("");
@@ -173,22 +182,30 @@ export default function ReportContent() {
   const [sheetPlace, setSheetPlace] = useState("");
   const [sheetGender, setSheetGender] = useState("");
   const [sheetBusy, setSheetBusy] = useState(false);
-  const [deepPhase, setDeepPhase] = useState<"idle" | "running" | "confirm">(
-    "idle",
-  );
+  const [inviteUsed, setInviteUsed] = useState(false);
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const afterPaymentHandled = useRef(false);
 
   const reportId = searchParams.get("id") || "";
   const displayName = report?.name?.trim() || "당신";
+
+  const freeParagraphs = useMemo(() => {
+    if (!freeSummary) return [];
+    const blocks = freeSummary
+      .split(/\n\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (blocks.length >= 2) return blocks;
+    const lines = freeSummary
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    return lines.length ? lines : [freeSummary.trim()];
+  }, [freeSummary]);
   const isDbPaid = report?.payment_status === "paid";
   const showPaidUnified =
     Boolean(unifiedReport) && (!isDbPaid || (isDbPaid && sajuStatus.ok));
-  const showPaidSection = Boolean(
-    isDbPaid && paidPanelOpen && showPaidUnified && unifiedReport,
-  );
-  const showDeepAnalysisCta = Boolean(
-    isDbPaid && showPaidUnified && unifiedReport && !paidPanelOpen,
-  );
-  const showUpgradePath = Boolean(!isDbPaid && paidSummary);
+  const showUpgradePath = Boolean(!isDbPaid && freeSummary);
 
   const birthInfoComplete = useMemo(
     () => hasCompleteBirthInfo(report),
@@ -201,14 +218,7 @@ export default function ReportContent() {
   );
 
   useEffect(() => {
-    if (!isDbPaid) setPaidPanelOpen(false);
-  }, [isDbPaid]);
-
-  useEffect(() => {
-    if (!reportId || typeof window === "undefined") return;
-    setShareUrlForQr(
-      `${window.location.origin}/result?id=${encodeURIComponent(reportId)}`,
-    );
+    afterPaymentHandled.current = false;
   }, [reportId]);
 
   useEffect(() => {
@@ -221,15 +231,43 @@ export default function ReportContent() {
     setSheetPlace(report.birth_place ?? "");
   }, [report]);
 
+  /** 결제 완료 후 돌아온 경우에만 개인정보 시트 자동 오픈 */
   useEffect(() => {
-    if (deepPhase !== "running") return;
-    const done = window.setTimeout(() => {
-      setDeepPhase("confirm");
-    }, 2800);
-    return () => window.clearTimeout(done);
-  }, [deepPhase]);
+    if (loading || afterPaymentHandled.current) return;
+    if (searchParams.get("afterPayment") !== "1" || !reportId) return;
+    if (!report || report.payment_status !== "paid") return;
+    afterPaymentHandled.current = true;
+    if (hasCompleteBirthInfo(report)) {
+      router.replace(`/result?id=${encodeURIComponent(reportId)}`, {
+        scroll: false,
+      });
+      return;
+    }
+    setShowCoordSheet(true);
+    router.replace(`/result?id=${encodeURIComponent(reportId)}`, { scroll: false });
+  }, [loading, searchParams, reportId, report, router]);
 
-  const saveSheetAndGoPay = useCallback(async () => {
+  useEffect(() => {
+    if (!reportId || !isDbPaid) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/invite/status?reportId=${encodeURIComponent(reportId)}`,
+        );
+        const data = await res.json();
+        if (!cancelled && data?.used === true) setInviteUsed(true);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId, isDbPaid]);
+
+  /** 생년월일·장소 저장 후 유료(결제) 페이지로 이동 — 결제 완료 뒤 통합 리포트 생성 */
+  const saveBirthAndGoPayment = useCallback(async () => {
     if (!reportId) return;
     setSheetBusy(true);
     try {
@@ -249,6 +287,7 @@ export default function ReportContent() {
       if (sheetGender.trim()) {
         localStorage.setItem(`gender_${reportId}`, sheetGender.trim());
       }
+      setShowCoordSheet(false);
       router.push(`/payment?reportId=${encodeURIComponent(reportId)}`);
     } finally {
       setSheetBusy(false);
@@ -256,10 +295,7 @@ export default function ReportContent() {
   }, [reportId, sheetDate, sheetTime, sheetPlace, sheetGender, router]);
 
   async function handleShare() {
-    const url =
-      typeof window !== "undefined"
-        ? window.location.href
-        : shareUrlForQr || "";
+    const url = typeof window !== "undefined" ? window.location.href : "";
     try {
       if (navigator.share) {
         await navigator.share({
@@ -273,6 +309,43 @@ export default function ReportContent() {
       }
     } catch {
       /* 사용자 취소 등 */
+    }
+  }
+
+  async function handleInviteFriend() {
+    if (!reportId || inviteUsed || inviteBusy) return;
+    setInviteBusy(true);
+    try {
+      const res = await fetch("/api/invite/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data?.error ?? "초대 링크를 만들지 못했어요.");
+        return;
+      }
+      const token = data?.invite?.invite_token as string | undefined;
+      if (!token) {
+        alert("초대 정보를 확인할 수 없어요.");
+        return;
+      }
+      const url = `${window.location.origin}/invite?token=${encodeURIComponent(token)}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "친구 초대", text: "함께 관계 분석을 받아보자.", url });
+        } else {
+          await navigator.clipboard.writeText(url);
+          alert("초대 링크를 복사했어요. 친구에게 보내 주세요.");
+        }
+      } catch {
+        await navigator.clipboard.writeText(url);
+        alert("초대 링크를 복사했어요.");
+      }
+      setInviteUsed(true);
+    } finally {
+      setInviteBusy(false);
     }
   }
 
@@ -295,6 +368,8 @@ export default function ReportContent() {
         setLoading(false);
         return;
       }
+
+      setLoading(true);
 
       const { data: reportData } = await supabase
         .from("reports")
@@ -400,7 +475,11 @@ export default function ReportContent() {
           if (ar.ok) {
             const astroData = await ar.json();
             if (astroData.sun && astroData.moon && astroData.rising) {
-              localAstrologyText = `태양: ${astroData.sun}, 달: ${astroData.moon}, 라이징: ${astroData.rising}`;
+              localAstrologyText = buildAstrologyContextForLlm({
+                sun: astroData.sun,
+                moon: astroData.moon,
+                rising: astroData.rising,
+              });
             }
           }
         } catch (e) {
@@ -487,9 +566,11 @@ export default function ReportContent() {
     return (
       <SpaceBackground>
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
-          <SpaceLoading
-            rotateMainOnly
-            rotatingStatuses={["탐사하는 중", "특징 분석 중", "패턴 분석 중"]}
+          <SurveyAnalyzingJourney
+            active
+            mode={
+              report?.payment_status === "paid" ? "landing" : "flight"
+            }
           />
         </div>
       </SpaceBackground>
@@ -522,7 +603,7 @@ export default function ReportContent() {
               Exploration log
             </p>
             <h1 className="text-2xl font-semibold leading-tight text-[var(--space-text)] sm:text-3xl">
-              {displayName}님의 관측 기록
+              {displayName}님의 관측기록
             </h1>
             <p className="text-sm text-[var(--space-text-muted)]">
               분석 일부가 도출되었습니다.
@@ -563,83 +644,113 @@ export default function ReportContent() {
                       ◐
                     </span>
                   </div>
-                  <p className="whitespace-pre-wrap text-center text-base leading-relaxed text-[var(--space-text)]">
-                    {freeSummary}
-                  </p>
 
-                  <div className="space-y-3 border-t border-[var(--space-border)] pt-5 text-center">
-                    <p className="whitespace-pre-line text-sm leading-relaxed text-[var(--space-text-muted)]">
-                      {`이건 지금 보이는 흐름 정도야
-
-비슷한 상황 몇 개만 떠올려보면
-같은 패턴이 반복되는 경우가 많아
-
-그 부분까지 보면 더 또렷하게 이해될 거야`}
-                    </p>
-                    <p className="text-xs text-[var(--space-text-muted)]">
-                      좌표를 더 입력할수록 정밀도가 높아집니다.
-                    </p>
+                  <div className="space-y-0 text-left">
+                    {freeParagraphs.map((para, i) => {
+                      const DividerIcon = [Sparkles, Orbit, Telescope][
+                        i % 3
+                      ] as typeof Sparkles;
+                      return (
+                        <Fragment key={i}>
+                          {i > 0 && (
+                            <div
+                              className="flex flex-col items-center gap-3 py-7"
+                              aria-hidden
+                            >
+                              <div className="flex items-center gap-2 opacity-[0.45]">
+                                <span className="h-1 w-1 rounded-full bg-[var(--space-text-muted)]" />
+                                <span className="h-1 w-1 rounded-full bg-[var(--space-text-muted)]" />
+                                <span className="h-1 w-1 rounded-full bg-[var(--space-text-muted)]" />
+                              </div>
+                              <DividerIcon
+                                className="h-[1.125rem] w-[1.125rem] text-[#8eb8ff]/85"
+                                strokeWidth={1.75}
+                                aria-hidden
+                              />
+                            </div>
+                          )}
+                          <p className="text-[15px] leading-[1.75] text-[var(--space-text)]">
+                            {para}
+                          </p>
+                        </Fragment>
+                      );
+                    })}
                   </div>
 
                   {showUpgradePath && (
-                    <div className="space-y-4 border-t border-[var(--space-border)] pt-5">
-                      <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                        패턴을 더 정밀하게 보려면 추가 좌표가 필요해요.
+                    <div className="space-y-4 border-t border-[var(--space-border)] pt-6 text-center">
+                      <p className="text-sm leading-relaxed text-[var(--space-text)]">
+                        이 해석은 현재의 {displayName}의 모습이야.
+                      </p>
+                      <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+                        추가 분석을 하면 패턴 속에 담긴 진짜 &apos;내면의
+                        나&apos;를 만날 수 있어.
                       </p>
                       <GlowButton
                         type="button"
                         className="w-full"
                         onClick={() => setShowCoordSheet(true)}
                       >
-                        추가 분석 진행하기
+                        👉 지금 분석하기
                       </GlowButton>
+                      <button
+                        type="button"
+                        onClick={() => void handleShare()}
+                        className="w-full rounded-2xl border border-[var(--space-border)] py-3.5 text-sm font-medium text-[var(--space-text)] transition hover:bg-white/[0.04]"
+                      >
+                        📤 결과 공유하기
+                      </button>
                     </div>
                   )}
                 </>
               )}
 
-              {isDbPaid &&
-                unifiedReport &&
-                showPaidUnified &&
-                !paidPanelOpen && (
-                  <>
-                    <div className="space-y-4">
-                      <p className="text-center text-sm font-medium text-[#FFD6A5]">
-                        🌟 통합 분석 리포트
-                      </p>
-                      <p className="whitespace-pre-wrap text-left text-[15px] leading-relaxed text-[var(--space-text)]">
-                        {unifiedReport}
+              {isDbPaid && unifiedReport && showPaidUnified && (
+                <>
+                  <div className="space-y-4">
+                    <p className="text-center text-sm font-medium text-[#FFD6A5]">
+                      🌟 통합 분석 리포트
+                    </p>
+                    <p className="whitespace-pre-wrap text-left text-[15px] leading-relaxed text-[var(--space-text)]">
+                      {unifiedReport}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
+                    <GlowButton
+                      type="button"
+                      className="w-full"
+                      onClick={() => void handleShare()}
+                    >
+                      공유하기
+                    </GlowButton>
+                    <GlowButton
+                      type="button"
+                      className="w-full"
+                      disabled={inviteUsed || inviteBusy}
+                      onClick={() => void handleInviteFriend()}
+                    >
+                      {inviteUsed
+                        ? "친구 초대하기 (이미 사용함)"
+                        : inviteBusy
+                          ? "초대 링크 준비 중…"
+                          : "친구 초대하기"}
+                    </GlowButton>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => router.push("/")}
+                        className="w-full rounded-2xl border border-[var(--space-border)] bg-white/[0.04] py-3.5 text-sm font-medium text-[var(--space-text)] transition hover:bg-white/[0.07]"
+                      >
+                        닫기
+                      </button>
+                      <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
+                        탐사 기록은 서버에 남아 있어요. 이 화면 주소를 북마크해
+                        두면 같은 경로로 다시 들어올 수 있어요.
                       </p>
                     </div>
-
-                    {showDeepAnalysisCta && (
-                      <div className="space-y-4 border-t border-[var(--space-border)] pt-5">
-                        <p className="text-center text-sm text-[var(--space-text-muted)]">
-                          심화 분석을 시작할 준비가 되었습니다.
-                        </p>
-                        <GlowButton
-                          type="button"
-                          className="w-full"
-                          onClick={() => {
-                            setDeepPhase("running");
-                          }}
-                        >
-                          심화 분석 시작하기
-                        </GlowButton>
-                      </div>
-                    )}
-                  </>
-                )}
-
-              {showPaidSection && (
-                <div className="space-y-4 border-t border-[var(--space-border)] pt-6">
-                  <p className="text-center text-sm font-medium text-[#FFD6A5]">
-                    아.. 이게 당신이군요
-                  </p>
-                  <p className="whitespace-pre-line text-[15px] leading-relaxed text-[var(--space-text)]">
-                    {unifiedReport}
-                  </p>
-                </div>
+                  </div>
+                </>
               )}
             </GlassCard>
           )}
@@ -659,34 +770,12 @@ export default function ReportContent() {
           <div className="space-y-3">
             <button
               type="button"
-              onClick={handleShare}
-              className="w-full rounded-2xl border border-[var(--space-border)] py-3.5 text-sm font-medium text-[var(--space-text)] transition hover:bg-white/[0.04]"
-            >
-              링크 공유하기
-            </button>
-            <button
-              type="button"
               onClick={() => router.push("/")}
               className="w-full py-2 text-sm text-[var(--space-text-muted)] transition hover:text-[var(--space-text)]"
             >
               다른 행성을 발견하러 가기
             </button>
           </div>
-
-          <GlassCard className="flex flex-col items-center gap-4">
-            <h2 className="text-sm font-medium text-[var(--space-text-muted)]">
-              공유 QR
-            </h2>
-            <div className="flex min-h-[184px] min-w-[184px] items-center justify-center rounded-2xl bg-white p-3">
-              {shareUrlForQr ? (
-                <QRCodeSVG value={shareUrlForQr} size={160} />
-              ) : (
-                <span className="px-2 text-center text-xs text-slate-500">
-                  QR 준비 중…
-                </span>
-              )}
-            </div>
-          </GlassCard>
         </div>
       </div>
 
@@ -706,13 +795,21 @@ export default function ReportContent() {
               className="w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <GlassCard className="max-h-[85vh] overflow-y-auto space-y-5 !bg-[rgba(16,22,38,0.97)] !shadow-[0_24px_60px_rgba(0,0,0,0.55)]">
+              <GlassCard className="max-h-[85vh] overflow-y-auto !bg-[rgba(16,22,38,0.97)] !shadow-[0_24px_60px_rgba(0,0,0,0.55)]">
+                <form
+                  className="space-y-5"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void saveBirthAndGoPayment();
+                  }}
+                >
                 <div className="space-y-1">
                   <h2 className="text-lg font-semibold text-[var(--space-text)]">
-                    추가 데이터
+                    심화 분석을 위한 정보
                   </h2>
                   <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
-                    패턴 분석을 위한 추가 데이터가 필요합니다.
+                    생년월일·시간·출생 장소를 입력한 뒤 결제하면, 18문항 세부
+                    해석과 사주·점성학이 이어진 통합 리포트를 받을 수 있어요.
                   </p>
                 </div>
 
@@ -840,14 +937,11 @@ export default function ReportContent() {
 
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row-reverse">
                   <GlowButton
-                    type="button"
+                    type="submit"
                     className="w-full flex-1"
                     disabled={sheetBusy}
-                    onClick={() => void saveSheetAndGoPay()}
                   >
-                    {sheetBusy
-                      ? "저장 중…"
-                      : "데이터 입력하고 심화분석시작하기"}
+                    {sheetBusy ? "저장 중…" : "입력 완료"}
                   </GlowButton>
                   <button
                     type="button"
@@ -858,49 +952,9 @@ export default function ReportContent() {
                     닫기
                   </button>
                 </div>
+                </form>
               </GlassCard>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {deepPhase !== "idle" && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-5"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <GlassCard className="w-full max-w-sm space-y-6 text-center">
-              {deepPhase === "running" && (
-                <SpaceLoading
-                  rotateMainOnly
-                  rotatingStatuses={[
-                    "탐사하는 중",
-                    "특징 분석 중",
-                    "패턴 분석 중",
-                  ]}
-                />
-              )}
-              {deepPhase === "confirm" && (
-                <>
-                  <p className="text-lg font-semibold text-[var(--space-text)]">
-                    탐사가 완료되었습니다.
-                  </p>
-                  <GlowButton
-                    type="button"
-                    className="w-full"
-                    onClick={() => {
-                      setPaidPanelOpen(true);
-                      setDeepPhase("idle");
-                    }}
-                  >
-                    결과 확인하기
-                  </GlowButton>
-                </>
-              )}
-            </GlassCard>
           </motion.div>
         )}
       </AnimatePresence>
