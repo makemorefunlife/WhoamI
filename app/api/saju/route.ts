@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { calculateSaju } from "@fullstackfamily/manseryeok";
 import { createClient } from "@supabase/supabase-js";
 
-console.log("🔥 route.ts 파일이 로드됨!");
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

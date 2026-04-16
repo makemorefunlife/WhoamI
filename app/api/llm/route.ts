@@ -1,7 +1,14 @@
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { buildUserInput } from "../../../lib/buildUserInput";
+import {
+  INTEGRATED_SYSTEM_PROMPT,
+  buildIntegratedPhase1UserPrompt,
+  buildIntegratedPhase2UserPrompt,
+} from "../../../lib/prompts/integratedPremiumReport";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -61,64 +68,128 @@ export async function POST(req: Request) {
     // 🔥 모드 2: 통합 보고서 (integrated)
     // ============================================================
     if (mode === "integrated") {
-      const { detailedSurvey, sajuData, astrologyText } = body;
+      const { detailedSurvey, sajuData, astrologyText, stream: wantStream } =
+        body as {
+          detailedSurvey?: unknown;
+          sajuData?: unknown;
+          astrologyText?: string | null;
+          stream?: boolean;
+        };
 
-      let sajuText = "";
-      if (sajuData) {
-        sajuText = `
-[사주 기질 해석 - DB 기반]
-- 일간(핵심 성향): ${sajuData.dayStemData?.meaning_ko || sajuData.dayStemData?.metaphor_ko || "정보 없음"}
-- 일지(내면 기반): ${sajuData.dayBranchData?.meaning_ko || "정보 없음"}
-- 일간 강점: ${sajuData.dayStemData?.strength_ko || "정보 없음"}
-- 일간 약점: ${sajuData.dayStemData?.weakness_ko || "정보 없음"}
-- 일간 조언: ${sajuData.dayStemData?.advice_ko || "정보 없음"}
-- 지장간(숨겨진 성향): ${sajuData.hiddenStemsData?.map((h: any) => h.meaning_ko).join(" / ") || "정보 없음"}
-- 십성(관계 스타일): ${sajuData.tenGods?.map((t: any) => `${t.pillar}: ${t.godData?.meaning_ko}`).join(" / ") || "정보 없음"}
-- 12운성(인생 흐름): ${sajuData.twelveStageData?.meaning_ko || "정보 없음"}
-- 관계 패턴: ${sajuData.relations?.map((r: any) => r.interpretation).join(" / ") || "정보 없음"}
-`;
+      const surveyAnalysis =
+        typeof detailedSurvey === "string"
+          ? detailedSurvey
+          : JSON.stringify(detailedSurvey ?? null, null, 2);
+      const sajuSummary =
+        sajuData == null
+          ? "(없음)"
+          : typeof sajuData === "string"
+            ? sajuData
+            : JSON.stringify(sajuData, null, 2);
+      const astrologyInterpretation =
+        typeof astrologyText === "string" && astrologyText.trim()
+          ? astrologyText.trim()
+          : "(없음)";
+
+      const phase1User = buildIntegratedPhase1UserPrompt(
+        surveyAnalysis,
+        sajuSummary,
+        astrologyInterpretation,
+      );
+
+      const phase1Messages: ChatCompletionMessageParam[] = [
+        { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+        { role: "user", content: phase1User },
+      ];
+
+      const useStream = wantStream === true;
+
+      if (useStream) {
+        const encoder = new TextEncoder();
+        const streamOut = new ReadableStream<Uint8Array>({
+          async start(controller) {
+            try {
+              let acc = "";
+              const s1 = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: phase1Messages,
+                temperature: 0.65,
+                max_tokens: 8192,
+                stream: true,
+              });
+              for await (const chunk of s1) {
+                const c = chunk.choices[0]?.delta?.content ?? "";
+                if (c) {
+                  acc += c;
+                  controller.enqueue(encoder.encode(c));
+                }
+              }
+              controller.enqueue(encoder.encode("\n\n—\n\n"));
+              const excerpt = acc.length > 12000 ? acc.slice(-12000) : acc;
+              const phase2User = buildIntegratedPhase2UserPrompt(
+                surveyAnalysis,
+                sajuSummary,
+                astrologyInterpretation,
+                excerpt,
+              );
+              const s2 = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                  { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+                  { role: "user", content: phase2User },
+                ],
+                temperature: 0.65,
+                max_tokens: 8192,
+                stream: true,
+              });
+              for await (const chunk of s2) {
+                const c = chunk.choices[0]?.delta?.content ?? "";
+                if (c) controller.enqueue(encoder.encode(c));
+              }
+              controller.close();
+            } catch (e) {
+              controller.error(
+                e instanceof Error ? e : new Error(String(e)),
+              );
+            }
+          },
+        });
+
+        return new Response(streamOut, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        });
       }
 
-      const integratedPrompt = `
-당신은 20년 경력의 명리학 전문가이자 15년 경력의 서양 점성학 전문가, 그리고 조직 심리 코치입니다.
-
-## [설문 기반 세부 해석 — 현재의 너]
-${detailedSurvey || "(없음)"}
-
-## [사주 기반 타고난 기질]
-${sajuText || "(사주 정보 없음)"}
-
-## [출생 맥락·점성 보조 데이터 — 내부 참고]
-${astrologyText || "(해당 데이터 없음)"}
-
-## 출력 규칙 (필수)
-- 최종 글에서는 "태양", "달", "라이징", "ASC", "상승궁", "~자리"(별자리 고유명사) 같은 점성학 용어를 쓰지 마라. 위 출생 맥락은 행동·관계·감정의 일상어로만 풀어라.
-- 사주 용어(십성, 일간 등)도 과다 나열하지 말고, 체험과 선택으로 번역해 달라.
-- 반드시 ### 로 시작하는 소제목으로 섹션을 나눠라. 아래 순서를 참고하되 제목은 자연스럽게 바꿔도 된다.
-  ### 들어가며 — 한눈에 보는 핵심
-  ### 지금의 나 — 설문이 말하는 패턴
-  ### 타고난 기질의 바닥 — 사주·출생 맥락이 만나는 지점
-  ### 관계와 감정 — 가까워질 때·멀어질 때
-  ### 일과 에너지 — 몰입·지치는 지점
-  ### 스트레스와 회복
-  ### 앞으로의 선택지 — 조건 중심 제안
-  ### 마무리 — 오늘부터 시도할 한 가지
-- 각 섹션은 여러 문단으로 풍부하게 써라. 전체 분량은 인쇄 기준 약 12~15페이지 분량(매우 길게)에 가깝게. 빈 섹션은 두지 마라.
-- 데이터가 없는 영역은 다른 데이터와 연결해 추론하되, 단정적 예언은 피하고 경향·조건으로 써라.
-
-위 데이터를 바탕으로 하나의 통합 보고서를 작성해주세요.
-현재의 모습과 타고난 기질을 자연스럽게 한 흐름으로 연결해주세요.
-말투는 다정하게, 하지만 너무 분석적으로 말하지 마세요.
-`;
-
-      const completion = await openai.chat.completions.create({
+      const c1 = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: integratedPrompt }],
-        temperature: 0.7,
-        max_tokens: 12000,
+        messages: phase1Messages,
+        temperature: 0.65,
+        max_tokens: 8192,
       });
+      const part1 = c1.choices[0].message.content ?? "";
+      const excerpt = part1.length > 12000 ? part1.slice(-12000) : part1;
+      const phase2User = buildIntegratedPhase2UserPrompt(
+        surveyAnalysis,
+        sajuSummary,
+        astrologyInterpretation,
+        excerpt,
+      );
+      const c2 = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+          { role: "user", content: phase2User },
+        ],
+        temperature: 0.65,
+        max_tokens: 8192,
+      });
+      const part2 = c2.choices[0].message.content ?? "";
+      const report = `${part1}\n\n—\n\n${part2}`;
 
-      return Response.json({ report: completion.choices[0].message.content });
+      return Response.json({ report });
     }
 
     // ============================================================

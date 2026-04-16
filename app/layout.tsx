@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import DevPaymentShortcut from "@/components/DevPaymentShortcut";
 import "./globals.css";
 
 export const runtime = "nodejs";
@@ -31,7 +32,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider>
+          {children}
+          <DevPaymentShortcut />
+        </ClerkProvider>
       </body>
     </html>
   );

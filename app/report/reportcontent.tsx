@@ -9,6 +9,7 @@ import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
+import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
 
 function formatTimeInput(t?: string | null) {
   if (!t) return "";
@@ -169,6 +170,7 @@ export default function ReportContent() {
   const [freeSummary, setFreeSummary] = useState<string | null>(null);
   const [paidSummary, setPaidSummary] = useState<string | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<string | null>(null);
+  const [reportStreaming, setReportStreaming] = useState(false);
   const [sajuStatus, setSajuStatus] = useState<{
     attempted: boolean;
     ok: boolean;
@@ -203,8 +205,13 @@ export default function ReportContent() {
     return lines.length ? lines : [freeSummary.trim()];
   }, [freeSummary]);
   const isDbPaid = report?.payment_status === "paid";
-  const showPaidUnified =
-    Boolean(unifiedReport) && (!isDbPaid || (isDbPaid && sajuStatus.ok));
+  const showPaidUnified = useMemo(() => {
+    if (!isDbPaid || !sajuStatus.ok) return false;
+    return (
+      reportStreaming ||
+      (unifiedReport !== null && unifiedReport.length > 0)
+    );
+  }, [isDbPaid, sajuStatus.ok, reportStreaming, unifiedReport]);
   const showUpgradePath = Boolean(!isDbPaid && freeSummary);
 
   const birthInfoComplete = useMemo(
@@ -370,6 +377,8 @@ export default function ReportContent() {
       }
 
       setLoading(true);
+      setUnifiedReport(null);
+      setReportStreaming(false);
 
       const { data: reportData } = await supabase
         .from("reports")
@@ -422,6 +431,7 @@ export default function ReportContent() {
 
       // 🔥 사주 구조 데이터
       let localSajuData: any = null;
+      let sajuOk = false;
 
       if (!paid) {
         setSajuStatus({ attempted: false, ok: false });
@@ -443,6 +453,7 @@ export default function ReportContent() {
         if (sr.ok) {
           const j = await sr.json();
           localSajuData = j;
+          sajuOk = true;
           setSajuStatus({ attempted: true, ok: true });
         } else {
           setSajuStatus({ attempted: true, ok: false });
@@ -474,12 +485,26 @@ export default function ReportContent() {
           });
           if (ar.ok) {
             const astroData = await ar.json();
-            if (astroData.sun && astroData.moon && astroData.rising) {
-              localAstrologyText = buildAstrologyContextForLlm({
-                sun: astroData.sun,
-                moon: astroData.moon,
-                rising: astroData.rising,
-              });
+            const interp =
+              typeof astroData.interpretation === "string"
+                ? astroData.interpretation.trim()
+                : "";
+            if (interp) {
+              localAstrologyText = interp;
+            } else {
+              const raw = astroData.raw as
+                | { sun?: string; moon?: string; rising?: string }
+                | undefined;
+              const sun = raw?.sun ?? astroData.sun;
+              const moon = raw?.moon ?? astroData.moon;
+              const rising = raw?.rising ?? astroData.rising;
+              if (sun && moon && rising) {
+                localAstrologyText = buildAstrologyContextForLlm({
+                  sun,
+                  moon,
+                  rising,
+                });
+              }
             }
           }
         } catch (e) {
@@ -519,35 +544,71 @@ export default function ReportContent() {
           setPaidSummary(data.paid ?? null);
           setUnifiedReport(null);
         } else {
-          // 🔥 이미 정의된 patterns 사용
           const detailedRes = await fetch("/api/llm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               mode: "detailed_survey",
-              patterns: localPatterns,  
+              patterns: localPatterns,
             }),
           });
           const detailedData = await detailedRes.json();
-        
-          // 통합 보고서 생성
+
           const combinedAstrology = [localAstrologyText, localRelationship]
             .filter(Boolean)
             .join("\n\n");
-        
-          const integratedRes = await fetch("/api/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "integrated",
-              detailedSurvey: detailedData.report,
-              sajuData: localSajuData ?? null,
-              astrologyText: combinedAstrology || null,
-            }),
-          });
-          const integratedData = await integratedRes.json();
-        
-          setUnifiedReport(integratedData.report);
+
+          if (hasCompleteBirthInfo(reportData) && sajuOk) {
+            setLoading(false);
+            setReportStreaming(true);
+            setUnifiedReport("");
+            try {
+              const integratedRes = await fetch("/api/llm", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  mode: "integrated",
+                  detailedSurvey: detailedData.report,
+                  sajuData: localSajuData ?? null,
+                  astrologyText: combinedAstrology || null,
+                  stream: true,
+                }),
+              });
+
+              if (!integratedRes.ok) {
+                const errJson = await integratedRes.json().catch(() => ({}));
+                setUnifiedReport(
+                  `통합 리포트를 만들지 못했어요. ${String((errJson as { error?: string }).error ?? "잠시 후 다시 열어보세요.")}`,
+                );
+              } else {
+                const ct = integratedRes.headers.get("content-type") ?? "";
+                if (ct.includes("text/plain") && integratedRes.body) {
+                  const reader = integratedRes.body.getReader();
+                  const decoder = new TextDecoder();
+                  let acc = "";
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    acc += decoder.decode(value, { stream: true });
+                    setUnifiedReport(acc);
+                  }
+                  setUnifiedReport(acc);
+                } else {
+                  const integratedData = await integratedRes.json();
+                  setUnifiedReport(integratedData.report ?? "");
+                }
+              }
+            } catch (streamErr) {
+              console.error(streamErr);
+              setUnifiedReport(
+                "통합 리포트를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
+              );
+            } finally {
+              setReportStreaming(false);
+            }
+          } else {
+            setUnifiedReport(null);
+          }
           setFreeSummary(null);
           setPaidSummary(null);
         }
@@ -596,9 +657,9 @@ export default function ReportContent() {
 
   return (
     <SpaceBackground>
-      <div className="relative z-10 min-h-screen px-5 py-10 pb-24">
-        <div className="mx-auto max-w-md space-y-8">
-          <header className="space-y-2 text-center">
+      <div className="relative z-10 min-h-screen px-4 py-10 pb-28 sm:px-6">
+        <div className="mx-auto max-w-md space-y-8 sm:max-w-2xl">
+          <header className="space-y-3 text-center">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--space-sub)]">
               Exploration log
             </p>
@@ -606,13 +667,15 @@ export default function ReportContent() {
               {displayName}님의 관측기록
             </h1>
             <p className="text-sm text-[var(--space-text-muted)]">
-              분석 일부가 도출되었습니다.
+              {isDbPaid && sajuStatus.ok
+                ? "심층 통합 리포트가 준비되었습니다."
+                : "분석 일부가 도출되었습니다."}
             </p>
           </header>
 
           {(freeSummary ||
             paidSummary ||
-            (unifiedReport && showPaidUnified) ||
+            showPaidUnified ||
             (isDbPaid && !(birthInfoComplete && sajuStatus.ok))) && (
             <GlassCard className="space-y-6">
               {isDbPaid && !(birthInfoComplete && sajuStatus.ok) && (
@@ -705,15 +768,41 @@ export default function ReportContent() {
                 </>
               )}
 
-              {isDbPaid && unifiedReport && showPaidUnified && (
+              {showPaidUnified && (
                 <>
-                  <div className="space-y-4">
-                    <p className="text-center text-sm font-medium text-[#FFD6A5]">
-                      🌟 통합 분석 리포트
-                    </p>
-                    <p className="whitespace-pre-wrap text-left text-[15px] leading-relaxed text-[var(--space-text)]">
-                      {unifiedReport}
-                    </p>
+                  <div className="space-y-5">
+                    <div className="text-center">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8eb8ff]/90">
+                        Premium
+                      </p>
+                      <p className="mt-2 text-lg font-semibold text-[#FFD6A5] sm:text-xl">
+                        통합 분석 리포트
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
+                        설문·사주·출생 맥락을 한 흐름으로 엮었습니다.
+                      </p>
+                    </div>
+
+                    <div
+                      className={[
+                        "rounded-2xl border border-[var(--space-border)]/80 bg-gradient-to-b from-[var(--space-card)]/55 to-[#0a0f1a]/35 p-4 shadow-[0_0_60px_rgba(103,183,255,0.06)] sm:p-6 md:p-8",
+                        reportStreaming ? "ring-1 ring-[#67B7FF]/25" : "",
+                      ].join(" ")}
+                    >
+                      {reportStreaming && (
+                        <p className="mb-4 flex items-center gap-2 text-xs text-[#8eb8ff]/90">
+                          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#67B7FF]" />
+                          리포트를 이어서 작성하는 중이에요…
+                        </p>
+                      )}
+                      {unifiedReport !== null && unifiedReport.length > 0 ? (
+                        <UnifiedReportMarkdown content={unifiedReport} />
+                      ) : reportStreaming ? (
+                        <p className="text-sm text-[var(--space-text-muted)]">
+                          곧 본문이 나타납니다.
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
@@ -757,7 +846,7 @@ export default function ReportContent() {
 
           {!freeSummary &&
             !paidSummary &&
-            !(unifiedReport && showPaidUnified) &&
+            !showPaidUnified &&
             !(isDbPaid && !(birthInfoComplete && sajuStatus.ok)) && (
               <GlassCard>
                 <p className="text-center text-sm text-[var(--space-text-muted)]">

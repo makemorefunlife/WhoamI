@@ -197,7 +197,8 @@ export default function TossPaymentFlow({
   if (variant === "product") {
     const showDevPanel =
       process.env.NODE_ENV === "development" ||
-      process.env.NEXT_PUBLIC_ALLOW_MOCK_PAYMENT === "true";
+      process.env.NEXT_PUBLIC_ALLOW_MOCK_PAYMENT === "true" ||
+      process.env.NEXT_PUBLIC_DEV_PAYMENT_SHORTCUT === "true";
 
     return (
       <div className="space-y-5">
