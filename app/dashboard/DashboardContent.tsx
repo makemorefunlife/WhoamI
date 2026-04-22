@@ -31,35 +31,44 @@ type RelSimple = {
 
 function AccordionSection({
   title,
+  subtitle,
   open,
   onToggle,
   children,
 }: {
   title: string;
+  subtitle?: ReactNode;
   open: boolean;
   onToggle: () => void;
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-white/12 bg-[rgba(10,14,24,0.45)] shadow-[0_12px_40px_rgba(0,0,0,0.2)]">
+    <section className="overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(10,14,24,0.38)] shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-sm">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5 text-left transition hover:bg-white/[0.04]"
+        className="flex w-full items-start justify-between gap-4 border-b border-white/[0.08] px-5 py-4 text-left transition hover:bg-white/[0.035] sm:px-6 sm:py-[1.125rem]"
         aria-expanded={open}
       >
-        <span className="text-sm font-semibold text-[var(--space-text)]">
-          {title}
-        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <span className="block text-[0.9375rem] font-semibold leading-snug tracking-[-0.01em] text-[var(--space-text)] sm:text-base">
+            {title}
+          </span>
+          {subtitle ? (
+            <span className="block text-[0.8125rem] font-normal leading-snug text-[var(--space-text-muted)] tabular-nums sm:text-sm">
+              {subtitle}
+            </span>
+          ) : null}
+        </div>
         <span
-          className="shrink-0 text-xs text-[var(--space-text-muted)] tabular-nums"
+          className="mt-0.5 shrink-0 text-[0.6875rem] text-[var(--space-text-muted)] tabular-nums opacity-80"
           aria-hidden
         >
           {open ? "▼" : "▶"}
         </span>
       </button>
       {open ? (
-        <div className="border-t border-white/[0.06] px-3 py-4 sm:px-4">
+        <div className="border-t border-white/[0.06] px-4 py-5 sm:px-6 sm:py-6">
           {children}
         </div>
       ) : null}
@@ -111,7 +120,7 @@ export default function DashboardContent() {
       const [r1, r2] = await Promise.all([
         fetch(`/api/my/report?reportId=${encodeURIComponent(reportId)}`),
         fetch(
-          `/api/relationship/list?reportId=${encodeURIComponent(reportId)}&limit=3&format=simple&scope=completed`,
+          `/api/relationship/list?reportId=${encodeURIComponent(reportId)}&format=simple&scope=all`,
         ),
       ]);
 
@@ -147,6 +156,25 @@ export default function DashboardContent() {
     if (lines.length >= 4) return lines.slice(0, 4);
     return [t];
   }, [my?.basic_result]);
+
+  const relPendingCount = useMemo(
+    () => rels.filter((r) => r.status === "pending").length,
+    [rels],
+  );
+  const relCompletedCount = useMemo(
+    () => rels.filter((r) => r.status === "completed").length,
+    [rels],
+  );
+
+  const relsSorted = useMemo(() => {
+    const copy = [...rels];
+    copy.sort((a, b) => {
+      if (a.status !== b.status)
+        return a.status === "pending" ? -1 : 1;
+      return a.partner_name.localeCompare(b.partner_name, "ko");
+    });
+    return copy;
+  }, [rels]);
 
   async function confirmNewSurvey() {
     if (!reportId) return;
@@ -190,12 +218,12 @@ export default function DashboardContent() {
 
   return (
     <SpaceBackground>
-      <div className="relative z-10 min-h-screen px-4 pb-32 pt-6 sm:px-6">
-        <h1 className="mx-auto mb-8 max-w-lg text-center text-lg font-semibold text-[var(--space-text)] sm:max-w-xl sm:text-xl">
-          🚀 나의 탐사실
+      <div className="relative z-10 min-h-screen px-5 pb-36 pt-10 sm:px-8 sm:pt-14">
+        <h1 className="mx-auto mb-12 max-w-md text-center text-2xl font-medium tracking-[-0.02em] text-[var(--space-text)] sm:mb-14 sm:max-w-lg sm:text-[1.65rem]">
+          🚀 탐사실
         </h1>
 
-        <div className="mx-auto max-w-lg space-y-4 sm:max-w-xl">
+        <div className="mx-auto max-w-md space-y-5 sm:max-w-lg sm:space-y-6">
           {loading ? (
             <p className="text-center text-sm text-[var(--space-text-muted)]">
               불러오는 중…
@@ -211,14 +239,11 @@ export default function DashboardContent() {
           {!loading && my && (
             <>
               <AccordionSection
-                title="📊 내 탐사 기록"
+                title="📊 내 탐사"
                 open={openMyRecords}
                 onToggle={() => setOpenMyRecords((v) => !v)}
               >
-                <div className="space-y-4">
-                  <p className="text-center text-xs text-[var(--space-text-muted)]">
-                    {my.name}님
-                  </p>
+                <div className="space-y-5">
                   <div
                     className="mx-auto inline-flex w-full max-w-md rounded-full border border-white/15 bg-[#0d121f] p-0.5"
                     role="tablist"
@@ -253,7 +278,7 @@ export default function DashboardContent() {
                     </button>
                   </div>
 
-                  <div className="min-h-[180px] rounded-xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+                  <div className="min-h-[180px] rounded-xl border border-white/[0.09] bg-white/[0.025] p-4 sm:p-5">
                     {tab === "basic" ? (
                       !my.has_survey ? (
                         <p className="text-center text-sm text-[var(--space-text-muted)]">
@@ -321,19 +346,20 @@ export default function DashboardContent() {
 
               <AccordionSection
                 title="👥 관계 탐사실"
+                subtitle={`• 대기 ${relPendingCount} · 완료 ${relCompletedCount}`}
                 open={openRelationships}
                 onToggle={() => setOpenRelationships((v) => !v)}
               >
-                <ul className="space-y-2">
-                  {rels.length === 0 ? (
-                    <li className="text-center text-sm text-[var(--space-text-muted)]">
-                      완료된 관계가 없어요.
+                <ul className="space-y-2.5">
+                  {relsSorted.length === 0 ? (
+                    <li className="py-2 text-center text-sm text-[var(--space-text-muted)]">
+                      아직 없어요
                     </li>
                   ) : (
-                    rels.map((r) => (
+                    relsSorted.map((r) => (
                       <li
                         key={r.relationship_report_id ?? r.partner_name}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-3"
                       >
                         <span className="text-sm text-[var(--space-text)]">
                           {r.partner_name}님과의 관계
@@ -357,25 +383,25 @@ export default function DashboardContent() {
                 </ul>
               </AccordionSection>
 
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center">
+              <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-center sm:gap-4 sm:pt-6">
                 <GlowButton
                   type="button"
-                  className="w-full !min-h-[48px] text-sm sm:max-w-xs sm:flex-1"
+                  className="w-full !min-h-[50px] text-[0.9375rem] font-medium sm:max-w-[13.5rem] sm:flex-1"
                   onClick={() => setConfirmNew(true)}
                 >
-                  새로운 탐사하기
+                  + 새 탐사
                 </GlowButton>
-                <GlowButton
+                <button
                   type="button"
-                  className="w-full !min-h-[48px] text-sm sm:max-w-xs sm:flex-1"
                   onClick={() =>
                     router.push(
                       `/relationships?myReportId=${encodeURIComponent(reportId)}`,
                     )
                   }
+                  className="soft-outline inline-flex min-h-[50px] w-full items-center justify-center rounded-2xl px-6 text-[0.9375rem] font-medium tracking-tight text-[var(--space-text)] transition hover:bg-white/[0.07] sm:max-w-[13.5rem] sm:flex-1"
                 >
-                  + 새로운 관계 탐사 시작
-                </GlowButton>
+                  관계 더보기
+                </button>
               </div>
             </>
           )}

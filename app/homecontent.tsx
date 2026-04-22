@@ -31,6 +31,8 @@ export default function HomeContent() {
     surveyCompleted: boolean;
     name: string | null;
   }>({ loading: true, reportId: null, hasReport: false, surveyCompleted: false, name: null });
+  /** 홈 재방문 — 관계 허브 요약 카운트 */
+  const [relCounts, setRelCounts] = useState({ pending: 0, completed: 0 });
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -125,6 +127,37 @@ export default function HomeContent() {
       cancelled = true;
     };
   }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    const rid = resume.reportId?.trim();
+    if (!rid || !resume.surveyCompleted) {
+      setRelCounts({ pending: 0, completed: 0 });
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const r = await fetch(
+          `/api/relationship/list?reportId=${encodeURIComponent(rid)}&format=simple&scope=all`,
+        );
+        const j = (await r.json()) as {
+          relationships?: { status: string }[];
+        };
+        if (cancelled || !r.ok) return;
+        const list = j.relationships ?? [];
+        setRelCounts({
+          pending: list.filter((x) => x.status === "pending").length,
+          completed: list.filter((x) => x.status === "completed").length,
+        });
+      } catch {
+        if (!cancelled) setRelCounts({ pending: 0, completed: 0 });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn, resume.reportId, resume.surveyCompleted]);
 
   const launchSurvey = useCallback(
     async (nameTrimmed: string) => {
@@ -349,12 +382,11 @@ export default function HomeContent() {
         ) : resume.reportId &&
           resume.hasReport &&
           resume.surveyCompleted ? (
-          <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-14">
-            <p className="text-left text-sm leading-relaxed text-white/75">
-              이 브라우저에 저장된 탐사 기록이 있어요. 이전 검사 결과를 보거나, 관계
-              허브에서 관계 분석을 이어갈 수 있어요.
-            </p>
-            <div className="flex flex-col gap-3">
+          <div className="mx-auto mt-10 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-14 sm:space-y-7">
+            <h2 className="text-center text-[1.35rem] font-medium tracking-[-0.02em] text-white/92 sm:text-2xl">
+              🚀 탐사실
+            </h2>
+            <div className="flex flex-col gap-3 sm:gap-3.5">
               <button
                 type="button"
                 onClick={() =>
@@ -362,30 +394,32 @@ export default function HomeContent() {
                     `/result?id=${encodeURIComponent(resume.reportId!)}`,
                   )
                 }
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:brightness-105"
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-105 sm:py-[0.9rem] sm:text-[15px]"
               >
-                기존에 내가 한 거 보기
+                📊 내 탐사
               </button>
-              <button
-                type="button"
-                onClick={() =>
-                  router.push(
-                    `/relationships?myReportId=${encodeURIComponent(resume.reportId!)}`,
-                  )
-                }
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/22 bg-white/[0.08] px-6 py-3.5 text-base font-medium text-white/95 transition hover:bg-white/[0.12]"
-              >
-                관계 허브 · 보낸 요청·받은 초대·관계 분석
-              </button>
+              <div className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/relationships?myReportId=${encodeURIComponent(resume.reportId!)}`,
+                    )
+                  }
+                  className="inline-flex w-full items-center justify-center rounded-2xl border border-white/20 bg-white/[0.07] px-6 py-3.5 text-[0.9375rem] font-medium text-white/95 backdrop-blur-sm transition hover:bg-white/[0.11] sm:py-[0.9rem] sm:text-[15px]"
+                >
+                  👥 관계 탐사실
+                </button>
+                <p className="text-center text-[0.8125rem] tabular-nums leading-snug text-white/45 sm:text-sm">
+                  • 대기 {relCounts.pending} · 완료 {relCounts.completed}
+                </p>
+              </div>
             </div>
-            <p className="text-left text-xs leading-relaxed text-white/45">
-              관계 허브에서는 초대를 보낸 요청, 상대가 응답한 뒤 열리는 관계
-              분석까지 한 목록에서 확인할 수 있어요.
-            </p>
             <button
               type="button"
               onClick={() => {
                 localStorage.removeItem("reportId");
+                setRelCounts({ pending: 0, completed: 0 });
                 setResume({
                   loading: false,
                   reportId: null,
@@ -394,9 +428,9 @@ export default function HomeContent() {
                   name: null,
                 });
               }}
-              className="w-full pt-1 text-center text-sm text-white/45 underline-offset-2 hover:text-white/70 hover:underline"
+              className="w-full rounded-2xl border border-white/12 bg-white/[0.04] py-3 text-center text-[0.9375rem] font-medium text-white/55 transition hover:border-white/18 hover:bg-white/[0.07] hover:text-white/75"
             >
-              새 닉네임으로 처음부터 탐사하기
+              + 새 탐사
             </button>
           </div>
         ) : resume.reportId && resume.hasReport && !resume.surveyCompleted ? (
