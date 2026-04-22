@@ -21,11 +21,9 @@ export default function InviteContent() {
       return;
     }
 
-    // 🔥 핵심: token 저장
     localStorage.setItem("inviteToken", token);
-
-    // 🔥 핵심 수정 (이게 문제였음)
-    router.push(`/survey?token=${token}`);
+    // 리포트는 홈에서 닉네임 입력 시 생성됨 — 설문으로 바로 가면 reportId가 없음
+    router.push(`/?token=${encodeURIComponent(token)}`);
   };
 
   return (

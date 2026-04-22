@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import DevPaymentShortcut from "@/components/DevPaymentShortcut";
+import Header from "@/components/layout/Header";
 import "./globals.css";
 
 export const runtime = "nodejs";
@@ -32,8 +33,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>
-          {children}
+        <ClerkProvider afterSignOutUrl="/">
+          <Header />
+          <div className="flex min-h-0 flex-1 flex-col pt-14">{children}</div>
           <DevPaymentShortcut />
         </ClerkProvider>
       </body>

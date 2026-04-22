@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SignIn, useAuth, UserButton } from "@clerk/nextjs";
+import { SignIn, useAuth } from "@clerk/nextjs";
 import { AnimatePresence, motion } from "framer-motion";
 import { Gloria_Hallelujah } from "next/font/google";
 import { supabase } from "@/lib/supabase/client";
@@ -23,6 +23,14 @@ export default function HomeContent() {
   const [nickname, setNickname] = useState("");
   const [creatingReport, setCreatingReport] = useState(false);
   const [rocketPlaying, setRocketPlaying] = useState(false);
+  /** 로컬 reportId 기준 서버 설문 완료 여부 (null: 아직 조회 전) */
+  const [resume, setResume] = useState<{
+    loading: boolean;
+    reportId: string | null;
+    hasReport: boolean;
+    surveyCompleted: boolean;
+    name: string | null;
+  }>({ loading: true, reportId: null, hasReport: false, surveyCompleted: false, name: null });
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -53,6 +61,71 @@ export default function HomeContent() {
     if (isSignedIn && authModalOpen) setAuthModalOpen(false);
   }, [isSignedIn, authModalOpen]);
 
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    let cancelled = false;
+    const reportId = typeof window !== "undefined" ? localStorage.getItem("reportId")?.trim() ?? "" : "";
+    if (!reportId) {
+      setResume({
+        loading: false,
+        reportId: null,
+        hasReport: false,
+        surveyCompleted: false,
+        name: null,
+      });
+      return;
+    }
+
+    setResume((s) => ({ ...s, loading: true }));
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/report/session-status?reportId=${encodeURIComponent(reportId)}`,
+        );
+        const data = (await res.json()) as {
+          hasReport?: boolean;
+          surveyCompleted?: boolean;
+          name?: string | null;
+        };
+        if (cancelled) return;
+        if (data.hasReport === false) {
+          localStorage.removeItem("reportId");
+          setResume({
+            loading: false,
+            reportId: null,
+            hasReport: false,
+            surveyCompleted: false,
+            name: null,
+          });
+          return;
+        }
+        setResume({
+          loading: false,
+          reportId,
+          hasReport: true,
+          surveyCompleted: data.surveyCompleted === true,
+          name: typeof data.name === "string" ? data.name : null,
+        });
+        if (data.name?.trim() && !localStorage.getItem("surveyNickname")) {
+          localStorage.setItem("surveyNickname", data.name.trim());
+        }
+      } catch {
+        if (!cancelled) {
+          setResume({
+            loading: false,
+            reportId,
+            hasReport: true,
+            surveyCompleted: false,
+            name: null,
+          });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, isSignedIn]);
+
   const launchSurvey = useCallback(
     async (nameTrimmed: string) => {
       const inviteToken = localStorage.getItem("inviteToken") || "";
@@ -82,6 +155,13 @@ export default function HomeContent() {
 
       localStorage.setItem("reportId", data.id);
       localStorage.setItem("surveyNickname", nameTrimmed);
+      setResume({
+        loading: false,
+        reportId: data.id,
+        hasReport: true,
+        surveyCompleted: false,
+        name: nameTrimmed,
+      });
       if (inviteToken) localStorage.setItem("inviteToken", inviteToken);
 
       setCreatingReport(false);
@@ -175,40 +255,8 @@ export default function HomeContent() {
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
       </div>
 
-      {/* 상단 고정: 햄버거 · 로그인/프로필 */}
-      <header className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between border-b border-white/[0.07] bg-[#0a0a2a]/80 px-4 py-3 backdrop-blur-md sm:px-5">
-        <button
-          type="button"
-          className="flex flex-col gap-1.5 rounded-lg p-2 transition-colors hover:bg-white/10"
-          aria-label="메뉴"
-        >
-          <span className="h-0.5 w-6 rounded-full bg-white/80" />
-          <span className="h-0.5 w-6 rounded-full bg-white/80" />
-          <span className="h-0.5 w-6 rounded-full bg-white/80" />
-        </button>
-        {isSignedIn ? (
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox:
-                  "h-9 w-9 ring-2 ring-white/25 shadow-md shadow-black/20",
-                userButtonPopoverCard: "border border-slate-200/80",
-              },
-            }}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setAuthModalOpen(true)}
-            className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/15"
-          >
-            로그인
-          </button>
-        )}
-      </header>
-
       {/* 메인 콘텐츠 */}
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-12 pt-[4.5rem] text-center sm:pt-20">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-12 pt-10 text-center sm:pt-16">
         {/* 제목 — 손글씨 + 네온 글로우 + 금색 궤도 장식 */}
         <div className="relative mx-auto mb-6 w-full max-w-[min(100%,26rem)] animate-fade-in px-2 sm:max-w-md">
           <svg
@@ -294,6 +342,98 @@ export default function HomeContent() {
               >
                 🚀
               </span>
+            </button>
+          </div>
+        ) : resume.loading ? (
+          <div className="mt-10 text-sm text-white/55 sm:mt-14">불러오는 중…</div>
+        ) : resume.reportId &&
+          resume.hasReport &&
+          resume.surveyCompleted ? (
+          <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-14">
+            <p className="text-left text-sm leading-relaxed text-white/75">
+              이 브라우저에 저장된 탐사 기록이 있어요. 이전 검사 결과를 보거나, 관계
+              허브에서 관계 분석을 이어갈 수 있어요.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/result?id=${encodeURIComponent(resume.reportId!)}`,
+                  )
+                }
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:brightness-105"
+              >
+                기존에 내가 한 거 보기
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    `/relationships?myReportId=${encodeURIComponent(resume.reportId!)}`,
+                  )
+                }
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/22 bg-white/[0.08] px-6 py-3.5 text-base font-medium text-white/95 transition hover:bg-white/[0.12]"
+              >
+                관계 허브 · 보낸 요청·받은 초대·관계 분석
+              </button>
+            </div>
+            <p className="text-left text-xs leading-relaxed text-white/45">
+              관계 허브에서는 초대를 보낸 요청, 상대가 응답한 뒤 열리는 관계
+              분석까지 한 목록에서 확인할 수 있어요.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("reportId");
+                setResume({
+                  loading: false,
+                  reportId: null,
+                  hasReport: false,
+                  surveyCompleted: false,
+                  name: null,
+                });
+              }}
+              className="w-full pt-1 text-center text-sm text-white/45 underline-offset-2 hover:text-white/70 hover:underline"
+            >
+              새 닉네임으로 처음부터 탐사하기
+            </button>
+          </div>
+        ) : resume.reportId && resume.hasReport && !resume.surveyCompleted ? (
+          <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-14">
+            <p className="text-left text-sm leading-relaxed text-white/75">
+              설문을 아직 마치지 않았어요. 이어서 하거나, 새 탐사를 시작할 수
+              있어요.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                const tok = localStorage.getItem("inviteToken")?.trim();
+                router.push(
+                  tok
+                    ? `/survey?token=${encodeURIComponent(tok)}`
+                    : "/survey",
+                );
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:brightness-105"
+            >
+              설문 이어하기
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("reportId");
+                setResume({
+                  loading: false,
+                  reportId: null,
+                  hasReport: false,
+                  surveyCompleted: false,
+                  name: null,
+                });
+              }}
+              className="w-full text-center text-sm text-white/45 underline-offset-2 hover:text-white/70 hover:underline"
+            >
+              이어가지 않고 새로 시작하기
             </button>
           </div>
         ) : (

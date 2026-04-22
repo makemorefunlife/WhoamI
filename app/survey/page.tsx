@@ -91,24 +91,85 @@ const STATUS_LINES = [
 
 export default function SurveyPage() {
   const router = useRouter();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-
-    if (token) {
-      localStorage.setItem("inviteToken", token);
-    }
-  }, []);
-
+  const [sessionReady, setSessionReady] = useState(false);
   const [answers, setAnswers] = useState(
     Object.fromEntries(Array.from({ length: 18 }, (_, i) => [`q${i + 1}`, ""])),
   );
-
   const [saving, setSaving] = useState(false);
   const busy = saving;
   const [advancing, setAdvancing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function boot() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      if (token) {
+        localStorage.setItem("inviteToken", token);
+      }
+
+      const reportId = localStorage.getItem("reportId");
+      const inviteToken = localStorage.getItem("inviteToken");
+      if (!reportId) {
+        if (inviteToken) {
+          router.replace(`/?token=${encodeURIComponent(inviteToken)}`);
+        } else {
+          router.replace("/");
+        }
+        return;
+      }
+
+      const redo = params.get("redo") === "1";
+      if (redo) {
+        try {
+          const res = await fetch("/api/survey/reset", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reportId }),
+          });
+          if (!res.ok) {
+            const j = (await res.json().catch(() => ({}))) as { error?: string };
+            alert(j.error ?? "설문 초기화에 실패했어요.");
+            router.replace(`/result?id=${encodeURIComponent(reportId)}`);
+            return;
+          }
+        } catch {
+          alert("설문 초기화에 실패했어요.");
+          router.replace(`/result?id=${encodeURIComponent(reportId)}`);
+          return;
+        }
+        router.replace("/survey");
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/report/session-status?reportId=${encodeURIComponent(reportId)}`,
+        );
+        const data = (await res.json()) as {
+          surveyCompleted?: boolean;
+          hasReport?: boolean;
+        };
+        if (cancelled) return;
+        if (data.hasReport !== false && data.surveyCompleted) {
+          router.replace(`/result?id=${encodeURIComponent(reportId)}`);
+          return;
+        }
+      } catch {
+        /* 네트워크 실패 시엔 설문 화면은 열어 둠 */
+      }
+
+      if (!cancelled) setSessionReady(true);
+    }
+
+    void boot();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   const currentQuestion = useMemo(
     () => QUESTIONS[currentIndex],
@@ -134,7 +195,12 @@ export default function SurveyPage() {
     const inviteToken = localStorage.getItem("inviteToken");
 
     if (!reportId) {
-      alert("reportId 없음. 처음부터 다시 시작해주세요.");
+      const inv = localStorage.getItem("inviteToken");
+      if (inv) {
+        router.replace(`/?token=${encodeURIComponent(inv)}`);
+      } else {
+        router.replace("/");
+      }
       setSaving(false);
       return;
     }
@@ -202,9 +268,21 @@ export default function SurveyPage() {
     setCurrentIndex((i) => i - 1);
   };
 
+  if (!sessionReady) {
+    return (
+      <SpaceBackground showProbe={false}>
+        <div className="flex min-h-screen flex-col items-center justify-center px-6">
+          <p className="text-sm text-[rgba(255,255,255,0.55)]">
+            궤도에 올리는 중…
+          </p>
+        </div>
+      </SpaceBackground>
+    );
+  }
+
   return (
     <SpaceBackground showProbe={false}>
-      <div className="fixed left-0 right-0 top-0 z-50 border-b border-[rgba(255,255,255,0.08)] bg-[#070B14]/82 backdrop-blur-md">
+      <div className="fixed left-0 right-0 top-14 z-[190] border-b border-[rgba(255,255,255,0.08)] bg-[#070B14]/82 backdrop-blur-md">
         <div className="mx-auto w-full max-w-[420px] px-5 py-4">
           <div className="mb-2 flex justify-between text-[11px] font-medium uppercase tracking-[0.12em] text-[rgba(255,255,255,0.65)]">
             <span className="text-[#67B7FF]">Survey</span>
@@ -227,7 +305,7 @@ export default function SurveyPage() {
         </div>
       </div>
 
-      <main className="relative flex min-h-screen flex-col items-center px-5 pb-32 pt-32 text-[rgba(255,255,255,0.95)]">
+      <main className="relative flex min-h-screen flex-col items-center px-5 pb-32 pt-44 text-[rgba(255,255,255,0.95)] sm:pt-48">
         <div
           className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.15)_0%,rgba(7,11,20,0.55)_55%,rgba(7,11,20,0.92)_100%)]"
           aria-hidden

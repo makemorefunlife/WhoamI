@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo, Fragment, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Orbit, Sparkles, Telescope } from "lucide-react";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
 import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
+import FreeAnalysisCardDeck from "@/components/report/FreeAnalysisCardDeck";
 
 function formatTimeInput(t?: string | null) {
   if (!t) return "";
@@ -186,8 +186,19 @@ export default function ReportContent() {
   const [sheetBusy, setSheetBusy] = useState(false);
   const [inviteUsed, setInviteUsed] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
+  const [relationshipItems, setRelationshipItems] = useState<
+    {
+      relationship_report_id: string;
+      partner_name: string;
+      has_basic: boolean;
+      has_premium: boolean;
+      analysis_type: string;
+      status_hint?: string;
+    }[]
+  >([]);
   const afterPaymentHandled = useRef(false);
 
+  const pathname = usePathname();
   const reportId = searchParams.get("id") || "";
   const displayName = report?.name?.trim() || "당신";
 
@@ -212,7 +223,6 @@ export default function ReportContent() {
       (unifiedReport !== null && unifiedReport.length > 0)
     );
   }, [isDbPaid, sajuStatus.ok, reportStreaming, unifiedReport]);
-  const showUpgradePath = Boolean(!isDbPaid && freeSummary);
 
   const birthInfoComplete = useMemo(
     () => hasCompleteBirthInfo(report),
@@ -254,24 +264,58 @@ export default function ReportContent() {
     router.replace(`/result?id=${encodeURIComponent(reportId)}`, { scroll: false });
   }, [loading, searchParams, reportId, report, router]);
 
-  useEffect(() => {
-    if (!reportId || !isDbPaid) return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch(
-          `/api/invite/status?reportId=${encodeURIComponent(reportId)}`,
-        );
-        const data = await res.json();
-        if (!cancelled && data?.used === true) setInviteUsed(true);
-      } catch {
-        /* ignore */
+  const refreshInviteUsed = useCallback(async () => {
+    if (!reportId) return;
+    try {
+      const res = await fetch(
+        `/api/invite/status?reportId=${encodeURIComponent(reportId)}`,
+      );
+      const data = await res.json();
+      if (data?.used === true) setInviteUsed(true);
+    } catch {
+      /* ignore */
+    }
+  }, [reportId]);
+
+  const refreshRelationships = useCallback(async () => {
+    if (!reportId) return;
+    try {
+      const res = await fetch(
+        `/api/relationship/status?reportId=${encodeURIComponent(reportId)}`,
+      );
+      const data = await res.json();
+      if (Array.isArray(data?.items)) {
+        setRelationshipItems(data.items);
       }
-    })();
-    return () => {
-      cancelled = true;
+    } catch {
+      /* ignore */
+    }
+  }, [reportId]);
+
+  const refreshInvitesAndRelations = useCallback(async () => {
+    await Promise.all([refreshInviteUsed(), refreshRelationships()]);
+  }, [refreshInviteUsed, refreshRelationships]);
+
+  useEffect(() => {
+    void refreshInvitesAndRelations();
+  }, [refreshInvitesAndRelations]);
+
+  useEffect(() => {
+    if (!reportId) return;
+    const id = window.setInterval(() => {
+      void refreshInvitesAndRelations();
+    }, 20000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        void refreshInvitesAndRelations();
+      }
     };
-  }, [reportId, isDbPaid]);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [reportId, refreshInvitesAndRelations]);
 
   /** 생년월일·장소 저장 후 유료(결제) 페이지로 이동 — 결제 완료 뒤 통합 리포트 생성 */
   const saveBirthAndGoPayment = useCallback(async () => {
@@ -387,6 +431,10 @@ export default function ReportContent() {
         .maybeSingle();
 
       setReport(reportData);
+
+      if (typeof window !== "undefined" && reportId) {
+        localStorage.setItem("reportId", reportId);
+      }
 
       const paid = reportData?.payment_status === "paid";
 
@@ -676,6 +724,8 @@ export default function ReportContent() {
           {(freeSummary ||
             paidSummary ||
             showPaidUnified ||
+            relationshipItems.length > 0 ||
+            inviteUsed ||
             (isDbPaid && !(birthInfoComplete && sajuStatus.ok))) && (
             <GlassCard className="space-y-6">
               {isDbPaid && !(birthInfoComplete && sajuStatus.ok) && (
@@ -702,69 +752,80 @@ export default function ReportContent() {
 
               {!isDbPaid && freeSummary && (
                 <>
-                  <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full border border-[var(--space-border)] bg-[var(--space-card)] shadow-[0_0_40px_rgba(103,183,255,0.12)]">
-                    <span className="text-4xl" aria-hidden>
-                      ◐
-                    </span>
+                  <div className="mx-auto max-w-lg space-y-2 text-center sm:max-w-xl">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--space-text-muted)]">
+                      관측 요약
+                    </p>
+                    <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+                      네 가지 관점으로 나눠 본 {displayName}님의 흐름이에요.
+                    </p>
                   </div>
 
-                  <div className="space-y-0 text-left">
-                    {freeParagraphs.map((para, i) => {
-                      const DividerIcon = [Sparkles, Orbit, Telescope][
-                        i % 3
-                      ] as typeof Sparkles;
-                      return (
-                        <Fragment key={i}>
-                          {i > 0 && (
-                            <div
-                              className="flex flex-col items-center gap-3 py-7"
-                              aria-hidden
-                            >
-                              <div className="flex items-center gap-2 opacity-[0.45]">
-                                <span className="h-1 w-1 rounded-full bg-[var(--space-text-muted)]" />
-                                <span className="h-1 w-1 rounded-full bg-[var(--space-text-muted)]" />
-                                <span className="h-1 w-1 rounded-full bg-[var(--space-text-muted)]" />
-                              </div>
-                              <DividerIcon
-                                className="h-[1.125rem] w-[1.125rem] text-[#8eb8ff]/85"
-                                strokeWidth={1.75}
-                                aria-hidden
-                              />
-                            </div>
-                          )}
-                          <p className="text-[15px] leading-[1.75] text-[var(--space-text)]">
-                            {para}
-                          </p>
-                        </Fragment>
-                      );
-                    })}
-                  </div>
+                  <FreeAnalysisCardDeck paragraphs={freeParagraphs} />
 
-                  {showUpgradePath && (
-                    <div className="space-y-4 border-t border-[var(--space-border)] pt-6 text-center">
-                      <p className="text-sm leading-relaxed text-[var(--space-text)]">
-                        이 해석은 현재의 {displayName}의 모습이야.
-                      </p>
-                      <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
-                        추가 분석을 하면 패턴 속에 담긴 진짜 &apos;내면의
-                        나&apos;를 만날 수 있어.
-                      </p>
+                  <div className="mt-6 space-y-3">
+                    <p className="text-center text-xs text-[var(--space-text-muted)]">
+                      설문 기반 · 지금의 {displayName}님
+                    </p>
+
+                    <div className="space-y-3 rounded-xl border border-[#67B7FF]/30 bg-gradient-to-br from-[#67B7FF]/10 to-transparent p-4">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl" aria-hidden>
+                          🔍
+                        </span>
+                        <h3 className="text-sm font-semibold text-[var(--space-text)]">
+                          내면의 나 · 심화
+                        </h3>
+                      </div>
                       <GlowButton
                         type="button"
-                        className="w-full"
+                        className="!min-h-[44px] w-full py-2.5 text-sm"
                         onClick={() => setShowCoordSheet(true)}
                       >
-                        👉 지금 분석하기
+                        심화 분석하기
                       </GlowButton>
+                    </div>
+
+                    <div className="space-y-3 rounded-xl border border-white/15 bg-white/5 p-4">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl" aria-hidden>
+                          👥
+                        </span>
+                        <h3 className="text-sm font-semibold text-[var(--space-text)]">
+                          관계 허브
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(
+                            `/relationships?myReportId=${encodeURIComponent(reportId)}`,
+                          )
+                        }
+                        className="w-full rounded-xl border border-white/30 py-2.5 text-sm font-medium text-[var(--space-text)] transition hover:border-white/45 hover:bg-white/10"
+                      >
+                        열기
+                      </button>
+                    </div>
+
+                    <div className="space-y-3 rounded-xl border border-white/15 bg-white/5 p-4">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl" aria-hidden>
+                          📤
+                        </span>
+                        <h3 className="text-sm font-semibold text-[var(--space-text)]">
+                          이 결과 공유
+                        </h3>
+                      </div>
                       <button
                         type="button"
                         onClick={() => void handleShare()}
-                        className="w-full rounded-2xl border border-[var(--space-border)] py-3.5 text-sm font-medium text-[var(--space-text)] transition hover:bg-white/[0.04]"
+                        className="w-full rounded-xl border border-white/30 py-2.5 text-sm font-medium text-[var(--space-text)] transition hover:border-white/45 hover:bg-white/10"
                       >
-                        📤 결과 공유하기
+                        공유하기
                       </button>
                     </div>
-                  )}
+                  </div>
                 </>
               )}
 
@@ -808,38 +869,80 @@ export default function ReportContent() {
                   <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
                     <GlowButton
                       type="button"
-                      className="w-full"
+                      className="w-full !min-h-[48px] py-3 text-sm"
                       onClick={() => void handleShare()}
                     >
-                      공유하기
+                      리포트 공유
                     </GlowButton>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(
+                          `/relationships?myReportId=${encodeURIComponent(reportId)}`,
+                        )
+                      }
+                      className="w-full rounded-xl border border-white/20 py-2.5 text-sm font-medium text-[var(--space-text)] transition hover:border-white/35 hover:bg-white/[0.06]"
+                    >
+                      관계 허브
+                    </button>
                     <GlowButton
                       type="button"
-                      className="w-full"
+                      className="w-full !min-h-[48px] py-3 text-sm"
                       disabled={inviteUsed || inviteBusy}
                       onClick={() => void handleInviteFriend()}
                     >
                       {inviteUsed
-                        ? "친구 초대하기 (이미 사용함)"
+                        ? "초대 링크 (사용됨)"
                         : inviteBusy
-                          ? "초대 링크 준비 중…"
-                          : "친구 초대하기"}
+                          ? "준비 중…"
+                          : "친구 초대 링크"}
                     </GlowButton>
-                    <div className="space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => router.push("/")}
-                        className="w-full rounded-2xl border border-[var(--space-border)] bg-white/[0.04] py-3.5 text-sm font-medium text-[var(--space-text)] transition hover:bg-white/[0.07]"
-                      >
-                        닫기
-                      </button>
-                      <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
-                        탐사 기록은 서버에 남아 있어요. 이 화면 주소를 북마크해
-                        두면 같은 경로로 다시 들어올 수 있어요.
-                      </p>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/")}
+                      className="w-full rounded-xl border border-[var(--space-border)] bg-white/[0.04] py-2.5 text-sm text-[var(--space-text-muted)] transition hover:bg-white/[0.07]"
+                    >
+                      나가기
+                    </button>
                   </div>
                 </>
+              )}
+
+              {relationshipItems.length > 0 && (
+                <div className="space-y-3 border-t border-[var(--space-border)] pt-5">
+                  <p className="text-center text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--space-text-muted)]">
+                    함께하는 관계
+                  </p>
+                  {relationshipItems.map((item) => (
+                    <div
+                      key={item.relationship_report_id}
+                      className="space-y-1.5"
+                    >
+                      <GlowButton
+                        type="button"
+                        className="w-full !min-h-[48px] py-3 text-sm"
+                        onClick={() =>
+                          router.push(
+                            `/relationship/${item.relationship_report_id}?viewer=${encodeURIComponent(reportId)}`,
+                          )
+                        }
+                      >
+                        {item.partner_name} — 관계 보기
+                      </GlowButton>
+                      {item.status_hint ? (
+                        <p className="text-center text-[11px] leading-relaxed text-[var(--space-text-muted)]">
+                          {item.status_hint}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {relationshipItems.length === 0 && inviteUsed && (
+                <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
+                  상대가 설문을 마치면 이 목록이 자동으로 갱신돼요. 잠시만
+                  기다리거나 탭을 다시 열어보세요.
+                </p>
               )}
             </GlassCard>
           )}
@@ -847,6 +950,7 @@ export default function ReportContent() {
           {!freeSummary &&
             !paidSummary &&
             !showPaidUnified &&
+            relationshipItems.length === 0 &&
             !(isDbPaid && !(birthInfoComplete && sajuStatus.ok)) && (
               <GlassCard>
                 <p className="text-center text-sm text-[var(--space-text-muted)]">
@@ -855,6 +959,30 @@ export default function ReportContent() {
                 </p>
               </GlassCard>
             )}
+
+          {pathname === "/result" && reportId ? (
+            <GlassCard className="space-y-3 border border-white/12 bg-white/[0.04]">
+              <p className="text-center text-sm font-medium text-[var(--space-text)]">
+                설문 다시 하기
+              </p>
+              <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
+                답을 바꾸면 해석도 달라질 수 있어요. 다시 제출하면 이전 설문
+                답변은 삭제돼요.
+              </p>
+              <GlowButton
+                type="button"
+                className="w-full !min-h-[48px] text-sm"
+                onClick={() => {
+                  if (typeof window !== "undefined" && reportId) {
+                    localStorage.setItem("reportId", reportId);
+                  }
+                  router.push("/survey?redo=1");
+                }}
+              >
+                다시 하기
+              </GlowButton>
+            </GlassCard>
+          ) : null}
 
           <div className="space-y-3">
             <button

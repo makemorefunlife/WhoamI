@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 
 export async function POST(req: Request) {
   try {
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       })
       .eq("invite_token", inviteToken)
       .eq("status", "open")
-      .select("id")
+      .select("id, from_report_id")
       .maybeSingle();
 
     if (error) {
@@ -54,7 +55,30 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true });
+    let relationship_report_id: string | null = null;
+    if (data.from_report_id && reportId && data.from_report_id !== reportId) {
+      try {
+        const { relationshipReportId } = await ensureRelationshipReport(
+          supabase,
+          data.from_report_id,
+          reportId,
+        );
+        relationship_report_id = relationshipReportId;
+        const { error: linkErr } = await supabase
+          .from("invites")
+          .update({
+            relationship_report_id: relationshipReportId,
+          })
+          .eq("id", data.id);
+        if (linkErr) {
+          console.error("invite/complete relationship_report_id:", linkErr);
+        }
+      } catch (relErr) {
+        console.error("invite/complete ensureRelationshipReport:", relErr);
+      }
+    }
+
+    return NextResponse.json({ ok: true, relationship_report_id });
   } catch (e) {
     console.error("invite/complete:", e);
     return NextResponse.json(
