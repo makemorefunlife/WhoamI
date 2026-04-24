@@ -391,7 +391,7 @@ export default function HomeContent() {
                 type="button"
                 onClick={() =>
                   router.push(
-                    `/result?id=${encodeURIComponent(resume.reportId!)}`,
+                    `/dashboard?reportId=${encodeURIComponent(resume.reportId!)}`,
                   )
                 }
                 className="inline-flex w-full items-center justify-center rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-105 sm:py-[0.9rem] sm:text-[15px]"

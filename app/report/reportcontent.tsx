@@ -1,9 +1,10 @@
 "use client";
 
+import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Check, Wand2 } from "lucide-react";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
@@ -78,9 +79,349 @@ function FreeResultAccordions({
   );
 }
 
+function deepReportIntroStorageKey(reportId: string) {
+  return `ahaitsme_deep_report_pre_form_intro_v1_${reportId}`;
+}
+
+function readDeepReportIntroSeen(reportId: string): boolean {
+  if (!reportId || typeof window === "undefined") return false;
+  try {
+    return localStorage.getItem(deepReportIntroStorageKey(reportId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markDeepReportIntroSeen(reportId: string) {
+  if (!reportId) return;
+  try {
+    localStorage.setItem(deepReportIntroStorageKey(reportId), "1");
+  } catch {
+    /* ignore */
+  }
+}
+
 function formatTimeInput(t?: string | null) {
   if (!t) return "";
   return t.length >= 5 ? t.slice(0, 5) : t;
+}
+
+/** 심화 탐사(핵심 리포트) 안내 — 결제 페이지와 동일한 타이포·플로우 레이아웃 */
+function DeepReportIntroPanel({
+  onContinue,
+  onBackToResult,
+}: {
+  onContinue: () => void;
+  onBackToResult: () => void;
+}) {
+  return (
+    <div className="space-y-6 px-0.5 py-1 sm:space-y-7">
+      <header className="space-y-1 text-center">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--space-sub)]">
+          Deep report
+        </p>
+        <h2 className="text-balance text-lg font-semibold leading-relaxed text-[var(--space-text)] sm:text-xl">
+          <span className="block">지금까지 본 건 현재의 흐름이었어.</span>
+          <span className="mt-2 block sm:mt-2.5">
+            이제 진짜 &apos;내면의 나&apos;를 만나봐.
+          </span>
+        </h2>
+      </header>
+
+      <div className="rounded-2xl border border-[var(--space-border)] bg-[var(--space-card)]/55 px-4 py-4 sm:px-5">
+        <p className="mb-3 text-center text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--space-text-muted)]">
+          핵심 리포트가 이어지는 방식
+        </p>
+        <div className="flex flex-col items-center gap-2 text-[13px] leading-snug text-[var(--space-text)] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-1 sm:gap-y-1 sm:text-sm">
+          <span className="font-medium">기존 설문</span>
+          <ArrowRight
+            className="hidden h-4 w-4 shrink-0 text-[#67B7FF] sm:inline"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <span className="text-white/35 sm:hidden">→</span>
+          <span className="font-medium">추가 설문(준비중)</span>
+          <ArrowRight
+            className="hidden h-4 w-4 shrink-0 text-[#67B7FF] sm:inline"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <span className="text-white/35 sm:hidden">→</span>
+          <span className="font-medium">행동 패턴·기질</span>
+          <ArrowRight
+            className="hidden h-4 w-4 shrink-0 text-[#8B7CFF] sm:inline"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <span className="text-white/35 sm:hidden">→</span>
+          <span className="font-semibold text-[#FFD6A5]">통합 핵심 리포트</span>
+        </div>
+        <p className="mt-3 text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
+          설문으로 읽힌 지금의 흐름과, 출생 맥락에서 정리되는 행동 패턴·기질이
+          한 줄기로 엮여 하나의 리포트로 전달돼요.
+        </p>
+      </div>
+
+      <div className="space-y-8 border-t border-[var(--space-border)] pt-6">
+        <section className="space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--space-text)]">
+            <Wand2 className="h-4 w-4 text-[#8eb8ff]" strokeWidth={1.75} />
+            포함 내용
+          </h3>
+          <ul className="space-y-3 text-[15px] leading-relaxed text-[var(--space-text-muted)]">
+            <li className="flex gap-3">
+              <Check
+                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
+                strokeWidth={2}
+              />
+              <span>방금 진행한 설문을 바탕으로 한 심화 분석</span>
+            </li>
+            <li className="flex gap-3">
+              <Check
+                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
+                strokeWidth={2}
+              />
+              <span>
+                행동 패턴과 타고난 기질을 한데 모은 통합 핵심 리포트
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <Check
+                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
+                strokeWidth={2}
+              />
+              <span>
+                1년간 분기별·월별 업데이트
+                <span className="mt-1.5 block text-[13px] text-white/55">
+                  · 분기별 행동 가이드
+                  <br />· 월별 변화에 따른 관계 방향 조언
+                </span>
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <Check
+                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
+                strokeWidth={2}
+              />
+              <span>
+                앞으로 더해지는 개인 분석 도구 업데이트는 추가 비용 없이 이용
+              </span>
+            </li>
+          </ul>
+        </section>
+
+        <div className="rounded-2xl border border-[#ffd6a5]/25 bg-gradient-to-br from-[#ffd6a5]/[0.08] to-transparent px-4 py-4 sm:px-5">
+          <h3 className="mb-2 text-sm font-semibold text-[var(--space-text)]">
+            가격 및 환불 정책
+          </h3>
+          <p className="text-lg font-semibold tracking-tight text-[#ffe8cc] sm:text-xl">
+            ₩9,900 / 1년
+          </p>
+          <p className="mt-0.5 text-xs text-[var(--space-text-muted)]">
+            일회성 결제
+          </p>
+          <ul className="mt-3 space-y-2 text-sm text-[var(--space-text-muted)]">
+            <li className="flex items-start gap-2.5">
+              <Check
+                className="mt-0.5 h-4 w-4 shrink-0 text-[#8fd4a8]"
+                strokeWidth={2}
+              />
+              <span>안전한 결제</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <Check
+                className="mt-0.5 h-4 w-4 shrink-0 text-[#8fd4a8]"
+                strokeWidth={2}
+              />
+              <span>결제 후 7일 이내 미사용 시 전액 환불</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="space-y-3">
+          <GlowButton
+            type="button"
+            className="w-full !min-h-[52px] text-[0.9375rem] font-semibold"
+            onClick={onContinue}
+          >
+            지금 바로 핵심 리포트 받기
+          </GlowButton>
+          <button
+            type="button"
+            onClick={onBackToResult}
+            className="w-full py-2 text-center text-sm text-[var(--space-text-muted)] underline-offset-4 transition hover:text-[var(--space-text)] hover:underline"
+          >
+            결과 화면으로 돌아가기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportBirthCaptureForm({
+  title,
+  description,
+  sheetYear,
+  setSheetYear,
+  sheetMonth,
+  setSheetMonth,
+  sheetDay,
+  setSheetDay,
+  sheetTime,
+  setSheetTime,
+  sheetPlace,
+  setSheetPlace,
+  sheetGender,
+  setSheetGender,
+  sheetBusy,
+  onSubmit,
+}: {
+  title: string;
+  description: string;
+  sheetYear: string;
+  setSheetYear: Dispatch<SetStateAction<string>>;
+  sheetMonth: string;
+  setSheetMonth: Dispatch<SetStateAction<string>>;
+  sheetDay: string;
+  setSheetDay: Dispatch<SetStateAction<string>>;
+  sheetTime: string;
+  setSheetTime: Dispatch<SetStateAction<string>>;
+  sheetPlace: string;
+  setSheetPlace: Dispatch<SetStateAction<string>>;
+  sheetGender: string;
+  setSheetGender: Dispatch<SetStateAction<string>>;
+  sheetBusy: boolean;
+  onSubmit: () => void | Promise<void>;
+}) {
+  return (
+    <form
+      className="space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void onSubmit();
+      }}
+    >
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-[var(--space-text)]">{title}</h2>
+        <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+          {description}
+        </p>
+      </div>
+      <div className="space-y-2">
+        <span className="block text-xs font-medium text-[rgba(255,255,255,0.78)]">
+          생년월일
+        </span>
+        <div className="grid grid-cols-3 gap-2">
+          <label className="space-y-1">
+            <span className="text-[10px] text-white/50">연도 (4자리)</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="bday-year"
+              maxLength={4}
+              value={sheetYear}
+              onChange={(e) =>
+                setSheetYear(e.target.value.replace(/\D/g, "").slice(0, 4))
+              }
+              placeholder="1990"
+              className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-white/50">월</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="bday-month"
+              maxLength={2}
+              value={sheetMonth}
+              onChange={(e) =>
+                setSheetMonth(e.target.value.replace(/\D/g, "").slice(0, 2))
+              }
+              placeholder="01"
+              className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] text-white/50">일</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="bday-day"
+              maxLength={2}
+              value={sheetDay}
+              onChange={(e) =>
+                setSheetDay(e.target.value.replace(/\D/g, "").slice(0, 2))
+              }
+              placeholder="15"
+              className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
+            />
+          </label>
+        </div>
+      </div>
+      <label className="block space-y-2">
+        <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
+          출생 시각
+        </span>
+        <input
+          type="time"
+          value={sheetTime}
+          onChange={(e) => setSheetTime(e.target.value)}
+          className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-4 py-3.5 text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
+        />
+      </label>
+      <div className="space-y-2">
+        <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
+          성별
+        </span>
+        <div
+          className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+          role="group"
+          aria-label="성별"
+        >
+          {(
+            [
+              { v: "female", label: "여성" },
+              { v: "male", label: "남성" },
+              { v: "other", label: "기타 · 밝히지 않음" },
+            ] as const
+          ).map(({ v, label }) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setSheetGender(v)}
+              className={[
+                "min-h-[48px] rounded-2xl border-2 px-3 py-2.5 text-sm font-semibold transition",
+                sheetGender === v
+                  ? "border-[#67B7FF] bg-[rgba(103,183,255,0.22)] text-white shadow-[0_0_20px_rgba(103,183,255,0.25)]"
+                  : "border-white/16 bg-[#121a2c] text-[rgba(255,255,255,0.92)] hover:border-[#67B7FF]/45 hover:bg-[#161f34]",
+              ].join(" ")}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className="block space-y-2">
+        <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
+          태어난 장소
+        </span>
+        <input
+          type="text"
+          placeholder="예: 서울"
+          value={sheetPlace}
+          onChange={(e) => setSheetPlace(e.target.value)}
+          className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-4 py-3.5 text-[rgba(255,255,255,0.96)] placeholder:text-white/45 outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
+        />
+      </label>
+      <div className="pt-2">
+        <GlowButton type="submit" className="w-full" disabled={sheetBusy}>
+          {sheetBusy ? "저장 중…" : "다음: 결제하기"}
+        </GlowButton>
+      </div>
+    </form>
+  );
 }
 
 function parseBirthDateParts(iso: string | null | undefined): {
@@ -243,7 +584,12 @@ export default function ReportContent() {
     ok: boolean;
   }>({ attempted: false, ok: false });
 
-  const [showCoordSheet, setShowCoordSheet] = useState(false);
+  /** 심화: 페이지 안 단계(모달 없음) — intro → form(출생) → 결제 */
+  const [deepFlow, setDeepFlow] = useState<null | "intro" | "form">(null);
+  const viewParam = searchParams.get("view");
+  const [resultViewTab, setResultViewTab] = useState<"basic" | "premium">(
+    viewParam === "premium" ? "premium" : "basic",
+  );
   const [sheetYear, setSheetYear] = useState("");
   const [sheetMonth, setSheetMonth] = useState("");
   const [sheetDay, setSheetDay] = useState("");
@@ -260,6 +606,11 @@ export default function ReportContent() {
   const pathname = usePathname();
   const reportId = searchParams.get("id") || "";
   const afterPaymentFlag = searchParams.get("afterPayment") === "1";
+
+  useEffect(() => {
+    if (viewParam === "premium") setResultViewTab("premium");
+    else if (viewParam === "basic") setResultViewTab("basic");
+  }, [viewParam]);
   const displayName = report?.name?.trim() || "당신";
 
   const freeParagraphs = useMemo(() => {
@@ -321,7 +672,7 @@ export default function ReportContent() {
     setSheetPlace(report.birth_place ?? "");
   }, [report]);
 
-  /** 결제 완료 후 돌아온 경우에만 개인정보 시트 자동 오픈 */
+  /** 결제 완료 후: 출생 정보 입력 단계(페이지 안) */
   useEffect(() => {
     if (loading || afterPaymentHandled.current) return;
     if (!afterPaymentFlag || !reportId) return;
@@ -333,8 +684,10 @@ export default function ReportContent() {
       });
       return;
     }
-    setShowCoordSheet(true);
-    router.replace(`/result?id=${encodeURIComponent(reportId)}`, { scroll: false });
+    setDeepFlow("form");
+    router.replace(`/result?id=${encodeURIComponent(reportId)}`, {
+      scroll: false,
+    });
   }, [loading, afterPaymentFlag, reportId, report, router]);
 
   /** 초대 링크 사용 여부 — 마운트·탭 포커스 시에만 조회(콜백 의존성 루프 방지) */
@@ -405,7 +758,7 @@ export default function ReportContent() {
       if (sheetGender.trim()) {
         localStorage.setItem(`gender_${reportId}`, sheetGender.trim());
       }
-      setShowCoordSheet(false);
+      setDeepFlow(null);
       router.push(`/payment?reportId=${encodeURIComponent(reportId)}`);
     } finally {
       setSheetBusy(false);
@@ -659,6 +1012,22 @@ export default function ReportContent() {
           setPaidSummary(data.paid ?? null);
           setUnifiedReport(null);
         } else {
+          try {
+            const freePromptData = buildSurveyOnlyPrompt(localInterpretations);
+            const freeRes = await fetch("/api/llm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode: "free",
+                userInput: freePromptData,
+              }),
+            });
+            const freeData = await freeRes.json();
+            setFreeSummary(freeData.free ?? null);
+          } catch {
+            setFreeSummary(null);
+          }
+
           const detailedRes = await fetch("/api/llm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -724,7 +1093,6 @@ export default function ReportContent() {
           } else {
             setUnifiedReport(null);
           }
-          setFreeSummary(null);
           setPaidSummary(null);
         }
         
@@ -792,152 +1160,312 @@ export default function ReportContent() {
             paidSummary ||
             showPaidUnified ||
             inviteUsed ||
-            (isDbPaid && !(birthInfoComplete && sajuStatus.ok))) && (
+            (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
+            deepFlow) && (
             <GlassCard className="space-y-6">
-              {isDbPaid && !(birthInfoComplete && sajuStatus.ok) && (
-                <div className="space-y-2 rounded-xl border border-[var(--space-border)] bg-[var(--space-card)]/40 p-4">
-                  <p className="text-center text-sm font-medium text-[#FFD6A5]">
-                    사주 기질 분석
-                  </p>
-                  {!birthInfoComplete && (
-                    <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                      생년월일, 시간, 장소를 입력하면 사주 기질 분석을 볼 수
-                      있습니다.
-                    </p>
-                  )}
-                  {birthInfoComplete &&
-                    sajuStatus.attempted &&
-                    !sajuStatus.ok && (
-                      <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                        사주 데이터를 불러오지 못했어요. 잠시 후 다시
-                        열어보세요.
-                      </p>
-                    )}
-                </div>
-              )}
-
-              {!isDbPaid && freeSummary && (
-                <>
-                  <FreeResultAccordions
-                    bodies={freeAccordionBodies}
-                    displayName={displayName}
+              {deepFlow === "intro" ? (
+                <DeepReportIntroPanel
+                  onContinue={() => {
+                    markDeepReportIntroSeen(reportId);
+                    setDeepFlow("form");
+                  }}
+                  onBackToResult={() => setDeepFlow(null)}
+                />
+              ) : deepFlow === "form" ? (
+                <div className="space-y-4">
+                  <ReportBirthCaptureForm
+                    title="심화 분석을 위한 정보"
+                    description="입력을 마치면 결제 페이지로 이동해요."
+                    sheetYear={sheetYear}
+                    setSheetYear={setSheetYear}
+                    sheetMonth={sheetMonth}
+                    setSheetMonth={setSheetMonth}
+                    sheetDay={sheetDay}
+                    setSheetDay={setSheetDay}
+                    sheetTime={sheetTime}
+                    setSheetTime={setSheetTime}
+                    sheetPlace={sheetPlace}
+                    setSheetPlace={setSheetPlace}
+                    sheetGender={sheetGender}
+                    setSheetGender={setSheetGender}
+                    sheetBusy={sheetBusy}
+                    onSubmit={() => void saveBirthAndGoPayment()}
                   />
-
-                  <div className="flex flex-col gap-3 pt-2 sm:gap-3.5">
-                    <GlowButton
-                      type="button"
-                      className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
-                      onClick={() => setShowCoordSheet(true)}
-                    >
-                      심화 분석하기
-                    </GlowButton>
-                    <GlowButton
-                      type="button"
-                      className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
-                      onClick={() =>
-                        router.push(
-                          `/relationships?myReportId=${encodeURIComponent(reportId)}`,
-                        )
-                      }
-                    >
-                      관계 탐사실
-                    </GlowButton>
-                    <GlowButton
-                      type="button"
-                      className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
-                      onClick={() => void handleShare()}
-                    >
-                      공유하기
-                    </GlowButton>
-                  </div>
-                </>
-              )}
-
-              {showPaidUnified && (
-                <>
-                  <div className="space-y-5">
-                    <div className="text-center">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8eb8ff]/90">
-                        Premium
-                      </p>
-                      <p className="mt-2 text-lg font-semibold text-[#FFD6A5] sm:text-xl">
-                        통합 분석 리포트
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
-                        설문·사주·출생 맥락을 한 흐름으로 엮었습니다.
-                      </p>
-                    </div>
-
-                    <div
-                      className={[
-                        "rounded-2xl border border-[var(--space-border)]/80 bg-gradient-to-b from-[var(--space-card)]/55 to-[#0a0f1a]/35 p-4 shadow-[0_0_60px_rgba(103,183,255,0.06)] sm:p-6 md:p-8",
-                        reportStreaming ? "ring-1 ring-[#67B7FF]/25" : "",
-                      ].join(" ")}
-                    >
-                      {reportStreaming && (
-                        <p className="mb-4 flex items-center gap-2 text-xs text-[#8eb8ff]/90">
-                          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#67B7FF]" />
-                          리포트를 이어서 작성하는 중이에요…
-                        </p>
-                      )}
-                      {unifiedReport !== null && unifiedReport.length > 0 ? (
-                        <UnifiedReportMarkdown content={unifiedReport} />
-                      ) : reportStreaming ? (
-                        <p className="text-sm text-[var(--space-text-muted)]">
-                          곧 본문이 나타납니다.
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
-                    <GlowButton
-                      type="button"
-                      className="w-full !min-h-[48px] py-3 text-sm"
-                      onClick={() => void handleShare()}
-                    >
-                      리포트 공유
-                    </GlowButton>
-                    <GlowButton
-                      type="button"
-                      className="w-full !min-h-[48px] py-3 text-sm"
-                      onClick={() =>
-                        router.push(
-                          `/relationships?myReportId=${encodeURIComponent(reportId)}`,
-                        )
-                      }
-                    >
-                      관계 탐사실
-                    </GlowButton>
-                    <GlowButton
-                      type="button"
-                      className="w-full !min-h-[48px] py-3 text-sm"
-                      disabled={inviteUsed || inviteBusy}
-                      onClick={() => void handleInviteFriend()}
-                    >
-                      {inviteUsed
-                        ? "초대 링크 (사용됨)"
-                        : inviteBusy
-                          ? "준비 중…"
-                          : "친구 초대 링크"}
-                    </GlowButton>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
                     <button
                       type="button"
-                      onClick={() => router.push("/")}
-                      className="w-full rounded-xl border border-[var(--space-border)] bg-white/[0.04] py-2.5 text-sm text-[var(--space-text-muted)] transition hover:bg-white/[0.07]"
+                      disabled={sheetBusy}
+                      onClick={() => {
+                        if (sheetBusy) return;
+                        if (readDeepReportIntroSeen(reportId)) {
+                          setDeepFlow(null);
+                        } else {
+                          setDeepFlow("intro");
+                        }
+                      }}
+                      className="w-full rounded-2xl border border-white/14 bg-[#121a2c] py-3.5 text-sm text-[rgba(255,255,255,0.82)] transition hover:bg-[#161f34] sm:w-auto sm:min-w-[7.5rem]"
                     >
-                      나가기
+                      이전
+                    </button>
+                    <button
+                      type="button"
+                      disabled={sheetBusy}
+                      onClick={() => setDeepFlow(null)}
+                      className="w-full rounded-2xl border border-white/14 bg-[#121a2c] py-3.5 text-sm text-[rgba(255,255,255,0.82)] transition hover:bg-[#161f34] sm:w-auto sm:min-w-[7.5rem]"
+                    >
+                      닫기
                     </button>
                   </div>
+                </div>
+              ) : (
+                <>
+                  {isDbPaid && showPaidUnified && (
+                    <div
+                      className="mx-auto inline-flex w-full max-w-md rounded-full border border-white/15 bg-[#0d121f] p-0.5"
+                      role="tablist"
+                      aria-label="분석 보기"
+                    >
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={resultViewTab === "basic"}
+                        onClick={() => {
+                          setResultViewTab("basic");
+                          void router.replace(
+                            `/result?id=${encodeURIComponent(reportId)}&view=basic`,
+                            { scroll: false },
+                          );
+                        }}
+                        className={[
+                          "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
+                          resultViewTab === "basic"
+                            ? "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] text-[#0a0f1a] shadow-md"
+                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
+                        ].join(" ")}
+                      >
+                        기본 분석
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={resultViewTab === "premium"}
+                        onClick={() => {
+                          setResultViewTab("premium");
+                          void router.replace(
+                            `/result?id=${encodeURIComponent(reportId)}&view=premium`,
+                            { scroll: false },
+                          );
+                        }}
+                        className={[
+                          "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
+                          resultViewTab === "premium"
+                            ? "bg-gradient-to-r from-[#ffd6a5] to-[#e8a85c] text-[#1a1208] shadow-md"
+                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
+                        ].join(" ")}
+                      >
+                        심화 분석
+                      </button>
+                    </div>
+                  )}
+
+                  {isDbPaid &&
+                    !(birthInfoComplete && sajuStatus.ok) &&
+                    resultViewTab === "basic" && (
+                      <div className="space-y-2 rounded-xl border border-[var(--space-border)] bg-[var(--space-card)]/40 p-4">
+                        <p className="text-center text-sm font-medium text-[#FFD6A5]">
+                          기질·행동 패턴 분석
+                        </p>
+                        {!birthInfoComplete && (
+                          <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
+                            생년월일, 시간, 장소를 입력하면 심화 리포트를 만들 수
+                            있어요. 아래 &apos;심화 분석하기&apos;에서 입력할 수
+                            있어요.
+                          </p>
+                        )}
+                        {birthInfoComplete &&
+                          sajuStatus.attempted &&
+                          !sajuStatus.ok && (
+                            <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
+                              데이터를 불러오지 못했어요. 잠시 후 다시
+                              열어보세요.
+                            </p>
+                          )}
+                      </div>
+                    )}
+
+                  {freeSummary &&
+                    (!isDbPaid ||
+                      resultViewTab === "basic" ||
+                      !showPaidUnified) && (
+                      <>
+                        <FreeResultAccordions
+                          bodies={freeAccordionBodies}
+                          displayName={displayName}
+                        />
+
+                        {resultViewTab === "basic" && (
+                          <div className="flex flex-col gap-3 pt-2 sm:gap-3.5">
+                            <GlowButton
+                              type="button"
+                              className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                              onClick={() => {
+                                if (showPaidUnified) {
+                                  setResultViewTab("premium");
+                                  void router.replace(
+                                    `/result?id=${encodeURIComponent(reportId)}&view=premium`,
+                                    { scroll: false },
+                                  );
+                                  return;
+                                }
+                                if (readDeepReportIntroSeen(reportId)) {
+                                  setDeepFlow("form");
+                                } else {
+                                  setDeepFlow("intro");
+                                }
+                              }}
+                            >
+                              {showPaidUnified
+                                ? "🔍 심화 리포트 보기"
+                                : "🔍 심화 분석하기"}
+                            </GlowButton>
+                            <GlowButton
+                              type="button"
+                              className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                              onClick={() => {
+                                if (
+                                  typeof window !== "undefined" &&
+                                  reportId
+                                ) {
+                                  localStorage.setItem("reportId", reportId);
+                                }
+                                router.push("/survey?redo=1");
+                              }}
+                            >
+                              🔄 다시 하기
+                            </GlowButton>
+                            <GlowButton
+                              type="button"
+                              className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                              onClick={() => router.push("/")}
+                            >
+                              🏠 홈으로 가기
+                            </GlowButton>
+                            <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
+                              <button
+                                type="button"
+                                className="underline decoration-white/30 underline-offset-2 hover:text-[var(--space-text)]"
+                                onClick={() =>
+                                  router.push(
+                                    `/relationships?myReportId=${encodeURIComponent(reportId)}`,
+                                  )
+                                }
+                              >
+                                관계 탐사실
+                              </button>
+                              {" · "}
+                              <button
+                                type="button"
+                                className="underline decoration-white/30 underline-offset-2 hover:text-[var(--space-text)]"
+                                onClick={() => void handleShare()}
+                              >
+                                공유하기
+                              </button>
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                  {isDbPaid &&
+                    showPaidUnified &&
+                    resultViewTab === "premium" && (
+                      <>
+                        <div className="space-y-5">
+                          <div className="text-center">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8eb8ff]/90">
+                              Premium
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-[#FFD6A5] sm:text-xl">
+                              통합 분석 리포트
+                            </p>
+                            <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
+                              설문·사주·출생 맥락을 한 흐름으로 엮었습니다.
+                            </p>
+                          </div>
+
+                          <div
+                            className={[
+                              "rounded-2xl border border-[var(--space-border)]/80 bg-gradient-to-b from-[var(--space-card)]/55 to-[#0a0f1a]/35 p-4 shadow-[0_0_60px_rgba(103,183,255,0.06)] sm:p-6 md:p-8",
+                              reportStreaming ? "ring-1 ring-[#67B7FF]/25" : "",
+                            ].join(" ")}
+                          >
+                            {reportStreaming && (
+                              <p className="mb-4 flex items-center gap-2 text-xs text-[#8eb8ff]/90">
+                                <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#67B7FF]" />
+                                리포트를 이어서 작성하는 중이에요…
+                              </p>
+                            )}
+                            {unifiedReport !== null &&
+                            unifiedReport.length > 0 ? (
+                              <UnifiedReportMarkdown content={unifiedReport} />
+                            ) : reportStreaming ? (
+                              <p className="text-sm text-[var(--space-text-muted)]">
+                                곧 본문이 나타납니다.
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
+                          <GlowButton
+                            type="button"
+                            className="w-full !min-h-[48px] py-3 text-sm"
+                            onClick={() => void handleShare()}
+                          >
+                            리포트 공유
+                          </GlowButton>
+                          <GlowButton
+                            type="button"
+                            className="w-full !min-h-[48px] py-3 text-sm"
+                            onClick={() =>
+                              router.push(
+                                `/relationships?myReportId=${encodeURIComponent(reportId)}`,
+                              )
+                            }
+                          >
+                            관계 탐사실
+                          </GlowButton>
+                          <GlowButton
+                            type="button"
+                            className="w-full !min-h-[48px] py-3 text-sm"
+                            disabled={inviteUsed || inviteBusy}
+                            onClick={() => void handleInviteFriend()}
+                          >
+                            {inviteUsed
+                              ? "초대 링크 (사용됨)"
+                              : inviteBusy
+                                ? "준비 중…"
+                                : "친구 초대 링크"}
+                          </GlowButton>
+                          <button
+                            type="button"
+                            onClick={() => router.push("/")}
+                            className="w-full rounded-xl border border-[var(--space-border)] bg-white/[0.04] py-2.5 text-sm text-[var(--space-text-muted)] transition hover:bg-white/[0.07]"
+                          >
+                            나가기
+                          </button>
+                        </div>
+                      </>
+                    )}
                 </>
               )}
-
             </GlassCard>
           )}
 
           {!freeSummary &&
             !paidSummary &&
             !showPaidUnified &&
+            !deepFlow &&
             !(isDbPaid && !(birthInfoComplete && sajuStatus.ok)) && (
               <GlassCard>
                 <p className="text-center text-sm text-[var(--space-text-muted)]">
@@ -947,221 +1475,19 @@ export default function ReportContent() {
               </GlassCard>
             )}
 
-          {pathname === "/result" && reportId ? (
-            <GlassCard className="space-y-3 border border-white/12 bg-white/[0.04]">
-              <p className="text-center text-sm font-medium text-[var(--space-text)]">
-                설문 다시 하기
-              </p>
-              <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
-                답을 바꾸면 해석도 달라질 수 있어요. 다시 제출하면 이전 설문
-                답변은 삭제돼요.
-              </p>
+          {pathname !== "/result" ? (
+            <div className="mx-auto w-full max-w-md sm:max-w-lg">
               <GlowButton
                 type="button"
-                className="w-full !min-h-[48px] text-sm"
-                onClick={() => {
-                  if (typeof window !== "undefined" && reportId) {
-                    localStorage.setItem("reportId", reportId);
-                  }
-                  router.push("/survey?redo=1");
-                }}
+                className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                onClick={() => router.push("/")}
               >
-                다시 하기
+                🏠 홈으로 가기
               </GlowButton>
-            </GlassCard>
+            </div>
           ) : null}
-
-          <div className="mx-auto w-full max-w-md sm:max-w-lg">
-            <GlowButton
-              type="button"
-              className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
-              onClick={() => router.push("/")}
-            >
-              🏠 홈으로 가기
-            </GlowButton>
-          </div>
         </div>
       </div>
-
-      <AnimatePresence>
-        {showCoordSheet && (
-          <motion.div
-            className="fixed inset-0 z-40 flex items-end justify-center bg-black/65 p-4 backdrop-blur-[2px] sm:items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => !sheetBusy && setShowCoordSheet(false)}
-          >
-            <motion.div
-              initial={{ y: 24, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 16, opacity: 0 }}
-              className="w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <GlassCard className="max-h-[85vh] overflow-y-auto !bg-[rgba(16,22,38,0.97)] !shadow-[0_24px_60px_rgba(0,0,0,0.55)]">
-                <form
-                  className="space-y-5"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void saveBirthAndGoPayment();
-                  }}
-                >
-                <div className="space-y-1">
-                  <h2 className="text-lg font-semibold text-[var(--space-text)]">
-                    심화 분석을 위한 정보
-                  </h2>
-                  <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
-                    생년월일·시간·출생 장소를 입력한 뒤 결제하면, 18문항 세부
-                    해석과 사주·점성학이 이어진 통합 리포트를 받을 수 있어요.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <span className="block text-xs font-medium text-[rgba(255,255,255,0.78)]">
-                    생년월일
-                  </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    <label className="space-y-1">
-                      <span className="text-[10px] text-white/50">
-                        연도 (4자리)
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="bday-year"
-                        maxLength={4}
-                        value={sheetYear}
-                        onChange={(e) =>
-                          setSheetYear(
-                            e.target.value.replace(/\D/g, "").slice(0, 4),
-                          )
-                        }
-                        placeholder="1990"
-                        className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-                      />
-                    </label>
-                    <label className="space-y-1">
-                      <span className="text-[10px] text-white/50">월</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="bday-month"
-                        maxLength={2}
-                        value={sheetMonth}
-                        onChange={(e) =>
-                          setSheetMonth(
-                            e.target.value.replace(/\D/g, "").slice(0, 2),
-                          )
-                        }
-                        placeholder="01"
-                        className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-                      />
-                    </label>
-                    <label className="space-y-1">
-                      <span className="text-[10px] text-white/50">일</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="bday-day"
-                        maxLength={2}
-                        value={sheetDay}
-                        onChange={(e) =>
-                          setSheetDay(
-                            e.target.value.replace(/\D/g, "").slice(0, 2),
-                          )
-                        }
-                        placeholder="15"
-                        className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                <label className="block space-y-2">
-                  <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
-                    출생 시각
-                  </span>
-                  <input
-                    type="time"
-                    value={sheetTime}
-                    onChange={(e) => setSheetTime(e.target.value)}
-                    className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-4 py-3.5 text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-                  />
-                </label>
-
-                <div className="space-y-2">
-                  <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
-                    성별
-                  </span>
-                  <div
-                    className="grid grid-cols-1 gap-2 sm:grid-cols-3"
-                    role="group"
-                    aria-label="성별"
-                  >
-                    {(
-                      [
-                        { v: "female", label: "여성" },
-                        { v: "male", label: "남성" },
-                        {
-                          v: "other",
-                          label: "기타 · 밝히지 않음",
-                        },
-                      ] as const
-                    ).map(({ v, label }) => (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => setSheetGender(v)}
-                        className={[
-                          "min-h-[48px] rounded-2xl border-2 px-3 py-2.5 text-sm font-semibold transition",
-                          sheetGender === v
-                            ? "border-[#67B7FF] bg-[rgba(103,183,255,0.22)] text-white shadow-[0_0_20px_rgba(103,183,255,0.25)]"
-                            : "border-white/16 bg-[#121a2c] text-[rgba(255,255,255,0.92)] hover:border-[#67B7FF]/45 hover:bg-[#161f34]",
-                        ].join(" ")}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <label className="block space-y-2">
-                  <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
-                    태어난 장소
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="예: 서울"
-                    value={sheetPlace}
-                    onChange={(e) => setSheetPlace(e.target.value)}
-                    className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-4 py-3.5 text-[rgba(255,255,255,0.96)] placeholder:text-white/45 outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-                  />
-                </label>
-
-                <div className="flex flex-col gap-3 pt-2 sm:flex-row-reverse">
-                  <GlowButton
-                    type="submit"
-                    className="w-full flex-1"
-                    disabled={sheetBusy}
-                  >
-                    {sheetBusy ? "저장 중…" : "입력 완료"}
-                  </GlowButton>
-                  <button
-                    type="button"
-                    disabled={sheetBusy}
-                    onClick={() => setShowCoordSheet(false)}
-                    className="w-full flex-1 rounded-2xl border border-white/14 bg-[#121a2c] py-3.5 text-sm text-[rgba(255,255,255,0.82)] transition hover:bg-[#161f34]"
-                  >
-                    닫기
-                  </button>
-                </div>
-                </form>
-              </GlassCard>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </SpaceBackground>
   );
 }

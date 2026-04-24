@@ -226,7 +226,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ relationship: null });
     }
 
-    const text = resolveIntegratedRelationshipText(chosen, viewerReportId);
+    let text = resolveIntegratedRelationshipText(chosen, viewerReportId);
+
+    if (!text && chosen.id) {
+      try {
+        const repairUrl = new URL(
+          "/api/relationship/analyze/basic",
+          new URL(req.url).origin,
+        );
+        const br = await fetch(repairUrl.toString(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ relationship_report_id: chosen.id }),
+        });
+        if (br.ok) {
+          const { data: rrFresh, error: frErr } = await supabase
+            .from("relationship_reports")
+            .select(
+              "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium",
+            )
+            .eq("id", chosen.id)
+            .maybeSingle();
+          if (!frErr && rrFresh) {
+            text = resolveIntegratedRelationshipText(
+              rrFresh as RelationshipReportRow,
+              viewerReportId,
+            );
+          }
+        } else {
+          const errBody = await br.text().catch(() => "");
+          console.warn(LOG, "기본 분석 보강(analyze/basic) 비정상 응답", {
+            status: br.status,
+            bodyPreview: errBody.slice(0, 200),
+          });
+        }
+      } catch (e) {
+        console.warn(LOG, "기본 분석 보강 호출 예외:", e);
+      }
+    }
 
     if (!text) {
       console.info(LOG, "선택한 행에 result_basic 시점 데이터 없음", {

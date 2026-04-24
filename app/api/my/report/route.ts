@@ -134,8 +134,8 @@ export async function GET(req: Request) {
       basic_result,
       premium_result,
       result_paths: {
-        basic: `/result?id=${encodeURIComponent(reportId)}`,
-        full: `/report?id=${encodeURIComponent(reportId)}`,
+        basic: `/result?id=${encodeURIComponent(reportId)}&view=basic`,
+        full: `/report?id=${encodeURIComponent(reportId)}&view=premium`,
         payment: `/payment?reportId=${encodeURIComponent(reportId)}`,
       },
     });

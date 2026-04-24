@@ -162,7 +162,7 @@ function PaymentContent() {
                   <span>친구 1명 초대권</span>
                 </li>
                 <li className="pl-6 text-[13px] text-[var(--space-text-muted)]">
-                  초대 링크를 보내면 상대방도 무료로 개인 분석을 받고, 나와의
+                  초대 링크를내면 상대방도 무료로 개인 분석을 받고, 나와의
                   관계 분석 리포트까지 제공
                 </li>
               </ul>

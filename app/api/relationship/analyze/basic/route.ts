@@ -8,6 +8,7 @@ import {
 } from "@/lib/relationship/surveyPatterns";
 import { buildRelationshipBasicPrompt } from "@/lib/prompts/relationshipAnalysis";
 import { parseJsonObject } from "@/lib/relationship/parseLlmJson";
+import { formatResultBasicForIntegratedContext } from "@/lib/relationship/formatResultBasicForIntegratedContext";
 import {
   hasCompletePerspectives,
   normalizeRelationshipPerspectives,
@@ -77,13 +78,23 @@ export async function POST(req: Request) {
     const labelA = repA?.name?.trim() || "첫 번째 사람";
     const labelB = repB?.name?.trim() || "두 번째 사람";
 
-    if (
-      hasCompletePerspectives(
+    const basicComplete = hasCompletePerspectives(
+      rr.result_basic,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    /** 구조상 완전해도 축 텍스트가 비어 통합 리포트에 넣을 수 없는 경우 재생성 */
+    const integratesForLlm =
+      formatResultBasicForIntegratedContext(
         rr.result_basic,
         rr.report_id_a,
+      ) != null ||
+      formatResultBasicForIntegratedContext(
+        rr.result_basic,
         rr.report_id_b,
-      )
-    ) {
+      ) != null;
+
+    if (basicComplete && integratesForLlm) {
       const perspectives = (
         rr.result_basic as { perspectives: Record<string, unknown> }
       ).perspectives;
