@@ -8,6 +8,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Gloria_Hallelujah } from "next/font/google";
 import { supabase } from "@/lib/supabase/client";
 import SpaceLoading from "@/components/space/SpaceLoading";
+import GlowButton from "@/components/space/GlowButton";
+import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
 
 const heroTitleFont = Gloria_Hallelujah({
   weight: "400",
@@ -387,36 +389,46 @@ export default function HomeContent() {
               🚀 탐사실
             </h2>
             <div className="flex flex-col gap-3 sm:gap-3.5">
-              <button
+              <GlowButton
                 type="button"
+                variant="primary"
+                className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
                 onClick={() =>
                   router.push(
                     `/dashboard?reportId=${encodeURIComponent(resume.reportId!)}`,
                   )
                 }
-                className="inline-flex w-full items-center justify-center rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-[0.9375rem] font-semibold text-white shadow-lg transition hover:brightness-105 sm:py-[0.9rem] sm:text-[15px]"
               >
-                📊 내 탐사
-              </button>
+                <span className="inline-flex items-center gap-2">
+                  <SubtleButtonIcon kind="dashboard" />
+                  내 탐사
+                </span>
+              </GlowButton>
               <div className="space-y-1.5">
-                <button
+                <GlowButton
                   type="button"
+                  variant="secondary"
+                  className="w-full text-[0.9375rem] font-medium sm:text-[15px]"
                   onClick={() =>
                     router.push(
                       `/relationships?myReportId=${encodeURIComponent(resume.reportId!)}`,
                     )
                   }
-                  className="inline-flex w-full items-center justify-center rounded-2xl border border-white/20 bg-white/[0.07] px-6 py-3.5 text-[0.9375rem] font-medium text-white/95 backdrop-blur-sm transition hover:bg-white/[0.11] sm:py-[0.9rem] sm:text-[15px]"
                 >
-                  👥 관계 탐사실
-                </button>
+                  <span className="inline-flex items-center gap-2">
+                    <SubtleButtonIcon kind="relationship" />
+                    관계 탐사실
+                  </span>
+                </GlowButton>
                 <p className="text-center text-[0.8125rem] tabular-nums leading-snug text-white/45 sm:text-sm">
                   • 대기 {relCounts.pending} · 완료 {relCounts.completed}
                 </p>
               </div>
             </div>
-            <button
+            <GlowButton
               type="button"
+              variant="secondary"
+              className="w-full text-[0.9375rem] font-medium"
               onClick={() => {
                 localStorage.removeItem("reportId");
                 setRelCounts({ pending: 0, completed: 0 });
@@ -428,10 +440,12 @@ export default function HomeContent() {
                   name: null,
                 });
               }}
-              className="w-full rounded-2xl border border-white/12 bg-white/[0.04] py-3 text-center text-[0.9375rem] font-medium text-white/55 transition hover:border-white/18 hover:bg-white/[0.07] hover:text-white/75"
             >
-              + 새 탐사
-            </button>
+              <span className="inline-flex items-center gap-2">
+                <SubtleButtonIcon kind="redo" />
+                + 새 탐사
+              </span>
+            </GlowButton>
           </div>
         ) : resume.reportId && resume.hasReport && !resume.surveyCompleted ? (
           <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-14">
@@ -439,8 +453,10 @@ export default function HomeContent() {
               설문을 아직 마치지 않았어요. 이어서 하거나, 새 탐사를 시작할 수
               있어요.
             </p>
-            <button
+            <GlowButton
               type="button"
+              variant="primary"
+              className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
               onClick={() => {
                 const tok = localStorage.getItem("inviteToken")?.trim();
                 router.push(
@@ -449,12 +465,16 @@ export default function HomeContent() {
                     : "/survey",
                 );
               }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#6bb5ff]/40 bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:brightness-105"
             >
-              설문 이어하기
-            </button>
-            <button
+              <span className="inline-flex items-center gap-2">
+                <SubtleButtonIcon kind="dashboard" />
+                설문 이어하기
+              </span>
+            </GlowButton>
+            <GlowButton
               type="button"
+              variant="ghost"
+              className="w-full text-sm font-medium"
               onClick={() => {
                 localStorage.removeItem("reportId");
                 setResume({
@@ -465,10 +485,12 @@ export default function HomeContent() {
                   name: null,
                 });
               }}
-              className="w-full text-center text-sm text-white/45 underline-offset-2 hover:text-white/70 hover:underline"
             >
-              이어가지 않고 새로 시작하기
-            </button>
+              <span className="inline-flex items-center gap-2">
+                <SubtleButtonIcon kind="redo" />
+                이어가지 않고 새로 시작하기
+              </span>
+            </GlowButton>
           </div>
         ) : (
           <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 sm:mt-14">

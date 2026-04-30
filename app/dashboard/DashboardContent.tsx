@@ -239,7 +239,7 @@ export default function DashboardContent() {
           {!loading && my && (
             <>
               <AccordionSection
-                title="📊 내 탐사"
+                title="내 탐사"
                 open={openMyRecords}
                 onToggle={() => setOpenMyRecords((v) => !v)}
               >
@@ -256,7 +256,7 @@ export default function DashboardContent() {
                       className={[
                         "min-h-[36px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
                         tab === "basic"
-                          ? "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] text-[#0a0f1a] shadow-md"
+                          ? "bg-gradient-to-r from-[#D6B46A] to-[#C2A35A] text-[#151515] shadow-[0_8px_20px_rgba(214,180,106,0.24)]"
                           : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
                       ].join(" ")}
                     >
@@ -270,7 +270,7 @@ export default function DashboardContent() {
                       className={[
                         "min-h-[36px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
                         tab === "premium"
-                          ? "bg-gradient-to-r from-[#ffd6a5] to-[#e8a85c] text-[#1a1208] shadow-md"
+                          ? "bg-gradient-to-r from-[#E5C97B] to-[#D6B46A] text-[#151515] shadow-[0_8px_20px_rgba(214,180,106,0.28)]"
                           : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
                       ].join(" ")}
                     >
@@ -345,7 +345,7 @@ export default function DashboardContent() {
               </AccordionSection>
 
               <AccordionSection
-                title="👥 관계 탐사실"
+                title="관계 탐사실"
                 subtitle={`• 대기 ${relPendingCount} · 완료 ${relCompletedCount}`}
                 open={openRelationships}
                 onToggle={() => setOpenRelationships((v) => !v)}
@@ -391,17 +391,18 @@ export default function DashboardContent() {
                 >
                   + 새 탐사
                 </GlowButton>
-                <button
+                <GlowButton
                   type="button"
+                  variant="secondary"
                   onClick={() =>
                     router.push(
                       `/relationships?myReportId=${encodeURIComponent(reportId)}`,
                     )
                   }
-                  className="soft-outline inline-flex min-h-[50px] w-full items-center justify-center rounded-2xl px-6 text-[0.9375rem] font-medium tracking-tight text-[var(--space-text)] transition hover:bg-white/[0.07] sm:max-w-[13.5rem] sm:flex-1"
+                  className="w-full !min-h-[50px] text-[0.9375rem] font-medium sm:max-w-[13.5rem] sm:flex-1"
                 >
                   관계 더보기
-                </button>
+                </GlowButton>
               </div>
             </>
           )}
@@ -423,14 +424,15 @@ export default function DashboardContent() {
               >
                 {resetting ? "처리 중…" : "네, 설문 다시 하기"}
               </GlowButton>
-              <button
+              <GlowButton
                 type="button"
+                variant="ghost"
                 disabled={resetting}
                 onClick={() => setConfirmNew(false)}
-                className="flex-1 rounded-xl border border-white/18 py-2.5 text-sm text-[var(--space-text-muted)] hover:bg-white/[0.05]"
+                className="flex-1 text-sm"
               >
                 취소
-              </button>
+              </GlowButton>
             </div>
           </GlassCard>
         </div>

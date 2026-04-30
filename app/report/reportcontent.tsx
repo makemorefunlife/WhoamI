@@ -10,12 +10,8 @@ import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
 import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
-const FREE_ACCORDION_TITLES = [
-  "🔍 보여지는 모습",
-  "💎 내면의 모습",
-  "💫 관계 패턴",
-  "🌱 소통 팁",
-] as const;
+import FreeAnalysisCardDeck from "@/components/report/FreeAnalysisCardDeck";
+import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
 
 function FreeResultAccordions({
   bodies,
@@ -24,57 +20,12 @@ function FreeResultAccordions({
   bodies: readonly [string, string, string, string];
   displayName: string;
 }) {
-  const [openIdx, setOpenIdx] = useState<number>(0);
-
   return (
     <div className="space-y-4">
       <p className="text-center text-sm leading-relaxed text-[var(--space-text)] sm:text-[0.9375rem]">
-        ✨ 설문으로 알아본 현재 {displayName}님의 모습이에요
+        설문으로 알아본 현재 {displayName}님의 모습이에요
       </p>
-      <div className="space-y-2.5">
-        {FREE_ACCORDION_TITLES.map((title, i) => {
-          const open = openIdx === i;
-          const body = bodies[i]?.trim() ?? "";
-          return (
-            <section
-              key={title}
-              className="overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(10,14,24,0.35)] shadow-[0_6px_24px_rgba(0,0,0,0.14)] backdrop-blur-sm"
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenIdx((prev) => (prev === i ? -1 : i))
-                }
-                className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition hover:bg-white/[0.04] sm:px-5 sm:py-4"
-                aria-expanded={open}
-              >
-                <span className="text-[0.9375rem] font-semibold leading-snug tracking-[-0.01em] text-[var(--space-text)] sm:text-base">
-                  {title}
-                </span>
-                <span
-                  className="shrink-0 text-[0.65rem] text-[var(--space-text-muted)] tabular-nums opacity-85"
-                  aria-hidden
-                >
-                  {open ? "▼" : "▶"}
-                </span>
-              </button>
-              {open ? (
-                <div className="border-t border-white/[0.07] px-4 py-4 sm:px-5 sm:py-5">
-                  {body ? (
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--space-text-muted)] sm:text-[0.9375rem]">
-                      {body}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-[var(--space-text-muted)]/80">
-                      이 구간 요약이 아직 짧게 전달됐어요.
-                    </p>
-                  )}
-                </div>
-              ) : null}
-            </section>
-          );
-        })}
-      </div>
+      <FreeAnalysisCardDeck paragraphs={Array.from(bodies)} />
     </div>
   );
 }
@@ -241,18 +192,20 @@ function DeepReportIntroPanel({
         <div className="space-y-3">
           <GlowButton
             type="button"
+            variant="primary"
             className="w-full !min-h-[52px] text-[0.9375rem] font-semibold"
             onClick={onContinue}
           >
             지금 바로 핵심 리포트 받기
           </GlowButton>
-          <button
+          <GlowButton
             type="button"
+            variant="ghost"
             onClick={onBackToResult}
-            className="w-full py-2 text-center text-sm text-[var(--space-text-muted)] underline-offset-4 transition hover:text-[var(--space-text)] hover:underline"
+            className="w-full !min-h-[46px] text-sm font-medium"
           >
             결과 화면으로 돌아가기
-          </button>
+          </GlowButton>
         </div>
       </div>
     </div>
@@ -416,7 +369,7 @@ function ReportBirthCaptureForm({
         />
       </label>
       <div className="pt-2">
-        <GlowButton type="submit" className="w-full" disabled={sheetBusy}>
+        <GlowButton type="submit" variant="secondary" className="w-full" disabled={sheetBusy}>
           {sheetBusy ? "저장 중…" : "다음: 결제하기"}
         </GlowButton>
       </div>
@@ -843,12 +796,13 @@ export default function ReportContent() {
       setLoading(true);
       setUnifiedReport(null);
       setReportStreaming(false);
+      try {
 
-      const { data: reportData } = await supabase
-        .from("reports")
-        .select("*")
-        .eq("id", reportId)
-        .maybeSingle();
+        const { data: reportData } = await supabase
+          .from("reports")
+          .select("*")
+          .eq("id", reportId)
+          .maybeSingle();
 
       setReport(reportData);
 
@@ -980,24 +934,28 @@ export default function ReportContent() {
         }
       }
 
-      // 🔥 관계/보조 텍스트
-      let localRelationship: string | null = null;
-      if (paid) {
-        const res = await fetch("/api/relationship/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reportId }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          localRelationship = data.relationship ?? data.astrology ?? null;
-          setRelationship(localRelationship);
+        // 🔥 관계/보조 텍스트
+        let localRelationship: string | null = null;
+        if (paid) {
+          try {
+            const res = await fetch("/api/relationship/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reportId }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              localRelationship = data.relationship ?? data.astrology ?? null;
+              setRelationship(localRelationship);
+            }
+          } catch (relationshipErr) {
+            console.error("관계 맥락 생성 API 실패:", relationshipErr);
+          }
         }
-      }
 
-      // 🔥 LLM 호출
-      try {
-        if (!paid) {
+        // 🔥 LLM 호출
+        try {
+          if (!paid) {
           const promptData = buildSurveyOnlyPrompt(localInterpretations);
           const res = await fetch("/api/llm", {
             method: "POST",
@@ -1011,7 +969,7 @@ export default function ReportContent() {
           setFreeSummary(data.free ?? null);
           setPaidSummary(data.paid ?? null);
           setUnifiedReport(null);
-        } else {
+          } else {
           try {
             const freePromptData = buildSurveyOnlyPrompt(localInterpretations);
             const freeRes = await fetch("/api/llm", {
@@ -1093,14 +1051,19 @@ export default function ReportContent() {
           } else {
             setUnifiedReport(null);
           }
-          setPaidSummary(null);
+            setPaidSummary(null);
+          }
+        } catch (e) {
+          console.error("GPT 실패", e);
         }
-        
       } catch (e) {
-        console.error("GPT 실패", e);
+        console.error("리포트 데이터 로드 실패:", e);
+        setUnifiedReport(null);
+        setFreeSummary(null);
+        setPaidSummary(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
     fetchData();
@@ -1192,8 +1155,9 @@ export default function ReportContent() {
                     onSubmit={() => void saveBirthAndGoPayment()}
                   />
                   <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                    <button
+                    <GlowButton
                       type="button"
+                      variant="ghost"
                       disabled={sheetBusy}
                       onClick={() => {
                         if (sheetBusy) return;
@@ -1203,18 +1167,19 @@ export default function ReportContent() {
                           setDeepFlow("intro");
                         }
                       }}
-                      className="w-full rounded-2xl border border-white/14 bg-[#121a2c] py-3.5 text-sm text-[rgba(255,255,255,0.82)] transition hover:bg-[#161f34] sm:w-auto sm:min-w-[7.5rem]"
+                      className="w-full !min-h-[46px] text-sm font-medium sm:w-auto sm:min-w-[7.5rem]"
                     >
                       이전
-                    </button>
-                    <button
+                    </GlowButton>
+                    <GlowButton
                       type="button"
+                      variant="ghost"
                       disabled={sheetBusy}
                       onClick={() => setDeepFlow(null)}
-                      className="w-full rounded-2xl border border-white/14 bg-[#121a2c] py-3.5 text-sm text-[rgba(255,255,255,0.82)] transition hover:bg-[#161f34] sm:w-auto sm:min-w-[7.5rem]"
+                      className="w-full !min-h-[46px] text-sm font-medium sm:w-auto sm:min-w-[7.5rem]"
                     >
                       닫기
-                    </button>
+                    </GlowButton>
                   </div>
                 </div>
               ) : (
@@ -1239,7 +1204,7 @@ export default function ReportContent() {
                         className={[
                           "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
                           resultViewTab === "basic"
-                            ? "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] text-[#0a0f1a] shadow-md"
+                            ? "bg-gradient-to-r from-[#F0D797] via-[#E3C47B] to-[#D6B46A] text-[#1b2230] ring-1 ring-[#F0D797]/35 shadow-[0_10px_24px_rgba(214,180,106,0.34)]"
                             : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
                         ].join(" ")}
                       >
@@ -1259,7 +1224,7 @@ export default function ReportContent() {
                         className={[
                           "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
                           resultViewTab === "premium"
-                            ? "bg-gradient-to-r from-[#ffd6a5] to-[#e8a85c] text-[#1a1208] shadow-md"
+                            ? "bg-gradient-to-r from-[#F3DB9E] via-[#E7C984] to-[#D6B46A] text-[#1b2230] ring-1 ring-[#F3DB9E]/35 shadow-[0_10px_24px_rgba(214,180,106,0.38)]"
                             : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
                         ].join(" ")}
                       >
@@ -1272,7 +1237,7 @@ export default function ReportContent() {
                     !(birthInfoComplete && sajuStatus.ok) &&
                     resultViewTab === "basic" && (
                       <div className="space-y-2 rounded-xl border border-[var(--space-border)] bg-[var(--space-card)]/40 p-4">
-                        <p className="text-center text-sm font-medium text-[#FFD6A5]">
+                        <p className="text-center text-sm font-semibold text-[#F0D797]">
                           기질·행동 패턴 분석
                         </p>
                         {!birthInfoComplete && (
@@ -1305,31 +1270,33 @@ export default function ReportContent() {
 
                         {resultViewTab === "basic" && (
                           <div className="flex flex-col gap-3 pt-2 sm:gap-3.5">
+                            {!showPaidUnified && (
+                              <GlowButton
+                                type="button"
+                                variant="primary"
+                                className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                                onClick={() => {
+                                  if (readDeepReportIntroSeen(reportId)) {
+                                    setDeepFlow("form");
+                                  } else {
+                                    setDeepFlow("intro");
+                                  }
+                                }}
+                              >
+                                <span className="inline-flex items-center gap-2">
+                                  <SubtleButtonIcon kind="search" />
+                                  심화 분석하기
+                                </span>
+                              </GlowButton>
+                            )}
+                            {showPaidUnified && (
+                              <p className="rounded-xl border border-[#D6B46A]/25 bg-[#D6B46A]/[0.08] px-3 py-2 text-center text-xs leading-relaxed text-[#F0D797]">
+                                심화 분석은 상단의 ‘심화 분석’ 탭에서 이어서 볼 수 있어요.
+                              </p>
+                            )}
                             <GlowButton
                               type="button"
-                              className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
-                              onClick={() => {
-                                if (showPaidUnified) {
-                                  setResultViewTab("premium");
-                                  void router.replace(
-                                    `/result?id=${encodeURIComponent(reportId)}&view=premium`,
-                                    { scroll: false },
-                                  );
-                                  return;
-                                }
-                                if (readDeepReportIntroSeen(reportId)) {
-                                  setDeepFlow("form");
-                                } else {
-                                  setDeepFlow("intro");
-                                }
-                              }}
-                            >
-                              {showPaidUnified
-                                ? "🔍 심화 리포트 보기"
-                                : "🔍 심화 분석하기"}
-                            </GlowButton>
-                            <GlowButton
-                              type="button"
+                              variant="secondary"
                               className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
                               onClick={() => {
                                 if (
@@ -1341,14 +1308,21 @@ export default function ReportContent() {
                                 router.push("/survey?redo=1");
                               }}
                             >
-                              🔄 다시 하기
+                              <span className="inline-flex items-center gap-2">
+                                <SubtleButtonIcon kind="redo" />
+                                다시 하기
+                              </span>
                             </GlowButton>
                             <GlowButton
                               type="button"
+                              variant="ghost"
                               className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
                               onClick={() => router.push("/")}
                             >
-                              🏠 홈으로 가기
+                              <span className="inline-flex items-center gap-2">
+                                <SubtleButtonIcon kind="home" />
+                                홈으로 가기
+                              </span>
                             </GlowButton>
                             <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
                               <button
@@ -1385,11 +1359,11 @@ export default function ReportContent() {
                             <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8eb8ff]/90">
                               Premium
                             </p>
-                            <p className="mt-2 text-lg font-semibold text-[#FFD6A5] sm:text-xl">
+                            <p className="mt-2 text-lg font-semibold text-[#F0D797] sm:text-xl">
                               통합 분석 리포트
                             </p>
                             <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
-                              설문·사주·출생 맥락을 한 흐름으로 엮었습니다.
+                              설문과 추가 데이터 분석을 한 흐름으로 정리했습니다.
                             </p>
                           </div>
 
@@ -1419,6 +1393,7 @@ export default function ReportContent() {
                         <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
                           <GlowButton
                             type="button"
+                            variant="secondary"
                             className="w-full !min-h-[48px] py-3 text-sm"
                             onClick={() => void handleShare()}
                           >
@@ -1426,6 +1401,7 @@ export default function ReportContent() {
                           </GlowButton>
                           <GlowButton
                             type="button"
+                            variant="secondary"
                             className="w-full !min-h-[48px] py-3 text-sm"
                             onClick={() =>
                               router.push(
@@ -1437,6 +1413,7 @@ export default function ReportContent() {
                           </GlowButton>
                           <GlowButton
                             type="button"
+                            variant={inviteUsed || inviteBusy ? "disabled" : "secondary"}
                             className="w-full !min-h-[48px] py-3 text-sm"
                             disabled={inviteUsed || inviteBusy}
                             onClick={() => void handleInviteFriend()}
@@ -1447,13 +1424,14 @@ export default function ReportContent() {
                                 ? "준비 중…"
                                 : "친구 초대 링크"}
                           </GlowButton>
-                          <button
+                          <GlowButton
                             type="button"
+                            variant="ghost"
                             onClick={() => router.push("/")}
-                            className="w-full rounded-xl border border-[var(--space-border)] bg-white/[0.04] py-2.5 text-sm text-[var(--space-text-muted)] transition hover:bg-white/[0.07]"
+                            className="w-full !min-h-[42px] text-sm font-medium"
                           >
                             나가기
-                          </button>
+                          </GlowButton>
                         </div>
                       </>
                     )}
@@ -1479,10 +1457,14 @@ export default function ReportContent() {
             <div className="mx-auto w-full max-w-md sm:max-w-lg">
               <GlowButton
                 type="button"
+                variant="ghost"
                 className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
                 onClick={() => router.push("/")}
               >
-                🏠 홈으로 가기
+                <span className="inline-flex items-center gap-2">
+                  <SubtleButtonIcon kind="home" />
+                  홈으로 가기
+                </span>
               </GlowButton>
             </div>
           ) : null}

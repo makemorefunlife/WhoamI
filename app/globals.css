@@ -28,6 +28,15 @@
   --space-card: var(--card);
   --space-warm-1: var(--warm);
   --space-warm-2: #ffd6a5;
+  --btn-bg: #1e293b;
+  --btn-text: #e5e7eb;
+  --btn-accent: #d6b46a;
+  --btn-border: rgba(214, 180, 106, 0.42);
+  --btn-hover-bg: rgba(214, 180, 106, 0.2);
+  --btn-hover-border: rgba(214, 180, 106, 0.78);
+  --btn-shadow: 0 0 20px rgba(214, 180, 106, 0.14);
+  --btn-disabled-bg: rgba(30, 41, 59, 0.5);
+  --btn-disabled-text: rgba(229, 231, 235, 0.5);
   --background: var(--bg-1);
   --foreground: var(--text-main);
 }
@@ -204,35 +213,75 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 .glow-button {
-  background: linear-gradient(
-    135deg,
-    rgba(103, 183, 255, 0.96),
-    rgba(139, 124, 255, 0.94)
-  );
-  color: white;
-  box-shadow:
-    0 10px 32px rgba(103, 183, 255, 0.22),
-    0 0 20px rgba(139, 124, 255, 0.14);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: 1px solid var(--btn-border);
+  box-shadow: var(--btn-shadow);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    opacity 0.2s ease;
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .glow-button:hover {
   transform: translateY(-1px);
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
   box-shadow:
-    0 14px 40px rgba(103, 183, 255, 0.28),
-    0 0 28px rgba(139, 124, 255, 0.2);
+    var(--btn-shadow),
+    0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .glow-button:active {
   transform: translateY(0);
+  background: rgba(214, 180, 106, 0.24);
+  border-color: var(--btn-hover-border);
+}
+
+.glow-button-secondary {
+  background: rgba(30, 41, 59, 0.85);
+  color: var(--btn-text);
+  border: 1px solid rgba(214, 180, 106, 0.34);
+  box-shadow: var(--btn-shadow);
+}
+
+.glow-button-secondary:hover {
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
+}
+
+.glow-button-ghost {
+  border: 1px solid rgba(214, 180, 106, 0.36);
+  background: transparent;
+  color: var(--btn-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    var(--btn-shadow);
+}
+
+.glow-button-ghost:hover {
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
+}
+
+.glow-button-disabled,
+.glow-button:disabled {
+  background: var(--btn-disabled-bg);
+  color: var(--btn-disabled-text);
+  border-color: rgba(214, 180, 106, 0.2);
+  box-shadow: none;
+  transform: none;
 }
 
 .soft-outline {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(214, 180, 106, 0.4);
+  background: rgba(214, 180, 106, 0.12);
+  color: var(--btn-text);
 }
 
 .signal-line {
