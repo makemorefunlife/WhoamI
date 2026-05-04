@@ -10,7 +10,7 @@ import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
 import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
-import FreeAnalysisCardDeck from "@/components/report/FreeAnalysisCardDeck";
+import FreeResultAccordions from "@/components/report/FreeResultAccordions";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
 import {
   buildISODateFromParts,
@@ -24,23 +24,6 @@ import {
   buildSurveyOnlyPrompt,
 } from "@/lib/report/reportPromptBuilders";
 import { getPattern, normalizeYN } from "@/lib/report/surveyPatternUtils";
-
-function FreeResultAccordions({
-  bodies,
-  displayName,
-}: {
-  bodies: readonly [string, string, string, string];
-  displayName: string;
-}) {
-  return (
-    <div className="space-y-4">
-      <p className="text-center text-sm leading-relaxed text-[var(--space-text)] sm:text-[0.9375rem]">
-        설문으로 알아본 현재 {displayName}님의 모습이에요
-      </p>
-      <FreeAnalysisCardDeck paragraphs={Array.from(bodies)} />
-    </div>
-  );
-}
 
 function deepReportIntroStorageKey(reportId: string) {
   return `ahaitsme_deep_report_pre_form_intro_v1_${reportId}`;
