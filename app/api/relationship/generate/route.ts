@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromOutboundInvites,
@@ -8,6 +7,7 @@ import {
 } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { formatResultBasicForIntegratedContext } from "@/lib/relationship/formatResultBasicForIntegratedContext";
 import { hasCompletePerspectives } from "@/lib/relationship/normalizeRelationshipPerspectives";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 
@@ -107,9 +107,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabase = createClient(url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = createServiceRoleClient(url, serviceKey);
 
     let rows: RelationshipReportRow[] = [];
     let inviteRow: {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export async function POST(req: Request) {
   const allow =
@@ -33,9 +33,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const supabase = createServiceRoleClient(url, serviceKey);
 
   const { error } = await supabase
     .from("reports")

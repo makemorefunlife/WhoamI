@@ -1,5 +1,5 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -47,9 +47,7 @@ export async function GET(request: NextRequest) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (url && serviceKey) {
-        const supabase = createClient(url, serviceKey, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
+        const supabase = createServiceRoleClient(url, serviceKey);
         const { error } = await supabase
           .from("reports")
           .update({ payment_status: "paid", plan_type: "paid" })
