@@ -23,7 +23,7 @@ import {
   buildIntegratedPrompt,
   buildSurveyOnlyPrompt,
 } from "@/lib/report/reportPromptBuilders";
-import { getPattern, normalizeYN } from "@/lib/report/surveyPatternUtils";
+import { getPattern } from "@/lib/report/surveyPatternUtils";
 
 function deepReportIntroStorageKey(reportId: string) {
   return `ahaitsme_deep_report_pre_form_intro_v1_${reportId}`;
