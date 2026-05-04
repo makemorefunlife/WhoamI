@@ -11,6 +11,7 @@ import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
 import FreeResultAccordions from "@/components/report/FreeResultAccordions";
 import DeepReportIntroPanel from "@/components/report/DeepReportIntroPanel";
 import ReportBirthCaptureForm from "@/components/report/ReportBirthCaptureForm";
+import ReportViewTabSwitcher from "@/components/report/ReportViewTabSwitcher";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
 import {
   buildISODateFromParts,
@@ -110,12 +111,7 @@ export default function ReportContent() {
     return lines.length ? lines : [freeSummary.trim()];
   }, [freeSummary]);
 
-  const freeAccordionBodies = useMemo((): [
-    string,
-    string,
-    string,
-    string,
-  ] => {
+  const freeAccordionBodies = useMemo((): [string, string, string, string] => {
     const p = freeParagraphs.map((x) => x.trim()).filter(Boolean);
     const out = [...p];
     while (out.length < 4) out.push("");
@@ -126,8 +122,7 @@ export default function ReportContent() {
   const showPaidUnified = useMemo(() => {
     if (!isDbPaid || !sajuStatus.ok) return false;
     return (
-      reportStreaming ||
-      (unifiedReport !== null && unifiedReport.length > 0)
+      reportStreaming || (unifiedReport !== null && unifiedReport.length > 0)
     );
   }, [isDbPaid, sajuStatus.ok, reportStreaming, unifiedReport]);
 
@@ -288,7 +283,11 @@ export default function ReportContent() {
       const url = `${window.location.origin}/invite?token=${encodeURIComponent(token)}`;
       try {
         if (navigator.share) {
-          await navigator.share({ title: "친구 초대", text: "함께 관계 분석을 받아보자.", url });
+          await navigator.share({
+            title: "친구 초대",
+            text: "함께 관계 분석을 받아보자.",
+            url,
+          });
         } else {
           await navigator.clipboard.writeText(url);
           alert("초대 링크를 복사했어요. 친구에게 보내 주세요.");
@@ -314,142 +313,141 @@ export default function ReportContent() {
       setUnifiedReport(null);
       setReportStreaming(false);
       try {
-
         const { data: reportData } = await supabase
           .from("reports")
           .select("*")
           .eq("id", reportId)
           .maybeSingle();
 
-      setReport(reportData);
+        setReport(reportData);
 
-      if (typeof window !== "undefined" && reportId) {
-        localStorage.setItem("reportId", reportId);
-      }
-
-      const paid = reportData?.payment_status === "paid";
-
-      const { data: responseData } = await supabase
-        .from("survey_responses")
-        .select("answers")
-        .eq("report_id", reportId)
-        .maybeSingle();
-
-      let localInterpretations: Record<string, string> = {};
-      let localPatterns: any = null; 
-
-      if (responseData?.answers) {
-        const ans = responseData.answers;
-
-        const patterns: Record<string, string> = {
-          mbti: getPattern(ans.q1, ans.q2, ans.q3),
-          disc: getPattern(ans.q4, ans.q5, ans.q6),
-          enneagram: getPattern(ans.q7, ans.q8, ans.q9),
-          riasec: getPattern(ans.q10, ans.q11, ans.q12),
-          pss: getPattern(ans.q13, ans.q14, ans.q15),
-          tci: getPattern(ans.q16, ans.q17, ans.q18),
-        };
-
-        localPatterns = patterns;
-
-        for (const key of Object.keys(patterns)) {
-          const pattern = patterns[key];
-      
-          const { data } = await supabase
-            .from("pattern_base")
-            .select("interpretation")
-            .eq("domain", key)
-            .eq("pattern", pattern.trim())
-            .maybeSingle();
-      
-          localInterpretations[key] = data?.interpretation ?? "해석 없음";
+        if (typeof window !== "undefined" && reportId) {
+          localStorage.setItem("reportId", reportId);
         }
-      
-        setInterpretations(localInterpretations);
-      }
 
-      // 🔥 사주 구조 데이터
-      let localSajuData: any = null;
-      let sajuOk = false;
+        const paid = reportData?.payment_status === "paid";
 
-      if (!paid) {
-        setSajuStatus({ attempted: false, ok: false });
-      } else if (!hasCompleteBirthInfo(reportData)) {
-        setSajuStatus({ attempted: false, ok: false });
-      } else {
-        setSajuStatus({ attempted: true, ok: false });
-        const sr = await fetch("/api/saju", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            birthDate: reportData.birth_date,
-            birthTime: reportData.birth_time,
-            birthPlace: reportData.birth_place ?? undefined,
-            reportId,
-          }),
-        });
+        const { data: responseData } = await supabase
+          .from("survey_responses")
+          .select("answers")
+          .eq("report_id", reportId)
+          .maybeSingle();
 
-        if (sr.ok) {
-          const j = await sr.json();
-          localSajuData = j;
-          sajuOk = true;
-          setSajuStatus({ attempted: true, ok: true });
+        let localInterpretations: Record<string, string> = {};
+        let localPatterns: any = null;
+
+        if (responseData?.answers) {
+          const ans = responseData.answers;
+
+          const patterns: Record<string, string> = {
+            mbti: getPattern(ans.q1, ans.q2, ans.q3),
+            disc: getPattern(ans.q4, ans.q5, ans.q6),
+            enneagram: getPattern(ans.q7, ans.q8, ans.q9),
+            riasec: getPattern(ans.q10, ans.q11, ans.q12),
+            pss: getPattern(ans.q13, ans.q14, ans.q15),
+            tci: getPattern(ans.q16, ans.q17, ans.q18),
+          };
+
+          localPatterns = patterns;
+
+          for (const key of Object.keys(patterns)) {
+            const pattern = patterns[key];
+
+            const { data } = await supabase
+              .from("pattern_base")
+              .select("interpretation")
+              .eq("domain", key)
+              .eq("pattern", pattern.trim())
+              .maybeSingle();
+
+            localInterpretations[key] = data?.interpretation ?? "해석 없음";
+          }
+
+          setInterpretations(localInterpretations);
+        }
+
+        // 🔥 사주 구조 데이터
+        let localSajuData: any = null;
+        let sajuOk = false;
+
+        if (!paid) {
+          setSajuStatus({ attempted: false, ok: false });
+        } else if (!hasCompleteBirthInfo(reportData)) {
+          setSajuStatus({ attempted: false, ok: false });
         } else {
           setSajuStatus({ attempted: true, ok: false });
-        }
-      }
-
-      // 🔥 점성학 API 호출 (추가!)
-      let localAstrologyText: string | null = null;
-      if (paid && hasCompleteBirthInfo(reportData)) {
-        try {
-          const birthDateObj = new Date(reportData.birth_date);
-          const ar = await fetch("/api/astrology", {
+          const sr = await fetch("/api/saju", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              year: birthDateObj.getFullYear(),
-              month: birthDateObj.getMonth() + 1,
-              day: birthDateObj.getDate(),
-              hour: reportData.birth_time
-                ? parseInt(reportData.birth_time.split(":")[0])
-                : 12,
-              minute: reportData.birth_time
-                ? parseInt(reportData.birth_time.split(":")[1])
-                : 0,
-              latitude: 37.5665, // TODO: 실제 위도로 대체
-              longitude: 126.978, // TODO: 실제 경도로 대체
-              timezone: 9,
+              birthDate: reportData.birth_date,
+              birthTime: reportData.birth_time,
+              birthPlace: reportData.birth_place ?? undefined,
+              reportId,
             }),
           });
-          if (ar.ok) {
-            const astroData = await ar.json();
-            const interp =
-              typeof astroData.interpretation === "string"
-                ? astroData.interpretation.trim()
-                : "";
-            if (interp) {
-              localAstrologyText = interp;
-            } else {
-              const raw = astroData.raw as
-                | { sun?: string; moon?: string; rising?: string }
-                | undefined;
-              const sun = raw?.sun ?? astroData.sun;
-              const moon = raw?.moon ?? astroData.moon;
-              const rising = raw?.rising ?? astroData.rising;
-              if (sun && moon && rising) {
-                localAstrologyText = buildAstrologyContextForLlm({
-                  sun,
-                  moon,
-                  rising,
-                });
+
+          if (sr.ok) {
+            const j = await sr.json();
+            localSajuData = j;
+            sajuOk = true;
+            setSajuStatus({ attempted: true, ok: true });
+          } else {
+            setSajuStatus({ attempted: true, ok: false });
+          }
+        }
+
+        // 🔥 점성학 API 호출 (추가!)
+        let localAstrologyText: string | null = null;
+        if (paid && hasCompleteBirthInfo(reportData)) {
+          try {
+            const birthDateObj = new Date(reportData.birth_date);
+            const ar = await fetch("/api/astrology", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                year: birthDateObj.getFullYear(),
+                month: birthDateObj.getMonth() + 1,
+                day: birthDateObj.getDate(),
+                hour: reportData.birth_time
+                  ? parseInt(reportData.birth_time.split(":")[0])
+                  : 12,
+                minute: reportData.birth_time
+                  ? parseInt(reportData.birth_time.split(":")[1])
+                  : 0,
+                latitude: 37.5665, // TODO: 실제 위도로 대체
+                longitude: 126.978, // TODO: 실제 경도로 대체
+                timezone: 9,
+              }),
+            });
+            if (ar.ok) {
+              const astroData = await ar.json();
+              const interp =
+                typeof astroData.interpretation === "string"
+                  ? astroData.interpretation.trim()
+                  : "";
+              if (interp) {
+                localAstrologyText = interp;
+              } else {
+                const raw = astroData.raw as
+                  | { sun?: string; moon?: string; rising?: string }
+                  | undefined;
+                const sun = raw?.sun ?? astroData.sun;
+                const moon = raw?.moon ?? astroData.moon;
+                const rising = raw?.rising ?? astroData.rising;
+                if (sun && moon && rising) {
+                  localAstrologyText = buildAstrologyContextForLlm({
+                    sun,
+                    moon,
+                    rising,
+                  });
+                }
               }
             }
+          } catch (e) {
+            console.error("점성학 API 실패:", e);
           }
-        } catch (e) {
-          console.error("점성학 API 실패:", e);
         }
-      }
 
         // 🔥 관계/보조 텍스트
         let localRelationship: string | null = null;
@@ -473,101 +471,102 @@ export default function ReportContent() {
         // 🔥 LLM 호출
         try {
           if (!paid) {
-          const promptData = buildSurveyOnlyPrompt(localInterpretations);
-          const res = await fetch("/api/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "free",
-              userInput: promptData,
-            }),
-          });
-          const data = await res.json();
-          setFreeSummary(data.free ?? null);
-          setPaidSummary(data.paid ?? null);
-          setUnifiedReport(null);
-          } else {
-          try {
-            const freePromptData = buildSurveyOnlyPrompt(localInterpretations);
-            const freeRes = await fetch("/api/llm", {
+            const promptData = buildSurveyOnlyPrompt(localInterpretations);
+            const res = await fetch("/api/llm", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 mode: "free",
-                userInput: freePromptData,
+                userInput: promptData,
               }),
             });
-            const freeData = await freeRes.json();
-            setFreeSummary(freeData.free ?? null);
-          } catch {
-            setFreeSummary(null);
-          }
-
-          const detailedRes = await fetch("/api/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "detailed_survey",
-              patterns: localPatterns,
-            }),
-          });
-          const detailedData = await detailedRes.json();
-
-          const combinedAstrology = [localAstrologyText, localRelationship]
-            .filter(Boolean)
-            .join("\n\n");
-
-          if (hasCompleteBirthInfo(reportData) && sajuOk) {
-            setLoading(false);
-            setReportStreaming(true);
-            setUnifiedReport("");
+            const data = await res.json();
+            setFreeSummary(data.free ?? null);
+            setPaidSummary(data.paid ?? null);
+            setUnifiedReport(null);
+          } else {
             try {
-              const integratedRes = await fetch("/api/llm", {
+              const freePromptData =
+                buildSurveyOnlyPrompt(localInterpretations);
+              const freeRes = await fetch("/api/llm", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  mode: "integrated",
-                  detailedSurvey: detailedData.report,
-                  sajuData: localSajuData ?? null,
-                  astrologyText: combinedAstrology || null,
-                  stream: true,
+                  mode: "free",
+                  userInput: freePromptData,
                 }),
               });
-
-              if (!integratedRes.ok) {
-                const errJson = await integratedRes.json().catch(() => ({}));
-                setUnifiedReport(
-                  `통합 리포트를 만들지 못했어요. ${String((errJson as { error?: string }).error ?? "잠시 후 다시 열어보세요.")}`,
-                );
-              } else {
-                const ct = integratedRes.headers.get("content-type") ?? "";
-                if (ct.includes("text/plain") && integratedRes.body) {
-                  const reader = integratedRes.body.getReader();
-                  const decoder = new TextDecoder();
-                  let acc = "";
-                  while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    acc += decoder.decode(value, { stream: true });
-                    setUnifiedReport(acc);
-                  }
-                  setUnifiedReport(acc);
-                } else {
-                  const integratedData = await integratedRes.json();
-                  setUnifiedReport(integratedData.report ?? "");
-                }
-              }
-            } catch (streamErr) {
-              console.error(streamErr);
-              setUnifiedReport(
-                "통합 리포트를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
-              );
-            } finally {
-              setReportStreaming(false);
+              const freeData = await freeRes.json();
+              setFreeSummary(freeData.free ?? null);
+            } catch {
+              setFreeSummary(null);
             }
-          } else {
-            setUnifiedReport(null);
-          }
+
+            const detailedRes = await fetch("/api/llm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode: "detailed_survey",
+                patterns: localPatterns,
+              }),
+            });
+            const detailedData = await detailedRes.json();
+
+            const combinedAstrology = [localAstrologyText, localRelationship]
+              .filter(Boolean)
+              .join("\n\n");
+
+            if (hasCompleteBirthInfo(reportData) && sajuOk) {
+              setLoading(false);
+              setReportStreaming(true);
+              setUnifiedReport("");
+              try {
+                const integratedRes = await fetch("/api/llm", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    mode: "integrated",
+                    detailedSurvey: detailedData.report,
+                    sajuData: localSajuData ?? null,
+                    astrologyText: combinedAstrology || null,
+                    stream: true,
+                  }),
+                });
+
+                if (!integratedRes.ok) {
+                  const errJson = await integratedRes.json().catch(() => ({}));
+                  setUnifiedReport(
+                    `통합 리포트를 만들지 못했어요. ${String((errJson as { error?: string }).error ?? "잠시 후 다시 열어보세요.")}`,
+                  );
+                } else {
+                  const ct = integratedRes.headers.get("content-type") ?? "";
+                  if (ct.includes("text/plain") && integratedRes.body) {
+                    const reader = integratedRes.body.getReader();
+                    const decoder = new TextDecoder();
+                    let acc = "";
+                    while (true) {
+                      const { done, value } = await reader.read();
+                      if (done) break;
+                      acc += decoder.decode(value, { stream: true });
+                      setUnifiedReport(acc);
+                    }
+                    setUnifiedReport(acc);
+                  } else {
+                    const integratedData = await integratedRes.json();
+                    setUnifiedReport(integratedData.report ?? "");
+                  }
+                }
+              } catch (streamErr) {
+                console.error(streamErr);
+                setUnifiedReport(
+                  "통합 리포트를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
+                );
+              } finally {
+                setReportStreaming(false);
+              }
+            } else {
+              setUnifiedReport(null);
+            }
             setPaidSummary(null);
           }
         } catch (e) {
@@ -592,9 +591,7 @@ export default function ReportContent() {
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
           <SurveyAnalyzingJourney
             active
-            mode={
-              report?.payment_status === "paid" ? "landing" : "flight"
-            }
+            mode={report?.payment_status === "paid" ? "landing" : "flight"}
           />
         </div>
       </SpaceBackground>
@@ -702,52 +699,23 @@ export default function ReportContent() {
               ) : (
                 <>
                   {isDbPaid && showPaidUnified && (
-                    <div
-                      className="mx-auto inline-flex w-full max-w-md rounded-full border border-white/15 bg-[#0d121f] p-0.5"
-                      role="tablist"
-                      aria-label="분석 보기"
-                    >
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={resultViewTab === "basic"}
-                        onClick={() => {
-                          setResultViewTab("basic");
-                          void router.replace(
-                            `/result?id=${encodeURIComponent(reportId)}&view=basic`,
-                            { scroll: false },
-                          );
-                        }}
-                        className={[
-                          "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
-                          resultViewTab === "basic"
-                            ? "bg-gradient-to-r from-[#F0D797] via-[#E3C47B] to-[#D6B46A] text-[#1b2230] ring-1 ring-[#F0D797]/35 shadow-[0_10px_24px_rgba(214,180,106,0.34)]"
-                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
-                        ].join(" ")}
-                      >
-                        기본 분석
-                      </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={resultViewTab === "premium"}
-                        onClick={() => {
-                          setResultViewTab("premium");
-                          void router.replace(
-                            `/result?id=${encodeURIComponent(reportId)}&view=premium`,
-                            { scroll: false },
-                          );
-                        }}
-                        className={[
-                          "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
-                          resultViewTab === "premium"
-                            ? "bg-gradient-to-r from-[#F3DB9E] via-[#E7C984] to-[#D6B46A] text-[#1b2230] ring-1 ring-[#F3DB9E]/35 shadow-[0_10px_24px_rgba(214,180,106,0.38)]"
-                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
-                        ].join(" ")}
-                      >
-                        심화 분석
-                      </button>
-                    </div>
+                    <ReportViewTabSwitcher
+                      resultViewTab={resultViewTab}
+                      onSelectBasic={() => {
+                        setResultViewTab("basic");
+                        void router.replace(
+                          `/result?id=${encodeURIComponent(reportId)}&view=basic`,
+                          { scroll: false },
+                        );
+                      }}
+                      onSelectPremium={() => {
+                        setResultViewTab("premium");
+                        void router.replace(
+                          `/result?id=${encodeURIComponent(reportId)}&view=premium`,
+                          { scroll: false },
+                        );
+                      }}
+                    />
                   )}
 
                   {isDbPaid &&
@@ -759,9 +727,9 @@ export default function ReportContent() {
                         </p>
                         {!birthInfoComplete && (
                           <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                            생년월일, 시간, 장소를 입력하면 심화 리포트를 만들 수
-                            있어요. 아래 &apos;심화 분석하기&apos;에서 입력할 수
-                            있어요.
+                            생년월일, 시간, 장소를 입력하면 심화 리포트를 만들
+                            수 있어요. 아래 &apos;심화 분석하기&apos;에서 입력할
+                            수 있어요.
                           </p>
                         )}
                         {birthInfoComplete &&
@@ -808,7 +776,8 @@ export default function ReportContent() {
                             )}
                             {showPaidUnified && (
                               <p className="rounded-xl border border-[#D6B46A]/25 bg-[#D6B46A]/[0.08] px-3 py-2 text-center text-xs leading-relaxed text-[#F0D797]">
-                                심화 분석은 상단의 ‘심화 분석’ 탭에서 이어서 볼 수 있어요.
+                                심화 분석은 상단의 ‘심화 분석’ 탭에서 이어서 볼
+                                수 있어요.
                               </p>
                             )}
                             <GlowButton
@@ -816,10 +785,7 @@ export default function ReportContent() {
                               variant="secondary"
                               className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
                               onClick={() => {
-                                if (
-                                  typeof window !== "undefined" &&
-                                  reportId
-                                ) {
+                                if (typeof window !== "undefined" && reportId) {
                                   localStorage.setItem("reportId", reportId);
                                 }
                                 router.push("/survey?redo=1");
@@ -880,7 +846,8 @@ export default function ReportContent() {
                               통합 분석 리포트
                             </p>
                             <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
-                              설문과 추가 데이터 분석을 한 흐름으로 정리했습니다.
+                              설문과 추가 데이터 분석을 한 흐름으로
+                              정리했습니다.
                             </p>
                           </div>
 
@@ -930,7 +897,11 @@ export default function ReportContent() {
                           </GlowButton>
                           <GlowButton
                             type="button"
-                            variant={inviteUsed || inviteBusy ? "disabled" : "secondary"}
+                            variant={
+                              inviteUsed || inviteBusy
+                                ? "disabled"
+                                : "secondary"
+                            }
                             className="w-full !min-h-[48px] py-3 text-sm"
                             disabled={inviteUsed || inviteBusy}
                             onClick={() => void handleInviteFriend()}
