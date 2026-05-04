@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { calculateSaju } from "@fullstackfamily/manseryeok";
 import { createClient } from "@supabase/supabase-js";
+import { branchMap, getBranch, getStem, stemMap } from "@/lib/saju/mapping";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -207,21 +208,6 @@ export async function POST(req: Request) {
     const [hour, minute] = birthTime.split(":").map(Number);
 
     const saju: any = calculateSaju(year, month, day, hour, minute);
-
-    // 헬퍼 함수
-    const getStem = (pillar: any) => pillar?.charAt(0) || "";
-    const getBranch = (pillar: any) => pillar?.charAt(1) || "";
-
-    // 🔥 한글 → 영문 코드 매핑 (이게 핵심!)
-    const stemMap: Record<string, string> = {
-      '갑': 'gap', '을': 'eul', '병': 'byeong', '정': 'jeong', '무': 'mu',
-      '기': 'gi', '경': 'gyeong', '신': 'sin', '임': 'im', '계': 'gye'
-    };
-
-    const branchMap: Record<string, string> = {
-      '자': 'ja', '축': 'chuk', '인': 'in', '묘': 'myo', '진': 'jin', '사': 'sa',
-      '오': 'o', '미': 'mi', '신': 'sin', '유': 'yu', '술': 'sul', '해': 'hae'
-    };
 
     // 원본 값
     const rawDayStem = getStem(saju.dayPillar);
