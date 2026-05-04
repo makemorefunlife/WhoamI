@@ -52,7 +52,7 @@ export default function HomeContent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = localStorage.getItem("surveyNickname");
-    if (saved) setNickname(saved);
+    if (saved) queueMicrotask(() => setNickname(saved));
   }, []);
 
   useEffect(() => {
@@ -70,7 +70,9 @@ export default function HomeContent() {
   }, [authModalOpen]);
 
   useEffect(() => {
-    if (isSignedIn && authModalOpen) setAuthModalOpen(false);
+    if (isSignedIn && authModalOpen) {
+      queueMicrotask(() => setAuthModalOpen(false));
+    }
   }, [isSignedIn, authModalOpen]);
 
   useEffect(() => {
@@ -78,17 +80,21 @@ export default function HomeContent() {
     let cancelled = false;
     const reportId = typeof window !== "undefined" ? localStorage.getItem("reportId")?.trim() ?? "" : "";
     if (!reportId) {
-      setResume({
-        loading: false,
-        reportId: null,
-        hasReport: false,
-        surveyCompleted: false,
-        name: null,
+      queueMicrotask(() => {
+        setResume({
+          loading: false,
+          reportId: null,
+          hasReport: false,
+          surveyCompleted: false,
+          name: null,
+        });
       });
       return;
     }
 
-    setResume((s) => ({ ...s, loading: true }));
+    queueMicrotask(() => {
+      setResume((s) => ({ ...s, loading: true }));
+    });
     void (async () => {
       try {
         const res = await fetch(
@@ -142,7 +148,9 @@ export default function HomeContent() {
     if (!isLoaded || !isSignedIn) return;
     const rid = resume.reportId?.trim();
     if (!rid || !resume.surveyCompleted) {
-      setRelCounts({ pending: 0, completed: 0 });
+      queueMicrotask(() => {
+        setRelCounts({ pending: 0, completed: 0 });
+      });
       return;
     }
     let cancelled = false;
