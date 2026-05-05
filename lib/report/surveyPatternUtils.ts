@@ -1,4 +1,4 @@
-export function normalizeYN(value: any): string {
+export function normalizeYN(value: unknown): string {
   const v = String(value ?? "")
     .trim()
     .toUpperCase();
@@ -7,6 +7,6 @@ export function normalizeYN(value: any): string {
   return "";
 }
 
-export function getPattern(a: any, b: any, c: any): string {
+export function getPattern(a: unknown, b: unknown, c: unknown): string {
   return normalizeYN(a) + normalizeYN(b) + normalizeYN(c);
 }

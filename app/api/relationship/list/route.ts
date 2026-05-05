@@ -92,7 +92,7 @@ export async function GET(req: Request) {
     rows.sort((a, b) => b.id.localeCompare(a.id));
 
     const rrIds = rows.map((r) => r.id);
-    let inviteByRrId = new Map<
+    const inviteByRrId = new Map<
       string,
       { from_report_id: string; accepted_report_id: string | null }
     >();

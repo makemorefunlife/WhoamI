@@ -25,7 +25,23 @@ export function buildIntegratedPrompt({
   astrologyText,
 }: {
   interpretations: Record<string, string>;
-  sajuData: any | null;
+  sajuData: {
+    saju?: {
+      yearPillar?: string;
+      monthPillar?: string;
+      dayPillar?: string;
+      hourPillar?: string;
+    };
+    dayStemData?: { kor_name?: string; metaphor_ko?: string };
+    dayBranchData?: { kor_name?: string; meaning_ko?: string };
+    hiddenStemsData?: Array<{ stem_code?: string; meaning_ko?: string }>;
+    tenGods?: Array<{
+      pillar?: string;
+      godData?: { kor_name?: string; meaning_ko?: string };
+    }>;
+    twelveStageData?: { kor_name?: string; meaning_ko?: string };
+    relations?: Array<{ type?: string; interpretation?: string }>;
+  } | null;
   astrologyText?: string | null;
 }) {
   const personality = Object.values(interpretations).filter(Boolean).join(", ");
@@ -46,7 +62,7 @@ export function buildIntegratedPrompt({
   const hiddenBlock =
     Array.isArray(s?.hiddenStemsData) && s.hiddenStemsData.length > 0
       ? s.hiddenStemsData
-          .map((h: any) =>
+          .map((h: { stem_code?: string; meaning_ko?: string }) =>
             `${h.stem_code ?? ""} — ${h.meaning_ko ?? ""}`.trim(),
           )
           .join("\n")
@@ -56,7 +72,10 @@ export function buildIntegratedPrompt({
     Array.isArray(s?.tenGods) && s.tenGods.length > 0
       ? s.tenGods
           .map(
-            (t: any) =>
+            (t: {
+              pillar?: string;
+              godData?: { kor_name?: string; meaning_ko?: string };
+            }) =>
               `${t.pillar ?? ""}: ${t.godData?.kor_name ?? ""} (${t.godData?.meaning_ko ?? ""})`,
           )
           .join("\n")
@@ -69,7 +88,9 @@ export function buildIntegratedPrompt({
   const relationsBlock =
     Array.isArray(s?.relations) && s.relations.length > 0
       ? s.relations
-          .map((r: any) => `${r.type ?? ""}: ${r.interpretation ?? ""}`)
+          .map((r: { type?: string; interpretation?: string }) =>
+            `${r.type ?? ""}: ${r.interpretation ?? ""}`,
+          )
           .join("\n")
       : "(없음)";
 

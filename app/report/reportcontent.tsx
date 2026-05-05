@@ -52,7 +52,7 @@ export default function ReportContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<Record<string, unknown> | null>(null);
   const [interpretations, setInterpretations] = useState<
     Record<string, string>
   >({});
@@ -333,8 +333,8 @@ export default function ReportContent() {
           .eq("report_id", reportId)
           .maybeSingle();
 
-        let localInterpretations: Record<string, string> = {};
-        let localPatterns: any = null;
+        const localInterpretations: Record<string, string> = {};
+        let localPatterns: Record<string, string> | null = null;
 
         if (responseData?.answers) {
           const ans = responseData.answers;
@@ -367,7 +367,8 @@ export default function ReportContent() {
         }
 
         // 🔥 사주 구조 데이터
-        let localSajuData: any = null;
+        let localSajuData: Parameters<typeof buildIntegratedPrompt>[0]["sajuData"] =
+          null;
         let sajuOk = false;
 
         if (!paid) {

@@ -37,6 +37,13 @@ type TwelveStageData = {
   meaning_ko: string;
 };
 
+type SajuResult = {
+  yearPillar: string;
+  monthPillar: string;
+  dayPillar: string;
+  hourPillar: string;
+};
+
 async function analyzeRelations(
   pillars: { name: string; branch: string }[],
 ): Promise<{ type: string; name: string; interpretation: string; priority: number }[]> {
@@ -51,7 +58,7 @@ async function analyzeRelations(
       if (processed.has(pairKey)) continue;
       processed.add(pairKey);
 
-      let { data: combine } = await supabase
+      const { data: combine } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_six_combine")
@@ -64,7 +71,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: clash } = await supabase
+      const { data: clash } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_clash")
@@ -77,7 +84,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: punishment } = await supabase
+      const { data: punishment } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_punishment")
@@ -90,7 +97,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: breach } = await supabase
+      const { data: breach } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_break")
@@ -103,7 +110,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: harm } = await supabase
+      const { data: harm } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_harm")
@@ -138,7 +145,7 @@ export async function POST(req: Request) {
     const [year, month, day] = birthDate.split("-").map(Number);
     const [hour, minute] = birthTime.split(":").map(Number);
 
-    const saju: any = calculateSaju(year, month, day, hour, minute);
+    const saju = calculateSaju(year, month, day, hour, minute) as SajuResult;
 
     // 원본 값
     const rawDayStem = getStem(saju.dayPillar);

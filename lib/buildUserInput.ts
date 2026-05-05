@@ -1,5 +1,12 @@
 // lib/buildUserInput.ts
-export function buildUserInput(data: any) {
+type BuildUserInputPayload = {
+  survey?: { behaviors?: unknown };
+  saju?: { traits?: unknown };
+  relation?: { patterns?: unknown };
+  astrology?: { sun?: unknown; moon?: unknown; rising?: unknown };
+};
+
+export function buildUserInput(data: BuildUserInputPayload) {
   const survey = data?.survey || {};
   const saju = data?.saju || {};
   const relation = data?.relation || {};

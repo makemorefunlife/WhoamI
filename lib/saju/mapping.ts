@@ -26,5 +26,7 @@ export const branchMap: Record<string, string> = {
   해: "hae",
 };
 
-export const getStem = (pillar: any) => pillar?.charAt(0) || "";
-export const getBranch = (pillar: any) => pillar?.charAt(1) || "";
+export const getStem = (pillar: string | null | undefined) =>
+  pillar?.charAt(0) || "";
+export const getBranch = (pillar: string | null | undefined) =>
+  pillar?.charAt(1) || "";

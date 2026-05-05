@@ -1,4 +1,4 @@
-export function generateFreeReport(survey: any) {
+export function generateFreeReport(survey: { q2?: unknown; q6?: unknown }) {
   let nowYouAre = "";
 
   if (survey.q6 === "매일 힘들었어") {
@@ -24,7 +24,7 @@ export function generateFreeReport(survey: any) {
       "다른 관점에서는 아직 드러나지 않은 가능성이 더 있을 수도 있어.";
   }
 
-  let soWhat = "이번 주에는 딱 하나만 가볍게 바꿔보는 건 어때?";
+  const soWhat = "이번 주에는 딱 하나만 가볍게 바꿔보는 건 어때?";
 
   return {
     nowYouAre,
