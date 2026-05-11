@@ -261,6 +261,22 @@ export default function ReportContent() {
     }
   }
 
+  const openPersonalDeepAnalysis = useCallback(() => {
+    if (readDeepReportIntroSeen(reportId)) {
+      setDeepFlow("form");
+    } else {
+      setDeepFlow("intro");
+    }
+  }, [reportId]);
+
+  const goPremiumResultTab = useCallback(() => {
+    setResultViewTab("premium");
+    void router.replace(
+      `/result?id=${encodeURIComponent(reportId)}&view=premium`,
+      { scroll: false },
+    );
+  }, [reportId, router]);
+
   async function handleInviteFriend() {
     if (!reportId || inviteUsed || inviteBusy) return;
     setInviteBusy(true);
@@ -761,13 +777,7 @@ export default function ReportContent() {
                                 type="button"
                                 variant="primary"
                                 className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
-                                onClick={() => {
-                                  if (readDeepReportIntroSeen(reportId)) {
-                                    setDeepFlow("form");
-                                  } else {
-                                    setDeepFlow("intro");
-                                  }
-                                }}
+                                onClick={openPersonalDeepAnalysis}
                               >
                                 <span className="inline-flex items-center gap-2">
                                   <SubtleButtonIcon kind="search" />
@@ -808,6 +818,31 @@ export default function ReportContent() {
                                 홈으로 가기
                               </span>
                             </GlowButton>
+                            {!showPaidUnified ? (
+                              <GlowButton
+                                type="button"
+                                variant="secondary"
+                                className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                                onClick={openPersonalDeepAnalysis}
+                              >
+                                <span className="inline-flex items-center gap-2">
+                                  <SubtleButtonIcon kind="search" />
+                                  개인 심화 분석하기
+                                </span>
+                              </GlowButton>
+                            ) : (
+                              <GlowButton
+                                type="button"
+                                variant="secondary"
+                                className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
+                                onClick={goPremiumResultTab}
+                              >
+                                <span className="inline-flex items-center gap-2">
+                                  <SubtleButtonIcon kind="search" />
+                                  개인 심화 분석하기
+                                </span>
+                              </GlowButton>
+                            )}
                             <p className="text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
                               <button
                                 type="button"

@@ -28,7 +28,7 @@ function homeTwinkleU01(seed: number, salt: number) {
 export default function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, userId } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [nickname, setNickname] = useState("");
   const [creatingReport, setCreatingReport] = useState(false);
@@ -78,24 +78,45 @@ export default function HomeContent() {
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     let cancelled = false;
-    const reportId = typeof window !== "undefined" ? localStorage.getItem("reportId")?.trim() ?? "" : "";
-    if (!reportId) {
-      queueMicrotask(() => {
-        setResume({
-          loading: false,
-          reportId: null,
-          hasReport: false,
-          surveyCompleted: false,
-          name: null,
-        });
-      });
-      return;
-    }
-
     queueMicrotask(() => {
       setResume((s) => ({ ...s, loading: true }));
     });
     void (async () => {
+      let reportId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("reportId")?.trim() ?? ""
+          : "";
+
+      if (!reportId && userId) {
+        const { data: fallbackRows, error: fallbackErr } = await supabase
+          .from("reports")
+          .select("id")
+          .eq("clerk_user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (!fallbackErr) {
+          const restoredId = fallbackRows?.[0]?.id;
+          if (restoredId) {
+            reportId = restoredId;
+            localStorage.setItem("reportId", restoredId);
+          }
+        }
+      }
+
+      if (!reportId) {
+        if (!cancelled) {
+          setResume({
+            loading: false,
+            reportId: null,
+            hasReport: false,
+            surveyCompleted: false,
+            name: null,
+          });
+        }
+        return;
+      }
+
       try {
         const res = await fetch(
           `/api/report/session-status?reportId=${encodeURIComponent(reportId)}`,
@@ -142,7 +163,7 @@ export default function HomeContent() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, userId]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
@@ -186,6 +207,7 @@ export default function HomeContent() {
         .insert([
           {
             name: nameTrimmed,
+            clerk_user_id: userId,
             birth_date: null,
             birth_time: null,
             birth_place: null,
@@ -245,7 +267,7 @@ export default function HomeContent() {
         }
       }, 1400);
     },
-    [router],
+    [router, userId],
   );
 
   const onNicknameSubmit = useCallback(() => {
