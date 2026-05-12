@@ -7,12 +7,12 @@ import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
-import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
 import FreeResultAccordions from "@/components/report/FreeResultAccordions";
 import DeepReportIntroPanel from "@/components/report/DeepReportIntroPanel";
 import ReportBirthCaptureForm from "@/components/report/ReportBirthCaptureForm";
 import ReportViewTabSwitcher from "@/components/report/ReportViewTabSwitcher";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
+import AdvancedExplorationReport from "@/components/report/AdvancedExplorationReport";
 import {
   buildISODateFromParts,
   formatTimeInput,
@@ -125,6 +125,8 @@ export default function ReportContent() {
       reportStreaming || (unifiedReport !== null && unifiedReport.length > 0)
     );
   }, [isDbPaid, sajuStatus.ok, reportStreaming, unifiedReport]);
+  const isPremiumHeroActive =
+    isDbPaid && showPaidUnified && resultViewTab === "premium" && !deepFlow;
 
   const birthInfoComplete = useMemo(
     () => hasCompleteBirthInfo(report),
@@ -606,10 +608,7 @@ export default function ReportContent() {
     return (
       <SpaceBackground>
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
-          <SurveyAnalyzingJourney
-            active
-            mode={report?.payment_status === "paid" ? "landing" : "flight"}
-          />
+          <SurveyAnalyzingJourney active mode="landing" />
         </div>
       </SpaceBackground>
     );
@@ -636,7 +635,8 @@ export default function ReportContent() {
     <SpaceBackground>
       <div className="relative z-10 min-h-screen px-4 py-10 pb-28 sm:px-6">
         <div className="mx-auto max-w-md space-y-8 sm:max-w-2xl">
-          <header className="space-y-3 text-center">
+          {!isPremiumHeroActive && (
+            <header className="space-y-3 text-center">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--space-sub)]">
               Exploration log
             </p>
@@ -648,14 +648,29 @@ export default function ReportContent() {
                 ? "심층 통합 리포트가 준비되었습니다."
                 : "분석 일부가 도출되었습니다."}
             </p>
-          </header>
+            </header>
+          )}
 
           {(freeSummary ||
             paidSummary ||
             showPaidUnified ||
             inviteUsed ||
             (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
-            deepFlow) && (
+            deepFlow) &&
+            isPremiumHeroActive && (
+              <AdvancedExplorationReport
+                fallbackName={displayName}
+                reportText={unifiedReport ?? ""}
+              />
+            )}
+
+          {(freeSummary ||
+            paidSummary ||
+            showPaidUnified ||
+            inviteUsed ||
+            (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
+            deepFlow) &&
+            !isPremiumHeroActive && (
             <GlassCard className="space-y-6">
               {deepFlow === "intro" ? (
                 <DeepReportIntroPanel
@@ -871,94 +886,7 @@ export default function ReportContent() {
 
                   {isDbPaid &&
                     showPaidUnified &&
-                    resultViewTab === "premium" && (
-                      <>
-                        <div className="space-y-5">
-                          <div className="text-center">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#8eb8ff]/90">
-                              Premium
-                            </p>
-                            <p className="mt-2 text-lg font-semibold text-[#F0D797] sm:text-xl">
-                              통합 분석 리포트
-                            </p>
-                            <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
-                              설문과 추가 데이터 분석을 한 흐름으로
-                              정리했습니다.
-                            </p>
-                          </div>
-
-                          <div
-                            className={[
-                              "rounded-2xl border border-[var(--space-border)]/80 bg-gradient-to-b from-[var(--space-card)]/55 to-[#0a0f1a]/35 p-4 shadow-[0_0_60px_rgba(103,183,255,0.06)] sm:p-6 md:p-8",
-                              reportStreaming ? "ring-1 ring-[#67B7FF]/25" : "",
-                            ].join(" ")}
-                          >
-                            {reportStreaming && (
-                              <p className="mb-4 flex items-center gap-2 text-xs text-[#8eb8ff]/90">
-                                <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#67B7FF]" />
-                                리포트를 이어서 작성하는 중이에요…
-                              </p>
-                            )}
-                            {unifiedReport !== null &&
-                            unifiedReport.length > 0 ? (
-                              <UnifiedReportMarkdown content={unifiedReport} />
-                            ) : reportStreaming ? (
-                              <p className="text-sm text-[var(--space-text-muted)]">
-                                곧 본문이 나타납니다.
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        <div className="space-y-3 border-t border-[var(--space-border)] pt-6">
-                          <GlowButton
-                            type="button"
-                            variant="secondary"
-                            className="w-full !min-h-[48px] py-3 text-sm"
-                            onClick={() => void handleShare()}
-                          >
-                            리포트 공유
-                          </GlowButton>
-                          <GlowButton
-                            type="button"
-                            variant="secondary"
-                            className="w-full !min-h-[48px] py-3 text-sm"
-                            onClick={() =>
-                              router.push(
-                                `/relationships?myReportId=${encodeURIComponent(reportId)}`,
-                              )
-                            }
-                          >
-                            관계 탐사실
-                          </GlowButton>
-                          <GlowButton
-                            type="button"
-                            variant={
-                              inviteUsed || inviteBusy
-                                ? "disabled"
-                                : "secondary"
-                            }
-                            className="w-full !min-h-[48px] py-3 text-sm"
-                            disabled={inviteUsed || inviteBusy}
-                            onClick={() => void handleInviteFriend()}
-                          >
-                            {inviteUsed
-                              ? "초대 링크 (사용됨)"
-                              : inviteBusy
-                                ? "준비 중…"
-                                : "친구 초대 링크"}
-                          </GlowButton>
-                          <GlowButton
-                            type="button"
-                            variant="ghost"
-                            onClick={() => router.push("/")}
-                            className="w-full !min-h-[42px] text-sm font-medium"
-                          >
-                            나가기
-                          </GlowButton>
-                        </div>
-                      </>
-                    )}
+                    resultViewTab === "premium" && null}
                 </>
               )}
             </GlassCard>
