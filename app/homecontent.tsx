@@ -334,12 +334,12 @@ export default function HomeContent() {
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
       </div>
 
-      {/* 메인 콘텐츠 — 히어로 높이 줄여 상단에 밀착 */}
-      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-col items-center px-5 pb-10 pt-10 text-center sm:pb-12 sm:pt-12">
+      {/* 메인 콘텐츠 */}
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-12 pt-10 text-center sm:pt-16">
         {/* 제목 — 손글씨 + 네온 글로우 + 금색 궤도 장식 */}
-        <div className="relative mx-auto mb-4 w-full max-w-[min(100%,22rem)] animate-fade-in px-2 sm:mb-5 sm:max-w-sm">
+        <div className="relative mx-auto mb-6 w-full max-w-[min(100%,26rem)] animate-fade-in px-2 sm:max-w-md">
           <svg
-            className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[100%] max-w-none -translate-x-1/2 -translate-y-[48%] select-none sm:w-[98%]"
+            className="pointer-events-none absolute left-1/2 top-1/2 z-0 w-[118%] max-w-none -translate-x-1/2 -translate-y-[46%] select-none sm:w-[115%]"
             viewBox="0 0 400 260"
             aria-hidden
           >
@@ -397,10 +397,10 @@ export default function HomeContent() {
           <h1
             className={`${heroTitleFont.className} hero-neon-title relative z-[1] text-balance`}
           >
-            <span className="block text-[clamp(2.1rem,9vw,3.35rem)] leading-[0.98] tracking-tight">
+            <span className="block text-[clamp(2.65rem,11vw,4.75rem)] leading-[0.98] tracking-tight">
               Aha!
             </span>
-            <span className="mt-0.5 block text-[clamp(1.35rem,5.5vw,2.15rem)] leading-tight opacity-[0.98]">
+            <span className="mt-1 block text-[clamp(1.65rem,6.5vw,2.85rem)] leading-tight opacity-[0.98]">
               It&apos;s me!
             </span>
           </h1>
@@ -408,7 +408,7 @@ export default function HomeContent() {
 
         {/* 로그인 전: 시작하기 · 로그인 후: 닉네임 + 입력 */}
         {!isSignedIn ? (
-          <div className="mt-8 animate-fade-in-up delay-200 sm:mt-10">
+          <div className="mt-12 animate-fade-in-up delay-200 sm:mt-16">
             <button
               type="button"
               onClick={() => setAuthModalOpen(true)}
@@ -429,8 +429,8 @@ export default function HomeContent() {
           resume.hasReport &&
           resume.surveyCompleted ? (
           <div className="mx-auto mt-8 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-10 sm:space-y-7">
-            <h2 className="text-center text-[1.35rem] font-medium tracking-[-0.02em] text-white/92 sm:text-2xl">
-              🚀 탐사실
+            <h2 className="text-center text-[1.2rem] font-medium tracking-[-0.02em] text-white/90 sm:text-[1.45rem]">
+              탐사실
             </h2>
             <div className="flex flex-col gap-3 sm:gap-3.5">
               <GlowButton

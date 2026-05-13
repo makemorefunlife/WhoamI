@@ -28,9 +28,9 @@ export default function SubtleButtonIcon({ kind }: { kind: SubtleButtonIconKind 
   return (
     <span
       aria-hidden
-      className="inline-flex h-[1.05rem] w-[1.05rem] shrink-0 items-center justify-center text-[rgba(21,21,21,0.42)]"
+      className="inline-flex h-[1.18rem] w-[1.18rem] shrink-0 items-center justify-center text-current opacity-95"
     >
-      <Icon className="h-[0.82rem] w-[0.82rem]" strokeWidth={1.85} />
+      <Icon className="h-[0.98rem] w-[0.98rem] drop-shadow-[0_0_6px_rgba(255,255,255,0.14)]" strokeWidth={2.05} />
     </span>
   );
 }

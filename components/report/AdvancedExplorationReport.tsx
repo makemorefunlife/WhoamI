@@ -2,14 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useUser } from "@clerk/nextjs";
-import {
-  ChevronDown,
-  UserRound,
-  Zap,
-  Users,
-  Activity,
-  Compass,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 type AdvancedExplorationReportProps = {
   fallbackName?: string;
@@ -37,15 +30,19 @@ const PART_1_SCROLL_IDS = new Set([
   "part1-next",
 ]);
 
-const part1LabelClass = "text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B8A6E8]";
+const part1LabelClass = "text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9F8BCF]";
 const part1MainTitleClass =
-  "mt-2 text-[1.5rem] font-bold leading-[1.2] tracking-[-0.03em] text-white sm:text-[1.6rem]";
+  "mt-3 whitespace-nowrap text-[1.3rem] font-semibold leading-[1.24] tracking-[-0.035em] text-[#F5F3FA] sm:text-[1.48rem]";
 const part1SectionTitleClass =
-  "flex items-center gap-3 text-[0.9375rem] font-semibold leading-snug tracking-[-0.01em] text-[#ECEEF4]";
+  "flex items-center gap-3 text-[0.95rem] font-semibold leading-snug tracking-[-0.01em] text-[#ECEEF4]";
 /** 이전 빌드·캐시 호환용 (part1SectionTitleClass와 동일) */
 const part1SectionHeadingClass = part1SectionTitleClass;
-const part1BodyClass = "text-[13px] leading-[1.85] text-[#94A3B8]";
-const part1CaptionClass = "text-[11px] leading-relaxed text-[#64748B]";
+const part1BodyClass = "text-[14px] leading-[2.02] tracking-[-0.01em] text-[#A7B2C5]";
+const part1CaptionClass = "text-[11px] leading-[1.9] tracking-[0.01em] text-[#707C92]";
+const part1PanelClass =
+  "mt-5 rounded-[26px] bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_60%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-5 py-6";
+const part1GroupedPanelClass =
+  "mt-8 rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] px-5 py-3";
 
 const part1SectionCueClass =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#A78BFA]/22 bg-[#8B5CF6]/[0.08]";
@@ -58,6 +55,13 @@ type Part1SectionGlyphKind =
   | "sparkleCluster"
   | "softCaution"
   | "compassMinimal";
+
+type NavigatorGlyphKind =
+  | "self"
+  | "energy"
+  | "relationship"
+  | "communication"
+  | "guidance";
 
 const GLYPH_SVG_CLASS = "h-4 w-4 text-[#C9C0F0]";
 
@@ -154,6 +158,54 @@ function Part1SectionTitle({
   );
 }
 
+function NavigatorGlyph({ kind, active }: { kind: NavigatorGlyphKind; active: boolean }) {
+  const color = active ? "#ECE7FF" : "#A7B2C5";
+  const accentOpacity = active ? 0.88 : 0.58;
+
+  switch (kind) {
+    case "self":
+      return (
+        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
+          <circle cx="12" cy="12" r="6.2" fill="none" stroke={color} strokeWidth="1.35" opacity={accentOpacity} />
+          <circle cx="12" cy="12" r="1.35" fill={color} opacity={active ? 0.9 : 0.65} />
+        </svg>
+      );
+    case "energy":
+      return (
+        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
+          <path d="M12 5.5v3M12 15.5v3M5.5 12h3M15.5 12h3" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" opacity={accentOpacity} />
+          <path d="M8.8 8.8l1.5 1.5M13.7 13.7l1.5 1.5M8.8 15.2l1.5-1.5M13.7 10.3l1.5-1.5" fill="none" stroke={color} strokeWidth="1.15" strokeLinecap="round" opacity={active ? 0.62 : 0.42} />
+        </svg>
+      );
+    case "relationship":
+      return (
+        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
+          <path d="M7.5 15.2c1.2-2 3-3 4.5-3s3.3 1 4.5 3" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" opacity={accentOpacity} />
+          <circle cx="9" cy="10" r="1.45" fill={color} opacity={active ? 0.84 : 0.62} />
+          <circle cx="15" cy="10" r="1.45" fill={color} opacity={active ? 0.84 : 0.62} />
+        </svg>
+      );
+    case "communication":
+      return (
+        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
+          <path d="M6.5 9.5c1.7-1.5 3.5-2.2 5.5-2.2s3.8.7 5.5 2.2" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" opacity={accentOpacity} />
+          <path d="M8.5 13c1.1-.85 2.3-1.3 3.5-1.3s2.4.45 3.5 1.3" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" opacity={active ? 0.7 : 0.46} />
+          <circle cx="12" cy="16.5" r="1.1" fill={color} opacity={active ? 0.88 : 0.62} />
+        </svg>
+      );
+    case "guidance":
+      return (
+        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
+          <circle cx="12" cy="12" r="6.1" fill="none" stroke={color} strokeWidth="1.35" opacity={accentOpacity} />
+          <path d="M12 12V6.9" fill="none" stroke={color} strokeWidth="1.25" strokeLinecap="round" opacity={accentOpacity} />
+          <path d="M12 12l2.8 4.65" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" opacity={active ? 0.68 : 0.46} />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 export default function AdvancedExplorationReport({
   fallbackName,
   reportText: _reportText,
@@ -176,13 +228,12 @@ export default function AdvancedExplorationReport({
     );
   }, [fallbackName, user?.firstName, user?.fullName, user?.username]);
 
-  /** 첫 항목 "나" = PART 1 본문 앵커. 나머지는 PART 1 내부 하위 구간(향후 PART 2+와 매핑 예정). */
   const navItems = [
-    { id: "part1", label: "나", icon: UserRound, chapter: "PART 1" },
-    { id: "part1-strengths", label: "에너지", icon: Zap },
-    { id: "part1-caution", label: "관계", icon: Users },
-    { id: "part1-signature", label: "소통", icon: Activity },
-    { id: "part1-next", label: "앞으로", icon: Compass },
+    { id: "part1", part: "PART 1", label: "나", glyph: "self", enabled: true },
+    { id: "part2", part: "PART 2", label: "에너지", glyph: "energy", enabled: false },
+    { id: "part3", part: "PART 3", label: "관계", glyph: "relationship", enabled: false },
+    { id: "part4", part: "PART 4", label: "소통팁", glyph: "communication", enabled: false },
+    { id: "part5", part: "PART 5", label: "조언", glyph: "guidance", enabled: false },
   ] as const;
 
   const nameLead = buildDisplayTitle(userName);
@@ -311,35 +362,45 @@ export default function AdvancedExplorationReport({
         <div className="rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_4px_16px_rgba(0,0,0,0.28)] backdrop-blur-md">
           <div className="flex items-stretch justify-between gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
-              const isPrimary = item.id === "part1";
-              const isActive = isPrimary ? navPrimaryActive : false;
+              const isActive = item.id === "part1" ? navPrimaryActive : false;
               return (
                 <button
                   key={item.id}
                   type="button"
-                  title={item.id === "part1" ? "PART 1 — 나" : undefined}
+                  disabled={!item.enabled}
                   aria-current={isActive ? "true" : undefined}
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={item.enabled ? () => scrollToSection("part1") : undefined}
                   className={[
                     "shrink-0 rounded-md px-1 py-1 text-[9px] transition-colors",
-                    isActive ? "bg-[#8B5CF6]/14 text-[#F1F5F9]" : "text-[#64748B] hover:text-[#94A3B8]",
+                    item.enabled ? "" : "cursor-default",
+                    isActive ? "bg-[#8B5CF6]/14 text-[#F1F5F9]" : "text-[#64748B]",
+                    item.enabled && !isActive ? "hover:text-[#94A3B8]" : "",
                   ].join(" ")}
                 >
-                  <span className="flex min-w-[48px] flex-col items-center gap-0.5">
-                    {"chapter" in item && item.chapter ? (
-                      <span className="text-[7px] font-medium uppercase tracking-[0.12em] text-[#64748B]">
-                        {item.chapter}
-                      </span>
-                    ) : null}
+                  <span className="flex min-w-[58px] flex-col items-center gap-1">
+                    <span className="text-[7px] font-medium uppercase tracking-[0.12em] text-[#64748B]">
+                      {item.part}
+                    </span>
                     <span
                       className={[
-                        "inline-flex h-5 w-5 items-center justify-center rounded-full border",
-                        isActive ? "border-[#A78BFA]/35 bg-[#8B5CF6]/10 text-[#E8E0FF]" : "border-transparent text-[#64748B]",
+                        "inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all",
+                        isActive
+                          ? "border-[#BBA6FF]/40 bg-[#8B5CF6]/18 shadow-[0_0_20px_rgba(139,92,246,0.18)]"
+                          : "border-white/[0.06] bg-white/[0.04]",
+                        !item.enabled ? "opacity-55" : "",
                       ].join(" ")}
                     >
-                      <item.icon className="h-3 w-3" strokeWidth={1.35} />
+                      <NavigatorGlyph kind={item.glyph} active={isActive} />
                     </span>
-                    <span>{item.label}</span>
+                    <span
+                      className={[
+                        "text-[9px] font-medium tracking-[-0.01em]",
+                        isActive ? "text-[#E8E0FF]" : "text-[#7C899E]",
+                        !item.enabled ? "opacity-70" : "",
+                      ].join(" ")}
+                    >
+                      {item.label}
+                    </span>
                   </span>
                 </button>
               );
@@ -348,216 +409,211 @@ export default function AdvancedExplorationReport({
         </div>
       </div>
 
-      <section id="part1" className="scroll-mt-28 mx-auto w-full max-w-lg border-t border-white/[0.06] pt-5">
-        <div className="rounded-[22px] border border-white/[0.08] bg-[#070B18]/90 p-4 sm:p-5">
-          <header className="border-b border-[#8B5CF6]/10 pb-7">
-            <p className={part1LabelClass}>PART 1</p>
-            <h2 className={part1MainTitleClass}>
-              <span className="block">나는 누굴까?</span>
-              <span className="mt-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">
-                WHO AM I?
-              </span>
-            </h2>
-          </header>
+      <section id="part1" className="scroll-mt-28 mx-auto w-full max-w-lg px-1 pt-8">
+        <header className="space-y-3">
+          <p className={part1LabelClass}>PART 1</p>
+          <h2 className={part1MainTitleClass}>나는 어떤 사람인가</h2>
+        </header>
 
-          <section id="part1-quote" className="mt-14 scroll-mt-28" aria-labelledby="part1-quote-heading">
-            <div className="rounded-2xl border border-[#8B5CF6]/18 bg-[#0c1022]/90 px-5 py-7 shadow-[0_0_40px_rgba(139,92,246,0.06)]">
-              <div className="mb-5 flex items-center gap-3">
-                <span className={part1SectionCueClass} aria-hidden>
-                  <Part1SectionGlyph kind="quoteSparkle" />
-                </span>
-                <h3 id="part1-quote-heading" className="text-[0.9375rem] font-semibold leading-snug tracking-[-0.01em] text-[#ECEEF4]">
-                  당신을 닮은 한 문장
-                </h3>
+        <section id="part1-quote" className="mt-14 scroll-mt-28" aria-labelledby="part1-quote-heading">
+          <div className="flex items-center gap-3">
+            <span className={part1SectionCueClass} aria-hidden>
+              <Part1SectionGlyph kind="quoteSparkle" />
+            </span>
+            <h3 id="part1-quote-heading" className="text-[0.9375rem] font-semibold leading-snug tracking-[-0.01em] text-[#ECEEF4]">
+              한 문장으로 표현한 당신
+            </h3>
+          </div>
+          <div className={part1PanelClass}>
+            <p className="mt-6 max-w-[22rem] text-[1rem] font-medium leading-[1.8] tracking-[-0.015em] text-[#F3F0F9] sm:text-[1.08rem]">
+              &quot;너는 자유로운 바람처럼, 새로운 가능성을 탐색하는 존재야.&quot;
+            </p>
+            <p className="mt-5 max-w-[20rem] text-[12px] leading-[1.95] tracking-[0.01em] text-[#75819A]">
+              새로운 생각과 가능성을 발견할 때, 가장 너다운 표정이 자연스럽게 드러나요.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-20" aria-labelledby="part1-outer-heading">
+          <Part1SectionTitle id="part1-outer-heading" glyph="gentleSparkle">
+            겉으로 보이는 모습
+          </Part1SectionTitle>
+          <div className={part1PanelClass}>
+            <p className={part1BodyClass}>
+              사람들과의 연결 속에서 자연스럽게 분위기를 이끄는 타입이에요. 먼저 다가가고, 흐름을 정리하고,
+              어색한 공기를 부드럽게 풀어내는 힘이 있어요.
+            </p>
+            {openOuter && (
+              <p className={`mt-5 max-w-[31rem] ${part1BodyClass}`}>
+                사람들과의 소통을 즐기고, 활발하게 활동하는 모습이 드러납니다. 친구들과의 대화에서 리더십을
+                발휘하고, 새로운 사람들과의 만남에서도 주도적으로 이야기를 이끌어가는 모습이 있습니다.
+              </p>
+            )}
+            <button
+              type="button"
+              className={`mt-5 inline-flex items-center gap-1 ${part1CaptionClass} font-medium hover:text-[#9BA7BA]`}
+              onClick={() => setOpenOuter((v) => !v)}
+            >
+              {openOuter ? "접기" : "조금 더 읽기"}
+              <ChevronDown
+                className={["h-3.5 w-3.5 transition", openOuter ? "rotate-180" : ""].join(" ")}
+                strokeWidth={1.35}
+              />
+            </button>
+          </div>
+        </section>
+
+        <section className="mt-20" aria-labelledby="part1-inner-heading">
+          <Part1SectionTitle id="part1-inner-heading" glyph="orbitRipple">
+            내면의 흐름
+          </Part1SectionTitle>
+          <div className={part1PanelClass}>
+            <p className="max-w-[31rem] text-[14px] leading-[2.05] tracking-[-0.01em] text-[#B1BCD0]">
+              겉은 밝지만, 내면은 생각보다 깊고 민감한 편이에요. 감정을 오래 품고 혼자 정리하려는 경향도
+              있어요. 누군가를 쉽게 지나치지 못하고, 작은 여운도 오래 마음속에 남겨 두는 편입니다.
+            </p>
+            {openInner && (
+              <p className={`mt-5 max-w-[30rem] ${part1BodyClass}`}>
+                타인의 감정을 잘 이해하고 지지하려는 모습이 강합니다. 다만 때로는 감정에 쉽게 영향을 받거나,
+                속으로 복잡한 마음을 오래 품을 수 있습니다.
+              </p>
+            )}
+            <button
+              type="button"
+              className={`mt-5 inline-flex items-center gap-1 ${part1CaptionClass} font-medium hover:text-[#9BA7BA]`}
+              onClick={() => setOpenInner((v) => !v)}
+            >
+              {openInner ? "접기" : "조금 더 읽기"}
+              <ChevronDown
+                className={["h-3.5 w-3.5 transition", openInner ? "rotate-180" : ""].join(" ")}
+                strokeWidth={1.35}
+              />
+            </button>
+          </div>
+        </section>
+
+        <section id="part1-strengths" className="mt-20 scroll-mt-28">
+          <Part1SectionTitle glyph="sparkleCluster">당신의 강점</Part1SectionTitle>
+          <div className={part1GroupedPanelClass}>
+            <article className="flex gap-4 py-5">
+              <span
+                className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#9FB1CA]/35 bg-transparent"
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <p className="text-[0.95rem] font-semibold tracking-[-0.015em] text-[#EDF0F7]">창의적인 사고</p>
+                <p className="mt-2 max-w-[18rem] text-[12px] leading-[1.85] tracking-[0.02em] text-[#7E8AA0]">
+                  익숙한 틀을 조금 비껴 바라보는 감각
+                </p>
+                <p className={`mt-3 max-w-[28rem] ${part1BodyClass}`}>
+                  직관적으로 문제를 바라보며, 익숙한 방식 바깥에서 새로운 해결책을 제안하는 힘이 있어요.
+                </p>
               </div>
-              <p className="font-serif text-[2.75rem] leading-none text-[#A78BFA]" aria-hidden>
-                &ldquo;
-              </p>
-              <p className="-mt-1 text-[1.125rem] font-medium leading-[1.75] tracking-[-0.015em] text-[#E8EDF5] sm:text-[1.2rem]">
-                너는 자유로운 바람처럼,
-                <br />
-                새로운 가능성을 탐색하는 존재야.
-              </p>
-              <p className={`mt-6 ${part1CaptionClass}`}>
-                새로운 생각과 가능성을 발견할 때 가장 너다워져요.
-              </p>
-            </div>
-          </section>
-
-          <section className="mt-16" aria-labelledby="part1-outer-heading">
-            <Part1SectionTitle id="part1-outer-heading" glyph="gentleSparkle">
-              겉으로 보이는 모습
-            </Part1SectionTitle>
-            <div className="mt-5 rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <p className={part1BodyClass}>
-                사람들과의 연결 속에서 자연스럽게 분위기를 이끄는 타입이에요.
-              </p>
-              <button
-                type="button"
-                className={`mt-4 ml-auto flex items-center gap-1 ${part1CaptionClass} font-medium hover:text-[#94A3B8]`}
-                onClick={() => setOpenOuter((v) => !v)}
-              >
-                {openOuter ? "접기" : "더보기"}
-                <ChevronDown
-                  className={["h-3.5 w-3.5 transition", openOuter ? "rotate-180" : ""].join(" ")}
-                  strokeWidth={1.35}
-                />
-              </button>
-              {openOuter && (
-                <p className={`mt-3 border-t border-white/[0.06] pt-3 ${part1BodyClass}`}>
-                  사람들과의 소통을 즐기고, 활발하게 활동하는 모습이 드러납니다. 친구들과의 대화에서 리더십을
-                  발휘하고, 새로운 사람들과의 만남에서도 주도적으로 이야기를 이끌어가는 모습이 있습니다.
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section className="mt-16" aria-labelledby="part1-inner-heading">
-            <Part1SectionTitle id="part1-inner-heading" glyph="orbitRipple">
-              내면의 흐름
-            </Part1SectionTitle>
-            <div className="mt-5 rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-              <p className={part1BodyClass}>
-                겉은 밝지만, 내면은 생각보다 깊고 민감한 편이에요. 감정을 오래 품고 혼자 정리하려는 경향도
-                있어요.
-              </p>
-              <button
-                type="button"
-                className={`mt-4 ml-auto flex items-center gap-1 ${part1CaptionClass} font-medium hover:text-[#94A3B8]`}
-                onClick={() => setOpenInner((v) => !v)}
-              >
-                {openInner ? "접기" : "더보기"}
-                <ChevronDown
-                  className={["h-3.5 w-3.5 transition", openInner ? "rotate-180" : ""].join(" ")}
-                  strokeWidth={1.35}
-                />
-              </button>
-              {openInner && (
-                <p className={`mt-3 border-t border-white/[0.06] pt-3 ${part1BodyClass}`}>
-                  타인의 감정을 잘 이해하고 지지하려는 모습이 강합니다. 다만 때로는 감정에 쉽게 영향을 받거나,
-                  속으로 복잡한 마음을 오래 품을 수 있습니다.
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section id="part1-strengths" className="mt-16 scroll-mt-28 border-t border-white/[0.06] pt-12">
-            <Part1SectionTitle glyph="sparkleCluster">당신의 강점</Part1SectionTitle>
-            <div className="mt-5 flex flex-col gap-3">
-              <article className="rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4 shadow-[0_0_24px_rgba(139,92,246,0.04)]">
-                <div className="flex gap-3">
-                  <span
-                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full border border-[#94A3B8]/35 bg-transparent ring-1 ring-[#A78BFA]/15"
-                    aria-hidden
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[0.8125rem] font-semibold text-[#E2E8F0]">창의적인 사고</p>
-                    <p className={`mt-2 ${part1BodyClass}`}>
-                      직관적으로 문제를 바라보며 새로운 해결책을 제안하는 힘이 있어요.
-                    </p>
-                  </div>
-                </div>
-              </article>
-              <article className="rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4 shadow-[0_0_24px_rgba(139,92,246,0.04)]">
-                <div className="flex gap-3">
-                  <span
-                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full border border-[#94A3B8]/35 bg-transparent ring-1 ring-[#A78BFA]/15"
-                    aria-hidden
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[0.8125rem] font-semibold text-[#E2E8F0]">감정적 이해</p>
-                    <p className={`mt-2 ${part1BodyClass}`}>
-                      타인의 감정을 깊이 이해하고, 공감하며 지지하는 능력이 뛰어나요.
-                    </p>
-                  </div>
-                </div>
-              </article>
-              <article className="rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4 shadow-[0_0_24px_rgba(139,92,246,0.04)]">
-                <div className="flex gap-3">
-                  <span
-                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full border border-[#94A3B8]/35 bg-transparent ring-1 ring-[#A78BFA]/15"
-                    aria-hidden
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[0.8125rem] font-semibold text-[#E2E8F0]">안정감 제공</p>
-                    <p className={`mt-2 ${part1BodyClass}`}>
-                      주변에 편안함과 신뢰를 주고, 깊은 관계를 맺는 데 강점이 있어요.
-                    </p>
-                  </div>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <section id="part1-caution" className="mt-16 scroll-mt-28" aria-labelledby="part1-caution-heading">
-            <Part1SectionTitle id="part1-caution-heading" glyph="softCaution">
-              조심하면 좋은 감정 흐름
-            </Part1SectionTitle>
-            <article className="mt-5 rounded-xl border border-[#8B5CF6]/14 bg-[#0a0d18]/95 p-4 shadow-[inset_0_0_0_1px_rgba(139,92,246,0.06)]">
-              <p className={part1BodyClass}>
-                스트레스와 감정의 영향을 쉽게 받는 편이에요. 감정에 휩쓸리기 전에, 스스로를 챙기는 시간이
-                필요해요.
-              </p>
-              <button
-                type="button"
-                className={`mt-4 ml-auto flex items-center gap-1 ${part1CaptionClass} font-medium hover:text-[#94A3B8]`}
-                onClick={() => setOpenCaution((v) => !v)}
-              >
-                {openCaution ? "접기" : "더보기"}
-                <ChevronDown
-                  className={["h-3.5 w-3.5 transition", openCaution ? "rotate-180" : ""].join(" ")}
-                  strokeWidth={1.35}
-                />
-              </button>
-              {openCaution && (
-                <p className={`mt-3 border-t border-white/[0.06] pt-3 ${part1BodyClass}`}>
-                  작은 일에도 부담을 느끼거나, 감정적으로 흔들릴 수 있습니다. 타인의 감정에 지나치게 영향을
-                  받지 않도록 자기 관리가 필요합니다. 감정을 숨기기보다 적절하게 표현하는 연습도 도움이 됩니다.
-                </p>
-              )}
             </article>
-          </section>
+            <article className="flex gap-4 border-t border-white/[0.05] py-5">
+              <span
+                className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#9FB1CA]/35 bg-transparent"
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <p className="text-[0.95rem] font-semibold tracking-[-0.015em] text-[#EDF0F7]">감정적 이해</p>
+                <p className="mt-2 max-w-[18rem] text-[12px] leading-[1.85] tracking-[0.02em] text-[#7E8AA0]">
+                  사람의 마음 결을 먼저 읽어내는 힘
+                </p>
+                <p className={`mt-3 max-w-[28rem] ${part1BodyClass}`}>
+                  타인의 감정을 깊이 이해하고, 공감하며 지지하는 능력이 뛰어나요. 사람들은 당신 곁에서 쉽게
+                  마음을 놓게 됩니다.
+                </p>
+              </div>
+            </article>
+            <article className="flex gap-4 border-t border-white/[0.05] py-5">
+              <span
+                className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#9FB1CA]/35 bg-transparent"
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <p className="text-[0.95rem] font-semibold tracking-[-0.015em] text-[#EDF0F7]">안정감 제공</p>
+                <p className="mt-2 max-w-[18rem] text-[12px] leading-[1.85] tracking-[0.02em] text-[#7E8AA0]">
+                  흔들리는 흐름 안에서도 중심을 남기는 결
+                </p>
+                <p className={`mt-3 max-w-[28rem] ${part1BodyClass}`}>
+                  주변에 편안함과 신뢰를 주고, 깊은 관계를 맺는 데 강점이 있어요. 복잡한 상황에서도 중심을 잃지
+                  않게 하는 결이 있습니다.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
 
-          <section id="part1-signature" className="mt-16 scroll-mt-28 border-t border-white/[0.06] pt-12">
-            <Part1SectionTitle glyph="compassMinimal">가장 나다운 순간</Part1SectionTitle>
-            <div className="mt-5 flex flex-col gap-3">
-              <article className="rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4">
-                <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-[#8B5CF6]/25 bg-[#8B5CF6]/[0.08] px-1.5 text-[9px] font-semibold tracking-wider text-[#C4B5FD]">
-                  01
-                </span>
-                <p className={`mt-3 ${part1BodyClass}`}>
+        <section id="part1-caution" className="mt-20 scroll-mt-28" aria-labelledby="part1-caution-heading">
+          <Part1SectionTitle id="part1-caution-heading" glyph="softCaution">
+            조심하면 좋은 감정 흐름
+          </Part1SectionTitle>
+          <article className={part1PanelClass}>
+            <p className="max-w-[31rem] text-[14px] leading-[2.02] tracking-[-0.01em] text-[#AFB8C9]">
+              스트레스와 감정의 영향을 쉽게 받는 편이에요. 감정에 휩쓸리기 전에, 스스로를 챙기는 시간이
+              필요해요.
+            </p>
+            {openCaution && (
+              <p className={`mt-5 max-w-[30rem] ${part1BodyClass}`}>
+                작은 일에도 부담을 느끼거나, 감정적으로 흔들릴 수 있습니다. 타인의 감정에 지나치게 영향을
+                받지 않도록 자기 관리가 필요합니다. 감정을 숨기기보다 적절하게 표현하는 연습도 도움이 됩니다.
+              </p>
+            )}
+            <button
+              type="button"
+              className={`mt-5 inline-flex items-center gap-1 ${part1CaptionClass} font-medium hover:text-[#9BA7BA]`}
+              onClick={() => setOpenCaution((v) => !v)}
+            >
+              {openCaution ? "접기" : "조금 더 읽기"}
+              <ChevronDown
+                className={["h-3.5 w-3.5 transition", openCaution ? "rotate-180" : ""].join(" ")}
+                strokeWidth={1.35}
+              />
+            </button>
+          </article>
+        </section>
+
+        <section id="part1-signature" className="mt-20 scroll-mt-28">
+          <Part1SectionTitle glyph="compassMinimal">가장 나다운 순간</Part1SectionTitle>
+          <div className={part1PanelClass}>
+            <div className="space-y-7">
+              <article className="flex gap-4">
+                <span
+                  className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#9FB1CA]/35 bg-transparent"
+                  aria-hidden
+                />
+                <p className="max-w-[28rem] text-[14px] leading-[2.02] tracking-[-0.01em] text-[#C7D1DF]">
                   친구들과의 대화 속에서
                   <br />
                   아이디어를 나누며 이야기를 이끌어갈 때
                 </p>
               </article>
-              <article className="rounded-xl border border-white/[0.08] bg-[#080c18]/95 p-4">
-                <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-[#8B5CF6]/25 bg-[#8B5CF6]/[0.08] px-1.5 text-[9px] font-semibold tracking-wider text-[#C4B5FD]">
-                  02
-                </span>
-                <p className={`mt-3 ${part1BodyClass}`}>
+              <article className="flex gap-4 border-t border-white/[0.05] pt-7">
+                <span
+                  className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#9FB1CA]/35 bg-transparent"
+                  aria-hidden
+                />
+                <p className="max-w-[28rem] text-[14px] leading-[2.02] tracking-[-0.01em] text-[#C7D1DF]">
                   친구가 힘들어할 때
                   <br />
                   위로하고 함께 시간을 내며 기분을 전환시켜줄 때
                 </p>
               </article>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <article
-            id="part1-next"
-            className="mt-16 scroll-mt-28 rounded-xl border border-[#8B5CF6]/16 bg-[#0a0d18] p-5 shadow-[0_0_28px_rgba(139,92,246,0.05)]"
-          >
-            <p className={`${part1CaptionClass} font-semibold uppercase tracking-[0.14em] text-[#8B7AB8]`}>
-              다음 탐험
-            </p>
-            <p className="mt-2 text-[0.9375rem] font-semibold text-[#ECEEF4]">나의 에너지와 환경</p>
-            <p className={`mt-2 ${part1BodyClass}`}>
-              에너지가 어디에서 충전되고, 어디에서 소진되는지 이어서 살펴볼게요.
-            </p>
-            <ChevronDown className="mt-4 h-4 w-4 text-[#A78BFA]/45" strokeWidth={1.35} aria-hidden />
-          </article>
-        </div>
+        <article id="part1-next" className="mt-20 scroll-mt-28 pb-4">
+          <p className={`${part1CaptionClass} font-semibold uppercase tracking-[0.16em] text-[#8F7BBE]`}>
+            다음 탐험
+          </p>
+          <p className="mt-3 text-[1rem] font-semibold tracking-[-0.015em] text-[#ECEEF4]">나의 에너지와 환경</p>
+          <p className="mt-3 max-w-[23rem] text-[13px] leading-[1.95] text-[#8592A6]">
+            에너지가 어디에서 충전되고, 어디에서 소진되는지 이어서 천천히 살펴볼게요.
+          </p>
+          <ChevronDown className="mt-4 h-4 w-4 text-[#A78BFA]/35" strokeWidth={1.35} aria-hidden />
+        </article>
       </section>
     </div>
   );

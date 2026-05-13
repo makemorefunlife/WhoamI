@@ -19,7 +19,7 @@ const CARD_META = [
     icon: ScanSearch,
     borderAccent: "border-[rgba(255,255,255,0.12)]",
     titleAccent: "text-[#e2d9bb]",
-    iconTint: "text-[#b7bddf]",
+    iconTint: "text-[#d8bc7e]",
   },
   {
     title: "관계에서의 나",
