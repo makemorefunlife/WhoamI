@@ -649,8 +649,23 @@ function NavigatorGlyph({ kind, active }: { kind: NavigatorGlyphKind; active: bo
     case "self":
       return (
         <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
-          <circle cx="12" cy="12" r="6.2" fill="none" stroke={color} strokeWidth="1.35" opacity={accentOpacity} />
-          <circle cx="12" cy="12" r="1.35" fill={color} opacity={active ? 0.9 : 0.65} />
+          <circle cx="12" cy="8.2" r="2.2" fill={color} opacity={active ? 0.9 : 0.7} />
+          <path
+            d="M8.4 17.2c.9-2.45 2.1-3.65 3.6-3.65s2.7 1.2 3.6 3.65"
+            fill="none"
+            stroke={color}
+            strokeWidth="1.35"
+            strokeLinecap="round"
+            opacity={accentOpacity}
+          />
+          <path
+            d="M10 11.9c.55.35 1.22.52 2 .52.78 0 1.45-.17 2-.52"
+            fill="none"
+            stroke={color}
+            strokeWidth="1.05"
+            strokeLinecap="round"
+            opacity={active ? 0.56 : 0.38}
+          />
         </svg>
       );
     case "energy":
@@ -663,9 +678,25 @@ function NavigatorGlyph({ kind, active }: { kind: NavigatorGlyphKind; active: bo
     case "relationship":
       return (
         <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden>
-          <path d="M7.5 15.2c1.2-2 3-3 4.5-3s3.3 1 4.5 3" fill="none" stroke={color} strokeWidth="1.35" strokeLinecap="round" opacity={accentOpacity} />
-          <circle cx="9" cy="10" r="1.45" fill={color} opacity={active ? 0.84 : 0.62} />
-          <circle cx="15" cy="10" r="1.45" fill={color} opacity={active ? 0.84 : 0.62} />
+          <circle cx="12" cy="7.8" r="1.85" fill={color} opacity={active ? 0.88 : 0.68} />
+          <circle cx="8" cy="10.1" r="1.5" fill={color} opacity={active ? 0.7 : 0.52} />
+          <circle cx="16" cy="10.1" r="1.5" fill={color} opacity={active ? 0.7 : 0.52} />
+          <path
+            d="M9.55 16.9c.62-1.75 1.42-2.62 2.45-2.62 1.02 0 1.84.87 2.45 2.62"
+            fill="none"
+            stroke={color}
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            opacity={accentOpacity}
+          />
+          <path
+            d="M4.9 16.3c.58-1.48 1.35-2.22 2.3-2.22.92 0 1.65.65 2.18 1.95M19.1 16.3c-.58-1.48-1.35-2.22-2.3-2.22-.92 0-1.65.65-2.18 1.95"
+            fill="none"
+            stroke={color}
+            strokeWidth="1.1"
+            strokeLinecap="round"
+            opacity={active ? 0.58 : 0.4}
+          />
         </svg>
       );
     case "communication":
@@ -916,78 +947,82 @@ export default function AdvancedExplorationReport({
       <div className="mt-4 px-1">
         {pinNavigator ? <div style={{ height: navigatorHeight || undefined }} aria-hidden /> : null}
         <div
-          ref={navigatorRef}
           className={[
-            "rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_6px_20px_rgba(0,0,0,0.34)] backdrop-blur-md transition-[top,transform,opacity] duration-300",
+            "transition-[top,opacity] duration-300",
             pinNavigator
-              ? "fixed left-1/2 z-[80] w-[calc(100%-1rem)] max-w-lg -translate-x-1/2 sm:w-[calc(100%-1.5rem)]"
-              : "mx-auto w-full max-w-lg",
+              ? "fixed inset-x-0 z-[80] px-1 sm:px-1.5"
+              : "",
           ].join(" ")}
           style={pinNavigator ? { top: "var(--app-header-offset, 0.75rem)" } : undefined}
         >
-          <div className="flex items-stretch justify-between gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {navItems.map((item) => {
-              const isActive =
-                item.id === "part1"
-                  ? navPrimaryActive
-                  : item.id === "part2"
-                    ? navPart2Active
-                    : item.id === "part3"
-                      ? navPart3Active
-                      : item.id === "part4"
-                        ? navPart4Active
-                      : item.id === "part5"
-                        ? navPart5Active
-                    : false;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  disabled={!item.enabled}
-                  aria-current={isActive ? "true" : undefined}
-                  onClick={item.enabled ? () => scrollToSection(item.id) : undefined}
-                  className={[
-                    "relative shrink-0 rounded-md px-1 py-1 text-[9px] transition-colors",
-                    item.enabled ? "" : "cursor-default",
-                    isActive ? "bg-[#8B5CF6]/14 text-[#F1F5F9]" : "text-[#64748B]",
-                    item.enabled && !isActive ? "hover:text-[#94A3B8]" : "",
-                  ].join(" ")}
-                >
-                  <span className="flex min-w-[58px] flex-col items-center gap-1">
-                    <span className="text-[7px] font-medium tracking-[0.12em] text-[#64748B]">
-                      {item.part}
-                    </span>
-                    <span
-                      className={[
-                        "inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all",
-                        isActive
-                          ? "border-[#BBA6FF]/40 bg-[#8B5CF6]/18 shadow-[0_0_20px_rgba(139,92,246,0.18)]"
-                          : "border-white/[0.06] bg-white/[0.04]",
-                        !item.enabled ? "opacity-55" : "",
-                      ].join(" ")}
-                    >
-                      <NavigatorGlyph kind={item.glyph} active={isActive} />
-                    </span>
-                    <span
-                      className={[
-                        "text-[9px] font-medium tracking-[-0.01em]",
-                        isActive ? "text-[#E8E0FF]" : "text-[#7C899E]",
-                        !item.enabled ? "opacity-70" : "",
-                      ].join(" ")}
-                    >
-                      {item.label}
-                    </span>
-                  </span>
-                  <span
+          <div
+            ref={navigatorRef}
+            className="mx-auto w-full max-w-lg rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_6px_20px_rgba(0,0,0,0.34)] backdrop-blur-md"
+          >
+            <div className="flex items-stretch justify-between gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {navItems.map((item) => {
+                const isActive =
+                  item.id === "part1"
+                    ? navPrimaryActive
+                    : item.id === "part2"
+                      ? navPart2Active
+                      : item.id === "part3"
+                        ? navPart3Active
+                        : item.id === "part4"
+                          ? navPart4Active
+                        : item.id === "part5"
+                          ? navPart5Active
+                      : false;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={!item.enabled}
+                    aria-current={isActive ? "true" : undefined}
+                    onClick={item.enabled ? () => scrollToSection(item.id) : undefined}
                     className={[
-                      "pointer-events-none absolute inset-x-2 bottom-0.5 h-px rounded-full transition-opacity",
-                      isActive ? "bg-[#C4B5FD]/80 opacity-100" : "opacity-0",
+                      "relative shrink-0 rounded-md px-1 py-1 text-[9px] transition-colors",
+                      item.enabled ? "" : "cursor-default",
+                      isActive ? "bg-[#8B5CF6]/14 text-[#F1F5F9]" : "text-[#64748B]",
+                      item.enabled && !isActive ? "hover:text-[#94A3B8]" : "",
                     ].join(" ")}
-                    aria-hidden
-                  />
-                </button>
-              );
-            })}
+                  >
+                    <span className="flex min-w-[58px] flex-col items-center gap-1">
+                      <span className="text-[7px] font-medium tracking-[0.12em] text-[#64748B]">
+                        {item.part}
+                      </span>
+                      <span
+                        className={[
+                          "inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all",
+                          isActive
+                            ? "border-[#BBA6FF]/40 bg-[#8B5CF6]/18 shadow-[0_0_20px_rgba(139,92,246,0.18)]"
+                            : "border-white/[0.06] bg-white/[0.04]",
+                          !item.enabled ? "opacity-55" : "",
+                        ].join(" ")}
+                      >
+                        <NavigatorGlyph kind={item.glyph} active={isActive} />
+                      </span>
+                      <span
+                        className={[
+                          "text-[9px] font-medium tracking-[-0.01em]",
+                          isActive ? "text-[#E8E0FF]" : "text-[#7C899E]",
+                          !item.enabled ? "opacity-70" : "",
+                        ].join(" ")}
+                      >
+                        {item.label}
+                      </span>
+                    </span>
+                    <span
+                      className={[
+                        "pointer-events-none absolute inset-x-2 bottom-0.5 h-px rounded-full transition-opacity",
+                        isActive ? "bg-[#C4B5FD]/80 opacity-100" : "opacity-0",
+                      ].join(" ")}
+                      aria-hidden
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
