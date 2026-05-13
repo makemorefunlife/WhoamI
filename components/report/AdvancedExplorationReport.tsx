@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useUser } from "@clerk/nextjs";
 import { ChevronDown } from "lucide-react";
 
@@ -697,9 +697,13 @@ export default function AdvancedExplorationReport({
   const [showScrollCue, setShowScrollCue] = useState(true);
   const [hasUserScrolled, setHasUserScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("part1");
+  const [pinNavigator, setPinNavigator] = useState(false);
+  const [navigatorHeight, setNavigatorHeight] = useState(0);
   const [openOuter, setOpenOuter] = useState(false);
   const [openInner, setOpenInner] = useState(false);
   const [openCaution, setOpenCaution] = useState(false);
+  const part1Ref = useRef<HTMLElement | null>(null);
+  const navigatorRef = useRef<HTMLDivElement | null>(null);
 
   const userName = useMemo(() => {
     return (
@@ -730,6 +734,48 @@ export default function AdvancedExplorationReport({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [hasUserScrolled]);
+
+  useEffect(() => {
+    const readHeaderOffsetPx = () => {
+      const rootStyles = window.getComputedStyle(document.documentElement);
+      const rawOffset = rootStyles.getPropertyValue("--app-header-offset").trim();
+      const rootFontSize = Number.parseFloat(rootStyles.fontSize || "16") || 16;
+
+      if (rawOffset.endsWith("rem")) {
+        return Number.parseFloat(rawOffset) * rootFontSize;
+      }
+      if (rawOffset.endsWith("px")) {
+        return Number.parseFloat(rawOffset);
+      }
+      return 12;
+    };
+
+    const updateNavigatorState = () => {
+      const part1Top = part1Ref.current?.getBoundingClientRect().top;
+      const navHeight = navigatorRef.current?.getBoundingClientRect().height ?? 0;
+      setNavigatorHeight(navHeight);
+      if (typeof part1Top !== "number") return;
+
+      const headerOffset = readHeaderOffsetPx();
+      setPinNavigator(part1Top <= headerOffset + navHeight + 8);
+    };
+
+    updateNavigatorState();
+    window.addEventListener("scroll", updateNavigatorState, { passive: true });
+    window.addEventListener("resize", updateNavigatorState);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (navigatorRef.current && typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => updateNavigatorState());
+      resizeObserver.observe(navigatorRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", updateNavigatorState);
+      window.removeEventListener("resize", updateNavigatorState);
+      resizeObserver?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const ids = [
@@ -867,9 +913,18 @@ export default function AdvancedExplorationReport({
         </div>
       </section>
 
-      <div className="h-[5.5rem]" aria-hidden />
-      <div className="fixed left-1/2 top-5 z-[60] w-[calc(100%-2rem)] max-w-[420px] -translate-x-1/2 sm:w-[calc(100%-3rem)]">
-        <div className="rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_6px_20px_rgba(0,0,0,0.34)] backdrop-blur-md">
+      <div className="mt-4 px-1">
+        {pinNavigator ? <div style={{ height: navigatorHeight || undefined }} aria-hidden /> : null}
+        <div
+          ref={navigatorRef}
+          className={[
+            "rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_6px_20px_rgba(0,0,0,0.34)] backdrop-blur-md transition-[top,transform,opacity] duration-300",
+            pinNavigator
+              ? "fixed left-1/2 z-[80] w-[calc(100%-1rem)] max-w-lg -translate-x-1/2 sm:w-[calc(100%-1.5rem)]"
+              : "mx-auto w-full max-w-lg",
+          ].join(" ")}
+          style={pinNavigator ? { top: "var(--app-header-offset, 0.75rem)" } : undefined}
+        >
           <div className="flex items-stretch justify-between gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const isActive =
@@ -937,7 +992,7 @@ export default function AdvancedExplorationReport({
         </div>
       </div>
 
-      <section id="part1" className="scroll-mt-28 mx-auto w-full max-w-lg px-1 pt-8">
+      <section id="part1" ref={part1Ref} className="scroll-mt-28 mx-auto w-full max-w-lg px-1 pt-8">
         <header className="space-y-3">
           <p className={part1LabelClass}>Part 1</p>
           <h2 className={part1MainTitleClass}>나는 어떤 사람인가</h2>
