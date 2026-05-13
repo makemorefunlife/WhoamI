@@ -30,7 +30,15 @@ const PART_1_SCROLL_IDS = new Set([
   "part1-next",
 ]);
 
-const part1LabelClass = "text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9F8BCF]";
+const PART_2_SCROLL_IDS = new Set([
+  "part2",
+  "part2-source",
+  "part2-drain",
+  "part2-rhythm",
+  "part2-flow",
+]);
+
+const part1LabelClass = "text-[10px] font-semibold tracking-[0.18em] text-[#9F8BCF]";
 const part1MainTitleClass =
   "mt-3 whitespace-nowrap text-[1.3rem] font-semibold leading-[1.24] tracking-[-0.035em] text-[#F5F3FA] sm:text-[1.48rem]";
 const part1SectionTitleClass =
@@ -43,6 +51,17 @@ const part1PanelClass =
   "mt-5 rounded-[26px] bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.16),transparent_60%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-5 py-6";
 const part1GroupedPanelClass =
   "mt-8 rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.14),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] px-5 py-3";
+const part2LabelClass = "text-[10px] font-semibold tracking-[0.18em] text-[#86AFCB]";
+const part2MainTitleClass =
+  "mt-3 whitespace-nowrap text-[1.3rem] font-semibold leading-[1.24] tracking-[-0.035em] text-[#F4F8FB] sm:text-[1.48rem]";
+const part2SubtitleClass = "max-w-[20rem] text-[12px] leading-[1.95] tracking-[0.01em] text-[#84A0B6]";
+const part2SectionCueClass =
+  "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#7DD3FC]/20 bg-[#38BDF8]/[0.08]";
+const part2GlyphClass = "h-4 w-4 text-[#B7D7E9]";
+const part2PanelClass =
+  "mt-5 rounded-[26px] bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_58%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] px-5 py-6";
+const part2GroupedPanelClass =
+  "mt-6 rounded-[28px] bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.16),transparent_44%),linear-gradient(180deg,rgba(255,255,255,0.032),rgba(255,255,255,0.015))] px-5 py-3";
 
 const part1SectionCueClass =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#A78BFA]/22 bg-[#8B5CF6]/[0.08]";
@@ -54,7 +73,11 @@ type Part1SectionGlyphKind =
   | "orbitRipple"
   | "sparkleCluster"
   | "softCaution"
-  | "compassMinimal";
+  | "compassMinimal"
+  | "energyBloom"
+  | "driftDown"
+  | "orbitField"
+  | "tideGauge";
 
 type NavigatorGlyphKind =
   | "self"
@@ -65,11 +88,77 @@ type NavigatorGlyphKind =
 
 const GLYPH_SVG_CLASS = "h-4 w-4 text-[#C9C0F0]";
 
-function Part1SectionGlyph({ kind }: { kind: Part1SectionGlyphKind }) {
+const PART2_ENERGY_SOURCES = [
+  {
+    title: "사람들과 깊게 연결될 때",
+    body:
+      "아이디어를 나누고 감정을 주고받는 순간, 당신의 에너지는 자연스럽게 살아나요. 대화의 온기가 곧 창의력의 불씨가 됩니다.",
+  },
+  {
+    title: "자연의 숨을 따라 걸을 때",
+    body:
+      "바람과 나무의 향기를 느끼며 잠시 속도를 늦추면, 마음은 평온을 되찾고 안쪽의 열정도 천천히 다시 돌아와요.",
+  },
+  {
+    title: "창작에 몰입하는 시간",
+    body:
+      "디자인이나 사회적 프로젝트처럼 아이디어를 손으로 옮기는 시간은 당신에게 큰 만족을 줘요. 몰입할수록 에너지도 더 또렷해집니다.",
+  },
+] as const;
+
+const PART2_DRAIN_PATTERNS = [
+  {
+    title: "모든 책임을 한꺼번에 안을 때",
+    body:
+      "해야 할 일을 모두 품으려는 순간, 당신의 흐름은 빠르게 무거워질 수 있어요. 먼저 우선순위를 나누는 것만으로도 에너지는 조금 가벼워집니다.",
+  },
+  {
+    title: "타인의 감정을 오래 붙들고 있을 때",
+    body:
+      "누군가의 마음을 세심하게 읽는 일은 당신의 장점이지만, 그 감정을 너무 오래 품고 있으면 정작 내 마음은 뒤로 밀려날 수 있어요.",
+  },
+  {
+    title: "작은 갈등이 오래 남을 때",
+    body:
+      "사람 사이의 균열은 생각보다 깊은 잔상을 남겨요. 바로 해결하려 하기보다, 한 발 물러서서 호흡을 정리하는 시간이 도움이 됩니다.",
+  },
+] as const;
+
+const PART2_SUPPORTIVE_RHYTHMS = [
+  {
+    title: "함께 목표를 만드는 환경",
+    body:
+      "사람들과 소통하고 협업하는 과정에서 당신의 강점은 더 또렷하게 살아나요. 연결 속에서 에너지가 자연스럽게 순환합니다.",
+  },
+  {
+    title: "감정이 존중되는 분위기",
+    body:
+      "서로의 마음을 함부로 밀어붙이지 않는 환경일수록 당신은 더 편안하게 성장해요. 안정된 공기는 당신에게 가장 좋은 리듬이 됩니다.",
+  },
+  {
+    title: "혼자 탐구할 수 있는 독립적인 시간",
+    body:
+      "아이디어를 천천히 파고들고 창작에 잠길 수 있는 고요한 시간이 있어야 에너지의 균형이 돌아옵니다. 혼자 있는 시간도 당신에게는 중요한 충전이에요.",
+  },
+] as const;
+
+const PART2_ENERGY_FLOW = [
+  { label: "사람·관계에 쓰는 에너지", value: 80 },
+  { label: "나에게 돌아오는 에너지", value: 40 },
+  { label: "혼자 재충전하는 시간", value: 20 },
+] as const;
+
+function Part1SectionGlyph({
+  kind,
+  className = GLYPH_SVG_CLASS,
+}: {
+  kind: Part1SectionGlyphKind;
+  className?: string;
+}) {
   const s = {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 24 24",
-    className: GLYPH_SVG_CLASS,
+    className,
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 1.35,
@@ -130,6 +219,38 @@ function Part1SectionGlyph({ kind }: { kind: Part1SectionGlyphKind }) {
           <circle cx="12" cy="12" r="0.85" fill="currentColor" stroke="none" opacity={0.35} />
         </svg>
       );
+    case "energyBloom":
+      return (
+        <svg {...s}>
+          <path d="M12 5.2v3.3M12 15.5v3.3M5.2 12h3.3M15.5 12h3.3" />
+          <path d="M8.1 8.1l1.9 1.9M14 14l1.9 1.9M8.1 15.9 10 14M14 10l1.9-1.9" opacity={0.5} />
+          <circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none" opacity={0.18} />
+        </svg>
+      );
+    case "driftDown":
+      return (
+        <svg {...s}>
+          <path d="M7.5 9.2c1.35-.95 2.88-1.45 4.5-1.45s3.15.5 4.5 1.45" />
+          <path d="M8.7 12.4c1-.65 2.12-.98 3.3-.98s2.3.33 3.3.98" opacity={0.62} />
+          <path d="M9.7 15.55c.68-.4 1.45-.6 2.3-.6s1.62.2 2.3.6" opacity={0.38} />
+        </svg>
+      );
+    case "orbitField":
+      return (
+        <svg {...s}>
+          <ellipse cx="12" cy="12" rx="7.2" ry="4.1" transform="rotate(-12 12 12)" />
+          <ellipse cx="12" cy="12" rx="5.2" ry="7.1" transform="rotate(28 12 12)" opacity={0.42} />
+          <circle cx="12" cy="12" r="1.05" fill="currentColor" stroke="none" opacity={0.5} />
+        </svg>
+      );
+    case "tideGauge":
+      return (
+        <svg {...s}>
+          <path d="M5.4 15.8c1.55-1.15 3.22-1.72 5-1.72 1.77 0 3.47.57 5.08 1.72" />
+          <path d="M6.7 12.2c1.1-.82 2.38-1.24 3.84-1.24 1.45 0 2.75.42 3.9 1.24" opacity={0.62} />
+          <path d="M8 8.7c.72-.52 1.58-.78 2.58-.78 1 0 1.88.26 2.64.78" opacity={0.36} />
+        </svg>
+      );
     default:
       return (
         <svg {...s}>
@@ -143,15 +264,19 @@ function Part1SectionTitle({
   id,
   glyph,
   children,
+  cueClassName = part1SectionCueClass,
+  glyphClassName = GLYPH_SVG_CLASS,
 }: {
   id?: string;
   glyph: Part1SectionGlyphKind;
   children: ReactNode;
+  cueClassName?: string;
+  glyphClassName?: string;
 }) {
   return (
     <h3 id={id} className={part1SectionTitleClass}>
-      <span className={part1SectionCueClass} aria-hidden>
-        <Part1SectionGlyph kind={glyph} />
+      <span className={cueClassName} aria-hidden>
+        <Part1SectionGlyph kind={glyph} className={glyphClassName} />
       </span>
       <span>{children}</span>
     </h3>
@@ -229,11 +354,11 @@ export default function AdvancedExplorationReport({
   }, [fallbackName, user?.firstName, user?.fullName, user?.username]);
 
   const navItems = [
-    { id: "part1", part: "PART 1", label: "나", glyph: "self", enabled: true },
-    { id: "part2", part: "PART 2", label: "에너지", glyph: "energy", enabled: false },
-    { id: "part3", part: "PART 3", label: "관계", glyph: "relationship", enabled: false },
-    { id: "part4", part: "PART 4", label: "소통팁", glyph: "communication", enabled: false },
-    { id: "part5", part: "PART 5", label: "조언", glyph: "guidance", enabled: false },
+    { id: "part1", part: "Part 1", label: "나", glyph: "self", enabled: true },
+    { id: "part2", part: "Part 2", label: "에너지", glyph: "energy", enabled: true },
+    { id: "part3", part: "Part 3", label: "관계", glyph: "relationship", enabled: false },
+    { id: "part4", part: "Part 4", label: "소통팁", glyph: "communication", enabled: false },
+    { id: "part5", part: "Part 5", label: "조언", glyph: "guidance", enabled: false },
   ] as const;
 
   const nameLead = buildDisplayTitle(userName);
@@ -256,6 +381,11 @@ export default function AdvancedExplorationReport({
       "part1-caution",
       "part1-signature",
       "part1-next",
+      "part2",
+      "part2-source",
+      "part2-drain",
+      "part2-rhythm",
+      "part2-flow",
     ];
     const sections = ids
       .map((id) => document.getElementById(id))
@@ -279,6 +409,7 @@ export default function AdvancedExplorationReport({
   };
 
   const navPrimaryActive = PART_1_SCROLL_IDS.has(activeSection);
+  const navPart2Active = PART_2_SCROLL_IDS.has(activeSection);
 
   return (
     <div className="space-y-5">
@@ -358,27 +489,33 @@ export default function AdvancedExplorationReport({
         </div>
       </section>
 
-      <div className="sticky top-[4.7rem] z-[30] mx-auto w-full max-w-lg">
-        <div className="rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_4px_16px_rgba(0,0,0,0.28)] backdrop-blur-md">
+      <div className="h-[4.75rem]" aria-hidden />
+      <div className="fixed left-1/2 top-3 z-[60] w-[calc(100%-2rem)] max-w-[420px] -translate-x-1/2 sm:w-[calc(100%-3rem)]">
+        <div className="rounded-lg border border-[#8B5CF6]/12 bg-[#070B18]/94 px-1 py-1 shadow-[0_6px_20px_rgba(0,0,0,0.34)] backdrop-blur-md">
           <div className="flex items-stretch justify-between gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
-              const isActive = item.id === "part1" ? navPrimaryActive : false;
+              const isActive =
+                item.id === "part1"
+                  ? navPrimaryActive
+                  : item.id === "part2"
+                    ? navPart2Active
+                    : false;
               return (
                 <button
                   key={item.id}
                   type="button"
                   disabled={!item.enabled}
                   aria-current={isActive ? "true" : undefined}
-                  onClick={item.enabled ? () => scrollToSection("part1") : undefined}
+                  onClick={item.enabled ? () => scrollToSection(item.id) : undefined}
                   className={[
-                    "shrink-0 rounded-md px-1 py-1 text-[9px] transition-colors",
+                    "relative shrink-0 rounded-md px-1 py-1 text-[9px] transition-colors",
                     item.enabled ? "" : "cursor-default",
                     isActive ? "bg-[#8B5CF6]/14 text-[#F1F5F9]" : "text-[#64748B]",
                     item.enabled && !isActive ? "hover:text-[#94A3B8]" : "",
                   ].join(" ")}
                 >
                   <span className="flex min-w-[58px] flex-col items-center gap-1">
-                    <span className="text-[7px] font-medium uppercase tracking-[0.12em] text-[#64748B]">
+                    <span className="text-[7px] font-medium tracking-[0.12em] text-[#64748B]">
                       {item.part}
                     </span>
                     <span
@@ -402,6 +539,13 @@ export default function AdvancedExplorationReport({
                       {item.label}
                     </span>
                   </span>
+                  <span
+                    className={[
+                      "pointer-events-none absolute inset-x-2 bottom-0.5 h-px rounded-full transition-opacity",
+                      isActive ? "bg-[#C4B5FD]/80 opacity-100" : "opacity-0",
+                    ].join(" ")}
+                    aria-hidden
+                  />
                 </button>
               );
             })}
@@ -411,7 +555,7 @@ export default function AdvancedExplorationReport({
 
       <section id="part1" className="scroll-mt-28 mx-auto w-full max-w-lg px-1 pt-8">
         <header className="space-y-3">
-          <p className={part1LabelClass}>PART 1</p>
+          <p className={part1LabelClass}>Part 1</p>
           <h2 className={part1MainTitleClass}>나는 어떤 사람인가</h2>
         </header>
 
@@ -614,6 +758,154 @@ export default function AdvancedExplorationReport({
           </p>
           <ChevronDown className="mt-4 h-4 w-4 text-[#A78BFA]/35" strokeWidth={1.35} aria-hidden />
         </article>
+      </section>
+
+      <section id="part2" className="scroll-mt-28 mx-auto w-full max-w-lg px-1 pt-16">
+        <header className="space-y-3 border-t border-white/[0.06] pt-14">
+          <p className={part2LabelClass}>Part 2</p>
+          <h2 className={part2MainTitleClass}>나의 에너지와 환경</h2>
+          <p className={part2SubtitleClass}>
+            어디에서 충전되고,
+            <br />
+            어디에서 소진되는지 살펴볼게요.
+          </p>
+        </header>
+
+        <section id="part2-source" className="mt-14 scroll-mt-28" aria-labelledby="part2-source-heading">
+          <Part1SectionTitle
+            id="part2-source-heading"
+            glyph="energyBloom"
+            cueClassName={part2SectionCueClass}
+            glyphClassName={part2GlyphClass}
+          >
+            나에게 힘을 주는 순간
+          </Part1SectionTitle>
+          <div className={part2GroupedPanelClass}>
+            {PART2_ENERGY_SOURCES.map((entry, index) => (
+              <article
+                key={entry.title}
+                className={[
+                  "flex gap-4 py-5",
+                  index > 0 ? "border-t border-white/[0.05]" : "",
+                ].join(" ")}
+              >
+                <span
+                  className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#AED5E8]/35 bg-transparent"
+                  aria-hidden
+                />
+                <div className="min-w-0">
+                  <p className="text-[0.95rem] font-semibold tracking-[-0.015em] text-[#EEF5FB]">{entry.title}</p>
+                  <p className="mt-3 max-w-[28rem] text-[14px] leading-[2.02] tracking-[-0.01em] text-[#B2C8D6]">
+                    {entry.body}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="part2-drain" className="mt-20 scroll-mt-28" aria-labelledby="part2-drain-heading">
+          <Part1SectionTitle
+            id="part2-drain-heading"
+            glyph="driftDown"
+            cueClassName={part2SectionCueClass}
+            glyphClassName={part2GlyphClass}
+          >
+            나를 지치게 하는 흐름
+          </Part1SectionTitle>
+          <div className={part2GroupedPanelClass}>
+            {PART2_DRAIN_PATTERNS.map((entry, index) => (
+              <article
+                key={entry.title}
+                className={[
+                  "flex gap-4 py-5",
+                  index > 0 ? "border-t border-white/[0.05]" : "",
+                ].join(" ")}
+              >
+                <span
+                  className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#AED5E8]/35 bg-transparent"
+                  aria-hidden
+                />
+                <div className="min-w-0">
+                  <p className="text-[0.95rem] font-semibold tracking-[-0.015em] text-[#E9F2F8]">{entry.title}</p>
+                  <p className="mt-3 max-w-[28rem] text-[14px] leading-[2.04] tracking-[-0.01em] text-[#A7BCCD]">
+                    {entry.body}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="part2-rhythm" className="mt-20 scroll-mt-28" aria-labelledby="part2-rhythm-heading">
+          <Part1SectionTitle
+            id="part2-rhythm-heading"
+            glyph="orbitField"
+            cueClassName={part2SectionCueClass}
+            glyphClassName={part2GlyphClass}
+          >
+            잘 맞는 환경과 리듬
+          </Part1SectionTitle>
+          <div className={part2PanelClass}>
+            <div className="space-y-7">
+              {PART2_SUPPORTIVE_RHYTHMS.map((entry, index) => (
+                <article
+                  key={entry.title}
+                  className={[
+                    "flex gap-4",
+                    index > 0 ? "border-t border-white/[0.05] pt-7" : "",
+                  ].join(" ")}
+                >
+                  <span
+                    className="mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full border border-[#AED5E8]/35 bg-transparent"
+                    aria-hidden
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[0.95rem] font-semibold tracking-[-0.015em] text-[#EAF4FA]">{entry.title}</p>
+                    <p className="mt-3 max-w-[28rem] text-[14px] leading-[2.02] tracking-[-0.01em] text-[#B4C9D6]">
+                      {entry.body}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="part2-flow" className="mt-20 scroll-mt-28" aria-labelledby="part2-flow-heading">
+          <Part1SectionTitle
+            id="part2-flow-heading"
+            glyph="tideGauge"
+            cueClassName={part2SectionCueClass}
+            glyphClassName={part2GlyphClass}
+          >
+            나의 에너지 흐름
+          </Part1SectionTitle>
+          <div className={part2PanelClass}>
+            <div className="space-y-5">
+              {PART2_ENERGY_FLOW.map((item) => (
+                <article key={item.label} className="space-y-2">
+                  <div className="flex items-end justify-between gap-4">
+                    <p className="text-[0.92rem] font-medium tracking-[-0.01em] text-[#EAF4FA]">{item.label}</p>
+                    <span className="text-[12px] font-semibold tracking-[0.02em] text-[#9CC7DC]">{item.value}%</span>
+                  </div>
+                  <div className="h-3 overflow-hidden rounded-full bg-white/[0.05]">
+                    <div
+                      className="relative h-full rounded-full bg-gradient-to-r from-[#67B7FF]/75 via-[#8BD3FF]/55 to-[#C4B5FD]/40"
+                      style={{ width: `${item.value}%` }}
+                    >
+                      <span className="absolute right-0 top-1/2 h-4 w-10 -translate-y-1/2 rounded-full bg-[#7DD3FC]/45 blur-md" />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p className="mt-8 max-w-[30rem] text-[13px] leading-[1.95] tracking-[0.01em] text-[#8EABBE]">
+              사람들과의 관계에 많은 에너지를 쓰는 편이라, 즐거움도 크지만 스스로에게 되돌아오는 충전은 상대적으로 적을 수 있어요.
+              자연 속에서 쉬거나 예술 활동에 몰입하는 시간을 조금 더 늘릴수록, 당신의 리듬은 더 안정되고 부드럽게 이어질 거예요.
+            </p>
+          </div>
+        </section>
       </section>
     </div>
   );
