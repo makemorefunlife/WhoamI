@@ -8,7 +8,7 @@ export default function Header() {
   const [sideOpen, setSideOpen] = useState(false);
   const [chromeVisible, setChromeVisible] = useState(true);
   const { isSignedIn, isLoaded } = useAuth();
-  const hideTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
 
   const clearHideTimer = useCallback(() => {
     if (hideTimerRef.current !== null) {
