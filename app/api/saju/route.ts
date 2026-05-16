@@ -2,6 +2,16 @@
 import { NextResponse } from "next/server";
 import { calculateSaju } from "@fullstackfamily/manseryeok";
 import { createClient } from "@supabase/supabase-js";
+import { branchMap, getBranch, getStem, stemMap } from "@/lib/saju/mapping";
+import {
+  calculateTenGod,
+  calculateTwelveStage,
+  getEarthlyBranchData,
+  getHeavenlyStemData,
+  getHiddenStemsData,
+  getTenGodData,
+  getTwelveStageData,
+} from "@/lib/saju/repository";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,83 +37,12 @@ type TwelveStageData = {
   meaning_ko: string;
 };
 
-// ============================================================
-// DB 조회 함수들
-// ============================================================
-
-// 천간(일간) 해석
-async function getHeavenlyStemData(stemCode: string) {
-  const { data } = await supabase
-    .from("ref_heavenly_stems")
-    .select("kor_name, metaphor_ko, strength_ko, weakness_ko, advice_ko")
-    .eq("code", stemCode)
-    .single();
-  return data;
-}
-
-// 지지(일지) 해석
-async function getEarthlyBranchData(branchCode: string) {
-  const { data } = await supabase
-    .from("ref_earthly_branches")
-    .select("kor_name, meaning_ko, strength_ko, weakness_ko, advice_ko")
-    .eq("code", branchCode)
-    .single();
-  return data;
-}
-
-// 지장간 해석
-async function getHiddenStemsData(branchCode: string) {
-  const { data } = await supabase
-    .from("ref_hidden_stems")
-    .select("stem_code, layer_type, meaning_ko, strength_ko, weakness_ko, advice_ko")
-    .eq("branch_code", branchCode)
-    .order("display_order", { ascending: true });
-  return data || [];
-}
-
-// 십성 해석
-async function getTenGodData(godCode: string) {
-  const { data } = await supabase
-    .from("ref_ten_gods")
-    .select("kor_name, meaning_ko, strength_ko, weakness_ko, advice_ko, relationship_ko")
-    .eq("code", godCode)
-    .single();
-  return data;
-}
-
-// 12운성 해석
-async function getTwelveStageData(stageCode: string) {
-  const { data } = await supabase
-    .from("ref_twelve_stages")
-    .select("kor_name, meaning_ko, strength_ko, weakness_ko, advice_ko, energy_level")
-    .eq("code", stageCode)
-    .single();
-  return data;
-}
-
-// ============================================================
-// 계산 함수들
-// ============================================================
-
-async function calculateTenGod(dayStem: string, targetStem: string): Promise<string> {
-  const { data } = await supabase
-    .from("ref_ten_god_rules")
-    .select("ten_god_code")
-    .eq("day_master_stem", dayStem)
-    .eq("target_stem", targetStem)
-    .single();
-  return data?.ten_god_code || "bigyeon";
-}
-
-async function calculateTwelveStage(dayStem: string, targetBranch: string): Promise<string> {
-  const { data } = await supabase
-    .from("ref_twelve_stage_rules")
-    .select("stage_code")
-    .eq("day_master_stem", dayStem)
-    .eq("target_branch", targetBranch)
-    .single();
-  return data?.stage_code || "byeong";
-}
+type SajuResult = {
+  yearPillar: string;
+  monthPillar: string;
+  dayPillar: string;
+  hourPillar: string;
+};
 
 async function analyzeRelations(
   pillars: { name: string; branch: string }[],
@@ -119,7 +58,7 @@ async function analyzeRelations(
       if (processed.has(pairKey)) continue;
       processed.add(pairKey);
 
-      let { data: combine } = await supabase
+      const { data: combine } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_six_combine")
@@ -132,7 +71,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: clash } = await supabase
+      const { data: clash } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_clash")
@@ -145,7 +84,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: punishment } = await supabase
+      const { data: punishment } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_punishment")
@@ -158,7 +97,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: breach } = await supabase
+      const { data: breach } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_break")
@@ -171,7 +110,7 @@ async function analyzeRelations(
         continue;
       }
 
-      let { data: harm } = await supabase
+      const { data: harm } = await supabase
         .from("ref_relation_rules")
         .select("meaning_ko, priority_score")
         .eq("relation_type", "branch_harm")
@@ -206,22 +145,7 @@ export async function POST(req: Request) {
     const [year, month, day] = birthDate.split("-").map(Number);
     const [hour, minute] = birthTime.split(":").map(Number);
 
-    const saju: any = calculateSaju(year, month, day, hour, minute);
-
-    // 헬퍼 함수
-    const getStem = (pillar: any) => pillar?.charAt(0) || "";
-    const getBranch = (pillar: any) => pillar?.charAt(1) || "";
-
-    // 🔥 한글 → 영문 코드 매핑 (이게 핵심!)
-    const stemMap: Record<string, string> = {
-      '갑': 'gap', '을': 'eul', '병': 'byeong', '정': 'jeong', '무': 'mu',
-      '기': 'gi', '경': 'gyeong', '신': 'sin', '임': 'im', '계': 'gye'
-    };
-
-    const branchMap: Record<string, string> = {
-      '자': 'ja', '축': 'chuk', '인': 'in', '묘': 'myo', '진': 'jin', '사': 'sa',
-      '오': 'o', '미': 'mi', '신': 'sin', '유': 'yu', '술': 'sul', '해': 'hae'
-    };
+    const saju = calculateSaju(year, month, day, hour, minute) as SajuResult;
 
     // 원본 값
     const rawDayStem = getStem(saju.dayPillar);
@@ -232,10 +156,12 @@ export async function POST(req: Request) {
     const dayBranch = branchMap[rawDayBranch] || rawDayBranch;
 
     const [dayStemData, dayBranchData, hiddenStemsData, twelveStageData] = await Promise.all([
-      getHeavenlyStemData(dayStem),
-      getEarthlyBranchData(dayBranch),
-      getHiddenStemsData(dayBranch),
-      calculateTwelveStage(dayStem, dayBranch).then(getTwelveStageData),
+      getHeavenlyStemData(supabase, dayStem),
+      getEarthlyBranchData(supabase, dayBranch),
+      getHiddenStemsData(supabase, dayBranch),
+      calculateTwelveStage(supabase, dayStem, dayBranch).then((stageCode) =>
+        getTwelveStageData(supabase, stageCode),
+      ),
     ]);
 
     const pillars = [
@@ -247,8 +173,8 @@ export async function POST(req: Request) {
 
     const tenGods = await Promise.all(
       pillars.map(async (p) => {
-        const godCode = await calculateTenGod(dayStem, p.stem);
-        const godData = await getTenGodData(godCode);
+        const godCode = await calculateTenGod(supabase, dayStem, p.stem);
+        const godData = await getTenGodData(supabase, godCode);
         return { pillar: p.name, godCode, godData };
       }),
     );

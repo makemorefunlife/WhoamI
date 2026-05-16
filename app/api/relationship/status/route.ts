@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromOutboundInvites,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 
@@ -27,9 +27,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const supabase = createClient(url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = createServiceRoleClient(url, serviceKey);
 
     let rows = await fetchRelationshipReportRowsForReportId(supabase, reportId);
     rows = await mergeRelationshipRowsFromOutboundInvites(

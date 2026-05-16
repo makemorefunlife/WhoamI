@@ -254,12 +254,16 @@ function LandingJourney({ active }: { active: boolean }) {
 
   useEffect(() => {
     if (!active) {
-      setPhase(0);
-      setLineIdx(0);
+      queueMicrotask(() => {
+        setPhase(0);
+        setLineIdx(0);
+      });
       return;
     }
-    setPhase(0);
-    setLineIdx(0);
+    queueMicrotask(() => {
+      setPhase(0);
+      setLineIdx(0);
+    });
     const t1 = window.setTimeout(() => setPhase(1), 400);
     const t2 = window.setTimeout(() => setPhase(2), 1200);
     return () => {

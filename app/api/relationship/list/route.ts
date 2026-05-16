@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromInboundInvites,
   mergeRelationshipRowsFromOutboundInvites,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 
@@ -75,9 +75,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const supabase = createClient(url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = createServiceRoleClient(url, serviceKey);
 
     let rows = await fetchRelationshipReportRowsForReportId(supabase, reportId);
     rows = await mergeRelationshipRowsFromOutboundInvites(
@@ -94,7 +92,7 @@ export async function GET(req: Request) {
     rows.sort((a, b) => b.id.localeCompare(a.id));
 
     const rrIds = rows.map((r) => r.id);
-    let inviteByRrId = new Map<
+    const inviteByRrId = new Map<
       string,
       { from_report_id: string; accepted_report_id: string | null }
     >();

@@ -1,34 +1,30 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Check, Wand2 } from "lucide-react";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import SurveyAnalyzingJourney from "@/components/space/SurveyAnalyzingJourney";
 import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
-import FreeAnalysisCardDeck from "@/components/report/FreeAnalysisCardDeck";
+import FreeResultAccordions from "@/components/report/FreeResultAccordions";
+import DeepReportIntroPanel from "@/components/report/DeepReportIntroPanel";
+import ReportBirthCaptureForm from "@/components/report/ReportBirthCaptureForm";
+import ReportViewTabSwitcher from "@/components/report/ReportViewTabSwitcher";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
-
-function FreeResultAccordions({
-  bodies,
-  displayName,
-}: {
-  bodies: readonly [string, string, string, string];
-  displayName: string;
-}) {
-  return (
-    <div className="space-y-4">
-      <p className="text-center text-sm leading-relaxed text-[var(--space-text)] sm:text-[0.9375rem]">
-        설문으로 알아본 현재 {displayName}님의 모습이에요
-      </p>
-      <FreeAnalysisCardDeck paragraphs={Array.from(bodies)} />
-    </div>
-  );
-}
+import {
+  buildISODateFromParts,
+  formatTimeInput,
+  hasCompleteBirthInfo,
+  parseBirthDateParts,
+} from "@/lib/report/reportBirthUtils";
+import {
+  buildAstrologyContextForLlm,
+  buildIntegratedPrompt,
+  buildSurveyOnlyPrompt,
+} from "@/lib/report/reportPromptBuilders";
+import { getPattern } from "@/lib/report/surveyPatternUtils";
 
 function deepReportIntroStorageKey(reportId: string) {
   return `ahaitsme_deep_report_pre_form_intro_v1_${reportId}`;
@@ -52,476 +48,11 @@ function markDeepReportIntroSeen(reportId: string) {
   }
 }
 
-function formatTimeInput(t?: string | null) {
-  if (!t) return "";
-  return t.length >= 5 ? t.slice(0, 5) : t;
-}
-
-/** 심화 탐사(핵심 리포트) 안내 — 결제 페이지와 동일한 타이포·플로우 레이아웃 */
-function DeepReportIntroPanel({
-  onContinue,
-  onBackToResult,
-}: {
-  onContinue: () => void;
-  onBackToResult: () => void;
-}) {
-  return (
-    <div className="space-y-6 px-0.5 py-1 sm:space-y-7">
-      <header className="space-y-1 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--space-sub)]">
-          Deep report
-        </p>
-        <h2 className="text-balance text-lg font-semibold leading-relaxed text-[var(--space-text)] sm:text-xl">
-          <span className="block">지금까지 본 건 현재의 흐름이었어.</span>
-          <span className="mt-2 block sm:mt-2.5">
-            이제 진짜 &apos;내면의 나&apos;를 만나봐.
-          </span>
-        </h2>
-      </header>
-
-      <div className="rounded-2xl border border-[var(--space-border)] bg-[var(--space-card)]/55 px-4 py-4 sm:px-5">
-        <p className="mb-3 text-center text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--space-text-muted)]">
-          핵심 리포트가 이어지는 방식
-        </p>
-        <div className="flex flex-col items-center gap-2 text-[13px] leading-snug text-[var(--space-text)] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-1 sm:gap-y-1 sm:text-sm">
-          <span className="font-medium">기존 설문</span>
-          <ArrowRight
-            className="hidden h-4 w-4 shrink-0 text-[#67B7FF] sm:inline"
-            strokeWidth={2}
-            aria-hidden
-          />
-          <span className="text-white/35 sm:hidden">→</span>
-          <span className="font-medium">추가 설문(준비중)</span>
-          <ArrowRight
-            className="hidden h-4 w-4 shrink-0 text-[#67B7FF] sm:inline"
-            strokeWidth={2}
-            aria-hidden
-          />
-          <span className="text-white/35 sm:hidden">→</span>
-          <span className="font-medium">행동 패턴·기질</span>
-          <ArrowRight
-            className="hidden h-4 w-4 shrink-0 text-[#8B7CFF] sm:inline"
-            strokeWidth={2}
-            aria-hidden
-          />
-          <span className="text-white/35 sm:hidden">→</span>
-          <span className="font-semibold text-[#FFD6A5]">통합 핵심 리포트</span>
-        </div>
-        <p className="mt-3 text-center text-xs leading-relaxed text-[var(--space-text-muted)]">
-          설문으로 읽힌 지금의 흐름과, 출생 맥락에서 정리되는 행동 패턴·기질이
-          한 줄기로 엮여 하나의 리포트로 전달돼요.
-        </p>
-      </div>
-
-      <div className="space-y-8 border-t border-[var(--space-border)] pt-6">
-        <section className="space-y-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--space-text)]">
-            <Wand2 className="h-4 w-4 text-[#8eb8ff]" strokeWidth={1.75} />
-            포함 내용
-          </h3>
-          <ul className="space-y-3 text-[15px] leading-relaxed text-[var(--space-text-muted)]">
-            <li className="flex gap-3">
-              <Check
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
-                strokeWidth={2}
-              />
-              <span>방금 진행한 설문을 바탕으로 한 심화 분석</span>
-            </li>
-            <li className="flex gap-3">
-              <Check
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
-                strokeWidth={2}
-              />
-              <span>
-                행동 패턴과 타고난 기질을 한데 모은 통합 핵심 리포트
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <Check
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
-                strokeWidth={2}
-              />
-              <span>
-                1년간 분기별·월별 업데이트
-                <span className="mt-1.5 block text-[13px] text-white/55">
-                  · 분기별 행동 가이드
-                  <br />· 월별 변화에 따른 관계 방향 조언
-                </span>
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <Check
-                className="mt-0.5 h-5 w-5 shrink-0 text-[#67B7FF]"
-                strokeWidth={2}
-              />
-              <span>
-                앞으로 더해지는 개인 분석 도구 업데이트는 추가 비용 없이 이용
-              </span>
-            </li>
-          </ul>
-        </section>
-
-        <div className="rounded-2xl border border-[#ffd6a5]/25 bg-gradient-to-br from-[#ffd6a5]/[0.08] to-transparent px-4 py-4 sm:px-5">
-          <h3 className="mb-2 text-sm font-semibold text-[var(--space-text)]">
-            가격 및 환불 정책
-          </h3>
-          <p className="text-lg font-semibold tracking-tight text-[#ffe8cc] sm:text-xl">
-            ₩9,900 / 1년
-          </p>
-          <p className="mt-0.5 text-xs text-[var(--space-text-muted)]">
-            일회성 결제
-          </p>
-          <ul className="mt-3 space-y-2 text-sm text-[var(--space-text-muted)]">
-            <li className="flex items-start gap-2.5">
-              <Check
-                className="mt-0.5 h-4 w-4 shrink-0 text-[#8fd4a8]"
-                strokeWidth={2}
-              />
-              <span>안전한 결제</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <Check
-                className="mt-0.5 h-4 w-4 shrink-0 text-[#8fd4a8]"
-                strokeWidth={2}
-              />
-              <span>결제 후 7일 이내 미사용 시 전액 환불</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="space-y-3">
-          <GlowButton
-            type="button"
-            variant="primary"
-            className="w-full !min-h-[52px] text-[0.9375rem] font-semibold"
-            onClick={onContinue}
-          >
-            지금 바로 핵심 리포트 받기
-          </GlowButton>
-          <GlowButton
-            type="button"
-            variant="ghost"
-            onClick={onBackToResult}
-            className="w-full !min-h-[46px] text-sm font-medium"
-          >
-            결과 화면으로 돌아가기
-          </GlowButton>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ReportBirthCaptureForm({
-  title,
-  description,
-  sheetYear,
-  setSheetYear,
-  sheetMonth,
-  setSheetMonth,
-  sheetDay,
-  setSheetDay,
-  sheetTime,
-  setSheetTime,
-  sheetPlace,
-  setSheetPlace,
-  sheetGender,
-  setSheetGender,
-  sheetBusy,
-  onSubmit,
-}: {
-  title: string;
-  description: string;
-  sheetYear: string;
-  setSheetYear: Dispatch<SetStateAction<string>>;
-  sheetMonth: string;
-  setSheetMonth: Dispatch<SetStateAction<string>>;
-  sheetDay: string;
-  setSheetDay: Dispatch<SetStateAction<string>>;
-  sheetTime: string;
-  setSheetTime: Dispatch<SetStateAction<string>>;
-  sheetPlace: string;
-  setSheetPlace: Dispatch<SetStateAction<string>>;
-  sheetGender: string;
-  setSheetGender: Dispatch<SetStateAction<string>>;
-  sheetBusy: boolean;
-  onSubmit: () => void | Promise<void>;
-}) {
-  return (
-    <form
-      className="space-y-5"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void onSubmit();
-      }}
-    >
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-[var(--space-text)]">{title}</h2>
-        <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
-          {description}
-        </p>
-      </div>
-      <div className="space-y-2">
-        <span className="block text-xs font-medium text-[rgba(255,255,255,0.78)]">
-          생년월일
-        </span>
-        <div className="grid grid-cols-3 gap-2">
-          <label className="space-y-1">
-            <span className="text-[10px] text-white/50">연도 (4자리)</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              autoComplete="bday-year"
-              maxLength={4}
-              value={sheetYear}
-              onChange={(e) =>
-                setSheetYear(e.target.value.replace(/\D/g, "").slice(0, 4))
-              }
-              placeholder="1990"
-              className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-[10px] text-white/50">월</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              autoComplete="bday-month"
-              maxLength={2}
-              value={sheetMonth}
-              onChange={(e) =>
-                setSheetMonth(e.target.value.replace(/\D/g, "").slice(0, 2))
-              }
-              placeholder="01"
-              className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-[10px] text-white/50">일</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              autoComplete="bday-day"
-              maxLength={2}
-              value={sheetDay}
-              onChange={(e) =>
-                setSheetDay(e.target.value.replace(/\D/g, "").slice(0, 2))
-              }
-              placeholder="15"
-              className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-3 py-3.5 text-center text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-            />
-          </label>
-        </div>
-      </div>
-      <label className="block space-y-2">
-        <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
-          출생 시각
-        </span>
-        <input
-          type="time"
-          value={sheetTime}
-          onChange={(e) => setSheetTime(e.target.value)}
-          className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-4 py-3.5 text-[rgba(255,255,255,0.96)] outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-        />
-      </label>
-      <div className="space-y-2">
-        <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
-          성별
-        </span>
-        <div
-          className="grid grid-cols-1 gap-2 sm:grid-cols-3"
-          role="group"
-          aria-label="성별"
-        >
-          {(
-            [
-              { v: "female", label: "여성" },
-              { v: "male", label: "남성" },
-              { v: "other", label: "기타 · 밝히지 않음" },
-            ] as const
-          ).map(({ v, label }) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setSheetGender(v)}
-              className={[
-                "min-h-[48px] rounded-2xl border-2 px-3 py-2.5 text-sm font-semibold transition",
-                sheetGender === v
-                  ? "border-[#67B7FF] bg-[rgba(103,183,255,0.22)] text-white shadow-[0_0_20px_rgba(103,183,255,0.25)]"
-                  : "border-white/16 bg-[#121a2c] text-[rgba(255,255,255,0.92)] hover:border-[#67B7FF]/45 hover:bg-[#161f34]",
-              ].join(" ")}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <label className="block space-y-2">
-        <span className="text-xs font-medium text-[rgba(255,255,255,0.78)]">
-          태어난 장소
-        </span>
-        <input
-          type="text"
-          placeholder="예: 서울"
-          value={sheetPlace}
-          onChange={(e) => setSheetPlace(e.target.value)}
-          className="w-full rounded-2xl border border-white/18 bg-[#0d121f] px-4 py-3.5 text-[rgba(255,255,255,0.96)] placeholder:text-white/45 outline-none focus:border-[#67B7FF]/55 focus:ring-2 focus:ring-[#67B7FF]/35"
-        />
-      </label>
-      <div className="pt-2">
-        <GlowButton type="submit" variant="secondary" className="w-full" disabled={sheetBusy}>
-          {sheetBusy ? "저장 중…" : "다음: 결제하기"}
-        </GlowButton>
-      </div>
-    </form>
-  );
-}
-
-function parseBirthDateParts(iso: string | null | undefined): {
-  y: string;
-  mo: string;
-  d: string;
-} {
-  const s = String(iso ?? "").trim();
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-  if (!m) return { y: "", mo: "", d: "" };
-  return { y: m[1], mo: m[2], d: m[3] };
-}
-
-function buildISODateFromParts(y: string, mo: string, d: string): string {
-  const ys = y.replace(/\D/g, "").slice(0, 4);
-  if (ys.length !== 4) return "";
-  const md = mo.replace(/\D/g, "").slice(0, 2);
-  const dd = d.replace(/\D/g, "").slice(0, 2);
-  if (!md || !dd) return "";
-  const mp = md.padStart(2, "0");
-  const dp = dd.padStart(2, "0");
-  const mi = Number(mp);
-  const di = Number(dp);
-  if (mi < 1 || mi > 12 || di < 1 || di > 31) return "";
-  return `${ys}-${mp}-${dp}`;
-}
-
-function hasCompleteBirthInfo(
-  row: {
-    birth_date?: string | null;
-    birth_time?: string | null;
-    birth_place?: string | null;
-  } | null,
-): boolean {
-  if (!row) return false;
-  const d = String(row.birth_date ?? "").trim();
-  const t = String(row.birth_time ?? "").trim();
-  const p = String(row.birth_place ?? "").trim();
-  return Boolean(d && t && p);
-}
-
-function buildSurveyOnlyPrompt(interpretations: Record<string, string>) {
-  const personality = Object.values(interpretations).filter(Boolean).join(", ");
-  return `
-[설문 기반 성향 — 실제 행동·패턴 해석]
-${personality || "(설문 해석 없음)"}
-
-위 설문 해석만을 근거로 분석해줘.
-`.trim();
-}
-
-function buildAstrologyContextForLlm(astro: {
-  sun: string;
-  moon: string;
-  rising: string;
-}) {
-  return `[출생 시점 도식에서 읽히는 세 축 — 최종 글에는 아래 라벨·별자리명을 그대로 쓰지 말 것]
-1) 삶에서 자기를 드러내고 추구하는 톤: "${astro.sun}" 계열 기질
-2) 안식·감정 반응의 리듬: "${astro.moon}" 계열 기질
-3) 낯선 사람에게 먼저 비치는 인상·접근 방식: "${astro.rising}" 계열 기질`;
-}
-
-function buildIntegratedPrompt({
-  interpretations,
-  sajuData,
-  astrologyText,
-}: {
-  interpretations: Record<string, string>;
-  sajuData: any | null;
-  astrologyText?: string | null;
-}) {
-  const personality = Object.values(interpretations).filter(Boolean).join(", ");
-  const s = sajuData;
-  const pillars = s?.saju
-    ? `${s.saju.yearPillar} ${s.saju.monthPillar} ${s.saju.dayPillar} ${s.saju.hourPillar}`
-    : "(사주 미계산)";
-
-  const dayStemBlock = s?.dayStemData
-    ? `- 표기: ${s.dayStemData.kor_name ?? ""}
-- 비유·기질: ${s.dayStemData.metaphor_ko ?? ""}`
-    : "(없음)";
-
-  const dayBranchBlock = s?.dayBranchData
-    ? `${s.dayBranchData.kor_name ?? ""}: ${s.dayBranchData.meaning_ko ?? ""}`
-    : "(없음)";
-
-  const hiddenBlock =
-    Array.isArray(s?.hiddenStemsData) && s.hiddenStemsData.length > 0
-      ? s.hiddenStemsData
-          .map((h: any) =>
-            `${h.stem_code ?? ""} — ${h.meaning_ko ?? ""}`.trim(),
-          )
-          .join("\n")
-      : "(없음)";
-
-  const tenGodBlock =
-    Array.isArray(s?.tenGods) && s.tenGods.length > 0
-      ? s.tenGods
-          .map(
-            (t: any) =>
-              `${t.pillar ?? ""}: ${t.godData?.kor_name ?? ""} (${t.godData?.meaning_ko ?? ""})`,
-          )
-          .join("\n")
-      : "(없음)";
-
-  const twelveBlock = s?.twelveStageData
-    ? `${s.twelveStageData.kor_name ?? ""} — ${s.twelveStageData.meaning_ko ?? ""}`
-    : "(없음)";
-
-  const relationsBlock =
-    Array.isArray(s?.relations) && s.relations.length > 0
-      ? s.relations
-          .map((r: any) => `${r.type ?? ""}: ${r.interpretation ?? ""}`)
-          .join("\n")
-      : "(없음)";
-
-  return `
-[설문 기반 성향 — 실제 행동·패턴 해석]
-${personality || "(없음)"}
-
-[사주 구조 데이터 — 원국]
-- 사주팔자: ${pillars}
-- 일간(천간)
-${dayStemBlock}
-- 일지(지지)
-${dayBranchBlock}
-- 지장간
-${hiddenBlock}
-- 십성
-${tenGodBlock}
-- 12운성
-${twelveBlock}
-- 지지 관계(합·충·형·파·해 등)
-${relationsBlock}
-
-[출생 맥락·점성 보조 데이터 — 본문에는 점성 용어 없이 일상어로만]
-${astrologyText?.trim() || "(별도 데이터 없음 — 설문·사주만으로 통합해줘)"}
-
-위 전체를 바탕으로 하나의 통합 보고서를 작성해줘. 별자리명·태양/달/라이징 같은 점성학 용어는 쓰지 말고 체험·행동으로 풀어줘.
-`.trim();
-}
-
 export default function ReportContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<Record<string, unknown> | null>(null);
   const [interpretations, setInterpretations] = useState<
     Record<string, string>
   >({});
@@ -580,12 +111,7 @@ export default function ReportContent() {
     return lines.length ? lines : [freeSummary.trim()];
   }, [freeSummary]);
 
-  const freeAccordionBodies = useMemo((): [
-    string,
-    string,
-    string,
-    string,
-  ] => {
+  const freeAccordionBodies = useMemo((): [string, string, string, string] => {
     const p = freeParagraphs.map((x) => x.trim()).filter(Boolean);
     const out = [...p];
     while (out.length < 4) out.push("");
@@ -596,8 +122,7 @@ export default function ReportContent() {
   const showPaidUnified = useMemo(() => {
     if (!isDbPaid || !sajuStatus.ok) return false;
     return (
-      reportStreaming ||
-      (unifiedReport !== null && unifiedReport.length > 0)
+      reportStreaming || (unifiedReport !== null && unifiedReport.length > 0)
     );
   }, [isDbPaid, sajuStatus.ok, reportStreaming, unifiedReport]);
 
@@ -758,7 +283,11 @@ export default function ReportContent() {
       const url = `${window.location.origin}/invite?token=${encodeURIComponent(token)}`;
       try {
         if (navigator.share) {
-          await navigator.share({ title: "친구 초대", text: "함께 관계 분석을 받아보자.", url });
+          await navigator.share({
+            title: "친구 초대",
+            text: "함께 관계 분석을 받아보자.",
+            url,
+          });
         } else {
           await navigator.clipboard.writeText(url);
           alert("초대 링크를 복사했어요. 친구에게 보내 주세요.");
@@ -773,19 +302,6 @@ export default function ReportContent() {
     }
   }
 
-  function normalizeYN(value: any): string {
-    const v = String(value ?? "")
-      .trim()
-      .toUpperCase();
-    if (v === "Y" || v === "YES") return "Y";
-    if (v === "N" || v === "NO") return "N";
-    return "";
-  }
-
-  function getPattern(a: any, b: any, c: any): string {
-    return normalizeYN(a) + normalizeYN(b) + normalizeYN(c);
-  }
-
   useEffect(() => {
     async function fetchData() {
       if (!reportId) {
@@ -797,142 +313,142 @@ export default function ReportContent() {
       setUnifiedReport(null);
       setReportStreaming(false);
       try {
-
         const { data: reportData } = await supabase
           .from("reports")
           .select("*")
           .eq("id", reportId)
           .maybeSingle();
 
-      setReport(reportData);
+        setReport(reportData);
 
-      if (typeof window !== "undefined" && reportId) {
-        localStorage.setItem("reportId", reportId);
-      }
-
-      const paid = reportData?.payment_status === "paid";
-
-      const { data: responseData } = await supabase
-        .from("survey_responses")
-        .select("answers")
-        .eq("report_id", reportId)
-        .maybeSingle();
-
-      let localInterpretations: Record<string, string> = {};
-      let localPatterns: any = null; 
-
-      if (responseData?.answers) {
-        const ans = responseData.answers;
-
-        const patterns: Record<string, string> = {
-          mbti: getPattern(ans.q1, ans.q2, ans.q3),
-          disc: getPattern(ans.q4, ans.q5, ans.q6),
-          enneagram: getPattern(ans.q7, ans.q8, ans.q9),
-          riasec: getPattern(ans.q10, ans.q11, ans.q12),
-          pss: getPattern(ans.q13, ans.q14, ans.q15),
-          tci: getPattern(ans.q16, ans.q17, ans.q18),
-        };
-
-        localPatterns = patterns;
-
-        for (const key of Object.keys(patterns)) {
-          const pattern = patterns[key];
-      
-          const { data } = await supabase
-            .from("pattern_base")
-            .select("interpretation")
-            .eq("domain", key)
-            .eq("pattern", pattern.trim())
-            .maybeSingle();
-      
-          localInterpretations[key] = data?.interpretation ?? "해석 없음";
+        if (typeof window !== "undefined" && reportId) {
+          localStorage.setItem("reportId", reportId);
         }
-      
-        setInterpretations(localInterpretations);
-      }
 
-      // 🔥 사주 구조 데이터
-      let localSajuData: any = null;
-      let sajuOk = false;
+        const paid = reportData?.payment_status === "paid";
 
-      if (!paid) {
-        setSajuStatus({ attempted: false, ok: false });
-      } else if (!hasCompleteBirthInfo(reportData)) {
-        setSajuStatus({ attempted: false, ok: false });
-      } else {
-        setSajuStatus({ attempted: true, ok: false });
-        const sr = await fetch("/api/saju", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            birthDate: reportData.birth_date,
-            birthTime: reportData.birth_time,
-            birthPlace: reportData.birth_place ?? undefined,
-            reportId,
-          }),
-        });
+        const { data: responseData } = await supabase
+          .from("survey_responses")
+          .select("answers")
+          .eq("report_id", reportId)
+          .maybeSingle();
 
-        if (sr.ok) {
-          const j = await sr.json();
-          localSajuData = j;
-          sajuOk = true;
-          setSajuStatus({ attempted: true, ok: true });
+        const localInterpretations: Record<string, string> = {};
+        let localPatterns: Record<string, string> | null = null;
+
+        if (responseData?.answers) {
+          const ans = responseData.answers;
+
+          const patterns: Record<string, string> = {
+            mbti: getPattern(ans.q1, ans.q2, ans.q3),
+            disc: getPattern(ans.q4, ans.q5, ans.q6),
+            enneagram: getPattern(ans.q7, ans.q8, ans.q9),
+            riasec: getPattern(ans.q10, ans.q11, ans.q12),
+            pss: getPattern(ans.q13, ans.q14, ans.q15),
+            tci: getPattern(ans.q16, ans.q17, ans.q18),
+          };
+
+          localPatterns = patterns;
+
+          for (const key of Object.keys(patterns)) {
+            const pattern = patterns[key];
+
+            const { data } = await supabase
+              .from("pattern_base")
+              .select("interpretation")
+              .eq("domain", key)
+              .eq("pattern", pattern.trim())
+              .maybeSingle();
+
+            localInterpretations[key] = data?.interpretation ?? "해석 없음";
+          }
+
+          setInterpretations(localInterpretations);
+        }
+
+        // 🔥 사주 구조 데이터
+        let localSajuData: Parameters<typeof buildIntegratedPrompt>[0]["sajuData"] =
+          null;
+        let sajuOk = false;
+
+        if (!paid) {
+          setSajuStatus({ attempted: false, ok: false });
+        } else if (!hasCompleteBirthInfo(reportData)) {
+          setSajuStatus({ attempted: false, ok: false });
         } else {
           setSajuStatus({ attempted: true, ok: false });
-        }
-      }
-
-      // 🔥 점성학 API 호출 (추가!)
-      let localAstrologyText: string | null = null;
-      if (paid && hasCompleteBirthInfo(reportData)) {
-        try {
-          const birthDateObj = new Date(reportData.birth_date);
-          const ar = await fetch("/api/astrology", {
+          const sr = await fetch("/api/saju", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              year: birthDateObj.getFullYear(),
-              month: birthDateObj.getMonth() + 1,
-              day: birthDateObj.getDate(),
-              hour: reportData.birth_time
-                ? parseInt(reportData.birth_time.split(":")[0])
-                : 12,
-              minute: reportData.birth_time
-                ? parseInt(reportData.birth_time.split(":")[1])
-                : 0,
-              latitude: 37.5665, // TODO: 실제 위도로 대체
-              longitude: 126.978, // TODO: 실제 경도로 대체
-              timezone: 9,
+              birthDate: reportData.birth_date,
+              birthTime: reportData.birth_time,
+              birthPlace: reportData.birth_place ?? undefined,
+              reportId,
             }),
           });
-          if (ar.ok) {
-            const astroData = await ar.json();
-            const interp =
-              typeof astroData.interpretation === "string"
-                ? astroData.interpretation.trim()
-                : "";
-            if (interp) {
-              localAstrologyText = interp;
-            } else {
-              const raw = astroData.raw as
-                | { sun?: string; moon?: string; rising?: string }
-                | undefined;
-              const sun = raw?.sun ?? astroData.sun;
-              const moon = raw?.moon ?? astroData.moon;
-              const rising = raw?.rising ?? astroData.rising;
-              if (sun && moon && rising) {
-                localAstrologyText = buildAstrologyContextForLlm({
-                  sun,
-                  moon,
-                  rising,
-                });
+
+          if (sr.ok) {
+            const j = await sr.json();
+            localSajuData = j;
+            sajuOk = true;
+            setSajuStatus({ attempted: true, ok: true });
+          } else {
+            setSajuStatus({ attempted: true, ok: false });
+          }
+        }
+
+        // 🔥 점성학 API 호출 (추가!)
+        let localAstrologyText: string | null = null;
+        if (paid && hasCompleteBirthInfo(reportData)) {
+          try {
+            const birthDateObj = new Date(reportData.birth_date);
+            const ar = await fetch("/api/astrology", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                year: birthDateObj.getFullYear(),
+                month: birthDateObj.getMonth() + 1,
+                day: birthDateObj.getDate(),
+                hour: reportData.birth_time
+                  ? parseInt(reportData.birth_time.split(":")[0])
+                  : 12,
+                minute: reportData.birth_time
+                  ? parseInt(reportData.birth_time.split(":")[1])
+                  : 0,
+                latitude: 37.5665, // TODO: 실제 위도로 대체
+                longitude: 126.978, // TODO: 실제 경도로 대체
+                timezone: 9,
+              }),
+            });
+            if (ar.ok) {
+              const astroData = await ar.json();
+              const interp =
+                typeof astroData.interpretation === "string"
+                  ? astroData.interpretation.trim()
+                  : "";
+              if (interp) {
+                localAstrologyText = interp;
+              } else {
+                const raw = astroData.raw as
+                  | { sun?: string; moon?: string; rising?: string }
+                  | undefined;
+                const sun = raw?.sun ?? astroData.sun;
+                const moon = raw?.moon ?? astroData.moon;
+                const rising = raw?.rising ?? astroData.rising;
+                if (sun && moon && rising) {
+                  localAstrologyText = buildAstrologyContextForLlm({
+                    sun,
+                    moon,
+                    rising,
+                  });
+                }
               }
             }
+          } catch (e) {
+            console.error("점성학 API 실패:", e);
           }
-        } catch (e) {
-          console.error("점성학 API 실패:", e);
         }
-      }
 
         // 🔥 관계/보조 텍스트
         let localRelationship: string | null = null;
@@ -956,101 +472,102 @@ export default function ReportContent() {
         // 🔥 LLM 호출
         try {
           if (!paid) {
-          const promptData = buildSurveyOnlyPrompt(localInterpretations);
-          const res = await fetch("/api/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "free",
-              userInput: promptData,
-            }),
-          });
-          const data = await res.json();
-          setFreeSummary(data.free ?? null);
-          setPaidSummary(data.paid ?? null);
-          setUnifiedReport(null);
-          } else {
-          try {
-            const freePromptData = buildSurveyOnlyPrompt(localInterpretations);
-            const freeRes = await fetch("/api/llm", {
+            const promptData = buildSurveyOnlyPrompt(localInterpretations);
+            const res = await fetch("/api/llm", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 mode: "free",
-                userInput: freePromptData,
+                userInput: promptData,
               }),
             });
-            const freeData = await freeRes.json();
-            setFreeSummary(freeData.free ?? null);
-          } catch {
-            setFreeSummary(null);
-          }
-
-          const detailedRes = await fetch("/api/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "detailed_survey",
-              patterns: localPatterns,
-            }),
-          });
-          const detailedData = await detailedRes.json();
-
-          const combinedAstrology = [localAstrologyText, localRelationship]
-            .filter(Boolean)
-            .join("\n\n");
-
-          if (hasCompleteBirthInfo(reportData) && sajuOk) {
-            setLoading(false);
-            setReportStreaming(true);
-            setUnifiedReport("");
+            const data = await res.json();
+            setFreeSummary(data.free ?? null);
+            setPaidSummary(data.paid ?? null);
+            setUnifiedReport(null);
+          } else {
             try {
-              const integratedRes = await fetch("/api/llm", {
+              const freePromptData =
+                buildSurveyOnlyPrompt(localInterpretations);
+              const freeRes = await fetch("/api/llm", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  mode: "integrated",
-                  detailedSurvey: detailedData.report,
-                  sajuData: localSajuData ?? null,
-                  astrologyText: combinedAstrology || null,
-                  stream: true,
+                  mode: "free",
+                  userInput: freePromptData,
                 }),
               });
-
-              if (!integratedRes.ok) {
-                const errJson = await integratedRes.json().catch(() => ({}));
-                setUnifiedReport(
-                  `통합 리포트를 만들지 못했어요. ${String((errJson as { error?: string }).error ?? "잠시 후 다시 열어보세요.")}`,
-                );
-              } else {
-                const ct = integratedRes.headers.get("content-type") ?? "";
-                if (ct.includes("text/plain") && integratedRes.body) {
-                  const reader = integratedRes.body.getReader();
-                  const decoder = new TextDecoder();
-                  let acc = "";
-                  while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    acc += decoder.decode(value, { stream: true });
-                    setUnifiedReport(acc);
-                  }
-                  setUnifiedReport(acc);
-                } else {
-                  const integratedData = await integratedRes.json();
-                  setUnifiedReport(integratedData.report ?? "");
-                }
-              }
-            } catch (streamErr) {
-              console.error(streamErr);
-              setUnifiedReport(
-                "통합 리포트를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
-              );
-            } finally {
-              setReportStreaming(false);
+              const freeData = await freeRes.json();
+              setFreeSummary(freeData.free ?? null);
+            } catch {
+              setFreeSummary(null);
             }
-          } else {
-            setUnifiedReport(null);
-          }
+
+            const detailedRes = await fetch("/api/llm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode: "detailed_survey",
+                patterns: localPatterns,
+              }),
+            });
+            const detailedData = await detailedRes.json();
+
+            const combinedAstrology = [localAstrologyText, localRelationship]
+              .filter(Boolean)
+              .join("\n\n");
+
+            if (hasCompleteBirthInfo(reportData) && sajuOk) {
+              setLoading(false);
+              setReportStreaming(true);
+              setUnifiedReport("");
+              try {
+                const integratedRes = await fetch("/api/llm", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    mode: "integrated",
+                    detailedSurvey: detailedData.report,
+                    sajuData: localSajuData ?? null,
+                    astrologyText: combinedAstrology || null,
+                    stream: true,
+                  }),
+                });
+
+                if (!integratedRes.ok) {
+                  const errJson = await integratedRes.json().catch(() => ({}));
+                  setUnifiedReport(
+                    `통합 리포트를 만들지 못했어요. ${String((errJson as { error?: string }).error ?? "잠시 후 다시 열어보세요.")}`,
+                  );
+                } else {
+                  const ct = integratedRes.headers.get("content-type") ?? "";
+                  if (ct.includes("text/plain") && integratedRes.body) {
+                    const reader = integratedRes.body.getReader();
+                    const decoder = new TextDecoder();
+                    let acc = "";
+                    while (true) {
+                      const { done, value } = await reader.read();
+                      if (done) break;
+                      acc += decoder.decode(value, { stream: true });
+                      setUnifiedReport(acc);
+                    }
+                    setUnifiedReport(acc);
+                  } else {
+                    const integratedData = await integratedRes.json();
+                    setUnifiedReport(integratedData.report ?? "");
+                  }
+                }
+              } catch (streamErr) {
+                console.error(streamErr);
+                setUnifiedReport(
+                  "통합 리포트를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
+                );
+              } finally {
+                setReportStreaming(false);
+              }
+            } else {
+              setUnifiedReport(null);
+            }
             setPaidSummary(null);
           }
         } catch (e) {
@@ -1075,9 +592,7 @@ export default function ReportContent() {
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
           <SurveyAnalyzingJourney
             active
-            mode={
-              report?.payment_status === "paid" ? "landing" : "flight"
-            }
+            mode={report?.payment_status === "paid" ? "landing" : "flight"}
           />
         </div>
       </SpaceBackground>
@@ -1185,52 +700,23 @@ export default function ReportContent() {
               ) : (
                 <>
                   {isDbPaid && showPaidUnified && (
-                    <div
-                      className="mx-auto inline-flex w-full max-w-md rounded-full border border-white/15 bg-[#0d121f] p-0.5"
-                      role="tablist"
-                      aria-label="분석 보기"
-                    >
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={resultViewTab === "basic"}
-                        onClick={() => {
-                          setResultViewTab("basic");
-                          void router.replace(
-                            `/result?id=${encodeURIComponent(reportId)}&view=basic`,
-                            { scroll: false },
-                          );
-                        }}
-                        className={[
-                          "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
-                          resultViewTab === "basic"
-                            ? "bg-gradient-to-r from-[#F0D797] via-[#E3C47B] to-[#D6B46A] text-[#1b2230] ring-1 ring-[#F0D797]/35 shadow-[0_10px_24px_rgba(214,180,106,0.34)]"
-                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
-                        ].join(" ")}
-                      >
-                        기본 분석
-                      </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={resultViewTab === "premium"}
-                        onClick={() => {
-                          setResultViewTab("premium");
-                          void router.replace(
-                            `/result?id=${encodeURIComponent(reportId)}&view=premium`,
-                            { scroll: false },
-                          );
-                        }}
-                        className={[
-                          "min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
-                          resultViewTab === "premium"
-                            ? "bg-gradient-to-r from-[#F3DB9E] via-[#E7C984] to-[#D6B46A] text-[#1b2230] ring-1 ring-[#F3DB9E]/35 shadow-[0_10px_24px_rgba(214,180,106,0.38)]"
-                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
-                        ].join(" ")}
-                      >
-                        심화 분석
-                      </button>
-                    </div>
+                    <ReportViewTabSwitcher
+                      resultViewTab={resultViewTab}
+                      onSelectBasic={() => {
+                        setResultViewTab("basic");
+                        void router.replace(
+                          `/result?id=${encodeURIComponent(reportId)}&view=basic`,
+                          { scroll: false },
+                        );
+                      }}
+                      onSelectPremium={() => {
+                        setResultViewTab("premium");
+                        void router.replace(
+                          `/result?id=${encodeURIComponent(reportId)}&view=premium`,
+                          { scroll: false },
+                        );
+                      }}
+                    />
                   )}
 
                   {isDbPaid &&
@@ -1242,9 +728,9 @@ export default function ReportContent() {
                         </p>
                         {!birthInfoComplete && (
                           <p className="text-center text-sm leading-relaxed text-[var(--space-text-muted)]">
-                            생년월일, 시간, 장소를 입력하면 심화 리포트를 만들 수
-                            있어요. 아래 &apos;심화 분석하기&apos;에서 입력할 수
-                            있어요.
+                            생년월일, 시간, 장소를 입력하면 심화 리포트를 만들
+                            수 있어요. 아래 &apos;심화 분석하기&apos;에서 입력할
+                            수 있어요.
                           </p>
                         )}
                         {birthInfoComplete &&
@@ -1291,7 +777,8 @@ export default function ReportContent() {
                             )}
                             {showPaidUnified && (
                               <p className="rounded-xl border border-[#D6B46A]/25 bg-[#D6B46A]/[0.08] px-3 py-2 text-center text-xs leading-relaxed text-[#F0D797]">
-                                심화 분석은 상단의 ‘심화 분석’ 탭에서 이어서 볼 수 있어요.
+                                심화 분석은 상단의 ‘심화 분석’ 탭에서 이어서 볼
+                                수 있어요.
                               </p>
                             )}
                             <GlowButton
@@ -1299,10 +786,7 @@ export default function ReportContent() {
                               variant="secondary"
                               className="w-full !min-h-[48px] text-[0.9375rem] font-medium"
                               onClick={() => {
-                                if (
-                                  typeof window !== "undefined" &&
-                                  reportId
-                                ) {
+                                if (typeof window !== "undefined" && reportId) {
                                   localStorage.setItem("reportId", reportId);
                                 }
                                 router.push("/survey?redo=1");
@@ -1363,7 +847,8 @@ export default function ReportContent() {
                               통합 분석 리포트
                             </p>
                             <p className="mt-1 text-xs leading-relaxed text-[var(--space-text-muted)]">
-                              설문과 추가 데이터 분석을 한 흐름으로 정리했습니다.
+                              설문과 추가 데이터 분석을 한 흐름으로
+                              정리했습니다.
                             </p>
                           </div>
 
@@ -1413,7 +898,11 @@ export default function ReportContent() {
                           </GlowButton>
                           <GlowButton
                             type="button"
-                            variant={inviteUsed || inviteBusy ? "disabled" : "secondary"}
+                            variant={
+                              inviteUsed || inviteBusy
+                                ? "disabled"
+                                : "secondary"
+                            }
                             className="w-full !min-h-[48px] py-3 text-sm"
                             disabled={inviteUsed || inviteBusy}
                             onClick={() => void handleInviteFriend()}

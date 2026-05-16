@@ -1,5 +1,5 @@
 export function generateCombinedReport(
-  survey: any,
+  survey: { q2?: unknown; q6?: unknown } | null | undefined,
   sajuInterpretation: string,
 ) {
   // 1️⃣ 지금 너는 (설문 기반)

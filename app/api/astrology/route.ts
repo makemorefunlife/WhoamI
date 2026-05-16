@@ -37,19 +37,8 @@ const ASTROLOGY_SYSTEM_PROMPT = `당신은 20년 경력의 점성학 전문가�
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    let {
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      second,
-      timezone,
-      latitude,
-      longitude,
-      birthPlace,
-      gender,
-    } = body;
+    const { year, month, day, latitude, longitude, birthPlace, gender } = body;
+    let { hour, minute, second, timezone } = body;
 
     if (!year || !month || !day || !latitude || !longitude) {
       return NextResponse.json(

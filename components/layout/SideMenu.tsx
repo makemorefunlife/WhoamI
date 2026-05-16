@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 function MenuRow({
   href,
@@ -47,14 +47,10 @@ export default function SideMenu({
   open: boolean;
   onClose: () => void;
 }) {
-  const [reportId, setReportId] = useState("");
-
-  useEffect(() => {
-    setReportId(
-      typeof window !== "undefined"
-        ? localStorage.getItem("reportId")?.trim() ?? ""
-        : "",
-    );
+  const reportId = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    void open;
+    return localStorage.getItem("reportId")?.trim() ?? "";
   }, [open]);
 
   const dashboardHref = reportId

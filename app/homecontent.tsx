@@ -1,7 +1,7 @@
 // app/homecontent.tsx
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SignIn, useAuth } from "@clerk/nextjs";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,6 +16,14 @@ const heroTitleFont = Gloria_Hallelujah({
   subsets: ["latin"],
   display: "swap",
 });
+
+const HOME_TWINKLE_COUNT = 50;
+
+/** Deterministic [0,1) — pure substitute for Math.random in render */
+function homeTwinkleU01(seed: number, salt: number) {
+  const x = Math.sin(seed * 12.9898 + salt * 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
 
 export default function HomeContent() {
   const router = useRouter();
@@ -44,7 +52,7 @@ export default function HomeContent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = localStorage.getItem("surveyNickname");
-    if (saved) setNickname(saved);
+    if (saved) queueMicrotask(() => setNickname(saved));
   }, []);
 
   useEffect(() => {
@@ -62,7 +70,9 @@ export default function HomeContent() {
   }, [authModalOpen]);
 
   useEffect(() => {
-    if (isSignedIn && authModalOpen) setAuthModalOpen(false);
+    if (isSignedIn && authModalOpen) {
+      queueMicrotask(() => setAuthModalOpen(false));
+    }
   }, [isSignedIn, authModalOpen]);
 
   useEffect(() => {
@@ -70,17 +80,21 @@ export default function HomeContent() {
     let cancelled = false;
     const reportId = typeof window !== "undefined" ? localStorage.getItem("reportId")?.trim() ?? "" : "";
     if (!reportId) {
-      setResume({
-        loading: false,
-        reportId: null,
-        hasReport: false,
-        surveyCompleted: false,
-        name: null,
+      queueMicrotask(() => {
+        setResume({
+          loading: false,
+          reportId: null,
+          hasReport: false,
+          surveyCompleted: false,
+          name: null,
+        });
       });
       return;
     }
 
-    setResume((s) => ({ ...s, loading: true }));
+    queueMicrotask(() => {
+      setResume((s) => ({ ...s, loading: true }));
+    });
     void (async () => {
       try {
         const res = await fetch(
@@ -134,7 +148,9 @@ export default function HomeContent() {
     if (!isLoaded || !isSignedIn) return;
     const rid = resume.reportId?.trim();
     if (!rid || !resume.surveyCompleted) {
-      setRelCounts({ pending: 0, completed: 0 });
+      queueMicrotask(() => {
+        setRelCounts({ pending: 0, completed: 0 });
+      });
       return;
     }
     let cancelled = false;
@@ -241,6 +257,20 @@ export default function HomeContent() {
     void launchSurvey(t);
   }, [nickname, launchSurvey]);
 
+  const homeTwinkleStyles = useMemo(
+    () =>
+      Array.from({ length: HOME_TWINKLE_COUNT }, (_, i) => ({
+        width: homeTwinkleU01(i, 1) * 3 + 1 + "px",
+        height: homeTwinkleU01(i, 2) * 3 + 1 + "px",
+        top: homeTwinkleU01(i, 3) * 100 + "%",
+        left: homeTwinkleU01(i, 4) * 100 + "%",
+        opacity: homeTwinkleU01(i, 5) * 0.5 + 0.3,
+        animationDelay: homeTwinkleU01(i, 6) * 5 + "s",
+        animationDuration: homeTwinkleU01(i, 7) * 3 + 2 + "s",
+      })),
+    [],
+  );
+
   if (!isLoaded) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a2a]">
@@ -256,19 +286,11 @@ export default function HomeContent() {
     <div className="relative min-h-screen bg-gradient-to-br from-[#0a0a2a] via-[#12123a] to-[#1a1a4a] overflow-hidden">
       {/* 반짝이는 별들 */}
       <div className="absolute inset-0">
-        {[...Array(50)].map((_, i) => (
+        {homeTwinkleStyles.map((style, i) => (
           <div
             key={i}
             className="absolute bg-white rounded-full animate-twinkle"
-            style={{
-              width: Math.random() * 3 + 1 + "px",
-              height: Math.random() * 3 + 1 + "px",
-              top: Math.random() * 100 + "%",
-              left: Math.random() * 100 + "%",
-              opacity: Math.random() * 0.5 + 0.3,
-              animationDelay: Math.random() * 5 + "s",
-              animationDuration: Math.random() * 3 + 2 + "s",
-            }}
+            style={style}
           />
         ))}
       </div>

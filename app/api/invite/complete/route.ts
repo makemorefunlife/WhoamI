@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export async function POST(req: Request) {
   try {
@@ -28,9 +28,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabase = createClient(url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    const supabase = createServiceRoleClient(url, serviceKey);
 
     const { data, error } = await supabase
       .from("invites")
