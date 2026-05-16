@@ -242,10 +242,10 @@ function FlightJourney({ active }: { active: boolean }) {
 }
 
 const LANDING_STATUS = [
-  "행성 표면에 착륙했어요.",
-  "착륙 다리를 펼치는 중이에요.",
-  "분석 장비를 세팅하고 있어요.",
-  "신호를 읽고 있어요.",
+  "🌍 행성 표면에 착륙했어요.",
+  "🔗 행성-탐사선 시그널 페어링 중...",
+  "📡 분석 자료 획득 중.",
+  "⚡ 신호를 분석 중.",
 ];
 
 function LandingJourney({ active }: { active: boolean }) {

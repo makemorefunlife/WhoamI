@@ -1,12 +1,40 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
 import SideMenu from "./SideMenu";
 
 export default function Header() {
   const [sideOpen, setSideOpen] = useState(false);
+  const [chromeVisible, setChromeVisible] = useState(true);
   const { isSignedIn, isLoaded } = useAuth();
+  const hideTimerRef = useRef<number | null>(null);
+
+  const clearHideTimer = useCallback(() => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHide = useCallback(
+    (delay = 1800) => {
+      clearHideTimer();
+      if (sideOpen) return;
+      hideTimerRef.current = window.setTimeout(() => {
+        setChromeVisible(false);
+      }, delay);
+    },
+    [clearHideTimer, sideOpen],
+  );
+
+  const revealChrome = useCallback(
+    (delay = 2200) => {
+      setChromeVisible(true);
+      scheduleHide(delay);
+    },
+    [scheduleHide],
+  );
 
   const closeAll = useCallback(() => {
     setSideOpen(false);
@@ -31,12 +59,51 @@ export default function Header() {
     }
   }, [sideOpen]);
 
+  useEffect(() => {
+    if (sideOpen) {
+      clearHideTimer();
+      setChromeVisible(true);
+      return;
+    }
+    scheduleHide(1800);
+    return clearHideTimer;
+  }, [clearHideTimer, scheduleHide, sideOpen]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--app-header-offset",
+      chromeVisible ? "4.25rem" : "0.75rem",
+    );
+    return () => {
+      document.documentElement.style.removeProperty("--app-header-offset");
+    };
+  }, [chromeVisible]);
+
   return (
     <>
-      <header className="fixed left-0 right-0 top-0 z-[220] flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0a0f1a]/92 px-3 backdrop-blur-md sm:px-4">
+      <div
+        className="fixed left-0 right-0 top-0 z-[210] h-16 bg-transparent"
+        onMouseEnter={() => revealChrome(2200)}
+        onMouseMove={() => revealChrome(1800)}
+        onTouchStart={() => revealChrome(2600)}
+        aria-hidden
+      />
+      <header
+        className={[
+          "fixed left-0 right-0 top-0 z-[220] flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#0a0f1a]/92 px-3 backdrop-blur-md transition-all duration-300 sm:px-4",
+          chromeVisible || sideOpen
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-[calc(100%+0.5rem)] opacity-0",
+        ].join(" ")}
+        onMouseEnter={() => revealChrome(2400)}
+        onMouseMove={() => revealChrome(2000)}
+        onTouchStart={() => revealChrome(2600)}
+        onFocusCapture={() => revealChrome(3000)}
+      >
         <button
           type="button"
           onClick={() => {
+            revealChrome(3200);
             setSideOpen((v) => !v);
           }}
           className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-white/90 transition hover:bg-white/[0.08]"

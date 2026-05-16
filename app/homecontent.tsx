@@ -28,7 +28,7 @@ function homeTwinkleU01(seed: number, salt: number) {
 export default function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, userId } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [nickname, setNickname] = useState("");
   const [creatingReport, setCreatingReport] = useState(false);
@@ -78,24 +78,45 @@ export default function HomeContent() {
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     let cancelled = false;
-    const reportId = typeof window !== "undefined" ? localStorage.getItem("reportId")?.trim() ?? "" : "";
-    if (!reportId) {
-      queueMicrotask(() => {
-        setResume({
-          loading: false,
-          reportId: null,
-          hasReport: false,
-          surveyCompleted: false,
-          name: null,
-        });
-      });
-      return;
-    }
-
     queueMicrotask(() => {
       setResume((s) => ({ ...s, loading: true }));
     });
     void (async () => {
+      let reportId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("reportId")?.trim() ?? ""
+          : "";
+
+      if (!reportId && userId) {
+        const { data: fallbackRows, error: fallbackErr } = await supabase
+          .from("reports")
+          .select("id")
+          .eq("clerk_user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (!fallbackErr) {
+          const restoredId = fallbackRows?.[0]?.id;
+          if (restoredId) {
+            reportId = restoredId;
+            localStorage.setItem("reportId", restoredId);
+          }
+        }
+      }
+
+      if (!reportId) {
+        if (!cancelled) {
+          setResume({
+            loading: false,
+            reportId: null,
+            hasReport: false,
+            surveyCompleted: false,
+            name: null,
+          });
+        }
+        return;
+      }
+
       try {
         const res = await fetch(
           `/api/report/session-status?reportId=${encodeURIComponent(reportId)}`,
@@ -142,7 +163,7 @@ export default function HomeContent() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, userId]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
@@ -186,6 +207,7 @@ export default function HomeContent() {
         .insert([
           {
             name: nameTrimmed,
+            clerk_user_id: userId,
             birth_date: null,
             birth_time: null,
             birth_place: null,
@@ -245,7 +267,7 @@ export default function HomeContent() {
         }
       }, 1400);
     },
-    [router],
+    [router, userId],
   );
 
   const onNicknameSubmit = useCallback(() => {
@@ -402,13 +424,13 @@ export default function HomeContent() {
             </button>
           </div>
         ) : resume.loading ? (
-          <div className="mt-10 text-sm text-white/55 sm:mt-14">불러오는 중…</div>
+          <div className="mt-8 text-sm text-white/55 sm:mt-10">불러오는 중…</div>
         ) : resume.reportId &&
           resume.hasReport &&
           resume.surveyCompleted ? (
-          <div className="mx-auto mt-10 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-14 sm:space-y-7">
-            <h2 className="text-center text-[1.35rem] font-medium tracking-[-0.02em] text-white/92 sm:text-2xl">
-              🚀 탐사실
+          <div className="mx-auto mt-8 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-10 sm:space-y-7">
+            <h2 className="text-center text-[1.2rem] font-medium tracking-[-0.02em] text-white/90 sm:text-[1.45rem]">
+              탐사실
             </h2>
             <div className="flex flex-col gap-3 sm:gap-3.5">
               <GlowButton
@@ -470,7 +492,7 @@ export default function HomeContent() {
             </GlowButton>
           </div>
         ) : resume.reportId && resume.hasReport && !resume.surveyCompleted ? (
-          <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-14">
+          <div className="mt-8 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-10">
             <p className="text-left text-sm leading-relaxed text-white/75">
               설문을 아직 마치지 않았어요. 이어서 하거나, 새 탐사를 시작할 수
               있어요.
@@ -515,7 +537,7 @@ export default function HomeContent() {
             </GlowButton>
           </div>
         ) : (
-          <div className="mt-10 w-full max-w-sm animate-fade-in-up delay-200 sm:mt-14">
+          <div className="mt-8 w-full max-w-sm animate-fade-in-up delay-200 sm:mt-10">
             <p className="mb-3 text-left text-sm leading-relaxed text-white/70">
               사용할 닉네임을 입력해 주세요.
             </p>
@@ -640,36 +662,34 @@ export default function HomeContent() {
                   <span className="block text-xl leading-none">×</span>
                 </button>
               </div>
-              <div className="[&_.cl-card]:shadow-none [&_.cl-card]:border-0 [&_.cl-card]:bg-transparent">
-                <SignIn
-                  routing="hash"
-                  signUpUrl="/sign-up"
-                  fallbackRedirectUrl="/"
-                  appearance={{
-                    variables: {
-                      colorPrimary: "#4a90e2",
-                      colorText: "#0f172a",
-                      colorTextSecondary: "#64748b",
-                      borderRadius: "0.75rem",
-                      fontSize: "0.9375rem",
-                    },
-                    elements: {
-                      rootBox: "w-full",
-                      card: "shadow-none border-0 bg-transparent p-0",
-                      headerTitle: "hidden",
-                      headerSubtitle: "hidden",
-                      socialButtonsBlockButton:
-                        "border-slate-200 bg-white hover:bg-slate-50 text-slate-800",
-                      formButtonPrimary:
-                        "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] hover:opacity-95",
-                      footerAction: "text-[#4a90e2]",
-                      identityPreviewText: "text-slate-700",
-                      formFieldInput:
-                        "border-slate-200 bg-white text-slate-900",
-                    },
-                  }}
-                />
-              </div>
+              <SignIn
+                routing="hash"
+                signUpUrl="/sign-up"
+                fallbackRedirectUrl="/"
+                appearance={{
+                  variables: {
+                    colorPrimary: "#4a90e2",
+                    colorText: "#0f172a",
+                    colorTextSecondary: "#64748b",
+                    borderRadius: "0.75rem",
+                    fontSize: "0.9375rem",
+                  },
+                  elements: {
+                    rootBox: "w-full",
+                    card: "shadow-none border-0 bg-transparent p-0",
+                    headerTitle: "hidden",
+                    headerSubtitle: "hidden",
+                    socialButtonsBlockButton:
+                      "border-slate-200 bg-white hover:bg-slate-50 text-slate-800",
+                    formButtonPrimary:
+                      "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] hover:opacity-95",
+                    footerAction: "text-[#4a90e2]",
+                    identityPreviewText: "text-slate-700",
+                    formFieldInput:
+                      "border-slate-200 bg-white text-slate-900",
+                  },
+                }}
+              />
             </motion.div>
           </motion.div>
         )}

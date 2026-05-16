@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
 
 function MenuRow({
   href,
@@ -47,19 +46,6 @@ export default function SideMenu({
   open: boolean;
   onClose: () => void;
 }) {
-  const reportId = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    void open;
-    return localStorage.getItem("reportId")?.trim() ?? "";
-  }, [open]);
-
-  const dashboardHref = reportId
-    ? `/dashboard?reportId=${encodeURIComponent(reportId)}`
-    : "/dashboard";
-  const relHref = reportId
-    ? `/relationships?myReportId=${encodeURIComponent(reportId)}`
-    : "/relationships";
-
   return (
     <>
       <div
@@ -96,7 +82,7 @@ export default function SideMenu({
           <MenuRow href="/" onNavigate={onClose}>
             🚀 나의 탐사실 (홈)
           </MenuRow>
-          <MenuRow href={dashboardHref} onNavigate={onClose}>
+          <MenuRow href="/dashboard" onNavigate={onClose}>
             📊 대시보드
           </MenuRow>
 
@@ -104,7 +90,7 @@ export default function SideMenu({
             <MenuRow href="/" onNavigate={onClose}>
               ✨ 새로운 기본 탐사
             </MenuRow>
-            <MenuRow href={relHref} onNavigate={onClose}>
+            <MenuRow href="/relationships" onNavigate={onClose}>
               👥 새로운 관계 탐사
             </MenuRow>
           </SubBlock>
