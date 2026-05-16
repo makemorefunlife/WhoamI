@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import { supabase } from "@/lib/supabase/client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SpaceBackground from "@/components/space/SpaceBackground";
@@ -11,20 +12,31 @@ import FreeResultAccordions from "@/components/report/FreeResultAccordions";
 import DeepReportIntroPanel from "@/components/report/DeepReportIntroPanel";
 import ReportBirthCaptureForm from "@/components/report/ReportBirthCaptureForm";
 import ReportViewTabSwitcher from "@/components/report/ReportViewTabSwitcher";
+import ReportSectionLoading from "@/components/report/ReportSectionLoading";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
-import AdvancedExplorationReport from "@/components/report/AdvancedExplorationReport";
+import { runPremiumReportPipeline } from "@/lib/report/runPremiumReportPipeline";
+import {
+  readUnifiedReportCache,
+  writeUnifiedReportCache,
+} from "@/lib/report/unifiedReportCache";
 import {
   buildISODateFromParts,
   formatTimeInput,
   hasCompleteBirthInfo,
   parseBirthDateParts,
 } from "@/lib/report/reportBirthUtils";
-import {
-  buildAstrologyContextForLlm,
-  buildIntegratedPrompt,
-  buildSurveyOnlyPrompt,
-} from "@/lib/report/reportPromptBuilders";
+import { buildSurveyOnlyPrompt } from "@/lib/report/reportPromptBuilders";
 import { getPattern } from "@/lib/report/surveyPatternUtils";
+
+const AdvancedExplorationReport = dynamic(
+  () => import("@/components/report/AdvancedExplorationReport"),
+  {
+    ssr: false,
+    loading: () => (
+      <ReportSectionLoading label="심화 리포트 화면을 불러오는 중…" />
+    ),
+  },
+);
 
 function deepReportIntroStorageKey(reportId: string) {
   return `ahaitsme_deep_report_pre_form_intro_v1_${reportId}`;
@@ -83,6 +95,12 @@ export default function ReportContent() {
   const [sheetBusy, setSheetBusy] = useState(false);
   const [inviteUsed, setInviteUsed] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+  const surveyContextRef = useRef<{
+    interpretations: Record<string, string>;
+    patterns: Record<string, string> | null;
+  }>({ interpretations: {}, patterns: null });
+  const premiumPipelineStartedRef = useRef(false);
   const afterPaymentHandled = useRef(false);
   const inviteUsedRef = useRef(false);
   inviteUsedRef.current = inviteUsed;
@@ -222,17 +240,26 @@ export default function ReportContent() {
     if (!reportId) return;
     setSheetBusy(true);
     try {
-      const { error } = await supabase
-        .from("reports")
-        .update({
-          birth_date: sheetDate || null,
-          birth_time: sheetTime || null,
-          birth_place: sheetPlace.trim() ? sheetPlace.trim() : null,
-        })
-        .eq("id", reportId);
-      if (error) {
-        console.error(error);
-        alert("좌표 저장에 실패했어요.");
+      const birthRes = await fetch("/api/report/birth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportId,
+          birthDate: sheetDate || null,
+          birthTime: sheetTime || null,
+          birthPlace: sheetPlace.trim() ? sheetPlace.trim() : null,
+        }),
+      });
+      if (!birthRes.ok) {
+        let message = "좌표 저장에 실패했어요.";
+        try {
+          const j = (await birthRes.json()) as { error?: string };
+          if (j.error) message = j.error;
+        } catch {
+          /* ignore */
+        }
+        console.error("report/birth:", message);
+        alert(message);
         return;
       }
       if (sheetGender.trim()) {
@@ -271,13 +298,72 @@ export default function ReportContent() {
     }
   }, [reportId]);
 
+  const loadPremiumReport = useCallback(async () => {
+    if (!reportId || !report) return;
+    if (report.payment_status !== "paid") return;
+    if (!hasCompleteBirthInfo(report)) return;
+
+    if (unifiedReport && unifiedReport.trim().length > 0) {
+      return;
+    }
+
+    const cached = readUnifiedReportCache(reportId);
+    if (cached) {
+      setUnifiedReport(cached);
+      setSajuStatus({ attempted: true, ok: true });
+      return;
+    }
+
+    if (premiumPipelineStartedRef.current || premiumLoading || reportStreaming) {
+      return;
+    }
+    premiumPipelineStartedRef.current = true;
+    setPremiumLoading(true);
+
+    try {
+      const result = await runPremiumReportPipeline(
+        reportId,
+        report,
+        surveyContextRef.current.interpretations,
+        surveyContextRef.current.patterns,
+        {
+          onStreamChunk: (acc) => setUnifiedReport(acc),
+          onStreamingChange: setReportStreaming,
+        },
+      );
+
+      setSajuStatus(result.sajuStatus);
+      if (result.relationship) setRelationship(result.relationship);
+      if (result.freeSummary && !freeSummary) {
+        setFreeSummary(result.freeSummary);
+      }
+      if (result.unifiedReport?.trim()) {
+        setUnifiedReport(result.unifiedReport);
+        writeUnifiedReportCache(reportId, result.unifiedReport);
+      }
+    } catch (e) {
+      console.error("심화 리포트 생성 실패:", e);
+      premiumPipelineStartedRef.current = false;
+    } finally {
+      setPremiumLoading(false);
+    }
+  }, [
+    reportId,
+    report,
+    unifiedReport,
+    premiumLoading,
+    reportStreaming,
+    freeSummary,
+  ]);
+
   const goPremiumResultTab = useCallback(() => {
     setResultViewTab("premium");
     void router.replace(
       `/result?id=${encodeURIComponent(reportId)}&view=premium`,
       { scroll: false },
     );
-  }, [reportId, router]);
+    void loadPremiumReport();
+  }, [reportId, router, loadPremiumReport]);
 
   async function handleInviteFriend() {
     if (!reportId || inviteUsed || inviteBusy) return;
@@ -321,15 +407,32 @@ export default function ReportContent() {
   }
 
   useEffect(() => {
-    async function fetchData() {
+    premiumPipelineStartedRef.current = false;
+  }, [reportId]);
+
+  useEffect(() => {
+    async function fetchCore() {
       if (!reportId) {
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      setUnifiedReport(null);
+      setPremiumLoading(false);
       setReportStreaming(false);
+
+      let hadCachedPremium = false;
+      const cachedPremium = readUnifiedReportCache(reportId);
+      if (cachedPremium) {
+        hadCachedPremium = true;
+        setUnifiedReport(cachedPremium);
+        setSajuStatus({ attempted: true, ok: true });
+        premiumPipelineStartedRef.current = true;
+      } else {
+        setUnifiedReport(null);
+        setSajuStatus({ attempted: false, ok: false });
+      }
+
       try {
         const { data: reportData } = await supabase
           .from("reports")
@@ -355,7 +458,7 @@ export default function ReportContent() {
         let localPatterns: Record<string, string> | null = null;
 
         if (responseData?.answers) {
-          const ans = responseData.answers;
+          const ans = responseData.answers as Record<string, string>;
 
           const patterns: Record<string, string> = {
             mbti: getPattern(ans.q1, ans.q2, ans.q3),
@@ -368,128 +471,31 @@ export default function ReportContent() {
 
           localPatterns = patterns;
 
-          for (const key of Object.keys(patterns)) {
-            const pattern = patterns[key];
+          const patternKeys = Object.keys(patterns);
+          await Promise.all(
+            patternKeys.map(async (key) => {
+              const pattern = patterns[key];
+              const { data } = await supabase
+                .from("pattern_base")
+                .select("interpretation")
+                .eq("domain", key)
+                .eq("pattern", pattern.trim())
+                .maybeSingle();
 
-            const { data } = await supabase
-              .from("pattern_base")
-              .select("interpretation")
-              .eq("domain", key)
-              .eq("pattern", pattern.trim())
-              .maybeSingle();
-
-            localInterpretations[key] = data?.interpretation ?? "해석 없음";
-          }
+              localInterpretations[key] = data?.interpretation ?? "해석 없음";
+            }),
+          );
 
           setInterpretations(localInterpretations);
         }
 
-        // 🔥 사주 구조 데이터
-        let localSajuData: Parameters<typeof buildIntegratedPrompt>[0]["sajuData"] =
-          null;
-        let sajuOk = false;
+        surveyContextRef.current = {
+          interpretations: localInterpretations,
+          patterns: localPatterns,
+        };
 
-        if (!paid) {
-          setSajuStatus({ attempted: false, ok: false });
-        } else if (!hasCompleteBirthInfo(reportData)) {
-          setSajuStatus({ attempted: false, ok: false });
-        } else {
-          setSajuStatus({ attempted: true, ok: false });
-          const sr = await fetch("/api/saju", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              birthDate: reportData.birth_date,
-              birthTime: reportData.birth_time,
-              birthPlace: reportData.birth_place ?? undefined,
-              reportId,
-            }),
-          });
-
-          if (sr.ok) {
-            const j = await sr.json();
-            localSajuData = j;
-            sajuOk = true;
-            setSajuStatus({ attempted: true, ok: true });
-          } else {
-            setSajuStatus({ attempted: true, ok: false });
-          }
-        }
-
-        // 🔥 점성학 API 호출 (추가!)
-        let localAstrologyText: string | null = null;
-        if (paid && hasCompleteBirthInfo(reportData)) {
+        if (Object.keys(localInterpretations).length > 0) {
           try {
-            const birthDateObj = new Date(reportData.birth_date);
-            const ar = await fetch("/api/astrology", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                year: birthDateObj.getFullYear(),
-                month: birthDateObj.getMonth() + 1,
-                day: birthDateObj.getDate(),
-                hour: reportData.birth_time
-                  ? parseInt(reportData.birth_time.split(":")[0])
-                  : 12,
-                minute: reportData.birth_time
-                  ? parseInt(reportData.birth_time.split(":")[1])
-                  : 0,
-                latitude: 37.5665, // TODO: 실제 위도로 대체
-                longitude: 126.978, // TODO: 실제 경도로 대체
-                timezone: 9,
-              }),
-            });
-            if (ar.ok) {
-              const astroData = await ar.json();
-              const interp =
-                typeof astroData.interpretation === "string"
-                  ? astroData.interpretation.trim()
-                  : "";
-              if (interp) {
-                localAstrologyText = interp;
-              } else {
-                const raw = astroData.raw as
-                  | { sun?: string; moon?: string; rising?: string }
-                  | undefined;
-                const sun = raw?.sun ?? astroData.sun;
-                const moon = raw?.moon ?? astroData.moon;
-                const rising = raw?.rising ?? astroData.rising;
-                if (sun && moon && rising) {
-                  localAstrologyText = buildAstrologyContextForLlm({
-                    sun,
-                    moon,
-                    rising,
-                  });
-                }
-              }
-            }
-          } catch (e) {
-            console.error("점성학 API 실패:", e);
-          }
-        }
-
-        // 🔥 관계/보조 텍스트
-        let localRelationship: string | null = null;
-        if (paid) {
-          try {
-            const res = await fetch("/api/relationship/generate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ reportId }),
-            });
-            if (res.ok) {
-              const data = await res.json();
-              localRelationship = data.relationship ?? data.astrology ?? null;
-              setRelationship(localRelationship);
-            }
-          } catch (relationshipErr) {
-            console.error("관계 맥락 생성 API 실패:", relationshipErr);
-          }
-        }
-
-        // 🔥 LLM 호출
-        try {
-          if (!paid) {
             const promptData = buildSurveyOnlyPrompt(localInterpretations);
             const res = await fetch("/api/llm", {
               method: "POST",
@@ -501,99 +507,24 @@ export default function ReportContent() {
             });
             const data = await res.json();
             setFreeSummary(data.free ?? null);
-            setPaidSummary(data.paid ?? null);
-            setUnifiedReport(null);
-          } else {
-            try {
-              const freePromptData =
-                buildSurveyOnlyPrompt(localInterpretations);
-              const freeRes = await fetch("/api/llm", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  mode: "free",
-                  userInput: freePromptData,
-                }),
-              });
-              const freeData = await freeRes.json();
-              setFreeSummary(freeData.free ?? null);
-            } catch {
-              setFreeSummary(null);
-            }
-
-            const detailedRes = await fetch("/api/llm", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                mode: "detailed_survey",
-                patterns: localPatterns,
-              }),
-            });
-            const detailedData = await detailedRes.json();
-
-            const combinedAstrology = [localAstrologyText, localRelationship]
-              .filter(Boolean)
-              .join("\n\n");
-
-            if (hasCompleteBirthInfo(reportData) && sajuOk) {
-              setLoading(false);
-              setReportStreaming(true);
-              setUnifiedReport("");
-              try {
-                const integratedRes = await fetch("/api/llm", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    mode: "integrated",
-                    detailedSurvey: detailedData.report,
-                    sajuData: localSajuData ?? null,
-                    astrologyText: combinedAstrology || null,
-                    stream: true,
-                  }),
-                });
-
-                if (!integratedRes.ok) {
-                  const errJson = await integratedRes.json().catch(() => ({}));
-                  setUnifiedReport(
-                    `통합 리포트를 만들지 못했어요. ${String((errJson as { error?: string }).error ?? "잠시 후 다시 열어보세요.")}`,
-                  );
-                } else {
-                  const ct = integratedRes.headers.get("content-type") ?? "";
-                  if (ct.includes("text/plain") && integratedRes.body) {
-                    const reader = integratedRes.body.getReader();
-                    const decoder = new TextDecoder();
-                    let acc = "";
-                    while (true) {
-                      const { done, value } = await reader.read();
-                      if (done) break;
-                      acc += decoder.decode(value, { stream: true });
-                      setUnifiedReport(acc);
-                    }
-                    setUnifiedReport(acc);
-                  } else {
-                    const integratedData = await integratedRes.json();
-                    setUnifiedReport(integratedData.report ?? "");
-                  }
-                }
-              } catch (streamErr) {
-                console.error(streamErr);
-                setUnifiedReport(
-                  "통합 리포트를 불러오는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.",
-                );
-              } finally {
-                setReportStreaming(false);
-              }
+            if (!paid) {
+              setPaidSummary(data.paid ?? null);
             } else {
-              setUnifiedReport(null);
+              setPaidSummary(null);
             }
-            setPaidSummary(null);
+          } catch (e) {
+            console.error("기본 LLM 실패", e);
           }
-        } catch (e) {
-          console.error("GPT 실패", e);
+        }
+
+        if (!hadCachedPremium) {
+          setUnifiedReport(null);
         }
       } catch (e) {
         console.error("리포트 데이터 로드 실패:", e);
-        setUnifiedReport(null);
+        if (!hadCachedPremium) {
+          setUnifiedReport(null);
+        }
         setFreeSummary(null);
         setPaidSummary(null);
       } finally {
@@ -601,8 +532,16 @@ export default function ReportContent() {
       }
     }
 
-    fetchData();
+    void fetchCore();
   }, [reportId]);
+
+  useEffect(() => {
+    if (loading || !report) return;
+    if (report.payment_status !== "paid") return;
+    if (resultViewTab !== "premium") return;
+    if (!hasCompleteBirthInfo(report)) return;
+    void loadPremiumReport();
+  }, [loading, report, resultViewTab, loadPremiumReport]);
 
   if (loading) {
     return (
@@ -730,7 +669,7 @@ export default function ReportContent() {
                 </div>
               ) : (
                 <>
-                  {isDbPaid && showPaidUnified && (
+                  {isDbPaid && (birthInfoComplete || showPaidUnified) && (
                     <ReportViewTabSwitcher
                       resultViewTab={resultViewTab}
                       onSelectBasic={() => {
@@ -741,11 +680,7 @@ export default function ReportContent() {
                         );
                       }}
                       onSelectPremium={() => {
-                        setResultViewTab("premium");
-                        void router.replace(
-                          `/result?id=${encodeURIComponent(reportId)}&view=premium`,
-                          { scroll: false },
-                        );
+                        void goPremiumResultTab();
                       }}
                     />
                   )}
@@ -885,8 +820,11 @@ export default function ReportContent() {
                     )}
 
                   {isDbPaid &&
-                    showPaidUnified &&
-                    resultViewTab === "premium" && null}
+                    resultViewTab === "premium" &&
+                    (premiumLoading || reportStreaming) &&
+                    !showPaidUnified && (
+                      <ReportSectionLoading label="심화 리포트를 준비하는 중…" />
+                    )}
                 </>
               )}
             </GlassCard>

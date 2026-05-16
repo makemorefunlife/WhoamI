@@ -22,48 +22,21 @@ function getInitial(name: string) {
   return trimmed.slice(0, 1).toUpperCase();
 }
 
-const PART_1_SCROLL_IDS = new Set([
-  "part1",
-  "part1-quote",
-  "part1-strengths",
-  "part1-caution",
-  "part1-signature",
-  "part1-next",
-]);
+const PART_ROOT_IDS = ["part1", "part2", "part3", "part4", "part5"] as const;
+type PartRootId = (typeof PART_ROOT_IDS)[number];
 
-const PART_2_SCROLL_IDS = new Set([
-  "part2",
-  "part2-source",
-  "part2-drain",
-  "part2-rhythm",
-  "part2-flow",
-]);
-
-const PART_3_SCROLL_IDS = new Set([
-  "part3",
-  "part3-pattern",
-  "part3-comfort",
-  "part3-discomfort",
-  "part3-words",
-  "part3-balance",
-]);
-
-const PART_4_SCROLL_IDS = new Set([
-  "part4",
-  "part4-rules",
-  "part4-dialogue",
-  "part4-calm",
-  "part4-boundary",
-  "part4-close",
-]);
-
-const PART_5_SCROLL_IDS = new Set([
-  "part5",
-  "part5-remember",
-  "part5-direction",
-  "part5-close",
-  "part5-checklist",
-]);
+/** 고정 헤더·네비 아래 기준선을 지난 마지막 Part 루트 = 현재 Part */
+function getActivePartId(probeY: number): PartRootId {
+  let active: PartRootId = "part1";
+  for (const id of PART_ROOT_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.getBoundingClientRect().top <= probeY) {
+      active = id;
+    }
+  }
+  return active;
+}
 
 const part1LabelClass = "text-[10px] font-semibold tracking-[0.18em] text-[#9F8BCF]";
 const part1MainTitleClass =
@@ -503,7 +476,7 @@ export default function AdvancedExplorationReport({
   const { user } = useUser();
   const [showScrollCue, setShowScrollCue] = useState(true);
   const [hasUserScrolled, setHasUserScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("part1");
+  const [activePart, setActivePart] = useState<PartRootId>("part1");
   const [pinNavigator, setPinNavigator] = useState(false);
   const [navigatorHeight, setNavigatorHeight] = useState(0);
   const [openOuter, setOpenOuter] = useState(false);
@@ -566,7 +539,9 @@ export default function AdvancedExplorationReport({
       if (typeof part1Top !== "number") return;
 
       const headerOffset = readHeaderOffsetPx();
+      const probeY = headerOffset + navHeight + 12;
       setPinNavigator(part1Top <= headerOffset + navHeight + 8);
+      setActivePart(getActivePartId(probeY));
     };
 
     updateNavigatorState();
@@ -586,63 +561,10 @@ export default function AdvancedExplorationReport({
     };
   }, []);
 
-  useEffect(() => {
-    const ids = [
-      "part1",
-      "part1-quote",
-      "part1-strengths",
-      "part1-caution",
-      "part1-signature",
-      "part1-next",
-      "part2",
-      "part2-source",
-      "part2-drain",
-      "part2-rhythm",
-      "part2-flow",
-      "part3",
-      "part3-pattern",
-      "part3-comfort",
-      "part3-discomfort",
-      "part3-words",
-      "part3-balance",
-      "part4",
-      "part4-rules",
-      "part4-dialogue",
-      "part4-calm",
-      "part4-boundary",
-      "part4-close",
-      "part5",
-      "part5-remember",
-      "part5-direction",
-      "part5-close",
-      "part5-checklist",
-    ];
-    const sections = ids
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => Boolean(el));
-    if (!sections.length) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) setActiveSection(visible.target.id);
-      },
-      { rootMargin: "-30% 0px -55% 0px", threshold: [0.2, 0.4, 0.6] },
-    );
-    sections.forEach((s) => observer.observe(s));
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToSection = (id: string) => {
+  const scrollToSection = (id: PartRootId) => {
+    setActivePart(id);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-
-  const navPrimaryActive = PART_1_SCROLL_IDS.has(activeSection);
-  const navPart2Active = PART_2_SCROLL_IDS.has(activeSection);
-  const navPart3Active = PART_3_SCROLL_IDS.has(activeSection);
-  const navPart4Active = PART_4_SCROLL_IDS.has(activeSection);
-  const navPart5Active = PART_5_SCROLL_IDS.has(activeSection);
 
   return (
     <div className="space-y-5">
@@ -739,18 +661,7 @@ export default function AdvancedExplorationReport({
           >
             <div className="flex items-stretch justify-between gap-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {navItems.map((item) => {
-                const isActive =
-                  item.id === "part1"
-                    ? navPrimaryActive
-                    : item.id === "part2"
-                      ? navPart2Active
-                      : item.id === "part3"
-                        ? navPart3Active
-                        : item.id === "part4"
-                          ? navPart4Active
-                        : item.id === "part5"
-                          ? navPart5Active
-                      : false;
+                const isActive = activePart === item.id;
                 return (
                   <button
                     key={item.id}

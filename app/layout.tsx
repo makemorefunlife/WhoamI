@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ui } from "@clerk/ui";
 import DevPaymentShortcut from "@/components/DevPaymentShortcut";
+import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import Header from "@/components/layout/Header";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ClerkProvider afterSignOutUrl="/" ui={ui}>
+          <FirstEntryDiagnostics scope="RootLayout" />
           <Header />
           <div className="flex min-h-0 flex-1 flex-col pt-14">{children}</div>
           <DevPaymentShortcut />

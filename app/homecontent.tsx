@@ -2,14 +2,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SignIn, useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import { AnimatePresence, motion } from "framer-motion";
 import { Gloria_Hallelujah } from "next/font/google";
 import { supabase } from "@/lib/supabase/client";
-import SpaceLoading from "@/components/space/SpaceLoading";
-import GlowButton from "@/components/space/GlowButton";
-import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
+import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
+import HomeAuthActions from "@/components/home/HomeAuthActions";
+import HomeLandingDecor from "@/components/home/HomeLandingDecor";
 
 const heroTitleFont = Gloria_Hallelujah({
   weight: "400",
@@ -17,20 +19,24 @@ const heroTitleFont = Gloria_Hallelujah({
   display: "swap",
 });
 
-const HOME_TWINKLE_COUNT = 50;
-
-/** Deterministic [0,1) — pure substitute for Math.random in render */
-function homeTwinkleU01(seed: number, salt: number) {
-  const x = Math.sin(seed * 12.9898 + salt * 78.233) * 43758.5453;
-  return x - Math.floor(x);
-}
+const HomeAuthSignInPanel = dynamic(
+  () => import("@/components/home/HomeAuthSignInPanel"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[220px] items-center justify-center text-sm text-slate-500">
+        로그인 화면을 불러오는 중…
+      </div>
+    ),
+  },
+);
 
 export default function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoaded, isSignedIn, userId } = useAuth();
+  const { user } = useUser();
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [nickname, setNickname] = useState("");
   const [creatingReport, setCreatingReport] = useState(false);
   const [rocketPlaying, setRocketPlaying] = useState(false);
   /** 로컬 reportId 기준 서버 설문 완료 여부 (null: 아직 조회 전) */
@@ -40,7 +46,7 @@ export default function HomeContent() {
     hasReport: boolean;
     surveyCompleted: boolean;
     name: string | null;
-  }>({ loading: true, reportId: null, hasReport: false, surveyCompleted: false, name: null });
+  }>({ loading: false, reportId: null, hasReport: false, surveyCompleted: false, name: null });
   /** 홈 재방문 — 관계 허브 요약 카운트 */
   const [relCounts, setRelCounts] = useState({ pending: 0, completed: 0 });
 
@@ -48,12 +54,6 @@ export default function HomeContent() {
     const token = searchParams.get("token");
     if (token) localStorage.setItem("inviteToken", token);
   }, [searchParams]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("surveyNickname");
-    if (saved) queueMicrotask(() => setNickname(saved));
-  }, []);
 
   useEffect(() => {
     if (!authModalOpen) return;
@@ -76,59 +76,48 @@ export default function HomeContent() {
   }, [isSignedIn, authModalOpen]);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      setResume({
+        loading: false,
+        reportId: null,
+        hasReport: false,
+        surveyCompleted: false,
+        name: null,
+      });
+      setRelCounts({ pending: 0, completed: 0 });
+      return;
+    }
+
     let cancelled = false;
     queueMicrotask(() => {
       setResume((s) => ({ ...s, loading: true }));
     });
+
     void (async () => {
-      let reportId =
+      const hint =
         typeof window !== "undefined"
           ? localStorage.getItem("reportId")?.trim() ?? ""
           : "";
-
-      if (!reportId && userId) {
-        const { data: fallbackRows, error: fallbackErr } = await supabase
-          .from("reports")
-          .select("id")
-          .eq("clerk_user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (!fallbackErr) {
-          const restoredId = fallbackRows?.[0]?.id;
-          if (restoredId) {
-            reportId = restoredId;
-            localStorage.setItem("reportId", restoredId);
-          }
-        }
-      }
-
-      if (!reportId) {
-        if (!cancelled) {
-          setResume({
-            loading: false,
-            reportId: null,
-            hasReport: false,
-            surveyCompleted: false,
-            name: null,
-          });
-        }
-        return;
-      }
+      const url = hint
+        ? `/api/home/resume?reportId=${encodeURIComponent(hint)}`
+        : "/api/home/resume";
 
       try {
-        const res = await fetch(
-          `/api/report/session-status?reportId=${encodeURIComponent(reportId)}`,
-        );
+        const res = await fetch(url);
         const data = (await res.json()) as {
+          error?: string;
+          reportId?: string | null;
           hasReport?: boolean;
           surveyCompleted?: boolean;
           name?: string | null;
+          invalidHint?: boolean;
+          relationshipSummary?: { pending: number; completed: number };
         };
+
         if (cancelled) return;
-        if (data.hasReport === false) {
-          localStorage.removeItem("reportId");
+
+        if (res.status === 401) {
           setResume({
             loading: false,
             reportId: null,
@@ -136,67 +125,73 @@ export default function HomeContent() {
             surveyCompleted: false,
             name: null,
           });
+          setRelCounts({ pending: 0, completed: 0 });
           return;
         }
-        setResume({
-          loading: false,
-          reportId,
-          hasReport: true,
-          surveyCompleted: data.surveyCompleted === true,
-          name: typeof data.name === "string" ? data.name : null,
-        });
-        if (data.name?.trim() && !localStorage.getItem("surveyNickname")) {
-          localStorage.setItem("surveyNickname", data.name.trim());
-        }
-      } catch {
-        if (!cancelled) {
+
+        if (!res.ok) {
+          console.error("home/resume:", data.error ?? res.status);
           setResume({
             loading: false,
-            reportId,
-            hasReport: true,
+            reportId: null,
+            hasReport: false,
             surveyCompleted: false,
             name: null,
           });
+          setRelCounts({ pending: 0, completed: 0 });
+          return;
+        }
+
+        if (data.invalidHint) {
+          localStorage.removeItem("reportId");
+        }
+
+        const reportId =
+          typeof data.reportId === "string" && data.reportId.trim()
+            ? data.reportId.trim()
+            : null;
+
+        if (reportId) {
+          localStorage.setItem("reportId", reportId);
+        } else {
+          localStorage.removeItem("reportId");
+        }
+
+        const summary = data.relationshipSummary ?? {
+          pending: 0,
+          completed: 0,
+        };
+
+        setResume({
+          loading: false,
+          reportId,
+          hasReport: data.hasReport === true,
+          surveyCompleted: data.surveyCompleted === true,
+          name: typeof data.name === "string" ? data.name : null,
+        });
+        setRelCounts({
+          pending: summary.pending ?? 0,
+          completed: summary.completed ?? 0,
+        });
+      } catch (e) {
+        console.error("home/resume fetch:", e);
+        if (!cancelled) {
+          setResume({
+            loading: false,
+            reportId: null,
+            hasReport: false,
+            surveyCompleted: false,
+            name: null,
+          });
+          setRelCounts({ pending: 0, completed: 0 });
         }
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isLoaded, isSignedIn, userId]);
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-    const rid = resume.reportId?.trim();
-    if (!rid || !resume.surveyCompleted) {
-      queueMicrotask(() => {
-        setRelCounts({ pending: 0, completed: 0 });
-      });
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        const r = await fetch(
-          `/api/relationship/list?reportId=${encodeURIComponent(rid)}&format=simple&scope=all`,
-        );
-        const j = (await r.json()) as {
-          relationships?: { status: string }[];
-        };
-        if (cancelled || !r.ok) return;
-        const list = j.relationships ?? [];
-        setRelCounts({
-          pending: list.filter((x) => x.status === "pending").length,
-          completed: list.filter((x) => x.status === "completed").length,
-        });
-      } catch {
-        if (!cancelled) setRelCounts({ pending: 0, completed: 0 });
-      }
-    })();
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, resume.reportId, resume.surveyCompleted]);
+  }, [isLoaded, isSignedIn]);
 
   const launchSurvey = useCallback(
     async (nameTrimmed: string) => {
@@ -227,7 +222,6 @@ export default function HomeContent() {
       }
 
       localStorage.setItem("reportId", data.id);
-      localStorage.setItem("surveyNickname", nameTrimmed);
       setResume({
         loading: false,
         reportId: data.id,
@@ -270,69 +264,39 @@ export default function HomeContent() {
     [router, userId],
   );
 
-  const onNicknameSubmit = useCallback(() => {
-    const t = nickname.trim();
-    if (!t) {
-      alert("사용할 닉네임을 입력해 주세요.");
-      return;
-    }
-    void launchSurvey(t);
-  }, [nickname, launchSurvey]);
+  const onStartExploration = useCallback(() => {
+    if (!userId || creatingReport || rocketPlaying) return;
+    const displayName = resolveClerkDisplayName(user);
+    void launchSurvey(displayName);
+  }, [userId, user, creatingReport, rocketPlaying, launchSurvey]);
 
-  const homeTwinkleStyles = useMemo(
-    () =>
-      Array.from({ length: HOME_TWINKLE_COUNT }, (_, i) => ({
-        width: homeTwinkleU01(i, 1) * 3 + 1 + "px",
-        height: homeTwinkleU01(i, 2) * 3 + 1 + "px",
-        top: homeTwinkleU01(i, 3) * 100 + "%",
-        left: homeTwinkleU01(i, 4) * 100 + "%",
-        opacity: homeTwinkleU01(i, 5) * 0.5 + 0.3,
-        animationDelay: homeTwinkleU01(i, 6) * 5 + "s",
-        animationDuration: homeTwinkleU01(i, 7) * 3 + 2 + "s",
-      })),
-    [],
+  const resetResume = useCallback(() => {
+    localStorage.removeItem("reportId");
+    localStorage.removeItem("surveyNickname");
+    setRelCounts({ pending: 0, completed: 0 });
+    setResume({
+      loading: false,
+      reportId: null,
+      hasReport: false,
+      surveyCompleted: false,
+      name: null,
+    });
+  }, []);
+
+  const diagExtra = useMemo(
+    () => ({
+      landingShell: "hero-always",
+      resume,
+      relCounts,
+    }),
+    [resume, relCounts],
   );
 
-  if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a2a]">
-        <SpaceLoading
-          rotateMainOnly
-          rotatingStatuses={["탐사하는 중", "특징 분석 중", "패턴 분석 중"]}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#0a0a2a] via-[#12123a] to-[#1a1a4a] overflow-hidden">
-      {/* 반짝이는 별들 */}
-      <div className="absolute inset-0">
-        {homeTwinkleStyles.map((style, i) => (
-          <div
-            key={i}
-            className="absolute bg-white rounded-full animate-twinkle"
-            style={style}
-          />
-        ))}
-      </div>
-
-      {/* 행성 1 (왼쪽 위) */}
-      <div className="absolute top-20 left-10 w-24 h-24 rounded-full bg-gradient-to-br from-[#ff9a9e] to-[#fecfef] opacity-70 blur-[2px] animate-float-slow">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
-      </div>
-
-      {/* 행성 2 (오른쪽 아래) */}
-      <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-gradient-to-br from-[#a18cd1] to-[#fbc2eb] opacity-60 blur-[3px] animate-float-slower">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
-        {/* 행성 고리 */}
-        <div className="absolute -inset-4 rounded-full border-4 border-[#fbc2eb]/40 rotate-12"></div>
-      </div>
-
-      {/* 행성 3 (오른쪽 위 작게) */}
-      <div className="absolute top-32 right-20 w-12 h-12 rounded-full bg-gradient-to-br from-[#ffecd2] to-[#fcb69f] opacity-70 animate-float">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent"></div>
-      </div>
+    <>
+      <FirstEntryDiagnostics scope="HomeContent" extra={diagExtra} />
+      <div className="relative min-h-screen bg-gradient-to-br from-[#0a0a2a] via-[#12123a] to-[#1a1a4a] overflow-hidden">
+      <HomeLandingDecor />
 
       {/* 메인 콘텐츠 */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 pb-12 pt-10 text-center sm:pt-16">
@@ -406,176 +370,18 @@ export default function HomeContent() {
           </h1>
         </div>
 
-        {/* 로그인 전: 시작하기 · 로그인 후: 닉네임 + 입력 */}
-        {!isSignedIn ? (
-          <div className="mt-12 animate-fade-in-up delay-200 sm:mt-16">
-            <button
-              type="button"
-              onClick={() => setAuthModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-10 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[#6bb5ff]/40"
-            >
-              <span>시작하기</span>
-              <span
-                className="animate-float-rocket text-2xl leading-none md:text-[1.75rem]"
-                aria-hidden
-              >
-                🚀
-              </span>
-            </button>
-          </div>
-        ) : resume.loading ? (
-          <div className="mt-8 text-sm text-white/55 sm:mt-10">불러오는 중…</div>
-        ) : resume.reportId &&
-          resume.hasReport &&
-          resume.surveyCompleted ? (
-          <div className="mx-auto mt-8 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-10 sm:space-y-7">
-            <h2 className="text-center text-[1.2rem] font-medium tracking-[-0.02em] text-white/90 sm:text-[1.45rem]">
-              탐사실
-            </h2>
-            <div className="flex flex-col gap-3 sm:gap-3.5">
-              <GlowButton
-                type="button"
-                variant="primary"
-                className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
-                onClick={() =>
-                  router.push(
-                    `/dashboard?reportId=${encodeURIComponent(resume.reportId!)}`,
-                  )
-                }
-              >
-                <span className="inline-flex items-center gap-2">
-                  <SubtleButtonIcon kind="dashboard" />
-                  내 탐사
-                </span>
-              </GlowButton>
-              <div className="space-y-1.5">
-                <GlowButton
-                  type="button"
-                  variant="secondary"
-                  className="w-full text-[0.9375rem] font-medium sm:text-[15px]"
-                  onClick={() =>
-                    router.push(
-                      `/relationships?myReportId=${encodeURIComponent(resume.reportId!)}`,
-                    )
-                  }
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <SubtleButtonIcon kind="relationship" />
-                    관계 탐사실
-                  </span>
-                </GlowButton>
-                <p className="text-center text-[0.8125rem] tabular-nums leading-snug text-white/45 sm:text-sm">
-                  • 대기 {relCounts.pending} · 완료 {relCounts.completed}
-                </p>
-              </div>
-            </div>
-            <GlowButton
-              type="button"
-              variant="secondary"
-              className="w-full text-[0.9375rem] font-medium"
-              onClick={() => {
-                localStorage.removeItem("reportId");
-                setRelCounts({ pending: 0, completed: 0 });
-                setResume({
-                  loading: false,
-                  reportId: null,
-                  hasReport: false,
-                  surveyCompleted: false,
-                  name: null,
-                });
-              }}
-            >
-              <span className="inline-flex items-center gap-2">
-                <SubtleButtonIcon kind="redo" />
-                + 새 탐사
-              </span>
-            </GlowButton>
-          </div>
-        ) : resume.reportId && resume.hasReport && !resume.surveyCompleted ? (
-          <div className="mt-8 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-10">
-            <p className="text-left text-sm leading-relaxed text-white/75">
-              설문을 아직 마치지 않았어요. 이어서 하거나, 새 탐사를 시작할 수
-              있어요.
-            </p>
-            <GlowButton
-              type="button"
-              variant="primary"
-              className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
-              onClick={() => {
-                const tok = localStorage.getItem("inviteToken")?.trim();
-                router.push(
-                  tok
-                    ? `/survey?token=${encodeURIComponent(tok)}`
-                    : "/survey",
-                );
-              }}
-            >
-              <span className="inline-flex items-center gap-2">
-                <SubtleButtonIcon kind="dashboard" />
-                설문 이어하기
-              </span>
-            </GlowButton>
-            <GlowButton
-              type="button"
-              variant="ghost"
-              className="w-full text-sm font-medium"
-              onClick={() => {
-                localStorage.removeItem("reportId");
-                setResume({
-                  loading: false,
-                  reportId: null,
-                  hasReport: false,
-                  surveyCompleted: false,
-                  name: null,
-                });
-              }}
-            >
-              <span className="inline-flex items-center gap-2">
-                <SubtleButtonIcon kind="redo" />
-                이어가지 않고 새로 시작하기
-              </span>
-            </GlowButton>
-          </div>
-        ) : (
-          <div className="mt-8 w-full max-w-sm animate-fade-in-up delay-200 sm:mt-10">
-            <p className="mb-3 text-left text-sm leading-relaxed text-white/70">
-              사용할 닉네임을 입력해 주세요.
-            </p>
-            <div className="flex items-stretch gap-2">
-              <input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    onNicknameSubmit();
-                  }
-                }}
-                placeholder="닉네임"
-                maxLength={40}
-                className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/[0.07] px-5 py-3.5 text-left text-base text-white placeholder:text-white/35 focus:border-[#6bb5ff]/50 focus:outline-none focus:ring-2 focus:ring-[#6bb5ff]/25"
-                autoComplete="nickname"
-                disabled={creatingReport || rocketPlaying}
-              />
-              <button
-                type="button"
-                onClick={onNicknameSubmit}
-                disabled={creatingReport || rocketPlaying}
-                aria-label={
-                  creatingReport || rocketPlaying ? "준비 중" : "다음으로"
-                }
-                className="inline-flex min-w-[3.25rem] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-[#6bb5ff]/35 bg-gradient-to-b from-[#6bb5ff]/25 to-[#4a90e2]/20 px-4 py-3.5 text-lg font-medium text-white shadow-md transition-all duration-200 ease-out enabled:hover:border-[#a8d4ff]/85 enabled:hover:from-[#6bb5ff]/48 enabled:hover:to-[#4a90e2]/42 enabled:hover:shadow-[0_0_18px_rgba(107,181,255,0.55),0_0_36px_rgba(107,181,255,0.28),inset_0_1px_0_rgba(255,255,255,0.18)] enabled:hover:brightness-110 enabled:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6bb5ff]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a2a] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
-              >
-                {creatingReport || rocketPlaying ? "…" : "↲"}
-              </button>
-            </div>
-          </div>
-        )}
-
+        <HomeAuthActions
+          resume={resume}
+          relCounts={relCounts}
+          creatingReport={creatingReport}
+          rocketPlaying={rocketPlaying}
+          onOpenAuth={() => setAuthModalOpen(true)}
+          onStartExploration={onStartExploration}
+          onResetResume={resetResume}
+        />
       </div>
 
-      {/* 로켓 발사 (닉네임 제출 후) */}
+      {/* 로켓 발사 (탐사 시작 후) */}
       <AnimatePresence>
         {rocketPlaying && (
           <motion.div
@@ -584,7 +390,7 @@ export default function HomeContent() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div
+            <div
               className="absolute left-0 right-0 top-[38%] h-0 sm:top-[40%]"
               aria-hidden
             >
@@ -609,7 +415,7 @@ export default function HomeContent() {
                   🚀
                 </span>
               </motion.div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -662,34 +468,7 @@ export default function HomeContent() {
                   <span className="block text-xl leading-none">×</span>
                 </button>
               </div>
-              <SignIn
-                routing="hash"
-                signUpUrl="/sign-up"
-                fallbackRedirectUrl="/"
-                appearance={{
-                  variables: {
-                    colorPrimary: "#4a90e2",
-                    colorText: "#0f172a",
-                    colorTextSecondary: "#64748b",
-                    borderRadius: "0.75rem",
-                    fontSize: "0.9375rem",
-                  },
-                  elements: {
-                    rootBox: "w-full",
-                    card: "shadow-none border-0 bg-transparent p-0",
-                    headerTitle: "hidden",
-                    headerSubtitle: "hidden",
-                    socialButtonsBlockButton:
-                      "border-slate-200 bg-white hover:bg-slate-50 text-slate-800",
-                    formButtonPrimary:
-                      "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] hover:opacity-95",
-                    footerAction: "text-[#4a90e2]",
-                    identityPreviewText: "text-slate-700",
-                    formFieldInput:
-                      "border-slate-200 bg-white text-slate-900",
-                  },
-                }}
-              />
+              <HomeAuthSignInPanel />
             </motion.div>
           </motion.div>
         )}
@@ -710,25 +489,9 @@ export default function HomeContent() {
             transform: translateY(0);
           }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          50% { transform: translateY(-10px) translateX(10px); }
-        }
-        @keyframes float-slower {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          50% { transform: translateY(15px) translateX(-10px); }
-        }
         @keyframes float-rocket {
           0%, 100% { transform: translateY(0px) rotate(-5deg); }
           50% { transform: translateY(-8px) rotate(5deg); }
-        }
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
         }
         .animate-fade-in {
           animation: fade-in 1.2s ease-out forwards;
@@ -740,20 +503,8 @@ export default function HomeContent() {
         .delay-200 {
           animation-delay: 0.2s;
         }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-        .animate-float-slower {
-          animation: float-slower 8s ease-in-out infinite;
-        }
         .animate-float-rocket {
           animation: float-rocket 2.5s ease-in-out infinite;
-        }
-        .animate-twinkle {
-          animation: twinkle 3s ease-in-out infinite;
         }
         .hero-neon-title {
           color: #c8f2ff;
@@ -765,5 +516,6 @@ export default function HomeContent() {
         }
       `}</style>
     </div>
+    </>
   );
 }

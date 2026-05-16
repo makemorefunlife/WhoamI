@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -47,18 +48,10 @@ export async function GET(req: Request) {
       });
     }
 
-    const { data: surveyRow, error: surErr } = await supabase
-      .from("survey_responses")
-      .select("id")
-      .eq("report_id", reportId)
-      .limit(1);
-
-    if (surErr) {
-      console.error("session-status survey:", surErr);
-      return NextResponse.json({ error: surErr.message }, { status: 500 });
-    }
-
-    const surveyCompleted = Boolean(surveyRow && surveyRow.length > 0);
+    const surveyCompleted = await isSurveyCompleteForReport(
+      supabase,
+      reportId,
+    );
 
     return NextResponse.json({
       hasReport: true,

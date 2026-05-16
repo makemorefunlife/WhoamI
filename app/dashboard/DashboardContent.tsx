@@ -2,12 +2,27 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
+import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import FreeAnalysisCardDeck from "@/components/report/FreeAnalysisCardDeck";
-import UnifiedReportMarkdown from "@/components/report/UnifiedReportMarkdown";
+import ReportSectionLoading from "@/components/report/ReportSectionLoading";
+import type { HomeResumePayload } from "@/lib/home/homeResume";
+import {
+  applyResumeReportIdToStorage,
+  fetchHomeResumeClient,
+} from "@/lib/home/fetchHomeResumeClient";
+
+const UnifiedReportMarkdown = dynamic(
+  () => import("@/components/report/UnifiedReportMarkdown"),
+  {
+    ssr: false,
+    loading: () => <ReportSectionLoading label="심화 리포트를 불러오는 중…" />,
+  },
+);
 
 type MyReportJson = {
   report_id: string;
@@ -28,6 +43,8 @@ type RelSimple = {
   status: "completed" | "pending";
   relationship_report_id: string | null;
 };
+
+type LoadPhase = "resolving" | "loading-report" | "idle";
 
 function AccordionSection({
   title,
@@ -76,13 +93,31 @@ function AccordionSection({
   );
 }
 
+function loadPhaseMessage(phase: LoadPhase): string {
+  if (phase === "resolving") return "탐사 기록을 확인하는 중…";
+  if (phase === "loading-report") return "탐사실을 불러오는 중…";
+  return "";
+}
+
+function resumeGuidanceMessage(resume: HomeResumePayload | null): string | null {
+  if (!resume) return null;
+  if (!resume.hasReport || !resume.reportId) {
+    return "아직 탐사 기록이 없어요. 홈에서 시작하기를 눌러 주세요.";
+  }
+  if (!resume.surveyCompleted) {
+    return "설문을 아직 마치지 않았어요. 이어서 진행해 주세요.";
+  }
+  return null;
+}
+
 export default function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reportIdFromUrl = searchParams.get("reportId")?.trim() ?? "";
 
-  const [reportId, setReportId] = useState(reportIdFromUrl);
-  const [loading, setLoading] = useState(true);
+  const [reportId, setReportId] = useState("");
+  const [loadPhase, setLoadPhase] = useState<LoadPhase>("resolving");
+  const [resume, setResume] = useState<HomeResumePayload | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [my, setMy] = useState<MyReportJson | null>(null);
   const [rels, setRels] = useState<RelSimple[]>([]);
@@ -92,60 +127,122 @@ export default function DashboardContent() {
   const [openMyRecords, setOpenMyRecords] = useState(true);
   const [openRelationships, setOpenRelationships] = useState(true);
 
-  useEffect(() => {
-    if (reportIdFromUrl) {
-      setReportId(reportIdFromUrl);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("reportId", reportIdFromUrl);
-      }
-      return;
-    }
-    const ls =
-      typeof window !== "undefined"
-        ? localStorage.getItem("reportId")?.trim() ?? ""
-        : "";
-    if (ls) setReportId(ls);
-  }, [reportIdFromUrl]);
+  const loading = loadPhase !== "idle";
 
-  const load = useCallback(async () => {
-    if (!reportId) {
-      setErr("reportId가 없어요. URL에 ?reportId= 또는 홈에서 탐사를 시작해 주세요.");
-      setLoading(false);
+  const syncCanonicalReportId = useCallback(
+    (data: HomeResumePayload) => {
+      const canonical = applyResumeReportIdToStorage(data);
+      setReportId(canonical ?? "");
+      if (
+        canonical &&
+        reportIdFromUrl &&
+        reportIdFromUrl !== canonical
+      ) {
+        router.replace(
+          `/dashboard?reportId=${encodeURIComponent(canonical)}`,
+          { scroll: false },
+        );
+      }
+      return canonical;
+    },
+    [reportIdFromUrl, router],
+  );
+
+  const fetchRelationships = useCallback(async (canonicalId: string) => {
+    const r2 = await fetch(
+      `/api/relationship/list?reportId=${encodeURIComponent(canonicalId)}&format=simple&scope=all`,
+    );
+    const j2 = await r2.json();
+    if (r2.ok) {
+      setRels((j2.relationships ?? []) as RelSimple[]);
+    } else {
+      setRels([]);
+    }
+  }, []);
+
+  const loadMyReport = useCallback(
+    async (canonicalId: string, allowResumeRetry: boolean): Promise<boolean> => {
+      const r1 = await fetch(
+        `/api/my/report?reportId=${encodeURIComponent(canonicalId)}&quick=1`,
+      );
+      const j1 = (await r1.json().catch(() => ({}))) as {
+        error?: string;
+      } & Partial<MyReportJson>;
+
+      if (r1.ok) {
+        setMy(j1 as MyReportJson);
+        await fetchRelationships(canonicalId);
+        return true;
+      }
+
+      if (r1.status === 404 && allowResumeRetry) {
+        const fresh = await fetchHomeResumeClient();
+        if (fresh.ok) {
+          const nextId = syncCanonicalReportId(fresh.data);
+          setResume(fresh.data);
+          if (nextId && nextId !== canonicalId) {
+            return loadMyReport(nextId, false);
+          }
+        }
+      }
+
+      setErr(j1.error ?? "내 리포트를 불러오지 못했어요.");
       setMy(null);
+      setRels([]);
+      return false;
+    },
+    [fetchRelationships, syncCanonicalReportId],
+  );
+
+  const bootstrap = useCallback(async () => {
+    setLoadPhase("resolving");
+    setErr(null);
+    setMy(null);
+    setRels([]);
+
+    const hint =
+      reportIdFromUrl ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("reportId")?.trim() ?? ""
+        : "");
+
+    const resumeRes = await fetchHomeResumeClient(hint || undefined);
+
+    if (!resumeRes.ok) {
+      if (resumeRes.status === 401) {
+        setErr("로그인이 필요해요. 홈에서 다시 시작해 주세요.");
+      } else {
+        setErr(resumeRes.error);
+      }
+      setLoadPhase("idle");
       return;
     }
-    setLoading(true);
-    setErr(null);
-    try {
-      const [r1, r2] = await Promise.all([
-        fetch(`/api/my/report?reportId=${encodeURIComponent(reportId)}`),
-        fetch(
-          `/api/relationship/list?reportId=${encodeURIComponent(reportId)}&format=simple&scope=all`,
-        ),
-      ]);
 
-      const j1 = await r1.json();
-      if (!r1.ok) {
-        setErr(j1?.error ?? "내 리포트를 불러오지 못했어요.");
-        setMy(null);
-        return;
-      }
-      setMy(j1 as MyReportJson);
+    const resumeData = resumeRes.data;
+    setResume(resumeData);
+    const canonical = syncCanonicalReportId(resumeData);
 
-      const j2 = await r2.json();
-      if (r2.ok) {
-        setRels((j2.relationships ?? []) as RelSimple[]);
-      } else {
-        setRels([]);
-      }
-    } finally {
-      setLoading(false);
+    const guidance = resumeGuidanceMessage(resumeData);
+    if (guidance) {
+      setErr(guidance);
+      setLoadPhase("idle");
+      return;
     }
-  }, [reportId]);
+
+    if (!canonical) {
+      setErr("표시할 탐사 기록을 찾지 못했어요. 홈에서 다시 시작해 주세요.");
+      setLoadPhase("idle");
+      return;
+    }
+
+    setLoadPhase("loading-report");
+    await loadMyReport(canonical, true);
+    setLoadPhase("idle");
+  }, [reportIdFromUrl, syncCanonicalReportId, loadMyReport]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void bootstrap();
+  }, [bootstrap]);
 
   const freeParagraphs = useMemo(() => {
     const t = (my?.basic_result ?? "").trim();
@@ -176,6 +273,17 @@ export default function DashboardContent() {
     return copy;
   }, [rels]);
 
+  const showSurveyResumeCta =
+    resume != null &&
+    resume.hasReport &&
+    !resume.surveyCompleted &&
+    Boolean(resume.reportId);
+
+  const showHomeCta =
+    !loading &&
+    (!resume?.hasReport || !resume?.reportId) &&
+    resume?.ctaBranch === "start-new";
+
   async function confirmNewSurvey() {
     if (!reportId) return;
     setResetting(true);
@@ -197,246 +305,270 @@ export default function DashboardContent() {
     }
   }
 
-  if (!reportId && !loading) {
-    return (
-      <SpaceBackground>
-        <div className="relative z-10 mx-auto max-w-lg px-4 py-16">
-          <GlassCard className="text-center">
-            <p className="text-sm text-[var(--space-text-muted)]">{err}</p>
-            <GlowButton
-              type="button"
-              className="mt-6 w-full"
-              onClick={() => router.push("/")}
-            >
-              홈으로
-            </GlowButton>
-          </GlassCard>
-        </div>
-      </SpaceBackground>
-    );
-  }
-
   return (
-    <SpaceBackground>
-      <div className="relative z-10 min-h-screen px-5 pb-36 pt-10 sm:px-8 sm:pt-14">
-        <h1 className="mx-auto mb-12 max-w-md text-center text-2xl font-medium tracking-[-0.02em] text-[var(--space-text)] sm:mb-14 sm:max-w-lg sm:text-[1.65rem]">
-          🚀 탐사실
-        </h1>
+    <>
+      <FirstEntryDiagnostics scope="DashboardContent" extra={{ resume, reportId }} />
+      <SpaceBackground>
+        <div className="relative z-10 min-h-screen px-5 pb-36 pt-10 sm:px-8 sm:pt-14">
+          <h1 className="mx-auto mb-12 max-w-md text-center text-2xl font-medium tracking-[-0.02em] text-[var(--space-text)] sm:mb-14 sm:max-w-lg sm:text-[1.65rem]">
+            🚀 탐사실
+          </h1>
 
-        <div className="mx-auto max-w-md space-y-5 sm:max-w-lg sm:space-y-6">
-          {loading ? (
-            <p className="text-center text-sm text-[var(--space-text-muted)]">
-              불러오는 중…
-            </p>
-          ) : err ? (
-            <GlassCard>
+          <div className="mx-auto max-w-md space-y-5 sm:max-w-lg sm:space-y-6">
+            {loading ? (
               <p className="text-center text-sm text-[var(--space-text-muted)]">
-                {err}
+                {loadPhaseMessage(loadPhase)}
               </p>
-            </GlassCard>
-          ) : null}
+            ) : null}
 
-          {!loading && my && (
-            <>
-              <AccordionSection
-                title="내 탐사"
-                open={openMyRecords}
-                onToggle={() => setOpenMyRecords((v) => !v)}
-              >
-                <div className="space-y-5">
-                  <div
-                    className="mx-auto inline-flex w-full max-w-md rounded-full border border-white/15 bg-[#0d121f] p-0.5"
-                    role="tablist"
+            {!loading && err && !my ? (
+              <GlassCard className="space-y-4 text-center">
+                <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+                  {err}
+                </p>
+                {showSurveyResumeCta && resume?.reportId ? (
+                  <GlowButton
+                    type="button"
+                    className="w-full"
+                    onClick={() => {
+                      const tok =
+                        typeof window !== "undefined"
+                          ? localStorage.getItem("inviteToken")?.trim()
+                          : "";
+                      router.push(
+                        tok
+                          ? `/survey?token=${encodeURIComponent(tok)}`
+                          : "/survey",
+                      );
+                    }}
                   >
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={tab === "basic"}
-                      onClick={() => setTab("basic")}
-                      className={[
-                        "min-h-[36px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
-                        tab === "basic"
-                          ? "bg-gradient-to-r from-[#D6B46A] to-[#C2A35A] text-[#151515] shadow-[0_8px_20px_rgba(214,180,106,0.24)]"
-                          : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
-                      ].join(" ")}
-                    >
-                      기본
-                    </button>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={tab === "premium"}
-                      onClick={() => setTab("premium")}
-                      className={[
-                        "min-h-[36px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
-                        tab === "premium"
-                          ? "bg-gradient-to-r from-[#E5C97B] to-[#D6B46A] text-[#151515] shadow-[0_8px_20px_rgba(214,180,106,0.28)]"
-                          : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
-                      ].join(" ")}
-                    >
-                      심화
-                    </button>
-                  </div>
+                    설문 이어하기
+                  </GlowButton>
+                ) : null}
+                {showHomeCta || showSurveyResumeCta ? (
+                  <GlowButton
+                    type="button"
+                    variant={showSurveyResumeCta ? "ghost" : "primary"}
+                    className="w-full"
+                    onClick={() => router.push("/")}
+                  >
+                    홈으로
+                  </GlowButton>
+                ) : (
+                  <GlowButton
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => void bootstrap()}
+                  >
+                    다시 시도
+                  </GlowButton>
+                )}
+              </GlassCard>
+            ) : null}
 
-                  <div className="min-h-[180px] rounded-xl border border-white/[0.09] bg-white/[0.025] p-4 sm:p-5">
-                    {tab === "basic" ? (
-                      !my.has_survey ? (
-                        <p className="text-center text-sm text-[var(--space-text-muted)]">
-                          설문을 마치면 기본 결과가 열려요.
-                        </p>
-                      ) : freeParagraphs.length > 0 ? (
-                        <FreeAnalysisCardDeck paragraphs={freeParagraphs} />
-                      ) : (
-                        <div className="space-y-3 text-center">
-                          <p className="text-sm text-[var(--space-text-muted)]">
-                            여기서 불러오지 못했어요.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              router.push(
-                                my.result_paths?.basic ??
-                                  `/result?id=${encodeURIComponent(reportId)}`,
-                              )
-                            }
-                            className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
-                          >
-                            기본 결과 페이지 열기
-                          </button>
-                        </div>
-                      )
-                    ) : my.has_premium ? (
-                      my.premium_result ? (
-                        <UnifiedReportMarkdown content={my.premium_result} />
-                      ) : (
-                        <div className="space-y-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              router.push(
-                                my.result_paths?.full ??
-                                  `/report?id=${encodeURIComponent(reportId)}`,
-                              )
-                            }
-                            className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
-                          >
-                            심화 리포트 전체 보기
-                          </button>
-                        </div>
-                      )
-                    ) : (
-                      <div className="text-center">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            router.push(
-                              my.result_paths?.payment ??
-                                `/payment?reportId=${encodeURIComponent(reportId)}`,
-                            )
-                          }
-                          className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
-                        >
-                          심화 구독하기
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </AccordionSection>
-
-              <AccordionSection
-                title="관계 탐사실"
-                subtitle={`• 대기 ${relPendingCount} · 완료 ${relCompletedCount}`}
-                open={openRelationships}
-                onToggle={() => setOpenRelationships((v) => !v)}
-              >
-                <ul className="space-y-2.5">
-                  {relsSorted.length === 0 ? (
-                    <li className="py-2 text-center text-sm text-[var(--space-text-muted)]">
-                      아직 없어요
-                    </li>
-                  ) : (
-                    relsSorted.map((r) => (
-                      <li
-                        key={r.relationship_report_id ?? r.partner_name}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-3"
+            {!loading && my && reportId ? (
+              <>
+                <AccordionSection
+                  title="내 탐사"
+                  open={openMyRecords}
+                  onToggle={() => setOpenMyRecords((v) => !v)}
+                >
+                  <div className="space-y-5">
+                    <div
+                      className="mx-auto inline-flex w-full max-w-md rounded-full border border-white/15 bg-[#0d121f] p-0.5"
+                      role="tablist"
+                    >
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === "basic"}
+                        onClick={() => setTab("basic")}
+                        className={[
+                          "min-h-[36px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
+                          tab === "basic"
+                            ? "bg-gradient-to-r from-[#D6B46A] to-[#C2A35A] text-[#151515] shadow-[0_8px_20px_rgba(214,180,106,0.24)]"
+                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
+                        ].join(" ")}
                       >
-                        <span className="text-sm text-[var(--space-text)]">
-                          {r.partner_name}님과의 관계
-                        </span>
-                        {r.relationship_report_id ? (
+                        기본
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === "premium"}
+                        onClick={() => setTab("premium")}
+                        className={[
+                          "min-h-[36px] flex-1 rounded-full px-4 py-2 text-xs font-semibold transition",
+                          tab === "premium"
+                            ? "bg-gradient-to-r from-[#E5C97B] to-[#D6B46A] text-[#151515] shadow-[0_8px_20px_rgba(214,180,106,0.28)]"
+                            : "text-[var(--space-text-muted)] hover:text-[var(--space-text)]",
+                        ].join(" ")}
+                      >
+                        심화
+                      </button>
+                    </div>
+
+                    <div className="min-h-[180px] rounded-xl border border-white/[0.09] bg-white/[0.025] p-4 sm:p-5">
+                      {tab === "basic" ? (
+                        !my.has_survey ? (
+                          <p className="text-center text-sm text-[var(--space-text-muted)]">
+                            설문을 마치면 기본 결과가 열려요.
+                          </p>
+                        ) : freeParagraphs.length > 0 ? (
+                          <FreeAnalysisCardDeck paragraphs={freeParagraphs} />
+                        ) : (
+                          <div className="space-y-3 text-center">
+                            <p className="text-sm text-[var(--space-text-muted)]">
+                              여기서 불러오지 못했어요.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                router.push(
+                                  my.result_paths?.basic ??
+                                    `/result?id=${encodeURIComponent(reportId)}`,
+                                )
+                              }
+                              className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
+                            >
+                              기본 결과 페이지 열기
+                            </button>
+                          </div>
+                        )
+                      ) : my.has_premium ? (
+                        my.premium_result ? (
+                          <UnifiedReportMarkdown content={my.premium_result} />
+                        ) : (
+                          <div className="space-y-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                router.push(
+                                  my.result_paths?.full ??
+                                    `/result?id=${encodeURIComponent(reportId)}`,
+                                )
+                              }
+                              className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
+                            >
+                              심화 리포트 전체 보기
+                            </button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="text-center">
                           <button
                             type="button"
                             onClick={() =>
                               router.push(
-                                `/relationship/${r.relationship_report_id}?viewer=${encodeURIComponent(reportId)}`,
+                                my.result_paths?.payment ??
+                                  `/payment?reportId=${encodeURIComponent(reportId)}`,
                               )
                             }
-                            className="shrink-0 text-xs font-medium text-[#8eb8ff] hover:underline"
+                            className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
                           >
-                            보기
+                            심화 구독하기
                           </button>
-                        ) : null}
-                      </li>
-                    ))
-                  )}
-                </ul>
-              </AccordionSection>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </AccordionSection>
 
-              <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-center sm:gap-4 sm:pt-6">
+                <AccordionSection
+                  title="관계 탐사실"
+                  subtitle={`• 대기 ${relPendingCount} · 완료 ${relCompletedCount}`}
+                  open={openRelationships}
+                  onToggle={() => setOpenRelationships((v) => !v)}
+                >
+                  <ul className="space-y-2.5">
+                    {relsSorted.length === 0 ? (
+                      <li className="py-2 text-center text-sm text-[var(--space-text-muted)]">
+                        아직 없어요
+                      </li>
+                    ) : (
+                      relsSorted.map((r) => (
+                        <li
+                          key={r.relationship_report_id ?? r.partner_name}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-3"
+                        >
+                          <span className="text-sm text-[var(--space-text)]">
+                            {r.partner_name}님과의 관계
+                          </span>
+                          {r.relationship_report_id ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                router.push(
+                                  `/relationship/${r.relationship_report_id}?viewer=${encodeURIComponent(reportId)}`,
+                                )
+                              }
+                              className="shrink-0 text-xs font-medium text-[#8eb8ff] hover:underline"
+                            >
+                              보기
+                            </button>
+                          ) : null}
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </AccordionSection>
+
+                <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-center sm:gap-4 sm:pt-6">
+                  <GlowButton
+                    type="button"
+                    className="w-full !min-h-[50px] text-[0.9375rem] font-medium sm:max-w-[13.5rem] sm:flex-1"
+                    onClick={() => setConfirmNew(true)}
+                  >
+                    + 새 탐사
+                  </GlowButton>
+                  <GlowButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                      router.push(
+                        `/relationships?myReportId=${encodeURIComponent(reportId)}`,
+                      )
+                    }
+                    className="w-full !min-h-[50px] text-[0.9375rem] font-medium sm:max-w-[13.5rem] sm:flex-1"
+                  >
+                    관계 더보기
+                  </GlowButton>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        {confirmNew ? (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <GlassCard className="max-w-sm space-y-4 !p-5">
+              <p className="text-center text-sm leading-relaxed text-[var(--space-text)]">
+                기존 설문과 이 화면의 기본 요약이 초기화돼요. 다시 하시겠어요?
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row-reverse">
                 <GlowButton
                   type="button"
-                  className="w-full !min-h-[50px] text-[0.9375rem] font-medium sm:max-w-[13.5rem] sm:flex-1"
-                  onClick={() => setConfirmNew(true)}
+                  disabled={resetting}
+                  className="flex-1 text-sm"
+                  onClick={() => void confirmNewSurvey()}
                 >
-                  + 새 탐사
+                  {resetting ? "처리 중…" : "네, 설문 다시 하기"}
                 </GlowButton>
                 <GlowButton
                   type="button"
-                  variant="secondary"
-                  onClick={() =>
-                    router.push(
-                      `/relationships?myReportId=${encodeURIComponent(reportId)}`,
-                    )
-                  }
-                  className="w-full !min-h-[50px] text-[0.9375rem] font-medium sm:max-w-[13.5rem] sm:flex-1"
+                  variant="ghost"
+                  disabled={resetting}
+                  onClick={() => setConfirmNew(false)}
+                  className="flex-1 text-sm"
                 >
-                  관계 더보기
+                  취소
                 </GlowButton>
               </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {confirmNew ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <GlassCard className="max-w-sm space-y-4 !p-5">
-            <p className="text-center text-sm leading-relaxed text-[var(--space-text)]">
-              기존 설문과 이 화면의 기본 요약이 초기화돼요. 다시 하시겠어요?
-            </p>
-            <div className="flex flex-col gap-2 sm:flex-row-reverse">
-              <GlowButton
-                type="button"
-                disabled={resetting}
-                className="flex-1 text-sm"
-                onClick={() => void confirmNewSurvey()}
-              >
-                {resetting ? "처리 중…" : "네, 설문 다시 하기"}
-              </GlowButton>
-              <GlowButton
-                type="button"
-                variant="ghost"
-                disabled={resetting}
-                onClick={() => setConfirmNew(false)}
-                className="flex-1 text-sm"
-              >
-                취소
-              </GlowButton>
-            </div>
-          </GlassCard>
-        </div>
-      ) : null}
-    </SpaceBackground>
+            </GlassCard>
+          </div>
+        ) : null}
+      </SpaceBackground>
+    </>
   );
 }

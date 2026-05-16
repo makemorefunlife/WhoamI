@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabase/client";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 
@@ -205,16 +204,25 @@ export default function SurveyPage() {
       return;
     }
 
-    const { error } = await supabase.from("survey_responses").insert([
-      {
-        report_id: reportId,
+    const submitRes = await fetch("/api/survey/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        reportId,
         answers: payload,
-      },
-    ]);
+      }),
+    });
 
-    if (error) {
-      console.error(error);
-      alert("설문 저장 실패");
+    if (!submitRes.ok) {
+      let message = "설문 저장 실패";
+      try {
+        const j = (await submitRes.json()) as { error?: string };
+        if (j.error) message = j.error;
+      } catch {
+        /* ignore */
+      }
+      console.error("survey/submit:", message);
+      alert(message);
       setSaving(false);
       return;
     }

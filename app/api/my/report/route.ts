@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { buildSurveyOnlyUserInputForReport } from "@/lib/report/surveyForLlmFromReportId";
+import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -98,13 +99,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const { data: surveyRow } = await supabase
-      .from("survey_responses")
-      .select("id")
-      .eq("report_id", reportId)
-      .limit(1);
-
-    const has_survey = Boolean(surveyRow && surveyRow.length > 0);
+    const has_survey = await isSurveyCompleteForReport(supabase, reportId);
     const has_premium =
       report.payment_status === "paid" || report.plan_type === "paid";
 
