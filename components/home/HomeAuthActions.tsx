@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import GlowButton from "@/components/space/GlowButton";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
 
@@ -59,7 +59,7 @@ export default function HomeAuthActions({
   onResetResume: () => void;
 }) {
   const router = useRouter();
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, clerkUnavailable } = useClerkReady();
 
   useEffect(() => {
     if (!loggingEnabled()) return;
@@ -71,17 +71,15 @@ export default function HomeAuthActions({
     });
   }, [isLoaded, isSignedIn, resume]);
 
-  if (!isLoaded) {
-    return (
-      <div className="mt-8 text-sm text-white/55 sm:mt-10" aria-live="polite">
-        불러오는 중…
-      </div>
-    );
-  }
-
   if (!isSignedIn) {
     return (
-      <div className="mt-12 animate-fade-in-up delay-200 sm:mt-16">
+      <div className="mt-12 animate-fade-in-up delay-200 space-y-3 sm:mt-16">
+        {clerkUnavailable ? (
+          <p className="mx-auto max-w-sm text-center text-xs leading-relaxed text-amber-200/85">
+            로그인 서비스(Clerk)에 연결하지 못했어요. 광고·추적 차단을 잠시 끄거나,
+            새로고침 후 다시 시도해 주세요.
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={onOpenAuth}
@@ -99,9 +97,11 @@ export default function HomeAuthActions({
     );
   }
 
-  if (resume.loading) {
+  if (resume.loading && !resume.reportId) {
     return (
-      <div className="mt-8 text-sm text-white/55 sm:mt-10">불러오는 중…</div>
+      <div className="mt-8 text-sm text-white/55 sm:mt-10" aria-live="polite">
+        탐사 기록 확인 중…
+      </div>
     );
   }
 
@@ -110,6 +110,11 @@ export default function HomeAuthActions({
       <div className="mx-auto mt-8 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-10 sm:space-y-7">
         <h2 className="text-center text-[1.2rem] font-medium tracking-[-0.02em] text-white/90 sm:text-[1.45rem]">
           탐사실
+          {resume.loading ? (
+            <span className="mt-1 block text-xs font-normal text-white/45">
+              갱신 중…
+            </span>
+          ) : null}
         </h2>
         <div className="flex flex-col gap-3 sm:gap-3.5">
           <GlowButton

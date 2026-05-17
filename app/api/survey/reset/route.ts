@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -38,6 +39,8 @@ export async function POST(req: Request) {
       console.error("survey reset:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await deleteReportAnalysis(supabase, reportId, "basic");
 
     return NextResponse.json({ ok: true });
   } catch (e) {

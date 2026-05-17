@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
@@ -15,6 +15,8 @@ import {
   applyResumeReportIdToStorage,
   fetchHomeResumeClient,
 } from "@/lib/home/fetchHomeResumeClient";
+import { clearBasicResultCache } from "@/lib/report/basicResultCache";
+import { fetchBasicAnalysisClient } from "@/lib/report/fetchBasicAnalysisClient";
 
 const UnifiedReportMarkdown = dynamic(
   () => import("@/components/report/UnifiedReportMarkdown"),
@@ -126,6 +128,9 @@ export default function DashboardContent() {
   const [resetting, setResetting] = useState(false);
   const [openMyRecords, setOpenMyRecords] = useState(true);
   const [openRelationships, setOpenRelationships] = useState(true);
+  const [basicLoading, setBasicLoading] = useState(false);
+  const [basicError, setBasicError] = useState<string | null>(null);
+  const basicFetchRef = useRef<string | null>(null);
 
   const loading = loadPhase !== "idle";
 
@@ -160,6 +165,50 @@ export default function DashboardContent() {
     }
   }, []);
 
+  const loadBasicAnalysis = useCallback(
+    async (id: string, fromMeta?: string | null, force = false) => {
+      const trimmedMeta = fromMeta?.trim();
+      if (trimmedMeta) {
+        setBasicError(null);
+        setMy((prev) =>
+          prev ? { ...prev, basic_result: trimmedMeta } : prev,
+        );
+        return;
+      }
+
+      if (!force && basicFetchRef.current === id) return;
+      basicFetchRef.current = id;
+
+      setBasicLoading(true);
+      setBasicError(null);
+      try {
+        const result = await fetchBasicAnalysisClient(id, {
+          cachedFromMeta: force ? null : fromMeta,
+          regenerate: force,
+        });
+        if (result.ok) {
+          setMy((prev) =>
+            prev ? { ...prev, basic_result: result.text } : prev,
+          );
+          return;
+        }
+        if (result.reason === "no_survey") return;
+        if (result.reason === "no_key") {
+          setBasicError(
+            "분석 서버 설정이 필요해요. 잠시 후 다시 시도해 주세요.",
+          );
+        } else {
+          setBasicError(
+            "기본 분석을 만드는 데 시간이 걸리거나 실패했어요. 다시 시도해 주세요.",
+          );
+        }
+      } finally {
+        setBasicLoading(false);
+      }
+    },
+    [],
+  );
+
   const loadMyReport = useCallback(
     async (canonicalId: string, allowResumeRetry: boolean): Promise<boolean> => {
       const r1 = await fetch(
@@ -170,8 +219,14 @@ export default function DashboardContent() {
       } & Partial<MyReportJson>;
 
       if (r1.ok) {
-        setMy(j1 as MyReportJson);
+        const row = j1 as MyReportJson;
+        setMy(row);
         await fetchRelationships(canonicalId);
+        if (row.basic_result?.trim()) {
+          setMy((prev) =>
+            prev ? { ...prev, basic_result: row.basic_result!.trim() } : prev,
+          );
+        }
         return true;
       }
 
@@ -191,7 +246,7 @@ export default function DashboardContent() {
       setRels([]);
       return false;
     },
-    [fetchRelationships, syncCanonicalReportId],
+    [fetchRelationships, syncCanonicalReportId, loadBasicAnalysis],
   );
 
   const bootstrap = useCallback(async () => {
@@ -243,6 +298,25 @@ export default function DashboardContent() {
   useEffect(() => {
     void bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    basicFetchRef.current = null;
+    setBasicError(null);
+  }, [reportId]);
+
+  useEffect(() => {
+    if (tab !== "basic" || !reportId || !my?.has_survey) return;
+    if (my.basic_result?.trim()) return;
+    if (basicLoading) return;
+    void loadBasicAnalysis(reportId, my.basic_result ?? null);
+  }, [
+    tab,
+    reportId,
+    my?.has_survey,
+    my?.basic_result,
+    basicLoading,
+    loadBasicAnalysis,
+  ]);
 
   const freeParagraphs = useMemo(() => {
     const t = (my?.basic_result ?? "").trim();
@@ -298,6 +372,7 @@ export default function DashboardContent() {
         alert((j as { error?: string }).error ?? "초기화에 실패했어요.");
         return;
       }
+      clearBasicResultCache(reportId);
       setConfirmNew(false);
       router.push("/survey");
     } finally {
@@ -412,28 +487,39 @@ export default function DashboardContent() {
                     <div className="min-h-[180px] rounded-xl border border-white/[0.09] bg-white/[0.025] p-4 sm:p-5">
                       {tab === "basic" ? (
                         !my.has_survey ? (
-                          <p className="text-center text-sm text-[var(--space-text-muted)]">
-                            설문을 마치면 기본 결과가 열려요.
-                          </p>
+                          <div className="space-y-3 text-center">
+                            <p className="text-sm text-[var(--space-text-muted)]">
+                              18문항 설문을 마치면 기본 분석을 볼 수 있어요.
+                            </p>
+                            <GlowButton
+                              type="button"
+                              className="w-full"
+                              onClick={() => router.push("/survey")}
+                            >
+                              설문 이어하기
+                            </GlowButton>
+                          </div>
+                        ) : basicLoading ? (
+                          <ReportSectionLoading label="18문항 설문을 바탕으로 기본 분석을 만드는 중… (최대 1~2분)" />
                         ) : freeParagraphs.length > 0 ? (
                           <FreeAnalysisCardDeck paragraphs={freeParagraphs} />
                         ) : (
                           <div className="space-y-3 text-center">
                             <p className="text-sm text-[var(--space-text-muted)]">
-                              여기서 불러오지 못했어요.
+                              {basicError ??
+                                "기본 분석을 불러오지 못했어요."}
                             </p>
-                            <button
+                            <GlowButton
                               type="button"
-                              onClick={() =>
-                                router.push(
-                                  my.result_paths?.basic ??
-                                    `/result?id=${encodeURIComponent(reportId)}`,
-                                )
-                              }
-                              className="text-sm text-[#8eb8ff] underline hover:text-[#b8d4ff]"
+                              variant="secondary"
+                              className="w-full"
+                              onClick={() => {
+                                basicFetchRef.current = null;
+                                void loadBasicAnalysis(reportId, null, true);
+                              }}
                             >
-                              기본 결과 페이지 열기
-                            </button>
+                              다시 시도
+                            </GlowButton>
                           </div>
                         )
                       ) : my.has_premium ? (

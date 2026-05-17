@@ -8,14 +8,21 @@ import GlowButton from "@/components/space/GlowButton";
 import RelationshipCard, {
   type RelationshipListItem,
 } from "@/components/relationship/RelationshipCard";
+import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
 
 export default function RelationshipsDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const myReportId =
+  const urlMyReportHint =
     searchParams.get("myReportId")?.trim() ||
     searchParams.get("reportId")?.trim() ||
     "";
+  const { canonicalReportId: myReportId, resolving: canonicalResolving } =
+    useCanonicalReportId({
+      urlHint: urlMyReportHint,
+      queryParam: "myReportId",
+      logContext: "relationships-hub",
+    });
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -24,6 +31,7 @@ export default function RelationshipsDashboard() {
   const [inviteBusy, setInviteBusy] = useState(false);
 
   const load = useCallback(async (mode: "full" | "silent" = "full") => {
+    if (canonicalResolving) return;
     if (!myReportId) {
       setErr(null);
       setItems([]);
@@ -54,7 +62,7 @@ export default function RelationshipsDashboard() {
     } finally {
       if (mode === "full") setLoading(false);
     }
-  }, [myReportId]);
+  }, [myReportId, canonicalResolving]);
 
   useEffect(() => {
     void load("full");
@@ -116,7 +124,7 @@ export default function RelationshipsDashboard() {
     }
   }
 
-  if (!myReportId) {
+  if (!canonicalResolving && !myReportId) {
     return (
       <SpaceBackground>
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
@@ -146,7 +154,7 @@ export default function RelationshipsDashboard() {
             </h1>
           </div>
 
-          {loading ? (
+          {canonicalResolving || loading ? (
             <p className="text-center text-xs text-[var(--space-text-muted)]">
               불러오는 중…
             </p>

@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
+import { useUser } from "@clerk/nextjs";
+import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import { supabase } from "@/lib/supabase/client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SpaceBackground from "@/components/space/SpaceBackground";
@@ -14,8 +16,15 @@ import ReportBirthCaptureForm from "@/components/report/ReportBirthCaptureForm";
 import ReportViewTabSwitcher from "@/components/report/ReportViewTabSwitcher";
 import ReportSectionLoading from "@/components/report/ReportSectionLoading";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
-import { runPremiumReportPipeline } from "@/lib/report/runPremiumReportPipeline";
+import { fetchBasicAnalysisClient } from "@/lib/report/fetchBasicAnalysisClient";
+import { fetchIntegratedAnalysisClient } from "@/lib/report/fetchIntegratedAnalysisClient";
+import { logPremiumContentSource } from "@/lib/report/premiumContentSourceLog";
 import {
+  clearPremiumPipelineLock,
+  runPremiumReportPipelineOnce,
+} from "@/lib/report/premiumPipelineLock";
+import {
+  clearUnifiedReportCache,
   readUnifiedReportCache,
   writeUnifiedReportCache,
 } from "@/lib/report/unifiedReportCache";
@@ -25,11 +34,11 @@ import {
   hasCompleteBirthInfo,
   parseBirthDateParts,
 } from "@/lib/report/reportBirthUtils";
-import { buildSurveyOnlyPrompt } from "@/lib/report/reportPromptBuilders";
 import { getPattern } from "@/lib/report/surveyPatternUtils";
+import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
 
-const AdvancedExplorationReport = dynamic(
-  () => import("@/components/report/AdvancedExplorationReport"),
+const UnifiedReportMarkdown = dynamic(
+  () => import("@/components/report/UnifiedReportMarkdown"),
   {
     ssr: false,
     loading: () => (
@@ -63,16 +72,20 @@ function markDeepReportIntroSeen(reportId: string) {
 export default function ReportContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useUser();
 
   const [report, setReport] = useState<Record<string, unknown> | null>(null);
   const [interpretations, setInterpretations] = useState<
     Record<string, string>
   >({});
   const [relationship, setRelationship] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [dataLoading, setDataLoading] = useState<boolean>(true);
 
   const [freeSummary, setFreeSummary] = useState<string | null>(null);
   const [paidSummary, setPaidSummary] = useState<string | null>(null);
+  const [surveyIncomplete, setSurveyIncomplete] = useState(false);
+  const [basicLoading, setBasicLoading] = useState(false);
+  const [basicError, setBasicError] = useState<string | null>(null);
   const [unifiedReport, setUnifiedReport] = useState<string | null>(null);
   const [reportStreaming, setReportStreaming] = useState(false);
   const [sajuStatus, setSajuStatus] = useState<{
@@ -101,19 +114,32 @@ export default function ReportContent() {
     patterns: Record<string, string> | null;
   }>({ interpretations: {}, patterns: null });
   const premiumPipelineStartedRef = useRef(false);
+  const premiumLoadInFlightRef = useRef(false);
   const afterPaymentHandled = useRef(false);
   const inviteUsedRef = useRef(false);
   inviteUsedRef.current = inviteUsed;
 
   const pathname = usePathname();
-  const reportId = searchParams.get("id") || "";
+  const urlReportIdHint = searchParams.get("id")?.trim() ?? "";
+  const {
+    canonicalReportId: reportId,
+    resolving: canonicalResolving,
+  } = useCanonicalReportId({
+    urlHint: urlReportIdHint,
+    queryParam: "id",
+    logContext: pathname === "/report" ? "report-page" : "result-page",
+  });
+  const loading = canonicalResolving || dataLoading;
   const afterPaymentFlag = searchParams.get("afterPayment") === "1";
+  const regenerateIntegratedFlag =
+    searchParams.get("regenerateIntegrated") === "1";
 
   useEffect(() => {
     if (viewParam === "premium") setResultViewTab("premium");
     else if (viewParam === "basic") setResultViewTab("basic");
   }, [viewParam]);
-  const displayName = report?.name?.trim() || "당신";
+  const displayName =
+    report?.name?.trim() || resolveClerkDisplayName(user) || "당신";
 
   const freeParagraphs = useMemo(() => {
     if (!freeSummary) return [];
@@ -303,25 +329,65 @@ export default function ReportContent() {
     if (report.payment_status !== "paid") return;
     if (!hasCompleteBirthInfo(report)) return;
 
-    if (unifiedReport && unifiedReport.trim().length > 0) {
+    const regenerate = regenerateIntegratedFlag;
+
+    if (
+      !regenerate &&
+      unifiedReport &&
+      unifiedReport.trim().length > 0 &&
+      premiumPipelineStartedRef.current
+    ) {
       return;
     }
 
-    const cached = readUnifiedReportCache(reportId);
-    if (cached) {
-      setUnifiedReport(cached);
-      setSajuStatus({ attempted: true, ok: true });
+    if (premiumLoadInFlightRef.current) {
       return;
     }
-
-    if (premiumPipelineStartedRef.current || premiumLoading || reportStreaming) {
-      return;
-    }
-    premiumPipelineStartedRef.current = true;
-    setPremiumLoading(true);
+    premiumLoadInFlightRef.current = true;
 
     try {
-      const result = await runPremiumReportPipeline(
+      if (regenerate) {
+        clearUnifiedReportCache(reportId);
+        clearPremiumPipelineLock(reportId);
+        premiumPipelineStartedRef.current = false;
+        setUnifiedReport(null);
+        logPremiumContentSource(reportId, "regeneration", "ui-requested");
+        try {
+          await fetchIntegratedAnalysisClient(reportId, { regenerate: true });
+        } catch {
+          /* DB 삭제 실패 시에도 파이프라인 재시도 */
+        }
+      } else {
+        const sessionPreview = readUnifiedReportCache(reportId);
+        if (sessionPreview && !unifiedReport?.trim()) {
+          setUnifiedReport(sessionPreview);
+          logPremiumContentSource(reportId, "session", "load-preview");
+        }
+
+        try {
+          const persisted = await fetchIntegratedAnalysisClient(reportId);
+          if (persisted.ok) {
+            setUnifiedReport(persisted.text);
+            setSajuStatus({ attempted: true, ok: true });
+            premiumPipelineStartedRef.current = true;
+            return;
+          }
+        } catch (e) {
+          console.warn("저장된 integrated 조회 실패:", e);
+        }
+      }
+
+      if (
+        premiumPipelineStartedRef.current ||
+        premiumLoading ||
+        reportStreaming
+      ) {
+        return;
+      }
+      premiumPipelineStartedRef.current = true;
+      setPremiumLoading(true);
+
+      const result = await runPremiumReportPipelineOnce(
         reportId,
         report,
         surveyContextRef.current.interpretations,
@@ -330,6 +396,7 @@ export default function ReportContent() {
           onStreamChunk: (acc) => setUnifiedReport(acc),
           onStreamingChange: setReportStreaming,
         },
+        { regenerate },
       );
 
       setSajuStatus(result.sajuStatus);
@@ -340,12 +407,16 @@ export default function ReportContent() {
       if (result.unifiedReport?.trim()) {
         setUnifiedReport(result.unifiedReport);
         writeUnifiedReportCache(reportId, result.unifiedReport);
+        if (regenerate) {
+          logPremiumContentSource(reportId, "regeneration", "ui-complete");
+        }
       }
     } catch (e) {
       console.error("심화 리포트 생성 실패:", e);
       premiumPipelineStartedRef.current = false;
     } finally {
       setPremiumLoading(false);
+      premiumLoadInFlightRef.current = false;
     }
   }, [
     reportId,
@@ -354,6 +425,7 @@ export default function ReportContent() {
     premiumLoading,
     reportStreaming,
     freeSummary,
+    regenerateIntegratedFlag,
   ]);
 
   const goPremiumResultTab = useCallback(() => {
@@ -408,29 +480,117 @@ export default function ReportContent() {
 
   useEffect(() => {
     premiumPipelineStartedRef.current = false;
+    premiumLoadInFlightRef.current = false;
+    clearPremiumPipelineLock(reportId);
   }, [reportId]);
 
+  const loadBasicAnalysisForResult = useCallback(
+    async (rid: string, opts?: { regenerate?: boolean }) => {
+      setBasicLoading(true);
+      setBasicError(null);
+      setSurveyIncomplete(false);
+      try {
+        const result = await fetchBasicAnalysisClient(rid, {
+          regenerate: opts?.regenerate,
+        });
+        if (result.ok) {
+          setFreeSummary(result.text);
+          setPaidSummary(null);
+          return;
+        }
+        if (result.reason === "no_survey") {
+          setSurveyIncomplete(true);
+          setFreeSummary(null);
+          setPaidSummary(null);
+          return;
+        }
+        if (result.reason === "no_key") {
+          setBasicError(
+            "분석 서버 설정이 필요해요. 잠시 후 다시 시도해 주세요.",
+          );
+        } else {
+          setBasicError(
+            "기본 분석을 만드는 데 시간이 걸리거나 실패했어요. 다시 시도해 주세요.",
+          );
+        }
+      } catch (e) {
+        console.error("기본 분석 로드 실패", e);
+        setBasicError("기본 분석을 불러오지 못했어요.");
+      } finally {
+        setBasicLoading(false);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
+    async function loadSurveyPatterns(rid: string) {
+      const { data: responseData } = await supabase
+        .from("survey_responses")
+        .select("answers")
+        .eq("report_id", rid)
+        .order("id", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const localInterpretations: Record<string, string> = {};
+      let localPatterns: Record<string, string> | null = null;
+
+      if (responseData?.answers) {
+        const ans = responseData.answers as Record<string, string>;
+        const patterns: Record<string, string> = {
+          mbti: getPattern(ans.q1, ans.q2, ans.q3),
+          disc: getPattern(ans.q4, ans.q5, ans.q6),
+          enneagram: getPattern(ans.q7, ans.q8, ans.q9),
+          riasec: getPattern(ans.q10, ans.q11, ans.q12),
+          pss: getPattern(ans.q13, ans.q14, ans.q15),
+          tci: getPattern(ans.q16, ans.q17, ans.q18),
+        };
+        localPatterns = patterns;
+
+        await Promise.all(
+          Object.keys(patterns).map(async (key) => {
+            const pattern = patterns[key];
+            const { data } = await supabase
+              .from("pattern_base")
+              .select("interpretation")
+              .eq("domain", key)
+              .eq("pattern", pattern.trim())
+              .maybeSingle();
+            localInterpretations[key] = data?.interpretation ?? "해석 없음";
+          }),
+        );
+        setInterpretations(localInterpretations);
+      }
+
+      surveyContextRef.current = {
+        interpretations: localInterpretations,
+        patterns: localPatterns,
+      };
+    }
+
     async function fetchCore() {
+      if (canonicalResolving) return;
+
       if (!reportId) {
-        setLoading(false);
+        setDataLoading(false);
         return;
       }
 
-      setLoading(true);
+      setDataLoading(true);
       setPremiumLoading(false);
       setReportStreaming(false);
+      setBasicError(null);
 
-      let hadCachedPremium = false;
-      const cachedPremium = readUnifiedReportCache(reportId);
-      if (cachedPremium) {
-        hadCachedPremium = true;
-        setUnifiedReport(cachedPremium);
-        setSajuStatus({ attempted: true, ok: true });
-        premiumPipelineStartedRef.current = true;
-      } else {
-        setUnifiedReport(null);
-        setSajuStatus({ attempted: false, ok: false });
+      let hadDbPremium = false;
+      setUnifiedReport(null);
+      setSajuStatus({ attempted: false, ok: false });
+      premiumPipelineStartedRef.current = false;
+
+      const sessionPreview = readUnifiedReportCache(reportId);
+      if (sessionPreview) {
+        setUnifiedReport(sessionPreview);
+        logPremiumContentSource(reportId, "session", "fetchCore-preview");
       }
 
       try {
@@ -442,98 +602,60 @@ export default function ReportContent() {
 
         setReport(reportData);
 
-        if (typeof window !== "undefined" && reportId) {
-          localStorage.setItem("reportId", reportId);
-        }
-
-        const paid = reportData?.payment_status === "paid";
-
-        const { data: responseData } = await supabase
-          .from("survey_responses")
-          .select("answers")
-          .eq("report_id", reportId)
-          .maybeSingle();
-
-        const localInterpretations: Record<string, string> = {};
-        let localPatterns: Record<string, string> | null = null;
-
-        if (responseData?.answers) {
-          const ans = responseData.answers as Record<string, string>;
-
-          const patterns: Record<string, string> = {
-            mbti: getPattern(ans.q1, ans.q2, ans.q3),
-            disc: getPattern(ans.q4, ans.q5, ans.q6),
-            enneagram: getPattern(ans.q7, ans.q8, ans.q9),
-            riasec: getPattern(ans.q10, ans.q11, ans.q12),
-            pss: getPattern(ans.q13, ans.q14, ans.q15),
-            tci: getPattern(ans.q16, ans.q17, ans.q18),
-          };
-
-          localPatterns = patterns;
-
-          const patternKeys = Object.keys(patterns);
-          await Promise.all(
-            patternKeys.map(async (key) => {
-              const pattern = patterns[key];
-              const { data } = await supabase
-                .from("pattern_base")
-                .select("interpretation")
-                .eq("domain", key)
-                .eq("pattern", pattern.trim())
-                .maybeSingle();
-
-              localInterpretations[key] = data?.interpretation ?? "해석 없음";
-            }),
-          );
-
-          setInterpretations(localInterpretations);
-        }
-
-        surveyContextRef.current = {
-          interpretations: localInterpretations,
-          patterns: localPatterns,
-        };
-
-        if (Object.keys(localInterpretations).length > 0) {
+        if (
+          reportData?.payment_status === "paid" &&
+          hasCompleteBirthInfo(reportData)
+        ) {
           try {
-            const promptData = buildSurveyOnlyPrompt(localInterpretations);
-            const res = await fetch("/api/llm", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                mode: "free",
-                userInput: promptData,
-              }),
+            const persisted = await fetchIntegratedAnalysisClient(reportId, {
+              regenerate: regenerateIntegratedFlag,
             });
-            const data = await res.json();
-            setFreeSummary(data.free ?? null);
-            if (!paid) {
-              setPaidSummary(data.paid ?? null);
-            } else {
-              setPaidSummary(null);
+            if (persisted.ok) {
+              hadDbPremium = true;
+              setUnifiedReport(persisted.text);
+              setSajuStatus({ attempted: true, ok: true });
+              premiumPipelineStartedRef.current = true;
+            } else if (!sessionPreview) {
+              setUnifiedReport(null);
             }
-          } catch (e) {
-            console.error("기본 LLM 실패", e);
+          } catch {
+            if (!sessionPreview) {
+              setUnifiedReport(null);
+            }
           }
+        } else if (!sessionPreview) {
+          setUnifiedReport(null);
         }
 
-        if (!hadCachedPremium) {
+        setDataLoading(false);
+
+        void loadSurveyPatterns(reportId);
+        if (viewParam !== "premium") {
+          void loadBasicAnalysisForResult(reportId);
+        }
+
+        if (!hadDbPremium && !sessionPreview) {
           setUnifiedReport(null);
         }
       } catch (e) {
         console.error("리포트 데이터 로드 실패:", e);
-        if (!hadCachedPremium) {
+        if (!hadDbPremium && !sessionPreview) {
           setUnifiedReport(null);
         }
         setFreeSummary(null);
         setPaidSummary(null);
-      } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     }
 
     void fetchCore();
-  }, [reportId]);
+  }, [
+    reportId,
+    canonicalResolving,
+    viewParam,
+    loadBasicAnalysisForResult,
+    regenerateIntegratedFlag,
+  ]);
 
   useEffect(() => {
     if (loading || !report) return;
@@ -553,7 +675,7 @@ export default function ReportContent() {
     );
   }
 
-  if (!reportId) {
+  if (!canonicalResolving && !reportId) {
     return (
       <SpaceBackground>
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
@@ -597,19 +719,56 @@ export default function ReportContent() {
             (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
             deepFlow) &&
             isPremiumHeroActive && (
-              <AdvancedExplorationReport
-                fallbackName={displayName}
-                reportText={unifiedReport ?? ""}
-              />
+              <div className="space-y-6">
+                <header className="space-y-2 text-center">
+                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--space-sub)]">
+                    Deep report
+                  </p>
+                  <h1 className="text-2xl font-semibold leading-tight text-[var(--space-text)] sm:text-3xl">
+                    {displayName}님의 심화 탐사 리포트
+                  </h1>
+                </header>
+                {unifiedReport?.trim() ? (
+                  <GlassCard className="p-4 sm:p-6">
+                    <UnifiedReportMarkdown content={unifiedReport} />
+                  </GlassCard>
+                ) : premiumLoading || reportStreaming ? (
+                  <ReportSectionLoading label="심화 리포트를 준비하는 중…" />
+                ) : (
+                  <GlassCard className="space-y-4 p-5 text-center">
+                    <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+                      심화 리포트를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+                    </p>
+                    <GlowButton
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => {
+                        premiumPipelineStartedRef.current = false;
+                        premiumLoadInFlightRef.current = false;
+                        clearPremiumPipelineLock(reportId);
+                        void loadPremiumReport();
+                      }}
+                    >
+                      다시 시도
+                    </GlowButton>
+                  </GlassCard>
+                )}
+              </div>
             )}
 
-          {(freeSummary ||
-            paidSummary ||
-            showPaidUnified ||
-            inviteUsed ||
-            (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
-            deepFlow) &&
-            !isPremiumHeroActive && (
+          {report &&
+            !loading &&
+            !isPremiumHeroActive &&
+            (freeSummary ||
+              paidSummary ||
+              showPaidUnified ||
+              inviteUsed ||
+              basicLoading ||
+              surveyIncomplete ||
+              basicError ||
+              (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
+              deepFlow) && (
             <GlassCard className="space-y-6">
               {deepFlow === "intro" ? (
                 <DeepReportIntroPanel
@@ -669,6 +828,50 @@ export default function ReportContent() {
                 </div>
               ) : (
                 <>
+                  {basicLoading &&
+                    !freeSummary &&
+                    (!isDbPaid || resultViewTab === "basic") && (
+                    <ReportSectionLoading label="18문항 설문을 바탕으로 기본 분석을 만드는 중… (최대 1~2분)" />
+                  )}
+
+                  {surveyIncomplete && !basicLoading && (
+                    <div className="space-y-4 text-center">
+                      <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+                        18문항 설문을 마치면 기본 분석을 볼 수 있어요.
+                      </p>
+                      <GlowButton
+                        type="button"
+                        className="w-full"
+                        onClick={() => router.push("/survey")}
+                      >
+                        설문 이어하기
+                      </GlowButton>
+                    </div>
+                  )}
+
+                  {basicError &&
+                    !basicLoading &&
+                    !freeSummary &&
+                    !surveyIncomplete && (
+                      <div className="space-y-3 text-center">
+                        <p className="text-sm text-[var(--space-text-muted)]">
+                          {basicError}
+                        </p>
+                        <GlowButton
+                          type="button"
+                          variant="secondary"
+                          className="w-full"
+                          onClick={() => {
+                            void loadBasicAnalysisForResult(reportId, {
+                              regenerate: true,
+                            });
+                          }}
+                        >
+                          다시 시도
+                        </GlowButton>
+                      </div>
+                    )}
+
                   {isDbPaid && (birthInfoComplete || showPaidUnified) && (
                     <ReportViewTabSwitcher
                       resultViewTab={resultViewTab}
@@ -678,6 +881,9 @@ export default function ReportContent() {
                           `/result?id=${encodeURIComponent(reportId)}&view=basic`,
                           { scroll: false },
                         );
+                        if (!freeSummary?.trim()) {
+                          void loadBasicAnalysisForResult(reportId);
+                        }
                       }}
                       onSelectPremium={() => {
                         void goPremiumResultTab();
@@ -711,9 +917,7 @@ export default function ReportContent() {
                     )}
 
                   {freeSummary &&
-                    (!isDbPaid ||
-                      resultViewTab === "basic" ||
-                      !showPaidUnified) && (
+                    (!isDbPaid || resultViewTab === "basic") && (
                       <>
                         <FreeResultAccordions
                           bodies={freeAccordionBodies}
@@ -829,19 +1033,6 @@ export default function ReportContent() {
               )}
             </GlassCard>
           )}
-
-          {!freeSummary &&
-            !paidSummary &&
-            !showPaidUnified &&
-            !deepFlow &&
-            !(isDbPaid && !(birthInfoComplete && sajuStatus.ok)) && (
-              <GlassCard>
-                <p className="text-center text-sm text-[var(--space-text-muted)]">
-                  아직 보여줄 관측 데이터가 준비되지 않았어요. 잠시 후 다시
-                  열어보세요.
-                </p>
-              </GlassCard>
-            )}
 
           {pathname !== "/result" ? (
             <div className="mx-auto w-full max-w-md sm:max-w-lg">

@@ -4,13 +4,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
+import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { AnimatePresence, motion } from "framer-motion";
 import { Gloria_Hallelujah } from "next/font/google";
 import { supabase } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import HomeAuthActions from "@/components/home/HomeAuthActions";
+import HomeClerkGate from "@/components/home/HomeClerkGate";
 import HomeLandingDecor from "@/components/home/HomeLandingDecor";
 
 const heroTitleFont = Gloria_Hallelujah({
@@ -34,7 +36,7 @@ const HomeAuthSignInPanel = dynamic(
 export default function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoaded, isSignedIn, userId } = useAuth();
+  const { isLoaded, isSignedIn, userId } = useClerkReady();
   const { user } = useUser();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [creatingReport, setCreatingReport] = useState(false);
@@ -90,15 +92,25 @@ export default function HomeContent() {
     }
 
     let cancelled = false;
-    queueMicrotask(() => {
+
+    const hint =
+      typeof window !== "undefined"
+        ? localStorage.getItem("reportId")?.trim() ?? ""
+        : "";
+
+    if (hint) {
+      setResume({
+        loading: true,
+        reportId: hint,
+        hasReport: true,
+        surveyCompleted: false,
+        name: resolveClerkDisplayName(user),
+      });
+    } else {
       setResume((s) => ({ ...s, loading: true }));
-    });
+    }
 
     void (async () => {
-      const hint =
-        typeof window !== "undefined"
-          ? localStorage.getItem("reportId")?.trim() ?? ""
-          : "";
       const url = hint
         ? `/api/home/resume?reportId=${encodeURIComponent(hint)}`
         : "/api/home/resume";
@@ -191,7 +203,7 @@ export default function HomeContent() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, user]);
 
   const launchSurvey = useCallback(
     async (nameTrimmed: string) => {
@@ -233,25 +245,6 @@ export default function HomeContent() {
 
       setCreatingReport(false);
       setRocketPlaying(true);
-
-      const trimmed = nameTrimmed;
-      void (async () => {
-        try {
-          const llmRes = await fetch("/api/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userInput: `이름: ${trimmed}\n(생년월일·출생 시각은 설문 이후 심화 분석 단계에서 수집 예정입니다.)`,
-            }),
-          });
-          const llmData = await llmRes.json();
-          const fullText =
-            typeof llmData.full === "string" ? llmData.full : "";
-          if (fullText) localStorage.setItem("llmResult", fullText);
-        } catch (e) {
-          console.error("LLM 호출 실패", e);
-        }
-      })();
 
       window.setTimeout(() => {
         if (inviteToken) {
@@ -370,15 +363,32 @@ export default function HomeContent() {
           </h1>
         </div>
 
-        <HomeAuthActions
-          resume={resume}
-          relCounts={relCounts}
-          creatingReport={creatingReport}
-          rocketPlaying={rocketPlaying}
-          onOpenAuth={() => setAuthModalOpen(true)}
-          onStartExploration={onStartExploration}
-          onResetResume={resetResume}
-        />
+        <HomeClerkGate
+          failedFallback={
+            <div className="mt-12 space-y-3 px-4 sm:mt-16">
+              <p className="mx-auto max-w-md text-center text-sm leading-relaxed text-amber-200/90">
+                로그인(Clerk) 스크립트를 불러오지 못했어요.
+                <br />
+                광고·추적 차단을 끄고 새로고침하거나, 시크릿 창에서 다시
+                시도해 주세요.
+              </p>
+              <p className="text-center text-xs text-white/45">
+                개발 모드에서는 <code className="text-white/60">/__clerk</code>{" "}
+                프록시가 켜져 있어야 합니다.
+              </p>
+            </div>
+          }
+        >
+          <HomeAuthActions
+            resume={resume}
+            relCounts={relCounts}
+            creatingReport={creatingReport}
+            rocketPlaying={rocketPlaying}
+            onOpenAuth={() => setAuthModalOpen(true)}
+            onStartExploration={onStartExploration}
+            onResetResume={resetResume}
+          />
+        </HomeClerkGate>
       </div>
 
       {/* 로켓 발사 (탐사 시작 후) */}

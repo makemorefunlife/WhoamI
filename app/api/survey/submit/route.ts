@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { mergeBirthCoordinateFields, updateReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { answersIndicateCompleteSurvey } from "@/lib/report/surveyCompletion";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
@@ -105,7 +107,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: insErr.message }, { status: 500 });
     }
 
-    const reportPatch: Record<string, string | null> = {};
+    const reportPatch: Record<string, string | number | null> = {};
     if (typeof body.birthDate === "string" && body.birthDate.trim()) {
       reportPatch.birth_date = body.birthDate.trim();
     }
@@ -117,12 +119,25 @@ export async function POST(req: Request) {
     }
 
     if (Object.keys(reportPatch).length > 0) {
-      const { error: upErr } = await supabase
-        .from("reports")
-        .update(reportPatch)
-        .eq("id", reportId);
+      const patchWithCoords = mergeBirthCoordinateFields(
+        reportPatch,
+        typeof reportPatch.birth_place === "string"
+          ? reportPatch.birth_place
+          : null,
+      );
+      const { error: upErr } = await updateReportPatchSafely(
+        supabase,
+        reportId,
+        patchWithCoords,
+      );
       if (upErr) {
         console.error("survey/submit report patch:", upErr);
+      } else if (
+        reportPatch.birth_date ||
+        reportPatch.birth_time ||
+        reportPatch.birth_place
+      ) {
+        await deleteReportAnalysis(supabase, reportId, "astrology");
       }
     }
 

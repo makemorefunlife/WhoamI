@@ -1,3 +1,5 @@
+import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
+import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { getPatternSummaryForReport } from "@/lib/relationship/surveyPatterns";
@@ -62,29 +64,19 @@ async function fetchSajuJson(
 
 async function fetchAstroJson(
   origin: string,
-  report: {
-    birth_date: string | null;
-    birth_time: string | null;
-    birth_place: string | null;
-  },
+  report: Record<string, unknown>,
 ): Promise<Record<string, unknown> | null> {
   if (!report.birth_date) return null;
-  const d = new Date(report.birth_date);
-  const [hh, mm] = String(report.birth_time ?? "12:0").split(":");
+  let body: ReturnType<typeof buildAstrologyApiRequestFromReport>["body"];
+  try {
+    ({ body } = buildAstrologyApiRequestFromReport(report));
+  } catch {
+    return null;
+  }
   const res = await fetch(`${origin}/api/astrology`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      year: d.getFullYear(),
-      month: d.getMonth() + 1,
-      day: d.getDate(),
-      hour: Number.parseInt(hh ?? "12", 10) || 12,
-      minute: Number.parseInt(mm ?? "0", 10) || 0,
-      latitude: 37.5665,
-      longitude: 126.978,
-      timezone: 9,
-      birthPlace: report.birth_place ?? "",
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) return null;
   return (await res.json()) as Record<string, unknown>;
@@ -146,19 +138,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ result_premium: rr.result_premium });
     }
 
-    const { data: repA, error: eA } = await supabase
-      .from("reports")
-      .select("id, name, birth_date, birth_time, birth_place, payment_status")
-      .eq("id", rr.report_id_a)
-      .maybeSingle();
+    const fetchA = await fetchReportWithBirthCoords(
+      supabase,
+      rr.report_id_a,
+      "payment_status",
+    );
+    const fetchB = await fetchReportWithBirthCoords(
+      supabase,
+      rr.report_id_b,
+      "payment_status",
+    );
 
-    const { data: repB, error: eB } = await supabase
-      .from("reports")
-      .select("id, name, birth_date, birth_time, birth_place, payment_status")
-      .eq("id", rr.report_id_b)
-      .maybeSingle();
+    const repA = fetchA.report;
+    const repB = fetchB.report;
 
-    if (eA || eB || !repA || !repB) {
+    if (fetchA.error || fetchB.error || !repA || !repB) {
       return NextResponse.json(
         { error: "양쪽 리포트 정보를 불러오지 못했습니다." },
         { status: 400 },

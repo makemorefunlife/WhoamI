@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { mergeBirthCoordinateFields, updateReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -71,29 +73,37 @@ export async function POST(req: Request) {
         .is("clerk_user_id", null);
     }
 
-    const patch: Record<string, string | null> = {
-      birth_date:
-        typeof body.birthDate === "string" && body.birthDate.trim()
-          ? body.birthDate.trim()
-          : null,
-      birth_time:
-        typeof body.birthTime === "string" && body.birthTime.trim()
-          ? body.birthTime.trim()
-          : null,
-      birth_place:
-        typeof body.birthPlace === "string" && body.birthPlace.trim()
-          ? body.birthPlace.trim()
-          : null,
-    };
+    const birthPlace =
+      typeof body.birthPlace === "string" && body.birthPlace.trim()
+        ? body.birthPlace.trim()
+        : null;
 
-    const { error: upErr } = await supabase
-      .from("reports")
-      .update(patch)
-      .eq("id", reportId);
+    const patch = mergeBirthCoordinateFields(
+      {
+        birth_date:
+          typeof body.birthDate === "string" && body.birthDate.trim()
+            ? body.birthDate.trim()
+            : null,
+        birth_time:
+          typeof body.birthTime === "string" && body.birthTime.trim()
+            ? body.birthTime.trim()
+            : null,
+        birth_place: birthPlace,
+      },
+      birthPlace,
+    );
+
+    const { error: upErr } = await updateReportPatchSafely(
+      supabase,
+      reportId,
+      patch,
+    );
 
     if (upErr) {
       return NextResponse.json({ error: upErr.message }, { status: 500 });
     }
+
+    await deleteReportAnalysis(supabase, reportId, "astrology");
 
     return NextResponse.json({ ok: true, ...patch });
   } catch (e) {

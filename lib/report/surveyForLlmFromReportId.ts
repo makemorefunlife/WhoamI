@@ -34,6 +34,8 @@ export async function buildSurveyOnlyUserInputForReport(
     .from("survey_responses")
     .select("answers")
     .eq("report_id", reportId)
+    .order("id", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (!responseData?.answers) return null;

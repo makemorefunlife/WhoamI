@@ -1,8 +1,12 @@
+import { persistIntegratedAnalysisClient } from "@/lib/report/fetchIntegratedAnalysisClient";
+import { fetchPremiumPipelineMetaClient } from "@/lib/report/fetchPremiumPipelineMetaClient";
+import { logAstrologyCache } from "@/lib/report/astrologyCoordLog";
+import { extractAstrologyTextForIntegrated } from "@/lib/report/astrologyIntegratedText";
+import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
+import { persistAstrologyClient } from "@/lib/report/persistAstrologyClient";
+import { persistDetailedSurveyClient } from "@/lib/report/persistDetailedSurveyClient";
+import { logPremiumContentSource } from "@/lib/report/premiumContentSourceLog";
 import { hasCompleteBirthInfo } from "@/lib/report/reportBirthUtils";
-import {
-  buildAstrologyContextForLlm,
-  buildSurveyOnlyPrompt,
-} from "@/lib/report/reportPromptBuilders";
 
 export type PremiumPipelineCallbacks = {
   onStreamChunk?: (accumulated: string) => void;
@@ -25,6 +29,7 @@ export async function runPremiumReportPipeline(
   interpretations: Record<string, string>,
   patterns: Record<string, string> | null,
   callbacks: PremiumPipelineCallbacks = {},
+  options?: { regenerate?: boolean },
 ): Promise<PremiumPipelineResult> {
   const { onStreamChunk, onStreamingChange } = callbacks;
   let sajuStatus: { attempted: boolean; ok: boolean } = {
@@ -35,11 +40,39 @@ export async function runPremiumReportPipeline(
   let freeSummary: string | null = null;
   let unifiedReport: string | null = null;
 
-  let localSajuData: unknown = null;
+  void interpretations;
 
   if (!hasCompleteBirthInfo(report)) {
     return { unifiedReport: null, sajuStatus, relationship, freeSummary };
   }
+
+  const metaResult = await fetchPremiumPipelineMetaClient(reportId, {
+    regenerate: options?.regenerate,
+  });
+  const pipelineMeta = metaResult.status === "ok" ? metaResult.meta : null;
+
+  if (pipelineMeta?.basic_result) {
+    freeSummary = pipelineMeta.basic_result;
+    logPremiumContentSource(reportId, "db", "basic-reuse-quick-meta");
+  }
+
+  if (!options?.regenerate && pipelineMeta?.premium_result) {
+    unifiedReport = pipelineMeta.premium_result;
+    logPremiumContentSource(reportId, "db", "pipeline-skip-full");
+    onStreamChunk?.(pipelineMeta.premium_result);
+    return {
+      unifiedReport,
+      sajuStatus: { attempted: true, ok: true },
+      relationship,
+      freeSummary,
+    };
+  }
+
+  if (options?.regenerate) {
+    logPremiumContentSource(reportId, "regeneration", "pipeline-full-run");
+  }
+
+  let localSajuData: unknown = null;
 
   sajuStatus = { attempted: true, ok: false };
   const sr = await fetch("/api/saju", {
@@ -60,52 +93,56 @@ export async function runPremiumReportPipeline(
 
   let localAstrologyText: string | null = null;
   if (sajuStatus.ok) {
+    let astroRequest: ReturnType<typeof buildAstrologyApiRequestFromReport> | null =
+      null;
     try {
-      const birthDateObj = new Date(String(report.birth_date));
-      const ar = await fetch("/api/astrology", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          year: birthDateObj.getFullYear(),
-          month: birthDateObj.getMonth() + 1,
-          day: birthDateObj.getDate(),
-          hour: report.birth_time
-            ? parseInt(String(report.birth_time).split(":")[0], 10)
-            : 12,
-          minute: report.birth_time
-            ? parseInt(String(report.birth_time).split(":")[1], 10)
-            : 0,
-          latitude: 37.5665,
-          longitude: 126.978,
-          timezone: 9,
-        }),
-      });
-      if (ar.ok) {
-        const astroData = await ar.json();
-        const interp =
-          typeof astroData.interpretation === "string"
-            ? astroData.interpretation.trim()
-            : "";
-        if (interp) {
-          localAstrologyText = interp;
-        } else {
-          const raw = astroData.raw as
-            | { sun?: string; moon?: string; rising?: string }
-            | undefined;
-          const sun = raw?.sun ?? astroData.sun;
-          const moon = raw?.moon ?? astroData.moon;
-          const rising = raw?.rising ?? astroData.rising;
-          if (sun && moon && rising) {
-            localAstrologyText = buildAstrologyContextForLlm({
-              sun,
-              moon,
-              rising,
+      astroRequest = buildAstrologyApiRequestFromReport(report, { reportId });
+    } catch (e) {
+      console.error("점성 좌표/요청 구성 실패:", e);
+    }
+
+    const fingerprint = astroRequest?.locationFingerprint ?? null;
+    const canReuseAstrology =
+      Boolean(pipelineMeta?.astrology_result) &&
+      Boolean(fingerprint) &&
+      pipelineMeta?.astrology_location_key === fingerprint;
+
+    if (canReuseAstrology && pipelineMeta?.astrology_result) {
+      localAstrologyText = pipelineMeta.astrology_result;
+      logAstrologyCache(reportId, "astrology_reused");
+    } else if (pipelineMeta?.astrology_result && fingerprint) {
+      logAstrologyCache(
+        reportId,
+        "astrology_invalidated_location",
+        "reason=pipeline_fingerprint_mismatch",
+      );
+    }
+
+    if (!localAstrologyText && astroRequest) {
+      try {
+        const ar = await fetch("/api/astrology", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(astroRequest.body),
+        });
+        if (ar.ok) {
+          const astroData = (await ar.json()) as Record<string, unknown>;
+          const extracted = extractAstrologyTextForIntegrated(astroData);
+          if (extracted) {
+            localAstrologyText = extracted;
+            logPremiumContentSource(
+              reportId,
+              "generation",
+              "astrology-api-llm",
+            );
+            void persistAstrologyClient(reportId, extracted, {
+              locationFingerprint: astroRequest.locationFingerprint,
             });
           }
         }
+      } catch (e) {
+        console.error("점성학 API 실패:", e);
       }
-    } catch (e) {
-      console.error("점성학 API 실패:", e);
     }
   }
 
@@ -123,35 +160,34 @@ export async function runPremiumReportPipeline(
     console.error("관계 맥락 생성 API 실패:", relationshipErr);
   }
 
-  try {
-    const freePromptData = buildSurveyOnlyPrompt(interpretations);
-    const freeRes = await fetch("/api/llm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        mode: "free",
-        userInput: freePromptData,
-      }),
-    });
-    const freeData = await freeRes.json();
-    freeSummary = freeData.free ?? null;
-  } catch {
-    freeSummary = null;
-  }
-
   if (!sajuStatus.ok) {
     return { unifiedReport: null, sajuStatus, relationship, freeSummary };
   }
 
-  const detailedRes = await fetch("/api/llm", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      mode: "detailed_survey",
-      patterns,
-    }),
-  });
-  const detailedData = await detailedRes.json();
+  let detailedSurveyReport: string | null = null;
+  if (!options?.regenerate && pipelineMeta?.detailed_survey_result) {
+    detailedSurveyReport = pipelineMeta.detailed_survey_result;
+    logPremiumContentSource(reportId, "db", "detailed-survey-reuse");
+  }
+
+  if (!detailedSurveyReport) {
+    logPremiumContentSource(reportId, "generation", "detailed-survey-llm-start");
+    const detailedRes = await fetch("/api/llm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "detailed_survey",
+        patterns,
+      }),
+    });
+    const detailedData = await detailedRes.json();
+    const generated =
+      typeof detailedData.report === "string" ? detailedData.report.trim() : "";
+    if (generated) {
+      detailedSurveyReport = generated;
+      void persistDetailedSurveyClient(reportId, generated);
+    }
+  }
 
   const combinedAstrology = [localAstrologyText, relationship]
     .filter(Boolean)
@@ -161,12 +197,13 @@ export async function runPremiumReportPipeline(
   unifiedReport = "";
 
   try {
+    logPremiumContentSource(reportId, "generation", "integrated-llm-start");
     const integratedRes = await fetch("/api/llm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mode: "integrated",
-        detailedSurvey: detailedData.report,
+        detailedSurvey: detailedSurveyReport,
         sajuData: localSajuData ?? null,
         astrologyText: combinedAstrology || null,
         stream: true,
@@ -202,6 +239,11 @@ export async function runPremiumReportPipeline(
     onStreamChunk?.(unifiedReport);
   } finally {
     onStreamingChange?.(false);
+  }
+
+  if (unifiedReport?.trim()) {
+    logPremiumContentSource(reportId, "generation", "integrated-llm-complete");
+    void persistIntegratedAnalysisClient(reportId, unifiedReport);
   }
 
   return { unifiedReport, sajuStatus, relationship, freeSummary };

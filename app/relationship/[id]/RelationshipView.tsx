@@ -8,6 +8,7 @@ import GlowButton from "@/components/space/GlowButton";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
+import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
 
 export default function RelationshipView({
   relationshipReportId,
@@ -17,7 +18,13 @@ export default function RelationshipView({
   const router = useRouter();
   const routeParams = useParams();
   const searchParams = useSearchParams();
-  const viewerReportId = searchParams.get("viewer")?.trim() ?? "";
+  const urlViewerHint = searchParams.get("viewer")?.trim() ?? "";
+  const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
+    useCanonicalReportId({
+      urlHint: urlViewerHint,
+      queryParam: "viewer",
+      logContext: "relationship-detail",
+    });
 
   const routeId =
     typeof routeParams?.id === "string"
@@ -39,6 +46,7 @@ export default function RelationshipView({
   const [premium, setPremium] = useState<RelationshipPerspective | null>(null);
 
   const load = useCallback(async () => {
+    if (canonicalResolving) return;
     if (!viewerReportId) {
       setErr("viewer 쿼리(내 리포트 id)가 필요합니다.");
       setDetailOk(false);
@@ -73,7 +81,7 @@ export default function RelationshipView({
     } finally {
       setLoading(false);
     }
-  }, [resolvedRelationshipId, viewerReportId]);
+  }, [resolvedRelationshipId, viewerReportId, canonicalResolving]);
 
   useEffect(() => {
     void load();

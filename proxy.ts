@@ -1,15 +1,23 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
 /**
- * Next.js 16+ `proxy.ts` — Vercel 등 일부 환경에서 `default`만으로는
- * 핸들러가 잡히지 않는 경우가 있어, 공식 문서에 맞춰 `proxy` 이름으로 export 합니다.
- * (동일 로직: https://github.com/clerk/clerk-nextjs-app-quickstart/blob/main/proxy.ts)
+ * frontendApiProxy: 브라우저 → localhost/__clerk → Clerk FAPI
+ * (clerk.accounts.dev 직접 호출 차단·실패 시 failed_to_load_clerk_js 완화)
+ *
+ * 클라이언트: AppClerkProvider 가 proxyUrl 설정 (개발 시 자동 /__clerk/)
  */
-export const proxy = clerkMiddleware();
+export const proxy = clerkMiddleware({
+  frontendApiProxy: {
+    enabled:
+      process.env.NODE_ENV === "development" ||
+      process.env.CLERK_FRONTEND_API_PROXY === "1",
+  },
+});
 
 export const config = {
   matcher: [
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
+    "/__clerk/(.*)",
   ],
 };

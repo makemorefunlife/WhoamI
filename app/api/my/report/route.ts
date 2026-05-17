@@ -1,5 +1,21 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import {
+  deleteReportAnalysis,
+  readPersistedBasicAnalysis,
+  readPersistedAstrologyAnalysisWithMeta,
+  readPersistedDetailedSurveyAnalysis,
+  readPersistedIntegratedAnalysis,
+  writePersistedBasicAnalysis,
+  writePersistedAstrologyAnalysis,
+  writePersistedDetailedSurveyAnalysis,
+  writePersistedIntegratedAnalysis,
+} from "@/lib/report/reportAnalyses";
+import { logAstrologyCache } from "@/lib/report/astrologyCoordLog";
+import { decidePersistedAstrologyReuse } from "@/lib/report/astrologyCacheValidation";
+import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
+import { astrologyLocationFingerprint } from "@/lib/report/resolveAstrologyCoordinates";
+import { syncReportBirthCoordinates } from "@/lib/report/syncReportBirthCoordinates";
 import { buildSurveyOnlyUserInputForReport } from "@/lib/report/surveyForLlmFromReportId";
 import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
@@ -57,13 +73,19 @@ ${userInput}
 }
 
 /**
- * GET ?reportId=uuid&quick=1
- * - quick=1 이면 LLM 호출 없이 메타만 (빠른 로드)
+ * GET ?reportId=uuid&quick=1&regenerate=1
+ * - DB(report_analyses.basic) 우선, 없을 때만 LLM 1회 생성 후 저장
+ * - quick=1: LLM 호출 없음 (DB/legacy 캐시만)
+ * - regenerate=1: basic 행 삭제 후 재생성 (full 요청 시만)
  */
 export async function GET(req: Request) {
   try {
-    const reportId = new URL(req.url).searchParams.get("reportId")?.trim();
-    const quick = new URL(req.url).searchParams.get("quick") === "1";
+    const url = new URL(req.url);
+    const reportId = url.searchParams.get("reportId")?.trim();
+    const quick = url.searchParams.get("quick") === "1";
+    const regenerate = url.searchParams.get("regenerate") === "1";
+    const regenerateIntegrated =
+      url.searchParams.get("regenerateIntegrated") === "1";
 
     if (!reportId) {
       return NextResponse.json(
@@ -72,25 +94,23 @@ export async function GET(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!url || !serviceKey) {
+    if (!supabaseUrl || !serviceKey) {
       return NextResponse.json(
         { error: "서버 Supabase 설정이 필요합니다." },
         { status: 500 },
       );
     }
 
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createServiceRoleClient(supabaseUrl, serviceKey);
 
-    const { data: report, error: repErr } = await supabase
-      .from("reports")
-      .select(
-        "id, name, payment_status, plan_type, birth_date, birth_time, birth_place",
-      )
-      .eq("id", reportId)
-      .maybeSingle();
+    const {
+      report,
+      error: repErr,
+      birthCoordColumnsAvailable,
+    } = await fetchReportWithBirthCoords(supabase, reportId);
 
     if (repErr || !report) {
       return NextResponse.json(
@@ -104,20 +124,155 @@ export async function GET(req: Request) {
       report.payment_status === "paid" || report.plan_type === "paid";
 
     let basic_result: string | null = null;
+    let basic_error: string | null = null;
+    let basic_from_db = false;
     let premium_result: string | null = null;
+    let integrated_from_db = false;
+    let detailed_survey_result: string | null = null;
+    let detailed_survey_from_db = false;
+    let astrology_result: string | null = null;
+    let astrology_from_db = false;
+    let astrology_location_key: string | null = null;
 
-    if (has_survey && !quick) {
-      const userInput = await buildSurveyOnlyUserInputForReport(
-        supabase,
-        reportId,
-      );
-      if (userInput) {
-        basic_result = await runFreeAnalysis(userInput);
+    if (
+      quick &&
+      has_premium &&
+      birthCoordColumnsAvailable &&
+      report.birth_place?.trim()
+    ) {
+      const latMissing =
+        report.birth_latitude == null || report.birth_longitude == null;
+      if (latMissing) {
+        const syncResult = await syncReportBirthCoordinates(
+          supabase,
+          reportId,
+          report.birth_place,
+        );
+        if (syncResult === "synced") {
+          const { data: refreshed } = await supabase
+            .from("reports")
+            .select("birth_latitude, birth_longitude, birth_timezone")
+            .eq("id", reportId)
+            .maybeSingle();
+          if (refreshed) {
+            Object.assign(report, refreshed);
+          }
+          console.info(
+            `[astrology-coords] reportId=${reportId} detail=quick-backfill-synced`,
+          );
+        }
+      }
+    }
+
+    astrology_location_key = astrologyLocationFingerprint({
+      birth_place: report.birth_place,
+      birth_latitude: report.birth_latitude,
+      birth_longitude: report.birth_longitude,
+      birth_timezone: report.birth_timezone,
+    });
+
+    if (has_survey) {
+      if (regenerate) {
+        await deleteReportAnalysis(supabase, reportId, "basic");
+      }
+
+      basic_result = regenerate
+        ? null
+        : await readPersistedBasicAnalysis(supabase, reportId);
+      if (basic_result) {
+        basic_from_db = true;
+      }
+
+      if (!basic_result && !quick) {
+        if (!process.env.OPENAI_API_KEY) {
+          basic_error = "missing_openai_key";
+        } else {
+          const userInput = await buildSurveyOnlyUserInputForReport(
+            supabase,
+            reportId,
+          );
+          if (userInput) {
+            basic_result = await runFreeAnalysis(userInput);
+            if (basic_result) {
+              const saved = await writePersistedBasicAnalysis(
+                supabase,
+                reportId,
+                basic_result,
+                { model: "gpt-4o-mini", source: "my_report_get" },
+              );
+              if (!saved) {
+                console.warn(
+                  "basic analysis generated but DB save failed:",
+                  reportId,
+                );
+              }
+            } else {
+              basic_error = "generation_failed";
+            }
+          } else {
+            basic_error = "survey_input_missing";
+          }
+        }
       }
     }
 
     if (has_premium) {
-      premium_result = null;
+      if (regenerateIntegrated) {
+        await deleteReportAnalysis(supabase, reportId, "integrated");
+        await deleteReportAnalysis(supabase, reportId, "detailed_survey");
+        premium_result = null;
+        detailed_survey_result = null;
+        console.info(
+          `[premium-report] reportId=${reportId} source=regeneration detail=api-integrated-and-detailed-survey-cleared`,
+        );
+      } else {
+        premium_result = await readPersistedIntegratedAnalysis(
+          supabase,
+          reportId,
+        );
+        if (premium_result) {
+          integrated_from_db = true;
+          console.info(
+            `[premium-report] reportId=${reportId} source=db detail=api-quick-read-integrated`,
+          );
+        }
+        detailed_survey_result = await readPersistedDetailedSurveyAnalysis(
+          supabase,
+          reportId,
+        );
+        if (detailed_survey_result) {
+          detailed_survey_from_db = true;
+        }
+      }
+
+      const persistedAstro = await readPersistedAstrologyAnalysisWithMeta(
+        supabase,
+        reportId,
+      );
+      const storedFp =
+        typeof persistedAstro.metadata?.location_fingerprint === "string"
+          ? persistedAstro.metadata.location_fingerprint
+          : null;
+
+      if (persistedAstro.content) {
+        const reuseDecision = decidePersistedAstrologyReuse(
+          storedFp,
+          astrology_location_key,
+        );
+
+        if (reuseDecision.action === "reuse") {
+          astrology_result = persistedAstro.content;
+          astrology_from_db = true;
+          logAstrologyCache(reportId, "astrology_reused");
+        } else if (reuseDecision.action === "invalidate") {
+          await deleteReportAnalysis(supabase, reportId, "astrology");
+          logAstrologyCache(
+            reportId,
+            "astrology_invalidated_location",
+            `reason=${reuseDecision.reason} stored=${storedFp ?? "none"} current=${astrology_location_key}`,
+          );
+        }
+      }
     }
 
     return NextResponse.json({
@@ -126,7 +281,16 @@ export async function GET(req: Request) {
       has_premium,
       has_survey,
       basic_result,
+      basic_error,
+      basic_from_db,
+      basic_pending: has_survey && !basic_result && quick,
       premium_result,
+      integrated_from_db,
+      detailed_survey_result,
+      detailed_survey_from_db,
+      astrology_result,
+      astrology_from_db,
+      astrology_location_key,
       result_paths: {
         basic: `/result?id=${encodeURIComponent(reportId)}&view=basic`,
         full: `/report?id=${encodeURIComponent(reportId)}&view=premium`,
@@ -137,6 +301,148 @@ export async function GET(req: Request) {
     console.error("GET /api/my/report:", e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "조회 실패" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * POST { reportId, integrated?, detailedSurvey?, astrology? } — report_analyses 저장
+ */
+export async function POST(req: Request) {
+  try {
+    const body = (await req.json()) as {
+      reportId?: string;
+      integrated?: string;
+      detailedSurvey?: string;
+      astrology?: string;
+      astrologyLocationFingerprint?: string;
+    };
+    const reportId = body.reportId?.trim();
+    const integrated = body.integrated?.trim();
+    const detailedSurvey = body.detailedSurvey?.trim();
+    const astrology = body.astrology?.trim();
+    const astrologyLocationFingerprintValue =
+      body.astrologyLocationFingerprint?.trim();
+
+    if (!reportId || (!integrated && !detailedSurvey && !astrology)) {
+      return NextResponse.json(
+        {
+          error:
+            "reportId와 integrated, detailedSurvey, astrology 중 하나 이상이 필요합니다.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceKey) {
+      return NextResponse.json(
+        { error: "서버 Supabase 설정이 필요합니다." },
+        { status: 500 },
+      );
+    }
+
+    const supabase = createServiceRoleClient(supabaseUrl, serviceKey);
+
+    const { data: report, error: repErr } = await supabase
+      .from("reports")
+      .select("id, payment_status, plan_type")
+      .eq("id", reportId)
+      .maybeSingle();
+
+    if (repErr || !report) {
+      return NextResponse.json(
+        { error: "리포트를 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
+    const has_premium =
+      report.payment_status === "paid" || report.plan_type === "paid";
+    if (!has_premium) {
+      return NextResponse.json(
+        { error: "심화 리포트는 결제 후 저장할 수 있습니다." },
+        { status: 403 },
+      );
+    }
+
+    if (astrology) {
+      const existingAstrology = await readPersistedAstrologyAnalysisWithMeta(
+        supabase,
+        reportId,
+      );
+      const savedAstrology = await writePersistedAstrologyAnalysis(
+        supabase,
+        reportId,
+        astrology,
+        {
+          source: "premium_pipeline",
+          ...(astrologyLocationFingerprintValue
+            ? { location_fingerprint: astrologyLocationFingerprintValue }
+            : {}),
+        },
+      );
+      if (!savedAstrology) {
+        return NextResponse.json(
+          { error: "astrology 저장에 실패했습니다." },
+          { status: 500 },
+        );
+      }
+      console.info(
+        `[premium-report] reportId=${reportId} source=${existingAstrology.content ? "db" : "generation"} detail=api-post-astrology`,
+      );
+    }
+
+    if (detailedSurvey) {
+      const existingDetailed = await readPersistedDetailedSurveyAnalysis(
+        supabase,
+        reportId,
+      );
+      const savedDetailed = await writePersistedDetailedSurveyAnalysis(
+        supabase,
+        reportId,
+        detailedSurvey,
+        { source: "premium_pipeline" },
+      );
+      if (!savedDetailed) {
+        return NextResponse.json(
+          { error: "detailed_survey 저장에 실패했습니다." },
+          { status: 500 },
+        );
+      }
+      console.info(
+        `[premium-report] reportId=${reportId} source=${existingDetailed ? "db" : "generation"} detail=api-post-detailed-survey`,
+      );
+    }
+
+    if (integrated) {
+      const existing = await readPersistedIntegratedAnalysis(supabase, reportId);
+      const saved = await writePersistedIntegratedAnalysis(
+        supabase,
+        reportId,
+        integrated,
+        { source: "premium_pipeline" },
+      );
+
+      if (!saved) {
+        return NextResponse.json(
+          { error: "integrated 저장에 실패했습니다." },
+          { status: 500 },
+        );
+      }
+      console.info(
+        `[premium-report] reportId=${reportId} source=${existing ? "db" : "generation"} detail=api-post-integrated`,
+      );
+    }
+
+    return NextResponse.json({ ok: true, report_id: reportId });
+  } catch (e) {
+    console.error("POST /api/my/report:", e);
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "저장 실패" },
       { status: 500 },
     );
   }
