@@ -478,7 +478,49 @@ AND deepFlow === null
 
 ---
 
-## 10. Known remaining risks (최적화 전)
+## 10. Row Level Security (RLS)
+
+마이그레이션: `supabase/migrations/20260519120000_enable_rls_remediation.sql`
+
+### 클라이언트 역할 (검수)
+
+| 역할 | 사용처 | 테이블 |
+|------|--------|--------|
+| **anon** (`lib/supabase/client.ts`) | 브라우저 | `reports` SELECT·INSERT, `survey_responses` SELECT, `pattern_base` / `ref_*` SELECT |
+| **service role** (`createServiceRoleClient`) | 거의 모든 `app/api/*` 라우트, `resolveCanonicalReport`, `report_analyses` | 전체 쓰기·관계·초대·결제·LLM 캐시 |
+| **service role** (전환됨) | `/api/saju`, `/api/invite/*`, `app/invite/create` | `ref_*`, `saju_charts`, `invites` |
+
+Clerk는 Supabase JWT와 연동되지 않음 → DB RLS는 `auth.uid()`가 아닌 **역할(anon/service)** + 정책으로 제어.
+
+### 테이블별 정책 요약
+
+| 테이블 | RLS | anon/authenticated | service role |
+|--------|-----|-------------------|--------------|
+| `ref_*`, `pattern_base` | ON | SELECT only (public read) | bypass |
+| `reports` | ON | SELECT, INSERT | bypass (UPDATE/claim/payment API) |
+| `survey_responses` | ON | SELECT (report 존재 시) | bypass (submit/reset) |
+| `report_analyses` | ON | **deny** (정책 없음) | bypass |
+| `invites` | ON | **deny** (정책 없음) | bypass (API만) |
+| `relationship_reports` | ON | deny | bypass |
+| `report_results`, `saju_charts` | ON | deny | bypass |
+| `users`, `generated_images`, `launch_settings` | ON | deny | bypass |
+
+### 검증 노트
+
+- Security Advisor “RLS disabled” → 마이그레이션 적용 후 해소 예정.
+- `invites`에 있던 broad policy는 마이그레이션에서 drop; 서버는 service role만 사용.
+- `reports` anon SELECT는 **report UUID를 아는 경우 읽기 가능** (기존 URL/localStorage 모델 유지). Clerk `clerk_user_id`와 DB RLS는 아직 1:1 연동 없음.
+- `users` 테이블은 앱에서 미사용; RLS만 켜 두고 정책 없음.
+
+### 남은 보안 리스크
+
+- reportId(UUID) 유출 시 타인 `reports` / `survey_responses` 읽기 가능 (구조적).
+- anon INSERT로 임의 `reports` 행 생성 가능 (스팸·비용 — rate limit 없음).
+- Clerk ↔ Supabase JWT 연동 시 `clerk_user_id` 기반 owner 정책으로 강화 가능.
+
+---
+
+## 11. Known remaining risks (최적화 전)
 
 ### P0 — 동작/비용
 
@@ -560,3 +602,4 @@ AND deepFlow === null
 | 2026-05-18 | astrology → `report_analyses.astrology` 영속; regenerateIntegrated 시 유지; birth 저장 시 삭제 |
 | 2026-05-18 | 출생 좌표: `birth_place` lookup + reports lat/lon; 서울 하드코드 제거; fingerprint 무효화 |
 | 2026-05-18 | 검증: 마이그레이션 fallback, 캐시 무효화, quick 백필 1회, coord/cache 로그 |
+| 2026-05-19 | RLS remediation migration; invite/saju API → service role |

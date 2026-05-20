@@ -1,7 +1,7 @@
 ﻿// app/api/saju/route.ts
 import { NextResponse } from "next/server";
 import { calculateSaju } from "@fullstackfamily/manseryeok";
-import { createClient } from "@supabase/supabase-js";
+import { createServerSupabaseClient } from "@/lib/supabase/serverClient";
 import { branchMap, getBranch, getStem, stemMap } from "@/lib/saju/mapping";
 import {
   calculateTenGod,
@@ -12,11 +12,6 @@ import {
   getTenGodData,
   getTwelveStageData,
 } from "@/lib/saju/repository";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
 
 // ============================================================
 // 타입 정의
@@ -132,6 +127,14 @@ async function analyzeRelations(
 // ============================================================
 export async function POST(req: Request) {
   try {
+    const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "서버 Supabase 설정이 필요합니다." },
+        { status: 500 },
+      );
+    }
+
     const body = await req.json();
     const { birthDate, birthTime, birthPlace, gender, reportId } = body;
 

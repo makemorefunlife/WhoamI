@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+import { createServerSupabaseClient } from "@/lib/supabase/serverClient";
 
 /** 해당 리포트에서 이미 만든 초대(친구 초대권 사용)가 있는지 */
 export async function GET(req: Request) {
@@ -15,6 +10,11 @@ export async function GET(req: Request) {
         { used: false, error: "reportId가 필요합니다." },
         { status: 400 },
       );
+    }
+
+    const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ used: false, error: "server_config" });
     }
 
     const { data, error } = await supabase
