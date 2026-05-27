@@ -9,6 +9,7 @@ import {
   buildIntegratedPhase1UserPrompt,
   buildIntegratedPhase2UserPrompt,
 } from "../../../lib/prompts/integratedPremiumReport";
+import { assertPremiumLlmAccess } from "../../../lib/report/llmPaymentGuard";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -23,6 +24,9 @@ export async function POST(req: Request) {
     // 🔥 모드 1: 설문 세부 해석 (detailed_survey)
     // ============================================================
     if (mode === "detailed_survey") {
+      const guard = await assertPremiumLlmAccess(body.reportId, "detailed_survey");
+      if (guard) return guard;
+
       const { patterns } = body;
       const detailedSurveyPrompt = `
 당신은 심리 분석 전문가입니다. 아래는 18문항 설문 결과(Y/N 패턴)입니다.
@@ -68,6 +72,9 @@ export async function POST(req: Request) {
     // 🔥 모드 2: 통합 보고서 (integrated)
     // ============================================================
     if (mode === "integrated") {
+      const guard = await assertPremiumLlmAccess(body.reportId, "integrated");
+      if (guard) return guard;
+
       const { detailedSurvey, sajuData, astrologyText, stream: wantStream } =
         body as {
           detailedSurvey?: unknown;
@@ -75,6 +82,27 @@ export async function POST(req: Request) {
           astrologyText?: string | null;
           stream?: boolean;
         };
+
+      const surveyLen =
+        typeof detailedSurvey === "string"
+          ? detailedSurvey.length
+          : detailedSurvey != null
+            ? JSON.stringify(detailedSurvey).length
+            : 0;
+      const sajuLen =
+        sajuData == null
+          ? 0
+          : typeof sajuData === "string"
+            ? sajuData.length
+            : JSON.stringify(sajuData).length;
+      const astroLen =
+        typeof astrologyText === "string" ? astrologyText.trim().length : 0;
+      console.info("[premium-pipeline] server stage=integrated_llm_inputs", {
+        survey_chars: surveyLen,
+        saju_chars: sajuLen,
+        astrology_chars: astroLen,
+        stream: wantStream === true,
+      });
 
       const surveyAnalysis =
         typeof detailedSurvey === "string"
@@ -208,6 +236,9 @@ export async function POST(req: Request) {
     const existingMode = body?.mode === "integrated" ? "integrated" : "free";
 
     if (existingMode === "integrated") {
+      const guard = await assertPremiumLlmAccess(body.reportId, "integrated");
+      if (guard) return guard;
+
       const integratedPrompt = `
 너는 설문·사주·점성학(또는 출생 맥락) 데이터를 하나의 이야기로 엮는 분석가야.
 전문용어는 필요할 때만 짧게 쓰고, 평소 말처럼 풀어서 설명해.
