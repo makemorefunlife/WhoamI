@@ -105,6 +105,15 @@ export default function SideMenu({
             <MenuRow href="/contact" onNavigate={onClose}>
               📞 문의하기
             </MenuRow>
+            <MenuRow href="/terms" onNavigate={onClose}>
+              📜 Terms of Service
+            </MenuRow>
+            <MenuRow href="/privacy" onNavigate={onClose}>
+              🔒 Privacy Policy
+            </MenuRow>
+            <MenuRow href="/refund" onNavigate={onClose}>
+              💳 Refund Policy
+            </MenuRow>
           </SubBlock>
 
           <SubBlock title="⚙️ 설정">
