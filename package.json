@@ -6,14 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
+    "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",
+    "test:parse-report": "node tests/scripts/parse-report-structure-smoke.mjs",
+    "test:astrology-cache": "node tests/scripts/validate-astrology-cache.mjs",
+    "test:pre-payment-qa": "node tests/scripts/pre-payment-qa-check.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.0",
     "@clerk/ui": "^1.6.7",
     "@fullstackfamily/manseryeok": "^1.0.8",
     "@supabase/supabase-js": "^2.100.1",
-    "@tosspayments/tosspayments-sdk": "^2.6.0",
     "celestine": "^0.2.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.1",

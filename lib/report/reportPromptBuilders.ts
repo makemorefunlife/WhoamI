@@ -41,6 +41,13 @@ export function buildIntegratedPrompt({
     }>;
     twelveStageData?: { kor_name?: string; meaning_ko?: string };
     relations?: Array<{ type?: string; interpretation?: string }>;
+    shinsals?: Array<{
+      name_ko?: string;
+      meaning_ko?: string | null;
+      strength_ko?: string | null;
+      weakness_ko?: string | null;
+      advice_ko?: string | null;
+    }>;
   } | null;
   astrologyText?: string | null;
 }) {
@@ -94,12 +101,27 @@ export function buildIntegratedPrompt({
           .join("\n")
       : "(없음)";
 
+  const shinsalBlock =
+    Array.isArray(s?.shinsals) && s.shinsals.length > 0
+      ? s.shinsals
+          .map(
+            (sh: {
+              name_ko?: string;
+              meaning_ko?: string | null;
+              strength_ko?: string | null;
+              weakness_ko?: string | null;
+            }) =>
+              `${sh.name_ko ?? ""}: ${sh.meaning_ko ?? ""} (강점: ${sh.strength_ko ?? ""}, 주의: ${sh.weakness_ko ?? ""})`,
+          )
+          .join("\n")
+      : "(없음)";
+
   return `
 [설문 기반 성향 — 실제 행동·패턴 해석]
 ${personality || "(없음)"}
 
-[사주 구조 데이터 — 원국]
-- 사주팔자: ${pillars}
+[기질 분석 데이터 — 타고난 성향]
+- 원국: ${pillars}
 - 일간(천간)
 ${dayStemBlock}
 - 일지(지지)
@@ -112,10 +134,12 @@ ${tenGodBlock}
 ${twelveBlock}
 - 지지 관계(합·충·형·파·해 등)
 ${relationsBlock}
+- 신살(특수 기질 신호)
+${shinsalBlock}
 
-[출생 맥락·점성 보조 데이터 — 본문에는 점성 용어 없이 일상어로만]
-${astrologyText?.trim() || "(별도 데이터 없음 — 설문·사주만으로 통합해줘)"}
+[출생 에너지 맥락 — 본문에는 점성 용어 없이 일상어로만]
+${astrologyText?.trim() || "(별도 데이터 없음 — 설문·기질 분석만으로 통합해줘)"}
 
-위 전체를 바탕으로 하나의 통합 보고서를 작성해줘. 별자리명·태양/달/라이징 같은 점성학 용어는 쓰지 말고 체험·행동으로 풀어줘.
+위 전체를 바탕으로 하나의 통합 보고서를 작성해줘. 사주·점성·신살·천을귀인 같은 전문 용어는 쓰지 말고, '기질 분석에 따르면' 정도만 사용하거나 출처 없이 체험·행동으로 풀어줘. 신살 신호는 반드시 해석에 반영해.
 `.trim();
 }

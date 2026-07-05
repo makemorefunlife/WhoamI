@@ -1,4 +1,15 @@
 import { NextResponse } from "next/server";
+import {
+  getPremiumPerspectiveForKind,
+  getRomanticSajuDeepReport,
+  isRelationshipFavorite,
+  parseRelationshipKind,
+  RELATIONSHIP_KINDS,
+  RELATIONSHIP_KIND_LABELS,
+  type RelationshipKind,
+} from "@/lib/relationship/relationshipKind";
+import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
+import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -9,6 +20,9 @@ export async function GET(req: Request) {
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim();
     const viewerReportId = sp.get("viewerReportId")?.trim();
+
+    const kindParam = sp.get("relationshipKind")?.trim();
+    const relationshipKind = parseRelationshipKind(kindParam);
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
@@ -29,13 +43,10 @@ export async function GET(req: Request) {
 
     const supabase = createServiceRoleClient(url, serviceKey);
 
-    const { data: rr, error } = await supabase
-      .from("relationship_reports")
-      .select(
-        "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium",
-      )
-      .eq("id", relationshipReportId)
-      .maybeSingle();
+    const { row: rr, error } = await fetchRelationshipReportByIdSafe(
+      supabase,
+      relationshipReportId,
+    );
 
     if (error || !rr) {
       return NextResponse.json(
@@ -54,38 +65,77 @@ export async function GET(req: Request) {
     const partnerId =
       rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
 
-    const [{ data: partner }, { data: viewer }] = await Promise.all([
+    const [{ data: partner }, { data: viewer }, { data: repA }, { data: repB }] =
+      await Promise.all([
       supabase.from("reports").select("name").eq("id", partnerId).maybeSingle(),
       supabase
         .from("reports")
         .select("name")
         .eq("id", viewerReportId)
         .maybeSingle(),
+      supabase.from("reports").select("name").eq("id", rr.report_id_a).maybeSingle(),
+      supabase.from("reports").select("name").eq("id", rr.report_id_b).maybeSingle(),
     ]);
 
     const basic = rr.result_basic as {
       perspectives?: Record<string, Record<string, unknown>>;
     } | null;
-    const premium = rr.result_premium as {
-      perspectives?: Record<string, Record<string, unknown>>;
-    } | null;
 
-    const perspectiveBasic =
-      basic?.perspectives?.[viewerReportId] ?? null;
-    const perspectivePremium =
-      premium?.perspectives?.[viewerReportId] ?? null;
+    const perspectiveBasic = getViewerPerspectiveSlice(
+      basic?.perspectives ?? null,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    const storedKind = parseRelationshipKind(rr.relationship_kind);
+    const activeKind = kindParam ? relationshipKind : storedKind;
+
+    const byKind = (rr.result_premium_by_kind ?? {}) as Record<
+      RelationshipKind,
+      { perspectives?: Record<string, unknown> } | undefined
+    >;
+
+    const perspectivePremium = getPremiumPerspectiveForKind(
+      byKind,
+      rr.result_premium,
+      activeKind,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+
+    const romanticDeepReport =
+      activeKind === "romantic"
+        ? getRomanticSajuDeepReport(byKind, rr.result_premium)
+        : null;
+
+    const favorited = await isRelationshipFavorite(
+      supabase,
+      viewerReportId,
+      relationshipReportId,
+    );
 
     return NextResponse.json({
       relationship_report_id: rr.id,
+      report_id_a: rr.report_id_a,
+      report_id_b: rr.report_id_b,
       analysis_type: rr.analysis_type,
+      relationship_kind: activeKind,
+      relationship_kinds: RELATIONSHIP_KINDS,
+      relationship_kind_labels: RELATIONSHIP_KIND_LABELS,
       viewer_report_id: viewerReportId,
       partner_report_id: partnerId,
       viewer_name: viewer?.name?.trim() ?? "나",
       partner_name: partner?.name?.trim() ?? "상대",
+      person_a_name: repA?.name?.trim() ?? "첫 번째",
+      person_b_name: repB?.name?.trim() ?? "두 번째",
       perspective_basic: perspectiveBasic,
       perspective_premium: perspectivePremium,
+      romantic_deep_report: romanticDeepReport,
+      is_favorite: favorited,
       raw_basic: rr.result_basic,
       raw_premium: rr.result_premium,
+      raw_premium_by_kind: rr.result_premium_by_kind,
     });
   } catch (e) {
     console.error("relationship/detail:", e);

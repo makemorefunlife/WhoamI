@@ -3,6 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  applyResumeReportIdToStorage,
+  fetchHomeResumeClient,
+} from "@/lib/home/fetchHomeResumeClient";
+import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
 
@@ -90,6 +95,7 @@ const STATUS_LINES = [
 
 export default function SurveyPage() {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useClerkReady();
   const [sessionReady, setSessionReady] = useState(false);
   const [answers, setAnswers] = useState(
     Object.fromEntries(Array.from({ length: 18 }, (_, i) => [`q${i + 1}`, ""])),
@@ -100,6 +106,8 @@ export default function SurveyPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    if (!isLoaded) return;
+
     let cancelled = false;
 
     async function boot() {
@@ -144,6 +152,22 @@ export default function SurveyPage() {
         return;
       }
 
+      if (isSignedIn) {
+        try {
+          const resume = await fetchHomeResumeClient(reportId);
+          if (cancelled) return;
+          if (resume.ok && resume.data.surveyCompleted && resume.data.reportId) {
+            const canonical = applyResumeReportIdToStorage(resume.data);
+            router.replace(
+              `/result?id=${encodeURIComponent(canonical ?? resume.data.reportId!)}`,
+            );
+            return;
+          }
+        } catch {
+          /* resume 실패 시 session-status로 폴백 */
+        }
+      }
+
       try {
         const res = await fetch(
           `/api/report/session-status?reportId=${encodeURIComponent(reportId)}`,
@@ -168,7 +192,7 @@ export default function SurveyPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, isLoaded, isSignedIn]);
 
   const currentQuestion = useMemo(
     () => QUESTIONS[currentIndex],

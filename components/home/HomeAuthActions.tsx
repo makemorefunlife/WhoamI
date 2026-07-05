@@ -11,7 +11,6 @@ export type ResumeState = {
   reportId: string | null;
   hasReport: boolean;
   surveyCompleted: boolean;
-  name: string | null;
 };
 
 export type RelCounts = { pending: number; completed: number };
@@ -72,6 +71,86 @@ export default function HomeAuthActions({
   }, [isLoaded, isSignedIn, resume]);
 
   if (!isSignedIn) {
+    if (resume.loading) {
+      return (
+        <div className="mt-8 text-sm text-white/55 sm:mt-10" aria-live="polite">
+          탐사 기록 확인 중…
+        </div>
+      );
+    }
+
+    if (resume.reportId && resume.hasReport && resume.surveyCompleted) {
+      return (
+        <div className="mx-auto mt-8 w-full max-w-md animate-fade-in-up delay-200 space-y-6 px-1 sm:mt-10 sm:space-y-7">
+          <h2 className="text-center text-[1.2rem] font-medium tracking-[-0.02em] text-white/90 sm:text-[1.45rem]">
+            탐사실
+          </h2>
+          <div className="flex flex-col gap-3 sm:gap-3.5">
+            <GlowButton
+              type="button"
+              variant="primary"
+              className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
+              onClick={() =>
+                router.push(
+                  `/blueprint-preview?reportId=${encodeURIComponent(resume.reportId!)}`,
+                )
+              }
+            >
+              <span className="inline-flex items-center gap-2">
+                <SubtleButtonIcon kind="dashboard" />
+                Blueprint 보기
+              </span>
+            </GlowButton>
+            <GlowButton
+              type="button"
+              variant="secondary"
+              className="w-full text-[0.9375rem] font-medium sm:text-[15px]"
+              onClick={() =>
+                router.push(
+                  `/dashboard?reportId=${encodeURIComponent(resume.reportId!)}`,
+                )
+              }
+            >
+              <span className="inline-flex items-center gap-2">
+                <SubtleButtonIcon kind="dashboard" />
+                내 탐사
+              </span>
+            </GlowButton>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="mx-auto block text-sm text-white/55 underline-offset-2 hover:text-white/75 hover:underline"
+          >
+            계정에 저장하려면 로그인
+          </button>
+        </div>
+      );
+    }
+
+    if (resume.reportId && resume.hasReport && !resume.surveyCompleted) {
+      return (
+        <div className="mt-8 w-full max-w-sm animate-fade-in-up delay-200 space-y-4 sm:mt-10">
+          <p className="text-left text-sm leading-relaxed text-white/75">
+            설문을 아직 마치지 않았어요. 이어서 진행할 수 있어요.
+          </p>
+          <GlowButton
+            type="button"
+            variant="primary"
+            className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
+            onClick={() => {
+              const tok = localStorage.getItem("inviteToken")?.trim();
+              router.push(
+                tok ? `/survey-v2?token=${encodeURIComponent(tok)}` : "/survey-v2",
+              );
+            }}
+          >
+            설문 이어하기
+          </GlowButton>
+        </div>
+      );
+    }
+
     return (
       <div className="mt-12 animate-fade-in-up delay-200 space-y-3 sm:mt-16">
         {clerkUnavailable ? (
@@ -82,10 +161,11 @@ export default function HomeAuthActions({
         ) : null}
         <button
           type="button"
-          onClick={onOpenAuth}
-          className="inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-10 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[#6bb5ff]/40"
+          onClick={onStartExploration}
+          disabled={creatingReport || rocketPlaying}
+          className="inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] px-10 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[#6bb5ff]/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
-          <span>시작하기</span>
+          <span>{creatingReport || rocketPlaying ? "준비 중…" : "시작하기"}</span>
           <span
             className="animate-float-rocket text-2xl leading-none md:text-[1.75rem]"
             aria-hidden
@@ -93,14 +173,23 @@ export default function HomeAuthActions({
             🚀
           </span>
         </button>
+        <button
+          type="button"
+          onClick={onOpenAuth}
+          className="text-sm text-white/55 underline-offset-2 hover:text-white/75 hover:underline"
+        >
+          이미 계정이 있어요
+        </button>
       </div>
     );
   }
 
-  if (resume.loading && !resume.reportId) {
+  if (resume.loading) {
     return (
       <div className="mt-8 text-sm text-white/55 sm:mt-10" aria-live="polite">
-        탐사 기록 확인 중…
+        {resume.reportId
+          ? "설문 응답 여부 확인 중…"
+          : "탐사 기록 확인 중…"}
       </div>
     );
   }
@@ -181,7 +270,7 @@ export default function HomeAuthActions({
           onClick={() => {
             const tok = localStorage.getItem("inviteToken")?.trim();
             router.push(
-              tok ? `/survey?token=${encodeURIComponent(tok)}` : "/survey",
+              tok ? `/survey-v2?token=${encodeURIComponent(tok)}` : "/survey-v2",
             );
           }}
         >

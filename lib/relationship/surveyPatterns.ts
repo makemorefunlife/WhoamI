@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getPatternInterpretation } from "@/lib/hardcoded/patternLookup";
+import { buildV2PatternSummaryForRelationship } from "@/lib/relationship/v2PatternSummary";
+import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
+import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/types";
 
 function normalizeYN(value: unknown): string {
   const v = String(value ?? "")
@@ -93,6 +97,29 @@ export function buildFallbackPatternSummary(
   return DOMAIN_KEYS.map((k) => `[${k}] Y/N 패턴: ${patterns[k]}`).join("\n");
 }
 
+function isV2SurveyAnswers(answers: Record<string, unknown>): boolean {
+  if (answers.survey_source === "v2_10q") return true;
+  if (answers.v2_profile && typeof answers.v2_profile === "object") return true;
+  const keys = Object.keys(answers).filter((k) => /^q\d+$/.test(k));
+  if (keys.length < 8) return false;
+  const sample = answers[keys[0]];
+  return typeof sample === "string" && /^[A-D]$/i.test(sample.trim());
+}
+
+function v2SummaryFromAnswers(
+  answers: Record<string, unknown>,
+): string | null {
+  const embedded = answers.v2_profile;
+  if (embedded && typeof embedded === "object" && !Array.isArray(embedded)) {
+    return buildV2PatternSummaryForRelationship(
+      embedded as CurrentSelfProfile,
+    );
+  }
+  if (!isV2SurveyAnswers(answers)) return null;
+  const scored = scoreSurveyAnswers(answers as SurveyAnswersInput);
+  return buildV2PatternSummaryForRelationship(scored);
+}
+
 /** 한 리포트의 18문항 — 도메인별 패턴을 한 줄 텍스트로 */
 export async function getPatternSummaryForReport(
   supabase: SupabaseClient,
@@ -101,20 +128,22 @@ export async function getPatternSummaryForReport(
   const rawAnswers = await getSurveyAnswersForReport(supabase, reportId);
   if (!rawAnswers) return null;
 
+  const v2 = v2SummaryFromAnswers(rawAnswers);
+  if (v2) {
+    if (rawAnswers.survey_skipped === true) {
+      return `${v2}\n\n[참고] 설문 미응답 — 중립 프로필 기준으로 분석됩니다.`;
+    }
+    return v2;
+  }
+
   const patterns = answersToPatternRecord(rawAnswers);
 
-  const lines = await Promise.all(
-    DOMAIN_KEYS.map(async (key) => {
-      const pattern = patterns[key].trim();
-      const { data } = await supabase
-        .from("pattern_base")
-        .select("interpretation")
-        .eq("domain", key)
-        .eq("pattern", pattern)
-        .maybeSingle();
-      return `[${key}] ${data?.interpretation ?? "해석 없음"}`;
-    }),
-  );
+  const lines = DOMAIN_KEYS.map((key) => {
+    const pattern = patterns[key].trim();
+    const interpretation =
+      getPatternInterpretation(key, pattern) ?? "해석 없음";
+    return `[${key}] ${interpretation}`;
+  });
 
   const joined = lines.join("\n");
   const allMissingInterpretation = lines.every((line) =>

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getPatternInterpretation } from "@/lib/hardcoded/patternLookup";
 
 function normalizeYN(value: unknown): string {
   const v = String(value ?? "")
@@ -53,13 +54,8 @@ export async function buildSurveyOnlyUserInputForReport(
   const localInterpretations: Record<string, string> = {};
   for (const key of Object.keys(patterns)) {
     const pattern = patterns[key];
-    const { data } = await supabase
-      .from("pattern_base")
-      .select("interpretation")
-      .eq("domain", key)
-      .eq("pattern", pattern.trim())
-      .maybeSingle();
-    localInterpretations[key] = data?.interpretation ?? "해석 없음";
+    localInterpretations[key] =
+      getPatternInterpretation(key, pattern) ?? "해석 없음";
   }
 
   return buildSurveyOnlyPrompt(localInterpretations);

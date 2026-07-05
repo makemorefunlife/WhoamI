@@ -233,3 +233,48 @@ export function normalizeRelationshipPerspectives(
 
   return null;
 }
+
+function isNonEmptyPerspectiveSlice(v: unknown): v is Record<string, unknown> {
+  if (!isRecord(v)) return false;
+  return RELATIONSHIP_AXIS_KEYS.some((k) => {
+    const ax = v[k];
+    return isNewAxisBlock(ax) || isLegacyAxisBlock(ax);
+  });
+}
+
+/** viewer id 키가 어긋난 저장 데이터에서도 현재 시점 슬라이스를 찾는다 */
+export function getViewerPerspectiveSlice(
+  perspectives: Record<string, unknown> | undefined | null,
+  viewerReportId: string,
+  reportIdA: string,
+  reportIdB: string,
+): Record<string, unknown> | null {
+  if (!perspectives || typeof perspectives !== "object") return null;
+
+  const tryPick = (id: string) => {
+    const slice = perspectives[id];
+    return isNonEmptyPerspectiveSlice(slice) ? slice : null;
+  };
+
+  const direct = tryPick(viewerReportId);
+  if (direct) return direct;
+
+  const viewerIsA = viewerReportId === reportIdA;
+  const viewerIsB = viewerReportId === reportIdB;
+  const fromA = tryPick(reportIdA);
+  const fromB = tryPick(reportIdB);
+
+  if (viewerIsA && fromA) return fromA;
+  if (viewerIsB && fromB) return fromB;
+
+  const blocks = Object.values(perspectives).filter(isNonEmptyPerspectiveSlice);
+  if (blocks.length >= 2) {
+    if (viewerIsA) return blocks[0]!;
+    if (viewerIsB) return blocks[1]!;
+  }
+  if (blocks.length === 1 && (viewerIsA || viewerIsB)) {
+    return blocks[0]!;
+  }
+
+  return null;
+}

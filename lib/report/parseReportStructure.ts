@@ -11,9 +11,41 @@ export type ParsedReportSection =
   | { kind: "part"; num: number; title: string; blocks: PartBodyBlock[] }
   | { kind: "appendix"; title: string; blocks: PartBodyBlock[] };
 
-/** 줄 시작 "Part 3 — 제목" / "Part 3 제목" / "Part3" */
-const PART_LINE = /^Part\s*(\d+)\s*(?:[—–\-]\s*)?(.*)$/i;
+/** Part N 제목 구분자: 콜론, 하이픈, en/em dash, 공백 */
+const PART_HEADER =
+  /^Part\s*(\d+)\s*(?:[：:]\s*|[—–\-]\s*|\s+)?(.*)$/i;
 const SUBSECTION_LINE = /^(\d+)\s*-\s*(\d+)\s*[\.．]?\s*(.*)$/;
+
+/** ## / ### / **Part N — 제목** 등 장식 제거 */
+function normalizeSectionLine(line: string): string {
+  let t = line.trim();
+  t = t.replace(/^#{1,6}\s+/, "");
+  const boldWrap = t.match(/^\*{1,2}(.+?)\*{1,2}$/s);
+  if (boldWrap) t = boldWrap[1].trim();
+  t = t.replace(/^\*+|\*+$/g, "").trim();
+  return t;
+}
+
+function parsePartHeader(
+  line: string,
+): { num: number; title: string } | null {
+  const normalized = normalizeSectionLine(line);
+  const m = normalized.match(PART_HEADER);
+  if (!m) return null;
+  const title = (m[2] ?? "").replace(/\*+$/g, "").trim();
+  return { num: Number(m[1]), title };
+}
+
+function isPartStartLine(line: string): boolean {
+  return parsePartHeader(line) !== null;
+}
+
+function hasPartMarkers(text: string): boolean {
+  return (
+    /(?:^|\n)\s*(?:#{1,6}\s+)?(?:\*{1,2}\s*)?Part\s*\d/i.test(text) ||
+    /(?:^|\n)\s*(?:#{1,6}\s+)?(?:\*{1,2}\s*)?부록/mi.test(text)
+  );
+}
 
 /**
  * "### 1-1. 제목" 형태를 "1-1. 제목"으로 바꿔 splitPartBody가 같은 줄 규칙으로 인식하게 함
@@ -26,7 +58,7 @@ function stripMarkdownHashesFromNumericSubsectionLines(text: string): string {
 }
 
 function isAppendixStart(line: string): boolean {
-  const t = line.trim();
+  const t = normalizeSectionLine(line);
   return /^부록(?:\s|$|[：:—–\-])/i.test(t);
 }
 
@@ -53,7 +85,7 @@ function insertBlankLineAfterMarkdownHeadings(text: string): string {
     if (/^\d+\.\s/.test(nextT)) continue;
     if (/^\|.+\|/.test(nextT)) continue;
     if (nextT.startsWith("```")) continue;
-    if (/^Part\s*\d/i.test(nextT)) continue;
+    if (isPartStartLine(nextT)) continue;
     if (isAppendixStart(next)) continue;
 
     out.push("");
@@ -71,7 +103,7 @@ function collectUntilNextSection(lines: string[], start: number): {
   while (i < lines.length) {
     const line = lines[i];
     const trimmed = line.trim();
-    if (PART_LINE.test(trimmed) || isAppendixStart(trimmed)) {
+    if (isPartStartLine(trimmed) || isAppendixStart(trimmed)) {
       break;
     }
     buf.push(line);
@@ -115,27 +147,14 @@ function splitPartBody(body: string): PartBodyBlock[] {
   return blocks;
 }
 
-function stripHeadingHashes(line: string): string {
-  const t = line.trimStart();
-  const part = t.match(/^#{1,6}\s+(Part\s*\d.*)$/i);
-  if (part) return part[1];
-  const ap = t.match(/^#{1,6}\s+(부록.*)$/i);
-  if (ap) return ap[1];
-  return line;
-}
-
 export function parseReportStructure(raw: string): ParsedReportSection[] | null {
   let normalized = raw.replace(/\r\n/g, "\n");
   normalized = stripMarkdownHashesFromNumericSubsectionLines(normalized);
   normalized = insertBlankLineAfterMarkdownHeadings(normalized);
-  normalized = normalized
-    .split("\n")
-    .map(stripHeadingHashes)
-    .join("\n")
-    .trim();
+  normalized = normalized.trim();
   if (!normalized) return [];
 
-  if (!/(^|\n)Part\s*\d/i.test(normalized) && !/^부록/mi.test(normalized)) {
+  if (!hasPartMarkers(normalized)) {
     return null;
   }
 
@@ -152,12 +171,11 @@ export function parseReportStructure(raw: string): ParsedReportSection[] | null 
 
   while (i < lines.length) {
     const trimmed = lines[i].trim();
-    const partM = trimmed.match(PART_LINE);
+    const partH = parsePartHeader(trimmed);
 
-    if (partM) {
+    if (partH) {
       flushPreamble();
-      const num = Number(partM[1]);
-      const title = (partM[2] ?? "").trim();
+      const { num, title } = partH;
       i++;
       const { chunk, nextIndex } = collectUntilNextSection(lines, i);
       i = nextIndex;

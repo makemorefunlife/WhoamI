@@ -1,5 +1,9 @@
 import { persistIntegratedAnalysisClient } from "@/lib/report/fetchIntegratedAnalysisClient";
-import { fetchPremiumPipelineMetaClient } from "@/lib/report/fetchPremiumPipelineMetaClient";
+import {
+  fetchPremiumPipelineMetaClient,
+  type PremiumPipelineMeta,
+} from "@/lib/report/fetchPremiumPipelineMetaClient";
+import { buildSurveyAnalysisForIntegrated } from "@/lib/v1/slim/surveyAnalysis";
 import { fetchWithTimeout, FetchTimeoutError } from "@/lib/report/fetchWithTimeout";
 import { logAstrologyCache } from "@/lib/report/astrologyCoordLog";
 import { extractAstrologyTextForIntegrated } from "@/lib/report/astrologyIntegratedText";
@@ -102,7 +106,7 @@ export async function runPremiumReportPipeline(
   interpretations: Record<string, string>,
   patterns: Record<string, string> | null,
   callbacks: PremiumPipelineCallbacks = {},
-  options?: { regenerate?: boolean },
+  options?: { regenerate?: boolean; initialMeta?: PremiumPipelineMeta | null },
 ): Promise<PremiumPipelineResult> {
   const startedAt = Date.now();
   const { onStreamChunk, onStreamingChange, onProgress } = callbacks;
@@ -154,18 +158,27 @@ export async function runPremiumReportPipeline(
   }
 
   emitProgress("cache_check");
-  const metaResult = await fetchPremiumPipelineMetaClient(reportId, {
-    regenerate: options?.regenerate,
-  });
-  const pipelineMeta = metaResult.status === "ok" ? metaResult.meta : null;
+  let pipelineMeta: PremiumPipelineMeta | null = options?.initialMeta ?? null;
+  let metaStatus: "ok" | "not_premium" | "error" | "prefetched" = options
+    ?.initialMeta
+    ? "prefetched"
+    : "ok";
 
-  if (metaResult.status === "error") {
-    recordPremiumApiFailure("meta_fetch");
-    failure = "meta_error";
+  if (!options?.initialMeta) {
+    const metaResult = await fetchPremiumPipelineMetaClient(reportId, {
+      regenerate: options?.regenerate,
+    });
+    metaStatus = metaResult.status;
+    pipelineMeta = metaResult.status === "ok" ? metaResult.meta : null;
+
+    if (metaResult.status === "error") {
+      recordPremiumApiFailure("meta_fetch");
+      failure = "meta_error";
+    }
   }
 
   logPremiumPipelineStage(reportId, "meta_fetch", {
-    status: metaResult.status,
+    status: metaStatus,
     premium_cached: Boolean(pipelineMeta?.premium_result?.trim()),
     detailed_survey_cached: Boolean(pipelineMeta?.detailed_survey_result?.trim()),
     astrology_cached: Boolean(pipelineMeta?.astrology_result?.trim()),
@@ -227,35 +240,41 @@ export async function runPremiumReportPipeline(
   }
 
   let localSajuData: unknown = null;
+  let localAstrologyText: string | null = null;
+  let detailedSurveyReport: string | null = null;
 
-  sajuStatus = { attempted: true, ok: false };
   emitProgress("saju");
-  logPremiumPipelineStage(reportId, "saju_request", {
+  logPremiumPipelineStage(reportId, "parallel_prep_start", {
     birth_date: String(report.birth_date ?? ""),
     birth_time: String(report.birth_time ?? ""),
   });
 
-  try {
-    const sr = await fetchWithTimeout("/api/saju", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        birthDate: report.birth_date,
-        birthTime: report.birth_time,
-        birthPlace: report.birth_place ?? undefined,
-        reportId,
-      }),
-      timeoutMs: SAJU_FETCH_TIMEOUT_MS,
-      label: "saju",
-    });
-
-    if (sr.ok) {
-      localSajuData = await sr.json();
-      sajuStatus = { attempted: true, ok: true };
-      logPremiumPipelineStage(reportId, "saju_ok", {
-        json_chars: inputLen(localSajuData),
+  const sajuTask = (async () => {
+    sajuStatus = { attempted: true, ok: false };
+    logPremiumPipelineStage(reportId, "saju_request");
+    try {
+      const sr = await fetchWithTimeout("/api/saju", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          birthDate: report.birth_date,
+          birthTime: report.birth_time,
+          birthPlace: report.birth_place ?? undefined,
+          reportId,
+        }),
+        timeoutMs: SAJU_FETCH_TIMEOUT_MS,
+        label: "saju",
       });
-    } else {
+
+      if (sr.ok) {
+        const data = await sr.json();
+        sajuStatus = { attempted: true, ok: true };
+        logPremiumPipelineStage(reportId, "saju_ok", {
+          json_chars: inputLen(data),
+        });
+        return data;
+      }
+
       const sajuErr = await sr.text().catch(() => "");
       recordPremiumApiFailure("saju_http");
       failure = "saju_failed";
@@ -263,18 +282,47 @@ export async function runPremiumReportPipeline(
         http_status: sr.status,
         body_preview: sajuErr.slice(0, 200),
       });
+      return null;
+    } catch (e) {
+      recordPremiumApiFailure("saju_exception");
+      failure =
+        e instanceof FetchTimeoutError ? "saju_timeout" : "saju_failed";
+      logPremiumPipelineStage(reportId, "saju_fail", {
+        message: e instanceof Error ? e.message : String(e),
+      });
+      return null;
     }
-  } catch (e) {
-    recordPremiumApiFailure("saju_exception");
-    failure =
-      e instanceof FetchTimeoutError ? "saju_timeout" : "saju_failed";
-    logPremiumPipelineStage(reportId, "saju_fail", {
-      message: e instanceof Error ? e.message : String(e),
-    });
-  }
+  })();
 
-  let localAstrologyText: string | null = null;
-  if (sajuStatus.ok) {
+  const relationshipTask = (async () => {
+    try {
+      const res = await fetchWithTimeout("/api/relationship/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportId }),
+        timeoutMs: 20_000,
+        label: "relationship",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.relationship ?? data.astrology ?? null;
+        logPremiumPipelineStage(
+          reportId,
+          text ? "relationship_ok" : "relationship_empty",
+          { chars: inputLen(text) },
+        );
+        return text as string | null;
+      }
+      return null;
+    } catch (relationshipErr) {
+      warnings.push("relationship_failed");
+      recordPremiumApiFailure("relationship");
+      console.error("관계 맥락 생성 API 실패:", relationshipErr);
+      return null;
+    }
+  })();
+
+  const astrologyTask = (async () => {
     let astroRequest: ReturnType<typeof buildAstrologyApiRequestFromReport> | null =
       null;
     try {
@@ -282,6 +330,7 @@ export async function runPremiumReportPipeline(
     } catch (e) {
       console.error("점성 좌표/요청 구성 실패:", e);
       warnings.push("astrology_request_build_failed");
+      return null;
     }
 
     const fingerprint = astroRequest?.locationFingerprint ?? null;
@@ -291,9 +340,10 @@ export async function runPremiumReportPipeline(
       pipelineMeta?.astrology_location_key === fingerprint;
 
     if (canReuseAstrology && pipelineMeta?.astrology_result) {
-      localAstrologyText = pipelineMeta.astrology_result;
       logAstrologyCache(reportId, "astrology_reused");
-    } else if (pipelineMeta?.astrology_result && fingerprint) {
+      return pipelineMeta.astrology_result;
+    }
+    if (pipelineMeta?.astrology_result && fingerprint) {
       logAstrologyCache(
         reportId,
         "astrology_invalidated_location",
@@ -301,83 +351,120 @@ export async function runPremiumReportPipeline(
       );
     }
 
-    if (!localAstrologyText && astroRequest) {
-      emitProgress("astrology");
-      try {
-        const ar = await fetchWithTimeout("/api/astrology", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(astroRequest.body),
-          timeoutMs: ASTROLOGY_FETCH_TIMEOUT_MS,
-          label: "astrology",
-        });
-        logPremiumPipelineStage(reportId, "astrology_request");
-        if (ar.ok) {
-          const astroData = (await ar.json()) as Record<string, unknown>;
-          const extracted = extractAstrologyTextForIntegrated(astroData);
-          if (extracted) {
-            localAstrologyText = extracted;
-            logPremiumPipelineStage(reportId, "astrology_ok", {
-              chars: extracted.length,
-            });
-            logPremiumContentSource(
-              reportId,
-              "generation",
-              "astrology-api-llm",
-            );
-            void persistAstrologyClient(reportId, extracted, {
-              locationFingerprint: astroRequest.locationFingerprint,
-            });
-          } else {
-            warnings.push("astrology_empty");
-            logPremiumPipelineStage(reportId, "astrology_skip", {
-              reason: "empty_extract",
-              http_status: ar.status,
-            });
-          }
-        } else {
-          warnings.push("astrology_http_error");
-          recordPremiumApiFailure("astrology_http");
-          logPremiumPipelineStage(reportId, "astrology_skip", {
-            reason: "http_error",
-            http_status: ar.status,
+    if (!astroRequest) return null;
+
+    emitProgress("astrology");
+    try {
+      const ar = await fetchWithTimeout("/api/astrology", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(astroRequest.body),
+        timeoutMs: ASTROLOGY_FETCH_TIMEOUT_MS,
+        label: "astrology",
+      });
+      logPremiumPipelineStage(reportId, "astrology_request");
+      if (ar.ok) {
+        const astroData = (await ar.json()) as Record<string, unknown>;
+        const extracted = extractAstrologyTextForIntegrated(astroData);
+        if (extracted) {
+          logPremiumPipelineStage(reportId, "astrology_ok", {
+            chars: extracted.length,
           });
+          logPremiumContentSource(
+            reportId,
+            "generation",
+            "astrology-api-llm",
+          );
+          void persistAstrologyClient(reportId, extracted, {
+            locationFingerprint: astroRequest.locationFingerprint,
+          });
+          return extracted;
         }
-      } catch (e) {
-        warnings.push("astrology_exception");
-        recordPremiumApiFailure("astrology_exception");
-        console.error("점성학 API 실패:", e);
+        warnings.push("astrology_empty");
         logPremiumPipelineStage(reportId, "astrology_skip", {
-          reason: "exception",
-          message: e instanceof Error ? e.message : String(e),
+          reason: "empty_extract",
+          http_status: ar.status,
+        });
+      } else {
+        warnings.push("astrology_http_error");
+        recordPremiumApiFailure("astrology_http");
+        logPremiumPipelineStage(reportId, "astrology_skip", {
+          reason: "http_error",
+          http_status: ar.status,
         });
       }
+    } catch (e) {
+      warnings.push("astrology_exception");
+      recordPremiumApiFailure("astrology_exception");
+      console.error("점성학 API 실패:", e);
+      logPremiumPipelineStage(reportId, "astrology_skip", {
+        reason: "exception",
+        message: e instanceof Error ? e.message : String(e),
+      });
     }
-  }
+    return null;
+  })();
+
+  const detailedSurveyTask = (async () => {
+    if (!options?.regenerate && pipelineMeta?.detailed_survey_result) {
+      logPremiumPipelineStage(reportId, "detailed_survey_reuse", {
+        chars: pipelineMeta.detailed_survey_result.length,
+      });
+      logPremiumContentSource(reportId, "db", "detailed-survey-reuse");
+      return pipelineMeta.detailed_survey_result;
+    }
+
+    emitProgress("detailed_survey");
+    logPremiumPipelineStage(reportId, "detailed_survey_build", {
+      patterns_keys: patterns ? Object.keys(patterns).join(",") : "",
+      source: "hardcoded_pattern_base",
+    });
+    logPremiumContentSource(
+      reportId,
+      "generation",
+      "detailed-survey-hardcoded-start",
+    );
+
+    const built = buildSurveyAnalysisForIntegrated({
+      v2Profile: null,
+      v1Patterns: patterns,
+    }).text;
+    if (built && built.trim() && !built.includes("설문 응답이 없어")) {
+      logPremiumPipelineStage(reportId, "detailed_survey_ok", {
+        chars: built.length,
+        source: "hardcoded_pattern_base",
+      });
+      void persistDetailedSurveyClient(reportId, built);
+      return built;
+    }
+
+    warnings.push("detailed_survey_failed");
+    logPremiumPipelineStage(reportId, "detailed_survey_fail", {
+      reason: "patterns_incomplete",
+    });
+    return null;
+  })();
+
+  const [sajuDataResult, relationshipResult, astrologyResult, detailedResult] =
+    await Promise.all([
+      sajuTask,
+      relationshipTask,
+      astrologyTask,
+      detailedSurveyTask,
+    ]);
+
+  localSajuData = sajuDataResult;
+  relationship = relationshipResult;
+  localAstrologyText = astrologyResult;
+  detailedSurveyReport = detailedResult;
 
   emitProgress("relationship");
-  try {
-    const res = await fetchWithTimeout("/api/relationship/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reportId }),
-      timeoutMs: 20_000,
-      label: "relationship",
-    });
-    if (res.ok) {
-      const data = await res.json();
-      relationship = data.relationship ?? data.astrology ?? null;
-      logPremiumPipelineStage(
-        reportId,
-        relationship ? "relationship_ok" : "relationship_empty",
-        { chars: inputLen(relationship) },
-      );
-    }
-  } catch (relationshipErr) {
-    warnings.push("relationship_failed");
-    recordPremiumApiFailure("relationship");
-    console.error("관계 맥락 생성 API 실패:", relationshipErr);
-  }
+  logPremiumPipelineStage(reportId, "parallel_prep_done", {
+    saju_ok: sajuStatus.ok,
+    relationship_chars: inputLen(relationship),
+    astrology_chars: inputLen(localAstrologyText),
+    detailed_survey_chars: inputLen(detailedSurveyReport),
+  });
 
   if (!sajuStatus.ok) {
     logPremiumPipelineStage(reportId, "abort_saju");
@@ -394,69 +481,12 @@ export async function runPremiumReportPipeline(
     };
   }
 
-  let detailedSurveyReport: string | null = null;
-  if (!options?.regenerate && pipelineMeta?.detailed_survey_result) {
-    detailedSurveyReport = pipelineMeta.detailed_survey_result;
-    logPremiumPipelineStage(reportId, "detailed_survey_reuse", {
-      chars: detailedSurveyReport.length,
-    });
-    logPremiumContentSource(reportId, "db", "detailed-survey-reuse");
-  }
-
-  if (!detailedSurveyReport) {
-    emitProgress("detailed_survey");
-    logPremiumPipelineStage(reportId, "detailed_survey_llm", {
-      patterns_keys: patterns ? Object.keys(patterns).join(",") : "",
-    });
-    logPremiumContentSource(reportId, "generation", "detailed-survey-llm-start");
-    try {
-      const detailedRes = await fetchWithTimeout("/api/llm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "detailed_survey",
-          reportId,
-          patterns,
-        }),
-        timeoutMs: LLM_FETCH_TIMEOUT_MS,
-        label: "detailed_survey_llm",
-      });
-      const detailedData = detailedRes.ok
-        ? ((await detailedRes.json().catch(() => ({}))) as { report?: string })
-        : {};
-      const generated =
-        typeof detailedData.report === "string" ? detailedData.report.trim() : "";
-      if (generated) {
-        detailedSurveyReport = generated;
-        logPremiumPipelineStage(reportId, "detailed_survey_ok", {
-          chars: generated.length,
-          http_status: detailedRes.status,
-        });
-        void persistDetailedSurveyClient(reportId, generated);
-      } else {
-        recordPremiumApiFailure("detailed_survey");
-        warnings.push("detailed_survey_failed");
-        logPremiumPipelineStage(reportId, "detailed_survey_fail", {
-          http_status: detailedRes.status,
-        });
-      }
-    } catch (e) {
-      recordPremiumApiFailure("detailed_survey_exception");
-      warnings.push("detailed_survey_failed");
-      logPremiumPipelineStage(reportId, "detailed_survey_fail", {
-        message: e instanceof Error ? e.message : String(e),
-      });
-    }
-  }
-
   if (!detailedSurveyReport?.trim()) {
     detailedSurveyReport =
-      "(설문 심화 해석을 불러오지 못했습니다. 사주·출생 맥락만으로 통합합니다.)";
+      "(설문 심화 해석을 불러오지 못했습니다. 기질 분석·출생 맥락만으로 통합합니다.)";
   }
 
-  const combinedAstrology = [localAstrologyText, relationship]
-    .filter(Boolean)
-    .join("\n\n");
+  const combinedAstrology = localAstrologyText ?? "";
 
   emitProgress("integrated");
   onStreamingChange?.(true);

@@ -1,4 +1,9 @@
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import {
+  readPremiumAccessCache,
+  writePremiumAccessCache,
+  logPremiumAccessCacheHit,
+} from "@/lib/report/premiumAccessCache";
 
 export type PremiumLlmRequestType = "integrated" | "detailed_survey";
 
@@ -25,6 +30,19 @@ export async function assertPremiumLlmAccess(
     return Response.json({ error: "reportId가 필요합니다." }, { status: 400 });
   }
 
+  const cached = readPremiumAccessCache(id);
+  if (cached === true) {
+    logPremiumAccessCacheHit(id, requestType);
+    return null;
+  }
+  if (cached === false) {
+    logPaymentGuard(id, false, requestType);
+    return Response.json(
+      { error: "심화 리포트는 결제 후 이용할 수 있습니다." },
+      { status: 403 },
+    );
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) {
@@ -48,6 +66,7 @@ export async function assertPremiumLlmAccess(
 
   const hasPremium =
     report.payment_status === "paid" || report.plan_type === "paid";
+  writePremiumAccessCache(id, hasPremium);
   logPaymentGuard(id, hasPremium, requestType);
 
   if (!hasPremium) {

@@ -7,8 +7,24 @@ import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
+import RelationshipAnalysisHistory, {
+  FavoriteHeartButton,
+  type AnalysisLogListItem,
+} from "@/components/relationship/RelationshipAnalysisHistory";
+import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
+import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
+import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import { relationshipPremiumPreviewEnabled } from "@/lib/relationship/premiumPreview";
+import {
+  parseRelationshipKind,
+  RELATIONSHIP_KIND_LABELS,
+  type RelationshipKind,
+} from "@/lib/relationship/relationshipKind";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
+
+const premiumPreview = relationshipPremiumPreviewEnabled();
 
 export default function RelationshipView({
   relationshipReportId,
@@ -19,6 +35,7 @@ export default function RelationshipView({
   const routeParams = useParams();
   const searchParams = useSearchParams();
   const urlViewerHint = searchParams.get("viewer")?.trim() ?? "";
+  const urlKindHint = searchParams.get("kind")?.trim() ?? "";
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
       urlHint: urlViewerHint,
@@ -44,8 +61,45 @@ export default function RelationshipView({
   const [analysisType, setAnalysisType] = useState<string>("basic");
   const [basic, setBasic] = useState<RelationshipPerspective | null>(null);
   const [premium, setPremium] = useState<RelationshipPerspective | null>(null);
+  const [romanticDeep, setRomanticDeep] = useState<
+    RomanticSajuDeepReport["report"] | null
+  >(null);
+  const [nameA, setNameA] = useState("");
+  const [nameB, setNameB] = useState("");
+  const [premiumKind, setPremiumKind] = useState<RelationshipKind>(() =>
+    parseRelationshipKind(urlKindHint || undefined),
+  );
+  const premiumKindRef = useRef<RelationshipKind>(
+    parseRelationshipKind(urlKindHint || undefined),
+  );
+  premiumKindRef.current = premiumKind;
+  const [favorited, setFavorited] = useState(false);
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
+  const [logs, setLogs] = useState<AnalysisLogListItem[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [snapshotView, setSnapshotView] = useState<{
+    logId: string;
+    kind?: RelationshipKind;
+    basic?: RelationshipPerspective | null;
+    premium?: RelationshipPerspective | null;
+    romanticDeep?: RomanticSajuDeepReport["report"] | null;
+  } | null>(null);
 
-  const load = useCallback(async () => {
+  const fetchLogs = useCallback(async () => {
+    if (!viewerReportId || !resolvedRelationshipId) return;
+    setLogsLoading(true);
+    try {
+      const res = await fetch(
+        `/api/relationship/logs?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(viewerReportId)}`,
+      );
+      const data = await res.json();
+      if (res.ok) setLogs((data.logs ?? []) as AnalysisLogListItem[]);
+    } finally {
+      setLogsLoading(false);
+    }
+  }, [resolvedRelationshipId, viewerReportId]);
+
+  const load = useCallback(async (kindOverride?: RelationshipKind) => {
     if (canonicalResolving) return;
     if (!viewerReportId) {
       setErr("viewer 쿼리(내 리포트 id)가 필요합니다.");
@@ -63,8 +117,9 @@ export default function RelationshipView({
     setErr(null);
     setLoading(true);
     try {
+      const kind = kindOverride ?? premiumKindRef.current;
       const res = await fetch(
-        `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(viewerReportId)}`,
+        `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(viewerReportId)}&relationshipKind=${encodeURIComponent(kind)}`,
       );
       const data = await res.json();
       if (!res.ok) {
@@ -72,25 +127,36 @@ export default function RelationshipView({
         setErr(data?.error ?? "불러오지 못했어요.");
         return;
       }
+      setSnapshotView(null);
       setDetailOk(true);
       setPartnerName(data.partner_name ?? "상대");
       setViewerName(data.viewer_name ?? "");
       setAnalysisType(data.analysis_type ?? "basic");
+      setPremiumKind(parseRelationshipKind(data.relationship_kind));
       setBasic((data.perspective_basic ?? null) as RelationshipPerspective);
       setPremium((data.perspective_premium ?? null) as RelationshipPerspective);
+      setRomanticDeep(
+        (data.romantic_deep_report ?? null) as RomanticSajuDeepReport["report"] | null,
+      );
+      setNameA(data.person_a_name ?? data.viewer_name ?? "A");
+      setNameB(data.person_b_name ?? data.partner_name ?? "B");
+      setFavorited(Boolean(data.is_favorite));
+      void fetchLogs();
     } finally {
       setLoading(false);
     }
-  }, [resolvedRelationshipId, viewerReportId, canonicalResolving]);
+  }, [resolvedRelationshipId, viewerReportId, canonicalResolving, fetchLogs]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   const basicAttempted = useRef(false);
+  const premiumPreviewAutoDone = useRef(false);
 
   useEffect(() => {
     basicAttempted.current = false;
+    premiumPreviewAutoDone.current = false;
   }, [resolvedRelationshipId]);
 
   const ensureBasic = useCallback(async () => {
@@ -103,6 +169,8 @@ export default function RelationshipView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           relationship_report_id: resolvedRelationshipId,
+          viewer_report_id: viewerReportId,
+          relationship_kind: premiumKindRef.current,
         }),
       });
       const data = await res.json();
@@ -114,7 +182,70 @@ export default function RelationshipView({
     } finally {
       setBusy(false);
     }
-  }, [viewerReportId, resolvedRelationshipId, load]);
+  }, [viewerReportId, resolvedRelationshipId, load, premiumKind]);
+
+  const toggleFavorite = useCallback(async () => {
+    if (!viewerReportId || !resolvedRelationshipId) return;
+    const next = !favorited;
+    setFavorited(next);
+    setFavoriteBusy(true);
+    try {
+      const res = await fetch("/api/relationship/favorite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          relationship_report_id: resolvedRelationshipId,
+          viewer_report_id: viewerReportId,
+          favorited: next,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        favorited?: boolean;
+      };
+      if (!res.ok) {
+        setFavorited(!next);
+        setErr(data?.error ?? "즐겨찾기 저장에 실패했어요.");
+        return;
+      }
+      setFavorited(Boolean(data.favorited));
+    } finally {
+      setFavoriteBusy(false);
+    }
+  }, [viewerReportId, resolvedRelationshipId, favorited]);
+
+  const viewAnalysisLog = useCallback((log: AnalysisLogListItem) => {
+    const snap = log.result_snapshot ?? {};
+    if (log.result_format === ROMANTIC_SAJU_DEEP_FORMAT) {
+      const report = snap.report as RomanticSajuDeepReport["report"] | undefined;
+      setSnapshotView({
+        logId: log.id,
+        kind: "romantic",
+        romanticDeep: report ?? null,
+        premium: null,
+      });
+      setPremiumKind("romantic");
+      return;
+    }
+    if (log.analysis_level === "premium") {
+      const kind =
+        log.relationship_kind !== "unspecified"
+          ? parseRelationshipKind(log.relationship_kind)
+          : premiumKindRef.current;
+      setSnapshotView({
+        logId: log.id,
+        kind,
+        premium: (snap.perspective ?? null) as RelationshipPerspective | null,
+        romanticDeep: null,
+      });
+      setPremiumKind(kind);
+      return;
+    }
+    setSnapshotView({
+      logId: log.id,
+      basic: (snap.perspective ?? null) as RelationshipPerspective | null,
+    });
+  }, []);
 
   useEffect(() => {
     if (loading || !detailOk || !viewerReportId || !resolvedRelationshipId)
@@ -138,28 +269,150 @@ export default function RelationshipView({
     void ensureBasic();
   }
 
-  const runPremium = async () => {
-    if (!resolvedRelationshipId) return;
+  const runPremium = useCallback(
+    async (
+      kind: RelationshipKind = premiumKind,
+      options?: { forceRegenerate?: boolean },
+    ) => {
+      if (!resolvedRelationshipId) return false;
+      const forceRegenerate = options?.forceRegenerate === true;
+      if (forceRegenerate) {
+        setSnapshotView(null);
+        if (kind === "romantic") {
+          setRomanticDeep(null);
+        } else {
+          setPremium(null);
+        }
+      }
+      setBusy(true);
+      setErr(null);
+      try {
+        const res = await fetch("/api/relationship/analyze/premium", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            relationship_report_id: resolvedRelationshipId,
+            relationship_kind: kind,
+            viewer_report_id: viewerReportId,
+            force_regenerate: forceRegenerate,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setErr(data?.error ?? "심화 분석 실패");
+          return false;
+        }
+        if (kind === "romantic" && data.result_premium?.report) {
+          setRomanticDeep(
+            data.result_premium.report as RomanticSajuDeepReport["report"],
+          );
+        } else if (data.result_premium?.perspectives && viewerReportId) {
+          const slice =
+            data.result_premium.perspectives[viewerReportId] ?? null;
+          if (slice && typeof slice === "object") {
+            setPremium(slice as RelationshipPerspective);
+          }
+        }
+        await load(kind);
+        return true;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [resolvedRelationshipId, load, premiumKind, viewerReportId],
+  );
+
+  function regeneratePremium() {
+    const label = RELATIONSHIP_KIND_LABELS[premiumKind];
+    if (
+      !window.confirm(
+        `기존 ${label} 심화 분석을 새 프롬프트로 다시 만들까요?\n(1~2분 걸릴 수 있어요. 이전 결과는 분석 기록에 남아 있어요.)`,
+      )
+    ) {
+      return;
+    }
+    void runPremium(premiumKind, { forceRegenerate: true });
+  }
+
+  const ensurePremiumPreview = useCallback(async () => {
+    if (!resolvedRelationshipId || !premiumPreview) return;
     setBusy(true);
     setErr(null);
     try {
-      const res = await fetch("/api/relationship/analyze/premium", {
+      const up = await fetch("/api/relationship/upgrade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           relationship_report_id: resolvedRelationshipId,
+          preview: true,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setErr(data?.error ?? "심화 분석 실패");
+      const upData = await up.json();
+      if (!up.ok) {
+        setErr(upData?.error ?? "업그레이드 실패");
         return;
       }
-      await load();
+      setAnalysisType("premium");
+      await runPremium(premiumKind);
     } finally {
       setBusy(false);
     }
-  };
+  }, [resolvedRelationshipId, runPremium, premiumKind]);
+
+  const onPremiumKindChange = useCallback(
+    (kind: RelationshipKind) => {
+      setSnapshotView(null);
+      setPremiumKind(kind);
+      setPremium(null);
+      setRomanticDeep(null);
+      if (viewerReportId && resolvedRelationshipId) {
+        const q = new URLSearchParams({
+          viewer: viewerReportId,
+          kind,
+        });
+        router.replace(
+          `/relationship/${resolvedRelationshipId}?${q.toString()}`,
+          { scroll: false },
+        );
+      }
+      void load(kind);
+    },
+    [load, router, viewerReportId, resolvedRelationshipId],
+  );
+
+  const displayBasic =
+    snapshotView?.basic !== undefined ? snapshotView.basic : basic;
+  const displayPremium =
+    snapshotView?.premium !== undefined ? snapshotView.premium : premium;
+  const displayRomanticDeep =
+    snapshotView?.romanticDeep !== undefined
+      ? snapshotView.romanticDeep
+      : romanticDeep;
+
+  const premiumReady =
+    premiumKind === "romantic"
+      ? Boolean(displayRomanticDeep?.section_1_summary)
+      : Boolean(displayPremium && Object.keys(displayPremium).length > 0);
+
+  useEffect(() => {
+    if (!premiumPreview || loading || !detailOk || !resolvedRelationshipId) return;
+    if (!basic || Object.keys(basic).length === 0) return;
+    if (premium && Object.keys(premium).length > 0) return;
+    if (romanticDeep?.section_1_summary) return;
+    if (premiumPreviewAutoDone.current) return;
+    if (premiumKind !== "friendship") return;
+    premiumPreviewAutoDone.current = true;
+    void ensurePremiumPreview();
+  }, [
+    premiumPreview,
+    loading,
+    detailOk,
+    resolvedRelationshipId,
+    basic,
+    premium,
+    premiumKind,
+    ensurePremiumPreview,
+  ]);
 
   if (!viewerReportId) {
     return (
@@ -212,7 +465,7 @@ export default function RelationshipView({
             Relationship
           </p>
           <h1 className="text-2xl font-semibold text-[var(--space-text)]">
-            관계 기본 분석
+            {RELATIONSHIP_KIND_LABELS[premiumKind]} 관계 분석
           </h1>
           <p className="text-sm text-[var(--space-text-muted)]">
             {viewerName ? (
@@ -220,12 +473,19 @@ export default function RelationshipView({
                 <span className="text-[var(--space-text)]">{viewerName}</span>
                 님이 보는 ·{" "}
                 <span className="text-[var(--space-text)]">{partnerName}</span>
-                님과의 관계를 네 축으로 정리했어요.
+                님
               </>
             ) : (
-              <>{partnerName}님과의 관계를 네 축으로 정리했어요.</>
+              <>{partnerName}님</>
             )}
           </p>
+          <div className="flex justify-center pt-1">
+            <FavoriteHeartButton
+              favorited={favorited}
+              busy={favoriteBusy}
+              onToggle={() => void toggleFavorite()}
+            />
+          </div>
         </header>
 
         {err && (
@@ -250,13 +510,39 @@ export default function RelationshipView({
           </p>
         ) : (
           <>
+            {snapshotView ? (
+              <div className="mb-4 flex flex-col gap-2 rounded-xl border border-[#67B7FF]/35 bg-[#67B7FF]/10 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-center text-xs text-[#9ec8ff] sm:text-left">
+                  저장된 분석 기록을 보고 있어요
+                </p>
+                <button
+                  type="button"
+                  className="text-xs font-medium text-[#67B7FF] underline-offset-2 hover:underline"
+                  onClick={() => {
+                    setSnapshotView(null);
+                    void load();
+                  }}
+                >
+                  최신 결과로
+                </button>
+              </div>
+            ) : null}
+
+            <RelationshipKindTabs
+              value={premiumKind}
+              onChange={onPremiumKindChange}
+              disabled={busy}
+            />
+
             <RelationshipBasicCards
-              perspective={basic}
+              perspective={displayBasic}
               partnerName={partnerName}
               viewerName={viewerName}
             />
 
-            {(!basic || Object.keys(basic).length === 0) && !err ? (
+            {(!displayBasic || Object.keys(displayBasic).length === 0) &&
+            !err &&
+            !snapshotView ? (
               <div className="mt-4">
                 <GlowButton
                   type="button"
@@ -269,35 +555,101 @@ export default function RelationshipView({
               </div>
             ) : null}
 
-            {analysisType === "premium" && (
+            {(analysisType === "premium" || premiumPreview) && (
               <div className="mt-10">
-                <RelationshipPremiumCards
-                  perspective={premium}
-                  partnerName={partnerName}
-                  viewerName={viewerName}
-                />
-                {!premium || Object.keys(premium).length === 0 ? (
-                  <div className="mt-4 text-center">
+                {busy ? (
+                  <p className="mb-4 text-center text-xs text-[#ffd6a5]/80">
+                    심화 관계 분석을 생성하고 있어요… (1~2분 걸릴 수 있어요)
+                  </p>
+                ) : null}
+                {premiumKind === "romantic" && displayRomanticDeep ? (
+                  <div className="space-y-3 rounded-2xl border border-[#ffd6a5]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd6a5]/90">
+                      Premium · 연인 사주 심화
+                    </p>
+                    <RomanticSajuDeepReportView
+                      report={displayRomanticDeep}
+                      nameA={nameA}
+                      nameB={nameB}
+                    />
+                  </div>
+                ) : premiumKind === "romantic" ? (
+                  <div className="space-y-3 rounded-2xl border border-[#ffd6a5]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd6a5]/90">
+                      Premium · 연인 사주 심화
+                    </p>
+                    <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
+                      아직 연인 사주 심화 분석이 없어요.
+                      <br />
+                      <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <RelationshipPremiumCards
+                    perspective={displayPremium}
+                    partnerName={partnerName}
+                    viewerName={viewerName}
+                  />
+                )}
+                {!premiumReady && !snapshotView ? (
+                  <div className="mt-4 space-y-2 text-center">
+                    {premiumPreview ? (
+                      <p className="text-[11px] text-[var(--space-text-muted)]">
+                        출생 정보가 부족하면 심화 분석이 제한될 수 있어요.
+                      </p>
+                    ) : null}
                     <GlowButton
                       type="button"
                       className="w-full"
                       disabled={busy}
-                      onClick={() => void runPremium()}
+                      onClick={() =>
+                        void (premiumPreview
+                          ? ensurePremiumPreview()
+                          : runPremium(premiumKind))
+                      }
                     >
                       {busy
                         ? "심화 분석 생성 중…"
-                        : "관계 심화 분석 생성하기"}
+                        : `${RELATIONSHIP_KIND_LABELS[premiumKind]} 관계 심화 분석 생성하기`}
                     </GlowButton>
+                  </div>
+                ) : premiumReady && !snapshotView ? (
+                  <div className="mt-4 space-y-2 text-center">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      className="w-full rounded-xl border border-[#ffd6a5]/35 bg-[#ffd6a5]/8 py-2.5 text-sm font-medium text-[#ffd6a5] transition hover:bg-[#ffd6a5]/12 disabled:opacity-50"
+                      onClick={regeneratePremium}
+                    >
+                      {busy
+                        ? "심화 분석 다시 생성 중…"
+                        : `${RELATIONSHIP_KIND_LABELS[premiumKind]} 심화 분석 다시 만들기`}
+                    </button>
+                    <p className="text-[10px] text-[var(--space-text-muted)]">
+                      새 프롬프트로 다시 생성해요. 이전 결과는 아래 분석 기록에서 볼 수 있어요.
+                    </p>
                   </div>
                 ) : null}
               </div>
             )}
 
-            {analysisType === "basic" && (
+            {analysisType === "basic" && !premiumPreview && (
               <p className="mt-8 text-center text-xs text-[var(--space-text-muted)]">
                 심화 관계 분석은 업그레이드 후에 열려요.
               </p>
             )}
+
+            <GlassCard className="mt-10 space-y-3">
+              <h2 className="text-sm font-semibold text-[#67B7FF]">
+                분석 기록
+              </h2>
+              <RelationshipAnalysisHistory
+                logs={logs}
+                loading={logsLoading}
+                selectedLogId={snapshotView?.logId ?? null}
+                onSelectLog={viewAnalysisLog}
+              />
+            </GlassCard>
 
             <GlowButton
               type="button"

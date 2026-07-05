@@ -41,6 +41,7 @@ type MyReportJson = {
 };
 
 type RelSimple = {
+  list_key: string;
   partner_name: string;
   status: "completed" | "pending";
   relationship_report_id: string | null;
@@ -265,7 +266,16 @@ export default function DashboardContent() {
 
     if (!resumeRes.ok) {
       if (resumeRes.status === 401) {
-        setErr("로그인이 필요해요. 홈에서 다시 시작해 주세요.");
+        const guestHint =
+          reportIdFromUrl ||
+          (typeof window !== "undefined"
+            ? localStorage.getItem("reportId")?.trim() ?? ""
+            : "");
+        setErr(
+          guestHint
+            ? "이 탐사 기록은 다른 계정에 연결되어 있어요. 로그인하거나 홈에서 새로 시작해 주세요."
+            : "로그인이 필요해요. 홈에서 시작하거나 로그인해 주세요.",
+        );
       } else {
         setErr(resumeRes.error);
       }
@@ -430,14 +440,24 @@ export default function DashboardContent() {
                     홈으로
                   </GlowButton>
                 ) : (
-                  <GlowButton
-                    type="button"
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => void bootstrap()}
-                  >
-                    다시 시도
-                  </GlowButton>
+                  <>
+                    <GlowButton
+                      type="button"
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => void bootstrap()}
+                    >
+                      다시 시도
+                    </GlowButton>
+                    <GlowButton
+                      type="button"
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => router.push("/sign-in")}
+                    >
+                      로그인
+                    </GlowButton>
+                  </>
                 )}
               </GlassCard>
             ) : null}
@@ -573,9 +593,13 @@ export default function DashboardContent() {
                         아직 없어요
                       </li>
                     ) : (
-                      relsSorted.map((r) => (
+                      relsSorted.map((r, index) => (
                         <li
-                          key={r.relationship_report_id ?? r.partner_name}
+                          key={
+                            r.list_key ??
+                            r.relationship_report_id ??
+                            `rel-${index}`
+                          }
                           className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.035] px-4 py-3"
                         >
                           <span className="text-sm text-[var(--space-text)]">

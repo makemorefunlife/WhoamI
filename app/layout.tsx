@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AppClerkProvider from "@/components/clerk/AppClerkProvider";
-import DevPaymentShortcut from "@/components/DevPaymentShortcut";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import Header from "@/components/layout/Header";
 import SiteFooter from "@/components/layout/SiteFooter";
@@ -40,7 +39,6 @@ export default function RootLayout({
           <Header />
           <div className="flex min-h-0 flex-1 flex-col pt-14">{children}</div>
           <SiteFooter />
-          <DevPaymentShortcut />
         </AppClerkProvider>
       </body>
     </html>

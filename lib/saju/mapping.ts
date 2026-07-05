@@ -30,3 +30,66 @@ export const getStem = (pillar: string | null | undefined) =>
   pillar?.charAt(0) || "";
 export const getBranch = (pillar: string | null | undefined) =>
   pillar?.charAt(1) || "";
+
+/** 한글 간지 1자 또는 기둥 문자열 → ref_* DB code */
+export function toStemCode(pillarOrHangul: string): string {
+  const hangul =
+    pillarOrHangul.length <= 1 ? pillarOrHangul : getStem(pillarOrHangul);
+  return stemMap[hangul] || hangul;
+}
+
+export function toBranchCode(pillarOrHangul: string): string {
+  const hangul =
+    pillarOrHangul.length <= 1 ? pillarOrHangul : getBranch(pillarOrHangul);
+  return branchMap[hangul] || hangul;
+}
+
+export const hanjaStemToCode: Record<string, string> = {
+  甲: "gap",
+  乙: "eul",
+  丙: "byeong",
+  丁: "jeong",
+  戊: "mu",
+  己: "gi",
+  庚: "gyeong",
+  辛: "sin",
+  壬: "im",
+  癸: "gye",
+};
+
+export const hanjaBranchToCode: Record<string, string> = {
+  子: "ja",
+  丑: "chuk",
+  寅: "in",
+  卯: "myo",
+  辰: "jin",
+  巳: "sa",
+  午: "o",
+  未: "mi",
+  申: "sin",
+  酉: "yu",
+  戌: "sul",
+  亥: "hae",
+};
+
+export const codeToHangulStem: Record<string, string> = Object.fromEntries(
+  Object.entries(stemMap).map(([hangul, code]) => [code, hangul]),
+);
+
+export const codeToHangulBranch: Record<string, string> = Object.fromEntries(
+  Object.entries(branchMap).map(([hangul, code]) => [code, hangul]),
+);
+
+export function hanjaBranchesToCodes(hanja: string): string[] {
+  return [...hanja].map((ch) => hanjaBranchToCode[ch]).filter(Boolean);
+}
+
+export function hanjaStemsToCodes(hanja: string): string[] {
+  return [...hanja].map((ch) => hanjaStemToCode[ch]).filter(Boolean);
+}
+
+export function codesToHangulPillar(stemCode: string, branchCode: string): string {
+  const s = codeToHangulStem[stemCode] ?? stemCode;
+  const b = codeToHangulBranch[branchCode] ?? branchCode;
+  return `${s}${b}`;
+}

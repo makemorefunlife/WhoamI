@@ -10,6 +10,9 @@ import {
   buildIntegratedPhase2UserPrompt,
 } from "../../../lib/prompts/integratedPremiumReport";
 import { assertPremiumLlmAccess } from "../../../lib/report/llmPaymentGuard";
+import { buildDetailedSurveyFromPatterns } from "../../../lib/report/buildDetailedSurveyFromPatterns";
+import { sajuDataToIntegratedSummary } from "../../../lib/report/formatInnateAnalysisForIntegrated";
+import { runIntegratedPremiumLlm } from "../../../lib/report/runIntegratedPremiumLlm";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -27,7 +30,12 @@ export async function POST(req: Request) {
       const guard = await assertPremiumLlmAccess(body.reportId, "detailed_survey");
       if (guard) return guard;
 
-      const { patterns } = body;
+      const { patterns } = body as { patterns?: Record<string, string> | null };
+      const hardcoded = buildDetailedSurveyFromPatterns(patterns ?? null);
+      if (hardcoded) {
+        return Response.json({ report: hardcoded });
+      }
+
       const detailedSurveyPrompt = `
 당신은 심리 분석 전문가입니다. 아래는 18문항 설문 결과(Y/N 패턴)입니다.
 
@@ -108,12 +116,7 @@ export async function POST(req: Request) {
         typeof detailedSurvey === "string"
           ? detailedSurvey
           : JSON.stringify(detailedSurvey ?? null, null, 2);
-      const sajuSummary =
-        sajuData == null
-          ? "(없음)"
-          : typeof sajuData === "string"
-            ? sajuData
-            : JSON.stringify(sajuData, null, 2);
+      const sajuSummary = sajuDataToIntegratedSummary(sajuData);
       const astrologyInterpretation =
         typeof astrologyText === "string" && astrologyText.trim()
           ? astrologyText.trim()
@@ -191,33 +194,12 @@ export async function POST(req: Request) {
         });
       }
 
-      const c1 = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: phase1Messages,
-        temperature: 0.65,
-        max_tokens: 8192,
-      });
-      const part1 = c1.choices[0].message.content ?? "";
-      const excerpt = part1.length > 12000 ? part1.slice(-12000) : part1;
-      const phase2User = buildIntegratedPhase2UserPrompt(
+      const integrated = await runIntegratedPremiumLlm({
         surveyAnalysis,
         sajuSummary,
         astrologyInterpretation,
-        excerpt,
-      );
-      const c2 = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
-          { role: "user", content: phase2User },
-        ],
-        temperature: 0.65,
-        max_tokens: 8192,
       });
-      const part2 = c2.choices[0].message.content ?? "";
-      const report = `${part1}\n\n—\n\n${part2}`;
-
-      return Response.json({ report });
+      return Response.json({ report: integrated.report });
     }
 
     // ============================================================

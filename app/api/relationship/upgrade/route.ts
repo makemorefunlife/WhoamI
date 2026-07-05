@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { relationshipPremiumPreviewEnabled } from "@/lib/relationship/premiumPreview";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -22,7 +23,9 @@ export async function POST(req: Request) {
     const secret =
       typeof body.secret === "string" ? body.secret.trim() : "";
     const expected = process.env.RELATIONSHIP_UPGRADE_SECRET;
-    if (expected && secret !== expected) {
+    const previewBypass =
+      relationshipPremiumPreviewEnabled() && body.preview === true;
+    if (expected && secret !== expected && !previewBypass) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 

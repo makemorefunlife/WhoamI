@@ -114,7 +114,83 @@ export async function deleteReportAnalysis(
   }
 }
 
-/** @deprecated report_results — 이전 캐시 폴백 */
+export type PersistedAnalysesBundle = {
+  basic: string | null;
+  integrated: string | null;
+  detailed_survey: string | null;
+  astrology: { content: string | null; metadata: Record<string, unknown> | null };
+};
+
+const BATCH_ANALYSIS_TYPES = [
+  "basic",
+  "integrated",
+  "detailed_survey",
+  "astrology",
+] as const;
+
+function pickLatestContent(
+  rows: { analysis_type: string; content: string; updated_at: string }[],
+  type: string,
+): string | null {
+  const match = rows
+    .filter((r) => r.analysis_type === type)
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+  const text = typeof match?.content === "string" ? match.content.trim() : "";
+  return text || null;
+}
+
+/** report_analyses — basic/integrated/detailed_survey/astrology 1회 조회 */
+export async function readPersistedAnalysesBatch(
+  supabase: SupabaseClient,
+  reportId: string,
+): Promise<PersistedAnalysesBundle> {
+  const { data, error } = await supabase
+    .from("report_analyses")
+    .select("analysis_type, content, metadata, updated_at")
+    .eq("report_id", reportId)
+    .in("analysis_type", [...BATCH_ANALYSIS_TYPES]);
+
+  if (error) {
+    console.warn("readPersistedAnalysesBatch:", error.message);
+    const legacyBasic = await readLegacyBasicFromReportResults(supabase, reportId);
+    return {
+      basic: legacyBasic,
+      integrated: null,
+      detailed_survey: null,
+      astrology: { content: null, metadata: null },
+    };
+  }
+
+  const rows = data ?? [];
+  const astrologyRow = rows
+    .filter((r) => r.analysis_type === "astrology")
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+
+  let basic = pickLatestContent(rows, "basic");
+  if (!basic) {
+    basic = await readLegacyBasicFromReportResults(supabase, reportId);
+  }
+
+  const astroContent =
+    typeof astrologyRow?.content === "string"
+      ? astrologyRow.content.trim()
+      : "";
+  const astroMetadata =
+    astrologyRow?.metadata && typeof astrologyRow.metadata === "object"
+      ? (astrologyRow.metadata as Record<string, unknown>)
+      : null;
+
+  return {
+    basic,
+    integrated: pickLatestContent(rows, "integrated"),
+    detailed_survey: pickLatestContent(rows, "detailed_survey"),
+    astrology: {
+      content: astroContent || null,
+      metadata: astroMetadata,
+    },
+  };
+}
+
 export async function readLegacyBasicFromReportResults(
   supabase: SupabaseClient,
   reportId: string,

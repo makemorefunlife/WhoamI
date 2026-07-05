@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useUser } from "@clerk/nextjs";
 import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import { supabase } from "@/lib/supabase/client";
+import { getPatternInterpretation } from "@/lib/hardcoded/patternLookup";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
@@ -15,9 +16,19 @@ import DeepReportIntroPanel from "@/components/report/DeepReportIntroPanel";
 import ReportBirthCaptureForm from "@/components/report/ReportBirthCaptureForm";
 import ReportViewTabSwitcher from "@/components/report/ReportViewTabSwitcher";
 import ReportSectionLoading from "@/components/report/ReportSectionLoading";
+import PremiumReportErrorPanel from "@/components/report/PremiumReportErrorPanel";
+import PremiumReportProgressPanel from "@/components/report/PremiumReportProgressPanel";
 import SubtleButtonIcon from "@/components/ui/SubtleButtonIcon";
 import { fetchBasicAnalysisClient } from "@/lib/report/fetchBasicAnalysisClient";
 import { fetchIntegratedAnalysisClient } from "@/lib/report/fetchIntegratedAnalysisClient";
+import {
+  fetchPremiumPipelineMetaClient,
+  type PremiumPipelineMeta,
+} from "@/lib/report/fetchPremiumPipelineMetaClient";
+import type { PremiumProgressStage } from "@/lib/report/premiumPipelineConfig";
+import { logPremiumPipelineStage } from "@/lib/report/premiumPipelineDiagnostics";
+import type { PremiumPipelineFailure } from "@/lib/report/premiumPipelineFailure";
+import { getPremiumFailureMessage } from "@/lib/report/premiumPipelineFailure";
 import { logPremiumContentSource } from "@/lib/report/premiumContentSourceLog";
 import {
   clearPremiumPipelineLock,
@@ -109,12 +120,19 @@ export default function ReportContent() {
   const [inviteUsed, setInviteUsed] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
   const [premiumLoading, setPremiumLoading] = useState(false);
+  const [premiumProgress, setPremiumProgress] =
+    useState<PremiumProgressStage | null>(null);
+  const [premiumFailure, setPremiumFailure] =
+    useState<PremiumPipelineFailure | null>(null);
+  const [premiumWarnings, setPremiumWarnings] = useState<string[]>([]);
+  const [premiumStreamChars, setPremiumStreamChars] = useState(0);
   const surveyContextRef = useRef<{
     interpretations: Record<string, string>;
     patterns: Record<string, string> | null;
   }>({ interpretations: {}, patterns: null });
   const premiumPipelineStartedRef = useRef(false);
   const premiumLoadInFlightRef = useRef(false);
+  const premiumMetaRef = useRef<PremiumPipelineMeta | null>(null);
   const afterPaymentHandled = useRef(false);
   const inviteUsedRef = useRef(false);
   inviteUsedRef.current = inviteUsed;
@@ -138,8 +156,7 @@ export default function ReportContent() {
     if (viewParam === "premium") setResultViewTab("premium");
     else if (viewParam === "basic") setResultViewTab("basic");
   }, [viewParam]);
-  const displayName =
-    report?.name?.trim() || resolveClerkDisplayName(user) || "당신";
+  const displayName = resolveClerkDisplayName(user) || report?.name?.trim() || "당신";
 
   const freeParagraphs = useMemo(() => {
     if (!freeSummary) return [];
@@ -163,6 +180,10 @@ export default function ReportContent() {
   }, [freeParagraphs]);
 
   const isDbPaid = report?.payment_status === "paid";
+  const birthInfoComplete = useMemo(
+    () => hasCompleteBirthInfo(report),
+    [report],
+  );
   const showPaidUnified = useMemo(() => {
     if (!isDbPaid || !sajuStatus.ok) return false;
     return (
@@ -170,12 +191,10 @@ export default function ReportContent() {
     );
   }, [isDbPaid, sajuStatus.ok, reportStreaming, unifiedReport]);
   const isPremiumHeroActive =
-    isDbPaid && showPaidUnified && resultViewTab === "premium" && !deepFlow;
-
-  const birthInfoComplete = useMemo(
-    () => hasCompleteBirthInfo(report),
-    [report],
-  );
+    isDbPaid &&
+    resultViewTab === "premium" &&
+    birthInfoComplete &&
+    !deepFlow;
 
   const sheetDate = useMemo(
     () => buildISODateFromParts(sheetYear, sheetMonth, sheetDay),
@@ -344,6 +363,10 @@ export default function ReportContent() {
       return;
     }
     premiumLoadInFlightRef.current = true;
+    setPremiumFailure(null);
+    setPremiumWarnings([]);
+    setPremiumProgress("cache_check");
+    setPremiumStreamChars(0);
 
     try {
       if (regenerate) {
@@ -370,6 +393,7 @@ export default function ReportContent() {
             setUnifiedReport(persisted.text);
             setSajuStatus({ attempted: true, ok: true });
             premiumPipelineStartedRef.current = true;
+            setPremiumProgress("done");
             return;
           }
         } catch (e) {
@@ -386,6 +410,10 @@ export default function ReportContent() {
       }
       premiumPipelineStartedRef.current = true;
       setPremiumLoading(true);
+      logPremiumPipelineStage(reportId, "start", {
+        trigger: "loadPremiumReport",
+        patterns_loaded: Boolean(surveyContextRef.current.patterns),
+      });
 
       const result = await runPremiumReportPipelineOnce(
         reportId,
@@ -393,10 +421,14 @@ export default function ReportContent() {
         surveyContextRef.current.interpretations,
         surveyContextRef.current.patterns,
         {
-          onStreamChunk: (acc) => setUnifiedReport(acc),
+          onStreamChunk: (acc) => {
+            setUnifiedReport(acc);
+            setPremiumStreamChars(acc.length);
+          },
           onStreamingChange: setReportStreaming,
+          onProgress: setPremiumProgress,
         },
-        { regenerate },
+        { regenerate, initialMeta: premiumMetaRef.current },
       );
 
       setSajuStatus(result.sajuStatus);
@@ -404,18 +436,27 @@ export default function ReportContent() {
       if (result.freeSummary && !freeSummary) {
         setFreeSummary(result.freeSummary);
       }
+      setPremiumWarnings(result.warnings);
+
       if (result.unifiedReport?.trim()) {
         setUnifiedReport(result.unifiedReport);
         writeUnifiedReportCache(reportId, result.unifiedReport);
+        setPremiumFailure(
+          result.failure === "persist_failed" ? "persist_failed" : null,
+        );
         if (regenerate) {
           logPremiumContentSource(reportId, "regeneration", "ui-complete");
         }
+      } else {
+        setPremiumFailure(result.failure ?? "unknown");
       }
     } catch (e) {
       console.error("심화 리포트 생성 실패:", e);
       premiumPipelineStartedRef.current = false;
+      setPremiumFailure("unknown");
     } finally {
       setPremiumLoading(false);
+      setPremiumProgress(null);
       premiumLoadInFlightRef.current = false;
     }
   }, [
@@ -436,6 +477,21 @@ export default function ReportContent() {
     );
     void loadPremiumReport();
   }, [reportId, router, loadPremiumReport]);
+
+  const handleRegenerateIntegrated = useCallback(() => {
+    if (!reportId) return;
+    clearUnifiedReportCache(reportId);
+    clearPremiumPipelineLock(reportId);
+    premiumPipelineStartedRef.current = false;
+    premiumLoadInFlightRef.current = false;
+    setPremiumFailure(null);
+    setPremiumWarnings([]);
+    setUnifiedReport(null);
+    void router.replace(
+      `/result?id=${encodeURIComponent(reportId)}&view=premium&regenerateIntegrated=1`,
+      { scroll: false },
+    );
+  }, [reportId, router]);
 
   async function handleInviteFriend() {
     if (!reportId || inviteUsed || inviteBusy) return;
@@ -548,18 +604,11 @@ export default function ReportContent() {
         };
         localPatterns = patterns;
 
-        await Promise.all(
-          Object.keys(patterns).map(async (key) => {
-            const pattern = patterns[key];
-            const { data } = await supabase
-              .from("pattern_base")
-              .select("interpretation")
-              .eq("domain", key)
-              .eq("pattern", pattern.trim())
-              .maybeSingle();
-            localInterpretations[key] = data?.interpretation ?? "해석 없음";
-          }),
-        );
+        Object.keys(patterns).forEach((key) => {
+          const pattern = patterns[key];
+          localInterpretations[key] =
+            getPatternInterpretation(key, pattern) ?? "해석 없음";
+        });
         setInterpretations(localInterpretations);
       }
 
@@ -594,42 +643,39 @@ export default function ReportContent() {
       }
 
       try {
-        const { data: reportData } = await supabase
-          .from("reports")
-          .select("*")
-          .eq("id", reportId)
-          .maybeSingle();
+        const [{ data: reportData }, metaResult] = await Promise.all([
+          supabase.from("reports").select("*").eq("id", reportId).maybeSingle(),
+          fetchPremiumPipelineMetaClient(reportId, {
+            regenerate: regenerateIntegratedFlag,
+          }),
+        ]);
 
         setReport(reportData);
+        premiumMetaRef.current =
+          metaResult.status === "ok" ? metaResult.meta : null;
 
         if (
           reportData?.payment_status === "paid" &&
           hasCompleteBirthInfo(reportData)
         ) {
-          try {
-            const persisted = await fetchIntegratedAnalysisClient(reportId, {
-              regenerate: regenerateIntegratedFlag,
-            });
-            if (persisted.ok) {
-              hadDbPremium = true;
-              setUnifiedReport(persisted.text);
-              setSajuStatus({ attempted: true, ok: true });
-              premiumPipelineStartedRef.current = true;
-            } else if (!sessionPreview) {
-              setUnifiedReport(null);
-            }
-          } catch {
-            if (!sessionPreview) {
-              setUnifiedReport(null);
-            }
+          const cachedPremium = premiumMetaRef.current?.premium_result?.trim();
+          if (cachedPremium && !regenerateIntegratedFlag) {
+            hadDbPremium = true;
+            setUnifiedReport(cachedPremium);
+            writeUnifiedReportCache(reportId, cachedPremium);
+            setSajuStatus({ attempted: true, ok: true });
+            premiumPipelineStartedRef.current = true;
+            logPremiumContentSource(reportId, "db", "fetchCore-parallel-meta");
+          } else if (!sessionPreview) {
+            setUnifiedReport(null);
           }
         } else if (!sessionPreview) {
           setUnifiedReport(null);
         }
 
+        await loadSurveyPatterns(reportId);
         setDataLoading(false);
 
-        void loadSurveyPatterns(reportId);
         if (viewParam !== "premium") {
           void loadBasicAnalysisForResult(reportId);
         }
@@ -663,7 +709,7 @@ export default function ReportContent() {
     if (resultViewTab !== "premium") return;
     if (!hasCompleteBirthInfo(report)) return;
     void loadPremiumReport();
-  }, [loading, report, resultViewTab, loadPremiumReport]);
+  }, [loading, report, resultViewTab, loadPremiumReport, regenerateIntegratedFlag]);
 
   if (loading) {
     return (
@@ -716,6 +762,7 @@ export default function ReportContent() {
             paidSummary ||
             showPaidUnified ||
             inviteUsed ||
+            (isDbPaid && resultViewTab === "premium" && birthInfoComplete) ||
             (isDbPaid && !(birthInfoComplete && sajuStatus.ok)) ||
             deepFlow) &&
             isPremiumHeroActive && (
@@ -729,29 +776,57 @@ export default function ReportContent() {
                   </h1>
                 </header>
                 {unifiedReport?.trim() ? (
-                  <GlassCard className="p-4 sm:p-6">
-                    <UnifiedReportMarkdown content={unifiedReport} />
-                  </GlassCard>
+                  <div className="space-y-3">
+                    {(premiumFailure === "persist_failed" ||
+                      premiumWarnings.includes("survey_incomplete") ||
+                      premiumWarnings.includes("markdown_parse_fallback") ||
+                      premiumWarnings.includes("low_part_count")) && (
+                      <p className="rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-center text-xs leading-relaxed text-amber-100/90">
+                        {premiumFailure === "persist_failed"
+                          ? getPremiumFailureMessage("persist_failed")
+                          : premiumWarnings.includes("survey_incomplete")
+                            ? getPremiumFailureMessage("survey_incomplete")
+                            : premiumWarnings.includes("markdown_parse_fallback")
+                              ? "Part 구분이 일부 단순 표시로 보일 수 있어요."
+                              : "Part 일부만 생성됐을 수 있어요. ‘다시 생성’으로 보완할 수 있어요."}
+                      </p>
+                    )}
+                    <GlassCard className="min-w-0 overflow-visible p-4 sm:p-6">
+                      <UnifiedReportMarkdown
+                        content={unifiedReport}
+                        reportId={reportId}
+                      />
+                    </GlassCard>
+                    <div className="flex justify-center pt-1">
+                      <button
+                        type="button"
+                        className="text-xs text-[var(--space-text-muted)] underline decoration-white/25 underline-offset-2 hover:text-[var(--space-text)]"
+                        onClick={handleRegenerateIntegrated}
+                      >
+                        심화 리포트 다시 생성
+                      </button>
+                    </div>
+                  </div>
                 ) : premiumLoading || reportStreaming ? (
-                  <ReportSectionLoading label="심화 리포트를 준비하는 중…" />
+                  <PremiumReportProgressPanel
+                    stage={premiumProgress}
+                    streaming={reportStreaming}
+                    streamedChars={premiumStreamChars}
+                  />
                 ) : (
-                  <GlassCard className="space-y-4 p-5 text-center">
-                    <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
-                      심화 리포트를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
-                    </p>
-                    <GlowButton
-                      type="button"
-                      variant="secondary"
-                      className="w-full"
-                      onClick={() => {
+                  <GlassCard>
+                    <PremiumReportErrorPanel
+                      failure={premiumFailure}
+                      showRegenerate={Boolean(regenerateIntegratedFlag)}
+                      onRegenerate={handleRegenerateIntegrated}
+                      onRetry={() => {
                         premiumPipelineStartedRef.current = false;
                         premiumLoadInFlightRef.current = false;
                         clearPremiumPipelineLock(reportId);
+                        setPremiumFailure(null);
                         void loadPremiumReport();
                       }}
-                    >
-                      다시 시도
-                    </GlowButton>
+                    />
                   </GlassCard>
                 )}
               </div>
@@ -1026,8 +1101,13 @@ export default function ReportContent() {
                   {isDbPaid &&
                     resultViewTab === "premium" &&
                     (premiumLoading || reportStreaming) &&
-                    !showPaidUnified && (
-                      <ReportSectionLoading label="심화 리포트를 준비하는 중…" />
+                    !showPaidUnified &&
+                    !isPremiumHeroActive && (
+                      <PremiumReportProgressPanel
+                        stage={premiumProgress}
+                        streaming={reportStreaming}
+                        streamedChars={premiumStreamChars}
+                      />
                     )}
                 </>
               )}

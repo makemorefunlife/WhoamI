@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { buildHomeResume } from "@/lib/home/homeResume";
+import { buildGuestHomeResume, buildHomeResume } from "@/lib/home/homeResume";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -11,10 +11,8 @@ export const runtime = "nodejs";
  */
 export async function GET(req: Request) {
   try {
+    const reportIdHint = new URL(req.url).searchParams.get("reportId")?.trim();
     const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
-    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -26,8 +24,25 @@ export async function GET(req: Request) {
       );
     }
 
-    const reportIdHint = new URL(req.url).searchParams.get("reportId")?.trim();
     const supabase = createServiceRoleClient(url, serviceKey);
+
+    if (!userId) {
+      if (!reportIdHint) {
+        return NextResponse.json(
+          { error: "로그인이 필요합니다." },
+          { status: 401 },
+        );
+      }
+      const guestPayload = await buildGuestHomeResume(supabase, reportIdHint);
+      if (!guestPayload) {
+        return NextResponse.json(
+          { error: "이 리포트는 로그인이 필요합니다." },
+          { status: 401 },
+        );
+      }
+      return NextResponse.json(guestPayload);
+    }
+
     const payload = await buildHomeResume(
       supabase,
       userId,

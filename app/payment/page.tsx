@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlassCard from "@/components/space/GlassCard";
-import TossPaymentFlow from "@/components/TossPaymentFlow";
 
 function PaymentFallback() {
   return (
@@ -169,7 +168,22 @@ function PaymentContent() {
             </section>
 
             <div className="border-t border-[var(--space-border)] pt-6">
-              <TossPaymentFlow requireReportId variant="product" />
+              <div className="space-y-4 text-center">
+                <p className="text-sm leading-relaxed text-[var(--space-text-muted)]">
+                  결제 연동을 새로 준비 중이에요. 토스 테스트·샌드박스 결제는
+                  제거되었습니다.
+                </p>
+                <p className="text-xs text-[var(--space-text-muted)]">
+                  Deep Self는 새 결제 수단 연동 후 Dashboard에서 이용할 수
+                  있어요.
+                </p>
+                <Link
+                  href={`/dashboard?reportId=${encodeURIComponent(reportId)}`}
+                  className="inline-flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-[var(--space-border)] bg-white/[0.06] py-3 text-sm font-medium text-[var(--space-text)] transition hover:bg-white/[0.09]"
+                >
+                  탐사실로 돌아가기
+                </Link>
+              </div>
             </div>
           </GlassCard>
 

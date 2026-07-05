@@ -1,0 +1,702 @@
+[
+  {
+    "id": 21,
+    "day_master_stem": "byeong",
+    "target_stem": "gap",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 22,
+    "day_master_stem": "byeong",
+    "target_stem": "eul",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 23,
+    "day_master_stem": "byeong",
+    "target_stem": "byeong",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 24,
+    "day_master_stem": "byeong",
+    "target_stem": "jeong",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 25,
+    "day_master_stem": "byeong",
+    "target_stem": "mu",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 26,
+    "day_master_stem": "byeong",
+    "target_stem": "gi",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 27,
+    "day_master_stem": "byeong",
+    "target_stem": "gyeong",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 28,
+    "day_master_stem": "byeong",
+    "target_stem": "sin",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 29,
+    "day_master_stem": "byeong",
+    "target_stem": "im",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 30,
+    "day_master_stem": "byeong",
+    "target_stem": "gye",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 11,
+    "day_master_stem": "eul",
+    "target_stem": "gap",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 12,
+    "day_master_stem": "eul",
+    "target_stem": "eul",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 13,
+    "day_master_stem": "eul",
+    "target_stem": "byeong",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 14,
+    "day_master_stem": "eul",
+    "target_stem": "jeong",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 15,
+    "day_master_stem": "eul",
+    "target_stem": "mu",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 16,
+    "day_master_stem": "eul",
+    "target_stem": "gi",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 17,
+    "day_master_stem": "eul",
+    "target_stem": "gyeong",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 18,
+    "day_master_stem": "eul",
+    "target_stem": "sin",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 19,
+    "day_master_stem": "eul",
+    "target_stem": "im",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 20,
+    "day_master_stem": "eul",
+    "target_stem": "gye",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 1,
+    "day_master_stem": "gap",
+    "target_stem": "gap",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 2,
+    "day_master_stem": "gap",
+    "target_stem": "eul",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 3,
+    "day_master_stem": "gap",
+    "target_stem": "byeong",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 4,
+    "day_master_stem": "gap",
+    "target_stem": "jeong",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 5,
+    "day_master_stem": "gap",
+    "target_stem": "mu",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 6,
+    "day_master_stem": "gap",
+    "target_stem": "gi",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 7,
+    "day_master_stem": "gap",
+    "target_stem": "gyeong",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 8,
+    "day_master_stem": "gap",
+    "target_stem": "sin",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 9,
+    "day_master_stem": "gap",
+    "target_stem": "im",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 10,
+    "day_master_stem": "gap",
+    "target_stem": "gye",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 51,
+    "day_master_stem": "gi",
+    "target_stem": "gap",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 52,
+    "day_master_stem": "gi",
+    "target_stem": "eul",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 53,
+    "day_master_stem": "gi",
+    "target_stem": "byeong",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 54,
+    "day_master_stem": "gi",
+    "target_stem": "jeong",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 55,
+    "day_master_stem": "gi",
+    "target_stem": "mu",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 56,
+    "day_master_stem": "gi",
+    "target_stem": "gi",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 57,
+    "day_master_stem": "gi",
+    "target_stem": "gyeong",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 58,
+    "day_master_stem": "gi",
+    "target_stem": "sin",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 59,
+    "day_master_stem": "gi",
+    "target_stem": "im",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 60,
+    "day_master_stem": "gi",
+    "target_stem": "gye",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 91,
+    "day_master_stem": "gye",
+    "target_stem": "gap",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 92,
+    "day_master_stem": "gye",
+    "target_stem": "eul",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 93,
+    "day_master_stem": "gye",
+    "target_stem": "byeong",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 94,
+    "day_master_stem": "gye",
+    "target_stem": "jeong",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 95,
+    "day_master_stem": "gye",
+    "target_stem": "mu",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 96,
+    "day_master_stem": "gye",
+    "target_stem": "gi",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 97,
+    "day_master_stem": "gye",
+    "target_stem": "gyeong",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 98,
+    "day_master_stem": "gye",
+    "target_stem": "sin",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 99,
+    "day_master_stem": "gye",
+    "target_stem": "im",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 100,
+    "day_master_stem": "gye",
+    "target_stem": "gye",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 61,
+    "day_master_stem": "gyeong",
+    "target_stem": "gap",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 62,
+    "day_master_stem": "gyeong",
+    "target_stem": "eul",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 63,
+    "day_master_stem": "gyeong",
+    "target_stem": "byeong",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 64,
+    "day_master_stem": "gyeong",
+    "target_stem": "jeong",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 65,
+    "day_master_stem": "gyeong",
+    "target_stem": "mu",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 66,
+    "day_master_stem": "gyeong",
+    "target_stem": "gi",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 67,
+    "day_master_stem": "gyeong",
+    "target_stem": "gyeong",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 68,
+    "day_master_stem": "gyeong",
+    "target_stem": "sin",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 69,
+    "day_master_stem": "gyeong",
+    "target_stem": "im",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 70,
+    "day_master_stem": "gyeong",
+    "target_stem": "gye",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 81,
+    "day_master_stem": "im",
+    "target_stem": "gap",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 82,
+    "day_master_stem": "im",
+    "target_stem": "eul",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 83,
+    "day_master_stem": "im",
+    "target_stem": "byeong",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 84,
+    "day_master_stem": "im",
+    "target_stem": "jeong",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 85,
+    "day_master_stem": "im",
+    "target_stem": "mu",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 86,
+    "day_master_stem": "im",
+    "target_stem": "gi",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 87,
+    "day_master_stem": "im",
+    "target_stem": "gyeong",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 88,
+    "day_master_stem": "im",
+    "target_stem": "sin",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 89,
+    "day_master_stem": "im",
+    "target_stem": "im",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 90,
+    "day_master_stem": "im",
+    "target_stem": "gye",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 31,
+    "day_master_stem": "jeong",
+    "target_stem": "gap",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 32,
+    "day_master_stem": "jeong",
+    "target_stem": "eul",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 33,
+    "day_master_stem": "jeong",
+    "target_stem": "byeong",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 34,
+    "day_master_stem": "jeong",
+    "target_stem": "jeong",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 35,
+    "day_master_stem": "jeong",
+    "target_stem": "mu",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 36,
+    "day_master_stem": "jeong",
+    "target_stem": "gi",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 37,
+    "day_master_stem": "jeong",
+    "target_stem": "gyeong",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 38,
+    "day_master_stem": "jeong",
+    "target_stem": "sin",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 39,
+    "day_master_stem": "jeong",
+    "target_stem": "im",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 40,
+    "day_master_stem": "jeong",
+    "target_stem": "gye",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 41,
+    "day_master_stem": "mu",
+    "target_stem": "gap",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 42,
+    "day_master_stem": "mu",
+    "target_stem": "eul",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 43,
+    "day_master_stem": "mu",
+    "target_stem": "byeong",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 44,
+    "day_master_stem": "mu",
+    "target_stem": "jeong",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 45,
+    "day_master_stem": "mu",
+    "target_stem": "mu",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 46,
+    "day_master_stem": "mu",
+    "target_stem": "gi",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 47,
+    "day_master_stem": "mu",
+    "target_stem": "gyeong",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 48,
+    "day_master_stem": "mu",
+    "target_stem": "sin",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 49,
+    "day_master_stem": "mu",
+    "target_stem": "im",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 50,
+    "day_master_stem": "mu",
+    "target_stem": "gye",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 71,
+    "day_master_stem": "sin",
+    "target_stem": "gap",
+    "ten_god_code": "jeongjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 72,
+    "day_master_stem": "sin",
+    "target_stem": "eul",
+    "ten_god_code": "pyeonjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 73,
+    "day_master_stem": "sin",
+    "target_stem": "byeong",
+    "ten_god_code": "jeonggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 74,
+    "day_master_stem": "sin",
+    "target_stem": "jeong",
+    "ten_god_code": "pyeongwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 75,
+    "day_master_stem": "sin",
+    "target_stem": "mu",
+    "ten_god_code": "jeongin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 76,
+    "day_master_stem": "sin",
+    "target_stem": "gi",
+    "ten_god_code": "pyeonin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 77,
+    "day_master_stem": "sin",
+    "target_stem": "gyeong",
+    "ten_god_code": "geopjae",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 78,
+    "day_master_stem": "sin",
+    "target_stem": "sin",
+    "ten_god_code": "bigyeon",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 79,
+    "day_master_stem": "sin",
+    "target_stem": "im",
+    "ten_god_code": "sanggwan",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  },
+  {
+    "id": 80,
+    "day_master_stem": "sin",
+    "target_stem": "gye",
+    "ten_god_code": "siksin",
+    "created_at": "2026-03-16T08:20:28.497431+00:00"
+  }
+]

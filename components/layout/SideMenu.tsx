@@ -1,24 +1,71 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function MenuRow({
   href,
   children,
   onNavigate,
+  indent = 0,
 }: {
   href: string;
   children: React.ReactNode;
   onNavigate: () => void;
+  indent?: 0 | 1 | 2;
 }) {
+  const pad =
+    indent === 2 ? "pl-8" : indent === 1 ? "pl-5" : "pl-3";
   return (
     <Link
       href={href}
       onClick={onNavigate}
-      className="block rounded-lg px-3 py-2.5 text-sm text-white/90 transition hover:bg-white/[0.06]"
+      className={`block rounded-lg ${pad} py-2.5 text-sm text-white/90 transition hover:bg-white/[0.06]`}
     >
       {children}
     </Link>
+  );
+}
+
+function HubMenuRow({
+  basePath,
+  query = "",
+  children,
+  onNavigate,
+  indent = 1,
+}: {
+  basePath: string;
+  query?: string;
+  children: React.ReactNode;
+  onNavigate: () => void;
+  indent?: 1 | 2;
+}) {
+  const router = useRouter();
+  const pad = indent === 2 ? "pl-8" : "pl-5";
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const id =
+          typeof window !== "undefined"
+            ? localStorage.getItem("reportId")?.trim() ?? ""
+            : "";
+        const qs = new URLSearchParams();
+        if (id) qs.set("myReportId", id);
+        if (query) {
+          for (const [k, v] of new URLSearchParams(query)) {
+            qs.set(k, v);
+          }
+        }
+        const suffix = qs.toString() ? `?${qs.toString()}` : "";
+        router.push(`${basePath}${suffix}`);
+        onNavigate();
+      }}
+      className={`block w-full rounded-lg ${pad} py-2.5 text-left text-sm text-white/90 transition hover:bg-white/[0.06]`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -34,8 +81,16 @@ function SubBlock({
       <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
         {title}
       </p>
-      <div className="space-y-0.5 pl-1">{children}</div>
+      <div className="space-y-0.5">{children}</div>
     </div>
+  );
+}
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-5 pb-0.5 pt-2 text-[11px] font-medium text-white/50">
+      {children}
+    </p>
   );
 }
 
@@ -87,12 +142,29 @@ export default function SideMenu({
           </MenuRow>
 
           <SubBlock title="🌌 탐험하기">
-            <MenuRow href="/" onNavigate={onClose}>
-              ✨ 새로운 기본 탐사
+            <MenuRow href="/" onNavigate={onClose} indent={1}>
+              ✨ 새로운 기본탐사
             </MenuRow>
-            <MenuRow href="/relationships" onNavigate={onClose}>
-              👥 새로운 관계 탐사
+            <MenuRow href="/report" onNavigate={onClose} indent={1}>
+              📋 기본탐사
             </MenuRow>
+            <GroupLabel>관계탐사</GroupLabel>
+            <HubMenuRow
+              basePath="/relationships"
+              query="section=list"
+              onNavigate={onClose}
+              indent={2}
+            >
+              👥 친구 분석
+            </HubMenuRow>
+            <HubMenuRow
+              basePath="/relationships"
+              query="section=add"
+              onNavigate={onClose}
+              indent={2}
+            >
+              ➕ 친구 추가
+            </HubMenuRow>
           </SubBlock>
 
           <SubBlock title="📚 탐사 안내">

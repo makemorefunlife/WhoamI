@@ -3,6 +3,7 @@ import {
   type PremiumPipelineCallbacks,
   type PremiumPipelineResult,
 } from "@/lib/report/runPremiumReportPipeline";
+import type { PremiumPipelineMeta } from "@/lib/report/fetchPremiumPipelineMetaClient";
 
 const inFlightByReportId = new Map<string, Promise<PremiumPipelineResult>>();
 
@@ -13,7 +14,7 @@ export function runPremiumReportPipelineOnce(
   interpretations: Record<string, string>,
   patterns: Record<string, string> | null,
   callbacks?: PremiumPipelineCallbacks,
-  options?: { regenerate?: boolean },
+  options?: { regenerate?: boolean; initialMeta?: PremiumPipelineMeta | null },
 ): Promise<PremiumPipelineResult> {
   const id = reportId.trim();
   if (!id) {

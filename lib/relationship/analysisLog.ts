@@ -1,0 +1,208 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import {
+  parseRelationshipKind,
+  type RelationshipKind,
+} from "@/lib/relationship/relationshipKind";
+
+export type AnalysisLogLevel = "basic" | "premium";
+
+export type AnalysisLogRow = {
+  id: string;
+  relationship_report_id: string;
+  viewer_report_id: string;
+  relationship_kind: RelationshipKind | "unspecified";
+  analysis_level: AnalysisLogLevel;
+  result_format: string;
+  result_snapshot: Record<string, unknown>;
+  created_at: string;
+};
+
+function buildLogSummary(
+  resultFormat: string,
+  snapshot: Record<string, unknown>,
+): { title: string; subtitle: string } {
+  if (resultFormat === ROMANTIC_SAJU_DEEP_FORMAT) {
+    const report = snapshot.report as {
+      section_1_summary?: {
+        relationship_name?: string;
+        one_line_summary?: string;
+      };
+    } | undefined;
+    const s1 = report?.section_1_summary;
+    return {
+      title: s1?.relationship_name?.trim() || "연인 사주 심화",
+      subtitle: s1?.one_line_summary?.trim() || "",
+    };
+  }
+  return {
+    title: "관계 기본 분석",
+    subtitle: "네 가지 관점으로 정리한 결과",
+  };
+}
+
+export function buildAnalysisLogSnapshot(params: {
+  resultFormat: string;
+  payload: unknown;
+  viewerReportId: string;
+}): Record<string, unknown> {
+  const { resultFormat, payload, viewerReportId } = params;
+  const base = {
+    viewer_report_id: viewerReportId,
+    saved_at: new Date().toISOString(),
+  };
+
+  if (resultFormat === ROMANTIC_SAJU_DEEP_FORMAT) {
+    const p = payload as { report?: unknown };
+    return { ...base, report: p.report ?? p };
+  }
+
+  const p = payload as { perspectives?: Record<string, unknown> };
+  const slice = p.perspectives?.[viewerReportId] ?? null;
+  return { ...base, perspective: slice, full: p };
+}
+
+export async function insertRelationshipAnalysisLog(
+  supabase: SupabaseClient,
+  params: {
+    relationshipReportId: string;
+    viewerReportId: string;
+    relationshipKind: RelationshipKind | "unspecified";
+    analysisLevel: AnalysisLogLevel;
+    resultFormat: string;
+    payload: unknown;
+  },
+): Promise<string | null> {
+  const viewerReportId = params.viewerReportId.trim();
+  if (!viewerReportId) return null;
+
+  const snapshot = buildAnalysisLogSnapshot({
+    resultFormat: params.resultFormat,
+    payload: params.payload,
+    viewerReportId,
+  });
+
+  const { data, error } = await supabase
+    .from("relationship_analysis_logs")
+    .insert({
+      relationship_report_id: params.relationshipReportId,
+      viewer_report_id: viewerReportId,
+      relationship_kind: params.relationshipKind,
+      analysis_level: params.analysisLevel,
+      result_format: params.resultFormat,
+      result_snapshot: snapshot,
+    })
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("relationship_analysis_logs insert:", error.message);
+    return null;
+  }
+  return data?.id ?? null;
+}
+
+export async function listRelationshipAnalysisLogs(
+  supabase: SupabaseClient,
+  relationshipReportId: string,
+  viewerReportId: string,
+  limit = 30,
+): Promise<
+  (AnalysisLogRow & { summary_title: string; summary_subtitle: string })[]
+> {
+  const { data, error } = await supabase
+    .from("relationship_analysis_logs")
+    .select(
+      "id, relationship_report_id, viewer_report_id, relationship_kind, analysis_level, result_format, result_snapshot, created_at",
+    )
+    .eq("relationship_report_id", relationshipReportId)
+    .eq("viewer_report_id", viewerReportId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("relationship_analysis_logs list:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => {
+    const snap = (row.result_snapshot ?? {}) as Record<string, unknown>;
+    const summary = buildLogSummary(row.result_format, snap);
+    return {
+      ...(row as AnalysisLogRow),
+      relationship_kind: parseRelationshipKind(
+        row.relationship_kind,
+        "unspecified",
+      ) as AnalysisLogRow["relationship_kind"],
+      summary_title: summary.title,
+      summary_subtitle: summary.subtitle,
+    };
+  });
+}
+
+export async function fetchFavoriteRelationshipIds(
+  supabase: SupabaseClient,
+  viewerReportId: string,
+): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("relationship_favorites")
+    .select("relationship_report_id")
+    .eq("viewer_report_id", viewerReportId);
+
+  if (error) {
+    if (error.code === "42P01") return new Set();
+    console.error("relationship_favorites list:", error.message);
+    return new Set();
+  }
+  return new Set((data ?? []).map((r) => r.relationship_report_id as string));
+}
+
+export async function isRelationshipFavorite(
+  supabase: SupabaseClient,
+  viewerReportId: string,
+  relationshipReportId: string,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("relationship_favorites")
+    .select("relationship_report_id")
+    .eq("viewer_report_id", viewerReportId)
+    .eq("relationship_report_id", relationshipReportId)
+    .maybeSingle();
+
+  if (error) return false;
+  return Boolean(data);
+}
+
+export async function setRelationshipFavorite(
+  supabase: SupabaseClient,
+  viewerReportId: string,
+  relationshipReportId: string,
+  favorited: boolean,
+): Promise<boolean> {
+  if (favorited) {
+    const { error } = await supabase.from("relationship_favorites").upsert(
+      {
+        viewer_report_id: viewerReportId,
+        relationship_report_id: relationshipReportId,
+      },
+      { onConflict: "viewer_report_id,relationship_report_id" },
+    );
+    if (error) {
+      console.error("relationship_favorites upsert:", error.message);
+      return false;
+    }
+    return true;
+  }
+
+  const { error } = await supabase
+    .from("relationship_favorites")
+    .delete()
+    .eq("viewer_report_id", viewerReportId)
+    .eq("relationship_report_id", relationshipReportId);
+
+  if (error) {
+    console.error("relationship_favorites delete:", error.message);
+    return false;
+  }
+  return true;
+}

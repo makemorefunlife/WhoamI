@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import {
   deleteReportAnalysis,
-  readPersistedBasicAnalysis,
+  readPersistedAnalysesBatch,
   readPersistedAstrologyAnalysisWithMeta,
   readPersistedDetailedSurveyAnalysis,
   readPersistedIntegratedAnalysis,
@@ -11,6 +11,7 @@ import {
   writePersistedDetailedSurveyAnalysis,
   writePersistedIntegratedAnalysis,
 } from "@/lib/report/reportAnalyses";
+import { writePremiumAccessCache } from "@/lib/report/premiumAccessCache";
 import { logAstrologyCache } from "@/lib/report/astrologyCoordLog";
 import { decidePersistedAstrologyReuse } from "@/lib/report/astrologyCacheValidation";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
@@ -119,9 +120,21 @@ export async function GET(req: Request) {
       );
     }
 
-    const has_survey = await isSurveyCompleteForReport(supabase, reportId);
     const has_premium =
       report.payment_status === "paid" || report.plan_type === "paid";
+    writePremiumAccessCache(reportId, has_premium);
+
+    const [has_survey, analysesBundle] = await Promise.all([
+      isSurveyCompleteForReport(supabase, reportId),
+      has_premium
+        ? readPersistedAnalysesBatch(supabase, reportId)
+        : Promise.resolve({
+            basic: null,
+            integrated: null,
+            detailed_survey: null,
+            astrology: { content: null, metadata: null },
+          }),
+    ]);
 
     let basic_result: string | null = null;
     let basic_error: string | null = null;
@@ -178,7 +191,7 @@ export async function GET(req: Request) {
 
       basic_result = regenerate
         ? null
-        : await readPersistedBasicAnalysis(supabase, reportId);
+        : analysesBundle.basic;
       if (basic_result) {
         basic_from_db = true;
       }
@@ -226,29 +239,20 @@ export async function GET(req: Request) {
           `[premium-report] reportId=${reportId} source=regeneration detail=api-integrated-and-detailed-survey-cleared`,
         );
       } else {
-        premium_result = await readPersistedIntegratedAnalysis(
-          supabase,
-          reportId,
-        );
+        premium_result = analysesBundle.integrated;
         if (premium_result) {
           integrated_from_db = true;
           console.info(
             `[premium-report] reportId=${reportId} source=db detail=api-quick-read-integrated`,
           );
         }
-        detailed_survey_result = await readPersistedDetailedSurveyAnalysis(
-          supabase,
-          reportId,
-        );
+        detailed_survey_result = analysesBundle.detailed_survey;
         if (detailed_survey_result) {
           detailed_survey_from_db = true;
         }
       }
 
-      const persistedAstro = await readPersistedAstrologyAnalysisWithMeta(
-        supabase,
-        reportId,
-      );
+      const persistedAstro = analysesBundle.astrology;
       const storedFp =
         typeof persistedAstro.metadata?.location_fingerprint === "string"
           ? persistedAstro.metadata.location_fingerprint

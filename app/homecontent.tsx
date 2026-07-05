@@ -4,11 +4,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { AnimatePresence, motion } from "framer-motion";
 import { Gloria_Hallelujah } from "next/font/google";
+import {
+  applyResumeReportIdToStorage,
+  fetchHomeResumeClient,
+} from "@/lib/home/fetchHomeResumeClient";
 import { supabase } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import HomeAuthActions from "@/components/home/HomeAuthActions";
@@ -37,7 +39,6 @@ export default function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isLoaded, isSignedIn, userId } = useClerkReady();
-  const { user } = useUser();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [creatingReport, setCreatingReport] = useState(false);
   const [rocketPlaying, setRocketPlaying] = useState(false);
@@ -47,8 +48,7 @@ export default function HomeContent() {
     reportId: string | null;
     hasReport: boolean;
     surveyCompleted: boolean;
-    name: string | null;
-  }>({ loading: false, reportId: null, hasReport: false, surveyCompleted: false, name: null });
+  }>({ loading: false, reportId: null, hasReport: false, surveyCompleted: false });
   /** 홈 재방문 — 관계 허브 요약 카운트 */
   const [relCounts, setRelCounts] = useState({ pending: 0, completed: 0 });
 
@@ -79,17 +79,6 @@ export default function HomeContent() {
 
   useEffect(() => {
     if (!isLoaded) return;
-    if (!isSignedIn) {
-      setResume({
-        loading: false,
-        reportId: null,
-        hasReport: false,
-        surveyCompleted: false,
-        name: null,
-      });
-      setRelCounts({ pending: 0, completed: 0 });
-      return;
-    }
 
     let cancelled = false;
 
@@ -98,77 +87,57 @@ export default function HomeContent() {
         ? localStorage.getItem("reportId")?.trim() ?? ""
         : "";
 
+    if (!isSignedIn && !hint) {
+      setResume({
+        loading: false,
+        reportId: null,
+        hasReport: false,
+        surveyCompleted: false,
+      });
+      setRelCounts({ pending: 0, completed: 0 });
+      return;
+    }
+
     if (hint) {
       setResume({
         loading: true,
         reportId: hint,
         hasReport: true,
         surveyCompleted: false,
-        name: resolveClerkDisplayName(user),
       });
     } else {
       setResume((s) => ({ ...s, loading: true }));
     }
 
     void (async () => {
-      const url = hint
-        ? `/api/home/resume?reportId=${encodeURIComponent(hint)}`
-        : "/api/home/resume";
-
       try {
-        const res = await fetch(url);
-        const data = (await res.json()) as {
-          error?: string;
-          reportId?: string | null;
-          hasReport?: boolean;
-          surveyCompleted?: boolean;
-          name?: string | null;
-          invalidHint?: boolean;
-          relationshipSummary?: { pending: number; completed: number };
-        };
-
+        const result = await fetchHomeResumeClient(hint || undefined);
         if (cancelled) return;
 
-        if (res.status === 401) {
+        if (!result.ok) {
+          if (result.status === 401) {
+            setResume({
+              loading: false,
+              reportId: isSignedIn ? null : hint || null,
+              hasReport: Boolean(hint),
+              surveyCompleted: false,
+            });
+            setRelCounts({ pending: 0, completed: 0 });
+            return;
+          }
+          console.error("home/resume:", result.error);
           setResume({
             loading: false,
             reportId: null,
             hasReport: false,
             surveyCompleted: false,
-            name: null,
           });
           setRelCounts({ pending: 0, completed: 0 });
           return;
         }
 
-        if (!res.ok) {
-          console.error("home/resume:", data.error ?? res.status);
-          setResume({
-            loading: false,
-            reportId: null,
-            hasReport: false,
-            surveyCompleted: false,
-            name: null,
-          });
-          setRelCounts({ pending: 0, completed: 0 });
-          return;
-        }
-
-        if (data.invalidHint) {
-          localStorage.removeItem("reportId");
-        }
-
-        const reportId =
-          typeof data.reportId === "string" && data.reportId.trim()
-            ? data.reportId.trim()
-            : null;
-
-        if (reportId) {
-          localStorage.setItem("reportId", reportId);
-        } else {
-          localStorage.removeItem("reportId");
-        }
-
+        const data = result.data;
+        const reportId = applyResumeReportIdToStorage(data);
         const summary = data.relationshipSummary ?? {
           pending: 0,
           completed: 0,
@@ -179,7 +148,6 @@ export default function HomeContent() {
           reportId,
           hasReport: data.hasReport === true,
           surveyCompleted: data.surveyCompleted === true,
-          name: typeof data.name === "string" ? data.name : null,
         });
         setRelCounts({
           pending: summary.pending ?? 0,
@@ -193,7 +161,6 @@ export default function HomeContent() {
             reportId: null,
             hasReport: false,
             surveyCompleted: false,
-            name: null,
           });
           setRelCounts({ pending: 0, completed: 0 });
         }
@@ -203,18 +170,18 @@ export default function HomeContent() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, isSignedIn, user]);
+  }, [isLoaded, isSignedIn]);
 
   const launchSurvey = useCallback(
-    async (nameTrimmed: string) => {
+    async () => {
       const inviteToken = localStorage.getItem("inviteToken") || "";
       setCreatingReport(true);
       const { data, error } = await supabase
         .from("reports")
         .insert([
           {
-            name: nameTrimmed,
-            clerk_user_id: userId,
+            name: null,
+            clerk_user_id: userId ?? null,
             birth_date: null,
             birth_time: null,
             birth_place: null,
@@ -239,7 +206,6 @@ export default function HomeContent() {
         reportId: data.id,
         hasReport: true,
         surveyCompleted: false,
-        name: nameTrimmed,
       });
       if (inviteToken) localStorage.setItem("inviteToken", inviteToken);
 
@@ -248,9 +214,9 @@ export default function HomeContent() {
 
       window.setTimeout(() => {
         if (inviteToken) {
-          router.push(`/survey?token=${encodeURIComponent(inviteToken)}`);
+          router.push(`/survey-v2?token=${encodeURIComponent(inviteToken)}`);
         } else {
-          router.push("/survey");
+          router.push("/survey-v2");
         }
       }, 1400);
     },
@@ -258,21 +224,18 @@ export default function HomeContent() {
   );
 
   const onStartExploration = useCallback(() => {
-    if (!userId || creatingReport || rocketPlaying) return;
-    const displayName = resolveClerkDisplayName(user);
-    void launchSurvey(displayName);
-  }, [userId, user, creatingReport, rocketPlaying, launchSurvey]);
+    if (creatingReport || rocketPlaying) return;
+    void launchSurvey();
+  }, [creatingReport, rocketPlaying, launchSurvey]);
 
   const resetResume = useCallback(() => {
     localStorage.removeItem("reportId");
-    localStorage.removeItem("surveyNickname");
     setRelCounts({ pending: 0, completed: 0 });
     setResume({
       loading: false,
       reportId: null,
       hasReport: false,
       surveyCompleted: false,
-      name: null,
     });
   }, []);
 
@@ -373,8 +336,8 @@ export default function HomeContent() {
                 시도해 주세요.
               </p>
               <p className="text-center text-xs text-white/45">
-                개발 모드에서는 <code className="text-white/60">/__clerk</code>{" "}
-                프록시가 켜져 있어야 합니다.
+                Clerk 대시보드에 이 사이트 URL(예: localhost:3000)이 허용
+                도메인으로 등록돼 있는지 확인해 주세요.
               </p>
             </div>
           }

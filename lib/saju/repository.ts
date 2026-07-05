@@ -1,94 +1,115 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  REF_EARTHLY_BRANCHES,
+  REF_HEAVENLY_STEMS,
+  REF_HIDDEN_STEMS,
+  REF_TEN_GOD_RULES,
+  REF_TEN_GODS,
+  REF_TWELVE_STAGE_RULES,
+  REF_TWELVE_STAGES,
+} from "@/lib/hardcoded/sajuReferenceData";
 
-// 천간(일간) 해석
-export async function getHeavenlyStemData(
-  supabase: SupabaseClient,
-  stemCode: string,
-) {
-  const { data } = await supabase
-    .from("ref_heavenly_stems")
-    .select("kor_name, metaphor_ko, strength_ko, weakness_ko, advice_ko")
-    .eq("code", stemCode)
-    .single();
-  return data;
+const heavenlyStemByCode = new Map(
+  REF_HEAVENLY_STEMS.map((row) => [row.code, row]),
+);
+const earthlyBranchByCode = new Map(
+  REF_EARTHLY_BRANCHES.map((row) => [row.code, row]),
+);
+const hiddenStemsByBranch = new Map<string, typeof REF_HIDDEN_STEMS>();
+for (const row of REF_HIDDEN_STEMS) {
+  const list = hiddenStemsByBranch.get(row.branch_code) ?? [];
+  list.push(row);
+  hiddenStemsByBranch.set(row.branch_code, list);
+}
+for (const [branch, rows] of hiddenStemsByBranch) {
+  rows.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  hiddenStemsByBranch.set(branch, rows);
+}
+const tenGodByCode = new Map(REF_TEN_GODS.map((row) => [row.code, row]));
+const twelveStageByCode = new Map(
+  REF_TWELVE_STAGES.map((row) => [row.code, row]),
+);
+const tenGodRuleByKey = new Map(
+  REF_TEN_GOD_RULES.map((row) => [
+    `${row.day_master_stem}:${row.target_stem}`,
+    row.ten_god_code,
+  ]),
+);
+const twelveStageRuleByKey = new Map(
+  REF_TWELVE_STAGE_RULES.map((row) => [
+    `${row.day_master_stem}:${row.target_branch}`,
+    row.stage_code,
+  ]),
+);
+
+export function getHeavenlyStemData(stemCode: string) {
+  const row = heavenlyStemByCode.get(stemCode);
+  if (!row) return null;
+  return {
+    kor_name: row.kor_name,
+    metaphor_ko: row.metaphor_ko,
+    strength_ko: row.strength_ko,
+    weakness_ko: row.weakness_ko,
+    advice_ko: row.advice_ko,
+  };
 }
 
-// 지지(일지) 해석
-export async function getEarthlyBranchData(
-  supabase: SupabaseClient,
-  branchCode: string,
-) {
-  const { data } = await supabase
-    .from("ref_earthly_branches")
-    .select("kor_name, meaning_ko, strength_ko, weakness_ko, advice_ko")
-    .eq("code", branchCode)
-    .single();
-  return data;
+export function getEarthlyBranchData(branchCode: string) {
+  const row = earthlyBranchByCode.get(branchCode);
+  if (!row) return null;
+  return {
+    kor_name: row.kor_name,
+    meaning_ko: row.meaning_ko,
+    strength_ko: row.strength_ko,
+    weakness_ko: row.weakness_ko,
+    advice_ko: row.advice_ko,
+  };
 }
 
-// 지장간 해석
-export async function getHiddenStemsData(
-  supabase: SupabaseClient,
-  branchCode: string,
-) {
-  const { data } = await supabase
-    .from("ref_hidden_stems")
-    .select("stem_code, layer_type, meaning_ko, strength_ko, weakness_ko, advice_ko")
-    .eq("branch_code", branchCode)
-    .order("display_order", { ascending: true });
-  return data || [];
+export function getHiddenStemsData(branchCode: string) {
+  const rows = hiddenStemsByBranch.get(branchCode) ?? [];
+  return rows.map((row) => ({
+    stem_code: row.stem_code,
+    layer_type: row.layer_type,
+    meaning_ko: row.meaning_ko,
+    strength_ko: row.strength_ko,
+    weakness_ko: row.weakness_ko,
+    advice_ko: row.advice_ko,
+  }));
 }
 
-// 십성 해석
-export async function getTenGodData(
-  supabase: SupabaseClient,
-  godCode: string,
-) {
-  const { data } = await supabase
-    .from("ref_ten_gods")
-    .select("kor_name, meaning_ko, strength_ko, weakness_ko, advice_ko, relationship_ko")
-    .eq("code", godCode)
-    .single();
-  return data;
+export function getTenGodData(godCode: string) {
+  const row = tenGodByCode.get(godCode);
+  if (!row) return null;
+  return {
+    kor_name: row.kor_name,
+    meaning_ko: row.meaning_ko,
+    strength_ko: row.strength_ko,
+    weakness_ko: row.weakness_ko,
+    advice_ko: row.advice_ko,
+    relationship_ko: row.relationship_ko,
+  };
 }
 
-// 12운성 해석
-export async function getTwelveStageData(
-  supabase: SupabaseClient,
-  stageCode: string,
-) {
-  const { data } = await supabase
-    .from("ref_twelve_stages")
-    .select("kor_name, meaning_ko, strength_ko, weakness_ko, advice_ko, energy_level")
-    .eq("code", stageCode)
-    .single();
-  return data;
+export function getTwelveStageData(stageCode: string) {
+  const row = twelveStageByCode.get(stageCode);
+  if (!row) return null;
+  return {
+    kor_name: row.kor_name,
+    meaning_ko: row.meaning_ko,
+    strength_ko: row.strength_ko,
+    weakness_ko: row.weakness_ko,
+    advice_ko: row.advice_ko,
+    energy_level: row.energy_level,
+  };
 }
 
-export async function calculateTenGod(
-  supabase: SupabaseClient,
-  dayStem: string,
-  targetStem: string,
-): Promise<string> {
-  const { data } = await supabase
-    .from("ref_ten_god_rules")
-    .select("ten_god_code")
-    .eq("day_master_stem", dayStem)
-    .eq("target_stem", targetStem)
-    .single();
-  return data?.ten_god_code || "bigyeon";
+export function calculateTenGod(dayStem: string, targetStem: string): string {
+  return tenGodRuleByKey.get(`${dayStem}:${targetStem}`) ?? "bigyeon";
 }
 
-export async function calculateTwelveStage(
-  supabase: SupabaseClient,
+export function calculateTwelveStage(
   dayStem: string,
   targetBranch: string,
-): Promise<string> {
-  const { data } = await supabase
-    .from("ref_twelve_stage_rules")
-    .select("stage_code")
-    .eq("day_master_stem", dayStem)
-    .eq("target_branch", targetBranch)
-    .single();
-  return data?.stage_code || "byeong";
+): string {
+  return twelveStageRuleByKey.get(`${dayStem}:${targetBranch}`) ?? "byeong";
 }

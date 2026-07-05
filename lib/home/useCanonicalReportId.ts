@@ -12,6 +12,8 @@ type UseCanonicalReportIdOptions = {
   queryParam?: string;
   /** resume API 호출 컨텍스트 로그 */
   logContext?: string;
+  /** false면 canonical로 URL을 덮어쓰지 않음 (관계 탐사실 등) */
+  syncToUrl?: boolean;
 };
 
 /**
@@ -21,6 +23,7 @@ export function useCanonicalReportId({
   urlHint,
   queryParam = "id",
   logContext = "page",
+  syncToUrl = true,
 }: UseCanonicalReportIdOptions) {
   const { isLoaded } = useAuth();
   const router = useRouter();
@@ -60,7 +63,7 @@ export function useCanonicalReportId({
       setInvalidHint(result.invalidHint);
       setResolving(false);
 
-      if (result.canonicalReportId) {
+      if (result.canonicalReportId && syncToUrl) {
         syncCanonicalToUrl(result.canonicalReportId);
       }
     }
@@ -69,7 +72,7 @@ export function useCanonicalReportId({
     return () => {
       cancelled = true;
     };
-  }, [urlHint, isLoaded, logContext, syncCanonicalToUrl]);
+  }, [urlHint, isLoaded, logContext, syncCanonicalToUrl, syncToUrl]);
 
   return {
     canonicalReportId,
