@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { polishRomanticDisplayText } from "@/lib/relationship/romanticEverydayText";
+import { polishRomanticDisplayText, stripComparisonCellSubject } from "@/lib/relationship/romanticEverydayText";
 import {
   buildRomanticScreenPlanFromStored,
   getScreen1Opening,
@@ -13,6 +13,8 @@ import type {
   DialogueTableRow,
   RomanticSajuDeepReport,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import { resolveSnapshotPanelFromReport } from "@/lib/relationship/romanticSnapshot/buildRomanticSnapshot";
+import RomanticSnapshotPanelView from "@/components/relationship/RomanticSnapshotPanel";
 
 const COMPARISON_ASPECTS = [
   "감정 표현",
@@ -65,8 +67,34 @@ function formatAdvice(item: AdviceItem): {
   };
 }
 
+function isRedundantInsightHook(slot: RomanticScreenSlot): boolean {
+  if (slot.insightId === "metaphor_combo") return true;
+  if (slot.resolvedFrom === "fallback" && slot.key === "nature") {
+    const body = polishRomanticDisplayText(slot.body);
+    if (
+      body.includes("서로 다른 리듬을 채워요") ||
+      /같은\s+.+\s+같은/.test(body)
+    ) {
+      return true;
+    }
+  }
+  const body = polishRomanticDisplayText(slot.body);
+  const headline = polishRomanticDisplayText(slot.headline);
+  if (body.includes("서로 다른 리듬을 채워요")) return true;
+  if (/같은\s+.+\s+같은/.test(body)) return true;
+  if (body.includes("바람막이가 되어") || body.includes("서로를 밝히고")) {
+    return true;
+  }
+  if (/^\d+\.\s/.test(body.trim()) && body.split(/\d+\.\s/).length > 2) {
+    const parts = body.split(/\d+\.\s/).filter(Boolean).map((s) => s.trim());
+    if (parts.length >= 2 && parts.every((p) => p === parts[0])) return true;
+  }
+  if (slot.key === "conflict" || slot.key === "action") return true;
+  return false;
+}
+
 function InsightHook({ slot }: { slot: RomanticScreenSlot | undefined }) {
-  if (!slot?.body) return null;
+  if (!slot?.body || isRedundantInsightHook(slot)) return null;
   return (
     <div className="mb-3 rounded-lg border border-[#ffd6a5]/15 bg-[#ffd6a5]/5 px-3 py-2">
       <p className="text-xs font-medium text-[#ffd6a5]/90">
@@ -97,15 +125,26 @@ function resolveScreenPlan(
 
 function mergeComparisonTable(
   rows: Array<{ aspect: string; a: string; b: string }>,
+  nameA: string,
+  nameB: string,
 ): Array<{ aspect: string; a: string; b: string }> {
   const byAspect = new Map(rows.map((r) => [r.aspect, r]));
   const merged = COMPARISON_ASPECTS.map((aspect) => {
     const hit = byAspect.get(aspect);
-    return hit ?? { aspect, a: "—", b: "—" };
+    if (!hit) return { aspect, a: "—", b: "—" };
+    return {
+      aspect,
+      a: stripComparisonCellSubject(hit.a, nameA),
+      b: stripComparisonCellSubject(hit.b, nameB),
+    };
   });
   for (const row of rows) {
     if (!COMPARISON_ASPECTS.includes(row.aspect as (typeof COMPARISON_ASPECTS)[number])) {
-      merged.push(row);
+      merged.push({
+        aspect: row.aspect,
+        a: stripComparisonCellSubject(row.a, nameA),
+        b: stripComparisonCellSubject(row.b, nameB),
+      });
     }
   }
   return merged;
@@ -116,6 +155,41 @@ function screenByKey(
   key: RomanticScreenSlot["key"],
 ): RomanticScreenSlot | undefined {
   return plan?.find((s) => s.key === key);
+}
+
+function eventScoreHint(
+  meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
+): string | null {
+  const scores = meta?.event_scores as
+    | {
+        overall?: { activation: number; benefit: number; risk: number };
+      }
+    | undefined;
+  if (!scores?.overall) return null;
+  const { activation, benefit, risk } = scores.overall;
+  return `🔥 호감 ${activation} · 🧩 케미 ${benefit} · ⚡ 예민 ${risk}`;
+}
+
+function ruleScreenTitle(
+  meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
+  key: string,
+  fallback: string,
+): string {
+  const plan = meta?.rule_screen_plan as
+    | Array<{ key: string; title: string }>
+    | undefined;
+  return plan?.find((s) => s.key === key)?.title ?? fallback;
+}
+
+function filterDialogueTable(
+  rows: DialogueTableRow[],
+): DialogueTableRow[] {
+  return rows.filter((row) => {
+    const label = String(row.label ?? row.speaker ?? "").trim();
+    if (!label) return true;
+    if (label === "결과" || label.startsWith("결과")) return false;
+    return true;
+  });
 }
 
 export default function RomanticSajuDeepReportView({
@@ -139,15 +213,17 @@ export default function RomanticSajuDeepReportView({
   const s6 = report.section_6_timeline as Record<string, Record<string, string>>;
 
   const conflict = s3?.conflict_situation;
-  const comparisonTable = mergeComparisonTable(s2.comparison_table ?? []);
-  const dialogueTable = (conflict?.dialogue_table ??
-    []) as DialogueTableRow[];
+  const comparisonTable = mergeComparisonTable(s2.comparison_table ?? [], nameA, nameB);
+  const dialogueTable = filterDialogueTable(
+    (conflict?.dialogue_table ?? []) as DialogueTableRow[],
+  );
 
   const adviceA = (s5.advice_for_a as AdviceItem[] | undefined) ?? [];
   const adviceB = (s5.advice_for_b as AdviceItem[] | undefined) ?? [];
 
   const screenPlan = resolveScreenPlan(report);
   const opening = getScreen1Opening(screenPlan, s1);
+  const snapshotPanel = resolveSnapshotPanelFromReport(report.meta);
 
   return (
     <div className="space-y-4">
@@ -159,10 +235,22 @@ export default function RomanticSajuDeepReportView({
         <p className="inline-flex rounded-full border border-[#ffd6a5]/30 bg-[#ffd6a5]/10 px-3 py-1 text-xs font-medium text-[#ffd6a5]">
           궁합 등급 {opening.grade}
         </p>
+        {eventScoreHint(report.meta) ? (
+          <p className="mt-2 text-xs leading-relaxed text-[var(--space-text-muted)]">
+            {eventScoreHint(report.meta)}
+          </p>
+        ) : null}
       </Section>
 
-      <Section title="🔍 서로의 성향">
-        <InsightHook slot={screenByKey(screenPlan, "nature")} />
+      {snapshotPanel ? (
+        <Section title="📊 관계 스냅샷">
+          <RomanticSnapshotPanelView panel={snapshotPanel} />
+        </Section>
+      ) : null}
+
+      <Section
+        title={`🔍 ${ruleScreenTitle(report.meta, "compare", "서로 비교")}`}
+      >
         <div className="overflow-x-auto rounded-lg border border-white/10">
           <table className="w-full min-w-[280px] text-left text-xs">
             <thead>
@@ -192,7 +280,9 @@ export default function RomanticSajuDeepReportView({
             </tbody>
           </table>
         </div>
+      </Section>
 
+      <Section title="📝 서로의 성향">
         <p className="mt-3 font-medium text-[var(--space-text)]">{nameA}</p>
         {s2.a_nature.image_metaphor ? (
           <p className="text-xs text-[#ffd6a5]/85">{s2.a_nature.image_metaphor}</p>
@@ -261,7 +351,6 @@ export default function RomanticSajuDeepReportView({
 
       {conflict && dialogueTable.length > 0 ? (
         <Section title={`💬 ${String(conflict.title ?? "갈등 패턴")}`}>
-          <InsightHook slot={screenByKey(screenPlan, "conflict")} />
           <div className="overflow-x-auto rounded-lg border border-white/10">
             <table className="w-full min-w-[300px] text-left text-xs">
               <thead>
@@ -296,7 +385,6 @@ export default function RomanticSajuDeepReportView({
       ) : null}
 
       <Section title="🌱 서로에게 도움이 되는 행동들">
-        <InsightHook slot={screenByKey(screenPlan, "action")} />
         {adviceA.length > 0 ? (
           <p className="text-xs font-medium text-[var(--space-text)]">
             {nameA}께

@@ -1,4 +1,10 @@
 import {
+  buildRomanticDayStemOneLiner,
+  formatRomanticEssencePair,
+  romanticHeadlineFromProfiles,
+} from "@/lib/relationship/dayStemRomanticProfile";
+import {
+  formatMetaphorPairLine,
   humanizeDayStemInteraction,
   humanizeRomanticCrossBody,
   humanizeStrengthComplement,
@@ -42,14 +48,26 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
     priority: 88,
     when: (ctx) => dayStemIncludes(ctx, "상생"),
     build: (ctx) => {
-      const { stemNameA, stemNameB } = romanticCrossBodyContext(ctx);
+      const profileA = ctx.romanticProfileA;
+      const profileB = ctx.romanticProfileB;
+      const body =
+        profileA && profileB
+          ? buildRomanticDayStemOneLiner({
+              profileA,
+              profileB,
+              nicknameA: ctx.nicknameA,
+              nicknameB: ctx.nicknameB,
+              dayStemInteraction: ctx.pairAnalysis.dayStemInteraction,
+              closeRelationship: true,
+            })
+          : humanizeDayStemInteraction(ctx.pairAnalysis.dayStemInteraction);
       return {
       ruleId: "headline_day_stem_sangsaeng",
-      headline: ctx.metaphorCombo,
-      body: humanizeDayStemInteraction(ctx.pairAnalysis.dayStemInteraction, {
-        a: stemNameA,
-        b: stemNameB,
-      }),
+      headline:
+        profileA && profileB
+          ? romanticHeadlineFromProfiles(profileA, profileB)
+          : ctx.metaphorCombo,
+      body,
       insightTags: ["pair_day_stem", "support"],
     };
     },
@@ -93,12 +111,23 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
     screen: 1,
     priority: 1,
     when: () => true,
-    build: (ctx) => ({
+    build: (ctx) => {
+      const profileA = ctx.romanticProfileA;
+      const profileB = ctx.romanticProfileB;
+      const defaultBody =
+        profileA && profileB
+          ? `${formatRomanticEssencePair(profileA, ctx.nicknameA, profileB, ctx.nicknameB)}가 만나 서로 다른 리듬을 채워요.`
+          : `${formatMetaphorPairLine(ctx.metaphorA, ctx.nicknameA, ctx.metaphorB, ctx.nicknameB)}가 만나 서로 다른 리듬을 채워요.`;
+      return {
       ruleId: "headline_metaphor_default",
-      headline: ctx.metaphorCombo,
-      body: `${ctx.metaphorA} 같은 ${ctx.nicknameA}와 ${ctx.metaphorB} 같은 ${ctx.nicknameB}가 만나 서로 다른 리듬을 채워요.`,
+      headline:
+        profileA && profileB
+          ? romanticHeadlineFromProfiles(profileA, profileB)
+          : ctx.metaphorCombo,
+      body: defaultBody,
       insightTags: ["metaphor_combo"],
-    }),
+      };
+    },
   },
 ];
 

@@ -1,4 +1,5 @@
 import {
+  formatMetaphorPairLine,
   humanizeDayStemInteraction,
   humanizeElementNote,
   humanizeRomanticCrossBody,
@@ -109,7 +110,7 @@ export const ATTRACTION_INFLUENCE_RULES: RomanticRule<AttractionRuleOutput>[] = 
       headline: "함께 변하는 두 사람",
       body: combinedElementWeak(ctx)
         ? humanizeElementNote(ctx.pairAnalysis.combinedElementNote)
-        : `${ctx.metaphorA} 같은 ${ctx.nicknameA}와 ${ctx.metaphorB} 같은 ${ctx.nicknameB}가 서로 다른 리듬을 채워요.`,
+        : `${formatMetaphorPairLine(ctx.metaphorA, ctx.nicknameA, ctx.metaphorB, ctx.nicknameB)}가 서로 다른 리듬을 채워요.`,
       influenceTags: combinedElementWeak(ctx)
         ? ["pair_element"]
         : ["metaphor_combo"],

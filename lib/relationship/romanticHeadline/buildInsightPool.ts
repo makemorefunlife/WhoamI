@@ -1,6 +1,13 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
 import {
+  buildRomanticDayStemOneLiner,
+  formatRomanticEssencePair,
+  resolveDayStemRomanticProfileFromSaju,
+  romanticHeadlineFromProfiles,
+} from "@/lib/relationship/dayStemRomanticProfile";
+import {
   crossHitDedupeKey,
+  formatMetaphorPairLine,
   humanizeDayStemInteraction,
   humanizeElementNote,
   humanizePersonRelation,
@@ -10,6 +17,10 @@ import {
   resolveDayStemNamesFromPair,
   resolvePersonalityLabel,
 } from "@/lib/relationship/romanticEverydayText";
+import {
+  crossHitPalaceWeight,
+  isPrimaryPalaceCross,
+} from "@/lib/saju/palaceWeight";
 import {
   analyzePairSaju,
   sajuJsonToPillars,
@@ -42,11 +53,13 @@ function rankScore(c: {
 }
 
 function crossImpact(hit: CrossChartHit, dayBranch: boolean): number {
-  let impact = hit.priority;
-  if (dayBranch) impact += 15;
-  if (TENSION_CROSS.has(hit.type)) impact += 10;
-  if (POSITIVE_CROSS.has(hit.type)) impact += 8;
-  return Math.min(100, impact);
+  let impact = hit.weightedPriority ?? hit.priority;
+  if (dayBranch) impact += 12;
+  if (isPrimaryPalaceCross(hit)) impact += 10;
+  if (TENSION_CROSS.has(hit.type)) impact += 8;
+  if (POSITIVE_CROSS.has(hit.type)) impact += 6;
+  if (crossHitPalaceWeight(hit) < 0.5) impact -= 15;
+  return Math.min(100, Math.max(20, impact));
 }
 
 function crossSurprise(hit: CrossChartHit): number {
@@ -98,6 +111,8 @@ export function buildRomanticInsightPool(params: {
 
   const metaA = metaphorShortLabel(sajuJsonA);
   const metaB = metaphorShortLabel(sajuJsonB);
+  const profileA = resolveDayStemRomanticProfileFromSaju(sajuJsonA);
+  const profileB = resolveDayStemRomanticProfileFromSaju(sajuJsonB);
   const { stemNameA, stemNameB } = resolveDayStemNamesFromPair(
     sajuJsonA,
     sajuJsonB,
@@ -107,6 +122,8 @@ export function buildRomanticInsightPool(params: {
     nicknameB,
     metaphorA: metaA,
     metaphorB: metaB,
+    romanticProfileA: profileA,
+    romanticProfileB: profileB,
     stemNameA,
     stemNameB,
     dayStemInteraction: pairAnalysis.dayStemInteraction,
@@ -117,8 +134,14 @@ export function buildRomanticInsightPool(params: {
     priority: 70,
     impact: 65,
     surprise: 50,
-    headline: joinRelationshipName(metaA, metaB),
-    body: `${metaA} 같은 ${nicknameA}와 ${metaB} 같은 ${nicknameB}가 만나 서로 다른 리듬을 채워요.`,
+    headline:
+      profileA && profileB
+        ? romanticHeadlineFromProfiles(profileA, profileB)
+        : joinRelationshipName(metaA, metaB),
+    body:
+      profileA && profileB
+        ? `${formatRomanticEssencePair(profileA, nicknameA, profileB, nicknameB)}가 만나 서로 다른 리듬을 채워요.`
+        : `${formatMetaphorPairLine(metaA, nicknameA, metaB, nicknameB)}가 만나 서로 다른 리듬을 채워요.`,
     screenHint: "opening",
   });
 
@@ -159,11 +182,21 @@ export function buildRomanticInsightPool(params: {
       priority: 80,
       impact: 78,
       surprise: 45,
-      headline: "자연스럽게 살림을 주는 만남",
-      body: humanizeDayStemInteraction(pairAnalysis.dayStemInteraction, {
-        a: stemNameA,
-        b: stemNameB,
-      }),
+      headline:
+        profileA && profileB
+          ? romanticHeadlineFromProfiles(profileA, profileB)
+          : "자연스럽게 살림을 주는 만남",
+      body:
+        profileA && profileB
+          ? buildRomanticDayStemOneLiner({
+              profileA,
+              profileB,
+              nicknameA,
+              nicknameB,
+              dayStemInteraction: pairAnalysis.dayStemInteraction,
+              closeRelationship: true,
+            })
+          : humanizeDayStemInteraction(pairAnalysis.dayStemInteraction),
       screenHint: "bond",
     });
   } else if (pairAnalysis.dayStemInteraction.includes("상극")) {
@@ -191,11 +224,13 @@ export function buildRomanticInsightPool(params: {
 
     const dayBranch =
       hit.personA_pillar.startsWith("일주") || hit.personB_pillar.startsWith("일주");
+    if (crossHitPalaceWeight(hit) < 0.5 && !dayBranch) continue;
+
     pushCandidate(candidates, {
       id: `pair_cross_${i}_${hit.type}`,
       source: "pair_cross",
       ruleType: hit.type,
-      priority: hit.priority,
+      priority: hit.weightedPriority ?? hit.priority,
       impact: crossImpact(hit, dayBranch),
       surprise: crossSurprise(hit),
       headline: crossHeadline(hit),

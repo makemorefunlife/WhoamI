@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import {
   getPremiumPerspectiveForKind,
   getRomanticSajuDeepReport,
+  getWorkColleagueDeepReport,
+  getCohabitationDeepReport,
+  getFamilyParentDeepReport,
   isRelationshipFavorite,
   parseRelationshipKind,
   RELATIONSHIP_KINDS,
@@ -109,6 +112,21 @@ export async function GET(req: Request) {
         ? getRomanticSajuDeepReport(byKind, rr.result_premium)
         : null;
 
+    const workColleagueDeepReport =
+      activeKind === "work"
+        ? getWorkColleagueDeepReport(byKind, rr.result_premium)
+        : null;
+
+    const cohabitationDeepReport =
+      activeKind === "cohabitation"
+        ? getCohabitationDeepReport(byKind, rr.result_premium)
+        : null;
+
+    const familyDeepReport =
+      activeKind === "family"
+        ? getFamilyParentDeepReport(byKind, rr.result_premium)
+        : null;
+
     const favorited = await isRelationshipFavorite(
       supabase,
       viewerReportId,
@@ -132,6 +150,9 @@ export async function GET(req: Request) {
       perspective_basic: perspectiveBasic,
       perspective_premium: perspectivePremium,
       romantic_deep_report: romanticDeepReport,
+      work_colleague_deep_report: workColleagueDeepReport,
+      cohabitation_deep_report: cohabitationDeepReport,
+      family_deep_report: familyDeepReport,
       is_favorite: favorited,
       raw_basic: rr.result_basic,
       raw_premium: rr.result_premium,

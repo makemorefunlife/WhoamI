@@ -15,6 +15,7 @@ import {
   hasTenGod,
   pickRelationshipInsight,
   romanticCrossBodyContext,
+  topTenGod,
   TENSION_CROSS,
 } from "./types";
 
@@ -73,14 +74,16 @@ export const HIDDEN_PATTERN_RULES: RomanticRule<HiddenPatternRuleOutput>[] = [
     build: (ctx) => {
       const who = hasTenGod(ctx, "a", ["식신", "상관"]) ? "a" : "b";
       const nick = who === "a" ? ctx.nicknameA : ctx.nicknameB;
-      const god = who === "a" ? ctx.tenGodsA : ctx.tenGodsB;
-      const top = Object.entries(god).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "식신";
+      const activation =
+        who === "a" ? ctx.tenGodsActivationA : ctx.tenGodsActivationB;
+      const activeGod = activation.find((r) => r.state === "active");
+      const godLabel = activeGod?.name ?? topTenGod(ctx, who) ?? "식신";
       return {
         ruleId: "hidden_shiksang_emotion",
         headline: "말보다 행동으로 보이는 마음",
-        body: `${nick}은 ${top} 기운이 강해, 감정을 직접 말하기보다 행동·표현으로 드러내요.`,
+        body: `${nick}은 ${godLabel} 기운이 ${activeGod ? "실제로" : "때때로"} 강해, 감정을 직접 말하기보다 행동·표현으로 드러내요.`,
         crisisHint: "표현 방식 차이를 무시하면 오해가 쌓여요.",
-        hiddenTags: ["ten_gods", top],
+        hiddenTags: ["ten_gods", godLabel],
       };
     },
   },

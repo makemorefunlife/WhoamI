@@ -23,6 +23,7 @@ export function buildSectionQualityExamples(
 
 ## section_2_nature
 - \`comparison_table\`: **아래 6개 항목 모두 필수** (각 셀 1~2문장, 빈 칸 없음)
+  - **각 셀은 주어(이름) 없이 서술만** — 표 열에 ${nicknameA}·${nicknameB}가 있으므로 "${nicknameA}는~", "${nicknameB}는~" 같은 표현 금지
   1. 감정 표현  2. 갈등 반응  3. 애정 언어  4. 스트레스 패턴  5. 의사결정  6. 소통 방식
 - \`first_person_voice\`: "사실 나는..."으로 **5~8문장** — 입력 데이터 기반 고유 표현
 - \`image_metaphor\`: 이 사람만의 이미지 (일간+오행+십성 조합)

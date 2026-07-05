@@ -65,13 +65,6 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
             "bad_line": "나쁜 예",
             "good_line": "좋은 예",
             "emoji": "🤔"
-          },
-          {
-            "speaker": "result",
-            "label": "결과",
-            "bad_line": "서로 멀어지는 결말",
-            "good_line": "가까워지는 결말",
-            "emoji": ""
           }
         ]
       }

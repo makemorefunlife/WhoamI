@@ -1,9 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
+import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import {
   parseRelationshipKind,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
+import { isRelationshipKindCheckError } from "@/lib/relationship/relationshipReportQuery";
 
 export type AnalysisLogLevel = "basic" | "premium";
 
@@ -35,6 +38,26 @@ function buildLogSummary(
       subtitle: s1?.one_line_summary?.trim() || "",
     };
   }
+  if (resultFormat === WORK_COLLEAGUE_DEEP_FORMAT) {
+    const report = snapshot.report as {
+      headline?: string;
+      summary_line?: string;
+    } | undefined;
+    return {
+      title: report?.headline?.trim() || "동료 심화 분석",
+      subtitle: report?.summary_line?.trim() || "",
+    };
+  }
+  if (resultFormat === COHABITATION_DEEP_FORMAT) {
+    const report = snapshot.report as {
+      headline?: string;
+      summary_line?: string;
+    } | undefined;
+    return {
+      title: report?.headline?.trim() || "동거·결혼 심화 분석",
+      subtitle: report?.summary_line?.trim() || "",
+    };
+  }
   return {
     title: "관계 기본 분석",
     subtitle: "네 가지 관점으로 정리한 결과",
@@ -53,6 +76,14 @@ export function buildAnalysisLogSnapshot(params: {
   };
 
   if (resultFormat === ROMANTIC_SAJU_DEEP_FORMAT) {
+    const p = payload as { report?: unknown };
+    return { ...base, report: p.report ?? p };
+  }
+
+  if (
+    resultFormat === WORK_COLLEAGUE_DEEP_FORMAT ||
+    resultFormat === COHABITATION_DEEP_FORMAT
+  ) {
     const p = payload as { report?: unknown };
     return { ...base, report: p.report ?? p };
   }
@@ -82,18 +113,28 @@ export async function insertRelationshipAnalysisLog(
     viewerReportId,
   });
 
-  const { data, error } = await supabase
-    .from("relationship_analysis_logs")
-    .insert({
-      relationship_report_id: params.relationshipReportId,
-      viewer_report_id: viewerReportId,
-      relationship_kind: params.relationshipKind,
-      analysis_level: params.analysisLevel,
-      result_format: params.resultFormat,
-      result_snapshot: snapshot,
-    })
-    .select("id")
-    .maybeSingle();
+  const insertRow = (relationshipKind: RelationshipKind | "unspecified") =>
+    supabase
+      .from("relationship_analysis_logs")
+      .insert({
+        relationship_report_id: params.relationshipReportId,
+        viewer_report_id: viewerReportId,
+        relationship_kind: relationshipKind,
+        analysis_level: params.analysisLevel,
+        result_format: params.resultFormat,
+        result_snapshot: snapshot,
+      })
+      .select("id")
+      .maybeSingle();
+
+  let { data, error } = await insertRow(params.relationshipKind);
+
+  if (error && isRelationshipKindCheckError(error)) {
+    console.warn(
+      "[relationship_analysis_logs] relationship_kind check 제약 — unspecified로 기록합니다.",
+    );
+    ({ data, error } = await insertRow("unspecified"));
+  }
 
   if (error) {
     console.error("relationship_analysis_logs insert:", error.message);

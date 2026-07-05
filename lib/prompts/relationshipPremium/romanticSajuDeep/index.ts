@@ -5,7 +5,9 @@ import {
   formatPersonSajuBlock,
 } from "@/lib/saju/formatRomanticSajuInput";
 import { parseJsonObject } from "@/lib/relationship/parseLlmJson";
-import { buildRomanticHeadlineContext } from "@/lib/relationship/romanticHeadline";
+import { buildRomanticRulesBundle } from "@/lib/relationship/romanticRules";
+import { buildRomanticScreenPlan } from "@/lib/relationship/romanticHeadline/screenMap";
+import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import { ROMANTIC_SAJU_DEEP_SYSTEM_PROMPT } from "./system";
 import { buildRomanticSajuDeepUserPrompt } from "./user";
@@ -70,13 +72,37 @@ export async function runRomanticSajuDeepAnalysis(
     sajuProvenanceB?: SajuChartProvenance;
   },
 ): Promise<RomanticSajuDeepPayload> {
-  const headlineCtx = buildRomanticHeadlineContext({
+  const uncertainA = buildSajuUncertainItems({
+    provenance: params.sajuProvenanceA,
+    birthPlace: params.birthA.place,
+    validationNotes: params.sajuProvenanceA?.validationNotes,
+  });
+  const uncertainB = buildSajuUncertainItems({
+    provenance: params.sajuProvenanceB,
+    birthPlace: params.birthB.place,
+    validationNotes: params.sajuProvenanceB?.validationNotes,
+  });
+
+  const bundle = buildRomanticRulesBundle({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,
     sajuJsonB: params.sajuJsonB,
+    birthPlaceA: params.birthA.place,
+    birthPlaceB: params.birthB.place,
+    birthTimeUnknownA: params.sajuProvenanceA?.birthTimeUnknown,
+    birthTimeUnknownB: params.sajuProvenanceB?.birthTimeUnknown,
   });
-  const { pairAnalysis, opening, screenPlan, ruleScreenPlan } = headlineCtx;
+  const { pairAnalysis, opening, insightPool, ruleScreenPlan, ctx } = bundle;
+  const snapshotSlot = ruleScreenPlan.find(
+    (s) => s.screen === 2 && s.key === "snapshot",
+  );
+  const snapshotPanel =
+    snapshotSlot?.key === "snapshot" ? snapshotSlot.output.panel : undefined;
+  const screenPlan = buildRomanticScreenPlan({
+    ranked: opening.ranked_insights,
+    pool: insightPool,
+  });
 
   const personBlockA = formatPersonSajuBlock({
     nickname: params.nicknameA,
@@ -84,6 +110,7 @@ export async function runRomanticSajuDeepAnalysis(
     birthTime: params.birthA.time,
     birthPlace: params.birthA.place,
     sajuJson: params.sajuJsonA,
+    uncertainItems: uncertainA,
   });
   const personBlockB = formatPersonSajuBlock({
     nickname: params.nicknameB,
@@ -91,6 +118,7 @@ export async function runRomanticSajuDeepAnalysis(
     birthTime: params.birthB.time,
     birthPlace: params.birthB.place,
     sajuJson: params.sajuJsonB,
+    uncertainItems: uncertainB,
   });
   const pairBlock = formatPairSajuBlock(
     params.sajuJsonA,
@@ -98,6 +126,7 @@ export async function runRomanticSajuDeepAnalysis(
     params.nicknameA,
     params.nicknameB,
     pairAnalysis,
+    opening.event_scores ?? ctx.eventScores,
   );
 
   const userPrompt = buildRomanticSajuDeepUserPrompt({
@@ -153,14 +182,16 @@ ${JSON.stringify(parsed)}`;
     },
     meta: {
       ...(parsed.report.meta ?? {}),
-      analysis_version: "v2.11",
+      analysis_version: "v2.12",
       generated_at: generatedAt,
-      headline_engine: "selector_v1+rule_library_v1+everyday_text",
+      headline_engine: "selector_v2+rule_library_v2+palace_weight+tri_score",
       saju_engine: "calculateSajuBundle_v2",
       saju_provenance: {
         a: params.sajuProvenanceA ?? null,
         b: params.sajuProvenanceB ?? null,
       },
+      uncertain_items: ctx.uncertainItems,
+      event_scores: opening.event_scores ?? ctx.eventScores,
       opening: {
         selected_insight_id: opening.selected_insight_id,
         grade_reason: opening.grade_reason,
@@ -176,6 +207,7 @@ ${JSON.stringify(parsed)}`;
       })),
       screen_plan: screenPlan,
       rule_screen_plan: ruleScreenPlan,
+      snapshot_panel: snapshotPanel ?? null,
     },
   };
 

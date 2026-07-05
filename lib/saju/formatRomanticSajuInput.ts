@@ -12,6 +12,12 @@ import {
   getDayStemCode,
   getMonthBranchCode,
 } from "@/lib/saju/romanticSajuDerivations";
+import {
+  analyzeTenGodActivation,
+  formatTenGodActivationBlock,
+} from "@/lib/saju/tenGodActivation";
+import { isPrimaryPalaceCross } from "@/lib/saju/palaceWeight";
+import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
 import { REF_EARTHLY_BRANCHES, REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
 
 export type PersonRomanticSajuInput = {
@@ -20,6 +26,7 @@ export type PersonRomanticSajuInput = {
   birthTime: string;
   birthPlace: string;
   sajuJson: SajuDataForIntegrated;
+  uncertainItems?: string[];
 };
 
 type BranchRef = {
@@ -131,6 +138,7 @@ export function formatPersonSajuBlock(p: PersonRomanticSajuInput): string {
 
   const strength = estimateStrengthBalance(sajuPillars);
   const yongGisin = estimateYongsinGisin(sajuPillars);
+  const tenGodActivation = analyzeTenGodActivation(p.sajuJson);
   const elementDist = formatElementDistribution(sajuPillars);
 
   const dayStem = data.dayStemData;
@@ -154,11 +162,14 @@ ${branchLine("월지(月支)", monthBranchCode, monthBranch, "잠재의식·본�
 
 ### 오행·십성·기운
 - 오행 분포: ${elementDist}
-- 주요 십성: ${formatTenGodsSummary(data.tenGods)}
+- 주요 십성(개수): ${formatTenGodsSummary(data.tenGods)}
+- 십성 작동성 (active=실제 작동 / dormant=배경):
+${formatTenGodActivationBlock(tenGodActivation)}
 - 12운성(일주): ${twelveStage}
 - ${strength.label} — ${strength.note}
-- 용신 방향(추정): ${yongGisin.yongsin}
-- 기신 방향(추정): ${yongGisin.gisin} (${yongGisin.note})
+- 용신 후보(확정 아님, confidence=${yongGisin.confidence}): ${yongGisin.yongsin_candidates.join(" | ")}
+- 기신 후보: ${yongGisin.gisin_candidates.join(" | ")} (${yongGisin.note})
+${p.uncertainItems?.length ? `\n### 불확실 항목 (임의 확정 금지)\n${p.uncertainItems.map((u) => `- ${u}`).join("\n")}` : ""}
 
 ### 지지 관계 (원국 내)
 ${formatRelations(data.relations)}
@@ -179,15 +190,19 @@ ${formatShinsals(data.shinsals)}
 function formatCrossHits(
   hits: PairSajuAnalysis["allCrossHits"],
   title: string,
+  primaryOnly = false,
 ): string {
-  if (!hits.length) {
-    return `${title}: (두 차트 간 뚜렷한 지지 충돌·합 없음 — 일간·오행·십성 조합으로 해석)`;
+  const list = primaryOnly
+    ? hits.filter((h) => isPrimaryPalaceCross(h))
+    : hits;
+  if (!list.length) {
+    return `${title}: (해당 범위에서 뚜렷한 지지 관계 없음 — 일간·오행·십성 조합으로 해석)`;
   }
   return [
     title,
-    ...hits.map(
+    ...list.map(
       (h) =>
-        `- A ${h.personA_pillar} ↔ B ${h.personB_pillar} [${h.type}]: ${h.interpretation}`,
+        `- A ${h.personA_pillar} ↔ B ${h.personB_pillar} [${h.type}, 궁위가중 ${h.palaceWeight}] (내부): ${h.interpretation}`,
     ),
   ].join("\n");
 }
@@ -199,6 +214,7 @@ export function formatPairSajuBlock(
   labelA: string,
   labelB: string,
   pairAnalysis?: PairSajuAnalysis,
+  eventScores?: RelationshipEventScores,
 ): string {
   const pillarsA = sajuA.saju;
   const pillarsB = sajuB.saju;
@@ -220,6 +236,16 @@ export function formatPairSajuBlock(
     sajuJsonToPillars(pillarsB as Required<typeof pillarsB>),
   );
 
+  const scoresBlock = eventScores
+    ? `
+### 사건화 3점수 (규칙 엔진 — activation/benefit/risk)
+- 전체: 끌림 ${eventScores.overall.activation} · 시너지 ${eventScores.overall.benefit} · 긴장 ${eventScores.overall.risk}
+- 친밀: ${eventScores.intimacy.activation}/${eventScores.intimacy.benefit}/${eventScores.intimacy.risk}
+- 갈등: ${eventScores.conflict.activation}/${eventScores.conflict.benefit}/${eventScores.conflict.risk}
+- 안정: ${eventScores.stability.activation}/${eventScores.stability.benefit}/${eventScores.stability.risk}
+`
+    : "";
+
   return `
 ## 두 사람 궁합 사주 (실제 교차 계산 — Layer 2~4)
 
@@ -228,18 +254,19 @@ export function formatPairSajuBlock(
 - ${labelB} 오행 분포: ${pair.bElementCounts}
 - 함께 있을 때: ${pair.combinedElementNote}
 
-### 용신/기신 상호작용 (Layer 2-2)
-- ${labelA} 필요 기운: ${yongA.yongsin} | 과부하 기운: ${yongA.gisin}
-- ${labelB} 필요 기운: ${yongB.yongsin} | 과부하 기운: ${yongB.gisin}
+### 용신/기신 상호작용 (후보만 — 확정 금지)
+- ${labelA} 필요 기운 후보: ${yongA.yongsin_candidates.join(" | ")} | 과부하 후보: ${yongA.gisin_candidates.join(" | ")}
+- ${labelB} 필요 기운 후보: ${yongB.yongsin_candidates.join(" | ")} | 과부하 후보: ${yongB.gisin_candidates.join(" | ")}
 - 해석: A의 부족분을 B가 채워주는지, B의 과한 기운이 A를 압박하는지 **조합**으로 판단
-
+${scoresBlock}
 ### 일간·일지·연주 (Layer 3-1, 3-2, 3-3)
 - 일간(핵심 자아) 상호작용: ${pair.dayStemInteraction}
 - ${pair.yearStemSameEra}
-${formatCrossHits(pair.dayBranchCrossHits, "일지(배우자궁) 교차 지지 관계")}
+${formatCrossHits(pair.dayBranchCrossHits, "일지(배우자궁) 교차 — 우선 해석", true)}
 
 ### 지지 갈등·시너지 (Layer 4)
-${formatCrossHits(pair.allCrossHits, "전체 기둥 교차 지지 관계")}
+${formatCrossHits(pair.allCrossHits, "일·월 궁위 우선 교차", true)}
+${formatCrossHits(pair.allCrossHits, "전체 기둥 교차 (배경 참고)")}
 
 ### 대운·시간 (Layer 8)
 - 대운 전용 데이터 없음 — 각자 12운성·연주·월지·위 궁합 신호를 조합해 시기별 전망 작성

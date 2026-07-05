@@ -1,5 +1,9 @@
 import { REF_EARTHLY_BRANCHES, REF_HEAVENLY_STEMS, REF_RELATION_RULES } from "@/lib/hardcoded/sajuReferenceData";
 import {
+  crossHitPalaceWeight,
+  weightedCrossPriority,
+} from "@/lib/saju/palaceWeight";
+import {
   type ChartContext,
   buildChartContext,
   type SajuPillars,
@@ -57,8 +61,8 @@ function findPairRule(
   );
 }
 
-/** 오행 상생·상극 (일간 간) */
-function elementInteraction(a: string, b: string): string {
+/** 오행 상생·상극 (천간·지지 오행 간) */
+export function elementInteraction(a: string, b: string): string {
   const generates: Record<string, string> = {
     wood: "fire",
     fire: "earth",
@@ -110,6 +114,9 @@ export type CrossChartHit = {
   type: string;
   interpretation: string;
   priority: number;
+  /** 궁위 가중치 (일주 1.0 · 월주 0.75 · 시주 0.45 · 년주 0.4) */
+  palaceWeight: number;
+  weightedPriority: number;
 };
 
 export function analyzeCrossChartRelations(
@@ -129,13 +136,19 @@ export function analyzeCrossChartRelations(
         const rule = findPairRule(rules, type, pa.branchCode, pb.branchCode);
         if (!rule?.meaning_ko) continue;
         seen.add(dedupe);
-        hits.push({
+        const basePriority = rule.priority_score ?? 50;
+        const hit: CrossChartHit = {
           personA_pillar: `${pa.name}(${pa.pillar})`,
           personB_pillar: `${pb.name}(${pb.pillar})`,
           type: label,
           interpretation: rule.meaning_ko,
-          priority: rule.priority_score ?? 50,
-        });
+          priority: basePriority,
+          palaceWeight: 0,
+          weightedPriority: basePriority,
+        };
+        hit.palaceWeight = crossHitPalaceWeight(hit);
+        hit.weightedPriority = weightedCrossPriority(hit);
+        hits.push(hit);
         break;
       }
     }
@@ -167,7 +180,9 @@ export function analyzePairSaju(
   const dayStemA = stemElement.get(chartA.dayStemCode) ?? "unknown";
   const dayStemB = stemElement.get(chartB.dayStemCode) ?? "unknown";
 
-  const cross = analyzeCrossChartRelations(chartA, chartB);
+  const cross = analyzeCrossChartRelations(chartA, chartB).sort(
+    (a, b) => b.weightedPriority - a.weightedPriority,
+  );
   const dayBranchCross = cross.filter(
     (h) =>
       h.personA_pillar.startsWith("일주") || h.personB_pillar.startsWith("일주"),

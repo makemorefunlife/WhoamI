@@ -1,0 +1,346 @@
+import type { MarriageRuleContext } from "./buildMarriageRuleContext";
+import type { HomeDeEscalationPair } from "./homeDeEscalationPrescriptions";
+import type {
+  ThreeYearHomeRiskForecast,
+  SleepFitSection,
+  ConflictCommunicationSection,
+} from "./marriageKillerSections";
+import {
+  buildBedroomMatrixSection,
+  type BedroomMatrixSection,
+} from "./bedroomProfile";
+import type { ParentingStyle } from "./marriageTenGodAnalysis";
+import {
+  buildPrivateBoundary,
+  buildPersonFamilyBoundaryNote,
+  buildHomeUpsetResponseGuide,
+  buildAttachmentNarrative,
+  sanitizeHomeLifeText,
+  type HomeUpsetGuide,
+} from "./homeLifeLanguage";
+
+export type HomeDnaSection = {
+  person_a: MarriageRuleContext["householdDnaA"];
+  person_b: MarriageRuleContext["householdDnaB"];
+};
+
+export type HouseholdSnapshotSection = {
+  romantic_fit_pct: number;
+  life_synergy_pct: number;
+  home_risk_pct: number;
+  one_line_household: string;
+};
+
+export type BedroomSection = {
+  matrix: BedroomMatrixSection;
+  attachment_style: string;
+  sleep_fit: SleepFitSection;
+};
+
+export type HomeWeatherForecastSection = ThreeYearHomeRiskForecast;
+
+export type MoneyChoresSection = {
+  cfo_nickname: string;
+  cfo_reason: string;
+  chores_guideline: string;
+};
+
+export type FamilyBoundarySection = {
+  inlaw_stress_summary: string;
+  person_a_boundary_note: string;
+  person_b_boundary_note: string;
+};
+
+export type ParentingSection = {
+  combined_attitude: string;
+  person_a_style: string;
+  person_b_style: string;
+  harmony_tip: string;
+};
+
+export type PrivacyRespectSection = {
+  person_a_private_line: string;
+  person_b_private_line: string;
+};
+
+export type HomeUpsetSection = {
+  person_a: HomeUpsetGuide;
+  person_b: HomeUpsetGuide;
+};
+
+export type HomeWarningSection = {
+  conflict_communication: ConflictCommunicationSection;
+  conflict_trigger: string;
+  de_escalation: HomeDeEscalationPair;
+};
+
+export type HouseholdPartnershipReport = {
+  section_dna: HomeDnaSection;
+  section_snapshot: HouseholdSnapshotSection;
+  section_weather_forecast: HomeWeatherForecastSection;
+  section_bedroom: BedroomSection;
+  section_money_chores: MoneyChoresSection;
+  section_family_boundary: FamilyBoundarySection;
+  section_parenting: ParentingSection;
+  section_privacy: PrivacyRespectSection;
+  section_upset: HomeUpsetSection;
+  section_warning: HomeWarningSection;
+};
+
+function resolveHouseholdOneLiner(ctx: MarriageRuleContext): string {
+  const { activation, benefit, risk } = ctx.masterScores;
+  const titleA = ctx.householdDnaA.lifestyle_title.split(" ")[0] ?? "Warm";
+  const titleB = ctx.householdDnaB.lifestyle_title.split(" ")[0] ?? "Steady";
+
+  if (benefit >= 70 && risk < 40) {
+    return `${titleA} & ${titleB} — 재정적 든든함 위에 세워진, 불꽃 튀는 로맨틱 하우스`;
+  }
+  if (activation >= 65 && risk >= 55) {
+    return `${titleA} & ${titleB} — 열정은 넘치지만, 집 안 규칙만 정하면 오래 가는 하우스`;
+  }
+  if (risk >= 60) {
+    return `${titleA} & ${titleB} — 역할만 나누면 평화, 섞으면 전쟁 — 경계가 생명`;
+  }
+  if (activation >= 75) {
+    return `${titleA} & ${titleB} — 침실은 뜨겁고, 거실은 협상이 필요한 하우스`;
+  }
+  return `${titleA} & ${titleB} — 서로 다른 강점으로 집을 채우되, 솔직한 대화 없으면 오해만 쌓이는 하우스`;
+}
+
+function buildChoresGuideline(ctx: MarriageRuleContext): string {
+  const { benefit, risk } = ctx.masterScores;
+  if (benefit >= 65 && risk < 50) {
+    return sanitizeHomeLifeText(
+      "역할을 명확히 쪼개야 평화 — '너는 설거지·빨래, 나는 장보기·청구서'처럼 시스템이 있어야 서운함이 안 쌓입니다.",
+    );
+  }
+  if (risk >= 55) {
+    return sanitizeHomeLifeText(
+      "눈에 보이는 대로 하면 100% 싸웁니다. 주간 가사 회의 15분은 선택이 아니라 필수예요.",
+    );
+  }
+  return sanitizeHomeLifeText(
+    "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
+  );
+}
+
+function buildInlawStressSummary(ctx: MarriageRuleContext): string {
+  const bA = ctx.tenGod.boundaryA;
+  const bB = ctx.tenGod.boundaryB;
+  const maxStress = Math.max(bA.inlawStressIndex, bB.inlawStressIndex);
+  const hardBoundary =
+    maxStress >= 70 ||
+    bA.needsStrongBoundary ||
+    bB.needsStrongBoundary ||
+    (bA.hyoshinRisk && bB.hyoshinRisk);
+
+  if (hardBoundary) {
+    return sanitizeHomeLifeText(
+      `시댁·처가 스트레스 지수 ${maxStress}% — 솔직히 말하면, 이 집의 평화를 지키려면 원가족과 정서적·물리적 선을 과감히 긋는 게 맞습니다. ` +
+        `명절·방문·돈·육아 개입에 '우리 핵가족 우선'이 아니면 둘 사이가 먼저 갈라집니다.`,
+    );
+  }
+  if (maxStress >= 45) {
+    return sanitizeHomeLifeText(
+      `시댁·처가 스트레스 지수 ${maxStress}% — 거리와 방문 룰을 미리 박아 두지 않으면, 사소한 일이 커플 싸움으로 번집니다.`,
+    );
+  }
+  return sanitizeHomeLifeText(
+    `시댁·처가 스트레스 지수 ${maxStress}% — 비교적 독립적이지만, 피곤할 때 가족 이슈가 침실까지 따라오지 않게 경계는 유지하세요.`,
+  );
+}
+
+function parentingBadge(style: ParentingStyle): string {
+  return style === "empathy" ? "🎨 공감형" : "📐 규칙형";
+}
+
+function parentingStyleDescription(label: string): string {
+  const dash = label.indexOf(" — ");
+  if (dash >= 0) return label.slice(dash + 3).trim();
+  return label.replace(/^🎨\s*|^📐\s*/, "").trim();
+}
+
+function formatParentingStyleLine(style: ParentingStyle, label: string): string {
+  return sanitizeHomeLifeText(
+    `${parentingBadge(style)} — ${parentingStyleDescription(label)}`,
+  );
+}
+
+function buildParentingCombined(ctx: MarriageRuleContext): string {
+  const pA = ctx.tenGod.parentingA;
+  const pB = ctx.tenGod.parentingB;
+  const nameA = ctx.nicknameA;
+  const nameB = ctx.nicknameB;
+
+  if (pA.style === pB.style) {
+    if (pA.style === "empathy") {
+      return sanitizeHomeLifeText(
+        `${nameA} & ${nameB} — 둘 다 🎨 공감형에 가깝습니다. 아이의 감정을 잘 읽지만, 규칙이 흐려지면 둘 다 '괜찮아'만 반복하다 지칩니다. 경계와 루틴을 문서로 박아 두세요.`,
+      );
+    }
+    return sanitizeHomeLifeText(
+      `${nameA} & ${nameB} — 둘 다 📐 규칙형에 가깝습니다. 기준과 일정은 단단하지만, 아이의 감정 신호를 놓치면 집안 공기가 딱딱해집니다. '오늘 기분은?' 한 마디를 루틴에 넣으세요.`,
+    );
+  }
+  return sanitizeHomeLifeText(
+    `${nameA} → ${parentingBadge(pA.style)} · ${nameB} → ${parentingBadge(pB.style)} — ` +
+      `아이를 사랑하는 온도는 같지만 방식이 다릅니다. 아이 앞에서 양육 방식을 충돌시키면 아이만 흔들립니다.`,
+  );
+}
+
+function buildParentingHarmonyTip(ctx: MarriageRuleContext): string {
+  const pA = ctx.tenGod.parentingA;
+  const pB = ctx.tenGod.parentingB;
+  const nameA = ctx.nicknameA;
+  const nameB = ctx.nicknameB;
+
+  if (pA.style !== pB.style) {
+    const empathyName = pA.style === "empathy" ? nameA : nameB;
+    const structureName = pA.style === "structure" ? nameA : nameB;
+    return sanitizeHomeLifeText(
+      `💬 ${empathyName}(🎨 공감형)과 ${structureName}(📐 규칙형)은 아이를 사랑하는 방식의 온도가 다릅니다. ` +
+        `아이 앞에서는 절대 서로의 양육 방식을 지적하거나 깎아내리지 마세요. ` +
+        `아이가 없는 독립된 부부만의 공간에서 훈육 가이드라인을 완벽히 합의한 뒤, ` +
+        `아이 앞에서는 오직 단호하고 일관된 하나의 목소리만 들려주어야 아이의 정서가 흔들리지 않습니다.`,
+    );
+  }
+  if (pA.style === "empathy") {
+    return sanitizeHomeLifeText(
+      `💬 ${nameA} & ${nameB} — 공감형끼리는 아이 감정에 맞추다 부모 둘 다 지칩니다. '이번 주는 규칙 한 줄만 추가'하기로 합의하고, 번갈아 단호한 역할을 맡으세요.`,
+    );
+  }
+  return sanitizeHomeLifeText(
+    `💬 ${nameA} & ${nameB} — 규칙형끼리는 기준이 맞지만 감정 쪽이 메마를 수 있습니다. 주 1회 '아이 기분 체크인' 시간을 정해, 룰보다 마음을 먼저 묻는 밤을 만드세요.`,
+  );
+}
+
+function buildConflictTrigger(ctx: MarriageRuleContext): string {
+  const { risk } = ctx.masterScores;
+  const sig = ctx.marriagePairAnalysis.scoringSignals;
+  const day = ctx.marriagePairAnalysis.dayBranch;
+
+  if (sig.hasDayHourHomeTension && sig.hasWonjinOrGuimun) {
+    return sanitizeHomeLifeText(
+      `육아·가사·돈이 겹치는 날 감정이 폭발합니다. 가까울수록 서운함이 꼬이고, ` +
+        `작은 말투 하나로 냉전이 옵니다. 홈 리스크 ${risk}% — 회복하려면 하루 이상 걸릴 수 있어요.`,
+    );
+  }
+  if (day.hasDayBranchChungHyung) {
+    return sanitizeHomeLifeText(
+      `피로가 극에 달하면 사적인 리듬 차이가 정면 충돌합니다. 퇴근 직후·잠들기 전이 폭발 시간대예요. ` +
+        `이때 무거운 대화를 시작하지 마세요.`,
+    );
+  }
+  if (sig.hasGongmangOverlap) {
+    return sanitizeHomeLifeText(
+      `'괜찮아'만 반복하는 정서적 방임이 옵니다. 상대는 혼자 삼키다가 어느 날 한꺼번에 터집니다. ` +
+        `짧게라도 '지금 기분 어때?'를 매일 확인하세요.`,
+    );
+  }
+  if (sig.hasWealthOfficerPowerStruggle) {
+    return sanitizeHomeLifeText(
+      `돈·주도권 싸움이 집안 전쟁으로 번지기 쉽습니다. 통장·큰 지출은 CFO 한 명만 — 둘이 동시에 쥐면 100% 싸웁니다.`,
+    );
+  }
+  return sanitizeHomeLifeText(
+    `역할·돈·육아를 한 번에 꺼내면 마찰이 치솟습니다. 오늘은 하나만. 나머지는 내일.`,
+  );
+}
+
+export function buildHouseholdPartnershipReport(
+  ctx: MarriageRuleContext,
+): HouseholdPartnershipReport {
+  const deEscalation = ctx.deEscalation;
+
+  const matrix = buildBedroomMatrixSection({
+    nicknameA: ctx.nicknameA,
+    nicknameB: ctx.nicknameB,
+    sajuJsonA: ctx.sajuJsonA,
+    sajuJsonB: ctx.sajuJsonB,
+    countsA: ctx.tenGod.countsA,
+    countsB: ctx.tenGod.countsB,
+    chartA: ctx.marriagePairAnalysis.chartA,
+    chartB: ctx.marriagePairAnalysis.chartB,
+    dayBranch: ctx.marriagePairAnalysis.dayBranch,
+  });
+
+  return {
+    section_dna: {
+      person_a: ctx.householdDnaA,
+      person_b: ctx.householdDnaB,
+    },
+    section_snapshot: {
+      romantic_fit_pct: ctx.masterScores.activation,
+      life_synergy_pct: ctx.masterScores.benefit,
+      home_risk_pct: ctx.masterScores.risk,
+      one_line_household: resolveHouseholdOneLiner(ctx),
+    },
+    section_weather_forecast: ctx.threeYearForecast,
+    section_bedroom: {
+      matrix,
+      attachment_style: buildAttachmentNarrative(ctx),
+      sleep_fit: ctx.sleepFit,
+    },
+    section_money_chores: {
+      cfo_nickname: ctx.tenGod.cfo.nickname,
+      cfo_reason: sanitizeHomeLifeText(ctx.tenGod.cfo.reason),
+      chores_guideline: buildChoresGuideline(ctx),
+    },
+    section_family_boundary: {
+      inlaw_stress_summary: buildInlawStressSummary(ctx),
+      person_a_boundary_note: buildPersonFamilyBoundaryNote(
+        ctx.nicknameA,
+        ctx.tenGod.boundaryA,
+        ctx.tenGod.countsA,
+        ctx.marriagePairAnalysis.chartA,
+      ),
+      person_b_boundary_note: buildPersonFamilyBoundaryNote(
+        ctx.nicknameB,
+        ctx.tenGod.boundaryB,
+        ctx.tenGod.countsB,
+        ctx.marriagePairAnalysis.chartB,
+      ),
+    },
+    section_parenting: {
+      combined_attitude: buildParentingCombined(ctx),
+      person_a_style: formatParentingStyleLine(
+        ctx.tenGod.parentingA.style,
+        ctx.tenGod.parentingA.label,
+      ),
+      person_b_style: formatParentingStyleLine(
+        ctx.tenGod.parentingB.style,
+        ctx.tenGod.parentingB.label,
+      ),
+      harmony_tip: buildParentingHarmonyTip(ctx),
+    },
+    section_privacy: {
+      person_a_private_line: buildPrivateBoundary(
+        ctx.nicknameA,
+        ctx.marriagePairAnalysis.chartA,
+        ctx.tenGod.countsA,
+      ),
+      person_b_private_line: buildPrivateBoundary(
+        ctx.nicknameB,
+        ctx.marriagePairAnalysis.chartB,
+        ctx.tenGod.countsB,
+      ),
+    },
+    section_upset: {
+      person_a: buildHomeUpsetResponseGuide(
+        ctx.nicknameA,
+        ctx.sajuJsonA,
+        ctx.tenGod.countsA,
+      ),
+      person_b: buildHomeUpsetResponseGuide(
+        ctx.nicknameB,
+        ctx.sajuJsonB,
+        ctx.tenGod.countsB,
+      ),
+    },
+    section_warning: {
+      conflict_communication: ctx.conflictCommunication,
+      conflict_trigger: buildConflictTrigger(ctx),
+      de_escalation: deEscalation,
+    },
+  };
+}

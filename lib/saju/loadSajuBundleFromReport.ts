@@ -2,6 +2,7 @@ import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { getDayStemCode } from "@/lib/saju/romanticSajuDerivations";
+import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
@@ -28,6 +29,8 @@ export type SajuChartProvenance = {
   dayStemKor: string;
   dayStemMetaphor: string;
   engine: "calculateSajuBundle_v2";
+  validationOk: boolean;
+  validationNotes: string[];
 };
 
 /**
@@ -60,6 +63,7 @@ export function loadSajuBundleFromReport(
   const pillars = sajuJsonToPillars(bundle.saju);
   const dayStemCode = getDayStemCode(pillars);
   const ref = REF_HEAVENLY_STEMS.find((r) => r.code === dayStemCode);
+  const validation = validateSajuPillars(pillars, { birthTimeUnknown });
 
   const sajuJson: SajuDataForIntegrated = {
     saju: payload.saju,
@@ -88,6 +92,8 @@ export function loadSajuBundleFromReport(
       dayStemKor: ref?.kor_name ?? dayStemCode,
       dayStemMetaphor: ref?.metaphor_ko ?? "",
       engine: "calculateSajuBundle_v2",
+      validationOk: validation.ok,
+      validationNotes: validation.notes,
     },
   };
 }

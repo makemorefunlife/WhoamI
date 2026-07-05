@@ -1,3 +1,5 @@
+import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
+import type { TenGodActivationRow } from "@/lib/saju/tenGodActivation";
 import type { RomanticCrossBodyContext } from "@/lib/relationship/romanticEverydayText";
 import { resolveDayStemNamesFromPair } from "@/lib/relationship/romanticEverydayText";
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
@@ -51,6 +53,8 @@ export type RelationshipBasicAxes = Partial<
  * saju·pair·survey 값은 buildRomanticRuleContext에서 1회만 준비하고,
  * 개별 rule은 여기서 참조만 한다 (새 계산 금지).
  */
+import type { DayStemRomanticProfile } from "@/lib/relationship/dayStemRomanticProfile";
+
 export type RomanticRuleContext = {
   nicknameA: string;
   nicknameB: string;
@@ -62,10 +66,16 @@ export type RomanticRuleContext = {
   metaphorA: string;
   metaphorB: string;
   metaphorCombo: string;
+  romanticProfileA: DayStemRomanticProfile | null;
+  romanticProfileB: DayStemRomanticProfile | null;
   tenGodsA: TenGodCounts;
   tenGodsB: TenGodCounts;
   grade: "A" | "B" | "C" | "D";
   gradeReason: string;
+  eventScores: RelationshipEventScores;
+  tenGodsActivationA: TenGodActivationRow[];
+  tenGodsActivationB: TenGodActivationRow[];
+  uncertainItems: string[];
   surveyProfileA?: CurrentSelfProfile | null;
   surveyProfileB?: CurrentSelfProfile | null;
   surveyPatternA?: SurveyPatternRecord | null;
@@ -91,12 +101,15 @@ export type HeadlineRuleOutput = {
   insightTags: string[];
 };
 
+import type { RomanticSnapshotPanel } from "@/lib/relationship/romanticSnapshot/buildRomanticSnapshot";
+
 export type SnapshotRuleOutput = {
   ruleId: string;
   grade: string;
   keywords: string[];
   gaugeLabel: string;
   representativeLine: string;
+  panel: RomanticSnapshotPanel;
 };
 
 export type AttractionRuleOutput = {
@@ -311,6 +324,8 @@ export function romanticCrossBodyContext(
     nicknameB: ctx.nicknameB,
     metaphorA: ctx.metaphorA,
     metaphorB: ctx.metaphorB,
+    romanticProfileA: ctx.romanticProfileA,
+    romanticProfileB: ctx.romanticProfileB,
     stemNameA,
     stemNameB,
     dayStemInteraction: ctx.pairAnalysis.dayStemInteraction,

@@ -6,6 +6,8 @@ import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
 import {
   getRomanticSajuDeepReport,
+  getWorkColleagueDeepReport,
+  getCohabitationDeepReport,
   parseRelationshipKind,
 } from "@/lib/relationship/relationshipKind";
 
@@ -29,6 +31,8 @@ function isPremiumComplete(
   if (analysisType !== "premium") return false;
   const byKind = (resultPremiumByKind ?? {}) as Record<string, unknown>;
   if (getRomanticSajuDeepReport(byKind, resultPremium)) return true;
+  if (getWorkColleagueDeepReport(byKind, resultPremium)) return true;
+  if (getCohabitationDeepReport(byKind, resultPremium)) return true;
   const prem = resultPremium as { perspectives?: unknown } | null;
   return (
     prem != null &&

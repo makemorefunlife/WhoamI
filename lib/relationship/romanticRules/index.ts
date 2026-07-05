@@ -1,9 +1,13 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
 import { answersToPatternRecord } from "@/lib/relationship/surveyPatterns";
 import {
-  joinPersonalityHeadline,
   resolvePersonalityLabel,
+  joinPersonalityHeadline,
 } from "@/lib/relationship/romanticEverydayText";
+import {
+  resolveDayStemRomanticProfileFromSaju,
+  romanticHeadlineFromProfiles,
+} from "@/lib/relationship/dayStemRomanticProfile";
 import {
   buildRomanticInsightPool,
   computePairAnalysisOnce,
@@ -13,6 +17,9 @@ import {
   selectRomanticOpening,
 } from "@/lib/relationship/romanticHeadline/selectOpening";
 import type { RomanticOpeningSelection } from "@/lib/relationship/romanticHeadline/types";
+import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
+import { analyzeTenGodActivation } from "@/lib/saju/tenGodActivation";
+import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
@@ -156,6 +163,10 @@ export function buildRomanticRuleContext(params: {
   surveyAnswersA?: Record<string, unknown> | null;
   surveyAnswersB?: Record<string, unknown> | null;
   resultBasic?: unknown;
+  birthPlaceA?: string | null;
+  birthPlaceB?: string | null;
+  birthTimeUnknownA?: boolean;
+  birthTimeUnknownB?: boolean;
   /** 이미 계산된 pair가 있으면 재사용 */
   pairAnalysis?: ReturnType<typeof computePairAnalysisOnce>;
   insightPool?: ReturnType<typeof buildRomanticInsightPool>;
@@ -172,9 +183,45 @@ export function buildRomanticRuleContext(params: {
     params.sajuJsonB.saju as Required<NonNullable<typeof params.sajuJsonB.saju>>,
   );
 
-  const { grade, reason: gradeReason } = computeCompatibilityGrade(pairAnalysis);
+  const strengthComplementDir =
+    (() => {
+      const aStrong = estimateStrengthBalance(pillarsA).label.includes("신강");
+      const bStrong = estimateStrengthBalance(pillarsB).label.includes("신강");
+      const aWeak = estimateStrengthBalance(pillarsA).label.includes("신약");
+      const bWeak = estimateStrengthBalance(pillarsB).label.includes("신약");
+      return (aStrong && bWeak) || (bStrong && aWeak);
+    })();
+
+  const validationA = validateSajuPillars(pillarsA, {
+    birthTimeUnknown: params.birthTimeUnknownA,
+  });
+  const validationB = validateSajuPillars(pillarsB, {
+    birthTimeUnknown: params.birthTimeUnknownB,
+  });
+
+  const uncertainItems = [
+    ...buildSajuUncertainItems({
+      birthPlace: params.birthPlaceA,
+      validationNotes: validationA.notes,
+    }),
+    ...buildSajuUncertainItems({
+      birthPlace: params.birthPlaceB,
+      validationNotes: validationB.notes,
+    }),
+  ];
+
+  const { grade, reason: gradeReason, eventScores } = computeCompatibilityGrade(
+    pairAnalysis,
+    { hasStrengthComplement: strengthComplementDir },
+  );
   const metaphorA = resolvePersonalityLabel(params.sajuJsonA);
   const metaphorB = resolvePersonalityLabel(params.sajuJsonB);
+  const romanticProfileA = resolveDayStemRomanticProfileFromSaju(params.sajuJsonA);
+  const romanticProfileB = resolveDayStemRomanticProfileFromSaju(params.sajuJsonB);
+  const metaphorCombo =
+    romanticProfileA && romanticProfileB
+      ? romanticHeadlineFromProfiles(romanticProfileA, romanticProfileB)
+      : joinPersonalityHeadline(metaphorA, metaphorB);
 
   const insightPool =
     params.insightPool ??
@@ -195,6 +242,7 @@ export function buildRomanticRuleContext(params: {
       sajuJsonB: params.sajuJsonB,
       pairAnalysis,
       insightPool,
+      hasStrengthComplement: strengthComplementDir,
     });
 
   const surveyPatternA: SurveyPatternRecord | null = params.surveyAnswersA
@@ -214,11 +262,17 @@ export function buildRomanticRuleContext(params: {
     strengthB: estimateStrengthBalance(pillarsB),
     metaphorA,
     metaphorB,
-    metaphorCombo: joinPersonalityHeadline(metaphorA, metaphorB),
+    metaphorCombo,
+    romanticProfileA,
+    romanticProfileB,
     tenGodsA: countTenGods(params.sajuJsonA),
     tenGodsB: countTenGods(params.sajuJsonB),
+    tenGodsActivationA: analyzeTenGodActivation(params.sajuJsonA),
+    tenGodsActivationB: analyzeTenGodActivation(params.sajuJsonB),
     grade,
     gradeReason,
+    eventScores,
+    uncertainItems,
     surveyProfileA: params.surveyProfileA,
     surveyProfileB: params.surveyProfileB,
     surveyPatternA,

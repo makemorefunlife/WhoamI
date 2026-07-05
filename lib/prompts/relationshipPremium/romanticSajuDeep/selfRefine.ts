@@ -22,6 +22,7 @@ export const ROMANTIC_SAJU_DEEP_SELF_REFINE_PROMPT = `# 분석 결과 검토
 
 ## 5. 대화·성향 표 검토
 - [ ] comparison_table이 **6개 항목**(감정 표현·갈등 반응·애정 언어·스트레스 패턴·의사결정·소통 방식) 모두 채워졌나요?
+- [ ] comparison_table 각 셀에 **이름·주어가 반복되지 않았나요?** (표 열에 이름이 있으므로 "OO는~" 금지)
 - [ ] conflict는 dialogue_table만 있고, 긴 대화·hidden_psychology·positive_situation은 없나요?
 
 ## 6. 조언 대화 예시 검토

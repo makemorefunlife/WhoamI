@@ -1,3 +1,6 @@
+import {
+  formatMetaphorPairLine,
+} from "@/lib/relationship/romanticEverydayText";
 import type {
   RomanticRule,
   RomanticRuleContext,
@@ -89,7 +92,7 @@ export const STORY_EXPANSION_RULES: RomanticRule<StoryExpansionRuleOutput>[] = [
       headline: "일상 속 이 관계",
       body:
         pickRelationshipAction(ctx, 0) ??
-        `${ctx.metaphorA} 같은 ${ctx.nicknameA}와 ${ctx.metaphorB} 같은 ${ctx.nicknameB} — 생활·애착·가족 이야기에서도 서로 다른 강점이 드러나요.`,
+        `${formatMetaphorPairLine(ctx.metaphorA, ctx.nicknameA, ctx.metaphorB, ctx.nicknameB)} — 생활·애착·가족 이야기에서도 서로 다른 강점이 드러나요.`,
       themes: ["생활", "애착", "가족"],
     }),
   },

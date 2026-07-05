@@ -36,6 +36,7 @@ export type RomanticOpeningSelection = {
   one_line_summary: string;
   grade: "A" | "B" | "C" | "D";
   grade_reason: string;
+  event_scores?: import("@/lib/relationship/pairEventScores").RelationshipEventScores;
   selected_insight_id: string;
   ranked_insights: RomanticInsightCandidate[];
 };

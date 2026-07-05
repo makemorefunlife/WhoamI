@@ -1,18 +1,20 @@
-/** 심화 관계 분석 — 관계 유형 (v2 문서 romantic|family|work|friendship 와 동일) */
+/** 심화 관계 분석 — 관계 유형 */
 export const RELATIONSHIP_KINDS = [
   "romantic",
-  "family",
   "work",
+  "cohabitation",
   "friendship",
+  "family",
 ] as const;
 
 export type RelationshipKind = (typeof RELATIONSHIP_KINDS)[number];
 
 export const RELATIONSHIP_KIND_LABELS: Record<RelationshipKind, string> = {
   romantic: "연인",
-  family: "가족",
   work: "동료",
+  cohabitation: "동거·결혼",
   friendship: "친구",
+  family: "가족",
 };
 
 export function isRelationshipKind(v: unknown): v is RelationshipKind {
@@ -33,6 +35,9 @@ export type { PremiumKindPayload, ResultPremiumByKind } from "./premiumByKind";
 export {
   getPremiumPerspectiveForKind,
   getRomanticSajuDeepReport,
+  getWorkColleagueDeepReport,
+  getCohabitationDeepReport,
+  getFamilyParentDeepReport,
   hasPremiumCacheForKind,
 } from "./premiumByKind";
 export { isRelationshipFavorite } from "./analysisLog";

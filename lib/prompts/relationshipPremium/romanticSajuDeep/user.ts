@@ -100,7 +100,7 @@ const FINAL_OUTPUT_RULES = `
 7. "~것 같아요" 금지 → "~해요", "~거예요"
 8. A와 B 균형
 9. Output Schema 모든 필드 빈 칸 없이
-10. **comparison_table**: 감정 표현·갈등 반응·애정 언어·스트레스 패턴·의사결정·소통 방식 **6행 필수**
+10. **comparison_table**: 감정 표현·갈등 반응·애정 언어·스트레스 패턴·의사결정·소통 방식 **6행 필수** — 각 셀은 **이름·주어 없이** 서술만 (표 헤더에 이름 있음)
 11. **section_5**: 각 조언마다 \`phrase_example\` + \`together_starter\` 필수
 12. **section_1_summary**: LLM이 만들지 마세요 (Headline Selector가 사주 rule 결과로 채움)
 `.trim();

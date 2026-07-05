@@ -13,9 +13,19 @@ import RelationshipAnalysisHistory, {
 } from "@/components/relationship/RelationshipAnalysisHistory";
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
+import WorkColleagueReportView from "@/components/relationship/WorkColleagueReportView";
+import MarriageReportView from "@/components/relationship/MarriageReportView";
+import FamilyParentReportView from "@/components/relationship/FamilyParentReportView";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
+import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
+import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
+import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
+import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { relationshipPremiumPreviewEnabled } from "@/lib/relationship/premiumPreview";
 import {
   parseRelationshipKind,
@@ -64,6 +74,19 @@ export default function RelationshipView({
   const [romanticDeep, setRomanticDeep] = useState<
     RomanticSajuDeepReport["report"] | null
   >(null);
+  const [workDeep, setWorkDeep] = useState<WorkColleagueReportBody | null>(
+    null,
+  );
+  const [cohabitationDeep, setCohabitationDeep] =
+    useState<MarriageReportBody | null>(null);
+  const [familyDeep, setFamilyDeep] = useState<FamilyParentReportBody | null>(
+    null,
+  );
+  const [familyParentType, setFamilyParentType] =
+    useState<FamilyParentRole>("mother");
+  const [familyChildIsViewer, setFamilyChildIsViewer] = useState(false);
+  const [reportIdA, setReportIdA] = useState("");
+  const [reportIdB, setReportIdB] = useState("");
   const [nameA, setNameA] = useState("");
   const [nameB, setNameB] = useState("");
   const [premiumKind, setPremiumKind] = useState<RelationshipKind>(() =>
@@ -83,6 +106,9 @@ export default function RelationshipView({
     basic?: RelationshipPerspective | null;
     premium?: RelationshipPerspective | null;
     romanticDeep?: RomanticSajuDeepReport["report"] | null;
+    workDeep?: WorkColleagueReportBody | null;
+    cohabitationDeep?: MarriageReportBody | null;
+    familyDeep?: FamilyParentReportBody | null;
   } | null>(null);
 
   const fetchLogs = useCallback(async () => {
@@ -138,6 +164,17 @@ export default function RelationshipView({
       setRomanticDeep(
         (data.romantic_deep_report ?? null) as RomanticSajuDeepReport["report"] | null,
       );
+      setWorkDeep(
+        (data.work_colleague_deep_report ?? null) as WorkColleagueReportBody | null,
+      );
+      setCohabitationDeep(
+        (data.cohabitation_deep_report ?? null) as MarriageReportBody | null,
+      );
+      setFamilyDeep(
+        (data.family_deep_report ?? null) as FamilyParentReportBody | null,
+      );
+      setReportIdA(data.report_id_a ?? "");
+      setReportIdB(data.report_id_b ?? "");
       setNameA(data.person_a_name ?? data.viewer_name ?? "A");
       setNameB(data.person_b_name ?? data.partner_name ?? "B");
       setFavorited(Boolean(data.is_favorite));
@@ -222,9 +259,37 @@ export default function RelationshipView({
         logId: log.id,
         kind: "romantic",
         romanticDeep: report ?? null,
+        workDeep: null,
+        cohabitationDeep: null,
         premium: null,
       });
       setPremiumKind("romantic");
+      return;
+    }
+    if (log.result_format === WORK_COLLEAGUE_DEEP_FORMAT) {
+      const report = snap.report as WorkColleagueReportBody | undefined;
+      setSnapshotView({
+        logId: log.id,
+        kind: "work",
+        workDeep: report ?? null,
+        romanticDeep: null,
+        cohabitationDeep: null,
+        premium: null,
+      });
+      setPremiumKind("work");
+      return;
+    }
+    if (log.result_format === COHABITATION_DEEP_FORMAT) {
+      const report = snap.report as MarriageReportBody | undefined;
+      setSnapshotView({
+        logId: log.id,
+        kind: "cohabitation",
+        cohabitationDeep: report ?? null,
+        romanticDeep: null,
+        workDeep: null,
+        premium: null,
+      });
+      setPremiumKind("cohabitation");
       return;
     }
     if (log.analysis_level === "premium") {
@@ -280,6 +345,12 @@ export default function RelationshipView({
         setSnapshotView(null);
         if (kind === "romantic") {
           setRomanticDeep(null);
+        } else if (kind === "work") {
+          setWorkDeep(null);
+        } else if (kind === "cohabitation") {
+          setCohabitationDeep(null);
+        } else if (kind === "family") {
+          setFamilyDeep(null);
         } else {
           setPremium(null);
         }
@@ -295,6 +366,12 @@ export default function RelationshipView({
             relationship_kind: kind,
             viewer_report_id: viewerReportId,
             force_regenerate: forceRegenerate,
+            ...(kind === "family"
+              ? {
+                  parent_type: familyParentType,
+                  child_is_viewer: familyChildIsViewer,
+                }
+              : {}),
           }),
         });
         const data = await res.json();
@@ -306,6 +383,36 @@ export default function RelationshipView({
           setRomanticDeep(
             data.result_premium.report as RomanticSajuDeepReport["report"],
           );
+        } else if (kind === "work") {
+          const prem = data.result_premium;
+          if (
+            prem?.format === WORK_COLLEAGUE_DEEP_FORMAT &&
+            prem?.report?.snapshot_panel
+          ) {
+            setWorkDeep(prem.report as WorkColleagueReportBody);
+          } else if (!forceRegenerate && prem?.perspectives) {
+            return runPremium(kind, { forceRegenerate: true });
+          }
+        } else if (kind === "cohabitation") {
+          const prem = data.result_premium;
+          if (
+            prem?.format === COHABITATION_DEEP_FORMAT &&
+            prem?.report?.snapshot_panel
+          ) {
+            setCohabitationDeep(prem.report as MarriageReportBody);
+          } else if (!forceRegenerate && prem?.perspectives) {
+            return runPremium(kind, { forceRegenerate: true });
+          }
+        } else if (kind === "family") {
+          const prem = data.result_premium;
+          if (
+            prem?.format === FAMILY_PARENT_CHILD_DEEP_FORMAT &&
+            prem?.report?.family?.section_child_dna
+          ) {
+            setFamilyDeep(prem.report as FamilyParentReportBody);
+          } else if (!forceRegenerate && prem?.perspectives) {
+            return runPremium(kind, { forceRegenerate: true });
+          }
         } else if (data.result_premium?.perspectives && viewerReportId) {
           const slice =
             data.result_premium.perspectives[viewerReportId] ?? null;
@@ -319,7 +426,7 @@ export default function RelationshipView({
         setBusy(false);
       }
     },
-    [resolvedRelationshipId, load, premiumKind, viewerReportId],
+    [resolvedRelationshipId, load, premiumKind, viewerReportId, familyParentType, familyChildIsViewer],
   );
 
   function regeneratePremium() {
@@ -365,6 +472,9 @@ export default function RelationshipView({
       setPremiumKind(kind);
       setPremium(null);
       setRomanticDeep(null);
+      setWorkDeep(null);
+      setCohabitationDeep(null);
+      setFamilyDeep(null);
       if (viewerReportId && resolvedRelationshipId) {
         const q = new URLSearchParams({
           viewer: viewerReportId,
@@ -388,17 +498,35 @@ export default function RelationshipView({
     snapshotView?.romanticDeep !== undefined
       ? snapshotView.romanticDeep
       : romanticDeep;
+  const displayWorkDeep =
+    snapshotView?.workDeep !== undefined ? snapshotView.workDeep : workDeep;
+  const displayCohabitationDeep =
+    snapshotView?.cohabitationDeep !== undefined
+      ? snapshotView.cohabitationDeep
+      : cohabitationDeep;
+  const displayFamilyDeep =
+    snapshotView?.familyDeep !== undefined
+      ? snapshotView.familyDeep
+      : familyDeep;
 
   const premiumReady =
     premiumKind === "romantic"
       ? Boolean(displayRomanticDeep?.section_1_summary)
-      : Boolean(displayPremium && Object.keys(displayPremium).length > 0);
+      : premiumKind === "work"
+        ? Boolean(displayWorkDeep?.snapshot_panel)
+        : premiumKind === "cohabitation"
+          ? Boolean(displayCohabitationDeep?.snapshot_panel)
+          : premiumKind === "family"
+            ? Boolean(displayFamilyDeep?.family?.section_child_dna)
+            : Boolean(displayPremium && Object.keys(displayPremium).length > 0);
 
   useEffect(() => {
     if (!premiumPreview || loading || !detailOk || !resolvedRelationshipId) return;
     if (!basic || Object.keys(basic).length === 0) return;
     if (premium && Object.keys(premium).length > 0) return;
     if (romanticDeep?.section_1_summary) return;
+    if (workDeep?.snapshot_panel) return;
+    if (cohabitationDeep?.snapshot_panel) return;
     if (premiumPreviewAutoDone.current) return;
     if (premiumKind !== "friendship") return;
     premiumPreviewAutoDone.current = true;
@@ -534,6 +662,56 @@ export default function RelationshipView({
               disabled={busy}
             />
 
+            {premiumKind === "family" ? (
+              <div className="mt-3 rounded-xl border border-[#9ed4b8]/25 bg-[#9ed4b8]/5 p-3">
+                <p className="mb-2 text-[11px] font-semibold text-[#9ed4b8]">
+                  👪 Child DNA Playbook · 역할 선택
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                      familyParentType === "mother"
+                        ? "bg-[#9ed4b8]/25 text-white"
+                        : "bg-white/5 text-[var(--space-text-muted)] hover:bg-white/10"
+                    }`}
+                    onClick={() => setFamilyParentType("mother")}
+                  >
+                    🌸 엄마 렌즈
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                      familyParentType === "father"
+                        ? "bg-[#9ed4b8]/25 text-white"
+                        : "bg-white/5 text-[var(--space-text-muted)] hover:bg-white/10"
+                    }`}
+                    onClick={() => setFamilyParentType("father")}
+                  >
+                    🛡️ 아빠 렌즈
+                  </button>
+                </div>
+                <label className="mt-3 flex cursor-pointer items-center gap-2 text-[11px] text-[var(--space-text-muted)]">
+                  <input
+                    type="checkbox"
+                    checked={familyChildIsViewer}
+                    onChange={(e) => setFamilyChildIsViewer(e.target.checked)}
+                    disabled={busy}
+                    className="rounded border-white/20"
+                  />
+                  분석 대상 자녀가 &apos;나&apos;({viewerName || "시청자"})예요
+                </label>
+                {reportIdA && reportIdB ? (
+                  <p className="mt-1 text-[10px] text-white/40">
+                    parentType: {familyParentType} · 자녀=
+                    {familyChildIsViewer ? viewerName || "나" : partnerName}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
             <RelationshipBasicCards
               perspective={displayBasic}
               partnerName={partnerName}
@@ -582,6 +760,62 @@ export default function RelationshipView({
                       아직 연인 사주 심화 분석이 없어요.
                       <br />
                       <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+                    </p>
+                  </div>
+                ) : premiumKind === "work" && displayWorkDeep ? (
+                  <div className="space-y-3 rounded-2xl border border-[#67b7ff]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#67b7ff]/90">
+                      Premium · 동료·비즈니스 파트너
+                    </p>
+                    <WorkColleagueReportView report={displayWorkDeep} />
+                  </div>
+                ) : premiumKind === "work" ? (
+                  <div className="space-y-3 rounded-2xl border border-[#67b7ff]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#67b7ff]/90">
+                      Premium · 동료·비즈니스 파트너
+                    </p>
+                    <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
+                      아직 동료 심화 분석이 없어요.
+                      <br />
+                      <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+                    </p>
+                  </div>
+                ) : premiumKind === "cohabitation" && displayCohabitationDeep ? (
+                  <div className="space-y-3 rounded-2xl border border-[#d4a5e8]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d4a5e8]/90">
+                      Premium · 동거·결혼 하우스홀드
+                    </p>
+                    <MarriageReportView report={displayCohabitationDeep} />
+                  </div>
+                ) : premiumKind === "cohabitation" ? (
+                  <div className="space-y-3 rounded-2xl border border-[#d4a5e8]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d4a5e8]/90">
+                      Premium · 동거·결혼 하우스홀드
+                    </p>
+                    <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
+                      아직 동거·결혼 심화 분석이 없어요.
+                      <br />
+                      <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+                    </p>
+                  </div>
+                ) : premiumKind === "family" && displayFamilyDeep ? (
+                  <div className="space-y-3 rounded-2xl border border-[#9ed4b8]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9ed4b8]/90">
+                      Premium · Child DNA Playbook
+                    </p>
+                    <FamilyParentReportView report={displayFamilyDeep} />
+                  </div>
+                ) : premiumKind === "family" ? (
+                  <div className="space-y-3 rounded-2xl border border-[#9ed4b8]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9ed4b8]/90">
+                      Premium · Child DNA Playbook
+                    </p>
+                    <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
+                      아직 가족 Child DNA 분석이 없어요.
+                      <br />
+                      <span className="text-xs">
+                        위에서 엄마/아빠 렌즈를 고른 뒤 생성하세요.
+                      </span>
                     </p>
                   </div>
                 ) : (

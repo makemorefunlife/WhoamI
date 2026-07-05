@@ -150,11 +150,10 @@ function fallbackConflict(
   };
 }
 
-/** story/action 부족 시: Top 1~3 narrative sequence */
+/** story/action 부족 시 — 중복 한줄 나열 금지 */
 function fallbackNarrativeSequence(
-  ranked: RomanticInsightCandidate[],
+  _ranked: RomanticInsightCandidate[],
 ): RomanticInsightCandidate {
-  const top3 = ranked.slice(0, 3);
   return {
     id: "fallback_narrative_sequence",
     source: "metaphor_combo",
@@ -162,8 +161,8 @@ function fallbackNarrativeSequence(
     impact: 58,
     surprise: 42,
     score: 55,
-    headline: "이 관계의 흐름",
-    body: top3.map((i, idx) => `${idx + 1}. ${i.body}`).join("\n\n"),
+    headline: "실천 조언",
+    body: "아래 항목을 상황에 맞게 골라 써 보세요.",
     screenHint: "action",
   };
 }
@@ -174,10 +173,9 @@ function fallbackNature(
 ): RomanticInsightCandidate {
   return (
     findByHint(ranked, ["nature"], new Set()) ??
-    findBySource(pool, "strength_complement") ??
-    findBySource(pool, "metaphor_combo") ?? {
+    findBySource(pool, "strength_complement") ?? {
       id: "fallback_nature_generic",
-      source: "metaphor_combo",
+      source: "strength_complement",
       priority: 50,
       impact: 50,
       surprise: 40,

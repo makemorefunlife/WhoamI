@@ -14,6 +14,17 @@ export function isMissingColumnError(
   return /does not exist|Could not find the .* column/i.test(error.message ?? "");
 }
 
+/** relationship_kind check 제약 — cohabitation 마이그레이션 전 DB */
+export function isRelationshipKindCheckError(
+  error: PostgrestError | null | undefined,
+): boolean {
+  if (!error) return false;
+  if (error.code === "23514") return true;
+  return /relationship_reports_relationship_kind_check|relationship_analysis_logs_relationship_kind_check/i.test(
+    error.message ?? "",
+  );
+}
+
 /** 프로세스당 한 번 감지 — 마이그레이션 미적용 DB */
 let preferLegacySelect: boolean | null = null;
 
@@ -135,6 +146,22 @@ export async function updateRelationshipReportSafe(
       .update({ ...legacyPatch, updated_at: updatedAt })
       .eq("id", relationshipReportId);
     return { error: legacyErr, usedLegacy: true };
+  }
+
+  if (
+    error &&
+    isRelationshipKindCheckError(error) &&
+    "relationship_kind" in fullPatch
+  ) {
+    const { relationship_kind: _omit, ...withoutKind } = fullPatch;
+    console.warn(
+      "[relationship_reports] relationship_kind check 제약 — kind 없이 result_premium_by_kind만 저장합니다. supabase/migrations/20260705165000_relationship_kind_cohabitation.sql 실행을 권장합니다.",
+    );
+    const { error: retryErr } = await supabase
+      .from("relationship_reports")
+      .update({ ...withoutKind, updated_at: updatedAt })
+      .eq("id", relationshipReportId);
+    return { error: retryErr, usedLegacy: false };
   }
 
   return { error, usedLegacy: false };

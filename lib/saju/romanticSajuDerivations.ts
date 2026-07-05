@@ -101,10 +101,11 @@ export function estimateStrengthBalance(saju: SajuPillars): {
   };
 }
 
-/** 용신/기신 방향 간이 추정 — LLM 내부 참고용 */
+/** 용신·기신 방향 간이 추정 — 확정 금지, 후보만 */
 export function estimateYongsinGisin(saju: SajuPillars): {
-  yongsin: string;
-  gisin: string;
+  yongsin_candidates: string[];
+  gisin_candidates: string[];
+  confidence: "low" | "medium";
   note: string;
 } {
   const counts = countElementsFromPillars(saju);
@@ -112,13 +113,18 @@ export function estimateYongsinGisin(saju: SajuPillars): {
   const weakest = sorted[0];
   const strongest = sorted[sorted.length - 1];
 
-  const yongsin = `${ELEMENT_KO[weakest[0]]} — 부족한 기운, 관계에서 채우고 싶은 에너지`;
-  const gisin = `${ELEMENT_KO[strongest[0]]} — 과한 기운, 과부하·고집·예민함으로 나올 수 있음`;
+  const yongsin_candidates = [
+    `${ELEMENT_KO[weakest[0]]} — 부족한 기운, 관계에서 채우고 싶은 에너지`,
+  ];
+  const gisin_candidates = [
+    `${ELEMENT_KO[strongest[0]]} — 과한 기운, 과부하·고집·예민함으로 나올 수 있음`,
+  ];
 
   return {
-    yongsin,
-    gisin,
-    note: `오행 분포 기반 추정 (약: ${weakest[1]}, 강: ${strongest[1]})`,
+    yongsin_candidates,
+    gisin_candidates,
+    confidence: "low",
+    note: `오행 분포 기반 후보 (약: ${weakest[1]}, 강: ${strongest[1]}) — 확정 아님`,
   };
 }
 
