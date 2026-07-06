@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/space/GlassCard";
 import DualAxisRadarChart, {
@@ -8,6 +8,7 @@ import DualAxisRadarChart, {
   BLUEPRINT_INNATE_STROKE,
 } from "@/components/v2/DualAxisRadarChart";
 import BlueprintLiteReportsSection from "@/components/v2/BlueprintLiteReportsSection";
+import PremiumDeepEntryButton from "@/components/v2/PremiumDeepEntryButton";
 import { PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
 import {
   buildBlueprintHookCopy,
@@ -34,6 +35,7 @@ export default function BlueprintPreviewContent({
   birthTimeUnknown: boolean;
 }) {
   const router = useRouter();
+  const [hasPremium, setHasPremium] = useState(false);
   const gapRows = buildGapRows(current.primary_axes, innate.primary_axes);
   const hook = buildBlueprintHookCopy({
     current: current.primary_axes,
@@ -55,6 +57,26 @@ export default function BlueprintPreviewContent({
     await clearSurveyOnServer(reportId);
     router.push(`/survey-v2?redo=1`);
   }, [reportId, router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/my/report?reportId=${encodeURIComponent(reportId)}&quick=1`,
+          { cache: "no-store" },
+        );
+        if (!res.ok || cancelled) return;
+        const body = (await res.json()) as { has_premium?: boolean };
+        if (!cancelled) setHasPremium(Boolean(body.has_premium));
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId]);
 
   return (
     <div className="w-full max-w-lg space-y-6 pb-16">
@@ -102,6 +124,10 @@ export default function BlueprintPreviewContent({
           profile={current}
           birth={birth}
         />
+
+        {hasPremium ? (
+          <PremiumDeepEntryButton reportId={reportId} />
+        ) : null}
 
         <div className="border-t border-white/10 pt-4">
           <div className="mb-3 grid grid-cols-[1fr_auto_auto_auto] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[rgba(255,255,255,0.45)]">
