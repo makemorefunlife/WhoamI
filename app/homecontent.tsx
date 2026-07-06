@@ -11,6 +11,7 @@ import {
   applyResumeReportIdToStorage,
   fetchHomeResumeClient,
 } from "@/lib/home/fetchHomeResumeClient";
+import { syncBirthFromResumeFields } from "@/lib/v2/onboarding/syncBirthFromResume";
 import { supabase } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import HomeAuthActions from "@/components/home/HomeAuthActions";
@@ -138,6 +139,13 @@ export default function HomeContent() {
 
         const data = result.data;
         const reportId = applyResumeReportIdToStorage(data);
+        if (reportId) {
+          syncBirthFromResumeFields(reportId, {
+            birthDate: data.birthDate,
+            birthTime: data.birthTime,
+            birthPlace: data.birthPlace,
+          });
+        }
         const summary = data.relationshipSummary ?? {
           pending: 0,
           completed: 0,

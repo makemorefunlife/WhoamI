@@ -1,5 +1,4 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
-import { answersToPatternRecord } from "@/lib/relationship/surveyPatterns";
 import {
   resolvePersonalityLabel,
   joinPersonalityHeadline,
@@ -245,12 +244,8 @@ export function buildRomanticRuleContext(params: {
       hasStrengthComplement: strengthComplementDir,
     });
 
-  const surveyPatternA: SurveyPatternRecord | null = params.surveyAnswersA
-    ? answersToPatternRecord(params.surveyAnswersA)
-    : null;
-  const surveyPatternB: SurveyPatternRecord | null = params.surveyAnswersB
-    ? answersToPatternRecord(params.surveyAnswersB)
-    : null;
+  const surveyPatternA: SurveyPatternRecord | null = null;
+  const surveyPatternB: SurveyPatternRecord | null = null;
 
   return {
     nicknameA: params.nicknameA,

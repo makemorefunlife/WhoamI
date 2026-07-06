@@ -13,7 +13,15 @@ import {
   writeBirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
 import { resetReportBirthOnServer } from "@/lib/v2/onboarding/fetchReportBirthClient";
-import { readSurveyV2Session } from "@/lib/v2/survey/session";
+import {
+  ensureBirthSession,
+  hasMinimalBirth,
+} from "@/lib/v2/onboarding/hydrateBirthSession";
+import {
+  hasSurveyV2Session,
+  readSurveyV2Session,
+} from "@/lib/v2/survey/session";
+import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 
 function BirthOnboardingContent() {
   const router = useRouter();
@@ -29,18 +37,44 @@ function BirthOnboardingContent() {
   const resetStarted = useRef(false);
 
   useEffect(() => {
-    const id = reportIdParam || localStorage.getItem("reportId")?.trim() || "";
-    if (!id) {
-      router.replace("/");
-      return;
+    let cancelled = false;
+
+    async function boot() {
+      const id = reportIdParam || localStorage.getItem("reportId")?.trim() || "";
+      if (!id) {
+        router.replace("/");
+        return;
+      }
+
+      if (!hasSurveyV2Session(id)) {
+        await hydrateSurveySession(id);
+      }
+      if (!readSurveyV2Session(id)) {
+        router.replace("/survey-v2");
+        return;
+      }
+
+      if (!wantReset) {
+        const birth = await ensureBirthSession(id);
+        if (hasMinimalBirth(birth)) {
+          router.replace(
+            `/blueprint-preview?reportId=${encodeURIComponent(id)}`,
+          );
+          return;
+        }
+      }
+
+      if (!cancelled) {
+        setReportId(id);
+        setReady(true);
+      }
     }
-    if (!readSurveyV2Session(id)) {
-      router.replace("/survey-v2");
-      return;
-    }
-    setReportId(id);
-    setReady(true);
-  }, [reportIdParam, router]);
+
+    void boot();
+    return () => {
+      cancelled = true;
+    };
+  }, [reportIdParam, router, wantReset]);
 
   const runReset = useCallback(async (id: string) => {
     setResetBusy(true);
@@ -100,6 +134,9 @@ function BirthOnboardingContent() {
         }
       } catch (e) {
         console.error("report/birth save:", e);
+        alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");
+        setBusy(false);
+        return;
       }
 
       router.push(

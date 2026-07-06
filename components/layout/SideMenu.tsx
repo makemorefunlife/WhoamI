@@ -3,95 +3,129 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/brand/Logo";
+import {
+  Compass,
+  GitBranch,
+  Home,
+  Scale,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 
-function MenuRow({
-  href,
-  children,
-  onNavigate,
-  indent = 0,
-}: {
-  href: string;
-  children: React.ReactNode;
-  onNavigate: () => void;
-  indent?: 0 | 1 | 2;
-}) {
-  const pad =
-    indent === 2 ? "pl-8" : indent === 1 ? "pl-5" : "pl-3";
-  return (
-    <Link
-      href={href}
-      onClick={onNavigate}
-      className={`block rounded-lg ${pad} py-2.5 text-sm text-white/90 transition hover:bg-white/[0.06]`}
-    >
-      {children}
-    </Link>
-  );
-}
+const NAV_ITEMS = [
+  {
+    href: "/blueprint-preview",
+    label: "나",
+    sub: "Blueprint",
+    desc: "6축 블루프린트 · 무료 리포트",
+    icon: Compass,
+    accent: "from-[#8b9cff]/20 to-[#6366f1]/5",
+    border: "border-[#8b9cff]/25",
+    needsReportId: true,
+    queryKey: "reportId",
+  },
+  {
+    href: "/",
+    label: "나의 탐사실",
+    desc: "홈 · 새 탐사 시작",
+    icon: Home,
+    accent: "from-[#6bb5ff]/20 to-[#4a90e2]/5",
+    border: "border-[#6bb5ff]/25",
+  },
+  {
+    href: "/relationships",
+    label: "관계 분석",
+    sub: "5대 탭",
+    desc: "연인 · 동료 · 가족 · 친구",
+    icon: GitBranch,
+    accent: "from-[#f472b6]/15 to-[#ec4899]/5",
+    border: "border-[#f472b6]/25",
+    needsReportId: true,
+    queryKey: "myReportId",
+  },
+  {
+    href: "/decision",
+    label: "결정 도우미",
+    sub: "Decision AI",
+    desc: "선택장애 · 의사결정 코치",
+    icon: Scale,
+    accent: "from-[#34d399]/15 to-[#10b981]/5",
+    border: "border-[#34d399]/25",
+    badge: "NEW",
+  },
+] as const;
 
-function HubMenuRow({
-  basePath,
-  query = "",
-  children,
+const FOOTER_LINKS = [
+  { href: "/about", label: "서비스 소개" },
+  { href: "/pricing", label: "요금 안내" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/terms", label: "이용약관" },
+  { href: "/privacy", label: "개인정보" },
+  { href: "/refund", label: "환불정책" },
+  { href: "/account", label: "계정" },
+] as const;
+
+function NavCard({
+  item,
   onNavigate,
-  indent = 1,
 }: {
-  basePath: string;
-  query?: string;
-  children: React.ReactNode;
+  item: (typeof NAV_ITEMS)[number];
   onNavigate: () => void;
-  indent?: 1 | 2;
 }) {
   const router = useRouter();
-  const pad = indent === 2 ? "pl-8" : "pl-5";
+  const Icon = item.icon;
+
+  const handleClick = () => {
+    if ("needsReportId" in item && item.needsReportId) {
+      const id =
+        typeof window !== "undefined"
+          ? localStorage.getItem("reportId")?.trim() ?? ""
+          : "";
+      const qs = new URLSearchParams();
+      if (id && item.queryKey) qs.set(item.queryKey, id);
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      router.push(`${item.href}${suffix}`);
+    } else {
+      router.push(item.href);
+    }
+    onNavigate();
+  };
 
   return (
     <button
       type="button"
-      onClick={() => {
-        const id =
-          typeof window !== "undefined"
-            ? localStorage.getItem("reportId")?.trim() ?? ""
-            : "";
-        const qs = new URLSearchParams();
-        if (id) qs.set("myReportId", id);
-        if (query) {
-          for (const [k, v] of new URLSearchParams(query)) {
-            qs.set(k, v);
-          }
-        }
-        const suffix = qs.toString() ? `?${qs.toString()}` : "";
-        router.push(`${basePath}${suffix}`);
-        onNavigate();
-      }}
-      className={`block w-full rounded-lg ${pad} py-2.5 text-left text-sm text-white/90 transition hover:bg-white/[0.06]`}
+      onClick={handleClick}
+      className={[
+        "group relative w-full overflow-hidden rounded-2xl border bg-gradient-to-br p-4 text-left transition duration-200",
+        "hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(0,0,0,0.35)]",
+        item.border,
+        item.accent,
+      ].join(" ")}
     >
-      {children}
+      {"badge" in item && item.badge ? (
+        <span className="absolute right-3 top-3 rounded-full bg-[#34d399]/20 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#6ee7b7]">
+          {item.badge}
+        </span>
+      ) : null}
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/20 text-white/90">
+          <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+        </span>
+        <div className="min-w-0 flex-1 pr-6">
+          <p className="text-[15px] font-semibold tracking-[-0.02em] text-white">
+            {item.label}
+            {"sub" in item && item.sub ? (
+              <span className="ml-1.5 text-xs font-medium text-white/45">
+                ({item.sub})
+              </span>
+            ) : null}
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-white/50">
+            {item.desc}
+          </p>
+        </div>
+      </div>
     </button>
-  );
-}
-
-function SubBlock({
-  title,
-  children,
-}: {
-  title: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-0.5 border-t border-white/[0.06] pt-3 first:border-t-0 first:pt-0">
-      <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
-        {title}
-      </p>
-      <div className="space-y-0.5">{children}</div>
-    </div>
-  );
-}
-
-function GroupLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="px-5 pb-0.5 pt-2 text-[11px] font-medium text-white/50">
-      {children}
-    </p>
   );
 }
 
@@ -106,7 +140,7 @@ export default function SideMenu({
     <>
       <div
         className={[
-          "fixed inset-0 z-[225] bg-black/50 transition-opacity duration-300 md:bg-black/40",
+          "fixed inset-0 z-[225] bg-black/55 backdrop-blur-[2px] transition-opacity duration-300",
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
         ].join(" ")}
         aria-hidden={!open}
@@ -118,107 +152,67 @@ export default function SideMenu({
         aria-modal="true"
         aria-hidden={!open}
         className={[
-          "fixed left-0 top-0 z-[230] flex h-full w-[min(100%,20rem)] flex-col border-r border-white/10 bg-[#0a0f1a] shadow-[12px_0_48px_rgba(0,0,0,0.45)] transition-transform duration-300 ease-out",
+          "fixed left-0 top-0 z-[230] flex h-full w-[min(100%,22rem)] flex-col border-r border-white/[0.08] bg-[#070b14]/95 shadow-[16px_0_64px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <Logo size={24} href={null} />
-            <span className="text-sm font-semibold text-white/95">나의 우주 탐사</span>
+            <Logo size={22} href={null} />
+            <div>
+              <p className="text-sm font-semibold tracking-[-0.02em] text-white/95">
+                Ahaitsme
+              </p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
+                나 · 관계 · 결정
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-2 py-1 text-lg leading-none text-white/55 transition hover:bg-white/10 hover:text-white"
+            className="rounded-lg px-2 py-1 text-lg leading-none text-white/50 transition hover:bg-white/10 hover:text-white"
             aria-label="메뉴 닫기"
           >
             ×
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overscroll-contain px-2 py-3">
-          <MenuRow href="/" onNavigate={onClose}>
-            🚀 나의 탐사실 (홈)
-          </MenuRow>
-          <MenuRow href="/dashboard" onNavigate={onClose}>
-            📊 대시보드
-          </MenuRow>
+        <nav className="flex-1 overflow-y-auto overscroll-contain px-4 py-5">
+          <p className="mb-3 flex items-center gap-1.5 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/40">
+            <Sparkles className="h-3 w-3" />
+            메인 허브
+          </p>
+          <div className="space-y-2.5">
+            {NAV_ITEMS.map((item) => (
+              <NavCard key={item.href} item={item} onNavigate={onClose} />
+            ))}
+          </div>
 
-          <SubBlock title="🌌 탐험하기">
-            <MenuRow href="/" onNavigate={onClose} indent={1}>
-              ✨ 새로운 기본탐사
-            </MenuRow>
-            <MenuRow href="/report" onNavigate={onClose} indent={1}>
-              📋 기본탐사
-            </MenuRow>
-            <GroupLabel>관계탐사</GroupLabel>
-            <HubMenuRow
-              basePath="/relationships"
-              query="section=list"
-              onNavigate={onClose}
-              indent={2}
-            >
-              👥 친구 분석
-            </HubMenuRow>
-            <HubMenuRow
-              basePath="/relationships"
-              query="section=add"
-              onNavigate={onClose}
-              indent={2}
-            >
-              ➕ 친구 추가
-            </HubMenuRow>
-          </SubBlock>
-
-          <SubBlock title="📚 탐사 안내">
-            <MenuRow href="/about" onNavigate={onClose}>
-              🌟 서비스 소개
-            </MenuRow>
-            <MenuRow href="/faq" onNavigate={onClose}>
-              ❓ 자주 묻는 질문
-            </MenuRow>
-            <MenuRow href="/contact" onNavigate={onClose}>
-              📞 문의하기
-            </MenuRow>
-            <MenuRow href="/terms" onNavigate={onClose}>
-              📜 Terms of Service
-            </MenuRow>
-            <MenuRow href="/privacy" onNavigate={onClose}>
-              🔒 Privacy Policy
-            </MenuRow>
-            <MenuRow href="/refund" onNavigate={onClose}>
-              💳 Refund Policy
-            </MenuRow>
-          </SubBlock>
-
-          <SubBlock title="⚙️ 설정">
-            <MenuRow href="/account" onNavigate={onClose}>
-              👤 프로필
-            </MenuRow>
-            <button
-              type="button"
-              onClick={() => {
-                alert("알림 설정은 곧 제공될 예정이에요.");
-              }}
-              className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-white/90 transition hover:bg-white/[0.06]"
-            >
-              🔔 알림 설정
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                alert("메일 수신 설정은 곧 제공될 예정이에요.");
-              }}
-              className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-white/90 transition hover:bg-white/[0.06]"
-            >
-              📧 홍보 메일 수신동의
-            </button>
-          </SubBlock>
+          <div className="mt-8 border-t border-white/[0.06] pt-5">
+            <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/40">
+              더 알아보기
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {FOOTER_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={onClose}
+                  className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/65 transition hover:border-white/15 hover:bg-white/[0.06] hover:text-white/90"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </nav>
 
-        <div className="border-t border-white/10 px-4 py-3 text-[11px] text-white/40">
-          ℹ️ 버전 1.0.0
+        <div className="border-t border-white/[0.06] px-5 py-3.5">
+          <div className="flex items-center gap-2 text-[11px] text-white/40">
+            <UserRound className="h-3.5 w-3.5" />
+            <span>v2 · Human Framework</span>
+          </div>
         </div>
       </aside>
     </>

@@ -19,7 +19,7 @@ export const termsOfService: PolicyDocument = {
       id: "service",
       title: "2. Ahaitsme가 제공하는 것",
       paragraphs: [
-        "Ahaitsme는 한 사람당 하나의 report를 만들고, 18문항 설문·출생 정보·사주(만세력)·점성 차트·AI 해석을 조합해 개인 리포트를 제공합니다.",
+        "Ahaitsme는 한 사람당 하나의 report를 만들고, v2 10문항 설문·출생 정보·사주(만세력)·점성 차트·AI 해석을 조합해 개인 리포트를 제공합니다.",
         "유료 이용 시 심화(통합) 리포트, 친구 초대, 두 사람의 관계 분석 등이 제공될 수 있습니다.",
         "베타 기간에는 기능·UI·가격·정책이 예고 없이 변경될 수 있습니다.",
       ],

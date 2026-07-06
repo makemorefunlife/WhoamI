@@ -35,7 +35,7 @@ export default function InnateDeepEntryButton({
             : "text-[12px] font-normal opacity-90"
         }
       >
-        (자세히 보기)
+        (심화)
       </span>
     </span>
   );

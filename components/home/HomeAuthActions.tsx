@@ -107,13 +107,13 @@ export default function HomeAuthActions({
               className="w-full text-[0.9375rem] font-medium sm:text-[15px]"
               onClick={() =>
                 router.push(
-                  `/dashboard?reportId=${encodeURIComponent(resume.reportId!)}`,
+                  `/relationships?myReportId=${encodeURIComponent(resume.reportId!)}`,
                 )
               }
             >
               <span className="inline-flex items-center gap-2">
-                <SubtleButtonIcon kind="dashboard" />
-                내 탐사
+                <SubtleButtonIcon kind="relationship" />
+                관계 분석
               </span>
             </GlowButton>
           </div>
@@ -212,13 +212,13 @@ export default function HomeAuthActions({
             className="w-full text-[0.9375rem] font-semibold sm:text-[15px]"
             onClick={() =>
               router.push(
-                `/dashboard?reportId=${encodeURIComponent(resume.reportId!)}`,
+                `/blueprint-preview?reportId=${encodeURIComponent(resume.reportId!)}`,
               )
             }
           >
             <span className="inline-flex items-center gap-2">
               <SubtleButtonIcon kind="dashboard" />
-              내 탐사
+              나 분석 (Blueprint)
             </span>
           </GlowButton>
           <div className="space-y-1.5">

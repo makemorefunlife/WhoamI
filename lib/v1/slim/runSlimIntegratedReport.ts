@@ -180,7 +180,7 @@ export async function runSlimIntegratedReport(
 
         "관계 맥락 (relationship/generate)",
 
-        "v1 18문항 Y/N (Slim V1 에서 미사용)",
+        "레거시 설문 (미사용)",
 
       ],
 

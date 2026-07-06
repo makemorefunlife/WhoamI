@@ -6,8 +6,12 @@ import SpaceBackground from "@/components/space/SpaceBackground";
 import BlueprintPreviewContent from "@/components/v2/BlueprintPreviewContent";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
 import { readBirthV2Session } from "@/lib/v2/onboarding/birthSession";
-import { hasBirthPlaceForAstrology } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import {
+  ensureBirthSession,
+  hasMinimalBirth,
+} from "@/lib/v2/onboarding/hydrateBirthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
+import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 
 function BlueprintPreviewPageContent() {
   const router = useRouter();
@@ -31,18 +35,20 @@ function BlueprintPreviewPageContent() {
   useEffect(() => {
     if (!ready || !reportId || bundleLoading) return;
     if (bundle) return;
-    if (!readSurveyV2Session(reportId)) {
-      router.replace("/survey-v2");
-      return;
-    }
-    const birth = readBirthV2Session(reportId);
-    if (!birth) {
-      router.replace(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
-      return;
-    }
-    if (!hasBirthPlaceForAstrology(birth.birthPlace)) {
-      router.replace(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
-    }
+
+    void (async () => {
+      if (!readSurveyV2Session(reportId)) {
+        await hydrateSurveySession(reportId);
+      }
+      if (!readSurveyV2Session(reportId)) {
+        router.replace("/survey-v2");
+        return;
+      }
+      const birth = await ensureBirthSession(reportId);
+      if (!hasMinimalBirth(birth)) {
+        router.replace(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
+      }
+    })();
   }, [ready, reportId, bundle, bundleLoading, router]);
 
   if (!ready || bundleLoading || !bundle) {
@@ -62,6 +68,7 @@ function BlueprintPreviewPageContent() {
           reportId={reportId}
           current={bundle.survey.profile}
           innate={bundle.innate}
+          birth={bundle.birth}
           birthTimeUnknown={bundle.birth.birthTimeUnknown}
         />
       </main>

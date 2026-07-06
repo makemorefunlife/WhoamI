@@ -574,12 +574,12 @@ export default function RelationshipsDashboard() {
               type="button"
               onClick={() =>
                 router.push(
-                  `/report?id=${encodeURIComponent(reportIdForUi)}`,
+                  `/blueprint-preview?reportId=${encodeURIComponent(reportIdForUi)}`,
                 )
               }
               className="w-full rounded-xl border border-white/15 py-2.5 text-xs text-[var(--space-text-muted)] transition hover:border-white/25 hover:text-[var(--space-text)]"
             >
-              ← 내 리포트
+              ← 나 분석 (Blueprint)
             </button>
           </GlassCard>
           </div>

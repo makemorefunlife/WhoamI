@@ -18,7 +18,7 @@ import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoo
 import { astrologyLocationFingerprint } from "@/lib/report/resolveAstrologyCoordinates";
 import { syncReportBirthCoordinates } from "@/lib/report/syncReportBirthCoordinates";
 import { buildSurveyOnlyUserInputForReport } from "@/lib/report/surveyForLlmFromReportId";
-import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
+import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -125,7 +125,7 @@ export async function GET(req: Request) {
     writePremiumAccessCache(reportId, has_premium);
 
     const [has_survey, analysesBundle] = await Promise.all([
-      isSurveyCompleteForReport(supabase, reportId),
+      isV2SurveyCompleteForReport(supabase, reportId),
       has_premium
         ? readPersistedAnalysesBatch(supabase, reportId)
         : Promise.resolve({
@@ -296,9 +296,9 @@ export async function GET(req: Request) {
       astrology_from_db,
       astrology_location_key,
       result_paths: {
-        basic: `/result?id=${encodeURIComponent(reportId)}&view=basic`,
-        full: `/report?id=${encodeURIComponent(reportId)}&view=premium`,
-        payment: `/payment?reportId=${encodeURIComponent(reportId)}`,
+        blueprint: `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`,
+        relationships: `/relationships?myReportId=${encodeURIComponent(reportId)}`,
+        decision: `/decision`,
       },
     });
   } catch (e) {

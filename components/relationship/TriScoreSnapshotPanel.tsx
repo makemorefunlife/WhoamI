@@ -86,16 +86,16 @@ function TopicCard({
 
   return (
     <div
-      className={`rounded-lg border p-3 ${
+      className={`rounded-xl border p-4 sm:p-5 ${
         topic.isWarning
           ? "border-amber-400/25 bg-amber-950/15"
-          : "border-white/8 bg-black/10"
+          : "border-white/10 bg-black/15"
       }`}
     >
-      <p className="mb-2 text-xs font-semibold text-[var(--space-text)]">
+      <p className="mb-2 text-sm font-semibold text-white/92">
         {topic.title}
       </p>
-      <p className="mb-2 text-[10px] text-[var(--space-text-muted)]">
+      <p className="mb-3 text-xs leading-relaxed text-white/55">
         {topic.subtitle}
       </p>
       <div className="mb-2 space-y-1.5">
@@ -124,7 +124,7 @@ function TopicCard({
           </>
         )}
       </div>
-      <p className="text-[11px] leading-relaxed text-[var(--space-text-muted)]">
+      <p className="text-[15px] leading-[1.7] text-white/72">
         {topic.interpretation}
       </p>
     </div>

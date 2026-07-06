@@ -3,7 +3,6 @@ import type { TenGodActivationRow } from "@/lib/saju/tenGodActivation";
 import type { RomanticCrossBodyContext } from "@/lib/relationship/romanticEverydayText";
 import { resolveDayStemNamesFromPair } from "@/lib/relationship/romanticEverydayText";
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
-import type { DomainKey } from "@/lib/relationship/surveyPatterns";
 import type { RelationshipAxisKey } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import type {
   RomanticInsightCandidate,
@@ -15,6 +14,16 @@ import type {
   PrimaryAxisKey,
   SecondaryAxisKey,
 } from "@/lib/v2/survey/types";
+
+export type DomainKey =
+  | "mbti"
+  | "disc"
+  | "enneagram"
+  | "riasec"
+  | "pss"
+  | "tci";
+
+export type SurveyPatternRecord = Partial<Record<DomainKey, string>>;
 
 export type RomanticRuleScreen = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -33,8 +42,6 @@ export type StrengthSnapshot = {
 };
 
 export type TenGodCounts = Record<string, number>;
-
-export type SurveyPatternRecord = Partial<Record<DomainKey, string>>;
 
 export type RelationshipBasicAxes = Partial<
   Record<

@@ -22,7 +22,7 @@ export type IntegratedPremiumLlmResult = {
 function buildIntegratedFallback(input: IntegratedPremiumLlmInput): string {
   return `[폴백] OPENAI_API_KEY가 없거나 LLM 호출에 실패해 유료 통합 리포트 본문을 생성하지 못했습니다.
 
-이 탭은 기존 v1 파이프라인(runPremiumReportPipeline → /api/llm mode=integrated)과 동일한 프롬프트(INTEGRATED_SYSTEM_PROMPT, Phase1·Phase2)로 Part 0~5 통합 에세이를 만듭니다.
+이 탭은 `/api/llm` mode=integrated 와 동일한 프롬프트(INTEGRATED_SYSTEM_PROMPT, Phase1·Phase2)로 Part 0~5 통합 에세이를 만듭니다.
 
 --- 입력 요약 ---
 ■ 설문 (${input.surveyAnalysis.length}자)

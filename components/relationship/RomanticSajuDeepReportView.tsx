@@ -15,6 +15,16 @@ import type {
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { resolveSnapshotPanelFromReport } from "@/lib/relationship/romanticSnapshot/buildRomanticSnapshot";
 import RomanticSnapshotPanelView from "@/components/relationship/RomanticSnapshotPanel";
+import {
+  RelationshipReportLayout,
+  RelationshipReportCard,
+  RelationshipReportBody,
+  RelationshipReportParagraph,
+  RelationshipReportLabel,
+  RelationshipReportInset,
+  getTabTheme,
+  type ScoreMetric,
+} from "@/components/relationship/reportLayout";
 
 const COMPARISON_ASPECTS = [
   "감정 표현",
@@ -25,30 +35,15 @@ const COMPARISON_ASPECTS = [
   "소통 방식",
 ] as const;
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-      <h3 className="mb-3 text-sm font-semibold text-[#ffd6a5]">{title}</h3>
-      <div className="space-y-2 text-sm leading-relaxed text-[var(--space-text)]">
-        {children}
-      </div>
-    </section>
-  );
-}
-
 function P({ children }: { children: ReactNode }) {
   const text =
     typeof children === "string"
       ? polishRomanticDisplayText(children)
       : children;
   return (
-    <p className="whitespace-pre-wrap text-[var(--space-text-muted)]">{text}</p>
+    <RelationshipReportParagraph className="whitespace-pre-wrap">
+      {text}
+    </RelationshipReportParagraph>
   );
 }
 
@@ -90,18 +85,19 @@ function isRedundantInsightHook(slot: RomanticScreenSlot): boolean {
     if (parts.length >= 2 && parts.every((p) => p === parts[0])) return true;
   }
   if (slot.key === "conflict" || slot.key === "action") return true;
+  if (!headline && !body) return true;
   return false;
 }
 
 function InsightHook({ slot }: { slot: RomanticScreenSlot | undefined }) {
   if (!slot?.body || isRedundantInsightHook(slot)) return null;
   return (
-    <div className="mb-3 rounded-lg border border-[#ffd6a5]/15 bg-[#ffd6a5]/5 px-3 py-2">
-      <p className="text-xs font-medium text-[#ffd6a5]/90">
+    <RelationshipReportInset className="border-[#ffd6a5]/20 bg-[#ffd6a5]/6">
+      <p className="text-sm font-medium text-[#ffd6a5]/95">
         {polishRomanticDisplayText(slot.headline)}
       </p>
       <P>{slot.body}</P>
-    </div>
+    </RelationshipReportInset>
   );
 }
 
@@ -139,7 +135,11 @@ function mergeComparisonTable(
     };
   });
   for (const row of rows) {
-    if (!COMPARISON_ASPECTS.includes(row.aspect as (typeof COMPARISON_ASPECTS)[number])) {
+    if (
+      !COMPARISON_ASPECTS.includes(
+        row.aspect as (typeof COMPARISON_ASPECTS)[number],
+      )
+    ) {
       merged.push({
         aspect: row.aspect,
         a: stripComparisonCellSubject(row.a, nameA),
@@ -157,17 +157,21 @@ function screenByKey(
   return plan?.find((s) => s.key === key);
 }
 
-function eventScoreHint(
+function extractRomanticScores(
   meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
-): string | null {
+): ScoreMetric[] {
   const scores = meta?.event_scores as
     | {
         overall?: { activation: number; benefit: number; risk: number };
       }
     | undefined;
-  if (!scores?.overall) return null;
+  if (!scores?.overall) return [];
   const { activation, benefit, risk } = scores.overall;
-  return `🔥 호감 ${activation} · 🧩 케미 ${benefit} · ⚡ 예민 ${risk}`;
+  return [
+    { emoji: "🔥", label: "호감", value: activation, tone: "warm" },
+    { emoji: "🧩", label: "케미", value: benefit, tone: "cool" },
+    { emoji: "⚡", label: "예민", value: risk, tone: "alert" },
+  ];
 }
 
 function ruleScreenTitle(
@@ -181,9 +185,7 @@ function ruleScreenTitle(
   return plan?.find((s) => s.key === key)?.title ?? fallback;
 }
 
-function filterDialogueTable(
-  rows: DialogueTableRow[],
-): DialogueTableRow[] {
+function filterDialogueTable(rows: DialogueTableRow[]): DialogueTableRow[] {
   return rows.filter((row) => {
     const label = String(row.label ?? row.speaker ?? "").trim();
     if (!label) return true;
@@ -201,6 +203,7 @@ export default function RomanticSajuDeepReportView({
   nameA: string;
   nameB: string;
 }) {
+  const theme = getTabTheme("romantic");
   const s1 = report.section_1_summary;
   const s2 = report.section_2_nature;
   const special = report.section_4_special_bond;
@@ -213,7 +216,11 @@ export default function RomanticSajuDeepReportView({
   const s6 = report.section_6_timeline as Record<string, Record<string, string>>;
 
   const conflict = s3?.conflict_situation;
-  const comparisonTable = mergeComparisonTable(s2.comparison_table ?? [], nameA, nameB);
+  const comparisonTable = mergeComparisonTable(
+    s2.comparison_table ?? [],
+    nameA,
+    nameB,
+  );
   const dialogueTable = filterDialogueTable(
     (conflict?.dialogue_table ?? []) as DialogueTableRow[],
   );
@@ -224,40 +231,36 @@ export default function RomanticSajuDeepReportView({
   const screenPlan = resolveScreenPlan(report);
   const opening = getScreen1Opening(screenPlan, s1);
   const snapshotPanel = resolveSnapshotPanelFromReport(report.meta);
+  const scores = extractRomanticScores(report.meta);
 
   return (
-    <div className="space-y-4">
-      <Section title="💞 관계 요약">
-        <p className="text-base font-medium text-[var(--space-text)]">
-          {polishRomanticDisplayText(opening.headline)}
-        </p>
-        <P>{opening.body}</P>
-        <p className="inline-flex rounded-full border border-[#ffd6a5]/30 bg-[#ffd6a5]/10 px-3 py-1 text-xs font-medium text-[#ffd6a5]">
-          궁합 등급 {opening.grade}
-        </p>
-        {eventScoreHint(report.meta) ? (
-          <p className="mt-2 text-xs leading-relaxed text-[var(--space-text-muted)]">
-            {eventScoreHint(report.meta)}
-          </p>
-        ) : null}
-      </Section>
-
-      {snapshotPanel ? (
-        <Section title="📊 관계 스냅샷">
+    <RelationshipReportLayout
+      kind="romantic"
+      kindLabel="Premium · 연인 사주 심화"
+      headline={{
+        title: polishRomanticDisplayText(opening.headline),
+        subtitle: polishRomanticDisplayText(opening.body),
+        names: [nameA, nameB],
+        badge: opening.grade ? `궁합 등급 ${opening.grade}` : undefined,
+      }}
+      scores={scores}
+      scoreFooter={
+        snapshotPanel ? (
           <RomanticSnapshotPanelView panel={snapshotPanel} />
-        </Section>
-      ) : null}
-
-      <Section
+        ) : undefined
+      }
+    >
+      <RelationshipReportCard
         title={`🔍 ${ruleScreenTitle(report.meta, "compare", "서로 비교")}`}
+        accentColor={theme.accent}
       >
-        <div className="overflow-x-auto rounded-lg border border-white/10">
-          <table className="w-full min-w-[280px] text-left text-xs">
+        <div className="overflow-x-auto rounded-xl border border-white/10">
+          <table className="w-full min-w-[280px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-[var(--space-text-muted)]">
-                <th className="px-2 py-2 font-medium">항목</th>
-                <th className="px-2 py-2 font-medium">{nameA}</th>
-                <th className="px-2 py-2 font-medium">{nameB}</th>
+              <tr className="border-b border-white/10 text-white/55">
+                <th className="px-4 py-3 font-medium">항목</th>
+                <th className="px-4 py-3 font-medium">{nameA}</th>
+                <th className="px-4 py-3 font-medium">{nameB}</th>
               </tr>
             </thead>
             <tbody>
@@ -266,66 +269,74 @@ export default function RomanticSajuDeepReportView({
                   key={row.aspect}
                   className="border-b border-white/5 last:border-0"
                 >
-                  <td className="px-2 py-2 font-medium text-[var(--space-text)]">
+                  <td className="px-4 py-3 font-medium text-white/88">
                     {row.aspect}
                   </td>
-                  <td className="px-2 py-2 text-[var(--space-text-muted)]">
-                    {row.a}
-                  </td>
-                  <td className="px-2 py-2 text-[var(--space-text-muted)]">
-                    {row.b}
-                  </td>
+                  <td className="px-4 py-3 text-white/72">{row.a}</td>
+                  <td className="px-4 py-3 text-white/72">{row.b}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </Section>
+      </RelationshipReportCard>
 
-      <Section title="📝 서로의 성향">
-        <p className="mt-3 font-medium text-[var(--space-text)]">{nameA}</p>
-        {s2.a_nature.image_metaphor ? (
-          <p className="text-xs text-[#ffd6a5]/85">{s2.a_nature.image_metaphor}</p>
-        ) : null}
-        {s2.a_nature.first_person_voice ? (
-          <blockquote className="rounded-lg border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-3 text-sm italic text-[var(--space-text)]">
-            {s2.a_nature.first_person_voice}
-          </blockquote>
-        ) : null}
-        <P>{s2.a_nature.description}</P>
-        <P>{s2.a_nature.meeting_b}</P>
-        <P>{s2.a_nature.together_change}</P>
+      <RelationshipReportCard
+        title="📝 서로의 성향"
+        accentColor={theme.accent}
+      >
+        <RelationshipReportBody>
+          <p className="text-base font-semibold text-white/92">{nameA}</p>
+          {s2.a_nature.image_metaphor ? (
+            <p className="text-sm text-[#ffd6a5]/90">
+              {s2.a_nature.image_metaphor}
+            </p>
+          ) : null}
+          {s2.a_nature.first_person_voice ? (
+            <blockquote className="rounded-xl border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-4 text-[15px] italic leading-relaxed text-white/88">
+              {s2.a_nature.first_person_voice}
+            </blockquote>
+          ) : null}
+          <P>{s2.a_nature.description}</P>
+          <P>{s2.a_nature.meeting_b}</P>
+          <P>{s2.a_nature.together_change}</P>
 
-        <p className="mt-3 font-medium text-[var(--space-text)]">{nameB}</p>
-        {s2.b_nature.image_metaphor ? (
-          <p className="text-xs text-[#ffd6a5]/85">{s2.b_nature.image_metaphor}</p>
-        ) : null}
-        {s2.b_nature.first_person_voice ? (
-          <blockquote className="rounded-lg border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-3 text-sm italic text-[var(--space-text)]">
-            {s2.b_nature.first_person_voice}
-          </blockquote>
-        ) : null}
-        <P>{s2.b_nature.description}</P>
-        <P>{s2.b_nature.meeting_a}</P>
-        <P>{s2.b_nature.together_change}</P>
-      </Section>
+          <p className="mt-6 text-base font-semibold text-white/92">{nameB}</p>
+          {s2.b_nature.image_metaphor ? (
+            <p className="text-sm text-[#ffd6a5]/90">
+              {s2.b_nature.image_metaphor}
+            </p>
+          ) : null}
+          {s2.b_nature.first_person_voice ? (
+            <blockquote className="rounded-xl border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-4 text-[15px] italic leading-relaxed text-white/88">
+              {s2.b_nature.first_person_voice}
+            </blockquote>
+          ) : null}
+          <P>{s2.b_nature.description}</P>
+          <P>{s2.b_nature.meeting_a}</P>
+          <P>{s2.b_nature.together_change}</P>
+        </RelationshipReportBody>
+      </RelationshipReportCard>
 
       {special ? (
-        <Section title="⚖️ 이 관계가 특별한 이유">
+        <RelationshipReportCard
+          title="⚖️ 이 관계가 특별한 이유"
+          accentColor={theme.accent}
+        >
           <InsightHook slot={screenByKey(screenPlan, "bond")} />
           {special.a_gives_b ? (
             <>
-              <p className="text-xs font-medium text-[var(--space-text)]">
+              <RelationshipReportLabel>
                 ✨ {nameA} → {nameB}
-              </p>
+              </RelationshipReportLabel>
               <P>{special.a_gives_b}</P>
             </>
           ) : null}
           {special.b_gives_a ? (
             <>
-              <p className="text-xs font-medium text-[var(--space-text)]">
+              <RelationshipReportLabel>
                 ✨ {nameB} → {nameA}
-              </p>
+              </RelationshipReportLabel>
               <P>{special.b_gives_a}</P>
             </>
           ) : null}
@@ -333,31 +344,37 @@ export default function RomanticSajuDeepReportView({
             <P>{special.power_to_each_other}</P>
           ) : null}
           <P>{special.only_together}</P>
-          <p className="font-medium text-[#ffd6a5]/90">
+          <p className="text-base font-medium" style={{ color: theme.accent }}>
             {special.relationship_formula}
           </p>
           <P>{special.why_special}</P>
-        </Section>
+        </RelationshipReportCard>
       ) : null}
 
-      <Section title="🌙 서로의 숨은 마음">
+      <RelationshipReportCard
+        title="🌙 서로의 숨은 마음"
+        accentColor={theme.accent}
+      >
         <InsightHook slot={screenByKey(screenPlan, "hidden")} />
-        <p className="text-xs font-medium text-[var(--space-text)]">{nameA}</p>
+        <RelationshipReportLabel>{nameA}</RelationshipReportLabel>
         <P>{String((s4.a_hidden as { voice?: string })?.voice ?? "")}</P>
-        <p className="text-xs font-medium text-[var(--space-text)]">{nameB}</p>
+        <RelationshipReportLabel className="mt-3">{nameB}</RelationshipReportLabel>
         <P>{String((s4.b_hidden as { voice?: string })?.voice ?? "")}</P>
         <P>{String(s4.mutual_gift ?? "")}</P>
-      </Section>
+      </RelationshipReportCard>
 
       {conflict && dialogueTable.length > 0 ? (
-        <Section title={`💬 ${String(conflict.title ?? "갈등 패턴")}`}>
-          <div className="overflow-x-auto rounded-lg border border-white/10">
-            <table className="w-full min-w-[300px] text-left text-xs">
+        <RelationshipReportCard
+          title={`💬 ${String(conflict.title ?? "갈등 패턴")}`}
+          accentColor={theme.accent}
+        >
+          <div className="overflow-x-auto rounded-xl border border-white/10">
+            <table className="w-full min-w-[300px] text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-[var(--space-text-muted)]">
-                  <th className="px-2 py-2">구분</th>
-                  <th className="px-2 py-2">❌ 자주 하던 말</th>
-                  <th className="px-2 py-2">✅ 이렇게 바꿔보면</th>
+                <tr className="border-b border-white/10 text-white/55">
+                  <th className="px-4 py-3">구분</th>
+                  <th className="px-4 py-3">❌ 자주 하던 말</th>
+                  <th className="px-4 py-3">✅ 이렇게 바꿔보면</th>
                 </tr>
               </thead>
               <tbody>
@@ -366,14 +383,12 @@ export default function RomanticSajuDeepReportView({
                     key={`${row.label}-${i}`}
                     className="border-b border-white/5 last:border-0"
                   >
-                    <td className="px-2 py-2 text-[var(--space-text)]">
+                    <td className="px-4 py-3 text-white/88">
                       {row.label ?? row.speaker}
                       {row.emoji ? ` ${row.emoji}` : ""}
                     </td>
-                    <td className="px-2 py-2 text-red-200/80">
-                      {row.bad_line}
-                    </td>
-                    <td className="px-2 py-2 text-emerald-200/80">
+                    <td className="px-4 py-3 text-red-200/85">{row.bad_line}</td>
+                    <td className="px-4 py-3 text-emerald-200/85">
                       {row.good_line}
                     </td>
                   </tr>
@@ -381,88 +396,96 @@ export default function RomanticSajuDeepReportView({
               </tbody>
             </table>
           </div>
-        </Section>
+        </RelationshipReportCard>
       ) : null}
 
-      <Section title="🌱 서로에게 도움이 되는 행동들">
-        {adviceA.length > 0 ? (
-          <p className="text-xs font-medium text-[var(--space-text)]">
-            {nameA}께
-          </p>
-        ) : null}
-        {adviceA.map((line, i) => {
-          const item = formatAdvice(line);
-          return (
-            <div
-              key={`a-${i}`}
-              className="space-y-1 border-b border-white/5 pb-2 last:border-0"
-            >
-              <p className="text-[var(--space-text)]">
-                {i + 1}. {item.title}
-              </p>
-              {item.detail ? <P>{item.detail}</P> : null}
-              {item.phrase ? (
-                <p className="text-xs italic text-[#9ec8ff]">{item.phrase}</p>
-              ) : null}
-            </div>
-          );
-        })}
-        {adviceB.length > 0 ? (
-          <p className="mt-2 text-xs font-medium text-[var(--space-text)]">
-            {nameB}께
-          </p>
-        ) : null}
-        {adviceB.map((line, i) => {
-          const item = formatAdvice(line);
-          return (
-            <div
-              key={`b-${i}`}
-              className="space-y-1 border-b border-white/5 pb-2 last:border-0"
-            >
-              <p className="text-[var(--space-text)]">
-                {i + 1}. {item.title}
-              </p>
-              {item.detail ? <P>{item.detail}</P> : null}
-              {item.phrase ? (
-                <p className="text-xs italic text-[#9ec8ff]">{item.phrase}</p>
-              ) : null}
-            </div>
-          );
-        })}
-        <P>{String(s5.together ?? "")}</P>
-        {s5.together_starter ? (
-          <p className="text-xs italic text-[#9ec8ff]">
-            {String(s5.together_starter)}
-          </p>
-        ) : null}
-        <p className="italic text-[#ffd6a5]/90">{String(s5.promise ?? "")}</p>
-      </Section>
-
-      <Section title="⏰ 시간이 지나면 이렇게 달라져요">
-        {Object.entries(s6 ?? {}).map(([key, block]) => (
-          <div
-            key={key}
-            className="border-t border-white/5 pt-2 first:border-0 first:pt-0"
-          >
-            <p className="text-xs font-medium text-[var(--space-text)]">
-              {block.period}
+      <RelationshipReportCard
+        title="🌱 서로에게 도움이 되는 행동들"
+        accentColor={theme.accent}
+      >
+        <RelationshipReportBody>
+          {adviceA.length > 0 ? (
+            <RelationshipReportLabel>{nameA}께</RelationshipReportLabel>
+          ) : null}
+          {adviceA.map((line, i) => {
+            const item = formatAdvice(line);
+            return (
+              <div
+                key={`a-${i}`}
+                className="space-y-2 border-b border-white/6 pb-4 last:border-0"
+              >
+                <p className="text-white/88">
+                  {i + 1}. {item.title}
+                </p>
+                {item.detail ? <P>{item.detail}</P> : null}
+                {item.phrase ? (
+                  <p className="text-sm italic text-[#9ec8ff]">{item.phrase}</p>
+                ) : null}
+              </div>
+            );
+          })}
+          {adviceB.length > 0 ? (
+            <RelationshipReportLabel className="mt-2">
+              {nameB}께
+            </RelationshipReportLabel>
+          ) : null}
+          {adviceB.map((line, i) => {
+            const item = formatAdvice(line);
+            return (
+              <div
+                key={`b-${i}`}
+                className="space-y-2 border-b border-white/6 pb-4 last:border-0"
+              >
+                <p className="text-white/88">
+                  {i + 1}. {item.title}
+                </p>
+                {item.detail ? <P>{item.detail}</P> : null}
+                {item.phrase ? (
+                  <p className="text-sm italic text-[#9ec8ff]">{item.phrase}</p>
+                ) : null}
+              </div>
+            );
+          })}
+          <P>{String(s5.together ?? "")}</P>
+          {s5.together_starter ? (
+            <p className="text-sm italic text-[#9ec8ff]">
+              {String(s5.together_starter)}
             </p>
-            <P>
-              {block.description ??
-                block.change ??
-                block.growth ??
-                block.vision ??
-                block.advice ??
-                ""}
-            </P>
-            {block.focus || block.prepare || block.goal || block.memory ? (
+          ) : null}
+          <p className="italic" style={{ color: theme.accent }}>
+            {String(s5.promise ?? "")}
+          </p>
+        </RelationshipReportBody>
+      </RelationshipReportCard>
+
+      <RelationshipReportCard
+        title="⏰ 시간이 지나면 이렇게 달라져요"
+        accentColor={theme.accent}
+      >
+        <RelationshipReportBody>
+          {Object.entries(s6 ?? {}).map(([key, block]) => (
+            <div
+              key={key}
+              className="border-t border-white/6 pt-4 first:border-0 first:pt-0"
+            >
+              <p className="text-sm font-medium text-white/88">{block.period}</p>
               <P>
-                {block.focus ?? block.prepare ?? block.goal ?? block.memory}
+                {block.description ??
+                  block.change ??
+                  block.growth ??
+                  block.vision ??
+                  block.advice ??
+                  ""}
               </P>
-            ) : null}
-          </div>
-        ))}
-      </Section>
-    </div>
+              {block.focus || block.prepare || block.goal || block.memory ? (
+                <P>
+                  {block.focus ?? block.prepare ?? block.goal ?? block.memory}
+                </P>
+              ) : null}
+            </div>
+          ))}
+        </RelationshipReportBody>
+      </RelationshipReportCard>
+    </RelationshipReportLayout>
   );
 }

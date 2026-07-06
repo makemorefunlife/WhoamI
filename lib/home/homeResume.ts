@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { countHubRelationshipSummary } from "@/lib/relationship/hubRelationshipSummary";
-import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
+import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { resolveCanonicalReport } from "@/lib/home/resolveCanonicalReport";
 
 export type HomeResumeSessionStatus =
@@ -54,7 +54,7 @@ export async function buildGuestHomeResume(
   if (error || !report?.id) return null;
   if (report.clerk_user_id != null) return null;
 
-  const surveyCompleted = await isSurveyCompleteForReport(supabase, report.id);
+  const surveyCompleted = await isV2SurveyCompleteForReport(supabase, report.id);
   const relationshipSummary = surveyCompleted
     ? await countHubRelationshipSummary(supabase, report.id)
     : { pending: 0, completed: 0 };
@@ -113,7 +113,7 @@ export async function buildHomeResume(
     return { ...empty, ctaBranch: resolveHomeCtaBranch(empty) };
   }
 
-  const surveyCompleted = await isSurveyCompleteForReport(supabase, report.id);
+  const surveyCompleted = await isV2SurveyCompleteForReport(supabase, report.id);
   const name = report.name?.trim() ?? null;
 
   const relationshipSummary = surveyCompleted

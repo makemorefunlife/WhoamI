@@ -1,28 +1,9 @@
-const PREFIX = "ahaitsme_unified_report_v1_";
-
-export function readUnifiedReportCache(reportId: string): string | null {
-  if (!reportId || typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(`${PREFIX}${reportId}`);
-    return raw && raw.trim() ? raw : null;
-  } catch {
-    return null;
-  }
-}
-
-export function writeUnifiedReportCache(reportId: string, text: string) {
-  if (!reportId || !text.trim() || typeof window === "undefined") return;
-  try {
-    sessionStorage.setItem(`${PREFIX}${reportId}`, text);
-  } catch {
-    /* ignore quota */
-  }
-}
-
+/** 블루프린트 심화 캐시 초기화 (localStorage) */
 export function clearUnifiedReportCache(reportId: string) {
-  if (!reportId || typeof window === "undefined") return;
+  const id = reportId.trim();
+  if (!id || typeof window === "undefined") return;
   try {
-    sessionStorage.removeItem(`${PREFIX}${reportId}`);
+    localStorage.removeItem(`unifiedReport:${id}`);
   } catch {
     /* ignore */
   }

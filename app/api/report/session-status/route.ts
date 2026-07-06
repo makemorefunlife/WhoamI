@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
+import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
       });
     }
 
-    const surveyCompleted = await isSurveyCompleteForReport(
+    const surveyCompleted = await isV2SurveyCompleteForReport(
       supabase,
       reportId,
     );

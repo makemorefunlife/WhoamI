@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isSurveyCompleteForReport } from "@/lib/report/surveyCompletion";
+import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 
 export type CanonicalReportRow = {
   id: string;
@@ -112,14 +112,19 @@ export async function resolveCanonicalReport(
   const scored = await Promise.all(
     candidates.map(async (report) => ({
       report,
-      surveyCompleted: await isSurveyCompleteForReport(supabase, report.id),
+      surveyCompleted: await isV2SurveyCompleteForReport(supabase, report.id),
     })),
   );
 
   const completed = scored
     .filter((x) => x.surveyCompleted)
     .map((x) => x.report)
-    .sort(sortByNewest);
+    .sort((a, b) => {
+      const aHasBirth = Boolean(a.birth_date?.trim());
+      const bHasBirth = Boolean(b.birth_date?.trim());
+      if (aHasBirth !== bHasBirth) return aHasBirth ? -1 : 1;
+      return sortByNewest(a, b);
+    });
 
   if (completed.length > 0) {
     const pick = completed[0]!;

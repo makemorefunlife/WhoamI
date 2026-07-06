@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/space/GlassCard";
 import GlowButton from "@/components/space/GlowButton";
@@ -7,25 +8,31 @@ import DualAxisRadarChart, {
   BLUEPRINT_CURRENT_STROKE,
   BLUEPRINT_INNATE_STROKE,
 } from "@/components/v2/DualAxisRadarChart";
+import BlueprintLiteReportsSection from "@/components/v2/BlueprintLiteReportsSection";
 import { PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
 import {
   buildBlueprintHookCopy,
 } from "@/lib/v2/blueprint/hookCopy";
 import { buildGapRows, gapDeltaTone } from "@/lib/v2/analysis/gap";
+import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { InnateSelfLiteProfile } from "@/lib/v2/saju/innateLite";
-import FreeBadge from "@/components/v2/FreeBadge";
+import { clearSurveyV2Session } from "@/lib/v2/survey/session";
+import { clearSurveyOnServer } from "@/lib/v2/survey/surveyClient";
+import { clearLiteReports } from "@/lib/v2/lite/session";
 import InnateDeepEntryButton from "@/components/v2/InnateDeepEntryButton";
 
 export default function BlueprintPreviewContent({
   reportId,
   current,
   innate,
+  birth,
   birthTimeUnknown,
 }: {
   reportId: string;
   current: CurrentSelfProfile;
   innate: InnateSelfLiteProfile;
+  birth: BirthV2Session;
   birthTimeUnknown: boolean;
 }) {
   const router = useRouter();
@@ -37,7 +44,19 @@ export default function BlueprintPreviewContent({
     primaryConcern: current.personalization.primary_concern,
   });
 
-  const detailBase = `/blueprint-preview/${encodeURIComponent(reportId)}`;
+  const handleRedoSurvey = useCallback(async () => {
+    if (
+      !window.confirm(
+        "설문을 다시 하면 기존 답변과 지금의 나 리포트가 초기화돼요. 계속할까요?",
+      )
+    ) {
+      return;
+    }
+    clearSurveyV2Session(reportId);
+    clearLiteReports(reportId);
+    await clearSurveyOnServer(reportId);
+    router.push(`/survey-v2?redo=1`);
+  }, [reportId, router]);
 
   return (
     <div className="w-full max-w-lg space-y-6 pb-16">
@@ -80,48 +99,13 @@ export default function BlueprintPreviewContent({
           </p>
         </div>
 
+        <BlueprintLiteReportsSection
+          reportId={reportId}
+          profile={current}
+          birth={birth}
+        />
+
         <div className="space-y-3 border-t border-white/10 pt-4">
-          <p className="text-center text-xs font-semibold tracking-wide text-[rgba(255,255,255,0.65)]">
-            세부레포트 보기
-          </p>
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <GlowButton
-              type="button"
-              variant="secondary"
-              className="w-full !px-4 !py-4"
-              onClick={() => router.push(`${detailBase}/current`)}
-            >
-              <span className="flex flex-col items-center gap-1.5 text-center">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="text-[15px] font-semibold leading-tight text-[#7B9BFF]">
-                    지금의 나
-                  </span>
-                  <FreeBadge />
-                </span>
-                <span className="text-[12px] font-normal leading-snug text-white/50">
-                  (설문결과)
-                </span>
-              </span>
-            </GlowButton>
-            <GlowButton
-              type="button"
-              variant="secondary"
-              className="w-full !px-4 !py-4"
-              onClick={() => router.push(`${detailBase}/innate`)}
-            >
-              <span className="flex flex-col items-center gap-1.5 text-center">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="text-[15px] font-semibold leading-tight text-[#FF9A3C]">
-                    본래의 나
-                  </span>
-                  <FreeBadge />
-                </span>
-                <span className="text-[12px] font-normal leading-snug text-white/50">
-                  (기질분석)
-                </span>
-              </span>
-            </GlowButton>
-          </div>
           <InnateDeepEntryButton reportId={reportId} featured />
         </div>
 
@@ -183,17 +167,24 @@ export default function BlueprintPreviewContent({
         </div>
       </GlassCard>
 
-      <p className="text-center">
+      <p className="text-center space-y-2">
         <button
           type="button"
-          className="text-xs text-white/45 underline-offset-2 hover:text-white/65 hover:underline"
+          className="block w-full text-xs text-white/45 underline-offset-2 hover:text-white/65 hover:underline"
           onClick={() =>
             router.push(
-              `/onboarding/birth?reportId=${encodeURIComponent(reportId)}&reset=1`,
+              `/account#birth`,
             )
           }
         >
-          출생 정보가 다르면 여기서 초기화 후 다시 입력
+          출생 정보 수정은 계정 → 출생 정보에서
+        </button>
+        <button
+          type="button"
+          className="block w-full text-xs text-white/45 underline-offset-2 hover:text-white/65 hover:underline"
+          onClick={() => void handleRedoSurvey()}
+        >
+          설문 다시하기
         </button>
       </p>
     </div>

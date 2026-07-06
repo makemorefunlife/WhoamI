@@ -3,6 +3,7 @@ import {
   fetchHomeResumeClient,
 } from "@/lib/home/fetchHomeResumeClient";
 import { logCanonicalReportIdMismatch } from "@/lib/home/canonicalReportIdLog";
+import { syncBirthFromResumeFields } from "@/lib/v2/onboarding/syncBirthFromResume";
 
 export type CanonicalReportIdSource = "resume" | "hint-fallback" | "none";
 
@@ -32,6 +33,13 @@ export async function resolveCanonicalReportIdClient(
 
   if (resume.ok) {
     const canonical = applyResumeReportIdToStorage(resume.data)?.trim() ?? "";
+    if (canonical) {
+      syncBirthFromResumeFields(canonical, {
+        birthDate: resume.data.birthDate,
+        birthTime: resume.data.birthTime,
+        birthPlace: resume.data.birthPlace,
+      });
+    }
     if (hint && canonical) {
       logCanonicalReportIdMismatch(hint, canonical, context);
     }

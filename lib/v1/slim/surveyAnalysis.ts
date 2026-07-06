@@ -1,4 +1,3 @@
-import { buildDetailedSurveyFromPatterns } from "@/lib/report/buildDetailedSurveyFromPatterns";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import {
   PRIMARY_AXIS_LABELS,
@@ -48,23 +47,15 @@ export function buildSurveyAnalysisForSlimV1(
   return { text: buildSurveyAnalysisFallback(), source: "none_fallback" };
 }
 
-/**
- * 통합 리포트 설문 입력 — v2 우선, 없으면 레거시 18문항 Y/N, 최종 폴백
- * (/report 레거시 파이프라인용 — Slim V1 은 buildSurveyAnalysisForSlimV1 사용)
- */
+/** 통합 리포트 설문 입력 — v2 10문항만 */
 export function buildSurveyAnalysisForIntegrated(input: {
   v2Profile?: CurrentSelfProfile | null;
-  v1Patterns?: Record<string, string> | null;
-}): { text: string; source: "v2_survey_10q" | "v1_survey_18q" | "none_fallback" } {
+}): { text: string; source: "v2_survey_10q" | "none_fallback" } {
   if (input.v2Profile) {
     return {
       text: buildSurveyAnalysisFromV2Profile(input.v2Profile),
       source: "v2_survey_10q",
     };
-  }
-  const legacy = buildDetailedSurveyFromPatterns(input.v1Patterns ?? null);
-  if (legacy?.trim()) {
-    return { text: legacy, source: "v1_survey_18q" };
   }
   return { text: buildSurveyAnalysisFallback(), source: "none_fallback" };
 }

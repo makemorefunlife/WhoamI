@@ -40,7 +40,7 @@ export function useCanonicalReportId({
 
       const next = new URLSearchParams(searchParams.toString());
       next.set(queryParam, canonical);
-      const base = pathname || "/result";
+      const base = pathname || "/";
       router.replace(`${base}?${next.toString()}`, { scroll: false });
     },
     [urlHint, queryParam, pathname, router, searchParams],

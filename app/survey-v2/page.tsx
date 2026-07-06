@@ -12,10 +12,17 @@ import {
 } from "@/lib/v2/survey/questions";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import {
+  clearSurveyV2Session,
   hasSurveyV2Session,
   writeSurveyV2Session,
 } from "@/lib/v2/survey/session";
+import {
+  clearSurveyOnServer,
+  hydrateSurveySession,
+  persistSurveyToServer,
+} from "@/lib/v2/survey/surveyClient";
 import { hasBirthV2Session } from "@/lib/v2/onboarding/birthSession";
+import { hydrateBirthSession } from "@/lib/v2/onboarding/hydrateBirthSession";
 
 const STATUS_LINES = [
   "탐사하는 중",
@@ -45,6 +52,7 @@ export default function SurveyV2Page() {
     async function boot() {
       const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
+      const wantRedo = params.get("redo") === "1";
       if (token) localStorage.setItem("inviteToken", token);
 
       const reportId = localStorage.getItem("reportId");
@@ -58,9 +66,23 @@ export default function SurveyV2Page() {
         return;
       }
 
+      if (wantRedo) {
+        clearSurveyV2Session(reportId);
+        await clearSurveyOnServer(reportId);
+        if (!cancelled) setSessionReady(true);
+        return;
+      }
+
+      if (!hasSurveyV2Session(reportId)) {
+        await hydrateSurveySession(reportId);
+      }
+
       if (hasSurveyV2Session(reportId)) {
+        const hasBirth =
+          hasBirthV2Session(reportId) ||
+          (await hydrateBirthSession(reportId));
         router.replace(
-          hasBirthV2Session(reportId)
+          hasBirth
             ? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`
             : `/onboarding/birth?reportId=${encodeURIComponent(reportId)}`,
         );
@@ -101,6 +123,7 @@ export default function SurveyV2Page() {
     setFinishing(true);
     const profile = scoreSurveyAnswers(payload);
     writeSurveyV2Session(reportId, { answers: payload, profile });
+    void persistSurveyToServer(reportId, payload, profile);
     router.push(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
   };
 

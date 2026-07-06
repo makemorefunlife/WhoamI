@@ -1,6 +1,6 @@
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlowButton from "@/components/space/GlowButton";
-import { CircleDot, Orbit, Radar, Satellite, Waves, UserRound } from "lucide-react";
+import { CircleDot, Compass, GitBranch, Orbit, Radar, Satellite, Scale, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 export default function AboutPage() {
@@ -41,6 +41,39 @@ export default function AboutPage() {
               <span className="absolute left-1/2 top-1/2 block h-[136%] w-[136%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8DA3D0]/20" />
               <span className="absolute left-[20%] top-[26%] h-2.5 w-2.5 rounded-full bg-[#E6D7B6] shadow-[0_0_14px_rgba(230,215,182,0.68)]" />
             </div>
+          </div>
+        </section>
+
+        <section className="py-12 sm:py-14">
+          <p className="text-xs font-medium uppercase tracking-[0.26em] text-[#CBB38E]">
+            Three Pillars
+          </p>
+          <h2 className="mt-3 text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
+            나 · 관계 · 결정
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-[#CBD5E1] sm:text-base">
+            Human Framework를 중심으로, 한 사람의 이해에서 관계, 그리고 선택까지
+            이어지는 여정을 설계했어요.
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <PillarCard
+              icon={<Compass className="h-5 w-5" strokeWidth={1.8} />}
+              title="나"
+              subtitle="Blueprint"
+              desc="10문항 설문과 6축 블루프린트로 나의 패턴을 읽어요."
+            />
+            <PillarCard
+              icon={<GitBranch className="h-5 w-5" strokeWidth={1.8} />}
+              title="관계"
+              subtitle="5대 탭"
+              desc="연인·동료·가족·친구 등 맥락별 리포트로 두 사람의 리듬을 봐요."
+            />
+            <PillarCard
+              icon={<Scale className="h-5 w-5" strokeWidth={1.8} />}
+              title="결정"
+              subtitle="Decision AI"
+              desc="선택장애를 위한 대화형 코치 — 곧 블루프린트와 연결됩니다."
+            />
           </div>
         </section>
 
@@ -160,6 +193,45 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <section className="border-t border-white/8 py-16 sm:py-20">
+          <div className="grid gap-8 md:grid-cols-[1fr_1.1fr] md:items-start">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.26em] text-[#CBB38E]">
+                Social
+              </p>
+              <h2 className="mt-3 text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
+                인스타그램에서 만나요
+              </h2>
+              <p className="mt-4 max-w-md text-sm leading-7 text-[#CBD5E1] sm:text-base">
+                업데이트 소식, 관계 인사이트, Human Framework 이야기를
+                공유해요.
+              </p>
+              <a
+                href="https://www.instagram.com/ahaitsme"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 text-sm font-medium text-white transition hover:border-[#f472b6]/40 hover:bg-[#f472b6]/10"
+              >
+                <span className="text-[#f472b6]" aria-hidden>
+                  IG
+                </span>
+                @ahaitsme 팔로우
+              </a>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div
+                  key={n}
+                  className="aspect-square rounded-xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-3"
+                >
+                  <div className="h-full w-full rounded-lg bg-white/[0.04]" />
+                  <p className="mt-2 text-[10px] text-white/30">피드 준비 중</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] px-6 py-10 text-center sm:px-10 sm:py-12">
           <div
             aria-hidden="true"
@@ -189,6 +261,33 @@ export default function AboutPage() {
         </section>
       </div>
     </SpaceBackground>
+  );
+}
+
+function PillarCard({
+  icon,
+  title,
+  subtitle,
+  desc,
+}: {
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+  desc: string;
+}) {
+  return (
+    <article className="rounded-[20px] border border-white/10 bg-[linear-gradient(160deg,rgba(255,255,255,0.05),transparent)] p-5">
+      <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-[#CBB38E]">
+        {icon}
+      </div>
+      <h3 className="mt-4 text-base font-semibold text-[#F8FAFC]">
+        {title}
+        <span className="ml-1.5 text-xs font-medium text-white/45">
+          {subtitle}
+        </span>
+      </h3>
+      <p className="mt-2 text-sm leading-7 text-[#CBD5E1]">{desc}</p>
+    </article>
   );
 }
 

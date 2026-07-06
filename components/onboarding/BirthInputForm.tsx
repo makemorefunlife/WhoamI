@@ -44,6 +44,7 @@ export default function BirthInputForm({
   initialBirthTimeUnknown,
   initialBirthPlace,
   busy,
+  submitLabel = "다음",
   onSubmit,
 }: {
   initialBirthDate?: string | null;
@@ -51,6 +52,7 @@ export default function BirthInputForm({
   initialBirthTimeUnknown?: boolean;
   initialBirthPlace?: string | null;
   busy?: boolean;
+  submitLabel?: string;
   onSubmit: (payload: BirthFormSubmitPayload) => void;
 }) {
   const parsed = parseBirthDateParts(initialBirthDate ?? null);
@@ -405,7 +407,7 @@ export default function BirthInputForm({
             disabled={busy}
             onClick={submitWithTime}
           >
-            {busy ? "저장 중…" : "다음"}
+            {busy ? "저장 중…" : submitLabel}
           </GlowButton>
         ) : null}
       </div>

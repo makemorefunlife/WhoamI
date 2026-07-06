@@ -12,6 +12,7 @@ import {
   type BirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
+import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { calculateInnateSelfLite } from "@/lib/v2/saju/innateLite";
 
 export type BlueprintBundle = {
@@ -39,7 +40,11 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
     setLoading(true);
 
     void (async () => {
-      const survey = readSurveyV2Session(reportId);
+      let survey = readSurveyV2Session(reportId);
+      if (!survey) {
+        await hydrateSurveySession(reportId);
+        survey = readSurveyV2Session(reportId);
+      }
       if (!survey) {
         if (!cancelled) {
           setBundle(null);
