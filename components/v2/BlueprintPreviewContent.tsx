@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/space/GlassCard";
-import GlowButton from "@/components/space/GlowButton";
 import DualAxisRadarChart, {
   BLUEPRINT_CURRENT_STROKE,
   BLUEPRINT_INNATE_STROKE,
@@ -20,7 +19,6 @@ import type { InnateSelfLiteProfile } from "@/lib/v2/saju/innateLite";
 import { clearSurveyV2Session } from "@/lib/v2/survey/session";
 import { clearSurveyOnServer } from "@/lib/v2/survey/surveyClient";
 import { clearLiteReports } from "@/lib/v2/lite/session";
-import InnateDeepEntryButton from "@/components/v2/InnateDeepEntryButton";
 
 export default function BlueprintPreviewContent({
   reportId,
@@ -105,10 +103,6 @@ export default function BlueprintPreviewContent({
           birth={birth}
         />
 
-        <div className="space-y-3 border-t border-white/10 pt-4">
-          <InnateDeepEntryButton reportId={reportId} featured />
-        </div>
-
         <div className="border-t border-white/10 pt-4">
           <div className="mb-3 grid grid-cols-[1fr_auto_auto_auto] gap-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[rgba(255,255,255,0.45)]">
             <span>축</span>
@@ -173,11 +167,18 @@ export default function BlueprintPreviewContent({
           className="block w-full text-xs text-white/45 underline-offset-2 hover:text-white/65 hover:underline"
           onClick={() =>
             router.push(
-              `/account#birth`,
+              `/onboarding/birth?reportId=${encodeURIComponent(reportId)}&edit=1`,
             )
           }
         >
-          출생 정보 수정은 계정 → 출생 정보에서
+          출생 정보 수정
+        </button>
+        <button
+          type="button"
+          className="block w-full text-xs text-white/40 underline-offset-2 hover:text-white/60 hover:underline"
+          onClick={() => router.push("/account#birth")}
+        >
+          로그인 후 계정에서도 수정 가능
         </button>
         <button
           type="button"

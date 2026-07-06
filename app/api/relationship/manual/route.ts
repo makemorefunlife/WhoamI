@@ -1,5 +1,7 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { mergeBirthCoordinateFields, insertReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
@@ -68,25 +70,13 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServiceRoleClient(url, serviceKey);
-
-    const { data: ownerReport, error: ownerErr } = await supabase
-      .from("reports")
-      .select("id")
-      .eq("id", reportIdA)
-      .maybeSingle();
-
-    if (ownerErr) {
-      return NextResponse.json({ error: ownerErr.message }, { status: 500 });
-    }
-    if (!ownerReport?.id) {
-      return NextResponse.json(
-        {
-          error:
-            "내 리포트를 찾지 못했어요. 리포트 화면에서 관계 탐사실로 다시 들어와 주세요.",
-        },
-        { status: 404 },
-      );
-    }
+    const { userId } = await auth();
+    const access = await assertGuestOrOwnerReportAccess(
+      supabase,
+      reportIdA,
+      userId,
+    );
+    if (access.error) return access.error;
 
     const birthTimeUnknown = body.birthTimeUnknown === true;
     const { chartTime } = resolveBirthTimeForCharts({

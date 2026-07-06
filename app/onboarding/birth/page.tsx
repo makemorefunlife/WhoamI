@@ -12,6 +12,7 @@ import {
   readBirthV2Session,
   writeBirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
+import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
 import { resetReportBirthOnServer } from "@/lib/v2/onboarding/fetchReportBirthClient";
 import {
   ensureBirthSession,
@@ -19,15 +20,16 @@ import {
 } from "@/lib/v2/onboarding/hydrateBirthSession";
 import {
   hasSurveyV2Session,
-  readSurveyV2Session,
 } from "@/lib/v2/survey/session";
-import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
+import { clearLiteReports } from "@/lib/v2/lite/session";
+import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
 
 function BirthOnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
   const wantReset = searchParams.get("reset") === "1";
+  const wantEdit = searchParams.get("edit") === "1";
   const [ready, setReady] = useState(false);
   const [reportId, setReportId] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,31 +43,40 @@ function BirthOnboardingContent() {
 
     async function boot() {
       const id = reportIdParam || localStorage.getItem("reportId")?.trim() || "";
-      if (!id) {
+      if (!id && !reportIdParam) {
         router.replace("/");
         return;
       }
 
-      if (!hasSurveyV2Session(id)) {
-        await hydrateSurveySession(id);
-      }
-      if (!readSurveyV2Session(id)) {
-        router.replace("/survey-v2");
+      const resolved = await resolveCanonicalReportIdClient(
+        reportIdParam || id,
+        "birth-onboarding",
+      );
+      const canonicalId = resolved.canonicalReportId;
+      if (!canonicalId) {
+        router.replace("/");
         return;
       }
 
-      if (!wantReset) {
-        const birth = await ensureBirthSession(id);
+      if (!hasSurveyV2Session(canonicalId)) {
+        router.replace(
+          `/survey-v2?reportId=${encodeURIComponent(canonicalId)}`,
+        );
+        return;
+      }
+
+      if (!wantReset && !wantEdit) {
+        const birth = await ensureBirthSession(canonicalId);
         if (hasMinimalBirth(birth)) {
           router.replace(
-            `/blueprint-preview?reportId=${encodeURIComponent(id)}`,
+            `/blueprint-preview?reportId=${encodeURIComponent(canonicalId)}`,
           );
           return;
         }
       }
 
       if (!cancelled) {
-        setReportId(id);
+        setReportId(canonicalId);
         setReady(true);
       }
     }
@@ -74,7 +85,7 @@ function BirthOnboardingContent() {
     return () => {
       cancelled = true;
     };
-  }, [reportIdParam, router, wantReset]);
+  }, [reportIdParam, router, wantReset, wantEdit]);
 
   const runReset = useCallback(async (id: string) => {
     setResetBusy(true);
@@ -132,6 +143,8 @@ function BirthOnboardingContent() {
           setBusy(false);
           return;
         }
+        clearLiteReports(reportId);
+        clearSlimIntegratedCache(reportId);
       } catch (e) {
         console.error("report/birth save:", e);
         alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");
@@ -148,6 +161,8 @@ function BirthOnboardingContent() {
 
   const existingBirth =
     ready && !resetBusy && !wantReset ? readBirthV2Session(reportId) : null;
+
+  const submitLabel = wantEdit ? "출생 정보 저장" : undefined;
 
   if (!ready || resetBusy) {
     return (
@@ -176,6 +191,7 @@ function BirthOnboardingContent() {
           initialBirthTime={existingBirth?.birthTime}
           initialBirthTimeUnknown={existingBirth?.birthTimeUnknown}
           initialBirthPlace={existingBirth?.birthPlace}
+          submitLabel={submitLabel}
           onSubmit={handleSubmit}
         />
         {existingBirth?.birthDate ? (

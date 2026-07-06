@@ -1,9 +1,11 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 
-/** 열린 초대(보낸 요청) 취소 */
+/** 열린 초대(보낸 요청) 취소 — 발신 리포트 소유자·게스트만 */
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as {
@@ -30,6 +32,13 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServiceRoleClient(url, serviceKey);
+    const { userId } = await auth();
+    const access = await assertGuestOrOwnerReportAccess(
+      supabase,
+      reportId,
+      userId,
+    );
+    if (access.error) return access.error;
 
     const { data, error } = await supabase
       .from("invites")

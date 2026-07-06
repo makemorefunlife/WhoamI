@@ -11,6 +11,8 @@ import {
   applyResumeReportIdToStorage,
   fetchHomeResumeClient,
 } from "@/lib/home/fetchHomeResumeClient";
+import { hydrateReportSessions } from "@/lib/v2/report/hydrateReportSessions";
+import { migrateLocalReportSessions } from "@/lib/v2/report/migrateLocalReportSessions";
 import { syncBirthFromResumeFields } from "@/lib/v2/onboarding/syncBirthFromResume";
 import { supabase } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
@@ -138,12 +140,24 @@ export default function HomeContent() {
         }
 
         const data = result.data;
+        const storedBefore =
+          typeof window !== "undefined"
+            ? localStorage.getItem("reportId")?.trim() ?? ""
+            : "";
         const reportId = applyResumeReportIdToStorage(data);
         if (reportId) {
+          for (const oldId of [hint, storedBefore].filter(
+            (id) => id && id !== reportId,
+          )) {
+            migrateLocalReportSessions(oldId, reportId);
+          }
           syncBirthFromResumeFields(reportId, {
             birthDate: data.birthDate,
             birthTime: data.birthTime,
             birthPlace: data.birthPlace,
+          });
+          await hydrateReportSessions(reportId, {
+            surveyCompleted: data.surveyCompleted === true,
           });
         }
         const summary = data.relationshipSummary ?? {

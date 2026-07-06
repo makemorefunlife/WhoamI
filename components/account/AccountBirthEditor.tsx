@@ -10,8 +10,10 @@ import {
   readBirthV2Session,
   writeBirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
-import { fetchReportBirthFromApi } from "@/lib/v2/onboarding/fetchReportBirthClient";
-import { resolveReportBirth } from "@/lib/v2/onboarding/resolveReportBirth";
+import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
+import { ensureBirthSession } from "@/lib/v2/onboarding/hydrateBirthSession";
+import { clearLiteReports } from "@/lib/v2/lite/session";
+import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
 
 export default function AccountBirthEditor() {
   const [reportId, setReportId] = useState("");
@@ -20,20 +22,15 @@ export default function AccountBirthEditor() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = localStorage.getItem("reportId")?.trim() ?? "";
-    setReportId(id);
-    if (!id) {
-      setLoading(false);
-      return;
-    }
     void (async () => {
-      const dbRow = await fetchReportBirthFromApi(id);
-      const sessionBirth = readBirthV2Session(id);
-      const resolved = resolveReportBirth({ db: dbRow, session: sessionBirth });
-      if (resolved) {
-        const { source: _s, ...birth } = resolved;
-        writeBirthV2Session(id, birth);
+      const resolved = await resolveCanonicalReportIdClient("", "account-birth");
+      const id = resolved.canonicalReportId;
+      setReportId(id);
+      if (!id) {
+        setLoading(false);
+        return;
       }
+      await ensureBirthSession(id);
       setLoading(false);
     })();
   }, []);
@@ -69,6 +66,8 @@ export default function AccountBirthEditor() {
           return;
         }
         setNotice("출생 정보가 저장되었어요.");
+        clearLiteReports(reportId);
+        clearSlimIntegratedCache(reportId);
       } catch {
         setNotice("네트워크 오류가 발생했어요. 다시 시도해 주세요.");
         setBusy(false);

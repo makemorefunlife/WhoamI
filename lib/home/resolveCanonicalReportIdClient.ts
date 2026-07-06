@@ -4,6 +4,8 @@ import {
 } from "@/lib/home/fetchHomeResumeClient";
 import { logCanonicalReportIdMismatch } from "@/lib/home/canonicalReportIdLog";
 import { syncBirthFromResumeFields } from "@/lib/v2/onboarding/syncBirthFromResume";
+import { hydrateReportSessions } from "@/lib/v2/report/hydrateReportSessions";
+import { migrateLocalReportSessions } from "@/lib/v2/report/migrateLocalReportSessions";
 
 export type CanonicalReportIdSource = "resume" | "hint-fallback" | "none";
 
@@ -12,6 +14,7 @@ export type ResolveCanonicalReportIdResult = {
   urlHint: string;
   source: CanonicalReportIdSource;
   invalidHint: boolean;
+  surveyCompleted: boolean;
 };
 
 /**
@@ -34,10 +37,16 @@ export async function resolveCanonicalReportIdClient(
   if (resume.ok) {
     const canonical = applyResumeReportIdToStorage(resume.data)?.trim() ?? "";
     if (canonical) {
+      for (const oldId of [hint, stored].filter((id) => id && id !== canonical)) {
+        migrateLocalReportSessions(oldId, canonical);
+      }
       syncBirthFromResumeFields(canonical, {
         birthDate: resume.data.birthDate,
         birthTime: resume.data.birthTime,
         birthPlace: resume.data.birthPlace,
+      });
+      await hydrateReportSessions(canonical, {
+        surveyCompleted: resume.data.surveyCompleted === true,
       });
     }
     if (hint && canonical) {
@@ -48,6 +57,7 @@ export async function resolveCanonicalReportIdClient(
       urlHint: hint,
       source: canonical ? "resume" : "none",
       invalidHint: resume.data.invalidHint,
+      surveyCompleted: resume.data.surveyCompleted === true,
     };
   }
 
@@ -64,11 +74,13 @@ export async function resolveCanonicalReportIdClient(
     if (typeof window !== "undefined") {
       localStorage.setItem("reportId", resumeHint);
     }
+    await hydrateReportSessions(resumeHint);
     return {
       canonicalReportId: resumeHint,
       urlHint: hint,
       source: "hint-fallback",
       invalidHint: false,
+      surveyCompleted: false,
     };
   }
 
@@ -77,5 +89,6 @@ export async function resolveCanonicalReportIdClient(
     urlHint: hint,
     source: "none",
     invalidHint: false,
+    surveyCompleted: false,
   };
 }

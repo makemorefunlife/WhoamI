@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import BlueprintPreviewContent from "@/components/v2/BlueprintPreviewContent";
+import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
-import { readBirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import {
   ensureBirthSession,
   hasMinimalBirth,
@@ -17,41 +17,48 @@ function BlueprintPreviewPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
-  const [ready, setReady] = useState(false);
-  const [reportId, setReportId] = useState("");
+
+  const { canonicalReportId, resolving } = useCanonicalReportId({
+    urlHint: reportIdParam,
+    queryParam: "reportId",
+    logContext: "blueprint-preview",
+  });
+
+  const { bundle, loading: bundleLoading } = useBlueprintBundle(
+    canonicalReportId,
+    Boolean(canonicalReportId) && !resolving,
+  );
 
   useEffect(() => {
-    const id = reportIdParam || localStorage.getItem("reportId")?.trim() || "";
-    if (!id) {
-      router.replace("/");
-      return;
-    }
-    setReportId(id);
-    setReady(true);
-  }, [reportIdParam, router]);
-
-  const { bundle, loading: bundleLoading } = useBlueprintBundle(reportId, ready);
-
-  useEffect(() => {
-    if (!ready || !reportId || bundleLoading) return;
+    if (resolving || !canonicalReportId || bundleLoading) return;
     if (bundle) return;
 
     void (async () => {
-      if (!readSurveyV2Session(reportId)) {
-        await hydrateSurveySession(reportId);
+      if (!readSurveyV2Session(canonicalReportId)) {
+        await hydrateSurveySession(canonicalReportId);
       }
-      if (!readSurveyV2Session(reportId)) {
-        router.replace("/survey-v2");
+      if (!readSurveyV2Session(canonicalReportId)) {
+        router.replace(
+          `/survey-v2?reportId=${encodeURIComponent(canonicalReportId)}`,
+        );
         return;
       }
-      const birth = await ensureBirthSession(reportId);
-      if (!hasMinimalBirth(birth)) {
-        router.replace(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
+      if (!hasMinimalBirth(await ensureBirthSession(canonicalReportId))) {
+        router.replace(
+          `/onboarding/birth?reportId=${encodeURIComponent(canonicalReportId)}`,
+        );
       }
     })();
-  }, [ready, reportId, bundle, bundleLoading, router]);
+  }, [resolving, canonicalReportId, bundle, bundleLoading, router]);
 
-  if (!ready || bundleLoading || !bundle) {
+  useEffect(() => {
+    if (resolving) return;
+    if (!canonicalReportId) {
+      router.replace("/");
+    }
+  }, [resolving, canonicalReportId, router]);
+
+  if (resolving || !canonicalReportId || bundleLoading || !bundle) {
     return (
       <SpaceBackground showProbe={false}>
         <div className="flex min-h-screen items-center justify-center px-6">
@@ -65,7 +72,7 @@ function BlueprintPreviewPageContent() {
     <SpaceBackground showProbe={false}>
       <main className="flex min-h-screen flex-col items-center px-5 py-16 pt-20">
         <BlueprintPreviewContent
-          reportId={reportId}
+          reportId={canonicalReportId}
           current={bundle.survey.profile}
           innate={bundle.innate}
           birth={bundle.birth}

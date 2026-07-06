@@ -18,11 +18,11 @@ import {
 } from "@/lib/v2/survey/session";
 import {
   clearSurveyOnServer,
-  hydrateSurveySession,
   persistSurveyToServer,
 } from "@/lib/v2/survey/surveyClient";
-import { hasBirthV2Session } from "@/lib/v2/onboarding/birthSession";
-import { hydrateBirthSession } from "@/lib/v2/onboarding/hydrateBirthSession";
+import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
+import { hasBirthV2Session, readBirthV2Session } from "@/lib/v2/onboarding/birthSession";
+import { hasMinimalBirth } from "@/lib/v2/onboarding/hydrateBirthSession";
 
 const STATUS_LINES = [
   "탐사하는 중",
@@ -53,10 +53,16 @@ export default function SurveyV2Page() {
       const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
       const wantRedo = params.get("redo") === "1";
+      const urlReportId = params.get("reportId")?.trim() ?? "";
       if (token) localStorage.setItem("inviteToken", token);
 
-      const reportId = localStorage.getItem("reportId");
       const inviteToken = localStorage.getItem("inviteToken");
+      const resolved = await resolveCanonicalReportIdClient(
+        urlReportId,
+        "survey-v2",
+      );
+      const reportId = resolved.canonicalReportId;
+
       if (!reportId) {
         if (inviteToken) {
           router.replace(`/?token=${encodeURIComponent(inviteToken)}`);
@@ -73,14 +79,10 @@ export default function SurveyV2Page() {
         return;
       }
 
-      if (!hasSurveyV2Session(reportId)) {
-        await hydrateSurveySession(reportId);
-      }
-
       if (hasSurveyV2Session(reportId)) {
         const hasBirth =
           hasBirthV2Session(reportId) ||
-          (await hydrateBirthSession(reportId));
+          hasMinimalBirth(readBirthV2Session(reportId));
         router.replace(
           hasBirth
             ? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`
@@ -108,13 +110,13 @@ export default function SurveyV2Page() {
     ((currentIndex + 1) / SURVEY_V2_QUESTION_COUNT) * 100,
   );
 
-  const finishSurvey = (payload: Record<string, string>) => {
+  const finishSurvey = async (payload: Record<string, string>) => {
     if (!isSurveyV2AnswersComplete(payload)) {
       alert("모든 문항에 답해 주세요.");
       return;
     }
 
-    const reportId = localStorage.getItem("reportId");
+    const reportId = localStorage.getItem("reportId")?.trim();
     if (!reportId) {
       router.replace("/");
       return;
@@ -123,7 +125,17 @@ export default function SurveyV2Page() {
     setFinishing(true);
     const profile = scoreSurveyAnswers(payload);
     writeSurveyV2Session(reportId, { answers: payload, profile });
-    void persistSurveyToServer(reportId, payload, profile);
+
+    const saved = await persistSurveyToServer(reportId, payload, profile);
+    if (!saved.ok) {
+      alert(
+        saved.error ??
+          "설문 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.",
+      );
+      setFinishing(false);
+      return;
+    }
+
     router.push(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
   };
 
