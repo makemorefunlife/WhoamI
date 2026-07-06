@@ -1,7 +1,7 @@
 import type { ChartContext } from "@/lib/saju/chartContext";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 
-/** 원진살 branch pairs (code_a → code_b) */
+/** 원진살 branch pairs (code_a → code_b) — SSOT */
 const WONJIN_PAIRS = new Set(
   [
     ["ja", "myo"],
@@ -19,7 +19,7 @@ const WONJIN_PAIRS = new Set(
   ].map(([a, b]) => `${a}-${b}`),
 );
 
-/** 귀문관살 branch pairs */
+/** 귀문관살 branch pairs — SSOT */
 const GUIMUN_PAIRS = new Set(
   [
     ["ja", "yu"],
@@ -47,16 +47,103 @@ const XUNKONG_BY_DAY_BRANCH: Record<string, [string, string]> = {
   hae: ["sin", "yu"],
 };
 
-function pairKey(a: string, b: string): string {
+export function branchPairKey(a: string, b: string): string {
   return [a, b].sort().join("-");
 }
 
-function isWonjin(a: string, b: string): boolean {
+/** 원진살 여부 (지지 코드 쌍) */
+export function isWonjin(a: string, b: string): boolean {
   return WONJIN_PAIRS.has(`${a}-${b}`) || WONJIN_PAIRS.has(`${b}-${a}`);
 }
 
-function isGuimun(a: string, b: string): boolean {
-  return GUIMUN_PAIRS.has(pairKey(a, b));
+/** 귀문관살 여부 (지지 코드 쌍) */
+export function isGuimun(a: string, b: string): boolean {
+  return GUIMUN_PAIRS.has(branchPairKey(a, b));
+}
+
+export function hasWonjinOrGuimun(a: string, b: string): boolean {
+  return isWonjin(a, b) || isGuimun(a, b);
+}
+
+type ChartPairSelector = (
+  chartA: ChartContext,
+  chartB: ChartContext,
+) => [string, string];
+
+function detectAcrossBranchPairs(
+  chartA: ChartContext,
+  chartB: ChartContext,
+  selectors: ChartPairSelector[],
+  includeMonthCheck: boolean,
+): boolean {
+  for (const select of selectors) {
+    const [a, b] = select(chartA, chartB);
+    if (hasWonjinOrGuimun(a, b)) return true;
+  }
+  if (includeMonthCheck) {
+    const month = detectMonthWonjinGuimun(chartA, chartB);
+    if (month.wonjin || month.guimun) return true;
+  }
+  return false;
+}
+
+/** 친구 탭 — 일지·월지 교차 원진/귀문 */
+export function detectFriendWonjinGuimun(
+  chartA: ChartContext,
+  chartB: ChartContext,
+): boolean {
+  return detectAcrossBranchPairs(chartA, chartB, [
+    (a, b) => [a.dayBranchCode, b.dayBranchCode],
+    (a, b) => [a.monthBranchCode, b.monthBranchCode],
+  ], true);
+}
+
+/** 결혼/동거 탭 — 일지·시지 교차 원진/귀문 */
+export function detectMarriageWonjinGuimun(
+  chartA: ChartContext,
+  chartB: ChartContext,
+): boolean {
+  return detectAcrossBranchPairs(chartA, chartB, [
+    (a, b) => [a.dayBranchCode, b.dayBranchCode],
+    (a, b) => [a.hourBranchCode, b.hourBranchCode],
+    (a, b) => [a.dayBranchCode, b.hourBranchCode],
+    (a, b) => [a.hourBranchCode, b.dayBranchCode],
+  ], true);
+}
+
+/** 가족 탭 — 부모·자녀 일지·월지 교차 원진/귀문 (월지 충/형은 호출측 추가) */
+export function detectFamilyWonjinGuimunBranches(
+  chartParent: ChartContext,
+  chartChild: ChartContext,
+): boolean {
+  return detectAcrossBranchPairs(chartParent, chartChild, [
+    (p, c) => [p.dayBranchCode, c.dayBranchCode],
+    (p, c) => [p.monthBranchCode, c.monthBranchCode],
+    (p, c) => [p.dayBranchCode, c.monthBranchCode],
+    (p, c) => [p.monthBranchCode, c.dayBranchCode],
+  ], true);
+}
+
+/** 원국 내 anchor 지지와 다른 지지 간 귀문 여부 */
+export function hasGuimunOnPalaceAnchors(
+  chart: ChartContext,
+  anchorBranches: string[],
+): boolean {
+  for (const anchor of anchorBranches) {
+    if (!anchor) continue;
+    for (const br of chart.branchCodes) {
+      if (br !== anchor && isGuimun(anchor, br)) return true;
+    }
+  }
+  return false;
+}
+
+/** 일지·시지 anchor 기준 귀문 (침실 프로필용) */
+export function hasGuimunOnDayHourPalaces(chart: ChartContext): boolean {
+  return hasGuimunOnPalaceAnchors(chart, [
+    chart.dayBranchCode,
+    chart.hourBranchCode,
+  ]);
 }
 
 function voidBranchesForChart(chart: ChartContext): string[] {

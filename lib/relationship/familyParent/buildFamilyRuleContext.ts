@@ -1,19 +1,17 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
-import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
-import { sajuJsonToPillars, type PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
+import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
 import {
   analyzeFamilyPairSaju,
   type FamilyPairSajuAnalysis,
 } from "@/lib/saju/familyAnalysis";
-import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
+import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
 import {
   computeFamilyCompatibilityGrade,
   type FamilyMasterScores,
 } from "./familyEventScores";
 import {
   analyzeFamilyParentTenGod,
-  countTenGodsForFamilyParent,
   type FamilyParentTenGodAnalysis,
 } from "./familyParentTenGodAnalysis";
 import { buildFamilyKillerSections, type FamilyKillerSections } from "./familyKillerSections";
@@ -104,22 +102,23 @@ export function buildFamilyRuleContext(
     ? params.birthTimeUnknownB
     : params.birthTimeUnknownA;
 
-  const pillarsParent = sajuJsonToPillars(
-    sajuJsonParent.saju as Required<NonNullable<typeof sajuJsonParent.saju>>,
-  );
-  const pillarsChild = sajuJsonToPillars(
-    sajuJsonChild.saju as Required<NonNullable<typeof sajuJsonChild.saju>>,
-  );
-
-  const countsParent = countTenGodsForFamilyParent(sajuJsonParent);
-  const countsChild = countTenGodsForFamilyParent(sajuJsonChild);
+  const blueprint = buildPairSajuBlueprint({
+    sajuJsonA: sajuJsonParent,
+    sajuJsonB: sajuJsonChild,
+    birthPlaceA: birthPlaceParent,
+    birthPlaceB: birthPlaceChild,
+    birthTimeUnknownA: birthTimeUnknownParent,
+    birthTimeUnknownB: birthTimeUnknownChild,
+  });
+  const { core, uncertainItems } = blueprint;
 
   const familyPairAnalysis = analyzeFamilyPairSaju(
-    pillarsParent,
-    pillarsChild,
+    core.pillarsA,
+    core.pillarsB,
     parentRole,
-    countsChild,
-    countsParent,
+    core.tenGodsB,
+    core.tenGodsA,
+    core,
   );
 
   const tenGod = analyzeFamilyParentTenGod({
@@ -143,24 +142,6 @@ export function buildFamilyRuleContext(
       masterScores,
     },
   });
-
-  const validationParent = validateSajuPillars(pillarsParent, {
-    birthTimeUnknown: birthTimeUnknownParent,
-  });
-  const validationChild = validateSajuPillars(pillarsChild, {
-    birthTimeUnknown: birthTimeUnknownChild,
-  });
-
-  const uncertainItems = [
-    ...buildSajuUncertainItems({
-      birthPlace: birthPlaceParent ?? undefined,
-      validationNotes: validationParent.notes,
-    }),
-    ...buildSajuUncertainItems({
-      birthPlace: birthPlaceChild ?? undefined,
-      validationNotes: validationChild.notes,
-    }),
-  ];
 
   return {
     nicknameA: params.nicknameA,

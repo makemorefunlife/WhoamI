@@ -272,23 +272,31 @@ export function analyzeMarriageTenGod(params: {
   sajuJsonB: SajuDataForIntegrated;
   crossHitsInternalA: CrossChartHit[];
   crossHitsInternalB: CrossChartHit[];
+  countsA?: TenGodCounts;
+  countsB?: TenGodCounts;
+  chartA?: ReturnType<typeof buildChartContext>;
+  chartB?: ReturnType<typeof buildChartContext>;
 }): MarriageTenGodAnalysis {
-  const countsA = countTenGodsForMarriage(params.sajuJsonA);
-  const countsB = countTenGodsForMarriage(params.sajuJsonB);
-  const chartA = buildChartContext(
-    sajuJsonToPillars(
-      params.sajuJsonA.saju as Required<
-        NonNullable<typeof params.sajuJsonA.saju>
-      >,
-    ),
-  );
-  const chartB = buildChartContext(
-    sajuJsonToPillars(
-      params.sajuJsonB.saju as Required<
-        NonNullable<typeof params.sajuJsonB.saju>
-      >,
-    ),
-  );
+  const countsA = params.countsA ?? countTenGodsForMarriage(params.sajuJsonA);
+  const countsB = params.countsB ?? countTenGodsForMarriage(params.sajuJsonB);
+  const chartA =
+    params.chartA ??
+    buildChartContext(
+      sajuJsonToPillars(
+        params.sajuJsonA.saju as Required<
+          NonNullable<typeof params.sajuJsonA.saju>
+        >,
+      ),
+    );
+  const chartB =
+    params.chartB ??
+    buildChartContext(
+      sajuJsonToPillars(
+        params.sajuJsonB.saju as Required<
+          NonNullable<typeof params.sajuJsonB.saju>
+        >,
+      ),
+    );
 
   return {
     countsA,

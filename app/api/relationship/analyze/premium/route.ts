@@ -8,6 +8,7 @@ import { runRomanticSajuDeepAnalysis } from "@/lib/prompts/relationshipPremium/r
 import { runWorkColleagueDeepAnalysis } from "@/lib/prompts/relationshipPremium/workColleague";
 import { runCohabitationDeepAnalysis } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { runFamilyParentChildDeepAnalysis } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import { runFriendSocialDeepAnalysis } from "@/lib/prompts/relationshipPremium/friendSocial";
 import { resolveFamilyRolesFromViewer } from "@/lib/relationship/familyParent/resolveFamilyRoles";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
@@ -23,6 +24,7 @@ import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/rom
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 import { relationshipKindUsesDeepPipeline } from "@/lib/relationship/relationshipAnalysisKinds";
 import {
   fetchRelationshipReportByIdSafe,
@@ -214,7 +216,9 @@ export async function POST(req: Request) {
                   ? "양쪽 모두 생년월일·출생지가 있어야 동거·결혼 심화 분석이 가능합니다."
                   : kind === "family"
                     ? "양쪽 모두 생년월일·출생지가 있어야 가족 Child DNA 분석이 가능합니다."
-                    : "양쪽 모두 생년월일·출생지가 있어야 동료 심화 분석이 가능합니다.",
+                    : kind === "friendship"
+                      ? "양쪽 모두 생년월일·출생지가 있어야 친구 Social DNA 분석이 가능합니다."
+                      : "양쪽 모두 생년월일·출생지가 있어야 동료 심화 분석이 가능합니다.",
           },
           { status: 400 },
         );
@@ -578,6 +582,88 @@ export async function POST(req: Request) {
       });
     }
 
+    if (kind === "friendship") {
+      const loadedA = loadSajuForReport({
+        birth_date: String(repA.birth_date ?? ""),
+        birth_time:
+          repA.birth_time != null ? String(repA.birth_time) : null,
+      });
+      const loadedB = loadSajuForReport({
+        birth_date: String(repB.birth_date ?? ""),
+        birth_time:
+          repB.birth_time != null ? String(repB.birth_time) : null,
+      });
+      if (!loadedA || !loadedB) {
+        return NextResponse.json(
+          { error: "사주 계산에 실패해 친구 Social DNA 분석을 할 수 없습니다." },
+          { status: 400 },
+        );
+      }
+
+      const friendshipPayload = await runFriendSocialDeepAnalysis(openai, {
+        nicknameA: labelA,
+        nicknameB: labelB,
+        birthA: {
+          date: String(repA.birth_date ?? ""),
+          time: chartBirthTime({
+            birth_date: String(repA.birth_date ?? ""),
+            birth_time:
+              repA.birth_time != null ? String(repA.birth_time) : null,
+          }),
+          place: String(repA.birth_place ?? "").trim(),
+        },
+        birthB: {
+          date: String(repB.birth_date ?? ""),
+          time: chartBirthTime({
+            birth_date: String(repB.birth_date ?? ""),
+            birth_time:
+              repB.birth_time != null ? String(repB.birth_time) : null,
+          }),
+          place: String(repB.birth_place ?? "").trim(),
+        },
+        sajuJsonA: loadedA.sajuJson,
+        sajuJsonB: loadedB.sajuJson,
+        sajuProvenanceA: loadedA.provenance,
+        sajuProvenanceB: loadedB.provenance,
+      });
+
+      const nextByKind: ResultPremiumByKind = {
+        ...byKind,
+        friendship: friendshipPayload,
+      };
+
+      const { error: upErr } = await updateRelationshipReportSafe(
+        supabase,
+        relationshipReportId,
+        {
+          result_premium_by_kind: nextByKind,
+          relationship_kind: kind,
+          result_premium: friendshipPayload,
+        },
+      );
+
+      if (upErr) {
+        console.error("relationship/analyze/premium friendship update:", upErr);
+        return NextResponse.json({ error: upErr.message }, { status: 500 });
+      }
+
+      if (viewerReportId) {
+        await insertRelationshipAnalysisLog(supabase, {
+          relationshipReportId,
+          viewerReportId,
+          relationshipKind: kind,
+          analysisLevel: "premium",
+          resultFormat: FRIEND_SOCIAL_DEEP_FORMAT,
+          payload: friendshipPayload,
+        });
+      }
+
+      return NextResponse.json({
+        relationship_kind: kind,
+        result_premium: friendshipPayload,
+      });
+    }
+
     const [blockA, blockB] = await Promise.all([
       getPatternSummaryForReport(supabase, rr.report_id_a),
       getPatternSummaryForReport(supabase, rr.report_id_b),
@@ -678,7 +764,6 @@ export async function POST(req: Request) {
       {
         result_premium_by_kind: nextByKind,
         relationship_kind: kind,
-        ...(kind === "friendship" ? { result_premium: payload } : {}),
       },
       { result_premium: payload },
     );

@@ -4,15 +4,14 @@ import {
   computeMarriageCompatibilityGrade,
   type MarriageMasterScores,
 } from "@/lib/relationship/marriageEventScores";
-import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
-import { sajuJsonToPillars, type PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
+import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
+import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import {
   analyzeMarriagePairSaju,
   resolveAttachmentLean,
   type MarriagePairSajuAnalysis,
 } from "@/lib/saju/marriageAnalysis";
-import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
-import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
+import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
 import {
   analyzeMarriageTenGod,
   type MarriageTenGodAnalysis,
@@ -65,12 +64,8 @@ export function buildMarriageRuleContext(params: {
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
 }): MarriageRuleContext {
-  const pillarsA = sajuJsonToPillars(
-    params.sajuJsonA.saju as Required<NonNullable<typeof params.sajuJsonA.saju>>,
-  );
-  const pillarsB = sajuJsonToPillars(
-    params.sajuJsonB.saju as Required<NonNullable<typeof params.sajuJsonB.saju>>,
-  );
+  const blueprint = buildPairSajuBlueprint(params);
+  const { core, uncertainItems } = blueprint;
 
   const tenGodPre = analyzeMarriageTenGod({
     nicknameA: params.nicknameA,
@@ -79,14 +74,23 @@ export function buildMarriageRuleContext(params: {
     sajuJsonB: params.sajuJsonB,
     crossHitsInternalA: [],
     crossHitsInternalB: [],
+    countsA: core.tenGodsA,
+    countsB: core.tenGodsB,
+    chartA: core.chartA,
+    chartB: core.chartB,
   });
 
-  let marriagePairAnalysis = analyzeMarriagePairSaju(pillarsA, pillarsB, {
-    hasWealthOfficerComplement: tenGodPre.complement.hasWealthOfficerComplement,
-    hasFoodSealHarmony: tenGodPre.complement.hasFoodSealHarmony,
-    hasWealthOfficerPowerStruggle:
-      tenGodPre.complement.hasWealthOfficerPowerStruggle,
-  });
+  let marriagePairAnalysis = analyzeMarriagePairSaju(
+    core.pillarsA,
+    core.pillarsB,
+    {
+      hasWealthOfficerComplement: tenGodPre.complement.hasWealthOfficerComplement,
+      hasFoodSealHarmony: tenGodPre.complement.hasFoodSealHarmony,
+      hasWealthOfficerPowerStruggle:
+        tenGodPre.complement.hasWealthOfficerPowerStruggle,
+    },
+    core,
+  );
 
   marriagePairAnalysis = {
     ...marriagePairAnalysis,
@@ -112,6 +116,10 @@ export function buildMarriageRuleContext(params: {
     sajuJsonB: params.sajuJsonB,
     crossHitsInternalA: marriagePairAnalysis.intraChartHitsA,
     crossHitsInternalB: marriagePairAnalysis.intraChartHitsB,
+    countsA: core.tenGodsA,
+    countsB: core.tenGodsB,
+    chartA: core.chartA,
+    chartB: core.chartB,
   });
 
   const threeYearForecast = buildThreeYearHomeRiskForecast(
@@ -135,24 +143,6 @@ export function buildMarriageRuleContext(params: {
 
   const { grade, reason, eventScores, masterScores } =
     computeMarriageCompatibilityGrade(marriagePairAnalysis, threeYearForecast);
-
-  const validationA = validateSajuPillars(pillarsA, {
-    birthTimeUnknown: params.birthTimeUnknownA,
-  });
-  const validationB = validateSajuPillars(pillarsB, {
-    birthTimeUnknown: params.birthTimeUnknownB,
-  });
-
-  const uncertainItems = [
-    ...buildSajuUncertainItems({
-      birthPlace: params.birthPlaceA,
-      validationNotes: validationA.notes,
-    }),
-    ...buildSajuUncertainItems({
-      birthPlace: params.birthPlaceB,
-      validationNotes: validationB.notes,
-    }),
-  ];
 
   const householdDnaA = buildHomeLifeDnaProfile(
     params.nicknameA,
@@ -185,8 +175,8 @@ export function buildMarriageRuleContext(params: {
     eventScores,
     grade,
     gradeReason: reason,
-    strengthA: estimateStrengthBalance(pillarsA),
-    strengthB: estimateStrengthBalance(pillarsB),
+    strengthA: estimateStrengthBalance(core.pillarsA),
+    strengthB: estimateStrengthBalance(core.pillarsB),
     masterScores,
     uncertainItems,
     deEscalation,

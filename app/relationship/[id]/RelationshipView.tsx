@@ -16,6 +16,7 @@ import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDe
 import WorkColleagueReportView from "@/components/relationship/WorkColleagueReportView";
 import MarriageReportView from "@/components/relationship/MarriageReportView";
 import FamilyParentReportView from "@/components/relationship/FamilyParentReportView";
+import FriendReportView from "@/components/relationship/FriendReportView";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
@@ -25,6 +26,8 @@ import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarria
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
+import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { relationshipPremiumPreviewEnabled } from "@/lib/relationship/premiumPreview";
 import {
@@ -82,6 +85,9 @@ export default function RelationshipView({
   const [familyDeep, setFamilyDeep] = useState<FamilyParentReportBody | null>(
     null,
   );
+  const [friendshipDeep, setFriendshipDeep] = useState<FriendReportBody | null>(
+    null,
+  );
   const [familyParentType, setFamilyParentType] =
     useState<FamilyParentRole>("mother");
   const [familyChildIsViewer, setFamilyChildIsViewer] = useState(false);
@@ -109,6 +115,7 @@ export default function RelationshipView({
     workDeep?: WorkColleagueReportBody | null;
     cohabitationDeep?: MarriageReportBody | null;
     familyDeep?: FamilyParentReportBody | null;
+    friendshipDeep?: FriendReportBody | null;
   } | null>(null);
 
   const fetchLogs = useCallback(async () => {
@@ -172,6 +179,9 @@ export default function RelationshipView({
       );
       setFamilyDeep(
         (data.family_deep_report ?? null) as FamilyParentReportBody | null,
+      );
+      setFriendshipDeep(
+        (data.friendship_deep_report ?? null) as FriendReportBody | null,
       );
       setReportIdA(data.report_id_a ?? "");
       setReportIdB(data.report_id_b ?? "");
@@ -287,9 +297,41 @@ export default function RelationshipView({
         cohabitationDeep: report ?? null,
         romanticDeep: null,
         workDeep: null,
+        familyDeep: null,
+        friendshipDeep: null,
         premium: null,
       });
       setPremiumKind("cohabitation");
+      return;
+    }
+    if (log.result_format === FAMILY_PARENT_CHILD_DEEP_FORMAT) {
+      const report = snap.report as FamilyParentReportBody | undefined;
+      setSnapshotView({
+        logId: log.id,
+        kind: "family",
+        familyDeep: report ?? null,
+        romanticDeep: null,
+        workDeep: null,
+        cohabitationDeep: null,
+        friendshipDeep: null,
+        premium: null,
+      });
+      setPremiumKind("family");
+      return;
+    }
+    if (log.result_format === FRIEND_SOCIAL_DEEP_FORMAT) {
+      const report = snap.report as FriendReportBody | undefined;
+      setSnapshotView({
+        logId: log.id,
+        kind: "friendship",
+        friendshipDeep: report ?? null,
+        romanticDeep: null,
+        workDeep: null,
+        cohabitationDeep: null,
+        familyDeep: null,
+        premium: null,
+      });
+      setPremiumKind("friendship");
       return;
     }
     if (log.analysis_level === "premium") {
@@ -351,6 +393,8 @@ export default function RelationshipView({
           setCohabitationDeep(null);
         } else if (kind === "family") {
           setFamilyDeep(null);
+        } else if (kind === "friendship") {
+          setFriendshipDeep(null);
         } else {
           setPremium(null);
         }
@@ -410,6 +454,16 @@ export default function RelationshipView({
             prem?.report?.family?.section_child_dna
           ) {
             setFamilyDeep(prem.report as FamilyParentReportBody);
+          } else if (!forceRegenerate && prem?.perspectives) {
+            return runPremium(kind, { forceRegenerate: true });
+          }
+        } else if (kind === "friendship") {
+          const prem = data.result_premium;
+          if (
+            prem?.format === FRIEND_SOCIAL_DEEP_FORMAT &&
+            prem?.report?.friend?.section_social_dna_a
+          ) {
+            setFriendshipDeep(prem.report as FriendReportBody);
           } else if (!forceRegenerate && prem?.perspectives) {
             return runPremium(kind, { forceRegenerate: true });
           }
@@ -508,6 +562,10 @@ export default function RelationshipView({
     snapshotView?.familyDeep !== undefined
       ? snapshotView.familyDeep
       : familyDeep;
+  const displayFriendshipDeep =
+    snapshotView?.friendshipDeep !== undefined
+      ? snapshotView.friendshipDeep
+      : friendshipDeep;
 
   const premiumReady =
     premiumKind === "romantic"
@@ -518,7 +576,9 @@ export default function RelationshipView({
           ? Boolean(displayCohabitationDeep?.snapshot_panel)
           : premiumKind === "family"
             ? Boolean(displayFamilyDeep?.family?.section_child_dna)
-            : Boolean(displayPremium && Object.keys(displayPremium).length > 0);
+            : premiumKind === "friendship"
+              ? Boolean(displayFriendshipDeep?.friend?.section_social_dna_a)
+              : Boolean(displayPremium && Object.keys(displayPremium).length > 0);
 
   useEffect(() => {
     if (!premiumPreview || loading || !detailOk || !resolvedRelationshipId) return;
@@ -527,6 +587,8 @@ export default function RelationshipView({
     if (romanticDeep?.section_1_summary) return;
     if (workDeep?.snapshot_panel) return;
     if (cohabitationDeep?.snapshot_panel) return;
+    if (familyDeep?.family?.section_child_dna) return;
+    if (friendshipDeep?.friend?.section_social_dna_a) return;
     if (premiumPreviewAutoDone.current) return;
     if (premiumKind !== "friendship") return;
     premiumPreviewAutoDone.current = true;
@@ -816,6 +878,24 @@ export default function RelationshipView({
                       <span className="text-xs">
                         위에서 엄마/아빠 렌즈를 고른 뒤 생성하세요.
                       </span>
+                    </p>
+                  </div>
+                ) : premiumKind === "friendship" && displayFriendshipDeep ? (
+                  <div className="space-y-3 rounded-2xl border border-[#67b7ff]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#67b7ff]/90">
+                      Premium · Social DNA
+                    </p>
+                    <FriendReportView report={displayFriendshipDeep} />
+                  </div>
+                ) : premiumKind === "friendship" ? (
+                  <div className="space-y-3 rounded-2xl border border-[#67b7ff]/25 bg-gradient-to-b from-[var(--space-card)]/90 to-[#0a0f1a]/40 p-3 sm:p-4">
+                    <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-[#67b7ff]/90">
+                      Premium · Social DNA
+                    </p>
+                    <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
+                      아직 친구 Social DNA 분석이 없어요.
+                      <br />
+                      <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
                     </p>
                   </div>
                 ) : (

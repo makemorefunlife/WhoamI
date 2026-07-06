@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/brand/Logo";
 
 function MenuRow({
   href,
@@ -122,7 +123,10 @@ export default function SideMenu({
         ].join(" ")}
       >
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <span className="text-sm font-semibold text-white/95">☰ 나의 우주 탐사</span>
+          <div className="flex items-center gap-2.5">
+            <Logo size={24} href={null} />
+            <span className="text-sm font-semibold text-white/95">나의 우주 탐사</span>
+          </div>
           <button
             type="button"
             onClick={onClose}

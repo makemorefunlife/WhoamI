@@ -38,6 +38,7 @@ export {
   getWorkColleagueDeepReport,
   getCohabitationDeepReport,
   getFamilyParentDeepReport,
+  getFriendSocialDeepReport,
   hasPremiumCacheForKind,
 } from "./premiumByKind";
 export { isRelationshipFavorite } from "./analysisLog";

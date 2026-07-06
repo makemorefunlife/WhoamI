@@ -170,9 +170,10 @@ export type PairSajuAnalysis = {
 export function analyzePairSaju(
   sajuA: SajuPillars,
   sajuB: SajuPillars,
+  prebuilt?: { chartA: ChartContext; chartB: ChartContext },
 ): PairSajuAnalysis {
-  const chartA = buildChartContext(sajuA);
-  const chartB = buildChartContext(sajuB);
+  const chartA = prebuilt?.chartA ?? buildChartContext(sajuA);
+  const chartB = prebuilt?.chartB ?? buildChartContext(sajuB);
 
   const elA = countElements(chartA);
   const elB = countElements(chartB);

@@ -20,6 +20,11 @@ import {
   type FamilyParentChildDeepReport,
 } from "@/lib/prompts/relationshipPremium/familyParentChild/outputSchema";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import {
+  isFriendSocialDeepReport,
+  type FriendSocialDeepReport,
+} from "@/lib/prompts/relationshipPremium/friendSocial/outputSchema";
+import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 
 /** kind별 premium 캐시 — perspectives LLM 또는 사주 심화(deep) report */
 export type PremiumKindPayload =
@@ -39,6 +44,10 @@ export type PremiumKindPayload =
   | {
       format: typeof FAMILY_PARENT_CHILD_DEEP_FORMAT;
       report: FamilyParentChildDeepReport["report"];
+    }
+  | {
+      format: typeof FRIEND_SOCIAL_DEEP_FORMAT;
+      report: FriendSocialDeepReport["report"];
     };
 
 export type ResultPremiumByKind = Partial<
@@ -96,6 +105,9 @@ function deepReportValid(
   if (format === FAMILY_PARENT_CHILD_DEEP_FORMAT) {
     return isFamilyParentChildDeepReport({ format, report });
   }
+  if (format === FRIEND_SOCIAL_DEEP_FORMAT) {
+    return isFriendSocialDeepReport({ format, report });
+  }
   return false;
 }
 
@@ -135,6 +147,18 @@ function familyDeepCacheValid(
   );
 }
 
+function friendshipDeepCacheValid(
+  payload: PremiumKindPayload | undefined,
+  legacyPremium: unknown,
+): boolean {
+  const pick = payload ?? legacyPremiumPayload(legacyPremium);
+  if (!pick || !isDeepFormatPayload(pick)) return false;
+  return (
+    pick.format === FRIEND_SOCIAL_DEEP_FORMAT &&
+    isFriendSocialDeepReport({ format: pick.format, report: pick.report })
+  );
+}
+
 function kindPayloadHasCache(
   payload: PremiumKindPayload | undefined,
   kind: RelationshipKind,
@@ -149,6 +173,9 @@ function kindPayloadHasCache(
   if (kind === "family") {
     return familyDeepCacheValid(payload, legacyPremium);
   }
+  if (kind === "friendship") {
+    return friendshipDeepCacheValid(payload, legacyPremium);
+  }
 
   if (!payload) {
     const legacy = legacyPremiumPayload(legacyPremium);
@@ -158,14 +185,6 @@ function kindPayloadHasCache(
         isDeepFormatPayload(legacy) &&
         legacy.format === ROMANTIC_SAJU_DEEP_FORMAT &&
         isRomanticSajuDeepReport({ report: legacy.report })
-      );
-    }
-    if (kind === "friendship") {
-      return Boolean(
-        "perspectives" in legacy &&
-          legacy.perspectives &&
-          typeof legacy.perspectives === "object" &&
-          Object.keys(legacy.perspectives).length > 0,
       );
     }
     if (kind === "family") {
@@ -223,6 +242,7 @@ export function getPremiumPerspectiveForKind(
     kind !== "romantic" &&
     kind !== "work" &&
     kind !== "cohabitation" &&
+    kind !== "friendship" &&
     kind !== "family"
   ) {
     if (reportIdA && reportIdB) {
@@ -303,6 +323,25 @@ export function getFamilyParentDeepReport(
     isDeepFormatPayload(payload) &&
     payload.format === FAMILY_PARENT_CHILD_DEEP_FORMAT &&
     isFamilyParentChildDeepReport({
+      format: payload.format,
+      report: payload.report,
+    })
+  ) {
+    return payload.report;
+  }
+  return null;
+}
+
+export function getFriendSocialDeepReport(
+  byKind: ResultPremiumByKind | null | undefined,
+  legacyPremium?: unknown,
+): FriendSocialDeepReport["report"] | null {
+  const payload = byKind?.friendship ?? legacyPremiumPayload(legacyPremium);
+  if (
+    payload &&
+    isDeepFormatPayload(payload) &&
+    payload.format === FRIEND_SOCIAL_DEEP_FORMAT &&
+    isFriendSocialDeepReport({
       format: payload.format,
       report: payload.report,
     })

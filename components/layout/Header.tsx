@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { UserButton, SignInButton } from "@clerk/nextjs";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
+import Logo from "@/components/brand/Logo";
 import SideMenu from "./SideMenu";
 
 export default function Header() {
@@ -115,9 +116,9 @@ export default function Header() {
           <span className="text-xl leading-none">☰</span>
         </button>
 
-        <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-medium tracking-wide text-white/35 sm:text-sm">
-          탐사
-        </span>
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Logo size={28} priority />
+        </div>
 
         <div className="flex min-h-[44px] min-w-[44px] items-center justify-center">
           {!isLoaded ? (

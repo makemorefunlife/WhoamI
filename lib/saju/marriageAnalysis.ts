@@ -17,7 +17,7 @@ import {
 } from "@/lib/saju/pairChartAnalysis";
 import {
   detectGongmangCrossHit,
-  detectMonthWonjinGuimun,
+  detectMarriageWonjinGuimun,
 } from "@/lib/saju/workPairRiskSignals";
 
 const stemElement = new Map(
@@ -25,34 +25,6 @@ const stemElement = new Map(
 );
 const branchElement = new Map(
   REF_EARTHLY_BRANCHES.map((r) => [r.code, r.element as string]),
-);
-
-const WONJIN_PAIRS = new Set(
-  [
-    ["ja", "myo"],
-    ["chuk", "in"],
-    ["in", "chuk"],
-    ["myo", "ja"],
-    ["jin", "yu"],
-    ["sa", "sin"],
-    ["o", "hae"],
-    ["mi", "sul"],
-    ["sin", "sa"],
-    ["yu", "jin"],
-    ["sul", "mi"],
-    ["hae", "o"],
-  ].map(([a, b]) => `${a}-${b}`),
-);
-
-const GUIMUN_PAIRS = new Set(
-  [
-    ["ja", "yu"],
-    ["chuk", "o"],
-    ["in", "mi"],
-    ["myo", "sin"],
-    ["jin", "hae"],
-    ["sa", "sul"],
-  ].map(([a, b]) => [a, b].sort().join("-")),
 );
 
 const YEOMA_BRANCHES = new Set(["in", "sin", "ja", "hae"]);
@@ -126,14 +98,6 @@ export type MarriagePairSajuAnalysis = {
 function palaceFromLabel(label: string): string {
   const m = label.match(/^(년주|월주|일주|시주)/);
   return m?.[1] ?? "";
-}
-
-function isWonjin(a: string, b: string): boolean {
-  return WONJIN_PAIRS.has(`${a}-${b}`) || WONJIN_PAIRS.has(`${b}-${a}`);
-}
-
-function isGuimun(a: string, b: string): boolean {
-  return GUIMUN_PAIRS.has([a, b].sort().join("-"));
 }
 
 function chartTemperature(
@@ -276,17 +240,7 @@ function detectWonjinGuimunPair(
   chartA: ChartContext,
   chartB: ChartContext,
 ): boolean {
-  const pairs: [string, string][] = [
-    [chartA.dayBranchCode, chartB.dayBranchCode],
-    [chartA.hourBranchCode, chartB.hourBranchCode],
-    [chartA.dayBranchCode, chartB.hourBranchCode],
-    [chartA.hourBranchCode, chartB.dayBranchCode],
-  ];
-  for (const [a, b] of pairs) {
-    if (isWonjin(a, b) || isGuimun(a, b)) return true;
-  }
-  const month = detectMonthWonjinGuimun(chartA, chartB);
-  return month.wonjin || month.guimun;
+  return detectMarriageWonjinGuimun(chartA, chartB);
 }
 
 function analyzeDayBranch(
@@ -368,10 +322,17 @@ export function analyzeMarriagePairSaju(
     | "hasFoodSealHarmony"
     | "hasWealthOfficerPowerStruggle"
   >,
+  prebuilt?: {
+    chartA: ChartContext;
+    chartB: ChartContext;
+    pairAnalysis: PairSajuAnalysis;
+  },
 ): MarriagePairSajuAnalysis {
-  const chartA = buildChartContext(sajuA);
-  const chartB = buildChartContext(sajuB);
-  const base = analyzePairSaju(sajuA, sajuB);
+  const chartA = prebuilt?.chartA ?? buildChartContext(sajuA);
+  const chartB = prebuilt?.chartB ?? buildChartContext(sajuB);
+  const base =
+    prebuilt?.pairAnalysis ??
+    analyzePairSaju(sajuA, sajuB, { chartA, chartB });
   const cross = base.allCrossHits;
 
   const dayBranch = analyzeDayBranch(chartA, chartB, cross, base);

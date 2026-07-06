@@ -21,6 +21,7 @@ import {
   crossHitPalaceWeight,
   isPrimaryPalaceCross,
 } from "@/lib/saju/palaceWeight";
+import { buildChartContext } from "@/lib/saju/chartContext";
 import {
   analyzePairSaju,
   sajuJsonToPillars,
@@ -285,10 +286,11 @@ export function computePairAnalysisOnce(
   if (!pillarsA?.dayPillar || !pillarsB?.dayPillar) {
     throw new Error("사주 팔자 데이터가 없어 궁합 분석을 할 수 없습니다.");
   }
-  return analyzePairSaju(
-    sajuJsonToPillars(pillarsA as Required<typeof pillarsA>),
-    sajuJsonToPillars(pillarsB as Required<typeof pillarsB>),
-  );
+  const pA = sajuJsonToPillars(pillarsA as Required<typeof pillarsA>);
+  const pB = sajuJsonToPillars(pillarsB as Required<typeof pillarsB>);
+  const chartA = buildChartContext(pA);
+  const chartB = buildChartContext(pB);
+  return analyzePairSaju(pA, pB, { chartA, chartB });
 }
 
 export { metaphorShortLabel, joinRelationshipName };

@@ -2,40 +2,13 @@ import { calculateSaju } from "@fullstackfamily/manseryeok";
 import { REF_RELATION_RULES } from "@/lib/hardcoded/sajuReferenceData";
 import type { ChartContext } from "@/lib/saju/chartContext";
 import { chartEnergyProfile } from "@/lib/saju/marriageAnalysis";
+import { branchPairKey, isGuimun, isWonjin } from "@/lib/saju/workPairRiskSignals";
 import { getBranch, toBranchCode } from "@/lib/saju/mapping";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import {
   profileTenGods,
   type TenGodCounts,
 } from "./marriageTenGodAnalysis";
-
-const WONJIN_PAIRS = new Set(
-  [
-    ["ja", "myo"],
-    ["chuk", "in"],
-    ["in", "chuk"],
-    ["myo", "ja"],
-    ["jin", "yu"],
-    ["sa", "sin"],
-    ["o", "hae"],
-    ["mi", "sul"],
-    ["sin", "sa"],
-    ["yu", "jin"],
-    ["sul", "mi"],
-    ["hae", "o"],
-  ].map(([a, b]) => `${a}-${b}`),
-);
-
-const GUIMUN_PAIRS = new Set(
-  [
-    ["ja", "yu"],
-    ["chuk", "o"],
-    ["in", "mi"],
-    ["myo", "sin"],
-    ["jin", "hae"],
-    ["sa", "sul"],
-  ].map(([a, b]) => [a, b].sort().join("-")),
-);
 
 /** 수면 예민도 — 날카로운 리듬·감각 과부하 지지 */
 const NEEDLE_SENSITIVE_BRANCHES = new Set(["ja", "o", "myo", "yu"]);
@@ -46,27 +19,15 @@ type RelationRuleRow = {
   code_b: string;
 };
 
-function pairKey(a: string, b: string): string {
-  return [a, b].sort().join("-");
-}
-
-function isWonjin(a: string, b: string): boolean {
-  return WONJIN_PAIRS.has(`${a}-${b}`) || WONJIN_PAIRS.has(`${b}-${a}`);
-}
-
-function isGuimun(a: string, b: string): boolean {
-  return GUIMUN_PAIRS.has(pairKey(a, b));
-}
-
 function hasBranchRelation(
   type: "branch_clash" | "branch_punishment",
   a: string,
   b: string,
 ): boolean {
-  const key = pairKey(a, b);
+  const key = branchPairKey(a, b);
   return (REF_RELATION_RULES as unknown as RelationRuleRow[]).some(
     (r) =>
-      r.relation_type === type && pairKey(r.code_a, r.code_b) === key,
+      r.relation_type === type && branchPairKey(r.code_a, r.code_b) === key,
   );
 }
 

@@ -11,9 +11,15 @@ import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/rom
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 import type { RelationshipKind } from "./relationshipKind";
 
-export type DeepAnalysisKind = "romantic" | "work" | "cohabitation" | "family";
+export type DeepAnalysisKind =
+  | "romantic"
+  | "work"
+  | "cohabitation"
+  | "friendship"
+  | "family";
 
 export type DeepAnalysisKindEntry = {
   /** DB·API format 문자열 */
@@ -59,6 +65,14 @@ export const DEEP_ANALYSIS_KIND_REGISTRY: Record<
     viewComponent: "components/relationship/MarriageReportView",
     birthRequirement: "date_place",
   },
+  friendship: {
+    format: FRIEND_SOCIAL_DEEP_FORMAT,
+    label: "친구 Social DNA 분석",
+    triScoreKind: "romantic",
+    pipeline: "lib/prompts/relationshipPremium/friendSocial",
+    viewComponent: "components/relationship/FriendReportView",
+    birthRequirement: "date_place",
+  },
   family: {
     format: FAMILY_PARENT_CHILD_DEEP_FORMAT,
     label: "가족 Child DNA Playbook",
@@ -76,6 +90,7 @@ export function relationshipKindUsesDeepPipeline(
     kind === "romantic" ||
     kind === "work" ||
     kind === "cohabitation" ||
+    kind === "friendship" ||
     kind === "family"
   );
 }

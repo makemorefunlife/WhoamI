@@ -9,6 +9,7 @@ import {
 import type { MarriageDayBranchAnalysis } from "@/lib/saju/marriageAnalysis";
 import type { TenGodCounts } from "./marriageTenGodAnalysis";
 import { profileTenGods } from "./marriageTenGodAnalysis";
+import { hasGuimunOnDayHourPalaces } from "@/lib/saju/workPairRiskSignals";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 
 export type StaminaArchetype = "marathon" | "sprint";
@@ -35,17 +36,6 @@ export type BedroomMatrixSection = {
   person_b: BedroomPersonProfile;
   frequency_one_liner: string;
 };
-
-const GUIMUN_PAIRS = new Set(
-  [
-    ["ja", "yu"],
-    ["chuk", "o"],
-    ["in", "mi"],
-    ["myo", "sin"],
-    ["jin", "hae"],
-    ["sa", "sul"],
-  ].map(([a, b]) => [a, b].sort().join("-")),
-);
 
 const NAKED_FIRE_BRANCHES = new Set(["ja", "o", "myo", "yu"]);
 
@@ -82,20 +72,6 @@ const MANNER_COPY: Record<MannerArchetype, string> = {
     "[👑 거침없이 이끄는 파워풀 리더] — 침실 주도권을 강하게 쥐고 직진형으로 상대를 리드하며 쟁취하는 타입입니다.",
   ),
 };
-
-function isGuimunPair(a: string, b: string): boolean {
-  return GUIMUN_PAIRS.has([a, b].sort().join("-"));
-}
-
-function hasGuimunOnDayHour(chart: ChartContext): boolean {
-  const anchors = [chart.dayBranchCode, chart.hourBranchCode];
-  for (const anchor of anchors) {
-    for (const br of chart.branchCodes) {
-      if (br !== anchor && isGuimunPair(anchor, br)) return true;
-    }
-  }
-  return false;
-}
 
 function hasNakedFireOnDayHour(chart: ChartContext): boolean {
   return [chart.dayBranchCode, chart.hourBranchCode].some((br) =>
@@ -134,7 +110,7 @@ function resolveFantasyArchetype(
   chart: ChartContext,
 ): FantasyArchetype {
   const sanggwan = counts["상관"] ?? 0;
-  const guimun = hasGuimunOnDayHour(chart);
+  const guimun = hasGuimunOnDayHourPalaces(chart);
   const nakedFire = hasNakedFireOnDayHour(chart);
 
   const isFantasyBreaker =

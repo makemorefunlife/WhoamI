@@ -21,6 +21,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ahaitsme — 나를 찾는 여행",
   description: "설문과 이야기로 나만의 작은 우주를 만나보세요.",
+  icons: {
+    icon: [
+      { url: "/brand/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/brand/apple-touch-icon.png",
+    shortcut: "/brand/favicon-32.png",
+  },
 };
 
 export default function RootLayout({

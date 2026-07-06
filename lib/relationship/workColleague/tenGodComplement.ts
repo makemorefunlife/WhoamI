@@ -117,9 +117,11 @@ export function analyzeTenGodComplement(params: {
   nicknameB: string;
   sajuJsonA: SajuDataForIntegrated;
   sajuJsonB: SajuDataForIntegrated;
+  countsA?: Record<string, number>;
+  countsB?: Record<string, number>;
 }): TenGodComplementResult {
-  const countsA = countTenGods(params.sajuJsonA);
-  const countsB = countTenGods(params.sajuJsonB);
+  const countsA = params.countsA ?? countTenGods(params.sajuJsonA);
+  const countsB = params.countsB ?? countTenGods(params.sajuJsonB);
 
   const lackingA = lackingCategories(countsA);
   const lackingB = lackingCategories(countsB);

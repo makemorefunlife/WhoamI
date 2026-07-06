@@ -18,8 +18,10 @@ import {
 } from "@/lib/saju/pairChartAnalysis";
 import { analyzeIntraChartPalaceHits } from "@/lib/saju/marriageAnalysis";
 import {
+  detectFamilyWonjinGuimunBranches,
   detectGongmangCrossHit,
-  detectMonthWonjinGuimun,
+  isGuimun,
+  isWonjin,
 } from "@/lib/saju/workPairRiskSignals";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { TenGodCounts } from "@/lib/relationship/familyParent/familyParentTenGodAnalysis";
@@ -39,34 +41,6 @@ function getStemEl(code: string): string {
 function getBranchEl(code: string): string {
   return branchElement.get(code as never) ?? "earth";
 }
-
-const WONJIN_PAIRS = new Set(
-  [
-    ["ja", "myo"],
-    ["chuk", "in"],
-    ["in", "chuk"],
-    ["myo", "ja"],
-    ["jin", "yu"],
-    ["sa", "sin"],
-    ["o", "hae"],
-    ["mi", "sul"],
-    ["sin", "sa"],
-    ["yu", "jin"],
-    ["sul", "mi"],
-    ["hae", "o"],
-  ].map(([a, b]) => `${a}-${b}`),
-);
-
-const GUIMUN_PAIRS = new Set(
-  [
-    ["ja", "yu"],
-    ["chuk", "o"],
-    ["in", "mi"],
-    ["myo", "sin"],
-    ["jin", "hae"],
-    ["sa", "sul"],
-  ].map(([a, b]) => [a, b].sort().join("-")),
-);
 
 const COMBINE_TYPES = new Set(["육합", "삼합", "방합"]);
 const TENSION_TYPES = new Set(["충", "형", "해", "파"]);
@@ -121,14 +95,6 @@ type RelationRuleRow = {
 
 function pairKey(a: string, b: string): string {
   return [a, b].sort().join("-");
-}
-
-function isWonjin(a: string, b: string): boolean {
-  return WONJIN_PAIRS.has(`${a}-${b}`) || WONJIN_PAIRS.has(`${b}-${a}`);
-}
-
-function isGuimun(a: string, b: string): boolean {
-  return GUIMUN_PAIRS.has(pairKey(a, b));
 }
 
 function findBranchRule(type: string, a: string, b: string): RelationRuleRow | null {
@@ -216,17 +182,7 @@ function detectWonjinGuimunCross(
   child: ChartContext,
   cross: CrossChartHit[],
 ): boolean {
-  const pairs: [string, string][] = [
-    [parent.dayBranchCode, child.dayBranchCode],
-    [parent.monthBranchCode, child.monthBranchCode],
-    [parent.dayBranchCode, child.monthBranchCode],
-    [parent.monthBranchCode, child.dayBranchCode],
-  ];
-  for (const [a, b] of pairs) {
-    if (isWonjin(a, b) || isGuimun(a, b)) return true;
-  }
-  const month = detectMonthWonjinGuimun(parent, child);
-  if (month.wonjin || month.guimun) return true;
+  if (detectFamilyWonjinGuimunBranches(parent, child)) return true;
   return cross.some(
     (h) =>
       (h.type === "충" || h.type === "형") &&
@@ -429,10 +385,20 @@ export function analyzeFamilyPairSaju(
   parentRole: FamilyParentRole,
   childCounts: TenGodCounts = {},
   parentCounts: TenGodCounts = {},
+  prebuilt?: {
+    chartA: ChartContext;
+    chartB: ChartContext;
+    pairAnalysis: PairSajuAnalysis;
+  },
 ): FamilyPairSajuAnalysis {
-  const chartParent = buildChartContext(parentPillars);
-  const chartChild = buildChartContext(childPillars);
-  const base = analyzePairSaju(parentPillars, childPillars);
+  const chartParent = prebuilt?.chartA ?? buildChartContext(parentPillars);
+  const chartChild = prebuilt?.chartB ?? buildChartContext(childPillars);
+  const base =
+    prebuilt?.pairAnalysis ??
+    analyzePairSaju(parentPillars, childPillars, {
+      chartA: chartParent,
+      chartB: chartChild,
+    });
   const cross = base.allCrossHits;
 
   const dayMonthHits = filterPalaceCross(cross, ["일주", "월주"]);

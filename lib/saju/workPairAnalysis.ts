@@ -407,10 +407,17 @@ function extractScoringSignals(
 export function analyzeWorkPairSaju(
   sajuA: SajuPillars,
   sajuB: SajuPillars,
+  prebuilt?: {
+    chartA: ChartContext;
+    chartB: ChartContext;
+    pairAnalysis: PairSajuAnalysis;
+  },
 ): WorkPairSajuAnalysis {
-  const chartA = buildChartContext(sajuA);
-  const chartB = buildChartContext(sajuB);
-  const base = analyzePairSaju(sajuA, sajuB);
+  const chartA = prebuilt?.chartA ?? buildChartContext(sajuA);
+  const chartB = prebuilt?.chartB ?? buildChartContext(sajuB);
+  const base =
+    prebuilt?.pairAnalysis ??
+    analyzePairSaju(sajuA, sajuB, { chartA, chartB });
 
   const monthBranch = analyzeMonthBranchWork(
     chartA,

@@ -5,6 +5,7 @@ import {
   getWorkColleagueDeepReport,
   getCohabitationDeepReport,
   getFamilyParentDeepReport,
+  getFriendSocialDeepReport,
   isRelationshipFavorite,
   parseRelationshipKind,
   RELATIONSHIP_KINDS,
@@ -127,6 +128,11 @@ export async function GET(req: Request) {
         ? getFamilyParentDeepReport(byKind, rr.result_premium)
         : null;
 
+    const friendshipDeepReport =
+      activeKind === "friendship"
+        ? getFriendSocialDeepReport(byKind, rr.result_premium)
+        : null;
+
     const favorited = await isRelationshipFavorite(
       supabase,
       viewerReportId,
@@ -153,6 +159,7 @@ export async function GET(req: Request) {
       work_colleague_deep_report: workColleagueDeepReport,
       cohabitation_deep_report: cohabitationDeepReport,
       family_deep_report: familyDeepReport,
+      friendship_deep_report: friendshipDeepReport,
       is_favorite: favorited,
       raw_basic: rr.result_basic,
       raw_premium: rr.result_premium,
