@@ -9,6 +9,7 @@
 PowerShell:
 
 ```powershell
+$env:REPORT_ID = "<유효한-report-uuid>"
 .\tests\manual\slim-v1-deep-api.ps1
 # 포트 변경: $env:PORT=3001; .\tests\manual\slim-v1-deep-api.ps1
 ```

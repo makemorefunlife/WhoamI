@@ -4,7 +4,13 @@
 $port = if ($env:PORT) { $env:PORT } else { "3000" }
 $uri = "http://localhost:$port/api/v2/deep/innate"
 
+if (-not $env:REPORT_ID) {
+  Write-Host "REPORT_ID 환경변수가 필요합니다 (유효한 report UUID)." -ForegroundColor Red
+  exit 1
+}
+
 $body = @{
+  reportId         = $env:REPORT_ID
   birthDate        = "1990-05-15"
   birthTime        = "14:30"
   birthTimeUnknown = $false

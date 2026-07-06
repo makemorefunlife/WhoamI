@@ -2,14 +2,10 @@ import { NextResponse } from "next/server";
 import {
   fetchRelationshipReportRowsForHub,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
+import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
-import {
-  getRomanticSajuDeepReport,
-  getWorkColleagueDeepReport,
-  getCohabitationDeepReport,
-  parseRelationshipKind,
-} from "@/lib/relationship/relationshipKind";
+import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 
 export const runtime = "nodejs";
 
@@ -23,24 +19,12 @@ function isBasicComplete(resultBasic: unknown): boolean {
   );
 }
 
-function isPremiumComplete(
-  analysisType: string,
-  resultPremium: unknown,
-  resultPremiumByKind: unknown,
-): boolean {
-  if (analysisType !== "premium") return false;
-  const byKind = (resultPremiumByKind ?? {}) as Record<string, unknown>;
-  if (getRomanticSajuDeepReport(byKind, resultPremium)) return true;
-  if (getWorkColleagueDeepReport(byKind, resultPremium)) return true;
-  if (getCohabitationDeepReport(byKind, resultPremium)) return true;
-  const prem = resultPremium as { perspectives?: unknown } | null;
-  return (
-    prem != null &&
-    typeof prem === "object" &&
-    prem.perspectives != null &&
-    typeof prem.perspectives === "object"
-  );
-}
+export type HubRowKind =
+  | "outbound_waiting"
+  | "relationship_outbound"
+  | "relationship_inbound"
+  | "relationship_manual"
+  | "relationship_other";
 
 /** YYYY-MM-DD */
 function dateOnly(iso: string | null | undefined): string | null {
@@ -49,13 +33,6 @@ function dateOnly(iso: string | null | undefined): string | null {
   if (s.length >= 10) return s.slice(0, 10);
   return null;
 }
-
-export type HubRowKind =
-  | "outbound_waiting"
-  | "relationship_outbound"
-  | "relationship_inbound"
-  | "relationship_manual"
-  | "relationship_other";
 
 export async function GET(req: Request) {
   try {
@@ -200,10 +177,11 @@ export async function GET(req: Request) {
         at === "premium" || at === "basic" ? at : null;
 
       const basicDone = isBasicComplete(r.result_basic);
-      const premiumDone = isPremiumComplete(
+      const premiumDone = isRelationshipPremiumComplete(
         at,
         r.result_premium,
         r.result_premium_by_kind,
+        r.relationship_kind,
       );
       const completed = basicDone && (at !== "premium" || premiumDone);
 

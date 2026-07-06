@@ -1,5 +1,7 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import {
   deleteReportAnalysis,
   readPersistedAnalysesBatch,
@@ -106,6 +108,14 @@ export async function GET(req: Request) {
     }
 
     const supabase = createServiceRoleClient(supabaseUrl, serviceKey);
+
+    const { userId } = await auth();
+    const access = await assertGuestOrOwnerReportAccess(
+      supabase,
+      reportId,
+      userId,
+    );
+    if (access.error) return access.error;
 
     const {
       report,
@@ -350,6 +360,14 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServiceRoleClient(supabaseUrl, serviceKey);
+
+    const { userId } = await auth();
+    const access = await assertGuestOrOwnerReportAccess(
+      supabase,
+      reportId,
+      userId,
+    );
+    if (access.error) return access.error;
 
     const { data: report, error: repErr } = await supabase
       .from("reports")

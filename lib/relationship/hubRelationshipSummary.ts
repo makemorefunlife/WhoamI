@@ -4,6 +4,7 @@ import {
   mergeRelationshipRowsFromInboundInvites,
   mergeRelationshipRowsFromOutboundInvites,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
+import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 
 function isBasicComplete(resultBasic: unknown): boolean {
   const basic = resultBasic as { perspectives?: unknown } | null;
@@ -12,20 +13,6 @@ function isBasicComplete(resultBasic: unknown): boolean {
     typeof basic === "object" &&
     basic.perspectives != null &&
     typeof basic.perspectives === "object"
-  );
-}
-
-function isPremiumComplete(
-  analysisType: string,
-  resultPremium: unknown,
-): boolean {
-  if (analysisType !== "premium") return false;
-  const prem = resultPremium as { perspectives?: unknown } | null;
-  return (
-    prem != null &&
-    typeof prem === "object" &&
-    prem.perspectives != null &&
-    typeof prem.perspectives === "object"
   );
 }
 
@@ -67,7 +54,12 @@ export async function countHubRelationshipSummary(
   for (const r of rows) {
     const at = r.analysis_type as string;
     const basicDone = isBasicComplete(r.result_basic);
-    const premiumDone = isPremiumComplete(at, r.result_premium);
+    const premiumDone = isRelationshipPremiumComplete(
+      at,
+      r.result_premium,
+      r.result_premium_by_kind,
+      r.relationship_kind,
+    );
     const done = basicDone && (at !== "premium" || premiumDone);
     if (done) completed++;
     else pending++;

@@ -57,6 +57,7 @@ export function useSlimV1Integrated(
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
           body: JSON.stringify({
+            reportId,
             birthDate: birth!.birthDate,
             birthTime: birth!.birthTime,
             birthTimeUnknown: birth!.birthTimeUnknown,

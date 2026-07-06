@@ -1,9 +1,11 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 
-/** 직접 입력 친구 관계 삭제 */
+/** 직접 입력 친구 관계 삭제 — 허브 리포트 소유자·게스트만 */
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as {
@@ -30,6 +32,13 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServiceRoleClient(url, serviceKey);
+    const { userId } = await auth();
+    const access = await assertGuestOrOwnerReportAccess(
+      supabase,
+      viewerReportId,
+      userId,
+    );
+    if (access.error) return access.error;
 
     const { data: rr, error: rrErr } = await supabase
       .from("relationship_reports")
@@ -44,11 +53,11 @@ export async function POST(req: Request) {
       );
     }
 
-    if (
-      rr.report_id_a !== viewerReportId &&
-      rr.report_id_b !== viewerReportId
-    ) {
-      return NextResponse.json({ error: "권한 없음" }, { status: 403 });
+    if (rr.report_id_a !== viewerReportId) {
+      return NextResponse.json(
+        { error: "이 관계를 삭제할 권한이 없습니다." },
+        { status: 403 },
+      );
     }
 
     const partnerId =
