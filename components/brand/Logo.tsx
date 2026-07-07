@@ -8,11 +8,11 @@ type LogoProps = {
   href?: string | null;
   className?: string;
   priority?: boolean;
-  /** 검은 배경이 들어간 PNG를 밝은(크림) 헤더에 쓸 때 */
+  /** 밝은(크림) 헤더 — 흰/검은 배경이 섞인 PNG를 자연스럽게 합성 */
   onLightBackground?: boolean;
 };
 
-/** 확정 브랜드 로고 — 파비콘과 동일 마크 */
+/** 확정 브랜드 로고 */
 export default function Logo({
   size = 32,
   href = "/",
@@ -23,14 +23,14 @@ export default function Logo({
   const image = (
     <Image
       src={LOGO_SRC}
-      alt="ahaitsme"
+      alt="Aha It's me!"
       width={size}
       height={size}
       priority={priority}
-      unoptimized={onLightBackground}
+      unoptimized
       className={[
         "object-contain",
-        onLightBackground ? "mix-blend-screen" : "",
+        onLightBackground ? "mix-blend-multiply" : "",
         className,
       ]
         .filter(Boolean)
