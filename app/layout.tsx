@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Lora, Manrope } from "next/font/google";
 import AppClerkProvider from "@/components/clerk/AppClerkProvider";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
-import Header from "@/components/layout/Header";
-import SiteFooter from "@/components/layout/SiteFooter";
+import ConditionalAppChrome from "@/components/layout/ConditionalAppChrome";
 import "./globals.css";
+import "./stitch-theme.css";
 
 export const runtime = "nodejs";
 
@@ -16,6 +16,18 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope-var",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const lora = Lora({
+  variable: "--font-lora-var",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -39,14 +51,12 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppClerkProvider>
           <FirstEntryDiagnostics scope="RootLayout" />
-          <Header />
-          <div className="flex min-h-0 flex-1 flex-col pt-14">{children}</div>
-          <SiteFooter />
+          <ConditionalAppChrome>{children}</ConditionalAppChrome>
         </AppClerkProvider>
       </body>
     </html>

@@ -17,3 +17,22 @@ export const PRIMARY_AXIS_ORDER: PrimaryAxisKey[] = [
   "control",
   "adaptability",
 ];
+
+/** Stitch dashboard — mockup axis labels (top → clockwise) */
+export const STITCH_DASHBOARD_AXIS_ORDER: PrimaryAxisKey[] = [
+  "control",
+  "connection",
+  "stability",
+  "growth",
+  "adaptability",
+  "autonomy",
+];
+
+export const STITCH_DASHBOARD_AXIS_LABELS: Record<PrimaryAxisKey, string> = {
+  control: "Focus",
+  connection: "Warmth",
+  stability: "Resilience",
+  growth: "Curiosity",
+  adaptability: "Stillness",
+  autonomy: "Expression",
+};

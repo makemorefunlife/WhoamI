@@ -11,6 +11,7 @@ export type ResumeState = {
   reportId: string | null;
   hasReport: boolean;
   surveyCompleted: boolean;
+  birthDate: string | null;
 };
 
 export type RelCounts = { pending: number; completed: number };

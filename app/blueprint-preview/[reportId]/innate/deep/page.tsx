@@ -2,9 +2,8 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import SpaceBackground from "@/components/space/SpaceBackground";
-import GlowButton from "@/components/space/GlowButton";
-import SlimV1IntegratedView from "@/components/v2/SlimV1IntegratedView";
+import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
+import StitchSlimV1IntegratedView from "@/components/results/StitchSlimV1IntegratedView";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
 import { useSlimV1Integrated } from "@/lib/v1/slim/useSlimV1Integrated";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
+import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
 
 function InnateDeepContent() {
   const router = useRouter();
@@ -68,49 +68,51 @@ function InnateDeepContent() {
       }
       const birth = await ensureBirthSession(reportId);
       if (!hasMinimalBirth(birth)) {
-        router.replace(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
+        router.replace(
+          `/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`,
+        );
       }
     })();
   }, [ready, booting, reportId, bundle, bundleLoading, router]);
 
   if (!ready || booting || bundleLoading) {
     return (
-      <SpaceBackground showProbe={false}>
-        <div className="flex min-h-screen items-center justify-center px-6">
-          <p className="text-sm text-[rgba(255,255,255,0.55)]">불러오는 중…</p>
+      <StitchSurveyShell className="stitch-survey stitch-results">
+        <div className="flex min-h-[50vh] items-center justify-center px-6">
+          <p className="text-sm text-on-surface-variant">불러오는 중…</p>
         </div>
-      </SpaceBackground>
+      </StitchSurveyShell>
     );
   }
 
   if (!bundle) {
     return (
-      <SpaceBackground showProbe={false}>
-        <div className="flex min-h-screen items-center justify-center px-6">
-          <p className="text-sm text-[rgba(255,255,255,0.55)]">
+      <StitchSurveyShell className="stitch-survey stitch-results">
+        <div className="flex min-h-[50vh] items-center justify-center px-6">
+          <p className="text-sm text-on-surface-variant">
             설문·출생 정보 확인 중…
           </p>
         </div>
-      </SpaceBackground>
+      </StitchSurveyShell>
     );
   }
 
   return (
-    <SpaceBackground showProbe={false}>
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-5 py-16 pt-20">
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-6 sm:px-6">
         <div className="text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF9A3C]">
-            Slim V1 · 심화
-          </p>
-          <h1 className="mt-2 text-lg font-semibold text-white/95">
-            본래의 나 (심화)
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-rose/30 bg-accent-rose-soft/60 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+            Premium
+          </span>
+          <h1 className="stitch-headline mt-4 text-balance text-2xl leading-snug sm:text-3xl">
+            Deep integration analysis
           </h1>
-          <p className="mt-2 text-sm text-white/50">
-            설문 6축 · 기질(신살) · 출생 에너지를 통합한 심화 리포트예요.
+          <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+            설문 · 출생 에너지를 통합한 심화 리포트예요.
           </p>
         </div>
 
-        <SlimV1IntegratedView
+        <StitchSlimV1IntegratedView
           data={data}
           loading={loading}
           error={error}
@@ -118,41 +120,34 @@ function InnateDeepContent() {
           onRegenerateFresh={() => regenerateFresh()}
         />
 
-        {error ? (
-          <GlowButton
+        <div className="flex flex-col gap-3">
+          <button
             type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={() => router.push("/account#birth")}
+            className="stitch-cta-primary w-full disabled:opacity-60"
+            onClick={() => regenerateFresh()}
+            disabled={loading}
           >
-            출생 정보 수정하기 (계정)
-          </GlowButton>
-        ) : null}
-
-        <GlowButton
-          type="button"
-          variant="primary"
-          className="w-full"
-          onClick={() => regenerateFresh()}
-          disabled={loading}
-        >
-          {loading ? "생성 중… (1~2분)" : "다시 생성"}
-        </GlowButton>
-
-        <GlowButton
-          type="button"
-          variant="secondary"
-          className="w-full"
-          onClick={() =>
-            router.push(
-              `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`,
-            )
-          }
-        >
-          Blueprint 미리보기로 돌아가기
-        </GlowButton>
+            {loading ? "생성 중… (1~2분)" : "다시 생성"}
+          </button>
+          <button
+            type="button"
+            className="stitch-cta-secondary w-full"
+            onClick={() => router.push(resultsDashboardPath(reportId))}
+          >
+            대시보드로 돌아가기
+          </button>
+          {error ? (
+            <button
+              type="button"
+              className="text-sm text-on-surface-variant underline-offset-2 hover:text-primary hover:underline"
+              onClick={() => router.push("/account#birth")}
+            >
+              출생 정보 수정하기 (계정)
+            </button>
+          ) : null}
+        </div>
       </main>
-    </SpaceBackground>
+    </StitchSurveyShell>
   );
 }
 
@@ -160,11 +155,11 @@ export default function InnateDeepPage() {
   return (
     <Suspense
       fallback={
-        <SpaceBackground showProbe={false}>
-          <div className="flex min-h-screen items-center justify-center px-6">
-            <p className="text-sm text-[rgba(255,255,255,0.55)]">불러오는 중…</p>
+        <StitchSurveyShell className="stitch-survey stitch-results">
+          <div className="flex min-h-[50vh] items-center justify-center px-6">
+            <p className="text-sm text-on-surface-variant">불러오는 중…</p>
           </div>
-        </SpaceBackground>
+        </StitchSurveyShell>
       }
     >
       <InnateDeepContent />

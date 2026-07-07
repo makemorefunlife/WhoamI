@@ -46,8 +46,62 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-manrope: var(--font-manrope-var), ui-sans-serif, system-ui, sans-serif;
   --color-space-accent: var(--space-accent);
   --color-space-accent-sub: var(--space-accent-sub);
+
+  /* Stitch landing — warm cream, deep green, emerald & rose accents */
+  --color-surface: #faf7f0;
+  --color-surface-dim: #ebe4d8;
+  --color-surface-container-lowest: #fffdf8;
+  --color-surface-container-low: #f5f0e8;
+  --color-surface-container: #ede8de;
+  --color-surface-container-high: #e5dfd3;
+  --color-on-surface: #1a3328;
+  --color-on-surface-variant: #4a5c52;
+  --color-outline-variant: #d4cfc4;
+  --color-primary: #1a3328;
+  --color-on-primary: #fffdf8;
+  --color-primary-container: #dceee6;
+  --color-secondary: #3a8f6e;
+  --color-secondary-container: #e3f2ec;
+  --color-tertiary: #c49a9c;
+  --color-tertiary-container: #f5e8e8;
+  --color-accent-emerald: #3a8f6e;
+  --color-accent-rose: #c49a9c;
+  --color-accent-rose-soft: #f3e4e4;
+  --color-accent-emerald-soft: #dceee6;
+  --font-stitch-serif: var(--font-lora-var), Georgia, "Times New Roman", serif;
+  --spacing-edge-margin-mobile: 1.25rem;
+  --spacing-edge-margin-desktop: 4rem;
+  --spacing-stack-lg: 2rem;
+  --spacing-section-gap: 5rem;
+  --radius-extra-large: 1.75rem;
+  --radius-extra-extra-large: 2.5rem;
+}
+
+html:has(.stitch-landing),
+html:has(.stitch-survey),
+html:has(.stitch-results) {
+  background: #faf7f0;
+}
+
+body:has(.stitch-landing),
+body:has(.stitch-survey),
+body:has(.stitch-results) {
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 100% 0%,
+      rgba(58, 143, 110, 0.09),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 0% 100%,
+      rgba(196, 154, 156, 0.12),
+      transparent 50%
+    ),
+  linear-gradient(180deg, #fffdf8 0%, #faf7f0 45%, #f5f0e8 100%);
+  color: #1a3328;
 }
 
 html,

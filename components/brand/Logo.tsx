@@ -8,6 +8,8 @@ type LogoProps = {
   href?: string | null;
   className?: string;
   priority?: boolean;
+  /** 검은 배경이 들어간 PNG를 밝은(크림) 헤더에 쓸 때 */
+  onLightBackground?: boolean;
 };
 
 /** 확정 브랜드 로고 — 파비콘과 동일 마크 */
@@ -16,6 +18,7 @@ export default function Logo({
   href = "/",
   className = "",
   priority = false,
+  onLightBackground = false,
 }: LogoProps) {
   const image = (
     <Image
@@ -24,7 +27,14 @@ export default function Logo({
       width={size}
       height={size}
       priority={priority}
-      className={`object-contain ${className}`}
+      unoptimized={onLightBackground}
+      className={[
+        "object-contain",
+        onLightBackground ? "mix-blend-screen" : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     />
   );
 

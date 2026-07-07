@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { mergeBirthCoordinateFields, updateReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import { resolveAstrologyCoordinates } from "@/lib/report/resolveAstrologyCoordinates";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
@@ -14,6 +15,9 @@ type BirthBody = {
   birthTime?: string | null;
   birthPlace?: string | null;
   birthTimeUnknown?: boolean;
+  birthPlaceUnknown?: boolean;
+  birthLatitude?: number;
+  birthLongitude?: number;
 };
 
 /** reports 출생 조회 — 게스트 리포트도 reportId로 조회 가능 */
@@ -100,27 +104,54 @@ export async function POST(req: Request) {
     if (access.error) return access.error;
 
     const birthTimeUnknown = body.birthTimeUnknown === true;
+    const birthPlaceUnknown = body.birthPlaceUnknown === true;
     const birthPlace =
       typeof body.birthPlace === "string" && body.birthPlace.trim()
         ? body.birthPlace.trim()
         : null;
 
-    const patch = mergeBirthCoordinateFields(
-      {
-        birth_date:
-          typeof body.birthDate === "string" && body.birthDate.trim()
-            ? body.birthDate.trim()
+    const basePatch = {
+      birth_date:
+        typeof body.birthDate === "string" && body.birthDate.trim()
+          ? body.birthDate.trim()
+          : null,
+      birth_time:
+        birthTimeUnknown
+          ? null
+          : typeof body.birthTime === "string" && body.birthTime.trim()
+            ? body.birthTime.trim()
             : null,
-        birth_time:
-          birthTimeUnknown
-            ? null
-            : typeof body.birthTime === "string" && body.birthTime.trim()
-              ? body.birthTime.trim()
-              : null,
-        birth_place: birthPlace,
-      },
-      birthPlace,
-    );
+      birth_place: birthPlaceUnknown
+        ? birthPlace || "Approximate location"
+        : birthPlace,
+    };
+
+    const hasClientCoords =
+      typeof body.birthLatitude === "number" &&
+      Number.isFinite(body.birthLatitude) &&
+      typeof body.birthLongitude === "number" &&
+      Number.isFinite(body.birthLongitude);
+
+    const patch = hasClientCoords
+      ? {
+          ...basePatch,
+          ...(() => {
+            const resolved = resolveAstrologyCoordinates(
+              {
+                birth_place: basePatch.birth_place,
+                birth_latitude: body.birthLatitude,
+                birth_longitude: body.birthLongitude,
+              },
+              { reportId, logDefaultSeoul: false },
+            );
+            return {
+              birth_latitude: resolved.latitude,
+              birth_longitude: resolved.longitude,
+              birth_timezone: resolved.timezone,
+            };
+          })(),
+        }
+      : mergeBirthCoordinateFields(basePatch, basePatch.birth_place);
 
     const { error: upErr } = await updateReportPatchSafely(
       supabase,

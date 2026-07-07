@@ -1,6 +1,9 @@
 "use client";
 
-import { PRIMARY_AXIS_ORDER, PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
+import {
+  PRIMARY_AXIS_ORDER,
+  PRIMARY_AXIS_LABELS,
+} from "@/lib/v2/framework/axisLabels";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 
 const SIZE = 300;
@@ -12,6 +15,47 @@ export const BLUEPRINT_CURRENT_FILL = "rgba(123, 155, 255, 0.22)";
 export const BLUEPRINT_INNATE_STROKE = "#FF9A3C";
 export const BLUEPRINT_INNATE_FILL = "rgba(255, 154, 60, 0.2)";
 
+export const STITCH_CURRENT_STROKE = "#1a3328";
+export const STITCH_CURRENT_FILL = "rgba(26, 51, 40, 0.2)";
+export const STITCH_INNATE_STROKE = "#c49a6c";
+export const STITCH_INNATE_FILL = "rgba(196, 154, 108, 0.28)";
+
+export type RadarChartTheme = {
+  gridStroke: string;
+  axisStroke: string;
+  baselineStroke: string;
+  labelClass: string;
+  currentStroke: string;
+  currentFill: string;
+  innateStroke: string;
+  innateFill: string;
+  legendTextClass: string;
+};
+
+const DARK_THEME: RadarChartTheme = {
+  gridStroke: "rgba(255,255,255,0.1)",
+  axisStroke: "rgba(255,255,255,0.12)",
+  baselineStroke: "rgba(255,255,255,0.08)",
+  labelClass: "fill-[rgba(255,255,255,0.65)] text-[9px]",
+  currentStroke: BLUEPRINT_CURRENT_STROKE,
+  currentFill: BLUEPRINT_CURRENT_FILL,
+  innateStroke: BLUEPRINT_INNATE_STROKE,
+  innateFill: BLUEPRINT_INNATE_FILL,
+  legendTextClass: "text-[rgba(255,255,255,0.82)]",
+};
+
+export const STITCH_RADAR_THEME: RadarChartTheme = {
+  gridStroke: "rgba(26, 51, 40, 0.1)",
+  axisStroke: "rgba(26, 51, 40, 0.14)",
+  baselineStroke: "rgba(26, 51, 40, 0.08)",
+  labelClass: "fill-primary/65 text-[9px]",
+  currentStroke: STITCH_CURRENT_STROKE,
+  currentFill: STITCH_CURRENT_FILL,
+  innateStroke: STITCH_INNATE_STROKE,
+  innateFill: STITCH_INNATE_FILL,
+  legendTextClass: "text-on-surface",
+};
+
 function pointAt(angleDeg: number, r: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return {
@@ -20,13 +64,18 @@ function pointAt(angleDeg: number, r: number) {
   };
 }
 
-function polygonPoints(scores: PrimaryAxesScores): string {
-  return PRIMARY_AXIS_ORDER.map((key, i) => {
-    const angle = (360 / PRIMARY_AXIS_ORDER.length) * i;
-    const r = (scores[key] / 100) * RADIUS;
-    const { x, y } = pointAt(angle, r);
-    return `${x},${y}`;
-  }).join(" ");
+function polygonPoints(
+  scores: PrimaryAxesScores,
+  axisOrder: PrimaryAxisKey[],
+): string {
+  return axisOrder
+    .map((key, i) => {
+      const angle = (360 / axisOrder.length) * i;
+      const r = (scores[key] / 100) * RADIUS;
+      const { x, y } = pointAt(angle, r);
+      return `${x},${y}`;
+    })
+    .join(" ");
 }
 
 function SeriesLayer({
@@ -34,23 +83,25 @@ function SeriesLayer({
   stroke,
   fill,
   glowId,
+  axisOrder,
 }: {
   scores: PrimaryAxesScores;
   stroke: string;
   fill: string;
   glowId?: string;
+  axisOrder: PrimaryAxisKey[];
 }) {
   return (
     <g>
       <polygon
-        points={polygonPoints(scores)}
+        points={polygonPoints(scores, axisOrder)}
         fill={fill}
         stroke={stroke}
         strokeWidth={2}
         filter={glowId ? `url(#${glowId})` : undefined}
       />
-      {PRIMARY_AXIS_ORDER.map((key, i) => {
-        const angle = (360 / PRIMARY_AXIS_ORDER.length) * i;
+      {axisOrder.map((key, i) => {
+        const angle = (360 / axisOrder.length) * i;
         const r = (scores[key] / 100) * RADIUS;
         const { x, y } = pointAt(angle, r);
         return (
@@ -68,12 +119,29 @@ function SeriesLayer({
   );
 }
 
+function levelScores(
+  level: number,
+  axisOrder: PrimaryAxisKey[],
+): PrimaryAxesScores {
+  return Object.fromEntries(axisOrder.map((k) => [k, level])) as PrimaryAxesScores;
+}
+
 export default function DualAxisRadarChart({
   current,
   innate,
+  theme = DARK_THEME,
+  axisOrder = PRIMARY_AXIS_ORDER,
+  axisLabels = PRIMARY_AXIS_LABELS,
+  currentLabel = "Current",
+  innateLabel = "Innate",
 }: {
   current: PrimaryAxesScores;
   innate: PrimaryAxesScores;
+  theme?: RadarChartTheme;
+  axisOrder?: PrimaryAxisKey[];
+  axisLabels?: Record<PrimaryAxisKey, string>;
+  currentLabel?: string;
+  innateLabel?: string;
 }) {
   const gridLevels = [20, 40, 60, 80, 100];
 
@@ -83,7 +151,7 @@ export default function DualAxisRadarChart({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className="mx-auto h-auto w-full"
         role="img"
-        aria-label="Current와 Innate 6축 비교 레이더 차트"
+        aria-label={`${currentLabel} and ${innateLabel} six-axis comparison radar chart`}
       >
         <defs>
           <filter id="innateNeonGlow" x="-40%" y="-40%" width="180%" height="180%">
@@ -105,19 +173,15 @@ export default function DualAxisRadarChart({
         {gridLevels.map((level) => (
           <polygon
             key={level}
-            points={polygonPoints(
-              Object.fromEntries(
-                PRIMARY_AXIS_ORDER.map((k) => [k, level]),
-              ) as PrimaryAxesScores,
-            )}
+            points={polygonPoints(levelScores(level, axisOrder), axisOrder)}
             fill="none"
-            stroke="rgba(255,255,255,0.1)"
+            stroke={theme.gridStroke}
             strokeWidth={1}
           />
         ))}
 
-        {PRIMARY_AXIS_ORDER.map((key, i) => {
-          const angle = (360 / PRIMARY_AXIS_ORDER.length) * i;
+        {axisOrder.map((key, i) => {
+          const angle = (360 / axisOrder.length) * i;
           const outer = pointAt(angle, RADIUS);
           const labelPt = pointAt(angle, RADIUS + 24);
           return (
@@ -127,7 +191,7 @@ export default function DualAxisRadarChart({
                 y1={CENTER}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="rgba(255,255,255,0.12)"
+                stroke={theme.axisStroke}
                 strokeWidth={1}
               />
               <text
@@ -135,56 +199,52 @@ export default function DualAxisRadarChart({
                 y={labelPt.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-[rgba(255,255,255,0.65)] text-[9px]"
+                className={theme.labelClass}
               >
-                {PRIMARY_AXIS_LABELS[key as PrimaryAxisKey]}
+                {axisLabels[key]}
               </text>
             </g>
           );
         })}
 
-        {/* Innate 먼저(뒤), Current 위 */}
         <SeriesLayer
           scores={innate}
-          stroke={BLUEPRINT_INNATE_STROKE}
-          fill={BLUEPRINT_INNATE_FILL}
+          stroke={theme.innateStroke}
+          fill={theme.innateFill}
           glowId="innateNeonGlow"
+          axisOrder={axisOrder}
         />
         <SeriesLayer
           scores={current}
-          stroke={BLUEPRINT_CURRENT_STROKE}
-          fill={BLUEPRINT_CURRENT_FILL}
+          stroke={theme.currentStroke}
+          fill={theme.currentFill}
           glowId="currentGlow"
+          axisOrder={axisOrder}
         />
 
-        {/* baseline 50 참고선 */}
         <polygon
-          points={polygonPoints(
-            Object.fromEntries(
-              PRIMARY_AXIS_ORDER.map((k) => [k, 50]),
-            ) as PrimaryAxesScores,
-          )}
+          points={polygonPoints(levelScores(50, axisOrder), axisOrder)}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke={theme.baselineStroke}
           strokeWidth={1}
           strokeDasharray="4 4"
         />
       </svg>
 
-      <div className="mt-4 flex items-center justify-center gap-6 text-xs">
-        <span className="inline-flex items-center gap-2 text-[rgba(255,255,255,0.82)]">
+      <div className={`mt-4 flex items-center justify-center gap-6 text-xs ${theme.legendTextClass}`}>
+        <span className="inline-flex items-center gap-2">
           <span
-            className="h-2.5 w-2.5 rounded-full shadow-[0_0_10px_rgba(123,155,255,0.65)]"
-            style={{ backgroundColor: BLUEPRINT_CURRENT_STROKE }}
+            className="h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: theme.currentStroke }}
           />
-          Current
+          {currentLabel}
         </span>
-        <span className="inline-flex items-center gap-2 text-[rgba(255,255,255,0.82)]">
+        <span className="inline-flex items-center gap-2">
           <span
-            className="h-2.5 w-2.5 rounded-full shadow-[0_0_12px_rgba(255,154,60,0.75)]"
-            style={{ backgroundColor: BLUEPRINT_INNATE_STROKE }}
+            className="h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: theme.innateStroke }}
           />
-          Innate
+          {innateLabel}
         </span>
       </div>
     </div>

@@ -11,6 +11,7 @@ export type BirthV2Session = {
   birthTime: string | null;
   birthTimeUnknown: boolean;
   birthPlace: string | null;
+  birthPlaceUnknown?: boolean;
   savedAt: string;
 };
 
@@ -44,6 +45,7 @@ export function readBirthV2Session(reportId: string): BirthV2Session | null {
       parsed.birthTime == null ||
       parsed.birthTime === "",
     birthPlace: parsed.birthPlace?.trim() || null,
+    birthPlaceUnknown: parsed.birthPlaceUnknown === true,
     savedAt: parsed.savedAt ?? new Date().toISOString(),
   };
 }
