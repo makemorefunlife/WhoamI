@@ -14,6 +14,11 @@ import type {
   ResumeState,
 } from "@/components/home/HomeAuthActions";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
+import {
+  blueprintPath,
+  DECISION_HUB_PATH,
+  relationHubPath,
+} from "@/lib/stitch/hubPaths";
 
 const HERO_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDvgf6WG4j6WmSliT9ytPyueU1yY_U7iK3rDs0KH0un2ei-7z7YtU6CWtOH0vlV1TeaTGp7MNGkGJJE_7jGSf9mVK_GZNVi0cXwUCZbLOqu4lskU70i2IZ3iPe0OhfnCoHROaachRLGnLUdZ7Y2B7Hm2210LeZsY2lijQ2Q7uJTIKNNHhy2pvKTWCMNwJv_B1Qn5xU3k3_SDhSpMjUl9uGmAFlwcpMJCvf2JXK0Od047ck6WxhSnq1RvLD2ek81OaidU9GNkxAezmTk";
@@ -273,11 +278,7 @@ export default function StitchLandingPage({
             <ul className="flex flex-col gap-4 text-on-primary/80">
               <li>
                 <Link
-                  href={
-                    reportId
-                      ? `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`
-                      : "/about"
-                  }
+                  href={blueprintPath(reportId)}
                   className="hover:text-accent-rose-soft"
                 >
                   Personal Analysis
@@ -285,18 +286,17 @@ export default function StitchLandingPage({
               </li>
               <li>
                 <Link
-                  href={
-                    reportId
-                      ? `/relationships?myReportId=${encodeURIComponent(reportId)}`
-                      : "/relationships"
-                  }
+                  href={relationHubPath(reportId)}
                   className="hover:text-accent-rose-soft"
                 >
                   Relation Hub
                 </Link>
               </li>
               <li>
-                <Link href="/decision" className="hover:text-accent-rose-soft">
+                <Link
+                  href={DECISION_HUB_PATH}
+                  className="hover:text-accent-rose-soft"
+                >
                   Decision Center
                 </Link>
               </li>

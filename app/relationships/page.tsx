@@ -1,17 +1,16 @@
 import { Suspense } from "react";
-import SpaceBackground from "@/components/space/SpaceBackground";
-import SpaceLoading from "@/components/space/SpaceLoading";
+import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import RelationshipsDashboard from "./RelationshipsDashboard";
 
 export default function RelationshipsPage() {
   return (
     <Suspense
       fallback={
-        <SpaceBackground>
-          <div className="relative z-10 flex min-h-screen items-center justify-center">
-            <SpaceLoading />
+        <StitchSurveyShell>
+          <div className="flex min-h-[50dvh] items-center justify-center px-6">
+            <p className="text-sm text-on-surface-variant">Loading…</p>
           </div>
-        </SpaceBackground>
+        </StitchSurveyShell>
       }
     >
       <RelationshipsDashboard />

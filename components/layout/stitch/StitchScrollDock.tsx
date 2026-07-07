@@ -5,6 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { Compass, Home, Scale, Users } from "lucide-react";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { stitchDockActivePath } from "@/components/layout/stitch/StitchSideMenu";
+import {
+  blueprintPath,
+  DECISION_HUB_PATH,
+  relationHubPath,
+} from "@/lib/stitch/hubPaths";
 
 function DockItem({
   label,
@@ -112,12 +117,8 @@ export default function StitchScrollDock({
             label="나"
             active={active === "me"}
             onClick={() => {
-              if (reportId) {
-                router.push(
-                  `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`,
-                );
-              } else if (isSignedIn) {
-                router.push("/blueprint-preview");
+              if (reportId || isSignedIn) {
+                router.push(blueprintPath(reportId));
               } else {
                 onOpenAuth?.();
               }
@@ -128,20 +129,14 @@ export default function StitchScrollDock({
           <DockItem
             label="관계"
             active={active === "relations"}
-            onClick={() =>
-              router.push(
-                reportId
-                  ? `/relationships?myReportId=${encodeURIComponent(reportId)}`
-                  : "/relationships",
-              )
-            }
+            onClick={() => router.push(relationHubPath(reportId))}
           >
             <Users className="h-5 w-5" strokeWidth={2} aria-hidden />
           </DockItem>
           <DockItem
             label="결정"
             active={active === "decision"}
-            onClick={() => router.push("/decision")}
+            onClick={() => router.push(DECISION_HUB_PATH)}
           >
             <Scale className="h-5 w-5" strokeWidth={2} aria-hidden />
           </DockItem>

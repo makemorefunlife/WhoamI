@@ -11,6 +11,7 @@ import RelationshipCard, {
   type RelationshipListItem,
 } from "@/components/relationship/RelationshipCard";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
+import { blueprintPath } from "@/lib/stitch/hubPaths";
 
 const WAITING_VISIBLE = 3;
 
@@ -373,15 +374,22 @@ export default function RelationshipsDashboard() {
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5">
           <GlassCard className="w-full max-w-sm space-y-4 text-center">
             <p className="text-xs text-[var(--space-text-muted)]">
-              리포트에서 들어와 주세요.
+              블루프린트를 먼저 완료하면 관계 허브를 이용할 수 있어요.
             </p>
             <GlowButton
               type="button"
               className="!min-h-[44px] text-sm"
+              onClick={() => router.push(blueprintPath())}
+            >
+              Blueprint로 이동
+            </GlowButton>
+            <button
+              type="button"
+              className="text-xs text-[var(--space-text-muted)] underline-offset-2 hover:underline"
               onClick={() => router.push("/")}
             >
               홈으로
-            </GlowButton>
+            </button>
           </GlassCard>
         </div>
       </SpaceBackground>

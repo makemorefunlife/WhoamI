@@ -11,6 +11,11 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
+import {
+  blueprintPath,
+  DECISION_HUB_PATH,
+  relationHubPath,
+} from "@/lib/stitch/hubPaths";
 
 const NAV_ITEMS = [
   {
@@ -19,8 +24,6 @@ const NAV_ITEMS = [
     sub: "Blueprint",
     desc: "6축 블루프린트 · 무료 리포트",
     icon: Compass,
-    needsReportId: true,
-    queryKey: "reportId",
   },
   {
     href: "/",
@@ -34,8 +37,6 @@ const NAV_ITEMS = [
     sub: "Relation Hub",
     desc: "연인 · 동료 · 가족 · 친구",
     icon: GitBranch,
-    needsReportId: true,
-    queryKey: "myReportId",
   },
   {
     href: "/decision",
@@ -46,6 +47,13 @@ const NAV_ITEMS = [
     badge: "NEW",
   },
 ] as const;
+
+function resolveNavHref(href: string): string {
+  if (href === "/blueprint-preview") return blueprintPath();
+  if (href === "/relationships") return relationHubPath();
+  if (href === "/decision") return DECISION_HUB_PATH;
+  return href;
+}
 
 const FOOTER_LINKS = [
   { href: "/about", label: "서비스 소개" },
@@ -68,18 +76,7 @@ function NavCard({
   const Icon = item.icon;
 
   const handleClick = () => {
-    if ("needsReportId" in item && item.needsReportId) {
-      const id =
-        typeof window !== "undefined"
-          ? localStorage.getItem("reportId")?.trim() ?? ""
-          : "";
-      const qs = new URLSearchParams();
-      if (id && item.queryKey) qs.set(item.queryKey, id);
-      const suffix = qs.toString() ? `?${qs.toString()}` : "";
-      router.push(`${item.href}${suffix}`);
-    } else {
-      router.push(item.href);
-    }
+    router.push(resolveNavHref(item.href));
     onNavigate();
   };
 
