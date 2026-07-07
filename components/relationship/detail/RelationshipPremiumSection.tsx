@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
@@ -36,6 +37,8 @@ type RelationshipPremiumSectionProps = {
   onEnsurePremiumPreview: () => void;
   onRunPremium: (kind: RelationshipKind) => void;
   onRegeneratePremium: () => void;
+  forceVisible?: boolean;
+  onReportReadyRef?: RefObject<HTMLDivElement | null>;
 };
 
 export default function RelationshipPremiumSection({
@@ -58,13 +61,15 @@ export default function RelationshipPremiumSection({
   onEnsurePremiumPreview,
   onRunPremium,
   onRegeneratePremium,
+  forceVisible = false,
+  onReportReadyRef,
 }: RelationshipPremiumSectionProps) {
-  if (analysisType !== "premium" && !premiumPreview) {
+  if (analysisType !== "premium" && !premiumPreview && !forceVisible) {
     return null;
   }
 
   return (
-    <div className="mt-10">
+    <div id="relationship-report-anchor" ref={onReportReadyRef} className="mt-10 scroll-mt-24">
       {busy ? (
         <p className="mb-4 text-center text-xs text-[#ffd6a5]/80">
           심화 관계 분석을 생성하고 있어요… (1~2분 걸릴 수 있어요)

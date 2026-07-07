@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Logo from "@/components/brand/Logo";
 import {
   blueprintPath,
+  DECISION_HUB_LABEL,
   DECISION_HUB_PATH,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
@@ -32,6 +34,10 @@ export default function StitchAppFooter() {
   return (
     <footer className="mt-auto border-t border-outline-variant/30 bg-surface-container-low/35 px-5 py-8 sm:px-6">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+        <div className="flex items-center gap-2.5">
+          <Logo size={24} href="/" onLightBackground />
+          <p className="text-sm font-semibold text-primary">Aha It&apos;s me!</p>
+        </div>
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-on-surface-variant">
             Journey
@@ -56,7 +62,7 @@ export default function StitchAppFooter() {
               href={DECISION_HUB_PATH}
               className="text-sm text-on-surface-variant transition hover:text-primary"
             >
-              Decision Center
+              {DECISION_HUB_LABEL}
             </Link>
           </nav>
         </div>

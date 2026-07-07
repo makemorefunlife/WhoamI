@@ -10,3 +10,9 @@ export {
 } from "./RelationshipReportCard";
 export { getTabTheme, RELATIONSHIP_TAB_THEME } from "./theme";
 export type { ScoreMetric, HeadlineProps } from "./types";
+export {
+  ReportSurfaceProvider,
+  useReportSurface,
+  useReportTone,
+  type ReportSurface,
+} from "./ReportSurface";

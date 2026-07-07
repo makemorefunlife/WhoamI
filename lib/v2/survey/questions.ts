@@ -129,7 +129,7 @@ export const SURVEY_V2_QUESTIONS: SurveyQuestion[] = [
       { value: "C", label: "자기개발을 하며 뒤처지지 않으려고 노력한다." },
       {
         value: "D",
-        label: "쉬어야 하는데도 기운이 없어 대부분 누워 있게 된다.",
+        label: "뭔가는 해야지 하면서도 기운이 없어 대부분 누워 있게 된다.",
       },
     ],
   },

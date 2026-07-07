@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useReportTone } from "./ReportSurface";
 import type { ScoreMetric } from "./types";
 import type { RelationshipTabTheme } from "./theme";
 
@@ -17,14 +18,18 @@ function ScoreGauge({
   metric: ScoreMetric;
   accent: string;
 }) {
+  const tone = useReportTone();
   const pct = Math.max(0, Math.min(100, Math.round(metric.value)));
-  const tone = metric.tone ?? "warm";
-  const barGradient = TONE_BAR[tone];
+  const barGradient = TONE_BAR[metric.tone ?? "warm"];
   const circumference = 2 * Math.PI * 36;
   const offset = circumference - (pct / 100) * circumference;
+  const trackStroke =
+    tone.surface === "stitch"
+      ? "rgba(26, 51, 40, 0.12)"
+      : "rgba(255,255,255,0.08)";
 
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-white/10 bg-black/25 px-4 py-5 backdrop-blur-sm">
+    <div className={tone.scoreCell}>
       <div className="relative h-[5.5rem] w-[5.5rem]">
         <svg
           className="h-full w-full -rotate-90"
@@ -36,7 +41,7 @@ function ScoreGauge({
             cy="44"
             r="36"
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke={trackStroke}
             strokeWidth="7"
           />
           <circle
@@ -54,21 +59,19 @@ function ScoreGauge({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold tabular-nums text-white">
-            {pct}
-          </span>
-          <span className="text-[10px] font-medium text-white/45">/ 100</span>
+          <span className={tone.scoreValue}>{pct}</span>
+          <span className={tone.scoreSub}>/ 100</span>
         </div>
       </div>
 
-      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/8">
+      <div className={tone.scoreTrack}>
         <div
           className={`h-full rounded-full bg-gradient-to-r ${barGradient}`}
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      <p className="mt-3 text-center text-sm font-semibold text-white/90">
+      <p className={tone.scoreLabel}>
         <span className="mr-1">{metric.emoji}</span>
         {metric.label}
       </p>
@@ -85,6 +88,8 @@ export default function RelationshipScoreBoard({
   theme: RelationshipTabTheme;
   footer?: ReactNode;
 }) {
+  const tone = useReportTone();
+
   if (scores.length === 0 && !footer) return null;
 
   return (
@@ -98,14 +103,20 @@ export default function RelationshipScoreBoard({
       <div className="mb-5 flex items-end justify-between gap-3">
         <div>
           <p
-            className="text-[11px] font-semibold uppercase tracking-[0.22em]"
-            style={{ color: theme.accentMuted }}
+            className={
+              tone.surface === "stitch"
+                ? "text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary"
+                : "text-[11px] font-semibold uppercase tracking-[0.22em]"
+            }
+            style={
+              tone.surface === "stitch"
+                ? undefined
+                : { color: theme.accentMuted }
+            }
           >
             Relationship Index
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-white/95">
-            한눈에 보는 관계 지수
-          </h3>
+          <h3 className={tone.sectionTitle}>한눈에 보는 관계 지수</h3>
         </div>
       </div>
 
@@ -131,7 +142,12 @@ export default function RelationshipScoreBoard({
       ) : null}
 
       {footer ? (
-        <div className="mt-5 space-y-3 border-t border-white/8 pt-5">
+        <div
+          className={[
+            "mt-5 space-y-3 border-t pt-5",
+            tone.scoreFooterBorder,
+          ].join(" ")}
+        >
           {footer}
         </div>
       ) : null}

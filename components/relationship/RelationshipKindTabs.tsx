@@ -10,8 +10,8 @@ const tabBtn = (active: boolean) =>
   [
     "flex-1 rounded-lg border px-2 py-2 text-xs font-medium transition",
     active
-      ? "border-[#ffd6a5]/50 bg-[#ffd6a5]/15 text-[#ffd6a5]"
-      : "border-white/12 bg-transparent text-white/55 hover:border-white/25",
+      ? "border-secondary/50 bg-secondary/15 text-primary"
+      : "border-outline-variant/40 bg-surface-container-low/60 text-on-surface-variant hover:border-secondary/35 hover:bg-secondary/8",
   ].join(" ");
 
 export default function RelationshipKindTabs({

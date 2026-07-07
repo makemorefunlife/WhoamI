@@ -132,7 +132,7 @@ export default function RelationshipBasicCards({
   if (!perspective || Object.keys(perspective).length === 0) {
     if (emptyMessage === false) return null;
     return (
-      <p className="text-center text-sm text-[var(--space-text-muted)]">
+      <p className="text-center text-sm text-on-surface-variant">
         {emptyMessage}
       </p>
     );

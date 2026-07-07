@@ -14,17 +14,16 @@ import type {
   ResumeState,
 } from "@/components/home/HomeAuthActions";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
+import Logo from "@/components/brand/Logo";
 import {
   blueprintPath,
+  DECISION_HUB_LABEL,
   DECISION_HUB_PATH,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
 
 const HERO_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDvgf6WG4j6WmSliT9ytPyueU1yY_U7iK3rDs0KH0un2ei-7z7YtU6CWtOH0vlV1TeaTGp7MNGkGJJE_7jGSf9mVK_GZNVi0cXwUCZbLOqu4lskU70i2IZ3iPe0OhfnCoHROaachRLGnLUdZ7Y2B7Hm2210LeZsY2lijQ2Q7uJTIKNNHhy2pvKTWCMNwJv_B1Qn5xU3k3_SDhSpMjUl9uGmAFlwcpMJCvf2JXK0Od047ck6WxhSnq1RvLD2ek81OaidU9GNkxAezmTk";
-
-const FOOTER_LOGO =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBlfdLUG0D7OsmV5zilUhXgdbxK8_gdaUjLzR66qxV9Uwcy6c9STymuREBgO3AGrNwuVjPuskOKRr3Rk8OkuowmNVMQsAPMwC-_wAyPLozUDU8YwGlo2VVV0jeVR03QxjXH75aVHRC8ve2hZVEKYzv1vpqxooMWhMnFWn8FYQl1hhqNkmn2wGw2dG9lPksmnSjMUdPRCfTpZNIhlKXXSk63aCHMTfGCbr7I1eFQuiQB5sWHA5wSA9HIKQEIT6pI2WyEZso";
 
 type Props = {
   resume: ResumeState;
@@ -93,6 +92,9 @@ export default function StitchLandingPage({
           <div className="relative w-full min-h-[min(520px,88dvh)] md:min-h-[400px]">
             <div className="flex min-h-[inherit] flex-col justify-center p-8 md:p-16">
               <div className="mx-auto w-full max-w-2xl text-center md:mx-0 md:text-left">
+                <div className="mb-4 flex justify-center md:justify-start">
+                  <Logo size={40} href={null} priority />
+                </div>
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent-emerald">
                   Aha It&apos;s me
                 </p>
@@ -254,14 +256,7 @@ export default function StitchLandingPage({
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-12 md:grid-cols-12">
           <div className="md:col-span-6">
             <div className="mb-6 flex items-center gap-2">
-              <Image
-                src={FOOTER_LOGO}
-                alt="Aha It's me!"
-                width={32}
-                height={32}
-                className="h-8 w-auto object-contain"
-                unoptimized
-              />
+              <Logo size={32} href={null} />
               <h5 className="text-2xl font-medium text-on-primary">
                 Aha It&apos;s me!
               </h5>
@@ -297,7 +292,7 @@ export default function StitchLandingPage({
                   href={DECISION_HUB_PATH}
                   className="hover:text-accent-rose-soft"
                 >
-                  Decision Center
+                  {DECISION_HUB_LABEL}
                 </Link>
               </li>
             </ul>

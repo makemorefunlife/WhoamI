@@ -1,0 +1,31 @@
+---
+description: Devlog·Status·규정 — 세션 시작/종료 시 참고
+alwaysApply: true
+---
+
+# Dev workflow
+
+## 세션 시작
+
+1. Read `docs/dev/00_Status.md` (NOW 1개)
+2. Skim latest `docs/dev/daily/*.md`
+3. Check `docs/dev/CORE_MAP.md` before adding files
+
+## 세션 종료 (user asks "오늘 로그 남겨줘")
+
+1. Update or create `docs/dev/daily/YYYY-MM-DD.md`
+2. Check off items in `00_Status.md`
+3. Add `decisions/NNN-*.md` if a lasting choice was made
+
+## Code placement
+
+- **Core:** `lib/saju`, `lib/report`, `lib/v1/slim`, `lib/v2/survey|onboarding|lite|blueprint`
+- **Experiments:** `tests/`, `sandbox/` only — do not import from `app/`
+- **Do not revive:** v2 deep 03B/C/D pipeline
+
+## Tests
+
+- Manual scripts → `tests/scripts/` or `tests/manual/`
+- Not in production `lib/` or `app/`
+
+Full rules: `docs/dev/PROJECT_RULES.md`

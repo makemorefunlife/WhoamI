@@ -31,6 +31,8 @@ const premiumPreview = relationshipPremiumPreviewEnabled();
 export type UseRelationshipDetailReturn = {
   router: ReturnType<typeof useRouter>;
   viewerReportId: string;
+  canonicalResolving: boolean;
+  autostartActive: boolean;
   resolvedRelationshipId: string;
   loading: boolean;
   busy: boolean;
@@ -85,12 +87,18 @@ export function useRelationshipDetail({
   const searchParams = useSearchParams();
   const urlViewerHint = searchParams.get("viewer")?.trim() ?? "";
   const urlKindHint = searchParams.get("kind")?.trim() ?? "";
+  const urlChildIsViewer = searchParams.get("childIsViewer")?.trim() ?? "";
+  const urlParentType = searchParams.get("parentType")?.trim() ?? "";
+  const urlAutostart = searchParams.get("autostart") === "1";
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
       urlHint: urlViewerHint,
       queryParam: "viewer",
       logContext: "relationship-detail",
+      syncToUrl: false,
     });
+
+  const effectiveViewerReportId = (viewerReportId || urlViewerHint).trim();
 
   const routeId =
     typeof routeParams?.id === "string"
@@ -125,8 +133,12 @@ export function useRelationshipDetail({
     null,
   );
   const [familyParentType, setFamilyParentType] =
-    useState<FamilyParentRole>("mother");
-  const [familyChildIsViewer, setFamilyChildIsViewer] = useState(false);
+    useState<FamilyParentRole>(
+      urlParentType === "father" ? "father" : "mother",
+    );
+  const [familyChildIsViewer, setFamilyChildIsViewer] = useState(
+    urlChildIsViewer === "true",
+  );
   const [reportIdA, setReportIdA] = useState("");
   const [reportIdB, setReportIdB] = useState("");
   const [nameA, setNameA] = useState("");
@@ -140,30 +152,32 @@ export function useRelationshipDetail({
   premiumKindRef.current = premiumKind;
   const [favorited, setFavorited] = useState(false);
   const [favoriteBusy, setFavoriteBusy] = useState(false);
-  const [logs, setLogs] = useState<AnalysisLogListItem[]>([]);
-  const [logsLoading, setLogsLoading] = useState(false);
   const [snapshotView, setSnapshotView] = useState<AnalysisLogSnapshot | null>(
     null,
   );
+  const [logs, setLogs] = useState<AnalysisLogListItem[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [autostartActive, setAutostartActive] = useState(false);
+  const autostartTriggered = useRef(false);
 
   const fetchLogs = useCallback(async () => {
-    if (!viewerReportId || !resolvedRelationshipId) return;
+    if (!effectiveViewerReportId || !resolvedRelationshipId) return;
     setLogsLoading(true);
     try {
       const res = await fetch(
-        `/api/relationship/logs?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(viewerReportId)}`,
+        `/api/relationship/logs?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}`,
       );
       const data = await res.json();
       if (res.ok) setLogs((data.logs ?? []) as AnalysisLogListItem[]);
     } finally {
       setLogsLoading(false);
     }
-  }, [resolvedRelationshipId, viewerReportId]);
+  }, [resolvedRelationshipId, effectiveViewerReportId]);
 
   const load = useCallback(
     async (kindOverride?: RelationshipKind) => {
-      if (canonicalResolving) return;
-      if (!viewerReportId) {
+      if (canonicalResolving && !urlViewerHint) return;
+      if (!effectiveViewerReportId) {
         setErr("viewer 쿼리(내 리포트 id)가 필요합니다.");
         setDetailOk(false);
         setLoading(false);
@@ -181,7 +195,7 @@ export function useRelationshipDetail({
       try {
         const kind = kindOverride ?? premiumKindRef.current;
         const res = await fetch(
-          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(viewerReportId)}&relationshipKind=${encodeURIComponent(kind)}`,
+          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}&relationshipKind=${encodeURIComponent(kind)}`,
         );
         const data = await res.json();
         if (!res.ok) {
@@ -224,7 +238,7 @@ export function useRelationshipDetail({
         setLoading(false);
       }
     },
-    [resolvedRelationshipId, viewerReportId, canonicalResolving, fetchLogs],
+    [resolvedRelationshipId, effectiveViewerReportId, canonicalResolving, urlViewerHint, fetchLogs],
   );
 
   useEffect(() => {
@@ -240,7 +254,7 @@ export function useRelationshipDetail({
   }, [resolvedRelationshipId]);
 
   const ensureBasic = useCallback(async () => {
-    if (!viewerReportId || !resolvedRelationshipId) return;
+    if (!effectiveViewerReportId || !resolvedRelationshipId) return;
     setBusy(true);
     setErr(null);
     try {
@@ -249,7 +263,7 @@ export function useRelationshipDetail({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           relationship_report_id: resolvedRelationshipId,
-          viewer_report_id: viewerReportId,
+          viewer_report_id: effectiveViewerReportId,
           relationship_kind: premiumKindRef.current,
         }),
       });
@@ -262,10 +276,10 @@ export function useRelationshipDetail({
     } finally {
       setBusy(false);
     }
-  }, [viewerReportId, resolvedRelationshipId, load, premiumKind]);
+  }, [effectiveViewerReportId, resolvedRelationshipId, load, premiumKind]);
 
   const toggleFavorite = useCallback(async () => {
-    if (!viewerReportId || !resolvedRelationshipId) return;
+    if (!effectiveViewerReportId || !resolvedRelationshipId) return;
     const next = !favorited;
     setFavorited(next);
     setFavoriteBusy(true);
@@ -275,7 +289,7 @@ export function useRelationshipDetail({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           relationship_report_id: resolvedRelationshipId,
-          viewer_report_id: viewerReportId,
+          viewer_report_id: effectiveViewerReportId,
           favorited: next,
         }),
       });
@@ -292,7 +306,7 @@ export function useRelationshipDetail({
     } finally {
       setFavoriteBusy(false);
     }
-  }, [viewerReportId, resolvedRelationshipId, favorited]);
+  }, [effectiveViewerReportId, resolvedRelationshipId, favorited]);
 
   const viewAnalysisLog = useCallback((log: AnalysisLogListItem) => {
     const { snapshot, kind } = parseAnalysisLogSnapshot(
@@ -304,7 +318,7 @@ export function useRelationshipDetail({
   }, []);
 
   useEffect(() => {
-    if (loading || !detailOk || !viewerReportId || !resolvedRelationshipId)
+    if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
       return;
     if (basic && Object.keys(basic).length > 0) return;
     if (basicAttempted.current) return;
@@ -314,7 +328,7 @@ export function useRelationshipDetail({
     loading,
     basic,
     detailOk,
-    viewerReportId,
+    effectiveViewerReportId,
     resolvedRelationshipId,
     ensureBasic,
   ]);
@@ -357,7 +371,7 @@ export function useRelationshipDetail({
           body: JSON.stringify({
             relationship_report_id: resolvedRelationshipId,
             relationship_kind: kind,
-            viewer_report_id: viewerReportId,
+            viewer_report_id: effectiveViewerReportId,
             force_regenerate: forceRegenerate,
             ...(kind === "family"
               ? {
@@ -416,9 +430,9 @@ export function useRelationshipDetail({
           } else if (!forceRegenerate && prem?.perspectives) {
             return runPremium(kind, { forceRegenerate: true });
           }
-        } else if (data.result_premium?.perspectives && viewerReportId) {
+        } else if (data.result_premium?.perspectives && effectiveViewerReportId) {
           const slice =
-            data.result_premium.perspectives[viewerReportId] ?? null;
+            data.result_premium.perspectives[effectiveViewerReportId] ?? null;
           if (slice && typeof slice === "object") {
             setPremium(slice as RelationshipPerspective);
           }
@@ -433,7 +447,7 @@ export function useRelationshipDetail({
       resolvedRelationshipId,
       load,
       premiumKind,
-      viewerReportId,
+      effectiveViewerReportId,
       familyParentType,
       familyChildIsViewer,
     ],
@@ -485,9 +499,9 @@ export function useRelationshipDetail({
       setWorkDeep(null);
       setCohabitationDeep(null);
       setFamilyDeep(null);
-      if (viewerReportId && resolvedRelationshipId) {
+      if (effectiveViewerReportId && resolvedRelationshipId) {
         const q = new URLSearchParams({
-          viewer: viewerReportId,
+          viewer: effectiveViewerReportId,
           kind,
         });
         router.replace(
@@ -497,7 +511,7 @@ export function useRelationshipDetail({
       }
       void load(kind);
     },
-    [load, router, viewerReportId, resolvedRelationshipId],
+    [load, router, effectiveViewerReportId, resolvedRelationshipId],
   );
 
   const displayBasic =
@@ -573,9 +587,66 @@ export function useRelationshipDetail({
     void load();
   }, [load]);
 
+  const runAutostartPremium = useCallback(async () => {
+    if (!resolvedRelationshipId || !effectiveViewerReportId) return;
+    setAutostartActive(true);
+    setErr(null);
+    try {
+      if (analysisType === "premium") {
+        await runPremium(premiumKind);
+        return;
+      }
+      if (premiumPreview) {
+        await ensurePremiumPreview();
+        return;
+      }
+      await runPremium(premiumKind);
+    } finally {
+      setAutostartActive(false);
+    }
+  }, [
+    resolvedRelationshipId,
+    effectiveViewerReportId,
+    premiumPreview,
+    analysisType,
+    ensurePremiumPreview,
+    runPremium,
+    premiumKind,
+  ]);
+
+  useEffect(() => {
+    if (!urlAutostart || autostartTriggered.current) return;
+    if (canonicalResolving && !urlViewerHint) return;
+    if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
+      return;
+    if (!basic || Object.keys(basic).length === 0) return;
+    if (premiumReady) {
+      autostartTriggered.current = true;
+      return;
+    }
+    if (busy || autostartActive) return;
+    autostartTriggered.current = true;
+    void runAutostartPremium();
+  }, [
+    urlAutostart,
+    canonicalResolving,
+    urlViewerHint,
+    loading,
+    detailOk,
+    effectiveViewerReportId,
+    resolvedRelationshipId,
+    basic,
+    premiumReady,
+    busy,
+    autostartActive,
+    runAutostartPremium,
+  ]);
+
   return {
     router,
-    viewerReportId,
+    viewerReportId: effectiveViewerReportId,
+    canonicalResolving,
+    autostartActive,
     resolvedRelationshipId,
     loading,
     busy,

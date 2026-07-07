@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import {
   blueprintPath,
+  DECISION_HUB_LABEL,
   DECISION_HUB_PATH,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
@@ -40,7 +41,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/decision",
-    label: "결정",
+    label: DECISION_HUB_LABEL,
     sub: "Decision",
     desc: "선택 · 의사결정 코치",
     icon: Scale,

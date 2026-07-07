@@ -1,0 +1,17 @@
+---
+description: Core vs sandbox file placement
+globs: lib/**/*,app/**/*,tests/**/*,sandbox/**/*
+alwaysApply: false
+---
+
+# Code zones
+
+Before creating files, pick a zone (`docs/dev/CORE_MAP.md`):
+
+| Zone | Path | Rule |
+|------|------|------|
+| Core | `lib/saju`, `lib/report`, `lib/v1/slim`, active `lib/v2/*` | Minimal diff; `npm run build` must pass |
+| Experiment | `tests/`, `sandbox/` | Disposable; no imports from `app/` |
+| Dead | `docs/v2` 03B–03E deep specs | No new code; archive/delete later |
+
+**Birth charts:** `resolveBirthTimeForCharts` — unknown time → 12:00; astrology **requires** `birthPlace`.

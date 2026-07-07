@@ -20,3 +20,4 @@ export function relationHubPath(reportId?: string): string {
 }
 
 export const DECISION_HUB_PATH = "/decision";
+export const DECISION_HUB_LABEL = "결정";

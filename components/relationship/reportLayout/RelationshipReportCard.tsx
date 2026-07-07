@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useReportTone } from "./ReportSurface";
 
 export type ReportCardVariant =
   | "default"
@@ -9,14 +10,6 @@ export type ReportCardVariant =
   | "success"
   | "muted";
 
-const VARIANT_CLASS: Record<ReportCardVariant, string> = {
-  default: "border-white/10 bg-white/[0.04]",
-  accent: "border-white/12 bg-white/[0.05]",
-  warning: "border-amber-400/25 bg-amber-950/20",
-  success: "border-emerald-400/25 bg-emerald-950/15",
-  muted: "border-white/8 bg-black/20",
-};
-
 export function RelationshipReportBody({
   children,
   className = "",
@@ -24,12 +17,12 @@ export function RelationshipReportBody({
   children: ReactNode;
   className?: string;
 }) {
+  const tone = useReportTone();
   return (
     <div
-      className={[
-        "space-y-4 text-[15px] leading-[1.75] text-white/78",
-        className,
-      ].join(" ")}
+      className={["space-y-4 text-[15px] leading-[1.75]", tone.body, className].join(
+        " ",
+      )}
     >
       {children}
     </div>
@@ -45,11 +38,12 @@ export function RelationshipReportParagraph({
   className?: string;
   muted?: boolean;
 }) {
+  const tone = useReportTone();
   return (
     <p
       className={[
         "whitespace-pre-wrap leading-[1.75]",
-        muted ? "text-white/62" : "text-white/78",
+        muted ? tone.muted : tone.body,
         className,
       ].join(" ")}
     >
@@ -65,16 +59,8 @@ export function RelationshipReportLabel({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <p
-      className={[
-        "text-xs font-semibold uppercase tracking-[0.12em] text-white/55",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </p>
-  );
+  const tone = useReportTone();
+  return <p className={[tone.label, className].join(" ")}>{children}</p>;
 }
 
 export function RelationshipReportInset({
@@ -84,16 +70,8 @@ export function RelationshipReportInset({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <div
-      className={[
-        "rounded-xl border border-white/8 bg-black/20 p-4 sm:p-5",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </div>
-  );
+  const tone = useReportTone();
+  return <div className={[tone.inset, className].join(" ")}>{children}</div>;
 }
 
 export default function RelationshipReportCard({
@@ -109,16 +87,30 @@ export default function RelationshipReportCard({
   accentColor?: string;
   className?: string;
 }) {
+  const tone = useReportTone();
+  const variantClass =
+    variant === "accent"
+      ? tone.cardAccent
+      : variant === "muted"
+        ? tone.cardMuted
+        : variant === "warning"
+          ? tone.surface === "stitch"
+            ? "border-amber-300/40 bg-amber-50/80"
+            : "border-amber-400/25 bg-amber-950/20"
+          : variant === "success"
+            ? tone.surface === "stitch"
+              ? "border-emerald-300/40 bg-emerald-50/70"
+              : "border-emerald-400/25 bg-emerald-950/15"
+            : tone.cardDefault;
+
   return (
     <article
-      className={[
-        "rounded-2xl border p-5 sm:p-6",
-        VARIANT_CLASS[variant],
-        className,
-      ].join(" ")}
+      className={["rounded-2xl border p-5 sm:p-6", variantClass, className].join(
+        " ",
+      )}
     >
       <h3
-        className="mb-4 text-base font-semibold leading-snug text-white/95 sm:text-[17px]"
+        className={tone.cardTitle}
         style={accentColor ? { color: accentColor } : undefined}
       >
         {title}

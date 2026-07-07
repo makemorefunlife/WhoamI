@@ -8,11 +8,11 @@ type LogoProps = {
   href?: string | null;
   className?: string;
   priority?: boolean;
-  /** 밝은(크림) 헤더 — 흰/검은 배경이 섞인 PNG를 자연스럽게 합성 */
+  /** 밝은(크림) 헤더 — 검은 배경이 남은 PNG 대비용 (투명 PNG면 생략 가능) */
   onLightBackground?: boolean;
 };
 
-/** 확정 브랜드 로고 */
+/** 확정 브랜드 로고 — Ai 모노그램 */
 export default function Logo({
   size = 32,
   href = "/",
@@ -35,6 +35,7 @@ export default function Logo({
       ]
         .filter(Boolean)
         .join(" ")}
+      style={{ width: size, height: size }}
     />
   );
 
@@ -50,5 +51,9 @@ export default function Logo({
     );
   }
 
-  return <span className="inline-flex shrink-0 items-center justify-center">{image}</span>;
+  return (
+    <span className="inline-flex shrink-0 items-center justify-center">
+      {image}
+    </span>
+  );
 }
