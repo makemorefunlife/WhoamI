@@ -36,12 +36,6 @@ export async function fetchRelationshipReportRowsForHub(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<RelationshipReportRow[]> {
-  const map = new Map<string, RelationshipReportRow>();
-
-  const append = (rows: RelationshipReportRow[]) => {
-    for (const r of rows) map.set(r.id, r);
-  };
-
   let primary = await fetchRelationshipReportRowsForReportId(supabase, reportId);
   primary = await mergeRelationshipRowsFromOutboundInvites(
     supabase,
@@ -53,32 +47,11 @@ export async function fetchRelationshipReportRowsForHub(
     reportId,
     primary,
   );
-  append(primary);
-
-  const { data: anchor } = await supabase
-    .from("reports")
-    .select("id, clerk_user_id")
-    .eq("id", reportId)
-    .maybeSingle();
-
-  const clerkId = (anchor as { clerk_user_id?: string | null } | null)
-    ?.clerk_user_id;
-  if (!clerkId) return [...map.values()];
-
-  const { data: owned } = await supabase
-    .from("reports")
-    .select("id")
-    .eq("clerk_user_id", clerkId)
-    .limit(50);
-
-  for (const row of owned ?? []) {
-    const oid = row.id as string;
-    if (oid === reportId) continue;
-    const extra = await fetchRelationshipReportRowsForReportId(supabase, oid);
-    append(extra);
-  }
-
-  return [...map.values()];
+  // NOTE:
+  // 다른 reportId(동일 clerk 계정 소유)까지 합쳐서 내려주면,
+  // detail API의 viewerReportId 권한 체크와 충돌해 403이 발생할 수 있다.
+  // 허브 액션 안정화를 위해 현재 활성 reportId 참여 관계만 반환한다.
+  return primary;
 }
 
 /**

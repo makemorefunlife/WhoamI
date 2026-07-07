@@ -483,7 +483,6 @@ export default function RelationHubDashboard() {
               onToggleFavorite={(item) =>
                 void toggleFavorite(item, !item.is_favorite)
               }
-              onAnalyze={openKindPicker}
             />
 
             <RelationHubActionButtons

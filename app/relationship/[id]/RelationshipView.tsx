@@ -276,8 +276,8 @@ export default function RelationshipView({
             displayCohabitationDeep={displayCohabitationDeep}
             displayFamilyDeep={displayFamilyDeep}
             displayFriendshipDeep={displayFriendshipDeep}
-            onEnsurePremiumPreview={() => void ensurePremiumPreview()}
-            onRunPremium={(kind) => void runPremium(kind)}
+            onEnsurePremiumPreview={ensurePremiumPreview}
+            onRunPremium={runPremium}
             onRegeneratePremium={regeneratePremium}
             forceVisible={urlAutostart || generating}
             onReportReadyRef={reportAnchorRef}
@@ -289,9 +289,9 @@ export default function RelationshipView({
             </p>
           ) : null}
 
-          {analysisType === "basic" && !premiumPreview && !urlAutostart ? (
+          {analysisType === "basic" && !urlAutostart ? (
             <p className="mt-8 text-center text-xs text-on-surface-variant">
-              심화 관계 분석은 업그레이드 후에 열려요.
+              관계 종류를 고른 뒤 심화 분석을 바로 생성할 수 있어요.
             </p>
           ) : null}
 

@@ -166,37 +166,37 @@ export default function RelationshipBasicCards({
         return (
           <article
             key={key}
-            className="overflow-hidden rounded-[20px] border border-[var(--space-border)]/90 bg-[var(--space-card)]/75 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.22)] sm:p-5"
+            className="overflow-hidden rounded-[20px] border border-outline-variant/35 bg-surface-container-low/80 p-4 shadow-[0_12px_32px_rgba(26,51,40,0.08)] sm:p-5"
           >
             <div className="mb-3 flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--space-text)]">
+              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                 <Icon
-                  className="h-[18px] w-[18px] text-[#8eb8ff]"
+                  className="h-[18px] w-[18px] text-secondary"
                   strokeWidth={1.75}
                 />
                 {label}
               </div>
             </div>
 
-            <div className="space-y-3.5 text-[15px] leading-relaxed text-[var(--space-text)]">
+            <div className="space-y-3.5 text-[15px] leading-relaxed text-on-surface">
               <p>
-                <span className="font-semibold text-[#b8dcff]">
+                <span className="font-semibold text-secondary">
                   {myNick}:
                 </span>{" "}
                 {myLineDisplay}
               </p>
               <p>
-                <span className="font-semibold text-[#d4c4ff]">
+                <span className="font-semibold text-accent-rose">
                   {partnerNick}:
                 </span>{" "}
                 {partnerLineDisplay}
               </p>
 
-              <div className="space-y-2 rounded-xl border border-[#67b7ff]/22 bg-[#67b7ff]/08 px-3.5 py-3">
-                <p className="text-[13px] font-semibold text-[#9ec8ff]">
+              <div className="space-y-2 rounded-xl border border-secondary/30 bg-secondary/10 px-3.5 py-3">
+                <p className="text-[13px] font-semibold text-secondary">
                   👉 이렇게 다르면
                 </p>
-                <ul className="list-inside list-disc space-y-1.5 text-[14px] leading-relaxed text-[var(--space-text-muted)]">
+                <ul className="list-inside list-disc space-y-1.5 text-[14px] leading-relaxed text-on-surface-variant">
                   {insights.map((line, i) => (
                     <li key={i} className="[text-wrap:pretty]">
                       {line}
@@ -205,11 +205,11 @@ export default function RelationshipBasicCards({
                 </ul>
               </div>
 
-              <div className="space-y-2 rounded-xl border border-[#ffd6a5]/22 bg-[#ffd6a5]/08 px-3.5 py-3">
-                <p className="text-[13px] font-semibold text-[#f0d9a8]">
+              <div className="space-y-2 rounded-xl border border-accent-rose/30 bg-accent-rose-soft/55 px-3.5 py-3">
+                <p className="text-[13px] font-semibold text-primary">
                   🎯 오늘 이렇게
                 </p>
-                <ul className="list-inside list-disc space-y-1.5 text-[14px] leading-relaxed text-[var(--space-text-muted)]">
+                <ul className="list-inside list-disc space-y-1.5 text-[14px] leading-relaxed text-on-surface-variant">
                   {actions.map((line, i) => (
                     <li key={i} className="[text-wrap:pretty]">
                       {line}

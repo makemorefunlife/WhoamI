@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, MoreHorizontal, Pencil, Search, Star } from "lucide-react";
+import { Clock, MoreHorizontal, Pencil, Star } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import { friendInitials } from "@/lib/relationship/hubDisplayName";
 
@@ -18,7 +18,6 @@ type Props = {
   onShowAll: () => void;
   onRename: (item: RelationshipListItem) => void;
   onToggleFavorite: (item: RelationshipListItem) => void;
-  onAnalyze: (item: RelationshipListItem) => void;
 };
 
 function itemKey(item: RelationshipListItem): string {
@@ -51,7 +50,6 @@ export default function FriendStoryRow({
   onShowAll,
   onRename,
   onToggleFavorite,
-  onAnalyze,
 }: Props) {
   const combined = [...waiting, ...friends];
   const visible = combined.slice(0, STORY_VISIBLE);
@@ -168,14 +166,6 @@ export default function FriendStoryRow({
                 className={`h-4 w-4 ${selected.is_favorite ? "fill-amber-400 text-amber-400" : ""}`}
               />
               {selected.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
-            </button>
-            <button
-              type="button"
-              onClick={() => onAnalyze(selected)}
-              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-secondary/15 px-3 text-sm font-semibold text-secondary transition hover:bg-secondary/20 active:scale-[0.98]"
-            >
-              <Search className="h-4 w-4" />
-              관계 분석하기
             </button>
           </motion.div>
         ) : null}

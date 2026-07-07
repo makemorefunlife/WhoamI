@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { useState, type RefObject } from "react";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
@@ -35,8 +35,8 @@ type RelationshipPremiumSectionProps = {
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
   displayFriendshipDeep: FriendReportBody | null;
-  onEnsurePremiumPreview: () => void;
-  onRunPremium: (kind: RelationshipKind) => void;
+  onEnsurePremiumPreview: () => Promise<boolean>;
+  onRunPremium: (kind: RelationshipKind) => Promise<boolean>;
   onRegeneratePremium: () => void;
   forceVisible?: boolean;
   onReportReadyRef?: RefObject<HTMLDivElement | null>;
@@ -65,20 +65,51 @@ export default function RelationshipPremiumSection({
   forceVisible = false,
   onReportReadyRef,
 }: RelationshipPremiumSectionProps) {
-  if (analysisType !== "premium" && !premiumPreview && !forceVisible) {
-    return null;
+  const [requesting, setRequesting] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const submitting = busy || requesting;
+  const hideSection = analysisType === "none" && !premiumPreview && !forceVisible;
+  if (hideSection) return null;
+
+  async function handleGenerateClick() {
+    if (submitting) return;
+    setRequesting(true);
+    setLocalError(null);
+    try {
+      let ok = false;
+      if (premiumPreview) {
+        ok = await onEnsurePremiumPreview();
+      } else {
+        ok = await onRunPremium(premiumKind);
+      }
+      if (!ok) {
+        setLocalError("생성 요청이 완료되지 않았어요. 잠시 후 다시 시도해 주세요.");
+      }
+    } finally {
+      setRequesting(false);
+    }
   }
 
   return (
-    <ReportSurfaceProvider surface="stitch">
+    <ReportSurfaceProvider surface="dark">
       <div
         id="relationship-report-anchor"
         ref={onReportReadyRef}
         className="mt-10 scroll-mt-24"
       >
-      {busy ? (
-        <p className="mb-4 text-center text-xs text-[#ffd6a5]/80">
-          심화 관계 분석을 생성하고 있어요… (1~2분 걸릴 수 있어요)
+      {submitting ? (
+        <div className="mb-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-center">
+          <p className="text-sm font-semibold text-secondary">
+            리포트를 생성중입니다
+          </p>
+          <p className="mt-1 text-xs text-on-surface-variant">
+            잠시만 기다려 주세요. 보통 1~2분 걸려요.
+          </p>
+        </div>
+      ) : null}
+      {localError ? (
+        <p className="mb-3 rounded-xl border border-red-300/50 bg-red-50/80 px-3 py-2 text-center text-sm text-red-800">
+          {localError}
         </p>
       ) : null}
       {premiumKind === "romantic" && displayRomanticDeep ? (
@@ -164,14 +195,10 @@ export default function RelationshipPremiumSection({
           <GlowButton
             type="button"
             className="w-full"
-            disabled={busy}
-            onClick={() =>
-              void (premiumPreview
-                ? onEnsurePremiumPreview()
-                : onRunPremium(premiumKind))
-            }
+            disabled={submitting}
+            onClick={() => void handleGenerateClick()}
           >
-            {busy
+            {submitting
               ? "심화 분석 생성 중…"
               : `${RELATIONSHIP_KIND_LABELS[premiumKind]} 관계 심화 분석 생성하기`}
           </GlowButton>
@@ -180,11 +207,11 @@ export default function RelationshipPremiumSection({
         <div className="mt-4 space-y-2 text-center">
           <button
             type="button"
-            disabled={busy}
+            disabled={submitting}
             className="w-full rounded-xl border border-[#ffd6a5]/35 bg-[#ffd6a5]/8 py-2.5 text-sm font-medium text-[#ffd6a5] transition hover:bg-[#ffd6a5]/12 disabled:opacity-50"
             onClick={onRegeneratePremium}
           >
-            {busy
+            {submitting
               ? "심화 분석 다시 생성 중…"
               : `${RELATIONSHIP_KIND_LABELS[premiumKind]} 심화 분석 다시 만들기`}
           </button>

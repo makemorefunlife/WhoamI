@@ -74,7 +74,7 @@ export type UseRelationshipDetailReturn = {
     options?: { forceRegenerate?: boolean },
   ) => Promise<boolean>;
   regeneratePremium: () => void;
-  ensurePremiumPreview: () => Promise<void>;
+  ensurePremiumPreview: () => Promise<boolean>;
 };
 
 export function useRelationshipDetail({
@@ -159,6 +159,25 @@ export function useRelationshipDetail({
   const [logsLoading, setLogsLoading] = useState(false);
   const [autostartActive, setAutostartActive] = useState(false);
   const autostartTriggered = useRef(false);
+  const REQUEST_TIMEOUT_MS = 120000;
+
+  async function fetchJsonWithTimeout(
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const res = await fetch(input, {
+        ...init,
+        signal: controller.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
 
   const fetchLogs = useCallback(async () => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
@@ -369,23 +388,25 @@ export function useRelationshipDetail({
       setBusy(true);
       setErr(null);
       try {
-        const res = await fetch("/api/relationship/analyze/premium", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            relationship_report_id: resolvedRelationshipId,
-            relationship_kind: kind,
-            viewer_report_id: effectiveViewerReportId,
-            force_regenerate: forceRegenerate,
-            ...(kind === "family"
-              ? {
-                  parent_type: familyParentType,
-                  child_is_viewer: familyChildIsViewer,
-                }
-              : {}),
-          }),
-        });
-        const data = await res.json();
+        const { res, data } = await fetchJsonWithTimeout(
+          "/api/relationship/analyze/premium",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              relationship_report_id: resolvedRelationshipId,
+              relationship_kind: kind,
+              viewer_report_id: effectiveViewerReportId,
+              force_regenerate: forceRegenerate,
+              ...(kind === "family"
+                ? {
+                    parent_type: familyParentType,
+                    child_is_viewer: familyChildIsViewer,
+                  }
+                : {}),
+            }),
+          },
+        );
         if (!res.ok) {
           setErr(data?.error ?? "심화 분석 실패");
           return false;
@@ -443,6 +464,13 @@ export function useRelationshipDetail({
         }
         await load(kind);
         return true;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          setErr("요청 시간이 길어져 중단됐어요. 다시 시도해 주세요.");
+          return false;
+        }
+        setErr("네트워크 문제로 심화 분석에 실패했어요.");
+        return false;
       } finally {
         setBusy(false);
       }
@@ -470,25 +498,34 @@ export function useRelationshipDetail({
   }, [premiumKind, runPremium]);
 
   const ensurePremiumPreview = useCallback(async () => {
-    if (!resolvedRelationshipId || !premiumPreview) return;
+    if (!resolvedRelationshipId || !premiumPreview) return false;
     setBusy(true);
     setErr(null);
     try {
-      const up = await fetch("/api/relationship/upgrade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          relationship_report_id: resolvedRelationshipId,
-          preview: true,
-        }),
-      });
-      const upData = await up.json();
+      const { res: up, data: upData } = await fetchJsonWithTimeout(
+        "/api/relationship/upgrade",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            relationship_report_id: resolvedRelationshipId,
+            preview: true,
+          }),
+        },
+      );
       if (!up.ok) {
         setErr(upData?.error ?? "업그레이드 실패");
-        return;
+        return false;
       }
       setAnalysisType("premium");
-      await runPremium(premiumKind);
+      return await runPremium(premiumKind);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") {
+        setErr("요청 시간이 길어져 중단됐어요. 다시 시도해 주세요.");
+        return false;
+      }
+      setErr("네트워크 문제로 업그레이드에 실패했어요.");
+      return false;
     } finally {
       setBusy(false);
     }
