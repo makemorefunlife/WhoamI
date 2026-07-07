@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
+import { UserButton, SignInButton } from "@clerk/nextjs";
+import { useClerkReady } from "@/lib/clerk/useClerkReady";
+import Logo from "@/components/brand/Logo";
 import SideMenu from "./SideMenu";
 
 export default function Header() {
   const [sideOpen, setSideOpen] = useState(false);
   const [chromeVisible, setChromeVisible] = useState(true);
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, clerkUnavailable } = useClerkReady();
   const hideTimerRef = useRef<number | null>(null);
 
   const clearHideTimer = useCallback(() => {
@@ -114,9 +116,9 @@ export default function Header() {
           <span className="text-xl leading-none">☰</span>
         </button>
 
-        <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-medium tracking-wide text-white/35 sm:text-sm">
-          탐사
-        </span>
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Logo size={28} priority />
+        </div>
 
         <div className="flex min-h-[44px] min-w-[44px] items-center justify-center">
           {!isLoaded ? (
@@ -133,6 +135,19 @@ export default function Header() {
                 },
               }}
             />
+          ) : clerkUnavailable ? (
+            <button
+              type="button"
+              title="Clerk JS를 불러오지 못했습니다"
+              className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white/55 ring-2 ring-white/10"
+              onClick={() =>
+                alert(
+                  "로그인 서비스에 연결하지 못했어요. 광고 차단을 끄거나 페이지를 새로고침해 주세요.",
+                )
+              }
+            >
+              로그인
+            </button>
           ) : (
             <SignInButton mode="modal" forceRedirectUrl="/">
               <button

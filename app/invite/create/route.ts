@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+import { createServerSupabaseClient } from "@/lib/supabase/serverClient";
 
 function makeToken() {
   return `invite_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -16,6 +11,14 @@ export async function POST(req: Request) {
 
     if (!reportId) {
       return NextResponse.json({ error: "reportId 없음" }, { status: 400 });
+    }
+
+    const supabase = createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "서버 Supabase 설정이 필요합니다." },
+        { status: 500 },
+      );
     }
 
     // 🔥 이미 초대한 적 있는지 체크 (1회 제한)

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import {
-  fetchRelationshipReportRowsForReportId,
-  mergeRelationshipRowsFromInboundInvites,
-  mergeRelationshipRowsFromOutboundInvites,
+  fetchRelationshipReportRowsForHub,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
+import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
+import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 
 export const runtime = "nodejs";
 
@@ -18,19 +19,12 @@ function isBasicComplete(resultBasic: unknown): boolean {
   );
 }
 
-function isPremiumComplete(
-  analysisType: string,
-  resultPremium: unknown,
-): boolean {
-  if (analysisType !== "premium") return false;
-  const prem = resultPremium as { perspectives?: unknown } | null;
-  return (
-    prem != null &&
-    typeof prem === "object" &&
-    prem.perspectives != null &&
-    typeof prem.perspectives === "object"
-  );
-}
+export type HubRowKind =
+  | "outbound_waiting"
+  | "relationship_outbound"
+  | "relationship_inbound"
+  | "relationship_manual"
+  | "relationship_other";
 
 /** YYYY-MM-DD */
 function dateOnly(iso: string | null | undefined): string | null {
@@ -39,12 +33,6 @@ function dateOnly(iso: string | null | undefined): string | null {
   if (s.length >= 10) return s.slice(0, 10);
   return null;
 }
-
-export type HubRowKind =
-  | "outbound_waiting"
-  | "relationship_outbound"
-  | "relationship_inbound"
-  | "relationship_other";
 
 export async function GET(req: Request) {
   try {
@@ -64,6 +52,7 @@ export async function GET(req: Request) {
         : undefined;
     const formatSimple = sp.get("format") === "simple";
     const scope = sp.get("scope")?.trim() ?? "all";
+    const favoritesOnly = sp.get("favoritesOnly") === "true";
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -77,17 +66,9 @@ export async function GET(req: Request) {
 
     const supabase = createServiceRoleClient(url, serviceKey);
 
-    let rows = await fetchRelationshipReportRowsForReportId(supabase, reportId);
-    rows = await mergeRelationshipRowsFromOutboundInvites(
-      supabase,
-      reportId,
-      rows,
-    );
-    rows = await mergeRelationshipRowsFromInboundInvites(
-      supabase,
-      reportId,
-      rows,
-    );
+    const favoriteIds = await fetchFavoriteRelationshipIds(supabase, reportId);
+
+    let rows = await fetchRelationshipReportRowsForHub(supabase, reportId);
 
     rows.sort((a, b) => b.id.localeCompare(a.id));
 
@@ -139,12 +120,15 @@ export async function GET(req: Request) {
       uniquePartners.length > 0
         ? await supabase
             .from("reports")
-            .select("id, name")
+            .select("id, name, report_type")
             .in("id", uniquePartners)
-        : { data: [] as { id: string; name: string | null }[] };
+        : { data: [] as { id: string; name: string | null; report_type: string | null }[] };
 
     const nameById = Object.fromEntries(
       (names ?? []).map((n) => [n.id, n.name?.trim() || "탐사자"]),
+    );
+    const typeById = Object.fromEntries(
+      (names ?? []).map((n) => [n.id, n.report_type ?? ""]),
     );
 
     const relationships: {
@@ -160,6 +144,8 @@ export async function GET(req: Request) {
       invite_token: string | null;
       outbound_invite_id: string | null;
       status_hint: string | null;
+      is_favorite: boolean;
+      relationship_kind: string;
     }[] = [];
 
     for (const inv of openInvites ?? []) {
@@ -167,17 +153,18 @@ export async function GET(req: Request) {
       relationships.push({
         list_key: `open-${inv.id}`,
         row_kind: "outbound_waiting",
-        pipeline_title: "내가 보낸 요청 · 링크 공유됨",
+        pipeline_title: "상대방 정보 요청 전송됨",
         relationship_report_id: null,
-        partner_name: "상대 초대 대기 중",
+        partner_name: "상대방",
         partner_report_id: null,
         analysis_type: null,
         status: "pending",
         last_viewed: dateOnly(inv.created_at),
         invite_token: inv.invite_token ?? null,
         outbound_invite_id: inv.id,
-        status_hint:
-          "친구에게 링크가 전달되면 설문이 시작돼요. 끝나면 여기서 바로 관계 분석을 열 수 있어요.",
+        status_hint: null,
+        is_favorite: false,
+        relationship_kind: "friendship",
       });
     }
 
@@ -190,14 +177,22 @@ export async function GET(req: Request) {
         at === "premium" || at === "basic" ? at : null;
 
       const basicDone = isBasicComplete(r.result_basic);
-      const premiumDone = isPremiumComplete(at, r.result_premium);
+      const premiumDone = isRelationshipPremiumComplete(
+        at,
+        r.result_premium,
+        r.result_premium_by_kind,
+        r.relationship_kind,
+      );
       const completed = basicDone && (at !== "premium" || premiumDone);
 
       const inv = inviteByRrId.get(r.id);
 
       let row_kind: HubRowKind = "relationship_other";
       let pipeline_title = "관계 분석";
-      if (inv) {
+      if (typeById[partnerId] === "partner_manual") {
+        row_kind = "relationship_manual";
+        pipeline_title = `${partnerName}님과의 관계 (직접 입력)`;
+      } else if (inv) {
         if (inv.from_report_id === reportId) {
           row_kind = "relationship_outbound";
           pipeline_title = completed
@@ -234,7 +229,19 @@ export async function GET(req: Request) {
         invite_token: null,
         outbound_invite_id: null,
         status_hint,
+        is_favorite: favoriteIds.has(r.id),
+        relationship_kind: parseRelationshipKind(r.relationship_kind),
       });
+    }
+
+    if (favoritesOnly) {
+      const favOnly = relationships.filter(
+        (r) =>
+          r.relationship_report_id != null &&
+          favoriteIds.has(r.relationship_report_id),
+      );
+      relationships.length = 0;
+      relationships.push(...favOnly);
     }
 
     const completedRows = relationships.filter(
@@ -251,6 +258,7 @@ export async function GET(req: Request) {
     }
 
     type SimpleRow = {
+      list_key: string;
       partner_name: string;
       status: "completed" | "pending";
       relationship_report_id: string | null;
@@ -258,18 +266,23 @@ export async function GET(req: Request) {
 
     const relationshipsOut: typeof relationships | SimpleRow[] = formatSimple
       ? (out as typeof relationships).map((r) => ({
+          list_key: r.list_key,
           partner_name: r.partner_name,
           status: r.status,
           relationship_report_id: r.relationship_report_id,
         }))
       : out;
 
+    const waiting_total = relationships.filter(
+      (r) => r.row_kind === "outbound_waiting",
+    ).length;
+
     return NextResponse.json({
       relationships: relationshipsOut,
       meta: {
-        manual_lists_note:
-          "이메일 없이 직접 적은 관계 등은 다음 버전에서 이 목록에 합쳐질 예정이에요.",
         completed_total,
+        waiting_total,
+        favorites_total: favoriteIds.size,
       },
     });
   } catch (e) {

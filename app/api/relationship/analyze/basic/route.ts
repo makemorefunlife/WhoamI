@@ -13,6 +13,8 @@ import {
   normalizeRelationshipPerspectives,
   perspectiveHasLegacyAxes,
 } from "@/lib/relationship/normalizeRelationshipPerspectives";
+import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
+import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
@@ -27,6 +29,14 @@ export async function POST(req: Request) {
       typeof body.relationship_report_id === "string"
         ? body.relationship_report_id.trim()
         : "";
+    const viewerReportId =
+      typeof body.viewer_report_id === "string"
+        ? body.viewer_report_id.trim()
+        : "";
+    const relationshipKind = parseRelationshipKind(
+      (body as { relationship_kind?: unknown }).relationship_kind,
+      "unspecified",
+    );
 
     if (!relationshipReportId) {
       return NextResponse.json(
@@ -246,6 +256,17 @@ export async function POST(req: Request) {
     if (upErr) {
       console.error("relationship/analyze/basic update:", upErr);
       return NextResponse.json({ error: upErr.message }, { status: 500 });
+    }
+
+    if (viewerReportId) {
+      await insertRelationshipAnalysisLog(supabase, {
+        relationshipReportId,
+        viewerReportId,
+        relationshipKind,
+        analysisLevel: "basic",
+        resultFormat: "relationship_4axis_v1",
+        payload,
+      });
     }
 
     return NextResponse.json({ result_basic: payload });

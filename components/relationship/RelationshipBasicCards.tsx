@@ -116,20 +116,24 @@ export default function RelationshipBasicCards({
   perspective,
   partnerName,
   viewerName,
+  emptyMessage = "아직 기본 관계 분석이 없어요.",
 }: {
   perspective: RelationshipPerspective | null;
   /** 상대 닉네임 (detail API, 구형 데이터 폴백용) */
   partnerName: string;
   /** 보는 사람(나) 닉네임 — 구형 데이터 폴백용 */
   viewerName?: string;
+  /** false면 빈 상태 문구를 숨김 */
+  emptyMessage?: string | false;
 }) {
   const myFallback = (viewerName ?? "").trim() || "나";
   const partnerFallback = partnerName.trim() || "상대";
 
   if (!perspective || Object.keys(perspective).length === 0) {
+    if (emptyMessage === false) return null;
     return (
       <p className="text-center text-sm text-[var(--space-text-muted)]">
-        아직 기본 관계 분석이 없어요.
+        {emptyMessage}
       </p>
     );
   }

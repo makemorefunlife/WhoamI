@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  fetchRelationshipReportByIdSafe,
+  fetchRelationshipReportRowsForReportIdSafe,
+} from "@/lib/relationship/relationshipReportQuery";
 
 /** relationship_reports 한 행 (조회용) */
 export type RelationshipReportRow = {
@@ -8,10 +12,9 @@ export type RelationshipReportRow = {
   analysis_type: string;
   result_basic: unknown;
   result_premium: unknown;
+  result_premium_by_kind?: unknown;
+  relationship_kind?: string | null;
 };
-
-const RR_SELECT =
-  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium";
 
 /**
  * 내 report_id가 A 또는 B인 관계 행을 모두 가져옴.
@@ -22,19 +25,59 @@ export async function fetchRelationshipReportRowsForReportId(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<RelationshipReportRow[]> {
-  const [{ data: aSide, error: e1 }, { data: bSide, error: e2 }] =
-    await Promise.all([
-      supabase.from("relationship_reports").select(RR_SELECT).eq("report_id_a", reportId),
-      supabase.from("relationship_reports").select(RR_SELECT).eq("report_id_b", reportId),
-    ]);
+  return fetchRelationshipReportRowsForReportIdSafe(supabase, reportId);
+}
 
-  if (e1) throw e1;
-  if (e2) throw e2;
-
+/**
+ * 관계 허브 — 동일 clerk 계정의 모든 리포트에 연결된 관계 행을 합친다.
+ * (리포트 ID가 달라져도 같은 사용자 친구 목록이 보이도록)
+ */
+export async function fetchRelationshipReportRowsForHub(
+  supabase: SupabaseClient,
+  reportId: string,
+): Promise<RelationshipReportRow[]> {
   const map = new Map<string, RelationshipReportRow>();
-  for (const r of [...(aSide ?? []), ...(bSide ?? [])]) {
-    map.set(r.id, r as RelationshipReportRow);
+
+  const append = (rows: RelationshipReportRow[]) => {
+    for (const r of rows) map.set(r.id, r);
+  };
+
+  let primary = await fetchRelationshipReportRowsForReportId(supabase, reportId);
+  primary = await mergeRelationshipRowsFromOutboundInvites(
+    supabase,
+    reportId,
+    primary,
+  );
+  primary = await mergeRelationshipRowsFromInboundInvites(
+    supabase,
+    reportId,
+    primary,
+  );
+  append(primary);
+
+  const { data: anchor } = await supabase
+    .from("reports")
+    .select("id, clerk_user_id")
+    .eq("id", reportId)
+    .maybeSingle();
+
+  const clerkId = (anchor as { clerk_user_id?: string | null } | null)
+    ?.clerk_user_id;
+  if (!clerkId) return [...map.values()];
+
+  const { data: owned } = await supabase
+    .from("reports")
+    .select("id")
+    .eq("clerk_user_id", clerkId)
+    .limit(50);
+
+  for (const row of owned ?? []) {
+    const oid = row.id as string;
+    if (oid === reportId) continue;
+    const extra = await fetchRelationshipReportRowsForReportId(supabase, oid);
+    append(extra);
   }
+
   return [...map.values()];
 }
 
@@ -65,16 +108,15 @@ export async function mergeRelationshipRowsFromOutboundInvites(
     const rrId = inv.relationship_report_id as string | null | undefined;
     if (!rrId || seen.has(rrId)) continue;
 
-    const { data: rr, error: rrErr } = await supabase
-      .from("relationship_reports")
-      .select(RR_SELECT)
-      .eq("id", rrId)
-      .maybeSingle();
+    const { row: rr, error: rrErr } = await fetchRelationshipReportByIdSafe(
+      supabase,
+      rrId,
+    );
 
     if (rrErr || !rr) continue;
 
     seen.add(rr.id);
-    out.push(rr as RelationshipReportRow);
+    out.push(rr);
   }
 
   return out;
@@ -108,16 +150,15 @@ export async function mergeRelationshipRowsFromInboundInvites(
     const rrId = inv.relationship_report_id as string | null | undefined;
     if (!rrId || seen.has(rrId)) continue;
 
-    const { data: rr, error: rrErr } = await supabase
-      .from("relationship_reports")
-      .select(RR_SELECT)
-      .eq("id", rrId)
-      .maybeSingle();
+    const { row: rr, error: rrErr } = await fetchRelationshipReportByIdSafe(
+      supabase,
+      rrId,
+    );
 
     if (rrErr || !rr) continue;
 
     seen.add(rr.id);
-    out.push(rr as RelationshipReportRow);
+    out.push(rr);
   }
 
   return out;
