@@ -6,6 +6,7 @@ import WorkColleagueReportView from "@/components/relationship/WorkColleagueRepo
 import MarriageReportView from "@/components/relationship/MarriageReportView";
 import FamilyParentReportView from "@/components/relationship/FamilyParentReportView";
 import FriendReportView from "@/components/relationship/FriendReportView";
+import { ReportSurfaceProvider } from "@/components/relationship/reportLayout";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
@@ -69,7 +70,12 @@ export default function RelationshipPremiumSection({
   }
 
   return (
-    <div id="relationship-report-anchor" ref={onReportReadyRef} className="mt-10 scroll-mt-24">
+    <ReportSurfaceProvider surface="stitch">
+      <div
+        id="relationship-report-anchor"
+        ref={onReportReadyRef}
+        className="mt-10 scroll-mt-24"
+      >
       {busy ? (
         <p className="mb-4 text-center text-xs text-[#ffd6a5]/80">
           심화 관계 분석을 생성하고 있어요… (1~2분 걸릴 수 있어요)
@@ -188,6 +194,7 @@ export default function RelationshipPremiumSection({
           </p>
         </div>
       ) : null}
-    </div>
+      </div>
+    </ReportSurfaceProvider>
   );
 }

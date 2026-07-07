@@ -253,6 +253,10 @@ export function useRelationshipDetail({
     premiumPreviewAutoDone.current = false;
   }, [resolvedRelationshipId]);
 
+  useEffect(() => {
+    autostartTriggered.current = false;
+  }, [resolvedRelationshipId, effectiveViewerReportId, urlAutostart]);
+
   const ensureBasic = useCallback(async () => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
     setBusy(true);

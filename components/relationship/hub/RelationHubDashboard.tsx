@@ -163,6 +163,15 @@ export default function RelationHubDashboard() {
     };
   }, [hubReportId, load]);
 
+  useEffect(() => {
+    if (!navOverlayPartner) return;
+    // 라우팅 실패/중단 시 오버레이가 고정되지 않도록 안전 타임아웃을 둔다.
+    const t = window.setTimeout(() => {
+      setNavOverlayPartner(null);
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [navOverlayPartner]);
+
   const { waitingItems, relationshipItems } = useMemo(() => {
     const waiting = items.filter((i) => i.row_kind === "outbound_waiting");
     const rest = items.filter((i) => i.row_kind !== "outbound_waiting");
