@@ -85,8 +85,7 @@ export default function RelationshipView({
     partnerBirthPlaceUnknown;
   const showGeneratingPanel =
     generating || (urlAutostart && !premiumReady && !err && !loading);
-  const showLoadingPanel =
-    loading || (canonicalResolving && !viewerReportId);
+  const showLoadingPanel = loading && !err;
 
   useEffect(() => {
     if (!premiumReady || !urlAutostart) return;

@@ -1,11 +1,10 @@
 import {
   ROUTES,
   blueprintRoute,
-  relationshipHubRoute,
   withReportId,
 } from "@/constants/routes";
 import type { ReportSession } from "@/lib/home/reportSession";
-import { hasResultsDashboardPrerequisites } from "@/lib/v2/results/canShowResultsDashboard";
+import { hubRouteForIntent } from "@/lib/routing/hubRoutes";
 
 export type EntryIntent =
   | "home"
@@ -17,6 +16,11 @@ export type EntryIntent =
   | "birth"
   | "relationship-detail";
 
+/**
+ * 진입 목적지 SSOT.
+ * - 허브 탭(decision/relationships/blueprint): 선행조건 없이 즉시 이동 (로그인 프리패스)
+ * - 설문/출생 등 내부 플로우만 session 기반 분기
+ */
 export function resolveEntryDestination(params: {
   intent: EntryIntent;
   session: ReportSession | null;
@@ -30,17 +34,14 @@ export function resolveEntryDestination(params: {
     params.session?.surveyCompleted === true && Boolean(reportId);
   const hasBirth = Boolean(params.session?.birthDate?.trim());
 
+  const hubRoute = hubRouteForIntent(params.intent, reportId || hint);
+  if (hubRoute) return hubRoute;
+
   if (params.intent === "home") {
-    if (!params.isSignedIn || !reportId) return null;
-    if (
-      hasResultsDashboardPrerequisites(
-        reportId,
-        params.session?.surveyCompleted === true,
-        params.session?.birthDate ?? null,
-      )
-    ) {
-      return blueprintRoute(reportId);
-    }
+    return null;
+  }
+
+  if (params.intent === "survey") {
     return null;
   }
 
@@ -48,30 +49,10 @@ export function resolveEntryDestination(params: {
     return ROUTES.home;
   }
 
-  if (params.intent === "survey") {
-    return null;
-  }
-
   if (params.intent === "survey-complete") {
     if (!surveyDone) return ROUTES.home;
     if (hasBirth) return blueprintRoute(reportId);
     return null;
-  }
-
-  if (params.intent === "blueprint") {
-    if (!surveyDone) return withReportId(ROUTES.surveyV2, reportId);
-    if (!hasBirth) return withReportId(ROUTES.surveyV2Complete, reportId);
-    return null;
-  }
-
-  if (params.intent === "relationships") {
-    if (!surveyDone) return withReportId(ROUTES.surveyV2, reportId);
-    if (!hasBirth) return withReportId(ROUTES.surveyV2Complete, reportId);
-    return relationshipHubRoute(reportId);
-  }
-
-  if (params.intent === "decision") {
-    return ROUTES.decision;
   }
 
   if (params.intent === "birth") {
@@ -87,4 +68,3 @@ export function resolveEntryDestination(params: {
 
   return null;
 }
-

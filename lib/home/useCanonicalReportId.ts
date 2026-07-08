@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   getCachedReportId,
+  getCachedSession,
   loadReportSession,
 } from "@/lib/home/reportSession";
 
@@ -22,8 +23,8 @@ type UseCanonicalReportIdOptions = {
 };
 
 /**
- * Result/Report·관계 허브 등 — DB/API는 반환된 canonicalReportId만 사용.
- * loadReportSession 캐시를 공유해 중복 resume/hydrate 방지.
+ * canonical reportId — 캐시/힌트를 즉시 사용하고 백그라운드에서 resume 갱신.
+ * 페이지 전체를 resolving 상태로 막지 않는다.
  */
 export function useCanonicalReportId({
   urlHint,
@@ -41,8 +42,10 @@ export function useCanonicalReportId({
   const initialId = trimmedHint || cachedId;
 
   const [canonicalReportId, setCanonicalReportId] = useState(initialId);
-  const [resolving, setResolving] = useState(!initialId);
-  const [invalidHint, setInvalidHint] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [invalidHint, setInvalidHint] = useState(
+    () => getCachedSession()?.invalidHint === true,
+  );
 
   const syncCanonicalToUrl = useCallback(
     (canonical: string) => {
@@ -70,7 +73,9 @@ export function useCanonicalReportId({
       });
       if (cancelled) return;
 
-      setCanonicalReportId(session.reportId);
+      if (session.reportId) {
+        setCanonicalReportId(session.reportId);
+      }
       setInvalidHint(session.invalidHint);
       setResolving(false);
 
@@ -90,6 +95,7 @@ export function useCanonicalReportId({
     syncCanonicalToUrl,
     syncToUrl,
     skipSessionHydrate,
+    initialId,
   ]);
 
   return {

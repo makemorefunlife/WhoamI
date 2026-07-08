@@ -204,7 +204,6 @@ export function useRelationshipDetail({
 
   const load = useCallback(
     async (kindOverride?: RelationshipKind) => {
-      if (canonicalResolving && !urlViewerHint) return;
       if (!effectiveViewerReportId) {
         setErr("viewer 쿼리(내 리포트 id)가 필요합니다.");
         setDetailOk(false);
@@ -270,7 +269,7 @@ export function useRelationshipDetail({
         setLoading(false);
       }
     },
-    [resolvedRelationshipId, effectiveViewerReportId, canonicalResolving, urlViewerHint, fetchLogs],
+    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs],
   );
 
   useEffect(() => {
@@ -670,7 +669,6 @@ export function useRelationshipDetail({
 
   useEffect(() => {
     if (!urlAutostart || autostartTriggered.current) return;
-    if (canonicalResolving && !urlViewerHint) return;
     if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
       return;
     if (!basic || Object.keys(basic).length === 0) return;
@@ -683,8 +681,6 @@ export function useRelationshipDetail({
     void runAutostartPremium();
   }, [
     urlAutostart,
-    canonicalResolving,
-    urlViewerHint,
     loading,
     detailOk,
     effectiveViewerReportId,

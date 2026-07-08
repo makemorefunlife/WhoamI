@@ -11,7 +11,7 @@ import {
   readBirthV2Session,
   writeBirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
-import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
+import { getCachedReportId } from "@/lib/home/reportSession";
 import { ensureBirthSession } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { clearLiteReports } from "@/lib/v2/lite/session";
 import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
@@ -26,17 +26,13 @@ export default function AccountBirthEditor() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    void (async () => {
-      const resolved = await resolveCanonicalReportIdClient("", "account-birth");
-      const id = resolved.canonicalReportId;
-      setReportId(id);
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-      await ensureBirthSession(id);
-      setLoading(false);
-    })();
+    const cached = getCachedReportId();
+    if (cached) {
+      setReportId(cached);
+      void ensureBirthSession(cached).finally(() => setLoading(false));
+      return;
+    }
+    setLoading(false);
   }, []);
 
   const existing = reportId ? readBirthV2Session(reportId) : null;

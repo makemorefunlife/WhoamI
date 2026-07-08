@@ -22,7 +22,6 @@ import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
 import RelationAnalyzeNavOverlay from "@/components/relationship/hub/RelationAnalyzeNavOverlay";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
 import { getCachedReportId } from "@/lib/home/reportSession";
-import { blueprintPath } from "@/lib/stitch/hubPaths";
 import {
   fetchHubAnalysisFeed,
   type HubAnalysisFeedItem,
@@ -111,7 +110,6 @@ export default function RelationHubDashboard() {
   const load = useCallback(
     async (mode: "full" | "silent" = "full", reportIdOverride?: string) => {
       const rid = (reportIdOverride ?? hubReportId).trim();
-      if (!reportIdOverride && canonicalResolving && !hubReportId) return;
       if (!rid) {
         setErr(null);
         setItems([]);
@@ -141,7 +139,7 @@ export default function RelationHubDashboard() {
         if (mode === "full") setLoading(false);
       }
     },
-    [hubReportId, canonicalResolving, favoritesOnly],
+    [hubReportId, favoritesOnly],
   );
 
   useEffect(() => {
@@ -263,7 +261,7 @@ export default function RelationHubDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [allAnalysisLimit, allAnalysisOpen, hubReportId, relationshipItems]);
+  }, [analysisAllLimit, allAnalysisOpen, hubReportId, relationshipItems]);
 
   const loadMoreAnalysis = useCallback(() => {
     if (analysisLoadingMore || analysisLoading || !analysisHasMore) return;
@@ -480,34 +478,6 @@ export default function RelationHubDashboard() {
     setSelectedKey((prev) => (prev === key ? null : key));
   }
 
-  if (!hubReportId) {
-    if (canonicalResolving) {
-      return (
-        <StitchSurveyShell className="stitch-survey stitch-results">
-          <div className="mx-auto flex min-h-[50dvh] max-w-lg items-center justify-center px-6">
-            <p className="text-sm text-on-surface-variant">불러오는 중…</p>
-          </div>
-        </StitchSurveyShell>
-      );
-    }
-    return (
-      <StitchSurveyShell className="stitch-survey stitch-results">
-        <div className="mx-auto flex min-h-[50dvh] max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
-          <p className="text-sm text-on-surface-variant">
-            블루프린트를 먼저 완료하면 Relation Hub를 이용할 수 있어요.
-          </p>
-          <button
-            type="button"
-            className="stitch-cta-primary !min-w-0 !px-8 !py-3 !text-sm"
-            onClick={() => router.push(blueprintPath())}
-          >
-            Blueprint로 이동
-          </button>
-        </div>
-      </StitchSurveyShell>
-    );
-  }
-
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
       <div className="mx-auto w-full max-w-lg px-5 py-6 sm:px-6 sm:py-8">
@@ -519,6 +489,12 @@ export default function RelationHubDashboard() {
             관계 허브
           </h1>
         </header>
+
+        {!hubReportId && !canonicalResolving ? (
+          <p className="mb-6 rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 px-4 py-3 text-center text-sm text-on-surface-variant">
+            블루프린트를 완료하면 친구 목록과 분석 기록이 여기에 표시돼요.
+          </p>
+        ) : null}
 
         <RelationHubBanner
           visible={bannerVisible}

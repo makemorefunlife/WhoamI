@@ -9,10 +9,12 @@ export type CanonicalReportRow = {
   birth_date: string | null;
   birth_time: string | null;
   birth_place: string | null;
+  payment_status: string | null;
+  plan_type: string | null;
 };
 
 const REPORT_SELECT =
-  "id, name, clerk_user_id, created_at, birth_date, birth_time, birth_place";
+  "id, name, clerk_user_id, created_at, birth_date, birth_time, birth_place, payment_status, plan_type";
 
 function sortByNewest(a: CanonicalReportRow, b: CanonicalReportRow): number {
   const ta = a.created_at ? Date.parse(a.created_at) : 0;

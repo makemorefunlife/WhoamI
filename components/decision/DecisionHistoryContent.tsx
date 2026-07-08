@@ -55,18 +55,28 @@ export default function DecisionHistoryContent() {
 
   const [reportId, setReportId] = useState("");
   const [entries, setEntries] = useState<DecisionEntry[]>([]);
+  const [journalReady, setJournalReady] = useState(false);
   const [statusFilter, setStatusFilter] = useState<HistoryStatusFilter>("all");
   const [ratingFilter, setRatingFilter] =
     useState<HistoryRatingFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [reviewEntry, setReviewEntry] = useState<DecisionEntry | null>(null);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
-    const id = localStorage.getItem("reportId")?.trim() ?? "local";
+    const id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("reportId")?.trim() || "local"
+        : "local";
     setReportId(id);
     setEntries(readDecisionJournal(id));
+    setJournalReady(true);
   }, []);
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [statusFilter, ratingFilter, categoryFilter]);
 
   const persist = useCallback((next: DecisionEntry[]) => {
     setEntries(next);
@@ -117,7 +127,11 @@ export default function DecisionHistoryContent() {
     setStatusFilter("all");
     setRatingFilter("all");
     setCategoryFilter("all");
+    setVisibleCount(10);
   };
+
+  const visibleEntries = filteredEntries.slice(0, visibleCount);
+  const hasMoreEntries = filteredEntries.length > visibleCount;
 
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
@@ -251,7 +265,13 @@ export default function DecisionHistoryContent() {
           </div>
         ) : null}
 
-        {entries.length === 0 ? (
+        {!journalReady ? (
+          <div className={`${panelClass()} p-8 text-center`}>
+            <p className="text-sm text-on-surface-variant">
+              목록 불러오는 중…
+            </p>
+          </div>
+        ) : entries.length === 0 ? (
           <div className={`${panelClass()} p-8 text-center`}>
             <p className="text-sm text-on-surface-variant">
               아직 저장된 결정이 없어요.
@@ -271,7 +291,7 @@ export default function DecisionHistoryContent() {
           </div>
         ) : (
           <ul className="space-y-4">
-            {filteredEntries.map((entry) => {
+            {visibleEntries.map((entry) => {
               const reviewed = isDecisionReviewed(entry);
               const displayDate = reviewed
                 ? entry.reviewedAt
@@ -351,6 +371,17 @@ export default function DecisionHistoryContent() {
                 </li>
               );
             })}
+            {hasMoreEntries ? (
+              <li className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((n) => n + 10)}
+                  className="w-full rounded-xl border border-outline-variant/40 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-secondary/40 hover:text-secondary"
+                >
+                  더 보기 (+10)
+                </button>
+              </li>
+            ) : null}
           </ul>
         )}
       </div>

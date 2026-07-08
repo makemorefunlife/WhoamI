@@ -79,7 +79,6 @@ export default function StartChoiceModal({
               <button
                 type="button"
                 className={secondaryBtn}
-                disabled={busy}
                 onClick={onGoDecision}
               >
                 결정

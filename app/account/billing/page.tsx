@@ -2,27 +2,25 @@
 
 import Link from "next/link";
 import { RedirectToSignIn, useAuth } from "@clerk/nextjs";
-import RouteGuard from "@/components/routing/RouteGuard";
 import { ROUTES } from "@/constants/routes";
 
 export default function AccountBillingPage() {
   const { isLoaded, isSignedIn } = useAuth();
 
-  if (isLoaded && !isSignedIn) {
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-[#0a0f1a] px-4 pt-24 text-center text-sm text-white/50">
+        불러오는 중…
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
     return <RedirectToSignIn redirectUrl={ROUTES.accountBilling} />;
   }
 
   return (
-    <RouteGuard
-      isLoading={!isLoaded}
-      destination={null}
-      loadingFallback={
-        <div className="min-h-screen bg-[#0a0f1a] px-4 pt-24 text-center text-sm text-white/50">
-          불러오는 중…
-        </div>
-      }
-    >
-      <div className="min-h-screen bg-[#0a0f1a] px-4 pb-16 pt-20 sm:px-6">
+    <div className="min-h-screen bg-[#0a0f1a] px-4 pb-16 pt-20 sm:px-6">
         <div className="mx-auto max-w-3xl space-y-6">
           <nav className="flex gap-2 text-sm">
             <Link
@@ -47,7 +45,6 @@ export default function AccountBillingPage() {
           </section>
         </div>
       </div>
-    </RouteGuard>
   );
 }
 

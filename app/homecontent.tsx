@@ -10,6 +10,7 @@ import type { RelCounts, ResumeState } from "@/lib/home/homeEntryTypes";
 import {
   invalidateReportSession,
   loadReportSession,
+  getCachedReportId,
 } from "@/lib/home/reportSession";
 import { invalidateHomeResumeCache } from "@/lib/home/fetchHomeResumeClient";
 import { supabase } from "@/lib/supabase/client";
@@ -219,32 +220,55 @@ export default function HomeContent() {
   const safeNavigate = useCallback(
     async (intent: EntryIntent) => {
       setStartChoiceOpen(false);
-      const session =
-        resume.reportId != null
-          ? {
-              reportId: resume.reportId,
-              source: "resume" as const,
-              invalidHint: false,
-              surveyCompleted:
-                resume.surveyCompleted ||
-                (resume.reportId ? hasSurveyV2Session(resume.reportId) : false),
-              hasReport: resume.hasReport,
-              birthDate: resume.birthDate,
-              birthTime: null,
-              birthPlace: null,
-              relationshipSummary: relCounts,
-            }
-          : null;
 
-      if (!session?.reportId && (intent === "blueprint" || intent === "relationships")) {
+      const reportIdHint =
+        resume.reportId?.trim() || getCachedReportId() || undefined;
+
+      // 로그인 사용자: 허브 탭은 선행조건 없이 즉시 이동
+      if (isSignedIn) {
+        const destination = resolveEntryDestination({
+          intent,
+          session: null,
+          isSignedIn: true,
+          reportIdHint,
+        });
+        if (destination) {
+          router.push(destination);
+          return;
+        }
+      }
+
+      if (intent === "decision") {
+        router.push(ROUTES.decision);
+        return;
+      }
+
+      if (!reportIdHint && (intent === "blueprint" || intent === "relationships")) {
         await createReportAndSurvey();
         return;
       }
 
       const destination = resolveEntryDestination({
         intent,
-        session,
+        session:
+          resume.reportId != null
+            ? {
+                reportId: resume.reportId,
+                source: "resume" as const,
+                invalidHint: false,
+                surveyCompleted:
+                  resume.surveyCompleted ||
+                  (resume.reportId ? hasSurveyV2Session(resume.reportId) : false),
+                hasReport: resume.hasReport,
+                birthDate: resume.birthDate,
+                birthTime: null,
+                birthPlace: null,
+                isPremium: false,
+                relationshipSummary: relCounts,
+              }
+            : null,
         isSignedIn,
+        reportIdHint,
       });
       if (destination) router.push(destination);
     },

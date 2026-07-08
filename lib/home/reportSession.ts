@@ -19,6 +19,7 @@ export type ReportSession = {
   birthDate: string | null;
   birthTime: string | null;
   birthPlace: string | null;
+  isPremium: boolean;
   relationshipSummary: { pending: number; completed: number };
 };
 
@@ -68,6 +69,7 @@ function payloadToSession(
     birthDate: data.birthDate?.trim() || null,
     birthTime: data.birthTime?.trim() || null,
     birthPlace: data.birthPlace?.trim() || null,
+    isPremium: data.isPremium === true,
     relationshipSummary: {
       pending: summary.pending ?? 0,
       completed: summary.completed ?? 0,
@@ -85,6 +87,7 @@ function emptySession(): ReportSession {
     birthDate: null,
     birthTime: null,
     birthPlace: null,
+    isPremium: false,
     relationshipSummary: { pending: 0, completed: 0 },
   };
 }
@@ -182,6 +185,7 @@ export async function loadReportSession(
         birthDate: null,
         birthTime: null,
         birthPlace: null,
+        isPremium: false,
         relationshipSummary: { pending: 0, completed: 0 },
       };
       sessionCache = { key: cacheKey, at: Date.now(), session };
@@ -215,4 +219,8 @@ export function invalidateReportSession(reportId?: string): void {
 
 export function getCachedReportId(): string {
   return sessionCache?.session.reportId?.trim() ?? readStoredReportId();
+}
+
+export function getCachedSession(): ReportSession | null {
+  return sessionCache?.session ?? null;
 }

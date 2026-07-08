@@ -46,6 +46,11 @@ function filterByRange(
   return entries.filter((e) => new Date(e.createdAt).getTime() >= cutoff);
 }
 
+function readLocalReportId(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("reportId")?.trim() || "local";
+}
+
 export default function DecisionJournalContent() {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
@@ -53,6 +58,7 @@ export default function DecisionJournalContent() {
 
   const [reportId, setReportId] = useState("");
   const [entries, setEntries] = useState<DecisionEntry[]>([]);
+  const [journalReady, setJournalReady] = useState(false);
   const [context, setContext] = useState("");
   const [category, setCategory] = useState<DecisionCategory>("career");
   const [analyzeRange, setAnalyzeRange] =
@@ -63,10 +69,12 @@ export default function DecisionJournalContent() {
   const [analyzeMessage, setAnalyzeMessage] = useState<string | null>(null);
   const [reviewEntry, setReviewEntry] = useState<DecisionEntry | null>(null);
 
+  // 진입 직후 로컬 저널만 읽음 (서버 대기 없음)
   useEffect(() => {
-    const id = localStorage.getItem("reportId")?.trim() ?? "local";
+    const id = readLocalReportId();
     setReportId(id);
     setEntries(readDecisionJournal(id));
+    setJournalReady(true);
   }, []);
 
   const persist = useCallback((next: DecisionEntry[]) => {
@@ -159,7 +167,7 @@ export default function DecisionJournalContent() {
           </div>
         ) : null}
 
-        {/* Step 1 — Decide */}
+        {/* Step 1 — Decide (즉시 표시) */}
         <section className="mb-12 sm:mb-16" id="decide">
           <div className="mb-6">
             <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
@@ -212,7 +220,7 @@ export default function DecisionJournalContent() {
           </div>
         </section>
 
-        {/* Step 2 — Review */}
+        {/* Step 2 — Review (최근 3개, 로딩은 이 구역만) */}
         <section className="mb-12 sm:mb-16">
           <div className="mb-6">
             <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
@@ -223,7 +231,11 @@ export default function DecisionJournalContent() {
             </h2>
           </div>
           <div className={`${panelClass()} p-2 sm:p-3`}>
-            {entries.length === 0 ? (
+            {!journalReady ? (
+              <p className="px-4 py-8 text-center text-sm text-on-surface-variant">
+                목록 불러오는 중…
+              </p>
+            ) : entries.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-on-surface-variant">
                 아직 리뷰할 결정이 없습니다.
                 <br />
@@ -240,7 +252,10 @@ export default function DecisionJournalContent() {
                       className="flex flex-col gap-3 rounded-xl p-4 transition hover:bg-surface-container-low/40 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex min-w-0 items-start gap-3 sm:items-center">
-                        <DecisionStatusDot entry={entry} className="mt-1.5 sm:mt-0" />
+                        <DecisionStatusDot
+                          entry={entry}
+                          className="mt-1.5 sm:mt-0"
+                        />
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-on-surface">
                             {entry.context}
@@ -392,4 +407,3 @@ export default function DecisionJournalContent() {
     </StitchSurveyShell>
   );
 }
-

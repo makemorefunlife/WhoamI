@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { countHubRelationshipSummary } from "@/lib/relationship/hubRelationshipSummary";
+import { isReportPremium } from "@/lib/report/isReportPremium";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { resolveCanonicalReport } from "@/lib/home/resolveCanonicalReport";
 
@@ -25,6 +26,7 @@ export type HomeResumePayload = {
   birthTime: string | null;
   birthPlace: string | null;
   relationshipSummary: { pending: number; completed: number };
+  isPremium: boolean;
   ctaBranch: HomeResumeCtaBranch;
   invalidHint: boolean;
 };
@@ -46,7 +48,7 @@ export async function buildGuestHomeResume(
   const { data: report, error } = await supabase
     .from("reports")
     .select(
-      "id, name, clerk_user_id, birth_date, birth_time, birth_place",
+      "id, name, clerk_user_id, birth_date, birth_time, birth_place, payment_status, plan_type",
     )
     .eq("id", reportId)
     .maybeSingle();
@@ -75,6 +77,7 @@ export async function buildGuestHomeResume(
     birthTime: report.birth_time?.trim() ?? null,
     birthPlace: report.birth_place?.trim() ?? null,
     relationshipSummary,
+    isPremium: isReportPremium(report),
     invalidHint: false,
   };
 
@@ -108,6 +111,7 @@ export async function buildHomeResume(
       birthTime: null,
       birthPlace: null,
       relationshipSummary: { pending: 0, completed: 0 },
+      isPremium: false,
       invalidHint,
     };
     return { ...empty, ctaBranch: resolveHomeCtaBranch(empty) };
@@ -136,6 +140,7 @@ export async function buildHomeResume(
     birthTime: report.birth_time?.trim() ?? null,
     birthPlace: report.birth_place?.trim() ?? null,
     relationshipSummary,
+    isPremium: isReportPremium(report),
     invalidHint,
   };
 
