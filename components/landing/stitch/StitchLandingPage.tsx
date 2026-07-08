@@ -84,7 +84,7 @@ export default function StitchLandingPage({
             <div className="flex min-h-[inherit] flex-col justify-center p-8 md:p-16">
               <div className="mx-auto w-full max-w-2xl text-center md:mx-0 md:text-left">
                 <div className="mb-4 flex justify-center md:justify-start">
-                  <Logo size={40} href={null} priority />
+                  <Logo size={40} href="/" priority />
                 </div>
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent-emerald">
                   Aha It&apos;s me
@@ -245,7 +245,7 @@ export default function StitchLandingPage({
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-12 md:grid-cols-12">
           <div className="md:col-span-6">
             <div className="mb-6 flex items-center gap-2">
-              <Logo size={32} href={null} />
+              <Logo size={32} href="/" />
               <h5 className="text-2xl font-medium text-on-primary">
                 Aha It&apos;s me!
               </h5>

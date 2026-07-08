@@ -161,7 +161,7 @@ export default function SideMenu({
       >
         <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <Logo size={22} href={null} />
+            <Logo size={22} href="/" />
             <div>
               <p className="text-sm font-semibold tracking-[-0.02em] text-white/95">
                 Ahaitsme

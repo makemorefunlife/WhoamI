@@ -10,6 +10,7 @@ const STORY_VISIBLE = 3;
 type Props = {
   friends: RelationshipListItem[];
   waiting: RelationshipListItem[];
+  loading?: boolean;
   isSignedIn: boolean;
   selectedId: string | null;
   displayNames: Record<string, string>;
@@ -44,6 +45,7 @@ function displayNameFor(
 export default function FriendStoryRow({
   friends,
   waiting,
+  loading = false,
   isSignedIn,
   selectedId,
   displayNames,
@@ -83,7 +85,11 @@ export default function FriendStoryRow({
         </button>
       </div>
 
-      {combined.length === 0 && !favoritesOnly ? (
+      {loading && combined.length === 0 ? (
+        <p className="py-8 text-center text-sm text-on-surface-variant">
+          친구 목록 불러오는 중…
+        </p>
+      ) : combined.length === 0 && !favoritesOnly ? (
         <div className="flex items-start gap-4 pb-1 pt-1">
           <button
             type="button"

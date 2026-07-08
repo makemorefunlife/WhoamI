@@ -14,6 +14,9 @@ type Props = {
   open: boolean;
   items: HubAnalysisFeedItem[];
   loading: boolean;
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
   onClose: () => void;
   onOpenLog: (item: HubAnalysisFeedItem) => void;
 };
@@ -22,6 +25,9 @@ export default function AllAnalysisSheet({
   open,
   items,
   loading,
+  hasMore,
+  loadingMore,
+  onLoadMore,
   onClose,
   onOpenLog,
 }: Props) {
@@ -62,37 +68,49 @@ export default function AllAnalysisSheet({
             기록이 없어요.
           </p>
         ) : (
-          <ul className="space-y-2">
-            {items.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenLog(item);
-                    onClose();
-                  }}
-                  className="w-full rounded-2xl border border-outline-variant/30 bg-surface-container-low/40 px-4 py-3.5 text-left transition hover:bg-surface-container-low active:scale-[0.99]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-on-surface">
-                      {item.partner_name}
+          <div className="space-y-3">
+            <ul className="space-y-2">
+              {items.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenLog(item);
+                      onClose();
+                    }}
+                    className="w-full rounded-2xl border border-outline-variant/30 bg-surface-container-low/40 px-4 py-3.5 text-left transition hover:bg-surface-container-low active:scale-[0.99]"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold text-on-surface">
+                        {item.partner_name}
+                      </p>
+                      <time className="shrink-0 text-xs text-on-surface-variant">
+                        {formatHubAnalysisDate(item.created_at)}
+                      </time>
+                    </div>
+                    <p className="mt-1 text-xs text-secondary">
+                      {hubAnalysisKindLabel(item)}
                     </p>
-                    <time className="shrink-0 text-xs text-on-surface-variant">
-                      {formatHubAnalysisDate(item.created_at)}
-                    </time>
-                  </div>
-                  <p className="mt-1 text-xs text-secondary">
-                    {hubAnalysisKindLabel(item)}
-                  </p>
-                  {item.summary_title ? (
-                    <p className="mt-1 text-sm text-on-surface-variant">
-                      {item.summary_title}
-                    </p>
-                  ) : null}
-                </button>
-              </li>
-            ))}
-          </ul>
+                    {item.summary_title ? (
+                      <p className="mt-1 text-sm text-on-surface-variant">
+                        {item.summary_title}
+                      </p>
+                    ) : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {hasMore ? (
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={loadingMore}
+                className="w-full rounded-xl border border-outline-variant/40 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-secondary/40 hover:text-secondary disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loadingMore ? "불러오는 중…" : "더 보기 (Load More)"}
+              </button>
+            ) : null}
+          </div>
         )}
       </motion.div>
     </div>

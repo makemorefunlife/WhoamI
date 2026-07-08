@@ -39,6 +39,10 @@ import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { buildInviteUrl, copyInviteLink } from "@/lib/relationship/inviteShare";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 
+const ANALYSIS_PREVIEW_LIMIT = 5;
+const ANALYSIS_PAGE_STEP = 10;
+const ANALYSIS_MAX_TARGETS = 20;
+
 export default function RelationHubDashboard() {
   const router = useRouter();
   const { openSignIn } = useClerk();
@@ -86,6 +90,9 @@ export default function RelationHubDashboard() {
     [],
   );
   const [analysisAll, setAnalysisAll] = useState<HubAnalysisFeedItem[]>([]);
+  const [analysisAllLimit, setAnalysisAllLimit] = useState(ANALYSIS_PREVIEW_LIMIT);
+  const [analysisHasMore, setAnalysisHasMore] = useState(false);
+  const [analysisLoadingMore, setAnalysisLoadingMore] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [navOverlayPartner, setNavOverlayPartner] = useState<string | null>(
     null,
@@ -202,22 +209,18 @@ export default function RelationHubDashboard() {
     setDisplayNames(names);
   }, [relationshipItems]);
 
-  const refreshAnalysis = useCallback(async () => {
+  const refreshAnalysisPreview = useCallback(async () => {
     if (!hubReportId) return;
     setAnalysisLoading(true);
     try {
       const preview = await fetchHubAnalysisFeed(
         hubReportId,
         relationshipItems,
-        3,
+        ANALYSIS_PREVIEW_LIMIT,
+        ANALYSIS_MAX_TARGETS,
       );
-      setAnalysisPreview(preview);
-      const all = await fetchHubAnalysisFeed(
-        hubReportId,
-        relationshipItems,
-        50,
-      );
-      setAnalysisAll(all);
+      setAnalysisPreview(preview.items);
+      setAnalysisHasMore(preview.hasMore);
     } finally {
       setAnalysisLoading(false);
     }
@@ -227,10 +230,50 @@ export default function RelationHubDashboard() {
     if (!hubReportId || relationshipItems.length === 0) {
       setAnalysisPreview([]);
       setAnalysisAll([]);
+      setAnalysisAllLimit(ANALYSIS_PREVIEW_LIMIT);
+      setAnalysisHasMore(false);
       return;
     }
-    void refreshAnalysis();
-  }, [hubReportId, relationshipItems, refreshAnalysis]);
+    void refreshAnalysisPreview();
+  }, [hubReportId, relationshipItems, refreshAnalysisPreview]);
+
+  useEffect(() => {
+    if (!allAnalysisOpen || !hubReportId || relationshipItems.length === 0) return;
+    let cancelled = false;
+    setAnalysisLoading(true);
+    void (async () => {
+      try {
+        const all = await fetchHubAnalysisFeed(
+          hubReportId,
+          relationshipItems,
+          analysisAllLimit,
+          ANALYSIS_MAX_TARGETS,
+        );
+        if (!cancelled) {
+          setAnalysisAll(all.items);
+          setAnalysisHasMore(all.hasMore);
+        }
+      } finally {
+        if (!cancelled) {
+          setAnalysisLoading(false);
+          setAnalysisLoadingMore(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [allAnalysisLimit, allAnalysisOpen, hubReportId, relationshipItems]);
+
+  const loadMoreAnalysis = useCallback(() => {
+    if (analysisLoadingMore || analysisLoading || !analysisHasMore) return;
+    setAnalysisLoadingMore(true);
+    setAnalysisAllLimit((prev) => prev + ANALYSIS_PAGE_STEP);
+  }, [
+    analysisHasMore,
+    analysisLoading,
+    analysisLoadingMore,
+  ]);
 
   async function toggleFavorite(item: RelationshipListItem, favorited: boolean) {
     if (!hubReportId || !item.relationship_report_id) return;
@@ -485,11 +528,7 @@ export default function RelationHubDashboard() {
           }}
         />
 
-        {loading && items.length === 0 ? (
-          <p className="py-12 text-center text-sm text-on-surface-variant">
-            불러오는 중…
-          </p>
-        ) : err ? (
+        {err ? (
           <p className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 py-8 text-center text-sm text-on-surface-variant">
             {err}
           </p>
@@ -498,6 +537,7 @@ export default function RelationHubDashboard() {
             <FriendStoryRow
               friends={relationshipItems}
               waiting={waitingItems}
+              loading={loading}
               isSignedIn={isSignedIn}
               selectedId={selectedKey}
               displayNames={displayNames}
@@ -535,7 +575,7 @@ export default function RelationHubDashboard() {
             <HubAnalysisSection
               items={analysisPreview}
               loading={analysisLoading}
-              totalCount={analysisAll.length}
+              totalCount={analysisPreview.length}
               onOpenLog={openAnalysisLog}
               onShowMore={() => setAllAnalysisOpen(true)}
             />
@@ -619,6 +659,9 @@ export default function RelationHubDashboard() {
         open={allAnalysisOpen}
         items={analysisAll}
         loading={analysisLoading}
+        hasMore={analysisHasMore}
+        loadingMore={analysisLoadingMore}
+        onLoadMore={() => void loadMoreAnalysis()}
         onClose={() => setAllAnalysisOpen(false)}
         onOpenLog={openAnalysisLog}
       />

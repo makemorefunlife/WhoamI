@@ -20,6 +20,7 @@ import { hasSurveyV2Session } from "@/lib/v2/survey/session";
 import { setStitchAuthHandler } from "@/lib/stitch/authBridge";
 import { ROUTES } from "@/constants/routes";
 import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
+import type { EntryIntent } from "@/lib/routing/resolveEntryDestination";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/home/HomeAuthSignInPanel"),
@@ -215,15 +216,14 @@ export default function HomeContent() {
     setAuthModalOpen(true);
   }, []);
 
-  useEffect(() => {
-    if (!isLoaded || resume.loading) return;
-    const destination = resolveEntryDestination({
-      intent: "home",
-      session:
+  const safeNavigate = useCallback(
+    async (intent: EntryIntent) => {
+      setStartChoiceOpen(false);
+      const session =
         resume.reportId != null
           ? {
               reportId: resume.reportId,
-              source: "resume",
+              source: "resume" as const,
               invalidHint: false,
               surveyCompleted:
                 resume.surveyCompleted ||
@@ -234,20 +234,31 @@ export default function HomeContent() {
               birthPlace: null,
               relationshipSummary: relCounts,
             }
-          : null,
+          : null;
+
+      if (!session?.reportId && (intent === "blueprint" || intent === "relationships")) {
+        await createReportAndSurvey();
+        return;
+      }
+
+      const destination = resolveEntryDestination({
+        intent,
+        session,
+        isSignedIn,
+      });
+      if (destination) router.push(destination);
+    },
+    [
+      createReportAndSurvey,
       isSignedIn,
-    });
-    if (destination) router.replace(destination);
-  }, [
-    isLoaded,
-    isSignedIn,
-    resume.loading,
-    resume.reportId,
-    resume.surveyCompleted,
-    resume.birthDate,
-    router,
-    relCounts,
-  ]);
+      relCounts,
+      resume.birthDate,
+      resume.hasReport,
+      resume.reportId,
+      resume.surveyCompleted,
+      router,
+    ],
+  );
 
   const diagExtra = useMemo(
     () => ({
@@ -262,17 +273,21 @@ export default function HomeContent() {
     <>
       <FirstEntryDiagnostics scope="HomeContent" extra={diagExtra} />
       <StitchLandingPage
-        resumeLoading={resume.loading}
+        resumeLoading={isSignedIn && resume.loading}
         creatingReport={creatingReport}
         onOpenStartChoice={openStartChoice}
       />
 
       <StartChoiceModal
         open={startChoiceOpen}
+        signedIn={isSignedIn}
         busy={creatingReport}
         onClose={() => setStartChoiceOpen(false)}
         onStartFree={() => void startFreeSurvey()}
         onLogin={openLoginFromStart}
+        onGoBlueprint={() => void safeNavigate("blueprint")}
+        onGoRelationships={() => void safeNavigate("relationships")}
+        onGoDecision={() => void safeNavigate("decision")}
       />
 
       <AnimatePresence>

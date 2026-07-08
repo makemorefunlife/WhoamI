@@ -25,14 +25,6 @@ export default function StitchHomeCta({
   creatingReport,
   onOpenStartChoice,
 }: Props) {
-  if (resumeLoading) {
-    return (
-      <p className="text-sm text-on-surface-variant" aria-live="polite">
-        잠시만요…
-      </p>
-    );
-  }
-
   return (
     <div className="flex w-full max-w-lg flex-col items-stretch gap-4">
       <button

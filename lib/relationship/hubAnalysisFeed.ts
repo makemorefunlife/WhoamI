@@ -7,40 +7,54 @@ export type HubAnalysisFeedItem = AnalysisLogListItem & {
   relationship_report_id: string;
 };
 
+type FeedPage = {
+  items: HubAnalysisFeedItem[];
+  hasMore: boolean;
+};
+
 export async function fetchHubAnalysisFeed(
   viewerReportId: string,
   relationships: RelationshipListItem[],
-  limit = 3,
-): Promise<HubAnalysisFeedItem[]> {
+  limit = 5,
+  maxTargets = 10,
+): Promise<FeedPage> {
   const withId = relationships.filter((r) => r.relationship_report_id);
-  const targets = withId.slice(0, 10);
+  const targets = withId.slice(0, Math.max(1, maxTargets));
+  const perRelationshipLimit = Math.max(3, Math.min(limit + 1, 20));
   const results = await Promise.all(
     targets.map(async (rel) => {
       const rrId = rel.relationship_report_id!;
       try {
         const res = await fetch(
-          `/api/relationship/logs?relationshipReportId=${encodeURIComponent(rrId)}&viewerReportId=${encodeURIComponent(viewerReportId)}`,
+          `/api/relationship/logs?relationshipReportId=${encodeURIComponent(rrId)}&viewerReportId=${encodeURIComponent(viewerReportId)}&limit=${perRelationshipLimit}&offset=0`,
         );
         const data = await res.json();
-        if (!res.ok) return [] as HubAnalysisFeedItem[];
+        if (!res.ok) return { items: [], hasMore: false } as FeedPage;
         const logs = (data.logs ?? []) as AnalysisLogListItem[];
-        return logs.map((log) => ({
+        return {
+          items: logs.map((log) => ({
           ...log,
           partner_name: rel.partner_name,
           relationship_report_id: rrId,
-        }));
+          })),
+          hasMore: data.hasMore === true,
+        } as FeedPage;
       } catch {
-        return [] as HubAnalysisFeedItem[];
+        return { items: [], hasMore: false } as FeedPage;
       }
     }),
   );
-  return results
-    .flat()
+  const merged = results
+    .flatMap((result) => result.items)
     .sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    )
-    .slice(0, limit);
+    );
+  const hasMore = merged.length > limit || results.some((result) => result.hasMore);
+  return {
+    items: merged.slice(0, limit),
+    hasMore,
+  };
 }
 
 export function formatHubAnalysisDate(iso: string): string {

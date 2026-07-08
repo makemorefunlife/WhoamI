@@ -148,9 +148,13 @@ export async function listRelationshipAnalysisLogs(
   relationshipReportId: string,
   viewerReportId: string,
   limit = 30,
+  offset = 0,
 ): Promise<
   (AnalysisLogRow & { summary_title: string; summary_subtitle: string })[]
 > {
+  const safeLimit = Math.max(1, Math.min(100, limit));
+  const safeOffset = Math.max(0, offset);
+  const rangeEnd = safeOffset + safeLimit - 1;
   const { data, error } = await supabase
     .from("relationship_analysis_logs")
     .select(
@@ -159,7 +163,7 @@ export async function listRelationshipAnalysisLogs(
     .eq("relationship_report_id", relationshipReportId)
     .eq("viewer_report_id", viewerReportId)
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .range(safeOffset, rangeEnd);
 
   if (error) {
     console.error("relationship_analysis_logs list:", error.message);

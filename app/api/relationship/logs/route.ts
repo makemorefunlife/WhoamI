@@ -10,6 +10,14 @@ export async function GET(req: Request) {
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim();
     const viewerReportId = sp.get("viewerReportId")?.trim();
+    const limitRaw = Number(sp.get("limit") ?? "30");
+    const offsetRaw = Number(sp.get("offset") ?? "0");
+    const limit = Number.isFinite(limitRaw)
+      ? Math.max(1, Math.min(100, Math.trunc(limitRaw)))
+      : 30;
+    const offset = Number.isFinite(offsetRaw)
+      ? Math.max(0, Math.trunc(offsetRaw))
+      : 0;
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
@@ -53,9 +61,15 @@ export async function GET(req: Request) {
       supabase,
       relationshipReportId,
       viewerReportId,
+      limit + 1,
+      offset,
     );
 
-    return NextResponse.json({ logs });
+    const hasMore = logs.length > limit;
+    const sliced = hasMore ? logs.slice(0, limit) : logs;
+    const nextOffset = offset + sliced.length;
+
+    return NextResponse.json({ logs: sliced, hasMore, nextOffset });
   } catch (e) {
     console.error("relationship/logs GET:", e);
     return NextResponse.json({ error: "조회 실패" }, { status: 500 });

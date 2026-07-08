@@ -46,12 +46,6 @@ export default function AccountBirthEditor() {
       if (!reportId || busy) return;
       setBusy(true);
       setNotice(null);
-      writeBirthV2Session(reportId, {
-        birthDate: existing?.birthDate ?? payload.birthDate,
-        birthTime: payload.birthTime,
-        birthTimeUnknown: payload.birthTimeUnknown,
-        birthPlace: payload.birthPlace,
-      });
 
       try {
         const res = await fetch("/api/report/birth", {
@@ -67,16 +61,24 @@ export default function AccountBirthEditor() {
         });
         const data = (await res.json()) as { error?: string };
         if (!res.ok) {
-          setNotice(data.error ?? "저장에 실패했어요.");
+          alert("저장에 실패했습니다. 다시 시도해 주세요.");
+          setNotice("저장에 실패했습니다. 다시 시도해 주세요.");
           setBusy(false);
           return;
         }
+        writeBirthV2Session(reportId, {
+          birthDate: existing?.birthDate ?? payload.birthDate,
+          birthTime: payload.birthTime,
+          birthTimeUnknown: payload.birthTimeUnknown,
+          birthPlace: payload.birthPlace,
+        });
         setNotice("출생 정보가 저장되었어요.");
         clearLiteReports(reportId);
         clearSlimIntegratedCache(reportId);
         invalidateReportSession(reportId);
       } catch {
-        setNotice("네트워크 오류가 발생했어요. 다시 시도해 주세요.");
+        alert("저장에 실패했습니다. 다시 시도해 주세요.");
+        setNotice("저장에 실패했습니다. 다시 시도해 주세요.");
         setBusy(false);
         return;
       }

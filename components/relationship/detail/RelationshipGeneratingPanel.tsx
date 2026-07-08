@@ -29,7 +29,7 @@ export default function RelationshipGeneratingPanel({
       className="stitch-hero-panel mb-6 rounded-extra-large border border-secondary/25 p-8 text-center"
     >
       <div className="mx-auto mb-4 flex flex-col items-center gap-3">
-        <Logo size={36} href={null} onLightBackground />
+        <Logo size={36} href="/" onLightBackground />
         <Loader2 className="h-7 w-7 animate-spin text-secondary" aria-hidden />
       </div>
       <h2 className="stitch-headline text-xl text-primary">{title}</h2>

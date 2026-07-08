@@ -8,7 +8,7 @@ import {
   type HubAnalysisFeedItem,
 } from "@/lib/relationship/hubAnalysisFeed";
 
-const PREVIEW_LIMIT = 3;
+const PREVIEW_LIMIT = 5;
 
 type Props = {
   items: HubAnalysisFeedItem[];

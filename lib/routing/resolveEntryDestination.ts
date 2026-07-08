@@ -1,10 +1,17 @@
-import { ROUTES, blueprintRoute, withReportId } from "@/constants/routes";
+import {
+  ROUTES,
+  blueprintRoute,
+  relationshipHubRoute,
+  withReportId,
+} from "@/constants/routes";
 import type { ReportSession } from "@/lib/home/reportSession";
 import { hasResultsDashboardPrerequisites } from "@/lib/v2/results/canShowResultsDashboard";
 
 export type EntryIntent =
   | "home"
   | "blueprint"
+  | "relationships"
+  | "decision"
   | "survey"
   | "survey-complete"
   | "birth"
@@ -55,6 +62,16 @@ export function resolveEntryDestination(params: {
     if (!surveyDone) return withReportId(ROUTES.surveyV2, reportId);
     if (!hasBirth) return withReportId(ROUTES.surveyV2Complete, reportId);
     return null;
+  }
+
+  if (params.intent === "relationships") {
+    if (!surveyDone) return withReportId(ROUTES.surveyV2, reportId);
+    if (!hasBirth) return withReportId(ROUTES.surveyV2Complete, reportId);
+    return relationshipHubRoute(reportId);
+  }
+
+  if (params.intent === "decision") {
+    return ROUTES.decision;
   }
 
   if (params.intent === "birth") {
