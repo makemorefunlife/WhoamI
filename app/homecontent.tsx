@@ -6,13 +6,12 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { AnimatePresence, motion } from "framer-motion";
+import type { RelCounts, ResumeState } from "@/lib/home/homeEntryTypes";
 import {
-  applyResumeReportIdToStorage,
-  fetchHomeResumeClient,
-} from "@/lib/home/fetchHomeResumeClient";
-import { hydrateReportSessions } from "@/lib/v2/report/hydrateReportSessions";
-import { migrateLocalReportSessions } from "@/lib/v2/report/migrateLocalReportSessions";
-import { syncBirthFromResumeFields } from "@/lib/v2/onboarding/syncBirthFromResume";
+  invalidateReportSession,
+  loadReportSession,
+} from "@/lib/home/reportSession";
+import { invalidateHomeResumeCache } from "@/lib/home/fetchHomeResumeClient";
 import { supabase } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import StitchLandingPage from "@/components/landing/stitch/StitchLandingPage";
@@ -36,6 +35,19 @@ const HomeAuthSignInPanel = dynamic(
   },
 );
 
+const emptyResume = (): ResumeState => ({
+  loading: false,
+  reportId: null,
+  hasReport: false,
+  surveyCompleted: false,
+  birthDate: null,
+});
+
+/**
+ * Stitch 단일 진입 플로우:
+ * 랜딩 [시작하기] → 모달(설문/로그인) → 설문 10문항 → 출생 → Blueprint
+ * SSOT: loadReportSession (/api/home/resume). localStorage.reportId는 힌트만.
+ */
 export default function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,22 +55,14 @@ export default function HomeContent() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [startChoiceOpen, setStartChoiceOpen] = useState(false);
   const [creatingReport, setCreatingReport] = useState(false);
-  /** 로컬 reportId 기준 서버 설문 완료 여부 (null: 아직 조회 전) */
-  const [resume, setResume] = useState<{
-    loading: boolean;
-    reportId: string | null;
-    hasReport: boolean;
-    surveyCompleted: boolean;
-    birthDate: string | null;
-  }>({
-    loading: false,
-    reportId: null,
-    hasReport: false,
-    surveyCompleted: false,
-    birthDate: null,
+  const [resume, setResume] = useState<ResumeState>({
+    ...emptyResume(),
+    loading: true,
   });
-  /** 홈 재방문 — 관계 허브 요약 카운트 */
-  const [relCounts, setRelCounts] = useState({ pending: 0, completed: 0 });
+  const [relCounts, setRelCounts] = useState<RelCounts>({
+    pending: 0,
+    completed: 0,
+  });
 
   useEffect(() => {
     setStitchAuthHandler(() => setAuthModalOpen(true));
@@ -94,112 +98,44 @@ export default function HomeContent() {
     if (!isLoaded) return;
 
     let cancelled = false;
-
     const hint =
       typeof window !== "undefined"
         ? localStorage.getItem("reportId")?.trim() ?? ""
         : "";
 
     if (!isSignedIn && !hint) {
-      setResume({
-        loading: false,
-        reportId: null,
-        hasReport: false,
-        surveyCompleted: false,
-        birthDate: null,
-      });
+      setResume(emptyResume());
       setRelCounts({ pending: 0, completed: 0 });
       return;
     }
 
-    if (hint) {
-      setResume({
-        loading: true,
-        reportId: hint,
-        hasReport: true,
-        surveyCompleted: false,
-        birthDate: null,
-      });
-    } else {
-      setResume((s) => ({ ...s, loading: true }));
-    }
+    setResume((s) => ({
+      ...s,
+      loading: true,
+      reportId: hint || s.reportId,
+      hasReport: Boolean(hint || s.reportId),
+    }));
 
     void (async () => {
       try {
-        const result = await fetchHomeResumeClient(hint || undefined);
+        const session = await loadReportSession({
+          context: "home",
+          hydrate: true,
+        });
         if (cancelled) return;
-
-        if (!result.ok) {
-          if (result.status === 401) {
-            setResume({
-              loading: false,
-              reportId: isSignedIn ? null : hint || null,
-              hasReport: Boolean(hint),
-              surveyCompleted: false,
-              birthDate: null,
-            });
-            setRelCounts({ pending: 0, completed: 0 });
-            return;
-          }
-          console.error("home/resume:", result.error);
-          setResume({
-            loading: false,
-            reportId: null,
-            hasReport: false,
-            surveyCompleted: false,
-            birthDate: null,
-          });
-          setRelCounts({ pending: 0, completed: 0 });
-          return;
-        }
-
-        const data = result.data;
-        const storedBefore =
-          typeof window !== "undefined"
-            ? localStorage.getItem("reportId")?.trim() ?? ""
-            : "";
-        const reportId = applyResumeReportIdToStorage(data);
-        if (reportId) {
-          for (const oldId of [hint, storedBefore].filter(
-            (id) => id && id !== reportId,
-          )) {
-            migrateLocalReportSessions(oldId, reportId);
-          }
-          syncBirthFromResumeFields(reportId, {
-            birthDate: data.birthDate,
-            birthTime: data.birthTime,
-            birthPlace: data.birthPlace,
-          });
-          await hydrateReportSessions(reportId, {
-            surveyCompleted: data.surveyCompleted === true,
-          });
-        }
-        const summary = data.relationshipSummary ?? {
-          pending: 0,
-          completed: 0,
-        };
 
         setResume({
           loading: false,
-          reportId,
-          hasReport: data.hasReport === true,
-          surveyCompleted: data.surveyCompleted === true,
-          birthDate: data.birthDate?.trim() || null,
+          reportId: session.reportId || null,
+          hasReport: session.hasReport,
+          surveyCompleted: session.surveyCompleted,
+          birthDate: session.birthDate,
         });
-        setRelCounts({
-          pending: summary.pending ?? 0,
-          completed: summary.completed ?? 0,
-        });
+        setRelCounts(session.relationshipSummary);
       } catch (e) {
-        console.error("home/resume fetch:", e);
+        console.error("home session:", e);
         if (!cancelled) {
-          setResume({
-            loading: false,
-            reportId: null,
-            hasReport: false,
-            surveyCompleted: false,
-            birthDate: null,
-          });
+          setResume(emptyResume());
           setRelCounts({ pending: 0, completed: 0 });
         }
       }
@@ -224,6 +160,9 @@ export default function HomeContent() {
   const createReportAndSurvey = useCallback(async () => {
     const inviteToken = localStorage.getItem("inviteToken") || "";
     setCreatingReport(true);
+    invalidateReportSession();
+    invalidateHomeResumeCache();
+
     const { data, error } = await supabase
       .from("reports")
       .insert([
@@ -265,7 +204,6 @@ export default function HomeContent() {
   const startFreeSurvey = useCallback(async () => {
     if (creatingReport) return;
     setStartChoiceOpen(false);
-    // 시작하기는 항상 새 리포트 + 설문 10문항부터 (이전 설문/출생 단계로 점프하지 않음)
     await createReportAndSurvey();
   }, [creatingReport, createReportAndSurvey]);
 
@@ -277,18 +215,6 @@ export default function HomeContent() {
   const openLoginFromStart = useCallback(() => {
     setStartChoiceOpen(false);
     setAuthModalOpen(true);
-  }, []);
-
-  const resetResume = useCallback(() => {
-    localStorage.removeItem("reportId");
-    setRelCounts({ pending: 0, completed: 0 });
-    setResume({
-      loading: false,
-      reportId: null,
-      hasReport: false,
-      surveyCompleted: false,
-      birthDate: null,
-    });
   }, []);
 
   useEffect(() => {
@@ -329,12 +255,9 @@ export default function HomeContent() {
     <>
       <FirstEntryDiagnostics scope="HomeContent" extra={diagExtra} />
       <StitchLandingPage
-        resume={resume}
-        relCounts={relCounts}
+        resumeLoading={resume.loading}
         creatingReport={creatingReport}
-        onOpenAuth={() => setAuthModalOpen(true)}
         onOpenStartChoice={openStartChoice}
-        onResetResume={resetResume}
       />
 
       <StartChoiceModal

@@ -1,18 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useClerkReady } from "@/lib/clerk/useClerkReady";
-import type {
-  RelCounts,
-  ResumeState,
-} from "@/components/home/HomeAuthActions";
 
 type Props = {
-  resume: ResumeState;
-  relCounts: RelCounts;
+  resumeLoading: boolean;
   creatingReport: boolean;
   onOpenStartChoice: () => void;
-  onResetResume: () => void;
 };
 
 function HowItWorksLink() {
@@ -26,19 +19,13 @@ function HowItWorksLink() {
   );
 }
 
+/** Stitch 랜딩 단일 CTA — 시작하기 + how it works */
 export default function StitchHomeCta({
-  resume,
-  relCounts: _relCounts,
+  resumeLoading,
   creatingReport,
   onOpenStartChoice,
-  onResetResume: _onResetResume,
 }: Props) {
-  const { isSignedIn } = useClerkReady();
-
-  const awaitingResume =
-    resume.loading && (Boolean(resume.reportId) || isSignedIn);
-
-  if (awaitingResume) {
+  if (resumeLoading) {
     return (
       <p className="text-sm text-on-surface-variant" aria-live="polite">
         잠시만요…

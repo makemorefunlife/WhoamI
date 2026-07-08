@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
+import {
+  getCachedReportId,
+  loadReportSession,
+} from "@/lib/home/reportSession";
 
 type UseCanonicalReportIdOptions = {
   /** URL 쿼리의 reportId 힌트 (id, myReportId, viewer 등) */
@@ -20,6 +23,7 @@ type UseCanonicalReportIdOptions = {
 
 /**
  * Result/Report·관계 허브 등 — DB/API는 반환된 canonicalReportId만 사용.
+ * loadReportSession 캐시를 공유해 중복 resume/hydrate 방지.
  */
 export function useCanonicalReportId({
   urlHint,
@@ -32,13 +36,16 @@ export function useCanonicalReportId({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [canonicalReportId, setCanonicalReportId] = useState("");
-  const [resolving, setResolving] = useState(true);
+  const trimmedHint = urlHint.trim();
+  const cachedId = getCachedReportId();
+  const initialId = trimmedHint || cachedId;
+
+  const [canonicalReportId, setCanonicalReportId] = useState(initialId);
+  const [resolving, setResolving] = useState(!initialId);
   const [invalidHint, setInvalidHint] = useState(false);
 
   const syncCanonicalToUrl = useCallback(
     (canonical: string) => {
-      const trimmedHint = urlHint.trim();
       if (!canonical || canonical === trimmedHint) return;
 
       const next = new URLSearchParams(searchParams.toString());
@@ -46,7 +53,7 @@ export function useCanonicalReportId({
       const base = pathname || "/";
       router.replace(`${base}?${next.toString()}`, { scroll: false });
     },
-    [urlHint, queryParam, pathname, router, searchParams],
+    [trimmedHint, queryParam, pathname, router, searchParams],
   );
 
   useEffect(() => {
@@ -55,20 +62,20 @@ export function useCanonicalReportId({
     let cancelled = false;
 
     async function run() {
-      setResolving(true);
-      const result = await resolveCanonicalReportIdClient(
-        urlHint,
-        logContext,
-        { skipSessionHydrate },
-      );
+      if (!initialId) setResolving(true);
+      const session = await loadReportSession({
+        urlHint: trimmedHint,
+        context: logContext,
+        hydrate: !skipSessionHydrate,
+      });
       if (cancelled) return;
 
-      setCanonicalReportId(result.canonicalReportId);
-      setInvalidHint(result.invalidHint);
+      setCanonicalReportId(session.reportId);
+      setInvalidHint(session.invalidHint);
       setResolving(false);
 
-      if (result.canonicalReportId && syncToUrl) {
-        syncCanonicalToUrl(result.canonicalReportId);
+      if (session.reportId && syncToUrl) {
+        syncCanonicalToUrl(session.reportId);
       }
     }
 
@@ -76,12 +83,19 @@ export function useCanonicalReportId({
     return () => {
       cancelled = true;
     };
-  }, [urlHint, isLoaded, logContext, syncCanonicalToUrl, syncToUrl, skipSessionHydrate]);
+  }, [
+    trimmedHint,
+    isLoaded,
+    logContext,
+    syncCanonicalToUrl,
+    syncToUrl,
+    skipSessionHydrate,
+  ]);
 
   return {
     canonicalReportId,
     resolving,
     invalidHint,
-    urlHint: urlHint.trim(),
+    urlHint: trimmedHint,
   };
 }

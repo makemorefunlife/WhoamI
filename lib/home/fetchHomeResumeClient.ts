@@ -4,7 +4,7 @@ export type HomeResumeClientResult =
   | { ok: true; data: HomeResumePayload }
   | { ok: false; status: number; error: string };
 
-const RESUME_CACHE_TTL_MS = 12_000;
+const RESUME_CACHE_TTL_MS = 60_000;
 let resumeCache:
   | { key: string; at: number; result: HomeResumeClientResult }
   | null = null;
@@ -55,6 +55,10 @@ export async function fetchHomeResumeClient(
   const result = { ok: true as const, data: body as HomeResumePayload };
   resumeCache = { key: cacheKey, at: now, result };
   return result;
+}
+
+export function invalidateHomeResumeCache(): void {
+  resumeCache = null;
 }
 
 export function applyResumeReportIdToStorage(data: HomeResumePayload): string | null {

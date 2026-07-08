@@ -159,7 +159,7 @@ export function useRelationshipDetail({
   const [logsLoading, setLogsLoading] = useState(false);
   const [autostartActive, setAutostartActive] = useState(false);
   const autostartTriggered = useRef(false);
-  const REQUEST_TIMEOUT_MS = 120000;
+  const REQUEST_TIMEOUT_MS = 300_000;
 
   async function fetchJsonWithTimeout(
     input: RequestInfo | URL,

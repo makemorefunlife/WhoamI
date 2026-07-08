@@ -21,6 +21,7 @@ import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
 import RelationAnalyzeNavOverlay from "@/components/relationship/hub/RelationAnalyzeNavOverlay";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
+import { getCachedReportId } from "@/lib/home/reportSession";
 import { blueprintPath } from "@/lib/stitch/hubPaths";
 import {
   fetchHubAnalysisFeed,
@@ -93,11 +94,7 @@ export default function RelationHubDashboard() {
   const hubReportId = useMemo(() => {
     const hint = urlMyReportHint.trim();
     const canonical = myReportId.trim();
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("reportId")?.trim() ?? ""
-        : "";
-    return hint || canonical || stored;
+    return hint || canonical || getCachedReportId();
   }, [urlMyReportHint, myReportId]);
 
   useEffect(() => {

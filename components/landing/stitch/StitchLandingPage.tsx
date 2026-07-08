@@ -9,16 +9,13 @@ import {
   Heart,
   TrendingUp,
 } from "lucide-react";
-import type {
-  RelCounts,
-  ResumeState,
-} from "@/components/home/HomeAuthActions";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
 import Logo from "@/components/brand/Logo";
 import {
   blueprintPath,
   DECISION_HUB_LABEL,
   DECISION_HUB_PATH,
+  readStoredReportId,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
 
@@ -26,12 +23,9 @@ const HERO_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDvgf6WG4j6WmSliT9ytPyueU1yY_U7iK3rDs0KH0un2ei-7z7YtU6CWtOH0vlV1TeaTGp7MNGkGJJE_7jGSf9mVK_GZNVi0cXwUCZbLOqu4lskU70i2IZ3iPe0OhfnCoHROaachRLGnLUdZ7Y2B7Hm2210LeZsY2lijQ2Q7uJTIKNNHhy2pvKTWCMNwJv_B1Qn5xU3k3_SDhSpMjUl9uGmAFlwcpMJCvf2JXK0Od047ck6WxhSnq1RvLD2ek81OaidU9GNkxAezmTk";
 
 type Props = {
-  resume: ResumeState;
-  relCounts: RelCounts;
+  resumeLoading: boolean;
   creatingReport: boolean;
-  onOpenAuth: () => void;
   onOpenStartChoice: () => void;
-  onResetResume: () => void;
 };
 
 function useScrollReveal() {
@@ -65,17 +59,14 @@ function useScrollReveal() {
 }
 
 export default function StitchLandingPage({
-  resume,
-  relCounts,
+  resumeLoading,
   creatingReport,
-  onOpenAuth,
   onOpenStartChoice,
-  onResetResume,
 }: Props) {
   const router = useRouter();
   const mainRef = useScrollReveal();
 
-  const reportId = resume.reportId?.trim() ?? "";
+  const reportId = readStoredReportId();
 
   return (
     <div className="stitch-landing overflow-x-hidden">
@@ -108,11 +99,9 @@ export default function StitchLandingPage({
                   answers.
                 </p>
                 <StitchHomeCta
-                  resume={resume}
-                  relCounts={relCounts}
+                  resumeLoading={resumeLoading}
                   creatingReport={creatingReport}
                   onOpenStartChoice={onOpenStartChoice}
-                  onResetResume={onResetResume}
                 />
               </div>
             </div>
