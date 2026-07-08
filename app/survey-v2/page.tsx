@@ -23,13 +23,9 @@ import {
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 
 import {
-
   clearSurveyV2Session,
-
-  hasSurveyV2Session,
-
+  readSurveyV2Session,
   writeSurveyV2Session,
-
 } from "@/lib/v2/survey/session";
 
 import {
@@ -154,7 +150,9 @@ export default function SurveyV2Page() {
 
 
 
-      if (hasSurveyV2Session(reportId)) {
+      const prior = readSurveyV2Session(reportId);
+
+      if (prior && isSurveyV2AnswersComplete(prior.answers)) {
 
         router.replace(
 
@@ -168,7 +166,17 @@ export default function SurveyV2Page() {
 
 
 
-      if (!cancelled) setSessionReady(true);
+      if (!cancelled) {
+
+        if (prior?.answers) {
+
+          setAnswers({ ...EMPTY_ANSWERS, ...prior.answers });
+
+        }
+
+        setSessionReady(true);
+
+      }
 
     }
 

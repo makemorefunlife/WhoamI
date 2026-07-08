@@ -60,7 +60,7 @@ export default function AddFriendSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-primary/25 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[260] flex items-end justify-center bg-primary/25 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       onClick={onClose}

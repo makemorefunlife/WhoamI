@@ -123,6 +123,34 @@ export async function fetchRelationshipReportByIdSafe(
   };
 }
 
+/** invite 보강 등 — 여러 relationship_report_id를 한 번에 조회 */
+export async function fetchRelationshipReportsByIdsSafe(
+  supabase: SupabaseClient,
+  relationshipReportIds: string[],
+): Promise<RelationshipReportRow[]> {
+  const ids = [...new Set(relationshipReportIds.map((id) => id.trim()).filter(Boolean))];
+  if (ids.length === 0) return [];
+
+  const select = relationshipReportSelect();
+  const { data, error } = await supabase
+    .from("relationship_reports")
+    .select(select)
+    .in("id", ids);
+
+  if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
+    preferLegacySelect = true;
+    console.warn(
+      "[relationship_reports] 마이그레이션 미적용 — legacy 컬럼만 사용합니다.",
+    );
+    return fetchRelationshipReportsByIdsSafe(supabase, ids);
+  }
+
+  if (error) throw error;
+  if (preferLegacySelect === null) preferLegacySelect = false;
+
+  return (data ?? []).map((r) => normalizeRow(r as Record<string, unknown>));
+}
+
 /** 신규 컬럼 업데이트 실패 시 legacy 컬럼(result_premium 등)만으로 재시도 */
 export async function updateRelationshipReportSafe(
   supabase: SupabaseClient,

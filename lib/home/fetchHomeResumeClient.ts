@@ -4,11 +4,26 @@ export type HomeResumeClientResult =
   | { ok: true; data: HomeResumePayload }
   | { ok: false; status: number; error: string };
 
-/** 클라이언트 — /api/home/resume (canonical reportId) */
+const RESUME_CACHE_TTL_MS = 12_000;
+let resumeCache:
+  | { key: string; at: number; result: HomeResumeClientResult }
+  | null = null;
+
+/** 짧은 TTL 캐시 — 홈→관계 허브 연속 이동 시 중복 resume 호출 방지 */
 export async function fetchHomeResumeClient(
   reportIdHint?: string,
 ): Promise<HomeResumeClientResult> {
   const hint = reportIdHint?.trim();
+  const cacheKey = hint ?? "";
+  const now = Date.now();
+  if (
+    resumeCache &&
+    resumeCache.key === cacheKey &&
+    now - resumeCache.at < RESUME_CACHE_TTL_MS
+  ) {
+    return resumeCache.result;
+  }
+
   const url = hint
     ? `/api/home/resume?reportId=${encodeURIComponent(hint)}`
     : "/api/home/resume";
@@ -28,14 +43,18 @@ export async function fetchHomeResumeClient(
   } & Partial<HomeResumePayload>;
 
   if (!res.ok) {
-    return {
-      ok: false,
+    const result = {
+      ok: false as const,
       status: res.status,
       error: body.error ?? "탐사 상태를 불러오지 못했어요.",
     };
+    resumeCache = { key: cacheKey, at: now, result };
+    return result;
   }
 
-  return { ok: true, data: body as HomeResumePayload };
+  const result = { ok: true as const, data: body as HomeResumePayload };
+  resumeCache = { key: cacheKey, at: now, result };
+  return result;
 }
 
 export function applyResumeReportIdToStorage(data: HomeResumePayload): string | null {

@@ -24,6 +24,7 @@ export type ResolveCanonicalReportIdResult = {
 export async function resolveCanonicalReportIdClient(
   urlHint?: string,
   context = "resolve",
+  options?: { skipSessionHydrate?: boolean },
 ): Promise<ResolveCanonicalReportIdResult> {
   const hint = urlHint?.trim() ?? "";
   const stored =
@@ -40,14 +41,16 @@ export async function resolveCanonicalReportIdClient(
       for (const oldId of [hint, stored].filter((id) => id && id !== canonical)) {
         migrateLocalReportSessions(oldId, canonical);
       }
-      syncBirthFromResumeFields(canonical, {
-        birthDate: resume.data.birthDate,
-        birthTime: resume.data.birthTime,
-        birthPlace: resume.data.birthPlace,
-      });
-      await hydrateReportSessions(canonical, {
-        surveyCompleted: resume.data.surveyCompleted === true,
-      });
+      if (!options?.skipSessionHydrate) {
+        syncBirthFromResumeFields(canonical, {
+          birthDate: resume.data.birthDate,
+          birthTime: resume.data.birthTime,
+          birthPlace: resume.data.birthPlace,
+        });
+        await hydrateReportSessions(canonical, {
+          surveyCompleted: resume.data.surveyCompleted === true,
+        });
+      }
     }
     if (hint && canonical) {
       logCanonicalReportIdMismatch(hint, canonical, context);
@@ -74,7 +77,9 @@ export async function resolveCanonicalReportIdClient(
     if (typeof window !== "undefined") {
       localStorage.setItem("reportId", resumeHint);
     }
-    await hydrateReportSessions(resumeHint);
+    if (!options?.skipSessionHydrate) {
+      await hydrateReportSessions(resumeHint);
+    }
     return {
       canonicalReportId: resumeHint,
       urlHint: hint,

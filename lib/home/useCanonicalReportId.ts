@@ -14,6 +14,8 @@ type UseCanonicalReportIdOptions = {
   logContext?: string;
   /** false면 canonical로 URL을 덮어쓰지 않음 (관계 탐사실 등) */
   syncToUrl?: boolean;
+  /** true면 설문·출생 localStorage 복구 생략 (관계 허브 등) */
+  skipSessionHydrate?: boolean;
 };
 
 /**
@@ -24,6 +26,7 @@ export function useCanonicalReportId({
   queryParam = "id",
   logContext = "page",
   syncToUrl = true,
+  skipSessionHydrate = false,
 }: UseCanonicalReportIdOptions) {
   const { isLoaded } = useAuth();
   const router = useRouter();
@@ -56,6 +59,7 @@ export function useCanonicalReportId({
       const result = await resolveCanonicalReportIdClient(
         urlHint,
         logContext,
+        { skipSessionHydrate },
       );
       if (cancelled) return;
 
@@ -72,7 +76,7 @@ export function useCanonicalReportId({
     return () => {
       cancelled = true;
     };
-  }, [urlHint, isLoaded, logContext, syncCanonicalToUrl, syncToUrl]);
+  }, [urlHint, isLoaded, logContext, syncCanonicalToUrl, syncToUrl, skipSessionHydrate]);
 
   return {
     canonicalReportId,

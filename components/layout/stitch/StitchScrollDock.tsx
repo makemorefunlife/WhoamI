@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 import { Compass, Home, Scale, Users } from "lucide-react";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { stitchDockActivePath } from "@/components/layout/stitch/StitchSideMenu";
@@ -57,6 +58,7 @@ export default function StitchScrollDock({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { openSignIn } = useClerk();
   const { isSignedIn } = useClerkReady();
   const [visible, setVisible] = useState(false);
   const [reportId, setReportId] = useState("");
@@ -130,9 +132,15 @@ export default function StitchScrollDock({
           onClick={() => {
             if (reportId || isSignedIn) {
               router.push(blueprintPath(reportId));
-            } else {
-              onOpenAuth?.();
+              return;
             }
+            if (pathname === "/" && onOpenAuth) {
+              onOpenAuth();
+              return;
+            }
+            openSignIn?.({
+              forceRedirectUrl: pathname || "/",
+            });
           }}
         >
           <Compass className="h-5 w-5" strokeWidth={2} aria-hidden />

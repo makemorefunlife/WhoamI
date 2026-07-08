@@ -387,7 +387,7 @@ function SurveyCompleteContent() {
 
             animate={{ opacity: 1, y: 0 }}
 
-            className="mx-auto flex min-h-dvh max-w-lg flex-col px-5 pb-36 pt-12"
+            className="mx-auto flex min-h-dvh max-w-lg flex-col px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-12"
 
           >
 
@@ -409,6 +409,23 @@ function SurveyCompleteContent() {
 
             />
 
+            <div className="mt-6 w-full max-w-[420px] self-center">
+              <button
+                type="button"
+                disabled={!canViewResults || busy}
+                onClick={() => void handleViewResults()}
+                className="stitch-cta-primary w-full disabled:cursor-not-allowed"
+              >
+                {busy ? "저장 중…" : "결과 보기"}
+              </button>
+              {!canViewResults ? (
+                <p className="mt-2 text-center text-[11px] text-on-surface-variant">
+                  생년월일을 입력하고, 시간·장소는 입력하거나 건너뛰기를 선택해
+                  주세요.
+                </p>
+              ) : null}
+            </div>
+
             <Link
 
               href="/"
@@ -426,48 +443,6 @@ function SurveyCompleteContent() {
         )}
 
       </AnimatePresence>
-
-
-
-      {phase === "birth" ? (
-
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-outline-variant/40 bg-[#faf7f0]/95 px-5 py-5 backdrop-blur-md">
-
-          <div className="mx-auto max-w-lg">
-
-            <button
-
-              type="button"
-
-              disabled={!canViewResults || busy}
-
-              onClick={() => void handleViewResults()}
-
-              className="stitch-cta-primary w-full disabled:cursor-not-allowed"
-
-            >
-
-              {busy ? "저장 중…" : "결과 보기"}
-
-            </button>
-
-            {!canViewResults ? (
-
-              <p className="mt-2 text-center text-[11px] text-on-surface-variant">
-
-                생년월일을 입력하고, 시간·장소는 입력하거나 건너뛰기를 선택해
-
-                주세요.
-
-              </p>
-
-            ) : null}
-
-          </div>
-
-        </div>
-
-      ) : null}
 
     </StitchSurveyShell>
 

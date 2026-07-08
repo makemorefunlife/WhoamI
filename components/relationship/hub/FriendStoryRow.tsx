@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, MoreHorizontal, Pencil, Star } from "lucide-react";
+import { Clock, MoreHorizontal, Pencil, Plus, Star } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import { friendInitials } from "@/lib/relationship/hubDisplayName";
 
@@ -10,11 +10,13 @@ const STORY_VISIBLE = 3;
 type Props = {
   friends: RelationshipListItem[];
   waiting: RelationshipListItem[];
+  isSignedIn: boolean;
   selectedId: string | null;
   displayNames: Record<string, string>;
   favoritesOnly: boolean;
   onToggleFavoritesOnly: () => void;
   onSelect: (item: RelationshipListItem) => void;
+  onAddFriend: () => void;
   onShowAll: () => void;
   onRename: (item: RelationshipListItem) => void;
   onToggleFavorite: (item: RelationshipListItem) => void;
@@ -42,18 +44,21 @@ function displayNameFor(
 export default function FriendStoryRow({
   friends,
   waiting,
+  isSignedIn,
   selectedId,
   displayNames,
   favoritesOnly,
   onToggleFavoritesOnly,
   onSelect,
+  onAddFriend,
   onShowAll,
   onRename,
   onToggleFavorite,
 }: Props) {
   const combined = [...waiting, ...friends];
-  const visible = combined.slice(0, STORY_VISIBLE);
-  const hasMore = combined.length > STORY_VISIBLE;
+  const maxVisible = isSignedIn ? STORY_VISIBLE : 1;
+  const visible = combined.slice(0, maxVisible);
+  const hasMore = combined.length > maxVisible;
   const selected = combined.find(
     (i) => itemKey(i) === selectedId,
   );
@@ -78,11 +83,25 @@ export default function FriendStoryRow({
         </button>
       </div>
 
-      {combined.length === 0 ? (
+      {combined.length === 0 && !favoritesOnly ? (
+        <div className="flex items-start gap-4 pb-1 pt-1">
+          <button
+            type="button"
+            onClick={onAddFriend}
+            className="flex shrink-0 flex-col items-center pt-1 active:scale-95"
+            aria-label="친구 추가하기"
+          >
+            <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-dashed border-secondary/45 bg-secondary/10 text-secondary">
+              <Plus className="h-7 w-7" />
+            </span>
+            <span className="mt-2 text-xs font-medium text-secondary">
+              친구 추가
+            </span>
+          </button>
+        </div>
+      ) : combined.length === 0 ? (
         <p className="py-8 text-center text-sm text-on-surface-variant">
-          {favoritesOnly
-            ? "즐겨찾기한 친구가 없어요."
-            : "아직 친구가 없어요. 아래에서 추가해 보세요."}
+          즐겨찾기한 친구가 없어요.
         </p>
       ) : (
         <div className="flex items-start gap-4 overflow-x-auto pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -137,6 +156,19 @@ export default function FriendStoryRow({
               </span>
             </button>
           ) : null}
+          <button
+            type="button"
+            onClick={onAddFriend}
+            className="flex shrink-0 flex-col items-center pt-1 active:scale-95"
+            aria-label="친구 추가하기"
+          >
+            <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-dashed border-secondary/45 bg-secondary/10 text-secondary">
+              <Plus className="h-7 w-7" />
+            </span>
+            <span className="mt-2 text-xs font-medium text-secondary">
+              친구 추가
+            </span>
+          </button>
         </div>
       )}
 

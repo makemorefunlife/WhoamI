@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
+import { useClerk } from "@clerk/nextjs";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import RelationHubBanner, {
@@ -35,9 +36,12 @@ import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 import type { FamilyPerspective } from "@/lib/relationship/hubNavigation";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { buildInviteUrl, copyInviteLink } from "@/lib/relationship/inviteShare";
+import { useClerkReady } from "@/lib/clerk/useClerkReady";
 
 export default function RelationHubDashboard() {
   const router = useRouter();
+  const { openSignIn } = useClerk();
+  const { isSignedIn } = useClerkReady();
   const searchParams = useSearchParams();
   const urlMyReportHint =
     searchParams.get("myReportId")?.trim() ||
@@ -50,6 +54,7 @@ export default function RelationHubDashboard() {
       queryParam: "myReportId",
       logContext: "relationships-hub",
       syncToUrl: false,
+      skipSessionHydrate: true,
     });
 
   const [loading, setLoading] = useState(true);
@@ -140,7 +145,7 @@ export default function RelationHubDashboard() {
   }, [load]);
 
   useEffect(() => {
-    if (!hubSection || canonicalResolving || loading) return;
+    if (!hubSection || loading) return;
     const t = window.setTimeout(() => {
       if (hubSection === "add") {
         setAddFriendOpen(true);
@@ -148,10 +153,16 @@ export default function RelationHubDashboard() {
       }
     }, 280);
     return () => window.clearTimeout(t);
-  }, [hubSection, canonicalResolving, loading]);
+  }, [hubSection, loading]);
+
+  const { waitingItems, relationshipItems } = useMemo(() => {
+    const waiting = items.filter((i) => i.row_kind === "outbound_waiting");
+    const rest = items.filter((i) => i.row_kind !== "outbound_waiting");
+    return { waitingItems: waiting, relationshipItems: rest };
+  }, [items]);
 
   useEffect(() => {
-    if (!hubReportId) return;
+    if (!hubReportId || waitingItems.length === 0) return;
     const id = window.setInterval(() => void load("silent"), 22000);
     const onVis = () => {
       if (document.visibilityState === "visible") void load("silent");
@@ -161,7 +172,7 @@ export default function RelationHubDashboard() {
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [hubReportId, load]);
+  }, [hubReportId, load, waitingItems.length]);
 
   useEffect(() => {
     if (!navOverlayPartner) return;
@@ -171,12 +182,6 @@ export default function RelationHubDashboard() {
     }, 5000);
     return () => window.clearTimeout(t);
   }, [navOverlayPartner]);
-
-  const { waitingItems, relationshipItems } = useMemo(() => {
-    const waiting = items.filter((i) => i.row_kind === "outbound_waiting");
-    const rest = items.filter((i) => i.row_kind !== "outbound_waiting");
-    return { waitingItems: waiting, relationshipItems: rest };
-  }, [items]);
 
   const selectedFriend = useMemo(() => {
     const all = [...waitingItems, ...relationshipItems];
@@ -277,6 +282,13 @@ export default function RelationHubDashboard() {
       });
       const data = await res.json();
       if (!res.ok) {
+        if (res.status === 401) {
+          alert("친구 추가는 로그인(회원가입) 후 이용할 수 있어요.");
+          openSignIn?.({
+            forceRedirectUrl: `/relationships?myReportId=${encodeURIComponent(hubReportId)}`,
+          });
+          return;
+        }
         alert(data?.error ?? "초대 링크를 만들지 못했어요.");
         return;
       }
@@ -347,6 +359,13 @@ export default function RelationHubDashboard() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 401) {
+          alert("친구 추가는 로그인(회원가입) 후 이용할 수 있어요.");
+          openSignIn?.({
+            forceRedirectUrl: `/relationships?myReportId=${encodeURIComponent(reportIdForCreate)}`,
+          });
+          return;
+        }
         alert(data?.error ?? "관계를 만들지 못했어요.");
         return;
       }
@@ -421,7 +440,16 @@ export default function RelationHubDashboard() {
     setSelectedKey((prev) => (prev === key ? null : key));
   }
 
-  if (!canonicalResolving && !hubReportId) {
+  if (!hubReportId) {
+    if (canonicalResolving) {
+      return (
+        <StitchSurveyShell className="stitch-survey stitch-results">
+          <div className="mx-auto flex min-h-[50dvh] max-w-lg items-center justify-center px-6">
+            <p className="text-sm text-on-surface-variant">불러오는 중…</p>
+          </div>
+        </StitchSurveyShell>
+      );
+    }
     return (
       <StitchSurveyShell className="stitch-survey stitch-results">
         <div className="mx-auto flex min-h-[50dvh] max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
@@ -460,7 +488,7 @@ export default function RelationHubDashboard() {
           }}
         />
 
-        {canonicalResolving || loading ? (
+        {loading && items.length === 0 ? (
           <p className="py-12 text-center text-sm text-on-surface-variant">
             불러오는 중…
           </p>
@@ -473,11 +501,16 @@ export default function RelationHubDashboard() {
             <FriendStoryRow
               friends={relationshipItems}
               waiting={waitingItems}
+              isSignedIn={isSignedIn}
               selectedId={selectedKey}
               displayNames={displayNames}
               favoritesOnly={favoritesOnly}
               onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}
               onSelect={handleSelectFriend}
+              onAddFriend={() => {
+                setAddFriendOpen(true);
+                setAddFriendTab("invite");
+              }}
               onShowAll={() => setFriendsListOpen(true)}
               onRename={(item) => setRenameTarget(item)}
               onToggleFavorite={(item) =>

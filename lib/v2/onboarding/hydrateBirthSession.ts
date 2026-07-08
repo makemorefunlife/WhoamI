@@ -35,8 +35,12 @@ export async function ensureBirthSession(
 ): Promise<BirthV2Session | null> {
   if (!reportId.trim()) return null;
 
-  const dbRow = await fetchReportBirthFromApi(reportId);
   const sessionBirth = readBirthV2Session(reportId);
+  if (sessionBirth && hasMinimalBirth(sessionBirth)) {
+    return sessionBirth;
+  }
+
+  const dbRow = await fetchReportBirthFromApi(reportId);
   const resolved = resolveReportBirth({ db: dbRow, session: sessionBirth });
   if (!resolved) {
     return sessionBirth && hasMinimalBirth(sessionBirth) ? sessionBirth : null;

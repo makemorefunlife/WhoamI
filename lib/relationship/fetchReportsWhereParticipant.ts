@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  fetchRelationshipReportByIdSafe,
   fetchRelationshipReportRowsForReportIdSafe,
+  fetchRelationshipReportsByIdsSafe,
 } from "@/lib/relationship/relationshipReportQuery";
 
 /** relationship_reports 한 행 (조회용) */
@@ -28,111 +28,129 @@ export async function fetchRelationshipReportRowsForReportId(
   return fetchRelationshipReportRowsForReportIdSafe(supabase, reportId);
 }
 
+function collectMissingInviteReportIds(
+  rows: RelationshipReportRow[],
+  inviteRows: { relationship_report_id: string | null }[] | null | undefined,
+): string[] {
+  const seen = new Set(rows.map((r) => r.id));
+  const missing: string[] = [];
+  for (const inv of inviteRows ?? []) {
+    const rrId = inv.relationship_report_id?.trim();
+    if (!rrId || seen.has(rrId)) continue;
+    seen.add(rrId);
+    missing.push(rrId);
+  }
+  return missing;
+}
+
 /**
- * 관계 허브 — 동일 clerk 계정의 모든 리포트에 연결된 관계 행을 합친다.
- * (리포트 ID가 달라져도 같은 사용자 친구 목록이 보이도록)
+ * 관계 허브 — 현재 reportId 참여 관계 + invite로만 연결된 행 보강.
+ * outbound/inbound invite 조회와 누락 행 batch fetch를 병렬로 처리한다.
  */
 export async function fetchRelationshipReportRowsForHub(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<RelationshipReportRow[]> {
-  let primary = await fetchRelationshipReportRowsForReportId(supabase, reportId);
-  primary = await mergeRelationshipRowsFromOutboundInvites(
-    supabase,
-    reportId,
-    primary,
-  );
-  primary = await mergeRelationshipRowsFromInboundInvites(
-    supabase,
-    reportId,
-    primary,
-  );
-  // NOTE:
-  // 다른 reportId(동일 clerk 계정 소유)까지 합쳐서 내려주면,
-  // detail API의 viewerReportId 권한 체크와 충돌해 403이 발생할 수 있다.
-  // 허브 액션 안정화를 위해 현재 활성 reportId 참여 관계만 반환한다.
-  return primary;
+  const [primary, outboundInvites, inboundInvites] = await Promise.all([
+    fetchRelationshipReportRowsForReportId(supabase, reportId),
+    supabase
+      .from("invites")
+      .select("relationship_report_id")
+      .eq("from_report_id", reportId)
+      .not("relationship_report_id", "is", null)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("invites")
+      .select("relationship_report_id")
+      .eq("accepted_report_id", reportId)
+      .neq("from_report_id", reportId)
+      .not("relationship_report_id", "is", null)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  if (outboundInvites.error) {
+    console.error("outbound invites:", outboundInvites.error.message);
+  }
+  if (inboundInvites.error) {
+    console.error("inbound invites merge:", inboundInvites.error.message);
+  }
+
+  const missingIds = [
+    ...collectMissingInviteReportIds(primary, outboundInvites.data),
+    ...collectMissingInviteReportIds(primary, inboundInvites.data),
+  ];
+
+  if (missingIds.length === 0) {
+    return primary;
+  }
+
+  const extra = await fetchRelationshipReportsByIdsSafe(supabase, missingIds);
+  const map = new Map(primary.map((r) => [r.id, r]));
+  for (const row of extra) {
+    map.set(row.id, row);
+  }
+  return [...map.values()];
 }
 
 /**
- * 내가 보낸 관계 초대(invites)에만 연결된 relationship_report_id가 있으나
- * 위 조회에 안 잡힌 행이 있으면(예: 쿼리/타이밍 이슈) invites를 통해 보강.
+ * @deprecated fetchRelationshipReportRowsForHub가 병렬·batch로 처리합니다.
  */
 export async function mergeRelationshipRowsFromOutboundInvites(
   supabase: SupabaseClient,
   fromReportId: string,
   rows: RelationshipReportRow[],
 ): Promise<RelationshipReportRow[]> {
-  const seen = new Set(rows.map((r) => r.id));
-  const out = [...rows];
-
-  const { data: invites, error } = await supabase
+  const { data, error } = await supabase
     .from("invites")
-    .select("relationship_report_id, status")
+    .select("relationship_report_id")
     .eq("from_report_id", fromReportId)
+    .not("relationship_report_id", "is", null)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("outbound invites:", error.message);
-    return out;
+    return rows;
   }
 
-  for (const inv of invites ?? []) {
-    const rrId = inv.relationship_report_id as string | null | undefined;
-    if (!rrId || seen.has(rrId)) continue;
+  const missingIds = collectMissingInviteReportIds(rows, data);
+  if (missingIds.length === 0) return rows;
 
-    const { row: rr, error: rrErr } = await fetchRelationshipReportByIdSafe(
-      supabase,
-      rrId,
-    );
-
-    if (rrErr || !rr) continue;
-
-    seen.add(rr.id);
-    out.push(rr);
+  const extra = await fetchRelationshipReportsByIdsSafe(supabase, missingIds);
+  const map = new Map(rows.map((r) => [r.id, r]));
+  for (const row of extra) {
+    map.set(row.id, row);
   }
-
-  return out;
+  return [...map.values()];
 }
 
 /**
- * 내가 초대를 *받은* 쪽(invite.accepted_report_id = 나)인데
- * relationship_report 행이 위 조회에서 빠진 경우 보강.
+ * @deprecated fetchRelationshipReportRowsForHub가 병렬·batch로 처리합니다.
  */
 export async function mergeRelationshipRowsFromInboundInvites(
   supabase: SupabaseClient,
   myReportId: string,
   rows: RelationshipReportRow[],
 ): Promise<RelationshipReportRow[]> {
-  const seen = new Set(rows.map((r) => r.id));
-  const out = [...rows];
-
-  const { data: invites, error } = await supabase
+  const { data, error } = await supabase
     .from("invites")
     .select("relationship_report_id")
     .eq("accepted_report_id", myReportId)
     .neq("from_report_id", myReportId)
+    .not("relationship_report_id", "is", null)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("inbound invites merge:", error.message);
-    return out;
+    return rows;
   }
 
-  for (const inv of invites ?? []) {
-    const rrId = inv.relationship_report_id as string | null | undefined;
-    if (!rrId || seen.has(rrId)) continue;
+  const missingIds = collectMissingInviteReportIds(rows, data);
+  if (missingIds.length === 0) return rows;
 
-    const { row: rr, error: rrErr } = await fetchRelationshipReportByIdSafe(
-      supabase,
-      rrId,
-    );
-
-    if (rrErr || !rr) continue;
-
-    seen.add(rr.id);
-    out.push(rr);
+  const extra = await fetchRelationshipReportsByIdsSafe(supabase, missingIds);
+  const map = new Map(rows.map((r) => [r.id, r]));
+  for (const row of extra) {
+    map.set(row.id, row);
   }
-
-  return out;
+  return [...map.values()];
 }

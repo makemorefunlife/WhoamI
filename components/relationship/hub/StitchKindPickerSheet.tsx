@@ -52,7 +52,7 @@ export default function StitchKindPickerSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-primary/25 p-4 backdrop-blur-[2px] sm:items-center"
+      className="fixed inset-0 z-[260] flex items-end justify-center bg-primary/25 p-4 backdrop-blur-[2px] sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="kind-picker-title"

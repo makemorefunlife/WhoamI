@@ -38,7 +38,7 @@ export default function AllAnalysisSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[105] flex items-end justify-center bg-primary/25 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[260] flex items-end justify-center bg-primary/25 backdrop-blur-[2px]"
       onClick={onClose}
     >
       <motion.div

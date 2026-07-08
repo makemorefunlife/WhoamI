@@ -33,7 +33,7 @@ export default function RelationHubActionButtons({
         친구 추가하기
       </button>
       {!canAnalyze ? (
-        <p className="text-center text-xs text-on-surface-variant">
+        <p className="rounded-xl border border-secondary/25 bg-secondary/10 px-4 py-2.5 text-center text-sm font-medium text-secondary">
           친구를 선택하거나 추가한 뒤 분석을 시작할 수 있어요.
         </p>
       ) : null}

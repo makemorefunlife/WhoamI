@@ -66,9 +66,18 @@ export async function GET(req: Request) {
 
     const supabase = createServiceRoleClient(url, serviceKey);
 
-    const favoriteIds = await fetchFavoriteRelationshipIds(supabase, reportId);
+    const [favoriteIds, rows, openInvitesResult] = await Promise.all([
+      fetchFavoriteRelationshipIds(supabase, reportId),
+      fetchRelationshipReportRowsForHub(supabase, reportId),
+      supabase
+        .from("invites")
+        .select("id, invite_token, status, relationship_report_id, created_at")
+        .eq("from_report_id", reportId)
+        .eq("status", "open")
+        .order("created_at", { ascending: false }),
+    ]);
 
-    let rows = await fetchRelationshipReportRowsForHub(supabase, reportId);
+    const { data: openInvites, error: invErr } = openInvitesResult;
 
     rows.sort((a, b) => b.id.localeCompare(a.id));
 
@@ -95,13 +104,6 @@ export async function GET(req: Request) {
         }
       }
     }
-
-    const { data: openInvites, error: invErr } = await supabase
-      .from("invites")
-      .select("id, invite_token, status, relationship_report_id, created_at")
-      .eq("from_report_id", reportId)
-      .eq("status", "open")
-      .order("created_at", { ascending: false });
 
     if (invErr) {
       console.error("relationship/list invites:", invErr);

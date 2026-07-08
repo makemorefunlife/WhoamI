@@ -61,7 +61,7 @@ export default function HomeContent() {
   const [relCounts, setRelCounts] = useState({ pending: 0, completed: 0 });
 
   useEffect(() => {
-    setStitchAuthHandler(() => () => setAuthModalOpen(true));
+    setStitchAuthHandler(() => setAuthModalOpen(true));
     return () => setStitchAuthHandler(null);
   }, []);
 
@@ -264,48 +264,10 @@ export default function HomeContent() {
 
   const startFreeSurvey = useCallback(async () => {
     if (creatingReport) return;
-
-    const existing =
-      resume.reportId?.trim() ||
-      localStorage.getItem("reportId")?.trim() ||
-      "";
-
-    if (existing && hasSurveyV2Session(existing)) {
-      setStartChoiceOpen(false);
-      if (
-        hasResultsDashboardPrerequisites(
-          existing,
-          resume.surveyCompleted,
-          resume.birthDate,
-        )
-      ) {
-        router.push(resultsDashboardPath(existing));
-      } else {
-        router.push(
-          `/survey-v2/complete?reportId=${encodeURIComponent(existing)}`,
-        );
-      }
-      return;
-    }
-
-    if (existing && resume.hasReport && !resume.surveyCompleted) {
-      setStartChoiceOpen(false);
-      goToSurvey(existing);
-      return;
-    }
-
     setStartChoiceOpen(false);
+    // 시작하기는 항상 새 리포트 + 설문 10문항부터 (이전 설문/출생 단계로 점프하지 않음)
     await createReportAndSurvey();
-  }, [
-    creatingReport,
-    createReportAndSurvey,
-    goToSurvey,
-    resume.hasReport,
-    resume.reportId,
-    resume.surveyCompleted,
-    resume.birthDate,
-    router,
-  ]);
+  }, [creatingReport, createReportAndSurvey]);
 
   const openStartChoice = useCallback(() => {
     if (creatingReport) return;

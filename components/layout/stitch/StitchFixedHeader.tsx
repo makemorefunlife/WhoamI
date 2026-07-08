@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import { useClerk, UserButton } from "@clerk/nextjs";
 import { Menu, User } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
@@ -15,7 +16,19 @@ export default function StitchFixedHeader({
 }) {
   const [sideOpen, setSideOpen] = useState(false);
   const [shadow, setShadow] = useState(false);
+  const pathname = usePathname();
+  const { openSignIn } = useClerk();
   const { isSignedIn, isLoaded, clerkUnavailable } = useClerkReady();
+
+  const handleOpenAuth = useCallback(() => {
+    if (pathname === "/" && onOpenAuth) {
+      onOpenAuth();
+      return;
+    }
+    openSignIn?.({
+      forceRedirectUrl: pathname || "/",
+    });
+  }, [onOpenAuth, openSignIn, pathname]);
 
   useEffect(() => {
     const onScroll = () => setShadow(window.scrollY > 12);
@@ -100,25 +113,15 @@ export default function StitchFixedHeader({
               >
                 <User className="h-4 w-4" aria-hidden />
               </button>
-            ) : onOpenAuth ? (
+            ) : (
               <button
                 type="button"
-                onClick={onOpenAuth}
+                onClick={handleOpenAuth}
                 className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant/40 bg-surface-container-low text-primary shadow-sm transition hover:bg-surface-container"
                 aria-label="로그인"
               >
                 <User className="h-4 w-4" strokeWidth={2} aria-hidden />
               </button>
-            ) : (
-              <SignInButton mode="modal" forceRedirectUrl="/">
-                <button
-                  type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant/40 bg-surface-container-low text-primary shadow-sm transition hover:bg-surface-container"
-                  aria-label="로그인"
-                >
-                  <User className="h-4 w-4" strokeWidth={2} aria-hidden />
-                </button>
-              </SignInButton>
             )}
           </div>
         </div>
