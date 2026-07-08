@@ -13,6 +13,8 @@ import RelationshipPremiumSection from "@/components/relationship/detail/Relatio
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
 import { RELATIONSHIP_KIND_LABELS } from "@/lib/relationship/relationshipKind";
+import { ROUTES } from "@/constants/routes";
+import { UNKNOWN_BIRTH_NOTICE_KO } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { useRelationshipDetail } from "./useRelationshipDetail";
 
 export default function RelationshipView({
@@ -36,6 +38,10 @@ export default function RelationshipView({
     err,
     partnerName,
     viewerName,
+    viewerBirthTimeUnknown,
+    partnerBirthTimeUnknown,
+    viewerBirthPlaceUnknown,
+    partnerBirthPlaceUnknown,
     analysisType,
     premiumKind,
     premiumPreview,
@@ -72,6 +78,11 @@ export default function RelationshipView({
   } = detail;
 
   const generating = busy || autostartActive;
+  const usedBirthFallback =
+    viewerBirthTimeUnknown ||
+    partnerBirthTimeUnknown ||
+    viewerBirthPlaceUnknown ||
+    partnerBirthPlaceUnknown;
   const showGeneratingPanel =
     generating || (urlAutostart && !premiumReady && !err && !loading);
   const showLoadingPanel =
@@ -105,7 +116,7 @@ export default function RelationshipView({
           <button
             type="button"
             className="stitch-cta-primary mt-6 w-full !min-w-0 !text-sm"
-            onClick={() => router.push("/relationships")}
+            onClick={() => router.push(ROUTES.relationships)}
           >
             관계 허브로
           </button>
@@ -162,6 +173,12 @@ export default function RelationshipView({
           />
         </div>
       </header>
+
+      {usedBirthFallback ? (
+        <p className="mb-4 rounded-xl border border-secondary/25 bg-secondary/10 px-3 py-2.5 text-xs leading-relaxed text-on-surface-variant">
+          💡 {UNKNOWN_BIRTH_NOTICE_KO}
+        </p>
+      ) : null}
 
       {err ? (
         <div className="mb-4 space-y-3">
@@ -308,7 +325,7 @@ export default function RelationshipView({
           <button
             type="button"
             className="stitch-cta-secondary mt-8 w-full"
-            onClick={() => router.push("/relationships")}
+            onClick={() => router.push(ROUTES.relationships)}
           >
             관계 허브로
           </button>

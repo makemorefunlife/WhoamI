@@ -44,6 +44,8 @@ export default function BirthInputForm({
   initialBirthTimeUnknown,
   initialBirthPlace,
   busy,
+  lockBirthDate = false,
+  birthDateLockReason,
   submitLabel = "다음",
   onSubmit,
 }: {
@@ -52,6 +54,8 @@ export default function BirthInputForm({
   initialBirthTimeUnknown?: boolean;
   initialBirthPlace?: string | null;
   busy?: boolean;
+  lockBirthDate?: boolean;
+  birthDateLockReason?: string;
   submitLabel?: string;
   onSubmit: (payload: BirthFormSubmitPayload) => void;
 }) {
@@ -61,7 +65,9 @@ export default function BirthInputForm({
       ? parse24hTo12h(initialBirthTime)
       : null;
 
-  const [step, setStep] = useState<Step>("date");
+  const [step, setStep] = useState<Step>(
+    lockBirthDate && parsed.y && parsed.mo && parsed.d ? "time" : "date",
+  );
   const [year, setYear] = useState(parsed.y);
   const [month, setMonth] = useState(parsed.mo);
   const [day, setDay] = useState(parsed.d);
@@ -98,6 +104,7 @@ export default function BirthInputForm({
   }, [step]);
 
   useEffect(() => {
+    if (lockBirthDate) return;
     if (step !== "date" || !dateComplete || busy) return;
     const t = window.setTimeout(() => setStep("time"), 220);
     return () => window.clearTimeout(t);
@@ -205,6 +212,12 @@ export default function BirthInputForm({
               transition={{ duration: 0.2 }}
               className="space-y-5"
             >
+              {lockBirthDate && dateComplete ? (
+                <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs text-white/70">
+                  🔒 {birthDate} ·{" "}
+                  {birthDateLockReason ?? "생년월일은 잠금 상태입니다."}
+                </p>
+              ) : null}
               <div className="grid grid-cols-3 gap-2.5">
                 <label className="space-y-1.5">
                   <span className="block text-center text-[10px] text-white/50">
@@ -219,7 +232,7 @@ export default function BirthInputForm({
                     value={year}
                     onChange={(e) => handleYear(e.target.value)}
                     placeholder="1990"
-                    disabled={busy}
+                    disabled={busy || lockBirthDate}
                     className={inputClass}
                   />
                 </label>
@@ -236,7 +249,7 @@ export default function BirthInputForm({
                     value={month}
                     onChange={(e) => handleMonth(e.target.value)}
                     placeholder="01"
-                    disabled={busy}
+                    disabled={busy || lockBirthDate}
                     className={inputClass}
                   />
                 </label>
@@ -253,7 +266,7 @@ export default function BirthInputForm({
                     value={day}
                     onChange={(e) => handleDay(e.target.value)}
                     placeholder="15"
-                    disabled={busy}
+                    disabled={busy || lockBirthDate}
                     className={inputClass}
                   />
                 </label>
@@ -387,7 +400,7 @@ export default function BirthInputForm({
       </GlassCard>
 
       <div className="flex items-center justify-between gap-3 px-1">
-        {step === "time" ? (
+        {step === "time" && !lockBirthDate ? (
           <button
             type="button"
             onClick={goPrev}

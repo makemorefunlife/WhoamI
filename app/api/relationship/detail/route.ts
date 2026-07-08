@@ -15,6 +15,7 @@ import {
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 export const runtime = "nodejs";
 
@@ -71,10 +72,14 @@ export async function GET(req: Request) {
 
     const [{ data: partner }, { data: viewer }, { data: repA }, { data: repB }] =
       await Promise.all([
-      supabase.from("reports").select("name").eq("id", partnerId).maybeSingle(),
       supabase
         .from("reports")
-        .select("name")
+        .select("name,birth_time,birth_place")
+        .eq("id", partnerId)
+        .maybeSingle(),
+      supabase
+        .from("reports")
+        .select("name,birth_time,birth_place")
         .eq("id", viewerReportId)
         .maybeSingle(),
       supabase.from("reports").select("name").eq("id", rr.report_id_a).maybeSingle(),
@@ -151,6 +156,10 @@ export async function GET(req: Request) {
       partner_report_id: partnerId,
       viewer_name: viewer?.name?.trim() ?? "나",
       partner_name: partner?.name?.trim() ?? "상대",
+      viewer_birth_time_unknown: !viewer?.birth_time?.trim(),
+      partner_birth_time_unknown: !partner?.birth_time?.trim(),
+      viewer_birth_place_unknown: isBirthPlaceFallback(viewer?.birth_place),
+      partner_birth_place_unknown: isBirthPlaceFallback(partner?.birth_place),
       person_a_name: repA?.name?.trim() ?? "첫 번째",
       person_b_name: repB?.name?.trim() ?? "두 번째",
       perspective_basic: perspectiveBasic,

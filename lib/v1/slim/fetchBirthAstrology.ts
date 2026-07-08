@@ -104,7 +104,9 @@ export async function fetchBirthAstrologyText(input: {
     coords.matchedPlace ??
     coords.birthPlaceNormalized ??
     body.birthPlace ??
-    (coords.source === "default_seoul" ? "서울(기본)" : null);
+    (coords.source === "default_san_francisco"
+      ? "San Francisco, CA (default)"
+      : null);
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
@@ -124,7 +126,7 @@ export async function fetchBirthAstrologyText(input: {
 사용자 정보:
 - 생년: ${body.year}년 ${body.month}월 ${body.day}일
 - 출생시각: ${body.hour}:${String(body.minute).padStart(2, "0")}
-- 출생장소: ${placeLabel || "미입력(서울 좌표 기본값)"}
+- 출생장소: ${placeLabel || "미입력(샌프란시스코 좌표 기본값)"}
 
 점성학 데이터:
 - 태양: ${planets.sun}

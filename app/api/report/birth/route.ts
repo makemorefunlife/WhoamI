@@ -6,6 +6,7 @@ import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerR
 import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 export const runtime = "nodejs";
 
@@ -122,7 +123,7 @@ export async function POST(req: Request) {
             ? body.birthTime.trim()
             : null,
       birth_place: birthPlaceUnknown
-        ? birthPlace || "Approximate location"
+        ? birthPlace || UNKNOWN_BIRTH_FALLBACK.place
         : birthPlace,
     };
 
@@ -132,7 +133,14 @@ export async function POST(req: Request) {
       typeof body.birthLongitude === "number" &&
       Number.isFinite(body.birthLongitude);
 
-    const patch = hasClientCoords
+    const patch = birthPlaceUnknown
+      ? {
+          ...basePatch,
+          birth_latitude: UNKNOWN_BIRTH_FALLBACK.latitude,
+          birth_longitude: UNKNOWN_BIRTH_FALLBACK.longitude,
+          birth_timezone: UNKNOWN_BIRTH_FALLBACK.timezone,
+        }
+      : hasClientCoords
       ? {
           ...basePatch,
           ...(() => {

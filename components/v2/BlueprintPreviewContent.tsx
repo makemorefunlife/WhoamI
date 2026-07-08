@@ -19,6 +19,7 @@ import type { InnateSelfLiteProfile } from "@/lib/v2/saju/innateLite";
 import { clearSurveyV2Session } from "@/lib/v2/survey/session";
 import { clearSurveyOnServer } from "@/lib/v2/survey/surveyClient";
 import { clearLiteReports } from "@/lib/v2/lite/session";
+import { ROUTES, withReportId } from "@/constants/routes";
 
 export default function BlueprintPreviewContent({
   reportId,
@@ -53,7 +54,7 @@ export default function BlueprintPreviewContent({
     clearSurveyV2Session(reportId);
     clearLiteReports(reportId);
     await clearSurveyOnServer(reportId);
-    router.push(`/survey-v2?redo=1`);
+    router.push(`${ROUTES.surveyV2}?redo=1`);
   }, [reportId, router]);
 
   return (
@@ -167,7 +168,7 @@ export default function BlueprintPreviewContent({
           className="block w-full text-xs text-white/45 underline-offset-2 hover:text-white/65 hover:underline"
           onClick={() =>
             router.push(
-              `/onboarding/birth?reportId=${encodeURIComponent(reportId)}&edit=1`,
+              `${withReportId(ROUTES.onboardingBirth, reportId)}&edit=1`,
             )
           }
         >
@@ -176,7 +177,7 @@ export default function BlueprintPreviewContent({
         <button
           type="button"
           className="block w-full text-xs text-white/40 underline-offset-2 hover:text-white/60 hover:underline"
-          onClick={() => router.push("/account#birth")}
+          onClick={() => router.push(`${ROUTES.accountProfile}#birth`)}
         >
           로그인 후 계정에서도 수정 가능
         </button>

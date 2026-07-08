@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Logo from "@/components/brand/Logo";
+import { ROUTES } from "@/constants/routes";
 import {
   blueprintPath,
   DECISION_HUB_LABEL,
@@ -11,10 +12,15 @@ import {
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
 
+const SUPPORT_LINKS = [
+  { href: ROUTES.faq, label: "FAQ" },
+  { href: ROUTES.contact, label: "Contact" },
+] as const;
+
 const LEGAL_LINKS = [
-  { href: "/terms", label: "Terms" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "/refund", label: "Refund" },
+  { href: ROUTES.terms, label: "Terms" },
+  { href: ROUTES.privacy, label: "Privacy" },
+  { href: ROUTES.refund, label: "Refund" },
 ] as const;
 
 export default function StitchAppFooter() {
@@ -29,7 +35,7 @@ export default function StitchAppFooter() {
     );
   }, [pathname]);
 
-  if (pathname === "/") return null;
+  if (pathname === ROUTES.home) return null;
 
   return (
     <footer className="mt-auto border-t border-outline-variant/30 bg-surface-container-low/35 px-5 py-8 sm:px-6">
@@ -67,17 +73,30 @@ export default function StitchAppFooter() {
           </nav>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/25 pt-5 text-[11px] text-on-surface-variant">
-          <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Legal">
-            {LEGAL_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition hover:text-primary"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex flex-col gap-2">
+            <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Support">
+              {SUPPORT_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="transition hover:text-primary"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Legal">
+              {LEGAL_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="transition hover:text-primary"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
           <p>© {new Date().getFullYear()} Aha It&apos;s me!</p>
         </div>
       </div>

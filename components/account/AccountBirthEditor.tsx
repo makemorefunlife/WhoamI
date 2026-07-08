@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import BirthInputForm, {
   type BirthFormSubmitPayload,
 } from "@/components/onboarding/BirthInputForm";
@@ -14,8 +15,11 @@ import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalRepor
 import { ensureBirthSession } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { clearLiteReports } from "@/lib/v2/lite/session";
 import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
+import { invalidateReportSession } from "@/lib/home/reportSession";
+import { blueprintRoute } from "@/constants/routes";
 
 export default function AccountBirthEditor() {
+  const router = useRouter();
   const [reportId, setReportId] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -35,13 +39,15 @@ export default function AccountBirthEditor() {
     })();
   }, []);
 
+  const existing = reportId ? readBirthV2Session(reportId) : null;
+
   const handleSubmit = useCallback(
     async (payload: BirthFormSubmitPayload) => {
       if (!reportId || busy) return;
       setBusy(true);
       setNotice(null);
       writeBirthV2Session(reportId, {
-        birthDate: payload.birthDate,
+        birthDate: existing?.birthDate ?? payload.birthDate,
         birthTime: payload.birthTime,
         birthTimeUnknown: payload.birthTimeUnknown,
         birthPlace: payload.birthPlace,
@@ -53,7 +59,7 @@ export default function AccountBirthEditor() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             reportId,
-            birthDate: payload.birthDate,
+            birthDate: existing?.birthDate ?? payload.birthDate,
             birthTime: payload.birthTimeUnknown ? null : payload.birthTime,
             birthTimeUnknown: payload.birthTimeUnknown,
             birthPlace: payload.birthPlace,
@@ -68,6 +74,7 @@ export default function AccountBirthEditor() {
         setNotice("출생 정보가 저장되었어요.");
         clearLiteReports(reportId);
         clearSlimIntegratedCache(reportId);
+        invalidateReportSession(reportId);
       } catch {
         setNotice("네트워크 오류가 발생했어요. 다시 시도해 주세요.");
         setBusy(false);
@@ -75,7 +82,7 @@ export default function AccountBirthEditor() {
       }
       setBusy(false);
     },
-    [busy, reportId],
+    [busy, existing?.birthDate, reportId],
   );
 
   if (loading) {
@@ -94,14 +101,12 @@ export default function AccountBirthEditor() {
     );
   }
 
-  const existing = readBirthV2Session(reportId);
-
   return (
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-white/95">출생 정보</h2>
         <p className="mt-1 text-sm text-white/50">
-          생년월일·시간·장소는 자동 저장되며, 여기서 수정할 수 있어요.
+          생년월일은 최초 입력 후 잠금되며, 시간·장소는 여기서 수정할 수 있어요.
         </p>
       </div>
       {notice ? (
@@ -115,6 +120,8 @@ export default function AccountBirthEditor() {
         initialBirthTime={existing?.birthTime}
         initialBirthTimeUnknown={existing?.birthTimeUnknown}
         initialBirthPlace={existing?.birthPlace}
+        lockBirthDate={Boolean(existing?.birthDate)}
+        birthDateLockReason="생년월일 변경은 고객센터로 문의해 주세요."
         submitLabel="출생 정보 저장"
         onSubmit={handleSubmit}
       />
@@ -123,7 +130,7 @@ export default function AccountBirthEditor() {
         variant="ghost"
         className="w-full text-sm"
         onClick={() => {
-          window.location.href = `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`;
+          router.push(blueprintRoute(reportId));
         }}
       >
         Blueprint 미리보기로 이동

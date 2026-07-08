@@ -1,4 +1,7 @@
-export type AstrologyCoordSource = "explicit" | "place_lookup" | "default_seoul";
+export type AstrologyCoordSource =
+  | "explicit"
+  | "place_lookup"
+  | "default_san_francisco";
 
 export type ResolvedAstrologyCoordinates = {
   latitude: number;
@@ -9,11 +12,11 @@ export type ResolvedAstrologyCoordinates = {
   birthPlaceNormalized: string | null;
 };
 
-const DEFAULT_SEOUL = {
-  latitude: 37.5665,
-  longitude: 126.978,
-  timezone: 9,
-  label: "서울(기본)",
+const DEFAULT_SAN_FRANCISCO = {
+  latitude: 37.7749,
+  longitude: -122.4194,
+  timezone: -8,
+  label: "San Francisco, CA (default)",
 } as const;
 
 type PlaceEntry = {
@@ -59,6 +62,13 @@ const PLACE_COORDINATES: PlaceEntry[] = [
   { keys: ["오사카", "osaka"], label: "오사카", latitude: 34.6937, longitude: 135.5023, timezone: 9 },
   { keys: ["뉴욕", "newyork"], label: "뉴욕", latitude: 40.7128, longitude: -74.006, timezone: -5 },
   { keys: ["로스앤젤레스", "losangeles", "la"], label: "로스앤젤레스", latitude: 34.0522, longitude: -118.2437, timezone: -8 },
+  {
+    keys: ["샌프란시스코", "sanfrancisco", "sf", "san francisco"],
+    label: "샌프란시스코",
+    latitude: 37.7749,
+    longitude: -122.4194,
+    timezone: -8,
+  },
   { keys: ["런던", "london"], label: "런던", latitude: 51.5074, longitude: -0.1278, timezone: 0 },
   { keys: ["파리", "paris"], label: "파리", latitude: 48.8566, longitude: 2.3522, timezone: 1 },
   { keys: ["베이징", "beijing"], label: "베이징", latitude: 39.9042, longitude: 116.4074, timezone: 8 },
@@ -149,7 +159,7 @@ export function resolveAstrologyCoordinates(
     return {
       latitude: lat,
       longitude: lon,
-      timezone: tzStored ?? DEFAULT_SEOUL.timezone,
+      timezone: tzStored ?? DEFAULT_SAN_FRANCISCO.timezone,
       source: "explicit",
       matchedPlace: birthPlaceRaw || null,
       birthPlaceNormalized,
@@ -173,16 +183,16 @@ export function resolveAstrologyCoordinates(
   if (logContext?.logDefaultSeoul !== false) {
     const ctx = logContext?.reportId ? ` reportId=${logContext.reportId}` : "";
     console.warn(
-      `[astrology-coords]${ctx} source=default_seoul birth_place=${birthPlaceRaw || "(none)"} — 알려진 장소 매칭 없음, 서울 좌표 사용`,
+      `[astrology-coords]${ctx} source=default_san_francisco birth_place=${birthPlaceRaw || "(none)"} — 알려진 장소 매칭 없음, 샌프란시스코 좌표 사용`,
     );
   }
 
   return {
-    latitude: DEFAULT_SEOUL.latitude,
-    longitude: DEFAULT_SEOUL.longitude,
-    timezone: DEFAULT_SEOUL.timezone,
-    source: "default_seoul",
-    matchedPlace: DEFAULT_SEOUL.label,
+    latitude: DEFAULT_SAN_FRANCISCO.latitude,
+    longitude: DEFAULT_SAN_FRANCISCO.longitude,
+    timezone: DEFAULT_SAN_FRANCISCO.timezone,
+    source: "default_san_francisco",
+    matchedPlace: DEFAULT_SAN_FRANCISCO.label,
     birthPlaceNormalized,
   };
 }

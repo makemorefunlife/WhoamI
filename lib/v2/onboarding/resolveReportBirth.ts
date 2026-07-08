@@ -1,4 +1,5 @@
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
+import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 export type ReportBirthRow = {
   birth_date?: string | null;
@@ -23,6 +24,7 @@ export function birthFromDbRow(
     birthTime: birthTimeUnknown ? null : birthTimeRaw,
     birthTimeUnknown,
     birthPlace: row?.birth_place?.trim() || null,
+    birthPlaceUnknown: isBirthPlaceFallback(row?.birth_place),
     savedAt: new Date().toISOString(),
   };
 }
@@ -43,6 +45,8 @@ function mergeBirthFields(
     birthTime,
     birthTimeUnknown,
     birthPlace: db.birthPlace?.trim() || session.birthPlace?.trim() || null,
+    birthPlaceUnknown:
+      db.birthPlaceUnknown === true || session.birthPlaceUnknown === true,
     savedAt: new Date().toISOString(),
   };
 }

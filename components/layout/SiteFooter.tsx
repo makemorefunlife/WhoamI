@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 const footerLinks = [
-  { href: "/privacy", label: "Privacy Policy" },
-  { href: "/terms", label: "Terms of Service" },
-  { href: "/refund", label: "Refund Policy" },
-  { href: "/contact", label: "Contact" },
+  { href: ROUTES.faq, label: "FAQ" },
+  { href: ROUTES.contact, label: "Contact" },
+  { href: ROUTES.privacy, label: "Privacy Policy" },
+  { href: ROUTES.terms, label: "Terms of Service" },
+  { href: ROUTES.refund, label: "Refund Policy" },
 ] as const;
 
 export default function SiteFooter() {

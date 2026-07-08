@@ -20,7 +20,7 @@ import StitchBirthInputForm, {
 
 } from "@/components/onboarding/StitchBirthInputForm";
 
-import { resolveApproximateBirthPlaceClient } from "@/lib/v2/onboarding/resolveApproximateBirthPlaceClient";
+import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 import {
 
@@ -173,33 +173,9 @@ function SurveyCompleteContent() {
 
 
 
-    let birthPlace = birthForm.birthPlace;
-
-    let birthLatitude: number | undefined;
-
-    let birthLongitude: number | undefined;
-
-
-
-    if (birthForm.birthPlaceUnknown) {
-
-      const approx = await resolveApproximateBirthPlaceClient();
-
-      if (approx) {
-
-        birthPlace = approx.birthPlace;
-
-        birthLatitude = approx.birthLatitude;
-
-        birthLongitude = approx.birthLongitude;
-
-      } else {
-
-        birthPlace = "Approximate location";
-
-      }
-
-    }
+    const birthPlace = birthForm.birthPlaceUnknown
+      ? UNKNOWN_BIRTH_FALLBACK.place
+      : birthForm.birthPlace;
 
 
 
@@ -241,9 +217,13 @@ function SurveyCompleteContent() {
 
           birthPlaceUnknown: birthForm.birthPlaceUnknown,
 
-          birthLatitude,
+          birthLatitude: birthForm.birthPlaceUnknown
+            ? UNKNOWN_BIRTH_FALLBACK.latitude
+            : undefined,
 
-          birthLongitude,
+          birthLongitude: birthForm.birthPlaceUnknown
+            ? UNKNOWN_BIRTH_FALLBACK.longitude
+            : undefined,
 
         }),
 

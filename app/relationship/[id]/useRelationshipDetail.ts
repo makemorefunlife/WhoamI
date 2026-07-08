@@ -39,6 +39,10 @@ export type UseRelationshipDetailReturn = {
   err: string | null;
   partnerName: string;
   viewerName: string;
+  viewerBirthTimeUnknown: boolean;
+  partnerBirthTimeUnknown: boolean;
+  viewerBirthPlaceUnknown: boolean;
+  partnerBirthPlaceUnknown: boolean;
   analysisType: string;
   premiumKind: RelationshipKind;
   premiumPreview: boolean;
@@ -116,6 +120,11 @@ export function useRelationshipDetail({
   const [partnerName, setPartnerName] = useState("상대");
   const [viewerName, setViewerName] = useState("");
   const [analysisType, setAnalysisType] = useState<string>("basic");
+  const [viewerBirthTimeUnknown, setViewerBirthTimeUnknown] = useState(false);
+  const [partnerBirthTimeUnknown, setPartnerBirthTimeUnknown] = useState(false);
+  const [viewerBirthPlaceUnknown, setViewerBirthPlaceUnknown] = useState(false);
+  const [partnerBirthPlaceUnknown, setPartnerBirthPlaceUnknown] =
+    useState(false);
   const [basic, setBasic] = useState<RelationshipPerspective | null>(null);
   const [premium, setPremium] = useState<RelationshipPerspective | null>(null);
   const [romanticDeep, setRomanticDeep] = useState<
@@ -226,6 +235,10 @@ export function useRelationshipDetail({
         setDetailOk(true);
         setPartnerName(data.partner_name ?? "상대");
         setViewerName(data.viewer_name ?? "");
+        setViewerBirthTimeUnknown(data.viewer_birth_time_unknown === true);
+        setPartnerBirthTimeUnknown(data.partner_birth_time_unknown === true);
+        setViewerBirthPlaceUnknown(data.viewer_birth_place_unknown === true);
+        setPartnerBirthPlaceUnknown(data.partner_birth_place_unknown === true);
         setAnalysisType(data.analysis_type ?? "basic");
         setPremiumKind(parseRelationshipKind(data.relationship_kind));
         setBasic((data.perspective_basic ?? null) as RelationshipPerspective);
@@ -694,6 +707,10 @@ export function useRelationshipDetail({
     err,
     partnerName,
     viewerName,
+    viewerBirthTimeUnknown,
+    partnerBirthTimeUnknown,
+    viewerBirthPlaceUnknown,
+    partnerBirthPlaceUnknown,
     analysisType,
     premiumKind,
     premiumPreview,

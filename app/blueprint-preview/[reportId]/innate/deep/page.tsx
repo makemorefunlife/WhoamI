@@ -13,6 +13,7 @@ import {
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
+import { ROUTES, withReportId } from "@/constants/routes";
 
 function InnateDeepContent() {
   const router = useRouter();
@@ -23,7 +24,7 @@ function InnateDeepContent() {
 
   useEffect(() => {
     if (!reportId) {
-      router.replace("/");
+      router.replace(ROUTES.home);
       return;
     }
     setReady(true);
@@ -63,13 +64,13 @@ function InnateDeepContent() {
         await hydrateSurveySession(reportId);
       }
       if (!readSurveyV2Session(reportId)) {
-        router.replace("/survey-v2");
+        router.replace(ROUTES.surveyV2);
         return;
       }
       const birth = await ensureBirthSession(reportId);
       if (!hasMinimalBirth(birth)) {
         router.replace(
-          `/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`,
+          withReportId(ROUTES.surveyV2Complete, reportId),
         );
       }
     })();
@@ -140,7 +141,7 @@ function InnateDeepContent() {
             <button
               type="button"
               className="text-sm text-on-surface-variant underline-offset-2 hover:text-primary hover:underline"
-              onClick={() => router.push("/account#birth")}
+              onClick={() => router.push(`${ROUTES.accountProfile}#birth`)}
             >
               출생 정보 수정하기 (계정)
             </button>

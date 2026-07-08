@@ -2,7 +2,11 @@ import { fetchBirthAstrologyText } from "@/lib/v1/slim/fetchBirthAstrology";
 
 export type BirthEnergyParts = {
   astrology: string;
-  coord_source: "explicit" | "place_lookup" | "default_seoul" | "unknown";
+  coord_source:
+    | "explicit"
+    | "place_lookup"
+    | "default_san_francisco"
+    | "unknown";
   birth_place_used: string | null;
 };
 

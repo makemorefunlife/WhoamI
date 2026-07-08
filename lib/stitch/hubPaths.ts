@@ -1,3 +1,5 @@
+import { ROUTES, blueprintRoute, relationshipHubRoute } from "@/constants/routes";
+
 /** Stitch 앱 허브 간 이동 경로 — reportId는 localStorage 폴백 */
 
 export function readStoredReportId(): string {
@@ -6,18 +8,12 @@ export function readStoredReportId(): string {
 }
 
 export function blueprintPath(reportId?: string): string {
-  const id = (reportId ?? readStoredReportId()).trim();
-  return id
-    ? `/blueprint-preview?reportId=${encodeURIComponent(id)}`
-    : "/blueprint-preview";
+  return blueprintRoute(reportId ?? readStoredReportId());
 }
 
 export function relationHubPath(reportId?: string): string {
-  const id = (reportId ?? readStoredReportId()).trim();
-  return id
-    ? `/relationships?myReportId=${encodeURIComponent(id)}`
-    : "/relationships";
+  return relationshipHubRoute(reportId ?? readStoredReportId());
 }
 
-export const DECISION_HUB_PATH = "/decision";
+export const DECISION_HUB_PATH = ROUTES.decision;
 export const DECISION_HUB_LABEL = "결정";

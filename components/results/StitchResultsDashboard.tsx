@@ -19,6 +19,7 @@ import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { InnateSelfLiteProfile } from "@/lib/v2/saju/innateLite";
+import { UNKNOWN_BIRTH_NOTICE_KO } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 type LiteTab = "current" | "innate";
 
@@ -84,6 +85,8 @@ export default function StitchResultsDashboard({
   const displayName =
     isLoaded && user ? resolveClerkDisplayName(user) : null;
   const showGreeting = Boolean(displayName && displayName !== "나");
+  const usedBirthFallback =
+    birthTimeUnknown || birth.birthPlaceUnknown === true;
 
   const requireAuthForFeature = () => {
     const redirect =
@@ -146,10 +149,9 @@ export default function StitchResultsDashboard({
           </button>
         </div>
 
-        {birthTimeUnknown ? (
+        {usedBirthFallback ? (
           <p className="mb-4 rounded-xl border border-secondary/25 bg-secondary/10 px-3 py-2.5 text-xs leading-relaxed text-on-surface-variant">
-            Birth time unknown — innate chart uses a noon reference. Add your
-            time later for finer accuracy.
+            💡 {UNKNOWN_BIRTH_NOTICE_KO}
           </p>
         ) : null}
 

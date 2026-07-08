@@ -37,6 +37,9 @@ import {
   type SajuChartProvenance,
 } from "@/lib/saju/loadSajuBundleFromReport";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import {
+  UNKNOWN_BIRTH_FALLBACK,
+} from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -72,6 +75,11 @@ function chartBirthTime(report: {
     birthTime: report.birth_time,
     birthTimeUnknown: !report.birth_time?.trim(),
   }).chartTime;
+}
+
+function chartBirthPlace(place: string | null): string {
+  const trimmed = place?.trim() ?? "";
+  return trimmed || UNKNOWN_BIRTH_FALLBACK.place;
 }
 
 function astroBrief(j: Record<string, unknown> | null): string {
@@ -199,11 +207,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const birthOkRomantic = (r: typeof repA) =>
-      Boolean(r.birth_date?.trim() && r.birth_place?.trim());
+    const birthOkRomantic = (r: typeof repA) => Boolean(r.birth_date?.trim());
 
-    const birthOkPremium = (r: typeof repA) =>
-      Boolean(r.birth_date && r.birth_time && r.birth_place?.trim());
+    const birthOkPremium = (r: typeof repA) => Boolean(r.birth_date);
 
     if (relationshipKindUsesDeepPipeline(kind)) {
       if (!birthOkRomantic(repA) || !birthOkRomantic(repB)) {
@@ -211,14 +217,14 @@ export async function POST(req: Request) {
           {
             error:
               kind === "romantic"
-                ? "양쪽 모두 생년월일·출생지가 있어야 연인 심화 분석이 가능합니다."
+                ? "양쪽 모두 생년월일이 있어야 연인 심화 분석이 가능합니다."
                 : kind === "cohabitation"
-                  ? "양쪽 모두 생년월일·출생지가 있어야 동거·결혼 심화 분석이 가능합니다."
+                  ? "양쪽 모두 생년월일이 있어야 동거·결혼 심화 분석이 가능합니다."
                   : kind === "family"
-                    ? "양쪽 모두 생년월일·출생지가 있어야 가족 Child DNA 분석이 가능합니다."
+                    ? "양쪽 모두 생년월일이 있어야 가족 Child DNA 분석이 가능합니다."
                     : kind === "friendship"
-                      ? "양쪽 모두 생년월일·출생지가 있어야 친구 Social DNA 분석이 가능합니다."
-                      : "양쪽 모두 생년월일·출생지가 있어야 동료 심화 분석이 가능합니다.",
+                      ? "양쪽 모두 생년월일이 있어야 친구 Social DNA 분석이 가능합니다."
+                      : "양쪽 모두 생년월일이 있어야 동료 심화 분석이 가능합니다.",
           },
           { status: 400 },
         );
@@ -266,7 +272,7 @@ export async function POST(req: Request) {
             birth_time:
               repA.birth_time != null ? String(repA.birth_time) : null,
           }),
-          place: String(repA.birth_place ?? "").trim(),
+          place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
           date: String(repB.birth_date ?? ""),
@@ -275,7 +281,7 @@ export async function POST(req: Request) {
             birth_time:
               repB.birth_time != null ? String(repB.birth_time) : null,
           }),
-          place: String(repB.birth_place ?? "").trim(),
+          place: chartBirthPlace(repB.birth_place),
         },
         sajuJsonA: loadedA.sajuJson,
         sajuJsonB: loadedB.sajuJson,
@@ -348,7 +354,7 @@ export async function POST(req: Request) {
             birth_time:
               repA.birth_time != null ? String(repA.birth_time) : null,
           }),
-          place: String(repA.birth_place ?? "").trim(),
+          place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
           date: String(repB.birth_date ?? ""),
@@ -357,7 +363,7 @@ export async function POST(req: Request) {
             birth_time:
               repB.birth_time != null ? String(repB.birth_time) : null,
           }),
-          place: String(repB.birth_place ?? "").trim(),
+          place: chartBirthPlace(repB.birth_place),
         },
         sajuJsonA: loadedA.sajuJson,
         sajuJsonB: loadedB.sajuJson,
@@ -429,7 +435,7 @@ export async function POST(req: Request) {
             birth_time:
               repA.birth_time != null ? String(repA.birth_time) : null,
           }),
-          place: String(repA.birth_place ?? "").trim(),
+          place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
           date: String(repB.birth_date ?? ""),
@@ -438,7 +444,7 @@ export async function POST(req: Request) {
             birth_time:
               repB.birth_time != null ? String(repB.birth_time) : null,
           }),
-          place: String(repB.birth_place ?? "").trim(),
+          place: chartBirthPlace(repB.birth_place),
         },
         sajuJsonA: loadedA.sajuJson,
         sajuJsonB: loadedB.sajuJson,
@@ -529,7 +535,7 @@ export async function POST(req: Request) {
             birth_time:
               repA.birth_time != null ? String(repA.birth_time) : null,
           }),
-          place: String(repA.birth_place ?? "").trim(),
+          place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
           date: String(repB.birth_date ?? ""),
@@ -538,7 +544,7 @@ export async function POST(req: Request) {
             birth_time:
               repB.birth_time != null ? String(repB.birth_time) : null,
           }),
-          place: String(repB.birth_place ?? "").trim(),
+          place: chartBirthPlace(repB.birth_place),
         },
         sajuJsonA: loadedA.sajuJson,
         sajuJsonB: loadedB.sajuJson,
@@ -610,7 +616,7 @@ export async function POST(req: Request) {
             birth_time:
               repA.birth_time != null ? String(repA.birth_time) : null,
           }),
-          place: String(repA.birth_place ?? "").trim(),
+          place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
           date: String(repB.birth_date ?? ""),
@@ -619,7 +625,7 @@ export async function POST(req: Request) {
             birth_time:
               repB.birth_time != null ? String(repB.birth_time) : null,
           }),
-          place: String(repB.birth_place ?? "").trim(),
+          place: chartBirthPlace(repB.birth_place),
         },
         sajuJsonA: loadedA.sajuJson,
         sajuJsonB: loadedB.sajuJson,

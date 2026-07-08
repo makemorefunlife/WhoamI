@@ -11,6 +11,7 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
 
 const NAV_ITEMS = [
   {
@@ -56,13 +57,15 @@ const NAV_ITEMS = [
 ] as const;
 
 const FOOTER_LINKS = [
-  { href: "/about", label: "서비스 소개" },
-  { href: "/pricing", label: "요금 안내" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/terms", label: "이용약관" },
-  { href: "/privacy", label: "개인정보" },
-  { href: "/refund", label: "환불정책" },
-  { href: "/account", label: "계정" },
+  { href: ROUTES.about, label: "서비스 소개" },
+  { href: ROUTES.pricing, label: "요금 안내" },
+  { href: ROUTES.faq, label: "FAQ" },
+  { href: ROUTES.contact, label: "고객지원" },
+  { href: ROUTES.terms, label: "이용약관" },
+  { href: ROUTES.privacy, label: "개인정보" },
+  { href: ROUTES.refund, label: "환불정책" },
+  { href: ROUTES.accountProfile, label: "내 정보" },
+  { href: ROUTES.accountBilling, label: "결제 내역" },
 ] as const;
 
 function NavCard({

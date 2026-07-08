@@ -2,6 +2,7 @@ import {
   readBirthV2Session,
   writeBirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
+import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 /** 홈 resume·DB 행 → localStorage 출생 session 동기화 */
 export function syncBirthFromResumeFields(
@@ -22,9 +23,7 @@ export function syncBirthFromResumeFields(
     birthDate,
     birthTime: birthTimeRaw,
     birthTimeUnknown: !birthTimeRaw,
-    birthPlace:
-      fields.birthPlace?.trim() ||
-      existing?.birthPlace?.trim() ||
-      null,
+    birthPlace: fields.birthPlace?.trim() || existing?.birthPlace?.trim() || null,
+    birthPlaceUnknown: isBirthPlaceFallback(fields.birthPlace),
   });
 }

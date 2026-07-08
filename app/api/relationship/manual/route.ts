@@ -4,6 +4,7 @@ import { mergeBirthCoordinateFields, insertReportPatchSafely } from "@/lib/repor
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
     const birthDate = body.birthDate?.trim();
     const birthPlaceUnknown = body.birthPlaceUnknown === true;
     const birthPlace = birthPlaceUnknown
-      ? null
+      ? UNKNOWN_BIRTH_FALLBACK.place
       : (body.birthPlace?.trim() || null);
     const surveySkipped = body.surveySkipped === true;
 
@@ -83,7 +84,7 @@ export async function POST(req: Request) {
       birthTime: body.birthTime,
       birthTimeUnknown,
     });
-    const birthTime = birthTimeUnknown ? chartTime : (body.birthTime?.trim() || chartTime);
+    const birthTime = birthTimeUnknown ? null : (body.birthTime?.trim() || chartTime);
     const profile = surveySkipped
       ? buildNeutralV2Profile()
       : scoreSurveyAnswers(body.surveyAnswers!);

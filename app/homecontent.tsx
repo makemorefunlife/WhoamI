@@ -17,11 +17,9 @@ import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import StitchLandingPage from "@/components/landing/stitch/StitchLandingPage";
 import StartChoiceModal from "@/components/landing/stitch/StartChoiceModal";
 import { hasSurveyV2Session } from "@/lib/v2/survey/session";
-import {
-  hasResultsDashboardPrerequisites,
-  resultsDashboardPath,
-} from "@/lib/v2/results/canShowResultsDashboard";
 import { setStitchAuthHandler } from "@/lib/stitch/authBridge";
+import { ROUTES } from "@/constants/routes";
+import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/home/HomeAuthSignInPanel"),
@@ -152,7 +150,7 @@ export default function HomeContent() {
       const params = new URLSearchParams();
       if (inviteToken) params.set("token", inviteToken);
       else params.set("reportId", reportId);
-      router.push(`/survey-v2?${params.toString()}`);
+      router.push(`${ROUTES.surveyV2}?${params.toString()}`);
     },
     [router],
   );
@@ -218,20 +216,28 @@ export default function HomeContent() {
   }, []);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || resume.loading || !resume.reportId) return;
-    const surveyDone =
-      resume.surveyCompleted || hasSurveyV2Session(resume.reportId);
-    if (!surveyDone) return;
-    if (
-      !hasResultsDashboardPrerequisites(
-        resume.reportId,
-        resume.surveyCompleted,
-        resume.birthDate,
-      )
-    ) {
-      return;
-    }
-    router.replace(resultsDashboardPath(resume.reportId));
+    if (!isLoaded || resume.loading) return;
+    const destination = resolveEntryDestination({
+      intent: "home",
+      session:
+        resume.reportId != null
+          ? {
+              reportId: resume.reportId,
+              source: "resume",
+              invalidHint: false,
+              surveyCompleted:
+                resume.surveyCompleted ||
+                (resume.reportId ? hasSurveyV2Session(resume.reportId) : false),
+              hasReport: resume.hasReport,
+              birthDate: resume.birthDate,
+              birthTime: null,
+              birthPlace: null,
+              relationshipSummary: relCounts,
+            }
+          : null,
+      isSignedIn,
+    });
+    if (destination) router.replace(destination);
   }, [
     isLoaded,
     isSignedIn,
@@ -240,6 +246,7 @@ export default function HomeContent() {
     resume.surveyCompleted,
     resume.birthDate,
     router,
+    relCounts,
   ]);
 
   const diagExtra = useMemo(

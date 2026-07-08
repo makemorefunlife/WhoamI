@@ -9,8 +9,8 @@ export function astrologyCoordSourceLogLabel(
       return "stored_coords";
     case "place_lookup":
       return "birth_place_lookup";
-    case "default_seoul":
-      return "default_seoul";
+    case "default_san_francisco":
+      return "default_san_francisco";
     default:
       return source;
   }
