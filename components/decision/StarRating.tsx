@@ -6,6 +6,9 @@ type DisplayProps = {
   className?: string;
 };
 
+const STAR_FILLED = "fill-[#e0b040] text-[#e0b040]";
+const STAR_EMPTY = "fill-transparent text-outline-variant/55";
+
 export function StarRatingDisplay({
   rating,
   max = 5,
@@ -22,16 +25,32 @@ export function StarRatingDisplay({
         return (
           <Star
             key={i}
-            className={`h-4 w-4 ${
-              filled
-                ? "fill-amber-400 text-amber-400"
-                : "fill-transparent text-outline-variant/70"
-            }`}
+            className={`h-4 w-4 ${filled ? STAR_FILLED : STAR_EMPTY}`}
             strokeWidth={filled ? 0 : 1.5}
             aria-hidden
           />
         );
       })}
+    </div>
+  );
+}
+
+/** Compact badge: stars + numeric score for review cards */
+export function StarRatingBadge({
+  rating,
+  max = 5,
+  className = "",
+}: DisplayProps) {
+  const value = Math.min(max, Math.max(0, Math.round(rating)));
+  return (
+    <div
+      className={`inline-flex shrink-0 flex-col items-end gap-1 rounded-xl bg-[#faf3e0]/80 px-2.5 py-1.5 ring-1 ring-[#e0b040]/25 ${className}`}
+      aria-label={`${value} out of ${max} stars`}
+    >
+      <StarRatingDisplay rating={value} max={max} className="gap-px" />
+      <span className="text-[10px] font-semibold tabular-nums tracking-wide text-[#a67c00]">
+        {value}.0 / {max}.0
+      </span>
     </div>
   );
 }
@@ -59,9 +78,7 @@ export function StarRatingInput({ value, onChange, max = 5 }: InputProps) {
           >
             <Star
               className={`h-7 w-7 ${
-                filled
-                  ? "fill-amber-400 text-amber-400"
-                  : "fill-transparent text-outline-variant"
+                filled ? STAR_FILLED : "fill-transparent text-outline-variant"
               }`}
               strokeWidth={filled ? 0 : 1.5}
               aria-hidden

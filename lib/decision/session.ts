@@ -4,6 +4,7 @@ import {
   writeJsonStorage,
 } from "@/lib/v2/storage/localPersist";
 import type { DecisionEntry } from "@/lib/decision/types";
+import { normalizeDecisionCategory } from "@/lib/decision/types";
 
 const PREFIX = "ahaitsme_decisions_";
 
@@ -22,6 +23,7 @@ function normalizeEntry(raw: DecisionEntry): DecisionEntry {
     (status === "reviewed" ? raw.updatedAt : null);
   return {
     ...raw,
+    category: normalizeDecisionCategory(String(raw.category)),
     status,
     rating:
       typeof raw.rating === "number" && raw.rating >= 1 && raw.rating <= 5

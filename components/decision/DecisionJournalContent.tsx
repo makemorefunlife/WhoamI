@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { Calendar, ChevronRight, Sparkles } from "lucide-react";
+import { Calendar, Sparkles } from "lucide-react";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import GuestDashboardAuthNotice from "@/components/results/GuestDashboardAuthNotice";
 import DecideWithAiComingSoon from "@/components/decision/DecideWithAiComingSoon";
 import DecisionStatusDot from "@/components/decision/DecisionStatusDot";
 import DecisionReviewSheet from "@/components/decision/DecisionReviewSheet";
+import { StarRatingDisplay } from "@/components/decision/StarRating";
 import FadeInContent from "@/components/ui/stitch/FadeInContent";
 import { StitchSkeleton } from "@/components/ui/stitch/StitchSkeleton";
 import {
@@ -17,11 +17,14 @@ import {
   readDecisionJournal,
 } from "@/lib/decision/session";
 import { sortDecisionsForReview } from "@/lib/decision/sort";
+import { formatDecisionDate } from "@/lib/decision/format";
 import { DECISION_HUB_LABEL } from "@/lib/stitch/hubPaths";
 import {
   DECISION_CATEGORIES,
   DECISION_DATE_RANGES,
   decisionCategoryLabel,
+  decisionCategoryReviewTabLabel,
+  decisionCategorySelectLabel,
   isDecisionReviewed,
   type DecisionCategory,
   type DecisionDateRangeId,
@@ -30,12 +33,69 @@ import {
 
 const REVIEW_PREVIEW_LIMIT = 3;
 
+const ONBOARDING_STEPS = [
+  { num: "01", label: "LOG", desc: "Record choice" },
+  { num: "02", label: "REVIEW", desc: "Track outcome" },
+  { num: "03", label: "ANALYZE", desc: "Decode pattern" },
+] as const;
+
 function panelClass() {
   return "stitch-hero-panel rounded-extra-large border border-outline-variant/30 shadow-[0_4px_20px_rgba(26,51,40,0.05)]";
 }
 
 function fieldClass() {
-  return "w-full rounded-xl border-0 bg-surface-container-low/80 px-4 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/35 focus:ring-2 focus:ring-primary/15";
+  return "w-full rounded-xl border-0 bg-surface-container-lowest/90 px-4 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/40 transition focus:ring-2 focus:ring-secondary/25";
+}
+
+function filterPillClass(active: boolean) {
+  return [
+    "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+    active
+      ? "bg-primary text-on-primary shadow-sm"
+      : "bg-surface-container-low text-on-surface-variant ring-1 ring-outline-variant/35 hover:bg-surface-container hover:text-on-surface",
+  ].join(" ");
+}
+
+function categoryTabClass(active: boolean) {
+  return [
+    "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
+    active
+      ? "bg-primary text-on-primary shadow-sm"
+      : "bg-surface-container-low text-on-surface-variant/80 ring-1 ring-outline-variant/30 hover:bg-surface-container",
+  ].join(" ");
+}
+
+function OnboardingBanner() {
+  return (
+    <div
+      className="mb-10 rounded-2xl border border-outline-variant/25 bg-gradient-to-r from-surface-container-low/80 via-surface-container-lowest to-surface-container-low/60 px-4 py-5 sm:px-6"
+      aria-label="Decision journal workflow"
+    >
+      <div className="flex items-start justify-between gap-1 sm:gap-3">
+        {ONBOARDING_STEPS.map((step, index) => (
+          <div key={step.num} className="contents">
+            <div className="min-w-0 flex-1 text-center">
+              <p className="text-[10px] font-bold tracking-[0.22em] text-primary sm:text-[11px]">
+                <span className="text-secondary">{step.num}</span>{" "}
+                <span>{step.label}</span>
+              </p>
+              <p className="mt-1.5 text-[9px] leading-snug text-on-surface-variant/50 sm:text-[10px]">
+                {step.desc}
+              </p>
+            </div>
+            {index < ONBOARDING_STEPS.length - 1 ? (
+              <span
+                className="mt-0.5 shrink-0 px-0.5 text-[10px] font-light text-outline-variant sm:mt-1 sm:px-1 sm:text-xs"
+                aria-hidden
+              >
+                ➔
+              </span>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function filterByRange(
@@ -62,10 +122,13 @@ export default function DecisionJournalContent() {
   const [entries, setEntries] = useState<DecisionEntry[]>([]);
   const [journalReady, setJournalReady] = useState(false);
   const [context, setContext] = useState("");
-  const [category, setCategory] = useState<DecisionCategory>("career");
+  const [category, setCategory] = useState<DecisionCategory>("relationship");
   const [analyzeRange, setAnalyzeRange] =
     useState<DecisionDateRangeId>("30d");
   const [analyzeCategory, setAnalyzeCategory] = useState<
+    DecisionCategory | "all"
+  >("all");
+  const [reviewCategoryFilter, setReviewCategoryFilter] = useState<
     DecisionCategory | "all"
   >("all");
   const [analyzeMessage, setAnalyzeMessage] = useState<string | null>(null);
@@ -120,7 +183,11 @@ export default function DecisionJournalContent() {
     () => sortDecisionsForReview(entries),
     [entries],
   );
-  const previewEntries = sortedEntries.slice(0, REVIEW_PREVIEW_LIMIT);
+  const filteredReviewEntries = useMemo(() => {
+    if (reviewCategoryFilter === "all") return sortedEntries;
+    return sortedEntries.filter((e) => e.category === reviewCategoryFilter);
+  }, [reviewCategoryFilter, sortedEntries]);
+  const previewEntries = filteredReviewEntries.slice(0, REVIEW_PREVIEW_LIMIT);
 
   const filteredForAnalyze = useMemo(() => {
     let list = filterByRange(entries, analyzeRange);
@@ -149,18 +216,19 @@ export default function DecisionJournalContent() {
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
       <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:px-6 sm:py-8">
-        <header className="mb-10">
+        <header className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
             {DECISION_HUB_LABEL}
           </p>
           <h1 className="stitch-headline mt-2 text-3xl leading-tight sm:text-4xl">
             Decision Journal
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-on-surface-variant">
-            결정을 기록하고, 리뷰하고, 나중에 패턴을 분석해요. 지금은 로컬
-            노트로 저장되며, 이후 계정 DB와 연동될 예정이에요.
+          <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+            Capture choices, review outcomes, and uncover patterns over time.
           </p>
         </header>
+
+        <OnboardingBanner />
 
         {isGuest ? (
           <div className="mb-10">
@@ -168,68 +236,84 @@ export default function DecisionJournalContent() {
           </div>
         ) : null}
 
-        {/* Step 1 — Decide (즉시 표시) */}
+        {/* Step 1 — Archive a Decision */}
         <section className="mb-12 sm:mb-16" id="decide">
-          <div className="mb-6">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
+          <div className="mb-5">
+            <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
               Step 1
             </span>
-            <h2 className="stitch-headline text-2xl text-primary sm:text-3xl">
-              Decide
+            <h2 className="stitch-headline text-2xl text-primary sm:text-[1.75rem]">
+              Archive a Decision
             </h2>
+            <p className="mt-1.5 text-sm text-on-surface-variant/80">
+              Log the choice you&apos;re facing before the outcome unfolds.
+            </p>
           </div>
-          <div
-            className={`${panelClass()} flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:p-6`}
-          >
-            <div className="min-w-0 flex-1">
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                Decision context
-              </label>
-              <input
-                type="text"
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                placeholder="What are you deciding?"
-                className={fieldClass()}
-              />
+          <div className={`${panelClass()} p-5 sm:p-6`}>
+            <div className="grid gap-4 sm:grid-cols-[11rem_1fr]">
+              <div>
+                <label
+                  htmlFor="decision-category"
+                  className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+                >
+                  Category
+                </label>
+                <select
+                  id="decision-category"
+                  value={category}
+                  onChange={(e) =>
+                    setCategory(e.target.value as DecisionCategory)
+                  }
+                  className={fieldClass()}
+                >
+                  {DECISION_CATEGORIES.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {decisionCategorySelectLabel(c)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="decision-context"
+                  className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+                >
+                  Context
+                </label>
+                <input
+                  id="decision-context"
+                  type="text"
+                  value={context}
+                  onChange={(e) => setContext(e.target.value)}
+                  placeholder="What choice are you making today? (e.g., Career pivot, Marketing budget)"
+                  className={fieldClass()}
+                />
+              </div>
             </div>
-            <div className="w-full sm:w-44">
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) =>
-                  setCategory(e.target.value as DecisionCategory)
-                }
-                className={fieldClass()}
+            <div className="mt-5 flex justify-end sm:mt-6">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="stitch-cta-primary !min-w-[10rem] !rounded-xl !py-3.5 !text-sm"
               >
-                {DECISION_CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+                Save
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="stitch-cta-primary h-[52px] shrink-0 px-8 sm:min-w-[9.5rem]"
-            >
-              Save
-            </button>
           </div>
         </section>
 
-        {/* Step 2 — Review (최근 3개, 로딩은 이 구역만) */}
+        {/* Step 2 — Review Outcomes */}
         <section className="mb-12 sm:mb-16">
-          <div className="mb-6">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
+          <div className="mb-5">
+            <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
               Step 2
             </span>
-            <h2 className="stitch-headline text-2xl text-primary sm:text-3xl">
-              Review
+            <h2 className="stitch-headline text-2xl text-primary sm:text-[1.75rem]">
+              Review Outcomes
             </h2>
+            <p className="mt-1.5 text-sm text-on-surface-variant/80">
+              Revisit past choices and rate how they turned out.
+            </p>
           </div>
           <div className={`${panelClass()} p-2 sm:p-3`}>
             {!journalReady ? (
@@ -239,156 +323,180 @@ export default function DecisionJournalContent() {
                 <StitchSkeleton className="h-14 w-full" />
               </div>
             ) : entries.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-on-surface-variant">
-                아직 리뷰할 결정이 없습니다.
-                <br />
-                <span className="text-xs">
-                  위에서 결정을 저장하면 여기에 표시돼요.
-                </span>
-              </p>
+              <div className="mx-2 my-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-10 text-center sm:mx-3 sm:py-12">
+                <p className="text-base font-medium text-on-surface">
+                  📋 No decisions to review yet.
+                </p>
+                <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-on-surface-variant/75">
+                  Once you save a choice in Step 1, your review card will appear
+                  here.
+                </p>
+              </div>
             ) : (
               <FadeInContent>
               <>
-                <div className="divide-y divide-outline-variant/15">
-                  {previewEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex flex-col gap-3 rounded-xl p-4 transition hover:bg-surface-container-low/40 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div className="flex min-w-0 items-start gap-3 sm:items-center">
-                        <DecisionStatusDot
-                          entry={entry}
-                          className="mt-1.5 sm:mt-0"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-on-surface">
-                            {entry.context}
-                          </p>
-                          <p className="mt-0.5 text-xs text-on-surface-variant">
-                            {decisionCategoryLabel(entry.category)}
-                          </p>
-                        </div>
-                      </div>
-                      {isDecisionReviewed(entry) ? (
-                        <button
-                          type="button"
-                          onClick={() => openReview(entry)}
-                          className="shrink-0 self-start rounded-full bg-surface-container-low px-4 py-1.5 text-xs font-semibold text-on-surface-variant transition hover:bg-surface-container-high sm:self-center"
-                        >
-                          Review
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => openReview(entry)}
-                          className="shrink-0 self-start rounded-full border border-secondary px-4 py-1.5 text-xs font-semibold text-secondary transition hover:bg-secondary hover:text-on-primary sm:self-center"
-                        >
-                          Complete
-                        </button>
+                <div className="flex flex-wrap gap-2 px-2 pb-3 pt-2 sm:px-3">
+                  <button
+                    type="button"
+                    onClick={() => setReviewCategoryFilter("all")}
+                    className={categoryTabClass(reviewCategoryFilter === "all")}
+                  >
+                    전체 (All)
+                  </button>
+                  {DECISION_CATEGORIES.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setReviewCategoryFilter(c.id)}
+                      className={categoryTabClass(
+                        reviewCategoryFilter === c.id,
                       )}
-                    </div>
+                    >
+                      {decisionCategoryReviewTabLabel(c.id)}
+                    </button>
                   ))}
                 </div>
-                {entries.length > REVIEW_PREVIEW_LIMIT ? (
-                  <div className="mt-2 flex justify-center border-t border-outline-variant/15 pt-3">
-                    <Link
-                      href="/decision/history"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-on-surface-variant transition hover:text-primary"
-                    >
-                      See more
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
+                {filteredReviewEntries.length === 0 ? (
+                  <div className="mx-2 mb-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-8 text-center sm:mx-3">
+                    <p className="text-sm text-on-surface-variant/75">
+                      No decisions in this category yet.
+                    </p>
                   </div>
-                ) : entries.length > 0 ? (
-                  <div className="mt-2 flex justify-center border-t border-outline-variant/15 pt-3">
-                    <Link
-                      href="/decision/history"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-on-surface-variant transition hover:text-primary"
-                    >
-                      Decision History
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                ) : null}
+                ) : (
+                <div className="divide-y divide-outline-variant/15">
+                  {previewEntries.map((entry) => {
+                    const reviewed = isDecisionReviewed(entry);
+                    return (
+                      <div
+                        key={entry.id}
+                        className="rounded-xl p-4 transition hover:bg-surface-container-low/40"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex min-w-0 flex-1 items-start gap-3">
+                            <DecisionStatusDot
+                              entry={entry}
+                              className="mt-1.5"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-on-surface">
+                                {entry.context}
+                              </p>
+                              <p className="mt-0.5 text-xs text-on-surface-variant">
+                                {decisionCategoryLabel(entry.category)}
+                              </p>
+                              {reviewed && entry.rating != null ? (
+                                <StarRatingDisplay
+                                  rating={entry.rating}
+                                  className="mt-2"
+                                />
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="shrink-0 pt-0.5">
+                            {reviewed ? (
+                              entry.reviewedAt ? (
+                                <time
+                                  dateTime={entry.reviewedAt}
+                                  className="text-[11px] text-on-surface-variant/55"
+                                >
+                                  Reviewed {formatDecisionDate(entry.reviewedAt)}
+                                </time>
+                              ) : null
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => openReview(entry)}
+                                className="rounded-full border border-secondary px-3.5 py-1.5 text-xs font-semibold text-secondary transition hover:bg-secondary hover:text-on-primary"
+                              >
+                                Review
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                )}
               </>
               </FadeInContent>
             )}
           </div>
         </section>
 
-        {/* Step 3 — Analyze */}
+        {/* Step 3 — Smart Insights */}
         <section className="mb-12 sm:mb-16">
-          <div className="mb-6">
-            <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
+          <div className="mb-5">
+            <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
               Step 3
             </span>
-            <h2 className="stitch-headline text-2xl text-primary sm:text-3xl">
-              Analyze
+            <h2 className="stitch-headline text-2xl text-primary sm:text-[1.75rem]">
+              Smart Insights
             </h2>
+            <p className="mt-1.5 text-sm text-on-surface-variant/80">
+              Filter your archive and surface recurring decision patterns.
+            </p>
           </div>
           <div className={`${panelClass()} p-5 sm:p-6`}>
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-              <div className="min-w-[200px] flex-1">
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
+                  <Calendar className="h-3.5 w-3.5" aria-hidden />
                   Date range
-                </label>
-                <div className="flex items-center gap-2 rounded-xl bg-surface-container-low/80 px-4 py-3 ring-1 ring-outline-variant/35">
-                  <Calendar
-                    className="h-4 w-4 text-on-surface-variant"
-                    aria-hidden
-                  />
-                  <select
-                    value={analyzeRange}
-                    onChange={(e) =>
-                      setAnalyzeRange(e.target.value as DecisionDateRangeId)
-                    }
-                    className="w-full border-0 bg-transparent text-sm text-on-surface outline-none"
+                </span>
+                {DECISION_DATE_RANGES.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setAnalyzeRange(r.id)}
+                    className={filterPillClass(analyzeRange === r.id)}
                   >
-                    {DECISION_DATE_RANGES.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {r.label}
+                  </button>
+                ))}
               </div>
-              <div className="min-w-[200px] flex-1">
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              <span
+                className="hidden h-4 w-px bg-outline-variant/50 sm:block"
+                aria-hidden
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
                   Filter category
-                </label>
-                <select
-                  value={analyzeCategory}
-                  onChange={(e) =>
-                    setAnalyzeCategory(
-                      e.target.value as DecisionCategory | "all",
-                    )
-                  }
-                  className={fieldClass()}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAnalyzeCategory("all")}
+                  className={filterPillClass(analyzeCategory === "all")}
                 >
-                  <option value="all">전체 카테고리</option>
-                  {DECISION_CATEGORIES.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
+                  All
+                </button>
+                {DECISION_CATEGORIES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setAnalyzeCategory(c.id)}
+                    className={filterPillClass(analyzeCategory === c.id)}
+                  >
+                    {decisionCategoryReviewTabLabel(c.id)}
+                  </button>
+                ))}
               </div>
             </div>
 
             <button
               type="button"
               onClick={handleAnalyze}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary py-4 text-sm font-semibold text-on-primary transition hover:opacity-90"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#2a5542] to-primary py-3.5 text-sm font-semibold text-on-primary shadow-[0_8px_24px_rgba(26,51,40,0.2)] transition hover:opacity-95"
             >
               <Sparkles className="h-4 w-4" aria-hidden />
               Analyze with AI
             </button>
 
             {analyzeMessage ? (
-              <div className="mt-6 rounded-xl border border-outline-variant/20 bg-surface-container-low/60 p-5 sm:p-6">
-                <div className="mb-3 flex items-center gap-2 text-secondary">
+              <div className="mt-5 rounded-xl border border-secondary/20 bg-secondary-container/40 p-5 sm:p-6">
+                <div className="mb-2 flex items-center gap-2 text-secondary">
                   <Sparkles className="h-4 w-4" aria-hidden />
-                  <h3 className="text-xs font-semibold uppercase tracking-wider">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.16em]">
                     AI insights
                   </h3>
                 </div>
