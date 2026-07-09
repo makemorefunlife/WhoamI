@@ -1,6 +1,6 @@
 "use client";
 
-import { PRIMARY_AXIS_ORDER, PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
+import { PRIMARY_AXIS_ORDER, PRIMARY_AXIS_EN_LABELS } from "@/lib/v2/framework/axisLabels";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 
 const SIZE = 280;
@@ -88,7 +88,7 @@ export default function AxisRadarChart({
                 dominantBaseline="middle"
                 className="fill-[rgba(255,255,255,0.65)] text-[9px]"
               >
-                {PRIMARY_AXIS_LABELS[key as PrimaryAxisKey]}
+                {PRIMARY_AXIS_EN_LABELS[key as PrimaryAxisKey]}
               </text>
             </g>
           );

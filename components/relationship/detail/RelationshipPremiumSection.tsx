@@ -29,6 +29,7 @@ type RelationshipPremiumSectionProps = {
   viewerName: string;
   nameA: string;
   nameB: string;
+  viewerIsReportA?: boolean;
   displayPremium: RelationshipPerspective | null;
   displayRomanticDeep: RomanticSajuDeepReport["report"] | null;
   displayWorkDeep: WorkColleagueReportBody | null;
@@ -53,6 +54,7 @@ export default function RelationshipPremiumSection({
   viewerName,
   nameA,
   nameB,
+  viewerIsReportA = true,
   displayPremium,
   displayRomanticDeep,
   displayWorkDeep,
@@ -118,6 +120,9 @@ export default function RelationshipPremiumSection({
             report={displayRomanticDeep}
             nameA={nameA}
             nameB={nameB}
+            myName={viewerName}
+            partnerName={partnerName}
+            viewerIsReportA={viewerIsReportA}
           />
         </div>
       ) : premiumKind === "romantic" ? (
@@ -130,7 +135,12 @@ export default function RelationshipPremiumSection({
         </div>
       ) : premiumKind === "work" && displayWorkDeep ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
-          <WorkColleagueReportView report={displayWorkDeep} />
+          <WorkColleagueReportView
+            report={displayWorkDeep}
+            myName={viewerName}
+            partnerName={partnerName}
+            viewerIsReportA={viewerIsReportA}
+          />
         </div>
       ) : premiumKind === "work" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
@@ -142,7 +152,12 @@ export default function RelationshipPremiumSection({
         </div>
       ) : premiumKind === "cohabitation" && displayCohabitationDeep ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
-          <MarriageReportView report={displayCohabitationDeep} />
+          <MarriageReportView
+            report={displayCohabitationDeep}
+            myName={viewerName}
+            partnerName={partnerName}
+            viewerIsReportA={viewerIsReportA}
+          />
         </div>
       ) : premiumKind === "cohabitation" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
@@ -168,7 +183,12 @@ export default function RelationshipPremiumSection({
         </div>
       ) : premiumKind === "friendship" && displayFriendshipDeep ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
-          <FriendReportView report={displayFriendshipDeep} />
+          <FriendReportView
+            report={displayFriendshipDeep}
+            myName={viewerName}
+            partnerName={partnerName}
+            viewerIsReportA={viewerIsReportA}
+          />
         </div>
       ) : premiumKind === "friendship" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">

@@ -6,6 +6,7 @@ import type { HomeUpsetGuide } from "@/lib/relationship/marriage/homeLifeLanguag
 import type { BedroomPersonProfile } from "@/lib/relationship/marriage/bedroomProfile";
 import type { HomeDeEscalationCard } from "@/lib/relationship/marriage/homeDeEscalationPrescriptions";
 import { hydrateMarriageSnapshotPanel } from "@/lib/relationship/marriage/buildMarriageSnapshotPanel";
+import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import {
   RelationshipReportLayout,
@@ -231,8 +232,14 @@ function UpsetGuideCard({ guide }: { guide: HomeUpsetGuide }) {
 
 export default function MarriageReportView({
   report,
+  myName: myNameProp,
+  partnerName: partnerNameProp,
+  viewerIsReportA = true,
 }: {
   report: MarriageReportBody;
+  myName?: string;
+  partnerName?: string;
+  viewerIsReportA?: boolean;
 }) {
   const theme = getTabTheme("cohabitation");
   const panel = hydrateMarriageSnapshotPanel(report.snapshot_panel);
@@ -243,19 +250,68 @@ export default function MarriageReportView({
     home_risk_pct: report.meta?.home_risk_pct ?? 0,
     one_line_household: report.one_line_household ?? report.headline,
   };
-  const nickA = hh?.section_dna?.person_a.nickname ?? "A";
-  const nickB = hh?.section_dna?.person_b.nickname ?? "B";
+  const dnaPair = hh?.section_dna
+    ? pickViewerFirstPair(
+        hh.section_dna.person_a,
+        hh.section_dna.person_b,
+        viewerIsReportA,
+      )
+    : null;
+  const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
+  const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
+  const slotAName = hh?.section_dna?.person_a.nickname ?? "A";
+  const slotBName = hh?.section_dna?.person_b.nickname ?? "B";
   const {
-    cards: deCards,
+    cards: rawDeCards,
     isLegacySingle: deLegacySingle,
     sharedTriggerNote: deSharedNote,
   } = resolveDeEscalationCards(
     hh?.section_warning?.de_escalation,
-    nickA,
-    nickB,
+    slotAName,
+    slotBName,
   );
+  const deCards = viewerIsReportA
+    ? rawDeCards
+    : rawDeCards.length === 2
+      ? [rawDeCards[1]!, rawDeCards[0]!]
+      : rawDeCards;
   const deSameType =
     deCards.length === 2 && deCards[0]!.hashtag === deCards[1]!.hashtag;
+  const bedroomPair = hh?.section_bedroom?.matrix
+    ? pickViewerFirstPair(
+        hh.section_bedroom.matrix.person_a,
+        hh.section_bedroom.matrix.person_b,
+        viewerIsReportA,
+      )
+    : null;
+  const familyBoundaryPair = hh?.section_family_boundary
+    ? pickViewerFirstPair(
+        hh.section_family_boundary.person_a_boundary_note,
+        hh.section_family_boundary.person_b_boundary_note,
+        viewerIsReportA,
+      )
+    : null;
+  const parentingPair = hh?.section_parenting
+    ? pickViewerFirstPair(
+        hh.section_parenting.person_a_style,
+        hh.section_parenting.person_b_style,
+        viewerIsReportA,
+      )
+    : null;
+  const privacyPair = hh?.section_privacy
+    ? pickViewerFirstPair(
+        hh.section_privacy.person_a_private_line,
+        hh.section_privacy.person_b_private_line,
+        viewerIsReportA,
+      )
+    : null;
+  const upsetPair = hh?.section_upset
+    ? pickViewerFirstPair(
+        hh.section_upset.person_a,
+        hh.section_upset.person_b,
+        viewerIsReportA,
+      )
+    : null;
 
   return (
     <RelationshipReportLayout
@@ -264,7 +320,7 @@ export default function MarriageReportView({
       headline={{
         title: report.headline || snap.one_line_household,
         subtitle: snap.one_line_household,
-        names: [nickA, nickB],
+        names: [myName, partnerName],
         badge: report.meta?.grade
           ? `하우스홀드 등급 ${report.meta.grade}`
           : undefined,
@@ -291,14 +347,14 @@ export default function MarriageReportView({
       ]}
       scoreFooter={<TriScoreSnapshotPanel panel={panel} kind="cohabitation" />}
     >
-      {hh?.section_dna ? (
+      {dnaPair ? (
         <RelationshipReportCard
           title="🧬 홈 라이프 DNA — 한 지붕 아래, 우린 각각 어떤 사람일까?"
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <DnaCard profile={hh.section_dna.person_a} accent={theme.accent} />
-            <DnaCard profile={hh.section_dna.person_b} accent={theme.accent} />
+            <DnaCard profile={dnaPair.me} accent={theme.accent} />
+            <DnaCard profile={dnaPair.partner} accent={theme.accent} />
           </div>
         </RelationshipReportCard>
       ) : null}
@@ -343,18 +399,14 @@ export default function MarriageReportView({
                   ""}
               </RelationshipReportParagraph>
             </div>
-            {hh.section_bedroom.matrix ? (
+            {bedroomPair ? (
               <>
                 <RelationshipReportLabel className="mt-2">
                   📊 밤의 성능 & 성향 매트릭스
                 </RelationshipReportLabel>
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <BedroomProfileCard
-                    profile={hh.section_bedroom.matrix.person_a}
-                  />
-                  <BedroomProfileCard
-                    profile={hh.section_bedroom.matrix.person_b}
-                  />
+                  <BedroomProfileCard profile={bedroomPair.me} />
+                  <BedroomProfileCard profile={bedroomPair.partner} />
                 </div>
                 <div className="mt-4">
                   <RelationshipReportLabel>🔥 침실 주파수 한줄평</RelationshipReportLabel>
@@ -425,16 +477,12 @@ export default function MarriageReportView({
               </RelationshipReportParagraph>
             </div>
             <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">
-                [{hh.section_dna?.person_a.nickname ?? "A"}]{" "}
-              </span>
-              {hh.section_family_boundary.person_a_boundary_note}
+              <span className="font-medium text-white/90">[{myName}] </span>
+              {familyBoundaryPair?.me}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">
-                [{hh.section_dna?.person_b.nickname ?? "B"}]{" "}
-              </span>
-              {hh.section_family_boundary.person_b_boundary_note}
+              <span className="font-medium text-white/90">[{partnerName}] </span>
+              {familyBoundaryPair?.partner}
             </RelationshipReportParagraph>
           </RelationshipReportBody>
         </RelationshipReportCard>
@@ -450,16 +498,12 @@ export default function MarriageReportView({
               {hh.section_parenting.combined_attitude}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">
-                [{hh.section_dna?.person_a.nickname ?? "A"}]{" "}
-              </span>
-              {hh.section_parenting.person_a_style}
+              <span className="font-medium text-white/90">[{myName}] </span>
+              {parentingPair?.me}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">
-                [{hh.section_dna?.person_b.nickname ?? "B"}]{" "}
-              </span>
-              {hh.section_parenting.person_b_style}
+              <span className="font-medium text-white/90">[{partnerName}] </span>
+              {parentingPair?.partner}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph className="italic">
               {hh.section_parenting.harmony_tip}
@@ -478,13 +522,13 @@ export default function MarriageReportView({
               <span className="font-medium text-white/90">
                 [내가 침범받기 싫은 선]{" "}
               </span>
-              {hh.section_privacy.person_a_private_line}
+              {privacyPair?.me}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph>
               <span className="font-medium text-white/90">
                 [상대에게 보장해 줄 선]{" "}
               </span>
-              {hh.section_privacy.person_b_private_line}
+              {privacyPair?.partner}
             </RelationshipReportParagraph>
           </RelationshipReportBody>
         </RelationshipReportCard>
@@ -506,10 +550,10 @@ export default function MarriageReportView({
               </div>
             </RelationshipReportBody>
           ) : null}
-          {hh?.section_upset ? (
+          {upsetPair ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <UpsetGuideCard guide={hh.section_upset.person_a} />
-              <UpsetGuideCard guide={hh.section_upset.person_b} />
+              <UpsetGuideCard guide={upsetPair.me} />
+              <UpsetGuideCard guide={upsetPair.partner} />
             </div>
           ) : null}
           {hh?.section_warning?.conflict_communication ? (
@@ -541,7 +585,7 @@ export default function MarriageReportView({
                   💊 화 풀림 처방전 — 두 사람 각각 1장
                 </p>
                 <RelationshipReportParagraph className="mt-2" muted>
-                  각 카드 = 「{nickA} 또는 {nickB}가 화났을 때 → 상대가 할
+                  각 카드 = 「{myName} 또는 {partnerName}가 화났을 때 → 상대가 할
                   말·행동」입니다.
                   {deSameType
                     ? " 두 사람의 1순위 화 풀림 유형이 같습니다."
@@ -551,13 +595,13 @@ export default function MarriageReportView({
                   <p className="mt-3 rounded-lg border border-violet-400/25 bg-violet-950/20 p-3 text-sm text-violet-100/90">
                     🔁{" "}
                     {deSharedNote ??
-                      `${nickA}와 ${nickB}는 같은 화 풀림 유형입니다. 비슷한 지점에서 동시에 터지기 쉬우니, 한 명이 먼저 타임아웃을 선언하세요.`}
+                      `${myName}와 ${partnerName}는 같은 화 풀림 유형입니다. 비슷한 지점에서 동시에 터지기 쉬우니, 한 명이 먼저 타임아웃을 선언하세요.`}
                   </p>
                 ) : null}
                 {deLegacySingle ? (
                   <p className="mt-3 rounded-lg border border-amber-400/25 bg-amber-950/20 p-3 text-sm text-amber-100/90">
                     이 리포트는 구버전(카드 1장)입니다. 「동거·결혼 심화 분석
-                    다시 만들기」를 누르면 {nickA}·{nickB} 각각의 처방 카드 2장이
+                    다시 만들기」를 누르면 {myName}·{partnerName} 각각의 처방 카드 2장이
                     표시됩니다.
                   </p>
                 ) : null}

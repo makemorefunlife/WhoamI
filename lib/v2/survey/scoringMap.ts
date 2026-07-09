@@ -24,29 +24,29 @@ export const SURVEY_SCORING_MAP: Record<
 > = {
   q1: {
     A: {
-      primary: { autonomy: 2, growth: 1, control: -1 },
+      primary: { autonomy: 2, growth: 1, structure: -1 },
       secondary: { stimulation: 2, decision_style: 2, self_control: -1 },
     },
     B: {
-      primary: { stability: 2, control: 1 },
+      primary: { stability: 2, structure: 1 },
       secondary: { practicality: 3, thinking_style: 2, self_control: 1 },
     },
     C: {
-      primary: { stability: 2, control: 2 },
+      primary: { stability: 2, structure: 2 },
       secondary: { structure: 2, practicality: 2, self_control: 2 },
     },
     D: {
-      primary: { control: 3, stability: 1 },
+      primary: { structure: 3, stability: 1 },
       secondary: { self_control: 3, structure: 1, stimulation: -1 },
     },
   },
   q2: {
     A: {
-      primary: { connection: 3, control: -1 },
+      primary: { connection: 3, structure: -1 },
       secondary: { empathy: 3, conflict_style: -1, recognition: 1 },
     },
     B: {
-      primary: { control: 2, connection: -1 },
+      primary: { structure: 2, connection: -1 },
       secondary: { conflict_style: 3, thinking_style: 2, empathy: -1 },
     },
     C: {
@@ -54,17 +54,17 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { conflict_style: -2, self_control: 1, energy_style: 1 },
     },
     D: {
-      primary: { control: 2, stability: 1 },
+      primary: { structure: 2, stability: 1 },
       secondary: { self_control: 2, conflict_style: 1, empathy: -1 },
     },
   },
   q3: {
     A: {
-      primary: { stability: -1, control: -1 },
+      primary: { stability: -1, structure: -1 },
       secondary: { resilience: -3, recognition: 2, thinking_style: 1 },
     },
     B: {
-      primary: { control: 2, adaptability: 1 },
+      primary: { structure: 2, adaptability: 1 },
       secondary: { thinking_style: 3, resilience: 2, structure: 1 },
     },
     C: {
@@ -86,7 +86,7 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { stimulation: 3, resilience: 2, decision_style: 1 },
     },
     C: {
-      primary: { control: 2, adaptability: 2 },
+      primary: { structure: 2, adaptability: 2 },
       secondary: { structure: 2, thinking_style: 2, resilience: 2 },
     },
     D: {
@@ -100,7 +100,7 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { decision_style: 3, stimulation: 1 },
     },
     B: {
-      primary: { stability: 3, control: 1 },
+      primary: { stability: 3, structure: 1 },
       secondary: { practicality: 3, structure: 2 },
     },
     C: {
@@ -114,15 +114,15 @@ export const SURVEY_SCORING_MAP: Record<
   },
   q6: {
     A: {
-      primary: { control: 2, growth: 1 },
+      primary: { structure: 2, growth: 1 },
       secondary: { structure: 2, practicality: 1 },
     },
     B: {
-      primary: { control: 2, connection: -1 },
+      primary: { structure: 2, connection: -1 },
       secondary: { conflict_style: 2, thinking_style: 1 },
     },
     C: {
-      primary: { growth: 2, control: 1 },
+      primary: { growth: 2, structure: 1 },
       secondary: { decision_style: 2, conflict_style: 1 },
     },
     D: {
@@ -136,7 +136,7 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { decision_style: 3, stimulation: 1 },
     },
     B: {
-      primary: { stability: 3, control: 2 },
+      primary: { stability: 3, structure: 2 },
       secondary: { practicality: 3, structure: 2 },
     },
     C: {
@@ -144,13 +144,13 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { empathy: 3, recognition: 1 },
     },
     D: {
-      primary: { growth: 2, control: 2 },
+      primary: { growth: 2, structure: 2 },
       secondary: { thinking_style: 3, structure: 2, self_control: 1 },
     },
   },
   q8: {
     A: {
-      primary: { stability: 2, control: 1 },
+      primary: { stability: 2, structure: 1 },
       secondary: { resilience: 2, energy_style: 2 },
     },
     B: {
@@ -162,7 +162,7 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { energy_style: -3, resilience: -2 },
     },
     D: {
-      primary: { control: -1, stability: -1 },
+      primary: { structure: -1, stability: -1 },
       secondary: { thinking_style: 2, resilience: -2, recognition: 1 },
     },
   },
@@ -176,7 +176,7 @@ export const SURVEY_SCORING_MAP: Record<
       secondary: { energy_style: 3, decision_style: 2 },
     },
     C: {
-      primary: { control: 3, stability: -1 },
+      primary: { structure: 3, stability: -1 },
       secondary: {
         structure: 3,
         self_control: 2,

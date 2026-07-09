@@ -6,6 +6,11 @@ import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationship
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
+import { cleanupStaleOpenInvites } from "@/lib/relationship/cleanupStaleOpenInvites";
+import {
+  partnerNameFromLogSnapshot,
+  resolvePartnerDisplayName,
+} from "@/lib/relationship/resolvePartnerDisplayName";
 
 export const runtime = "nodejs";
 
@@ -53,6 +58,7 @@ export async function GET(req: Request) {
     const formatSimple = sp.get("format") === "simple";
     const scope = sp.get("scope")?.trim() ?? "all";
     const favoritesOnly = sp.get("favoritesOnly") === "true";
+    const includeWaiting = sp.get("includeWaiting") === "true";
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -65,6 +71,8 @@ export async function GET(req: Request) {
     }
 
     const supabase = createServiceRoleClient(url, serviceKey);
+
+    await cleanupStaleOpenInvites(supabase, reportId);
 
     const [favoriteIds, rows, openInvitesResult] = await Promise.all([
       fetchFavoriteRelationshipIds(supabase, reportId),
@@ -127,11 +135,30 @@ export async function GET(req: Request) {
         : { data: [] as { id: string; name: string | null; report_type: string | null }[] };
 
     const nameById = Object.fromEntries(
-      (names ?? []).map((n) => [n.id, n.name?.trim() || "탐사자"]),
+      (names ?? []).map((n) => [n.id, n.name?.trim() ?? ""]),
     );
     const typeById = Object.fromEntries(
       (names ?? []).map((n) => [n.id, n.report_type ?? ""]),
     );
+
+    const logNameByRrId = new Map<string, string>();
+    if (rrIds.length > 0) {
+      const { data: logRows } = await supabase
+        .from("relationship_analysis_logs")
+        .select("relationship_report_id, result_snapshot, created_at")
+        .eq("viewer_report_id", reportId)
+        .in("relationship_report_id", rrIds)
+        .order("created_at", { ascending: false });
+
+      for (const log of logRows ?? []) {
+        const rrId = log.relationship_report_id as string;
+        if (logNameByRrId.has(rrId)) continue;
+        const fromLog = partnerNameFromLogSnapshot(
+          (log.result_snapshot ?? {}) as Record<string, unknown>,
+        );
+        if (fromLog) logNameByRrId.set(rrId, fromLog);
+      }
+    }
 
     const relationships: {
       list_key: string;
@@ -150,30 +177,36 @@ export async function GET(req: Request) {
       relationship_kind: string;
     }[] = [];
 
-    for (const inv of openInvites ?? []) {
-      if (inv.relationship_report_id) continue;
-      relationships.push({
-        list_key: `open-${inv.id}`,
-        row_kind: "outbound_waiting",
-        pipeline_title: "상대방 정보 요청 전송됨",
-        relationship_report_id: null,
-        partner_name: "상대방",
-        partner_report_id: null,
-        analysis_type: null,
-        status: "pending",
-        last_viewed: dateOnly(inv.created_at),
-        invite_token: inv.invite_token ?? null,
-        outbound_invite_id: inv.id,
-        status_hint: null,
-        is_favorite: false,
-        relationship_kind: "friendship",
-      });
+    if (includeWaiting) {
+      for (const inv of openInvites ?? []) {
+        if (inv.relationship_report_id) continue;
+        relationships.push({
+          list_key: `open-${inv.id}`,
+          row_kind: "outbound_waiting",
+          pipeline_title: "상대방 정보 요청 전송됨",
+          relationship_report_id: null,
+          partner_name: "상대방",
+          partner_report_id: null,
+          analysis_type: null,
+          status: "pending",
+          last_viewed: dateOnly(inv.created_at),
+          invite_token: inv.invite_token ?? null,
+          outbound_invite_id: inv.id,
+          status_hint: null,
+          is_favorite: false,
+          relationship_kind: "friendship",
+        });
+      }
     }
 
     for (const r of rows) {
       const partnerId =
         r.report_id_a === reportId ? r.report_id_b : r.report_id_a;
-      const partnerName = nameById[partnerId] ?? "상대";
+      const partnerName = resolvePartnerDisplayName(
+        nameById[partnerId],
+        logNameByRrId.get(r.id),
+        typeById[partnerId] === "partner_manual" ? "친구" : "탐사자",
+      );
       const at = r.analysis_type as string;
       const analysisType: "basic" | "premium" | null =
         at === "premium" || at === "basic" ? at : null;
@@ -236,6 +269,33 @@ export async function GET(req: Request) {
       });
     }
 
+    // 동일 상대(partner_report_id) 중복 행 — 분석 완료·즐겨찾기 우선 1건만
+    const deduped: typeof relationships = [];
+    const byPartner = new Map<string, (typeof relationships)[number]>();
+    for (const rel of relationships) {
+      if (rel.row_kind === "outbound_waiting" || !rel.partner_report_id) {
+        deduped.push(rel);
+        continue;
+      }
+      const pid = rel.partner_report_id;
+      const prev = byPartner.get(pid);
+      if (!prev) {
+        byPartner.set(pid, rel);
+        continue;
+      }
+      const score = (item: (typeof relationships)[number]) => {
+        let s = 0;
+        if (item.status === "completed") s += 4;
+        if (item.is_favorite) s += 2;
+        if (item.row_kind === "relationship_manual") s += 1;
+        return s;
+      };
+      if (score(rel) > score(prev)) byPartner.set(pid, rel);
+    }
+    deduped.push(...byPartner.values());
+    relationships.length = 0;
+    relationships.push(...deduped);
+
     if (favoritesOnly) {
       const favOnly = relationships.filter(
         (r) =>
@@ -275,9 +335,9 @@ export async function GET(req: Request) {
         }))
       : out;
 
-    const waiting_total = relationships.filter(
-      (r) => r.row_kind === "outbound_waiting",
-    ).length;
+    const waiting_total = includeWaiting
+      ? relationships.filter((r) => r.row_kind === "outbound_waiting").length
+      : (openInvites ?? []).filter((inv) => !inv.relationship_report_id).length;
 
     return NextResponse.json({
       relationships: relationshipsOut,

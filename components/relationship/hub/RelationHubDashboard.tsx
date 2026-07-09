@@ -20,17 +20,20 @@ import SentRequestsSheet from "@/components/relationship/hub/SentRequestsSheet";
 import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
 import RelationAnalyzeNavOverlay from "@/components/relationship/hub/RelationAnalyzeNavOverlay";
-import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
-import { getCachedReportId } from "@/lib/home/reportSession";
+import FadeInContent from "@/components/ui/stitch/FadeInContent";
+import {
+  FriendStoryRowSkeleton,
+  HubAnalysisListSkeleton,
+  RelationHubActionSkeleton,
+} from "@/components/ui/stitch/StitchSkeleton";
+import { useClientReportId } from "@/lib/hooks/useClientReportId";
+import { clearLegacyHubDisplayNames } from "@/lib/relationship/hubDisplayName";
 import {
   fetchHubAnalysisFeed,
   type HubAnalysisFeedItem,
 } from "@/lib/relationship/hubAnalysisFeed";
-import {
-  readHubDisplayName,
-  writeHubDisplayName,
-} from "@/lib/relationship/hubDisplayName";
-import { hubDisplayNameFor, hubItemKey } from "@/lib/relationship/hubItemKey";
+import { filterHubFriendList } from "@/lib/relationship/hubFriendList";
+import { hubItemKey } from "@/lib/relationship/hubItemKey";
 import { buildRelationshipAnalyzeUrl } from "@/lib/relationship/hubNavigation";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 import type { FamilyPerspective } from "@/lib/relationship/hubNavigation";
@@ -52,16 +55,17 @@ export default function RelationHubDashboard() {
     searchParams.get("reportId")?.trim() ||
     "";
   const hubSection = searchParams.get("section")?.trim() ?? "";
-  const { canonicalReportId: myReportId, resolving: canonicalResolving } =
-    useCanonicalReportId({
-      urlHint: urlMyReportHint,
-      queryParam: "myReportId",
-      logContext: "relationships-hub",
-      syncToUrl: false,
-      skipSessionHydrate: true,
-    });
+  const {
+    reportId: hubReportId,
+    ready: reportIdReady,
+    recovering,
+  } = useClientReportId({
+    urlHint: urlMyReportHint,
+    logContext: "relationships-hub",
+    recoverFromServer: true,
+  });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [items, setItems] = useState<RelationshipListItem[]>([]);
   const [inviteBusy, setInviteBusy] = useState(false);
@@ -72,7 +76,6 @@ export default function RelationHubDashboard() {
   const [favoriteBusyId, setFavoriteBusyId] = useState<string | null>(null);
   const [bannerVisible, setBannerVisible] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [displayNames, setDisplayNames] = useState<Record<string, string>>({});
   const [renameTarget, setRenameTarget] = useState<RelationshipListItem | null>(
     null,
   );
@@ -93,17 +96,37 @@ export default function RelationHubDashboard() {
   const [analysisHasMore, setAnalysisHasMore] = useState(false);
   const [analysisLoadingMore, setAnalysisLoadingMore] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [waitingItems, setWaitingItems] = useState<RelationshipListItem[]>([]);
   const [navOverlayPartner, setNavOverlayPartner] = useState<string | null>(
     null,
   );
 
-  const hubReportId = useMemo(() => {
-    const hint = urlMyReportHint.trim();
-    const canonical = myReportId.trim();
-    return hint || canonical || getCachedReportId();
-  }, [urlMyReportHint, myReportId]);
+  const loadWaiting = useCallback(async (reportIdOverride?: string) => {
+    const rid = (reportIdOverride ?? hubReportId).trim();
+    if (!rid) {
+      setWaitingItems([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/relationship/list?reportId=${encodeURIComponent(rid)}&includeWaiting=true`,
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setWaitingItems([]);
+        return;
+      }
+      const incoming = (data.relationships ?? []) as RelationshipListItem[];
+      setWaitingItems(
+        incoming.filter((i) => i.row_kind === "outbound_waiting"),
+      );
+    } catch {
+      setWaitingItems([]);
+    }
+  }, [hubReportId]);
 
   useEffect(() => {
+    clearLegacyHubDisplayNames();
     setBannerVisible(!readBannerDismissed());
   }, []);
 
@@ -143,8 +166,9 @@ export default function RelationHubDashboard() {
   );
 
   useEffect(() => {
+    if (!reportIdReady) return;
     void load("full");
-  }, [load]);
+  }, [load, reportIdReady, hubReportId]);
 
   useEffect(() => {
     if (!hubSection || loading) return;
@@ -157,24 +181,24 @@ export default function RelationHubDashboard() {
     return () => window.clearTimeout(t);
   }, [hubSection, loading]);
 
-  const { waitingItems, relationshipItems } = useMemo(() => {
-    const waiting = items.filter((i) => i.row_kind === "outbound_waiting");
-    const rest = items.filter((i) => i.row_kind !== "outbound_waiting");
-    return { waitingItems: waiting, relationshipItems: rest };
-  }, [items]);
+  const relationshipItems = useMemo(
+    () => filterHubFriendList(items),
+    [items],
+  );
 
   useEffect(() => {
-    if (!hubReportId || waitingItems.length === 0) return;
-    const id = window.setInterval(() => void load("silent"), 22000);
+    if (!sentRequestsOpen || !hubReportId) return;
+    void loadWaiting();
+    const id = window.setInterval(() => void loadWaiting(), 22000);
     const onVis = () => {
-      if (document.visibilityState === "visible") void load("silent");
+      if (document.visibilityState === "visible") void loadWaiting();
     };
     document.addEventListener("visibilitychange", onVis);
     return () => {
       window.clearInterval(id);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [hubReportId, load, waitingItems.length]);
+  }, [hubReportId, loadWaiting, sentRequestsOpen]);
 
   useEffect(() => {
     if (!navOverlayPartner) return;
@@ -186,26 +210,14 @@ export default function RelationHubDashboard() {
   }, [navOverlayPartner]);
 
   const selectedFriend = useMemo(() => {
-    const all = [...waitingItems, ...relationshipItems];
-    return all.find((i) => hubItemKey(i) === selectedKey) ?? null;
-  }, [relationshipItems, selectedKey, waitingItems]);
+    return relationshipItems.find((i) => hubItemKey(i) === selectedKey) ?? null;
+  }, [relationshipItems, selectedKey]);
 
   const canAnalyze = Boolean(
     hubReportId &&
       selectedFriend?.relationship_report_id &&
       selectedFriend.row_kind !== "outbound_waiting",
   );
-
-  useEffect(() => {
-    const names: Record<string, string> = {};
-    for (const item of relationshipItems) {
-      const id = item.relationship_report_id;
-      if (!id) continue;
-      const saved = readHubDisplayName(id, item.partner_name);
-      if (saved !== item.partner_name) names[id] = saved;
-    }
-    setDisplayNames(names);
-  }, [relationshipItems]);
 
   const refreshAnalysisPreview = useCallback(async () => {
     if (!hubReportId) return;
@@ -337,6 +349,7 @@ export default function RelationHubDashboard() {
       }
       setFreshInviteToken(token);
       await load();
+      void loadWaiting();
     } finally {
       setInviteBusy(false);
     }
@@ -361,6 +374,7 @@ export default function RelationHubDashboard() {
         return;
       }
       await load();
+      void loadWaiting();
     } finally {
       setDeleteBusyId(null);
     }
@@ -443,7 +457,7 @@ export default function RelationHubDashboard() {
       );
       return;
     }
-    const partnerLabel = hubDisplayNameFor(item, displayNames);
+    const partnerLabel = item.partner_name;
     setKindPickerTarget(null);
     setNavOverlayPartner(partnerLabel);
     router.push(
@@ -465,12 +479,25 @@ export default function RelationHubDashboard() {
 
   function handleRenameSave(name: string) {
     const item = renameTarget;
-    if (!item?.relationship_report_id) return;
-    writeHubDisplayName(item.relationship_report_id, name);
-    setDisplayNames((prev) => ({
-      ...prev,
-      [item.relationship_report_id!]: name,
-    }));
+    if (!item?.relationship_report_id || !item.partner_report_id) return;
+    if (item.row_kind !== "relationship_manual") return;
+    void (async () => {
+      const res = await fetch("/api/relationship/partner-name", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          partnerReportId: item.partner_report_id,
+          viewerReportId: hubReportId,
+          name,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data?.error ?? "이름을 저장하지 못했어요.");
+        return;
+      }
+      await load("silent");
+    })();
   }
 
   function handleSelectFriend(item: RelationshipListItem) {
@@ -490,85 +517,102 @@ export default function RelationHubDashboard() {
           </h1>
         </header>
 
-        {!hubReportId && !canonicalResolving ? (
-          <p className="mb-6 rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 px-4 py-3 text-center text-sm text-on-surface-variant">
-            블루프린트를 완료하면 친구 목록과 분석 기록이 여기에 표시돼요.
-          </p>
-        ) : null}
-
         <RelationHubBanner
-          visible={bannerVisible}
+          visible={bannerVisible && reportIdReady}
           onDismiss={() => {
             dismissBanner();
             setBannerVisible(false);
           }}
         />
 
-        {err ? (
+        {!reportIdReady || recovering ? (
+          <div className="space-y-8">
+            {recovering ? (
+              <p className="text-center text-xs text-on-surface-variant">
+                로그인 계정에서 기록을 불러오는 중…
+              </p>
+            ) : null}
+            <FriendStoryRowSkeleton />
+            <RelationHubActionSkeleton />
+            <HubAnalysisListSkeleton />
+          </div>
+        ) : err ? (
           <p className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 py-8 text-center text-sm text-on-surface-variant">
             {err}
           </p>
         ) : (
-          <div className="space-y-8">
-            <FriendStoryRow
-              friends={relationshipItems}
-              waiting={waitingItems}
-              loading={loading}
-              isSignedIn={isSignedIn}
-              selectedId={selectedKey}
-              displayNames={displayNames}
-              favoritesOnly={favoritesOnly}
-              onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}
-              onSelect={handleSelectFriend}
-              onAddFriend={() => {
-                setAddFriendOpen(true);
-                setAddFriendTab("invite");
-              }}
-              onShowAll={() => setFriendsListOpen(true)}
-              onRename={(item) => setRenameTarget(item)}
-              onToggleFavorite={(item) =>
-                void toggleFavorite(item, !item.is_favorite)
-              }
-            />
+          <FadeInContent>
+            <div className="space-y-8">
+              {!hubReportId ? (
+                <p className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 px-4 py-3 text-center text-sm text-on-surface-variant">
+                  블루프린트를 완료하면 친구 목록과 분석 기록이 여기에 표시돼요.
+                  {isSignedIn
+                    ? " 다른 브라우저에서 진행한 경우, 로그인 상태면 자동으로 연결됩니다."
+                    : ""}
+                </p>
+              ) : null}
 
-            <RelationHubActionButtons
-              canAnalyze={canAnalyze}
-              analyzeLabel={
-                selectedFriend
-                  ? `${hubDisplayNameFor(selectedFriend, displayNames)}님과 분석하기`
-                  : "관계 분석하기"
-              }
-              onAnalyze={() => {
-                if (selectedFriend) openKindPicker(selectedFriend);
-                else alert("친구를 먼저 선택해 주세요.");
-              }}
-              onAddFriend={() => {
-                setAddFriendOpen(true);
-                setAddFriendTab("invite");
-              }}
-            />
+              {loading && items.length === 0 ? (
+                <>
+                  <FriendStoryRowSkeleton />
+                  <RelationHubActionSkeleton />
+                  <HubAnalysisListSkeleton />
+                </>
+              ) : (
+                <>
+                  <FriendStoryRow
+                    friends={relationshipItems}
+                    loading={false}
+                    isSignedIn={isSignedIn}
+                    selectedId={selectedKey}
+                    favoritesOnly={favoritesOnly}
+                    onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}
+                    onSelect={handleSelectFriend}
+                    onAddFriend={() => {
+                      setAddFriendOpen(true);
+                      setAddFriendTab("invite");
+                    }}
+                    onShowAll={() => setFriendsListOpen(true)}
+                    onRename={(item) => setRenameTarget(item)}
+                    onToggleFavorite={(item) =>
+                      void toggleFavorite(item, !item.is_favorite)
+                    }
+                  />
 
-            <HubAnalysisSection
-              items={analysisPreview}
-              loading={analysisLoading}
-              totalCount={analysisPreview.length}
-              onOpenLog={openAnalysisLog}
-              onShowMore={() => setAllAnalysisOpen(true)}
-            />
-          </div>
+                  <RelationHubActionButtons
+                    canAnalyze={canAnalyze}
+                    analyzeLabel={
+                      selectedFriend
+                        ? `${selectedFriend.partner_name}님과 분석하기`
+                        : "관계 분석하기"
+                    }
+                    onAnalyze={() => {
+                      if (selectedFriend) openKindPicker(selectedFriend);
+                      else alert("친구를 먼저 선택해 주세요.");
+                    }}
+                    onAddFriend={() => {
+                      setAddFriendOpen(true);
+                      setAddFriendTab("invite");
+                    }}
+                  />
+
+                  <HubAnalysisSection
+                    items={analysisPreview}
+                    loading={analysisLoading}
+                    totalCount={analysisPreview.length}
+                    onOpenLog={openAnalysisLog}
+                    onShowMore={() => setAllAnalysisOpen(true)}
+                  />
+                </>
+              )}
+            </div>
+          </FadeInContent>
         )}
       </div>
 
       <RenameFriendDialog
         open={renameTarget != null}
-        initialName={
-          renameTarget
-            ? readHubDisplayName(
-                renameTarget.relationship_report_id ?? "",
-                renameTarget.partner_name,
-              )
-            : ""
-        }
+        initialName={renameTarget?.partner_name ?? ""}
         onClose={() => setRenameTarget(null)}
         onSave={handleRenameSave}
       />
@@ -577,7 +621,7 @@ export default function RelationHubDashboard() {
         open={kindPickerTarget != null}
         partnerName={
           kindPickerTarget
-            ? hubDisplayNameFor(kindPickerTarget, displayNames)
+            ? kindPickerTarget.partner_name
             : ""
         }
         onClose={() => setKindPickerTarget(null)}
@@ -604,6 +648,7 @@ export default function RelationHubDashboard() {
             onCreateInvite={() => void startNewInvite()}
             onShowSentRequests={() => {
               setSentRequestsOpen(true);
+              void loadWaiting();
             }}
             manualBusy={manualBusy}
             myReportId={hubReportId}
@@ -624,8 +669,6 @@ export default function RelationHubDashboard() {
       <FriendsListSheet
         open={friendsListOpen}
         friends={relationshipItems}
-        waiting={waitingItems}
-        displayNames={displayNames}
         selectedId={selectedKey}
         onClose={() => setFriendsListOpen(false)}
         onSelect={handleSelectFriend}

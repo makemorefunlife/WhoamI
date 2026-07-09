@@ -20,7 +20,7 @@ const SNAPSHOT_AXIS_KEYS: PrimaryAxisKey[] = [
   "connection",
   "stability",
   "growth",
-  "control",
+  "structure",
   "adaptability",
 ];
 
@@ -29,9 +29,9 @@ const ELEMENT_AXIS_BIAS: Record<
   Partial<Record<PrimaryAxisKey, number>>
 > = {
   fire: { connection: 10, growth: 6 },
-  earth: { stability: 12, control: 8 },
+  earth: { stability: 12, structure: 8 },
   wood: { growth: 10, adaptability: 5 },
-  metal: { control: 10, stability: 5 },
+  metal: { structure: 10, stability: 5 },
   water: { connection: 6, adaptability: 10 },
 };
 
@@ -119,7 +119,7 @@ function fallbackAxesFromSaju(
   }
 
   if (ref?.yin_yang === "yang") {
-    scores.control = Math.min(78, scores.control + 4);
+    scores.structure = Math.min(78, scores.structure + 4);
     scores.growth = Math.min(78, scores.growth + 3);
   } else if (ref?.yin_yang === "yin") {
     scores.connection = Math.min(78, scores.connection + 4);
@@ -127,7 +127,7 @@ function fallbackAxesFromSaju(
   }
 
   if (strength.label.includes("신강")) {
-    scores.control = Math.min(82, scores.control + 8);
+    scores.structure = Math.min(82, scores.structure + 8);
     scores.stability = Math.min(80, scores.stability + 5);
   } else if (strength.label.includes("신약")) {
     scores.connection = Math.min(82, scores.connection + 8);
@@ -147,7 +147,7 @@ function fallbackAxesFromSaju(
     scores.adaptability = Math.min(78, scores.adaptability + 4);
   }
   if (topGod?.includes("정관") || topGod?.includes("편관")) {
-    scores.control = Math.min(82, scores.control + 6);
+    scores.structure = Math.min(82, scores.structure + 6);
     scores.stability = Math.min(78, scores.stability + 4);
   }
   if (topGod?.includes("정인") || topGod?.includes("편인")) {

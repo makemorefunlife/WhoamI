@@ -3,11 +3,8 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import {
-  formatHubAnalysisDate,
-  hubAnalysisKindLabel,
-  type HubAnalysisFeedItem,
-} from "@/lib/relationship/hubAnalysisFeed";
+import HubAnalysisReportRow from "@/components/relationship/hub/HubAnalysisReportRow";
+import type { HubAnalysisFeedItem } from "@/lib/relationship/hubAnalysisFeed";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
 
 type Props = {
@@ -69,34 +66,17 @@ export default function AllAnalysisSheet({
           </p>
         ) : (
           <div className="space-y-3">
-            <ul className="space-y-2">
+            <ul className={`${hubSheetClass()} divide-y divide-outline-variant/15 overflow-hidden`}>
               {items.map((item) => (
                 <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onOpenLog(item);
+                  <HubAnalysisReportRow
+                    item={item}
+                    onOpen={(log) => {
+                      onOpenLog(log);
                       onClose();
                     }}
-                    className="w-full rounded-2xl border border-outline-variant/30 bg-surface-container-low/40 px-4 py-3.5 text-left transition hover:bg-surface-container-low active:scale-[0.99]"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-on-surface">
-                        {item.partner_name}
-                      </p>
-                      <time className="shrink-0 text-xs text-on-surface-variant">
-                        {formatHubAnalysisDate(item.created_at)}
-                      </time>
-                    </div>
-                    <p className="mt-1 text-xs text-secondary">
-                      {hubAnalysisKindLabel(item)}
-                    </p>
-                    {item.summary_title ? (
-                      <p className="mt-1 text-sm text-on-surface-variant">
-                        {item.summary_title}
-                      </p>
-                    ) : null}
-                  </button>
+                    className="px-4"
+                  />
                 </li>
               ))}
             </ul>

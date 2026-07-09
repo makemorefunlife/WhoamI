@@ -1,18 +1,15 @@
 "use client";
 
 import {
+  RELATIONSHIP_KIND_BADGE_BASE_CLASS,
+  RELATIONSHIP_KIND_BADGE_STYLES,
+  relationshipKindBadgeLabel,
+  relationshipKindForBadge,
+} from "@/lib/relationship/relationshipKindBadge";
+import {
   RELATIONSHIP_KINDS,
-  RELATIONSHIP_KIND_LABELS,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
-
-const tabBtn = (active: boolean) =>
-  [
-    "flex-1 rounded-lg border px-2 py-2 text-xs font-medium transition",
-    active
-      ? "border-secondary/50 bg-secondary/15 text-primary"
-      : "border-outline-variant/40 bg-surface-container-low/60 text-on-surface-variant hover:border-secondary/35 hover:bg-secondary/8",
-  ].join(" ");
 
 export default function RelationshipKindTabs({
   value,
@@ -24,18 +21,33 @@ export default function RelationshipKindTabs({
   disabled?: boolean;
 }) {
   return (
-    <div className="mb-4 flex gap-1.5">
-      {RELATIONSHIP_KINDS.map((kind) => (
-        <button
-          key={kind}
-          type="button"
-          disabled={disabled}
-          className={tabBtn(value === kind)}
-          onClick={() => onChange(kind)}
-        >
-          {RELATIONSHIP_KIND_LABELS[kind]}
-        </button>
-      ))}
+    <div className="mb-4 flex flex-wrap gap-1.5">
+      {RELATIONSHIP_KINDS.map((kind) => {
+        const active = value === kind;
+        const resolved = relationshipKindForBadge(kind);
+        const color =
+          resolved !== "unspecified"
+            ? RELATIONSHIP_KIND_BADGE_STYLES[resolved]
+            : "bg-gray-100 text-gray-600";
+        return (
+          <button
+            key={kind}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(kind)}
+            className={[
+              RELATIONSHIP_KIND_BADGE_BASE_CLASS,
+              color,
+              "transition active:scale-[0.98] disabled:opacity-45",
+              active
+                ? "ring-2 ring-current/25 ring-offset-1 ring-offset-[#faf7f0]"
+                : "opacity-75 hover:opacity-100",
+            ].join(" ")}
+          >
+            {relationshipKindBadgeLabel(resolved)}
+          </button>
+        );
+      })}
     </div>
   );
 }

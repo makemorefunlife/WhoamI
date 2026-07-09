@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import GlowButton from "@/components/space/GlowButton";
+import { RelationshipKindBadge } from "@/components/relationship/RelationshipKindBadge";
 import {
   RELATIONSHIP_KINDS,
-  RELATIONSHIP_KIND_LABELS,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
 
@@ -60,10 +60,10 @@ export default function RelationshipKindPicker({
             <button
               key={kind}
               type="button"
-              className="rounded-xl border border-white/15 bg-white/[0.04] py-3 text-sm font-medium text-[var(--space-text)] transition hover:border-[#67B7FF]/40 hover:bg-[#67B7FF]/10"
+              className="flex items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] py-3 transition hover:border-[#67B7FF]/40 hover:bg-[#67B7FF]/10"
               onClick={() => onSelect(kind)}
             >
-              {RELATIONSHIP_KIND_LABELS[kind]}
+              <RelationshipKindBadge kind={kind} />
             </button>
           ))}
         </div>

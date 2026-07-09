@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, X } from "lucide-react";
+import { X } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import InviteShareButtons from "@/components/relationship/InviteShareButtons";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
@@ -70,13 +70,8 @@ export default function SentRequestsSheet({
                   className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400/20 text-amber-600">
-                      <Clock className="h-5 w-5" />
-                    </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-on-surface">
-                        {item.partner_name || "초대 대기 중"}
-                      </p>
+                      <p className="font-medium text-on-surface">초대 대기 중</p>
                       <p className="text-xs text-on-surface-variant">
                         {item.status_hint ?? "수락을 기다리는 중이에요"}
                       </p>

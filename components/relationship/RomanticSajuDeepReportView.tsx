@@ -14,6 +14,7 @@ import type {
   RomanticSajuDeepReport,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { resolveSnapshotPanelFromReport } from "@/lib/relationship/romanticSnapshot/buildRomanticSnapshot";
+import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import RomanticSnapshotPanelView from "@/components/relationship/RomanticSnapshotPanel";
 import {
   RelationshipReportLayout,
@@ -198,12 +199,20 @@ export default function RomanticSajuDeepReportView({
   report,
   nameA,
   nameB,
+  myName: myNameProp,
+  partnerName: partnerNameProp,
+  viewerIsReportA = true,
 }: {
   report: RomanticSajuDeepReport["report"];
   nameA: string;
   nameB: string;
+  myName?: string;
+  partnerName?: string;
+  viewerIsReportA?: boolean;
 }) {
   const theme = getTabTheme("romantic");
+  const myName = myNameProp ?? (viewerIsReportA ? nameA : nameB);
+  const partnerName = partnerNameProp ?? (viewerIsReportA ? nameB : nameA);
   const s1 = report.section_1_summary;
   const s2 = report.section_2_nature;
   const special = report.section_4_special_bond;
@@ -215,18 +224,66 @@ export default function RomanticSajuDeepReportView({
   const s5 = report.section_5_action as Record<string, unknown>;
   const s6 = report.section_6_timeline as Record<string, Record<string, string>>;
 
+  const { me: myNature, partner: partnerNature } = pickViewerFirstPair(
+    s2.a_nature,
+    s2.b_nature,
+    viewerIsReportA,
+  );
+  const { me: myHidden, partner: partnerHidden } = pickViewerFirstPair(
+    s4.a_hidden,
+    s4.b_hidden,
+    viewerIsReportA,
+  );
+  const { me: myAdvice, partner: partnerAdvice } = pickViewerFirstPair(
+    (s5.advice_for_a as AdviceItem[] | undefined) ?? [],
+    (s5.advice_for_b as AdviceItem[] | undefined) ?? [],
+    viewerIsReportA,
+  );
+
   const conflict = s3?.conflict_situation;
-  const comparisonTable = mergeComparisonTable(
+  const rawComparison = mergeComparisonTable(
     s2.comparison_table ?? [],
     nameA,
     nameB,
   );
+  const comparisonTable = viewerIsReportA
+    ? rawComparison
+    : rawComparison.map((row) => ({
+        aspect: row.aspect,
+        a: row.b,
+        b: row.a,
+      }));
   const dialogueTable = filterDialogueTable(
     (conflict?.dialogue_table ?? []) as DialogueTableRow[],
   );
 
-  const adviceA = (s5.advice_for_a as AdviceItem[] | undefined) ?? [];
-  const adviceB = (s5.advice_for_b as AdviceItem[] | undefined) ?? [];
+  const bondGifts = special
+    ? viewerIsReportA
+      ? [
+          {
+            from: myName,
+            to: partnerName,
+            text: special.a_gives_b,
+          },
+          {
+            from: partnerName,
+            to: myName,
+            text: special.b_gives_a,
+          },
+        ]
+      : [
+          {
+            from: myName,
+            to: partnerName,
+            text: special.b_gives_a,
+          },
+          {
+            from: partnerName,
+            to: myName,
+            text: special.a_gives_b,
+          },
+        ]
+    : [];
 
   const screenPlan = resolveScreenPlan(report);
   const opening = getScreen1Opening(screenPlan, s1);
@@ -240,7 +297,7 @@ export default function RomanticSajuDeepReportView({
       headline={{
         title: polishRomanticDisplayText(opening.headline),
         subtitle: polishRomanticDisplayText(opening.body),
-        names: [nameA, nameB],
+        names: [myName, partnerName],
         badge: opening.grade ? `궁합 등급 ${opening.grade}` : undefined,
       }}
       scores={scores}
@@ -259,8 +316,8 @@ export default function RomanticSajuDeepReportView({
             <thead>
               <tr className="border-b border-white/10 text-white/55">
                 <th className="px-4 py-3 font-medium">항목</th>
-                <th className="px-4 py-3 font-medium">{nameA}</th>
-                <th className="px-4 py-3 font-medium">{nameB}</th>
+                <th className="px-4 py-3 font-medium">{myName}</th>
+                <th className="px-4 py-3 font-medium">{partnerName}</th>
               </tr>
             </thead>
             <tbody>
@@ -286,35 +343,41 @@ export default function RomanticSajuDeepReportView({
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
-          <p className="text-base font-semibold text-white/92">{nameA}</p>
-          {s2.a_nature.image_metaphor ? (
+          <p className="text-base font-semibold text-white/92">{myName}</p>
+          {myNature.image_metaphor ? (
             <p className="text-sm text-[#ffd6a5]/90">
-              {s2.a_nature.image_metaphor}
+              {myNature.image_metaphor}
             </p>
           ) : null}
-          {s2.a_nature.first_person_voice ? (
+          {myNature.first_person_voice ? (
             <blockquote className="rounded-xl border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-4 text-[15px] italic leading-relaxed text-white/88">
-              {s2.a_nature.first_person_voice}
+              {myNature.first_person_voice}
             </blockquote>
           ) : null}
-          <P>{s2.a_nature.description}</P>
-          <P>{s2.a_nature.meeting_b}</P>
-          <P>{s2.a_nature.together_change}</P>
+          <P>{myNature.description}</P>
+          <P>
+            {viewerIsReportA ? myNature.meeting_b : myNature.meeting_a}
+          </P>
+          <P>{myNature.together_change}</P>
 
-          <p className="mt-6 text-base font-semibold text-white/92">{nameB}</p>
-          {s2.b_nature.image_metaphor ? (
+          <p className="mt-6 text-base font-semibold text-white/92">
+            {partnerName}
+          </p>
+          {partnerNature.image_metaphor ? (
             <p className="text-sm text-[#ffd6a5]/90">
-              {s2.b_nature.image_metaphor}
+              {partnerNature.image_metaphor}
             </p>
           ) : null}
-          {s2.b_nature.first_person_voice ? (
+          {partnerNature.first_person_voice ? (
             <blockquote className="rounded-xl border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-4 text-[15px] italic leading-relaxed text-white/88">
-              {s2.b_nature.first_person_voice}
+              {partnerNature.first_person_voice}
             </blockquote>
           ) : null}
-          <P>{s2.b_nature.description}</P>
-          <P>{s2.b_nature.meeting_a}</P>
-          <P>{s2.b_nature.together_change}</P>
+          <P>{partnerNature.description}</P>
+          <P>
+            {viewerIsReportA ? partnerNature.meeting_a : partnerNature.meeting_b}
+          </P>
+          <P>{partnerNature.together_change}</P>
         </RelationshipReportBody>
       </RelationshipReportCard>
 
@@ -324,22 +387,16 @@ export default function RomanticSajuDeepReportView({
           accentColor={theme.accent}
         >
           <InsightHook slot={screenByKey(screenPlan, "bond")} />
-          {special.a_gives_b ? (
-            <>
-              <RelationshipReportLabel>
-                ✨ {nameA} → {nameB}
-              </RelationshipReportLabel>
-              <P>{special.a_gives_b}</P>
-            </>
-          ) : null}
-          {special.b_gives_a ? (
-            <>
-              <RelationshipReportLabel>
-                ✨ {nameB} → {nameA}
-              </RelationshipReportLabel>
-              <P>{special.b_gives_a}</P>
-            </>
-          ) : null}
+          {bondGifts.map((gift) =>
+            gift.text ? (
+              <div key={`${gift.from}-${gift.to}`}>
+                <RelationshipReportLabel>
+                  ✨ {gift.from} → {gift.to}
+                </RelationshipReportLabel>
+                <P>{gift.text}</P>
+              </div>
+            ) : null,
+          )}
           {special.power_to_each_other && !special.a_gives_b ? (
             <P>{special.power_to_each_other}</P>
           ) : null}
@@ -356,10 +413,10 @@ export default function RomanticSajuDeepReportView({
         accentColor={theme.accent}
       >
         <InsightHook slot={screenByKey(screenPlan, "hidden")} />
-        <RelationshipReportLabel>{nameA}</RelationshipReportLabel>
-        <P>{String((s4.a_hidden as { voice?: string })?.voice ?? "")}</P>
-        <RelationshipReportLabel className="mt-3">{nameB}</RelationshipReportLabel>
-        <P>{String((s4.b_hidden as { voice?: string })?.voice ?? "")}</P>
+        <RelationshipReportLabel>{myName}</RelationshipReportLabel>
+        <P>{String((myHidden as { voice?: string })?.voice ?? "")}</P>
+        <RelationshipReportLabel className="mt-3">{partnerName}</RelationshipReportLabel>
+        <P>{String((partnerHidden as { voice?: string })?.voice ?? "")}</P>
         <P>{String(s4.mutual_gift ?? "")}</P>
       </RelationshipReportCard>
 
@@ -404,14 +461,14 @@ export default function RomanticSajuDeepReportView({
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
-          {adviceA.length > 0 ? (
-            <RelationshipReportLabel>{nameA}께</RelationshipReportLabel>
+          {myAdvice.length > 0 ? (
+            <RelationshipReportLabel>{myName}께</RelationshipReportLabel>
           ) : null}
-          {adviceA.map((line, i) => {
+          {myAdvice.map((line, i) => {
             const item = formatAdvice(line);
             return (
               <div
-                key={`a-${i}`}
+                key={`me-${i}`}
                 className="space-y-2 border-b border-white/6 pb-4 last:border-0"
               >
                 <p className="text-white/88">
@@ -424,16 +481,16 @@ export default function RomanticSajuDeepReportView({
               </div>
             );
           })}
-          {adviceB.length > 0 ? (
+          {partnerAdvice.length > 0 ? (
             <RelationshipReportLabel className="mt-2">
-              {nameB}께
+              {partnerName}께
             </RelationshipReportLabel>
           ) : null}
-          {adviceB.map((line, i) => {
+          {partnerAdvice.map((line, i) => {
             const item = formatAdvice(line);
             return (
               <div
-                key={`b-${i}`}
+                key={`partner-${i}`}
                 className="space-y-2 border-b border-white/6 pb-4 last:border-0"
               >
                 <p className="text-white/88">

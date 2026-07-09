@@ -3,10 +3,13 @@
  * docs/v2/saju/06_Saju_Lite_Interpretation_Dictionary.md
  */
 import type { InnateSelfLiteInputPayload } from "@/lib/v2/saju/innateLiteInput";
+import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
 
 export const INNATE_SELF_LITE_SYSTEM = `You are the Innate Self Lite interpreter for Aha! It's Me.
 
 Translate pre-calculated innate signals into concise human insight in Korean.
+
+${PRIMARY_AXIS_LLM_GUIDE}
 
 Rules:
 - Do NOT calculate Saju or use raw birth data. Use only innate_self_lite_input JSON.

@@ -10,6 +10,8 @@ type LogoProps = {
   priority?: boolean;
   /** 밝은(크림) 헤더 — 검은 배경이 남은 PNG 대비용 (투명 PNG면 생략 가능) */
   onLightBackground?: boolean;
+  /** 어두운 푸터 등 — PNG 검정 박스가 배경에 녹아 보이게 */
+  onDarkBackground?: boolean;
 };
 
 /** 확정 브랜드 로고 — Ai 모노그램 */
@@ -19,6 +21,7 @@ export default function Logo({
   className = "",
   priority = false,
   onLightBackground = false,
+  onDarkBackground = false,
 }: LogoProps) {
   const image = (
     <Image
@@ -31,6 +34,7 @@ export default function Logo({
       className={[
         "object-contain",
         onLightBackground ? "mix-blend-multiply" : "",
+        onDarkBackground ? "mix-blend-screen" : "",
         className,
       ]
         .filter(Boolean)

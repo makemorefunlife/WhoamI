@@ -1,4 +1,5 @@
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
+import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -64,8 +65,14 @@ function PersonDnaBlock({
 
 export default function FriendReportView({
   report,
+  myName: myNameProp,
+  partnerName: partnerNameProp,
+  viewerIsReportA = true,
 }: {
   report: FriendReportBody;
+  myName?: string;
+  partnerName?: string;
+  viewerIsReportA?: boolean;
 }) {
   const theme = getTabTheme("friendship");
   const f = report.friend;
@@ -76,8 +83,15 @@ export default function FriendReportView({
     one_line_friendship: report.one_line_friendship ?? report.headline,
   };
 
-  const nameA = f.section_social_dna_a.nickname;
-  const nameB = f.section_social_dna_b.nickname;
+  const dnaPair = f
+    ? pickViewerFirstPair(
+        f.section_social_dna_a,
+        f.section_social_dna_b,
+        viewerIsReportA,
+      )
+    : null;
+  const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
+  const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
 
   return (
     <RelationshipReportLayout
@@ -86,7 +100,7 @@ export default function FriendReportView({
       headline={{
         title: report.headline || snap.one_line_friendship,
         subtitle: snap.one_line_friendship,
-        names: [nameA, nameB],
+        names: [myName, partnerName],
         badge: report.meta?.grade
           ? `우정 등급 ${report.meta.grade}`
           : undefined,
@@ -118,13 +132,13 @@ export default function FriendReportView({
       >
         <RelationshipReportBody className="grid gap-4 sm:grid-cols-2">
           <PersonDnaBlock
-            title={`👤 ${nameA}`}
-            person={f.section_social_dna_a}
+            title={`👤 ${myName}`}
+            person={dnaPair!.me}
             accent={theme.accent}
           />
           <PersonDnaBlock
-            title={`👤 ${nameB}`}
-            person={f.section_social_dna_b}
+            title={`👤 ${partnerName}`}
+            person={dnaPair!.partner}
             accent={theme.accent}
           />
         </RelationshipReportBody>

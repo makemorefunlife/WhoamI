@@ -67,7 +67,7 @@ export default function RenameFriendDialog({
           className="w-full rounded-xl border-0 bg-surface-container-low/80 px-4 py-3.5 text-base text-on-surface outline-none ring-1 ring-outline-variant/35 focus:ring-2 focus:ring-primary/15"
         />
         <p className="mt-2 text-xs text-on-surface-variant">
-          {trimmed.length}/10 · 기기에만 저장돼요 (DB 연동 예정)
+          {trimmed.length}/10 · 직접 입력 친구만 DB에 저장돼요
         </p>
         <div className="mt-5 flex gap-3">
           <button

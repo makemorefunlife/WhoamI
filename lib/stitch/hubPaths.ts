@@ -16,4 +16,4 @@ export function relationHubPath(reportId?: string): string {
 }
 
 export const DECISION_HUB_PATH = ROUTES.decision;
-export const DECISION_HUB_LABEL = "결정";
+export const DECISION_HUB_LABEL = "Choice";

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildV2PatternSummaryForRelationship } from "@/lib/relationship/v2PatternSummary";
+import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/types";
 
@@ -54,7 +55,7 @@ function v2SummaryFromAnswers(
   const embedded = answers.v2_profile;
   if (embedded && typeof embedded === "object" && !Array.isArray(embedded)) {
     return buildV2PatternSummaryForRelationship(
-      embedded as CurrentSelfProfile,
+      normalizeCurrentSelfProfile(embedded as CurrentSelfProfile),
     );
   }
   if (!isV2SurveyAnswers(answers)) return null;

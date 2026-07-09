@@ -5,7 +5,7 @@ export const PRIMARY_AXIS_KEYS = [
   "connection",
   "stability",
   "growth",
-  "control",
+  "structure",
   "adaptability",
 ] as const;
 

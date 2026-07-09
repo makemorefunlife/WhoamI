@@ -4,6 +4,7 @@ import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerR
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/types";
+import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 
 export const runtime = "nodejs";
@@ -24,7 +25,7 @@ function parseAnswers(raw: unknown): Record<string, string> | null {
 function profileFromRow(answers: Record<string, unknown>): CurrentSelfProfile | null {
   const embedded = answers.v2_profile;
   if (embedded && typeof embedded === "object" && !Array.isArray(embedded)) {
-    return embedded as CurrentSelfProfile;
+    return normalizeCurrentSelfProfile(embedded as CurrentSelfProfile);
   }
   const stringAnswers = parseAnswers(answers);
   if (!stringAnswers) return null;

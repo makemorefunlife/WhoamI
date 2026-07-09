@@ -9,6 +9,8 @@ import GuestDashboardAuthNotice from "@/components/results/GuestDashboardAuthNot
 import DecideWithAiComingSoon from "@/components/decision/DecideWithAiComingSoon";
 import DecisionStatusDot from "@/components/decision/DecisionStatusDot";
 import DecisionReviewSheet from "@/components/decision/DecisionReviewSheet";
+import FadeInContent from "@/components/ui/stitch/FadeInContent";
+import { StitchSkeleton } from "@/components/ui/stitch/StitchSkeleton";
 import {
   addDecisionEntry,
   completeDecisionReview,
@@ -69,16 +71,15 @@ export default function DecisionJournalContent() {
   const [analyzeMessage, setAnalyzeMessage] = useState<string | null>(null);
   const [reviewEntry, setReviewEntry] = useState<DecisionEntry | null>(null);
 
-  // 진입 직후 로컬 저널만 읽음 (서버 대기 없음)
+  const persist = useCallback((next: DecisionEntry[]) => {
+    setEntries(next);
+  }, []);
+
   useEffect(() => {
     const id = readLocalReportId();
     setReportId(id);
     setEntries(readDecisionJournal(id));
     setJournalReady(true);
-  }, []);
-
-  const persist = useCallback((next: DecisionEntry[]) => {
-    setEntries(next);
   }, []);
 
   const requireAuth = useCallback(() => {
@@ -232,9 +233,11 @@ export default function DecisionJournalContent() {
           </div>
           <div className={`${panelClass()} p-2 sm:p-3`}>
             {!journalReady ? (
-              <p className="px-4 py-8 text-center text-sm text-on-surface-variant">
-                목록 불러오는 중…
-              </p>
+              <div className="space-y-3 px-4 py-6" aria-busy="true">
+                <StitchSkeleton className="h-14 w-full" />
+                <StitchSkeleton className="h-14 w-full" />
+                <StitchSkeleton className="h-14 w-full" />
+              </div>
             ) : entries.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-on-surface-variant">
                 아직 리뷰할 결정이 없습니다.
@@ -244,6 +247,7 @@ export default function DecisionJournalContent() {
                 </span>
               </p>
             ) : (
+              <FadeInContent>
               <>
                 <div className="divide-y divide-outline-variant/15">
                   {previewEntries.map((entry) => (
@@ -307,6 +311,7 @@ export default function DecisionJournalContent() {
                   </div>
                 ) : null}
               </>
+              </FadeInContent>
             )}
           </div>
         </section>

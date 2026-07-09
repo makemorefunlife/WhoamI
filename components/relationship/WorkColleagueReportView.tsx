@@ -8,6 +8,7 @@ import type {
 } from "@/lib/relationship/workColleague/officeLanguage";
 import type { OfficePersonRoleCard } from "@/lib/relationship/workColleague/officeReportTemplate";
 import { hydrateWorkSnapshotPanel } from "@/lib/relationship/workColleague/buildWorkSnapshotPanel";
+import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import {
   RelationshipReportLayout,
@@ -209,8 +210,14 @@ function DeEscalationBlock({
 
 export default function WorkColleagueReportView({
   report,
+  myName: myNameProp,
+  partnerName: partnerNameProp,
+  viewerIsReportA = true,
 }: {
   report: WorkColleagueReportBody;
+  myName?: string;
+  partnerName?: string;
+  viewerIsReportA?: boolean;
 }) {
   const theme = getTabTheme("work");
   const panel = hydrateWorkSnapshotPanel(report.snapshot_panel);
@@ -222,8 +229,15 @@ export default function WorkColleagueReportView({
     one_line_definition: report.one_line_definition ?? report.headline,
   };
 
-  const nameA = office?.section_dna?.person_a.nickname ?? "첫 번째";
-  const nameB = office?.section_dna?.person_b.nickname ?? "두 번째";
+  const dnaPair = office?.section_dna
+    ? pickViewerFirstPair(
+        office.section_dna.person_a,
+        office.section_dna.person_b,
+        viewerIsReportA,
+      )
+    : null;
+  const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
+  const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
 
   const mixFit = office?.section_mix_fit as
     | {
@@ -234,10 +248,11 @@ export default function WorkColleagueReportView({
         communication_fit?: string;
       }
     | undefined;
-  const workStyleA =
-    mixFit?.person_a_work_style ?? mixFit?.my_work_style ?? "";
-  const workStyleB =
-    mixFit?.person_b_work_style ?? mixFit?.partner_work_style ?? "";
+  const { me: workStyleMe, partner: workStylePartner } = pickViewerFirstPair(
+    mixFit?.person_a_work_style ?? mixFit?.my_work_style ?? "",
+    mixFit?.person_b_work_style ?? mixFit?.partner_work_style ?? "",
+    viewerIsReportA,
+  );
 
   const respect = office?.section_respect as
     | {
@@ -247,10 +262,11 @@ export default function WorkColleagueReportView({
         partner_boundary?: string;
       }
     | undefined;
-  const boundaryA =
-    respect?.person_a_boundary ?? respect?.my_boundary ?? "";
-  const boundaryB =
-    respect?.person_b_boundary ?? respect?.partner_boundary ?? "";
+  const { me: boundaryMe, partner: boundaryPartner } = pickViewerFirstPair(
+    respect?.person_a_boundary ?? respect?.my_boundary ?? "",
+    respect?.person_b_boundary ?? respect?.partner_boundary ?? "",
+    viewerIsReportA,
+  );
 
   const roles = office?.section_roles as
     | {
@@ -265,6 +281,23 @@ export default function WorkColleagueReportView({
         }>;
       }
     | undefined;
+  const rolePair = roles?.person_a && roles?.person_b
+    ? pickViewerFirstPair(roles.person_a, roles.person_b, viewerIsReportA)
+    : null;
+  const idealPair = office?.section_ideal_roles
+    ? pickViewerFirstPair(
+        office.section_ideal_roles.person_a,
+        office.section_ideal_roles.person_b,
+        viewerIsReportA,
+      )
+    : null;
+  const upsetPair = office?.section_upset
+    ? pickViewerFirstPair(
+        office.section_upset.person_a,
+        office.section_upset.person_b,
+        viewerIsReportA,
+      )
+    : null;
 
   const deCard = office?.section_warning?.de_escalation;
 
@@ -275,7 +308,7 @@ export default function WorkColleagueReportView({
       headline={{
         title: report.headline || snap.one_line_definition,
         subtitle: snap.one_line_definition,
-        names: [nameA, nameB],
+        names: [myName, partnerName],
         badge: report.meta?.grade
           ? `파트너십 등급 ${report.meta.grade}`
           : undefined,
@@ -297,20 +330,16 @@ export default function WorkColleagueReportView({
       ]}
       scoreFooter={<TriScoreSnapshotPanel panel={panel} kind="work" />}
     >
-      {office?.section_dna ? (
+      {dnaPair ? (
         <RelationshipReportCard
           title="🧬 파트너십 DNA — 우린 일할 때 어떤 사람일까?"
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
+            <DnaCard label="👤" profile={dnaPair.me} accent={theme.accent} />
             <DnaCard
               label="👤"
-              profile={office.section_dna.person_a}
-              accent={theme.accent}
-            />
-            <DnaCard
-              label="👤"
-              profile={office.section_dna.person_b}
+              profile={dnaPair.partner}
               accent={theme.accent}
             />
           </div>
@@ -324,15 +353,15 @@ export default function WorkColleagueReportView({
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>[{nameA}의 일 스타일]</RelationshipReportLabel>
+              <RelationshipReportLabel>[{myName}의 일 스타일]</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
-                {workStyleA}
+                {workStyleMe}
               </RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>[{nameB}의 일 스타일]</RelationshipReportLabel>
+              <RelationshipReportLabel>[{partnerName}의 일 스타일]</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
-                {workStyleB}
+                {workStylePartner}
               </RelationshipReportParagraph>
             </div>
             <div>
@@ -352,15 +381,15 @@ export default function WorkColleagueReportView({
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>[{nameA}의 영역]</RelationshipReportLabel>
+              <RelationshipReportLabel>[{myName}의 영역]</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
-                {boundaryA}
+                {boundaryMe}
               </RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>[{nameB}의 영역]</RelationshipReportLabel>
+              <RelationshipReportLabel>[{partnerName}의 영역]</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
-                {boundaryB}
+                {boundaryPartner}
               </RelationshipReportParagraph>
             </div>
           </RelationshipReportBody>
@@ -372,15 +401,15 @@ export default function WorkColleagueReportView({
           title="🎯 롤 분담 치트키"
           accentColor={theme.accent}
         >
-          {roles.person_a && roles.person_b ? (
+          {rolePair ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              <RoleCard card={roles.person_a} accent={theme.accent} />
-              <RoleCard card={roles.person_b} accent={theme.accent} />
+              <RoleCard card={rolePair.me} accent={theme.accent} />
+              <RoleCard card={rolePair.partner} accent={theme.accent} />
             </div>
           ) : (
             <RelationshipReportBody>
               <RelationshipReportLabel>
-                [{nameA}가 맡으면 좋은 일]
+                [{myName}가 맡으면 좋은 일]
               </RelationshipReportLabel>
               <ul className="mt-2 list-inside list-disc space-y-1" style={{ color: theme.accent }}>
                 {(roles.my_weapons ?? []).map((w) => (
@@ -397,20 +426,16 @@ export default function WorkColleagueReportView({
         </RelationshipReportCard>
       ) : null}
 
-      {office?.section_ideal_roles ? (
+      {idealPair ? (
         <RelationshipReportCard
           title="🏢 잘 어울리는 직군·부서"
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
+            <IdealRoleCard label="👤" fit={idealPair.me} accent={theme.accent} />
             <IdealRoleCard
               label="👤"
-              fit={office.section_ideal_roles.person_a}
-              accent={theme.accent}
-            />
-            <IdealRoleCard
-              label="👤"
-              fit={office.section_ideal_roles.person_b}
+              fit={idealPair.partner}
               accent={theme.accent}
             />
           </div>
@@ -420,14 +445,14 @@ export default function WorkColleagueReportView({
         </RelationshipReportCard>
       ) : null}
 
-      {office?.section_upset ? (
+      {upsetPair ? (
         <RelationshipReportCard
           title="😤 삐졌을 때 이렇게 대응하세요"
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <UpsetGuideCard guide={office.section_upset.person_a} />
-            <UpsetGuideCard guide={office.section_upset.person_b} />
+            <UpsetGuideCard guide={upsetPair.me} />
+            <UpsetGuideCard guide={upsetPair.partner} />
           </div>
         </RelationshipReportCard>
       ) : null}

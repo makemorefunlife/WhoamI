@@ -9,6 +9,7 @@ import { hydrateReportSessions } from "@/lib/v2/report/hydrateReportSessions";
 import { migrateLocalReportSessions } from "@/lib/v2/report/migrateLocalReportSessions";
 import type { CanonicalReportIdSource } from "@/lib/home/resolveCanonicalReportIdClientTypes";
 import { invalidateHomeResumeCache } from "@/lib/home/fetchHomeResumeClient";
+import { ensureGuestAccountMerged } from "@/lib/home/mergeGuestAccountClient";
 
 export type ReportSession = {
   reportId: string;
@@ -32,6 +33,8 @@ export type LoadReportSessionOptions = {
   hydrate?: boolean;
   /** true면 캐시 무시하고 resume 재조회 */
   forceRefresh?: boolean;
+  /** false면 게스트→계정 병합 생략 (기본: 수행) */
+  mergeGuestAccount?: boolean;
 };
 
 const SESSION_CACHE_TTL_MS = 60_000;
@@ -134,12 +137,12 @@ export async function loadReportSession(
   }
 
   const work = (async (): Promise<ReportSession> => {
-    if (!resumeHint) {
-      const empty = emptySession();
-      sessionCache = { key: cacheKey, at: Date.now(), session: empty };
-      return empty;
+    if (options.mergeGuestAccount !== false) {
+      await ensureGuestAccountMerged(hint || stored || undefined);
+      sessionCache = null;
     }
 
+    // 힌트 없어도 호출 — 로그인 사용자는 Clerk 세션으로 계정 reportId 복구 (브라우저 전환)
     const resume = await fetchHomeResumeClient(resumeHint || undefined);
 
     if (resume.ok) {

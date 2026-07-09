@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
+import { RelationshipKindBadge } from "@/components/relationship/RelationshipKindBadge";
 import type { FamilyPerspective } from "@/lib/relationship/hubNavigation";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 
 const HUB_KINDS: {
   kind: RelationshipKind;
-  label: string;
   hasFamily?: boolean;
 }[] = [
-  { kind: "romantic", label: "연인" },
-  { kind: "work", label: "동료" },
-  { kind: "cohabitation", label: "동거·부부" },
-  { kind: "friendship", label: "친구" },
-  { kind: "family", label: "가족", hasFamily: true },
+  { kind: "romantic" },
+  { kind: "work" },
+  { kind: "cohabitation" },
+  { kind: "friendship" },
+  { kind: "family", hasFamily: true },
 ];
 
 type Props = {
@@ -88,15 +88,15 @@ export default function StitchKindPickerSheet({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {HUB_KINDS.map(({ kind, label, hasFamily }) =>
+          {HUB_KINDS.map(({ kind, hasFamily }) =>
             hasFamily ? (
               <div key={kind} className="col-span-2">
                 <button
                   type="button"
                   onClick={() => setFamilyOpen((v) => !v)}
-                  className="flex w-full items-center justify-between rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 px-4 py-4 text-left text-base font-semibold text-primary transition hover:border-secondary/35 active:scale-[0.99]"
+                  className="flex w-full items-center justify-between gap-2 rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 px-4 py-4 text-left transition hover:border-secondary/35 active:scale-[0.99]"
                 >
-                  {label}
+                  <RelationshipKindBadge kind={kind} />
                   <ChevronDown
                     className={`h-5 w-5 transition ${familyOpen ? "rotate-180" : ""}`}
                   />
@@ -169,9 +169,9 @@ export default function StitchKindPickerSheet({
                 key={kind}
                 type="button"
                 onClick={() => onSelect(kind)}
-                className="rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 py-4 text-base font-semibold text-primary transition hover:border-secondary/35 active:scale-[0.98]"
+                className="flex items-center justify-center rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 py-4 transition hover:border-secondary/35 active:scale-[0.98]"
               >
-                {label}
+                <RelationshipKindBadge kind={kind} />
               </button>
             ),
           )}

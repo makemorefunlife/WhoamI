@@ -20,6 +20,8 @@ type UseCanonicalReportIdOptions = {
   syncToUrl?: boolean;
   /** true면 설문·출생 localStorage 복구 생략 (관계 허브 등) */
   skipSessionHydrate?: boolean;
+  /** true면 /api/home/resume 호출 생략 — 허브 탭 즉시 진입용 */
+  skipResume?: boolean;
 };
 
 /**
@@ -32,20 +34,26 @@ export function useCanonicalReportId({
   logContext = "page",
   syncToUrl = true,
   skipSessionHydrate = false,
+  skipResume = false,
 }: UseCanonicalReportIdOptions) {
   const { isLoaded } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const trimmedHint = urlHint.trim();
-  const cachedId = getCachedReportId();
-  const initialId = trimmedHint || cachedId;
 
-  const [canonicalReportId, setCanonicalReportId] = useState(initialId);
+  const [canonicalReportId, setCanonicalReportId] = useState(trimmedHint);
   const [resolving, setResolving] = useState(false);
-  const [invalidHint, setInvalidHint] = useState(
-    () => getCachedSession()?.invalidHint === true,
-  );
+  const [invalidHint, setInvalidHint] = useState(false);
+
+  useEffect(() => {
+    if (!skipResume) return;
+    if (!trimmedHint) {
+      const cached = getCachedReportId();
+      if (cached) setCanonicalReportId(cached);
+    }
+    if (getCachedSession()?.invalidHint) setInvalidHint(true);
+  }, [skipResume, trimmedHint]);
 
   const syncCanonicalToUrl = useCallback(
     (canonical: string) => {
@@ -60,12 +68,13 @@ export function useCanonicalReportId({
   );
 
   useEffect(() => {
+    if (skipResume) return;
     if (!isLoaded) return;
 
     let cancelled = false;
 
     async function run() {
-      if (!initialId) setResolving(true);
+      if (!trimmedHint && !getCachedReportId()) setResolving(true);
       const session = await loadReportSession({
         urlHint: trimmedHint,
         context: logContext,
@@ -95,7 +104,8 @@ export function useCanonicalReportId({
     syncCanonicalToUrl,
     syncToUrl,
     skipSessionHydrate,
-    initialId,
+    skipResume,
+    trimmedHint,
   ]);
 
   return {

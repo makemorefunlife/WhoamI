@@ -218,33 +218,20 @@ export default function HomeContent() {
   }, []);
 
   const safeNavigate = useCallback(
-    async (intent: EntryIntent) => {
+    (intent: EntryIntent) => {
       setStartChoiceOpen(false);
 
       const reportIdHint =
         resume.reportId?.trim() || getCachedReportId() || undefined;
 
-      // 로그인 사용자: 허브 탭은 선행조건 없이 즉시 이동
-      if (isSignedIn) {
-        const destination = resolveEntryDestination({
-          intent,
-          session: null,
-          isSignedIn: true,
-          reportIdHint,
-        });
-        if (destination) {
-          router.push(destination);
-          return;
-        }
-      }
-
-      if (intent === "decision") {
-        router.push(ROUTES.decision);
-        return;
-      }
-
-      if (!reportIdHint && (intent === "blueprint" || intent === "relationships")) {
-        await createReportAndSurvey();
+      const hubDestination = resolveEntryDestination({
+        intent,
+        session: null,
+        isSignedIn,
+        reportIdHint,
+      });
+      if (hubDestination) {
+        router.push(hubDestination);
         return;
       }
 

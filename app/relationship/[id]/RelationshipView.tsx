@@ -56,6 +56,7 @@ export default function RelationshipView({
     reportIdB,
     nameA,
     nameB,
+    viewerIsReportA,
     displayBasic,
     displayPremium,
     displayRomanticDeep,
@@ -169,6 +170,7 @@ export default function RelationshipView({
             favorited={favorited}
             busy={favoriteBusy}
             onToggle={() => void toggleFavorite()}
+            variant="stitch"
           />
         </div>
       </header>
@@ -286,6 +288,7 @@ export default function RelationshipView({
             viewerName={viewerName}
             nameA={nameA}
             nameB={nameB}
+            viewerIsReportA={viewerIsReportA}
             displayPremium={displayPremium}
             displayRomanticDeep={displayRomanticDeep}
             displayWorkDeep={displayWorkDeep}
@@ -318,6 +321,7 @@ export default function RelationshipView({
               loading={logsLoading}
               selectedLogId={snapshotView?.logId ?? null}
               onSelectLog={viewAnalysisLog}
+              variant="stitch"
             />
           </div>
 

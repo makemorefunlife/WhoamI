@@ -1,8 +1,5 @@
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
-import {
-  PRIMARY_AXIS_LABELS,
-  PRIMARY_AXIS_ORDER,
-} from "@/lib/v2/framework/axisLabels";
+import { PRIMARY_AXIS_EN_LABELS, PRIMARY_AXIS_ORDER } from "@/lib/v2/framework/axisLabels";
 
 const CONCERN_KO: Record<string, string> = {
   money: "돈·재정",
@@ -17,7 +14,7 @@ export function buildSurveyAnalysisFromV2Profile(
   profile: CurrentSelfProfile,
 ): string {
   const axisLines = PRIMARY_AXIS_ORDER.map(
-    (k) => `- ${PRIMARY_AXIS_LABELS[k]}: ${profile.primary_axes[k] ?? 50}/100`,
+    (k) => `- ${PRIMARY_AXIS_EN_LABELS[k]}: ${profile.primary_axes[k] ?? 50}/100`,
   ).join("\n");
   const concern = profile.personalization.primary_concern;
   return `## 현재의 나 — Human Framework (v2 설문 10문항)

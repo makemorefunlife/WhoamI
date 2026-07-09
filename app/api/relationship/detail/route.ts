@@ -1,3 +1,4 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import {
   getPremiumPerspectiveForKind,
@@ -16,6 +17,7 @@ import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelations
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 
 export const runtime = "nodejs";
 
@@ -144,24 +146,39 @@ export async function GET(req: Request) {
       relationshipReportId,
     );
 
+    const { userId } = await auth();
+    const clerkUser = userId ? await currentUser() : null;
+    const viewerIsReportA = viewerReportId === rr.report_id_a;
+    const personAName = repA?.name?.trim() || "나";
+    const personBName = repB?.name?.trim() || "상대";
+    const viewerName = resolveViewerDisplayName({
+      reportName: viewer?.name,
+      clerkFirstName: clerkUser?.firstName,
+      clerkFullName: clerkUser?.fullName,
+    });
+    const partnerName = partner?.name?.trim() || "상대";
+
     return NextResponse.json({
       relationship_report_id: rr.id,
       report_id_a: rr.report_id_a,
       report_id_b: rr.report_id_b,
+      viewer_is_report_a: viewerIsReportA,
       analysis_type: rr.analysis_type,
       relationship_kind: activeKind,
       relationship_kinds: RELATIONSHIP_KINDS,
       relationship_kind_labels: RELATIONSHIP_KIND_LABELS,
       viewer_report_id: viewerReportId,
       partner_report_id: partnerId,
-      viewer_name: viewer?.name?.trim() ?? "나",
-      partner_name: partner?.name?.trim() ?? "상대",
+      viewer_name: viewerName,
+      partner_name: partnerName,
+      my_name: viewerName,
+      display_partner_name: partnerName,
       viewer_birth_time_unknown: !viewer?.birth_time?.trim(),
       partner_birth_time_unknown: !partner?.birth_time?.trim(),
       viewer_birth_place_unknown: isBirthPlaceFallback(viewer?.birth_place),
       partner_birth_place_unknown: isBirthPlaceFallback(partner?.birth_place),
-      person_a_name: repA?.name?.trim() ?? "첫 번째",
-      person_b_name: repB?.name?.trim() ?? "두 번째",
+      person_a_name: personAName,
+      person_b_name: personBName,
       perspective_basic: perspectiveBasic,
       perspective_premium: perspectivePremium,
       romantic_deep_report: romanticDeepReport,

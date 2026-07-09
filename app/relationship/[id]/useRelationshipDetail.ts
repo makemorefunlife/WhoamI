@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { AnalysisLogListItem } from "@/components/relationship/RelationshipAnalysisHistory";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
@@ -25,6 +26,7 @@ import {
   type AnalysisLogSnapshot,
 } from "@/lib/relationship/detail/parseAnalysisLogSnapshot";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
+import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 
 const premiumPreview = relationshipPremiumPreviewEnabled();
 
@@ -57,6 +59,7 @@ export type UseRelationshipDetailReturn = {
   reportIdB: string;
   nameA: string;
   nameB: string;
+  viewerIsReportA: boolean;
   displayBasic: RelationshipPerspective | null;
   displayPremium: RelationshipPerspective | null;
   displayRomanticDeep: RomanticSajuDeepReport["report"] | null;
@@ -94,6 +97,7 @@ export function useRelationshipDetail({
   const urlChildIsViewer = searchParams.get("childIsViewer")?.trim() ?? "";
   const urlParentType = searchParams.get("parentType")?.trim() ?? "";
   const urlAutostart = searchParams.get("autostart") === "1";
+  const { user } = useUser();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
       urlHint: urlViewerHint,
@@ -152,6 +156,7 @@ export function useRelationshipDetail({
   const [reportIdB, setReportIdB] = useState("");
   const [nameA, setNameA] = useState("");
   const [nameB, setNameB] = useState("");
+  const [viewerIsReportA, setViewerIsReportA] = useState(true);
   const [premiumKind, setPremiumKind] = useState<RelationshipKind>(() =>
     parseRelationshipKind(urlKindHint || undefined),
   );
@@ -232,8 +237,19 @@ export function useRelationshipDetail({
         }
         setSnapshotView(null);
         setDetailOk(true);
-        setPartnerName(data.partner_name ?? "상대");
-        setViewerName(data.viewer_name ?? "");
+        const ridA = data.report_id_a ?? "";
+        const ridB = data.report_id_b ?? "";
+        const isViewerA = effectiveViewerReportId === ridA;
+        const resolvedViewer = resolveViewerDisplayName({
+          reportName: data.viewer_name ?? data.my_name,
+          clerkFirstName: user?.firstName,
+          clerkFullName: user?.fullName,
+        });
+        const resolvedPartner =
+          (data.partner_name ?? data.display_partner_name ?? "상대").trim() ||
+          "상대";
+        setPartnerName(resolvedPartner);
+        setViewerName(resolvedViewer);
         setViewerBirthTimeUnknown(data.viewer_birth_time_unknown === true);
         setPartnerBirthTimeUnknown(data.partner_birth_time_unknown === true);
         setViewerBirthPlaceUnknown(data.viewer_birth_place_unknown === true);
@@ -259,17 +275,21 @@ export function useRelationshipDetail({
         setFriendshipDeep(
           (data.friendship_deep_report ?? null) as FriendReportBody | null,
         );
-        setReportIdA(data.report_id_a ?? "");
-        setReportIdB(data.report_id_b ?? "");
-        setNameA(data.person_a_name ?? data.viewer_name ?? "A");
-        setNameB(data.person_b_name ?? data.partner_name ?? "B");
+        setReportIdA(ridA);
+        setReportIdB(ridB);
+        setViewerIsReportA(
+          data.viewer_is_report_a === true ||
+            (data.viewer_is_report_a !== false && isViewerA),
+        );
+        setNameA(data.person_a_name ?? resolvedViewer);
+        setNameB(data.person_b_name ?? resolvedPartner);
         setFavorited(Boolean(data.is_favorite));
         void fetchLogs();
       } finally {
         setLoading(false);
       }
     },
-    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs],
+    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, user?.firstName, user?.fullName],
   );
 
   useEffect(() => {
@@ -721,6 +741,7 @@ export function useRelationshipDetail({
     reportIdB,
     nameA,
     nameB,
+    viewerIsReportA,
     displayBasic,
     displayPremium,
     displayRomanticDeep,

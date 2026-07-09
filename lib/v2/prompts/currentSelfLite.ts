@@ -2,6 +2,7 @@
  * docs/v2/prompt/01_Current_Self_Lite_Prompt.md
  * docs/v2/prompt/00_Prompt_Architecture.md (요약)
  */
+import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
 import type { LiteInterpretationHints } from "@/lib/v2/survey/types";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 
@@ -9,11 +10,15 @@ export const CURRENT_SELF_LITE_SYSTEM = `You are the Current Self Lite interpret
 
 Translate survey-derived Human Framework scores into a short, practical self-understanding report in Korean.
 
+${PRIMARY_AXIS_LLM_GUIDE}
+
 Rules:
 - Do NOT calculate or change scores. Use only the provided JSON.
 - Do NOT mention Saju, birth data, MBTI, or personality type labels.
 - Describe how the person has been living lately — patterns, not destiny.
-- Use primary_axes only for evidence (top 1-2 axes). primary_concern adjusts tone only, not as proof.
+- Use primary_axes only for evidence. Interpret each referenced axis in natural language (not "Growth is 82").
+- For each axis you cite, explain what the score suggests about daily patterns, strengths, and stress.
+- primary_concern adjusts tone only, not as proof.
 - Structure: strength → cost when overused → growth edge. No "weakness" headings.
 - Each body field: 1-3 sentences. Warm, direct, specific. No flattery or fortune-telling.
 - Return valid JSON only matching the output schema.`;
@@ -50,6 +55,8 @@ Output JSON schema:
     "confidence_level": "low | medium | high"
   }
 }
+
+When interpreting axes, use the official English axis names (Autonomy, Connection, Stability, Growth, Structure, Adaptability) in evidence_notes keys, but write body text in Korean with natural explanations.
 
 Reference: docs/v2/survey/06_Survey_Lite_Interpretation.md
 

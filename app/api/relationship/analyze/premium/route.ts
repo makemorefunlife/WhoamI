@@ -1,3 +1,4 @@
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { NextResponse } from "next/server";
@@ -40,6 +41,7 @@ import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChart
 import {
   UNKNOWN_BIRTH_FALLBACK,
 } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -239,8 +241,25 @@ export async function POST(req: Request) {
       );
     }
 
-    const labelA = String(repA.name ?? "").trim() || "첫 번째 사람";
-    const labelB = String(repB.name ?? "").trim() || "두 번째 사람";
+    const { userId } = await auth();
+    const clerkUser = userId ? await currentUser() : null;
+
+    const labelA = resolveViewerDisplayName({
+      reportName: repA.name,
+      clerkFirstName:
+        viewerReportId === rr.report_id_a ? clerkUser?.firstName : undefined,
+      clerkFullName:
+        viewerReportId === rr.report_id_a ? clerkUser?.fullName : undefined,
+      fallback: "나",
+    });
+    const labelB = resolveViewerDisplayName({
+      reportName: repB.name,
+      clerkFirstName:
+        viewerReportId === rr.report_id_b ? clerkUser?.firstName : undefined,
+      clerkFullName:
+        viewerReportId === rr.report_id_b ? clerkUser?.fullName : undefined,
+      fallback: "상대",
+    });
 
     const origin = getAppOrigin();
 

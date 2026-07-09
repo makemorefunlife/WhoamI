@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Brain,
   Heart,
@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
 import Logo from "@/components/brand/Logo";
+import { ROUTES } from "@/constants/routes";
 import {
   blueprintPath,
-  DECISION_HUB_LABEL,
   DECISION_HUB_PATH,
   readStoredReportId,
   relationHubPath,
@@ -65,8 +65,11 @@ export default function StitchLandingPage({
 }: Props) {
   const router = useRouter();
   const mainRef = useScrollReveal();
+  const [reportId, setReportId] = useState("");
 
-  const reportId = readStoredReportId();
+  useEffect(() => {
+    setReportId(readStoredReportId());
+  }, []);
 
   return (
     <div className="stitch-landing overflow-x-hidden">
@@ -243,9 +246,9 @@ export default function StitchLandingPage({
 
       <footer className="mt-section-gap rounded-t-extra-extra-large border-t border-outline-variant/30 bg-primary px-edge-margin-mobile py-16 pb-32 text-on-primary md:px-edge-margin-desktop">
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-12 md:grid-cols-12">
-          <div className="md:col-span-6">
+          <div className="md:col-span-3">
             <div className="mb-6 flex items-center gap-2">
-              <Logo size={32} href="/" />
+              <Logo size={32} href="/" onDarkBackground />
               <h5 className="text-2xl font-medium text-on-primary">
                 Aha It&apos;s me!
               </h5>
@@ -256,63 +259,94 @@ export default function StitchLandingPage({
             </p>
           </div>
           <div className="md:col-span-3">
-            <h6 className="mb-6 text-sm font-semibold uppercase tracking-widest text-accent-emerald-soft">
-              Journey
+            <h6 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-emerald-soft/90">
+              Account
             </h6>
-            <ul className="flex flex-col gap-4 text-on-primary/80">
+            <ul className="flex flex-col gap-2.5 text-sm text-on-primary/80">
               <li>
                 <Link
-                  href={blueprintPath(reportId)}
-                  className="hover:text-accent-rose-soft"
+                  href={ROUTES.accountProfile}
+                  className="transition hover:text-accent-rose-soft"
                 >
-                  Personal Analysis
+                  My Profile
                 </Link>
               </li>
               <li>
                 <Link
-                  href={relationHubPath(reportId)}
-                  className="hover:text-accent-rose-soft"
+                  href={ROUTES.accountBilling}
+                  className="transition hover:text-accent-rose-soft"
                 >
-                  Relation Hub
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={DECISION_HUB_PATH}
-                  className="hover:text-accent-rose-soft"
-                >
-                  {DECISION_HUB_LABEL}
+                  Billing History
                 </Link>
               </li>
             </ul>
           </div>
           <div className="md:col-span-3">
-            <h6 className="mb-6 text-sm font-semibold uppercase tracking-widest text-accent-emerald-soft">
-              Legal
+            <h6 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-emerald-soft/90">
+              Support
             </h6>
-            <ul className="flex flex-col gap-4 text-on-primary">
+            <ul className="flex flex-col gap-2.5 text-sm text-on-primary/80">
               <li>
                 <Link
-                  href="/about"
-                  className="font-medium text-on-primary hover:text-accent-rose-soft"
+                  href={ROUTES.about}
+                  className="transition hover:text-accent-rose-soft"
                 >
-                  Service Information
+                  About Service
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/terms"
-                  className="font-medium text-on-primary hover:text-accent-rose-soft"
+                  href={ROUTES.pricing}
+                  className="transition hover:text-accent-rose-soft"
+                >
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.faq}
+                  className="transition hover:text-accent-rose-soft"
+                >
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.contact}
+                  className="transition hover:text-accent-rose-soft"
+                >
+                  Contact Support
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div className="md:col-span-3">
+            <h6 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-emerald-soft/90">
+              Legal
+            </h6>
+            <ul className="flex flex-col gap-2.5 text-sm text-on-primary/80">
+              <li>
+                <Link
+                  href={ROUTES.terms}
+                  className="transition hover:text-accent-rose-soft"
                 >
                   Terms of Service
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/privacy"
-                  className="font-medium text-on-primary hover:text-accent-rose-soft"
+                  href={ROUTES.privacy}
+                  className="transition hover:text-accent-rose-soft"
                 >
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.refund}
+                  className="transition hover:text-accent-rose-soft"
+                >
+                  Refund Policy
                 </Link>
               </li>
             </ul>
@@ -320,8 +354,22 @@ export default function StitchLandingPage({
         </div>
         <div className="mx-auto mt-16 flex max-w-[1200px] flex-col justify-between gap-4 border-t border-on-primary/15 pt-8 text-xs md:flex-row">
           <p className="text-on-primary/60">
-            © 2026 Aha It&apos;s me! All rights reserved.
+            © {new Date().getFullYear()} Aha It&apos;s me! All rights reserved.
           </p>
+          <nav
+            className="flex flex-wrap gap-x-4 gap-y-1 text-on-primary/55"
+            aria-label="Hub shortcuts"
+          >
+            <Link href={blueprintPath(reportId)} className="hover:text-on-primary">
+              Me
+            </Link>
+            <Link href={relationHubPath(reportId)} className="hover:text-on-primary">
+              Lab
+            </Link>
+            <Link href={DECISION_HUB_PATH} className="hover:text-on-primary">
+              Choice
+            </Link>
+          </nav>
         </div>
       </footer>
     </div>

@@ -2,103 +2,77 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import Logo from "@/components/brand/Logo";
 import { ROUTES } from "@/constants/routes";
-import {
-  blueprintPath,
-  DECISION_HUB_LABEL,
-  DECISION_HUB_PATH,
-  relationHubPath,
-} from "@/lib/stitch/hubPaths";
 
-const SUPPORT_LINKS = [
-  { href: ROUTES.faq, label: "FAQ" },
-  { href: ROUTES.contact, label: "Contact" },
-] as const;
-
-const LEGAL_LINKS = [
-  { href: ROUTES.terms, label: "Terms" },
-  { href: ROUTES.privacy, label: "Privacy" },
-  { href: ROUTES.refund, label: "Refund" },
+const FOOTER_GROUPS = [
+  {
+    id: "account",
+    label: "Account",
+    links: [
+      { href: ROUTES.accountProfile, label: "My Profile" },
+      { href: ROUTES.accountBilling, label: "Billing History" },
+    ],
+  },
+  {
+    id: "support",
+    label: "Support",
+    links: [
+      { href: ROUTES.about, label: "About Service" },
+      { href: ROUTES.pricing, label: "Pricing" },
+      { href: ROUTES.faq, label: "FAQ" },
+      { href: ROUTES.contact, label: "Contact Support" },
+    ],
+  },
+  {
+    id: "legal",
+    label: "Legal",
+    links: [
+      { href: ROUTES.terms, label: "Terms of Service" },
+      { href: ROUTES.privacy, label: "Privacy Policy" },
+      { href: ROUTES.refund, label: "Refund Policy" },
+    ],
+  },
 ] as const;
 
 export default function StitchAppFooter() {
   const pathname = usePathname();
-  const [reportId, setReportId] = useState("");
-
-  useEffect(() => {
-    setReportId(
-      typeof window !== "undefined"
-        ? localStorage.getItem("reportId")?.trim() ?? ""
-        : "",
-    );
-  }, [pathname]);
 
   if (pathname === ROUTES.home) return null;
 
   return (
     <footer className="mt-auto border-t border-outline-variant/30 bg-surface-container-low/35 px-5 py-8 sm:px-6">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <div className="flex items-center gap-2.5">
-          <Logo size={24} href="/" onLightBackground />
-          <p className="text-sm font-semibold text-primary">Aha It&apos;s me!</p>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+        <p className="text-sm font-semibold text-primary">
+          <Link href="/" className="transition hover:opacity-80">
+            Aha It&apos;s me!
+          </Link>
+        </p>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {FOOTER_GROUPS.map((group) => (
+            <div key={group.id}>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60">
+                {group.label}
+              </p>
+              <ul className="space-y-1.5">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-[12px] font-normal text-on-surface-variant transition hover:text-primary"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-on-surface-variant">
-            Journey
-          </p>
-          <nav
-            className="mt-3 flex flex-wrap gap-x-5 gap-y-2"
-            aria-label="Hub navigation"
-          >
-            <Link
-              href={blueprintPath(reportId)}
-              className="text-sm text-on-surface-variant transition hover:text-primary"
-            >
-              Personal Analysis
-            </Link>
-            <Link
-              href={relationHubPath(reportId)}
-              className="text-sm font-medium text-primary transition hover:text-secondary"
-            >
-              Relation Hub
-            </Link>
-            <Link
-              href={DECISION_HUB_PATH}
-              className="text-sm text-on-surface-variant transition hover:text-primary"
-            >
-              {DECISION_HUB_LABEL}
-            </Link>
-          </nav>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant/25 pt-5 text-[11px] text-on-surface-variant">
-          <div className="flex flex-col gap-2">
-            <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Support">
-              {SUPPORT_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="transition hover:text-primary"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Legal">
-              {LEGAL_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="transition hover:text-primary"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <p>© {new Date().getFullYear()} Aha It&apos;s me!</p>
-        </div>
+
+        <p className="border-t border-outline-variant/25 pt-5 text-[11px] text-on-surface-variant">
+          © {new Date().getFullYear()} Aha It&apos;s me!
+        </p>
       </div>
     </footer>
   );

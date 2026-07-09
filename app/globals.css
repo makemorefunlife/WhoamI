@@ -397,6 +397,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   animation: pulseSoft 2.6s ease-in-out infinite;
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;

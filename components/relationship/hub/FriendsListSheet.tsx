@@ -2,16 +2,14 @@
 
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, X } from "lucide-react";
+import { X } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
-import { friendInitials } from "@/lib/relationship/hubDisplayName";
+import { FriendAvatarCircle } from "@/components/relationship/hub/FriendAvatarCircle";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
 
 type Props = {
   open: boolean;
   friends: RelationshipListItem[];
-  waiting: RelationshipListItem[];
-  displayNames: Record<string, string>;
   selectedId: string | null;
   onClose: () => void;
   onSelect: (item: RelationshipListItem) => void;
@@ -21,7 +19,7 @@ function itemKey(item: RelationshipListItem): string {
   return (
     item.list_key ??
     item.relationship_report_id ??
-    item.outbound_invite_id ??
+    item.partner_report_id ??
     item.partner_name
   );
 }
@@ -29,14 +27,10 @@ function itemKey(item: RelationshipListItem): string {
 export default function FriendsListSheet({
   open,
   friends,
-  waiting,
-  displayNames,
   selectedId,
   onClose,
   onSelect,
 }: Props) {
-  const combined = [...waiting, ...friends];
-
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -65,41 +59,39 @@ export default function FriendsListSheet({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <ul className="space-y-2">
-          {combined.map((item) => {
-            const key = itemKey(item);
-            const isPending = item.row_kind === "outbound_waiting";
-            const id = item.relationship_report_id;
-            const name =
-              (id && displayNames[id]) || item.partner_name;
-            return (
-              <li key={key}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(item);
-                    onClose();
-                  }}
-                  className={`flex w-full min-h-[56px] items-center gap-3 rounded-2xl px-4 py-3 text-left transition active:scale-[0.99] ${
-                    selectedId === key
-                      ? "bg-secondary/15 ring-2 ring-secondary/40"
-                      : "bg-surface-container-low/50 hover:bg-surface-container-low"
-                  }`}
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-emerald-soft text-sm font-semibold text-primary">
-                    {friendInitials(name)}
-                  </span>
-                  <span className="min-w-0 flex-1 font-medium text-on-surface">
-                    {name}
-                  </span>
-                  {isPending ? (
-                    <Clock className="h-4 w-4 shrink-0 text-amber-500" />
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {friends.length === 0 ? (
+          <p className="py-10 text-center text-sm text-on-surface-variant">
+            등록된 친구가 없어요.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {friends.map((item) => {
+              const key = itemKey(item);
+              const name = item.partner_name;
+              return (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(item);
+                      onClose();
+                    }}
+                    className={`flex w-full min-h-[56px] items-center gap-3 rounded-2xl px-4 py-3 text-left transition active:scale-[0.99] ${
+                      selectedId === key
+                        ? "bg-secondary/15 ring-2 ring-secondary/40"
+                        : "bg-surface-container-low/50 hover:bg-surface-container-low"
+                    }`}
+                  >
+                    <FriendAvatarCircle name={name} />
+                    <span className="min-w-0 flex-1 font-medium text-on-surface">
+                      {name}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </motion.div>
     </div>
   );

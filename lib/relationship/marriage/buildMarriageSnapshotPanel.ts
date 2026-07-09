@@ -23,7 +23,7 @@ const SNAPSHOT_AXIS_KEYS: PrimaryAxisKey[] = [
   "connection",
   "stability",
   "growth",
-  "control",
+  "structure",
   "adaptability",
 ];
 
@@ -72,11 +72,11 @@ function fallbackAxesFromMarriage(
   if (ref?.yin_yang === "yin") {
     scores.connection = Math.min(82, scores.connection + 6);
   } else if (ref?.yin_yang === "yang") {
-    scores.control = Math.min(78, scores.control + 5);
+    scores.structure = Math.min(78, scores.structure + 5);
   }
 
   const p = who === "a" ? ctx.tenGod.profileA : ctx.tenGod.profileB;
-  if (p.wealthOfficer >= 2) scores.control = Math.min(82, scores.control + 8);
+  if (p.wealthOfficer >= 2) scores.structure = Math.min(82, scores.structure + 8);
   if (p.food >= 2) scores.connection = Math.min(80, scores.connection + 6);
   if (p.seal >= 2) scores.stability = Math.min(78, scores.stability + 5);
 

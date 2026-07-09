@@ -36,7 +36,7 @@ const CONCERN_EMPHASIS: Record<PrimaryConcern, string[]> = {
   money: ["stability", "practicality"],
   relationship: ["connection", "empathy"],
   health: ["energy_style", "resilience"],
-  career: ["growth", "control"],
+  career: ["growth", "structure"],
   other: [],
 };
 

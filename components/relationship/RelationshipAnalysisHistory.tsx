@@ -1,10 +1,8 @@
 "use client";
 
 import { Heart } from "lucide-react";
-import {
-  RELATIONSHIP_KIND_LABELS,
-  type RelationshipKind,
-} from "@/lib/relationship/relationshipKind";
+import { RelationshipAnalysisBadgeGroup } from "@/components/relationship/RelationshipKindBadge";
+import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 
 export type AnalysisLogListItem = {
   id: string;
@@ -16,6 +14,8 @@ export type AnalysisLogListItem = {
   summary_subtitle: string;
   result_snapshot?: Record<string, unknown>;
 };
+
+type HistoryVariant = "dark" | "stitch";
 
 function formatWhen(iso: string): string {
   try {
@@ -31,28 +31,56 @@ function formatWhen(iso: string): string {
   }
 }
 
+function historyStyles(variant: HistoryVariant) {
+  if (variant === "stitch") {
+    return {
+      loading: "text-center text-xs text-on-surface-variant",
+      empty: "text-center text-xs text-on-surface-variant",
+      itemSelected:
+        "border-secondary/40 bg-secondary/10",
+      itemDefault:
+        "border-outline-variant/30 bg-surface-container-low/60 hover:border-secondary/30 hover:bg-secondary/5",
+      time: "text-[10px] text-on-surface-variant/70",
+      title: "text-sm font-medium text-slate-900",
+      subtitle: "text-xs leading-relaxed text-on-surface-variant",
+      hint: "text-[10px] text-secondary/90",
+    };
+  }
+  return {
+    loading: "text-center text-xs text-[var(--space-text-muted)]",
+    empty: "text-center text-xs text-[var(--space-text-muted)]",
+    itemSelected: "border-[#67B7FF]/50 bg-[#67B7FF]/12",
+    itemDefault:
+      "border-white/10 bg-white/[0.03] hover:border-[#67B7FF]/30 hover:bg-white/[0.05]",
+    time: "text-[10px] text-white/35",
+    title: "text-sm font-medium text-[var(--space-text)]",
+    subtitle: "text-xs leading-relaxed text-[var(--space-text-muted)]",
+    hint: "text-[10px] text-[#9ec8ff]/80",
+  };
+}
+
 export default function RelationshipAnalysisHistory({
   logs,
   loading,
   selectedLogId,
   onSelectLog,
+  variant = "dark",
 }: {
   logs: AnalysisLogListItem[];
   loading?: boolean;
   selectedLogId?: string | null;
   onSelectLog?: (log: AnalysisLogListItem) => void;
+  variant?: HistoryVariant;
 }) {
+  const styles = historyStyles(variant);
+
   if (loading) {
-    return (
-      <p className="text-center text-xs text-[var(--space-text-muted)]">
-        분석 기록 불러오는 중…
-      </p>
-    );
+    return <p className={styles.loading}>분석 기록 불러오는 중…</p>;
   }
 
   if (logs.length === 0) {
     return (
-      <p className="text-center text-xs text-[var(--space-text-muted)]">
+      <p className={styles.empty}>
         아직 저장된 분석 기록이 없어요. 분석을 만들면 여기에 쌓여요.
       </p>
     );
@@ -71,35 +99,27 @@ export default function RelationshipAnalysisHistory({
               onClick={() => onSelectLog?.(log)}
               className={[
                 "w-full rounded-xl border px-3 py-2.5 text-left transition",
-                selected
-                  ? "border-[#67B7FF]/50 bg-[#67B7FF]/12"
-                  : "border-white/10 bg-white/[0.03] hover:border-[#67B7FF]/30 hover:bg-white/[0.05]",
+                selected ? styles.itemSelected : styles.itemDefault,
                 clickable ? "cursor-pointer" : "cursor-default",
               ].join(" ")}
             >
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-medium text-[#67B7FF]">
-                  {log.relationship_kind === "unspecified"
-                    ? "관계"
-                    : RELATIONSHIP_KIND_LABELS[log.relationship_kind]}
-                </span>
-                <span className="text-[10px] text-white/40">
-                  {log.analysis_level === "premium" ? "심화" : "기본"}
-                </span>
-                <span className="ml-auto text-[10px] text-white/35">
+                <RelationshipAnalysisBadgeGroup
+                  kind={log.relationship_kind}
+                  level={log.analysis_level}
+                />
+                <span className={`ml-auto ${styles.time}`}>
                   {formatWhen(log.created_at)}
                 </span>
               </div>
-              <p className="mt-1 text-sm font-medium text-[var(--space-text)]">
-                {log.summary_title}
-              </p>
+              <p className={`mt-1 ${styles.title}`}>{log.summary_title}</p>
               {log.summary_subtitle ? (
-                <p className="mt-0.5 text-xs leading-relaxed text-[var(--space-text-muted)]">
+                <p className={`mt-0.5 ${styles.subtitle}`}>
                   {log.summary_subtitle}
                 </p>
               ) : null}
               {clickable ? (
-                <p className="mt-1.5 text-[10px] text-[#9ec8ff]/80">
+                <p className={`mt-1.5 ${styles.hint}`}>
                   {selected ? "지금 이 기록을 보고 있어요" : "탭해서 다시 보기"}
                 </p>
               ) : null}
@@ -115,11 +135,14 @@ export function FavoriteHeartButton({
   favorited,
   busy,
   onToggle,
+  variant = "dark",
 }: {
   favorited: boolean;
   busy?: boolean;
   onToggle: () => void;
+  variant?: HistoryVariant;
 }) {
+  const stitch = variant === "stitch";
   return (
     <button
       type="button"
@@ -128,9 +151,13 @@ export function FavoriteHeartButton({
       aria-pressed={favorited}
       className={[
         "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50",
-        favorited
-          ? "border-pink-400/50 bg-pink-500/20 text-pink-200 shadow-[0_0_12px_rgba(244,114,182,0.25)]"
-          : "border-white/15 bg-white/[0.04] text-white/60 hover:border-pink-400/30 hover:text-pink-200",
+        stitch
+          ? favorited
+            ? "border-pink-300 bg-pink-50 text-pink-700 shadow-sm"
+            : "border-outline-variant/40 bg-surface-container-low text-on-surface-variant hover:border-pink-300/60 hover:text-pink-600"
+          : favorited
+            ? "border-pink-400/50 bg-pink-500/20 text-pink-200 shadow-[0_0_12px_rgba(244,114,182,0.25)]"
+            : "border-white/15 bg-white/[0.04] text-white/60 hover:border-pink-400/30 hover:text-pink-200",
       ].join(" ")}
       onClick={onToggle}
     >

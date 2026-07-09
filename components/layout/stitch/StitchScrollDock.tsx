@@ -1,14 +1,14 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { Compass, Home, Scale, Users } from "lucide-react";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { stitchDockActivePath } from "@/components/layout/stitch/StitchSideMenu";
 import {
   blueprintPath,
-  DECISION_HUB_LABEL,
   DECISION_HUB_PATH,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
@@ -16,7 +16,41 @@ import {
 const SCROLL_DOWN_THRESHOLD = 10;
 const TOP_HIDE_Y = 24;
 
-function DockItem({
+const dockItemClass = (active: boolean) =>
+  `flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1 transition-colors ${
+    active
+      ? "text-accent-emerald"
+      : "text-on-surface-variant hover:text-accent-emerald"
+  }`;
+
+function DockLink({
+  label,
+  active,
+  href,
+  children,
+}: {
+  label: string;
+  active?: boolean;
+  href: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link href={href} prefetch className={dockItemClass(Boolean(active))}>
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-full ${
+          active ? "bg-accent-emerald-soft" : ""
+        }`}
+      >
+        {children}
+      </span>
+      <span className="text-[10px] font-medium leading-none sm:text-xs">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+function DockButton({
   label,
   active,
   onClick,
@@ -31,11 +65,7 @@ function DockItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1 transition-colors ${
-        active
-          ? "text-accent-emerald"
-          : "text-on-surface-variant hover:text-accent-emerald"
-      }`}
+      className={dockItemClass(Boolean(active))}
     >
       <span
         className={`flex h-9 w-9 items-center justify-center rounded-full ${
@@ -56,7 +86,6 @@ export default function StitchScrollDock({
 }: {
   onOpenAuth?: () => void;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const { openSignIn } = useClerk();
   const { isSignedIn } = useClerkReady();
@@ -116,49 +145,51 @@ export default function StitchScrollDock({
     >
       <nav
         className="flex h-[4.25rem] w-full items-stretch justify-between gap-1 rounded-full border border-outline-variant/30 bg-[#fffdf8]/95 px-2 shadow-[0_12px_40px_rgba(26,51,40,0.14)] backdrop-blur-xl"
-        aria-label="주요 메뉴"
+        aria-label="Main navigation"
         aria-hidden={!visible}
       >
-        <DockItem
-          label="홈"
-          active={active === "home"}
-          onClick={() => router.push("/")}
-        >
+        <DockLink label="Home" active={active === "home"} href="/">
           <Home className="h-5 w-5" strokeWidth={2} aria-hidden />
-        </DockItem>
-        <DockItem
-          label="나"
-          active={active === "me"}
-          onClick={() => {
-            if (reportId || isSignedIn) {
-              router.push(blueprintPath(reportId));
-              return;
-            }
-            if (pathname === "/" && onOpenAuth) {
-              onOpenAuth();
-              return;
-            }
-            openSignIn?.({
-              forceRedirectUrl: pathname || "/",
-            });
-          }}
-        >
-          <Compass className="h-5 w-5" strokeWidth={2} aria-hidden />
-        </DockItem>
-        <DockItem
-          label="관계"
+        </DockLink>
+        {reportId || isSignedIn ? (
+          <DockLink
+            label="Me"
+            active={active === "me"}
+            href={blueprintPath(reportId)}
+          >
+            <Compass className="h-5 w-5" strokeWidth={2} aria-hidden />
+          </DockLink>
+        ) : (
+          <DockButton
+            label="Me"
+            active={active === "me"}
+            onClick={() => {
+              if (pathname === "/" && onOpenAuth) {
+                onOpenAuth();
+                return;
+              }
+              openSignIn?.({
+                forceRedirectUrl: pathname || "/",
+              });
+            }}
+          >
+            <Compass className="h-5 w-5" strokeWidth={2} aria-hidden />
+          </DockButton>
+        )}
+        <DockLink
+          label="Lab"
           active={active === "relations"}
-          onClick={() => router.push(relationHubPath(reportId))}
+          href={relationHubPath(reportId)}
         >
           <Users className="h-5 w-5" strokeWidth={2} aria-hidden />
-        </DockItem>
-        <DockItem
-          label={DECISION_HUB_LABEL}
+        </DockLink>
+        <DockLink
+          label="Choice"
           active={active === "decision"}
-          onClick={() => router.push(DECISION_HUB_PATH)}
+          href={DECISION_HUB_PATH}
         >
           <Scale className="h-5 w-5" strokeWidth={2} aria-hidden />
-        </DockItem>
+        </DockLink>
       </nav>
     </div>
   );

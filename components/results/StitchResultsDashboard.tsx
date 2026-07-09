@@ -8,13 +8,12 @@ import GuestDashboardAuthNotice from "@/components/results/GuestDashboardAuthNot
 import DualAxisRadarChart, {
   STITCH_RADAR_THEME,
 } from "@/components/v2/DualAxisRadarChart";
+import AxisSummaryCards from "@/components/v2/AxisSummaryCards";
 import StitchFreeSticker from "@/components/results/StitchFreeSticker";
 import StitchLiteResultPanel from "@/components/results/StitchLiteResultPanel";
 import StitchPremiumCard from "@/components/results/StitchPremiumCard";
-import {
-  STITCH_DASHBOARD_AXIS_LABELS,
-  STITCH_DASHBOARD_AXIS_ORDER,
-} from "@/lib/v2/framework/axisLabels";
+import { PRIMARY_AXIS_ORDER } from "@/lib/v2/framework/axisLabels";
+import { buildOverallAxisSummary } from "@/lib/v2/framework/axisInterpretation";
 import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
@@ -159,11 +158,25 @@ export default function StitchResultsDashboard({
           current={current.primary_axes}
           innate={innate.primary_axes}
           theme={STITCH_RADAR_THEME}
-          axisOrder={STITCH_DASHBOARD_AXIS_ORDER}
-          axisLabels={STITCH_DASHBOARD_AXIS_LABELS}
           currentLabel="Current state"
           innateLabel="Innate potential"
         />
+      </section>
+
+      <section className="stitch-hero-panel space-y-5 rounded-extra-large p-6 sm:p-8">
+        <AxisSummaryCards
+          scores={current.primary_axes}
+          axisOrder={PRIMARY_AXIS_ORDER}
+          title="Current state — axis summary"
+        />
+        <div className="rounded-2xl border border-outline-variant/35 bg-surface-container-low/40 px-4 py-3.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
+            Overall summary
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-on-surface">
+            {buildOverallAxisSummary(current.primary_axes, PRIMARY_AXIS_ORDER)}
+          </p>
+        </div>
       </section>
 
       <section className="space-y-4">
