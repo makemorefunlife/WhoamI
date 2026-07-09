@@ -1,75 +1,13 @@
-export const DECISION_CATEGORIES = [
-  {
-    id: "relationship",
-    emoji: "👥",
-    label: "관계",
-    labelEn: "Relationships",
-  },
-  {
-    id: "career",
-    emoji: "💼",
-    label: "커리어",
-    labelEn: "Career",
-  },
-  {
-    id: "finance",
-    emoji: "💰",
-    label: "재테크",
-    labelEn: "Finance",
-  },
-  {
-    id: "life",
-    emoji: "🏠",
-    label: "일상",
-    labelEn: "Life",
-  },
-  {
-    id: "others",
-    emoji: "📦",
-    label: "기타",
-    labelEn: "Others",
-  },
-] as const;
+import type { DecisionCategory } from "@/lib/decision/categories";
 
-export type DecisionCategory = (typeof DECISION_CATEGORIES)[number]["id"];
-
-const REVIEW_TAB_LABELS: Record<DecisionCategory, string> = {
-  relationship: "👥 관계",
-  career: "💼 커리어",
-  finance: "💰 Finance",
-  life: "🏠 일상",
-  others: "📦 기타",
-};
-
-const LEGACY_CATEGORY_MAP: Record<string, DecisionCategory> = {
-  investment: "finance",
-  hobby: "life",
-  other: "others",
-};
-
-export function normalizeDecisionCategory(raw: string): DecisionCategory {
-  if (raw in LEGACY_CATEGORY_MAP) {
-    return LEGACY_CATEGORY_MAP[raw];
-  }
-  const found = DECISION_CATEGORIES.find((c) => c.id === raw);
-  return found?.id ?? "others";
-}
-
-export function decisionCategoryLabel(id: DecisionCategory): string {
-  return REVIEW_TAB_LABELS[id] ?? id;
-}
-
-/** STEP 1 dropdown — emoji + English */
-export function decisionCategorySelectLabel(
-  cat: (typeof DECISION_CATEGORIES)[number],
-): string {
-  return `${cat.emoji} ${cat.labelEn}`;
-}
-
-/** STEP 2 filter tabs & review cards */
-export function decisionCategoryReviewTabLabel(id: DecisionCategory): string {
-  return REVIEW_TAB_LABELS[id];
-}
+export type { DecisionCategory, DecisionCategoryFilter } from "@/lib/decision/categories";
+export {
+  DECISION_CATEGORIES,
+  decisionCategoryLabel,
+  decisionCategoryReviewTabLabel,
+  decisionCategorySelectLabel,
+  normalizeDecisionCategory,
+} from "@/lib/decision/categories";
 
 /** pending = 리뷰 필요(노란불), reviewed = 리뷰 완료(초록불) */
 export type DecisionStatus = "pending" | "reviewed";

@@ -1,32 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Calendar, Sparkles } from "lucide-react";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import GuestDashboardAuthNotice from "@/components/results/GuestDashboardAuthNotice";
 import DecideWithAiComingSoon from "@/components/decision/DecideWithAiComingSoon";
-import DecisionStatusDot from "@/components/decision/DecisionStatusDot";
+import DecisionCategoryTabs from "@/components/decision/DecisionCategoryTabs";
+import DecisionReviewCard from "@/components/decision/DecisionReviewCard";
 import DecisionReviewSheet from "@/components/decision/DecisionReviewSheet";
-import { StarRatingDisplay } from "@/components/decision/StarRating";
+import { decisionPanelClass } from "@/components/decision/decisionPanelClass";
+import { stitchPillClass } from "@/components/decision/stitchPillClass";
 import FadeInContent from "@/components/ui/stitch/FadeInContent";
 import { StitchSkeleton } from "@/components/ui/stitch/StitchSkeleton";
 import {
   addDecisionEntry,
   completeDecisionReview,
   readDecisionJournal,
+  readDecisionReportId,
 } from "@/lib/decision/session";
 import { sortDecisionsForReview } from "@/lib/decision/sort";
-import { formatDecisionDate } from "@/lib/decision/format";
+import { DECISION_CATEGORIES, decisionCategorySelectLabel } from "@/lib/decision/categories";
 import { DECISION_HUB_LABEL } from "@/lib/stitch/hubPaths";
 import {
-  DECISION_CATEGORIES,
   DECISION_DATE_RANGES,
-  decisionCategoryLabel,
-  decisionCategoryReviewTabLabel,
-  decisionCategorySelectLabel,
-  isDecisionReviewed,
   type DecisionCategory,
+  type DecisionCategoryFilter,
   type DecisionDateRangeId,
   type DecisionEntry,
 } from "@/lib/decision/types";
@@ -39,30 +39,8 @@ const ONBOARDING_STEPS = [
   { num: "03", label: "ANALYZE", desc: "Decode pattern" },
 ] as const;
 
-function panelClass() {
-  return "stitch-hero-panel rounded-extra-large border border-outline-variant/30 shadow-[0_4px_20px_rgba(26,51,40,0.05)]";
-}
-
 function fieldClass() {
   return "w-full rounded-xl border-0 bg-surface-container-lowest/90 px-4 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/40 transition focus:ring-2 focus:ring-secondary/25";
-}
-
-function filterPillClass(active: boolean) {
-  return [
-    "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-    active
-      ? "bg-primary text-on-primary shadow-sm"
-      : "bg-surface-container-low text-on-surface-variant ring-1 ring-outline-variant/35 hover:bg-surface-container hover:text-on-surface",
-  ].join(" ");
-}
-
-function categoryTabClass(active: boolean) {
-  return [
-    "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition",
-    active
-      ? "bg-primary text-on-primary shadow-sm"
-      : "bg-surface-container-low text-on-surface-variant/80 ring-1 ring-outline-variant/30 hover:bg-surface-container",
-  ].join(" ");
 }
 
 function OnboardingBanner() {
@@ -108,11 +86,6 @@ function filterByRange(
   return entries.filter((e) => new Date(e.createdAt).getTime() >= cutoff);
 }
 
-function readLocalReportId(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem("reportId")?.trim() || "local";
-}
-
 export default function DecisionJournalContent() {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
@@ -125,12 +98,10 @@ export default function DecisionJournalContent() {
   const [category, setCategory] = useState<DecisionCategory>("relationship");
   const [analyzeRange, setAnalyzeRange] =
     useState<DecisionDateRangeId>("30d");
-  const [analyzeCategory, setAnalyzeCategory] = useState<
-    DecisionCategory | "all"
-  >("all");
-  const [reviewCategoryFilter, setReviewCategoryFilter] = useState<
-    DecisionCategory | "all"
-  >("all");
+  const [analyzeCategory, setAnalyzeCategory] =
+    useState<DecisionCategoryFilter>("all");
+  const [reviewCategoryFilter, setReviewCategoryFilter] =
+    useState<DecisionCategoryFilter>("all");
   const [analyzeMessage, setAnalyzeMessage] = useState<string | null>(null);
   const [reviewEntry, setReviewEntry] = useState<DecisionEntry | null>(null);
 
@@ -139,7 +110,7 @@ export default function DecisionJournalContent() {
   }, []);
 
   useEffect(() => {
-    const id = readLocalReportId();
+    const id = readDecisionReportId();
     setReportId(id);
     setEntries(readDecisionJournal(id));
     setJournalReady(true);
@@ -188,6 +159,8 @@ export default function DecisionJournalContent() {
     return sortedEntries.filter((e) => e.category === reviewCategoryFilter);
   }, [reviewCategoryFilter, sortedEntries]);
   const previewEntries = filteredReviewEntries.slice(0, REVIEW_PREVIEW_LIMIT);
+  const hasMoreReviewEntries =
+    filteredReviewEntries.length > REVIEW_PREVIEW_LIMIT;
 
   const filteredForAnalyze = useMemo(() => {
     let list = filterByRange(entries, analyzeRange);
@@ -213,6 +186,8 @@ export default function DecisionJournalContent() {
     );
   };
 
+  const panelClass = decisionPanelClass();
+
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
       <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:px-6 sm:py-8">
@@ -236,7 +211,6 @@ export default function DecisionJournalContent() {
           </div>
         ) : null}
 
-        {/* Step 1 — Archive a Decision */}
         <section className="mb-12 sm:mb-16" id="decide">
           <div className="mb-5">
             <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
@@ -249,7 +223,7 @@ export default function DecisionJournalContent() {
               Log the choice you&apos;re facing before the outcome unfolds.
             </p>
           </div>
-          <div className={`${panelClass()} p-5 sm:p-6`}>
+          <div className={`${panelClass} p-5 sm:p-6`}>
             <div className="grid gap-4 sm:grid-cols-[11rem_1fr]">
               <div>
                 <label
@@ -302,7 +276,6 @@ export default function DecisionJournalContent() {
           </div>
         </section>
 
-        {/* Step 2 — Review Outcomes */}
         <section className="mb-12 sm:mb-16">
           <div className="mb-5">
             <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
@@ -315,7 +288,7 @@ export default function DecisionJournalContent() {
               Revisit past choices and rate how they turned out.
             </p>
           </div>
-          <div className={`${panelClass()} p-2 sm:p-3`}>
+          <div className={`${panelClass} p-2 sm:p-3`}>
             {!journalReady ? (
               <div className="space-y-3 px-4 py-6" aria-busy="true">
                 <StitchSkeleton className="h-14 w-full" />
@@ -334,97 +307,47 @@ export default function DecisionJournalContent() {
               </div>
             ) : (
               <FadeInContent>
-              <>
-                <div className="flex flex-wrap gap-2 px-2 pb-3 pt-2 sm:px-3">
-                  <button
-                    type="button"
-                    onClick={() => setReviewCategoryFilter("all")}
-                    className={categoryTabClass(reviewCategoryFilter === "all")}
-                  >
-                    전체 (All)
-                  </button>
-                  {DECISION_CATEGORIES.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setReviewCategoryFilter(c.id)}
-                      className={categoryTabClass(
-                        reviewCategoryFilter === c.id,
-                      )}
-                    >
-                      {decisionCategoryReviewTabLabel(c.id)}
-                    </button>
-                  ))}
-                </div>
-                {filteredReviewEntries.length === 0 ? (
-                  <div className="mx-2 mb-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-8 text-center sm:mx-3">
-                    <p className="text-sm text-on-surface-variant/75">
-                      No decisions in this category yet.
-                    </p>
-                  </div>
-                ) : (
-                <div className="divide-y divide-outline-variant/15">
-                  {previewEntries.map((entry) => {
-                    const reviewed = isDecisionReviewed(entry);
-                    return (
-                      <div
-                        key={entry.id}
-                        className="rounded-xl p-4 transition hover:bg-surface-container-low/40"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex min-w-0 flex-1 items-start gap-3">
-                            <DecisionStatusDot
-                              entry={entry}
-                              className="mt-1.5"
-                            />
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-on-surface">
-                                {entry.context}
-                              </p>
-                              <p className="mt-0.5 text-xs text-on-surface-variant">
-                                {decisionCategoryLabel(entry.category)}
-                              </p>
-                              {reviewed && entry.rating != null ? (
-                                <StarRatingDisplay
-                                  rating={entry.rating}
-                                  className="mt-2"
-                                />
-                              ) : null}
-                            </div>
-                          </div>
-                          <div className="shrink-0 pt-0.5">
-                            {reviewed ? (
-                              entry.reviewedAt ? (
-                                <time
-                                  dateTime={entry.reviewedAt}
-                                  className="text-[11px] text-on-surface-variant/55"
-                                >
-                                  Reviewed {formatDecisionDate(entry.reviewedAt)}
-                                </time>
-                              ) : null
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => openReview(entry)}
-                                className="rounded-full border border-secondary px-3.5 py-1.5 text-xs font-semibold text-secondary transition hover:bg-secondary hover:text-on-primary"
-                              >
-                                Review
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                <>
+                  <DecisionCategoryTabs
+                    value={reviewCategoryFilter}
+                    onChange={setReviewCategoryFilter}
+                    className="px-2 pb-3 pt-2 sm:px-3"
+                  />
+                  {filteredReviewEntries.length === 0 ? (
+                    <div className="mx-2 mb-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-8 text-center sm:mx-3">
+                      <p className="text-sm text-on-surface-variant/75">
+                        No decisions in this category yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="divide-y divide-outline-variant/15">
+                        {previewEntries.map((entry) => (
+                          <DecisionReviewCard
+                            key={entry.id}
+                            entry={entry}
+                            onReview={openReview}
+                          />
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
-                )}
-              </>
+                      {hasMoreReviewEntries ? (
+                        <div className="border-t border-outline-variant/15 px-3 py-3 text-center">
+                          <Link
+                            href="/decision/history"
+                            className="text-xs font-semibold text-on-surface-variant transition hover:text-primary"
+                          >
+                            View all ({filteredReviewEntries.length})
+                          </Link>
+                        </div>
+                      ) : null}
+                    </>
+                  )}
+                </>
               </FadeInContent>
             )}
           </div>
         </section>
 
-        {/* Step 3 — Smart Insights */}
         <section className="mb-12 sm:mb-16">
           <div className="mb-5">
             <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
@@ -437,7 +360,7 @@ export default function DecisionJournalContent() {
               Filter your archive and surface recurring decision patterns.
             </p>
           </div>
-          <div className={`${panelClass()} p-5 sm:p-6`}>
+          <div className={`${panelClass} p-5 sm:p-6`}>
             <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="mr-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
@@ -449,7 +372,7 @@ export default function DecisionJournalContent() {
                     key={r.id}
                     type="button"
                     onClick={() => setAnalyzeRange(r.id)}
-                    className={filterPillClass(analyzeRange === r.id)}
+                    className={stitchPillClass(analyzeRange === r.id)}
                   >
                     {r.label}
                   </button>
@@ -459,28 +382,11 @@ export default function DecisionJournalContent() {
                 className="hidden h-4 w-px bg-outline-variant/50 sm:block"
                 aria-hidden
               />
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="mr-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
-                  Filter category
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setAnalyzeCategory("all")}
-                  className={filterPillClass(analyzeCategory === "all")}
-                >
-                  All
-                </button>
-                {DECISION_CATEGORIES.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setAnalyzeCategory(c.id)}
-                    className={filterPillClass(analyzeCategory === c.id)}
-                  >
-                    {decisionCategoryReviewTabLabel(c.id)}
-                  </button>
-                ))}
-              </div>
+              <DecisionCategoryTabs
+                value={analyzeCategory}
+                onChange={setAnalyzeCategory}
+                allLabel="All"
+              />
             </div>
 
             <button

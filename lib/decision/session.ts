@@ -3,34 +3,49 @@ import {
   removeJsonStorage,
   writeJsonStorage,
 } from "@/lib/v2/storage/localPersist";
+import { readStoredReportId } from "@/lib/stitch/hubPaths";
 import type { DecisionEntry } from "@/lib/decision/types";
-import { normalizeDecisionCategory } from "@/lib/decision/types";
+import { normalizeDecisionCategory } from "@/lib/decision/categories";
 
 const PREFIX = "ahaitsme_decisions_";
+
+/** reportId 없을 때 Journal·History 공통 fallback */
+export const DECISION_FALLBACK_REPORT_ID = "local";
+
+export function readDecisionReportId(): string {
+  const id = readStoredReportId();
+  return id || DECISION_FALLBACK_REPORT_ID;
+}
 
 function storageKey(reportId: string) {
   return `${PREFIX}${reportId}`;
 }
 
+function normalizeRating(raw: unknown): number | null {
+  if (typeof raw !== "number" || raw < 1 || raw > 5) return null;
+  return Math.round(raw);
+}
+
 function normalizeEntry(raw: DecisionEntry): DecisionEntry {
   const legacyStatus = (raw as { status?: string }).status;
-  const status =
+  const rawStatus =
     legacyStatus === "finalized" || legacyStatus === "reviewed"
       ? "reviewed"
       : "pending";
+  const rating = normalizeRating(raw.rating);
+
+  // reviewed인데 rating 없으면 pending으로 되돌림 (유령 리뷰 방지)
+  const status = rawStatus === "reviewed" && rating == null ? "pending" : rawStatus;
   const reviewedAt =
-    raw.reviewedAt ??
-    (status === "reviewed" ? raw.updatedAt : null);
+    status === "reviewed"
+      ? (raw.reviewedAt ?? raw.updatedAt ?? null)
+      : null;
+
   return {
     ...raw,
     category: normalizeDecisionCategory(String(raw.category)),
     status,
-    rating:
-      typeof raw.rating === "number" && raw.rating >= 1 && raw.rating <= 5
-        ? raw.rating
-        : status === "reviewed"
-          ? null
-          : null,
+    rating: status === "reviewed" ? rating : null,
     reviewedAt,
     note: raw.note ?? "",
   };

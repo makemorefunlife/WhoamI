@@ -35,26 +35,6 @@ export function StarRatingDisplay({
   );
 }
 
-/** Compact badge: stars + numeric score for review cards */
-export function StarRatingBadge({
-  rating,
-  max = 5,
-  className = "",
-}: DisplayProps) {
-  const value = Math.min(max, Math.max(0, Math.round(rating)));
-  return (
-    <div
-      className={`inline-flex shrink-0 flex-col items-end gap-1 rounded-xl bg-[#faf3e0]/80 px-2.5 py-1.5 ring-1 ring-[#e0b040]/25 ${className}`}
-      aria-label={`${value} out of ${max} stars`}
-    >
-      <StarRatingDisplay rating={value} max={max} className="gap-px" />
-      <span className="text-[10px] font-semibold tabular-nums tracking-wide text-[#a67c00]">
-        {value}.0 / {max}.0
-      </span>
-    </div>
-  );
-}
-
 type InputProps = {
   value: number;
   onChange: (rating: number) => void;

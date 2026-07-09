@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import type { DecisionEntry } from "@/lib/decision/types";
-import { decisionCategoryLabel } from "@/lib/decision/types";
+import { decisionCategoryLabel } from "@/lib/decision/categories";
 import { StarRatingInput } from "@/components/decision/StarRating";
 
 type Props = {
