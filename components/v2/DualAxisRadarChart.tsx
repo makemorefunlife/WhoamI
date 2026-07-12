@@ -15,13 +15,13 @@ const RADIUS = 112;
 
 export const BLUEPRINT_CURRENT_STROKE = "#7B9BFF";
 export const BLUEPRINT_CURRENT_FILL = "rgba(123, 155, 255, 0.22)";
-export const BLUEPRINT_INNATE_STROKE = "#FF9A3C";
-export const BLUEPRINT_INNATE_FILL = "rgba(255, 154, 60, 0.2)";
+export const BLUEPRINT_ESSENCE_STROKE = "#FF9A3C";
+export const BLUEPRINT_ESSENCE_FILL = "rgba(255, 154, 60, 0.2)";
 
 export const STITCH_CURRENT_STROKE = "#1a3328";
 export const STITCH_CURRENT_FILL = "rgba(26, 51, 40, 0.2)";
-export const STITCH_INNATE_STROKE = "#c49a6c";
-export const STITCH_INNATE_FILL = "rgba(196, 154, 108, 0.28)";
+export const STITCH_ESSENCE_STROKE = "#c49a6c";
+export const STITCH_ESSENCE_FILL = "rgba(196, 154, 108, 0.28)";
 
 export type RadarChartTheme = {
   gridStroke: string;
@@ -31,8 +31,8 @@ export type RadarChartTheme = {
   labelActiveClass: string;
   currentStroke: string;
   currentFill: string;
-  innateStroke: string;
-  innateFill: string;
+  essenceStroke: string;
+  essenceFill: string;
   legendTextClass: string;
 };
 
@@ -44,8 +44,8 @@ const DARK_THEME: RadarChartTheme = {
   labelActiveClass: "fill-white text-[9px] font-semibold",
   currentStroke: BLUEPRINT_CURRENT_STROKE,
   currentFill: BLUEPRINT_CURRENT_FILL,
-  innateStroke: BLUEPRINT_INNATE_STROKE,
-  innateFill: BLUEPRINT_INNATE_FILL,
+  essenceStroke: BLUEPRINT_ESSENCE_STROKE,
+  essenceFill: BLUEPRINT_ESSENCE_FILL,
   legendTextClass: "text-[rgba(255,255,255,0.82)]",
 };
 
@@ -57,8 +57,8 @@ export const STITCH_RADAR_THEME: RadarChartTheme = {
   labelActiveClass: "fill-primary text-[9px] font-semibold",
   currentStroke: STITCH_CURRENT_STROKE,
   currentFill: STITCH_CURRENT_FILL,
-  innateStroke: STITCH_INNATE_STROKE,
-  innateFill: STITCH_INNATE_FILL,
+  essenceStroke: STITCH_ESSENCE_STROKE,
+  essenceFill: STITCH_ESSENCE_FILL,
   legendTextClass: "text-on-surface",
 };
 
@@ -169,21 +169,21 @@ function AxisDetailPanel({
 
 export default function DualAxisRadarChart({
   current,
-  innate,
+  essence,
   theme = DARK_THEME,
   axisOrder = PRIMARY_AXIS_ORDER,
   axisLabels = PRIMARY_AXIS_EN_LABELS,
   currentLabel = "Current",
-  innateLabel = "Innate",
+  essenceLabel = "Essence",
   interactiveLabels = true,
 }: {
   current: PrimaryAxesScores;
-  innate: PrimaryAxesScores;
+  essence: PrimaryAxesScores;
   theme?: RadarChartTheme;
   axisOrder?: PrimaryAxisKey[];
   axisLabels?: Record<PrimaryAxisKey, string>;
   currentLabel?: string;
-  innateLabel?: string;
+  essenceLabel?: string;
   interactiveLabels?: boolean;
 }) {
   const gridLevels = [20, 40, 60, 80, 100];
@@ -211,10 +211,10 @@ export default function DualAxisRadarChart({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className="mx-auto h-auto w-full"
         role="img"
-        aria-label={`${currentLabel} and ${innateLabel} six-axis comparison radar chart`}
+        aria-label={`${currentLabel} and ${essenceLabel} six-axis comparison radar chart`}
       >
         <defs>
-          <filter id="innateNeonGlow" x="-40%" y="-40%" width="180%" height="180%">
+          <filter id="essenceNeonGlow" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="2.2" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -293,10 +293,10 @@ export default function DualAxisRadarChart({
         })}
 
         <SeriesLayer
-          scores={innate}
-          stroke={theme.innateStroke}
-          fill={theme.innateFill}
-          glowId="innateNeonGlow"
+          scores={essence}
+          stroke={theme.essenceStroke}
+          fill={theme.essenceFill}
+          glowId="essenceNeonGlow"
           axisOrder={axisOrder}
         />
         <SeriesLayer
@@ -338,9 +338,9 @@ export default function DualAxisRadarChart({
         <span className="inline-flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: theme.innateStroke }}
+            style={{ backgroundColor: theme.essenceStroke }}
           />
-          {innateLabel}
+          {essenceLabel}
         </span>
       </div>
     </div>

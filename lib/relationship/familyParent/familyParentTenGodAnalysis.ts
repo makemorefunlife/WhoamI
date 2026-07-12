@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { profileTenGods } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import type { FamilyPairSajuAnalysis } from "@/lib/saju/familyAnalysis";
 import { sanitizeFamilyParentText } from "./familyParentLanguage";

@@ -42,7 +42,7 @@ export function CurrentLiteReportView({
   );
 }
 
-export function InnateLiteReportView({
+export function EssenceLiteReportView({
   oneLineSummary,
   sections,
 }: {

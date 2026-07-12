@@ -1,9 +1,13 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { getPatternSummaryForReport } from "@/lib/relationship/surveyPatterns";
+import {
+  getCurrentSelfProfileForReport,
+  getPatternSummaryForReport,
+} from "@/lib/relationship/surveyPatterns";
 import { buildRelationshipPremiumPrompt } from "@/lib/prompts/relationshipPremium";
 import { runRomanticSajuDeepAnalysis } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { runWorkColleagueDeepAnalysis } from "@/lib/prompts/relationshipPremium/workColleague";
@@ -12,8 +16,11 @@ import { runFamilyParentChildDeepAnalysis } from "@/lib/prompts/relationshipPrem
 import { runFriendSocialDeepAnalysis } from "@/lib/prompts/relationshipPremium/friendSocial";
 import { resolveFamilyRolesFromViewer } from "@/lib/relationship/familyParent/resolveFamilyRoles";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
-import { parseJsonObject } from "@/lib/relationship/parseLlmJson";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
+import {
+  LlmJsonParseRetryError,
+  parseJsonObject,
+} from "@/lib/relationship/parseLlmJson";
 import { normalizeRelationshipPerspectives } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
@@ -31,7 +38,6 @@ import {
   fetchRelationshipReportByIdSafe,
   updateRelationshipReportSafe,
 } from "@/lib/relationship/relationshipReportQuery";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { getAppOrigin } from "@/lib/relationship/appOrigin";
 import {
   loadSajuBundleFromReport,
@@ -42,11 +48,16 @@ import {
   UNKNOWN_BIRTH_FALLBACK,
 } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import type { RomanticSajuDeepLocale } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+
+function parsePremiumLanguage(v: unknown): RomanticSajuDeepLocale {
+  return v === "en" ? "en" : "ko";
+}
 
 function sajuBriefFromProvenance(p: SajuChartProvenance): string {
   return [
@@ -135,17 +146,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
 
     const { row: rr, error: rrErr } = await fetchRelationshipReportByIdSafe(
       supabase,
@@ -176,6 +178,9 @@ export async function POST(req: Request) {
     );
     const forceRegenerate =
       (body as { force_regenerate?: unknown }).force_regenerate === true;
+    const language = parsePremiumLanguage(
+      (body as { language?: unknown }).language,
+    );
 
     if (
       !forceRegenerate &&
@@ -260,6 +265,10 @@ export async function POST(req: Request) {
         viewerReportId === rr.report_id_b ? clerkUser?.fullName : undefined,
       fallback: "상대",
     });
+    const userCustomMyName =
+      viewerReportId === rr.report_id_a ? labelA : labelB;
+    const userCustomTargetName =
+      viewerReportId === rr.report_id_a ? labelB : labelA;
 
     const origin = getAppOrigin();
 
@@ -281,9 +290,16 @@ export async function POST(req: Request) {
         );
       }
 
+      const [surveyProfileA, surveyProfileB] = await Promise.all([
+        getCurrentSelfProfileForReport(supabase, rr.report_id_a),
+        getCurrentSelfProfileForReport(supabase, rr.report_id_b),
+      ]);
+
       const romanticPayload = await runRomanticSajuDeepAnalysis(openai, {
         nicknameA: labelA,
         nicknameB: labelB,
+        userCustomMyName,
+        userCustomTargetName,
         birthA: {
           date: String(repA.birth_date ?? ""),
           time: chartBirthTime({
@@ -306,6 +322,9 @@ export async function POST(req: Request) {
         sajuJsonB: loadedB.sajuJson,
         sajuProvenanceA: loadedA.provenance,
         sajuProvenanceB: loadedB.provenance,
+        surveyProfileA,
+        surveyProfileB,
+        locale: language,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -815,6 +834,14 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     console.error("relationship/analyze/premium:", e);
+    if (e instanceof LlmJsonParseRetryError) {
+      return NextResponse.json(
+        {
+          error: `관계 심화 분석 실패 (${e.attempts}회 재시도 후 실패)`,
+        },
+        { status: 500 },
+      );
+    }
     return NextResponse.json(
       { error: "관계 심화 분석 실패" },
       { status: 500 },

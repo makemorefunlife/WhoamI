@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildV2PatternSummaryForRelationship } from "@/lib/relationship/v2PatternSummary";
 import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
+import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/types";
 
@@ -38,6 +39,54 @@ export async function getSurveyAnswersForReport(
     return null;
   }
   return answers as Record<string, unknown>;
+}
+
+function parseSurveyAnswersForScoring(
+  raw: Record<string, unknown>,
+): Record<string, string> | null {
+  const stringAnswers: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "string") stringAnswers[k] = v;
+  }
+  if (raw.survey_source === "v2_10q" && raw.v2_profile) {
+    return stringAnswers;
+  }
+  return isSurveyV2AnswersComplete(stringAnswers) ? stringAnswers : null;
+}
+
+function isValidCurrentSelfProfile(
+  profile: CurrentSelfProfile | null | undefined,
+): profile is CurrentSelfProfile {
+  if (!profile || profile.profile_type !== "current_self") return false;
+  if (!profile.secondary_axes || typeof profile.secondary_axes !== "object") {
+    return false;
+  }
+  return true;
+}
+
+/** survey_responses.answers → CurrentSelfProfile (GET /api/v2/survey와 동일 규칙) */
+export function currentSelfProfileFromSurveyAnswers(
+  answers: Record<string, unknown>,
+): CurrentSelfProfile | null {
+  const embedded = answers.v2_profile;
+  if (embedded && typeof embedded === "object" && !Array.isArray(embedded)) {
+    const profile = normalizeCurrentSelfProfile(embedded as CurrentSelfProfile);
+    return isValidCurrentSelfProfile(profile) ? profile : null;
+  }
+  const stringAnswers = parseSurveyAnswersForScoring(answers);
+  if (!stringAnswers) return null;
+  const profile = scoreSurveyAnswers(stringAnswers as SurveyAnswersInput);
+  return isValidCurrentSelfProfile(profile) ? profile : null;
+}
+
+/** 한 리포트의 v2 설문 프로필 (survey_responses SSOT) */
+export async function getCurrentSelfProfileForReport(
+  supabase: SupabaseClient,
+  reportId: string,
+): Promise<CurrentSelfProfile | null> {
+  const rawAnswers = await getSurveyAnswersForReport(supabase, reportId);
+  if (!rawAnswers) return null;
+  return currentSelfProfileFromSurveyAnswers(rawAnswers);
 }
 
 function isV2SurveyAnswers(answers: Record<string, unknown>): boolean {

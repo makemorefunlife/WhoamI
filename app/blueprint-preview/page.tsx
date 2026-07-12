@@ -71,7 +71,7 @@ function BlueprintPreviewPageContent() {
           <StitchResultsDashboard
             reportId={canonicalReportId}
             current={bundle.survey.profile}
-            innate={bundle.innate}
+            essence={bundle.essence}
             birth={bundle.birth}
             birthTimeUnknown={bundle.birth.birthTimeUnknown}
           />

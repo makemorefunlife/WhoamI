@@ -3,28 +3,27 @@
 import { useEffect, useState } from "react";
 import { fetchReportBirthFromApi } from "@/lib/v2/onboarding/fetchReportBirthClient";
 import {
-  birthConflicts,
+  canBackfillBirthFromSession,
   resolveReportBirth,
 } from "@/lib/v2/onboarding/resolveReportBirth";
 import {
   readBirthV2Session,
-  writeBirthV2Session,
   type BirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
+import { syncBirthSessionFromDb } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
-import { calculateInnateSelfLite } from "@/lib/v2/saju/innateLite";
+import { calculateEssenceSelfLite } from "@/lib/v2/saju/essenceLite";
 
 export type BlueprintBundle = {
   survey: NonNullable<ReturnType<typeof readSurveyV2Session>>;
   birth: BirthV2Session;
-  innate: ReturnType<typeof calculateInnateSelfLite>;
+  essence: ReturnType<typeof calculateEssenceSelfLite>;
   birthSource: "db" | "session" | "merged";
 };
 
 /**
- * Blueprint — 설문(session) + 출생(DB 우선) + innate 계산.
- * 연인 심화·관계 premium과 동일한 reports.birth_* 를 먼저 쓴다.
+ * Blueprint — 설문(session) + 출생(DB 우선) + Essence 계산.
  */
 export function useBlueprintBundle(reportId: string, enabled: boolean) {
   const [bundle, setBundle] = useState<BlueprintBundle | null>(null);
@@ -53,14 +52,11 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
         return;
       }
 
-      const dbRow = await fetchReportBirthFromApi(reportId);
-      const sessionBirth = readBirthV2Session(reportId);
-      const resolved = resolveReportBirth({
-        db: dbRow,
-        session: sessionBirth,
-      });
+      const synced = await syncBirthSessionFromDb(reportId);
+      const birth = synced.birth;
+      const source = synced.source ?? (birth ? "session" : null);
 
-      if (!resolved) {
+      if (!birth || !source) {
         if (!cancelled) {
           setBundle(null);
           setLoading(false);
@@ -68,32 +64,34 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
         return;
       }
 
-      const { source, ...birth } = resolved;
-
-      writeBirthV2Session(reportId, birth);
-
-      if (source === "merged" || birthConflicts(dbRow, sessionBirth)) {
-        void fetch("/api/report/birth", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reportId,
-            birthDate: birth.birthDate,
-            birthTime: birth.birthTimeUnknown ? null : birth.birthTime,
-            birthTimeUnknown: birth.birthTimeUnknown,
-            birthPlace: birth.birthPlace,
-          }),
-        }).catch(() => undefined);
+      const dbRow = await fetchReportBirthFromApi(reportId);
+      const sessionBirth = readBirthV2Session(reportId);
+      if (canBackfillBirthFromSession({ db: dbRow, session: sessionBirth })) {
+        const resolved = resolveReportBirth({ db: dbRow, session: sessionBirth });
+        if (resolved?.source === "merged") {
+          const { source: _s, ...backfill } = resolved;
+          void fetch("/api/report/birth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              reportId,
+              birthDate: backfill.birthDate,
+              birthTime: backfill.birthTimeUnknown ? null : backfill.birthTime,
+              birthTimeUnknown: backfill.birthTimeUnknown,
+              birthPlace: backfill.birthPlace,
+            }),
+          }).catch(() => undefined);
+        }
       }
 
-      const innate = calculateInnateSelfLite({
+      const essence = calculateEssenceSelfLite({
         birthDate: birth.birthDate,
         birthTime: birth.birthTime,
         birthTimeUnknown: birth.birthTimeUnknown,
       });
 
       if (!cancelled) {
-        setBundle({ survey, birth, innate, birthSource: source });
+        setBundle({ survey, birth, essence, birthSource: source });
         setLoading(false);
       }
     })();

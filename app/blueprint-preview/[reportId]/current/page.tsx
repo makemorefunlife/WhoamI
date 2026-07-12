@@ -107,10 +107,10 @@ function CurrentDetailContent() {
           Blueprint로 돌아가기
         </GlowButton>
         <Link
-          href={`/blueprint-preview/${encodeURIComponent(reportId)}/innate`}
+          href={`/blueprint-preview/${encodeURIComponent(reportId)}/essence`}
           className="text-center text-sm text-white/50 underline-offset-2 hover:text-white/75 hover:underline"
         >
-          본래의 나 (기질분석) 보기 →
+          Essence Profile 보기 →
         </Link>
       </main>
     </SpaceBackground>

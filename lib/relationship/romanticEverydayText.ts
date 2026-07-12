@@ -1,9 +1,15 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
 import {
   buildRomanticDayStemOneLiner,
   resolveDayStemRomanticProfileFromSaju,
+  type DayStemRomanticProfile,
 } from "@/lib/relationship/dayStemRomanticProfile";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import {
+  joinHeadlineLabelsEn,
+  normalizeRomanticHeadlineLocale,
+} from "@/lib/relationship/romanticHeadline/locale";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { getDayStemCode } from "@/lib/saju/romanticSajuDerivations";
@@ -14,7 +20,7 @@ const SAJU_TERM_RE =
 
 /** 지지(띠)·육합 원문에 섞인 메타포 — 연인 UI에는 일간(정화·무토 등)만 쓴다 */
 const BRANCH_METAPHOR_LEAK_RE =
-  /작은 불|날카로운 금|큰 나무|큰 강|초원|꽃나무|등불|칼|바다|샘물|성곽|보석|뱀|원숭이|닭|소|말|양|쥐|호랑이|토끼|용|돼지|개|지혜.*재주|재주.*지혜|불이 금을|금이 불을/;
+  /작은 불|날카로운 금|큰 나무|큰 강|초원|꽃나무|등불|칼|바다|샘물|성곽|보석|뱀|원숭이|닭|소|말(?!로|을)|양|쥐|호랑이|토끼|용|돼지|개|지혜.*재주|재주.*지혜|불이 금을|금이 불을/;
 
 const POSITIVE_CROSS = new Set(["육합", "천간합", "삼합", "방합"]);
 const TENSION_CROSS = new Set(["충", "형", "해", "파"]);
@@ -62,11 +68,17 @@ export function formatMetaphorPairLine(
   nicknameA: string,
   metaphorB: string,
   nicknameB: string,
+  locale: RomanticHeadlineLocale = "ko",
 ): string {
   const a = formatMetaphorNickname(metaphorA, nicknameA);
   const b = formatMetaphorNickname(metaphorB, nicknameB);
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    return joinHeadlineLabelsEn(a, b);
+  }
   return `${a}${waGwaAfter(a)} ${b}`;
 }
+
+export { joinHeadlineLabelsEn } from "@/lib/relationship/romanticHeadline/locale";
 
 export type RomanticCrossBodyContext = {
   nicknameA: string;
@@ -290,8 +302,91 @@ export function humanizeStrengthComplement(
   return `${strongNick}은 든든하게 버티는 편이고, ${softNick}은 마음의 온기와 공감이 필요한 타입이라 서로의 빈칸을 채워요.`;
 }
 
+export function polishConflictDialogueLine(
+  line: string | undefined | null,
+): string {
+  if (!line?.trim()) return "";
+  let text = stripSajuJargon(line)
+    .replace(/너의 이 나에게/g, "네 그 말이 나에게")
+    .replace(/너의 이 /g, "네 ")
+    .replace(/이해를 못해\?/g, "이해가 안 돼.")
+    .replace(/왜 이렇게 이해를 못해/g, "왜 그렇게 이해가 안 되는 것 같아")
+    .replace(/그냥 좀 더 강해져야 해/g, "좀 더 단단해져야 해")
+    .replace(/문제를 해결하는 데 집중해\.?/g, "일단 문제부터 풀자고만 말해.")
+    .replace(/내가 지금 힘든 상황이라서 그런 것 같아/g, "지금 내가 힘들어서 예민했어")
+    .replace(/나에게 상처가/g, "나한테 상처가")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (text.length < 6) return stripSajuJargon(line).trim();
+  return text;
+}
+
+export function isGenericRomanticActionPhrase(phrase: string): boolean {
+  const p = phrase
+    .replace(/^이렇게\s*말해보세요[:：]?\s*/i, "")
+    .replace(/^📱\s*/, "")
+    .trim();
+  if (!p) return true;
+  if (/작은 신호부터 맞춰/.test(p)) return true;
+  if (/^지금 기분부터 들어볼/.test(p)) return true;
+  if (/^.+\s+—\s+/.test(p) && p.length < 48) return true;
+  if (/^.+와 .+ —/.test(p)) return true;
+  return false;
+}
+
+const SHARE_SUMMARY_EXCLUDE_RE =
+  /가까울수록\s*예민|예민해지는\s*조합|클로즈니스|tension/i;
+
+export function filterShareSummaryKeywords(keywords: string[]): string[] {
+  return keywords
+    .filter(Boolean)
+    .filter((k) => !SHARE_SUMMARY_EXCLUDE_RE.test(k))
+    .filter((k) => !k.includes("신호"))
+    .slice(0, 4);
+}
+
+export function isShareSummaryRelationshipNameExcluded(
+  name: string | undefined | null,
+): boolean {
+  if (!name?.trim()) return true;
+  return SHARE_SUMMARY_EXCLUDE_RE.test(name);
+}
+
 export function humanizePersonRelation(raw: string): string {
+  const romantic = humanizeRelationMeaningForRomantic(raw);
+  if (romantic) return romantic;
   return humanizeCrossMeaning(raw);
+}
+
+/** ref_relation_rules meaning_ko → 연인 UI용 일상어 (한자·끊긴 은유 정리) */
+export function humanizeRelationMeaningForRomantic(raw: string): string {
+  const trimmed = raw?.trim();
+  if (!trimmed) return "";
+
+  if (
+    /촛불.*물|물.*촛불|꺼지지 않|통찰.*자유/i.test(trimmed)
+  ) {
+    return "한쪽은 섬세하게 느끼고 표현하는 편, 다른 쪽은 넓게 흘러가며 받쳐 주는 편이라 서로 자극과 안정을 동시에 줘요. 다만 속도나 말투가 어긋나면 작은 오해가 커질 수 있어요.";
+  }
+
+  const withoutHanja = trimmed
+    .replace(/[（(][^)）]*[\u4e00-\u9fff][^)）]*[)）]/g, "")
+    .replace(/[\u4e00-\u9fff()（）]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const sentences = withoutHanja
+    .split(/[.。]/)
+    .map((s) => stripSajuJargon(s))
+    .filter((s) => s.length >= 12 && !hasBranchMetaphorLeak(s));
+
+  if (sentences.length > 0) {
+    return sentences.slice(0, 2).join(". ").replace(/\s+\./g, ".");
+  }
+
+  const cross = humanizeCrossMeaning(raw);
+  return cross || "";
 }
 
 export function humanizeElementNote(raw: string): string {
@@ -307,23 +402,61 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** comparison_table 셀 — 열 헤더에 이름이 있으므로 맨 앞 주어(이름+조사) 제거 */
+/** comparison_table 셀 — 열 헤더에 이름이 있으므로 주어·이름 제거, 상대 지칭은 "상대" */
 export function stripComparisonCellSubject(
   text: string,
-  nickname: string,
+  columnOwnerName: string,
+  otherName?: string,
 ): string {
   const trimmed = text.trim();
   if (!trimmed) return "";
-  const name = nickname.trim();
-  if (!name) return polishRomanticDisplayText(trimmed);
 
-  const escaped = escapeRegExp(name);
-  const withoutSubject = trimmed
-    .replace(new RegExp(`^${escaped}(은|는|이|가)\\s+`), "")
-    .replace(new RegExp(`^${escaped}\\s+`), "")
+  const owner = columnOwnerName.trim();
+  const other = otherName?.trim() ?? "";
+  let result = trimmed;
+
+  for (const name of [owner, other].filter(Boolean)) {
+    result = stripLeadingNameSubject(result, name);
+  }
+
+  if (other) {
+    const esc = escapeRegExp(other);
+    result = result
+      .replace(new RegExp(`${esc}에게`, "g"), "상대에게")
+      .replace(new RegExp(`${esc}(을|를)`, "g"), "상대$1")
+      .replace(new RegExp(`${esc}(은|는|이|가)`, "g"), "상대$1")
+      .replace(new RegExp(`${esc}의`, "g"), "상대의");
+  }
+
+  if (owner) {
+    const esc = escapeRegExp(owner);
+    result = result
+      .replace(new RegExp(`${esc}에게`, "g"), "상대에게")
+      .replace(new RegExp(`${esc}(을|를)`, "g"), "상대$1")
+      .replace(new RegExp(`${esc}(은|는|이|가)`, "g"), "상대$1")
+      .replace(new RegExp(`${esc}의`, "g"), "");
+  }
+
+  result = result
+    .replace(/^상대(을|를)\s+/, "")
+    .replace(/^나는\s+/, "")
+    .replace(/^내가\s+/, "")
     .trim();
 
-  return polishRomanticDisplayText(withoutSubject || trimmed);
+  const cleaned = stripSajuJargon(result || trimmed)
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned || trimmed;
+}
+
+function stripLeadingNameSubject(text: string, name: string): string {
+  const escaped = escapeRegExp(name.trim());
+  if (!escaped) return text;
+  return text
+    .replace(new RegExp(`^${escaped}(은|는|이|가|을|를)\\s*`), "")
+    .replace(new RegExp(`^${escaped}\\s+`), "")
+    .replace(new RegExp(`^${escaped}의\\s+`), "")
+    .trim();
 }
 
   /** UI·저장 훅 공통 — 노출 직전 한 번 더 정리 */
@@ -347,7 +480,14 @@ export function polishRomanticDisplayText(text: string | undefined | null): stri
   return cleaned;
 }
 
-export function joinPersonalityHeadline(labelA: string, labelB: string): string {
+export function joinPersonalityHeadline(
+  labelA: string,
+  labelB: string,
+  locale: RomanticHeadlineLocale = "ko",
+): string {
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    return joinHeadlineLabelsEn(labelA, labelB);
+  }
   const endsWithVowel = (s: string) => /[aeiouAEIOUㅏ-ㅣ]$/.test(s);
   const particle = endsWithVowel(labelB) ? "와" : "과";
   return `${labelA}${particle} ${labelB}`;

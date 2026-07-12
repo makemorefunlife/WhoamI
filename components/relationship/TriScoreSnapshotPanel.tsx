@@ -6,63 +6,41 @@ import {
   getTriScoreKindConfig,
   type TriScoreSnapshotKind,
 } from "@/lib/relationship/triScoreSnapshot/kinds";
+import { resolveScoreBarAppearance } from "@/lib/relationship/scoreBarAppearance";
+import { useReportTone } from "@/components/relationship/reportLayout/ReportSurface";
+import RelationshipScoreDefinitions from "@/components/relationship/reportLayout/RelationshipScoreDefinitions";
 
 function MiniScoreBar({
   label,
   value,
-  tone,
+  polarity = "higher_better",
 }: {
   label: string;
   value: number;
-  tone?: "warm" | "cool" | "alert";
+  polarity?: "higher_better" | "higher_worse";
 }) {
+  const reportTone = useReportTone();
+  const stitch = reportTone.surface === "stitch";
   const pct = Math.max(0, Math.min(100, value));
-  const barClass =
-    tone === "alert"
-      ? "from-amber-400/60 to-orange-400/70"
-      : tone === "cool"
-        ? "from-[#67b7ff]/70 to-[#67b7ff]/50"
-        : "from-[#ffd6a5]/70 to-[#ff9f6b]/80";
+  const appearance = resolveScoreBarAppearance(pct, polarity);
+  const labelClass = stitch ? "text-on-surface-variant" : "text-[var(--space-text)]";
+  const valueClass = stitch ? "text-primary" : "text-[var(--space-text)]";
+  const trackClass = stitch ? "bg-outline-variant/25" : "bg-white/8";
+
   return (
     <div className="flex items-center gap-2 text-[11px]">
-      <span className="w-[3.25rem] shrink-0 font-medium text-[var(--space-text)]">
+      <span className={`w-[3.25rem] shrink-0 font-medium ${labelClass}`}>
         {label}
       </span>
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/8">
+      <div className={`h-1.5 flex-1 overflow-hidden rounded-full ${trackClass}`}>
         <div
-          className={`h-full rounded-full bg-gradient-to-r ${barClass}`}
+          className={`h-full rounded-full bg-gradient-to-r ${appearance.barGradient}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-6 shrink-0 text-right tabular-nums text-[var(--space-text)]">
+      <span className={`w-6 shrink-0 text-right tabular-nums ${valueClass}`}>
         {pct}
       </span>
-    </div>
-  );
-}
-
-function ScoreLegend({
-  kind,
-}: {
-  kind: TriScoreSnapshotKind;
-}) {
-  const config = getTriScoreKindConfig(kind);
-  return (
-    <div className="border-t border-white/8 pt-3 text-[10px] leading-relaxed text-[var(--space-text-muted)]">
-      <p className="mb-1.5 font-medium text-[var(--space-text)]">
-        점수가 의미하는 것
-      </p>
-      <ul className="space-y-1">
-        {config.legendItems.map((item) => (
-          <li key={item.label}>
-            <span className="text-[var(--space-text)]">
-              {item.emoji} {item.label}
-            </span>
-            {" — "}
-            {item.meaning}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
@@ -76,6 +54,7 @@ function TopicCard({
   kind: TriScoreSnapshotKind;
   singlePrimaryMetric?: boolean;
 }) {
+  const tone = useReportTone();
   const labels = getTriScoreKindConfig(kind).labels;
   const primary =
     topic.topic === "intimacy"
@@ -84,18 +63,25 @@ function TopicCard({
         ? { label: labels.benefit.short, value: topic.benefit }
         : { label: labels.risk.short, value: topic.risk };
 
+  const cardClass =
+    tone.surface === "stitch"
+      ? topic.isWarning
+        ? "border-amber-400/35 bg-amber-50/80"
+        : "border-outline-variant/30 bg-surface-container-low/70"
+      : topic.isWarning
+        ? "border-amber-400/25 bg-amber-950/15"
+        : "border-white/10 bg-black/15";
+  const titleClass =
+    tone.surface === "stitch" ? "text-primary" : "text-white/92";
+  const subtitleClass =
+    tone.surface === "stitch" ? "text-on-surface-variant" : "text-white/55";
+  const bodyClass =
+    tone.surface === "stitch" ? "text-on-surface" : "text-white/72";
+
   return (
-    <div
-      className={`rounded-xl border p-4 sm:p-5 ${
-        topic.isWarning
-          ? "border-amber-400/25 bg-amber-950/15"
-          : "border-white/10 bg-black/15"
-      }`}
-    >
-      <p className="mb-2 text-sm font-semibold text-white/92">
-        {topic.title}
-      </p>
-      <p className="mb-3 text-xs leading-relaxed text-white/55">
+    <div className={`rounded-xl border p-4 sm:p-5 ${cardClass}`}>
+      <p className={`mb-2 text-sm font-semibold ${titleClass}`}>{topic.title}</p>
+      <p className={`mb-3 text-xs leading-relaxed ${subtitleClass}`}>
         {topic.subtitle}
       </p>
       <div className="mb-2 space-y-1.5">
@@ -103,28 +89,29 @@ function TopicCard({
           <MiniScoreBar
             label={primary.label}
             value={primary.value}
-            tone={topic.topic === "conflict" ? "alert" : undefined}
+            polarity={topic.topic === "conflict" ? "higher_worse" : "higher_better"}
           />
         ) : (
           <>
             <MiniScoreBar
               label={labels.activation.short}
               value={topic.activation}
+              polarity="higher_better"
             />
             <MiniScoreBar
               label={labels.benefit.short}
               value={topic.benefit}
-              tone="cool"
+              polarity="higher_better"
             />
             <MiniScoreBar
               label={labels.risk.short}
               value={topic.risk}
-              tone={topic.isWarning ? "alert" : undefined}
+              polarity="higher_worse"
             />
           </>
         )}
       </div>
-      <p className="text-[15px] leading-[1.7] text-white/72">
+      <p className={`text-[15px] leading-[1.7] ${bodyClass}`}>
         {topic.interpretation}
       </p>
     </div>
@@ -152,7 +139,7 @@ export default function TriScoreSnapshotPanel({
           singlePrimaryMetric={singlePrimaryMetric}
         />
       ))}
-      {!singlePrimaryMetric ? <ScoreLegend kind={kind} /> : null}
+      {!singlePrimaryMetric ? <RelationshipScoreDefinitions kind={kind} /> : null}
     </div>
   );
 }

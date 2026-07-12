@@ -4,9 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
-import RelationshipAnalysisHistory, {
-  FavoriteHeartButton,
-} from "@/components/relationship/RelationshipAnalysisHistory";
+import RelationshipAnalysisHistory from "@/components/relationship/RelationshipAnalysisHistory";
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
 import RelationshipFamilyRolePanel from "@/components/relationship/detail/RelationshipFamilyRolePanel";
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
@@ -45,8 +43,6 @@ export default function RelationshipView({
     analysisType,
     premiumKind,
     premiumPreview,
-    favorited,
-    favoriteBusy,
     snapshotView,
     logs,
     logsLoading,
@@ -65,7 +61,6 @@ export default function RelationshipView({
     displayFamilyDeep,
     displayFriendshipDeep,
     premiumReady,
-    toggleFavorite,
     retryAnalysis,
     onPremiumKindChange,
     viewAnalysisLog,
@@ -165,14 +160,6 @@ export default function RelationshipView({
             <>{partnerName}님</>
           )}
         </p>
-        <div className="flex justify-center pt-1">
-          <FavoriteHeartButton
-            favorited={favorited}
-            busy={favoriteBusy}
-            onToggle={() => void toggleFavorite()}
-            variant="stitch"
-          />
-        </div>
       </header>
 
       {usedBirthFallback ? (

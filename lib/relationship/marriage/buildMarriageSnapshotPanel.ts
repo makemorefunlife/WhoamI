@@ -5,7 +5,7 @@ import type {
   RelationshipTopicGauge,
   TriScoreSnapshotPanel,
 } from "@/lib/relationship/triScoreSnapshot/types";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";

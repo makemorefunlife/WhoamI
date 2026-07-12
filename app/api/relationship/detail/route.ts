@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import {
   getPremiumPerspectiveForKind,
@@ -15,9 +16,10 @@ import {
 } from "@/lib/relationship/relationshipKind";
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 
 export const runtime = "nodejs";
 
@@ -38,17 +40,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
 
     const { row: rr, error } = await fetchRelationshipReportByIdSafe(
       supabase,
@@ -117,7 +110,9 @@ export async function GET(req: Request) {
 
     const romanticDeepReport =
       activeKind === "romantic"
-        ? getRomanticSajuDeepReport(byKind, rr.result_premium)
+        ? parseRomanticDeepViewModel(
+            getRomanticSajuDeepReport(byKind, rr.result_premium),
+          )
         : null;
 
     const workColleagueDeepReport =
@@ -149,14 +144,18 @@ export async function GET(req: Request) {
     const { userId } = await auth();
     const clerkUser = userId ? await currentUser() : null;
     const viewerIsReportA = viewerReportId === rr.report_id_a;
-    const personAName = repA?.name?.trim() || "나";
-    const personBName = repB?.name?.trim() || "상대";
     const viewerName = resolveViewerDisplayName({
       reportName: viewer?.name,
       clerkFirstName: clerkUser?.firstName,
       clerkFullName: clerkUser?.fullName,
     });
-    const partnerName = partner?.name?.trim() || "상대";
+    const partnerName = resolvePartnerDisplayName(
+      partner?.name,
+      undefined,
+      "친구",
+    );
+    const personAName = repA?.name?.trim() || "";
+    const personBName = repB?.name?.trim() || "";
 
     return NextResponse.json({
       relationship_report_id: rr.id,

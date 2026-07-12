@@ -80,12 +80,14 @@ export default function RelationshipReportCard({
   variant = "default",
   accentColor,
   className = "",
+  id,
 }: {
   title: string;
   children: ReactNode;
   variant?: ReportCardVariant;
   accentColor?: string;
   className?: string;
+  id?: string;
 }) {
   const tone = useReportTone();
   const variantClass =
@@ -105,6 +107,7 @@ export default function RelationshipReportCard({
 
   return (
     <article
+      id={id}
       className={["rounded-2xl border p-5 sm:p-6", variantClass, className].join(
         " ",
       )}

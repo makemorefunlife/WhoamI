@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { RedirectToSignIn, useAuth } from "@clerk/nextjs";
+import AccountPageShell from "@/components/account/AccountPageShell";
 import { ROUTES } from "@/constants/routes";
 
 export default function AccountBillingPage() {
@@ -9,9 +10,9 @@ export default function AccountBillingPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-[#0a0f1a] px-4 pt-24 text-center text-sm text-white/50">
-        불러오는 중…
-      </div>
+      <AccountPageShell activeTab="billing" title="결제 내역">
+        <p className="text-sm text-on-surface-variant">불러오는 중…</p>
+      </AccountPageShell>
     );
   }
 
@@ -20,31 +21,22 @@ export default function AccountBillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] px-4 pb-16 pt-20 sm:px-6">
-        <div className="mx-auto max-w-3xl space-y-6">
-          <nav className="flex gap-2 text-sm">
-            <Link
-              href={ROUTES.accountProfile}
-              className="rounded-full border border-white/20 px-3 py-1.5 text-white/70"
-            >
-              내 정보
-            </Link>
-            <Link
-              href={ROUTES.accountBilling}
-              className="rounded-full bg-white/10 px-3 py-1.5 font-medium text-white"
-            >
-              결제 내역
-            </Link>
-          </nav>
-
-          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <h1 className="text-xl font-semibold text-white">결제 내역</h1>
-            <p className="mt-2 text-sm text-white/70">
-              결제 내역 화면은 곧 제공될 예정입니다.
-            </p>
-          </section>
-        </div>
-      </div>
+    <AccountPageShell
+      activeTab="billing"
+      title="결제 내역"
+      subtitle="결제·구독 내역을 확인해요."
+    >
+      <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
+        <p className="text-sm leading-relaxed text-on-surface-variant">
+          결제 내역 화면은 곧 제공될 예정이에요.
+        </p>
+        <Link
+          href={ROUTES.accountProfile}
+          className="stitch-cta-secondary mt-5 inline-flex"
+        >
+          개인정보로 돌아가기
+        </Link>
+      </section>
+    </AccountPageShell>
   );
 }
-

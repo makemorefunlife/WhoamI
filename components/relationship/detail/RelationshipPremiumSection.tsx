@@ -93,7 +93,9 @@ export default function RelationshipPremiumSection({
   }
 
   return (
-    <ReportSurfaceProvider surface="dark">
+    <ReportSurfaceProvider
+      surface={premiumKind === "romantic" ? "stitch" : "dark"}
+    >
       <div
         id="relationship-report-anchor"
         ref={onReportReadyRef}
@@ -115,7 +117,7 @@ export default function RelationshipPremiumSection({
         </p>
       ) : null}
       {premiumKind === "romantic" && displayRomanticDeep ? (
-        <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
+        <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
           <RomanticSajuDeepReportView
             report={displayRomanticDeep}
             nameA={nameA}

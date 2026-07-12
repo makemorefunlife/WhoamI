@@ -55,6 +55,27 @@ export const RELATIONSHIP_TAB_THEME: Record<
   },
 };
 
+export function getStitchTabTheme(
+  kind: RelationshipTabKind,
+): RelationshipTabTheme {
+  const base = RELATIONSHIP_TAB_THEME[kind];
+  if (kind === "romantic") {
+    return {
+      accent: "#3a8f6e",
+      accentMuted: "rgba(58, 143, 110, 0.72)",
+      gradientFrom: "from-secondary/10",
+      borderClass: "border-outline-variant/30",
+      glowClass: "",
+    };
+  }
+  return {
+    ...base,
+    gradientFrom: "from-secondary/10",
+    borderClass: "border-outline-variant/30",
+    glowClass: "",
+  };
+}
+
 export function getTabTheme(kind: RelationshipTabKind): RelationshipTabTheme {
   return RELATIONSHIP_TAB_THEME[kind];
 }

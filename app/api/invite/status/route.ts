@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { createRouteSupabaseClient } from "@/lib/supabase/serverClient";
 
 export const runtime = "nodejs";
 
@@ -16,13 +16,10 @@ export async function GET(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) {
       return NextResponse.json({ used: false, error: "server_config" });
     }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(
       supabase,

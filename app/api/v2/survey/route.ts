@@ -1,13 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
+import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/types";
 import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function parseAnswers(raw: unknown): Record<string, string> | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
@@ -40,16 +41,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "reportId가 필요합니다." }, { status: 400 });
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(supabase, reportId, userId);
     if (access.error) return access.error;
@@ -132,16 +125,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(supabase, reportId, userId);
     if (access.error) return access.error;
@@ -179,16 +164,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "reportId가 필요합니다." }, { status: 400 });
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(supabase, reportId, userId);
     if (access.error) return access.error;

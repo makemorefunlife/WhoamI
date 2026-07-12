@@ -17,10 +17,10 @@ import { buildOverallAxisSummary } from "@/lib/v2/framework/axisInterpretation";
 import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
-import type { InnateSelfLiteProfile } from "@/lib/v2/saju/innateLite";
+import type { EssenceSelfLiteProfile } from "@/lib/v2/saju/essenceLite";
 import { UNKNOWN_BIRTH_NOTICE_KO } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
-type LiteTab = "current" | "innate";
+type LiteTab = "current" | "essence";
 
 function FreeAnalysisButton({
   active,
@@ -33,7 +33,7 @@ function FreeAnalysisButton({
   onClick: () => void;
   title: string;
   subtitle: string;
-  accent: "current" | "innate";
+  accent: "current" | "essence";
 }) {
   const border =
     accent === "current"
@@ -66,13 +66,13 @@ function FreeAnalysisButton({
 export default function StitchResultsDashboard({
   reportId,
   current,
-  innate,
+  essence,
   birth,
   birthTimeUnknown,
 }: {
   reportId: string;
   current: CurrentSelfProfile;
-  innate: InnateSelfLiteProfile;
+  essence: EssenceSelfLiteProfile;
   birth: BirthV2Session;
   birthTimeUnknown: boolean;
 }) {
@@ -135,14 +135,14 @@ export default function StitchResultsDashboard({
               Behavioral blueprint
             </p>
             <h2 className="stitch-headline mt-1.5 text-xl leading-snug sm:text-2xl">
-              Current state vs. innate potential
+              Current state vs. Essence potential
             </h2>
           </div>
           <button
             type="button"
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-outline-variant/50 text-on-surface-variant"
             aria-label="About this chart"
-            title="Survey patterns (current) overlaid with birth-chart traits (innate)"
+            title="Survey patterns (current) overlaid with birth-chart traits (Essence)"
           >
             <Info className="h-4 w-4" strokeWidth={2} />
           </button>
@@ -156,10 +156,10 @@ export default function StitchResultsDashboard({
 
         <DualAxisRadarChart
           current={current.primary_axes}
-          innate={innate.primary_axes}
+          essence={essence.primary_axes}
           theme={STITCH_RADAR_THEME}
           currentLabel="Current state"
-          innateLabel="Innate potential"
+          essenceLabel="Essence potential"
         />
       </section>
 
@@ -189,11 +189,11 @@ export default function StitchResultsDashboard({
             accent="current"
           />
           <FreeAnalysisButton
-            active={activeTab === "innate"}
-            onClick={() => toggleTab("innate")}
-            title="Innate blueprint"
+            active={activeTab === "essence"}
+            onClick={() => toggleTab("essence")}
+            title="Essence blueprint"
             subtitle="Birth-chart based"
-            accent="innate"
+            accent="essence"
           />
         </div>
 

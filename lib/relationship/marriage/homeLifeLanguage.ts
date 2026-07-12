@@ -1,5 +1,5 @@
 import { REF_EARTHLY_BRANCHES, REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { chartEnergyProfile } from "@/lib/saju/marriageAnalysis";
 import { buildChartContext, type ChartContext } from "@/lib/saju/chartContext";
 import { sajuJsonToPillars, countElements } from "@/lib/saju/pairChartAnalysis";

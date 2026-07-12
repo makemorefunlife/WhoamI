@@ -1,15 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { CurrentSelfLiteReport, InnateSelfLiteReport } from "@/lib/v2/lite/types";
+import type { CurrentSelfLiteReport, EssenceSelfLiteReport } from "@/lib/v2/lite/types";
 import {
   readCurrentLiteReport,
-  readInnateLiteReport,
+  readEssenceLiteReport,
   writeCurrentLiteReport,
-  writeInnateLiteReport,
+  writeEssenceLiteReport,
 } from "@/lib/v2/lite/session";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
-import { buildInnateSelfLiteInput } from "@/lib/v2/saju/innateLiteInput";
+import { buildEssenceSelfLiteInput } from "@/lib/v2/saju/essenceLiteInput";
 
 export function useCurrentLiteReport(
   reportId: string,
@@ -61,7 +61,7 @@ export function useCurrentLiteReport(
   return { report, loading, error, retry: fetchReport };
 }
 
-export function useInnateLiteReport(
+export function useEssenceLiteReport(
   reportId: string,
   birth: {
     birthDate: string;
@@ -70,19 +70,19 @@ export function useInnateLiteReport(
   } | null,
   enabled: boolean,
 ) {
-  const [report, setReport] = useState<InnateSelfLiteReport | null>(null);
+  const [report, setReport] = useState<EssenceSelfLiteReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = useCallback(async () => {
     if (!reportId || !birth) return;
-    const cached = readInnateLiteReport(reportId);
+    const cached = readEssenceLiteReport(reportId);
     if (cached) {
       setReport(cached);
       return;
     }
 
-    const innate_self_lite_input = buildInnateSelfLiteInput({
+    const essence_self_lite_input = buildEssenceSelfLiteInput({
       birthDate: birth.birthDate,
       birthTime: birth.birthTime,
       birthTimeUnknown: birth.birthTimeUnknown,
@@ -91,26 +91,26 @@ export function useInnateLiteReport(
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v2/lite/innate", {
+      const res = await fetch("/api/v2/lite/essence", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          innate_self_lite_input,
+          essence_self_lite_input,
           language: "ko",
         }),
       });
       const data = (await res.json()) as {
         ok?: boolean;
-        report?: InnateSelfLiteReport;
+        report?: EssenceSelfLiteReport;
         error?: string;
       };
       if (!res.ok || !data.report) {
-        throw new Error(data.error ?? "기질 분석에 실패했어요.");
+        throw new Error(data.error ?? "본질 분석에 실패했어요.");
       }
-      writeInnateLiteReport(reportId, data.report);
+      writeEssenceLiteReport(reportId, data.report);
       setReport(data.report);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "기질 분석에 실패했어요.");
+      setError(e instanceof Error ? e.message : "본질 분석에 실패했어요.");
     } finally {
       setLoading(false);
     }

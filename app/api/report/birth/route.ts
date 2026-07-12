@@ -1,14 +1,22 @@
 import { auth } from "@clerk/nextjs/server";
+import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { mergeBirthCoordinateFields, updateReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import {
+  BIRTH_DATE_CORRECTION_COLUMN,
+  isBirthDateCorrectionUsed,
+  isMissingBirthDateCorrectionColumnError,
+} from "@/lib/report/birthDateCorrection";
 import { resolveAstrologyCoordinates } from "@/lib/report/resolveAstrologyCoordinates";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
 import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type BirthBody = {
   reportId?: string;
@@ -32,16 +40,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(
       supabase,
@@ -50,7 +50,11 @@ export async function GET(req: Request) {
     );
     if (access.error) return access.error;
 
-    const { report, error } = await fetchReportWithBirthCoords(supabase, reportId);
+    const { report, error } = await fetchReportWithBirthCoords(
+      supabase,
+      reportId,
+      BIRTH_DATE_CORRECTION_COLUMN,
+    );
     if (error || !report) {
       return NextResponse.json(
         { error: error?.message ?? "리포트를 찾을 수 없습니다." },
@@ -58,11 +62,20 @@ export async function GET(req: Request) {
       );
     }
 
+    const correctionUsedAt = report[BIRTH_DATE_CORRECTION_COLUMN];
+    const correctionUsed =
+      typeof correctionUsedAt === "string"
+        ? isBirthDateCorrectionUsed(correctionUsedAt)
+        : false;
+
     return NextResponse.json({
       ok: true,
       birth_date: report.birth_date ?? null,
       birth_time: report.birth_time ?? null,
       birth_place: report.birth_place ?? null,
+      birth_date_correction_used_at:
+        typeof correctionUsedAt === "string" ? correctionUsedAt : null,
+      birth_date_correction_used: correctionUsed,
     });
   } catch (e) {
     console.error("report/birth GET:", e);
@@ -86,16 +99,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(
       supabase,
@@ -104,6 +109,28 @@ export async function POST(req: Request) {
     );
     if (access.error) return access.error;
 
+    const { report: existingReport, error: fetchErr } =
+      await fetchReportWithBirthCoords(
+        supabase,
+        reportId,
+        BIRTH_DATE_CORRECTION_COLUMN,
+      );
+    if (fetchErr || !existingReport) {
+      return NextResponse.json(
+        { error: fetchErr?.message ?? "리포트를 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
+    const currentBirthTime =
+      typeof existingReport.birth_time === "string"
+        ? existingReport.birth_time.trim()
+        : null;
+    const currentBirthPlace =
+      typeof existingReport.birth_place === "string"
+        ? existingReport.birth_place.trim()
+        : null;
+
     const birthTimeUnknown = body.birthTimeUnknown === true;
     const birthPlaceUnknown = body.birthPlaceUnknown === true;
     const birthPlace =
@@ -111,11 +138,38 @@ export async function POST(req: Request) {
         ? body.birthPlace.trim()
         : null;
 
+    const currentBirthDate =
+      typeof existingReport.birth_date === "string"
+        ? existingReport.birth_date.trim()
+        : null;
+    const requestedBirthDate =
+      typeof body.birthDate === "string" && body.birthDate.trim()
+        ? body.birthDate.trim()
+        : currentBirthDate;
+
+    const correctionUsedAt = existingReport[BIRTH_DATE_CORRECTION_COLUMN];
+    const correctionAlreadyUsed =
+      typeof correctionUsedAt === "string" &&
+      isBirthDateCorrectionUsed(correctionUsedAt);
+
+    const birthDateChanging = Boolean(
+      currentBirthDate &&
+        requestedBirthDate &&
+        requestedBirthDate !== currentBirthDate,
+    );
+
+    if (birthDateChanging && correctionAlreadyUsed) {
+      return NextResponse.json(
+        {
+          error:
+            "생년월일은 계정에서 1회만 수정할 수 있어요. 추가 변경은 고객센터로 문의해 주세요.",
+        },
+        { status: 403 },
+      );
+    }
+
     const basePatch = {
-      birth_date:
-        typeof body.birthDate === "string" && body.birthDate.trim()
-          ? body.birthDate.trim()
-          : null,
+      birth_date: requestedBirthDate,
       birth_time:
         birthTimeUnknown
           ? null
@@ -125,7 +179,15 @@ export async function POST(req: Request) {
       birth_place: birthPlaceUnknown
         ? birthPlace || UNKNOWN_BIRTH_FALLBACK.place
         : birthPlace,
+      ...(birthDateChanging
+        ? { [BIRTH_DATE_CORRECTION_COLUMN]: new Date().toISOString() }
+        : {}),
     };
+
+    const birthMateriallyChanged =
+      (currentBirthDate ?? "") !== (basePatch.birth_date ?? "") ||
+      (currentBirthTime ?? "") !== (basePatch.birth_time ?? "") ||
+      (currentBirthPlace ?? "") !== (basePatch.birth_place ?? "");
 
     const hasClientCoords =
       typeof body.birthLatitude === "number" &&
@@ -161,19 +223,28 @@ export async function POST(req: Request) {
         }
       : mergeBirthCoordinateFields(basePatch, basePatch.birth_place);
 
-    const { error: upErr } = await updateReportPatchSafely(
-      supabase,
-      reportId,
-      patch,
-    );
-
-    if (upErr) {
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+    const upError = await saveBirthPatch(supabase, reportId, patch, birthDateChanging);
+    if (upError) {
+      return NextResponse.json({ error: upError.message }, { status: 500 });
     }
 
     await deleteReportAnalysis(supabase, reportId, "astrology");
+    if (birthDateChanging || birthMateriallyChanged) {
+      await deleteReportAnalysis(supabase, reportId, "integrated");
+    }
+    if (birthMateriallyChanged) {
+      await invalidateRelationshipPremiumsForReport(supabase, reportId);
+    }
 
-    return NextResponse.json({ ok: true, ...patch });
+    return NextResponse.json({
+      ok: true,
+      ...patch,
+      birth_date_correction_used:
+        birthDateChanging || correctionAlreadyUsed,
+      birth_date_correction_column_available:
+        typeof correctionUsedAt === "string" || correctionAlreadyUsed,
+      relationship_premium_invalidated: birthMateriallyChanged,
+    });
   } catch (e) {
     console.error("report/birth:", e);
     return NextResponse.json(
@@ -181,6 +252,37 @@ export async function POST(req: Request) {
       { status: 500 },
     );
   }
+}
+
+/** correction 컬럼 미적용 DB — 생년월일 등은 저장하고 correction 필드만 제외 */
+async function saveBirthPatch(
+  supabase: SupabaseClient,
+  reportId: string,
+  patch: Record<string, unknown>,
+  birthDateChanging: boolean,
+): Promise<{ message?: string } | null> {
+  let { error } = await updateReportPatchSafely(supabase, reportId, patch);
+
+  if (
+    error &&
+    birthDateChanging &&
+    BIRTH_DATE_CORRECTION_COLUMN in patch &&
+    isMissingBirthDateCorrectionColumnError(error)
+  ) {
+    const withoutCorrection = { ...patch };
+    delete withoutCorrection[BIRTH_DATE_CORRECTION_COLUMN];
+    console.warn(
+      `[report-birth] ${BIRTH_DATE_CORRECTION_COLUMN} missing — saved birth without correction flag reportId=${reportId}`,
+    );
+    const retry = await updateReportPatchSafely(
+      supabase,
+      reportId,
+      withoutCorrection,
+    );
+    error = retry.error;
+  }
+
+  return error;
 }
 
 /** 출생 정보 초기화 */
@@ -194,16 +296,8 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(
       supabase,

@@ -5,6 +5,16 @@ import {
   buildConversationAndActionWritingGuide,
 } from "./dataCombinationRules";
 import { buildSectionQualityExamples } from "./sectionExamples";
+import {
+  buildEssenceJournalNameMappingBlock,
+  buildEssenceJournalToneRules,
+  buildHiddenHeartsRoleGuide,
+  buildSectionRoleSeparationGuide,
+} from "./essenceJournalWritingRules";
+import {
+  buildSpecialBondFewShotExample,
+} from "./specialBondWritingRules";
+import type { RomanticSajuDeepLocale } from "./system";
 
 const DATA_COMBINATION_RULES = `
 # ⚠️ 가장 중요한 규칙: 데이터 조합 해석
@@ -31,7 +41,7 @@ const RELATIONSHIP_INTERPRETATION_GUIDE = `
 |---|---|
 | 일간 천간합 | 첫 만남부터 강렬한 끌림. 서로의 존재 자체가 편안해요. |
 | 일지 육합 | 현실 생활에서 잘 보완. 함께 살아갈 때 큰 마찰이 적어요. |
-| 월지 육합 | 말하지 않아도 이해되는 깊은 정서적 교감. |
+| 월지 육합 | 말하지 않아도 흐름이 맞는 편안한 정서적 연결. |
 
 ## 충(沖) - 서로를 자극하는 힘
 | 충의 종류 | 관계에서의 해석 |
@@ -85,11 +95,11 @@ const UX_SECTION_GUIDE = `
 3. section_4_special_bond ⚖️
 4. section_4_hidden_hearts 🌙
 5. section_3_conversation_patterns 💬 — conflict **dialogue_table만** (긴 대화·숨은심리·좋은패턴 없음)
-6. section_5_action 🌱 (title + detail + **phrase_example** 필수)
+6. section_5_action 🌱 — \`EssenceActionGuideline\` 6필드 (saju_reason + action_title + real_speech_tip + real_life_example 필수)
 7. section_6_timeline ⏰
 `.trim();
 
-const FINAL_OUTPUT_RULES = `
+const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 # 최종 지침
 1. **입력 데이터 필수 사용** — 위 "입력 데이터"의 실제 계산값을 근거로만 작성. 품질 예시·정답 예시 복사 금지.
 2. 전문 용어 금지 — 본문(JSON 값)에 사주 용어·한자 없음
@@ -100,9 +110,16 @@ const FINAL_OUTPUT_RULES = `
 7. "~것 같아요" 금지 → "~해요", "~거예요"
 8. A와 B 균형
 9. Output Schema 모든 필드 빈 칸 없이
-10. **comparison_table**: 감정 표현·갈등 반응·애정 언어·스트레스 패턴·의사결정·소통 방식 **6행 필수** — 각 셀은 **이름·주어 없이** 서술만 (표 헤더에 이름 있음)
-11. **section_5**: 각 조언마다 \`phrase_example\` + \`together_starter\` 필수
-12. **section_1_summary**: LLM이 만들지 마세요 (Headline Selector가 사주 rule 결과로 채움)
+10. **comparison_table**: 감정 표현·갈등 반응·애정 언어·스트레스 패턴·의사결정·소통 방식 **6행 필수**
+    - \`a\` 열 = **${nicknameA}** 성향만, \`b\` 열 = **${nicknameB}** 성향만 (서로 바꿔 쓰지 마세요)
+    - 각 셀은 **이름·주어 없이** 서술 (표 헤더에 이름 있음). "OO는~", "OO을~" 금지
+    - 상대를 가리킬 때는 이름 대신 **"상대에게"**, **"상대를"** (둘만 보는 리포트 톤)
+    - 예: "상대에게 고마움을 자주 표현해요." / "사랑을 행동으로 보여 주려 해요."
+11. **section_5**: advice_for_a·b **각 3개** — 항목마다 \`saju_reason\`, \`action_title\`, \`real_speech_tip\`, \`real_life_example\` 필수. \`together_starter\`는 함께 대화 시작 대사. "20분 쉬어가요" 템플릿 반복 금지
+12. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` 필수. Few-Shot 구조 준수. 자연물 비유·명리 용어 금지
+13. **section_4_hidden_hearts**: a_hidden·b_hidden 둘 다 필수. special_bond와 **완전 분리**
+14. **section_1_summary**: LLM이 만들지 마세요 (Headline Selector가 사주 rule 결과로 채움)
+15. **중복 검열**: 주어만 바꾼 미러링·금지 미사여구·사주 전문 용어·bond 자연물 비유 발견 시 해당 필드 **전면 재작성**
 `.trim();
 
 export function buildRomanticSajuDeepUserPrompt(params: {
@@ -111,9 +128,24 @@ export function buildRomanticSajuDeepUserPrompt(params: {
   personBlockA: string;
   personBlockB: string;
   pairBlock: string;
+  userCustomMyName?: string;
+  userCustomTargetName?: string;
+  locale?: RomanticSajuDeepLocale;
 }): string {
-  const { nicknameA, nicknameB, personBlockA, personBlockB, pairBlock } =
-    params;
+  const {
+    nicknameA,
+    nicknameB,
+    personBlockA,
+    personBlockB,
+    pairBlock,
+    userCustomMyName,
+    userCustomTargetName,
+    locale: _locale = "ko",
+  } = params;
+  void _locale;
+
+  const myName = userCustomMyName?.trim() || nicknameA;
+  const targetName = userCustomTargetName?.trim() || nicknameB;
 
   const qualityExamples = buildSectionQualityExamples(nicknameA, nicknameB);
   const pdfStyleGuide = buildPdfStyleReferenceGuide(nicknameA, nicknameB);
@@ -121,12 +153,47 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     nicknameA,
     nicknameB,
   );
+  const nameMapping = buildEssenceJournalNameMappingBlock({
+    nicknameA,
+    nicknameB,
+    userCustomMyName: myName,
+    userCustomTargetName: targetName,
+  });
+  const essenceTone = buildEssenceJournalToneRules();
+  const sectionRoles = buildSectionRoleSeparationGuide(nicknameA, nicknameB);
+  const hiddenHeartsGuide = buildHiddenHeartsRoleGuide(nicknameA, nicknameB);
+  const specialBondFewShot = buildSpecialBondFewShotExample(
+    nicknameA,
+    nicknameB,
+  );
 
   return `
 # 분석 대상
-- A: ${nicknameA}
-- B: ${nicknameB}
+- A (JSON 슬롯): ${nicknameA}
+- B (JSON 슬롯): ${nicknameB}
+- 나(커스텀 1순위): ${myName}
+- 상대(커스텀 1순위): ${targetName}
 - 관계 유형: 연인
+
+---
+
+${nameMapping}
+
+---
+
+${essenceTone}
+
+---
+
+${sectionRoles}
+
+---
+
+${hiddenHeartsGuide}
+
+---
+
+${specialBondFewShot}
 
 ---
 
@@ -183,7 +250,7 @@ ${ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA}
 
 ---
 
-${FINAL_OUTPUT_RULES}
+${buildFinalOutputRules(nicknameA, nicknameB)}
 
 JSON만 출력하세요.
 `.trim();

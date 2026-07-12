@@ -2,7 +2,7 @@ import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores
 import type { TenGodActivationRow } from "@/lib/saju/tenGodActivation";
 import type { RomanticCrossBodyContext } from "@/lib/relationship/romanticEverydayText";
 import { resolveDayStemNamesFromPair } from "@/lib/relationship/romanticEverydayText";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { RelationshipAxisKey } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import type {
   RomanticInsightCandidate,
@@ -61,6 +61,8 @@ export type RelationshipBasicAxes = Partial<
  * 개별 rule은 여기서 참조만 한다 (새 계산 금지).
  */
 import type { DayStemRomanticProfile } from "@/lib/relationship/dayStemRomanticProfile";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 
 export type RomanticRuleContext = {
   nicknameA: string;
@@ -91,6 +93,7 @@ export type RomanticRuleContext = {
   insightPool?: RomanticInsightCandidate[];
   rankedInsights?: RomanticInsightCandidate[];
   opening?: RomanticOpeningSelection;
+  locale: RomanticHeadlineLocale;
 };
 
 export type RomanticRule<TOut> = {

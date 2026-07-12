@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/serverClient";
+import {
+  createServerSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
 
 function makeToken() {
   return `invite_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
@@ -14,12 +17,7 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServerSupabaseClient();
-    if (!supabase) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
+    if (!supabase) return supabaseConfigErrorResponse();
 
     // 🔥 이미 초대한 적 있는지 체크 (1회 제한)
     const { data: existing } = await supabase

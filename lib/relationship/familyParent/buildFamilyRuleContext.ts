@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
 import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
 import {

@@ -56,3 +56,7 @@ alter table public.relationship_analysis_logs
         'unspecified'
       )
     );
+
+-- 4) 생년월일 1회 수정 시각 (개인정보 화면)
+alter table public.reports
+  add column if not exists birth_date_correction_used_at timestamptz;

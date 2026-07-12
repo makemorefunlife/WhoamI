@@ -3,16 +3,16 @@
 import {
   LiteReportError,
 } from "@/components/v2/LiteReportView";
-import { useCurrentLiteReport, useInnateLiteReport } from "@/lib/v2/lite/useLiteReport";
+import { useCurrentLiteReport, useEssenceLiteReport } from "@/lib/v2/lite/useLiteReport";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import StitchFreeSticker from "@/components/results/StitchFreeSticker";
 import {
   STITCH_CURRENT_STROKE,
-  STITCH_INNATE_STROKE,
+  STITCH_ESSENCE_STROKE,
 } from "@/components/v2/DualAxisRadarChart";
 
-type LiteTab = "current" | "innate";
+type LiteTab = "current" | "essence";
 
 function StitchSectionBlock({
   title,
@@ -58,7 +58,7 @@ function StitchCurrentLiteReport({
   );
 }
 
-function StitchInnateLiteReport({
+function StitchEssenceLiteReport({
   oneLineSummary,
   sections,
 }: {
@@ -70,7 +70,7 @@ function StitchInnateLiteReport({
       {oneLineSummary ? (
         <p
           className="text-center text-[15px] font-medium leading-snug"
-          style={{ color: STITCH_INNATE_STROKE }}
+          style={{ color: STITCH_ESSENCE_STROKE }}
         >
           {oneLineSummary}
         </p>
@@ -103,20 +103,20 @@ export default function StitchLiteResultPanel({
   } = useCurrentLiteReport(reportId, profile, active === "current");
 
   const {
-    report: innateReport,
-    loading: innateLoading,
-    error: innateError,
-    retry: retryInnate,
-  } = useInnateLiteReport(reportId, birth, active === "innate");
+    report: essenceReport,
+    loading: essenceLoading,
+    error: essenceError,
+    retry: retryEssence,
+  } = useEssenceLiteReport(reportId, birth, active === "essence");
 
   if (!active) return null;
 
-  const innateSections = innateReport
+  const essenceSections = essenceReport
     ? [
-        innateReport.core_personality_insight,
-        innateReport.relationship_tendency_insight,
-        ...(innateReport.environment_fit_hint
-          ? [innateReport.environment_fit_hint]
+        essenceReport.core_personality_insight,
+        essenceReport.relationship_tendency_insight,
+        ...(essenceReport.environment_fit_hint
+          ? [essenceReport.environment_fit_hint]
           : []),
       ]
     : [];
@@ -153,21 +153,21 @@ export default function StitchLiteResultPanel({
       ) : (
         <>
           <h3 className="mb-4 inline-flex flex-wrap items-center gap-2 text-base font-semibold text-primary">
-            Innate blueprint
+            Essence blueprint
             <StitchFreeSticker />
           </h3>
-          {innateLoading && !innateReport ? (
+          {essenceLoading && !essenceReport ? (
             <p className="py-8 text-center text-sm text-on-surface-variant">
               Reading your birth chart patterns…
             </p>
           ) : null}
-          {innateError && !innateReport ? (
-            <LiteReportError message={innateError} onRetry={retryInnate} />
+          {essenceError && !essenceReport ? (
+            <LiteReportError message={essenceError} onRetry={retryEssence} />
           ) : null}
-          {innateReport ? (
-            <StitchInnateLiteReport
-              oneLineSummary={innateReport.one_line_summary}
-              sections={innateSections}
+          {essenceReport ? (
+            <StitchEssenceLiteReport
+              oneLineSummary={essenceReport.one_line_summary}
+              sections={essenceSections}
             />
           ) : null}
         </>

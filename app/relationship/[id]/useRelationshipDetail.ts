@@ -5,7 +5,6 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { AnalysisLogListItem } from "@/components/relationship/RelationshipAnalysisHistory";
-import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
@@ -26,7 +25,13 @@ import {
   type AnalysisLogSnapshot,
 } from "@/lib/relationship/detail/parseAnalysisLogSnapshot";
 import { useCanonicalReportId } from "@/lib/home/useCanonicalReportId";
+import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import {
+  parseRomanticDeepViewModel,
+  type RomanticDeepMetaViewModel,
+  type RomanticDeepViewModel,
+} from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 
 const premiumPreview = relationshipPremiumPreviewEnabled();
 
@@ -62,7 +67,8 @@ export type UseRelationshipDetailReturn = {
   viewerIsReportA: boolean;
   displayBasic: RelationshipPerspective | null;
   displayPremium: RelationshipPerspective | null;
-  displayRomanticDeep: RomanticSajuDeepReport["report"] | null;
+  displayRomanticDeep: RomanticDeepViewModel | null;
+  displayRomanticMeta: RomanticDeepMetaViewModel | null;
   displayWorkDeep: WorkColleagueReportBody | null;
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
@@ -131,9 +137,9 @@ export function useRelationshipDetail({
     useState(false);
   const [basic, setBasic] = useState<RelationshipPerspective | null>(null);
   const [premium, setPremium] = useState<RelationshipPerspective | null>(null);
-  const [romanticDeep, setRomanticDeep] = useState<
-    RomanticSajuDeepReport["report"] | null
-  >(null);
+  const [romanticDeep, setRomanticDeep] = useState<RomanticDeepViewModel | null>(
+    null,
+  );
   const [workDeep, setWorkDeep] = useState<WorkColleagueReportBody | null>(
     null,
   );
@@ -245,9 +251,11 @@ export function useRelationshipDetail({
           clerkFirstName: user?.firstName,
           clerkFullName: user?.fullName,
         });
-        const resolvedPartner =
-          (data.partner_name ?? data.display_partner_name ?? "상대").trim() ||
-          "상대";
+        const resolvedPartner = resolvePartnerDisplayName(
+          data.partner_name ?? data.display_partner_name,
+          undefined,
+          "친구",
+        );
         setPartnerName(resolvedPartner);
         setViewerName(resolvedViewer);
         setViewerBirthTimeUnknown(data.viewer_birth_time_unknown === true);
@@ -260,9 +268,7 @@ export function useRelationshipDetail({
         setPremium(
           (data.perspective_premium ?? null) as RelationshipPerspective,
         );
-        setRomanticDeep(
-          (data.romantic_deep_report ?? null) as RomanticSajuDeepReport["report"] | null,
-        );
+        setRomanticDeep(parseRomanticDeepViewModel(data.romantic_deep_report));
         setWorkDeep(
           (data.work_colleague_deep_report ?? null) as WorkColleagueReportBody | null,
         );
@@ -281,8 +287,14 @@ export function useRelationshipDetail({
           data.viewer_is_report_a === true ||
             (data.viewer_is_report_a !== false && isViewerA),
         );
-        setNameA(data.person_a_name ?? resolvedViewer);
-        setNameB(data.person_b_name ?? resolvedPartner);
+        setNameA(
+          (data.person_a_name ?? "").trim() ||
+            (isViewerA ? resolvedViewer : resolvedPartner),
+        );
+        setNameB(
+          (data.person_b_name ?? "").trim() ||
+            (isViewerA ? resolvedPartner : resolvedViewer),
+        );
         setFavorited(Boolean(data.is_favorite));
         void fetchLogs();
       } finally {
@@ -444,9 +456,7 @@ export function useRelationshipDetail({
           return false;
         }
         if (kind === "romantic" && data.result_premium?.report) {
-          setRomanticDeep(
-            data.result_premium.report as RomanticSajuDeepReport["report"],
-          );
+          setRomanticDeep(parseRomanticDeepViewModel(data.result_premium.report));
         } else if (kind === "work") {
           const prem = data.result_premium;
           if (
@@ -593,8 +603,14 @@ export function useRelationshipDetail({
     snapshotView?.premium !== undefined ? snapshotView.premium : premium;
   const displayRomanticDeep =
     snapshotView?.romanticDeep !== undefined
-      ? snapshotView.romanticDeep
+      ? parseRomanticDeepViewModel(snapshotView.romanticDeep)
       : romanticDeep;
+  const displayRomanticMeta = displayRomanticDeep?.meta
+    ? {
+        psych_match: displayRomanticDeep.meta.psych_match ?? null,
+        romantic_fortune_flow: displayRomanticDeep.meta.romantic_fortune_flow ?? null,
+      }
+    : null;
   const displayWorkDeep =
     snapshotView?.workDeep !== undefined ? snapshotView.workDeep : workDeep;
   const displayCohabitationDeep =
@@ -745,6 +761,7 @@ export function useRelationshipDetail({
     displayBasic,
     displayPremium,
     displayRomanticDeep,
+    displayRomanticMeta,
     displayWorkDeep,
     displayCohabitationDeep,
     displayFamilyDeep,

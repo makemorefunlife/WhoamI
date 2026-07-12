@@ -3,7 +3,7 @@
 import {
   LiteReportError,
 } from "@/components/v2/LiteReportView";
-import type { InnateDeepPreviewResponse } from "@/lib/v1/slim/types";
+import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 
 export default function StitchSlimV1IntegratedView({
   data,
@@ -12,7 +12,7 @@ export default function StitchSlimV1IntegratedView({
   onRetry,
   onRegenerateFresh,
 }: {
-  data: InnateDeepPreviewResponse | null;
+  data: EssenceDeepPreviewResponse | null;
   loading: boolean;
   error: string | null;
   onRetry?: () => void;

@@ -3,24 +3,24 @@ import { PRIMARY_AXIS_KEYS, type PrimaryAxesScores } from "@/lib/v2/survey/types
 export type GapAxisRow = {
   axis: (typeof PRIMARY_AXIS_KEYS)[number];
   current: number;
-  innate: number;
-  /** current - innate (docs/v2/analysis/01) */
+  essence: number;
+  /** current - essence (docs/v2/analysis/01) */
   delta: number;
   absDelta: number;
 };
 
 export function buildGapRows(
   current: PrimaryAxesScores,
-  innate: PrimaryAxesScores,
+  essence: PrimaryAxesScores,
 ): GapAxisRow[] {
   return PRIMARY_AXIS_KEYS.map((axis) => {
     const c = current[axis];
-    const i = innate[axis];
-    const delta = c - i;
+    const e = essence[axis];
+    const delta = c - e;
     return {
       axis,
       current: c,
-      innate: i,
+      essence: e,
       delta,
       absDelta: Math.abs(delta),
     };

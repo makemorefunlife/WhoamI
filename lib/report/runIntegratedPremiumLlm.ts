@@ -28,7 +28,7 @@ function buildIntegratedFallback(input: IntegratedPremiumLlmInput): string {
 ■ 설문 (${input.surveyAnalysis.length}자)
 ${input.surveyAnalysis.slice(0, 800)}${input.surveyAnalysis.length > 800 ? "…" : ""}
 
-■ 기질 분석 (${input.sajuSummary.length}자)
+■ Essence 분석 (${input.sajuSummary.length}자)
 ${input.sajuSummary.slice(0, 600)}${input.sajuSummary.length > 600 ? "…" : ""}
 
 ■ 출생 에너지 맥락 (${input.astrologyInterpretation.length}자)

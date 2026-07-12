@@ -15,6 +15,9 @@ type UseClientReportIdOptions = {
 /**
  * reportId는 마운트 후에만 확정. 첫 렌더는 항상 "".
  * ready=true 이후에만 데이터 fetch 시작.
+ *
+ * 로그인 사용자: URL/localStorage 힌트는 resume에만 전달하고,
+ * 서버 canonical reportId를 SSOT로 사용한다.
  */
 export function useClientReportId({
   urlHint = "",
@@ -30,32 +33,32 @@ export function useClientReportId({
     let cancelled = false;
 
     async function resolve() {
-      const hint = urlHint.trim();
+      if (!isLoaded) return;
 
-      if (hint) {
+      const hint = urlHint.trim();
+      const stored = readStoredReportId();
+      const effectiveHint = hint || stored || undefined;
+
+      if (recoverFromServer && isSignedIn) {
+        if (!cancelled) setRecovering(true);
+        const session = await loadReportSession({
+          urlHint: effectiveHint,
+          context: logContext,
+          hydrate: false,
+          // URL 힌트가 있으면 캐시를 우회해 canonical 재확정
+          forceRefresh: Boolean(hint),
+        });
         if (!cancelled) {
-          setReportId(hint);
+          setReportId(session.reportId);
+          setRecovering(false);
           setReady(true);
         }
         return;
       }
 
-      if (!isLoaded) return;
-
-      const stored = readStoredReportId();
-
-      // 로그인 사용자: localStorage 유무와 관계없이 서버 canonical을 먼저 확정한 뒤 fetch
-      if (recoverFromServer && isSignedIn) {
-        if (!cancelled) setRecovering(true);
-        const session = await loadReportSession({
-          urlHint: stored || undefined,
-          context: logContext,
-          hydrate: false,
-          forceRefresh: !stored,
-        });
+      if (hint) {
         if (!cancelled) {
-          setReportId(session.reportId);
-          setRecovering(false);
+          setReportId(hint);
           setReady(true);
         }
         return;

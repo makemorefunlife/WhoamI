@@ -18,6 +18,8 @@ import {
   readStoredReportId,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
+import { useAppSession } from "@/lib/routing/useAppSession";
+import { useHydrated } from "@/lib/hooks/useHydrated";
 
 const HERO_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuDvgf6WG4j6WmSliT9ytPyueU1yY_U7iK3rDs0KH0un2ei-7z7YtU6CWtOH0vlV1TeaTGp7MNGkGJJE_7jGSf9mVK_GZNVi0cXwUCZbLOqu4lskU70i2IZ3iPe0OhfnCoHROaachRLGnLUdZ7Y2B7Hm2210LeZsY2lijQ2Q7uJTIKNNHhy2pvKTWCMNwJv_B1Qn5xU3k3_SDhSpMjUl9uGmAFlwcpMJCvf2JXK0Od047ck6WxhSnq1RvLD2ek81OaidU9GNkxAezmTk";
@@ -65,11 +67,17 @@ export default function StitchLandingPage({
 }: Props) {
   const router = useRouter();
   const mainRef = useScrollReveal();
-  const [reportId, setReportId] = useState("");
+  const { reportId: sessionReportId } = useAppSession({ hydrate: false });
+  const hydrated = useHydrated();
+  const [storedReportId, setStoredReportId] = useState("");
 
   useEffect(() => {
-    setReportId(readStoredReportId());
+    setStoredReportId(readStoredReportId());
   }, []);
+
+  const reportId = hydrated
+    ? sessionReportId?.trim() || storedReportId
+    : "";
 
   return (
     <div className="stitch-landing overflow-x-hidden">

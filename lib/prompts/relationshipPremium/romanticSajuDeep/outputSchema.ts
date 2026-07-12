@@ -14,7 +14,7 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
       "a_nature": {
         "image_metaphor": "A를 한 장면으로 압축한 이미지",
         "first_person_voice": "사실 나는... (5~8문장, 1인칭)",
-        "description": "A 타고난 기질·강점·약점·혼자일 때 (5~8문장)",
+        "description": "A Essence·강점·약점·혼자일 때 (5~8문장)",
         "data_combination_note": "어떤 신호들을 조합해 이렇게 읽었는지 (용어 없이)",
         "meeting_b": "B를 만나며 달라진 점 (5문장+)",
         "together_change": "약점이 B 강점과 만나 변화 (5문장+)"
@@ -22,31 +22,34 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
       "b_nature": {
         "image_metaphor": "B 이미지",
         "first_person_voice": "사실 나는... (5~8문장)",
-        "description": "B 기질 (5~8문장)",
+        "description": "B Essence (5~8문장)",
         "data_combination_note": "조합 논리",
         "meeting_a": "A를 만나며 (5문장+)",
         "together_change": "변화 (5문장+)"
       }
     },
     "section_4_special_bond": {
-      "a_gives_b": "A가 B에게 주는 힘 (5문장+, 구체적 장면)",
-      "b_gives_a": "B가 A에게 주는 힘 (5문장+)",
-      "only_together": "둘이 있을 때만 가능한 시너지 (5문장+)",
-      "relationship_formula": "관계 방정식 한 줄",
-      "why_special": "특별한 이유 (3~5문장)"
+      "a_gives_b_headline": "A→B 한 줄 훅 (콜론 뒤 서브타이틀)",
+      "a_gives_b": "A→B 본문 4~5문장 (새 경험·변화·더 나은 결정 역동 필수)",
+      "b_gives_a_headline": "B→A 한 줄 훅",
+      "b_gives_a": "B→A 본문 4~5문장 (감정 부담 경감·분석적 새 시각 역동 필수)",
+      "only_together_headline": "A↔B 한 줄 훅",
+      "only_together": "A↔B 상호보완·Essence 아우라 본문 3~4문장",
+      "relationship_formula": "관계 방정식 한 줄 (선택)",
+      "why_special": "💡 맞춰 가는 지점 — 갈등 패턴·실전 팁 (bond 칭찬 재탕 금지)"
     },
     "section_4_hidden_hearts": {
       "a_hidden": {
-        "need": "A 무의식적 욕구/두려움",
-        "reason": "왜 그런지 (3문장+)",
-        "voice": "사실 나는... (날것의 1인칭, 5~8문장)"
+        "need": "A 한 줄 후킹 — 무의식적 욕구·두려움 (겉모습 vs 속마음 대비)",
+        "reason": "왜 그런지 — 구체 장면·습관 3문장+ (사주 용어 없이)",
+        "voice": "사실 나는... (A 1인칭 날것 고백 5~8문장)"
       },
       "b_hidden": {
-        "need": "B 욕구/두려움",
-        "reason": "이유",
-        "voice": "사실 나는... (5~8문장)"
+        "need": "B 한 줄 후킹",
+        "reason": "이유 3문장+",
+        "voice": "사실 나는... (B 1인칭 5~8문장)"
       },
-      "mutual_gift": "서로에게 주는 치유 (4문장+)"
+      "mutual_gift": "💡 두 사람의 무의식 시너지 — 말하지 않아도 느끼는 긴장감 또는 보이지 않는 정서적 안전지대 (4문장+)"
     },
     "section_3_conversation_patterns": {
       "conflict_situation": {
@@ -72,20 +75,26 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
     "section_5_action": {
       "advice_for_a": [
         {
-          "title": "행동 제목",
-          "detail": "왜·어떻게 (2~3문장)",
-          "phrase_example": "📱 이렇게 말해보세요: \\"실제 대사 한두 문장\\""
+          "relationship_kind": "연인",
+          "target_user": "A닉네임",
+          "saju_reason": "왜 이 행동이 필요한지 — 기질·패턴 근거 2~3문장 (사주 용어·한자 없이)",
+          "action_title": "엣지 있고 후킹되는 행동 제목 한 줄",
+          "real_speech_tip": "입으로 뱉을 수 있는 실제 대사 한두 문장",
+          "real_life_example": "적용할 수 있는 구체적 상황 예시 한 줄"
         }
       ],
       "advice_for_b": [
         {
-          "title": "행동 제목",
-          "detail": "2~3문장",
-          "phrase_example": "📱 이렇게 말해보세요: \\"실제 대사\\""
+          "relationship_kind": "연인",
+          "target_user": "B닉네임",
+          "saju_reason": "2~3문장",
+          "action_title": "행동 제목",
+          "real_speech_tip": "실제 대사",
+          "real_life_example": "상황 예시"
         }
       ],
       "together": "함께보면 좋을 것 (3문장+)",
-      "together_starter": "📱 이렇게 시작해보세요: \\"대화 시작 대사\\"",
+      "together_starter": "함께 대화를 시작할 때 쓸 수 있는 실제 대사 한두 문장",
       "promise": "따뜻한 격려 한 문장"
     },
     "section_6_timeline": {
@@ -123,9 +132,26 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
   }
 }`;
 
+export interface EssenceActionGuideline {
+  relationship_kind: string;
+  target_user: string;
+  saju_reason: string;
+  action_title: string;
+  real_speech_tip: string;
+  real_life_example: string;
+}
+
+/** @deprecated LLM 구 스키마 — normalizeActionGuideline이 변환 */
+export type LegacyAdviceItem = {
+  title?: string;
+  detail?: string;
+  phrase_example?: string;
+};
+
 export type AdviceItem =
   | string
-  | { title?: string; detail?: string; phrase_example?: string };
+  | EssenceActionGuideline
+  | LegacyAdviceItem;
 
 export type DialogueTableRow = {
   speaker?: string;
@@ -134,6 +160,44 @@ export type DialogueTableRow = {
   good_line?: string;
   line?: string;
   emoji?: string;
+};
+
+export type RomanticPsychMatchType = "similarity" | "complementary" | "tension";
+
+export type RomanticPsychMatchAxisResult = {
+  axis_key: string;
+  score_a: number;
+  score_b: number;
+  gap: number;
+  match_type: RomanticPsychMatchType;
+};
+
+export type RomanticPsychMatchResult = {
+  axis_results: RomanticPsychMatchAxisResult[];
+  conflict_triggers: Array<{
+    axis_key: string;
+    gap: number;
+    match_type: RomanticPsychMatchType;
+  }>;
+};
+
+export type RomanticFortuneFlowResult = {
+  daewoon: {
+    current_year: number;
+    age_band_start: number;
+    daewoon_pillar: string;
+    daewoon_element: string;
+    relationship_interaction: "supportive" | "neutral" | "tension";
+    interaction_note: string;
+  };
+  sewoon: {
+    current_year: number;
+    years: Array<{
+      year: number;
+      sewoon_pillar: string;
+      branch_relation: "combine" | "clash" | "neutral";
+    }>;
+  };
 };
 
 export type RomanticSajuDeepReport = {
@@ -165,9 +229,12 @@ export type RomanticSajuDeepReport = {
       };
     };
     section_4_special_bond?: {
+      a_gives_b_headline?: string;
       a_gives_b?: string;
+      b_gives_a_headline?: string;
       b_gives_a?: string;
       power_to_each_other?: string;
+      only_together_headline?: string;
       only_together: string;
       relationship_formula: string;
       why_special: string;
@@ -176,7 +243,10 @@ export type RomanticSajuDeepReport = {
     section_4_hidden_hearts: Record<string, unknown>;
     section_5_action: Record<string, unknown>;
     section_6_timeline: Record<string, unknown>;
-    meta?: Record<string, unknown>;
+    meta?: Record<string, unknown> & {
+      romantic_fortune_flow?: RomanticFortuneFlowResult | null;
+      psych_match?: RomanticPsychMatchResult | null;
+    };
   };
 };
 

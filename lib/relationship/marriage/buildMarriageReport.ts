@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/types";
 import { buildMarriageRuleContext } from "./buildMarriageRuleContext";
 import { buildMarriageSnapshotPanel } from "./buildMarriageSnapshotPanel";

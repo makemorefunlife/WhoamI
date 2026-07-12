@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
@@ -21,7 +22,6 @@ import { astrologyLocationFingerprint } from "@/lib/report/resolveAstrologyCoord
 import { syncReportBirthCoordinates } from "@/lib/report/syncReportBirthCoordinates";
 import { buildSurveyOnlyUserInputForReport } from "@/lib/report/surveyForLlmFromReportId";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -97,17 +97,8 @@ export async function GET(req: Request) {
       );
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(supabaseUrl, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
 
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(
@@ -349,17 +340,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(supabaseUrl, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
 
     const { userId } = await auth();
     const access = await assertGuestOrOwnerReportAccess(

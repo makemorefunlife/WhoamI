@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Lora, Manrope } from "next/font/google";
+import { Geist, Geist_Mono, IBM_Plex_Mono, Lora, Manrope } from "next/font/google";
 import AppClerkProvider from "@/components/clerk/AppClerkProvider";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import ConditionalAppChrome from "@/components/layout/ConditionalAppChrome";
@@ -16,6 +16,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 const manrope = Manrope({
@@ -51,7 +57,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppClerkProvider>

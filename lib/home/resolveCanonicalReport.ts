@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { countHubRelationshipSummary } from "@/lib/relationship/hubRelationshipSummary";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 
 export type CanonicalReportRow = {
@@ -120,16 +121,38 @@ export async function resolveCanonicalReport(
 
   const completed = scored
     .filter((x) => x.surveyCompleted)
-    .map((x) => x.report)
-    .sort((a, b) => {
-      const aHasBirth = Boolean(a.birth_date?.trim());
-      const bHasBirth = Boolean(b.birth_date?.trim());
-      if (aHasBirth !== bHasBirth) return aHasBirth ? -1 : 1;
-      return sortByNewest(a, b);
-    });
+    .map((x) => x.report);
 
   if (completed.length > 0) {
-    const pick = completed[0]!;
+    const withRelationships = await Promise.all(
+      completed.map(async (report) => ({
+        report,
+        summary: await countHubRelationshipSummary(supabase, report.id),
+      })),
+    );
+
+    withRelationships.sort((a, b) => {
+      const aRel = a.summary.completed + a.summary.pending;
+      const bRel = b.summary.completed + b.summary.pending;
+      if (aRel !== bRel) return bRel - aRel;
+
+      const aHasBirth = Boolean(a.report.birth_date?.trim());
+      const bHasBirth = Boolean(b.report.birth_date?.trim());
+      if (aHasBirth !== bHasBirth) return aHasBirth ? -1 : 1;
+
+      if (reportIdHint) {
+        if (a.report.id === reportIdHint && b.report.id !== reportIdHint) {
+          return -1;
+        }
+        if (b.report.id === reportIdHint && a.report.id !== reportIdHint) {
+          return 1;
+        }
+      }
+
+      return sortByNewest(a.report, b.report);
+    });
+
+    const pick = withRelationships[0]!.report;
     if (
       reportIdHint &&
       reportIdHint !== pick.id &&

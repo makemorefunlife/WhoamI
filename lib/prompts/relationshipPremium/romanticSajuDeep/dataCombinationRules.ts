@@ -38,11 +38,14 @@ export function buildPdfStyleReferenceGuide(
 
 ## section_4_special_bond (이 관계가 특별한 이유)
 
-| PDF/내부 톤 (참고) | 이렇게 변환해서 작성 |
+| 내부 신호 | JSON 출력 |
 |---|---|
-| "한 분은 큰 그림을 그리면, 다른 분은 세밀한 부분을 조명한다" | "한 분은 전체를 조망하고, 다른 분은 세부를 챙기는 완벽한 역할 분담" |
-| 오행·십성 조합으로 역할 분담 도출 | \`a_gives_b\` / \`b_gives_a\`에 **구체적 장면** 5문장+ |
-| 관계 방정식 | \`relationship_formula\`: "[A이미지] + [B이미지] = [핵심]" 한 줄 |
+| A 기질 → B 내면 | \`a_gives_b_headline\` + \`a_gives_b\` — 새 경험·변화·더 나은 결정 |
+| B 기질 → A 내면 | \`b_gives_a_headline\` + \`b_gives_a\` — 감정 부담 경감·분석적 새 시각 |
+| 둘의 결합 | \`only_together_headline\` + \`only_together\` — 상호보완·Essence 아우라 |
+
+- 본문: **현대 심리학 언어**만. 명리 용어·자연물 비유(산·불꽃·촛불·물·바위 등) **0개**.
+- User Prompt의 **Few-Shot 구조·문장 밀도**를 뼈대로 삼되, ${nicknameA}·${nicknameB} 데이터로 **새로 작성**.
 
 ---
 
@@ -63,7 +66,7 @@ export function buildPdfStyleReferenceGuide(
 | PDF/내부 톤 (참고) | 이렇게 변환해서 작성 |
 |---|---|
 | "감정 기복을 '변덕'이 아닌 '다양한 색깔'로 본다" | "상대의 예민함을 '변덕'이 아닌 '다양한 감정의 표현'으로 받아들이는 연습을 해보세요" |
-| 긍정 프레이밍 + 구체 행동 | \`{ title, detail }\` — title은 한 줄 행동, detail은 2~3문장 **어떻게** 할지 |
+| 긍정 프레이밍 + 구체 행동 | \`EssenceActionGuideline\` — action_title(한 줄) + saju_reason(왜 2~3문장) + real_life_example + real_speech_tip |
 | 각자 3개 | 용신/기신·갈등 패턴·십성에서 도출한 **맞춤** 조언만 |
 
 \`promise\`: 따뜻한 격려 한 문장 — 두 사람 이름 포함.
@@ -78,16 +81,23 @@ export function buildConversationAndActionWritingGuide(
   return `
 # 섹션 5 추가 작성 가이드
 
-## section_5_action — 각 행동마다 "이렇게 말해보세요" (필수)
+## section_5_action — 각 행동마다 4요소 (필수)
 
-**각 \`advice_for_a\` / \`advice_for_b\` 항목**에 \`phrase_example\` 필드를 **반드시** 포함:
+**각 \`advice_for_a\` / \`advice_for_b\` 항목**에 아래 6필드를 **반드시** 포함:
 
 \`\`\`
-{ "title": "행동 한 줄", "detail": "왜·어떻게 2~3문장", "phrase_example": "📱 이렇게 말해보세요: \\"...\\"" }
+{
+  "relationship_kind": "연인",
+  "target_user": "닉네임",
+  "saju_reason": "왜 이 행동이 필요한지 — 이 사람 기질·패턴 근거 2~3문장 (사주 용어 없이)",
+  "action_title": "엣지 있고 후킹되는 행동 제목 한 줄",
+  "real_speech_tip": "입으로 뱉을 수 있는 실제 대사 한두 문장",
+  "real_life_example": "적용할 수 있는 구체적 상황 예시 한 줄"
+}
 \`\`\`
 
-- A·B 각 **3개** — 모두 \`phrase_example\` 포함
-- \`together_starter\`: "📱 이렇게 시작해보세요: ..." — 함께 대화 시작 대사
+- A·B 각 **3개** — 모두 4요소(saju_reason·action_title·real_speech_tip·real_life_example) 포함
+- \`together_starter\`: 함께 대화를 시작할 때 쓸 수 있는 실제 대사
 - \`together\`: 함께보면 좋을 것 설명 3문장+
 
 **톤 참고 (복사 금지)** — 공감 먼저 / 솔직한 욕구 표현 / 작은 칭찬. 이 커플 갈등·십성 패턴에 맞는 **맞춤** 대사만.

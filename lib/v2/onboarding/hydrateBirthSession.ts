@@ -1,11 +1,14 @@
 import {
-  hasBirthV2Session,
   readBirthV2Session,
   writeBirthV2Session,
   type BirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
 import { fetchReportBirthFromApi } from "@/lib/v2/onboarding/fetchReportBirthClient";
-import { resolveReportBirth } from "@/lib/v2/onboarding/resolveReportBirth";
+import {
+  birthConflicts,
+  resolveReportBirth,
+  type ResolvedReportBirth,
+} from "@/lib/v2/onboarding/resolveReportBirth";
 
 /** 생년월일만 있어도 Blueprint·기본 분석 가능 */
 export function hasMinimalBirth(
@@ -14,39 +17,59 @@ export function hasMinimalBirth(
   return Boolean(birth?.birthDate?.trim());
 }
 
-/** 로컬 없으면 DB에서 출생 정보를 복구해 localStorage에 기록 */
-export async function hydrateBirthSession(reportId: string): Promise<boolean> {
-  if (!reportId.trim()) return false;
-  if (hasBirthV2Session(reportId)) return true;
+type SyncBirthResult = {
+  birth: BirthV2Session | null;
+  source: ResolvedReportBirth["source"] | null;
+  sessionCorrected: boolean;
+};
+
+/**
+ * 출생 SSOT: reports DB → localStorage 동기화.
+ * localStorage만 있고 DB와 다르면 DB 기준으로 session을 덮어씀.
+ */
+export async function syncBirthSessionFromDb(
+  reportId: string,
+): Promise<SyncBirthResult> {
+  if (!reportId.trim()) {
+    return { birth: null, source: null, sessionCorrected: false };
+  }
 
   const dbRow = await fetchReportBirthFromApi(reportId);
-  const sessionBirth = readBirthV2Session(reportId);
-  const resolved = resolveReportBirth({ db: dbRow, session: sessionBirth });
-  if (!hasMinimalBirth(resolved)) return false;
+  const sessionBefore = readBirthV2Session(reportId);
+  const hadConflict = birthConflicts(dbRow, sessionBefore);
+  const resolved = resolveReportBirth({ db: dbRow, session: sessionBefore });
 
-  const { source: _s, ...birth } = resolved!;
+  if (!resolved) {
+    return {
+      birth:
+        sessionBefore && hasMinimalBirth(sessionBefore) ? sessionBefore : null,
+      source: null,
+      sessionCorrected: false,
+    };
+  }
+
+  const { source, ...birth } = resolved;
   writeBirthV2Session(reportId, birth);
-  return true;
+
+  if (hadConflict) {
+    console.warn(
+      `[birth-ssot] localStorage 출생 정보를 DB 기준으로 맞췄어요 reportId=${reportId}`,
+    );
+  }
+
+  return { birth, source, sessionCorrected: hadConflict };
 }
 
-/** 로컬 + DB 병합 후 session 갱신 */
+/** DB에서 출생 session 복구 (항상 DB 우선) */
+export async function hydrateBirthSession(reportId: string): Promise<boolean> {
+  const { birth } = await syncBirthSessionFromDb(reportId);
+  return hasMinimalBirth(birth);
+}
+
+/** Blueprint·계정 등 — DB SSOT로 session 갱신 후 반환 */
 export async function ensureBirthSession(
   reportId: string,
 ): Promise<BirthV2Session | null> {
-  if (!reportId.trim()) return null;
-
-  const sessionBirth = readBirthV2Session(reportId);
-  if (sessionBirth && hasMinimalBirth(sessionBirth)) {
-    return sessionBirth;
-  }
-
-  const dbRow = await fetchReportBirthFromApi(reportId);
-  const resolved = resolveReportBirth({ db: dbRow, session: sessionBirth });
-  if (!resolved) {
-    return sessionBirth && hasMinimalBirth(sessionBirth) ? sessionBirth : null;
-  }
-
-  const { source: _s, ...birth } = resolved;
-  writeBirthV2Session(reportId, birth);
+  const { birth } = await syncBirthSessionFromDb(reportId);
   return birth;
 }

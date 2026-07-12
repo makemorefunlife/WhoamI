@@ -35,18 +35,18 @@ function axisSpread(scores: PrimaryAxesScores) {
 }
 
 /**
- * 무료 Blueprint 상단 후킹 카피 — Gap + Current/Innate 대비 기반 (LLM 전 단계)
+ * 무료 Blueprint 상단 후킹 카피 — Gap + Current/Essence 대비 기반 (LLM 전 단계)
  */
 export function buildBlueprintHookCopy(input: {
   current: PrimaryAxesScores;
-  innate: PrimaryAxesScores;
+  essence: PrimaryAxesScores;
   gapRows: GapAxisRow[];
   primaryConcern: PrimaryConcern | null;
 }): BlueprintHookCopy {
-  const { current, innate, gapRows, primaryConcern } = input;
+  const { current, essence, gapRows, primaryConcern } = input;
   const topGap = [...gapRows].sort((a, b) => b.absDelta - a.absDelta)[0];
   const currentTop = topAxis(current);
-  const innateTop = topAxis(innate);
+  const essenceTop = topAxis(essence);
   const currentLow = bottomAxis(current);
   const concernTail = primaryConcern
     ? CONCERN_TAIL[primaryConcern]
@@ -56,7 +56,7 @@ export function buildBlueprintHookCopy(input: {
     const label = PRIMARY_AXIS_LABELS[topGap.axis];
     if (topGap.delta >= 12) {
       return {
-        headline: `겉으로는 ‘${label}’을 많이 쓰고 있는데, 타고난 기질은 그보다 낮아요.`,
+        headline: `겉으로는 ‘${label}’을 많이 쓰고 있는데, 내면의 본질은 그보다 낮아요.`,
         subline: `지금의 ${label}은 어느 정도 ‘맞춰 산 버릇’일 수 있어요. 이 간극이 길어질수록 피로가 쌓이기 쉽습니다.`,
         teaser: concernTail,
       };
@@ -70,9 +70,9 @@ export function buildBlueprintHookCopy(input: {
     }
   }
 
-  if (currentTop.key !== innateTop.key) {
+  if (currentTop.key !== essenceTop.key) {
     return {
-      headline: `지금은 ‘${PRIMARY_AXIS_LABELS[currentTop.key]}’으로 살고, 타고난 흐름은 ‘${PRIMARY_AXIS_LABELS[innateTop.key]}’에 가깝습니다.`,
+      headline: `지금은 ‘${PRIMARY_AXIS_LABELS[currentTop.key]}’으로 살고, 본질의 흐름은 ‘${PRIMARY_AXIS_LABELS[essenceTop.key]}’에 가깝습니다.`,
       subline: `두 선이 겹치지 않는 구간이 바로, 당신이 “뭔가 어긋난다”고 느끼는 지점일 수 있어요.`,
       teaser: concernTail,
     };

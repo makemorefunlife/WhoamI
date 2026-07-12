@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import GlassCard from "@/components/space/GlassCard";
 import DualAxisRadarChart, {
   BLUEPRINT_CURRENT_STROKE,
-  BLUEPRINT_INNATE_STROKE,
+  BLUEPRINT_ESSENCE_STROKE,
 } from "@/components/v2/DualAxisRadarChart";
 import BlueprintLiteReportsSection from "@/components/v2/BlueprintLiteReportsSection";
 import { PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
@@ -15,7 +15,7 @@ import {
 import { buildGapRows, gapDeltaTone } from "@/lib/v2/analysis/gap";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
-import type { InnateSelfLiteProfile } from "@/lib/v2/saju/innateLite";
+import type { EssenceSelfLiteProfile } from "@/lib/v2/saju/essenceLite";
 import { clearSurveyV2Session } from "@/lib/v2/survey/session";
 import { clearSurveyOnServer } from "@/lib/v2/survey/surveyClient";
 import { clearLiteReports } from "@/lib/v2/lite/session";
@@ -24,21 +24,21 @@ import { ROUTES, withReportId } from "@/constants/routes";
 export default function BlueprintPreviewContent({
   reportId,
   current,
-  innate,
+  essence,
   birth,
   birthTimeUnknown,
 }: {
   reportId: string;
   current: CurrentSelfProfile;
-  innate: InnateSelfLiteProfile;
+  essence: EssenceSelfLiteProfile;
   birth: BirthV2Session;
   birthTimeUnknown: boolean;
 }) {
   const router = useRouter();
-  const gapRows = buildGapRows(current.primary_axes, innate.primary_axes);
+  const gapRows = buildGapRows(current.primary_axes, essence.primary_axes);
   const hook = buildBlueprintHookCopy({
     current: current.primary_axes,
-    innate: innate.primary_axes,
+    essence: essence.primary_axes,
     gapRows,
     primaryConcern: current.personalization.primary_concern,
   });
@@ -69,13 +69,13 @@ export default function BlueprintPreviewContent({
         <p className="text-sm leading-relaxed text-[rgba(255,255,255,0.55)]">
           <span style={{ color: BLUEPRINT_CURRENT_STROKE }}>Current</span>
           <span className="text-white/35"> · </span>
-          <span style={{ color: BLUEPRINT_INNATE_STROKE }}>Innate</span>
+          <span style={{ color: BLUEPRINT_ESSENCE_STROKE }}>Essence</span>
           를 한눈에 겹쳐 비교했어요.
         </p>
         {birthTimeUnknown ? (
           <p className="rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs leading-relaxed text-amber-100/90">
             출생 시간을 모르는 상태로 계산했어요. 시간을 알게 되면 더 정밀한
-            Innate 분석이 가능해요.
+            Essence 분석이 가능해요.
           </p>
         ) : null}
       </header>
@@ -83,7 +83,7 @@ export default function BlueprintPreviewContent({
       <GlassCard className="space-y-5 !py-6">
         <DualAxisRadarChart
           current={current.primary_axes}
-          innate={innate.primary_axes}
+          essence={essence.primary_axes}
         />
 
         <div className="space-y-2 rounded-2xl border border-[#67B7FF]/20 bg-gradient-to-b from-[#67B7FF]/10 to-transparent px-4 py-4 text-center">
@@ -115,9 +115,9 @@ export default function BlueprintPreviewContent({
             </span>
             <span
               className="text-right"
-              style={{ color: BLUEPRINT_INNATE_STROKE }}
+              style={{ color: BLUEPRINT_ESSENCE_STROKE }}
             >
-              Innate
+              Essence
             </span>
             <span className="text-right">Gap</span>
           </div>
@@ -141,9 +141,9 @@ export default function BlueprintPreviewContent({
                   </span>
                   <span
                     className="tabular-nums font-medium"
-                    style={{ color: BLUEPRINT_INNATE_STROKE }}
+                    style={{ color: BLUEPRINT_ESSENCE_STROKE }}
                   >
-                    {row.innate}
+                    {row.essence}
                   </span>
                   <span
                     className={`tabular-nums text-xs font-medium ${

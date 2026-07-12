@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { ChartContext } from "@/lib/saju/chartContext";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";

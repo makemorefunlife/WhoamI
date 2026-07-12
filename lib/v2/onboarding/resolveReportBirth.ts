@@ -5,6 +5,7 @@ export type ReportBirthRow = {
   birth_date?: string | null;
   birth_time?: string | null;
   birth_place?: string | null;
+  birth_date_correction_used_at?: string | null;
 };
 
 export type ResolvedReportBirth = BirthV2Session & {
@@ -57,6 +58,18 @@ function needsSessionFill(db: BirthV2Session, session: BirthV2Session): boolean 
     return true;
   }
   return false;
+}
+
+/** DB에 날짜는 같고 시간·장소만 비어 있을 때 session → DB 백필 허용 여부 */
+export function canBackfillBirthFromSession(params: {
+  db: ReportBirthRow | null | undefined;
+  session: BirthV2Session | null | undefined;
+}): boolean {
+  const fromDb = birthFromDbRow(params.db);
+  const session = params.session?.birthDate?.trim() ? params.session : null;
+  if (!fromDb || !session) return false;
+  if (fromDb.birthDate !== session.birthDate.trim()) return false;
+  return needsSessionFill(fromDb, session);
 }
 
 /**

@@ -1,6 +1,7 @@
 import {
   buildRomanticDayStemOneLiner,
   formatRomanticEssencePair,
+  formatRomanticMetaphorComboBody,
   romanticHeadlineFromProfiles,
 } from "@/lib/relationship/dayStemRomanticProfile";
 import {
@@ -10,6 +11,7 @@ import {
   humanizeStrengthComplement,
   joinPersonalityHeadline,
 } from "@/lib/relationship/romanticEverydayText";
+import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import type { HeadlineRuleOutput, RomanticRule, RomanticRuleContext } from "./types";
 import {
   crossHits,
@@ -19,6 +21,23 @@ import {
   strengthComplement,
   TENSION_CROSS,
 } from "./types";
+
+const HEADLINE_TENSION_DAY_CROSS_KO = "가까울수록 예민해지는 조합";
+const HEADLINE_TENSION_DAY_CROSS_EN = "Closeness that turns sharp";
+const HEADLINE_YUKHAP_PULL_KO = "끌리는데 이유가 있는 관계";
+const HEADLINE_YUKHAP_PULL_EN = "There's a reason you're drawn together";
+
+function headlineTensionDayCross(locale: RomanticRuleContext["locale"]): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? HEADLINE_TENSION_DAY_CROSS_EN
+    : HEADLINE_TENSION_DAY_CROSS_KO;
+}
+
+function headlineYukhapPull(locale: RomanticRuleContext["locale"]): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? HEADLINE_YUKHAP_PULL_EN
+    : HEADLINE_YUKHAP_PULL_KO;
+}
 
 export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
   {
@@ -36,7 +55,7 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
       )[0]!;
       return {
         ruleId: "headline_tension_day_cross",
-        headline: "가까울수록 예민해지는 조합",
+        headline: headlineTensionDayCross(ctx.locale),
         body: `${ctx.nicknameA}와 ${ctx.nicknameB} — ${humanizeRomanticCrossBody(hit, romanticCrossBodyContext(ctx), { closeRelationship: true })}`,
         insightTags: ["pair_cross", hit.type, "close"],
       };
@@ -59,17 +78,18 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
               nicknameB: ctx.nicknameB,
               dayStemInteraction: ctx.pairAnalysis.dayStemInteraction,
               closeRelationship: true,
+              locale: ctx.locale,
             })
           : humanizeDayStemInteraction(ctx.pairAnalysis.dayStemInteraction);
       return {
-      ruleId: "headline_day_stem_sangsaeng",
-      headline:
-        profileA && profileB
-          ? romanticHeadlineFromProfiles(profileA, profileB)
-          : ctx.metaphorCombo,
-      body,
-      insightTags: ["pair_day_stem", "support"],
-    };
+        ruleId: "headline_day_stem_sangsaeng",
+        headline:
+          profileA && profileB
+            ? romanticHeadlineFromProfiles(profileA, profileB, ctx.locale)
+            : ctx.metaphorCombo,
+        body,
+        insightTags: ["pair_day_stem", "support"],
+      };
     },
   },
   {
@@ -81,7 +101,7 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
       const hit = crossHits(ctx, "육합")[0]!;
       return {
         ruleId: "headline_yukhap_pull",
-        headline: "끌리는데 이유가 있는 관계",
+        headline: headlineYukhapPull(ctx.locale),
         body: humanizeRomanticCrossBody(hit, romanticCrossBodyContext(ctx)),
         insightTags: ["pair_cross", "육합"],
       };
@@ -100,7 +120,7 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
           : [ctx.nicknameB, ctx.nicknameA];
       return {
         ruleId: "headline_strength_complement",
-        headline: joinPersonalityHeadline(ctx.metaphorA, ctx.metaphorB),
+        headline: joinPersonalityHeadline(ctx.metaphorA, ctx.metaphorB, ctx.locale),
         body: humanizeStrengthComplement(strong, soft),
         insightTags: ["strength_complement"],
       };
@@ -116,16 +136,34 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
       const profileB = ctx.romanticProfileB;
       const defaultBody =
         profileA && profileB
-          ? `${formatRomanticEssencePair(profileA, ctx.nicknameA, profileB, ctx.nicknameB)}가 만나 서로 다른 리듬을 채워요.`
-          : `${formatMetaphorPairLine(ctx.metaphorA, ctx.nicknameA, ctx.metaphorB, ctx.nicknameB)}가 만나 서로 다른 리듬을 채워요.`;
+          ? formatRomanticMetaphorComboBody(
+              formatRomanticEssencePair(
+                profileA,
+                ctx.nicknameA,
+                profileB,
+                ctx.nicknameB,
+                ctx.locale,
+              ),
+              ctx.locale,
+            )
+          : formatRomanticMetaphorComboBody(
+              formatMetaphorPairLine(
+                ctx.metaphorA,
+                ctx.nicknameA,
+                ctx.metaphorB,
+                ctx.nicknameB,
+                ctx.locale,
+              ),
+              ctx.locale,
+            );
       return {
-      ruleId: "headline_metaphor_default",
-      headline:
-        profileA && profileB
-          ? romanticHeadlineFromProfiles(profileA, profileB)
-          : ctx.metaphorCombo,
-      body: defaultBody,
-      insightTags: ["metaphor_combo"],
+        ruleId: "headline_metaphor_default",
+        headline:
+          profileA && profileB
+            ? romanticHeadlineFromProfiles(profileA, profileB, ctx.locale)
+            : ctx.metaphorCombo,
+        body: defaultBody,
+        insightTags: ["metaphor_combo"],
       };
     },
   },

@@ -23,30 +23,51 @@ export function buildSectionQualityExamples(
 
 ## section_2_nature
 - \`comparison_table\`: **아래 6개 항목 모두 필수** (각 셀 1~2문장, 빈 칸 없음)
-  - **각 셀은 주어(이름) 없이 서술만** — 표 열에 ${nicknameA}·${nicknameB}가 있으므로 "${nicknameA}는~", "${nicknameB}는~" 같은 표현 금지
+  - **각 셀은 주어(이름) 없이 서술만** — 표 열에 ${nicknameA}·${nicknameB}가 있으므로 "${nicknameA}는~", "${nicknameB}는~" 같은 표현 금지. 상대 지칭은 **"상대에게"**, **"상대를"**
   1. 감정 표현  2. 갈등 반응  3. 애정 언어  4. 스트레스 패턴  5. 의사결정  6. 소통 방식
 - \`first_person_voice\`: "사실 나는..."으로 **5~8문장** — 입력 데이터 기반 고유 표현
 - \`image_metaphor\`: 이 사람만의 이미지 (일간+오행+십성 조합)
 - \`data_combination_note\`: 3단계 중 1~2단계 (신호 나열 + 조합 이미지)
 - description / meeting / together_change: 각 **5~8문장**
 
-## section_4_special_bond
-- \`a_gives_b\` / \`b_gives_a\`: 각 **5문장+**, 구체적 장면
-- \`relationship_formula\`: "[A이미지] + [B이미지] = [관계 핵심]" 한 줄
-- \`only_together\` / \`why_special\`: 궁합 교차 데이터(일간·일지·오행) 근거
+## section_4_special_bond (⚖️ — specialBond Few-Shot 구조 **필수**)
+- \`a_gives_b_headline\` / \`b_gives_a_headline\` / \`only_together_headline\`: 각 방향 **한 줄 훅** (이름 없이)
+- \`a_gives_b\`: ${nicknameA}→${nicknameB} 본문 4~5문장 — **새 경험·변화 자극 + 더 나은 결정** 역동 필수
+- \`b_gives_a\`: ${nicknameB}→${nicknameA} 본문 4~5문장 — **감정 부담 경감 + 분석적 새 시각** 역동 필수. a_gives_b와 **문장 미러링 금지**
+- \`only_together\`: ${nicknameA}↔${nicknameB} — **장단점이 맞물린 상호보완** (a_gives_b/b_gives_a 재탕·요약 금지)
+- **금지**: 명리 용어, 자연물 비유(산·불꽃·촛불·물·바위 등), "깊은 교감", "특별한 에너지"
+- \`why_special\`: 💡 맞춰 가는 지점 — **갈등·속도 시차·실전 팁만** (칭찬·교감 문단 금지)
+- \`relationship_formula\`: 생략 가능(\`""\`). only_together가 충분하면 비워 두기
 
-## section_4_hidden_hearts
-- \`voice\`: "사실 나는..." **5~8문장**, 날것의 고백 — 용신/기신·월지·지장간 조합 반영
+## section_4_hidden_hearts (🌙 서로의 숨은 마음 — special_bond와 **완전 분리**)
+- \`a_hidden\` / \`b_hidden\` **둘 다 필수** — need(후킹 1~2문장) · reason(3문장+) · voice("사실 나는…" 5~8문장)
+- **절대 금지**: special_bond 칭찬·보완·시너지 재탕. 무의식·속마음·방어·갈증만.
+- \`a_hidden\` (${nicknameA}): 겉쿨/씩씩 vs 내심 ${nicknameB}에게 인정 욕구·말 못 한 정서적 갈증
+- \`b_hidden\` (${nicknameB}): 겉든든/무뚝뚝 vs ${nicknameA} 앞 방어·취약 — a_hidden과 **문장 미러링 금지**
+- \`mutual_gift\`: **💡 두 사람의 무의식 시너지** — 말하지 않아도 느끼는 긴장감 또는 보이지 않는 안전지대 (4문장+)
+- 금지: "깊은 정서적 교감", "솔직한 대화", "서로 존중" 등 진부한 심리테스트 문구
+- 한자·사주 용어·끊긴 은유 금지 — **읽으면 바로 이해되는 일상 한국어**
 
 ## section_3_conversation_patterns
 - \`conflict_situation\`: **title + dialogue_table만** (3~5행 bad/good 대비)
+- 대사는 **실제 커플이 말할 법한 자연스러운 구어체** — 문법 오류·"너의 이 나에게" 같은 깨진 표현 금지
+- ❌ 예: "너의 이 나에게 상처가 됐어" → ✅ "네 그 말이 나한테 상처가 됐어"
+- ❌ 예: "문제를 해결하는 데 집중해" (냉정한 조언) → ✅ "네가 힘든 건 알겠어. 내가 어떻게 도와줄까?"
 - 긴 대화 블록·숨은 심리·key_point·positive_situation **생성하지 마세요** (표만으로 충분)
 
+## section_6_timeline
+- **지금·1년·3년·5년·10년** 다섯 구간 모두 필수 — 각 구간에 \`period\`에 연도 명시
+- 사주·한자·대운·세운 용어 금지 — 관계 변화만 일상어로
+
 ## section_5_action
-- \`advice_for_a\` / \`advice_for_b\`: 각 3개 — \`{ title, detail, phrase_example }\` **phrase_example 필수**
-- \`together\` + \`together_starter\` ("📱 이렇게 시작해보세요")
+- \`advice_for_a\` / \`advice_for_b\`: **각 3개 모두 필수** — \`EssenceActionGuideline\` 6필드
+- 필드: \`relationship_kind\`, \`target_user\`, \`saju_reason\`(왜 필요한지·기질 근거), \`action_title\`(후킹 제목), \`real_speech_tip\`(실제 대사), \`real_life_example\`(상황 예시)
+- action_title은 구체 행동(예: "급한 감정을 멈추고 상대 마음부터 확인하기")
+- "갈등 직후 20분 쉬어가요" 같은 **템플릿 문장 반복 금지**
+- \`together\` — 함께 실천할 한 가지 (템플릿 "작은 신호부터" 금지)
 
 ## section_6_timeline
-- current / in_3_years / in_5_years / in_10_years / turning_point: 각 **4~6문장**
+- **지금·1년·3년·5년·10년** 다섯 구간 — \`in_1_year\` 키 포함, 각 \`period\`에 연도
+- 사주·한자·대운·세운 용어 금지 — 관계 변화만 일상어로 (각 2~4문장)
 `.trim();
 }

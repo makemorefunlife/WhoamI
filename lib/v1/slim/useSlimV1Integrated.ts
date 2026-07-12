@@ -6,7 +6,7 @@ import {
   readSlimIntegratedCache,
   writeSlimIntegratedCache,
 } from "@/lib/v1/slim/slimIntegratedCache";
-import type { InnateDeepPreviewResponse } from "@/lib/v1/slim/types";
+import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import { readBirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import { hasMinimalBirth } from "@/lib/v2/onboarding/hydrateBirthSession";
@@ -17,7 +17,7 @@ export function useSlimV1Integrated(
   enabled: boolean,
   birthFromBundle?: BirthV2Session | null,
 ) {
-  const [data, setData] = useState<InnateDeepPreviewResponse | null>(null);
+  const [data, setData] = useState<EssenceDeepPreviewResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +52,7 @@ export function useSlimV1Integrated(
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/v2/deep/innate", {
+        const res = await fetch("/api/v2/deep/essence", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
@@ -66,7 +66,7 @@ export function useSlimV1Integrated(
             currentSelfProfile: survey?.profile ?? null,
           }),
         });
-        const json = (await res.json()) as InnateDeepPreviewResponse & {
+        const json = (await res.json()) as EssenceDeepPreviewResponse & {
           error?: string;
         };
         if (!res.ok || !json.slim_v1?.report) {

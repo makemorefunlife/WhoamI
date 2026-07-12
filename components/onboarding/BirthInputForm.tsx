@@ -370,7 +370,7 @@ export default function BirthInputForm({
                   className={`${inputClass} text-base`}
                 />
                 <p className="text-center text-[10px] text-white/40">
-                  점성 해석에 필요해요. 사주(기질)는 지역과 무관해요.
+                  점성 해석에 필요해요. 사주(본질)은 지역과 무관해요.
                 </p>
                 {!placeComplete && (timeComplete || hour || minute) ? (
                   <p className="text-center text-[10px] text-amber-200/90">

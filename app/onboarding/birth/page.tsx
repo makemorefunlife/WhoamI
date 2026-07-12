@@ -23,6 +23,7 @@ import {
 } from "@/lib/v2/survey/session";
 import { clearLiteReports } from "@/lib/v2/lite/session";
 import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
+import { invalidateReportSession } from "@/lib/home/reportSession";
 
 function BirthOnboardingContent() {
   const router = useRouter();
@@ -145,6 +146,7 @@ function BirthOnboardingContent() {
         }
         clearLiteReports(reportId);
         clearSlimIntegratedCache(reportId);
+        invalidateReportSession(reportId);
       } catch (e) {
         console.error("report/birth save:", e);
         alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");

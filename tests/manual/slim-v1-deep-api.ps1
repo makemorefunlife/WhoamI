@@ -1,8 +1,8 @@
-# Slim V1 innate deep — API 스모크 (PowerShell)
+# Slim V1 Essence deep — API 스모크 (PowerShell)
 # Usage: .\tests\manual\slim-v1-deep-api.ps1
 
 $port = if ($env:PORT) { $env:PORT } else { "3000" }
-$uri = "http://localhost:$port/api/v2/deep/innate"
+$uri = "http://localhost:$port/api/v2/deep/essence"
 
 if (-not $env:REPORT_ID) {
   Write-Host "REPORT_ID 환경변수가 필요합니다 (유효한 report UUID)." -ForegroundColor Red

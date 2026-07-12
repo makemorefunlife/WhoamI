@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
+import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import {
   fetchRelationshipReportRowsForHub,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { fetchFavoriteRelationshipIds } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { cleanupStaleOpenInvites } from "@/lib/relationship/cleanupStaleOpenInvites";
@@ -60,17 +60,8 @@ export async function GET(req: Request) {
     const favoritesOnly = sp.get("favoritesOnly") === "true";
     const includeWaiting = sp.get("includeWaiting") === "true";
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!url || !serviceKey) {
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
 
     await cleanupStaleOpenInvites(supabase, reportId);
 

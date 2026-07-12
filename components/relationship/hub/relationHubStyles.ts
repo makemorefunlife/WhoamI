@@ -8,6 +8,6 @@ export function hubSheetClass() {
 
 export function hubTouchBtn(primary = false) {
   return primary
-    ? "stitch-cta-primary w-full !min-w-0 !px-6 !py-4 !text-base"
-    : "w-full rounded-full border border-outline-variant/50 bg-surface-container-low/80 py-4 text-base font-semibold text-primary transition hover:bg-surface-container-high active:scale-[0.98]";
+    ? "stitch-cta-primary w-full !min-w-0 !rounded-xl !px-6 !py-4 !text-base"
+    : "stitch-cta-secondary w-full !min-w-0 !rounded-xl !px-6 !py-3.5 !text-base";
 }

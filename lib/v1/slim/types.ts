@@ -7,12 +7,12 @@ export type SlimV1ReportResult = {
   phase2_chars: number;
   inputs_preview: {
     survey_chars: number;
-    innate_chars: number;
+    essence_chars: number;
     birth_energy_chars: number;
   };
   inputs_meta: {
     survey_source: "v2_survey_10q" | "none_fallback";
-    innate_analysis: {
+    essence_analysis: {
       includes_shinsal: boolean;
       shinsal_count: number;
       shinsal_names: string[];
@@ -27,12 +27,12 @@ export type SlimV1ReportResult = {
   };
   inputs: {
     surveyAnalysis: string;
-    innateAnalysisSummary: string;
+    essenceAnalysisSummary: string;
     astrologyInterpretation: string;
   };
 };
 
-export type InnateDeepPreviewResponse = {
+export type EssenceDeepPreviewResponse = {
   ok: true;
   slim_v1: SlimV1ReportResult;
 };

@@ -3,18 +3,19 @@
 import { useState } from "react";
 import {
   CurrentLiteReportView,
-  InnateLiteReportView,
+  EssenceLiteReportView,
   LiteReportError,
   LiteReportLoading,
 } from "@/components/v2/LiteReportView";
 import GlassCard from "@/components/space/GlassCard";
 import FreeBadge from "@/components/v2/FreeBadge";
-import InnateDeepEntryButton from "@/components/v2/InnateDeepEntryButton";
-import { useCurrentLiteReport, useInnateLiteReport } from "@/lib/v2/lite/useLiteReport";
+import EssenceDeepEntryButton from "@/components/v2/EssenceDeepEntryButton";
+import { STITCH_ESSENCE_STROKE } from "@/components/v2/DualAxisRadarChart";
+import { useCurrentLiteReport, useEssenceLiteReport } from "@/lib/v2/lite/useLiteReport";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 
-type LiteTab = "current" | "innate";
+type LiteTab = "current" | "essence";
 
 export default function BlueprintLiteReportsSection({
   reportId,
@@ -35,18 +36,18 @@ export default function BlueprintLiteReportsSection({
   } = useCurrentLiteReport(reportId, profile, active === "current");
 
   const {
-    report: innateReport,
-    loading: innateLoading,
-    error: innateError,
-    retry: retryInnate,
-  } = useInnateLiteReport(reportId, birth, active === "innate");
+    report: essenceReport,
+    loading: essenceLoading,
+    error: essenceError,
+    retry: retryEssence,
+  } = useEssenceLiteReport(reportId, birth, active === "essence");
 
-  const innateSections = innateReport
+  const essenceSections = essenceReport
     ? [
-        innateReport.core_personality_insight,
-        innateReport.relationship_tendency_insight,
-        ...(innateReport.environment_fit_hint
-          ? [innateReport.environment_fit_hint]
+        essenceReport.core_personality_insight,
+        essenceReport.relationship_tendency_insight,
+        ...(essenceReport.environment_fit_hint
+          ? [essenceReport.environment_fit_hint]
           : []),
       ]
     : [];
@@ -96,7 +97,7 @@ export default function BlueprintLiteReportsSection({
 
       <div className="grid grid-cols-2 gap-2.5">
         {tabBtn("current", "지금의 나", "#7B9BFF", "(설문결과)")}
-        {tabBtn("innate", "본래의 나", "#FF9A3C", "(기질분석)")}
+        {tabBtn("essence", "Essence", STITCH_ESSENCE_STROKE, "(Essence 분석)")}
       </div>
 
       {active ? (
@@ -126,18 +127,18 @@ export default function BlueprintLiteReportsSection({
             </>
           ) : (
             <>
-              <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-[#FF9A3C]">
-                본래의 나
+              <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                Essence Profile
                 <FreeBadge />
               </h2>
-              {innateLoading && !innateReport ? <LiteReportLoading /> : null}
-              {innateError && !innateReport ? (
-                <LiteReportError message={innateError} onRetry={retryInnate} />
+              {essenceLoading && !essenceReport ? <LiteReportLoading /> : null}
+              {essenceError && !essenceReport ? (
+                <LiteReportError message={essenceError} onRetry={retryEssence} />
               ) : null}
-              {innateReport ? (
-                <InnateLiteReportView
-                  oneLineSummary={innateReport.one_line_summary}
-                  sections={innateSections}
+              {essenceReport ? (
+                <EssenceLiteReportView
+                  oneLineSummary={essenceReport.one_line_summary}
+                  sections={essenceSections}
                 />
               ) : null}
             </>
@@ -149,7 +150,7 @@ export default function BlueprintLiteReportsSection({
         </p>
       )}
 
-      <InnateDeepEntryButton reportId={reportId} featured />
+      <EssenceDeepEntryButton reportId={reportId} featured />
     </div>
   );
 }

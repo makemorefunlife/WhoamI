@@ -15,8 +15,8 @@ export type CurrentSelfLiteReport = {
   };
 };
 
-export type InnateSelfLiteReport = {
-  report_type: "innate_self_lite";
+export type EssenceSelfLiteReport = {
+  report_type: "essence_self_lite";
   language: string;
   one_line_summary: string;
   core_personality_insight: LiteSection;

@@ -1,4 +1,7 @@
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import {
+  createRouteSupabaseClient,
+  SERVER_SUPABASE_CONFIG_ERROR,
+} from "@/lib/supabase/serverClient";
 import {
   readPremiumAccessCache,
   writePremiumAccessCache,
@@ -43,16 +46,13 @@ export async function assertPremiumLlmAccess(
     );
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) {
+  const supabase = createRouteSupabaseClient();
+  if (!supabase) {
     return Response.json(
-      { error: "서버 Supabase 설정이 필요합니다." },
+      { error: SERVER_SUPABASE_CONFIG_ERROR },
       { status: 500 },
     );
   }
-
-  const supabase = createServiceRoleClient(url, serviceKey);
   const { data: report, error } = await supabase
     .from("reports")
     .select("payment_status, plan_type")

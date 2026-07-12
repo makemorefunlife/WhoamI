@@ -344,7 +344,7 @@ export default function StitchBirthInputForm({
             </p>
           ) : !placeComplete && dateComplete ? (
             <p className="text-center text-[10px] text-on-surface-variant">
-              점성 차트에 필요해요. 사주(기질)는 지역과 무관해요.
+              점성 차트에 필요해요. 사주(본질)은 지역과 무관해요.
             </p>
           ) : null}
           {birthPlaceUnknown ? (

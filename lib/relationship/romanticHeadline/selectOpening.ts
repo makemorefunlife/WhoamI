@@ -8,7 +8,7 @@ import {
 } from "@/lib/relationship/pairEventScores";
 import type { RomanticInsightCandidate, RomanticOpeningSelection } from "./types";
 import { joinRelationshipName, metaphorShortLabel } from "./buildInsightPool";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 
 export type CompatibilityGradeResult = {
   grade: "A" | "B" | "C" | "D";
@@ -49,8 +49,10 @@ export function selectRomanticOpening(params: {
   pairAnalysis: PairSajuAnalysis;
   insightPool: RomanticInsightCandidate[];
   hasStrengthComplement?: boolean;
+  locale?: import("@/lib/relationship/romanticHeadline/locale").RomanticHeadlineLocale;
 }): RomanticOpeningSelection {
   const { sajuJsonA, sajuJsonB, pairAnalysis, insightPool } = params;
+  const locale = params.locale ?? "ko";
 
   const ranked = [...insightPool]
     .sort((a, b) => b.score - a.score)
@@ -64,6 +66,7 @@ export function selectRomanticOpening(params: {
   const metaphorName = joinRelationshipName(
     metaphorShortLabel(sajuJsonA),
     metaphorShortLabel(sajuJsonB),
+    locale,
   );
 
   if (!top) {

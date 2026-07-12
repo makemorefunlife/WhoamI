@@ -78,8 +78,8 @@ export default function FriendStoryRow({
           onClick={onToggleFavoritesOnly}
           className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition active:scale-[0.98] ${
             favoritesOnly
-              ? "border-secondary bg-secondary/15 text-secondary"
-              : "border-outline-variant/45 text-on-surface-variant hover:border-secondary/35"
+              ? "border-primary bg-primary text-on-primary"
+              : "border-outline-variant/45 text-on-surface-variant hover:border-outline-variant"
           }`}
         >
           <Star
@@ -102,7 +102,7 @@ export default function FriendStoryRow({
           <AddFriendButton onClick={onAddFriend} />
         </div>
       ) : (
-        <div className="flex items-start gap-4 overflow-x-auto pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex items-start gap-4 overflow-x-auto px-1 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {visible.map((item) => {
             const key = itemKey(item);
             const isSelected = selectedId === key;
@@ -113,7 +113,7 @@ export default function FriendStoryRow({
                 key={key}
                 type="button"
                 onClick={() => onSelect(item)}
-                className="flex w-16 shrink-0 flex-col items-center gap-2 active:scale-95"
+                className="flex w-[4.75rem] shrink-0 flex-col items-center gap-2"
                 aria-pressed={isSelected}
                 aria-label={name}
               >

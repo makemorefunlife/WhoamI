@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import {
   resolvePersonalityLabel,
   joinPersonalityHeadline,
@@ -22,6 +22,8 @@ import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import { resolveActionRule, ACTION_RULES } from "./actionRules";
 import {
   resolveAttractionRule,
@@ -170,7 +172,9 @@ export function buildRomanticRuleContext(params: {
   pairAnalysis?: ReturnType<typeof computePairAnalysisOnce>;
   insightPool?: ReturnType<typeof buildRomanticInsightPool>;
   opening?: RomanticOpeningSelection;
+  locale?: RomanticHeadlineLocale;
 }): RomanticRuleContext {
+  const locale = normalizeRomanticHeadlineLocale(params.locale);
   const pairAnalysis =
     params.pairAnalysis ??
     computePairAnalysisOnce(params.sajuJsonA, params.sajuJsonB);
@@ -215,12 +219,12 @@ export function buildRomanticRuleContext(params: {
   );
   const metaphorA = resolvePersonalityLabel(params.sajuJsonA);
   const metaphorB = resolvePersonalityLabel(params.sajuJsonB);
-  const romanticProfileA = resolveDayStemRomanticProfileFromSaju(params.sajuJsonA);
-  const romanticProfileB = resolveDayStemRomanticProfileFromSaju(params.sajuJsonB);
+  const romanticProfileA = resolveDayStemRomanticProfileFromSaju(params.sajuJsonA, locale);
+  const romanticProfileB = resolveDayStemRomanticProfileFromSaju(params.sajuJsonB, locale);
   const metaphorCombo =
     romanticProfileA && romanticProfileB
-      ? romanticHeadlineFromProfiles(romanticProfileA, romanticProfileB)
-      : joinPersonalityHeadline(metaphorA, metaphorB);
+      ? romanticHeadlineFromProfiles(romanticProfileA, romanticProfileB, locale)
+      : joinPersonalityHeadline(metaphorA, metaphorB, locale);
 
   const insightPool =
     params.insightPool ??
@@ -230,6 +234,7 @@ export function buildRomanticRuleContext(params: {
       sajuJsonA: params.sajuJsonA,
       sajuJsonB: params.sajuJsonB,
       pairAnalysis,
+      locale,
     });
 
   const opening =
@@ -276,6 +281,7 @@ export function buildRomanticRuleContext(params: {
     insightPool,
     rankedInsights: opening.ranked_insights,
     opening,
+    locale,
   };
 }
 
@@ -359,11 +365,13 @@ export function buildRomanticRulesBundle(params: {
   surveyAnswersA?: Record<string, unknown> | null;
   surveyAnswersB?: Record<string, unknown> | null;
   resultBasic?: unknown;
+  locale?: RomanticHeadlineLocale;
 }) {
+  const locale = normalizeRomanticHeadlineLocale(params.locale);
   const pairAnalysis = computePairAnalysisOnce(params.sajuJsonA, params.sajuJsonB);
-  const insightPool = buildRomanticInsightPool({ ...params, pairAnalysis });
-  const opening = selectRomanticOpening({ ...params, pairAnalysis, insightPool });
-  const ctx = buildRomanticRuleContext({ ...params, pairAnalysis, insightPool, opening });
+  const insightPool = buildRomanticInsightPool({ ...params, pairAnalysis, locale });
+  const opening = selectRomanticOpening({ ...params, pairAnalysis, insightPool, locale });
+  const ctx = buildRomanticRuleContext({ ...params, pairAnalysis, insightPool, opening, locale });
   const ruleScreenPlan = buildRomanticRuleScreenPlan(ctx);
 
   const screen1 = ruleScreenPlan.find((s) => s.screen === 1);

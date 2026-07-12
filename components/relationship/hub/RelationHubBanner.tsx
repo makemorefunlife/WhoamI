@@ -28,10 +28,10 @@ export default function RelationHubBanner({ visible, onDismiss }: Props) {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-          className="mb-5 overflow-hidden rounded-2xl border border-secondary/25 bg-secondary/10 px-4 py-3.5 sm:px-5"
+          className="mb-5 overflow-hidden rounded-2xl border border-accent-rose/30 bg-accent-rose-soft/40 px-4 py-3.5 sm:px-5"
         >
           <div className="flex items-start gap-3">
-            <p className="min-w-0 flex-1 text-sm leading-relaxed text-primary">
+            <p className="min-w-0 flex-1 text-sm leading-relaxed text-on-surface-variant">
               나와 친구의 관계를 분석하고 최고의 결정을 내려보세요!
             </p>
             <button

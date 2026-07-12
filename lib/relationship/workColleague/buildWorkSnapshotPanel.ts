@@ -13,7 +13,7 @@ import type {
   RelationshipTopicGauge,
   TriScoreSnapshotPanel,
 } from "@/lib/relationship/triScoreSnapshot/types";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import {
   buildWorkSnapshotNarrative,
   buildWorkSnapshotNarrativeFromGauges,

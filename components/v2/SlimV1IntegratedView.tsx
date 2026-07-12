@@ -5,7 +5,7 @@ import {
   LiteReportError,
   LiteReportLoading,
 } from "@/components/v2/LiteReportView";
-import type { InnateDeepPreviewResponse } from "@/lib/v1/slim/types";
+import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 
 export default function SlimV1IntegratedView({
   data,
@@ -14,7 +14,7 @@ export default function SlimV1IntegratedView({
   onRetry,
   onRegenerateFresh,
 }: {
-  data: InnateDeepPreviewResponse | null;
+  data: EssenceDeepPreviewResponse | null;
   loading: boolean;
   error: string | null;
   onRetry?: () => void;

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연인 관계 심화 리포트 — Sera × 창창이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Pretendard:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F2ECE0;
+    --cream-deep:#E9E1D0;
+    --ink:#221F2B;
+    --card:#2A2733;
+    --card-soft:#332F3D;
+    --line: rgba(242,236,224,0.14);
+    --line-soft: rgba(34,31,43,0.10);
+    --gold:#C9A24B;
+    --terra:#C1663F;
+    --teal:#3F8477;
+    --plum:#8C4A5C;
+    --text-on-dark:#F2ECE0;
+    --text-on-dark-dim: rgba(242,236,224,0.62);
+    --text-on-light:#221F2B;
+    --text-on-light-dim: rgba(34,31,43,0.58);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: #DDD4C0;
+    font-family:'Pretendard', sans-serif;
+    color:var(--text-on-light);
+    display:flex; justify-content:center;
+    padding: 32px 12px;
+  }
+  .frame{
+    width:100%; max-width:430px;
+    background:var(--cream);
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow: 0 30px 60px rgba(34,31,43,0.35);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:600;
+  }
+  .section{ padding: 36px 22px; }
+  .section + .section{ border-top:1px solid var(--line-soft); }
+  h2.title{
+    font-family:'Noto Serif KR', serif;
+    font-size:20px; font-weight:700;
+    margin-top:8px; line-height:1.4;
+  }
+  p.lead{ margin-top:10px; font-size:14px; line-height:1.65; color:var(--text-on-light-dim); }
+
+  /* ---------- COVER ---------- */
+  .cover{
+    background: radial-gradient(120% 100% at 15% 0%, #34303F 0%, var(--ink) 62%);
+    color:var(--text-on-dark);
+    padding: 34px 22px 30px;
+    position:relative;
+  }
+  .cover .eyebrow{ color:var(--gold); }
+  .cover .names{
+    font-family:'Noto Serif KR', serif;
+    font-size:28px; font-weight:700; margin-top:10px;
+  }
+  .cover .names em{ font-style:normal; color:var(--terra); }
+  .chips{ display:flex; gap:6px; margin-top:14px; flex-wrap:wrap; }
+  .chip{
+    font-size:11px; padding:5px 11px; border-radius:100px;
+    border:1px solid var(--line); color:var(--text-on-dark-dim);
+  }
+  .chip.active{ border-color:var(--gold); color:var(--gold); }
+  .grade-row{
+    margin-top:26px; display:flex; align-items:center; gap:16px;
+  }
+  .grade-dial{ position:relative; width:88px; height:88px; flex-shrink:0; }
+  .grade-dial svg{ transform:rotate(-90deg); }
+  .grade-dial .label{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .grade-dial .grade{ font-family:'Noto Serif KR',serif; font-size:26px; font-weight:700; }
+  .grade-dial .score{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-on-dark-dim); }
+  .cover-copy .headline{ font-size:15px; line-height:1.6; font-weight:500; }
+  .cover-copy .sub{ margin-top:6px; font-size:12.5px; color:var(--text-on-dark-dim); }
+
+  /* ---------- DASHBOARD TABS ---------- */
+  .tabbar{ display:flex; gap:6px; margin-top:16px; }
+  .tab-btn{
+    flex:1; padding:10px 6px; border-radius:12px; text-align:center;
+    font-size:12.5px; font-weight:600; cursor:pointer;
+    border:1px solid var(--line-soft); background:#fff; color:var(--text-on-light-dim);
+    transition:.2s;
+  }
+  .tab-btn.active{ background:var(--ink); color:var(--cream); border-color:var(--ink); }
+  .ctx-panel{ display:none; margin-top:22px; }
+  .ctx-panel.active{ display:block; }
+  .gauge-row{ display:flex; justify-content:space-between; gap:10px; }
+  .gauge{ text-align:center; flex:1; }
+  .gauge svg{ transform:rotate(-90deg); }
+  .gauge-wrap{ position:relative; width:76px; height:76px; margin:0 auto; }
+  .gauge-num{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:17px;
+  }
+  .gauge-label{ margin-top:8px; font-size:12px; font-weight:600; }
+  .ctx-note{
+    margin-top:18px; font-size:13.5px; line-height:1.7;
+    background:#fff; border-radius:14px; padding:16px; border:1px solid var(--line-soft);
+  }
+
+  /* ---------- 왜 끌렸는가 ---------- */
+  .saju-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    color:#fff; background:var(--terra); padding:4px 10px; border-radius:100px;
+    margin-bottom:12px;
+  }
+  .insight-card{
+    background:#fff; border-radius:16px; padding:16px 16px 15px;
+    border:1px solid var(--line-soft); margin-top:12px;
+  }
+  .insight-card .tag{ font-size:11px; font-weight:700; color:var(--teal); margin-bottom:6px; letter-spacing:0.02em; }
+  .insight-card p{ font-size:13.5px; line-height:1.68; }
+
+  /* ---------- PERSONA + RADAR ---------- */
+  .persona-cards{ display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+  .persona-card{
+    background:var(--card); color:var(--text-on-dark); border-radius:16px; padding:18px;
+    position:relative; overflow:hidden;
+  }
+  .persona-card.b{ background: linear-gradient(155deg, #3A2A2A, #2A2733 70%); }
+  .persona-card .who{ font-size:11px; color:var(--text-on-dark-dim); font-family:'IBM Plex Mono',monospace; }
+  .persona-card .nick{ font-family:'Noto Serif KR',serif; font-size:17px; font-weight:700; margin-top:4px; color:var(--gold); }
+  .persona-card blockquote{
+    margin-top:10px; font-size:13px; line-height:1.65; font-style:italic;
+    color:var(--text-on-dark-dim); border-left:2px solid var(--gold); padding-left:10px;
+  }
+  .radar-wrap{ margin-top:22px; background:#fff; border-radius:16px; padding:18px 10px; border:1px solid var(--line-soft); }
+  .radar-legend{ display:flex; gap:16px; justify-content:center; margin-top:10px; }
+  .radar-legend span{ display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  /* ---------- COMPARE TABLE ---------- */
+  .cmp-table{ margin-top:16px; border-radius:16px; overflow:hidden; border:1px solid var(--line-soft); background:#fff; }
+  .cmp-row{ display:grid; grid-template-columns: 74px 1fr 1fr; border-top:1px solid var(--line-soft); }
+  .cmp-row:first-child{ border-top:none; background:var(--cream-deep); }
+  .cmp-row > div{ padding:11px 10px; font-size:12px; line-height:1.5; }
+  .cmp-row .item-name{ font-weight:700; font-size:12px; display:flex; align-items:center; }
+  .cmp-row.gap-high{ background: rgba(193,102,63,0.06); }
+  .cmp-row.gap-high .item-name{ color:var(--terra); }
+  .cmp-head{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; color:var(--text-on-light-dim); }
+
+  /* ---------- CHEMISTRY SUB ---------- */
+  .chem-list{ margin-top:16px; display:flex; flex-direction:column; gap:14px; }
+  .chem-item .top{ display:flex; justify-content:space-between; font-size:13px; font-weight:600; }
+  .chem-item .top .num{ font-family:'IBM Plex Mono',monospace; color:var(--terra); }
+  .bar-track{ height:8px; border-radius:100px; background:var(--line-soft); margin-top:7px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:100px; background: linear-gradient(90deg, var(--teal), var(--terra)); }
+  .chem-item .desc{ margin-top:6px; font-size:12px; color:var(--text-on-light-dim); }
+
+  /* ---------- WHY SPECIAL ---------- */
+  .arrow-card{ background:#fff; border:1px solid var(--line-soft); border-radius:16px; padding:15px; margin-top:12px; }
+  .arrow-card .who{ font-size:12px; font-weight:700; color:var(--teal); margin-bottom:6px; }
+  .arrow-card p{ font-size:13px; line-height:1.65; }
+  .synth-card{
+    margin-top:14px; background:var(--ink); color:var(--cream); border-radius:16px; padding:18px;
+    text-align:center;
+  }
+  .synth-card .formula{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--gold); }
+  .synth-card .line{ font-family:'Noto Serif KR',serif; font-size:15px; margin-top:8px; line-height:1.5; }
+
+  /* ---------- CONFLICT CYCLE ---------- */
+  .cycle-wrap{ margin-top:16px; background:#fff; border-radius:16px; padding:18px 8px; border:1px solid var(--line-soft); }
+  .cycle-note{ font-size:12px; text-align:center; color:var(--text-on-light-dim); margin-top:6px; }
+  .script-table{ margin-top:20px; border-radius:16px; overflow:hidden; border:1px solid var(--line-soft); }
+  .script-row{ display:grid; grid-template-columns: 58px 1fr; border-top:1px solid var(--line-soft); }
+  .script-row:first-child{ border-top:none; }
+  .script-row .who-cell{
+    background:var(--cream-deep); font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; text-align:center; padding:10px 4px;
+  }
+  .script-row .pair{ background:#fff; padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
+  .script-row .bad{ font-size:12px; color:var(--plum); text-decoration:line-through; text-decoration-color:rgba(140,74,92,0.4); }
+  .script-row .good{ font-size:12.5px; color:var(--teal); font-weight:600; }
+
+  /* ---------- STRENGTH / WEAKNESS ---------- */
+  .sw-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .sw-card{ border-radius:16px; padding:15px 13px; }
+  .sw-card.strength{ background: rgba(63,132,119,0.10); border:1px solid rgba(63,132,119,0.28); }
+  .sw-card.weak{ background: rgba(140,74,92,0.08); border:1px solid rgba(140,74,92,0.24); }
+  .sw-card .sw-head{ font-size:12px; font-weight:700; margin-bottom:10px; }
+  .sw-card.strength .sw-head{ color:var(--teal); }
+  .sw-card.weak .sw-head{ color:var(--plum); }
+  .sw-card ul{ list-style:none; display:flex; flex-direction:column; gap:9px; }
+  .sw-card li{ font-size:11.8px; line-height:1.55; padding-left:14px; position:relative; }
+  .sw-card li::before{ content:''; position:absolute; left:0; top:6px; width:5px; height:5px; border-radius:50%; }
+  .sw-card.strength li::before{ background:var(--teal); }
+  .sw-card.weak li::before{ background:var(--plum); }
+
+  /* ---------- ACTION PLAN ---------- */
+  .person-tabbar{ display:flex; gap:6px; margin-top:16px; }
+  .p-tab{ flex:1; padding:9px; border-radius:100px; text-align:center; font-size:12.5px; font-weight:700; border:1px solid var(--line-soft); cursor:pointer; }
+  .p-tab.active{ background:var(--terra); border-color:var(--terra); color:#fff; }
+  .action-panel{ display:none; margin-top:16px; }
+  .action-panel.active{ display:block; }
+  .action-item{ background:#fff; border:1px solid var(--line-soft); border-radius:14px; padding:13px 14px; margin-top:10px; }
+  .action-item .num{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold); font-weight:700; }
+  .action-item .a-title{ font-size:13.5px; font-weight:700; margin-top:3px; }
+  .action-item .a-desc{ font-size:12px; color:var(--text-on-light-dim); margin-top:5px; line-height:1.55; }
+  .speech{ margin-top:8px; background:var(--cream-deep); border-radius:10px; padding:8px 11px; font-size:12px; font-style:italic; }
+
+  /* ---------- TIMELINE ---------- */
+  .timeline-scroll{
+    display:flex; gap:12px; margin-top:16px; overflow-x:auto; padding-bottom:6px;
+    scroll-snap-type:x mandatory;
+  }
+  .timeline-scroll::-webkit-scrollbar{ height:4px; }
+  .timeline-scroll::-webkit-scrollbar-thumb{ background:var(--line-soft); border-radius:10px; }
+  .tl-card{
+    flex:0 0 78%; scroll-snap-align:start; background:var(--card); color:var(--text-on-dark);
+    border-radius:16px; padding:16px;
+  }
+  .tl-card .yr{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold); }
+  .tl-card .yr-title{ font-family:'Noto Serif KR',serif; font-size:15.5px; font-weight:700; margin-top:5px; }
+  .tl-card p{ font-size:12px; line-height:1.6; color:var(--text-on-dark-dim); margin-top:8px; }
+  .tl-cta{
+    display:inline-block; margin-top:11px; font-size:11.5px; font-weight:700; color:var(--ink);
+    background:var(--gold); padding:6px 11px; border-radius:100px;
+  }
+
+  /* ---------- SHARE CARD ---------- */
+  .share-outer{ background: var(--cream-deep); padding: 30px 22px 36px; }
+  .share-card{
+    aspect-ratio: 1/1; border-radius:22px; overflow:hidden; position:relative;
+    background: radial-gradient(130% 100% at 20% 100%, #3A2A2A 0%, var(--ink) 55%);
+    display:flex; flex-direction:column; justify-content:space-between; padding:24px;
+    color:var(--text-on-dark);
+  }
+  .share-card .top .eyebrow{ color:var(--gold); }
+  .share-card .mid{ font-family:'Noto Serif KR',serif; font-size:21px; line-height:1.5; font-weight:700; margin-top:14px; }
+  .share-card .mid em{ color:var(--terra); font-style:normal; }
+  .share-card .bottom{ display:flex; justify-content:space-between; align-items:flex-end; }
+  .share-card .grade-mini{ font-family:'Noto Serif KR',serif; font-size:34px; font-weight:700; color:var(--gold); }
+  .share-card .tagrow{ display:flex; gap:6px; flex-wrap:wrap; }
+  .share-btn{
+    margin-top:16px; width:100%; padding:14px; text-align:center; border-radius:100px;
+    background:var(--ink); color:var(--cream); font-weight:700; font-size:13.5px;
+  }
+
+  .footer-note{ text-align:center; padding:22px; font-size:11px; color:var(--text-on-light-dim); background:var(--cream-deep); }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- 0. COVER -->
+  <div class="section cover">
+    <div class="eyebrow">RELATIONSHIP · PREMIUM 심화</div>
+    <div class="names">Sera <em>×</em> 창창이</div>
+    <div class="chips">
+      <span class="chip active">인연</span>
+      <span class="chip">동료</span><span class="chip">부부</span><span class="chip">친구</span>
+    </div>
+    <div class="grade-row">
+      <div class="grade-dial">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="38" fill="none" stroke="rgba(242,236,224,0.14)" stroke-width="7"/>
+          <circle cx="44" cy="44" r="38" fill="none" stroke="#C9A24B" stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="177.8 61" />
+        </svg>
+        <div class="label"><div class="grade">B</div><div class="score">74/100</div></div>
+      </div>
+      <div class="cover-copy">
+        <div class="headline">가까운 관계에서 듬직하고 안정감 있는 창창이와<br>꾸준히 빛나고 따뜻한 Sera가 서로의 바람막이가 돼요.</div>
+        <div class="sub">관계 유형 — "천천히 타오르는 관계"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. INDEX DASHBOARD -->
+  <div class="section">
+    <div class="eyebrow" style="color:var(--teal)">RELATIONSHIP INDEX</div>
+    <h2 class="title">상황별 관계 지수</h2>
+    <p class="lead">같은 두 사람도 상황에 따라 다르게 만납니다. 세 가지 국면에서의 지수를 따로 봤어요.</p>
+
+    <div class="tabbar">
+      <div class="tab-btn active" onclick="showCtx(0)">썸·데이트</div>
+      <div class="tab-btn" onclick="showCtx(1)">일상·미래</div>
+      <div class="tab-btn" onclick="showCtx(2)">갈등·긴장</div>
+    </div>
+
+    <div class="ctx-panel active" id="ctx-0">
+      <div class="gauge-row">
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--terra)" stroke-width="7" stroke-linecap="round" stroke-dasharray="164.9 36.2"/></svg><div class="gauge-num">82</div></div><div class="gauge-label">호감</div></div>
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--teal)" stroke-width="7" stroke-linecap="round" stroke-dasharray="172.9 28.2"/></svg><div class="gauge-num">86</div></div><div class="gauge-label">케미</div></div>
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--plum)" stroke-width="7" stroke-linecap="round" stroke-dasharray="96.5 104.6"/></svg><div class="gauge-num">48</div></div><div class="gauge-label">예민</div></div>
+      </div>
+      <div class="ctx-note">단둘이 감정을 나눌 때가 가장 좋아요. 긴장이 낮아 설렘을 편하게 즐기고, 일간이 서로를 자연스럽게 밀어 올려주는 조합이에요.</div>
+    </div>
+
+    <div class="ctx-panel" id="ctx-1">
+      <div class="gauge-row">
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--terra)" stroke-width="7" stroke-linecap="round" stroke-dasharray="140.7 60.4"/></svg><div class="gauge-num">70</div></div><div class="gauge-label">호감</div></div>
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--teal)" stroke-width="7" stroke-linecap="round" stroke-dasharray="144.7 56.4"/></svg><div class="gauge-num">72</div></div><div class="gauge-label">케미</div></div>
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--plum)" stroke-width="7" stroke-linecap="round" stroke-dasharray="128.5 72.6"/></svg><div class="gauge-num">64</div></div><div class="gauge-label">예민</div></div>
+      </div>
+      <div class="ctx-note">일상과 미래를 맞출 때도 안정적이에요. 계획을 세우는 방식은 살짝 다르지만, 두 사람 다 관계를 지키려는 마음이 커서 균형을 찾기 좋아요.</div>
+    </div>
+
+    <div class="ctx-panel" id="ctx-2">
+      <div class="gauge-row">
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--terra)" stroke-width="7" stroke-linecap="round" stroke-dasharray="144.7 56.4"/></svg><div class="gauge-num">72</div></div><div class="gauge-label">호감</div></div>
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--teal)" stroke-width="7" stroke-linecap="round" stroke-dasharray="64.3 136.8"/></svg><div class="gauge-num">32</div></div><div class="gauge-label">케미</div></div>
+        <div class="gauge"><div class="gauge-wrap"><svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line-soft)" stroke-width="7"/><circle cx="38" cy="38" r="30" fill="none" stroke="var(--plum)" stroke-width="7" stroke-linecap="round" stroke-dasharray="164.9 36.2"/></svg><div class="gauge-num">82</div></div><div class="gauge-label">예민</div></div>
+      </div>
+      <div class="ctx-note">의견이 부딪혀도 호감(72)은 남아 있어 관계가 쉽게 끊기진 않아요. 다만 이 순간 케미가 크게 떨어지니, 날카로운 말 대신 한 박자 쉬었다 말하는 게 회복의 열쇠예요.</div>
+    </div>
+  </div>
+
+  <!-- 2. 왜 끌렸는가 -->
+  <div class="section">
+    <div class="saju-tag">일지 자수(子水) × 일지 오화(午火) — 자오충(子午沖)이 아닌 근접 배치</div>
+    <h2 class="title">우리는 왜 서로에게 끌렸는가</h2>
+    <div class="insight-card">
+      <div class="tag">사주 근거</div>
+      <p>Sera의 일간은 물의 기운, 창창이의 일간은 불의 기운이에요. 원래 물과 불은 서로를 끄는 상극 관계지만, 두 사람의 사주에서는 이 기운이 팽팽한 긴장이 아니라 "촛불이 물 위에 떠 있어도 꺼지지 않는" 절묘한 균형으로 배치돼 있어요. 서로가 서로를 완전히 지우지 않으면서 자극하는 조합입니다.</p>
+    </div>
+    <div class="insight-card">
+      <div class="tag">심리 근거</div>
+      <p>Sera는 신중결정·계획구조화 점수가 높고, 창창이는 자극추구·관계공감 점수가 높아요. 이렇게 정반대 축일수록 처음 끌림은 "내게 없는 걸 가진 사람"이라는 강한 자석 효과로 나타나는 경우가 많아요. 사주와 심리 데이터가 같은 결론(정반대의 끌림)으로 수렴하는 조합이라 신뢰도가 높은 해석이에요.</p>
+    </div>
+  </div>
+
+  <!-- 3. 기질 카드 + 레이더 -->
+  <div class="section">
+    <div class="eyebrow" style="color:var(--terra)">PERSONA</div>
+    <h2 class="title">서로의 기질</h2>
+    <div class="persona-cards">
+      <div class="persona-card">
+        <div class="who">SERA</div>
+        <div class="nick">튼튼한 산과 같은 존재감</div>
+        <blockquote>"신뢰가 제일 중요해요. 감정 표현이 서툴러서 가끔 힘들지만, 그걸 이해해주는 사람을 만나면 큰 힘이 돼요."</blockquote>
+      </div>
+      <div class="persona-card b">
+        <div class="who">창창이</div>
+        <div class="nick">타오르는 불꽃처럼 열정적인 존재</div>
+        <blockquote>"감정을 솔직하게 표현하는 걸 좋아해요. 가끔 그 열정이 저를 지치게도 하지만, 깊은 이해를 나누는 게 가장 행복해요."</blockquote>
+      </div>
+    </div>
+
+    <div class="radar-wrap">
+      <svg width="100%" viewBox="0 0 300 300">
+        <!-- grid rings -->
+        <polygon points="150.0,123.8 164.2,127.9 173.9,139.1 176.0,153.7 169.8,167.2 157.4,175.2 142.6,175.2 130.2,167.2 124.0,153.7 126.1,139.1 135.8,127.9" fill="none" stroke="#E7E0D1" stroke-width="1"/>
+        <polygon points="150.0,97.5 178.4,105.8 197.8,128.2 202.0,157.5 189.7,184.4 164.8,200.4 135.2,200.4 110.3,184.4 98.0,157.5 102.2,128.2 121.6,105.8" fill="none" stroke="#E7E0D1" stroke-width="1"/>
+        <polygon points="150.0,71.2 192.6,83.8 221.6,117.3 227.9,161.2 209.5,201.6 172.2,225.6 127.8,225.6 90.5,201.6 72.1,161.2 78.4,117.3 107.4,83.8" fill="none" stroke="#E7E0D1" stroke-width="1"/>
+        <polygon points="150.0,45.0 206.8,61.7 245.5,106.4 253.9,164.9 229.4,218.8 179.6,250.7 120.4,250.7 70.6,218.8 46.1,164.9 54.5,106.4 93.2,61.7" fill="none" stroke="#D8CFBB" stroke-width="1.3"/>
+
+        <!-- axis lines -->
+        <g stroke="#E7E0D1" stroke-width="1">
+          <line x1="150" y1="150" x2="150.0" y2="45.0"/>
+          <line x1="150" y1="150" x2="206.8" y2="61.7"/>
+          <line x1="150" y1="150" x2="245.5" y2="106.4"/>
+          <line x1="150" y1="150" x2="253.9" y2="164.9"/>
+          <line x1="150" y1="150" x2="229.4" y2="218.8"/>
+          <line x1="150" y1="150" x2="179.6" y2="250.7"/>
+          <line x1="150" y1="150" x2="120.4" y2="250.7"/>
+          <line x1="150" y1="150" x2="70.6" y2="218.8"/>
+          <line x1="150" y1="150" x2="46.1" y2="164.9"/>
+          <line x1="150" y1="150" x2="54.5" y2="106.4"/>
+          <line x1="150" y1="150" x2="93.2" y2="61.7"/>
+        </g>
+
+        <!-- data polygons -->
+        <polygon points="150.0,113.2 190.9,86.4 214.9,120.3 226.9,161.1 196.0,189.9 158.9,180.2 133.7,205.4 118.3,177.5 110.5,155.7 83.1,119.5 105.7,81.1" fill="rgba(63,132,119,0.22)" stroke="#3F8477" stroke-width="2"/>
+        <polygon points="150.0,68.1 173.8,112.9 188.2,132.6 186.4,155.2 215.1,206.4 167.7,210.4 135.2,200.4 94.5,198.1 75.2,160.8 119.4,136.0 134.1,125.3" fill="rgba(193,102,63,0.20)" stroke="#C1663F" stroke-width="2"/>
+
+        <!-- labels -->
+        <g font-family="Pretendard" font-size="10.5" fill="#221F2B" text-anchor="middle">
+          <text x="150.0" y="20">자극추구</text>
+          <text x="222" y="41">자기통제</text>
+          <text x="268" y="97" text-anchor="start">현실실리</text>
+          <text x="278" y="169" text-anchor="start">계획구조화</text>
+          <text x="246" y="238">관계공감</text>
+          <text x="186" y="279">갈등직면성</text>
+          <text x="114" y="279" text-anchor="end">회복탄력성</text>
+          <text x="54" y="238" text-anchor="end">인정욕구</text>
+          <text x="20" y="169" text-anchor="end">외향에너지</text>
+          <text x="30" y="97" text-anchor="end">분석사고</text>
+          <text x="81" y="41">신중결정</text>
+        </g>
+      </svg>
+      <div class="radar-legend">
+        <span><i class="dot" style="background:#3F8477"></i>Sera</span>
+        <span><i class="dot" style="background:#C1663F"></i>창창이</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 비교표 -->
+  <div class="section">
+    <h2 class="title">서로 비교</h2>
+    <div class="cmp-table">
+      <div class="cmp-row"><div></div><div class="cmp-head">SERA</div><div class="cmp-head">창창이</div></div>
+      <div class="cmp-row"><div class="item-name">감정표현</div><div>신중하고 안정적인 신뢰 기반</div><div>솔직하고 즉각적인 감정 표출</div></div>
+      <div class="cmp-row gap-high"><div class="item-name">갈등반응</div><div>침묵하며 고집을 부림</div><div>감정적으로 반응, 때론 거리 둠</div></div>
+      <div class="cmp-row"><div class="item-name">애정언어</div><div>신뢰·책임감 기반 표현</div><div>깊은 공감 기반 표현</div></div>
+      <div class="cmp-row gap-high"><div class="item-name">의사결정</div><div>신중하게, 감정 고려</div><div>직관·즉흥적 결정 선호</div></div>
+      <div class="cmp-row"><div class="item-name">소통방식</div><div>직접적·현실적</div><div>감정적 교류로 깊은 이해 추구</div></div>
+    </div>
+    <p class="lead" style="margin-top:10px; font-size:11.5px;">색으로 표시된 항목은 심리 격차(gap)가 커서 마찰 가능성이 있는 지점이에요.</p>
+  </div>
+
+  <!-- 5. 케미 심화 -->
+  <div class="section">
+    <h2 class="title">케미스트리 심화</h2>
+    <div class="chem-list">
+      <div class="chem-item">
+        <div class="top"><span>감정 케미</span><span class="num">84</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:84%"></div></div>
+        <div class="desc">서로의 감정을 알아채는 속도가 빠르고, 깊은 대화로 이어지기 쉬운 조합이에요.</div>
+      </div>
+      <div class="chem-item">
+        <div class="top"><span>소통 케미</span><span class="num">61</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:61%"></div></div>
+        <div class="desc">Sera는 결론부터, 창창이는 과정을 함께 나누고 싶어해요. 대화 리듬을 맞추는 연습이 필요해요.</div>
+      </div>
+      <div class="chem-item">
+        <div class="top"><span>신체 케미</span><span class="num">73</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:73%"></div></div>
+        <div class="desc">함께 있을 때의 편안함과 스킨십 리듬이 자연스럽게 맞는 편이에요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. 관계가 특별한 이유 -->
+  <div class="section">
+    <h2 class="title">이 관계가 특별한 이유</h2>
+    <div class="arrow-card">
+      <div class="who">SERA → 창창이</div>
+      <p>창창이에게 안정감과 신뢰를 주는 존재예요. 감정이 격해질 때 곁에 있어주는 것만으로 큰 위안이 되고, 그 예민함을 덜어주는 역할을 해요.</p>
+    </div>
+    <div class="arrow-card">
+      <div class="who">창창이 → SERA</div>
+      <p>Sera에게 감정적으로 방적인 모습을 보여줘요. 깊은 공감 능력이 위안을 주고, 직관적인 결정 방식은 Sera에게 새로운 시각을 열어줘요.</p>
+    </div>
+    <div class="synth-card">
+      <div class="formula">튼튼한 산 + 타오르는 불꽃</div>
+      <div class="line">서로 다른 기질이 오히려 깊은 이해와<br>감정적 교감을 만들어내는 관계예요.</div>
+    </div>
+  </div>
+
+  <!-- 7. 갈등 지도 -->
+  <div class="section">
+    <h2 class="title">갈등 지도</h2>
+    <p class="lead">싸움은 우연히 시작되지 않아요. 이 커플이 부딪히는 순환 구조예요.</p>
+
+    <div class="cycle-wrap">
+      <svg width="100%" viewBox="0 0 300 260">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#C9A24B"/>
+          </marker>
+        </defs>
+        <!-- 4 nodes -->
+        <g font-family="Pretendard" font-size="11.5" font-weight="600" text-anchor="middle">
+          <circle cx="150" cy="40" r="42" fill="#F2ECE0" stroke="#C9A24B" stroke-width="2"/>
+          <text x="150" y="36">트리거</text>
+          <text x="150" y="50" font-size="9.5" font-weight="400" fill="#6b6560">약속 변경·지연</text>
+
+          <circle cx="255" cy="140" r="42" fill="#F2ECE0" stroke="#3F8477" stroke-width="2"/>
+          <text x="255" y="136">Sera 반응</text>
+          <text x="255" y="150" font-size="9.5" font-weight="400" fill="#6b6560">침묵·고집</text>
+
+          <circle cx="150" cy="230" r="42" fill="#F2ECE0" stroke="#8C4A5C" stroke-width="2"/>
+          <text x="150" y="226">확대</text>
+          <text x="150" y="240" font-size="9.5" font-weight="400" fill="#6b6560">냉전 장기화</text>
+
+          <circle cx="45" cy="140" r="42" fill="#F2ECE0" stroke="#C1663F" stroke-width="2"/>
+          <text x="45" y="136">창창이 반응</text>
+          <text x="45" y="150" font-size="9.5" font-weight="400" fill="#6b6560">감정 표출·거리두기</text>
+        </g>
+        <g fill="none" stroke="#C9A24B" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arrow)">
+          <path d="M182,58 Q225,90 232,108"/>
+          <path d="M232,172 Q195,210 178,220"/>
+          <path d="M122,220 Q95,205 68,172"/>
+          <path d="M68,108 Q95,75 118,58"/>
+        </g>
+      </svg>
+      <div class="cycle-note">회피형(Sera)과 표출-거리두기형(창창이)이 만나면, 한쪽이 침묵할수록 다른 쪽은 더 불안해지는 악순환이 생기기 쉬워요.</div>
+    </div>
+
+    <div class="script-table">
+      <div class="script-row"><div class="who-cell">SERA</div><div class="pair"><div class="bad">"왜 그렇게 감정적으로 반응해? 이해할 수 없어."</div><div class="good">"내가 이해해주지 못한 부분이 있는 것 같아. 조금 더 이야기해줄래?"</div></div></div>
+      <div class="script-row"><div class="who-cell">창창이</div><div class="pair"><div class="bad">"너는 항상 내 기분을 무시해!"</div><div class="good">"내 기분이 이렇게 되는 이유를 이해해주면 좋겠어."</div></div></div>
+    </div>
+  </div>
+
+  <!-- 8. 강점 / 약점 -->
+  <div class="section">
+    <h2 class="title">강점 · 약점</h2>
+    <div class="sw-grid">
+      <div class="sw-card strength">
+        <div class="sw-head">이 사람에게서 얻는 것</div>
+        <ul>
+          <li>흔들릴 때 붙잡아주는 정서적 안전기지</li>
+          <li>감정을 언어화하는 법을 자연스럽게 배움</li>
+          <li>계획에 갇힌 시야를 넓혀주는 즉흥성</li>
+        </ul>
+      </div>
+      <div class="sw-card weak">
+        <div class="sw-head">함께 있으면 약해지는 지점</div>
+        <ul>
+          <li>갈등을 미루는 습관이 더 굳어질 수 있음</li>
+          <li>상대의 감정 기복에 쉽게 에너지가 소진됨</li>
+          <li>계획성이 느슨해져 중요한 결정이 늦어질 수 있음</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. 액션플랜 -->
+  <div class="section">
+    <h2 class="title">서로에게 도움이 되는 행동</h2>
+    <div class="person-tabbar">
+      <div class="p-tab active" onclick="showPerson(0)">SERA께</div>
+      <div class="p-tab" onclick="showPerson(1)">창창이께</div>
+    </div>
+
+    <div class="action-panel active" id="p-0">
+      <div class="action-item"><div class="num">01</div><div class="a-title">감정 표현 연습하기</div><div class="a-desc">작은 일부터 시작해서 내 기분을 먼저 말해보세요.</div><div class="speech">"요즘 내 기분이 이래. 너는 어때?"</div></div>
+      <div class="action-item"><div class="num">02</div><div class="a-title">상대방의 감정 존중하기</div><div class="a-desc">격해질 때 판단하지 말고 먼저 경청해보세요.</div><div class="speech">"네가 이렇게 느끼는 이유를 알고 싶어."</div></div>
+      <div class="action-item"><div class="num">03</div><div class="a-title">작은 약속 지키기</div><div class="a-desc">신뢰는 큰 이벤트가 아니라 작은 약속의 누적에서 쌓여요.</div><div class="speech">"이번 주말에 약속한 대로 함께 나가자!"</div></div>
+    </div>
+    <div class="action-panel" id="p-1">
+      <div class="action-item"><div class="num">01</div><div class="a-title">솔직한 감정 표현하기</div><div class="a-desc">감정의 깊이를 있는 그대로 나눠보세요.</div><div class="speech">"지금 기분이 정말 힘들어."</div></div>
+      <div class="action-item"><div class="num">02</div><div class="a-title">Sera의 안정감 활용하기</div><div class="a-desc">힘들 땐 밀어내지 말고 기대어보세요.</div><div class="speech">"너와 함께 있을 땐 정말 편안해."</div></div>
+      <div class="action-item"><div class="num">03</div><div class="a-title">신뢰를 존중하기</div><div class="a-desc">함께 시간을 보내며 신뢰를 천천히 쌓아가세요.</div><div class="speech">"너와의 관계가 정말 소중해."</div></div>
+    </div>
+  </div>
+
+  <!-- 10. 타이밍 -->
+  <div class="section">
+    <h2 class="title">시간이 지나면 이렇게 달라져요</h2>
+    <div class="timeline-scroll">
+      <div class="tl-card"><div class="yr">지금 · 2026</div><div class="yr-title">이해하는 단계</div><p>서로의 기질을 알아가며 안정적인 관계로 발전 중이에요. 감정 존중이 핵심 과제예요.</p><span class="tl-cta">오늘의 대화 하나 시도하기</span></div>
+      <div class="tl-card"><div class="yr">3년 후 · 2029</div><div class="yr-title">신뢰가 깊어지는 시기</div><p>갈등 해결 능력이 향상되고 서로의 감정에 더 공감하게 될 시기예요.</p><span class="tl-cta">공동의 목표 하나 정하기</span></div>
+      <div class="tl-card"><div class="yr">5년 후 · 2031</div><div class="yr-title">완전한 이해의 시기</div><p>대운의 흐름이 안정적인 오행으로 전환되며 관계가 더 단단해질 시기예요.</p><span class="tl-cta">장기 계획 함께 그려보기</span></div>
+      <div class="tl-card"><div class="yr">10년 후 · 2036</div><div class="yr-title">함께 완성하는 시기</div><p>지금의 갈등이 추억으로 남고, 서로의 성장을 기념하게 될 거예요.</p><span class="tl-cta">지금의 우리에게 편지 쓰기</span></div>
+    </div>
+  </div>
+
+  <!-- 11. 공유 카드 -->
+  <div class="share-outer">
+    <div class="eyebrow" style="color:var(--terra); margin-bottom:14px;">SHARE</div>
+    <div class="share-card">
+      <div class="top"><div class="eyebrow">RELATIONSHIP REPORT</div></div>
+      <div class="mid">튼튼한 산 <em>+</em> 타오르는 불꽃<br>서로를 보완하며 성장하는 관계</div>
+      <div class="bottom">
+        <div class="grade-mini">B · 74</div>
+        <div class="tagrow">
+          <span class="chip" style="border-color:rgba(242,236,224,0.3); color:var(--text-on-dark-dim)">Sera × 창창이</span>
+        </div>
+      </div>
+    </div>
+    <div class="share-btn">이미지로 저장하기</div>
+  </div>
+
+  <div class="footer-note">출생 시간·장소가 정확하지 않아 임의값으로 계산된 목업입니다.<br>실제 리포트는 개인별 데이터로 대체됩니다.</div>
+
+</div>
+
+<script>
+  function showCtx(i){
+    document.querySelectorAll('.tab-btn').forEach((b,idx)=>b.classList.toggle('active', idx===i));
+    document.querySelectorAll('.ctx-panel').forEach((p,idx)=>p.classList.toggle('active', idx===i));
+  }
+  function showPerson(i){
+    document.querySelectorAll('.p-tab').forEach((b,idx)=>b.classList.toggle('active', idx===i));
+    document.querySelectorAll('.action-panel').forEach((p,idx)=>p.classList.toggle('active', idx===i));
+  }
+</script>
+</body>
+</html>

@@ -1,7 +1,17 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { polishRomanticDisplayText, stripComparisonCellSubject } from "@/lib/relationship/romanticEverydayText";
+import {
+  filterShareSummaryKeywords,
+  isGenericRomanticActionPhrase,
+  isShareSummaryRelationshipNameExcluded,
+  polishConflictDialogueLine,
+  polishRomanticDisplayText,
+  stripComparisonCellSubject,
+} from "@/lib/relationship/romanticEverydayText";
+import { buildRomanticTimelineBlocks, type TimelineBlock } from "@/lib/relationship/romanticTimeline";
+import { romanticHeadlineViewerFirst } from "@/lib/relationship/dayStemRomanticProfile";
+import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import {
   buildRomanticScreenPlanFromStored,
   getScreen1Opening,
@@ -14,7 +24,12 @@ import type {
   RomanticSajuDeepReport,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { resolveSnapshotPanelFromReport } from "@/lib/relationship/romanticSnapshot/buildRomanticSnapshot";
-import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
+import {
+  applyRomanticDisplayNames,
+  applyReportSlotNames,
+  buildRomanticNameReplacements,
+  pickViewerFirstPair,
+} from "@/lib/relationship/viewerFirstDisplay";
 import RomanticSnapshotPanelView from "@/components/relationship/RomanticSnapshotPanel";
 import {
   RelationshipReportLayout,
@@ -23,9 +38,29 @@ import {
   RelationshipReportParagraph,
   RelationshipReportLabel,
   RelationshipReportInset,
+  ChemistryBreakdown,
+  PsychMatchRadarChart,
+  ShareSummaryCard,
+  StrengthWeaknessCard,
+  EssenceActionGuidelineList,
+  getStitchTabTheme,
   getTabTheme,
+  useReportTone,
   type ScoreMetric,
 } from "@/components/relationship/reportLayout";
+import {
+  buildChemistryApproxScores,
+  buildStrengthWeaknessLists,
+} from "@/lib/relationship/psychMatch";
+import {
+  dedupeActionGuidelines,
+  normalizeActionGuideline,
+} from "@/lib/relationship/essenceActionGuideline";
+import {
+  shouldShowBondFormula,
+  shouldShowWhySpecial,
+  isGenericBondParagraph,
+} from "@/lib/relationship/romanticBondDisplay";
 
 const COMPARISON_ASPECTS = [
   "감정 표현",
@@ -36,31 +71,140 @@ const COMPARISON_ASPECTS = [
   "소통 방식",
 ] as const;
 
-function P({ children }: { children: ReactNode }) {
-  const text =
-    typeof children === "string"
-      ? polishRomanticDisplayText(children)
-      : children;
-  return (
-    <RelationshipReportParagraph className="whitespace-pre-wrap">
-      {text}
-    </RelationshipReportParagraph>
+type NatureBlock = {
+  description?: string;
+  first_person_voice?: string;
+  meeting_a?: string;
+  meeting_b?: string;
+  together_change?: string;
+  image_metaphor?: string;
+};
+
+const GENERIC_ACTION_DETAILS = new Set([
+  "갈등 직후 바로 결론 내리지 말고, 감정 라벨링 후 20분 쉬어가요.",
+  "설문에서 나온 행동 팁을 갈등 전에 미리 써 보세요.",
+  "거리가 생겼을 때 먼저 연결 신호(짧은 메시지·안부)를 보내세요.",
+]);
+
+function hasActionGuidelineContent(items?: AdviceItem[]): boolean {
+  return (items ?? []).some((line) =>
+    Boolean(normalizeActionGuideline(line, { target_user: "" })),
   );
 }
 
-function formatAdvice(item: AdviceItem): {
-  title: string;
-  detail: string;
-  phrase?: string;
-} {
-  if (typeof item === "string") {
-    return { title: item, detail: "", phrase: undefined };
+function pickPersonHiddenInsight(
+  ranked:
+    | Array<{ id: string; headline: string; body: string; screenHint?: string }>
+    | undefined,
+  reportSlot: "a" | "b",
+): { headline: string; body: string } | null {
+  if (!ranked?.length) return null;
+  const hit = ranked.find(
+    (row) =>
+      row.screenHint === "hidden" && row.id.startsWith(`person_${reportSlot}_`),
+  );
+  if (!hit?.body?.trim()) return null;
+  return { headline: hit.headline, body: hit.body };
+}
+
+function resolveHiddenVoice(
+  hidden: { voice?: string; need?: string; reason?: string },
+  insightBody?: string,
+): string {
+  const voice = hidden.voice?.trim();
+  if (voice && voice.length >= 20) return voice;
+  const parts = [hidden.need, hidden.reason, insightBody]
+    .map((p) => p?.trim())
+    .filter(Boolean);
+  return parts.join(" ");
+}
+
+type HiddenHeartBlock = {
+  voice?: string;
+  need?: string;
+  reason?: string;
+};
+
+function formatHiddenHeartDisplay(
+  hidden: HiddenHeartBlock,
+  insightBody: string | undefined,
+  polish: (text: string) => string,
+): { hook: string; body: string } {
+  const need = hidden.need?.trim() ?? "";
+  const voice = hidden.voice?.trim() ?? "";
+  const reason = hidden.reason?.trim() ?? "";
+  const hook = need ? polish(need) : "";
+
+  let body = "";
+  if (voice.length >= 20) {
+    body = polish(voice);
+  } else {
+    body = polish(
+      [voice, reason, insightBody].filter(Boolean).join(" "),
+    );
   }
-  return {
-    title: item.title?.trim() ?? "",
-    detail: item.detail?.trim() ?? "",
-    phrase: item.phrase_example?.trim(),
-  };
+
+  if (hook && body.startsWith(hook)) {
+    body = body.slice(hook.length).trim();
+  }
+
+  return { hook, body };
+}
+
+function HiddenHeartPanel({
+  name,
+  hidden,
+  insightBody,
+  polish,
+}: {
+  name: string;
+  hidden: HiddenHeartBlock;
+  insightBody?: string;
+  polish: (text: string) => string;
+}) {
+  const { hook, body } = formatHiddenHeartDisplay(hidden, insightBody, polish);
+  if (!hook && !body) return null;
+
+  return (
+    <div className="space-y-2">
+      <RelationshipReportLabel>🌙 {name}의 숨은 마음</RelationshipReportLabel>
+      {hook ? (
+        <p className="text-sm font-medium leading-relaxed text-on-surface">
+          {hook}
+        </p>
+      ) : null}
+      {body ? (
+        <RelationshipReportParagraph>{body}</RelationshipReportParagraph>
+      ) : null}
+    </div>
+  );
+}
+
+function pickBestNatureParagraph(
+  nature: NatureBlock | undefined,
+  meetingHint?: string,
+): string {
+  const candidates = [
+    nature?.description,
+    nature?.first_person_voice,
+    meetingHint,
+    nature?.together_change,
+  ]
+    .map((c) => (c ? polishRomanticDisplayText(String(c)) : ""))
+    .filter((c) => c.length >= 12);
+
+  if (candidates.length === 0) return "";
+
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const c of candidates) {
+    const key = c.slice(0, 48);
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(c);
+    }
+  }
+  return unique.sort((a, b) => b.length - a.length)[0] ?? "";
 }
 
 function isRedundantInsightHook(slot: RomanticScreenSlot): boolean {
@@ -86,20 +230,9 @@ function isRedundantInsightHook(slot: RomanticScreenSlot): boolean {
     if (parts.length >= 2 && parts.every((p) => p === parts[0])) return true;
   }
   if (slot.key === "conflict" || slot.key === "action") return true;
+  if (slot.key === "bond" && isGenericBondParagraph(body)) return true;
   if (!headline && !body) return true;
   return false;
-}
-
-function InsightHook({ slot }: { slot: RomanticScreenSlot | undefined }) {
-  if (!slot?.body || isRedundantInsightHook(slot)) return null;
-  return (
-    <RelationshipReportInset className="border-[#ffd6a5]/20 bg-[#ffd6a5]/6">
-      <p className="text-sm font-medium text-[#ffd6a5]/95">
-        {polishRomanticDisplayText(slot.headline)}
-      </p>
-      <P>{slot.body}</P>
-    </RelationshipReportInset>
-  );
 }
 
 function resolveScreenPlan(
@@ -120,34 +253,50 @@ function resolveScreenPlan(
   });
 }
 
-function mergeComparisonTable(
+function buildViewerComparisonTable(
   rows: Array<{ aspect: string; a: string; b: string }>,
-  nameA: string,
-  nameB: string,
+  opts: {
+    myName: string;
+    partnerName: string;
+    viewerIsReportA: boolean;
+    polish: (text: string) => string;
+  },
 ): Array<{ aspect: string; a: string; b: string }> {
+  const { myName, partnerName, viewerIsReportA, polish } = opts;
   const byAspect = new Map(rows.map((r) => [r.aspect, r]));
-  const merged = COMPARISON_ASPECTS.map((aspect) => {
-    const hit = byAspect.get(aspect);
+
+  const formatRow = (
+    aspect: string,
+    hit?: { a: string; b: string },
+  ): { aspect: string; a: string; b: string } => {
     if (!hit) return { aspect, a: "—", b: "—" };
+    const meRaw = viewerIsReportA ? hit.a : hit.b;
+    const partnerRaw = viewerIsReportA ? hit.b : hit.a;
     return {
       aspect,
-      a: stripComparisonCellSubject(hit.a, nameA),
-      b: stripComparisonCellSubject(hit.b, nameB),
+      a: polish(
+        stripComparisonCellSubject(meRaw, myName, partnerName),
+      ),
+      b: polish(
+        stripComparisonCellSubject(partnerRaw, partnerName, myName),
+      ),
     };
-  });
+  };
+
+  const merged = COMPARISON_ASPECTS.map((aspect) =>
+    formatRow(aspect, byAspect.get(aspect)),
+  );
+
   for (const row of rows) {
     if (
       !COMPARISON_ASPECTS.includes(
         row.aspect as (typeof COMPARISON_ASPECTS)[number],
       )
     ) {
-      merged.push({
-        aspect: row.aspect,
-        a: stripComparisonCellSubject(row.a, nameA),
-        b: stripComparisonCellSubject(row.b, nameB),
-      });
+      merged.push(formatRow(row.aspect, row));
     }
   }
+
   return merged;
 }
 
@@ -169,9 +318,24 @@ function extractRomanticScores(
   if (!scores?.overall) return [];
   const { activation, benefit, risk } = scores.overall;
   return [
-    { emoji: "🔥", label: "호감", value: activation, tone: "warm" },
-    { emoji: "🧩", label: "케미", value: benefit, tone: "cool" },
-    { emoji: "⚡", label: "예민", value: risk, tone: "alert" },
+    {
+      emoji: "🔥",
+      label: "호감",
+      value: activation,
+      polarity: "higher_better",
+    },
+    {
+      emoji: "🧩",
+      label: "케미",
+      value: benefit,
+      polarity: "higher_better",
+    },
+    {
+      emoji: "⚡",
+      label: "예민",
+      value: risk,
+      polarity: "higher_worse",
+    },
   ];
 }
 
@@ -195,6 +359,135 @@ function filterDialogueTable(rows: DialogueTableRow[]): DialogueTableRow[] {
   });
 }
 
+type ActionRuleFallback = {
+  goodPhrases?: string[];
+  avoidPhrases?: string[];
+  recoveryTip?: string;
+  togetherStarter?: string;
+};
+
+type ActionSection = {
+  advice_for_a?: AdviceItem[];
+  advice_for_b?: AdviceItem[];
+  together?: string;
+  together_starter?: string;
+  promise?: string;
+};
+
+function resolveActionSection(
+  llm: ActionSection,
+  meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
+): ActionSection {
+  const plan = meta?.rule_screen_plan as
+    | Array<{ key: string; output?: ActionRuleFallback }>
+    | undefined;
+  const action = plan?.find((slot) => slot.key === "action")?.output;
+
+  const buildFallback = (): ActionSection => {
+    if (!action?.goodPhrases?.length) return llm;
+    const phrases = action.goodPhrases;
+    const recovery = action.recoveryTip?.trim() ?? "";
+    const contextualReason = (index: number) => {
+      if (recovery && !GENERIC_ACTION_DETAILS.has(recovery) && index === 0) {
+        return recovery;
+      }
+      return "";
+    };
+    const fallbackTitles = [
+      "감정이 올라올 때 한 박자 쉬기",
+      "상대 마음을 먼저 확인하기",
+      "함께 회복하는 말하기",
+    ] as const;
+    const fallbackTitlesB = [
+      "급하게 결론 내리지 않기",
+      "표현 방식 차이 인정하기",
+      "작은 신호로 연결하기",
+    ] as const;
+
+    const toGuideline = (
+      phrase: string,
+      index: number,
+      target: string,
+      titles: readonly string[],
+    ) => ({
+      relationship_kind: "연인",
+      target_user: target,
+      action_title: titles[index] ?? "실천 팁",
+      saju_reason: contextualReason(index),
+      real_speech_tip: phrase,
+      real_life_example: "",
+    });
+
+    return {
+      advice_for_a: phrases
+        .slice(0, 3)
+        .map((phrase, index) => toGuideline(phrase, index, "A", fallbackTitles)),
+      advice_for_b: phrases
+        .slice(0, 3)
+        .map((phrase, index) =>
+          toGuideline(phrase, index, "B", fallbackTitlesB),
+        ),
+      together:
+        recovery && !GENERIC_ACTION_DETAILS.has(recovery) ? recovery : "",
+      together_starter: action.togetherStarter,
+      promise: phrases[0],
+    };
+  };
+
+  if (
+    !hasActionGuidelineContent(llm.advice_for_a) &&
+    !hasActionGuidelineContent(llm.advice_for_b)
+  ) {
+    const fallback = buildFallback();
+    if (
+      hasActionGuidelineContent(fallback.advice_for_a) ||
+      hasActionGuidelineContent(fallback.advice_for_b)
+    ) {
+      return fallback;
+    }
+    return llm;
+  }
+
+  if (!action?.goodPhrases?.length) return llm;
+
+  const fallback = buildFallback();
+  return {
+    ...llm,
+    advice_for_a: hasActionGuidelineContent(llm.advice_for_a)
+      ? llm.advice_for_a
+      : fallback.advice_for_a,
+    advice_for_b: hasActionGuidelineContent(llm.advice_for_b)
+      ? llm.advice_for_b
+      : fallback.advice_for_b,
+  };
+}
+
+function resolveTimelineSection(
+  llm: Record<string, Record<string, string>>,
+  meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
+  polish: (text: string) => string,
+): TimelineBlock[] {
+  const flow = meta?.romantic_fortune_flow as
+    | {
+        daewoon?: {
+          current_year?: number;
+          interaction_note?: string;
+        };
+      }
+    | undefined;
+
+  return buildRomanticTimelineBlocks({
+    llm,
+    metaYear: flow?.daewoon?.current_year,
+    fortuneNote: flow?.daewoon?.interaction_note,
+    polish,
+  });
+}
+
+function hasTimelineContent(blocks: TimelineBlock[]): boolean {
+  return blocks.some((block) => Boolean(block.body?.trim()));
+}
+
 export default function RomanticSajuDeepReportView({
   report,
   nameA,
@@ -210,49 +503,178 @@ export default function RomanticSajuDeepReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
-  const theme = getTabTheme("romantic");
+  const tone = useReportTone();
+  const theme =
+    tone.surface === "stitch"
+      ? getStitchTabTheme("romantic")
+      : getTabTheme("romantic");
+
   const myName = myNameProp ?? (viewerIsReportA ? nameA : nameB);
   const partnerName = partnerNameProp ?? (viewerIsReportA ? nameB : nameA);
-  const s1 = report.section_1_summary;
-  const s2 = report.section_2_nature;
+
+  const nameReplacements = buildRomanticNameReplacements({
+    myName,
+    partnerName,
+    personAName: nameA,
+    personBName: nameB,
+    viewerIsReportA,
+  });
+
+  const displayText = (raw: string | undefined | null): string => {
+    if (!raw?.trim()) return "";
+    const slotted = applyReportSlotNames(raw, nameA, nameB);
+    return applyRomanticDisplayNames(
+      polishRomanticDisplayText(slotted),
+      nameReplacements,
+    );
+  };
+
+  function P({ children }: { children: ReactNode }) {
+    const text =
+      typeof children === "string" ? displayText(children) : children;
+    return (
+      <RelationshipReportParagraph className="whitespace-pre-wrap">
+        {text}
+      </RelationshipReportParagraph>
+    );
+  }
+
+  function InsightHook({ slot }: { slot: RomanticScreenSlot | undefined }) {
+    if (!slot?.body || isRedundantInsightHook(slot)) return null;
+    return (
+      <RelationshipReportInset
+        className={
+          tone.surface === "stitch"
+            ? "border-secondary/25 bg-secondary/8"
+            : "border-[#ffd6a5]/20 bg-[#ffd6a5]/6"
+        }
+      >
+        <p
+          className={
+            tone.surface === "stitch"
+              ? "text-sm font-medium text-secondary"
+              : "text-sm font-medium text-[#ffd6a5]/95"
+          }
+        >
+          {displayText(slot.headline)}
+        </p>
+        <P>{slot.body}</P>
+      </RelationshipReportInset>
+    );
+  }
+
+  function NaturePersonPanel({
+    name,
+    nature,
+    meetingHint,
+  }: {
+    name: string;
+    nature?: NatureBlock;
+    meetingHint?: string;
+  }) {
+    const paragraph = pickBestNatureParagraph(nature, meetingHint);
+    return (
+      <article className="stitch-hero-panel space-y-3 rounded-extra-large border border-outline-variant/25 p-5 sm:p-6">
+        <p className={tone.bodyStrong}>{name}</p>
+        {nature?.image_metaphor ? (
+          <p className="text-sm text-secondary">
+            {displayText(nature.image_metaphor)}
+          </p>
+        ) : null}
+        {paragraph ? <P>{paragraph}</P> : null}
+      </article>
+    );
+  }
+
+  const s1 = report.section_1_summary ?? {};
+  const s2 = report.section_2_nature ?? {};
   const special = report.section_4_special_bond;
-  const s3 = report.section_3_conversation_patterns as Record<
+  const s3 = (report.section_3_conversation_patterns ?? {}) as Record<
     string,
     Record<string, unknown>
   >;
-  const s4 = report.section_4_hidden_hearts as Record<string, unknown>;
-  const s5 = report.section_5_action as Record<string, unknown>;
-  const s6 = report.section_6_timeline as Record<string, Record<string, string>>;
+  const s4 = (report.section_4_hidden_hearts ?? {}) as Record<string, unknown>;
+  const s5 = resolveActionSection(
+    (report.section_5_action ?? {}) as ActionSection,
+    report.meta,
+  );
+  const s6 = resolveTimelineSection(
+    (report.section_6_timeline ?? {}) as Record<string, Record<string, string>>,
+    report.meta,
+    displayText,
+  );
 
+  const emptyNature: NatureBlock = {};
   const { me: myNature, partner: partnerNature } = pickViewerFirstPair(
-    s2.a_nature,
-    s2.b_nature,
+    s2.a_nature ?? emptyNature,
+    s2.b_nature ?? emptyNature,
     viewerIsReportA,
   );
+  const { me: myAdviceRaw, partner: partnerAdviceRaw } = pickViewerFirstPair(
+    s5.advice_for_a ?? [],
+    s5.advice_for_b ?? [],
+    viewerIsReportA,
+  );
+  const actionKind = s1.relationship_name?.trim() || "연인";
+  const myAdvice = dedupeActionGuidelines(myAdviceRaw, {
+    target_user: myName,
+    relationship_kind: actionKind,
+  });
+  const partnerAdvice = dedupeActionGuidelines(partnerAdviceRaw, {
+    target_user: partnerName,
+    relationship_kind: actionKind,
+  });
   const { me: myHidden, partner: partnerHidden } = pickViewerFirstPair(
-    s4.a_hidden,
-    s4.b_hidden,
+    (s4.a_hidden as { voice?: string; need?: string; reason?: string } | undefined) ??
+      {},
+    (s4.b_hidden as { voice?: string; need?: string; reason?: string } | undefined) ??
+      {},
     viewerIsReportA,
   );
-  const { me: myAdvice, partner: partnerAdvice } = pickViewerFirstPair(
-    (s5.advice_for_a as AdviceItem[] | undefined) ?? [],
-    (s5.advice_for_b as AdviceItem[] | undefined) ?? [],
-    viewerIsReportA,
+  const rankedInsights = (
+    report.meta as
+      | {
+          ranked_insights?: Array<{
+            id: string;
+            headline: string;
+            body: string;
+            screenHint?: string;
+          }>;
+        }
+      | undefined
+  )?.ranked_insights;
+
+  const myReportSlot = viewerIsReportA ? "a" : "b";
+  const partnerReportSlot = viewerIsReportA ? "b" : "a";
+  const myHiddenInsight = pickPersonHiddenInsight(rankedInsights, myReportSlot);
+  const partnerHiddenInsight = pickPersonHiddenInsight(
+    rankedInsights,
+    partnerReportSlot,
   );
+
+  const myHiddenVoice = resolveHiddenVoice(
+    myHidden as HiddenHeartBlock,
+    myHiddenInsight?.body,
+  );
+  const partnerHiddenVoice = resolveHiddenVoice(
+    partnerHidden as HiddenHeartBlock,
+    partnerHiddenInsight?.body,
+  );
+  const hasHiddenContent =
+    Boolean(myHiddenVoice) ||
+    Boolean(partnerHiddenVoice) ||
+    Boolean(String(s4.mutual_gift ?? "").trim());
 
   const conflict = s3?.conflict_situation;
-  const rawComparison = mergeComparisonTable(
+  const comparisonTable = buildViewerComparisonTable(
     s2.comparison_table ?? [],
-    nameA,
-    nameB,
+    {
+      myName,
+      partnerName,
+      viewerIsReportA,
+      polish: displayText,
+    },
   );
-  const comparisonTable = viewerIsReportA
-    ? rawComparison
-    : rawComparison.map((row) => ({
-        aspect: row.aspect,
-        a: row.b,
-        b: row.a,
-      }));
   const dialogueTable = filterDialogueTable(
     (conflict?.dialogue_table ?? []) as DialogueTableRow[],
   );
@@ -263,11 +685,13 @@ export default function RomanticSajuDeepReportView({
           {
             from: myName,
             to: partnerName,
+            headline: special.a_gives_b_headline,
             text: special.a_gives_b,
           },
           {
             from: partnerName,
             to: myName,
+            headline: special.b_gives_a_headline,
             text: special.b_gives_a,
           },
         ]
@@ -275,46 +699,141 @@ export default function RomanticSajuDeepReportView({
           {
             from: myName,
             to: partnerName,
+            headline: special.b_gives_a_headline,
             text: special.b_gives_a,
           },
           {
             from: partnerName,
             to: myName,
+            headline: special.a_gives_b_headline,
             text: special.a_gives_b,
           },
         ]
     : [];
 
   const screenPlan = resolveScreenPlan(report);
-  const opening = getScreen1Opening(screenPlan, s1);
+  const openingRaw = getScreen1Opening(screenPlan, s1);
+  const sajuProvenance = (
+    report.meta as
+      | {
+          saju_provenance?: {
+            a?: SajuChartProvenance | null;
+            b?: SajuChartProvenance | null;
+          };
+          language?: string;
+        }
+      | undefined
+  )?.saju_provenance;
+  const locale =
+    (report.meta as { language?: string } | undefined)?.language === "en"
+      ? "en"
+      : "ko";
+  const viewerFirstHeadline = romanticHeadlineViewerFirst(
+    sajuProvenance?.a,
+    sajuProvenance?.b,
+    viewerIsReportA,
+    locale,
+  );
+  const opening = {
+    ...openingRaw,
+    headline: viewerFirstHeadline ?? openingRaw.headline,
+  };
   const snapshotPanel = resolveSnapshotPanelFromReport(report.meta);
   const scores = extractRomanticScores(report.meta);
+  const psychMatch = report.meta?.psych_match ?? null;
+  const chemistryScores = psychMatch?.axis_results?.length
+    ? buildChemistryApproxScores(psychMatch.axis_results)
+    : null;
+  const showChemistryBreakdown =
+    chemistryScores != null &&
+    (chemistryScores.emotional !== null ||
+      chemistryScores.communication !== null);
+  const strengthWeaknessResult = psychMatch?.axis_results?.length
+    ? buildStrengthWeaknessLists(psychMatch.axis_results)
+    : null;
+  const showStrengthWeakness =
+    psychMatch != null &&
+    strengthWeaknessResult != null &&
+    strengthWeaknessResult.strengths.length > 0;
+  const showBondFormula = shouldShowBondFormula(
+    special?.relationship_formula,
+    special?.only_together,
+  );
+  const showWhySpecial = shouldShowWhySpecial(special?.why_special, {
+    onlyTogether: special?.only_together,
+    aGivesB: special?.a_gives_b,
+    bGivesA: special?.b_gives_a,
+  });
+  const shareFormula =
+    showBondFormula && special?.relationship_formula
+      ? displayText(special.relationship_formula)
+      : "";
+  const hasActionContent =
+    myAdvice.length > 0 ||
+    partnerAdvice.length > 0 ||
+    Boolean(s5.together?.trim());
+  const showTimeline = hasTimelineContent(s6);
+
+  const myMeetingHint = viewerIsReportA
+    ? myNature.meeting_b
+    : myNature.meeting_a;
+  const partnerMeetingHint = viewerIsReportA
+    ? partnerNature.meeting_a
+    : partnerNature.meeting_b;
+
+  const psychAxisForViewer =
+    psychMatch?.axis_results?.map((row) =>
+      viewerIsReportA
+        ? row
+        : { ...row, score_a: row.score_b, score_b: row.score_a },
+    ) ?? [];
 
   return (
     <RelationshipReportLayout
       kind="romantic"
       kindLabel="Premium · 연인 사주 심화"
       headline={{
-        title: polishRomanticDisplayText(opening.headline),
-        subtitle: polishRomanticDisplayText(opening.body),
+        title: displayText(opening.headline),
+        subtitle: displayText(opening.body),
         names: [myName, partnerName],
         badge: opening.grade ? `궁합 등급 ${opening.grade}` : undefined,
       }}
       scores={scores}
+      scoreSourceNote="사주 궁합 신호(합·충·일간 상생 등)로 계산 · 0~100점 · 설문 11축과는 별도예요."
+      showTriScoreInsight
+      conflictInsightAnchor="relationship-conflict-map"
       scoreFooter={
         snapshotPanel ? (
           <RomanticSnapshotPanelView panel={snapshotPanel} />
         ) : undefined
       }
     >
+      {showChemistryBreakdown && chemistryScores ? (
+        <RelationshipReportCard
+          title="🍀 케미스트리 심화"
+          accentColor={theme.accent}
+        >
+          <ChemistryBreakdown scores={chemistryScores} />
+        </RelationshipReportCard>
+      ) : null}
+
       <RelationshipReportCard
         title={`🔍 ${ruleScreenTitle(report.meta, "compare", "서로 비교")}`}
         accentColor={theme.accent}
       >
-        <div className="overflow-x-auto rounded-xl border border-white/10">
+        <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">
+          두 사람 사주·설문 데이터를 바탕으로 AI가 정리한 성향 비교예요. 항목별로
+          나와 상대의 차이를 한눈에 볼 수 있어요.
+        </p>
+        <div
+          className={[
+            "overflow-x-auto rounded-xl border",
+            tone.tableBorder,
+          ].join(" ")}
+        >
           <table className="w-full min-w-[280px] text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-white/55">
+              <tr className={["border-b", tone.tableBorder, tone.tableHead].join(" ")}>
                 <th className="px-4 py-3 font-medium">항목</th>
                 <th className="px-4 py-3 font-medium">{myName}</th>
                 <th className="px-4 py-3 font-medium">{partnerName}</th>
@@ -324,13 +843,15 @@ export default function RomanticSajuDeepReportView({
               {comparisonTable.map((row) => (
                 <tr
                   key={row.aspect}
-                  className="border-b border-white/5 last:border-0"
+                  className={["border-b last:border-0", tone.tableBorder].join(
+                    " ",
+                  )}
                 >
-                  <td className="px-4 py-3 font-medium text-white/88">
+                  <td className={["px-4 py-3 font-medium", tone.bodyMedium].join(" ")}>
                     {row.aspect}
                   </td>
-                  <td className="px-4 py-3 text-white/72">{row.a}</td>
-                  <td className="px-4 py-3 text-white/72">{row.b}</td>
+                  <td className={["px-4 py-3", tone.body].join(" ")}>{row.a}</td>
+                  <td className={["px-4 py-3", tone.body].join(" ")}>{row.b}</td>
                 </tr>
               ))}
             </tbody>
@@ -338,97 +859,151 @@ export default function RomanticSajuDeepReportView({
         </div>
       </RelationshipReportCard>
 
-      <RelationshipReportCard
-        title="📝 서로의 성향"
-        accentColor={theme.accent}
-      >
-        <RelationshipReportBody>
-          <p className="text-base font-semibold text-white/92">{myName}</p>
-          {myNature.image_metaphor ? (
-            <p className="text-sm text-[#ffd6a5]/90">
-              {myNature.image_metaphor}
-            </p>
-          ) : null}
-          {myNature.first_person_voice ? (
-            <blockquote className="rounded-xl border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-4 text-[15px] italic leading-relaxed text-white/88">
-              {myNature.first_person_voice}
-            </blockquote>
-          ) : null}
-          <P>{myNature.description}</P>
-          <P>
-            {viewerIsReportA ? myNature.meeting_b : myNature.meeting_a}
-          </P>
-          <P>{myNature.together_change}</P>
-
-          <p className="mt-6 text-base font-semibold text-white/92">
-            {partnerName}
-          </p>
-          {partnerNature.image_metaphor ? (
-            <p className="text-sm text-[#ffd6a5]/90">
-              {partnerNature.image_metaphor}
-            </p>
-          ) : null}
-          {partnerNature.first_person_voice ? (
-            <blockquote className="rounded-xl border border-[#67b7ff]/20 bg-[#67b7ff]/8 p-4 text-[15px] italic leading-relaxed text-white/88">
-              {partnerNature.first_person_voice}
-            </blockquote>
-          ) : null}
-          <P>{partnerNature.description}</P>
-          <P>
-            {viewerIsReportA ? partnerNature.meeting_a : partnerNature.meeting_b}
-          </P>
-          <P>{partnerNature.together_change}</P>
-        </RelationshipReportBody>
+      <RelationshipReportCard title="📝 서로의 성향" accentColor={theme.accent}>
+        <div className="space-y-8 sm:space-y-10">
+          <NaturePersonPanel
+            name={myName}
+            nature={myNature}
+            meetingHint={myMeetingHint}
+          />
+          <NaturePersonPanel
+            name={partnerName}
+            nature={partnerNature}
+            meetingHint={partnerMeetingHint}
+          />
+        </div>
       </RelationshipReportCard>
+
+      {psychAxisForViewer.length > 0 ? (
+        <RelationshipReportCard
+          title="🎯 심리 11축 매칭"
+          accentColor={theme.accent}
+        >
+          <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">
+            둘의 현재 모습에서 어디가 비슷하고 어디가 다른지 한눈에 볼 수 있게
+            정리했어요.
+          </p>
+          <PsychMatchRadarChart
+            axisResults={psychAxisForViewer}
+            personALabel={myName}
+            personBLabel={partnerName}
+          />
+        </RelationshipReportCard>
+      ) : null}
 
       {special ? (
         <RelationshipReportCard
           title="⚖️ 이 관계가 특별한 이유"
           accentColor={theme.accent}
         >
-          <InsightHook slot={screenByKey(screenPlan, "bond")} />
-          {bondGifts.map((gift) =>
-            gift.text ? (
-              <div key={`${gift.from}-${gift.to}`}>
+          <RelationshipReportBody className="space-y-6">
+            <InsightHook slot={screenByKey(screenPlan, "bond")} />
+            {bondGifts.map((gift) =>
+              gift.text && !isGenericBondParagraph(gift.text) ? (
+                <div key={`${gift.from}-${gift.to}`} className="space-y-2">
+                  <RelationshipReportLabel>
+                    ✨ {gift.from} → {gift.to}
+                    {gift.headline?.trim()
+                      ? ` : ${displayText(gift.headline.trim())}`
+                      : ""}
+                  </RelationshipReportLabel>
+                  <P>{gift.text}</P>
+                </div>
+              ) : null,
+            )}
+            {special.power_to_each_other &&
+            !special.a_gives_b &&
+            !isGenericBondParagraph(special.power_to_each_other) ? (
+              <P>{special.power_to_each_other}</P>
+            ) : null}
+            {special.only_together &&
+            !isGenericBondParagraph(special.only_together) ? (
+              <div className="space-y-2">
                 <RelationshipReportLabel>
-                  ✨ {gift.from} → {gift.to}
+                  ✨ {myName} ↔ {partnerName}
+                  {special.only_together_headline?.trim()
+                    ? ` : ${displayText(special.only_together_headline.trim())}`
+                    : ""}
                 </RelationshipReportLabel>
-                <P>{gift.text}</P>
+                <P>{special.only_together}</P>
               </div>
-            ) : null,
-          )}
-          {special.power_to_each_other && !special.a_gives_b ? (
-            <P>{special.power_to_each_other}</P>
-          ) : null}
-          <P>{special.only_together}</P>
-          <p className="text-base font-medium" style={{ color: theme.accent }}>
-            {special.relationship_formula}
-          </p>
-          <P>{special.why_special}</P>
+            ) : null}
+            {showBondFormula && special.relationship_formula ? (
+              <p className="text-base font-medium text-accent-emerald">
+                {displayText(special.relationship_formula)}
+              </p>
+            ) : null}
+            {showWhySpecial && special.why_special ? (
+              <div className="space-y-2">
+                <RelationshipReportLabel>
+                  💡 두 사람이 맞춰 가는 지점
+                </RelationshipReportLabel>
+                <P>{special.why_special}</P>
+              </div>
+            ) : null}
+          </RelationshipReportBody>
         </RelationshipReportCard>
       ) : null}
 
+      {showStrengthWeakness && strengthWeaknessResult ? (
+        <RelationshipReportCard
+          title="💪 강점 · 약점"
+          accentColor={theme.accent}
+        >
+          <StrengthWeaknessCard result={strengthWeaknessResult} />
+        </RelationshipReportCard>
+      ) : null}
+
+      {hasHiddenContent ? (
       <RelationshipReportCard
         title="🌙 서로의 숨은 마음"
         accentColor={theme.accent}
       >
-        <InsightHook slot={screenByKey(screenPlan, "hidden")} />
-        <RelationshipReportLabel>{myName}</RelationshipReportLabel>
-        <P>{String((myHidden as { voice?: string })?.voice ?? "")}</P>
-        <RelationshipReportLabel className="mt-3">{partnerName}</RelationshipReportLabel>
-        <P>{String((partnerHidden as { voice?: string })?.voice ?? "")}</P>
-        <P>{String(s4.mutual_gift ?? "")}</P>
+        <RelationshipReportBody className="space-y-6">
+          <HiddenHeartPanel
+            name={myName}
+            hidden={myHidden as HiddenHeartBlock}
+            insightBody={myHiddenInsight?.body}
+            polish={displayText}
+          />
+          <HiddenHeartPanel
+            name={partnerName}
+            hidden={partnerHidden as HiddenHeartBlock}
+            insightBody={partnerHiddenInsight?.body}
+            polish={displayText}
+          />
+          {s4.mutual_gift ? (
+            <div className="space-y-2">
+              <RelationshipReportLabel>
+                💡 두 사람의 무의식 시너지
+              </RelationshipReportLabel>
+              <P>{displayText(String(s4.mutual_gift))}</P>
+            </div>
+          ) : null}
+        </RelationshipReportBody>
       </RelationshipReportCard>
+      ) : null}
 
       {conflict && dialogueTable.length > 0 ? (
         <RelationshipReportCard
-          title={`💬 ${String(conflict.title ?? "갈등 패턴")}`}
+          title={`💬 ${displayText(String(conflict.title ?? "갈등 패턴"))}`}
           accentColor={theme.accent}
+          className="scroll-mt-24"
+          id="relationship-conflict-map"
         >
-          <div className="overflow-x-auto rounded-xl border border-white/10">
+          <div
+            className={[
+              "overflow-x-auto rounded-xl border",
+              tone.tableBorder,
+            ].join(" ")}
+          >
             <table className="w-full min-w-[300px] text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-white/55">
+                <tr
+                  className={["border-b", tone.tableBorder, tone.tableHead].join(
+                    " ",
+                  )}
+                >
                   <th className="px-4 py-3">구분</th>
                   <th className="px-4 py-3">❌ 자주 하던 말</th>
                   <th className="px-4 py-3">✅ 이렇게 바꿔보면</th>
@@ -438,15 +1013,19 @@ export default function RomanticSajuDeepReportView({
                 {dialogueTable.map((row, i) => (
                   <tr
                     key={`${row.label}-${i}`}
-                    className="border-b border-white/5 last:border-0"
+                    className={["border-b last:border-0", tone.tableBorder].join(
+                      " ",
+                    )}
                   >
-                    <td className="px-4 py-3 text-white/88">
+                    <td className={["px-4 py-3", tone.bodyMedium].join(" ")}>
                       {row.label ?? row.speaker}
                       {row.emoji ? ` ${row.emoji}` : ""}
                     </td>
-                    <td className="px-4 py-3 text-red-200/85">{row.bad_line}</td>
-                    <td className="px-4 py-3 text-emerald-200/85">
-                      {row.good_line}
+                    <td className="px-4 py-3 text-red-700/85">
+                      {displayText(polishConflictDialogueLine(row.bad_line))}
+                    </td>
+                    <td className="px-4 py-3 text-accent-emerald">
+                      {displayText(polishConflictDialogueLine(row.good_line))}
                     </td>
                   </tr>
                 ))}
@@ -456,93 +1035,93 @@ export default function RomanticSajuDeepReportView({
         </RelationshipReportCard>
       ) : null}
 
+      {hasActionContent ? (
       <RelationshipReportCard
         title="🌱 서로에게 도움이 되는 행동들"
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
           {myAdvice.length > 0 ? (
-            <RelationshipReportLabel>{myName}께</RelationshipReportLabel>
+            <>
+              <RelationshipReportLabel>{myName}께</RelationshipReportLabel>
+              <EssenceActionGuidelineList
+                items={myAdvice}
+                polish={displayText}
+              />
+            </>
           ) : null}
-          {myAdvice.map((line, i) => {
-            const item = formatAdvice(line);
-            return (
-              <div
-                key={`me-${i}`}
-                className="space-y-2 border-b border-white/6 pb-4 last:border-0"
-              >
-                <p className="text-white/88">
-                  {i + 1}. {item.title}
-                </p>
-                {item.detail ? <P>{item.detail}</P> : null}
-                {item.phrase ? (
-                  <p className="text-sm italic text-[#9ec8ff]">{item.phrase}</p>
-                ) : null}
-              </div>
-            );
-          })}
           {partnerAdvice.length > 0 ? (
-            <RelationshipReportLabel className="mt-2">
-              {partnerName}께
-            </RelationshipReportLabel>
-          ) : null}
-          {partnerAdvice.map((line, i) => {
-            const item = formatAdvice(line);
-            return (
-              <div
-                key={`partner-${i}`}
-                className="space-y-2 border-b border-white/6 pb-4 last:border-0"
+            <>
+              <RelationshipReportLabel
+                className={myAdvice.length > 0 ? "mt-6" : undefined}
               >
-                <p className="text-white/88">
-                  {i + 1}. {item.title}
-                </p>
-                {item.detail ? <P>{item.detail}</P> : null}
-                {item.phrase ? (
-                  <p className="text-sm italic text-[#9ec8ff]">{item.phrase}</p>
-                ) : null}
-              </div>
-            );
-          })}
-          <P>{String(s5.together ?? "")}</P>
-          {s5.together_starter ? (
-            <p className="text-sm italic text-[#9ec8ff]">
-              {String(s5.together_starter)}
-            </p>
+                {partnerName}께
+              </RelationshipReportLabel>
+              <EssenceActionGuidelineList
+                items={partnerAdvice}
+                polish={displayText}
+              />
+            </>
           ) : null}
-          <p className="italic" style={{ color: theme.accent }}>
-            {String(s5.promise ?? "")}
-          </p>
+          {s5.together?.trim() &&
+          !isGenericRomanticActionPhrase(s5.together) ? (
+            <div className="mt-6 space-y-2 border-t pt-5 border-outline-variant/30">
+              <RelationshipReportLabel>함께보면 좋아요</RelationshipReportLabel>
+              <P>{String(s5.together)}</P>
+              {s5.together_starter?.trim() &&
+              !isGenericRomanticActionPhrase(s5.together_starter) ? (
+                <p className="rounded-xl bg-accent-rose-soft px-4 py-3 text-sm leading-relaxed text-on-surface-variant">
+                  <span className="font-medium">이렇게 시작해보세요: </span>
+                  {displayText(s5.together_starter)}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </RelationshipReportBody>
       </RelationshipReportCard>
+      ) : null}
 
+      {showTimeline ? (
       <RelationshipReportCard
         title="⏰ 시간이 지나면 이렇게 달라져요"
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
-          {Object.entries(s6 ?? {}).map(([key, block]) => (
+          {s6.map((block, index) => (
             <div
-              key={key}
-              className="border-t border-white/6 pt-4 first:border-0 first:pt-0"
+              key={`timeline-${index}`}
+              className={[
+                "border-t pt-4 first:border-0 first:pt-0",
+                tone.tableBorder,
+              ].join(" ")}
             >
-              <p className="text-sm font-medium text-white/88">{block.period}</p>
-              <P>
-                {block.description ??
-                  block.change ??
-                  block.growth ??
-                  block.vision ??
-                  block.advice ??
-                  ""}
-              </P>
-              {block.focus || block.prepare || block.goal || block.memory ? (
-                <P>
-                  {block.focus ?? block.prepare ?? block.goal ?? block.memory}
-                </P>
-              ) : null}
+              <p className={tone.bodyMedium}>{block.period}</p>
+              <P>{block.body}</P>
+              {block.sub ? <P>{block.sub}</P> : null}
             </div>
           ))}
         </RelationshipReportBody>
       </RelationshipReportCard>
+      ) : null}
+
+      <ShareSummaryCard
+        summary={{
+          ...s1,
+          keywords: filterShareSummaryKeywords(s1.keywords ?? []),
+          relationship_name: isShareSummaryRelationshipNameExcluded(
+            s1.relationship_name,
+          )
+            ? ""
+            : s1.relationship_name,
+        }}
+        showGrade={false}
+        relationshipFormula={
+          shareFormula ||
+          displayText(s1.one_line_summary) ||
+          s1.relationship_name ||
+          "우리 관계"
+        }
+      />
     </RelationshipReportLayout>
   );
 }

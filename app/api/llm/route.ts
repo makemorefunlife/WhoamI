@@ -9,7 +9,7 @@ import {
   buildIntegratedPhase2UserPrompt,
 } from "../../../lib/prompts/integratedPremiumReport";
 import { assertPremiumLlmAccess } from "../../../lib/report/llmPaymentGuard";
-import { sajuDataToIntegratedSummary } from "../../../lib/report/formatInnateAnalysisForIntegrated";
+import { sajuDataToIntegratedSummary } from "../../../lib/report/formatEssenceAnalysisForIntegrated";
 import { runIntegratedPremiumLlm } from "../../../lib/report/runIntegratedPremiumLlm";
 
 const openai = new OpenAI({

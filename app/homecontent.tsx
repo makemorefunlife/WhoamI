@@ -13,15 +13,16 @@ import {
   getCachedReportId,
 } from "@/lib/home/reportSession";
 import { invalidateHomeResumeCache } from "@/lib/home/fetchHomeResumeClient";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import StitchLandingPage from "@/components/landing/stitch/StitchLandingPage";
 import StartChoiceModal from "@/components/landing/stitch/StartChoiceModal";
 import { hasSurveyV2Session } from "@/lib/v2/survey/session";
 import { setStitchAuthHandler } from "@/lib/stitch/authBridge";
-import { ROUTES } from "@/constants/routes";
 import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
 import type { EntryIntent } from "@/lib/routing/resolveEntryDestination";
+import { resolveHubHrefForIntent } from "@/lib/stitch/hubPaths";
+import { ROUTES } from "@/constants/routes";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/home/HomeAuthSignInPanel"),
@@ -163,26 +164,38 @@ export default function HomeContent() {
     invalidateReportSession();
     invalidateHomeResumeCache();
 
-    const { data, error } = await supabase
-      .from("reports")
-      .insert([
-        {
-          name: null,
-          clerk_user_id: userId ?? null,
-          birth_date: null,
-          birth_time: null,
-          birth_place: null,
-          report_type: inviteToken ? "relationship" : "self",
-          plan_type: inviteToken ? "paid" : "free",
-          payment_status: inviteToken ? "paid" : "none",
-        },
-      ])
-      .select()
-      .single();
+    let data: { id: string };
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const result = await supabase
+        .from("reports")
+        .insert([
+          {
+            name: null,
+            clerk_user_id: userId ?? null,
+            birth_date: null,
+            birth_time: null,
+            birth_place: null,
+            report_type: inviteToken ? "relationship" : "self",
+            plan_type: inviteToken ? "paid" : "free",
+            payment_status: inviteToken ? "paid" : "none",
+          },
+        ])
+        .select()
+        .single();
 
-    if (error) {
-      console.error(error);
-      alert("리포트를 만드는 데 실패했어요. 잠시 후 다시 시도해 주세요.");
+      if (result.error) {
+        console.error(result.error);
+        alert("리포트를 만드는 데 실패했어요. 잠시 후 다시 시도해 주세요.");
+        setCreatingReport(false);
+        return;
+      }
+      data = result.data;
+    } catch (e) {
+      console.error("supabase client:", e);
+      alert(
+        "Supabase 연결 설정을 확인해 주세요. 잠시 후 다시 시도해 주세요.",
+      );
       setCreatingReport(false);
       return;
     }
@@ -218,11 +231,28 @@ export default function HomeContent() {
   }, []);
 
   const safeNavigate = useCallback(
-    (intent: EntryIntent) => {
+    async (intent: EntryIntent) => {
       setStartChoiceOpen(false);
 
       const reportIdHint =
         resume.reportId?.trim() || getCachedReportId() || undefined;
+
+      if (
+        isSignedIn &&
+        (intent === "relationships" || intent === "blueprint")
+      ) {
+        const href = await resolveHubHrefForIntent(intent, {
+          urlHint: reportIdHint,
+          isSignedIn: true,
+        });
+        router.push(href);
+        return;
+      }
+
+      if (intent === "decision") {
+        router.push(ROUTES.decision);
+        return;
+      }
 
       const hubDestination = resolveEntryDestination({
         intent,

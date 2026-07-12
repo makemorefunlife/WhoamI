@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
 
 export async function POST(req: Request) {
   try {
@@ -17,18 +20,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!url || !serviceKey) {
-      console.error("invite/complete: NEXT_PUBLIC_SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY 없음");
-      return NextResponse.json(
-        { error: "서버 Supabase 설정이 필요합니다." },
-        { status: 500 },
-      );
-    }
-
-    const supabase = createServiceRoleClient(url, serviceKey);
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
 
     const { data, error } = await supabase
       .from("invites")

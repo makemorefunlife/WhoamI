@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { resolvePersonalityLabel } from "@/lib/relationship/romanticEverydayText";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
 import {

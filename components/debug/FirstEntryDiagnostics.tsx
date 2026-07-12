@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { getSupabaseUrl } from "@/lib/supabase/env";
 
 function loggingEnabled() {
   return (
@@ -40,7 +41,7 @@ export default function FirstEntryDiagnostics({ scope, extra }: Props) {
       reportIdLocalStorage = "(localStorage_read_error)";
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "(missing)";
+    const supabaseUrl = getSupabaseUrl() ?? "(missing)";
 
     console.info("[WhoamI:first-entry]", {
       scope,

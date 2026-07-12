@@ -5,7 +5,7 @@
 import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
 
 export const INTEGRATED_SYSTEM_PROMPT = `당신은 한국어로만 응답하는 유료 심층 리포트 작가입니다.
-설문(현재의 행동)·기질 분석(타고난 성향)·출생 에너지 맥락(의식·감정·표면 톤)을 비교·통합해 하나의 이야기로 씁니다.
+설문(현재의 행동)·Essence 분석(내면의 본질)·출생 에너지 맥락(의식·감정·표면 톤)을 비교·통합해 하나의 이야기로 씁니다.
 
 ${PRIMARY_AXIS_LLM_GUIDE}
 
@@ -31,7 +31,7 @@ Premium 해석 규칙 (각 Primary Axis를 언급할 때):
 - 해시 기호로 소제목 만들기(대신 **굵게** 또는 Part 번호로만 구분)
 
 [권장 — 근거를 말할 때]
-- 필요하면 "기질 분석에 따르면", "타고난 성향으로 보면", "지금의 행동 패턴과 맞춰 보면" 정도만 사용
+- 필요하면 "Essence 분석에 따르면", "내면의 본질로 보면", "지금의 행동 패턴과 맞춰 보면" 정도만 사용
 - 신살·특수 기질 신호(예: 위기 때 도움 받는 경향, 귀인 덕)는 일상 행동·관계·결정 장면으로 풀어서 쓸 것
 
 [허용·권장 형식]
@@ -43,15 +43,15 @@ Premium 해석 규칙 (각 Primary Axis를 언급할 때):
 
 export function buildIntegratedPhase1UserPrompt(
   surveyAnalysis: string,
-  innateAnalysisSummary: string,
+  essenceAnalysisSummary: string,
   birthEnergyContext: string,
 ): string {
   return `[입력 데이터 — 반드시 이 자료만 근거로 쓸 것]
 ■ 설문(현재의 행동 패턴)
 ${surveyAnalysis}
 
-■ 기질 분석(타고난 성향·본성 — 신살 포함, 용어는 일상어로 번역)
-${innateAnalysisSummary}
+■ Essence 분석(내면의 본질·신살 포함, 용어는 일상어로 번역)
+${essenceAnalysisSummary}
 
 ■ 출생 에너지 맥락(의식·감정·표면 톤 — 용어는 일상어로 번역)
 ${birthEnergyContext}
@@ -60,7 +60,7 @@ ${birthEnergyContext}
 
 [이번 호출에서 작성할 범위: Part 0 ~ Part 2 만]
 아래 구조와 분량을 지키세요. 각 소항목마다 구체적 행동 예시·대화 상황·선택의 순간을 넣으세요.
-강점/주의점은 항목당 최소 5~7문장. 기질 분석(신살·합충·일간 기질 포함)과 출생 에너지 맥락에서 읽히는 뼈대와, 설문에서 보이는 현재 운용 방식을 한두 번은 명시적으로 연결하세요(도구·전문 용어 이름은 쓰지 말 것).
+강점/주의점은 항목당 최소 5~7문장. Essence 분석(신살·합충·일간 본질 포함)과 출생 에너지 맥락에서 읽히는 뼈대와, 설문에서 보이는 현재 운용 방식을 한두 번은 명시적으로 연결하세요(도구·전문 용어 이름은 쓰지 말 것).
 
 Part 0 — 들어가며
 - 이 글이 무엇인지, 어떻게 읽으면 좋은지 가볍게 안내 (4~8문장)
@@ -68,8 +68,8 @@ Part 0 — 들어가며
 
 Part 1 — 나는 어떤 사람인가
 1-1 한 줄 비유: 자연·빛·사물에 비유한 한 문장 + 그 이유 2~4문장
-1-2 겉과 속: 설문 vs 타고난 기질/내면 동력을 대비해서 서술 (8~14문장)
-1-3 내게 주어진 강점 3가지: 각 강점마다 제목 한 줄 + 5~7문장 (상황 예시·기질 분석·출생 맥락·설문 연결 고리 포함. 신살에서 읽히는 강점이 있으면 반드시 1개 이상 반영)
+1-2 겉과 속: 설문 vs Essence/내면 동력을 대비해서 서술 (8~14문장)
+1-3 내게 주어진 강점 3가지: 각 강점마다 제목 한 줄 + 5~7문장 (상황 예시·Essence 분석·출생 맥락·설문 연결 고리 포함. 신살에서 읽히는 강점이 있으면 반드시 1개 이상 반영)
 1-4 알아두면 좋은 주의점 3가지: 각각 4~6문장, 부드러운 톤 (신살 주의 경향이 있으면 일상어로 반영)
 1-5 내가 가장 나다운 순간 2~3가지: 각 4~6문장
 
@@ -78,7 +78,7 @@ Part 2 — 나의 에너지와 환경
 2-2 나를 지치게 하는 것 3~5가지 (각 3~5문장)
 2-3 잘 맞는 환경·리듬 2~4가지 (각 3~5문장)
 
-에너지 비율 게이지 (설문·기질 분석·출생 맥락을 종합해 비율을 추정)
+에너지 비율 게이지 (설문·Essence 분석·출생 맥락을 종합해 비율을 추정)
 다음 형식을 그대로 사용하세요(숫자는 분석에 맞게 조정):
 사람·관계에 쓰는 에너지    ████████████████████ 00%
 나에게 돌아오는 에너지      ████ 00%
@@ -91,7 +91,7 @@ Part 2 — 나의 에너지와 환경
 
 export function buildIntegratedPhase2UserPrompt(
   surveyAnalysis: string,
-  innateAnalysisSummary: string,
+  essenceAnalysisSummary: string,
   birthEnergyContext: string,
   part1Excerpt: string,
 ): string {
@@ -99,8 +99,8 @@ export function buildIntegratedPhase2UserPrompt(
 ■ 설문
 ${surveyAnalysis}
 
-■ 기질 분석(신살 포함)
-${innateAnalysisSummary}
+■ Essence 분석(신살 포함)
+${essenceAnalysisSummary}
 
 ■ 출생 에너지 맥락
 ${birthEnergyContext}

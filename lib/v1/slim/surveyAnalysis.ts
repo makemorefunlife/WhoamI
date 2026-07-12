@@ -28,7 +28,7 @@ ${concern ? CONCERN_KO[concern] ?? concern : "미응답"}`;
 
 export function buildSurveyAnalysisFallback(): string {
   return `## 현재의 나
-설문 응답이 없어 기질 분석·출생 맥락 위주로 통합합니다.`;
+설문 응답이 없어 Essence 분석·출생 맥락 위주로 통합합니다.`;
 }
 
 /** Slim V1 전용 — v2 10문항만. 18문항 Y/N·레거시 미사용 */

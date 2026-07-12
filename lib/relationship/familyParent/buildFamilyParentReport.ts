@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/types";
 import { buildFamilyRuleContext } from "./buildFamilyRuleContext";
 import type { FamilyParentPairRoles, FamilyParentRole } from "./types";

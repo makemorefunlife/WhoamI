@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { RedirectToSignIn, UserProfile, useAuth } from "@clerk/nextjs";
 import AccountBirthEditor from "@/components/account/AccountBirthEditor";
+import AccountPageShell from "@/components/account/AccountPageShell";
+import AccountSurveySection from "@/components/account/AccountSurveySection";
 import { ROUTES } from "@/constants/routes";
 
 export default function AccountProfilePage() {
@@ -10,9 +11,9 @@ export default function AccountProfilePage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-[#0a0f1a] px-4 pt-24 text-center text-sm text-white/50">
-        불러오는 중…
-      </div>
+      <AccountPageShell activeTab="profile" title="개인정보">
+        <p className="text-sm text-on-surface-variant">불러오는 중…</p>
+      </AccountPageShell>
     );
   }
 
@@ -21,42 +22,38 @@ export default function AccountProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] px-4 pb-16 pt-20 sm:px-6">
-        <div className="mx-auto max-w-3xl space-y-10">
-          <nav className="flex gap-2 text-sm">
-            <Link
-              href={ROUTES.accountProfile}
-              className="rounded-full bg-white/10 px-3 py-1.5 font-medium text-white"
-            >
-              내 정보
-            </Link>
-            <Link
-              href={ROUTES.accountBilling}
-              className="rounded-full border border-white/20 px-3 py-1.5 text-white/70"
-            >
-              결제 내역
-            </Link>
-          </nav>
+    <AccountPageShell
+      activeTab="profile"
+      title="개인정보"
+      subtitle="출생 정보와 계정 설정을 관리해요."
+    >
+      <AccountBirthEditor />
+      <AccountSurveySection />
 
-          <section id="birth" className="scroll-mt-24">
-            <AccountBirthEditor />
-          </section>
-
-          <section className="border-t border-white/10 pt-8">
-            <h2 className="mb-4 text-lg font-semibold text-white/95">계정 설정</h2>
-            <UserProfile
-              routing="hash"
-              appearance={{
-                variables: { colorPrimary: "#4a90e2", borderRadius: "0.75rem" },
-                elements: {
-                  rootBox: "w-full",
-                  card: "shadow-xl border border-white/10 bg-[#121a2c]",
-                },
-              }}
-            />
-          </section>
+      <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
+        <h2 className="stitch-headline text-xl text-primary">계정 설정</h2>
+        <p className="mt-1 text-sm text-on-surface-variant">
+          이메일·비밀번호 등 Clerk 계정 정보예요.
+        </p>
+        <div className="mt-5 overflow-hidden rounded-2xl border border-outline-variant/25 bg-surface-container-lowest/80">
+          <UserProfile
+            routing="hash"
+            appearance={{
+              variables: {
+                colorPrimary: "#2d5a47",
+                colorBackground: "#fffdf8",
+                borderRadius: "0.75rem",
+              },
+              elements: {
+                rootBox: "w-full",
+                card: "shadow-none border-0 bg-transparent",
+                navbar: "hidden",
+                pageScrollBox: "p-0",
+              },
+            }}
+          />
         </div>
-      </div>
+      </section>
+    </AccountPageShell>
   );
 }
-

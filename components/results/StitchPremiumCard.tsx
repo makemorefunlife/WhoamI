@@ -11,7 +11,7 @@ export default function StitchPremiumCard({
   onGuestClick?: () => void;
 }) {
   const router = useRouter();
-  const href = `/blueprint-preview/${encodeURIComponent(reportId)}/innate/deep`;
+  const href = `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`;
 
   const handleClick = () => {
     if (onGuestClick) {
@@ -40,7 +40,7 @@ export default function StitchPremiumCard({
         Deep integration analysis
       </h3>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-on-surface-variant">
-        A 30-page report weaving your innate blueprint into daily patterns,
+        A 30-page report weaving your Essence blueprint into daily patterns,
         relationships, and decisions — written like a letter to yourself.
       </p>
 

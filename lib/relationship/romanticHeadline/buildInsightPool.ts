@@ -1,7 +1,8 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import {
   buildRomanticDayStemOneLiner,
   formatRomanticEssencePair,
+  formatRomanticMetaphorComboBody,
   resolveDayStemRomanticProfileFromSaju,
   romanticHeadlineFromProfiles,
 } from "@/lib/relationship/dayStemRomanticProfile";
@@ -29,6 +30,8 @@ import {
   type PairSajuAnalysis,
 } from "@/lib/saju/pairChartAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import type {
   RomanticInsightCandidate,
   RomanticScreenHint,
@@ -41,8 +44,12 @@ function metaphorShortLabel(sajuJson: SajuDataForIntegrated): string {
   return resolvePersonalityLabel(sajuJson);
 }
 
-function joinRelationshipName(labelA: string, labelB: string): string {
-  return joinPersonalityHeadline(labelA, labelB);
+function joinRelationshipName(
+  labelA: string,
+  labelB: string,
+  locale: RomanticHeadlineLocale = "ko",
+): string {
+  return joinPersonalityHeadline(labelA, labelB, locale);
 }
 
 function rankScore(c: {
@@ -75,7 +82,17 @@ function crossScreenHint(hit: CrossChartHit): RomanticScreenHint {
   return "nature";
 }
 
-function crossHeadline(hit: CrossChartHit): string {
+function crossHeadline(
+  hit: CrossChartHit,
+  locale: RomanticHeadlineLocale = "ko",
+): string {
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    if (hit.type === "육합") return "A magnetic pull";
+    if (hit.type === "충") return "Where it gets sensitive";
+    if (TENSION_CROSS.has(hit.type)) return "Where you clash";
+    if (POSITIVE_CROSS.has(hit.type)) return "A natural fit";
+    return "Different rhythms";
+  }
   if (hit.type === "육합") return "끌리는 조합";
   if (hit.type === "충") return "예민해지는 지점";
   if (TENSION_CROSS.has(hit.type)) return "부딪히는 지점";
@@ -99,8 +116,10 @@ export function buildRomanticInsightPool(params: {
   sajuJsonA: SajuDataForIntegrated;
   sajuJsonB: SajuDataForIntegrated;
   pairAnalysis: PairSajuAnalysis;
+  locale?: RomanticHeadlineLocale;
 }): RomanticInsightCandidate[] {
   const { nicknameA, nicknameB, sajuJsonA, sajuJsonB, pairAnalysis } = params;
+  const locale = normalizeRomanticHeadlineLocale(params.locale);
   const candidates: RomanticInsightCandidate[] = [];
 
   const pillarsA = sajuJsonToPillars(
@@ -112,8 +131,8 @@ export function buildRomanticInsightPool(params: {
 
   const metaA = metaphorShortLabel(sajuJsonA);
   const metaB = metaphorShortLabel(sajuJsonB);
-  const profileA = resolveDayStemRomanticProfileFromSaju(sajuJsonA);
-  const profileB = resolveDayStemRomanticProfileFromSaju(sajuJsonB);
+  const profileA = resolveDayStemRomanticProfileFromSaju(sajuJsonA, locale);
+  const profileB = resolveDayStemRomanticProfileFromSaju(sajuJsonB, locale);
   const { stemNameA, stemNameB } = resolveDayStemNamesFromPair(
     sajuJsonA,
     sajuJsonB,
@@ -137,12 +156,24 @@ export function buildRomanticInsightPool(params: {
     surprise: 50,
     headline:
       profileA && profileB
-        ? romanticHeadlineFromProfiles(profileA, profileB)
-        : joinRelationshipName(metaA, metaB),
+        ? romanticHeadlineFromProfiles(profileA, profileB, locale)
+        : joinRelationshipName(metaA, metaB, locale),
     body:
       profileA && profileB
-        ? `${formatRomanticEssencePair(profileA, nicknameA, profileB, nicknameB)}가 만나 서로 다른 리듬을 채워요.`
-        : `${formatMetaphorPairLine(metaA, nicknameA, metaB, nicknameB)}가 만나 서로 다른 리듬을 채워요.`,
+        ? formatRomanticMetaphorComboBody(
+            formatRomanticEssencePair(
+              profileA,
+              nicknameA,
+              profileB,
+              nicknameB,
+              locale,
+            ),
+            locale,
+          )
+        : formatRomanticMetaphorComboBody(
+            formatMetaphorPairLine(metaA, nicknameA, metaB, nicknameB, locale),
+            locale,
+          ),
     screenHint: "opening",
   });
 
@@ -185,7 +216,7 @@ export function buildRomanticInsightPool(params: {
       surprise: 45,
       headline:
         profileA && profileB
-          ? romanticHeadlineFromProfiles(profileA, profileB)
+          ? romanticHeadlineFromProfiles(profileA, profileB, locale)
           : "자연스럽게 살림을 주는 만남",
       body:
         profileA && profileB
@@ -196,6 +227,7 @@ export function buildRomanticInsightPool(params: {
               nicknameB,
               dayStemInteraction: pairAnalysis.dayStemInteraction,
               closeRelationship: true,
+              locale,
             })
           : humanizeDayStemInteraction(pairAnalysis.dayStemInteraction),
       screenHint: "bond",
@@ -234,7 +266,7 @@ export function buildRomanticInsightPool(params: {
       priority: hit.weightedPriority ?? hit.priority,
       impact: crossImpact(hit, dayBranch),
       surprise: crossSurprise(hit),
-      headline: crossHeadline(hit),
+      headline: crossHeadline(hit, locale),
       body: humanizeRomanticCrossBody(hit, crossCtx, { closeRelationship: dayBranch }),
       screenHint: crossScreenHint(hit),
     });

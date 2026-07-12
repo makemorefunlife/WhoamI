@@ -1,5 +1,5 @@
 import type OpenAI from "openai";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildFamilyParentReport } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyParentPairRoles, FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";

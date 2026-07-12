@@ -1,5 +1,5 @@
 import type OpenAI from "openai";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import {

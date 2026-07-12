@@ -1,5 +1,5 @@
 import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { getDayStemCode } from "@/lib/saju/romanticSajuDerivations";
 import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";

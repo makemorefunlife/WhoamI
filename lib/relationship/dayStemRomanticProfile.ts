@@ -1,7 +1,13 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
+import { korOrHanjaStemToCode } from "@/lib/saju/mapping";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { getDayStemCode } from "@/lib/saju/romanticSajuDerivations";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import {
+  joinHeadlineLabelsEn,
+  normalizeRomanticHeadlineLocale,
+} from "@/lib/relationship/romanticHeadline/locale";
 
 /**
  * 일간(10천간) 연인용 이미지 프로필 — UI에 사주 용어 없이 쓰는 문장 재료.
@@ -20,7 +26,7 @@ export type DayStemRomanticProfile = {
 };
 
 /** 10천간 — 연인 리포트 톤 (수정·확장은 이 파일만) */
-export const DAY_STEM_ROMANTIC_PROFILES: Record<string, DayStemRomanticProfile> =
+export const DAY_STEM_ROMANTIC_PROFILES_KO: Record<string, DayStemRomanticProfile> =
   {
     gap: {
       stemCode: "gap",
@@ -94,6 +100,92 @@ export const DAY_STEM_ROMANTIC_PROFILES: Record<string, DayStemRomanticProfile> 
     },
   };
 
+/** @deprecated DAY_STEM_ROMANTIC_PROFILES_KO 와 동일 */
+export const DAY_STEM_ROMANTIC_PROFILES = DAY_STEM_ROMANTIC_PROFILES_KO;
+
+/** ROMANTIC_HEADLINE_EN.md 표 그대로 */
+export const DAY_STEM_ROMANTIC_PROFILES_EN: Record<string, DayStemRomanticProfile> =
+  {
+    gap: {
+      stemCode: "gap",
+      image: "Tall Tree",
+      essence: "growing steady and strong",
+      inLove: "a root that keeps you grounded",
+      headlineLabel: "steadfast tall tree",
+    },
+    eul: {
+      stemCode: "eul",
+      image: "Flower",
+      essence: "softly taking root",
+      inLove: "fills the space with small kindnesses",
+      headlineLabel: "delicate flower",
+    },
+    byeong: {
+      stemCode: "byeong",
+      image: "Sun",
+      essence: "shining bright",
+      inLove: "lights up everything around them",
+      headlineLabel: "radiant sun",
+    },
+    jeong: {
+      stemCode: "jeong",
+      image: "Candle",
+      essence: "a steady, warm glow",
+      inLove: "warmth that lights up the heart",
+      headlineLabel: "warm candle",
+    },
+    mu: {
+      stemCode: "mu",
+      image: "Mountain",
+      essence: "solid and reassuring",
+      inLove: "a steady shelter from the wind",
+      headlineLabel: "steadfast mountain",
+    },
+    gi: {
+      stemCode: "gi",
+      image: "Field",
+      essence: "warmly holding everything",
+      inLove: "quietly supports everyday life",
+      headlineLabel: "wide open field",
+    },
+    gyeong: {
+      stemCode: "gyeong",
+      image: "Steel",
+      essence: "firm and clear",
+      inLove: "steadies you when you waver",
+      headlineLabel: "unbending steel",
+    },
+    sin: {
+      stemCode: "sin",
+      image: "Gem",
+      essence: "delicate and gleaming",
+      inLove: "notices even the smallest signal",
+      headlineLabel: "polished gem",
+    },
+    im: {
+      stemCode: "im",
+      image: "Deep River",
+      essence: "flowing deep and wide",
+      inLove: "holds the full depth of your feelings",
+      headlineLabel: "deep river",
+    },
+    gye: {
+      stemCode: "gye",
+      image: "Stream",
+      essence: "quietly seeping in",
+      inLove: "understands without needing words",
+      headlineLabel: "gentle stream",
+    },
+  };
+
+export function getDayStemProfiles(
+  locale: RomanticHeadlineLocale = "ko",
+): Record<string, DayStemRomanticProfile> {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? DAY_STEM_ROMANTIC_PROFILES_EN
+    : DAY_STEM_ROMANTIC_PROFILES_KO;
+}
+
 const ELEMENT_GENERATES: Record<string, string> = {
   wood: "fire",
   fire: "earth",
@@ -103,7 +195,7 @@ const ELEMENT_GENERATES: Record<string, string> = {
 };
 
 /** 오행 상생 방향 — nurturer가 nurtured를 키움 */
-const ELEMENT_PAIR_CLOSER: Record<string, string> = {
+const ELEMENT_PAIR_CLOSER_KO: Record<string, string> = {
   "wood→fire": "한쪽이 키우고, 다른 쪽이 타오르게 해요.",
   "fire→earth":
     "서로를 밝히고, 단단한 바람막이가 되어 줘요.",
@@ -112,19 +204,68 @@ const ELEMENT_PAIR_CLOSER: Record<string, string> = {
   "water→wood": "마음을 적시고, 다시 자라나게 해요.",
 };
 
-const DEFAULT_SANGSAENG_CLOSER =
+const ELEMENT_PAIR_CLOSER_EN: Record<string, string> = {
+  "wood→fire": "One nurtures, and the other catches fire.",
+  "fire→earth": "One lights things up, the other becomes a steady shelter.",
+  "earth→metal": "Value shines longest when it rests on solid ground.",
+  "metal→water": "A cool edge softens in a gentle current.",
+  "water→wood": "One waters the heart, and new growth follows.",
+};
+
+const DEFAULT_SANGSAENG_CLOSER_KO =
   "핵심 기질이 서로를 자연스럽게 키워 주는 관계예요.";
-const DEFAULT_SANGGEUK_CLOSER =
+const DEFAULT_SANGGEUK_CLOSER_KO =
   "서로 자극해 부딪히지만, 성장의 계기가 되기도 해요.";
-const DEFAULT_SAME_ELEMENT_CLOSER =
+const DEFAULT_SAME_ELEMENT_CLOSER_KO =
   "비슷한 성향이라 공감은 쉽지만, 고집이 맞부딪힐 때도 있어요.";
+
+const DEFAULT_SANGSAENG_CLOSER_EN =
+  "Your core natures grow each other, quite naturally.";
+const DEFAULT_SANGGEUK_CLOSER_EN =
+  "You push against each other — and that friction can be where growth starts.";
+const DEFAULT_SAME_ELEMENT_CLOSER_EN =
+  "Similar natures make it easy to relate — though your stubborn streaks can collide too.";
+
+function elementPairCloserForLocale(locale: RomanticHeadlineLocale) {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? ELEMENT_PAIR_CLOSER_EN
+    : ELEMENT_PAIR_CLOSER_KO;
+}
+
+function defaultSangsaengCloser(locale: RomanticHeadlineLocale): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? DEFAULT_SANGSAENG_CLOSER_EN
+    : DEFAULT_SANGSAENG_CLOSER_KO;
+}
+
+function defaultSanggeukCloser(locale: RomanticHeadlineLocale): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? DEFAULT_SANGGEUK_CLOSER_EN
+    : DEFAULT_SANGGEUK_CLOSER_KO;
+}
+
+function defaultSameElementCloser(locale: RomanticHeadlineLocale): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? DEFAULT_SAME_ELEMENT_CLOSER_EN
+    : DEFAULT_SAME_ELEMENT_CLOSER_KO;
+}
 
 function stemElement(stemCode: string): string | null {
   return REF_HEAVENLY_STEMS.find((r) => r.code === stemCode)?.element ?? null;
 }
 
 /** 일간 프로필이 없을 때 — 정화 등 커스텀 essence 미정의 시 */
-export const ROMANTIC_ESSENCE_FALLBACK = "마음을 전하는";
+export const ROMANTIC_ESSENCE_FALLBACK_KO = "마음을 전하는";
+export const ROMANTIC_ESSENCE_FALLBACK_EN = "warm and open";
+
+/** @deprecated ROMANTIC_ESSENCE_FALLBACK_KO 와 동일 */
+export const ROMANTIC_ESSENCE_FALLBACK = ROMANTIC_ESSENCE_FALLBACK_KO;
+
+function romanticEssenceFallback(locale: RomanticHeadlineLocale): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? ROMANTIC_ESSENCE_FALLBACK_EN
+    : ROMANTIC_ESSENCE_FALLBACK_KO;
+}
 
 /**
  * 연인 UI용 essence — DAY_STEM_ROMANTIC_PROFILES 우선, 없으면 천간 메타포, 최종 fallback.
@@ -132,8 +273,9 @@ export const ROMANTIC_ESSENCE_FALLBACK = "마음을 전하는";
  */
 export function resolveRomanticEssenceForSaju(
   sajuJson: SajuDataForIntegrated,
+  locale: RomanticHeadlineLocale = "ko",
 ): string {
-  const profile = resolveDayStemRomanticProfileFromSaju(sajuJson);
+  const profile = resolveDayStemRomanticProfileFromSaju(sajuJson, locale);
   if (profile?.essence) return profile.essence;
 
   try {
@@ -152,29 +294,44 @@ export function resolveRomanticEssenceForSaju(
   const metaphor = sajuJson.dayStemData?.metaphor_ko?.trim();
   if (metaphor) return `${metaphor} 같은 온기를 품은`;
 
-  return ROMANTIC_ESSENCE_FALLBACK;
+  return romanticEssenceFallback(locale);
 }
 
 export function getDayStemRomanticProfile(
   stemCode: string,
+  locale: RomanticHeadlineLocale = "ko",
 ): DayStemRomanticProfile | null {
-  return DAY_STEM_ROMANTIC_PROFILES[stemCode] ?? null;
+  return getDayStemProfiles(locale)[stemCode] ?? null;
 }
 
-export function resolveDayStemRomanticProfileFromSaju(
+function resolveStemCodeFromSajuJson(
   sajuJson: SajuDataForIntegrated,
-): DayStemRomanticProfile | null {
+): string | null {
+  const korName = sajuJson.dayStemData?.kor_name?.trim();
+  if (korName) {
+    const fromBundle = korOrHanjaStemToCode(korName);
+    if (fromBundle && getDayStemProfiles("ko")[fromBundle]) return fromBundle;
+  }
+
   const dayPillar = sajuJson.saju?.dayPillar;
   if (!dayPillar) return null;
   try {
     const pillars = sajuJsonToPillars(
       sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
     );
-    const stemCode = getDayStemCode(pillars);
-    return getDayStemRomanticProfile(stemCode);
+    return getDayStemCode(pillars);
   } catch {
     return null;
   }
+}
+
+export function resolveDayStemRomanticProfileFromSaju(
+  sajuJson: SajuDataForIntegrated,
+  locale: RomanticHeadlineLocale = "ko",
+): DayStemRomanticProfile | null {
+  const stemCode = resolveStemCodeFromSajuJson(sajuJson);
+  if (!stemCode) return null;
+  return getDayStemRomanticProfile(stemCode, locale);
 }
 
 function hasBatchimKorean(word: string): boolean {
@@ -190,25 +347,33 @@ function waGwaAfter(phrase: string): "과" | "와" {
   return hasBatchimKorean(lastToken) ? "과" : "와";
 }
 
-/** "꾸준히 빛나고 따뜻한 콩콩" */
+/** "꾸준히 빛나고 따뜻한 콩콩" / EN: "Sera, growing steady and strong" */
 export function formatRomanticEssenceNickname(
   profile: DayStemRomanticProfile,
   nickname: string,
+  locale: RomanticHeadlineLocale = "ko",
 ): string {
   const n = nickname.trim();
   if (!n) return profile.essence;
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    return `${n}, ${profile.essence}`;
+  }
   return `${profile.essence} ${n}`;
 }
 
-/** 두 사람 essence 구 — 조사 포함 */
+/** 두 사람 essence 구 — 조사 포함 (EN: " and ") */
 export function formatRomanticEssencePair(
   profileA: DayStemRomanticProfile,
   nicknameA: string,
   profileB: DayStemRomanticProfile,
   nicknameB: string,
+  locale: RomanticHeadlineLocale = "ko",
 ): string {
-  const a = formatRomanticEssenceNickname(profileA, nicknameA);
-  const b = formatRomanticEssenceNickname(profileB, nicknameB);
+  const a = formatRomanticEssenceNickname(profileA, nicknameA, locale);
+  const b = formatRomanticEssenceNickname(profileB, nicknameB, locale);
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    return joinHeadlineLabelsEn(a, b);
+  }
   return `${a}${waGwaAfter(a)} ${b}`;
 }
 
@@ -216,27 +381,31 @@ function resolveElementPairCloser(
   stemCodeA: string,
   stemCodeB: string,
   interaction: string,
+  locale: RomanticHeadlineLocale = "ko",
 ): string {
   const elA = stemElement(stemCodeA);
   const elB = stemElement(stemCodeB);
-  if (!elA || !elB) return DEFAULT_SANGSAENG_CLOSER;
+  const pairCloser = elementPairCloserForLocale(locale);
+  const sangsaengDefault = defaultSangsaengCloser(locale);
+
+  if (!elA || !elB) return sangsaengDefault;
 
   if (interaction.includes("상생")) {
     if (ELEMENT_GENERATES[elA] === elB) {
-      return ELEMENT_PAIR_CLOSER[`${elA}→${elB}`] ?? DEFAULT_SANGSAENG_CLOSER;
+      return pairCloser[`${elA}→${elB}`] ?? sangsaengDefault;
     }
     if (ELEMENT_GENERATES[elB] === elA) {
-      return ELEMENT_PAIR_CLOSER[`${elB}→${elA}`] ?? DEFAULT_SANGSAENG_CLOSER;
+      return pairCloser[`${elB}→${elA}`] ?? sangsaengDefault;
     }
-    return DEFAULT_SANGSAENG_CLOSER;
+    return sangsaengDefault;
   }
   if (interaction.includes("상극")) {
-    return DEFAULT_SANGGEUK_CLOSER;
+    return defaultSanggeukCloser(locale);
   }
   if (interaction.includes("같은") && interaction.includes("기운")) {
-    return DEFAULT_SAME_ELEMENT_CLOSER;
+    return defaultSameElementCloser(locale);
   }
-  return DEFAULT_SANGSAENG_CLOSER;
+  return sangsaengDefault;
 }
 
 /** 일간 조합 한줄 — 정화×무토 상생 등 */
@@ -247,21 +416,46 @@ export function buildRomanticDayStemOneLiner(params: {
   nicknameB: string;
   dayStemInteraction: string;
   closeRelationship?: boolean;
+  locale?: RomanticHeadlineLocale;
 }): string {
-  const opener = params.closeRelationship
-    ? "가까운 관계에서"
-    : "함께 있을 때";
+  const locale = normalizeRomanticHeadlineLocale(params.locale);
+  const opener =
+    locale === "en"
+      ? params.closeRelationship
+        ? "In close moments,"
+        : "When you're together,"
+      : params.closeRelationship
+        ? "가까운 관계에서"
+        : "함께 있을 때";
   const pair = formatRomanticEssencePair(
     params.profileA,
     params.nicknameA,
     params.profileB,
     params.nicknameB,
+    locale,
   );
   const closer = resolveElementPairCloser(
     params.profileA.stemCode,
     params.profileB.stemCode,
     params.dayStemInteraction,
+    locale,
   );
+
+  if (locale === "en") {
+    if (params.dayStemInteraction.includes("상생")) {
+      return `${opener} ${pair} ${closer}`;
+    }
+    if (params.dayStemInteraction.includes("상극")) {
+      return `${opener} ${pair} ${closer}`;
+    }
+    if (
+      params.dayStemInteraction.includes("같은") &&
+      params.dayStemInteraction.includes("기운")
+    ) {
+      return `${opener} ${pair} ${closer}`;
+    }
+    return `${opener} ${pair} fill the relationship with each other's different strengths.`;
+  }
 
   if (params.dayStemInteraction.includes("상생")) {
     return `${opener} ${pair}가 ${closer}`;
@@ -278,11 +472,53 @@ export function buildRomanticDayStemOneLiner(params: {
   return `${opener} ${pair}는 서로 다른 강점으로 관계를 채워 가요.`;
 }
 
+/** stem code 쌍 → "촛불과 강철" 형태 헤드라인 */
+export function romanticHeadlineFromStemCodes(
+  stemCodeA: string,
+  stemCodeB: string,
+  locale: RomanticHeadlineLocale = "ko",
+): string | null {
+  const profileA = getDayStemRomanticProfile(stemCodeA, locale);
+  const profileB = getDayStemRomanticProfile(stemCodeB, locale);
+  if (!profileA || !profileB) return null;
+  return romanticHeadlineFromProfiles(profileA, profileB, locale);
+}
+
+/** 저장 시 report_id_a/b 순서 → 화면에서는 뷰어(나) × 상대 순으로 헤드라인 */
+export function romanticHeadlineViewerFirst(
+  provenanceA: { dayStemCode?: string } | null | undefined,
+  provenanceB: { dayStemCode?: string } | null | undefined,
+  viewerIsReportA: boolean,
+  locale: RomanticHeadlineLocale = "ko",
+): string | null {
+  const codeA = provenanceA?.dayStemCode?.trim();
+  const codeB = provenanceB?.dayStemCode?.trim();
+  if (!codeA || !codeB) return null;
+  const myCode = viewerIsReportA ? codeA : codeB;
+  const partnerCode = viewerIsReportA ? codeB : codeA;
+  return romanticHeadlineFromStemCodes(myCode, partnerCode, locale);
+}
+
 export function romanticHeadlineFromProfiles(
   profileA: DayStemRomanticProfile,
   profileB: DayStemRomanticProfile,
+  locale: RomanticHeadlineLocale = "ko",
 ): string {
-  const a = profileA.headlineLabel;
-  const b = profileB.headlineLabel;
+  const a = profileA.image;
+  const b = profileB.image;
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    return joinHeadlineLabelsEn(a, b);
+  }
   return `${a}${waGwaAfter(a)} ${b}`;
+}
+
+/** Rule 5 / metaphor_combo body 접미사 */
+export function formatRomanticMetaphorComboBody(
+  pairLine: string,
+  locale: RomanticHeadlineLocale = "ko",
+): string {
+  if (normalizeRomanticHeadlineLocale(locale) === "en") {
+    return `${pairLine} come together, filling in each other's rhythm.`;
+  }
+  return `${pairLine}가 만나 서로 다른 리듬을 채워요.`;
 }

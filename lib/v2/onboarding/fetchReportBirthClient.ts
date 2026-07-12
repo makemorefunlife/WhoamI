@@ -20,6 +20,8 @@ export async function fetchReportBirthFromApi(
       birth_date: data.birth_date ?? null,
       birth_time: data.birth_time ?? null,
       birth_place: data.birth_place ?? null,
+      birth_date_correction_used_at:
+        data.birth_date_correction_used_at ?? null,
     };
   } catch {
     return null;

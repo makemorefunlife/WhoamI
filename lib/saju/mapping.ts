@@ -31,17 +31,31 @@ export const getStem = (pillar: string | null | undefined) =>
 export const getBranch = (pillar: string | null | undefined) =>
   pillar?.charAt(1) || "";
 
+/** 한글·한자 천간 1자 → ref_* DB code */
+export function korOrHanjaStemToCode(stemChar: string): string {
+  const ch = stemChar.trim().charAt(0);
+  if (!ch) return "";
+  return stemMap[ch] || hanjaStemToCode[ch] || ch;
+}
+
+/** 한글·한자 지지 1자 → ref_* DB code */
+export function korOrHanjaBranchToCode(branchChar: string): string {
+  const ch = branchChar.trim().charAt(0);
+  if (!ch) return "";
+  return branchMap[ch] || hanjaBranchToCode[ch] || ch;
+}
+
 /** 한글 간지 1자 또는 기둥 문자열 → ref_* DB code */
 export function toStemCode(pillarOrHangul: string): string {
-  const hangul =
+  const stem =
     pillarOrHangul.length <= 1 ? pillarOrHangul : getStem(pillarOrHangul);
-  return stemMap[hangul] || hangul;
+  return korOrHanjaStemToCode(stem);
 }
 
 export function toBranchCode(pillarOrHangul: string): string {
-  const hangul =
+  const branch =
     pillarOrHangul.length <= 1 ? pillarOrHangul : getBranch(pillarOrHangul);
-  return branchMap[hangul] || hangul;
+  return korOrHanjaBranchToCode(branch);
 }
 
 export const hanjaStemToCode: Record<string, string> = {

@@ -11,6 +11,8 @@ import {
   readStoredReportId,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
+import { useAppSession } from "@/lib/routing/useAppSession";
+import { useHydrated } from "@/lib/hooks/useHydrated";
 const NAV_ITEMS = [
   {
     href: "/",
@@ -118,11 +120,17 @@ export default function StitchSideMenu({
   open: boolean;
   onClose: () => void;
 }) {
-  const [reportId, setReportId] = useState("");
+  const [storedReportId, setStoredReportId] = useState("");
+  const hydrated = useHydrated();
+  const { reportId: sessionReportId } = useAppSession({ hydrate: false });
 
   useEffect(() => {
-    setReportId(readStoredReportId());
+    setStoredReportId(readStoredReportId());
   }, []);
+
+  const reportId = hydrated
+    ? sessionReportId?.trim() || storedReportId
+    : "";
 
   return (
     <>

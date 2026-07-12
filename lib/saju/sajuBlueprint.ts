@@ -2,7 +2,7 @@
  * 사주 블루프린트 — 만세력·십성·합충·신살을 1회만 계산하고
  * 5대 관계 탭(연인·동료·결혼·가족·친구)은 가중치·텍스트 매핑만 수행.
  */
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type {
   PersonTenGodProfile,
   TenGodCounts,

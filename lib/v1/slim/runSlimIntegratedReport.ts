@@ -1,4 +1,4 @@
-import { formatInnateAnalysisForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import { formatEssenceAnalysisForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 
 import { runIntegratedPremiumLlm } from "@/lib/report/runIntegratedPremiumLlm";
 
@@ -48,7 +48,7 @@ export type SlimIntegratedRunInput = {
 
  * 1) v2 설문 → Human Framework
 
- * 2) 기질 분석(신살 포함)
+ * 2) Essence 분석(신살 포함)
 
  * 3) 출생 에너지(점성만 — 관계 맥락 제외)
 
@@ -84,7 +84,7 @@ export async function runSlimIntegratedReport(
 
 
 
-  const innateAnalysisSummary = formatInnateAnalysisForIntegrated(
+  const essenceAnalysisSummary = formatEssenceAnalysisForIntegrated(
 
     toV1SajuApiPayload(bundle),
 
@@ -110,7 +110,7 @@ export async function runSlimIntegratedReport(
 
     surveyAnalysis: survey.text,
 
-    sajuSummary: innateAnalysisSummary,
+    sajuSummary: essenceAnalysisSummary,
 
     astrologyInterpretation: birthEnergy.astrology,
 
@@ -140,7 +140,7 @@ export async function runSlimIntegratedReport(
 
       survey_chars: survey.text.length,
 
-      innate_chars: innateAnalysisSummary.length,
+      essence_chars: essenceAnalysisSummary.length,
 
       birth_energy_chars: birthEnergy.astrology.length,
 
@@ -150,7 +150,7 @@ export async function runSlimIntegratedReport(
 
       survey_source: survey.source,
 
-      innate_analysis: {
+      essence_analysis: {
 
         includes_shinsal: shinsalNames.length > 0,
 
@@ -190,7 +190,7 @@ export async function runSlimIntegratedReport(
 
       surveyAnalysis: survey.text,
 
-      innateAnalysisSummary,
+      essenceAnalysisSummary,
 
       astrologyInterpretation: birthEnergy.astrology,
 

@@ -1,21 +1,26 @@
 import type OpenAI from "openai";
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import {
   formatPairSajuBlock,
   formatPersonSajuBlock,
 } from "@/lib/saju/formatRomanticSajuInput";
-import { parseJsonObject } from "@/lib/relationship/parseLlmJson";
+import { fetchLlmJsonWithParseRetry } from "@/lib/relationship/parseLlmJson";
 import { buildRomanticRulesBundle } from "@/lib/relationship/romanticRules";
+import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
 import { buildRomanticScreenPlan } from "@/lib/relationship/romanticHeadline/screenMap";
 import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
-import { ROMANTIC_SAJU_DEEP_SYSTEM_PROMPT } from "./system";
+import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import { buildPsychMatchResult } from "@/lib/relationship/psychMatch";
+import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
+import { getRomanticSajuDeepSystemPrompt } from "./system";
+import type { RomanticSajuDeepLocale } from "./system";
 import { buildRomanticSajuDeepUserPrompt } from "./user";
 import {
   isRomanticSajuDeepReport,
   type RomanticSajuDeepReport,
 } from "./outputSchema";
-import { ROMANTIC_SAJU_DEEP_SELF_REFINE_PROMPT } from "./selfRefine";
+import { buildRomanticSajuDeepSelfRefinePrompt } from "./selfRefine";
 
 export const ROMANTIC_SAJU_DEEP_FORMAT = "romantic_saju_deep_v2" as const;
 
@@ -59,19 +64,38 @@ async function callLlmJson(
   return completion.choices[0]?.message.content?.trim() ?? "";
 }
 
+async function callLlmJsonAndParse<T>(
+  openai: OpenAI,
+  system: string,
+  user: string,
+  label: string,
+): Promise<T> {
+  return fetchLlmJsonWithParseRetry<T>(
+    () => callLlmJson(openai, system, user),
+    { label },
+  );
+}
+
 export async function runRomanticSajuDeepAnalysis(
   openai: OpenAI,
   params: {
     nicknameA: string;
     nicknameB: string;
+    userCustomMyName?: string;
+    userCustomTargetName?: string;
     birthA: { date: string; time: string; place: string };
     birthB: { date: string; time: string; place: string };
     sajuJsonA: SajuDataForIntegrated;
     sajuJsonB: SajuDataForIntegrated;
     sajuProvenanceA?: SajuChartProvenance;
     sajuProvenanceB?: SajuChartProvenance;
+    surveyProfileA?: CurrentSelfProfile | null;
+    surveyProfileB?: CurrentSelfProfile | null;
+    locale?: RomanticSajuDeepLocale;
   },
 ): Promise<RomanticSajuDeepPayload> {
+  const locale = params.locale ?? "ko";
+  const systemPrompt = getRomanticSajuDeepSystemPrompt(locale);
   const uncertainA = buildSajuUncertainItems({
     provenance: params.sajuProvenanceA,
     birthPlace: params.birthA.place,
@@ -88,10 +112,9 @@ export async function runRomanticSajuDeepAnalysis(
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,
     sajuJsonB: params.sajuJsonB,
-    birthPlaceA: params.birthA.place,
-    birthPlaceB: params.birthB.place,
-    birthTimeUnknownA: params.sajuProvenanceA?.birthTimeUnknown,
-    birthTimeUnknownB: params.sajuProvenanceB?.birthTimeUnknown,
+    surveyProfileA: params.surveyProfileA,
+    surveyProfileB: params.surveyProfileB,
+    locale,
   });
   const { pairAnalysis, opening, insightPool, ruleScreenPlan, ctx } = bundle;
   const snapshotSlot = ruleScreenPlan.find(
@@ -132,24 +155,26 @@ export async function runRomanticSajuDeepAnalysis(
   const userPrompt = buildRomanticSajuDeepUserPrompt({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
+    userCustomMyName: params.userCustomMyName,
+    userCustomTargetName: params.userCustomTargetName,
     personBlockA,
     personBlockB,
     pairBlock,
+    locale,
   });
 
-  const raw = await callLlmJson(
+  let parsed = await callLlmJsonAndParse<RomanticSajuDeepReport>(
     openai,
-    ROMANTIC_SAJU_DEEP_SYSTEM_PROMPT,
+    systemPrompt,
     userPrompt,
+    "romantic-primary",
   );
-
-  let parsed = parseJsonObject<RomanticSajuDeepReport>(raw);
   if (!isRomanticSajuDeepReport(parsed)) {
     throw new Error("LLM 응답이 연인 심화 Output Schema와 맞지 않습니다.");
   }
 
   if (romanticSajuDeepSelfRefineEnabled()) {
-    const refineUser = `${ROMANTIC_SAJU_DEEP_SELF_REFINE_PROMPT}
+    const refineUser = `${buildRomanticSajuDeepSelfRefinePrompt(params.nicknameA, params.nicknameB)}
 
 # 원본 입력 데이터 (1차 결과가 이 데이터와 맞는지 검증·재작성)
 
@@ -161,18 +186,36 @@ ${pairBlock}
 
 # 1차 분석 결과
 ${JSON.stringify(parsed)}`;
-    const refinedRaw = await callLlmJson(
+    const refined = await callLlmJsonAndParse<RomanticSajuDeepReport>(
       openai,
-      ROMANTIC_SAJU_DEEP_SYSTEM_PROMPT,
+      systemPrompt,
       refineUser,
+      "romantic-refine",
     );
-    const refined = parseJsonObject<RomanticSajuDeepReport>(refinedRaw);
     if (isRomanticSajuDeepReport(refined)) {
       parsed = refined;
     }
   }
 
   const generatedAt = new Date().toISOString();
+  const psychMatch =
+    params.surveyProfileA && params.surveyProfileB
+      ? buildPsychMatchResult({
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
+  const fortuneFlow = buildRomanticFortuneFlow({
+    birthDateA: params.birthA.date,
+    birthDateB: params.birthB.date,
+    sajuA: sajuJsonToPillars(
+      params.sajuJsonA.saju as Required<NonNullable<typeof params.sajuJsonA.saju>>,
+    ),
+    sajuB: sajuJsonToPillars(
+      params.sajuJsonB.saju as Required<NonNullable<typeof params.sajuJsonB.saju>>,
+    ),
+    currentYear: new Date().getFullYear(),
+  });
   const report = {
     ...parsed.report,
     section_1_summary: {
@@ -182,7 +225,8 @@ ${JSON.stringify(parsed)}`;
     },
     meta: {
       ...(parsed.report.meta ?? {}),
-      analysis_version: "v2.12",
+      language: locale,
+      analysis_version: "v2.15",
       generated_at: generatedAt,
       headline_engine: "selector_v2+rule_library_v2+palace_weight+tri_score",
       saju_engine: "calculateSajuBundle_v2",
@@ -192,6 +236,8 @@ ${JSON.stringify(parsed)}`;
       },
       uncertain_items: ctx.uncertainItems,
       event_scores: opening.event_scores ?? ctx.eventScores,
+      romantic_fortune_flow: fortuneFlow,
+      psych_match: psychMatch,
       opening: {
         selected_insight_id: opening.selected_insight_id,
         grade_reason: opening.grade_reason,
@@ -217,7 +263,18 @@ ${JSON.stringify(parsed)}`;
   };
 }
 
-export { ROMANTIC_SAJU_DEEP_SYSTEM_PROMPT } from "./system";
+export {
+  ROMANTIC_SAJU_DEEP_SYSTEM_PROMPT,
+  getRomanticSajuDeepSystemPrompt,
+  type RomanticSajuDeepLocale,
+} from "./system";
 export { buildRomanticSajuDeepUserPrompt } from "./user";
 export { ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA } from "./outputSchema";
-export { ROMANTIC_SAJU_DEEP_SELF_REFINE_PROMPT } from "./selfRefine";
+export {
+  ROMANTIC_SAJU_DEEP_SELF_REFINE_PROMPT,
+  buildRomanticSajuDeepSelfRefinePrompt,
+} from "./selfRefine";
+export {
+  buildSpecialBondFewShotExample,
+  buildSpecialBondSystemPromptBlock,
+} from "./specialBondWritingRules";

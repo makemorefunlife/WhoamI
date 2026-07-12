@@ -5,8 +5,8 @@ import {
   type RelationshipReportRow,
 } from "@/lib/relationship/fetchReportsWhereParticipant";
 import { formatResultBasicForIntegratedContext } from "@/lib/relationship/formatResultBasicForIntegratedContext";
+import { createRouteSupabaseClient } from "@/lib/supabase/serverClient";
 import { hasCompletePerspectives } from "@/lib/relationship/normalizeRelationshipPerspectives";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 function pickBestRelationshipRow(
   rows: RelationshipReportRow[],
@@ -61,11 +61,8 @@ export async function resolveIntegratedRelationshipText(
   const id = reportId.trim();
   if (!id) return null;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return null;
-
-  const supabase = createServiceRoleClient(url, serviceKey);
+  const supabase = createRouteSupabaseClient();
+  if (!supabase) return null;
   let rows = await fetchRelationshipReportRowsForReportId(supabase, id);
   rows = await mergeRelationshipRowsFromOutboundInvites(supabase, id, rows);
   rows = await mergeRelationshipRowsFromInboundInvites(supabase, id, rows);

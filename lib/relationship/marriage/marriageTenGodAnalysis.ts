@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildChartContext } from "@/lib/saju/chartContext";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";

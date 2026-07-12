@@ -4,6 +4,7 @@ import {
   REPORT_BASE_FIELDS,
   reportSelectWithBirthCoords,
 } from "@/lib/report/reportsBirthCoordinateColumns";
+import { isMissingBirthDateCorrectionColumnError } from "@/lib/report/birthDateCorrection";
 
 export type ReportWithBirthCoords = Record<string, unknown> & {
   id: string;
@@ -19,54 +20,59 @@ export type FetchReportWithBirthCoordsResult = {
   birthCoordColumnsAvailable: boolean;
 };
 
-/** 좌표 컬럼 포함 select — 마이그레이션 미적용 시 기본 필드만 조회 */
+function isRetryableSelectColumnError(
+  error: { message?: string } | null | undefined,
+): boolean {
+  return (
+    isMissingBirthCoordinateColumnError(error) ||
+    isMissingBirthDateCorrectionColumnError(error)
+  );
+}
+
+/** 좌표·선택적 extra 컬럼 — 없으면 단계적으로 필드 축소 후 재조회 */
 export async function fetchReportWithBirthCoords(
   supabase: SupabaseClient,
   reportId: string,
   extraSelect = "",
 ): Promise<FetchReportWithBirthCoordsResult> {
-  const withCoords = reportSelectWithBirthCoords(extraSelect);
-
-  const full = await supabase
-    .from("reports")
-    .select(withCoords)
-    .eq("id", reportId)
-    .maybeSingle();
-
-  if (!full.error) {
-    return {
-      report: full.data as ReportWithBirthCoords | null,
-      error: null,
-      birthCoordColumnsAvailable: true,
-    };
-  }
-
-  if (!isMissingBirthCoordinateColumnError(full.error)) {
-    return {
-      report: null,
-      error: full.error,
-      birthCoordColumnsAvailable: false,
-    };
-  }
-
-  console.warn(
-    `[astrology-coords] birth coordinate columns missing — using birth_place lookup only reportId=${reportId}`,
-  );
-
   const extra = extraSelect.trim();
-  const baseSelect = extra
-    ? `${REPORT_BASE_FIELDS}, ${extra}`
-    : REPORT_BASE_FIELDS;
+  const selectAttempts = extra
+    ? [reportSelectWithBirthCoords(extra), reportSelectWithBirthCoords(""), REPORT_BASE_FIELDS]
+    : [reportSelectWithBirthCoords(""), REPORT_BASE_FIELDS];
 
-  const fallback = await supabase
-    .from("reports")
-    .select(baseSelect)
-    .eq("id", reportId)
-    .maybeSingle();
+  let lastError: { message?: string } | null = null;
+
+  for (const select of selectAttempts) {
+    const result = await supabase
+      .from("reports")
+      .select(select)
+      .eq("id", reportId)
+      .maybeSingle();
+
+    if (!result.error) {
+      return {
+        report: result.data as ReportWithBirthCoords | null,
+        error: null,
+        birthCoordColumnsAvailable: select.includes("birth_latitude"),
+      };
+    }
+
+    lastError = result.error;
+    if (!isRetryableSelectColumnError(result.error)) {
+      break;
+    }
+  }
+
+  if (lastError && isRetryableSelectColumnError(lastError)) {
+    console.warn(
+      `[report-birth] column fallback exhausted reportId=${reportId}`,
+      lastError.message,
+    );
+  }
 
   return {
-    report: fallback.data as ReportWithBirthCoords | null,
-    error: fallback.error,
+    report: null,
+    error: lastError,
     birthCoordColumnsAvailable: false,
   };
 }

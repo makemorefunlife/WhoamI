@@ -27,6 +27,7 @@ import {
   RelationHubActionSkeleton,
 } from "@/components/ui/stitch/StitchSkeleton";
 import { useClientReportId } from "@/lib/hooks/useClientReportId";
+import { relationshipHubRoute } from "@/constants/routes";
 import { clearLegacyHubDisplayNames } from "@/lib/relationship/hubDisplayName";
 import {
   fetchHubAnalysisFeed,
@@ -40,6 +41,7 @@ import type { FamilyPerspective } from "@/lib/relationship/hubNavigation";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { buildInviteUrl, copyInviteLink } from "@/lib/relationship/inviteShare";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
+import { setRelationHubDockLocked } from "@/lib/stitch/relationHubDockLock";
 
 const ANALYSIS_PREVIEW_LIMIT = 5;
 const ANALYSIS_PAGE_STEP = 10;
@@ -170,6 +172,14 @@ export default function RelationHubDashboard() {
     void load("full");
   }, [load, reportIdReady, hubReportId]);
 
+  // canonical reportId가 URL myReportId와 다르면 주소를 맞춰 진입 경로 분기를 없앤다.
+  useEffect(() => {
+    if (!reportIdReady || recovering || !hubReportId) return;
+    const urlId = urlMyReportHint.trim();
+    if (urlId === hubReportId) return;
+    router.replace(relationshipHubRoute(hubReportId), { scroll: false });
+  }, [reportIdReady, recovering, hubReportId, urlMyReportHint, router]);
+
   useEffect(() => {
     if (!hubSection || loading) return;
     const t = window.setTimeout(() => {
@@ -185,6 +195,20 @@ export default function RelationHubDashboard() {
     () => filterHubFriendList(items),
     [items],
   );
+
+  const hubIsEmpty = Boolean(
+    reportIdReady &&
+      !recovering &&
+      !loading &&
+      hubReportId &&
+      !favoritesOnly &&
+      relationshipItems.length === 0,
+  );
+
+  useEffect(() => {
+    setRelationHubDockLocked(hubIsEmpty);
+    return () => setRelationHubDockLocked(false);
+  }, [hubIsEmpty]);
 
   useEffect(() => {
     if (!sentRequestsOpen || !hubReportId) return;
@@ -510,7 +534,7 @@ export default function RelationHubDashboard() {
       <div className="mx-auto w-full max-w-lg px-5 py-6 sm:px-6 sm:py-8">
         <header className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
-            Relation Hub
+            RELATION HUB
           </p>
           <h1 className="stitch-headline mt-2 text-3xl text-primary">
             관계 허브
@@ -518,7 +542,7 @@ export default function RelationHubDashboard() {
         </header>
 
         <RelationHubBanner
-          visible={bannerVisible && reportIdReady}
+          visible={bannerVisible && reportIdReady && !hubIsEmpty}
           onDismiss={() => {
             dismissBanner();
             setBannerVisible(false);
@@ -558,6 +582,16 @@ export default function RelationHubDashboard() {
                   <RelationHubActionSkeleton />
                   <HubAnalysisListSkeleton />
                 </>
+              ) : hubIsEmpty ? (
+                <RelationHubActionButtons
+                  emptyHub
+                  canAnalyze={false}
+                  onAnalyze={() => {}}
+                  onAddFriend={() => {
+                    setAddFriendOpen(true);
+                    setAddFriendTab("invite");
+                  }}
+                />
               ) : (
                 <>
                   <FriendStoryRow

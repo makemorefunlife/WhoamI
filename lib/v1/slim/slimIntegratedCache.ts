@@ -1,4 +1,4 @@
-import type { InnateDeepPreviewResponse } from "@/lib/v1/slim/types";
+import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 import {
   readJsonStorage,
   removeJsonStorage,
@@ -13,9 +13,9 @@ function storageKey(reportId: string) {
 
 export function readSlimIntegratedCache(
   reportId: string,
-): InnateDeepPreviewResponse | null {
+): EssenceDeepPreviewResponse | null {
   if (!reportId) return null;
-  const data = readJsonStorage<InnateDeepPreviewResponse>(
+  const data = readJsonStorage<EssenceDeepPreviewResponse>(
     storageKey(reportId),
     storageKey(reportId),
   );
@@ -25,7 +25,7 @@ export function readSlimIntegratedCache(
 
 export function writeSlimIntegratedCache(
   reportId: string,
-  data: InnateDeepPreviewResponse,
+  data: EssenceDeepPreviewResponse,
 ) {
   if (!reportId) return;
   writeJsonStorage(storageKey(reportId), data);

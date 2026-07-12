@@ -18,7 +18,7 @@ export {
   type StoredRankedInsight,
 } from "./screenMap";
 
-import type { SajuDataForIntegrated } from "@/lib/report/formatInnateAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildRomanticRulesBundle } from "@/lib/relationship/romanticRules";
 import { buildRomanticInsightPool, computePairAnalysisOnce } from "./buildInsightPool";
 import { selectRomanticOpening } from "./selectOpening";
@@ -43,6 +43,7 @@ export function buildRomanticHeadlineContext(params: {
   nicknameB: string;
   sajuJsonA: SajuDataForIntegrated;
   sajuJsonB: SajuDataForIntegrated;
+  locale?: import("@/lib/relationship/romanticHeadline/locale").RomanticHeadlineLocale;
 }): RomanticHeadlineContext {
   const bundle = buildRomanticRulesBundle(params);
   const { pairAnalysis, opening, insightPool, ruleScreenPlan } = bundle;

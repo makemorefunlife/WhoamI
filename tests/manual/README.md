@@ -4,7 +4,7 @@
 
 | 파일 | 용도 |
 |------|------|
-| `slim-v1-deep-api.ps1` | Slim V1 `/api/v2/deep/innate` 스모크 |
+| `slim-v1-deep-api.ps1` | Slim V1 `/api/v2/deep/essence` 스모크 |
 
 PowerShell:
 
