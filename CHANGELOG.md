@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.1 (2026-07-12)
+
+연인 심화 리포트 프롬프트·psych_match UI 품질 패치.
+
+- 🌱 **서로에게 도움이 되는 행동들**: `essenceActionWritingRules` Few-Shot 전면 교체, 「이런 순간에」 UI 제거, 💌 에센스 다이어리 섹션명 적용.
+- 💬 **갈등 상황**: `conflictSituationWritingRules` — 50:50 쌍방 고충·2행 대화표·모범답안 금지 (v2.17).
+- 💪 **강점·약점**: `buildStrengthWeaknessLists` 최소 3개 보장 (tension 1개만 있어도 gap 상위 축으로 보충).
+- Essence 행동 가이드 UI: `01. 제목: 본문` + `* 실전 대사 꿀팁` 형식.
+- Supabase 마이그레이션 적용 스크립트 `tests/scripts/apply-supabase-migration.mjs` 추가.
+
 ## 0.3.0 (2026-07-12)
 
 연인 심화 리포트 psych_match·Essence 저널·관계 Hub 대규모 개선.

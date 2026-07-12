@@ -326,10 +326,14 @@ export function isGenericRomanticActionPhrase(phrase: string): boolean {
   const p = phrase
     .replace(/^이렇게\s*말해보세요[:：]?\s*/i, "")
     .replace(/^📱\s*/, "")
+    .replace(/^이런\s*순간에\s*[—\-:：]\s*/i, "")
     .trim();
   if (!p) return true;
   if (/작은 신호부터 맞춰/.test(p)) return true;
   if (/^지금 기분부터 들어볼/.test(p)) return true;
+  if (/^감정을\s*드러내/.test(p)) return true;
+  if (/함께보면\s*좋/.test(p)) return true;
+  if (p.length < 40 && /이런\s*순간/.test(p)) return true;
   if (/^.+\s+—\s+/.test(p) && p.length < 48) return true;
   if (/^.+와 .+ —/.test(p)) return true;
   return false;

@@ -51,13 +51,15 @@ export function buildPdfStyleReferenceGuide(
 
 ## section_3_conversation_patterns (갈등 상황)
 
-| PDF/내부 톤 (참고) | 이렇게 변환해서 작성 |
+| 규칙 | 내용 |
 |---|---|
-| "지지 충돌은 이동·환경 변화나 감정적 불안정을 뜻함" | "예상치 못한 변화가 생기면 '왠지 모르게 답답한' 상태가 되어, 아무 잘못 없는 상대에게도 짜증이 나기 시작해요" |
-| 데이터 → 삶의 장면 | \`a_behavior\` / \`b_behavior\`에 **실제 말·행동·생각** 3문장+ |
-| 심리 통찰 | \`hidden_psychology\`: "이 대화의 숨은 심리" 2~4문장 |
+| 구조 | \`title\` + \`dialogue_table\` **2행만** (A·B 각 1행) |
+| 밸런스 | 50:50 쌍방 고충 — 가해/피해 프레이밍 금지 |
+| 빠른 감정 쪽 ❌ | 침묵·무뚝뚝함 → 방관·무시 오해 |
+| 신중 쪽 ❌ | 과부하 → 이성 통제로 상대 서운함 |
+| 금지 | hidden_psychology·positive_situation·모범답안 good_line |
 
-\`dialogue_table\` + \`bad_example\` / \`good_example\` 대화는 **이 커플 데이터에서만** 나올 법한 상황으로.
+User Prompt **Few-Shot 구조**를 뼈대로, ${nicknameA}·${nicknameB} 데이터로 **새로 작성**.
 
 ---
 
@@ -66,40 +68,17 @@ export function buildPdfStyleReferenceGuide(
 | PDF/내부 톤 (참고) | 이렇게 변환해서 작성 |
 |---|---|
 | "감정 기복을 '변덕'이 아닌 '다양한 색깔'로 본다" | "상대의 예민함을 '변덕'이 아닌 '다양한 감정의 표현'으로 받아들이는 연습을 해보세요" |
-| 긍정 프레이밍 + 구체 행동 | \`EssenceActionGuideline\` — action_title(한 줄) + saju_reason(왜 2~3문장) + real_life_example + real_speech_tip |
+| 긍정 프레이밍 + 구체 행동 | \`EssenceActionGuideline\` — action_title + saju_reason(3~4문장) + real_speech_tip. \`real_life_example\`는 \`""\` |
 | 각자 3개 | 용신/기신·갈등 패턴·십성에서 도출한 **맞춤** 조언만 |
 
 \`promise\`: 따뜻한 격려 한 문장 — 두 사람 이름 포함.
 `.trim();
 }
 
-/** 섹션 3·5 추가 작성 가이드 (좋은 관계 패턴 + 말해보세요 예시) */
+/** @deprecated — essenceActionWritingRules.ts Few-Shot으로 대체됨 */
 export function buildConversationAndActionWritingGuide(
-  nicknameA: string,
-  nicknameB: string,
+  _nicknameA: string,
+  _nicknameB: string,
 ): string {
-  return `
-# 섹션 5 추가 작성 가이드
-
-## section_5_action — 각 행동마다 4요소 (필수)
-
-**각 \`advice_for_a\` / \`advice_for_b\` 항목**에 아래 6필드를 **반드시** 포함:
-
-\`\`\`
-{
-  "relationship_kind": "연인",
-  "target_user": "닉네임",
-  "saju_reason": "왜 이 행동이 필요한지 — 이 사람 기질·패턴 근거 2~3문장 (사주 용어 없이)",
-  "action_title": "엣지 있고 후킹되는 행동 제목 한 줄",
-  "real_speech_tip": "입으로 뱉을 수 있는 실제 대사 한두 문장",
-  "real_life_example": "적용할 수 있는 구체적 상황 예시 한 줄"
-}
-\`\`\`
-
-- A·B 각 **3개** — 모두 4요소(saju_reason·action_title·real_speech_tip·real_life_example) 포함
-- \`together_starter\`: 함께 대화를 시작할 때 쓸 수 있는 실제 대사
-- \`together\`: 함께보면 좋을 것 설명 3문장+
-
-**톤 참고 (복사 금지)** — 공감 먼저 / 솔직한 욕구 표현 / 작은 칭찬. 이 커플 갈등·십성 패턴에 맞는 **맞춤** 대사만.
-`.trim();
+  return "";
 }

@@ -226,7 +226,7 @@ ${JSON.stringify(parsed)}`;
     meta: {
       ...(parsed.report.meta ?? {}),
       language: locale,
-      analysis_version: "v2.15",
+      analysis_version: "v2.17",
       generated_at: generatedAt,
       headline_engine: "selector_v2+rule_library_v2+palace_weight+tri_score",
       saju_engine: "calculateSajuBundle_v2",

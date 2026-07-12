@@ -754,7 +754,8 @@ export default function RomanticSajuDeepReportView({
   const showStrengthWeakness =
     psychMatch != null &&
     strengthWeaknessResult != null &&
-    strengthWeaknessResult.strengths.length > 0;
+    (strengthWeaknessResult.strengths.length > 0 ||
+      strengthWeaknessResult.weaknesses.length > 0);
   const showBondFormula = shouldShowBondFormula(
     special?.relationship_formula,
     special?.only_together,
@@ -1043,7 +1044,9 @@ export default function RomanticSajuDeepReportView({
         <RelationshipReportBody>
           {myAdvice.length > 0 ? (
             <>
-              <RelationshipReportLabel>{myName}께</RelationshipReportLabel>
+              <RelationshipReportLabel>
+                ✨ {myName}님을 위한 에센스 가이드
+              </RelationshipReportLabel>
               <EssenceActionGuidelineList
                 items={myAdvice}
                 polish={displayText}
@@ -1055,7 +1058,7 @@ export default function RomanticSajuDeepReportView({
               <RelationshipReportLabel
                 className={myAdvice.length > 0 ? "mt-6" : undefined}
               >
-                {partnerName}께
+                ✨ {partnerName}님을 위한 에센스 가이드
               </RelationshipReportLabel>
               <EssenceActionGuidelineList
                 items={partnerAdvice}
@@ -1066,13 +1069,23 @@ export default function RomanticSajuDeepReportView({
           {s5.together?.trim() &&
           !isGenericRomanticActionPhrase(s5.together) ? (
             <div className="mt-6 space-y-2 border-t pt-5 border-outline-variant/30">
-              <RelationshipReportLabel>함께보면 좋아요</RelationshipReportLabel>
+              <RelationshipReportLabel>
+                💌 에센스 다이어리 : 우리만의 관계 아카이브
+              </RelationshipReportLabel>
               <P>{String(s5.together)}</P>
               {s5.together_starter?.trim() &&
               !isGenericRomanticActionPhrase(s5.together_starter) ? (
-                <p className="rounded-xl bg-accent-rose-soft px-4 py-3 text-sm leading-relaxed text-on-surface-variant">
-                  <span className="font-medium">이렇게 시작해보세요: </span>
+                <p className="text-sm leading-relaxed text-on-surface-variant">
+                  <span className="font-medium text-on-surface">
+                    * 이렇게 대화의 문을 열어보세요:{" "}
+                  </span>
+                  <span aria-hidden className="text-on-surface-variant/70">
+                    “
+                  </span>
                   {displayText(s5.together_starter)}
+                  <span aria-hidden className="text-on-surface-variant/70">
+                    ”
+                  </span>
                 </p>
               ) : null}
             </div>

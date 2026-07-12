@@ -53,20 +53,20 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
     },
     "section_3_conversation_patterns": {
       "conflict_situation": {
-        "title": "갈등 상황 제목",
+        "title": "기질 차이 한 줄 (예: 표현의 속도차이와 내면의 과부하)",
         "dialogue_table": [
           {
             "speaker": "A",
-            "label": "A닉네임",
-            "bad_line": "나쁜 예 대사 (이모지 포함 가능)",
-            "good_line": "좋은 예 대사",
+            "label": "A 커스텀 이름",
+            "bad_line": "빠른 감정 표현 쪽 — 침묵 오해형 bad (공격적이되 가해자 프레이밍 금지)",
+            "good_line": "속도 인정 + 상대 듣기 good",
             "emoji": "😤"
           },
           {
             "speaker": "B",
-            "label": "B닉네임",
-            "bad_line": "나쁜 예",
-            "good_line": "좋은 예",
+            "label": "B 커스텀 이름",
+            "bad_line": "신중·무거운 처리 쪽 — 과부하·이성 통제형 bad",
+            "good_line": "상대 속상함 인정 + 정리·호흡 good",
             "emoji": "🤔"
           }
         ]
@@ -77,24 +77,24 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
         {
           "relationship_kind": "연인",
           "target_user": "A닉네임",
-          "saju_reason": "왜 이 행동이 필요한지 — 기질·패턴 근거 2~3문장 (사주 용어·한자 없이)",
-          "action_title": "엣지 있고 후킹되는 행동 제목 한 줄",
-          "real_speech_tip": "입으로 뱉을 수 있는 실제 대사 한두 문장",
-          "real_life_example": "적용할 수 있는 구체적 상황 예시 한 줄"
+          "saju_reason": "왜 이 행동이 필요한지 — 기질·패턴 근거 3~4문장 (사주 용어·한자·기획 메모 톤 없이)",
+          "action_title": "행동 강령 제목 한 줄 (후킹)",
+          "real_speech_tip": "실전 대사 꿀팁 — 입으로 뱉을 1~2문장",
+          "real_life_example": ""
         }
       ],
       "advice_for_b": [
         {
           "relationship_kind": "연인",
           "target_user": "B닉네임",
-          "saju_reason": "2~3문장",
-          "action_title": "행동 제목",
-          "real_speech_tip": "실제 대사",
-          "real_life_example": "상황 예시"
+          "saju_reason": "3~4문장",
+          "action_title": "행동 강령 제목",
+          "real_speech_tip": "실전 대사",
+          "real_life_example": ""
         }
       ],
-      "together": "함께보면 좋을 것 (3문장+)",
-      "together_starter": "함께 대화를 시작할 때 쓸 수 있는 실제 대사 한두 문장",
+      "together": "💌 에센스 다이어리 본문 — 관계 아카이브·주말 대화 제안 등 3~4문장+",
+      "together_starter": "이렇게 대화의 문을 열어보세요 — 실전 대사 1~2문장",
       "promise": "따뜻한 격려 한 문장"
     },
     "section_6_timeline": {

@@ -101,8 +101,63 @@ export type StrengthWeaknessLists = {
   weaknesses: StrengthWeaknessItem[];
 };
 
+/** 강점·약점 리스트 최소 노출 개수 */
+export const STRENGTH_WEAKNESS_MIN_ITEMS = 3;
+
 function isSecondaryAxisKey(key: string): key is SecondaryAxisKey {
   return key in STRENGTH_WEAKNESS_TEMPLATES;
+}
+
+function eligibleAxisRows(
+  axisResults: StrengthWeaknessAxisInput[],
+): Array<StrengthWeaknessAxisInput & { axis_key: SecondaryAxisKey; gap: number }> {
+  return axisResults
+    .filter(
+      (
+        row,
+      ): row is StrengthWeaknessAxisInput & {
+        axis_key: SecondaryAxisKey;
+        gap: number;
+      } =>
+        isSecondaryAxisKey(row.axis_key) &&
+        !STRENGTH_WEAKNESS_EXCLUDED_AXIS_KEYS.has(row.axis_key) &&
+        typeof row.gap === "number",
+    )
+    .map((row) => ({
+      ...row,
+      gap: row.gap ?? 0,
+    }));
+}
+
+function fillStrengthWeaknessList(params: {
+  items: StrengthWeaknessItem[];
+  axisResults: StrengthWeaknessAxisInput[];
+  pickText: (axisKey: SecondaryAxisKey) => string;
+  sortRows: (
+    rows: Array<StrengthWeaknessAxisInput & { axis_key: SecondaryAxisKey; gap: number }>,
+  ) => Array<StrengthWeaknessAxisInput & { axis_key: SecondaryAxisKey; gap: number }>;
+  minItems?: number;
+}): StrengthWeaknessItem[] {
+  const minItems = params.minItems ?? STRENGTH_WEAKNESS_MIN_ITEMS;
+  const out = [...params.items];
+  if (out.length >= minItems) return out;
+
+  const usedKeys = new Set(out.map((item) => item.axis_key));
+  const usedTexts = new Set(out.map((item) => item.text));
+  const candidates = params
+    .sortRows(eligibleAxisRows(params.axisResults))
+    .filter((row) => !usedKeys.has(row.axis_key));
+
+  for (const row of candidates) {
+    if (out.length >= minItems) break;
+    const text = params.pickText(row.axis_key);
+    if (usedTexts.has(text)) continue;
+    out.push({ axis_key: row.axis_key, text });
+    usedKeys.add(row.axis_key);
+    usedTexts.add(text);
+  }
+
+  return out;
 }
 
 export function strengthWeaknessTextForAxis(
@@ -147,20 +202,18 @@ export function buildStrengthWeaknessLists(
     }
   }
 
-  if (weaknesses.length === 0 && axisResults.length > 0) {
-    const gapSorted = axisResults
-      .filter((row): row is StrengthWeaknessAxisInput & { axis_key: SecondaryAxisKey; gap: number } =>
-        isSecondaryAxisKey(row.axis_key) &&
-        !STRENGTH_WEAKNESS_EXCLUDED_AXIS_KEYS.has(row.axis_key) &&
-        typeof row.gap === "number",
-      )
-      .sort((a, b) => b.gap - a.gap);
-
-    for (const row of gapSorted.slice(0, 3)) {
-      const text = STRENGTH_WEAKNESS_TEMPLATES[row.axis_key].weakness;
-      weaknesses.push({ axis_key: row.axis_key, text });
-    }
-  }
-
-  return { strengths, weaknesses };
+  return {
+    strengths: fillStrengthWeaknessList({
+      items: strengths,
+      axisResults,
+      pickText: (axisKey) => STRENGTH_WEAKNESS_TEMPLATES[axisKey].strength,
+      sortRows: (rows) => [...rows].sort((a, b) => a.gap - b.gap),
+    }),
+    weaknesses: fillStrengthWeaknessList({
+      items: weaknesses,
+      axisResults,
+      pickText: (axisKey) => STRENGTH_WEAKNESS_TEMPLATES[axisKey].weakness,
+      sortRows: (rows) => [...rows].sort((a, b) => b.gap - a.gap),
+    }),
+  };
 }

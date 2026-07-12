@@ -141,12 +141,14 @@ export function buildSectionRoleSeparationGuide(
 - special_bond: 관계 기능·시너지 — hidden의 need/voice 문장 재사용 금지
 
 ## section_3_conversation_patterns vs why_special
-- conflict dialogue_table: **장면별 bad/good 대사**
+- conflict dialogue_table: **정확히 2행** — A·B 각 ❌/✅. 50:50 기질 차이 (가해/피해 금지)
 - why_special: **패턴 이름 + 왜 생기는지 + 한 줄 실전 팁** — 대사 표를 복사하지 마세요.
 
 ## section_5_action vs why_special
-- action: 개인별 **행동 처방 + real_speech_tip**
+- action: 개인별 **행동 강령 + real_speech_tip** (기획 메모 "이런 순간에" 금지, real_life_example **""**)
 - why_special: 관계 **패턴 진단** — 같은 대사를 양쪽에 넣지 마세요.
+- advice_for_a 3개·advice_for_b 3개 — **서로 다른 구체 행동** (감정 드러내라 복제 금지)
+- together: **💌 에센스 다이어리** 3문장+ / together_starter: 대화 문 여는 대사
 `.trim();
 }
 

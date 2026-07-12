@@ -1,6 +1,10 @@
 /** Self-Refine — 2차 품질 검토 프롬프트 */
 
-import { buildEssenceJournalSelfDedupChecklist } from "./essenceJournalWritingRules";
+import {
+  buildEssenceJournalSelfDedupChecklist,
+} from "./essenceJournalWritingRules";
+import { buildEssenceActionSelfDedupChecklist } from "./essenceActionWritingRules";
+import { buildConflictSituationSelfDedupChecklist } from "./conflictSituationWritingRules";
 
 
 
@@ -58,15 +62,20 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 
 - [ ] 상대를 가리킬 때 이름 대신 **"상대에게"**, **"상대를"** 를 썼나요?
 
-- [ ] conflict는 dialogue_table만 있고, 긴 대화·hidden_psychology·positive_situation은 없나요?
+- [ ] conflict는 dialogue_table **2행**(A·B 각 1)만 있고, 50:50 쌍방 고충인가요?
+- [ ] good_line이 모범답안·상담사 톤이 아닌가요?
+- [ ] hidden_psychology·positive_situation은 없나요?
 
 
 
-## 6. 조언 대화 예시 검토
+## 6. Essence 행동 가이드 검토
 
-- [ ] advice_for_a / advice_for_b **각 3개 모두** saju_reason·action_title·real_speech_tip·real_life_example이 있나요?
-
-- [ ] together_starter (함께 대화 시작 대사)가 있나요?
+- [ ] advice_for_a / advice_for_b **각 3개** — action_title + saju_reason(3문장+) + real_speech_tip 필수?
+- [ ] 모든 \`real_life_example\`이 **\`""\`** 인가요?
+- [ ] "이런 순간에" 등 기획 메모식 문구 **0개**?
+- [ ] 6개 팁이 **서로 다른 행동 강령**인가요? ("감정을 드러내라" 복제 없음)
+- [ ] \`together\`가 에센스 다이어리 **3문장+** 인가요?
+- [ ] \`together_starter\`가 대화 시작 실전 대사인가요?
 
 
 
@@ -84,9 +93,9 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 
 - [ ] hidden 금지 미사여구("깊은 정서적 교감", "솔직한 대화", "서로 존중") **0개**?
 
-- [ ] section_3: 갈등이 "답답함·짜증" 같은 **삶의 장면**으로 변환됐나요?
+- [ ] section_3: 갈등이 **양쪽 기질의 힘듦**으로 50:50 서술됐나요? (한쪽만 잘못 프레이밍 없음)
 
-- [ ] section_5: 조언이 saju_reason(왜) + action_title(행동) + real_life_example + real_speech_tip 4요소인가요?
+- [ ] section_5: action_title + saju_reason(3문장+) + real_speech_tip. real_life_example **""**. 자연물 비유·"이런 순간에" **0개**?
 
 
 
@@ -135,6 +144,10 @@ export function buildRomanticSajuDeepSelfRefinePrompt(
 
 
 ${buildEssenceJournalSelfDedupChecklist(nicknameA, nicknameB)}
+
+${buildEssenceActionSelfDedupChecklist(nicknameA, nicknameB)}
+
+${buildConflictSituationSelfDedupChecklist(nicknameA, nicknameB)}
 
 
 

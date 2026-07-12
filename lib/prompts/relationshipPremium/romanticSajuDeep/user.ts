@@ -2,7 +2,6 @@ import { ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA } from "./outputSchema";
 import {
   DATA_COMBINATION_FORCE_RULES,
   buildPdfStyleReferenceGuide,
-  buildConversationAndActionWritingGuide,
 } from "./dataCombinationRules";
 import { buildSectionQualityExamples } from "./sectionExamples";
 import {
@@ -11,6 +10,12 @@ import {
   buildHiddenHeartsRoleGuide,
   buildSectionRoleSeparationGuide,
 } from "./essenceJournalWritingRules";
+import {
+  buildEssenceActionFewShotExample,
+} from "./essenceActionWritingRules";
+import {
+  buildConflictSituationFewShotExample,
+} from "./conflictSituationWritingRules";
 import {
   buildSpecialBondFewShotExample,
 } from "./specialBondWritingRules";
@@ -94,8 +99,8 @@ const UX_SECTION_GUIDE = `
 2. section_2_nature 🔍
 3. section_4_special_bond ⚖️
 4. section_4_hidden_hearts 🌙
-5. section_3_conversation_patterns 💬 — conflict **dialogue_table만** (긴 대화·숨은심리·좋은패턴 없음)
-6. section_5_action 🌱 — \`EssenceActionGuideline\` 6필드 (saju_reason + action_title + real_speech_tip + real_life_example 필수)
+5. section_3_conversation_patterns 💬 — conflict **dialogue_table 2행만** (A·B 각 1행, 50:50 쌍방 고충)
+6. section_5_action 🌱 — EssenceActionGuideline (action_title + saju_reason 3문장+ + real_speech_tip). real_life_example는 항상 ""
 7. section_6_timeline ⏰
 `.trim();
 
@@ -115,11 +120,12 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - 각 셀은 **이름·주어 없이** 서술 (표 헤더에 이름 있음). "OO는~", "OO을~" 금지
     - 상대를 가리킬 때는 이름 대신 **"상대에게"**, **"상대를"** (둘만 보는 리포트 톤)
     - 예: "상대에게 고마움을 자주 표현해요." / "사랑을 행동으로 보여 주려 해요."
-11. **section_5**: advice_for_a·b **각 3개** — 항목마다 \`saju_reason\`, \`action_title\`, \`real_speech_tip\`, \`real_life_example\` 필수. \`together_starter\`는 함께 대화 시작 대사. "20분 쉬어가요" 템플릿 반복 금지
-12. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` 필수. Few-Shot 구조 준수. 자연물 비유·명리 용어 금지
-13. **section_4_hidden_hearts**: a_hidden·b_hidden 둘 다 필수. special_bond와 **완전 분리**
-14. **section_1_summary**: LLM이 만들지 마세요 (Headline Selector가 사주 rule 결과로 채움)
-15. **중복 검열**: 주어만 바꾼 미러링·금지 미사여구·사주 전문 용어·bond 자연물 비유 발견 시 해당 필드 **전면 재작성**
+11. **section_5**: advice_for_a·b **각 3개** — action_title + saju_reason(3문장+) + real_speech_tip 필수. real_life_example는 **""**. together=💌 에센스 다이어리(3문장+), together_starter=대화 시작 대사. "이런 순간에"·자연물 비유·감정드러내라 복제 금지
+12. **section_3 conflict**: dialogue_table **정확히 2행** — 빠른 감정 표현 쪽·신중 쪽 각 ❌/✅. 50:50 밸런스·모범답안 금지. hidden_psychology 금지
+13. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` 필수. Few-Shot 구조 준수. 자연물 비유·명리 용어 금지
+14. **section_4_hidden_hearts**: a_hidden·b_hidden 둘 다 필수. special_bond와 **완전 분리**
+15. **section_1_summary**: LLM이 만들지 마세요 (Headline Selector가 사주 rule 결과로 채움)
+16. **중복 검열**: 주어만 바꾼 미러링·금지 미사여구·사주 전문 용어·bond 자연물 비유 발견 시 해당 필드 **전면 재작성**
 `.trim();
 
 export function buildRomanticSajuDeepUserPrompt(params: {
@@ -166,6 +172,18 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     nicknameA,
     nicknameB,
   );
+  const essenceActionFewShot = buildEssenceActionFewShotExample({
+    nicknameA,
+    nicknameB,
+    myName,
+    targetName,
+  });
+  const conflictFewShot = buildConflictSituationFewShotExample({
+    nicknameA,
+    nicknameB,
+    myName,
+    targetName,
+  });
 
   return `
 # 분석 대상
@@ -197,6 +215,14 @@ ${specialBondFewShot}
 
 ---
 
+${essenceActionFewShot}
+
+---
+
+${conflictFewShot}
+
+---
+
 # 입력 데이터 (실제 사주 계산값 — 반드시 이 데이터로만 분석)
 
 ## A (${nicknameA})
@@ -224,10 +250,6 @@ ${qualityExamples}
 ---
 
 ${pdfStyleGuide}
-
----
-
-${conversationActionGuide}
 
 ---
 

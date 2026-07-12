@@ -44,6 +44,11 @@ function baseProfile(overrides: Partial<CurrentSelfProfile["secondary_axes"]> = 
   };
 }
 
+function assert(cond: boolean, label: string) {
+  if (!cond) throw new Error(`FAIL: ${label}`);
+  console.log(`OK: ${label}`);
+}
+
 section("1. classifyPsychMatchType — empathy 축 p60/p90 경계");
 
 const empathyBounds = getAxisGapPercentiles("empathy");
@@ -94,3 +99,18 @@ const lists = buildStrengthWeaknessLists([
   },
 ]);
 console.log(`weaknesses: ${lists.weaknesses.length}, strengths: ${lists.strengths.length}`);
+
+section("6. buildStrengthWeaknessLists — full psych_match min 3 each");
+
+const fullMatch = buildPsychMatchResult({
+  profileA: baseProfile({ stimulation: 20, empathy: 45 }),
+  profileB: baseProfile({ stimulation: 80, empathy: 55 }),
+});
+const fullLists = buildStrengthWeaknessLists(fullMatch.axis_results);
+console.log(
+  `full match — strengths: ${fullLists.strengths.length}, weaknesses: ${fullLists.weaknesses.length}`,
+);
+assert(fullLists.weaknesses.length >= 3, "weaknesses min 3");
+assert(fullLists.strengths.length >= 3, "strengths min 3");
+
+console.log("\nAll psych-match edge checks passed.");

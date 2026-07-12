@@ -48,23 +48,30 @@ export function buildSectionQualityExamples(
 - 금지: "깊은 정서적 교감", "솔직한 대화", "서로 존중" 등 진부한 심리테스트 문구
 - 한자·사주 용어·끊긴 은유 금지 — **읽으면 바로 이해되는 일상 한국어**
 
-## section_3_conversation_patterns
-- \`conflict_situation\`: **title + dialogue_table만** (3~5행 bad/good 대비)
-- 대사는 **실제 커플이 말할 법한 자연스러운 구어체** — 문법 오류·"너의 이 나에게" 같은 깨진 표현 금지
-- ❌ 예: "너의 이 나에게 상처가 됐어" → ✅ "네 그 말이 나한테 상처가 됐어"
-- ❌ 예: "문제를 해결하는 데 집중해" (냉정한 조언) → ✅ "네가 힘든 건 알겠어. 내가 어떻게 도와줄까?"
-- 긴 대화 블록·숨은 심리·key_point·positive_situation **생성하지 마세요** (표만으로 충분)
+## section_3_conversation_patterns (💬 갈등 상황 — Few-Shot **필수**)
+- \`conflict_situation.title\`: 기질 차이 한 줄 (예: "표현의 속도차이와 내면의 과부하")
+- \`dialogue_table\`: **정확히 2행** — ${nicknameA}·${nicknameB} **각 1행** (한 사람만 여러 행 금지)
+- **50:50 밸런스**: 가해/피해 구도 금지. 양쪽 ❌ 모두 **기질에서 비롯된 필연적 힘듦**
+  - 빠른 감정 표현 쪽 ❌: 침묵·무뚝뚝함을 방관·무시로 오해하는 **공격적** 말
+  - 신중·무거운 처리 쪽 ❌: 감정 과부하 → **이성 통제**로만 맞추다 상대에게 서운한 말
+- ✅ good_line: 상담사 모범답안 금지 — **구체적·입 밖에 낼 법한** 말
+- \`label\`·대사: 커스텀 이름 1순위. emoji 😤/🤔 등
+- hidden_psychology·positive_situation·3행 이상 **금지**
 
 ## section_6_timeline
 - **지금·1년·3년·5년·10년** 다섯 구간 모두 필수 — 각 구간에 \`period\`에 연도 명시
 - 사주·한자·대운·세운 용어 금지 — 관계 변화만 일상어로
 
-## section_5_action
-- \`advice_for_a\` / \`advice_for_b\`: **각 3개 모두 필수** — \`EssenceActionGuideline\` 6필드
-- 필드: \`relationship_kind\`, \`target_user\`, \`saju_reason\`(왜 필요한지·기질 근거), \`action_title\`(후킹 제목), \`real_speech_tip\`(실제 대사), \`real_life_example\`(상황 예시)
-- action_title은 구체 행동(예: "급한 감정을 멈추고 상대 마음부터 확인하기")
-- "갈등 직후 20분 쉬어가요" 같은 **템플릿 문장 반복 금지**
-- \`together\` — 함께 실천할 한 가지 (템플릿 "작은 신호부터" 금지)
+## section_5_action (🌱 Essence 행동 가이드 — Few-Shot 구조 **필수**)
+- \`advice_for_a\` / \`advice_for_b\`: **각 3개** — \`EssenceActionGuideline\`
+- 필드: \`action_title\`(행동 강령 제목) + \`saju_reason\`(왜·어떻게 **3~4문장**) + \`real_speech_tip\`(실전 대사)
+- \`real_life_example\`: **항상 \`""\`** — "이런 순간에 —" 기획 메모식 서술 **절대 금지**
+- 6개 팁은 **서로 다른 행동 강령** (제목만 다르고 "감정을 드러내라" 복제 금지)
+- A용 예: 정서적 타이밍 존중 / 표현 밀도 조절 / 해결 전 감정 확인
+- B용 예: 침묵 깨고 내면 표현 / 해결 전 주파수 맞추기 / 완벽한 말 대신 솔직한 시도
+- \`together\`: **💌 에센스 다이어리** 본문 **3~4문장+** ("함께보면 좋아요" 한 줄 금지)
+- \`together_starter\`: 대화의 문을 여는 실전 대사
+- 명리 용어·자연물 비유(산·불·물 등) **0개**
 
 ## section_6_timeline
 - **지금·1년·3년·5년·10년** 다섯 구간 — \`in_1_year\` 키 포함, 각 \`period\`에 연도

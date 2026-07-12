@@ -8,16 +8,17 @@ function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
 }
 
-function ActionSpeech({ text }: { text: string }) {
+function ActionSpeechTip({ text }: { text: string }) {
   const body = text.trim();
   if (!body || isGenericRomanticActionPhrase(body)) return null;
   return (
-    <p className="rounded-xl bg-accent-rose-soft px-4 py-3 text-sm leading-relaxed text-on-surface-variant">
-      <span aria-hidden className="mr-1 text-on-surface-variant/70">
+    <p className="text-sm leading-relaxed text-on-surface-variant">
+      <span className="font-medium text-on-surface">* 실전 대사 꿀팁: </span>
+      <span aria-hidden className="text-on-surface-variant/70">
         “
       </span>
       {body}
-      <span aria-hidden className="ml-0.5 text-on-surface-variant/70">
+      <span aria-hidden className="text-on-surface-variant/70">
         ”
       </span>
     </p>
@@ -40,9 +41,6 @@ export default function EssenceActionGuidelineList({
       {items.map((item, index) => {
         const title = polish(item.action_title);
         const reason = item.saju_reason ? polish(item.saju_reason) : "";
-        const example = item.real_life_example
-          ? polish(item.real_life_example)
-          : "";
         const speech = item.real_speech_tip
           ? polish(item.real_speech_tip)
           : "";
@@ -62,22 +60,18 @@ export default function EssenceActionGuidelineList({
               {formatIndex(index)}
             </span>
             <div className="min-w-0 flex-1 space-y-2.5">
-              <p className={tone.bodyMedium}>{title}</p>
-              {reason ? (
-                <p className="text-sm leading-relaxed text-on-surface-variant">
-                  {reason}
-                </p>
-              ) : null}
-              {example ? (
-                <p className="text-xs leading-relaxed text-on-surface-variant/90">
-                  <span className="font-medium text-on-surface-variant">
-                    이런 순간에
-                  </span>
-                  {" — "}
-                  {example}
-                </p>
-              ) : null}
-              {speech ? <ActionSpeech text={speech} /> : null}
+              <p className={tone.bodyMedium}>
+                {title}
+                {reason ? (
+                  <>
+                    <span className="text-on-surface-variant">: </span>
+                    <span className="font-normal text-on-surface-variant">
+                      {reason}
+                    </span>
+                  </>
+                ) : null}
+              </p>
+              {speech ? <ActionSpeechTip text={speech} /> : null}
             </div>
           </article>
         );
