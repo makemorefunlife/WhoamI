@@ -17,7 +17,6 @@ import {
   parseRelationshipKind,
   type ResultPremiumByKind,
 } from "@/lib/relationship/relationshipKind";
-import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
@@ -43,6 +42,11 @@ import type {
   RomanticSajuDeepRunParams,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { createRomanticPremiumStreamResponse } from "@/lib/relationship/romanticPremiumStreamHandler";
+import {
+  assertRelationshipPremiumLlmAccess,
+  assertRelationshipViewerParticipant,
+} from "@/lib/relationship/relationshipPremiumGuard";
+import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -131,6 +135,13 @@ export async function POST(req: Request) {
         { status: 404 },
       );
     }
+
+    const viewerGuard = assertRelationshipViewerParticipant(
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    if (viewerGuard) return viewerGuard;
 
     if (rr.analysis_type !== "premium") {
       return NextResponse.json(
@@ -230,6 +241,12 @@ export async function POST(req: Request) {
     const userCustomTargetName =
       viewerReportId === rr.report_id_a ? labelB : labelA;
 
+    const llmAccessGuard = await assertRelationshipPremiumLlmAccess(
+      supabase,
+      relationshipReportId,
+    );
+    if (llmAccessGuard) return llmAccessGuard;
+
     if (kind === "romantic") {
       const wantStream =
         (body as { stream?: unknown }).stream === true && !forceRegenerate;
@@ -282,50 +299,35 @@ export async function POST(req: Request) {
       };
 
       if (wantStream) {
-        return createRomanticPremiumStreamResponse(openai, {
-          analysisParams: romanticAnalysisParams,
-          relationshipReportId,
-          viewerReportId,
-          kind: "romantic",
-          byKind,
-          supabase,
-        });
+        return createRomanticPremiumStreamResponse(
+          openai,
+          {
+            analysisParams: romanticAnalysisParams,
+            relationshipReportId,
+            viewerReportId,
+            kind: "romantic",
+            byKind,
+            supabase,
+          },
+          { abortSignal: req.signal },
+        );
       }
 
       const romanticPayload = await runRomanticSajuDeepAnalysis(
         openai,
         romanticAnalysisParams,
+        { abortSignal: req.signal },
       );
 
-      const nextByKind: ResultPremiumByKind = {
-        ...byKind,
-        romantic: romanticPayload,
-      };
-
-      const { error: upErr } = await updateRelationshipReportSafe(
-        supabase,
+      const persist = await persistRomanticPremiumResult(supabase, {
         relationshipReportId,
-        {
-          result_premium_by_kind: nextByKind,
-          relationship_kind: kind,
-        },
-        { result_premium: romanticPayload },
-      );
+        viewerReportId,
+        byKind,
+        romanticPayload,
+      });
 
-      if (upErr) {
-        console.error("relationship/analyze/premium romantic update:", upErr);
-        return NextResponse.json({ error: upErr.message }, { status: 500 });
-      }
-
-      if (viewerReportId) {
-        await insertRelationshipAnalysisLog(supabase, {
-          relationshipReportId,
-          viewerReportId,
-          relationshipKind: kind,
-          analysisLevel: "premium",
-          resultFormat: ROMANTIC_SAJU_DEEP_FORMAT,
-          payload: romanticPayload,
-        });
+      if (!persist.ok) {
+        return NextResponse.json({ error: persist.userMessage }, { status: 500 });
       }
 
       return NextResponse.json({

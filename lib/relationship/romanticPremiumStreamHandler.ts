@@ -4,15 +4,24 @@ import {
   runRomanticSajuDeepAnalysisStreaming,
   type RomanticSajuDeepRunParams,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
-import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
-import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
+import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
 import {
   encodePremiumStreamLine,
   ROMANTIC_PREMIUM_STREAM_CONTENT_TYPE,
   type RomanticPremiumStreamComplete,
 } from "@/lib/relationship/premiumStream";
+import {
+  RELATIONSHIP_PREMIUM_ANALYSIS_FAILED_MESSAGE,
+  RELATIONSHIP_PREMIUM_STREAM_ABORTED_MESSAGE,
+} from "@/lib/relationship/relationshipPremiumGuard";
 import type { ResultPremiumByKind } from "@/lib/relationship/relationshipKind";
-import { updateRelationshipReportSafe } from "@/lib/relationship/relationshipReportQuery";
+
+function isAbortError(err: unknown): boolean {
+  return (
+    (err instanceof DOMException && err.name === "AbortError") ||
+    (err instanceof Error && err.name === "AbortError")
+  );
+}
 
 export function createRomanticPremiumStreamResponse(
   openai: OpenAI,
@@ -20,20 +29,50 @@ export function createRomanticPremiumStreamResponse(
     analysisParams: RomanticSajuDeepRunParams;
     relationshipReportId: string;
     viewerReportId: string;
-    kind: "romantic";
     byKind: ResultPremiumByKind;
     supabase: SupabaseClient;
   },
+  options?: { abortSignal?: AbortSignal },
 ): Response {
+  const abortSignal = options?.abortSignal;
+  let streamClosed = false;
+
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const enqueue = (chunk: Uint8Array) => controller.enqueue(chunk);
+      const enqueue = (chunk: Uint8Array) => {
+        if (streamClosed) return;
+        try {
+          controller.enqueue(chunk);
+        } catch {
+          streamClosed = true;
+        }
+      };
+      const closeStream = () => {
+        if (streamClosed) return;
+        streamClosed = true;
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
+      const onClientAbort = () => {
+        closeStream();
+      };
+      abortSignal?.addEventListener("abort", onClientAbort, { once: true });
+
       try {
+        if (abortSignal?.aborted) {
+          return;
+        }
+
         const payload = await runRomanticSajuDeepAnalysisStreaming(
           openai,
           params.analysisParams,
           {
             onPrelude: (prelude) => {
+              if (abortSignal?.aborted) return;
               enqueue(
                 encodePremiumStreamLine({
                   type: "prelude",
@@ -42,64 +81,62 @@ export function createRomanticPremiumStreamResponse(
               );
             },
             onDelta: (content) => {
-              if (!content) return;
+              if (abortSignal?.aborted || !content) return;
               enqueue(encodePremiumStreamLine({ type: "delta", content }));
             },
           },
+          { abortSignal },
         );
 
-        const romanticPayload = payload;
-        const nextByKind: ResultPremiumByKind = {
-          ...params.byKind,
-          romantic: romanticPayload,
-        };
-
-        const { error: upErr } = await updateRelationshipReportSafe(
-          params.supabase,
-          params.relationshipReportId,
-          {
-            result_premium_by_kind: nextByKind,
-            relationship_kind: params.kind,
-          },
-          { result_premium: romanticPayload },
-        );
-
-        if (upErr) {
-          enqueue(
-            encodePremiumStreamLine({
-              type: "error",
-              message: upErr.message,
-            }),
-          );
-          controller.close();
+        if (abortSignal?.aborted) {
           return;
         }
 
-        if (params.viewerReportId) {
-          await insertRelationshipAnalysisLog(params.supabase, {
-            relationshipReportId: params.relationshipReportId,
-            viewerReportId: params.viewerReportId,
-            relationshipKind: params.kind,
-            analysisLevel: "premium",
-            resultFormat: ROMANTIC_SAJU_DEEP_FORMAT,
-            payload: romanticPayload,
-          });
+        const persist = await persistRomanticPremiumResult(params.supabase, {
+          relationshipReportId: params.relationshipReportId,
+          viewerReportId: params.viewerReportId,
+          byKind: params.byKind,
+          romanticPayload: payload,
+        });
+
+        if (!persist.ok) {
+          enqueue(
+            encodePremiumStreamLine({
+              type: "error",
+              message: persist.userMessage,
+            }),
+          );
+          closeStream();
+          return;
         }
 
         const complete: RomanticPremiumStreamComplete = {
           type: "complete",
           relationship_kind: "romantic",
-          result_premium: romanticPayload,
+          result_premium: payload,
         };
         enqueue(encodePremiumStreamLine(complete));
-        controller.close();
+        closeStream();
       } catch (e) {
-        const message =
-          e instanceof Error ? e.message : "관계 심화 분석 스트림 실패";
+        if (isAbortError(e) || abortSignal?.aborted) {
+          console.info("romanticPremiumStreamHandler: client disconnected");
+          closeStream();
+          return;
+        }
         console.error("romanticPremiumStreamHandler:", e);
-        enqueue(encodePremiumStreamLine({ type: "error", message }));
-        controller.close();
+        enqueue(
+          encodePremiumStreamLine({
+            type: "error",
+            message: RELATIONSHIP_PREMIUM_ANALYSIS_FAILED_MESSAGE,
+          }),
+        );
+        closeStream();
+      } finally {
+        abortSignal?.removeEventListener("abort", onClientAbort);
       }
+    },
+    cancel() {
+      streamClosed = true;
     },
   });
 
@@ -110,3 +147,5 @@ export function createRomanticPremiumStreamResponse(
     },
   });
 }
+
+export { RELATIONSHIP_PREMIUM_STREAM_ABORTED_MESSAGE };

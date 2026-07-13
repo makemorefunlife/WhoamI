@@ -6,7 +6,6 @@ export type RomanticPremiumStreamPrelude = {
   relationship_name: string;
   one_line_summary: string;
   grade: string;
-  snapshot_panel: unknown;
 };
 
 export type RomanticPremiumStreamDelta = {

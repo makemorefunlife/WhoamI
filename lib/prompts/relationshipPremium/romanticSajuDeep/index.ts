@@ -71,7 +71,6 @@ export type RomanticPremiumPreludePayload = {
   relationship_name: string;
   one_line_summary: string;
   grade: string;
-  snapshot_panel: unknown;
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
@@ -215,7 +214,6 @@ export function buildRomanticPremiumPrelude(
     relationship_name: prepared.opening.relationship_name,
     one_line_summary: prepared.opening.one_line_summary,
     grade: prepared.opening.grade,
-    snapshot_panel: prepared.snapshotPanel,
   };
 }
 
@@ -283,17 +281,24 @@ async function callLlmJson(
   openai: OpenAI,
   system: string,
   user: string,
+  abortSignal?: AbortSignal,
 ): Promise<string> {
-  const completion = await openai.chat.completions.create({
-    model: romanticLlmModel(),
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-    temperature: 0.55,
-    max_tokens: romanticSajuDeepMaxTokens(),
-    response_format: { type: "json_object" },
-  });
+  if (abortSignal?.aborted) {
+    throw new DOMException("Aborted", "AbortError");
+  }
+  const completion = await openai.chat.completions.create(
+    {
+      model: romanticLlmModel(),
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      temperature: 0.55,
+      max_tokens: romanticSajuDeepMaxTokens(),
+      response_format: { type: "json_object" },
+    },
+    { signal: abortSignal },
+  );
   return completion.choices[0]?.message.content?.trim() ?? "";
 }
 
@@ -302,9 +307,10 @@ async function callLlmJsonAndParse<T>(
   system: string,
   user: string,
   label: string,
+  abortSignal?: AbortSignal,
 ): Promise<T> {
   return fetchLlmJsonWithParseRetry<T>(
-    () => callLlmJson(openai, system, user),
+    () => callLlmJson(openai, system, user, abortSignal),
     { label },
   );
 }
@@ -314,21 +320,32 @@ async function streamLlmJsonRaw(
   system: string,
   user: string,
   onDelta: (content: string) => void,
+  abortSignal?: AbortSignal,
 ): Promise<string> {
-  const stream = await openai.chat.completions.create({
-    model: romanticLlmModel(),
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-    temperature: 0.55,
-    max_tokens: romanticSajuDeepMaxTokens(),
-    response_format: { type: "json_object" },
-    stream: true,
-  });
+  if (abortSignal?.aborted) {
+    throw new DOMException("Aborted", "AbortError");
+  }
+
+  const stream = await openai.chat.completions.create(
+    {
+      model: romanticLlmModel(),
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      temperature: 0.55,
+      max_tokens: romanticSajuDeepMaxTokens(),
+      response_format: { type: "json_object" },
+      stream: true,
+    },
+    { signal: abortSignal },
+  );
 
   let acc = "";
   for await (const chunk of stream) {
+    if (abortSignal?.aborted) {
+      throw new DOMException("Aborted", "AbortError");
+    }
     const content = chunk.choices[0]?.delta?.content ?? "";
     if (!content) continue;
     acc += content;
@@ -340,8 +357,10 @@ async function streamLlmJsonRaw(
 export async function runRomanticSajuDeepAnalysis(
   openai: OpenAI,
   params: RomanticSajuDeepRunParams,
+  options?: { abortSignal?: AbortSignal },
 ): Promise<RomanticSajuDeepPayload> {
   const prepared = prepareRomanticSajuDeepRun(params);
+  const abortSignal = options?.abortSignal;
 
   const [parsed, psychMatch, fortuneFlow] = await Promise.all([
     callLlmJsonAndParse<RomanticSajuDeepReport>(
@@ -349,6 +368,7 @@ export async function runRomanticSajuDeepAnalysis(
       prepared.systemPrompt,
       prepared.userPrompt,
       "romantic-primary",
+      abortSignal,
     ),
     Promise.resolve().then(() => buildPsychMatchParallel(params)),
     Promise.resolve().then(() => buildFortuneFlowParallel(params)),
@@ -376,8 +396,10 @@ export async function runRomanticSajuDeepAnalysisStreaming(
     onPrelude: (prelude: RomanticPremiumPreludePayload) => void;
     onDelta: (content: string) => void;
   },
+  options?: { abortSignal?: AbortSignal },
 ): Promise<RomanticSajuDeepPayload> {
   const prepared = prepareRomanticSajuDeepRun(params);
+  const abortSignal = options?.abortSignal;
   handlers.onPrelude(buildRomanticPremiumPrelude(prepared));
 
   const [raw, psychMatch, fortuneFlow] = await Promise.all([
@@ -386,6 +408,7 @@ export async function runRomanticSajuDeepAnalysisStreaming(
       prepared.systemPrompt,
       prepared.userPrompt,
       handlers.onDelta,
+      abortSignal,
     ),
     Promise.resolve().then(() => buildPsychMatchParallel(params)),
     Promise.resolve().then(() => buildFortuneFlowParallel(params)),
