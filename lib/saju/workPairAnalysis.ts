@@ -22,10 +22,10 @@ import {
   type PairSajuAnalysis,
 } from "@/lib/saju/pairChartAnalysis";
 
-const stemElement = new Map(
+const stemElement = new Map<string, string>(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
 );
-const branchElement = new Map(
+const branchElement = new Map<string, string>(
   REF_EARTHLY_BRANCHES.map((r) => [r.code, r.element as string]),
 );
 
@@ -260,7 +260,7 @@ function analyzeStemCommunicationWork(
   chartA: ChartContext,
   chartB: ChartContext,
 ): WorkStemCommunicationAnalysis {
-  const rules = REF_RELATION_RULES as RelationRuleRow[];
+  const rules = REF_RELATION_RULES as unknown as RelationRuleRow[];
   const stemPairs: WorkStemPairHit[] = [];
 
   for (const pa of chartA.pillars) {

@@ -6,6 +6,8 @@ import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { CurrentSelfProfile, SurveyAnswersInput } from "@/lib/v2/survey/types";
 import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
+import { invalidatePersonCoreBlueprint } from "@/lib/personCore";
+import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -146,6 +148,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    await Promise.all([
+      invalidatePersonCoreBlueprint(reportId, supabase),
+      invalidateRelationshipPremiumsForReport(supabase, reportId),
+    ]);
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("v2/survey POST:", e);
@@ -178,6 +185,11 @@ export async function DELETE(req: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await Promise.all([
+      invalidatePersonCoreBlueprint(reportId, supabase),
+      invalidateRelationshipPremiumsForReport(supabase, reportId),
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch (e) {

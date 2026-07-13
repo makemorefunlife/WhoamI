@@ -11,6 +11,9 @@ import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/
 import { buildFriendRuleContext } from "./buildFriendRuleContext";
 import { buildFriendSnapshotPanel } from "./buildFriendSnapshotPanel";
 import { buildFriendSocialReport } from "./friendReportTemplate";
+import { buildFriendPrescriptions } from "./buildFriendPrescriptions";
+import type { FriendPrescriptionPack } from "./friendPrescriptionTypes";
+import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTypes";
 
 export type FriendReportBody = {
   headline: string;
@@ -30,6 +33,8 @@ export type FriendReportBody = {
     person_core?: PersonCoreRelationMetaPayload;
     psych_match?: PsychMatchResult | null;
     psych_lens?: DomainPsychLens | null;
+    /** pair.friendship 교차 신호 기반 실행 처방전 */
+    prescription_friendship?: FriendPrescriptionPack;
   };
 };
 
@@ -50,6 +55,7 @@ export function buildFriendReport(params: {
     inputFingerprintA: string;
     inputFingerprintB: string;
   };
+  pairFriendship?: PairFriendshipSignals | null;
 }): FriendReportBody {
   const ctx = buildFriendRuleContext(params);
   const friend = buildFriendSocialReport(ctx);
@@ -71,6 +77,14 @@ export function buildFriendReport(params: {
     params.psychMasterA,
     params.psychMasterB,
   );
+
+  const prescription_friendship = params.pairFriendship
+    ? buildFriendPrescriptions({
+        pair: params.pairFriendship,
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+      })
+    : undefined;
 
   return {
     headline: friend.section_snapshot.one_line_friendship,
@@ -94,6 +108,7 @@ export function buildFriendReport(params: {
             psych_lens: psychBundle.psych_lens,
           }
         : {}),
+      ...(prescription_friendship ? { prescription_friendship } : {}),
     },
   };
 }

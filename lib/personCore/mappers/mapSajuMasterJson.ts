@@ -8,6 +8,7 @@ import {
 } from "@/lib/saju/workPairRiskSignals";
 import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import { extractDomainSajuSignals } from "../sajuSignals/extractDomainSajuSignals";
 import {
   SAJU_ENGINE_VERSION,
   SAJU_MASTER_JSON_VERSION,
@@ -237,6 +238,7 @@ export function mapSajuBundleToMasterJson(params: {
 
   const dayStemHangul = stemHangulFromPillar(pillars.dayPillar);
   const monthStemHangul = stemHangulFromPillar(pillars.monthPillar);
+  const johu_climate = buildJohuClimate(chart);
 
   return {
     schema_version: SAJU_MASTER_JSON_VERSION,
@@ -257,13 +259,14 @@ export function mapSajuBundleToMasterJson(params: {
       day_branch_code: chart.dayBranchCode,
       day_branch_hangul: branchHangulFromPillar(pillars.dayPillar),
     },
-    johu_climate: buildJohuClimate(chart),
+    johu_climate,
     hidden_stems: mapHiddenStems(bundle.hiddenStemsData),
     special_signals: buildSpecialSignals(chart, bundle.shinsals),
     shinsal_hits: mapShinsalHits(bundle.shinsals),
     twelve_stages: mapTwelveStages(bundle.growthStages),
     ten_gods: mapTenGods(bundle.tenGods),
     relation_dynamics: mapRelationDynamics(bundle.relations),
+    domain_signals: extractDomainSajuSignals(bundle, johu_climate),
     validation: {
       ok: validation.ok,
       notes: validation.notes,

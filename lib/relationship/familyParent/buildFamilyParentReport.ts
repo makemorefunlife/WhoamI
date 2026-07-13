@@ -15,6 +15,9 @@ import {
   buildFamilyParentChildReport,
   type FamilyParentChildReport,
 } from "./familyReportTemplate";
+import { buildFamilyPrescriptions } from "./buildFamilyPrescriptions";
+import type { FamilyPrescriptionPack } from "./familyPrescriptionTypes";
+import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -38,6 +41,8 @@ export type FamilyParentReportBody = {
     person_core?: PersonCoreRelationMetaPayload;
     psych_match?: PsychMatchResult | null;
     psych_lens?: DomainPsychLens | null;
+    /** pair.family 교차 신호 기반 실행 처방전 */
+    prescription_family?: FamilyPrescriptionPack;
   };
 };
 
@@ -60,6 +65,7 @@ export function buildFamilyParentReport(params: {
     inputFingerprintA: string;
     inputFingerprintB: string;
   };
+  pairFamily?: PairFamilySignals | null;
 }): FamilyParentReportBody {
   const ctx = buildFamilyRuleContext(params);
   const family = buildFamilyParentChildReport(ctx);
@@ -81,6 +87,14 @@ export function buildFamilyParentReport(params: {
     params.psychMasterA,
     params.psychMasterB,
   );
+
+  const prescription_family = params.pairFamily
+    ? buildFamilyPrescriptions({
+        pair: params.pairFamily,
+        parentNickname: ctx.parentNickname,
+        childNickname: ctx.childNickname,
+      })
+    : undefined;
 
   return {
     headline: family.section_snapshot.one_line_family,
@@ -108,6 +122,7 @@ export function buildFamilyParentReport(params: {
             psych_lens: psychBundle.psych_lens,
           }
         : {}),
+      ...(prescription_family ? { prescription_family } : {}),
     },
   };
 }

@@ -1,15 +1,15 @@
 import type OpenAI from "openai";
-import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import {
-  formatPairSajuBlock,
-  formatPersonSajuBlock,
-} from "@/lib/saju/formatRomanticSajuInput";
-import { fetchLlmJsonWithParseRetry } from "@/lib/relationship/parseLlmJson";
-import { buildRomanticRefineDigest } from "@/lib/relationship/romanticRefineDigest";
+import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
 import { buildRomanticRulesBundle } from "@/lib/relationship/romanticRules";
+import {
+  buildRomanticPairSignalsDigest,
+  buildRomanticPersonSignalsDigest,
+} from "@/lib/relationship/romanticSajuPromptDigest";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
 import { buildRomanticScreenPlan } from "@/lib/relationship/romanticHeadline/screenMap";
 import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
+import { fetchLlmJsonWithParseRetry } from "@/lib/relationship/parseLlmJson";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import { buildPsychMatchResult } from "@/lib/relationship/psychMatch";
@@ -21,7 +21,6 @@ import {
   isRomanticSajuDeepReport,
   type RomanticSajuDeepReport,
 } from "./outputSchema";
-import { buildRomanticSajuDeepSelfRefinePrompt } from "./selfRefine";
 
 export const ROMANTIC_SAJU_DEEP_FORMAT = "romantic_saju_deep_v2" as const;
 
@@ -31,7 +30,7 @@ export type RomanticSajuDeepPayload = {
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
-  return process.env.RELATIONSHIP_ROMANTIC_SELF_REFINE === "true";
+  return false;
 }
 
 /** 출력 토큰 상한 — RELATIONSHIP_ROMANTIC_MAX_TOKENS 로 조정 가능 */
@@ -90,6 +89,8 @@ export async function runRomanticSajuDeepAnalysis(
     surveyProfileA?: CurrentSelfProfile | null;
     surveyProfileB?: CurrentSelfProfile | null;
     locale?: RomanticSajuDeepLocale;
+    sajuMasterA?: SajuMasterJson | null;
+    sajuMasterB?: SajuMasterJson | null;
   },
 ): Promise<RomanticSajuDeepPayload> {
   const locale = params.locale ?? "ko";
@@ -125,30 +126,34 @@ export async function runRomanticSajuDeepAnalysis(
     pool: insightPool,
   });
 
-  const personBlockA = formatPersonSajuBlock({
-    nickname: params.nicknameA,
-    birthDate: params.birthA.date,
-    birthTime: params.birthA.time,
-    birthPlace: params.birthA.place,
-    sajuJson: params.sajuJsonA,
-    uncertainItems: uncertainA,
-  });
-  const personBlockB = formatPersonSajuBlock({
-    nickname: params.nicknameB,
-    birthDate: params.birthB.date,
-    birthTime: params.birthB.time,
-    birthPlace: params.birthB.place,
-    sajuJson: params.sajuJsonB,
-    uncertainItems: uncertainB,
-  });
-  const pairBlock = formatPairSajuBlock(
-    params.sajuJsonA,
-    params.sajuJsonB,
-    params.nicknameA,
-    params.nicknameB,
+  const personBlockA =
+    params.sajuMasterA != null
+      ? buildRomanticPersonSignalsDigest({
+          nickname: params.nicknameA,
+          birthDate: params.birthA.date,
+          birthTime: params.birthA.time,
+          birthPlace: params.birthA.place,
+          master: params.sajuMasterA,
+          uncertainItems: uncertainA,
+        })
+      : `## ${params.nicknameA}\n(PersonCore master 없음 — 규칙 엔진만 사용)`;
+  const personBlockB =
+    params.sajuMasterB != null
+      ? buildRomanticPersonSignalsDigest({
+          nickname: params.nicknameB,
+          birthDate: params.birthB.date,
+          birthTime: params.birthB.time,
+          birthPlace: params.birthB.place,
+          master: params.sajuMasterB,
+          uncertainItems: uncertainB,
+        })
+      : `## ${params.nicknameB}\n(PersonCore master 없음 — 규칙 엔진만 사용)`;
+  const pairBlock = buildRomanticPairSignalsDigest({
+    labelA: params.nicknameA,
+    labelB: params.nicknameB,
     pairAnalysis,
-    opening.event_scores ?? ctx.eventScores,
-  );
+    eventScores: opening.event_scores ?? ctx.eventScores,
+  });
 
   const userPrompt = buildRomanticSajuDeepUserPrompt({
     nicknameA: params.nicknameA,
@@ -161,7 +166,7 @@ export async function runRomanticSajuDeepAnalysis(
     locale,
   });
 
-  let parsed = await callLlmJsonAndParse<RomanticSajuDeepReport>(
+  const parsed = await callLlmJsonAndParse<RomanticSajuDeepReport>(
     openai,
     systemPrompt,
     userPrompt,
@@ -169,30 +174,6 @@ export async function runRomanticSajuDeepAnalysis(
   );
   if (!isRomanticSajuDeepReport(parsed)) {
     throw new Error("LLM 응답이 연인 심화 Output Schema와 맞지 않습니다.");
-  }
-
-  if (romanticSajuDeepSelfRefineEnabled()) {
-    const refineUser = `${buildRomanticSajuDeepSelfRefinePrompt(params.nicknameA, params.nicknameB)}
-
-# 원본 입력 데이터 (1차 결과가 이 데이터와 맞는지 검증·재작성)
-
-${personBlockA}
-
-${personBlockB}
-
-${pairBlock}
-
-# 1차 분석 결과 (요약 digest — 전체 JSON 대신 핵심 필드만)
-${buildRomanticRefineDigest(parsed.report)}`;
-    const refined = await callLlmJsonAndParse<RomanticSajuDeepReport>(
-      openai,
-      systemPrompt,
-      refineUser,
-      "romantic-refine",
-    );
-    if (isRomanticSajuDeepReport(refined)) {
-      parsed = refined;
-    }
   }
 
   const generatedAt = new Date().toISOString();
@@ -228,6 +209,11 @@ ${buildRomanticRefineDigest(parsed.report)}`;
       generated_at: generatedAt,
       headline_engine: "selector_v2+rule_library_v2+palace_weight+tri_score",
       saju_engine: "calculateSajuBundle_v2",
+      saju_master_schema:
+        params.sajuMasterA?.schema_version ??
+        params.sajuMasterB?.schema_version ??
+        null,
+      prompt_input_mode: "domain_signals_digest_v1",
       saju_provenance: {
         a: params.sajuProvenanceA ?? null,
         b: params.sajuProvenanceB ?? null,

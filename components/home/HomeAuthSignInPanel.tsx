@@ -12,8 +12,6 @@ export default function HomeAuthSignInPanel() {
       appearance={{
         variables: {
           colorPrimary: "#4a90e2",
-          colorText: "#0f172a",
-          colorTextSecondary: "#64748b",
           borderRadius: "0.75rem",
           fontSize: "0.9375rem",
         },

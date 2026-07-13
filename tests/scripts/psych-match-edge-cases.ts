@@ -12,7 +12,7 @@ import {
   compatibilityScoreFromGap,
 } from "@/lib/relationship/psychMatch/chemistryApprox";
 import { buildStrengthWeaknessLists } from "@/lib/relationship/psychMatch/strengthWeaknessTemplates";
-import { SECONDARY_AXIS_KEYS, type CurrentSelfProfile } from "@/lib/v2/survey/types";
+import { PRIMARY_AXIS_KEYS, SECONDARY_AXIS_KEYS, type CurrentSelfProfile } from "@/lib/v2/survey/types";
 
 function section(title: string) {
   console.log(`\n${"=".repeat(60)}\n${title}\n${"=".repeat(60)}`);
@@ -27,13 +27,9 @@ function baseProfile(overrides: Partial<CurrentSelfProfile["secondary_axes"]> = 
   }
   return {
     profile_type: "current_self",
-    primary_axes: {
-      extraversion: 50,
-      agreeableness: 50,
-      conscientiousness: 50,
-      emotional_stability: 50,
-      openness: 50,
-    },
+    primary_axes: Object.fromEntries(
+      PRIMARY_AXIS_KEYS.map((k) => [k, 50]),
+    ) as CurrentSelfProfile["primary_axes"],
     secondary_axes,
     personalization: { primary_concern: null },
     meta: {

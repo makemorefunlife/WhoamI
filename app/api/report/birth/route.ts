@@ -12,6 +12,7 @@ import { resolveAstrologyCoordinates } from "@/lib/report/resolveAstrologyCoordi
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
+import { invalidatePersonCoreBlueprint } from "@/lib/personCore";
 import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
 import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
@@ -233,7 +234,10 @@ export async function POST(req: Request) {
       await deleteReportAnalysis(supabase, reportId, "integrated");
     }
     if (birthMateriallyChanged) {
-      await invalidateRelationshipPremiumsForReport(supabase, reportId);
+      await Promise.all([
+        invalidateRelationshipPremiumsForReport(supabase, reportId),
+        invalidatePersonCoreBlueprint(reportId, supabase),
+      ]);
     }
 
     return NextResponse.json({
@@ -244,6 +248,7 @@ export async function POST(req: Request) {
       birth_date_correction_column_available:
         typeof correctionUsedAt === "string" || correctionAlreadyUsed,
       relationship_premium_invalidated: birthMateriallyChanged,
+      person_core_invalidated: birthMateriallyChanged,
     });
   } catch (e) {
     console.error("report/birth:", e);
@@ -320,6 +325,7 @@ export async function DELETE(req: Request) {
     }
 
     await deleteReportAnalysis(supabase, reportId, "astrology");
+    await invalidatePersonCoreBlueprint(reportId, supabase);
 
     return NextResponse.json({ ok: true });
   } catch (e) {

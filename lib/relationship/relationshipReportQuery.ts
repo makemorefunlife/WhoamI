@@ -59,7 +59,9 @@ async function selectByReportSide(
 
   if (error) return { data: [], error };
   return {
-    data: (data ?? []).map((r) => normalizeRow(r as Record<string, unknown>)),
+    data: (data ?? []).map((r) =>
+      normalizeRow(r as unknown as Record<string, unknown>),
+    ),
     error: null,
   };
 }
@@ -118,7 +120,7 @@ export async function fetchRelationshipReportByIdSafe(
   if (preferLegacySelect === null) preferLegacySelect = false;
 
   return {
-    row: normalizeRow(data as Record<string, unknown>),
+    row: normalizeRow(data as unknown as Record<string, unknown>),
     error: null,
   };
 }
@@ -148,7 +150,9 @@ export async function fetchRelationshipReportsByIdsSafe(
   if (error) throw error;
   if (preferLegacySelect === null) preferLegacySelect = false;
 
-  return (data ?? []).map((r) => normalizeRow(r as Record<string, unknown>));
+  return (data ?? []).map((r) =>
+    normalizeRow(r as unknown as Record<string, unknown>),
+  );
 }
 
 /** 신규 컬럼 업데이트 실패 시 legacy 컬럼(result_premium 등)만으로 재시도 */

@@ -17,6 +17,9 @@ import {
   buildOfficePartnershipReport,
   type OfficePartnershipReport,
 } from "./officeReportTemplate";
+import { buildWorkPrescriptions } from "./buildWorkPrescriptions";
+import type { WorkPrescriptionPack } from "./workPrescriptionTypes";
+import type { PairWorkSignals } from "@/lib/personCore/sajuSignals/pairTypes";
 
 export type WorkColleagueReportBody = {
   headline: string;
@@ -34,6 +37,8 @@ export type WorkColleagueReportBody = {
     person_core?: PersonCoreRelationMetaPayload;
     psych_match?: PsychMatchResult | null;
     psych_lens?: DomainPsychLens | null;
+    /** pair.work 교차 신호 기반 실행 처방전 */
+    prescription_work?: WorkPrescriptionPack;
   };
 };
 
@@ -72,6 +77,7 @@ export function buildWorkColleagueReport(params: {
     inputFingerprintA: string;
     inputFingerprintB: string;
   };
+  pairWork?: PairWorkSignals | null;
 }): WorkColleagueReportBody {
   const ctx = buildWorkColleagueContext(params);
   const office = buildOfficePartnershipReport(ctx);
@@ -95,6 +101,14 @@ export function buildWorkColleagueReport(params: {
     params.psychMasterB,
   );
 
+  const prescription_work = params.pairWork
+    ? buildWorkPrescriptions({
+        pair: params.pairWork,
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+      })
+    : undefined;
+
   return {
     headline: headlineBlock.headline,
     summary_line: headlineBlock.summary_line,
@@ -115,6 +129,7 @@ export function buildWorkColleagueReport(params: {
             psych_lens: psychBundle.psych_lens,
           }
         : {}),
+      ...(prescription_work ? { prescription_work } : {}),
     },
   };
 }

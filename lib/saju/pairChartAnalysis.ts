@@ -17,10 +17,10 @@ const ELEMENT_KO: Record<string, string> = {
   water: "수(水)",
 };
 
-const stemElement = new Map(
+const stemElement = new Map<string, string>(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
 );
-const branchElement = new Map(
+const branchElement = new Map<string, string>(
   REF_EARTHLY_BRANCHES.map((r) => [r.code, r.element as string]),
 );
 
@@ -123,7 +123,7 @@ export function analyzeCrossChartRelations(
   chartA: ChartContext,
   chartB: ChartContext,
 ): CrossChartHit[] {
-  const rules = REF_RELATION_RULES as RelationRuleRow[];
+  const rules = REF_RELATION_RULES as unknown as RelationRuleRow[];
   const hits: CrossChartHit[] = [];
   const seen = new Set<string>();
 

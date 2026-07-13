@@ -126,7 +126,7 @@ console.log(`profiles: ${profiles.length} (expected 262144)`);
 const rng = mulberry32(SEED);
 const perAxisGaps: Record<SecondaryAxisKey, number[]> = Object.fromEntries(
   SECONDARY_AXIS_KEYS.map((k) => [k, []]),
-) as Record<SecondaryAxisKey, number[]>;
+) as unknown as Record<SecondaryAxisKey, number[]>;
 
 const meanGap11: number[] = [];
 const maxGap11: number[] = [];

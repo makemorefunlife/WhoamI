@@ -47,8 +47,8 @@ export const ATTRACTION_INFLUENCE_RULES: RomanticRule<AttractionRuleOutput>[] = 
       ruleId: "attraction_day_stem_support",
       headline: "서로를 살리는 만남",
       body: humanizeDayStemInteraction(ctx.pairAnalysis.dayStemInteraction, {
-        a: stemNameA,
-        b: stemNameB,
+        a: stemNameA ?? "",
+        b: stemNameB ?? "",
       }),
       influenceTags: ["pair_day_stem", "상생"],
       togetherChangeHint: "한쪽이 흔들릴 때 다른 쪽이 버팀목이 되는 패턴이에요.",

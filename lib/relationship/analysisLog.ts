@@ -4,6 +4,7 @@ import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/coha
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import {
   parseRelationshipKind,
+  isRelationshipKind,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
 import { isRelationshipKindCheckError } from "@/lib/relationship/relationshipReportQuery";
@@ -175,10 +176,9 @@ export async function listRelationshipAnalysisLogs(
     const summary = buildLogSummary(row.result_format, snap);
     return {
       ...(row as AnalysisLogRow),
-      relationship_kind: parseRelationshipKind(
-        row.relationship_kind,
-        "unspecified",
-      ) as AnalysisLogRow["relationship_kind"],
+      relationship_kind: isRelationshipKind(row.relationship_kind)
+        ? row.relationship_kind
+        : "unspecified",
       summary_title: summary.title,
       summary_subtitle: summary.subtitle,
     };

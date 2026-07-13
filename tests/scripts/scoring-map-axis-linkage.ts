@@ -5,12 +5,16 @@ import {
 import {
   SCORED_QUESTION_IDS,
   SECONDARY_AXIS_KEYS,
+  type ScoredQuestionId,
+  type SecondaryAxisKey,
+  type SurveyChoice,
 } from "@/lib/v2/survey/types";
 
-const CHOICES = ["A", "B", "C", "D"] as const;
+const CHOICES = ["A", "B", "C", "D"] as const satisfies readonly SurveyChoice[];
 
-const linkedQs: Record<string, string[]> = {};
-for (const axis of SECONDARY_AXIS_KEYS) linkedQs[axis] = [];
+const linkedQs = Object.fromEntries(
+  SECONDARY_AXIS_KEYS.map((k) => [k, [] as ScoredQuestionId[]]),
+) as Record<SecondaryAxisKey, ScoredQuestionId[]>;
 for (const qId of SCORED_QUESTION_IDS) {
   const touches = new Set<string>();
   for (const c of CHOICES) {
@@ -20,17 +24,17 @@ for (const qId of SCORED_QUESTION_IDS) {
       if (sec[axis]) touches.add(axis);
     }
   }
-  for (const axis of touches) linkedQs[axis].push(qId);
+  for (const axis of touches) linkedQs[axis as SecondaryAxisKey].push(qId);
 }
 
 console.log("=== 1. linked question count (q1-q9) ===");
 for (const axis of SECONDARY_AXIS_KEYS) {
   console.log(
-    `${axis}: ${linkedQs[axis].length} — [${linkedQs[axis].join(", ")}]`,
+    `${axis}: ${linkedQs[axis].length} ??[${linkedQs[axis].join(", ")}]`,
   );
 }
 
-function deltasForAxisOnQuestion(qId: string, axis: string) {
+function deltasForAxisOnQuestion(qId: ScoredQuestionId, axis: SecondaryAxisKey) {
   const w = QUESTION_WEIGHT[qId];
   return CHOICES.map((c) => {
     const raw = SURVEY_SCORING_MAP[qId][c].secondary?.[axis] ?? 0;
@@ -42,11 +46,14 @@ console.log("\n=== 2. axes with <=2 linked questions ===");
 for (const axis of SECONDARY_AXIS_KEYS) {
   const qs = linkedQs[axis];
   if (qs.length > 2) continue;
-  const perQ = qs.map((q) => ({ q, deltas: deltasForAxisOnQuestion(q, axis) }));
+  const perQ = qs.map((q) => ({
+    q,
+    deltas: deltasForAxisOnQuestion(q as ScoredQuestionId, axis),
+  }));
 
   function combos(idx: number, acc: number): number[] {
     if (idx === qs.length) return [acc];
-    const q = qs[idx];
+    const q = qs[idx] as ScoredQuestionId;
     const outs: number[] = [];
     for (const c of CHOICES) {
       const raw = SURVEY_SCORING_MAP[q][c].secondary?.[axis] ?? 0;
@@ -119,7 +126,7 @@ for (const axis of SECONDARY_AXIS_KEYS) {
 struct.sort((a, b) => a.zero_net_rate - b.zero_net_rate);
 console.log(JSON.stringify(struct, null, 2));
 
-const B: Record<string, string> = {
+const B: Partial<Record<ScoredQuestionId, SurveyChoice>> = {
   q1: "A",
   q2: "D",
   q3: "D",
@@ -132,7 +139,7 @@ const B: Record<string, string> = {
 };
 let pracB = 0;
 for (const q of SCORED_QUESTION_IDS) {
-  const c = B[q];
+  const c: SurveyChoice = B[q] ?? "A";
   pracB +=
     (SURVEY_SCORING_MAP[q][c].secondary?.practicality ?? 0) *
     QUESTION_WEIGHT[q];

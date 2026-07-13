@@ -13,6 +13,11 @@ export {
   type BuildFamilyContextParams as BuildFamilyParentContextParams,
 } from "./buildFamilyRuleContext";
 export { buildFamilyParentReport, type FamilyParentReportBody } from "./buildFamilyParentReport";
+export { buildFamilyPrescriptions } from "./buildFamilyPrescriptions";
+export type {
+  FamilyPrescriptionPack,
+  FamilyPrescriptionItem,
+} from "./familyPrescriptionTypes";
 export {
   buildFamilyParentChildReport,
   type FamilyParentChildReport,

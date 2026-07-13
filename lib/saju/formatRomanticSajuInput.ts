@@ -50,8 +50,10 @@ type ExtendedSajuJson = SajuDataForIntegrated & {
   monthStemData?: StemRef | null;
 };
 
-const stemKorByCode = new Map(REF_HEAVENLY_STEMS.map((r) => [r.code, r.kor_name]));
-const branchKorByCode = new Map(
+const stemKorByCode = new Map<string, string>(
+  REF_HEAVENLY_STEMS.map((r) => [r.code, r.kor_name]),
+);
+const branchKorByCode = new Map<string, string>(
   REF_EARTHLY_BRANCHES.map((r) => [r.code, r.kor_name]),
 );
 

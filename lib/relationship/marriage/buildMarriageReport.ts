@@ -13,6 +13,13 @@ import {
   buildHouseholdPartnershipReport,
   type HouseholdPartnershipReport,
 } from "./homeReportTemplate";
+import {
+  buildCohabitationKillerQuestions,
+} from "./buildCohabitationKillerQuestions";
+import type { CohabitationKillerQuestionPack } from "./cohabitationKillerTypes";
+import { buildCohabitationPrescriptions } from "./buildCohabitationPrescriptions";
+import type { CohabitationPrescriptionPack } from "./cohabitationPrescriptionTypes";
+import type { PairCohabitationSignals } from "@/lib/personCore/sajuSignals/pairTypes";
 
 export type MarriageReportBody = {
   headline: string;
@@ -41,6 +48,10 @@ export type MarriageReportBody = {
     psych_lens?: DomainPsychLens | null;
     /** 동거·부부 렌즈 — 홈 생활에서 특히 눈에 띄는 축 2~3개 (레거시 캐시 호환) */
     home_psych_lens?: MarriageHomePsychLens | null;
+    /** 1안 — 사주×설문 교차 검증 킬러 질문 팩 */
+    killer_questions?: CohabitationKillerQuestionPack;
+    /** 3보 — pair 교차 신호 기반 실행 처방전 (기존 household 서사와 독립) */
+    prescription_cohabitation?: CohabitationPrescriptionPack;
   };
 };
 
@@ -61,6 +72,8 @@ export function buildMarriageReport(params: {
     inputFingerprintA: string;
     inputFingerprintB: string;
   };
+  /** PersonCore pair 교차 연산 — prescription_cohabitation 생성용 */
+  pairCohabitation?: PairCohabitationSignals | null;
 }): MarriageReportBody {
   const ctx = buildMarriageRuleContext(params);
   const household = buildHouseholdPartnershipReport(ctx);
@@ -96,6 +109,21 @@ export function buildMarriageReport(params: {
     params.psychMasterB,
   );
 
+  const killer_questions = buildCohabitationKillerQuestions({
+    ctx,
+    household,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+  });
+
+  const prescription_cohabitation = params.pairCohabitation
+    ? buildCohabitationPrescriptions({
+        pair: params.pairCohabitation,
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+      })
+    : undefined;
+
   return {
     headline: household.section_snapshot.one_line_household,
     summary_line: `🔥 ${ctx.masterScores.activation}% · 🧩 ${ctx.masterScores.benefit}% · ⚡ ${ctx.masterScores.risk}%`,
@@ -116,6 +144,10 @@ export function buildMarriageReport(params: {
             psych_lens: psychBundle.psych_lens,
             home_psych_lens: psychBundle.home_psych_lens,
           }
+        : {}),
+      killer_questions,
+      ...(prescription_cohabitation
+        ? { prescription_cohabitation }
         : {}),
     },
   };

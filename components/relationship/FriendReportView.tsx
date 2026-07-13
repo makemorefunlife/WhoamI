@@ -7,6 +7,7 @@ import { buildFriendPsychMatchBundle } from "@/lib/relationship/psychDomainLens/
 import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import {
   applyRomanticDisplayNames,
@@ -277,6 +278,12 @@ export default function FriendReportView({
           </RelationshipReportInset>
         </RelationshipReportBody>
       </RelationshipReportCard>
+
+      <PairPrescriptionSection
+        pack={report.meta?.prescription_friendship}
+        accentColor={theme.accent}
+        domain="friendship"
+      />
     </RelationshipReportLayout>
   );
 }

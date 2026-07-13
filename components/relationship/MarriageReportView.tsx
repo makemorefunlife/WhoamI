@@ -12,6 +12,7 @@ import type { HomeDeEscalationCard } from "@/lib/relationship/marriage/homeDeEsc
 import { hydrateMarriageSnapshotPanel } from "@/lib/relationship/marriage/buildMarriageSnapshotPanel";
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -653,6 +654,14 @@ export default function MarriageReportView({
             </div>
           ) : null}
         </RelationshipReportCard>
+      ) : null}
+
+      {report.meta?.prescription_cohabitation ? (
+        <PairPrescriptionSection
+          pack={report.meta.prescription_cohabitation}
+          accentColor={theme.accent}
+          domain="cohabitation"
+        />
       ) : null}
     </RelationshipReportLayout>
   );

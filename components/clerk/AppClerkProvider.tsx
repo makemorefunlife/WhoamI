@@ -14,8 +14,6 @@ export default function AppClerkProvider({
     <ClerkProvider
       signInUrl={ROUTES.signIn}
       signUpUrl={ROUTES.signUp}
-      afterSignInUrl={ROUTES.home}
-      afterSignUpUrl={ROUTES.home}
       afterSignOutUrl={ROUTES.home}
       ui={ui}
     >

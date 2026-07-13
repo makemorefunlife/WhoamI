@@ -20,10 +20,10 @@ import {
   detectMarriageWonjinGuimun,
 } from "@/lib/saju/workPairRiskSignals";
 
-const stemElement = new Map(
+const stemElement = new Map<string, string>(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
 );
-const branchElement = new Map(
+const branchElement = new Map<string, string>(
   REF_EARTHLY_BRANCHES.map((r) => [r.code, r.element as string]),
 );
 
@@ -183,7 +183,7 @@ function findBranchRule(
 ): RelationRuleRow | null {
   const key = pairKey(a, b);
   return (
-    (REF_RELATION_RULES as RelationRuleRow[]).find(
+    (REF_RELATION_RULES as unknown as RelationRuleRow[]).find(
       (r) =>
         r.relation_type === type && pairKey(r.code_a, r.code_b) === key,
     ) ?? null

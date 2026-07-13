@@ -14,6 +14,7 @@ import type { OfficePersonRoleCard } from "@/lib/relationship/workColleague/offi
 import { hydrateWorkSnapshotPanel } from "@/lib/relationship/workColleague/buildWorkSnapshotPanel";
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -503,6 +504,12 @@ export default function WorkColleagueReportView({
           </RelationshipReportBody>
         </RelationshipReportCard>
       ) : null}
+
+      <PairPrescriptionSection
+        pack={report.meta?.prescription_work}
+        accentColor={theme.accent}
+        domain="work"
+      />
     </RelationshipReportLayout>
   );
 }

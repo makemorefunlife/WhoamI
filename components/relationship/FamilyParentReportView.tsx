@@ -7,6 +7,7 @@ import { buildFamilyPsychMatchBundle } from "@/lib/relationship/psychDomainLens/
 import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -245,6 +246,12 @@ export default function FamilyParentReportView({
           </RelationshipReportBody>
         </RelationshipReportCard>
       ) : null}
+
+      <PairPrescriptionSection
+        pack={report.meta?.prescription_family}
+        accentColor={theme.accent}
+        domain="family"
+      />
     </RelationshipReportLayout>
   );
 }

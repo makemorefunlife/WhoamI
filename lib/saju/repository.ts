@@ -8,13 +8,15 @@ import {
   REF_TWELVE_STAGES,
 } from "@/lib/hardcoded/sajuReferenceData";
 
-const heavenlyStemByCode = new Map(
+type HiddenStemRow = (typeof REF_HIDDEN_STEMS)[number];
+
+const heavenlyStemByCode = new Map<string, (typeof REF_HEAVENLY_STEMS)[number]>(
   REF_HEAVENLY_STEMS.map((row) => [row.code, row]),
 );
-const earthlyBranchByCode = new Map(
+const earthlyBranchByCode = new Map<string, (typeof REF_EARTHLY_BRANCHES)[number]>(
   REF_EARTHLY_BRANCHES.map((row) => [row.code, row]),
 );
-const hiddenStemsByBranch = new Map<string, typeof REF_HIDDEN_STEMS>();
+const hiddenStemsByBranch = new Map<string, HiddenStemRow[]>();
 for (const row of REF_HIDDEN_STEMS) {
   const list = hiddenStemsByBranch.get(row.branch_code) ?? [];
   list.push(row);
@@ -24,17 +26,19 @@ for (const [branch, rows] of hiddenStemsByBranch) {
   rows.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
   hiddenStemsByBranch.set(branch, rows);
 }
-const tenGodByCode = new Map(REF_TEN_GODS.map((row) => [row.code, row]));
-const twelveStageByCode = new Map(
+const tenGodByCode = new Map<string, (typeof REF_TEN_GODS)[number]>(
+  REF_TEN_GODS.map((row) => [row.code, row]),
+);
+const twelveStageByCode = new Map<string, (typeof REF_TWELVE_STAGES)[number]>(
   REF_TWELVE_STAGES.map((row) => [row.code, row]),
 );
-const tenGodRuleByKey = new Map(
+const tenGodRuleByKey = new Map<string, string>(
   REF_TEN_GOD_RULES.map((row) => [
     `${row.day_master_stem}:${row.target_stem}`,
     row.ten_god_code,
   ]),
 );
-const twelveStageRuleByKey = new Map(
+const twelveStageRuleByKey = new Map<string, string>(
   REF_TWELVE_STAGE_RULES.map((row) => [
     `${row.day_master_stem}:${row.target_branch}`,
     row.stage_code,

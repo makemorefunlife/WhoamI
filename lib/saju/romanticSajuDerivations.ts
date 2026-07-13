@@ -9,14 +9,18 @@ const ELEMENT_KO: Record<string, string> = {
   water: "수(水)",
 };
 
-const stemElement = new Map(
+const stemElement = new Map<string, string>(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
 );
-const branchElement = new Map(
+const branchElement = new Map<string, string>(
   REF_EARTHLY_BRANCHES.map((r) => [r.code, r.element as string]),
 );
-const stemKor = new Map(REF_HEAVENLY_STEMS.map((r) => [r.code, r.kor_name]));
-const branchKor = new Map(REF_EARTHLY_BRANCHES.map((r) => [r.code, r.kor_name]));
+const stemKor = new Map<string, string>(
+  REF_HEAVENLY_STEMS.map((r) => [r.code, r.kor_name]),
+);
+const branchKor = new Map<string, string>(
+  REF_EARTHLY_BRANCHES.map((r) => [r.code, r.kor_name]),
+);
 
 function countElementsFromPillars(saju: SajuPillars): Record<string, number> {
   const chart = buildChartContext(saju);

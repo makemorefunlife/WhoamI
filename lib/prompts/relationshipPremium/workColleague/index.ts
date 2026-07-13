@@ -1,5 +1,7 @@
 import type OpenAI from "openai";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
+import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/pairDomainSignals";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
@@ -37,8 +39,18 @@ export async function runWorkColleagueDeepAnalysis(
       inputFingerprintA: string;
       inputFingerprintB: string;
     };
+    sajuMasterA?: SajuMasterJson | null;
+    sajuMasterB?: SajuMasterJson | null;
   },
 ): Promise<WorkColleagueDeepPayload> {
+  const pairWork =
+    params.sajuMasterA && params.sajuMasterB
+      ? buildPairDomainSignalsFromMasters(
+          params.sajuMasterA,
+          params.sajuMasterB,
+        ).work
+      : null;
+
   const report = buildWorkColleagueReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -51,6 +63,7 @@ export async function runWorkColleagueDeepAnalysis(
     psychMasterA: params.psychMasterA,
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
+    pairWork,
   });
 
   return {

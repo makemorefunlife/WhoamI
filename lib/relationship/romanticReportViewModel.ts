@@ -82,14 +82,24 @@ export function buildRomanticPsychDerivations(
   };
 }
 
+type RomanticNatureSlot = {
+  image_metaphor?: string;
+  first_person_voice?: string;
+  description: string;
+  data_combination_note?: string;
+  meeting_a?: string;
+  meeting_b?: string;
+  together_change: string;
+};
+
 export function pickRomanticNaturePair(
   report: RomanticSajuDeepReport["report"],
   viewerIsReportA: boolean,
 ) {
   const s2 = report.section_2_nature ?? {};
-  return pickViewerFirstPair(
-    s2.a_nature ?? {},
-    s2.b_nature ?? {},
+  return pickViewerFirstPair<RomanticNatureSlot>(
+    (s2.a_nature ?? {}) as RomanticNatureSlot,
+    (s2.b_nature ?? {}) as RomanticNatureSlot,
     viewerIsReportA,
   );
 }

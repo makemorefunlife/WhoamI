@@ -4,6 +4,11 @@ export {
   type BuildFriendContextParams,
 } from "./buildFriendRuleContext";
 export { buildFriendReport, type FriendReportBody } from "./buildFriendReport";
+export { buildFriendPrescriptions } from "./buildFriendPrescriptions";
+export type {
+  FriendPrescriptionPack,
+  FriendPrescriptionItem,
+} from "./friendPrescriptionTypes";
 export { buildFriendSnapshotPanel } from "./buildFriendSnapshotPanel";
 export { buildFriendSocialReport } from "./friendReportTemplate";
 export { buildFriendKillerSections, type FriendKillerSections } from "./friendKillerSections";

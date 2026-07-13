@@ -86,7 +86,7 @@ export const SNAPSHOT_RULES: RomanticRule<SnapshotRuleOutput>[] = [
         gaugeLabel: "부딪히지만 성장하는 리듬",
         representativeLine: humanizeDayStemInteraction(
           ctx.pairAnalysis.dayStemInteraction,
-          { a: stemNameA, b: stemNameB },
+          { a: stemNameA ?? "", b: stemNameB ?? "" },
         ),
       });
     },

@@ -160,7 +160,7 @@ export function buildWorkSnapshotNarrativeFromGauges(
         stemPairs: [],
       },
     },
-  } as WorkColleagueContext;
+  } as unknown as WorkColleagueContext;
 
   return {
     topics: gauges.map((g) =>

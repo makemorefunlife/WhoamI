@@ -54,8 +54,29 @@ export { loadPerson } from "./services/loadPerson";
 export {
   getOrBuildPersonCore,
   getOrBuildPersonCorePair,
+  type GetOrBuildPersonCoreOptions,
   type PersonCorePair,
 } from "./services/getOrBuildPersonCore";
+export { computeCurrentInputFingerprint } from "./services/computeCurrentInputFingerprint";
+export { invalidatePersonCoreBlueprint } from "./services/invalidatePersonCoreBlueprint";
+export { extractDomainSajuSignals } from "./sajuSignals/extractDomainSajuSignals";
+export type {
+  CohabitationSajuSignals,
+  DomainSajuSignalsPack,
+  FamilySajuSignals,
+  FriendshipSajuSignals,
+  WorkSajuSignals,
+} from "./sajuSignals/types";
+export {
+  buildPairDomainSignals,
+  buildPairDomainSignalsFromMasters,
+  PAIR_DOMAIN_SIGNALS_VERSION,
+  type PairDomainSignalsPack,
+  type PairCohabitationSignals,
+  type PairWorkSignals,
+  type PairFriendshipSignals,
+  type PairFamilySignals,
+} from "./sajuSignals/pairDomainSignals";
 export {
   bundlePersonCoreForPremium,
   bundlePersonCorePairForPremium,

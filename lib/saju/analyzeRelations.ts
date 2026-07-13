@@ -147,7 +147,7 @@ function analyzePairwiseBranches(
 }
 
 export function analyzeRelations(chart: ChartContext): RelationHit[] {
-  const rules = REF_RELATION_RULES as RelationRuleRow[];
+  const rules = REF_RELATION_RULES as unknown as RelationRuleRow[];
 
   const hits = [
     ...analyzeTrioCombines(chart, rules, "branch_three_combine", "삼합"),

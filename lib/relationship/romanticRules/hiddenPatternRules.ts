@@ -98,8 +98,8 @@ export const HIDDEN_PATTERN_RULES: RomanticRule<HiddenPatternRuleOutput>[] = [
       ruleId: "hidden_day_stem_clash",
       headline: "부딪히지만 자극이 되는 마음",
       body: humanizeDayStemInteraction(ctx.pairAnalysis.dayStemInteraction, {
-        a: stemNameA,
-        b: stemNameB,
+        a: stemNameA ?? "",
+        b: stemNameB ?? "",
       }),
       crisisHint: "서로를 바꾸려 할 때 갈등이 커져요.",
       hiddenTags: ["pair_day_stem", "상극"],

@@ -597,7 +597,7 @@ export default function RelationHubDashboard() {
                   <FriendStoryRow
                     friends={relationshipItems}
                     loading={false}
-                    isSignedIn={isSignedIn}
+                    isSignedIn={isSignedIn ?? false}
                     selectedId={selectedKey}
                     favoritesOnly={favoritesOnly}
                     onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}

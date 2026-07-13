@@ -282,7 +282,10 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       report_id: report.id,
-      name: report.name?.trim() ?? "탐사자",
+      name:
+        typeof report.name === "string" && report.name.trim()
+          ? report.name.trim()
+          : "탐사자",
       has_premium,
       has_survey,
       basic_result,

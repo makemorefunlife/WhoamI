@@ -37,7 +37,6 @@ export async function POST(req: Request) {
         : "";
     const relationshipKind = parseRelationshipKind(
       (body as { relationship_kind?: unknown }).relationship_kind,
-      "unspecified",
     );
 
     if (!relationshipReportId) {

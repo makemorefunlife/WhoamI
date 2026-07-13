@@ -9,6 +9,7 @@ import {
   relationshipKindForBadge,
   RELATIONSHIP_KIND_BADGE_BASE_CLASS,
 } from "@/lib/relationship/relationshipKindBadge";
+import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 
 type KindInput = RelationshipKind | "unspecified" | string | null | undefined;
 

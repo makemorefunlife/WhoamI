@@ -1,4 +1,5 @@
 import type { SAJU_MASTER_JSON_VERSION } from "../schemaVersion";
+import type { DomainSajuSignalsPack } from "../sajuSignals/types";
 
 /** 사주 원국 4주 */
 export type SajuPillarSlot = "year" | "month" | "day" | "hour";
@@ -138,6 +139,9 @@ export type SajuMasterJson = {
   ten_gods: TenGodPillarEntry[];
 
   relation_dynamics: RelationDynamicsEntry[];
+
+  /** 4대 관계 도메인 통합 명리 신호 — PersonCore bake-in (1회 계산) */
+  domain_signals: DomainSajuSignalsPack;
 
   validation: {
     ok: boolean;

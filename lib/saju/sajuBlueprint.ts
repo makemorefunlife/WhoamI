@@ -27,7 +27,6 @@ import {
   validateSajuPillars,
   type SajuValidationResult,
 } from "@/lib/saju/validateSajuBundle";
-import { loadSajuBundleFromReport } from "@/lib/saju/loadSajuBundleFromReport";
 
 /** 십성 카운트 — marriageTenGodAnalysis 단일 SSOT */
 export function countTenGods(sajuJson: SajuDataForIntegrated): TenGodCounts {
@@ -159,27 +158,4 @@ export function buildPairSajuBlueprint(
   ];
 
   return { personA, personB, core, uncertainItems };
-}
-
-export type ReportBirthForBlueprint = {
-  birth_date: string | null;
-  birth_time: string | null;
-  birth_place?: string | null;
-  birth_time_unknown?: boolean | null;
-};
-
-/** reports 행 → 1인 블루프린트 (loadSajuBundleFromReport 경유) */
-export function buildPersonSajuBlueprintFromReport(
-  report: ReportBirthForBlueprint,
-): PersonSajuBlueprint | null {
-  const loaded = loadSajuBundleFromReport(report);
-  if (!loaded) return null;
-  const birthTimeUnknown =
-    report.birth_time_unknown === true || !report.birth_time?.trim();
-  return buildPersonSajuBlueprint({
-    sajuJson: loaded.sajuJson,
-    provenance: loaded.provenance,
-    birthPlace: report.birth_place,
-    birthTimeUnknown,
-  });
 }

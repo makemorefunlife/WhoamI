@@ -1,6 +1,8 @@
 import type OpenAI from "openai";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
+import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/pairDomainSignals";
 import { buildMarriageReport } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import {
@@ -36,8 +38,18 @@ export async function runCohabitationDeepAnalysis(
       inputFingerprintA: string;
       inputFingerprintB: string;
     };
+    sajuMasterA?: SajuMasterJson | null;
+    sajuMasterB?: SajuMasterJson | null;
   },
 ): Promise<CohabitationDeepPayload> {
+  const pairCohabitation =
+    params.sajuMasterA && params.sajuMasterB
+      ? buildPairDomainSignalsFromMasters(
+          params.sajuMasterA,
+          params.sajuMasterB,
+        ).cohabitation
+      : null;
+
   const report = buildMarriageReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -50,6 +62,7 @@ export async function runCohabitationDeepAnalysis(
     psychMasterA: params.psychMasterA,
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
+    pairCohabitation,
   });
 
   return {

@@ -16,6 +16,7 @@ let dispatches: CapturedDispatch[] = [];
 const originalWarn = console.warn;
 const originalDebug = console.debug;
 const originalNodeEnv = process.env.NODE_ENV;
+const mutableEnv = process.env as Record<string, string | undefined>;
 
 function installMocks() {
   warnLogs.length = 0;
@@ -43,9 +44,9 @@ function restoreMocks() {
   console.warn = originalWarn;
   console.debug = originalDebug;
   if (originalNodeEnv === undefined) {
-    delete process.env.NODE_ENV;
+    Reflect.deleteProperty(mutableEnv, "NODE_ENV");
   } else {
-    process.env.NODE_ENV = originalNodeEnv;
+    mutableEnv.NODE_ENV = originalNodeEnv;
   }
 }
 
@@ -71,7 +72,7 @@ function run() {
         "1. any 캐스팅으로 금지 필드를 넣어도 dispatch params에는 허용 필드만 남는다",
       fn: () => {
         installMocks();
-        process.env.NODE_ENV = "development";
+        mutableEnv.NODE_ENV = "development";
 
         const dirtyParams = {
           relationship_kind: "romantic",
@@ -122,7 +123,7 @@ function run() {
         "2. console.warn에는 제거된 키 이름만 있고 금지 값(PII)은 출력되지 않는다",
       fn: () => {
         installMocks();
-        process.env.NODE_ENV = "development";
+        mutableEnv.NODE_ENV = "development";
 
         const secretReportId = "62291b22-760e-420d-b1eb-4cb258beedf0";
         const secretBirth = "1990-01-15";
@@ -158,7 +159,7 @@ function run() {
       title: "3. 필수 키 누락 시 dispatch 없음(빈 이벤트도 전송 안 함)",
       fn: () => {
         installMocks();
-        process.env.NODE_ENV = "development";
+        mutableEnv.NODE_ENV = "development";
 
         track({
           name: "report_view",

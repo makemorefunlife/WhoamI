@@ -257,7 +257,7 @@ export default function HomeContent() {
       const hubDestination = resolveEntryDestination({
         intent,
         session: null,
-        isSignedIn,
+        isSignedIn: isSignedIn ?? false,
         reportIdHint,
       });
       if (hubDestination) {
@@ -284,7 +284,7 @@ export default function HomeContent() {
                 relationshipSummary: relCounts,
               }
             : null,
-        isSignedIn,
+        isSignedIn: isSignedIn ?? false,
         reportIdHint,
       });
       if (destination) router.push(destination);
@@ -314,14 +314,14 @@ export default function HomeContent() {
     <>
       <FirstEntryDiagnostics scope="HomeContent" extra={diagExtra} />
       <StitchLandingPage
-        resumeLoading={isSignedIn && resume.loading}
+        resumeLoading={(isSignedIn ?? false) && resume.loading}
         creatingReport={creatingReport}
         onOpenStartChoice={openStartChoice}
       />
 
       <StartChoiceModal
         open={startChoiceOpen}
-        signedIn={isSignedIn}
+        signedIn={isSignedIn ?? false}
         busy={creatingReport}
         onClose={() => setStartChoiceOpen(false)}
         onStartFree={() => void startFreeSurvey()}

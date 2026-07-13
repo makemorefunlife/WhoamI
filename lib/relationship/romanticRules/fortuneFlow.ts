@@ -31,8 +31,12 @@ const STEM_ORDER = [
   "gye",
 ] as const;
 
-const stemElementByCode = new Map(REF_HEAVENLY_STEMS.map((row) => [row.code, row.element]));
-const branchElementByCode = new Map(REF_EARTHLY_BRANCHES.map((row) => [row.code, row.element]));
+const stemElementByCode = new Map<string, string>(
+  REF_HEAVENLY_STEMS.map((row) => [row.code, row.element]),
+);
+const branchElementByCode = new Map<string, string>(
+  REF_EARTHLY_BRANCHES.map((row) => [row.code, row.element]),
+);
 
 const POSITIVE_KEYWORDS = ["상생", "살림"];
 const TENSION_KEYWORDS = ["상극", "긴장", "누름"];

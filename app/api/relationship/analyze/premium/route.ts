@@ -11,7 +11,6 @@ import { runFamilyParentChildDeepAnalysis } from "@/lib/prompts/relationshipPrem
 import { runFriendSocialDeepAnalysis } from "@/lib/prompts/relationshipPremium/friendSocial";
 import { resolveFamilyRolesFromViewer } from "@/lib/relationship/familyParent/resolveFamilyRoles";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
-import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
   hasPremiumCacheForKind,
@@ -28,10 +27,6 @@ import {
   fetchRelationshipReportByIdSafe,
   updateRelationshipReportSafe,
 } from "@/lib/relationship/relationshipReportQuery";
-import {
-  loadSajuBundleFromReport,
-  type SajuChartProvenance,
-} from "@/lib/saju/loadSajuBundleFromReport";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
   UNKNOWN_BIRTH_FALLBACK,
@@ -50,9 +45,13 @@ export const maxDuration = 300;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-async function loadPersonCorePairForPremium(reportIdA: string, reportIdB: string) {
+async function loadPersonCorePairForPremium(
+  reportIdA: string,
+  reportIdB: string,
+  options?: { force?: boolean },
+) {
   try {
-    const pair = await getOrBuildPersonCorePair(reportIdA, reportIdB);
+    const pair = await getOrBuildPersonCorePair(reportIdA, reportIdB, options);
     const bundles = bundlePersonCorePairForPremium(pair);
     const personCore = personCoreRelationParamsFromBundles(bundles);
     return { bundles, personCore };
@@ -66,19 +65,6 @@ async function loadPersonCorePairForPremium(reportIdA: string, reportIdB: string
 
 function parsePremiumLanguage(v: unknown): RomanticSajuDeepLocale {
   return v === "en" ? "en" : "ko";
-}
-
-function loadSajuForReport(report: {
-  birth_date: string | null;
-  birth_time: string | null;
-}): {
-  sajuJson: SajuDataForIntegrated;
-  provenance: SajuChartProvenance;
-} | null {
-  return loadSajuBundleFromReport({
-    birth_date: report.birth_date,
-    birth_time: report.birth_time,
-  });
 }
 
 function chartBirthTime(report: {
@@ -248,20 +234,18 @@ export async function POST(req: Request) {
       viewerReportId === rr.report_id_a ? labelB : labelA;
 
     if (kind === "romantic") {
-      const loadedA = loadSajuForReport({
-        birth_date: reportBirthDate(repA),
-        birth_time: reportBirthTime(repA),
-      });
-      const loadedB = loadSajuForReport({
-        birth_date: reportBirthDate(repB),
-        birth_time: reportBirthTime(repB),
-      });
-      if (!loadedA || !loadedB) {
+      const personCoreLoad = await loadPersonCorePairForPremium(
+        rr.report_id_a,
+        rr.report_id_b,
+        { force: forceRegenerate },
+      );
+      if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: "사주 계산에 실패해 연인 심화 분석을 할 수 없습니다." },
+          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
           { status: 400 },
         );
       }
+      const { bundles } = personCoreLoad;
 
       const [surveyProfileA, surveyProfileB] = await Promise.all([
         getCurrentSelfProfileForReport(supabase, rr.report_id_a),
@@ -289,10 +273,12 @@ export async function POST(req: Request) {
           }),
           place: chartBirthPlace(repB.birth_place),
         },
-        sajuJsonA: loadedA.sajuJson,
-        sajuJsonB: loadedB.sajuJson,
-        sajuProvenanceA: loadedA.provenance,
-        sajuProvenanceB: loadedB.provenance,
+        sajuJsonA: bundles.a.sajuJson,
+        sajuJsonB: bundles.b.sajuJson,
+        sajuProvenanceA: bundles.a.provenance,
+        sajuProvenanceB: bundles.b.provenance,
+        sajuMasterA: bundles.a.blueprint.saju_master_json,
+        sajuMasterB: bundles.b.blueprint.saju_master_json,
         surveyProfileA,
         surveyProfileB,
         locale: language,
@@ -339,6 +325,7 @@ export async function POST(req: Request) {
       const personCoreLoad = await loadPersonCorePairForPremium(
         rr.report_id_a,
         rr.report_id_b,
+        { force: forceRegenerate },
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
@@ -374,6 +361,8 @@ export async function POST(req: Request) {
         psychMasterA: personCore.psychMasterA,
         psychMasterB: personCore.psychMasterB,
         personCoreMeta: personCore.personCoreMeta,
+        sajuMasterA: bundles.a.blueprint.saju_master_json,
+        sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -417,6 +406,7 @@ export async function POST(req: Request) {
       const personCoreLoad = await loadPersonCorePairForPremium(
         rr.report_id_a,
         rr.report_id_b,
+        { force: forceRegenerate },
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
@@ -452,6 +442,8 @@ export async function POST(req: Request) {
         psychMasterA: personCore.psychMasterA,
         psychMasterB: personCore.psychMasterB,
         personCoreMeta: personCore.personCoreMeta,
+        sajuMasterA: bundles.a.blueprint.saju_master_json,
+        sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -495,6 +487,7 @@ export async function POST(req: Request) {
       const personCoreLoad = await loadPersonCorePairForPremium(
         rr.report_id_a,
         rr.report_id_b,
+        { force: forceRegenerate },
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
@@ -549,6 +542,8 @@ export async function POST(req: Request) {
         psychMasterA: personCore.psychMasterA,
         psychMasterB: personCore.psychMasterB,
         personCoreMeta: personCore.personCoreMeta,
+        sajuMasterA: bundles.a.blueprint.saju_master_json,
+        sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -592,6 +587,7 @@ export async function POST(req: Request) {
       const personCoreLoad = await loadPersonCorePairForPremium(
         rr.report_id_a,
         rr.report_id_b,
+        { force: forceRegenerate },
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
@@ -627,6 +623,8 @@ export async function POST(req: Request) {
         psychMasterA: personCore.psychMasterA,
         psychMasterB: personCore.psychMasterB,
         personCoreMeta: personCore.personCoreMeta,
+        sajuMasterA: bundles.a.blueprint.saju_master_json,
+        sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
       const nextByKind: ResultPremiumByKind = {

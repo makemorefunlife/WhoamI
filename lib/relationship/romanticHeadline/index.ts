@@ -24,7 +24,8 @@ import { buildRomanticInsightPool, computePairAnalysisOnce } from "./buildInsigh
 import { selectRomanticOpening } from "./selectOpening";
 import { buildRomanticScreenPlan } from "./screenMap";
 import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
-import type { RomanticOpeningSelection, RomanticScreenSlot } from "./types";
+import type { RomanticOpeningSelection } from "./types";
+import type { RomanticScreenSlot } from "./screenMap";
 import type { RomanticRuleScreenPlan } from "@/lib/relationship/romanticRules";
 
 export type RomanticHeadlineContext = {
