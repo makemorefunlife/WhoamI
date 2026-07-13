@@ -2,6 +2,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { PsychMatchResult } from "@/lib/relationship/psychMatch";
 import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/types";
+import type { DomainPsychLens } from "@/lib/relationship/psychDomainLens/types";
 import {
   buildMarriagePsychMatchBundle,
   type MarriageHomePsychLens,
@@ -37,7 +38,8 @@ export type MarriageReportBody = {
     };
     /** 연인 보고서와 동일한 11축 2인 매칭 (PersonCore 설문 기반) */
     psych_match?: PsychMatchResult | null;
-    /** 동거·부부 렌즈 — 홈 생활에서 특히 눈에 띄는 축 2~3개 */
+    psych_lens?: DomainPsychLens | null;
+    /** 동거·부부 렌즈 — 홈 생활에서 특히 눈에 띄는 축 2~3개 (레거시 캐시 호환) */
     home_psych_lens?: MarriageHomePsychLens | null;
   };
 };
@@ -111,6 +113,7 @@ export function buildMarriageReport(params: {
       ...(psychBundle
         ? {
             psych_match: psychBundle.psych_match,
+            psych_lens: psychBundle.psych_lens,
             home_psych_lens: psychBundle.home_psych_lens,
           }
         : {}),

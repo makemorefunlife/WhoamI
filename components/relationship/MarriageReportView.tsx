@@ -2,7 +2,9 @@
 
 import { useMemo } from "react";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
-import { buildMarriagePsychMatchBundle } from "@/lib/relationship/marriage/buildMarriagePsychMatch";
+import { buildCohabitationPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildCohabitationPsychMatch";
+import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
+import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
 import type { HomeLifeDnaProfile } from "@/lib/relationship/marriage/homeLifeLanguage";
 import type { HomeUpsetGuide } from "@/lib/relationship/marriage/homeLifeLanguage";
 import type { BedroomPersonProfile } from "@/lib/relationship/marriage/bedroomProfile";
@@ -17,7 +19,6 @@ import {
   RelationshipReportParagraph,
   RelationshipReportLabel,
   RelationshipReportInset,
-  PsychMatchRadarChart,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
 
@@ -277,32 +278,11 @@ export default function MarriageReportView({
     one_line_household: report.one_line_household ?? report.headline,
   };
 
-  const psychDisplay = useMemo(() => {
-    if (report.meta?.psych_match) {
-      return {
-        psych_match: report.meta.psych_match,
-        home_psych_lens: report.meta.home_psych_lens ?? null,
-      };
-    }
-    const pc = report.meta?.person_core;
-    if (pc?.psych_a && pc?.psych_b) {
-      const built = buildMarriagePsychMatchBundle(pc.psych_a, pc.psych_b);
-      if (built) {
-        return {
-          psych_match: built.psych_match,
-          home_psych_lens: built.home_psych_lens,
-        };
-      }
-    }
-    return null;
-  }, [report.meta]);
-
-  const psychAxisForViewer =
-    psychDisplay?.psych_match.axis_results.map((row) =>
-      viewerIsReportA
-        ? row
-        : { ...row, score_a: row.score_b, score_b: row.score_a },
-    ) ?? [];
+  const psychDisplay = useMemo(
+    () =>
+      resolveReportPsychDisplay(report.meta, buildCohabitationPsychMatchBundle),
+    [report.meta],
+  );
 
   const slotAName = hh?.section_dna?.person_a.nickname ?? "A";
   const slotBName = hh?.section_dna?.person_b.nickname ?? "B";
@@ -392,57 +372,15 @@ export default function MarriageReportView({
       ]}
       scoreFooter={<TriScoreSnapshotPanel panel={panel} kind="cohabitation" />}
     >
-      {psychAxisForViewer.length > 0 ? (
-        <RelationshipReportCard
-          title="🎯 심리 11축 매칭"
+      {psychDisplay ? (
+        <RelationshipPsychMatchSection
+          psychMatch={psychDisplay.psych_match}
+          psychLens={psychDisplay.psych_lens}
+          personALabel={myName}
+          personBLabel={partnerName}
+          viewerIsReportA={viewerIsReportA}
           accentColor={theme.accent}
-        >
-          <p className="mb-3 text-xs leading-relaxed text-white/65">
-            둘의 현재 모습에서 어디가 비슷하고 어디가 다른지 한눈에 볼 수 있게
-            정리했어요. (연인 심화 분석과 같은 11축 설문 기준이에요.)
-          </p>
-          <div className="rounded-2xl border border-white/10 bg-[#f8f6f3] p-3 sm:p-4">
-            <PsychMatchRadarChart
-              axisResults={psychAxisForViewer}
-              personALabel={myName}
-              personBLabel={partnerName}
-            />
-          </div>
-        </RelationshipReportCard>
-      ) : null}
-
-      {psychDisplay?.home_psych_lens?.highlights.length ? (
-        <RelationshipReportCard
-          title="🏠 동거에서 특히 눈에 띄는 축"
-          accentColor={theme.accent}
-        >
-          <RelationshipReportParagraph className="text-white/80">
-            {psychDisplay.home_psych_lens.intro_line}
-          </RelationshipReportParagraph>
-          <ul className="mt-4 space-y-3">
-            {psychDisplay.home_psych_lens.highlights.map((item) => (
-              <li
-                key={item.axis_key}
-                className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3"
-              >
-                <p className="text-sm font-semibold leading-snug text-white/92">
-                  {item.hook}
-                </p>
-                <RelationshipReportParagraph className="mt-2 text-white/78">
-                  {item.narrative}
-                </RelationshipReportParagraph>
-                <p className="mt-2 text-[10px] text-white/45">
-                  {item.home_topic}
-                  {item.match_type === "tension"
-                    ? " · 자주 부딪히기 쉬운 축"
-                    : item.match_type === "similarity"
-                      ? " · 비슷해서 편한 축"
-                      : " · 역할 나누면 좋은 축"}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </RelationshipReportCard>
+        />
       ) : null}
 
       {dnaPair ? (
