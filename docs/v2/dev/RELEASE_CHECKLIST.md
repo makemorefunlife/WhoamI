@@ -29,6 +29,11 @@ Ah, It's Me는 문서·프롬프트 중심 단계이므로, 릴리즈 = **의미
 - [ ] 태그 메시지에 이번 마일스톤 3줄 요약
 - [ ] `docs/dev/daily/`에 릴리즈 기록
 
+### 5. DB 마이그레이션 (코드 배포 시 필수)
+
+- [ ] **`docs/dev/DEPLOY_CHECKLIST.md` §1** — `verify-person-core-saju-schema-v2.mjs` exit 0
+- [ ] 미적용 시 `apply-supabase-migration.mjs`로 `20260713140000_person_core_saju_schema_v2.sql` 적용 후 재검증
+
 ---
 
 ## 버전 네이밍 (초기 단계)

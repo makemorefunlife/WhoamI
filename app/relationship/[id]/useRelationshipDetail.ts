@@ -32,6 +32,11 @@ import {
   type RomanticDeepMetaViewModel,
   type RomanticDeepViewModel,
 } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
+import {
+  consumeRomanticPremiumStream,
+  isRomanticPremiumStreamResponse,
+  type RomanticPremiumStreamPrelude,
+} from "@/lib/relationship/premiumStream";
 
 const premiumPreview = relationshipPremiumPreviewEnabled();
 
@@ -74,6 +79,11 @@ export type UseRelationshipDetailReturn = {
   displayFamilyDeep: FamilyParentReportBody | null;
   displayFriendshipDeep: FriendReportBody | null;
   premiumReady: boolean;
+  premiumStreamPreview: string | null;
+  premiumPrelude: Pick<
+    RomanticPremiumStreamPrelude,
+    "relationship_name" | "one_line_summary" | "grade"
+  > | null;
   toggleFavorite: () => Promise<void>;
   retryAnalysis: () => void;
   onPremiumKindChange: (kind: RelationshipKind) => void;
@@ -179,6 +189,13 @@ export function useRelationshipDetail({
   const [logsLoading, setLogsLoading] = useState(false);
   const [autostartActive, setAutostartActive] = useState(false);
   const autostartTriggered = useRef(false);
+  const [premiumStreamPreview, setPremiumStreamPreview] = useState<string | null>(
+    null,
+  );
+  const [premiumPrelude, setPremiumPrelude] = useState<Pick<
+    RomanticPremiumStreamPrelude,
+    "relationship_name" | "one_line_summary" | "grade"
+  > | null>(null);
   const REQUEST_TIMEOUT_MS = 300_000;
 
   async function fetchJsonWithTimeout(
@@ -415,6 +432,8 @@ export function useRelationshipDetail({
       const forceRegenerate = options?.forceRegenerate === true;
       if (forceRegenerate) {
         setSnapshotView(null);
+        setPremiumStreamPreview(null);
+        setPremiumPrelude(null);
         if (kind === "romantic") {
           setRomanticDeep(null);
         } else if (kind === "work") {
@@ -431,24 +450,105 @@ export function useRelationshipDetail({
       }
       setBusy(true);
       setErr(null);
+      setPremiumStreamPreview(null);
+      setPremiumPrelude(null);
       try {
+        const requestBody = {
+          relationship_report_id: resolvedRelationshipId,
+          relationship_kind: kind,
+          viewer_report_id: effectiveViewerReportId,
+          force_regenerate: forceRegenerate,
+          ...(kind === "romantic" ? { stream: true } : {}),
+          ...(kind === "family"
+            ? {
+                parent_type: familyParentType,
+                child_is_viewer: familyChildIsViewer,
+              }
+            : {}),
+        };
+
+        if (kind === "romantic") {
+          const controller = new AbortController();
+          const timer = window.setTimeout(
+            () => controller.abort(),
+            REQUEST_TIMEOUT_MS,
+          );
+          try {
+            const res = await fetch("/api/relationship/analyze/premium", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(requestBody),
+              signal: controller.signal,
+            });
+
+            if (
+              isRomanticPremiumStreamResponse(res.headers.get("content-type")) &&
+              res.body
+            ) {
+              if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                setErr(
+                  (errData as { error?: string }).error ?? "심화 분석 실패",
+                );
+                return false;
+              }
+
+              let streamError: string | null = null;
+              const complete = await consumeRomanticPremiumStream(res.body, {
+                onPrelude: (event) => {
+                  setPremiumPrelude({
+                    relationship_name: event.relationship_name,
+                    one_line_summary: event.one_line_summary,
+                    grade: event.grade,
+                  });
+                },
+                onDelta: (content) => {
+                  setPremiumStreamPreview((prev) => `${prev ?? ""}${content}`);
+                },
+                onError: (message) => {
+                  streamError = message;
+                },
+              });
+
+              if (streamError) {
+                setErr(streamError);
+                return false;
+              }
+
+              const prem = complete?.result_premium as
+                | { report?: unknown }
+                | undefined;
+              if (prem?.report) {
+                setRomanticDeep(parseRomanticDeepViewModel(prem.report));
+              } else {
+                setErr("심화 분석 결과를 받지 못했어요.");
+                return false;
+              }
+              await load(kind);
+              return true;
+            }
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              setErr(data?.error ?? "심화 분석 실패");
+              return false;
+            }
+            if (data.result_premium?.report) {
+              setRomanticDeep(parseRomanticDeepViewModel(data.result_premium.report));
+            }
+            await load(kind);
+            return true;
+          } finally {
+            window.clearTimeout(timer);
+          }
+        }
+
         const { res, data } = await fetchJsonWithTimeout(
           "/api/relationship/analyze/premium",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              relationship_report_id: resolvedRelationshipId,
-              relationship_kind: kind,
-              viewer_report_id: effectiveViewerReportId,
-              force_regenerate: forceRegenerate,
-              ...(kind === "family"
-                ? {
-                    parent_type: familyParentType,
-                    child_is_viewer: familyChildIsViewer,
-                  }
-                : {}),
-            }),
+            body: JSON.stringify(requestBody),
           },
         );
         if (!res.ok) {
@@ -515,6 +615,8 @@ export function useRelationshipDetail({
         return false;
       } finally {
         setBusy(false);
+        setPremiumStreamPreview(null);
+        setPremiumPrelude(null);
       }
     },
     [
@@ -767,6 +869,8 @@ export function useRelationshipDetail({
     displayFamilyDeep,
     displayFriendshipDeep,
     premiumReady,
+    premiumStreamPreview,
+    premiumPrelude,
     toggleFavorite,
     retryAnalysis,
     onPremiumKindChange,

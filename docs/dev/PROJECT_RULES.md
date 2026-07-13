@@ -68,6 +68,10 @@
 - force push / amend는 사용자 규칙 따름
 - devlog에 커밋 해시 적을 때만 `daily/`에 기록
 
+## 7b. 프로덕션 배포
+
+- 배포 전 **`docs/dev/DEPLOY_CHECKLIST.md`** — 특히 PersonCore `saju_master_v2` 마이그레이션 확인 (`verify-person-core-saju-schema-v2.mjs`)
+
 ---
 
 ## 8. AI 작업 원칙

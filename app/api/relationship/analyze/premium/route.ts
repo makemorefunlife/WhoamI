@@ -38,7 +38,11 @@ import {
   personCoreRelationParamsFromBundles,
   PersonCoreError,
 } from "@/lib/personCore";
-import type { RomanticSajuDeepLocale } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import type {
+  RomanticSajuDeepLocale,
+  RomanticSajuDeepRunParams,
+} from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import { createRomanticPremiumStreamResponse } from "@/lib/relationship/romanticPremiumStreamHandler";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -160,16 +164,12 @@ export async function POST(req: Request) {
       });
     }
 
-    const fetchA = await fetchReportWithBirthCoords(
-      supabase,
-      rr.report_id_a,
-      "payment_status",
-    );
-    const fetchB = await fetchReportWithBirthCoords(
-      supabase,
-      rr.report_id_b,
-      "payment_status",
-    );
+    const [{ userId }, fetchA, fetchB] = await Promise.all([
+      auth(),
+      fetchReportWithBirthCoords(supabase, rr.report_id_a, "payment_status"),
+      fetchReportWithBirthCoords(supabase, rr.report_id_b, "payment_status"),
+    ]);
+    const clerkUser = userId ? await currentUser() : null;
 
     const repA = fetchA.report;
     const repB = fetchB.report;
@@ -209,9 +209,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const { userId } = await auth();
-    const clerkUser = userId ? await currentUser() : null;
-
     const labelA = resolveViewerDisplayName({
       reportName: reportName(repA),
       clerkFirstName:
@@ -234,11 +231,16 @@ export async function POST(req: Request) {
       viewerReportId === rr.report_id_a ? labelB : labelA;
 
     if (kind === "romantic") {
-      const personCoreLoad = await loadPersonCorePairForPremium(
-        rr.report_id_a,
-        rr.report_id_b,
-        { force: forceRegenerate },
-      );
+      const wantStream =
+        (body as { stream?: unknown }).stream === true && !forceRegenerate;
+
+      const [personCoreLoad, surveyProfileA, surveyProfileB] = await Promise.all([
+        loadPersonCorePairForPremium(rr.report_id_a, rr.report_id_b, {
+          force: forceRegenerate,
+        }),
+        getCurrentSelfProfileForReport(supabase, rr.report_id_a),
+        getCurrentSelfProfileForReport(supabase, rr.report_id_b),
+      ]);
       if ("error" in personCoreLoad) {
         return NextResponse.json(
           { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
@@ -247,12 +249,7 @@ export async function POST(req: Request) {
       }
       const { bundles } = personCoreLoad;
 
-      const [surveyProfileA, surveyProfileB] = await Promise.all([
-        getCurrentSelfProfileForReport(supabase, rr.report_id_a),
-        getCurrentSelfProfileForReport(supabase, rr.report_id_b),
-      ]);
-
-      const romanticPayload = await runRomanticSajuDeepAnalysis(openai, {
+      const romanticAnalysisParams: RomanticSajuDeepRunParams = {
         nicknameA: labelA,
         nicknameB: labelB,
         userCustomMyName,
@@ -282,7 +279,23 @@ export async function POST(req: Request) {
         surveyProfileA,
         surveyProfileB,
         locale: language,
-      });
+      };
+
+      if (wantStream) {
+        return createRomanticPremiumStreamResponse(openai, {
+          analysisParams: romanticAnalysisParams,
+          relationshipReportId,
+          viewerReportId,
+          kind: "romantic",
+          byKind,
+          supabase,
+        });
+      }
+
+      const romanticPayload = await runRomanticSajuDeepAnalysis(
+        openai,
+        romanticAnalysisParams,
+      );
 
       const nextByKind: ResultPremiumByKind = {
         ...byKind,

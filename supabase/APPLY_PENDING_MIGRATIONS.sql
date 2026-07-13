@@ -98,3 +98,17 @@ create index if not exists person_core_blueprints_psych_axes_gin
   using gin ((psych_master_json -> 'secondary_axes'));
 
 alter table public.person_core_blueprints enable row level security;
+
+-- 6) PersonCore saju_master_json — v1·v2 전환 (domain_signals bake-in)
+--    파일: supabase/migrations/20260713140000_person_core_saju_schema_v2.sql
+--    적용 전 확인: node tests/scripts/verify-person-core-saju-schema-v2.mjs
+alter table public.person_core_blueprints
+  drop constraint if exists person_core_blueprints_saju_schema;
+
+alter table public.person_core_blueprints
+  add constraint person_core_blueprints_saju_schema check (
+    (saju_master_json ->> 'schema_version') in ('saju_master_v1', 'saju_master_v2')
+  );
+
+comment on column public.person_core_blueprints.saju_master_json is
+  '만세력·십성·신살·합충·12운성·조후·domain_signals (saju_master_v1 | saju_master_v2 — 전환 중)';

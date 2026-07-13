@@ -72,7 +72,19 @@ console.log("OK: migration applied");
 
 const basename = path.basename(sqlPath);
 let verifySql;
-if (basename.includes("person_core_blueprints")) {
+let verifyOk = false;
+
+if (basename.includes("person_core_saju_schema_v2")) {
+  verifySql = `
+select pg_get_constraintdef(c.oid) as definition
+from pg_constraint c
+join pg_class t on t.oid = c.conrelid
+join pg_namespace n on n.oid = t.relnamespace
+where n.nspname = 'public'
+  and t.relname = 'person_core_blueprints'
+  and c.conname = 'person_core_blueprints_saju_schema';
+`.trim();
+} else if (basename.includes("person_core_blueprints")) {
   verifySql =
     "select table_name from information_schema.tables where table_schema = 'public' and table_name = 'person_core_blueprints';";
 } else if (basename.includes("birth_date_correction")) {
@@ -89,17 +101,22 @@ const verify = spawnSync(
   { cwd: root, encoding: "utf8", shell: true },
 );
 
-const verifyOk =
-  basename.includes("person_core_blueprints")
-    ? verify.stdout?.includes("person_core_blueprints")
-    : verify.stdout?.includes("birth_date_correction_used_at");
+if (basename.includes("person_core_saju_schema_v2")) {
+  verifyOk =
+    verify.stdout?.includes("saju_master_v2") &&
+    verify.stdout?.includes("saju_master_v1");
+} else if (basename.includes("person_core_blueprints")) {
+  verifyOk = verify.stdout?.includes("person_core_blueprints");
+} else {
+  verifyOk = verify.stdout?.includes("birth_date_correction_used_at");
+}
 
 if (verifyOk) {
   console.log(`VERIFY OK: ${basename}`);
   process.exit(0);
 }
 
-console.error("VERIFY FAILED: column not found");
+console.error("VERIFY FAILED");
 if (verify.stdout?.trim()) console.log(verify.stdout.trim());
 if (verify.stderr?.trim()) console.error(verify.stderr.trim());
 process.exit(1);
