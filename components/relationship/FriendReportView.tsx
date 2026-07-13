@@ -1,5 +1,18 @@
+"use client";
+
+import { useMemo } from "react";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
+import { hydrateFriendSnapshotPanel } from "@/lib/relationship/friend/buildFriendSnapshotPanel";
+import { buildFriendPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFriendPsychMatch";
+import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
+import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
+import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
+import {
+  applyRomanticDisplayNames,
+  buildRomanticNameReplacements,
+  rewriteViewerFirstNamePairLine,
+} from "@/lib/relationship/viewerFirstDisplay";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -93,13 +106,51 @@ export default function FriendReportView({
   const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
   const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
 
+  const psychDisplay = useMemo(
+    () => resolveReportPsychDisplay(report.meta, buildFriendPsychMatchBundle),
+    [report.meta],
+  );
+
+  const snapshotPanel = useMemo(() => {
+    const pc = report.meta?.person_core;
+    if (!report.snapshot_panel) return null;
+    return hydrateFriendSnapshotPanel(report.snapshot_panel, {
+      psychA: pc?.psych_a,
+      psychB: pc?.psych_b,
+      nicknameA: report.meta?.nickname_a ?? report.snapshot_panel.personA.nickname,
+      nicknameB: report.meta?.nickname_b ?? report.snapshot_panel.personB.nickname,
+    });
+  }, [report.snapshot_panel, report.meta]);
+
+  const nameReplacements = useMemo(
+    () =>
+      buildRomanticNameReplacements({
+        myName,
+        partnerName,
+        personAName: viewerIsReportA ? myName : partnerName,
+        personBName: viewerIsReportA ? partnerName : myName,
+        viewerIsReportA,
+      }),
+    [myName, partnerName, viewerIsReportA],
+  );
+
+  const polishStored = (raw: string | undefined | null) => {
+    if (!raw?.trim()) return "";
+    const pairFixed = rewriteViewerFirstNamePairLine(raw, myName, partnerName);
+    return applyRomanticDisplayNames(pairFixed.trim(), nameReplacements);
+  };
+
+  const headlineTitle = polishStored(
+    report.headline || snap.one_line_friendship,
+  );
+  const headlineSubtitle = polishStored(snap.one_line_friendship);
   return (
     <RelationshipReportLayout
       kind="friendship"
       kindLabel="Premium · Social DNA"
       headline={{
-        title: report.headline || snap.one_line_friendship,
-        subtitle: snap.one_line_friendship,
+        title: headlineTitle,
+        subtitle: headlineSubtitle,
         names: [myName, partnerName],
         badge: report.meta?.grade
           ? `우정 등급 ${report.meta.grade}`
@@ -125,7 +176,23 @@ export default function FriendReportView({
           tone: "alert",
         },
       ]}
+      scoreFooter={
+        snapshotPanel ? (
+          <TriScoreSnapshotPanel panel={snapshotPanel} kind="friendship" />
+        ) : undefined
+      }
     >
+      {psychDisplay ? (
+        <RelationshipPsychMatchSection
+          psychMatch={psychDisplay.psych_match}
+          psychLens={psychDisplay.psych_lens}
+          personALabel={myName}
+          personBLabel={partnerName}
+          viewerIsReportA={viewerIsReportA}
+          accentColor={theme.accent}
+        />
+      ) : null}
+
       <RelationshipReportCard
         title="🧬 Social DNA 프로필"
         accentColor={theme.accent}
@@ -149,7 +216,7 @@ export default function FriendReportView({
         accentColor={theme.accent}
       >
         <RelationshipReportParagraph>
-          {f.section_soulmate.soulmate_verdict}
+          {polishStored(f.section_soulmate.soulmate_verdict)}
         </RelationshipReportParagraph>
       </RelationshipReportCard>
 
@@ -181,10 +248,10 @@ export default function FriendReportView({
       >
         <RelationshipReportBody>
           <RelationshipReportParagraph>
-            {f.section_breakup_guide.trigger_warning_a}
+            {polishStored(f.section_breakup_guide.trigger_warning_a)}
           </RelationshipReportParagraph>
           <RelationshipReportParagraph>
-            {f.section_breakup_guide.trigger_warning_b}
+            {polishStored(f.section_breakup_guide.trigger_warning_b)}
           </RelationshipReportParagraph>
         </RelationshipReportBody>
       </RelationshipReportCard>

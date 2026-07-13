@@ -7,7 +7,12 @@
  *
  * 계산: workPairEventScores (월지·천간 중심, 연인 pairEventScores 와 분리)
  */
-export type TriScoreSnapshotKind = "romantic" | "work" | "cohabitation";
+export type TriScoreSnapshotKind =
+  | "romantic"
+  | "work"
+  | "cohabitation"
+  | "friendship"
+  | "family";
 
 export type TriScoreLabelConfig = {
   activation: { short: string };
@@ -174,6 +179,92 @@ const COHABITATION_CONFIG: TriScoreKindConfig = {
   ],
 };
 
+const FRIENDSHIP_CONFIG: TriScoreKindConfig = {
+  kind: "friendship",
+  labels: {
+    activation: { short: "🔥 우정 케미" },
+    benefit: { short: "🧩 티키타카" },
+    risk: { short: "⚡ 소셜 리스크" },
+  },
+  legendItems: [
+    {
+      label: "우정 케미",
+      emoji: "🔥",
+      meaning: "친해지고 싶고, 같이 있을 때 편한 정도",
+    },
+    {
+      label: "티키타카",
+      emoji: "🧩",
+      meaning: "대화·놀거리·유머가 잘 맞는 정도",
+    },
+    {
+      label: "소셜 리스크",
+      emoji: "⚡",
+      meaning: "서운함·연락 빈도·갈등이 쌓이는 정도",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① 우정 케미",
+      cardSubtitle: "친밀감·끌림·만남",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② 티키타카",
+      cardSubtitle: "대화·놀거리·리듬",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ 소셜 리스크",
+      cardSubtitle: "서운함·멀어짐·갈등",
+    },
+  ],
+};
+
+const FAMILY_CONFIG: TriScoreKindConfig = {
+  kind: "family",
+  labels: {
+    activation: { short: "🔥 정서적 유대" },
+    benefit: { short: "🧩 성장 시너지" },
+    risk: { short: "⚡ 훈육 마찰" },
+  },
+  legendItems: [
+    {
+      label: "정서적 유대",
+      emoji: "🔥",
+      meaning: "부모·자녀 사이 마음이 닿고 가까운 정도",
+    },
+    {
+      label: "성장 시너지",
+      emoji: "🧩",
+      meaning: "서로의 성장을 돕고 방향이 맞는 정도",
+    },
+    {
+      label: "훈육 마찰",
+      emoji: "⚡",
+      meaning: "훈육·규칙·갈등에서 스트레스가 커지는 정도",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① 정서적 유대",
+      cardSubtitle: "부모↔자녀 마음",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② 성장 시너지",
+      cardSubtitle: "성장·지지·방향",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ 훈육 마찰",
+      cardSubtitle: "규칙·갈등·스트레스",
+    },
+  ],
+};
+
 export const TRI_SCORE_KIND_CONFIG: Record<
   TriScoreSnapshotKind,
   TriScoreKindConfig
@@ -181,6 +272,8 @@ export const TRI_SCORE_KIND_CONFIG: Record<
   romantic: ROMANTIC_CONFIG,
   work: WORK_CONFIG,
   cohabitation: COHABITATION_CONFIG,
+  friendship: FRIENDSHIP_CONFIG,
+  family: FAMILY_CONFIG,
 };
 
 export function getTriScoreKindConfig(

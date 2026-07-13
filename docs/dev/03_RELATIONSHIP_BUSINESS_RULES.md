@@ -37,7 +37,7 @@ Basic은 **출생지 없어도** 동작한다. Premium(심화)은 출생지·시
 
 **연인 (`romantic`)**
 - 유일하게 OpenAI LLM 심화
-- self-refine 기본 ON → 최대 **2회** LLM 호출 (`RELATIONSHIP_ROMANTIC_SELF_REFINE`, 기본 true)
+- self-refine 기본 **OFF** → `RELATIONSHIP_ROMANTIC_SELF_REFINE=true`일 때만 2차 LLM 호출
 - 모델: `RELATIONSHIP_ROMANTIC_MODEL` ?? `gpt-4o-mini`
 - max tokens: `RELATIONSHIP_ROMANTIC_MAX_TOKENS` ?? **16384**
 - 완료 판정: `section_1_summary` 존재

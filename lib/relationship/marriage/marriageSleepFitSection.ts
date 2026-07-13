@@ -1,6 +1,6 @@
 import type { ChartContext } from "@/lib/saju/chartContext";
 import { chartEnergyProfile } from "@/lib/saju/marriageAnalysis";
-import { branchPairKey, isWonjin } from "@/lib/saju/workPairRiskSignals";
+import { branchPairKey, isGuimun, isWonjin } from "@/lib/saju/workPairRiskSignals";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 
 const NEEDLE_SENSITIVE_BRANCHES = new Set(["ja", "o", "myo", "yu"]);

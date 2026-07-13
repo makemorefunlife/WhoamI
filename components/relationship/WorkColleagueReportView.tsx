@@ -1,6 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
+import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
+import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
 import type {
   OfficeDnaProfile,
   OfficeIdealRoleFit,
@@ -220,15 +224,7 @@ export default function WorkColleagueReportView({
   viewerIsReportA?: boolean;
 }) {
   const theme = getTabTheme("work");
-  const panel = hydrateWorkSnapshotPanel(report.snapshot_panel);
   const office = report.office;
-  const snap = office?.section_snapshot ?? {
-    fit_pct: report.meta?.fit_pct ?? 0,
-    synergy_pct: report.meta?.synergy_pct ?? 0,
-    risk_pct: report.meta?.risk_pct ?? 0,
-    one_line_definition: report.one_line_definition ?? report.headline,
-  };
-
   const dnaPair = office?.section_dna
     ? pickViewerFirstPair(
         office.section_dna.person_a,
@@ -238,6 +234,28 @@ export default function WorkColleagueReportView({
     : null;
   const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
   const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
+
+  const snap = office?.section_snapshot ?? {
+    fit_pct: report.meta?.fit_pct ?? 0,
+    synergy_pct: report.meta?.synergy_pct ?? 0,
+    risk_pct: report.meta?.risk_pct ?? 0,
+    one_line_definition: report.one_line_definition ?? report.headline,
+  };
+
+  const panel = useMemo(() => {
+    const pc = report.meta?.person_core;
+    return hydrateWorkSnapshotPanel(report.snapshot_panel, {
+      psychA: pc?.psych_a,
+      psychB: pc?.psych_b,
+      nicknameA: office?.section_dna?.person_a.nickname ?? report.snapshot_panel.personA.nickname,
+      nicknameB: office?.section_dna?.person_b.nickname ?? report.snapshot_panel.personB.nickname,
+    });
+  }, [report.snapshot_panel, report.meta?.person_core, office?.section_dna]);
+
+  const psychDisplay = useMemo(
+    () => resolveReportPsychDisplay(report.meta, buildWorkPsychMatchBundle),
+    [report.meta],
+  );
 
   const mixFit = office?.section_mix_fit as
     | {
@@ -330,6 +348,17 @@ export default function WorkColleagueReportView({
       ]}
       scoreFooter={<TriScoreSnapshotPanel panel={panel} kind="work" />}
     >
+      {psychDisplay ? (
+        <RelationshipPsychMatchSection
+          psychMatch={psychDisplay.psych_match}
+          psychLens={psychDisplay.psych_lens}
+          personALabel={myName}
+          personBLabel={partnerName}
+          viewerIsReportA={viewerIsReportA}
+          accentColor={theme.accent}
+        />
+      ) : null}
+
       {dnaPair ? (
         <RelationshipReportCard
           title="🧬 파트너십 DNA — 우린 일할 때 어떤 사람일까?"

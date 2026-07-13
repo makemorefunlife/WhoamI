@@ -4,6 +4,8 @@
  * 구형(me/partner/insight) 축은 신형으로 승격할 수 있다.
  */
 
+import { partnerNameFromReportRow } from "@/lib/relationship/resolvePartnerDisplayName";
+
 export const RELATIONSHIP_AXIS_KEYS = [
   "emotional_sensitivity",
   "communication_style",
@@ -242,12 +244,57 @@ function isNonEmptyPerspectiveSlice(v: unknown): v is Record<string, unknown> {
   });
 }
 
+function axisNicknames(
+  slice: Record<string, unknown>,
+): { my: string; partner: string } | null {
+  for (const k of RELATIONSHIP_AXIS_KEYS) {
+    const ax = slice[k];
+    if (!isRecord(ax)) continue;
+    return {
+      my: String(ax.my_nickname ?? "").trim(),
+      partner: String(ax.partner_nickname ?? "").trim(),
+    };
+  }
+  return null;
+}
+
+/** stale 키일 때 partner reports.name으로 viewer 시점 슬라이스 식별 */
+function pickViewerSliceByPartnerName(
+  perspectives: Record<string, unknown>,
+  partnerReportName: string | null | undefined,
+): Record<string, unknown> | null {
+  const partnerReal = partnerNameFromReportRow(partnerReportName);
+  if (!partnerReal) return null;
+
+  const blocks = Object.values(perspectives).filter(isNonEmptyPerspectiveSlice);
+
+  const byPartnerNick = blocks.filter((b) => {
+    const n = axisNicknames(b);
+    return n?.partner === partnerReal;
+  });
+  if (byPartnerNick.length === 1) return byPartnerNick[0]!;
+  if (byPartnerNick.length > 1) {
+    const notSwapped = byPartnerNick.find(
+      (b) => axisNicknames(b)?.my !== partnerReal,
+    );
+    if (notSwapped) return notSwapped;
+  }
+
+  const notPartnerAsMy = blocks.filter(
+    (b) => axisNicknames(b)?.my !== partnerReal,
+  );
+  if (notPartnerAsMy.length === 1) return notPartnerAsMy[0]!;
+
+  return null;
+}
+
 /** viewer id 키가 어긋난 저장 데이터에서도 현재 시점 슬라이스를 찾는다 */
 export function getViewerPerspectiveSlice(
   perspectives: Record<string, unknown> | undefined | null,
   viewerReportId: string,
   reportIdA: string,
   reportIdB: string,
+  options?: { partnerReportName?: string | null },
 ): Record<string, unknown> | null {
   if (!perspectives || typeof perspectives !== "object") return null;
 
@@ -266,6 +313,12 @@ export function getViewerPerspectiveSlice(
 
   if (viewerIsA && fromA) return fromA;
   if (viewerIsB && fromB) return fromB;
+
+  const byPartnerName = pickViewerSliceByPartnerName(
+    perspectives,
+    options?.partnerReportName,
+  );
+  if (byPartnerName) return byPartnerName;
 
   const blocks = Object.values(perspectives).filter(isNonEmptyPerspectiveSlice);
   if (blocks.length >= 2) {

@@ -58,10 +58,6 @@ export function buildSectionQualityExamples(
 - \`label\`·대사: 커스텀 이름 1순위. emoji 😤/🤔 등
 - hidden_psychology·positive_situation·3행 이상 **금지**
 
-## section_6_timeline
-- **지금·1년·3년·5년·10년** 다섯 구간 모두 필수 — 각 구간에 \`period\`에 연도 명시
-- 사주·한자·대운·세운 용어 금지 — 관계 변화만 일상어로
-
 ## section_5_action (🌱 Essence 행동 가이드 — Few-Shot 구조 **필수**)
 - \`advice_for_a\` / \`advice_for_b\`: **각 3개** — \`EssenceActionGuideline\`
 - 필드: \`action_title\`(행동 강령 제목) + \`saju_reason\`(왜·어떻게 **3~4문장**) + \`real_speech_tip\`(실전 대사)

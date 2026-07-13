@@ -65,21 +65,23 @@ export async function GET(req: Request) {
     const partnerId =
       rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
 
-    const [{ data: partner }, { data: viewer }, { data: repA }, { data: repB }] =
-      await Promise.all([
+    const [{ data: repA }, { data: repB }] = await Promise.all([
       supabase
         .from("reports")
         .select("name,birth_time,birth_place")
-        .eq("id", partnerId)
+        .eq("id", rr.report_id_a)
         .maybeSingle(),
       supabase
         .from("reports")
         .select("name,birth_time,birth_place")
-        .eq("id", viewerReportId)
+        .eq("id", rr.report_id_b)
         .maybeSingle(),
-      supabase.from("reports").select("name").eq("id", rr.report_id_a).maybeSingle(),
-      supabase.from("reports").select("name").eq("id", rr.report_id_b).maybeSingle(),
     ]);
+
+    const viewer =
+      viewerReportId === rr.report_id_a ? repA : repB;
+    const partner =
+      viewerReportId === rr.report_id_a ? repB : repA;
 
     const basic = rr.result_basic as {
       perspectives?: Record<string, Record<string, unknown>>;
@@ -90,6 +92,7 @@ export async function GET(req: Request) {
       viewerReportId,
       rr.report_id_a,
       rr.report_id_b,
+      { partnerReportName: partner?.name },
     );
     const storedKind = parseRelationshipKind(rr.relationship_kind);
     const activeKind = kindParam ? relationshipKind : storedKind;
@@ -106,6 +109,7 @@ export async function GET(req: Request) {
       viewerReportId,
       rr.report_id_a,
       rr.report_id_b,
+      { partnerReportName: partner?.name },
     );
 
     const romanticDeepReport =
@@ -157,7 +161,7 @@ export async function GET(req: Request) {
     const personAName = repA?.name?.trim() || "";
     const personBName = repB?.name?.trim() || "";
 
-    return NextResponse.json({
+    const responseBody: Record<string, unknown> = {
       relationship_report_id: rr.id,
       report_id_a: rr.report_id_a,
       report_id_b: rr.report_id_b,
@@ -186,10 +190,15 @@ export async function GET(req: Request) {
       family_deep_report: familyDeepReport,
       friendship_deep_report: friendshipDeepReport,
       is_favorite: favorited,
-      raw_basic: rr.result_basic,
-      raw_premium: rr.result_premium,
-      raw_premium_by_kind: rr.result_premium_by_kind,
-    });
+    };
+
+    if (activeKind !== "romantic") {
+      responseBody.raw_basic = rr.result_basic;
+      responseBody.raw_premium = rr.result_premium;
+      responseBody.raw_premium_by_kind = rr.result_premium_by_kind;
+    }
+
+    return NextResponse.json(responseBody);
   } catch (e) {
     console.error("relationship/detail:", e);
     return NextResponse.json({ error: "조회 실패" }, { status: 500 });

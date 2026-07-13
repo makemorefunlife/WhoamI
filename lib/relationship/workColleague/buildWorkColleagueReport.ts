@@ -1,3 +1,11 @@
+import type { PsychMatchResult } from "@/lib/relationship/psychMatch";
+import type { DomainPsychLens } from "@/lib/relationship/psychDomainLens/types";
+import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import {
+  buildPersonCoreRelationMeta,
+  type PersonCoreRelationMetaPayload,
+} from "@/lib/personCore/mappers/buildPersonCoreRelationMeta";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import {
   buildWorkColleagueContext,
@@ -23,6 +31,9 @@ export type WorkColleagueReportBody = {
     fit_pct: number;
     synergy_pct: number;
     risk_pct: number;
+    person_core?: PersonCoreRelationMetaPayload;
+    psych_match?: PsychMatchResult | null;
+    psych_lens?: DomainPsychLens | null;
   };
 };
 
@@ -53,15 +64,36 @@ export function buildWorkColleagueReport(params: {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  psychMasterA?: PsychMasterJson | null;
+  psychMasterB?: PsychMasterJson | null;
+  personCoreMeta?: {
+    reportIdA: string;
+    reportIdB: string;
+    inputFingerprintA: string;
+    inputFingerprintB: string;
+  };
 }): WorkColleagueReportBody {
   const ctx = buildWorkColleagueContext(params);
   const office = buildOfficePartnershipReport(ctx);
   const headlineBlock = resolveHeadline(ctx);
 
-  const snapshot_panel = buildWorkSnapshotPanel(ctx, {
-    gaugeLabel: headlineBlock.gaugeLabel,
-    representativeLine: headlineBlock.summary_line,
-  });
+  const snapshot_panel = buildWorkSnapshotPanel(
+    ctx,
+    {
+      gaugeLabel: headlineBlock.gaugeLabel,
+      representativeLine: headlineBlock.summary_line,
+    },
+    {
+      psychA: params.psychMasterA ?? null,
+      psychB: params.psychMasterB ?? null,
+    },
+  );
+
+  const personCoreMeta = buildPersonCoreRelationMeta(params);
+  const psychBundle = buildWorkPsychMatchBundle(
+    params.psychMasterA,
+    params.psychMasterB,
+  );
 
   return {
     headline: headlineBlock.headline,
@@ -76,6 +108,13 @@ export function buildWorkColleagueReport(params: {
       fit_pct: ctx.masterScores.activation,
       synergy_pct: ctx.masterScores.benefit,
       risk_pct: ctx.masterScores.risk,
+      ...(personCoreMeta ? { person_core: personCoreMeta } : {}),
+      ...(psychBundle
+        ? {
+            psych_match: psychBundle.psych_match,
+            psych_lens: psychBundle.psych_lens,
+          }
+        : {}),
     },
   };
 }

@@ -1,14 +1,9 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
-import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import {
-  getCurrentSelfProfileForReport,
-  getPatternSummaryForReport,
-} from "@/lib/relationship/surveyPatterns";
-import { buildRelationshipPremiumPrompt } from "@/lib/prompts/relationshipPremium";
+import { getCurrentSelfProfileForReport } from "@/lib/relationship/surveyPatterns";
 import { runRomanticSajuDeepAnalysis } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { runWorkColleagueDeepAnalysis } from "@/lib/prompts/relationshipPremium/workColleague";
 import { runCohabitationDeepAnalysis } from "@/lib/prompts/relationshipPremium/cohabitation";
@@ -17,11 +12,6 @@ import { runFriendSocialDeepAnalysis } from "@/lib/prompts/relationshipPremium/f
 import { resolveFamilyRolesFromViewer } from "@/lib/relationship/familyParent/resolveFamilyRoles";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import {
-  LlmJsonParseRetryError,
-  parseJsonObject,
-} from "@/lib/relationship/parseLlmJson";
-import { normalizeRelationshipPerspectives } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
   hasPremiumCacheForKind,
@@ -38,7 +28,6 @@ import {
   fetchRelationshipReportByIdSafe,
   updateRelationshipReportSafe,
 } from "@/lib/relationship/relationshipReportQuery";
-import { getAppOrigin } from "@/lib/relationship/appOrigin";
 import {
   loadSajuBundleFromReport,
   type SajuChartProvenance,
@@ -48,6 +37,12 @@ import {
   UNKNOWN_BIRTH_FALLBACK,
 } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import {
+  getOrBuildPersonCorePair,
+  bundlePersonCorePairForPremium,
+  personCoreRelationParamsFromBundles,
+  PersonCoreError,
+} from "@/lib/personCore";
 import type { RomanticSajuDeepLocale } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 
 export const runtime = "nodejs";
@@ -55,16 +50,22 @@ export const maxDuration = 300;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-function parsePremiumLanguage(v: unknown): RomanticSajuDeepLocale {
-  return v === "en" ? "en" : "ko";
+async function loadPersonCorePairForPremium(reportIdA: string, reportIdB: string) {
+  try {
+    const pair = await getOrBuildPersonCorePair(reportIdA, reportIdB);
+    const bundles = bundlePersonCorePairForPremium(pair);
+    const personCore = personCoreRelationParamsFromBundles(bundles);
+    return { bundles, personCore };
+  } catch (err) {
+    if (err instanceof PersonCoreError) {
+      return { error: err.message as string };
+    }
+    throw err;
+  }
 }
 
-function sajuBriefFromProvenance(p: SajuChartProvenance): string {
-  return [
-    `팔자: ${p.pillars.year} ${p.pillars.month} ${p.pillars.day} ${p.pillars.hour}`,
-    `일간: ${p.dayStemKor}(${p.dayStemMetaphor})`,
-    p.birthTimeUnknown ? "출생시간 미상→12:00 시주" : `출생시각 ${p.chartTime}`,
-  ].join(" | ");
+function parsePremiumLanguage(v: unknown): RomanticSajuDeepLocale {
+  return v === "en" ? "en" : "ko";
 }
 
 function loadSajuForReport(report: {
@@ -90,41 +91,21 @@ function chartBirthTime(report: {
   }).chartTime;
 }
 
-function chartBirthPlace(place: string | null): string {
-  const trimmed = place?.trim() ?? "";
+function chartBirthPlace(place: unknown): string {
+  const trimmed = typeof place === "string" ? place.trim() : "";
   return trimmed || UNKNOWN_BIRTH_FALLBACK.place;
 }
 
-function astroBrief(j: Record<string, unknown> | null): string {
-  if (!j) return "(점성 없음)";
-  if (typeof j.interpretation === "string" && j.interpretation.trim()) {
-    return j.interpretation.trim().slice(0, 3500);
-  }
-  const raw = j.raw as { sun?: string; moon?: string; rising?: string } | undefined;
-  if (raw) {
-    return `태양·달·상승 톤: ${raw.sun ?? ""}, ${raw.moon ?? ""}, ${raw.rising ?? ""}`;
-  }
-  return "(점성 데이터 없음)";
+function reportBirthDate(report: Record<string, unknown>): string {
+  return typeof report.birth_date === "string" ? report.birth_date : "";
 }
 
-async function fetchAstroJson(
-  origin: string,
-  report: Record<string, unknown>,
-): Promise<Record<string, unknown> | null> {
-  if (!report.birth_date) return null;
-  let body: ReturnType<typeof buildAstrologyApiRequestFromReport>["body"];
-  try {
-    ({ body } = buildAstrologyApiRequestFromReport(report));
-  } catch {
-    return null;
-  }
-  const res = await fetch(`${origin}/api/astrology`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) return null;
-  return (await res.json()) as Record<string, unknown>;
+function reportBirthTime(report: Record<string, unknown>): string | null {
+  return typeof report.birth_time === "string" ? report.birth_time : null;
+}
+
+function reportName(report: Record<string, unknown>): string | null {
+  return typeof report.name === "string" ? report.name : null;
 }
 
 export async function POST(req: Request) {
@@ -214,33 +195,29 @@ export async function POST(req: Request) {
       );
     }
 
-    const birthOkRomantic = (r: typeof repA) => Boolean(r.birth_date?.trim());
+    const birthOkDeep = (r: typeof repA) =>
+      typeof r.birth_date === "string" && r.birth_date.trim().length > 0;
 
-    const birthOkPremium = (r: typeof repA) => Boolean(r.birth_date);
+    if (!relationshipKindUsesDeepPipeline(kind)) {
+      return NextResponse.json(
+        { error: `지원하지 않는 관계 유형: ${kind}` },
+        { status: 400 },
+      );
+    }
 
-    if (relationshipKindUsesDeepPipeline(kind)) {
-      if (!birthOkRomantic(repA) || !birthOkRomantic(repB)) {
-        return NextResponse.json(
-          {
-            error:
-              kind === "romantic"
-                ? "양쪽 모두 생년월일이 있어야 연인 심화 분석이 가능합니다."
-                : kind === "cohabitation"
-                  ? "양쪽 모두 생년월일이 있어야 동거·결혼 심화 분석이 가능합니다."
-                  : kind === "family"
-                    ? "양쪽 모두 생년월일이 있어야 가족 Child DNA 분석이 가능합니다."
-                    : kind === "friendship"
-                      ? "양쪽 모두 생년월일이 있어야 친구 Social DNA 분석이 가능합니다."
-                      : "양쪽 모두 생년월일이 있어야 동료 심화 분석이 가능합니다.",
-          },
-          { status: 400 },
-        );
-      }
-    } else if (!birthOkPremium(repA) || !birthOkPremium(repB)) {
+    if (!birthOkDeep(repA) || !birthOkDeep(repB)) {
       return NextResponse.json(
         {
           error:
-            "양쪽 모두 생년월일·시간·출생지가 있어야 심화 관계 분석이 가능합니다.",
+            kind === "romantic"
+              ? "양쪽 모두 생년월일이 있어야 연인 심화 분석이 가능합니다."
+              : kind === "cohabitation"
+                ? "양쪽 모두 생년월일이 있어야 동거·결혼 심화 분석이 가능합니다."
+                : kind === "family"
+                  ? "양쪽 모두 생년월일이 있어야 가족 Child DNA 분석이 가능합니다."
+                  : kind === "friendship"
+                    ? "양쪽 모두 생년월일이 있어야 친구 Social DNA 분석이 가능합니다."
+                    : "양쪽 모두 생년월일이 있어야 동료 심화 분석이 가능합니다.",
         },
         { status: 400 },
       );
@@ -250,7 +227,7 @@ export async function POST(req: Request) {
     const clerkUser = userId ? await currentUser() : null;
 
     const labelA = resolveViewerDisplayName({
-      reportName: repA.name,
+      reportName: reportName(repA),
       clerkFirstName:
         viewerReportId === rr.report_id_a ? clerkUser?.firstName : undefined,
       clerkFullName:
@@ -258,7 +235,7 @@ export async function POST(req: Request) {
       fallback: "나",
     });
     const labelB = resolveViewerDisplayName({
-      reportName: repB.name,
+      reportName: reportName(repB),
       clerkFirstName:
         viewerReportId === rr.report_id_b ? clerkUser?.firstName : undefined,
       clerkFullName:
@@ -270,18 +247,14 @@ export async function POST(req: Request) {
     const userCustomTargetName =
       viewerReportId === rr.report_id_a ? labelB : labelA;
 
-    const origin = getAppOrigin();
-
     if (kind === "romantic") {
       const loadedA = loadSajuForReport({
-        birth_date: String(repA.birth_date ?? ""),
-        birth_time:
-          repA.birth_time != null ? String(repA.birth_time) : null,
+        birth_date: reportBirthDate(repA),
+        birth_time: reportBirthTime(repA),
       });
       const loadedB = loadSajuForReport({
-        birth_date: String(repB.birth_date ?? ""),
-        birth_time:
-          repB.birth_time != null ? String(repB.birth_time) : null,
+        birth_date: reportBirthDate(repB),
+        birth_time: reportBirthTime(repB),
       });
       if (!loadedA || !loadedB) {
         return NextResponse.json(
@@ -301,20 +274,18 @@ export async function POST(req: Request) {
         userCustomMyName,
         userCustomTargetName,
         birthA: {
-          date: String(repA.birth_date ?? ""),
+          date: reportBirthDate(repA),
           time: chartBirthTime({
-            birth_date: String(repA.birth_date ?? ""),
-            birth_time:
-              repA.birth_time != null ? String(repA.birth_time) : null,
+            birth_date: reportBirthDate(repA),
+            birth_time: reportBirthTime(repA),
           }),
           place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
-          date: String(repB.birth_date ?? ""),
+          date: reportBirthDate(repB),
           time: chartBirthTime({
-            birth_date: String(repB.birth_date ?? ""),
-            birth_time:
-              repB.birth_time != null ? String(repB.birth_time) : null,
+            birth_date: reportBirthDate(repB),
+            birth_time: reportBirthTime(repB),
           }),
           place: chartBirthPlace(repB.birth_place),
         },
@@ -365,48 +336,44 @@ export async function POST(req: Request) {
     }
 
     if (kind === "work") {
-      const loadedA = loadSajuForReport({
-        birth_date: String(repA.birth_date ?? ""),
-        birth_time:
-          repA.birth_time != null ? String(repA.birth_time) : null,
-      });
-      const loadedB = loadSajuForReport({
-        birth_date: String(repB.birth_date ?? ""),
-        birth_time:
-          repB.birth_time != null ? String(repB.birth_time) : null,
-      });
-      if (!loadedA || !loadedB) {
+      const personCoreLoad = await loadPersonCorePairForPremium(
+        rr.report_id_a,
+        rr.report_id_b,
+      );
+      if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: "사주 계산에 실패해 동료 심화 분석을 할 수 없습니다." },
+          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
           { status: 400 },
         );
       }
+      const { bundles, personCore } = personCoreLoad;
 
       const workPayload = await runWorkColleagueDeepAnalysis(openai, {
         nicknameA: labelA,
         nicknameB: labelB,
         birthA: {
-          date: String(repA.birth_date ?? ""),
+          date: reportBirthDate(repA),
           time: chartBirthTime({
-            birth_date: String(repA.birth_date ?? ""),
-            birth_time:
-              repA.birth_time != null ? String(repA.birth_time) : null,
+            birth_date: reportBirthDate(repA),
+            birth_time: reportBirthTime(repA),
           }),
           place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
-          date: String(repB.birth_date ?? ""),
+          date: reportBirthDate(repB),
           time: chartBirthTime({
-            birth_date: String(repB.birth_date ?? ""),
-            birth_time:
-              repB.birth_time != null ? String(repB.birth_time) : null,
+            birth_date: reportBirthDate(repB),
+            birth_time: reportBirthTime(repB),
           }),
           place: chartBirthPlace(repB.birth_place),
         },
-        sajuJsonA: loadedA.sajuJson,
-        sajuJsonB: loadedB.sajuJson,
-        sajuProvenanceA: loadedA.provenance,
-        sajuProvenanceB: loadedB.provenance,
+        sajuJsonA: bundles.a.sajuJson,
+        sajuJsonB: bundles.b.sajuJson,
+        sajuProvenanceA: bundles.a.provenance,
+        sajuProvenanceB: bundles.b.provenance,
+        psychMasterA: personCore.psychMasterA,
+        psychMasterB: personCore.psychMasterB,
+        personCoreMeta: personCore.personCoreMeta,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -421,6 +388,7 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
+        { result_premium: workPayload },
       );
 
       if (upErr) {
@@ -446,48 +414,44 @@ export async function POST(req: Request) {
     }
 
     if (kind === "cohabitation") {
-      const loadedA = loadSajuForReport({
-        birth_date: String(repA.birth_date ?? ""),
-        birth_time:
-          repA.birth_time != null ? String(repA.birth_time) : null,
-      });
-      const loadedB = loadSajuForReport({
-        birth_date: String(repB.birth_date ?? ""),
-        birth_time:
-          repB.birth_time != null ? String(repB.birth_time) : null,
-      });
-      if (!loadedA || !loadedB) {
+      const personCoreLoad = await loadPersonCorePairForPremium(
+        rr.report_id_a,
+        rr.report_id_b,
+      );
+      if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: "사주 계산에 실패해 동거·결혼 심화 분석을 할 수 없습니다." },
+          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
           { status: 400 },
         );
       }
+      const { bundles, personCore } = personCoreLoad;
 
       const cohabitationPayload = await runCohabitationDeepAnalysis(openai, {
         nicknameA: labelA,
         nicknameB: labelB,
         birthA: {
-          date: String(repA.birth_date ?? ""),
+          date: reportBirthDate(repA),
           time: chartBirthTime({
-            birth_date: String(repA.birth_date ?? ""),
-            birth_time:
-              repA.birth_time != null ? String(repA.birth_time) : null,
+            birth_date: reportBirthDate(repA),
+            birth_time: reportBirthTime(repA),
           }),
           place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
-          date: String(repB.birth_date ?? ""),
+          date: reportBirthDate(repB),
           time: chartBirthTime({
-            birth_date: String(repB.birth_date ?? ""),
-            birth_time:
-              repB.birth_time != null ? String(repB.birth_time) : null,
+            birth_date: reportBirthDate(repB),
+            birth_time: reportBirthTime(repB),
           }),
           place: chartBirthPlace(repB.birth_place),
         },
-        sajuJsonA: loadedA.sajuJson,
-        sajuJsonB: loadedB.sajuJson,
-        sajuProvenanceA: loadedA.provenance,
-        sajuProvenanceB: loadedB.provenance,
+        sajuJsonA: bundles.a.sajuJson,
+        sajuJsonB: bundles.b.sajuJson,
+        sajuProvenanceA: bundles.a.provenance,
+        sajuProvenanceB: bundles.b.provenance,
+        psychMasterA: personCore.psychMasterA,
+        psychMasterB: personCore.psychMasterB,
+        personCoreMeta: personCore.personCoreMeta,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -502,6 +466,7 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
+        { result_premium: cohabitationPayload },
       );
 
       if (upErr) {
@@ -527,22 +492,17 @@ export async function POST(req: Request) {
     }
 
     if (kind === "family") {
-      const loadedA = loadSajuForReport({
-        birth_date: String(repA.birth_date ?? ""),
-        birth_time:
-          repA.birth_time != null ? String(repA.birth_time) : null,
-      });
-      const loadedB = loadSajuForReport({
-        birth_date: String(repB.birth_date ?? ""),
-        birth_time:
-          repB.birth_time != null ? String(repB.birth_time) : null,
-      });
-      if (!loadedA || !loadedB) {
+      const personCoreLoad = await loadPersonCorePairForPremium(
+        rr.report_id_a,
+        rr.report_id_b,
+      );
+      if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: "사주 계산에 실패해 가족 Child DNA 분석을 할 수 없습니다." },
+          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
           { status: 400 },
         );
       }
+      const { bundles, personCore } = personCoreLoad;
 
       const bodyFamily = body as {
         parent_type?: unknown;
@@ -567,27 +527,28 @@ export async function POST(req: Request) {
         roles,
         parentType,
         birthA: {
-          date: String(repA.birth_date ?? ""),
+          date: reportBirthDate(repA),
           time: chartBirthTime({
-            birth_date: String(repA.birth_date ?? ""),
-            birth_time:
-              repA.birth_time != null ? String(repA.birth_time) : null,
+            birth_date: reportBirthDate(repA),
+            birth_time: reportBirthTime(repA),
           }),
           place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
-          date: String(repB.birth_date ?? ""),
+          date: reportBirthDate(repB),
           time: chartBirthTime({
-            birth_date: String(repB.birth_date ?? ""),
-            birth_time:
-              repB.birth_time != null ? String(repB.birth_time) : null,
+            birth_date: reportBirthDate(repB),
+            birth_time: reportBirthTime(repB),
           }),
           place: chartBirthPlace(repB.birth_place),
         },
-        sajuJsonA: loadedA.sajuJson,
-        sajuJsonB: loadedB.sajuJson,
-        sajuProvenanceA: loadedA.provenance,
-        sajuProvenanceB: loadedB.provenance,
+        sajuJsonA: bundles.a.sajuJson,
+        sajuJsonB: bundles.b.sajuJson,
+        sajuProvenanceA: bundles.a.provenance,
+        sajuProvenanceB: bundles.b.provenance,
+        psychMasterA: personCore.psychMasterA,
+        psychMasterB: personCore.psychMasterB,
+        personCoreMeta: personCore.personCoreMeta,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -602,6 +563,7 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
+        { result_premium: familyPayload },
       );
 
       if (upErr) {
@@ -627,48 +589,44 @@ export async function POST(req: Request) {
     }
 
     if (kind === "friendship") {
-      const loadedA = loadSajuForReport({
-        birth_date: String(repA.birth_date ?? ""),
-        birth_time:
-          repA.birth_time != null ? String(repA.birth_time) : null,
-      });
-      const loadedB = loadSajuForReport({
-        birth_date: String(repB.birth_date ?? ""),
-        birth_time:
-          repB.birth_time != null ? String(repB.birth_time) : null,
-      });
-      if (!loadedA || !loadedB) {
+      const personCoreLoad = await loadPersonCorePairForPremium(
+        rr.report_id_a,
+        rr.report_id_b,
+      );
+      if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: "사주 계산에 실패해 친구 Social DNA 분석을 할 수 없습니다." },
+          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
           { status: 400 },
         );
       }
+      const { bundles, personCore } = personCoreLoad;
 
       const friendshipPayload = await runFriendSocialDeepAnalysis(openai, {
         nicknameA: labelA,
         nicknameB: labelB,
         birthA: {
-          date: String(repA.birth_date ?? ""),
+          date: reportBirthDate(repA),
           time: chartBirthTime({
-            birth_date: String(repA.birth_date ?? ""),
-            birth_time:
-              repA.birth_time != null ? String(repA.birth_time) : null,
+            birth_date: reportBirthDate(repA),
+            birth_time: reportBirthTime(repA),
           }),
           place: chartBirthPlace(repA.birth_place),
         },
         birthB: {
-          date: String(repB.birth_date ?? ""),
+          date: reportBirthDate(repB),
           time: chartBirthTime({
-            birth_date: String(repB.birth_date ?? ""),
-            birth_time:
-              repB.birth_time != null ? String(repB.birth_time) : null,
+            birth_date: reportBirthDate(repB),
+            birth_time: reportBirthTime(repB),
           }),
           place: chartBirthPlace(repB.birth_place),
         },
-        sajuJsonA: loadedA.sajuJson,
-        sajuJsonB: loadedB.sajuJson,
-        sajuProvenanceA: loadedA.provenance,
-        sajuProvenanceB: loadedB.provenance,
+        sajuJsonA: bundles.a.sajuJson,
+        sajuJsonB: bundles.b.sajuJson,
+        sajuProvenanceA: bundles.a.provenance,
+        sajuProvenanceB: bundles.b.provenance,
+        psychMasterA: personCore.psychMasterA,
+        psychMasterB: personCore.psychMasterB,
+        personCoreMeta: personCore.personCoreMeta,
       });
 
       const nextByKind: ResultPremiumByKind = {
@@ -682,8 +640,8 @@ export async function POST(req: Request) {
         {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
-          result_premium: friendshipPayload,
         },
+        { result_premium: friendshipPayload },
       );
 
       if (upErr) {
@@ -708,140 +666,12 @@ export async function POST(req: Request) {
       });
     }
 
-    const [blockA, blockB] = await Promise.all([
-      getPatternSummaryForReport(supabase, rr.report_id_a),
-      getPatternSummaryForReport(supabase, rr.report_id_b),
-    ]);
-
-    if (!blockA || !blockB) {
-      return NextResponse.json(
-        { error: "설문 패턴이 없어 심화 분석을 할 수 없습니다." },
-        { status: 400 },
-      );
-    }
-
-    const loadedA = loadSajuForReport({
-      birth_date: String(repA.birth_date ?? ""),
-      birth_time: repA.birth_time != null ? String(repA.birth_time) : null,
-    });
-    const loadedB = loadSajuForReport({
-      birth_date: String(repB.birth_date ?? ""),
-      birth_time: repB.birth_time != null ? String(repB.birth_time) : null,
-    });
-    const [astroA, astroB] = await Promise.all([
-      fetchAstroJson(origin, repA),
-      fetchAstroJson(origin, repB),
-    ]);
-
-    const sajuTextA = loadedA
-      ? sajuBriefFromProvenance(loadedA.provenance)
-      : "(사주 계산 없음)";
-    const sajuTextB = loadedB
-      ? sajuBriefFromProvenance(loadedB.provenance)
-      : "(사주 계산 없음)";
-    const astroTextA = astroBrief(astroA);
-    const astroTextB = astroBrief(astroB);
-
-    const userPrompt = buildRelationshipPremiumPrompt({
-      kind: kind,
-      myPatternsBlock: blockA,
-      partnerPatternsBlock: blockB,
-      nicknameA: labelA,
-      nicknameB: labelB,
-      reportIdA: rr.report_id_a,
-      reportIdB: rr.report_id_b,
-      mySaju: `[${rr.report_id_a}] ${sajuTextA}`,
-      partnerSaju: `[${rr.report_id_b}] ${sajuTextB}`,
-      myAstrology: `[${rr.report_id_a}] ${astroTextA}`,
-      partnerAstrology: `[${rr.report_id_b}] ${astroTextB}`,
-    });
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "출력은 유효한 JSON 한 덩어리만. 한국어. markdown·코드펜스 금지.",
-        },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.55,
-      max_tokens: 6000,
-      response_format: { type: "json_object" },
-    });
-
-    const raw = completion.choices[0]?.message.content?.trim() ?? "";
-    const parsed = parseJsonObject<{ perspectives?: Record<string, unknown> }>(
-      raw,
+    return NextResponse.json(
+      { error: `지원하지 않는 관계 유형: ${kind}` },
+      { status: 400 },
     );
-    if (!parsed.perspectives) {
-      return NextResponse.json(
-        { error: "LLM 응답 형식이 올바르지 않습니다." },
-        { status: 502 },
-      );
-    }
-
-    const normalized = normalizeRelationshipPerspectives(
-      parsed,
-      rr.report_id_a,
-      rr.report_id_b,
-      labelA,
-      labelB,
-    );
-    if (!normalized) {
-      return NextResponse.json(
-        { error: "LLM이 두 사람 시점 데이터를 만들지 못했습니다." },
-        { status: 502 },
-      );
-    }
-
-    const payload = normalized;
-    const nextByKind: ResultPremiumByKind = {
-      ...byKind,
-      [kind]: payload,
-    };
-
-    const { error: upErr } = await updateRelationshipReportSafe(
-      supabase,
-      relationshipReportId,
-      {
-        result_premium_by_kind: nextByKind,
-        relationship_kind: kind,
-      },
-      { result_premium: payload },
-    );
-
-    if (upErr) {
-      console.error("relationship/analyze/premium update:", upErr);
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
-    }
-
-    if (viewerReportId) {
-      await insertRelationshipAnalysisLog(supabase, {
-        relationshipReportId,
-        viewerReportId,
-        relationshipKind: kind,
-        analysisLevel: "premium",
-        resultFormat: "relationship_4axis_premium_v1",
-        payload,
-      });
-    }
-
-    return NextResponse.json({
-      relationship_kind: kind,
-      result_premium: payload,
-    });
   } catch (e) {
     console.error("relationship/analyze/premium:", e);
-    if (e instanceof LlmJsonParseRetryError) {
-      return NextResponse.json(
-        {
-          error: `관계 심화 분석 실패 (${e.attempts}회 재시도 후 실패)`,
-        },
-        { status: 500 },
-      );
-    }
     return NextResponse.json(
       { error: "관계 심화 분석 실패" },
       { status: 500 },

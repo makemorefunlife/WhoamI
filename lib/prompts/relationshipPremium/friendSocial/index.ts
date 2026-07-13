@@ -1,4 +1,5 @@
 import type OpenAI from "openai";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
@@ -25,6 +26,14 @@ export async function runFriendSocialDeepAnalysis(
     sajuJsonB: SajuDataForIntegrated;
     sajuProvenanceA?: SajuChartProvenance;
     sajuProvenanceB?: SajuChartProvenance;
+    psychMasterA?: PsychMasterJson | null;
+    psychMasterB?: PsychMasterJson | null;
+    personCoreMeta?: {
+      reportIdA: string;
+      reportIdB: string;
+      inputFingerprintA: string;
+      inputFingerprintB: string;
+    };
   },
 ): Promise<FriendSocialDeepPayload> {
   const report = buildFriendReport({
@@ -36,6 +45,9 @@ export async function runFriendSocialDeepAnalysis(
     birthPlaceB: params.birthB.place,
     birthTimeUnknownA: params.sajuProvenanceA?.birthTimeUnknown,
     birthTimeUnknownB: params.sajuProvenanceB?.birthTimeUnknown,
+    psychMasterA: params.psychMasterA,
+    psychMasterB: params.psychMasterB,
+    personCoreMeta: params.personCoreMeta,
   });
 
   return {

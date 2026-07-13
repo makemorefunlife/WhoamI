@@ -217,7 +217,11 @@ export function getPremiumPerspectiveForKind(
   viewerReportId: string,
   reportIdA?: string,
   reportIdB?: string,
+  options?: { partnerReportName?: string | null },
 ): Record<string, unknown> | null {
+  const sliceOptions = options?.partnerReportName
+    ? { partnerReportName: options.partnerReportName }
+    : undefined;
   const payload = byKind?.[kind];
   if (payload && "perspectives" in payload && payload.perspectives) {
     const block = payload.perspectives as Record<string, unknown>;
@@ -227,6 +231,7 @@ export function getPremiumPerspectiveForKind(
         viewerReportId,
         reportIdA,
         reportIdB,
+        sliceOptions,
       );
       if (slice) return slice;
     } else {
@@ -251,6 +256,7 @@ export function getPremiumPerspectiveForKind(
         viewerReportId,
         reportIdA,
         reportIdB,
+        sliceOptions,
       );
     }
     const p = legacyPayload.perspectives[viewerReportId];

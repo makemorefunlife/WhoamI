@@ -17,12 +17,11 @@ function isPsychMatchType(v: unknown): v is RomanticPsychMatchType {
 function parsePsychMatch(v: unknown): RomanticPsychMatchResult | null {
   if (!isRecord(v)) return null;
   const axisResultsRaw = v.axis_results;
-  const conflictTriggersRaw = v.conflict_triggers;
-  if (!Array.isArray(axisResultsRaw) || !Array.isArray(conflictTriggersRaw)) return null;
+  if (!Array.isArray(axisResultsRaw)) return null;
 
   const axisResults: RomanticPsychMatchResult["axis_results"] = [];
   for (const row of axisResultsRaw) {
-    if (!isRecord(row)) return null;
+    if (!isRecord(row)) continue;
     if (
       typeof row.axis_key !== "string" ||
       typeof row.score_a !== "number" ||
@@ -30,7 +29,7 @@ function parsePsychMatch(v: unknown): RomanticPsychMatchResult | null {
       typeof row.gap !== "number" ||
       !isPsychMatchType(row.match_type)
     ) {
-      return null;
+      continue;
     }
     axisResults.push({
       axis_key: row.axis_key,
@@ -41,21 +40,26 @@ function parsePsychMatch(v: unknown): RomanticPsychMatchResult | null {
     });
   }
 
+  if (axisResults.length === 0) return null;
+
   const conflictTriggers: RomanticPsychMatchResult["conflict_triggers"] = [];
-  for (const row of conflictTriggersRaw) {
-    if (!isRecord(row)) return null;
-    if (
-      typeof row.axis_key !== "string" ||
-      typeof row.gap !== "number" ||
-      !isPsychMatchType(row.match_type)
-    ) {
-      return null;
+  const conflictTriggersRaw = v.conflict_triggers;
+  if (Array.isArray(conflictTriggersRaw)) {
+    for (const row of conflictTriggersRaw) {
+      if (!isRecord(row)) continue;
+      if (
+        typeof row.axis_key !== "string" ||
+        typeof row.gap !== "number" ||
+        !isPsychMatchType(row.match_type)
+      ) {
+        continue;
+      }
+      conflictTriggers.push({
+        axis_key: row.axis_key,
+        gap: row.gap,
+        match_type: row.match_type,
+      });
     }
-    conflictTriggers.push({
-      axis_key: row.axis_key,
-      gap: row.gap,
-      match_type: row.match_type,
-    });
   }
 
   return {

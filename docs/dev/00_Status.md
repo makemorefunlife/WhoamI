@@ -27,7 +27,7 @@
 ```text
 [ ] 유료 /report 파이프라인도 Slim V1 정책과 용어 정렬 검토
 [ ] relationship 리포트 — 관계 맥락 분리 유지 확인
-[ ] docs/v2 deep 스펙 폴더 정리(archive 또는 삭제)
+[x] docs/v2 deep 스펙 03B–03E 삭제
 ```
 
 ---

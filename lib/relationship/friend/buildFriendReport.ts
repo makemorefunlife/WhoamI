@@ -1,3 +1,11 @@
+import type { PsychMatchResult } from "@/lib/relationship/psychMatch";
+import type { DomainPsychLens } from "@/lib/relationship/psychDomainLens/types";
+import { buildFriendPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFriendPsychMatch";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import {
+  buildPersonCoreRelationMeta,
+  type PersonCoreRelationMetaPayload,
+} from "@/lib/personCore/mappers/buildPersonCoreRelationMeta";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/types";
 import { buildFriendRuleContext } from "./buildFriendRuleContext";
@@ -19,6 +27,9 @@ export type FriendReportBody = {
     risk_pct: number;
     nickname_a: string;
     nickname_b: string;
+    person_core?: PersonCoreRelationMetaPayload;
+    psych_match?: PsychMatchResult | null;
+    psych_lens?: DomainPsychLens | null;
   };
 };
 
@@ -31,14 +42,35 @@ export function buildFriendReport(params: {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  psychMasterA?: PsychMasterJson | null;
+  psychMasterB?: PsychMasterJson | null;
+  personCoreMeta?: {
+    reportIdA: string;
+    reportIdB: string;
+    inputFingerprintA: string;
+    inputFingerprintB: string;
+  };
 }): FriendReportBody {
   const ctx = buildFriendRuleContext(params);
   const friend = buildFriendSocialReport(ctx);
 
-  const snapshot_panel = buildFriendSnapshotPanel(ctx, {
-    gaugeLabel: "Social DNA · 우정 스냅샷",
-    representativeLine: friend.section_snapshot.one_line_friendship,
-  });
+  const snapshot_panel = buildFriendSnapshotPanel(
+    ctx,
+    {
+      gaugeLabel: "Social DNA · 우정 스냅샷",
+      representativeLine: friend.section_snapshot.one_line_friendship,
+    },
+    {
+      psychA: params.psychMasterA ?? null,
+      psychB: params.psychMasterB ?? null,
+    },
+  );
+
+  const personCoreMeta = buildPersonCoreRelationMeta(params);
+  const psychBundle = buildFriendPsychMatchBundle(
+    params.psychMasterA,
+    params.psychMasterB,
+  );
 
   return {
     headline: friend.section_snapshot.one_line_friendship,
@@ -55,6 +87,13 @@ export function buildFriendReport(params: {
       risk_pct: ctx.masterScores.risk,
       nickname_a: ctx.nicknameA,
       nickname_b: ctx.nicknameB,
+      ...(personCoreMeta ? { person_core: personCoreMeta } : {}),
+      ...(psychBundle
+        ? {
+            psych_match: psychBundle.psych_match,
+            psych_lens: psychBundle.psych_lens,
+          }
+        : {}),
     },
   };
 }

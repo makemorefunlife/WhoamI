@@ -1,4 +1,7 @@
-import { isGenericPartnerName } from "@/lib/relationship/resolvePartnerDisplayName";
+import {
+  isGenericPartnerName,
+  resolvePartnerDisplayName,
+} from "@/lib/relationship/resolvePartnerDisplayName";
 
 export type ViewerFirstContext = {
   viewerIsReportA: boolean;
@@ -24,6 +27,29 @@ export function resolveViewerDisplayName(options: {
   if (fromClerk && !isGenericPartnerName(fromClerk)) return fromClerk;
 
   return options.fallback?.trim() || "나";
+}
+
+/** basic 축 카드 — DB my_nickname이 제네릭이면 viewer 표시명으로 */
+export function resolveAxisViewerNickname(
+  storedNickname: string | null | undefined,
+  viewerDisplayName: string,
+): string {
+  return resolveViewerDisplayName({
+    reportName: storedNickname,
+    fallback: viewerDisplayName.trim() || "나",
+  });
+}
+
+/** basic 축 카드 — DB partner_nickname이 제네릭이면 상대 표시명으로 */
+export function resolveAxisPartnerNickname(
+  storedNickname: string | null | undefined,
+  partnerDisplayName: string,
+): string {
+  return resolvePartnerDisplayName(
+    storedNickname,
+    undefined,
+    partnerDisplayName.trim() || "상대",
+  );
 }
 
 export function buildViewerFirstContext(params: {
@@ -58,6 +84,19 @@ export function pickViewerFirstPair<T>(
 
 function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** "A & B — …" / "A × B …" 형태를 viewer-first 이름 쌍으로 교체 */
+export function rewriteViewerFirstNamePairLine(
+  raw: string | undefined | null,
+  myName: string,
+  partnerName: string,
+): string {
+  const text = raw?.trim();
+  if (!text) return "";
+  const m = text.match(/^(.+?)\s([&×])\s(.+?)(\s[—\-].*)?$/u);
+  if (!m) return text;
+  return `${myName} ${m[2]} ${partnerName}${m[4] ?? ""}`;
 }
 
 const REPORT_SLOT_PARTICLES =

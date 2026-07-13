@@ -2,6 +2,10 @@
 
 import { MessageCircle, Sparkles, Zap, Battery } from "lucide-react";
 import type { RelationshipAxisKey } from "@/lib/relationship/normalizeRelationshipPerspectives";
+import {
+  resolveAxisPartnerNickname,
+  resolveAxisViewerNickname,
+} from "@/lib/relationship/viewerFirstDisplay";
 
 /** 신형 API 축 블록 */
 export type AxisBlockV2 = {
@@ -126,8 +130,8 @@ export default function RelationshipBasicCards({
   /** false면 빈 상태 문구를 숨김 */
   emptyMessage?: string | false;
 }) {
-  const myFallback = (viewerName ?? "").trim() || "나";
-  const partnerFallback = partnerName.trim() || "상대";
+  const myDisplay = (viewerName ?? "").trim() || "나";
+  const partnerDisplay = partnerName.trim() || "상대";
 
   if (!perspective || Object.keys(perspective).length === 0) {
     if (emptyMessage === false) return null;
@@ -148,14 +152,16 @@ export default function RelationshipBasicCards({
           ? raw
           : linesFromLegacy(
               raw as AxisBlockLegacy,
-              myFallback,
-              partnerFallback,
+              myDisplay,
+              partnerDisplay,
               key,
             );
 
-        const myNick = (v2.my_nickname ?? myFallback).trim() || myFallback;
-        const partnerNick =
-          (v2.partner_nickname ?? partnerFallback).trim() || partnerFallback;
+        const myNick = resolveAxisViewerNickname(v2.my_nickname, myDisplay);
+        const partnerNick = resolveAxisPartnerNickname(
+          v2.partner_nickname,
+          partnerDisplay,
+        );
         const insights = (v2.insights ?? []).filter(Boolean).slice(0, 2);
         const actions = (v2.actions ?? []).filter(Boolean).slice(0, 2);
         const myLineDisplay = stripRolePreface(v2.my_line?.trim() ?? "");

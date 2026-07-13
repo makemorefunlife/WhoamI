@@ -1,6 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
+import { hydrateFamilyParentSnapshotPanel } from "@/lib/relationship/familyParent/buildFamilySnapshotPanel";
+import { buildFamilyPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFamilyPsychMatch";
+import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
+import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
+import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -38,6 +44,24 @@ export default function FamilyParentReportView({
 
   const childName = roles?.child_nickname ?? "자녀";
   const parentName = roles?.parent_nickname ?? "부모";
+  const labelA = report.meta?.nickname_a ?? childName;
+  const labelB = report.meta?.nickname_b ?? parentName;
+
+  const psychDisplay = useMemo(
+    () => resolveReportPsychDisplay(report.meta, buildFamilyPsychMatchBundle),
+    [report.meta],
+  );
+
+  const snapshotPanel = useMemo(() => {
+    const pc = report.meta?.person_core;
+    if (!report.snapshot_panel) return null;
+    return hydrateFamilyParentSnapshotPanel(report.snapshot_panel, {
+      psychA: pc?.psych_a,
+      psychB: pc?.psych_b,
+      nicknameA: labelA,
+      nicknameB: labelB,
+    });
+  }, [report.snapshot_panel, report.meta, labelA, labelB]);
 
   return (
     <RelationshipReportLayout
@@ -74,7 +98,23 @@ export default function FamilyParentReportView({
           tone: "alert",
         },
       ]}
+      scoreFooter={
+        snapshotPanel ? (
+          <TriScoreSnapshotPanel panel={snapshotPanel} kind="family" />
+        ) : undefined
+      }
     >
+      {psychDisplay ? (
+        <RelationshipPsychMatchSection
+          psychMatch={psychDisplay.psych_match}
+          psychLens={psychDisplay.psych_lens}
+          personALabel={labelA}
+          personBLabel={labelB}
+          viewerIsReportA
+          accentColor={theme.accent}
+        />
+      ) : null}
+
       {dna ? (
         <RelationshipReportCard
           title="🧬 Child DNA 프로필"

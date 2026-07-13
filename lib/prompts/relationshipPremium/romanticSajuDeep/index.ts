@@ -5,6 +5,7 @@ import {
   formatPersonSajuBlock,
 } from "@/lib/saju/formatRomanticSajuInput";
 import { fetchLlmJsonWithParseRetry } from "@/lib/relationship/parseLlmJson";
+import { buildRomanticRefineDigest } from "@/lib/relationship/romanticRefineDigest";
 import { buildRomanticRulesBundle } from "@/lib/relationship/romanticRules";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
 import { buildRomanticScreenPlan } from "@/lib/relationship/romanticHeadline/screenMap";
@@ -30,10 +31,7 @@ export type RomanticSajuDeepPayload = {
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
-  const flag = process.env.RELATIONSHIP_ROMANTIC_SELF_REFINE;
-  if (flag === "true") return true;
-  if (flag === "false") return false;
-  return true;
+  return process.env.RELATIONSHIP_ROMANTIC_SELF_REFINE === "true";
 }
 
 /** 출력 토큰 상한 — RELATIONSHIP_ROMANTIC_MAX_TOKENS 로 조정 가능 */
@@ -184,8 +182,8 @@ ${personBlockB}
 
 ${pairBlock}
 
-# 1차 분석 결과
-${JSON.stringify(parsed)}`;
+# 1차 분석 결과 (요약 digest — 전체 JSON 대신 핵심 필드만)
+${buildRomanticRefineDigest(parsed.report)}`;
     const refined = await callLlmJsonAndParse<RomanticSajuDeepReport>(
       openai,
       systemPrompt,

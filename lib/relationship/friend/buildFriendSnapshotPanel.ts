@@ -1,4 +1,10 @@
 import type { FriendRuleContext } from "./buildFriendRuleContext";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import {
+  buildPersonGaugesFromPsych,
+  patchSnapshotPanelWithPsych,
+  resolveSnapshotPersonAxesSource,
+} from "@/lib/personCore/mappers/mapPsychMasterToSnapshotAxes";
 import type {
   RelationshipTopicGauge,
   TriScoreSnapshotPanel,
@@ -32,12 +38,31 @@ function buildTopicGauges(ctx: FriendRuleContext): RelationshipTopicGauge[] {
   ];
 }
 
+function emptyPersonGauges(nickname: string): TriScoreSnapshotPanel["personA"] {
+  return { nickname, metaphor: "", axes: [] };
+}
+
 export function buildFriendSnapshotPanel(
   ctx: FriendRuleContext,
   options?: { gaugeLabel?: string; representativeLine?: string },
+  personCorePsych?: {
+    psychA?: PsychMasterJson | null;
+    psychB?: PsychMasterJson | null;
+  },
 ): TriScoreSnapshotPanel {
   const relationshipGauges = buildTopicGauges(ctx);
   const snap = ctx.killerSections.section_snapshot;
+  const psychA = personCorePsych?.psychA ?? null;
+  const psychB = personCorePsych?.psychB ?? null;
+
+  const personA =
+    psychA != null
+      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "friendship")
+      : emptyPersonGauges(ctx.nicknameA);
+  const personB =
+    psychB != null
+      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "friendship")
+      : emptyPersonGauges(ctx.nicknameB);
 
   return {
     grade: ctx.grade,
@@ -47,17 +72,9 @@ export function buildFriendSnapshotPanel(
       `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
     keywords: ["친구", "Social DNA", "우정"],
     relationshipGauges,
-    personA: {
-      nickname: ctx.nicknameA,
-      axes: [],
-      metaphor: ctx.friendPairAnalysis.dnaA.socialTitle,
-    },
-    personB: {
-      nickname: ctx.nicknameB,
-      axes: [],
-      metaphor: ctx.friendPairAnalysis.dnaB.socialTitle,
-    },
-    personAxesSource: "hidden",
+    personA,
+    personB,
+    personAxesSource: resolveSnapshotPersonAxesSource(psychA, psychB),
     narrative: {
       topics: relationshipGauges.map((g) => ({
         topic: g.topic,
@@ -71,4 +88,35 @@ export function buildFriendSnapshotPanel(
       })),
     },
   };
+}
+
+export function hydrateFriendSnapshotPanel(
+  panel: TriScoreSnapshotPanel,
+  personCorePsych?: {
+    psychA?: PsychMasterJson | null;
+    psychB?: PsychMasterJson | null;
+    nicknameA?: string;
+    nicknameB?: string;
+  },
+): TriScoreSnapshotPanel {
+  if (
+    personCorePsych?.psychA &&
+    personCorePsych.psychB &&
+    personCorePsych.nicknameA &&
+    personCorePsych.nicknameB
+  ) {
+    return patchSnapshotPanelWithPsych(
+      panel,
+      {
+        nicknameA: personCorePsych.nicknameA,
+        nicknameB: personCorePsych.nicknameB,
+      },
+      {
+        psychA: personCorePsych.psychA,
+        psychB: personCorePsych.psychB,
+      },
+      "friendship",
+    );
+  }
+  return panel;
 }

@@ -155,10 +155,6 @@ export function buildRomanticSajuDeepUserPrompt(params: {
 
   const qualityExamples = buildSectionQualityExamples(nicknameA, nicknameB);
   const pdfStyleGuide = buildPdfStyleReferenceGuide(nicknameA, nicknameB);
-  const conversationActionGuide = buildConversationAndActionWritingGuide(
-    nicknameA,
-    nicknameB,
-  );
   const nameMapping = buildEssenceJournalNameMappingBlock({
     nicknameA,
     nicknameB,

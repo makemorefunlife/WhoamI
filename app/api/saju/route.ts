@@ -4,13 +4,7 @@
 
 import { NextResponse } from "next/server";
 
-import { analyzeRelations } from "@/lib/saju/analyzeRelations";
-
-import { analyzeShinsal } from "@/lib/saju/analyzeShinsal";
-
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
-
-import { createServerSupabaseClient } from "@/lib/supabase/serverClient";
 
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 
@@ -22,7 +16,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { birthDate, birthTime, reportId, birthTimeUnknown } = body;
+    const { birthDate, birthTime, birthTimeUnknown } = body;
 
 
 
@@ -49,32 +43,6 @@ export async function POST(req: Request) {
       birthTimeUnknown: birthTimeUnknown === true || !birthTime?.trim(),
 
     });
-
-
-
-    if (reportId) {
-
-      const supabase = createServerSupabaseClient();
-
-      if (supabase) {
-
-        await supabase.from("saju_charts").insert({
-
-          report_id: reportId,
-
-          year_pillar: bundle.saju.yearPillar,
-
-          month_pillar: bundle.saju.monthPillar,
-
-          day_pillar: bundle.saju.dayPillar,
-
-          hour_pillar: bundle.saju.hourPillar,
-
-        });
-
-      }
-
-    }
 
 
 

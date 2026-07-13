@@ -70,8 +70,18 @@ if (apply.status !== 0) {
 
 console.log("OK: migration applied");
 
-const verifySql =
-  "select column_name from information_schema.columns where table_schema = 'public' and table_name = 'reports' and column_name = 'birth_date_correction_used_at';";
+const basename = path.basename(sqlPath);
+let verifySql;
+if (basename.includes("person_core_blueprints")) {
+  verifySql =
+    "select table_name from information_schema.tables where table_schema = 'public' and table_name = 'person_core_blueprints';";
+} else if (basename.includes("birth_date_correction")) {
+  verifySql =
+    "select column_name from information_schema.columns where table_schema = 'public' and table_name = 'reports' and column_name = 'birth_date_correction_used_at';";
+} else {
+  console.log("VERIFY skipped (no built-in check for this migration)");
+  process.exit(0);
+}
 
 const verify = spawnSync(
   "npx",
@@ -79,8 +89,13 @@ const verify = spawnSync(
   { cwd: root, encoding: "utf8", shell: true },
 );
 
-if (verify.stdout?.includes("birth_date_correction_used_at")) {
-  console.log("VERIFY OK: reports.birth_date_correction_used_at exists");
+const verifyOk =
+  basename.includes("person_core_blueprints")
+    ? verify.stdout?.includes("person_core_blueprints")
+    : verify.stdout?.includes("birth_date_correction_used_at");
+
+if (verifyOk) {
+  console.log(`VERIFY OK: ${basename}`);
   process.exit(0);
 }
 

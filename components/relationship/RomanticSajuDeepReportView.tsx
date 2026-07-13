@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useCallback, useMemo, type ReactNode } from "react";
 import {
   filterShareSummaryKeywords,
   isGenericRomanticActionPhrase,
@@ -24,12 +24,7 @@ import type {
   RomanticSajuDeepReport,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { resolveSnapshotPanelFromReport } from "@/lib/relationship/romanticSnapshot/buildRomanticSnapshot";
-import {
-  applyRomanticDisplayNames,
-  applyReportSlotNames,
-  buildRomanticNameReplacements,
-  pickViewerFirstPair,
-} from "@/lib/relationship/viewerFirstDisplay";
+import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import RomanticSnapshotPanelView from "@/components/relationship/RomanticSnapshotPanel";
 import {
   RelationshipReportLayout,
@@ -52,6 +47,7 @@ import {
   buildChemistryApproxScores,
   buildStrengthWeaknessLists,
 } from "@/lib/relationship/psychMatch";
+import { buildRomanticDisplayContext } from "@/lib/relationship/romanticReportViewModel";
 import {
   dedupeActionGuidelines,
   normalizeActionGuideline,
@@ -512,22 +508,22 @@ export default function RomanticSajuDeepReportView({
   const myName = myNameProp ?? (viewerIsReportA ? nameA : nameB);
   const partnerName = partnerNameProp ?? (viewerIsReportA ? nameB : nameA);
 
-  const nameReplacements = buildRomanticNameReplacements({
-    myName,
-    partnerName,
-    personAName: nameA,
-    personBName: nameB,
-    viewerIsReportA,
-  });
+  const { displayText } = useMemo(
+    () =>
+      buildRomanticDisplayContext({
+        nameA,
+        nameB,
+        myName,
+        partnerName,
+        viewerIsReportA,
+      }),
+    [nameA, nameB, myName, partnerName, viewerIsReportA],
+  );
 
-  const displayText = (raw: string | undefined | null): string => {
-    if (!raw?.trim()) return "";
-    const slotted = applyReportSlotNames(raw, nameA, nameB);
-    return applyRomanticDisplayNames(
-      polishRomanticDisplayText(slotted),
-      nameReplacements,
-    );
-  };
+  const polishLine = useCallback(
+    (raw: string | undefined | null) => displayText(raw),
+    [displayText],
+  );
 
   function P({ children }: { children: ReactNode }) {
     const text =
@@ -606,8 +602,8 @@ export default function RomanticSajuDeepReportView({
 
   const emptyNature: NatureBlock = {};
   const { me: myNature, partner: partnerNature } = pickViewerFirstPair(
-    s2.a_nature ?? emptyNature,
-    s2.b_nature ?? emptyNature,
+    (s2.a_nature ?? emptyNature) as NatureBlock,
+    (s2.b_nature ?? emptyNature) as NatureBlock,
     viewerIsReportA,
   );
   const { me: myAdviceRaw, partner: partnerAdviceRaw } = pickViewerFirstPair(
@@ -666,14 +662,22 @@ export default function RomanticSajuDeepReportView({
     Boolean(String(s4.mutual_gift ?? "").trim());
 
   const conflict = s3?.conflict_situation;
-  const comparisonTable = buildViewerComparisonTable(
-    s2.comparison_table ?? [],
-    {
-      myName,
-      partnerName,
-      viewerIsReportA,
-      polish: displayText,
-    },
+  const comparisonTable = useMemo(
+    () =>
+      buildViewerComparisonTable(
+        (s2.comparison_table as Array<{
+          aspect: string;
+          a: string;
+          b: string;
+        }>) ?? [],
+        {
+          myName,
+          partnerName,
+          viewerIsReportA,
+          polish: polishLine,
+        },
+      ),
+    [s2.comparison_table, myName, partnerName, viewerIsReportA, polishLine],
   );
   const dialogueTable = filterDialogueTable(
     (conflict?.dialogue_table ?? []) as DialogueTableRow[],
@@ -741,16 +745,20 @@ export default function RomanticSajuDeepReportView({
   const snapshotPanel = resolveSnapshotPanelFromReport(report.meta);
   const scores = extractRomanticScores(report.meta);
   const psychMatch = report.meta?.psych_match ?? null;
-  const chemistryScores = psychMatch?.axis_results?.length
-    ? buildChemistryApproxScores(psychMatch.axis_results)
-    : null;
+  const { chemistryApprox: chemistryScores, strengthWeakness: strengthWeaknessResult } =
+    useMemo(() => {
+      if (!psychMatch?.axis_results?.length) {
+        return { chemistryApprox: null, strengthWeakness: null };
+      }
+      return {
+        chemistryApprox: buildChemistryApproxScores(psychMatch.axis_results),
+        strengthWeakness: buildStrengthWeaknessLists(psychMatch.axis_results),
+      };
+    }, [psychMatch]);
   const showChemistryBreakdown =
     chemistryScores != null &&
     (chemistryScores.emotional !== null ||
       chemistryScores.communication !== null);
-  const strengthWeaknessResult = psychMatch?.axis_results?.length
-    ? buildStrengthWeaknessLists(psychMatch.axis_results)
-    : null;
   const showStrengthWeakness =
     psychMatch != null &&
     strengthWeaknessResult != null &&

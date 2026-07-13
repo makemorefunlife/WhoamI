@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.2 (unreleased)
+
+- `RelationshipBasicCards`가 DB `my_nickname`/`partner_nickname`의 제네릭 플레이스홀더(첫·두 번째 사람 등)를 표시 직전 `resolveAxisViewerNickname`/`resolveAxisPartnerNickname`으로 viewer·상대 표시명으로 치환합니다.
+- `POST /api/relationship/analyze/basic` 라벨 생성이 premium과 동일하게 viewer 슬롯에 Clerk 이름을 우선 사용합니다(viewer 없으면 기존 플레이스홀더 저장·UI 보정).
+- 분석 기록 스냅샷(`viewAnalysisLog` → `snapshotView.basic`)도 동일 컴포넌트를 타므로 재생성 없이 화면 닉네임이 보정됩니다.
+- stale perspective 키(merge·repoint 후)에서 viewer 시점 슬라이스를 `partner reports.name`으로 식별해 내/상대 라벨이 뒤바뀌지 않게 합니다.
+- 연인 심화 self-refine 기본 OFF 확정(`RELATIONSHIP_ROMANTIC_SELF_REFINE=true`만 2차 호출), 2차 refine는 1차 JSON 전체 대신 `buildRomanticRefineDigest` 축약본 전달.
+- `parsePsychMatch` partial parse — 일부 axis row 깨져도 유효 축만 반환.
+- `FriendReportView` 헤드라인·본문에 `buildRomanticNameReplacements` + `rewriteViewerFirstNamePairLine` 표시 보정(두 번째 사람·역방향 저장 헤드라인).
+- `RomanticSajuDeepReportView` 비교표·psych_match 파생값 `useMemo`/`useCallback` 적용.
+- detail API reports 조회 4회→2회(`report_id_a/b`만 fetch).
+- 레거시 `buildConversationAndActionWritingGuide` 제거, `sectionExamples` section_6 중복 정리.
+
 ## 0.3.1 (2026-07-12)
 
 연인 심화 리포트 프롬프트·psych_match UI 품질 패치.
@@ -9,6 +22,9 @@
 - 💪 **강점·약점**: `buildStrengthWeaknessLists` 최소 3개 보장 (tension 1개만 있어도 gap 상위 축으로 보충).
 - Essence 행동 가이드 UI: `01. 제목: 본문` + `* 실전 대사 꿀팁` 형식.
 - Supabase 마이그레이션 적용 스크립트 `tests/scripts/apply-supabase-migration.mjs` 추가.
+- `RELATIONSHIP_ROMANTIC_SELF_REFINE` 미설정 시 기본 OFF — 연인 심화 LLM 2차 refine 비활성(분석 속도·비용 완화).
+- `parsePsychMatch` partial parse — 일부 axis row가 깨져도 유효 축만 반환(레이더·강약점 유지).
+- 연인 kind detail API에서 미사용 `raw_basic`/`raw_premium`/`raw_premium_by_kind` 응답 제거.
 
 ## 0.3.0 (2026-07-12)
 

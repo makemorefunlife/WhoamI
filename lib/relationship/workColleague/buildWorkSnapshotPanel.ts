@@ -1,129 +1,21 @@
 import type { WorkColleagueContext } from "./buildWorkColleagueContext";
 import { polishRomanticDisplayText } from "@/lib/relationship/romanticEverydayText";
 import { resolveWorkColleagueStylePhrase } from "./officeLanguage";
-import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
-import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
-import { getDayStemCode } from "@/lib/saju/romanticSajuDerivations";
-import { PRIMARY_AXIS_LABELS } from "@/lib/v2/framework/axisLabels";
-import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
-import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import {
+  buildPersonGaugesFromPsych,
+  patchSnapshotPanelWithPsych,
+  resolveSnapshotPersonAxesSource,
+} from "@/lib/personCore/mappers/mapPsychMasterToSnapshotAxes";
 import { getTriScoreKindConfig } from "@/lib/relationship/triScoreSnapshot/kinds";
 import type {
-  PersonSnapshotGauges,
   RelationshipTopicGauge,
   TriScoreSnapshotPanel,
 } from "@/lib/relationship/triScoreSnapshot/types";
-import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import {
   buildWorkSnapshotNarrative,
   buildWorkSnapshotNarrativeFromGauges,
 } from "./buildWorkSnapshotNarrative";
-
-const SNAPSHOT_AXIS_KEYS: PrimaryAxisKey[] = [
-  "connection",
-  "stability",
-  "growth",
-  "structure",
-  "adaptability",
-];
-
-const ELEMENT_AXIS_BIAS: Record<
-  string,
-  Partial<Record<PrimaryAxisKey, number>>
-> = {
-  fire: { connection: 10, growth: 6 },
-  earth: { stability: 12, structure: 8 },
-  wood: { growth: 10, adaptability: 5 },
-  metal: { structure: 10, stability: 5 },
-  water: { connection: 6, adaptability: 10 },
-};
-
-function axesFromFallback(fallback: PrimaryAxesScores) {
-  return SNAPSHOT_AXIS_KEYS.map((key) => ({
-    key,
-    label: PRIMARY_AXIS_LABELS[key],
-    value: Math.max(0, Math.min(100, Math.round(fallback[key] ?? 50))),
-  }));
-}
-
-function stemCodeFromSaju(sajuJson: SajuDataForIntegrated): string | null {
-  try {
-    const pillars = sajuJsonToPillars(
-      sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
-    );
-    return getDayStemCode(pillars);
-  } catch {
-    return null;
-  }
-}
-
-function fallbackAxesFromSaju(
-  ctx: WorkColleagueContext,
-  who: "a" | "b",
-): PrimaryAxesScores {
-  const scores = { ...buildNeutralV2Profile().primary_axes };
-  const sajuJson = who === "a" ? ctx.sajuJsonA : ctx.sajuJsonB;
-  const strength = who === "a" ? ctx.strengthA : ctx.strengthB;
-  const tenGods = who === "a" ? ctx.tenGodsA : ctx.tenGodsB;
-
-  const stemCode = stemCodeFromSaju(sajuJson);
-  const ref = stemCode
-    ? REF_HEAVENLY_STEMS.find((r) => r.code === stemCode)
-    : null;
-  const element = ref?.element as string | undefined;
-
-  if (element && ELEMENT_AXIS_BIAS[element]) {
-    for (const [key, delta] of Object.entries(ELEMENT_AXIS_BIAS[element]!)) {
-      const axis = key as PrimaryAxisKey;
-      scores[axis] = Math.min(85, scores[axis] + (delta ?? 0));
-    }
-  }
-
-  if (ref?.yin_yang === "yang") {
-    scores.structure = Math.min(78, scores.structure + 4);
-    scores.growth = Math.min(78, scores.growth + 3);
-  } else if (ref?.yin_yang === "yin") {
-    scores.connection = Math.min(78, scores.connection + 4);
-    scores.adaptability = Math.min(78, scores.adaptability + 3);
-  }
-
-  if (strength.label.includes("신강")) {
-    scores.structure = Math.min(82, scores.structure + 8);
-    scores.stability = Math.min(80, scores.stability + 5);
-  } else if (strength.label.includes("신약")) {
-    scores.connection = Math.min(82, scores.connection + 8);
-    scores.adaptability = Math.min(78, scores.adaptability + 6);
-  }
-
-  const godTotal = Object.values(tenGods).reduce((s, n) => s + n, 0);
-  if (godTotal >= 4) {
-    scores.growth = Math.min(80, scores.growth + 5);
-  }
-
-  const topGod = Object.entries(tenGods).sort((a, b) => b[1] - a[1])[0]?.[0];
-  if (topGod?.includes("식신") || topGod?.includes("상관")) {
-    scores.connection = Math.min(82, scores.connection + 5);
-    scores.adaptability = Math.min(78, scores.adaptability + 4);
-  }
-  if (topGod?.includes("정관") || topGod?.includes("편관")) {
-    scores.structure = Math.min(82, scores.structure + 6);
-    scores.stability = Math.min(78, scores.stability + 4);
-  }
-  if (topGod?.includes("정인") || topGod?.includes("편인")) {
-    scores.connection = Math.min(80, scores.connection + 4);
-    scores.growth = Math.min(76, scores.growth + 3);
-  }
-
-  return scores;
-}
-
-function axesAreNearlyIdentical(
-  a: PersonSnapshotGauges["axes"],
-  b: PersonSnapshotGauges["axes"],
-): boolean {
-  if (a.length !== b.length) return false;
-  return a.every((bar, i) => Math.abs(bar.value - (b[i]?.value ?? 0)) <= 3);
-}
 
 function buildWorkKeywords(ctx: WorkColleagueContext): string[] {
   const raw = new Set<string>();
@@ -145,6 +37,10 @@ function buildWorkKeywords(ctx: WorkColleagueContext): string[] {
     .slice(0, 8);
 }
 
+function emptyPersonGauges(nickname: string): TriScoreSnapshotPanel["personA"] {
+  return { nickname, metaphor: "", axes: [] };
+}
+
 export function buildWorkSnapshotPanel(
   ctx: WorkColleagueContext,
   headline: {
@@ -152,27 +48,25 @@ export function buildWorkSnapshotPanel(
     representativeLine: string;
     keywords?: string[];
   },
+  personCorePsych?: {
+    psychA?: PsychMasterJson | null;
+    psychB?: PsychMasterJson | null;
+  },
 ): TriScoreSnapshotPanel {
   const topicLabels = getTriScoreKindConfig("work").topics;
+  const psychA = personCorePsych?.psychA ?? null;
+  const psychB = personCorePsych?.psychB ?? null;
 
-  const fallbackA = fallbackAxesFromSaju(ctx, "a");
-  const fallbackB = fallbackAxesFromSaju(ctx, "b");
+  const personA =
+    psychA != null
+      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "work")
+      : emptyPersonGauges(ctx.nicknameA);
+  const personB =
+    psychB != null
+      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "work")
+      : emptyPersonGauges(ctx.nicknameB);
 
-  const personA: PersonSnapshotGauges = {
-    nickname: ctx.nicknameA,
-    metaphor: resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA),
-    axes: axesFromFallback(fallbackA),
-  };
-  const personB: PersonSnapshotGauges = {
-    nickname: ctx.nicknameB,
-    metaphor: resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB),
-    axes: axesFromFallback(fallbackB),
-  };
-
-  const personAxesSource: TriScoreSnapshotPanel["personAxesSource"] =
-    axesAreNearlyIdentical(personA.axes, personB.axes)
-      ? "hidden"
-      : "saju_estimate";
+  const personAxesSource = resolveSnapshotPersonAxesSource(psychA, psychB);
 
   const keywords =
     headline.keywords?.length &&
@@ -223,12 +117,38 @@ export function buildWorkSnapshotPanel(
 
 export function hydrateWorkSnapshotPanel(
   panel: TriScoreSnapshotPanel,
+  personCorePsych?: {
+    psychA?: PsychMasterJson | null;
+    psychB?: PsychMasterJson | null;
+    nicknameA?: string;
+    nicknameB?: string;
+  },
 ): TriScoreSnapshotPanel {
-  if (panel.narrative?.topics?.length) return panel;
+  let next = panel;
+  if (
+    personCorePsych?.psychA &&
+    personCorePsych.psychB &&
+    personCorePsych.nicknameA &&
+    personCorePsych.nicknameB
+  ) {
+    next = patchSnapshotPanelWithPsych(
+      next,
+      {
+        nicknameA: personCorePsych.nicknameA,
+        nicknameB: personCorePsych.nicknameB,
+      },
+      {
+        psychA: personCorePsych.psychA,
+        psychB: personCorePsych.psychB,
+      },
+      "work",
+    );
+  }
+  if (next.narrative?.topics?.length) return next;
   return {
-    ...panel,
-    personAxesSource: panel.personAxesSource ?? "hidden",
-    narrative: buildWorkSnapshotNarrativeFromGauges(panel.relationshipGauges),
+    ...next,
+    personAxesSource: next.personAxesSource ?? "hidden",
+    narrative: buildWorkSnapshotNarrativeFromGauges(next.relationshipGauges),
   };
 }
 
@@ -238,9 +158,18 @@ export function resolveWorkSnapshotPanelFromReport(
   if (!meta || typeof meta !== "object") return null;
   const m = meta as {
     snapshot_panel?: TriScoreSnapshotPanel;
+    person_core?: {
+      psych_a?: PsychMasterJson;
+      psych_b?: PsychMasterJson;
+    };
+    nickname_a?: string;
+    nickname_b?: string;
   };
-  if (m.snapshot_panel?.personA?.axes?.length) {
-    return hydrateWorkSnapshotPanel(m.snapshot_panel);
-  }
-  return null;
+  if (!m.snapshot_panel?.personA) return null;
+  return hydrateWorkSnapshotPanel(m.snapshot_panel, {
+    psychA: m.person_core?.psych_a,
+    psychB: m.person_core?.psych_b,
+    nicknameA: m.nickname_a ?? m.snapshot_panel.personA.nickname,
+    nicknameB: m.nickname_b ?? m.snapshot_panel.personB.nickname,
+  });
 }

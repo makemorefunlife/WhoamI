@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import OpenAI from "openai";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
+import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -74,8 +76,27 @@ export async function POST(req: Request) {
         .maybeSingle(),
     ]);
 
-    const labelA = repA?.name?.trim() || "첫 번째 사람";
-    const labelB = repB?.name?.trim() || "두 번째 사람";
+    const { userId } = await auth();
+    const clerkUser = userId ? await currentUser() : null;
+
+    const labelA = resolveViewerDisplayName({
+      reportName: repA?.name,
+      clerkFirstName:
+        viewerReportId === rr.report_id_a ? clerkUser?.firstName : undefined,
+      clerkFullName:
+        viewerReportId === rr.report_id_a ? clerkUser?.fullName : undefined,
+      fallback:
+        viewerReportId === rr.report_id_a ? "나" : "첫 번째 사람",
+    });
+    const labelB = resolveViewerDisplayName({
+      reportName: repB?.name,
+      clerkFirstName:
+        viewerReportId === rr.report_id_b ? clerkUser?.firstName : undefined,
+      clerkFullName:
+        viewerReportId === rr.report_id_b ? clerkUser?.fullName : undefined,
+      fallback:
+        viewerReportId === rr.report_id_b ? "나" : "두 번째 사람",
+    });
 
     const basicComplete = hasCompletePerspectives(
       rr.result_basic,

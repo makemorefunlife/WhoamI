@@ -1,4 +1,5 @@
 import type OpenAI from "openai";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildFamilyParentReport } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyParentPairRoles, FamilyParentRole } from "@/lib/relationship/familyParent/types";
@@ -32,6 +33,14 @@ export async function runFamilyParentChildDeepAnalysis(
     sajuJsonB: SajuDataForIntegrated;
     sajuProvenanceA?: SajuChartProvenance;
     sajuProvenanceB?: SajuChartProvenance;
+    psychMasterA?: PsychMasterJson | null;
+    psychMasterB?: PsychMasterJson | null;
+    personCoreMeta?: {
+      reportIdA: string;
+      reportIdB: string;
+      inputFingerprintA: string;
+      inputFingerprintB: string;
+    };
   },
 ): Promise<FamilyParentChildDeepPayload> {
   const report = buildFamilyParentReport({
@@ -45,6 +54,9 @@ export async function runFamilyParentChildDeepAnalysis(
     birthPlaceB: params.birthB.place,
     birthTimeUnknownA: params.sajuProvenanceA?.birthTimeUnknown,
     birthTimeUnknownB: params.sajuProvenanceB?.birthTimeUnknown,
+    psychMasterA: params.psychMasterA,
+    psychMasterB: params.psychMasterB,
+    personCoreMeta: params.personCoreMeta,
   });
 
   return {

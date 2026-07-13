@@ -74,11 +74,3 @@ User Prompt **Few-Shot 구조**를 뼈대로, ${nicknameA}·${nicknameB} 데이�
 \`promise\`: 따뜻한 격려 한 문장 — 두 사람 이름 포함.
 `.trim();
 }
-
-/** @deprecated — essenceActionWritingRules.ts Few-Shot으로 대체됨 */
-export function buildConversationAndActionWritingGuide(
-  _nicknameA: string,
-  _nicknameB: string,
-): string {
-  return "";
-}

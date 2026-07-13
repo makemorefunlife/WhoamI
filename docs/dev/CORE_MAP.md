@@ -78,7 +78,7 @@ scripts/                # → tests/scripts/ 로 이전 중 (레거시 경로는
 ## 삭제 후보 (참고만, 새 코드 금지)
 
 ```text
-docs/v2/prompt/03B_* 03C_* 03D_* 03E_*   # 폐기된 deep self 파이프라인 스펙
+docs/v2/prompt/03B_* 03C_* 03D_* 03E_*   # (삭제됨) 폐기된 deep self 파이프라인 스펙
 docs/v2/saju/07~10                       # deep 전용 규칙 (Slim V1 미사용)
 lib/v2/deep/                             # (삭제됨)
 lib/v2/saju/extractDeepSignals.ts        # (삭제됨)
