@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import PolicyDocumentView from "@/components/legal/PolicyDocumentView";
-import SpaceBackground from "@/components/space/SpaceBackground";
 import { privacyPolicy } from "@/lib/legal/privacyPolicy";
 
 export const metadata: Metadata = {
@@ -10,9 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
-  return (
-    <SpaceBackground showPlanet={false} showOrbit={false} showProbe={false}>
-      <PolicyDocumentView document={privacyPolicy} />
-    </SpaceBackground>
-  );
+  return <PolicyDocumentView document={privacyPolicy} />;
 }

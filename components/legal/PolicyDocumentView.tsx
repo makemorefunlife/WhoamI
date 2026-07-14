@@ -1,5 +1,6 @@
-import GlassCard from "@/components/space/GlassCard";
 import type { PolicyDocument } from "@/lib/legal/types";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 const EMAIL_SPLIT = /([\w.-]+@[\w.-]+\.\w+)/g;
 const EMAIL_ONLY = /^[\w.-]+@[\w.-]+\.\w+$/;
@@ -11,7 +12,7 @@ function renderInlineText(text: string) {
       <a
         key={`${part}-${index}`}
         href={`mailto:${part}`}
-        className="text-[#8eb8ff] underline underline-offset-2 hover:text-[#a8ccff]"
+        className="font-medium text-secondary underline decoration-secondary/35 underline-offset-2 transition hover:text-accent-emerald hover:decoration-accent-emerald/50"
       >
         {part}
       </a>
@@ -21,60 +22,68 @@ function renderInlineText(text: string) {
   );
 }
 
+/** Stitch legal doc — server component, mobile-first, no space chrome. */
 export default function PolicyDocumentView({
   document,
 }: {
   document: PolicyDocument;
 }) {
   return (
-    <div className="relative z-10 mx-auto w-full max-w-3xl px-5 py-12 sm:px-6 sm:py-16">
-      <GlassCard className="!border-white/[0.08] !bg-[#0a0f1a]/80 !px-6 !py-8 sm:!px-10 sm:!py-10">
-        <header className="border-b border-white/[0.08] pb-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#CBB38E]">
+    <div className="stitch-legal relative min-h-dvh text-on-surface">
+      <div className="relative z-[1] mx-auto w-full max-w-3xl px-5 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
+        <p className="mb-6">
+          <Link
+            href={ROUTES.home}
+            className="text-sm text-on-surface-variant transition hover:text-primary"
+          >
+            ← Back home
+          </Link>
+        </p>
+
+        <header className="border-b border-outline-variant/40 pb-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">
             Legal
           </p>
-          <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-[-0.02em] text-[var(--space-text)] sm:text-[1.65rem]">
+          <h1 className="stitch-headline mt-3 text-balance text-2xl leading-snug text-primary sm:text-3xl">
             {document.title}
           </h1>
-          <p className="mt-4 max-w-2xl text-[15px] leading-[1.75] text-[var(--space-text-muted)]">
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-on-surface-variant sm:text-base">
             {document.description}
           </p>
-          <p className="mt-4 text-xs text-white/40">
-            최종 업데이트 · {document.lastUpdated}
+          <p className="mt-4 text-xs text-on-surface-variant/70">
+            Last updated · {document.lastUpdated}
           </p>
         </header>
 
-        <article className="policy-scroll mt-10 max-h-none overflow-visible sm:max-h-[min(72vh,48rem)] sm:overflow-y-auto sm:overscroll-contain sm:pr-2">
-          <div className="space-y-10 pb-4">
-            {document.sections.map((section) => (
-              <section key={section.id} id={section.id} className="scroll-mt-28">
-                <h2 className="text-base font-semibold tracking-[-0.01em] text-[var(--space-text)]">
-                  {section.title}
-                </h2>
-                <div className="mt-4 space-y-4">
-                  {section.paragraphs.map((paragraph, index) => (
-                    <p
-                      key={`${section.id}-p-${index}`}
-                      className="text-[15px] leading-[1.85] text-[var(--space-text-muted)] [word-break:keep-all]"
-                    >
-                      {renderInlineText(paragraph)}
-                    </p>
-                  ))}
-                  {section.listItems?.length ? (
-                    <ul className="list-disc space-y-2.5 pl-5 text-[15px] leading-[1.85] text-[var(--space-text-muted)]">
-                      {section.listItems.map((item, index) => (
-                        <li key={`${section.id}-li-${index}`}>
-                          {renderInlineText(item)}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              </section>
-            ))}
-          </div>
+        <article className="mt-10 space-y-10">
+          {document.sections.map((section) => (
+            <section key={section.id} id={section.id} className="scroll-mt-28">
+              <h2 className="text-base font-semibold tracking-[-0.01em] text-primary sm:text-[1.05rem]">
+                {section.title}
+              </h2>
+              <div className="mt-3 space-y-3.5 sm:mt-4 sm:space-y-4">
+                {section.paragraphs.map((paragraph, index) => (
+                  <p
+                    key={`${section.id}-p-${index}`}
+                    className="text-[15px] leading-[1.8] text-on-surface-variant [word-break:keep-all] sm:text-[15.5px] sm:leading-[1.85]"
+                  >
+                    {renderInlineText(paragraph)}
+                  </p>
+                ))}
+                {section.listItems?.length ? (
+                  <ul className="list-disc space-y-2.5 pl-5 text-[15px] leading-[1.8] text-on-surface-variant marker:text-secondary/70 sm:text-[15.5px]">
+                    {section.listItems.map((item, index) => (
+                      <li key={`${section.id}-li-${index}`} className="pl-0.5">
+                        {renderInlineText(item)}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </section>
+          ))}
         </article>
-      </GlassCard>
+      </div>
     </div>
   );
 }

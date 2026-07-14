@@ -1,74 +1,45 @@
 import type { PolicyDocument } from "@/lib/legal/types";
 
-/** 환불 정책 — 문구만 수정하면 페이지에 반영됩니다. */
+/** Refund Policy — sourced from Legal/refund_policy_en.md */
 export const refundPolicy: PolicyDocument = {
-  title: "환불 정책",
+  title: "Refund Policy",
   description:
-    "Ahaitsme 베타 기간 — 심화 리포트·관계 분석·초대권 등 유료 구매에 대한 환불 안내입니다.",
-  lastUpdated: "2026-06-01",
+    "Thank you for using Aha It's me. Because our Service provides digital, AI-generated analysis reports that are delivered instantly upon creation, we maintain the following refund policy to ensure fairness and transparency.",
+  lastUpdated: "2026-07-15",
   sections: [
     {
-      id: "beta",
-      title: "1. 베타 안내",
-      paragraphs: [
-        "본 페이지는 Ahaitsme 베타 출시용 간단 환불 정책입니다.",
-        "유료 구독(정기 결제) 플랜이 도입되면 구독 전용 환불·해지·자동 결제 조항을 추가하고, 환불 조건이 업데이트될 수 있습니다. 도입 전에는 아래 일회성 구매 기준만 적용됩니다.",
+      id: "eligibility",
+      title: "1. Refund Eligibility",
+      paragraphs: [],
+      listItems: [
+        "Before Digital Content Delivery: You are eligible for a full refund within 7 days of purchase, provided that you have NOT generated, viewed, or downloaded any AI analysis reports or premium content.",
+        "After Digital Content Delivery: Once an AI report has been successfully generated and delivered to your account, the service is considered consumed. In accordance with applicable electronic commerce and consumer protection laws, refunds cannot be granted for digital goods that have already been rendered, unless there is a confirmed technical defect caused entirely by our system.",
       ],
     },
     {
-      id: "scope",
-      title: "2. 적용 상품",
+      id: "subscriptions",
+      title: "2. Subscription Cancellations",
+      paragraphs: [],
+      listItems: [
+        "If you are subscribed to a recurring plan, you may cancel your subscription at any time through your billing settings.",
+        "Upon cancellation, you will retain access to premium features until the end of your current billing cycle. No partial refunds will be issued for unused days within a billing period.",
+      ],
+    },
+    {
+      id: "request",
+      title: "3. How to Request a Refund",
       paragraphs: [
-        "다음 등 Ahaitsme에서 결제한 디지털 상품에 적용됩니다.",
+        "Since Paddle.com is the Merchant of Record for our global orders, all billing inquiries, disputes, and refund requests are processed through Paddle.",
       ],
       listItems: [
-        "심화(통합) 개인 리포트",
-        "친구 초대·관계 분석 이용권",
-        "기타 베타 유료 패키지",
+        "You can submit your refund request directly to Paddle support via your email receipt, or contact us at hong@ahaitsme.com with your transaction ID, and we will assist in escalating the request to Paddle.",
       ],
     },
     {
-      id: "digital",
-      title: "3. 디지털 상품 특성",
+      id: "processing",
+      title: "4. Processing Time",
       paragraphs: [
-        "결제 직후 사주·점성·AI 파이프라인이 돌아가며 리포트 생성이 시작됩니다. 이미 생성·열람한 리포트는 환불이 어려울 수 있습니다.",
-        "관계 분석 권한을 사용해 초대·연결·분석이 진행된 경우에도 환불이 제한될 수 있습니다.",
-      ],
-    },
-    {
-      id: "eligible",
-      title: "4. 환불 검토 가능",
-      paragraphs: ["대표적인 경우는 다음과 같습니다."],
-      listItems: [
-        "중복 결제·결제 오류",
-        "결제 후 기술 장애로 심화 리포트 또는 관계 분석이 전혀 제공되지 않은 경우",
-        "운영자가 베타 이벤트 등으로 환불을 명시한 경우",
-      ],
-    },
-    {
-      id: "ineligible",
-      title: "5. 환불이 어려운 경우",
-      paragraphs: ["대표적인 경우는 다음과 같습니다."],
-      listItems: [
-        "심화 리포트·관계 분석 결과를 이미 열람한 경우",
-        "출생 시각·장소 등 잘못 입력한 경우(재생성으로 해결 가능한 경우 포함)",
-        "AI 문체·해석 톤·사주/점성 표현에 대한 단순 불만",
-        "초대 링크를 이미 사용하거나 관계 분석이 완료된 경우",
-      ],
-    },
-    {
-      id: "process",
-      title: "6. 신청 방법",
-      paragraphs: [
-        "support@ahaitsme.com 또는 Contact(문의하기)로 결제 일시·이메일·report ID(알고 있는 경우)·환불 사유를 보내 주세요.",
-        "영업일 기준 며칠 내 검토 후 답변드립니다. 승인 시 원 결제 수단으로 환불하며, 카드사·은행 반영까지 추가 일수가 걸릴 수 있습니다.",
-      ],
-    },
-    {
-      id: "subscription-future",
-      title: "7. 구독 플랜(예정)",
-      paragraphs: [
-        "월간·연간 등 정기 구독이 생기면 자동 결제, 해지 방법, 구독 기간 중 환불 가능 여부 등을 이 페이지에 별도로 적어 안내합니다. 구독 도입 시점에 이메일 또는 서비스 공지로 알릴 수 있습니다.",
+        "Once approved, refunds are processed by Paddle and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.",
       ],
     },
   ],

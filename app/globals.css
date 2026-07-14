@@ -82,13 +82,15 @@
 
 html:has(.stitch-landing),
 html:has(.stitch-survey),
-html:has(.stitch-results) {
+html:has(.stitch-results),
+html:has(.stitch-legal) {
   background: #faf7f0;
 }
 
 body:has(.stitch-landing),
 body:has(.stitch-survey),
-body:has(.stitch-results) {
+body:has(.stitch-results),
+body:has(.stitch-legal) {
   background:
     radial-gradient(
       ellipse 90% 60% at 100% 0%,

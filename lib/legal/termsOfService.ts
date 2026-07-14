@@ -1,124 +1,72 @@
 import type { PolicyDocument } from "@/lib/legal/types";
 
-/** 이용약관 — 문구만 수정하면 페이지에 반영됩니다. */
+/** Terms of Service — sourced from Legal/terms_of_service_en.md */
 export const termsOfService: PolicyDocument = {
-  title: "이용약관",
+  title: "Terms of Service",
   description:
-    "Ahaitsme 베타 이용 약관입니다. 설문·사주·점성·AI·관계 분석을 이용하기 전에 읽어 주세요. 문의: support@ahaitsme.com",
-  lastUpdated: "2026-06-01",
+    "Terms governing use of Aha It's me, including AI reports, third-party data, payments via Paddle, and dispute resolution.",
+  lastUpdated: "2026-07-15",
   sections: [
     {
-      id: "acceptance",
-      title: "1. 약관 동의",
+      id: "about",
+      title: "1. About the Service",
       paragraphs: [
-        "본 약관은 아하잇츠미가 제공하는 Ahaitsme(이하 \"서비스\") 이용 조건을 정합니다.",
-        "로그인, 설문 제출, 리포트 열람, 결제, 친구 초대 등 서비스를 이용하면 본 약관에 동의한 것으로 봅니다.",
+        'Aha It\'s me ("we," "us," or "the Company"), located at Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea, provides an online service offering personality and relationship analysis based on astrology, behavioral psychology, and related frameworks, including AI-generated reports and decision-support tools (the "Service").',
       ],
     },
     {
-      id: "service",
-      title: "2. Ahaitsme가 제공하는 것",
+      id: "eligibility",
+      title: "2. Eligibility",
       paragraphs: [
-        "Ahaitsme는 한 사람당 하나의 report를 만들고, v2 10문항 설문·출생 정보·사주(만세력)·점성 차트·AI 해석을 조합해 개인 리포트를 제공합니다.",
-        "유료 이용 시 심화(통합) 리포트, 친구 초대, 두 사람의 관계 분석 등이 제공될 수 있습니다.",
-        "베타 기간에는 기능·UI·가격·정책이 예고 없이 변경될 수 있습니다.",
+        "You must be at least 13 years old to use the Service. If you are under 18, you represent that you have your parent or guardian's permission to use the Service.",
+      ],
+    },
+    {
+      id: "third-party",
+      title: "3. Third-Party Information",
+      paragraphs: [
+        '1. Certain features allow you to input information about another person (e.g., a partner, family member, or friend) for relationship analysis ("Third-Party Data").',
+        "2. By submitting Third-Party Data, you represent and warrant that you have obtained that person's explicit consent to share their information with us for this purpose.",
+        "3. You are solely responsible for any disputes arising from your submission of Third-Party Data. We may remove such data immediately upon a verified request from the affected individual.",
       ],
     },
     {
       id: "ai-disclaimer",
-      title: "3. AI Analysis Disclaimer",
+      title: "4. AI-Generated Content & Disclaimer",
       paragraphs: [
-        "Ahaitsme는 행동 심리(설문 패턴), 점성술(출생 차트), 사주(사주팔자), 관계 분석, AI가 생성·통합한 해석을 함께 사용합니다.",
-        "이 모든 결과는 자기 성찰(self-reflection), 학습, 오락(entertainment), 일반 정보 제공(informational purposes)을 위한 것입니다.",
-        "의료·심리 치료·법률·재무·기타 전문적 조언이 아니며, 진단·처방·투자 권유·법적 결론을 대체하지 않습니다.",
-        "이별, 치료, 투자, 고용, 이혼 등 중요한 결정은 서비스 결과만으로 내리지 마세요. 그에 대한 책임은 전적으로 이용자에게 있습니다.",
-        "AI 리포트는 실행마다 표현이 달라질 수 있으며, 사실과 다르거나 불완전할 수 있습니다.",
+        "1. Reports and analyses are generated using artificial intelligence (including OpenAI technology) and are provided for informational and entertainment purposes only.",
+        "2. The Service does not provide professional psychological counseling, medical, legal, or financial advice. Consult a qualified professional before making significant decisions.",
+        "3. We do not guarantee the accuracy, reliability, or completeness of AI-generated content and disclaim liability for outcomes resulting from reliance on it, except where caused by our gross negligence or willful misconduct.",
       ],
     },
     {
-      id: "relationship-disclaimer",
-      title: "4. Relationship Analysis",
+      id: "payments",
+      title: "5. Payments, Subscriptions & Refunds",
       paragraphs: [
-        "관계 분석은 두 report의 데이터를 바탕으로 한 해석적·정보 제공 목적의 콘텐츠입니다.",
-        "궁합 점수, 관계 성공, 미래 사건, 갈등 해결 여부 등을 보장하거나 예측하지 않습니다.",
-        "결과를 사실적 판정이나 확정적 결론으로 취급해서는 안 됩니다. 참고 자료로만 활용해 주세요.",
-        "초대 링크로 연결된 상대방도 자신의 report와 분석 결과에 대한 권리를 가질 수 있습니다.",
+        "1. All payments and subscription transactions for our global service are processed exclusively by Paddle.com, which acts as our online reseller and the Merchant of Record (MoR). By making a purchase, you agree to Paddle’s Terms of Use and Privacy Policy.",
+        "2. Subscriptions renew automatically unless cancelled through your account settings or Paddle support at least 24 hours before the renewal date.",
+        "3. All refund requests are handled in accordance with our standalone Refund Policy and Paddle’s reseller terms.",
       ],
     },
     {
-      id: "third-party-info",
-      title: "5. Third-Party Information",
+      id: "liability",
+      title: "6. Limitation of Liability",
       paragraphs: [
-        "친구 초대·관계 분석을 위해 다른 사람의 출생 정보·이름·설문 맥락 등을 입력할 때, 해당인의 적절한 허락(동의)을 받아야 합니다.",
-        "동의 없이 타인의 개인정보를 입력·공유하는 것은 금지됩니다.",
-        "이용자가 제공한 제3자 정보로 인해 발생하는 분쟁·클레임·손해에 대해, 법이 허용하는 범위에서 이용자가 책임집니다. 운영자는 이용자 간 법적 분쟁의 당사자가 아닙니다.",
+        "To the maximum extent permitted by law, Aha It's me is not liable for indirect, incidental, or consequential damages arising from your use of the Service.",
       ],
     },
     {
-      id: "account",
-      title: "6. 계정과 report",
+      id: "governing-law",
+      title: "7. Governing Law & Dispute Resolution",
       paragraphs: [
-        "출생 시각·장소 등은 리포트 품질에 영향을 주므로 정확히 입력해 주세요.",
-        "계정(Clerk)과 report는 별도로 관리됩니다. 로그인·초대·결제 권한 관리 책임은 이용자에게 있습니다.",
-        "report URL·QR을 공유할 때는 수신자가 내용을 볼 수 있음을 인지해 주세요.",
+        "These Terms and your use of the Service shall be governed by and construed in accordance with the laws of the Republic of Korea. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts located in Seoul, Republic of Korea.",
       ],
     },
     {
-      id: "paid",
-      title: "7. 유료 기능",
+      id: "changes",
+      title: "8. Changes to These Terms",
       paragraphs: [
-        "심화 리포트, 관계 분석, 초대권 등 유료 상품의 가격·포함 내용은 결제 화면에 표시된 내용을 따릅니다.",
-        "결제는 토스페이먼츠 등 지정 PG를 통해 처리됩니다.",
-      ],
-    },
-    {
-      id: "refund",
-      title: "8. 환불",
-      paragraphs: [
-        "환불은 「환불 정책」 페이지를 따릅니다.",
-      ],
-    },
-    {
-      id: "prohibited",
-      title: "9. 금지 행위",
-      paragraphs: ["다음은 금지됩니다."],
-      listItems: [
-        "타인 정보 무단 입력·유출",
-        "리포트·API 비정상 호출, 역설계, 서비스 장애 유발",
-        "AI에 혐오·불법·타인 비방 입력 유도",
-        "Ahaitsme 리포트 무단 복제·재판매",
-      ],
-    },
-    {
-      id: "ip",
-      title: "10. 지식재산",
-      paragraphs: [
-        "Ahaitsme UI, 브랜드, 프롬프트·DB 구조, 리포트 템플릿에 대한 권리는 아하잇츠미 또는 권리자에게 있습니다.",
-        "이용자 입력(설문·출생 정보)에 대한 권리는 이용자에게 있으나, 서비스 제공·개선·캐시를 위해 필요한 범위에서 이용·저장할 수 있습니다.",
-      ],
-    },
-    {
-      id: "disclaimer",
-      title: "11. 책임의 한계",
-      paragraphs: [
-        "통신·AI·PG·DB 장애 등 운영자가 합리적으로 통제하기 어려운 사유로 인한 손해는 법이 허용하는 범위에서 책임이 제한될 수 있습니다.",
-        "서비스는 베타 단계로 \"있는 그대로\" 제공됩니다.",
-      ],
-    },
-    {
-      id: "termination",
-      title: "12. 이용 제한",
-      paragraphs: [
-        "약관 위반, 타인 정보 무단 입력, 시스템 악용 시 이용을 제한하거나 계정·report 접근을 차단할 수 있습니다.",
-        "탈퇴·삭제는 support@ahaitsme.com 또는 Contact로 요청할 수 있습니다.",
-      ],
-    },
-    {
-      id: "law",
-      title: "13. 기타",
-      paragraphs: [
-        "본 약관은 대한민국 법을 기준으로 해석합니다.",
-        "문의: support@ahaitsme.com · 개인정보: privacy@ahaitsme.com",
+        "We may update these Terms from time to time. Material changes will be notified via the Service or email at least 7 days (or 30 days for changes unfavorable to users) in advance.",
       ],
     },
   ],
