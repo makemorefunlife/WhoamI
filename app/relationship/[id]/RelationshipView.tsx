@@ -60,8 +60,6 @@ export default function RelationshipView({
     displayFamilyDeep,
     displayFriendshipDeep,
     premiumReady,
-    premiumStreamPreview,
-    premiumPrelude,
     retryAnalysis,
     onPremiumKindChange,
     viewAnalysisLog,
@@ -206,8 +204,6 @@ export default function RelationshipView({
           partnerName={partnerName}
           kindLabel={RELATIONSHIP_KIND_LABELS[premiumKind]}
           phase="generating"
-          streamPreview={premiumStreamPreview}
-          prelude={premiumPrelude}
         />
       ) : null}
 
