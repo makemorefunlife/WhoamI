@@ -13,7 +13,6 @@ import {
   getCachedReportId,
 } from "@/lib/home/reportSession";
 import { invalidateHomeResumeCache } from "@/lib/home/fetchHomeResumeClient";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import StitchLandingPage from "@/components/landing/stitch/StitchLandingPage";
 import StartChoiceModal from "@/components/landing/stitch/StartChoiceModal";
@@ -134,7 +133,7 @@ export default function HomeContent() {
         });
         setRelCounts(session.relationshipSummary);
       } catch (e) {
-        console.error("home session:", e);
+        console.error("[home] session_error");
         if (!cancelled) {
           setResume(emptyResume());
           setRelCounts({ pending: 0, completed: 0 });
@@ -159,6 +158,10 @@ export default function HomeContent() {
   );
 
   const createReportAndSurvey = useCallback(async () => {
+    if (!userId) {
+      setAuthModalOpen(true);
+      return;
+    }
     const inviteToken = localStorage.getItem("inviteToken") || "";
     setCreatingReport(true);
     invalidateReportSession();
@@ -166,35 +169,28 @@ export default function HomeContent() {
 
     let data: { id: string };
     try {
-      const supabase = getSupabaseBrowserClient();
-      const result = await supabase
-        .from("reports")
-        .insert([
-          {
-            name: null,
-            clerk_user_id: userId ?? null,
-            birth_date: null,
-            birth_time: null,
-            birth_place: null,
-            report_type: inviteToken ? "relationship" : "self",
-            plan_type: inviteToken ? "paid" : "free",
-            payment_status: inviteToken ? "paid" : "none",
-          },
-        ])
-        .select()
-        .single();
-
-      if (result.error) {
-        console.error(result.error);
+      const res = await fetch("/api/report/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          report_type: inviteToken ? "relationship" : "self",
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        id?: string;
+        error?: string;
+      };
+      if (!res.ok || !body.id) {
+        console.error("[home] report_create_failed", res.status);
         alert("리포트를 만드는 데 실패했어요. 잠시 후 다시 시도해 주세요.");
         setCreatingReport(false);
         return;
       }
-      data = result.data;
+      data = { id: body.id };
     } catch (e) {
-      console.error("supabase client:", e);
+      console.error("[home] report_create_error");
       alert(
-        "Supabase 연결 설정을 확인해 주세요. 잠시 후 다시 시도해 주세요.",
+        "연결에 실패했어요. 잠시 후 다시 시도해 주세요.",
       );
       setCreatingReport(false);
       return;
