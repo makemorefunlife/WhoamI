@@ -136,7 +136,7 @@ function BirthOnboardingContent() {
         });
         const data = (await res.json()) as { error?: string };
         if (!res.ok) {
-          console.error("report/birth save:", data.error);
+          console.error("[onboarding/birth] save_failed");
           alert(
             data.error ??
               "출생 정보 저장에 실패했어요. 잠시 후 다시 시도해 주세요.",
@@ -148,7 +148,7 @@ function BirthOnboardingContent() {
         clearSlimIntegratedCache(reportId);
         invalidateReportSession(reportId);
       } catch (e) {
-        console.error("report/birth save:", e);
+        console.error("[onboarding/birth] save_error");
         alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");
         setBusy(false);
         return;

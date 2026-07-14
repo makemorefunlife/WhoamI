@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import { buildV2PatternSummaryForRelationship } from "@/lib/relationship/v2PatternSummary";
 import { normalizeCurrentSelfProfile } from "@/lib/v2/framework/normalizePrimaryAxes";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
@@ -20,7 +21,7 @@ export async function getSurveyAnswersForReport(
     .limit(1);
 
   if (error) {
-    console.error("survey_responses select:", reportId, error.message);
+    logServerError("surveyPatterns.select", error, "db_select_failed");
     return null;
   }
 

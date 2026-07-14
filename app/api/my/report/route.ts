@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { logServerError, logServerEvent, maskId } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -171,9 +172,9 @@ export async function GET(req: Request) {
           if (refreshed) {
             Object.assign(report, refreshed);
           }
-          console.info(
-            `[astrology-coords] reportId=${reportId} detail=quick-backfill-synced`,
-          );
+          logServerEvent("my/report", "coords_backfill_synced", {
+            reportId: maskId(reportId),
+          });
         }
       }
     }
@@ -215,10 +216,7 @@ export async function GET(req: Request) {
                 { model: "gpt-4o-mini", source: "my_report_get" },
               );
               if (!saved) {
-                console.warn(
-                  "basic analysis generated but DB save failed:",
-                  reportId,
-                );
+                logServerError("my/report", undefined, "basic_save_failed");
               }
             } else {
               basic_error = "generation_failed";
@@ -236,16 +234,16 @@ export async function GET(req: Request) {
         await deleteReportAnalysis(supabase, reportId, "detailed_survey");
         premium_result = null;
         detailed_survey_result = null;
-        console.info(
-          `[premium-report] reportId=${reportId} source=regeneration detail=api-integrated-and-detailed-survey-cleared`,
-        );
+        logServerEvent("my/report", "premium_cleared_for_regen", {
+          reportId: maskId(reportId),
+        });
       } else {
         premium_result = analysesBundle.integrated;
         if (premium_result) {
           integrated_from_db = true;
-          console.info(
-            `[premium-report] reportId=${reportId} source=db detail=api-quick-read-integrated`,
-          );
+          logServerEvent("my/report", "integrated_from_db", {
+            reportId: maskId(reportId),
+          });
         }
         detailed_survey_result = analysesBundle.detailed_survey;
         if (detailed_survey_result) {
@@ -306,9 +304,9 @@ export async function GET(req: Request) {
       },
     });
   } catch (e) {
-    console.error("GET /api/my/report:", e);
+    logServerError("GET /api/my/report:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }
@@ -398,9 +396,9 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-      console.info(
-        `[premium-report] reportId=${reportId} source=${existingAstrology.content ? "db" : "generation"} detail=api-post-astrology`,
-      );
+      logServerEvent("my/report", "astrology_saved", {
+        reportId: maskId(reportId),
+      });
     }
 
     if (detailedSurvey) {
@@ -420,9 +418,9 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-      console.info(
-        `[premium-report] reportId=${reportId} source=${existingDetailed ? "db" : "generation"} detail=api-post-detailed-survey`,
-      );
+      logServerEvent("my/report", "detailed_survey_saved", {
+        reportId: maskId(reportId),
+      });
     }
 
     if (integrated) {
@@ -440,16 +438,16 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-      console.info(
-        `[premium-report] reportId=${reportId} source=${existing ? "db" : "generation"} detail=api-post-integrated`,
-      );
+      logServerEvent("my/report", "integrated_saved", {
+        reportId: maskId(reportId),
+      });
     }
 
     return NextResponse.json({ ok: true, report_id: reportId });
   } catch (e) {
-    console.error("POST /api/my/report:", e);
+    logServerError("POST /api/my/report:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "저장 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

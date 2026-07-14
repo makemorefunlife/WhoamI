@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
-import { buildGuestHomeResume, buildHomeResume } from "@/lib/home/homeResume";
+import { buildHomeResume } from "@/lib/home/homeResume";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,20 +20,10 @@ export async function GET(req: Request) {
     if (!supabase) return supabaseConfigErrorResponse();
 
     if (!userId) {
-      if (!reportIdHint) {
-        return NextResponse.json(
-          { error: "로그인이 필요합니다." },
-          { status: 401 },
-        );
-      }
-      const guestPayload = await buildGuestHomeResume(supabase, reportIdHint);
-      if (!guestPayload) {
-        return NextResponse.json(
-          { error: "이 리포트는 로그인이 필요합니다." },
-          { status: 401 },
-        );
-      }
-      return NextResponse.json(guestPayload);
+      return NextResponse.json(
+        { error: "로그인이 필요합니다." },
+        { status: 401 },
+      );
     }
 
     const payload = await buildHomeResume(
@@ -43,10 +34,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(payload);
   } catch (e) {
-    console.error("home/resume:", e);
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
-      { status: 500 },
-    );
+    logServerError("home/resume", e);
+    return NextResponse.json({ error: "lookup failed" }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import type { AstrologyCoordSource } from "@/lib/report/resolveAstrologyCoordinates";
+import { maskId } from "@/lib/security/safeLog";
 
 /** 로그용 coord source 라벨 (explicit → stored_coords) */
 export function astrologyCoordSourceLogLabel(
@@ -19,24 +20,21 @@ export function astrologyCoordSourceLogLabel(
 export function logAstrologyCoordSource(
   reportId: string,
   source: AstrologyCoordSource,
-  detail?: string,
+  _detail?: string,
 ): void {
-  const id = reportId.trim() || "unknown";
   const label = astrologyCoordSourceLogLabel(source);
-  const suffix = detail?.trim() ? ` ${detail.trim()}` : "";
+  // Never log birth place / coordinates / full report id
   console.info(
-    `[astrology-coords] reportId=${id} source=${label}${suffix}`,
+    `[astrology-coords] reportId=${maskId(reportId)} source=${label}`,
   );
 }
 
 export function logAstrologyCache(
   reportId: string,
   event: "astrology_reused" | "astrology_invalidated_location",
-  detail?: string,
+  _detail?: string,
 ): void {
-  const id = reportId.trim() || "unknown";
-  const suffix = detail?.trim() ? ` ${detail.trim()}` : "";
   console.info(
-    `[premium-report] reportId=${id} cache=${event}${suffix}`,
+    `[premium-report] reportId=${maskId(reportId)} cache=${event}`,
   );
 }

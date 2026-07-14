@@ -1,4 +1,5 @@
 import { PersonCoreError } from "../errors";
+import { logServerError } from "@/lib/security/safeLog";
 import {
   PERSON_CORE_BLUEPRINT_VERSION,
   PSYCH_MASTER_JSON_VERSION,
@@ -71,7 +72,7 @@ export async function loadPerson(
     .maybeSingle();
 
   if (error) {
-    console.error("personCore loadPerson:", trimmedId, error.message);
+    logServerError("personCore.loadPerson", error, "db_select_failed");
     return null;
   }
   if (!data) return null;

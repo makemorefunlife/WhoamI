@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
@@ -138,7 +139,7 @@ export async function insertRelationshipAnalysisLog(
   }
 
   if (error) {
-    console.error("relationship_analysis_logs insert:", error.message);
+    logServerError("analysisLog.insert", error, "db_insert_failed");
     return null;
   }
   return data?.id ?? null;
@@ -167,7 +168,7 @@ export async function listRelationshipAnalysisLogs(
     .range(safeOffset, rangeEnd);
 
   if (error) {
-    console.error("relationship_analysis_logs list:", error.message);
+    logServerError("analysisLog.list", error, "db_select_failed");
     return [];
   }
 
@@ -196,7 +197,7 @@ export async function fetchFavoriteRelationshipIds(
 
   if (error) {
     if (error.code === "42P01") return new Set();
-    console.error("relationship_favorites list:", error.message);
+    logServerError("favorites.list", error, "db_select_failed");
     return new Set();
   }
   return new Set((data ?? []).map((r) => r.relationship_report_id as string));
@@ -233,7 +234,7 @@ export async function setRelationshipFavorite(
       { onConflict: "viewer_report_id,relationship_report_id" },
     );
     if (error) {
-      console.error("relationship_favorites upsert:", error.message);
+      logServerError("favorites.upsert", error, "db_upsert_failed");
       return false;
     }
     return true;
@@ -246,7 +247,7 @@ export async function setRelationshipFavorite(
     .eq("relationship_report_id", relationshipReportId);
 
   if (error) {
-    console.error("relationship_favorites delete:", error.message);
+    logServerError("favorites.delete", error, "db_delete_failed");
     return false;
   }
   return true;

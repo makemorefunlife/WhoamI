@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import { PersonCoreError } from "../errors";
 
 export type ReportRowForPersonCore = {
@@ -67,7 +68,7 @@ export async function fetchLatestSurveyForPersonCore(
     .limit(1);
 
   if (error) {
-    console.error("personCore survey_responses select:", reportId, error.message);
+    logServerError("personCore.survey_select", error, "db_select_failed");
     return null;
   }
 

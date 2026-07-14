@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromInboundInvites,
@@ -40,7 +41,7 @@ export async function countHubRelationshipSummary(
     .eq("status", "open");
 
   if (invErr) {
-    console.error("hubRelationshipSummary invites:", invErr);
+    logServerError("hubRelationshipSummary invites:", invErr, "internal_error");
     return { pending: 0, completed: 0 };
   }
 

@@ -81,7 +81,7 @@ export async function fetchRelationshipReportRowsForReportIdSafe(
   if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
     preferLegacySelect = true;
     console.warn(
-      "[relationship_reports] 마이그레이션 미적용 — legacy 컬럼만 사용합니다. Supabase SQL Editor에서 supabase/APPLY_PENDING_MIGRATIONS.sql 실행을 권장합니다.",
+      "[relationship_reports] schema_legacy_fallback",
     );
     return fetchRelationshipReportRowsForReportIdSafe(supabase, reportId);
   }
@@ -110,7 +110,7 @@ export async function fetchRelationshipReportByIdSafe(
   if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
     preferLegacySelect = true;
     console.warn(
-      "[relationship_reports] 마이그레이션 미적용 — legacy 컬럼만 사용합니다.",
+      "[relationship_reports] schema_legacy_fallback",
     );
     return fetchRelationshipReportByIdSafe(supabase, relationshipReportId);
   }
@@ -142,7 +142,7 @@ export async function fetchRelationshipReportsByIdsSafe(
   if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
     preferLegacySelect = true;
     console.warn(
-      "[relationship_reports] 마이그레이션 미적용 — legacy 컬럼만 사용합니다.",
+      "[relationship_reports] schema_legacy_fallback",
     );
     return fetchRelationshipReportsByIdsSafe(supabase, ids);
   }
@@ -171,7 +171,7 @@ export async function updateRelationshipReportSafe(
   if (error && isMissingColumnError(error)) {
     preferLegacySelect = true;
     console.warn(
-      "[relationship_reports] 마이그레이션 미적용 — result_premium(legacy)에 저장합니다.",
+      "[relationship_reports] schema_legacy_fallback",
     );
     const { error: legacyErr } = await supabase
       .from("relationship_reports")
@@ -187,7 +187,7 @@ export async function updateRelationshipReportSafe(
   ) {
     const { relationship_kind: _omit, ...withoutKind } = fullPatch;
     console.warn(
-      "[relationship_reports] relationship_kind check 제약 — kind 없이 result_premium_by_kind만 저장합니다. supabase/migrations/20260705165000_relationship_kind_cohabitation.sql 실행을 권장합니다.",
+      "[relationship_reports] relationship_kind_check_fallback",
     );
     const { error: retryErr } = await supabase
       .from("relationship_reports")

@@ -61,7 +61,7 @@ export async function insertReportPatchSafely(
   }
 
   console.warn(
-    "[astrology-coords] coordinate columns missing — inserted report without lat/lon",
+    "[astrology-coords] coordinate columns missing — inserted without coords",
   );
   return {
     data: retry.data as { id: string },
@@ -106,7 +106,7 @@ export async function updateReportPatchSafely(
   }
 
   console.warn(
-    `[astrology-coords] coordinate columns missing — saved birth fields without lat/lon reportId=${reportId}`,
+    "[astrology-coords] coordinate columns missing — updated without coords",
   );
   return { error: null, coordColumnsUsed: false };
 }

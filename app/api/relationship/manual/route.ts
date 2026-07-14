@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { mergeBirthCoordinateFields, insertReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
@@ -142,9 +143,9 @@ export async function POST(req: Request) {
       created,
     });
   } catch (e) {
-    console.error("relationship/manual:", e);
+    logServerError("relationship/manual:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "생성 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

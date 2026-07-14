@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
       created,
     });
   } catch (e) {
-    console.error("relationship/create:", e);
+    logServerError("relationship/create:", e, "internal_error");
     return NextResponse.json(
       { error: "관계 레코드를 만들지 못했습니다." },
       { status: 500 },

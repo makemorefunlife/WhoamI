@@ -1,3 +1,5 @@
+import { logServerError } from "@/lib/security/safeLog";
+
 export type AstrologyCoordSource =
   | "explicit"
   | "place_lookup"
@@ -181,10 +183,7 @@ export function resolveAstrologyCoordinates(
   }
 
   if (logContext?.logDefaultSeoul !== false) {
-    const ctx = logContext?.reportId ? ` reportId=${logContext.reportId}` : "";
-    console.warn(
-      `[astrology-coords]${ctx} source=default_san_francisco birth_place=${birthPlaceRaw || "(none)"} — 알려진 장소 매칭 없음, 샌프란시스코 좌표 사용`,
-    );
+    logServerError("astrology-coords", undefined, "default_san_francisco");
   }
 
   return {

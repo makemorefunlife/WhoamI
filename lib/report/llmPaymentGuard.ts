@@ -7,6 +7,7 @@ import {
   writePremiumAccessCache,
   logPremiumAccessCacheHit,
 } from "@/lib/report/premiumAccessCache";
+import { logServerEvent, maskId } from "@/lib/security/safeLog";
 
 export type PremiumLlmRequestType = "integrated" | "detailed_survey";
 
@@ -15,8 +16,8 @@ function logPaymentGuard(
   hasPremium: boolean,
   requestType: PremiumLlmRequestType,
 ) {
-  console.info("[premium-pipeline] stage=llm_payment_guard", {
-    reportId,
+  logServerEvent("premium-pipeline", "llm_payment_guard", {
+    reportId: maskId(reportId),
     hasPremium,
     requestType,
   });

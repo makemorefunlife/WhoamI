@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isMissingBirthCoordinateColumnError } from "@/lib/report/reportsBirthCoordinateColumns";
 import { birthCoordinatesPatchFromPlace } from "@/lib/report/resolveAstrologyCoordinates";
+import { logServerError } from "@/lib/security/safeLog";
 
 export type SyncReportBirthCoordinatesResult =
   | "synced"
@@ -34,10 +35,7 @@ export async function syncReportBirthCoordinates(
     if (isMissingBirthCoordinateColumnError(readErr)) {
       return "skipped_no_columns";
     }
-    console.warn(
-      `[astrology-coords] sync read failed reportId=${reportId}:`,
-      readErr.message,
-    );
+    logServerError("syncReportBirthCoordinates", readErr, "db_select_failed");
     return "failed";
   }
 
@@ -58,10 +56,7 @@ export async function syncReportBirthCoordinates(
     if (isMissingBirthCoordinateColumnError(upErr)) {
       return "skipped_no_columns";
     }
-    console.warn(
-      `[astrology-coords] sync update failed reportId=${reportId}:`,
-      upErr.message,
-    );
+    logServerError("syncReportBirthCoordinates", upErr, "db_update_failed");
     return "failed";
   }
 

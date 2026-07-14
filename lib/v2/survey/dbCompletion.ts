@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
 
 function parseAnswersRow(raw: unknown): Record<string, unknown> | null {
@@ -41,7 +42,7 @@ export async function isV2SurveyCompleteForReport(
     .limit(1);
 
   if (error) {
-    console.error("dbCompletion:", reportId, error.message);
+    logServerError("dbCompletion", error, "db_select_failed");
     return false;
   }
 

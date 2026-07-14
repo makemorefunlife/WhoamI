@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
@@ -61,9 +62,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, slim_v1 });
   } catch (e) {
-    console.error("v2/deep/essence:", e);
+    logServerError("v2/deep/essence:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "분석 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

@@ -1,4 +1,5 @@
 import type { PremiumLlmRequestType } from "@/lib/report/llmPaymentGuard";
+import { logServerEvent, maskId } from "@/lib/security/safeLog";
 
 type CacheEntry = { hasPremium: boolean; expiresAt: number };
 
@@ -33,8 +34,8 @@ export function logPremiumAccessCacheHit(
   reportId: string,
   requestType: PremiumLlmRequestType,
 ) {
-  console.info("[premium-pipeline] stage=llm_payment_guard_cache_hit", {
-    reportId,
+  logServerEvent("premium-pipeline", "llm_payment_guard_cache_hit", {
+    reportId: maskId(reportId),
     requestType,
   });
 }

@@ -1,5 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { calculateSaju } from "@fullstackfamily/manseryeok";
+import { logServerError } from "@/lib/security/safeLog";
 
 export async function POST(req: Request) {
   try {
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       sajuInterpretation,
     });
   } catch (error) {
-    console.error("만세력 API 에러:", error);
+    logServerError("만세력 API 에러:", error, "internal_error");
 
     return NextResponse.json(
       { error: "만세력 계산 중 오류가 발생했습니다." },

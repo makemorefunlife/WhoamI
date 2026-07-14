@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 
 export const runtime = "nodejs";
@@ -25,15 +26,15 @@ export async function GET(req: Request) {
       .is("relationship_report_id", null);
 
     if (error) {
-      console.error("invites/pending:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logServerError("invites/pending:", error, "internal_error");
+      return NextResponse.json({ error: "request failed" }, { status: 500 });
     }
 
     return NextResponse.json({ count: count ?? 0 });
   } catch (e) {
-    console.error("invites/pending:", e);
+    logServerError("invites/pending:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

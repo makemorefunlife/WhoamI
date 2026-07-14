@@ -1,66 +1,59 @@
-﻿// app/api/saju/route.ts
-
-
-
-import { NextResponse } from "next/server";
-
+﻿import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
-
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
-
-
+import { enforceRateLimit } from "@/lib/security/rateLimit";
+import {
+  parseBirthDate,
+  parseBirthTime,
+  readJsonBodyLimited,
+} from "@/lib/security/requestValidation";
+import { logServerError } from "@/lib/security/safeLog";
 
 export async function POST(req: Request) {
-
   try {
-
-    const body = await req.json();
-
-    const { birthDate, birthTime, birthTimeUnknown } = body;
-
-
-
-    if (!birthDate) {
-
-      return NextResponse.json(
-
-        { error: "birthDate가 없습니다." },
-
-        { status: 400 },
-
-      );
-
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
 
+    const parsed = await readJsonBodyLimited(req);
+    if (!parsed.ok) return parsed.response;
+    const body = (parsed.body ?? {}) as Record<string, unknown>;
 
+    const birthDate = parseBirthDate(body.birthDate);
+    if (!birthDate.ok) return birthDate.response;
+    const birthTime = parseBirthTime(body.birthTime);
+    if (!birthTime.ok) return birthTime.response;
+
+    const limited = enforceRateLimit("saju", userId);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: limited.error },
+        {
+          status: limited.status,
+          headers: limited.retryAfterSec
+            ? { "Retry-After": String(limited.retryAfterSec) }
+            : undefined,
+        },
+      );
+    }
+
+    const birthTimeUnknown =
+      body.birthTimeUnknown === true || !birthTime.value;
 
     const bundle = calculateSajuBundle({
-
-      birthDate,
-
-      birthTime,
-
-      birthTimeUnknown: birthTimeUnknown === true || !birthTime?.trim(),
-
+      birthDate: birthDate.value,
+      birthTime: birthTime.value ?? undefined,
+      birthTimeUnknown,
     });
 
-
-
     return NextResponse.json(toV1SajuApiPayload(bundle));
-
   } catch (error) {
-
-    console.error("API 에러:", error);
-
+    logServerError("saju", error);
     return NextResponse.json(
-
       { error: "사주 계산 중 오류가 발생했습니다." },
-
       { status: 500 },
-
     );
-
   }
-
 }
-

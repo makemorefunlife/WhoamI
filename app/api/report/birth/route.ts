@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { logServerError, logServerEvent, maskId } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -79,9 +80,9 @@ export async function GET(req: Request) {
       birth_date_correction_used: correctionUsed,
     });
   } catch (e) {
-    console.error("report/birth GET:", e);
+    logServerError("report/birth GET:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }
@@ -251,9 +252,9 @@ export async function POST(req: Request) {
       person_core_invalidated: birthMateriallyChanged,
     });
   } catch (e) {
-    console.error("report/birth:", e);
+    logServerError("report/birth:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "저장 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }
@@ -276,9 +277,9 @@ async function saveBirthPatch(
   ) {
     const withoutCorrection = { ...patch };
     delete withoutCorrection[BIRTH_DATE_CORRECTION_COLUMN];
-    console.warn(
-      `[report-birth] ${BIRTH_DATE_CORRECTION_COLUMN} missing — saved birth without correction flag reportId=${reportId}`,
-    );
+    logServerEvent("report/birth", "correction_column_missing", {
+      reportId: maskId(reportId),
+    });
     const retry = await updateReportPatchSafely(
       supabase,
       reportId,
@@ -329,9 +330,9 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("report/birth DELETE:", e);
+    logServerError("report/birth DELETE:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "초기화 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

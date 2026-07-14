@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import {
   ESSENCE_SELF_LITE_SYSTEM,
   buildEssenceSelfLiteUserPrompt,
@@ -58,15 +59,15 @@ export async function POST(req: Request) {
       report.report_type = "essence_self_lite";
       report.language = body.language ?? "ko";
     } catch (e) {
-      console.warn("v2/lite/essence LLM fallback:", e);
+      logServerError("v2/lite/essence LLM fallback:", e, "internal_error");
       report = buildEssenceSelfLiteFallback(liteInput);
     }
 
     return NextResponse.json({ ok: true, report, source: "essence_self_lite" });
   } catch (e) {
-    console.error("v2/lite/essence:", e);
+    logServerError("v2/lite/essence:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "분석 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

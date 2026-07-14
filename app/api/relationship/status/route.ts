@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import {
   fetchRelationshipReportRowsForReportId,
@@ -75,9 +76,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ items });
   } catch (e) {
-    console.error("relationship/status:", e);
+    logServerError("relationship/status:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

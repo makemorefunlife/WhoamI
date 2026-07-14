@@ -9,6 +9,7 @@ import {
   resolveReportBirth,
   type ResolvedReportBirth,
 } from "@/lib/v2/onboarding/resolveReportBirth";
+import { logServerEvent, maskId } from "@/lib/security/safeLog";
 
 /** 생년월일만 있어도 Blueprint·기본 분석 가능 */
 export function hasMinimalBirth(
@@ -52,9 +53,9 @@ export async function syncBirthSessionFromDb(
   writeBirthV2Session(reportId, birth);
 
   if (hadConflict) {
-    console.warn(
-      `[birth-ssot] localStorage 출생 정보를 DB 기준으로 맞췄어요 reportId=${reportId}`,
-    );
+    logServerEvent("birth-ssot", "local_corrected_from_db", {
+      reportId: maskId(reportId),
+    });
   }
 
   return { birth, source, sessionCorrected: hadConflict };

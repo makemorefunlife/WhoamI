@@ -5,6 +5,7 @@ import {
   reportSelectWithBirthCoords,
 } from "@/lib/report/reportsBirthCoordinateColumns";
 import { isMissingBirthDateCorrectionColumnError } from "@/lib/report/birthDateCorrection";
+import { logServerError } from "@/lib/security/safeLog";
 
 export type ReportWithBirthCoords = Record<string, unknown> & {
   id: string;
@@ -64,10 +65,7 @@ export async function fetchReportWithBirthCoords(
   }
 
   if (lastError && isRetryableSelectColumnError(lastError)) {
-    console.warn(
-      `[report-birth] column fallback exhausted reportId=${reportId}`,
-      lastError.message,
-    );
+    logServerError("fetchReportWithBirthCoords", undefined, "column_fallback_exhausted");
   }
 
   return {

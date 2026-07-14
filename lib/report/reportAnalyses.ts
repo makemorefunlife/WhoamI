@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const REPORT_ANALYSIS_TYPES = [
   "basic",
@@ -36,7 +37,7 @@ export async function readReportAnalysis(
     .limit(5);
 
   if (error) {
-    console.warn("readReportAnalysis:", analysisType, error.message);
+    logServerError("reportAnalyses.read", error, "db_select_failed");
     return null;
   }
 
@@ -45,12 +46,7 @@ export async function readReportAnalysis(
 
   if (rows.length > 1) {
     const keepId = rows[0].id;
-    console.warn(
-      "readReportAnalysis: duplicate rows",
-      analysisType,
-      reportId,
-      `count=${rows.length}`,
-    );
+    logServerError("reportAnalyses.duplicate", undefined, "duplicate_rows");
     const staleIds = rows.slice(1).map((r) => r.id);
     if (staleIds.length > 0) {
       const { error: delErr } = await supabase
@@ -58,7 +54,7 @@ export async function readReportAnalysis(
         .delete()
         .in("id", staleIds);
       if (delErr) {
-        console.warn("readReportAnalysis: prune failed", delErr.message);
+        logServerError("reportAnalyses.prune", delErr, "db_delete_failed");
       }
     }
   }
@@ -92,7 +88,7 @@ export async function writeReportAnalysis(
   );
 
   if (error) {
-    console.error("writeReportAnalysis:", analysisType, error.message);
+    logServerError("reportAnalyses.write", error, "db_write_failed");
     return false;
   }
   return true;
@@ -110,7 +106,7 @@ export async function deleteReportAnalysis(
     .eq("analysis_type", analysisType);
 
   if (error) {
-    console.warn("deleteReportAnalysis:", analysisType, error.message);
+    logServerError("reportAnalyses.delete", error, "db_delete_failed");
   }
 }
 
@@ -151,7 +147,7 @@ export async function readPersistedAnalysesBatch(
     .in("analysis_type", [...BATCH_ANALYSIS_TYPES]);
 
   if (error) {
-    console.warn("readPersistedAnalysesBatch:", error.message);
+    logServerError("reportAnalyses.batch", error, "db_select_failed");
     const legacyBasic = await readLegacyBasicFromReportResults(supabase, reportId);
     return {
       basic: legacyBasic,
@@ -286,7 +282,7 @@ export async function readPersistedAstrologyAnalysisWithMeta(
     .maybeSingle();
 
   if (error) {
-    console.warn("readPersistedAstrologyAnalysisWithMeta:", error.message);
+    logServerError("reportAnalyses.astrology", error, "db_select_failed");
     return { content: null, metadata: null };
   }
 

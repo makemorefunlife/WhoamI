@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 
 /**
  * 출생 정보 변경 시 — 해당 reportId가 참여한 관계 심화 캐시 무효화.
@@ -17,7 +18,7 @@ export async function invalidateRelationshipPremiumsForReport(
     .or(`report_id_a.eq.${rid},report_id_b.eq.${rid}`);
 
   if (error) {
-    console.warn("invalidateRelationshipPremiumsForReport:", error.message);
+    logServerError("invalidateRelPremiums", error, "db_select_failed");
     return 0;
   }
 
@@ -33,7 +34,7 @@ export async function invalidateRelationshipPremiumsForReport(
     .in("id", ids);
 
   if (upErr) {
-    console.warn("invalidateRelationshipPremiumsForReport update:", upErr.message);
+    logServerError("invalidateRelPremiums", upErr, "db_update_failed");
     return 0;
   }
 

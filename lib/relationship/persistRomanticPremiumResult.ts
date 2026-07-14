@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import type { RomanticSajuDeepPayload } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
@@ -37,7 +38,7 @@ export async function persistRomanticPremiumResult(
   );
 
   if (upErr) {
-    console.error("persistRomanticPremiumResult update:", upErr);
+    logServerError("persistRomanticPremiumResult update:", upErr, "internal_error");
     return { ok: false, userMessage: RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE };
   }
 

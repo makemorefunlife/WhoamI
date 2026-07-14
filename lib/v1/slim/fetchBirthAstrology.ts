@@ -1,4 +1,5 @@
 import { calculateChart, type Sign } from "celestine";
+import { logServerError } from "@/lib/security/safeLog";
 import OpenAI from "openai";
 import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
 import { extractAstrologyTextForIntegrated } from "@/lib/report/astrologyIntegratedText";
@@ -160,7 +161,7 @@ export async function fetchBirthAstrologyText(input: {
       };
     }
   } catch (e) {
-    console.warn("fetchBirthAstrologyText LLM:", e);
+    logServerError("fetchBirthAstrologyText LLM:", e, "internal_error");
   }
 
   const fallback = extractAstrologyTextForIntegrated({

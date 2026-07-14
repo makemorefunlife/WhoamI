@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import {
   CURRENT_SELF_LITE_SYSTEM,
   buildCurrentSelfLiteUserPrompt,
@@ -47,15 +48,15 @@ export async function POST(req: Request) {
       report.report_type = "current_self_lite";
       report.language = body.language ?? "ko";
     } catch (e) {
-      console.warn("v2/lite/current LLM fallback:", e);
+      logServerError("v2/lite/current LLM fallback:", e, "internal_error");
       report = buildCurrentSelfLiteFallback(profile);
     }
 
     return NextResponse.json({ ok: true, report, source: "current_self_lite" });
   } catch (e) {
-    console.error("v2/lite/current:", e);
+    logServerError("v2/lite/current:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "분석 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

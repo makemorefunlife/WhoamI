@@ -19,7 +19,8 @@ export function createServerSupabaseClient(): SupabaseClient | null {
 export function supabaseConfigErrorResponse(): NextResponse {
   const missing = getMissingServerSupabaseEnvKeys();
   if (missing.length > 0) {
-    console.error("[supabase] missing server env:", missing.join(", "));
+    // Do not log env key names
+    console.error("[supabase]", "missing_server_env");
   }
   return NextResponse.json(
     { error: SERVER_SUPABASE_CONFIG_ERROR },

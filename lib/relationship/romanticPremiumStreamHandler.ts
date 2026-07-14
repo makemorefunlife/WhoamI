@@ -1,4 +1,5 @@
 import type OpenAI from "openai";
+import { logServerError } from "@/lib/security/safeLog";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   runRomanticSajuDeepAnalysisStreaming,
@@ -123,7 +124,7 @@ export function createRomanticPremiumStreamResponse(
           closeStream();
           return;
         }
-        console.error("romanticPremiumStreamHandler:", e);
+        logServerError("romanticPremiumStreamHandler:", e, "internal_error");
         enqueue(
           encodePremiumStreamLine({
             type: "error",

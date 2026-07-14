@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 
 /**
  * 관계가 이미 있는데 relationship_report_id 없는 open 초대는
@@ -27,7 +28,7 @@ export async function cleanupStaleOpenInvites(
     .select("id");
 
   if (error) {
-    console.error("cleanupStaleOpenInvites:", error.message);
+    logServerError("cleanupStaleOpenInvites", error, "db_delete_failed");
     return 0;
   }
 

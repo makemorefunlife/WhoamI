@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
@@ -68,14 +69,14 @@ export async function PATCH(req: Request) {
       .eq("id", partnerReportId);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "request failed" }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true, name });
   } catch (e) {
-    console.error("relationship/partner-name:", e);
+    logServerError("relationship/partner-name:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "저장 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { logServerError } from "@/lib/security/safeLog";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import {
   INTEGRATED_SYSTEM_PROMPT,
@@ -100,7 +101,7 @@ export async function runIntegratedPremiumLlm(
       phase2_chars: part2.length,
     };
   } catch (e) {
-    console.warn("runIntegratedPremiumLlm:", e);
+    logServerError("runIntegratedPremiumLlm:", e, "internal_error");
     return {
       report: buildIntegratedFallback(input),
       source: "fallback",

@@ -1,7 +1,15 @@
 // app/api/astrology/route.ts
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { calculateChart, type Sign } from "celestine";
 import OpenAI from "openai";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
+import {
+  MAX_BIRTH_PLACE_LEN,
+  parseLatLng,
+  readJsonBodyLimited,
+} from "@/lib/security/requestValidation";
+import { logServerError } from "@/lib/security/safeLog";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -36,14 +44,57 @@ const ASTROLOGY_SYSTEM_PROMPT = `당신은 20년 경력의 점성학 전문가�
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { year, month, day, latitude, longitude, birthPlace, gender } = body;
-    let { hour, minute, second, timezone } = body;
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
 
-    if (!year || !month || !day || !latitude || !longitude) {
+    const parsed = await readJsonBodyLimited(req);
+    if (!parsed.ok) return parsed.response;
+    const body = (parsed.body ?? {}) as Record<string, unknown>;
+    const {
+      year,
+      month,
+      day,
+      latitude,
+      longitude,
+      birthPlace,
+      gender,
+    } = body;
+    let { hour, minute, second, timezone } = body as {
+      hour?: number;
+      minute?: number;
+      second?: number;
+      timezone?: number;
+    };
+
+    if (!year || !month || !day || latitude == null || longitude == null) {
       return NextResponse.json(
         { error: "year, month, day, latitude, longitude는 필수입니다." },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    const coords = parseLatLng(latitude, longitude);
+    if (!coords.ok) return coords.response;
+
+    if (
+      typeof birthPlace === "string" &&
+      birthPlace.length > MAX_BIRTH_PLACE_LEN
+    ) {
+      return NextResponse.json({ error: "birthPlace too long" }, { status: 400 });
+    }
+
+    const limited = enforceRateLimit("astrology", userId);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: limited.error },
+        {
+          status: limited.status,
+          headers: limited.retryAfterSec
+            ? { "Retry-After": String(limited.retryAfterSec) }
+            : undefined,
+        },
       );
     }
 
@@ -54,15 +105,15 @@ export async function POST(req: Request) {
 
     // 1. 천체 위치 계산
     const chart = calculateChart({
-      year,
-      month,
-      day,
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
       hour,
       minute,
       second,
       timezone,
-      latitude,
-      longitude,
+      latitude: coords.lat,
+      longitude: coords.lng,
     });
 
     
@@ -177,9 +228,8 @@ export async function POST(req: Request) {
         });
         interpretation = llmResponse.choices[0].message.content ?? null;
       } catch (llmErr) {
-        console.error("Astrology LLM error:", llmErr);
-        llmError =
-          llmErr instanceof Error ? llmErr.message : "LLM 호출 실패";
+        logServerError("astrology.llm", llmErr);
+        llmError = "LLM 호출 실패";
       }
     }
 
@@ -204,17 +254,13 @@ export async function POST(req: Request) {
       raw,
     });
   } catch (error) {
-    console.error("Astrology API error:", error);
-    const message =
-      error instanceof Error ? error.message : "알 수 없는 오류";
+    logServerError("astrology", error);
     return NextResponse.json(
       {
         success: false,
         error: "점성학 차트 계산 중 오류가 발생했습니다.",
-        detail:
-          process.env.NODE_ENV === "development" ? message : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
@@ -88,9 +89,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("relationship/remove:", e);
+    logServerError("relationship/remove:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "삭제 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

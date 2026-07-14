@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import {
   fetchRelationshipReportRowsForReportIdSafe,
   fetchRelationshipReportsByIdsSafe,
@@ -69,10 +70,10 @@ export async function fetchRelationshipReportRowsForHub(
   ]);
 
   if (outboundInvites.error) {
-    console.error("outbound invites:", outboundInvites.error.message);
+    logServerError("fetchParticipant.outbound", outboundInvites.error, "db_select_failed");
   }
   if (inboundInvites.error) {
-    console.error("inbound invites merge:", inboundInvites.error.message);
+    logServerError("fetchParticipant.inbound", inboundInvites.error, "db_select_failed");
   }
 
   const missingIds = [
@@ -108,7 +109,7 @@ export async function mergeRelationshipRowsFromOutboundInvites(
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("outbound invites:", error.message);
+    logServerError("fetchParticipant.outbound", error, "db_select_failed");
     return rows;
   }
 
@@ -140,7 +141,7 @@ export async function mergeRelationshipRowsFromInboundInvites(
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("inbound invites merge:", error.message);
+    logServerError("fetchParticipant.inbound", error, "db_select_failed");
     return rows;
   }
 

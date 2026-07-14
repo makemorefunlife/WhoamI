@@ -1,4 +1,6 @@
 /** LLM 응답에서 JSON 객체 추출 (코드펜스 제거) */
+import { logServerError } from "@/lib/security/safeLog";
+
 export function parseJsonObject<T = unknown>(raw: string): T {
   let s = raw.trim();
   const fence = /^```(?:json)?\s*([\s\S]*?)```$/m.exec(s);
@@ -70,17 +72,11 @@ export async function fetchLlmJsonWithParseRetry<T>(
       }
 
       if (isLastAttempt) {
-        console.error(
-          `fetchLlmJsonWithParseRetry${labelSuffix}: ${totalAttempts}회 재시도 후 실패`,
-          err,
-        );
+        logServerError("parseLlmJson", err, "parse_retry_exhausted");
         throw new LlmJsonParseRetryError(totalAttempts, err);
       }
 
-      console.warn(
-        `fetchLlmJsonWithParseRetry${labelSuffix}: JSON 파싱 실패 (${attempt}/${totalAttempts}), ${delayMs}ms 후 재시도`,
-        err instanceof Error ? err.message : err,
-      );
+      logServerError("parseLlmJson", undefined, "parse_retry");
       await sleep(delayMs);
     }
   }

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { getSupabaseUrl } from "@/lib/supabase/env";
+import { maskId } from "@/lib/security/safeLog";
+import { maskInviteToken } from "@/lib/security/inviteToken";
 
 function loggingEnabled() {
   return (
@@ -20,6 +22,7 @@ type Props = {
 /**
  * 로컬 vs 프로덕션 첫 진입 비교용 클라이언트 로그.
  * 프로덕션에서 켜려면 Vercel에 NEXT_PUBLIC_DEBUG_FIRST_ENTRY=1 설정.
+ * PII / tokens / full IDs are never logged.
  */
 export default function FirstEntryDiagnostics({ scope, extra }: Props) {
   const pathname = usePathname();
@@ -28,36 +31,47 @@ export default function FirstEntryDiagnostics({ scope, extra }: Props) {
   useEffect(() => {
     if (!loggingEnabled()) return;
 
-    const href = window.location.href;
-    const inviteTokenQuery =
-      new URLSearchParams(window.location.search).get("token");
+    const inviteTokenQuery = new URLSearchParams(window.location.search).get(
+      "token",
+    );
     let inviteTokenLocalStorage: string | null = null;
     let reportIdLocalStorage: string | null = null;
     try {
       inviteTokenLocalStorage = localStorage.getItem("inviteToken");
       reportIdLocalStorage = localStorage.getItem("reportId");
     } catch {
-      inviteTokenLocalStorage = "(localStorage_read_error)";
-      reportIdLocalStorage = "(localStorage_read_error)";
+      inviteTokenLocalStorage = null;
+      reportIdLocalStorage = null;
     }
 
-    const supabaseUrl = getSupabaseUrl() ?? "(missing)";
+    const supabaseUrl = getSupabaseUrl() ?? "";
+    const host = (() => {
+      try {
+        return supabaseUrl ? new URL(supabaseUrl).host.slice(0, 24) : "(missing)";
+      } catch {
+        return "(invalid)";
+      }
+    })();
 
     console.info("[WhoamI:first-entry]", {
       scope,
-      activeRendered: scope,
       pathname,
-      href,
       clerk: {
         isLoaded,
         isSignedIn,
-        userId: userId ?? null,
+        userId: userId ? maskId(userId) : null,
       },
-      inviteTokenQuery,
-      inviteTokenLocalStorage,
-      reportIdLocalStorage,
-      supabaseUrlPrefix: supabaseUrl.slice(0, 48),
-      ...extra,
+      inviteTokenQuery: inviteTokenQuery
+        ? maskInviteToken(inviteTokenQuery)
+        : null,
+      inviteTokenLocalStorage: inviteTokenLocalStorage
+        ? maskInviteToken(inviteTokenLocalStorage)
+        : null,
+      reportIdLocalStorage: reportIdLocalStorage
+        ? maskId(reportIdLocalStorage)
+        : null,
+      supabaseHostPrefix: host,
+      extraKeys: extra ? Object.keys(extra) : [],
       ts: new Date().toISOString(),
     });
   }, [scope, pathname, isLoaded, isSignedIn, userId, extra]);

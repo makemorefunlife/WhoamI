@@ -253,7 +253,7 @@ function SurveyCompleteContent() {
 
     } catch (e) {
 
-      console.error("report/birth save:", e);
+      console.error("[survey-complete] birth_save_error");
 
       alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");
 

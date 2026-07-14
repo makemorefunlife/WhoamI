@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
       .maybeSingle();
 
     if (repErr) {
-      console.error("session-status report:", repErr);
+      logServerError("session-status report:", repErr, "internal_error");
       return NextResponse.json({ error: repErr.message }, { status: 500 });
     }
 
@@ -50,9 +51,9 @@ export async function GET(req: Request) {
       name: (report as { name?: string | null }).name?.trim() ?? null,
     });
   } catch (e) {
-    console.error("session-status:", e);
+    logServerError("session-status:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

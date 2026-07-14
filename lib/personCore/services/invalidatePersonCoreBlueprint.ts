@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logServerError } from "@/lib/security/safeLog";
 import { getPersonCoreSupabase } from "../utils/getServerSupabase";
 
 /**
@@ -18,7 +19,7 @@ export async function invalidatePersonCoreBlueprint(
     .eq("report_id", rid);
 
   if (error) {
-    console.warn("invalidatePersonCoreBlueprint:", rid, error.message);
+    logServerError("personCore.invalidate", error, "db_update_failed");
     return false;
   }
 
