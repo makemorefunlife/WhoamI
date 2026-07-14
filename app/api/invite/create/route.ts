@@ -1,62 +1,75 @@
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
-import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import { createInviteToken } from "@/lib/security/inviteToken";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rateLimit";
+import {
+  readJsonBodyLimited,
+  requireUuid,
+} from "@/lib/security/requestValidation";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
-function makeToken() {
-  return `invite_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
-/** 친구 초대 생성 — 발신 리포트 소유자·게스트만 */
+/** 친구 초대 생성 — 로그인 + 소유 report만 */
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const reportId = body.reportId?.trim();
-
-    if (!reportId) {
-      return NextResponse.json(
-        { error: "reportId가 없습니다." },
-        { status: 400 },
-      );
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
+
+    const parsed = await readJsonBodyLimited(req);
+    if (!parsed.ok) return parsed.response;
+    const body = (parsed.body ?? {}) as Record<string, unknown>;
+    const idCheck = requireUuid(body.reportId, "reportId");
+    if (!idCheck.ok) return idCheck.response;
+
+    const limited = enforceRateLimit("invite", userId);
+    if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
-    const { userId } = await auth();
-    const access = await assertGuestOrOwnerReportAccess(
+    const access = await assertOwnedReportAccess(
       supabase,
-      reportId,
+      idCheck.value,
       userId,
     );
     if (access.error) return access.error;
 
-    const inviteToken = makeToken();
+    const inviteToken = createInviteToken();
 
     const { data, error } = await supabase
       .from("invites")
       .insert([
         {
-          from_report_id: reportId,
+          from_report_id: idCheck.value,
           invite_token: inviteToken,
           invite_type: "relationship",
           status: "open",
         },
       ])
-      .select()
+      .select("id, status, from_report_id, invite_type, created_at")
       .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error || !data) {
+      logServerError("invite/create", error);
+      return NextResponse.json({ error: "create failed" }, { status: 500 });
     }
 
+    // Return token once to creator; never log full token.
     return NextResponse.json({
-      invite: data,
+      invite: {
+        ...data,
+        invite_token: inviteToken,
+      },
     });
   } catch (error) {
-    console.error("invite create error:", error);
-
+    logServerError("invite/create", error);
     return NextResponse.json(
       { error: "초대 생성 중 오류가 발생했습니다." },
       { status: 500 },

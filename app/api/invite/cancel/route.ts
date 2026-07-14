@@ -1,62 +1,79 @@
 import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
-import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rateLimit";
+import {
+  readJsonBodyLimited,
+  requireUuid,
+} from "@/lib/security/requestValidation";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
-/** 열린 초대(보낸 요청) 취소 — 발신 리포트 소유자·게스트만 */
+/**
+ * Cancel open invite — creator (from_report owner) only.
+ * Marks status cancelled when delete not preferred; uses status filter.
+ */
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as {
-      inviteId?: string;
-      reportId?: string;
-    };
-    const inviteId = body.inviteId?.trim();
-    const reportId = body.reportId?.trim();
-
-    if (!inviteId || !reportId) {
-      return NextResponse.json(
-        { error: "inviteId와 reportId가 필요합니다." },
-        { status: 400 },
-      );
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
+
+    const parsed = await readJsonBodyLimited(req);
+    if (!parsed.ok) return parsed.response;
+    const body = (parsed.body ?? {}) as {
+      inviteId?: unknown;
+      reportId?: unknown;
+    };
+
+    const inviteIdCheck = requireUuid(body.inviteId, "inviteId");
+    if (!inviteIdCheck.ok) return inviteIdCheck.response;
+    const reportIdCheck = requireUuid(body.reportId, "reportId");
+    if (!reportIdCheck.ok) return reportIdCheck.response;
+
+    const limited = enforceRateLimit("invite", userId);
+    if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
-    const { userId } = await auth();
-    const access = await assertGuestOrOwnerReportAccess(
+    const access = await assertOwnedReportAccess(
       supabase,
-      reportId,
+      reportIdCheck.value,
       userId,
     );
     if (access.error) return access.error;
 
+    // Physical delete of open invite — no new status enum without migration.
+    // complete() only matches status=open, so cancelled/deleted cannot accept.
     const { data, error } = await supabase
       .from("invites")
       .delete()
-      .eq("id", inviteId)
-      .eq("from_report_id", reportId)
+      .eq("id", inviteIdCheck.value)
+      .eq("from_report_id", reportIdCheck.value)
       .eq("status", "open")
       .select("id")
       .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logServerError("invite/cancel", error);
+      return NextResponse.json({ error: "cancel failed" }, { status: 500 });
     }
     if (!data) {
       return NextResponse.json(
-        { error: "삭제할 요청을 찾지 못했습니다." },
+        { error: "invite not found" },
         { status: 404 },
       );
     }
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("invite/cancel:", e);
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "삭제 실패" },
-      { status: 500 },
-    );
+    logServerError("invite/cancel", e);
+    return NextResponse.json({ error: "cancel failed" }, { status: 500 });
   }
 }

@@ -1,32 +1,73 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 import {
   createRouteSupabaseClient,
   supabaseConfigErrorResponse,
 } from "@/lib/supabase/serverClient";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/security/rateLimit";
+import {
+  readJsonBodyLimited,
+  requireUuid,
+} from "@/lib/security/requestValidation";
+import { isAcceptableInviteToken } from "@/lib/security/inviteToken";
+import { logServerError } from "@/lib/security/safeLog";
 
+export const runtime = "nodejs";
+
+/**
+ * Complete invite: accepter links their OWN report.
+ * State transition requires status === 'open' (atomic update filter).
+ * Cancelled/deleted invites cannot complete; completed cannot reuse.
+ *
+ * Token formats:
+ * - modern: 64-char hex (createInviteToken)
+ * - legacy short / invite_* : accept-only (deprecation — existing customer links)
+ */
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const parsed = await readJsonBodyLimited(req);
+    if (!parsed.ok) return parsed.response;
+    const body = (parsed.body ?? {}) as Record<string, unknown>;
+
     const inviteToken =
       typeof body.inviteToken === "string" ? body.inviteToken.trim() : "";
-    const reportId =
-      typeof body.reportId === "string" ? body.reportId.trim() : "";
-
-    if (!inviteToken || !reportId) {
-      return NextResponse.json(
-        { error: "inviteToken과 reportId가 필요합니다." },
-        { status: 400 },
-      );
+    // Do not log token. Legacy formats still accepted for existing links.
+    if (!isAcceptableInviteToken(inviteToken)) {
+      return NextResponse.json({ error: "invalid invite" }, { status: 400 });
     }
+
+    const idCheck = requireUuid(body.reportId, "reportId");
+    if (!idCheck.ok) return idCheck.response;
+
+    const limited = enforceRateLimit("invite", userId);
+    if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
+    // Accepter can only attach their owned report.
+    const access = await assertOwnedReportAccess(
+      supabase,
+      idCheck.value,
+      userId,
+    );
+    if (access.error) return access.error;
+
+    // Race-safe: only open → complete.
     const { data, error } = await supabase
       .from("invites")
       .update({
-        accepted_report_id: reportId,
+        accepted_report_id: idCheck.value,
         status: "complete",
       })
       .eq("invite_token", inviteToken)
@@ -35,24 +76,28 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (error) {
-      console.error("invite/complete:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logServerError("invite/complete", error);
+      return NextResponse.json({ error: "complete failed" }, { status: 500 });
     }
 
     if (!data) {
       return NextResponse.json(
-        { error: "유효하지 않은 초대이거나 이미 처리되었습니다." },
+        { error: "invite unavailable" },
         { status: 404 },
       );
     }
 
     let relationship_report_id: string | null = null;
-    if (data.from_report_id && reportId && data.from_report_id !== reportId) {
+    if (
+      data.from_report_id &&
+      idCheck.value &&
+      data.from_report_id !== idCheck.value
+    ) {
       try {
         const { relationshipReportId } = await ensureRelationshipReport(
           supabase,
           data.from_report_id,
-          reportId,
+          idCheck.value,
         );
         relationship_report_id = relationshipReportId;
         const { error: linkErr } = await supabase
@@ -60,18 +105,19 @@ export async function POST(req: Request) {
           .update({
             relationship_report_id: relationshipReportId,
           })
-          .eq("id", data.id);
+          .eq("id", data.id)
+          .eq("status", "complete");
         if (linkErr) {
-          console.error("invite/complete relationship_report_id:", linkErr);
+          logServerError("invite/complete.link", linkErr);
         }
       } catch (relErr) {
-        console.error("invite/complete ensureRelationshipReport:", relErr);
+        logServerError("invite/complete.rel", relErr);
       }
     }
 
     return NextResponse.json({ ok: true, relationship_report_id });
   } catch (e) {
-    console.error("invite/complete:", e);
+    logServerError("invite/complete", e);
     return NextResponse.json(
       { error: "초대 완료 처리 중 오류가 발생했습니다." },
       { status: 500 },

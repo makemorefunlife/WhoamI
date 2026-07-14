@@ -1,29 +1,36 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { createRouteSupabaseClient } from "@/lib/supabase/serverClient";
+import { requireUuid } from "@/lib/security/requestValidation";
+import { logServerError } from "@/lib/security/safeLog";
 
 export const runtime = "nodejs";
 
-/** 해당 리포트에서 이미 만든 초대(친구 초대권 사용)가 있는지 — 소유자·게스트만 */
+/**
+ * Whether this report already created an invite — owner only.
+ * Response must not include invitee/host PII or full tokens.
+ */
 export async function GET(req: Request) {
   try {
-    const reportId = new URL(req.url).searchParams.get("reportId")?.trim();
-    if (!reportId) {
-      return NextResponse.json(
-        { used: false, error: "reportId가 필요합니다." },
-        { status: 400 },
-      );
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
+
+    const idCheck = requireUuid(
+      new URL(req.url).searchParams.get("reportId"),
+      "reportId",
+    );
+    if (!idCheck.ok) return idCheck.response;
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) {
       return NextResponse.json({ used: false, error: "server_config" });
     }
-    const { userId } = await auth();
-    const access = await assertGuestOrOwnerReportAccess(
+    const access = await assertOwnedReportAccess(
       supabase,
-      reportId,
+      idCheck.value,
       userId,
     );
     if (access.error) return access.error;
@@ -31,17 +38,17 @@ export async function GET(req: Request) {
     const { data, error } = await supabase
       .from("invites")
       .select("id")
-      .eq("from_report_id", reportId)
+      .eq("from_report_id", idCheck.value)
       .limit(1);
 
     if (error) {
-      console.error("invite/status:", error);
+      logServerError("invite/status", error);
       return NextResponse.json({ used: false });
     }
 
     return NextResponse.json({ used: (data?.length ?? 0) > 0 });
   } catch (e) {
-    console.error("invite/status:", e);
+    logServerError("invite/status", e);
     return NextResponse.json({ used: false });
   }
 }
