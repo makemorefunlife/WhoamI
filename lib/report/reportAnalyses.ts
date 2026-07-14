@@ -148,9 +148,8 @@ export async function readPersistedAnalysesBatch(
 
   if (error) {
     logServerError("reportAnalyses.batch", error, "db_select_failed");
-    const legacyBasic = await readLegacyBasicFromReportResults(supabase, reportId);
     return {
-      basic: legacyBasic,
+      basic: null,
       integrated: null,
       detailed_survey: null,
       astrology: { content: null, metadata: null },
@@ -162,10 +161,7 @@ export async function readPersistedAnalysesBatch(
     .filter((r) => r.analysis_type === "astrology")
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
 
-  let basic = pickLatestContent(rows, "basic");
-  if (!basic) {
-    basic = await readLegacyBasicFromReportResults(supabase, reportId);
-  }
+  const basic = pickLatestContent(rows, "basic");
 
   const astroContent =
     typeof astrologyRow?.content === "string"
@@ -187,34 +183,11 @@ export async function readPersistedAnalysesBatch(
   };
 }
 
-export async function readLegacyBasicFromReportResults(
-  supabase: SupabaseClient,
-  reportId: string,
-): Promise<string | null> {
-  try {
-    const { data, error } = await supabase
-      .from("report_results")
-      .select("analysis_result")
-      .eq("report_id", reportId)
-      .maybeSingle();
-    if (error) return null;
-    const text =
-      typeof data?.analysis_result === "string"
-        ? data.analysis_result.trim()
-        : "";
-    return text || null;
-  } catch {
-    return null;
-  }
-}
-
 export async function readPersistedBasicAnalysis(
   supabase: SupabaseClient,
   reportId: string,
 ): Promise<string | null> {
-  const fromAnalyses = await readReportAnalysis(supabase, reportId, "basic");
-  if (fromAnalyses) return fromAnalyses;
-  return readLegacyBasicFromReportResults(supabase, reportId);
+  return readReportAnalysis(supabase, reportId, "basic");
 }
 
 export async function writePersistedBasicAnalysis(

@@ -190,9 +190,9 @@ export async function POST(req: Request) {
 
     if (
       !forceRegenerate &&
-      hasPremiumCacheForKind(byKind, rr.result_premium, kind)
+      hasPremiumCacheForKind(byKind, kind)
     ) {
-      const cached = byKind[kind] ?? rr.result_premium;
+      const cached = byKind[kind];
       return NextResponse.json({
         relationship_kind: kind,
         result_premium: cached,
@@ -200,8 +200,8 @@ export async function POST(req: Request) {
     }
 
     const [fetchA, fetchB, clerkUser] = await Promise.all([
-      fetchReportWithBirthCoords(supabase, rr.report_id_a, "payment_status"),
-      fetchReportWithBirthCoords(supabase, rr.report_id_b, "payment_status"),
+      fetchReportWithBirthCoords(supabase, rr.report_id_a),
+      fetchReportWithBirthCoords(supabase, rr.report_id_b),
       userId ? currentUser() : Promise.resolve(null),
     ]);
 
@@ -414,7 +414,6 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
-        { result_premium: workPayload },
       );
 
       if (upErr) {
@@ -495,7 +494,6 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
-        { result_premium: cohabitationPayload },
       );
 
       if (upErr) {
@@ -595,7 +593,6 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
-        { result_premium: familyPayload },
       );
 
       if (upErr) {
@@ -676,7 +673,6 @@ export async function POST(req: Request) {
           result_premium_by_kind: nextByKind,
           relationship_kind: kind,
         },
-        { result_premium: friendshipPayload },
       );
 
       if (upErr) {

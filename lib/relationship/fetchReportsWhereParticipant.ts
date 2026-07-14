@@ -12,7 +12,6 @@ export type RelationshipReportRow = {
   report_id_b: string;
   analysis_type: string;
   result_basic: unknown;
-  result_premium: unknown;
   result_premium_by_kind?: unknown;
   relationship_kind?: string | null;
 };

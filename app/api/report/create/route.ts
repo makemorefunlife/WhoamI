@@ -19,7 +19,7 @@ export const runtime = "nodejs";
 
 /**
  * Create a self report for the signed-in Clerk user.
- * Client entitlement fields are ignored. Idempotent: reuses unfinished owned report.
+ * Client entitlement / report_type fields are ignored. Idempotent: reuses unfinished owned report.
  */
 export async function POST(req: Request) {
   try {
@@ -30,7 +30,8 @@ export async function POST(req: Request) {
 
     const parsed = await readJsonBodyLimited(req);
     if (!parsed.ok) return parsed.response;
-    const body = stripClientTrustFields(
+    // Ignore client report_type / entitlement — always insert self.
+    stripClientTrustFields(
       (parsed.body && typeof parsed.body === "object"
         ? parsed.body
         : {}) as Record<string, unknown>,
@@ -60,11 +61,6 @@ export async function POST(req: Request) {
       }
     }
 
-    let reportType = "self";
-    if (body.report_type === "relationship" || body.report_type === "self") {
-      reportType = body.report_type;
-    }
-
     const { data, error } = await supabase
       .from("reports")
       .insert([
@@ -74,9 +70,8 @@ export async function POST(req: Request) {
           birth_date: null,
           birth_time: null,
           birth_place: null,
-          report_type: reportType,
-          plan_type: "free",
-          payment_status: "none",
+          report_type: "self",
+          entitlement: "free",
         },
       ])
       .select("id")

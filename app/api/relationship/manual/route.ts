@@ -89,9 +89,8 @@ export async function POST(req: Request) {
         birth_time: birthTime,
         birth_place: birthPlace,
         report_type: "partner_manual",
-        plan_type: "free",
-        payment_status: "none",
-        clerk_user_id: null,
+        entitlement: "free",
+        clerk_user_id: userId,
       },
       birthPlace,
     );

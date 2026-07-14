@@ -109,7 +109,6 @@ export async function GET(req: Request) {
 
     const perspectivePremium = getPremiumPerspectiveForKind(
       byKind,
-      rr.result_premium,
       activeKind,
       viewerReportId,
       rr.report_id_a,
@@ -119,30 +118,22 @@ export async function GET(req: Request) {
 
     const romanticDeepReport =
       activeKind === "romantic"
-        ? parseRomanticDeepViewModel(
-            getRomanticSajuDeepReport(byKind, rr.result_premium),
-          )
+        ? parseRomanticDeepViewModel(getRomanticSajuDeepReport(byKind))
         : null;
 
     const workColleagueDeepReport =
-      activeKind === "work"
-        ? getWorkColleagueDeepReport(byKind, rr.result_premium)
-        : null;
+      activeKind === "work" ? getWorkColleagueDeepReport(byKind) : null;
 
     const cohabitationDeepReport =
       activeKind === "cohabitation"
-        ? getCohabitationDeepReport(byKind, rr.result_premium)
+        ? getCohabitationDeepReport(byKind)
         : null;
 
     const familyDeepReport =
-      activeKind === "family"
-        ? getFamilyParentDeepReport(byKind, rr.result_premium)
-        : null;
+      activeKind === "family" ? getFamilyParentDeepReport(byKind) : null;
 
     const friendshipDeepReport =
-      activeKind === "friendship"
-        ? getFriendSocialDeepReport(byKind, rr.result_premium)
-        : null;
+      activeKind === "friendship" ? getFriendSocialDeepReport(byKind) : null;
 
     const favorited = await isRelationshipFavorite(
       supabase,
@@ -198,7 +189,6 @@ export async function GET(req: Request) {
 
     if (activeKind !== "romantic") {
       responseBody.raw_basic = rr.result_basic;
-      responseBody.raw_premium = rr.result_premium;
       responseBody.raw_premium_by_kind = rr.result_premium_by_kind;
     }
 

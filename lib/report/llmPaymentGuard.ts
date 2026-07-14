@@ -8,6 +8,7 @@ import {
   logPremiumAccessCacheHit,
 } from "@/lib/report/premiumAccessCache";
 import { logServerEvent, maskId } from "@/lib/security/safeLog";
+import { isReportPremium } from "@/lib/report/isReportPremium";
 
 export type PremiumLlmRequestType = "integrated" | "detailed_survey";
 
@@ -56,7 +57,7 @@ export async function assertPremiumLlmAccess(
   }
   const { data: report, error } = await supabase
     .from("reports")
-    .select("payment_status, plan_type")
+    .select("entitlement")
     .eq("id", id)
     .maybeSingle();
 
@@ -65,8 +66,7 @@ export async function assertPremiumLlmAccess(
     return Response.json({ error: "리포트를 찾을 수 없습니다." }, { status: 403 });
   }
 
-  const hasPremium =
-    report.payment_status === "paid" || report.plan_type === "paid";
+  const hasPremium = isReportPremium(report);
   writePremiumAccessCache(id, hasPremium);
   logPaymentGuard(id, hasPremium, requestType);
 

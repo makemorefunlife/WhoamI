@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
+import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromOutboundInvites,
@@ -54,12 +55,11 @@ export async function GET(req: Request) {
         typeof basic === "object" &&
         basic.perspectives != null &&
         typeof basic.perspectives === "object";
-      const prem = r.result_premium as { perspectives?: unknown } | null;
-      const hasPremium =
-        r.analysis_type === "premium" &&
-        prem != null &&
-        typeof prem === "object" &&
-        prem.perspectives != null;
+      const hasPremium = isRelationshipPremiumComplete(
+        r.analysis_type,
+        r.result_premium_by_kind,
+        r.relationship_kind,
+      );
 
       return {
         relationship_report_id: r.id,

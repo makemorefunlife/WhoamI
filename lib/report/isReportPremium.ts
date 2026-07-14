@@ -1,7 +1,6 @@
-/** reports 행 기준 프리미엄(결제) 여부 */
+/** reports 행 기준 프리미엄(entitlement) 여부 — Dev SSOT hard cut */
 export function isReportPremium(report: {
-  payment_status?: string | null;
-  plan_type?: string | null;
+  entitlement?: string | null;
 }): boolean {
-  return report.payment_status === "paid" || report.plan_type === "paid";
+  return report.entitlement === "premium";
 }

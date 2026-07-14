@@ -173,7 +173,7 @@ export default function HomeContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          report_type: inviteToken ? "relationship" : "self",
+          report_type: "self",
         }),
       });
       const body = (await res.json().catch(() => ({}))) as {

@@ -1,10 +1,12 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { RelationshipReportRow } from "@/lib/relationship/fetchReportsWhereParticipant";
 
-export const RR_SELECT_LEGACY =
-  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium";
+/** Dev SSOT — no result_premium column */
+export const RR_SELECT =
+  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium_by_kind, relationship_kind";
 
-export const RR_SELECT_FULL = `${RR_SELECT_LEGACY}, result_premium_by_kind, relationship_kind`;
+/** @deprecated Use RR_SELECT */
+export const RR_SELECT_FULL = RR_SELECT;
 
 export function isMissingColumnError(
   error: PostgrestError | null | undefined,
@@ -25,12 +27,8 @@ export function isRelationshipKindCheckError(
   );
 }
 
-/** 프로세스당 한 번 감지 — 마이그레이션 미적용 DB */
-let preferLegacySelect: boolean | null = null;
-
 export function relationshipReportSelect(): string {
-  if (preferLegacySelect === true) return RR_SELECT_LEGACY;
-  return RR_SELECT_FULL;
+  return RR_SELECT;
 }
 
 function normalizeRow(row: Record<string, unknown>): RelationshipReportRow {
@@ -40,7 +38,6 @@ function normalizeRow(row: Record<string, unknown>): RelationshipReportRow {
     report_id_b: String(row.report_id_b),
     analysis_type: String(row.analysis_type),
     result_basic: row.result_basic,
-    result_premium: row.result_premium,
     result_premium_by_kind: row.result_premium_by_kind ?? {},
     relationship_kind: (row.relationship_kind as string) ?? "friendship",
   };
@@ -66,7 +63,6 @@ async function selectByReportSide(
   };
 }
 
-/** report_id_a / report_id_b 참여 행 — 신규 컬럼 없으면 legacy select 로 재시도 */
 export async function fetchRelationshipReportRowsForReportIdSafe(
   supabase: SupabaseClient,
   reportId: string,
@@ -78,16 +74,7 @@ export async function fetchRelationshipReportRowsForReportIdSafe(
   ]);
 
   const error = aSide.error ?? bSide.error;
-  if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
-    preferLegacySelect = true;
-    console.warn(
-      "[relationship_reports] schema_legacy_fallback",
-    );
-    return fetchRelationshipReportRowsForReportIdSafe(supabase, reportId);
-  }
-
   if (error) throw error;
-  if (preferLegacySelect === null) preferLegacySelect = false;
 
   const map = new Map<string, RelationshipReportRow>();
   for (const r of [...aSide.data, ...bSide.data]) {
@@ -107,17 +94,8 @@ export async function fetchRelationshipReportByIdSafe(
     .eq("id", relationshipReportId)
     .maybeSingle();
 
-  if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
-    preferLegacySelect = true;
-    console.warn(
-      "[relationship_reports] schema_legacy_fallback",
-    );
-    return fetchRelationshipReportByIdSafe(supabase, relationshipReportId);
-  }
-
   if (error) return { row: null, error };
   if (!data) return { row: null, error: null };
-  if (preferLegacySelect === null) preferLegacySelect = false;
 
   return {
     row: normalizeRow(data as unknown as Record<string, unknown>),
@@ -125,7 +103,6 @@ export async function fetchRelationshipReportByIdSafe(
   };
 }
 
-/** invite 보강 등 — 여러 relationship_report_id를 한 번에 조회 */
 export async function fetchRelationshipReportsByIdsSafe(
   supabase: SupabaseClient,
   relationshipReportIds: string[],
@@ -139,53 +116,31 @@ export async function fetchRelationshipReportsByIdsSafe(
     .select(select)
     .in("id", ids);
 
-  if (error && isMissingColumnError(error) && preferLegacySelect !== true) {
-    preferLegacySelect = true;
-    console.warn(
-      "[relationship_reports] schema_legacy_fallback",
-    );
-    return fetchRelationshipReportsByIdsSafe(supabase, ids);
-  }
-
   if (error) throw error;
-  if (preferLegacySelect === null) preferLegacySelect = false;
 
   return (data ?? []).map((r) =>
     normalizeRow(r as unknown as Record<string, unknown>),
   );
 }
 
-/** 신규 컬럼 업데이트 실패 시 legacy 컬럼(result_premium 등)만으로 재시도 */
+/** Dev SSOT — single patch (no legacy result_premium fallback) */
 export async function updateRelationshipReportSafe(
   supabase: SupabaseClient,
   relationshipReportId: string,
-  fullPatch: Record<string, unknown>,
-  legacyPatch: Record<string, unknown>,
+  patch: Record<string, unknown>,
 ): Promise<{ error: PostgrestError | null; usedLegacy: boolean }> {
   const updatedAt = new Date().toISOString();
   const { error } = await supabase
     .from("relationship_reports")
-    .update({ ...fullPatch, updated_at: updatedAt })
+    .update({ ...patch, updated_at: updatedAt })
     .eq("id", relationshipReportId);
-
-  if (error && isMissingColumnError(error)) {
-    preferLegacySelect = true;
-    console.warn(
-      "[relationship_reports] schema_legacy_fallback",
-    );
-    const { error: legacyErr } = await supabase
-      .from("relationship_reports")
-      .update({ ...legacyPatch, updated_at: updatedAt })
-      .eq("id", relationshipReportId);
-    return { error: legacyErr, usedLegacy: true };
-  }
 
   if (
     error &&
     isRelationshipKindCheckError(error) &&
-    "relationship_kind" in fullPatch
+    "relationship_kind" in patch
   ) {
-    const { relationship_kind: _omit, ...withoutKind } = fullPatch;
+    const { relationship_kind: _omit, ...withoutKind } = patch;
     console.warn(
       "[relationship_reports] relationship_kind_check_fallback",
     );

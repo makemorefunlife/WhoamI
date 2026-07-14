@@ -57,7 +57,6 @@ export async function countHubRelationshipSummary(
     const basicDone = isBasicComplete(r.result_basic);
     const premiumDone = isRelationshipPremiumComplete(
       at,
-      r.result_premium,
       r.result_premium_by_kind,
       r.relationship_kind,
     );

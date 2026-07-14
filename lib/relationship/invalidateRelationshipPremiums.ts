@@ -28,8 +28,7 @@ export async function invalidateRelationshipPremiumsForReport(
   const { error: upErr } = await supabase
     .from("relationship_reports")
     .update({
-      result_premium: null,
-      result_premium_by_kind: null,
+      result_premium_by_kind: {},
     })
     .in("id", ids);
 

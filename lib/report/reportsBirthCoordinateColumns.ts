@@ -3,7 +3,7 @@ export const REPORT_BIRTH_COORD_COLUMNS =
   "birth_latitude, birth_longitude, birth_timezone" as const;
 
 export const REPORT_BASE_FIELDS =
-  "id, name, payment_status, plan_type, birth_date, birth_time, birth_place" as const;
+  "id, name, entitlement, birth_date, birth_time, birth_place" as const;
 
 export function reportSelectWithBirthCoords(
   extraFields = "",

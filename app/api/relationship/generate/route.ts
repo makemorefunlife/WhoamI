@@ -77,7 +77,7 @@ export async function POST(req: Request) {
         const { data: rr } = await supabase
           .from("relationship_reports")
           .select(
-            "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium",
+            "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium_by_kind, relationship_kind",
           )
           .eq("id", invite.relationship_report_id)
           .maybeSingle();

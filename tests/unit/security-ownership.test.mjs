@@ -138,14 +138,14 @@ async function run() {
     ok("llm rate limit → 429 after 5/hour");
   }
 
-  // Client payment_status ignored conceptually (server create hardcodes free/none)
+  // Client entitlement ignored conceptually (server create hardcodes free)
   {
     const createMod = await import("../../app/api/report/create/route.ts").catch(
       () => null,
     );
     // Route depends on Clerk; document expectation in assert below.
     assert.ok(true);
-    ok("payment_status client field must be ignored by /api/report/create (server hardcodes free/none)");
+    ok("entitlement client field must be ignored by /api/report/create (server hardcodes free)");
     void createMod;
   }
 

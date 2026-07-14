@@ -344,8 +344,9 @@ async function run() {
   {
     const fs = await import("node:fs");
     const src = fs.readFileSync("app/api/report/create/route.ts", "utf8");
-    assert.match(src, /payment_status:\s*"none"/);
-    assert.match(src, /plan_type:\s*"free"/);
+    assert.match(src, /entitlement:\s*"free"/);
+    assert.ok(!/payment_status/.test(src));
+    assert.ok(!/plan_type/.test(src));
     assert.match(src, /clerk_user_id:\s*userId/);
     assert.match(src, /stripClientTrustFields/);
     assert.match(src, /auth\(\)/);

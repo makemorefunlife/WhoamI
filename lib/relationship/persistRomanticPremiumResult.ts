@@ -34,7 +34,6 @@ export async function persistRomanticPremiumResult(
       result_premium_by_kind: nextByKind,
       relationship_kind: "romantic",
     },
-    { result_premium: params.romanticPayload },
   );
 
   if (upErr) {

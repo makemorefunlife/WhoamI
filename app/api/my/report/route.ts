@@ -19,6 +19,7 @@ import { writePremiumAccessCache } from "@/lib/report/premiumAccessCache";
 import { logAstrologyCache } from "@/lib/report/astrologyCoordLog";
 import { decidePersistedAstrologyReuse } from "@/lib/report/astrologyCacheValidation";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
+import { isReportPremium } from "@/lib/report/isReportPremium";
 import { astrologyLocationFingerprint } from "@/lib/report/resolveAstrologyCoordinates";
 import { syncReportBirthCoordinates } from "@/lib/report/syncReportBirthCoordinates";
 import { buildSurveyOnlyUserInputForReport } from "@/lib/report/surveyForLlmFromReportId";
@@ -122,8 +123,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const has_premium =
-      report.payment_status === "paid" || report.plan_type === "paid";
+    const has_premium = isReportPremium(report);
     writePremiumAccessCache(reportId, has_premium);
 
     const [has_survey, analysesBundle] = await Promise.all([
@@ -354,7 +354,7 @@ export async function POST(req: Request) {
 
     const { data: report, error: repErr } = await supabase
       .from("reports")
-      .select("id, payment_status, plan_type")
+      .select("id, entitlement")
       .eq("id", reportId)
       .maybeSingle();
 
@@ -365,8 +365,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const has_premium =
-      report.payment_status === "paid" || report.plan_type === "paid";
+    const has_premium = isReportPremium(report);
     if (!has_premium) {
       return NextResponse.json(
         { error: "심화 리포트는 결제 후 저장할 수 있습니다." },
