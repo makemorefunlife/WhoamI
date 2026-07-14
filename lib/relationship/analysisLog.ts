@@ -3,12 +3,22 @@ import { logServerError } from "@/lib/security/safeLog";
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
+import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 import {
   parseRelationshipKind,
   isRelationshipKind,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
 import { isRelationshipKindCheckError } from "@/lib/relationship/relationshipReportQuery";
+
+const DEEP_REPORT_FORMATS = new Set<string>([
+  ROMANTIC_SAJU_DEEP_FORMAT,
+  WORK_COLLEAGUE_DEEP_FORMAT,
+  COHABITATION_DEEP_FORMAT,
+  FAMILY_PARENT_CHILD_DEEP_FORMAT,
+  FRIEND_SOCIAL_DEEP_FORMAT,
+]);
 
 export type AnalysisLogLevel = "basic" | "premium";
 
@@ -60,6 +70,32 @@ function buildLogSummary(
       subtitle: report?.summary_line?.trim() || "",
     };
   }
+  if (resultFormat === FRIEND_SOCIAL_DEEP_FORMAT) {
+    const report = snapshot.report as {
+      headline?: string;
+      summary_line?: string;
+      one_line_friendship?: string;
+    } | undefined;
+    return {
+      title: report?.headline?.trim() || "친구 Social DNA 분석",
+      subtitle:
+        report?.summary_line?.trim() ||
+        report?.one_line_friendship?.trim() ||
+        "",
+    };
+  }
+  if (resultFormat === FAMILY_PARENT_CHILD_DEEP_FORMAT) {
+    const report = snapshot.report as {
+      headline?: string;
+      summary_line?: string;
+      one_line_family?: string;
+    } | undefined;
+    return {
+      title: report?.headline?.trim() || "가족 Child DNA 분석",
+      subtitle:
+        report?.summary_line?.trim() || report?.one_line_family?.trim() || "",
+    };
+  }
   return {
     title: "관계 기본 분석",
     subtitle: "네 가지 관점으로 정리한 결과",
@@ -77,15 +113,9 @@ export function buildAnalysisLogSnapshot(params: {
     saved_at: new Date().toISOString(),
   };
 
-  if (resultFormat === ROMANTIC_SAJU_DEEP_FORMAT) {
-    const p = payload as { report?: unknown };
-    return { ...base, report: p.report ?? p };
-  }
-
-  if (
-    resultFormat === WORK_COLLEAGUE_DEEP_FORMAT ||
-    resultFormat === COHABITATION_DEEP_FORMAT
-  ) {
+  // All deep kinds share { format, report } — extract report for replay.
+  // (Previously friendship/family fell through to perspectives-only and lost the deep body.)
+  if (DEEP_REPORT_FORMATS.has(resultFormat)) {
     const p = payload as { report?: unknown };
     return { ...base, report: p.report ?? p };
   }

@@ -33,8 +33,20 @@ export function parseAnalysisLogSnapshot(
 ): { snapshot: AnalysisLogSnapshot; kind: RelationshipKind } {
   const snap = log.result_snapshot ?? {};
 
+  function deepReportFromSnap(): unknown {
+    if (snap.report != null) return snap.report;
+    const full = snap.full;
+    if (full && typeof full === "object" && !Array.isArray(full)) {
+      const report = (full as { report?: unknown }).report;
+      if (report != null) return report;
+    }
+    return null;
+  }
+
   if (log.result_format === ROMANTIC_SAJU_DEEP_FORMAT) {
-    const report = snap.report as RomanticSajuDeepReport["report"] | undefined;
+    const report = deepReportFromSnap() as
+      | RomanticSajuDeepReport["report"]
+      | null;
     return {
       snapshot: {
         logId: log.id,
@@ -49,7 +61,7 @@ export function parseAnalysisLogSnapshot(
   }
 
   if (log.result_format === WORK_COLLEAGUE_DEEP_FORMAT) {
-    const report = snap.report as WorkColleagueReportBody | undefined;
+    const report = deepReportFromSnap() as WorkColleagueReportBody | null;
     return {
       snapshot: {
         logId: log.id,
@@ -64,7 +76,7 @@ export function parseAnalysisLogSnapshot(
   }
 
   if (log.result_format === COHABITATION_DEEP_FORMAT) {
-    const report = snap.report as MarriageReportBody | undefined;
+    const report = deepReportFromSnap() as MarriageReportBody | null;
     return {
       snapshot: {
         logId: log.id,
@@ -81,7 +93,7 @@ export function parseAnalysisLogSnapshot(
   }
 
   if (log.result_format === FAMILY_PARENT_CHILD_DEEP_FORMAT) {
-    const report = snap.report as FamilyParentReportBody | undefined;
+    const report = deepReportFromSnap() as FamilyParentReportBody | null;
     return {
       snapshot: {
         logId: log.id,
@@ -98,7 +110,7 @@ export function parseAnalysisLogSnapshot(
   }
 
   if (log.result_format === FRIEND_SOCIAL_DEEP_FORMAT) {
-    const report = snap.report as FriendReportBody | undefined;
+    const report = deepReportFromSnap() as FriendReportBody | null;
     return {
       snapshot: {
         logId: log.id,

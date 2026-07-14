@@ -9,11 +9,13 @@ import {
   getCohabitationDeepReport,
   getFamilyParentDeepReport,
   getFriendSocialDeepReport,
+  hasPremiumCacheForKind,
   isRelationshipFavorite,
   parseRelationshipKind,
   RELATIONSHIP_KINDS,
   RELATIONSHIP_KIND_LABELS,
   type RelationshipKind,
+  type ResultPremiumByKind,
 } from "@/lib/relationship/relationshipKind";
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
@@ -102,10 +104,7 @@ export async function GET(req: Request) {
     const storedKind = parseRelationshipKind(rr.relationship_kind);
     const activeKind = kindParam ? relationshipKind : storedKind;
 
-    const byKind = (rr.result_premium_by_kind ?? {}) as Record<
-      RelationshipKind,
-      { perspectives?: Record<string, unknown> } | undefined
-    >;
+    const byKind = (rr.result_premium_by_kind ?? {}) as ResultPremiumByKind;
 
     const perspectivePremium = getPremiumPerspectiveForKind(
       byKind,
@@ -184,13 +183,13 @@ export async function GET(req: Request) {
       cohabitation_deep_report: cohabitationDeepReport,
       family_deep_report: familyDeepReport,
       friendship_deep_report: friendshipDeepReport,
+      /** Same completion rule as analyze cache / hub — kind-scoped by_kind. */
+      premium_ready: hasPremiumCacheForKind(byKind, activeKind),
+      premium_kinds_ready: RELATIONSHIP_KINDS.filter((k) =>
+        hasPremiumCacheForKind(byKind, k),
+      ),
       is_favorite: favorited,
     };
-
-    if (activeKind !== "romantic") {
-      responseBody.raw_basic = rr.result_basic;
-      responseBody.raw_premium_by_kind = rr.result_premium_by_kind;
-    }
 
     return NextResponse.json(responseBody);
   } catch (e) {

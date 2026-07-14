@@ -174,7 +174,9 @@ export function useRelationshipDetail({
   const [logs, setLogs] = useState<AnalysisLogListItem[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [autostartActive, setAutostartActive] = useState(false);
+  const [serverPremiumReady, setServerPremiumReady] = useState(false);
   const autostartTriggered = useRef(false);
+  const loadSeqRef = useRef(0);
   const REQUEST_TIMEOUT_MS = 300_000;
 
   async function fetchJsonWithTimeout(
@@ -224,14 +226,23 @@ export function useRelationshipDetail({
         return;
       }
 
+      const seq = ++loadSeqRef.current;
+      const explicitKind =
+        kindOverride ??
+        (urlKindHint ? parseRelationshipKind(urlKindHint) : null);
+      const kindForRequest = explicitKind ?? premiumKindRef.current;
       setErr(null);
       setLoading(true);
       try {
-        const kind = kindOverride ?? premiumKindRef.current;
+        const kindQuery =
+          explicitKind != null
+            ? `&relationshipKind=${encodeURIComponent(explicitKind)}`
+            : "";
         const res = await fetch(
-          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}&relationshipKind=${encodeURIComponent(kind)}`,
+          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}${kindQuery}`,
         );
         const data = await res.json();
+        if (seq !== loadSeqRef.current) return;
         if (!res.ok) {
           setDetailOk(false);
           setErr(data?.error ?? "불러오지 못했어요.");
@@ -259,7 +270,10 @@ export function useRelationshipDetail({
         setViewerBirthPlaceUnknown(data.viewer_birth_place_unknown === true);
         setPartnerBirthPlaceUnknown(data.partner_birth_place_unknown === true);
         setAnalysisType(data.analysis_type ?? "basic");
-        setPremiumKind(parseRelationshipKind(data.relationship_kind));
+        setPremiumKind(
+          parseRelationshipKind(data.relationship_kind ?? kindForRequest),
+        );
+        setServerPremiumReady(data.premium_ready === true);
         setBasic((data.perspective_basic ?? null) as RelationshipPerspective);
         setPremium(
           (data.perspective_premium ?? null) as RelationshipPerspective,
@@ -294,15 +308,32 @@ export function useRelationshipDetail({
         setFavorited(Boolean(data.is_favorite));
         void fetchLogs();
       } finally {
-        setLoading(false);
+        if (seq === loadSeqRef.current) setLoading(false);
       }
     },
-    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, user?.firstName, user?.fullName],
+    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, user?.firstName, user?.fullName, urlKindHint],
   );
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  /** Same-route soft navigations: sync ?kind= and reload (state otherwise sticks). */
+  useEffect(() => {
+    if (!urlKindHint) return;
+    const k = parseRelationshipKind(urlKindHint);
+    if (k === premiumKindRef.current) return;
+    setSnapshotView(null);
+    setPremiumKind(k);
+    setServerPremiumReady(false);
+    setPremium(null);
+    setRomanticDeep(null);
+    setWorkDeep(null);
+    setCohabitationDeep(null);
+    setFamilyDeep(null);
+    setFriendshipDeep(null);
+    void load(k);
+  }, [urlKindHint, load]);
 
   const basicAttempted = useRef(false);
 
@@ -409,6 +440,7 @@ export function useRelationshipDetail({
       const forceRegenerate = options?.forceRegenerate === true;
       if (forceRegenerate) {
         setSnapshotView(null);
+        setServerPremiumReady(false);
         if (kind === "romantic") {
           setRomanticDeep(null);
         } else if (kind === "work") {
@@ -526,6 +558,7 @@ export function useRelationshipDetail({
           setErr("심화 분석 결과를 받지 못했어요.");
           return false;
         }
+        setServerPremiumReady(true);
         await load(kind);
         return true;
       } catch (e) {
@@ -565,11 +598,13 @@ export function useRelationshipDetail({
     (kind: RelationshipKind) => {
       setSnapshotView(null);
       setPremiumKind(kind);
+      setServerPremiumReady(false);
       setPremium(null);
       setRomanticDeep(null);
       setWorkDeep(null);
       setCohabitationDeep(null);
       setFamilyDeep(null);
+      setFriendshipDeep(null);
       if (effectiveViewerReportId && resolvedRelationshipId) {
         const q = new URLSearchParams({
           viewer: effectiveViewerReportId,
@@ -614,7 +649,7 @@ export function useRelationshipDetail({
       ? snapshotView.friendshipDeep
       : friendshipDeep;
 
-  const premiumReady =
+  const localPremiumReady =
     premiumKind === "romantic"
       ? Boolean(displayRomanticDeep?.section_1_summary)
       : premiumKind === "work"
@@ -630,6 +665,8 @@ export function useRelationshipDetail({
               : Boolean(
                   displayPremium && Object.keys(displayPremium).length > 0,
                 );
+  // Server hasPremiumCacheForKind + local body checks — same rule for all kinds.
+  const premiumReady = serverPremiumReady || localPremiumReady;
 
   const clearSnapshotView = useCallback(() => {
     setSnapshotView(null);
