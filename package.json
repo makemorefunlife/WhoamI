@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:security-ownership": "npx tsx tests/unit/security-ownership.test.mjs",
+    "test:security-flow": "npx tsx tests/unit/security-flow.test.mjs",
     "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
     "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",
     "test:parse-report": "node tests/scripts/parse-report-structure-smoke.mjs",
