@@ -1,12 +1,17 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { logServerError } from "@/lib/security/safeLog";
-import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 
 export const runtime = "nodejs";
 
 /**
- * 로컬 reportId가 유효한지, 설문을 이미 제출했는지 확인 (서비스 롤)
+ * reportId 유효·설문 완료 여부 — 로그인 + 본인 소유 report만.
  */
 export async function GET(req: Request) {
   try {
@@ -21,6 +26,19 @@ export async function GET(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
+    const { userId } = await auth();
+    const access = await assertOwnedReportAccess(supabase, reportId, userId);
+    if (access.error) {
+      if (access.error.status === 404) {
+        return NextResponse.json({
+          hasReport: false,
+          surveyCompleted: false,
+          name: null,
+        });
+      }
+      return access.error;
+    }
+
     const { data: report, error: repErr } = await supabase
       .from("reports")
       .select("id, name")
@@ -29,7 +47,7 @@ export async function GET(req: Request) {
 
     if (repErr) {
       logServerError("session-status report:", repErr, "internal_error");
-      return NextResponse.json({ error: repErr.message }, { status: 500 });
+      return NextResponse.json({ error: "request failed" }, { status: 500 });
     }
 
     if (!report) {

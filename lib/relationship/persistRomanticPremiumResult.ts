@@ -6,8 +6,7 @@ import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
   RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE,
 } from "@/lib/relationship/relationshipPremiumGuard";
-import type { ResultPremiumByKind } from "@/lib/relationship/relationshipKind";
-import { updateRelationshipReportSafe } from "@/lib/relationship/relationshipReportQuery";
+import { mergeRelationshipPremiumByKind } from "@/lib/relationship/relationshipReportQuery";
 
 export type PersistRomanticPremiumResult =
   | { ok: true }
@@ -18,22 +17,15 @@ export async function persistRomanticPremiumResult(
   params: {
     relationshipReportId: string;
     viewerReportId: string;
-    byKind: ResultPremiumByKind;
     romanticPayload: RomanticSajuDeepPayload;
   },
 ): Promise<PersistRomanticPremiumResult> {
-  const nextByKind: ResultPremiumByKind = {
-    ...params.byKind,
-    romantic: params.romanticPayload,
-  };
-
-  const { error: upErr } = await updateRelationshipReportSafe(
+  const { error: upErr } = await mergeRelationshipPremiumByKind(
     supabase,
     params.relationshipReportId,
-    {
-      result_premium_by_kind: nextByKind,
-      relationship_kind: "romantic",
-    },
+    "romantic",
+    params.romanticPayload,
+    { relationshipKind: "romantic" },
   );
 
   if (upErr) {

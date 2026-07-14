@@ -25,7 +25,7 @@ import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/fri
 import { relationshipKindUsesDeepPipeline } from "@/lib/relationship/relationshipAnalysisKinds";
 import {
   fetchRelationshipReportByIdSafe,
-  updateRelationshipReportSafe,
+  mergeRelationshipPremiumByKind,
 } from "@/lib/relationship/relationshipReportQuery";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
@@ -42,7 +42,6 @@ import type {
   RomanticSajuDeepLocale,
   RomanticSajuDeepRunParams,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
-import { createRomanticPremiumStreamResponse } from "@/lib/relationship/romanticPremiumStreamHandler";
 import {
   assertRelationshipPremiumLlmAccess,
 } from "@/lib/relationship/relationshipPremiumGuard";
@@ -268,9 +267,6 @@ export async function POST(req: Request) {
     if (llmAccessGuard) return llmAccessGuard;
 
     if (kind === "romantic") {
-      const wantStream =
-        (body as { stream?: unknown }).stream === true && !forceRegenerate;
-
       const [personCoreLoad, surveyProfileA, surveyProfileB] = await Promise.all([
         loadPersonCorePairForPremium(rr.report_id_a, rr.report_id_b, {
           force: forceRegenerate,
@@ -318,20 +314,6 @@ export async function POST(req: Request) {
         locale: language,
       };
 
-      if (wantStream) {
-        return createRomanticPremiumStreamResponse(
-          openai,
-          {
-            analysisParams: romanticAnalysisParams,
-            relationshipReportId,
-            viewerReportId,
-            byKind,
-            supabase,
-          },
-          { abortSignal: req.signal },
-        );
-      }
-
       const romanticPayload = await runRomanticSajuDeepAnalysis(
         openai,
         romanticAnalysisParams,
@@ -341,7 +323,6 @@ export async function POST(req: Request) {
       const persist = await persistRomanticPremiumResult(supabase, {
         relationshipReportId,
         viewerReportId,
-        byKind,
         romanticPayload,
       });
 
@@ -399,18 +380,12 @@ export async function POST(req: Request) {
         sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
-      const nextByKind: ResultPremiumByKind = {
-        ...byKind,
-        work: workPayload,
-      };
-
-      const { error: upErr } = await updateRelationshipReportSafe(
+      const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
-        {
-          result_premium_by_kind: nextByKind,
-          relationship_kind: kind,
-        },
+        "work",
+        workPayload,
+        { relationshipKind: kind },
       );
 
       if (upErr) {
@@ -479,18 +454,12 @@ export async function POST(req: Request) {
         sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
-      const nextByKind: ResultPremiumByKind = {
-        ...byKind,
-        cohabitation: cohabitationPayload,
-      };
-
-      const { error: upErr } = await updateRelationshipReportSafe(
+      const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
-        {
-          result_premium_by_kind: nextByKind,
-          relationship_kind: kind,
-        },
+        "cohabitation",
+        cohabitationPayload,
+        { relationshipKind: kind },
       );
 
       if (upErr) {
@@ -578,18 +547,12 @@ export async function POST(req: Request) {
         sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
-      const nextByKind: ResultPremiumByKind = {
-        ...byKind,
-        family: familyPayload,
-      };
-
-      const { error: upErr } = await updateRelationshipReportSafe(
+      const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
-        {
-          result_premium_by_kind: nextByKind,
-          relationship_kind: kind,
-        },
+        "family",
+        familyPayload,
+        { relationshipKind: kind },
       );
 
       if (upErr) {
@@ -658,18 +621,12 @@ export async function POST(req: Request) {
         sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
-      const nextByKind: ResultPremiumByKind = {
-        ...byKind,
-        friendship: friendshipPayload,
-      };
-
-      const { error: upErr } = await updateRelationshipReportSafe(
+      const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
-        {
-          result_premium_by_kind: nextByKind,
-          relationship_kind: kind,
-        },
+        "friendship",
+        friendshipPayload,
+        { relationshipKind: kind },
       );
 
       if (upErr) {

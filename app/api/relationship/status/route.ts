@@ -1,6 +1,11 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { logServerError } from "@/lib/security/safeLog";
-import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { isRelationshipPremiumComplete } from "@/lib/relationship/isRelationshipPremiumComplete";
 import {
   fetchRelationshipReportRowsForReportId,
@@ -9,6 +14,7 @@ import {
 
 export const runtime = "nodejs";
 
+/** 로그인 + reportId 소유자만 관계 상태 목록 조회 */
 export async function GET(req: Request) {
   try {
     const reportId = new URL(req.url).searchParams.get("reportId")?.trim();
@@ -21,6 +27,10 @@ export async function GET(req: Request) {
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
+
+    const { userId } = await auth();
+    const access = await assertOwnedReportAccess(supabase, reportId, userId);
+    if (access.error) return access.error;
 
     let rows = await fetchRelationshipReportRowsForReportId(supabase, reportId);
     rows = await mergeRelationshipRowsFromOutboundInvites(

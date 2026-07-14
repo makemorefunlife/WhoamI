@@ -1,5 +1,10 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
   fetchRelationshipReportRowsForReportId,
   mergeRelationshipRowsFromOutboundInvites,
@@ -14,6 +19,11 @@ const LOG = "[relationship/generate]";
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
     let body: unknown;
     try {
       body = await req.json();
@@ -40,17 +50,23 @@ export async function POST(req: Request) {
       );
     }
 
+    const supabase = createRouteSupabaseClient();
+    if (!supabase) return supabaseConfigErrorResponse();
+
     if (reportId && !inviteToken) {
+      const access = await assertOwnedReportAccess(supabase, reportId, userId);
+      if (access.error) return access.error;
       const text = await resolveIntegratedRelationshipText(reportId);
       return NextResponse.json({ relationship: text });
     }
 
-    const supabase = createRouteSupabaseClient();
-    if (!supabase) return supabaseConfigErrorResponse();
     let rows: RelationshipReportRow[] = [];
     let viewerReportId = reportId;
 
     if (reportId) {
+      const access = await assertOwnedReportAccess(supabase, reportId, userId);
+      if (access.error) return access.error;
+
       rows = await fetchRelationshipReportRowsForReportId(supabase, reportId);
       rows = await mergeRelationshipRowsFromOutboundInvites(
         supabase,
@@ -95,6 +111,13 @@ export async function POST(req: Request) {
     }
 
     if (viewerReportId) {
+      const access = await assertOwnedReportAccess(
+        supabase,
+        viewerReportId,
+        userId,
+      );
+      if (access.error) return access.error;
+
       const text = await resolveIntegratedRelationshipText(viewerReportId);
       if (text) {
         return NextResponse.json({ relationship: text });

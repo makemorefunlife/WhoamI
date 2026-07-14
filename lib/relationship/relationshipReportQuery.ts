@@ -153,3 +153,71 @@ export async function updateRelationshipReportSafe(
 
   return { error, usedLegacy: false };
 }
+
+function isMissingRpcError(error: PostgrestError | null | undefined): boolean {
+  if (!error) return false;
+  if (error.code === "PGRST202" || error.code === "42883") return true;
+  return /Could not find the function|function .* does not exist/i.test(
+    error.message ?? "",
+  );
+}
+
+/**
+ * Atomically merge one kind into result_premium_by_kind (|| jsonb).
+ * Falls back to re-read + JS merge if RPC migration is not applied yet.
+ */
+export async function mergeRelationshipPremiumByKind(
+  supabase: SupabaseClient,
+  relationshipReportId: string,
+  kind: string,
+  payload: unknown,
+  options?: { relationshipKind?: string },
+): Promise<{ error: PostgrestError | null }> {
+  const relationshipKind = options?.relationshipKind ?? kind;
+  const { error: rpcError } = await supabase.rpc(
+    "merge_relationship_premium_by_kind",
+    {
+      p_relationship_report_id: relationshipReportId,
+      p_kind: kind,
+      p_payload: payload,
+      p_relationship_kind: relationshipKind,
+    },
+  );
+
+  if (!rpcError) return { error: null };
+  if (!isMissingRpcError(rpcError)) return { error: rpcError };
+
+  const { row, error: fetchErr } = await fetchRelationshipReportByIdSafe(
+    supabase,
+    relationshipReportId,
+  );
+  if (fetchErr) return { error: fetchErr };
+  if (!row) {
+    return {
+      error: {
+        message: "relationship report not found",
+        details: "",
+        hint: "",
+        code: "PGRST116",
+        name: "PostgrestError",
+      } as PostgrestError,
+    };
+  }
+
+  const prev =
+    row.result_premium_by_kind &&
+    typeof row.result_premium_by_kind === "object" &&
+    !Array.isArray(row.result_premium_by_kind)
+      ? (row.result_premium_by_kind as Record<string, unknown>)
+      : {};
+  const nextByKind = { ...prev, [kind]: payload };
+  const { error: upErr } = await updateRelationshipReportSafe(
+    supabase,
+    relationshipReportId,
+    {
+      result_premium_by_kind: nextByKind,
+      relationship_kind: relationshipKind,
+    },
+  );
+  return { error: upErr };
+}

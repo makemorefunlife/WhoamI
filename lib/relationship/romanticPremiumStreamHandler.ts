@@ -96,7 +96,6 @@ export function createRomanticPremiumStreamResponse(
         const persist = await persistRomanticPremiumResult(params.supabase, {
           relationshipReportId: params.relationshipReportId,
           viewerReportId: params.viewerReportId,
-          byKind: params.byKind,
           romanticPayload: payload,
         });
 

@@ -384,6 +384,39 @@ async function run() {
     ok("invite status response has no PII fields in source");
   }
 
+  {
+    const fs = await import("node:fs");
+    const routes = [
+      "app/api/relationship/create/route.ts",
+      "app/api/relationship/status/route.ts",
+      "app/api/relationship/generate/route.ts",
+      "app/api/report/session-status/route.ts",
+      "app/api/invites/pending/route.ts",
+    ];
+    for (const path of routes) {
+      const src = fs.readFileSync(path, "utf8");
+      assert.match(src, /auth\(\)/);
+      assert.match(src, /assertOwnedReportAccess/);
+    }
+    ok("critical service-role routes require auth + ownership");
+  }
+
+  {
+    const fs = await import("node:fs");
+    const premiumSrc = fs.readFileSync(
+      "app/api/relationship/analyze/premium/route.ts",
+      "utf8",
+    );
+    assert.match(premiumSrc, /mergeRelationshipPremiumByKind/);
+    assert.match(premiumSrc, /ensureRelationshipPremiumSlot/);
+    const policySrc = fs.readFileSync(
+      "lib/product/premiumAccessPolicy.ts",
+      "utf8",
+    );
+    assert.match(policySrc, /PREMIUM_PAYWALL/);
+    ok("premium analyze uses atomic by_kind merge; MVP paywall opt-in");
+  }
+
   console.log(`\n${passed} tests passed`);
 }
 
