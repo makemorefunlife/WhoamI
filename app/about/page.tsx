@@ -3,6 +3,9 @@ import GlowButton from "@/components/space/GlowButton";
 import { CircleDot, Compass, GitBranch, Orbit, Radar, Satellite, Scale, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 
+/** Avoid SSG: root Clerk chrome can throw useContext null during /about prerender. */
+export const dynamic = "force-dynamic";
+
 export default function AboutPage() {
   return (
     <SpaceBackground>
