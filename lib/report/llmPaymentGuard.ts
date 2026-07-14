@@ -9,6 +9,7 @@ import {
 } from "@/lib/report/premiumAccessCache";
 import { logServerEvent, maskId } from "@/lib/security/safeLog";
 import { isReportPremium } from "@/lib/report/isReportPremium";
+import { isPremiumPaywallEnabled } from "@/lib/product/premiumAccessPolicy";
 
 export type PremiumLlmRequestType = "integrated" | "detailed_survey";
 
@@ -29,6 +30,10 @@ export async function assertPremiumLlmAccess(
   reportId: unknown,
   requestType: PremiumLlmRequestType,
 ): Promise<Response | null> {
+  if (!isPremiumPaywallEnabled()) {
+    return null;
+  }
+
   const id = typeof reportId === "string" ? reportId.trim() : "";
   if (!id) {
     logPaymentGuard("(missing)", false, requestType);

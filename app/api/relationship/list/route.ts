@@ -243,6 +243,12 @@ export async function GET(req: Request) {
       let status_hint: string | null = null;
       if (completed) {
         status_hint = "지금 입장에서 관계 요약을 볼 수 있어요.";
+      } else if (basicDone && at === "premium" && !premiumDone) {
+        status_hint =
+          "기본 분석은 있어요. 관계 종류를 고른 뒤 심화 분석을 이어서 만들 수 있어요.";
+      } else if (basicDone) {
+        status_hint =
+          "기본 분석까지 준비됐어요. 심화 분석은 관계 종류를 고르면 생성돼요.";
       } else {
         status_hint =
           "기본 관계 분석을 만드는 중이에요. 잠시 후 다시 열어보세요.";

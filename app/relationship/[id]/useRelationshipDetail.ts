@@ -14,7 +14,6 @@ import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremi
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
-import { relationshipPremiumPreviewEnabled } from "@/lib/relationship/premiumPreview";
 import {
   parseRelationshipKind,
   RELATIONSHIP_KIND_LABELS,
@@ -38,8 +37,6 @@ import {
   type RomanticPremiumStreamPrelude,
 } from "@/lib/relationship/premiumStream";
 
-const premiumPreview = relationshipPremiumPreviewEnabled();
-
 export type UseRelationshipDetailReturn = {
   router: ReturnType<typeof useRouter>;
   viewerReportId: string;
@@ -57,7 +54,6 @@ export type UseRelationshipDetailReturn = {
   partnerBirthPlaceUnknown: boolean;
   analysisType: string;
   premiumKind: RelationshipKind;
-  premiumPreview: boolean;
   favorited: boolean;
   favoriteBusy: boolean;
   snapshotView: AnalysisLogSnapshot | null;
@@ -97,7 +93,6 @@ export type UseRelationshipDetailReturn = {
     options?: { forceRegenerate?: boolean },
   ) => Promise<boolean>;
   regeneratePremium: () => void;
-  ensurePremiumPreview: () => Promise<boolean>;
 };
 
 export function useRelationshipDetail({
@@ -326,11 +321,9 @@ export function useRelationshipDetail({
   }, [load]);
 
   const basicAttempted = useRef(false);
-  const premiumPreviewAutoDone = useRef(false);
 
   useEffect(() => {
     basicAttempted.current = false;
-    premiumPreviewAutoDone.current = false;
   }, [resolvedRelationshipId]);
 
   useEffect(() => {
@@ -564,6 +557,9 @@ export function useRelationshipDetail({
             setWorkDeep(prem.report as WorkColleagueReportBody);
           } else if (!forceRegenerate && prem?.perspectives) {
             return runPremium(kind, { forceRegenerate: true });
+          } else {
+            setErr("동료 심화 분석 결과를 받지 못했어요.");
+            return false;
           }
         } else if (kind === "cohabitation") {
           const prem = data.result_premium;
@@ -574,6 +570,9 @@ export function useRelationshipDetail({
             setCohabitationDeep(prem.report as MarriageReportBody);
           } else if (!forceRegenerate && prem?.perspectives) {
             return runPremium(kind, { forceRegenerate: true });
+          } else {
+            setErr("동거·결혼 심화 분석 결과를 받지 못했어요.");
+            return false;
           }
         } else if (kind === "family") {
           const prem = data.result_premium;
@@ -584,6 +583,9 @@ export function useRelationshipDetail({
             setFamilyDeep(prem.report as FamilyParentReportBody);
           } else if (!forceRegenerate && prem?.perspectives) {
             return runPremium(kind, { forceRegenerate: true });
+          } else {
+            setErr("가족 심화 분석 결과를 받지 못했어요.");
+            return false;
           }
         } else if (kind === "friendship") {
           const prem = data.result_premium;
@@ -594,13 +596,22 @@ export function useRelationshipDetail({
             setFriendshipDeep(prem.report as FriendReportBody);
           } else if (!forceRegenerate && prem?.perspectives) {
             return runPremium(kind, { forceRegenerate: true });
+          } else {
+            setErr("친구 심화 분석 결과를 받지 못했어요.");
+            return false;
           }
         } else if (data.result_premium?.perspectives && effectiveViewerReportId) {
           const slice =
             data.result_premium.perspectives[effectiveViewerReportId] ?? null;
           if (slice && typeof slice === "object") {
             setPremium(slice as RelationshipPerspective);
+          } else {
+            setErr("심화 분석 결과를 받지 못했어요.");
+            return false;
           }
+        } else {
+          setErr("심화 분석 결과를 받지 못했어요.");
+          return false;
         }
         await load(kind);
         return true;
@@ -638,46 +649,6 @@ export function useRelationshipDetail({
     }
     void runPremium(premiumKind, { forceRegenerate: true });
   }, [premiumKind, runPremium]);
-
-  const ensurePremiumPreview = useCallback(async () => {
-    if (!resolvedRelationshipId || !premiumPreview) return false;
-    setBusy(true);
-    setErr(null);
-    try {
-      const { res: up, data: upData } = await fetchJsonWithTimeout(
-        "/api/relationship/upgrade",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            relationship_report_id: resolvedRelationshipId,
-            viewer_report_id: effectiveViewerReportId,
-            preview: true,
-          }),
-        },
-      );
-      if (!up.ok) {
-        setErr(upData?.error ?? "업그레이드 실패");
-        return false;
-      }
-      setAnalysisType("premium");
-      return await runPremium(premiumKind);
-    } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") {
-        setErr("요청 시간이 길어져 중단됐어요. 다시 시도해 주세요.");
-        return false;
-      }
-      setErr("네트워크 문제로 업그레이드에 실패했어요.");
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  }, [
-    resolvedRelationshipId,
-    effectiveViewerReportId,
-    runPremium,
-    premiumKind,
-  ]);
 
   const onPremiumKindChange = useCallback(
     (kind: RelationshipKind) => {
@@ -749,31 +720,6 @@ export function useRelationshipDetail({
                   displayPremium && Object.keys(displayPremium).length > 0,
                 );
 
-  useEffect(() => {
-    if (!premiumPreview || loading || !detailOk || !resolvedRelationshipId)
-      return;
-    if (!basic || Object.keys(basic).length === 0) return;
-    if (premium && Object.keys(premium).length > 0) return;
-    if (romanticDeep?.section_1_summary) return;
-    if (workDeep?.snapshot_panel) return;
-    if (cohabitationDeep?.snapshot_panel) return;
-    if (familyDeep?.family?.section_child_dna) return;
-    if (friendshipDeep?.friend?.section_social_dna_a) return;
-    if (premiumPreviewAutoDone.current) return;
-    if (premiumKind !== "friendship") return;
-    premiumPreviewAutoDone.current = true;
-    void ensurePremiumPreview();
-  }, [
-    premiumPreview,
-    loading,
-    detailOk,
-    resolvedRelationshipId,
-    basic,
-    premium,
-    premiumKind,
-    ensurePremiumPreview,
-  ]);
-
   const clearSnapshotView = useCallback(() => {
     setSnapshotView(null);
   }, []);
@@ -782,31 +728,35 @@ export function useRelationshipDetail({
     void load();
   }, [load]);
 
+  const clearAutostartParam = useCallback(() => {
+    if (searchParams.get("autostart") !== "1" || !resolvedRelationshipId) return;
+    const q = new URLSearchParams(searchParams.toString());
+    q.delete("autostart");
+    const qs = q.toString();
+    router.replace(
+      qs
+        ? `/relationship/${resolvedRelationshipId}?${qs}`
+        : `/relationship/${resolvedRelationshipId}`,
+      { scroll: false },
+    );
+  }, [router, resolvedRelationshipId, searchParams]);
+
   const runAutostartPremium = useCallback(async () => {
     if (!resolvedRelationshipId || !effectiveViewerReportId) return;
     setAutostartActive(true);
     setErr(null);
     try {
-      if (analysisType === "premium") {
-        await runPremium(premiumKind);
-        return;
-      }
-      if (premiumPreview) {
-        await ensurePremiumPreview();
-        return;
-      }
       await runPremium(premiumKind);
     } finally {
       setAutostartActive(false);
+      clearAutostartParam();
     }
   }, [
     resolvedRelationshipId,
     effectiveViewerReportId,
-    premiumPreview,
-    analysisType,
-    ensurePremiumPreview,
     runPremium,
     premiumKind,
+    clearAutostartParam,
   ]);
 
   useEffect(() => {
@@ -851,7 +801,6 @@ export function useRelationshipDetail({
     partnerBirthPlaceUnknown,
     analysisType,
     premiumKind,
-    premiumPreview,
     favorited,
     favoriteBusy,
     snapshotView,
@@ -885,6 +834,5 @@ export function useRelationshipDetail({
     setFamilyChildIsViewer,
     runPremium,
     regeneratePremium,
-    ensurePremiumPreview,
   };
 }

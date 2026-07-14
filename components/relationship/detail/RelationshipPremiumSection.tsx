@@ -22,7 +22,6 @@ type RelationshipPremiumSectionProps = {
   busy: boolean;
   premiumKind: RelationshipKind;
   analysisType: string;
-  premiumPreview: boolean;
   premiumReady: boolean;
   hasSnapshotView: boolean;
   partnerName: string;
@@ -36,7 +35,6 @@ type RelationshipPremiumSectionProps = {
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
   displayFriendshipDeep: FriendReportBody | null;
-  onEnsurePremiumPreview: () => Promise<boolean>;
   onRunPremium: (kind: RelationshipKind) => Promise<boolean>;
   onRegeneratePremium: () => void;
   forceVisible?: boolean;
@@ -47,7 +45,6 @@ export default function RelationshipPremiumSection({
   busy,
   premiumKind,
   analysisType,
-  premiumPreview,
   premiumReady,
   hasSnapshotView,
   partnerName,
@@ -61,7 +58,6 @@ export default function RelationshipPremiumSection({
   displayCohabitationDeep,
   displayFamilyDeep,
   displayFriendshipDeep,
-  onEnsurePremiumPreview,
   onRunPremium,
   onRegeneratePremium,
   forceVisible = false,
@@ -70,7 +66,7 @@ export default function RelationshipPremiumSection({
   const [requesting, setRequesting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const submitting = busy || requesting;
-  const hideSection = analysisType === "none" && !premiumPreview && !forceVisible;
+  const hideSection = analysisType === "none" && !forceVisible;
   if (hideSection) return null;
 
   async function handleGenerateClick() {
@@ -79,11 +75,7 @@ export default function RelationshipPremiumSection({
     setLocalError(null);
     try {
       let ok = false;
-      if (premiumPreview) {
-        ok = await onEnsurePremiumPreview();
-      } else {
-        ok = await onRunPremium(premiumKind);
-      }
+      ok = await onRunPremium(premiumKind);
       if (!ok) {
         setLocalError("생성 요청이 완료되지 않았어요. 잠시 후 다시 시도해 주세요.");
       }
@@ -209,11 +201,6 @@ export default function RelationshipPremiumSection({
       )}
       {!premiumReady && !hasSnapshotView ? (
         <div className="mt-4 space-y-2 text-center">
-          {premiumPreview ? (
-            <p className="text-[11px] text-[var(--space-text-muted)]">
-              출생 정보가 부족하면 심화 분석이 제한될 수 있어요.
-            </p>
-          ) : null}
           <GlowButton
             type="button"
             className="w-full"

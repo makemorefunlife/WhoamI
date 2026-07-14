@@ -46,6 +46,7 @@ import { createRomanticPremiumStreamResponse } from "@/lib/relationship/romantic
 import {
   assertRelationshipPremiumLlmAccess,
 } from "@/lib/relationship/relationshipPremiumGuard";
+import { ensureRelationshipPremiumSlot } from "@/lib/relationship/ensureRelationshipPremiumSlot";
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
@@ -167,15 +168,11 @@ export async function POST(req: Request) {
     );
     if (accessGuard) return accessGuard;
 
-    if (rr.analysis_type !== "premium") {
-      return NextResponse.json(
-        {
-          error:
-            "심화 분석은 결제·업그레이드 후에 실행할 수 있습니다.",
-        },
-        { status: 403 },
-      );
-    }
+    const slotGuard = await ensureRelationshipPremiumSlot(
+      supabase,
+      relationshipReportId,
+    );
+    if (slotGuard) return slotGuard;
 
     const byKind = (rr.result_premium_by_kind ?? {}) as ResultPremiumByKind;
     const kind = parseRelationshipKind(

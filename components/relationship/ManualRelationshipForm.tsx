@@ -256,68 +256,76 @@ export default function ManualRelationshipForm({
         )}
       </div>
 
-      <div className="flex gap-2">
-        {onCancel ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={busy}
-            className={s.cancelBtn}
-          >
-            취소
-          </button>
+      <div
+        className={
+          theme === "stitch"
+            ? "sticky bottom-0 z-10 -mx-4 mt-2 space-y-2 border-t border-outline-variant/25 bg-surface-container-low/95 px-4 pb-[max(3.75rem,calc(2.75rem+env(safe-area-inset-bottom)))] pt-3 backdrop-blur-md"
+            : "space-y-2"
+        }
+      >
+        <div className="flex gap-2">
+          {onCancel ? (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={busy}
+              className={s.cancelBtn}
+            >
+              취소
+            </button>
+          ) : null}
+          {theme === "stitch" ? (
+            <button
+              type="button"
+              className="stitch-cta-primary flex-1 !min-h-[48px] !min-w-0 !text-sm disabled:opacity-45"
+              disabled={busy || !canSubmit}
+              onClick={() =>
+                void onSubmit({
+                  partnerName: partnerName.trim(),
+                  birthDate,
+                  birthTime: birthTimeUnknown ? null : birthTime,
+                  birthTimeUnknown,
+                  birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
+                  birthPlaceUnknown,
+                  surveySkipped: surveyMode === "skip",
+                  surveyAnswers:
+                    surveyMode === "skip"
+                      ? null
+                      : (answers as SurveyAnswersInput),
+                })
+              }
+            >
+              {busy ? "만드는 중…" : "관계 만들기"}
+            </button>
+          ) : (
+            <GlowButton
+              type="button"
+              className="flex-1 !min-h-[44px] text-sm"
+              disabled={busy || !canSubmit}
+              onClick={() =>
+                void onSubmit({
+                  partnerName: partnerName.trim(),
+                  birthDate,
+                  birthTime: birthTimeUnknown ? null : birthTime,
+                  birthTimeUnknown,
+                  birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
+                  birthPlaceUnknown,
+                  surveySkipped: surveyMode === "skip",
+                  surveyAnswers:
+                    surveyMode === "skip"
+                      ? null
+                      : (answers as SurveyAnswersInput),
+                })
+              }
+            >
+              {busy ? "만드는 중…" : "관계 만들기"}
+            </GlowButton>
+          )}
+        </div>
+        {!canSubmit && submitHint && !busy ? (
+          <p className={s.hint}>{submitHint}</p>
         ) : null}
-        {theme === "stitch" ? (
-          <button
-            type="button"
-            className="stitch-cta-primary flex-1 !min-w-0 !min-h-[48px] !text-sm disabled:opacity-45"
-            disabled={busy || !canSubmit}
-            onClick={() =>
-              void onSubmit({
-                partnerName: partnerName.trim(),
-                birthDate,
-                birthTime: birthTimeUnknown ? null : birthTime,
-                birthTimeUnknown,
-                birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
-                birthPlaceUnknown,
-                surveySkipped: surveyMode === "skip",
-                surveyAnswers:
-                  surveyMode === "skip"
-                    ? null
-                    : (answers as SurveyAnswersInput),
-              })
-            }
-          >
-            {busy ? "만드는 중…" : "관계 만들기"}
-          </button>
-        ) : (
-          <GlowButton
-            type="button"
-            className="flex-1 !min-h-[44px] text-sm"
-            disabled={busy || !canSubmit}
-            onClick={() =>
-              void onSubmit({
-                partnerName: partnerName.trim(),
-                birthDate,
-                birthTime: birthTimeUnknown ? null : birthTime,
-                birthTimeUnknown,
-                birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
-                birthPlaceUnknown,
-                surveySkipped: surveyMode === "skip",
-                surveyAnswers:
-                  surveyMode === "skip"
-                    ? null
-                    : (answers as SurveyAnswersInput),
-              })
-            }
-          >
-            {busy ? "만드는 중…" : "관계 만들기"}
-          </GlowButton>
-        )}
       </div>
-      {!canSubmit && submitHint && !busy ? (
-        <p className={s.hint}>{submitHint}</p>
-      ) : null}
     </div>
   );
 }

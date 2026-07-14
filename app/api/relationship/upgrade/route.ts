@@ -4,7 +4,7 @@ import {
   createRouteSupabaseClient,
   supabaseConfigErrorResponse,
 } from "@/lib/supabase/serverClient";
-import { relationshipUpgradePreviewBypassEnabled } from "@/lib/relationship/premiumPreview";
+import { isPremiumPaywallEnabled } from "@/lib/product/premiumAccessPolicy";
 import {
   assertRelationshipViewerParticipant,
   assertViewerReportUpgradeAccess,
@@ -38,10 +38,9 @@ export async function POST(req: Request) {
     const secret =
       typeof body.secret === "string" ? body.secret.trim() : "";
     const expected = process.env.RELATIONSHIP_UPGRADE_SECRET?.trim() ?? "";
-    const previewBypass =
-      relationshipUpgradePreviewBypassEnabled() && body.preview === true;
+    const paywallBypass = !isPremiumPaywallEnabled();
 
-    if (!previewBypass) {
+    if (!paywallBypass) {
       if (!expected) {
         console.info("[relationship/upgrade] secret_missing");
         return NextResponse.json(

@@ -120,7 +120,8 @@ export const SURVEY_V2_QUESTIONS_EN: SurveyQuestion[] = [
       { value: "C", label: "Try to keep growing so I don't fall behind." },
       {
         value: "D",
-        label: "Should rest, but often end up lying down with low energy.",
+        label:
+          "I tell myself I should do something, but I'm too tired and mostly just lie around.",
       },
     ],
   },

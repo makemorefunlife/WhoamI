@@ -226,11 +226,15 @@ export default function RelationshipCard({
         <p className="mt-2 text-[11px] text-[var(--space-text-muted)]">
           {isDone ? (
             <>
-              분석 완료
+              {isPremium ? "심화 분석 완료" : "기본 분석 완료"}
               {item.last_viewed ? ` · ${item.last_viewed}` : ""}
             </>
           ) : (
-            <>분석 준비 중 · 잠시 후 다시 열어보세요</>
+            <>
+              {item.analysis_type === "basic" || item.analysis_type === "premium"
+                ? "심화 분석 미완료 · 이어서 만들 수 있어요"
+                : "분석 준비 중 · 잠시 후 다시 열어보세요"}
+            </>
           )}
         </p>
       ) : null}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import { isPremiumPaywallEnabled } from "@/lib/product/premiumAccessPolicy";
 import { logServerEvent, maskId } from "@/lib/security/safeLog";
 
 export const RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE =
@@ -66,6 +67,10 @@ export async function assertRelationshipPremiumLlmAccess(
   supabase: SupabaseClient,
   relationshipReportId: string,
 ): Promise<NextResponse | null> {
+  if (!isPremiumPaywallEnabled()) {
+    return null;
+  }
+
   const id = relationshipReportId.trim();
   if (!id) {
     return NextResponse.json(

@@ -42,7 +42,6 @@ export default function RelationshipView({
     partnerBirthPlaceUnknown,
     analysisType,
     premiumKind,
-    premiumPreview,
     snapshotView,
     logs,
     logsLoading,
@@ -72,7 +71,6 @@ export default function RelationshipView({
     setFamilyChildIsViewer,
     runPremium,
     regeneratePremium,
-    ensurePremiumPreview,
   } = detail;
 
   const generating = busy || autostartActive;
@@ -81,9 +79,18 @@ export default function RelationshipView({
     partnerBirthTimeUnknown ||
     viewerBirthPlaceUnknown ||
     partnerBirthPlaceUnknown;
-  const showGeneratingPanel =
-    generating || (urlAutostart && !premiumReady && !err && !loading);
+  /** 실제로 생성 요청 중일 때만 — autostart 쿼리만으로 영원히 잠기지 않음 */
+  const showGeneratingPanel = generating;
   const showLoadingPanel = loading && !err;
+  const viewingPremiumSnapshot = Boolean(
+    snapshotView &&
+      (snapshotView.romanticDeep ||
+        snapshotView.workDeep ||
+        snapshotView.cohabitationDeep ||
+        snapshotView.familyDeep ||
+        snapshotView.friendshipDeep ||
+        snapshotView.premium),
+  );
 
   useEffect(() => {
     if (!premiumReady || !urlAutostart) return;
@@ -244,7 +251,7 @@ export default function RelationshipView({
             />
           ) : null}
 
-          {!urlAutostart ? (
+          {!showGeneratingPanel ? (
             <RelationshipBasicCards
               perspective={displayBasic}
               partnerName={partnerName}
@@ -255,7 +262,7 @@ export default function RelationshipView({
           {(!displayBasic || Object.keys(displayBasic).length === 0) &&
           !err &&
           !snapshotView &&
-          !urlAutostart ? (
+          !showGeneratingPanel ? (
             <div className="mt-4">
               <button
                 type="button"
@@ -272,9 +279,8 @@ export default function RelationshipView({
             busy={generating}
             premiumKind={premiumKind}
             analysisType={analysisType}
-            premiumPreview={premiumPreview}
             premiumReady={premiumReady}
-            hasSnapshotView={Boolean(snapshotView)}
+            hasSnapshotView={viewingPremiumSnapshot}
             partnerName={partnerName}
             viewerName={viewerName}
             nameA={nameA}
@@ -286,14 +292,13 @@ export default function RelationshipView({
             displayCohabitationDeep={displayCohabitationDeep}
             displayFamilyDeep={displayFamilyDeep}
             displayFriendshipDeep={displayFriendshipDeep}
-            onEnsurePremiumPreview={ensurePremiumPreview}
             onRunPremium={runPremium}
             onRegeneratePremium={regeneratePremium}
             forceVisible={urlAutostart || generating}
             onReportReadyRef={reportAnchorRef}
           />
 
-          {premiumReady && urlAutostart ? (
+          {premiumReady && !showGeneratingPanel ? (
             <p className="mt-4 text-center text-sm font-medium text-secondary">
               리포트가 준비됐어요. 아래에서 바로 확인하세요.
             </p>

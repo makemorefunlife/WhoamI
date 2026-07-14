@@ -31,9 +31,9 @@ export const PAIR_PRESCRIPTION_TOPIC_META: Record<
   { label: string; emoji: string }
 > = {
   // cohabitation
-  secret_affinity: { label: "암합·비언어적 친밀", emoji: "💫" },
-  cfo_power_struggle: { label: "경제권·CFO 권력", emoji: "💸" },
-  day_palace_tension: { label: "일궁·생활 리듬", emoji: "🏠" },
+  secret_affinity: { label: "비언어적 친밀", emoji: "💫" },
+  cfo_power_struggle: { label: "경제권·집안 규칙", emoji: "💸" },
+  day_palace_tension: { label: "생활 리듬 긴장", emoji: "🏠" },
   home_baseline: { label: "집안 운영 기본", emoji: "📋" },
   // work
   micromanaging_coordination: { label: "마이크로 매니징", emoji: "🎯" },
@@ -66,7 +66,7 @@ export const PAIR_PRESCRIPTION_DOMAIN_FOOTNOTE: Record<
   string
 > = {
   cohabitation:
-    "위 분석은 기존 사주·생활 서사와 별도입니다. 아래는 pair 교차 신호에서 뽑은 실행 체크리스트예요.",
+    "위 분석은 기존 생활 서사와 별도입니다. 아래는 두 사람의 생활 패턴 신호에서 뽑은 실행 체크리스트예요.",
   work: "위 분석은 기존 오피스 서사와 별도입니다. 아래는 pair.work 교차 신호 기반 실천 체크리스트예요.",
   friendship:
     "위 분석은 기존 Social DNA 서사와 별도입니다. 아래는 pair.friendship 교차 신호 기반 실천 체크리스트예요.",
