@@ -555,9 +555,7 @@ export function useRelationshipDetail({
           setErr(data?.error ?? "심화 분석 실패");
           return false;
         }
-        if (kind === "romantic" && data.result_premium?.report) {
-          setRomanticDeep(parseRomanticDeepViewModel(data.result_premium.report));
-        } else if (kind === "work") {
+        if (kind === "work") {
           const prem = data.result_premium;
           if (
             prem?.format === WORK_COLLEAGUE_DEEP_FORMAT &&
@@ -653,6 +651,7 @@ export function useRelationshipDetail({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             relationship_report_id: resolvedRelationshipId,
+            viewer_report_id: effectiveViewerReportId,
             preview: true,
           }),
         },
@@ -673,7 +672,12 @@ export function useRelationshipDetail({
     } finally {
       setBusy(false);
     }
-  }, [resolvedRelationshipId, runPremium, premiumKind]);
+  }, [
+    resolvedRelationshipId,
+    effectiveViewerReportId,
+    runPremium,
+    premiumKind,
+  ]);
 
   const onPremiumKindChange = useCallback(
     (kind: RelationshipKind) => {

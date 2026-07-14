@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
+import { auth } from "@clerk/nextjs/server";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import {
@@ -9,8 +10,24 @@ import {
   buildIntegratedPhase2UserPrompt,
 } from "../../../lib/prompts/integratedPremiumReport";
 import { assertPremiumLlmAccess } from "../../../lib/report/llmPaymentGuard";
+import { assertOwnedReportAccess } from "../../../lib/report/assertOwnedReportAccess";
+import {
+  createRouteSupabaseClient,
+  SERVER_SUPABASE_CONFIG_ERROR,
+} from "../../../lib/supabase/serverClient";
 import { sajuDataToIntegratedSummary } from "../../../lib/report/formatEssenceAnalysisForIntegrated";
 import { runIntegratedPremiumLlm } from "../../../lib/report/runIntegratedPremiumLlm";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+} from "../../../lib/security/rateLimit";
+import {
+  MAX_LLM_INPUT_CHARS,
+  readJsonBodyLimited,
+  requireUuid,
+  stripClientTrustFields,
+} from "../../../lib/security/requestValidation";
+import { logServerError } from "../../../lib/security/safeLog";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -18,7 +35,18 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const { userId } = await auth();
+    if (!userId) {
+      return Response.json({ error: "unauthorized" }, { status: 401 });
+    }
+
+    const parsed = await readJsonBodyLimited(req, 256 * 1024);
+    if (!parsed.ok) return parsed.response;
+    const body = stripClientTrustFields(
+      (parsed.body && typeof parsed.body === "object"
+        ? parsed.body
+        : {}) as Record<string, unknown>,
+    );
     const mode = body.mode;
 
     // ============================================================
@@ -38,7 +66,28 @@ export async function POST(req: Request) {
     // 🔥 모드 2: 통합 보고서 (integrated)
     // ============================================================
     if (mode === "integrated") {
-      const guard = await assertPremiumLlmAccess(body.reportId, "integrated");
+      const idCheck = requireUuid(body.reportId, "reportId");
+      if (!idCheck.ok) return idCheck.response;
+
+      const limited = enforceRateLimit("llm", userId);
+      if (!limited.ok) return rateLimitResponse(limited);
+
+      const supabase = createRouteSupabaseClient();
+      if (!supabase) {
+        return Response.json(
+          { error: SERVER_SUPABASE_CONFIG_ERROR },
+          { status: 500 },
+        );
+      }
+
+      const access = await assertOwnedReportAccess(
+        supabase,
+        idCheck.value,
+        userId,
+      );
+      if (access.error) return access.error;
+
+      const guard = await assertPremiumLlmAccess(idCheck.value, "integrated");
       if (guard) return guard;
 
       const { detailedSurvey, sajuData, astrologyText, stream: wantStream } =
@@ -63,6 +112,15 @@ export async function POST(req: Request) {
             : JSON.stringify(sajuData).length;
       const astroLen =
         typeof astrologyText === "string" ? astrologyText.trim().length : 0;
+
+      if (
+        surveyLen > MAX_LLM_INPUT_CHARS ||
+        sajuLen > MAX_LLM_INPUT_CHARS ||
+        astroLen > MAX_LLM_INPUT_CHARS
+      ) {
+        return Response.json({ error: "input too large" }, { status: 400 });
+      }
+
       console.info("[premium-pipeline] server stage=integrated_llm_inputs", {
         survey_chars: surveyLen,
         saju_chars: sajuLen,
@@ -165,7 +223,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   } catch (error) {
-    console.error(error);
+    logServerError("llm", error);
     return Response.json({ error: "LLM error" }, { status: 500 });
   }
 }

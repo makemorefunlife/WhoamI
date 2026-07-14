@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { countHubRelationshipSummary } from "@/lib/relationship/hubRelationshipSummary";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
+import { logServerError } from "@/lib/security/safeLog";
 
 export type CanonicalReportRow = {
   id: string;
@@ -35,7 +36,7 @@ async function fetchOwnedReports(
     .limit(30);
 
   if (error) {
-    console.error("resolveCanonicalReport owned:", error);
+    logServerError("resolveCanonicalReport.owned", error);
     return [];
   }
   return (data ?? []) as CanonicalReportRow[];
@@ -52,31 +53,15 @@ async function fetchReportById(
     .maybeSingle();
 
   if (error) {
-    console.error("resolveCanonicalReport by id:", error);
+    logServerError("resolveCanonicalReport.byId", error);
     return null;
   }
   return (data as CanonicalReportRow | null) ?? null;
 }
 
-async function claimOrphanReport(
-  supabase: SupabaseClient,
-  reportId: string,
-  clerkUserId: string,
-): Promise<void> {
-  const { error } = await supabase
-    .from("reports")
-    .update({ clerk_user_id: clerkUserId })
-    .eq("id", reportId)
-    .is("clerk_user_id", null);
-
-  if (error) {
-    console.error("resolveCanonicalReport claim:", error);
-  }
-}
-
 /**
- * 로그인 사용자의 대표 report — 완료된 설문이 있으면 최신 완료본 우선,
- * localStorage 힌트는 검증·연결용으로만 사용.
+ * 로그인 사용자의 대표 report — 본인 소유 행만 후보.
+ * orphan/guest claim 없음.
  */
 export async function resolveCanonicalReport(
   supabase: SupabaseClient,
@@ -91,15 +76,9 @@ export async function resolveCanonicalReport(
     hintReport = await fetchReportById(supabase, reportIdHint);
     if (!hintReport) {
       invalidHint = true;
-    } else if (
-      hintReport.clerk_user_id != null &&
-      hintReport.clerk_user_id !== clerkUserId
-    ) {
+    } else if (hintReport.clerk_user_id !== clerkUserId) {
       invalidHint = true;
       hintReport = null;
-    } else if (hintReport.clerk_user_id == null) {
-      await claimOrphanReport(supabase, hintReport.id, clerkUserId);
-      hintReport = { ...hintReport, clerk_user_id: clerkUserId };
     }
   }
 

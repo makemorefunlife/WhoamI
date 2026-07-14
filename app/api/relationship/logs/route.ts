@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { listRelationshipAnalysisLogs } from "@/lib/relationship/analysisLog";
+import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 
 export const runtime = "nodejs";
 
@@ -42,12 +44,15 @@ export async function GET(req: Request) {
       );
     }
 
-    if (
-      rr.report_id_a !== viewerReportId &&
-      rr.report_id_b !== viewerReportId
-    ) {
-      return NextResponse.json({ error: "권한 없음" }, { status: 403 });
-    }
+    const { userId } = await auth();
+    const accessGuard = await assertOwnedViewerParticipantAccess(
+      supabase,
+      userId,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    if (accessGuard) return accessGuard;
 
     const logs = await listRelationshipAnalysisLogs(
       supabase,
@@ -63,7 +68,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ logs: sliced, hasMore, nextOffset });
   } catch (e) {
-    console.error("relationship/logs GET:", e);
+    console.error("relationship/logs GET: unexpected");
     return NextResponse.json({ error: "조회 실패" }, { status: 500 });
   }
 }

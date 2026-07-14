@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import {
@@ -20,6 +21,7 @@ import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
+import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 
 export const runtime = "nodejs";
 
@@ -55,12 +57,15 @@ export async function GET(req: Request) {
       );
     }
 
-    if (
-      rr.report_id_a !== viewerReportId &&
-      rr.report_id_b !== viewerReportId
-    ) {
-      return NextResponse.json({ error: "권한 없음" }, { status: 403 });
-    }
+    const { userId } = await auth();
+    const accessGuard = await assertOwnedViewerParticipantAccess(
+      supabase,
+      userId,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    if (accessGuard) return accessGuard;
 
     const partnerId =
       rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
@@ -145,7 +150,6 @@ export async function GET(req: Request) {
       relationshipReportId,
     );
 
-    const { userId } = await auth();
     const clerkUser = userId ? await currentUser() : null;
     const viewerIsReportA = viewerReportId === rr.report_id_a;
     const viewerName = resolveViewerDisplayName({
@@ -200,7 +204,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(responseBody);
   } catch (e) {
-    console.error("relationship/detail:", e);
+    logServerError("relationship/detail:", e, "internal_error");
     return NextResponse.json({ error: "조회 실패" }, { status: 500 });
   }
 }

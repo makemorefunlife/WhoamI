@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { NextResponse } from "next/server";
@@ -44,9 +45,12 @@ import type {
 import { createRomanticPremiumStreamResponse } from "@/lib/relationship/romanticPremiumStreamHandler";
 import {
   assertRelationshipPremiumLlmAccess,
-  assertRelationshipViewerParticipant,
 } from "@/lib/relationship/relationshipPremiumGuard";
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
+import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
+import {
+  enforceRateLimit,
+} from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -104,6 +108,11 @@ function reportName(report: Record<string, unknown>): string | null {
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const relationshipReportId =
       typeof body.relationship_report_id === "string"
@@ -114,10 +123,23 @@ export async function POST(req: Request) {
         ? body.viewer_report_id.trim()
         : "";
 
-    if (!relationshipReportId) {
+    if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
-        { error: "relationship_report_id가 필요합니다." },
+        { error: "relationship_report_id와 viewer_report_id가 필요합니다." },
         { status: 400 },
+      );
+    }
+
+    const limited = enforceRateLimit("relationship_premium", userId);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: limited.error },
+        {
+          status: limited.status,
+          headers: limited.retryAfterSec
+            ? { "Retry-After": String(limited.retryAfterSec) }
+            : undefined,
+        },
       );
     }
 
@@ -136,12 +158,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const viewerGuard = assertRelationshipViewerParticipant(
+    const accessGuard = await assertOwnedViewerParticipantAccess(
+      supabase,
+      userId,
       viewerReportId,
       rr.report_id_a,
       rr.report_id_b,
     );
-    if (viewerGuard) return viewerGuard;
+    if (accessGuard) return accessGuard;
 
     if (rr.analysis_type !== "premium") {
       return NextResponse.json(
@@ -175,12 +199,11 @@ export async function POST(req: Request) {
       });
     }
 
-    const [{ userId }, fetchA, fetchB] = await Promise.all([
-      auth(),
+    const [fetchA, fetchB, clerkUser] = await Promise.all([
       fetchReportWithBirthCoords(supabase, rr.report_id_a, "payment_status"),
       fetchReportWithBirthCoords(supabase, rr.report_id_b, "payment_status"),
+      userId ? currentUser() : Promise.resolve(null),
     ]);
-    const clerkUser = userId ? await currentUser() : null;
 
     const repA = fetchA.report;
     const repB = fetchB.report;
@@ -305,7 +328,6 @@ export async function POST(req: Request) {
             analysisParams: romanticAnalysisParams,
             relationshipReportId,
             viewerReportId,
-            kind: "romantic",
             byKind,
             supabase,
           },
@@ -396,7 +418,7 @@ export async function POST(req: Request) {
       );
 
       if (upErr) {
-        console.error("relationship/analyze/premium work update:", upErr);
+        logServerError("relationship/analyze/premium work update:", upErr, "internal_error");
         return NextResponse.json({ error: upErr.message }, { status: 500 });
       }
 
@@ -477,7 +499,7 @@ export async function POST(req: Request) {
       );
 
       if (upErr) {
-        console.error("relationship/analyze/premium cohabitation update:", upErr);
+        logServerError("relationship/analyze/premium cohabitation update:", upErr, "internal_error");
         return NextResponse.json({ error: upErr.message }, { status: 500 });
       }
 
@@ -577,7 +599,7 @@ export async function POST(req: Request) {
       );
 
       if (upErr) {
-        console.error("relationship/analyze/premium family update:", upErr);
+        logServerError("relationship/analyze/premium family update:", upErr, "internal_error");
         return NextResponse.json({ error: upErr.message }, { status: 500 });
       }
 
@@ -658,7 +680,7 @@ export async function POST(req: Request) {
       );
 
       if (upErr) {
-        console.error("relationship/analyze/premium friendship update:", upErr);
+        logServerError("relationship/analyze/premium friendship update:", upErr, "internal_error");
         return NextResponse.json({ error: upErr.message }, { status: 500 });
       }
 
@@ -684,7 +706,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   } catch (e) {
-    console.error("relationship/analyze/premium:", e);
+    logServerError("relationship/analyze/premium:", e, "internal_error");
     return NextResponse.json(
       { error: "관계 심화 분석 실패" },
       { status: 500 },

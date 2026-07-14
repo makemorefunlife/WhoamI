@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
+import { auth } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import {
   fetchRelationshipReportRowsForHub,
@@ -11,6 +13,7 @@ import {
   partnerNameFromLogSnapshot,
   resolvePartnerDisplayName,
 } from "@/lib/relationship/resolvePartnerDisplayName";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 
 export const runtime = "nodejs";
 
@@ -63,6 +66,10 @@ export async function GET(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
+    const { userId } = await auth();
+    const access = await assertOwnedReportAccess(supabase, reportId, userId);
+    if (access.error) return access.error;
+
     await cleanupStaleOpenInvites(supabase, reportId);
 
     const [favoriteIds, rows, openInvitesResult] = await Promise.all([
@@ -105,7 +112,7 @@ export async function GET(req: Request) {
     }
 
     if (invErr) {
-      console.error("relationship/list invites:", invErr);
+      logServerError("relationship/list invites:", invErr, "internal_error");
       return NextResponse.json(
         { error: invErr.message },
         { status: 500 },
@@ -339,9 +346,9 @@ export async function GET(req: Request) {
       },
     });
   } catch (e) {
-    console.error("relationship/list:", e);
+    logServerError("relationship/list:", e, "internal_error");
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "조회 실패" },
+      { error: "request failed" },
       { status: 500 },
     );
   }

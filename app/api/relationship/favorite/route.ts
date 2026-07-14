@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
+import { auth } from "@clerk/nextjs/server";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
 import {
   isRelationshipFavorite,
   setRelationshipFavorite,
 } from "@/lib/relationship/analysisLog";
+import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 
 export const runtime = "nodejs";
 
@@ -22,6 +27,30 @@ export async function GET(req: Request) {
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
+
+    const { data: rr } = await supabase
+      .from("relationship_reports")
+      .select("report_id_a, report_id_b")
+      .eq("id", relationshipReportId)
+      .maybeSingle();
+
+    if (!rr) {
+      return NextResponse.json(
+        { error: "관계 분석을 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
+    const { userId } = await auth();
+    const accessGuard = await assertOwnedViewerParticipantAccess(
+      supabase,
+      userId,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    if (accessGuard) return accessGuard;
+
     const favorited = await isRelationshipFavorite(
       supabase,
       viewerReportId,
@@ -30,7 +59,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ favorited });
   } catch (e) {
-    console.error("relationship/favorite GET:", e);
+    console.error("relationship/favorite GET: unexpected");
     return NextResponse.json({ error: "조회 실패" }, { status: 500 });
   }
 }
@@ -71,12 +100,15 @@ export async function POST(req: Request) {
       );
     }
 
-    if (
-      rr.report_id_a !== viewerReportId &&
-      rr.report_id_b !== viewerReportId
-    ) {
-      return NextResponse.json({ error: "권한 없음" }, { status: 403 });
-    }
+    const { userId } = await auth();
+    const accessGuard = await assertOwnedViewerParticipantAccess(
+      supabase,
+      userId,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    if (accessGuard) return accessGuard;
 
     const ok = await setRelationshipFavorite(
       supabase,
@@ -91,7 +123,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ favorited });
   } catch (e) {
-    console.error("relationship/favorite POST:", e);
+    console.error("relationship/favorite POST: unexpected");
     return NextResponse.json({ error: "저장 실패" }, { status: 500 });
   }
 }

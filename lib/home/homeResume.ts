@@ -40,51 +40,15 @@ export function resolveHomeCtaBranch(resume: {
   return "resume-survey";
 }
 
-/** 게스트 리포트(clerk_user_id null) — reportId만으로 resume */
+/**
+ * Guest resume disabled by product policy.
+ * Kept as exported no-op so older imports compile.
+ */
 export async function buildGuestHomeResume(
-  supabase: SupabaseClient,
-  reportId: string,
+  _supabase: SupabaseClient,
+  _reportId: string,
 ): Promise<HomeResumePayload | null> {
-  const { data: report, error } = await supabase
-    .from("reports")
-    .select(
-      "id, name, clerk_user_id, birth_date, birth_time, birth_place, payment_status, plan_type",
-    )
-    .eq("id", reportId)
-    .maybeSingle();
-
-  if (error || !report?.id) return null;
-  if (report.clerk_user_id != null) return null;
-
-  const surveyCompleted = await isV2SurveyCompleteForReport(supabase, report.id);
-  const relationshipSummary = surveyCompleted
-    ? await countHubRelationshipSummary(supabase, report.id)
-    : { pending: 0, completed: 0 };
-
-  const sessionStatus: HomeResumeSessionStatus = surveyCompleted
-    ? "hub_ready"
-    : "survey_in_progress";
-
-  const core = {
-    reportId: report.id,
-    sessionStatus,
-    hasReport: true,
-    surveyCompleted,
-    hasCompletedReport: surveyCompleted,
-    canResumeSurvey: !surveyCompleted,
-    name: report.name?.trim() ?? null,
-    birthDate: report.birth_date?.trim() ?? null,
-    birthTime: report.birth_time?.trim() ?? null,
-    birthPlace: report.birth_place?.trim() ?? null,
-    relationshipSummary,
-    isPremium: isReportPremium(report),
-    invalidHint: false,
-  };
-
-  return {
-    ...core,
-    ctaBranch: resolveHomeCtaBranch(core),
-  };
+  return null;
 }
 
 export async function buildHomeResume(

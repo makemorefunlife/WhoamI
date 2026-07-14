@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logServerError } from "@/lib/security/safeLog";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import OpenAI from "openai";
@@ -18,6 +19,8 @@ import {
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -26,6 +29,11 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const relationshipReportId =
       typeof body.relationship_report_id === "string"
@@ -39,10 +47,23 @@ export async function POST(req: Request) {
       (body as { relationship_kind?: unknown }).relationship_kind,
     );
 
-    if (!relationshipReportId) {
+    if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
-        { error: "relationship_report_id가 필요합니다." },
+        { error: "relationship_report_id와 viewer_report_id가 필요합니다." },
         { status: 400 },
+      );
+    }
+
+    const limited = enforceRateLimit("relationship_basic", userId);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: limited.error },
+        {
+          status: limited.status,
+          headers: limited.retryAfterSec
+            ? { "Retry-After": String(limited.retryAfterSec) }
+            : undefined,
+        },
       );
     }
 
@@ -55,12 +76,30 @@ export async function POST(req: Request) {
       .eq("id", relationshipReportId)
       .maybeSingle();
 
-    if (rrErr || !rr) {
+    if (rrErr) {
+      console.info("[relationship/analyze/basic] relationship_lookup_failed");
+      return NextResponse.json(
+        { error: "관계 기본 분석을 처리할 수 없습니다." },
+        { status: 503 },
+      );
+    }
+    if (!rr?.id) {
       return NextResponse.json(
         { error: "관계 분석을 찾을 수 없습니다." },
         { status: 404 },
       );
     }
+
+    const accessGuard = await assertOwnedViewerParticipantAccess(
+      supabase,
+      userId,
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+    );
+    if (accessGuard) return accessGuard;
+
+    const clerkUser = await currentUser();
 
     const [{ data: repA }, { data: repB }] = await Promise.all([
       supabase
@@ -74,9 +113,6 @@ export async function POST(req: Request) {
         .eq("id", rr.report_id_b)
         .maybeSingle(),
     ]);
-
-    const { userId } = await auth();
-    const clerkUser = userId ? await currentUser() : null;
 
     const labelA = resolveViewerDisplayName({
       reportName: repA?.name,
@@ -265,24 +301,25 @@ export async function POST(req: Request) {
       .eq("id", relationshipReportId);
 
     if (upErr) {
-      console.error("relationship/analyze/basic update:", upErr);
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+      console.error("relationship/analyze/basic update failed");
+      return NextResponse.json(
+        { error: "관계 기본 분석을 처리할 수 없습니다." },
+        { status: 503 },
+      );
     }
 
-    if (viewerReportId) {
-      await insertRelationshipAnalysisLog(supabase, {
-        relationshipReportId,
-        viewerReportId,
-        relationshipKind,
-        analysisLevel: "basic",
-        resultFormat: "relationship_4axis_v1",
-        payload,
-      });
-    }
+    await insertRelationshipAnalysisLog(supabase, {
+      relationshipReportId,
+      viewerReportId,
+      relationshipKind,
+      analysisLevel: "basic",
+      resultFormat: "relationship_4axis_v1",
+      payload,
+    });
 
     return NextResponse.json({ result_basic: payload });
   } catch (e) {
-    console.error("relationship/analyze/basic:", e);
+    logServerError("relationship/analyze/basic:", e, "internal_error");
     return NextResponse.json(
       { error: "관계 기본 분석 실패" },
       { status: 500 },

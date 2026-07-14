@@ -1,8 +1,22 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
-import { relationshipPremiumPreviewEnabled } from "@/lib/relationship/premiumPreview";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
+import { relationshipUpgradePreviewBypassEnabled } from "@/lib/relationship/premiumPreview";
+import {
+  assertRelationshipViewerParticipant,
+  assertViewerReportUpgradeAccess,
+} from "@/lib/relationship/relationshipPremiumGuard";
+import { enforceRateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
+
+const UPGRADE_GUARD_MESSAGES = {
+  missing: "invalid request",
+  forbidden: "forbidden",
+} as const;
 
 /** 결제·웹훅 이후 관계 심화 분석 슬롯 열기 (analysis_type → premium) */
 export async function POST(req: Request) {
@@ -12,25 +26,92 @@ export async function POST(req: Request) {
       typeof body.relationship_report_id === "string"
         ? body.relationship_report_id.trim()
         : "";
+    const viewerReportId =
+      typeof body.viewer_report_id === "string"
+        ? body.viewer_report_id.trim()
+        : "";
 
-    if (!relationshipReportId) {
-      return NextResponse.json(
-        { error: "relationship_report_id가 필요합니다." },
-        { status: 400 },
-      );
+    if (!relationshipReportId || !viewerReportId) {
+      return NextResponse.json({ error: "invalid request" }, { status: 400 });
     }
 
     const secret =
       typeof body.secret === "string" ? body.secret.trim() : "";
-    const expected = process.env.RELATIONSHIP_UPGRADE_SECRET;
+    const expected = process.env.RELATIONSHIP_UPGRADE_SECRET?.trim() ?? "";
     const previewBypass =
-      relationshipPremiumPreviewEnabled() && body.preview === true;
-    if (expected && secret !== expected && !previewBypass) {
-      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+      relationshipUpgradePreviewBypassEnabled() && body.preview === true;
+
+    if (!previewBypass) {
+      if (!expected) {
+        console.info("[relationship/upgrade] secret_missing");
+        return NextResponse.json(
+          { error: "upgrade temporarily unavailable" },
+          { status: 503 },
+        );
+      }
+      if (secret !== expected) {
+        return NextResponse.json({ error: "forbidden" }, { status: 403 });
+      }
     }
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
+
+    const { data: rr, error: rrErr } = await supabase
+      .from("relationship_reports")
+      .select("id, report_id_a, report_id_b, analysis_type")
+      .eq("id", relationshipReportId)
+      .maybeSingle();
+
+    if (rrErr) {
+      console.info("[relationship/upgrade] relationship_lookup_failed");
+      return NextResponse.json(
+        { error: "upgrade temporarily unavailable" },
+        { status: 503 },
+      );
+    }
+    if (!rr?.id) {
+      return NextResponse.json(
+        { error: "relationship report not found" },
+        { status: 404 },
+      );
+    }
+
+    const { userId } = await auth();
+    const viewerGuard = await assertViewerReportUpgradeAccess(
+      supabase,
+      viewerReportId,
+      userId,
+    );
+    if (viewerGuard) return viewerGuard;
+
+    const participantGuard = assertRelationshipViewerParticipant(
+      viewerReportId,
+      rr.report_id_a,
+      rr.report_id_b,
+      UPGRADE_GUARD_MESSAGES,
+    );
+    if (participantGuard) return participantGuard;
+
+    const limited = enforceRateLimit("upgrade", userId);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: limited.error },
+        {
+          status: limited.status,
+          headers: limited.retryAfterSec
+            ? { "Retry-After": String(limited.retryAfterSec) }
+            : undefined,
+        },
+      );
+    }
+
+    if (rr.analysis_type === "premium") {
+      return NextResponse.json({
+        ok: true,
+        relationship_report_id: rr.id,
+      });
+    }
 
     const { data, error } = await supabase
       .from("relationship_reports")
@@ -39,22 +120,41 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString(),
       })
       .eq("id", relationshipReportId)
+      .eq("analysis_type", "basic")
       .select("id")
       .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if (!data) {
+      console.info("[relationship/upgrade] update_failed");
       return NextResponse.json(
-        { error: "관계 분석을 찾을 수 없습니다." },
+        { error: "upgrade temporarily unavailable" },
+        { status: 503 },
+      );
+    }
+    if (!data?.id) {
+      const { data: current } = await supabase
+        .from("relationship_reports")
+        .select("id, analysis_type")
+        .eq("id", relationshipReportId)
+        .maybeSingle();
+      if (current?.analysis_type === "premium" && current.id) {
+        return NextResponse.json({
+          ok: true,
+          relationship_report_id: current.id,
+        });
+      }
+      return NextResponse.json(
+        { error: "relationship report not found" },
         { status: 404 },
       );
     }
 
     return NextResponse.json({ ok: true, relationship_report_id: data.id });
   } catch (e) {
-    console.error("relationship/upgrade:", e);
-    return NextResponse.json({ error: "업그레이드 실패" }, { status: 500 });
+    console.error("relationship/upgrade: unexpected");
+    return NextResponse.json(
+      { error: "upgrade temporarily unavailable" },
+      { status: 503 },
+    );
   }
 }

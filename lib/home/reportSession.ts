@@ -33,7 +33,7 @@ export type LoadReportSessionOptions = {
   hydrate?: boolean;
   /** true면 캐시 무시하고 resume 재조회 */
   forceRefresh?: boolean;
-  /** false면 게스트→계정 병합 생략 (기본: 수행) */
+  /** false면 게스트→계정 병합 생략 (기본: 생략 — guest merge 비활성) */
   mergeGuestAccount?: boolean;
 };
 
@@ -137,7 +137,8 @@ export async function loadReportSession(
   }
 
   const work = (async (): Promise<ReportSession> => {
-    if (options.mergeGuestAccount !== false) {
+    // Guest merge disabled by product policy.
+    if (options.mergeGuestAccount === true) {
       await ensureGuestAccountMerged(hint || stored || undefined);
       sessionCache = null;
     }
