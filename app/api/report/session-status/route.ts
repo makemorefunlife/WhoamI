@@ -7,6 +7,8 @@ import {
 } from "@/lib/supabase/serverClient";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
@@ -14,11 +16,18 @@ export const runtime = "nodejs";
  * reportId 유효·설문 완료 여부 — 로그인 + 본인 소유 report만.
  */
 export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const locale = resolveRequestLocale({
+    bodyLanguage: url.searchParams.get("language") ?? url.searchParams.get("locale"),
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
-    const reportId = new URL(req.url).searchParams.get("reportId")?.trim();
+    const reportId = url.searchParams.get("reportId")?.trim();
     if (!reportId) {
       return NextResponse.json(
-        { error: "reportId가 필요합니다." },
+        { error: messages.errors.reportIdRequired },
         { status: 400 },
       );
     }

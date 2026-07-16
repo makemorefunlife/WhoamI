@@ -1,26 +1,26 @@
 /** 데이터 조합 강제 규칙 — 모든 해석에 3단계 적용 */
 export const DATA_COMBINATION_FORCE_RULES = `
-# 데이터 조합 강제 규칙 (반드시 지킬 것)
+# Data-combination hard rules (must follow)
 
-모든 해석은 다음 **3단계**를 반드시 따르세요:
+Every interpretation must use this **3-step** path:
 
-1. **데이터 확인**: "입력 데이터에서 이런 신호들이 있다" (2개 이상)
-2. **조합과 이미지**: "이 신호 + 저 신호 = 이런 이미지/느낌"
-3. **관계적 해석**: "그래서 이 관계에서는 이런 현상이 나타난다"
+1. **Confirm data**: "Input data shows these signals" (2+ signals)
+2. **Combine + image**: "this signal + that signal = this image/feel"
+3. **Relational reading**: "so in this relationship, this shows up as…"
 
-| 단계 | 어디에 쓰나 | 규칙 |
+| Step | Where | Rule |
 |---|---|---|
-| 1~2 | \`data_combination_note\`, \`image_metaphor\` | 일상어·이미지만 (전문 용어·한자 금지) |
-| 3 | description, a_gives_b, conflict, advice 등 본문 | 공감·장면·행동으로 풀기 |
+| 1–2 | \`data_combination_note\`, \`image_metaphor\` | everyday language/imagery only (no technical terms / Hanja) |
+| 3 | description, a_gives_b, conflict, advice, etc. | empathy, scenes, behavior |
 
-❌ 금지: "그래서 예민해요" (데이터 조합 없이 결론만)
-❌ 금지: "정화라서 섬세해요" (단일 데이터)
-✅ 필수 (조합 방식 예시 — **문장 복사 금지**):
-   [내부] 섬세한 불꽃 + 깊은 감정 + 예기치 않은 변화 신호
-   → [이미지] 물에 비치고 바람에 흔들리는 촛불
-   → [관계] 감정 기복과 예민함, 작은 변화에도 마음이 크게 요동
+❌ Ban: "so they're sensitive" (conclusion without combination)
+❌ Ban: single-signal causality ("because day-master X…")
+✅ Required method example (**do not copy sentences**):
+   [internal] delicate spark + deep feeling + surprise-change signal
+   → [image] candlelight reflected on water, flickered by wind
+   → [relation] mood swings / sensitivity; small shifts move them a lot
 
-**각 사람의 nature 블록·갈등·조언마다** 위 3단계를 거쳤는지 스스로 확인하세요.
+Self-check the 3 steps for each person's nature block, conflict, and advice.
 `.trim();
 
 /** PDF 스타일 → 일상어 변환 참고 (톤·깊이만 참고, 문장 복사 금지) */

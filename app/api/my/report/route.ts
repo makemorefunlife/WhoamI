@@ -24,19 +24,27 @@ import { astrologyLocationFingerprint } from "@/lib/report/resolveAstrologyCoord
 import { syncReportBirthCoordinates } from "@/lib/report/syncReportBirthCoordinates";
 import { buildSurveyOnlyUserInputForReport } from "@/lib/report/surveyForLlmFromReportId";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
+import type { Locale } from "@/lib/i18n/locale";
+import {
+  buildLlmOutputLocaleInstruction,
+  resolveRequestLocale,
+} from "@/lib/i18n/llmLocale";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? "" });
 
-/** 무료 모드 LLM — app/api/llm/route.ts 와 동일 톤의 축약 프롬프트 */
-async function runFreeAnalysis(userInput: string): Promise<string | null> {
+/** Free-mode LLM — compact essay tone (paired with /api/llm) */
+async function runFreeAnalysis(
+  userInput: string,
+  locale: Locale,
+): Promise<string | null> {
   if (!process.env.OPENAI_API_KEY) return null;
 
   const hookTemplates = [
-    "이거 그냥 재미로 볼 수 있는데, 생각보다 꽤 정확하게 나온다",
-    "이거 가볍게 시작해도 생각보다 설명이 잘 되는 편이다",
+    "You can take this lightly — but it often lands more accurately than expected.",
+    "Even if you start casually, the read tends to explain you surprisingly well.",
   ];
   const randomHook =
     hookTemplates[Math.floor(Math.random() * hookTemplates.length)];
@@ -44,28 +52,31 @@ async function runFreeAnalysis(userInput: string): Promise<string | null> {
   const prompt = `
 ${randomHook}
 
-너는 사람을 아주 잘 읽고, 상대가 바로 이해할 말로 짚어주는 분석가야.
-친한 친구한테 말하듯, 짧고 또렷하게 말해.
+You are an analyst who reads people accurately and names patterns so the reader gets it immediately.
+Write like a close friend — short and clear.
 
-[분량]
-- 네 문단 모두 짧게: 문단당 대략 2~4문장.
-- 문장 끝은 구어체 (~거야, ~쪽이야, ~느낌이야). "~다" 로만 딱딱하게 끝내지 마.
+[Length]
+- Four short paragraphs: about 2–4 sentences each.
+- Casual spoken endings; avoid stiff formal report closures.
 
-[형식]
-- 리스트 기호 금지. 문단만. 네 문단 사이 빈 줄 하나.
-- 별표(**)·마크다운 강조 기호는 출력하지 마라. 평문만.
+[Format]
+- No list markers. Paragraphs only. One blank line between the four paragraphs.
+- No asterisks (**) or markdown emphasis — plain text only.
 
-[입력 데이터]
+[Input data]
 ${userInput}
 `;
+
+  const system = `You are an analyst who reads people accurately. Write short, easy sentences like a friend. No bullets or list formatting. No asterisks or markdown emphasis.
+
+${buildLlmOutputLocaleInstruction(locale)}`;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
-        content:
-          "너는 사람을 정확하게 읽는 분석가다. 짧고 읽기 쉬운 문장으로, 친구한테 말하듯 써라. 기호나 리스트 형식은 쓰지 마라. 별표나 마크다운 강조는 쓰지 마라.",
+        content: system,
       },
       { role: "user", content: prompt },
     ],
@@ -91,6 +102,10 @@ export async function GET(req: Request) {
     const regenerate = url.searchParams.get("regenerate") === "1";
     const regenerateIntegrated =
       url.searchParams.get("regenerateIntegrated") === "1";
+    const locale = resolveRequestLocale({
+      bodyLanguage: url.searchParams.get("language") ?? url.searchParams.get("locale"),
+      headerLanguage: req.headers.get("x-aha-locale"),
+    });
 
     if (!reportId) {
       return NextResponse.json(
@@ -207,7 +222,7 @@ export async function GET(req: Request) {
             reportId,
           );
           if (userInput) {
-            basic_result = await runFreeAnalysis(userInput);
+            basic_result = await runFreeAnalysis(userInput, locale);
             if (basic_result) {
               const saved = await writePersistedBasicAnalysis(
                 supabase,

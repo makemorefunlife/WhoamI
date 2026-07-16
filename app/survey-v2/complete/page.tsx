@@ -4,7 +4,8 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 
-import Link from "next/link";
+import LocaleLink from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -55,6 +56,8 @@ function SurveyCompleteContent() {
 
   const router = useRouter();
 
+  const { messages, href: localize } = useLocale();
+
   const searchParams = useSearchParams();
 
   const [phase, setPhase] = useState<Phase>("boot");
@@ -91,7 +94,7 @@ function SurveyCompleteContent() {
 
       if (!id || !hasSurveyV2Session(id)) {
 
-        router.replace("/");
+        router.replace(localize("/"));
 
         return;
 
@@ -103,7 +106,7 @@ function SurveyCompleteContent() {
       const existing = readBirthV2Session(id);
 
       if (hasMinimalBirth(existing)) {
-        router.replace(resultsDashboardPath(id));
+        router.replace(localize(resultsDashboardPath(id)));
         return;
       }
 
@@ -143,7 +146,7 @@ function SurveyCompleteContent() {
 
     };
 
-  }, [router, searchParams]);
+  }, [router, searchParams, localize]);
 
 
 
@@ -237,7 +240,7 @@ function SurveyCompleteContent() {
 
           data.error ??
 
-            "출생 정보 저장에 실패했어요. 잠시 후 다시 시도해 주세요.",
+            messages.survey.birthSaveFailed,
 
         );
 
@@ -255,7 +258,7 @@ function SurveyCompleteContent() {
 
       console.error("[survey-complete] birth_save_error");
 
-      alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");
+      alert(messages.survey.birthSaveNetworkError);
 
       setBusy(false);
 
@@ -265,9 +268,9 @@ function SurveyCompleteContent() {
 
 
 
-    router.push(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`);
+    router.push(localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`));
 
-  }, [birthForm, busy, canViewResults, reportId, router]);
+  }, [birthForm, busy, canViewResults, reportId, router, messages, localize]);
 
 
 
@@ -279,7 +282,7 @@ function SurveyCompleteContent() {
 
         <div className="flex min-h-dvh items-center justify-center px-6">
 
-          <p className="text-sm text-on-surface-variant">불러오는 중…</p>
+          <p className="text-sm text-on-surface-variant">{messages.report.chrome.loading}</p>
 
         </div>
 
@@ -339,19 +342,19 @@ function SurveyCompleteContent() {
 
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">
 
-              Organizing patterns
+              {messages.survey.organizingPatternsEyebrow}
 
             </p>
 
             <h1 className="stitch-headline mt-3 max-w-sm text-balance text-2xl leading-snug sm:text-3xl">
 
-              답변을 바탕으로 패턴을 정리중입니다
+              {messages.survey.organizingPatternsTitle}
 
             </h1>
 
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-on-surface-variant">
 
-              잠시만 기다려 주세요. 곧 출생 정보를 입력할 수 있어요.
+              {messages.survey.organizingPatternsSubtitle}
 
             </p>
 
@@ -396,17 +399,16 @@ function SurveyCompleteContent() {
                 onClick={() => void handleViewResults()}
                 className="stitch-cta-primary w-full disabled:cursor-not-allowed"
               >
-                {busy ? "저장 중…" : "결과 보기"}
+                {busy ? messages.survey.saving : messages.survey.viewResults}
               </button>
               {!canViewResults ? (
                 <p className="mt-2 text-center text-[11px] text-on-surface-variant">
-                  생년월일을 입력하고, 시간·장소는 입력하거나 건너뛰기를 선택해
-                  주세요.
+                  {messages.survey.birthFormIncompleteHint}
                 </p>
               ) : null}
             </div>
 
-            <Link
+            <LocaleLink
 
               href="/"
 
@@ -414,9 +416,9 @@ function SurveyCompleteContent() {
 
             >
 
-              홈으로
+              {messages.survey.goHome}
 
-            </Link>
+            </LocaleLink>
 
           </motion.div>
 
@@ -432,25 +434,24 @@ function SurveyCompleteContent() {
 
 
 
+function SurveyCompleteFallback() {
+  const { messages } = useLocale();
+  return (
+    <StitchSurveyShell>
+      <div className="flex min-h-dvh items-center justify-center px-6">
+        <p className="text-sm text-on-surface-variant">{messages.report.chrome.loading}</p>
+      </div>
+    </StitchSurveyShell>
+  );
+}
+
 export default function SurveyCompletePage() {
 
   return (
 
     <Suspense
 
-      fallback={
-
-        <StitchSurveyShell>
-
-          <div className="flex min-h-dvh items-center justify-center px-6">
-
-            <p className="text-sm text-on-surface-variant">불러오는 중…</p>
-
-          </div>
-
-        </StitchSurveyShell>
-
-      }
+      fallback={<SurveyCompleteFallback />}
 
     >
 

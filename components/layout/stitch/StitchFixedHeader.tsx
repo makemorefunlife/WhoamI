@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import LocaleLink from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePathname } from "next/navigation";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { Menu, User } from "lucide-react";
@@ -17,6 +18,7 @@ export default function StitchFixedHeader({
   const [sideOpen, setSideOpen] = useState(false);
   const [shadow, setShadow] = useState(false);
   const pathname = usePathname();
+  const { messages } = useLocale();
   const { openSignIn } = useClerk();
   const { isSignedIn, isLoaded, clerkUnavailable } = useClerkReady();
 
@@ -65,7 +67,7 @@ export default function StitchFixedHeader({
           <button
             type="button"
             className="flex h-10 w-10 items-center justify-center rounded-xl text-primary transition hover:bg-surface-container-low active:scale-95"
-            aria-label="메뉴 열기"
+            aria-label={messages.header.openMenu}
             aria-expanded={sideOpen}
             aria-controls="stitch-side-menu"
             onClick={() => setSideOpen((v) => !v)}
@@ -74,16 +76,16 @@ export default function StitchFixedHeader({
           </button>
 
           <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <Link
+            <LocaleLink
               href="/"
               className="flex items-center gap-2"
-              aria-label="Aha It's me! 홈"
+              aria-label={messages.header.homeAria}
             >
               <Logo size={32} href={null} priority onLightBackground />
               <span className="hidden text-lg font-medium tracking-tight text-primary sm:inline">
                 Aha It&apos;s me!
               </span>
-            </Link>
+            </LocaleLink>
           </div>
 
           <div className="flex h-9 w-9 items-center justify-center">
@@ -103,13 +105,9 @@ export default function StitchFixedHeader({
             ) : clerkUnavailable ? (
               <button
                 type="button"
-                title="로그인 서비스 연결 실패"
+                title={messages.header.signInFailedTitle}
                 className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant/40 text-on-surface-variant"
-                onClick={() =>
-                  alert(
-                    "로그인 서비스에 연결하지 못했어요. 페이지를 새로고침해 주세요.",
-                  )
-                }
+                onClick={() => alert(messages.header.signInFailedAlert)}
               >
                 <User className="h-4 w-4" aria-hidden />
               </button>
@@ -118,7 +116,7 @@ export default function StitchFixedHeader({
                 type="button"
                 onClick={handleOpenAuth}
                 className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant/40 bg-surface-container-low text-primary shadow-sm transition hover:bg-surface-container"
-                aria-label="로그인"
+                aria-label={messages.nav.signIn}
               >
                 <User className="h-4 w-4" strokeWidth={2} aria-hidden />
               </button>

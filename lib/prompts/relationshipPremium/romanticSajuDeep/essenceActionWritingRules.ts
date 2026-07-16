@@ -43,7 +43,7 @@ export const ESSENCE_ACTION_FORBIDDEN_CLICHES = [
   "함께보면 좋아요",
 ] as const;
 
-/** System Prompt에 주입 — section_5_action 전용 규칙 */
+/** Injected into system prompt — section_5_action rules */
 export function buildEssenceActionSystemPromptBlock(): string {
   const planning = ESSENCE_ACTION_FORBIDDEN_PLANNING_PHRASES.map((p) => `"${p}"`)
     .join(", ");
@@ -55,40 +55,40 @@ export function buildEssenceActionSystemPromptBlock(): string {
   );
 
   return `
-# section_5_action — 🌱 서로에게 도움이 되는 행동들 (최우선 규칙)
+# section_5_action — Helpful actions for each other (highest priority)
 
-## 호칭 (1순위 강제)
-- 본문·대사·제목의 모든 호칭: User Prompt의 \`userCustomMyName\` / \`userCustomTargetName\` **1순위**.
-- 별칭·애칭(예: 창창이, 우리 여보)이 있으면 문맥 **전체 호칭을 동일하게** 유지.
-- JSON 슬롯 A/B 이름은 \`target_user\` 필드에만. 본문에는 플레이스홀더 금지.
+## Names (hard preference)
+- All names in body/dialogue/titles: \`userCustomMyName\` / \`userCustomTargetName\` from User Prompt first.
+- If nicknames exist, keep the same forms everywhere.
+- JSON slot A/B names belong in \`target_user\` only — no placeholders in prose.
 
-## 기획 메모·분석용 서술 전면 삭제
-- ${planning} 등 **기획/분석용 중복 서술 구조 절대 금지**.
-- \`real_life_example\` 필드는 **항상 빈 문자열 \`""\`** — 상황 예시는 \`saju_reason\` 본문에 자연스럽게 녹이세요.
-- "OO하는 상황", "— ~할 때" 같은 메모식 접두 **0개**.
+## No planning-memo narration
+- Ban planning/analysis scaffolding such as ${planning}.
+- \`real_life_example\` must always be \`""\` — fold situations into \`saju_reason\` only.
+- Zero memo-style prefixes ("in situations where…", "— when ~").
 
-## 심리 저널화 (명리·자연물 비유 전면 차단)
-- 내부: 사주·점성·설문으로 행동 처방 근거 계산.
-- **출력 본문**: 명리 용어·한자 **0개**. ${nature} 등 **자연물·원소 비유 0개**.
-- **현대 심리학적 단어** + **실전 행동 강령** + **실전 대사**만.
+## Psychological journal (block Mingli / nature metaphors)
+- Internally: ground prescriptions in Saju, astrology, survey.
+- **User-facing body**: zero Mingli terms / Hanja. Zero nature/element metaphors such as ${nature}.
+- Use modern psychological wording + concrete action mandates + speakable lines only.
 
-## 팁 파편화 (복사 붙여넣기 방지)
-- \`advice_for_a\` 3개·\`advice_for_b\` 3개 — **제목만 다르고 본문이 같은** 미러링 **즉시 폐기**.
-- 같은 "감정을 드러내라" 문장을 양쪽·여러 팁에 **반복 금지** (${cliches} 등 클리셰 0개).
-- 각 팁은 **서로 다른 행동 강령**이어야 함. 예시 축:
-  - A용 01: 상대 **정서적 타이밍 존중** / 02: **표현 밀도 조절** / 03: **해결 전 감정 확인**
-  - B용 01: **침묵 깨고 내면 표현** / 02: **해결 전 주파수·공감 맞추기** / 03: **완벽한 말 대신 솔직한 시도**
+## Tip fragmentation (anti copy-paste)
+- \`advice_for_a\` ×3 and \`advice_for_b\` ×3 — discard title-only mirrors with same body.
+- Do not repeat the same "express your feelings" line across tips (${cliches} and variants = 0).
+- Each tip needs a distinct action mandate. Example axes:
+  - For A: respect partner's emotional timing / regulate expression density / check feelings before solving
+  - For B: break silence and name the inner state / sync empathy before solving / try honesty over perfect words
 
-## 출력 구조 (필수)
-각 사람별 3개 팁 — 항목마다:
-- \`action_title\`: 행동 강령 제목 (한 줄, 후킹)
-- \`saju_reason\`: 왜·어떻게 — **3~4문장** (상황은 여기에만, 기획 메모 톤 금지)
-- \`real_speech_tip\`: 입으로 뱉을 **실전 대사 1~2문장** (따옴표 없이 본문만)
-- \`real_life_example\`: **반드시 \`""\`**
+## Output structure (required)
+Per person, 3 tips — each item:
+- \`action_title\`: hooky one-line mandate
+- \`saju_reason\`: why/how — **3–4 sentences** (situations only here; no planning-memo tone)
+- \`real_speech_tip\`: 1–2 speakable lines (no wrapping quotes)
+- \`real_life_example\`: must be \`""\`
 
-하단 공동 섹션 (함께보면 좋아요 대체):
-- \`together\`: **💌 에센스 다이어리** 본문 — **3~4문장+**, 관계 아카이브·주말 대화 제안 등 구체적
-- \`together_starter\`: "이렇게 대화의 문을 열어보세요"용 **실전 대사 1~2문장**
+Shared bottom section:
+- \`together\`: Essence diary body — **3–4+ sentences**, concrete (e.g. archive ritual, weekend talk prompt)
+- \`together_starter\`: 1–2 speakable lines that open the conversation
 `.trim();
 }
 

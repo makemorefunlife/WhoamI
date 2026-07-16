@@ -1,4 +1,5 @@
 import { fetchBirthAstrologyText } from "@/lib/v1/slim/fetchBirthAstrology";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type BirthEnergyParts = {
   astrology: string;
@@ -16,12 +17,14 @@ export async function buildBirthEnergyContext(input: {
   birthTime?: string | null;
   birthTimeUnknown?: boolean;
   birthPlace?: string | null;
+  locale?: Locale | string;
 }): Promise<BirthEnergyParts> {
   const result = await fetchBirthAstrologyText({
     birthDate: input.birthDate,
     birthTime: input.birthTime,
     birthTimeUnknown: input.birthTimeUnknown,
     birthPlace: input.birthPlace,
+    locale: input.locale,
   });
 
   return {

@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/i18n/locale";
+import { normalizeLocale } from "@/lib/i18n/locale";
 import type { RelationshipKind } from "./relationshipKind";
 import { getViewerPerspectiveSlice } from "./normalizeRelationshipPerspectives";
 import {
@@ -26,7 +28,13 @@ import {
 } from "@/lib/prompts/relationshipPremium/friendSocial/outputSchema";
 import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 
-/** kind별 premium 캐시 — perspectives LLM 또는 사주 심화(deep) report */
+/**
+ * kind별 premium 캐시.
+ * perspectives-only는 레거시 잔여물 — cache hit로 보지 않음 (deep format만 완료).
+ *
+ * Locale: prefer `byLocale["en-US"|"ko-KR"]`. Flat legacy deep payloads are
+ * treated as cache **miss** for locale-strict hits (safe default).
+ */
 export type PremiumKindPayload =
   | { perspectives?: Record<string, unknown> }
   | {
@@ -50,14 +58,28 @@ export type PremiumKindPayload =
       report: FriendSocialDeepReport["report"];
     };
 
+export type PremiumKindSlot = {
+  byLocale?: Partial<Record<Locale, PremiumKindPayload>>;
+  perspectives?: Record<string, unknown>;
+  /** @deprecated Legacy flat deep — not a locale-safe hit */
+  format?: string;
+  report?: unknown;
+};
+
 export type ResultPremiumByKind = Partial<
-  Record<RelationshipKind, PremiumKindPayload>
+  Record<RelationshipKind, PremiumKindSlot | PremiumKindPayload>
 >;
 
 function isDeepFormatPayload(
-  payload: PremiumKindPayload,
+  payload: PremiumKindPayload | PremiumKindSlot | undefined,
 ): payload is Extract<PremiumKindPayload, { format: string }> {
-  return "format" in payload && Boolean(payload.format);
+  return (
+    !!payload &&
+    typeof payload === "object" &&
+    "format" in payload &&
+    Boolean((payload as { format?: string }).format) &&
+    !("byLocale" in payload && (payload as PremiumKindSlot).byLocale)
+  );
 }
 
 function deepReportValid(format: string, report: unknown): boolean {
@@ -83,11 +105,10 @@ function kindPayloadHasCache(
   payload: PremiumKindPayload | undefined,
   kind: RelationshipKind,
 ): boolean {
-  if (!payload) return false;
+  if (!payload || !isDeepFormatPayload(payload)) return false;
 
   if (kind === "work") {
     return (
-      isDeepFormatPayload(payload) &&
       payload.format === WORK_COLLEAGUE_DEEP_FORMAT &&
       isWorkColleagueDeepReport({
         format: payload.format,
@@ -97,7 +118,6 @@ function kindPayloadHasCache(
   }
   if (kind === "cohabitation") {
     return (
-      isDeepFormatPayload(payload) &&
       payload.format === COHABITATION_DEEP_FORMAT &&
       isCohabitationDeepReport({
         format: payload.format,
@@ -107,7 +127,6 @@ function kindPayloadHasCache(
   }
   if (kind === "family") {
     return (
-      isDeepFormatPayload(payload) &&
       payload.format === FAMILY_PARENT_CHILD_DEEP_FORMAT &&
       isFamilyParentChildDeepReport({
         format: payload.format,
@@ -117,7 +136,6 @@ function kindPayloadHasCache(
   }
   if (kind === "friendship") {
     return (
-      isDeepFormatPayload(payload) &&
       payload.format === FRIEND_SOCIAL_DEEP_FORMAT &&
       isFriendSocialDeepReport({
         format: payload.format,
@@ -126,25 +144,128 @@ function kindPayloadHasCache(
     );
   }
 
-  // romantic (and any remaining kind): deep format or non-empty perspectives
-  if (isDeepFormatPayload(payload)) {
-    if (kind === "romantic" && payload.format === ROMANTIC_SAJU_DEEP_FORMAT) {
-      return isRomanticSajuDeepReport({ report: payload.report });
-    }
-    return deepReportValid(payload.format, payload.report);
+  if (kind === "romantic" && payload.format === ROMANTIC_SAJU_DEEP_FORMAT) {
+    return isRomanticSajuDeepReport({ report: payload.report });
   }
-  const block = payload.perspectives;
-  return Boolean(
-    block && typeof block === "object" && Object.keys(block).length > 0,
-  );
+  return deepReportValid(payload.format, payload.report);
 }
 
-/** True when by_kind[kind] holds a valid premium cache for that kind. */
+function asSlot(
+  raw: PremiumKindSlot | PremiumKindPayload | undefined,
+): PremiumKindSlot | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  return raw as PremiumKindSlot;
+}
+
+/** Resolve deep payload for a kind + locale (strict — legacy flat = miss). */
+export function getPremiumPayloadForKindLocale(
+  byKind: ResultPremiumByKind | null | undefined,
+  kind: RelationshipKind,
+  locale: Locale | string,
+): PremiumKindPayload | null {
+  const resolved = normalizeLocale(locale);
+  const slot = asSlot(byKind?.[kind]);
+  if (!slot) return null;
+
+  const fromBucket = slot.byLocale?.[resolved];
+  if (fromBucket && kindPayloadHasCache(fromBucket, kind)) {
+    return fromBucket;
+  }
+
+  // Optional: migrate-safe hit when legacy meta.locale matches
+  if (isDeepFormatPayload(slot)) {
+    const meta = (slot.report as { meta?: Record<string, unknown> } | undefined)
+      ?.meta;
+    const metaLocale = normalizeLocale(
+      meta?.locale ?? meta?.language ?? null,
+    );
+    if (
+      meta?.locale != null ||
+      meta?.language != null
+    ) {
+      if (metaLocale === resolved && kindPayloadHasCache(slot, kind)) {
+        return slot;
+      }
+    }
+    // No locale meta → miss (safe)
+  }
+
+  return null;
+}
+
+/**
+ * Locale-strict cache hit.
+ * @deprecated Prefer hasPremiumCacheForKindLocale — kept for callers that pass locale as 3rd arg.
+ */
 export function hasPremiumCacheForKind(
   byKind: ResultPremiumByKind | null | undefined,
   kind: RelationshipKind,
+  locale?: Locale | string,
 ): boolean {
-  return kindPayloadHasCache(byKind?.[kind], kind);
+  if (locale != null) {
+    return getPremiumPayloadForKindLocale(byKind, kind, locale) != null;
+  }
+  // Locale omitted: true if any byLocale entry OR legacy deep (completion checks)
+  const slot = asSlot(byKind?.[kind]);
+  if (!slot) return false;
+  if (slot.byLocale) {
+    return (Object.keys(slot.byLocale) as Locale[]).some((loc) =>
+      kindPayloadHasCache(slot.byLocale?.[loc], kind),
+    );
+  }
+  return kindPayloadHasCache(slot as PremiumKindPayload, kind);
+}
+
+export function hasPremiumCacheForKindLocale(
+  byKind: ResultPremiumByKind | null | undefined,
+  kind: RelationshipKind,
+  locale: Locale | string,
+): boolean {
+  return getPremiumPayloadForKindLocale(byKind, kind, locale) != null;
+}
+
+/** Atomic merge: write one locale without wiping other locales or other kinds. */
+export function mergePremiumKindLocale(
+  byKind: ResultPremiumByKind | null | undefined,
+  kind: RelationshipKind,
+  locale: Locale | string,
+  payload: PremiumKindPayload,
+): ResultPremiumByKind {
+  const resolved = normalizeLocale(locale);
+  const prev = { ...(byKind ?? {}) };
+  const rawSlot = prev[kind];
+  const prevSlot: PremiumKindSlot = asSlot(rawSlot) ?? {};
+  const prevByLocale: Partial<Record<Locale, PremiumKindPayload>> = {
+    ...(prevSlot.byLocale ?? {}),
+  };
+
+  // Lift legacy flat deep into byLocale once (under its meta locale or skip)
+  if (isDeepFormatPayload(rawSlot) && !prevSlot.byLocale) {
+    const meta = (rawSlot.report as { meta?: Record<string, unknown> })?.meta;
+    if (meta?.locale != null || meta?.language != null) {
+      const lift = normalizeLocale(meta.locale ?? meta.language);
+      prevByLocale[lift] = rawSlot;
+    }
+  }
+
+  prevByLocale[resolved] = payload;
+
+  const nextSlot: PremiumKindSlot = {
+    byLocale: prevByLocale,
+  };
+  const prevPerspectives =
+    prevSlot.perspectives ??
+    (rawSlot &&
+    typeof rawSlot === "object" &&
+    "perspectives" in rawSlot
+      ? (rawSlot as { perspectives?: Record<string, unknown> }).perspectives
+      : undefined);
+  if (prevPerspectives) {
+    nextSlot.perspectives = prevPerspectives;
+  }
+
+  prev[kind] = nextSlot;
+  return prev;
 }
 
 export function getPremiumPerspectiveForKind(
@@ -158,9 +279,14 @@ export function getPremiumPerspectiveForKind(
   const sliceOptions = options?.partnerReportName
     ? { partnerReportName: options.partnerReportName }
     : undefined;
-  const payload = byKind?.[kind];
-  if (payload && "perspectives" in payload && payload.perspectives) {
-    const block = payload.perspectives as Record<string, unknown>;
+  const slot = asSlot(byKind?.[kind]);
+  const perspectives =
+    slot?.perspectives ??
+    (slot && "perspectives" in slot
+      ? (slot as { perspectives?: Record<string, unknown> }).perspectives
+      : undefined);
+  if (perspectives) {
+    const block = perspectives;
     if (reportIdA && reportIdB) {
       const slice = getViewerPerspectiveSlice(
         block,
@@ -178,89 +304,138 @@ export function getPremiumPerspectiveForKind(
   return null;
 }
 
+function reportFromLocaleOrLegacy(
+  byKind: ResultPremiumByKind | null | undefined,
+  kind: RelationshipKind,
+  format: string,
+  locale?: Locale | string,
+): unknown | null {
+  if (locale != null) {
+    const payload = getPremiumPayloadForKindLocale(byKind, kind, locale);
+    if (
+      payload &&
+      isDeepFormatPayload(payload) &&
+      payload.format === format
+    ) {
+      return payload.report;
+    }
+    return null;
+  }
+  const slot = asSlot(byKind?.[kind]);
+  if (!slot) return null;
+  if (slot.byLocale) {
+    for (const p of Object.values(slot.byLocale)) {
+      if (p && isDeepFormatPayload(p) && p.format === format) {
+        return p.report;
+      }
+    }
+  }
+  if (isDeepFormatPayload(slot) && slot.format === format) {
+    return slot.report;
+  }
+  return null;
+}
+
 export function getRomanticSajuDeepReport(
   byKind: ResultPremiumByKind | null | undefined,
+  locale?: Locale | string,
 ): RomanticSajuDeepReport["report"] | null {
-  const payload = byKind?.romantic;
-  if (
-    payload &&
-    isDeepFormatPayload(payload) &&
-    payload.format === ROMANTIC_SAJU_DEEP_FORMAT &&
-    isRomanticSajuDeepReport({ report: payload.report })
-  ) {
-    return payload.report;
+  const report = reportFromLocaleOrLegacy(
+    byKind,
+    "romantic",
+    ROMANTIC_SAJU_DEEP_FORMAT,
+    locale,
+  );
+  if (report && isRomanticSajuDeepReport({ report })) {
+    return report as RomanticSajuDeepReport["report"];
   }
   return null;
 }
 
 export function getWorkColleagueDeepReport(
   byKind: ResultPremiumByKind | null | undefined,
+  locale?: Locale | string,
 ): WorkColleagueDeepReport["report"] | null {
-  const payload = byKind?.work;
+  const report = reportFromLocaleOrLegacy(
+    byKind,
+    "work",
+    WORK_COLLEAGUE_DEEP_FORMAT,
+    locale,
+  );
   if (
-    payload &&
-    isDeepFormatPayload(payload) &&
-    payload.format === WORK_COLLEAGUE_DEEP_FORMAT &&
+    report &&
     isWorkColleagueDeepReport({
-      format: payload.format,
-      report: payload.report,
+      format: WORK_COLLEAGUE_DEEP_FORMAT,
+      report,
     })
   ) {
-    return payload.report;
+    return report as WorkColleagueDeepReport["report"];
   }
   return null;
 }
 
 export function getCohabitationDeepReport(
   byKind: ResultPremiumByKind | null | undefined,
+  locale?: Locale | string,
 ): CohabitationDeepReport["report"] | null {
-  const payload = byKind?.cohabitation;
+  const report = reportFromLocaleOrLegacy(
+    byKind,
+    "cohabitation",
+    COHABITATION_DEEP_FORMAT,
+    locale,
+  );
   if (
-    payload &&
-    isDeepFormatPayload(payload) &&
-    payload.format === COHABITATION_DEEP_FORMAT &&
+    report &&
     isCohabitationDeepReport({
-      format: payload.format,
-      report: payload.report,
+      format: COHABITATION_DEEP_FORMAT,
+      report,
     })
   ) {
-    return payload.report;
+    return report as CohabitationDeepReport["report"];
   }
   return null;
 }
 
 export function getFamilyParentDeepReport(
   byKind: ResultPremiumByKind | null | undefined,
+  locale?: Locale | string,
 ): FamilyParentChildDeepReport["report"] | null {
-  const payload = byKind?.family;
+  const report = reportFromLocaleOrLegacy(
+    byKind,
+    "family",
+    FAMILY_PARENT_CHILD_DEEP_FORMAT,
+    locale,
+  );
   if (
-    payload &&
-    isDeepFormatPayload(payload) &&
-    payload.format === FAMILY_PARENT_CHILD_DEEP_FORMAT &&
+    report &&
     isFamilyParentChildDeepReport({
-      format: payload.format,
-      report: payload.report,
+      format: FAMILY_PARENT_CHILD_DEEP_FORMAT,
+      report,
     })
   ) {
-    return payload.report;
+    return report as FamilyParentChildDeepReport["report"];
   }
   return null;
 }
 
 export function getFriendSocialDeepReport(
   byKind: ResultPremiumByKind | null | undefined,
+  locale?: Locale | string,
 ): FriendSocialDeepReport["report"] | null {
-  const payload = byKind?.friendship;
+  const report = reportFromLocaleOrLegacy(
+    byKind,
+    "friendship",
+    FRIEND_SOCIAL_DEEP_FORMAT,
+    locale,
+  );
   if (
-    payload &&
-    isDeepFormatPayload(payload) &&
-    payload.format === FRIEND_SOCIAL_DEEP_FORMAT &&
+    report &&
     isFriendSocialDeepReport({
-      format: payload.format,
-      report: payload.report,
+      format: FRIEND_SOCIAL_DEEP_FORMAT,
+      report,
     })
   ) {
-    return payload.report;
+    return report as FriendSocialDeepReport["report"];
   }
   return null;
 }

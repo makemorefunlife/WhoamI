@@ -16,6 +16,7 @@ import {
   parse24hTo12h,
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type StitchBirthFormState = {
   birthDate: string;
@@ -47,6 +48,7 @@ export default function StitchBirthInputForm({
   busy?: boolean;
   onChange: (state: StitchBirthFormState) => void;
 }) {
+  const { messages } = useLocale();
   const parsed = parseBirthDateParts(initialBirthDate ?? null);
   const parsedTime =
     !initialBirthTimeUnknown && initialBirthTime
@@ -167,10 +169,10 @@ export default function StitchBirthInputForm({
           Birth details
         </p>
         <h2 className="stitch-headline mt-2 text-balance text-xl leading-snug">
-          생년월일시 · 태어난 장소
+          {messages.birthForm.heading}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-          사주와 점성 해석에 사용돼요. 모르는 항목은 건너뛸 수 있어요.
+          {messages.birthForm.subtitle}
         </p>
       </div>
 
@@ -236,8 +238,8 @@ export default function StitchBirthInputForm({
           {year || month || day ? (
             <p className="text-center text-xs text-on-surface-variant">
               {dateComplete
-                ? `${birthDate} — 확인됐어요`
-                : "연·월·일을 모두 입력해 주세요"}
+                ? messages.birthForm.dateConfirmed(birthDate)
+                : messages.birthForm.dateIncomplete}
             </p>
           ) : null}
         </section>
@@ -299,15 +301,15 @@ export default function StitchBirthInputForm({
           </div>
           {birthTimeUnknown ? (
             <p className="text-center text-xs text-secondary">
-              출생 시간 모름 — 12시 기준으로 계산해요.
+              {messages.birthForm.timeUnknownNotice}
             </p>
           ) : timeComplete ? (
             <p className="text-center text-xs text-secondary">
-              {period === "am" ? "오전" : "오후"} {hour}:{minute}
+              {period === "am" ? messages.birthForm.amLabel : messages.birthForm.pmLabel} {hour}:{minute}
             </p>
           ) : (
             <p className="text-center text-xs text-on-surface-variant">
-              1–12시 · 00–59분
+              {messages.birthForm.timeRangeHint}
             </p>
           )}
           <button
@@ -316,7 +318,7 @@ export default function StitchBirthInputForm({
             onClick={skipTime}
             className="w-full rounded-2xl border border-outline-variant/60 bg-surface px-4 py-3 text-sm font-medium text-on-surface transition hover:border-primary/35 disabled:opacity-50"
           >
-            시간 모름 / 입력 안 함
+            {messages.birthForm.skipTime}
           </button>
         </section>
 
@@ -331,20 +333,21 @@ export default function StitchBirthInputForm({
               setBirthPlace(e.target.value);
               if (birthPlaceUnknown) setBirthPlaceUnknown(false);
             }}
-            placeholder="예: 서울, 부산, Tokyo"
+            placeholder={messages.birthForm.placePlaceholder}
             disabled={busy || birthPlaceUnknown}
             autoComplete="address-level2"
             className={`${inputClass} text-base disabled:opacity-40`}
           />
           {birthPlaceUnknown ? (
             <p className="rounded-xl border border-secondary/25 bg-secondary/8 px-3 py-2.5 text-xs leading-relaxed text-on-surface-variant">
-              <span className="font-medium text-primary">안내:</span> 장소를
-              모르면 해석 정확도가 떨어질 수 있어요. 가능하면 현재 위치를
-              중심으로 대략 계산합니다.
+              <span className="font-medium text-primary">
+                {messages.birthForm.placeUnknownNoticeLabel}
+              </span>{" "}
+              {messages.birthForm.placeUnknownNoticeBody}
             </p>
           ) : !placeComplete && dateComplete ? (
             <p className="text-center text-[10px] text-on-surface-variant">
-              점성 차트에 필요해요. 사주(본질)은 지역과 무관해요.
+              {messages.birthForm.placeNeededHint}
             </p>
           ) : null}
           {birthPlaceUnknown ? (
@@ -354,7 +357,7 @@ export default function StitchBirthInputForm({
               onClick={enablePlaceInput}
               className="w-full rounded-2xl border border-outline-variant/60 px-4 py-3 text-sm font-medium text-primary transition hover:border-primary/35"
             >
-              장소 직접 입력하기
+              {messages.birthForm.enterPlaceManually}
             </button>
           ) : (
             <button
@@ -363,7 +366,7 @@ export default function StitchBirthInputForm({
               onClick={skipPlace}
               className="w-full rounded-2xl border border-outline-variant/60 bg-surface px-4 py-3 text-sm font-medium text-on-surface transition hover:border-primary/35"
             >
-              장소 입력 안 함
+              {messages.birthForm.skipPlace}
             </button>
           )}
         </section>

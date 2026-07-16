@@ -11,12 +11,14 @@ import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import { readBirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import { hasMinimalBirth } from "@/lib/v2/onboarding/hydrateBirthSession";
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export function useSlimV1Integrated(
   reportId: string,
   enabled: boolean,
   birthFromBundle?: BirthV2Session | null,
 ) {
+  const { locale, messages } = useLocale();
   const [data, setData] = useState<EssenceDeepPreviewResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +33,13 @@ export function useSlimV1Integrated(
       const birth = birthFromBundle ?? readBirthV2Session(reportId);
       if (!hasMinimalBirth(birth)) {
         setData(null);
-        setError("생년월일 정보가 없습니다. 계정 → 출생 정보에서 입력해 주세요.");
+        setError(messages.errors.birthMissing);
         setLoading(false);
         return;
       }
 
       if (!opts?.clearCaches) {
-        const cached = readSlimIntegratedCache(reportId);
+        const cached = readSlimIntegratedCache(reportId, locale);
         if (cached) {
           setData(cached);
           setError(null);
@@ -54,7 +56,10 @@ export function useSlimV1Integrated(
       try {
         const res = await fetch("/api/v2/deep/essence", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-aha-locale": locale,
+          },
           cache: "no-store",
           body: JSON.stringify({
             reportId,
@@ -64,24 +69,27 @@ export function useSlimV1Integrated(
             birthPlace: birth!.birthPlace,
             surveyAnswers: survey?.answers ?? null,
             currentSelfProfile: survey?.profile ?? null,
+            language: locale,
           }),
         });
         const json = (await res.json()) as EssenceDeepPreviewResponse & {
           error?: string;
         };
         if (!res.ok || !json.slim_v1?.report) {
-          throw new Error(json.error ?? "분석에 실패했습니다.");
+          throw new Error(json.error ?? messages.errors.analysisFailed);
         }
         const payload = { ok: true as const, slim_v1: json.slim_v1 };
-        writeSlimIntegratedCache(reportId, payload);
+        writeSlimIntegratedCache(reportId, payload, locale);
         setData(payload);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "분석에 실패했습니다.");
+        setError(
+          e instanceof Error ? e.message : messages.errors.analysisFailed,
+        );
       } finally {
         setLoading(false);
       }
     },
-    [reportId, birthFromBundle],
+    [reportId, birthFromBundle, locale, messages.errors.birthMissing, messages.errors.analysisFailed],
   );
 
   const regenerateFresh = useCallback(() => {

@@ -21,6 +21,8 @@ import type {
   SurveyAnswersInput,
 
 } from "@/lib/v2/survey/types";
+import type { Locale } from "@/lib/i18n/locale";
+import { normalizeLocale } from "@/lib/i18n/locale";
 
 
 
@@ -37,6 +39,8 @@ export type SlimIntegratedRunInput = {
   surveyAnswers?: SurveyAnswersInput | null;
 
   currentSelfProfile?: CurrentSelfProfile | null;
+
+  locale?: Locale | string;
 
 };
 
@@ -59,6 +63,8 @@ export async function runSlimIntegratedReport(
   input: SlimIntegratedRunInput,
 
 ): Promise<SlimV1ReportResult> {
+
+  const locale = normalizeLocale(input.locale);
 
   const bundle = calculateSajuBundle({
 
@@ -102,6 +108,8 @@ export async function runSlimIntegratedReport(
 
     birthPlace: input.birthPlace,
 
+    locale,
+
   });
 
 
@@ -113,6 +121,8 @@ export async function runSlimIntegratedReport(
     sajuSummary: essenceAnalysisSummary,
 
     astrologyInterpretation: birthEnergy.astrology,
+
+    locale,
 
   });
 

@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import Logo from "@/components/brand/Logo";
+import LocaleLink from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { pathnameWithoutLocalePrefix } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
 import { ChevronRight } from "lucide-react";
 import {
@@ -13,59 +15,6 @@ import {
 } from "@/lib/stitch/hubPaths";
 import { useAppSession } from "@/lib/routing/useAppSession";
 import { useHydrated } from "@/lib/hooks/useHydrated";
-const NAV_ITEMS = [
-  {
-    href: "/",
-    title: "Dashboard",
-    subtitle: "Your Journey Starts Here",
-  },
-  {
-    href: "/blueprint-preview",
-    title: "My Blueprint",
-    subtitle: "Uncover Your True Design",
-  },
-  {
-    href: "/relationships",
-    title: "Relation Lab",
-    subtitle: "Decode Your Chemistry",
-    badge: "NEW" as const,
-  },
-  {
-    href: "/decision",
-    title: "Choice Engine",
-    subtitle: "Navigate Your Next Move",
-  },
-] as const;
-
-const FOOTER_GROUPS = [
-  {
-    id: "account",
-    label: "Account",
-    links: [
-      { href: ROUTES.accountProfile, label: "My Profile" },
-      { href: ROUTES.accountBilling, label: "Billing History" },
-    ],
-  },
-  {
-    id: "support",
-    label: "Support",
-    links: [
-      { href: ROUTES.about, label: "About Service" },
-      { href: ROUTES.pricing, label: "Pricing" },
-      { href: ROUTES.faq, label: "FAQ" },
-      { href: ROUTES.contact, label: "Contact Support" },
-    ],
-  },
-  {
-    id: "legal",
-    label: "Legal",
-    links: [
-      { href: ROUTES.terms, label: "Terms of Service" },
-      { href: ROUTES.privacy, label: "Privacy Policy" },
-      { href: ROUTES.refund, label: "Refund Policy" },
-    ],
-  },
-] as const;
 
 function resolveNavHref(href: string, reportId: string): string {
   if (href === "/blueprint-preview") return blueprintPath(reportId);
@@ -75,16 +24,20 @@ function resolveNavHref(href: string, reportId: string): string {
 }
 
 function NavRow({
-  item,
+  title,
+  subtitle,
+  badge,
   href,
   onNavigate,
 }: {
-  item: (typeof NAV_ITEMS)[number];
+  title: string;
+  subtitle: string;
+  badge?: string;
   href: string;
   onNavigate: () => void;
 }) {
   return (
-    <Link
+    <LocaleLink
       href={href}
       onClick={onNavigate}
       className="group flex w-full items-center gap-3 rounded-xl px-3 py-4 text-left transition hover:bg-surface-container-low/80 active:scale-[0.99]"
@@ -92,16 +45,16 @@ function NavRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="text-xl font-bold tracking-[-0.03em] text-primary sm:text-[1.35rem]">
-            {item.title}
+            {title}
           </p>
-          {"badge" in item && item.badge ? (
+          {badge ? (
             <span className="rounded-full bg-secondary/12 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-secondary">
-              {item.badge}
+              {badge}
             </span>
           ) : null}
         </div>
         <p className="mt-1 text-[13px] font-normal leading-snug text-on-surface-variant/75">
-          {item.subtitle}
+          {subtitle}
         </p>
       </div>
       <ChevronRight
@@ -109,7 +62,7 @@ function NavRow({
         strokeWidth={1.75}
         aria-hidden
       />
-    </Link>
+    </LocaleLink>
   );
 }
 
@@ -120,6 +73,7 @@ export default function StitchSideMenu({
   open: boolean;
   onClose: () => void;
 }) {
+  const { messages, locale, href: localize } = useLocale();
   const [storedReportId, setStoredReportId] = useState("");
   const hydrated = useHydrated();
   const { reportId: sessionReportId } = useAppSession({ hydrate: false });
@@ -131,6 +85,64 @@ export default function StitchSideMenu({
   const reportId = hydrated
     ? sessionReportId?.trim() || storedReportId
     : "";
+
+  const navItems = [
+    {
+      href: "/",
+      title: messages.nav.dashboard,
+      subtitle:
+        locale === "ko-KR" ? "당신의 여정이 여기서 시작됩니다" : "Your Journey Starts Here",
+    },
+    {
+      href: "/blueprint-preview",
+      title: messages.nav.blueprint,
+      subtitle:
+        locale === "ko-KR" ? "진짜 설계를 발견하세요" : "Uncover Your True Design",
+    },
+    {
+      href: "/relationships",
+      title: messages.nav.relationLab,
+      subtitle:
+        locale === "ko-KR" ? "관계의 케미스트리를 해독하세요" : "Decode Your Chemistry",
+      badge: "NEW",
+    },
+    {
+      href: "/decision",
+      title: messages.nav.decision,
+      subtitle:
+        locale === "ko-KR" ? "다음 선택을 안내합니다" : "Navigate Your Next Move",
+    },
+  ];
+
+  const footerGroups = [
+    {
+      id: "account",
+      label: messages.account.title,
+      links: [
+        { href: ROUTES.accountProfile, label: messages.account.profile },
+        { href: ROUTES.accountBilling, label: messages.account.billing },
+      ],
+    },
+    {
+      id: "support",
+      label: messages.footer.support,
+      links: [
+        { href: ROUTES.about, label: messages.nav.about },
+        { href: ROUTES.pricing, label: messages.nav.pricing },
+        { href: ROUTES.faq, label: messages.nav.faq },
+        { href: ROUTES.contact, label: messages.nav.contact },
+      ],
+    },
+    {
+      id: "legal",
+      label: messages.footer.legal,
+      links: [
+        { href: ROUTES.terms, label: messages.footer.terms },
+        { href: ROUTES.privacy, label: messages.footer.privacy },
+        { href: ROUTES.refund, label: messages.footer.refund },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -156,13 +168,13 @@ export default function StitchSideMenu({
       >
         <div className="flex items-center justify-between px-5 pb-3 pt-5">
           <div className="flex items-center gap-2.5">
-            <Logo size={22} href="/" onLightBackground />
+            <Logo size={22} href={localize("/")} onLightBackground />
             <div>
               <p className="text-sm font-semibold tracking-[-0.02em] text-primary">
                 Aha It&apos;s me!
               </p>
               <p className="text-[10px] font-medium tracking-[0.04em] text-on-surface-variant/70">
-                Know yourself better
+                {locale === "ko-KR" ? "나 자신을 더 잘 알기" : "Know yourself better"}
               </p>
             </div>
           </div>
@@ -170,7 +182,7 @@ export default function StitchSideMenu({
             type="button"
             onClick={onClose}
             className="rounded-lg px-2 py-1 text-lg leading-none text-on-surface-variant/70 transition hover:bg-surface-container-low hover:text-primary"
-            aria-label="Close menu"
+            aria-label={messages.common.close}
           >
             ×
           </button>
@@ -178,10 +190,12 @@ export default function StitchSideMenu({
 
         <nav className="flex-1 overflow-y-auto overscroll-contain px-3 pb-8 pt-2">
           <div className="space-y-0.5">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <NavRow
                 key={item.href}
-                item={item}
+                title={item.title}
+                subtitle={item.subtitle}
+                badge={item.badge}
                 href={resolveNavHref(item.href, reportId)}
                 onNavigate={onClose}
               />
@@ -189,7 +203,7 @@ export default function StitchSideMenu({
           </div>
 
           <div className="mt-10 space-y-3.5 border-t border-outline-variant/30 px-1 pt-5">
-            {FOOTER_GROUPS.map((group) => (
+            {footerGroups.map((group) => (
               <div key={group.id}>
                 <p className="mb-0.5 px-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-on-surface-variant/50">
                   {group.label}
@@ -197,13 +211,13 @@ export default function StitchSideMenu({
                 <ul>
                   {group.links.map((link) => (
                     <li key={link.href}>
-                      <Link
+                      <LocaleLink
                         href={link.href}
                         onClick={onClose}
                         className="block rounded-md px-2 py-1 text-[11px] font-light leading-snug text-on-surface-variant/75 transition hover:bg-surface-container-low/70 hover:text-primary"
                       >
                         {link.label}
-                      </Link>
+                      </LocaleLink>
                     </li>
                   ))}
                 </ul>
@@ -219,14 +233,15 @@ export default function StitchSideMenu({
 export function stitchDockActivePath(
   pathname: string,
 ): "home" | "me" | "relations" | "decision" | null {
-  if (pathname === "/") return "home";
-  if (pathname.startsWith("/blueprint-preview")) return "me";
+  const path = pathnameWithoutLocalePrefix(pathname);
+  if (path === "/") return "home";
+  if (path.startsWith("/blueprint-preview")) return "me";
   if (
-    pathname.startsWith("/relationships") ||
-    pathname.startsWith("/relationship/")
+    path.startsWith("/relationships") ||
+    path.startsWith("/relationship/")
   ) {
     return "relations";
   }
-  if (pathname.startsWith("/decision")) return "decision";
+  if (path.startsWith("/decision")) return "decision";
   return null;
 }

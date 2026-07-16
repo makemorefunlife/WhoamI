@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import Logo from "@/components/brand/Logo";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   partnerName: string;
@@ -15,12 +16,15 @@ export default function RelationshipGeneratingPanel({
   kindLabel,
   phase = "generating",
 }: Props) {
+  const { messages, href: localize } = useLocale();
   const title =
-    phase === "loading" ? "리포트를 불러오는 중이에요" : "리포트를 생성중입니다";
+    phase === "loading"
+      ? messages.report.loadingReportTitle
+      : messages.report.generatingReportTitle;
   const subtitle =
     phase === "loading"
-      ? "잠시만 기다려 주세요."
-      : `${partnerName}님과의 ${kindLabel} 분석을 준비하고 있어요. 1~2분 걸릴 수 있어요.`;
+      ? messages.report.analyzingHint
+      : messages.report.generatingSubtitle(partnerName, kindLabel);
 
   return (
     <motion.div
@@ -29,7 +33,7 @@ export default function RelationshipGeneratingPanel({
       className="stitch-hero-panel mb-6 rounded-extra-large border border-secondary/25 p-8 text-center"
     >
       <div className="mx-auto mb-4 flex flex-col items-center gap-3">
-        <Logo size={36} href="/" onLightBackground />
+        <Logo size={36} href={localize("/")} onLightBackground />
         <Loader2 className="h-7 w-7 animate-spin text-secondary" aria-hidden />
       </div>
       <h2 className="stitch-headline text-xl text-primary">{title}</h2>

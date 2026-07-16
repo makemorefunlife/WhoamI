@@ -22,6 +22,7 @@ import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
 import type { EntryIntent } from "@/lib/routing/resolveEntryDestination";
 import { resolveHubHrefForIntent } from "@/lib/stitch/hubPaths";
 import { ROUTES } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/home/HomeAuthSignInPanel"),
@@ -50,6 +51,7 @@ const emptyResume = (): ResumeState => ({
  */
 export default function HomeContent() {
   const router = useRouter();
+  const { messages, href: localize } = useLocale();
   const searchParams = useSearchParams();
   const { isLoaded, isSignedIn, userId } = useClerkReady();
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -152,9 +154,9 @@ export default function HomeContent() {
       const params = new URLSearchParams();
       if (inviteToken) params.set("token", inviteToken);
       else params.set("reportId", reportId);
-      router.push(`${ROUTES.surveyV2}?${params.toString()}`);
+      router.push(localize(`${ROUTES.surveyV2}?${params.toString()}`));
     },
-    [router],
+    [router, localize],
   );
 
   const createReportAndSurvey = useCallback(async () => {
@@ -182,16 +184,14 @@ export default function HomeContent() {
       };
       if (!res.ok || !body.id) {
         console.error("[home] report_create_failed", res.status);
-        alert("리포트를 만드는 데 실패했어요. 잠시 후 다시 시도해 주세요.");
+        alert(messages.errors.generic);
         setCreatingReport(false);
         return;
       }
       data = { id: body.id };
     } catch (e) {
       console.error("[home] report_create_error");
-      alert(
-        "연결에 실패했어요. 잠시 후 다시 시도해 주세요.",
-      );
+      alert(messages.errors.network);
       setCreatingReport(false);
       return;
     }
@@ -208,7 +208,7 @@ export default function HomeContent() {
 
     setCreatingReport(false);
     goToSurvey(data.id);
-  }, [goToSurvey, userId]);
+  }, [goToSurvey, userId, messages]);
 
   const startFreeSurvey = useCallback(async () => {
     if (creatingReport) return;
@@ -241,12 +241,12 @@ export default function HomeContent() {
           urlHint: reportIdHint,
           isSignedIn: true,
         });
-        router.push(href);
+        router.push(localize(href));
         return;
       }
 
       if (intent === "decision") {
-        router.push(ROUTES.decision);
+        router.push(localize(ROUTES.decision));
         return;
       }
 
@@ -257,7 +257,7 @@ export default function HomeContent() {
         reportIdHint,
       });
       if (hubDestination) {
-        router.push(hubDestination);
+        router.push(localize(hubDestination));
         return;
       }
 
@@ -283,7 +283,7 @@ export default function HomeContent() {
         isSignedIn: isSignedIn ?? false,
         reportIdHint,
       });
-      if (destination) router.push(destination);
+      if (destination) router.push(localize(destination));
     },
     [
       createReportAndSurvey,
@@ -294,6 +294,7 @@ export default function HomeContent() {
       resume.reportId,
       resume.surveyCompleted,
       router,
+      localize,
     ],
   );
 
@@ -339,7 +340,7 @@ export default function HomeContent() {
             <button
               type="button"
               className="absolute inset-0 bg-white/88 backdrop-blur-xl"
-              aria-label="로그인 창 닫기"
+              aria-label={messages.common.close}
               onClick={() => setAuthModalOpen(false)}
             />
             <motion.div
@@ -359,18 +360,17 @@ export default function HomeContent() {
                     id="auth-modal-title"
                     className="text-lg font-semibold tracking-tight text-slate-800"
                   >
-                    탐사를 이어가려면
+                    {messages.landing.authModalTitle}
                   </h2>
                   <p className="mt-1 text-sm leading-relaxed text-slate-500">
-                    Google 계정으로 빠르게 시작하거나, 이메일로 로그인할 수
-                    있어요.
+                    {messages.landing.authModalBody}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAuthModalOpen(false)}
                   className="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                  aria-label="닫기"
+                  aria-label={messages.common.close}
                 >
                   <span className="block text-xl leading-none">×</span>
                 </button>

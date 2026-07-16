@@ -1,4 +1,5 @@
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type RelationshipFamilyRolePanelProps = {
   familyParentType: FamilyParentRole;
@@ -23,10 +24,11 @@ export default function RelationshipFamilyRolePanel({
   reportIdA,
   reportIdB,
 }: RelationshipFamilyRolePanelProps) {
+  const { messages } = useLocale();
   return (
     <div className="mt-3 rounded-xl border border-secondary/30 bg-secondary/8 p-3">
       <p className="mb-2 text-[11px] font-semibold text-secondary">
-        👪 Child DNA Playbook · 역할 선택
+        {messages.report.childDnaPlaybookLabel}
       </p>
       <div className="flex flex-wrap gap-2">
         <button
@@ -39,7 +41,7 @@ export default function RelationshipFamilyRolePanel({
           }`}
           onClick={() => onFamilyParentTypeChange("mother")}
         >
-          🌸 엄마 렌즈
+          {messages.report.motherLens}
         </button>
         <button
           type="button"
@@ -51,7 +53,7 @@ export default function RelationshipFamilyRolePanel({
           }`}
           onClick={() => onFamilyParentTypeChange("father")}
         >
-          🛡️ 아빠 렌즈
+          {messages.report.fatherLens}
         </button>
       </div>
       <label className="mt-3 flex cursor-pointer items-center gap-2 text-[11px] text-on-surface-variant">
@@ -62,12 +64,16 @@ export default function RelationshipFamilyRolePanel({
           disabled={busy}
           className="rounded border-outline-variant/50"
         />
-        분석 대상 자녀가 &apos;나&apos;({viewerName || "시청자"})예요
+        {messages.report.childIsViewerCheckbox(viewerName)}
       </label>
       {reportIdA && reportIdB ? (
         <p className="mt-1 text-[10px] text-on-surface-variant/70">
-          parentType: {familyParentType} · 자녀=
-          {familyChildIsViewer ? viewerName || "나" : partnerName}
+          {messages.report.debugParentTypeLine(
+            familyParentType,
+            familyChildIsViewer
+              ? viewerName || messages.report.meFallbackLabel
+              : partnerName,
+          )}
         </p>
       ) : null}
     </div>

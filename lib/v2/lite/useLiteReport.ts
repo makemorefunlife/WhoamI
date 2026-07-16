@@ -10,19 +10,21 @@ import {
 } from "@/lib/v2/lite/session";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import { buildEssenceSelfLiteInput } from "@/lib/v2/saju/essenceLiteInput";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export function useCurrentLiteReport(
   reportId: string,
   profile: CurrentSelfProfile | null,
   enabled: boolean,
 ) {
+  const { locale, messages } = useLocale();
   const [report, setReport] = useState<CurrentSelfLiteReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = useCallback(async () => {
     if (!reportId || !profile) return;
-    const cached = readCurrentLiteReport(reportId);
+    const cached = readCurrentLiteReport(reportId, locale);
     if (cached) {
       setReport(cached);
       return;
@@ -33,8 +35,11 @@ export function useCurrentLiteReport(
     try {
       const res = await fetch("/api/v2/lite/current", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile, language: "ko" }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-aha-locale": locale,
+        },
+        body: JSON.stringify({ profile, language: locale }),
       });
       const data = (await res.json()) as {
         ok?: boolean;
@@ -42,16 +47,16 @@ export function useCurrentLiteReport(
         error?: string;
       };
       if (!res.ok || !data.report) {
-        throw new Error(data.error ?? "설문 분석에 실패했어요.");
+        throw new Error(data.error ?? messages.errors.generic);
       }
-      writeCurrentLiteReport(reportId, data.report);
+      writeCurrentLiteReport(reportId, data.report, locale);
       setReport(data.report);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "설문 분석에 실패했어요.");
+      setError(e instanceof Error ? e.message : messages.errors.generic);
     } finally {
       setLoading(false);
     }
-  }, [profile, reportId]);
+  }, [profile, reportId, locale, messages.errors.generic]);
 
   useEffect(() => {
     if (!enabled || !profile) return;
@@ -70,13 +75,14 @@ export function useEssenceLiteReport(
   } | null,
   enabled: boolean,
 ) {
+  const { locale, messages } = useLocale();
   const [report, setReport] = useState<EssenceSelfLiteReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchReport = useCallback(async () => {
     if (!reportId || !birth) return;
-    const cached = readEssenceLiteReport(reportId);
+    const cached = readEssenceLiteReport(reportId, locale);
     if (cached) {
       setReport(cached);
       return;
@@ -93,10 +99,13 @@ export function useEssenceLiteReport(
     try {
       const res = await fetch("/api/v2/lite/essence", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-aha-locale": locale,
+        },
         body: JSON.stringify({
           essence_self_lite_input,
-          language: "ko",
+          language: locale,
         }),
       });
       const data = (await res.json()) as {
@@ -105,16 +114,16 @@ export function useEssenceLiteReport(
         error?: string;
       };
       if (!res.ok || !data.report) {
-        throw new Error(data.error ?? "본질 분석에 실패했어요.");
+        throw new Error(data.error ?? messages.errors.generic);
       }
-      writeEssenceLiteReport(reportId, data.report);
+      writeEssenceLiteReport(reportId, data.report, locale);
       setReport(data.report);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "본질 분석에 실패했어요.");
+      setError(e instanceof Error ? e.message : messages.errors.generic);
     } finally {
       setLoading(false);
     }
-  }, [birth, reportId]);
+  }, [birth, reportId, locale, messages.errors.generic]);
 
   useEffect(() => {
     if (!enabled || !birth) return;

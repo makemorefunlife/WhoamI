@@ -16,9 +16,19 @@ import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoo
 import { invalidatePersonCoreBlueprint } from "@/lib/personCore";
 import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
 import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function routeLocale(req: Request) {
+  return resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+}
 
 type BirthBody = {
   reportId?: string;
@@ -33,11 +43,13 @@ type BirthBody = {
 
 /** reports 출생 조회 — 게스트 리포트도 reportId로 조회 가능 */
 export async function GET(req: Request) {
+  const locale = routeLocale(req);
+  const messages = getMessages(locale);
   try {
     const reportId = new URL(req.url).searchParams.get("reportId")?.trim() ?? "";
     if (!reportId) {
       return NextResponse.json(
-        { error: "reportId가 필요합니다." },
+        { error: messages.errors.reportIdRequired },
         { status: 400 },
       );
     }
@@ -49,6 +61,7 @@ export async function GET(req: Request) {
       supabase,
       reportId,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -59,7 +72,7 @@ export async function GET(req: Request) {
     );
     if (error || !report) {
       return NextResponse.json(
-        { error: error?.message ?? "리포트를 찾을 수 없습니다." },
+        { error: error?.message ?? messages.errors.notFound },
         { status: 404 },
       );
     }
@@ -82,7 +95,7 @@ export async function GET(req: Request) {
   } catch (e) {
     logServerError("report/birth GET:", e, "internal_error");
     return NextResponse.json(
-      { error: "request failed" },
+      { error: messages.errors.generic },
       { status: 500 },
     );
   }
@@ -90,13 +103,15 @@ export async function GET(req: Request) {
 
 /** reports 생년월일·시간·장소 저장 — 로그인 없이 게스트 리포트도 저장 가능 */
 export async function POST(req: Request) {
+  const locale = routeLocale(req);
+  const messages = getMessages(locale);
   try {
     const body = (await req.json()) as BirthBody;
     const reportId =
       typeof body.reportId === "string" ? body.reportId.trim() : "";
     if (!reportId) {
       return NextResponse.json(
-        { error: "reportId가 필요합니다." },
+        { error: messages.errors.reportIdRequired },
         { status: 400 },
       );
     }
@@ -108,6 +123,7 @@ export async function POST(req: Request) {
       supabase,
       reportId,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -119,7 +135,7 @@ export async function POST(req: Request) {
       );
     if (fetchErr || !existingReport) {
       return NextResponse.json(
-        { error: fetchErr?.message ?? "리포트를 찾을 수 없습니다." },
+        { error: fetchErr?.message ?? messages.errors.notFound },
         { status: 404 },
       );
     }
@@ -162,10 +178,7 @@ export async function POST(req: Request) {
 
     if (birthDateChanging && correctionAlreadyUsed) {
       return NextResponse.json(
-        {
-          error:
-            "생년월일은 계정에서 1회만 수정할 수 있어요. 추가 변경은 고객센터로 문의해 주세요.",
-        },
+        { error: messages.errors.birthDateCorrectionUsed },
         { status: 403 },
       );
     }
@@ -254,7 +267,7 @@ export async function POST(req: Request) {
   } catch (e) {
     logServerError("report/birth:", e, "internal_error");
     return NextResponse.json(
-      { error: "request failed" },
+      { error: messages.errors.generic },
       { status: 500 },
     );
   }
@@ -293,11 +306,13 @@ async function saveBirthPatch(
 
 /** 출생 정보 초기화 */
 export async function DELETE(req: Request) {
+  const locale = routeLocale(req);
+  const messages = getMessages(locale);
   try {
     const reportId = new URL(req.url).searchParams.get("reportId")?.trim() ?? "";
     if (!reportId) {
       return NextResponse.json(
-        { error: "reportId가 필요합니다." },
+        { error: messages.errors.reportIdRequired },
         { status: 400 },
       );
     }
@@ -309,6 +324,7 @@ export async function DELETE(req: Request) {
       supabase,
       reportId,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -332,7 +348,7 @@ export async function DELETE(req: Request) {
   } catch (e) {
     logServerError("report/birth DELETE:", e, "internal_error");
     return NextResponse.json(
-      { error: "request failed" },
+      { error: messages.errors.generic },
       { status: 500 },
     );
   }

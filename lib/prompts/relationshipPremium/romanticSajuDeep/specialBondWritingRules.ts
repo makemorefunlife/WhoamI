@@ -42,7 +42,7 @@ export const SPECIAL_BOND_FORBIDDEN_NATURE_METAPHORS = [
   "꽃",
 ] as const;
 
-/** System Prompt에 주입 — special_bond 섹션 전용 규칙 */
+/** Injected into system prompt — special_bond section rules */
 export function buildSpecialBondSystemPromptBlock(): string {
   const cliches = SPECIAL_BOND_FORBIDDEN_CLICHES.map((p) => `"${p}"`).join(
     ", ",
@@ -52,36 +52,36 @@ export function buildSpecialBondSystemPromptBlock(): string {
     .join(", ");
 
   return `
-# section_4_special_bond — ⚖️ 이 관계가 특별한 이유 (최우선 규칙)
+# section_4_special_bond — Why this bond is special (highest priority)
 
-## 호칭
-- 본문 모든 호칭: \`userCustomMyName\` / \`userCustomTargetName\` (User Prompt 매핑표) **1순위**.
-- JSON 슬롯 이름 + **님** 호칭 일관 유지. 별칭·애칭이 있으면 문맥 전체 동일 호칭.
+## Names
+- Prefer \`userCustomMyName\` / \`userCustomTargetName\` (User Prompt name map) everywhere in prose.
+- Keep JSON slot names + honorifics consistent; if nicknames exist, use the same forms throughout.
 
-## 심리 저널화 (명리·자연물 비유 전면 금지)
-- 내부: 사주·점성·설문으로 역동을 정밀 계산.
-- **출력 본문**: 명리 용어·한자 **0개**. ${nature} 등 **자연물·원소 비유 0개**.
-- 고급스러운 **현대 심리학적 언어**와 **내면 역동의 서사**만 사용.
+## Psychological journal (no Mingli / nature metaphors in output)
+- Internally: compute dynamics from Saju, astrology, survey.
+- **User-facing body**: zero Mingli terms / Hanja. Zero nature/element metaphors such as ${nature}.
+- Use modern psychological language and inner-dynamics narrative only.
 
-## 필수 역동 (입력 데이터에서 반드시 녹일 핵심 가치)
-| 방향 | JSON 필드 | 반드시 포함할 역동 |
+## Required dynamics (must reflect input data)
+| Direction | JSON field | Must include |
 |---|---|---|
-| A → B | \`a_gives_b\` | A가 B에게 **새로운 경험·변화를 자극**하고, **더 나은 결정**을 내리도록 돕는 지성적·정서적 파트너 |
-| B → A | \`b_gives_a\` | B가 A의 **감정적 부담을 덜어주고**, **분석적 사고로 새로운 시각**을 제공하는 안정적 중심축 |
-| A ↔ B | \`only_together\` | 각자 **장단점이 맞물려** 만든 상호보완·Essence 아우라 (앞 두 필드 **재탕 금지**) |
+| A → B | \`a_gives_b\` | A stimulates new experience/change for B and helps B make better decisions — intellectual/emotional partner |
+| B → A | \`b_gives_a\` | B eases A's emotional load and offers analytical new perspectives — steady center |
+| A ↔ B | \`only_together\` | Complementary Essence aura from interlocking strengths/limits (no reuse of the two fields above) |
 
-## 출력 구조 (필수 필드)
-각 필드는 **headline(한 줄 훅)** + **body(본문 4~5문장)** 로 분리:
+## Output structure (required fields)
+Each direction = **headline (one-line hook)** + **body (4–5 sentences)**:
 - \`a_gives_b_headline\`, \`a_gives_b\`
 - \`b_gives_a_headline\`, \`b_gives_a\`
 - \`only_together_headline\`, \`only_together\`
-- \`relationship_formula\`: **생략 가능** — only_together가 충분하면 \`""\`. 자연물 비유·클리셰 금지
-- \`why_special\`: 💡 맞춰 가는 지점 — **갈등·속도 시차·실전 팁만** (칭찬·교감 문단 **절대 금지**)
+- \`relationship_formula\`: optional — \`""\` if only_together is enough. No nature metaphors / clichés
+- \`why_special\`: fitting-points only — conflict, tempo gaps, practical tips (no praise/communion paragraphs)
 
-## 중복 검열
-- a_gives_b / b_gives_a / only_together 간 **문장 골격·핵심 형용사 50% 이상 겹치면 파기 후 재작성**.
-- 주어만 바꾼 미러링 **즉시 폐기**.
-- 금지 미사여구: ${cliches} 및 유사 변형 **0개**.
+## Dedup checks
+- If a_gives_b / b_gives_a / only_together share ≥50% sentence skeleton or key adjectives → discard and rewrite.
+- Subject-swapped mirroring → discard immediately.
+- Ban clichés: ${cliches} and near-variants — zero tolerance.
 `.trim();
 }
 

@@ -5,6 +5,8 @@ import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyA
 import { extractAstrologyTextForIntegrated } from "@/lib/report/astrologyIntegratedText";
 import type { AstrologyCoordSource } from "@/lib/report/resolveAstrologyCoordinates";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
 const zodiacIndexToKorean: Record<number, string> = {
   0: "양자리",
@@ -21,15 +23,37 @@ const zodiacIndexToKorean: Record<number, string> = {
   11: "물고기자리",
 };
 
-function signToKorean(sign: Sign | undefined): string {
-  if (sign === undefined) return "알 수 없음";
-  return zodiacIndexToKorean[sign as number] ?? "알 수 없음";
+const zodiacIndexToEnglish: Record<number, string> = {
+  0: "Aries",
+  1: "Taurus",
+  2: "Gemini",
+  3: "Cancer",
+  4: "Leo",
+  5: "Virgo",
+  6: "Libra",
+  7: "Scorpio",
+  8: "Sagittarius",
+  9: "Capricorn",
+  10: "Aquarius",
+  11: "Pisces",
+};
+
+function signToLabel(sign: Sign | undefined, locale: Locale): string {
+  if (sign === undefined) return locale === "ko-KR" ? "알 수 없음" : "Unknown";
+  const map = locale === "ko-KR" ? zodiacIndexToKorean : zodiacIndexToEnglish;
+  return map[sign as number] ?? (locale === "ko-KR" ? "알 수 없음" : "Unknown");
 }
 
-const ASTROLOGY_SYSTEM_PROMPT = `당신은 20년 경력의 점성학 전문가입니다.
-점성학 용어를 일상어로 풀어서 설명합니다.
-"운명", "절대적" 같은 표현은 쓰지 않습니다.
-사용자가 스스로를 이해하는 데 도움을 주는 것이 목적입니다.`;
+const ASTROLOGY_SYSTEM_RULES = `You are an astrology expert with 20 years of experience.
+Explain astrological terms in everyday language.
+Avoid words like "destiny" or "absolute."
+Your goal is to help the reader understand themselves better.`;
+
+function getAstrologySystemPrompt(locale: Locale): string {
+  return `${ASTROLOGY_SYSTEM_RULES}
+
+${buildLlmOutputLocaleInstruction(locale)}`;
+}
 
 export type BirthAstrologyResult = {
   text: string;
@@ -42,11 +66,16 @@ export async function fetchBirthAstrologyText(input: {
   birthTime?: string | null;
   birthTimeUnknown?: boolean;
   birthPlace?: string | null;
+  locale?: Locale | string;
 }): Promise<BirthAstrologyResult> {
+  const locale = normalizeLocale(input.locale);
   const birthPlace = input.birthPlace?.trim() ?? "";
   if (!birthPlace) {
     return {
-      text: "(출생 지역이 없어 점성 차트를 계산하지 않았습니다. 태어난 지역을 입력해 주세요.)",
+      text:
+        locale === "ko-KR"
+          ? "(출생 지역이 없어 점성 차트를 계산하지 않았습니다. 태어난 지역을 입력해 주세요.)"
+          : "(No astrology chart was calculated because a birth place is missing. Please add your birth place.)",
       coord_source: "unknown",
       birth_place_used: null,
     };
@@ -67,7 +96,10 @@ export async function fetchBirthAstrologyText(input: {
     coords = built.coords;
   } catch {
     return {
-      text: "(출생 정보로 점성 차트를 구성하지 못했습니다.)",
+      text:
+        locale === "ko-KR"
+          ? "(출생 정보로 점성 차트를 구성하지 못했습니다.)"
+          : "(We couldn't build an astrology chart from this birth info.)",
       coord_source: "unknown",
       birth_place_used: null,
     };
@@ -86,19 +118,19 @@ export async function fetchBirthAstrologyText(input: {
   });
 
   const planets = {
-    sun: signToKorean(chart.planets[0]?.sign),
-    moon: signToKorean(chart.planets[1]?.sign),
-    mercury: signToKorean(chart.planets[2]?.sign),
-    venus: signToKorean(chart.planets[3]?.sign),
-    mars: signToKorean(chart.planets[4]?.sign),
-    jupiter: signToKorean(chart.planets[5]?.sign),
-    saturn: signToKorean(chart.planets[6]?.sign),
+    sun: signToLabel(chart.planets[0]?.sign, locale),
+    moon: signToLabel(chart.planets[1]?.sign, locale),
+    mercury: signToLabel(chart.planets[2]?.sign, locale),
+    venus: signToLabel(chart.planets[3]?.sign, locale),
+    mars: signToLabel(chart.planets[4]?.sign, locale),
+    jupiter: signToLabel(chart.planets[5]?.sign, locale),
+    saturn: signToLabel(chart.planets[6]?.sign, locale),
   };
-  const rising = signToKorean(chart.angles.ascendant?.sign);
+  const rising = signToLabel(chart.angles.ascendant?.sign, locale);
   const houseCusps = chart.houses.cusps ?? [];
   const houses = houseCusps.slice(0, 12).map((cusp) => ({
     house: cusp.house,
-    sign: signToKorean(cusp.sign),
+    sign: signToLabel(cusp.sign, locale),
   }));
 
   const placeLabel =
@@ -116,37 +148,44 @@ export async function fetchBirthAstrologyText(input: {
     });
     return {
       text:
-        fallback ?? "(점성 해석 LLM 없음 — 태양·달·라이징만 계산됨)",
+        fallback ??
+        (locale === "ko-KR"
+          ? "(점성 해석 LLM 없음 — 태양·달·라이징만 계산됨)"
+          : "(No astrology LLM available — only Sun, Moon, and Rising were calculated.)"),
       coord_source: coords.source,
       birth_place_used: placeLabel,
     };
   }
 
   const openai = new OpenAI({ apiKey });
+  const defaultPlaceLabel =
+    locale === "ko-KR"
+      ? "미입력(샌프란시스코 좌표 기본값)"
+      : "Not provided (defaulting to San Francisco coordinates)";
   const userPrompt = `
-사용자 정보:
-- 생년: ${body.year}년 ${body.month}월 ${body.day}일
-- 출생시각: ${body.hour}:${String(body.minute).padStart(2, "0")}
-- 출생장소: ${placeLabel || "미입력(샌프란시스코 좌표 기본값)"}
+User info:
+- Birth date: ${body.year}-${body.month}-${body.day}
+- Birth time: ${body.hour}:${String(body.minute).padStart(2, "0")}
+- Birth place: ${placeLabel || defaultPlaceLabel}
 
-점성학 데이터:
-- 태양: ${planets.sun}
-- 달: ${planets.moon}
-- 라이징: ${rising}
-- 수성: ${planets.mercury}
-- 금성: ${planets.venus}
-- 화성: ${planets.mars}
-- 목성: ${planets.jupiter}
-- 토성: ${planets.saturn}
-- 하우스: ${houses.map((h) => `${h.house}번: ${h.sign}`).join(", ")}
+Astrology data:
+- Sun: ${planets.sun}
+- Moon: ${planets.moon}
+- Rising: ${rising}
+- Mercury: ${planets.mercury}
+- Venus: ${planets.venus}
+- Mars: ${planets.mars}
+- Jupiter: ${planets.jupiter}
+- Saturn: ${planets.saturn}
+- Houses: ${houses.map((h) => `House ${h.house}: ${h.sign}`).join(", ")}
 
-위 데이터를 바탕으로 점성학 해석을 한국어로 작성해주세요. 일상어로 풀어쓰고, 1500자 내외로 핵심만 정리해주세요.`;
+Based on the data above, write an astrology interpretation. Use everyday language and keep it to roughly 1500 characters, hitting only the key points.`;
 
   try {
     const llmResponse = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: ASTROLOGY_SYSTEM_PROMPT },
+        { role: "system", content: getAstrologySystemPrompt(locale) },
         { role: "user", content: userPrompt },
       ],
       temperature: 0.7,
@@ -168,7 +207,11 @@ export async function fetchBirthAstrologyText(input: {
     raw: { sun: planets.sun, moon: planets.moon, rising },
   });
   return {
-    text: fallback ?? "(점성 해석을 생성하지 못했습니다.)",
+    text:
+      fallback ??
+      (locale === "ko-KR"
+        ? "(점성 해석을 생성하지 못했습니다.)"
+        : "(We couldn't generate an astrology interpretation.)"),
     coord_source: coords.source,
     birth_place_used: placeLabel,
   };

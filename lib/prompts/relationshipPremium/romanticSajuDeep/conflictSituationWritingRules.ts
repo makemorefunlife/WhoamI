@@ -26,7 +26,7 @@ export const CONFLICT_GENERIC_GOOD_LINES = [
   "차분하게 얘기하자",
 ] as const;
 
-/** System Prompt에 주입 */
+/** Injected into system prompt */
 export function buildConflictSituationSystemPromptBlock(): string {
   const nature = SPECIAL_BOND_FORBIDDEN_NATURE_METAPHORS.slice(0, 12)
     .map((p) => `"${p}"`)
@@ -37,35 +37,35 @@ export function buildConflictSituationSystemPromptBlock(): string {
     .join(", ");
 
   return `
-# section_3_conversation_patterns — 💬 갈등 상황 (최우선 규칙)
+# section_3_conversation_patterns — Conflict situation (highest priority)
 
-## 호칭
-- \`label\`·대사 속 이름: User Prompt \`userCustomMyName\` / \`userCustomTargetName\` **1순위**.
-- JSON \`speaker\`는 A/B 슬롯. \`label\`은 **실명·별칭** (플레이스홀더 금지).
+## Names
+- Names in \`label\` and dialogue: \`userCustomMyName\` / \`userCustomTargetName\` first.
+- JSON \`speaker\` is A/B slot; \`label\` is real name/nickname (no placeholders).
 
-## 50:50 쌍방 고충 (가해자/피해자 프레이밍 절대 금지)
-- 갈등은 **기질적 차이**에서 동시에 생기는 힘듦. 한쪽만 잘못·한쪽만 서운한 **유치한 심리테스트 톤 금지**.
-- \`dialogue_table\` **정확히 2행** — ${"`"}A 슬롯 1행 + B 슬롯 1행${"`"} (3행 이상·한 사람만 여러 행 **금지**).
+## 50:50 mutual strain (no perpetrator/victim framing)
+- Conflict is simultaneous strain from temperamental difference — ban one-sided blame / quiz tone.
+- \`dialogue_table\` has **exactly 2 rows** — one A-slot row + one B-slot row (no 3+ rows; no duplicate person rows).
 
-### 빠른 감정 표현 쪽 (입력 데이터에서 해당하는 사람)
-- ❌ \`bad_line\`: 직관·빠른 감정 표현 때문에 상대 **침묵·무뚝뚝함**을 방관·무시로 오해 → **공격적·서운한** 말 (상대를 몰아붙이지 말고 **자기 해석**이 드러나게)
-- ✅ \`good_line\`: 속도 인정 + 자기 감정 소유 + 상대 생각 듣기 **제안** (모범답안·상담사 톤 금지)
+### Faster emotional expresser (per input data)
+- ❌ \`bad_line\`: misreads partner silence/reservedness as neglect → sharp or hurt phrasing (show their interpretation, not pure attack)
+- ✅ \`good_line\`: acknowledge tempo + own the feeling + invite listening (no model-answer / therapist tone)
 
-### 신중·무거운 처리 쪽 (입력 데이터에서 해당하는 사람)
-- ❌ \`bad_line\`: 강한 감정 에너지에 **과부하(뇌정지)** → 상황을 **이성·통제**로만 맞추려다 상대에게 **서운함·차갑게 느껴지는** 말
-- ✅ \`good_line\`: 상대 속상함 **인정** + 무시가 아니라 **정리·호흡**이 필요했다는 설명 + 잠깐 숨 고르자 **제안**
+### Slower / heavier processor (per input data)
+- ❌ \`bad_line\`: overload from high emotional energy → control via reason only → lands as cold/hurtful
+- ✅ \`good_line\`: acknowledge partner hurt + explain need to gather (not ignore) + propose a short pause
 
-## 출력 구조
-- \`conflict_situation.title\`: 한 줄 — 기질 차이 핵심 (예: "표현의 속도차이와 내면의 과부하")
-- 각 행: \`speaker\`, \`label\`(이름), \`emoji\`(😤 / 🤔 등), \`bad_line\`, \`good_line\`
-- **hidden_psychology·positive_situation·긴 대화 블록 생성 금지** — \`dialogue_table\`만
+## Output structure
+- \`conflict_situation.title\`: one line on the temperamental gap (e.g. "expression tempo vs inner overload")
+- Each row: \`speaker\`, \`label\` (name), \`emoji\` (😤 / 🤔 etc.), \`bad_line\`, \`good_line\`
+- Do **not** generate hidden_psychology, positive_situation, or long dialogue blocks — \`dialogue_table\` only
 
-## 금지
-- 명리·사주 용어·한자: ${ESSENCE_JOURNAL_FORBIDDEN_TERMS.slice(0, 12).join(", ")} 등 **0개**
-- 자연물 비유: ${nature} 등 **0개**
-- 진부 클리셰: ${cliches} 및 유사 변형 **0개**
-- 영혼 없는 모범답안: ${genericGood} 식 **뻔한 good_line** — 발견 시 해당 행 **파기 후 재작성**
-- 한쪽만 ❌가 공격적이고 다른 쪽 ❌가 온화한 **불균형** — 발견 시 **전면 재작성**
+## Bans
+- Mingli/Saju terms / Hanja: ${ESSENCE_JOURNAL_FORBIDDEN_TERMS.slice(0, 12).join(", ")} etc. — zero
+- Nature metaphors: ${nature} etc. — zero
+- Clichés: ${cliches} and near-variants — zero
+- Hollow model answers like ${genericGood} — rewrite the row if found
+- One-sided severity imbalance (only one ❌ aggressive) — full rewrite
 `.trim();
 }
 

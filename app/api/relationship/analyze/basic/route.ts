@@ -18,6 +18,7 @@ import {
 } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
@@ -46,6 +47,13 @@ export async function POST(req: Request) {
     const relationshipKind = parseRelationshipKind(
       (body as { relationship_kind?: unknown }).relationship_kind,
     );
+    const locale = resolveRequestLocale({
+      bodyLanguage:
+        (body as { language?: unknown }).language ??
+        (body as { locale?: unknown }).locale,
+      headerLanguage:
+        req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
@@ -248,6 +256,7 @@ export async function POST(req: Request) {
       labelB,
       rr.report_id_a,
       rr.report_id_b,
+      locale,
     );
 
     const completion = await openai.chat.completions.create({
@@ -256,7 +265,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "출력은 유효한 JSON 한 덩어리만. 한국어. markdown·코드펜스 금지.",
+            "Output one valid JSON object only. No markdown or code fences. Follow the user prompt locale instruction for prose language.",
         },
         { role: "user", content: userPrompt },
       ],

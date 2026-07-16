@@ -3,6 +3,8 @@ import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/su
 import { NextResponse } from "next/server";
 import { buildHomeResume } from "@/lib/home/homeResume";
 import { logServerError } from "@/lib/security/safeLog";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,8 +14,15 @@ export const dynamic = "force-dynamic";
  * GET ?reportId=  (optional localStorage 힌트)
  */
 export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const locale = resolveRequestLocale({
+    bodyLanguage: url.searchParams.get("language") ?? url.searchParams.get("locale"),
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
-    const reportIdHint = new URL(req.url).searchParams.get("reportId")?.trim();
+    const reportIdHint = url.searchParams.get("reportId")?.trim();
     const { userId } = await auth();
 
     const supabase = createRouteSupabaseClient();
@@ -21,7 +30,7 @@ export async function GET(req: Request) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: "로그인이 필요합니다." },
+        { error: messages.errors.unauthorized },
         { status: 401 },
       );
     }

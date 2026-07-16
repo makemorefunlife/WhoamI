@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import { RelationshipAnalysisBadgeGroup } from "@/components/relationship/RelationshipKindBadge";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type AnalysisLogListItem = {
   id: string;
@@ -17,10 +18,10 @@ export type AnalysisLogListItem = {
 
 type HistoryVariant = "dark" | "stitch";
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string, locale: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleString("ko-KR", {
+    return d.toLocaleString(locale, {
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -72,18 +73,15 @@ export default function RelationshipAnalysisHistory({
   onSelectLog?: (log: AnalysisLogListItem) => void;
   variant?: HistoryVariant;
 }) {
+  const { messages, locale } = useLocale();
   const styles = historyStyles(variant);
 
   if (loading) {
-    return <p className={styles.loading}>분석 기록 불러오는 중…</p>;
+    return <p className={styles.loading}>{messages.report.historyLoading}</p>;
   }
 
   if (logs.length === 0) {
-    return (
-      <p className={styles.empty}>
-        아직 저장된 분석 기록이 없어요. 분석을 만들면 여기에 쌓여요.
-      </p>
-    );
+    return <p className={styles.empty}>{messages.report.historyEmpty}</p>;
   }
 
   return (
@@ -109,7 +107,7 @@ export default function RelationshipAnalysisHistory({
                   level={log.analysis_level}
                 />
                 <span className={`ml-auto ${styles.time}`}>
-                  {formatWhen(log.created_at)}
+                  {formatWhen(log.created_at, locale)}
                 </span>
               </div>
               <p className={`mt-1 ${styles.title}`}>{log.summary_title}</p>
@@ -120,7 +118,9 @@ export default function RelationshipAnalysisHistory({
               ) : null}
               {clickable ? (
                 <p className={`mt-1.5 ${styles.hint}`}>
-                  {selected ? "지금 이 기록을 보고 있어요" : "탭해서 다시 보기"}
+                  {selected
+                    ? messages.report.historyViewingNow
+                    : messages.report.historyTapToView}
                 </p>
               ) : null}
             </button>
@@ -142,12 +142,13 @@ export function FavoriteHeartButton({
   onToggle: () => void;
   variant?: HistoryVariant;
 }) {
+  const { messages } = useLocale();
   const stitch = variant === "stitch";
   return (
     <button
       type="button"
       disabled={busy}
-      aria-label={favorited ? "즐겨찾기 해제" : "즐겨찾기"}
+      aria-label={favorited ? messages.report.favoriteRemove : messages.report.favoriteLabel}
       aria-pressed={favorited}
       className={[
         "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50",
@@ -166,7 +167,7 @@ export function FavoriteHeartButton({
         fill={favorited ? "currentColor" : "none"}
         strokeWidth={favorited ? 0 : 2}
       />
-      {favorited ? "즐겨찾기" : "하트"}
+      {favorited ? messages.report.favoriteLabel : messages.report.heartLabel}
     </button>
   );
 }

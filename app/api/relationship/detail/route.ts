@@ -10,6 +10,7 @@ import {
   getFamilyParentDeepReport,
   getFriendSocialDeepReport,
   hasPremiumCacheForKind,
+  hasPremiumCacheForKindLocale,
   isRelationshipFavorite,
   parseRelationshipKind,
   RELATIONSHIP_KINDS,
@@ -17,6 +18,7 @@ import {
   type RelationshipKind,
   type ResultPremiumByKind,
 } from "@/lib/relationship/relationshipKind";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
@@ -36,6 +38,11 @@ export async function GET(req: Request) {
 
     const kindParam = sp.get("relationshipKind")?.trim();
     const relationshipKind = parseRelationshipKind(kindParam);
+    const locale = resolveRequestLocale({
+      bodyLanguage: sp.get("language") ?? sp.get("locale"),
+      headerLanguage:
+        req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
@@ -117,22 +124,30 @@ export async function GET(req: Request) {
 
     const romanticDeepReport =
       activeKind === "romantic"
-        ? parseRomanticDeepViewModel(getRomanticSajuDeepReport(byKind))
+        ? parseRomanticDeepViewModel(
+            getRomanticSajuDeepReport(byKind, locale),
+          )
         : null;
 
     const workColleagueDeepReport =
-      activeKind === "work" ? getWorkColleagueDeepReport(byKind) : null;
+      activeKind === "work"
+        ? getWorkColleagueDeepReport(byKind, locale)
+        : null;
 
     const cohabitationDeepReport =
       activeKind === "cohabitation"
-        ? getCohabitationDeepReport(byKind)
+        ? getCohabitationDeepReport(byKind, locale)
         : null;
 
     const familyDeepReport =
-      activeKind === "family" ? getFamilyParentDeepReport(byKind) : null;
+      activeKind === "family"
+        ? getFamilyParentDeepReport(byKind, locale)
+        : null;
 
     const friendshipDeepReport =
-      activeKind === "friendship" ? getFriendSocialDeepReport(byKind) : null;
+      activeKind === "friendship"
+        ? getFriendSocialDeepReport(byKind, locale)
+        : null;
 
     const favorited = await isRelationshipFavorite(
       supabase,
@@ -184,10 +199,15 @@ export async function GET(req: Request) {
       family_deep_report: familyDeepReport,
       friendship_deep_report: friendshipDeepReport,
       /** Same completion rule as analyze cache / hub — kind-scoped by_kind. */
-      premium_ready: hasPremiumCacheForKind(byKind, activeKind),
+      premium_ready: hasPremiumCacheForKindLocale(
+        byKind,
+        activeKind,
+        locale,
+      ),
       premium_kinds_ready: RELATIONSHIP_KINDS.filter((k) =>
         hasPremiumCacheForKind(byKind, k),
       ),
+      locale,
       is_favorite: favorited,
     };
 

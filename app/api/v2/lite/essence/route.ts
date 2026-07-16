@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { logServerError } from "@/lib/security/safeLog";
 import {
-  ESSENCE_SELF_LITE_SYSTEM,
+  getEssenceSelfLiteSystemPrompt,
   buildEssenceSelfLiteUserPrompt,
 } from "@/lib/v2/prompts/essenceSelfLite";
+import { normalizeLocale } from "@/lib/i18n/locale";
 import { buildEssenceSelfLiteFallback } from "@/lib/v2/lite/fallbackEssence";
 import { runLiteLlmJson } from "@/lib/v2/lite/runLiteLlm";
 import type { EssenceSelfLiteReport } from "@/lib/v2/lite/types";
@@ -44,20 +45,22 @@ export async function POST(req: Request) {
         birthTimeUnknown: body.birthTimeUnknown === true,
       });
 
+    const language = normalizeLocale(body.language);
+
     let report: EssenceSelfLiteReport;
     try {
       report = await runLiteLlmJson<EssenceSelfLiteReport>([
-        { role: "system", content: ESSENCE_SELF_LITE_SYSTEM },
+        { role: "system", content: getEssenceSelfLiteSystemPrompt(language) },
         {
           role: "user",
           content: buildEssenceSelfLiteUserPrompt({
             essence_self_lite_input: liteInput,
-            language: body.language ?? "ko",
+            language,
           }),
         },
       ]);
       report.report_type = "essence_self_lite";
-      report.language = body.language ?? "ko";
+      report.language = language;
     } catch (e) {
       logServerError("v2/lite/essence LLM fallback:", e, "internal_error");
       report = buildEssenceSelfLiteFallback(liteInput);

@@ -14,9 +14,11 @@ import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
 import { ROUTES, withReportId } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function EssenceDeepContent() {
   const router = useRouter();
+  const { messages, href: localize } = useLocale();
   const params = useParams();
   const reportId = decodeURIComponent(String(params.reportId ?? ""));
   const [ready, setReady] = useState(false);
@@ -24,11 +26,11 @@ function EssenceDeepContent() {
 
   useEffect(() => {
     if (!reportId) {
-      router.replace(ROUTES.home);
+      router.replace(localize(ROUTES.home));
       return;
     }
     setReady(true);
-  }, [reportId, router]);
+  }, [reportId, router, localize]);
 
   useEffect(() => {
     if (!ready || !reportId) return;
@@ -64,23 +66,25 @@ function EssenceDeepContent() {
         await hydrateSurveySession(reportId);
       }
       if (!readSurveyV2Session(reportId)) {
-        router.replace(ROUTES.surveyV2);
+        router.replace(localize(ROUTES.surveyV2));
         return;
       }
       const birth = await ensureBirthSession(reportId);
       if (!hasMinimalBirth(birth)) {
         router.replace(
-          withReportId(ROUTES.surveyV2Complete, reportId),
+          localize(withReportId(ROUTES.surveyV2Complete, reportId)),
         );
       }
     })();
-  }, [ready, booting, reportId, bundle, bundleLoading, router]);
+  }, [ready, booting, reportId, bundle, bundleLoading, router, localize]);
 
   if (!ready || booting || bundleLoading) {
     return (
       <StitchSurveyShell className="stitch-survey stitch-results">
         <div className="flex min-h-[50vh] items-center justify-center px-6">
-          <p className="text-sm text-on-surface-variant">불러오는 중…</p>
+          <p className="text-sm text-on-surface-variant">
+            {messages.report.chrome.loading}
+          </p>
         </div>
       </StitchSurveyShell>
     );
@@ -91,7 +95,7 @@ function EssenceDeepContent() {
       <StitchSurveyShell className="stitch-survey stitch-results">
         <div className="flex min-h-[50vh] items-center justify-center px-6">
           <p className="text-sm text-on-surface-variant">
-            설문·출생 정보 확인 중…
+            {messages.blueprint.checkingSurveyBirth}
           </p>
         </div>
       </StitchSurveyShell>
@@ -106,10 +110,10 @@ function EssenceDeepContent() {
             Premium
           </span>
           <h1 className="stitch-headline mt-4 text-balance text-2xl leading-snug sm:text-3xl">
-            Deep integration analysis
+            {messages.blueprint.deepAnalysisTitle}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
-            설문 · 출생 에너지를 통합한 심화 리포트예요.
+            {messages.blueprint.deepAnalysisSubtitle}
           </p>
         </div>
 
@@ -128,22 +132,22 @@ function EssenceDeepContent() {
             onClick={() => regenerateFresh()}
             disabled={loading}
           >
-            {loading ? "생성 중… (1~2분)" : "다시 생성"}
+            {loading ? messages.blueprint.regenerating : messages.blueprint.regenerate}
           </button>
           <button
             type="button"
             className="stitch-cta-secondary w-full"
-            onClick={() => router.push(resultsDashboardPath(reportId))}
+            onClick={() => router.push(localize(resultsDashboardPath(reportId)))}
           >
-            대시보드로 돌아가기
+            {messages.blueprint.backToDashboard}
           </button>
           {error ? (
             <button
               type="button"
               className="text-sm text-on-surface-variant underline-offset-2 hover:text-primary hover:underline"
-              onClick={() => router.push(`${ROUTES.accountProfile}#birth`)}
+              onClick={() => router.push(localize(`${ROUTES.accountProfile}#birth`))}
             >
-              출생 정보 수정하기 (계정)
+              {messages.blueprint.editBirthInfo}
             </button>
           ) : null}
         </div>
@@ -152,17 +156,22 @@ function EssenceDeepContent() {
   );
 }
 
+function EssenceDeepFallback() {
+  const { messages } = useLocale();
+  return (
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      <div className="flex min-h-[50vh] items-center justify-center px-6">
+        <p className="text-sm text-on-surface-variant">
+          {messages.report.chrome.loading}
+        </p>
+      </div>
+    </StitchSurveyShell>
+  );
+}
+
 export default function EssenceDeepPage() {
   return (
-    <Suspense
-      fallback={
-        <StitchSurveyShell className="stitch-survey stitch-results">
-          <div className="flex min-h-[50vh] items-center justify-center px-6">
-            <p className="text-sm text-on-surface-variant">불러오는 중…</p>
-          </div>
-        </StitchSurveyShell>
-      }
-    >
+    <Suspense fallback={<EssenceDeepFallback />}>
       <EssenceDeepContent />
     </Suspense>
   );

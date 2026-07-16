@@ -5,10 +5,11 @@ import { auth } from "@clerk/nextjs/server";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import {
-  INTEGRATED_SYSTEM_PROMPT,
+  getIntegratedSystemPrompt,
   buildIntegratedPhase1UserPrompt,
   buildIntegratedPhase2UserPrompt,
 } from "../../../lib/prompts/integratedPremiumReport";
+import { normalizeLocale } from "../../../lib/i18n/locale";
 import { assertPremiumLlmAccess } from "../../../lib/report/llmPaymentGuard";
 import { assertOwnedReportAccess } from "../../../lib/report/assertOwnedReportAccess";
 import {
@@ -138,14 +139,24 @@ export async function POST(req: Request) {
           ? astrologyText.trim()
           : "(없음)";
 
+      const locale = normalizeLocale(
+        typeof body.language === "string"
+          ? body.language
+          : typeof body.locale === "string"
+            ? body.locale
+            : undefined,
+      );
+      const systemPrompt = getIntegratedSystemPrompt(locale);
+
       const phase1User = buildIntegratedPhase1UserPrompt(
         surveyAnalysis,
         sajuSummary,
         astrologyInterpretation,
+        locale,
       );
 
       const phase1Messages: ChatCompletionMessageParam[] = [
-        { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: phase1User },
       ];
 
@@ -178,11 +189,12 @@ export async function POST(req: Request) {
                 sajuSummary,
                 astrologyInterpretation,
                 excerpt,
+                locale,
               );
               const s2 = await openai.chat.completions.create({
                 model: "gpt-4o-mini",
                 messages: [
-                  { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+                  { role: "system", content: systemPrompt },
                   { role: "user", content: phase2User },
                 ],
                 temperature: 0.65,
@@ -214,6 +226,7 @@ export async function POST(req: Request) {
         surveyAnalysis,
         sajuSummary,
         astrologyInterpretation,
+        locale,
       });
       return Response.json({ report: integrated.report });
     }

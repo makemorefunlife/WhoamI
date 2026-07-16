@@ -1,18 +1,22 @@
-/** 무료·심화 관계 분석 — 4축 JSON (두 시점 × 네 섹션) */
+/** Free / deep relationship analysis — 4-axis JSON (two perspectives × four sections) */
+
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
 /**
- * 축 키(JSON) ↔ 기획 섹션명 (프롬프트 안에서만 사용; JSON 키는 절대 바꾸지 말 것)
- * - emotional_sensitivity → 보여지는 모습
- * - communication_style → 내면의 모습
- * - conflict_response → 관계 패턴
- * - energy_pattern → 소통 팁
+ * Axis key (JSON) ↔ section role (prompt-only; never change JSON keys)
+ * - emotional_sensitivity → outward appearance
+ * - communication_style → inner landscape
+ * - conflict_response → relationship pattern
+ * - energy_pattern → communication tips
  */
 
 /**
- * @param myPatternsBlock  report_id_a 기준 첫 번째 사람 설문 패턴 요약
- * @param partnerPatternsBlock  두 번째 사람 설문 패턴 요약
- * @param nicknameA  report_id_a 리포트 주인 닉네임
- * @param nicknameB  report_id_b 리포트 주인 닉네임
+ * @param myPatternsBlock  survey pattern summary for report_id_a person
+ * @param partnerPatternsBlock  survey pattern summary for second person
+ * @param nicknameA  nickname for report_id_a owner
+ * @param nicknameB  nickname for report_id_b owner
+ * @param locale  output language (default en-US via normalizeLocale)
  */
 export function buildRelationshipBasicPrompt(
   myPatternsBlock: string,
@@ -21,209 +25,212 @@ export function buildRelationshipBasicPrompt(
   nicknameB: string,
   reportIdA: string,
   reportIdB: string,
+  locale?: Locale | string,
 ): string {
-  return `
-당신은 관계 분석가다. 아래 **분석 로직**과 **출력 규칙**을 지키고, **유효한 JSON 한 덩어리**만 출력한다.
+  const outputLocale = normalizeLocale(locale);
 
-## 입력
-- 나(첫 시점 기준 A): 닉네임 **${nicknameA}**, JSON 키 **"${reportIdA}"** 의 '나'
-- 상대: 닉네임 **${nicknameB}**
-- ${nicknameA} 설문·패턴 요약:
+  return `
+You are a relationship analyst. Follow the **analysis logic** and **output rules** below, and emit **one valid JSON object** only.
+
+## Input
+- Me (first perspective A): nickname **${nicknameA}**, JSON key **"${reportIdA}"** "me"
+- Partner: nickname **${nicknameB}**
+- ${nicknameA} survey/pattern summary:
 ${myPatternsBlock}
 
-- ${nicknameB} 설문·패턴 요약:
+- ${nicknameB} survey/pattern summary:
 ${partnerPatternsBlock}
 
-## 두 시점 (perspectives)
-1) **"${reportIdA}"**: 나 = **${nicknameA}**, 상대 = **${nicknameB}**
-2) **"${reportIdB}"**: 나 = **${nicknameB}**, 상대 = **${nicknameA}** (데이터는 같고, 문장 속 나/상대만 바뀜)
+## Two perspectives
+1) **"${reportIdA}"**: me = **${nicknameA}**, partner = **${nicknameB}**
+2) **"${reportIdB}"**: me = **${nicknameB}**, partner = **${nicknameA}** (same data; only me/partner swap in sentences)
 
 ---
 
-## 분석 로직 (각 시점·각 JSON 축마다 반복) — **반드시 이 순서로 쓴다**
+## Analysis logic (repeat for every perspective × every JSON axis) — **write in this order**
 
-설문에서 뽑은 **성향1** → **성향2** → **같은 방향이면 강화 / 다른 방향이면 충돌** → **그래서 겉으로 드러나는 결과(행동·말버릇)**.
+From the surveys, pick **trait1** → **trait2** → **same direction = amplify / opposite = clash** → **visible result (behavior / speech habits)**.
 
-1. 두 설문을 겹쳐 **이 시점의 '너'(my_nickname)** 안에서 **서로 다른 두 가지 성향**을 고른다. (그 축 주제에 맞게.)
-2. **성향1**: **"너는 ~한 편이야."** 로 시작하는 **짧은 문장 1~3개**로만 쓴다. (시점별 '너'는 **${nicknameA}** / **${nicknameB}**.)  
-   블록 끝에 **\\n\\n** 넣고 다음으로 넘어간다.
-3. **성향2**: **"그치만"** 또는 **"그런데"** 로 시작하는 **짧은 문장 1~3개**. 끝에 **\\n\\n**.
-4. **관계 한 줄**: "이 두 마음이 서로 충돌해." 또는 "이 두 마음이 강화되면서 한쪽으로 기울어져." 중 하나. 끝 **\\n\\n**.
-5. **결과**: **"그래서 ~하게 돼."** 같은 **행동·말버릇**으로 끝맺고, 필요하면 **한두 문장** 더 덧붙여 **두 성향을 같이 맞추려다 생기는 긴장**까지 짧게 쪼개 쓴다. (문장마다 **\\n**)
+1. Overlay both surveys and pick **two different traits inside this perspective's "you" (my_nickname)** for that axis theme.
+2. **Trait1**: only **1–3 short sentences** starting **"You're the kind of person who…"**. (Perspective "you" is **${nicknameA}** / **${nicknameB}**.)  
+   End the block with **\\n\\n**, then continue.
+3. **Trait2**: **1–3 short sentences** starting **"But"** or **"And yet"**. End with **\\n\\n**.
+4. **Relationship one-liner**: either "These two sides clash." or "These two sides amplify and tip toward one pole." End with **\\n\\n**.
+5. **Result**: end with **"So you end up…"**-style **behavior/speech**, then add a sentence or two if needed on the tension of trying to honor both traits. (**\\n** after each sentence)
 
-**문장 개수는 제한하지 않는다.** 대신 **한 문장을 길게 늘리지 말고**, 임팩트 나게 **여러 짧은 문장**으로 쪼갠다.
+**No hard limit on sentence count.** Prefer **many short lines** over long run-ons.
 
-## 네 축(섹션)별로 쓸 초점
+## Focus per axis (section)
 
-| JSON 키 | 섹션 역할 |
+| JSON key | Section role |
 |---------|-----------|
-| emotional_sensitivity | **보여지는 모습**: 충돌/강화가 **겉으로** 어떻게 드러나는지 |
-| communication_style | **내면의 모습**: 왜 그런 충돌/강화가 생겼는지 (**숨은 욕구·두려움**) |
-| conflict_response | **관계 패턴**: 그 행동이 **타인에게** 어떻게 비치는지 |
-| energy_pattern | **소통 팁**: 앞 축에서 드러난 **문제 행동의 반대**를 조언으로 쓰고, **심리 기법을 일상어**로 섞는다 |
+| emotional_sensitivity | **Outward appearance**: how clash/amplify shows **externally** |
+| communication_style | **Inner landscape**: why clash/amplify arises (**hidden needs/fears**) |
+| conflict_response | **Relationship pattern**: how that behavior lands **on others** |
+| energy_pattern | **Communication tips**: advise the **opposite** of the problem behavior from prior axes; weave psychology techniques into everyday language |
 
 ---
 
-## 출력 형식 (한 축 안에서의 줄 구성 — 예시 흐름만 참고, 복붙 금지)
+## Output format inside one axis (flow example only — do not copy)
 
-너는 사고가 굉장히 논리적인 편이야.
+You're highly logical when you think alone.
 
-혼자 결정할 땐 그 기준으로 정리돼.
+When deciding solo, that standard clicks into place.
 
-그치만 남 말귀 밝은 편이라, 상대 기분이 먼저 읽혀.
+But you're also quick to catch other people's vibes.
 
-맞춰주려는 쪽으로 몸이 먼저 가.
+Your body moves to match them first.
 
-이 두 마음이 서로 **충돌**해.
+These two sides **clash**.
 
-논리랑 감정 사이에서 자꾸 갈라져.
+Logic and feeling keep splitting you.
 
-그래서 같이 있을 때 결정을 미루게 돼.
+So you delay decisions when you're together.
 
-- 위처럼 **호흡이 끊기게** 쓴다. (줄 **개수 제한 없음**. 대신 **한 문장은 짧게**.)
+- Write with **breath breaks** like above. (No limit on line count; keep **each sentence short**.)
 
-### 가독성·문장 길이 — 네 축 공통 (최우선)
+### Readability / length — all four axes (highest priority)
 
-- **한 문장**: 공백 제외 **24자 이내**를 목표로 한다. (조금 넘으면 **문장을 반으로 쪼갠다.**)
-- **마침표(.), 물음표(?), 느낌표(!), …** 로 끝날 때마다 바로 **\\n** 넣는다.
-- **한 줄 = 한 문장.** 같은 줄에 문장 두 개 두지 않는다.
-- **쉼표(,) 금지 규칙:** 문장 안에서 **쉼표로 절대 길게 잇지 않는다.** 쉼표를 쓰더라도 **한 문장 안 쉼표는 0~1개**만. 나열은 **마침표 + \\n**으로 끊어 다음 줄에 이어 쓴다.
-- **성향1 블록 / 성향2 블록 / 충돌·강화 / 결과** 사이에는 **\\n\\n** 으로 빈 줄을 넣는다.
-- **my_line**, **partner_line**도 한 문장이 길면 **두 문장으로 쪼개고** 사이에 **\\n**.
+- **One sentence**: aim for under ~12 English words (or a very short clause). If longer, **split in half**.
+- After **period (.), question (?), exclamation (!), …** insert **\\n** immediately.
+- **One line = one sentence.** Never two sentences on one line.
+- **Comma rule:** do not chain long clauses with commas. At most **0–1 comma** per sentence. Lists = **period + \\n** then next line.
+- Between **trait1 / trait2 / clash-or-amplify / result** blocks use **\\n\\n**.
+- If **my_line** / **partner_line** run long, **split into two sentences** with **\\n** between.
 
-### 끝맺음·관찰 표현 금지 (위반 시 전부 다시 쓸 것)
+### Ban vague observational endings (rewrite the whole axis on violation)
 
-- **절대 금지:** \`~모습이 보여\`, \`~것 같아\`, \`~느껴져\`, \`~느낌이야\`, \`~인 듯\`, \`~하는 것 같아\` 처럼 **흐릿한 관찰어**로 끝내기.
-- **나쁜 예 (이렇게 쓰면 안 됨):** 한 줄에 쉼표로 길게 잇고, "모습이 보여 / 것 같아 / 느껴져"로 흐리게 끝내기.
-- **좋은 예 (호흡):** 성향1 한두 문장 → 빈 줄 → 성향2 한두 문장 → 빈 줄 → 충돌/강화 한 문장 → 빈 줄 → 그래서 결과·긴장을 **짧은 문장 여러 개**로.
-- 대신 **\`~해\` \`~돼\` \`~거야\` \`~못해\` \`~가\`** 같이 **상태·행동이 바로 보이게** 끝낸다.
-
----
-
-## JSON 필드에 나누어 담는 법 (스키마 유지)
-
-각 축마다 객체:
-
-- **my_line** (한 줄): 이 시점의 **'너'** 에 대한 **첫 성향**을 **"너는 ~한 편이야"** 형태로 **짧게** 한 문장.
-- **partner_line** (한 줄): **상대(partner_nickname)** 를 한 줄로 짚는다. **"그 사람은 ~한 편이야"** 또는 **"상대는 ~한 편이야"** 형태. **너는** 으로 상대를 부르지 않는다.
-
-- **insights** (문자열 **정확히 2개**) — **위 분석 순서**를 그대로 담는다:
-  - **insights[0]**: **성향1** 짧은 문장들(끝마다 **\\n**, 블록 끝 **\\n\\n**) + **성향2** 짧은 문장들(끝마다 **\\n**).
-  - **insights[1]**: **충돌 또는 강화** 한 줄 + **\\n\\n** + **결과**(\`그래서 ~하게 돼\` + 필요 시 **두 성향을 같이 맞추려다 조정하다 보니 생기는 긴장** 등을 **짧은 문장 여러 개**로, 각 끝 **\\n**).
-
-- **actions** (문자열 **정확히 2개**): **energy_pattern(소통 팁)** 은 아래 **「소통 팁 — 네 규칙」**을 **반드시** 따른다. **나머지 세 축**은 주제에 맞는 **오늘 할 수 있는** 구체 행동으로 쓰되, **문장 끝마다 \\n**, 필요하면 **\\n\\n** 으로 호흡을 준다.
+- **Never end with:** "I can see…", "it seems…", "it feels like…", "kind of…", "maybe…" soft observer hedges.
+- **Bad:** long comma chains + fuzzy endings.
+- **Good breath:** trait1 (1–2 lines) → blank → trait2 → blank → clash/amplify → blank → result/tension as **several short sentences**.
+- Prefer endings that show **state/behavior** directly: "…you do X", "…you freeze", "…you can't", "…you go there".
 
 ---
 
-## 규칙 (반드시)
+## How to fill JSON fields (keep schema)
 
-1. **MBTI, DISC, 에니어그램, RIASEC, PSS, TCI** 등 **테스트·도구 이름은 절대 쓰지 않는다.**
-2. 성향 설명은 **"너는 ~한 편이야"** 패턴을 쓴다. (**my_line** 에도 반영.)
-3. 두 번째 성향 전환은 **"그치만"** 또는 **"그런데"** 를 쓴다.
-4. 관계 한 줄에는 **충돌** 또는 **강화** 중 하나를 골라 명시한다. (예: "이 두 마음이 서로 충돌해." / "이 두 마음이 강화되면서 한쪽으로 기울어져.")
-5. 결과는 **"그래서 ~하게 돼"** 로 수렴시킨다.
-6. **줄 개수로 내용을 줄이지 않는다.** 읽기 좋게 **짧은 문장을 여러 개** 써도 된다.
-7. **가독성** 규칙(짧은 문장, **쉼표 남용 금지**, 문장 끝 **. ? ! …** 마다 **\\n**, 블록 사이 **\\n\\n**)을 **네 축 모두** 지킨다.
-8. **금지 표현** 목록을 어기면 그 축 전체를 다시 쓴다.
+Per axis object:
 
----
+- **my_line** (one line): first trait for this perspective's **"you"** as a short **"You're the kind of person who…"**.
+- **partner_line** (one line): name the **partner (partner_nickname)** in one line as **"That person tends to…"** or **"Your partner tends to…"**. Do not call the partner "you".
 
-## 소통 팁 — JSON 키 **energy_pattern** (아래 네 규칙만 이 축 전용)
+- **insights** (exactly **2** strings) — carry the analysis order:
+  - **insights[0]**: trait1 shorts (each end **\\n**, block end **\\n\\n**) + trait2 shorts (each end **\\n**).
+  - **insights[1]**: clash-or-amplify one-liner + **\\n\\n** + result (\`So you end up…\` + if needed, tension of holding both traits as **several short sentences**, each ending **\\n**).
+
+- **actions** (exactly **2** strings): for **energy_pattern** follow **「Communication tips — four rules」** below. For the other three axes, concrete **do-today** actions; **\\n** after sentences; use **\\n\\n** for breath when useful.
 
 ---
 
-### [규칙 1] 문제 행동 찾아내기
+## Rules (must)
 
-앞 세 축·**insights**에서 **"사람이 어떤 행동을 반복하는지"**를 먼저 짚는다. (말버릇·회피·맞춤 습관 등 **관찰 가능한 행동**으로.)
-
-**형태 예시 (이런 식으로 한 줄 요약):**
-
-- 남들 눈치만 보고 내 의견을 못 내
-- 결정을 혼자 못 하고 망설임
-- 상대방 감정만 읽고 내 감정은 숨김
-- 완벽주의로 스트레스 받음
-- 불안해서 회피함
+1. **Never** name tests/tools: MBTI, DISC, Enneagram, RIASEC, PSS, TCI, etc.
+2. Trait lines use **"You're the kind of person who…"** (also in **my_line**).
+3. Second-trait turn uses **"But"** or **"And yet"**.
+4. Relationship one-liner must explicitly say **clash** or **amplify**.
+5. Result converges on **"So you end up…"**.
+6. Do **not** shorten content by cutting line count — many short sentences are fine.
+7. Apply readability rules (short sentences, no comma abuse, **\\n** after . ? ! …, **\\n\\n** between blocks) on **all four axes**.
+8. On banned phrasing, **rewrite the whole axis**.
 
 ---
 
-### [규칙 2] 문제 행동의 **반대 방향**으로만 조언
+## Communication tips — JSON key **energy_pattern** (these four rules are axis-specific)
 
-| 문제 행동 (이런 행동을 하면) | 반대 조언 (이렇게 바꿔보기) |
+---
+
+### [Rule 1] Find the problem behavior
+
+From prior axes / **insights**, first name **"what behavior repeats"** (observable habits: speech, avoidance, people-pleasing, etc.).
+
+**Shape examples (one-line summaries):**
+
+- Watching others so hard you don't voice your view
+- Can't decide alone and stall
+- Reading their feelings while hiding yours
+- Perfectionism stress
+- Anxiety → avoidance
+
+---
+
+### [Rule 2] Advise only the **opposite** of the problem behavior
+
+| Problem behavior | Opposite advice |
 |---------------------------|--------------------------|
-| 남들 눈치만 보고 내 의견 못 냄 | "내 생각을 먼저 말해보는 건 어때?" |
-| 결정을 혼자 못 하고 망설임 | "작은 결정이라도 스스로 해보는 건 어때?" |
-| 상대방 감정만 읽고 내 감정 숨김 | "오늘은 '나는 지금 ~하게 느껴' 라고 말해봐" |
-| 완벽주의로 스트레스 받음 | "'80%만 되어도 충분해' 라고 생각을 바꿔봐" |
-| 불안해서 회피함 | "가장 편한 상황부터 조금씩 도전해보는 게 어때?" |
+| Watching others; can't voice your view | "Want to try saying your thought first?" |
+| Can't decide alone; stall | "Want to try one small decision yourself?" |
+| Reading them; hiding your feelings | "Today try: 'I'm feeling ___ right now.'" |
+| Perfectionism stress | "Try switching to: '80% is enough.'" |
+| Anxiety → avoidance | "Want to start with the easiest situation?" |
 
-**문제를 악화시키는 조언 — 절대 금지**
+**Advice that worsens the problem — banned**
 
-- "먼저 상대방 의견을 물어봐" (눈치 보는 행동 강화)
-- "상대방을 더 배려해봐" (내 감정 숨기는 행동 강화)
-- 그 밖에도, **이미 과한 맞춤·눈치·회피**인데 **또 맞추게 만드는** 말은 쓰지 않는다.
+- "Ask them first" (reinforces people-watching)
+- "Be more considerate of them" (reinforces hiding your feelings)
+- Anything that pushes more matching/avoidance when those are already excessive
 
-**"먼저 물어봐"**, **"경청만 해"** 는 **문제가 정말로 과한 침묵·신호 읽기 부족**일 때만 예외적으로 고려한다.
+Exceptions for **"ask first"** / **"just listen"** only when the real problem is excessive silence / poor cue-reading.
 
 ---
 
-### [규칙 3] 심리학 기법은 **일상어로만** 1개 이상 (이름은 출력 금지)
+### [Rule 3] Psychology techniques in everyday language only (≥1; names never printed)
 
-아래 표의 **왼쪽(기법 이름)**은 너(모델)가 **이해용으로만** 쓰고, **JSON 본문·actions·insights 안에는 절대 쓰지 않는다.**  
-**오른쪽 "일상어 표현"처럼만** 자연스럽게 한두 문장을 섞는다.
+Left column (technique names) is **model-internal only** — **never** appear in JSON body / actions / insights.  
+Speak only like the right column.
 
-| (내부 참고용 — 출력 금지) | 일상어 표현 (이렇게만 말하기) |
+| (internal — never print) | Everyday wording |
 |------------------------|--------------------------|
-| 자기 효능감 | 작은 성공이 쌓이면, '나도 할 수 있구나' 라는 믿음이 생겨 |
-| 인지 재구성 | '실패할까 봐' 라는 생각을 '일단 해보는 거야' 로 바꿔봐 |
-| 행동 활성화 | 기분이 안 좋아도 일단 가벼운 것부터 시작해봐 |
-| 점진적 노출 | 처음에는 편한 사람부터, 조금씩 도전해보는 게 좋아 |
-| 자기-자비 | 실수해도 '어쩔 수 있지, 다음에 잘하면 돼' 라고 말해줘 |
+| Self-efficacy | Small wins stack into 'I can do this' |
+| Cognitive reframe | Swap 'what if I fail' for 'I'm trying this once' |
+| Behavioral activation | Even on a low day, start with something light |
+| Gradual exposure | Begin with safer people, then stretch a little |
+| Self-compassion | Mistakes can be 'that's okay — next time' |
 
-**금지:** "자기 효능감", "인지 재구성", "행동 활성화", "점진적 노출", "자기-자비" 같은 **학술 이름·기법 라벨**을 사용자에게 보이게 쓰기.
-
----
-
-### [규칙 4] 출력 형식 (energy_pattern의 **actions** 두 개)
-
-- **각 actions 문자열**은 **4~6줄** 분량의 **조언 본문**이다.
-- **문장과 문장 사이**에는 반드시 **한 줄 비우기** → JSON 안에서는 **\\n\\n** (개행 두 번).
-- **마지막 문장**은 **"~해보는 건 어때?"** / **"~해 볼래?"** 처럼 **부드러운 질문**으로 끝낸다.
-- 한 줄에 문장 여럿·쉼표로 길게 잇지 않는다. (가독성 공통 규칙 유지.)
+**Ban printing** academic labels like "self-efficacy", "cognitive restructuring", etc.
 
 ---
 
-### energy_pattern — JSON에 넣는 법
+### [Rule 4] Output shape (two **actions** under energy_pattern)
 
-- **insights[0], insights[1]**: 다른 축과 동일 — **성향1 → 성향2 → 충돌/강화 → 결과**. (문장 끝 **\\n**, 블록 사이 **\\n\\n**.)
-- **actions[0]**: [규칙1]에서 짚은 **문제 행동 한 줄** → **\\n\\n** → [규칙2] **반대 조언**(표현은 질문형 권장) → **\\n\\n** → 짧은 예시·한 줄 설명 → **\\n\\n** → [규칙3] **일상어 표현만** 1개 이상(기법 이름 없이) → **\\n\\n** → [규칙4] **부드러운 질문으로 마무리**.
-- **actions[1]**: **다른 문제 행동**을 짚거나 **다른 반대 조언** + **다른 일상어 심리 문장**으로, **actions[0]과 겹치지 않게**. 역시 **4~6줄**, 문장 사이 **\\n\\n**, 끝은 **질문형**.
-
-### 올바른 톤 예시 (복붙 금지 — 기법 이름 없음)
-
-너는 남들 눈치를 보느라 내 의견을 잘 못 내.\\n\\n
-오늘은 한 번만, 내 생각을 먼저 말해보는 건 어때?\\n\\n
-상대 의견부터 묻지 말고, 네 한 마디를 먼저 꺼내는 연습이야.\\n\\n
-작은 성공이 쌓이면, '나도 할 수 있구나' 라는 믿음이 생겨.\\n\\n
-편한 사람에게만이라도, 먼저 말해보는 건 어때?
-
-### 금지 (energy_pattern)
-
-- 분석과 무관한 잡일 한 줄
-- 기법·이론 **이름 노출**
-- 일반 소통 템플릿만 나열
+- Each **actions** string is a **4–6 line** advice body.
+- Between sentences: always a blank line → **\\n\\n** inside JSON.
+- Last sentence ends as a soft question: **"Want to try…?"** / **"Up for…?"**
+- Keep common readability rules (no long comma chains).
 
 ---
 
-## 금지
+### energy_pattern — packing into JSON
 
-- 테스트 이름, 이니셜 약어, "N성향", "D형" 같은 **유형 라벨**
-- **쉼표로 문장 여럿 한 줄에 이어 붙이기**, **한 문장을 아주 길게 쓰기**
-- \`~모습이 보여\`, \`~것 같아\`, \`~느껴져\` 등 **흐릿한 관찰어**
-- 네 축이 **같은 문장**을 복붙하기 (축마다 **다른 두 성향·다른 장면**)
+- **insights[0], insights[1]**: same as other axes — trait1 → trait2 → clash/amplify → result. (**\\n** / **\\n\\n**.)
+- **actions[0]**: problem behavior one-liner → **\\n\\n** → opposite advice (question form preferred) → **\\n\\n** → short example → **\\n\\n** → everyday psych wording (≥1, no technique names) → **\\n\\n** → soft question close.
+- **actions[1]**: different problem or different opposite advice + different everyday psych line; **no overlap** with actions[0]. Also **4–6 lines**, **\\n\\n** between, question close.
+
+### Correct tone example (do not copy — no technique names)
+
+You're so busy reading the room that you rarely voice your own take.\\n\\n
+Want to try saying your thought first, just once today?\\n\\n
+Don't start by asking theirs — practice putting your one line first.\\n\\n
+Small wins stack into 'I can do this'.\\n\\n
+Even with someone safe, want to try speaking first?
+
+### Banned (energy_pattern)
+
+- Chores unrelated to the analysis
+- Exposing technique/theory **names**
+- Generic communication templates only
 
 ---
 
-## 출력 JSON (설명·마크다운 블록·코드펜스 없이 이 구조만)
+## Banned
+
+- Test names, type abbreviations, labels like "N-type", "D-style"
+- Comma-chaining many clauses on one line; very long sentences
+- Fuzzy observer endings ("I can see…", "it seems…", "it feels like…")
+- Copy-pasting the **same sentences** across axes (each axis needs **different traits/scenes**)
+
+---
+
+## Output JSON (this structure only — no markdown, no code fences)
 
 {
   "perspectives": {
@@ -298,9 +305,11 @@ ${partnerPatternsBlock}
   }
 }
 
-빈 문자열 없이 채운다. **"${reportIdB}"** 블록에서는 **my_nickname / partner_nickname** 과 문장 속 나·상대가 위와 반대인지 다시 확인한다.
+Fill every string. For **"${reportIdB}"**, re-check that **my_nickname / partner_nickname** and me/partner in prose are swapped as above.
 
-## JSON만 출력
+${buildLlmOutputLocaleInstruction(outputLocale)}
+
+## JSON only
 `.trim();
 }
 
@@ -311,16 +320,16 @@ export function buildRelationshipPremiumExtraBlock(
   partnerAstrology: string,
 ): string {
   return `
-[추가 데이터 — 본문에 녹일 때 직접 인용·전문 용어 나열은 피할 것]
-- 나(첫 번째 리포트 주인) 사주·기질 요약: ${mySaju}
-- 상대(두 번째 리포트 주인) 사주·기질 요약: ${partnerSaju}
-- 나 출생 맥락·점성 톤: ${myAstrology}
-- 상대 출생 맥락·점성 톤: ${partnerAstrology}
+[Extra data — weave lightly into body; do not quote technical jargon lists]
+- Me (first report owner) Saju/temperament summary: ${mySaju}
+- Partner (second report owner) Saju/temperament summary: ${partnerSaju}
+- My birth-context / astrological tone: ${myAstrology}
+- Partner birth-context / astrological tone: ${partnerAstrology}
 
-## 심화 시에도 동일하게 적용
-- 위 데이터는 **각 축의 insights·my_line·partner_line**에 **은은하게만** 섞는다. **테스트 이름 금지**는 그대로.
-- **분석 순서**(성향1 → 성향2 → 충돌/강화 → 결과), **짧은 문장·쉼표 남용 금지**, **문장 끝마다 \\n**·**블록 사이 \\n\\n**, **금지 표현** 규칙은 **기본 프롬프트와 동일**하다.
-- **energy_pattern** 축의 **actions**는 기본 프롬프트 **「소통 팁 네 규칙」**(문제 행동 파악 → 반대 조언 → 일상어 심리 문장만·기법 이름 금지 → 4~6줄·문장 사이 \\n\\n·마지막 부드러운 질문)을 **반드시** 따른다.
-- **나머지 축**의 **actions**도 **짧게** 유지하되, 문장 끝마다 **\\n** 은 동일하게 적용한다.
+## Also apply for premium
+- Fold the above softly into each axis **insights / my_line / partner_line**. Test-name bans still apply.
+- Same analysis order (trait1 → trait2 → clash/amplify → result), short sentences, no comma abuse, **\\n** after sentences / **\\n\\n** between blocks, banned phrasing — identical to the basic prompt.
+- **energy_pattern** **actions** must follow the basic prompt **four communication-tip rules** (find problem behavior → opposite advice → everyday psych wording only · no technique names → 4–6 lines · **\\n\\n** · soft question close).
+- Other axes' **actions** stay short; still **\\n** after each sentence.
 `.trim();
 }

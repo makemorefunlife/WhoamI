@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const primaryBtn = "stitch-cta-primary w-full";
 const secondaryBtn = "stitch-cta-secondary w-full";
@@ -28,6 +29,8 @@ export default function StartChoiceModal({
   onGoRelationships,
   onGoDecision,
 }: Props) {
+  const { messages } = useLocale();
+
   if (!open) return null;
 
   return (
@@ -35,7 +38,7 @@ export default function StartChoiceModal({
       <button
         type="button"
         className="absolute inset-0 bg-primary/25 backdrop-blur-sm"
-        aria-label="닫기"
+        aria-label={messages.common.close}
         onClick={onClose}
       />
       <motion.div
@@ -50,12 +53,14 @@ export default function StartChoiceModal({
           id="start-choice-title"
           className="stitch-headline text-xl sm:text-2xl"
         >
-          {signedIn ? "어디로 이동할까요?" : "어떻게 시작할까요?"}
+          {signedIn
+            ? messages.startChoice.titleSignedIn
+            : messages.startChoice.titleGuest}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
           {signedIn
-            ? "원하는 허브를 고르면, 필요한 단계(설문/출생)부터 자동으로 이어서 진행해요."
-            : "무료 설문 10문항으로 바로 시작하거나, 계정에 로그인해 이어갈 수 있어요."}
+            ? messages.startChoice.bodySignedIn
+            : messages.startChoice.bodyGuest}
         </p>
         <div className="mt-6 flex flex-col gap-3">
           {signedIn ? (
@@ -66,7 +71,7 @@ export default function StartChoiceModal({
                 disabled={busy}
                 onClick={onGoBlueprint}
               >
-                나 (추천)
+                {messages.startChoice.goBlueprint}
               </button>
               <button
                 type="button"
@@ -74,14 +79,14 @@ export default function StartChoiceModal({
                 disabled={busy}
                 onClick={onGoRelationships}
               >
-                관계
+                {messages.startChoice.goRelationships}
               </button>
               <button
                 type="button"
                 className={secondaryBtn}
                 onClick={onGoDecision}
               >
-                결정
+                {messages.startChoice.goDecision}
               </button>
             </>
           ) : (
@@ -92,10 +97,10 @@ export default function StartChoiceModal({
                 disabled={busy}
                 onClick={onStartFree}
               >
-                {busy ? "준비하는 중…" : "시작하기 (무료 설문)"}
+                {busy ? messages.common.preparing : messages.startChoice.startFree}
               </button>
               <button type="button" className={secondaryBtn} onClick={onLogin}>
-                로그인
+                {messages.nav.signIn}
               </button>
             </>
           )}
@@ -105,7 +110,7 @@ export default function StartChoiceModal({
           className="mt-4 w-full text-center text-sm text-on-surface-variant hover:text-primary"
           onClick={onClose}
         >
-          나중에
+          {messages.startChoice.later}
         </button>
       </motion.div>
     </div>

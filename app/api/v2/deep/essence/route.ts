@@ -8,6 +8,8 @@ import type {
   CurrentSelfProfile,
   SurveyAnswersInput,
 } from "@/lib/v2/survey/types";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -20,23 +22,31 @@ type Body = {
   birthPlace?: string | null;
   surveyAnswers?: SurveyAnswersInput | null;
   currentSelfProfile?: CurrentSelfProfile | null;
+  language?: string;
+  locale?: string;
 };
 
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Body;
+    const locale = resolveRequestLocale({
+      bodyLanguage: body.language ?? body.locale,
+      headerLanguage:
+        req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
+    const messages = getMessages(locale);
     const reportId = body.reportId?.trim();
     const birthDate = body.birthDate?.trim();
 
     if (!reportId) {
       return NextResponse.json(
-        { error: "reportId가 필요합니다." },
+        { error: messages.errors.reportIdRequired },
         { status: 400 },
       );
     }
     if (!birthDate) {
       return NextResponse.json(
-        { error: "birthDate가 필요합니다." },
+        { error: messages.errors.birthDateRequired },
         { status: 400 },
       );
     }
@@ -58,9 +68,10 @@ export async function POST(req: Request) {
       birthPlace: body.birthPlace ?? null,
       surveyAnswers: body.surveyAnswers ?? null,
       currentSelfProfile: body.currentSelfProfile ?? null,
+      locale,
     });
 
-    return NextResponse.json({ ok: true, slim_v1 });
+    return NextResponse.json({ ok: true, locale, slim_v1 });
   } catch (e) {
     logServerError("v2/deep/essence:", e, "internal_error");
     return NextResponse.json(

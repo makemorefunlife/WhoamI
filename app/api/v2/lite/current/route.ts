@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { logServerError } from "@/lib/security/safeLog";
 import {
-  CURRENT_SELF_LITE_SYSTEM,
+  getCurrentSelfLiteSystemPrompt,
   buildCurrentSelfLiteUserPrompt,
 } from "@/lib/v2/prompts/currentSelfLite";
+import { normalizeLocale } from "@/lib/i18n/locale";
 import { buildCurrentSelfLiteFallback } from "@/lib/v2/lite/fallbackCurrent";
 import { runLiteLlmJson } from "@/lib/v2/lite/runLiteLlm";
 import type { CurrentSelfLiteReport } from "@/lib/v2/lite/types";
@@ -31,22 +32,23 @@ export async function POST(req: Request) {
     }
 
     const hints = buildLiteInterpretationHints(profile);
+    const language = normalizeLocale(body.language);
 
     let report: CurrentSelfLiteReport;
     try {
       report = await runLiteLlmJson<CurrentSelfLiteReport>([
-        { role: "system", content: CURRENT_SELF_LITE_SYSTEM },
+        { role: "system", content: getCurrentSelfLiteSystemPrompt(language) },
         {
           role: "user",
           content: buildCurrentSelfLiteUserPrompt({
             profile,
             hints,
-            language: body.language ?? "ko",
+            language,
           }),
         },
       ]);
       report.report_type = "current_self_lite";
-      report.language = body.language ?? "ko";
+      report.language = language;
     } catch (e) {
       logServerError("v2/lite/current LLM fallback:", e, "internal_error");
       report = buildCurrentSelfLiteFallback(profile);

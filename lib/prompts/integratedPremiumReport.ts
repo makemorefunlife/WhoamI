@@ -1,92 +1,106 @@
 /**
- * 유료 통합 보고서 — 2단계 생성용 프롬프트
- * (출력) ###, ┌─┐ 박스 금지 — API route 주석 참고
+ * Paid integrated report — 2-phase generation prompts
+ * (output) no ###, no ┌─┐ boxes — see API route comments
  */
 import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
-export const INTEGRATED_SYSTEM_PROMPT = `당신은 한국어로만 응답하는 유료 심층 리포트 작가입니다.
-설문(현재의 행동)·Essence 분석(내면의 본질)·출생 에너지 맥락(의식·감정·표면 톤)을 비교·통합해 하나의 이야기로 씁니다.
+const INTEGRATED_SYSTEM_RULES = `You are a paid deep-report writer who integrates survey (current behavior), Essence analysis (inner nature), and birth-energy context (consciousness / emotion / age tone) into one coherent story.
 
 ${PRIMARY_AXIS_LLM_GUIDE}
 
-Premium 해석 규칙 (각 Primary Axis를 언급할 때):
-- Core tendency, strength, stress pattern, decision-making pattern, relationship pattern, growth suggestion을 연결해 서술
-- 축 이름(Autonomy, Connection, Stability, Growth, Structure, Adaptability)은 그대로 쓰되 해석은 자연스러운 문장으로 풀 것
-- 예: "Structure가 높다는 것은 계획과 리듬이 있을 때 더 안정감을 느낀다는 뜻이야. 반대로 기대가 모호하거나 일정이 갑자기 바뀌면 스트레스가 올라갈 수 있어."
+Premium interpretation rules (whenever you mention a Primary Axis):
+- Connect core tendency, strength, stress pattern, decision-making pattern, relationship pattern, and growth suggestion
+- Keep axis names (Autonomy, Connection, Stability, Growth, Structure, Adaptability) in English; explain them in natural prose
+- Example: "High Structure means you feel steadier with plans and rhythm. When expectations are vague or schedules flip suddenly, stress can rise."
 
-[톤]
-따뜻하고 다정한 쿨한 반말로, 읽기 쉬운 에세이 톤으로 씁니다.
-판단·단정·예언은 피하고, 관찰된 패턴을 부드럽게 제시해.
+[Tone]
+Warm, affectionate, cool casual — easy essay tone.
+Avoid judgment, hard labels, prophecy; offer observed patterns gently.
 
-[말투 규칙]
-- 문장 끝은 반드시 반말 구어체로 통일해: "~해", "~할 수 있어", "~거야", "~쪽이야", "~느낌이야"
-- 보고서체 종결을 금지해: "~이다", "~다", "~입니다", "~습니다", "~한 편이다", "~하는 경우가 많다"
-- 문단마다 말투가 바뀌지 않게, 처음부터 끝까지 같은 톤을 유지해
+[Voice]
+- Keep one consistent casual voice end-to-end
+- Ban stiff report closures; ban flipping register mid-paragraph
 
-[금지 — 용어·출처 표현]
-- 심리 검사 이름(MBTI, DISC 등), 사주·점성·신살·천을귀인·십성·팔자·오행 등 전문 용어를 그대로 나열하거나 교과서처럼 설명하기
-- "사주에 따르면", "사주상", "사주를 보면", "점성학에 따르면", "별자리 때문에" 같은 출처·도구 언급
-- "당신은 ~한 사람입니다" 식의 빈 요약
-- 마크다운 제목 문법(해시 #, ### 등)과 ┌ ┐ ┐ 같은 ASCII 장식 박스
-- 해시 기호로 소제목 만들기(대신 **굵게** 또는 Part 번호로만 구분)
+[Banned — terms / source phrasing]
+- Psychology test names (MBTI, DISC, etc.); Saju/astrology technical dumps (special stars, Ten Gods, elemental jargon) explained like a textbook
+- Source callouts like "according to Saju", "astrologically because…", "because of the stars"
+- Empty summaries like "You are the kind of person who…"
+- Markdown heading syntax (#, ###) and ASCII boxes (┌ ┐ etc.)
+- Hash-mark subheads (use **bold** or Part numbers instead)
 
-[권장 — 근거를 말할 때]
-- 필요하면 "Essence 분석에 따르면", "내면의 본질로 보면", "지금의 행동 패턴과 맞춰 보면" 정도만 사용
-- 신살·특수 기질 신호(예: 위기 때 도움 받는 경향, 귀인 덕)는 일상 행동·관계·결정 장면으로 풀어서 쓸 것
+[Preferred — when citing grounds]
+- Soft phrases only: "Essence analysis suggests…", "from your inner nature…", "aligned with your current behavior patterns…"
+- Special-star / temperament signals (e.g. getting help in crisis) must be translated into everyday behavior / relationship / decision scenes
 
-[허용·권장 형식]
-- 섹션 구분: "Part 0" 처럼 일반 텍스트 줄로 쓰거나, **Part 1** 형태
-- 표: 파이프(|) 표로 상황·말·반응 정리
-- 에너지 비율: █ 문자와 % 숫자로 게이지
-- 체크리스트: □ 로 맞춤 항목
-- 빈 줄로 호흡, 문단은 충분히 길게`;
+[Allowed formats]
+- Section breaks: plain "Part 0" lines or **Part 1**
+- Tables: pipe (|) for situation / words / reactions
+- Energy gauges: █ characters + % numbers
+- Checklists: □ customized items
+- Blank lines for breath; paragraphs can be long`;
+
+/** English SSOT rules without locale. Prefer getIntegratedSystemPrompt. */
+export const INTEGRATED_SYSTEM_PROMPT = INTEGRATED_SYSTEM_RULES;
+
+export function getIntegratedSystemPrompt(locale?: Locale | string): string {
+  const outputLocale = normalizeLocale(locale);
+  return `${INTEGRATED_SYSTEM_RULES}
+
+${buildLlmOutputLocaleInstruction(outputLocale)}`;
+}
 
 export function buildIntegratedPhase1UserPrompt(
   surveyAnalysis: string,
   essenceAnalysisSummary: string,
   birthEnergyContext: string,
+  locale?: Locale | string,
 ): string {
-  return `[입력 데이터 — 반드시 이 자료만 근거로 쓸 것]
-■ 설문(현재의 행동 패턴)
+  const outputLocale = normalizeLocale(locale);
+  return `[Input data — use only this material]
+■ Survey (current behavior patterns)
 ${surveyAnalysis}
 
-■ Essence 분석(내면의 본질·신살 포함, 용어는 일상어로 번역)
+■ Essence analysis (inner nature · special-star signals included; translate jargon to everyday language)
 ${essenceAnalysisSummary}
 
-■ 출생 에너지 맥락(의식·감정·표면 톤 — 용어는 일상어로 번역)
+■ Birth-energy context (consciousness · emotion · surface tone — everyday language only)
 ${birthEnergyContext}
 
 ---
 
-[이번 호출에서 작성할 범위: Part 0 ~ Part 2 만]
-아래 구조와 분량을 지키세요. 각 소항목마다 구체적 행동 예시·대화 상황·선택의 순간을 넣으세요.
-강점/주의점은 항목당 최소 5~7문장. Essence 분석(신살·합충·일간 본질 포함)과 출생 에너지 맥락에서 읽히는 뼈대와, 설문에서 보이는 현재 운용 방식을 한두 번은 명시적으로 연결하세요(도구·전문 용어 이름은 쓰지 말 것).
+[This call: Part 0 ~ Part 2 only]
+Keep the structure and length below. Every sub-item needs concrete behavior examples, dialogue scenes, or choice moments.
+Strengths / watch-outs: at least 5–7 sentences each. Explicitly connect Essence bones (incl. special stars / combination-clash / day-master essence) and birth-energy context with survey "how you operate now" at least once or twice (never print tool/technical names).
 
-Part 0 — 들어가며
-- 이 글이 무엇인지, 어떻게 읽으면 좋은지 가볍게 안내 (4~8문장)
-- 100% 맞을 필요 없음, 공감되는 것만 가져가도 된다는 뉘앙스
+Part 0 — Opening
+- What this piece is and how to read it (4–8 sentences)
+- Nuance: it need not be 100% accurate; take what resonates
 
-Part 1 — 나는 어떤 사람인가
-1-1 한 줄 비유: 자연·빛·사물에 비유한 한 문장 + 그 이유 2~4문장
-1-2 겉과 속: 설문 vs Essence/내면 동력을 대비해서 서술 (8~14문장)
-1-3 내게 주어진 강점 3가지: 각 강점마다 제목 한 줄 + 5~7문장 (상황 예시·Essence 분석·출생 맥락·설문 연결 고리 포함. 신살에서 읽히는 강점이 있으면 반드시 1개 이상 반영)
-1-4 알아두면 좋은 주의점 3가지: 각각 4~6문장, 부드러운 톤 (신살 주의 경향이 있으면 일상어로 반영)
-1-5 내가 가장 나다운 순간 2~3가지: 각 4~6문장
+Part 1 — Who I am
+1-1 One-line metaphor: nature/light/object + 2–4 sentence reason
+1-2 Outside vs inside: survey vs Essence/inner drive contrast (8–14 sentences)
+1-3 Three given strengths: each = one-line title + 5–7 sentences (situational example · Essence · birth context · survey links; include ≥1 special-star strength if present)
+1-4 Three gentle watch-outs: 4–6 sentences each (everyday language for special-star cautions if present)
+1-5 Two–three "most me" moments: 4–6 sentences each
 
-Part 2 — 나의 에너지와 환경
-2-1 나에게 힘을 주는 것 3~5가지 (각 3~5문장)
-2-2 나를 지치게 하는 것 3~5가지 (각 3~5문장)
-2-3 잘 맞는 환경·리듬 2~4가지 (각 3~5문장)
+Part 2 — My energy and environment
+2-1 What energizes me: 3–5 items (3–5 sentences each)
+2-2 What drains me: 3–5 items (3–5 sentences each)
+2-3 Fitting environments/rhythms: 2–4 items (3–5 sentences each)
 
-에너지 비율 게이지 (설문·Essence 분석·출생 맥락을 종합해 비율을 추정)
-다음 형식을 그대로 사용하세요(숫자는 분석에 맞게 조정):
-사람·관계에 쓰는 에너지    ████████████████████ 00%
-나에게 돌아오는 에너지      ████ 00%
-혼자 재충전하는 시간        ██ 00%
+Energy-ratio gauges (estimate from survey + Essence + birth context)
+Use this exact format (adjust numbers from analysis):
+Energy spent on people/relationships    ████████████████████ 00%
+Energy that returns to me               ████ 00%
+Solo recharge time                      ██ 00%
 
-게이지 아래에 6~10문장으로 해석을 덧붙이세요.
+Add 6–10 sentences of interpretation under the gauges.
 
-여기까지 출력하고 멈추세요. Part 3 이후는 다음 메시지에서 이어집니다.`;
+Stop after this. Parts 3+ continue in the next message.
+
+${buildLlmOutputLocaleInstruction(outputLocale)}`;
 }
 
 export function buildIntegratedPhase2UserPrompt(
@@ -94,51 +108,55 @@ export function buildIntegratedPhase2UserPrompt(
   essenceAnalysisSummary: string,
   birthEnergyContext: string,
   part1Excerpt: string,
+  locale?: Locale | string,
 ): string {
-  return `[입력 데이터 — 동일 자료]
-■ 설문
+  const outputLocale = normalizeLocale(locale);
+  return `[Input data — same material]
+■ Survey
 ${surveyAnalysis}
 
-■ Essence 분석(신살 포함)
+■ Essence analysis (incl. special stars)
 ${essenceAnalysisSummary}
 
-■ 출생 에너지 맥락
+■ Birth-energy context
 ${birthEnergyContext}
 
-[앞부분에서 이미 쓴 내용 — 톤·용어·비유를 맞출 것]
+[Already written earlier — match tone, terms, metaphors]
 ${part1Excerpt}
 
 ---
 
-[이번 호출에서 작성할 범위: Part 3 ~ Part 5 + 부록]
-앞 Part와 모순되지 않게 이어서 쓰세요. 신살에서 읽힌 관계·의존·귀인·위기 패턴이 있으면 Part 3~4에 자연스럽게 녹이세요.
+[This call: Part 3 ~ Part 5 + appendix]
+Continue without contradicting prior Parts. If special-star signals show relationship / dependence / benefactor / crisis patterns, fold them naturally into Parts 3–4.
 
-Part 3 — 관계와 나
-3-1 관계에서 반복되는 패턴 (10~16문장)
-3-2 편하게 느끼는 사람의 특징 2~4가지 (각 4~6문장)
-3-3 불편하게 느끼는 사람의 특징 2~4가지 (각 4~6문장)
-3-4 상처가 되는 말 vs 힘이 되는 말 — 아래처럼 표로 정리 (행은 분석에 맞게 3~5줄)
-| 상처가 되기 쉬운 말 | 힘이 되는 말 |
+Part 3 — Relationships and me
+3-1 Recurring relational patterns (10–16 sentences)
+3-2 Traits of people who feel easy: 2–4 items (4–6 sentences each)
+3-3 Traits of people who feel hard: 2–4 items (4–6 sentences each)
+3-4 Words that wound vs words that fuel — table (3–5 rows from the analysis)
+| Words that tend to wound | Words that fuel |
 |---------------------|--------------|
 | ... | ... |
 
-Part 4 — 관계를 더 편하게
-4-1 나만의 소통 규칙 3~5가지 (각 3~5문장)
-4-2 상황별 실전 팁 — 아래처럼 표로 (상황·이전 반응·추천 반응)
-| 상황 | 이전 반응 | 추천 반응 |
+Part 4 — Making relationships easier
+4-1 Personal communication rules: 3–5 (3–5 sentences each)
+4-2 Situation tips — table (situation · previous reaction · recommended reaction)
+| Situation | Previous reaction | Recommended reaction |
 |------|-----------|-----------|
 | ... | ... | ... |
-4-3 감정이 격해질 때 나를 위한 룰 2~4가지 (각 3~5문장)
-4-4 관계 거리두기·정리가 필요할 때 체크할 것 2~4가지 (각 3~5문장)
+4-3 Rules for when emotions spike: 2–4 (3–5 sentences each)
+4-4 What to check when distance / cleanup is needed: 2–4 (3–5 sentences each)
 
-Part 5 — 앞으로의 나
-5-1 기억하면 좋을 세 가지 (각 4~7문장)
-5-2 한 걸음 더 나가기 위한 방향 2~4가지 (각 3~5문장)
-5-3 마무리: 따뜻한 한 문단 (6~12문장)
+Part 5 — Who I'm becoming
+5-1 Three things worth remembering (4–7 sentences each)
+5-2 Directions for one more step: 2–4 (3–5 sentences each)
+5-3 Closing: one warm paragraph (6–12 sentences)
 
-부록 — 오늘의 나를 위한 맞춤 체크리스트
-- 분석에서 드러난 패턴에 맞춰 □ 항목 8~12개 (한 줄당 한 가지 행동) 
-- 가능하면 "과잉 적응/회피/완벽주의" 등은 데이터에 기반할 때만 쓸 것
+Appendix — today's personal checklist
+- 8–12 □ items from the patterns (one action per line)
+- Use labels like over-adapting / avoidance / perfectionism only when data supports them
 
-전체를 풍부한 분량으로 마무리하세요.`;
+Finish with generous length.
+
+${buildLlmOutputLocaleInstruction(outputLocale)}`;
 }

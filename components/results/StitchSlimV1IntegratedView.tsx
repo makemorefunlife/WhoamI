@@ -4,6 +4,7 @@ import {
   LiteReportError,
 } from "@/components/v2/LiteReportView";
 import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function StitchSlimV1IntegratedView({
   data,
@@ -18,14 +19,16 @@ export default function StitchSlimV1IntegratedView({
   onRetry?: () => void;
   onRegenerateFresh?: () => void;
 }) {
+  const { messages } = useLocale();
+
   if (loading && !data) {
     return (
       <div className="stitch-hero-panel rounded-extra-large px-6 py-12 text-center">
         <p className="text-sm text-on-surface-variant">
-          리포트 생성 중… 보통 1~2분 걸려요.
+          {messages.blueprint.generatingReportNotice}
         </p>
         <p className="mt-1 text-xs text-on-surface-variant/80">
-          창을 닫지 마세요.
+          {messages.blueprint.dontCloseWindow}
         </p>
       </div>
     );
@@ -43,7 +46,9 @@ export default function StitchSlimV1IntegratedView({
     <div className="relative">
       {loading ? (
         <div className="absolute inset-0 z-10 flex items-start justify-center rounded-extra-large bg-[#faf7f0]/80 pt-16 backdrop-blur-[2px]">
-          <p className="text-sm text-on-surface-variant">다시 생성 중…</p>
+          <p className="text-sm text-on-surface-variant">
+            {messages.blueprint.regeneratingOverlay}
+          </p>
         </div>
       ) : null}
 

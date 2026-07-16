@@ -6,6 +6,7 @@ import {
   resolveAxisPartnerNickname,
   resolveAxisViewerNickname,
 } from "@/lib/relationship/viewerFirstDisplay";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /** 신형 API 축 블록 */
 export type AxisBlockV2 = {
@@ -35,13 +36,12 @@ export type RelationshipPerspective = Partial<{
 
 const AXES: {
   key: keyof Required<RelationshipPerspective>;
-  label: string;
   Icon: typeof MessageCircle;
 }[] = [
-  { key: "emotional_sensitivity", label: "감정·민감도", Icon: MessageCircle },
-  { key: "communication_style", label: "말하는 방식", Icon: Sparkles },
-  { key: "conflict_response", label: "갈등·거리두기", Icon: Zap },
-  { key: "energy_pattern", label: "에너지·리듬", Icon: Battery },
+  { key: "emotional_sensitivity", Icon: MessageCircle },
+  { key: "communication_style", Icon: Sparkles },
+  { key: "conflict_response", Icon: Zap },
+  { key: "energy_pattern", Icon: Battery },
 ];
 
 function isAxisV2(block: AxisBlock | undefined): block is AxisBlockV2 {
@@ -120,7 +120,7 @@ export default function RelationshipBasicCards({
   perspective,
   partnerName,
   viewerName,
-  emptyMessage = "아직 기본 관계 분석이 없어요.",
+  emptyMessage,
 }: {
   perspective: RelationshipPerspective | null;
   /** 상대 닉네임 (detail API, 구형 데이터 폴백용) */
@@ -130,21 +130,24 @@ export default function RelationshipBasicCards({
   /** false면 빈 상태 문구를 숨김 */
   emptyMessage?: string | false;
 }) {
-  const myDisplay = (viewerName ?? "").trim() || "나";
-  const partnerDisplay = partnerName.trim() || "상대";
+  const { messages } = useLocale();
+  const resolvedEmptyMessage = emptyMessage ?? messages.report.basicAnalysisEmpty;
+  const myDisplay = (viewerName ?? "").trim() || messages.report.meFallbackLabel;
+  const partnerDisplay = partnerName.trim() || messages.report.partnerFallbackLabel;
 
   if (!perspective || Object.keys(perspective).length === 0) {
     if (emptyMessage === false) return null;
     return (
       <p className="text-center text-sm text-on-surface-variant">
-        {emptyMessage}
+        {resolvedEmptyMessage}
       </p>
     );
   }
 
   return (
     <div className="space-y-5">
-      {AXES.map(({ key, label, Icon }) => {
+      {AXES.map(({ key, Icon }) => {
+        const label = messages.report.axisLabels[key];
         const raw = perspective[key];
         if (!raw) return null;
 
@@ -200,7 +203,7 @@ export default function RelationshipBasicCards({
 
               <div className="space-y-2 rounded-xl border border-secondary/30 bg-secondary/10 px-3.5 py-3">
                 <p className="text-[13px] font-semibold text-secondary">
-                  👉 이렇게 다르면
+                  {messages.report.axisDifferenceHeading}
                 </p>
                 <ul className="list-inside list-disc space-y-1.5 text-[14px] leading-relaxed text-on-surface-variant">
                   {insights.map((line, i) => (
@@ -213,7 +216,7 @@ export default function RelationshipBasicCards({
 
               <div className="space-y-2 rounded-xl border border-accent-rose/30 bg-accent-rose-soft/55 px-3.5 py-3">
                 <p className="text-[13px] font-semibold text-primary">
-                  🎯 오늘 이렇게
+                  {messages.report.axisActionHeading}
                 </p>
                 <ul className="list-inside list-disc space-y-1.5 text-[14px] leading-relaxed text-on-surface-variant">
                   {actions.map((line, i) => (

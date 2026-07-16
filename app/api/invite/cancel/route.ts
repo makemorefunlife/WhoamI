@@ -11,6 +11,8 @@ import {
   requireUuid,
 } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
@@ -19,10 +21,16 @@ export const runtime = "nodejs";
  * Marks status cancelled when delete not preferred; uses status filter.
  */
 export async function POST(req: Request) {
+  const locale = resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: messages.errors.unauthorized }, { status: 401 });
     }
 
     const parsed = await readJsonBodyLimited(req);
@@ -46,6 +54,7 @@ export async function POST(req: Request) {
       supabase,
       reportIdCheck.value,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -62,11 +71,11 @@ export async function POST(req: Request) {
 
     if (error) {
       logServerError("invite/cancel", error);
-      return NextResponse.json({ error: "cancel failed" }, { status: 500 });
+      return NextResponse.json({ error: messages.hub.inviteCancelFailed }, { status: 500 });
     }
     if (!data) {
       return NextResponse.json(
-        { error: "invite not found" },
+        { error: messages.errors.notFound },
         { status: 404 },
       );
     }
@@ -74,6 +83,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     logServerError("invite/cancel", e);
-    return NextResponse.json({ error: "cancel failed" }, { status: 500 });
+    return NextResponse.json({ error: messages.hub.inviteCancelFailed }, { status: 500 });
   }
 }

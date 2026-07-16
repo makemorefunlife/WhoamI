@@ -9,8 +9,16 @@ import {
   readJsonBodyLimited,
 } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export async function POST(req: Request) {
+  const locale = resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -52,7 +60,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logServerError("saju", error);
     return NextResponse.json(
-      { error: "사주 계산 중 오류가 발생했습니다." },
+      { error: messages.errors.generic },
       { status: 500 },
     );
   }

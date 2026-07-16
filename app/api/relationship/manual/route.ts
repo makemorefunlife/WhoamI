@@ -10,6 +10,8 @@ import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy"
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
@@ -27,6 +29,12 @@ type Body = {
 
 /** 이메일 없이 친구 정보 직접 입력 → proxy report + 관계 행 */
 export async function POST(req: Request) {
+  const locale = resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
     const body = (await req.json()) as Body;
     const reportIdA = body.reportIdA?.trim();
@@ -40,13 +48,13 @@ export async function POST(req: Request) {
 
     if (!reportIdA || !partnerName || !birthDate) {
       return NextResponse.json(
-        { error: "reportIdA, partnerName, birthDate가 필요합니다." },
+        { error: messages.errors.relationshipManualFieldsRequired },
         { status: 400 },
       );
     }
     if (!birthPlaceUnknown && !birthPlace) {
       return NextResponse.json(
-        { error: "태어난 지역을 입력하거나 '모름'을 선택해 주세요." },
+        { error: messages.relationshipForm.birthPlaceRequired },
         { status: 400 },
       );
     }
@@ -57,7 +65,7 @@ export async function POST(req: Request) {
           .length < 10)
     ) {
       return NextResponse.json(
-        { error: "친구 설문 10문항 응답이 필요합니다." },
+        { error: messages.errors.friendSurveyIncomplete },
         { status: 400 },
       );
     }
@@ -69,6 +77,7 @@ export async function POST(req: Request) {
       supabase,
       reportIdA,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -102,7 +111,7 @@ export async function POST(req: Request) {
 
     if (repErr || !partnerReport?.id) {
       return NextResponse.json(
-        { error: repErr?.message ?? "친구 리포트 생성 실패" },
+        { error: repErr?.message ?? messages.errors.partnerReportCreateFailed },
         { status: 500 },
       );
     }
@@ -144,7 +153,7 @@ export async function POST(req: Request) {
   } catch (e) {
     logServerError("relationship/manual:", e, "internal_error");
     return NextResponse.json(
-      { error: "request failed" },
+      { error: messages.errors.generic },
       { status: 500 },
     );
   }

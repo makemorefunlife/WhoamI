@@ -9,10 +9,22 @@ import {
   setRelationshipFavorite,
 } from "@/lib/relationship/analysisLog";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
+function routeLocale(req: Request) {
+  return resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+}
+
 export async function GET(req: Request) {
+  const locale = routeLocale(req);
+  const messages = getMessages(locale);
   try {
     const sp = new URL(req.url).searchParams;
     const relationshipReportId = sp.get("relationshipReportId")?.trim();
@@ -20,7 +32,7 @@ export async function GET(req: Request) {
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
-        { error: "relationshipReportId와 viewerReportId가 필요합니다." },
+        { error: messages.errors.relationshipIdsRequired },
         { status: 400 },
       );
     }
@@ -36,7 +48,7 @@ export async function GET(req: Request) {
 
     if (!rr) {
       return NextResponse.json(
-        { error: "관계 분석을 찾을 수 없습니다." },
+        { error: messages.errors.notFound },
         { status: 404 },
       );
     }
@@ -48,6 +60,7 @@ export async function GET(req: Request) {
       viewerReportId,
       rr.report_id_a,
       rr.report_id_b,
+      locale,
     );
     if (accessGuard) return accessGuard;
 
@@ -60,11 +73,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ favorited });
   } catch (e) {
     console.error("relationship/favorite GET: unexpected");
-    return NextResponse.json({ error: "조회 실패" }, { status: 500 });
+    return NextResponse.json({ error: messages.hub.loadFailed }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
+  const locale = routeLocale(req);
+  const messages = getMessages(locale);
   try {
     const body = await req.json();
     const relationshipReportId =
@@ -79,7 +94,7 @@ export async function POST(req: Request) {
 
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
-        { error: "relationship_report_id와 viewer_report_id가 필요합니다." },
+        { error: messages.errors.relationshipIdsRequired },
         { status: 400 },
       );
     }
@@ -95,7 +110,7 @@ export async function POST(req: Request) {
 
     if (!rr) {
       return NextResponse.json(
-        { error: "관계 분석을 찾을 수 없습니다." },
+        { error: messages.errors.notFound },
         { status: 404 },
       );
     }
@@ -107,6 +122,7 @@ export async function POST(req: Request) {
       viewerReportId,
       rr.report_id_a,
       rr.report_id_b,
+      locale,
     );
     if (accessGuard) return accessGuard;
 
@@ -118,12 +134,12 @@ export async function POST(req: Request) {
     );
 
     if (!ok) {
-      return NextResponse.json({ error: "저장 실패" }, { status: 500 });
+      return NextResponse.json({ error: messages.hub.favoriteSaveFailed }, { status: 500 });
     }
 
     return NextResponse.json({ favorited });
   } catch (e) {
     console.error("relationship/favorite POST: unexpected");
-    return NextResponse.json({ error: "저장 실패" }, { status: 500 });
+    return NextResponse.json({ error: messages.hub.favoriteSaveFailed }, { status: 500 });
   }
 }

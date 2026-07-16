@@ -7,10 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { isSurveyV2AnswersComplete } from "@/lib/v2/survey/completion";
-import {
-  SURVEY_V2_QUESTION_COUNT_EN,
-  SURVEY_V2_QUESTIONS_EN,
-} from "@/lib/v2/survey/questionsEn";
+import { getSurveyQuestions } from "@/lib/v2/survey/getSurveyQuestions";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import {
   clearSurveyV2Session,
@@ -27,6 +24,8 @@ import {
   persistSurveyToServer,
 } from "@/lib/v2/survey/surveyClient";
 import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { SCORED_QUESTION_IDS } from "@/lib/v2/survey/types";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/survey/SurveyAuthSignInPanel"),
@@ -42,7 +41,7 @@ const STATUS_LINES = [
 ];
 
 const EMPTY_ANSWERS = Object.fromEntries(
-  SURVEY_V2_QUESTIONS_EN.map((q) => [q.id, ""]),
+  [...SCORED_QUESTION_IDS, "q10"].map((id) => [id, ""]),
 );
 
 const CREATE_LOCK_KEY = "ahaitsme_report_create_inflight";
@@ -104,6 +103,9 @@ async function createOwnedReportIdempotent(): Promise<
 
 export default function SurveyV2Page() {
   const router = useRouter();
+  const { locale, messages, href: localize } = useLocale();
+  const questions = useMemo(() => getSurveyQuestions(locale), [locale]);
+  const questionCount = questions.length;
   const { isLoaded, isSignedIn } = useClerkReady();
   const [sessionReady, setSessionReady] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>(EMPTY_ANSWERS);
@@ -158,7 +160,7 @@ export default function SurveyV2Page() {
         const prior = readSurveyV2Session(reportId);
         if (prior && isSurveyV2AnswersComplete(prior.answers)) {
           router.replace(
-            `/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`,
+            localize(`/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`),
           );
           return;
         }
@@ -184,7 +186,7 @@ export default function SurveyV2Page() {
             setCurrentIndex(
               Math.min(
                 Math.max(0, pending.currentIndex),
-                SURVEY_V2_QUESTION_COUNT_EN - 1,
+                questionCount - 1,
               ),
             );
           }
@@ -238,10 +240,10 @@ export default function SurveyV2Page() {
       clearPendingSurveyDraft();
       pendingCompleteRef.current = false;
       router.push(
-        `/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`,
+        localize(`/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`),
       );
     },
-    [router],
+    [router, localize],
   );
 
   useEffect(() => {
@@ -285,7 +287,7 @@ export default function SurveyV2Page() {
     const next = { ...answers, [currentQuestion.id]: value };
     setAnswers(next);
 
-    const isLast = currentIndex >= SURVEY_V2_QUESTION_COUNT_EN - 1;
+    const isLast = currentIndex >= questionCount - 1;
     if (!isLast) {
       setAdvancing(true);
       window.setTimeout(() => {
@@ -303,13 +305,13 @@ export default function SurveyV2Page() {
   }, [advancing, busy, currentIndex]);
 
   const currentQuestion = useMemo(
-    () => SURVEY_V2_QUESTIONS_EN[currentIndex],
-    [currentIndex],
+    () => questions[currentIndex],
+    [currentIndex, questions],
   );
 
   const statusLine = STATUS_LINES[currentIndex % STATUS_LINES.length];
   const progressPct = Math.round(
-    ((currentIndex + 1) / SURVEY_V2_QUESTION_COUNT_EN) * 100,
+    ((currentIndex + 1) / questionCount) * 100,
   );
 
   if (!sessionReady || !isLoaded) {
@@ -329,13 +331,13 @@ export default function SurveyV2Page() {
       <div className="fixed left-0 right-0 top-16 z-[190] border-b border-outline-variant/40 bg-[#faf7f0]/92 backdrop-blur-md">
         <div className="mx-auto w-full max-w-[420px] px-5 py-4">
           <div className="mb-2 flex justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
-            <span className="text-secondary">Free survey</span>
+            <span className="text-secondary">{messages.survey.title}</span>
             <span className="tabular-nums text-primary">
-              {currentIndex + 1} / {SURVEY_V2_QUESTION_COUNT_EN}
+              {currentIndex + 1} / {questionCount}
             </span>
           </div>
           <div className="mb-2 flex justify-center gap-1.5">
-            {SURVEY_V2_QUESTIONS_EN.map((q, i) => (
+            {questions.map((q, i) => (
               <span
                 key={q.id}
                 className={`h-1.5 w-1.5 rounded-full transition-colors ${
@@ -375,7 +377,7 @@ export default function SurveyV2Page() {
               {currentQuestion.prompt}
             </h1>
             <div className="flex flex-col gap-3">
-              {currentQuestion.options.map((opt) => {
+              {currentQuestion.options.map((opt: { value: string; label: string }) => {
                 const selected = answers[currentQuestion.id] === opt.value;
                 return (
                   <button

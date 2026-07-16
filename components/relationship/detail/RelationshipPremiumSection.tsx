@@ -13,10 +13,8 @@ import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/b
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
-import {
-  RELATIONSHIP_KIND_LABELS,
-  type RelationshipKind,
-} from "@/lib/relationship/relationshipKind";
+import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type RelationshipPremiumSectionProps = {
   busy: boolean;
@@ -63,11 +61,14 @@ export default function RelationshipPremiumSection({
   forceVisible = false,
   onReportReadyRef,
 }: RelationshipPremiumSectionProps) {
+  const { messages } = useLocale();
   const [requesting, setRequesting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const submitting = busy || requesting;
   const hideSection = analysisType === "none" && !forceVisible;
   if (hideSection) return null;
+
+  const kindLabel = messages.report.relationshipKindNames[premiumKind];
 
   async function handleGenerateClick() {
     if (submitting) return;
@@ -77,7 +78,7 @@ export default function RelationshipPremiumSection({
       let ok = false;
       ok = await onRunPremium(premiumKind);
       if (!ok) {
-        setLocalError("생성 요청이 완료되지 않았어요. 잠시 후 다시 시도해 주세요.");
+        setLocalError(messages.report.premiumGenerateFailed);
       }
     } finally {
       setRequesting(false);
@@ -96,10 +97,10 @@ export default function RelationshipPremiumSection({
       {submitting ? (
         <div className="mb-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-center">
           <p className="text-sm font-semibold text-secondary">
-            리포트를 생성중입니다
+            {messages.report.generatingReportTitle}
           </p>
           <p className="mt-1 text-xs text-on-surface-variant">
-            잠시만 기다려 주세요. 보통 1~2분 걸려요.
+            {messages.report.premiumGeneratingSubtitle}
           </p>
         </div>
       ) : null}
@@ -122,9 +123,9 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "romantic" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            아직 연인 사주 심화 분석이 없어요.
+            {messages.report.premiumEmptyRomantic}
             <br />
-            <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
           </p>
         </div>
       ) : premiumKind === "work" && displayWorkDeep ? (
@@ -139,9 +140,9 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "work" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            아직 동료 심화 분석이 없어요.
+            {messages.report.premiumEmptyWork}
             <br />
-            <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
           </p>
         </div>
       ) : premiumKind === "cohabitation" && displayCohabitationDeep ? (
@@ -156,9 +157,9 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "cohabitation" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            아직 동거·결혼 심화 분석이 없어요.
+            {messages.report.premiumEmptyCohabitation}
             <br />
-            <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
           </p>
         </div>
       ) : premiumKind === "family" && displayFamilyDeep ? (
@@ -168,11 +169,9 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "family" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            아직 가족 Child DNA 분석이 없어요.
+            {messages.report.premiumEmptyFamily}
             <br />
-            <span className="text-xs">
-              위에서 엄마/아빠 렌즈를 고른 뒤 생성하세요.
-            </span>
+            <span className="text-xs">{messages.report.premiumEmptyFamilyHint}</span>
           </p>
         </div>
       ) : premiumKind === "friendship" && displayFriendshipDeep ? (
@@ -187,9 +186,9 @@ export default function RelationshipPremiumSection({
       ) : premiumKind === "friendship" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
           <p className="py-6 text-center text-sm text-[var(--space-text-muted)]">
-            아직 친구 Social DNA 분석이 없어요.
+            {messages.report.premiumEmptyFriendship}
             <br />
-            <span className="text-xs">아래 버튼으로 생성할 수 있어요.</span>
+            <span className="text-xs">{messages.report.premiumEmptyGenerateHint}</span>
           </p>
         </div>
       ) : (
@@ -208,8 +207,8 @@ export default function RelationshipPremiumSection({
             onClick={() => void handleGenerateClick()}
           >
             {submitting
-              ? "심화 분석 생성 중…"
-              : `${RELATIONSHIP_KIND_LABELS[premiumKind]} 관계 심화 분석 생성하기`}
+              ? messages.report.premiumGenerating
+              : messages.report.premiumGenerateCta(kindLabel)}
           </GlowButton>
         </div>
       ) : premiumReady && !hasSnapshotView ? (
@@ -221,12 +220,11 @@ export default function RelationshipPremiumSection({
             onClick={onRegeneratePremium}
           >
             {submitting
-              ? "심화 분석 다시 생성 중…"
-              : `${RELATIONSHIP_KIND_LABELS[premiumKind]} 심화 분석 다시 만들기`}
+              ? messages.report.premiumRegenerating
+              : messages.report.premiumRegenerateCta(kindLabel)}
           </button>
           <p className="text-[10px] text-[var(--space-text-muted)]">
-            새 프롬프트로 다시 생성해요. 이전 결과는 아래 분석 기록에서 볼 수
-            있어요.
+            {messages.report.premiumRegenerateHint}
           </p>
         </div>
       ) : null}

@@ -10,9 +10,8 @@ import RelationshipFamilyRolePanel from "@/components/relationship/detail/Relati
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
-import { RELATIONSHIP_KIND_LABELS } from "@/lib/relationship/relationshipKind";
 import { ROUTES } from "@/constants/routes";
-import { UNKNOWN_BIRTH_NOTICE_KO } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRelationshipDetail } from "./useRelationshipDetail";
 
 export default function RelationshipView({
@@ -23,6 +22,7 @@ export default function RelationshipView({
   const searchParams = useSearchParams();
   const urlAutostart = searchParams.get("autostart") === "1";
   const reportAnchorRef = useRef<HTMLDivElement>(null);
+  const { messages, href: localize } = useLocale();
 
   const detail = useRelationshipDetail({ relationshipReportId });
   const {
@@ -112,15 +112,17 @@ export default function RelationshipView({
       <div className="mx-auto max-w-lg px-5 py-16 sm:px-6">
         <div className={`${hubPanelClass()} p-6 text-center`}>
           <p className="text-sm text-on-surface-variant">
-            주소에 내 리포트 id가 필요해요. 예:{" "}
-            <code className="text-primary">?viewer=리포트UUID</code>
+            {messages.report.viewerReportIdRequired}{" "}
+            <code className="text-primary">
+              {messages.report.viewerQueryPlaceholder}
+            </code>
           </p>
           <button
             type="button"
             className="stitch-cta-primary mt-6 w-full !min-w-0 !text-sm"
-            onClick={() => router.push(ROUTES.relationships)}
+            onClick={() => router.push(localize(ROUTES.relationships))}
           >
-            관계 허브로
+            {messages.report.goToRelationHub}
           </button>
         </div>
       </div>,
@@ -132,14 +134,14 @@ export default function RelationshipView({
       <div className="mx-auto max-w-lg px-5 py-16 sm:px-6">
         <div className={`${hubPanelClass()} p-6 text-center`}>
           <p className="text-sm text-on-surface-variant">
-            관계 분석 id를 찾을 수 없어요.
+            {messages.report.relationshipIdNotFound}
           </p>
           <button
             type="button"
             className="stitch-cta-primary mt-6 w-full !min-w-0 !text-sm"
             onClick={() => router.back()}
           >
-            돌아가기
+            {messages.cta.back}
           </button>
         </div>
       </div>,
@@ -153,25 +155,29 @@ export default function RelationshipView({
           Relationship
         </p>
         <h1 className="stitch-headline text-2xl text-primary sm:text-3xl">
-          {RELATIONSHIP_KIND_LABELS[premiumKind]} 관계 분석
+          {messages.report.relationshipKindNames[premiumKind]}{" "}
+          {messages.report.relationshipAnalysisTitleSuffix}
         </h1>
         <p className="text-sm text-on-surface-variant">
           {viewerName ? (
             <>
               <span className="font-medium text-primary">{viewerName}</span>
-              님이 보는 ·{" "}
+              {messages.report.viewerPartnerSeparator}
               <span className="font-medium text-primary">{partnerName}</span>
-              님
+              {messages.report.partnerNameSuffix}
             </>
           ) : (
-            <>{partnerName}님</>
+            <>
+              {partnerName}
+              {messages.report.partnerNameSuffix}
+            </>
           )}
         </p>
       </header>
 
       {usedBirthFallback ? (
         <p className="mb-4 rounded-xl border border-secondary/25 bg-secondary/10 px-3 py-2.5 text-xs leading-relaxed text-on-surface-variant">
-          💡 {UNKNOWN_BIRTH_NOTICE_KO}
+          💡 {messages.report.unknownBirthNotice}
         </p>
       ) : null}
 
@@ -186,7 +192,7 @@ export default function RelationshipView({
             disabled={generating}
             onClick={() => retryAnalysis()}
           >
-            {generating ? "처리 중…" : "다시 시도"}
+            {generating ? messages.report.processing : messages.report.chrome.retry}
           </button>
         </div>
       ) : null}
@@ -194,7 +200,7 @@ export default function RelationshipView({
       {showLoadingPanel ? (
         <RelationshipGeneratingPanel
           partnerName={partnerName}
-          kindLabel={RELATIONSHIP_KIND_LABELS[premiumKind]}
+          kindLabel={messages.report.relationshipKindNames[premiumKind]}
           phase="loading"
         />
       ) : null}
@@ -202,7 +208,7 @@ export default function RelationshipView({
       {showGeneratingPanel && !showLoadingPanel ? (
         <RelationshipGeneratingPanel
           partnerName={partnerName}
-          kindLabel={RELATIONSHIP_KIND_LABELS[premiumKind]}
+          kindLabel={messages.report.relationshipKindNames[premiumKind]}
           phase="generating"
         />
       ) : null}
@@ -212,7 +218,7 @@ export default function RelationshipView({
           {snapshotView ? (
             <div className="mb-4 flex flex-col gap-2 rounded-xl border border-secondary/30 bg-secondary/8 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-center text-xs text-on-surface-variant sm:text-left">
-                저장된 분석 기록을 보고 있어요
+                {messages.report.viewingSavedSnapshot}
               </p>
               <button
                 type="button"
@@ -222,7 +228,7 @@ export default function RelationshipView({
                   reloadDetail();
                 }}
               >
-                최신 결과로
+                {messages.report.viewLatestResult}
               </button>
             </div>
           ) : null}
@@ -266,7 +272,7 @@ export default function RelationshipView({
                 disabled={generating}
                 onClick={() => retryAnalysis()}
               >
-                {generating ? "만드는 중…" : "기본 분석 만들기"}
+                {generating ? messages.common.creating : messages.report.createBasicAnalysis}
               </button>
             </div>
           ) : null}
@@ -296,18 +302,20 @@ export default function RelationshipView({
 
           {premiumReady && !showGeneratingPanel ? (
             <p className="mt-4 text-center text-sm font-medium text-secondary">
-              리포트가 준비됐어요. 아래에서 바로 확인하세요.
+              {messages.report.reportReadyNotice}
             </p>
           ) : null}
 
           {analysisType === "basic" && !urlAutostart ? (
             <p className="mt-8 text-center text-xs text-on-surface-variant">
-              관계 종류를 고른 뒤 심화 분석을 바로 생성할 수 있어요.
+              {messages.report.chooseKindHint}
             </p>
           ) : null}
 
           <div className={`${hubPanelClass()} mt-10 space-y-3 p-5`}>
-            <h2 className="text-sm font-semibold text-secondary">분석 기록</h2>
+            <h2 className="text-sm font-semibold text-secondary">
+              {messages.report.analysisHistoryTitle}
+            </h2>
             <RelationshipAnalysisHistory
               logs={logs}
               loading={logsLoading}
@@ -320,9 +328,9 @@ export default function RelationshipView({
           <button
             type="button"
             className="stitch-cta-secondary mt-8 w-full"
-            onClick={() => router.push(ROUTES.relationships)}
+            onClick={() => router.push(localize(ROUTES.relationships))}
           >
-            관계 허브로
+            {messages.report.goToRelationHub}
           </button>
         </>
       ) : null}

@@ -1,5 +1,9 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { RelationshipReportRow } from "@/lib/relationship/fetchReportsWhereParticipant";
+import type { ResultPremiumByKind } from "@/lib/relationship/premiumByKind";
+import { mergePremiumKindLocale } from "@/lib/relationship/premiumByKind";
+import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import type { PremiumKindPayload } from "@/lib/relationship/premiumByKind";
 
 /** Dev SSOT — no result_premium column */
 export const RR_SELECT =
@@ -163,17 +167,64 @@ function isMissingRpcError(error: PostgrestError | null | undefined): boolean {
 }
 
 /**
- * Atomically merge one kind into result_premium_by_kind (|| jsonb).
- * Falls back to re-read + JS merge if RPC migration is not applied yet.
+ * Atomically merge one kind into result_premium_by_kind.
+ * When `locale` is set, merges into `byLocale[locale]` without wiping other locales
+ * (read–merge–write; RPC whole-kind replace is skipped so peer locales stay intact).
+ * Without locale, keeps legacy RPC / flat-kind merge.
  */
 export async function mergeRelationshipPremiumByKind(
   supabase: SupabaseClient,
   relationshipReportId: string,
   kind: string,
   payload: unknown,
-  options?: { relationshipKind?: string },
+  options?: { relationshipKind?: string; locale?: string },
 ): Promise<{ error: PostgrestError | null }> {
   const relationshipKind = options?.relationshipKind ?? kind;
+  const locale = options?.locale?.trim();
+
+  if (locale) {
+    const { row, error: fetchErr } = await fetchRelationshipReportByIdSafe(
+      supabase,
+      relationshipReportId,
+    );
+    if (fetchErr) return { error: fetchErr };
+    if (!row) {
+      return {
+        error: {
+          message: "relationship report not found",
+          details: "",
+          hint: "",
+          code: "PGRST116",
+          name: "PostgrestError",
+        } as PostgrestError,
+      };
+    }
+
+    const prev =
+      row.result_premium_by_kind &&
+      typeof row.result_premium_by_kind === "object" &&
+      !Array.isArray(row.result_premium_by_kind)
+        ? (row.result_premium_by_kind as ResultPremiumByKind)
+        : {};
+
+    const nextByKind = mergePremiumKindLocale(
+      prev,
+      kind as RelationshipKind,
+      locale,
+      payload as PremiumKindPayload,
+    );
+
+    const { error: upErr } = await updateRelationshipReportSafe(
+      supabase,
+      relationshipReportId,
+      {
+        result_premium_by_kind: nextByKind,
+        relationship_kind: relationshipKind,
+      },
+    );
+    return { error: upErr };
+  }
+
   const { error: rpcError } = await supabase.rpc(
     "merge_relationship_premium_by_kind",
     {

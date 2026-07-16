@@ -9,6 +9,8 @@ import { logServerError } from "@/lib/security/safeLog";
 
 export type ReportWithBirthCoords = Record<string, unknown> & {
   id: string;
+  /** Present in REPORT_BASE_FIELDS select (runtime); required for isReportPremium. */
+  entitlement?: string | null;
   birth_place?: string | null;
   birth_latitude?: number | null;
   birth_longitude?: number | null;

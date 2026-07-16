@@ -14,7 +14,6 @@ import {
 import { buildSajuUncertainItems } from "@/lib/saju/sajuUncertainItems";
 import {
   fetchLlmJsonWithParseRetry,
-  parseJsonObject,
 } from "@/lib/relationship/parseLlmJson";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
@@ -67,12 +66,6 @@ type RomanticPreparedContext = {
   snapshotPanel: unknown;
 };
 
-export type RomanticPremiumPreludePayload = {
-  relationship_name: string;
-  one_line_summary: string;
-  grade: string;
-};
-
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
   return false;
 }
@@ -119,7 +112,7 @@ function buildFortuneFlowParallel(params: RomanticSajuDeepRunParams) {
 export function prepareRomanticSajuDeepRun(
   params: RomanticSajuDeepRunParams,
 ): RomanticPreparedContext {
-  const locale = params.locale ?? "ko";
+  const locale = params.locale ?? "en";
   const systemPrompt = getRomanticSajuDeepSystemPrompt(locale);
   const [uncertainA, uncertainB] = [
     buildSajuUncertainItems({
@@ -207,16 +200,6 @@ export function prepareRomanticSajuDeepRun(
   };
 }
 
-export function buildRomanticPremiumPrelude(
-  prepared: RomanticPreparedContext,
-): RomanticPremiumPreludePayload {
-  return {
-    relationship_name: prepared.opening.relationship_name,
-    one_line_summary: prepared.opening.one_line_summary,
-    grade: prepared.opening.grade,
-  };
-}
-
 function finalizeRomanticSajuDeepReport(
   parsed: RomanticSajuDeepReport,
   prepared: RomanticPreparedContext,
@@ -240,6 +223,7 @@ function finalizeRomanticSajuDeepReport(
     meta: {
       ...(parsed.report.meta ?? {}),
       language: locale,
+      locale: locale === "en" ? "en-US" : "ko-KR",
       analysis_version: "v2.17",
       generated_at: generatedAt,
       headline_engine: "selector_v2+rule_library_v2+palace_weight+tri_score",
@@ -315,45 +299,6 @@ async function callLlmJsonAndParse<T>(
   );
 }
 
-async function streamLlmJsonRaw(
-  openai: OpenAI,
-  system: string,
-  user: string,
-  onDelta: (content: string) => void,
-  abortSignal?: AbortSignal,
-): Promise<string> {
-  if (abortSignal?.aborted) {
-    throw new DOMException("Aborted", "AbortError");
-  }
-
-  const stream = await openai.chat.completions.create(
-    {
-      model: romanticLlmModel(),
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      temperature: 0.55,
-      max_tokens: romanticSajuDeepMaxTokens(),
-      response_format: { type: "json_object" },
-      stream: true,
-    },
-    { signal: abortSignal },
-  );
-
-  let acc = "";
-  for await (const chunk of stream) {
-    if (abortSignal?.aborted) {
-      throw new DOMException("Aborted", "AbortError");
-    }
-    const content = chunk.choices[0]?.delta?.content ?? "";
-    if (!content) continue;
-    acc += content;
-    onDelta(content);
-  }
-  return acc.trim();
-}
-
 export async function runRomanticSajuDeepAnalysis(
   openai: OpenAI,
   params: RomanticSajuDeepRunParams,
@@ -373,55 +318,6 @@ export async function runRomanticSajuDeepAnalysis(
     Promise.resolve().then(() => buildPsychMatchParallel(params)),
     Promise.resolve().then(() => buildFortuneFlowParallel(params)),
   ]);
-
-  if (!isRomanticSajuDeepReport(parsed)) {
-    throw new Error("LLM 응답이 연인 심화 Output Schema와 맞지 않습니다.");
-  }
-
-  const report = finalizeRomanticSajuDeepReport(parsed, prepared, params, {
-    psychMatch,
-    fortuneFlow,
-  });
-
-  return {
-    format: ROMANTIC_SAJU_DEEP_FORMAT,
-    report,
-  };
-}
-
-export async function runRomanticSajuDeepAnalysisStreaming(
-  openai: OpenAI,
-  params: RomanticSajuDeepRunParams,
-  handlers: {
-    onPrelude: (prelude: RomanticPremiumPreludePayload) => void;
-    onDelta: (content: string) => void;
-  },
-  options?: { abortSignal?: AbortSignal },
-): Promise<RomanticSajuDeepPayload> {
-  const prepared = prepareRomanticSajuDeepRun(params);
-  const abortSignal = options?.abortSignal;
-  handlers.onPrelude(buildRomanticPremiumPrelude(prepared));
-
-  const [raw, psychMatch, fortuneFlow] = await Promise.all([
-    streamLlmJsonRaw(
-      openai,
-      prepared.systemPrompt,
-      prepared.userPrompt,
-      handlers.onDelta,
-      abortSignal,
-    ),
-    Promise.resolve().then(() => buildPsychMatchParallel(params)),
-    Promise.resolve().then(() => buildFortuneFlowParallel(params)),
-  ]);
-
-  let parsed: RomanticSajuDeepReport;
-  try {
-    parsed = parseJsonObject<RomanticSajuDeepReport>(raw);
-  } catch (err) {
-    throw new Error(
-      `LLM 스트림 JSON 파싱 실패: ${err instanceof Error ? err.message : String(err)}`,
-    );
-  }
 
   if (!isRomanticSajuDeepReport(parsed)) {
     throw new Error("LLM 응답이 연인 심화 Output Schema와 맞지 않습니다.");

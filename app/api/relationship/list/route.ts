@@ -14,6 +14,8 @@ import {
   resolvePartnerDisplayName,
 } from "@/lib/relationship/resolvePartnerDisplayName";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
@@ -43,12 +45,18 @@ function dateOnly(iso: string | null | undefined): string | null {
 }
 
 export async function GET(req: Request) {
+  const locale = resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
     const sp = new URL(req.url).searchParams;
     const reportId = sp.get("reportId")?.trim();
     if (!reportId) {
       return NextResponse.json(
-        { error: "reportId가 필요합니다." },
+        { error: messages.errors.reportIdRequired },
         { status: 400 },
       );
     }
@@ -67,7 +75,7 @@ export async function GET(req: Request) {
     if (!supabase) return supabaseConfigErrorResponse();
 
     const { userId } = await auth();
-    const access = await assertOwnedReportAccess(supabase, reportId, userId);
+    const access = await assertOwnedReportAccess(supabase, reportId, userId, locale);
     if (access.error) return access.error;
 
     await cleanupStaleOpenInvites(supabase, reportId);
@@ -353,7 +361,7 @@ export async function GET(req: Request) {
   } catch (e) {
     logServerError("relationship/list:", e, "internal_error");
     return NextResponse.json(
-      { error: "request failed" },
+      { error: messages.errors.generic },
       { status: 500 },
     );
   }

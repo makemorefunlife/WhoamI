@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const STORAGE_KEY = "ahaitsme_relation_hub_banner_dismissed";
 
@@ -21,6 +22,7 @@ export function dismissBanner(): void {
 }
 
 export default function RelationHubBanner({ visible, onDismiss }: Props) {
+  const { messages } = useLocale();
   return (
     <AnimatePresence>
       {visible ? (
@@ -32,13 +34,13 @@ export default function RelationHubBanner({ visible, onDismiss }: Props) {
         >
           <div className="flex items-start gap-3">
             <p className="min-w-0 flex-1 text-sm leading-relaxed text-on-surface-variant">
-              나와 친구의 관계를 분석하고 최고의 결정을 내려보세요!
+              {messages.hub.bannerText}
             </p>
             <button
               type="button"
               onClick={onDismiss}
               className="shrink-0 rounded-full p-1.5 text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary"
-              aria-label="배너 닫기"
+              aria-label={messages.hub.bannerDismiss}
             >
               <X className="h-4 w-4" />
             </button>

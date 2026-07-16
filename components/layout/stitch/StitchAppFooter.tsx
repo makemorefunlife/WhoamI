@@ -1,55 +1,59 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LocaleLink from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { pathnameWithoutLocalePrefix } from "@/lib/i18n/locale";
 import { ROUTES } from "@/constants/routes";
-
-const FOOTER_GROUPS = [
-  {
-    id: "account",
-    label: "Account",
-    links: [
-      { href: ROUTES.accountProfile, label: "My Profile" },
-      { href: ROUTES.accountBilling, label: "Billing History" },
-    ],
-  },
-  {
-    id: "support",
-    label: "Support",
-    links: [
-      { href: ROUTES.about, label: "About Service" },
-      { href: ROUTES.pricing, label: "Pricing" },
-      { href: ROUTES.faq, label: "FAQ" },
-      { href: ROUTES.contact, label: "Contact Support" },
-    ],
-  },
-  {
-    id: "legal",
-    label: "Legal",
-    links: [
-      { href: ROUTES.terms, label: "Terms of Service" },
-      { href: ROUTES.privacy, label: "Privacy Policy" },
-      { href: ROUTES.refund, label: "Refund Policy" },
-    ],
-  },
-] as const;
 
 export default function StitchAppFooter() {
   const pathname = usePathname();
+  const { messages } = useLocale();
+  const path = pathnameWithoutLocalePrefix(pathname ?? "/");
 
-  if (pathname === ROUTES.home) return null;
+  if (path === ROUTES.home) return null;
+
+  const footerGroups = [
+    {
+      id: "account",
+      label: messages.account.title,
+      links: [
+        { href: ROUTES.accountProfile, label: messages.account.profile },
+        { href: ROUTES.accountBilling, label: messages.account.billing },
+      ],
+    },
+    {
+      id: "support",
+      label: messages.footer.support,
+      links: [
+        { href: ROUTES.about, label: messages.nav.about },
+        { href: ROUTES.pricing, label: messages.nav.pricing },
+        { href: ROUTES.faq, label: messages.nav.faq },
+        { href: ROUTES.contact, label: messages.nav.contact },
+      ],
+    },
+    {
+      id: "legal",
+      label: messages.footer.legal,
+      links: [
+        { href: ROUTES.terms, label: messages.footer.terms },
+        { href: ROUTES.privacy, label: messages.footer.privacy },
+        { href: ROUTES.refund, label: messages.footer.refund },
+      ],
+    },
+  ];
 
   return (
     <footer className="mt-auto border-t border-outline-variant/30 bg-surface-container-low/35 px-5 py-8 sm:px-6">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
         <p className="text-sm font-semibold text-primary">
-          <Link href="/" className="transition hover:opacity-80">
+          <LocaleLink href="/" className="transition hover:opacity-80">
             Aha It&apos;s me!
-          </Link>
+          </LocaleLink>
         </p>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {FOOTER_GROUPS.map((group) => (
+          {footerGroups.map((group) => (
             <div key={group.id}>
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60">
                 {group.label}
@@ -57,12 +61,12 @@ export default function StitchAppFooter() {
               <ul className="space-y-1.5">
                 {group.links.map((link) => (
                   <li key={link.href}>
-                    <Link
+                    <LocaleLink
                       href={link.href}
                       className="text-[12px] font-normal text-on-surface-variant transition hover:text-primary"
                     >
                       {link.label}
-                    </Link>
+                    </LocaleLink>
                   </li>
                 ))}
               </ul>

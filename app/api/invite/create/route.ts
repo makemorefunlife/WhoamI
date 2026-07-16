@@ -12,15 +12,23 @@ import {
   requireUuid,
 } from "@/lib/security/requestValidation";
 import { logServerError } from "@/lib/security/safeLog";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
 /** 친구 초대 생성 — 로그인 + 소유 report만 */
 export async function POST(req: Request) {
+  const locale = resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: messages.errors.unauthorized }, { status: 401 });
     }
 
     const parsed = await readJsonBodyLimited(req);
@@ -38,6 +46,7 @@ export async function POST(req: Request) {
       supabase,
       idCheck.value,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -58,7 +67,7 @@ export async function POST(req: Request) {
 
     if (error || !data) {
       logServerError("invite/create", error);
-      return NextResponse.json({ error: "create failed" }, { status: 500 });
+      return NextResponse.json({ error: messages.hub.inviteCreateFailed }, { status: 500 });
     }
 
     // Return token once to creator; never log full token.
@@ -71,7 +80,7 @@ export async function POST(req: Request) {
   } catch (error) {
     logServerError("invite/create", error);
     return NextResponse.json(
-      { error: "초대 생성 중 오류가 발생했습니다." },
+      { error: messages.hub.inviteCreateFailed },
       { status: 500 },
     );
   }

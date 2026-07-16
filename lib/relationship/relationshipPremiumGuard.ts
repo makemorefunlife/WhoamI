@@ -3,15 +3,23 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { isPremiumPaywallEnabled } from "@/lib/product/premiumAccessPolicy";
 import { logServerEvent, maskId } from "@/lib/security/safeLog";
+import type { Locale } from "@/lib/i18n/locale";
+import { normalizeLocale } from "@/lib/i18n/locale";
+import { getMessages } from "@/lib/i18n/messages";
 
-export const RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE =
-  "분석 결과를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.";
+/** User-facing — resolve against the request's locale, default en-US. */
+export function getRelationshipPremiumSaveFailedMessage(
+  locale?: Locale | string,
+): string {
+  return getMessages(normalizeLocale(locale)).errors.relationshipSaveFailed;
+}
 
-export const RELATIONSHIP_PREMIUM_STREAM_ABORTED_MESSAGE =
-  "요청이 중단되었어요.";
-
-export const RELATIONSHIP_PREMIUM_ANALYSIS_FAILED_MESSAGE =
-  "관계 심화 분석에 실패했어요. 잠시 후 다시 시도해 주세요.";
+/** User-facing — resolve against the request's locale, default en-US. */
+export function getRelationshipPremiumAnalysisFailedMessage(
+  locale?: Locale | string,
+): string {
+  return getMessages(normalizeLocale(locale)).errors.relationshipAnalysisFailed;
+}
 
 type ParticipantGuardMessages = {
   missing?: string;

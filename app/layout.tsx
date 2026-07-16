@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, IBM_Plex_Mono, Lora, Manrope } from "next/font/googl
 import AppClerkProvider from "@/components/clerk/AppClerkProvider";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import ConditionalAppChrome from "@/components/layout/ConditionalAppChrome";
+import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
+import { localeToHtmlLang } from "@/lib/i18n/locale";
+import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import "./globals.css";
 import "./stitch-theme.css";
 
@@ -37,8 +40,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "ahaitsme — 나를 찾는 여행",
-  description: "설문과 이야기로 나만의 작은 우주를 만나보세요.",
+  title: "ahaitsme — Know yourself",
+  description: "Discover your patterns through surveys, charts, and relationships.",
   icons: {
     icon: [
       { url: "/brand/favicon-16.png", sizes: "16x16", type: "image/png" },
@@ -49,21 +52,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getRequestLocale();
+  const htmlLang = localeToHtmlLang(locale);
+
   return (
     <html
-      lang="ko"
+      lang={htmlLang}
       className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AppClerkProvider>
-          <FirstEntryDiagnostics scope="RootLayout" />
-          <ConditionalAppChrome>{children}</ConditionalAppChrome>
-        </AppClerkProvider>
+        <LocaleProvider locale={locale}>
+          <AppClerkProvider>
+            <FirstEntryDiagnostics scope="RootLayout" />
+            <ConditionalAppChrome>{children}</ConditionalAppChrome>
+          </AppClerkProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

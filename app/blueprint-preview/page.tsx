@@ -13,9 +13,11 @@ import {
 import { readSurveyV2Session } from "@/lib/v2/survey/session";
 import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { ROUTES } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function BlueprintPreviewPageContent() {
   const router = useRouter();
+  const { messages, href: localize } = useLocale();
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
 
@@ -39,17 +41,17 @@ function BlueprintPreviewPageContent() {
       }
       if (!readSurveyV2Session(canonicalReportId)) {
         router.replace(
-          `/survey-v2?reportId=${encodeURIComponent(canonicalReportId)}`,
+          localize(`/survey-v2?reportId=${encodeURIComponent(canonicalReportId)}`),
         );
         return;
       }
       if (!hasMinimalBirth(await ensureBirthSession(canonicalReportId))) {
         router.replace(
-          `/survey-v2/complete?reportId=${encodeURIComponent(canonicalReportId)}`,
+          localize(`/survey-v2/complete?reportId=${encodeURIComponent(canonicalReportId)}`),
         );
       }
     })();
-  }, [canonicalReportId, bundle, bundleLoading, router]);
+  }, [canonicalReportId, bundle, bundleLoading, router, localize]);
 
   return (
     <StitchSurveyShell className="stitch-survey stitch-results">
@@ -57,14 +59,14 @@ function BlueprintPreviewPageContent() {
         {!canonicalReportId && !resolving ? (
           <div className="mx-auto flex min-h-[40dvh] max-w-2xl flex-col items-center justify-center gap-4 py-16 text-center">
             <p className="text-sm text-on-surface-variant">
-              블루프린트를 보려면 설문을 먼저 완료해 주세요.
+              {messages.blueprint.surveyRequired}
             </p>
             <button
               type="button"
               className="stitch-cta-primary !min-w-0 !px-8 !py-3 !text-sm"
-              onClick={() => router.push(ROUTES.surveyV2)}
+              onClick={() => router.push(localize(ROUTES.surveyV2))}
             >
-              설문 시작하기
+              {messages.blueprint.startSurveyCta}
             </button>
           </div>
         ) : bundle ? (
@@ -79,8 +81,8 @@ function BlueprintPreviewPageContent() {
           <div className="mx-auto flex min-h-[40dvh] max-w-2xl items-center justify-center py-16">
             <p className="text-sm text-on-surface-variant">
               {bundleLoading || resolving
-                ? "블루프린트 불러오는 중…"
-                : "블루프린트를 준비하고 있어요…"}
+                ? messages.blueprint.loading
+                : messages.common.preparing}
             </p>
           </div>
         )}
@@ -89,17 +91,22 @@ function BlueprintPreviewPageContent() {
   );
 }
 
+function BlueprintPreviewFallback() {
+  const { messages } = useLocale();
+  return (
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      <div className="flex min-h-dvh items-center justify-center px-6">
+        <p className="text-sm text-on-surface-variant">
+          {messages.blueprint.loading}
+        </p>
+      </div>
+    </StitchSurveyShell>
+  );
+}
+
 export default function BlueprintPreviewPage() {
   return (
-    <Suspense
-      fallback={
-        <StitchSurveyShell className="stitch-survey stitch-results">
-          <div className="flex min-h-dvh items-center justify-center px-6">
-            <p className="text-sm text-on-surface-variant">Loading…</p>
-          </div>
-        </StitchSurveyShell>
-      }
-    >
+    <Suspense fallback={<BlueprintPreviewFallback />}>
       <BlueprintPreviewPageContent />
     </Suspense>
   );

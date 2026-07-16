@@ -4,7 +4,7 @@ import type { RomanticSajuDeepPayload } from "@/lib/prompts/relationshipPremium/
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
-  RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE,
+  getRelationshipPremiumSaveFailedMessage,
 } from "@/lib/relationship/relationshipPremiumGuard";
 import { mergeRelationshipPremiumByKind } from "@/lib/relationship/relationshipReportQuery";
 
@@ -18,19 +18,31 @@ export async function persistRomanticPremiumResult(
     relationshipReportId: string;
     viewerReportId: string;
     romanticPayload: RomanticSajuDeepPayload;
+    locale?: string;
   },
 ): Promise<PersistRomanticPremiumResult> {
+  const locale =
+    params.locale ??
+    (typeof params.romanticPayload.report?.meta?.locale === "string"
+      ? params.romanticPayload.report.meta.locale
+      : typeof params.romanticPayload.report?.meta?.language === "string"
+        ? params.romanticPayload.report.meta.language
+        : "en-US");
+
   const { error: upErr } = await mergeRelationshipPremiumByKind(
     supabase,
     params.relationshipReportId,
     "romantic",
     params.romanticPayload,
-    { relationshipKind: "romantic" },
+    { relationshipKind: "romantic", locale },
   );
 
   if (upErr) {
     logServerError("persistRomanticPremiumResult update:", upErr, "internal_error");
-    return { ok: false, userMessage: RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE };
+    return {
+      ok: false,
+      userMessage: getRelationshipPremiumSaveFailedMessage(locale),
+    };
   }
 
   if (params.viewerReportId.trim()) {
@@ -44,7 +56,10 @@ export async function persistRomanticPremiumResult(
     });
     if (!logId) {
       console.error("persistRomanticPremiumResult analysis log insert failed");
-      return { ok: false, userMessage: RELATIONSHIP_PREMIUM_SAVE_FAILED_MESSAGE };
+      return {
+        ok: false,
+        userMessage: getRelationshipPremiumSaveFailedMessage(locale),
+      };
     }
   }
 

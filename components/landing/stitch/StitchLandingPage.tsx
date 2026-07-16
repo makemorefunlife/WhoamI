@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import LocaleLink from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -67,6 +68,7 @@ export default function StitchLandingPage({
 }: Props) {
   const router = useRouter();
   const mainRef = useScrollReveal();
+  const { messages, href: localize } = useLocale();
   const { reportId: sessionReportId } = useAppSession({ hydrate: false });
   const hydrated = useHydrated();
   const [storedReportId, setStoredReportId] = useState("");
@@ -95,19 +97,20 @@ export default function StitchLandingPage({
             <div className="flex min-h-[inherit] flex-col justify-center p-8 md:p-16">
               <div className="mx-auto w-full max-w-2xl text-center md:mx-0 md:text-left">
                 <div className="mb-4 flex justify-center md:justify-start">
-                  <Logo size={40} href="/" priority />
+                  <Logo size={40} href={localize("/")} priority />
                 </div>
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent-emerald">
                   Aha It&apos;s me
                 </p>
                 <h2 className="stitch-headline mb-6 text-balance text-[2rem] leading-[1.12] sm:text-4xl md:text-[2.75rem] lg:text-5xl">
-                  Understand yourself.
+                  {messages.landing.heroTitleLine1}
                   <br />
-                  Make peace with <em>your story</em>.
+                  {messages.landing.heroTitleLine2Start}
+                  <em>{messages.landing.heroTitleLine2Emphasis}</em>
+                  {messages.landing.heroTitleLine2End}
                 </h2>
                 <p className="mb-10 max-w-xl text-base leading-relaxed text-on-surface-variant sm:text-lg">
-                  Gentle insights for the moments you&apos;re searching for
-                  answers.
+                  {messages.landing.heroSubtitle}
                 </p>
                 <StitchHomeCta
                   resumeLoading={resumeLoading}
@@ -129,12 +132,10 @@ export default function StitchLandingPage({
                 <Brain className="h-8 w-8" strokeWidth={1.75} aria-hidden />
               </span>
               <h3 className="mb-4 mt-6 text-3xl font-semibold text-primary">
-                Deep Behavioral Mapping
+                {messages.landing.featureBrainTitle}
               </h3>
               <p className="max-w-md text-base leading-relaxed text-on-surface-variant">
-                Our proprietary algorithms translate complex emotional data into
-                actionable clarity, helping you understand the &apos;why&apos;
-                behind your reactions.
+                {messages.landing.featureBrainDesc}
               </p>
             </div>
             <div className="relative mt-8 aspect-video overflow-hidden rounded-extra-large md:aspect-[21/9]">
@@ -155,11 +156,10 @@ export default function StitchLandingPage({
                 <Heart className="h-7 w-7" strokeWidth={1.75} aria-hidden />
               </span>
               <h4 className="mb-2 mt-4 text-2xl font-medium text-primary">
-                Relationship Alignment
+                {messages.landing.featureHeartTitle}
               </h4>
               <p className="text-base leading-relaxed text-on-surface-variant">
-                Sync your profile with partners or family to visualize
-                compatibility and communication gaps.
+                {messages.landing.featureHeartDesc}
               </p>
             </div>
             <div className="flex-1 rounded-extra-extra-large border border-accent-emerald/20 bg-secondary-container p-8 shadow-sm transition-shadow hover:shadow-md">
@@ -167,11 +167,10 @@ export default function StitchLandingPage({
                 <TrendingUp className="h-7 w-7" strokeWidth={1.75} aria-hidden />
               </span>
               <h4 className="mb-2 mt-4 text-2xl font-medium text-primary">
-                Longitudinal Growth
+                {messages.landing.featureGrowthTitle}
               </h4>
               <p className="text-base leading-relaxed text-on-surface-variant">
-                Track your evolution over months and years with precise
-                data-driven journaling.
+                {messages.landing.featureGrowthDesc}
               </p>
             </div>
           </div>
@@ -183,10 +182,10 @@ export default function StitchLandingPage({
         >
           <div className="mb-16 text-center">
             <h3 className="mb-4 text-3xl font-semibold text-primary">
-              The Scientific Sanctuary
+              {messages.landing.sanctuaryTitle}
             </h3>
             <p className="text-lg text-on-surface-variant">
-              Our three-pillar approach to lasting equilibrium.
+              {messages.landing.sanctuarySubtitle}
             </p>
           </div>
           <div className="overflow-hidden rounded-extra-large border border-outline-variant/20 bg-surface-container-lowest shadow-sm">
@@ -256,127 +255,126 @@ export default function StitchLandingPage({
         <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-12 md:grid-cols-12">
           <div className="md:col-span-3">
             <div className="mb-6 flex items-center gap-2">
-              <Logo size={32} href="/" onDarkBackground />
+              <Logo size={32} href={localize("/")} onDarkBackground />
               <h5 className="text-2xl font-medium text-on-primary">
                 Aha It&apos;s me!
               </h5>
             </div>
             <p className="mb-8 max-w-sm text-on-primary/75">
-              Architecting psychological equilibrium through scientific discovery
-              and empathetic design.
+              {messages.landing.footerTagline}
             </p>
           </div>
           <div className="md:col-span-3">
             <h6 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-emerald-soft/90">
-              Account
+              {messages.account.title}
             </h6>
             <ul className="flex flex-col gap-2.5 text-sm text-on-primary/80">
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.accountProfile}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  My Profile
-                </Link>
+                  {messages.account.profile}
+                </LocaleLink>
               </li>
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.accountBilling}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  Billing History
-                </Link>
+                  {messages.account.billing}
+                </LocaleLink>
               </li>
             </ul>
           </div>
           <div className="md:col-span-3">
             <h6 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-emerald-soft/90">
-              Support
+              {messages.footer.support}
             </h6>
             <ul className="flex flex-col gap-2.5 text-sm text-on-primary/80">
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.about}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  About Service
-                </Link>
+                  {messages.nav.about}
+                </LocaleLink>
               </li>
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.pricing}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  Pricing
-                </Link>
+                  {messages.nav.pricing}
+                </LocaleLink>
               </li>
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.faq}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  FAQ
-                </Link>
+                  {messages.nav.faq}
+                </LocaleLink>
               </li>
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.contact}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  Contact Support
-                </Link>
+                  {messages.nav.contact}
+                </LocaleLink>
               </li>
             </ul>
           </div>
           <div className="md:col-span-3">
             <h6 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-emerald-soft/90">
-              Legal
+              {messages.footer.legal}
             </h6>
             <ul className="flex flex-col gap-2.5 text-sm text-on-primary/80">
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.terms}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  Terms of Service
-                </Link>
+                  {messages.footer.terms}
+                </LocaleLink>
               </li>
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.privacy}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  Privacy Policy
-                </Link>
+                  {messages.footer.privacy}
+                </LocaleLink>
               </li>
               <li>
-                <Link
+                <LocaleLink
                   href={ROUTES.refund}
                   className="transition hover:text-accent-rose-soft"
                 >
-                  Refund Policy
-                </Link>
+                  {messages.footer.refund}
+                </LocaleLink>
               </li>
             </ul>
           </div>
         </div>
         <div className="mx-auto mt-16 flex max-w-[1200px] flex-col justify-between gap-4 border-t border-on-primary/15 pt-8 text-xs md:flex-row">
           <p className="text-on-primary/60">
-            © {new Date().getFullYear()} Aha It&apos;s me! All rights reserved.
+            © {new Date().getFullYear()} Aha It&apos;s me! {messages.footer.copyrightSuffix}
           </p>
           <nav
             className="flex flex-wrap gap-x-4 gap-y-1 text-on-primary/55"
             aria-label="Hub shortcuts"
           >
-            <Link href={blueprintPath(reportId)} className="hover:text-on-primary">
-              Me
-            </Link>
-            <Link href={relationHubPath(reportId)} className="hover:text-on-primary">
-              Lab
-            </Link>
-            <Link href={DECISION_HUB_PATH} className="hover:text-on-primary">
-              Choice
-            </Link>
+            <LocaleLink href={blueprintPath(reportId)} className="hover:text-on-primary">
+              {messages.nav.blueprint}
+            </LocaleLink>
+            <LocaleLink href={relationHubPath(reportId)} className="hover:text-on-primary">
+              {messages.nav.relationLab}
+            </LocaleLink>
+            <LocaleLink href={DECISION_HUB_PATH} className="hover:text-on-primary">
+              {messages.nav.decision}
+            </LocaleLink>
           </nav>
         </div>
       </footer>

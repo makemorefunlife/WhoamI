@@ -5,10 +5,12 @@
 import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
 import type { LiteInterpretationHints } from "@/lib/v2/survey/types";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import { normalizeLocale } from "@/lib/i18n/locale";
+import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
-export const CURRENT_SELF_LITE_SYSTEM = `You are the Current Self Lite interpreter for Aha! It's Me.
+const CURRENT_SELF_LITE_SYSTEM_RULES = `You are the Current Self Lite interpreter for Aha! It's Me.
 
-Translate survey-derived Human Framework scores into a short, practical self-understanding report in Korean.
+Translate survey-derived Human Framework scores into a short, practical self-understanding report.
 
 ${PRIMARY_AXIS_LLM_GUIDE}
 
@@ -23,11 +25,22 @@ Rules:
 - Each body field: 1-3 sentences. Warm, direct, specific. No flattery or fortune-telling.
 - Return valid JSON only matching the output schema.`;
 
+/** English SSOT rules (no locale). Prefer getCurrentSelfLiteSystemPrompt. */
+export const CURRENT_SELF_LITE_SYSTEM = CURRENT_SELF_LITE_SYSTEM_RULES;
+
+export function getCurrentSelfLiteSystemPrompt(language?: string): string {
+  const locale = normalizeLocale(language);
+  return `${CURRENT_SELF_LITE_SYSTEM_RULES}
+
+${buildLlmOutputLocaleInstruction(locale)}`;
+}
+
 export function buildCurrentSelfLiteUserPrompt(input: {
   profile: CurrentSelfProfile;
   hints: LiteInterpretationHints;
   language?: string;
 }): string {
+  const locale = normalizeLocale(input.language);
   const payload = {
     profile_type: "current_self",
     primary_axes: input.profile.primary_axes,
@@ -36,14 +49,14 @@ export function buildCurrentSelfLiteUserPrompt(input: {
     meta: input.profile.meta,
   };
 
-  return `Output language: ${input.language ?? "ko"}
+  return `Output language: ${locale}
 
 Generate a Current Self Lite report.
 
 Output JSON schema:
 {
   "report_type": "current_self_lite",
-  "language": "ko",
+  "language": "${locale}",
   "one_line_summary": "string",
   "current_pattern": { "title": "string", "body": "string" },
   "key_strength": { "title": "string", "body": "string" },
@@ -56,7 +69,7 @@ Output JSON schema:
   }
 }
 
-When interpreting axes, use the official English axis names (Autonomy, Connection, Stability, Growth, Structure, Adaptability) in evidence_notes keys, but write body text in Korean with natural explanations.
+When interpreting axes, use the official English axis names (Autonomy, Connection, Stability, Growth, Structure, Adaptability) in evidence_notes keys; write body prose in the output language from the system instruction.
 
 Reference: docs/v2/survey/06_Survey_Lite_Interpretation.md
 

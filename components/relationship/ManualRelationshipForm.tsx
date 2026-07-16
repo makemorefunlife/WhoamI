@@ -6,9 +6,10 @@ import StitchBirthDateTimeFields, {
   stitchBirthIsoDate,
   stitchBirthTime24h,
 } from "@/components/onboarding/StitchBirthDateTimeFields";
-import { SURVEY_V2_QUESTIONS } from "@/lib/v2/survey/questions";
+import { getSurveyQuestions } from "@/lib/v2/survey/getSurveyQuestions";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
 import type { AmPm } from "@/lib/v2/onboarding/birthTime";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type SurveyMode = "answer" | "skip";
 
@@ -84,6 +85,8 @@ export default function ManualRelationshipForm({
   const [surveyMode, setSurveyMode] = useState<SurveyMode>("answer");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const s = useFormStyles(theme);
+  const { locale, messages } = useLocale();
+  const surveyQuestions = useMemo(() => getSurveyQuestions(locale), [locale]);
 
   const birthDate = useMemo(
     () => stitchBirthIsoDate(year, month, day),
@@ -95,13 +98,13 @@ export default function ManualRelationshipForm({
   );
 
   const answeredCount = useMemo(
-    () => SURVEY_V2_QUESTIONS.filter((q) => answers[q.id]).length,
-    [answers],
+    () => surveyQuestions.filter((q) => answers[q.id]).length,
+    [answers, surveyQuestions],
   );
 
   const surveyOk =
     surveyMode === "skip" ||
-    answeredCount === SURVEY_V2_QUESTIONS.length;
+    answeredCount === surveyQuestions.length;
 
   const canSubmit =
     partnerName.trim().length >= 1 &&
@@ -112,18 +115,23 @@ export default function ManualRelationshipForm({
 
   const submitHint = useMemo(() => {
     if (canSubmit) return null;
-    if (!partnerName.trim()) return "이름을 입력해 주세요.";
-    if (!birthDate.trim() || birthDate.length !== 10) return "생년월일(YYYY-MM-DD)을 입력해 주세요.";
+    if (!partnerName.trim()) return messages.relationshipForm.nameRequired;
+    if (!birthDate.trim() || birthDate.length !== 10) {
+      return messages.relationshipForm.birthDateRequired;
+    }
     if (!birthTimeUnknown && !birthTime) {
-      return "출생 시간을 입력하거나 「출생 시간 모름」을 선택해 주세요.";
+      return messages.relationshipForm.birthTimeRequired;
     }
     if (!birthPlaceUnknown && !birthPlace.trim()) {
-      return "태어난 지역을 입력하거나 「태어난 지역 모름」을 선택해 주세요.";
+      return messages.relationshipForm.birthPlaceRequired;
     }
     if (surveyMode === "answer" && !surveyOk) {
-      return `친구 설문을 완료해 주세요. (${answeredCount}/${SURVEY_V2_QUESTIONS.length})`;
+      return messages.relationshipForm.surveyIncomplete(
+        answeredCount,
+        surveyQuestions.length,
+      );
     }
-    return "필수 항목을 채워 주세요.";
+    return messages.relationshipForm.fieldsRequired;
   }, [
     canSubmit,
     partnerName,
@@ -135,17 +143,19 @@ export default function ManualRelationshipForm({
     surveyMode,
     surveyOk,
     answeredCount,
+    surveyQuestions.length,
+    messages,
   ]);
 
   return (
     <div className="space-y-4">
       <label className="block space-y-1">
-        <span className={s.label}>이름 (또는 별명)</span>
+        <span className={s.label}>{messages.relationshipForm.nameLabel}</span>
         <input
           value={partnerName}
           onChange={(e) => setPartnerName(e.target.value)}
           className={s.input}
-          placeholder="예: 민수"
+          placeholder={messages.relationshipForm.namePlaceholder}
           disabled={busy}
         />
       </label>
@@ -170,13 +180,13 @@ export default function ManualRelationshipForm({
       />
 
       <label className="block space-y-1">
-        <span className={s.label}>태어난 장소</span>
+        <span className={s.label}>{messages.onboarding.birthPlace}</span>
         <input
           value={birthPlace}
           onChange={(e) => setBirthPlace(e.target.value)}
           disabled={busy || birthPlaceUnknown}
           className={s.input}
-          placeholder="예: 서울, 부산"
+          placeholder={messages.relationshipForm.birthPlacePlaceholder}
         />
       </label>
 
@@ -187,12 +197,12 @@ export default function ManualRelationshipForm({
           onChange={(e) => setBirthPlaceUnknown(e.target.checked)}
           disabled={busy}
         />
-        입력 건너뛰기 · 태어난 장소 모름
+        {messages.relationshipForm.birthPlaceSkip}
       </label>
 
       <div className={s.surveyBox}>
         <div className="space-y-2">
-          <p className={s.surveyTitle}>친구 설문 (10문항)</p>
+          <p className={s.surveyTitle}>{messages.relationshipForm.surveyTitle}</p>
           <div className="flex gap-2">
             <button
               type="button"
@@ -200,7 +210,7 @@ export default function ManualRelationshipForm({
               onClick={() => setSurveyMode("answer")}
               disabled={busy}
             >
-              설문하기
+              {messages.relationshipForm.surveyModeAnswer}
             </button>
             <button
               type="button"
@@ -208,7 +218,7 @@ export default function ManualRelationshipForm({
               onClick={() => setSurveyMode("skip")}
               disabled={busy}
             >
-              입력 건너뛰기
+              {messages.relationshipForm.surveyModeSkip}
             </button>
           </div>
         </div>
@@ -216,16 +226,19 @@ export default function ManualRelationshipForm({
         {surveyMode === "answer" ? (
           <>
             <p className={s.hint}>
-              {answeredCount}/{SURVEY_V2_QUESTIONS.length} 응답
+              {messages.relationshipForm.responses(
+                answeredCount,
+                surveyQuestions.length,
+              )}
             </p>
             <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
-              {SURVEY_V2_QUESTIONS.map((q) => (
+              {surveyQuestions.map((q) => (
                 <fieldset key={q.id} className="space-y-2">
                   <legend className={`text-[11px] leading-relaxed ${theme === "stitch" ? "text-on-surface" : "text-white/75"}`}>
                     {q.prompt.split("\n")[0]}
                   </legend>
                   <div className="space-y-1">
-                    {q.options.map((opt) => (
+                    {q.options.map((opt: { value: string; label: string }) => (
                       <label key={opt.value} className={s.optionLabel}>
                         <input
                           type="radio"
@@ -251,7 +264,7 @@ export default function ManualRelationshipForm({
           </>
         ) : (
           <p className={`text-[11px] leading-relaxed ${theme === "stitch" ? "text-on-surface-variant" : "text-white/45"}`}>
-            설문 없이 관계를 만들어요. 분석은 중립 프로필 기준으로 진행됩니다.
+            {messages.relationshipForm.surveySkippedNote}
           </p>
         )}
       </div>
@@ -271,7 +284,7 @@ export default function ManualRelationshipForm({
               disabled={busy}
               className={s.cancelBtn}
             >
-              취소
+              {messages.cta.cancel}
             </button>
           ) : null}
           {theme === "stitch" ? (
@@ -295,7 +308,7 @@ export default function ManualRelationshipForm({
                 })
               }
             >
-              {busy ? "만드는 중…" : "관계 만들기"}
+              {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
             </button>
           ) : (
             <GlowButton
@@ -318,7 +331,7 @@ export default function ManualRelationshipForm({
                 })
               }
             >
-              {busy ? "만드는 중…" : "관계 만들기"}
+              {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
             </GlowButton>
           )}
         </div>

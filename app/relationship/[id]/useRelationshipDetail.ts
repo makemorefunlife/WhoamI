@@ -32,6 +32,7 @@ import {
   type RomanticDeepMetaViewModel,
   type RomanticDeepViewModel,
 } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type UseRelationshipDetailReturn = {
   router: ReturnType<typeof useRouter>;
@@ -100,6 +101,7 @@ export function useRelationshipDetail({
   const urlParentType = searchParams.get("parentType")?.trim() ?? "";
   const urlAutostart = searchParams.get("autostart") === "1";
   const { user } = useUser();
+  const { locale } = useLocale();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
       urlHint: urlViewerHint,
@@ -177,6 +179,13 @@ export function useRelationshipDetail({
   const [serverPremiumReady, setServerPremiumReady] = useState(false);
   const autostartTriggered = useRef(false);
   const loadSeqRef = useRef(0);
+  const premiumSeqRef = useRef(0);
+  const detailOkRef = useRef(false);
+  const viewerReportNameRef = useRef<string | null>(null);
+  const clerkFirstNameRef = useRef(user?.firstName);
+  const clerkFullNameRef = useRef(user?.fullName);
+  clerkFirstNameRef.current = user?.firstName;
+  clerkFullNameRef.current = user?.fullName;
   const REQUEST_TIMEOUT_MS = 300_000;
 
   async function fetchJsonWithTimeout(
@@ -197,66 +206,85 @@ export function useRelationshipDetail({
     }
   }
 
-  const fetchLogs = useCallback(async () => {
-    if (!effectiveViewerReportId || !resolvedRelationshipId) return;
-    setLogsLoading(true);
-    try {
-      const res = await fetch(
-        `/api/relationship/logs?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}`,
-      );
-      const data = await res.json();
-      if (res.ok) setLogs((data.logs ?? []) as AnalysisLogListItem[]);
-    } finally {
-      setLogsLoading(false);
-    }
-  }, [resolvedRelationshipId, effectiveViewerReportId]);
+  const fetchLogs = useCallback(
+    async (expectedLoadSeq?: number) => {
+      if (!effectiveViewerReportId || !resolvedRelationshipId) return;
+      const seqAtStart = expectedLoadSeq ?? loadSeqRef.current;
+      setLogsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/relationship/logs?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}`,
+        );
+        const data = await res.json();
+        if (seqAtStart !== loadSeqRef.current) return;
+        if (res.ok) setLogs((data.logs ?? []) as AnalysisLogListItem[]);
+      } finally {
+        if (seqAtStart === loadSeqRef.current) setLogsLoading(false);
+      }
+    },
+    [resolvedRelationshipId, effectiveViewerReportId],
+  );
 
   const load = useCallback(
-    async (kindOverride?: RelationshipKind) => {
+    async (
+      kindOverride?: RelationshipKind,
+      options?: { silent?: boolean },
+    ) => {
       if (!effectiveViewerReportId) {
         setErr("viewer 쿼리(내 리포트 id)가 필요합니다.");
+        detailOkRef.current = false;
         setDetailOk(false);
         setLoading(false);
         return;
       }
       if (!resolvedRelationshipId) {
         setErr("관계 분석 주소가 올바르지 않아요.");
+        detailOkRef.current = false;
         setDetailOk(false);
         setLoading(false);
         return;
       }
 
       const seq = ++loadSeqRef.current;
+      const silent =
+        options?.silent === true || detailOkRef.current === true;
       const explicitKind =
         kindOverride ??
         (urlKindHint ? parseRelationshipKind(urlKindHint) : null);
       const kindForRequest = explicitKind ?? premiumKindRef.current;
       setErr(null);
-      setLoading(true);
+      if (!silent) setLoading(true);
       try {
         const kindQuery =
           explicitKind != null
             ? `&relationshipKind=${encodeURIComponent(explicitKind)}`
             : "";
         const res = await fetch(
-          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}${kindQuery}`,
+          `/api/relationship/detail?relationshipReportId=${encodeURIComponent(resolvedRelationshipId)}&viewerReportId=${encodeURIComponent(effectiveViewerReportId)}${kindQuery}&language=${encodeURIComponent(locale)}`,
+          { headers: { "x-aha-locale": locale } },
         );
         const data = await res.json();
         if (seq !== loadSeqRef.current) return;
         if (!res.ok) {
+          detailOkRef.current = false;
           setDetailOk(false);
           setErr(data?.error ?? "불러오지 못했어요.");
           return;
         }
         setSnapshotView(null);
+        detailOkRef.current = true;
         setDetailOk(true);
         const ridA = data.report_id_a ?? "";
         const ridB = data.report_id_b ?? "";
         const isViewerA = effectiveViewerReportId === ridA;
+        const reportViewerName = (data.viewer_name ?? data.my_name ?? null) as
+          | string
+          | null;
+        viewerReportNameRef.current = reportViewerName;
         const resolvedViewer = resolveViewerDisplayName({
-          reportName: data.viewer_name ?? data.my_name,
-          clerkFirstName: user?.firstName,
-          clerkFullName: user?.fullName,
+          reportName: reportViewerName,
+          clerkFirstName: clerkFirstNameRef.current,
+          clerkFullName: clerkFullNameRef.current,
         });
         const resolvedPartner = resolvePartnerDisplayName(
           data.partner_name ?? data.display_partner_name,
@@ -306,17 +334,29 @@ export function useRelationshipDetail({
             (isViewerA ? resolvedPartner : resolvedViewer),
         );
         setFavorited(Boolean(data.is_favorite));
-        void fetchLogs();
+        void fetchLogs(seq);
       } finally {
         if (seq === loadSeqRef.current) setLoading(false);
       }
     },
-    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, user?.firstName, user?.fullName, urlKindHint],
+    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, urlKindHint],
   );
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Clerk hydrate → display name only (do not re-fetch detail).
+  useEffect(() => {
+    if (!detailOkRef.current) return;
+    setViewerName(
+      resolveViewerDisplayName({
+        reportName: viewerReportNameRef.current,
+        clerkFirstName: user?.firstName,
+        clerkFullName: user?.fullName,
+      }),
+    );
+  }, [user?.firstName, user?.fullName]);
 
   /** Same-route soft navigations: sync ?kind= and reload (state otherwise sticks). */
   useEffect(() => {
@@ -332,7 +372,8 @@ export function useRelationshipDetail({
     setCohabitationDeep(null);
     setFamilyDeep(null);
     setFriendshipDeep(null);
-    void load(k);
+    premiumSeqRef.current += 1;
+    void load(k, { silent: true });
   }, [urlKindHint, load]);
 
   const basicAttempted = useRef(false);
@@ -364,7 +405,7 @@ export function useRelationshipDetail({
         setErr(data?.error ?? "기본 분석 실패");
         return;
       }
-      await load();
+      await load(undefined, { silent: true });
     } finally {
       setBusy(false);
     }
@@ -438,6 +479,8 @@ export function useRelationshipDetail({
     ) => {
       if (!resolvedRelationshipId) return false;
       const forceRegenerate = options?.forceRegenerate === true;
+      const premiumSeq = ++premiumSeqRef.current;
+      const kindAtStart = kind;
       if (forceRegenerate) {
         setSnapshotView(null);
         setServerPremiumReady(false);
@@ -463,6 +506,8 @@ export function useRelationshipDetail({
           relationship_kind: kind,
           viewer_report_id: effectiveViewerReportId,
           force_regenerate: forceRegenerate,
+          language: locale,
+          locale,
           ...(kind === "family"
             ? {
                 parent_type: familyParentType,
@@ -475,10 +520,19 @@ export function useRelationshipDetail({
           "/api/relationship/analyze/premium",
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-aha-locale": locale,
+            },
             body: JSON.stringify(requestBody),
           },
         );
+        if (
+          premiumSeq !== premiumSeqRef.current ||
+          kindAtStart !== premiumKindRef.current
+        ) {
+          return false;
+        }
         if (!res.ok) {
           setErr(data?.error ?? "심화 분석 실패");
           return false;
@@ -487,9 +541,8 @@ export function useRelationshipDetail({
           const prem = data.result_premium;
           if (prem?.format === ROMANTIC_SAJU_DEEP_FORMAT && prem?.report) {
             setRomanticDeep(parseRomanticDeepViewModel(prem.report));
-          } else if (!forceRegenerate && prem?.perspectives) {
-            return runPremium(kind, { forceRegenerate: true });
           } else {
+            // Legacy perspectives-only is not a valid deep cache — do not force-regenerate here.
             setErr("연인 심화 분석 결과를 받지 못했어요.");
             return false;
           }
@@ -500,8 +553,6 @@ export function useRelationshipDetail({
             prem?.report?.snapshot_panel
           ) {
             setWorkDeep(prem.report as WorkColleagueReportBody);
-          } else if (!forceRegenerate && prem?.perspectives) {
-            return runPremium(kind, { forceRegenerate: true });
           } else {
             setErr("동료 심화 분석 결과를 받지 못했어요.");
             return false;
@@ -513,8 +564,6 @@ export function useRelationshipDetail({
             prem?.report?.snapshot_panel
           ) {
             setCohabitationDeep(prem.report as MarriageReportBody);
-          } else if (!forceRegenerate && prem?.perspectives) {
-            return runPremium(kind, { forceRegenerate: true });
           } else {
             setErr("동거·결혼 심화 분석 결과를 받지 못했어요.");
             return false;
@@ -526,8 +575,6 @@ export function useRelationshipDetail({
             prem?.report?.family?.section_child_dna
           ) {
             setFamilyDeep(prem.report as FamilyParentReportBody);
-          } else if (!forceRegenerate && prem?.perspectives) {
-            return runPremium(kind, { forceRegenerate: true });
           } else {
             setErr("가족 심화 분석 결과를 받지 못했어요.");
             return false;
@@ -539,19 +586,8 @@ export function useRelationshipDetail({
             prem?.report?.friend?.section_social_dna_a
           ) {
             setFriendshipDeep(prem.report as FriendReportBody);
-          } else if (!forceRegenerate && prem?.perspectives) {
-            return runPremium(kind, { forceRegenerate: true });
           } else {
             setErr("친구 심화 분석 결과를 받지 못했어요.");
-            return false;
-          }
-        } else if (data.result_premium?.perspectives && effectiveViewerReportId) {
-          const slice =
-            data.result_premium.perspectives[effectiveViewerReportId] ?? null;
-          if (slice && typeof slice === "object") {
-            setPremium(slice as RelationshipPerspective);
-          } else {
-            setErr("심화 분석 결과를 받지 못했어요.");
             return false;
           }
         } else {
@@ -559,9 +595,15 @@ export function useRelationshipDetail({
           return false;
         }
         setServerPremiumReady(true);
-        await load(kind);
+        await load(kind, { silent: true });
         return true;
       } catch (e) {
+        if (
+          premiumSeq !== premiumSeqRef.current ||
+          kindAtStart !== premiumKindRef.current
+        ) {
+          return false;
+        }
         if (e instanceof DOMException && e.name === "AbortError") {
           setErr("요청 시간이 길어져 중단됐어요. 다시 시도해 주세요.");
           return false;
@@ -569,7 +611,9 @@ export function useRelationshipDetail({
         setErr("네트워크 문제로 심화 분석에 실패했어요.");
         return false;
       } finally {
-        setBusy(false);
+        if (premiumSeq === premiumSeqRef.current) {
+          setBusy(false);
+        }
       }
     },
     [
@@ -615,7 +659,8 @@ export function useRelationshipDetail({
           { scroll: false },
         );
       }
-      void load(kind);
+      premiumSeqRef.current += 1;
+      void load(kind, { silent: true });
     },
     [load, router, effectiveViewerReportId, resolvedRelationshipId],
   );
@@ -665,7 +710,7 @@ export function useRelationshipDetail({
               : Boolean(
                   displayPremium && Object.keys(displayPremium).length > 0,
                 );
-  // Server hasPremiumCacheForKind + local body checks — same rule for all kinds.
+  // Server hasPremiumCacheForKind (deep-only) + local body checks — same rule for all kinds.
   const premiumReady = serverPremiumReady || localPremiumReady;
 
   const clearSnapshotView = useCallback(() => {

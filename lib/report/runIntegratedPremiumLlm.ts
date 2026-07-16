@@ -2,15 +2,17 @@ import OpenAI from "openai";
 import { logServerError } from "@/lib/security/safeLog";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import {
-  INTEGRATED_SYSTEM_PROMPT,
+  getIntegratedSystemPrompt,
   buildIntegratedPhase1UserPrompt,
   buildIntegratedPhase2UserPrompt,
 } from "@/lib/prompts/integratedPremiumReport";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 
 export type IntegratedPremiumLlmInput = {
   surveyAnalysis: string;
   sajuSummary: string;
   astrologyInterpretation: string;
+  locale?: Locale | string;
 };
 
 export type IntegratedPremiumLlmResult = {
@@ -50,13 +52,16 @@ export async function runIntegratedPremiumLlm(
   }
 
   const openai = new OpenAI({ apiKey });
+  const locale = normalizeLocale(input.locale);
+  const systemPrompt = getIntegratedSystemPrompt(locale);
   const phase1User = buildIntegratedPhase1UserPrompt(
     input.surveyAnalysis,
     input.sajuSummary,
     input.astrologyInterpretation,
+    locale,
   );
   const phase1Messages: ChatCompletionMessageParam[] = [
-    { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+    { role: "system", content: systemPrompt },
     { role: "user", content: phase1User },
   ];
 
@@ -74,11 +79,12 @@ export async function runIntegratedPremiumLlm(
       input.sajuSummary,
       input.astrologyInterpretation,
       excerpt,
+      locale,
     );
     const c2 = await openai.chat.completions.create({
       model: process.env.OPENAI_INTEGRATED_MODEL?.trim() || "gpt-4o-mini",
       messages: [
-        { role: "system", content: INTEGRATED_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: phase2User },
       ],
       temperature: 0.65,

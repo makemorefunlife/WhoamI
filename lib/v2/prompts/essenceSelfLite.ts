@@ -4,10 +4,12 @@
  */
 import type { EssenceSelfLiteInputPayload } from "@/lib/v2/saju/essenceLiteInput";
 import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
+import { normalizeLocale } from "@/lib/i18n/locale";
+import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
-export const ESSENCE_SELF_LITE_SYSTEM = `You are the Essence Self Lite interpreter for Aha! It's Me.
+const ESSENCE_SELF_LITE_SYSTEM_RULES = `You are the Essence Self Lite interpreter for Aha! It's Me.
 
-Translate pre-calculated essence signals into concise human insight in Korean.
+Translate pre-calculated essence signals into concise human insight.
 
 ${PRIMARY_AXIS_LLM_GUIDE}
 
@@ -19,18 +21,29 @@ Rules:
 - Natural language only. No fortune-telling, diagnosis, or invented life events.
 - Return valid JSON only.`;
 
+/** English SSOT rules (no locale). Prefer getEssenceSelfLiteSystemPrompt. */
+export const ESSENCE_SELF_LITE_SYSTEM = ESSENCE_SELF_LITE_SYSTEM_RULES;
+
+export function getEssenceSelfLiteSystemPrompt(language?: string): string {
+  const locale = normalizeLocale(language);
+  return `${ESSENCE_SELF_LITE_SYSTEM_RULES}
+
+${buildLlmOutputLocaleInstruction(locale)}`;
+}
+
 export function buildEssenceSelfLiteUserPrompt(input: {
   essence_self_lite_input: EssenceSelfLiteInputPayload;
   language?: string;
 }): string {
-  return `Output language: ${input.language ?? "ko"}
+  const locale = normalizeLocale(input.language);
+  return `Output language: ${locale}
 
 Generate an Essence Self Lite interpretation.
 
 Output JSON schema:
 {
   "report_type": "essence_self_lite",
-  "language": "ko",
+  "language": "${locale}",
   "one_line_summary": "string",
   "core_personality_insight": { "title": "string", "body": "string" },
   "relationship_tendency_insight": { "title": "string", "body": "string" },

@@ -1,9 +1,17 @@
+"use client";
+
 import { SignUp } from "@clerk/nextjs";
+import { ROUTES } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function SignUpPage() {
+  const { href } = useLocale();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1c2b] to-[#2a2d3e] px-4 py-12">
       <SignUp
+        fallbackRedirectUrl={href(ROUTES.home)}
+        signInUrl={href(ROUTES.signIn)}
         appearance={{
           variables: { colorPrimary: "#7c3aed" },
           elements: {

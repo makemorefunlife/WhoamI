@@ -42,6 +42,7 @@ import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { buildInviteUrl, copyInviteLink } from "@/lib/relationship/inviteShare";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import { setRelationHubDockLocked } from "@/lib/stitch/relationHubDockLock";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const ANALYSIS_PREVIEW_LIMIT = 5;
 const ANALYSIS_PAGE_STEP = 10;
@@ -49,6 +50,7 @@ const ANALYSIS_MAX_TARGETS = 20;
 
 export default function RelationHubDashboard() {
   const router = useRouter();
+  const { messages, href: localize } = useLocale();
   const { openSignIn } = useClerk();
   const { isSignedIn } = useClerkReady();
   const searchParams = useSearchParams();
@@ -152,7 +154,7 @@ export default function RelationHubDashboard() {
         const data = await res.json();
         if (!res.ok) {
           if (mode === "full") {
-            setErr(data?.error ?? "불러오지 못했어요.");
+            setErr(data?.error ?? messages.hub.loadFailed);
             setItems([]);
           }
           return;
@@ -337,7 +339,7 @@ export default function RelationHubDashboard() {
               : r,
           ),
         );
-        alert(data?.error ?? "즐겨찾기 저장에 실패했어요.");
+        alert(data?.error ?? messages.hub.favoriteSaveFailed);
       }
     } finally {
       setFavoriteBusyId(null);
@@ -357,18 +359,20 @@ export default function RelationHubDashboard() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401) {
-          alert("친구 추가는 로그인(회원가입) 후 이용할 수 있어요.");
+          alert(messages.hub.signInRequiredForFriend);
           openSignIn?.({
-            forceRedirectUrl: `/relationships?myReportId=${encodeURIComponent(hubReportId)}`,
+            forceRedirectUrl: localize(
+              `/relationships?myReportId=${encodeURIComponent(hubReportId)}`,
+            ),
           });
           return;
         }
-        alert(data?.error ?? "초대 링크를 만들지 못했어요.");
+        alert(data?.error ?? messages.hub.inviteCreateFailed);
         return;
       }
       const token = data?.invite?.invite_token as string | undefined;
       if (!token) {
-        alert("초대 정보를 확인할 수 없어요.");
+        alert(messages.hub.inviteInfoUnavailable);
         return;
       }
       setFreshInviteToken(token);
@@ -381,7 +385,7 @@ export default function RelationHubDashboard() {
 
   async function deleteRequest(item: RelationshipListItem) {
     if (!hubReportId || !item.outbound_invite_id) return;
-    if (!window.confirm("초대를 취소할까요? (분석권이 회수될 수 있어요)")) return;
+    if (!window.confirm(messages.hub.inviteCancelConfirm)) return;
     setDeleteBusyId(item.outbound_invite_id);
     try {
       const res = await fetch("/api/invite/cancel", {
@@ -394,7 +398,7 @@ export default function RelationHubDashboard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data?.error ?? "취소하지 못했어요.");
+        alert(data?.error ?? messages.hub.inviteCancelFailed);
         return;
       }
       await load();
@@ -408,7 +412,7 @@ export default function RelationHubDashboard() {
     const token = item.invite_token;
     if (token) {
       const ok = await copyInviteLink(buildInviteUrl(token));
-      alert(ok ? "초대 링크를 복사했어요." : "복사에 실패했어요.");
+      alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
       return;
     }
     await startNewInvite();
@@ -436,13 +440,15 @@ export default function RelationHubDashboard() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 401) {
-          alert("친구 추가는 로그인(회원가입) 후 이용할 수 있어요.");
+          alert(messages.hub.signInRequiredForFriend);
           openSignIn?.({
-            forceRedirectUrl: `/relationships?myReportId=${encodeURIComponent(reportIdForCreate)}`,
+            forceRedirectUrl: localize(
+              `/relationships?myReportId=${encodeURIComponent(reportIdForCreate)}`,
+            ),
           });
           return;
         }
-        alert(data?.error ?? "관계를 만들지 못했어요.");
+        alert(data?.error ?? messages.hub.relationshipCreateFailed);
         return;
       }
       setAddFriendOpen(false);
@@ -451,7 +457,7 @@ export default function RelationHubDashboard() {
       }
       await load("full", reportIdForCreate);
     } catch {
-      alert("네트워크 오류로 관계를 만들지 못했어요.");
+      alert(messages.hub.relationshipCreateNetworkError);
     } finally {
       setManualBusy(false);
     }
@@ -459,7 +465,7 @@ export default function RelationHubDashboard() {
 
   function openKindPicker(item: RelationshipListItem) {
     if (!item.relationship_report_id) {
-      alert("수락 대기 중인 친구는 분석을 시작할 수 없어요.");
+      alert(messages.hub.pendingFriendCannotAnalyze);
       return;
     }
     setKindPickerTarget(item);
@@ -471,25 +477,25 @@ export default function RelationHubDashboard() {
     family?: { perspective: FamilyPerspective; parentType: FamilyParentRole },
   ) {
     if (!item.relationship_report_id) {
-      alert("수락 대기 중인 친구는 분석을 시작할 수 없어요.");
+      alert(messages.hub.pendingFriendCannotAnalyze);
       return;
     }
     const viewerId = hubReportId.trim();
     if (!viewerId) {
-      alert(
-        "내 리포트 정보를 찾을 수 없어요. 블루프린트를 먼저 완료한 뒤 다시 시도해 주세요.",
-      );
+      alert(messages.hub.viewerReportMissing);
       return;
     }
     const partnerLabel = item.partner_name;
     setKindPickerTarget(null);
     setNavOverlayPartner(partnerLabel);
     router.push(
-      buildRelationshipAnalyzeUrl(
-        item.relationship_report_id,
-        viewerId,
-        kind,
-        family,
+      localize(
+        buildRelationshipAnalyzeUrl(
+          item.relationship_report_id,
+          viewerId,
+          kind,
+          family,
+        ),
       ),
     );
   }
@@ -497,7 +503,9 @@ export default function RelationHubDashboard() {
   function openAnalysisLog(log: HubAnalysisFeedItem) {
     if (!hubReportId) return;
     router.push(
-      `/relationship/${log.relationship_report_id}?viewer=${encodeURIComponent(hubReportId)}&kind=${encodeURIComponent(log.relationship_kind === "unspecified" ? "friendship" : log.relationship_kind)}`,
+      localize(
+        `/relationship/${log.relationship_report_id}?viewer=${encodeURIComponent(hubReportId)}&kind=${encodeURIComponent(log.relationship_kind === "unspecified" ? "friendship" : log.relationship_kind)}`,
+      ),
     );
   }
 
@@ -517,7 +525,7 @@ export default function RelationHubDashboard() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data?.error ?? "이름을 저장하지 못했어요.");
+        alert(data?.error ?? messages.hub.renameSaveFailed);
         return;
       }
       await load("silent");
@@ -537,7 +545,7 @@ export default function RelationHubDashboard() {
             RELATION HUB
           </p>
           <h1 className="stitch-headline mt-2 text-3xl text-primary">
-            관계 허브
+            {messages.hub.title}
           </h1>
         </header>
 
@@ -553,7 +561,7 @@ export default function RelationHubDashboard() {
           <div className="space-y-8">
             {recovering ? (
               <p className="text-center text-xs text-on-surface-variant">
-                로그인 계정에서 기록을 불러오는 중…
+                {messages.hub.loadingRecords}
               </p>
             ) : null}
             <FriendStoryRowSkeleton />
@@ -569,9 +577,9 @@ export default function RelationHubDashboard() {
             <div className="space-y-8">
               {!hubReportId ? (
                 <p className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 px-4 py-3 text-center text-sm text-on-surface-variant">
-                  블루프린트를 완료하면 친구 목록과 분석 기록이 여기에 표시돼요.
+                  {messages.hub.emptyBlueprintRequired}
                   {isSignedIn
-                    ? " 다른 브라우저에서 진행한 경우, 로그인 상태면 자동으로 연결됩니다."
+                    ? messages.hub.emptyBlueprintRequiredSignedInHint
                     : ""}
                 </p>
               ) : null}
@@ -617,12 +625,12 @@ export default function RelationHubDashboard() {
                     canAnalyze={canAnalyze}
                     analyzeLabel={
                       selectedFriend
-                        ? `${selectedFriend.partner_name}님과 분석하기`
-                        : "관계 분석하기"
+                        ? messages.hub.analyzeWithName(selectedFriend.partner_name)
+                        : messages.hub.analyzeCta
                     }
                     onAnalyze={() => {
                       if (selectedFriend) openKindPicker(selectedFriend);
-                      else alert("친구를 먼저 선택해 주세요.");
+                      else alert(messages.hub.selectFriendFirst);
                     }}
                     onAddFriend={() => {
                       setAddFriendOpen(true);

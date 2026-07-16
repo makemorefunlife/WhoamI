@@ -99,6 +99,43 @@ async function run() {
     ok("owner access succeeds without DB mutation");
   }
 
+  // Locale-aware error messages — message text only; status codes/decisions unchanged
+  {
+    const rEn = await assertOwnedReportAccess(
+      mockSupabase({ id: "r1", clerk_user_id: "user_b" }),
+      "r1",
+      "user_a",
+      "en-US",
+    );
+    const rKo = await assertOwnedReportAccess(
+      mockSupabase({ id: "r1", clerk_user_id: "user_b" }),
+      "r1",
+      "user_a",
+      "ko-KR",
+    );
+    const rDefault = await assertOwnedReportAccess(
+      mockSupabase({ id: "r1", clerk_user_id: "user_b" }),
+      "r1",
+      "user_a",
+    );
+    const rInvalid = await assertOwnedReportAccess(
+      mockSupabase({ id: "r1", clerk_user_id: "user_b" }),
+      "r1",
+      "user_a",
+      "xx-XX",
+    );
+    assert.equal(rEn.error?.status, 403);
+    assert.equal(rKo.error?.status, 403);
+    const enBody = await rEn.error.json();
+    const koBody = await rKo.error.json();
+    const defaultBody = await rDefault.error.json();
+    const invalidBody = await rInvalid.error.json();
+    assert.notEqual(enBody.error, koBody.error);
+    assert.equal(defaultBody.error, enBody.error, "no locale arg falls back to en-US");
+    assert.equal(invalidBody.error, enBody.error, "invalid locale falls back to en-US");
+    ok("assertOwnedReportAccess forbidden message is locale-aware (en-US/ko-KR); status codes unchanged; invalid/missing locale falls back to en-US");
+  }
+
   // Non-participant
   {
     const guard = await assertOwnedViewerParticipantAccess(

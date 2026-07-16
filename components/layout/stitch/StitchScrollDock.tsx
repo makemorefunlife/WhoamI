@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import LocaleLink from "@/lib/i18n/LocaleLink";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useClerk } from "@clerk/nextjs";
@@ -41,7 +42,7 @@ function DockLink({
   children: ReactNode;
 }) {
   return (
-    <Link href={href} prefetch className={dockItemClass(Boolean(active))}>
+    <LocaleLink href={href} prefetch className={dockItemClass(Boolean(active))}>
       <span
         className={`flex h-9 w-9 items-center justify-center rounded-full ${
           active ? "bg-accent-emerald-soft" : ""
@@ -52,7 +53,7 @@ function DockLink({
       <span className="text-[10px] font-medium leading-none sm:text-xs">
         {label}
       </span>
-    </Link>
+    </LocaleLink>
   );
 }
 
@@ -93,6 +94,7 @@ export default function StitchScrollDock({
   onOpenAuth?: () => void;
 }) {
   const pathname = usePathname();
+  const { messages } = useLocale();
   const { openSignIn } = useClerk();
   const { isSignedIn } = useClerkReady();
   const hydrated = useHydrated();
@@ -207,12 +209,12 @@ export default function StitchScrollDock({
             aria-label="Main navigation"
             aria-hidden={!dockShown}
           >
-        <DockLink label="Home" active={active === "home"} href="/">
+        <DockLink label={messages.dock.home} active={active === "home"} href="/">
           <Home className="h-5 w-5" strokeWidth={2} aria-hidden />
         </DockLink>
         {showMeLink ? (
           <DockLink
-            label="Me"
+            label={messages.dock.me}
             active={active === "me"}
             href={blueprintPath(reportId)}
           >
@@ -220,7 +222,7 @@ export default function StitchScrollDock({
           </DockLink>
         ) : (
           <DockButton
-            label="Me"
+            label={messages.dock.me}
             active={active === "me"}
             onClick={() => {
               if (pathname === "/" && onOpenAuth) {
@@ -236,14 +238,14 @@ export default function StitchScrollDock({
           </DockButton>
         )}
         <DockLink
-          label="Lab"
+          label={messages.dock.lab}
           active={active === "relations"}
           href={relationHubPath(reportId)}
         >
           <Users className="h-5 w-5" strokeWidth={2} aria-hidden />
         </DockLink>
         <DockLink
-          label="Choice"
+          label={messages.dock.choice}
           active={active === "decision"}
           href={DECISION_HUB_PATH}
         >

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import GlowButton from "@/components/space/GlowButton";
 import { STITCH_ESSENCE_STROKE } from "@/components/v2/DualAxisRadarChart";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /** Essence 심화 — 결제 게이트는 추후 `/essence/deep` API·페이지에 연결 */
 export default function EssenceDeepEntryButton({
@@ -16,6 +17,7 @@ export default function EssenceDeepEntryButton({
   featured?: boolean;
 }) {
   const router = useRouter();
+  const { messages, href: localize } = useLocale();
   const href = `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`;
 
   const label = (
@@ -36,7 +38,7 @@ export default function EssenceDeepEntryButton({
             : "text-[12px] font-normal text-on-surface-variant"
         }
       >
-        (심화 탐사)
+        ({messages.blueprint.deepExploration})
       </span>
     </span>
   );
@@ -45,7 +47,7 @@ export default function EssenceDeepEntryButton({
     return (
       <button
         type="button"
-        onClick={() => router.push(href)}
+        onClick={() => router.push(localize(href))}
         className={`group relative overflow-hidden rounded-2xl border-2 border-primary/25 bg-gradient-to-b from-accent-emerald-soft via-surface-container-low to-surface px-4 py-4 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-md active:scale-[0.99] ${className}`}
       >
         <span
@@ -67,7 +69,7 @@ export default function EssenceDeepEntryButton({
       type="button"
       variant="primary"
       className={className}
-      onClick={() => router.push(href)}
+      onClick={() => router.push(localize(href))}
     >
       {label}
     </GlowButton>

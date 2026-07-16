@@ -2,6 +2,7 @@
 
 import GlassCard from "@/components/space/GlassCard";
 import type { LiteSection } from "@/lib/v2/lite/types";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function SectionBlock({ section }: { section: LiteSection }) {
   if (!section?.body?.trim()) return null;
@@ -70,11 +71,12 @@ export function LiteReportLoading({
 }: {
   hint?: string;
 } = {}) {
+  const { messages } = useLocale();
   return (
     <GlassCard className="!py-8 text-center">
-      <p className="text-sm text-white/55">분석 중이에요…</p>
+      <p className="text-sm text-white/55">{messages.report.analyzing}</p>
       <p className="mt-1 text-xs text-white/40">
-        {hint ?? "잠시만 기다려 주세요"}
+        {hint ?? messages.report.analyzingHint}
       </p>
     </GlassCard>
   );
@@ -87,6 +89,7 @@ export function LiteReportError({
   message: string;
   onRetry?: () => void;
 }) {
+  const { messages } = useLocale();
   return (
     <GlassCard className="space-y-3 !py-6 text-center">
       <p className="text-sm text-amber-200/90">{message}</p>
@@ -96,7 +99,7 @@ export function LiteReportError({
           onClick={onRetry}
           className="text-sm text-[#67B7FF] underline-offset-2 hover:underline"
         >
-          다시 시도
+          {messages.report.chrome.retry}
         </button>
       ) : null}
     </GlassCard>

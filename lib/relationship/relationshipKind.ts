@@ -39,6 +39,9 @@ export {
   getCohabitationDeepReport,
   getFamilyParentDeepReport,
   getFriendSocialDeepReport,
+  getPremiumPayloadForKindLocale,
   hasPremiumCacheForKind,
+  hasPremiumCacheForKindLocale,
+  mergePremiumKindLocale,
 } from "./premiumByKind";
 export { isRelationshipFavorite } from "./analysisLog";

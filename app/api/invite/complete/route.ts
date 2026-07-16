@@ -16,6 +16,8 @@ import {
 } from "@/lib/security/requestValidation";
 import { isAcceptableInviteToken } from "@/lib/security/inviteToken";
 import { logServerError } from "@/lib/security/safeLog";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
 
@@ -29,10 +31,16 @@ export const runtime = "nodejs";
  * - legacy short / invite_* : accept-only (deprecation — existing customer links)
  */
 export async function POST(req: Request) {
+  const locale = resolveRequestLocale({
+    bodyLanguage: null,
+    headerLanguage:
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+  });
+  const messages = getMessages(locale);
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: messages.errors.unauthorized }, { status: 401 });
     }
 
     const parsed = await readJsonBodyLimited(req);
@@ -43,7 +51,7 @@ export async function POST(req: Request) {
       typeof body.inviteToken === "string" ? body.inviteToken.trim() : "";
     // Do not log token. Legacy formats still accepted for existing links.
     if (!isAcceptableInviteToken(inviteToken)) {
-      return NextResponse.json({ error: "invalid invite" }, { status: 400 });
+      return NextResponse.json({ error: messages.errors.inviteInvalid }, { status: 400 });
     }
 
     const idCheck = requireUuid(body.reportId, "reportId");
@@ -60,6 +68,7 @@ export async function POST(req: Request) {
       supabase,
       idCheck.value,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -77,12 +86,12 @@ export async function POST(req: Request) {
 
     if (error) {
       logServerError("invite/complete", error);
-      return NextResponse.json({ error: "complete failed" }, { status: 500 });
+      return NextResponse.json({ error: messages.errors.inviteCompleteFailed }, { status: 500 });
     }
 
     if (!data) {
       return NextResponse.json(
-        { error: "invite unavailable" },
+        { error: messages.errors.inviteUnavailable },
         { status: 404 },
       );
     }
@@ -119,7 +128,7 @@ export async function POST(req: Request) {
   } catch (e) {
     logServerError("invite/complete", e);
     return NextResponse.json(
-      { error: "초대 완료 처리 중 오류가 발생했습니다." },
+      { error: messages.errors.inviteCompleteFailed },
       { status: 500 },
     );
   }

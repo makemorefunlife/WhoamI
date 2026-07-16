@@ -14,10 +14,15 @@ import { resolveFamilyRolesFromViewer } from "@/lib/relationship/familyParent/re
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import {
-  hasPremiumCacheForKind,
+  getPremiumPayloadForKindLocale,
+  hasPremiumCacheForKindLocale,
   parseRelationshipKind,
   type ResultPremiumByKind,
 } from "@/lib/relationship/relationshipKind";
+import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { toLegacyShortLocale } from "@/lib/i18n/llmLocale";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locale";
+import { getMessages } from "@/lib/i18n/messages";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
@@ -44,6 +49,8 @@ import type {
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import {
   assertRelationshipPremiumLlmAccess,
+  getRelationshipPremiumAnalysisFailedMessage,
+  getRelationshipPremiumSaveFailedMessage,
 } from "@/lib/relationship/relationshipPremiumGuard";
 import { ensureRelationshipPremiumSlot } from "@/lib/relationship/ensureRelationshipPremiumSlot";
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
@@ -75,8 +82,14 @@ async function loadPersonCorePairForPremium(
   }
 }
 
-function parsePremiumLanguage(v: unknown): RomanticSajuDeepLocale {
-  return v === "en" ? "en" : "ko";
+function parsePremiumLocale(
+  bodyLanguage: unknown,
+  headerLanguage: string | null,
+): Locale {
+  return resolveRequestLocale({
+    bodyLanguage,
+    headerLanguage,
+  });
 }
 
 function chartBirthTime(report: {
@@ -107,10 +120,20 @@ function reportName(report: Record<string, unknown>): string | null {
 }
 
 export async function POST(req: Request) {
+  let locale: Locale = DEFAULT_LOCALE;
   try {
+    locale = resolveRequestLocale({
+      bodyLanguage: null,
+      headerLanguage:
+        req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
+
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: getMessages(locale).errors.unauthorized },
+        { status: 401 },
+      );
     }
 
     const body = await req.json();
@@ -123,9 +146,15 @@ export async function POST(req: Request) {
         ? body.viewer_report_id.trim()
         : "";
 
+    locale = parsePremiumLocale(
+      (body as { language?: unknown }).language ??
+        (body as { locale?: unknown }).locale,
+      req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    );
+
     if (!relationshipReportId || !viewerReportId) {
       return NextResponse.json(
-        { error: "relationship_report_id와 viewer_report_id가 필요합니다." },
+        { error: getMessages(locale).errors.relationshipIdsRequired },
         { status: 400 },
       );
     }
@@ -153,7 +182,7 @@ export async function POST(req: Request) {
 
     if (rrErr || !rr) {
       return NextResponse.json(
-        { error: "관계 분석을 찾을 수 없습니다." },
+        { error: getMessages(locale).errors.notFound },
         { status: 404 },
       );
     }
@@ -180,17 +209,13 @@ export async function POST(req: Request) {
     );
     const forceRegenerate =
       (body as { force_regenerate?: unknown }).force_regenerate === true;
-    const language = parsePremiumLanguage(
-      (body as { language?: unknown }).language,
-    );
+    const language = toLegacyShortLocale(locale) as RomanticSajuDeepLocale;
 
-    if (
-      !forceRegenerate &&
-      hasPremiumCacheForKind(byKind, kind)
-    ) {
-      const cached = byKind[kind];
+    if (!forceRegenerate && hasPremiumCacheForKindLocale(byKind, kind, locale)) {
+      const cached = getPremiumPayloadForKindLocale(byKind, kind, locale);
       return NextResponse.json({
         relationship_kind: kind,
+        locale,
         result_premium: cached,
       });
     }
@@ -206,7 +231,7 @@ export async function POST(req: Request) {
 
     if (fetchA.error || fetchB.error || !repA || !repB) {
       return NextResponse.json(
-        { error: "양쪽 리포트 정보를 불러오지 못했습니다." },
+        { error: getMessages(locale).errors.relationshipDataMissing },
         { status: 400 },
       );
     }
@@ -276,7 +301,7 @@ export async function POST(req: Request) {
       ]);
       if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
+          { error: personCoreLoad.error ?? getMessages(locale).errors.personCoreLoadFailed },
           { status: 400 },
         );
       }
@@ -324,6 +349,7 @@ export async function POST(req: Request) {
         relationshipReportId,
         viewerReportId,
         romanticPayload,
+        locale,
       });
 
       if (!persist.ok) {
@@ -332,6 +358,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         relationship_kind: kind,
+        locale,
         result_premium: romanticPayload,
       });
     }
@@ -344,7 +371,7 @@ export async function POST(req: Request) {
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
+          { error: personCoreLoad.error ?? getMessages(locale).errors.personCoreLoadFailed },
           { status: 400 },
         );
       }
@@ -380,17 +407,31 @@ export async function POST(req: Request) {
         sajuMasterB: bundles.b.blueprint.saju_master_json,
       });
 
+      const workWithLocale = {
+        ...workPayload,
+        report: {
+          ...workPayload.report,
+          meta: {
+            ...(workPayload.report?.meta ?? {}),
+            locale,
+            language: toLegacyShortLocale(locale),
+          },
+        },
+      };
       const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
         "work",
-        workPayload,
-        { relationshipKind: kind },
+        workWithLocale,
+        { relationshipKind: kind, locale },
       );
 
       if (upErr) {
         logServerError("relationship/analyze/premium work update:", upErr, "internal_error");
-        return NextResponse.json({ error: upErr.message }, { status: 500 });
+        return NextResponse.json(
+          { error: getRelationshipPremiumSaveFailedMessage(locale) },
+          { status: 500 },
+        );
       }
 
       if (viewerReportId) {
@@ -400,13 +441,14 @@ export async function POST(req: Request) {
           relationshipKind: kind,
           analysisLevel: "premium",
           resultFormat: WORK_COLLEAGUE_DEEP_FORMAT,
-          payload: workPayload,
+          payload: workWithLocale,
         });
       }
 
       return NextResponse.json({
         relationship_kind: kind,
-        result_premium: workPayload,
+        locale,
+        result_premium: workWithLocale,
       });
     }
 
@@ -418,7 +460,7 @@ export async function POST(req: Request) {
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
+          { error: personCoreLoad.error ?? getMessages(locale).errors.personCoreLoadFailed },
           { status: 400 },
         );
       }
@@ -458,13 +500,26 @@ export async function POST(req: Request) {
         supabase,
         relationshipReportId,
         "cohabitation",
-        cohabitationPayload,
-        { relationshipKind: kind },
+        {
+          ...cohabitationPayload,
+          report: {
+            ...cohabitationPayload.report,
+            meta: {
+              ...(cohabitationPayload.report?.meta ?? {}),
+              locale,
+              language: toLegacyShortLocale(locale),
+            },
+          },
+        },
+        { relationshipKind: kind, locale },
       );
 
       if (upErr) {
         logServerError("relationship/analyze/premium cohabitation update:", upErr, "internal_error");
-        return NextResponse.json({ error: upErr.message }, { status: 500 });
+        return NextResponse.json(
+          { error: getRelationshipPremiumSaveFailedMessage(locale) },
+          { status: 500 },
+        );
       }
 
       if (viewerReportId) {
@@ -480,6 +535,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         relationship_kind: kind,
+        locale,
         result_premium: cohabitationPayload,
       });
     }
@@ -492,7 +548,7 @@ export async function POST(req: Request) {
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
+          { error: personCoreLoad.error ?? getMessages(locale).errors.personCoreLoadFailed },
           { status: 400 },
         );
       }
@@ -551,13 +607,26 @@ export async function POST(req: Request) {
         supabase,
         relationshipReportId,
         "family",
-        familyPayload,
-        { relationshipKind: kind },
+        {
+          ...familyPayload,
+          report: {
+            ...familyPayload.report,
+            meta: {
+              ...(familyPayload.report?.meta ?? {}),
+              locale,
+              language: toLegacyShortLocale(locale),
+            },
+          },
+        },
+        { relationshipKind: kind, locale },
       );
 
       if (upErr) {
         logServerError("relationship/analyze/premium family update:", upErr, "internal_error");
-        return NextResponse.json({ error: upErr.message }, { status: 500 });
+        return NextResponse.json(
+          { error: getRelationshipPremiumSaveFailedMessage(locale) },
+          { status: 500 },
+        );
       }
 
       if (viewerReportId) {
@@ -573,6 +642,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         relationship_kind: kind,
+        locale,
         result_premium: familyPayload,
       });
     }
@@ -585,7 +655,7 @@ export async function POST(req: Request) {
       );
       if ("error" in personCoreLoad) {
         return NextResponse.json(
-          { error: personCoreLoad.error ?? "PersonCore 로드에 실패했습니다." },
+          { error: personCoreLoad.error ?? getMessages(locale).errors.personCoreLoadFailed },
           { status: 400 },
         );
       }
@@ -625,13 +695,26 @@ export async function POST(req: Request) {
         supabase,
         relationshipReportId,
         "friendship",
-        friendshipPayload,
-        { relationshipKind: kind },
+        {
+          ...friendshipPayload,
+          report: {
+            ...friendshipPayload.report,
+            meta: {
+              ...(friendshipPayload.report?.meta ?? {}),
+              locale,
+              language: toLegacyShortLocale(locale),
+            },
+          },
+        },
+        { relationshipKind: kind, locale },
       );
 
       if (upErr) {
         logServerError("relationship/analyze/premium friendship update:", upErr, "internal_error");
-        return NextResponse.json({ error: upErr.message }, { status: 500 });
+        return NextResponse.json(
+          { error: getRelationshipPremiumSaveFailedMessage(locale) },
+          { status: 500 },
+        );
       }
 
       if (viewerReportId) {
@@ -647,6 +730,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         relationship_kind: kind,
+        locale,
         result_premium: friendshipPayload,
       });
     }
@@ -658,7 +742,7 @@ export async function POST(req: Request) {
   } catch (e) {
     logServerError("relationship/analyze/premium:", e, "internal_error");
     return NextResponse.json(
-      { error: "관계 심화 분석 실패" },
+      { error: getRelationshipPremiumAnalysisFailedMessage(locale) },
       { status: 500 },
     );
   }

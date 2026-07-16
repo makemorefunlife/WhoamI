@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import InviteShareButtons from "@/components/relationship/InviteShareButtons";
 import ManualRelationshipForm from "@/components/relationship/ManualRelationshipForm";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Tab = "invite" | "manual";
 
@@ -47,6 +48,8 @@ export default function AddFriendSheet({
   myReportId,
   onManualSubmit,
 }: Props) {
+  const { messages } = useLocale();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -75,12 +78,14 @@ export default function AddFriendSheet({
       >
         <div className="shrink-0 space-y-5 px-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-center justify-between">
-            <h2 className="stitch-headline text-xl text-primary">친구 추가</h2>
+            <h2 className="stitch-headline text-xl text-primary">
+              {messages.addFriend.title}
+            </h2>
             <button
               type="button"
               onClick={onClose}
               className="rounded-full p-2 text-on-surface-variant hover:bg-surface-container-low"
-              aria-label="닫기"
+              aria-label={messages.common.close}
             >
               <X className="h-5 w-5" />
             </button>
@@ -89,8 +94,8 @@ export default function AddFriendSheet({
           <div className="flex gap-2 rounded-full bg-surface-container-low/80 p-1">
             {(
               [
-                ["invite", "초대 링크"],
-                ["manual", "직접 입력"],
+                ["invite", messages.addFriend.tabInvite],
+                ["manual", messages.addFriend.tabManual],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -113,7 +118,7 @@ export default function AddFriendSheet({
           {tab === "invite" ? (
             <div className="space-y-4">
               <p className="text-sm leading-relaxed text-on-surface-variant">
-                링크는 48시간 유효하며, 수락 시 분석권 1회 차감됩니다.
+                {messages.addFriend.inviteHint}
               </p>
               <button
                 type="button"
@@ -121,7 +126,7 @@ export default function AddFriendSheet({
                 onClick={onCreateInvite}
                 className="stitch-cta-primary w-full !min-w-0 !py-4 !text-base disabled:opacity-50"
               >
-                {inviteBusy ? "만드는 중…" : "초대 링크 생성"}
+                {inviteBusy ? messages.common.creating : messages.addFriend.createInvite}
               </button>
               {inviteToken ? (
                 <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 p-4">
@@ -133,7 +138,7 @@ export default function AddFriendSheet({
                 onClick={onShowSentRequests}
                 className="w-full min-h-[48px] rounded-full border border-outline-variant/45 py-3 text-sm font-semibold text-secondary transition hover:bg-secondary/10"
               >
-                보낸 요청 보기
+                {messages.addFriend.viewSentRequests}
               </button>
             </div>
           ) : (
