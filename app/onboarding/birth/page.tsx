@@ -24,9 +24,11 @@ import {
 import { clearLiteReports } from "@/lib/v2/lite/session";
 import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
 import { invalidateReportSession } from "@/lib/home/reportSession";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function BirthOnboardingContent() {
   const router = useRouter();
+  const { messages } = useLocale();
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
   const wantReset = searchParams.get("reset") === "1";
@@ -95,12 +97,12 @@ function BirthOnboardingContent() {
     setFormKey((k) => k + 1);
     setResetNotice(
       result.ok
-        ? "출생 정보를 초기화했어요. 아래에서 다시 입력해 주세요."
-        : (result.error ?? "초기화에 실패했어요. 다시 시도해 주세요."),
+        ? messages.onboarding.resetSuccess
+        : (result.error ?? messages.onboarding.resetFailed),
     );
     setResetBusy(false);
     return result.ok;
-  }, []);
+  }, [messages]);
 
   useEffect(() => {
     if (!ready || !reportId || !wantReset || resetStarted.current) return;
@@ -137,10 +139,7 @@ function BirthOnboardingContent() {
         const data = (await res.json()) as { error?: string };
         if (!res.ok) {
           console.error("[onboarding/birth] save_failed");
-          alert(
-            data.error ??
-              "출생 정보 저장에 실패했어요. 잠시 후 다시 시도해 주세요.",
-          );
+          alert(data.error ?? messages.survey.birthSaveFailed);
           setBusy(false);
           return;
         }
@@ -149,7 +148,7 @@ function BirthOnboardingContent() {
         invalidateReportSession(reportId);
       } catch (e) {
         console.error("[onboarding/birth] save_error");
-        alert("출생 정보 저장에 실패했어요. 네트워크를 확인한 뒤 다시 시도해 주세요.");
+        alert(messages.survey.birthSaveNetworkError);
         setBusy(false);
         return;
       }
@@ -158,20 +157,20 @@ function BirthOnboardingContent() {
         `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`,
       );
     },
-    [busy, reportId, router],
+    [busy, messages, reportId, router],
   );
 
   const existingBirth =
     ready && !resetBusy && !wantReset ? readBirthV2Session(reportId) : null;
 
-  const submitLabel = wantEdit ? "출생 정보 저장" : undefined;
+  const submitLabel = wantEdit ? messages.account.birthFormSaveBirthInfo : undefined;
 
   if (!ready || resetBusy) {
     return (
       <SpaceBackground showProbe={false}>
         <div className="flex min-h-screen items-center justify-center px-6">
           <p className="text-sm text-[rgba(255,255,255,0.55)]">
-            {resetBusy ? "출생 정보 초기화 중…" : "불러오는 중…"}
+            {resetBusy ? messages.onboarding.resetting : messages.account.loading}
           </p>
         </div>
       </SpaceBackground>
@@ -202,17 +201,13 @@ function BirthOnboardingContent() {
             variant="ghost"
             disabled={busy}
             onClick={() => {
-              if (
-                !window.confirm(
-                  "저장된 출생 정보를 지우고 처음부터 다시 입력할까요?",
-                )
-              ) {
+              if (!window.confirm(messages.onboarding.resetConfirm)) {
                 return;
               }
               void runReset(reportId);
             }}
           >
-            출생 정보 초기화하고 다시 입력
+            {messages.onboarding.resetCta}
           </GlowButton>
         ) : null}
       </main>
@@ -221,12 +216,15 @@ function BirthOnboardingContent() {
 }
 
 export default function BirthOnboardingPage() {
+  const { messages } = useLocale();
   return (
     <Suspense
       fallback={
         <SpaceBackground showProbe={false}>
           <div className="flex min-h-screen items-center justify-center px-6">
-            <p className="text-sm text-[rgba(255,255,255,0.55)]">불러오는 중…</p>
+            <p className="text-sm text-[rgba(255,255,255,0.55)]">
+              {messages.account.loading}
+            </p>
           </div>
         </SpaceBackground>
       }

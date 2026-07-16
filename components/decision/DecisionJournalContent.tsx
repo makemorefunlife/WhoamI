@@ -22,9 +22,11 @@ import {
 } from "@/lib/decision/session";
 import { sortDecisionsForReview } from "@/lib/decision/sort";
 import { DECISION_CATEGORIES, decisionCategorySelectLabel } from "@/lib/decision/categories";
-import { DECISION_HUB_LABEL } from "@/lib/stitch/hubPaths";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 import {
   DECISION_DATE_RANGES,
+  decisionDateRangeLabel,
   type DecisionCategory,
   type DecisionCategoryFilter,
   type DecisionDateRangeId,
@@ -33,24 +35,28 @@ import {
 
 const REVIEW_PREVIEW_LIMIT = 3;
 
-const ONBOARDING_STEPS = [
-  { num: "01", label: "LOG", desc: "Record choice" },
-  { num: "02", label: "REVIEW", desc: "Track outcome" },
-  { num: "03", label: "ANALYZE", desc: "Decode pattern" },
-] as const;
+function onboardingSteps(messages: MessageCatalog) {
+  return [
+    { num: "01", label: messages.decision.onboardingLogLabel, desc: messages.decision.onboardingLogDesc },
+    { num: "02", label: messages.decision.onboardingReviewLabel, desc: messages.decision.onboardingReviewDesc },
+    { num: "03", label: messages.decision.onboardingAnalyzeLabel, desc: messages.decision.onboardingAnalyzeDesc },
+  ] as const;
+}
 
 function fieldClass() {
   return "w-full rounded-xl border-0 bg-surface-container-lowest/90 px-4 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/40 transition focus:ring-2 focus:ring-secondary/25";
 }
 
 function OnboardingBanner() {
+  const messages = useMessages();
+  const steps = onboardingSteps(messages);
   return (
     <div
       className="mb-10 rounded-2xl border border-outline-variant/25 bg-gradient-to-r from-surface-container-low/80 via-surface-container-lowest to-surface-container-low/60 px-4 py-5 sm:px-6"
-      aria-label="Decision journal workflow"
+      aria-label={messages.decision.journalWorkflowAria}
     >
       <div className="flex items-start justify-between gap-1 sm:gap-3">
-        {ONBOARDING_STEPS.map((step, index) => (
+        {steps.map((step, index) => (
           <div key={step.num} className="contents">
             <div className="min-w-0 flex-1 text-center">
               <p className="text-[10px] font-bold tracking-[0.22em] text-primary sm:text-[11px]">
@@ -61,7 +67,7 @@ function OnboardingBanner() {
                 {step.desc}
               </p>
             </div>
-            {index < ONBOARDING_STEPS.length - 1 ? (
+            {index < steps.length - 1 ? (
               <span
                 className="mt-0.5 shrink-0 px-0.5 text-[10px] font-light text-outline-variant sm:mt-1 sm:px-1 sm:text-xs"
                 aria-hidden
@@ -87,6 +93,7 @@ function filterByRange(
 }
 
 export default function DecisionJournalContent() {
+  const messages = useMessages();
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
   const isGuest = isLoaded && !user;
@@ -176,13 +183,11 @@ export default function DecisionJournalContent() {
       return;
     }
     if (filteredForAnalyze.length === 0) {
-      setAnalyzeMessage(
-        "선택한 기간·카테고리에 해당하는 결정 기록이 없어요. 먼저 결정을 저장해 보세요.",
-      );
+      setAnalyzeMessage(messages.decision.analyzeNoResults);
       return;
     }
     setAnalyzeMessage(
-      `AI 분석은 준비 중이에요. 현재 ${filteredForAnalyze.length}건의 기록이 선택됐어요. 곧 패턴 인사이트가 여기에 표시됩니다.`,
+      messages.decision.analyzePlaceholderResult(filteredForAnalyze.length),
     );
   };
 
@@ -193,13 +198,13 @@ export default function DecisionJournalContent() {
       <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:px-6 sm:py-8">
         <header className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
-            {DECISION_HUB_LABEL}
+            {messages.dock.choice}
           </p>
           <h1 className="stitch-headline mt-2 text-3xl leading-tight sm:text-4xl">
-            Decision Journal
+            {messages.decision.journalTitle}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
-            Capture choices, review outcomes, and uncover patterns over time.
+            {messages.decision.journalSubtitle}
           </p>
         </header>
 
@@ -214,13 +219,13 @@ export default function DecisionJournalContent() {
         <section className="mb-12 sm:mb-16" id="decide">
           <div className="mb-5">
             <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
-              Step 1
+              {messages.decision.stepLabel(1)}
             </span>
             <h2 className="stitch-headline text-2xl text-primary sm:text-[1.75rem]">
-              Archive a Decision
+              {messages.decision.archiveTitle}
             </h2>
             <p className="mt-1.5 text-sm text-on-surface-variant/80">
-              Log the choice you&apos;re facing before the outcome unfolds.
+              {messages.decision.archiveSubtitle}
             </p>
           </div>
           <div className={`${panelClass} p-5 sm:p-6`}>
@@ -230,7 +235,7 @@ export default function DecisionJournalContent() {
                   htmlFor="decision-category"
                   className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
                 >
-                  Category
+                  {messages.decision.categoryLabel}
                 </label>
                 <select
                   id="decision-category"
@@ -242,7 +247,7 @@ export default function DecisionJournalContent() {
                 >
                   {DECISION_CATEGORIES.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {decisionCategorySelectLabel(c)}
+                      {decisionCategorySelectLabel(c, messages)}
                     </option>
                   ))}
                 </select>
@@ -252,14 +257,14 @@ export default function DecisionJournalContent() {
                   htmlFor="decision-context"
                   className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
                 >
-                  Context
+                  {messages.decision.contextLabel}
                 </label>
                 <input
                   id="decision-context"
                   type="text"
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
-                  placeholder="What choice are you making today? (e.g., Career pivot, Marketing budget)"
+                  placeholder={messages.decision.contextPlaceholder}
                   className={fieldClass()}
                 />
               </div>
@@ -270,7 +275,7 @@ export default function DecisionJournalContent() {
                 onClick={handleSave}
                 className="stitch-cta-primary !min-w-[10rem] !rounded-xl !py-3.5 !text-sm"
               >
-                Save
+                {messages.cta.save}
               </button>
             </div>
           </div>
@@ -279,13 +284,13 @@ export default function DecisionJournalContent() {
         <section className="mb-12 sm:mb-16">
           <div className="mb-5">
             <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
-              Step 2
+              {messages.decision.stepLabel(2)}
             </span>
             <h2 className="stitch-headline text-2xl text-primary sm:text-[1.75rem]">
-              Review Outcomes
+              {messages.decision.reviewOutcomesTitle}
             </h2>
             <p className="mt-1.5 text-sm text-on-surface-variant/80">
-              Revisit past choices and rate how they turned out.
+              {messages.decision.reviewOutcomesSubtitle}
             </p>
           </div>
           <div className={`${panelClass} p-2 sm:p-3`}>
@@ -298,11 +303,10 @@ export default function DecisionJournalContent() {
             ) : entries.length === 0 ? (
               <div className="mx-2 my-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-10 text-center sm:mx-3 sm:py-12">
                 <p className="text-base font-medium text-on-surface">
-                  📋 No decisions to review yet.
+                  {messages.decision.noReviewsYet}
                 </p>
                 <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-on-surface-variant/75">
-                  Once you save a choice in Step 1, your review card will appear
-                  here.
+                  {messages.decision.noReviewsYetHint}
                 </p>
               </div>
             ) : (
@@ -316,7 +320,7 @@ export default function DecisionJournalContent() {
                   {filteredReviewEntries.length === 0 ? (
                     <div className="mx-2 mb-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-8 text-center sm:mx-3">
                       <p className="text-sm text-on-surface-variant/75">
-                        No decisions in this category yet.
+                        {messages.decision.noReviewsInCategory}
                       </p>
                     </div>
                   ) : (
@@ -336,7 +340,7 @@ export default function DecisionJournalContent() {
                             href="/decision/history"
                             className="text-xs font-semibold text-on-surface-variant transition hover:text-primary"
                           >
-                            View all ({filteredReviewEntries.length})
+                            {messages.decision.viewAllCount(filteredReviewEntries.length)}
                           </Link>
                         </div>
                       ) : null}
@@ -351,13 +355,13 @@ export default function DecisionJournalContent() {
         <section className="mb-12 sm:mb-16">
           <div className="mb-5">
             <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
-              Step 3
+              {messages.decision.stepLabel(3)}
             </span>
             <h2 className="stitch-headline text-2xl text-primary sm:text-[1.75rem]">
-              Smart Insights
+              {messages.decision.smartInsightsTitle}
             </h2>
             <p className="mt-1.5 text-sm text-on-surface-variant/80">
-              Filter your archive and surface recurring decision patterns.
+              {messages.decision.smartInsightsSubtitle}
             </p>
           </div>
           <div className={`${panelClass} p-5 sm:p-6`}>
@@ -365,7 +369,7 @@ export default function DecisionJournalContent() {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="mr-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
                   <Calendar className="h-3.5 w-3.5" aria-hidden />
-                  Date range
+                  {messages.decision.dateRangeLabel}
                 </span>
                 {DECISION_DATE_RANGES.map((r) => (
                   <button
@@ -374,7 +378,7 @@ export default function DecisionJournalContent() {
                     onClick={() => setAnalyzeRange(r.id)}
                     className={stitchPillClass(analyzeRange === r.id)}
                   >
-                    {r.label}
+                    {decisionDateRangeLabel(r.id, messages)}
                   </button>
                 ))}
               </div>
@@ -385,7 +389,6 @@ export default function DecisionJournalContent() {
               <DecisionCategoryTabs
                 value={analyzeCategory}
                 onChange={setAnalyzeCategory}
-                allLabel="All"
               />
             </div>
 
@@ -395,7 +398,7 @@ export default function DecisionJournalContent() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#2a5542] to-primary py-3.5 text-sm font-semibold text-on-primary shadow-[0_8px_24px_rgba(26,51,40,0.2)] transition hover:opacity-95"
             >
               <Sparkles className="h-4 w-4" aria-hidden />
-              Analyze with AI
+              {messages.decision.analyzeWithAiCta}
             </button>
 
             {analyzeMessage ? (
@@ -403,7 +406,7 @@ export default function DecisionJournalContent() {
                 <div className="mb-2 flex items-center gap-2 text-secondary">
                   <Sparkles className="h-4 w-4" aria-hidden />
                   <h3 className="text-[10px] font-bold uppercase tracking-[0.16em]">
-                    AI insights
+                    {messages.decision.aiInsightsTitle}
                   </h3>
                 </div>
                 <p className="text-sm leading-relaxed text-on-surface-variant">

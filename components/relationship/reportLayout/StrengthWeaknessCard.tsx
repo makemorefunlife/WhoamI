@@ -1,6 +1,7 @@
 "use client";
 
 import type { StrengthWeaknessLists } from "@/lib/relationship/psychMatch/strengthWeaknessTemplates";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const TEAL = "#3F8477";
 const PLUM = "#8C4A5C";
@@ -24,6 +25,7 @@ function SwList({
   tone: "strength" | "weak";
   title: string;
 }) {
+  const t = useMessages().relationshipDrilldown.layout;
   const isStrength = tone === "strength";
 
   return (
@@ -58,7 +60,7 @@ function SwList({
         </ul>
       ) : (
         <p className="text-[11.8px] leading-[1.55] text-on-surface-variant">
-          아직 뚜렷한 패턴이 없어요.
+          {t.noPatternYet}
         </p>
       )}
     </div>
@@ -67,9 +69,12 @@ function SwList({
 
 export default function StrengthWeaknessCard({
   result,
-  strengthTitle = "이 사람에게서 얻는 것",
-  weaknessTitle = "함께 있으면 약해지는 지점",
+  strengthTitle,
+  weaknessTitle,
 }: StrengthWeaknessCardProps) {
+  const t = useMessages().relationshipDrilldown.layout;
+  const resolvedStrengthTitle = strengthTitle ?? t.defaultStrengthTitle;
+  const resolvedWeaknessTitle = weaknessTitle ?? t.defaultWeaknessTitle;
   const strengthTexts = result.strengths.map((item) => item.text);
   const weaknessTexts = result.weaknesses.map((item) => item.text);
 
@@ -79,8 +84,8 @@ export default function StrengthWeaknessCard({
 
   return (
     <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-      <SwList items={strengthTexts} tone="strength" title={strengthTitle} />
-      <SwList items={weaknessTexts} tone="weak" title={weaknessTitle} />
+      <SwList items={strengthTexts} tone="strength" title={resolvedStrengthTitle} />
+      <SwList items={weaknessTexts} tone="weak" title={resolvedWeaknessTitle} />
     </div>
   );
 }

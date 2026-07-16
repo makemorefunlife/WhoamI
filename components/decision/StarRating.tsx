@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type DisplayProps = {
   rating: number;
@@ -14,11 +15,12 @@ export function StarRatingDisplay({
   max = 5,
   className = "",
 }: DisplayProps) {
+  const messages = useMessages();
   const value = Math.min(max, Math.max(0, Math.round(rating)));
   return (
     <div
       className={`flex items-center gap-0.5 ${className}`}
-      aria-label={`${value} out of ${max} stars`}
+      aria-label={messages.decision.starRatingAria(value, max)}
     >
       {Array.from({ length: max }, (_, i) => {
         const filled = i < value;
@@ -42,8 +44,13 @@ type InputProps = {
 };
 
 export function StarRatingInput({ value, onChange, max = 5 }: InputProps) {
+  const messages = useMessages();
   return (
-    <div className="flex items-center gap-1" role="radiogroup" aria-label="별점">
+    <div
+      className="flex items-center gap-1"
+      role="radiogroup"
+      aria-label={messages.decision.ratingLabel}
+    >
       {Array.from({ length: max }, (_, i) => {
         const star = i + 1;
         const filled = star <= value;

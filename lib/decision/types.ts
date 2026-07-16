@@ -1,4 +1,5 @@
 import type { DecisionCategory } from "@/lib/decision/categories";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 
 export type { DecisionCategory, DecisionCategoryFilter } from "@/lib/decision/categories";
 export {
@@ -26,13 +27,30 @@ export type DecisionEntry = {
 };
 
 export const DECISION_DATE_RANGES = [
-  { id: "7d", label: "최근 7일", days: 7 },
-  { id: "30d", label: "최근 30일", days: 30 },
-  { id: "90d", label: "최근 90일", days: 90 },
-  { id: "all", label: "전체", days: null },
+  { id: "7d", days: 7 },
+  { id: "30d", days: 30 },
+  { id: "90d", days: 90 },
+  { id: "all", days: null },
 ] as const;
 
 export type DecisionDateRangeId = (typeof DECISION_DATE_RANGES)[number]["id"];
+
+const DATE_RANGE_MESSAGE_KEY: Record<
+  DecisionDateRangeId,
+  "last7d" | "last30d" | "last90d" | "all"
+> = {
+  "7d": "last7d",
+  "30d": "last30d",
+  "90d": "last90d",
+  all: "all",
+};
+
+export function decisionDateRangeLabel(
+  id: DecisionDateRangeId,
+  messages: MessageCatalog,
+): string {
+  return messages.decision.dateRanges[DATE_RANGE_MESSAGE_KEY[id]];
+}
 
 export type HistoryStatusFilter = "all" | "needs_review" | "completed";
 

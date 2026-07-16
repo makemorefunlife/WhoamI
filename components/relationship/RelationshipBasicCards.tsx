@@ -7,6 +7,7 @@ import {
   resolveAxisViewerNickname,
 } from "@/lib/relationship/viewerFirstDisplay";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 
 /** 신형 API 축 블록 */
 export type AxisBlockV2 = {
@@ -55,55 +56,23 @@ function isAxisV2(block: AxisBlock | undefined): block is AxisBlockV2 {
   );
 }
 
-const LEGACY_INSIGHT_SECOND: Record<RelationshipAxisKey, string> = {
-  emotional_sensitivity:
-    "감정이 겉으로 드러나는 속도가 다르면 ‘무심하다’로 읽히기 쉬워.",
-  communication_style:
-    "말의 길이·속도 기대가 다르면 한쪽만 말이 많다고 느껴질 수 있어.",
-  conflict_response:
-    "갈등 직후에 붙잡고 싶은 쪽과 잠깐 떨어지고 싶은 쪽이 갈리면 더 팽팽해질 수 있어.",
-  energy_pattern:
-    "충전이 혼자서 되는지 같이 있을 때 되는지 다르면 약속 길이부터 어긋나기 쉬워.",
-};
-
-const LEGACY_ACTIONS: Record<RelationshipAxisKey, [string, string]> = {
-  emotional_sensitivity: [
-    "오늘은 ‘지금 기분 한 단어로만’ 말해 달라고 부탁해 봐.",
-    "카톡은 짧게 두 번 나눠 보내 봐.",
-  ],
-  communication_style: [
-    "상대가 말할 때 3초만 비우고 답해 봐.",
-    "긴 얘기 전에 ‘핵심만 말할게’ 한마디만 걸어 봐.",
-  ],
-  conflict_response: [
-    "말이 세지면 ‘10분만 혼자 정리할게’라고 말해 봐.",
-    "진정되면 ‘이거 한 줄로만 정리해볼까?’라고 먼저 꺼내 봐.",
-  ],
-  energy_pattern: [
-    "오늘 만남은 시간만 정하고 헤어질 때 각자 쉬기로 해 봐.",
-    "다음 주 약속은 ‘가볍게’인지 ‘길게’인지 미리 한마디만 맞춰 봐.",
-  ],
-};
-
 function linesFromLegacy(
   block: AxisBlockLegacy,
   myNick: string,
   partnerNick: string,
   axisKey: RelationshipAxisKey,
+  messages: MessageCatalog,
 ) {
   const insight = block.insight.replace(/^💡\s*/, "").trim();
-  const [a1, a2] = LEGACY_ACTIONS[axisKey];
+  const [a1, a2] = messages.report.legacyActions[axisKey];
   return {
     my_nickname: myNick,
     partner_nickname: partnerNick,
     my_line: block.me.trim(),
     partner_line: block.partner.trim(),
     insights: insight
-      ? [insight, LEGACY_INSIGHT_SECOND[axisKey]]
-      : [
-          "패턴이 다르면 오해가 생기기 쉬워.",
-          "한 박자 쉬었다가 짧게만 말해 봐.",
-        ],
+      ? [insight, messages.report.legacyInsightSecond[axisKey]]
+      : messages.report.legacyInsightDefault,
     actions: [a1, a2],
   };
 }
@@ -158,6 +127,7 @@ export default function RelationshipBasicCards({
               myDisplay,
               partnerDisplay,
               key,
+              messages,
             );
 
         const myNick = resolveAxisViewerNickname(v2.my_nickname, myDisplay);

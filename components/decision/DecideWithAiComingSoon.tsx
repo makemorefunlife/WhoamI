@@ -1,13 +1,15 @@
 "use client";
 
 import { MessageCircle, Sparkles } from "lucide-react";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
-/** 함께 결정하기(AI 챗봇) — 추후 연동 */
+/** Decide with AI chatbot — future integration */
 export default function DecideWithAiComingSoon() {
+  const messages = useMessages();
   return (
     <section
       className="relative overflow-hidden rounded-extra-large border border-accent-rose/30 bg-gradient-to-br from-accent-rose-soft/50 via-surface-container-lowest to-surface-container-low/80 p-5 shadow-[0_4px_24px_rgba(196,154,156,0.12)] sm:p-6"
-      aria-label="Decide with AI — coming soon"
+      aria-label={messages.decision.decideWithAiAria}
     >
       <div
         className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent-rose/10 blur-2xl"
@@ -24,20 +26,19 @@ export default function DecideWithAiComingSoon() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="stitch-headline text-xl leading-snug text-primary">
-              Decide with AI
+              {messages.decision.decideWithAiTitle}
             </h3>
             <span className="inline-flex items-center gap-1 rounded-full border border-accent-rose/35 bg-accent-rose-soft/80 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
               <Sparkles className="h-3 w-3 text-accent-rose" aria-hidden />
-              Coming soon
+              {messages.decision.decideWithAiBadge}
             </span>
           </div>
           <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-            A conversation partner grounded in your blueprint — for when the
-            choice in front of you feels bigger than a pros/cons list.
+            {messages.decision.decideWithAiBody}
           </p>
           <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent-rose">
             <span aria-hidden>✦</span>
-            Your next decision, decoded together
+            {messages.decision.decideWithAiTagline}
           </p>
         </div>
       </div>

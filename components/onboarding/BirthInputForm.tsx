@@ -20,6 +20,7 @@ import {
   parse24hTo12h,
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Step = "date" | "time";
 
@@ -46,7 +47,7 @@ export default function BirthInputForm({
   busy,
   lockBirthDate = false,
   birthDateLockReason,
-  submitLabel = "다음",
+  submitLabel,
   onSubmit,
 }: {
   initialBirthDate?: string | null;
@@ -59,6 +60,9 @@ export default function BirthInputForm({
   submitLabel?: string;
   onSubmit: (payload: BirthFormSubmitPayload) => void;
 }) {
+  const { messages } = useLocale();
+  const resolvedSubmitLabel = submitLabel ?? messages.survey.next;
+  const resolvedLockReason = birthDateLockReason ?? messages.onboarding.dateLockReasonDefault;
   const parsed = parseBirthDateParts(initialBirthDate ?? null);
   const parsedTime =
     !initialBirthTimeUnknown && initialBirthTime
@@ -187,17 +191,17 @@ export default function BirthInputForm({
     <div className="w-full max-w-[420px] space-y-6">
       <div className="text-center">
         <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#67B7FF]">
-          Birth coordinates
+          {messages.onboarding.eyebrow}
         </p>
         <h1 className="mt-2 text-balance text-lg font-medium leading-snug text-[rgba(255,255,255,0.95)]">
           {step === "date"
-            ? "태어난 날을 알려주세요"
-            : "태어난 시간을 알려주세요"}
+            ? messages.onboarding.dateStepTitle
+            : messages.onboarding.timeStepTitle}
         </h1>
         <p className="mt-2 text-sm text-[rgba(255,255,255,0.55)]">
           {step === "date"
-            ? "숫자만 입력해도 다음 칸으로 넘어가요."
-            : "오전·오후와 시·분, 태어난 지역을 입력해 주세요. (점성 차트에 필요해요)"}
+            ? messages.onboarding.dateStepSubtitle
+            : messages.onboarding.timeStepSubtitle}
         </p>
       </div>
 
@@ -214,14 +218,13 @@ export default function BirthInputForm({
             >
               {lockBirthDate && dateComplete ? (
                 <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs text-white/70">
-                  🔒 {birthDate} ·{" "}
-                  {birthDateLockReason ?? "생년월일은 잠금 상태입니다."}
+                  🔒 {birthDate} · {resolvedLockReason}
                 </p>
               ) : null}
               <div className="grid grid-cols-3 gap-2.5">
                 <label className="space-y-1.5">
                   <span className="block text-center text-[10px] text-white/50">
-                    연도
+                    {messages.account.birthFormYear}
                   </span>
                   <input
                     ref={yearRef}
@@ -238,7 +241,7 @@ export default function BirthInputForm({
                 </label>
                 <label className="space-y-1.5">
                   <span className="block text-center text-[10px] text-white/50">
-                    월
+                    {messages.account.birthFormMonth}
                   </span>
                   <input
                     ref={monthRef}
@@ -255,7 +258,7 @@ export default function BirthInputForm({
                 </label>
                 <label className="space-y-1.5">
                   <span className="block text-center text-[10px] text-white/50">
-                    일
+                    {messages.account.birthFormDay}
                   </span>
                   <input
                     ref={dayRef}
@@ -274,8 +277,8 @@ export default function BirthInputForm({
               {year || month || day ? (
                 <p className="text-center text-xs text-[rgba(255,255,255,0.45)]">
                   {dateComplete
-                    ? `${birthDate} — 확인됐어요`
-                    : "연·월·일을 모두 입력해 주세요"}
+                    ? messages.birthForm.dateConfirmed(birthDate)
+                    : messages.birthForm.dateIncomplete}
                 </p>
               ) : null}
             </motion.div>
@@ -291,12 +294,12 @@ export default function BirthInputForm({
               <div
                 className="grid grid-cols-2 gap-2"
                 role="group"
-                aria-label="오전 또는 오후"
+                aria-label={messages.account.birthFormAmPmAria}
               >
                 {(
                   [
-                    { v: "am" as const, label: "오전" },
-                    { v: "pm" as const, label: "오후" },
+                    { v: "am" as const, label: messages.birthForm.amLabel },
+                    { v: "pm" as const, label: messages.birthForm.pmLabel },
                   ] as const
                 ).map(({ v, label }) => (
                   <button
@@ -328,7 +331,7 @@ export default function BirthInputForm({
                   onChange={(e) => handleHour(e.target.value)}
                   placeholder="7"
                   disabled={busy}
-                  aria-label="시"
+                  aria-label={messages.account.birthFormHourAria}
                   className={`${inputClass} max-w-[5.5rem]`}
                 />
                 <span className="text-xl font-light text-white/40">:</span>
@@ -341,40 +344,42 @@ export default function BirthInputForm({
                   onChange={(e) => handleMinute(e.target.value)}
                   placeholder="30"
                   disabled={busy}
-                  aria-label="분"
+                  aria-label={messages.account.birthFormMinuteAria}
                   className={`${inputClass} max-w-[5.5rem]`}
                 />
               </div>
 
               {timeComplete ? (
                 <p className="text-center text-xs text-[#67B7FF]/90">
-                  {period === "am" ? "오전" : "오후"} {hour}:{minute} — 확인됐어요
+                  {period === "am" ? messages.birthForm.amLabel : messages.birthForm.pmLabel}{" "}
+                  {hour}:{minute}
+                  {messages.onboarding.timeConfirmedSuffix}
                 </p>
               ) : (
                 <p className="text-center text-xs text-[rgba(255,255,255,0.45)]">
-                  1~12시 · 00~59분
+                  {messages.birthForm.timeRangeHint}
                 </p>
               )}
 
               <label className="block space-y-1.5">
                 <span className="block text-center text-[10px] text-white/50">
-                  태어난 지역 <span className="text-[#67B7FF]">*</span>
+                  {messages.onboarding.placeLabel} <span className="text-[#67B7FF]">*</span>
                 </span>
                 <input
                   type="text"
                   value={birthPlace}
                   onChange={(e) => setBirthPlace(e.target.value)}
-                  placeholder="예: 서울, 부산, 제주"
+                  placeholder={messages.birthForm.placePlaceholder}
                   disabled={busy}
                   autoComplete="address-level2"
                   className={`${inputClass} text-base`}
                 />
                 <p className="text-center text-[10px] text-white/40">
-                  점성 해석에 필요해요. 사주(본질)은 지역과 무관해요.
+                  {messages.birthForm.placeNeededHint}
                 </p>
                 {!placeComplete && (timeComplete || hour || minute) ? (
                   <p className="text-center text-[10px] text-amber-200/90">
-                    태어난 지역을 입력해 주세요.
+                    {messages.onboarding.placeRequiredError}
                   </p>
                 ) : null}
               </label>
@@ -386,12 +391,13 @@ export default function BirthInputForm({
                   onClick={submitUnknownTime}
                   className="w-full rounded-2xl border-2 border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.04)] px-4 py-3.5 text-sm font-medium text-[rgba(255,255,255,0.88)] transition hover:border-[#67B7FF]/35 disabled:opacity-50"
                 >
-                  출생 시간 모름 (지역은 입력됨)
+                  {messages.onboarding.skipTimeButtonLabel}
                 </button>
                 <p className="rounded-xl border border-[#67B7FF]/20 bg-[#67B7FF]/8 px-3 py-2.5 text-center text-xs leading-relaxed text-[rgba(200,230,255,0.92)]">
-                  <span className="font-medium text-[#8ecfff]">참고로,</span>{" "}
-                  출생 시간을 모르면 12시 기준으로 계산하고, 시주·점성
-                  라이징은 참고 수준이에요. 시간과 지역을 알면 더 정확해요.
+                  <span className="font-medium text-[#8ecfff]">
+                    {messages.onboarding.unknownTimeNoticeLabel}
+                  </span>{" "}
+                  {messages.onboarding.unknownTimeNoticeBody}
                 </p>
               </div>
             </motion.div>
@@ -407,7 +413,7 @@ export default function BirthInputForm({
             disabled={busy}
             className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-5 py-3 text-sm font-medium text-[rgba(255,255,255,0.75)] transition hover:text-white disabled:opacity-40"
           >
-            ← 이전
+            {messages.onboarding.back}
           </button>
         ) : (
           <span />
@@ -420,7 +426,7 @@ export default function BirthInputForm({
             disabled={busy}
             onClick={submitWithTime}
           >
-            {busy ? "저장 중…" : submitLabel}
+            {busy ? messages.account.birthFormSaving : resolvedSubmitLabel}
           </GlowButton>
         ) : null}
       </div>

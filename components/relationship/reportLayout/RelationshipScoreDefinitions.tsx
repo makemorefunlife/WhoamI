@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import type { TriScoreSnapshotKind } from "@/lib/relationship/triScoreSnapshot/kinds";
 import { getTriScoreKindConfig } from "@/lib/relationship/triScoreSnapshot/kinds";
 import { useReportTone } from "./ReportSurface";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function RelationshipScoreDefinitions({
   kind,
@@ -13,6 +14,7 @@ export default function RelationshipScoreDefinitions({
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const tone = useReportTone();
+  const t = useMessages().relationshipDrilldown.layout;
   const config = getTriScoreKindConfig(kind);
   const stitch = tone.surface === "stitch";
   const labelClass = stitch ? "text-on-surface-variant" : "text-white/55";
@@ -33,7 +35,7 @@ export default function RelationshipScoreDefinitions({
         onClick={() => setOpen((prev) => !prev)}
       >
         <span className="font-medium">
-          {open ? "이 점수들이 뭔가요?" : "지표가 궁금하다면 눌러보세요"}
+          {open ? t.toggleOpenLabel : t.toggleClosedLabel}
         </span>
         <span className="shrink-0 text-[10px] opacity-70" aria-hidden>
           {open ? "▲" : "▼"}

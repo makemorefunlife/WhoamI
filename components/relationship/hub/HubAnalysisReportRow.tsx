@@ -2,6 +2,7 @@
 
 import { RelationshipKindBadge } from "@/components/relationship/RelationshipKindBadge";
 import type { HubAnalysisFeedItem } from "@/lib/relationship/hubAnalysisFeed";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   item: HubAnalysisFeedItem;
@@ -9,17 +10,18 @@ type Props = {
   className?: string;
 };
 
-/** 관계 허브 — 미니멀 분석 리포트 리스트 행 */
+/** Relation hub — minimal analysis report list row */
 export default function HubAnalysisReportRow({
   item,
   onOpen,
   className = "",
 }: Props) {
+  const messages = useMessages();
   return (
     <button
       type="button"
       onClick={() => onOpen(item)}
-      aria-label={`${item.partner_name} 리포트 보기`}
+      aria-label={messages.hub.reportRowAria(item.partner_name)}
       className={[
         "group flex w-full items-center justify-between gap-3 px-5 py-2.5 text-left transition",
         "hover:bg-surface-container-low/40 active:scale-[0.99]",
@@ -30,7 +32,7 @@ export default function HubAnalysisReportRow({
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="truncate text-sm font-medium text-on-surface">
-          with {item.partner_name}
+          {messages.hub.reportRowPartnerLabel(item.partner_name)}
         </span>
         <RelationshipKindBadge kind={item.relationship_kind} className="shrink-0" />
       </div>
@@ -38,7 +40,7 @@ export default function HubAnalysisReportRow({
         className="shrink-0 text-xs font-semibold tracking-wide text-secondary transition group-hover:text-primary"
         aria-hidden
       >
-        View Report +
+        {messages.hub.viewReportCta}
       </span>
     </button>
   );

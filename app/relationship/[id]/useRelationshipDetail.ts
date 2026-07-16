@@ -17,7 +17,6 @@ import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/rom
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import {
   parseRelationshipKind,
-  RELATIONSHIP_KIND_LABELS,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
 import {
@@ -101,7 +100,7 @@ export function useRelationshipDetail({
   const urlParentType = searchParams.get("parentType")?.trim() ?? "";
   const urlAutostart = searchParams.get("autostart") === "1";
   const { user } = useUser();
-  const { locale } = useLocale();
+  const { locale, messages } = useLocale();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
       urlHint: urlViewerHint,
@@ -125,7 +124,7 @@ export function useRelationshipDetail({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [detailOk, setDetailOk] = useState(false);
-  const [partnerName, setPartnerName] = useState("상대");
+  const [partnerName, setPartnerName] = useState(messages.report.partnerFallbackLabel);
   const [viewerName, setViewerName] = useState("");
   const [analysisType, setAnalysisType] = useState<string>("basic");
   const [viewerBirthTimeUnknown, setViewerBirthTimeUnknown] = useState(false);
@@ -231,14 +230,14 @@ export function useRelationshipDetail({
       options?: { silent?: boolean },
     ) => {
       if (!effectiveViewerReportId) {
-        setErr("viewer 쿼리(내 리포트 id)가 필요합니다.");
+        setErr(messages.report.viewerQueryRequired);
         detailOkRef.current = false;
         setDetailOk(false);
         setLoading(false);
         return;
       }
       if (!resolvedRelationshipId) {
-        setErr("관계 분석 주소가 올바르지 않아요.");
+        setErr(messages.report.relationshipUrlInvalid);
         detailOkRef.current = false;
         setDetailOk(false);
         setLoading(false);
@@ -268,7 +267,7 @@ export function useRelationshipDetail({
         if (!res.ok) {
           detailOkRef.current = false;
           setDetailOk(false);
-          setErr(data?.error ?? "불러오지 못했어요.");
+          setErr(data?.error ?? messages.hub.loadFailed);
           return;
         }
         setSnapshotView(null);
@@ -289,7 +288,7 @@ export function useRelationshipDetail({
         const resolvedPartner = resolvePartnerDisplayName(
           data.partner_name ?? data.display_partner_name,
           undefined,
-          "친구",
+          messages.report.partnerFallbackLabel,
         );
         setPartnerName(resolvedPartner);
         setViewerName(resolvedViewer);
@@ -339,7 +338,7 @@ export function useRelationshipDetail({
         if (seq === loadSeqRef.current) setLoading(false);
       }
     },
-    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, urlKindHint],
+    [resolvedRelationshipId, effectiveViewerReportId, fetchLogs, urlKindHint, messages],
   );
 
   useEffect(() => {
@@ -402,14 +401,14 @@ export function useRelationshipDetail({
       });
       const data = await res.json();
       if (!res.ok) {
-        setErr(data?.error ?? "기본 분석 실패");
+        setErr(data?.error ?? messages.report.basicAnalysisFailed);
         return;
       }
       await load(undefined, { silent: true });
     } finally {
       setBusy(false);
     }
-  }, [effectiveViewerReportId, resolvedRelationshipId, load, premiumKind]);
+  }, [effectiveViewerReportId, resolvedRelationshipId, load, premiumKind, messages]);
 
   const toggleFavorite = useCallback(async () => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
@@ -432,14 +431,14 @@ export function useRelationshipDetail({
       };
       if (!res.ok) {
         setFavorited(!next);
-        setErr(data?.error ?? "즐겨찾기 저장에 실패했어요.");
+        setErr(data?.error ?? messages.hub.favoriteSaveFailed);
         return;
       }
       setFavorited(Boolean(data.favorited));
     } finally {
       setFavoriteBusy(false);
     }
-  }, [effectiveViewerReportId, resolvedRelationshipId, favorited]);
+  }, [effectiveViewerReportId, resolvedRelationshipId, favorited, messages]);
 
   const viewAnalysisLog = useCallback((log: AnalysisLogListItem) => {
     const { snapshot, kind } = parseAnalysisLogSnapshot(
@@ -534,7 +533,7 @@ export function useRelationshipDetail({
           return false;
         }
         if (!res.ok) {
-          setErr(data?.error ?? "심화 분석 실패");
+          setErr(data?.error ?? messages.report.premiumAnalysisFailedGeneric);
           return false;
         }
         if (kind === "romantic") {
@@ -543,7 +542,7 @@ export function useRelationshipDetail({
             setRomanticDeep(parseRomanticDeepViewModel(prem.report));
           } else {
             // Legacy perspectives-only is not a valid deep cache — do not force-regenerate here.
-            setErr("연인 심화 분석 결과를 받지 못했어요.");
+            setErr(messages.report.premiumAnalysisFailedRomantic);
             return false;
           }
         } else if (kind === "work") {
@@ -554,7 +553,7 @@ export function useRelationshipDetail({
           ) {
             setWorkDeep(prem.report as WorkColleagueReportBody);
           } else {
-            setErr("동료 심화 분석 결과를 받지 못했어요.");
+            setErr(messages.report.premiumAnalysisFailedWork);
             return false;
           }
         } else if (kind === "cohabitation") {
@@ -565,7 +564,7 @@ export function useRelationshipDetail({
           ) {
             setCohabitationDeep(prem.report as MarriageReportBody);
           } else {
-            setErr("동거·결혼 심화 분석 결과를 받지 못했어요.");
+            setErr(messages.report.premiumAnalysisFailedCohabitation);
             return false;
           }
         } else if (kind === "family") {
@@ -576,7 +575,7 @@ export function useRelationshipDetail({
           ) {
             setFamilyDeep(prem.report as FamilyParentReportBody);
           } else {
-            setErr("가족 심화 분석 결과를 받지 못했어요.");
+            setErr(messages.report.premiumAnalysisFailedFamily);
             return false;
           }
         } else if (kind === "friendship") {
@@ -587,11 +586,11 @@ export function useRelationshipDetail({
           ) {
             setFriendshipDeep(prem.report as FriendReportBody);
           } else {
-            setErr("친구 심화 분석 결과를 받지 못했어요.");
+            setErr(messages.report.premiumAnalysisFailedFriendship);
             return false;
           }
         } else {
-          setErr("심화 분석 결과를 받지 못했어요.");
+          setErr(messages.report.premiumResultMissingGeneric);
           return false;
         }
         setServerPremiumReady(true);
@@ -605,10 +604,10 @@ export function useRelationshipDetail({
           return false;
         }
         if (e instanceof DOMException && e.name === "AbortError") {
-          setErr("요청 시간이 길어져 중단됐어요. 다시 시도해 주세요.");
+          setErr(messages.report.requestTimeout);
           return false;
         }
-        setErr("네트워크 문제로 심화 분석에 실패했어요.");
+        setErr(messages.report.premiumNetworkError);
         return false;
       } finally {
         if (premiumSeq === premiumSeqRef.current) {
@@ -623,20 +622,17 @@ export function useRelationshipDetail({
       effectiveViewerReportId,
       familyParentType,
       familyChildIsViewer,
+      messages,
     ],
   );
 
   const regeneratePremium = useCallback(() => {
-    const label = RELATIONSHIP_KIND_LABELS[premiumKind];
-    if (
-      !window.confirm(
-        `기존 ${label} 심화 분석을 새 프롬프트로 다시 만들까요?\n(1~2분 걸릴 수 있어요. 이전 결과는 분석 기록에 남아 있어요.)`,
-      )
-    ) {
+    const label = messages.report.relationshipKindNames[premiumKind];
+    if (!window.confirm(messages.report.regenerateConfirm(label))) {
       return;
     }
     void runPremium(premiumKind, { forceRegenerate: true });
-  }, [premiumKind, runPremium]);
+  }, [premiumKind, runPremium, messages]);
 
   const onPremiumKindChange = useCallback(
     (kind: RelationshipKind) => {

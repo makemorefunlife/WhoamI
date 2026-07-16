@@ -16,6 +16,8 @@ import FadeInContent from "@/components/ui/stitch/FadeInContent";
 
 import type { HubAnalysisFeedItem } from "@/lib/relationship/hubAnalysisFeed";
 
+import { useMessages } from "@/lib/i18n/LocaleProvider";
+
 
 
 const PREVIEW_LIMIT = 5;
@@ -52,6 +54,8 @@ export default function HubAnalysisSection({
 
 }: Props) {
 
+  const messages = useMessages();
+
   const preview = items.slice(0, PREVIEW_LIMIT);
 
   const showMore =
@@ -64,7 +68,7 @@ export default function HubAnalysisSection({
 
     <section className="space-y-4">
 
-      <h2 className="stitch-headline text-lg text-primary">최근 분석</h2>
+      <h2 className="stitch-headline text-lg text-primary">{messages.hub.recentAnalysisTitle}</h2>
 
       <div className={`${hubPanelClass()} divide-y divide-outline-variant/15`}>
 
@@ -84,7 +88,7 @@ export default function HubAnalysisSection({
 
           <p className="px-5 py-8 text-center text-sm text-on-surface-variant">
 
-            아직 분석 기록이 없어요. 관계 분석하기를 눌러 시작해 보세요.
+            {messages.hub.noAnalysisYetHint}
 
           </p>
 
@@ -120,7 +124,7 @@ export default function HubAnalysisSection({
 
                 >
 
-                  More
+                  {messages.hub.more}
 
                   <ChevronRight className="h-4 w-4" />
 

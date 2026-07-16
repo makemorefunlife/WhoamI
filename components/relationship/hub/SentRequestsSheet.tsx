@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import InviteShareButtons from "@/components/relationship/InviteShareButtons";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   open: boolean;
@@ -24,6 +25,7 @@ export default function SentRequestsSheet({
   onResend,
   onCancel,
 }: Props) {
+  const messages = useMessages();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -49,15 +51,15 @@ export default function SentRequestsSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="stitch-headline text-xl text-primary">보낸 요청</h2>
-          <button type="button" onClick={onClose} aria-label="닫기" className="rounded-full p-2">
+          <h2 className="stitch-headline text-xl text-primary">{messages.hub.sentRequestsTitle}</h2>
+          <button type="button" onClick={onClose} aria-label={messages.common.close} className="rounded-full p-2">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {items.length === 0 ? (
           <p className="py-10 text-center text-sm text-on-surface-variant">
-            수락 대기 중인 요청이 없어요.
+            {messages.hub.noSentRequests}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -71,9 +73,9 @@ export default function SentRequestsSheet({
                 >
                   <div className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-on-surface">초대 대기 중</p>
+                      <p className="font-medium text-on-surface">{messages.hub.inviteWaitingTitle}</p>
                       <p className="text-xs text-on-surface-variant">
-                        {item.status_hint ?? "수락을 기다리는 중이에요"}
+                        {item.status_hint ?? messages.hub.inviteWaitingHintDefault}
                       </p>
                     </div>
                   </div>
@@ -84,7 +86,7 @@ export default function SentRequestsSheet({
                       onClick={() => onResend(item)}
                       className="min-h-[44px] flex-1 rounded-full border border-secondary/40 py-2.5 text-sm font-semibold text-secondary disabled:opacity-50"
                     >
-                      다시 보내기
+                      {messages.hub.resendInvite}
                     </button>
                     <button
                       type="button"
@@ -92,7 +94,7 @@ export default function SentRequestsSheet({
                       onClick={() => onCancel(item)}
                       className="min-h-[44px] flex-1 rounded-full border border-outline-variant/45 py-2.5 text-sm font-semibold text-on-surface-variant disabled:opacity-50"
                     >
-                      초대 취소하기
+                      {messages.hub.cancelInvite}
                     </button>
                   </div>
                   {token ? (

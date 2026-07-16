@@ -2,11 +2,16 @@ import SpaceBackground from "@/components/space/SpaceBackground";
 import GlowButton from "@/components/space/GlowButton";
 import { CircleDot, Compass, GitBranch, Orbit, Radar, Satellite, Scale, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
+import { getRequestLocale } from "@/lib/i18n/serverLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 /** Avoid SSG: root Clerk chrome can throw useContext null during /about prerender. */
 export const dynamic = "force-dynamic";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  const t = messages.about;
   return (
     <SpaceBackground>
       <div
@@ -17,22 +22,23 @@ export default function AboutPage() {
         <section className="grid items-center gap-10 border-b border-white/8 pb-14 sm:pb-16 md:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
             <p className="text-xs font-medium uppercase tracking-[0.26em] text-[#CBB38E]">
-              About
+              {t.heroEyebrow}
             </p>
             <h1 className="max-w-[16ch] text-3xl font-semibold leading-[1.25] text-[#F8FAFC]">
-              왜 우리는
+              {t.heroTitleLine1}
               <br />
-              비슷한 문제로 계속 부딪힐까
+              {t.heroTitleLine2}
             </h1>
             <div className="max-w-[35rem] space-y-4 text-sm leading-7 text-[#CBD5E1] sm:text-base sm:leading-8">
               <p className="max-w-[32ch]">
-                사람이 달라서가 아니라
+                {t.heroBodyLine1}
                 <br />
-                서로를 모른 채 계속 만나기 때문이라고 생각했어요
+                {t.heroBodyLine2}
               </p>
               <p className="max-w-[16ch]">
-                그래서
-                <br />이 서비스를 만들었어요
+                {t.heroBodyLine3}
+                <br />
+                {t.heroBodyLine4}
               </p>
             </div>
           </div>
@@ -49,33 +55,32 @@ export default function AboutPage() {
 
         <section className="py-12 sm:py-14">
           <p className="text-xs font-medium uppercase tracking-[0.26em] text-[#CBB38E]">
-            Three Pillars
+            {t.pillarsEyebrow}
           </p>
           <h2 className="mt-3 text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
-            나 · 관계 · 결정
+            {t.pillarsTitle}
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[#CBD5E1] sm:text-base">
-            Human Framework를 중심으로, 한 사람의 이해에서 관계, 그리고 선택까지
-            이어지는 여정을 설계했어요.
+            {t.pillarsBody}
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <PillarCard
               icon={<Compass className="h-5 w-5" strokeWidth={1.8} />}
-              title="나"
-              subtitle="Blueprint"
-              desc="10문항 설문과 6축 블루프린트로 나의 패턴을 읽어요."
+              title={t.pillarMeTitle}
+              subtitle={t.pillarMeSubtitle}
+              desc={t.pillarMeDesc}
             />
             <PillarCard
               icon={<GitBranch className="h-5 w-5" strokeWidth={1.8} />}
-              title="관계"
-              subtitle="5대 탭"
-              desc="연인·동료·가족·친구 등 맥락별 리포트로 두 사람의 리듬을 봐요."
+              title={t.pillarRelTitle}
+              subtitle={t.pillarRelSubtitle}
+              desc={t.pillarRelDesc}
             />
             <PillarCard
               icon={<Scale className="h-5 w-5" strokeWidth={1.8} />}
-              title="결정"
-              subtitle="Decision AI"
-              desc="선택장애를 위한 대화형 코치 — 곧 블루프린트와 연결됩니다."
+              title={t.pillarDecisionTitle}
+              subtitle={t.pillarDecisionSubtitle}
+              desc={t.pillarDecisionDesc}
             />
           </div>
         </section>
@@ -84,46 +89,46 @@ export default function AboutPage() {
           <div className="grid gap-5 rounded-[24px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] p-6 shadow-[0_16px_36px_rgba(0,0,0,0.24)] sm:grid-cols-[auto_1fr] sm:items-center">
             <div className="h-12 w-12 rounded-full border border-[#CBB38E]/35 bg-[radial-gradient(circle,rgba(203,179,142,0.45)_0%,rgba(203,179,142,0.08)_56%,transparent_74%)] shadow-[0_0_24px_rgba(203,179,142,0.22)]" />
             <p className="max-w-[36rem] text-base leading-8 text-[#F8FAFC]">
-              이건 관계에서
+              {t.helpQuoteLine1}
               <br />
-              서로를 이해할 수 있게 도와줘요.
+              {t.helpQuoteLine2}
               <br />
               <br />
-              굳이 맞추려고 애쓰지 않아도
+              {t.helpQuoteLine3}
               <br />
-              왜 그런지 알게 되면
+              {t.helpQuoteLine4}
               <br />
-              훨씬 편해지니까요
+              {t.helpQuoteLine5}
             </p>
           </div>
         </section>
 
         <section className="py-16 sm:py-20">
           <h2 className="text-left text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
-            우리는 이렇게 이해해요
+            {t.understandTitle}
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-10 sm:gap-5">
             <StructureCard
-              title="겉모습"
-              description="밖으로 드러나는 행동"
+              title={t.structureOuterTitle}
+              description={t.structureOuterDesc}
               icon={<Satellite className="h-5 w-5" strokeWidth={1.8} />}
               visual={<WaveVisual />}
             />
             <StructureCard
-              title="내면"
-              description="그 행동이 나오는 이유"
+              title={t.structureInnerTitle}
+              description={t.structureInnerDesc}
               icon={<CircleDot className="h-5 w-5" strokeWidth={1.8} />}
               visual={<LayerVisual />}
             />
             <StructureCard
-              title="관계"
-              description="사람을 만날 때의 흐름"
+              title={t.structureRelTitle}
+              description={t.structureRelDesc}
               icon={<Orbit className="h-5 w-5" strokeWidth={1.8} />}
               visual={<OrbitVisual />}
             />
             <StructureCard
-              title="조언 한마디"
-              description="덜 힘들어지는 방향"
+              title={t.structureAdviceTitle}
+              description={t.structureAdviceDesc}
               icon={<Radar className="h-5 w-5" strokeWidth={1.8} />}
               visual={<RadarVisual />}
             />
@@ -132,38 +137,43 @@ export default function AboutPage() {
 
         <section className="border-t border-white/8 py-16 sm:py-20">
           <h2 className="text-left text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
-            지금 이용할 수 있는 것들
+            {t.availableNowTitle}
           </h2>
           <p className="mt-6 max-w-2xl text-sm leading-7 text-[#CBD5E1] sm:text-base sm:leading-8">
-            지금은
+            {t.availableNowBodyLine1}
             <br />
-            나를 이해하고, 관계를 가볍게 들여다볼 수 있어요
-            <br />
-            <br />
-            그리고 이 흐름은
-            <br />
-            여기서 끝나지 않아요
+            {t.availableNowBodyLine2}
             <br />
             <br />
-            개인 분석도 더 깊어지고,
+            {t.availableNowBodyLine3}
             <br />
-            관계 분석도 점점 확장될 예정이에요
+            {t.availableNowBodyLine4}
+            <br />
+            <br />
+            {t.availableNowBodyLine5}
+            <br />
+            {t.availableNowBodyLine6}
           </p>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-10 sm:gap-5">
             <FeatureCard
-              title="무료 개인 분석"
-              points={["겉모습", "내면", "관계", "조언"]}
+              title={t.featureFreeTitle}
+              points={[
+                t.featureFreePoint1,
+                t.featureFreePoint2,
+                t.featureFreePoint3,
+                t.featureFreePoint4,
+              ]}
               visual={<TextCardVisual />}
             />
             <FeatureCard
-              title="개인 심화 분석"
-              points={["감정 흐름", "에너지", "패턴"]}
+              title={t.featureDeepTitle}
+              points={[t.featureDeepPoint1, t.featureDeepPoint2, t.featureDeepPoint3]}
               visual={<BarGraphVisual />}
             />
             <FeatureCard
-              title="관계 기본 분석"
-              points={["두 사람 비교 구조", "간단 텍스트 UI"]}
+              title={t.featureRelTitle}
+              points={[t.featureRelPoint1, t.featureRelPoint2]}
               visual={<CompareVisual />}
             />
           </div>
@@ -172,25 +182,25 @@ export default function AboutPage() {
         <section className="grid gap-8 border-t border-white/8 py-16 sm:py-20 md:grid-cols-[1.05fr_0.95fr] md:items-center">
           <div>
             <p className="text-xl font-semibold leading-[1.65] text-[#F8FAFC] sm:text-2xl">
-              이건 한 번 보고 끝나는 분석이 아니에요
+              {t.continuousQuoteLine1}
               <br />
               <br />
-              계속해서 이해를 쌓아가는 과정이에요
+              {t.continuousQuoteLine2}
             </p>
           </div>
           <div className="rounded-[24px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] px-6 py-5 text-sm leading-7 text-[#CBD5E1] sm:text-base sm:leading-8">
             <ul className="space-y-3">
               <li className="flex items-center gap-2.5">
-                <LineDot /> 관계 심화 분석
+                <LineDot /> {t.roadmapRelDeep}
               </li>
               <li className="flex items-center gap-2.5">
-                <LineDot /> 다각도 개인분석
+                <LineDot /> {t.roadmapMultiAngle}
               </li>
               <li className="flex items-center gap-2.5">
-                <LineDot /> 팀 관계 분석
+                <LineDot /> {t.roadmapTeam}
               </li>
               <li className="flex items-center gap-2.5">
-                <LineDot /> 그리고 더 다양한 관계 맥락 확장
+                <LineDot /> {t.roadmapMore}
               </li>
             </ul>
           </div>
@@ -200,14 +210,13 @@ export default function AboutPage() {
           <div className="grid gap-8 md:grid-cols-[1fr_1.1fr] md:items-start">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.26em] text-[#CBB38E]">
-                Social
+                {t.socialEyebrow}
               </p>
               <h2 className="mt-3 text-xl font-semibold text-[#F8FAFC] sm:text-2xl">
-                인스타그램에서 만나요
+                {t.socialTitle}
               </h2>
               <p className="mt-4 max-w-md text-sm leading-7 text-[#CBD5E1] sm:text-base">
-                업데이트 소식, 관계 인사이트, Human Framework 이야기를
-                공유해요.
+                {t.socialBody}
               </p>
               <a
                 href="https://www.instagram.com/ahaitsme"
@@ -218,7 +227,7 @@ export default function AboutPage() {
                 <span className="text-[#f472b6]" aria-hidden>
                   IG
                 </span>
-                @ahaitsme 팔로우
+                {t.socialFollowCta}
               </a>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -228,7 +237,7 @@ export default function AboutPage() {
                   className="aspect-square rounded-xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-3"
                 >
                   <div className="h-full w-full rounded-lg bg-white/[0.04]" />
-                  <p className="mt-2 text-[10px] text-white/30">피드 준비 중</p>
+                  <p className="mt-2 text-[10px] text-white/30">{t.feedComingSoon}</p>
                 </div>
               ))}
             </div>
@@ -245,12 +254,12 @@ export default function AboutPage() {
             className="pointer-events-none absolute left-1/2 top-4 h-14 w-[118%] -translate-x-1/2 rounded-full border border-[#CBB38E]/25"
           />
           <p className="relative text-2xl font-semibold leading-[1.35] text-[#F8FAFC] sm:text-3xl">
-            먼저,
+            {t.closingQuoteLine1}
             <br />
-            나부터 이해해보세요
+            {t.closingQuoteLine2}
           </p>
           <p className="relative mt-3 text-sm leading-7 text-[#94A3B8] sm:text-base">
-            나를 이해하는 데서 모든 변화가 시작돼요.
+            {t.closingSubtitle}
           </p>
           <div className="relative mx-auto mt-8 max-w-xs">
             <GlowButton
@@ -258,7 +267,7 @@ export default function AboutPage() {
               variant="primary"
               className="!min-h-[50px] text-[0.98rem] font-semibold"
             >
-              무료 분석 시작하기 →
+              {t.closingCta}
             </GlowButton>
           </div>
         </section>

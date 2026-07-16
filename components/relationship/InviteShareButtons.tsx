@@ -9,6 +9,7 @@ import {
   openSmsShare,
   openWhatsAppShare,
 } from "@/lib/relationship/inviteShare";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const primaryBtn =
   "flex-1 rounded-xl border border-white/18 bg-white/[0.05] px-3 py-2.5 text-xs font-medium text-[var(--space-text)] transition hover:border-white/30 hover:bg-white/[0.08]";
@@ -23,18 +24,19 @@ export default function InviteShareButtons({
   inviteToken: string;
   compact?: boolean;
 }) {
+  const messages = useMessages();
   const [shareOpen, setShareOpen] = useState(false);
   const url = buildInviteUrl(inviteToken);
 
   async function onCopy() {
     const ok = await copyInviteLink(url);
-    alert(ok ? "링크를 복사했어요." : "복사에 실패했어요.");
+    alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
   }
 
   async function onNative() {
     const ok = await nativeShareInvite(url);
     if (!ok) {
-      alert("이 기기에서는 시스템 공유를 쓸 수 없어요. 위 옵션을 이용해 주세요.");
+      alert(messages.hub.nativeShareUnavailable);
     }
   }
 
@@ -50,7 +52,7 @@ export default function InviteShareButtons({
 
       <div className="flex gap-2">
         <button type="button" className={primaryBtn} onClick={() => void onCopy()}>
-          링크 복사
+          {messages.hub.copyLink}
         </button>
         <button
           type="button"
@@ -61,7 +63,7 @@ export default function InviteShareButtons({
           onClick={toggleShare}
           aria-expanded={shareOpen}
         >
-          공유하기{shareOpen ? " ↑" : ""}
+          {messages.hub.shareToggleCta}{shareOpen ? " ↑" : ""}
         </button>
       </div>
 
@@ -79,7 +81,7 @@ export default function InviteShareButtons({
             className={shareOptionBtn}
             onClick={() => openSmsShare(url)}
           >
-            메시지
+            {messages.hub.shareViaSms}
           </button>
           <button
             type="button"
@@ -93,7 +95,7 @@ export default function InviteShareButtons({
             className={shareOptionBtn}
             onClick={() => void onNative()}
           >
-            다른 앱으로…
+            {messages.hub.shareViaOtherApp}
           </button>
         </div>
       ) : null}

@@ -25,6 +25,7 @@ import {
   type HistoryRatingFilter,
   type HistoryStatusFilter,
 } from "@/lib/decision/types";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 function matchesStatusFilter(
   entry: DecisionEntry,
@@ -46,6 +47,7 @@ function matchesRatingFilter(
 }
 
 export default function DecisionHistoryContent() {
+  const messages = useMessages();
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
   const isGuest = isLoaded && !user;
@@ -137,10 +139,10 @@ export default function DecisionHistoryContent() {
             href="/decision"
             className="text-xs font-semibold text-on-surface-variant transition hover:text-primary"
           >
-            ← Decision Journal
+            {messages.decision.backToJournal}
           </Link>
           <h1 className="stitch-headline mt-4 text-3xl leading-tight text-primary sm:text-4xl">
-            Decision History
+            {messages.decision.historyTitle}
           </h1>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <button
@@ -153,7 +155,7 @@ export default function DecisionHistoryContent() {
               }`}
             >
               <Filter className="h-4 w-4" aria-hidden />
-              Filter
+              {messages.decision.filterCta}
               {activeFilterCount > 0 ? (
                 <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-on-primary">
                   {activeFilterCount}
@@ -165,7 +167,7 @@ export default function DecisionHistoryContent() {
               className="stitch-cta-primary inline-flex !min-w-0 items-center gap-2 !px-5 !py-2.5 !text-sm"
             >
               <Plus className="h-4 w-4" aria-hidden />
-              New
+              {messages.decision.newCta}
             </Link>
           </div>
         </header>
@@ -180,14 +182,14 @@ export default function DecisionHistoryContent() {
           <div className={`${panelClass} mb-6 space-y-5 p-5`}>
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                Status
+                {messages.decision.statusLabel}
               </p>
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    ["all", "All"],
-                    ["needs_review", "Needs review"],
-                    ["completed", "Completed"],
+                    ["all", messages.decision.statusAll],
+                    ["needs_review", messages.decision.statusNeedsReview],
+                    ["completed", messages.decision.statusCompleted],
                   ] as const
                 ).map(([id, label]) => (
                   <button
@@ -203,14 +205,14 @@ export default function DecisionHistoryContent() {
             </div>
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                Rating
+                {messages.decision.ratingLabel}
               </p>
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    ["all", "All"],
-                    ["high", "High (4–5)"],
-                    ["low", "Low (1–2)"],
+                    ["all", messages.decision.ratingAll],
+                    ["high", messages.decision.ratingHigh],
+                    ["low", messages.decision.ratingLow],
                   ] as const
                 ).map(([id, label]) => (
                   <button
@@ -230,7 +232,7 @@ export default function DecisionHistoryContent() {
                 onClick={clearFilters}
                 className="text-xs font-semibold text-secondary underline-offset-2 hover:underline"
               >
-                Clear filters
+                {messages.decision.clearFilters}
               </button>
             ) : null}
           </div>
@@ -238,18 +240,18 @@ export default function DecisionHistoryContent() {
 
         {!journalReady ? (
           <div className={`${panelClass} p-8 text-center`}>
-            <p className="text-sm text-on-surface-variant">Loading…</p>
+            <p className="text-sm text-on-surface-variant">{messages.account.loading}</p>
           </div>
         ) : entries.length === 0 ? (
           <div className={`${panelClass} p-8 text-center`}>
             <p className="text-sm text-on-surface-variant">
-              No decisions saved yet.
+              {messages.decision.noDecisionsSaved}
             </p>
             <Link
               href="/decision"
               className="mt-4 inline-block text-sm font-semibold text-secondary underline-offset-2 hover:underline"
             >
-              Log your first decision
+              {messages.decision.logFirstDecision}
             </Link>
           </div>
         ) : (
@@ -262,7 +264,7 @@ export default function DecisionHistoryContent() {
             {filteredEntries.length === 0 ? (
               <div className="mx-2 mb-3 rounded-2xl border border-dashed border-outline-variant/45 bg-surface-container-lowest/60 px-6 py-8 text-center sm:mx-3">
                 <p className="text-sm text-on-surface-variant/75">
-                  No decisions match these filters.
+                  {messages.decision.noDecisionsMatchFilters}
                 </p>
               </div>
             ) : (
@@ -283,7 +285,7 @@ export default function DecisionHistoryContent() {
                       onClick={() => setVisibleCount((n) => n + 10)}
                       className="text-xs font-semibold text-on-surface-variant transition hover:text-primary"
                     >
-                      Load more (+10)
+                      {messages.decision.loadMoreCount}
                     </button>
                   </div>
                 ) : null}

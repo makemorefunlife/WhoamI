@@ -1,12 +1,10 @@
 "use client";
 
 import type { RomanticPsychMatchAxisResult } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
-import {
-  psychMatchAxisKoLabel,
-  scoreToBlendedAxisRatio,
-} from "@/lib/relationship/psychMatch";
+import { scoreToBlendedAxisRatio } from "@/lib/relationship/psychMatch";
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
 import { SECONDARY_AXIS_KEYS } from "@/lib/v2/survey/types";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const SIZE = 360;
 const CENTER = SIZE / 2;
@@ -145,13 +143,19 @@ function gapStrokeColor(
 
 export default function PsychMatchRadarChart({
   axisResults,
-  personALabel = "나",
-  personBLabel = "상대",
+  personALabel,
+  personBLabel,
 }: {
   axisResults: RomanticPsychMatchAxisResult[];
   personALabel?: string;
   personBLabel?: string;
 }) {
+  const messages = useMessages();
+  const t = messages.relationshipDrilldown.layout;
+  const resolvedPersonALabel = personALabel ?? messages.report.meFallbackLabel;
+  const resolvedPersonBLabel = personBLabel ?? messages.report.partnerFallbackLabel;
+  const axisLabel = (axisKey: string): string =>
+    t.psychAxisLabels[axisKey as SecondaryAxisKey] ?? axisKey;
   if (!axisResults.length) return null;
 
   const topGaps = [...axisResults]
@@ -165,7 +169,7 @@ export default function PsychMatchRadarChart({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className="mx-auto h-auto w-full"
         role="img"
-        aria-label="심리 11축 2인 오버레이 레이더 차트"
+        aria-label={t.radarAria}
       >
         {GRID_FRACTIONS.map((fraction) => (
           <polygon
@@ -208,7 +212,7 @@ export default function PsychMatchRadarChart({
                 fontSize={10}
                 fontWeight={isTension ? 600 : 400}
               >
-                {psychMatchAxisKoLabel(axis.axis_key)}
+                {axisLabel(axis.axis_key)}
                 {axis.axis_key === "conflict_style" ? "*" : ""}
               </text>
             </g>
@@ -270,30 +274,30 @@ export default function PsychMatchRadarChart({
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           <span className="inline-flex items-center gap-2">
             <LegendSwatch color={PERSON_A_DOT} />
-            {personALabel}
+            {resolvedPersonALabel}
           </span>
           <span className="inline-flex items-center gap-2">
             <LegendSwatch color={PERSON_B_DOT} />
-            {personBLabel}
+            {resolvedPersonBLabel}
           </span>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-on-surface-variant">
           <span className="inline-flex items-center gap-2">
             <LegendSwatch color={AXIS_STYLE.tension.legend} variant="line" />
-            긴장 축
+            {t.tensionAxisLegend}
           </span>
           <span className="inline-flex items-center gap-2">
             <LegendSwatch color={AXIS_STYLE.similarity.legend} variant="line" />
-            유사 축
+            {t.similarAxisLegend}
           </span>
           <span className="inline-flex items-center gap-2">
             <LegendSwatch color={AXIS_STYLE.complementary.legend} variant="line" />
-            보완 축
+            {t.complementaryAxisLegend}
           </span>
         </div>
         {axisResults.some((axis) => axis.axis_key === "conflict_style") ? (
           <p className="text-[10px] text-on-surface-variant">
-            * 행동 기반 설문으로 측정한 참고 자료예요. 가볍게 참고만 해 주세요.
+            {t.radarFootnote}
           </p>
         ) : null}
       </div>
@@ -301,32 +305,34 @@ export default function PsychMatchRadarChart({
       {topGaps.length > 0 ? (
         <div className="mt-4 w-full rounded-2xl border border-outline-variant/30 bg-surface-container-low/80 px-4 py-3">
           <p className="mb-2 text-xs font-semibold text-on-surface">
-            차이가 큰 축
+            {t.bigGapTitle}
           </p>
           <ul className="space-y-1.5 text-[11px] leading-relaxed text-on-surface-variant">
             {topGaps.map((axis) => {
               const higher =
                 axis.score_a > axis.score_b
-                  ? personALabel
+                  ? resolvedPersonALabel
                   : axis.score_b > axis.score_a
-                    ? personBLabel
-                    : "비슷함";
+                    ? resolvedPersonBLabel
+                    : t.similarLabel;
               return (
                 <li key={`gap-row-${axis.axis_key}`}>
                   <span className="font-medium text-on-surface">
-                    {psychMatchAxisKoLabel(axis.axis_key)}
+                    {axisLabel(axis.axis_key)}
                   </span>
                   {" — "}
-                  격차 <span className="tabular-nums font-medium">{axis.gap}</span>
-                  점
-                  {higher !== "비슷함" ? (
+                  {t.gapPrefix}
+                  <span className="tabular-nums font-medium">{axis.gap}</span>
+                  {t.gapSuffix}
+                  {higher !== t.similarLabel ? (
                     <>
                       {" · "}
-                      <span className="text-secondary">{higher}</span> 쪽이 높음
+                      <span className="text-secondary">{higher}</span>
+                      {t.higherSideSuffix}
                     </>
                   ) : null}
                   {axis.match_type === "tension" ? (
-                    <span className="ml-1 text-rose-700">(긴장 축)</span>
+                    <span className="ml-1 text-rose-700">{t.tensionAxisTag}</span>
                   ) : null}
                 </li>
               );

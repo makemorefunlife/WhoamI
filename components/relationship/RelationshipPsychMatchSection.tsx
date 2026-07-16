@@ -8,6 +8,7 @@ import {
 } from "@/components/relationship/reportLayout";
 import type { DomainPsychLens } from "@/lib/relationship/psychDomainLens/types";
 import { swapPsychAxisForViewer } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type RelationshipPsychMatchSectionProps = {
   psychMatch: PsychMatchResult;
@@ -26,6 +27,7 @@ export default function RelationshipPsychMatchSection({
   viewerIsReportA = true,
   accentColor,
 }: RelationshipPsychMatchSectionProps) {
+  const t = useMessages().relationshipDrilldown.layout;
   const psychAxisForViewer = swapPsychAxisForViewer(
     psychMatch.axis_results,
     viewerIsReportA,
@@ -36,7 +38,7 @@ export default function RelationshipPsychMatchSection({
   return (
     <>
       <RelationshipReportCard
-        title="🎯 심리 11축 매칭"
+        title={t.psychMatchCardTitle}
         accentColor={accentColor}
       >
         <p className="mb-3 text-xs leading-relaxed text-white/65">
@@ -74,10 +76,10 @@ export default function RelationshipPsychMatchSection({
                 <p className="mt-2 text-[10px] text-white/45">
                   {item.topic}
                   {item.match_type === "tension"
-                    ? " · 자주 부딪히기 쉬운 축"
+                    ? t.tensionAxisSuffix
                     : item.match_type === "similarity"
-                      ? " · 비슷해서 편한 축"
-                      : " · 역할 나누면 좋은 축"}
+                      ? t.similarAxisSuffix
+                      : t.complementaryAxisSuffix}
                 </p>
               </li>
             ))}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   open: boolean;
@@ -17,6 +18,7 @@ export default function RenameFriendDialog({
   onClose,
   onSave,
 }: Props) {
+  const messages = useMessages();
   const [name, setName] = useState(initialName);
 
   useEffect(() => {
@@ -49,12 +51,12 @@ export default function RenameFriendDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="stitch-headline text-xl text-primary">이름 변경</h2>
+          <h2 className="stitch-headline text-xl text-primary">{messages.hub.renameTitle}</h2>
           <button
             type="button"
             onClick={onClose}
             className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low"
-            aria-label="닫기"
+            aria-label={messages.common.close}
           >
             <X className="h-5 w-5" />
           </button>
@@ -63,11 +65,11 @@ export default function RenameFriendDialog({
           value={name}
           maxLength={10}
           onChange={(e) => setName(e.target.value)}
-          placeholder="별명 (최대 10자)"
+          placeholder={messages.hub.renamePlaceholder}
           className="w-full rounded-xl border-0 bg-surface-container-low/80 px-4 py-3.5 text-base text-on-surface outline-none ring-1 ring-outline-variant/35 focus:ring-2 focus:ring-primary/15"
         />
         <p className="mt-2 text-xs text-on-surface-variant">
-          {trimmed.length}/10 · 직접 입력 친구만 DB에 저장돼요
+          {messages.hub.renameCharCountHint(trimmed.length)}
         </p>
         <div className="mt-5 flex gap-3">
           <button
@@ -75,7 +77,7 @@ export default function RenameFriendDialog({
             onClick={onClose}
             className="flex-1 rounded-full border border-outline-variant/50 py-3.5 text-sm font-semibold text-on-surface-variant"
           >
-            취소
+            {messages.cta.cancel}
           </button>
           <button
             type="button"
@@ -86,7 +88,7 @@ export default function RenameFriendDialog({
             }}
             className="stitch-cta-primary flex-1 !min-w-0 !px-4 !py-3.5 !text-sm disabled:opacity-45"
           >
-            저장
+            {messages.cta.save}
           </button>
         </div>
       </div>

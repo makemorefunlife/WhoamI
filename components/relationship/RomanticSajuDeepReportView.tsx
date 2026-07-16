@@ -57,6 +57,8 @@ import {
   shouldShowWhySpecial,
   isGenericBondParagraph,
 } from "@/lib/relationship/romanticBondDisplay";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 
 const COMPARISON_ASPECTS = [
   "감정 표현",
@@ -158,12 +160,15 @@ function HiddenHeartPanel({
   insightBody?: string;
   polish: (text: string) => string;
 }) {
+  const messages = useMessages();
   const { hook, body } = formatHiddenHeartDisplay(hidden, insightBody, polish);
   if (!hook && !body) return null;
 
   return (
     <div className="space-y-2">
-      <RelationshipReportLabel>🌙 {name}의 숨은 마음</RelationshipReportLabel>
+      <RelationshipReportLabel>
+        {messages.relationshipDrilldown.romantic.hiddenHeartPanelLabel(name)}
+      </RelationshipReportLabel>
       {hook ? (
         <p className="text-sm font-medium leading-relaxed text-on-surface">
           {hook}
@@ -305,6 +310,11 @@ function screenByKey(
 
 function extractRomanticScores(
   meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
+  t: {
+    scoreLabelAffinity: string;
+    scoreLabelChemistry: string;
+    scoreLabelSensitivity: string;
+  },
 ): ScoreMetric[] {
   const scores = meta?.event_scores as
     | {
@@ -316,19 +326,19 @@ function extractRomanticScores(
   return [
     {
       emoji: "🔥",
-      label: "호감",
+      label: t.scoreLabelAffinity,
       value: activation,
       polarity: "higher_better",
     },
     {
       emoji: "🧩",
-      label: "케미",
+      label: t.scoreLabelChemistry,
       value: benefit,
       polarity: "higher_better",
     },
     {
       emoji: "⚡",
-      label: "예민",
+      label: t.scoreLabelSensitivity,
       value: risk,
       polarity: "higher_worse",
     },
@@ -373,6 +383,7 @@ type ActionSection = {
 function resolveActionSection(
   llm: ActionSection,
   meta: RomanticSajuDeepReport["report"]["meta"] | undefined,
+  t: MessageCatalog["relationshipDrilldown"]["romantic"],
 ): ActionSection {
   const plan = meta?.rule_screen_plan as
     | Array<{ key: string; output?: ActionRuleFallback }>
@@ -389,16 +400,8 @@ function resolveActionSection(
       }
       return "";
     };
-    const fallbackTitles = [
-      "감정이 올라올 때 한 박자 쉬기",
-      "상대 마음을 먼저 확인하기",
-      "함께 회복하는 말하기",
-    ] as const;
-    const fallbackTitlesB = [
-      "급하게 결론 내리지 않기",
-      "표현 방식 차이 인정하기",
-      "작은 신호로 연결하기",
-    ] as const;
+    const fallbackTitles = t.fallbackActionTitlesA;
+    const fallbackTitlesB = t.fallbackActionTitlesB;
 
     const toGuideline = (
       phrase: string,
@@ -408,7 +411,7 @@ function resolveActionSection(
     ) => ({
       relationship_kind: "연인",
       target_user: target,
-      action_title: titles[index] ?? "실천 팁",
+      action_title: titles[index] ?? t.fallbackActionTitleDefault,
       saju_reason: contextualReason(index),
       real_speech_tip: phrase,
       real_life_example: "",
@@ -499,6 +502,8 @@ export default function RomanticSajuDeepReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
+  const messages = useMessages();
+  const t = messages.relationshipDrilldown.romantic;
   const tone = useReportTone();
   const theme =
     tone.surface === "stitch"
@@ -593,6 +598,7 @@ export default function RomanticSajuDeepReportView({
   const s5 = resolveActionSection(
     (report.section_5_action ?? {}) as ActionSection,
     report.meta,
+    t,
   );
   const s6 = resolveTimelineSection(
     (report.section_6_timeline ?? {}) as Record<string, Record<string, string>>,
@@ -743,7 +749,7 @@ export default function RomanticSajuDeepReportView({
     headline: viewerFirstHeadline ?? openingRaw.headline,
   };
   const snapshotPanel = resolveSnapshotPanelFromReport(report.meta);
-  const scores = extractRomanticScores(report.meta);
+  const scores = extractRomanticScores(report.meta, t);
   const psychMatch = report.meta?.psych_match ?? null;
   const { chemistryApprox: chemistryScores, strengthWeakness: strengthWeaknessResult } =
     useMemo(() => {
@@ -800,15 +806,15 @@ export default function RomanticSajuDeepReportView({
   return (
     <RelationshipReportLayout
       kind="romantic"
-      kindLabel="Premium · 연인 사주 심화"
+      kindLabel={t.eyebrow}
       headline={{
         title: displayText(opening.headline),
         subtitle: displayText(opening.body),
         names: [myName, partnerName],
-        badge: opening.grade ? `궁합 등급 ${opening.grade}` : undefined,
+        badge: opening.grade ? t.gradeBadge(opening.grade) : undefined,
       }}
       scores={scores}
-      scoreSourceNote="사주 궁합 신호(합·충·일간 상생 등)로 계산 · 0~100점 · 설문 11축과는 별도예요."
+      scoreSourceNote={t.scoreSourceNote}
       showTriScoreInsight
       conflictInsightAnchor="relationship-conflict-map"
       scoreFooter={
@@ -819,7 +825,7 @@ export default function RomanticSajuDeepReportView({
     >
       {showChemistryBreakdown && chemistryScores ? (
         <RelationshipReportCard
-          title="🍀 케미스트리 심화"
+          title={t.chemistryCardTitle}
           accentColor={theme.accent}
         >
           <ChemistryBreakdown scores={chemistryScores} />
@@ -827,12 +833,11 @@ export default function RomanticSajuDeepReportView({
       ) : null}
 
       <RelationshipReportCard
-        title={`🔍 ${ruleScreenTitle(report.meta, "compare", "서로 비교")}`}
+        title={`🔍 ${ruleScreenTitle(report.meta, "compare", t.compareCardTitleFallback)}`}
         accentColor={theme.accent}
       >
         <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">
-          두 사람 사주·설문 데이터를 바탕으로 AI가 정리한 성향 비교예요. 항목별로
-          나와 상대의 차이를 한눈에 볼 수 있어요.
+          {t.compareCardIntro}
         </p>
         <div
           className={[
@@ -843,7 +848,7 @@ export default function RomanticSajuDeepReportView({
           <table className="w-full min-w-[280px] text-left text-sm">
             <thead>
               <tr className={["border-b", tone.tableBorder, tone.tableHead].join(" ")}>
-                <th className="px-4 py-3 font-medium">항목</th>
+                <th className="px-4 py-3 font-medium">{t.comparisonAspectColumn}</th>
                 <th className="px-4 py-3 font-medium">{myName}</th>
                 <th className="px-4 py-3 font-medium">{partnerName}</th>
               </tr>
@@ -857,7 +862,9 @@ export default function RomanticSajuDeepReportView({
                   )}
                 >
                   <td className={["px-4 py-3 font-medium", tone.bodyMedium].join(" ")}>
-                    {row.aspect}
+                    {t.comparisonAspectLabels[
+                      row.aspect as keyof typeof t.comparisonAspectLabels
+                    ] ?? row.aspect}
                   </td>
                   <td className={["px-4 py-3", tone.body].join(" ")}>{row.a}</td>
                   <td className={["px-4 py-3", tone.body].join(" ")}>{row.b}</td>
@@ -868,7 +875,7 @@ export default function RomanticSajuDeepReportView({
         </div>
       </RelationshipReportCard>
 
-      <RelationshipReportCard title="📝 서로의 성향" accentColor={theme.accent}>
+      <RelationshipReportCard title={t.natureCardTitle} accentColor={theme.accent}>
         <div className="space-y-8 sm:space-y-10">
           <NaturePersonPanel
             name={myName}
@@ -885,12 +892,11 @@ export default function RomanticSajuDeepReportView({
 
       {psychAxisForViewer.length > 0 ? (
         <RelationshipReportCard
-          title="🎯 심리 11축 매칭"
+          title={t.psychMatchCardTitle}
           accentColor={theme.accent}
         >
           <p className="mb-3 text-xs leading-relaxed text-on-surface-variant">
-            둘의 현재 모습에서 어디가 비슷하고 어디가 다른지 한눈에 볼 수 있게
-            정리했어요.
+            {t.psychMatchIntro}
           </p>
           <PsychMatchRadarChart
             axisResults={psychAxisForViewer}
@@ -902,7 +908,7 @@ export default function RomanticSajuDeepReportView({
 
       {special ? (
         <RelationshipReportCard
-          title="⚖️ 이 관계가 특별한 이유"
+          title={t.specialCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody className="space-y-6">
@@ -945,7 +951,7 @@ export default function RomanticSajuDeepReportView({
             {showWhySpecial && special.why_special ? (
               <div className="space-y-2">
                 <RelationshipReportLabel>
-                  💡 두 사람이 맞춰 가는 지점
+                  {t.specialWhyLabel}
                 </RelationshipReportLabel>
                 <P>{special.why_special}</P>
               </div>
@@ -956,7 +962,7 @@ export default function RomanticSajuDeepReportView({
 
       {showStrengthWeakness && strengthWeaknessResult ? (
         <RelationshipReportCard
-          title="💪 강점 · 약점"
+          title={t.strengthWeaknessCardTitle}
           accentColor={theme.accent}
         >
           <StrengthWeaknessCard result={strengthWeaknessResult} />
@@ -965,7 +971,7 @@ export default function RomanticSajuDeepReportView({
 
       {hasHiddenContent ? (
       <RelationshipReportCard
-        title="🌙 서로의 숨은 마음"
+        title={t.hiddenHeartsCardTitle}
         accentColor={theme.accent}
       >
         <RelationshipReportBody className="space-y-6">
@@ -984,7 +990,7 @@ export default function RomanticSajuDeepReportView({
           {s4.mutual_gift ? (
             <div className="space-y-2">
               <RelationshipReportLabel>
-                💡 두 사람의 무의식 시너지
+                {t.hiddenHeartsMutualGiftLabel}
               </RelationshipReportLabel>
               <P>{displayText(String(s4.mutual_gift))}</P>
             </div>
@@ -995,7 +1001,7 @@ export default function RomanticSajuDeepReportView({
 
       {conflict && dialogueTable.length > 0 ? (
         <RelationshipReportCard
-          title={`💬 ${displayText(String(conflict.title ?? "갈등 패턴"))}`}
+          title={`💬 ${displayText(String(conflict.title ?? t.conflictCardTitleFallback))}`}
           accentColor={theme.accent}
           className="scroll-mt-24"
           id="relationship-conflict-map"
@@ -1013,9 +1019,9 @@ export default function RomanticSajuDeepReportView({
                     " ",
                   )}
                 >
-                  <th className="px-4 py-3">구분</th>
-                  <th className="px-4 py-3">❌ 자주 하던 말</th>
-                  <th className="px-4 py-3">✅ 이렇게 바꿔보면</th>
+                  <th className="px-4 py-3">{t.conflictColumnLabel}</th>
+                  <th className="px-4 py-3">{t.conflictBadLineColumn}</th>
+                  <th className="px-4 py-3">{t.conflictGoodLineColumn}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1046,14 +1052,14 @@ export default function RomanticSajuDeepReportView({
 
       {hasActionContent ? (
       <RelationshipReportCard
-        title="🌱 서로에게 도움이 되는 행동들"
+        title={t.actionCardTitle}
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
           {myAdvice.length > 0 ? (
             <>
               <RelationshipReportLabel>
-                ✨ {myName}님을 위한 에센스 가이드
+                {t.actionGuideLabel(myName)}
               </RelationshipReportLabel>
               <EssenceActionGuidelineList
                 items={myAdvice}
@@ -1066,7 +1072,7 @@ export default function RomanticSajuDeepReportView({
               <RelationshipReportLabel
                 className={myAdvice.length > 0 ? "mt-6" : undefined}
               >
-                ✨ {partnerName}님을 위한 에센스 가이드
+                {t.actionGuideLabel(partnerName)}
               </RelationshipReportLabel>
               <EssenceActionGuidelineList
                 items={partnerAdvice}
@@ -1078,14 +1084,14 @@ export default function RomanticSajuDeepReportView({
           !isGenericRomanticActionPhrase(s5.together) ? (
             <div className="mt-6 space-y-2 border-t pt-5 border-outline-variant/30">
               <RelationshipReportLabel>
-                💌 에센스 다이어리 : 우리만의 관계 아카이브
+                {t.actionDiaryLabel}
               </RelationshipReportLabel>
               <P>{String(s5.together)}</P>
               {s5.together_starter?.trim() &&
               !isGenericRomanticActionPhrase(s5.together_starter) ? (
                 <p className="text-sm leading-relaxed text-on-surface-variant">
                   <span className="font-medium text-on-surface">
-                    * 이렇게 대화의 문을 열어보세요:{" "}
+                    {t.actionStarterPrefix}
                   </span>
                   <span aria-hidden className="text-on-surface-variant/70">
                     “
@@ -1104,7 +1110,7 @@ export default function RomanticSajuDeepReportView({
 
       {showTimeline ? (
       <RelationshipReportCard
-        title="⏰ 시간이 지나면 이렇게 달라져요"
+        title={t.timelineCardTitle}
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
@@ -1140,7 +1146,7 @@ export default function RomanticSajuDeepReportView({
           shareFormula ||
           displayText(s1.one_line_summary) ||
           s1.relationship_name ||
-          "우리 관계"
+          t.shareFormulaFallback
         }
       />
     </RelationshipReportLayout>

@@ -13,6 +13,7 @@ import {
   RelationshipReportCard,
   RelationshipReportParagraph,
 } from "@/components/relationship/reportLayout";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 function ChecklistColumn({
   variant,
@@ -70,6 +71,7 @@ function PrescriptionTopicCard({
   item: PairPrescriptionItem;
   accentColor: string;
 }) {
+  const t = useMessages().relationshipDrilldown.layout;
   const meta = resolveTopicMeta(item.topic);
 
   return (
@@ -91,7 +93,7 @@ function PrescriptionTopicCard({
       <div className="space-y-4 p-5">
         <div className="rounded-xl border border-violet-300/20 bg-violet-950/30 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-violet-200/80">
-            🧠❤️ 왜 이 처방인가요
+            {t.prescriptionWhyLabel}
           </p>
           <p className="mt-2 text-[15px] leading-relaxed text-violet-50/95">
             {item.evidence.summary}
@@ -101,12 +103,12 @@ function PrescriptionTopicCard({
         <div className="grid gap-4 lg:grid-cols-2">
           <ChecklistColumn
             variant="do"
-            title="✅ 지금 당장 해볼 것 (Do)"
+            title={t.prescriptionDoLabel}
             items={item.do_list}
           />
           <ChecklistColumn
             variant="dont"
-            title="🚫 절대 하지 말 것 (Don't)"
+            title={t.prescriptionDontLabel}
             items={item.dont_list}
           />
         </div>
@@ -124,12 +126,13 @@ export default function PairPrescriptionSection({
   accentColor: string;
   domain: PairPrescriptionDomain;
 }) {
+  const t = useMessages().relationshipDrilldown.layout;
   if (!pack?.items.length) return null;
 
   return (
     <RelationshipReportCard
       id={`pair-prescription-${domain}`}
-      title="💊 실전 행동 처방전"
+      title={t.prescriptionCardTitle}
       accentColor={accentColor}
       variant="accent"
       className="scroll-mt-6 border-violet-400/35 bg-gradient-to-b from-violet-950/25 to-transparent"

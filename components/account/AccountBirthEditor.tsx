@@ -7,10 +7,11 @@ import AccountBirthEditForm, {
   type AccountBirthEditPayload,
 } from "@/components/account/AccountBirthEditForm";
 import {
-  formatBirthDateKo,
-  formatBirthPlaceKo,
-  formatBirthTimeKo,
+  formatBirthDate,
+  formatBirthPlace,
+  formatBirthTime,
 } from "@/lib/account/formatBirthDisplay";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useClientReportId } from "@/lib/hooks/useClientReportId";
 import {
   writeBirthV2Session,
@@ -47,6 +48,7 @@ function BirthSummaryRow({
 
 export default function AccountBirthEditor() {
   const router = useRouter();
+  const { locale, messages } = useLocale();
   const { reportId, ready, recovering } = useClientReportId({
     logContext: "account-profile",
   });
@@ -56,6 +58,7 @@ export default function AccountBirthEditor() {
   const [loadingBirth, setLoadingBirth] = useState(true);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noticeKind, setNoticeKind] = useState<"error" | "success" | null>(null);
 
   const loadBirth = useCallback(async (id: string) => {
     const [synced, dbRow] = await Promise.all([
@@ -68,12 +71,11 @@ export default function AccountBirthEditor() {
         readLocalBirthDateCorrectionUsed(id),
     );
     if (synced.sessionCorrected) {
-      setNotice(
-        "브라우저에 남아 있던 출생 정보와 서버(DB) 값이 달라서, 서버 기준으로 맞춰 두었어요.",
-      );
+      setNotice(messages.account.birthSessionCorrectedNotice);
+      setNoticeKind("success");
     }
     setLoadingBirth(false);
-  }, []);
+  }, [messages]);
 
   useEffect(() => {
     if (!ready) return;
@@ -93,14 +95,14 @@ export default function AccountBirthEditor() {
       if (!reportId || !birth?.birthDate || busy) return;
       setBusy(true);
       setNotice(null);
+      setNoticeKind(null);
 
       const nextBirthDate = payload.birthDate?.trim() || birth.birthDate;
       const dateChanging = nextBirthDate !== birth.birthDate.trim();
 
       if (dateChanging && correctionUsed) {
-        setNotice(
-          "생년월일은 이미 1회 수정했어요. 추가 변경은 고객센터로 문의해 주세요.",
-        );
+        setNotice(messages.account.birthDateCorrectionUsedNotice);
+        setNoticeKind("error");
         setBusy(false);
         return;
       }
@@ -122,7 +124,8 @@ export default function AccountBirthEditor() {
           birth_date_correction_used?: boolean;
         };
         if (!res.ok) {
-          setNotice(data.error ?? "저장에 실패했어요. 다시 시도해 주세요.");
+          setNotice(data.error ?? messages.account.birthSaveFailed);
+          setNoticeKind("error");
           setBusy(false);
           return;
         }
@@ -144,26 +147,30 @@ export default function AccountBirthEditor() {
         }
         setNotice(
           dateChanging
-            ? "생년월일을 포함해 출생 정보가 저장되었어요. 생년월일은 다시 바꿀 수 없어요."
-            : "출생 시간·지역이 저장되었어요.",
+            ? messages.account.birthDateSavedNotice
+            : messages.account.birthTimePlaceSavedNotice,
         );
+        setNoticeKind("success");
         clearLiteReports(reportId);
         clearSlimIntegratedCache(reportId);
         invalidateReportSession(reportId);
         void loadBirth(reportId);
       } catch {
-        setNotice("저장에 실패했어요. 다시 시도해 주세요.");
+        setNotice(messages.account.birthSaveFailed);
+        setNoticeKind("error");
       }
       setBusy(false);
     },
-    [birth?.birthDate, busy, correctionUsed, loadBirth, reportId],
+    [birth?.birthDate, busy, correctionUsed, loadBirth, messages, reportId],
   );
 
   if (!ready || recovering || loadingBirth) {
     return (
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
         <p className="text-sm text-on-surface-variant">
-          {recovering ? "계정 기록을 불러오는 중…" : "출생 정보를 불러오는 중…"}
+          {recovering
+            ? messages.account.birthLoadingAccount
+            : messages.account.birthLoadingInfo}
         </p>
       </section>
     );
@@ -172,12 +179,14 @@ export default function AccountBirthEditor() {
   if (!reportId) {
     return (
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
-        <h2 className="stitch-headline text-xl text-primary">출생 정보</h2>
+        <h2 className="stitch-headline text-xl text-primary">
+          {messages.account.birthTitle}
+        </h2>
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-          블루프린트를 시작한 뒤 출생 정보를 확인·수정할 수 있어요.
+          {messages.account.birthNoReportSubtitle}
         </p>
         <Link href={ROUTES.home} className="stitch-cta-primary mt-5 inline-flex">
-          홈으로 이동
+          {messages.account.birthGoHome}
         </Link>
       </section>
     );
@@ -186,15 +195,17 @@ export default function AccountBirthEditor() {
   if (!birth?.birthDate) {
     return (
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
-        <h2 className="stitch-headline text-xl text-primary">출생 정보</h2>
+        <h2 className="stitch-headline text-xl text-primary">
+          {messages.account.birthTitle}
+        </h2>
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-          아직 등록된 생년월일이 없어요. 설문 후 출생 정보를 입력해 주세요.
+          {messages.account.birthNoDateSubtitle}
         </p>
         <Link
           href={withReportId(ROUTES.onboardingBirth, reportId)}
           className="stitch-cta-primary mt-5 inline-flex"
         >
-          출생 정보 입력하기
+          {messages.account.birthEnterInfo}
         </Link>
       </section>
     );
@@ -203,40 +214,45 @@ export default function AccountBirthEditor() {
   return (
     <section id="birth" className="scroll-mt-24 space-y-5">
       <div>
-        <h2 className="stitch-headline text-xl text-primary">출생 정보</h2>
+        <h2 className="stitch-headline text-xl text-primary">
+          {messages.account.birthTitle}
+        </h2>
         <p className="mt-1 text-sm text-on-surface-variant">
-          출생 시간·지역은 자유롭게 수정할 수 있어요. 생년월일은 잘못 입력한
-          경우 <strong>1회</strong> 수정할 수 있습니다.
+          {messages.account.birthEditableHintLead}
+          <strong>{messages.account.birthEditableHintBold}</strong>
+          {messages.account.birthEditableHintTrail}
         </p>
       </div>
 
       <div className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
-        <h3 className="text-sm font-semibold text-primary">등록된 정보</h3>
+        <h3 className="text-sm font-semibold text-primary">
+          {messages.account.birthRegisteredInfo}
+        </h3>
         <dl className="mt-3">
           <BirthSummaryRow
-            label="생년월일"
-            value={formatBirthDateKo(birth.birthDate)}
+            label={messages.account.birthDateLabel}
+            value={formatBirthDate(birth.birthDate, locale, messages)}
           />
           <BirthSummaryRow
-            label="출생 시간"
-            value={formatBirthTimeKo(birth)}
+            label={messages.account.birthTimeLabel}
+            value={formatBirthTime(birth, locale, messages)}
           />
           <BirthSummaryRow
-            label="태어난 곳"
-            value={formatBirthPlaceKo(
+            label={messages.account.birthPlaceLabel}
+            value={formatBirthPlace(
               birth.birthPlace,
               birth.birthPlaceUnknown,
+              messages,
             )}
           />
         </dl>
         {correctionUsed ? (
           <p className="mt-4 text-[11px] leading-relaxed text-on-surface-variant/80">
-            생년월일 1회 수정을 이미 사용했어요. 추가 변경은 고객센터로
-            문의해 주세요.
+            {messages.account.birthCorrectionUsedHint}
           </p>
         ) : dateEditMode ? (
           <p className="mt-4 text-[11px] leading-relaxed text-on-surface-variant/80">
-            아래 폼에서 생년월일을 고친 뒤 저장하면 1회 수정이 완료됩니다.
+            {messages.account.birthDateEditModeHint}
           </p>
         ) : (
           <button
@@ -245,9 +261,10 @@ export default function AccountBirthEditor() {
             onClick={() => {
               setDateEditMode(true);
               setNotice(null);
+              setNoticeKind(null);
             }}
           >
-            생년월일 수정 (1회 가능)
+            {messages.account.birthEditDateCta}
           </button>
         )}
       </div>
@@ -255,7 +272,7 @@ export default function AccountBirthEditor() {
       {notice ? (
         <p
           className={`rounded-2xl border px-4 py-3 text-sm ${
-            notice.includes("실패") || notice.includes("이미")
+            noticeKind === "error"
               ? "border-accent-rose/40 bg-accent-rose-soft text-primary"
               : "border-secondary/30 bg-secondary/8 text-primary"
           }`}
@@ -268,10 +285,12 @@ export default function AccountBirthEditor() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-primary">
-              {dateEditMode ? "생년월일·시간·지역 수정" : "시간·지역 수정"}
+              {dateEditMode
+                ? messages.account.birthEditAllTitle
+                : messages.account.birthEditTimePlaceTitle}
             </h3>
             <p className="mt-1 text-xs text-on-surface-variant">
-              저장하면 Blueprint·관계 리포트 계산이 새 정보로 갱신돼요.
+              {messages.account.birthEditHint}
             </p>
           </div>
           {dateEditMode ? (
@@ -280,7 +299,7 @@ export default function AccountBirthEditor() {
               className="shrink-0 text-xs text-on-surface-variant underline"
               onClick={() => setDateEditMode(false)}
             >
-              취소
+              {messages.account.birthCancel}
             </button>
           ) : null}
         </div>
@@ -302,7 +321,7 @@ export default function AccountBirthEditor() {
         className="stitch-cta-secondary w-full"
         onClick={() => router.push(blueprintRoute(reportId))}
       >
-        Blueprint 미리보기로 이동
+        {messages.account.birthGoToBlueprintPreview}
       </button>
     </section>
   );

@@ -2,14 +2,14 @@
 
 import {
   ANALYSIS_LEVEL_BADGE_BASE_CLASS,
-  ANALYSIS_LEVEL_BADGE_LABELS,
   ANALYSIS_LEVEL_BADGE_STYLES,
   relationshipKindBadgeClassName,
-  relationshipKindBadgeLabel,
   relationshipKindForBadge,
   RELATIONSHIP_KIND_BADGE_BASE_CLASS,
 } from "@/lib/relationship/relationshipKindBadge";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 
 type KindInput = RelationshipKind | "unspecified" | string | null | undefined;
 
@@ -18,12 +18,28 @@ type RelationshipKindBadgeProps = {
   className?: string;
 };
 
+function localizedKindBadgeLabel(
+  kind: RelationshipKind | "unspecified",
+  messages: MessageCatalog,
+): string {
+  if (kind === "unspecified") return messages.hub.badgeOtherRelationship;
+  const map: Record<RelationshipKind, string> = {
+    romantic: messages.hub.kindBadgeRomantic,
+    work: messages.hub.kindBadgeWork,
+    cohabitation: messages.hub.kindBadgeCohabitation,
+    friendship: messages.hub.kindBadgeFriendship,
+    family: messages.hub.kindBadgeFamily,
+  };
+  return map[kind];
+}
+
 export function RelationshipKindBadge({
   kind,
   className = "",
 }: RelationshipKindBadgeProps) {
+  const messages = useMessages();
   const resolved = relationshipKindForBadge(kind);
-  const label = relationshipKindBadgeLabel(resolved);
+  const label = localizedKindBadgeLabel(resolved, messages);
   const color = relationshipKindBadgeClassName(resolved);
 
   return (
@@ -44,11 +60,16 @@ export function AnalysisLevelBadge({
   level,
   className = "",
 }: AnalysisLevelBadgeProps) {
+  const messages = useMessages();
+  const label =
+    level === "premium"
+      ? messages.hub.analysisLevelPremium
+      : messages.hub.analysisLevelBasic;
   return (
     <span
       className={`${ANALYSIS_LEVEL_BADGE_BASE_CLASS} ${ANALYSIS_LEVEL_BADGE_STYLES[level]} ${className}`.trim()}
     >
-      {ANALYSIS_LEVEL_BADGE_LABELS[level]}
+      {label}
     </span>
   );
 }

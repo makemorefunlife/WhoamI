@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import PricingCards, { PricingHero } from "@/components/pricing/PricingCards";
+import { getRequestLocale } from "@/lib/i18n/serverLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
-export const metadata: Metadata = {
-  title: "요금 안내 | Ahaitsme",
-  description: "나 · 관계 · 결정 — Human Framework 요금제",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  return {
+    title: messages.pricing.metaTitle,
+    description: messages.pricing.metaDescription,
+  };
+}
 
 export default function PricingPage() {
   return (

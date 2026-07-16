@@ -1,6 +1,8 @@
 import type { PolicyDocument } from "@/lib/legal/types";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import { getRequestLocale } from "@/lib/i18n/serverLocale";
+import { getMessages } from "@/lib/i18n/messages";
 
 const EMAIL_SPLIT = /([\w.-]+@[\w.-]+\.\w+)/g;
 const EMAIL_ONLY = /^[\w.-]+@[\w.-]+\.\w+$/;
@@ -23,11 +25,13 @@ function renderInlineText(text: string) {
 }
 
 /** Stitch legal doc — server component, mobile-first, no space chrome. */
-export default function PolicyDocumentView({
+export default async function PolicyDocumentView({
   document,
 }: {
   document: PolicyDocument;
 }) {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
   return (
     <div className="stitch-legal relative min-h-dvh text-on-surface">
       <div className="relative z-[1] mx-auto w-full max-w-3xl px-5 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
@@ -36,13 +40,13 @@ export default function PolicyDocumentView({
             href={ROUTES.home}
             className="text-sm text-on-surface-variant transition hover:text-primary"
           >
-            ← Back home
+            {messages.legal.backHome}
           </Link>
         </p>
 
         <header className="border-b border-outline-variant/40 pb-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">
-            Legal
+            {messages.legal.eyebrow}
           </p>
           <h1 className="stitch-headline mt-3 text-balance text-2xl leading-snug text-primary sm:text-3xl">
             {document.title}
@@ -51,7 +55,7 @@ export default function PolicyDocumentView({
             {document.description}
           </p>
           <p className="mt-4 text-xs text-on-surface-variant/70">
-            Last updated · {document.lastUpdated}
+            {messages.legal.lastUpdatedPrefix}{document.lastUpdated}
           </p>
         </header>
 

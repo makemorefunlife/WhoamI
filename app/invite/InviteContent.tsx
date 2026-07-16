@@ -2,49 +2,50 @@
 
 import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function InviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const messages = useMessages();
 
   const token =
     searchParams.get("token") || searchParams.get("invite") || "";
 
   const message = useMemo(() => {
-    if (!token) return "초대 링크가 올바르지 않아요.";
-    return "친구가 너와의 관계 팁을 받아보자고 초대했어.";
-  }, [token]);
+    if (!token) return messages.invite.invalidToken;
+    return messages.invite.inviteMessage;
+  }, [token, messages]);
 
   const handleStart = () => {
     if (!token) {
-      alert("초대 토큰이 없습니다.");
+      alert(messages.invite.missingTokenAlert);
       return;
     }
 
     localStorage.setItem("inviteToken", token);
-    // 리포트는 홈에서 닉네임 입력 시 생성됨 — 설문으로 바로 가면 reportId가 없음
+    // Report is created on the home page when a nickname is entered — going straight to the survey has no reportId yet.
     router.push(`/?token=${encodeURIComponent(token)}`);
   };
 
   return (
     <main className="min-h-screen p-8 max-w-xl mx-auto space-y-6">
       {" "}
-      <h1 className="text-2xl font-bold">친구 초대</h1>
+      <h1 className="text-2xl font-bold">{messages.invite.title}</h1>
       <div className="bg-yellow-50 p-4 rounded">
         <p className="mb-2">{message}</p>
         <p className="text-sm text-gray-600 break-all">token: {token}</p>
       </div>
       <div className="bg-gray-100 p-4 rounded space-y-3">
         <p>
-          여기서 시작하면 네 정보로 새 리포트를 만들고, 친구와의 관계 분석으로
-          연결돼.
+          {messages.invite.startBody}
         </p>
 
         <button
           onClick={handleStart}
           className="bg-black text-white px-4 py-2 rounded"
         >
-          시작하기
+          {messages.invite.startCta}
         </button>
       </div>
     </main>

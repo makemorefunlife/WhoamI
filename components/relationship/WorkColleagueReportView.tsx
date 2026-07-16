@@ -24,6 +24,7 @@ import {
   RelationshipReportInset,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 function DnaCard({
   label,
@@ -34,6 +35,7 @@ function DnaCard({
   profile: OfficeDnaProfile & { nickname: string };
   accent: string;
 }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">
@@ -44,19 +46,19 @@ function DnaCard({
       </p>
       <ul className="mt-4 space-y-3">
         <li>
-          <RelationshipReportLabel>🌌 추구하는 일 스타일</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaWorkStyleLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.work_style}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>🪵 내면의 행동 기준</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaInnerStandardLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.inner_standard}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>🔮 오피스 캐릭터</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaCharacterLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.overall_character}
           </RelationshipReportParagraph>
@@ -67,21 +69,22 @@ function DnaCard({
 }
 
 function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">
-        {guide.nickname}가 삐졌을 때
+        {t.upsetTitle(guide.nickname)}
       </p>
       <div className="mt-4 space-y-3">
         <div>
-          <RelationshipReportLabel>신호</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.upsetSignalLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {guide.upset_signals}
           </RelationshipReportParagraph>
         </div>
         <div>
           <RelationshipReportLabel className="text-emerald-200/90">
-            이렇게 해보세요
+            {t.upsetDoLabel}
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {guide.do_list.map((item) => (
@@ -93,7 +96,7 @@ function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
         </div>
         <div>
           <RelationshipReportLabel className="text-red-200/80">
-            피하면 좋아요
+            {t.upsetAvoidLabel}
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {guide.avoid_list.map((item) => (
@@ -117,6 +120,7 @@ function IdealRoleCard({
   fit: OfficeIdealRoleFit;
   accent: string;
 }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">
@@ -124,7 +128,7 @@ function IdealRoleCard({
       </p>
       <RelationshipReportParagraph className="mt-3">{fit.why}</RelationshipReportParagraph>
       <div className="mt-4">
-        <RelationshipReportLabel>잘 맞는 직군</RelationshipReportLabel>
+        <RelationshipReportLabel>{t.idealRolesLabel}</RelationshipReportLabel>
         <ul className="mt-2 list-inside list-disc space-y-1" style={{ color: accent }}>
           {fit.ideal_roles.map((role) => (
             <li key={role} className="text-[15px] leading-relaxed">
@@ -134,7 +138,7 @@ function IdealRoleCard({
         </ul>
       </div>
       <div className="mt-4">
-        <RelationshipReportLabel>잘 맞는 부서·팀</RelationshipReportLabel>
+        <RelationshipReportLabel>{t.idealDeptsLabel}</RelationshipReportLabel>
         <ul className="mt-2 list-inside list-disc space-y-1">
           {fit.ideal_departments.map((dept) => (
             <li key={dept}>
@@ -148,12 +152,13 @@ function IdealRoleCard({
 }
 
 function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent: string }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">👤 {card.nickname}</p>
       <div className="mt-4">
         <RelationshipReportLabel>
-          {card.nickname}가 맡으면 좋은 일
+          {t.roleWeaponsLabel(card.nickname)}
         </RelationshipReportLabel>
         <ul className="mt-2 list-inside list-disc space-y-1" style={{ color: accent }}>
           {card.weapons.map((w) => (
@@ -166,7 +171,7 @@ function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent: string
       {card.handoff_tasks.length > 0 ? (
         <div className="mt-4 space-y-2">
           <RelationshipReportLabel>
-            {card.nickname} → 파트너에게 넘기면 좋은 일
+            {t.handoffLabel(card.nickname)}
           </RelationshipReportLabel>
           {card.handoff_tasks.map((task) => (
             <div
@@ -186,8 +191,7 @@ function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent: string
         </div>
       ) : (
         <RelationshipReportParagraph className="mt-3" muted>
-          파트너에게 넘기는 게 유리한 영역은 뚜렷하지 않아요. 각자 강점 쪽에
-          집중하면 됩니다.
+          {t.noHandoffNote}
         </RelationshipReportParagraph>
       )}
     </RelationshipReportInset>
@@ -224,6 +228,8 @@ export default function WorkColleagueReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
+  const messages = useMessages();
+  const t = messages.relationshipDrilldown.work;
   const theme = getTabTheme("work");
   const office = report.office;
   const dnaPair = office?.section_dna
@@ -233,8 +239,9 @@ export default function WorkColleagueReportView({
         viewerIsReportA,
       )
     : null;
-  const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
-  const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
+  const myName = myNameProp ?? dnaPair?.me.nickname ?? messages.report.meFallbackLabel;
+  const partnerName =
+    partnerNameProp ?? dnaPair?.partner.nickname ?? messages.report.partnerFallbackLabel;
 
   const snap = office?.section_snapshot ?? {
     fit_pct: report.meta?.fit_pct ?? 0,
@@ -323,26 +330,24 @@ export default function WorkColleagueReportView({
   return (
     <RelationshipReportLayout
       kind="work"
-      kindLabel="Premium · 오피스 파트너십"
+      kindLabel={t.eyebrow}
       headline={{
         title: report.headline || snap.one_line_definition,
         subtitle: snap.one_line_definition,
         names: [myName, partnerName],
-        badge: report.meta?.grade
-          ? `파트너십 등급 ${report.meta.grade}`
-          : undefined,
+        badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
       }}
       scores={[
-        { emoji: "🔥", label: "업무적 핏", value: snap.fit_pct, tone: "warm" },
+        { emoji: "🔥", label: t.scoreLabelFit, value: snap.fit_pct, tone: "warm" },
         {
           emoji: "🧩",
-          label: "협업 시너지",
+          label: t.scoreLabelSynergy,
           value: snap.synergy_pct,
           tone: "cool",
         },
         {
           emoji: "⚡",
-          label: "오피스 리스크",
+          label: t.scoreLabelRisk,
           value: snap.risk_pct,
           tone: "alert",
         },
@@ -362,7 +367,7 @@ export default function WorkColleagueReportView({
 
       {dnaPair ? (
         <RelationshipReportCard
-          title="🧬 파트너십 DNA — 우린 일할 때 어떤 사람일까?"
+          title={t.dnaCardTitle}
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -378,24 +383,24 @@ export default function WorkColleagueReportView({
 
       {mixFit ? (
         <RelationshipReportCard
-          title="💻 두 사람의 일하는 캐릭터 & 믹스 핏"
+          title={t.mixFitCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>[{myName}의 일 스타일]</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.workStyleLabel(myName)}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {workStyleMe}
               </RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>[{partnerName}의 일 스타일]</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.workStyleLabel(partnerName)}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {workStylePartner}
               </RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>[둘의 커뮤니케이션 핏]</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.communicationFitLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {mixFit.communication_fit}
               </RelationshipReportParagraph>
@@ -406,18 +411,18 @@ export default function WorkColleagueReportView({
 
       {respect ? (
         <RelationshipReportCard
-          title="🤝 평화를 지키는 상호 존중 가이드"
+          title={t.respectCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>[{myName}의 영역]</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.boundaryLabel(myName)}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {boundaryMe}
               </RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>[{partnerName}의 영역]</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.boundaryLabel(partnerName)}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {boundaryPartner}
               </RelationshipReportParagraph>
@@ -428,7 +433,7 @@ export default function WorkColleagueReportView({
 
       {roles ? (
         <RelationshipReportCard
-          title="🎯 롤 분담 치트키"
+          title={t.rolesCardTitle}
           accentColor={theme.accent}
         >
           {rolePair ? (
@@ -439,7 +444,7 @@ export default function WorkColleagueReportView({
           ) : (
             <RelationshipReportBody>
               <RelationshipReportLabel>
-                [{myName}가 맡으면 좋은 일]
+                {t.myWeaponsLabel(myName)}
               </RelationshipReportLabel>
               <ul className="mt-2 list-inside list-disc space-y-1" style={{ color: theme.accent }}>
                 {(roles.my_weapons ?? []).map((w) => (
@@ -458,7 +463,7 @@ export default function WorkColleagueReportView({
 
       {idealPair ? (
         <RelationshipReportCard
-          title="🏢 잘 어울리는 직군·부서"
+          title={t.idealRolesCardTitle}
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -477,7 +482,7 @@ export default function WorkColleagueReportView({
 
       {upsetPair ? (
         <RelationshipReportCard
-          title="😤 삐졌을 때 이렇게 대응하세요"
+          title={t.upsetCardTitle}
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -489,13 +494,13 @@ export default function WorkColleagueReportView({
 
       {office?.section_warning ? (
         <RelationshipReportCard
-          title="⚠️ 오피스 워닝 & 싸움 해독제"
+          title={t.warningCardTitle}
           accentColor={theme.accent}
           variant="warning"
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>갈등 트리거</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.conflictTriggerLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {office.section_warning.conflict_trigger}
               </RelationshipReportParagraph>

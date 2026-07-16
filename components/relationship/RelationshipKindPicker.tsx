@@ -7,6 +7,7 @@ import {
   RELATIONSHIP_KINDS,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function RelationshipKindPicker({
   partnerName,
@@ -19,6 +20,7 @@ export default function RelationshipKindPicker({
   onClose: () => void;
   onSelect: (kind: RelationshipKind) => void;
 }) {
+  const messages = useMessages();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,10 +52,10 @@ export default function RelationshipKindPicker({
           id="kind-picker-title"
           className="text-center text-base font-semibold text-[var(--space-text)]"
         >
-          {partnerName}님과 어떤 관계로 볼까요?
+          {messages.hub.kindPickerTitle(partnerName)}
         </h2>
         <p className="mt-2 text-center text-xs text-[var(--space-text-muted)]">
-          선택한 관계에 맞게 심화 분석이 달라져요.
+          {messages.hub.kindPickerSubtitlePremium}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-2">
           {RELATIONSHIP_KINDS.map((kind) => (
@@ -72,7 +74,7 @@ export default function RelationshipKindPicker({
           className="mt-4 w-full border border-white/15 bg-transparent !shadow-none"
           onClick={onClose}
         >
-          취소
+          {messages.cta.cancel}
         </GlowButton>
       </div>
     </div>

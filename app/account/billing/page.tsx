@@ -4,14 +4,16 @@ import Link from "next/link";
 import { RedirectToSignIn, useAuth } from "@clerk/nextjs";
 import AccountPageShell from "@/components/account/AccountPageShell";
 import { ROUTES } from "@/constants/routes";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function AccountBillingPage() {
   const { isLoaded, isSignedIn } = useAuth();
+  const messages = useMessages();
 
   if (!isLoaded) {
     return (
-      <AccountPageShell activeTab="billing" title="결제 내역">
-        <p className="text-sm text-on-surface-variant">불러오는 중…</p>
+      <AccountPageShell activeTab="billing" title={messages.account.billingLabel}>
+        <p className="text-sm text-on-surface-variant">{messages.account.loading}</p>
       </AccountPageShell>
     );
   }
@@ -23,18 +25,18 @@ export default function AccountBillingPage() {
   return (
     <AccountPageShell
       activeTab="billing"
-      title="결제 내역"
-      subtitle="결제·구독 내역을 확인해요."
+      title={messages.account.billingLabel}
+      subtitle={messages.account.billingSubtitle}
     >
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
         <p className="text-sm leading-relaxed text-on-surface-variant">
-          결제 내역 화면은 곧 제공될 예정이에요.
+          {messages.account.billingComingSoon}
         </p>
         <Link
           href={ROUTES.accountProfile}
           className="stitch-cta-secondary mt-5 inline-flex"
         >
-          개인정보로 돌아가기
+          {messages.account.backToProfile}
         </Link>
       </section>
     </AccountPageShell>

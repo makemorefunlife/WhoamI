@@ -23,6 +23,7 @@ import {
   RelationshipReportLabel,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const DE_ESCALATION_VARIANT: Record<string, "warning" | "success" | "default"> = {
   red: "warning",
@@ -41,6 +42,7 @@ function PersonDnaBlock({
   person: FriendReportBody["friend"]["section_social_dna_a"];
   accent: string;
 }) {
+  const t = useMessages().relationshipDrilldown.friendship;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">{title}</p>
@@ -49,25 +51,25 @@ function PersonDnaBlock({
       </p>
       <div className="mt-4 space-y-3">
         <div>
-          <RelationshipReportLabel>🎭 포지션</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.positionLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {person.friend_position}
           </RelationshipReportParagraph>
         </div>
         <div>
-          <RelationshipReportLabel>🗣️ 티키타카</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.banterLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {person.tikitaka_label} — {person.tikitaka_description}
           </RelationshipReportParagraph>
         </div>
         <div>
-          <RelationshipReportLabel>🔋 배터리</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.batteryLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {person.battery_description}
           </RelationshipReportParagraph>
         </div>
         <div>
-          <RelationshipReportLabel>🍻 편한 본모습</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.privateSideLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {person.private_self}
           </RelationshipReportParagraph>
@@ -88,6 +90,8 @@ export default function FriendReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
+  const messages = useMessages();
+  const t = messages.relationshipDrilldown.friendship;
   const theme = getTabTheme("friendship");
   const f = report.friend;
   const snap = f?.section_snapshot ?? {
@@ -104,8 +108,9 @@ export default function FriendReportView({
         viewerIsReportA,
       )
     : null;
-  const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
-  const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
+  const myName = myNameProp ?? dnaPair?.me.nickname ?? messages.report.meFallbackLabel;
+  const partnerName =
+    partnerNameProp ?? dnaPair?.partner.nickname ?? messages.report.partnerFallbackLabel;
 
   const psychDisplay = useMemo(
     () => resolveReportPsychDisplay(report.meta, buildFriendPsychMatchBundle),
@@ -153,26 +158,24 @@ export default function FriendReportView({
         title: headlineTitle,
         subtitle: headlineSubtitle,
         names: [myName, partnerName],
-        badge: report.meta?.grade
-          ? `우정 등급 ${report.meta.grade}`
-          : undefined,
+        badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
       }}
       scores={[
         {
           emoji: "🔥",
-          label: "우정 케미",
+          label: t.scoreLabelChemistry,
           value: snap.connection_pct,
           tone: "warm",
         },
         {
           emoji: "🧩",
-          label: "티키타카",
+          label: t.scoreLabelBanter,
           value: snap.banter_pct,
           tone: "cool",
         },
         {
           emoji: "⚡",
-          label: "소셜 리스크",
+          label: t.scoreLabelRisk,
           value: snap.risk_pct,
           tone: "alert",
         },
@@ -195,7 +198,7 @@ export default function FriendReportView({
       ) : null}
 
       <RelationshipReportCard
-        title="🧬 Social DNA 프로필"
+        title={t.dnaCardTitle}
         accentColor={theme.accent}
       >
         <RelationshipReportBody className="grid gap-4 sm:grid-cols-2">
@@ -213,7 +216,7 @@ export default function FriendReportView({
       </RelationshipReportCard>
 
       <RelationshipReportCard
-        title="🤝 우정 주파수 매칭"
+        title={t.soulmateCardTitle}
         accentColor={theme.accent}
       >
         <RelationshipReportParagraph>
@@ -222,19 +225,19 @@ export default function FriendReportView({
       </RelationshipReportCard>
 
       <RelationshipReportCard
-        title="💸 노는 코드와 돈 계산"
+        title={t.playMoneyCardTitle}
         accentColor={theme.accent}
       >
         <RelationshipReportBody>
           <div>
-            <RelationshipReportLabel>💰 총무</RelationshipReportLabel>
+            <RelationshipReportLabel>{t.treasurerLabel}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">
               {f.section_play_money.treasurer_nickname} —{" "}
               {f.section_play_money.treasurer_reason}
             </RelationshipReportParagraph>
           </div>
           <div>
-            <RelationshipReportLabel>🎪 최적 동선</RelationshipReportLabel>
+            <RelationshipReportLabel>{t.optimalHangoutLabel}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">
               {f.section_play_money.optimal_hangout}
             </RelationshipReportParagraph>
@@ -243,7 +246,7 @@ export default function FriendReportView({
       </RelationshipReportCard>
 
       <RelationshipReportCard
-        title="⚠️ 손절 폭탄 해체 가이드"
+        title={t.breakupGuideCardTitle}
         accentColor={theme.accent}
         variant="warning"
       >
@@ -258,7 +261,7 @@ export default function FriendReportView({
       </RelationshipReportCard>
 
       <RelationshipReportCard
-        title="⚡ 절친 싸움 해독제"
+        title={t.deEscalationCardTitle}
         accentColor={theme.accent}
         variant={
           DE_ESCALATION_VARIANT[f.section_de_escalation.color] ?? "default"

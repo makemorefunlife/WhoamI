@@ -1,39 +1,11 @@
+import type { MessageCatalog } from "@/lib/i18n/messages";
+
 export const DECISION_CATEGORIES = [
-  {
-    id: "relationship",
-    emoji: "👥",
-    labelKo: "관계",
-    labelEn: "Relationships",
-    tabLabel: "👥 관계",
-  },
-  {
-    id: "career",
-    emoji: "💼",
-    labelKo: "커리어",
-    labelEn: "Career",
-    tabLabel: "💼 커리어",
-  },
-  {
-    id: "finance",
-    emoji: "💰",
-    labelKo: "재테크",
-    labelEn: "Finance",
-    tabLabel: "💰 Finance",
-  },
-  {
-    id: "life",
-    emoji: "🏠",
-    labelKo: "일상",
-    labelEn: "Life",
-    tabLabel: "🏠 일상",
-  },
-  {
-    id: "others",
-    emoji: "📦",
-    labelKo: "기타",
-    labelEn: "Others",
-    tabLabel: "📦 기타",
-  },
+  { id: "relationship", emoji: "👥" },
+  { id: "career", emoji: "💼" },
+  { id: "finance", emoji: "💰" },
+  { id: "life", emoji: "🏠" },
+  { id: "others", emoji: "📦" },
 ] as const;
 
 export type DecisionCategory = (typeof DECISION_CATEGORIES)[number]["id"];
@@ -56,14 +28,23 @@ export function normalizeDecisionCategory(raw: string): DecisionCategory {
 
 export function decisionCategorySelectLabel(
   cat: (typeof DECISION_CATEGORIES)[number],
+  messages: MessageCatalog,
 ): string {
-  return `${cat.emoji} ${cat.labelEn}`;
+  return `${cat.emoji} ${messages.decision.categories[cat.id]}`;
 }
 
-export function decisionCategoryReviewTabLabel(id: DecisionCategory): string {
-  return DECISION_CATEGORIES.find((c) => c.id === id)?.tabLabel ?? id;
+export function decisionCategoryReviewTabLabel(
+  id: DecisionCategory,
+  messages: MessageCatalog,
+): string {
+  const cat = DECISION_CATEGORIES.find((c) => c.id === id);
+  if (!cat) return id;
+  return `${cat.emoji} ${messages.decision.categories[id]}`;
 }
 
-export function decisionCategoryLabel(id: DecisionCategory): string {
-  return decisionCategoryReviewTabLabel(id);
+export function decisionCategoryLabel(
+  id: DecisionCategory,
+  messages: MessageCatalog,
+): string {
+  return decisionCategoryReviewTabLabel(id, messages);
 }

@@ -8,6 +8,8 @@ import {
   FriendAvatarCircle,
   FriendMoreCircle,
 } from "@/components/relationship/hub/FriendAvatarCircle";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 
 const STORY_VISIBLE = 3;
 
@@ -34,17 +36,23 @@ function itemKey(item: RelationshipListItem): string {
   );
 }
 
-function AddFriendButton({ onClick }: { onClick: () => void }) {
+function AddFriendButton({
+  onClick,
+  messages,
+}: {
+  onClick: () => void;
+  messages: MessageCatalog;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex w-16 shrink-0 flex-col items-center gap-2 active:scale-95"
-      aria-label="친구 추가하기"
+      aria-label={messages.hub.addFriendAria}
     >
       <FriendAddCircle />
       <span className="max-w-[4.5rem] truncate text-center text-xs font-medium text-secondary">
-        친구 추가
+        {messages.hub.addFriendShort}
       </span>
     </button>
   );
@@ -63,6 +71,7 @@ export default function FriendStoryRow({
   onRename,
   onToggleFavorite,
 }: Props) {
+  const messages = useMessages();
   const maxVisible = isSignedIn ? STORY_VISIBLE : 1;
   const visible = friends.slice(0, maxVisible);
   const hasMore = friends.length > maxVisible;
@@ -72,7 +81,7 @@ export default function FriendStoryRow({
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="stitch-headline text-lg text-primary">친구 목록</h2>
+        <h2 className="stitch-headline text-lg text-primary">{messages.hub.friendListTitle}</h2>
         <button
           type="button"
           onClick={onToggleFavoritesOnly}
@@ -85,21 +94,21 @@ export default function FriendStoryRow({
           <Star
             className={`h-3.5 w-3.5 ${favoritesOnly ? "fill-current" : ""}`}
           />
-          즐겨찾기만 보기
+          {messages.hub.favoritesOnly}
         </button>
       </div>
 
       {loading && isEmpty ? (
         <p className="py-6 text-center text-sm text-on-surface-variant">
-          친구 목록 불러오는 중…
+          {messages.hub.friendListLoading}
         </p>
       ) : isEmpty && favoritesOnly ? (
         <p className="py-6 text-center text-sm text-on-surface-variant">
-          즐겨찾기한 친구가 없어요.
+          {messages.hub.noFavoriteFriends}
         </p>
       ) : isEmpty ? (
         <div className="flex items-start pb-1 pt-1">
-          <AddFriendButton onClick={onAddFriend} />
+          <AddFriendButton onClick={onAddFriend} messages={messages} />
         </div>
       ) : (
         <div className="flex items-start gap-4 overflow-x-auto px-1 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -133,15 +142,15 @@ export default function FriendStoryRow({
               type="button"
               onClick={onShowAll}
               className="flex w-16 shrink-0 flex-col items-center gap-2 active:scale-95"
-              aria-label="전체 친구 보기"
+              aria-label={messages.hub.viewAllFriendsAria}
             >
               <FriendMoreCircle />
               <span className="max-w-[4.5rem] truncate text-center text-xs font-medium text-on-surface-variant">
-                More
+                {messages.hub.more}
               </span>
             </button>
           ) : null}
-          <AddFriendButton onClick={onAddFriend} />
+          <AddFriendButton onClick={onAddFriend} messages={messages} />
         </div>
       )}
 
@@ -160,7 +169,7 @@ export default function FriendStoryRow({
             className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-surface px-3 text-sm font-medium text-primary transition hover:bg-surface-container-high active:scale-[0.98] disabled:opacity-40"
           >
             <Pencil className="h-4 w-4" />
-            이름 변경하기
+            {messages.hub.renameCta}
           </button>
           <button
             type="button"
@@ -170,7 +179,7 @@ export default function FriendStoryRow({
             <Star
               className={`h-4 w-4 ${selected.is_favorite ? "fill-amber-400 text-amber-400" : ""}`}
             />
-            {selected.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
+            {selected.is_favorite ? messages.hub.unfavorite : messages.hub.favorite}
           </button>
         </motion.div>
       ) : null}

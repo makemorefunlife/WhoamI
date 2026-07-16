@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import { FriendAvatarCircle } from "@/components/relationship/hub/FriendAvatarCircle";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   open: boolean;
@@ -31,6 +32,7 @@ export default function FriendsListSheet({
   onClose,
   onSelect,
 }: Props) {
+  const messages = useMessages();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -54,14 +56,14 @@ export default function FriendsListSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="stitch-headline text-xl text-primary">전체 친구</h2>
-          <button type="button" onClick={onClose} aria-label="닫기" className="rounded-full p-2">
+          <h2 className="stitch-headline text-xl text-primary">{messages.hub.allFriendsTitle}</h2>
+          <button type="button" onClick={onClose} aria-label={messages.common.close} className="rounded-full p-2">
             <X className="h-5 w-5" />
           </button>
         </div>
         {friends.length === 0 ? (
           <p className="py-10 text-center text-sm text-on-surface-variant">
-            등록된 친구가 없어요.
+            {messages.hub.noFriendsRegistered}
           </p>
         ) : (
           <ul className="space-y-2">

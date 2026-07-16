@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import type { DecisionEntry } from "@/lib/decision/types";
 import { decisionCategoryLabel } from "@/lib/decision/categories";
 import { StarRatingInput } from "@/components/decision/StarRating";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   entry: DecisionEntry | null;
@@ -19,6 +20,7 @@ export default function DecisionReviewSheet({
   onClose,
   onSave,
 }: Props) {
+  const messages = useMessages();
   const [rating, setRating] = useState(0);
   const [note, setNote] = useState("");
 
@@ -60,7 +62,7 @@ export default function DecisionReviewSheet({
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">
-              {decisionCategoryLabel(entry.category)}
+              {decisionCategoryLabel(entry.category, messages)}
             </p>
             <h2
               id="decision-review-title"
@@ -73,25 +75,25 @@ export default function DecisionReviewSheet({
             type="button"
             onClick={onClose}
             className="shrink-0 rounded-full p-1.5 text-on-surface-variant transition hover:bg-surface-container-low"
-            aria-label="닫기"
+            aria-label={messages.common.close}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-          별점
+          {messages.decision.ratingSectionLabel}
         </p>
         <StarRatingInput value={rating} onChange={setRating} />
 
         <label className="mb-2 mt-5 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-          리뷰 메모
+          {messages.decision.reviewNoteLabel}
         </label>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={3}
-          placeholder="이 결정에 대해 어떻게 느꼈나요?"
+          placeholder={messages.decision.reviewNotePlaceholder}
           className="w-full resize-none rounded-xl border-0 bg-surface-container-low/80 px-4 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/35 focus:ring-2 focus:ring-primary/15"
         />
 
@@ -101,7 +103,7 @@ export default function DecisionReviewSheet({
             onClick={onClose}
             className="flex-1 rounded-full border border-outline-variant/50 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-low"
           >
-            취소
+            {messages.cta.cancel}
           </button>
           <button
             type="button"
@@ -109,7 +111,7 @@ export default function DecisionReviewSheet({
             disabled={rating < 1}
             className="stitch-cta-primary flex-1 !min-w-0 !px-4 !py-3 !text-sm disabled:cursor-not-allowed disabled:opacity-45"
           >
-            저장
+            {messages.cta.save}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { needsDecisionReview } from "@/lib/decision/types";
 import type { DecisionEntry } from "@/lib/decision/types";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   entry: DecisionEntry;
@@ -7,6 +8,7 @@ type Props = {
 };
 
 export default function DecisionStatusDot({ entry, className = "" }: Props) {
+  const messages = useMessages();
   const pending = needsDecisionReview(entry);
   return (
     <span
@@ -15,7 +17,7 @@ export default function DecisionStatusDot({ entry, className = "" }: Props) {
           ? "bg-amber-400 shadow-amber-400/40"
           : "bg-secondary shadow-secondary/35"
       } ${className}`}
-      title={pending ? "리뷰 필요" : "리뷰 완료"}
+      title={pending ? messages.decision.statusPending : messages.decision.statusDotReviewed}
       aria-hidden
     />
   );

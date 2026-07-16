@@ -13,6 +13,8 @@ import {
   buildInviteUrl,
   copyInviteLink,
 } from "@/lib/relationship/inviteShare";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
+import type { MessageCatalog } from "@/lib/i18n/messages";
 
 export type HubRowKind =
   | "outbound_waiting"
@@ -38,28 +40,32 @@ export type RelationshipListItem = {
   relationship_kind?: string;
 };
 
-const KIND_BADGE: Record<HubRowKind, { label: string; className: string }> = {
-  outbound_waiting: {
-    label: "보낸 요청",
-    className: "bg-[#FFD6A5]/15 text-[#FFD6A5]",
-  },
-  relationship_outbound: {
-    label: "내가 초대한 관계",
-    className: "bg-[#67B7FF]/18 text-[#9ec8ff]",
-  },
-  relationship_inbound: {
-    label: "받은 초대",
-    className: "bg-[#c4a5ff]/15 text-[#d4c4ff]",
-  },
-  relationship_other: {
-    label: "관계",
-    className: "bg-white/10 text-[var(--space-text-muted)]",
-  },
-  relationship_manual: {
-    label: "직접 입력",
-    className: "bg-[#7BFFB5]/12 text-[#9dffc8]",
-  },
-};
+function kindBadgeMap(
+  messages: MessageCatalog,
+): Record<HubRowKind, { label: string; className: string }> {
+  return {
+    outbound_waiting: {
+      label: messages.hub.badgeOutboundWaiting,
+      className: "bg-[#FFD6A5]/15 text-[#FFD6A5]",
+    },
+    relationship_outbound: {
+      label: messages.hub.badgeOutboundRelationship,
+      className: "bg-[#67B7FF]/18 text-[#9ec8ff]",
+    },
+    relationship_inbound: {
+      label: messages.hub.badgeInboundRelationship,
+      className: "bg-[#c4a5ff]/15 text-[#d4c4ff]",
+    },
+    relationship_other: {
+      label: messages.hub.badgeOtherRelationship,
+      className: "bg-white/10 text-[var(--space-text-muted)]",
+    },
+    relationship_manual: {
+      label: messages.hub.badgeManualRelationship,
+      className: "bg-[#7BFFB5]/12 text-[#9dffc8]",
+    },
+  };
+}
 
 type Props = {
   item: RelationshipListItem;
@@ -81,9 +87,11 @@ export default function RelationshipCard({
   favoriteBusy,
 }: Props) {
   const router = useRouter();
+  const messages = useMessages();
   const [pickerOpen, setPickerOpen] = useState(false);
   const kind = (item.row_kind ?? "relationship_other") as HubRowKind;
-  const badge = KIND_BADGE[kind] ?? KIND_BADGE.relationship_other;
+  const kindBadge = kindBadgeMap(messages);
+  const badge = kindBadge[kind] ?? kindBadge.relationship_other;
   const isDone = item.status === "completed";
   const isPremium = item.analysis_type === "premium";
   const hasRr = Boolean(item.relationship_report_id);
@@ -91,7 +99,7 @@ export default function RelationshipCard({
 
   const title =
     item.pipeline_title?.trim() ||
-    `${item.partner_name}님과의 관계`;
+    messages.hub.defaultTitle(item.partner_name);
 
   const shell = [
     "flex flex-col rounded-xl border p-4 backdrop-blur-sm transition",
@@ -118,20 +126,20 @@ export default function RelationshipCard({
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "친구 초대",
-          text: "함께 관계 분석을 받아보자.",
+          title: messages.hub.shareInviteTitle,
+          text: messages.hub.shareInviteText,
           url,
         });
       } else {
         await navigator.clipboard.writeText(url);
-        alert("복사했어요.");
+        alert(messages.hub.shareCopiedNotice);
       }
     } catch {
       try {
         await navigator.clipboard.writeText(url);
-        alert("복사했어요.");
+        alert(messages.hub.shareCopiedNotice);
       } catch {
-        alert("공유에 실패했어요.");
+        alert(messages.hub.shareFailedNotice);
       }
     }
   }
@@ -164,7 +172,7 @@ export default function RelationshipCard({
   async function copyInvite(token: string) {
     const url = buildInviteUrl(token);
     const ok = await copyInviteLink(url);
-    alert(ok ? "링크를 복사했어요." : "복사에 실패했어요.");
+    alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
   }
 
   return (
@@ -184,14 +192,14 @@ export default function RelationshipCard({
                 : "bg-[#67B7FF]/12 text-[#9ec8ff]",
             ].join(" ")}
           >
-            {item.analysis_type === "premium" ? "Premium" : "Basic"}
+            {item.analysis_type === "premium" ? messages.hub.premiumBadge : messages.hub.basicBadge}
           </span>
         ) : null}
         {hasRr && onFavoriteToggle ? (
           <button
             type="button"
             disabled={favoriteBusy}
-            aria-label={item.is_favorite ? "즐겨찾기 해제" : "즐겨찾기"}
+            aria-label={item.is_favorite ? messages.hub.unfavorite : messages.hub.favorite}
             aria-pressed={Boolean(item.is_favorite)}
             className={[
               "ml-auto rounded-full p-1.5 transition disabled:opacity-50",
@@ -218,7 +226,7 @@ export default function RelationshipCard({
       </h3>
       {kind !== "outbound_waiting" && (
         <p className="mt-1 text-xs text-[var(--space-text-muted)]">
-          상대: {item.partner_name}
+          {messages.hub.partnerPrefix(item.partner_name)}
         </p>
       )}
 
@@ -226,14 +234,14 @@ export default function RelationshipCard({
         <p className="mt-2 text-[11px] text-[var(--space-text-muted)]">
           {isDone ? (
             <>
-              {isPremium ? "심화 분석 완료" : "기본 분석 완료"}
+              {isPremium ? messages.hub.premiumDoneStatus : messages.hub.basicDoneStatus}
               {item.last_viewed ? ` · ${item.last_viewed}` : ""}
             </>
           ) : (
             <>
               {item.analysis_type === "basic" || item.analysis_type === "premium"
-                ? "심화 분석 미완료 · 이어서 만들 수 있어요"
-                : "분석 준비 중 · 잠시 후 다시 열어보세요"}
+                ? messages.hub.premiumIncompleteStatus
+                : messages.hub.preparingStatus}
             </>
           )}
         </p>
@@ -254,14 +262,14 @@ export default function RelationshipCard({
                   className="!min-h-[42px] w-full py-2 text-sm"
                   onClick={viewCompletedReport}
                 >
-                  완성된 리포트 보기
+                  {messages.hub.viewCompletedReport}
                 </GlowButton>
                 <button
                   type="button"
                   className={outlineBtn}
                   onClick={() => setPickerOpen(true)}
                 >
-                  다른 관계로 더 보기
+                  {messages.hub.viewOtherKinds}
                 </button>
               </div>
             ) : (
@@ -270,7 +278,7 @@ export default function RelationshipCard({
                 className="!min-h-[42px] flex-1 py-2 text-sm"
                 onClick={openForFirstAnalysis}
               >
-                {`${item.partner_name}님 분석하기`}
+                {messages.hub.analyzeWithName(item.partner_name)}
               </GlowButton>
             )}
             <button
@@ -279,7 +287,7 @@ export default function RelationshipCard({
               className="shrink-0 rounded-xl border border-red-400/25 px-3 py-2 text-xs font-medium text-red-300/90 hover:bg-red-500/10 disabled:opacity-50"
               onClick={() => onDeleteManual(item)}
             >
-              {deleteBusy ? "…" : "삭제"}
+              {deleteBusy ? "…" : messages.hub.delete}
             </button>
           </div>
         ) : hasRr ? (
@@ -290,14 +298,14 @@ export default function RelationshipCard({
                 className="!min-h-[42px] w-full py-2 text-sm"
                 onClick={viewCompletedReport}
               >
-                완성된 리포트 보기
+                {messages.hub.viewCompletedReport}
               </GlowButton>
               <button
                 type="button"
                 className={outlineBtn}
                 onClick={() => setPickerOpen(true)}
               >
-                다른 관계로 더 보기 (연인·가족·동료·친구)
+                {messages.hub.viewOtherKindsFull}
               </button>
             </>
           ) : (
@@ -306,7 +314,7 @@ export default function RelationshipCard({
               className="!min-h-[42px] w-full py-2 text-sm"
               onClick={openForFirstAnalysis}
             >
-              {`${item.partner_name}님 분석하기`}
+              {messages.hub.analyzeWithName(item.partner_name)}
             </GlowButton>
           )
         ) : null}
@@ -317,7 +325,7 @@ export default function RelationshipCard({
               className={halfBtn}
               onClick={() => void copyInvite(item.invite_token!)}
             >
-              링크 복사
+              {messages.hub.copyLink}
             </button>
             {onDeleteRequest ? (
               <button
@@ -326,7 +334,7 @@ export default function RelationshipCard({
                 className="flex-1 rounded-xl border border-red-400/25 py-2.5 text-xs font-medium text-red-300/90 hover:bg-red-500/10 disabled:opacity-50"
                 onClick={() => onDeleteRequest(item)}
               >
-                {deleteBusy ? "삭제 중…" : "요청 삭제"}
+                {deleteBusy ? messages.hub.deleting : messages.hub.deleteRequestCta}
               </button>
             ) : null}
           </div>
@@ -337,7 +345,7 @@ export default function RelationshipCard({
             className={outlineBtn}
             onClick={() => void shareInvite(item.invite_token!)}
           >
-            초대 링크 다시 보내기
+            {messages.hub.resendInviteLink}
           </button>
         ) : null}
       </div>

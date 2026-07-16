@@ -7,11 +7,11 @@ import {
   pickChemistryHeadline,
   pickChemistryInsight,
 } from "@/lib/relationship/psychMatch/chemistryInsights";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const LINE_SOFT = "rgba(34,31,43,0.10)";
 const GOLD_LIGHT = "#F0DFB8";
 const GOLD_BRAND = "#C9A24B";
-const INSUFFICIENT_DATA_MESSAGE = "데이터가 부족해 계산할 수 없어요";
 
 const MONO_STYLE: CSSProperties = {
   fontFamily: "var(--font-ibm-plex-mono), var(--font-geist-mono), monospace",
@@ -31,6 +31,7 @@ export type ChemistryBreakdownProps = {
 function MethodologyHint() {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const t = useMessages().relationshipDrilldown.layout;
 
   return (
     <div className="relative inline-flex items-start">
@@ -39,7 +40,7 @@ function MethodologyHint() {
         className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-outline-variant/40 text-[11px] font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label="케미 점수 계산 방법"
+        aria-label={t.chemistryCalcAria}
         onClick={() => setOpen((prev) => !prev)}
       >
         i
@@ -58,6 +59,7 @@ function MethodologyHint() {
 }
 
 function ChemistryGauge({ label, icon, score, kind }: ChemistryGaugeItem) {
+  const t = useMessages().relationshipDrilldown.layout;
   if (score === null) {
     return (
       <div className="rounded-xl border border-outline-variant/25 bg-surface-container-low/50 px-4 py-3">
@@ -68,7 +70,7 @@ function ChemistryGauge({ label, icon, score, kind }: ChemistryGaugeItem) {
           {label}
         </p>
         <p className="mt-1.5 text-xs leading-relaxed text-on-surface-variant">
-          {INSUFFICIENT_DATA_MESSAGE}
+          {t.insufficientData}
         </p>
       </div>
     );
@@ -120,17 +122,18 @@ function ChemistryGauge({ label, icon, score, kind }: ChemistryGaugeItem) {
 }
 
 export default function ChemistryBreakdown({ scores }: ChemistryBreakdownProps) {
+  const t = useMessages().relationshipDrilldown.layout;
   const headline = pickChemistryHeadline(scores);
 
   const items: ChemistryGaugeItem[] = [
     {
-      label: "감정 케미",
+      label: t.emotionalChemistryLabel,
       icon: "🍀",
       score: scores.emotional,
       kind: "emotional",
     },
     {
-      label: "소통 케미",
+      label: t.communicationChemistryLabel,
       icon: "🍀",
       score: scores.communication,
       kind: "communication",

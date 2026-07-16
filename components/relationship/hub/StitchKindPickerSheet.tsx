@@ -8,6 +8,7 @@ import { RelationshipKindBadge } from "@/components/relationship/RelationshipKin
 import type { FamilyPerspective } from "@/lib/relationship/hubNavigation";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const HUB_KINDS: {
   kind: RelationshipKind;
@@ -36,6 +37,7 @@ export default function StitchKindPickerSheet({
   onClose,
   onSelect,
 }: Props) {
+  const messages = useMessages();
   const [familyOpen, setFamilyOpen] = useState(false);
   const [parentType, setParentType] = useState<FamilyParentRole>("mother");
 
@@ -71,17 +73,17 @@ export default function StitchKindPickerSheet({
               id="kind-picker-title"
               className="stitch-headline text-xl text-primary"
             >
-              {partnerName}님과 어떤 관계로 볼까요?
+              {messages.hub.kindPickerTitle(partnerName)}
             </h2>
             <p className="mt-1 text-sm text-on-surface-variant">
-              선택한 관계에 맞게 분석이 달라져요.
+              {messages.hub.kindPickerSubtitle}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="shrink-0 rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low"
-            aria-label="닫기"
+            aria-label={messages.common.close}
           >
             <X className="h-5 w-5" />
           </button>
@@ -111,7 +113,7 @@ export default function StitchKindPickerSheet({
                     >
                       <div className="mt-2 space-y-2 rounded-2xl border border-outline-variant/25 bg-surface-container-low/40 p-3">
                         <p className="px-1 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                          관점 선택
+                          {messages.hub.perspectiveSelectLabel}
                         </p>
                         <button
                           type="button"
@@ -123,9 +125,9 @@ export default function StitchKindPickerSheet({
                           }
                           className="w-full rounded-xl border border-outline-variant/35 bg-surface px-4 py-3.5 text-left text-sm font-medium text-primary transition hover:border-secondary/30 active:scale-[0.99]"
                         >
-                          부모 입장
+                          {messages.hub.parentPerspectiveTitle}
                           <span className="mt-0.5 block text-xs font-normal text-on-surface-variant">
-                            자녀를 바라보는 관점
+                            {messages.hub.parentPerspectiveSubtitle}
                           </span>
                         </button>
                         <button
@@ -138,9 +140,9 @@ export default function StitchKindPickerSheet({
                           }
                           className="w-full rounded-xl border border-outline-variant/35 bg-surface px-4 py-3.5 text-left text-sm font-medium text-primary transition hover:border-secondary/30 active:scale-[0.99]"
                         >
-                          자녀 입장
+                          {messages.hub.childPerspectiveTitle}
                           <span className="mt-0.5 block text-xs font-normal text-on-surface-variant">
-                            부모를 바라보는 관점
+                            {messages.hub.childPerspectiveSubtitle}
                           </span>
                         </button>
                         <div className="flex gap-2 pt-1">
@@ -155,7 +157,7 @@ export default function StitchKindPickerSheet({
                                   : "bg-surface text-on-surface-variant"
                               }`}
                             >
-                              {role === "mother" ? "엄마 렌즈" : "아빠 렌즈"}
+                              {role === "mother" ? messages.hub.motherLensShort : messages.hub.fatherLensShort}
                             </button>
                           ))}
                         </div>

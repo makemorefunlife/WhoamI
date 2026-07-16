@@ -22,6 +22,7 @@ import {
   RelationshipReportInset,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const DE_ESCALATION_COLORS: Record<string, string> = {
   red: "border-red-400/30 bg-red-950/20 text-red-200",
@@ -32,6 +33,7 @@ const DE_ESCALATION_COLORS: Record<string, string> = {
 };
 
 function DnaCard({ profile, accent }: { profile: HomeLifeDnaProfile; accent: string }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">👤 {profile.nickname}</p>
@@ -40,25 +42,25 @@ function DnaCard({ profile, accent }: { profile: HomeLifeDnaProfile; accent: str
       </p>
       <ul className="mt-4 space-y-3">
         <li>
-          <RelationshipReportLabel>🏡 추구하는 삶의 가치관</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaValuesLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.life_values}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>🛏️ 문 닫은 집 안에서의 모습</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaPrivateSelfLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.private_home_self}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>🔋 에너지 배터리</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaEnergyLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.energy_battery}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>🔮 패밀리 정체성</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.dnaFamilyIdentityLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.family_identity}
           </RelationshipReportParagraph>
@@ -69,26 +71,27 @@ function DnaCard({ profile, accent }: { profile: HomeLifeDnaProfile; accent: str
 }
 
 function BedroomProfileCard({ profile }: { profile: BedroomPersonProfile }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
   return (
     <RelationshipReportInset>
       <p className="text-sm font-bold text-white/92">
-        {profile.nickname}의 밤 프로필
+        {t.bedroomProfileTitle(profile.nickname)}
       </p>
       <ul className="mt-4 space-y-3">
         <li>
-          <RelationshipReportLabel>🔋 스태미나 & 지속력</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.bedroomStaminaLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.stamina}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>🔮 판타지 & 새로움</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.bedroomFantasyLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.fantasy}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>💖 침실 매너 & 배려</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.bedroomMannerLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.manner}
           </RelationshipReportParagraph>
@@ -159,15 +162,16 @@ function DeEscalationPrescriptionCard({
 }: {
   card: HomeDeEscalationCard;
 }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
   return (
     <div
       className={`rounded-xl border p-5 ${DE_ESCALATION_COLORS[card.color] ?? DE_ESCALATION_COLORS.blue}`}
     >
       <p className="text-xs font-medium uppercase tracking-wide opacity-80">
-        ⚡ {card.upset_nickname}가 화났을 때
+        {t.deEscalationCardUpsetLabel(card.upset_nickname)}
       </p>
       <p className="mt-1 text-xs opacity-75">
-        → {card.partner_nickname}의 화 풀림 처방
+        {t.deEscalationCardArrowLabel(card.partner_nickname)}
       </p>
       <p className="mt-3 text-base font-bold">{card.hashtag}</p>
       {card.archetype_label ? (
@@ -175,16 +179,16 @@ function DeEscalationPrescriptionCard({
       ) : null}
       <div className="mt-4 space-y-4 text-[15px] leading-relaxed">
         <div>
-          <p className="font-semibold">🧠 {card.upset_nickname}의 심리 상태</p>
+          <p className="font-semibold">{t.deEscalationPsychStateLabel(card.upset_nickname)}</p>
           <p className="mt-1.5 opacity-95">{card.psych_state}</p>
         </div>
         <div>
-          <p className="font-semibold">🛑 {card.partner_nickname}가 하면 안 되는 것</p>
+          <p className="font-semibold">{t.deEscalationAvoidLabel(card.partner_nickname)}</p>
           <p className="mt-1.5 opacity-95">{card.avoid_actions}</p>
         </div>
         <div>
           <p className="font-semibold">
-            💊 {card.partner_nickname} → {card.upset_nickname} Script
+            {t.deEscalationScriptLabel(card.partner_nickname, card.upset_nickname)}
           </p>
           <p className="mt-2 rounded-lg bg-black/20 p-3 italic opacity-95">
             {card.solution_script}
@@ -196,19 +200,22 @@ function DeEscalationPrescriptionCard({
 }
 
 function UpsetGuideCard({ guide }: { guide: HomeUpsetGuide }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
   return (
     <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">{guide.nickname}가 화날 때</p>
+      <p className="text-sm font-bold text-white/92">
+        {t.upsetGuideTitle(guide.nickname)}
+      </p>
       <div className="mt-4 space-y-3">
         <div>
-          <RelationshipReportLabel>잘 터지는 포인트</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.upsetPointLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {guide.upset_signals}
           </RelationshipReportParagraph>
         </div>
         <div>
           <RelationshipReportLabel className="text-emerald-200/90">
-            이렇게 풀어보세요
+            {t.resolveLabel}
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {guide.do_list.map((item) => (
@@ -220,7 +227,7 @@ function UpsetGuideCard({ guide }: { guide: HomeUpsetGuide }) {
         </div>
         <div>
           <RelationshipReportLabel className="text-red-200/80">
-            피하면 좋아요
+            {t.avoidLabel}
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {guide.avoid_list.map((item) => (
@@ -246,6 +253,8 @@ export default function MarriageReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
+  const messages = useMessages();
+  const t = messages.relationshipDrilldown.cohabitation;
   const theme = getTabTheme("cohabitation");
   const hh = report.household;
   const dnaPair = hh?.section_dna
@@ -255,8 +264,9 @@ export default function MarriageReportView({
         viewerIsReportA,
       )
     : null;
-  const myName = myNameProp ?? dnaPair?.me.nickname ?? "나";
-  const partnerName = partnerNameProp ?? dnaPair?.partner.nickname ?? "상대";
+  const myName = myNameProp ?? dnaPair?.me.nickname ?? messages.report.meFallbackLabel;
+  const partnerName =
+    partnerNameProp ?? dnaPair?.partner.nickname ?? messages.report.partnerFallbackLabel;
 
   const panel = useMemo(() => {
     const pc = report.meta?.person_core;
@@ -342,31 +352,29 @@ export default function MarriageReportView({
   return (
     <RelationshipReportLayout
       kind="cohabitation"
-      kindLabel="Premium · 하우스홀드"
+      kindLabel={t.eyebrow}
       headline={{
         title: report.headline || snap.one_line_household,
         subtitle: snap.one_line_household,
         names: [myName, partnerName],
-        badge: report.meta?.grade
-          ? `하우스홀드 등급 ${report.meta.grade}`
-          : undefined,
+        badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
       }}
       scores={[
         {
           emoji: "🔥",
-          label: "로맨틱 핏",
+          label: t.scoreLabelRomanticFit,
           value: snap.romantic_fit_pct,
           tone: "warm",
         },
         {
           emoji: "🧩",
-          label: "라이프 시너지",
+          label: t.scoreLabelLifeSynergy,
           value: snap.life_synergy_pct,
           tone: "cool",
         },
         {
           emoji: "⚡",
-          label: "홈 리스크",
+          label: t.scoreLabelHomeRisk,
           value: snap.home_risk_pct,
           tone: "alert",
         },
@@ -386,7 +394,7 @@ export default function MarriageReportView({
 
       {dnaPair ? (
         <RelationshipReportCard
-          title="🧬 홈 라이프 DNA — 한 지붕 아래, 우린 각각 어떤 사람일까?"
+          title={t.dnaCardTitle}
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -398,7 +406,7 @@ export default function MarriageReportView({
 
       {hh?.section_weather_forecast ? (
         <RelationshipReportCard
-          title="⏳ 향후 3년 홈 리스크 기상도"
+          title={t.weatherCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportParagraph className="font-medium text-white/90">
@@ -423,12 +431,12 @@ export default function MarriageReportView({
 
       {hh?.section_bedroom ? (
         <RelationshipReportCard
-          title="🔞 침실 케미스트리 & 애착 유형"
+          title={t.bedroomCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>🌙 밤의 정합성</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.bedroomChemistryLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {hh.section_bedroom.matrix?.sexual_chemistry_summary ??
                   (hh.section_bedroom as { sexual_chemistry?: string })
@@ -439,14 +447,14 @@ export default function MarriageReportView({
             {bedroomPair ? (
               <>
                 <RelationshipReportLabel className="mt-2">
-                  📊 밤의 성능 & 성향 매트릭스
+                  {t.bedroomMatrixLabel}
                 </RelationshipReportLabel>
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
                   <BedroomProfileCard profile={bedroomPair.me} />
                   <BedroomProfileCard profile={bedroomPair.partner} />
                 </div>
                 <div className="mt-4">
-                  <RelationshipReportLabel>🔥 침실 주파수 한줄평</RelationshipReportLabel>
+                  <RelationshipReportLabel>{t.bedroomFrequencyLabel}</RelationshipReportLabel>
                   <RelationshipReportParagraph className="mt-1.5">
                     {hh.section_bedroom.matrix.frequency_one_liner}
                   </RelationshipReportParagraph>
@@ -462,7 +470,7 @@ export default function MarriageReportView({
                   {hh.section_bedroom.sleep_fit.narrative}
                 </RelationshipReportParagraph>
                 <RelationshipReportLabel className="mt-3 text-emerald-200/90">
-                  💡 수면 처방
+                  {t.sleepPrescriptionLabel}
                 </RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {hh.section_bedroom.sleep_fit.prescription}
@@ -470,7 +478,7 @@ export default function MarriageReportView({
               </RelationshipReportInset>
             ) : null}
             <div className="mt-4">
-              <RelationshipReportLabel>❤️ 정서적 애착 유형</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.attachmentStyleLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {hh.section_bedroom.attachment_style}
               </RelationshipReportParagraph>
@@ -481,20 +489,20 @@ export default function MarriageReportView({
 
       {hh?.section_money_chores ? (
         <RelationshipReportCard
-          title="💸 자산 관리 주도권 & 가사 분담"
+          title={t.moneyChoresCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <RelationshipReportParagraph>
               <span className="font-medium text-white/90">
-                💰 통장 잔고는 누가 쥐어야 할까?{" "}
+                {t.cfoQuestionLabel}
               </span>
               <strong>{hh.section_money_chores.cfo_nickname}</strong>
               {" — "}
               {hh.section_money_chores.cfo_reason}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">[살림 분담] </span>
+              <span className="font-medium text-white/90">{t.choresLabel}</span>
               {hh.section_money_chores.chores_guideline}
             </RelationshipReportParagraph>
           </RelationshipReportBody>
@@ -503,12 +511,12 @@ export default function MarriageReportView({
 
       {hh?.section_family_boundary ? (
         <RelationshipReportCard
-          title="👪 원가족과의 바운더리 & 독립성"
+          title={t.familyBoundaryCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>⚠️ 시댁·처가 스트레스 지수</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.inlawStressLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {hh.section_family_boundary.inlaw_stress_summary}
               </RelationshipReportParagraph>
@@ -527,7 +535,7 @@ export default function MarriageReportView({
 
       {hh?.section_parenting ? (
         <RelationshipReportCard
-          title="👶 육아·교육 가치관"
+          title={t.parentingCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
@@ -551,19 +559,19 @@ export default function MarriageReportView({
 
       {hh?.section_privacy ? (
         <RelationshipReportCard
-          title="🤝 사생활 존중 가이드"
+          title={t.privacyCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <RelationshipReportParagraph>
               <span className="font-medium text-white/90">
-                [내가 침범받기 싫은 선]{" "}
+                {t.myPrivacyLineLabel}
               </span>
               {privacyPair?.me}
             </RelationshipReportParagraph>
             <RelationshipReportParagraph>
               <span className="font-medium text-white/90">
-                [상대에게 보장해 줄 선]{" "}
+                {t.partnerPrivacyLineLabel}
               </span>
               {privacyPair?.partner}
             </RelationshipReportParagraph>
@@ -573,14 +581,14 @@ export default function MarriageReportView({
 
       {hh?.section_warning || hh?.section_upset ? (
         <RelationshipReportCard
-          title="⚠️ 홈 워닝 & 부부 싸움 해독제"
+          title={t.warningCardTitle}
           accentColor={theme.accent}
           variant="warning"
         >
           {hh?.section_warning ? (
             <RelationshipReportBody>
               <div>
-                <RelationshipReportLabel>갈등 트리거</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.conflictTriggerLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {hh.section_warning.conflict_trigger}
                 </RelationshipReportParagraph>
@@ -605,7 +613,7 @@ export default function MarriageReportView({
                 {hh.section_warning.conflict_communication.narrative}
               </RelationshipReportParagraph>
               <RelationshipReportLabel className="mt-3 text-amber-200/90">
-                정서적 방임 리스크
+                {t.neglectRiskLabel}
               </RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {
@@ -619,27 +627,21 @@ export default function MarriageReportView({
             <div className="mt-5 space-y-4">
               <div>
                 <p className="text-sm font-semibold text-white/92">
-                  💊 화 풀림 처방전 — 두 사람 각각 1장
+                  {t.dePrescriptionHeading}
                 </p>
                 <RelationshipReportParagraph className="mt-2" muted>
-                  각 카드 = 「{myName} 또는 {partnerName}가 화났을 때 → 상대가 할
-                  말·행동」입니다.
-                  {deSameType
-                    ? " 두 사람의 1순위 화 풀림 유형이 같습니다."
-                    : " 두 사람의 화 풀림 방식은 다릅니다."}
+                  {t.deIntro(myName, partnerName)}
+                  {deSameType ? t.deSameTypeSuffix : t.deDifferentTypeSuffix}
                 </RelationshipReportParagraph>
                 {deSharedNote || deSameType ? (
                   <p className="mt-3 rounded-lg border border-violet-400/25 bg-violet-950/20 p-3 text-sm text-violet-100/90">
                     🔁{" "}
-                    {deSharedNote ??
-                      `${myName}와 ${partnerName}는 같은 화 풀림 유형입니다. 비슷한 지점에서 동시에 터지기 쉬우니, 한 명이 먼저 타임아웃을 선언하세요.`}
+                    {deSharedNote ?? t.deSharedNoteFallback(myName, partnerName)}
                   </p>
                 ) : null}
                 {deLegacySingle ? (
                   <p className="mt-3 rounded-lg border border-amber-400/25 bg-amber-950/20 p-3 text-sm text-amber-100/90">
-                    이 리포트는 구버전(카드 1장)입니다. 「동거·결혼 심화 분석
-                    다시 만들기」를 누르면 {myName}·{partnerName} 각각의 처방 카드 2장이
-                    표시됩니다.
+                    {t.deLegacyNotice(myName, partnerName)}
                   </p>
                 ) : null}
               </div>

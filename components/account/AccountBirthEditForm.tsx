@@ -10,6 +10,7 @@ import {
   parse24hTo12h,
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 export type AccountBirthEditPayload = {
   birthDate?: string;
@@ -39,6 +40,7 @@ export default function AccountBirthEditForm({
   busy?: boolean;
   onSubmit: (payload: AccountBirthEditPayload) => void;
 }) {
+  const messages = useMessages();
   const parsedDate = parseBirthDateParts(initialBirthDate ?? null);
   const parsedTime =
     !initialBirthTimeUnknown && initialBirthTime
@@ -127,22 +129,23 @@ export default function AccountBirthEditForm({
 
   const saveLabel = allowBirthDateEdit
     ? dateChanged
-      ? "생년월일 포함 저장 (1회 수정)"
-      : "출생 정보 저장"
-    : "출생 시간·지역 저장";
+      ? messages.account.birthFormSaveWithDate
+      : messages.account.birthFormSaveBirthInfo
+    : messages.account.birthFormSaveTimeAndPlace;
 
   return (
     <div className="space-y-5">
       {allowBirthDateEdit ? (
         <div className="space-y-3 rounded-2xl border border-accent-rose/25 bg-accent-rose-soft/60 p-4">
           <p className="text-center text-xs leading-relaxed text-primary">
-            생년월일은 <strong>이번 한 번만</strong> 바꿀 수 있어요. 저장하면
-            이후에는 고객센터로만 변경할 수 있습니다.
+            {messages.account.birthFormDateChangeWarningLead}
+            <strong>{messages.account.birthFormDateChangeWarningBold}</strong>
+            {messages.account.birthFormDateChangeWarningTrail}
           </p>
           <div className="grid grid-cols-3 gap-2">
             <label className="space-y-1">
               <span className="block text-center text-[10px] text-on-surface-variant">
-                연도
+                {messages.account.birthFormYear}
               </span>
               <input
                 type="text"
@@ -157,7 +160,7 @@ export default function AccountBirthEditForm({
             </label>
             <label className="space-y-1">
               <span className="block text-center text-[10px] text-on-surface-variant">
-                월
+                {messages.account.birthFormMonth}
               </span>
               <input
                 type="text"
@@ -172,7 +175,7 @@ export default function AccountBirthEditForm({
             </label>
             <label className="space-y-1">
               <span className="block text-center text-[10px] text-on-surface-variant">
-                일
+                {messages.account.birthFormDay}
               </span>
               <input
                 type="text"
@@ -189,21 +192,25 @@ export default function AccountBirthEditForm({
           {dateComplete ? (
             <p className="text-center text-xs text-secondary">
               {birthDate}
-              {dateChanged ? " — 변경됨" : ""}
+              {dateChanged ? messages.account.birthFormDateChangedSuffix : ""}
             </p>
           ) : (
             <p className="text-center text-xs text-on-surface-variant">
-              연·월·일을 모두 입력해 주세요.
+              {messages.account.birthFormDateIncompleteHint}
             </p>
           )}
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2" role="group" aria-label="오전 또는 오후">
+      <div
+        className="grid grid-cols-2 gap-2"
+        role="group"
+        aria-label={messages.account.birthFormAmPmAria}
+      >
         {(
           [
-            { v: "am" as const, label: "오전" },
-            { v: "pm" as const, label: "오후" },
+            { v: "am" as const, label: messages.birthForm.amLabel },
+            { v: "pm" as const, label: messages.birthForm.pmLabel },
           ] as const
         ).map(({ v, label }) => (
           <button
@@ -239,7 +246,7 @@ export default function AccountBirthEditForm({
           }}
           placeholder="7"
           disabled={busy}
-          aria-label="시"
+          aria-label={messages.account.birthFormHourAria}
           className={`${inputClass} max-w-[5.5rem]`}
         />
         <span className="text-xl font-light text-on-surface-variant">:</span>
@@ -255,26 +262,26 @@ export default function AccountBirthEditForm({
           }}
           placeholder="30"
           disabled={busy}
-          aria-label="분"
+          aria-label={messages.account.birthFormMinuteAria}
           className={`${inputClass} max-w-[5.5rem]`}
         />
       </div>
 
       <label className="block space-y-1.5">
         <span className="block text-center text-xs font-medium text-on-surface-variant">
-          태어난 지역 <span className="text-secondary">*</span>
+          {messages.account.birthPlaceLabel} <span className="text-secondary">*</span>
         </span>
         <input
           type="text"
           value={birthPlace}
           onChange={(e) => setBirthPlace(e.target.value)}
-          placeholder="예: 서울, 부산, 제주"
+          placeholder={messages.birthForm.placePlaceholder}
           disabled={busy}
           autoComplete="address-level2"
           className={`${inputClass} text-base`}
         />
         <p className="text-center text-[11px] text-on-surface-variant/80">
-          점성 차트에 사용돼요. 사주(본질)는 지역과 무관해요.
+          {messages.birthForm.placeNeededHint}
         </p>
       </label>
 
@@ -285,7 +292,7 @@ export default function AccountBirthEditForm({
           onClick={submitUnknownTime}
           className="stitch-cta-secondary w-full disabled:opacity-50"
         >
-          출생 시간 모름 (지역만 저장)
+          {messages.account.birthFormSkipTime}
         </button>
         <button
           type="button"
@@ -293,7 +300,7 @@ export default function AccountBirthEditForm({
           onClick={submitWithTime}
           className="stitch-cta-primary w-full disabled:opacity-50"
         >
-          {busy ? "저장 중…" : saveLabel}
+          {busy ? messages.account.birthFormSaving : saveLabel}
         </button>
       </div>
     </div>

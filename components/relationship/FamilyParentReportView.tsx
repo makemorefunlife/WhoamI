@@ -17,6 +17,7 @@ import {
   RelationshipReportInset,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const DE_VARIANT: Record<string, "warning" | "success" | "default"> = {
   red: "warning",
@@ -31,6 +32,7 @@ export default function FamilyParentReportView({
 }: {
   report: FamilyParentReportBody;
 }) {
+  const t = useMessages().relationshipDrilldown.family;
   const theme = getTabTheme("family");
   const fam = report.family;
   const roles = fam?.section_roles;
@@ -43,8 +45,8 @@ export default function FamilyParentReportView({
   const dna = fam?.section_child_dna;
   const card = fam?.section_de_escalation;
 
-  const childName = roles?.child_nickname ?? "자녀";
-  const parentName = roles?.parent_nickname ?? "부모";
+  const childName = roles?.child_nickname ?? t.childFallback;
+  const parentName = roles?.parent_nickname ?? t.parentFallback;
   const labelA = report.meta?.nickname_a ?? childName;
   const labelB = report.meta?.nickname_b ?? parentName;
 
@@ -75,26 +77,24 @@ export default function FamilyParentReportView({
         meta: roles
           ? `👶 ${childName} · ${roles.parent_role_label} ${parentName}`
           : undefined,
-        badge: report.meta?.grade
-          ? `패밀리 등급 ${report.meta.grade}`
-          : undefined,
+        badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
       }}
       scores={[
         {
           emoji: "🔥",
-          label: "정서적 유대",
+          label: t.scoreLabelBond,
           value: snap.bond_pct,
           tone: "warm",
         },
         {
           emoji: "🧩",
-          label: "성장 시너지",
+          label: t.scoreLabelSynergy,
           value: snap.synergy_pct,
           tone: "cool",
         },
         {
           emoji: "⚡",
-          label: "훈육 마찰",
+          label: t.scoreLabelFriction,
           value: snap.risk_pct,
           tone: "alert",
         },
@@ -118,7 +118,7 @@ export default function FamilyParentReportView({
 
       {dna ? (
         <RelationshipReportCard
-          title="🧬 Child DNA 프로필"
+          title={t.dnaCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
@@ -127,25 +127,25 @@ export default function FamilyParentReportView({
             </p>
             <div className="mt-4 space-y-4">
               <div>
-                <RelationshipReportLabel>🎨 소통 방식</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.dnaCommunicationLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {dna.communication_style}
                 </RelationshipReportParagraph>
               </div>
               <div>
-                <RelationshipReportLabel>🧠 숨겨진 감수성</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.dnaHiddenSensitivityLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {dna.hidden_sensitivity}
                 </RelationshipReportParagraph>
               </div>
               <div>
-                <RelationshipReportLabel>🔋 에너지 몰입 방식</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.dnaEnergyLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {dna.attention_focus_style}
                 </RelationshipReportParagraph>
               </div>
               <div>
-                <RelationshipReportLabel>🔮 대기만성형 잠재력</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.dnaHiddenGeniusLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {dna.hidden_genius}
                 </RelationshipReportParagraph>
@@ -157,18 +157,18 @@ export default function FamilyParentReportView({
 
       {fam?.section_destiny ? (
         <RelationshipReportCard
-          title="🤝 우리의 운명적 스코어"
+          title={t.destinyCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportBody>
             <div>
-              <RelationshipReportLabel>🍀 정합성</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.harmonyLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {fam.section_destiny.harmony_one_liner}
               </RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>⚖️ 편애 리스크</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.favoritismRiskLabel}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {fam.section_destiny.favoritism_warning}
               </RelationshipReportParagraph>
@@ -184,7 +184,7 @@ export default function FamilyParentReportView({
 
       {fam?.section_growth_tunnel ? (
         <RelationshipReportCard
-          title="⚠️ 아이의 마음 성장 터널"
+          title={t.growthTunnelCardTitle}
           accentColor={theme.accent}
           variant="warning"
         >
@@ -194,7 +194,7 @@ export default function FamilyParentReportView({
             </RelationshipReportParagraph>
             {fam.section_growth_tunnel.focus_areas.length > 0 ? (
               <p className="text-sm text-white/50">
-                집중 영역:{" "}
+                {t.focusAreasPrefix}
                 {fam.section_growth_tunnel.focus_areas.join(" · ")}
               </p>
             ) : null}
@@ -204,7 +204,7 @@ export default function FamilyParentReportView({
 
       {fam?.section_filial_reward ? (
         <RelationshipReportCard
-          title="🎯 미래의 패밀리 리워드"
+          title={t.filialRewardCardTitle}
           accentColor={theme.accent}
         >
           <RelationshipReportParagraph>
@@ -215,7 +215,7 @@ export default function FamilyParentReportView({
 
       {card ? (
         <RelationshipReportCard
-          title="⚡ 화 풀림 치트키"
+          title={t.deEscalationCardTitle}
           accentColor={theme.accent}
           variant={DE_VARIANT[card.color] ?? "default"}
         >
@@ -224,14 +224,14 @@ export default function FamilyParentReportView({
             <p className="text-sm text-white/50">{card.archetype_label}</p>
             <div className="mt-4 space-y-3">
               <div>
-                <RelationshipReportLabel>화났을 때</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.whenAngryLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {card.psych_state}
                 </RelationshipReportParagraph>
               </div>
               <div>
                 <RelationshipReportLabel className="text-red-300/80">
-                  하지 말 것
+                  {t.avoidLabel}
                 </RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">
                   {card.avoid_actions}

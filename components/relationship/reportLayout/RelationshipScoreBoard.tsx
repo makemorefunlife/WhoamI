@@ -9,6 +9,7 @@ import { pickRelationshipIndexInsight } from "@/lib/relationship/relationshipInd
 import { useReportTone } from "./ReportSurface";
 import type { ScoreMetric } from "./types";
 import type { RelationshipTabTheme } from "./theme";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 function ScoreGauge({ metric }: { metric: ScoreMetric }) {
   const tone = useReportTone();
@@ -88,6 +89,7 @@ function RelationshipIndexInsightLine({
   conflictAnchorId?: string;
 }) {
   const tone = useReportTone();
+  const t = useMessages().relationshipDrilldown.layout;
   if (scores.length !== 3) return null;
 
   const insight = pickRelationshipIndexInsight({
@@ -118,7 +120,7 @@ function RelationshipIndexInsightLine({
                 : "text-white/90 underline decoration-white/35 underline-offset-2"
             }
           >
-            갈등 패턴 보기
+            {t.conflictPatternLink}
           </a>
         </>
       ) : null}
@@ -130,6 +132,7 @@ function ScoreSourceNoteHint({ note }: { note: string }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const tone = useReportTone();
+  const t = useMessages().relationshipDrilldown.layout;
   const stitch = tone.surface === "stitch";
 
   return (
@@ -143,7 +146,7 @@ function ScoreSourceNoteHint({ note }: { note: string }) {
         }
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label="관계 지수 계산 방법"
+        aria-label={t.scoreCalcAria}
         onClick={() => setOpen((prev) => !prev)}
       >
         i
@@ -181,6 +184,7 @@ export default function RelationshipScoreBoard({
   conflictInsightAnchor?: string;
 }) {
   const tone = useReportTone();
+  const t = useMessages().relationshipDrilldown.layout;
 
   if (scores.length === 0 && !footer) return null;
 
@@ -207,9 +211,9 @@ export default function RelationshipScoreBoard({
                 : { color: theme.accentMuted }
             }
           >
-            Relationship Index
+            {t.scoreIndexEyebrow}
           </p>
-          <h3 className={tone.sectionTitle}>한눈에 보는 관계 지수</h3>
+          <h3 className={tone.sectionTitle}>{t.scoreIndexTitle}</h3>
         </div>
       </div>
 

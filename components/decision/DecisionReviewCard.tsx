@@ -5,6 +5,7 @@ import { StarRatingDisplay } from "@/components/decision/StarRating";
 import { formatDecisionDate } from "@/lib/decision/format";
 import { decisionCategoryLabel } from "@/lib/decision/categories";
 import { isDecisionReviewed, type DecisionEntry } from "@/lib/decision/types";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   entry: DecisionEntry;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function DecisionReviewCard({ entry, onReview }: Props) {
+  const { locale, messages } = useLocale();
   const reviewed = isDecisionReviewed(entry);
   const showStars = reviewed && entry.rating != null;
   const showDate = reviewed && entry.reviewedAt;
@@ -24,7 +26,7 @@ export default function DecisionReviewCard({ entry, onReview }: Props) {
           <div className="min-w-0">
             <p className="text-sm font-medium text-on-surface">{entry.context}</p>
             <p className="mt-0.5 text-xs text-on-surface-variant">
-              {decisionCategoryLabel(entry.category)}
+              {decisionCategoryLabel(entry.category, messages)}
             </p>
             {showStars ? (
               <StarRatingDisplay rating={entry.rating!} className="mt-2" />
@@ -37,7 +39,7 @@ export default function DecisionReviewCard({ entry, onReview }: Props) {
               dateTime={entry.reviewedAt!}
               className="text-[11px] text-on-surface-variant/55"
             >
-              Reviewed {formatDecisionDate(entry.reviewedAt!)}
+              {messages.decision.reviewedOn(formatDecisionDate(entry.reviewedAt!, locale))}
             </time>
           ) : !reviewed && onReview ? (
             <button
@@ -45,7 +47,7 @@ export default function DecisionReviewCard({ entry, onReview }: Props) {
               onClick={() => onReview(entry)}
               className="rounded-full border border-secondary px-3.5 py-1.5 text-xs font-semibold text-secondary transition hover:bg-secondary hover:text-on-primary"
             >
-              Review
+              {messages.decision.reviewCta}
             </button>
           ) : null}
         </div>

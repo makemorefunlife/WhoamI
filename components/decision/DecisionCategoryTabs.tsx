@@ -6,6 +6,7 @@ import {
   type DecisionCategoryFilter,
 } from "@/lib/decision/categories";
 import { stitchPillClass } from "@/components/decision/stitchPillClass";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   value: DecisionCategoryFilter;
@@ -17,9 +18,11 @@ type Props = {
 export default function DecisionCategoryTabs({
   value,
   onChange,
-  allLabel = "전체 (All)",
+  allLabel,
   className = "",
 }: Props) {
+  const messages = useMessages();
+  const resolvedAllLabel = allLabel ?? messages.decision.allCategoriesLabel;
   return (
     <div className={`flex flex-wrap gap-2 ${className}`}>
       <button
@@ -27,7 +30,7 @@ export default function DecisionCategoryTabs({
         onClick={() => onChange("all")}
         className={stitchPillClass(value === "all")}
       >
-        {allLabel}
+        {resolvedAllLabel}
       </button>
       {DECISION_CATEGORIES.map((c) => (
         <button
@@ -36,7 +39,7 @@ export default function DecisionCategoryTabs({
           onClick={() => onChange(c.id)}
           className={stitchPillClass(value === c.id)}
         >
-          {decisionCategoryReviewTabLabel(c.id)}
+          {decisionCategoryReviewTabLabel(c.id, messages)}
         </button>
       ))}
     </div>

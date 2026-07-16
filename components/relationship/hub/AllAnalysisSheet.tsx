@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import HubAnalysisReportRow from "@/components/relationship/hub/HubAnalysisReportRow";
 import type { HubAnalysisFeedItem } from "@/lib/relationship/hubAnalysisFeed";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   open: boolean;
@@ -28,6 +29,7 @@ export default function AllAnalysisSheet({
   onClose,
   onOpenLog,
 }: Props) {
+  const messages = useMessages();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -51,18 +53,18 @@ export default function AllAnalysisSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="stitch-headline text-xl text-primary">분석 기록</h2>
-          <button type="button" onClick={onClose} aria-label="닫기" className="rounded-full p-2">
+          <h2 className="stitch-headline text-xl text-primary">{messages.hub.allAnalysisTitle}</h2>
+          <button type="button" onClick={onClose} aria-label={messages.common.close} className="rounded-full p-2">
             <X className="h-5 w-5" />
           </button>
         </div>
         {loading ? (
           <p className="py-8 text-center text-sm text-on-surface-variant">
-            불러오는 중…
+            {messages.hub.loadingRecords}
           </p>
         ) : items.length === 0 ? (
           <p className="py-8 text-center text-sm text-on-surface-variant">
-            기록이 없어요.
+            {messages.hub.noAnalysisRecords}
           </p>
         ) : (
           <div className="space-y-3">
@@ -87,7 +89,7 @@ export default function AllAnalysisSheet({
                 disabled={loadingMore}
                 className="w-full rounded-xl border border-outline-variant/40 py-3 text-sm font-semibold text-on-surface-variant transition hover:border-secondary/40 hover:text-secondary disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loadingMore ? "불러오는 중…" : "더 보기 (Load More)"}
+                {loadingMore ? messages.hub.loadingRecords : messages.hub.loadMore}
               </button>
             ) : null}
           </div>

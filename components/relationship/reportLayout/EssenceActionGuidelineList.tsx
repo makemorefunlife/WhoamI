@@ -3,17 +3,19 @@
 import type { EssenceActionGuideline } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { isGenericRomanticActionPhrase } from "@/lib/relationship/romanticEverydayText";
 import { useReportTone } from "./ReportSurface";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 function formatIndex(index: number): string {
   return String(index + 1).padStart(2, "0");
 }
 
 function ActionSpeechTip({ text }: { text: string }) {
+  const t = useMessages().relationshipDrilldown.layout;
   const body = text.trim();
   if (!body || isGenericRomanticActionPhrase(body)) return null;
   return (
     <p className="text-sm leading-relaxed text-on-surface-variant">
-      <span className="font-medium text-on-surface">* 실전 대사 꿀팁: </span>
+      <span className="font-medium text-on-surface">{t.actionSpeechTipLabel}</span>
       <span aria-hidden className="text-on-surface-variant/70">
         “
       </span>
