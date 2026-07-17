@@ -44,7 +44,7 @@ export function buildMarriageSnapshotPanel(
     psychB?: PsychMasterJson | null;
   },
 ): TriScoreSnapshotPanel {
-  const topicLabels = getTriScoreKindConfig("cohabitation").topics;
+  const topicLabels = getTriScoreKindConfig("cohabitation", ctx.locale).topics;
   const psychA = personCorePsych?.psychA ?? null;
   const psychB = personCorePsych?.psychB ?? null;
 

@@ -16,6 +16,8 @@ import {
   type FamilyParentChildReport,
 } from "./familyReportTemplate";
 import { buildFamilyPrescriptions } from "./buildFamilyPrescriptions";
+import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
+import type { Locale } from "@/lib/i18n/locale";
 import type { FamilyPrescriptionPack } from "./familyPrescriptionTypes";
 import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 
@@ -66,14 +68,16 @@ export function buildFamilyParentReport(params: {
     inputFingerprintB: string;
   };
   pairFamily?: PairFamilySignals | null;
+  locale?: Locale;
 }): FamilyParentReportBody {
-  const ctx = buildFamilyRuleContext(params);
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const ctx = buildFamilyRuleContext({ ...params, locale });
   const family = buildFamilyParentChildReport(ctx);
 
   const snapshot_panel = buildFamilyParentSnapshotPanel(
     ctx,
     {
-      gaugeLabel: "Child DNA Playbook · 패밀리 스냅샷",
+      gaugeLabel: pick(locale, "Child DNA Playbook · Family Snapshot", "Child DNA Playbook · 패밀리 스냅샷"),
       representativeLine: family.section_snapshot.one_line_family,
     },
     {
@@ -93,6 +97,7 @@ export function buildFamilyParentReport(params: {
         pair: params.pairFamily,
         parentNickname: ctx.parentNickname,
         childNickname: ctx.childNickname,
+        locale,
       })
     : undefined;
 

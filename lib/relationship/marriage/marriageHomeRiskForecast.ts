@@ -4,6 +4,8 @@ import type { ChartContext } from "@/lib/saju/chartContext";
 import { branchPairKey, isWonjin } from "@/lib/saju/workPairRiskSignals";
 import { getBranch, toBranchCode } from "@/lib/saju/mapping";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
+import { LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
+import type { Locale } from "@/lib/i18n/locale";
 import { homeRiskWeatherCopy } from "./marriageHomeRiskCopy";
 
 type RelationRuleRow = {
@@ -109,25 +111,30 @@ function levelFromSeverity(severity: number): HomeRiskWeatherLevel {
   return "sunny";
 }
 
-const YEAR_LABELS = ["올해", "내년", "내후년"] as const;
+const YEAR_LABELS: Record<Locale, readonly string[]> = {
+  "en-US": ["This year", "Next year", "The year after"],
+  "ko-KR": ["올해", "내년", "내후년"],
+};
 
 export function buildThreeYearHomeRiskForecast(
   chartA: ChartContext,
   chartB: ChartContext,
   referenceYear: number = new Date().getFullYear(),
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): ThreeYearHomeRiskForecast {
   const years: HomeRiskYearForecast[] = [];
+  const yearLabels = YEAR_LABELS[locale];
 
   for (let i = 0; i < 3; i++) {
     const year = referenceYear + i;
     const yearBranch = getCalendarYearBranch(year);
     const hit = scoreYearForCouple(yearBranch, chartA, chartB);
     const level = levelFromSeverity(hit.severity);
-    const copy = homeRiskWeatherCopy(level);
+    const copy = homeRiskWeatherCopy(level, locale);
 
     years.push({
       year,
-      year_label: YEAR_LABELS[i]!,
+      year_label: yearLabels[i]!,
       icon: copy.icon,
       level,
       weather_label: copy.weather_label,

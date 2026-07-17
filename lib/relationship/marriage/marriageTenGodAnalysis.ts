@@ -2,6 +2,8 @@ import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisFo
 import { buildChartContext } from "@/lib/saju/chartContext";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
+import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type TenGodCounts = Record<string, number>;
 
@@ -119,6 +121,7 @@ export function pickHouseholdCfo(
   countsB: TenGodCounts,
   chartABranchCodes: Set<string>,
   chartBBranchCodes: Set<string>,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): { nickname: string; reason: string } {
   const a = profileTenGods(countsA);
   const b = profileTenGods(countsB);
@@ -157,17 +160,37 @@ export function pickHouseholdCfo(
 
   return {
     nickname: winnerNick,
-    reason:
+    reason: pick(
+      locale,
+      winnerProfile.wealthOfficer >= 3
+        ? `${winnerNick} is the sole CFO leader of the household. Budget, bank accounts, and big-spending decisions should all go to this one person, or the household gets shaky. ${loserNick} should give input but leave the final call to them.`
+        : `${winnerNick} has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A "dual CFO" setup is banned — only one person should hold the reins.`,
       winnerProfile.wealthOfficer >= 3
         ? `${winnerNick}이(가) 집안 CFO 단독 리더입니다. 예산·통장·큰 지출 결정권은 이 사람 한 명에게 몰아야 집이 안 흔들립니다. ${loserNick}은(는) 의견은 내되 최종 결정은 맡기세요.`
         : `${winnerNick}이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요.`,
+    ),
   };
 }
 
 export type ParentingStyle = "empathy" | "structure";
 
+const EMPATHY_LABEL: Record<Locale, string> = {
+  "en-US":
+    "🎨 Empathy Type Who Reads the Child's Emotions First — Takes in tears, anxiety, and hidden feelings first, but rules and boundaries can easily blur.",
+  "ko-KR":
+    "🎨 아이의 감정을 먼저 읽는 공감형 — 눈물·불안·숨겨진 마음을 먼저 받아 주지만, 규칙과 경계가 흐려지기 쉬워요.",
+};
+
+const STRUCTURE_LABEL: Record<Locale, string> = {
+  "en-US":
+    "📐 Structure Type Who Sets Firm Guidelines — Gives the child a safety net through schedule, standards, and principle, but emotional needs can get pushed back.",
+  "ko-KR":
+    "📐 엄격한 가이드를 세우는 규칙형 — 일정·기준·원칙으로 아이에게 안전망을 주지만, 감정 요구는 뒤로 밀릴 수 있어요.",
+};
+
 export function resolveParentingStyle(
   counts: TenGodCounts,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): { style: ParentingStyle; label: string } {
   const p = profileTenGods(counts);
   const foodDeveloped =
@@ -176,32 +199,16 @@ export function resolveParentingStyle(
     p.seal + p.officer >= 2 || p.seal + p.officer > p.food;
 
   if (foodDeveloped && !structureDeveloped) {
-    return {
-      style: "empathy",
-      label:
-        "🎨 아이의 감정을 먼저 읽는 공감형 — 눈물·불안·숨겨진 마음을 먼저 받아 주지만, 규칙과 경계가 흐려지기 쉬워요.",
-    };
+    return { style: "empathy", label: EMPATHY_LABEL[locale] };
   }
   if (structureDeveloped && !foodDeveloped) {
-    return {
-      style: "structure",
-      label:
-        "📐 엄격한 가이드를 세우는 규칙형 — 일정·기준·원칙으로 아이에게 안전망을 주지만, 감정 요구는 뒤로 밀릴 수 있어요.",
-    };
+    return { style: "structure", label: STRUCTURE_LABEL[locale] };
   }
 
   if (p.food >= p.seal + p.officer) {
-    return {
-      style: "empathy",
-      label:
-        "🎨 아이의 감정을 먼저 읽는 공감형 — 눈물·불안·숨겨진 마음을 먼저 받아 주지만, 규칙과 경계가 흐려지기 쉬워요.",
-    };
+    return { style: "empathy", label: EMPATHY_LABEL[locale] };
   }
-  return {
-    style: "structure",
-    label:
-      "📐 엄격한 가이드를 세우는 규칙형 — 일정·기준·원칙으로 아이에게 안전망을 주지만, 감정 요구는 뒤로 밀릴 수 있어요.",
-  };
+  return { style: "structure", label: STRUCTURE_LABEL[locale] };
 }
 
 export type FamilyBoundaryProfile = {
@@ -276,7 +283,9 @@ export function analyzeMarriageTenGod(params: {
   countsB?: TenGodCounts;
   chartA?: ReturnType<typeof buildChartContext>;
   chartB?: ReturnType<typeof buildChartContext>;
+  locale?: Locale;
 }): MarriageTenGodAnalysis {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const countsA = params.countsA ?? countTenGodsForMarriage(params.sajuJsonA);
   const countsB = params.countsB ?? countTenGodsForMarriage(params.sajuJsonB);
   const chartA =
@@ -311,9 +320,10 @@ export function analyzeMarriageTenGod(params: {
       countsB,
       chartA.branchCodes,
       chartB.branchCodes,
+      locale,
     ),
-    parentingA: resolveParentingStyle(countsA),
-    parentingB: resolveParentingStyle(countsB),
+    parentingA: resolveParentingStyle(countsA, locale),
+    parentingB: resolveParentingStyle(countsB, locale),
     boundaryA: analyzeFamilyBoundary(countsA, params.crossHitsInternalA),
     boundaryB: analyzeFamilyBoundary(countsB, params.crossHitsInternalB),
   };

@@ -1,5 +1,7 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
+import type { Locale } from "@/lib/i18n/locale";
+import { LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
 import {
   analyzeFamilyPairSaju,
@@ -41,6 +43,7 @@ export type FamilyRuleContext = {
   gradeReason: string;
   masterScores: FamilyMasterScores;
   uncertainItems: string[];
+  locale: Locale;
 };
 
 export type BuildFamilyContextParams = {
@@ -55,6 +58,7 @@ export type BuildFamilyContextParams = {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  locale?: Locale;
 };
 
 function resolveParentType(
@@ -81,6 +85,8 @@ export function buildFamilyRuleContext(
       "가족(자녀-부모) 분석: 한 명은 child, 다른 한 명은 mother 또는 father 여야 합니다.",
     );
   }
+
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
 
   const resolved = resolveParentChildNicknames({
     nicknameA: params.nicknameA,
@@ -127,10 +133,11 @@ export function buildFamilyRuleContext(
     sajuJsonChild,
     familyPairAnalysis,
     childNickname: resolved.childNickname,
+    locale,
   });
 
   const { grade, reason, eventScores, masterScores } =
-    computeFamilyCompatibilityGrade(familyPairAnalysis, parentRole);
+    computeFamilyCompatibilityGrade(familyPairAnalysis, parentRole, locale);
 
   const killerSections = buildFamilyKillerSections({
     ctx: {
@@ -140,6 +147,7 @@ export function buildFamilyRuleContext(
       familyPairAnalysis,
       tenGod,
       masterScores,
+      locale,
     },
   });
 
@@ -162,6 +170,7 @@ export function buildFamilyRuleContext(
     gradeReason: reason,
     masterScores,
     uncertainItems,
+    locale,
   };
 }
 

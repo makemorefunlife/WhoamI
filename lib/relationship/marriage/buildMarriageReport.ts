@@ -20,6 +20,8 @@ import type { CohabitationKillerQuestionPack } from "./cohabitationKillerTypes";
 import { buildCohabitationPrescriptions } from "./buildCohabitationPrescriptions";
 import type { CohabitationPrescriptionPack } from "./cohabitationPrescriptionTypes";
 import type { PairCohabitationSignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import { LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type MarriageReportBody = {
   headline: string;
@@ -74,8 +76,10 @@ export function buildMarriageReport(params: {
   };
   /** PersonCore pair 교차 연산 — prescription_cohabitation 생성용 */
   pairCohabitation?: PairCohabitationSignals | null;
+  locale?: Locale;
 }): MarriageReportBody {
-  const ctx = buildMarriageRuleContext(params);
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const ctx = buildMarriageRuleContext({ ...params, locale });
   const household = buildHouseholdPartnershipReport(ctx);
 
   const snapshot_panel = buildMarriageSnapshotPanel(
@@ -121,6 +125,7 @@ export function buildMarriageReport(params: {
         pair: params.pairCohabitation,
         nicknameA: params.nicknameA,
         nicknameB: params.nicknameB,
+        locale,
       })
     : undefined;
 

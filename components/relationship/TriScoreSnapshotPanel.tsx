@@ -9,6 +9,7 @@ import {
 import { resolveScoreBarAppearance } from "@/lib/relationship/scoreBarAppearance";
 import { useReportTone } from "@/components/relationship/reportLayout/ReportSurface";
 import RelationshipScoreDefinitions from "@/components/relationship/reportLayout/RelationshipScoreDefinitions";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function MiniScoreBar({
   label,
@@ -55,7 +56,8 @@ function TopicCard({
   singlePrimaryMetric?: boolean;
 }) {
   const tone = useReportTone();
-  const labels = getTriScoreKindConfig(kind).labels;
+  const { locale } = useLocale();
+  const labels = getTriScoreKindConfig(kind, locale).labels;
   const primary =
     topic.topic === "intimacy"
       ? { label: labels.activation.short, value: topic.activation }

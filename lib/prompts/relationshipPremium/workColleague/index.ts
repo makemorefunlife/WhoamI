@@ -5,6 +5,7 @@ import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
+import type { Locale } from "@/lib/i18n/locale";
 import {
   WORK_COLLEAGUE_DEEP_FORMAT,
   type WorkColleagueDeepReport,
@@ -41,6 +42,7 @@ export async function runWorkColleagueDeepAnalysis(
     };
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
+    locale?: Locale;
   },
 ): Promise<WorkColleagueDeepPayload> {
   const pairWork =
@@ -64,6 +66,7 @@ export async function runWorkColleagueDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairWork,
+    locale: params.locale,
   });
 
   return {

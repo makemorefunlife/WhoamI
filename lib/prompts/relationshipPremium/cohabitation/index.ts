@@ -5,6 +5,7 @@ import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
 import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/pairDomainSignals";
 import { buildMarriageReport } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
+import type { Locale } from "@/lib/i18n/locale";
 import {
   COHABITATION_DEEP_FORMAT,
   type CohabitationDeepReport,
@@ -40,6 +41,7 @@ export async function runCohabitationDeepAnalysis(
     };
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
+    locale?: Locale;
   },
 ): Promise<CohabitationDeepPayload> {
   const pairCohabitation =
@@ -63,6 +65,7 @@ export async function runCohabitationDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairCohabitation,
+    locale: params.locale,
   });
 
   return {

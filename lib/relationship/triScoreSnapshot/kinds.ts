@@ -276,8 +276,160 @@ export const TRI_SCORE_KIND_CONFIG: Record<
   family: FAMILY_CONFIG,
 };
 
+const WORK_CONFIG_EN: TriScoreKindConfig = {
+  kind: "work",
+  labels: {
+    activation: { short: "🔥 Work Fit" },
+    benefit: { short: "🧩 Collab Synergy" },
+    risk: { short: "⚡ Office Risk" },
+  },
+  legendItems: [
+    {
+      label: "Work Fit",
+      emoji: "🔥",
+      meaning:
+        "How much you want to work together, and how well your meeting/communication styles click.",
+    },
+    {
+      label: "Collab Synergy",
+      emoji: "🧩",
+      meaning:
+        "How comfortable you are on the same project, and how well your strengths combine to produce results.",
+    },
+    {
+      label: "Office Risk",
+      emoji: "⚡",
+      meaning:
+        "How much friction, differing org rhythms, and work stress build up (cumulative).",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① Work Fit & Trust",
+      cardSubtitle: "First contact, or handing off a role",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② Project Synergy",
+      cardSubtitle: "Long-term collaboration, schedules, results",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ Work Friction & Conflict",
+      cardSubtitle: "When opinions diverge or pressure rises",
+    },
+  ],
+};
+
+const FAMILY_CONFIG_EN: TriScoreKindConfig = {
+  kind: "family",
+  labels: {
+    activation: { short: "🔥 Emotional Bond" },
+    benefit: { short: "🧩 Growth Synergy" },
+    risk: { short: "⚡ Discipline Friction" },
+  },
+  legendItems: [
+    {
+      label: "Emotional Bond",
+      emoji: "🔥",
+      meaning: "How close and connected parent and child feel.",
+    },
+    {
+      label: "Growth Synergy",
+      emoji: "🧩",
+      meaning: "How well you support each other's growth and stay aligned in direction.",
+    },
+    {
+      label: "Discipline Friction",
+      emoji: "⚡",
+      meaning: "How much stress builds up around discipline, rules, and conflict.",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① Emotional Bond",
+      cardSubtitle: "Parent ↔ Child",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② Growth Synergy",
+      cardSubtitle: "Growth · support · direction",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ Discipline Friction",
+      cardSubtitle: "Rules · conflict · stress",
+    },
+  ],
+};
+
+const COHABITATION_CONFIG_EN: TriScoreKindConfig = {
+  kind: "cohabitation",
+  labels: {
+    activation: { short: "🔥 Romantic Fit" },
+    benefit: { short: "🧩 Life Synergy" },
+    risk: { short: "⚡ Home Risk" },
+  },
+  legendItems: [
+    {
+      label: "Romantic Fit",
+      emoji: "🔥",
+      meaning:
+        "How well your bedroom rhythm and attachment align, and how comfortable you get the closer you are.",
+    },
+    {
+      label: "Life Synergy",
+      emoji: "🧩",
+      meaning:
+        "How well chores, finances, parenting, and daily rhythm mesh so the household runs smoothly.",
+    },
+    {
+      label: "Home Risk",
+      emoji: "⚡",
+      meaning:
+        "How much stress, conflict, and emotional neglect build up inside the home (cumulative).",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① Romantic Fit & Attachment",
+      cardSubtitle: "Bedroom, touch, emotional distance",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② Life Synergy",
+      cardSubtitle: "Chores, finances, parenting, daily rhythm",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ Home Risk",
+      cardSubtitle: "Household conflict, stress, recovery",
+    },
+  ],
+};
+
+/** English variants only exist for kinds already migrated to locale-aware content. */
+const EN_KIND_CONFIG: Partial<Record<TriScoreSnapshotKind, TriScoreKindConfig>> = {
+  work: WORK_CONFIG_EN,
+  family: FAMILY_CONFIG_EN,
+  cohabitation: COHABITATION_CONFIG_EN,
+};
+
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before. Pass "en-US" explicitly once a kind's
+ * content has been migrated (see EN_KIND_CONFIG) — kinds without an English
+ * variant yet always fall back to the Korean config regardless of locale.
+ */
 export function getTriScoreKindConfig(
   kind: TriScoreSnapshotKind,
+  locale: "en-US" | "ko-KR" = "ko-KR",
 ): TriScoreKindConfig {
+  if (locale === "en-US" && EN_KIND_CONFIG[kind]) {
+    return EN_KIND_CONFIG[kind]!;
+  }
   return TRI_SCORE_KIND_CONFIG[kind];
 }

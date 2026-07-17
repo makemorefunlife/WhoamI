@@ -7,6 +7,7 @@ import type {
   FamilySnapshotSection,
 } from "./familyKillerSections";
 import type { ChildDeEscalationCard } from "./childDeEscalationPrescriptions";
+import { pick } from "./familyParentCopy";
 import type { FamilyParentRole } from "./types";
 
 export type FamilyRoleMetaSection = {
@@ -30,7 +31,11 @@ export type FamilyParentChildReport = {
 export function buildFamilyParentChildReport(
   ctx: FamilyRuleContext,
 ): FamilyParentChildReport {
-  const roleLabel = ctx.parentRole === "mother" ? "엄마" : "아빠";
+  const roleLabel = pick(
+    ctx.locale,
+    ctx.parentRole === "mother" ? "Mom" : "Dad",
+    ctx.parentRole === "mother" ? "엄마" : "아빠",
+  );
   const k = ctx.killerSections;
 
   return {

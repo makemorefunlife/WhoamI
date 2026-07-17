@@ -14,6 +14,8 @@ import {
   type OfficeUpsetGuide,
 } from "./officeLanguage";
 import { CATEGORY_OFFICE_LABEL } from "./tenGodComplement";
+import { pick } from "./workColleagueCopy";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type OfficeDnaSection = {
   person_a: OfficeDnaProfile & { nickname: string };
@@ -82,55 +84,81 @@ export type OfficePartnershipReport = {
   section_warning: OfficeWarningSection;
 };
 
-const CATEGORY_WEAPONS: Record<string, string[]> = {
-  재성: ["예산·수익 콘트롤", "영업·사업 개발", "실무 성과 정리"],
-  관성: ["프로젝트 총괄", "일정·품질 관리", "대외 조율"],
-  식상: ["기획·브레인스토밍", "콘텐츠·발표", "개선 제안"],
-  인성: ["리서치·분석", "문서·교육", "백오피스 지원"],
-  비겁: ["현장 실행", "팀 빌딩", "동료 조율"],
+const CATEGORY_WEAPONS: Record<Locale, Record<string, string[]>> = {
+  "en-US": {
+    재성: ["Budget & revenue control", "Sales & business development", "Wrapping up operational results"],
+    관성: ["Project oversight", "Schedule & quality management", "External coordination"],
+    식상: ["Planning & brainstorming", "Content & presentations", "Improvement proposals"],
+    인성: ["Research & analysis", "Documentation & training", "Back-office support"],
+    비겁: ["Field execution", "Team building", "Coordinating with coworkers"],
+  },
+  "ko-KR": {
+    재성: ["예산·수익 콘트롤", "영업·사업 개발", "실무 성과 정리"],
+    관성: ["프로젝트 총괄", "일정·품질 관리", "대외 조율"],
+    식상: ["기획·브레인스토밍", "콘텐츠·발표", "개선 제안"],
+    인성: ["리서치·분석", "문서·교육", "백오피스 지원"],
+    비겁: ["현장 실행", "팀 빌딩", "동료 조율"],
+  },
 };
 
 function resolveOneLineDefinition(ctx: WorkColleagueContext): string {
   const { activation, benefit, risk } = ctx.masterScores;
   const titleA =
-    buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA).character_title.split(
+    buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale).character_title.split(
       " · ",
-    )[0] ?? "실행형";
+    )[0] ?? pick(ctx.locale, "an executor", "실행형");
   const titleB =
-    buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB).character_title.split(
+    buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale).character_title.split(
       " · ",
-    )[0] ?? "지원형";
+    )[0] ?? pick(ctx.locale, "a supporter", "지원형");
 
   if (benefit >= 70 && risk < 40) {
-    return `${titleA}와 ${titleB} — 톱니바퀴가 맞물리는 황금 조합`;
+    return pick(
+      ctx.locale,
+      `${titleA} and ${titleB} — a golden combo where the gears mesh perfectly`,
+      `${titleA}와 ${titleB} — 톱니바퀴가 맞물리는 황금 조합`,
+    );
   }
   if (activation >= 65 && risk >= 55) {
-    return `${titleA}와 ${titleB} — 아슬아슬하지만 결과는 나오는 긴장의 파트너십`;
+    return pick(
+      ctx.locale,
+      `${titleA} and ${titleB} — a nail-biting but results-driven partnership`,
+      `${titleA}와 ${titleB} — 아슬아슬하지만 결과는 나오는 긴장의 파트너십`,
+    );
   }
   if (risk >= 60) {
-    return `${titleA}와 ${titleB} — 역할만 나누면 대박, 섞으면 폭발`;
+    return pick(
+      ctx.locale,
+      `${titleA} and ${titleB} — split the roles and it's a hit, mix them and it blows up`,
+      `${titleA}와 ${titleB} — 역할만 나누면 대박, 섞으면 폭발`,
+    );
   }
-  return `${titleA}와 ${titleB} — 서로 다른 무기로 팀을 채우는 보완 조합`;
+  return pick(
+    ctx.locale,
+    `${titleA} and ${titleB} — a complementary combo that fills the team with different weapons`,
+    `${titleA}와 ${titleB} — 서로 다른 무기로 팀을 채우는 보완 조합`,
+  );
 }
 
 function buildCommunicationFitWitty(ctx: WorkColleagueContext): string {
   const fit = ctx.masterScores.activation;
   const meetingNote = buildOfficeMeetingSummary(
     ctx.workPairAnalysis.stemCommunication,
+    ctx.locale,
   );
 
   if (fit >= 75) {
     return sanitizeOfficeText(
-      `회의실에서 방향이 잘 맞는 편이에요. ${meetingNote}`,
+      pick(ctx.locale, `Directions align well in the meeting room. ${meetingNote}`, `회의실에서 방향이 잘 맞는 편이에요. ${meetingNote}`),
     );
   }
   if (fit >= 55) {
     return sanitizeOfficeText(
-      `안건만 정리하면 꽤 잘 맞아요. ${meetingNote}`,
+      pick(ctx.locale, `Get the agenda sorted and you'll click pretty well. ${meetingNote}`, `안건만 정리하면 꽤 잘 맞아요. ${meetingNote}`),
     );
   }
   return sanitizeOfficeText(
-    `회의 스타일이 꽤 달라요. ${meetingNote}`,
+    pick(ctx.locale, `Your meeting styles are quite different. ${meetingNote}`, `회의 스타일이 꽤 달라요. ${meetingNote}`),
   );
 }
 
@@ -139,13 +167,12 @@ function buildMyWeapons(ctx: WorkColleagueContext, who: "a" | "b"): string[] {
     who === "a"
       ? ctx.tenGodComplement.personA.strong
       : ctx.tenGodComplement.personB.strong;
-  const nickname = who === "a" ? ctx.nicknameA : ctx.nicknameB;
   const weapons: string[] = [];
   for (const cat of strong.slice(0, 2)) {
-    weapons.push(...(CATEGORY_WEAPONS[cat] ?? []).slice(0, 2));
+    weapons.push(...(CATEGORY_WEAPONS[ctx.locale][cat] ?? []).slice(0, 2));
   }
   if (!weapons.length) {
-    weapons.push("협업·실행", "팀 조율");
+    weapons.push(...pick(ctx.locale, ["Collaboration & execution", "Team coordination"], ["협업·실행", "팀 조율"]));
   }
   return [...new Set(weapons)].slice(0, 4);
 }
@@ -162,7 +189,11 @@ function buildPersonRoleCard(
       task_label: item.roles[0] ?? item.delegateText,
       handoff_to: item.giverNickname,
       reason: sanitizeOfficeText(
-        `${item.giverNickname}에게 ${CATEGORY_OFFICE_LABEL[item.category]} 역량이 있어요. ${item.roles[0] ?? item.delegateText} 쪽은 ${item.giverNickname}에게 맡기세요.`,
+        pick(
+          ctx.locale,
+          `${item.giverNickname} has strength in ${CATEGORY_OFFICE_LABEL[ctx.locale][item.category]}. Leave the ${item.roles[0] ?? item.delegateText} side to ${item.giverNickname}.`,
+          `${item.giverNickname}에게 ${CATEGORY_OFFICE_LABEL[ctx.locale][item.category]} 역량이 있어요. ${item.roles[0] ?? item.delegateText} 쪽은 ${item.giverNickname}에게 맡기세요.`,
+        ),
       ),
     }));
 
@@ -173,11 +204,19 @@ function buildSynergyOneLiner(ctx: WorkColleagueContext): string {
   const n = ctx.tenGodComplement.items.length;
   if (n >= 2) {
     return sanitizeOfficeText(
-      `두 사람은 서로 다른 비즈니스 무기를 갖고 있어요. ${ctx.nicknameA}는 ${buildMyWeapons(ctx, "a").join("·")} 쪽, ${ctx.nicknameB}는 ${buildMyWeapons(ctx, "b").join("·")} 쪽으로 나누면 톱니바퀴가 돌아갑니다.`,
+      pick(
+        ctx.locale,
+        `You two have different business weapons. If ${ctx.nicknameA} takes ${buildMyWeapons(ctx, "a").join(" · ")} and ${ctx.nicknameB} takes ${buildMyWeapons(ctx, "b").join(" · ")}, the gears turn smoothly.`,
+        `두 사람은 서로 다른 비즈니스 무기를 갖고 있어요. ${ctx.nicknameA}는 ${buildMyWeapons(ctx, "a").join("·")} 쪽, ${ctx.nicknameB}는 ${buildMyWeapons(ctx, "b").join("·")} 쪽으로 나누면 톱니바퀴가 돌아갑니다.`,
+      ),
     );
   }
   return sanitizeOfficeText(
-    `완벽한 보완은 아니지만, 업무적 핏 ${ctx.masterScores.activation}% · 시너지 ${ctx.masterScores.benefit}%로 역할만 명확히 하면 충분히 잘 굴러갑니다.`,
+    pick(
+      ctx.locale,
+      `Not a perfect complement, but with work fit at ${ctx.masterScores.activation}% and synergy at ${ctx.masterScores.benefit}%, clarifying roles alone is enough to run smoothly.`,
+      `완벽한 보완은 아니지만, 업무적 핏 ${ctx.masterScores.activation}% · 시너지 ${ctx.masterScores.benefit}%로 역할만 명확히 하면 충분히 잘 굴러갑니다.`,
+    ),
   );
 }
 
@@ -187,12 +226,20 @@ function buildConflictTrigger(ctx: WorkColleagueContext): string {
 
   if (month.directMonthCross?.type === "충") {
     return sanitizeOfficeText(
-      `프로젝트 리듬·조직 적응 방식이 정면으로 부딪힐 때 — 특히 일정·우선순위를 한 번에 정해야 하는 회의에서 긴장이 폭발하기 쉽습니다. (오피스 리스크 ${risk}%)`,
+      pick(
+        ctx.locale,
+        `When project rhythm and ways of adapting to the org clash head-on — especially in meetings where schedule and priorities must be settled at once, tension can easily boil over. (Office risk ${risk}%)`,
+        `프로젝트 리듬·조직 적응 방식이 정면으로 부딪힐 때 — 특히 일정·우선순위를 한 번에 정해야 하는 회의에서 긴장이 폭발하기 쉽습니다. (오피스 리스크 ${risk}%)`,
+      ),
     );
   }
   if (ctx.workPairAnalysis.scoringSignals.hasWonjinOrGuimun) {
     return sanitizeOfficeText(
-      `가까워질수록 오해가 쌓이는 패턴이 있어요. 겉으로는 멀쩡한데 속으로 서운함이 쌓이면, 갑자기 냉각되거나 톤이 세져집니다.`,
+      pick(
+        ctx.locale,
+        "There's a pattern of misunderstanding building up the closer you get. Things can look fine on the surface, but once hurt feelings pile up underneath, it can suddenly turn cold or the tone can sharpen.",
+        "가까워질수록 오해가 쌓이는 패턴이 있어요. 겉으로는 멀쩡한데 속으로 서운함이 쌓이면, 갑자기 냉각되거나 톤이 세져집니다.",
+      ),
     );
   }
   const stemTension = ctx.workPairAnalysis.stemCommunication.stemPairs.find(
@@ -200,11 +247,19 @@ function buildConflictTrigger(ctx: WorkColleagueContext): string {
   );
   if (stemTension) {
     return sanitizeOfficeText(
-      `회의에서 의견이 정면 충돌할 때 — 한쪽은 빠른 결론, 다른 쪽은 신중한 검토를 원해서 '태클 대 태클'로 번지기 쉽습니다.`,
+      pick(
+        ctx.locale,
+        "When opinions collide head-on in a meeting — one side wants a fast conclusion, the other wants careful review, so it can easily escalate into a standoff.",
+        "회의에서 의견이 정면 충돌할 때 — 한쪽은 빠른 결론, 다른 쪽은 신중한 검토를 원해서 '태클 대 태클'로 번지기 쉽습니다.",
+      ),
     );
   }
   return sanitizeOfficeText(
-    `역할·책임 경계가 불분명해질 때, 또는 둘 다 같은 영역(기획·실행·관리)에 손대려 할 때 마찰이 올라갑니다.`,
+    pick(
+      ctx.locale,
+      "Friction rises when role and responsibility boundaries get unclear, or when you both reach into the same area (planning, execution, management).",
+      "역할·책임 경계가 불분명해질 때, 또는 둘 다 같은 영역(기획·실행·관리)에 손대려 할 때 마찰이 올라갑니다.",
+    ),
   );
 }
 
@@ -213,15 +268,26 @@ function buildMyBoundary(ctx: WorkColleagueContext, who: "a" | "b"): string {
   const dna = buildOfficeDnaProfile(
     who === "a" ? ctx.sajuJsonA : ctx.sajuJsonB,
     who === "a" ? ctx.tenGodsA : ctx.tenGodsB,
+    ctx.locale,
   );
   const strength = who === "a" ? ctx.strengthA : ctx.strengthB;
 
   const lines = [
-    `${nickname}에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요.`,
+    pick(
+      ctx.locale,
+      `Don't publicly dump blame onto ${nickname}, or push for speed without respect.`,
+      `${nickname}에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요.`,
+    ),
     dna.inner_standard,
   ];
   if (strength.label.includes("신강")) {
-    lines.push("결정권·프로세스를 무시당한다고 느끼면 바로 방어 모드로 전환됩니다.");
+    lines.push(
+      pick(
+        ctx.locale,
+        "If they feel their authority or process is being ignored, they switch straight into defense mode.",
+        "결정권·프로세스를 무시당한다고 느끼면 바로 방어 모드로 전환됩니다.",
+      ),
+    );
   }
   return sanitizeOfficeText(lines.join(" "));
 }
@@ -229,25 +295,26 @@ function buildMyBoundary(ctx: WorkColleagueContext, who: "a" | "b"): string {
 export function buildOfficePartnershipReport(
   ctx: WorkColleagueContext,
 ): OfficePartnershipReport {
-  const dnaA = buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA);
-  const dnaB = buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB);
+  const dnaA = buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale);
+  const dnaB = buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale);
 
   const deEscalation = pickDeEscalationCard(
     ctx.tenGodsA,
     ctx.tenGodsB,
     ctx.workPairAnalysis.chartA,
     ctx.workPairAnalysis.chartB,
+    ctx.locale,
   );
 
   const workStyleA = sanitizeOfficeText(
-    `${ctx.nicknameA} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA)}`,
+    `${ctx.nicknameA} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale)}`,
   );
   const workStyleB = sanitizeOfficeText(
-    `${ctx.nicknameB} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB)}`,
+    `${ctx.nicknameB} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale)}`,
   );
 
-  const idealA = buildIdealRoleFit(ctx.nicknameA, ctx.sajuJsonA, ctx.tenGodsA);
-  const idealB = buildIdealRoleFit(ctx.nicknameB, ctx.sajuJsonB, ctx.tenGodsB);
+  const idealA = buildIdealRoleFit(ctx.nicknameA, ctx.sajuJsonA, ctx.tenGodsA, ctx.locale);
+  const idealB = buildIdealRoleFit(ctx.nicknameB, ctx.sajuJsonB, ctx.tenGodsB, ctx.locale);
 
   return {
     section_dna: {
@@ -279,11 +346,13 @@ export function buildOfficePartnershipReport(
         ctx.nicknameA,
         ctx.sajuJsonA,
         ctx.tenGodsA,
+        ctx.locale,
       ),
       person_b: buildUpsetResponseGuide(
         ctx.nicknameB,
         ctx.sajuJsonB,
         ctx.tenGodsB,
+        ctx.locale,
       ),
     },
     section_ideal_roles: {
@@ -294,6 +363,7 @@ export function buildOfficePartnershipReport(
         ctx.nicknameB,
         idealA,
         idealB,
+        ctx.locale,
       ),
     },
     section_warning: {

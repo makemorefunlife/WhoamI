@@ -12,6 +12,8 @@ import {
   analyzeWorkPairSaju,
   type WorkPairSajuAnalysis,
 } from "@/lib/saju/workPairAnalysis";
+import type { Locale } from "@/lib/i18n/locale";
+import { LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 import {
   analyzeTenGodComplement,
   type TenGodComplementResult,
@@ -36,6 +38,7 @@ export type WorkColleagueContext = {
   tenGodComplement: TenGodComplementResult;
   masterScores: WorkMasterScores;
   uncertainItems: string[];
+  locale: Locale;
 };
 
 /** 동료 전용 컨텍스트 — 연인 rule context·일지 친밀 점수 미사용 */
@@ -48,7 +51,9 @@ export function buildWorkColleagueContext(params: {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  locale?: Locale;
 }): WorkColleagueContext {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const blueprint = buildPairSajuBlueprint(params);
   const { core, uncertainItems } = blueprint;
 
@@ -65,6 +70,7 @@ export function buildWorkColleagueContext(params: {
     sajuJsonB: params.sajuJsonB,
     countsA: core.tenGodsA,
     countsB: core.tenGodsB,
+    locale,
   });
 
   const { grade, reason, eventScores, masterScores } =
@@ -89,5 +95,6 @@ export function buildWorkColleagueContext(params: {
     tenGodComplement,
     masterScores,
     uncertainItems,
+    locale,
   };
 }

@@ -18,6 +18,8 @@ import {
   sanitizeHomeLifeText,
   type HomeUpsetGuide,
 } from "./homeLifeLanguage";
+import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type HomeDnaSection = {
   person_a: MarriageRuleContext["householdDnaA"];
@@ -91,42 +93,77 @@ function resolveHouseholdOneLiner(ctx: MarriageRuleContext): string {
   const { activation, benefit, risk } = ctx.masterScores;
   const titleA = ctx.householdDnaA.lifestyle_title.split(" ")[0] ?? "Warm";
   const titleB = ctx.householdDnaB.lifestyle_title.split(" ")[0] ?? "Steady";
+  const locale = ctx.locale;
 
   if (benefit >= 70 && risk < 40) {
-    return `${titleA} & ${titleB} — 재정적 든든함 위에 세워진, 불꽃 튀는 로맨틱 하우스`;
+    return pick(
+      locale,
+      `${titleA} & ${titleB} — a spark-flying romantic house built on financial security`,
+      `${titleA} & ${titleB} — 재정적 든든함 위에 세워진, 불꽃 튀는 로맨틱 하우스`,
+    );
   }
   if (activation >= 65 && risk >= 55) {
-    return `${titleA} & ${titleB} — 열정은 넘치지만, 집 안 규칙만 정하면 오래 가는 하우스`;
+    return pick(
+      locale,
+      `${titleA} & ${titleB} — passion overflows, but this house lasts once you set the household rules`,
+      `${titleA} & ${titleB} — 열정은 넘치지만, 집 안 규칙만 정하면 오래 가는 하우스`,
+    );
   }
   if (risk >= 60) {
-    return `${titleA} & ${titleB} — 역할만 나누면 평화, 섞으면 전쟁 — 경계가 생명`;
+    return pick(
+      locale,
+      `${titleA} & ${titleB} — split the roles and it's peace, mix them and it's war — boundaries are everything`,
+      `${titleA} & ${titleB} — 역할만 나누면 평화, 섞으면 전쟁 — 경계가 생명`,
+    );
   }
   if (activation >= 75) {
-    return `${titleA} & ${titleB} — 침실은 뜨겁고, 거실은 협상이 필요한 하우스`;
+    return pick(
+      locale,
+      `${titleA} & ${titleB} — the bedroom runs hot, the living room needs some negotiating`,
+      `${titleA} & ${titleB} — 침실은 뜨겁고, 거실은 협상이 필요한 하우스`,
+    );
   }
-  return `${titleA} & ${titleB} — 서로 다른 강점으로 집을 채우되, 솔직한 대화 없으면 오해만 쌓이는 하우스`;
+  return pick(
+    locale,
+    `${titleA} & ${titleB} — you fill the house with different strengths, but without honest conversation only misunderstanding builds up`,
+    `${titleA} & ${titleB} — 서로 다른 강점으로 집을 채우되, 솔직한 대화 없으면 오해만 쌓이는 하우스`,
+  );
 }
 
 function buildChoresGuideline(ctx: MarriageRuleContext): string {
   const { benefit, risk } = ctx.masterScores;
+  const locale = ctx.locale;
   if (benefit >= 65 && risk < 50) {
     return sanitizeHomeLifeText(
-      "역할을 명확히 쪼개야 평화 — '너는 설거지·빨래, 나는 장보기·청구서'처럼 시스템이 있어야 서운함이 안 쌓입니다.",
+      pick(
+        locale,
+        "Peace requires clearly splitting roles — a system like 'you handle dishes and laundry, I handle groceries and bills' keeps hurt feelings from building up.",
+        "역할을 명확히 쪼개야 평화 — '너는 설거지·빨래, 나는 장보기·청구서'처럼 시스템이 있어야 서운함이 안 쌓입니다.",
+      ),
     );
   }
   if (risk >= 55) {
     return sanitizeHomeLifeText(
-      "눈에 보이는 대로 하면 100% 싸웁니다. 주간 가사 회의 15분은 선택이 아니라 필수예요.",
+      pick(
+        locale,
+        "Winging it by what's visible guarantees a fight. A weekly 15-minute chore meeting isn't optional — it's essential.",
+        "눈에 보이는 대로 하면 100% 싸웁니다. 주간 가사 회의 15분은 선택이 아니라 필수예요.",
+      ),
     );
   }
   return sanitizeHomeLifeText(
-    "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
+    pick(
+      locale,
+      "A 'this week's assignment' checklist is more realistic than a perfect division chart. Write down the invisible labor (tidying, bookings, childcare scheduling) first.",
+      "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
+    ),
   );
 }
 
 function buildInlawStressSummary(ctx: MarriageRuleContext): string {
   const bA = ctx.tenGod.boundaryA;
   const bB = ctx.tenGod.boundaryB;
+  const locale = ctx.locale;
   const maxStress = Math.max(bA.inlawStressIndex, bB.inlawStressIndex);
   const hardBoundary =
     maxStress >= 70 ||
@@ -136,22 +173,36 @@ function buildInlawStressSummary(ctx: MarriageRuleContext): string {
 
   if (hardBoundary) {
     return sanitizeHomeLifeText(
-      `시댁·처가 스트레스 지수 ${maxStress}% — 솔직히 말하면, 이 집의 평화를 지키려면 원가족과 정서적·물리적 선을 과감히 긋는 게 맞습니다. ` +
-        `명절·방문·돈·육아 개입에 '우리 핵가족 우선'이 아니면 둘 사이가 먼저 갈라집니다.`,
+      pick(
+        locale,
+        `In-law stress index ${maxStress}% — honestly, protecting the peace of this home means boldly drawing an emotional and physical line with the family of origin. ` +
+          `Without "our nuclear family comes first" on holidays, visits, money, and childcare interference, the two of you will split first.`,
+        `시댁·처가 스트레스 지수 ${maxStress}% — 솔직히 말하면, 이 집의 평화를 지키려면 원가족과 정서적·물리적 선을 과감히 긋는 게 맞습니다. ` +
+          `명절·방문·돈·육아 개입에 '우리 핵가족 우선'이 아니면 둘 사이가 먼저 갈라집니다.`,
+      ),
     );
   }
   if (maxStress >= 45) {
     return sanitizeHomeLifeText(
-      `시댁·처가 스트레스 지수 ${maxStress}% — 거리와 방문 룰을 미리 박아 두지 않으면, 사소한 일이 커플 싸움으로 번집니다.`,
+      pick(
+        locale,
+        `In-law stress index ${maxStress}% — unless you pin down distance and visit rules ahead of time, small things escalate into couple fights.`,
+        `시댁·처가 스트레스 지수 ${maxStress}% — 거리와 방문 룰을 미리 박아 두지 않으면, 사소한 일이 커플 싸움으로 번집니다.`,
+      ),
     );
   }
   return sanitizeHomeLifeText(
-    `시댁·처가 스트레스 지수 ${maxStress}% — 비교적 독립적이지만, 피곤할 때 가족 이슈가 침실까지 따라오지 않게 경계는 유지하세요.`,
+    pick(
+      locale,
+      `In-law stress index ${maxStress}% — relatively independent, but keep the boundary so family issues don't follow you into the bedroom when you're tired.`,
+      `시댁·처가 스트레스 지수 ${maxStress}% — 비교적 독립적이지만, 피곤할 때 가족 이슈가 침실까지 따라오지 않게 경계는 유지하세요.`,
+    ),
   );
 }
 
-function parentingBadge(style: ParentingStyle): string {
-  return style === "empathy" ? "🎨 공감형" : "📐 규칙형";
+function parentingBadge(style: ParentingStyle, locale: Locale): string {
+  if (style === "empathy") return pick(locale, "🎨 Empathy Type", "🎨 공감형");
+  return pick(locale, "📐 Structure Type", "📐 규칙형");
 }
 
 function parentingStyleDescription(label: string): string {
@@ -160,9 +211,9 @@ function parentingStyleDescription(label: string): string {
   return label.replace(/^🎨\s*|^📐\s*/, "").trim();
 }
 
-function formatParentingStyleLine(style: ParentingStyle, label: string): string {
+function formatParentingStyleLine(style: ParentingStyle, label: string, locale: Locale): string {
   return sanitizeHomeLifeText(
-    `${parentingBadge(style)} — ${parentingStyleDescription(label)}`,
+    `${parentingBadge(style, locale)} — ${parentingStyleDescription(label)}`,
   );
 }
 
@@ -171,20 +222,34 @@ function buildParentingCombined(ctx: MarriageRuleContext): string {
   const pB = ctx.tenGod.parentingB;
   const nameA = ctx.nicknameA;
   const nameB = ctx.nicknameB;
+  const locale = ctx.locale;
 
   if (pA.style === pB.style) {
     if (pA.style === "empathy") {
       return sanitizeHomeLifeText(
-        `${nameA} & ${nameB} — 둘 다 🎨 공감형에 가깝습니다. 아이의 감정을 잘 읽지만, 규칙이 흐려지면 둘 다 '괜찮아'만 반복하다 지칩니다. 경계와 루틴을 문서로 박아 두세요.`,
+        pick(
+          locale,
+          `${nameA} & ${nameB} — you're both close to 🎨 empathy type. You read the child's emotions well, but once rules blur, you both wear yourselves out repeating "it's fine." Pin boundaries and routines down in writing.`,
+          `${nameA} & ${nameB} — 둘 다 🎨 공감형에 가깝습니다. 아이의 감정을 잘 읽지만, 규칙이 흐려지면 둘 다 '괜찮아'만 반복하다 지칩니다. 경계와 루틴을 문서로 박아 두세요.`,
+        ),
       );
     }
     return sanitizeHomeLifeText(
-      `${nameA} & ${nameB} — 둘 다 📐 규칙형에 가깝습니다. 기준과 일정은 단단하지만, 아이의 감정 신호를 놓치면 집안 공기가 딱딱해집니다. '오늘 기분은?' 한 마디를 루틴에 넣으세요.`,
+      pick(
+        locale,
+        `${nameA} & ${nameB} — you're both close to 📐 structure type. Standards and schedules are solid, but missing the child's emotional signals stiffens the air at home. Add one line — "how are you feeling today?" — to the routine.`,
+        `${nameA} & ${nameB} — 둘 다 📐 규칙형에 가깝습니다. 기준과 일정은 단단하지만, 아이의 감정 신호를 놓치면 집안 공기가 딱딱해집니다. '오늘 기분은?' 한 마디를 루틴에 넣으세요.`,
+      ),
     );
   }
   return sanitizeHomeLifeText(
-    `${nameA} → ${parentingBadge(pA.style)} · ${nameB} → ${parentingBadge(pB.style)} — ` +
-      `아이를 사랑하는 온도는 같지만 방식이 다릅니다. 아이 앞에서 양육 방식을 충돌시키면 아이만 흔들립니다.`,
+    pick(
+      locale,
+      `${nameA} → ${parentingBadge(pA.style, locale)} · ${nameB} → ${parentingBadge(pB.style, locale)} — ` +
+        `you love the child at the same temperature but in different ways. Clashing your parenting styles in front of the child only shakes the child.`,
+      `${nameA} → ${parentingBadge(pA.style, locale)} · ${nameB} → ${parentingBadge(pB.style, locale)} — ` +
+        `아이를 사랑하는 온도는 같지만 방식이 다릅니다. 아이 앞에서 양육 방식을 충돌시키면 아이만 흔들립니다.`,
+    ),
   );
 }
 
@@ -193,24 +258,40 @@ function buildParentingHarmonyTip(ctx: MarriageRuleContext): string {
   const pB = ctx.tenGod.parentingB;
   const nameA = ctx.nicknameA;
   const nameB = ctx.nicknameB;
+  const locale = ctx.locale;
 
   if (pA.style !== pB.style) {
     const empathyName = pA.style === "empathy" ? nameA : nameB;
     const structureName = pA.style === "structure" ? nameA : nameB;
     return sanitizeHomeLifeText(
-      `💬 ${empathyName}(🎨 공감형)과 ${structureName}(📐 규칙형)은 아이를 사랑하는 방식의 온도가 다릅니다. ` +
-        `아이 앞에서는 절대 서로의 양육 방식을 지적하거나 깎아내리지 마세요. ` +
-        `아이가 없는 독립된 부부만의 공간에서 훈육 가이드라인을 완벽히 합의한 뒤, ` +
-        `아이 앞에서는 오직 단호하고 일관된 하나의 목소리만 들려주어야 아이의 정서가 흔들리지 않습니다.`,
+      pick(
+        locale,
+        `💬 ${empathyName} (🎨 empathy type) and ${structureName} (📐 structure type) run at a different temperature in how they love the child. ` +
+          `Never point out or put down each other's parenting style in front of the child. ` +
+          `Fully agree on discipline guidelines somewhere private, just the two of you without the child, and ` +
+          `then show the child only one firm, consistent voice — that's what keeps the child's emotions steady.`,
+        `💬 ${empathyName}(🎨 공감형)과 ${structureName}(📐 규칙형)은 아이를 사랑하는 방식의 온도가 다릅니다. ` +
+          `아이 앞에서는 절대 서로의 양육 방식을 지적하거나 깎아내리지 마세요. ` +
+          `아이가 없는 독립된 부부만의 공간에서 훈육 가이드라인을 완벽히 합의한 뒤, ` +
+          `아이 앞에서는 오직 단호하고 일관된 하나의 목소리만 들려주어야 아이의 정서가 흔들리지 않습니다.`,
+      ),
     );
   }
   if (pA.style === "empathy") {
     return sanitizeHomeLifeText(
-      `💬 ${nameA} & ${nameB} — 공감형끼리는 아이 감정에 맞추다 부모 둘 다 지칩니다. '이번 주는 규칙 한 줄만 추가'하기로 합의하고, 번갈아 단호한 역할을 맡으세요.`,
+      pick(
+        locale,
+        `💬 ${nameA} & ${nameB} — two empathy types both wear out trying to match the child's every emotion. Agree to "add just one rule this week," and take turns being the firm one.`,
+        `💬 ${nameA} & ${nameB} — 공감형끼리는 아이 감정에 맞추다 부모 둘 다 지칩니다. '이번 주는 규칙 한 줄만 추가'하기로 합의하고, 번갈아 단호한 역할을 맡으세요.`,
+      ),
     );
   }
   return sanitizeHomeLifeText(
-    `💬 ${nameA} & ${nameB} — 규칙형끼리는 기준이 맞지만 감정 쪽이 메마를 수 있습니다. 주 1회 '아이 기분 체크인' 시간을 정해, 룰보다 마음을 먼저 묻는 밤을 만드세요.`,
+    pick(
+      locale,
+      `💬 ${nameA} & ${nameB} — two structure types align on standards, but the emotional side can dry up. Set a weekly "child mood check-in" and make one night about asking the heart before the rules.`,
+      `💬 ${nameA} & ${nameB} — 규칙형끼리는 기준이 맞지만 감정 쪽이 메마를 수 있습니다. 주 1회 '아이 기분 체크인' 시간을 정해, 룰보다 마음을 먼저 묻는 밤을 만드세요.`,
+    ),
   );
 }
 
@@ -218,32 +299,56 @@ function buildConflictTrigger(ctx: MarriageRuleContext): string {
   const { risk } = ctx.masterScores;
   const sig = ctx.marriagePairAnalysis.scoringSignals;
   const day = ctx.marriagePairAnalysis.dayBranch;
+  const locale = ctx.locale;
 
   if (sig.hasDayHourHomeTension && sig.hasWonjinOrGuimun) {
     return sanitizeHomeLifeText(
-      `육아·가사·돈이 겹치는 날 감정이 폭발합니다. 가까울수록 서운함이 꼬이고, ` +
-        `작은 말투 하나로 냉전이 옵니다. 홈 리스크 ${risk}% — 회복하려면 하루 이상 걸릴 수 있어요.`,
+      pick(
+        locale,
+        `Emotions explode on days when childcare, chores, and money overlap. The closer you are, the more hurt feelings tangle, ` +
+          `and one small tone of voice brings a cold war. Home risk ${risk}% — recovery can take more than a day.`,
+        `육아·가사·돈이 겹치는 날 감정이 폭발합니다. 가까울수록 서운함이 꼬이고, ` +
+          `작은 말투 하나로 냉전이 옵니다. 홈 리스크 ${risk}% — 회복하려면 하루 이상 걸릴 수 있어요.`,
+      ),
     );
   }
   if (day.hasDayBranchChungHyung) {
     return sanitizeHomeLifeText(
-      `피로가 극에 달하면 사적인 리듬 차이가 정면 충돌합니다. 퇴근 직후·잠들기 전이 폭발 시간대예요. ` +
-        `이때 무거운 대화를 시작하지 마세요.`,
+      pick(
+        locale,
+        `When fatigue peaks, your personal rhythm differences collide head-on. Right after getting home from work and right before sleep are prime blow-up times. ` +
+          `Don't start a heavy conversation then.`,
+        `피로가 극에 달하면 사적인 리듬 차이가 정면 충돌합니다. 퇴근 직후·잠들기 전이 폭발 시간대예요. ` +
+          `이때 무거운 대화를 시작하지 마세요.`,
+      ),
     );
   }
   if (sig.hasGongmangOverlap) {
     return sanitizeHomeLifeText(
-      `'괜찮아'만 반복하는 정서적 방임이 옵니다. 상대는 혼자 삼키다가 어느 날 한꺼번에 터집니다. ` +
-        `짧게라도 '지금 기분 어때?'를 매일 확인하세요.`,
+      pick(
+        locale,
+        `Emotional neglect comes from repeating just "it's fine." The other person swallows it alone until one day it all bursts out at once. ` +
+          `Check in daily, even briefly, with "how are you feeling right now?"`,
+        `'괜찮아'만 반복하는 정서적 방임이 옵니다. 상대는 혼자 삼키다가 어느 날 한꺼번에 터집니다. ` +
+          `짧게라도 '지금 기분 어때?'를 매일 확인하세요.`,
+      ),
     );
   }
   if (sig.hasWealthOfficerPowerStruggle) {
     return sanitizeHomeLifeText(
-      `돈·주도권 싸움이 집안 전쟁으로 번지기 쉽습니다. 통장·큰 지출은 CFO 한 명만 — 둘이 동시에 쥐면 100% 싸웁니다.`,
+      pick(
+        locale,
+        "A money-and-power-struggle can easily escalate into a household war. Only one CFO should hold the bank account and big spending — if both of you hold it at once, you're guaranteed to fight.",
+        "돈·주도권 싸움이 집안 전쟁으로 번지기 쉽습니다. 통장·큰 지출은 CFO 한 명만 — 둘이 동시에 쥐면 100% 싸웁니다.",
+      ),
     );
   }
   return sanitizeHomeLifeText(
-    `역할·돈·육아를 한 번에 꺼내면 마찰이 치솟습니다. 오늘은 하나만. 나머지는 내일.`,
+    pick(
+      locale,
+      "Bringing up roles, money, and childcare all at once sends friction soaring. Just one topic today. The rest, tomorrow.",
+      "역할·돈·육아를 한 번에 꺼내면 마찰이 치솟습니다. 오늘은 하나만. 나머지는 내일.",
+    ),
   );
 }
 
@@ -262,6 +367,7 @@ export function buildHouseholdPartnershipReport(
     chartA: ctx.marriagePairAnalysis.chartA,
     chartB: ctx.marriagePairAnalysis.chartB,
     dayBranch: ctx.marriagePairAnalysis.dayBranch,
+    locale: ctx.locale,
   });
 
   return {
@@ -293,12 +399,14 @@ export function buildHouseholdPartnershipReport(
         ctx.tenGod.boundaryA,
         ctx.tenGod.countsA,
         ctx.marriagePairAnalysis.chartA,
+        ctx.locale,
       ),
       person_b_boundary_note: buildPersonFamilyBoundaryNote(
         ctx.nicknameB,
         ctx.tenGod.boundaryB,
         ctx.tenGod.countsB,
         ctx.marriagePairAnalysis.chartB,
+        ctx.locale,
       ),
     },
     section_parenting: {
@@ -306,10 +414,12 @@ export function buildHouseholdPartnershipReport(
       person_a_style: formatParentingStyleLine(
         ctx.tenGod.parentingA.style,
         ctx.tenGod.parentingA.label,
+        ctx.locale,
       ),
       person_b_style: formatParentingStyleLine(
         ctx.tenGod.parentingB.style,
         ctx.tenGod.parentingB.label,
+        ctx.locale,
       ),
       harmony_tip: buildParentingHarmonyTip(ctx),
     },
@@ -318,11 +428,13 @@ export function buildHouseholdPartnershipReport(
         ctx.nicknameA,
         ctx.marriagePairAnalysis.chartA,
         ctx.tenGod.countsA,
+        ctx.locale,
       ),
       person_b_private_line: buildPrivateBoundary(
         ctx.nicknameB,
         ctx.marriagePairAnalysis.chartB,
         ctx.tenGod.countsB,
+        ctx.locale,
       ),
     },
     section_upset: {
@@ -330,11 +442,13 @@ export function buildHouseholdPartnershipReport(
         ctx.nicknameA,
         ctx.sajuJsonA,
         ctx.tenGod.countsA,
+        ctx.locale,
       ),
       person_b: buildHomeUpsetResponseGuide(
         ctx.nicknameB,
         ctx.sajuJsonB,
         ctx.tenGod.countsB,
+        ctx.locale,
       ),
     },
     section_warning: {

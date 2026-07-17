@@ -375,6 +375,7 @@ export function useRelationshipDetail({
     void load(k, { silent: true });
   }, [urlKindHint, load]);
 
+  /** Whether we've already attempted an ensureBasic() call for this relationship (this mount). */
   const basicAttempted = useRef(false);
 
   useEffect(() => {
@@ -392,11 +393,16 @@ export function useRelationshipDetail({
     try {
       const res = await fetch("/api/relationship/analyze/basic", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-aha-locale": locale,
+        },
         body: JSON.stringify({
           relationship_report_id: resolvedRelationshipId,
           viewer_report_id: effectiveViewerReportId,
           relationship_kind: premiumKindRef.current,
+          language: locale,
+          locale,
         }),
       });
       const data = await res.json();
@@ -408,7 +414,7 @@ export function useRelationshipDetail({
     } finally {
       setBusy(false);
     }
-  }, [effectiveViewerReportId, resolvedRelationshipId, load, premiumKind, messages]);
+  }, [effectiveViewerReportId, resolvedRelationshipId, load, premiumKind, messages, locale]);
 
   const toggleFavorite = useCallback(async () => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
@@ -452,8 +458,8 @@ export function useRelationshipDetail({
   useEffect(() => {
     if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
       return;
-    if (basic && Object.keys(basic).length > 0) return;
-    if (basicAttempted.current) return;
+    const hasBasicContent = Boolean(basic && Object.keys(basic).length > 0);
+    if (hasBasicContent || basicAttempted.current) return;
     basicAttempted.current = true;
     void ensureBasic();
   }, [

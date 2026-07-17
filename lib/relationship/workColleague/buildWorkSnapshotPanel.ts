@@ -53,7 +53,7 @@ export function buildWorkSnapshotPanel(
     psychB?: PsychMasterJson | null;
   },
 ): TriScoreSnapshotPanel {
-  const topicLabels = getTriScoreKindConfig("work").topics;
+  const topicLabels = getTriScoreKindConfig("work", ctx.locale).topics;
   const psychA = personCorePsych?.psychA ?? null;
   const psychB = personCorePsych?.psychB ?? null;
 

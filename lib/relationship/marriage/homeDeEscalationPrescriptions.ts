@@ -1,4 +1,6 @@
 import type { TenGodCounts } from "./marriageTenGodAnalysis";
+import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type HomeDeEscalationCard = {
   hashtag: string;
@@ -22,75 +24,135 @@ export type HomeDeEscalationPair = {
 };
 
 type PrescriptionDef = {
-  hashtag: string;
+  hashtag: (locale: Locale) => string;
   color: HomeDeEscalationCard["color"];
-  archetype_label: string;
+  archetype_label: (locale: Locale) => string;
   category: "self" | "food" | "seal" | "officer" | "wealth";
-  psych_state: (upset: string) => string;
-  avoid_actions: (partner: string, upset: string) => string;
-  solution_script: (partner: string, upset: string) => string;
+  psych_state: (upset: string, locale: Locale) => string;
+  avoid_actions: (partner: string, upset: string, locale: Locale) => string;
+  solution_script: (partner: string, upset: string, locale: Locale) => string;
 };
 
 const HOME_DE_ESCALATION_PRESCRIPTIONS: PrescriptionDef[] = [
   {
-    hashtag: "#우쭈쭈_당신이최고야",
+    hashtag: (locale) => pick(locale, "#YoureTheBest", "#우쭈쭈_당신이최고야"),
     color: "red",
-    archetype_label: "존재감·자존심 민감형",
+    archetype_label: (locale) => pick(locale, "Presence & Pride Sensitive Type", "존재감·자존심 민감형"),
     category: "self",
-    psych_state: (upset) =>
-      `${upset}는 자신의 존재 가치나 자존심에 상처를 입었다고 느끼면 이성적인 대화가 불가능해집니다. 잘잘못을 따지는 순간 '날 무시한다'고 받아들여 방어벽을 높입니다.`,
-    avoid_actions: (partner, upset) =>
-      `【${partner} → ${upset}】 "네가 잘못한 부분도 있잖아"라며 시시비비 가리기, 한숨·한심한 눈빛, ${upset}의 노력을 가볍게 치부하기.`,
-    solution_script: (partner, upset) =>
-      `【${partner} → ${upset}】 "${upset}, 당신이 우리 집을 위해 얼마나 고생하는지 내가 다 알아. 당신 없으면 이 집이 안 돌아가. 아까 내 말이 상처였다면 정말 미안해." — 존재 가치를 먼저 인정한 뒤, 논쟁은 내일로 미루세요.`,
+    psych_state: (upset, locale) =>
+      pick(
+        locale,
+        `${upset} can't have a rational conversation once they feel their sense of worth or pride was hurt. The moment fault gets assigned, they read it as "being looked down on" and raise their guard.`,
+        `${upset}는 자신의 존재 가치나 자존심에 상처를 입었다고 느끼면 이성적인 대화가 불가능해집니다. 잘잘못을 따지는 순간 '날 무시한다'고 받아들여 방어벽을 높입니다.`,
+      ),
+    avoid_actions: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 Litigating "you did something wrong too," sighing or giving a disappointed look, or brushing off ${upset}'s effort.`,
+        `【${partner} → ${upset}】 "네가 잘못한 부분도 있잖아"라며 시시비비 가리기, 한숨·한심한 눈빛, ${upset}의 노력을 가볍게 치부하기.`,
+      ),
+    solution_script: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 "${upset}, I know exactly how hard you work for this home. This place doesn't run without you. I'm really sorry if what I said earlier hurt you." — Affirm their worth first, and save the argument for tomorrow.`,
+        `【${partner} → ${upset}】 "${upset}, 당신이 우리 집을 위해 얼마나 고생하는지 내가 다 알아. 당신 없으면 이 집이 안 돌아가. 아까 내 말이 상처였다면 정말 미안해." — 존재 가치를 먼저 인정한 뒤, 논쟁은 내일로 미루세요.`,
+      ),
   },
   {
-    hashtag: "#바람쐬고_기분전환",
+    hashtag: (locale) => pick(locale, "#FreshAirResetsMe", "#바람쐬고_기분전환"),
     color: "yellow",
-    archetype_label: "즉각 표출·기분전환형",
+    archetype_label: (locale) => pick(locale, "Instant-Vent, Quick-Reset Type", "즉각 표출·기분전환형"),
     category: "food",
-    psych_state: (upset) =>
-      `${upset}는 화가 올라오면 바로 표출하는 타입입니다. 뒤끝은 길지 않지만, 무겁고 심각한 분위기가 길어질수록 더 지쳐버립니다.`,
-    avoid_actions: (partner, upset) =>
-      `【${partner} → ${upset}】 며칠간 투명인간 취급·냉전, 정색하고 청문회처럼 앉아 조사하기, ${upset}가 기분 풀려 하면 "아직 화났어?"라며 무겁게 몰아붙이기.`,
-    solution_script: (partner, upset) =>
-      `【${partner} → ${upset}】 "우리 둘 다 꿀꿀한데 잠깐 드라이브 갈까?", "맛있는 거 시켰는데 같이 먹으면서 풀자." — 진지한 사과보다 분위기 전환이 먼저입니다. ${upset}가 웃을 틈을 만든 뒤 핵심을 짧게 말하세요.`,
+    psych_state: (upset, locale) =>
+      pick(
+        locale,
+        `${upset} vents anger right away. It doesn't linger long, but the longer a heavy, serious mood drags on, the more exhausted they get.`,
+        `${upset}는 화가 올라오면 바로 표출하는 타입입니다. 뒤끝은 길지 않지만, 무겁고 심각한 분위기가 길어질수록 더 지쳐버립니다.`,
+      ),
+    avoid_actions: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 Days of treating them like they're invisible, sitting them down for an interrogation-style hearing, or pushing with "still mad?" the moment ${upset} tries to lighten up.`,
+        `【${partner} → ${upset}】 며칠간 투명인간 취급·냉전, 정색하고 청문회처럼 앉아 조사하기, ${upset}가 기분 풀려 하면 "아직 화났어?"라며 무겁게 몰아붙이기.`,
+      ),
+    solution_script: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 "Want to take a quick drive, we're both feeling down?", "I ordered something good, let's eat and shake it off together." — Changing the mood comes before a serious apology. Make room for ${upset} to laugh first, then say the important part briefly.`,
+        `【${partner} → ${upset}】 "우리 둘 다 꿀꿀한데 잠깐 드라이브 갈까?", "맛있는 거 시켰는데 같이 먹으면서 풀자." — 진지한 사과보다 분위기 전환이 먼저입니다. ${upset}가 웃을 틈을 만든 뒤 핵심을 짧게 말하세요.`,
+      ),
   },
   {
-    hashtag: "#혼자만의_동굴시간",
+    hashtag: (locale) => pick(locale, "#MyOwnCaveTime", "#혼자만의_동굴시간"),
     color: "orange",
-    archetype_label: "침묵·동굴 회복형",
+    archetype_label: (locale) => pick(locale, "Silent Cave-Recovery Type", "침묵·동굴 회복형"),
     category: "seal",
-    psych_state: (upset) =>
-      `${upset}는 갈등 직후 뇌 과부하 상태가 됩니다. 즉시 대화를 요구하면 폭발하거나 완전히 문을 닫아버립니다. 혼자 정리할 시간이 필요합니다.`,
-    avoid_actions: (partner, upset) =>
-      `【${partner} → ${upset}】 "말 안 하면 어떻게 알아? 지금 당장 대화해!"라며 쫓아가기, 방문 두드리기, ${upset}의 침묵을 무시·방임으로 해석하기.`,
-    solution_script: (partner, upset) =>
-      `【${partner} → ${upset}】 (문자·메모 한 줄) "${upset}, 화난 마음 이해해. 생각 정리될 때까지 기다릴게. 준비되면 말해 줘." — 그다음 최소 반나절은 존재감만 남기고 쫓지 마세요.`,
+    psych_state: (upset, locale) =>
+      pick(
+        locale,
+        `${upset}'s brain overloads right after conflict. Demanding a conversation immediately can make them explode or shut the door completely. They need time alone to sort things out.`,
+        `${upset}는 갈등 직후 뇌 과부하 상태가 됩니다. 즉시 대화를 요구하면 폭발하거나 완전히 문을 닫아버립니다. 혼자 정리할 시간이 필요합니다.`,
+      ),
+    avoid_actions: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 Chasing them with "how am I supposed to know if you don't talk? Talk to me right now!", knocking on the door, or reading ${upset}'s silence as being ignored or neglectful.`,
+        `【${partner} → ${upset}】 "말 안 하면 어떻게 알아? 지금 당장 대화해!"라며 쫓아가기, 방문 두드리기, ${upset}의 침묵을 무시·방임으로 해석하기.`,
+      ),
+    solution_script: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 (a one-line text or note) "${upset}, I understand you're upset. I'll wait until your thoughts settle. Talk to me when you're ready." — After that, leave your presence known but don't chase for at least half a day.`,
+        `【${partner} → ${upset}】 (문자·메모 한 줄) "${upset}, 화난 마음 이해해. 생각 정리될 때까지 기다릴게. 준비되면 말해 줘." — 그다음 최소 반나절은 존재감만 남기고 쫓지 마세요.`,
+      ),
   },
   {
-    hashtag: "#구체적인_대안제시",
+    hashtag: (locale) => pick(locale, "#GiveMeAConcretePlan", "#구체적인_대안제시"),
     color: "blue",
-    archetype_label: "규칙·대안 중시형",
+    archetype_label: (locale) => pick(locale, "Rules & Alternatives-Focused Type", "규칙·대안 중시형"),
     category: "officer",
-    psych_state: (upset) =>
-      `${upset}는 눈물 섞인 호소나 "그냥 미안해" 같은 감정만 있는 사과를 진정성 없다고 느낍니다. 논리·사실·앞으로의 행동 규칙이 있어야 마음이 열립니다.`,
-    avoid_actions: (partner, upset) =>
-      `【${partner} → ${upset}】 울며 매달리기, "기분 나빴다면 미안" 같은 조건부 사과, ${upset}가 요구하는 구체 해법 없이 감정만 반복하기.`,
-    solution_script: (partner, upset) =>
-      `【${partner} → ${upset}】 "${upset}, A는 내 잘못이 맞아. 앞으로는 가사 분담을 이렇게 바꾸고, 알람 맞춰 지킬게. 이 제안 어때?" — 사실 인정 → 대안 → 확인 질문 순서로 말하세요.`,
+    psych_state: (upset, locale) =>
+      pick(
+        locale,
+        `${upset} finds a tearful plea or a plain "sorry" without substance insincere. Logic, facts, and a rule for future behavior are what open their heart.`,
+        `${upset}는 눈물 섞인 호소나 "그냥 미안해" 같은 감정만 있는 사과를 진정성 없다고 느낍니다. 논리·사실·앞으로의 행동 규칙이 있어야 마음이 열립니다.`,
+      ),
+    avoid_actions: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 Pleading in tears, a conditional apology like "sorry if you were upset," or repeating emotion without the concrete solution ${upset} is asking for.`,
+        `【${partner} → ${upset}】 울며 매달리기, "기분 나빴다면 미안" 같은 조건부 사과, ${upset}가 요구하는 구체 해법 없이 감정만 반복하기.`,
+      ),
+    solution_script: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 "${upset}, I was wrong about A. Here's how I'll change the chore split going forward, and I'll set an alarm to keep to it. How does that sound?" — Acknowledge the fact → offer an alternative → ask for confirmation, in that order.`,
+        `【${partner} → ${upset}】 "${upset}, A는 내 잘못이 맞아. 앞으로는 가사 분담을 이렇게 바꾸고, 알람 맞춰 지킬게. 이 제안 어때?" — 사실 인정 → 대안 → 확인 질문 순서로 말하세요.`,
+      ),
   },
   {
-    hashtag: "#금융치료와_현실보상",
+    hashtag: (locale) => pick(locale, "#RealActionOverApologies", "#금융치료와_현실보상"),
     color: "green",
-    archetype_label: "현실 보상·실속형",
+    archetype_label: (locale) => pick(locale, "Practical-Reward, Results-Oriented Type", "현실 보상·실속형"),
     category: "wealth",
-    psych_state: (upset) =>
-      `${upset}는 말로만 하는 사과에는 실망합니다. 시간·돈·노동 같은 실질적 손해가 메워져야 마음이 열립니다.`,
-    avoid_actions: (partner, upset) =>
-      `【${partner} → ${upset}】 말로만 "미안해" 반복하기, ${upset}가 입은 손해(시간·돈·육아)를 가볍게 넘기기, 보상·양보 없이 분위기만 풀려 하기.`,
-    solution_script: (partner, upset) =>
-      `【${partner} → ${upset}】 "이번 주말 육아·살림은 내가 다 맡을게. 네가 쉬고 싶던 호캉스 예약해 뒀어." 또는 ${upset}가 원하던 실질적 보상을 먼저 제시하세요. 말보다 행동이 먼저입니다.`,
+    psych_state: (upset, locale) =>
+      pick(
+        locale,
+        `${upset} is disappointed by apologies that are just words. Real losses — time, money, labor — need to be made up for before their heart opens.`,
+        `${upset}는 말로만 하는 사과에는 실망합니다. 시간·돈·노동 같은 실질적 손해가 메워져야 마음이 열립니다.`,
+      ),
+    avoid_actions: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 Repeating "sorry" in words only, brushing off the loss ${upset} took (time, money, childcare), or trying to smooth the mood without any compensation or concession.`,
+        `【${partner} → ${upset}】 말로만 "미안해" 반복하기, ${upset}가 입은 손해(시간·돈·육아)를 가볍게 넘기기, 보상·양보 없이 분위기만 풀려 하기.`,
+      ),
+    solution_script: (partner, upset, locale) =>
+      pick(
+        locale,
+        `【${partner} → ${upset}】 "I'll take care of all the childcare and chores this weekend. I booked the staycation you wanted to rest at." Or offer the real compensation ${upset} wanted, first. Action comes before words.`,
+        `【${partner} → ${upset}】 "이번 주말 육아·살림은 내가 다 맡을게. 네가 쉬고 싶던 호캉스 예약해 뒀어." 또는 ${upset}가 원하던 실질적 보상을 먼저 제시하세요. 말보다 행동이 먼저입니다.`,
+      ),
   },
 ];
 
@@ -132,16 +194,17 @@ function buildCardFromDef(
   def: PrescriptionDef,
   upsetNickname: string,
   partnerNickname: string,
+  locale: Locale,
 ): HomeDeEscalationCard {
   return {
-    hashtag: def.hashtag,
+    hashtag: def.hashtag(locale),
     color: def.color,
-    archetype_label: def.archetype_label,
+    archetype_label: def.archetype_label(locale),
     upset_nickname: upsetNickname,
     partner_nickname: partnerNickname,
-    psych_state: def.psych_state(upsetNickname),
-    avoid_actions: def.avoid_actions(partnerNickname, upsetNickname),
-    solution_script: def.solution_script(partnerNickname, upsetNickname),
+    psych_state: def.psych_state(upsetNickname, locale),
+    avoid_actions: def.avoid_actions(partnerNickname, upsetNickname, locale),
+    solution_script: def.solution_script(partnerNickname, upsetNickname, locale),
   };
 }
 
@@ -154,12 +217,14 @@ export function buildHomeDeEscalationForPartner(params: {
   upsetNickname: string;
   partnerNickname: string;
   counts: TenGodCounts;
+  locale?: Locale;
 }): HomeDeEscalationCard {
   const cat = rankCategoriesForPerson(params.counts)[0]!;
   return buildCardFromDef(
     defByCategory(cat),
     params.upsetNickname,
     params.partnerNickname,
+    params.locale ?? LEGACY_FALLBACK_LOCALE,
   );
 }
 
@@ -169,7 +234,9 @@ export function buildHomeDeEscalationPair(params: {
   nicknameB: string;
   countsA: TenGodCounts;
   countsB: TenGodCounts;
+  locale?: Locale;
 }): HomeDeEscalationPair {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const catA = topCategory(params.countsA);
   const catB = topCategory(params.countsB);
   const defA = defByCategory(catA);
@@ -177,9 +244,15 @@ export function buildHomeDeEscalationPair(params: {
   const shared_trigger = catA === catB;
 
   const shared_trigger_note = shared_trigger
-    ? `${params.nicknameA}와 ${params.nicknameB}는 같은 화 풀림 유형(${defA.archetype_label})입니다. ` +
-      `둘 다 비슷한 지점에서 터지기 쉬워, 싸울 때 '서로 같은 방식'으로 맞부딪히면 대화가 두 배로 길어집니다. ` +
-      `한 명이 먼저 "지금은 쉬고 30분 뒤 다시"라고 타임아웃을 선언하고, 아래 처방을 번갈아 써 보세요.`
+    ? pick(
+        locale,
+        `${params.nicknameA} and ${params.nicknameB} share the same de-escalation type (${defA.archetype_label(locale)}). ` +
+          `You're both prone to blowing up at similar points, so clashing "the same way" during a fight doubles the length of the argument. ` +
+          `Have one of you declare a timeout first — "let's rest now and pick this up in 30 minutes" — and take turns using the prescription below.`,
+        `${params.nicknameA}와 ${params.nicknameB}는 같은 화 풀림 유형(${defA.archetype_label(locale)})입니다. ` +
+          `둘 다 비슷한 지점에서 터지기 쉬워, 싸울 때 '서로 같은 방식'으로 맞부딪히면 대화가 두 배로 길어집니다. ` +
+          `한 명이 먼저 "지금은 쉬고 30분 뒤 다시"라고 타임아웃을 선언하고, 아래 처방을 번갈아 써 보세요.`,
+      )
     : null;
 
   return {
@@ -187,11 +260,13 @@ export function buildHomeDeEscalationPair(params: {
       defA,
       params.nicknameA,
       params.nicknameB,
+      locale,
     ),
     person_b: buildCardFromDef(
       defB,
       params.nicknameB,
       params.nicknameA,
+      locale,
     ),
     shared_trigger,
     shared_trigger_note,

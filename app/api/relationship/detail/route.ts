@@ -19,6 +19,7 @@ import {
   type ResultPremiumByKind,
 } from "@/lib/relationship/relationshipKind";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { getResultBasicLocale } from "@/lib/relationship/resultBasicLocale";
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
@@ -208,6 +209,8 @@ export async function GET(req: Request) {
         hasPremiumCacheForKind(byKind, k),
       ),
       locale,
+      /** Locale the stored result_basic was generated in; null = unknown/legacy row. */
+      basic_locale: getResultBasicLocale(rr.result_basic),
       is_favorite: favorited,
     };
 

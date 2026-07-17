@@ -156,7 +156,6 @@ export async function POST(req: Request) {
         rr.result_basic,
         rr.report_id_b,
       ) != null;
-
     if (basicComplete && integratesForLlm) {
       const perspectives = (
         rr.result_basic as { perspectives: Record<string, unknown> }
@@ -176,15 +175,16 @@ export async function POST(req: Request) {
           labelB,
         );
         if (migrated) {
+          const migratedWithLocale = { ...migrated, locale };
           const { error: migErr } = await supabase
             .from("relationship_reports")
             .update({
-              result_basic: migrated as unknown as Record<string, unknown>,
+              result_basic: migratedWithLocale as unknown as Record<string, unknown>,
               updated_at: new Date().toISOString(),
             })
             .eq("id", relationshipReportId);
           if (!migErr) {
-            return NextResponse.json({ result_basic: migrated });
+            return NextResponse.json({ result_basic: migratedWithLocale });
           }
         }
       }
@@ -207,15 +207,16 @@ export async function POST(req: Request) {
         labelB,
       );
       if (patched) {
+        const patchedWithLocale = { ...patched, locale };
         const { error: fixErr } = await supabase
           .from("relationship_reports")
           .update({
-            result_basic: patched as unknown as Record<string, unknown>,
+            result_basic: patchedWithLocale as unknown as Record<string, unknown>,
             updated_at: new Date().toISOString(),
           })
           .eq("id", relationshipReportId);
         if (!fixErr) {
-          return NextResponse.json({ result_basic: patched });
+          return NextResponse.json({ result_basic: patchedWithLocale });
         }
       }
     }
@@ -299,7 +300,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const payload = normalized;
+    const payload = { ...normalized, locale };
 
     const { error: upErr } = await supabase
       .from("relationship_reports")

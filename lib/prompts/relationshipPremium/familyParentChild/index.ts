@@ -6,6 +6,7 @@ import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisFo
 import { buildFamilyParentReport } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyParentPairRoles, FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
+import type { Locale } from "@/lib/i18n/locale";
 import {
   FAMILY_PARENT_CHILD_DEEP_FORMAT,
   type FamilyParentChildDeepReport,
@@ -45,6 +46,7 @@ export async function runFamilyParentChildDeepAnalysis(
     };
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
+    locale?: Locale;
   },
 ): Promise<FamilyParentChildDeepPayload> {
   const pairFamily =
@@ -70,6 +72,7 @@ export async function runFamilyParentChildDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairFamily,
+    locale: params.locale,
   });
 
   return {

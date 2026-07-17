@@ -1,4 +1,6 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 
 export type TenGodCategory =
   | "재성"
@@ -16,42 +18,80 @@ const CATEGORY_GODS: Record<TenGodCategory, string[]> = {
 };
 
 const CATEGORY_WORK: Record<
-  TenGodCategory,
-  { label: string; roles: string[]; delegatePhrase: string }
+  Locale,
+  Record<TenGodCategory, { label: string; roles: string[]; delegatePhrase: string }>
 > = {
-  재성: {
-    label: "실속·자원",
-    roles: ["예산·수익 관리", "영업·사업 개발", "실무·운영 돈 흐름"],
-    delegatePhrase: "돈·자원·실무 성과가 필요한 업무",
+  "en-US": {
+    재성: {
+      label: "Resources & Results",
+      roles: ["Budget & revenue management", "Sales & business development", "Operational cash flow"],
+      delegatePhrase: "work that needs money, resources, or tangible results",
+    },
+    관성: {
+      label: "Management & Drive",
+      roles: ["Project management", "Schedule & quality control", "External coordination & accountability"],
+      delegatePhrase: "work that needs accountability, drive, or management",
+    },
+    식상: {
+      label: "Planning & Expression",
+      roles: ["Planning & ideation", "Content & production", "Improvement proposals & presentations"],
+      delegatePhrase: "work that needs planning, expression, or deliverables",
+    },
+    인성: {
+      label: "Learning & Support",
+      roles: ["Research & analysis", "Documentation & training", "Back-office support"],
+      delegatePhrase: "work that needs learning, organizing, or support",
+    },
+    비겁: {
+      label: "Field & Teamwork",
+      roles: ["On-the-ground coordination", "Team building", "Peer collaboration & execution"],
+      delegatePhrase: "work that needs field coordination, teamwork, or execution",
+    },
   },
-  관성: {
-    label: "관리·추진",
-    roles: ["프로젝트 관리", "일정·품질 통제", "대외 조율·책임"],
-    delegatePhrase: "책임·추진·관리가 필요한 업무",
-  },
-  식상: {
-    label: "기획·표현",
-    roles: ["기획·아이디어", "콘텐츠·제작", "개선 제안·발표"],
-    delegatePhrase: "기획·표현·산출물이 필요한 업무",
-  },
-  인성: {
-    label: "학습·지원",
-    roles: ["리서치·분석", "문서·교육", "백오피스·지원"],
-    delegatePhrase: "학습·정리·지원이 필요한 업무",
-  },
-  비겁: {
-    label: "현장·협업",
-    roles: ["현장 조율", "팀 빌딩", "동료 협업·실행"],
-    delegatePhrase: "현장·협업·실행이 필요한 업무",
+  "ko-KR": {
+    재성: {
+      label: "실속·자원",
+      roles: ["예산·수익 관리", "영업·사업 개발", "실무·운영 돈 흐름"],
+      delegatePhrase: "돈·자원·실무 성과가 필요한 업무",
+    },
+    관성: {
+      label: "관리·추진",
+      roles: ["프로젝트 관리", "일정·품질 통제", "대외 조율·책임"],
+      delegatePhrase: "책임·추진·관리가 필요한 업무",
+    },
+    식상: {
+      label: "기획·표현",
+      roles: ["기획·아이디어", "콘텐츠·제작", "개선 제안·발표"],
+      delegatePhrase: "기획·표현·산출물이 필요한 업무",
+    },
+    인성: {
+      label: "학습·지원",
+      roles: ["리서치·분석", "문서·교육", "백오피스·지원"],
+      delegatePhrase: "학습·정리·지원이 필요한 업무",
+    },
+    비겁: {
+      label: "현장·협업",
+      roles: ["현장 조율", "팀 빌딩", "동료 협업·실행"],
+      delegatePhrase: "현장·협업·실행이 필요한 업무",
+    },
   },
 };
 
-export const CATEGORY_OFFICE_LABEL: Record<TenGodCategory, string> = {
-  재성: "실속·자원",
-  관성: "관리·추진",
-  식상: "기획·표현",
-  인성: "학습·지원",
-  비겁: "현장·협업",
+export const CATEGORY_OFFICE_LABEL: Record<Locale, Record<TenGodCategory, string>> = {
+  "en-US": {
+    재성: "Resources & Results",
+    관성: "Management & Drive",
+    식상: "Planning & Expression",
+    인성: "Learning & Support",
+    비겁: "Field & Teamwork",
+  },
+  "ko-KR": {
+    재성: "실속·자원",
+    관성: "관리·추진",
+    식상: "기획·표현",
+    인성: "학습·지원",
+    비겁: "현장·협업",
+  },
 };
 
 export type TenGodComplementItem = {
@@ -119,7 +159,9 @@ export function analyzeTenGodComplement(params: {
   sajuJsonB: SajuDataForIntegrated;
   countsA?: Record<string, number>;
   countsB?: Record<string, number>;
+  locale?: Locale;
 }): TenGodComplementResult {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const countsA = params.countsA ?? countTenGods(params.sajuJsonA);
   const countsB = params.countsB ?? countTenGods(params.sajuJsonB);
 
@@ -133,7 +175,7 @@ export function analyzeTenGodComplement(params: {
   for (const cat of lackingA) {
     const bStrength = categoryStrength(countsB, cat);
     if (bStrength >= 1) {
-      const meta = CATEGORY_WORK[cat];
+      const meta = CATEGORY_WORK[locale][cat];
       items.push({
         category: cat,
         categoryLabel: meta.label,
@@ -143,7 +185,11 @@ export function analyzeTenGodComplement(params: {
         giverStrength: bStrength,
         roles: meta.roles,
         delegateText: meta.delegatePhrase,
-        explanation: `${params.nicknameA}의 빈 구간을 ${params.nicknameB}이(가) ${meta.label} 역량으로 메워 줍니다.`,
+        explanation: pick(
+          locale,
+          `${params.nicknameB} fills ${params.nicknameA}'s gap with ${meta.label} strength.`,
+          `${params.nicknameA}의 빈 구간을 ${params.nicknameB}이(가) ${meta.label} 역량으로 메워 줍니다.`,
+        ),
       });
     }
   }
@@ -151,7 +197,7 @@ export function analyzeTenGodComplement(params: {
   for (const cat of lackingB) {
     const aStrength = categoryStrength(countsA, cat);
     if (aStrength >= 1) {
-      const meta = CATEGORY_WORK[cat];
+      const meta = CATEGORY_WORK[locale][cat];
       items.push({
         category: cat,
         categoryLabel: meta.label,
@@ -161,7 +207,11 @@ export function analyzeTenGodComplement(params: {
         giverStrength: aStrength,
         roles: meta.roles,
         delegateText: meta.delegatePhrase,
-        explanation: `${params.nicknameB}의 빈 구간을 ${params.nicknameA}이(가) ${meta.label} 역량으로 메워 줍니다.`,
+        explanation: pick(
+          locale,
+          `${params.nicknameA} fills ${params.nicknameB}'s gap with ${meta.label} strength.`,
+          `${params.nicknameB}의 빈 구간을 ${params.nicknameA}이(가) ${meta.label} 역량으로 메워 줍니다.`,
+        ),
       });
     }
   }

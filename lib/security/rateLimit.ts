@@ -71,6 +71,19 @@ export function allowsMemoryRateLimitFallback(): boolean {
   return process.env.RATE_LIMIT_ALLOW_MEMORY === "true";
 }
 
+/**
+ * Local-dev-only escape hatch — set RATE_LIMIT_DEV_UNLIMITED=true in
+ * .env.local to skip all rate limits while building/testing.
+ * Double-gated behind isStrictDeployEnv()/NODE_ENV so it can never apply
+ * in preview/production, regardless of what env vars are present there.
+ * Remove or unset before shipping to keep the real limits active again.
+ */
+export function isDevRateLimitUnlimited(): boolean {
+  if (isStrictDeployEnv()) return false;
+  if (process.env.NODE_ENV !== "development") return false;
+  return process.env.RATE_LIMIT_DEV_UNLIMITED === "true";
+}
+
 export type RateLimitResult =
   | { ok: true }
   | { ok: false; status: 401 | 429 | 503; error: string; retryAfterSec?: number };
@@ -86,6 +99,10 @@ export function enforceRateLimit(
   const subject = typeof keySubject === "string" ? keySubject.trim() : "";
   if (!subject) {
     return { ok: false, status: 401, error: "unauthorized" };
+  }
+
+  if (isDevRateLimitUnlimited()) {
+    return { ok: true };
   }
 
   const hasRemote = hasRemoteRateLimitBackend();

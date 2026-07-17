@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import type { TriScoreSnapshotKind } from "@/lib/relationship/triScoreSnapshot/kinds";
 import { getTriScoreKindConfig } from "@/lib/relationship/triScoreSnapshot/kinds";
 import { useReportTone } from "./ReportSurface";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function RelationshipScoreDefinitions({
   kind,
@@ -15,7 +15,8 @@ export default function RelationshipScoreDefinitions({
   const panelId = useId();
   const tone = useReportTone();
   const t = useMessages().relationshipDrilldown.layout;
-  const config = getTriScoreKindConfig(kind);
+  const { locale } = useLocale();
+  const config = getTriScoreKindConfig(kind, locale);
   const stitch = tone.surface === "stitch";
   const labelClass = stitch ? "text-on-surface-variant" : "text-white/55";
   const bodyClass = stitch

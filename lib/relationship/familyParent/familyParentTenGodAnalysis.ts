@@ -2,6 +2,8 @@ import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisFo
 import { profileTenGods } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import type { FamilyPairSajuAnalysis } from "@/lib/saju/familyAnalysis";
 import { sanitizeFamilyParentText } from "./familyParentLanguage";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import type { FamilyParentRole } from "./types";
 
 export type TenGodCounts = Record<string, number>;
@@ -46,6 +48,7 @@ function buildMotherProfile(
   child: ReturnType<typeof profileTenGods>,
   family: FamilyPairSajuAnalysis | undefined,
   childNickname: string,
+  locale: Locale,
 ): ParentCareProfile {
   const sig = family?.scoringSignals;
   const sealFocus = child.seal >= 2;
@@ -71,7 +74,11 @@ function buildMotherProfile(
     ),
     support_strength: supportStrength,
     lens_summary: sanitizeFamilyParentText(
-      `엄마 렌즈: ${childNickname}의 숨겨진 감수성·안정 욕구를 최우선으로 읽는 분석입니다.`,
+      pick(
+        locale,
+        `Mom lens: reads ${childNickname}'s hidden sensitivity and need for stability first.`,
+        `엄마 렌즈: ${childNickname}의 숨겨진 감수성·안정 욕구를 최우선으로 읽는 분석입니다.`,
+      ),
     ),
   };
 }
@@ -81,6 +88,7 @@ function buildFatherProfile(
   child: ReturnType<typeof profileTenGods>,
   family: FamilyPairSajuAnalysis | undefined,
   childNickname: string,
+  locale: Locale,
 ): ParentCareProfile {
   const sig = family?.scoringSignals;
   const wealthFocus = child.wealth >= 2;
@@ -106,7 +114,11 @@ function buildFatherProfile(
     ),
     support_strength: supportStrength,
     lens_summary: sanitizeFamilyParentText(
-      `아빠 렌즈: ${childNickname}의 현실 감각·자립·미래 설계 욕구를 최우선으로 읽는 분석입니다.`,
+      pick(
+        locale,
+        `Dad lens: reads ${childNickname}'s practical sense, independence, and need for future planning first.`,
+        `아빠 렌즈: ${childNickname}의 현실 감각·자립·미래 설계 욕구를 최우선으로 읽는 분석입니다.`,
+      ),
     ),
   };
 }
@@ -159,20 +171,22 @@ export function analyzeFamilyParentTenGod(params: {
   sajuJsonChild: SajuDataForIntegrated;
   familyPairAnalysis?: FamilyPairSajuAnalysis;
   childNickname?: string;
+  locale?: Locale;
 }): FamilyParentTenGodAnalysis {
   const countsParent = countTenGodsForFamilyParent(params.sajuJsonParent);
   const countsChild = countTenGodsForFamilyParent(params.sajuJsonChild);
   const parent = profileTenGods(countsParent);
   const child = profileTenGods(countsChild);
   const childNickname = params.childNickname ?? "아이";
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
 
   return {
     countsParent,
     countsChild,
     parentProfile:
       params.parentRole === "mother"
-        ? buildMotherProfile(parent, child, params.familyPairAnalysis, childNickname)
-        : buildFatherProfile(parent, child, params.familyPairAnalysis, childNickname),
+        ? buildMotherProfile(parent, child, params.familyPairAnalysis, childNickname, locale)
+        : buildFatherProfile(parent, child, params.familyPairAnalysis, childNickname, locale),
     childProfile: buildChildProfile(child, childNickname, params.familyPairAnalysis),
   };
 }

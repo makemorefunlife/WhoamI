@@ -1,5 +1,6 @@
 import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import { getTriScoreKindConfig } from "@/lib/relationship/triScoreSnapshot/kinds";
+import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type {
   SnapshotTopicNarrative,
   SnapshotNarrative,
@@ -10,7 +11,8 @@ function interpretMarriageTopic(
   gauge: RelationshipTopicGauge,
   ctx: MarriageRuleContext,
 ): SnapshotTopicNarrative {
-  const config = getTriScoreKindConfig("cohabitation");
+  const locale = ctx.locale ?? LEGACY_FALLBACK_LOCALE;
+  const config = getTriScoreKindConfig("cohabitation", locale);
   const topicMeta = config.topics.find((t) => t.topic === gauge.topic);
   const activation = Math.round(gauge.activation);
   const benefit = Math.round(gauge.benefit);
@@ -18,21 +20,35 @@ function interpretMarriageTopic(
   const day = ctx.marriagePairAnalysis.dayBranch;
 
   if (gauge.topic === "intimacy") {
-    const core =
+    const core = pick(
+      locale,
+      activation >= 70
+        ? "Your bedroom and attachment rhythm align naturally. Touch and your nighttime frequency tend to match well."
+        : activation >= 58
+          ? "A combination where fit rises the closer you get. Just aligning pace and touch is enough."
+          : "There's a body/emotion rhythm difference. Without conversation, nights can turn awkward.",
       activation >= 70
         ? "침실·애착 리듬이 자연스럽게 맞습니다. 스킨십과 밤의 주파수가 잘 맞는 편."
         : activation >= 58
           ? "가까워질수록 핏이 올라가는 조합. 속도·촉감만 맞추면 충분합니다."
-          : "신체·정서 리듬 차이가 있습니다. 대화 없이는 밤이 어색해질 수 있어요.";
-    const bed =
+          : "신체·정서 리듬 차이가 있습니다. 대화 없이는 밤이 어색해질 수 있어요.",
+    );
+    const bed = pick(
+      locale,
+      day.bedFitLevel === "excellent"
+        ? " Your nighttime chemistry is especially strong."
+        : day.bedFitLevel === "needs_tune"
+          ? " Tuning your rhythm in the bedroom is essential."
+          : "",
       day.bedFitLevel === "excellent"
         ? " 밤의 케미가 특히 강합니다."
         : day.bedFitLevel === "needs_tune"
           ? " 침실에서 리듬 조율이 필수입니다."
-          : "";
+          : "",
+    );
     return {
       topic: gauge.topic,
-      title: topicMeta?.cardTitle ?? "① 로맨틱 핏·애착",
+      title: topicMeta?.cardTitle ?? pick(locale, "① Romantic Fit & Attachment", "① 로맨틱 핏·애착"),
       subtitle: topicMeta?.cardSubtitle ?? "",
       activation,
       benefit,
@@ -43,40 +59,63 @@ function interpretMarriageTopic(
   }
 
   if (gauge.topic === "stability") {
-    const core =
+    const core = pick(
+      locale,
+      benefit >= 68
+        ? "There's plenty of room for chores, finances, and childcare to mesh like gears."
+        : benefit >= 50
+          ? "You can raise this by agreeing on roles and designating a CFO."
+          : "Friction over money, roles, and childcare can be frequent. Without a system, only hurt feelings pile up.",
       benefit >= 68
         ? "가사·재정·육아가 톱니바퀴처럼 맞물릴 여지가 큽니다."
         : benefit >= 50
           ? "역할 합의와 CFO 지정으로 끌어올릴 수 있습니다."
-          : "돈·역할·육아에서 마찰이 잦을 수 있습니다. 시스템이 없으면 서운함만 쌓입니다.";
+          : "돈·역할·육아에서 마찰이 잦을 수 있습니다. 시스템이 없으면 서운함만 쌓입니다.",
+    );
     const cfo = ctx.tenGod.cfo.nickname;
     return {
       topic: gauge.topic,
-      title: topicMeta?.cardTitle ?? "② 라이프 시너지",
+      title: topicMeta?.cardTitle ?? pick(locale, "② Life Synergy", "② 라이프 시너지"),
       subtitle: topicMeta?.cardSubtitle ?? "",
       activation,
       benefit,
       risk,
-      interpretation: `${core} 통장·큰 지출은 ${cfo} 한 명만 쥐세요.`,
+      interpretation: pick(
+        locale,
+        `${core} Only ${cfo} should hold the bank account and big spending.`,
+        `${core} 통장·큰 지출은 ${cfo} 한 명만 쥐세요.`,
+      ),
       isWarning: false,
     };
   }
 
   const isWarning = risk >= 70;
-  const core =
+  const core = pick(
+    locale,
+    risk >= 60
+      ? "A pattern where household stress and conflict can easily rise."
+      : risk >= 40
+        ? "There's room to recover even when conflict comes up, but bringing up several topics at once causes a blow-up."
+        : "Home risk is relatively low. Just keep the boundaries and the peace lasts long.",
     risk >= 60
       ? "집 안 스트레스·갈등이 올라가기 쉬운 패턴입니다."
       : risk >= 40
         ? "갈등이 와도 회복 여지는 있지만, 한 번에 여러 주제를 꺼내면 폭발합니다."
-        : "홈 리스크는 비교적 낮은 편. 경계만 지키면 평화가 길어집니다.";
-  const tip =
+        : "홈 리스크는 비교적 낮은 편. 경계만 지키면 평화가 길어집니다.",
+  );
+  const tip = pick(
+    locale,
+    risk >= 55
+      ? " Just one of childcare, chores, or money at a time. No heavy conversation right after getting home from work."
+      : "",
     risk >= 55
       ? " 육아·가사·돈은 한 번에 하나만. 퇴근 직후 무거운 대화 금지."
-      : "";
+      : "",
+  );
 
   return {
     topic: gauge.topic,
-    title: topicMeta?.cardTitle ?? "③ 홈 리스크",
+    title: topicMeta?.cardTitle ?? pick(locale, "③ Home Risk", "③ 홈 리스크"),
     subtitle: topicMeta?.cardSubtitle ?? "",
     activation,
     benefit,

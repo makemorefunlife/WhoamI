@@ -20,6 +20,8 @@ import {
 import { buildWorkPrescriptions } from "./buildWorkPrescriptions";
 import type { WorkPrescriptionPack } from "./workPrescriptionTypes";
 import type { PairWorkSignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import type { Locale } from "@/lib/i18n/locale";
+import { LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 
 export type WorkColleagueReportBody = {
   headline: string;
@@ -78,8 +80,10 @@ export function buildWorkColleagueReport(params: {
     inputFingerprintB: string;
   };
   pairWork?: PairWorkSignals | null;
+  locale?: Locale;
 }): WorkColleagueReportBody {
-  const ctx = buildWorkColleagueContext(params);
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const ctx = buildWorkColleagueContext({ ...params, locale });
   const office = buildOfficePartnershipReport(ctx);
   const headlineBlock = resolveHeadline(ctx);
 
@@ -106,6 +110,7 @@ export function buildWorkColleagueReport(params: {
         pair: params.pairWork,
         nicknameA: params.nicknameA,
         nicknameB: params.nicknameB,
+        locale,
       })
     : undefined;
 
