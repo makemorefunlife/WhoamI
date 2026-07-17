@@ -7,6 +7,7 @@ import type {
   DomainPsychLens,
 } from "@/lib/relationship/psychDomainLens/types";
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
+import type { Locale } from "@/lib/i18n/locale";
 
 /** @deprecated `psych_lens` / `DomainPsychHighlight.topic` 사용 권장 */
 export type MarriageHomePsychHighlight = {
@@ -76,8 +77,9 @@ export function homePsychLensToDomain(
 export function buildMarriagePsychMatchBundle(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
+  locale: Locale = "ko-KR",
 ): MarriagePsychMatchBundle | null {
-  const bundle = buildCohabitationPsychMatchBundle(psychA, psychB);
+  const bundle = buildCohabitationPsychMatchBundle(psychA, psychB, locale);
   if (!bundle) return null;
   return {
     psych_match: bundle.psych_match,

@@ -2,6 +2,8 @@ import type { RelationshipEventScores, TopicTriScore } from "@/lib/relationship/
 import { triScoreToGrade } from "@/lib/relationship/pairEventScores";
 import type { MarriagePairSajuAnalysis } from "@/lib/saju/marriageAnalysis";
 import type { ThreeYearHomeRiskForecast } from "@/lib/relationship/marriage/marriageKillerSections";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/marriage/marriageCopy";
 
 function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, Math.round(n)));
@@ -90,6 +92,7 @@ export function computeMarriageEventScores(
 export function computeMarriageCompatibilityGrade(
   marriage: MarriagePairSajuAnalysis,
   threeYearForecast?: ThreeYearHomeRiskForecast | null,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): {
   grade: "A" | "B" | "C" | "D";
   reason: string;
@@ -100,7 +103,11 @@ export function computeMarriageCompatibilityGrade(
   const eventScores = computeMarriageEventScores(marriage, threeYearForecast);
   const grade = triScoreToGrade(eventScores.overall);
 
-  const reason = `동거·결혼 등급 ${grade} — 로맨틱 핏 ${masterScores.activation}% · 라이프 시너지 ${masterScores.benefit}% · 홈 리스크 ${masterScores.risk}%`;
+  const reason = pick(
+    locale,
+    `Cohabitation/marriage grade ${grade} — Romantic fit ${masterScores.activation}% · Life synergy ${masterScores.benefit}% · Home risk ${masterScores.risk}%`,
+    `동거·결혼 등급 ${grade} — 로맨틱 핏 ${masterScores.activation}% · 라이프 시너지 ${masterScores.benefit}% · 홈 리스크 ${masterScores.risk}%`,
+  );
 
   return { grade, reason, eventScores, masterScores };
 }

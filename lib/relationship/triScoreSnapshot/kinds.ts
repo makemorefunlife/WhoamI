@@ -411,11 +411,55 @@ const COHABITATION_CONFIG_EN: TriScoreKindConfig = {
   ],
 };
 
+const FRIENDSHIP_CONFIG_EN: TriScoreKindConfig = {
+  kind: "friendship",
+  labels: {
+    activation: { short: "🔥 Friend Chemistry" },
+    benefit: { short: "🧩 Banter" },
+    risk: { short: "⚡ Social Risk" },
+  },
+  legendItems: [
+    {
+      label: "Friend Chemistry",
+      emoji: "🔥",
+      meaning: "How much you want to get closer, and how comfortable it feels to be around each other.",
+    },
+    {
+      label: "Banter",
+      emoji: "🧩",
+      meaning: "How well your conversation, hangout style, and sense of humor click.",
+    },
+    {
+      label: "Social Risk",
+      emoji: "⚡",
+      meaning: "How much hurt feelings, contact-frequency mismatches, and conflict build up.",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① Friend Chemistry",
+      cardSubtitle: "Closeness, pull, hangouts",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② Banter",
+      cardSubtitle: "Conversation, fun, rhythm",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ Social Risk",
+      cardSubtitle: "Hurt feelings, drifting, conflict",
+    },
+  ],
+};
+
 /** English variants only exist for kinds already migrated to locale-aware content. */
 const EN_KIND_CONFIG: Partial<Record<TriScoreSnapshotKind, TriScoreKindConfig>> = {
   work: WORK_CONFIG_EN,
   family: FAMILY_CONFIG_EN,
   cohabitation: COHABITATION_CONFIG_EN,
+  friendship: FRIENDSHIP_CONFIG_EN,
 };
 
 /**

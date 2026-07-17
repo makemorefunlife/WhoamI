@@ -14,6 +14,7 @@ import {
   buildMarriageSnapshotNarrative,
   buildMarriageSnapshotNarrativeFromGauges,
 } from "./buildMarriageSnapshotNarrative";
+import { pick } from "./marriageCopy";
 
 function emptyPersonGauges(nickname: string): TriScoreSnapshotPanel["personA"] {
   return { nickname, metaphor: "", axes: [] };
@@ -21,14 +22,14 @@ function emptyPersonGauges(nickname: string): TriScoreSnapshotPanel["personA"] {
 
 function buildMarriageKeywords(ctx: MarriageRuleContext): string[] {
   const raw = new Set<string>();
-  raw.add(`홈 ${ctx.grade}`);
+  raw.add(pick(ctx.locale, `Home ${ctx.grade}`, `홈 ${ctx.grade}`));
   raw.add(ctx.householdDnaA.lifestyle_title.split(" ")[0] ?? "Home");
   raw.add(ctx.householdDnaB.lifestyle_title.split(" ")[0] ?? "Partner");
   if (ctx.marriagePairAnalysis.dayBranch.bedFitLevel === "excellent") {
-    raw.add("침실 핏");
+    raw.add(pick(ctx.locale, "Bedroom Fit", "침실 핏"));
   }
-  if (ctx.masterScores.benefit >= 60) raw.add("라이프 시너지");
-  if (ctx.masterScores.risk >= 55) raw.add("홈 리스크");
+  if (ctx.masterScores.benefit >= 60) raw.add(pick(ctx.locale, "Life Synergy", "라이프 시너지"));
+  if (ctx.masterScores.risk >= 55) raw.add(pick(ctx.locale, "Home Risk", "홈 리스크"));
   return [...raw].filter((k) => k.length >= 2).slice(0, 8);
 }
 
@@ -50,11 +51,11 @@ export function buildMarriageSnapshotPanel(
 
   const personA =
     psychA != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "cohabitation")
+      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "cohabitation", ctx.locale)
       : emptyPersonGauges(ctx.nicknameA);
   const personB =
     psychB != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "cohabitation")
+      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "cohabitation", ctx.locale)
       : emptyPersonGauges(ctx.nicknameB);
 
   const personAxesSource = resolveSnapshotPersonAxesSource(psychA, psychB);
@@ -112,6 +113,7 @@ export function hydrateMarriageSnapshotPanel(
     nicknameA?: string;
     nicknameB?: string;
   },
+  locale: import("@/lib/i18n/locale").Locale = "ko-KR",
 ): TriScoreSnapshotPanel {
   let next = panel;
   if (
@@ -131,6 +133,7 @@ export function hydrateMarriageSnapshotPanel(
         psychB: personCorePsych.psychB,
       },
       "cohabitation",
+      locale,
     );
   }
   if (next.narrative?.topics?.length) return next;

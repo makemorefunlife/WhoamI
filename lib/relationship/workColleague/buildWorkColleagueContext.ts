@@ -74,7 +74,7 @@ export function buildWorkColleagueContext(params: {
   });
 
   const { grade, reason, eventScores, masterScores } =
-    computeWorkCompatibilityGrade(workPairAnalysis, tenGodComplement);
+    computeWorkCompatibilityGrade(workPairAnalysis, tenGodComplement, locale);
 
   return {
     nicknameA: params.nicknameA,

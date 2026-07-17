@@ -61,11 +61,11 @@ export function buildFamilyParentSnapshotPanel(
 
   const personA =
     psychA != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "family")
+      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "family", ctx.locale)
       : emptyPersonGauges(ctx.nicknameA);
   const personB =
     psychB != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "family")
+      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "family", ctx.locale)
       : emptyPersonGauges(ctx.nicknameB);
 
   return {
@@ -104,6 +104,7 @@ export function hydrateFamilyParentSnapshotPanel(
     nicknameA?: string;
     nicknameB?: string;
   },
+  locale: import("@/lib/i18n/locale").Locale = "ko-KR",
 ): TriScoreSnapshotPanel {
   if (
     personCorePsych?.psychA &&
@@ -122,6 +123,7 @@ export function hydrateFamilyParentSnapshotPanel(
         psychB: personCorePsych.psychB,
       },
       "family",
+      locale,
     );
   }
   return panel;

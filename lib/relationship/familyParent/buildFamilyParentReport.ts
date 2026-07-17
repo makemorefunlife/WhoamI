@@ -90,6 +90,7 @@ export function buildFamilyParentReport(params: {
   const psychBundle = buildFamilyPsychMatchBundle(
     params.psychMasterA,
     params.psychMasterB,
+    locale,
   );
 
   const prescription_family = params.pairFamily

@@ -19,6 +19,8 @@ import {
 import { profileTenGods } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import { detectFriendWonjinGuimun } from "@/lib/saju/workPairRiskSignals";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/friend/friendCopy";
 
 const stemElement = new Map(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
@@ -224,15 +226,27 @@ function wealthOfficerClash(
   return bothPowerful && tension;
 }
 
-const SOCIAL_TITLES: Record<string, string> = {
-  wood: "🌿 무드 메이커 인간 비타민",
-  fire: "🔥 분위기 터뜨리는 파티 히어로",
-  earth: "🧸 든든한 우정 아지트 수호자",
-  metal: "💎 팩트 폭격기 & 현실 체크 요정",
-  water: "🌊 감성 터치 플레이리스트 DJ",
+const SOCIAL_TITLES: Record<Locale, Record<string, string>> = {
+  "en-US": {
+    wood: "🌿 Mood-Maker Human Vitamin",
+    fire: "🔥 Party Hero Who Blows Up the Room",
+    earth: "🧸 Ride-or-Die Friendship Guardian",
+    metal: "💎 Fact-Bomber & Reality-Check Fairy",
+    water: "🌊 Emotional-Touch Playlist DJ",
+  },
+  "ko-KR": {
+    wood: "🌿 무드 메이커 인간 비타민",
+    fire: "🔥 분위기 터뜨리는 파티 히어로",
+    earth: "🧸 든든한 우정 아지트 수호자",
+    metal: "💎 팩트 폭격기 & 현실 체크 요정",
+    water: "🌊 감성 터치 플레이리스트 DJ",
+  },
 };
 
-function resolveTikitaka(counts: TenGodCounts): {
+function resolveTikitaka(
+  counts: TenGodCounts,
+  locale: Locale,
+): {
   mode: TikitakaMode;
   label: string;
   description: string;
@@ -242,20 +256,29 @@ function resolveTikitaka(counts: TenGodCounts): {
   if (foodCount >= 2) {
     return {
       mode: "popcorn",
-      label: "🔥 밤새 털어대는 팝콘 토크파",
-      description:
+      label: pick(locale, "🔥 All-Night Popcorn Talk Type", "🔥 밤새 털어대는 팝콘 토크파"),
+      description: pick(
+        locale,
+        "Jokes and reactions fire nonstop — they only feel satisfied after a talk that spills every last thought.",
         "쉬지 않고 드립과 리액션이 튀어나오며 영혼을 탈탈 털어 수다를 떨어야 풀리는 스타일.",
+      ),
     };
   }
   return {
     mode: "silent",
-    label: "☕ 말 없이 있어도 편한 침묵 아지트파",
-    description:
+    label: pick(locale, "☕ Comfortable-Silence Home-Base Type", "☕ 말 없이 있어도 편한 침묵 아지트파"),
+    description: pick(
+      locale,
+      "Prefers sharing the same space in comfortable silence — scrolling your phone or zoning out — over small talk for its own sake.",
       "영혼 없는 수다보다는 같은 공간에서 각자 폰을 보거나 멍 때려도 편안한 스타일.",
+    ),
   };
 }
 
-function resolveBattery(chart: ChartContext): {
+function resolveBattery(
+  chart: ChartContext,
+  locale: Locale,
+): {
   mode: BatteryMode;
   description: string;
 } {
@@ -264,53 +287,85 @@ function resolveBattery(chart: ChartContext): {
   if (temp === "hot" || yeoma >= 1) {
     return {
       mode: "outdoor",
-      description:
+      description: pick(
+        locale,
+        "An iron-stamina outdoor type who has to get out and tear up a hot new spot or festival to recharge.",
         "무조건 밖으로 기어나가 힙한 핫플이나 페스티벌을 찢어야 풀리는 강철 체력 밖순이/밖돌이.",
+      ),
     };
   }
   return {
     mode: "homebody",
-    description:
+    description: pick(
+      locale,
+      "A Netflix-and-delivery homebody who recharges by lying around their own home base.",
       "배달 음식 시켜놓고 집구석 아지트에서 누워있어야 충전되는 넷플릭스형 집순이/집돌이.",
+    ),
   };
 }
 
-function friendPosition(stemEl: string): string {
-  const map: Record<string, string> = {
+const FRIEND_POSITION: Record<Locale, Record<string, string>> = {
+  "en-US": {
+    wood: "The networking captain who hypes up the group and pulls in new friends",
+    fire: "The entertainer who blows up the room with jokes, memes, and reactions",
+    earth: "The friendship guardian who reads everyone's mood and keeps the peace",
+    metal: "The reality-check leader who sets the group's standard on promises, manners, and facts",
+    water: "The emotional counselor everyone comes to for a listening ear",
+  },
+  "ko-KR": {
     wood: "모임에서 분위기 띄우고 새 친구 끌어오는 네트워킹 캡틴",
     fire: "드립·밈·리액션으로 분위기 폭발시키는 엔터테이너",
     earth: "친구들 감정 캐치하고 중재하는 우정 수호자",
     metal: "약속·매너·팩트로 그룹 기준 잡는 현실 체크 리더",
     water: "속마음 듣고 공감해 주는 감성 상담소",
-  };
+  },
+};
+
+function friendPosition(stemEl: string, locale: Locale): string {
+  const map = FRIEND_POSITION[locale];
   return map[stemEl] ?? map.earth!;
 }
 
-function privateSelf(branchEl: string): string {
-  const map: Record<string, string> = {
+const PRIVATE_SELF: Record<Locale, Record<string, string>> = {
+  "en-US": {
+    wood: "Gets loose and honest even at a casual drinking night",
+    fire: "Gets more hyped and shows their true self the closer you get",
+    earth: "Their real self comes out in a quiet corner during a deep conversation",
+    metal: "Their real feelings show when the jokes stop and the talk gets serious and factual",
+    water: "Processes emotions alone, and only opens up to their closest friends",
+  },
+  "ko-KR": {
     wood: "편한 술자리에서도 자유롭게 움직이며 솔직해지는 타입",
     fire: "친해질수록 텐션 올라가고 본音이 튀어나오는 타입",
     earth: "조용한 구석에서 깊은 대화가 터질 때 진짜 본모습",
     metal: "장난 줄이고 진지한 팩트 토크할 때 진짜 속마음",
     water: "혼자 있을 때 감정 정리하고, 친한 친구에게만 털어놓는 타입",
-  };
+  },
+};
+
+function privateSelf(branchEl: string, locale: Locale): string {
+  const map = PRIVATE_SELF[locale];
   return map[branchEl] ?? map.earth!;
 }
 
-function buildDnaProfile(chart: ChartContext, counts: TenGodCounts): FriendDnaProfile {
+function buildDnaProfile(
+  chart: ChartContext,
+  counts: TenGodCounts,
+  locale: Locale,
+): FriendDnaProfile {
   const el = countElements(chart);
   const dominant = (
     Object.entries(el) as [FriendDnaProfile["dominantElement"], number][]
   ).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "earth";
-  const tikitaka = resolveTikitaka(counts);
-  const battery = resolveBattery(chart);
+  const tikitaka = resolveTikitaka(counts, locale);
+  const battery = resolveBattery(chart, locale);
   const stemEl = getStemEl(chart.dayStemCode);
   const branchEl = getBranchEl(chart.dayBranchCode);
 
   return {
-    socialTitle: SOCIAL_TITLES[dominant] ?? SOCIAL_TITLES.earth!,
-    friendPosition: friendPosition(stemEl),
-    privateSelf: privateSelf(branchEl),
+    socialTitle: SOCIAL_TITLES[locale][dominant] ?? SOCIAL_TITLES[locale].earth!,
+    friendPosition: friendPosition(stemEl, locale),
+    privateSelf: privateSelf(branchEl, locale),
     tikitakaMode: tikitaka.mode,
     tikitakaLabel: tikitaka.label,
     tikitakaDescription: tikitaka.description,
@@ -364,6 +419,7 @@ export function analyzeFriendPairSaju(
     chartB: ChartContext;
     pairAnalysis: PairSajuAnalysis;
   },
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): FriendPairSajuAnalysis {
   const chartA = prebuilt?.chartA ?? buildChartContext(sajuA);
   const chartB = prebuilt?.chartB ?? buildChartContext(sajuB);
@@ -385,7 +441,7 @@ export function analyzeFriendPairSaju(
       countsB,
       base,
     ),
-    dnaA: buildDnaProfile(chartA, countsA),
-    dnaB: buildDnaProfile(chartB, countsB),
+    dnaA: buildDnaProfile(chartA, countsA, locale),
+    dnaB: buildDnaProfile(chartB, countsB, locale),
   };
 }

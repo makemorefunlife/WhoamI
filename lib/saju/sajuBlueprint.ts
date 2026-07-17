@@ -27,6 +27,7 @@ import {
   validateSajuPillars,
   type SajuValidationResult,
 } from "@/lib/saju/validateSajuBundle";
+import type { Locale } from "@/lib/i18n/locale";
 
 /** 십성 카운트 — marriageTenGodAnalysis 단일 SSOT */
 export function countTenGods(sajuJson: SajuDataForIntegrated): TenGodCounts {
@@ -72,19 +73,20 @@ export type BuildPersonBlueprintParams = {
   provenance?: SajuChartProvenance;
   birthPlace?: string | null;
   birthTimeUnknown?: boolean;
+  locale?: Locale;
 };
 
 /** sajuJson → 1인 블루프린트 (chart·십성·검증 1회) */
 export function buildPersonSajuBlueprint(
   params: BuildPersonBlueprintParams,
 ): PersonSajuBlueprint {
-  const { sajuJson, provenance, birthPlace, birthTimeUnknown } = params;
+  const { sajuJson, provenance, birthPlace, birthTimeUnknown, locale } = params;
   const pillars = sajuJsonToPillars(
     sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
   );
   const chart = buildChartContext(pillars);
   const tenGodCounts = countTenGods(sajuJson);
-  const validation = validateSajuPillars(pillars, { birthTimeUnknown });
+  const validation = validateSajuPillars(pillars, { birthTimeUnknown, locale });
 
   return {
     sajuJson,
@@ -110,6 +112,7 @@ export type BuildPairBlueprintParams = {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  locale?: Locale;
 };
 
 /** 2인 블루프린트 + 페어 코어 (analyzePairSaju 1회) */
@@ -121,12 +124,14 @@ export function buildPairSajuBlueprint(
     provenance: params.provenanceA,
     birthPlace: params.birthPlaceA,
     birthTimeUnknown: params.birthTimeUnknownA,
+    locale: params.locale,
   });
   const personB = buildPersonSajuBlueprint({
     sajuJson: params.sajuJsonB,
     provenance: params.provenanceB,
     birthPlace: params.birthPlaceB,
     birthTimeUnknown: params.birthTimeUnknownB,
+    locale: params.locale,
   });
 
   const pairAnalysis = analyzePairSaju(personA.pillars, personB.pillars, {
@@ -150,10 +155,12 @@ export function buildPairSajuBlueprint(
     ...buildSajuUncertainItems({
       birthPlace: personA.birthPlace,
       validationNotes: personA.validation.notes,
+      locale: params.locale,
     }),
     ...buildSajuUncertainItems({
       birthPlace: personB.birthPlace,
       validationNotes: personB.validation.notes,
+      locale: params.locale,
     }),
   ];
 

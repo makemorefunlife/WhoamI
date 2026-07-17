@@ -2,6 +2,8 @@ import type { RelationshipEventScores, TopicTriScore } from "@/lib/relationship/
 import { triScoreToGrade } from "@/lib/relationship/pairEventScores";
 import type { TenGodComplementResult } from "@/lib/relationship/workColleague/tenGodComplement";
 import type { WorkPairSajuAnalysis } from "@/lib/saju/workPairAnalysis";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/workColleague/workColleagueCopy";
 
 function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, Math.round(n)));
@@ -93,6 +95,7 @@ export function computeWorkEventScores(
 export function computeWorkCompatibilityGrade(
   work: WorkPairSajuAnalysis,
   complement: TenGodComplementResult,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): {
   grade: "A" | "B" | "C" | "D";
   reason: string;
@@ -103,8 +106,11 @@ export function computeWorkCompatibilityGrade(
   const masterScores = computeWorkMasterScores(work, complement);
   const grade = triScoreToGrade(eventScores.overall);
 
-  const reason =
-    `파트너십 등급 ${grade} — 업무적 핏 ${masterScores.activation}% · 협업 시너지 ${masterScores.benefit}% · 오피스 리스크 ${masterScores.risk}%`;
+  const reason = pick(
+    locale,
+    `Partnership grade ${grade} — Work fit ${masterScores.activation}% · Collab synergy ${masterScores.benefit}% · Office risk ${masterScores.risk}%`,
+    `파트너십 등급 ${grade} — 업무적 핏 ${masterScores.activation}% · 협업 시너지 ${masterScores.benefit}% · 오피스 리스크 ${masterScores.risk}%`,
+  );
 
   return { grade, reason, eventScores, masterScores };
 }

@@ -56,8 +56,11 @@ function resolveHeadline(ctx: WorkColleagueContext): {
 
   return {
     headline: oneLine,
-    summary_line: `업무적 핏 ${activation}% · 협업 시너지 ${benefit}% · 오피스 리스크 ${risk}%`,
-    gaugeLabel: "오피스 파트너십 스냅샷",
+    summary_line:
+      ctx.locale === "en-US"
+        ? `Work fit ${activation}% · Collab synergy ${benefit}% · Office risk ${risk}%`
+        : `업무적 핏 ${activation}% · 협업 시너지 ${benefit}% · 오피스 리스크 ${risk}%`,
+    gaugeLabel: ctx.locale === "en-US" ? "Office Partnership Snapshot" : "오피스 파트너십 스냅샷",
     representativeLine: ctx.gradeReason,
   };
 }
@@ -103,6 +106,7 @@ export function buildWorkColleagueReport(params: {
   const psychBundle = buildWorkPsychMatchBundle(
     params.psychMasterA,
     params.psychMasterB,
+    locale,
   );
 
   const prescription_work = params.pairWork

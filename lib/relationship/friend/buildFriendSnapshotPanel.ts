@@ -5,32 +5,36 @@ import {
   patchSnapshotPanelWithPsych,
   resolveSnapshotPersonAxesSource,
 } from "@/lib/personCore/mappers/mapPsychMasterToSnapshotAxes";
+import { getTriScoreKindConfig } from "@/lib/relationship/triScoreSnapshot/kinds";
 import type {
   RelationshipTopicGauge,
   TriScoreSnapshotPanel,
 } from "@/lib/relationship/triScoreSnapshot/types";
+import { pick } from "./friendCopy";
+import type { Locale } from "@/lib/i18n/locale";
 
 function buildTopicGauges(ctx: FriendRuleContext): RelationshipTopicGauge[] {
   const { eventScores } = ctx;
+  const topicLabels = getTriScoreKindConfig("friendship", ctx.locale).topics;
 
   return [
     {
       topic: "intimacy",
-      label: "① 우정 케미",
+      label: topicLabels.find((t) => t.topic === "intimacy")!.cardTitle,
       activation: eventScores.intimacy.activation,
       benefit: eventScores.intimacy.benefit,
       risk: eventScores.intimacy.risk,
     },
     {
       topic: "stability",
-      label: "② 티키타카",
+      label: topicLabels.find((t) => t.topic === "stability")!.cardTitle,
       activation: eventScores.stability.activation,
       benefit: eventScores.stability.benefit,
       risk: eventScores.stability.risk,
     },
     {
       topic: "conflict",
-      label: "③ 소셜 리스크",
+      label: topicLabels.find((t) => t.topic === "conflict")!.cardTitle,
       activation: eventScores.conflict.activation,
       benefit: eventScores.conflict.benefit,
       risk: eventScores.conflict.risk,
@@ -57,20 +61,22 @@ export function buildFriendSnapshotPanel(
 
   const personA =
     psychA != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "friendship")
+      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "friendship", ctx.locale)
       : emptyPersonGauges(ctx.nicknameA);
   const personB =
     psychB != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "friendship")
+      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "friendship", ctx.locale)
       : emptyPersonGauges(ctx.nicknameB);
 
   return {
     grade: ctx.grade,
-    gaugeLabel: options?.gaugeLabel ?? "Social DNA · 우정 스냅샷",
+    gaugeLabel:
+      options?.gaugeLabel ??
+      pick(ctx.locale, "Social DNA · Friendship Snapshot", "Social DNA · 우정 스냅샷"),
     representativeLine:
       options?.representativeLine ??
       `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
-    keywords: ["친구", "Social DNA", "우정"],
+    keywords: pick(ctx.locale, ["Friends", "Social DNA", "Friendship"], ["친구", "Social DNA", "우정"]),
     relationshipGauges,
     personA,
     personB,
@@ -98,6 +104,7 @@ export function hydrateFriendSnapshotPanel(
     nicknameA?: string;
     nicknameB?: string;
   },
+  locale: Locale = "ko-KR",
 ): TriScoreSnapshotPanel {
   if (
     personCorePsych?.psychA &&
@@ -116,6 +123,7 @@ export function hydrateFriendSnapshotPanel(
         psychB: personCorePsych.psychB,
       },
       "friendship",
+      locale,
     );
   }
   return panel;

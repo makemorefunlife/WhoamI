@@ -115,6 +115,7 @@ export function buildFamilyRuleContext(
     birthPlaceB: birthPlaceChild,
     birthTimeUnknownA: birthTimeUnknownParent,
     birthTimeUnknownB: birthTimeUnknownChild,
+    locale,
   });
   const { core, uncertainItems } = blueprint;
 

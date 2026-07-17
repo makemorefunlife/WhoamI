@@ -9,6 +9,8 @@ import {
 import type { RomanticInsightCandidate, RomanticOpeningSelection } from "./types";
 import { joinRelationshipName, metaphorShortLabel } from "./buildInsightPool";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
+import type { RomanticHeadlineLocale } from "./locale";
+import { fromLegacyShortLocale } from "@/lib/i18n/llmLocale";
 
 export type CompatibilityGradeResult = {
   grade: "A" | "B" | "C" | "D";
@@ -16,10 +18,15 @@ export type CompatibilityGradeResult = {
   eventScores: RelationshipEventScores;
 };
 
-/** 궁위 가중 cross + 3점수(activation/benefit/risk)로 등급 산출 */
+/**
+ * 궁위 가중 cross + 3점수(activation/benefit/risk)로 등급 산출
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function computeCompatibilityGrade(
   pair: PairSajuAnalysis,
   opts?: { hasStrengthComplement?: boolean },
+  locale: RomanticHeadlineLocale = "ko",
 ): CompatibilityGradeResult {
   const eventScores = computeRelationshipEventScores(pair, opts);
   const grade = triScoreToGrade(eventScores.overall);
@@ -33,9 +40,12 @@ export function computeCompatibilityGrade(
       ["충", "형", "해", "파"].includes(h.type) && isPrimaryPalaceCross(h),
   ).length;
 
+  const fullLocale = fromLegacyShortLocale(locale);
   const reason =
-    formatEventScoresReason(eventScores, grade) +
-    ` · 일·월 궁 시너지 ${primaryPos} · 긴장 ${primaryTension}`;
+    formatEventScoresReason(eventScores, grade, fullLocale) +
+    (locale === "en"
+      ? ` · Day/Month palace synergy ${primaryPos} · Tension ${primaryTension}`
+      : ` · 일·월 궁 시너지 ${primaryPos} · 긴장 ${primaryTension}`);
 
   return { grade, reason, eventScores };
 }
@@ -61,6 +71,7 @@ export function selectRomanticOpening(params: {
   const { grade, reason, eventScores } = computeCompatibilityGrade(
     pairAnalysis,
     { hasStrengthComplement: params.hasStrengthComplement },
+    locale,
   );
 
   const metaphorName = joinRelationshipName(
@@ -72,7 +83,10 @@ export function selectRomanticOpening(params: {
   if (!top) {
     return {
       relationship_name: metaphorName,
-      one_line_summary: "두 사람의 기질이 만나 새로운 균형을 만들어요.",
+      one_line_summary:
+        locale === "en"
+          ? "Your two temperaments meet and create a new kind of balance."
+          : "두 사람의 기질이 만나 새로운 균형을 만들어요.",
       grade,
       grade_reason: reason,
       event_scores: eventScores,

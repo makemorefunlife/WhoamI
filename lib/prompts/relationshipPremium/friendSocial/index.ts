@@ -5,6 +5,7 @@ import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
+import type { Locale } from "@/lib/i18n/locale";
 import {
   FRIEND_SOCIAL_DEEP_FORMAT,
   type FriendSocialDeepReport,
@@ -38,6 +39,7 @@ export async function runFriendSocialDeepAnalysis(
     };
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
+    locale?: Locale;
   },
 ): Promise<FriendSocialDeepPayload> {
   const pairFriendship =
@@ -61,6 +63,7 @@ export async function runFriendSocialDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairFriendship,
+    locale: params.locale,
   });
 
   return {

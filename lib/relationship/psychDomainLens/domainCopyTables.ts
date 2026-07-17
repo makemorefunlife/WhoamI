@@ -2,6 +2,7 @@ import type { PsychMatchAxisResult, PsychMatchType } from "@/lib/relationship/ps
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
 import { scoreLean, type DomainAxisMeta } from "./shared";
 import type { DomainNarrativeCopy } from "./types";
+import type { Locale } from "@/lib/i18n/locale";
 
 type LeanCopy = Record<"even" | "a_high" | "b_high", DomainNarrativeCopy>;
 type AxisCopySet = {
@@ -235,6 +236,170 @@ export const WORK_DOMAIN_AXES: Partial<
   },
 };
 
+/**
+ * English variant of WORK_DOMAIN_AXES's `topic` field — the only field of
+ * this table rendered on screen (RelationshipPsychMatchSection shows
+ * `item.topic`; `section_hint`/`section_key` are not displayed, so they're
+ * reused as-is from the Korean table).
+ */
+export const WORK_DOMAIN_AXES_EN: Partial<
+  Record<SecondaryAxisKey, DomainAxisMeta>
+> = {
+  structure: { ...WORK_DOMAIN_AXES.structure!, topic: "Work Routine", section_hint: "「Role Split」" },
+  practicality: { ...WORK_DOMAIN_AXES.practicality!, topic: "Practicality & Efficiency", section_hint: "「Mix Fit」" },
+  conflict_style: { ...WORK_DOMAIN_AXES.conflict_style!, topic: "Conflict & Feedback", section_hint: "「When Tensions Flare」" },
+  decision_style: { ...WORK_DOMAIN_AXES.decision_style!, topic: "Decision-Making", section_hint: "「Ideal Roles」" },
+  recognition: { ...WORK_DOMAIN_AXES.recognition!, topic: "Recognition & Feedback", section_hint: "「Respect & Boundaries」" },
+  energy_style: { ...WORK_DOMAIN_AXES.energy_style!, topic: "Collaboration Energy", section_hint: "「Office DNA」" },
+};
+
+export const WORK_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
+  structure: {
+    tension: c(
+      "Does it split into 'let's just try it' vs 'let's plan the schedule first' in meetings?",
+      "A mismatch in work-routine expectations can build resentment around deadlines and reporting. Check the 「Role Split」 section to sort out the division of labor.",
+    ),
+    similarity: c(
+      "Do you both like checklists and schedule management?",
+      "Your planning styles match, so projects tend to run smoothly.",
+    ),
+    complementary: {
+      even: c(
+        "Is one of you flexible while the other builds a spreadsheet first?",
+        "When a spontaneous type and a planner type team up, 'too loose' vs 'too rigid' misunderstandings can crop up. Split into planning and execution roles.",
+      ),
+      a_high: c(
+        "Is there one of you who's more on top of schedules and process?",
+        "It works well when the planner sets the framework and the other person runs things flexibly on the ground.",
+      ),
+      b_high: c(
+        "Is there one of you who's more on top of schedules and process?",
+        "It works well when the planner sets the framework and the other person runs things flexibly on the ground.",
+      ),
+    },
+  },
+  practicality: {
+    tension: c(
+      "Does the mood get heavy the moment budget or priorities come up?",
+      "A difference in how practical you each are can turn into a 'why are you making such a big deal of it' fight. Check the 「Mix Fit」 section for communication tips.",
+    ),
+    similarity: c(
+      "Do you both lead with efficiency first?",
+      "Your practical judgment lines up, so decisions get made fast.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into who looks at numbers/data first vs. mood/relationships first?",
+        "It balances out well when one of you leads with ROI and the other looks after team morale.",
+      ),
+      a_high: c(
+        "Is there one of you who weighs cost and efficiency first?",
+        "Splitting into a practicality lead and a relationship lead makes meetings shorter.",
+      ),
+      b_high: c(
+        "Is there one of you who weighs cost and efficiency first?",
+        "Splitting into a practicality lead and a relationship lead makes meetings shorter.",
+      ),
+    },
+  },
+  conflict_style: {
+    tension: c(
+      "With uncomfortable feedback, is one of you quick to say it while the other puts it off?",
+      "A difference in how fast you handle conflict can let small frustrations pile up. Be sure to check the 「When Tensions Flare」 guide.",
+    ),
+    similarity: c(
+      "Do you both tend to raise uncomfortable topics fairly quickly?",
+      "You don't let things sit, so misunderstandings stay rare on the team. Just softening your tone is enough.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into calling it out mid-meeting vs. bringing it up separately afterward?",
+        "Deciding who puts out the fire and who cleans up afterward keeps feelings from getting hurt.",
+      ),
+      a_high: c(
+        "Is there one of you who's usually first to point out a problem?",
+        "Splitting into a direct-speaker and a let-it-settle type keeps the project from stalling as much.",
+      ),
+      b_high: c(
+        "Is there one of you who's usually first to point out a problem?",
+        "Splitting into a direct-speaker and a let-it-settle type keeps the project from stalling as much.",
+      ),
+    },
+  },
+  decision_style: {
+    tension: c(
+      "Does 'decide now' vs 'let's wait and see' clash often?",
+      "A difference in decision speed can spike stress right before a deadline.",
+    ),
+    similarity: c(
+      "Do you both tend to reach conclusions carefully?",
+      "It cuts down on big mistakes, but when things slow down, you'll need to split up who owns what.",
+    ),
+    complementary: {
+      even: c(
+        "Are you closer to 'decide fast' or 'review thoroughly'?",
+        "It balances well when one of you opens the door and the other checks the risk.",
+      ),
+      a_high: c(
+        "Is there one of you who reaches conclusions faster?",
+        "Splitting into a fast-mover and a reviewer makes meetings more efficient.",
+      ),
+      b_high: c(
+        "Is there one of you who reaches conclusions faster?",
+        "Splitting into a fast-mover and a reviewer makes meetings more efficient.",
+      ),
+    },
+  },
+  recognition: {
+    tension: c(
+      "Do you two expect a different amount of praise and recognition?",
+      "Feeling like your effort goes unseen can turn even small things into hurt feelings.",
+    ),
+    similarity: c(
+      "Do you both get a lift from a simple 'good work' from the other?",
+      "This is a pairing that makes it easy to build a culture of mutual recognition.",
+    ),
+    complementary: {
+      even: c(
+        "Is one of you the quiet worker and the other the one who makes it visible?",
+        "Take turns recognizing the visible contributions and the ones happening quietly behind the scenes.",
+      ),
+      a_high: c(
+        "Is there one of you who wants recognition and feedback more often?",
+        "Even a small habit of quick praise changes the whole team's mood.",
+      ),
+      b_high: c(
+        "Is there one of you who wants recognition and feedback more often?",
+        "Even a small habit of quick praise changes the whole team's mood.",
+      ),
+    },
+  },
+  energy_style: {
+    tension: c(
+      "After a meeting, does it split into 'let's keep talking' vs 'let's call it'?",
+      "A difference in how you recharge means post-collaboration fatigue builds up differently for each of you.",
+    ),
+    similarity: c(
+      "Do you both gain energy from being around people, or do you both recharge alone?",
+      "Your rest and networking rhythms line up, so scheduling around each other is easy.",
+    ),
+    complementary: {
+      even: c(
+        "Who's more comfortable with external meetings vs. desk work?",
+        "Splitting into external-facing and internal-facing roles lets each of your strengths shine.",
+      ),
+      a_high: c(
+        "Is there one of you who works best while meeting people?",
+        "It works well to split into a front-facing/sales role and a focused-work role.",
+      ),
+      b_high: c(
+        "Is there one of you who works best while meeting people?",
+        "It works well to split into a front-facing/sales role and a focused-work role.",
+      ),
+    },
+  },
+};
+
 export const FRIEND_AXIS_COPY: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
   energy_style: {
     tension: c(
@@ -414,6 +579,170 @@ export const FRIEND_DOMAIN_AXES: Partial<
     topic: "돈·더치",
     section_hint: "「노는 코드와 돈」",
     section_key: "money",
+  },
+};
+
+/**
+ * English variant of FRIEND_DOMAIN_AXES's `topic` field — the only field of
+ * this table rendered on screen (RelationshipPsychMatchSection shows
+ * `item.topic`; `section_hint`/`section_key` are not displayed, so they're
+ * reused as-is from the Korean table).
+ */
+export const FRIEND_DOMAIN_AXES_EN: Partial<
+  Record<SecondaryAxisKey, DomainAxisMeta>
+> = {
+  energy_style: { ...FRIEND_DOMAIN_AXES.energy_style!, topic: "Hangouts & Contact", section_hint: "「Friendship Frequency」" },
+  empathy: { ...FRIEND_DOMAIN_AXES.empathy!, topic: "Empathy & Comfort" },
+  stimulation: { ...FRIEND_DOMAIN_AXES.stimulation!, topic: "Fun & Novelty", section_hint: "「Hangout Style」" },
+  conflict_style: { ...FRIEND_DOMAIN_AXES.conflict_style!, topic: "Hurt Feelings & Making Up", section_hint: "「When You Drift Apart」" },
+  recognition: { ...FRIEND_DOMAIN_AXES.recognition!, topic: "Recognition & Praise", section_hint: "「Friendship Frequency」" },
+  practicality: { ...FRIEND_DOMAIN_AXES.practicality!, topic: "Money & Splitting the Bill", section_hint: "「Hangout Style & Money」" },
+};
+
+export const FRIEND_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
+  energy_style: {
+    tension: c(
+      "Does one of you want to meet often while the other prefers occasional, deeper hangouts?",
+      "A mismatch in how often you expect to meet can quietly build hurt feelings. Check the 「Friendship Frequency」 section together.",
+    ),
+    similarity: c(
+      "Do you both like meeting often, or both prefer meeting only when there's time to spare?",
+      "Your contact and hangout rhythms match, so this friendship keeps going without wearing either of you out.",
+    ),
+    complementary: {
+      even: c(
+        "Is one of you the texting champion while the other replies slowly?",
+        "Thinking of it as one person handling contact and the other handling space keeps this friendship from wearing either of you down.",
+      ),
+      a_high: c(
+        "Is there one of you who usually reaches out first and sets up plans?",
+        "Splitting into a spark-starter and a depth-keeper is what makes this last.",
+      ),
+      b_high: c(
+        "Is there one of you who usually reaches out first and sets up plans?",
+        "Splitting into a spark-starter and a depth-keeper is what makes this last.",
+      ),
+    },
+  },
+  empathy: {
+    tension: c(
+      "When one of you says things are hard, does comfort or a solution come out first?",
+      "A difference in how you show empathy can easily turn into a 'you just don't get it' fight.",
+    ),
+    similarity: c(
+      "Do you both read each other's mood first and adjust accordingly?",
+      "Your emotional empathy syncs up fast, so misunderstandings stay rare.",
+    ),
+    complementary: {
+      even: c(
+        "Between deep emotional talk and just having light fun, who's stronger at which?",
+        "Splitting into a comforter and a mood-lifter makes this a lot easier.",
+      ),
+      a_high: c(
+        "Is there one of you who checks the other's mood first?",
+        "Having someone who reads the emotional undercurrent first is what makes this friendship solid.",
+      ),
+      b_high: c(
+        "Is there one of you who checks the other's mood first?",
+        "Having someone who reads the emotional undercurrent first is what makes this friendship solid.",
+      ),
+    },
+  },
+  stimulation: {
+    tension: c(
+      "When you hang out, does it split into 'somewhere familiar' vs 'somewhere new'?",
+      "A difference in how much novelty you crave can make planning hangouts exhausting.",
+    ),
+    similarity: c(
+      "Do you both love new experiences, or do you both prefer sticking to what's familiar?",
+      "Your taste in hangouts lines up, so planning is easy.",
+    ),
+    complementary: {
+      even: c(
+        "Is one of you the planner while the other just goes along and enjoys it?",
+        "Splitting into an idea person and an execution person keeps things from ever getting boring.",
+      ),
+      a_high: c(
+        "Is there one of you who usually suggests new things to do first?",
+        "It works well to split into a planner and someone who's happy to just come along.",
+      ),
+      b_high: c(
+        "Is there one of you who usually suggests new things to do first?",
+        "It works well to split into a planner and someone who's happy to just come along.",
+      ),
+    },
+  },
+  conflict_style: {
+    tension: c(
+      "When something's upsetting, is one of you quick to say it while the other needs to sit with it first?",
+      "Putting off conflict can drag out the awkwardness even between friends. Check the 「When You Drift Apart」 guide.",
+    ),
+    similarity: c(
+      "Do you both tend to speak up about hurt feelings fairly quickly?",
+      "Misunderstandings don't linger, which keeps this friendship easy and light.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into saying it right away vs bringing it up days later?",
+        "Just agreeing on 'should we talk about it today?' slows down how fast you two drift apart.",
+      ),
+      a_high: c(
+        "Is there one of you who's usually first to speak up honestly?",
+        "Recognize the roles — one of you puts out fires, the other tidies things up afterward.",
+      ),
+      b_high: c(
+        "Is there one of you who's usually first to speak up honestly?",
+        "Recognize the roles — one of you puts out fires, the other tidies things up afterward.",
+      ),
+    },
+  },
+  recognition: {
+    tension: c(
+      "Do you two expect a simple 'thanks' at different moments than each other?",
+      "Feeling under-recognized can turn even small things into hurt feelings.",
+    ),
+    similarity: c(
+      "Do you both get a boost from praise and recognition?",
+      "This is a friendship where acknowledging each other genuinely lands.",
+    ),
+    complementary: {
+      even: c(
+        "Is one of you the friend who quietly looks out for you, and the other the one who makes it obvious?",
+        "Recognize both the visible contributions and the ones happening quietly behind the scenes.",
+      ),
+      a_high: c(
+        "Is there one of you who wants recognition and praise more often?",
+        "Even a small habit of casual compliments warms this friendship up.",
+      ),
+      b_high: c(
+        "Is there one of you who wants recognition and praise more often?",
+        "Even a small habit of casual compliments warms this friendship up.",
+      ),
+    },
+  },
+  practicality: {
+    tension: c(
+      "Does splitting the bill or handling the group's money ever get awkward between you?",
+      "A difference in how practical you are about money can turn into a 'why are you making such a big deal of it' kind of hurt. Check the 「Hangout Style & Money」 section.",
+    ),
+    similarity: c(
+      "Do you both handle splitting costs about the same way?",
+      "There's little friction over group costs or splitting the bill.",
+    ),
+    complementary: {
+      even: c(
+        "Is there one of you who's naturally good at being the treasurer and settling up?",
+        "Splitting into a numbers person and a mood person makes hanging out a lot easier.",
+      ),
+      a_high: c(
+        "Is there one of you who keeps track of receipts and settling up?",
+        "Recognizing the treasurer role takes a lot of the strain off this friendship.",
+      ),
+      b_high: c(
+        "Is there one of you who keeps track of receipts and settling up?",
+        "Recognizing the treasurer role takes a lot of the strain off this friendship.",
+      ),
+    },
   },
 };
 
@@ -599,37 +928,219 @@ export const FAMILY_DOMAIN_AXES: Partial<
   },
 };
 
+/**
+ * English variant of FAMILY_DOMAIN_AXES's `topic` field — the only field of
+ * this table rendered on screen (RelationshipPsychMatchSection shows
+ * `item.topic`; `section_hint`/`section_key` are not displayed, so they're
+ * reused as-is from the Korean table).
+ */
+export const FAMILY_DOMAIN_AXES_EN: Partial<
+  Record<SecondaryAxisKey, DomainAxisMeta>
+> = {
+  empathy: { ...FAMILY_DOMAIN_AXES.empathy!, topic: "Communication & Empathy" },
+  conflict_style: { ...FAMILY_DOMAIN_AXES.conflict_style!, topic: "Conflict & Discipline", section_hint: "「Cooling Down Conflict」" },
+  structure: { ...FAMILY_DOMAIN_AXES.structure!, topic: "Rules & Routine", section_hint: "「Growth Tunnel」" },
+  self_control: { ...FAMILY_DOMAIN_AXES.self_control!, topic: "Emotional Regulation" },
+  resilience: { ...FAMILY_DOMAIN_AXES.resilience!, topic: "Recovery & Comfort", section_hint: "「Destiny Score」" },
+  recognition: { ...FAMILY_DOMAIN_AXES.recognition!, topic: "Recognition & Praise", section_hint: "「Filial Rewards」" },
+};
+
+export const FAMILY_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
+  empathy: {
+    tension: c(
+      "When things get hard, does it split into talking it through vs. jumping straight to a solution?",
+      "A difference in how you show empathy can easily turn into a 'you/mom/dad just don't get me' fight. Check the 「Child DNA」 communication style.",
+    ),
+    similarity: c(
+      "Do both parent and child put feelings into words fairly well?",
+      "Your pace for reading each other's feelings matches, so conversations go smoothly.",
+    ),
+    complementary: {
+      even: c(
+        "Between emotional talk and action/solutions, who leans toward which?",
+        "Splitting into a comforter and a doer makes discipline sting less.",
+      ),
+      a_high: c(
+        "Is there one of you who reads the other's feelings first?",
+        "Making a habit of checking the mood before speaking softens the relationship.",
+      ),
+      b_high: c(
+        "Is there one of you who reads the other's feelings first?",
+        "Making a habit of checking the mood before speaking softens the relationship.",
+      ),
+    },
+  },
+  conflict_style: {
+    tension: c(
+      "When upset, is one of you quick to say it while the other retreats to their room?",
+      "A difference in how fast you process conflict can let small things snowball. Check the 「Cooling Down Conflict」 card.",
+    ),
+    similarity: c(
+      "Do you both tend to bring up uncomfortable things fairly quickly?",
+      "Hurt feelings don't pile up, so friction around discipline stays low.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into calling it out right away vs. talking about it later?",
+        "Just agreeing on 'do we talk now or tonight?' cuts down on hurt feelings.",
+      ),
+      a_high: c(
+        "Is there one of you who's usually first to try talking it out?",
+        "Recognize the roles — one of you puts out fires, the other tidies things up afterward.",
+      ),
+      b_high: c(
+        "Is there one of you who's usually first to try talking it out?",
+        "Recognize the roles — one of you puts out fires, the other tidies things up afterward.",
+      ),
+    },
+  },
+  structure: {
+    tension: c(
+      "Does it split into 'rules are rules' vs. 'stay flexible depending on the situation'?",
+      "A difference in standards can turn into a 'why does it have to go this far' discipline fight.",
+    ),
+    similarity: c(
+      "Do you have similar expectations around household rules and routines?",
+      "Promises and schedules line up, so daily life stays steadier.",
+    ),
+    complementary: {
+      even: c(
+        "Does one of you set the framework while the other adjusts flexibly?",
+        "It helps to split into a rule-designer and an on-the-ground adjuster.",
+      ),
+      a_high: c(
+        "Is there one of you who's more on top of schedules and rules?",
+        "Splitting into a structure lead and a flexibility lead makes discipline easier.",
+      ),
+      b_high: c(
+        "Is there one of you who's more on top of schedules and rules?",
+        "Splitting into a structure lead and a flexibility lead makes discipline easier.",
+      ),
+    },
+  },
+  self_control: {
+    tension: c(
+      "When emotions rise, is one of you the type to hold it in and the other to blow up right away?",
+      "A big gap in self-control can make even a small tone of voice sting more.",
+    ),
+    similarity: c(
+      "Do you both handle emotions fairly calmly?",
+      "You each have room to pause before things explode.",
+    ),
+    complementary: {
+      even: c(
+        "Does one of you cool down fast while the other stays upset longer?",
+        "Set aside break time and talk time in advance.",
+      ),
+      a_high: c(
+        "Is there one of you who tends to swallow their feelings first?",
+        "It helps to signal to the one holding it in that 'it's okay to say something.'",
+      ),
+      b_high: c(
+        "Is there one of you who tends to swallow their feelings first?",
+        "It helps to signal to the one holding it in that 'it's okay to say something.'",
+      ),
+    },
+  },
+  resilience: {
+    tension: c(
+      "After a setback or being corrected, does one of you bounce back fast while the other carries it longer?",
+      "A gap in recovery speed can cause the 'I thought we were past this' fight to repeat.",
+    ),
+    similarity: c(
+      "Do you both recover at a similar pace after something hard?",
+      "Comfort and encouragement land well between you.",
+    ),
+    complementary: {
+      even: c(
+        "Does one of you shake it off quickly while the other holds onto it longer?",
+        "Simply respecting each other's recovery time cuts down on fights.",
+      ),
+      a_high: c(
+        "Is there one of you who recovers faster?",
+        "Whoever gets back up first can help lift the mood for both of you.",
+      ),
+      b_high: c(
+        "Is there one of you who recovers faster?",
+        "Whoever gets back up first can help lift the mood for both of you.",
+      ),
+    },
+  },
+  recognition: {
+    tension: c(
+      "Do parent and child expect a different amount of 'good job' in return?",
+      "Feeling under-recognized can turn into discipline and academic-performance stress. Check the 「Filial Rewards」 section.",
+    ),
+    similarity: c(
+      "Do you both respond similarly to praise and recognition?",
+      "Acknowledging each other genuinely keeps the relationship warm.",
+    ),
+    complementary: {
+      even: c(
+        "Between praising with words and showing it through action, who leans toward which?",
+        "Just matching how you each show recognition changes the whole household mood.",
+      ),
+      a_high: c(
+        "Is there one of you who wants recognition and praise more often?",
+        "Even a small habit of quick praise has an outsized effect.",
+      ),
+      b_high: c(
+        "Is there one of you who wants recognition and praise more often?",
+        "Even a small habit of quick praise has an outsized effect.",
+      ),
+    },
+  },
+};
+
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function resolveWorkCopy(
   row: PsychMatchAxisResult,
   meta: DomainAxisMeta,
+  locale: Locale = "ko-KR",
 ): DomainNarrativeCopy {
+  const table = locale === "en-US" ? WORK_AXIS_COPY_EN : WORK_AXIS_COPY;
   return resolveFromSet(
     row,
-    WORK_AXIS_COPY[row.axis_key],
+    table[row.axis_key],
     meta,
     scoreLean(row.score_a, row.score_b),
   );
 }
 
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function resolveFriendCopy(
   row: PsychMatchAxisResult,
   meta: DomainAxisMeta,
+  locale: Locale = "ko-KR",
 ): DomainNarrativeCopy {
+  const table = locale === "en-US" ? FRIEND_AXIS_COPY_EN : FRIEND_AXIS_COPY;
   return resolveFromSet(
     row,
-    FRIEND_AXIS_COPY[row.axis_key],
+    table[row.axis_key],
     meta,
     scoreLean(row.score_a, row.score_b),
   );
 }
 
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function resolveFamilyCopy(
   row: PsychMatchAxisResult,
   meta: DomainAxisMeta,
+  locale: Locale = "ko-KR",
 ): DomainNarrativeCopy {
+  const table = locale === "en-US" ? FAMILY_AXIS_COPY_EN : FAMILY_AXIS_COPY;
   return resolveFromSet(
     row,
-    FAMILY_AXIS_COPY[row.axis_key],
+    table[row.axis_key],
     meta,
     scoreLean(row.score_a, row.score_b),
   );

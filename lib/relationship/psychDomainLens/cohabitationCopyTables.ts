@@ -2,6 +2,7 @@ import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
 import { scoreLean, type DomainAxisMeta } from "./shared";
 import type { DomainNarrativeCopy } from "./types";
+import type { Locale } from "@/lib/i18n/locale";
 
 type LeanCopy = Record<"even" | "a_high" | "b_high", DomainNarrativeCopy>;
 type AxisCopySet = {
@@ -227,16 +228,191 @@ export const COHABITATION_DOMAIN_AXES: Partial<
   },
 };
 
+/**
+ * English variant of COHABITATION_DOMAIN_AXES's `topic` field — the only
+ * field of this table rendered on screen (RelationshipPsychMatchSection
+ * shows `item.topic`; `section_hint`/`section_key` are not displayed, so
+ * they're reused as-is from the Korean table).
+ */
+export const COHABITATION_DOMAIN_AXES_EN: Partial<
+  Record<SecondaryAxisKey, DomainAxisMeta>
+> = {
+  conflict_style: { ...COHABITATION_DOMAIN_AXES.conflict_style!, topic: "Conflict & Making Up", section_hint: "the 「Conflict & Making Up」 section below" },
+  practicality: { ...COHABITATION_DOMAIN_AXES.practicality!, topic: "Money & Practical Living", section_hint: "「Money & Chores」" },
+  structure: { ...COHABITATION_DOMAIN_AXES.structure!, topic: "Household Routine", section_hint: "「Money & Chores」" },
+  self_control: { ...COHABITATION_DOMAIN_AXES.self_control!, topic: "Sleep & Life Rhythm", section_hint: "「Bedroom Chemistry」" },
+  energy_style: { ...COHABITATION_DOMAIN_AXES.energy_style!, topic: "Energy & Activity Level", section_hint: "「Home Life DNA」" },
+  empathy: { ...COHABITATION_DOMAIN_AXES.empathy!, topic: "In-Laws & Boundaries", section_hint: "「Family Boundaries」" },
+};
+
 export const COHABITATION_CHART_NOTE =
   "둘의 현재 모습에서 어디가 비슷하고 어디가 다른지 한눈에 볼 수 있게 정리했어요. (연인 심화 분석과 같은 11축 설문 기준이에요.)";
 
+export const COHABITATION_CHART_NOTE_EN =
+  "We laid out where you two are similar and where you differ right now, at a glance. (Same 11-axis survey standard as the romantic deep-dive.)";
+
+export const COHABITATION_AXIS_COPY_EN: Partial<
+  Record<SecondaryAxisKey, AxisCopySet>
+> = {
+  conflict_style: {
+    tension: c(
+      "The night after a fight, if no one speaks first, does the whole house go cold?",
+      "You each tend to feel your own way of handling conflict/making up is the right one. Don't let small sparks grow — set a reconciliation routine ahead of time in 「Conflict & Making Up」 below.",
+    ),
+    similarity: c(
+      "Do you both bring up uncomfortable topics fairly quickly?",
+      "You don't put off conflict, so hurt feelings don't pile up. If you're both blunt, though, softening your tone is the one thing to watch.",
+    ),
+    complementary: {
+      even: c(
+        "After a fight, does one of you speak up right away while the other needs to sit with it?",
+        "You handle conflict at different speeds. Just agreeing on 'do we talk today or tomorrow?' cuts down on late-night fights. Check 「Conflict & Making Up」 together.",
+      ),
+      a_high: c(
+        "Is there one of you who's usually first to bring up something uncomfortable?",
+        "One of you may put out the fire first while the other gets honest later. Try splitting into a first-speaker and a follow-up-cleaner role.",
+      ),
+      b_high: c(
+        "Is there one of you who's usually first to bring up something uncomfortable?",
+        "One of you may put out the fire first while the other gets honest later. Try splitting into a first-speaker and a follow-up-cleaner role.",
+      ),
+    },
+  },
+  practicality: {
+    tension: c(
+      "Does the mood turn heavy fast the moment the bank account or living expenses come up?",
+      "Your standards for money and practicality differ quite a bit. Don't let a numbers fight become an emotional one — check the role split in 「Money & Chores」.",
+    ),
+    similarity: c(
+      "Do you both stay on top of receipts and the bank account?",
+      "Your sense for money and practicality matches, so expense/savings conversations go smoothly. Splitting roles in 「Money & Chores」 makes it even easier.",
+    ),
+    complementary: {
+      even: c(
+        "Is one of you quicker to check groceries or the bank balance?",
+        "One of you may lead with numbers/practicality while the other leads with mood/ease. Just assigning a CFO role in 「Money & Chores」 helps.",
+      ),
+      a_high: c(
+        "Is there one of you who's more meticulous about living expenses and savings?",
+        "One of you may check receipts and the account first, while the other's the 'it's fine' pipeline. Splitting into a numbers role and a mood role cuts down on fights.",
+      ),
+      b_high: c(
+        "Is there one of you who's more meticulous about living expenses and savings?",
+        "One of you may check receipts and the account first, while the other's the 'it's fine' pipeline. Splitting into a numbers role and a mood role cuts down on fights.",
+      ),
+    },
+  },
+  structure: {
+    tension: c(
+      "Does chores split into 'let's just do it today, roughly' vs. 'let's build a schedule first'?",
+      "A difference in expectations around routine and planning can turn even small chores into hurt feelings. Cross-reference this with 「Money & Chores」 to avoid confusion.",
+    ),
+    similarity: c(
+      "Do you both like to line up 'when' to do chores together?",
+      "Your routine/planning styles match, making this an easy combination to set house rules with.",
+    ),
+    complementary: {
+      even: c(
+        "Does chores split into 'let's do it today' vs. 'let's build a schedule first'?",
+        "One of you may stay flexible while the other wants a chart/routine first. Rotating who's on cleaning/grocery duty cuts down on hurt feelings.",
+      ),
+      a_high: c(
+        "Is there one of you who likes a chore chart/checklist more?",
+        "When a planner type and a spontaneous type live together, 'too loose' vs. 'too rigid' misunderstandings can crop up. Check the division-of-labor guide in 「Money & Chores」.",
+      ),
+      b_high: c(
+        "Is there one of you who likes a chore chart/checklist more?",
+        "When a planner type and a spontaneous type live together, 'too loose' vs. 'too rigid' misunderstandings can crop up. Check the division-of-labor guide in 「Money & Chores」.",
+      ),
+    },
+  },
+  self_control: {
+    tension: c(
+      "Does one of you go to bed early while the other stays up late?",
+      "A big gap in sleep/life rhythm can make even a small tone of voice sting more on tired days. 「Bedroom Chemistry」 has points worth aligning on.",
+    ),
+    similarity: c(
+      "Are you both the type to stay up late, or both the type to rest early?",
+      "A matching life rhythm means less friction around the bedroom and rest time. 「Bedroom Chemistry」 is an easy read too.",
+    ),
+    complementary: {
+      even: c(
+        "Past midnight, is one of you still awake while the other's already out?",
+        "A gap in sleep/self-care rhythm can make your tone sharper on tired days. Check your sleep fit in 「Bedroom Chemistry」.",
+      ),
+      a_high: c(
+        "Is there one of you who's early to bed, early to rise?",
+        "With different life rhythms, a 'be quiet' vs. 'why are you sleeping so early' conflict can arise. Just aligning bedtime cuts down on home risk.",
+      ),
+      b_high: c(
+        "Is there one of you who's early to bed, early to rise?",
+        "With different life rhythms, a 'be quiet' vs. 'why are you sleeping so early' conflict can arise. Just aligning bedtime cuts down on home risk.",
+      ),
+    },
+  },
+  energy_style: {
+    tension: c(
+      "Does 'let's stay in' vs. 'let's go out' clash often on weekends?",
+      "A difference in how you recharge can leave you both tired even on days off. Check each of your battery types in 「Home Life DNA」.",
+    ),
+    similarity: c(
+      "On weekends, are you both similarly 'let's go out' or 'home is best'?",
+      "Your energy-use patterns match, so you fight less over weekend plans.",
+    ),
+    complementary: {
+      even: c(
+        "Does 'home is the best' vs. 'I need to get out to breathe' clash on weekends?",
+        "A difference in how you recharge can lead to frequent mismatches in weekend plans. Just designating a 'stay-in week' and 'going-out week' in turn cuts down on fights.",
+      ),
+      a_high: c(
+        "Is there one of you who's out meeting people more often?",
+        "A gap between extroverted and introverted batteries can repeat a 'why aren't you going out' vs. 'why are you going out again' pattern. Check how each of you recharges in 「Home Life DNA」.",
+      ),
+      b_high: c(
+        "Is there one of you who's out meeting people more often?",
+        "A gap between extroverted and introverted batteries can repeat a 'why aren't you going out' vs. 'why are you going out again' pattern. Check how each of you recharges in 「Home Life DNA」.",
+      ),
+    },
+  },
+  empathy: {
+    tension: c(
+      "Does the mood at home shift the moment in-laws come up?",
+      "A difference in how fast you read and match each other's feelings can turn into a 'why don't you get it' fight. Draw the boundary lines together in 「Family Boundaries」.",
+    ),
+    similarity: c(
+      "Do you both tend to read the other's mood first?",
+      "Even on in-law issues, your emotional empathy syncs up fast, so 'why don't you understand' fights stay rare. Just set the boundaries in 「Family Boundaries」.",
+    ),
+    complementary: {
+      even: c(
+        "When a text comes in from the in-laws, is one of you quicker to read the room?",
+        "One of you may lead with mood/emotion while the other leads with facts/solutions. Just splitting in-law conversations into an 'emotion' role and a 'sort-it-out' role eases the load.",
+      ),
+      a_high: c(
+        "Is there one of you who checks the other's mood first?",
+        "A gap in emotional-empathy speed can cause a 'why don't you get it' vs. 'just solve it already' clash. Draw the boundary lines together in 「Family Boundaries」.",
+      ),
+      b_high: c(
+        "Is there one of you who checks the other's mood first?",
+        "A gap in emotional-empathy speed can cause a 'why don't you get it' vs. 'just solve it already' clash. Draw the boundary lines together in 「Family Boundaries」.",
+      ),
+    },
+  },
+};
+
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function resolveCohabitationCopy(
   row: PsychMatchAxisResult,
   meta: DomainAxisMeta,
+  locale: Locale = "ko-KR",
 ): DomainNarrativeCopy {
+  const table = locale === "en-US" ? COHABITATION_AXIS_COPY_EN : COHABITATION_AXIS_COPY;
   return resolveFromSet(
     row,
-    COHABITATION_AXIS_COPY[row.axis_key],
+    table[row.axis_key],
     meta,
     scoreLean(row.score_a, row.score_b),
   );

@@ -14,6 +14,8 @@ import { buildFriendSocialReport } from "./friendReportTemplate";
 import { buildFriendPrescriptions } from "./buildFriendPrescriptions";
 import type { FriendPrescriptionPack } from "./friendPrescriptionTypes";
 import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 
 export type FriendReportBody = {
   headline: string;
@@ -56,14 +58,16 @@ export function buildFriendReport(params: {
     inputFingerprintB: string;
   };
   pairFriendship?: PairFriendshipSignals | null;
+  locale?: Locale;
 }): FriendReportBody {
-  const ctx = buildFriendRuleContext(params);
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const ctx = buildFriendRuleContext({ ...params, locale });
   const friend = buildFriendSocialReport(ctx);
 
   const snapshot_panel = buildFriendSnapshotPanel(
     ctx,
     {
-      gaugeLabel: "Social DNA · 우정 스냅샷",
+      gaugeLabel: pick(locale, "Social DNA · Friendship Snapshot", "Social DNA · 우정 스냅샷"),
       representativeLine: friend.section_snapshot.one_line_friendship,
     },
     {
@@ -76,6 +80,7 @@ export function buildFriendReport(params: {
   const psychBundle = buildFriendPsychMatchBundle(
     params.psychMasterA,
     params.psychMasterB,
+    locale,
   );
 
   const prescription_friendship = params.pairFriendship
@@ -83,6 +88,7 @@ export function buildFriendReport(params: {
         pair: params.pairFriendship,
         nicknameA: params.nicknameA,
         nicknameB: params.nicknameB,
+        locale,
       })
     : undefined;
 

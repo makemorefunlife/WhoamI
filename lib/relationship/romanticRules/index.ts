@@ -24,6 +24,7 @@ import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import { fromLegacyShortLocale } from "@/lib/i18n/llmLocale";
 import { resolveActionRule, ACTION_RULES } from "./actionRules";
 import {
   resolveAttractionRule,
@@ -195,27 +196,33 @@ export function buildRomanticRuleContext(params: {
       return (aStrong && bWeak) || (bStrong && aWeak);
     })();
 
+  const fullLocale = fromLegacyShortLocale(locale);
   const validationA = validateSajuPillars(pillarsA, {
     birthTimeUnknown: params.birthTimeUnknownA,
+    locale: fullLocale,
   });
   const validationB = validateSajuPillars(pillarsB, {
     birthTimeUnknown: params.birthTimeUnknownB,
+    locale: fullLocale,
   });
 
   const uncertainItems = [
     ...buildSajuUncertainItems({
       birthPlace: params.birthPlaceA,
       validationNotes: validationA.notes,
+      locale: fullLocale,
     }),
     ...buildSajuUncertainItems({
       birthPlace: params.birthPlaceB,
       validationNotes: validationB.notes,
+      locale: fullLocale,
     }),
   ];
 
   const { grade, reason: gradeReason, eventScores } = computeCompatibilityGrade(
     pairAnalysis,
     { hasStrengthComplement: strengthComplementDir },
+    locale,
   );
   const metaphorA = resolvePersonalityLabel(params.sajuJsonA);
   const metaphorB = resolvePersonalityLabel(params.sajuJsonB);
@@ -247,6 +254,7 @@ export function buildRomanticRuleContext(params: {
       pairAnalysis,
       insightPool,
       hasStrengthComplement: strengthComplementDir,
+      locale,
     });
 
   const surveyPatternA: SurveyPatternRecord | null = null;

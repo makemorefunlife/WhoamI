@@ -8,6 +8,8 @@ import {
   pickFriendTreasurer,
   type FriendDeEscalationCard,
 } from "./friendDeEscalationPrescriptions";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 
 export type SocialDnaPersonSection = {
   nickname: string;
@@ -71,23 +73,41 @@ function resolveFriendshipOneLiner(
   sig: FriendPairSajuAnalysis["scoringSignals"],
   nameA: string,
   nameB: string,
+  locale: Locale,
 ): string {
   if (master.connection >= 70 && master.risk < 40) {
-    return `${nameA} & ${nameB} — 영혼을 나눈 환상의 덤앤더머`;
+    return pick(
+      locale,
+      `${nameA} & ${nameB} — soulmates who share a brain, the ultimate Dumb and Dumber duo`,
+      `${nameA} & ${nameB} — 영혼을 나눈 환상의 덤앤더머`,
+    );
   }
   if (sig.hasDayBranchChungHyung || sig.hasFoodClashFriction) {
-    return `${nameA} & ${nameB} — 멀리서 보면 희극, 가까이서 보면 대환장 투덜이 콤비`;
+    return pick(
+      locale,
+      `${nameA} & ${nameB} — a comedy from a distance, a total chaos-grumbling duo up close`,
+      `${nameA} & ${nameB} — 멀리서 보면 희극, 가까이서 보면 대환장 투덜이 콤비`,
+    );
   }
   if (master.banter >= 65) {
-    return `${nameA} & ${nameB} — 밈과 드립이 연결된 틱톡 우정`;
+    return pick(
+      locale,
+      `${nameA} & ${nameB} — a TikTok-core friendship built on memes and jokes`,
+      `${nameA} & ${nameB} — 밈과 드립이 연결된 틱톡 우정`,
+    );
   }
-  return `${nameA} & ${nameB} — 각자 다른 주파수, 그래서 오래 가는 우정`;
+  return pick(
+    locale,
+    `${nameA} & ${nameB} — different frequencies, which is exactly why this friendship lasts`,
+    `${nameA} & ${nameB} — 각자 다른 주파수, 그래서 오래 가는 우정`,
+  );
 }
 
 function buildSoulmateVerdict(
   friend: FriendPairSajuAnalysis,
   nameA: string,
   nameB: string,
+  locale: Locale,
 ): string {
   const sig = friend.scoringSignals;
   if (
@@ -96,39 +116,72 @@ function buildSoulmateVerdict(
     !sig.hasDayBranchChungHyung
   ) {
     return sanitizeFriendText(
-      `${nameA} & ${nameB} — 서로 눈빛만 봐도 상대 뇌 구조를 스캔하는 100% 영혼의 단짝.`,
+      pick(
+        locale,
+        `${nameA} & ${nameB} — a 100% soul-tethered best-friend pair who can scan each other's brain with just a look.`,
+        `${nameA} & ${nameB} — 서로 눈빛만 봐도 상대 뇌 구조를 스캔하는 100% 영혼의 단짝.`,
+      ),
     );
   }
   if (sig.hasFoodClashFriction || sig.hasDayBranchChungHyung) {
     return sanitizeFriendText(
-      `${nameA} & ${nameB} — 말투나 유머 타임라인이 0.5초씩 비껴가는 묘한 평행선 관계. 서로 다름을 인정하면 오히려 오래 간다.`,
+      pick(
+        locale,
+        `${nameA} & ${nameB} — an oddly parallel pair whose tone and sense of humor land half a beat off from each other. Accepting the difference is exactly what makes this last.`,
+        `${nameA} & ${nameB} — 말투나 유머 타임라인이 0.5초씩 비껴가는 묘한 평행선 관계. 서로 다름을 인정하면 오히려 오래 간다.`,
+      ),
     );
   }
   if (sig.hasDayBranchCombine) {
     return sanitizeFriendText(
-      `${nameA} & ${nameB} — 본능적으로 쿵 맞는 우정 케미. 만나면 시간 가는 줄 모른다.`,
+      pick(
+        locale,
+        `${nameA} & ${nameB} — an instinctively perfect friendship chemistry. Time flies whenever you two hang out.`,
+        `${nameA} & ${nameB} — 본능적으로 쿵 맞는 우정 케미. 만나면 시간 가는 줄 모른다.`,
+      ),
     );
   }
   return sanitizeFriendText(
-    `${nameA} & ${nameB} — 완벽한 단짝은 아니지만, 솔직해질수록 깊어지는 우정.`,
+    pick(
+      locale,
+      `${nameA} & ${nameB} — not the perfect best-friend pair, but a friendship that deepens the more honest you get.`,
+      `${nameA} & ${nameB} — 완벽한 단짝은 아니지만, 솔직해질수록 깊어지는 우정.`,
+    ),
   );
 }
 
 function buildOptimalHangout(
   dnaA: FriendDnaProfile,
   dnaB: FriendDnaProfile,
+  locale: Locale,
 ): string {
   if (dnaA.batteryMode === "outdoor" && dnaB.batteryMode === "outdoor") {
-    return "둘 다 밖순이 — 핫플 웨이팅 조지고 페스티벌·팝업스토어 투어가 정답.";
+    return pick(
+      locale,
+      "Both certified out-and-about types — braving the wait at a hot new spot or touring festivals and pop-up stores is the move.",
+      "둘 다 밖순이 — 핫플 웨이팅 조지고 페스티벌·팝업스토어 투어가 정답.",
+    );
   }
   if (dnaA.batteryMode === "homebody" && dnaB.batteryMode === "homebody") {
-    return "둘 다 집순이 — 홈파티·배달 음식·넷플릭스 마라톤 아지트 개척이 정답.";
+    return pick(
+      locale,
+      "Both certified homebodies — a home base built on house parties, delivery food, and Netflix marathons is the move.",
+      "둘 다 집순이 — 홈파티·배달 음식·넷플릭스 마라톤 아지트 개척이 정답.",
+    );
   }
   const aOutdoor = dnaA.batteryMode === "outdoor";
   if (aOutdoor) {
-    return "한 명은 밖순이, 한 명은 집순이 — 낮엔 가볍게 밖에서, 밤엔 편한 아지트로 마무리하는 하이브리드 동선.";
+    return pick(
+      locale,
+      "One's the outdoor type, one's the homebody — a hybrid plan that starts light outside during the day and ends back at a cozy home base at night.",
+      "한 명은 밖순이, 한 명은 집순이 — 낮엔 가볍게 밖에서, 밤엔 편한 아지트로 마무리하는 하이브리드 동선.",
+    );
   }
-  return "한 명은 집순이, 한 명은 밖순이 — 집순이 친구 집을 아지트로 정하고, 밖순이 친구가 동선 리드.";
+  return pick(
+    locale,
+    "One's the homebody, one's the outdoor type — make the homebody's place the home base, and let the outdoor friend lead the route.",
+    "한 명은 집순이, 한 명은 밖순이 — 집순이 친구 집을 아지트로 정하고, 밖순이 친구가 동선 리드.",
+  );
 }
 
 export function buildFriendKillerSections(params: {
@@ -138,9 +191,17 @@ export function buildFriendKillerSections(params: {
   masterScores: FriendMasterScores;
   countsA: TenGodCounts;
   countsB: TenGodCounts;
+  locale?: Locale;
 }): FriendKillerSections {
-  const { nicknameA, nicknameB, friendPairAnalysis, masterScores, countsA, countsB } =
-    params;
+  const {
+    nicknameA,
+    nicknameB,
+    friendPairAnalysis,
+    masterScores,
+    countsA,
+    countsB,
+  } = params;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const sig = friendPairAnalysis.scoringSignals;
   const dnaA = friendPairAnalysis.dnaA;
   const dnaB = friendPairAnalysis.dnaB;
@@ -150,6 +211,7 @@ export function buildFriendKillerSections(params: {
     nicknameB,
     countsA,
     countsB,
+    locale,
   });
 
   const upsetSide = sig.hasDayBranchChungHyung || sig.hasWonjinOrGuimun ? "B" : "A";
@@ -165,7 +227,7 @@ export function buildFriendKillerSections(params: {
       banter_pct: masterScores.banter,
       risk_pct: masterScores.risk,
       one_line_friendship: sanitizeFriendText(
-        resolveFriendshipOneLiner(masterScores, sig, nicknameA, nicknameB),
+        resolveFriendshipOneLiner(masterScores, sig, nicknameA, nicknameB, locale),
       ),
     },
     section_soulmate: {
@@ -173,25 +235,27 @@ export function buildFriendKillerSections(params: {
         friendPairAnalysis,
         nicknameA,
         nicknameB,
+        locale,
       ),
     },
     section_play_money: {
       treasurer_nickname: treasurer.nickname,
       treasurer_reason: sanitizeFriendText(treasurer.reason),
-      optimal_hangout: sanitizeFriendText(buildOptimalHangout(dnaA, dnaB)),
+      optimal_hangout: sanitizeFriendText(buildOptimalHangout(dnaA, dnaB, locale)),
     },
     section_breakup_guide: {
       trigger_warning_a: sanitizeFriendText(
-        buildBreakupTriggerWarning({ nickname: nicknameA, counts: countsA }),
+        buildBreakupTriggerWarning({ nickname: nicknameA, counts: countsA, locale }),
       ),
       trigger_warning_b: sanitizeFriendText(
-        buildBreakupTriggerWarning({ nickname: nicknameB, counts: countsB }),
+        buildBreakupTriggerWarning({ nickname: nicknameB, counts: countsB, locale }),
       ),
     },
     section_de_escalation: buildFriendDeEscalationCard({
       upsetNickname,
       counts: upsetCounts,
       dominantElement: upsetDna.dominantElement,
+      locale,
     }),
   };
 }

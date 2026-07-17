@@ -1,6 +1,8 @@
 import type { RelationshipEventScores, TopicTriScore } from "@/lib/relationship/pairEventScores";
 import { triScoreToGrade } from "@/lib/relationship/pairEventScores";
 import type { FriendPairSajuAnalysis } from "@/lib/saju/friendAnalysis";
+import type { Locale } from "@/lib/i18n/locale";
+import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/friend/friendCopy";
 
 function clamp(n: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, Math.round(n)));
@@ -74,6 +76,7 @@ export function computeFriendEventScores(
 
 export function computeFriendCompatibilityGrade(
   friend: FriendPairSajuAnalysis,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): {
   grade: "A" | "B" | "C" | "D";
   reason: string;
@@ -86,7 +89,11 @@ export function computeFriendCompatibilityGrade(
 
   return {
     grade,
-    reason: `친구(Social DNA) 등급 ${grade} — 우정 케미 ${masterScores.connection}% · 티키타카 ${masterScores.banter}% · 소셜 리스크 ${masterScores.risk}%`,
+    reason: pick(
+      locale,
+      `Friendship (Social DNA) grade ${grade} — Friend chemistry ${masterScores.connection}% · Banter ${masterScores.banter}% · Social risk ${masterScores.risk}%`,
+      `친구(Social DNA) 등급 ${grade} — 우정 케미 ${masterScores.connection}% · 티키타카 ${masterScores.banter}% · 소셜 리스크 ${masterScores.risk}%`,
+    ),
     eventScores,
     masterScores,
   };

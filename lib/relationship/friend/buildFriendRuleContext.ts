@@ -36,6 +36,10 @@ import {
 
 } from "./friendKillerSections";
 
+import type { Locale } from "@/lib/i18n/locale";
+
+import { LEGACY_FALLBACK_LOCALE } from "./friendCopy";
+
 
 
 export type FriendRuleContext = {
@@ -76,6 +80,8 @@ export type FriendRuleContext = {
 
   uncertainItems: string[];
 
+  locale: Locale;
+
 };
 
 
@@ -98,6 +104,8 @@ export type BuildFriendContextParams = {
 
   birthTimeUnknownB?: boolean;
 
+  locale?: Locale;
+
 };
 
 
@@ -109,6 +117,8 @@ export function buildFriendRuleContext(
   params: BuildFriendContextParams,
 
 ): FriendRuleContext {
+
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
 
   const blueprint = buildPairSajuBlueprint(params);
 
@@ -128,13 +138,15 @@ export function buildFriendRuleContext(
 
     core,
 
+    locale,
+
   );
 
 
 
   const { grade, reason, eventScores, masterScores } =
 
-    computeFriendCompatibilityGrade(friendPairAnalysis);
+    computeFriendCompatibilityGrade(friendPairAnalysis, locale);
 
 
 
@@ -151,6 +163,8 @@ export function buildFriendRuleContext(
     countsA: core.tenGodsA,
 
     countsB: core.tenGodsB,
+
+    locale,
 
   });
 
@@ -193,6 +207,8 @@ export function buildFriendRuleContext(
     tenGodsB: core.tenGodsB,
 
     uncertainItems,
+
+    locale,
 
   };
 

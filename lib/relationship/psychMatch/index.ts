@@ -83,7 +83,9 @@ export {
 } from "./gapPercentiles";
 export {
   PSYCH_MATCH_AXIS_KO_LABELS,
+  PSYCH_MATCH_AXIS_EN_LABELS,
   psychMatchAxisKoLabel,
+  psychMatchAxisLabel,
 } from "./axisLabels";
 export {
   STRENGTH_WEAKNESS_TEMPLATES,

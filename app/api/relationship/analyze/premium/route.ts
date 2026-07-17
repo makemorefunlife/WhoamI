@@ -692,6 +692,7 @@ export async function POST(req: Request) {
         personCoreMeta: personCore.personCoreMeta,
         sajuMasterA: bundles.a.blueprint.saju_master_json,
         sajuMasterB: bundles.b.blueprint.saju_master_json,
+        locale,
       });
 
       const { error: upErr } = await mergeRelationshipPremiumByKind(

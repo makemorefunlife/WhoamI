@@ -16,21 +16,22 @@ import {
   buildWorkSnapshotNarrative,
   buildWorkSnapshotNarrativeFromGauges,
 } from "./buildWorkSnapshotNarrative";
+import { pick } from "./workColleagueCopy";
 
 function buildWorkKeywords(ctx: WorkColleagueContext): string[] {
   const raw = new Set<string>();
-  raw.add(`협업 ${ctx.grade}`);
-  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA).split(".")[0] ?? "");
-  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB).split(".")[0] ?? "");
+  raw.add(pick(ctx.locale, `Collab ${ctx.grade}`, `협업 ${ctx.grade}`));
+  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale).split(".")[0] ?? "");
+  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale).split(".")[0] ?? "");
   if (ctx.workPairAnalysis.monthBranch.monthElementInteraction.includes("상생")) {
-    raw.add("업무 리듬 맞음");
+    raw.add(pick(ctx.locale, "Work Rhythm Match", "업무 리듬 맞음"));
   }
   if (ctx.workPairAnalysis.monthBranch.directMonthCross?.type === "육합") {
-    raw.add("협업 시너지");
+    raw.add(pick(ctx.locale, "Collab Synergy", "협업 시너지"));
   }
-  if (ctx.eventScores.overall.activation >= 60) raw.add("소통 핏");
-  if (ctx.eventScores.overall.risk >= 55) raw.add("업무 마찰");
-  if (ctx.eventScores.overall.benefit >= 60) raw.add("역할 보완");
+  if (ctx.eventScores.overall.activation >= 60) raw.add(pick(ctx.locale, "Comms Fit", "소통 핏"));
+  if (ctx.eventScores.overall.risk >= 55) raw.add(pick(ctx.locale, "Work Friction", "업무 마찰"));
+  if (ctx.eventScores.overall.benefit >= 60) raw.add(pick(ctx.locale, "Role Complement", "역할 보완"));
   return [...raw]
     .map((k) => polishRomanticDisplayText(k))
     .filter((k) => k.length >= 2)
@@ -59,11 +60,11 @@ export function buildWorkSnapshotPanel(
 
   const personA =
     psychA != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "work")
+      ? buildPersonGaugesFromPsych(ctx.nicknameA, psychA, "work", ctx.locale)
       : emptyPersonGauges(ctx.nicknameA);
   const personB =
     psychB != null
-      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "work")
+      ? buildPersonGaugesFromPsych(ctx.nicknameB, psychB, "work", ctx.locale)
       : emptyPersonGauges(ctx.nicknameB);
 
   const personAxesSource = resolveSnapshotPersonAxesSource(psychA, psychB);
@@ -123,6 +124,7 @@ export function hydrateWorkSnapshotPanel(
     nicknameA?: string;
     nicknameB?: string;
   },
+  locale: import("@/lib/i18n/locale").Locale = "ko-KR",
 ): TriScoreSnapshotPanel {
   let next = panel;
   if (
@@ -142,6 +144,7 @@ export function hydrateWorkSnapshotPanel(
         psychB: personCorePsych.psychB,
       },
       "work",
+      locale,
     );
   }
   if (next.narrative?.topics?.length) return next;

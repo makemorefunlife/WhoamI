@@ -1,13 +1,14 @@
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import {
   buildPsychMatchResult,
-  psychMatchAxisKoLabel,
+  psychMatchAxisLabel,
   type PsychMatchAxisResult,
   type PsychMatchResult,
 } from "@/lib/relationship/psychMatch";
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
 import type { CurrentSelfProfile, SecondaryAxisKey } from "@/lib/v2/survey/types";
 import type { DomainNarrativeCopy, DomainPsychHighlight, DomainPsychLens } from "./types";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type DomainAxisMeta = {
   topic: string;
@@ -86,6 +87,10 @@ export function pickDomainHighlights(
   return picked.slice(0, max);
 }
 
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function buildDomainPsychLens(params: {
   psychMatch: PsychMatchResult;
   domainAxes: Partial<Record<SecondaryAxisKey, DomainAxisMeta>>;
@@ -98,7 +103,9 @@ export function buildDomainPsychLens(params: {
     meta: DomainAxisMeta,
   ) => DomainNarrativeCopy;
   maxHighlights?: number;
+  locale?: Locale;
 }): DomainPsychLens {
+  const locale = params.locale ?? "ko-KR";
   const highlights: DomainPsychHighlight[] = pickDomainHighlights(
     params.psychMatch.axis_results,
     params.domainAxes,
@@ -108,7 +115,7 @@ export function buildDomainPsychLens(params: {
     const copy = params.resolveCopy(row, meta);
     return {
       axis_key: row.axis_key,
-      axis_label: psychMatchAxisKoLabel(row.axis_key),
+      axis_label: psychMatchAxisLabel(row.axis_key, locale),
       gap: row.gap,
       match_type: row.match_type,
       topic: meta.topic,

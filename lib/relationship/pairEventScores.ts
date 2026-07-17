@@ -3,6 +3,7 @@ import {
   crossHitPalaceWeight,
   weightedCrossPriority,
 } from "@/lib/saju/palaceWeight";
+import type { Locale } from "@/lib/i18n/locale";
 
 const POSITIVE_CROSS = new Set(["육합", "천간합", "삼합", "방합"]);
 const TENSION_CROSS = new Set(["충", "형", "해", "파"]);
@@ -106,11 +107,22 @@ export function triScoreToGrade(overall: TopicTriScore): "A" | "B" | "C" | "D" {
   return "D";
 }
 
+/**
+ * `locale` defaults to Korean so every pre-existing caller that doesn't pass
+ * it keeps rendering exactly as before.
+ */
 export function formatEventScoresReason(
   scores: RelationshipEventScores,
   grade: string,
+  locale: Locale = "ko-KR",
 ): string {
   const { overall, intimacy, conflict } = scores;
+  if (locale === "en-US") {
+    return (
+      `Compatibility grade ${grade} — Attraction ${overall.activation} · Synergy ${overall.benefit} · Tension ${overall.risk} ` +
+      `(Intimacy ${intimacy.activation}/${intimacy.risk} · Conflict ${conflict.activation}/${conflict.risk})`
+    );
+  }
   return (
     `궁합 등급 ${grade} — 끌림 ${overall.activation} · 시너지 ${overall.benefit} · 긴장 ${overall.risk} ` +
     `(친밀 ${intimacy.activation}/${intimacy.risk} · 갈등 ${conflict.activation}/${conflict.risk})`

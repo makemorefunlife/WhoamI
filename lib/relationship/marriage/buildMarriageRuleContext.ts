@@ -153,7 +153,7 @@ export function buildMarriageRuleContext(params: {
   });
 
   const { grade, reason, eventScores, masterScores } =
-    computeMarriageCompatibilityGrade(marriagePairAnalysis, threeYearForecast);
+    computeMarriageCompatibilityGrade(marriagePairAnalysis, threeYearForecast, locale);
 
   const householdDnaA = buildHomeLifeDnaProfile(
     params.nicknameA,

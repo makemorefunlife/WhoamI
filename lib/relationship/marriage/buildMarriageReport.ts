@@ -20,7 +20,7 @@ import type { CohabitationKillerQuestionPack } from "./cohabitationKillerTypes";
 import { buildCohabitationPrescriptions } from "./buildCohabitationPrescriptions";
 import type { CohabitationPrescriptionPack } from "./cohabitationPrescriptionTypes";
 import type { PairCohabitationSignals } from "@/lib/personCore/sajuSignals/pairTypes";
-import { LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
+import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
 
 export type MarriageReportBody = {
@@ -85,7 +85,7 @@ export function buildMarriageReport(params: {
   const snapshot_panel = buildMarriageSnapshotPanel(
     ctx,
     {
-      gaugeLabel: "하우스홀드 파트너십 스냅샷",
+      gaugeLabel: pick(locale, "Household Partnership Snapshot", "하우스홀드 파트너십 스냅샷"),
       representativeLine: household.section_snapshot.one_line_household,
     },
     {
@@ -111,6 +111,7 @@ export function buildMarriageReport(params: {
   const psychBundle = buildMarriagePsychMatchBundle(
     params.psychMasterA,
     params.psychMasterB,
+    locale,
   );
 
   const killer_questions = buildCohabitationKillerQuestions({
@@ -118,6 +119,7 @@ export function buildMarriageReport(params: {
     household,
     psychA: params.psychMasterA,
     psychB: params.psychMasterB,
+    locale,
   });
 
   const prescription_cohabitation = params.pairCohabitation
