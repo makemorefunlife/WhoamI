@@ -33,6 +33,24 @@ import {
 } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+/**
+ * `/relationship/[id]` path + optional query string, WITHOUT a locale prefix.
+ * Callers must pass this through `href()` (from useLocale()) before handing it
+ * to router.replace/push, so `/kr` is preserved on the ko-KR route and absent
+ * on the en-US route — matching the project's `/` = en-US, `/kr` = ko-KR
+ * convention (lib/i18n/locale.ts). Extracted only to avoid writing the same
+ * ternary twice; no new locale-detection logic.
+ */
+function buildRelationshipDetailPath(
+  relationshipReportId: string,
+  params?: URLSearchParams,
+): string {
+  const qs = params?.toString();
+  return qs
+    ? `/relationship/${relationshipReportId}?${qs}`
+    : `/relationship/${relationshipReportId}`;
+}
+
 export type UseRelationshipDetailReturn = {
   router: ReturnType<typeof useRouter>;
   viewerReportId: string;
@@ -100,7 +118,7 @@ export function useRelationshipDetail({
   const urlParentType = searchParams.get("parentType")?.trim() ?? "";
   const urlAutostart = searchParams.get("autostart") === "1";
   const { user } = useUser();
-  const { locale, messages } = useLocale();
+  const { locale, messages, href } = useLocale();
   const { canonicalReportId: viewerReportId, resolving: canonicalResolving } =
     useCanonicalReportId({
       urlHint: urlViewerHint,
@@ -657,14 +675,14 @@ export function useRelationshipDetail({
           kind,
         });
         router.replace(
-          `/relationship/${resolvedRelationshipId}?${q.toString()}`,
+          href(buildRelationshipDetailPath(resolvedRelationshipId, q)),
           { scroll: false },
         );
       }
       premiumSeqRef.current += 1;
       void load(kind, { silent: true });
     },
-    [load, router, effectiveViewerReportId, resolvedRelationshipId],
+    [load, router, effectiveViewerReportId, resolvedRelationshipId, href],
   );
 
   const displayBasic =
@@ -727,14 +745,10 @@ export function useRelationshipDetail({
     if (searchParams.get("autostart") !== "1" || !resolvedRelationshipId) return;
     const q = new URLSearchParams(searchParams.toString());
     q.delete("autostart");
-    const qs = q.toString();
-    router.replace(
-      qs
-        ? `/relationship/${resolvedRelationshipId}?${qs}`
-        : `/relationship/${resolvedRelationshipId}`,
-      { scroll: false },
-    );
-  }, [router, resolvedRelationshipId, searchParams]);
+    router.replace(href(buildRelationshipDetailPath(resolvedRelationshipId, q)), {
+      scroll: false,
+    });
+  }, [router, resolvedRelationshipId, searchParams, href]);
 
   const runAutostartPremium = useCallback(async () => {
     if (!resolvedRelationshipId || !effectiveViewerReportId) return;
