@@ -1,3 +1,6 @@
+import type { DeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
+import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
+
 export type SlimV1ReportResult = {
   source: "v1/slim-integrated";
   prompt: string;
@@ -5,6 +8,15 @@ export type SlimV1ReportResult = {
   llm_source: "llm" | "fallback";
   phase1_chars: number;
   phase2_chars: number;
+  /**
+   * Part 01~05 + 부록 구조화 결과. null이면 프론트는 기존 산문(report)
+   * 렌더링으로 폴백한다. en-US · ko-KR 둘 다 생성.
+   * 스키마: lib/report/deepEssenceStructuredSchema.ts
+   */
+  structured: DeepEssenceStructuredReport | null;
+  structured_source: "llm" | "fallback";
+  /** 레이더 차트 "현재 상태" — 설문 채점 결과, LLM을 거치지 않은 결정론적 값 */
+  radar_current: PrimaryAxesScores | null;
   inputs_preview: {
     survey_chars: number;
     essence_chars: number;

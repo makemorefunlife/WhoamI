@@ -213,6 +213,7 @@ export default function StitchResultsDashboard({
               <StitchLiteResultPanel
                 reportId={reportId}
                 profile={current}
+                essence={essence}
                 birth={birth}
                 active={activeTab}
               />

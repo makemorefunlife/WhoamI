@@ -4,22 +4,18 @@ import { Suspense, useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useParams, useRouter } from "next/navigation";
-import SpaceBackground from "@/components/space/SpaceBackground";
-import GlassCard from "@/components/space/GlassCard";
-import GlowButton from "@/components/space/GlowButton";
-import AxisRadarChart from "@/components/v2/AxisRadarChart";
+import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import {
-  CurrentLiteReportView,
-  LiteReportError,
-  LiteReportLoading,
-} from "@/components/v2/LiteReportView";
+  StitchReportError,
+  StitchReportLoading,
+} from "@/components/results/deep/StitchReportStatus";
+import { StitchFreeReportView } from "@/components/results/free/StitchFreeReportView";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
 import { useCurrentLiteReport } from "@/lib/v2/lite/useLiteReport";
-import FreeBadge from "@/components/v2/FreeBadge";
 
 function CurrentDetailContent() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { locale, messages, href: localize } = useLocale();
   const params = useParams();
   const reportId = decodeURIComponent(String(params.reportId ?? ""));
   const [ready, setReady] = useState(false);
@@ -47,90 +43,83 @@ function CurrentDetailContent() {
 
   if (!ready || bundleLoading || !bundle || !profile) {
     return (
-      <SpaceBackground showProbe={false}>
-        <div className="flex min-h-screen items-center justify-center px-6">
-          <p className="text-sm text-[rgba(255,255,255,0.55)]">
-            {messages.report.chrome.loading}
-          </p>
+      <StitchSurveyShell className="stitch-survey stitch-results">
+        <div className="flex min-h-[50vh] items-center justify-center px-6">
+          <p className="text-sm text-on-surface-variant">{messages.report.chrome.loading}</p>
         </div>
-      </SpaceBackground>
+      </StitchSurveyShell>
     );
   }
 
   return (
-    <SpaceBackground showProbe={false}>
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-5 py-16">
-        <div className="text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7B9BFF]">
-            {messages.blueprint.currentTitle}
-          </p>
-          <h1 className="mt-2 inline-flex items-center justify-center gap-2 text-lg font-semibold text-white/95">
-            <span>{messages.blueprint.surveyResultLabel}</span>
-            <FreeBadge />
-          </h1>
-        </div>
-
-        <GlassCard className="space-y-4 !py-6">
-          <AxisRadarChart
-            scores={profile.primary_axes}
-            stroke="#7B9BFF"
-            fill="rgba(123, 155, 255, 0.22)"
-            label={messages.blueprint.axisChartLabel}
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      <main className="mx-auto flex max-w-2xl flex-col gap-5 px-5 py-16">
+        {loading && !report ? (
+          <StitchReportLoading
+            message={messages.report.analyzing}
+            hint={messages.report.analyzingHint}
           />
-        </GlassCard>
-
-        {loading && !report ? <LiteReportLoading /> : null}
+        ) : null}
         {error && !report ? (
-          <LiteReportError message={error} onRetry={retry} />
+          <StitchReportError
+            message={error}
+            onRetry={retry}
+            retryLabel={messages.report.chrome.retry}
+          />
         ) : null}
         {report ? (
-          <GlassCard className="!py-6">
-            <CurrentLiteReportView
-              oneLineSummary={report.one_line_summary}
-              sections={[
-                report.current_pattern,
-                report.key_strength,
-                report.growth_edge,
-                report.decision_hint,
-                report.small_action,
-              ]}
-            />
-          </GlassCard>
+          <StitchFreeReportView
+            title={messages.blueprint.surveyResultLabel}
+            oneLineSummary={report.one_line_summary}
+            axesScores={profile.primary_axes}
+            sections={{
+              pattern: report.current_pattern,
+              strength: report.key_strength,
+              growth: report.growth_edge,
+              hint: report.decision_hint,
+              action: report.small_action,
+            }}
+            locale={locale}
+            onUpsellClick={() =>
+              router.push(
+                localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`),
+              )
+            }
+          />
         ) : null}
 
-        <GlowButton
-          type="button"
-          variant="primary"
-          className="w-full"
-          onClick={() =>
-            router.push(
-              localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
-            )
-          }
-        >
-          {messages.blueprint.backToBlueprint}
-        </GlowButton>
-        <LocaleLink
-          href={`/blueprint-preview/${encodeURIComponent(reportId)}/essence`}
-          className="text-center text-sm text-white/50 underline-offset-2 hover:text-white/75 hover:underline"
-        >
-          {messages.blueprint.viewEssenceProfile}
-        </LocaleLink>
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            className="stitch-cta-primary w-full"
+            onClick={() =>
+              router.push(
+                localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
+              )
+            }
+          >
+            {messages.blueprint.backToBlueprint}
+          </button>
+          <LocaleLink
+            href={`/blueprint-preview/${encodeURIComponent(reportId)}/essence`}
+            className="text-center text-sm text-on-surface-variant underline-offset-2 hover:text-primary hover:underline"
+          >
+            {messages.blueprint.viewEssenceProfile}
+          </LocaleLink>
+        </div>
       </main>
-    </SpaceBackground>
+    </StitchSurveyShell>
   );
 }
 
 function CurrentDetailFallback() {
   const { messages } = useLocale();
   return (
-    <SpaceBackground showProbe={false}>
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <p className="text-sm text-[rgba(255,255,255,0.55)]">
-          {messages.report.chrome.loading}
-        </p>
+    <StitchSurveyShell className="stitch-survey stitch-results">
+      <div className="flex min-h-[50vh] items-center justify-center px-6">
+        <p className="text-sm text-on-surface-variant">{messages.report.chrome.loading}</p>
       </div>
-    </SpaceBackground>
+    </StitchSurveyShell>
   );
 }
 

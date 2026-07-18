@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
-import StitchSlimV1IntegratedView from "@/components/results/StitchSlimV1IntegratedView";
+import StitchDeepEssenceView from "@/components/results/StitchDeepEssenceView";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
 import { useSlimV1Integrated } from "@/lib/v1/slim/useSlimV1Integrated";
 import {
@@ -117,7 +117,7 @@ function EssenceDeepContent() {
           </p>
         </div>
 
-        <StitchSlimV1IntegratedView
+        <StitchDeepEssenceView
           data={data}
           loading={loading}
           error={error}

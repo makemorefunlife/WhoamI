@@ -1,6 +1,7 @@
 import { formatEssenceAnalysisForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 
 import { runIntegratedPremiumLlm } from "@/lib/report/runIntegratedPremiumLlm";
+import { runDeepEssenceStructuredLlm } from "@/lib/report/runDeepEssenceStructuredLlm";
 
 import { buildBirthEnergyContext } from "@/lib/v1/slim/buildBirthEnergyContext";
 
@@ -14,9 +15,13 @@ import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 
+import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
+
 import type {
 
   CurrentSelfProfile,
+
+  PrimaryAxesScores,
 
   SurveyAnswersInput,
 
@@ -46,15 +51,35 @@ export type SlimIntegratedRunInput = {
 
 
 
+const DEFAULT_AXIS_SCORE = 50;
+
+
+
+function fallbackAxisScores(): PrimaryAxesScores {
+
+  return Object.fromEntries(
+
+    PRIMARY_AXIS_KEYS.map((k) => [k, DEFAULT_AXIS_SCORE]),
+
+  ) as PrimaryAxesScores;
+
+}
+
+
+
 /**
 
  * Slim V1 — 나에 대한 심화 통합 리포트
 
- * 1) v2 설문 → Human Framework
+ * 1) v2 설문 → Human Framework (레이더 "현재" 점수는 여기서 결정론적으로 나옴)
 
  * 2) Essence 분석(신살 포함)
 
  * 3) 출생 에너지(점성만 — 관계 맥락 제외)
+
+ * 4) 위 세 입력으로 (a) 기존 산문 리포트, (b) Part 01~05+부록 구조화 리포트를
+ *    병렬 생성한다 — 둘 다 en-US·ko-KR 모두 지원. 구조화 생성이 실패하면
+ *    structured가 null로 남아 프론트에서 자동으로 기존 산문 뷰로 폴백한다.
 
  */
 
@@ -114,17 +139,43 @@ export async function runSlimIntegratedReport(
 
 
 
-  const integrated = await runIntegratedPremiumLlm({
+  const radarCurrent = v2Profile?.primary_axes ?? fallbackAxisScores();
+
+
+
+  const structuredPromise = runDeepEssenceStructuredLlm({
 
     surveyAnalysis: survey.text,
 
-    sajuSummary: essenceAnalysisSummary,
+    essenceAnalysisSummary,
 
     astrologyInterpretation: birthEnergy.astrology,
+
+    currentAxisScores: radarCurrent,
 
     locale,
 
   });
+
+
+
+  const [integrated, structuredResult] = await Promise.all([
+
+    runIntegratedPremiumLlm({
+
+      surveyAnalysis: survey.text,
+
+      sajuSummary: essenceAnalysisSummary,
+
+      astrologyInterpretation: birthEnergy.astrology,
+
+      locale,
+
+    }),
+
+    structuredPromise,
+
+  ]);
 
 
 
@@ -136,7 +187,7 @@ export async function runSlimIntegratedReport(
 
     source: "v1/slim-integrated",
 
-    prompt: "lib/prompts/integratedPremiumReport.ts",
+    prompt: "lib/prompts/integratedPremiumReport.ts + lib/prompts/deepEssenceStructured.ts",
 
     report: integrated.report,
 
@@ -145,6 +196,12 @@ export async function runSlimIntegratedReport(
     phase1_chars: integrated.phase1_chars,
 
     phase2_chars: integrated.phase2_chars,
+
+    structured: structuredResult.structured,
+
+    structured_source: structuredResult.source,
+
+    radar_current: v2Profile?.primary_axes ?? null,
 
     inputs_preview: {
 
@@ -209,5 +266,3 @@ export async function runSlimIntegratedReport(
   };
 
 }
-
-

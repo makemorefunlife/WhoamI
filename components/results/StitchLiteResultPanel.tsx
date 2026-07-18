@@ -1,100 +1,41 @@
 "use client";
 
-import {
-  LiteReportError,
-} from "@/components/v2/LiteReportView";
+import { StitchReportError } from "@/components/results/deep/StitchReportStatus";
+import { FreeReportBody } from "@/components/results/free/FreeReportBody";
+import { getFreeReportUiStrings } from "@/components/results/free/freeReportUiStrings";
 import { useCurrentLiteReport, useEssenceLiteReport } from "@/lib/v2/lite/useLiteReport";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
+import type { EssenceSelfLiteProfile } from "@/lib/v2/saju/essenceLite";
 import StitchFreeSticker from "@/components/results/StitchFreeSticker";
-import {
-  STITCH_CURRENT_STROKE,
-  STITCH_ESSENCE_STROKE,
-} from "@/components/v2/DualAxisRadarChart";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useRouter } from "next/navigation";
 
 type LiteTab = "current" | "essence";
 
-function StitchSectionBlock({
-  title,
-  body,
-}: {
-  title?: string;
-  body: string;
-}) {
-  if (!body?.trim()) return null;
-  return (
-    <div className="space-y-1.5 rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 px-4 py-3.5">
-      {title ? (
-        <h4 className="text-sm font-semibold text-primary">{title}</h4>
-      ) : null}
-      <p className="text-sm leading-relaxed text-on-surface">{body}</p>
-    </div>
-  );
-}
-
-function StitchCurrentLiteReport({
-  oneLineSummary,
-  sections,
-}: {
-  oneLineSummary: string;
-  sections: { title?: string; body: string }[];
-}) {
-  return (
-    <div className="space-y-4">
-      {oneLineSummary ? (
-        <p
-          className="text-center text-[15px] font-medium leading-snug"
-          style={{ color: STITCH_CURRENT_STROKE }}
-        >
-          {oneLineSummary}
-        </p>
-      ) : null}
-      <div className="space-y-2.5">
-        {sections.map((s, i) => (
-          <StitchSectionBlock key={`${s.title}-${i}`} title={s.title} body={s.body} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function StitchEssenceLiteReport({
-  oneLineSummary,
-  sections,
-}: {
-  oneLineSummary: string;
-  sections: { title?: string; body: string }[];
-}) {
-  return (
-    <div className="space-y-4">
-      {oneLineSummary ? (
-        <p
-          className="text-center text-[15px] font-medium leading-snug"
-          style={{ color: STITCH_ESSENCE_STROKE }}
-        >
-          {oneLineSummary}
-        </p>
-      ) : null}
-      <div className="space-y-2.5">
-        {sections.map((s, i) => (
-          <StitchSectionBlock key={`${s.title}-${i}`} title={s.title} body={s.body} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
+/**
+ * 대시보드에 인라인으로 펼쳐지는 무료 분석 패널 — 로버블 "Inner Compass Free"
+ * 디자인의 본문(FreeReportBody: 미니 인디케이터·태그 섹션·업셀)을 그대로 쓴다.
+ * /blueprint-preview/[reportId]/current 전체 페이지 버전(StitchFreeReportView)과
+ * 같은 컴포넌트를 공유해서 두 곳이 다른 디자인으로 어긋나지 않게 했다.
+ */
 export default function StitchLiteResultPanel({
   reportId,
   profile,
+  essence,
   birth,
   active,
 }: {
   reportId: string;
   profile: CurrentSelfProfile;
+  essence: EssenceSelfLiteProfile;
   birth: BirthV2Session;
   active: LiteTab | null;
 }) {
+  const router = useRouter();
+  const { locale, messages, href: localize } = useLocale();
+  const t = getFreeReportUiStrings(locale);
+
   const {
     report: currentReport,
     loading: currentLoading,
@@ -111,12 +52,29 @@ export default function StitchLiteResultPanel({
 
   if (!active) return null;
 
+  const goToDeepReport = () =>
+    router.push(localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`));
+
   const essenceSections = essenceReport
     ? [
-        essenceReport.core_personality_insight,
-        essenceReport.relationship_tendency_insight,
+        {
+          section: essenceReport.core_personality_insight,
+          tag: t.essenceSectionTags.personality,
+          tone: "ink" as const,
+        },
+        {
+          section: essenceReport.relationship_tendency_insight,
+          tag: t.essenceSectionTags.relationship,
+          tone: "accent" as const,
+        },
         ...(essenceReport.environment_fit_hint
-          ? [essenceReport.environment_fit_hint]
+          ? [
+              {
+                section: essenceReport.environment_fit_hint,
+                tag: t.essenceSectionTags.environment,
+                tone: "highlight" as const,
+              },
+            ]
           : []),
       ]
     : [];
@@ -126,48 +84,84 @@ export default function StitchLiteResultPanel({
       {active === "current" ? (
         <>
           <h3 className="mb-4 inline-flex flex-wrap items-center gap-2 text-base font-semibold text-primary">
-            Current state
+            {messages.report.currentStateLabel}
             <StitchFreeSticker />
           </h3>
           {currentLoading && !currentReport ? (
             <p className="py-8 text-center text-sm text-on-surface-variant">
-              Analyzing your survey patterns…
+              {messages.report.analyzing}
             </p>
           ) : null}
           {currentError && !currentReport ? (
-            <LiteReportError message={currentError} onRetry={retryCurrent} />
+            <StitchReportError
+              message={currentError}
+              onRetry={retryCurrent}
+              retryLabel={messages.report.chrome.retry}
+            />
           ) : null}
           {currentReport ? (
-            <StitchCurrentLiteReport
+            <FreeReportBody
               oneLineSummary={currentReport.one_line_summary}
+              axesScores={profile.primary_axes}
               sections={[
-                currentReport.current_pattern,
-                currentReport.key_strength,
-                currentReport.growth_edge,
-                currentReport.decision_hint,
-                currentReport.small_action,
+                {
+                  section: currentReport.current_pattern,
+                  tag: t.currentSectionTags.pattern,
+                  tone: "ink",
+                },
+                {
+                  section: currentReport.key_strength,
+                  tag: t.currentSectionTags.strength,
+                  tone: "accent",
+                },
+                {
+                  section: currentReport.growth_edge,
+                  tag: t.currentSectionTags.growth,
+                  tone: "highlight",
+                },
+                {
+                  section: currentReport.decision_hint,
+                  tag: t.currentSectionTags.hint,
+                  tone: "gold",
+                },
+                {
+                  section: currentReport.small_action,
+                  tag: t.currentSectionTags.action,
+                  tone: "accent",
+                },
               ]}
+              locale={locale}
+              t={t}
+              onUpsellClick={goToDeepReport}
             />
           ) : null}
         </>
       ) : (
         <>
           <h3 className="mb-4 inline-flex flex-wrap items-center gap-2 text-base font-semibold text-primary">
-            Essence blueprint
+            {messages.report.essenceBlueprintTitle}
             <StitchFreeSticker />
           </h3>
           {essenceLoading && !essenceReport ? (
             <p className="py-8 text-center text-sm text-on-surface-variant">
-              Reading your birth chart patterns…
+              {messages.report.analyzing}
             </p>
           ) : null}
           {essenceError && !essenceReport ? (
-            <LiteReportError message={essenceError} onRetry={retryEssence} />
+            <StitchReportError
+              message={essenceError}
+              onRetry={retryEssence}
+              retryLabel={messages.report.chrome.retry}
+            />
           ) : null}
           {essenceReport ? (
-            <StitchEssenceLiteReport
+            <FreeReportBody
               oneLineSummary={essenceReport.one_line_summary}
+              axesScores={essence.primary_axes}
               sections={essenceSections}
+              locale={locale}
+              t={t}
+              onUpsellClick={goToDeepReport}
             />
           ) : null}
         </>
