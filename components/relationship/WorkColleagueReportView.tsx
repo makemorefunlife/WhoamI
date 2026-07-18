@@ -5,216 +5,85 @@ import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/b
 import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
 import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import RelationshipPsychMatchSection from "@/components/relationship/RelationshipPsychMatchSection";
-import type {
-  OfficeDnaProfile,
-  OfficeIdealRoleFit,
-  OfficeUpsetGuide,
-} from "@/lib/relationship/workColleague/officeLanguage";
 import type { OfficePersonRoleCard } from "@/lib/relationship/workColleague/officeReportTemplate";
 import { hydrateWorkSnapshotPanel } from "@/lib/relationship/workColleague/buildWorkSnapshotPanel";
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
+  DnaCard,
+  UpsetGuideCard,
+  IdealRoleCard,
+  RoleCard,
+  DeEscalationBlock,
+} from "@/components/relationship/workColleague/officeCards";
+import {
   RelationshipReportLayout,
   RelationshipReportCard,
   RelationshipReportBody,
   RelationshipReportParagraph,
   RelationshipReportLabel,
-  RelationshipReportInset,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
+import { buildWorkReportViewModel } from "@/lib/relationship/workColleague/viewModel/buildWorkReportViewModel";
+import { WorkReportViewModelView } from "@/components/relationship/workColleague/sections/SectionRenderer";
 
-function DnaCard({
-  label,
-  profile,
-  accent,
-}: {
-  label: string;
-  profile: OfficeDnaProfile & { nickname: string };
-  accent: string;
-}) {
-  const t = useMessages().relationshipDrilldown.work;
-  return (
-    <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">
-        {label} {profile.nickname}
-      </p>
-      <p className="mt-2 text-base font-semibold" style={{ color: accent }}>
-        {profile.character_title}
-      </p>
-      <ul className="mt-4 space-y-3">
-        <li>
-          <RelationshipReportLabel>{t.dnaWorkStyleLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">
-            {profile.work_style}
-          </RelationshipReportParagraph>
-        </li>
-        <li>
-          <RelationshipReportLabel>{t.dnaInnerStandardLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">
-            {profile.inner_standard}
-          </RelationshipReportParagraph>
-        </li>
-        <li>
-          <RelationshipReportLabel>{t.dnaCharacterLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">
-            {profile.overall_character}
-          </RelationshipReportParagraph>
-        </li>
-      </ul>
-    </RelationshipReportInset>
-  );
-}
+/**
+ * ko-KR 신규 렌더러(WorkReportViewModelView) 진입 가능 여부를 판단하는 구조 점검.
+ *
+ * buildWorkReportViewModel()은 새 shape(section_roles.person_a/b 등)만 이해한다.
+ * 아래 3개 필드는 이 컴포넌트가 이미 방어적으로 처리해 온 "레거시 대체 shape"
+ * (my_work_style/partner_work_style, my_boundary/partner_boundary,
+ * my_weapons/delegate_to_partner)가 실존한다는 증거다 — 그 대체 shape로 저장된
+ * 오래된 캐시 row가 새 렌더러에 들어가면 일부를 조용히 비우거나(마이크로 매니징
+ * 카드 공백) 크래시(RoleCard가 undefined.weapons를 읽음)를 낼 수 있으므로,
+ * 이런 payload는 신규 렌더러를 타지 않고 기존 렌더러로 안전하게 남긴다.
+ * viewmodel adapter(buildWorkReportViewModel.ts) 자체는 건드리지 않는다.
+ */
+function workReportSupportsNewRenderer(report: WorkColleagueReportBody): boolean {
+  const office = report.office;
+  if (!office) return false;
 
-function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
-  const t = useMessages().relationshipDrilldown.work;
-  return (
-    <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">
-        {t.upsetTitle(guide.nickname)}
-      </p>
-      <div className="mt-4 space-y-3">
-        <div>
-          <RelationshipReportLabel>{t.upsetSignalLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">
-            {guide.upset_signals}
-          </RelationshipReportParagraph>
-        </div>
-        <div>
-          <RelationshipReportLabel className="text-emerald-200/90">
-            {t.upsetDoLabel}
-          </RelationshipReportLabel>
-          <ul className="mt-2 list-inside list-disc space-y-1">
-            {guide.do_list.map((item) => (
-              <li key={item}>
-                <RelationshipReportParagraph>{item}</RelationshipReportParagraph>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <RelationshipReportLabel className="text-red-200/80">
-            {t.upsetAvoidLabel}
-          </RelationshipReportLabel>
-          <ul className="mt-2 list-inside list-disc space-y-1">
-            {guide.avoid_list.map((item) => (
-              <li key={item}>
-                <RelationshipReportParagraph>{item}</RelationshipReportParagraph>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </RelationshipReportInset>
-  );
-}
+  const roles = office.section_roles as
+    | { person_a?: unknown; person_b?: unknown }
+    | undefined;
+  if (
+    !roles ||
+    typeof roles.person_a !== "object" ||
+    roles.person_a === null ||
+    typeof roles.person_b !== "object" ||
+    roles.person_b === null
+  ) {
+    return false;
+  }
 
-function IdealRoleCard({
-  label,
-  fit,
-  accent,
-}: {
-  label: string;
-  fit: OfficeIdealRoleFit;
-  accent: string;
-}) {
-  const t = useMessages().relationshipDrilldown.work;
-  return (
-    <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">
-        {label} {fit.nickname}
-      </p>
-      <RelationshipReportParagraph className="mt-3">{fit.why}</RelationshipReportParagraph>
-      <div className="mt-4">
-        <RelationshipReportLabel>{t.idealRolesLabel}</RelationshipReportLabel>
-        <ul className="mt-2 list-inside list-disc space-y-1" style={{ color: accent }}>
-          {fit.ideal_roles.map((role) => (
-            <li key={role} className="text-[15px] leading-relaxed">
-              {role}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="mt-4">
-        <RelationshipReportLabel>{t.idealDeptsLabel}</RelationshipReportLabel>
-        <ul className="mt-2 list-inside list-disc space-y-1">
-          {fit.ideal_departments.map((dept) => (
-            <li key={dept}>
-              <RelationshipReportParagraph>{dept}</RelationshipReportParagraph>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </RelationshipReportInset>
-  );
-}
+  const mixFit = office.section_mix_fit as
+    | { person_a_work_style?: unknown; person_b_work_style?: unknown }
+    | undefined;
+  if (
+    !mixFit ||
+    typeof mixFit.person_a_work_style !== "string" ||
+    typeof mixFit.person_b_work_style !== "string"
+  ) {
+    return false;
+  }
 
-function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent: string }) {
-  const t = useMessages().relationshipDrilldown.work;
-  return (
-    <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">👤 {card.nickname}</p>
-      <div className="mt-4">
-        <RelationshipReportLabel>
-          {t.roleWeaponsLabel(card.nickname)}
-        </RelationshipReportLabel>
-        <ul className="mt-2 list-inside list-disc space-y-1" style={{ color: accent }}>
-          {card.weapons.map((w) => (
-            <li key={w} className="text-[15px] leading-relaxed">
-              {w}
-            </li>
-          ))}
-        </ul>
-      </div>
-      {card.handoff_tasks.length > 0 ? (
-        <div className="mt-4 space-y-2">
-          <RelationshipReportLabel>
-            {t.handoffLabel(card.nickname)}
-          </RelationshipReportLabel>
-          {card.handoff_tasks.map((task) => (
-            <div
-              key={`${task.handoff_to}-${task.task_label}`}
-              className="rounded-xl border border-white/10 bg-black/15 p-4"
-            >
-              <p className="font-semibold text-white/90">
-                {task.task_label}
-                <span className="text-white/40"> → </span>
-                <span style={{ color: accent }}>{task.handoff_to}</span>
-              </p>
-              <RelationshipReportParagraph className="mt-2" muted>
-                {task.reason}
-              </RelationshipReportParagraph>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <RelationshipReportParagraph className="mt-3" muted>
-          {t.noHandoffNote}
-        </RelationshipReportParagraph>
-      )}
-    </RelationshipReportInset>
-  );
-}
+  // section_respect is legitimately optional (buildWorkReportViewModel already
+  // omits the boundary block gracefully when absent) — only reject it when it's
+  // present in the old alternate shape.
+  const respect = office.section_respect as
+    | { person_a_boundary?: unknown; person_b_boundary?: unknown }
+    | undefined;
+  if (
+    respect &&
+    (typeof respect.person_a_boundary !== "string" ||
+      typeof respect.person_b_boundary !== "string")
+  ) {
+    return false;
+  }
 
-function DeEscalationBlock({
-  deCard,
-}: {
-  deCard: {
-    hashtag: string;
-    title: string;
-    detail: string;
-    color: string;
-  };
-}) {
-  return (
-    <RelationshipReportInset className="border-amber-400/20 bg-amber-950/15">
-      <p className="text-base font-bold text-white/95">{deCard.hashtag}</p>
-      <p className="mt-1 text-sm font-medium text-white/80">{deCard.title}</p>
-      <RelationshipReportParagraph className="mt-2">{deCard.detail}</RelationshipReportParagraph>
-    </RelationshipReportInset>
-  );
+  return true;
 }
 
 export default function WorkColleagueReportView({
@@ -228,6 +97,7 @@ export default function WorkColleagueReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
+  const { locale } = useLocale();
   const messages = useMessages();
   const t = messages.relationshipDrilldown.work;
   const theme = getTabTheme("work");
@@ -326,6 +196,39 @@ export default function WorkColleagueReportView({
     : null;
 
   const deCard = office?.section_warning?.de_escalation;
+
+  // Phase 3 §2 — ko-KR only, and only when the payload matches the shape the
+  // new ViewModel adapter understands. Any other locale, or any payload the
+  // adapter might mishandle, falls through to the legacy JSX below unchanged.
+  // This never touches buildWorkReportViewModel.ts itself, the premium API
+  // route, or the stored report shape.
+  //
+  // Only the adapter call is try/caught — constructing/returning JSX inside a
+  // try/catch would NOT catch errors thrown while React actually renders
+  // <WorkReportViewModelView> (react-hooks/error-boundaries), so this only
+  // protects against buildWorkReportViewModel() itself throwing on a payload
+  // that slipped past the structural check above. A crash inside the
+  // renderer's own JSX tree is not covered by this net.
+  let koRendererViewModel: ReturnType<typeof buildWorkReportViewModel> | null = null;
+  if (locale === "ko-KR" && workReportSupportsNewRenderer(report)) {
+    try {
+      koRendererViewModel = buildWorkReportViewModel(report, {
+        viewerIsReportA,
+        myName,
+        partnerName,
+      });
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          "[WorkColleagueReportView] buildWorkReportViewModel failed, falling back to legacy view",
+          err,
+        );
+      }
+    }
+  }
+  if (koRendererViewModel) {
+    return <WorkReportViewModelView vm={koRendererViewModel} kindLabel={t.eyebrow} />;
+  }
 
   return (
     <RelationshipReportLayout
