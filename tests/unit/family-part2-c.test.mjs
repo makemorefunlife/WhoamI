@@ -200,7 +200,7 @@ assert.deepEqual(ids, [
   "affection_expression",
   "guidance_balance",
   "gathering_recovery",
-  "gathering_temperature",
+  "home_climate",
 ]);
 const { isFamilyParentChildDeepReport, FAMILY_PARENT_CHILD_DEEP_FORMAT } =
   await import("../../lib/prompts/relationshipPremium/familyParentChild/outputSchema.ts");

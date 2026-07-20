@@ -14,6 +14,10 @@ import {
   type GuidanceFit,
 } from "@/lib/personCore/sajuSignals/guidanceProfile";
 import { resolveParentBondBandFromCounts } from "@/lib/personCore/sajuSignals/extractFamilySignals";
+import {
+  resolveHomeClimateBand,
+  type HomeClimateBand,
+} from "@/lib/personCore/sajuSignals/extractFamilySignals";
 import { buildPairFamilySignals } from "@/lib/personCore/sajuSignals/pairFamilySignals";
 import { countElements } from "@/lib/saju/pairChartAnalysis";
 import type { ChartContext } from "@/lib/saju/chartContext";
@@ -26,20 +30,14 @@ import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { FamilyParentRole } from "./types";
 
 /**
- * family(가족) "한눈에 비교" 표 — Part2 A/B/C (009·010).
+ * family(가족) "한눈에 비교" 표 — Part2 A/B/C/E (009·010·012).
  *
  * A correction_style: person=십신 반응 유형 / pair=nagging_band
  * B bond_distance: person=parent_bond_band / pair=umbilical_band
  * C guidance_balance: person=guidance_profile / pair=guidance_fit
+ * E home_climate: person=family_conflict_index band / pair=band 조합(수치 pair 없음)
  * parentRole → 제목·문맥만. 원국 점수 가감 금지.
- * D~F(③⑤⑥)는 이번 커밋에서 계산 변경 없음.
- *
- * | 행 | person | pair 의미 |
- * |---|---|---|
- * | A correction_style | ten_god style bucket | nagging_band |
- * | B bond_distance | parent_bond_band | umbilical_band |
- * | C guidance_balance | guidance mode | guidance_fit |
- * | ③⑤⑥ | (기존 유지) | — |
+ * F·Part3 미구현. 구 johu gathering_temperature 행은 E로 교체.
  */
 
 export type FamilyCompareRowId =
@@ -48,7 +46,10 @@ export type FamilyCompareRowId =
   | "affection_expression"
   | "guidance_balance"
   | "gathering_recovery"
-  | "gathering_temperature";
+  | "home_climate";
+
+/** @deprecated Part2 E 이전 id — home_climate로 교체 */
+export type LegacyGatheringTemperatureRowId = "gathering_temperature";
 
 /** @deprecated Part2 C 이전 id — guidance_balance로 교체 */
 export type LegacyCareBalanceRowId = "care_balance";
@@ -215,15 +216,19 @@ export function resolveGatheringRecoveryBucket(
 
 type TemperatureBand = "cold" | "neutral" | "hot";
 
-/** ⑥용 — johu_profile(PersonCore SSOT, friendship_signals). 신호 없으면
- * neutral로 폴백(신규 계산 아님 — 이 파일에서 johu 공식을 재구현하지 않음.
- * 이 폴백은 이번 wiring으로 생성되는 리포트에서는 정상적으로 발생하지 않아야
- * 하고, 방어적 코드로만 존재한다). */
+/** @deprecated Part2 E — johu 행 제거. 회귀·외부 참조용만 유지. */
 export function resolveGatheringTemperatureBucket(
   signals: FriendshipSajuSignals | undefined,
 ): { sourceValue: FriendshipSajuSignals["johu_profile"] | null; bucket: TemperatureBand } {
   if (!signals) return { sourceValue: null, bucket: "neutral" };
   return { sourceValue: signals.johu_profile, bucket: signals.johu_profile.temperature_band };
+}
+
+/** E person — family_conflict_index → intensityBand3 (기존 threshold). */
+export function resolveHomeClimateBucket(
+  familySignals?: FamilySajuSignals,
+): ReturnType<typeof resolveHomeClimateBand> {
+  return resolveHomeClimateBand(familySignals);
 }
 
 // ---------------------------------------------------------------------------
@@ -515,35 +520,87 @@ const GATHERING_RECOVERY_MEANING: Record<Locale, Record<string, string>> = {
   },
 };
 
-const GATHERING_TEMPERATURE_LABEL: Record<Locale, Record<TemperatureBand, string>> = {
+const HOME_CLIMATE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> = {
   "ko-KR": {
-    hot: "가족 모임에서 활발하게 대화를 주도하는 타입",
-    neutral: "필요할 때 적당히 대화하는 타입",
-    cold: "말수는 적어도 편안하게 함께 있는 타입",
+    neutral: "집 안 긴장이 쌓이기 쉬운가, 오래 남지 않는가",
+    mother: "집 안에서 걱정과 긴장이 쌓이는 방식",
+    father: "기준·대화·침묵이 집 안 분위기에 남는 방식",
   },
   "en-US": {
-    hot: "Actively drives conversation at family gatherings",
-    neutral: "Chats when it counts, easygoing otherwise",
-    cold: "Comfortable together even with fewer words",
+    neutral: "Does household tension build easily, or does it not linger?",
+    mother: "How worry and tension build inside the home",
+    father: "How standards, talk, and silence linger in the household mood",
   },
 };
 
-const GATHERING_TEMPERATURE_MEANING: Record<Locale, Record<string, string>> = {
+const HOME_CLIMATE_LABEL: Record<Locale, Record<HomeClimateBand, string>> = {
   "ko-KR": {
-    "hot|hot": "둘 다 활발한 분위기를 좋아해서 모임이 시끌벅적해지기 쉬워요.",
-    "neutral|neutral": "둘 다 적당한 온도의 대화를 편하게 느껴요.",
-    "cold|cold": "둘 다 말수가 적어도 편안한 편이라 조용한 모임도 괜찮아요.",
-    "hot|neutral": "한쪽은 활발하게 대화를 주도하고, 다른 쪽은 적당한 선에서 맞춰요.",
-    "cold|neutral": "한쪽은 적당히, 다른 쪽은 조용한 편이라 자연스럽게 리듬이 맞을 수 있어요.",
-    "cold|hot": "한쪽은 활발하게 분위기를 이끌고, 다른 쪽은 조용히 함께 있는 걸 편해해요 — 온도차를 서로 존중하는 게 중요해요.",
+    low: "집 안 긴장을 오래 붙잡지 않는 편",
+    medium: "집 안 미묘한 압력을 중간 정도로 느끼는 편",
+    high: "집 안 긴장을 빨리 감지하고 오래 품을 수 있는 편",
   },
   "en-US": {
-    "hot|hot": "You both like an energetic atmosphere, so gatherings tend to get lively.",
-    "neutral|neutral": "You're both comfortable with a moderate conversational temperature.",
-    "cold|cold": "You're both fine with fewer words — quiet gatherings work for you.",
-    "hot|neutral": "One of you actively drives conversation, the other matches at a moderate level.",
-    "cold|neutral": "One of you is moderate, the other quieter — the rhythm tends to line up naturally.",
-    "cold|hot": "One of you actively leads the mood, the other is comfortable being quietly present — worth respecting the temperature gap.",
+    low: "Doesn't tend to hold household tension for long",
+    medium: "Notices subtle household pressure at a moderate level",
+    high: "Picks up household tension quickly and may carry it longer",
+  },
+};
+
+const HOME_CLIMATE_MEANING: Record<
+  Locale,
+  Record<FamilyRoleLensKey, Record<string, string>>
+> = {
+  "ko-KR": {
+    neutral: {
+      "high|high": "둘 다 집 안 긴장을 오래 감지·누적하기 쉬운 구조예요 — 갈등이 집 전체 분위기로 번질 수 있어, 작은 불편을 일찍 말로 풀면 도움이 돼요.",
+      "low|low": "둘 다 집 안 긴장을 오래 붙잡지 않는 편이라, 불편이 생겨도 분위기로 오래 남기기 어려워요.",
+      "medium|medium": "둘 다 집 안 압력을 중간 정도로 느끼는 구조예요 — 쌓이기 전에 한 줄로 상태를 말해 두면 좋아요.",
+      "high|low": "한쪽은 집 안 긴장을 빨리 감지·누적하고, 다른 쪽은 오래 붙잡지 않는 편이에요 — 민감한 쪽의 신호를 무시하지 마세요.",
+      "high|medium": "한쪽은 긴장을 더 오래 품고, 다른 쪽은 중간 정도예요 — 분위기 변화가 느껴질 때 짧은 확인이 도움이 돼요.",
+      "low|medium": "한쪽은 긴장을 덜 붙잡고, 다른 쪽은 중간 정도예요 — 온도 차이를 ‘관심 없음’으로 오해하지 마세요.",
+    },
+    mother: {
+      "high|high": "걱정과 집 안 긴장이 둘 다 누적되기 쉬운 구조예요 — 분위기가 무거워지기 전에 짧은 안부로 풀면 도움이 돼요.",
+      "low|low": "걱정이 집 전체 분위기로 오래 남기 어려운 조합이에요.",
+      "medium|medium": "걱정과 압력이 중간 강도로 감지되는 구조예요 — 쌓이기 전에 한 줄로 말해 보세요.",
+      "high|low": "한쪽은 집 안 걱정·긴장을 오래 품고, 다른 쪽은 덜 붙잡는 편이에요 — 민감한 쪽의 신호를 먼저 받아 주세요.",
+      "high|medium": "걱정이 분위기로 번지기 쉬운 쪽과 중간 쪽의 조합이에요 — 변화가 느껴질 때 짧게 확인해 주세요.",
+      "low|medium": "한쪽은 긴장을 덜 붙잡고, 다른 쪽은 중간 정도예요 — 온도 차이를 무관심으로 읽지 마세요.",
+    },
+    father: {
+      "high|high": "기준·대화·침묵이 집 안 분위기로 오래 남기 쉬운 구조예요 — 한 가지 기준만 짧게 남기고 분위기를 비워 주세요.",
+      "low|low": "기준 대화가 집 전체 긴장으로 오래 남기 어려운 조합이에요.",
+      "medium|medium": "기준과 침묵이 중간 강도로 분위기에 남는 구조예요 — 쌓이기 전에 한 줄로 맞춰 보세요.",
+      "high|low": "한쪽은 분위기 긴장을 오래 감지하고, 다른 쪽은 덜 붙잡는 편이에요 — 민감한 쪽의 침묵을 무시하지 마세요.",
+      "high|medium": "긴장이 분위기로 남기 쉬운 쪽과 중간 쪽의 조합이에요 — 변화가 느껴질 때 짧게 확인해 주세요.",
+      "low|medium": "한쪽은 긴장을 덜 붙잡고, 다른 쪽은 중간 정도예요 — 온도 차이를 무관심으로 읽지 마세요.",
+    },
+  },
+  "en-US": {
+    neutral: {
+      "high|high": "Both of you tend to sense and accumulate household tension — friction can spread into the whole mood, so naming a small discomfort early helps.",
+      "low|low": "Neither of you tends to hold household tension long — discomfort rarely settles into the room's mood.",
+      "medium|medium": "You both notice household pressure at a moderate level — say one line before it stacks.",
+      "high|low": "One of you senses and carries household tension; the other doesn't hold it long — don't ignore the sensitive signal.",
+      "high|medium": "One carries tension longer; the other is moderate — a short check-in when the mood shifts helps.",
+      "low|medium": "One holds tension lightly; the other is moderate — don't read the gap as indifference.",
+    },
+    mother: {
+      "high|high": "Worry and household tension can stack for both of you — a short check-in before the mood gets heavy helps.",
+      "low|low": "Worry is less likely to linger as the whole-home mood between you.",
+      "medium|medium": "Worry and pressure register at a moderate level — say one line before it stacks.",
+      "high|low": "One of you carries home worry/tension longer; the other holds it lightly — receive the sensitive signal first.",
+      "high|medium": "One side lets worry tint the mood more easily; the other is moderate — check in briefly when it shifts.",
+      "low|medium": "One holds tension lightly; the other is moderate — don't read the gap as indifference.",
+    },
+    father: {
+      "high|high": "Standards, talk, and silence can linger in the household mood — leave one short standard, then clear the air.",
+      "low|low": "Guidance talk is less likely to linger as whole-home tension between you.",
+      "medium|medium": "Standards and silence register at a moderate mood level — align in one line before it stacks.",
+      "high|low": "One of you senses mood tension longer; the other holds it lightly — don't ignore the quieter signal.",
+      "high|medium": "One side lets tension linger in the mood; the other is moderate — check in briefly when it shifts.",
+      "low|medium": "One holds tension lightly; the other is moderate — don't read the gap as indifference.",
+    },
   },
 };
 
@@ -641,8 +698,12 @@ export function buildFamilySajuCompareTable(params: {
   const recoveryP = resolveGatheringRecoveryBucket(chartParent);
   const recoveryC = resolveGatheringRecoveryBucket(chartChild);
 
-  const tempP = resolveGatheringTemperatureBucket(friendshipSignalsParent);
-  const tempC = resolveGatheringTemperatureBucket(friendshipSignalsChild);
+  const climateP = resolveHomeClimateBucket(familySignalsParent);
+  const climateC = resolveHomeClimateBucket(familySignalsChild);
+  const climateMeaning =
+    HOME_CLIMATE_MEANING[locale][roleLensKey][
+      comboKey(climateP.bucket, climateC.bucket)
+    ]!;
 
   return [
     row(
@@ -683,11 +744,11 @@ export function buildFamilySajuCompareTable(params: {
       GATHERING_RECOVERY_MEANING[locale][comboKey(recoveryP.bucket, recoveryC.bucket)]!,
     ),
     row(
-      "gathering_temperature",
-      pick(locale, "Conversational Temperature at Gatherings", "가족모임의 대화 온도"),
-      GATHERING_TEMPERATURE_LABEL[locale][tempP.bucket],
-      GATHERING_TEMPERATURE_LABEL[locale][tempC.bucket],
-      GATHERING_TEMPERATURE_MEANING[locale][comboKey(tempP.bucket, tempC.bucket)]!,
+      "home_climate",
+      HOME_CLIMATE_TITLE[locale][roleLensKey],
+      HOME_CLIMATE_LABEL[locale][climateP.bucket],
+      HOME_CLIMATE_LABEL[locale][climateC.bucket],
+      climateMeaning,
     ),
   ];
 }

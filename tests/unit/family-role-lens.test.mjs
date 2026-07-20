@@ -115,13 +115,18 @@ ok("A/B/C person labels role-invariant; titles role-framed");
 
 section("3) ③⑤⑥ role-invariant byte-identical");
 
-for (const id of ["affection_expression", "gathering_recovery", "gathering_temperature"]) {
+for (const id of ["affection_expression", "gathering_recovery"]) {
   assert.deepEqual(
     motherRows.find((r) => r.id === id),
     fatherRows.find((r) => r.id === id),
   );
 }
-ok("③⑤⑥ unchanged by parentRole");
+ok("③⑤ role-invariant (home_climate is role-framed)");
+
+const eM = motherRows.find((r) => r.id === "home_climate");
+const eF = fatherRows.find((r) => r.id === "home_climate");
+assert.equal(eM.personParent.shortLabel, eF.personParent.shortLabel);
+assert.notEqual(eM.label, eF.label);
 
 section("4) resolve*Bucket signatures ignore parentRole");
 
@@ -135,13 +140,13 @@ section("5) locale × role lookup miss 없음");
 for (const locale of ["ko-KR", "en-US"]) {
   for (const parentType of ["mother", "father"]) {
     const rows = buildReport(locale, parentType).family.section_compare_table;
-    for (const id of ["correction_style", "bond_distance", "guidance_balance"]) {
+    for (const id of ["correction_style", "bond_distance", "guidance_balance", "home_climate"]) {
       const r = rows.find((x) => x.id === id);
       assert.ok(r.meaning.length > 0 && r.personParent.shortLabel.length > 0);
     }
   }
 }
-ok("all role×locale A/B/C lookups resolve");
+ok("all role×locale A/B/C/E lookups resolve");
 
 section("6) en-US Hangul-free");
 

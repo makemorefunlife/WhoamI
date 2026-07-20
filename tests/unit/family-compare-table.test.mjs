@@ -12,7 +12,7 @@ import {
   resolveBondDistanceBucket,
   resolveAffectionExpressionBucket,
   resolveGatheringRecoveryBucket,
-  resolveGatheringTemperatureBucket,
+  resolveHomeClimateBucket,
 } from "../../lib/relationship/familyParent/familySajuCompareTable.ts";
 import { calculateSajuBundle } from "../../lib/v2/saju/calculateSajuBundle.ts";
 import { toV1SajuApiPayload } from "../../lib/saju/toApiPayload.ts";
@@ -73,7 +73,7 @@ assert.deepEqual(
     "affection_expression",
     "guidance_balance",
     "gathering_recovery",
-    "gathering_temperature",
+    "home_climate",
   ],
 );
 for (const r of rows) {
@@ -139,23 +139,32 @@ assert.equal(affectionCheck.sourceValue[affectionCheck.bucket], maxVal);
 ok("row③이 countElements(오행 카운트) argmax를 정확히 사용함을 확인");
 
 // ---------------------------------------------------------------------------
-section("6) ⑥은 johu_profile을 사용함(SSOT 값을 그대로 읽는지 주입 테스트)");
+section("6) E home_climate는 family_conflict_index→intensityBand3 (주입 테스트)");
 
-// 실제로는 chart에서 유도 불가능한 임의 temperature_band를 주입해서,
-// 이 함수가 "값을 그대로 통과"시키는지(재계산하지 않는지) 증명한다.
-const injectedSignals = {
-  year_month_palace: { harmony_hits: [], tension_hits: [], social_surface_tension_index: 0 },
-  johu_profile: { heat_score: 12, moisture_score: 34, temperature_band: "hot", dominant_element: "fire" },
-  bijie_isolation: { self_count: 0, peer_cluster_score: 0, isolation_score: 0, isolation_band: "balanced" },
+const climateInjected = {
+  year_karma: { year_branch_code: "ja", tension_hits: [], karma_tension_index: 99 },
+  seal_parent: {
+    seal_count: 2,
+    seal_excess: false,
+    seal_isolated: false,
+    parent_bond_band: "balanced",
+  },
+  home_punishment: {
+    punishment_hits: [],
+    punishment_count: 0,
+    family_conflict_index: 80,
+  },
 };
-const tempCheck = resolveGatheringTemperatureBucket(injectedSignals);
-assert.equal(tempCheck.bucket, "hot", "주입한 johu_profile.temperature_band가 그대로 bucket이 되어야 함(재계산 아님)");
-assert.equal(tempCheck.sourceValue, injectedSignals.johu_profile);
-
-const tempFallback = resolveGatheringTemperatureBucket(undefined);
-assert.equal(tempFallback.bucket, "neutral", "신호 없으면 방어적으로 neutral 폴백");
-assert.equal(tempFallback.sourceValue, null);
-ok("row⑥이 johu_profile 값을 그대로 읽고, 없을 때만 방어적 neutral 폴백을 씀(로컬 재계산 없음)");
+const climateCheck = resolveHomeClimateBucket(climateInjected);
+assert.equal(climateCheck.bucket, "high");
+assert.equal(climateCheck.sourceValue.family_conflict_index, 80);
+const climateLow = resolveHomeClimateBucket({
+  ...climateInjected,
+  year_karma: { ...climateInjected.year_karma, karma_tension_index: 0 },
+  home_punishment: { ...climateInjected.home_punishment, family_conflict_index: 10 },
+});
+assert.equal(climateLow.bucket, "low");
+ok("row E reads family_conflict_index only (year_karma does not set band)");
 
 // ---------------------------------------------------------------------------
 section("7) 금지 문구가 출력되지 않음");

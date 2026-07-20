@@ -118,7 +118,6 @@ console.log(
     {
       fixtures,
       not_implemented: [
-        "E home_climate",
         "F recognition_fit",
         "Part3 growth SSOT wiring",
         "Part4 parent_lens_summary SSOT wiring",

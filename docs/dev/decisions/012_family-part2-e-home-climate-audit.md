@@ -1,8 +1,20 @@
 # 012 — Family Part2 E `home_climate` 감사 (구현 금지)
 
 **날짜:** 2026-07-20  
-**상태:** 감사만. 코드·threshold·비교표 미수정.  
-**질문 후보:** “이 가족 관계에서는 갈등이 어떤 방식으로 쌓이고, 집 안 분위기가 얼마나 쉽게 긴장되는가?”
+**상태:** 감사 승인 + 구현 반영(`home_climate` 행). F·Part3 미구현.
+
+## 구현 결정 (감사 후)
+
+- **Person SSOT:** `home_punishment.family_conflict_index` → 기존 `intensityBand3` (34/67) = home climate band. 신규 threshold 없음.
+- **Pair:** 수치 pair 필드 **없음**. 두 person band의 `comboKey` 조합 해석만.
+- **비교표:** 구 `gathering_temperature`(johu) 행 → `home_climate`로 교체.
+- **미사용(E):** nagging, umbilical, year_karma, johu, origin_family_tension, 11축.
+
+## Part4 / Part5 후속 연결 (이번 구현에서 코드 변경 없음)
+
+- **Part4 destiny:** `home_climate`를 destiny `risk`와 **합산하지 않음**. 정적 집 긴장 구조 vs 시기·사건 리스크를 분리 유지.
+- **Part5:** 추후 de-escalation **톤·우선순위**에만 참고 가능. 새 처방 점수·topic을 climate로 만들지 않음. 기존 umbilical/nagging/de-escalation 계산 불변.
+
 
 ---
 

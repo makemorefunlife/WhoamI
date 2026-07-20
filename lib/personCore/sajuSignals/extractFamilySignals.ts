@@ -4,8 +4,42 @@ import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAna
 import {
   clampScore,
   collectBranchPalaceRelations,
+  intensityBand3,
 } from "./intraPalaceRelations";
 import type { FamilySajuSignals, ParentBondBand } from "./types";
+import type { PairIntensityBand } from "./pairTypes";
+
+export type HomeClimateBand = PairIntensityBand;
+
+/**
+ * E home_climate — 기존 family_conflict_index에 intensityBand3(≥67 high, ≥34 medium) 적용.
+ * 신규 threshold 없음. year_karma / nagging / umbilical과 무관한 person 노출.
+ */
+export function resolveHomeClimateBandFromIndex(
+  familyConflictIndex: number,
+): HomeClimateBand {
+  return intensityBand3(familyConflictIndex);
+}
+
+/** PersonCore FamilySajuSignals.home_punishment SSOT 소비. 신호 없으면 low(0). */
+export function resolveHomeClimateBand(
+  familySignals?: FamilySajuSignals,
+): {
+  sourceValue: {
+    family_conflict_index: number;
+    punishment_count: number;
+  };
+  bucket: HomeClimateBand;
+} {
+  const family_conflict_index =
+    familySignals?.home_punishment.family_conflict_index ?? 0;
+  const punishment_count =
+    familySignals?.home_punishment.punishment_count ?? 0;
+  return {
+    sourceValue: { family_conflict_index, punishment_count },
+    bucket: resolveHomeClimateBandFromIndex(family_conflict_index),
+  };
+}
 
 function countTenGods(bundle: SajuBundle): TenGodCounts {
   const counts: TenGodCounts = {};
