@@ -133,6 +133,12 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-emerald-200/70">
+            {t.dnaLayerLabel}
+          </p>
+          <p className="mt-1 text-sm text-white/55">{t.dnaLayerHint}</p>
+        </div>
         <p className="text-lg font-semibold text-white/92">{section.geniusTitle}</p>
         <div className="mt-4 space-y-4">
           <div>
@@ -162,6 +168,12 @@ function GrowthTunnelCard({ section }: { section: GrowthTunnelSection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
       <RelationshipReportBody>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-amber-200/70">
+            {t.growthLayerLabel}
+          </p>
+          <p className="mt-1 text-sm text-white/55">{t.growthLayerHint}</p>
+        </div>
         <RelationshipReportParagraph>{section.currentChallenge}</RelationshipReportParagraph>
         {section.focusAreas.length > 0 ? (
           <p className="text-sm text-white/50">

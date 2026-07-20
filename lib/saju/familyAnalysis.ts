@@ -12,6 +12,7 @@ import {
 import {
   analyzePairSaju,
   countElements,
+  resolveDominantElement,
   elementInteraction,
   type CrossChartHit,
   type PairSajuAnalysis,
@@ -335,10 +336,7 @@ function buildChildInnerSignals(
   intraHits: CrossChartHit[],
 ): ChildInnerSignals {
   const p = profileTenGods(childCounts);
-  const el = countElements(child);
-  const dominant = (
-    Object.entries(el) as [ChildInnerSignals["dominantArchetype"], number][]
-  ).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "earth";
+  const { dominant } = resolveDominantElement(child);
 
   const branches = Array.from(child.branchCodes);
   let wonjinGuimun = false;

@@ -934,6 +934,8 @@ export const messagesEnUS = {
       scoreLabelSynergy: "Growth synergy",
       scoreLabelFriction: "Discipline friction",
       dnaCardTitle: "🧬 Child DNA profile",
+      dnaLayerLabel: "Innate pattern",
+      dnaLayerHint: "How this child naturally learns, relates, and focuses",
       dnaCommunicationLabel: "🎨 Communication style",
       dnaHiddenSensitivityLabel: "🧠 Hidden sensitivity",
       dnaEnergyLabel: "🔋 Energy & focus style",
@@ -941,7 +943,9 @@ export const messagesEnUS = {
       destinyCardTitle: "🤝 Your destined score",
       harmonyLabel: "🍀 Harmony",
       favoritismRiskLabel: "⚖️ Favoritism risk",
-      growthTunnelCardTitle: "⚠️ The child's growth tunnel",
+      growthTunnelCardTitle: "⚠️ This year's growth challenge",
+      growthLayerLabel: "This year's growth tunnel",
+      growthLayerHint: "A time-specific challenge or transition for the current year",
       focusAreasPrefix: "Focus areas: ",
       filialRewardCardTitle: "🎯 Future family reward",
       deEscalationCardTitle: "⚡ De-escalation cheat sheet",
@@ -956,7 +960,7 @@ export const messagesEnUS = {
       psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
       prescriptionCardTitle: "💊 Real-Life Action Prescription",
       part2Title: "📊 Part 2. Scored, Side by Side",
-      part3Title: "🧬 Part 3. Child DNA & Growth",
+      part3Title: "🧬 Part 3. Innate DNA & this year's growth",
       part4Title: "🤝 Part 4. Destiny & Future Reward",
       part5Title: "💊 Part 5. Guardrails & Action Plan",
       defaultKindLabel: "Premium · Child DNA Playbook",
@@ -1945,6 +1949,8 @@ export type MessageCatalog = {
       scoreLabelSynergy: string;
       scoreLabelFriction: string;
       dnaCardTitle: string;
+      dnaLayerLabel: string;
+      dnaLayerHint: string;
       dnaCommunicationLabel: string;
       dnaHiddenSensitivityLabel: string;
       dnaEnergyLabel: string;
@@ -1953,6 +1959,8 @@ export type MessageCatalog = {
       harmonyLabel: string;
       favoritismRiskLabel: string;
       growthTunnelCardTitle: string;
+      growthLayerLabel: string;
+      growthLayerHint: string;
       focusAreasPrefix: string;
       filialRewardCardTitle: string;
       deEscalationCardTitle: string;

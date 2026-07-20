@@ -76,6 +76,8 @@ export function buildFamilyParentReport(params: {
   friendshipSignalsA?: FriendshipSajuSignals;
   friendshipSignalsB?: FriendshipSajuSignals;
   locale?: Locale;
+  /** Part3 성장 터널 분석 연도. 생략 시 현재 연도. */
+  analysisYear?: number;
 }): FamilyParentReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildFamilyRuleContext({ ...params, locale });

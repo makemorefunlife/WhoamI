@@ -102,6 +102,31 @@ export function countElements(chart: ChartContext): Record<string, number> {
   return counts;
 }
 
+/** 오행 우세 원소 — countElements 후 고정 키 순서·내림차순. 신규 tie-break 없음. */
+export type DominantElementKey = "wood" | "fire" | "earth" | "metal" | "water";
+
+const DOMINANT_ELEMENT_ORDER: DominantElementKey[] = [
+  "wood",
+  "fire",
+  "earth",
+  "metal",
+  "water",
+];
+
+export function resolveDominantElement(
+  chart: ChartContext,
+): {
+  counts: Record<string, number>;
+  dominant: DominantElementKey;
+} {
+  const counts = countElements(chart);
+  const entries: Array<[DominantElementKey, number]> = DOMINANT_ELEMENT_ORDER.map(
+    (k) => [k, counts[k] ?? 0],
+  );
+  entries.sort((a, b) => b[1] - a[1]);
+  return { counts, dominant: entries[0]![0] };
+}
+
 function formatElementCounts(counts: Record<string, number>): string {
   return Object.entries(counts)
     .map(([el, n]) => `${ELEMENT_KO[el] ?? el}: ${n}`)

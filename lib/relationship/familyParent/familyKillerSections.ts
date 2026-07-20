@@ -107,10 +107,20 @@ export function buildFamilyKillerSections(params: {
     tenGod: FamilyParentTenGodAnalysis;
     masterScores: FamilyMasterScores;
     locale: Locale;
+    /** 성장 터널 분석 연도. 생략 시 현재 연도(기존 동작). */
+    analysisYear?: number;
   };
 }): FamilyKillerSections {
-  const { childNickname, parentNickname, parentRole, familyPairAnalysis, tenGod, masterScores, locale } =
-    params.ctx;
+  const {
+    childNickname,
+    parentNickname,
+    parentRole,
+    familyPairAnalysis,
+    tenGod,
+    masterScores,
+    locale,
+  } = params.ctx;
+  const analysisYear = params.ctx.analysisYear ?? new Date().getFullYear();
   const sig = familyPairAnalysis.scoringSignals;
   const childSig = familyPairAnalysis.childSignals;
   const roleLabel = pick(locale, parentRole === "mother" ? "Mom" : "Dad", parentRole === "mother" ? "엄마" : "아빠");
@@ -265,7 +275,7 @@ export function buildFamilyKillerSections(params: {
     );
   }
 
-  const yearBranch = getCalendarYearBranch(new Date().getFullYear());
+  const yearBranch = getCalendarYearBranch(analysisYear);
   const child = familyPairAnalysis.chartChild;
   const yearClashDay = hasBranchRelation("branch_clash", yearBranch, child.dayBranchCode);
   const yearClashMonth = hasBranchRelation("branch_clash", yearBranch, child.monthBranchCode);
@@ -281,20 +291,20 @@ export function buildFamilyKillerSections(params: {
 
   let growthChallenge = pick(
     locale,
-    `${childNickname} is going through a phase of trying to define "who I am" on their own this year.`,
-    `${childNickname}는 올해 '내가 누구인지'를 스스로 정의하려는 시기를 지나고 있어요.`,
+    `In ${analysisYear}, ${childNickname} is moving through a time-specific growth tunnel — a stretch of defining "who I am" that belongs to this year, not a fixed trait.`,
+    `${analysisYear}년, ${childNickname}는 올해의 성장 터널을 지나고 있어요 — '내가 누구인지'를 스스로 다듬는 시기적 과제이며, 고정된 성격이 아닙니다.`,
   );
   if (yearClashDay || yearClashMonth) {
     growthChallenge = pick(
       locale,
-      `${childNickname} is in a psychological tunnel right now. ` +
-        `${yearClashMonth ? "They may become sensitive in school or peer relationships, " : ""}` +
-        `${yearClashDay ? "and their pride can be shaken badly even by small remarks. " : ""}` +
-        `Listening to "why you're struggling" matters more than grades or rankings right now.`,
-      `${childNickname}는 지금 심리적 터널 구간이에요. ` +
+      `In ${analysisYear}, ${childNickname} is in a time-specific growth tunnel. ` +
+        `${yearClashMonth ? "School or peer sensitivity may rise this year, " : ""}` +
+        `${yearClashDay ? "and small remarks can shake pride more than usual. " : ""}` +
+        `This is about the pressure of this year — listening to "why this stretch feels hard" matters more than grades or rankings right now.`,
+      `${analysisYear}년, ${childNickname}는 올해의 성장 터널 구간에 있어요. ` +
         `${yearClashMonth ? "학교·또래 관계에서 예민해질 수 있고, " : ""}` +
         `${yearClashDay ? "작은 지적에도 자존심이 크게 흔들릴 수 있어요. " : ""}` +
-        `성적·순위보다 '네가 힘든 이유'를 먼저 들어 주는 게 최우선입니다.`,
+        `고정된 문제가 아니라 올해의 압력입니다. 성적·순위보다 '네가 힘든 이유'를 먼저 들어 주는 게 최우선입니다.`,
     );
   }
 

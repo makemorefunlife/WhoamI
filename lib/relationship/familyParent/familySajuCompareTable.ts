@@ -19,7 +19,7 @@ import {
   type HomeClimateBand,
 } from "@/lib/personCore/sajuSignals/extractFamilySignals";
 import { buildPairFamilySignals } from "@/lib/personCore/sajuSignals/pairFamilySignals";
-import { countElements } from "@/lib/saju/pairChartAnalysis";
+import { countElements, resolveDominantElement } from "@/lib/saju/pairChartAnalysis";
 import type { ChartContext } from "@/lib/saju/chartContext";
 import type {
   FamilySajuSignals,
@@ -142,20 +142,12 @@ export function resolveBondDistanceBucket(
 
 type ElementKey = "wood" | "fire" | "earth" | "metal" | "water";
 
-/** ③용 — 오행 우세(work의 dominantElement(chart)와 동일 원리, 이 파일에서 로컬 재현). */
+/** ③용 — 오행 우세(resolveDominantElement SSOT, Part3 genius와 동일 primitive). */
 export function resolveAffectionExpressionBucket(
   chart: ChartContext,
 ): { sourceValue: Record<string, number>; bucket: ElementKey } {
-  const counts = countElements(chart);
-  const entries: Array<[ElementKey, number]> = [
-    ["wood", counts.wood ?? 0],
-    ["fire", counts.fire ?? 0],
-    ["earth", counts.earth ?? 0],
-    ["metal", counts.metal ?? 0],
-    ["water", counts.water ?? 0],
-  ];
-  entries.sort((a, b) => b[1] - a[1]);
-  return { sourceValue: counts, bucket: entries[0]![0] };
+  const { counts, dominant } = resolveDominantElement(chart);
+  return { sourceValue: counts, bucket: dominant };
 }
 
 /** @deprecated Marriage parenting_style_lean 재노출 — Family C축에서는 사용하지 않음. */
