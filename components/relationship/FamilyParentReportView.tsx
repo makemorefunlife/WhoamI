@@ -17,7 +17,9 @@ import {
   RelationshipReportInset,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
+import { buildFamilyReportViewModel } from "@/lib/relationship/familyParent/viewModel/buildFamilyReportViewModel";
+import { FamilyReportViewModelView } from "@/components/relationship/familyParent/sections/SectionRenderer";
 
 const DE_VARIANT: Record<string, "warning" | "success" | "default"> = {
   red: "warning",
@@ -65,6 +67,18 @@ export default function FamilyParentReportView({
       nicknameB: labelB,
     });
   }, [report.snapshot_panel, report.meta, labelA, labelB]);
+
+  // 006 로드맵 Step4 — Part1-5 와이어프레임. 훅 규칙 준수를 위해 반드시
+  // 위의 모든 useMemo 호출 뒤, 아래 조건부 렌더링(return) 앞에 위치시킨다
+  // (marriage/friend에서 겪은 Hooks 순서 위반 버그를 여기서 처음부터 피함).
+  const { locale } = useLocale();
+  const partRendererViewModel = useMemo(
+    () => buildFamilyReportViewModel(report, { locale }),
+    [report, locale],
+  );
+  if (partRendererViewModel.sections.length > 0) {
+    return <FamilyReportViewModelView vm={partRendererViewModel} />;
+  }
 
   return (
     <RelationshipReportLayout

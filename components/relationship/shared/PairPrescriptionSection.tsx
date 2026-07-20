@@ -13,7 +13,7 @@ import {
   RelationshipReportCard,
   RelationshipReportParagraph,
 } from "@/components/relationship/reportLayout";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
 
 function ChecklistColumn({
   variant,
@@ -72,7 +72,8 @@ function PrescriptionTopicCard({
   accentColor: string;
 }) {
   const t = useMessages().relationshipDrilldown.layout;
-  const meta = resolveTopicMeta(item.topic);
+  const { locale } = useLocale();
+  const meta = resolveTopicMeta(item.topic, locale);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-violet-400/25 bg-gradient-to-br from-violet-950/35 via-fuchsia-950/20 to-rose-950/25 shadow-[0_0_40px_-16px_rgba(212,165,232,0.35)]">
@@ -127,6 +128,7 @@ export default function PairPrescriptionSection({
   domain: PairPrescriptionDomain;
 }) {
   const t = useMessages().relationshipDrilldown.layout;
+  const { locale } = useLocale();
   if (!pack?.items.length) return null;
 
   return (
@@ -141,7 +143,7 @@ export default function PairPrescriptionSection({
         {pack.intro_line}
       </RelationshipReportParagraph>
       <p className="mt-2 text-xs text-white/50">
-        {PAIR_PRESCRIPTION_DOMAIN_FOOTNOTE[domain]}
+        {PAIR_PRESCRIPTION_DOMAIN_FOOTNOTE[locale][domain]}
       </p>
       <div className="mt-5 space-y-5">
         {pack.items.map((item) => (

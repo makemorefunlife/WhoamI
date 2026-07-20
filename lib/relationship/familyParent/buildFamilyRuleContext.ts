@@ -23,6 +23,8 @@ import {
   type FamilyParentPairRoles,
   type FamilyParentRole,
 } from "./types";
+import type { FamilySajuSignals, FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type { ChartContext } from "@/lib/saju/chartContext";
 
 export type FamilyRuleContext = {
   nicknameA: string;
@@ -44,6 +46,12 @@ export type FamilyRuleContext = {
   masterScores: FamilyMasterScores;
   uncertainItems: string[];
   locale: Locale;
+  /** 006 로드맵 Step3 — 비교표(원가족긴장도/오행/신강신약)용 chart 노출. 기존 필드는 안 건드림(순수 추가). */
+  chartParent: ChartContext;
+  chartChild: ChartContext;
+  /** 006 로드맵 Step3 — 비교표 ⑥(대화온도, johu_profile)용. PersonCore SSOT, 없으면 undefined. */
+  friendshipSignalsParent?: FriendshipSajuSignals;
+  friendshipSignalsChild?: FriendshipSajuSignals;
 };
 
 export type BuildFamilyContextParams = {
@@ -58,6 +66,11 @@ export type BuildFamilyContextParams = {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  familySignalsA?: FamilySajuSignals;
+  familySignalsB?: FamilySajuSignals;
+  /** 006 로드맵 Step3 — 비교표 ⑥(대화온도)용. 없으면 해당 행만 neutral 폴백(주석 참조). */
+  friendshipSignalsA?: FriendshipSajuSignals;
+  friendshipSignalsB?: FriendshipSajuSignals;
   locale?: Locale;
 };
 
@@ -99,6 +112,9 @@ export function buildFamilyRuleContext(
   const isParentA = params.roles.roleA !== "child";
   const sajuJsonParent = isParentA ? params.sajuJsonA : params.sajuJsonB;
   const sajuJsonChild = isParentA ? params.sajuJsonB : params.sajuJsonA;
+  const familySignalsParent = isParentA ? params.familySignalsA : params.familySignalsB;
+  const friendshipSignalsParent = isParentA ? params.friendshipSignalsA : params.friendshipSignalsB;
+  const friendshipSignalsChild = isParentA ? params.friendshipSignalsB : params.friendshipSignalsA;
   const birthPlaceParent = isParentA ? params.birthPlaceA : params.birthPlaceB;
   const birthPlaceChild = isParentA ? params.birthPlaceB : params.birthPlaceA;
   const birthTimeUnknownParent = isParentA
@@ -135,6 +151,7 @@ export function buildFamilyRuleContext(
     familyPairAnalysis,
     childNickname: resolved.childNickname,
     locale,
+    parentBondBand: familySignalsParent?.seal_parent.parent_bond_band,
   });
 
   const { grade, reason, eventScores, masterScores } =
@@ -172,6 +189,10 @@ export function buildFamilyRuleContext(
     masterScores,
     uncertainItems,
     locale,
+    chartParent: core.chartA,
+    chartChild: core.chartB,
+    friendshipSignalsParent,
+    friendshipSignalsChild,
   };
 }
 

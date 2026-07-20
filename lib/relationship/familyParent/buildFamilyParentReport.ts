@@ -20,6 +20,8 @@ import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { FamilyPrescriptionPack } from "./familyPrescriptionTypes";
 import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import type { FamilySajuSignals, FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import { buildFamilySajuCompareTable } from "./familySajuCompareTable";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -68,11 +70,30 @@ export function buildFamilyParentReport(params: {
     inputFingerprintB: string;
   };
   pairFamily?: PairFamilySignals | null;
+  familySignalsA?: FamilySajuSignals;
+  familySignalsB?: FamilySajuSignals;
+  /** 006 로드맵 Step3 — 비교표 ⑥(대화온도)용. 없으면 해당 행만 neutral 폴백. */
+  friendshipSignalsA?: FriendshipSajuSignals;
+  friendshipSignalsB?: FriendshipSajuSignals;
   locale?: Locale;
 }): FamilyParentReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildFamilyRuleContext({ ...params, locale });
-  const family = buildFamilyParentChildReport(ctx);
+  const family: FamilyParentChildReport = {
+    ...buildFamilyParentChildReport(ctx),
+    section_compare_table: buildFamilySajuCompareTable({
+      parentNickname: ctx.parentNickname,
+      childNickname: ctx.childNickname,
+      countsParent: ctx.tenGod.countsParent,
+      countsChild: ctx.tenGod.countsChild,
+      chartParent: ctx.chartParent,
+      chartChild: ctx.chartChild,
+      friendshipSignalsParent: ctx.friendshipSignalsParent,
+      friendshipSignalsChild: ctx.friendshipSignalsChild,
+      parentRole: ctx.parentRole,
+      locale,
+    }),
+  };
 
   const snapshot_panel = buildFamilyParentSnapshotPanel(
     ctx,

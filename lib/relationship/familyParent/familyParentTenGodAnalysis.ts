@@ -5,6 +5,23 @@ import { sanitizeFamilyParentText } from "./familyParentLanguage";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import type { FamilyParentRole } from "./types";
+import type { ParentBondBand } from "@/lib/personCore/sajuSignals/types";
+
+/**
+ * PersonCore SSOT 印(印星/보호본능) 부모-자녀 유대 신호(`FamilySajuSignals.seal_parent.parent_bond_band`)
+ * 보강 문장 — 계산은 되지만 리포트 어디에도 안 쓰이던 신호를 부모 렌즈 요약(lens_summary)에 반영한다.
+ * balanced는 특별히 튀는 신호가 아니라서 보강 문장을 붙이지 않는다(work/friend와 동일한 원칙).
+ */
+const PARENT_BOND_BONUS: Record<Locale, Record<"distant" | "smothering", string>> = {
+  "en-US": {
+    distant: " On top of that, this parent tends to give space rather than hover — showing love by trusting rather than checking in constantly.",
+    smothering: " On top of that, this parent tends to lean in close — love shows up as constant checking-in, which can feel protective or a little overwhelming depending on the day.",
+  },
+  "ko-KR": {
+    distant: " 게다가 이 부모는 곁을 지키되 거리를 존중하는 편이라, 잔소리보다 믿음으로 사랑을 표현하는 타입이에요.",
+    smothering: " 게다가 이 부모는 가까이 밀착하는 편이라, 끊임없는 확인으로 사랑을 표현하기 쉬워요 — 든든하게 느껴질 수도, 가끔 답답하게 느껴질 수도 있어요.",
+  },
+};
 
 export type TenGodCounts = Record<string, number>;
 
@@ -49,6 +66,7 @@ function buildMotherProfile(
   family: FamilyPairSajuAnalysis | undefined,
   childNickname: string,
   locale: Locale,
+  parentBondBand?: ParentBondBand,
 ): ParentCareProfile {
   const sig = family?.scoringSignals;
   const sealFocus = child.seal >= 2;
@@ -58,6 +76,10 @@ function buildMotherProfile(
       : parent.seal >= 1
         ? "moderate"
         : "developing";
+  const bondBonus =
+    parentBondBand && parentBondBand !== "balanced"
+      ? PARENT_BOND_BONUS[locale][parentBondBand]
+      : "";
 
   return {
     role: "mother",
@@ -78,7 +100,7 @@ function buildMotherProfile(
         locale,
         `Mom lens: reads ${childNickname}'s hidden sensitivity and need for stability first.`,
         `엄마 렌즈: ${childNickname}의 숨겨진 감수성·안정 욕구를 최우선으로 읽는 분석입니다.`,
-      ),
+      ) + bondBonus,
     ),
   };
 }
@@ -89,6 +111,7 @@ function buildFatherProfile(
   family: FamilyPairSajuAnalysis | undefined,
   childNickname: string,
   locale: Locale,
+  parentBondBand?: ParentBondBand,
 ): ParentCareProfile {
   const sig = family?.scoringSignals;
   const wealthFocus = child.wealth >= 2;
@@ -98,6 +121,10 @@ function buildFatherProfile(
       : parent.wealth >= 1
         ? "moderate"
         : "developing";
+  const bondBonus =
+    parentBondBand && parentBondBand !== "balanced"
+      ? PARENT_BOND_BONUS[locale][parentBondBand]
+      : "";
 
   return {
     role: "father",
@@ -118,7 +145,7 @@ function buildFatherProfile(
         locale,
         `Dad lens: reads ${childNickname}'s practical sense, independence, and need for future planning first.`,
         `아빠 렌즈: ${childNickname}의 현실 감각·자립·미래 설계 욕구를 최우선으로 읽는 분석입니다.`,
-      ),
+      ) + bondBonus,
     ),
   };
 }
@@ -172,6 +199,8 @@ export function analyzeFamilyParentTenGod(params: {
   familyPairAnalysis?: FamilyPairSajuAnalysis;
   childNickname?: string;
   locale?: Locale;
+  /** PersonCore SSOT 印 부모-자녀 유대 신호 — 계산되지만 orphaned였던 신호를 부모 렌즈에 반영 */
+  parentBondBand?: ParentBondBand;
 }): FamilyParentTenGodAnalysis {
   const countsParent = countTenGodsForFamilyParent(params.sajuJsonParent);
   const countsChild = countTenGodsForFamilyParent(params.sajuJsonChild);
@@ -185,8 +214,8 @@ export function analyzeFamilyParentTenGod(params: {
     countsChild,
     parentProfile:
       params.parentRole === "mother"
-        ? buildMotherProfile(parent, child, params.familyPairAnalysis, childNickname, locale)
-        : buildFatherProfile(parent, child, params.familyPairAnalysis, childNickname, locale),
+        ? buildMotherProfile(parent, child, params.familyPairAnalysis, childNickname, locale, params.parentBondBand)
+        : buildFatherProfile(parent, child, params.familyPairAnalysis, childNickname, locale, params.parentBondBand),
     childProfile: buildChildProfile(child, childNickname, params.familyPairAnalysis),
   };
 }

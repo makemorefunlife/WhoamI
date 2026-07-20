@@ -56,6 +56,12 @@ export async function runFamilyParentChildDeepAnalysis(
           params.sajuMasterB,
         ).family
       : null;
+  const familySignalsA = params.sajuMasterA?.domain_signals.family_signals;
+  const familySignalsB = params.sajuMasterB?.domain_signals.family_signals;
+  // 006 로드맵 Step3 — 비교표 ⑥(대화온도, johu_profile)용. cohabitation의
+  // wealth_officer_power와 동일한 패턴(있으면 사용, 없으면 폴백).
+  const friendshipSignalsA = params.sajuMasterA?.domain_signals.friendship_signals;
+  const friendshipSignalsB = params.sajuMasterB?.domain_signals.friendship_signals;
 
   const report = buildFamilyParentReport({
     nicknameA: params.nicknameA,
@@ -72,6 +78,10 @@ export async function runFamilyParentChildDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairFamily,
+    familySignalsA,
+    familySignalsB,
+    friendshipSignalsA,
+    friendshipSignalsB,
     locale: params.locale,
   });
 

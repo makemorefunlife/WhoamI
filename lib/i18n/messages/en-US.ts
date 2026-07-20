@@ -914,6 +914,19 @@ export const messagesEnUS = {
       upsetAvoidLabel: "Avoid this",
       warningCardTitle: "⚠️ Office warnings & conflict antidotes",
       conflictTriggerLabel: "Conflict trigger",
+      compareTableCardTitle: "📊 At a glance — 6 ways you compare",
+      compareTableColMe: "Me",
+      compareTableColPartner: "Partner",
+      compareTableColMeaning: "What it means for collaboration",
+      loopStrengthLabel: "Where your strengths connect",
+      loopFrictionLabel: "Where misunderstandings build up",
+      weeklyCheckInTitle: "Weekly 10-min check-in",
+      defaultKindLabel: "Colleague · Business Partner",
+      part1Title: "📊 Part 1. Where You Stand, at a Glance",
+      part2Title: "👥 Part 2. How You Each Work",
+      part3Title: "🔄 Part 3. Roles & the Loop You Fall Into",
+      part4Title: "⚠️ Part 4. Collaboration Safeguards",
+      part5Title: "💊 Part 5. Playbook for Working Together",
     },
     family: {
       gradeBadge: (grade: string) => `Family grade ${grade}`,
@@ -936,6 +949,17 @@ export const messagesEnUS = {
       avoidLabel: "Don't do this",
       childFallback: "Child",
       parentFallback: "Parent",
+      compareTableCardTitle: "📊 At a Glance — 6 Family Axes",
+      compareTableColParent: "Parent",
+      compareTableColChild: "Child",
+      compareTableColMeaning: "What it means for the family",
+      psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
+      prescriptionCardTitle: "💊 Real-Life Action Prescription",
+      part2Title: "📊 Part 2. Scored, Side by Side",
+      part3Title: "🧬 Part 3. Child DNA & Growth",
+      part4Title: "🤝 Part 4. Destiny & Future Reward",
+      part5Title: "💊 Part 5. Guardrails & Action Plan",
+      defaultKindLabel: "Premium · Child DNA Playbook",
     },
     friendship: {
       gradeBadge: (grade: string) => `Friendship grade ${grade}`,
@@ -953,6 +977,17 @@ export const messagesEnUS = {
       optimalHangoutLabel: "🎪 Best hangout style",
       breakupGuideCardTitle: "⚠️ Falling-out prevention guide",
       deEscalationCardTitle: "⚡ Best-friend fight antidote",
+      compareTableCardTitle: "📊 At a glance — 6 ways you compare",
+      compareTableColMe: "Me",
+      compareTableColPartner: "Friend",
+      compareTableColMeaning: "What it means for the friendship",
+      psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
+      part1Title: "📊 Part 1. Your Friendship, Fully Diagnosed",
+      part2Title: "👥 Part 2. Compared Side by Side (Social DNA)",
+      part3Title: "🔄 Part 3. The Hidden Flow Between You",
+      part4Title: "⚠️ Part 4. Guardrails for a Healthy Friendship",
+      part5Title: "💊 Part 5. Your Friendship Repair Kit",
+      defaultKindLabel: "Friendship · Social DNA",
     },
     cohabitation: {
       eyebrow: "Premium · Household",
@@ -1009,6 +1044,19 @@ export const messagesEnUS = {
         `🛑 What ${partnerNickname} shouldn't do`,
       deEscalationScriptLabel: (partnerNickname: string, nickname: string) =>
         `💊 ${partnerNickname} → ${nickname} script`,
+      compareTableCardTitle: "📊 At a Glance — 6 Ways You Run a Household",
+      compareTableColMe: "Me",
+      compareTableColPartner: "Partner",
+      compareTableColMeaning: "What it means for your household",
+      psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
+      prescriptionCardTitle: "💊 Your Household Playbook",
+      upsetSectionCardTitle: "😤 How You Each Respond When Upset",
+      part1Title: "💕 Part 1. Why You Became a Household",
+      part2Title: "📊 Part 2. Your Household, Fully Scored",
+      part3Title: "🔞 Part 3. Bedroom Chemistry & Attachment",
+      part4Title: "🏡 Part 4. Home-Life DNA & the Next 3 Years",
+      part5Title: "⚡ Part 5. Your Fight-Proofing Playbook",
+      defaultKindLabel: "Household · Life Partnership",
     },
     layout: {
       conflictPatternLink: "See conflict pattern",
@@ -1877,6 +1925,19 @@ export type MessageCatalog = {
       upsetAvoidLabel: string;
       warningCardTitle: string;
       conflictTriggerLabel: string;
+      compareTableCardTitle: string;
+      compareTableColMe: string;
+      compareTableColPartner: string;
+      compareTableColMeaning: string;
+      loopStrengthLabel: string;
+      loopFrictionLabel: string;
+      weeklyCheckInTitle: string;
+      defaultKindLabel: string;
+      part1Title: string;
+      part2Title: string;
+      part3Title: string;
+      part4Title: string;
+      part5Title: string;
     };
     family: {
       gradeBadge: (grade: string) => string;
@@ -1899,6 +1960,17 @@ export type MessageCatalog = {
       avoidLabel: string;
       childFallback: string;
       parentFallback: string;
+      compareTableCardTitle: string;
+      compareTableColParent: string;
+      compareTableColChild: string;
+      compareTableColMeaning: string;
+      psychRadarCardTitle: string;
+      prescriptionCardTitle: string;
+      part2Title: string;
+      part3Title: string;
+      part4Title: string;
+      part5Title: string;
+      defaultKindLabel: string;
     };
     friendship: {
       gradeBadge: (grade: string) => string;
@@ -1916,6 +1988,17 @@ export type MessageCatalog = {
       optimalHangoutLabel: string;
       breakupGuideCardTitle: string;
       deEscalationCardTitle: string;
+      compareTableCardTitle: string;
+      compareTableColMe: string;
+      compareTableColPartner: string;
+      compareTableColMeaning: string;
+      psychRadarCardTitle: string;
+      part1Title: string;
+      part2Title: string;
+      part3Title: string;
+      part4Title: string;
+      part5Title: string;
+      defaultKindLabel: string;
     };
     cohabitation: {
       eyebrow: string;
@@ -1966,6 +2049,19 @@ export type MessageCatalog = {
       deEscalationPsychStateLabel: (nickname: string) => string;
       deEscalationAvoidLabel: (partnerNickname: string) => string;
       deEscalationScriptLabel: (partnerNickname: string, nickname: string) => string;
+      compareTableCardTitle: string;
+      compareTableColMe: string;
+      compareTableColPartner: string;
+      compareTableColMeaning: string;
+      psychRadarCardTitle: string;
+      prescriptionCardTitle: string;
+      upsetSectionCardTitle: string;
+      part1Title: string;
+      part2Title: string;
+      part3Title: string;
+      part4Title: string;
+      part5Title: string;
+      defaultKindLabel: string;
     };
     layout: {
       conflictPatternLink: string;
