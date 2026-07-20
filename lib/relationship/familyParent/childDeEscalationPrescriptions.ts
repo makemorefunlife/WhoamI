@@ -2,11 +2,21 @@ import type { TenGodCounts } from "./familyParentTenGodAnalysis";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { FamilyParentRole } from "./types";
+import { resolveCorrectionStyleBucket } from "./familySajuCompareTable";
+
+export type ChildDeEscalationCategory =
+  | "self"
+  | "food"
+  | "seal"
+  | "officer"
+  | "wealth";
 
 export type ChildDeEscalationCard = {
   hashtag: string;
   color: "red" | "yellow" | "orange" | "blue" | "green";
   archetype_label: string;
+  /** Part2 A child correction_style bucket — SSOT */
+  category: ChildDeEscalationCategory;
   psych_state: string;
   avoid_actions: string;
   solution_script: string;
@@ -16,7 +26,7 @@ type PrescriptionDef = {
   hashtag: (locale: Locale) => string;
   color: ChildDeEscalationCard["color"];
   archetype_label: (locale: Locale) => string;
-  category: "self" | "food" | "seal" | "officer" | "wealth";
+  category: ChildDeEscalationCategory;
   psych_state: (child: string, parent: string, locale: Locale) => string;
   avoid_actions: (child: string, parent: string, locale: Locale) => string;
   solution_script: (child: string, parent: string, role: string, locale: Locale) => string;
@@ -150,45 +160,17 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
   },
 ];
 
-const ARCHETYPE_TO_CATEGORY: Record<
-  string,
-  PrescriptionDef["category"]
-> = {
-  wood: "self",
-  fire: "food",
-  earth: "seal",
-  metal: "officer",
-  water: "wealth",
-};
-
-function categoryScores(counts: TenGodCounts): Record<PrescriptionDef["category"], number> {
-  return {
-    self: (counts["비견"] ?? 0) * 2 + (counts["겁재"] ?? 0),
-    food: (counts["상관"] ?? 0) * 2 + (counts["식신"] ?? 0),
-    seal: (counts["정인"] ?? 0) * 2 + (counts["편인"] ?? 0),
-    officer: (counts["정관"] ?? 0) * 2 + (counts["편관"] ?? 0),
-    wealth: (counts["정재"] ?? 0) + (counts["편재"] ?? 0) * 2,
-  };
-}
-
-function pickPrescription(
+/**
+ * Part2 A child correction_style bucket → Part5 de-escalation prescription.
+ * dominantArchetype / 별도 categoryScores 미사용 (017 SSOT).
+ */
+export function pickDeEscalationByCorrectionStyle(
   counts: TenGodCounts,
-  dominantArchetype: string,
 ): PrescriptionDef {
-  const scores = categoryScores(counts);
-  const preferred = ARCHETYPE_TO_CATEGORY[dominantArchetype] ?? "seal";
-  const ranked = (
-    Object.entries(scores) as [PrescriptionDef["category"], number][]
-  ).sort((a, b) => b[1] - a[1]);
-
-  const top = ranked[0]?.[0];
-  const category =
-    (scores[preferred] ?? 0) >= (ranked[0]?.[1] ?? 0) - 1
-      ? preferred
-      : top ?? preferred;
-
+  const { bucket } = resolveCorrectionStyleBucket(counts);
   return (
-    CHILD_DE_ESCALATION.find((p) => p.category === category) ??
+    CHILD_DE_ESCALATION.find((p) => p.category === bucket) ??
+    CHILD_DE_ESCALATION.find((p) => p.category === "seal") ??
     CHILD_DE_ESCALATION[2]!
   );
 }
@@ -198,17 +180,21 @@ export function buildChildDeEscalationCard(params: {
   parentNickname: string;
   parentRole: FamilyParentRole;
   childCounts: TenGodCounts;
-  dominantArchetype: string;
   locale?: Locale;
 }): ChildDeEscalationCard {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const roleLabel = pick(locale, params.parentRole === "mother" ? "Mom" : "Dad", params.parentRole === "mother" ? "엄마" : "아빠");
-  const def = pickPrescription(params.childCounts, params.dominantArchetype);
+  const roleLabel = pick(
+    locale,
+    params.parentRole === "mother" ? "Mom" : "Dad",
+    params.parentRole === "mother" ? "엄마" : "아빠",
+  );
+  const def = pickDeEscalationByCorrectionStyle(params.childCounts);
 
   return {
     hashtag: def.hashtag(locale),
     color: def.color,
     archetype_label: def.archetype_label(locale),
+    category: def.category,
     psych_state: def.psych_state(params.childNickname, params.parentNickname, locale),
     avoid_actions: def.avoid_actions(params.childNickname, params.parentNickname, locale),
     solution_script: def.solution_script(

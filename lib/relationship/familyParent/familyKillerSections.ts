@@ -345,7 +345,6 @@ export function buildFamilyKillerSections(params: {
     parentNickname,
     parentRole,
     childCounts: tenGod.countsChild,
-    dominantArchetype: childSig.dominantArchetype,
     locale,
   });
 
