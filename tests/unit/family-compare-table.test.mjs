@@ -9,7 +9,7 @@ import { buildFamilyRuleContext } from "../../lib/relationship/familyParent/buil
 import {
   buildFamilySajuCompareTable,
   resolveNaggingReactionBucket,
-  resolveOriginFamilyDistanceBucket,
+  resolveBondDistanceBucket,
   resolveAffectionExpressionBucket,
   resolveCareBalanceBucket,
   resolveGatheringRecoveryBucket,
@@ -69,8 +69,8 @@ assert.equal(rows.length, 6);
 assert.deepEqual(
   rows.map((r) => r.id),
   [
-    "nagging_reaction",
-    "origin_family_distance",
+    "correction_style",
+    "bond_distance",
     "affection_expression",
     "care_balance",
     "gathering_recovery",
@@ -114,19 +114,15 @@ assert.deepEqual(
 ok("section_compare_table 필드 추가 외에는 기존 family 서사 결과가 한 글자도 안 바뀜");
 
 // ---------------------------------------------------------------------------
-section("4) ②는 origin_family_tension(PersonCore 지정 primitive)을 사용함");
+section("4) B bond_distance는 parent_bond_band(기존 Family SSOT)를 사용함");
 
-const distanceCheck = resolveOriginFamilyDistanceBucket(
-  ctxForBaseline.tenGod.countsParent,
-  ctxForBaseline.chartParent,
-);
+const bondCheck = resolveBondDistanceBucket(ctxForBaseline.tenGod.countsParent);
 assert.ok(
-  "tensionIndex" in distanceCheck.sourceValue &&
-    "needsStrongBoundary" in distanceCheck.sourceValue &&
-    "hyoshinRisk" in distanceCheck.sourceValue,
-  "row②의 sourceValue는 OriginFamilyTensionProfile 형태(Step1 primitive 산출물)여야 함",
+  ["distant", "balanced", "smothering"].includes(bondCheck.bucket),
+  "bond_distance bucket은 ParentBondBand여야 함",
 );
-ok("row②가 resolveOriginFamilyTension(Step1 PersonCore primitive)의 산출물을 그대로 사용함을 확인");
+assert.ok(typeof bondCheck.sourceValue.seal_count === "number");
+ok("row B가 parent_bond_band / seal_count 기반임을 확인 (origin_family_tension 미사용)");
 
 // ---------------------------------------------------------------------------
 section("5) ③은 dominant_element(오행 우세)를 사용함");

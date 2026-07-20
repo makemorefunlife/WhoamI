@@ -52,6 +52,9 @@ export type FamilyRuleContext = {
   /** 006 로드맵 Step3 — 비교표 ⑥(대화온도, johu_profile)용. PersonCore SSOT, 없으면 undefined. */
   friendshipSignalsParent?: FriendshipSajuSignals;
   friendshipSignalsChild?: FriendshipSajuSignals;
+  /** Part2 A/B — bond_distance / pair 보강. 없으면 compare table이 counts에서 band 재현. */
+  familySignalsParent?: FamilySajuSignals;
+  familySignalsChild?: FamilySajuSignals;
 };
 
 export type BuildFamilyContextParams = {
@@ -113,6 +116,7 @@ export function buildFamilyRuleContext(
   const sajuJsonParent = isParentA ? params.sajuJsonA : params.sajuJsonB;
   const sajuJsonChild = isParentA ? params.sajuJsonB : params.sajuJsonA;
   const familySignalsParent = isParentA ? params.familySignalsA : params.familySignalsB;
+  const familySignalsChild = isParentA ? params.familySignalsB : params.familySignalsA;
   const friendshipSignalsParent = isParentA ? params.friendshipSignalsA : params.friendshipSignalsB;
   const friendshipSignalsChild = isParentA ? params.friendshipSignalsB : params.friendshipSignalsA;
   const birthPlaceParent = isParentA ? params.birthPlaceA : params.birthPlaceB;
@@ -193,6 +197,8 @@ export function buildFamilyRuleContext(
     chartChild: core.chartB,
     friendshipSignalsParent,
     friendshipSignalsChild,
+    familySignalsParent,
+    familySignalsChild,
   };
 }
 

@@ -1,14 +1,12 @@
-import type { DomainSajuSignalsPack } from "./types";
+import type { DomainSajuSignalsPack, FamilySajuSignals } from "./types";
 import { clampScore, intensityBand3 } from "./intraPalaceRelations";
 import type { PairFamilySignals } from "./pairTypes";
 
-export function pairFamilySignals(
-  signalsA: DomainSajuSignalsPack,
-  signalsB: DomainSajuSignalsPack,
+/** Person-level FamilySajuSignals 두 개만으로 pair 교차 — pack 전체 불필요. */
+export function buildPairFamilySignals(
+  famA: FamilySajuSignals,
+  famB: FamilySajuSignals,
 ): PairFamilySignals {
-  const famA = signalsA.family_signals;
-  const famB = signalsB.family_signals;
-
   const combinedKarma = clampScore(
     famA.year_karma.karma_tension_index * 0.55 +
       famB.year_karma.karma_tension_index * 0.55,
@@ -49,4 +47,11 @@ export function pairFamilySignals(
     nagging_band: intensityBand3(nagging),
     combined_karma_tension: combinedKarma,
   };
+}
+
+export function pairFamilySignals(
+  signalsA: DomainSajuSignalsPack,
+  signalsB: DomainSajuSignalsPack,
+): PairFamilySignals {
+  return buildPairFamilySignals(signalsA.family_signals, signalsB.family_signals);
 }

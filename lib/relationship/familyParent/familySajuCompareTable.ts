@@ -7,45 +7,43 @@ import {
   resolveOriginFamilyTension,
   type OriginFamilyTensionProfile,
 } from "@/lib/personCore/sajuSignals/sharedPersonaSignals";
+import { resolveParentBondBandFromCounts } from "@/lib/personCore/sajuSignals/extractFamilySignals";
+import { buildPairFamilySignals } from "@/lib/personCore/sajuSignals/pairFamilySignals";
 import { countElements } from "@/lib/saju/pairChartAnalysis";
 import type { ChartContext } from "@/lib/saju/chartContext";
-import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type {
+  FamilySajuSignals,
+  FriendshipSajuSignals,
+  ParentBondBand,
+} from "@/lib/personCore/sajuSignals/types";
+import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { FamilyParentRole } from "./types";
 
 /**
- * family(가족) "한눈에 비교" 표 — 006/007 문서(006_master-migration-roadmap.md,
- * 007_family-compare-table-axis-design.md) Step3 구현.
+ * family(가족) "한눈에 비교" 표 — Part2 A/B 엔진 강화 (009).
  *
- * **계산 레이어와 카피 레이어를 파일 안에서 물리적으로 분리했다.**
- * - 계산 레이어: `resolve*Bucket()` 함수들 — source value + bucket만 반환, 문자열 카피 없음.
- * - pair relation 레이어: `resolve*PairRelation()` 함수들 — bucket 순서가 있으면
- *   same/near/different, 명목형(순서 없음) bucket은 same/different만.
- * - 카피 레이어: `*_LABEL`/`*_MEANING` 룩업 테이블 — 계산된 bucket/relation을
- *   조회하는 용도로만 쓰고, 계산 근거 없는 내용(애정의 크기·효심·진심·죄책감·
- *   가족애의 깊이)은 절대 서술하지 않는다.
+ * A correction_style: person=십신 반응 유형 / pair=nagging_band (기존 PairFamilySignals)
+ * B bond_distance: person=parent_bond_band / pair=umbilical_band
+ * parentRole → 제목·문맥만. 원국 점수 가감 금지.
+ * C~F(③④⑤⑥)는 이번 커밋에서 계산 변경 없음(후속 Part2).
  *
- * 6축은 007 문서에서 확정된 provisional 설계 그대로다. **①④⑤는 전부
- * profileTenGods(십신 5범주) 입력 공간을 공유하므로, Step5 실측 전까지
- * 서로 독립이라고 가정하지 않는다** — 이 파일의 유닛테스트도 "크래시 없음
- * ·구조 정합성"만 검증하고 "실제로 다양하게 갈린다"는 주장은 하지 않는다.
- *
- * | 행 | 신호 | bucket | pair relation |
- * |---|---|---|---|
- * | ① 잔소리·지적 반응 | 십신 우세 카테고리(argmax) | 5-way 명목형 | same/different |
- * | ② 가족과 편안한 정서적 거리 | origin_family_tension(needsStrongBoundary) | 2-way | same/different |
- * | ③ 마음을 표현하는 방식 | 오행 우세(dominant element) | 5-way 명목형 | same/different |
- * | ④ 돌볼 때 공감/기준 균형 | parenting_style_lean | 2-way | same/different |
- * | ⑤ 가족행사 후 회복 방식 | 신강신약(margin=1, friend와 동일 공식 로컬 재현) | 3-way 순서형 | same/near/different |
- * | ⑥ 가족모임 대화 온도 | johu_profile(PersonCore SSOT, friendship_signals) | 3-way 순서형 | same/near/different |
+ * | 행 | person | pair 의미 |
+ * |---|---|---|
+ * | A correction_style | ten_god style bucket | nagging_band |
+ * | B bond_distance | parent_bond_band | umbilical_band |
+ * | ③~⑥ | (기존 유지) | — |
  */
 
 export type FamilyCompareRowId =
-  | "nagging_reaction"
-  | "origin_family_distance"
+  | "correction_style"
+  | "bond_distance"
   | "affection_expression"
   | "care_balance"
   | "gathering_recovery"
   | "gathering_temperature";
+
+/** @deprecated Part2 이전 id — 테스트 마이그레이션용 별칭 */
+export type LegacyFamilyCompareRowId = "nagging_reaction" | "origin_family_distance";
 
 export type FamilyCompareRow = {
   id: FamilyCompareRowId;
@@ -58,11 +56,8 @@ export type FamilyCompareRow = {
 export type PairRelation = "same" | "near" | "different";
 
 /**
- * Family Role Lens (008 문서 "최소 변경" 승인분) — ②/④ 두 축의 카피(라벨·의미)만
- * mother/father로 분기하기 위한 키. bucket 계산·pair relation 계산에는 전혀
- * 관여하지 않는다. parentRole 미전달/미매칭 시 "neutral" — 기존 배포 문구와
- * byte-identical 유지를 위한 기본값(신규 문구 아님, 기존 텍스트를 이 자리로
- * 재배치한 것).
+ * Family Role Lens — 제목·의미 문맥만 mother/father로 분기.
+ * bucket·pair band 계산에는 관여하지 않는다 (009).
  */
 type FamilyRoleLensKey = "neutral" | "mother" | "father";
 
@@ -73,14 +68,13 @@ function resolveRoleLensKey(parentRole: FamilyParentRole | undefined): FamilyRol
 }
 
 // ---------------------------------------------------------------------------
-// 계산 레이어 (source value + bucket) — 카피 없음.
+// 계산 레이어 (source value + bucket) — 카피 없음. parentRole 미사용.
 // ---------------------------------------------------------------------------
 
 type TenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
 
-/** ①용 — 십신 5범주 argmax. 005/007 문서의 B후보(ten_god_dominant_category)를
- * family 파일 안에서 직접 호출(marriage/friend와 동일 공식, 신규 계산 아님). */
-export function resolveNaggingReactionBucket(
+/** A person — 십신 우세 카테고리 = 교정 반응 유형 (de-escalation과 동일 5범주). */
+export function resolveCorrectionStyleBucket(
   counts: TenGodCounts,
 ): { sourceValue: ReturnType<typeof profileTenGods>; bucket: TenGodCategory } {
   const p = profileTenGods(counts);
@@ -95,7 +89,14 @@ export function resolveNaggingReactionBucket(
   return { sourceValue: p, bucket: entries[0]![0] };
 }
 
-/** ②용 — Step1에서 만든 origin_family_tension 그대로 호출. */
+/** @deprecated Part2 이전 이름 — resolveCorrectionStyleBucket과 동일 */
+export function resolveNaggingReactionBucket(
+  counts: TenGodCounts,
+): { sourceValue: ReturnType<typeof profileTenGods>; bucket: TenGodCategory } {
+  return resolveCorrectionStyleBucket(counts);
+}
+
+/** ② 레거시 — Part2 B에서 비교표 본체로는 미사용. 테스트·원가족 서사 참조용. */
 export function resolveOriginFamilyDistanceBucket(
   counts: TenGodCounts,
   chart: ChartContext,
@@ -105,6 +106,26 @@ export function resolveOriginFamilyDistanceBucket(
     sourceValue: profile,
     bucket: profile.needsStrongBoundary ? "needs_distance" : "comfortable",
   };
+}
+
+/** B person — FamilySajuSignals.seal_parent.parent_bond_band (기존 threshold). */
+export function resolveBondDistanceBucket(
+  counts: TenGodCounts,
+  familySignals?: FamilySajuSignals,
+): { sourceValue: { band: ParentBondBand; seal_count: number }; bucket: ParentBondBand } {
+  if (familySignals) {
+    const band = familySignals.seal_parent.parent_bond_band;
+    return {
+      sourceValue: {
+        band,
+        seal_count: familySignals.seal_parent.seal_count,
+      },
+      bucket: band,
+    };
+  }
+  const band = resolveParentBondBandFromCounts(counts);
+  const p = profileTenGods(counts);
+  return { sourceValue: { band, seal_count: p.seal }, bucket: band };
 }
 
 type ElementKey = "wood" | "fire" | "earth" | "metal" | "water";
@@ -209,7 +230,7 @@ const TEMPERATURE_ORDER: TemperatureBand[] = ["cold", "neutral", "hot"];
 // 진심·죄책감·가족애 깊이) 서술 금지.
 // ---------------------------------------------------------------------------
 
-const NAGGING_REACTION_LABEL: Record<Locale, Record<TenGodCategory, string>> = {
+const CORRECTION_STYLE_LABEL: Record<Locale, Record<TenGodCategory, string>> = {
   "ko-KR": {
     self: "감정이 먼저 드러나는 타입",
     seal: "말없이 속으로 삭이는 타입",
@@ -226,91 +247,121 @@ const NAGGING_REACTION_LABEL: Record<Locale, Record<TenGodCategory, string>> = {
   },
 };
 
-const NAGGING_REACTION_MEANING: Record<Locale, { same: string; diff: string }> = {
+const CORRECTION_STYLE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> = {
   "ko-KR": {
-    same: "지적을 받아들이는 온도가 비슷해서 서로 눈치 볼 일이 적어요.",
-    diff: "받아들이는 방식이 서로 달라요 — 조용해지는 쪽이 있다면 먼저 '괜찮아?' 하고 물어봐 주는 게 도움이 돼요.",
+    neutral: "지적·교정이 들어오는 순간의 반응",
+    mother: "지적·교정이 들어오는 순간의 반응",
+    father: "지적·교정에 대한 반응",
   },
   "en-US": {
-    same: "You take feedback in a similar way, so there's little guessing games.",
-    diff: "You take it differently — if one of you tends to go quiet, checking in first goes a long way.",
+    neutral: "How you react the moment correction arrives",
+    mother: "How you react the moment correction arrives",
+    father: "How you respond to correction and guidance",
   },
 };
 
-const ORIGIN_FAMILY_DISTANCE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> = {
-  "ko-KR": {
-    neutral: "가족과 편안한 정서적 거리",
-    mother: "보호와 독립의 거리",
-    father: "자율성과 관여의 거리",
-  },
-  "en-US": {
-    neutral: "Comfortable Distance with Family of Origin",
-    mother: "Protection and Independence",
-    father: "Autonomy and Involvement",
-  },
-};
-
-const ORIGIN_FAMILY_DISTANCE_LABEL: Record<
+const CORRECTION_FRICTION_MEANING: Record<
   Locale,
-  Record<FamilyRoleLensKey, Record<"needs_distance" | "comfortable", string>>
+  Record<FamilyRoleLensKey, Record<"low" | "medium" | "high", string>>
 > = {
   "ko-KR": {
     neutral: {
-      needs_distance: "원가족과 확실히 거리를 둬야 편한 타입",
-      comfortable: "원가족과 적당히 가까워도 괜찮은 타입",
+      low: "둘이 만날 때 지적·교정 마찰이 낮은 편이에요 — 반응 유형이 달라도 쉽게 쌓이지 않아요.",
+      medium: "교정 순간에 중간 정도의 마찰이 생길 수 있어요 — 반응 유형 차이를 먼저 말해 두면 도움이 돼요.",
+      high: "둘이 만날 때 지적·교정 마찰이 커지기 쉬운 조합이에요 — 한 번에 한 가지 요청만 쓰는 편이 안전해요.",
     },
     mother: {
-      needs_distance: "보호가 많아지면 스스로 해볼 공간이 더 필요한 타입",
-      comfortable: "필요할 때 보호와 도움을 받는 것이 편안한 타입",
+      low: "교정 장면에서도 마찰이 낮은 편이에요 — 반응 속도가 달라도 쉽게 상처로 번지지 않아요.",
+      medium: "교정 순간에 중간 마찰이 생길 수 있어요 — ‘한 줄 사실 + 한 줄 요청’이 도움이 돼요.",
+      high: "교정 장면에서 마찰이 커지기 쉬운 조합이에요 — 평가는 줄이고 요청만 짧게 말해 보세요.",
     },
     father: {
-      needs_distance: "관여가 많아지면 스스로 판단할 여지가 더 필요한 타입",
-      comfortable: "적당한 관여와 방향 제시가 편안한 타입",
+      low: "지적·교정 장면에서 마찰이 낮은 편이에요 — 설명 방식이 달라도 크게 쌓이지 않아요.",
+      medium: "지적·교정에서 중간 마찰이 생길 수 있어요 — 이유와 요청을 한 번에 하나씩만 말하세요.",
+      high: "지적·교정 장면에서 마찰이 커지기 쉬운 조합이에요 — 긴 설교보다 한 가지 기준만 분명히 하세요.",
     },
   },
   "en-US": {
     neutral: {
-      needs_distance: "Needs clear distance from family of origin to feel at ease",
-      comfortable: "Comfortable staying reasonably close with family of origin",
+      low: "Correction friction between you tends to stay low — different reaction styles don't pile up easily.",
+      medium: "Moderate correction friction can show up — naming your reaction styles helps.",
+      high: "Correction friction tends to run high between you — one fact + one request is safer.",
     },
     mother: {
-      needs_distance: "Needs more room to figure things out when protection increases",
-      comfortable: "Comfortable receiving protection and help when needed",
+      low: "Correction moments tend to stay low-friction — different tempos rarely turn into lasting hurt.",
+      medium: "Moderate friction can show up in correction moments — one fact + one request helps.",
+      high: "Correction moments can escalate quickly — shorten evaluation and keep the ask brief.",
     },
     father: {
-      needs_distance: "Needs more room to decide for themselves when involvement increases",
-      comfortable: "Comfortable with moderate involvement and guidance",
+      low: "Guidance/correction friction tends to stay low — different explanation styles don't stack up.",
+      medium: "Moderate friction can show up — give one reason and one request at a time.",
+      high: "Guidance/correction friction tends to run high — one clear standard beats a long lecture.",
     },
   },
 };
 
-const ORIGIN_FAMILY_DISTANCE_MEANING: Record<Locale, Record<FamilyRoleLensKey, { same: string; diff: string }>> = {
+const BOND_DISTANCE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> = {
+  "ko-KR": {
+    neutral: "가까운 관계와 적당한 거리, 어디에 더 편한가",
+    mother: "보호와 독립의 전환",
+    father: "관여와 자율의 조율",
+  },
+  "en-US": {
+    neutral: "Closeness or comfortable distance — which feels easier?",
+    mother: "Shifting between protection and independence",
+    father: "Balancing involvement and autonomy",
+  },
+};
+
+const BOND_DISTANCE_LABEL: Record<Locale, Record<ParentBondBand, string>> = {
+  "ko-KR": {
+    distant: "거리를 둘 때 더 편안한 타입",
+    balanced: "적당한 거리가 편안한 타입",
+    smothering: "가까이 붙어 있을 때 더 편안한 타입",
+  },
+  "en-US": {
+    distant: "More comfortable with space",
+    balanced: "Comfortable with a moderate distance",
+    smothering: "More comfortable staying close",
+  },
+};
+
+const UMBILICAL_MEANING: Record<
+  Locale,
+  Record<FamilyRoleLensKey, Record<"low" | "medium" | "high", string>>
+> = {
   "ko-KR": {
     neutral: {
-      same: "원가족과의 거리감에 대한 기준이 비슷해서 왕래에 대한 마찰이 적어요.",
-      diff: "거리감의 기준이 서로 달라요 — 거리가 필요한 쪽의 기준을 먼저 존중해 주는 게 갈등을 줄여요.",
+      low: "둘의 밀착·거리 패턴이 크게 어긋나지 않아, 분리·독립 과제가 낮은 편이에요.",
+      medium: "밀착과 거리 감각에 차이가 있어, 분리·독립을 중간 강도로 조율할 여지가 있어요.",
+      high: "밀착과 거리 패턴이 크게 달라, 분리·독립 과제가 선명해요 — 각자의 편안한 거리를 먼저 말해 보세요.",
     },
     mother: {
-      same: "보호와 독립에 대한 감각이 비슷해서 서로 부담 없이 지낼 수 있어요.",
-      diff: "보호와 독립에 대한 감각이 서로 달라요 — 더 많은 공간이 필요한 쪽의 속도를 존중해 주는 게 도움이 돼요.",
+      low: "보호와 독립의 리듬이 크게 충돌하지 않아요.",
+      medium: "보호와 독립 사이에서 중간 강도 조율이 필요해요.",
+      high: "보호와 독립의 전환 과제가 커요 — 더 많은 공간이 필요한 쪽의 속도를 존중해 주세요.",
     },
     father: {
-      same: "관여와 자율에 대한 감각이 비슷해서 서로 부담 없이 지낼 수 있어요.",
-      diff: "관여와 자율에 대한 감각이 서로 달라요 — 판단할 여지가 더 필요한 쪽에게 방향만 제시하고 맡겨보는 게 도움이 돼요.",
+      low: "관여와 자율의 리듬이 크게 충돌하지 않아요.",
+      medium: "관여와 자율 사이에서 중간 강도 조율이 필요해요.",
+      high: "관여와 자율의 조율 과제가 커요 — 스스로 판단할 여지가 더 필요한 쪽에 방향만 남기고 맡겨 보세요.",
     },
   },
   "en-US": {
     neutral: {
-      same: "Your sense of comfortable distance from family of origin matches, so there's little friction over visits.",
-      diff: "Your comfort levels differ — respecting the distance-needing person's line first reduces conflict.",
+      low: "Your closeness/distance patterns don't clash much — the separation task stays low.",
+      medium: "There's a moderate gap in closeness needs — some tuning on independence helps.",
+      high: "Your closeness patterns differ sharply — name each person's comfortable distance first.",
     },
     mother: {
-      same: "Your sense of protection and independence is similar, so it's easy to stay comfortable together.",
-      diff: "Your sense of protection and independence differs — it helps to respect the pace of whoever needs more room.",
+      low: "Protection and independence rhythms don't clash much.",
+      medium: "Moderate tuning is needed between protection and independence.",
+      high: "The shift between protection and independence is a strong task — respect the pace of whoever needs more room.",
     },
     father: {
-      same: "Your sense of involvement and autonomy is similar, so it's easy to stay comfortable together.",
-      diff: "Your sense of involvement and autonomy differs — offering direction and then stepping back helps whoever needs more room to decide.",
+      low: "Involvement and autonomy rhythms don't clash much.",
+      medium: "Moderate tuning is needed between involvement and autonomy.",
+      high: "Balancing involvement and autonomy is a strong task — offer direction, then leave room to decide.",
     },
   },
 };
@@ -503,9 +554,13 @@ export function buildFamilySajuCompareTable(params: {
   chartChild: ChartContext;
   friendshipSignalsParent?: FriendshipSajuSignals;
   friendshipSignalsChild?: FriendshipSajuSignals;
-  /** 008 문서(Family Role Lens, 최소변경 승인분) — ②/④ 축의 라벨·의미 카피만
-   * 분기하는 데 쓰인다. bucket/relation 계산에는 영향을 주지 않는다.
-   * 미전달 시 기존 배포 문구(neutral)와 byte-identical 유지. */
+  familySignalsParent?: FamilySajuSignals;
+  familySignalsChild?: FamilySajuSignals;
+  /** 기존 PairFamilySignals — 없으면 person signals로 재구성(동일 공식). */
+  pairFamily?: PairFamilySignals | null;
+  /**
+   * 제목·의미 문맥만 분기. bucket / nagging_band / umbilical_band 계산에는 미사용.
+   */
   parentRole?: FamilyParentRole;
   locale?: Locale;
 }): FamilyCompareRow[] {
@@ -519,9 +574,17 @@ export function buildFamilySajuCompareTable(params: {
     chartChild,
     friendshipSignalsParent,
     friendshipSignalsChild,
+    familySignalsParent,
+    familySignalsChild,
     parentRole,
   } = params;
   const roleLensKey = resolveRoleLensKey(parentRole);
+
+  const pairFamily: PairFamilySignals | null =
+    params.pairFamily ??
+    (familySignalsParent && familySignalsChild
+      ? buildPairFamilySignals(familySignalsParent, familySignalsChild)
+      : null);
 
   const row = (
     id: FamilyCompareRowId,
@@ -537,54 +600,48 @@ export function buildFamilySajuCompareTable(params: {
     meaning: sanitizeFamilyParentText(meaning),
   });
 
-  // ① 잔소리·지적 반응
-  const naggingP = resolveNaggingReactionBucket(countsParent);
-  const naggingC = resolveNaggingReactionBucket(countsChild);
-  const naggingRelation = nominalRelation(naggingP.bucket, naggingC.bucket);
+  // A — person style + pair nagging friction
+  const styleP = resolveCorrectionStyleBucket(countsParent);
+  const styleC = resolveCorrectionStyleBucket(countsChild);
+  const frictionBand = pairFamily?.nagging_band ?? "medium";
+  const correctionMeaning =
+    CORRECTION_FRICTION_MEANING[locale][roleLensKey][frictionBand];
 
-  // ② 원가족과 편안한 정서적 거리
-  const distanceP = resolveOriginFamilyDistanceBucket(countsParent, chartParent);
-  const distanceC = resolveOriginFamilyDistanceBucket(countsChild, chartChild);
-  const distanceRelation = nominalRelation(distanceP.bucket, distanceC.bucket);
+  // B — person bond + pair umbilical (origin_family_tension 미사용)
+  const bondP = resolveBondDistanceBucket(countsParent, familySignalsParent);
+  const bondC = resolveBondDistanceBucket(countsChild, familySignalsChild);
+  const umbilicalBand = pairFamily?.umbilical_band ?? "medium";
+  const bondMeaning = UMBILICAL_MEANING[locale][roleLensKey][umbilicalBand];
 
-  // ③ 마음을 표현하는 방식
+  // ③~⑥ — Part2 C~F 이전 유지
   const affectionP = resolveAffectionExpressionBucket(chartParent);
   const affectionC = resolveAffectionExpressionBucket(chartChild);
   const affectionRelation = nominalRelation(affectionP.bucket, affectionC.bucket);
 
-  // ④ 돌볼 때 공감/기준 균형
   const careP = resolveCareBalanceBucket(countsParent);
   const careC = resolveCareBalanceBucket(countsChild);
   const careRelation = nominalRelation(careP.bucket, careC.bucket);
 
-  // ⑤ 가족행사 후 회복 방식
   const recoveryP = resolveGatheringRecoveryBucket(chartParent);
   const recoveryC = resolveGatheringRecoveryBucket(chartChild);
-  const recoveryRelation = orderedRelation(STRENGTH_ORDER, recoveryP.bucket, recoveryC.bucket);
 
-  // ⑥ 가족모임 대화 온도
   const tempP = resolveGatheringTemperatureBucket(friendshipSignalsParent);
   const tempC = resolveGatheringTemperatureBucket(friendshipSignalsChild);
-  const tempRelation = orderedRelation(TEMPERATURE_ORDER, tempP.bucket, tempC.bucket);
 
   return [
     row(
-      "nagging_reaction",
-      pick(locale, "Reaction to Feedback", "잔소리·지적을 받을 때의 반응"),
-      NAGGING_REACTION_LABEL[locale][naggingP.bucket],
-      NAGGING_REACTION_LABEL[locale][naggingC.bucket],
-      naggingRelation === "same"
-        ? NAGGING_REACTION_MEANING[locale].same
-        : NAGGING_REACTION_MEANING[locale].diff,
+      "correction_style",
+      CORRECTION_STYLE_TITLE[locale][roleLensKey],
+      CORRECTION_STYLE_LABEL[locale][styleP.bucket],
+      CORRECTION_STYLE_LABEL[locale][styleC.bucket],
+      correctionMeaning,
     ),
     row(
-      "origin_family_distance",
-      ORIGIN_FAMILY_DISTANCE_TITLE[locale][roleLensKey],
-      ORIGIN_FAMILY_DISTANCE_LABEL[locale][roleLensKey][distanceP.bucket],
-      ORIGIN_FAMILY_DISTANCE_LABEL[locale][roleLensKey][distanceC.bucket],
-      distanceRelation === "same"
-        ? ORIGIN_FAMILY_DISTANCE_MEANING[locale][roleLensKey].same
-        : ORIGIN_FAMILY_DISTANCE_MEANING[locale][roleLensKey].diff,
+      "bond_distance",
+      BOND_DISTANCE_TITLE[locale][roleLensKey],
+      BOND_DISTANCE_LABEL[locale][bondP.bucket],
+      BOND_DISTANCE_LABEL[locale][bondC.bucket],
+      bondMeaning,
     ),
     row(
       "affection_expression",

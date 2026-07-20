@@ -28,6 +28,15 @@ function parentBondBand(
   return "distant";
 }
 
+/** 비교표 B 등 — FamilySajuSignals 없이 counts만 있을 때 동일 threshold로 band 재현. */
+export function resolveParentBondBandFromCounts(
+  counts: TenGodCounts,
+): ParentBondBand {
+  const profile = profileTenGods(counts);
+  const sealIsolated = profile.seal === 0;
+  return parentBondBand(profile.seal, profile.sealExcess, sealIsolated);
+}
+
 export function extractFamilySignals(bundle: SajuBundle): FamilySajuSignals {
   const chart = bundle.chart;
   const yearRel = collectBranchPalaceRelations(chart, "년주");
