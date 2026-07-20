@@ -1,11 +1,23 @@
 import type { DomainSajuSignalsPack, FamilySajuSignals } from "./types";
 import { clampScore, intensityBand3 } from "./intraPalaceRelations";
 import type { PairFamilySignals } from "./pairTypes";
+import {
+  resolveGuidanceFit,
+  type GuidanceMode,
+} from "./guidanceProfile";
+
+export type BuildPairFamilyGuidanceOpts = {
+  /** famA에 대응하는 person guidance mode */
+  modeA: GuidanceMode;
+  /** famB에 대응하는 person guidance mode */
+  modeB: GuidanceMode;
+};
 
 /** Person-level FamilySajuSignals 두 개만으로 pair 교차 — pack 전체 불필요. */
 export function buildPairFamilySignals(
   famA: FamilySajuSignals,
   famB: FamilySajuSignals,
+  guidance?: BuildPairFamilyGuidanceOpts,
 ): PairFamilySignals {
   const combinedKarma = clampScore(
     famA.year_karma.karma_tension_index * 0.55 +
@@ -46,6 +58,9 @@ export function buildPairFamilySignals(
     nagging_trigger_index: nagging,
     nagging_band: intensityBand3(nagging),
     combined_karma_tension: combinedKarma,
+    guidance_fit: guidance
+      ? resolveGuidanceFit(guidance.modeA, guidance.modeB)
+      : null,
   };
 }
 

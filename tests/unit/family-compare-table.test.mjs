@@ -11,7 +11,6 @@ import {
   resolveNaggingReactionBucket,
   resolveBondDistanceBucket,
   resolveAffectionExpressionBucket,
-  resolveCareBalanceBucket,
   resolveGatheringRecoveryBucket,
   resolveGatheringTemperatureBucket,
 } from "../../lib/relationship/familyParent/familySajuCompareTable.ts";
@@ -72,7 +71,7 @@ assert.deepEqual(
     "correction_style",
     "bond_distance",
     "affection_expression",
-    "care_balance",
+    "guidance_balance",
     "gathering_recovery",
     "gathering_temperature",
   ],

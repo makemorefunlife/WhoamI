@@ -7,6 +7,12 @@ import {
   resolveOriginFamilyTension,
   type OriginFamilyTensionProfile,
 } from "@/lib/personCore/sajuSignals/sharedPersonaSignals";
+import {
+  resolveGuidanceProfile,
+  resolveGuidanceFit,
+  type GuidanceMode,
+  type GuidanceFit,
+} from "@/lib/personCore/sajuSignals/guidanceProfile";
 import { resolveParentBondBandFromCounts } from "@/lib/personCore/sajuSignals/extractFamilySignals";
 import { buildPairFamilySignals } from "@/lib/personCore/sajuSignals/pairFamilySignals";
 import { countElements } from "@/lib/saju/pairChartAnalysis";
@@ -20,27 +26,32 @@ import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { FamilyParentRole } from "./types";
 
 /**
- * family(가족) "한눈에 비교" 표 — Part2 A/B 엔진 강화 (009).
+ * family(가족) "한눈에 비교" 표 — Part2 A/B/C (009·010).
  *
- * A correction_style: person=십신 반응 유형 / pair=nagging_band (기존 PairFamilySignals)
+ * A correction_style: person=십신 반응 유형 / pair=nagging_band
  * B bond_distance: person=parent_bond_band / pair=umbilical_band
+ * C guidance_balance: person=guidance_profile / pair=guidance_fit
  * parentRole → 제목·문맥만. 원국 점수 가감 금지.
- * C~F(③④⑤⑥)는 이번 커밋에서 계산 변경 없음(후속 Part2).
+ * D~F(③⑤⑥)는 이번 커밋에서 계산 변경 없음.
  *
  * | 행 | person | pair 의미 |
  * |---|---|---|
  * | A correction_style | ten_god style bucket | nagging_band |
  * | B bond_distance | parent_bond_band | umbilical_band |
- * | ③~⑥ | (기존 유지) | — |
+ * | C guidance_balance | guidance mode | guidance_fit |
+ * | ③⑤⑥ | (기존 유지) | — |
  */
 
 export type FamilyCompareRowId =
   | "correction_style"
   | "bond_distance"
   | "affection_expression"
-  | "care_balance"
+  | "guidance_balance"
   | "gathering_recovery"
   | "gathering_temperature";
+
+/** @deprecated Part2 C 이전 id — guidance_balance로 교체 */
+export type LegacyCareBalanceRowId = "care_balance";
 
 /** @deprecated Part2 이전 id — 테스트 마이그레이션용 별칭 */
 export type LegacyFamilyCompareRowId = "nagging_reaction" | "origin_family_distance";
@@ -146,7 +157,7 @@ export function resolveAffectionExpressionBucket(
   return { sourceValue: counts, bucket: entries[0]![0] };
 }
 
-/** ④용 — Step1의 parenting_style_lean(marriage 재노출) 그대로 호출. */
+/** @deprecated Marriage parenting_style_lean 재노출 — Family C축에서는 사용하지 않음. */
 export function resolveCareBalanceBucket(
   counts: TenGodCounts,
 ): { sourceValue: ReturnType<typeof profileTenGods>; bucket: "empathy" | "structure" } {
@@ -154,6 +165,14 @@ export function resolveCareBalanceBucket(
     sourceValue: profileTenGods(counts),
     bucket: resolveParentingStyleLean(counts),
   };
+}
+
+/** C person — seal/food/officer 상대 우세 → guidance mode (010 SSOT). */
+export function resolveGuidanceBalanceBucket(
+  counts: TenGodCounts,
+): { sourceValue: ReturnType<typeof resolveGuidanceProfile>; bucket: GuidanceMode } {
+  const profile = resolveGuidanceProfile(counts);
+  return { sourceValue: profile, bucket: profile.mode };
 }
 
 type StrengthBand = "weak" | "balanced" | "strong";
@@ -396,79 +415,70 @@ const AFFECTION_EXPRESSION_MEANING: Record<Locale, { same: string; diff: string 
   },
 };
 
-const CARE_BALANCE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> = {
+const GUIDANCE_BALANCE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> = {
   "ko-KR": {
-    neutral: "가족을 돌볼 때 공감과 기준의 균형",
-    mother: "감정 수용과 기준의 균형",
-    father: "설명·지도와 기준의 균형",
+    neutral: "돌봄·지도가 필요할 때 자연스러운 방식",
+    mother: "돌봄이 필요할 때 — 수용·설명·기준",
+    father: "지도·조언이 필요할 때 — 수용·설명·기준",
   },
   "en-US": {
-    neutral: "Empathy vs. Standards When Caring",
-    mother: "Emotional Acceptance and Standards",
-    father: "Guidance and Standards",
+    neutral: "What feels natural when care or guidance is needed",
+    mother: "When care is needed — accept, explain, or set standards",
+    father: "When guidance is needed — accept, explain, or set standards",
   },
 };
 
-const CARE_BALANCE_LABEL: Record<Locale, Record<FamilyRoleLensKey, Record<"empathy" | "structure", string>>> = {
+const GUIDANCE_BALANCE_LABEL: Record<Locale, Record<GuidanceMode, string>> = {
   "ko-KR": {
-    neutral: {
-      empathy: "감정을 먼저 살피는 공감형",
-      structure: "기준을 먼저 세우는 원칙형",
-    },
-    mother: {
-      empathy: "감정부터 알아주는 게 편한 타입",
-      structure: "기준이 분명한 게 편한 타입",
-    },
-    father: {
-      empathy: "이유와 맥락을 이해한 뒤 움직이는 게 편한 타입",
-      structure: "명확한 기준부터 세우는 게 편한 타입",
-    },
+    receptive: "감정 수용이 먼저 나오는 타입",
+    explanatory: "이유와 맥락을 설명하며 지도하는 타입",
+    standards: "기준을 먼저 제시하는 타입",
+    mixed: "수용·설명·기준을 섞어 쓰는 타입",
   },
   "en-US": {
-    neutral: {
-      empathy: "Reads emotions first",
-      structure: "Sets standards first",
-    },
-    mother: {
-      empathy: "Comfortable when feelings are acknowledged first",
-      structure: "Comfortable when standards are clear",
-    },
-    father: {
-      empathy: "Comfortable moving once the reason and context make sense",
-      structure: "Comfortable once clear standards are set first",
-    },
+    receptive: "Leads with emotional acceptance",
+    explanatory: "Guides by explaining reasons and context",
+    standards: "Leads by setting clear standards",
+    mixed: "Mixes acceptance, explanation, and standards",
   },
 };
 
-// "돌봄 상황에서 감정 vs 원칙 중 무엇을 먼저 보는지" 성향으로 한정 — 실제
-// 부모 역할 여부와 무관하게 두 사람 모두에게 적용 가능한 일반 성향 서술.
-const CARE_BALANCE_MEANING: Record<Locale, Record<FamilyRoleLensKey, { same: string; diff: string }>> = {
+const GUIDANCE_FIT_MEANING: Record<
+  Locale,
+  Record<FamilyRoleLensKey, Record<GuidanceFit, string>>
+> = {
   "ko-KR": {
     neutral: {
-      same: "누군가를 돌볼 때 먼저 보는 지점이 비슷해요.",
-      diff: "누군가를 돌볼 때 먼저 보는 지점이 서로 달라요 — 한쪽은 감정을, 한쪽은 기준을 먼저 챙기는 조합이에요.",
+      aligned: "돌봄·지도 방식이 잘 맞아요 — 같은 채널로 주고받기 쉬워요.",
+      partial: "한쪽이 혼합형이라, 장면마다 조율할 여지가 있어요.",
+      mismatch: "한쪽은 수용·설명, 다른 쪽은 기준 제시에 치우쳐 엇갈리기 쉬워요 — ‘지금 필요한 채널’을 먼저 말해 보세요.",
     },
     mother: {
-      same: "돌볼 때 먼저 보는 지점이 비슷해요.",
-      diff: "돌볼 때 먼저 보는 지점이 서로 달라요 — 한쪽은 감정을, 한쪽은 기준을 먼저 챙기는 조합이에요.",
+      aligned: "돌봄 장면에서 방식이 잘 맞아요 — 걱정과 챙김이 같은 언어로 전달되기 쉬워요.",
+      partial: "돌봄 장면에서 한쪽이 혼합형이라, 일상 개입 강도를 장면마다 조율할 여지가 있어요.",
+      mismatch: "돌봄 장면에서 수용과 기준이 엇갈리기 쉬워요 — 먼저 감정을 받을지, 기준을 할지 한 줄로 맞춰 보세요.",
     },
     father: {
-      same: "돌볼 때 먼저 확인하는 방식이 비슷해요.",
-      diff: "돌볼 때 먼저 확인하는 방식이 서로 달라요 — 한쪽은 이유와 맥락을 먼저 살피고, 한쪽은 기준부터 세우는 조합이에요.",
+      aligned: "지도·조언 장면에서 방식이 잘 맞아요 — 기대와 설명이 같은 리듬으로 전달되기 쉬워요.",
+      partial: "지도 장면에서 한쪽이 혼합형이라, 책임 대화의 톤을 장면마다 조율할 여지가 있어요.",
+      mismatch: "지도 장면에서 설명과 기준이 엇갈리기 쉬워요 — 이유부터인지, 기준부터인지 먼저 맞춰 보세요.",
     },
   },
   "en-US": {
     neutral: {
-      same: "You both look at the same thing first when caring for someone.",
-      diff: "You look at different things first when caring for someone — one leads with emotion, the other with standards.",
+      aligned: "Your care/guidance channels line up — easy to give and receive on the same wavelength.",
+      partial: "One of you mixes modes — room to tune channel by situation.",
+      mismatch: "One leans accept/explain while the other leans standards — name the channel you need first.",
     },
     mother: {
-      same: "You both look at the same thing first when caring for someone.",
-      diff: "You look at different things first when caring for someone — one leads with emotion, the other with standards.",
+      aligned: "Care moments line up — worry and tending travel in the same language.",
+      partial: "One of you mixes modes in care moments — tune everyday involvement by situation.",
+      mismatch: "Acceptance and standards can cross wires in care moments — align in one line first: feel or frame.",
     },
     father: {
-      same: "You both check in on things the same way when caring for someone.",
-      diff: "You check in differently when caring for someone — one looks for the reason and context first, the other sets standards first.",
+      aligned: "Guidance moments line up — expectation and explanation share a rhythm.",
+      partial: "One of you mixes modes in guidance — tune the tone of responsibility talks by situation.",
+      mismatch: "Explanation and standards can cross wires — align first: reason, or the standard.",
     },
   },
 };
@@ -580,10 +590,17 @@ export function buildFamilySajuCompareTable(params: {
   } = params;
   const roleLensKey = resolveRoleLensKey(parentRole);
 
+  // C person modes — pair 재구성·fit에 필요하므로 A/B보다 먼저 계산(SSOT 함수만 호출)
+  const guideP = resolveGuidanceBalanceBucket(countsParent);
+  const guideC = resolveGuidanceBalanceBucket(countsChild);
+
   const pairFamily: PairFamilySignals | null =
     params.pairFamily ??
     (familySignalsParent && familySignalsChild
-      ? buildPairFamilySignals(familySignalsParent, familySignalsChild)
+      ? buildPairFamilySignals(familySignalsParent, familySignalsChild, {
+          modeA: guideP.bucket,
+          modeB: guideC.bucket,
+        })
       : null);
 
   const row = (
@@ -613,14 +630,13 @@ export function buildFamilySajuCompareTable(params: {
   const umbilicalBand = pairFamily?.umbilical_band ?? "medium";
   const bondMeaning = UMBILICAL_MEANING[locale][roleLensKey][umbilicalBand];
 
-  // ③~⑥ — Part2 C~F 이전 유지
+  // ③⑤⑥ — Part2 D~F 이전 유지; C는 guidance_balance
   const affectionP = resolveAffectionExpressionBucket(chartParent);
   const affectionC = resolveAffectionExpressionBucket(chartChild);
   const affectionRelation = nominalRelation(affectionP.bucket, affectionC.bucket);
 
-  const careP = resolveCareBalanceBucket(countsParent);
-  const careC = resolveCareBalanceBucket(countsChild);
-  const careRelation = nominalRelation(careP.bucket, careC.bucket);
+  const guidanceFit: GuidanceFit =
+    pairFamily?.guidance_fit ?? resolveGuidanceFit(guideP.bucket, guideC.bucket);
 
   const recoveryP = resolveGatheringRecoveryBucket(chartParent);
   const recoveryC = resolveGatheringRecoveryBucket(chartChild);
@@ -653,13 +669,11 @@ export function buildFamilySajuCompareTable(params: {
         : AFFECTION_EXPRESSION_MEANING[locale].diff,
     ),
     row(
-      "care_balance",
-      CARE_BALANCE_TITLE[locale][roleLensKey],
-      CARE_BALANCE_LABEL[locale][roleLensKey][careP.bucket],
-      CARE_BALANCE_LABEL[locale][roleLensKey][careC.bucket],
-      careRelation === "same"
-        ? CARE_BALANCE_MEANING[locale][roleLensKey].same
-        : CARE_BALANCE_MEANING[locale][roleLensKey].diff,
+      "guidance_balance",
+      GUIDANCE_BALANCE_TITLE[locale][roleLensKey],
+      GUIDANCE_BALANCE_LABEL[locale][guideP.bucket],
+      GUIDANCE_BALANCE_LABEL[locale][guideC.bucket],
+      GUIDANCE_FIT_MEANING[locale][roleLensKey][guidanceFit],
     ),
     row(
       "gathering_recovery",

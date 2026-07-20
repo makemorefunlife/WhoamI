@@ -10,7 +10,7 @@ import {
   buildFamilySajuCompareTable,
   resolveCorrectionStyleBucket,
   resolveBondDistanceBucket,
-  resolveCareBalanceBucket,
+  resolveGuidanceBalanceBucket,
 } from "../../lib/relationship/familyParent/familySajuCompareTable.ts";
 import { calculateSajuBundle } from "../../lib/v2/saju/calculateSajuBundle.ts";
 import { toV1SajuApiPayload } from "../../lib/saju/toApiPayload.ts";
@@ -97,8 +97,8 @@ const aM = motherRows.find((r) => r.id === "correction_style");
 const aF = fatherRows.find((r) => r.id === "correction_style");
 const bM = motherRows.find((r) => r.id === "bond_distance");
 const bF = fatherRows.find((r) => r.id === "bond_distance");
-const cM = motherRows.find((r) => r.id === "care_balance");
-const cF = fatherRows.find((r) => r.id === "care_balance");
+const cM = motherRows.find((r) => r.id === "guidance_balance");
+const cF = fatherRows.find((r) => r.id === "guidance_balance");
 
 assert.notEqual(aM.label, aF.label);
 assert.notEqual(bM.label, bF.label);
@@ -109,7 +109,9 @@ assert.equal(bM.personChild.shortLabel, bF.personChild.shortLabel);
 assert.equal(bM.label, "보호와 독립의 전환");
 assert.equal(bF.label, "관여와 자율의 조율");
 assert.notEqual(cM.label, cF.label);
-ok("A/B person labels role-invariant; titles role-framed; care_balance titles still role-framed");
+assert.equal(cM.personParent.shortLabel, cF.personParent.shortLabel);
+assert.equal(cM.personChild.shortLabel, cF.personChild.shortLabel);
+ok("A/B/C person labels role-invariant; titles role-framed");
 
 section("3) ③⑤⑥ role-invariant byte-identical");
 
@@ -125,7 +127,7 @@ section("4) resolve*Bucket signatures ignore parentRole");
 
 assert.equal(resolveCorrectionStyleBucket.length, 1);
 assert.equal(resolveBondDistanceBucket.length, 2);
-assert.equal(resolveCareBalanceBucket.length, 1);
+assert.equal(resolveGuidanceBalanceBucket.length, 1);
 ok("bucket resolvers do not take parentRole");
 
 section("5) locale × role lookup miss 없음");
@@ -133,13 +135,13 @@ section("5) locale × role lookup miss 없음");
 for (const locale of ["ko-KR", "en-US"]) {
   for (const parentType of ["mother", "father"]) {
     const rows = buildReport(locale, parentType).family.section_compare_table;
-    for (const id of ["correction_style", "bond_distance", "care_balance"]) {
+    for (const id of ["correction_style", "bond_distance", "guidance_balance"]) {
       const r = rows.find((x) => x.id === id);
       assert.ok(r.meaning.length > 0 && r.personParent.shortLabel.length > 0);
     }
   }
 }
-ok("all role×locale A/B/care lookups resolve");
+ok("all role×locale A/B/C lookups resolve");
 
 section("6) en-US Hangul-free");
 

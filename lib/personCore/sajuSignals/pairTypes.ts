@@ -55,12 +55,20 @@ export type PairFriendshipSignals = {
   energy_drain_band: PairIntensityBand;
 };
 
+/** Part2 C — 두 사람 guidance mode 적합도 (guidanceProfile.resolveGuidanceFit). */
+export type PairGuidanceFit = "aligned" | "partial" | "mismatch";
+
 export type PairFamilySignals = {
   umbilical_separation_index: number;
   umbilical_band: PairIntensityBand;
   nagging_trigger_index: number;
   nagging_band: PairIntensityBand;
   combined_karma_tension: number;
+  /**
+   * Part2 C. modes를 넘긴 경우에만 채움.
+   * 미전달 시 null — 비교표는 counts로 resolveGuidanceFit 폴백(동일 SSOT 함수).
+   */
+  guidance_fit: PairGuidanceFit | null;
 };
 
 export type PairDomainSignalsPack = {
