@@ -19,18 +19,18 @@ function buildUmbilicalPrescription(
 
   const summary = pick(
     locale,
-    `Umbilical separation-task index ${pair.umbilical_separation_index} (${pair.umbilical_band}). When signals of "too close" and "too distant" overlap between ${parentNickname} and ${childNickname}, expressions of love can easily be mistaken for interference or neglect.`,
-    `탯줄 분리·경계 조율 과제 지수 ${pair.umbilical_separation_index}(${pair.umbilical_band}). ` +
+    `Closeness–boundary task index ${pair.umbilical_separation_index} (${pair.umbilical_band}). When "too close" and "too distant" signals overlap between ${parentNickname} and ${childNickname}, care can easily be read as interference — or distance as neglect.`,
+    `가까움·경계 조율 과제 지수 ${pair.umbilical_separation_index}(${pair.umbilical_band}). ` +
       `${parentNickname}와 ${childNickname} 사이에 '너무 가깝거나 너무 멀다'는 양극 신호가 겹치면, ` +
-      `사랑 표현이 간섭·방임으로 오해되기 쉽습니다.`,
+      `돌봄이 간섭으로, 거리두기가 방임으로 오해되기 쉽습니다.`,
   );
 
   return {
     topic: "umbilical_independence",
     headline: pick(
       locale,
-      "The Cord Still Connects, But Space Is Still Needed — A Boundary-Tuning Routine",
-      "탯줄은 이어져도 공간은 필요 — 경계 조율 루틴",
+      "Stay Connected, Keep Space — A Boundary-Tuning Routine",
+      "연결은 유지하되 공간은 지키기 — 경계 조율 루틴",
     ),
     evidence: {
       source: "pair_family_signals",
@@ -77,7 +77,7 @@ function buildUmbilicalPrescription(
         "'네가 어떻게 자랐는데' 역사 재판 — 과거는 이유 설명용, 면죄부 아님.",
         "연락 두절을 벌·협박 카드로 쓰기.",
       ],
-    )
+    ),
   };
 }
 
@@ -97,18 +97,18 @@ function buildNaggingKarmaPrescription(
 
   const summary = pick(
     locale,
-    `Nagging trigger index ${pair.nagging_trigger_index} (${pair.nagging_band}), combined family karma tension ${pair.combined_karma_tension}. When an overactive parental "seal" signal overlaps with a household punishment signal, a single remark from ${parentNickname} can easily sound to ${childNickname} like "the old fight replaying."`,
+    `Nagging-trigger index ${pair.nagging_trigger_index} (${pair.nagging_band}), repeated family-tension score ${pair.combined_karma_tension}. When an overactive "care/seal" signal overlaps with household friction, a single remark from ${parentNickname} can sound to ${childNickname} like "the same old fight starting again."`,
     `잔소리 트리거 지수 ${pair.nagging_trigger_index}(${pair.nagging_band}), ` +
-      `가족 카르마 결합 긴장 ${pair.combined_karma_tension}. ` +
-      `인성(부모) 과잉·가정 내 형벌 신호가 겹치면, ${parentNickname}의 한마디가 ${childNickname}에게 '옛날 싸움 재생'처럼 들리기 쉽습니다.`,
+      `반복되는 가족 긴장 점수 ${pair.combined_karma_tension}. ` +
+      `돌봄·챙김 신호가 과하고 집안 마찰 신호와 겹치면, ${parentNickname}의 한마디가 ${childNickname}에게 '또 그 싸움이 시작됐다'처럼 들리기 쉽습니다.`,
   );
 
   return {
     topic: "nagging_karma_avoidance",
     headline: pick(
       locale,
-      "It's Not Nagging, It's a Signal — A Karma-Conflict Avoidance Prescription",
-      "잔소리가 아니라 신호 — 카르마 갈등 회피 처방",
+      "It's Not Just Nagging — A Routine to Soften Repeating Conflict",
+      "잔소리가 아니라 신호 — 반복 갈등을 줄이는 루틴",
     ),
     evidence: {
       source: "pair_family_signals",
@@ -144,24 +144,24 @@ function buildNaggingKarmaPrescription(
     dont_list: pick(
       locale,
       [
-        "Comparative nagging — 'so-and-so is doing so well' ignites family karma instantly.",
+        "Comparative nagging — 'so-and-so is doing so well' lights up old friction instantly.",
         "Bringing up money, marriage, or career at every single meal.",
         `Telling relatives or siblings about ${childNickname}'s mistake first.`,
         `Reading ${parentNickname}'s worry as "control," and ${childNickname}'s distance as "betrayal."`,
         "Dragging up a 10-year-old incident as evidence every time.",
       ],
       [
-        "비교 잔소리 — '○○는 잘하는데'는 가족 카르마를 즉시 점화합니다.",
+        "비교 잔소리 — '○○는 잘하는데'는 익숙한 마찰을 바로 점화합니다.",
         "돈·결혼·직업을 매 식사마다 반복하기.",
         `${childNickname} 실수를 친척·형제에게 먼저 말하기.`,
         `${parentNickname}의 걱정을 '통제'로, ${childNickname}의 거리두기를 '배신'으로 해석하기.`,
         "과거 사건(10년 전)을 매번 증거로 꺼내기.",
       ],
-    )
+    ),
   };
 }
 
-function buildFamilyBaseline(
+export function buildFamilyBaseline(
   parentNickname: string,
   childNickname: string,
   locale: Locale,
@@ -178,8 +178,8 @@ function buildFamilyBaseline(
       signal_paths: ["family_prescription.baseline"],
       summary: pick(
         locale,
-        "Even when the pair's cross-signals don't spike sharply on any one topic, parents and children can carry small differences in tone for a long time.",
-        "pair 교차 신호가 특정 주제에서 강하게 치솟지 않아도, 부모·자녀는 작은 말투 차이가 오래 갑니다.",
+        "Even when cross-signals don't spike on any one topic, parents and children can carry small differences in tone for a long time. These are shared habits that keep the relationship steady.",
+        "특정 주제가 강하게 치솟지 않아도, 부모·자녀는 작은 말투 차이가 오래 갑니다. 관계를 안정적으로 유지하는 공통 습관입니다.",
       ),
       snapshot: {},
     },
@@ -208,11 +208,22 @@ function buildFamilyBaseline(
         "제3자 앞에서 훈계·반박.",
         "선물·돈으로 갈등 덮기만 하기.",
       ],
-    )
+    ),
   };
 }
 
-function resolveIntroLine(items: FamilyPrescriptionItem[], locale: Locale): string {
+function resolveIntroLine(
+  items: FamilyPrescriptionItem[],
+  locale: Locale,
+  baselineOnly: boolean,
+): string {
+  if (baselineOnly) {
+    return pick(
+      locale,
+      "Pair cross-signals weren't available for this report, so here's a shared baseline routine — practical habits, not a prediction.",
+      "이번 리포트에는 관계 교차 신호가 없어, 공통 기본 루틴만 담았어요 — 확정 예언이 아니라 실천 습관입니다.",
+    );
+  }
   const topics = new Set(items.map((i) => i.topic));
   if (
     topics.has("umbilical_independence") &&
@@ -220,47 +231,64 @@ function resolveIntroLine(items: FamilyPrescriptionItem[], locale: Locale): stri
   ) {
     return pick(
       locale,
-      "This is a family pairing where emotional distance and nagging/karma tension are both likely to be active at once. Below is a practical prescription based on your pair.family cross-signals.",
-      "정서적 거리와 잔소리·카르마 긴장이 동시에 작용하기 쉬운 가족 조합입니다. 아래는 pair.family 교차 신호 기반 실천 처방입니다.",
+      "This pairing often activates both closeness–boundary tension and repeating nagging friction. Below is a practical prescription from your family pair signals.",
+      "가까움·경계 긴장과 잔소리처럼 반복되는 마찰이 동시에 오기 쉬운 조합입니다. 아래는 가족 관계 신호 기반 실천 처방입니다.",
     );
   }
   if (topics.has("umbilical_independence")) {
     return pick(
       locale,
-      "A separation-boundary task shows up in this pair. Fix the line between care and interference with concrete actions.",
-      "이 조합에는 분리·경계 조율 과제가 있어요. 돌봄과 간섭의 경계를 행동으로 고정하세요.",
+      "A closeness–boundary task shows up in this pair. Fix the line between care and interference with concrete actions.",
+      "이 조합에는 가까움과 경계의 조율 과제가 있어요. 돌봄과 간섭의 경계를 행동으로 고정하세요.",
     );
   }
   if (topics.has("nagging_karma_avoidance")) {
     return pick(
       locale,
-      "Nagging and family karma triggers have been detected. Changing the form and timing of your words changes the response.",
-      "잔소리·가족 카르마 트리거가 감지됐습니다. 말의 형식과 타이밍을 바꾸면 반응이 달라집니다.",
+      "Repeating nagging triggers have been detected. Changing the form and timing of your words changes the response.",
+      "반복되는 잔소리 트리거가 감지됐습니다. 말의 형식과 타이밍을 바꾸면 반응이 달라집니다.",
     );
   }
   return pick(
     locale,
-    "This is a practical prescription based on family pair cross-signals — meant for action, separate from the existing Child DNA narrative.",
-    "가족 pair 교차 신호 기반 실행 처방입니다. 기존 Child DNA 서사와 별도로 실천용입니다.",
+    "This is a practical prescription from family pair signals — for action, separate from the Child DNA narrative above.",
+    "가족 관계 신호 기반 실행 처방입니다. 위의 Child DNA 서사와 별도로 실천용입니다.",
   );
 }
 
+/**
+ * pair 있으면 signal-aware(+필요 시 baseline 보강).
+ * pair 없으면 baseline-only (새 signal 추측 금지).
+ */
 export function buildFamilyPrescriptions(params: {
-  pair: PairFamilySignals;
+  pair?: PairFamilySignals | null;
   parentNickname: string;
   childNickname: string;
   locale?: Locale;
 }): FamilyPrescriptionPack {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const pair = params.pair ?? null;
+
+  if (!pair) {
+    const items = [
+      buildFamilyBaseline(params.parentNickname, params.childNickname, locale),
+    ];
+    return {
+      schema_version: FAMILY_PRESCRIPTION_VERSION,
+      intro_line: resolveIntroLine(items, locale, true),
+      items,
+    };
+  }
+
   const candidates = [
     buildUmbilicalPrescription(
-      params.pair,
+      pair,
       params.parentNickname,
       params.childNickname,
       locale,
     ),
     buildNaggingKarmaPrescription(
-      params.pair,
+      pair,
       params.parentNickname,
       params.childNickname,
       locale,
@@ -287,7 +315,7 @@ export function buildFamilyPrescriptions(params: {
 
   return {
     schema_version: FAMILY_PRESCRIPTION_VERSION,
-    intro_line: resolveIntroLine(items, locale),
+    intro_line: resolveIntroLine(items, locale, false),
     items,
   };
 }

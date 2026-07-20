@@ -122,10 +122,13 @@ export default function PairPrescriptionSection({
   pack,
   accentColor,
   domain,
+  titleOverride,
 }: {
   pack: PairPrescriptionPack | null | undefined;
   accentColor: string;
   domain: PairPrescriptionDomain;
+  /** Domain catalog title when provided (e.g. family Part5). */
+  titleOverride?: string;
 }) {
   const t = useMessages().relationshipDrilldown.layout;
   const { locale } = useLocale();
@@ -134,7 +137,7 @@ export default function PairPrescriptionSection({
   return (
     <RelationshipReportCard
       id={`pair-prescription-${domain}`}
-      title={t.prescriptionCardTitle}
+      title={titleOverride ?? t.prescriptionCardTitle}
       accentColor={accentColor}
       variant="accent"
       className="scroll-mt-6 border-violet-400/35 bg-gradient-to-b from-violet-950/25 to-transparent"

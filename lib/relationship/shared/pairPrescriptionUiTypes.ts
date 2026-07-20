@@ -55,8 +55,8 @@ export const PAIR_PRESCRIPTION_TOPIC_META: Record<
     communication_climate: { label: "대화 온도·리듬", emoji: "🌡️" },
     friendship_baseline: { label: "우정 유지 기본", emoji: "📋" },
     // family
-    umbilical_independence: { label: "정서적 독립", emoji: "🪢" },
-    nagging_karma_avoidance: { label: "잔소리·카르마", emoji: "🔔" },
+    umbilical_independence: { label: "거리와 독립", emoji: "🪢" },
+    nagging_karma_avoidance: { label: "잔소리·반복 마찰", emoji: "🔔" },
     family_baseline: { label: "가족 관계 기본", emoji: "📋" },
   },
   "en-US": {
@@ -74,8 +74,8 @@ export const PAIR_PRESCRIPTION_TOPIC_META: Record<
     communication_climate: { label: "Communication Climate & Rhythm", emoji: "🌡️" },
     friendship_baseline: { label: "Friendship Basics", emoji: "📋" },
     // family
-    umbilical_independence: { label: "Emotional Independence", emoji: "🪢" },
-    nagging_karma_avoidance: { label: "Nagging & Karma", emoji: "🔔" },
+    umbilical_independence: { label: "Closeness & Independence", emoji: "🪢" },
+    nagging_karma_avoidance: { label: "Nagging & Repeating Friction", emoji: "🔔" },
     family_baseline: { label: "Family Relationship Basics", emoji: "📋" },
   },
 };
@@ -106,7 +106,7 @@ export const PAIR_PRESCRIPTION_DOMAIN_FOOTNOTE: Record<
     friendship:
       "위 분석은 기존 Social DNA 서사와 별도입니다. 아래는 pair.friendship 교차 신호 기반 실천 체크리스트예요.",
     family:
-      "위 분석은 기존 Child DNA 서사와 별도입니다. 아래는 pair.family 교차 신호 기반 실천 체크리스트예요.",
+      "위 Child DNA 서사와 별도입니다. 아래는 관계를 안정적으로 유지하기 위한 실천 체크리스트예요.",
   },
   "en-US": {
     cohabitation:
@@ -115,6 +115,6 @@ export const PAIR_PRESCRIPTION_DOMAIN_FOOTNOTE: Record<
     friendship:
       "This analysis is separate from the existing Social DNA narrative above. Below is an action checklist drawn from your pair.friendship cross signals.",
     family:
-      "This analysis is separate from the existing Child DNA narrative above. Below is an action checklist drawn from your pair.family cross signals.",
+      "This is separate from the Child DNA narrative above. Below is a practical checklist for keeping the relationship steady.",
   },
 };

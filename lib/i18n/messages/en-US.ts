@@ -955,6 +955,8 @@ export const messagesEnUS = {
       filialLayerLabel: "Future possibility",
       filialLayerHint: "What may grow from how you relate now — a possibility, not a prediction",
       deEscalationCardTitle: "⚡ De-escalation cheat sheet",
+      deEscalationLayerLabel: "Right after conflict",
+      deEscalationLayerHint: "What to say and avoid when tempers rise — not a fixed personality label",
       whenAngryLabel: "When upset",
       avoidLabel: "Don't do this",
       childFallback: "Child",
@@ -965,6 +967,8 @@ export const messagesEnUS = {
       compareTableColMeaning: "What it means for the family",
       psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
       prescriptionCardTitle: "💊 Real-Life Action Prescription",
+      prescriptionLayerLabel: "Relationship routines",
+      prescriptionLayerHint: "Habits that soften repeating patterns — not a forecast",
       part2Title: "📊 Part 2. Scored, Side by Side",
       part3Title: "🧬 Part 3. Innate DNA & this year's growth",
       part4Title: "🤝 Part 4. Relationship chemistry & future possibility",
@@ -1976,6 +1980,8 @@ export type MessageCatalog = {
       filialLayerLabel: string;
       filialLayerHint: string;
       deEscalationCardTitle: string;
+      deEscalationLayerLabel: string;
+      deEscalationLayerHint: string;
       whenAngryLabel: string;
       avoidLabel: string;
       childFallback: string;
@@ -1986,6 +1992,8 @@ export type MessageCatalog = {
       compareTableColMeaning: string;
       psychRadarCardTitle: string;
       prescriptionCardTitle: string;
+      prescriptionLayerLabel: string;
+      prescriptionLayerHint: string;
       part2Title: string;
       part3Title: string;
       part4Title: string;

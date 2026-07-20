@@ -252,6 +252,12 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
       variant={DE_VARIANT[card.color] ?? "default"}
     >
       <RelationshipReportBody>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-rose-200/70">
+            {t.deEscalationLayerLabel}
+          </p>
+          <p className="mt-1 text-sm text-white/55">{t.deEscalationLayerHint}</p>
+        </div>
         <p className="text-lg font-bold text-white/95">{card.hashtag}</p>
         <p className="text-sm text-white/50">{card.archetype_label}</p>
         <div className="mt-4 space-y-3">
@@ -275,12 +281,28 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
 }
 
 function PrescriptionCard({ section }: { section: PrescriptionSection }) {
+  const t = useMessages().relationshipDrilldown.family;
   const pack = {
     schema_version: "family_prescription_v1",
     intro_line: section.introLine,
     items: section.items,
   };
-  return <PairPrescriptionSection pack={pack} accentColor={ACCENT} domain="family" />;
+  return (
+    <div className="space-y-3">
+      <div className="px-1">
+        <p className="text-xs font-medium uppercase tracking-wide text-violet-200/70">
+          {t.prescriptionLayerLabel}
+        </p>
+        <p className="mt-1 text-sm text-white/55">{t.prescriptionLayerHint}</p>
+      </div>
+      <PairPrescriptionSection
+        pack={pack}
+        accentColor={ACCENT}
+        domain="family"
+        titleOverride={section.title}
+      />
+    </div>
+  );
 }
 
 // ---- Dispatcher -------------------------------------------------------------

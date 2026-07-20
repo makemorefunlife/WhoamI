@@ -131,14 +131,12 @@ export function buildFamilyParentReport(params: {
     };
   }
 
-  const prescription_family = params.pairFamily
-    ? buildFamilyPrescriptions({
-        pair: params.pairFamily,
-        parentNickname: ctx.parentNickname,
-        childNickname: ctx.childNickname,
-        locale,
-      })
-    : undefined;
+  const prescription_family = buildFamilyPrescriptions({
+    pair: params.pairFamily ?? null,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
 
   return {
     headline: family.section_snapshot.one_line_family,
@@ -166,7 +164,7 @@ export function buildFamilyParentReport(params: {
             psych_lens: psychBundle.psych_lens,
           }
         : {}),
-      ...(prescription_family ? { prescription_family } : {}),
+      prescription_family,
     },
   };
 }
