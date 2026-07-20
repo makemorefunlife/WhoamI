@@ -266,24 +266,34 @@ function parentOvercontrol(
   return p.officer >= 3 && c.food >= 2;
 }
 
-function parentSupportsSeal(
+/**
+ * 부모 일간이 자녀 일간의 인성(印) 오행을 생·동하는지.
+ * childEl은 반드시 자녀 day stem — parent day stem을 쓰면 지원 판정이 왜곡된다.
+ */
+export function parentSupportsSeal(
   parent: ChartContext,
+  child: ChartContext,
   childSealStrong: boolean,
 ): boolean {
   if (!childSealStrong) return false;
   const parentEl = getStemEl(parent.dayStemCode);
-  const childEl = getStemEl(parent.dayStemCode);
+  const childEl = getStemEl(child.dayStemCode);
   const sealEl = generatingElement(childEl);
   return elementGenerates(parentEl, sealEl) || parentEl === sealEl;
 }
 
-function parentSupportsWealth(
+/**
+ * 부모 일간이 자녀 일간의 재성(財) 오행을 생·동하는지.
+ * childEl은 반드시 자녀 day stem.
+ */
+export function parentSupportsWealth(
   parent: ChartContext,
+  child: ChartContext,
   childWealthStrong: boolean,
 ): boolean {
   if (!childWealthStrong) return false;
   const parentEl = getStemEl(parent.dayStemCode);
-  const childEl = getStemEl(parent.dayStemCode);
+  const childEl = getStemEl(child.dayStemCode);
   const wealthEl = overcomeElement(childEl);
   return elementGenerates(parentEl, wealthEl) || parentEl === wealthEl;
 }
@@ -429,10 +439,15 @@ export function analyzeFamilyPairSaju(
     hasStrongParentChildCombine: detectStrongCombine(cross),
     hasStrongParentChildClash: detectStrongClash(cross),
     childSealStrong,
-    parentSupportsChildSeal: parentSupportsSeal(chartParent, childSealStrong),
+    parentSupportsChildSeal: parentSupportsSeal(
+      chartParent,
+      chartChild,
+      childSealStrong,
+    ),
     childWealthStrong,
     parentSupportsChildWealth: parentSupportsWealth(
       chartParent,
+      chartChild,
       childWealthStrong,
     ),
   };
