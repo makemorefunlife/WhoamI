@@ -22,6 +22,7 @@ import type { FamilyPrescriptionPack } from "./familyPrescriptionTypes";
 import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { FamilySajuSignals, FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { buildFamilySajuCompareTable } from "./familySajuCompareTable";
+import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -118,6 +119,17 @@ export function buildFamilyParentReport(params: {
     params.psychMasterB,
     locale,
   );
+
+  if (psychBundle?.psych_match) {
+    family.section_filial_reward = {
+      ...family.section_filial_reward,
+      future_reward: appendFilialRecognitionEnrichment(
+        family.section_filial_reward.future_reward,
+        psychBundle.psych_match,
+        locale,
+      ),
+    };
+  }
 
   const prescription_family = params.pairFamily
     ? buildFamilyPrescriptions({

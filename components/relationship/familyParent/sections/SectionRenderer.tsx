@@ -194,6 +194,12 @@ function DestinyCard({ section }: { section: DestinySection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
         <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-emerald-200/70">
+            {t.destinyLayerLabel}
+          </p>
+          <p className="mt-1 text-sm text-white/55">{t.destinyLayerHint}</p>
+        </div>
+        <div>
           <RelationshipReportLabel>{t.harmonyLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.harmonyOneLiner}</RelationshipReportParagraph>
         </div>
@@ -202,9 +208,15 @@ function DestinyCard({ section }: { section: DestinySection }) {
           <RelationshipReportParagraph className="mt-1.5">{section.favoritismWarning}</RelationshipReportParagraph>
         </div>
         {section.parentLensSummary ? (
-          <RelationshipReportParagraph className="italic text-emerald-200/75">
-            {section.parentLensSummary}
-          </RelationshipReportParagraph>
+          <div className="border-t border-white/10 pt-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-sky-200/70">
+              {t.parentLensLayerLabel}
+            </p>
+            <p className="mt-1 text-sm text-white/55">{t.parentLensLayerHint}</p>
+            <RelationshipReportParagraph className="mt-2 italic text-emerald-200/75">
+              {section.parentLensSummary}
+            </RelationshipReportParagraph>
+          </div>
         ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
@@ -212,9 +224,18 @@ function DestinyCard({ section }: { section: DestinySection }) {
 }
 
 function FilialRewardCard({ section }: { section: FilialRewardSection }) {
+  const t = useMessages().relationshipDrilldown.family;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportParagraph>{section.futureReward}</RelationshipReportParagraph>
+      <RelationshipReportBody>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-amber-200/70">
+            {t.filialLayerLabel}
+          </p>
+          <p className="mt-1 text-sm text-white/55">{t.filialLayerHint}</p>
+        </div>
+        <RelationshipReportParagraph>{section.futureReward}</RelationshipReportParagraph>
+      </RelationshipReportBody>
     </RelationshipReportCard>
   );
 }

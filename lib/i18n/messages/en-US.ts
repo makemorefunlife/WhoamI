@@ -941,13 +941,19 @@ export const messagesEnUS = {
       dnaEnergyLabel: "🔋 Energy & focus style",
       dnaHiddenGeniusLabel: "🔮 Late-bloomer potential",
       destinyCardTitle: "🤝 Your destined score",
+      destinyLayerLabel: "Relationship pattern",
+      destinyLayerHint: "How the two of you tend to click — not this year's luck, not a fixed prophecy",
       harmonyLabel: "🍀 Harmony",
       favoritismRiskLabel: "⚖️ Favoritism risk",
+      parentLensLayerLabel: "Parent role lens",
+      parentLensLayerHint: "A role-based reading aid — separate from the pair pattern above",
       growthTunnelCardTitle: "⚠️ This year's growth challenge",
       growthLayerLabel: "This year's growth tunnel",
       growthLayerHint: "A time-specific challenge or transition for the current year",
       focusAreasPrefix: "Focus areas: ",
       filialRewardCardTitle: "🎯 Future family reward",
+      filialLayerLabel: "Future possibility",
+      filialLayerHint: "What may grow from how you relate now — a possibility, not a prediction",
       deEscalationCardTitle: "⚡ De-escalation cheat sheet",
       whenAngryLabel: "When upset",
       avoidLabel: "Don't do this",
@@ -961,7 +967,7 @@ export const messagesEnUS = {
       prescriptionCardTitle: "💊 Real-Life Action Prescription",
       part2Title: "📊 Part 2. Scored, Side by Side",
       part3Title: "🧬 Part 3. Innate DNA & this year's growth",
-      part4Title: "🤝 Part 4. Destiny & Future Reward",
+      part4Title: "🤝 Part 4. Relationship chemistry & future possibility",
       part5Title: "💊 Part 5. Guardrails & Action Plan",
       defaultKindLabel: "Premium · Child DNA Playbook",
     },
@@ -1956,13 +1962,19 @@ export type MessageCatalog = {
       dnaEnergyLabel: string;
       dnaHiddenGeniusLabel: string;
       destinyCardTitle: string;
+      destinyLayerLabel: string;
+      destinyLayerHint: string;
       harmonyLabel: string;
       favoritismRiskLabel: string;
+      parentLensLayerLabel: string;
+      parentLensLayerHint: string;
       growthTunnelCardTitle: string;
       growthLayerLabel: string;
       growthLayerHint: string;
       focusAreasPrefix: string;
       filialRewardCardTitle: string;
+      filialLayerLabel: string;
+      filialLayerHint: string;
       deEscalationCardTitle: string;
       whenAngryLabel: string;
       avoidLabel: string;

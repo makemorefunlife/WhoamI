@@ -325,9 +325,9 @@ export function buildFamilyKillerSections(params: {
   ) {
     filialReward = pick(
       locale,
-      `${childNickname} has the DNA to become a solid "family reward" for ${parentNickname}'s later years. There's a good chance they'll repay you like a devoted child in at least one of economics, caregiving, or emotional support.`,
-      `${childNickname}는 ${parentNickname}의 인생 후반전에 든든한 '패밀리 리워드'가 될 DNA예요. ` +
-        `경제·돌봄·정서 중 하나 이상에서 효자·효녀형 보답을 줄 가능성이 높습니다.`,
+      `${childNickname} may grow into a solid "family reward" for ${parentNickname}'s later years — a possibility rooted in how you relate now, not a fixed trait. They may repay you in at least one of economics, caregiving, or emotional support.`,
+      `${childNickname}는 ${parentNickname}의 인생 후반전에 든든한 '패밀리 리워드'가 될 수 있어요 — 지금 관계 패턴에서 이어질 가능성이지, 정해진 성격의 단정은 아닙니다. ` +
+        `경제·돌봄·정서 중 하나 이상에서 보답으로 이어질 여지가 있습니다.`,
     );
     rewardIndex = "high";
   } else if (sig.hasStrongParentChildClash) {
