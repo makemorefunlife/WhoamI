@@ -141,7 +141,7 @@ console.log(
       ok: true,
       mother_father_same_buckets_different_titles: sameCalc,
       fixtures,
-      not_implemented: ["C guidance_balance engine", "D separation as own axis (umbilical is B meaning)", "E home_climate", "F recognition_fit"],
+      not_implemented: ["E home_climate", "F recognition_fit"],
     },
     null,
     2,

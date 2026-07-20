@@ -19,8 +19,8 @@ function buildUmbilicalPrescription(
 
   const summary = pick(
     locale,
-    `Umbilical separation / emotional independence index ${pair.umbilical_separation_index} (${pair.umbilical_band}). When signals of "too close" and "too distant" overlap between ${parentNickname} and ${childNickname}, expressions of love can easily be mistaken for interference or neglect.`,
-    `탯줄 분리·정서적 독립 지수 ${pair.umbilical_separation_index}(${pair.umbilical_band}). ` +
+    `Umbilical separation-task index ${pair.umbilical_separation_index} (${pair.umbilical_band}). When signals of "too close" and "too distant" overlap between ${parentNickname} and ${childNickname}, expressions of love can easily be mistaken for interference or neglect.`,
+    `탯줄 분리·경계 조율 과제 지수 ${pair.umbilical_separation_index}(${pair.umbilical_band}). ` +
       `${parentNickname}와 ${childNickname} 사이에 '너무 가깝거나 너무 멀다'는 양극 신호가 겹치면, ` +
       `사랑 표현이 간섭·방임으로 오해되기 쉽습니다.`,
   );
@@ -29,8 +29,8 @@ function buildUmbilicalPrescription(
     topic: "umbilical_independence",
     headline: pick(
       locale,
-      "The Cord Still Connects, But Space Is Still Needed — An Emotional Independence Routine",
-      "탯줄은 이어져도 공간은 필요 — 정서적 독립 루틴",
+      "The Cord Still Connects, But Space Is Still Needed — A Boundary-Tuning Routine",
+      "탯줄은 이어져도 공간은 필요 — 경계 조율 루틴",
     ),
     evidence: {
       source: "pair_family_signals",
@@ -227,8 +227,8 @@ function resolveIntroLine(items: FamilyPrescriptionItem[], locale: Locale): stri
   if (topics.has("umbilical_independence")) {
     return pick(
       locale,
-      "Signs of umbilical separation and independence are present. Fix the boundary between love and interference with action.",
-      "탯줄 분리·독립 신호가 있습니다. 사랑과 간섭의 경계를 행동으로 고정하세요.",
+      "A separation-boundary task shows up in this pair. Fix the line between care and interference with concrete actions.",
+      "이 조합에는 분리·경계 조율 과제가 있어요. 돌봄과 간섭의 경계를 행동으로 고정하세요.",
     );
   }
   if (topics.has("nagging_karma_avoidance")) {

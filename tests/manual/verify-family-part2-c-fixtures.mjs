@@ -118,7 +118,6 @@ console.log(
     {
       fixtures,
       not_implemented: [
-        "D separation as own axis",
         "E home_climate",
         "F recognition_fit",
         "Part3 growth SSOT wiring",

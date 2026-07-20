@@ -1,7 +1,7 @@
 # 010 — Family Part2 축 C (guidance_balance)
 
 **날짜:** 2026-07-20  
-**상태:** 구현 (C만). A/B 불변. D~F·Part3 금지.  
+**상태:** 구현 (C만). A/B 불변. D는 011에서 제외. E/F·Part3는 별도.  
 **원칙:** `parentRole`은 질문·제목·문맥만. 원국 점수를 role로 가감하지 않음.  
 **A 상태 고정:** `correction_style`은 ten-god style bucket **v1** 재사용. `correction_reactivity` 신규 엔진은 아님(Part5에서 부족 시 v2 검토).
 
