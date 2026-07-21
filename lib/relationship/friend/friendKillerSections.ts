@@ -44,6 +44,12 @@ export type FriendshipSnapshotSection = {
   banter_pct: number;
   risk_pct: number;
   one_line_friendship: string;
+  /** 11축 확인/보정 문구 — psychMaster 없으면(레거시 캐시·설문 미완료) null */
+  vibe_axis_notes?: {
+    connection_note: string | null;
+    banter_note: string | null;
+    risk_note: string | null;
+  } | null;
 };
 
 export type SoulmateFrequencySection = {

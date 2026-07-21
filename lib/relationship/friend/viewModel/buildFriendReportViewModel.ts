@@ -55,6 +55,7 @@ function buildSnapshotSection(
 ): FriendReportSection | null {
   const f = report.friend;
   if (!f?.section_snapshot) return null;
+  const notes = f.section_snapshot.vibe_axis_notes;
   return {
     id: "snapshot",
     type: "snapshot",
@@ -66,6 +67,13 @@ function buildSnapshotSection(
       riskPct: f.section_snapshot.risk_pct,
     },
     panel: report.snapshot_panel,
+    vibeAxisNotes: notes
+      ? {
+          connectionNote: notes.connection_note,
+          banterNote: notes.banter_note,
+          riskNote: notes.risk_note,
+        }
+      : undefined,
   };
 }
 

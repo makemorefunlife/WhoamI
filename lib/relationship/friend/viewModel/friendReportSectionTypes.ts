@@ -34,6 +34,12 @@ export type SnapshotSection = BaseSection & {
   type: "snapshot";
   scores: { connectionPct: number; banterPct: number; riskPct: number };
   panel: TriScoreSnapshotPanelData;
+  /** 11축 확인/보정 문구 — psychMaster 없으면(레거시 캐시·설문 미완료) 생략 */
+  vibeAxisNotes?: {
+    connectionNote: string | null;
+    banterNote: string | null;
+    riskNote: string | null;
+  };
 };
 
 export type PsychRadarSection = BaseSection & {

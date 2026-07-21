@@ -327,7 +327,20 @@ export function FriendReportViewModelView({
             ]
           : []
       }
-      scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="friendship" /> : undefined}
+      scoreFooter={
+        snapshot ? (
+          <>
+            <TriScoreSnapshotPanel panel={snapshot.panel} kind="friendship" />
+            {snapshot.vibeAxisNotes ? (
+              <div className="mt-3 space-y-1 text-xs text-white/70">
+                {snapshot.vibeAxisNotes.connectionNote ? <p>{snapshot.vibeAxisNotes.connectionNote}</p> : null}
+                {snapshot.vibeAxisNotes.banterNote ? <p>{snapshot.vibeAxisNotes.banterNote}</p> : null}
+                {snapshot.vibeAxisNotes.riskNote ? <p>{snapshot.vibeAxisNotes.riskNote}</p> : null}
+              </div>
+            ) : null}
+          </>
+        ) : undefined
+      }
     >
       {(() => {
         let lastPartNumber: number | null = null;

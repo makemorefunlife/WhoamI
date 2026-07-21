@@ -18,6 +18,7 @@ import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTyp
 import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
+import { resolveFriendSignatureClause, resolveFriendVibeAxisNotes } from "./friendPsychFit";
 
 export type FriendReportBody = {
   headline: string;
@@ -69,11 +70,27 @@ export function buildFriendReport(params: {
   const ctx = buildFriendRuleContext({ ...params, locale });
   const friendBase = buildFriendSocialReport(ctx);
 
+  // Part1 — 11축(psychMaster) 확인/보정. computeFriendMasterScores 숫자 자체는
+  // grade/eventScores에도 쓰여 영향 범위가 넓으므로 안 건드리고, 문구만 덧붙인다.
+  const signatureClause = resolveFriendSignatureClause(
+    params.psychMasterA,
+    params.psychMasterB,
+    locale,
+  );
+  const vibeAxisNotes = resolveFriendVibeAxisNotes(
+    params.psychMasterA,
+    params.psychMasterB,
+    locale,
+  );
+  const oneLineFriendship = signatureClause
+    ? `${friendBase.section_snapshot.one_line_friendship} ${signatureClause}`
+    : friendBase.section_snapshot.one_line_friendship;
+
   const snapshot_panel = buildFriendSnapshotPanel(
     ctx,
     {
       gaugeLabel: pick(locale, "Social DNA · Friendship Snapshot", "Social DNA · 우정 스냅샷"),
-      representativeLine: friendBase.section_snapshot.one_line_friendship,
+      representativeLine: oneLineFriendship,
     },
     {
       psychA: params.psychMasterA ?? null,
@@ -90,6 +107,11 @@ export function buildFriendReport(params: {
 
   const friend = {
     ...friendBase,
+    section_snapshot: {
+      ...friendBase.section_snapshot,
+      one_line_friendship: oneLineFriendship,
+      vibe_axis_notes: vibeAxisNotes,
+    },
     section_compare_table: buildFriendSajuCompareTable({
       nicknameA: params.nicknameA,
       nicknameB: params.nicknameB,
@@ -113,9 +135,9 @@ export function buildFriendReport(params: {
     : undefined;
 
   return {
-    headline: friendBase.section_snapshot.one_line_friendship,
+    headline: oneLineFriendship,
     summary_line: `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
-    one_line_friendship: friendBase.section_snapshot.one_line_friendship,
+    one_line_friendship: oneLineFriendship,
     snapshot_panel,
     friend,
     meta: {
