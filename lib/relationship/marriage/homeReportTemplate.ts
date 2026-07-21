@@ -87,6 +87,12 @@ export type HouseholdPartnershipReport = {
   section_privacy: PrivacyRespectSection;
   section_upset: HomeUpsetSection;
   section_warning: HomeWarningSection;
+  /**
+   * 사주 중심 "한눈에 비교" 표(6행) — work·friend와 동일 패턴. 이 함수
+   * 안에서는 안 채워지고 `buildMarriageReport.ts`에서 별도로 채워 넣는다
+   * (friend의 section_compare_table과 동일 방식).
+   */
+  section_compare_table?: import("./marriageSajuCompareTable").MarriageCompareRow[];
 };
 
 function resolveHouseholdOneLiner(ctx: MarriageRuleContext): string {

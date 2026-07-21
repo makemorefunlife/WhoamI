@@ -7,9 +7,8 @@
  * 해당 섹션 또는 섹션 내부 optional 필드를 생략한다 — 빈 문자열/placeholder로
  * 채워 넣지 않는다(가짜 데이터 방지).
  *
- * locale 분기·i18n 문자열 치환은 이 어댑터의 책임이 아니다. 이번 phase는 ko-KR
- * 전용이라 SECTION_TITLES를 한국어로 고정했고, 다국어 렌더러가 붙는 단계(Phase 3
- * 이후)에서 이 상수는 relationshipDrilldown.work 쪽 i18n 메시지로 이관한다.
+ * SECTION_TITLES는 en-US/ko-KR 둘 다 지원 — 주 사용자층이 영어권이라 en-US도
+ * Part 렌더러를 그대로 써야 한다(ko-KR 전용으로 게이트하지 않는다).
  */
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import {
@@ -18,6 +17,7 @@ import {
 } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import type { Locale } from "@/lib/i18n/locale";
 import type {
   OpeningBlock,
   WorkReportSection,
@@ -29,18 +29,45 @@ export type BuildWorkReportViewModelParams = {
   /** 이미 해석된 표시명 — fallback 문구는 호출부(React 레이어, useMessages 보유)의 책임 */
   myName: string;
   partnerName: string;
+  locale?: Locale;
 };
 
-const SECTION_TITLES = {
-  snapshot: "파트너십 한눈에 보기",
-  psychRadar: "11축 궁합 레이더",
-  comparison: "두 사람의 업무 스타일",
-  roleMatrix: "역할 및 기여 방식",
-  relationshipLoop: "함께 일할 때 반복되는 흐름",
-  warning: "협업 안전장치",
-  prescription: "실전 운영 가이드",
-  conflictTrigger: "갈등 트리거",
-} as const;
+type SectionTitleSet = {
+  snapshot: string;
+  compareTable: string;
+  psychRadar: string;
+  comparison: string;
+  roleMatrix: string;
+  relationshipLoop: string;
+  warning: string;
+  prescription: string;
+  conflictTrigger: string;
+};
+
+const SECTION_TITLES: Record<Locale, SectionTitleSet> = {
+  "ko-KR": {
+    snapshot: "파트너십 한눈에 보기",
+    compareTable: "한눈에 비교 — 6가지 협업 축",
+    psychRadar: "11축 궁합 레이더",
+    comparison: "두 사람의 업무 스타일",
+    roleMatrix: "역할 및 기여 방식",
+    relationshipLoop: "함께 일할 때 반복되는 흐름",
+    warning: "협업 안전장치",
+    prescription: "실전 운영 가이드",
+    conflictTrigger: "갈등 트리거",
+  },
+  "en-US": {
+    snapshot: "Partnership at a Glance",
+    compareTable: "Side-by-Side — 6 Collaboration Axes",
+    psychRadar: "11-Axis Compatibility Radar",
+    comparison: "Work Styles Compared",
+    roleMatrix: "Roles & How You Each Contribute",
+    relationshipLoop: "The Loop You Fall Into at Work",
+    warning: "Collaboration Safeguards",
+    prescription: "Playbook for Working Together",
+    conflictTrigger: "Conflict Trigger",
+  },
+};
 
 function buildOpening(
   report: WorkColleagueReportBody,
@@ -58,6 +85,7 @@ function buildOpening(
 
 function buildSnapshotSection(
   report: WorkColleagueReportBody,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const snap = report.office?.section_snapshot ?? {
     fit_pct: report.meta?.fit_pct ?? 0,
@@ -72,7 +100,7 @@ function buildSnapshotSection(
     id: "snapshot",
     type: "snapshot",
     partNumber: 1,
-    title: SECTION_TITLES.snapshot,
+    title: titles.snapshot,
     scores: {
       fitPct: snap.fit_pct,
       synergyPct: snap.synergy_pct,
@@ -85,6 +113,7 @@ function buildSnapshotSection(
 function buildPsychRadarSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const psychDisplay = resolveReportPsychDisplay(
     report.meta,
@@ -96,7 +125,7 @@ function buildPsychRadarSection(
     id: "psych_radar",
     type: "psych_radar",
     partNumber: 1,
-    title: SECTION_TITLES.psychRadar,
+    title: titles.psychRadar,
     axisResults: swapPsychAxisForViewer(
       psychDisplay.psych_match.axis_results,
       viewerIsReportA,
@@ -106,9 +135,40 @@ function buildPsychRadarSection(
   };
 }
 
+function buildCompareTableSection(
+  report: WorkColleagueReportBody,
+  viewerIsReportA: boolean,
+  titles: SectionTitleSet,
+): WorkReportSection | null {
+  const rows = report.office?.section_compare_table;
+  if (!rows?.length) return null;
+
+  return {
+    id: "compare_table",
+    type: "compare_table",
+    partNumber: 1,
+    title: titles.compareTable,
+    rows: rows.map((row) => {
+      const { me, partner } = pickViewerFirstPair(
+        row.personA,
+        row.personB,
+        viewerIsReportA,
+      );
+      return {
+        id: row.id,
+        label: row.label,
+        me: { shortLabel: me.shortLabel },
+        partner: { shortLabel: partner.shortLabel },
+        meaning: row.meaning,
+      };
+    }),
+  };
+}
+
 function buildComparisonSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const office = report.office;
   if (!office?.section_dna || !office?.section_mix_fit) return null;
@@ -135,7 +195,7 @@ function buildComparisonSection(
     id: "comparison",
     type: "comparison",
     partNumber: 2,
-    title: SECTION_TITLES.comparison,
+    title: titles.comparison,
     dna,
     workStyle,
     communicationFit: office.section_mix_fit.communication_fit,
@@ -146,6 +206,7 @@ function buildComparisonSection(
 function buildRoleMatrixSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const office = report.office;
   if (!office?.section_roles) return null;
@@ -167,7 +228,7 @@ function buildRoleMatrixSection(
     id: "role_matrix",
     type: "role_matrix",
     partNumber: 3,
-    title: SECTION_TITLES.roleMatrix,
+    title: titles.roleMatrix,
     roles,
     synergyOneLiner: office.section_roles.synergy_one_liner,
     idealFit,
@@ -177,6 +238,7 @@ function buildRoleMatrixSection(
 
 function buildRelationshipLoopSection(
   report: WorkColleagueReportBody,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const topics = report.snapshot_panel?.narrative?.topics ?? [];
   const conflictTrigger = report.office?.section_warning?.conflict_trigger;
@@ -191,7 +253,7 @@ function buildRelationshipLoopSection(
     .map((t) => ({ title: t.title, body: t.interpretation }));
   if (conflictTrigger) {
     frictionLoop.push({
-      title: SECTION_TITLES.conflictTrigger,
+      title: titles.conflictTrigger,
       body: conflictTrigger,
     });
   }
@@ -202,7 +264,7 @@ function buildRelationshipLoopSection(
     id: "relationship_loop",
     type: "relationship_loop",
     partNumber: 3,
-    title: SECTION_TITLES.relationshipLoop,
+    title: titles.relationshipLoop,
     positiveLoop,
     frictionLoop,
   };
@@ -211,6 +273,7 @@ function buildRelationshipLoopSection(
 function buildWarningSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const sectionWarning = report.office?.section_warning;
   if (!sectionWarning) return null;
@@ -227,7 +290,7 @@ function buildWarningSection(
     id: "warning",
     type: "warning",
     partNumber: 4,
-    title: SECTION_TITLES.warning,
+    title: titles.warning,
     conflictTrigger: sectionWarning.conflict_trigger,
     deEscalation: sectionWarning.de_escalation,
     upset,
@@ -236,6 +299,7 @@ function buildWarningSection(
 
 function buildPrescriptionSection(
   report: WorkColleagueReportBody,
+  titles: SectionTitleSet,
 ): WorkReportSection | null {
   const pack = report.meta?.prescription_work;
   if (!pack?.items?.length) return null;
@@ -244,7 +308,7 @@ function buildPrescriptionSection(
     id: "prescription",
     type: "prescription",
     partNumber: 5,
-    title: SECTION_TITLES.prescription,
+    title: titles.prescription,
     introLine: pack.intro_line,
     items: pack.items,
     weeklyCheckIn: pack.items.find((item) => item.topic === "office_baseline"),
@@ -255,17 +319,19 @@ export function buildWorkReportViewModel(
   report: WorkColleagueReportBody,
   params: BuildWorkReportViewModelParams,
 ): WorkReportViewModel {
-  const { viewerIsReportA, myName, partnerName } = params;
+  const { viewerIsReportA, myName, partnerName, locale } = params;
   const names: [string, string] = [myName, partnerName];
+  const titles = SECTION_TITLES[locale ?? "ko-KR"];
 
   const builders: Array<() => WorkReportSection | null> = [
-    () => buildSnapshotSection(report),
-    () => buildPsychRadarSection(report, viewerIsReportA),
-    () => buildComparisonSection(report, viewerIsReportA),
-    () => buildRoleMatrixSection(report, viewerIsReportA),
-    () => buildRelationshipLoopSection(report),
-    () => buildWarningSection(report, viewerIsReportA),
-    () => buildPrescriptionSection(report),
+    () => buildSnapshotSection(report, titles),
+    () => buildCompareTableSection(report, viewerIsReportA, titles),
+    () => buildPsychRadarSection(report, viewerIsReportA, titles),
+    () => buildComparisonSection(report, viewerIsReportA, titles),
+    () => buildRoleMatrixSection(report, viewerIsReportA, titles),
+    () => buildRelationshipLoopSection(report, titles),
+    () => buildWarningSection(report, viewerIsReportA, titles),
+    () => buildPrescriptionSection(report, titles),
   ];
 
   const sections = builders

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
+import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
 import { hydrateFriendSnapshotPanel } from "@/lib/relationship/friend/buildFriendSnapshotPanel";
 import { buildFriendPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFriendPsychMatch";
 import { resolveReportPsychDisplay } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
@@ -23,7 +24,9 @@ import {
   RelationshipReportLabel,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
+import { buildFriendReportViewModel } from "@/lib/relationship/friend/viewModel/buildFriendReportViewModel";
+import { FriendReportViewModelView } from "@/components/relationship/friend/sections/SectionRenderer";
 
 const DE_ESCALATION_VARIANT: Record<string, "warning" | "success" | "default"> = {
   red: "warning",
@@ -79,6 +82,60 @@ function PersonDnaBlock({
   );
 }
 
+function FriendCompareTableCard({
+  rows,
+  viewerIsReportA,
+  accent,
+  myName,
+  partnerName,
+}: {
+  rows: FriendCompareRow[];
+  viewerIsReportA: boolean;
+  accent: string;
+  myName: string;
+  partnerName: string;
+}) {
+  const t = useMessages().relationshipDrilldown.friendship;
+  if (!rows.length) return null;
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-white/10">
+      <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+        <thead>
+          <tr className="border-b border-white/10 bg-white/[0.04]">
+            <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
+            <th className="px-4 py-3 font-semibold text-white/80">{myName}</th>
+            <th className="px-4 py-3 font-semibold text-white/80">{partnerName}</th>
+            <th className="px-4 py-3 font-semibold text-white/55">{t.compareTableColMeaning}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => {
+            const me = viewerIsReportA ? row.personA : row.personB;
+            const partner = viewerIsReportA ? row.personB : row.personA;
+            return (
+              <tr key={row.id} className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
+                  {row.label}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold" style={{ color: accent }}>
+                  {me.shortLabel}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
+                  {partner.shortLabel}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
+                  {row.meaning}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function FriendReportView({
   report,
   myName: myNameProp,
@@ -90,6 +147,7 @@ export default function FriendReportView({
   partnerName?: string;
   viewerIsReportA?: boolean;
 }) {
+  const { locale } = useLocale();
   const messages = useMessages();
   const t = messages.relationshipDrilldown.friendship;
   const theme = getTabTheme("friendship");
@@ -150,6 +208,38 @@ export default function FriendReportView({
     report.headline || snap.one_line_friendship,
   );
   const headlineSubtitle = polishStored(snap.one_line_friendship);
+
+  // Part 렌더러 — en-US/ko-KR 둘 다 지원. f(=report.friend)가 있고 최소한의
+  // Social DNA 필드가 있으면 새 ViewModel 어댑터로 스위치, 아니면(레거시 payload
+  // 등) 아래 레거시 JSX로 안전하게 폴백한다.
+  let partRendererViewModel: ReturnType<typeof buildFriendReportViewModel> | null = null;
+  if (f?.section_social_dna_a && f?.section_social_dna_b) {
+    try {
+      partRendererViewModel = buildFriendReportViewModel(report, {
+        viewerIsReportA,
+        myName,
+        partnerName,
+        locale,
+      });
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          "[FriendReportView] buildFriendReportViewModel failed, falling back to legacy view",
+          err,
+        );
+      }
+    }
+  }
+  if (partRendererViewModel) {
+    return (
+      <FriendReportViewModelView
+        vm={partRendererViewModel}
+        kindLabel={t.defaultKindLabel}
+        viewerIsReportA={viewerIsReportA}
+      />
+    );
+  }
+
   return (
     <RelationshipReportLayout
       kind="friendship"
@@ -214,6 +304,21 @@ export default function FriendReportView({
           />
         </RelationshipReportBody>
       </RelationshipReportCard>
+
+      {f.section_compare_table?.length ? (
+        <RelationshipReportCard
+          title={t.compareTableCardTitle}
+          accentColor={theme.accent}
+        >
+          <FriendCompareTableCard
+            rows={f.section_compare_table}
+            viewerIsReportA={viewerIsReportA}
+            accent={theme.accent}
+            myName={myName}
+            partnerName={partnerName}
+          />
+        </RelationshipReportCard>
+      ) : null}
 
       <RelationshipReportCard
         title={t.soulmateCardTitle}

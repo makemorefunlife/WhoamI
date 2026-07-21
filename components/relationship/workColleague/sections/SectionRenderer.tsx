@@ -1,16 +1,16 @@
 "use client";
 
 /**
- * Work Colleague Premium — WorkReportViewModel 전용 렌더러 (Phase 2, 프리뷰 전용).
+ * Work Colleague Premium — WorkReportViewModel 전용 렌더러.
  *
- * 현재 어디에서도 production 라우트(app/relationship/[id]/...)에 연결되지 않는다 —
- * app/dev/work-report-viewmodel/page.tsx의 시각 검증용으로만 쓰인다.
- * buildWorkColleagueReport.ts / WorkColleagueReportView.tsx는 건드리지 않았고,
+ * WorkColleagueReportView.tsx에서 en-US/ko-KR 둘 다에 대해 production 렌더링에
+ * 쓰인다(구조 체크 통과 시). buildWorkColleagueReport.ts는 건드리지 않았고,
  * 여기서 재사용하는 reportLayout·TriScoreSnapshotPanel·PairPrescriptionSection·
  * PsychMatchRadarChart도 원본 그대로다(수정 없음).
  *
- * SECTION_TITLES 계열 한국어 문자열은 이번 phase(ko-KR 전용) 기준 하드코딩이며,
- * en-US 렌더러가 붙는 단계에서 relationshipDrilldown.work i18n 메시지로 이관해야 한다.
+ * 카드 내부 라벨은 전부 `useMessages().relationshipDrilldown.work`(i18n 메시지
+ * 카탈로그)에서 가져온다 — 하드코딩 금지, 새 라벨이 필요하면 en-US.ts/ko-KR.ts에
+ * 같이 추가할 것.
  */
 import type { ReactNode } from "react";
 import {
@@ -34,6 +34,7 @@ import {
 } from "@/components/relationship/workColleague/officeCards";
 import type { PairPrescriptionPack } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type {
+  CompareTableSection,
   ComparisonSection,
   PrescriptionSection,
   PsychRadarSection,
@@ -43,8 +44,49 @@ import type {
   WorkReportSection,
   WorkReportViewModel,
 } from "@/lib/relationship/workColleague/viewModel/workReportSectionTypes";
+import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("work").accent;
+
+// ---- Part 1a: 한눈에 비교 표 (사주 6종) ------------------------------------
+
+function CompareTableCard({ section, names }: { section: CompareTableSection; names: [string, string] }) {
+  const t = useMessages().relationshipDrilldown.work;
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <div className="overflow-x-auto rounded-2xl border border-white/10">
+        <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/[0.04]">
+              <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
+              <th className="px-4 py-3 font-semibold text-white/80">{names[0]}</th>
+              <th className="px-4 py-3 font-semibold text-white/80">{names[1]}</th>
+              <th className="px-4 py-3 font-semibold text-white/55">{t.compareTableColMeaning}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {section.rows.map((row, i) => (
+              <tr key={row.id} className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
+                  {row.label}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold" style={{ color: ACCENT }}>
+                  {row.me.shortLabel}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
+                  {row.partner.shortLabel}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
+                  {row.meaning}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </RelationshipReportCard>
+  );
+}
 
 // ---- Part 1b: 11축 궁합 레이더 --------------------------------------------
 
@@ -73,7 +115,8 @@ function PsychRadarCard({ section, names }: { section: PsychRadarSection; names:
 
 // ---- Part 2: 두 사람의 업무 스타일 -----------------------------------------
 
-function ComparisonCard({ section }: { section: ComparisonSection }) {
+function ComparisonCard({ section, names }: { section: ComparisonSection; names: [string, string] }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -82,25 +125,25 @@ function ComparisonCard({ section }: { section: ComparisonSection }) {
       </div>
       <RelationshipReportBody className="mt-4">
         <div>
-          <RelationshipReportLabel>업무 운영 리듬 (나)</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.workStyleLabel(names[0])}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.workStyle.me}</RelationshipReportParagraph>
         </div>
         <div>
-          <RelationshipReportLabel>업무 운영 리듬 (상대)</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.workStyleLabel(names[1])}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.workStyle.partner}</RelationshipReportParagraph>
         </div>
         <div>
-          <RelationshipReportLabel>보고·소통 궁합</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.communicationFitLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.communicationFit}</RelationshipReportParagraph>
         </div>
         {section.boundary ? (
           <>
             <div>
-              <RelationshipReportLabel>존중해야 할 경계 (나)</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.boundaryLabel(names[0])}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">{section.boundary.me}</RelationshipReportParagraph>
             </div>
             <div>
-              <RelationshipReportLabel>존중해야 할 경계 (상대)</RelationshipReportLabel>
+              <RelationshipReportLabel>{t.boundaryLabel(names[1])}</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">{section.boundary.partner}</RelationshipReportParagraph>
             </div>
           </>
@@ -150,11 +193,12 @@ function LoopRow({ title, body, isFirst }: { title: string; body: string; isFirs
 }
 
 function RelationshipLoopCard({ section }: { section: RelationshipLoopSection }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       {section.positiveLoop.length > 0 ? (
         <div className="space-y-1">
-          <RelationshipReportLabel className="text-emerald-200/90">강점이 연결되는 흐름</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-emerald-200/90">{t.loopStrengthLabel}</RelationshipReportLabel>
           {section.positiveLoop.map((item, i) => (
             <LoopRow key={`pos-${item.title}-${i}`} title={item.title} body={item.body} isFirst={i === 0} />
           ))}
@@ -162,7 +206,7 @@ function RelationshipLoopCard({ section }: { section: RelationshipLoopSection })
       ) : null}
       {section.frictionLoop.length > 0 ? (
         <div className={section.positiveLoop.length > 0 ? "mt-6 space-y-1" : "space-y-1"}>
-          <RelationshipReportLabel className="text-red-200/80">오해가 쌓이는 흐름</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-red-200/80">{t.loopFrictionLabel}</RelationshipReportLabel>
           {section.frictionLoop.map((item, i) => (
             <LoopRow key={`fric-${item.title}-${i}`} title={item.title} body={item.body} isFirst={i === 0} />
           ))}
@@ -175,11 +219,12 @@ function RelationshipLoopCard({ section }: { section: RelationshipLoopSection })
 // ---- Part 4: 협업 안전장치 --------------------------------------------------
 
 function WarningCard({ section }: { section: WarningSection }) {
+  const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
       <RelationshipReportBody>
         <div>
-          <RelationshipReportLabel>갈등 트리거</RelationshipReportLabel>
+          <RelationshipReportLabel>{t.conflictTriggerLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.conflictTrigger}</RelationshipReportParagraph>
         </div>
         <DeEscalationBlock deCard={section.deEscalation} />
@@ -197,6 +242,7 @@ function WarningCard({ section }: { section: WarningSection }) {
 // ---- Part 5: 실전 운영 가이드 ------------------------------------------------
 
 function PrescriptionCard({ section }: { section: PrescriptionSection }) {
+  const t = useMessages().relationshipDrilldown.work;
   const pack: PairPrescriptionPack = {
     schema_version: "work_prescription_v1",
     intro_line: section.introLine,
@@ -205,7 +251,7 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
   return (
     <>
       {section.weeklyCheckIn ? (
-        <RelationshipReportCard title="주간 10분 체크인" accentColor={ACCENT} variant="success">
+        <RelationshipReportCard title={t.weeklyCheckInTitle} accentColor={ACCENT} variant="success">
           <RelationshipReportParagraph>{section.weeklyCheckIn.evidence.summary}</RelationshipReportParagraph>
           <ul className="mt-3 list-inside list-disc space-y-1">
             {section.weeklyCheckIn.do_list.map((item) => (
@@ -221,6 +267,22 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
   );
 }
 
+// ---- Part 구분선 --------------------------------------------------------------
+
+/**
+ * `WorkReportSection.partNumber`(1~5)는 원래 존재했지만 렌더러가 소비한 적이
+ * 없어서 화면에는 "Part로 나뉘어 있다"는 표시가 전혀 없었다(카드만 쭉 나열).
+ * 이 컴포넌트가 partNumber가 바뀔 때마다 눈에 보이는 구분선/타이틀을 넣는다.
+ */
+function PartHeading({ title }: { title: string }) {
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">{title}</h2>
+      <div className="h-px flex-1" style={{ backgroundColor: `${ACCENT}33` }} />
+    </div>
+  );
+}
+
 // ---- Dispatcher -------------------------------------------------------------
 
 type NonSnapshotSection = Exclude<WorkReportSection, { type: "snapshot" }>;
@@ -233,10 +295,12 @@ export function WorkReportSectionCard({
   names: [string, string];
 }): ReactNode {
   switch (section.type) {
+    case "compare_table":
+      return <CompareTableCard section={section} names={names} />;
     case "psych_radar":
       return <PsychRadarCard section={section} names={names} />;
     case "comparison":
-      return <ComparisonCard section={section} />;
+      return <ComparisonCard section={section} names={names} />;
     case "role_matrix":
       return <RoleMatrixCard section={section} />;
     case "relationship_loop":
@@ -253,14 +317,15 @@ export function WorkReportSectionCard({
   }
 }
 
-/** ViewModel 전체를 RelationshipReportLayout에 조립 — 프리뷰 전용 진입점. */
+/** ViewModel 전체를 RelationshipReportLayout에 조립 — production 진입점. */
 export function WorkReportViewModelView({
   vm,
-  kindLabel = "동료·비즈니스 파트너",
+  kindLabel,
 }: {
   vm: WorkReportViewModel;
   kindLabel?: string;
 }) {
+  const t = useMessages().relationshipDrilldown.work;
   const snapshot = vm.sections.find(
     (s): s is Extract<WorkReportSection, { type: "snapshot" }> => s.type === "snapshot",
   );
@@ -271,27 +336,44 @@ export function WorkReportViewModelView({
   return (
     <RelationshipReportLayout
       kind="work"
-      kindLabel={kindLabel}
+      kindLabel={kindLabel ?? t.defaultKindLabel}
       headline={{
         title: vm.opening.headline,
         subtitle: vm.opening.subtitle,
         names: vm.opening.names,
-        badge: vm.opening.grade ? `등급 ${vm.opening.grade}` : undefined,
+        badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
       }}
       scores={
         snapshot
           ? [
-              { emoji: "🔥", label: "업무적 핏", value: snapshot.scores.fitPct, tone: "warm" },
-              { emoji: "🧩", label: "협업 시너지", value: snapshot.scores.synergyPct, tone: "cool" },
-              { emoji: "⚡", label: "오피스 리스크", value: snapshot.scores.riskPct, tone: "alert" },
+              { emoji: "🔥", label: t.scoreLabelFit, value: snapshot.scores.fitPct, tone: "warm" },
+              { emoji: "🧩", label: t.scoreLabelSynergy, value: snapshot.scores.synergyPct, tone: "cool" },
+              { emoji: "⚡", label: t.scoreLabelRisk, value: snapshot.scores.riskPct, tone: "alert" },
             ]
           : []
       }
       scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="work" /> : undefined}
     >
-      {otherSections.map((section) => (
-        <WorkReportSectionCard key={section.id} section={section} names={vm.opening.names} />
-      ))}
+      {(() => {
+        const partTitles: Record<1 | 2 | 3 | 4 | 5, string> = {
+          1: t.part1Title,
+          2: t.part2Title,
+          3: t.part3Title,
+          4: t.part4Title,
+          5: t.part5Title,
+        };
+        let lastPartNumber: number | null = null;
+        return otherSections.map((section) => {
+          const showHeading = section.partNumber !== lastPartNumber;
+          lastPartNumber = section.partNumber;
+          return (
+            <div key={section.id} className="space-y-5 sm:space-y-6">
+              {showHeading ? <PartHeading title={partTitles[section.partNumber]} /> : null}
+              <WorkReportSectionCard section={section} names={vm.opening.names} />
+            </div>
+          );
+        });
+      })()}
     </RelationshipReportLayout>
   );
 }

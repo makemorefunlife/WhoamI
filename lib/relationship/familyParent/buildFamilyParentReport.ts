@@ -22,6 +22,7 @@ import type { FamilyPrescriptionPack } from "./familyPrescriptionTypes";
 import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { FamilySajuSignals, FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { buildFamilySajuCompareTable } from "./familySajuCompareTable";
+import { buildFamilyHouseholdRoles } from "./buildFamilyHouseholdRoles";
 import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment";
 
 export type FamilyParentReportBody = {
@@ -79,6 +80,8 @@ export function buildFamilyParentReport(params: {
   locale?: Locale;
   /** Part3 성장 터널 분석 연도. 생략 시 현재 연도. */
   analysisYear?: number;
+  /** true면 시청자=자녀 — household_roles 나/상대 매핑용 */
+  childIsViewer?: boolean;
 }): FamilyParentReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildFamilyRuleContext({ ...params, locale });
@@ -97,6 +100,17 @@ export function buildFamilyParentReport(params: {
       familySignalsChild: ctx.familySignalsChild,
       pairFamily: params.pairFamily,
       parentRole: ctx.parentRole,
+      locale,
+    }),
+    section_household_roles: buildFamilyHouseholdRoles({
+      parentNickname: ctx.parentNickname,
+      childNickname: ctx.childNickname,
+      countsParent: ctx.tenGod.countsParent,
+      countsChild: ctx.tenGod.countsChild,
+      familySignalsParent: ctx.familySignalsParent,
+      familySignalsChild: ctx.familySignalsChild,
+      pairFamily: params.pairFamily,
+      viewerIsChild: params.childIsViewer === true,
       locale,
     }),
   };

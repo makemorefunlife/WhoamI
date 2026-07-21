@@ -18,6 +18,7 @@ import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
 import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import type { WorkCompareRowId } from "@/lib/relationship/workColleague/sajuCompareTable";
 
 /** viewer-first로 이미 정렬된 사람 슬롯 — me/partner 스왑은 어댑터에서 1회만 수행 */
 export type PersonSlot<T> = { me: T; partner: T };
@@ -55,6 +56,24 @@ export type PsychRadarSection = BaseSection & {
   chartNote: string;
   /** "가장 강한 축 / 차이가 큰 축" 후보 — psych_lens.highlights 그대로 */
   highlights: DomainPsychHighlight[];
+};
+
+export type CompareTableRow = {
+  id: WorkCompareRowId;
+  label: string;
+  me: { shortLabel: string };
+  partner: { shortLabel: string };
+  meaning: string;
+};
+
+export type CompareTableSection = BaseSection & {
+  type: "compare_table";
+  /**
+   * 사주 신호 6종 비교표 — 11축 심리 설문(psych_radar)과는 별개 소스.
+   * sajuCompareTable.ts가 만드는 personA/personB를 여기서 이미 me/partner로
+   * swap 완료(다른 섹션들과 동일한 컨벤션) — 렌더러는 viewer 여부를 몰라도 됨.
+   */
+  rows: CompareTableRow[];
 };
 
 export type ComparisonSection = BaseSection & {
@@ -102,6 +121,7 @@ export type PrescriptionSection = BaseSection & {
 export type WorkReportSection =
   | SnapshotSection
   | PsychRadarSection
+  | CompareTableSection
   | ComparisonSection
   | RoleMatrixSection
   | RelationshipLoopSection

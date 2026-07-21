@@ -31,6 +31,7 @@ import {
 } from "./marriageKillerSections";
 import { LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
 
 export type MarriageRuleContext = {
   nicknameA: string;
@@ -66,11 +67,15 @@ export function buildMarriageRuleContext(params: {
   birthPlaceB?: string | null;
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
+  cohabitationSignalsA?: CohabitationSajuSignals;
+  cohabitationSignalsB?: CohabitationSajuSignals;
   locale?: Locale;
 }): MarriageRuleContext {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const blueprint = buildPairSajuBlueprint(params);
   const { core, uncertainItems } = blueprint;
+  const wealthOfficerPowerA = params.cohabitationSignalsA?.wealth_officer_power;
+  const wealthOfficerPowerB = params.cohabitationSignalsB?.wealth_officer_power;
 
   const tenGodPre = analyzeMarriageTenGod({
     nicknameA: params.nicknameA,
@@ -83,6 +88,8 @@ export function buildMarriageRuleContext(params: {
     countsB: core.tenGodsB,
     chartA: core.chartA,
     chartB: core.chartB,
+    wealthOfficerPowerA,
+    wealthOfficerPowerB,
     locale,
   });
 
@@ -126,6 +133,8 @@ export function buildMarriageRuleContext(params: {
     countsB: core.tenGodsB,
     chartA: core.chartA,
     chartB: core.chartB,
+    wealthOfficerPowerA,
+    wealthOfficerPowerB,
     locale,
   });
 

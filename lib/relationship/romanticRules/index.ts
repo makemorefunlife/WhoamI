@@ -114,6 +114,8 @@ const SCREEN_LAYOUT: Array<{
 function countTenGods(sajuJson: SajuDataForIntegrated): TenGodCounts {
   const counts: TenGodCounts = {};
   for (const t of sajuJson.tenGods ?? []) {
+    // 일주(day pillar)는 일간 자기비교라 정의상 항상 비견(self)이 됨 — 제외.
+    if (t.pillar === "일주") continue;
     const name = t.godData?.kor_name ?? t.godCode ?? "";
     if (!name) continue;
     counts[name] = (counts[name] ?? 0) + 1;

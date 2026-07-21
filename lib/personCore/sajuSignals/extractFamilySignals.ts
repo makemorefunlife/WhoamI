@@ -44,6 +44,8 @@ export function resolveHomeClimateBand(
 function countTenGods(bundle: SajuBundle): TenGodCounts {
   const counts: TenGodCounts = {};
   for (const t of bundle.tenGods) {
+    // 일주(day pillar)는 일간 자기비교라 정의상 항상 비견(self)이 됨 — 제외.
+    if (t.pillar === "일주") continue;
     const name = t.godData?.kor_name ?? t.godCode ?? "";
     if (!name) continue;
     counts[name] = (counts[name] ?? 0) + 1;
@@ -69,6 +71,40 @@ export function resolveParentBondBandFromCounts(
   const profile = profileTenGods(counts);
   const sealIsolated = profile.seal === 0;
   return parentBondBand(profile.seal, profile.sealExcess, sealIsolated);
+}
+
+/**
+ * PersonCore family_signals가 없을 때 pair 밴드 재구성용 최소 합성.
+ * seal/bond는 counts SSOT와 동일. 형·년긴장(home_climate)은 chart 없으므로 0 —
+ * 가짜 medium pair fallback 대신 실제 bond/seal 교차로 umbilical·nagging을 계산하게 함.
+ */
+export function synthesizeFamilySignalsFromCounts(
+  counts: TenGodCounts,
+): FamilySajuSignals {
+  const profile = profileTenGods(counts);
+  const sealIsolated = profile.seal === 0;
+  return {
+    year_karma: {
+      year_branch_code: "",
+      tension_hits: [],
+      karma_tension_index: 0,
+    },
+    seal_parent: {
+      seal_count: profile.seal,
+      seal_excess: profile.sealExcess,
+      seal_isolated: sealIsolated,
+      parent_bond_band: parentBondBand(
+        profile.seal,
+        profile.sealExcess,
+        sealIsolated,
+      ),
+    },
+    home_punishment: {
+      punishment_hits: [],
+      punishment_count: 0,
+      family_conflict_index: 0,
+    },
+  };
 }
 
 export function extractFamilySignals(bundle: SajuBundle): FamilySajuSignals {

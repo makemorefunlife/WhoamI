@@ -1,0 +1,213 @@
+/**
+ * buildFriendSajuCompareTable() — v4 structural fixes (2026-07-20):
+ *   1. Row②(서운함 표출)와 행⑤(총무 기질)가 더 이상 같은 신호를 재사용하지
+ *      않고 독립적으로 움직여야 한다.
+ *   2. 행④(배터리 충전)는 신강/신약/중화 모든 조합에서 "혼자/만나서" 식으로
+ *      단정하지 않고 조합별 문구를 내야 한다.
+ *   3. 행③(애정 언어)의 "마음의 크기는 같아요" 문구가 더 이상 출력되지
+ *      않아야 한다.
+ *   4. 동일 입력은 항상 동일 결과(결정론성)를 내야 한다.
+ * No DB, no LLM — 순수 함수 입력만으로 검증. saju pillars는 실제 두 사람의
+ * 생년월일시(880202 11:10 / 871027 22:30)로 진단 스크립트를 돌려 확인한
+ * 실제 간지 문자열을 그대로 사용한다.
+ * Run: npx tsx tests/unit/friend-compare-table.test.mjs
+ */
+import assert from "node:assert/strict";
+import { buildFriendSajuCompareTable } from "../../lib/relationship/friend/friendSajuCompareTable.ts";
+import { buildChartContext } from "../../lib/saju/chartContext.ts";
+
+function section(title) {
+  console.log(`\n=== ${title} ===`);
+}
+function ok(name) {
+  console.log(`ok - ${name}`);
+}
+
+// 실제 두 사람(Sera 880202 11:10 / 다시고고 871027 22:30)의 간지 —
+// calculateSajuBundle로 계산한 결과를 그대로 하드코딩(테스트에 외부 패키지
+// 의존을 늘리지 않기 위해).
+const SERA_SAJU = { yearPillar: "정묘", monthPillar: "계축", dayPillar: "정해", hourPillar: "을사" };
+const DASIGOGO_SAJU = { yearPillar: "정묘", monthPillar: "경술", dayPillar: "기유", hourPillar: "을해" };
+// 신강/신약/중화 margin=1 기준 "balanced"로 떨어지는 합성 인물(1985-06-20 14:30) —
+// 중화 포함 조합을 테스트하기 위한 픽스처.
+const BALANCED_SAJU = { yearPillar: "을축", monthPillar: "임오", dayPillar: "경인", hourPillar: "계미" };
+
+const chartSera = buildChartContext(SERA_SAJU);
+const chartDasigogo = buildChartContext(DASIGOGO_SAJU);
+const chartBalanced = buildChartContext(BALANCED_SAJU);
+
+// row③(애정 언어)만 읽는 최소 dnaA/dnaB fixture.
+const dna = (dominantElement) => ({ dominantElement });
+
+function findRow(rows, id) {
+  const r = rows.find((row) => row.id === id);
+  assert.ok(r, `row ${id} must exist`);
+  return r;
+}
+
+// ---------------------------------------------------------------------------
+section("1) 행②·⑤가 같은 신호를 재사용하지 않고 독립적으로 움직인다");
+// self가 최댓값(행②)이면서 wealthOfficer 합산(행⑤)만 다른 두 세트를 구성.
+const countsA_self = { "비견": 3 }; // self=3 dominant, wealthOfficer=0 -> "none"
+const countsB_selfHighWO = { "비견": 2, "정관": 2 }; // self=2 dominant(동률시 self 우선), wealthOfficer=2 -> "strong"
+
+const rowsIndep = buildFriendSajuCompareTable({
+  nicknameA: "A",
+  nicknameB: "B",
+  tenGodsA: countsA_self,
+  tenGodsB: countsB_selfHighWO,
+  dnaA: dna("fire"),
+  dnaB: dna("fire"),
+  chartA: chartSera,
+  chartB: chartSera, // 행②/⑤만 보는 테스트라 행①/④는 관심사 아님(같은 chart로 고정)
+  locale: "ko-KR",
+});
+
+const upset = findRow(rowsIndep, "upset_expression");
+const hangout = findRow(rowsIndep, "hangout_planning");
+
+assert.equal(upset.personA.shortLabel, upset.personB.shortLabel, "row② dominant category(self) must match for both — precondition of this test");
+assert.notEqual(
+  hangout.personA.shortLabel,
+  hangout.personB.shortLabel,
+  "row⑤ must differ even though row② matched — proves independent signal",
+);
+ok("행② 카테고리가 같아도 행⑤(재관 합산)는 독립적으로 다르게 나온다");
+
+// 반대 방향도 확인: 재관 합산이 같아도(둘 다 wealthOfficer=0) 행②는 다를 수 있어야 함.
+const countsC_food = { "식신": 3 }; // food dominant, wealthOfficer=0
+const countsD_seal = { "정인": 3 }; // seal dominant, wealthOfficer=0
+const rowsIndep2 = buildFriendSajuCompareTable({
+  nicknameA: "C",
+  nicknameB: "D",
+  tenGodsA: countsC_food,
+  tenGodsB: countsD_seal,
+  dnaA: dna("fire"),
+  dnaB: dna("fire"),
+  chartA: chartSera,
+  chartB: chartSera,
+  locale: "ko-KR",
+});
+const upset2 = findRow(rowsIndep2, "upset_expression");
+const hangout2 = findRow(rowsIndep2, "hangout_planning");
+assert.equal(hangout2.personA.shortLabel, hangout2.personB.shortLabel, "row⑤(둘 다 wealthOfficer=0) precondition");
+assert.notEqual(upset2.personA.shortLabel, upset2.personB.shortLabel, "row②(food vs seal)는 행⑤가 같아도 독립적으로 달라야 함");
+ok("행⑤가 같아도 행②는 독립적으로 다르게 나온다 (양방향 확인)");
+
+// ---------------------------------------------------------------------------
+section("2) 행④ 배터리 — 신강/신약/중화 조합별 문구, 절대 단정 없음");
+
+const realPairRows = buildFriendSajuCompareTable({
+  nicknameA: "Sera",
+  nicknameB: "다시고고",
+  tenGodsA: { "비견": 2, "편관": 1, "편인": 1 },
+  tenGodsB: { "편인": 1, "상관": 1, "비견": 1, "편관": 1 },
+  dnaA: dna("fire"),
+  dnaB: dna("wood"),
+  chartA: chartSera,
+  chartB: chartDasigogo,
+  locale: "ko-KR",
+});
+const batteryReal = findRow(realPairRows, "battery_recharge");
+assert.notEqual(
+  batteryReal.personA.shortLabel,
+  batteryReal.personB.shortLabel,
+  "실제 두 사람은 margin=1 재계산으로 강/약이 갈려야 함(margin=2 시절엔 둘 다 중화로 뭉쳤던 케이스)",
+);
+ok("실제 두 사람(Sera/다시고고) 배터리 행이 더 이상 같은 문구로 뭉치지 않는다");
+
+const balancedVsStrongRows = buildFriendSajuCompareTable({
+  nicknameA: "Sera",
+  nicknameB: "Balanced",
+  tenGodsA: { "비견": 2, "편관": 1, "편인": 1 },
+  tenGodsB: { "비견": 1 },
+  dnaA: dna("fire"),
+  dnaB: dna("earth"),
+  chartA: chartSera,
+  chartB: chartBalanced,
+  locale: "ko-KR",
+});
+const batteryBalancedCombo = findRow(balancedVsStrongRows, "battery_recharge");
+assert.match(
+  batteryBalancedCombo.meaning,
+  /그날그날/,
+  "중화가 포함된 조합은 '그날그날 다른 편' 뉘앙스를 반영해야 함",
+);
+assert.doesNotMatch(
+  batteryBalancedCombo.meaning,
+  /무조건 혼자|무조건 발산/,
+  "중화를 '무조건 혼자' 또는 '무조건 발산'으로 단정하면 안 됨",
+);
+ok("중화 포함 배터리 조합 문구가 정상 출력되고 절대적 단정을 하지 않는다");
+
+// 같은 밴드끼리도(둘 다 balanced) 정상 출력되는지 확인.
+const bothBalancedRows = buildFriendSajuCompareTable({
+  nicknameA: "B1",
+  nicknameB: "B2",
+  tenGodsA: {},
+  tenGodsB: {},
+  dnaA: dna("earth"),
+  dnaB: dna("earth"),
+  chartA: chartBalanced,
+  chartB: chartBalanced,
+  locale: "ko-KR",
+});
+const bothBalanced = findRow(bothBalancedRows, "battery_recharge");
+assert.equal(bothBalanced.personA.shortLabel, bothBalanced.personB.shortLabel);
+assert.match(bothBalanced.meaning, /그날그날/);
+ok("둘 다 중화인 경우도 정상 출력된다");
+
+// ---------------------------------------------------------------------------
+section("3) '마음의 크기' 문구가 더 이상 출력되지 않는다");
+
+const allSampleRows = [...rowsIndep, ...rowsIndep2, ...realPairRows, ...balancedVsStrongRows, ...bothBalancedRows];
+for (const locale of ["ko-KR", "en-US"]) {
+  const rows = buildFriendSajuCompareTable({
+    nicknameA: "X",
+    nicknameB: "Y",
+    tenGodsA: { "식신": 2, "정재": 1 },
+    tenGodsB: { "정인": 2, "정관": 1 },
+    dnaA: dna("metal"),
+    dnaB: dna("water"),
+    chartA: chartSera,
+    chartB: chartDasigogo,
+    locale,
+  });
+  for (const r of rows) {
+    assert.doesNotMatch(JSON.stringify(r), /마음의 크기|same-size heart/i);
+  }
+}
+for (const r of allSampleRows) {
+  assert.doesNotMatch(JSON.stringify(r), /마음의 크기|same-size heart/i);
+}
+ok("'마음의 크기' 계열 문구가 어떤 조합/로케일에서도 나오지 않는다");
+
+// ---------------------------------------------------------------------------
+section("4) 동일 입력은 항상 동일 결과 (결정론성)");
+
+const inputA = {
+  nicknameA: "Sera",
+  nicknameB: "다시고고",
+  tenGodsA: { "비견": 2, "편관": 1, "편인": 1 },
+  tenGodsB: { "편인": 1, "상관": 1, "비견": 1, "편관": 1 },
+  dnaA: dna("fire"),
+  dnaB: dna("wood"),
+  chartA: chartSera,
+  chartB: chartDasigogo,
+  locale: "ko-KR",
+};
+const runOnce = buildFriendSajuCompareTable(inputA);
+const runTwice = buildFriendSajuCompareTable(inputA);
+assert.deepEqual(runOnce, runTwice, "동일 입력을 두 번 호출해도 결과가 완전히 같아야 함");
+
+// 새 객체로(참조는 다르지만 내용은 동일) 다시 호출해도 동일해야 함 — 진짜
+// 순수 함수인지(숨은 전역 상태·랜덤 없음) 확인.
+const runThird = buildFriendSajuCompareTable(JSON.parse(JSON.stringify(inputA)) && {
+  ...inputA,
+  tenGodsA: { ...inputA.tenGodsA },
+  tenGodsB: { ...inputA.tenGodsB },
+});
+assert.deepEqual(runOnce, runThird, "구조적으로 동일한 새 객체를 넣어도 결과가 같아야 함(랜덤성 없음)");
+ok("동일 입력 → 항상 동일 결과, 숨은 랜덤성 없음");
+
+console.log("\nAll friend-compare-table tests passed.");

@@ -13,6 +13,7 @@
 import { resolveReportPsychDisplay, swapPsychAxisForViewer } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildFamilyPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFamilyPsychMatch";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
+import type { FamilyCompareRowId } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
 import { messagesKoKR } from "@/lib/i18n/messages/ko-KR";
@@ -25,6 +26,14 @@ import type {
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
 };
+
+/** Part2 UI — 핵심 4행만 표시. affection/recovery는 report body에 유지, 렌더만 제외. */
+const PART2_COMPARE_TABLE_DISPLAY_IDS: readonly FamilyCompareRowId[] = [
+  "correction_style",
+  "bond_distance",
+  "guidance_balance",
+  "home_climate",
+];
 
 function catalog(locale: Locale) {
   return (locale === "en-US" ? messagesEnUS : messagesKoKR).relationshipDrilldown.family;
@@ -64,14 +73,41 @@ function buildCompareTableSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
 ): FamilyReportSection | null {
-  const rows = report.family?.section_compare_table;
-  if (!rows?.length) return null;
+  const allRows = report.family?.section_compare_table;
+  if (!allRows?.length) return null;
+  const byId = new Map(allRows.map((row) => [row.id, row]));
+  const rows = PART2_COMPARE_TABLE_DISPLAY_IDS.map((id) => byId.get(id)).filter(
+    (row): row is NonNullable<typeof row> => row != null,
+  );
+  if (!rows.length) return null;
   return {
     id: "compare_table",
     type: "compare_table",
     partNumber: 2,
     title: t.compareTableCardTitle,
     rows,
+  };
+}
+
+function buildHouseholdRolesSection(
+  report: FamilyParentReportBody,
+  t: ReturnType<typeof catalog>,
+): FamilyReportSection | null {
+  const roles = report.family?.section_household_roles;
+  if (!roles) return null;
+  return {
+    id: "household_roles",
+    type: "household_roles",
+    partNumber: 2,
+    title: t.householdRolesCardTitle,
+    selfName: roles.self_name,
+    partnerName: roles.partner_name,
+    selfRoleLabel: roles.self_role_label,
+    selfRoleDetail: roles.self_role_detail,
+    partnerRoleLabel: roles.partner_role_label,
+    partnerRoleDetail: roles.partner_role_detail,
+    complement: roles.complement,
+    tension: roles.tension,
   };
 }
 
@@ -201,6 +237,7 @@ export function buildFamilyReportViewModel(
   const builders: Array<() => FamilyReportSection | null> = [
     () => buildSnapshotSection(report),
     () => buildCompareTableSection(report, t),
+    () => buildHouseholdRolesSection(report, t),
     () => buildPsychRadarSection(report, t),
     () => buildChildDnaSection(report, t),
     () => buildGrowthTunnelSection(report, t),

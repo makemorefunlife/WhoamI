@@ -51,6 +51,8 @@ export async function runCohabitationDeepAnalysis(
           params.sajuMasterB,
         ).cohabitation
       : null;
+  const cohabitationSignalsA = params.sajuMasterA?.domain_signals.cohabitation_signals;
+  const cohabitationSignalsB = params.sajuMasterB?.domain_signals.cohabitation_signals;
 
   const report = buildMarriageReport({
     nicknameA: params.nicknameA,
@@ -65,6 +67,8 @@ export async function runCohabitationDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairCohabitation,
+    cohabitationSignalsA,
+    cohabitationSignalsB,
     locale: params.locale,
   });
 

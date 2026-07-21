@@ -141,7 +141,14 @@ const hl = meaningFor(80, 10);
 const mm = meaningFor(50, 50);
 assert.ok(ll.meaning.includes("오래 붙잡지") || ll.meaning.includes("doesn't") || ll.meaning.length > 10);
 assert.notEqual(ll.meaning, hh.meaning);
-assert.equal(lh.meaning, hl.meaning); // comboKey sort → symmetric
+// person lead keeps parent/child order; combo meaning body stays symmetric
+assert.ok(lh.meaning.includes(lh.personParent.shortLabel));
+assert.ok(hl.meaning.includes(hl.personParent.shortLabel));
+assert.notEqual(lh.meaning, hl.meaning);
+assert.ok(
+  lh.meaning.includes("한쪽은") && hl.meaning.includes("한쪽은"),
+  "pair combo copy still present for both orientations",
+);
 assert.ok(mm.meaning.length > 10);
 ok("low/low, high/high, low/high symmetric, medium/medium");
 
@@ -224,9 +231,19 @@ assert.deepEqual(ids, [
   "home_climate",
 ]);
 assert.ok(!ids.includes("gathering_temperature"));
-const en = buildReport("mother", "en-US");
+const en = buildFamilyParentReport({
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  roles: { roleA: "child", roleB: "mother" },
+  parentType: "mother",
+  sajuJsonA: child.json,
+  sajuJsonB: parent.json,
+  familySignalsA: famHigh,
+  familySignalsB: famLow,
+  locale: "en-US",
+});
 const enE = en.family.section_compare_table.find((r) => r.id === "home_climate");
-assert.ok(!/[ㄱ-ㅎ가-힣]/.test(enE.label + enE.personParent.shortLabel + enE.meaning));
+assert.ok(!/[ㄱ-ㅎ가-힣]/.test(enE.label + enE.personParent.shortLabel + enE.personChild.shortLabel + enE.meaning));
 ok("6 rows; gathering_temperature gone; en-US Hangul-free");
 
 section("7) forbidden event-claim copy");

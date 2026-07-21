@@ -30,6 +30,8 @@ export function countTenGodsForFamilyParent(
 ): TenGodCounts {
   const counts: TenGodCounts = {};
   for (const t of sajuJson.tenGods ?? []) {
+    // 일주(day pillar)는 일간 자기비교라 정의상 항상 비견(self)이 됨 — 제외.
+    if (t.pillar === "일주") continue;
     const name = t.godData?.kor_name ?? t.godCode ?? "";
     if (!name) continue;
     counts[name] = (counts[name] ?? 0) + 1;
@@ -83,7 +85,7 @@ function buildMotherProfile(
 
   return {
     role: "mother",
-    label: "🌸 Gentle Parenting · 엄마 렌즈",
+    label: "🌸 Gentle Parenting · Mom",
     care_style: sanitizeFamilyParentText(
       sealFocus
         ? `${childNickname}의 정서적 안식처 역할을 자연스럽게 하려는 엄마예요. 걱정·챙김·기억으로 사랑을 표현하기 쉽습니다.`
@@ -98,8 +100,8 @@ function buildMotherProfile(
     lens_summary: sanitizeFamilyParentText(
       pick(
         locale,
-        `Mom lens: reads ${childNickname}'s hidden sensitivity and need for stability first.`,
-        `엄마 렌즈: ${childNickname}의 숨겨진 감수성·안정 욕구를 최우선으로 읽는 분석입니다.`,
+        `As Mom with ${childNickname}, this reading starts from hidden sensitivity and the need for stability.`,
+        `엄마로서 ${childNickname}와의 관계에서는, 숨겨진 감수성·안정 욕구를 먼저 읽습니다.`,
       ) + bondBonus,
     ),
   };
@@ -128,7 +130,7 @@ function buildFatherProfile(
 
   return {
     role: "father",
-    label: "🛡️ Gentle Parenting · 아빠 렌즈",
+    label: "🛡️ Gentle Parenting · Dad",
     care_style: sanitizeFamilyParentText(
       wealthFocus
         ? `${childNickname}에게 현실적인 도구·기회·방향을 주려는 아빠예요. '어떻게 해낼지'를 함께 고민해 주는 타입입니다.`
@@ -143,8 +145,8 @@ function buildFatherProfile(
     lens_summary: sanitizeFamilyParentText(
       pick(
         locale,
-        `Dad lens: reads ${childNickname}'s practical sense, independence, and need for future planning first.`,
-        `아빠 렌즈: ${childNickname}의 현실 감각·자립·미래 설계 욕구를 최우선으로 읽는 분석입니다.`,
+        `As Dad with ${childNickname}, this reading starts from practical sense, independence, and future planning.`,
+        `아빠로서 ${childNickname}와의 관계에서는, 현실 감각·자립·미래 설계 욕구를 먼저 읽습니다.`,
       ) + bondBonus,
     ),
   };

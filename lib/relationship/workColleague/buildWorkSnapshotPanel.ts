@@ -21,8 +21,8 @@ import { pick } from "./workColleagueCopy";
 function buildWorkKeywords(ctx: WorkColleagueContext): string[] {
   const raw = new Set<string>();
   raw.add(pick(ctx.locale, `Collab ${ctx.grade}`, `협업 ${ctx.grade}`));
-  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale).split(".")[0] ?? "");
-  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale).split(".")[0] ?? "");
+  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale, ctx.workSignalsA).split(".")[0] ?? "");
+  raw.add(resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale, ctx.workSignalsB).split(".")[0] ?? "");
   if (ctx.workPairAnalysis.monthBranch.monthElementInteraction.includes("상생")) {
     raw.add(pick(ctx.locale, "Work Rhythm Match", "업무 리듬 맞음"));
   }

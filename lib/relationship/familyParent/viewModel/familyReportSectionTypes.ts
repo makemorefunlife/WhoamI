@@ -48,6 +48,18 @@ export type CompareTableSection = BaseSection & {
   rows: FamilyCompareRow[];
 };
 
+export type HouseholdRolesSection = BaseSection & {
+  type: "household_roles";
+  selfName: string;
+  partnerName: string;
+  selfRoleLabel: string;
+  selfRoleDetail: string;
+  partnerRoleLabel: string;
+  partnerRoleDetail: string;
+  complement: string;
+  tension: string;
+};
+
 export type PsychRadarSection = BaseSection & {
   type: "psych_radar";
   axisResults: PsychMatchAxisResult[];
@@ -103,6 +115,7 @@ export type PrescriptionSection = BaseSection & {
 export type FamilyReportSection =
   | SnapshotSection
   | CompareTableSection
+  | HouseholdRolesSection
   | PsychRadarSection
   | ChildDnaSection
   | GrowthTunnelSection

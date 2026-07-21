@@ -7,6 +7,26 @@ import type { WorkStemCommunicationAnalysis } from "@/lib/saju/workPairAnalysis"
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 import type { TenGodCategory } from "./tenGodComplement";
+import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
+
+/**
+ * PersonCore SSOT 격국(월주 기준) → work 리포트가 쓰는 로컬 5범주 매핑.
+ * 이전에는 "4개 기둥 전체에서 십신 갯수가 가장 많은 범주"(dominantCategory,
+ * 아래)로 캐릭터 타입을 정했는데, 이는 명리학적으로 격국을 정하는 정식 방법이
+ * 아니다. PersonCore(`extractWorkSignals.ts`)가 이미 월간 십신 기준 격국을
+ * 계산해 두었으므로, sajuMaster가 있으면 이쪽을 SSOT로 우선 사용한다.
+ * 없으면(레거시 캐시 등) 기존 raw-count 방식으로 안전하게 폴백한다.
+ */
+const GEOKGUK_TO_LOCAL_CATEGORY: Record<
+  WorkSajuSignals["month_geokguk"]["month_stem_category"],
+  TenGodCategory
+> = {
+  self: "비겁",
+  food: "식상",
+  wealth: "재성",
+  officer: "관성",
+  seal: "인성",
+};
 
 const SAJU_JARGON_RE =
   /일간|일지|월간|월지|년주|월주|연주|시주|지지|천간|십신|십성|오행|상생|상극|육합|삼합|방합|원진|귀문|공망|형벌|순환형|신강|신약|용신|기신|정재|편재|정관|편관|식신|상관|정인|편인|비견|겁재|천간합|천간충|목\(木\)|화\(火\)|토\(土\)|금\(金\)|수\(水\)|[一-鿿]{1,2}합|[一-鿿]충|[一-鿿]형|[一-鿿]파|[一-鿿]해|\([가-힣]{2}\)/g;
@@ -249,7 +269,7 @@ const BRANCH_UPSET_NUANCE: Record<Locale, Record<string, string>> = {
   },
 };
 
-const ELEMENT_OFFICE: Record<Locale, Record<string, string>> = {
+export const ELEMENT_OFFICE: Record<Locale, Record<string, string>> = {
   "en-US": {
     wood: "growth & pioneering",
     fire: "expression & speed",
@@ -356,7 +376,7 @@ export function sanitizeOfficeText(text: string): string {
     .trim();
 }
 
-function dominantElement(chart: ChartContext): string {
+export function dominantElement(chart: ChartContext): string {
   const counts = countElements(chart);
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   return sorted[0]?.[0] ?? "earth";
@@ -379,6 +399,20 @@ function dominantCategory(
   return cats.sort((a, b) => score(b) - score(a))[0] ?? "비겁";
 }
 
+/**
+ * 캐릭터 타입 결정에 쓰는 대표 범주 — sajuMaster(PersonCore 격국)가 있으면
+ * 그걸 SSOT로 쓰고, 없으면 레거시 raw-count 방식으로 폴백.
+ */
+export function resolveWorkCategory(
+  counts: Record<string, number>,
+  workSignals?: WorkSajuSignals,
+): TenGodCategory {
+  if (workSignals) {
+    return GEOKGUK_TO_LOCAL_CATEGORY[workSignals.month_geokguk.month_stem_category];
+  }
+  return dominantCategory(counts);
+}
+
 function hipTitle(category: TenGodCategory, element: string, locale: Locale): string {
   const titles = CATEGORY_TITLE[locale][category];
   const el = ELEMENT_OFFICE[locale][element] ?? "";
@@ -390,13 +424,14 @@ export function buildOfficeDnaProfile(
   sajuJson: SajuDataForIntegrated,
   tenGodCounts: Record<string, number>,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  workSignals?: WorkSajuSignals,
 ): OfficeDnaProfile {
   const pillars = sajuJsonToPillars(
     sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
   );
   const chart = buildChartContext(pillars);
   const element = dominantElement(chart);
-  const category = dominantCategory(tenGodCounts);
+  const category = resolveWorkCategory(tenGodCounts, workSignals);
 
   const stemRef = REF_HEAVENLY_STEMS.find((r) => r.code === chart.dayStemCode);
   const branchRef = REF_EARTHLY_BRANCHES.find(
@@ -563,9 +598,11 @@ export function pickDeEscalationCard(
   chartA: ChartContext,
   chartB: ChartContext,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  workSignalsA?: WorkSajuSignals,
+  workSignalsB?: WorkSajuSignals,
 ): DeEscalationCard {
-  const catA = dominantCategory(tenGodsA);
-  const catB = dominantCategory(tenGodsB);
+  const catA = resolveWorkCategory(tenGodsA, workSignalsA);
+  const catB = resolveWorkCategory(tenGodsB, workSignalsB);
   const elA = dominantElement(chartA);
   const elB = dominantElement(chartB);
 
@@ -594,12 +631,13 @@ export function resolveWorkColleagueStylePhrase(
   sajuJson: SajuDataForIntegrated,
   tenGodCounts: Record<string, number>,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  workSignals?: WorkSajuSignals,
 ): string {
   const pillars = sajuJsonToPillars(
     sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
   );
   const chart = buildChartContext(pillars);
-  const category = dominantCategory(tenGodCounts);
+  const category = resolveWorkCategory(tenGodCounts, workSignals);
   const persona =
     STEM_OFFICE_PERSONA[locale][chart.dayStemCode] ??
     pick(locale, "a collaborator whose focus rises once the direction is right", "방향이 맞을 때 집중력이 올라가는 협업형");
@@ -674,12 +712,13 @@ export function buildUpsetResponseGuide(
   sajuJson: SajuDataForIntegrated,
   tenGodCounts: Record<string, number>,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  workSignals?: WorkSajuSignals,
 ): OfficeUpsetGuide {
   const pillars = sajuJsonToPillars(
     sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
   );
   const chart = buildChartContext(pillars);
-  const category = dominantCategory(tenGodCounts);
+  const category = resolveWorkCategory(tenGodCounts, workSignals);
   const base = UPSET_RESPONSE_BY_CATEGORY[locale][category];
   const branchNuance = BRANCH_UPSET_NUANCE[locale][chart.dayBranchCode] ?? "";
 
@@ -700,28 +739,78 @@ export type OfficeIdealRoleFit = {
   why: string;
 };
 
+/**
+ * 신살(귀인) 보강 문장 — PersonCore가 이미 계산해 둔 문창귀인/장성살/천을귀인 신호
+ * (`WorkSajuSignals.literary_noble`, `lib/personCore/sajuSignals/extractWorkSignals.ts`)를
+ * 이상적 역할 "why" 텍스트에 반영한다. 이전에는 이 신호가 계산만 되고 어디에도
+ * 쓰이지 않았음(리포트 lineage 감사에서 발견).
+ * 우선순위: 장성살(리더십) > 천을귀인(귀인의 도움) > 문창귀인(학문·기획) —
+ * 여러 개가 동시에 있어도 자연스러운 한 문장만 고른다(조합하지 않음).
+ */
+const NOBLE_STAR_BONUS: Record<
+  Locale,
+  { jangseong: string; cheoneul: string; munchang: string }
+> = {
+  "en-US": {
+    jangseong:
+      "On top of that, they carry the '장성살(General Star)' — leadership and management roles bring out even more of their strength.",
+    cheoneul:
+      "On top of that, they carry '천을귀인(Heaven's Noble)' — the luckiest star in saju — so they tend to draw in people who help them along the way.",
+    munchang:
+      "On top of that, they carry a scholarly noble star — research, planning, and documentation work is where this really shines.",
+  },
+  "ko-KR": {
+    jangseong:
+      "게다가 '장성살'까지 있어서, 팀을 이끄는 관리·리더십 자리에서 강점이 한층 배가돼요.",
+    cheoneul:
+      "게다가 사주에서 가장 좋은 길신인 '천을귀인'까지 있어서, 주변에서 도와주는 사람이 잘 붙는 편이에요.",
+    munchang:
+      "게다가 학문·글재주를 뜻하는 귀인까지 있어서, 리서치·기획·문서 작업 쪽에서 유독 빛을 발해요.",
+  },
+};
+
+function resolveNobleBonus(
+  noble:
+    | {
+        has_munchang_guin: boolean;
+        has_jangseong_sal: boolean;
+        has_cheoneul_guin: boolean;
+      }
+    | undefined,
+  locale: Locale,
+): string | null {
+  if (!noble) return null;
+  const t = NOBLE_STAR_BONUS[locale];
+  if (noble.has_jangseong_sal) return t.jangseong;
+  if (noble.has_cheoneul_guin) return t.cheoneul;
+  if (noble.has_munchang_guin) return t.munchang;
+  return null;
+}
+
 export function buildIdealRoleFit(
   nickname: string,
   sajuJson: SajuDataForIntegrated,
   tenGodCounts: Record<string, number>,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  workSignals?: WorkSajuSignals,
 ): OfficeIdealRoleFit {
-  const category = dominantCategory(tenGodCounts);
+  const category = resolveWorkCategory(tenGodCounts, workSignals);
   const fit = CATEGORY_IDEAL_FIT[locale][category];
-  const dna = buildOfficeDnaProfile(sajuJson, tenGodCounts, locale);
+  const dna = buildOfficeDnaProfile(sajuJson, tenGodCounts, locale, workSignals);
   const title = dna.character_title.split(" · ")[0] ?? pick(locale, "an executor", "실행형");
+  const nobleBonus = resolveNobleBonus(workSignals?.literary_noble, locale);
+
+  const baseWhy = pick(
+    locale,
+    `${nickname} has a ${title} temperament, so their strengths shine in roles like ${fit.departments[0]} · ${fit.roles[0]}.`,
+    `${nickname}은(는) ${title} 기질이라 ${fit.departments[0]}·${fit.roles[0]} 같은 자리에서 역량이 잘 드러나요.`,
+  );
 
   return {
     nickname,
     ideal_roles: fit.roles.slice(0, 4),
     ideal_departments: fit.departments.slice(0, 3),
-    why: sanitizeOfficeText(
-      pick(
-        locale,
-        `${nickname} has a ${title} temperament, so their strengths shine in roles like ${fit.departments[0]} · ${fit.roles[0]}.`,
-        `${nickname}은(는) ${title} 기질이라 ${fit.departments[0]}·${fit.roles[0]} 같은 자리에서 역량이 잘 드러나요.`,
-      ),
-    ),
+    why: sanitizeOfficeText(nobleBonus ? `${baseWhy} ${nobleBonus}` : baseWhy),
   };
 }
 

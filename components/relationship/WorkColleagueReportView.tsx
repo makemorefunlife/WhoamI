@@ -16,6 +16,7 @@ import {
   IdealRoleCard,
   RoleCard,
   DeEscalationBlock,
+  WorkCompareTableCard,
 } from "@/components/relationship/workColleague/officeCards";
 import {
   RelationshipReportLayout,
@@ -42,6 +43,7 @@ import { WorkReportViewModelView } from "@/components/relationship/workColleague
  * viewmodel adapter(buildWorkReportViewModel.ts) 자체는 건드리지 않는다.
  */
 function workReportSupportsNewRenderer(report: WorkColleagueReportBody): boolean {
+  // Structural gate only — no debug logging (Next treats console.error as overlay errors).
   const office = report.office;
   if (!office) return false;
 
@@ -197,11 +199,11 @@ export default function WorkColleagueReportView({
 
   const deCard = office?.section_warning?.de_escalation;
 
-  // Phase 3 §2 — ko-KR only, and only when the payload matches the shape the
-  // new ViewModel adapter understands. Any other locale, or any payload the
-  // adapter might mishandle, falls through to the legacy JSX below unchanged.
-  // This never touches buildWorkReportViewModel.ts itself, the premium API
-  // route, or the stored report shape.
+  // Part 렌더러 — en-US/ko-KR 둘 다 지원(SECTION_TITLES가 locale-aware, 주 타겟이
+  // 영어권이라 ko-KR로 게이트하면 안 됨). 페이로드가 새 ViewModel 어댑터가 이해하는
+  // 모양이 아니면(레거시 payload 등) structural check에서 걸러져 아래 레거시 JSX로
+  // 폴백한다. 이건 buildWorkReportViewModel.ts 자체나 premium API route, 저장된
+  // report shape을 건드리지 않는다.
   //
   // Only the adapter call is try/caught — constructing/returning JSX inside a
   // try/catch would NOT catch errors thrown while React actually renders
@@ -210,12 +212,13 @@ export default function WorkColleagueReportView({
   // that slipped past the structural check above. A crash inside the
   // renderer's own JSX tree is not covered by this net.
   let koRendererViewModel: ReturnType<typeof buildWorkReportViewModel> | null = null;
-  if (locale === "ko-KR" && workReportSupportsNewRenderer(report)) {
+  if (workReportSupportsNewRenderer(report)) {
     try {
       koRendererViewModel = buildWorkReportViewModel(report, {
         viewerIsReportA,
         myName,
         partnerName,
+        locale,
       });
     } catch (err) {
       if (process.env.NODE_ENV !== "production") {
@@ -266,6 +269,21 @@ export default function WorkColleagueReportView({
           viewerIsReportA={viewerIsReportA}
           accentColor={theme.accent}
         />
+      ) : null}
+
+      {office?.section_compare_table?.length ? (
+        <RelationshipReportCard
+          title={t.compareTableCardTitle}
+          accentColor={theme.accent}
+        >
+          <WorkCompareTableCard
+            rows={office.section_compare_table}
+            viewerIsReportA={viewerIsReportA}
+            accent={theme.accent}
+            myName={myName}
+            partnerName={partnerName}
+          />
+        </RelationshipReportCard>
       ) : null}
 
       {dnaPair ? (

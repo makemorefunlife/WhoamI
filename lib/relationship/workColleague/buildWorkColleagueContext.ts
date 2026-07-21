@@ -18,6 +18,7 @@ import {
   analyzeTenGodComplement,
   type TenGodComplementResult,
 } from "./tenGodComplement";
+import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 
 export type WorkColleagueContext = {
   nicknameA: string;
@@ -39,6 +40,13 @@ export type WorkColleagueContext = {
   masterScores: WorkMasterScores;
   uncertainItems: string[];
   locale: Locale;
+  /**
+   * PersonCore bake-in 명리 신호(월주 격국·신살 등) — SSOT.
+   * 없으면(레거시 캐시 등) 캐릭터 타입/이상적 역할 로직은 raw-count 폴백으로
+   * 안전하게 동작한다(officeLanguage.ts의 resolveWorkCategory 참고).
+   */
+  workSignalsA?: WorkSajuSignals;
+  workSignalsB?: WorkSajuSignals;
 };
 
 /** 동료 전용 컨텍스트 — 연인 rule context·일지 친밀 점수 미사용 */
@@ -52,6 +60,8 @@ export function buildWorkColleagueContext(params: {
   birthTimeUnknownA?: boolean;
   birthTimeUnknownB?: boolean;
   locale?: Locale;
+  workSignalsA?: WorkSajuSignals;
+  workSignalsB?: WorkSajuSignals;
 }): WorkColleagueContext {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const blueprint = buildPairSajuBlueprint(params);
@@ -96,5 +106,7 @@ export function buildWorkColleagueContext(params: {
     masterScores,
     uncertainItems,
     locale,
+    workSignalsA: params.workSignalsA,
+    workSignalsB: params.workSignalsB,
   };
 }

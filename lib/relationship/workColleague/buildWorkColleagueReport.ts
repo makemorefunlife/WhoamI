@@ -20,6 +20,7 @@ import {
 import { buildWorkPrescriptions } from "./buildWorkPrescriptions";
 import type { WorkPrescriptionPack } from "./workPrescriptionTypes";
 import type { PairWorkSignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { Locale } from "@/lib/i18n/locale";
 import { LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 
@@ -44,15 +45,23 @@ export type WorkColleagueReportBody = {
   };
 };
 
-function resolveHeadline(ctx: WorkColleagueContext): {
+/**
+ * `oneLine`은 호출부에서 이미 만든 `office`(buildOfficePartnershipReport 결과)의
+ * `section_snapshot.one_line_definition`을 받는다. 예전에는 이 함수 안에서
+ * `buildOfficePartnershipReport(ctx)`를 한 번 더 호출해서 DNA·워닝·이상적 역할 등
+ * 리포트 전체를 통째로 다시 계산하고 문자열 하나만 뽑아 버렸다(겹친 분석 — 리포트
+ * 생성당 office 계산이 2회 실행됨). 그 중복을 제거했다.
+ */
+function resolveHeadline(
+  ctx: WorkColleagueContext,
+  oneLine: string,
+): {
   headline: string;
   summary_line: string;
   gaugeLabel: string;
   representativeLine: string;
 } {
   const { activation, benefit, risk } = ctx.masterScores;
-  const oneLine = buildOfficePartnershipReport(ctx).section_snapshot
-    .one_line_definition;
 
   return {
     headline: oneLine,
@@ -83,12 +92,18 @@ export function buildWorkColleagueReport(params: {
     inputFingerprintB: string;
   };
   pairWork?: PairWorkSignals | null;
+  /** PersonCore bake-in 명리 신호(월주 격국·신살 등) — work 캐릭터 타입 SSOT */
+  workSignalsA?: WorkSajuSignals;
+  workSignalsB?: WorkSajuSignals;
   locale?: Locale;
 }): WorkColleagueReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildWorkColleagueContext({ ...params, locale });
   const office = buildOfficePartnershipReport(ctx);
-  const headlineBlock = resolveHeadline(ctx);
+  const headlineBlock = resolveHeadline(
+    ctx,
+    office.section_snapshot.one_line_definition,
+  );
 
   const snapshot_panel = buildWorkSnapshotPanel(
     ctx,

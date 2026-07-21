@@ -167,7 +167,7 @@ function resolveFantasyArchetype(
   return boldScore > classicScore ? "fantasy_breaker" : "romantic_classic";
 }
 
-function resolveMannerArchetype(counts: TenGodCounts): MannerArchetype {
+export function resolveMannerArchetype(counts: TenGodCounts): MannerArchetype {
   const p = profileTenGods(counts);
   const siksin = counts["식신"] ?? 0;
   const jungwan = counts["정관"] ?? 0;

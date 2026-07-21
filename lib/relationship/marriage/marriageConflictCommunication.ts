@@ -15,7 +15,7 @@ export type ConflictCommunicationSection = {
   stonewall_nickname: string;
 };
 
-function communicationArchetype(counts: TenGodCounts): {
+export function communicationArchetype(counts: TenGodCounts): {
   explosive: number;
   stonewall: number;
 } {

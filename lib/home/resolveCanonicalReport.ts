@@ -12,10 +12,22 @@ export type CanonicalReportRow = {
   birth_time: string | null;
   birth_place: string | null;
   entitlement: string | null;
+  report_type: string | null;
 };
 
 const REPORT_SELECT =
-  "id, name, clerk_user_id, created_at, birth_date, birth_time, birth_place, entitlement";
+  "id, name, clerk_user_id, created_at, birth_date, birth_time, birth_place, entitlement, report_type";
+
+/** Manually-added friend proxy reports (app/api/relationship/manual/route.ts) share
+ *  the adder's clerk_user_id but must never be treated as "my" canonical report —
+ *  same value fetchOwnedReports excludes at the query level. */
+const PARTNER_MANUAL_REPORT_TYPE = "partner_manual";
+
+function isEligibleForCanonicalReport(
+  row: Pick<CanonicalReportRow, "report_type">,
+): boolean {
+  return row.report_type !== PARTNER_MANUAL_REPORT_TYPE;
+}
 
 function sortByNewest(a: CanonicalReportRow, b: CanonicalReportRow): number {
   const ta = a.created_at ? Date.parse(a.created_at) : 0;
@@ -31,6 +43,9 @@ async function fetchOwnedReports(
     .from("reports")
     .select(REPORT_SELECT)
     .eq("clerk_user_id", clerkUserId)
+    // /api/report/create already applies this same exclusion to its own
+    // owned-report lookup.
+    .neq("report_type", PARTNER_MANUAL_REPORT_TYPE)
     .order("created_at", { ascending: false })
     .limit(30);
 
@@ -76,6 +91,13 @@ export async function resolveCanonicalReport(
     if (!hintReport) {
       invalidHint = true;
     } else if (hintReport.clerk_user_id !== clerkUserId) {
+      invalidHint = true;
+      hintReport = null;
+    } else if (!isEligibleForCanonicalReport(hintReport)) {
+      // Same eligibility rule as fetchOwnedReports — a hint pointing at a
+      // partner_manual proxy report must not be treated as valid self-report
+      // evidence either (it would otherwise still enter candidateMap below
+      // and could win the completed-survey / relationship-count scoring).
       invalidHint = true;
       hintReport = null;
     }

@@ -22,7 +22,9 @@ import {
   RelationshipReportInset,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
+import { buildMarriageReportViewModel } from "@/lib/relationship/marriage/viewModel/buildMarriageReportViewModel";
+import { MarriageReportViewModelView } from "@/components/relationship/marriage/sections/SectionRenderer";
 
 const DE_ESCALATION_COLORS: Record<string, string> = {
   red: "border-red-400/30 bg-red-950/20 text-red-200",
@@ -268,6 +270,8 @@ export default function MarriageReportView({
   const partnerName =
     partnerNameProp ?? dnaPair?.partner.nickname ?? messages.report.partnerFallbackLabel;
 
+  const { locale } = useLocale();
+
   const panel = useMemo(() => {
     const pc = report.meta?.person_core;
     return hydrateMarriageSnapshotPanel(report.snapshot_panel, {
@@ -294,6 +298,38 @@ export default function MarriageReportView({
       resolveReportPsychDisplay(report.meta, buildCohabitationPsychMatchBundle),
     [report.meta],
   );
+
+  // Part 렌더러 — en-US/ko-KR 둘 다 지원(friend·work와 동일 패턴). hh(=report.household)에
+  // 최소한의 DNA 필드가 있으면 새 ViewModel 어댑터로 스위치, 아니면(레거시 payload 등)
+  // 아래 레거시 JSX로 안전하게 폴백한다. 모든 hook(useMemo 등) 호출 이후에 배치해
+  // React Hooks 규칙(조건부 early return 이전에 hook을 다 호출)을 지킨다.
+  let partRendererViewModel: ReturnType<typeof buildMarriageReportViewModel> | null = null;
+  if (hh?.section_dna?.person_a && hh?.section_dna?.person_b) {
+    try {
+      partRendererViewModel = buildMarriageReportViewModel(report, {
+        viewerIsReportA,
+        myName,
+        partnerName,
+        locale,
+      });
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          "[MarriageReportView] buildMarriageReportViewModel failed, falling back to legacy view",
+          err,
+        );
+      }
+    }
+  }
+  if (partRendererViewModel) {
+    return (
+      <MarriageReportViewModelView
+        vm={partRendererViewModel}
+        kindLabel={t.defaultKindLabel}
+        viewerIsReportA={viewerIsReportA}
+      />
+    );
+  }
 
   const slotAName = hh?.section_dna?.person_a.nickname ?? "A";
   const slotBName = hh?.section_dna?.person_b.nickname ?? "B";

@@ -206,7 +206,16 @@ section("Compatibility — section ids + ViewModel block types");
   assert.equal(growth.id, "growth_tunnel");
   const compare = vm.sections.find((s) => s.type === "compare_table");
   assert.ok(compare);
-  assert.equal(compare.rows.length, 6);
+  assert.equal(compare.rows.length, 4);
+  assert.deepEqual(
+    compare.rows.map((r) => r.id),
+    [
+      "correction_style",
+      "bond_distance",
+      "guidance_balance",
+      "home_climate",
+    ],
+  );
   ok("section_child_dna / section_growth_tunnel + ViewModel types preserved");
 }
 
@@ -224,7 +233,18 @@ section("Part2 row set unchanged");
       "home_climate",
     ],
   );
-  ok("Part2 six-axis order preserved");
+  const vm = buildFamilyReportViewModel(report, { locale: "ko-KR" });
+  const compare = vm.sections.find((s) => s.type === "compare_table");
+  assert.deepEqual(
+    compare.rows.map((r) => r.id),
+    [
+      "correction_style",
+      "bond_distance",
+      "guidance_balance",
+      "home_climate",
+    ],
+  );
+  ok("Part2 body keeps 6 rows; ViewModel displays core 4");
 }
 
 console.log("\nAll family-part3 checks passed.");

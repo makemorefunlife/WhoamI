@@ -50,6 +50,12 @@ export async function runFriendSocialDeepAnalysis(
         ).friendship
       : null;
 
+  // 우정 명리 신호(년월 궁합·조후·비겁고립) — PersonCore가 person별로 계산해 둔
+  // 값을 그대로 읽어서 Social DNA(친구 포지션)에 반영한다(전에는 pair 신호로만
+  // 소비되고 개인별 신호는 미사용이었음).
+  const friendSignalsA = params.sajuMasterA?.domain_signals.friendship_signals;
+  const friendSignalsB = params.sajuMasterB?.domain_signals.friendship_signals;
+
   const report = buildFriendReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -63,6 +69,8 @@ export async function runFriendSocialDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairFriendship,
+    friendSignalsA,
+    friendSignalsB,
     locale: params.locale,
   });
 

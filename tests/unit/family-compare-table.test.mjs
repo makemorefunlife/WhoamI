@@ -104,13 +104,17 @@ const ctxForBaseline = buildFamilyRuleContext({
   locale: "ko-KR",
 });
 const baselineFamily = buildFamilyParentChildReport(ctxForBaseline);
-const { section_compare_table: _omit, ...reportFamilyWithoutCompareTable } = koReport.family;
+const {
+  section_compare_table: _omitCompare,
+  section_household_roles: _omitRoles,
+  ...reportFamilyWithoutPart2Extras
+} = koReport.family;
 assert.deepEqual(
-  reportFamilyWithoutCompareTable,
+  reportFamilyWithoutPart2Extras,
   baselineFamily,
-  "section_compare_table을 제외한 모든 필드는 buildFamilyParentChildReport(ctx) 원본과 완전히 동일해야 함",
+  "Part2 extras(compare/household_roles)를 제외한 필드는 buildFamilyParentChildReport(ctx) 원본과 동일해야 함",
 );
-ok("section_compare_table 필드 추가 외에는 기존 family 서사 결과가 한 글자도 안 바뀜");
+ok("Part2 extras 외에는 기존 family 서사 결과가 한 글자도 안 바뀜");
 
 // ---------------------------------------------------------------------------
 section("4) B bond_distance는 parent_bond_band(기존 Family SSOT)를 사용함");

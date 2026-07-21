@@ -16,6 +16,7 @@ import {
 import { CATEGORY_OFFICE_LABEL } from "./tenGodComplement";
 import { pick } from "./workColleagueCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import { buildWorkSajuCompareTable, type WorkCompareRow } from "./sajuCompareTable";
 
 export type OfficeDnaSection = {
   person_a: OfficeDnaProfile & { nickname: string };
@@ -82,6 +83,13 @@ export type OfficePartnershipReport = {
   section_upset: OfficeUpsetSection;
   section_ideal_roles: OfficeIdealRolesSection;
   section_warning: OfficeWarningSection;
+  /**
+   * "한눈에 비교" 표 — 팀 회의에서 확정한 6개 사주 기반 비교축 (sajuCompareTable.ts).
+   * optional인 이유: 오늘 이전에 생성·캐시된 리포트(DB `result_premium_by_kind`)에는
+   * 이 필드가 없다 — 값이 없을 때 가짜 데이터를 채우지 않고 섹션을 생략한다는
+   * 기존 원칙(레거시 payload 방어)을 그대로 따른다.
+   */
+  section_compare_table?: WorkCompareRow[];
 };
 
 const CATEGORY_WEAPONS: Record<Locale, Record<string, string[]>> = {
@@ -101,16 +109,21 @@ const CATEGORY_WEAPONS: Record<Locale, Record<string, string[]>> = {
   },
 };
 
-function resolveOneLineDefinition(ctx: WorkColleagueContext): string {
+/**
+ * `dnaA`/`dnaB`는 호출부(buildOfficePartnershipReport)가 이미 계산해 둔
+ * OfficeDnaProfile을 받는다 — 예전에는 이 함수 안에서 `buildOfficeDnaProfile`을
+ * A/B 각각 한 번씩 더 호출해 캐릭터 타입 전체를 다시 계산하고 타이틀 한 글자만
+ * 뽑아 썼다(겹친 분석). 이 함수와 `buildMyBoundary` 둘 다 같은 값을 재계산하고
+ * 있었어서, 사람당 DNA 프로필이 리포트 1건당 3번씩 계산되던 걸 1번으로 줄였다.
+ */
+function resolveOneLineDefinition(
+  ctx: WorkColleagueContext,
+  dnaA: OfficeDnaProfile,
+  dnaB: OfficeDnaProfile,
+): string {
   const { activation, benefit, risk } = ctx.masterScores;
-  const titleA =
-    buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale).character_title.split(
-      " · ",
-    )[0] ?? pick(ctx.locale, "an executor", "실행형");
-  const titleB =
-    buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale).character_title.split(
-      " · ",
-    )[0] ?? pick(ctx.locale, "a supporter", "지원형");
+  const titleA = dnaA.character_title.split(" · ")[0] ?? pick(ctx.locale, "an executor", "실행형");
+  const titleB = dnaB.character_title.split(" · ")[0] ?? pick(ctx.locale, "a supporter", "지원형");
 
   if (benefit >= 70 && risk < 40) {
     return pick(
@@ -263,13 +276,12 @@ function buildConflictTrigger(ctx: WorkColleagueContext): string {
   );
 }
 
-function buildMyBoundary(ctx: WorkColleagueContext, who: "a" | "b"): string {
+function buildMyBoundary(
+  ctx: WorkColleagueContext,
+  who: "a" | "b",
+  dna: OfficeDnaProfile,
+): string {
   const nickname = who === "a" ? ctx.nicknameA : ctx.nicknameB;
-  const dna = buildOfficeDnaProfile(
-    who === "a" ? ctx.sajuJsonA : ctx.sajuJsonB,
-    who === "a" ? ctx.tenGodsA : ctx.tenGodsB,
-    ctx.locale,
-  );
   const strength = who === "a" ? ctx.strengthA : ctx.strengthB;
 
   const lines = [
@@ -295,8 +307,8 @@ function buildMyBoundary(ctx: WorkColleagueContext, who: "a" | "b"): string {
 export function buildOfficePartnershipReport(
   ctx: WorkColleagueContext,
 ): OfficePartnershipReport {
-  const dnaA = buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale);
-  const dnaB = buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale);
+  const dnaA = buildOfficeDnaProfile(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale, ctx.workSignalsA);
+  const dnaB = buildOfficeDnaProfile(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale, ctx.workSignalsB);
 
   const deEscalation = pickDeEscalationCard(
     ctx.tenGodsA,
@@ -304,17 +316,31 @@ export function buildOfficePartnershipReport(
     ctx.workPairAnalysis.chartA,
     ctx.workPairAnalysis.chartB,
     ctx.locale,
+    ctx.workSignalsA,
+    ctx.workSignalsB,
   );
 
   const workStyleA = sanitizeOfficeText(
-    `${ctx.nicknameA} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale)}`,
+    `${ctx.nicknameA} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonA, ctx.tenGodsA, ctx.locale, ctx.workSignalsA)}`,
   );
   const workStyleB = sanitizeOfficeText(
-    `${ctx.nicknameB} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale)}`,
+    `${ctx.nicknameB} — ${resolveWorkColleagueStylePhrase(ctx.sajuJsonB, ctx.tenGodsB, ctx.locale, ctx.workSignalsB)}`,
   );
 
-  const idealA = buildIdealRoleFit(ctx.nicknameA, ctx.sajuJsonA, ctx.tenGodsA, ctx.locale);
-  const idealB = buildIdealRoleFit(ctx.nicknameB, ctx.sajuJsonB, ctx.tenGodsB, ctx.locale);
+  const idealA = buildIdealRoleFit(
+    ctx.nicknameA,
+    ctx.sajuJsonA,
+    ctx.tenGodsA,
+    ctx.locale,
+    ctx.workSignalsA,
+  );
+  const idealB = buildIdealRoleFit(
+    ctx.nicknameB,
+    ctx.sajuJsonB,
+    ctx.tenGodsB,
+    ctx.locale,
+    ctx.workSignalsB,
+  );
 
   return {
     section_dna: {
@@ -325,7 +351,7 @@ export function buildOfficePartnershipReport(
       fit_pct: ctx.masterScores.activation,
       synergy_pct: ctx.masterScores.benefit,
       risk_pct: ctx.masterScores.risk,
-      one_line_definition: resolveOneLineDefinition(ctx),
+      one_line_definition: resolveOneLineDefinition(ctx, dnaA, dnaB),
     },
     section_mix_fit: {
       person_a_work_style: workStyleA,
@@ -333,8 +359,8 @@ export function buildOfficePartnershipReport(
       communication_fit: buildCommunicationFitWitty(ctx),
     },
     section_respect: {
-      person_a_boundary: buildMyBoundary(ctx, "a"),
-      person_b_boundary: buildMyBoundary(ctx, "b"),
+      person_a_boundary: buildMyBoundary(ctx, "a", dnaA),
+      person_b_boundary: buildMyBoundary(ctx, "b", dnaB),
     },
     section_roles: {
       person_a: buildPersonRoleCard(ctx, "a"),
@@ -347,12 +373,14 @@ export function buildOfficePartnershipReport(
         ctx.sajuJsonA,
         ctx.tenGodsA,
         ctx.locale,
+        ctx.workSignalsA,
       ),
       person_b: buildUpsetResponseGuide(
         ctx.nicknameB,
         ctx.sajuJsonB,
         ctx.tenGodsB,
         ctx.locale,
+        ctx.workSignalsB,
       ),
     },
     section_ideal_roles: {
@@ -370,5 +398,6 @@ export function buildOfficePartnershipReport(
       conflict_trigger: buildConflictTrigger(ctx),
       de_escalation: deEscalation,
     },
+    section_compare_table: buildWorkSajuCompareTable(ctx),
   };
 }

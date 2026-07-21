@@ -4,6 +4,9 @@ import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
+
+type WealthOfficerPower = CohabitationSajuSignals["wealth_officer_power"];
 
 export type TenGodCounts = Record<string, number>;
 
@@ -18,6 +21,9 @@ export function countTenGodsForMarriage(
 ): TenGodCounts {
   const counts: TenGodCounts = {};
   for (const t of sajuJson.tenGods ?? []) {
+    // 일주(day pillar)는 일간을 자기 자신과 비교하는 항목이라 정의상 항상
+    // 비견(self)으로 계산됨 — 실제 신호가 아니므로 카운트에서 제외한다.
+    if (t.pillar === "일주") continue;
     const name = t.godData?.kor_name ?? t.godCode ?? "";
     if (!name) continue;
     counts[name] = (counts[name] ?? 0) + 1;
@@ -114,6 +120,23 @@ export function analyzeMarriageTenGodComplement(
 
 const WEALTH_STORAGE_BRANCHES = new Set(["chuk", "jin", "mi", "sul"]);
 
+function legacyCfoScore(
+  p: PersonTenGodProfile,
+  branches: Set<string>,
+): number {
+  let s = p.wealthOfficer * 3 + p.wealth * 2;
+  for (const br of branches) {
+    if (WEALTH_STORAGE_BRANCHES.has(br)) s += 4;
+  }
+  if (p.noWealth && p.self >= 3) s -= 3;
+  return s;
+}
+
+/**
+ * PersonCore SSOT `CohabitationSajuSignals.wealth_officer_power` — 계산은 되지만
+ * 리포트 어디서도 안 쓰이던 신호. `cfo_affinity_score`/`economic_dominance_band`가
+ * 있으면 그걸 우선 쓰고, 없으면(레거시 캐시 호환) 기존 십신 카운트 계산으로 폴백한다.
+ */
 export function pickHouseholdCfo(
   nicknameA: string,
   nicknameB: string,
@@ -122,37 +145,35 @@ export function pickHouseholdCfo(
   chartABranchCodes: Set<string>,
   chartBBranchCodes: Set<string>,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  wealthOfficerPowerA?: WealthOfficerPower,
+  wealthOfficerPowerB?: WealthOfficerPower,
 ): { nickname: string; reason: string } {
   const a = profileTenGods(countsA);
   const b = profileTenGods(countsB);
 
-  const score = (
-    p: PersonTenGodProfile,
-    branches: Set<string>,
-  ): number => {
-    let s = p.wealthOfficer * 3 + p.wealth * 2;
-    for (const br of branches) {
-      if (WEALTH_STORAGE_BRANCHES.has(br)) s += 4;
-    }
-    if (p.noWealth && p.self >= 3) s -= 3;
-    return s;
-  };
-
-  const scoreA = score(a, chartABranchCodes);
-  const scoreB = score(b, chartBBranchCodes);
+  const scoreA = wealthOfficerPowerA?.cfo_affinity_score ?? legacyCfoScore(a, chartABranchCodes);
+  const scoreB = wealthOfficerPowerB?.cfo_affinity_score ?? legacyCfoScore(b, chartBBranchCodes);
+  const isHighDominance = (nick: "A" | "B"): boolean =>
+    nick === "A"
+      ? wealthOfficerPowerA
+        ? wealthOfficerPowerA.economic_dominance_band === "high"
+        : a.wealthOfficer >= 3
+      : wealthOfficerPowerB
+        ? wealthOfficerPowerB.economic_dominance_band === "high"
+        : b.wealthOfficer >= 3;
 
   let winnerNick = scoreA >= scoreB ? nicknameA : nicknameB;
-  let winnerProfile = scoreA >= scoreB ? a : b;
+  let winnerIsHighDominance = isHighDominance(scoreA >= scoreB ? "A" : "B");
 
   if (scoreA === scoreB) {
     const jungjaeA = (countsA["정재"] ?? 0) + (countsA["정관"] ?? 0);
     const jungjaeB = (countsB["정재"] ?? 0) + (countsB["정관"] ?? 0);
     if (jungjaeB > jungjaeA) {
       winnerNick = nicknameB;
-      winnerProfile = b;
+      winnerIsHighDominance = isHighDominance("B");
     } else {
       winnerNick = nicknameA;
-      winnerProfile = a;
+      winnerIsHighDominance = isHighDominance("A");
     }
   }
 
@@ -162,10 +183,10 @@ export function pickHouseholdCfo(
     nickname: winnerNick,
     reason: pick(
       locale,
-      winnerProfile.wealthOfficer >= 3
+      winnerIsHighDominance
         ? `${winnerNick} is the sole CFO leader of the household. Budget, bank accounts, and big-spending decisions should all go to this one person, or the household gets shaky. ${loserNick} should give input but leave the final call to them.`
         : `${winnerNick} has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A "dual CFO" setup is banned — only one person should hold the reins.`,
-      winnerProfile.wealthOfficer >= 3
+      winnerIsHighDominance
         ? `${winnerNick}이(가) 집안 CFO 단독 리더입니다. 예산·통장·큰 지출 결정권은 이 사람 한 명에게 몰아야 집이 안 흔들립니다. ${loserNick}은(는) 의견은 내되 최종 결정은 맡기세요.`
         : `${winnerNick}이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요.`,
     ),
@@ -283,6 +304,8 @@ export function analyzeMarriageTenGod(params: {
   countsB?: TenGodCounts;
   chartA?: ReturnType<typeof buildChartContext>;
   chartB?: ReturnType<typeof buildChartContext>;
+  wealthOfficerPowerA?: WealthOfficerPower;
+  wealthOfficerPowerB?: WealthOfficerPower;
   locale?: Locale;
 }): MarriageTenGodAnalysis {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
@@ -321,6 +344,8 @@ export function analyzeMarriageTenGod(params: {
       chartA.branchCodes,
       chartB.branchCodes,
       locale,
+      params.wealthOfficerPowerA,
+      params.wealthOfficerPowerB,
     ),
     parentingA: resolveParentingStyle(countsA, locale),
     parentingB: resolveParentingStyle(countsB, locale),

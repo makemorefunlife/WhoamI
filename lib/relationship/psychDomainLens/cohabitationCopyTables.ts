@@ -191,6 +191,30 @@ export const COHABITATION_AXIS_COPY: Partial<
       ),
     },
   },
+  thinking_style: {
+    tension: c(
+      "생활비·이사처럼 큰 결정에서 '숫자로 비교' vs '일단 느낌이 좋아서'로 부딪히나요?",
+      "생각하는 방식 자체가 달라 같은 결정도 다르게 접근하려고 해요. 「돈과 집안일」에서 결정 방식을 미리 맞춰 두면 좋아요.",
+    ),
+    similarity: c(
+      "둘 다 근거부터 따지거나, 둘 다 느낌으로 빠르게 정하는 편인가요?",
+      "생각의 결이 비슷해서 큰 결정도 설명 없이 빨리 합의돼요.",
+    ),
+    complementary: {
+      even: c(
+        "근거·비교표부터 보는 쪽과 일단 끌리는 대로 정하는 쪽이 갈리나요?",
+        "분석형이 근거를 채우고 직관형이 방향을 짚으면 이사·목돈 결정이 훨씬 빨라져요.",
+      ),
+      a_high: c(
+        "숫자·근거를 더 꼼꼼히 챙기는 쪽이 있나요?",
+        "분석 담당·직감 담당으로 나누면 큰 결정 앞에서 다투는 시간이 줄어요.",
+      ),
+      b_high: c(
+        "숫자·근거를 더 꼼꼼히 챙기는 쪽이 있나요?",
+        "분석 담당·직감 담당으로 나누면 큰 결정 앞에서 다투는 시간이 줄어요.",
+      ),
+    },
+  },
 };
 
 export const COHABITATION_DOMAIN_AXES: Partial<
@@ -226,6 +250,11 @@ export const COHABITATION_DOMAIN_AXES: Partial<
     section_hint: "「가족 경계」",
     section_key: "family_boundary",
   },
+  thinking_style: {
+    topic: "사고방식",
+    section_hint: "「돈과 집안일」",
+    section_key: "money_chores",
+  },
 };
 
 /**
@@ -243,6 +272,7 @@ export const COHABITATION_DOMAIN_AXES_EN: Partial<
   self_control: { ...COHABITATION_DOMAIN_AXES.self_control!, topic: "Sleep & Life Rhythm", section_hint: "「Bedroom Chemistry」" },
   energy_style: { ...COHABITATION_DOMAIN_AXES.energy_style!, topic: "Energy & Activity Level", section_hint: "「Home Life DNA」" },
   empathy: { ...COHABITATION_DOMAIN_AXES.empathy!, topic: "In-Laws & Boundaries", section_hint: "「Family Boundaries」" },
+  thinking_style: { ...COHABITATION_DOMAIN_AXES.thinking_style!, topic: "Thinking Style", section_hint: "「Money & Chores」" },
 };
 
 export const COHABITATION_CHART_NOTE =
@@ -395,6 +425,30 @@ export const COHABITATION_AXIS_COPY_EN: Partial<
       b_high: c(
         "Is there one of you who checks the other's mood first?",
         "A gap in emotional-empathy speed can cause a 'why don't you get it' vs. 'just solve it already' clash. Draw the boundary lines together in 「Family Boundaries」.",
+      ),
+    },
+  },
+  thinking_style: {
+    tension: c(
+      "For big decisions like rent or moving, does it split into 'compare the numbers' vs. 'it just feels right'?",
+      "You approach the same decision differently because you think differently. Agreeing on a decision style ahead of time in 「Money & Chores」 helps.",
+    ),
+    similarity: c(
+      "Do you both want the evidence first, or do you both decide fast by feel?",
+      "Your way of thinking lines up, so even big decisions get agreed on quickly without much explanation.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into leading with evidence/comparison charts vs. just going with what feels right?",
+        "Moving or big-purchase decisions go much faster when the analytical type fills in the evidence and the intuitive type calls the direction.",
+      ),
+      a_high: c(
+        "Is there one of you who's more thorough about numbers and evidence?",
+        "Splitting into an analysis lead and a gut-feel lead cuts down on fights before big decisions.",
+      ),
+      b_high: c(
+        "Is there one of you who's more thorough about numbers and evidence?",
+        "Splitting into an analysis lead and a gut-feel lead cuts down on fights before big decisions.",
       ),
     },
   },

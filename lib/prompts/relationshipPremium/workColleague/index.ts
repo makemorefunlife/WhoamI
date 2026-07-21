@@ -53,6 +53,13 @@ export async function runWorkColleagueDeepAnalysis(
         ).work
       : null;
 
+  // work 명리 신호(월주 격국·신살 등) — PersonCore가 person별로 1회 계산해 둔
+  // 값을 그대로 읽어서 캐릭터 타입 판정(SSOT) + 이상적 역할 "why" 텍스트에
+  // 반영한다. sajuMaster가 없으면(레거시 캐시 등) officeLanguage.ts가 raw-count
+  // 방식으로 안전하게 폴백한다.
+  const workSignalsA = params.sajuMasterA?.domain_signals.work_signals;
+  const workSignalsB = params.sajuMasterB?.domain_signals.work_signals;
+
   const report = buildWorkColleagueReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -66,6 +73,8 @@ export async function runWorkColleagueDeepAnalysis(
     psychMasterB: params.psychMasterB,
     personCoreMeta: params.personCoreMeta,
     pairWork,
+    workSignalsA,
+    workSignalsB,
     locale: params.locale,
   });
 

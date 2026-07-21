@@ -11,9 +11,11 @@ import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/
 import { buildFriendRuleContext } from "./buildFriendRuleContext";
 import { buildFriendSnapshotPanel } from "./buildFriendSnapshotPanel";
 import { buildFriendSocialReport } from "./friendReportTemplate";
+import { buildFriendSajuCompareTable } from "./friendSajuCompareTable";
 import { buildFriendPrescriptions } from "./buildFriendPrescriptions";
 import type { FriendPrescriptionPack } from "./friendPrescriptionTypes";
 import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 
@@ -58,17 +60,20 @@ export function buildFriendReport(params: {
     inputFingerprintB: string;
   };
   pairFriendship?: PairFriendshipSignals | null;
+  /** PersonCore bake-in 명리 신호(년월 궁합·조후·비겁고립) — Social DNA SSOT */
+  friendSignalsA?: FriendshipSajuSignals;
+  friendSignalsB?: FriendshipSajuSignals;
   locale?: Locale;
 }): FriendReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildFriendRuleContext({ ...params, locale });
-  const friend = buildFriendSocialReport(ctx);
+  const friendBase = buildFriendSocialReport(ctx);
 
   const snapshot_panel = buildFriendSnapshotPanel(
     ctx,
     {
       gaugeLabel: pick(locale, "Social DNA · Friendship Snapshot", "Social DNA · 우정 스냅샷"),
-      representativeLine: friend.section_snapshot.one_line_friendship,
+      representativeLine: friendBase.section_snapshot.one_line_friendship,
     },
     {
       psychA: params.psychMasterA ?? null,
@@ -83,6 +88,21 @@ export function buildFriendReport(params: {
     locale,
   );
 
+  const friend = {
+    ...friendBase,
+    section_compare_table: buildFriendSajuCompareTable({
+      nicknameA: params.nicknameA,
+      nicknameB: params.nicknameB,
+      tenGodsA: ctx.tenGodsA,
+      tenGodsB: ctx.tenGodsB,
+      dnaA: ctx.friendPairAnalysis.dnaA,
+      dnaB: ctx.friendPairAnalysis.dnaB,
+      chartA: ctx.friendPairAnalysis.chartA,
+      chartB: ctx.friendPairAnalysis.chartB,
+      locale,
+    }),
+  };
+
   const prescription_friendship = params.pairFriendship
     ? buildFriendPrescriptions({
         pair: params.pairFriendship,
@@ -93,9 +113,9 @@ export function buildFriendReport(params: {
     : undefined;
 
   return {
-    headline: friend.section_snapshot.one_line_friendship,
+    headline: friendBase.section_snapshot.one_line_friendship,
     summary_line: `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
-    one_line_friendship: friend.section_snapshot.one_line_friendship,
+    one_line_friendship: friendBase.section_snapshot.one_line_friendship,
     snapshot_panel,
     friend,
     meta: {

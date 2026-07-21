@@ -47,6 +47,8 @@ export async function runFamilyParentChildDeepAnalysis(
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
     locale?: Locale;
+    /** true면 시청자=자녀 — household_roles 나/상대 */
+    childIsViewer?: boolean;
   },
 ): Promise<FamilyParentChildDeepPayload> {
   const pairFamily =
@@ -83,6 +85,7 @@ export async function runFamilyParentChildDeepAnalysis(
     friendshipSignalsA,
     friendshipSignalsB,
     locale: params.locale,
+    childIsViewer: params.childIsViewer,
   });
 
   return {

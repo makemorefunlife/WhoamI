@@ -10,6 +10,24 @@ import {
 } from "./friendDeEscalationPrescriptions";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
+import type { IsolationBand } from "@/lib/personCore/sajuSignals/types";
+
+/**
+ * PersonCore SSOT 비겁고립(bijie_isolation) 보강 문장 — 계산은 되지만 리포트
+ * 어디에도 안 쓰이던 신호(`FriendshipSajuSignals.bijie_isolation.isolation_band`)를
+ * 우정 포지션(friend_position)에 반영한다. balanced는 특별히 튀는 신호가 아니라서
+ * 보강 문장을 붙이지 않는다(work의 신살 보너스와 동일한 "신호가 뚜렷할 때만" 원칙).
+ */
+const ISOLATION_BONUS: Record<Locale, Record<"bonded" | "lone_wolf", string>> = {
+  "en-US": {
+    bonded: "On top of that, they naturally blend into a group — they tend to gather people around them.",
+    lone_wolf: "On top of that, they're just as comfortable on their own — they don't need a crowd to feel okay.",
+  },
+  "ko-KR": {
+    bonded: "게다가 무리에 자연스럽게 섞이는 편이라, 사람을 잘 모으는 타입이에요.",
+    lone_wolf: "게다가 혼자여도 편안한 타입이라, 꼭 무리 지어 있지 않아도 괜찮아해요.",
+  },
+};
 
 export type SocialDnaPersonSection = {
   nickname: string;
@@ -51,16 +69,30 @@ export type FriendKillerSections = {
   section_play_money: PlayMoneySection;
   section_breakup_guide: BreakupGuideSection;
   section_de_escalation: FriendDeEscalationCard;
+  /**
+   * 심리 11축 기반 "한눈에 비교" 표 — psych_match가 있어야 계산 가능해서
+   * buildFriendReport.ts에서 이 객체 생성 후 별도로 채워 넣는다(optional,
+   * 레거시 캐시/설문 미완료 페어와의 하위호환).
+   */
+  section_compare_table?: import("./friendSajuCompareTable").FriendCompareRow[];
 };
 
 function buildPersonDna(
   nickname: string,
   dna: FriendDnaProfile,
+  isolationBand: IsolationBand | undefined,
+  locale: Locale,
 ): SocialDnaPersonSection {
+  const bonus =
+    isolationBand && isolationBand !== "balanced"
+      ? ISOLATION_BONUS[locale][isolationBand]
+      : null;
   return {
     nickname,
     social_title: sanitizeFriendText(dna.socialTitle),
-    friend_position: sanitizeFriendText(dna.friendPosition),
+    friend_position: sanitizeFriendText(
+      bonus ? `${dna.friendPosition} ${bonus}` : dna.friendPosition,
+    ),
     tikitaka_label: sanitizeFriendText(dna.tikitakaLabel),
     tikitaka_description: sanitizeFriendText(dna.tikitakaDescription),
     battery_description: sanitizeFriendText(dna.batteryDescription),
@@ -191,6 +223,8 @@ export function buildFriendKillerSections(params: {
   masterScores: FriendMasterScores;
   countsA: TenGodCounts;
   countsB: TenGodCounts;
+  isolationBandA?: IsolationBand;
+  isolationBandB?: IsolationBand;
   locale?: Locale;
 }): FriendKillerSections {
   const {
@@ -220,8 +254,8 @@ export function buildFriendKillerSections(params: {
   const upsetDna = upsetSide === "A" ? dnaA : dnaB;
 
   return {
-    section_social_dna_a: buildPersonDna(nicknameA, dnaA),
-    section_social_dna_b: buildPersonDna(nicknameB, dnaB),
+    section_social_dna_a: buildPersonDna(nicknameA, dnaA, params.isolationBandA, locale),
+    section_social_dna_b: buildPersonDna(nicknameB, dnaB, params.isolationBandB, locale),
     section_snapshot: {
       connection_pct: masterScores.connection,
       banter_pct: masterScores.banter,

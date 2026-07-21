@@ -13,6 +13,7 @@ import {
   buildHouseholdPartnershipReport,
   type HouseholdPartnershipReport,
 } from "./homeReportTemplate";
+import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
 import {
   buildCohabitationKillerQuestions,
 } from "./buildCohabitationKillerQuestions";
@@ -20,6 +21,7 @@ import type { CohabitationKillerQuestionPack } from "./cohabitationKillerTypes";
 import { buildCohabitationPrescriptions } from "./buildCohabitationPrescriptions";
 import type { CohabitationPrescriptionPack } from "./cohabitationPrescriptionTypes";
 import type { PairCohabitationSignals } from "@/lib/personCore/sajuSignals/pairTypes";
+import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
 
@@ -76,11 +78,29 @@ export function buildMarriageReport(params: {
   };
   /** PersonCore pair 교차 연산 — prescription_cohabitation 생성용 */
   pairCohabitation?: PairCohabitationSignals | null;
+  /** PersonCore 인당 신호 — CFO(재관 세력) 판정 등에 사용 */
+  cohabitationSignalsA?: CohabitationSajuSignals;
+  cohabitationSignalsB?: CohabitationSajuSignals;
   locale?: Locale;
 }): MarriageReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildMarriageRuleContext({ ...params, locale });
-  const household = buildHouseholdPartnershipReport(ctx);
+  const household: HouseholdPartnershipReport = {
+    ...buildHouseholdPartnershipReport(ctx),
+    section_compare_table: buildMarriageSajuCompareTable({
+      nicknameA: params.nicknameA,
+      nicknameB: params.nicknameB,
+      tenGodsA: ctx.tenGod.countsA,
+      tenGodsB: ctx.tenGod.countsB,
+      needsStrongBoundaryA: ctx.tenGod.boundaryA.needsStrongBoundary,
+      needsStrongBoundaryB: ctx.tenGod.boundaryB.needsStrongBoundary,
+      parentingStyleA: ctx.tenGod.parentingA.style,
+      parentingStyleB: ctx.tenGod.parentingB.style,
+      economicDominanceBandA: params.cohabitationSignalsA?.wealth_officer_power.economic_dominance_band,
+      economicDominanceBandB: params.cohabitationSignalsB?.wealth_officer_power.economic_dominance_band,
+      locale,
+    }),
+  };
 
   const snapshot_panel = buildMarriageSnapshotPanel(
     ctx,

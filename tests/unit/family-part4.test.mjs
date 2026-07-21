@@ -116,7 +116,33 @@ section("Locale layer labels");
   assert.ok(HANGUL_RE.test(ko.parentLensLayerLabel));
   assert.ok(HANGUL_RE.test(ko.filialLayerLabel));
   assert.ok(!HANGUL_RE.test(en.destinyLayerHint));
-  ok("ko/en Part4 layer labels present");
+  assert.ok(!/lens/i.test(en.parentLensLayerLabel));
+  assert.ok(!/lens/i.test(en.parentLensLayerHint));
+  assert.ok(!/렌즈/.test(ko.parentLensLayerLabel));
+  assert.ok(!/렌즈/.test(ko.parentLensLayerHint));
+  ok("ko/en Part4 layer labels present without lens wording");
+}
+
+section("Task1 — no user-facing lens wording on role labels");
+{
+  assert.ok(!/렌즈|lens/i.test(messagesKoKR.hub.motherLensShort));
+  assert.ok(!/렌즈|lens/i.test(messagesKoKR.hub.fatherLensShort));
+  assert.ok(!/렌즈|lens/i.test(messagesKoKR.report.motherLens));
+  assert.ok(!/렌즈|lens/i.test(messagesKoKR.report.fatherLens));
+  assert.ok(!/렌즈|lens/i.test(messagesKoKR.report.premiumEmptyFamilyHint));
+  assert.ok(!/lens/i.test(messagesEnUS.hub.motherLensShort));
+  assert.ok(!/lens/i.test(messagesEnUS.hub.fatherLensShort));
+  assert.ok(!/lens/i.test(messagesEnUS.report.motherLens));
+  assert.ok(!/lens/i.test(messagesEnUS.report.fatherLens));
+  assert.ok(!/lens/i.test(messagesEnUS.report.premiumEmptyFamilyHint));
+  const mother = buildReport({ parentType: "mother" });
+  const father = buildReport({
+    parentType: "father",
+    roles: { roleA: "child", roleB: "father" },
+  });
+  assert.ok(!/렌즈|lens/i.test(mother.family.parent_lens_summary));
+  assert.ok(!/렌즈|lens/i.test(father.family.parent_lens_summary));
+  ok("hub/report/summary copy has no lens wording");
 }
 
 section("Recognition enrichment — psych absent → filial body unchanged");
@@ -239,6 +265,7 @@ section("Compatibility — fields + ViewModel; reward_index not required in UI")
   assert.ok(report.family.section_destiny);
   assert.ok(report.family.section_filial_reward);
   assert.ok(report.family.parent_lens_summary);
+  assert.ok(!/렌즈|lens/i.test(report.family.parent_lens_summary));
   assert.ok(report.family.section_filial_reward.reward_index);
   const vm = buildFamilyReportViewModel(report, { locale: "ko-KR" });
   const destiny = vm.sections.find((s) => s.type === "destiny");
@@ -246,6 +273,7 @@ section("Compatibility — fields + ViewModel; reward_index not required in UI")
   assert.equal(destiny.partNumber, 4);
   assert.equal(filial.partNumber, 4);
   assert.ok(destiny.parentLensSummary);
+  assert.ok(!/렌즈|lens/i.test(destiny.parentLensSummary));
   assert.ok(filial.rewardIndex);
   assert.deepEqual(
     report.family.section_compare_table.map((r) => r.id),
@@ -255,6 +283,16 @@ section("Compatibility — fields + ViewModel; reward_index not required in UI")
       "affection_expression",
       "guidance_balance",
       "gathering_recovery",
+      "home_climate",
+    ],
+  );
+  const compare = vm.sections.find((s) => s.type === "compare_table");
+  assert.deepEqual(
+    compare.rows.map((r) => r.id),
+    [
+      "correction_style",
+      "bond_distance",
+      "guidance_balance",
       "home_climate",
     ],
   );

@@ -199,6 +199,30 @@ export const WORK_AXIS_COPY: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
       ),
     },
   },
+  thinking_style: {
+    tension: c(
+      "보고할 때 '데이터부터' vs '감으로 먼저'로 부딪히나요?",
+      "문제를 푸는 방식 자체가 달라 서로 설득하는 데 시간이 걸릴 수 있어요. 「오피스 DNA」에서 서로의 기질을 먼저 확인해 보세요.",
+    ),
+    similarity: c(
+      "둘 다 데이터로 판단하거나, 둘 다 감으로 빠르게 판단하는 편인가요?",
+      "생각하는 결이 비슷해서 긴 설명 없이도 설득이 빨라요.",
+    ),
+    complementary: {
+      even: c(
+        "숫자·근거부터 보는 쪽과 직감·패턴부터 보는 쪽이 갈리나요?",
+        "분석형이 근거를 채우고 직관형이 방향을 먼저 짚으면 의사결정이 훨씬 빨라져요.",
+      ),
+      a_high: c(
+        "데이터·근거를 더 꼼꼼히 챙기는 쪽이 있나요?",
+        "분석 담당과 직관 담당으로 나누면 회의 시간이 줄어요.",
+      ),
+      b_high: c(
+        "데이터·근거를 더 꼼꼼히 챙기는 쪽이 있나요?",
+        "분석 담당과 직관 담당으로 나누면 회의 시간이 줄어요.",
+      ),
+    },
+  },
 };
 
 export const WORK_DOMAIN_AXES: Partial<
@@ -234,6 +258,11 @@ export const WORK_DOMAIN_AXES: Partial<
     section_hint: "「오피스 DNA」",
     section_key: "dna",
   },
+  thinking_style: {
+    topic: "사고방식",
+    section_hint: "「오피스 DNA」",
+    section_key: "dna",
+  },
 };
 
 /**
@@ -251,6 +280,7 @@ export const WORK_DOMAIN_AXES_EN: Partial<
   decision_style: { ...WORK_DOMAIN_AXES.decision_style!, topic: "Decision-Making", section_hint: "「Ideal Roles」" },
   recognition: { ...WORK_DOMAIN_AXES.recognition!, topic: "Recognition & Feedback", section_hint: "「Respect & Boundaries」" },
   energy_style: { ...WORK_DOMAIN_AXES.energy_style!, topic: "Collaboration Energy", section_hint: "「Office DNA」" },
+  thinking_style: { ...WORK_DOMAIN_AXES.thinking_style!, topic: "Thinking Style", section_hint: "「Office DNA」" },
 };
 
 export const WORK_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
@@ -395,6 +425,30 @@ export const WORK_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> =
       b_high: c(
         "Is there one of you who works best while meeting people?",
         "It works well to split into a front-facing/sales role and a focused-work role.",
+      ),
+    },
+  },
+  thinking_style: {
+    tension: c(
+      "In reports, does it split into 'data first' vs 'gut feeling first'?",
+      "You solve the same problem in different ways, so it can take longer to talk each other around. Check the 「Office DNA」 section to see each other's temperament first.",
+    ),
+    similarity: c(
+      "Do you both lean on data, or do you both go with a fast gut call?",
+      "Your way of thinking lines up, so you can persuade each other without much explanation.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into leading with numbers/evidence vs. leading with intuition/patterns?",
+        "Decisions get much faster when the analytical type fills in the evidence and the intuitive type calls the direction first.",
+      ),
+      a_high: c(
+        "Is there one of you who's more thorough about data and evidence?",
+        "Splitting into an analysis lead and an intuition lead cuts down meeting time.",
+      ),
+      b_high: c(
+        "Is there one of you who's more thorough about data and evidence?",
+        "Splitting into an analysis lead and an intuition lead cuts down meeting time.",
       ),
     },
   },
@@ -545,6 +599,30 @@ export const FRIEND_AXIS_COPY: Partial<Record<SecondaryAxisKey, AxisCopySet>> = 
       ),
     },
   },
+  thinking_style: {
+    tension: c(
+      "여행·약속 짤 때 '데이터로 비교' vs '일단 끌리는 대로'로 부딪히나요?",
+      "생각하는 방식이 달라 같은 상황도 다르게 풀려고 해서 의견 차이가 잦을 수 있어요.",
+    ),
+    similarity: c(
+      "둘 다 꼼꼼히 따지거나, 둘 다 감으로 편하게 정하는 편인가요?",
+      "생각의 결이 비슷해서 설명 없이도 척하면 척이에요.",
+    ),
+    complementary: {
+      even: c(
+        "정보부터 찾아보는 쪽과 일단 저지르는 쪽이 갈리나요?",
+        "분석형이 정보를 모으고 직관형이 방향을 정하면 계획이 빨라져요.",
+      ),
+      a_high: c(
+        "더 꼼꼼히 따져보는 쪽이 있나요?",
+        "분석 담당과 직관 담당으로 나누면 약속·여행 짜기가 편해져요.",
+      ),
+      b_high: c(
+        "더 꼼꼼히 따져보는 쪽이 있나요?",
+        "분석 담당과 직관 담당으로 나누면 약속·여행 짜기가 편해져요.",
+      ),
+    },
+  },
 };
 
 export const FRIEND_DOMAIN_AXES: Partial<
@@ -580,6 +658,11 @@ export const FRIEND_DOMAIN_AXES: Partial<
     section_hint: "「노는 코드와 돈」",
     section_key: "money",
   },
+  thinking_style: {
+    topic: "사고방식",
+    section_hint: "「Social DNA」",
+    section_key: "dna",
+  },
 };
 
 /**
@@ -597,6 +680,7 @@ export const FRIEND_DOMAIN_AXES_EN: Partial<
   conflict_style: { ...FRIEND_DOMAIN_AXES.conflict_style!, topic: "Hurt Feelings & Making Up", section_hint: "「When You Drift Apart」" },
   recognition: { ...FRIEND_DOMAIN_AXES.recognition!, topic: "Recognition & Praise", section_hint: "「Friendship Frequency」" },
   practicality: { ...FRIEND_DOMAIN_AXES.practicality!, topic: "Money & Splitting the Bill", section_hint: "「Hangout Style & Money」" },
+  thinking_style: { ...FRIEND_DOMAIN_AXES.thinking_style!, topic: "Thinking Style", section_hint: "「Social DNA」" },
 };
 
 export const FRIEND_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
@@ -741,6 +825,30 @@ export const FRIEND_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>>
       b_high: c(
         "Is there one of you who keeps track of receipts and settling up?",
         "Recognizing the treasurer role takes a lot of the strain off this friendship.",
+      ),
+    },
+  },
+  thinking_style: {
+    tension: c(
+      "Does it split into 'compare the data' vs 'just go with what feels right' when planning a trip or hangout?",
+      "You solve the same situation differently, which can lead to frequent disagreements.",
+    ),
+    similarity: c(
+      "Do you both weigh things carefully, or do you both decide comfortably by gut feel?",
+      "Your way of thinking lines up, so you're in sync without much explaining.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into looking up info first vs. just diving in?",
+        "Plans come together faster when the analytical type gathers info and the intuitive type sets the direction.",
+      ),
+      a_high: c(
+        "Is there one of you who weighs things more carefully?",
+        "Splitting into an analysis lead and a gut-feel lead makes planning trips and hangouts easier.",
+      ),
+      b_high: c(
+        "Is there one of you who weighs things more carefully?",
+        "Splitting into an analysis lead and a gut-feel lead makes planning trips and hangouts easier.",
       ),
     },
   },
@@ -891,6 +999,30 @@ export const FAMILY_AXIS_COPY: Partial<Record<SecondaryAxisKey, AxisCopySet>> = 
       ),
     },
   },
+  thinking_style: {
+    tension: c(
+      "설명할 때 '이유·논리부터' vs '일단 느낌으로'가 부딪히나요?",
+      "생각하는 방식 자체가 달라 같은 잔소리도 다르게 들릴 수 있어요. 「Child DNA」 소통 방식을 먼저 확인해 보세요.",
+    ),
+    similarity: c(
+      "부모와 자녀 모두 이유를 따지거나, 둘 다 느낌으로 빠르게 판단하는 편인가요?",
+      "생각의 결이 비슷해서 긴 설명 없이도 서로 이해가 빨라요.",
+    ),
+    complementary: {
+      even: c(
+        "이유·근거부터 묻는 쪽과 일단 느낌으로 받아들이는 쪽이 갈리나요?",
+        "'왜?'를 묻는 아이에게는 이유를, 느낌으로 받는 아이에게는 분위기를 먼저 챙겨 주세요.",
+      ),
+      a_high: c(
+        "이유·근거를 더 꼼꼼히 따지는 쪽이 있나요?",
+        "설명이 필요한 사람에게 짧게라도 '왜'를 먼저 알려 주면 훈육이 수월해요.",
+      ),
+      b_high: c(
+        "이유·근거를 더 꼼꼼히 따지는 쪽이 있나요?",
+        "설명이 필요한 사람에게 짧게라도 '왜'를 먼저 알려 주면 훈육이 수월해요.",
+      ),
+    },
+  },
 };
 
 export const FAMILY_DOMAIN_AXES: Partial<
@@ -926,6 +1058,11 @@ export const FAMILY_DOMAIN_AXES: Partial<
     section_hint: "「효도 리워드」",
     section_key: "filial",
   },
+  thinking_style: {
+    topic: "사고방식",
+    section_hint: "「Child DNA」",
+    section_key: "dna",
+  },
 };
 
 /**
@@ -943,6 +1080,7 @@ export const FAMILY_DOMAIN_AXES_EN: Partial<
   self_control: { ...FAMILY_DOMAIN_AXES.self_control!, topic: "Emotional Regulation" },
   resilience: { ...FAMILY_DOMAIN_AXES.resilience!, topic: "Recovery & Comfort", section_hint: "「Destiny Score」" },
   recognition: { ...FAMILY_DOMAIN_AXES.recognition!, topic: "Recognition & Praise", section_hint: "「Filial Rewards」" },
+  thinking_style: { ...FAMILY_DOMAIN_AXES.thinking_style!, topic: "Thinking Style", section_hint: "「Child DNA」" },
 };
 
 export const FAMILY_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
@@ -1087,6 +1225,30 @@ export const FAMILY_AXIS_COPY_EN: Partial<Record<SecondaryAxisKey, AxisCopySet>>
       b_high: c(
         "Is there one of you who wants recognition and praise more often?",
         "Even a small habit of quick praise has an outsized effect.",
+      ),
+    },
+  },
+  thinking_style: {
+    tension: c(
+      "When explaining things, does it split into 'reasons and logic first' vs. 'just go with the feeling'?",
+      "A difference in how you think can make the same reminder land completely differently. Check the 「Child DNA」 communication style first.",
+    ),
+    similarity: c(
+      "Do both parent and child either want reasons, or both quickly go with a feeling?",
+      "Your way of thinking lines up, so you understand each other quickly without long explanations.",
+    ),
+    complementary: {
+      even: c(
+        "Does it split into asking 'why' first vs. just accepting things by feel?",
+        "Give reasons to the child who asks 'why,' and pay attention to mood first for the one who goes by feel.",
+      ),
+      a_high: c(
+        "Is there one of you who's more particular about reasons and evidence?",
+        "Discipline goes more smoothly when you give the one who needs an explanation a quick 'why' first.",
+      ),
+      b_high: c(
+        "Is there one of you who's more particular about reasons and evidence?",
+        "Discipline goes more smoothly when you give the one who needs an explanation a quick 'why' first.",
       ),
     },
   },

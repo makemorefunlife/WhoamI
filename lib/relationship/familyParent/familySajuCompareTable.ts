@@ -13,9 +13,10 @@ import {
   type GuidanceMode,
   type GuidanceFit,
 } from "@/lib/personCore/sajuSignals/guidanceProfile";
-import { resolveParentBondBandFromCounts } from "@/lib/personCore/sajuSignals/extractFamilySignals";
 import {
+  resolveParentBondBandFromCounts,
   resolveHomeClimateBand,
+  synthesizeFamilySignalsFromCounts,
   type HomeClimateBand,
 } from "@/lib/personCore/sajuSignals/extractFamilySignals";
 import { buildPairFamilySignals } from "@/lib/personCore/sajuSignals/pairFamilySignals";
@@ -77,6 +78,69 @@ function resolveRoleLensKey(parentRole: FamilyParentRole | undefined): FamilyRol
   if (parentRole === "mother") return "mother";
   if (parentRole === "father") return "father";
   return "neutral";
+}
+
+/**
+ * meaning이 pair 밴드만 쓰면 person shortLabel 차이가 최종 문장에 안 남음.
+ * 이미 계산된 A/B 라벨을 앞에 붙여, 같으면 “같음”·다르면 “차이”가 문장에 나타나게 한다.
+ */
+function personAxisLead(
+  locale: Locale,
+  nameParent: string,
+  labelParent: string,
+  nameChild: string,
+  labelChild: string,
+): string {
+  if (labelParent === labelChild) {
+    return pick(
+      locale,
+      `${nameParent} and ${nameChild} share the same person signal (“${labelParent}”). `,
+      `${nameParent}와 ${nameChild} 모두 ‘${labelParent}’이에요. `,
+    );
+  }
+  return pick(
+    locale,
+    `${nameParent}: “${labelParent}.” ${nameChild}: “${labelChild}.” `,
+    `${nameParent} 쪽은 ‘${labelParent}’, ${nameChild} 쪽은 ‘${labelChild}’이에요. `,
+  );
+}
+
+/** pairFamily 없으면 counts로 seal/bond 합성 → 기존 buildPairFamilySignals SSOT 재사용 (medium 강제 금지). */
+function resolveComparePairFamily(params: {
+  pairFamily?: PairFamilySignals | null;
+  familySignalsParent?: FamilySajuSignals;
+  familySignalsChild?: FamilySajuSignals;
+  countsParent: TenGodCounts;
+  countsChild: TenGodCounts;
+  modeParent: GuidanceMode;
+  modeChild: GuidanceMode;
+}): PairFamilySignals {
+  const famP =
+    params.familySignalsParent ??
+    synthesizeFamilySignalsFromCounts(params.countsParent);
+  const famC =
+    params.familySignalsChild ??
+    synthesizeFamilySignalsFromCounts(params.countsChild);
+  const rebuilt = buildPairFamilySignals(famP, famC, {
+    modeA: params.modeParent,
+    modeB: params.modeChild,
+  });
+  if (!params.pairFamily) return rebuilt;
+  return {
+    ...params.pairFamily,
+    umbilical_band: params.pairFamily.umbilical_band ?? rebuilt.umbilical_band,
+    nagging_band: params.pairFamily.nagging_band ?? rebuilt.nagging_band,
+    guidance_fit:
+      params.pairFamily.guidance_fit ??
+      resolveGuidanceFit(params.modeParent, params.modeChild),
+    umbilical_separation_index:
+      params.pairFamily.umbilical_separation_index ??
+      rebuilt.umbilical_separation_index,
+    nagging_trigger_index:
+      params.pairFamily.nagging_trigger_index ?? rebuilt.nagging_trigger_index,
+    combined_karma_tension:
+      params.pairFamily.combined_karma_tension ?? rebuilt.combined_karma_tension,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -276,42 +340,84 @@ const CORRECTION_STYLE_TITLE: Record<Locale, Record<FamilyRoleLensKey, string>> 
   },
 };
 
-const CORRECTION_FRICTION_MEANING: Record<
+/** person shortLabel이 다를 때 — “달라도” 문구 허용 */
+const CORRECTION_FRICTION_DIFF: Record<
   Locale,
   Record<FamilyRoleLensKey, Record<"low" | "medium" | "high", string>>
 > = {
   "ko-KR": {
     neutral: {
-      low: "둘이 만날 때 지적·교정 마찰이 낮은 편이에요 — 반응 유형이 달라도 쉽게 쌓이지 않아요.",
-      medium: "교정 순간에 중간 정도의 마찰이 생길 수 있어요 — 반응 유형 차이를 먼저 말해 두면 도움이 돼요.",
-      high: "둘이 만날 때 지적·교정 마찰이 커지기 쉬운 조합이에요 — 한 번에 한 가지 요청만 쓰는 편이 안전해요.",
+      low: "반응 유형이 달라도 지금 마찰 신호는 낮은 편이에요 — 쉽게 쌓이지 않아요.",
+      medium: "반응 유형이 달라 중간 마찰이 생길 수 있어요 — 차이를 먼저 말해 두면 도움이 돼요.",
+      high: "반응 유형이 달라 마찰이 커지기 쉬운 조합이에요 — 한 번에 한 가지 요청만 쓰는 편이 안전해요.",
     },
     mother: {
-      low: "교정 장면에서도 마찰이 낮은 편이에요 — 반응 속도가 달라도 쉽게 상처로 번지지 않아요.",
-      medium: "교정 순간에 중간 마찰이 생길 수 있어요 — ‘한 줄 사실 + 한 줄 요청’이 도움이 돼요.",
-      high: "교정 장면에서 마찰이 커지기 쉬운 조합이에요 — 평가는 줄이고 요청만 짧게 말해 보세요.",
+      low: "반응 타입이 달라도 지금 마찰은 낮은 편이에요 — 쉽게 상처로 번지지 않아요.",
+      medium: "반응 타입이 달라 중간 마찰이 생길 수 있어요 — ‘한 줄 사실 + 한 줄 요청’이 도움이 돼요.",
+      high: "반응 타입이 달라 마찰이 커지기 쉬워요 — 평가는 줄이고 요청만 짧게 말해 보세요.",
     },
     father: {
-      low: "지적·교정 장면에서 마찰이 낮은 편이에요 — 설명 방식이 달라도 크게 쌓이지 않아요.",
-      medium: "지적·교정에서 중간 마찰이 생길 수 있어요 — 이유와 요청을 한 번에 하나씩만 말하세요.",
-      high: "지적·교정 장면에서 마찰이 커지기 쉬운 조합이에요 — 긴 설교보다 한 가지 기준만 분명히 하세요.",
+      low: "설명·반응 방식이 달라도 지금 마찰은 낮은 편이에요 — 크게 쌓이지 않아요.",
+      medium: "방식이 달라 중간 마찰이 생길 수 있어요 — 이유와 요청을 한 번에 하나씩만 말하세요.",
+      high: "방식이 달라 마찰이 커지기 쉬워요 — 긴 설교보다 한 가지 기준만 분명히 하세요.",
     },
   },
   "en-US": {
     neutral: {
-      low: "Correction friction between you tends to stay low — different reaction styles don't pile up easily.",
-      medium: "Moderate correction friction can show up — naming your reaction styles helps.",
-      high: "Correction friction tends to run high between you — one fact + one request is safer.",
+      low: "Even with different reaction styles, friction stays low right now.",
+      medium: "Different reaction styles can create moderate friction — name the difference first.",
+      high: "Different reaction styles tend to escalate — one fact + one request is safer.",
     },
     mother: {
-      low: "Correction moments tend to stay low-friction — different tempos rarely turn into lasting hurt.",
-      medium: "Moderate friction can show up in correction moments — one fact + one request helps.",
-      high: "Correction moments can escalate quickly — shorten evaluation and keep the ask brief.",
+      low: "Different reaction styles, but friction stays low — less likely to turn into lasting hurt.",
+      medium: "Different styles can create moderate friction — one fact + one request helps.",
+      high: "Different styles can escalate quickly — shorten evaluation and keep the ask brief.",
     },
     father: {
-      low: "Guidance/correction friction tends to stay low — different explanation styles don't stack up.",
-      medium: "Moderate friction can show up — give one reason and one request at a time.",
-      high: "Guidance/correction friction tends to run high — one clear standard beats a long lecture.",
+      low: "Different explanation styles, but friction stays low for now.",
+      medium: "Different styles can create moderate friction — one reason and one request at a time.",
+      high: "Different styles tend to escalate — one clear standard beats a long lecture.",
+    },
+  },
+};
+
+/** person shortLabel이 같을 때 — “달라도” 금지, 같은 타입의 함의를 짚음 */
+const CORRECTION_FRICTION_SAME: Record<
+  Locale,
+  Record<FamilyRoleLensKey, Record<"low" | "medium" | "high", string>>
+> = {
+  "ko-KR": {
+    neutral: {
+      low: "같은 반응 타입이라 속도 충돌은 적고, 지금 마찰 신호도 낮은 편이에요.",
+      medium: "같은 반응 타입끼리라 감정이 겹칠 때 중간 마찰이 날 수 있어요 — 한 줄 요청만 쓰세요.",
+      high: "같은 반응 타입끼리 감정 온도가 겹치며 마찰이 커지기 쉬워요 — 한 번에 한 가지만 요청하세요.",
+    },
+    mother: {
+      low: "같은 반응 타입이라 속도 싸움은 적고, 지금 마찰도 낮은 편이에요.",
+      medium: "같은 반응 타입끼리 감정이 겹치면 중간 마찰이 날 수 있어요 — ‘한 줄 사실 + 한 줄 요청’이 도움이 돼요.",
+      high: "같은 반응 타입끼리라 감정 온도가 겹치며 마찰이 커지기 쉬워요 — 평가는 줄이고 요청만 짧게.",
+    },
+    father: {
+      low: "같은 반응 타입이라 설명 방식 충돌은 적고, 지금 마찰도 낮은 편이에요.",
+      medium: "같은 반응 타입끼리 말이 겹치면 중간 마찰이 날 수 있어요 — 이유와 요청을 하나씩만.",
+      high: "같은 반응 타입끼리라 말이 겹치며 마찰이 커지기 쉬워요 — 한 가지 기준만 분명히 하세요.",
+    },
+  },
+  "en-US": {
+    neutral: {
+      low: "Same reaction type — less tempo clash, and friction stays low right now.",
+      medium: "Same reaction type can still create moderate friction when feelings stack — keep one short ask.",
+      high: "Same reaction type can stack emotion and escalate — one request at a time.",
+    },
+    mother: {
+      low: "Same reaction type — less tempo fight, and friction stays low right now.",
+      medium: "Same reaction type can create moderate friction when feelings overlap — one fact + one request.",
+      high: "Same reaction type can stack emotion quickly — shorten evaluation and keep the ask brief.",
+    },
+    father: {
+      low: "Same reaction type — less style clash, and friction stays low right now.",
+      medium: "Same reaction type can create moderate friction when talk overlaps — one reason, one request.",
+      high: "Same reaction type can escalate when talk stacks — one clear standard is enough.",
     },
   },
 };
@@ -342,42 +448,84 @@ const BOND_DISTANCE_LABEL: Record<Locale, Record<ParentBondBand, string>> = {
   },
 };
 
-const UMBILICAL_MEANING: Record<
+/** person bond가 다를 때 */
+const UMBILICAL_DIFF: Record<
   Locale,
   Record<FamilyRoleLensKey, Record<"low" | "medium" | "high", string>>
 > = {
   "ko-KR": {
     neutral: {
-      low: "둘의 밀착·거리 패턴이 크게 어긋나지 않아, 분리·독립 과제가 낮은 편이에요.",
-      medium: "밀착과 거리 감각에 차이가 있어, 분리·독립을 중간 강도로 조율할 여지가 있어요.",
-      high: "밀착과 거리 패턴이 크게 달라, 분리·독립 과제가 선명해요 — 각자의 편안한 거리를 먼저 말해 보세요.",
+      low: "거리 감각이 달라도 지금은 크게 어긋나지 않아, 분리·독립 과제가 낮은 편이에요.",
+      medium: "거리 감각이 달라 중간 강도 조율이 필요해요 — 가까운 쪽·공간 필요한 쪽을 말로 맞춰 보세요.",
+      high: "거리 감각이 크게 달라 분리·독립 과제가 선명해요 — 각자의 편안한 거리를 먼저 말해 보세요.",
     },
     mother: {
-      low: "보호와 독립의 리듬이 크게 충돌하지 않아요.",
-      medium: "보호와 독립 사이에서 중간 강도 조율이 필요해요.",
-      high: "보호와 독립의 전환 과제가 커요 — 더 많은 공간이 필요한 쪽의 속도를 존중해 주세요.",
+      low: "거리 감각이 달라도 보호·독립 리듬이 크게 충돌하지 않아요.",
+      medium: "거리 감각이 달라 보호와 독립 사이에서 중간 강도 조율이 필요해요.",
+      high: "거리 감각이 달라 보호·독립 전환 과제가 커요 — 더 많은 공간이 필요한 쪽의 속도를 존중해 주세요.",
     },
     father: {
-      low: "관여와 자율의 리듬이 크게 충돌하지 않아요.",
-      medium: "관여와 자율 사이에서 중간 강도 조율이 필요해요.",
-      high: "관여와 자율의 조율 과제가 커요 — 스스로 판단할 여지가 더 필요한 쪽에 방향만 남기고 맡겨 보세요.",
+      low: "거리 감각이 달라도 관여·자율 리듬이 크게 충돌하지 않아요.",
+      medium: "거리 감각이 달라 관여와 자율 사이에서 중간 강도 조율이 필요해요.",
+      high: "거리 감각이 달라 관여·자율 조율 과제가 커요 — 스스로 판단할 여지가 더 필요한 쪽에 방향만 남기고 맡겨 보세요.",
     },
   },
   "en-US": {
     neutral: {
-      low: "Your closeness/distance patterns don't clash much — the separation task stays low.",
-      medium: "There's a moderate gap in closeness needs — some tuning on independence helps.",
-      high: "Your closeness patterns differ sharply — name each person's comfortable distance first.",
+      low: "Different closeness needs, but the separation task stays low right now.",
+      medium: "Different closeness needs need moderate tuning — name who wants nearer vs more space.",
+      high: "Closeness needs differ sharply — name each person's comfortable distance first.",
     },
     mother: {
-      low: "Protection and independence rhythms don't clash much.",
-      medium: "Moderate tuning is needed between protection and independence.",
-      high: "The shift between protection and independence is a strong task — respect the pace of whoever needs more room.",
+      low: "Different closeness needs, but protection/independence rhythms don't clash much.",
+      medium: "Different closeness needs — moderate tuning between protection and independence.",
+      high: "Different closeness needs make the protection/independence shift a strong task — respect who needs more room.",
     },
     father: {
-      low: "Involvement and autonomy rhythms don't clash much.",
-      medium: "Moderate tuning is needed between involvement and autonomy.",
-      high: "Balancing involvement and autonomy is a strong task — offer direction, then leave room to decide.",
+      low: "Different closeness needs, but involvement/autonomy rhythms don't clash much.",
+      medium: "Different closeness needs — moderate tuning between involvement and autonomy.",
+      high: "Different closeness needs make involvement/autonomy a strong task — offer direction, then leave room.",
+    },
+  },
+};
+
+/** person bond가 같을 때 — “차이가 있어” 금지 */
+const UMBILICAL_SAME: Record<
+  Locale,
+  Record<FamilyRoleLensKey, Record<"low" | "medium" | "high", string>>
+> = {
+  "ko-KR": {
+    neutral: {
+      low: "같은 거리 감각이라 밀착·분리 과제가 낮은 편이에요.",
+      medium: "같은 거리 감각끼리라 ‘공간이 필요해’는 통하지만, 챙김이 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요.",
+      high: "같은 거리 감각끼리도 밀착이 과해지면 숨이 막힐 수 있어요 — 각자의 편안한 거리를 주기적으로 말해 보세요.",
+    },
+    mother: {
+      low: "같은 거리 감각이라 보호·독립 리듬이 크게 충돌하지 않아요.",
+      medium: "같은 거리 감각끼리라 통하지만, 챙김·독립이 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요.",
+      high: "같은 거리 감각끼리도 붙어 있으면 숨이 막힐 수 있어요 — 공간이 필요한 속도를 서로 존중해 주세요.",
+    },
+    father: {
+      low: "같은 거리 감각이라 관여·자율 리듬이 크게 충돌하지 않아요.",
+      medium: "같은 거리 감각끼리라 통하지만, 관여가 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요.",
+      high: "같은 거리 감각끼리도 관여가 과하면 부담이 돼요 — 방향만 남기고 자율 여지를 주세요.",
+    },
+  },
+  "en-US": {
+    neutral: {
+      low: "Same closeness band — the separation task stays low.",
+      medium: "Same closeness band means you both want similar space, but care can still feel missing — moderate tuning helps.",
+      high: "Same closeness band can still feel smothering when you stay too near — name comfortable distance often.",
+    },
+    mother: {
+      low: "Same closeness band — protection/independence rhythms don't clash much.",
+      medium: "Same closeness band — you understand space, but care vs independence can still feel confusing — moderate tuning helps.",
+      high: "Same closeness band can still feel tight — respect the pace of needing room.",
+    },
+    father: {
+      low: "Same closeness band — involvement/autonomy rhythms don't clash much.",
+      medium: "Same closeness band — involvement can still feel missing — moderate tuning helps.",
+      high: "Same closeness band can still feel heavy — leave room to decide after giving direction.",
     },
   },
 };
@@ -643,14 +791,15 @@ export function buildFamilySajuCompareTable(params: {
   const guideP = resolveGuidanceBalanceBucket(countsParent);
   const guideC = resolveGuidanceBalanceBucket(countsChild);
 
-  const pairFamily: PairFamilySignals | null =
-    params.pairFamily ??
-    (familySignalsParent && familySignalsChild
-      ? buildPairFamilySignals(familySignalsParent, familySignalsChild, {
-          modeA: guideP.bucket,
-          modeB: guideC.bucket,
-        })
-      : null);
+  const pairFamily = resolveComparePairFamily({
+    pairFamily: params.pairFamily,
+    familySignalsParent,
+    familySignalsChild,
+    countsParent,
+    countsChild,
+    modeParent: guideP.bucket,
+    modeChild: guideC.bucket,
+  });
 
   const row = (
     id: FamilyCompareRowId,
@@ -666,18 +815,29 @@ export function buildFamilySajuCompareTable(params: {
     meaning: sanitizeFamilyParentText(meaning),
   });
 
-  // A — person style + pair nagging friction
+  // A — person style + pair nagging friction (+ person contrast in meaning)
   const styleP = resolveCorrectionStyleBucket(countsParent);
   const styleC = resolveCorrectionStyleBucket(countsChild);
-  const frictionBand = pairFamily?.nagging_band ?? "medium";
+  const labelStyleP = CORRECTION_STYLE_LABEL[locale][styleP.bucket];
+  const labelStyleC = CORRECTION_STYLE_LABEL[locale][styleC.bucket];
+  const frictionBand = pairFamily.nagging_band;
   const correctionMeaning =
-    CORRECTION_FRICTION_MEANING[locale][roleLensKey][frictionBand];
+    personAxisLead(locale, parentNickname, labelStyleP, childNickname, labelStyleC) +
+    (styleP.bucket === styleC.bucket
+      ? CORRECTION_FRICTION_SAME[locale][roleLensKey][frictionBand]
+      : CORRECTION_FRICTION_DIFF[locale][roleLensKey][frictionBand]);
 
-  // B — person bond + pair umbilical (origin_family_tension 미사용)
+  // B — person bond + pair umbilical (+ person contrast in meaning)
   const bondP = resolveBondDistanceBucket(countsParent, familySignalsParent);
   const bondC = resolveBondDistanceBucket(countsChild, familySignalsChild);
-  const umbilicalBand = pairFamily?.umbilical_band ?? "medium";
-  const bondMeaning = UMBILICAL_MEANING[locale][roleLensKey][umbilicalBand];
+  const labelBondP = BOND_DISTANCE_LABEL[locale][bondP.bucket];
+  const labelBondC = BOND_DISTANCE_LABEL[locale][bondC.bucket];
+  const umbilicalBand = pairFamily.umbilical_band;
+  const bondMeaning =
+    personAxisLead(locale, parentNickname, labelBondP, childNickname, labelBondC) +
+    (bondP.bucket === bondC.bucket
+      ? UMBILICAL_SAME[locale][roleLensKey][umbilicalBand]
+      : UMBILICAL_DIFF[locale][roleLensKey][umbilicalBand]);
 
   // ③⑤⑥ — Part2 D~F 이전 유지; C는 guidance_balance
   const affectionP = resolveAffectionExpressionBucket(chartParent);
@@ -685,14 +845,28 @@ export function buildFamilySajuCompareTable(params: {
   const affectionRelation = nominalRelation(affectionP.bucket, affectionC.bucket);
 
   const guidanceFit: GuidanceFit =
-    pairFamily?.guidance_fit ?? resolveGuidanceFit(guideP.bucket, guideC.bucket);
+    pairFamily.guidance_fit ?? resolveGuidanceFit(guideP.bucket, guideC.bucket);
+  const labelGuideP = GUIDANCE_BALANCE_LABEL[locale][guideP.bucket];
+  const labelGuideC = GUIDANCE_BALANCE_LABEL[locale][guideC.bucket];
+  const guidanceMeaning =
+    personAxisLead(locale, parentNickname, labelGuideP, childNickname, labelGuideC) +
+    GUIDANCE_FIT_MEANING[locale][roleLensKey][guidanceFit];
 
   const recoveryP = resolveGatheringRecoveryBucket(chartParent);
   const recoveryC = resolveGatheringRecoveryBucket(chartChild);
 
   const climateP = resolveHomeClimateBucket(familySignalsParent);
   const climateC = resolveHomeClimateBucket(familySignalsChild);
+  const labelClimateP = HOME_CLIMATE_LABEL[locale][climateP.bucket];
+  const labelClimateC = HOME_CLIMATE_LABEL[locale][climateC.bucket];
   const climateMeaning =
+    personAxisLead(
+      locale,
+      parentNickname,
+      labelClimateP,
+      childNickname,
+      labelClimateC,
+    ) +
     HOME_CLIMATE_MEANING[locale][roleLensKey][
       comboKey(climateP.bucket, climateC.bucket)
     ]!;
@@ -701,15 +875,15 @@ export function buildFamilySajuCompareTable(params: {
     row(
       "correction_style",
       CORRECTION_STYLE_TITLE[locale][roleLensKey],
-      CORRECTION_STYLE_LABEL[locale][styleP.bucket],
-      CORRECTION_STYLE_LABEL[locale][styleC.bucket],
+      labelStyleP,
+      labelStyleC,
       correctionMeaning,
     ),
     row(
       "bond_distance",
       BOND_DISTANCE_TITLE[locale][roleLensKey],
-      BOND_DISTANCE_LABEL[locale][bondP.bucket],
-      BOND_DISTANCE_LABEL[locale][bondC.bucket],
+      labelBondP,
+      labelBondC,
       bondMeaning,
     ),
     row(
@@ -724,9 +898,9 @@ export function buildFamilySajuCompareTable(params: {
     row(
       "guidance_balance",
       GUIDANCE_BALANCE_TITLE[locale][roleLensKey],
-      GUIDANCE_BALANCE_LABEL[locale][guideP.bucket],
-      GUIDANCE_BALANCE_LABEL[locale][guideC.bucket],
-      GUIDANCE_FIT_MEANING[locale][roleLensKey][guidanceFit],
+      labelGuideP,
+      labelGuideC,
+      guidanceMeaning,
     ),
     row(
       "gathering_recovery",
@@ -738,8 +912,8 @@ export function buildFamilySajuCompareTable(params: {
     row(
       "home_climate",
       HOME_CLIMATE_TITLE[locale][roleLensKey],
-      HOME_CLIMATE_LABEL[locale][climateP.bucket],
-      HOME_CLIMATE_LABEL[locale][climateC.bucket],
+      labelClimateP,
+      labelClimateC,
       climateMeaning,
     ),
   ];

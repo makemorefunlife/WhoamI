@@ -107,8 +107,8 @@ export const messagesEnUS = {
     parentPerspectiveSubtitle: "Viewing the child",
     childPerspectiveTitle: "Child's perspective",
     childPerspectiveSubtitle: "Viewing the parent",
-    motherLensShort: "Mom lens",
-    fatherLensShort: "Dad lens",
+    motherLensShort: "Mom",
+    fatherLensShort: "Dad",
     renameTitle: "Rename",
     renamePlaceholder: "Nickname (max 10 characters)",
     renameCharCountHint: (count: number) =>
@@ -300,13 +300,13 @@ export const messagesEnUS = {
     favoriteLabel: "Favorite",
     heartLabel: "Heart",
     childDnaPlaybookLabel: "👪 Child DNA Playbook · Choose a role",
-    motherLens: "🌸 Mom lens",
-    fatherLens: "🛡️ Dad lens",
+    motherLens: "Mom",
+    fatherLens: "Dad",
     childIsViewerCheckbox: (viewerName: string) =>
       `The child being analyzed is 'me' (${viewerName || "viewer"})`,
     viewerFallbackLabel: "viewer",
     debugParentTypeLine: (parentType: string, childLabel: string) =>
-      `parentType: ${parentType} · child=${childLabel}`,
+      `${parentType === "father" ? "Dad" : "Mom"} · child=${childLabel}`,
     premiumGeneratingSubtitle:
       "Please wait a moment. It usually takes 1–2 minutes.",
     premiumEmptyRomantic:
@@ -317,7 +317,7 @@ export const messagesEnUS = {
     premiumEmptyFamily: "You don't have a Child DNA analysis yet.",
     premiumEmptyFriendship: "You don't have a Social DNA analysis yet.",
     premiumEmptyGenerateHint: "You can generate it with the button below.",
-    premiumEmptyFamilyHint: "Choose a Mom/Dad lens above, then generate.",
+    premiumEmptyFamilyHint: "Choose Mom or Dad above, then generate.",
     premiumGenerateCta: (kindLabel: string) => `Generate ${kindLabel} deep analysis`,
     premiumGenerating: "Generating deep analysis…",
     premiumRegenerateCta: (kindLabel: string) =>
@@ -945,8 +945,8 @@ export const messagesEnUS = {
       destinyLayerHint: "How the two of you tend to click — not this year's luck, not a fixed prophecy",
       harmonyLabel: "🍀 Harmony",
       favoritismRiskLabel: "⚖️ Favoritism risk",
-      parentLensLayerLabel: "Parent role lens",
-      parentLensLayerHint: "A role-based reading aid — separate from the pair pattern above",
+      parentLensLayerLabel: "Reading for this relationship",
+      parentLensLayerHint: "A supporting line based on the parent–child roles you chose",
       growthTunnelCardTitle: "⚠️ This year's growth challenge",
       growthLayerLabel: "This year's growth tunnel",
       growthLayerHint: "A time-specific challenge or transition for the current year",
@@ -961,10 +961,15 @@ export const messagesEnUS = {
       avoidLabel: "Don't do this",
       childFallback: "Child",
       parentFallback: "Parent",
-      compareTableCardTitle: "📊 At a Glance — 6 Family Axes",
+      compareTableCardTitle: "📊 At a Glance — 4 Family Axes",
       compareTableColParent: "Parent",
       compareTableColChild: "Child",
       compareTableColMeaning: "What it means for the family",
+      householdRolesCardTitle: "🏠 Your roles at home",
+      householdRolesSelfLabel: (name: string) => `My main family role · ${name}`,
+      householdRolesPartnerLabel: (name: string) => `Their main family role · ${name}`,
+      householdRolesComplementLabel: "Where the roles complement each other",
+      householdRolesTensionLabel: "Where roles clash or one side carries more load",
       psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
       prescriptionCardTitle: "💊 Real-Life Action Prescription",
       prescriptionLayerLabel: "Relationship routines",
@@ -1990,6 +1995,11 @@ export type MessageCatalog = {
       compareTableColParent: string;
       compareTableColChild: string;
       compareTableColMeaning: string;
+      householdRolesCardTitle: string;
+      householdRolesSelfLabel: (name: string) => string;
+      householdRolesPartnerLabel: (name: string) => string;
+      householdRolesComplementLabel: string;
+      householdRolesTensionLabel: string;
       psychRadarCardTitle: string;
       prescriptionCardTitle: string;
       prescriptionLayerLabel: string;

@@ -14,6 +14,7 @@ import type {
   OfficeUpsetGuide,
 } from "@/lib/relationship/workColleague/officeLanguage";
 import type { OfficePersonRoleCard } from "@/lib/relationship/workColleague/officeReportTemplate";
+import type { WorkCompareRow } from "@/lib/relationship/workColleague/sajuCompareTable";
 import {
   RelationshipReportParagraph,
   RelationshipReportLabel,
@@ -190,6 +191,78 @@ export function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent:
         </RelationshipReportParagraph>
       )}
     </RelationshipReportInset>
+  );
+}
+
+/**
+ * 사주 기반 "한눈에 비교" 표 — 진짜 `<table>` (row/column). 카드형 UI가 서사에
+ * 강하다면, 이 표는 스캔에 강해야 한다는 설계 원칙(제품 논의)에 따라 만들었다.
+ * 데이터는 `buildWorkSajuCompareTable`(사주 신호 6종) — 11축 심리 설문과는
+ * 별개 소스다.
+ */
+export function WorkCompareTableCard({
+  rows,
+  viewerIsReportA,
+  accent,
+  myName,
+  partnerName,
+}: {
+  rows: WorkCompareRow[];
+  viewerIsReportA: boolean;
+  accent: string;
+  myName: string;
+  partnerName: string;
+}) {
+  const t = useMessages().relationshipDrilldown.work;
+  if (!rows.length) return null;
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-white/10">
+      <table className="w-full min-w-[520px] border-collapse text-left text-sm">
+        <thead>
+          <tr className="border-b border-white/10 bg-white/[0.04]">
+            <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
+            <th className="px-4 py-3 font-semibold text-white/80">
+              {myName}
+            </th>
+            <th className="px-4 py-3 font-semibold text-white/80">
+              {partnerName}
+            </th>
+            <th className="px-4 py-3 font-semibold text-white/55">
+              {t.compareTableColMeaning}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => {
+            const me = viewerIsReportA ? row.personA : row.personB;
+            const partner = viewerIsReportA ? row.personB : row.personA;
+            return (
+              <tr
+                key={row.id}
+                className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}
+              >
+                <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
+                  {row.label}
+                </td>
+                <td
+                  className="border-t border-white/8 px-4 py-3 align-top font-semibold"
+                  style={{ color: accent }}
+                >
+                  {me.shortLabel}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
+                  {partner.shortLabel}
+                </td>
+                <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
+                  {row.meaning}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

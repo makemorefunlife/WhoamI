@@ -578,6 +578,7 @@ export async function POST(req: Request) {
         nicknameB: labelB,
         roles,
         parentType,
+        childIsViewer,
         birthA: {
           date: reportBirthDate(repA),
           time: chartBirthTime({

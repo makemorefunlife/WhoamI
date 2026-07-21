@@ -31,6 +31,7 @@ import type {
   FamilyReportViewModel,
   FilialRewardSection,
   GrowthTunnelSection,
+  HouseholdRolesSection,
   PrescriptionSection,
   PsychRadarSection,
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
@@ -99,6 +100,48 @@ function CompareTableCard({
           </tbody>
         </table>
       </div>
+    </RelationshipReportCard>
+  );
+}
+
+function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
+  const t = useMessages().relationshipDrilldown.family;
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+            <RelationshipReportLabel>
+              {t.householdRolesSelfLabel(section.selfName)}
+            </RelationshipReportLabel>
+            <p className="mt-2 text-base font-semibold text-white/92">{section.selfRoleLabel}</p>
+            <RelationshipReportParagraph className="mt-2 text-white/75">
+              {section.selfRoleDetail}
+            </RelationshipReportParagraph>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+            <RelationshipReportLabel>
+              {t.householdRolesPartnerLabel(section.partnerName)}
+            </RelationshipReportLabel>
+            <p className="mt-2 text-base font-semibold text-white/92">{section.partnerRoleLabel}</p>
+            <RelationshipReportParagraph className="mt-2 text-white/75">
+              {section.partnerRoleDetail}
+            </RelationshipReportParagraph>
+          </div>
+        </div>
+        <div>
+          <RelationshipReportLabel>{t.householdRolesComplementLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.complement}
+          </RelationshipReportParagraph>
+        </div>
+        <div>
+          <RelationshipReportLabel>{t.householdRolesTensionLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.tension}
+          </RelationshipReportParagraph>
+        </div>
+      </RelationshipReportBody>
     </RelationshipReportCard>
   );
 }
@@ -208,15 +251,9 @@ function DestinyCard({ section }: { section: DestinySection }) {
           <RelationshipReportParagraph className="mt-1.5">{section.favoritismWarning}</RelationshipReportParagraph>
         </div>
         {section.parentLensSummary ? (
-          <div className="border-t border-white/10 pt-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-sky-200/70">
-              {t.parentLensLayerLabel}
-            </p>
-            <p className="mt-1 text-sm text-white/55">{t.parentLensLayerHint}</p>
-            <RelationshipReportParagraph className="mt-2 italic text-emerald-200/75">
-              {section.parentLensSummary}
-            </RelationshipReportParagraph>
-          </div>
+          <RelationshipReportParagraph className="italic text-emerald-200/75">
+            {section.parentLensSummary}
+          </RelationshipReportParagraph>
         ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
@@ -319,6 +356,8 @@ export function FamilyReportSectionCard({
   switch (section.type) {
     case "compare_table":
       return <CompareTableCard section={section} names={names} />;
+    case "household_roles":
+      return <HouseholdRolesCard section={section} />;
     case "psych_radar":
       return <PsychRadarCard section={section} names={names} />;
     case "child_dna":

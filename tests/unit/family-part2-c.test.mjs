@@ -178,11 +178,23 @@ assert.equal(
 );
 ok("A/B rows present; C deterministic without psych");
 
-section("6) locale en-US Hangul-free");
+section("6) locale en-US Hangul-free (labels + meaning body; nicknames may be localized)");
 
-const en = buildReport("mother", "en-US");
+const en = buildFamilyParentReport({
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  roles: { roleA: "child", roleB: "mother" },
+  parentType: "mother",
+  sajuJsonA: child.json,
+  sajuJsonB: parent.json,
+  familySignalsA: famChild,
+  familySignalsB: famParent,
+  pairFamily: pair,
+  locale: "en-US",
+});
 const enC = en.family.section_compare_table.find((r) => r.id === "guidance_balance");
-assert.ok(!/[ㄱ-ㅎ가-힣]/.test(enC.label + enC.personParent.shortLabel + enC.meaning));
+assert.ok(!/[ㄱ-ㅎ가-힣]/.test(enC.label + enC.personParent.shortLabel + enC.personChild.shortLabel));
+assert.ok(!/[ㄱ-ㅎ가-힣]/.test(enC.meaning));
 ok("en-US C Hangul-free");
 
 section("7) parenting_style_lean regression (marriage path untouched)");

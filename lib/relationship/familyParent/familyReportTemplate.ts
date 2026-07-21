@@ -10,6 +10,7 @@ import type { ChildDeEscalationCard } from "./childDeEscalationPrescriptions";
 import { pick } from "./familyParentCopy";
 import type { FamilyParentRole } from "./types";
 import type { FamilyCompareRow } from "./familySajuCompareTable";
+import type { FamilyHouseholdRolesSection } from "./buildFamilyHouseholdRoles";
 
 export type FamilyRoleMetaSection = {
   child_nickname: string;
@@ -29,6 +30,8 @@ export type FamilyParentChildReport = {
   parent_lens_summary: string;
   /** 006/007 로드맵 Step3 — 신규 추가 필드. 기존 필드는 전혀 안 바뀜(순수 추가). */
   section_compare_table?: FamilyCompareRow[];
+  /** Part2 — 기존 A/B/C·pair bucket 조합. 구형 캐시에는 없을 수 있음. */
+  section_household_roles?: FamilyHouseholdRolesSection;
 };
 
 export function buildFamilyParentChildReport(

@@ -1,0 +1,151 @@
+/**
+ * 부부/동거(Marriage/Cohabitation) Premium → 렌더링 전용 ViewModel 타입.
+ *
+ * work·friend 도메인과 동일한 패턴: DB·캐시·LLM output schema를 변경하지
+ * 않는다. `MarriageReportBody`(lib/relationship/marriage/buildMarriageReport.ts)가
+ * 유일한 저장 SSOT이고, 여기 정의된 shape는 buildMarriageReportViewModel()이
+ * 렌더링 직전에 파생시키는 비영속(non-persisted) 값이다.
+ *
+ * Part1(낭만/운명 서사)은 아직 신규 콘텐츠가 없어 이번 단계에서는 섹션
+ * 타입을 만들지 않는다 — 콘텐츠가 생기면 partNumber:1인 섹션을 추가할
+ * 예정(단계적 작업, 사용자 승인됨).
+ */
+import type { TriScoreSnapshotPanel as TriScoreSnapshotPanelData } from "@/lib/relationship/triScoreSnapshot/types";
+import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
+import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
+import type { MarriageCompareRow } from "@/lib/relationship/marriage/marriageSajuCompareTable";
+import type { HomeLifeDnaProfile, HomeUpsetGuide } from "@/lib/relationship/marriage/homeLifeLanguage";
+import type { BedroomMatrixSection } from "@/lib/relationship/marriage/bedroomProfile";
+import type { SleepFitSection } from "@/lib/relationship/marriage/marriageSleepFitSection";
+import type { ThreeYearHomeRiskForecast } from "@/lib/relationship/marriage/marriageHomeRiskForecast";
+import type { ConflictCommunicationSection } from "@/lib/relationship/marriage/marriageConflictCommunication";
+import type { HomeDeEscalationPair } from "@/lib/relationship/marriage/homeDeEscalationPrescriptions";
+import type { CohabitationPrescriptionItem } from "@/lib/relationship/marriage/cohabitationPrescriptionTypes";
+import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
+
+export type PersonSlot<T> = { me: T; partner: T };
+
+export type OpeningBlock = {
+  headline: string;
+  subtitle: string;
+  grade: string;
+  gradeReason: string;
+  names: [string, string];
+};
+
+type BaseSection = {
+  id: string;
+  partNumber: 2 | 3 | 4 | 5;
+  title: string;
+};
+
+// ---- Part 2: 스코어링 + 11축 매칭 + 비교표 + 자산관리 ------------------------
+
+export type HouseholdSnapshotSection = BaseSection & {
+  type: "household_snapshot";
+  scores: { romanticFitPct: number; lifeSynergyPct: number; homeRiskPct: number };
+  panel: TriScoreSnapshotPanelData;
+};
+
+export type CompareTableSection = BaseSection & {
+  type: "compare_table";
+  rows: MarriageCompareRow[];
+};
+
+export type PsychRadarSection = BaseSection & {
+  type: "psych_radar";
+  axisResults: PsychMatchAxisResult[];
+  chartNote: string;
+  highlights: DomainPsychHighlight[];
+};
+
+export type MoneyChoresSection = BaseSection & {
+  type: "money_chores";
+  cfoNickname: string;
+  cfoReason: string;
+  choresGuideline: string;
+};
+
+// ---- Part 3: 침실 케미스트리 + 수면 + 애착 -----------------------------------
+
+export type BedroomSection = BaseSection & {
+  type: "bedroom";
+  matrix: BedroomMatrixSection;
+  attachmentStyle: string;
+  sleepFit: SleepFitSection;
+};
+
+// ---- Part 4: 홈라이프 DNA + 육아 + 원가족 + 3년 리스크 ------------------------
+
+export type HomeDnaSection = BaseSection & {
+  type: "home_dna";
+  dna: PersonSlot<HomeLifeDnaProfile>;
+};
+
+export type ParentingSection = BaseSection & {
+  type: "parenting";
+  combinedAttitude: string;
+  personAStyle: string;
+  personBStyle: string;
+  harmonyTip: string;
+};
+
+export type FamilyBoundarySection = BaseSection & {
+  type: "family_boundary";
+  inlawStressSummary: string;
+  personABoundaryNote: string;
+  personBBoundaryNote: string;
+};
+
+export type WeatherForecastSection = BaseSection & {
+  type: "weather_forecast";
+  forecast: ThreeYearHomeRiskForecast;
+};
+
+// ---- Part 5: 부부싸움 해독제 + 실전 처방 -------------------------------------
+
+export type PrivacySection = BaseSection & {
+  type: "privacy";
+  personAPrivateLine: string;
+  personBPrivateLine: string;
+};
+
+export type UpsetSection = BaseSection & {
+  type: "upset";
+  guide: PersonSlot<HomeUpsetGuide>;
+};
+
+export type WarningSection = BaseSection & {
+  type: "warning";
+  conflictCommunication: ConflictCommunicationSection;
+  conflictTrigger: string;
+  deEscalation: HomeDeEscalationPair;
+};
+
+export type PrescriptionSection = BaseSection & {
+  type: "prescription";
+  introLine: string;
+  items: CohabitationPrescriptionItem[];
+};
+
+export type MarriageReportSection =
+  | HouseholdSnapshotSection
+  | CompareTableSection
+  | PsychRadarSection
+  | MoneyChoresSection
+  | BedroomSection
+  | HomeDnaSection
+  | ParentingSection
+  | FamilyBoundarySection
+  | WeatherForecastSection
+  | PrivacySection
+  | UpsetSection
+  | WarningSection
+  | PrescriptionSection;
+
+export type MarriageReportViewModel = {
+  kind: "cohabitation";
+  opening: OpeningBlock;
+  sections: MarriageReportSection[];
+  raw: { report: MarriageReportBody };
+};

@@ -40,6 +40,8 @@ import type { Locale } from "@/lib/i18n/locale";
 
 import { LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 
+import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
+
 
 
 export type FriendRuleContext = {
@@ -104,6 +106,10 @@ export type BuildFriendContextParams = {
 
   birthTimeUnknownB?: boolean;
 
+  friendSignalsA?: FriendshipSajuSignals;
+
+  friendSignalsB?: FriendshipSajuSignals;
+
   locale?: Locale;
 
 };
@@ -163,6 +169,10 @@ export function buildFriendRuleContext(
     countsA: core.tenGodsA,
 
     countsB: core.tenGodsB,
+
+    isolationBandA: params.friendSignalsA?.bijie_isolation.isolation_band,
+
+    isolationBandB: params.friendSignalsB?.bijie_isolation.isolation_band,
 
     locale,
 
