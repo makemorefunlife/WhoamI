@@ -3,6 +3,7 @@ import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { mergeBirthCoordinateFields, insertReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import { detectsOwnBirthDateCollision } from "@/lib/report/detectOwnBirthDateCollision";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
@@ -144,11 +145,32 @@ export async function POST(req: Request) {
       partnerReport.id,
     );
 
+    // 새로 만든 파트너 프로필의 생년월일시가 본인(reportIdA)의 self report와
+    // 완전히 같은지 확인 — 경고용, 생성을 막지는 않는다(진짜 같은 생일일 수도
+    // 있으므로). 2026-07-21 동글 birth_date 오염 사고 재발 방지.
+    let ownBirthDateCollision = false;
+    if (userId) {
+      const { data: ownSelfReport } = await supabase
+        .from("reports")
+        .select("id, birth_date, birth_time")
+        .eq("clerk_user_id", userId)
+        .eq("report_type", "self")
+        .maybeSingle();
+
+      ownBirthDateCollision = detectsOwnBirthDateCollision({
+        targetReportId: partnerReport.id,
+        ownSelfReport: ownSelfReport ?? null,
+        newBirthDate: birthDate,
+        newBirthTime: birthTime,
+      });
+    }
+
     return NextResponse.json({
       ok: true,
       partner_report_id: partnerReport.id,
       relationship_report_id: relationshipReportId,
       created,
+      own_birth_date_collision_warning: ownBirthDateCollision,
     });
   } catch (e) {
     logServerError("relationship/manual:", e, "internal_error");

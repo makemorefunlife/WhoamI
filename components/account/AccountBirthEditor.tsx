@@ -122,12 +122,16 @@ export default function AccountBirthEditor() {
         const data = (await res.json()) as {
           error?: string;
           birth_date_correction_used?: boolean;
+          own_birth_date_collision_warning?: boolean;
         };
         if (!res.ok) {
           setNotice(data.error ?? messages.account.birthSaveFailed);
           setNoticeKind("error");
           setBusy(false);
           return;
+        }
+        if (data.own_birth_date_collision_warning) {
+          alert(messages.hub.ownBirthDateCollisionWarning);
         }
 
         const nextBirth: BirthV2Session = {

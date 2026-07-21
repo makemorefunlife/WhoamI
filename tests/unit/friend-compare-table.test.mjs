@@ -210,4 +210,59 @@ const runThird = buildFriendSajuCompareTable(JSON.parse(JSON.stringify(inputA)) 
 assert.deepEqual(runOnce, runThird, "구조적으로 동일한 새 객체를 넣어도 결과가 같아야 함(랜덤성 없음)");
 ok("동일 입력 → 항상 동일 결과, 숨은 랜덤성 없음");
 
+// ---------------------------------------------------------------------------
+section("5) report_id_a/report_id_b가 실제로 다른 사람 데이터를 쓰면 6/6 동일하지 않다");
+// 2026-07-21: 동글(partner_manual) report row에 Sera 본인의 birth_date가 잘못
+// 들어가 있어서, family/friend/work/marriage 비교표 6행이 전부 동일하게
+// 나온 사고가 있었음. 원인은 classifier가 아니라 DB에 저장된 입력 데이터
+// 자체가 같았기 때문 — 이 테스트는 "서로 다른 실제 두 사람 데이터를 넣으면
+// 6행이 전부 동일해지지 않는다"는 것과, 반대로 "같은 데이터를 두 번 넣으면
+// (버그가 재발하면) 실제로 6/6 동일해진다"는 대조군을 함께 남겨서, 앞으로
+// compare table 결과가 전부 동일하게 나오면 classifier가 아니라 데이터
+// 페칭 쪽을 의심하게 만드는 회귀 가드다.
+const realDistinctPairRows = buildFriendSajuCompareTable({
+  nicknameA: "Sera",
+  nicknameB: "다시고고",
+  tenGodsA: { "비견": 2, "편관": 1, "편인": 1 },
+  tenGodsB: { "편인": 1, "상관": 1, "비견": 1, "편관": 1 },
+  dnaA: dna("fire"),
+  dnaB: dna("wood"),
+  chartA: chartSera,
+  chartB: chartDasigogo,
+  locale: "ko-KR",
+});
+const sameCountDistinct = realDistinctPairRows.filter(
+  (r) => r.personA.shortLabel === r.personB.shortLabel,
+).length;
+assert.ok(
+  sameCountDistinct < realDistinctPairRows.length,
+  `서로 다른 실제 두 사람인데 ${sameCountDistinct}/${realDistinctPairRows.length}행이 동일함 — classifier 회귀 의심`,
+);
+ok(`실제 두 사람(Sera/다시고고) 데이터는 ${sameCountDistinct}/6행만 겹침 (전부 동일 아님)`);
+
+// 대조군: Sera 데이터를 A/B 양쪽에 그대로 복제해서 넣으면(=파이프라인이
+// 동일 인물 데이터를 두 번 페칭하는 버그 상황) 실제로 6/6 전부 동일해짐을
+// 확인 — "6/6 동일"이 나오면 데이터 중복 유입을 의심할 근거가 되는 것을
+// 증명하는 대조군.
+const duplicatedInputRows = buildFriendSajuCompareTable({
+  nicknameA: "Sera",
+  nicknameB: "Sera(복제 버그 시뮬레이션)",
+  tenGodsA: { "비견": 2, "편관": 1, "편인": 1 },
+  tenGodsB: { "비견": 2, "편관": 1, "편인": 1 },
+  dnaA: dna("fire"),
+  dnaB: dna("fire"),
+  chartA: chartSera,
+  chartB: chartSera,
+  locale: "ko-KR",
+});
+const sameCountDuplicated = duplicatedInputRows.filter(
+  (r) => r.personA.shortLabel === r.personB.shortLabel,
+).length;
+assert.equal(
+  sameCountDuplicated,
+  duplicatedInputRows.length,
+  "동일 인물 데이터를 A/B에 중복 입력하면 6/6 전부 동일해야 함(대조군) — classifier는 정상 동작 중임을 증명",
+);
+ok("동일 데이터 중복 입력 시 6/6 전부 동일 — classifier가 아니라 데이터 유입 문제였음을 재확인하는 대조군");
+
 console.log("\nAll friend-compare-table tests passed.");

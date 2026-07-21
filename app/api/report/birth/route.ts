@@ -4,6 +4,7 @@ import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/su
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { mergeBirthCoordinateFields, updateReportPatchSafely } from "@/lib/report/applyBirthCoordinatePatch";
+import { detectsOwnBirthDateCollision } from "@/lib/report/detectOwnBirthDateCollision";
 import {
   BIRTH_DATE_CORRECTION_COLUMN,
   isBirthDateCorrectionUsed,
@@ -238,6 +239,32 @@ export async function POST(req: Request) {
         }
       : mergeBirthCoordinateFields(basePatch, basePatch.birth_place);
 
+    // 저장 직전 — 로그인 계정의 본인(self) report와 생년월일시가 완전히
+    // 같아지는 저장인지 확인(경고용, 차단하지 않음). 본인이 본인 report를
+    // 고치는 경우는 제외.
+    let ownBirthDateCollision = false;
+    if (userId && birthMateriallyChanged) {
+      const { data: ownSelfReport } = await supabase
+        .from("reports")
+        .select("id, birth_date, birth_time")
+        .eq("clerk_user_id", userId)
+        .eq("report_type", "self")
+        .maybeSingle();
+
+      ownBirthDateCollision = detectsOwnBirthDateCollision({
+        targetReportId: reportId,
+        ownSelfReport: ownSelfReport ?? null,
+        newBirthDate: basePatch.birth_date,
+        newBirthTime: basePatch.birth_time,
+      });
+
+      if (ownBirthDateCollision) {
+        logServerEvent("report/birth", "own_birth_date_collision_warning", {
+          reportId: maskId(reportId),
+        });
+      }
+    }
+
     const upError = await saveBirthPatch(supabase, reportId, patch, birthDateChanging);
     if (upError) {
       return NextResponse.json({ error: upError.message }, { status: 500 });
@@ -263,6 +290,7 @@ export async function POST(req: Request) {
         typeof correctionUsedAt === "string" || correctionAlreadyUsed,
       relationship_premium_invalidated: birthMateriallyChanged,
       person_core_invalidated: birthMateriallyChanged,
+      own_birth_date_collision_warning: ownBirthDateCollision,
     });
   } catch (e) {
     logServerError("report/birth:", e, "internal_error");

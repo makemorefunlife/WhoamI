@@ -81,6 +81,8 @@ export const messagesEnUS = {
     relationshipCreateFailed: "We couldn't create the relationship.",
     relationshipCreateNetworkError:
       "A network error kept us from creating the relationship.",
+    ownBirthDateCollisionWarning:
+      "The birth date and time you entered exactly match your own. Please double-check you didn't enter your own birthday by mistake.",
     pendingFriendCannotAnalyze:
       "You can't start analysis while the invite is still pending.",
     viewerReportMissing:
@@ -1229,6 +1231,7 @@ export type MessageCatalog = {
     inviteLinkCopyFailed: string;
     relationshipCreateFailed: string;
     relationshipCreateNetworkError: string;
+    ownBirthDateCollisionWarning: string;
     pendingFriendCannotAnalyze: string;
     viewerReportMissing: string;
     renameSaveFailed: string;

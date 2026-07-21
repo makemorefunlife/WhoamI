@@ -136,12 +136,18 @@ function BirthOnboardingContent() {
             birthPlace: payload.birthPlace,
           }),
         });
-        const data = (await res.json()) as { error?: string };
+        const data = (await res.json()) as {
+          error?: string;
+          own_birth_date_collision_warning?: boolean;
+        };
         if (!res.ok) {
           console.error("[onboarding/birth] save_failed");
           alert(data.error ?? messages.survey.birthSaveFailed);
           setBusy(false);
           return;
+        }
+        if (data.own_birth_date_collision_warning) {
+          alert(messages.hub.ownBirthDateCollisionWarning);
         }
         clearLiteReports(reportId);
         clearSlimIntegratedCache(reportId);

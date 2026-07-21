@@ -78,6 +78,8 @@ export const messagesKoKR: MessageCatalog = {
     inviteLinkCopyFailed: "복사에 실패했어요.",
     relationshipCreateFailed: "관계를 만들지 못했어요.",
     relationshipCreateNetworkError: "네트워크 오류로 관계를 만들지 못했어요.",
+    ownBirthDateCollisionWarning:
+      "입력한 생년월일시가 내 정보와 똑같아요. 실수로 본인 생일을 입력한 게 아닌지 확인해 주세요.",
     pendingFriendCannotAnalyze: "수락 대기 중인 친구는 분석을 시작할 수 없어요.",
     viewerReportMissing:
       "내 리포트 정보를 찾을 수 없어요. 블루프린트를 먼저 완료한 뒤 다시 시도해 주세요.",

@@ -455,6 +455,9 @@ export default function RelationHubDashboard() {
       if (typeof window !== "undefined") {
         localStorage.setItem("reportId", reportIdForCreate);
       }
+      if (data?.own_birth_date_collision_warning) {
+        alert(messages.hub.ownBirthDateCollisionWarning);
+      }
       await load("full", reportIdForCreate);
     } catch {
       alert(messages.hub.relationshipCreateNetworkError);
