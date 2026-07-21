@@ -85,6 +85,87 @@ export const STRENGTH_WEAKNESS_TEMPLATES: Record<
   },
 };
 
+/** 영어 세션용 — 한글 템플릿과 1:1 대응, 같은 톤(비난 없이, 보완 가능한 패턴) 유지 */
+export const STRENGTH_WEAKNESS_TEMPLATES_EN: Record<
+  SecondaryAxisKey,
+  AxisStrengthWeaknessTemplates
+> = {
+  stimulation: {
+    strength:
+      "Together you can easily bring small changes and fun into daily life, keeping things light.",
+    weakness:
+      "Chasing novelty over stability can mean important things get put off.",
+  },
+  self_control: {
+    strength:
+      "You can build a balanced daily rhythm by pacing with each other.",
+    weakness:
+      "Instead of pushing each other, the habit of putting things off can take hold.",
+  },
+  practicality: {
+    strength:
+      "Real-world matters like money and schedules get easier to sort out together.",
+    weakness:
+      "Always taking the easy route now can let long-term plans slip.",
+  },
+  structure: {
+    strength:
+      "You help each other split tasks and keep promises.",
+    weakness:
+      "Drifting without a plan can make important deadlines slide.",
+  },
+  empathy: {
+    strength:
+      "Reading and adjusting to each other's mood can come naturally and grow over time.",
+    weakness:
+      "Not fully voicing feelings can turn into a repeating pattern.",
+  },
+  conflict_style: {
+    strength:
+      "You tend to bring up uncomfortable topics fairly quickly and work through them.",
+    weakness:
+      "If putting off conflict becomes a habit, small misunderstandings can pile up.",
+  },
+  resilience: {
+    strength:
+      "You can learn to get back up together even after hard times.",
+    weakness:
+      "When stress drags on, fatigue can build up faster than comfort.",
+  },
+  recognition: {
+    strength:
+      "Acknowledging each other's efforts tends to raise relationship satisfaction.",
+    weakness:
+      "Feeling unrecognized can make even small things sting.",
+  },
+  energy_style: {
+    strength:
+      "You can learn to balance time with people and time alone.",
+    weakness:
+      "Different ways of using up energy can mean tiredness shows up late.",
+  },
+  thinking_style: {
+    strength:
+      "You're good at calmly breaking down complex problems together.",
+    weakness:
+      "When thoughts pile up, it can take longer to speak up before pausing.",
+  },
+  decision_style: {
+    strength:
+      "Reviewing important choices together helps cut down on mistakes.",
+    weakness:
+      "Putting off decisions can mean missed chances or built-up frustration.",
+  },
+};
+
+export type StrengthWeaknessLocale = "ko" | "en";
+
+function templatesForLocale(
+  locale: StrengthWeaknessLocale,
+): Record<SecondaryAxisKey, AxisStrengthWeaknessTemplates> {
+  return locale === "en" ? STRENGTH_WEAKNESS_TEMPLATES_EN : STRENGTH_WEAKNESS_TEMPLATES;
+}
+
 export type StrengthWeaknessAxisInput = {
   axis_key: string;
   match_type: PsychMatchType;
@@ -163,9 +244,10 @@ function fillStrengthWeaknessList(params: {
 export function strengthWeaknessTextForAxis(
   axisKey: string,
   matchType: PsychMatchType,
+  locale: StrengthWeaknessLocale = "ko",
 ): string | null {
   if (!isSecondaryAxisKey(axisKey)) return null;
-  const templates = STRENGTH_WEAKNESS_TEMPLATES[axisKey];
+  const templates = templatesForLocale(locale)[axisKey];
   if (matchType === "tension") return templates.weakness;
   if (matchType === "similarity" || matchType === "complementary") {
     return templates.strength;
@@ -180,14 +262,16 @@ const STRENGTH_WEAKNESS_EXCLUDED_AXIS_KEYS = new Set<SecondaryAxisKey>([
 
 export function buildStrengthWeaknessLists(
   axisResults: StrengthWeaknessAxisInput[],
+  locale: StrengthWeaknessLocale = "ko",
 ): StrengthWeaknessLists {
+  const templates = templatesForLocale(locale);
   const strengths: StrengthWeaknessItem[] = [];
   const weaknesses: StrengthWeaknessItem[] = [];
 
   for (const row of axisResults) {
     if (!isSecondaryAxisKey(row.axis_key)) continue;
     if (STRENGTH_WEAKNESS_EXCLUDED_AXIS_KEYS.has(row.axis_key)) continue;
-    const text = strengthWeaknessTextForAxis(row.axis_key, row.match_type);
+    const text = strengthWeaknessTextForAxis(row.axis_key, row.match_type, locale);
     if (!text) continue;
 
     const item: StrengthWeaknessItem = {
@@ -206,13 +290,13 @@ export function buildStrengthWeaknessLists(
     strengths: fillStrengthWeaknessList({
       items: strengths,
       axisResults,
-      pickText: (axisKey) => STRENGTH_WEAKNESS_TEMPLATES[axisKey].strength,
+      pickText: (axisKey) => templates[axisKey].strength,
       sortRows: (rows) => [...rows].sort((a, b) => a.gap - b.gap),
     }),
     weaknesses: fillStrengthWeaknessList({
       items: weaknesses,
       axisResults,
-      pickText: (axisKey) => STRENGTH_WEAKNESS_TEMPLATES[axisKey].weakness,
+      pickText: (axisKey) => templates[axisKey].weakness,
       sortRows: (rows) => [...rows].sort((a, b) => b.gap - a.gap),
     }),
   };

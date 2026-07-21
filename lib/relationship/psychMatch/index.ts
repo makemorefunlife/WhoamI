@@ -89,11 +89,13 @@ export {
 } from "./axisLabels";
 export {
   STRENGTH_WEAKNESS_TEMPLATES,
+  STRENGTH_WEAKNESS_TEMPLATES_EN,
   buildStrengthWeaknessLists,
   strengthWeaknessTextForAxis,
   type StrengthWeaknessAxisInput,
   type StrengthWeaknessItem,
   type StrengthWeaknessLists,
+  type StrengthWeaknessLocale,
 } from "./strengthWeaknessTemplates";
 export {
   EMOTIONAL_CHEMISTRY_AXIS_KEYS,
