@@ -19,10 +19,24 @@ import { CATEGORY_OFFICE_LABEL } from "./tenGodComplement";
 import { pick } from "./workColleagueCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import { buildWorkSajuCompareTable, type WorkCompareRow } from "./sajuCompareTable";
+import type {
+  BreakBoundaryFit,
+  ContributionStyle,
+  FeedbackCushionScript,
+  ReportingStyleFit,
+} from "./officePsychFit";
 
 export type OfficeDnaSection = {
-  person_a: OfficeDnaProfile & { nickname: string };
-  person_b: OfficeDnaProfile & { nickname: string };
+  person_a: OfficeDnaProfile & {
+    nickname: string;
+    contribution_style?: ContributionStyle | null;
+    contribution_style_label?: string | null;
+  };
+  person_b: OfficeDnaProfile & {
+    nickname: string;
+    contribution_style?: ContributionStyle | null;
+    contribution_style_label?: string | null;
+  };
 };
 
 export type OfficeSnapshotSection = {
@@ -36,11 +50,15 @@ export type OfficeMixFitSection = {
   person_a_work_style: string;
   person_b_work_style: string;
   communication_fit: string;
+  /** 두괄식/미괄식 보고 핏 — 11축 없는 구버전 캐시·설문 미완료 시 null */
+  reporting_style_fit?: ReportingStyleFit | null;
 };
 
 export type OfficeRespectSection = {
   person_a_boundary: string;
   person_b_boundary: string;
+  /** 점심시간·탕비실 경계선 핏 — 11축 없으면 null */
+  break_boundary_fit?: BreakBoundaryFit | null;
 };
 
 export type OfficePersonRoleCard = {
@@ -70,6 +88,8 @@ export type OfficeWarningSection = {
 export type OfficeUpsetSection = {
   person_a: OfficeUpsetGuide;
   person_b: OfficeUpsetGuide;
+  /** 피드백 쿠션 멘트 — 11축 없으면 null */
+  feedback_cushion?: FeedbackCushionScript | null;
 };
 
 export type OfficeIdealRolesSection = {

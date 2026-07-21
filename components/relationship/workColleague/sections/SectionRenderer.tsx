@@ -148,6 +148,18 @@ function ComparisonCard({ section, names }: { section: ComparisonSection; names:
             </div>
           </>
         ) : null}
+        {section.reportingStyleFit ? (
+          <div>
+            <RelationshipReportLabel>{t.reportingStyleFitLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.reportingStyleFit.summary}</RelationshipReportParagraph>
+          </div>
+        ) : null}
+        {section.breakBoundaryFit ? (
+          <div>
+            <RelationshipReportLabel>{t.breakBoundaryFitLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.breakBoundaryFit.summary}</RelationshipReportParagraph>
+          </div>
+        ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );
@@ -236,6 +248,13 @@ function WarningCard({ section }: { section: WarningSection }) {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <UpsetGuideCard guide={section.upset.me} />
           <UpsetGuideCard guide={section.upset.partner} />
+        </div>
+      ) : null}
+      {section.feedbackCushion ? (
+        <div className="mt-4">
+          <RelationshipReportLabel>{t.feedbackCushionLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">{section.feedbackCushion.to_a}</RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-1.5">{section.feedbackCushion.to_b}</RelationshipReportParagraph>
         </div>
       ) : null}
     </RelationshipReportCard>

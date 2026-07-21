@@ -906,11 +906,14 @@ export const messagesEnUS = {
       dnaWorkStyleLabel: "🌌 The work style you pursue",
       dnaInnerStandardLabel: "🪵 Your inner standard",
       dnaCharacterLabel: "🔮 Office character",
+      contributionStyleLabel: "🌱 Contribution style",
       mixFitCardTitle: "💻 How you each work & your mix fit",
       workStyleLabel: (name: string) => `[${name}'s work style]`,
       communicationFitLabel: "[Your communication fit]",
+      reportingStyleFitLabel: "📝 Reporting & feedback fit",
       respectCardTitle: "🤝 A guide to mutual respect that keeps the peace",
       boundaryLabel: (name: string) => `[${name}'s territory]`,
+      breakBoundaryFitLabel: "☕ Lunch & break-room boundary",
       rolesCardTitle: "🎯 Role-split cheat sheet",
       myWeaponsLabel: (name: string) => `[What ${name} should own]`,
       roleWeaponsLabel: (nickname: string) => `What ${nickname} should own`,
@@ -925,6 +928,7 @@ export const messagesEnUS = {
       upsetSignalLabel: "Signals",
       upsetDoLabel: "Try this",
       upsetAvoidLabel: "Avoid this",
+      feedbackCushionLabel: "💬 Feedback cushion phrase",
       warningCardTitle: "⚠️ Office warnings & conflict antidotes",
       conflictTriggerLabel: "Conflict trigger",
       compareTableCardTitle: "📊 At a glance — 6 ways you compare",
@@ -1949,11 +1953,14 @@ export type MessageCatalog = {
       dnaWorkStyleLabel: string;
       dnaInnerStandardLabel: string;
       dnaCharacterLabel: string;
+      contributionStyleLabel: string;
       mixFitCardTitle: string;
       workStyleLabel: (name: string) => string;
       communicationFitLabel: string;
+      reportingStyleFitLabel: string;
       respectCardTitle: string;
       boundaryLabel: (name: string) => string;
+      breakBoundaryFitLabel: string;
       rolesCardTitle: string;
       myWeaponsLabel: (name: string) => string;
       roleWeaponsLabel: (nickname: string) => string;
@@ -1967,6 +1974,7 @@ export type MessageCatalog = {
       upsetSignalLabel: string;
       upsetDoLabel: string;
       upsetAvoidLabel: string;
+      feedbackCushionLabel: string;
       warningCardTitle: string;
       conflictTriggerLabel: string;
       compareTableCardTitle: string;

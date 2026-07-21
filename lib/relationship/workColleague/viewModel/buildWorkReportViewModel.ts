@@ -191,6 +191,22 @@ function buildComparisonSection(
       )
     : undefined;
 
+  const reportingFit = office.section_mix_fit.reporting_style_fit;
+  const reportingStyleFit = reportingFit
+    ? {
+        ...pickViewerFirstPair(reportingFit.person_a, reportingFit.person_b, viewerIsReportA),
+        summary: reportingFit.summary,
+      }
+    : undefined;
+
+  const breakFit = office.section_respect?.break_boundary_fit;
+  const breakBoundaryFit = breakFit
+    ? {
+        ...pickViewerFirstPair(breakFit.person_a, breakFit.person_b, viewerIsReportA),
+        summary: breakFit.summary,
+      }
+    : undefined;
+
   return {
     id: "comparison",
     type: "comparison",
@@ -200,6 +216,8 @@ function buildComparisonSection(
     workStyle,
     communicationFit: office.section_mix_fit.communication_fit,
     boundary,
+    reportingStyleFit,
+    breakBoundaryFit,
   };
 }
 
@@ -295,6 +313,7 @@ function buildWarningSection(
     conflictTrigger: sectionWarning.conflict_trigger,
     deEscalation: sectionWarning.de_escalation,
     upset,
+    feedbackCushion: report.office?.section_upset?.feedback_cushion ?? undefined,
   };
 }
 

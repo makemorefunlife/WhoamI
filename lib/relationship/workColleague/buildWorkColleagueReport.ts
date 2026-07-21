@@ -23,6 +23,12 @@ import type { PairWorkSignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { Locale } from "@/lib/i18n/locale";
 import { LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
+import {
+  resolveReportingStyleFit,
+  resolveBreakBoundaryFit,
+  resolveContributionStyle,
+  resolveFeedbackCushionScript,
+} from "./officePsychFit";
 
 export type WorkColleagueReportBody = {
   headline: string;
@@ -99,7 +105,77 @@ export function buildWorkColleagueReport(params: {
 }): WorkColleagueReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildWorkColleagueContext({ ...params, locale });
-  const office = buildOfficePartnershipReport(ctx);
+  const officeBase = buildOfficePartnershipReport(ctx);
+
+  // Part2②③·Part3①·Part4② — 사주(ctx)만으로는 못 만들고 11축(psychMaster)이
+  // 있어야 하는 필드들. buildOfficePartnershipReport(ctx)는 psychMaster를
+  // 모르므로, 여기서 계산해 office에 병합한다.
+  const reportingStyleFit = resolveReportingStyleFit(
+    ctx.tenGodsA,
+    ctx.tenGodsB,
+    ctx.workSignalsA,
+    ctx.workSignalsB,
+    params.psychMasterA,
+    params.psychMasterB,
+    ctx.nicknameA,
+    ctx.nicknameB,
+    locale,
+  );
+  const breakBoundaryFit = resolveBreakBoundaryFit(
+    ctx.workPairAnalysis.base.dayBranchCrossHits,
+    params.psychMasterA,
+    params.psychMasterB,
+    ctx.nicknameA,
+    ctx.nicknameB,
+    locale,
+  );
+  const contributionStyle = resolveContributionStyle(
+    ctx.workSignalsA,
+    ctx.workSignalsB,
+    params.psychMasterA,
+    params.psychMasterB,
+    ctx.nicknameA,
+    ctx.nicknameB,
+    locale,
+  );
+  const feedbackCushion = resolveFeedbackCushionScript(
+    ctx.nicknameA,
+    ctx.nicknameB,
+    ctx.strengthA,
+    ctx.strengthB,
+    params.psychMasterA,
+    params.psychMasterB,
+    locale,
+  );
+
+  const office = {
+    ...officeBase,
+    section_mix_fit: {
+      ...officeBase.section_mix_fit,
+      reporting_style_fit: reportingStyleFit,
+    },
+    section_respect: {
+      ...officeBase.section_respect,
+      break_boundary_fit: breakBoundaryFit,
+    },
+    section_dna: {
+      person_a: {
+        ...officeBase.section_dna.person_a,
+        contribution_style: contributionStyle?.person_a.style ?? null,
+        contribution_style_label: contributionStyle?.person_a.label ?? null,
+      },
+      person_b: {
+        ...officeBase.section_dna.person_b,
+        contribution_style: contributionStyle?.person_b.style ?? null,
+        contribution_style_label: contributionStyle?.person_b.label ?? null,
+      },
+    },
+    section_upset: {
+      ...officeBase.section_upset,
+      feedback_cushion: feedbackCushion,
+    },
+  };
+
   const headlineBlock = resolveHeadline(
     ctx,
     office.section_snapshot.one_line_definition,

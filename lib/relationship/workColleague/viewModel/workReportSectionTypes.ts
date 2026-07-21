@@ -15,6 +15,12 @@ import type {
   OfficeUpsetGuide,
 } from "@/lib/relationship/workColleague/officeLanguage";
 import type { OfficePersonRoleCard } from "@/lib/relationship/workColleague/officeReportTemplate";
+import type {
+  BreakBoundaryFit,
+  ContributionStyle,
+  FeedbackCushionScript,
+  ReportingStyleFit,
+} from "@/lib/relationship/workColleague/officePsychFit";
 import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
 import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
@@ -79,11 +85,20 @@ export type CompareTableSection = BaseSection & {
 
 export type ComparisonSection = BaseSection & {
   type: "comparison";
-  dna: PersonSlot<OfficeDnaProfile & { nickname: string }>;
+  dna: PersonSlot<
+    OfficeDnaProfile & {
+      nickname: string;
+      contribution_style?: ContributionStyle | null;
+      contribution_style_label?: string | null;
+    }
+  >;
   workStyle: PersonSlot<string>;
   communicationFit: string;
   /** section_respect가 없는 레거시 payload에서는 생략(빈 문자열로 채우지 않음) */
   boundary?: PersonSlot<string>;
+  /** 11축 없는 구버전 캐시·설문 미완료 시 생략 */
+  reportingStyleFit?: PersonSlot<ReportingStyleFit["person_a"]> & { summary: string };
+  breakBoundaryFit?: PersonSlot<BreakBoundaryFit["person_a"]> & { summary: string };
 };
 
 export type RoleMatrixSection = BaseSection & {
@@ -111,6 +126,8 @@ export type WarningSection = BaseSection & {
   deEscalation: DeEscalationCard;
   /** section_upset이 없는 레거시 payload에서는 생략 */
   upset?: PersonSlot<OfficeUpsetGuide>;
+  /** 11축 없는 구버전 캐시·설문 미완료 시 생략 */
+  feedbackCushion?: FeedbackCushionScript;
 };
 
 export type PrescriptionSection = BaseSection & {

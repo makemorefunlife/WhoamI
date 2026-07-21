@@ -28,7 +28,10 @@ export function DnaCard({
   accent,
 }: {
   label: string;
-  profile: OfficeDnaProfile & { nickname: string };
+  profile: OfficeDnaProfile & {
+    nickname: string;
+    contribution_style_label?: string | null;
+  };
   accent: string;
 }) {
   const t = useMessages().relationshipDrilldown.work;
@@ -59,6 +62,14 @@ export function DnaCard({
             {profile.overall_character}
           </RelationshipReportParagraph>
         </li>
+        {profile.contribution_style_label ? (
+          <li>
+            <RelationshipReportLabel>{t.contributionStyleLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">
+              {profile.contribution_style_label}
+            </RelationshipReportParagraph>
+          </li>
+        ) : null}
       </ul>
     </RelationshipReportInset>
   );
