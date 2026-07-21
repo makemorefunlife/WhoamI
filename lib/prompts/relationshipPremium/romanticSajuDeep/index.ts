@@ -5,7 +5,10 @@ import type { RomanticRuleScreenPlan } from "@/lib/relationship/romanticRules";
 import {
   buildRomanticPairSignalsDigest,
   buildRomanticPersonSignalsDigest,
+  buildRomanticDynamicsDigest,
 } from "@/lib/relationship/romanticSajuPromptDigest";
+import { hasDayStemRootInDayBranch } from "@/lib/relationship/romanticRules/relationshipDynamics";
+import { buildChartContext } from "@/lib/saju/chartContext";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
 import {
   buildRomanticScreenPlan,
@@ -176,6 +179,42 @@ export function prepareRomanticSajuDeepRun(
     eventScores: opening.event_scores ?? ctx.eventScores,
   });
 
+  // romantic_signals는 오늘 추가된 필드라 이전에 저장된 saju_master_json에는
+  // 없을 수 있다 — sajuMaster 존재 여부뿐 아니라 이 필드 자체도 확인해서
+  // 없으면 크래시 대신 dynamics_digest를 생략한다(구버전 스냅샷 안전 처리).
+  const romanticSignalsA = params.sajuMasterA?.domain_signals?.romantic_signals;
+  const romanticSignalsB = params.sajuMasterB?.domain_signals?.romantic_signals;
+  const dynamicsBlock =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? buildRomanticDynamicsDigest({
+          nicknameA: params.nicknameA,
+          nicknameB: params.nicknameB,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+          romanticA: romanticSignalsA,
+          romanticB: romanticSignalsB,
+          rootedA: hasDayStemRootInDayBranch(
+            buildChartContext(
+              sajuJsonToPillars(
+                params.sajuJsonA.saju as Required<
+                  NonNullable<typeof params.sajuJsonA.saju>
+                >,
+              ),
+            ),
+          ),
+          rootedB: hasDayStemRootInDayBranch(
+            buildChartContext(
+              sajuJsonToPillars(
+                params.sajuJsonB.saju as Required<
+                  NonNullable<typeof params.sajuJsonB.saju>
+                >,
+              ),
+            ),
+          ),
+          dayStemInteraction: pairAnalysis.dayStemInteraction,
+        })
+      : "## dynamics_digest\n(구버전 사주 스냅샷이라 romantic_signals 없음 — 관계 역학 4종은 이번 리포트에서 생략)";
+
   const userPrompt = buildRomanticSajuDeepUserPrompt({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -184,6 +223,7 @@ export function prepareRomanticSajuDeepRun(
     personBlockA,
     personBlockB,
     pairBlock,
+    dynamicsBlock,
     locale,
   });
 

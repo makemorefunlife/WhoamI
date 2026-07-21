@@ -96,12 +96,14 @@ const UX_SECTION_GUIDE = `
 # Output story order (JSON keys)
 
 1. section_1_summary — **server-generated** (LLM must not create)
-2. section_2_nature
-3. section_4_special_bond
-4. section_4_hidden_hearts
-5. section_3_conversation_patterns — conflict **dialogue_table 2 rows only** (A·B one each, 50:50 mutual strain)
-6. section_5_action — EssenceActionGuideline (action_title + saju_reason 3+ sentences + real_speech_tip). real_life_example always ""
-7. section_6_timeline
+2. section_1_relationship_dynamics — balance_of_power + recovery_speed, grounded ONLY in dynamics_digest above (server already decided the band; you just phrase it)
+3. section_2_nature
+4. section_4_special_bond
+5. section_4_relationship_frames — reassurance_signal + unconscious_role_play, grounded ONLY in dynamics_digest above
+6. section_4_hidden_hearts
+7. section_3_conversation_patterns — conflict **dialogue_table 2 rows only** (A·B one each, 50:50 mutual strain)
+8. section_5_action — EssenceActionGuideline (action_title + saju_reason 3+ sentences + real_speech_tip). real_life_example always ""
+9. section_6_timeline
 `.trim();
 
 const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
@@ -125,7 +127,8 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 13. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms
 14. **section_4_hidden_hearts**: both a_hidden and b_hidden required. Fully separate from special_bond
 15. **section_1_summary**: do not generate (Headline Selector fills from Saju rules)
-16. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, or bond nature metaphors — **fully rewrite** that field
+16. **section_1_relationship_dynamics / section_4_relationship_frames**: these 4 fields (balance_of_power, recovery_speed, reassurance_signal, unconscious_role_play) must be phrased **only** from \`dynamics_digest\` in Input data. Do not invent a different verdict than what the digest already decided — you are writing the narrative, not re-classifying. Never print the internal band/frame names (e.g. "leader", "savior_dependent") literally — translate them into natural language.
+17. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, or bond nature metaphors — **fully rewrite** that field
 
 Output language follows the system prompt locale instruction — do not hardcode a language here.
 `.trim();
@@ -136,6 +139,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
   personBlockA: string;
   personBlockB: string;
   pairBlock: string;
+  dynamicsBlock?: string;
   userCustomMyName?: string;
   userCustomTargetName?: string;
   locale?: RomanticSajuDeepLocale;
@@ -146,6 +150,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     personBlockA,
     personBlockB,
     pairBlock,
+    dynamicsBlock = "",
     userCustomMyName,
     userCustomTargetName,
     locale: _locale = "ko",
@@ -232,6 +237,10 @@ ${personBlockB}
 ---
 
 ${pairBlock}
+
+---
+
+${dynamicsBlock}
 
 ---
 

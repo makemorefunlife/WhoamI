@@ -181,6 +181,27 @@ function HiddenHeartPanel({
   );
 }
 
+/** friend/family SectionRenderer.tsx와 동일한 Part 구분선 패턴. */
+function PartHeading({
+  title,
+  accentColor,
+}: {
+  title: string;
+  accentColor: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">
+        {title}
+      </h2>
+      <div
+        className="h-px flex-1"
+        style={{ backgroundColor: `${accentColor}33` }}
+      />
+    </div>
+  );
+}
+
 function pickBestNatureParagraph(
   nature: NatureBlock | undefined,
   meetingHint?: string,
@@ -588,8 +609,16 @@ export default function RomanticSajuDeepReportView({
   }
 
   const s1 = report.section_1_summary ?? {};
+  const dynamics = report.section_1_relationship_dynamics;
   const s2 = report.section_2_nature ?? {};
   const special = report.section_4_special_bond;
+  const frames = report.section_4_relationship_frames;
+  const reassurance = frames?.reassurance_signal;
+  const { me: myReassurance, partner: partnerReassurance } = pickViewerFirstPair(
+    { body: reassurance?.a_body },
+    { body: reassurance?.b_body },
+    viewerIsReportA,
+  );
   const s3 = (report.section_3_conversation_patterns ?? {}) as Record<
     string,
     Record<string, unknown>
@@ -758,9 +787,9 @@ export default function RomanticSajuDeepReportView({
       }
       return {
         chemistryApprox: buildChemistryApproxScores(psychMatch.axis_results),
-        strengthWeakness: buildStrengthWeaknessLists(psychMatch.axis_results),
+        strengthWeakness: buildStrengthWeaknessLists(psychMatch.axis_results, locale),
       };
-    }, [psychMatch]);
+    }, [psychMatch, locale]);
   const showChemistryBreakdown =
     chemistryScores != null &&
     (chemistryScores.emotional !== null ||
@@ -832,6 +861,8 @@ export default function RomanticSajuDeepReportView({
         </RelationshipReportCard>
       ) : null}
 
+      <PartHeading title={t.part1Title} accentColor={theme.accent} />
+
       <RelationshipReportCard
         title={`🔍 ${ruleScreenTitle(report.meta, "compare", t.compareCardTitleFallback)}`}
         accentColor={theme.accent}
@@ -875,6 +906,41 @@ export default function RomanticSajuDeepReportView({
         </div>
       </RelationshipReportCard>
 
+      {dynamics &&
+      (dynamics.balance_of_power?.body || dynamics.recovery_speed?.body) ? (
+        <RelationshipReportCard
+          title={t.dynamicsCardTitle}
+          accentColor={theme.accent}
+        >
+          <RelationshipReportBody className="space-y-5">
+            {dynamics.balance_of_power?.body ? (
+              <div className="space-y-2">
+                <RelationshipReportLabel>
+                  {t.dynamicsBalanceLabel}
+                  {dynamics.balance_of_power.headline?.trim()
+                    ? ` — ${displayText(dynamics.balance_of_power.headline)}`
+                    : ""}
+                </RelationshipReportLabel>
+                <P>{displayText(dynamics.balance_of_power.body)}</P>
+              </div>
+            ) : null}
+            {dynamics.recovery_speed?.body ? (
+              <div className="space-y-2">
+                <RelationshipReportLabel>
+                  {t.dynamicsRecoveryLabel}
+                  {dynamics.recovery_speed.headline?.trim()
+                    ? ` — ${displayText(dynamics.recovery_speed.headline)}`
+                    : ""}
+                </RelationshipReportLabel>
+                <P>{displayText(dynamics.recovery_speed.body)}</P>
+              </div>
+            ) : null}
+          </RelationshipReportBody>
+        </RelationshipReportCard>
+      ) : null}
+
+      <PartHeading title={t.part2Title} accentColor={theme.accent} />
+
       <RelationshipReportCard title={t.natureCardTitle} accentColor={theme.accent}>
         <div className="space-y-8 sm:space-y-10">
           <NaturePersonPanel
@@ -905,6 +971,8 @@ export default function RomanticSajuDeepReportView({
           />
         </RelationshipReportCard>
       ) : null}
+
+      <PartHeading title={t.part3Title} accentColor={theme.accent} />
 
       {special ? (
         <RelationshipReportCard
@@ -959,6 +1027,51 @@ export default function RomanticSajuDeepReportView({
           </RelationshipReportBody>
         </RelationshipReportCard>
       ) : null}
+
+      {frames &&
+      (myReassurance.body ||
+        partnerReassurance.body ||
+        frames.unconscious_role_play?.body) ? (
+        <RelationshipReportCard
+          title={t.framesCardTitle}
+          accentColor={theme.accent}
+        >
+          <RelationshipReportBody className="space-y-6">
+            {myReassurance.body || partnerReassurance.body ? (
+              <div className="space-y-2">
+                <RelationshipReportLabel>
+                  {t.framesReassuranceLabel}
+                  {reassurance?.headline?.trim()
+                    ? ` — ${displayText(reassurance.headline)}`
+                    : ""}
+                </RelationshipReportLabel>
+                {myReassurance.body ? (
+                  <P>{`${myName}: ${displayText(myReassurance.body)}`}</P>
+                ) : null}
+                {partnerReassurance.body ? (
+                  <P>{`${partnerName}: ${displayText(partnerReassurance.body)}`}</P>
+                ) : null}
+                {reassurance?.match_note?.trim() ? (
+                  <P>{displayText(reassurance.match_note)}</P>
+                ) : null}
+              </div>
+            ) : null}
+            {frames.unconscious_role_play?.body ? (
+              <div className="space-y-2">
+                <RelationshipReportLabel>
+                  {t.framesRolePlayLabel}
+                  {frames.unconscious_role_play.headline?.trim()
+                    ? ` — ${displayText(frames.unconscious_role_play.headline)}`
+                    : ""}
+                </RelationshipReportLabel>
+                <P>{displayText(frames.unconscious_role_play.body)}</P>
+              </div>
+            ) : null}
+          </RelationshipReportBody>
+        </RelationshipReportCard>
+      ) : null}
+
+      <PartHeading title={t.part4Title} accentColor={theme.accent} />
 
       {showStrengthWeakness && strengthWeaknessResult ? (
         <RelationshipReportCard
@@ -1049,6 +1162,8 @@ export default function RomanticSajuDeepReportView({
           </div>
         </RelationshipReportCard>
       ) : null}
+
+      <PartHeading title={t.part5Title} accentColor={theme.accent} />
 
       {hasActionContent ? (
       <RelationshipReportCard

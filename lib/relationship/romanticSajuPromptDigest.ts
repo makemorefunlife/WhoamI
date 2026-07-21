@@ -1,7 +1,19 @@
 import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
+import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
 import { isPrimaryPalaceCross } from "@/lib/saju/palaceWeight";
+import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import {
+  resolveBalanceOfPower,
+  resolveSubLeads,
+  resolveRecoverySpeedGap,
+  resolveResidualBand,
+  resolveReassuranceBand,
+  resolveGiveStyle,
+  resolveReassuranceMatch,
+  resolveRolePlayWithSajuFrame,
+} from "@/lib/relationship/romanticRules/relationshipDynamics";
 
 function formatHitsBrief(
   hits: Array<{ type: string; name?: string; interpretation?: string }>,
@@ -43,7 +55,18 @@ export function buildRomanticPersonSignalsDigest(params: {
     ? `\n- 불확실(임의 확정 금지): ${params.uncertainItems.join("; ")}`
     : "";
 
+  // romantic_signals는 오늘 추가된 필드라, 그 이전에 이미 계산·저장된 기존 유저의
+  // saju_master_json에는 없을 수 있다 — 없으면 크래시 대신 이 블록만 생략한다.
   const rs = ds.romantic_signals;
+  const romanticSignalsBlock = rs
+    ? `- romantic_signals(이 사람의 연애 성향 — comparison_table 6축과 1:1 대응):
+  · 감정 표현: ${rs.expression_style.expression_band} (식상${rs.expression_style.food_count})
+  · 갈등 반응: ${rs.conflict_response.conflict_band} (관성${rs.conflict_response.officer_count}/식상${rs.conflict_response.food_count}, 일지충형${rs.conflict_response.day_branch_tension_hits.length}건)
+  · 애정 언어: ${rs.affection_language.affection_band} (재성${rs.affection_language.wealth_count}/인성${rs.affection_language.seal_count})
+  · 스트레스 패턴: ${rs.stress_pattern.stress_band} (${rs.stress_pattern.temperature_band}, 열${rs.stress_pattern.heat_score})
+  · 의사결정: ${rs.decision_making.decision_band} (${rs.decision_making.strength_label})
+  · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})`
+    : "- romantic_signals: 없음(구버전 스냅샷) — comparison_table은 원국 데이터만으로 해석";
 
   return `## ${params.nickname} — saju_master_v2 엑기스 Digest
 - 생년월일시: ${params.birthDate} ${params.birthTime} | 출생지: ${params.birthPlace}
@@ -52,13 +75,7 @@ export function buildRomanticPersonSignalsDigest(params: {
 - 조후: ${m.johu_climate.temperature_band} (열${m.johu_climate.heat_score}/습${m.johu_climate.moisture_score}) | 오행 목${ec.wood} 화${ec.fire} 토${ec.earth} 금${ec.metal} 수${ec.water}
 - 원국 역학(상위): ${relations || "없음"}
 - 신살 보유: ${possessed.join(", ") || "없음"}
-- romantic_signals(이 사람의 연애 성향 — comparison_table 6축과 1:1 대응):
-  · 감정 표현: ${rs.expression_style.expression_band} (식상${rs.expression_style.food_count})
-  · 갈등 반응: ${rs.conflict_response.conflict_band} (관성${rs.conflict_response.officer_count}/식상${rs.conflict_response.food_count}, 일지충형${rs.conflict_response.day_branch_tension_hits.length}건)
-  · 애정 언어: ${rs.affection_language.affection_band} (재성${rs.affection_language.wealth_count}/인성${rs.affection_language.seal_count})
-  · 스트레스 패턴: ${rs.stress_pattern.stress_band} (${rs.stress_pattern.temperature_band}, 열${rs.stress_pattern.heat_score})
-  · 의사결정: ${rs.decision_making.decision_band} (${rs.decision_making.strength_label})
-  · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})${uncertain}
+${romanticSignalsBlock}${uncertain}
 ⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`.trim();
 }
 
@@ -78,6 +95,61 @@ function crossHitsDigest(
         `${h.personA_pillar}↔${h.personB_pillar}[${h.type}]`,
     )
     .join(" | ");
+}
+
+/**
+ * 관계 역학 4종(균형추/회복속도/안심신호/무의식역할극) — 심리축+사주 보정으로
+ * 서버가 이미 판정해 둔 결과를 LLM에게 근거로 전달한다. LLM은 이 판정을
+ * 문장으로 풀어쓰기만 하고, 새로 유형을 정하지 않는다.
+ */
+export function buildRomanticDynamicsDigest(params: {
+  nicknameA: string;
+  nicknameB: string;
+  profileA?: CurrentSelfProfile | null;
+  profileB?: CurrentSelfProfile | null;
+  romanticA: RomanticSajuSignals;
+  romanticB: RomanticSajuSignals;
+  rootedA: boolean;
+  rootedB: boolean;
+  dayStemInteraction: string;
+}): string {
+  const {
+    nicknameA,
+    nicknameB,
+    profileA,
+    profileB,
+    romanticA,
+    romanticB,
+    rootedA,
+    rootedB,
+    dayStemInteraction,
+  } = params;
+
+  const bop = resolveBalanceOfPower(profileA, profileB);
+  const subLeads = resolveSubLeads(romanticA, romanticB);
+  const recovery = resolveRecoverySpeedGap(profileA, profileB);
+  const residualA = resolveResidualBand(romanticA);
+  const residualB = resolveResidualBand(romanticB);
+  const needA = resolveReassuranceBand(profileA, rootedA);
+  const needB = resolveReassuranceBand(profileB, rootedB);
+  const giveA = resolveGiveStyle(romanticA);
+  const giveB = resolveGiveStyle(romanticB);
+  const matchBGivesA = resolveReassuranceMatch(needA, giveB);
+  const matchAGivesB = resolveReassuranceMatch(needB, giveA);
+  const rolePlay = resolveRolePlayWithSajuFrame(
+    profileA,
+    profileB,
+    romanticA,
+    romanticB,
+    dayStemInteraction,
+  );
+
+  return `## dynamics_digest — 관계 역학 4종 (서버 판정 완료, 그대로 서술만 할 것)
+- balance_of_power: ${nicknameA}=${bop.bandA} / ${nicknameB}=${bop.bandB} (서브 리드 — 아이디어·분위기:${subLeads.ideaMoodLead}, 결정·승인:${subLeads.decisionApprovalLead}, 실행:${subLeads.executionLead})
+- recovery_speed: ${nicknameA}=${recovery.bandA}(잔류도 ${residualA}) / ${nicknameB}=${recovery.bandB}(잔류도 ${residualB}) ${recovery.mismatch ? "— 격차 큼(주의)" : ""}
+- reassurance: ${nicknameA} need=${needA} vs ${nicknameB} give=${giveB} → 일치:${matchBGivesA} | ${nicknameB} need=${needB} vs ${nicknameA} give=${giveA} → 일치:${matchAGivesB}
+- role_play: 심리축 판정=${rolePlay.primaryFrame} / 사주 판정=${rolePlay.sajuFrame} (일치:${rolePlay.agrees})
+⚠️ 위 밴드·판정 이름 자체는 출력하지 말고, 이미 정해진 방향으로만 자연스러운 문장을 쓰세요.`.trim();
 }
 
 /** pairAnalysis + eventScores 압축 — formatPairSajuBlock 대체 */

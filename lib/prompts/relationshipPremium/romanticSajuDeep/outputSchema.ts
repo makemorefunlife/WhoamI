@@ -2,6 +2,16 @@
 export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
   "report": {
     "section_1_summary": "(서버 Headline Selector가 채움 — LLM은 생성하지 마세요)",
+    "section_1_relationship_dynamics": {
+      "balance_of_power": {
+        "headline": "관계의 균형추 — 데이트·연락 주도권 한 줄 훅",
+        "body": "아래 Input data의 dynamics_digest.balance_of_power(주도/수용/균형, 아이디어·결정·실행 서브 리드)를 근거로만 서술 (3~4문장, 판정을 새로 만들지 말고 주어진 판정을 문장으로 풀어쓰기)"
+      },
+      "recovery_speed": {
+        "headline": "감정 회복 속도 차이 — 한 줄 훅",
+        "body": "dynamics_digest.recovery_speed(급속회복/심층숙성/균형, 겉보기 속도 vs 내부 잔류도)를 근거로만 서술 (3~4문장)"
+      }
+    },
     "section_2_nature": {
       "comparison_table": [
         { "aspect": "감정 표현", "a": "A (1~2문장)", "b": "B (1~2문장)" },
@@ -37,6 +47,18 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
       "only_together": "A↔B 상호보완·Essence 아우라 본문 3~4문장",
       "relationship_formula": "관계 방정식 한 줄 (선택)",
       "why_special": "💡 맞춰 가는 지점 — 갈등 패턴·실전 팁 (bond 칭찬 재탕 금지)"
+    },
+    "section_4_relationship_frames": {
+      "reassurance_signal": {
+        "headline": "안심 신호 — 한 줄 훅",
+        "a_body": "dynamics_digest.reassurance(A need vs B give, 일치 여부)를 근거로 A가 무엇에 안심하는지 3문장+",
+        "b_body": "B가 무엇에 안심하는지 3문장+",
+        "match_note": "두 사람의 요구·제공 일치/불일치를 짚어주는 실전 팁 2~3문장"
+      },
+      "unconscious_role_play": {
+        "headline": "무의식적 역할극 — 한 줄 훅",
+        "body": "dynamics_digest.role_play(primaryFrame·sajuFrame·일치 여부)를 근거로 두 사람의 무의식적 관계 프레임과 균형 대안 3~4문장 (부모자식/구원자의존자/사제/단짝 중 하나를 단정하지 말고, 두 신호가 다르면 상황에 따라 다르게 나타날 수 있음을 자연스럽게 반영)"
+      }
     },
     "section_4_hidden_hearts": {
       "a_hidden": {
@@ -102,6 +124,11 @@ export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
         "period": "📍 지금 (2026년)",
         "description": "현재 특징·과제 (4~6문장)",
         "focus": "지금 집중할 것"
+      },
+      "in_1_year": {
+        "period": "📍 1년 후 (2027년)",
+        "change": "1년 후 변화 — 서로의 패턴을 알아가는 단계 (4~6문장)",
+        "prepare": "지금부터 준비할 것"
       },
       "in_3_years": {
         "period": "📍 3년 후 (2029년)",
@@ -209,6 +236,10 @@ export type RomanticSajuDeepReport = {
       total_score?: number;
       keywords?: string[];
     };
+    section_1_relationship_dynamics?: {
+      balance_of_power?: { headline?: string; body?: string };
+      recovery_speed?: { headline?: string; body?: string };
+    };
     section_2_nature: {
       comparison_table?: Array<{ aspect: string; a: string; b: string }>;
       a_nature: {
@@ -238,6 +269,15 @@ export type RomanticSajuDeepReport = {
       only_together: string;
       relationship_formula: string;
       why_special: string;
+    };
+    section_4_relationship_frames?: {
+      reassurance_signal?: {
+        headline?: string;
+        a_body?: string;
+        b_body?: string;
+        match_note?: string;
+      };
+      unconscious_role_play?: { headline?: string; body?: string };
     };
     section_3_conversation_patterns: Record<string, unknown>;
     section_4_hidden_hearts: Record<string, unknown>;

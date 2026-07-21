@@ -865,6 +865,17 @@ export const messagesEnUS = {
       psychMatchCardTitle: "🎯 11-axis psych match",
       psychMatchIntro:
         "An at-a-glance summary of where you're alike and where you differ right now.",
+      part1Title: "📊 Part 1. A 3D diagnosis of your relationship",
+      part2Title: "👥 Part 2. You and me, side by side",
+      part3Title: "🔄 Part 3. Why this relationship is special",
+      part4Title: "⚡ Part 4. Tuning into each other's frequency",
+      part5Title: "🛠️ Part 5. Real steps that help you both",
+      dynamicsCardTitle: "⚡ The balance of power",
+      dynamicsBalanceLabel: "🎯 Who leads dates & contact",
+      dynamicsRecoveryLabel: "🌊 Emotional recovery speed gap",
+      framesCardTitle: "🌗 The hidden frame of your relationship",
+      framesReassuranceLabel: "🛟 Reassurance signals",
+      framesRolePlayLabel: "🎭 Unconscious role-play",
       specialCardTitle: "⚖️ Why this relationship is special",
       specialWhyLabel: "💡 Where you two are meeting in the middle",
       strengthWeaknessCardTitle: "💪 Strengths · Weaknesses",
@@ -873,8 +884,8 @@ export const messagesEnUS = {
       hiddenHeartPanelLabel: (name: string) => `🌙 ${name}'s hidden heart`,
       conflictCardTitleFallback: "Conflict pattern",
       conflictColumnLabel: "Who",
-      conflictBadLineColumn: "❌ What you used to say",
-      conflictGoodLineColumn: "✅ Try this instead",
+      conflictBadLineColumn: "Before ❌ What you used to say",
+      conflictGoodLineColumn: "After ✅ Try this instead",
       actionCardTitle: "🌱 Things that help each other",
       actionGuideLabel: (name: string) => `✨ Essence guide for ${name}`,
       actionDiaryLabel: "💌 Essence diary · your shared archive",
@@ -1897,6 +1908,17 @@ export type MessageCatalog = {
       natureCardTitle: string;
       psychMatchCardTitle: string;
       psychMatchIntro: string;
+      part1Title: string;
+      part2Title: string;
+      part3Title: string;
+      part4Title: string;
+      part5Title: string;
+      dynamicsCardTitle: string;
+      dynamicsBalanceLabel: string;
+      dynamicsRecoveryLabel: string;
+      framesCardTitle: string;
+      framesReassuranceLabel: string;
+      framesRolePlayLabel: string;
       specialCardTitle: string;
       specialWhyLabel: string;
       strengthWeaknessCardTitle: string;
