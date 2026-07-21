@@ -885,3 +885,64 @@ export function buildPairIdealRoleCombo(
     ),
   );
 }
+
+export type LeadershipRoleSplit = {
+  external_lead: "a" | "b" | "balanced";
+  internal_qa_lead: "a" | "b" | "balanced";
+  summary: string;
+};
+
+/**
+ * 업무 주도권 및 공적 공로 배분 — 마스터 사양서 Part3②.
+ * 사양서는 "천간 관성/비겁 투간(대외 발표 리더) vs 지지 인성/정재(실무 검수
+ * 리더)"로 나누는데, 지지(지장간) 기준 집계는 아직 없어서 이번엔 이미 계산돼
+ * 있는 스템 기준 십성 카운트만으로 간이 근사한다: (관성+비겁)이 상대적으로
+ * 높은 쪽 = 대외 리더, (인성+재성)이 높은 쪽 = 실무 검수 리더. 2인 구도라
+ * 한쪽을 정하면 나머지 역할은 자동으로 상대에게 배정한다(역할 안 겹치게).
+ */
+export function resolveLeadershipRoleSplit(
+  workSignalsA: WorkSajuSignals | undefined,
+  workSignalsB: WorkSajuSignals | undefined,
+  nicknameA: string,
+  nicknameB: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): LeadershipRoleSplit | null {
+  if (!workSignalsA || !workSignalsB) return null;
+
+  const externalScore = (s: WorkSajuSignals) =>
+    s.drive_stubborn.officer_count + s.drive_stubborn.self_count;
+  const extA = externalScore(workSignalsA);
+  const extB = externalScore(workSignalsB);
+  const diff = extA - extB;
+
+  if (diff === 0) {
+    return {
+      external_lead: "balanced",
+      internal_qa_lead: "balanced",
+      summary: sanitizeOfficeText(
+        pick(
+          locale,
+          `${nicknameA} and ${nicknameB} are evenly matched on presenting vs. reviewing — decide case by case rather than fixing roles.`,
+          `${nicknameA}와 ${nicknameB}는 대외 발표·실무 검수 성향이 비슷해요. 역할을 고정하기보다 상황에 따라 나누는 게 좋아요.`,
+        ),
+      ),
+    };
+  }
+
+  const externalLead = diff > 0 ? "a" : "b";
+  const internalQaLead = diff > 0 ? "b" : "a";
+  const externalName = diff > 0 ? nicknameA : nicknameB;
+  const internalName = diff > 0 ? nicknameB : nicknameA;
+
+  return {
+    external_lead: externalLead,
+    internal_qa_lead: internalQaLead,
+    summary: sanitizeOfficeText(
+      pick(
+        locale,
+        `${externalName} fits presenting and reporting externally, while ${internalName} is stronger at internal review and quality control — split it officially instead of both trying to do everything.`,
+        `${externalName}는 대외 발표·리포팅 쪽이 잘 맞고, ${internalName}는 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
+      ),
+    ),
+  };
+}

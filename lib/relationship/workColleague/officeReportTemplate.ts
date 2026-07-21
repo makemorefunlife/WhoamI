@@ -6,9 +6,11 @@ import {
   buildPairIdealRoleCombo,
   buildUpsetResponseGuide,
   pickDeEscalationCard,
+  resolveLeadershipRoleSplit,
   resolveWorkColleagueStylePhrase,
   sanitizeOfficeText,
   type DeEscalationCard,
+  type LeadershipRoleSplit,
   type OfficeDnaProfile,
   type OfficeIdealRoleFit,
   type OfficeUpsetGuide,
@@ -56,6 +58,8 @@ export type OfficeRoleSection = {
   person_a: OfficePersonRoleCard;
   person_b: OfficePersonRoleCard;
   synergy_one_liner: string;
+  /** 대외 발표/리포팅 리더 vs 실무 검수 리더 배분 — 이 필드 도입 전 구버전 캐시엔 키 자체가 없음 */
+  leadership_split?: LeadershipRoleSplit | null;
 };
 
 export type OfficeWarningSection = {
@@ -116,6 +120,43 @@ const CATEGORY_WEAPONS: Record<Locale, Record<string, string[]>> = {
  * 뽑아 썼다(겹친 분석). 이 함수와 `buildMyBoundary` 둘 다 같은 값을 재계산하고
  * 있었어서, 사람당 DNA 프로필이 리포트 1건당 3번씩 계산되던 걸 1번으로 줄였다.
  */
+/**
+ * 일간 오행 관계(상생/상극/비화) 시너지 절 — 마스터 사양서 "시작점 시그니처
+ * 한 줄 요약"의 일간 오행 관계 성분. `ctx.workPairAnalysis.base.dayStemInteraction`은
+ * 이미 계산되어 있는 원시 문자열(한자 포함, 로케일 무관)이라 그대로 못 쓰고,
+ * 기존 코드 관례(workPairAnalysis.ts의 classifyStemInteraction 등)처럼
+ * "상생"/"상극"/"같은" 부분 문자열로 분류해서 로케일별 잡담체 문장으로 다시 씀.
+ */
+function resolveDayStemSynergyClause(ctx: WorkColleagueContext): string {
+  const interaction = ctx.workPairAnalysis.base.dayStemInteraction;
+  if (interaction.includes("상생")) {
+    return pick(
+      ctx.locale,
+      "Your core instincts naturally feed each other.",
+      "일간 기운이 서로를 자연스럽게 살려줘요.",
+    );
+  }
+  if (interaction.includes("상극")) {
+    return pick(
+      ctx.locale,
+      "Your core instincts pull in different directions — a spark that needs channeling.",
+      "일간 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+    );
+  }
+  if (interaction.includes("같은")) {
+    return pick(
+      ctx.locale,
+      "You share the same core rhythm — for better and worse.",
+      "일간 기운이 비슷해서, 잘 통하는 것도 고집이 겹치는 것도 있어요.",
+    );
+  }
+  return pick(
+    ctx.locale,
+    "Your core instincts don't clash directly — context decides the fit.",
+    "일간끼리 직접 부딪히진 않아서, 상황에 따라 맞춰가는 편이에요.",
+  );
+}
+
 function resolveOneLineDefinition(
   ctx: WorkColleagueContext,
   dnaA: OfficeDnaProfile,
@@ -124,33 +165,34 @@ function resolveOneLineDefinition(
   const { activation, benefit, risk } = ctx.masterScores;
   const titleA = dnaA.character_title.split(" · ")[0] ?? pick(ctx.locale, "an executor", "실행형");
   const titleB = dnaB.character_title.split(" · ")[0] ?? pick(ctx.locale, "a supporter", "지원형");
+  const synergyClause = resolveDayStemSynergyClause(ctx);
 
-  if (benefit >= 70 && risk < 40) {
-    return pick(
-      ctx.locale,
-      `${titleA} and ${titleB} — a golden combo where the gears mesh perfectly`,
-      `${titleA}와 ${titleB} — 톱니바퀴가 맞물리는 황금 조합`,
-    );
-  }
-  if (activation >= 65 && risk >= 55) {
-    return pick(
-      ctx.locale,
-      `${titleA} and ${titleB} — a nail-biting but results-driven partnership`,
-      `${titleA}와 ${titleB} — 아슬아슬하지만 결과는 나오는 긴장의 파트너십`,
-    );
-  }
-  if (risk >= 60) {
-    return pick(
-      ctx.locale,
-      `${titleA} and ${titleB} — split the roles and it's a hit, mix them and it blows up`,
-      `${titleA}와 ${titleB} — 역할만 나누면 대박, 섞으면 폭발`,
-    );
-  }
-  return pick(
-    ctx.locale,
-    `${titleA} and ${titleB} — a complementary combo that fills the team with different weapons`,
-    `${titleA}와 ${titleB} — 서로 다른 무기로 팀을 채우는 보완 조합`,
-  );
+  const base =
+    benefit >= 70 && risk < 40
+      ? pick(
+          ctx.locale,
+          `${titleA} and ${titleB} — a golden combo where the gears mesh perfectly.`,
+          `${titleA}와 ${titleB} — 톱니바퀴가 맞물리는 황금 조합.`,
+        )
+      : activation >= 65 && risk >= 55
+        ? pick(
+            ctx.locale,
+            `${titleA} and ${titleB} — a nail-biting but results-driven partnership.`,
+            `${titleA}와 ${titleB} — 아슬아슬하지만 결과는 나오는 긴장의 파트너십.`,
+          )
+        : risk >= 60
+          ? pick(
+              ctx.locale,
+              `${titleA} and ${titleB} — split the roles and it's a hit, mix them and it blows up.`,
+              `${titleA}와 ${titleB} — 역할만 나누면 대박, 섞으면 폭발.`,
+            )
+          : pick(
+              ctx.locale,
+              `${titleA} and ${titleB} — a complementary combo that fills the team with different weapons.`,
+              `${titleA}와 ${titleB} — 서로 다른 무기로 팀을 채우는 보완 조합.`,
+            );
+
+  return sanitizeOfficeText(`${base} ${synergyClause}`);
 }
 
 function buildCommunicationFitWitty(ctx: WorkColleagueContext): string {
@@ -366,6 +408,13 @@ export function buildOfficePartnershipReport(
       person_a: buildPersonRoleCard(ctx, "a"),
       person_b: buildPersonRoleCard(ctx, "b"),
       synergy_one_liner: buildSynergyOneLiner(ctx),
+      leadership_split: resolveLeadershipRoleSplit(
+        ctx.workSignalsA,
+        ctx.workSignalsB,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        ctx.locale,
+      ),
     },
     section_upset: {
       person_a: buildUpsetResponseGuide(

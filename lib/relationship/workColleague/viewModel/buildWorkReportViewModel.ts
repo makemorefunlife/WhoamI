@@ -233,6 +233,7 @@ function buildRoleMatrixSection(
     synergyOneLiner: office.section_roles.synergy_one_liner,
     idealFit,
     togetherCombo: office.section_ideal_roles?.together_combo,
+    leadershipSplit: office.section_roles.leadership_split ?? undefined,
   };
 }
 

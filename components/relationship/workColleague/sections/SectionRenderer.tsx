@@ -174,6 +174,9 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
       {section.togetherCombo ? (
         <RelationshipReportParagraph className="mt-4 italic">💬 {section.togetherCombo}</RelationshipReportParagraph>
       ) : null}
+      {section.leadershipSplit ? (
+        <RelationshipReportParagraph className="mt-4 italic">🎤 {section.leadershipSplit.summary}</RelationshipReportParagraph>
+      ) : null}
     </RelationshipReportCard>
   );
 }

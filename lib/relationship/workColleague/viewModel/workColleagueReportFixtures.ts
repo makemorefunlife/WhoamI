@@ -104,6 +104,11 @@ export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
       },
       person_b: { nickname: "Jordan", weapons: ["기획"], handoff_tasks: [] },
       synergy_one_liner: "역할만 나누면 톱니바퀴가 돌아갑니다.",
+      leadership_split: {
+        external_lead: "a",
+        internal_qa_lead: "b",
+        summary: "Alex는 대외 발표 쪽이 잘 맞고, Jordan은 실무 검수 쪽이 강해요.",
+      },
     },
     section_upset: {
       person_a: {

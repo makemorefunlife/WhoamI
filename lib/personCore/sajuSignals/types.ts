@@ -57,6 +57,9 @@ export type WorkSajuSignals = {
   drive_stubborn: {
     food_count: number;
     self_count: number;
+    officer_count: number;
+    wealth_count: number;
+    seal_count: number;
     food_intensity: number;
     self_intensity: number;
     drive_band: DriveBand;

@@ -111,6 +111,9 @@ export function extractWorkSignals(
     drive_stubborn: {
       food_count: profile.food,
       self_count: profile.self,
+      officer_count: profile.officer,
+      wealth_count: profile.wealth,
+      seal_count: profile.seal,
       food_intensity: foodIntensity,
       self_intensity: selfIntensity,
       drive_band: driveBand(foodIntensity),

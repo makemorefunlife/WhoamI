@@ -9,6 +9,7 @@
 import type { TriScoreSnapshotPanel as TriScoreSnapshotPanelData } from "@/lib/relationship/triScoreSnapshot/types";
 import type {
   DeEscalationCard,
+  LeadershipRoleSplit,
   OfficeDnaProfile,
   OfficeIdealRoleFit,
   OfficeUpsetGuide,
@@ -92,6 +93,8 @@ export type RoleMatrixSection = BaseSection & {
   /** section_ideal_roles가 없는 레거시 payload에서는 생략 */
   idealFit?: PersonSlot<OfficeIdealRoleFit>;
   togetherCombo?: string;
+  /** leadership_split이 없는 레거시 payload·균형 케이스에서는 생략 */
+  leadershipSplit?: LeadershipRoleSplit;
 };
 
 export type RelationshipLoopSection = BaseSection & {
