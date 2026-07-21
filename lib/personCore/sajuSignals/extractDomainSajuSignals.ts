@@ -23,7 +23,7 @@ export function extractDomainSajuSignals(
     schema_version: DOMAIN_SAJU_SIGNALS_VERSION,
     engine_version: SAJU_ENGINE_VERSION,
     cohabitation_signals: extractCohabitationSignals(bundle),
-    work_signals: extractWorkSignals(bundle),
+    work_signals: extractWorkSignals(bundle, johuClimate),
     friendship_signals: extractFriendshipSignals(bundle, johuClimate),
     family_signals: extractFamilySignals(bundle),
     romantic_signals: extractRomanticSignals(bundle, johuClimate),

@@ -69,6 +69,12 @@ export type WorkSajuSignals = {
     noble_star_hits: string[];
     work_support_index: number;
   };
+  johu_profile: {
+    heat_score: number;
+    moisture_score: number;
+    temperature_band: "cold" | "neutral" | "hot";
+    dominant_element: "wood" | "fire" | "earth" | "metal" | "water";
+  };
 };
 
 /** 친구 — 년월 합충·조후·비겁 고립 */

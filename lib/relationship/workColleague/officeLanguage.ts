@@ -286,20 +286,69 @@ export const ELEMENT_OFFICE: Record<Locale, Record<string, string>> = {
   },
 };
 
-const CATEGORY_TITLE: Record<Locale, Record<TenGodCategory, string[]>> = {
+/**
+ * 월지 십성 × 조후(한조/난조) 매트릭스 — 마스터 사양서 Part2① 표 그대로.
+ * neutral=기본 캐릭터, hot=난조(화·토 과다), cold=한조(수·금 과다).
+ */
+type CategoryTitleByClimate = Record<
+  TenGodCategory,
+  { neutral: string; hot: string; cold: string }
+>;
+
+const CATEGORY_TITLE: Record<Locale, CategoryTitleByClimate> = {
   "en-US": {
-    재성: ["Results-Obsessed CFO", "Cool-Headed Dealmaker", "Numbers-Sense Powerhouse"],
-    관성: ["Process-Guardian PM", "Cool-Headed Breaker", "Max-Accountability Leader"],
-    식상: ["Idea Bank", "Planner Who Makes It Click", "Brainstorming Artisan"],
-    인성: ["Research Fairy", "Documentation Master", "Quiet Supporter"],
-    비겁: ["Field-Ready Team Player", "Proud Lone Wolf", "Teamwork-Loving Doer"],
+    관성: {
+      neutral: "Process-Guardian PM",
+      hot: "Speed-First Risk Manager",
+      cold: "The Careful Process Guardian",
+    },
+    재성: {
+      neutral: "Results-Driven CFO",
+      hot: "Energetic Target Crusher",
+      cold: "The Data-Driven Realist",
+    },
+    식상: {
+      neutral: "Problem Solver",
+      hot: "Rapid-Fire Problem Solver",
+      cold: "Deep-Dive Strategy Researcher",
+    },
+    인성: {
+      neutral: "Strategic Planner",
+      hot: "On-the-Ground Strategy Manager",
+      cold: "The Meticulous Systems Researcher",
+    },
+    비겁: {
+      neutral: "Independent Driver",
+      hot: "Bold Frontline Charger",
+      cold: "The Careful Solo Executor",
+    },
   },
   "ko-KR": {
-    재성: ["실속 폭주 CFO", "냉철한 딜메이커", "숫자 감각 폭발형"],
-    관성: ["프로세스 지킴이 PM", "냉정한 브레이커", "책임감 MAX 리더"],
-    식상: ["아이디어 뱅크", "말 되는 기획자", "브레인스토밍 장인"],
-    인성: ["리서치 요정", "문서화 마스터", "조용한 서포터"],
-    비겁: ["현장형 팀플레이어", "자존심 강한 독립군", "동료애 넘치는 실행러"],
+    관성: {
+      neutral: "프로세스 지킴이 PM",
+      hot: "스피드 중심의 리스크 관리자",
+      cold: "신중한 프로세스 지킴이",
+    },
+    재성: {
+      neutral: "성과 달성가 CFO",
+      hot: "에너제틱한 타겟 달성가",
+      cold: "데이터 기반의 실리주의자",
+    },
+    식상: {
+      neutral: "문제 해결사",
+      hot: "즉각적인 문제 해결사",
+      cold: "심층 기획 및 전략 연구원",
+    },
+    인성: {
+      neutral: "전략 기획자",
+      hot: "현장형 전략 매니저",
+      cold: "꼼꼼한 시스템 리서처",
+    },
+    비겁: {
+      neutral: "독립적 추진가",
+      hot: "과감한 돌격 대장",
+      cold: "신중한 독자적 실행가",
+    },
   },
 };
 
@@ -413,10 +462,15 @@ export function resolveWorkCategory(
   return dominantCategory(counts);
 }
 
-function hipTitle(category: TenGodCategory, element: string, locale: Locale): string {
+function hipTitle(
+  category: TenGodCategory,
+  element: string,
+  locale: Locale,
+  temperatureBand: WorkSajuSignals["johu_profile"]["temperature_band"] = "neutral",
+): string {
   const titles = CATEGORY_TITLE[locale][category];
   const el = ELEMENT_OFFICE[locale][element] ?? "";
-  const pickedTitle = titles[Math.abs(element.length + category.length) % titles.length]!;
+  const pickedTitle = titles[temperatureBand];
   return el ? `${pickedTitle} · ${el} DNA` : pickedTitle;
 }
 
@@ -432,6 +486,7 @@ export function buildOfficeDnaProfile(
   const chart = buildChartContext(pillars);
   const element = dominantElement(chart);
   const category = resolveWorkCategory(tenGodCounts, workSignals);
+  const temperatureBand = workSignals?.johu_profile.temperature_band ?? "neutral";
 
   const stemRef = REF_HEAVENLY_STEMS.find((r) => r.code === chart.dayStemCode);
   const branchRef = REF_EARTHLY_BRANCHES.find(
@@ -468,7 +523,7 @@ export function buildOfficeDnaProfile(
             : "teamwork, execution, and being on the ground",
     category === "재성" ? "돈·자원·성과" : category === "관성" ? "책임·관리·추진" : category === "식상" ? "아이디어·표현·산출" : category === "인성" ? "학습·정리·지원" : "동료심·실행·현장",
   );
-  const positionTitle = hipTitle(category, element, locale).split(" · ")[0];
+  const positionTitle = hipTitle(category, element, locale, temperatureBand).split(" · ")[0];
   const overall = sanitizeOfficeText(
     pick(
       locale,
@@ -478,7 +533,7 @@ export function buildOfficeDnaProfile(
   );
 
   return {
-    character_title: hipTitle(category, element, locale),
+    character_title: hipTitle(category, element, locale, temperatureBand),
     work_style: sanitizeOfficeText(workStyle),
     inner_standard: sanitizeOfficeText(innerStandard),
     overall_character: overall,

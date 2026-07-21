@@ -8,6 +8,7 @@ import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAna
 import { elementInteraction } from "@/lib/saju/pairChartAnalysis";
 import { clampScore } from "./intraPalaceRelations";
 import type { TenGodCategory, WorkSajuSignals } from "./types";
+import type { JohuClimateSnapshot } from "../types/sajuMaster";
 
 const GEOKGUK_LABEL: Record<TenGodCategory, string> = {
   officer: "관성격 — 조직·책임·규범 중심",
@@ -54,7 +55,22 @@ function stubbornBand(
 
 const NOBLE_STAR_NAMES = ["문창귀인", "장성살", "천을귀인", "학당귀인"] as const;
 
-export function extractWorkSignals(bundle: SajuBundle): WorkSajuSignals {
+/** extractFriendshipSignals.ts/extractRomanticSignals.ts와 동일한 정의 — 오행 우세 판정. */
+function dominantElement(
+  el: JohuClimateSnapshot["element_counts"],
+): WorkSajuSignals["johu_profile"]["dominant_element"] {
+  const entries = Object.entries(el) as [
+    WorkSajuSignals["johu_profile"]["dominant_element"],
+    number,
+  ][];
+  entries.sort((a, b) => b[1] - a[1]);
+  return entries[0]?.[0] ?? "earth";
+}
+
+export function extractWorkSignals(
+  bundle: SajuBundle,
+  johuClimate: JohuClimateSnapshot,
+): WorkSajuSignals {
   const chart = bundle.chart;
   const counts = countTenGods(bundle);
   const profile = profileTenGods(counts);
@@ -106,6 +122,12 @@ export function extractWorkSignals(bundle: SajuBundle): WorkSajuSignals {
       has_cheoneul_guin: shinsalNames.has("천을귀인"),
       noble_star_hits: [...nobleHits],
       work_support_index: workSupport,
+    },
+    johu_profile: {
+      heat_score: johuClimate.heat_score,
+      moisture_score: johuClimate.moisture_score,
+      temperature_band: johuClimate.temperature_band,
+      dominant_element: dominantElement(johuClimate.element_counts),
     },
   };
 }
