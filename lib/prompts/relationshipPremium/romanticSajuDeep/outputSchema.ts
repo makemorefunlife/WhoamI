@@ -1,3 +1,8 @@
+import type {
+  ChemistryApproxScores,
+  StrengthWeaknessLists,
+} from "@/lib/relationship/psychMatch";
+
 /** 연인 심화 Output Schema — LLM용 JSON 골격 (v2.2 풍부 출력) */
 export const ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA = `{
   "report": {
@@ -286,6 +291,8 @@ export type RomanticSajuDeepReport = {
     meta?: Record<string, unknown> & {
       romantic_fortune_flow?: RomanticFortuneFlowResult | null;
       psych_match?: RomanticPsychMatchResult | null;
+      chemistry_approx?: ChemistryApproxScores | null;
+      strength_weakness?: StrengthWeaknessLists | null;
     };
   };
 };

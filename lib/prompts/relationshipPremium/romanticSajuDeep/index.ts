@@ -21,7 +21,11 @@ import {
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
-import { buildPsychMatchResult } from "@/lib/relationship/psychMatch";
+import {
+  buildPsychMatchResult,
+  buildChemistryApproxScores,
+  buildStrengthWeaknessLists,
+} from "@/lib/relationship/psychMatch";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import type { RomanticOpeningSelection } from "@/lib/relationship/romanticHeadline/types";
 import { getRomanticSajuDeepSystemPrompt } from "./system";
@@ -281,6 +285,12 @@ function finalizeRomanticSajuDeepReport(
       event_scores: opening.event_scores ?? ctx.eventScores,
       romantic_fortune_flow: extras.fortuneFlow,
       psych_match: extras.psychMatch,
+      chemistry_approx: extras.psychMatch?.axis_results?.length
+        ? buildChemistryApproxScores(extras.psychMatch.axis_results)
+        : null,
+      strength_weakness: extras.psychMatch?.axis_results?.length
+        ? buildStrengthWeaknessLists(extras.psychMatch.axis_results, locale)
+        : null,
       opening: {
         selected_insight_id: opening.selected_insight_id,
         grade_reason: opening.grade_reason,

@@ -782,6 +782,15 @@ export default function RomanticSajuDeepReportView({
   const psychMatch = report.meta?.psych_match ?? null;
   const { chemistryApprox: chemistryScores, strengthWeakness: strengthWeaknessResult } =
     useMemo(() => {
+      // 2026-07-21부터: 서버가 생성 시점에 meta.chemistry_approx/strength_weakness를
+      // 저장함 — 있으면 그대로 쓰고, 없으면(그 이전에 생성된 구버전 캐시) 클라이언트에서
+      // 재계산해 하위호환 유지.
+      if (report.meta?.chemistry_approx && report.meta?.strength_weakness) {
+        return {
+          chemistryApprox: report.meta.chemistry_approx,
+          strengthWeakness: report.meta.strength_weakness,
+        };
+      }
       if (!psychMatch?.axis_results?.length) {
         return { chemistryApprox: null, strengthWeakness: null };
       }
@@ -789,7 +798,7 @@ export default function RomanticSajuDeepReportView({
         chemistryApprox: buildChemistryApproxScores(psychMatch.axis_results),
         strengthWeakness: buildStrengthWeaknessLists(psychMatch.axis_results, locale),
       };
-    }, [psychMatch, locale]);
+    }, [report.meta, psychMatch, locale]);
   const showChemistryBreakdown =
     chemistryScores != null &&
     (chemistryScores.emotional !== null ||
