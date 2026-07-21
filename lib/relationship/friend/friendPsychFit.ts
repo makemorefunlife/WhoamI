@@ -1,5 +1,7 @@
 import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import { profileTenGods } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
+import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 
 /**
@@ -78,4 +80,98 @@ export function resolveFriendVibeAxisNotes(
       : null;
 
   return { connection_note, banter_note, risk_note };
+}
+
+export type FriendGuardianCharacterKey = "brain" | "business" | "bamboo";
+
+export type FriendGuardianCharacter = {
+  key: FriendGuardianCharacterKey;
+  label: string;
+  description: string;
+};
+
+const GUARDIAN_LABEL: Record<Locale, Record<FriendGuardianCharacterKey, { label: string; description: string }>> = {
+  "en-US": {
+    brain: {
+      label: "The Smart Brain",
+      description: "Cuts through messy problems with sharp, structured thinking — the friend you call when you need a real answer, not just sympathy.",
+    },
+    business: {
+      label: "The Hustler & Wealth Energizer",
+      description: "Practical, resourceful, and always has a plan to make things happen — the friend who turns ideas into results.",
+    },
+    bamboo: {
+      label: "The Soul's Bamboo Forest",
+      description: "Holds space for whatever you need to vent, no judgment — the friend you can say anything to and it stays safe.",
+    },
+  },
+  "ko-KR": {
+    brain: {
+      label: "똑똑한 브레인",
+      description: "복잡한 문제를 단칼에 정리해주는 스마트한 전략 멘토 — 위로보다 진짜 답이 필요할 때 찾게 되는 친구.",
+    },
+    business: {
+      label: "사업가 & 재물 에너자이저",
+      description: "현실적이고 추진력 있게 일을 되게 만드는 스타일 — 아이디어를 실제 결과로 바꿔주는 친구.",
+    },
+    bamboo: {
+      label: "영혼의 대나무숲",
+      description: "어떤 얘기를 해도 판단하지 않고 들어주는 안전지대 — 뭐든 털어놔도 되는 친구.",
+    },
+  },
+};
+
+/** Part2① Social DNA — 십성(귀인 성향) + 11축(사고/실리/공감) 기반 3종 귀인캐릭터 */
+export function resolveGuardianCharacterForPerson(
+  counts: TenGodCounts,
+  psych: PsychMasterJson | null | undefined,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): FriendGuardianCharacter | null {
+  if (!psych) return null;
+  const p = profileTenGods(counts);
+  const { thinking_style, practicality, empathy } = psych.secondary_axes;
+
+  const brainScore = (p.officer + p.seal) * 10 + thinking_style;
+  const businessScore = (p.wealth + p.food) * 10 + practicality;
+  const bambooScore = (p.seal + p.food) * 10 + empathy;
+
+  let key: FriendGuardianCharacterKey = "brain";
+  let best = brainScore;
+  if (businessScore > best) {
+    key = "business";
+    best = businessScore;
+  }
+  if (bambooScore > best) {
+    key = "bamboo";
+    best = bambooScore;
+  }
+
+  return { key, ...GUARDIAN_LABEL[locale][key] };
+}
+
+/** Part2② 대화 핑퐁·메신저 템포 — 자극추구+외향에너지 기반 확인 문구 */
+export function resolveCommunicationRhythmNote(
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  if (!psychA || !psychB) return null;
+  const avg =
+    (axisAvg(psychA, "stimulation", "energy_style") + axisAvg(psychB, "stimulation", "energy_style")) / 2;
+
+  if (avg >= 60) {
+    return pick(
+      locale,
+      "Both of you tend to text fast and often — expect quick back-and-forth, not long silences.",
+      "둘 다 빠르고 자주 답하는 편이라, 메시지가 오래 안 묵히고 핑퐁이 빠르게 오갈 확률이 높아요.",
+    );
+  }
+  if (avg <= 40) {
+    return pick(
+      locale,
+      "Neither of you rushes to reply, so slower message tempo is normal here — not a sign of distance.",
+      "둘 다 답장을 서두르지 않는 편이라, 느린 템포가 오히려 이 관계에선 자연스러운 거예요.",
+    );
+  }
+  return null;
 }

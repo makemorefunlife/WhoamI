@@ -94,6 +94,9 @@ function CompareTableCard({
                   </td>
                   <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
                     {row.meaning}
+                    {row.psych_note ? (
+                      <p className="mt-1.5 text-xs text-white/50">{row.psych_note}</p>
+                    ) : null}
                   </td>
                 </tr>
               );
@@ -150,6 +153,17 @@ function SocialDnaCard({ section }: { section: SocialDnaSection }) {
                 <RelationshipReportLabel>{t.positionLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">{person.friend_position}</RelationshipReportParagraph>
               </div>
+              {person.guardian_character ? (
+                <div>
+                  <RelationshipReportLabel>{t.guardianCharacterLabel}</RelationshipReportLabel>
+                  <RelationshipReportParagraph className="mt-1.5">
+                    <span className="font-semibold" style={{ color: ACCENT }}>
+                      {person.guardian_character.label}
+                    </span>{" "}
+                    — {person.guardian_character.description}
+                  </RelationshipReportParagraph>
+                </div>
+              ) : null}
               <div>
                 <RelationshipReportLabel>{t.banterLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">

@@ -960,6 +960,7 @@ export const messagesKoKR: MessageCatalog = {
       scoreLabelRisk: "소셜 리스크",
       dnaCardTitle: "🧬 Social DNA 프로필",
       positionLabel: "🎭 포지션",
+      guardianCharacterLabel: "🌟 귀인 캐릭터",
       banterLabel: "🗣️ 티키타카",
       batteryLabel: "🔋 배터리",
       privateSideLabel: "🍻 편한 본모습",

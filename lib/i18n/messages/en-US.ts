@@ -1004,6 +1004,7 @@ export const messagesEnUS = {
       scoreLabelRisk: "Social risk",
       dnaCardTitle: "🧬 Social DNA profile",
       positionLabel: "🎭 Position",
+      guardianCharacterLabel: "🌟 Guardian character",
       banterLabel: "🗣️ Banter",
       batteryLabel: "🔋 Social battery",
       privateSideLabel: "🍻 Their off-duty side",
@@ -2050,6 +2051,7 @@ export type MessageCatalog = {
       scoreLabelRisk: string;
       dnaCardTitle: string;
       positionLabel: string;
+      guardianCharacterLabel: string;
       banterLabel: string;
       batteryLabel: string;
       privateSideLabel: string;

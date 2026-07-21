@@ -57,6 +57,8 @@ export type FriendCompareRow = {
   personA: { nickname: string; shortLabel: string };
   personB: { nickname: string; shortLabel: string };
   meaning: string;
+  /** 11축 확인 문구 — 현재는 communication_rhythm 행에만 부착. psychMaster 없으면 null */
+  psych_note?: string | null;
 };
 
 type FriendTenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";

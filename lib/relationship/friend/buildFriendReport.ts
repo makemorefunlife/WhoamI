@@ -18,7 +18,12 @@ import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTyp
 import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
-import { resolveFriendSignatureClause, resolveFriendVibeAxisNotes } from "./friendPsychFit";
+import {
+  resolveFriendSignatureClause,
+  resolveFriendVibeAxisNotes,
+  resolveGuardianCharacterForPerson,
+  resolveCommunicationRhythmNote,
+} from "./friendPsychFit";
 
 export type FriendReportBody = {
   headline: string;
@@ -86,6 +91,15 @@ export function buildFriendReport(params: {
     ? `${friendBase.section_snapshot.one_line_friendship} ${signatureClause}`
     : friendBase.section_snapshot.one_line_friendship;
 
+  // Part2① Social DNA 귀인캐릭터, Part2② 대화템포 — 11축 결합.
+  const guardianA = resolveGuardianCharacterForPerson(ctx.tenGodsA, params.psychMasterA, locale);
+  const guardianB = resolveGuardianCharacterForPerson(ctx.tenGodsB, params.psychMasterB, locale);
+  const commRhythmNote = resolveCommunicationRhythmNote(
+    params.psychMasterA,
+    params.psychMasterB,
+    locale,
+  );
+
   const snapshot_panel = buildFriendSnapshotPanel(
     ctx,
     {
@@ -112,6 +126,14 @@ export function buildFriendReport(params: {
       one_line_friendship: oneLineFriendship,
       vibe_axis_notes: vibeAxisNotes,
     },
+    section_social_dna_a: {
+      ...friendBase.section_social_dna_a,
+      guardian_character: guardianA,
+    },
+    section_social_dna_b: {
+      ...friendBase.section_social_dna_b,
+      guardian_character: guardianB,
+    },
     section_compare_table: buildFriendSajuCompareTable({
       nicknameA: params.nicknameA,
       nicknameB: params.nicknameB,
@@ -122,7 +144,9 @@ export function buildFriendReport(params: {
       chartA: ctx.friendPairAnalysis.chartA,
       chartB: ctx.friendPairAnalysis.chartB,
       locale,
-    }),
+    }).map((row) =>
+      row.id === "communication_rhythm" ? { ...row, psych_note: commRhythmNote } : row,
+    ),
   };
 
   const prescription_friendship = params.pairFriendship
