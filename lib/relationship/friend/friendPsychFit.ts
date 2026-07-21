@@ -175,3 +175,127 @@ export function resolveCommunicationRhythmNote(
   }
   return null;
 }
+
+export type FriendTravelStyleSplit = {
+  planner: { nickname: string; description: string };
+  flexible: { nickname: string; description: string };
+  role_prescription: string;
+};
+
+/** Part3① 여행 & 액티비티 동선 마찰 — 계획구조화(structure) 격차 기반 역할 분리 */
+export function resolveTravelStyleSplit(
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
+  nicknameA: string,
+  nicknameB: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): FriendTravelStyleSplit | null {
+  if (!psychA || !psychB) return null;
+  const structA = psychA.secondary_axes.structure;
+  const structB = psychB.secondary_axes.structure;
+  const gap = Math.abs(structA - structB);
+  if (gap < 15) return null;
+
+  const aIsPlanner = structA > structB;
+  const plannerNickname = aIsPlanner ? nicknameA : nicknameB;
+  const flexibleNickname = aIsPlanner ? nicknameB : nicknameA;
+
+  return {
+    planner: {
+      nickname: plannerNickname,
+      description: pick(
+        locale,
+        "The spreadsheet planner — needs a minute-by-minute itinerary of hot spots to feel at ease.",
+        "분 단위 핫플 동선과 타임테이블을 완벽히 짜야 마음이 편한 엑셀 계획파.",
+      ),
+    },
+    flexible: {
+      nickname: flexibleNickname,
+      description: pick(
+        locale,
+        "The go-with-the-flow healer — sleeps in, wanders, and ducks into any cute café that catches their eye.",
+        "발길 닿는 대로 늦잠 자고 예쁜 카페 보이면 들어가는 유연한 힐링파.",
+      ),
+    },
+    role_prescription: pick(
+      locale,
+      `Let ${plannerNickname} own the itinerary and logistics, and hand ${flexibleNickname} the final call on restaurants and cafe vibes — that split keeps the trip smooth for both of you.`,
+      `일정·동선 세팅은 ${plannerNickname}에게 맡기고, 맛집·카페 분위기 선택권은 ${flexibleNickname}에게 주면 여행이 훨씬 편해져요.`,
+    ),
+  };
+}
+
+export type FriendCounselingStyle = {
+  type: "F" | "T" | "balanced";
+  label: string;
+  description: string;
+};
+
+/** Part3③ 비밀 공유 & 고민 상담의 깊이(F형 vs T형) — 인성/관계공감 vs 관성/분석사고 */
+export function resolveCounselingStyleForPerson(
+  counts: TenGodCounts,
+  psych: PsychMasterJson | null | undefined,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): FriendCounselingStyle | null {
+  if (!psych) return null;
+  const p = profileTenGods(counts);
+  const { empathy, thinking_style } = psych.secondary_axes;
+  const fScore = p.seal * 10 + empathy;
+  const tScore = p.officer * 10 + thinking_style;
+
+  if (fScore > tScore) {
+    return {
+      type: "F",
+      label: pick(locale, "Emotional healer", "감정 힐러"),
+      description: pick(
+        locale,
+        `"That must've been so hard — I'm on your side no matter what." Sits with the feeling first.`,
+        `"속상했겠다, 무조건 네 편이야." 감정을 같이 우려내주는 타입.`,
+      ),
+    };
+  }
+  if (tScore > fScore) {
+    return {
+      type: "T",
+      label: pick(locale, "Cool-headed problem solver", "사이다 솔루션"),
+      description: pick(
+        locale,
+        `"So what's the actual plan here?" Cuts straight to a clear-eyed solution.`,
+        `"그래서 해결책이 뭔데?" 하고 냉철하게 대안을 제시하는 타입.`,
+      ),
+    };
+  }
+  return {
+    type: "balanced",
+    label: pick(locale, "Switch-hitter", "상황 따라 유연"),
+    description: pick(
+      locale,
+      "Reads the moment and switches between comforting first and problem-solving first as needed.",
+      "상황 봐가며 위로가 먼저일 때와 해결책이 먼저일 때를 유연하게 오가는 타입.",
+    ),
+  };
+}
+
+/** Part3② 더치페이·총무 — 재성 기반 지정 결과에 대한 11축(현실실리+계획구조화) 확인/유보 문구 */
+export function resolveTreasurerConfirmNote(
+  psych: PsychMasterJson | null | undefined,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  if (!psych) return null;
+  const avg = axisAvg(psych, "practicality", "structure");
+  if (avg >= 60) {
+    return pick(
+      locale,
+      "The 11-axis scores back this up too — high reality-sense and planning-structure make them a natural fit for the job.",
+      "현실실리·계획구조화 축도 이 판정을 뒷받침해요 — 이 역할이 잘 맞는 타입이에요.",
+    );
+  }
+  if (avg <= 40) {
+    return pick(
+      locale,
+      "That said, the 11-axis scores suggest the treasurer role might feel like a bit of a burden — a splitting app can take some pressure off.",
+      "다만 11축만 보면 총무 자리가 살짝 부담스러울 수 있어요 — 정산 앱 등으로 부담을 덜어주면 좋아요.",
+    );
+  }
+  return null;
+}

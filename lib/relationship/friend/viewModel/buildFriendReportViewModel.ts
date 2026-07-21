@@ -160,6 +160,30 @@ function buildPlayMoneySection(
     treasurerNickname: pm.treasurer_nickname,
     treasurerReason: pm.treasurer_reason,
     optimalHangout: pm.optimal_hangout,
+    psychConfirmNote: pm.psych_confirm_note,
+  };
+}
+
+function buildHiddenFlowSection(
+  report: FriendReportBody,
+  viewerIsReportA: boolean,
+  t: ReturnType<typeof catalog>,
+): FriendReportSection | null {
+  const hf = report.friend?.section_hidden_flow;
+  if (!hf) return null;
+  if (!hf.travel_style && !hf.counseling_style_a && !hf.counseling_style_b) return null;
+  const counseling = pickViewerFirstPair(
+    hf.counseling_style_a,
+    hf.counseling_style_b,
+    viewerIsReportA,
+  );
+  return {
+    id: "hidden_flow",
+    type: "hidden_flow",
+    partNumber: 3,
+    title: t.hiddenFlowCardTitle,
+    travelStyle: hf.travel_style,
+    counseling,
   };
 }
 
@@ -233,6 +257,7 @@ export function buildFriendReportViewModel(
     () => buildSocialDnaSection(report, viewerIsReportA, t),
     () => buildSoulmateSection(report, t),
     () => buildPlayMoneySection(report, t),
+    () => buildHiddenFlowSection(report, viewerIsReportA, t),
     () => buildBreakupGuideSection(report, viewerIsReportA, t),
     () => buildDeEscalationSection(report, t),
     () => buildPrescriptionSection(report, t),

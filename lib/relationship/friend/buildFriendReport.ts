@@ -23,6 +23,9 @@ import {
   resolveFriendVibeAxisNotes,
   resolveGuardianCharacterForPerson,
   resolveCommunicationRhythmNote,
+  resolveTravelStyleSplit,
+  resolveCounselingStyleForPerson,
+  resolveTreasurerConfirmNote,
 } from "./friendPsychFit";
 
 export type FriendReportBody = {
@@ -100,6 +103,22 @@ export function buildFriendReport(params: {
     locale,
   );
 
+  // Part3① 여행동선, Part3③ F/T형 — 완전 신규. Part3② 더치페이 — 기존 재성 판정에 11축 확인만 추가.
+  const travelStyle = resolveTravelStyleSplit(
+    params.psychMasterA,
+    params.psychMasterB,
+    params.nicknameA,
+    params.nicknameB,
+    locale,
+  );
+  const counselingA = resolveCounselingStyleForPerson(ctx.tenGodsA, params.psychMasterA, locale);
+  const counselingB = resolveCounselingStyleForPerson(ctx.tenGodsB, params.psychMasterB, locale);
+  const treasurerIsA = friendBase.section_play_money.treasurer_nickname === params.nicknameA;
+  const treasurerNote = resolveTreasurerConfirmNote(
+    treasurerIsA ? params.psychMasterA : params.psychMasterB,
+    locale,
+  );
+
   const snapshot_panel = buildFriendSnapshotPanel(
     ctx,
     {
@@ -133,6 +152,15 @@ export function buildFriendReport(params: {
     section_social_dna_b: {
       ...friendBase.section_social_dna_b,
       guardian_character: guardianB,
+    },
+    section_play_money: {
+      ...friendBase.section_play_money,
+      psych_confirm_note: treasurerNote,
+    },
+    section_hidden_flow: {
+      travel_style: travelStyle,
+      counseling_style_a: counselingA,
+      counseling_style_b: counselingB,
     },
     section_compare_table: buildFriendSajuCompareTable({
       nicknameA: params.nicknameA,

@@ -7,7 +7,11 @@
  * 직전에 파생시키는 비영속(non-persisted) 값이다.
  */
 import type { TriScoreSnapshotPanel as TriScoreSnapshotPanelData } from "@/lib/relationship/triScoreSnapshot/types";
-import type { FriendKillerSections } from "@/lib/relationship/friend/friendKillerSections";
+import type {
+  FriendKillerSections,
+  TravelStyleSplit,
+  CounselingStyle,
+} from "@/lib/relationship/friend/friendKillerSections";
 import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
 import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
@@ -69,6 +73,13 @@ export type PlayMoneySection = BaseSection & {
   treasurerNickname: string;
   treasurerReason: string;
   optimalHangout: string;
+  psychConfirmNote?: string | null;
+};
+
+export type HiddenFlowSection = BaseSection & {
+  type: "hidden_flow";
+  travelStyle: TravelStyleSplit | null;
+  counseling: PersonSlot<CounselingStyle | null>;
 };
 
 export type BreakupGuideSection = BaseSection & {
@@ -97,6 +108,7 @@ export type FriendReportSection =
   | SocialDnaSection
   | SoulmateSection
   | PlayMoneySection
+  | HiddenFlowSection
   | BreakupGuideSection
   | DeEscalationSection
   | PrescriptionSection;

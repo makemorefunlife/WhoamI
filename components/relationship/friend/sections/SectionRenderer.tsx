@@ -24,6 +24,7 @@ import type {
   DeEscalationSection,
   FriendReportSection,
   FriendReportViewModel,
+  HiddenFlowSection,
   PlayMoneySection,
   PrescriptionSection,
   PsychRadarSection,
@@ -211,6 +212,68 @@ function PlayMoneyCard({ section }: { section: PlayMoneySection }) {
           <RelationshipReportLabel>{t.optimalHangoutLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.optimalHangout}</RelationshipReportParagraph>
         </div>
+        {section.psychConfirmNote ? (
+          <p className="text-xs text-white/50">{section.psychConfirmNote}</p>
+        ) : null}
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
+function HiddenFlowCard({ section }: { section: HiddenFlowSection }) {
+  const t = useMessages().relationshipDrilldown.friendship;
+  const counselors = [
+    { label: "me" as const, style: section.counseling.me },
+    { label: "partner" as const, style: section.counseling.partner },
+  ];
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        {section.travelStyle ? (
+          <div>
+            <RelationshipReportLabel>{t.travelStyleLabel}</RelationshipReportLabel>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <RelationshipReportInset>
+                <p className="text-sm font-bold text-white/92">🗺️ {section.travelStyle.planner.nickname}</p>
+                <p className="mt-1 text-xs font-semibold" style={{ color: ACCENT }}>
+                  {t.travelPlannerLabel}
+                </p>
+                <RelationshipReportParagraph className="mt-1.5">
+                  {section.travelStyle.planner.description}
+                </RelationshipReportParagraph>
+              </RelationshipReportInset>
+              <RelationshipReportInset>
+                <p className="text-sm font-bold text-white/92">🌿 {section.travelStyle.flexible.nickname}</p>
+                <p className="mt-1 text-xs font-semibold" style={{ color: ACCENT }}>
+                  {t.travelFlexibleLabel}
+                </p>
+                <RelationshipReportParagraph className="mt-1.5">
+                  {section.travelStyle.flexible.description}
+                </RelationshipReportParagraph>
+              </RelationshipReportInset>
+            </div>
+            <RelationshipReportParagraph className="mt-2" muted>
+              {section.travelStyle.role_prescription}
+            </RelationshipReportParagraph>
+          </div>
+        ) : null}
+        {counselors.some(({ style }) => style) ? (
+          <div>
+            <RelationshipReportLabel>{t.counselingStyleLabel}</RelationshipReportLabel>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              {counselors.map(({ label, style }) =>
+                style ? (
+                  <RelationshipReportInset key={label}>
+                    <p className="text-sm font-semibold" style={{ color: ACCENT }}>
+                      {style.label}
+                    </p>
+                    <RelationshipReportParagraph className="mt-1.5">{style.description}</RelationshipReportParagraph>
+                  </RelationshipReportInset>
+                ) : null,
+              )}
+            </div>
+          </div>
+        ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );
@@ -284,6 +347,8 @@ export function FriendReportSectionCard({
       return <SoulmateCard section={section} />;
     case "play_money":
       return <PlayMoneyCard section={section} />;
+    case "hidden_flow":
+      return <HiddenFlowCard section={section} />;
     case "breakup_guide":
       return <BreakupGuideCard section={section} />;
     case "de_escalation":

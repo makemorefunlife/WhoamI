@@ -62,11 +62,23 @@ export type PlayMoneySection = {
   treasurer_nickname: string;
   treasurer_reason: string;
   optimal_hangout: string;
+  /** Part3② 더치페이·총무 — 11축(현실실리+계획구조화) 확인/유보 문구. psychMaster 없으면 null */
+  psych_confirm_note?: string | null;
 };
 
 export type BreakupGuideSection = {
   trigger_warning_a: string;
   trigger_warning_b: string;
+};
+
+export type TravelStyleSplit = import("./friendPsychFit").FriendTravelStyleSplit;
+export type CounselingStyle = import("./friendPsychFit").FriendCounselingStyle;
+
+/** Part3① 여행동선 + Part3③ F/T형 — 둘 다 완전 신규 콘텐츠라 한 섹션에 묶음 */
+export type HiddenFlowSection = {
+  travel_style: TravelStyleSplit | null;
+  counseling_style_a: CounselingStyle | null;
+  counseling_style_b: CounselingStyle | null;
 };
 
 export type FriendKillerSections = {
@@ -83,6 +95,8 @@ export type FriendKillerSections = {
    * 레거시 캐시/설문 미완료 페어와의 하위호환).
    */
   section_compare_table?: import("./friendSajuCompareTable").FriendCompareRow[];
+  /** Part3 — buildFriendReport.ts에서 채움(optional, 레거시 캐시 하위호환) */
+  section_hidden_flow?: HiddenFlowSection;
 };
 
 function buildPersonDna(

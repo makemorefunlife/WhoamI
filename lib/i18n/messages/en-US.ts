@@ -1012,6 +1012,11 @@ export const messagesEnUS = {
       playMoneyCardTitle: "💸 Hangout style & money habits",
       treasurerLabel: "💰 Treasurer",
       optimalHangoutLabel: "🎪 Best hangout style",
+      hiddenFlowCardTitle: "🔄 The hidden flow of your friendship",
+      travelStyleLabel: "✈️ Travel & itinerary friction",
+      travelPlannerLabel: "The spreadsheet planner",
+      travelFlexibleLabel: "The go-with-the-flow healer",
+      counselingStyleLabel: "🍃 Counseling style",
       breakupGuideCardTitle: "⚠️ Falling-out prevention guide",
       deEscalationCardTitle: "⚡ Best-friend fight antidote",
       compareTableCardTitle: "📊 At a glance — 6 ways you compare",
@@ -2059,6 +2064,11 @@ export type MessageCatalog = {
       playMoneyCardTitle: string;
       treasurerLabel: string;
       optimalHangoutLabel: string;
+      hiddenFlowCardTitle: string;
+      travelStyleLabel: string;
+      travelPlannerLabel: string;
+      travelFlexibleLabel: string;
+      counselingStyleLabel: string;
       breakupGuideCardTitle: string;
       deEscalationCardTitle: string;
       compareTableCardTitle: string;
