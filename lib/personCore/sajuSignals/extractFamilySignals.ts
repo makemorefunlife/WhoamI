@@ -53,6 +53,14 @@ function countTenGods(bundle: SajuBundle): TenGodCounts {
   return counts;
 }
 
+// 2026-07-21 수정: seal_count는 3개 비일주 기둥에서만 뽑혀 0~3 범위로 매우
+// 좁다(합성 스윕 N=400 기준 seal=0 49%, seal=1 37.5%, seal=2 11%, seal=3+ 2.5%).
+// 기존 threshold(>=2 balanced)는 seal=1(전체의 37.5%)을 seal=0(고립)과 똑같이
+// "distant"로 묶어버려서, 무관한 두 사람이 부모-자녀 비교표에서 "distant"로
+// 겹칠 확률이 76%에 달했다(0.865² + 0.11² + 0.025² ≈ 76%) — 이게 "표가 항상
+// 똑같이 나온다"는 사용자 리포트의 근본 원인이었다. seal=1은 "완전 고립"과
+// 다르므로 balanced 경계를 1로 낮춰 분포를 distant 49% / balanced 48.5% /
+// smothering 2.5%로 재배분한다.
 function parentBondBand(
   sealCount: number,
   sealExcess: boolean,
@@ -60,7 +68,7 @@ function parentBondBand(
 ): ParentBondBand {
   if (sealIsolated) return "distant";
   if (sealExcess) return "smothering";
-  if (sealCount >= 2) return "balanced";
+  if (sealCount >= 1) return "balanced";
   return "distant";
 }
 

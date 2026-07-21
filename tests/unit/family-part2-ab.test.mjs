@@ -51,13 +51,13 @@ function countsFromJson(sajuJson) {
   return counts;
 }
 
-/** Synthetic FamilySajuSignals for band control (existing thresholds only). */
+/** Synthetic FamilySajuSignals for band control (thresholds match parentBondBand, 2026-07-21). */
 function synthFamilySignals({ sealCount, sealExcess, sealIsolated, punishmentCount = 0, karma = 0 }) {
   const band = sealIsolated
     ? "distant"
     : sealExcess
       ? "smothering"
-      : sealCount >= 2
+      : sealCount >= 1
         ? "balanced"
         : "distant";
   return {
@@ -146,9 +146,10 @@ ok("parentRole changes A title/context only — person shortLabels identical");
 section("B) bond_distance bands + umbilical independence");
 
 assert.equal(resolveParentBondBandFromCounts({ 정인: 0, 편인: 0 }), "distant");
+assert.equal(resolveParentBondBandFromCounts({ 정인: 1 }), "balanced");
 assert.equal(resolveParentBondBandFromCounts({ 정인: 2 }), "balanced");
 assert.equal(resolveParentBondBandFromCounts({ 정인: 3 }), "smothering");
-ok("parent_bond_band thresholds: 0→distant, ≥2→balanced, ≥3→smothering");
+ok("parent_bond_band thresholds: 0→distant, ≥1→balanced, ≥3→smothering (2026-07-21 수정: seal=1을 distant에서 balanced로 — 합성 스윕에서 seal=0/1 합쳐 86.5%가 distant로 뭉쳐 A/B 비교표가 항상 같아 보이는 원인이었음)");
 
 const balancedBond = synthFamilySignals({ sealCount: 2, sealExcess: false, sealIsolated: false });
 const smotherBond = synthFamilySignals({ sealCount: 4, sealExcess: true, sealIsolated: false });
