@@ -1,8 +1,4 @@
-import {
-  REF_EARTHLY_BRANCHES,
-  REF_HEAVENLY_STEMS,
-  REF_RELATION_RULES,
-} from "@/lib/hardcoded/sajuReferenceData";
+import { REF_RELATION_RULES } from "@/lib/hardcoded/sajuReferenceData";
 import {
   type ChartContext,
   buildChartContext,
@@ -16,18 +12,10 @@ import {
 } from "@/lib/saju/workPairRiskSignals";
 import {
   analyzePairSaju,
-  countElements,
-  elementInteraction,
   type CrossChartHit,
   type PairSajuAnalysis,
 } from "@/lib/saju/pairChartAnalysis";
-
-const stemElement = new Map<string, string>(
-  REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
-);
-const branchElement = new Map<string, string>(
-  REF_EARTHLY_BRANCHES.map((r) => [r.code, r.element as string]),
-);
+import { stemElement, branchElement, countElements, elementInteraction } from "@/lib/saju/elements";
 
 type RelationRuleRow = {
   relation_type: string;

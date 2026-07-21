@@ -34,6 +34,7 @@ export type JohuClimateSnapshot = {
   /** 0=조(燥) 100=습(濕) — 수·목 비중 대 토·금 비중 */
   moisture_score: number;
   temperature_band: "cold" | "neutral" | "hot";
+  moisture_band: "dry" | "neutral" | "moist";
   element_counts: {
     wood: number;
     fire: number;
@@ -41,6 +42,20 @@ export type JohuClimateSnapshot = {
     metal: number;
     water: number;
   };
+};
+
+/** 신강/신약 간이 추정 — 확정 사주 이론이 아닌 오행 카운트 기반 근사치 */
+export type StrengthBalanceSnapshot = {
+  label: string;
+  note: string;
+};
+
+/** 용신·기신 후보 간이 추정 — confidence: "low"|"medium", 확정 아님 */
+export type YongsinEstimateSnapshot = {
+  yongsin_candidates: string[];
+  gisin_candidates: string[];
+  confidence: "low" | "medium";
+  note: string;
 };
 
 export type HiddenStemEntry = {
@@ -129,6 +144,8 @@ export type SajuMasterJson = {
   pillars: SajuMasterPillar[];
   stem_focus: SajuMasterStemFocus;
   johu_climate: JohuClimateSnapshot;
+  strength_balance: StrengthBalanceSnapshot;
+  yongsin_estimate: YongsinEstimateSnapshot;
 
   hidden_stems: HiddenStemEntry[];
 

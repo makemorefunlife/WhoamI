@@ -8,6 +8,10 @@ import {
 } from "@/lib/saju/workPairRiskSignals";
 import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import {
+  estimateStrengthBalance,
+  estimateYongsinGisin,
+} from "@/lib/saju/strengthBalance";
 import { extractDomainSajuSignals } from "../sajuSignals/extractDomainSajuSignals";
 import {
   SAJU_ENGINE_VERSION,
@@ -79,10 +83,15 @@ function buildJohuClimate(chart: ChartContext): JohuClimateSnapshot {
   if (cold >= hot + 2) temperature_band = "cold";
   else if (hot >= cold + 2) temperature_band = "hot";
 
+  let moisture_band: JohuClimateSnapshot["moisture_band"] = "neutral";
+  if (dry >= moist + 2) moisture_band = "dry";
+  else if (moist >= dry + 2) moisture_band = "moist";
+
   return {
     heat_score,
     moisture_score,
     temperature_band,
+    moisture_band,
     element_counts: { wood, fire, earth, metal, water },
   };
 }
@@ -239,6 +248,8 @@ export function mapSajuBundleToMasterJson(params: {
   const dayStemHangul = stemHangulFromPillar(pillars.dayPillar);
   const monthStemHangul = stemHangulFromPillar(pillars.monthPillar);
   const johu_climate = buildJohuClimate(chart);
+  const strength_balance = estimateStrengthBalance(chart);
+  const yongsin_estimate = estimateYongsinGisin(chart);
 
   return {
     schema_version: SAJU_MASTER_JSON_VERSION,
@@ -260,6 +271,8 @@ export function mapSajuBundleToMasterJson(params: {
       day_branch_hangul: branchHangulFromPillar(pillars.dayPillar),
     },
     johu_climate,
+    strength_balance,
+    yongsin_estimate,
     hidden_stems: mapHiddenStems(bundle.hiddenStemsData),
     special_signals: buildSpecialSignals(chart, bundle.shinsals),
     shinsal_hits: mapShinsalHits(bundle.shinsals),
