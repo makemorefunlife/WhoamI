@@ -405,7 +405,7 @@ const BRANCH_CRISIS_STYLE: Record<Locale, Record<string, string>> = {
     mi: "상처받으면 방어적으로 굳고, 혼자 정리할 시간이 필요해요.",
     sin: "날카롭게 반응하며, 기준이 무너지면 바로 지적합니다.",
     yu: "완벽주의가 올라와, 디테일 하나로 분위기가 싸해질 수 있어요.",
-    sul: "책임감이 폭발하고, 내 영역이 침범당하면 단호해집니다.",
+    sul: "책임감이 강하게 올라오고, 내 영역이 침범당하면 단호해집니다.",
     hae: "감정이 깊어지면 회피하거나, 뒤늦게 한꺼번에 터뜨릴 수 있어요.",
   },
 };
@@ -600,7 +600,7 @@ const DE_ESCALATION_CARDS: Record<
   ],
   "ko-KR": [
     {
-      hashtag: "#우쭈쭈_자존심이생명",
+      hashtag: "#인정받으면_풀려요",
       color: "red",
       title: "인정 한 마디가 스위치",
       detail:

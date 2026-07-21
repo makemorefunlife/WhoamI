@@ -64,14 +64,14 @@ const BOUNDARY_LABEL: Record<Locale, Record<TenGodCategory, string>> = {
 
 const FEEDBACK_LABEL: Record<Locale, Record<TenGodCategory, string>> = {
   "ko-KR": {
-    비겁: "자존심 스위치형 — 인정이 먼저 필요",
+    비겁: "주체성 스위치형 — 인정이 먼저 필요",
     인성: "이성적 수용형 — 시간 주면 스스로 정리",
     관성: "근거 확인형 — 기준부터 짚고 넘어감",
     식상: "즉시 반응형 — 그 자리에서 바로 표현",
     재성: "결과 중심형 — 손해·성과로 설득되면 수긍",
   },
   "en-US": {
-    비겁: "Pride-sensitive — needs recognition first",
+    비겁: "Ownership-driven — needs recognition first",
     인성: "Rational processor — sorts it out alone, given time",
     관성: "Fact-checker — wants the standard clarified first",
     식상: "Instant reactor — responds right on the spot",
@@ -111,7 +111,7 @@ const BRANCH_BURNOUT_LABEL: Record<Locale, Record<string, string>> = {
     sin: "즉시지적형 — 기준 무너지면 바로 표현",
     yu: "완벽민감형 — 디테일 하나로 예민해짐",
     sul: "선긋기형 — 영역 침범당하면 단호히 거리",
-    hae: "잠행형 — 회피하다 뒤늦게 몰아서 표출",
+    hae: "내면 숙성형 — 충분히 정리한 뒤 한번에 표현",
   },
   "en-US": {
     ja: "Head-on type — changes the board to cope",
@@ -125,7 +125,7 @@ const BRANCH_BURNOUT_LABEL: Record<Locale, Record<string, string>> = {
     sin: "Instant-caller — flags it the moment a standard slips",
     yu: "Perfection-sensitive — one small detail can tip the mood",
     sul: "Line-drawer — draws a firm boundary if territory is crossed",
-    hae: "Avoider — dodges it, then releases it all at once later",
+    hae: "Inner-processor — takes time to settle, then expresses it all at once",
   },
 };
 

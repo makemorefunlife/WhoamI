@@ -17,15 +17,15 @@ function micromanagingSummary(
   if (notes.includes("a_food_high_vs_b_self_low")) {
     return pick(
       locale,
-      `${nicknameA}'s drive overlaps with ${nicknameB}'s stubborn streak, so if ${nicknameA} pushes one-sidedly with "do it this way," ${nicknameB} tends to go passive or push back. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
-      `${nicknameA}의 추진력(식상)이 ${nicknameB}의 자기 고집(비겁) 영역과 겹쳐, ${nicknameA}가 일방적으로 '이렇게 해'라고 밀어붙이면 ${nicknameB}는 수동적이거나 반발하기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
+      `${nicknameA}'s drive overlaps with ${nicknameB}'s strong sense of ownership, so if ${nicknameA} pushes one-sidedly with "do it this way," ${nicknameB} tends to go passive or push back. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
+      `${nicknameA}의 추진력(식상)이 ${nicknameB}의 업무 주체성(비겁) 영역과 겹쳐, ${nicknameA}가 일방적으로 '이렇게 해'라고 밀어붙이면 ${nicknameB}는 수동적이거나 반발하기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
     );
   }
   if (notes.includes("b_food_high_vs_a_self_low")) {
     return pick(
       locale,
-      `${nicknameB}'s drive overlaps with ${nicknameA}'s stubborn streak — the more detailed instructions ${nicknameB} gives, the more ${nicknameA} tends to lose energy or hold a grudge. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
-      `${nicknameB}의 추진력이 ${nicknameA}의 고집 영역과 겹쳐, ${nicknameB}가 세부 지시를 많이 할수록 ${nicknameA}는 에너지가 빠지거나 뒤끝이 남기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
+      `${nicknameB}'s drive overlaps with ${nicknameA}'s strong sense of ownership — the more detailed instructions ${nicknameB} gives, the more ${nicknameA} tends to lose energy or hold a grudge. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
+      `${nicknameB}의 추진력이 ${nicknameA}의 주체성 영역과 겹쳐, ${nicknameB}가 세부 지시를 많이 할수록 ${nicknameA}는 에너지가 빠지거나 뒤끝이 남기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
     );
   }
   if (notes.includes("both_managerish")) {
@@ -37,8 +37,8 @@ function micromanagingSummary(
   }
   return pick(
     locale,
-    `The gap between drive and stubbornness bands creates a risk of accumulating "nagging and re-instruction" during work. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
-    `식상(추진)과 비겁(고집) 밴드 격차로 업무 중 '잔소리·재지시' 누적 위험이 있습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
+    `The gap between drive and ownership-strength bands creates a risk of accumulating "nagging and re-instruction" during work. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
+    `식상(추진)과 비겁(주체성) 밴드 격차로 업무 중 '잔소리·재지시' 누적 위험이 있습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
   );
 }
 
@@ -124,8 +124,8 @@ function buildLeadershipPrescription(
   const summary = dualStubborn
     ? pick(
         locale,
-        `Both ${nicknameA} and ${nicknameB} have a strong stubborn streak, so when opinions diverge, "who's right" fights tend to drag on. Leadership-conflict index ${pair.leadership_conflict_index} (${pair.leadership_conflict_band}).`,
-        `${nicknameA}와 ${nicknameB} 모두 고집 밴드가 강해, 의견이 갈리면 '누가 맞는지' 싸움이 길어지기 쉽습니다. 주도권 충돌 지수 ${pair.leadership_conflict_index}(${pair.leadership_conflict_band}).`,
+        `Both ${nicknameA} and ${nicknameB} have a strong sense of ownership, so when opinions diverge, "who's right" fights tend to drag on. Leadership-conflict index ${pair.leadership_conflict_index} (${pair.leadership_conflict_band}).`,
+        `${nicknameA}와 ${nicknameB} 모두 주체성 밴드가 강해, 의견이 갈리면 '누가 맞는지' 싸움이 길어지기 쉽습니다. 주도권 충돌 지수 ${pair.leadership_conflict_index}(${pair.leadership_conflict_band}).`,
       )
     : dualHighSelf
       ? pick(
@@ -135,8 +135,8 @@ function buildLeadershipPrescription(
         )
       : pick(
           locale,
-          `The gap between drive and stubbornness bands means "who leads" gets re-decided every single time. Leadership-conflict index ${pair.leadership_conflict_index} (${pair.leadership_conflict_band}).`,
-          `추진 밴드와 고집 밴드 격차로 '누가 리드할지'가 매번 새로 갈립니다. 주도권 충돌 지수 ${pair.leadership_conflict_index}(${pair.leadership_conflict_band}).`,
+          `The gap between drive and ownership-strength bands means "who leads" gets re-decided every single time. Leadership-conflict index ${pair.leadership_conflict_index} (${pair.leadership_conflict_band}).`,
+          `추진 밴드와 주체성 밴드 격차로 '누가 리드할지'가 매번 새로 갈립니다. 주도권 충돌 지수 ${pair.leadership_conflict_index}(${pair.leadership_conflict_band}).`,
         );
 
   return {
@@ -178,13 +178,13 @@ function buildLeadershipPrescription(
     dont_list: pick(
       locale,
       [
-        "Cutting off the other's speech in a meeting and repeating 'hear me out' — a stubborn-vs-stubborn combo only ends in a volume contest.",
+        "Cutting off the other's speech in a meeting and repeating 'hear me out' — a strong-ownership-vs-strong-ownership combo only ends in a volume contest.",
         "Venting complaints about a settled decision to another teammate behind the scenes — side channels only fuel the power struggle.",
         "Value judgments like 'your way is outdated' — discuss using facts, deadlines, and risk only.",
         "Using project results only for personal branding — a pair's power struggle never resolves without 'shared credit.'",
       ],
       [
-        "회의 중 상대 발언을 끊고 '내 말 들어봐' 반복 — 고집×고집 조합은 음량 경쟁으로만 끝납니다.",
+        "회의 중 상대 발언을 끊고 '내 말 들어봐' 반복 — 주체성×주체성 조합은 음량 경쟁으로만 끝납니다.",
         "결정된 사항을 뒤에서 다른 팀원에게 먼저 불만 토로하기 — 사이드 채널은 주도권 전쟁의 연료입니다.",
         "'네 방식은 옛날 방식' 같은 가치 판단 — 사실·기한·리스크만으로 논의하세요.",
         "프로젝트 성과를 개인 브랜딩에만 쓰기 — 페어 주도권 갈등은 '공동 성과' 없이는 절대 안 풀립니다.",
@@ -245,8 +245,8 @@ function resolveIntroLine(items: WorkPrescriptionItem[], locale: Locale): string
   if (topics.has("micromanaging_coordination") && topics.has("leadership_conflict")) {
     return pick(
       locale,
-      "This is an office pairing where drive and stubbornness are both strong at once. The Do/Don't below is pulled from your pair.work cross-signals, and is meant for action, separate from the existing office report narrative.",
-      "추진력과 고집이 동시에 강한 오피스 조합입니다. 아래 Do/Don't는 pair.work 교차 신호에서 뽑았고, 기존 오피스 리포트 서사와 별도로 실천용입니다.",
+      "This is an office pairing where drive and ownership are both strong at once. The Do/Don't below is pulled from your pair.work cross-signals, and is meant for action, separate from the existing office report narrative.",
+      "추진력과 주체성이 동시에 강한 오피스 조합입니다. 아래 Do/Don't는 pair.work 교차 신호에서 뽑았고, 기존 오피스 리포트 서사와 별도로 실천용입니다.",
     );
   }
   if (topics.has("micromanaging_coordination")) {
