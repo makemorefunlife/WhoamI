@@ -8,7 +8,6 @@ import {
 } from "@/lib/saju/repository";
 import type { MarriageDayBranchAnalysis } from "@/lib/saju/marriageAnalysis";
 import type { TenGodCounts } from "./marriageTenGodAnalysis";
-import { profileTenGods } from "./marriageTenGodAnalysis";
 import { hasGuimunOnDayHourPalaces } from "@/lib/saju/workPairRiskSignals";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
@@ -167,23 +166,26 @@ function resolveFantasyArchetype(
   return boldScore > classicScore ? "fantasy_breaker" : "romantic_classic";
 }
 
+// 침실 리드 스타일 판정에 쓰는 십신 배정. 비교 대상 십신 개수(일주 제외
+// 년/월/시 3개 기둥)가 항상 정확히 3개로 고정돼 있어서, 두 그룹에 배정되는
+// "개별 십신 종류 수"가 그대로 기저 확률이 된다 — 6:4로 배정하면 곧바로
+// 60:40 근처로 쏠린다(검증: 합성 스윕 N=500에서 sweet_guide 56→63%로 확인).
+// 그래서 5:5로 맞춘다. 정관(원칙적·온건한 권위)은 기존 코드가 sweet 쪽에
+// 두던 것을 유지하고, 편관(강압적·전투적 권위=칠살)만 새로 power 쪽에
+// 배정한다 — 기존 코드에서 편관은 아예 어느 쪽도 아니었다.
+const POWER_LEADER_GODS = ["비견", "겁재", "정재", "편재", "편관"];
+const SWEET_GUIDE_GODS = ["식신", "상관", "정인", "편인", "정관"];
+
 export function resolveMannerArchetype(counts: TenGodCounts): MannerArchetype {
-  const p = profileTenGods(counts);
-  const siksin = counts["식신"] ?? 0;
-  const jungwan = counts["정관"] ?? 0;
-  const pyeoja = counts["편재"] ?? 0;
+  const powerScore = POWER_LEADER_GODS.reduce(
+    (s, g) => s + (counts[g] ?? 0),
+    0,
+  );
+  const sweetScore = SWEET_GUIDE_GODS.reduce(
+    (s, g) => s + (counts[g] ?? 0),
+    0,
+  );
 
-  const powerExcess = p.self >= 3 || pyeoja >= 2;
-  const sweetDeveloped =
-    siksin >= 2 ||
-    jungwan >= 2 ||
-    (siksin >= 1 && jungwan >= 1);
-
-  if (powerExcess && !sweetDeveloped) return "power_leader";
-  if (sweetDeveloped && !powerExcess) return "sweet_guide";
-
-  const sweetScore = siksin * 2 + jungwan * 2;
-  const powerScore = p.self * 2 + pyeoja * 2;
   return sweetScore >= powerScore ? "sweet_guide" : "power_leader";
 }
 

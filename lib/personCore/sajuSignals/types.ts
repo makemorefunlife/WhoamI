@@ -112,6 +112,51 @@ export type FamilySajuSignals = {
   };
 };
 
+export type ExpressionBand = "expressive" | "balanced" | "reserved";
+export type ConflictBand = "principled" | "balanced" | "direct";
+export type AffectionBand = "action_gift" | "balanced" | "emotional_care";
+export type StressReactionBand = "explosive" | "steady" | "withdrawn";
+export type DecisionBand = "independent" | "balanced" | "consultative";
+export type CommunicationBand = "direct" | "balanced" | "considerate";
+
+/**
+ * 연인 — 표현/갈등/애정언어/스트레스/의사결정/소통 6축.
+ * romanticSajuDeep LLM comparison_table(감정 표현·갈등 반응·애정 언어·
+ * 스트레스 패턴·의사결정·소통 방식)과 1:1로 맞춰서, LLM에게 짜깁기 대신
+ * 사람별로 실제로 다른 근거 있는 신호를 준다.
+ */
+export type RomanticSajuSignals = {
+  expression_style: {
+    food_count: number;
+    expression_band: ExpressionBand;
+  };
+  conflict_response: {
+    officer_count: number;
+    food_count: number;
+    day_branch_tension_hits: SajuRelationHitBrief[];
+    conflict_band: ConflictBand;
+  };
+  affection_language: {
+    wealth_count: number;
+    seal_count: number;
+    affection_band: AffectionBand;
+  };
+  stress_pattern: {
+    heat_score: number;
+    temperature_band: "cold" | "neutral" | "hot";
+    stress_band: StressReactionBand;
+  };
+  decision_making: {
+    strength_label: string;
+    decision_band: DecisionBand;
+  };
+  communication_style: {
+    self_count: number;
+    seal_count: number;
+    communication_band: CommunicationBand;
+  };
+};
+
 export type DomainSajuSignalsPack = {
   schema_version: typeof DOMAIN_SAJU_SIGNALS_VERSION;
   engine_version: string;
@@ -119,4 +164,5 @@ export type DomainSajuSignalsPack = {
   work_signals: WorkSajuSignals;
   friendship_signals: FriendshipSajuSignals;
   family_signals: FamilySajuSignals;
+  romantic_signals: RomanticSajuSignals;
 };

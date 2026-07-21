@@ -43,6 +43,8 @@ export function buildRomanticPersonSignalsDigest(params: {
     ? `\n- 불확실(임의 확정 금지): ${params.uncertainItems.join("; ")}`
     : "";
 
+  const rs = ds.romantic_signals;
+
   return `## ${params.nickname} — saju_master_v2 엑기스 Digest
 - 생년월일시: ${params.birthDate} ${params.birthTime} | 출생지: ${params.birthPlace}
 - 원국: ${pillars}
@@ -50,12 +52,14 @@ export function buildRomanticPersonSignalsDigest(params: {
 - 조후: ${m.johu_climate.temperature_band} (열${m.johu_climate.heat_score}/습${m.johu_climate.moisture_score}) | 오행 목${ec.wood} 화${ec.fire} 토${ec.earth} 금${ec.metal} 수${ec.water}
 - 원국 역학(상위): ${relations || "없음"}
 - 신살 보유: ${possessed.join(", ") || "없음"}
-- domain_signals:
-  · 동거축 일궁긴장${ds.cohabitation_signals.day_palace.tension_index} 친밀${ds.cohabitation_signals.hidden_stem_intimacy.intimacy_index} CFO${ds.cohabitation_signals.wealth_officer_power.cfo_affinity_score}
-  · 동료축 격국${ds.work_signals.month_geokguk.geokguk_label_ko} 추진${ds.work_signals.drive_stubborn.drive_band} 고집${ds.work_signals.drive_stubborn.stubborn_band}
-  · 친구축 조후${ds.friendship_signals.johu_profile.temperature_band} 고립${ds.friendship_signals.bijie_isolation.isolation_band}
-  · 가족축 카르마${ds.family_signals.year_karma.karma_tension_index} 인성${ds.family_signals.seal_parent.parent_bond_band}${uncertain}
-⚠️ 전문용어·한자 출력 금지. 위 수치·밴드를 Few-Shot 규칙으로 조합 해석만 하세요.`.trim();
+- romantic_signals(이 사람의 연애 성향 — comparison_table 6축과 1:1 대응):
+  · 감정 표현: ${rs.expression_style.expression_band} (식상${rs.expression_style.food_count})
+  · 갈등 반응: ${rs.conflict_response.conflict_band} (관성${rs.conflict_response.officer_count}/식상${rs.conflict_response.food_count}, 일지충형${rs.conflict_response.day_branch_tension_hits.length}건)
+  · 애정 언어: ${rs.affection_language.affection_band} (재성${rs.affection_language.wealth_count}/인성${rs.affection_language.seal_count})
+  · 스트레스 패턴: ${rs.stress_pattern.stress_band} (${rs.stress_pattern.temperature_band}, 열${rs.stress_pattern.heat_score})
+  · 의사결정: ${rs.decision_making.decision_band} (${rs.decision_making.strength_label})
+  · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})${uncertain}
+⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`.trim();
 }
 
 function crossHitsDigest(

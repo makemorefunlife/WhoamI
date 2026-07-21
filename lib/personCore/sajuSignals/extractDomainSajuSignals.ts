@@ -4,6 +4,7 @@ import type { JohuClimateSnapshot } from "../types/sajuMaster";
 import { extractCohabitationSignals } from "./extractCohabitationSignals";
 import { extractFamilySignals } from "./extractFamilySignals";
 import { extractFriendshipSignals } from "./extractFriendshipSignals";
+import { extractRomanticSignals } from "./extractRomanticSignals";
 import { extractWorkSignals } from "./extractWorkSignals";
 import {
   DOMAIN_SAJU_SIGNALS_VERSION,
@@ -25,5 +26,6 @@ export function extractDomainSajuSignals(
     work_signals: extractWorkSignals(bundle),
     friendship_signals: extractFriendshipSignals(bundle, johuClimate),
     family_signals: extractFamilySignals(bundle),
+    romantic_signals: extractRomanticSignals(bundle, johuClimate),
   };
 }
