@@ -207,6 +207,14 @@ function BedroomCard({ section }: { section: BedroomSection }) {
               <div>
                 <RelationshipReportLabel>{t.bedroomStaminaLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1">{person.stamina}</RelationshipReportParagraph>
+                {person.stamina_precision_note ? (
+                  <div className="mt-2">
+                    <RelationshipReportLabel>{t.bedroomStaminaPrecisionNoteLabel}</RelationshipReportLabel>
+                    <RelationshipReportParagraph className="mt-1">
+                      {person.stamina_precision_note}
+                    </RelationshipReportParagraph>
+                  </div>
+                ) : null}
               </div>
               <div>
                 <RelationshipReportLabel>{t.bedroomFantasyLabel}</RelationshipReportLabel>

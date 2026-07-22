@@ -31,6 +31,8 @@ export type BedroomPersonProfile = {
   fantasy: string;
   manner: string;
   archetypes: BedroomArchetypes;
+  /** Part3① 12운성(제왕/건록 vs 묘/절) 정밀 확인문구 — psych 불필요, 판정 자체는 안 건드림 */
+  stamina_precision_note?: string | null;
 };
 
 export type BedroomMatrixSection = {
@@ -136,6 +138,39 @@ function resolveStaminaArchetype(
     return "marathon";
   }
   return rooted ? "marathon" : "sprint";
+}
+
+/**
+ * Part3① "제왕/건록 vs 묘/절" 정밀 확인문구 — `resolveStaminaArchetype`(마라톤/
+ * 스파크 판정)은 이미 합성 스윕으로 튜닝돼 있어 절대 안 건드리고, 스펙이
+ * 요구하는 12운성 자체만 별도 확인문구로 얹는다. 나머지 8개 운성은 확정할
+ * 근거가 약해 null(억지로 안 붙임).
+ */
+function resolveStaminaTwelveStageNote(
+  chart: ChartContext,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  const stage = calculateTwelveStage(chart.dayStemCode, chart.dayBranchCode);
+
+  if (stage === "jewang" || stage === "geollok") {
+    return sanitizeHomeLifeText(
+      pick(
+        locale,
+        "Your natural energy is running at its peak right now — the stamina to keep the rhythm going all night is backed up by the chart as well.",
+        "타고난 기력이 가장 왕성한 시기의 사주라, 밤새 리듬을 유지하는 체력이 사주로도 뒷받침돼요.",
+      ),
+    );
+  }
+  if (stage === "myo" || stage === "jeol") {
+    return sanitizeHomeLifeText(
+      pick(
+        locale,
+        "You're in a quieter, more settled phase right now — the strength in momentary immersion and spark is backed up by the chart as well.",
+        "차분히 가라앉은 시기의 사주라, 순간의 몰입과 스파크에 강점이 있는 타입이라는 게 사주로도 확인돼요.",
+      ),
+    );
+  }
+  return null;
 }
 
 function resolveFantasyArchetype(
@@ -495,11 +530,13 @@ export function buildBedroomMatrixSection(params: {
     stamina: STAMINA_COPY[locale][archA.stamina],
     fantasy: FANTASY_COPY[locale][archA.fantasy],
     manner: MANNER_COPY[locale][archA.manner],
+    stamina_precision_note: resolveStaminaTwelveStageNote(params.chartA, locale),
   };
   const profileB = {
     stamina: STAMINA_COPY[locale][archB.stamina],
     fantasy: FANTASY_COPY[locale][archB.fantasy],
     manner: MANNER_COPY[locale][archB.manner],
+    stamina_precision_note: resolveStaminaTwelveStageNote(params.chartB, locale),
   };
 
   return {

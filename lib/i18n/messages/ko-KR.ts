@@ -1005,6 +1005,7 @@ export const messagesKoKR: MessageCatalog = {
       bedroomMatrixLabel: "📊 밤의 성능 & 성향 매트릭스",
       bedroomProfileTitle: (nickname: string) => `${nickname}의 밤 프로필`,
       bedroomStaminaLabel: "🔋 스태미나 & 지속력",
+      bedroomStaminaPrecisionNoteLabel: "🔍 사주 정밀 확인",
       bedroomFantasyLabel: "🔮 판타지 & 새로움",
       bedroomMannerLabel: "💖 침실 매너 & 배려",
       bedroomFrequencyLabel: "🔥 침실 주파수 한줄평",

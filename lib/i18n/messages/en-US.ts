@@ -1049,6 +1049,7 @@ export const messagesEnUS = {
       bedroomMatrixLabel: "📊 Nighttime performance & tendency matrix",
       bedroomProfileTitle: (nickname: string) => `${nickname}'s nighttime profile`,
       bedroomStaminaLabel: "🔋 Stamina & staying power",
+      bedroomStaminaPrecisionNoteLabel: "🔍 A closer chart check",
       bedroomFantasyLabel: "🔮 Fantasy & novelty",
       bedroomMannerLabel: "💖 Bedroom manners & consideration",
       bedroomFrequencyLabel: "🔥 Bedroom frequency, in one line",
@@ -2109,6 +2110,7 @@ export type MessageCatalog = {
       bedroomMatrixLabel: string;
       bedroomProfileTitle: (nickname: string) => string;
       bedroomStaminaLabel: string;
+      bedroomStaminaPrecisionNoteLabel: string;
       bedroomFantasyLabel: string;
       bedroomMannerLabel: string;
       bedroomFrequencyLabel: string;
