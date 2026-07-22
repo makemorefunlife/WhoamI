@@ -23,6 +23,7 @@ import type { ChildDeEscalationCard } from "@/lib/relationship/familyParent/chil
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyPsychRole } from "@/lib/relationship/familyParent/familyPsychRoles";
+import type { FilialFrequencyType } from "@/lib/relationship/familyParent/familyFilialFrequency";
 
 export type OpeningBlock = {
   headline: string;
@@ -112,6 +113,13 @@ export type FamilyRoleSection = BaseSection & {
   roleDescription: string;
 };
 
+export type FilialFrequencySection = BaseSection & {
+  type: "filial_frequency";
+  frequencyType: FilialFrequencyType;
+  frequencyLabel: string;
+  frequencyNote: string;
+};
+
 // ---- Part 4: 운명적 케미 + 부모 렌즈 + 미래 보답 ------------------------------
 
 export type DestinySection = BaseSection & {
@@ -156,6 +164,7 @@ export type FamilyReportSection =
   | TalentSection
   | GrowthTunnelSection
   | FamilyRoleSection
+  | FilialFrequencySection
   | DestinySection
   | FilialRewardSection
   | SosScriptSection

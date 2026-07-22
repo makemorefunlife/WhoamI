@@ -28,6 +28,7 @@ import { buildFamilyRoleSection } from "./familyPsychRoles";
 import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
 import { buildFamilyTalentSection } from "./familyTalentProfile";
 import { buildFamilySosSection } from "./familySosScript";
+import { buildFamilyFilialFrequencySection } from "./familyFilialFrequency";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -143,6 +144,12 @@ export function buildFamilyParentReport(params: {
       scoringSignals: ctx.familyPairAnalysis.scoringSignals,
       countsParent: ctx.tenGod.countsParent,
       childNickname: ctx.childNickname,
+      parentNickname: ctx.parentNickname,
+      childIsViewer: ctx.childIsViewer,
+      locale,
+    }),
+    section_filial_frequency: buildFamilyFilialFrequencySection({
+      countsParent: ctx.tenGod.countsParent,
       parentNickname: ctx.parentNickname,
       childIsViewer: ctx.childIsViewer,
       locale,

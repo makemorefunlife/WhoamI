@@ -929,6 +929,7 @@ export const messagesKoKR: MessageCatalog = {
       growthLayerHint: "현재 연도에만 적용되는 시기적 해석",
       familyRoleCardTitle: "🎭 우리 아이의 마음속 역할",
       familyRoleDescriptionLabel: "부모님이 해주면 좋은 것",
+      filialFrequencyCardTitle: "💝 부모님의 효도 주파수",
       focusAreasPrefix: "집중 영역: ",
       filialRewardCardTitle: "🎯 미래의 패밀리 리워드",
       filialLayerLabel: "미래의 가능성",

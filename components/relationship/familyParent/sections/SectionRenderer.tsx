@@ -30,6 +30,7 @@ import type {
   FamilyReportSection,
   FamilyReportViewModel,
   FamilyRoleSection,
+  FilialFrequencySection,
   FilialRewardSection,
   GrowthTunnelSection,
   HouseholdRolesSection,
@@ -301,6 +302,21 @@ function FamilyRoleCard({ section }: { section: FamilyRoleSection }) {
   );
 }
 
+function FilialFrequencyCard({ section }: { section: FilialFrequencySection }) {
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <p className="text-lg font-semibold text-white/92">{section.frequencyLabel}</p>
+        <RelationshipReportInset>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.frequencyNote}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
 // ---- Part 4: 운명적 케미 + 부모 렌즈 + 미래 보답 ------------------------------
 
 function DestinyCard({ section }: { section: DestinySection }) {
@@ -468,6 +484,8 @@ export function FamilyReportSectionCard({
       return <GrowthTunnelCard section={section} />;
     case "family_role":
       return <FamilyRoleCard section={section} />;
+    case "filial_frequency":
+      return <FilialFrequencyCard section={section} />;
     case "destiny":
       return <DestinyCard section={section} />;
     case "filial_reward":

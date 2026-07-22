@@ -218,6 +218,23 @@ function buildFamilyRoleSectionView(
   };
 }
 
+function buildFilialFrequencySection(
+  report: FamilyParentReportBody,
+  t: ReturnType<typeof catalog>,
+): FamilyReportSection | null {
+  const f = report.family?.section_filial_frequency;
+  if (!f) return null;
+  return {
+    id: "filial_frequency",
+    type: "filial_frequency",
+    partNumber: 3,
+    title: t.filialFrequencyCardTitle,
+    frequencyType: f.frequency_type,
+    frequencyLabel: f.frequency_label,
+    frequencyNote: f.frequency_note,
+  };
+}
+
 function buildDestinySection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
@@ -313,6 +330,7 @@ export function buildFamilyReportViewModel(
     () => buildTalentSection(report),
     () => buildGrowthTunnelSection(report, t),
     () => buildFamilyRoleSectionView(report, t),
+    () => buildFilialFrequencySection(report, t),
     () => buildDestinySection(report, t),
     () => buildFilialRewardSection(report, t),
     () => buildSosScriptSection(report),

@@ -15,6 +15,7 @@ import type { FamilyRoleSection } from "./familyPsychRoles";
 import type { FamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
 import type { FamilyTalentSection } from "./familyTalentProfile";
 import type { FamilySosSection } from "./familySosScript";
+import type { FamilyFilialFrequencySection } from "./familyFilialFrequency";
 
 export type FamilyRoleMetaSection = {
   child_nickname: string;
@@ -44,6 +45,8 @@ export type FamilyParentChildReport = {
   section_talent?: FamilyTalentSection;
   /** Part5 — 비상시 SOS 룰(Track A: 자녀 위기 대응 / Track B: 부모 케어). */
   section_sos_script?: FamilySosSection;
+  /** Part3 Track B 전용 — 효도 주파수. Track A(childIsViewer=false)면 항상 null. */
+  section_filial_frequency?: FamilyFilialFrequencySection | null;
 };
 
 export function buildFamilyParentChildReport(

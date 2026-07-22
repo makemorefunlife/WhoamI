@@ -973,6 +973,7 @@ export const messagesEnUS = {
       growthLayerHint: "A time-specific challenge or transition for the current year",
       familyRoleCardTitle: "🎭 What role your child carries at home",
       familyRoleDescriptionLabel: "What helps, from a parent",
+      filialFrequencyCardTitle: "💝 Your parent's filial frequency",
       focusAreasPrefix: "Focus areas: ",
       filialRewardCardTitle: "🎯 Future family reward",
       filialLayerLabel: "Future possibility",
@@ -2044,6 +2045,7 @@ export type MessageCatalog = {
       growthLayerHint: string;
       familyRoleCardTitle: string;
       familyRoleDescriptionLabel: string;
+      filialFrequencyCardTitle: string;
       focusAreasPrefix: string;
       filialRewardCardTitle: string;
       filialLayerLabel: string;
