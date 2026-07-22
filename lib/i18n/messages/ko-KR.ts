@@ -938,6 +938,7 @@ export const messagesKoKR: MessageCatalog = {
       deEscalationLayerHint: "화가 올랐을 때 바로 쓰는 말과 행동 — 타고난 성격을 단정하지 않습니다",
       whenAngryLabel: "화났을 때",
       avoidLabel: "하지 말 것",
+      contactWaitLabel: "⏱️ 연락 대기시간",
       childFallback: "자녀",
       parentFallback: "부모",
       compareTableCardTitle: "📊 한눈에 비교 — 4가지 가족 축",

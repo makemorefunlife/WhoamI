@@ -20,6 +20,10 @@ export type ChildDeEscalationCard = {
   psych_state: string;
   avoid_actions: string;
   solution_script: string;
+  /** Part4 — 연락 대기시간(스펙 고정값 3시간). Track A/B 둘 다 항상 채움. */
+  contact_wait_note: string;
+  /** Part4 Track B 전용 — 자녀→부모 거절/독립 스크립트. Track A(기본)면 null. */
+  boundary_script: string | null;
 };
 
 type PrescriptionDef = {
@@ -161,6 +165,85 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
 ];
 
 /**
+ * Part4 Track B — 자녀→부모 거절/독립 스크립트. 새 십성 분류를 만들지 않고
+ * 기존 5카테고리(`ChildDeEscalationCategory`, correction_style bucket)를
+ * 그대로 재사용 — marriage의 `RECONCILIATION_CUE_COPY`와 동일 컨벤션.
+ */
+const BOUNDARY_SCRIPT: Record<Locale, Record<ChildDeEscalationCategory, (child: string, parent: string) => string>> = {
+  "en-US": {
+    self: (_child, parent) =>
+      `${parent}, this isn't about disrespecting you — I just want to do this my own way. If you can respect that, I'll open up more too.`,
+    food: (_child, parent) =>
+      `${parent}, can we just let this one go for now? I'll bring it up myself once I've cooled down.`,
+    seal: (_child, parent) =>
+      `${parent}, I need a little time alone to sort my thoughts out first. Please wait — I'll talk when I'm ready.`,
+    officer: (_child, parent) =>
+      `${parent}, I need to understand the "why" before I can accept it. If you tell me specifically what the issue was, I'll work on it too.`,
+    wealth: (_child, parent) =>
+      `${parent}, I'd rather see it than hear it. If you follow through on what you said, I'll feel better too.`,
+  },
+  "ko-KR": {
+    self: (_child, parent) =>
+      `${parent}, 무시하려는 게 아니라 그냥 내 방식대로 하고 싶은 것뿐이야. 존중해 주면 나도 더 잘 얘기할 수 있어.`,
+    food: (_child, parent) =>
+      `${parent}, 이번 건 그냥 넘어가 주면 안 될까? 기분 풀리면 내가 먼저 말할게.`,
+    seal: (_child, parent) =>
+      `${parent}, 나 지금 혼자 생각 정리할 시간이 필요해. 잠깐만 기다려 줘, 준비되면 얘기할게.`,
+    officer: (_child, parent) =>
+      `${parent}, 나도 이유를 알아야 받아들일 수 있어. 뭐가 문제였는지 구체적으로 말해주면 나도 노력할게.`,
+    wealth: (_child, parent) =>
+      `${parent}, 말보다 행동으로 보여줬으면 좋겠어. 약속 지켜주면 나도 마음이 풀려.`,
+  },
+};
+
+function resolveSelfCount(counts: TenGodCounts): number {
+  return (counts["비견"] ?? 0) + (counts["겁재"] ?? 0);
+}
+
+/**
+ * Part4 — 연락 대기시간. 스펙 고정값 "3시간"(marriage의 24시간처럼
+ * spec-literal)은 그대로 두고, 비겁(고집) 카운트 비교로 "누가 더 답장이
+ * 늦는 편인지"만 개인화 — marriage `resolveColdWarProtocol`과 동일 패턴.
+ */
+function buildContactWaitNote(params: {
+  childNickname: string;
+  parentNickname: string;
+  childSelf: number;
+  parentSelf: number;
+  childIsViewer: boolean;
+  locale: Locale;
+}): string {
+  const { childNickname: child, parentNickname: parent, locale } = params;
+  const childHoldsOutLonger = params.childSelf >= params.parentSelf;
+
+  if (!params.childIsViewer) {
+    return childHoldsOutLonger
+      ? pick(
+          locale,
+          `${child} tends to take longer to reply once upset. Give them up to 3 hours after a text before checking in — pushing sooner tends to backfire.`,
+          `${child}는 한번 삐지면 답장이 늦어지는 편이에요. 카톡 보내고 3시간까지는 다그치지 말고 기다려 주세요 — 그 이상 침묵하면 그때 다시 말 걸어도 늦지 않아요.`,
+        )
+      : pick(
+          locale,
+          `${child} doesn't tend to hold out long — 3 hours is usually enough for them to settle down and reach out first. No need to rush it.`,
+          `${child}는 오래 버티는 편은 아니라, 3시간이면 충분히 마음을 추스르고 먼저 연락해 올 거예요. 조급해하지 않아도 돼요.`,
+        );
+  }
+
+  return childHoldsOutLonger
+    ? pick(
+        locale,
+        `You tend to need a bit of time when you're upset — that's okay. Just try to leave a short line within 3 hours, like "eating fine, working — I'll text tonight." That alone is enough for ${parent} to stop worrying.`,
+        `화가 나면 시간이 좀 필요한 편이죠? 그래도 3시간 안에는 짧게라도 안부를 남겨보세요 — "잘 먹고 일하는 중! 저녁에 톡할게" 한 줄이면 ${parent}는 충분히 안심하실 거예요.`,
+      )
+    : pick(
+        locale,
+        `Even when you're usually quick to reply, on busy days just leaving one short line within 3 hours — "eating fine, working — I'll text tonight" — will put ${parent}'s mind at ease.`,
+        `평소 답장이 빠른 편이라도, 바쁠 땐 3시간 안에 짧은 한 줄만 남겨보세요 — "잘 먹고 일하는 중! 저녁에 톡할게" 정도면 ${parent}는 걱정을 내려놓으실 거예요.`,
+      );
+}
+
+/**
  * Part2 A child correction_style bucket → Part5 de-escalation prescription.
  * dominantArchetype / 별도 categoryScores 미사용 (017 SSOT).
  */
@@ -180,15 +263,32 @@ export function buildChildDeEscalationCard(params: {
   parentNickname: string;
   parentRole: FamilyParentRole;
   childCounts: TenGodCounts;
+  parentCounts?: TenGodCounts;
   locale?: Locale;
+  /** true면 시청자=자녀(Track B) — boundary_script 채움 + contact_wait_note 톤 분기. */
+  childIsViewer?: boolean;
 }): ChildDeEscalationCard {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const childIsViewer = params.childIsViewer === true;
   const roleLabel = pick(
     locale,
     params.parentRole === "mother" ? "Mom" : "Dad",
     params.parentRole === "mother" ? "엄마" : "아빠",
   );
   const def = pickDeEscalationByCorrectionStyle(params.childCounts);
+
+  const contact_wait_note = buildContactWaitNote({
+    childNickname: params.childNickname,
+    parentNickname: params.parentNickname,
+    childSelf: resolveSelfCount(params.childCounts),
+    parentSelf: resolveSelfCount(params.parentCounts ?? {}),
+    childIsViewer,
+    locale,
+  });
+
+  const boundary_script = childIsViewer
+    ? BOUNDARY_SCRIPT[locale][def.category](params.childNickname, params.parentNickname)
+    : null;
 
   return {
     hashtag: def.hashtag(locale),
@@ -203,5 +303,7 @@ export function buildChildDeEscalationCard(params: {
       roleLabel,
       locale,
     ),
+    contact_wait_note,
+    boundary_script,
   };
 }

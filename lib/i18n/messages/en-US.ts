@@ -982,6 +982,7 @@ export const messagesEnUS = {
       deEscalationLayerHint: "What to say and avoid when tempers rise — not a fixed personality label",
       whenAngryLabel: "When upset",
       avoidLabel: "Don't do this",
+      contactWaitLabel: "⏱️ Contact wait time",
       childFallback: "Child",
       parentFallback: "Parent",
       compareTableCardTitle: "📊 At a Glance — 4 Family Axes",
@@ -2052,6 +2053,7 @@ export type MessageCatalog = {
       deEscalationLayerHint: string;
       whenAngryLabel: string;
       avoidLabel: string;
+      contactWaitLabel: string;
       childFallback: string;
       parentFallback: string;
       compareTableCardTitle: string;

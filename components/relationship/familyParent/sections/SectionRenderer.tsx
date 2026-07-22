@@ -382,6 +382,17 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
               💬 {card.solution_script}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
+          {card.boundary_script ? (
+            <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
+              <RelationshipReportParagraph className="italic text-sky-100/85">
+                💬 {card.boundary_script}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+          ) : null}
+          <div>
+            <RelationshipReportLabel>{t.contactWaitLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{card.contact_wait_note}</RelationshipReportParagraph>
+          </div>
         </div>
       </RelationshipReportBody>
     </RelationshipReportCard>

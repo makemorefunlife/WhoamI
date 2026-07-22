@@ -372,7 +372,9 @@ export function buildFamilyKillerSections(params: {
     parentNickname,
     parentRole,
     childCounts: tenGod.countsChild,
+    parentCounts: tenGod.countsParent,
     locale,
+    childIsViewer,
   });
 
   return {
