@@ -251,6 +251,21 @@ function buildFilialRewardSection(
   };
 }
 
+function buildSosScriptSection(
+  report: FamilyParentReportBody,
+): FamilyReportSection | null {
+  const s = report.family?.section_sos_script;
+  if (!s) return null;
+  return {
+    id: "sos_script",
+    type: "sos_script",
+    partNumber: 4,
+    title: s.headline,
+    triggerLabel: s.trigger_label,
+    sosLine: s.sos_line,
+  };
+}
+
 function buildDeEscalationSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
@@ -300,6 +315,7 @@ export function buildFamilyReportViewModel(
     () => buildFamilyRoleSectionView(report, t),
     () => buildDestinySection(report, t),
     () => buildFilialRewardSection(report, t),
+    () => buildSosScriptSection(report),
     () => buildDeEscalationSection(report, t),
     () => buildPrescriptionSection(report, t),
   ];

@@ -14,6 +14,7 @@ import type { FamilyHouseholdRolesSection } from "./buildFamilyHouseholdRoles";
 import type { FamilyRoleSection } from "./familyPsychRoles";
 import type { FamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
 import type { FamilyTalentSection } from "./familyTalentProfile";
+import type { FamilySosSection } from "./familySosScript";
 
 export type FamilyRoleMetaSection = {
   child_nickname: string;
@@ -41,6 +42,8 @@ export type FamilyParentChildReport = {
   section_relationship_index?: FamilyRelationshipIndexSection;
   /** Part2 — 공부 타입 & 성공 그릇(Track A) / 부모님 기질 이해(Track B). */
   section_talent?: FamilyTalentSection;
+  /** Part5 — 비상시 SOS 룰(Track A: 자녀 위기 대응 / Track B: 부모 케어). */
+  section_sos_script?: FamilySosSection;
 };
 
 export function buildFamilyParentChildReport(

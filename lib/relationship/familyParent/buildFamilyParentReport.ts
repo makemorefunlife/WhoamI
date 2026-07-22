@@ -27,6 +27,7 @@ import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment
 import { buildFamilyRoleSection } from "./familyPsychRoles";
 import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
 import { buildFamilyTalentSection } from "./familyTalentProfile";
+import { buildFamilySosSection } from "./familySosScript";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -132,6 +133,14 @@ export function buildFamilyParentReport(params: {
     }),
     section_talent: buildFamilyTalentSection({
       countsChild: ctx.tenGod.countsChild,
+      countsParent: ctx.tenGod.countsParent,
+      childNickname: ctx.childNickname,
+      parentNickname: ctx.parentNickname,
+      childIsViewer: ctx.childIsViewer,
+      locale,
+    }),
+    section_sos_script: buildFamilySosSection({
+      scoringSignals: ctx.familyPairAnalysis.scoringSignals,
       countsParent: ctx.tenGod.countsParent,
       childNickname: ctx.childNickname,
       parentNickname: ctx.parentNickname,

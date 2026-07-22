@@ -127,6 +127,12 @@ export type FilialRewardSection = BaseSection & {
   rewardIndex: "high" | "moderate" | "developing";
 };
 
+export type SosScriptSection = BaseSection & {
+  type: "sos_script";
+  triggerLabel: string;
+  sosLine: string;
+};
+
 // ---- Part 5: 갈등 완화 + 실전 처방 -------------------------------------------
 
 export type DeEscalationSection = BaseSection & {
@@ -152,6 +158,7 @@ export type FamilyReportSection =
   | FamilyRoleSection
   | DestinySection
   | FilialRewardSection
+  | SosScriptSection
   | DeEscalationSection
   | PrescriptionSection;
 

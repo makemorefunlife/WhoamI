@@ -36,6 +36,7 @@ import type {
   PrescriptionSection,
   PsychRadarSection,
   RelationshipIndexSection,
+  SosScriptSection,
   TalentSection,
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
@@ -348,6 +349,21 @@ function FilialRewardCard({ section }: { section: FilialRewardSection }) {
   );
 }
 
+function SosScriptCard({ section }: { section: SosScriptSection }) {
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
+      <RelationshipReportBody>
+        <RelationshipReportLabel>{section.triggerLabel}</RelationshipReportLabel>
+        <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
+          <RelationshipReportParagraph className="italic text-emerald-100/85">
+            💬 {section.sosLine}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
 // ---- Part 5: 갈등 완화 + 실전 처방 -------------------------------------------
 
 function DeEscalationCard({ section }: { section: DeEscalationSection }) {
@@ -456,6 +472,8 @@ export function FamilyReportSectionCard({
       return <DestinyCard section={section} />;
     case "filial_reward":
       return <FilialRewardCard section={section} />;
+    case "sos_script":
+      return <SosScriptCard section={section} />;
     case "de_escalation":
       return <DeEscalationCard section={section} />;
     case "prescription":
