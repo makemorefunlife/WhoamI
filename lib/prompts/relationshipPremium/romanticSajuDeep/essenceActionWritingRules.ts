@@ -92,20 +92,31 @@ Shared bottom section:
 `.trim();
 }
 
-/** 100점 Few-Shot — 구조·톤·길이 뼈대 (문장 복사 금지) */
+/**
+ * 100점 Few-Shot — 구조·톤·길이 뼈대 (문장 복사 금지).
+ * fasterName — Batch 6의 resolveExpressionSpeedDirection(갈등직면성+자기통제)
+ * 신호를 재사용. 아래 예시의 "01. 정서적 타이밍 존중하기"(myName용)/"01. 침묵을
+ * 깨고 내면의 지도 보여주기"(targetName용) 구도가 "빠른 표현 쪽 vs 신중 처리
+ * 쪽" 개념과 그대로 겹쳐서 새 신호를 안 만들고 재사용한다. balanced/신호
+ * 없음(fasterName 없음)이면 기존과 byte-identical.
+ */
 export function buildEssenceActionFewShotExample(params: {
   nicknameA: string;
   nicknameB: string;
   myName: string;
   targetName: string;
+  fasterName?: string | null;
 }): string {
-  const { nicknameA, nicknameB, myName, targetName } = params;
+  const { nicknameA, nicknameB, myName, targetName, fasterName } = params;
+  const serverSignalLine = fasterName
+    ? `\n⚠️ 서버 신호: 이 리포트는 **${fasterName}**가 갈등직면성↑·자기통제↓ 쪽으로 신호가 갈립니다 — ${fasterName}에게는 "상대 타이밍 존중" 계열 팁을, 반대쪽에게는 "침묵 깨고 내면 보여주기" 계열 팁을 01번에 우선 배치하세요.`
+    : "";
 
   return `
 # [최종 통합 출력 예시] section_5_action
 
 ⚠️ 아래는 **구조·문장 밀도·톤·길이**만 참고. ${nicknameA}·${nicknameB} 실제 입력 데이터로 **새로** 작성. 예시 문장·형용사 **복사 금지**.
-⚠️ \`real_life_example\`은 모든 항목 **\`""\`**. "이런 순간에 —" **절대 금지**.
+⚠️ \`real_life_example\`은 모든 항목 **\`""\`**. "이런 순간에 —" **절대 금지**.${serverSignalLine}
 
 ---
 🌱 서로에게 도움이 되는 행동들

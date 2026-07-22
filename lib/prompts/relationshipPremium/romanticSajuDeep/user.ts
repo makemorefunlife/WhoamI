@@ -179,14 +179,15 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     nicknameA,
     nicknameB,
   );
+  const fasterName =
+    expressionSpeedDirection === "A" ? myName : expressionSpeedDirection === "B" ? targetName : null;
   const essenceActionFewShot = buildEssenceActionFewShotExample({
     nicknameA,
     nicknameB,
     myName,
     targetName,
+    fasterName,
   });
-  const fasterName =
-    expressionSpeedDirection === "A" ? myName : expressionSpeedDirection === "B" ? targetName : null;
   const conflictFewShot = buildConflictSituationFewShotExample({
     nicknameA,
     nicknameB,
