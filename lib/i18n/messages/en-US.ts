@@ -1041,6 +1041,7 @@ export const messagesEnUS = {
       dnaValuesLabel: "🏡 The life values you pursue",
       dnaPrivateSelfLabel: "🛏️ Who you are behind closed doors",
       dnaEnergyLabel: "🔋 Energy battery",
+      dnaEnergyAxisNoteLabel: "🎯 11-axis check",
       dnaFamilyIdentityLabel: "🔮 Family identity",
       weatherCardTitle: "⏳ Home-risk forecast for the next 3 years",
       bedroomCardTitle: "🔞 Bedroom chemistry & attachment style",
@@ -2098,6 +2099,7 @@ export type MessageCatalog = {
       dnaValuesLabel: string;
       dnaPrivateSelfLabel: string;
       dnaEnergyLabel: string;
+      dnaEnergyAxisNoteLabel: string;
       dnaFamilyIdentityLabel: string;
       weatherCardTitle: string;
       bedroomCardTitle: string;

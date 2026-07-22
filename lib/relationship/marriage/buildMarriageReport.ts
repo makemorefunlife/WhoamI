@@ -15,6 +15,7 @@ import {
 } from "./homeReportTemplate";
 import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
 import { resolveCfoAxisNote } from "./marriageCfoConsumption";
+import { resolveEnergyStyleAxisNote } from "./homeLifeLanguage";
 import {
   buildCohabitationKillerQuestions,
 } from "./buildCohabitationKillerQuestions";
@@ -119,6 +120,24 @@ export function buildMarriageReport(params: {
         baseHousehold.section_money_chores.cfo_nickname === params.nicknameA,
         locale,
       ),
+    },
+    section_dna: {
+      person_a: {
+        ...baseHousehold.section_dna.person_a,
+        energy_axis_note: resolveEnergyStyleAxisNote(
+          ctx.marriagePairAnalysis.chartA,
+          params.psychMasterA,
+          locale,
+        ),
+      },
+      person_b: {
+        ...baseHousehold.section_dna.person_b,
+        energy_axis_note: resolveEnergyStyleAxisNote(
+          ctx.marriagePairAnalysis.chartB,
+          params.psychMasterB,
+          locale,
+        ),
+      },
     },
   };
 

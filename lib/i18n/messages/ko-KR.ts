@@ -997,6 +997,7 @@ export const messagesKoKR: MessageCatalog = {
       dnaValuesLabel: "🏡 추구하는 삶의 가치관",
       dnaPrivateSelfLabel: "🛏️ 문 닫은 집 안에서의 모습",
       dnaEnergyLabel: "🔋 에너지 배터리",
+      dnaEnergyAxisNoteLabel: "🎯 11축 확인",
       dnaFamilyIdentityLabel: "🔮 패밀리 정체성",
       weatherCardTitle: "⏳ 향후 3년 홈 리스크 기상도",
       bedroomCardTitle: "🔞 침실 케미스트리 & 애착 유형",

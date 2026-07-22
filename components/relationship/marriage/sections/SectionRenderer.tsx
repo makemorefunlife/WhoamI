@@ -263,6 +263,14 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
               <div>
                 <RelationshipReportLabel>{t.dnaEnergyLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1.5">{person.energy_battery}</RelationshipReportParagraph>
+                {person.energy_axis_note ? (
+                  <div className="mt-2">
+                    <RelationshipReportLabel>{t.dnaEnergyAxisNoteLabel}</RelationshipReportLabel>
+                    <RelationshipReportParagraph className="mt-1">
+                      {person.energy_axis_note}
+                    </RelationshipReportParagraph>
+                  </div>
+                ) : null}
               </div>
               <div>
                 <RelationshipReportLabel>{t.dnaFamilyIdentityLabel}</RelationshipReportLabel>
