@@ -83,6 +83,9 @@ export type BedroomSection = BaseSection & {
   matrix: BedroomMatrixSection;
   attachmentStyle: string;
   sleepFit: SleepFitSection;
+  rejectionScriptA: string;
+  rejectionScriptB: string;
+  rejectionAxisNote?: string | null;
 };
 
 // ---- Part 4: 홈라이프 DNA + 육아 + 원가족 + 3년 리스크 ------------------------

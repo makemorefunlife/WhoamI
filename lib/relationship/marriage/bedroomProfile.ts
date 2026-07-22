@@ -8,10 +8,12 @@ import {
 } from "@/lib/saju/repository";
 import type { MarriageDayBranchAnalysis } from "@/lib/saju/marriageAnalysis";
 import type { TenGodCounts } from "./marriageTenGodAnalysis";
+import { profileTenGods } from "./marriageTenGodAnalysis";
 import { hasGuimunOnDayHourPalaces } from "@/lib/saju/workPairRiskSignals";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 
 export type StaminaArchetype = "marathon" | "sprint";
 export type FantasyArchetype = "fantasy_breaker" | "romantic_classic";
@@ -383,6 +385,86 @@ function buildSexualChemistrySummary(
       "침실 DNA는 같은 편입니다. 다만 루틴에 안주하면 불씨가 약해질 수 있어 — 솔직한 피드백이 쌓일수록 깊어집니다.",
     ),
   );
+}
+
+type RejectionCategory = "officer" | "wealth" | "food" | "seal" | "balanced";
+
+/**
+ * Part3② "상처 주지 않고 밤을 거절하는 기술" — 스펙 소스는 "상대방의 일지
+ * 십성"이지만, 이 리포에 일지(day-branch) 지장간만 따로 십성 재분류하는
+ * 함수가 없다. `homeDeEscalationPrescriptions.ts`(Part5②)가 이미 같은 방식
+ * (월지/일지 십성 대신 전체 십성 카운트)으로 근사해 둔 선례를 따른다.
+ */
+function resolveRejectionCategory(counts: TenGodCounts): RejectionCategory {
+  const p = profileTenGods(counts);
+  const candidates: Array<{ key: Exclude<RejectionCategory, "balanced">; score: number }> = [
+    { key: "officer", score: p.officer },
+    { key: "wealth", score: p.wealth },
+    { key: "food", score: p.food },
+    { key: "seal", score: p.seal },
+  ];
+  const top = candidates.reduce((best, c) => (c.score > best.score ? c : best));
+  if (top.score <= 1) return "balanced";
+  return top.key;
+}
+
+const REJECTION_SCRIPT_COPY: Record<Locale, Record<RejectionCategory, string>> = {
+  "en-US": {
+    officer: "With this person, lead with a concrete next promise — \"tonight's rough, but I'm keeping this weekend open for us\" — before you decline. Respecting their sense of principle and certainty softens the letdown.",
+    wealth: "With this person, don't just say \"I'm tired\" — offer a specific alternative plan while you decline. Once they can see a plan, tonight's no becomes easy to accept.",
+    food: "With this person, lead with touch and warm words before you decline — \"let's call it here for tonight.\" Once they feel emotionally filled up, the decline itself barely stings.",
+    seal: "With this person, reassure them first — \"my feelings for you haven't changed\" — before you decline. Once they're sure the relationship itself isn't shaky, they relax.",
+    balanced: "With this person, you don't need to overthink it — a plain, honest \"I'm wiped tonight, tomorrow?\" works just fine.",
+  },
+  "ko-KR": {
+    officer: "이 사람에게는 '오늘은 힘들지만 이번 주말 밤은 꼭 비워둘게'처럼 구체적인 다음 약속을 먼저 제시하며 거절하세요. 원칙과 확실함을 존중받는다고 느끼면 서운함이 줄어들어요.",
+    wealth: "이 사람에게는 막연히 '피곤해'보다 '다음엔 이렇게 하자'는 구체적인 대안을 제시하며 거절하세요. 계획이 보이면 오늘의 거절도 쿨하게 받아들여요.",
+    food: "이 사람에게는 거절하기 전에 스킨십과 다정한 말을 먼저 건네고 나서 '오늘은 여기까지 하자'고 말하세요. 감정적으로 먼저 채워지면 거절 자체는 크게 서운해하지 않아요.",
+    seal: "이 사람에게는 거절하기 전에 '너를 사랑하는 마음은 그대로야'라고 먼저 확인시켜 주세요. 관계 자체가 흔들리지 않는다는 확신이 있으면 안심해요.",
+    balanced: "이 사람에게는 크게 눈치 볼 것 없이 '오늘은 피곤해, 내일은 어때?'처럼 담백하고 솔직하게 말해도 괜찮아요.",
+  },
+};
+
+export function resolveRejectionScript(
+  counts: TenGodCounts,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  const category = resolveRejectionCategory(counts);
+  return sanitizeHomeLifeText(REJECTION_SCRIPT_COPY[locale][category]);
+}
+
+const AXIS_NOTE_EMPATHY_HIGH = 60;
+const AXIS_NOTE_EMPATHY_LOW = 40;
+
+/**
+ * 11축[관계공감] 확인문구 — Batch 2~4와 동일한 60/40 임계값 컨벤션.
+ * `resolveRejectionScript`의 판정 자체는 안 건드리고 확인/유보 문구만 얹는다.
+ */
+export function resolveRejectionAxisNote(
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  const empathyA = psychA?.secondary_axes?.empathy;
+  const empathyB = psychB?.secondary_axes?.empathy;
+  if (typeof empathyA !== "number" || typeof empathyB !== "number") return null;
+  const avg = (empathyA + empathyB) / 2;
+
+  if (avg >= AXIS_NOTE_EMPATHY_HIGH) {
+    return pick(
+      locale,
+      "The 11-axis survey backs this up too — relational empathy runs high for both of you, so a soft-decline script like this tends to land well in practice.",
+      "11축 설문에서도 확인돼요 — 둘 다 관계공감 축이 높은 편이라, 이런 부드러운 거절 멘트가 실제로도 잘 통할 가능성이 커요.",
+    );
+  }
+  if (avg <= AXIS_NOTE_EMPATHY_LOW) {
+    return pick(
+      locale,
+      "Relational empathy runs a bit low for both of you — the script still helps, but pay extra attention to tone and expression when you actually say it.",
+      "둘 다 관계공감 축이 낮은 편이라, 멘트 자체는 도움이 되지만 실제로 말할 때 표정·말투에 조금 더 신경 쓰는 게 좋아요.",
+    );
+  }
+  return null;
 }
 
 export function buildBedroomMatrixSection(params: {

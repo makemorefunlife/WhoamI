@@ -16,6 +16,7 @@ import {
 import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
 import { resolveCfoAxisNote } from "./marriageCfoConsumption";
 import { resolveEnergyStyleAxisNote } from "./homeLifeLanguage";
+import { resolveRejectionAxisNote } from "./bedroomProfile";
 import {
   buildCohabitationKillerQuestions,
 } from "./buildCohabitationKillerQuestions";
@@ -138,6 +139,14 @@ export function buildMarriageReport(params: {
           locale,
         ),
       },
+    },
+    section_bedroom: {
+      ...baseHousehold.section_bedroom,
+      rejection_axis_note: resolveRejectionAxisNote(
+        params.psychMasterA,
+        params.psychMasterB,
+        locale,
+      ),
     },
   };
 

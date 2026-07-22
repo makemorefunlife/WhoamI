@@ -7,6 +7,7 @@ import type {
 } from "./marriageKillerSections";
 import {
   buildBedroomMatrixSection,
+  resolveRejectionScript,
   type BedroomMatrixSection,
 } from "./bedroomProfile";
 import type { ParentingStyle } from "./marriageTenGodAnalysis";
@@ -43,6 +44,10 @@ export type BedroomSection = {
   matrix: BedroomMatrixSection;
   attachment_style: string;
   sleep_fit: SleepFitSection;
+  rejection_script_a: string;
+  rejection_script_b: string;
+  /** psych(설문) 필요 — buildMarriageReport.ts에서 나중에 patch(section_money_chores와 동일 패턴) */
+  rejection_axis_note?: string | null;
 };
 
 export type HomeWeatherForecastSection = ThreeYearHomeRiskForecast;
@@ -440,6 +445,9 @@ export function buildHouseholdPartnershipReport(
       matrix,
       attachment_style: buildAttachmentNarrative(ctx),
       sleep_fit: ctx.sleepFit,
+      rejection_script_a: resolveRejectionScript(ctx.tenGod.countsA, ctx.locale),
+      rejection_script_b: resolveRejectionScript(ctx.tenGod.countsB, ctx.locale),
+      rejection_axis_note: null,
     },
     section_money_chores: {
       cfo_nickname: ctx.tenGod.cfo.nickname,

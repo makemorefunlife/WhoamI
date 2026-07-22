@@ -230,6 +230,20 @@ function BedroomCard({ section }: { section: BedroomSection }) {
         <RelationshipReportParagraph className="mt-1.5">{section.sleepFit.narrative}</RelationshipReportParagraph>
         <RelationshipReportParagraph className="mt-1.5">{section.sleepFit.prescription}</RelationshipReportParagraph>
       </RelationshipReportInset>
+      <RelationshipReportInset className="mt-3">
+        <RelationshipReportLabel>{t.rejectionScriptLabel(matrix.person_a.nickname)}</RelationshipReportLabel>
+        <RelationshipReportParagraph className="mt-1.5">{section.rejectionScriptA}</RelationshipReportParagraph>
+      </RelationshipReportInset>
+      <RelationshipReportInset className="mt-3">
+        <RelationshipReportLabel>{t.rejectionScriptLabel(matrix.person_b.nickname)}</RelationshipReportLabel>
+        <RelationshipReportParagraph className="mt-1.5">{section.rejectionScriptB}</RelationshipReportParagraph>
+      </RelationshipReportInset>
+      {section.rejectionAxisNote ? (
+        <RelationshipReportInset className="mt-3">
+          <RelationshipReportLabel>{t.rejectionAxisNoteLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">{section.rejectionAxisNote}</RelationshipReportParagraph>
+        </RelationshipReportInset>
+      ) : null}
     </RelationshipReportCard>
   );
 }

@@ -154,6 +154,9 @@ function buildBedroomSection(
     matrix: b.matrix,
     attachmentStyle: b.attachment_style,
     sleepFit: b.sleep_fit,
+    rejectionScriptA: b.rejection_script_a,
+    rejectionScriptB: b.rejection_script_b,
+    rejectionAxisNote: b.rejection_axis_note,
   };
 }
 

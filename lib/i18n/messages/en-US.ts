@@ -1054,6 +1054,8 @@ export const messagesEnUS = {
       bedroomFrequencyLabel: "🔥 Bedroom frequency, in one line",
       sleepPrescriptionLabel: "💡 Sleep prescription",
       attachmentStyleLabel: "❤️ Emotional attachment style",
+      rejectionScriptLabel: (nickname: string) => `🙏 Declining ${nickname} without hurting them`,
+      rejectionAxisNoteLabel: "🎯 11-axis check",
       moneyChoresCardTitle: "💸 Money leadership & chore split",
       cfoQuestionLabel: "💰 Who should hold the wallet? ",
       choresLabel: "[Chore split] ",
@@ -2112,6 +2114,8 @@ export type MessageCatalog = {
       bedroomFrequencyLabel: string;
       sleepPrescriptionLabel: string;
       attachmentStyleLabel: string;
+      rejectionScriptLabel: (nickname: string) => string;
+      rejectionAxisNoteLabel: string;
       moneyChoresCardTitle: string;
       cfoQuestionLabel: string;
       choresLabel: string;

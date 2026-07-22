@@ -1010,6 +1010,8 @@ export const messagesKoKR: MessageCatalog = {
       bedroomFrequencyLabel: "🔥 침실 주파수 한줄평",
       sleepPrescriptionLabel: "💡 수면 처방",
       attachmentStyleLabel: "❤️ 정서적 애착 유형",
+      rejectionScriptLabel: (nickname: string) => `🙏 ${nickname}에게 상처 안 주고 거절하기`,
+      rejectionAxisNoteLabel: "🎯 11축 확인",
       moneyChoresCardTitle: "💸 자산 관리 주도권 & 가사 분담",
       cfoQuestionLabel: "💰 통장 잔고는 누가 쥐어야 할까? ",
       choresLabel: "[살림 분담] ",
