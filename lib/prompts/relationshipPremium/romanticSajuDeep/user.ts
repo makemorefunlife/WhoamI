@@ -144,6 +144,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
   userCustomTargetName?: string;
   locale?: RomanticSajuDeepLocale;
   anchorIsA?: boolean | null;
+  expressionSpeedDirection?: "A" | "B" | "balanced" | null;
 }): string {
   const {
     nicknameA,
@@ -156,6 +157,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     userCustomTargetName,
     locale: _locale = "ko",
     anchorIsA,
+    expressionSpeedDirection,
   } = params;
   void _locale;
 
@@ -183,11 +185,14 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     myName,
     targetName,
   });
+  const fasterName =
+    expressionSpeedDirection === "A" ? myName : expressionSpeedDirection === "B" ? targetName : null;
   const conflictFewShot = buildConflictSituationFewShotExample({
     nicknameA,
     nicknameB,
     myName,
     targetName,
+    fasterName,
   });
 
   return `

@@ -164,6 +164,34 @@ export function resolveRecoverySpeedGap(
   };
 }
 
+// ---- Part4① 표현 속도 차이 교정 대사 (갈등직면성 + 자기통제) ---------------------
+//
+// Part1③(감정 회복 속도, 위 resolveRecoverySpeedGap)은 회복탄력성+자기통제를 쓰지만,
+// 스펙은 Part4①에 갈등직면성+자기통제를 지정해서 축이 다르다 — resolveRecoverySpeedGap을
+// 재사용하지 않고 별도 함수로 둔다.
+
+export type ExpressionSpeedDirection = "A" | "B" | "balanced";
+
+function expressionSpeedScore(profile: CurrentSelfProfile | null | undefined): number | null {
+  const conflict = axisScore(profile, "conflict_style");
+  const selfControl = axisScore(profile, "self_control");
+  if (conflict == null || selfControl == null) return null;
+  return conflict - selfControl;
+}
+
+/** 갈등직면성↑ + 자기통제↓ = 빠른 표현 쪽(급하게 감정을 터뜨리는 쪽). 격차 작으면 balanced. */
+export function resolveExpressionSpeedDirection(
+  profileA: CurrentSelfProfile | null | undefined,
+  profileB: CurrentSelfProfile | null | undefined,
+): ExpressionSpeedDirection {
+  const scoreA = expressionSpeedScore(profileA);
+  const scoreB = expressionSpeedScore(profileB);
+  if (scoreA == null || scoreB == null) return "balanced";
+  const gap = scoreA - scoreB;
+  if (Math.abs(gap) < GAP_THRESHOLD) return "balanced";
+  return gap > 0 ? "A" : "B";
+}
+
 /**
  * "겉보기 속도"(위 bandA/B, 심리축)와 별개로 "내부 잔류도"를 사주로 판정.
  * 인성(seal) 우세 + 일지 충형이 많을수록 감정이 안에서 오래 남는다고 본다.

@@ -69,20 +69,30 @@ export function buildConflictSituationSystemPromptBlock(): string {
 `.trim();
 }
 
-/** 100점 Few-Shot — 구조·깊이·톤 (문장 복사 금지) */
+/**
+ * 100점 Few-Shot — 구조·깊이·톤 (문장 복사 금지).
+ * fasterName — resolveExpressionSpeedDirection(갈등직면성+자기통제)이 A/B로
+ * 갈렸을 때만 채워서 서버 신호 확인 줄을 추가한다. balanced/신호 없음(profile
+ * 없는 레거시 등)이면 undefined로 두어 이 함수의 반환 문자열이 기존과
+ * byte-identical하게 유지된다.
+ */
 export function buildConflictSituationFewShotExample(params: {
   nicknameA: string;
   nicknameB: string;
   myName: string;
   targetName: string;
+  fasterName?: string | null;
 }): string {
-  const { nicknameA, nicknameB, myName, targetName } = params;
+  const { nicknameA, nicknameB, myName, targetName, fasterName } = params;
+  const serverSignalLine = fasterName
+    ? `\n⚠️ 서버 신호: 이 리포트는 **${fasterName}**가 갈등직면성↑·자기통제↓ 쪽으로 신호가 갈립니다 — 빠른 표현 슬롯에 ${fasterName}를 우선 배치하세요.`
+    : "";
 
   return `
 # [최종 통합 출력 예시] section_3_conversation_patterns.conflict_situation
 
 ⚠️ **구조·문장 밀도·50:50 밸런스**만 참고. ${nicknameA}·${nicknameB} **실제 입력 데이터**로 새로 작성. 예시 대사 **복사 금지**.
-⚠️ 입력 데이터로 **누가 빠른 감정 표현 / 누가 신중·무거운 처리**인지 판별한 뒤, 해당 슬롯에 bad/good를 배치하세요. (아래는 ${myName}=빠른 쪽, ${targetName}=신중 쪽 **예시**)
+⚠️ 입력 데이터로 **누가 빠른 감정 표현 / 누가 신중·무거운 처리**인지 판별한 뒤, 해당 슬롯에 bad/good를 배치하세요. (아래는 ${myName}=빠른 쪽, ${targetName}=신중 쪽 **예시**)${serverSignalLine}
 
 ---
 💬 갈등 상황: 표현의 속도차이와 내면의 과부하
