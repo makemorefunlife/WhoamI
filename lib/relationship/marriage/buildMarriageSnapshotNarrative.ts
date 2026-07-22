@@ -6,10 +6,65 @@ import type {
   SnapshotNarrative,
 } from "@/lib/relationship/romanticSnapshot/buildSnapshotNarrative";
 import type { RelationshipTopicGauge } from "@/lib/relationship/triScoreSnapshot/types";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
+
+// Part2① 종합 관계 지수 11축 확인문구 — 로맨틱 Batch 2(관계공감/갈등직면성)와
+// 같은 non-invasive 원칙: 판정 점수(computeMarriageMasterScores)는 안 건드리고
+// intimacy/stability 토픽에만 확인/유보 문구를 별도로 얹는다. conflict(홈
+// 리스크)는 스펙이 축을 지정하지 않아 대상 아님.
+const AXIS_NOTE_HIGH = 60;
+const AXIS_NOTE_LOW = 40;
+
+function axisScore(
+  psych: PsychMasterJson | null | undefined,
+  key: SecondaryAxisKey,
+): number | null {
+  const v = psych?.secondary_axes?.[key];
+  return typeof v === "number" ? v : null;
+}
+
+/** intimacy(로맨틱 핏) — 관계공감(empathy) 평균으로 확인/유보 */
+function resolveRomanticFitAxisNote(
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
+): string | null {
+  const empathyA = axisScore(psychA, "empathy");
+  const empathyB = axisScore(psychB, "empathy");
+  if (empathyA == null || empathyB == null) return null;
+  const avg = (empathyA + empathyB) / 2;
+  if (avg >= AXIS_NOTE_HIGH) {
+    return "관계공감 축도 둘 다 높은 편이라, 사주로 보이는 로맨틱 핏이 실제 애정 표현으로도 잘 이어질 가능성이 커요.";
+  }
+  if (avg <= AXIS_NOTE_LOW) {
+    return "관계공감 축은 낮은 편이라, 핏이 좋아도 애정 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.";
+  }
+  return null;
+}
+
+/** stability(라이프 시너지) — 계획구조화(structure) 평균으로 확인/유보 */
+function resolveLifeSynergyAxisNote(
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
+): string | null {
+  const structureA = axisScore(psychA, "structure");
+  const structureB = axisScore(psychB, "structure");
+  if (structureA == null || structureB == null) return null;
+  const avg = (structureA + structureB) / 2;
+  if (avg >= AXIS_NOTE_HIGH) {
+    return "계획구조화 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.";
+  }
+  if (avg <= AXIS_NOTE_LOW) {
+    return "계획구조화 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.";
+  }
+  return null;
+}
 
 function interpretMarriageTopic(
   gauge: RelationshipTopicGauge,
   ctx: MarriageRuleContext,
+  psychA?: PsychMasterJson | null,
+  psychB?: PsychMasterJson | null,
 ): SnapshotTopicNarrative {
   const locale = ctx.locale ?? LEGACY_FALLBACK_LOCALE;
   const config = getTriScoreKindConfig("cohabitation", locale);
@@ -55,6 +110,7 @@ function interpretMarriageTopic(
       risk,
       interpretation: `${core}${bed}`,
       isWarning: false,
+      axisNote: resolveRomanticFitAxisNote(psychA, psychB),
     };
   }
 
@@ -86,6 +142,7 @@ function interpretMarriageTopic(
         `${core} 통장·큰 지출은 ${cfo} 한 명만 쥐세요.`,
       ),
       isWarning: false,
+      axisNote: resolveLifeSynergyAxisNote(psychA, psychB),
     };
   }
 
@@ -128,10 +185,12 @@ function interpretMarriageTopic(
 export function buildMarriageSnapshotNarrative(params: {
   ctx: MarriageRuleContext;
   relationshipGauges: RelationshipTopicGauge[];
+  psychA?: PsychMasterJson | null;
+  psychB?: PsychMasterJson | null;
 }): SnapshotNarrative {
   return {
     topics: params.relationshipGauges.map((g) =>
-      interpretMarriageTopic(g, params.ctx),
+      interpretMarriageTopic(g, params.ctx, params.psychA, params.psychB),
     ),
   };
 }

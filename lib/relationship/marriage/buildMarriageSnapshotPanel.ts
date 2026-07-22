@@ -90,7 +90,7 @@ export function buildMarriageSnapshotPanel(
     },
   ];
 
-  const narrative = buildMarriageSnapshotNarrative({ ctx, relationshipGauges });
+  const narrative = buildMarriageSnapshotNarrative({ ctx, relationshipGauges, psychA, psychB });
 
   return {
     grade: ctx.grade,
