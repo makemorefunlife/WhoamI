@@ -164,6 +164,23 @@ function buildGrowthTunnelSection(
   };
 }
 
+function buildFamilyRoleSectionView(
+  report: FamilyParentReportBody,
+  t: ReturnType<typeof catalog>,
+): FamilyReportSection | null {
+  const r = report.family?.section_family_role;
+  if (!r) return null;
+  return {
+    id: "family_role",
+    type: "family_role",
+    partNumber: 3,
+    title: t.familyRoleCardTitle,
+    childRole: r.child_role,
+    roleLabel: r.role_label,
+    roleDescription: r.role_description,
+  };
+}
+
 function buildDestinySection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
@@ -241,6 +258,7 @@ export function buildFamilyReportViewModel(
     () => buildPsychRadarSection(report, t),
     () => buildChildDnaSection(report, t),
     () => buildGrowthTunnelSection(report, t),
+    () => buildFamilyRoleSectionView(report, t),
     () => buildDestinySection(report, t),
     () => buildFilialRewardSection(report, t),
     () => buildDeEscalationSection(report, t),

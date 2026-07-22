@@ -11,6 +11,7 @@ import { pick } from "./familyParentCopy";
 import type { FamilyParentRole } from "./types";
 import type { FamilyCompareRow } from "./familySajuCompareTable";
 import type { FamilyHouseholdRolesSection } from "./buildFamilyHouseholdRoles";
+import type { FamilyRoleSection } from "./familyPsychRoles";
 
 export type FamilyRoleMetaSection = {
   child_nickname: string;
@@ -32,6 +33,8 @@ export type FamilyParentChildReport = {
   section_compare_table?: FamilyCompareRow[];
   /** Part2 — 기존 A/B/C·pair bucket 조합. 구형 캐시에는 없을 수 있음. */
   section_household_roles?: FamilyHouseholdRolesSection;
+  /** Part3 — 6대 심리 역할(해결사/중재자/희생자/독립자/감정쓰레기통/강아지). psych 없으면 null. */
+  section_family_role?: FamilyRoleSection | null;
 };
 
 export function buildFamilyParentChildReport(

@@ -20,6 +20,7 @@ import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySaj
 import type { ChildDeEscalationCard } from "@/lib/relationship/familyParent/childDeEscalationPrescriptions";
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
+import type { FamilyPsychRole } from "@/lib/relationship/familyParent/familyPsychRoles";
 
 export type OpeningBlock = {
   headline: string;
@@ -84,6 +85,13 @@ export type GrowthTunnelSection = BaseSection & {
   focusAreas: string[];
 };
 
+export type FamilyRoleSection = BaseSection & {
+  type: "family_role";
+  childRole: FamilyPsychRole;
+  roleLabel: string;
+  roleDescription: string;
+};
+
 // ---- Part 4: 운명적 케미 + 부모 렌즈 + 미래 보답 ------------------------------
 
 export type DestinySection = BaseSection & {
@@ -119,6 +127,7 @@ export type FamilyReportSection =
   | PsychRadarSection
   | ChildDnaSection
   | GrowthTunnelSection
+  | FamilyRoleSection
   | DestinySection
   | FilialRewardSection
   | DeEscalationSection

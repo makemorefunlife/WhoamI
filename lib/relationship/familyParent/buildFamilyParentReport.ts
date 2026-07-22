@@ -24,6 +24,7 @@ import type { FamilySajuSignals, FriendshipSajuSignals } from "@/lib/personCore/
 import { buildFamilySajuCompareTable } from "./familySajuCompareTable";
 import { buildFamilyHouseholdRoles } from "./buildFamilyHouseholdRoles";
 import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment";
+import { buildFamilyRoleSection } from "./familyPsychRoles";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -113,6 +114,11 @@ export function buildFamilyParentReport(params: {
       viewerIsChild: params.childIsViewer === true,
       locale,
     }),
+    section_family_role: buildFamilyRoleSection(
+      ctx.roles.roleA !== "child" ? params.psychMasterB : params.psychMasterA,
+      ctx.childNickname,
+      locale,
+    ),
   };
 
   const snapshot_panel = buildFamilyParentSnapshotPanel(

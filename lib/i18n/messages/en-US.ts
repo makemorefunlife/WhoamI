@@ -967,6 +967,8 @@ export const messagesEnUS = {
       growthTunnelCardTitle: "⚠️ This year's growth challenge",
       growthLayerLabel: "This year's growth tunnel",
       growthLayerHint: "A time-specific challenge or transition for the current year",
+      familyRoleCardTitle: "🎭 What role your child carries at home",
+      familyRoleDescriptionLabel: "What helps, from a parent",
       focusAreasPrefix: "Focus areas: ",
       filialRewardCardTitle: "🎯 Future family reward",
       filialLayerLabel: "Future possibility",
@@ -2031,6 +2033,8 @@ export type MessageCatalog = {
       growthTunnelCardTitle: string;
       growthLayerLabel: string;
       growthLayerHint: string;
+      familyRoleCardTitle: string;
+      familyRoleDescriptionLabel: string;
       focusAreasPrefix: string;
       filialRewardCardTitle: string;
       filialLayerLabel: string;
