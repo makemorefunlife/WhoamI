@@ -143,6 +143,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
   userCustomMyName?: string;
   userCustomTargetName?: string;
   locale?: RomanticSajuDeepLocale;
+  anchorIsA?: boolean | null;
 }): string {
   const {
     nicknameA,
@@ -154,6 +155,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     userCustomMyName,
     userCustomTargetName,
     locale: _locale = "ko",
+    anchorIsA,
   } = params;
   void _locale;
 
@@ -169,7 +171,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     userCustomTargetName: targetName,
   });
   const essenceTone = buildEssenceJournalToneRules();
-  const sectionRoles = buildSectionRoleSeparationGuide(nicknameA, nicknameB);
+  const sectionRoles = buildSectionRoleSeparationGuide(nicknameA, nicknameB, anchorIsA);
   const hiddenHeartsGuide = buildHiddenHeartsRoleGuide(nicknameA, nicknameB);
   const specialBondFewShot = buildSpecialBondFewShotExample(
     nicknameA,

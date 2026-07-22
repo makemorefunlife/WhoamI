@@ -112,10 +112,28 @@ export function buildEssenceJournalToneRules(): string {
 `.trim();
 }
 
+/**
+ * anchorIsA — Part3② 스펙(관성/인성=보호자 vs 식상/비겁=동반자)에 따라 누가
+ * "안식처" 역, 누가 "온기" 역인지 신호로 정해서 넘긴다. JSON 필드 매핑
+ * (a_gives_b="A가 주는 것", b_gives_a="B가 주는 것")은 그대로 두고, 그 필드에
+ * 들어갈 "역할 내용"만 anchorIsA에 따라 바꾼다. true면 A가 안식처 역(A가
+ * 안정·감정 부담 경감을 줌), 그 외(false/null/미전달 — 균형이거나
+ * romantic_signals 없는 레거시)는 기존 문구(A=온기 제공, B=안식처 제공)를
+ * byte-identical하게 그대로 유지한다. 신호 무관하게 항상 A=온기·B=안식처로
+ * 고정돼있던 문제를 고침 — "A/B 복붙 현상 완벽 차단"이라는 사양서 1절
+ * 목적과 어긋나던 지점.
+ */
 export function buildSectionRoleSeparationGuide(
   nicknameA: string,
   nicknameB: string,
+  anchorIsA?: boolean | null,
 ): string {
+  const ANCHOR_ROLE = "다정한 안식처·**안정·감정 부담 경감·분석적 새 시각**";
+  const WARMTH_ROLE = "다정한 생동감·**새 경험·변화·더 나은 결정**";
+  const DEFAULT_B_ROLE = "안정·**감정 부담 경감·분석적 새 시각**"; // 기존(anchorIsA 도입 전) b_gives_a 문구 그대로
+  const aGivesRole = anchorIsA ? ANCHOR_ROLE : WARMTH_ROLE;
+  const bGivesRole = anchorIsA ? WARMTH_ROLE : DEFAULT_B_ROLE;
+
   return `
 # 섹션별 서술 역할 분리 (중복 금지 — 각 필드는 고유한 질문에만 답할 것)
 
@@ -125,8 +143,8 @@ export function buildSectionRoleSeparationGuide(
 
 | 필드 | 서술 역할 | 금지 |
 |---|---|---|
-| \`a_gives_b_headline\` + \`a_gives_b\` | **${nicknameA} → ${nicknameB}**: 다정한 생동감·**새 경험·변화·더 나은 결정** | 자연물 비유, b_gives_a 미러링 |
-| \`b_gives_a_headline\` + \`b_gives_a\` | **${nicknameB} → ${nicknameA}**: 안정·**감정 부담 경감·분석적 새 시각** | a_gives_b 미러링 |
+| \`a_gives_b_headline\` + \`a_gives_b\` | **${nicknameA} → ${nicknameB}**: ${aGivesRole} | 자연물 비유, b_gives_a 미러링 |
+| \`b_gives_a_headline\` + \`b_gives_a\` | **${nicknameB} → ${nicknameA}**: ${bGivesRole} | a_gives_b 미러링 |
 | \`only_together_headline\` + \`only_together\` | **${nicknameA} ↔ ${nicknameB}**: 상호보완·Essence 아우라 | 앞 본문 재탕 |
 | \`why_special\` | 💡 맞춰 가는 지점 — 갈등 패턴·실전 팁 | bond 칭찬 재탕 |
 

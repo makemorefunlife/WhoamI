@@ -279,6 +279,28 @@ export function resolveSajuFrame(
   return "savior_dependent";
 }
 
+export type SajuFrameDirection = "A" | "B" | "balanced";
+
+/**
+ * Part3② special_bond 역할 배정 전용 — resolveSajuFrame과 같은 원천 신호
+ * (인성+관성 합산)를 쓰지만, 그쪽은 방향성 없는 밴드만 반환해 unconscious_role_play
+ * digest 줄에 쓰이고 있어 그대로 둔다. special_bond는 "누가 안식처/보호자 역인지"
+ * 방향이 반드시 필요해서 별도 함수로 분리 — 높은 쪽이 안식처 역(스펙의 관성/인성=
+ * 스승/보호자), 낮은 쪽이 온기 역(식상/비겁=아이/동반자 방향의 간이 근사).
+ */
+export function resolveSajuFrameDirection(
+  romanticA: RomanticSajuSignals,
+  romanticB: RomanticSajuSignals,
+): SajuFrameDirection {
+  const structureA =
+    romanticA.affection_language.seal_count + romanticA.conflict_response.officer_count;
+  const structureB =
+    romanticB.affection_language.seal_count + romanticB.conflict_response.officer_count;
+  const gap = structureA - structureB;
+  if (Math.abs(gap) < SAJU_COUNT_GAP) return "balanced";
+  return gap > 0 ? "A" : "B";
+}
+
 export type RolePlayResult = {
   primaryFrame: RolePlayBand;
   sajuFrame: RolePlayBand;

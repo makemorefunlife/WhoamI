@@ -7,7 +7,10 @@ import {
   buildRomanticPersonSignalsDigest,
   buildRomanticDynamicsDigest,
 } from "@/lib/relationship/romanticSajuPromptDigest";
-import { hasDayStemRootInDayBranch } from "@/lib/relationship/romanticRules/relationshipDynamics";
+import {
+  hasDayStemRootInDayBranch,
+  resolveSajuFrameDirection,
+} from "@/lib/relationship/romanticRules/relationshipDynamics";
 import { buildChartContext } from "@/lib/saju/chartContext";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
 import {
@@ -190,6 +193,16 @@ export function prepareRomanticSajuDeepRun(
   // 없으면 크래시 대신 dynamics_digest를 생략한다(구버전 스냅샷 안전 처리).
   const romanticSignalsA = params.sajuMasterA?.domain_signals?.romantic_signals;
   const romanticSignalsB = params.sajuMasterB?.domain_signals?.romantic_signals;
+
+  // Part3② special_bond 역할 배정 — 신호 없으면(레거시) null로 둬서
+  // buildSectionRoleSeparationGuide가 기존 기본 문구를 그대로 쓰게 한다.
+  const sajuFrameDirection =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? resolveSajuFrameDirection(romanticSignalsA, romanticSignalsB)
+      : null;
+  const anchorIsA =
+    sajuFrameDirection === "A" ? true : sajuFrameDirection === "B" ? false : null;
+
   const dynamicsBlock =
     romanticSignalsA != null && romanticSignalsB != null
       ? buildRomanticDynamicsDigest({
@@ -233,6 +246,7 @@ export function prepareRomanticSajuDeepRun(
     pairBlock,
     dynamicsBlock,
     locale,
+    anchorIsA,
   });
 
   return {
