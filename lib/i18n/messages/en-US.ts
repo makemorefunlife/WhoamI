@@ -1056,6 +1056,8 @@ export const messagesEnUS = {
       moneyChoresCardTitle: "💸 Money leadership & chore split",
       cfoQuestionLabel: "💰 Who should hold the wallet? ",
       choresLabel: "[Chore split] ",
+      spendingStyleLabel: "💳 Spending style",
+      cfoAxisNoteLabel: "🎯 11-axis check",
       familyBoundaryCardTitle: "👪 Boundaries with family of origin & independence",
       inlawStressLabel: "⚠️ In-law stress index",
       parentingCardTitle: "👶 Parenting & education values",
@@ -2111,6 +2113,8 @@ export type MessageCatalog = {
       moneyChoresCardTitle: string;
       cfoQuestionLabel: string;
       choresLabel: string;
+      spendingStyleLabel: string;
+      cfoAxisNoteLabel: string;
       familyBoundaryCardTitle: string;
       inlawStressLabel: string;
       parentingCardTitle: string;

@@ -15,6 +15,7 @@ import {
   buildOriginStorySection,
   type OriginStorySection,
 } from "./marriageOriginStory";
+import { resolveSpendingStyleNote } from "./marriageCfoConsumption";
 import {
   buildPrivateBoundary,
   buildPersonFamilyBoundaryNote,
@@ -50,6 +51,9 @@ export type MoneyChoresSection = {
   cfo_nickname: string;
   cfo_reason: string;
   chores_guideline: string;
+  spending_style_note: string;
+  /** psych(설문) 필요 — buildMarriageReport.ts에서 나중에 patch(section_compare_table과 동일 패턴) */
+  cfo_axis_note?: string | null;
 };
 
 export type FamilyBoundarySection = {
@@ -441,6 +445,14 @@ export function buildHouseholdPartnershipReport(
       cfo_nickname: ctx.tenGod.cfo.nickname,
       cfo_reason: sanitizeHomeLifeText(ctx.tenGod.cfo.reason),
       chores_guideline: buildChoresGuideline(ctx),
+      spending_style_note: resolveSpendingStyleNote(
+        ctx.tenGod.countsA,
+        ctx.tenGod.countsB,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        ctx.locale,
+      ),
+      cfo_axis_note: null,
     },
     section_family_boundary: {
       inlaw_stress_summary: buildInlawStressSummary(ctx),

@@ -14,6 +14,7 @@ import {
   type HouseholdPartnershipReport,
 } from "./homeReportTemplate";
 import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
+import { resolveCfoAxisNote } from "./marriageCfoConsumption";
 import {
   buildCohabitationKillerQuestions,
 } from "./buildCohabitationKillerQuestions";
@@ -85,8 +86,19 @@ export function buildMarriageReport(params: {
 }): MarriageReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildMarriageRuleContext({ ...params, locale });
+
+  // psych_match를 여기서 미리 한 번만 계산해 두면(section_money_chores의 CFO
+  // 11축 확인문구용) 아래 killer_questions 등 다른 소비처와 중복 계산하지
+  // 않아도 된다 — buildMarriagePsychMatchBundle 호출 위치를 앞으로 옮긴 것.
+  const psychBundle = buildMarriagePsychMatchBundle(
+    params.psychMasterA,
+    params.psychMasterB,
+    locale,
+  );
+
+  const baseHousehold = buildHouseholdPartnershipReport(ctx);
   const household: HouseholdPartnershipReport = {
-    ...buildHouseholdPartnershipReport(ctx),
+    ...baseHousehold,
     section_compare_table: buildMarriageSajuCompareTable({
       nicknameA: params.nicknameA,
       nicknameB: params.nicknameB,
@@ -100,6 +112,14 @@ export function buildMarriageReport(params: {
       economicDominanceBandB: params.cohabitationSignalsB?.wealth_officer_power.economic_dominance_band,
       locale,
     }),
+    section_money_chores: {
+      ...baseHousehold.section_money_chores,
+      cfo_axis_note: resolveCfoAxisNote(
+        psychBundle?.psych_match ?? null,
+        baseHousehold.section_money_chores.cfo_nickname === params.nicknameA,
+        locale,
+      ),
+    },
   };
 
   const snapshot_panel = buildMarriageSnapshotPanel(
@@ -127,12 +147,6 @@ export function buildMarriageReport(params: {
           psych_b: params.psychMasterB,
         }
       : undefined;
-
-  const psychBundle = buildMarriagePsychMatchBundle(
-    params.psychMasterA,
-    params.psychMasterB,
-    locale,
-  );
 
   const killer_questions = buildCohabitationKillerQuestions({
     ctx,

@@ -175,6 +175,16 @@ function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
           <RelationshipReportLabel>{t.choresLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">{section.choresGuideline}</RelationshipReportParagraph>
         </div>
+        <div>
+          <RelationshipReportLabel>{t.spendingStyleLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">{section.spendingStyleNote}</RelationshipReportParagraph>
+        </div>
+        {section.cfoAxisNote ? (
+          <RelationshipReportInset>
+            <RelationshipReportLabel>{t.cfoAxisNoteLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.cfoAxisNote}</RelationshipReportParagraph>
+          </RelationshipReportInset>
+        ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );

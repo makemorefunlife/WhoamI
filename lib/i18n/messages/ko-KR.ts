@@ -1012,6 +1012,8 @@ export const messagesKoKR: MessageCatalog = {
       moneyChoresCardTitle: "💸 자산 관리 주도권 & 가사 분담",
       cfoQuestionLabel: "💰 통장 잔고는 누가 쥐어야 할까? ",
       choresLabel: "[살림 분담] ",
+      spendingStyleLabel: "💳 소비 스타일",
+      cfoAxisNoteLabel: "🎯 11축 확인",
       familyBoundaryCardTitle: "👪 원가족과의 바운더리 & 독립성",
       inlawStressLabel: "⚠️ 시댁·처가 스트레스 지수",
       parentingCardTitle: "👶 육아·교육 가치관",

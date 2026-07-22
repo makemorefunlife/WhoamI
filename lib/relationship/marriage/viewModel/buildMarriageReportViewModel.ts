@@ -135,6 +135,8 @@ function buildMoneyChoresSection(
     cfoNickname: m.cfo_nickname,
     cfoReason: m.cfo_reason,
     choresGuideline: m.chores_guideline,
+    spendingStyleNote: m.spending_style_note,
+    cfoAxisNote: m.cfo_axis_note,
   };
 }
 

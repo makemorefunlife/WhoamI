@@ -72,6 +72,8 @@ export type MoneyChoresSection = BaseSection & {
   cfoNickname: string;
   cfoReason: string;
   choresGuideline: string;
+  spendingStyleNote: string;
+  cfoAxisNote?: string | null;
 };
 
 // ---- Part 3: 침실 케미스트리 + 수면 + 애착 -----------------------------------
