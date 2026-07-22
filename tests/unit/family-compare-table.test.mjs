@@ -109,12 +109,13 @@ const {
   section_household_roles: _omitRoles,
   section_family_role: _omitFamilyRole,
   section_relationship_index: _omitRelationshipIndex,
+  section_talent: _omitTalent,
   ...reportFamilyWithoutPart2Extras
 } = koReport.family;
 assert.deepEqual(
   reportFamilyWithoutPart2Extras,
   baselineFamily,
-  "Part2 extras(compare/household_roles/family_role/relationship_index)를 제외한 필드는 buildFamilyParentChildReport(ctx) 원본과 동일해야 함",
+  "Part2 extras(compare/household_roles/family_role/relationship_index/talent)를 제외한 필드는 buildFamilyParentChildReport(ctx) 원본과 동일해야 함",
 );
 ok("Part2/Part3/Part1 extras 외에는 기존 family 서사 결과가 한 글자도 안 바뀜");
 

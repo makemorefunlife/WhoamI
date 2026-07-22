@@ -36,6 +36,7 @@ import type {
   PrescriptionSection,
   PsychRadarSection,
   RelationshipIndexSection,
+  TalentSection,
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
@@ -232,6 +233,33 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
   );
 }
 
+function TalentCard({ section }: { section: TalentSection }) {
+  const t = useMessages().relationshipDrilldown.family;
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <div>
+          <RelationshipReportLabel>{t.talentStudyTypeLabel}</RelationshipReportLabel>
+          <p className="mt-1.5 text-base font-semibold text-white/92">{section.studyTypeLabel}</p>
+          <RelationshipReportParagraph className="mt-1.5">{section.studyTypeNote}</RelationshipReportParagraph>
+        </div>
+        <div>
+          <RelationshipReportLabel>{t.talentWealthVesselLabel}</RelationshipReportLabel>
+          <p className="mt-1.5 text-base font-semibold text-white/92">{section.wealthVesselLabel}</p>
+          <RelationshipReportParagraph className="mt-1.5">{section.wealthVesselNote}</RelationshipReportParagraph>
+        </div>
+        {section.inheritedNote ? (
+          <RelationshipReportInset>
+            <RelationshipReportParagraph className="text-white/78">
+              {section.inheritedNote}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        ) : null}
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
 function GrowthTunnelCard({ section }: { section: GrowthTunnelSection }) {
   const t = useMessages().relationshipDrilldown.family;
   return (
@@ -407,6 +435,8 @@ export function FamilyReportSectionCard({
       return <PsychRadarCard section={section} names={names} />;
     case "child_dna":
       return <ChildDnaCard section={section} />;
+    case "talent":
+      return <TalentCard section={section} />;
     case "growth_tunnel":
       return <GrowthTunnelCard section={section} />;
     case "family_role":

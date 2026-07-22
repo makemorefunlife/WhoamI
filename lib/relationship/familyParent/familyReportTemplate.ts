@@ -13,6 +13,7 @@ import type { FamilyCompareRow } from "./familySajuCompareTable";
 import type { FamilyHouseholdRolesSection } from "./buildFamilyHouseholdRoles";
 import type { FamilyRoleSection } from "./familyPsychRoles";
 import type { FamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
+import type { FamilyTalentSection } from "./familyTalentProfile";
 
 export type FamilyRoleMetaSection = {
   child_nickname: string;
@@ -38,6 +39,8 @@ export type FamilyParentChildReport = {
   section_family_role?: FamilyRoleSection | null;
   /** Part1 — 훈육 마찰 지수(Track A) / 소통 엇박자 진단(Track B). */
   section_relationship_index?: FamilyRelationshipIndexSection;
+  /** Part2 — 공부 타입 & 성공 그릇(Track A) / 부모님 기질 이해(Track B). */
+  section_talent?: FamilyTalentSection;
 };
 
 export function buildFamilyParentChildReport(

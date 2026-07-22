@@ -952,6 +952,8 @@ export const messagesEnUS = {
       scoreLabelFriction: "Discipline friction",
       relationshipIndexCardTitle: "🧭 Discipline Friction Index",
       relationshipIndexSafeDistanceLabel: "Safe distance",
+      talentStudyTypeLabel: "📖 Study type",
+      talentWealthVesselLabel: "💼 Vessel for success",
       dnaCardTitle: "🧬 Child DNA profile",
       dnaLayerLabel: "Innate pattern",
       dnaLayerHint: "How this child naturally learns, relates, and focuses",
@@ -2020,6 +2022,8 @@ export type MessageCatalog = {
       scoreLabelFriction: string;
       relationshipIndexCardTitle: string;
       relationshipIndexSafeDistanceLabel: string;
+      talentStudyTypeLabel: string;
+      talentWealthVesselLabel: string;
       dnaCardTitle: string;
       dnaLayerLabel: string;
       dnaLayerHint: string;

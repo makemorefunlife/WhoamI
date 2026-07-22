@@ -88,6 +88,17 @@ export type ChildDnaSection = BaseSection & {
   hiddenGenius: string;
 };
 
+export type TalentSection = BaseSection & {
+  type: "talent";
+  studyType: string;
+  studyTypeLabel: string;
+  studyTypeNote: string;
+  wealthVessel: string;
+  wealthVesselLabel: string;
+  wealthVesselNote: string;
+  inheritedNote: string | null;
+};
+
 export type GrowthTunnelSection = BaseSection & {
   type: "growth_tunnel";
   currentChallenge: string;
@@ -136,6 +147,7 @@ export type FamilyReportSection =
   | HouseholdRolesSection
   | PsychRadarSection
   | ChildDnaSection
+  | TalentSection
   | GrowthTunnelSection
   | FamilyRoleSection
   | DestinySection

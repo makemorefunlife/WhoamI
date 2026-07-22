@@ -908,6 +908,8 @@ export const messagesKoKR: MessageCatalog = {
       scoreLabelFriction: "훈육 마찰",
       relationshipIndexCardTitle: "🧭 훈육 마찰 지수",
       relationshipIndexSafeDistanceLabel: "적정 거리",
+      talentStudyTypeLabel: "📖 공부 타입",
+      talentWealthVesselLabel: "💼 성공 그릇",
       dnaCardTitle: "🧬 Child DNA 프로필",
       dnaLayerLabel: "타고난 기질",
       dnaLayerHint: "관계와 학습에서 반복되는 기본 패턴",

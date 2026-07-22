@@ -165,6 +165,26 @@ function buildChildDnaSection(
   };
 }
 
+function buildTalentSection(
+  report: FamilyParentReportBody,
+): FamilyReportSection | null {
+  const s = report.family?.section_talent;
+  if (!s) return null;
+  return {
+    id: "talent",
+    type: "talent",
+    partNumber: 3,
+    title: s.headline,
+    studyType: s.study_type,
+    studyTypeLabel: s.study_type_label,
+    studyTypeNote: s.study_type_note,
+    wealthVessel: s.wealth_vessel,
+    wealthVesselLabel: s.wealth_vessel_label,
+    wealthVesselNote: s.wealth_vessel_note,
+    inheritedNote: s.inherited_note,
+  };
+}
+
 function buildGrowthTunnelSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
@@ -275,6 +295,7 @@ export function buildFamilyReportViewModel(
     () => buildHouseholdRolesSection(report, t),
     () => buildPsychRadarSection(report, t),
     () => buildChildDnaSection(report, t),
+    () => buildTalentSection(report),
     () => buildGrowthTunnelSection(report, t),
     () => buildFamilyRoleSectionView(report, t),
     () => buildDestinySection(report, t),

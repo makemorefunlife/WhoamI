@@ -26,6 +26,7 @@ import { buildFamilyHouseholdRoles } from "./buildFamilyHouseholdRoles";
 import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment";
 import { buildFamilyRoleSection } from "./familyPsychRoles";
 import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
+import { buildFamilyTalentSection } from "./familyTalentProfile";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -126,6 +127,14 @@ export function buildFamilyParentReport(params: {
       fallbackRisk: ctx.masterScores.risk,
       psychChild: ctx.roles.roleA !== "child" ? params.psychMasterB : params.psychMasterA,
       psychParent: ctx.roles.roleA !== "child" ? params.psychMasterA : params.psychMasterB,
+      childIsViewer: ctx.childIsViewer,
+      locale,
+    }),
+    section_talent: buildFamilyTalentSection({
+      countsChild: ctx.tenGod.countsChild,
+      countsParent: ctx.tenGod.countsParent,
+      childNickname: ctx.childNickname,
+      parentNickname: ctx.parentNickname,
       childIsViewer: ctx.childIsViewer,
       locale,
     }),
