@@ -109,6 +109,8 @@ export function buildFamilyKillerSections(params: {
     locale: Locale;
     /** 성장 터널 분석 연도. 생략 시 현재 연도(기존 동작). */
     analysisYear?: number;
+    /** true면 시청자=자녀(Track B) — 시그니처 한 줄 요약 톤 분기용. */
+    childIsViewer?: boolean;
   };
 }): FamilyKillerSections {
   const {
@@ -120,6 +122,7 @@ export function buildFamilyKillerSections(params: {
     masterScores,
     locale,
   } = params.ctx;
+  const childIsViewer = params.ctx.childIsViewer === true;
   const analysisYear = params.ctx.analysisYear ?? new Date().getFullYear();
   const sig = familyPairAnalysis.scoringSignals;
   const childSig = familyPairAnalysis.childSignals;
@@ -208,29 +211,53 @@ export function buildFamilyKillerSections(params: {
     );
   }
 
-  let oneLine = pick(
-    locale,
-    `${childNickname} & ${parentNickname} — a ${roleLabel}–child bond that deepens the more you understand each other's different rhythms`,
-    `${childNickname} & ${parentNickname} — 서로 다른 리듬을 이해할수록 깊어지는 ${roleLabel}-자녀 관계`,
-  );
+  let oneLine = childIsViewer
+    ? pick(
+        locale,
+        `${childNickname} & ${parentNickname} — a relationship that grows more comfortable the more you each understand the other's rhythm`,
+        `${childNickname} & ${parentNickname} — 서로 다른 리듬을 이해할수록 마음이 편해지는 부모-자식 사이`,
+      )
+    : pick(
+        locale,
+        `${childNickname} & ${parentNickname} — a ${roleLabel}–child bond that deepens the more you understand each other's different rhythms`,
+        `${childNickname} & ${parentNickname} — 서로 다른 리듬을 이해할수록 깊어지는 ${roleLabel}-자녀 관계`,
+      );
   if (masterScores.bond >= 70 && masterScores.risk < 40) {
-    oneLine = pick(
-      locale,
-      `${childNickname} & ${parentNickname} — close to an inseparable, warm bond`,
-      `${childNickname} & ${parentNickname} — 죽고 못 사는 찰떡궁합에 가까운 따뜻한 유대`,
-    );
+    oneLine = childIsViewer
+      ? pick(
+          locale,
+          `${childNickname} & ${parentNickname} — a place to lean on anytime, close to an irreplaceable comfort`,
+          `${childNickname} & ${parentNickname} — 언제든 기댈 수 있는, 둘도 없이 편안한 사이`,
+        )
+      : pick(
+          locale,
+          `${childNickname} & ${parentNickname} — close to an inseparable, warm bond`,
+          `${childNickname} & ${parentNickname} — 죽고 못 사는 찰떡궁합에 가까운 따뜻한 유대`,
+        );
   } else if (sig.hasStrongParentChildClash || sig.hasDayMonthTensionBond) {
-    oneLine = pick(
-      locale,
-      `${childNickname} & ${parentNickname} — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance`,
-      `${childNickname} & ${parentNickname} — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계`,
-    );
+    oneLine = childIsViewer
+      ? pick(
+          locale,
+          `${childNickname} & ${parentNickname} — a warm hedgehog's-dilemma relationship that finally feels comfortable once you each respect the other's boundaries`,
+          `${childNickname} & ${parentNickname} — 다정하지만 서로의 선을 존중할 때 비로소 편안해지는 고슴도치 관계`,
+        )
+      : pick(
+          locale,
+          `${childNickname} & ${parentNickname} — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance`,
+          `${childNickname} & ${parentNickname} — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계`,
+        );
   } else if (masterScores.synergy >= 65) {
-    oneLine = pick(
-      locale,
-      `${childNickname} & ${parentNickname} — growth partners who fill in each other's gaps`,
-      `${childNickname} & ${parentNickname} — 서로의 빈틈을 채워 주는 성장 파트너`,
-    );
+    oneLine = childIsViewer
+      ? pick(
+          locale,
+          `${childNickname} & ${parentNickname} — a steady backing that helps you grow through each other's different strengths`,
+          `${childNickname} & ${parentNickname} — 서로 다른 강점으로 나를 자라게 해주는 든든한 뒷배`,
+        )
+      : pick(
+          locale,
+          `${childNickname} & ${parentNickname} — growth partners who fill in each other's gaps`,
+          `${childNickname} & ${parentNickname} — 서로의 빈틈을 채워 주는 성장 파트너`,
+        );
   }
 
   let harmonyLine = pick(

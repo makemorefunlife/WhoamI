@@ -55,6 +55,12 @@ export type FamilyRuleContext = {
   /** Part2 A/B — bond_distance / pair 보강. 없으면 compare table이 counts에서 band 재현. */
   familySignalsParent?: FamilySajuSignals;
   familySignalsChild?: FamilySajuSignals;
+  /**
+   * true면 시청자=자녀(Track B). 렌더링 순서/레이아웃은 그대로 고정이고
+   * (SectionRenderer.tsx의 "viewer 토글 없음" 주석은 레이아웃 기준으로는
+   * 여전히 사실), 일부 섹션의 서술 톤만 이 값으로 분기한다.
+   */
+  childIsViewer: boolean;
 };
 
 export type BuildFamilyContextParams = {
@@ -77,6 +83,8 @@ export type BuildFamilyContextParams = {
   locale?: Locale;
   /** Part3 성장 터널 분석 연도. 생략 시 현재 연도. */
   analysisYear?: number;
+  /** true면 시청자=자녀(Track B) — FamilyRuleContext.childIsViewer로 정규화되어 전달됨. */
+  childIsViewer?: boolean;
 };
 
 function resolveParentType(
@@ -163,6 +171,8 @@ export function buildFamilyRuleContext(
   const { grade, reason, eventScores, masterScores } =
     computeFamilyCompatibilityGrade(familyPairAnalysis, parentRole, locale);
 
+  const childIsViewer = params.childIsViewer === true;
+
   const killerSections = buildFamilyKillerSections({
     ctx: {
       childNickname: resolved.childNickname,
@@ -173,6 +183,7 @@ export function buildFamilyRuleContext(
       masterScores,
       locale,
       analysisYear: params.analysisYear,
+      childIsViewer,
     },
   });
 
@@ -202,6 +213,7 @@ export function buildFamilyRuleContext(
     friendshipSignalsChild,
     familySignalsParent,
     familySignalsChild,
+    childIsViewer,
   };
 }
 

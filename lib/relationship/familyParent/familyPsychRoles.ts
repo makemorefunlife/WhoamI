@@ -92,27 +92,70 @@ const ROLE_DESCRIPTION: Record<Locale, Record<FamilyPsychRole, (nickname: string
   },
 };
 
+/**
+ * Track B(자녀 시선) — 자녀 본인에게 말하는 자기진단 톤. 부모에게 "~해
+ * 주세요"라고 지시하는 대신, 자녀 자신을 위한 자기이해+자기돌봄 문구로
+ * 재서술한다. 역할 판정(resolveFamilyPsychRole) 자체는 트랙 불문 동일 —
+ * 절대 안 건드림.
+ */
+const ROLE_DESCRIPTION_SELF: Record<Locale, Record<FamilyPsychRole, (nickname: string) => string>> = {
+  "en-US": {
+    fixer: (n) =>
+      `You tend to step in and fix things the moment something goes wrong at home. It's a real strength — but you don't always have to carry the solution alone. It's okay to let others handle a problem sometimes too.`,
+    mediator: (n) =>
+      `You naturally read the room and smooth things over between family members. That effort deserves real credit, even if no one says it out loud — you don't have to keep the peace all by yourself.`,
+    martyr: (n) =>
+      `You tend to put your own feelings last to take care of the family first. Before jumping in to help, it's worth checking in with yourself first — how are you doing, really? You deserve recognition too.`,
+    independent: (n) =>
+      `You handle things alone rather than leaning on the family. That's a real strength — but it's okay to ask for help too. Independence doesn't have to turn into distance.`,
+    emotional_dump: (n) =>
+      `You quietly absorb everyone else's emotions without much credit in return. It's okay to ask yourself "how am I doing?" — not just when something's wrong at home.`,
+    puppy: (n) =>
+      `You light up the mood at home and often seek approval through cheerfulness. You're worth appreciating for who you are, not just for keeping things fun — the brightness doesn't have to be a performance.`,
+  },
+  "ko-KR": {
+    fixer: (n) =>
+      `당신은 집에서 문제가 생기면 먼저 나서서 해결하려는 편이에요. 큰 강점이지만, 항상 혼자 짊어질 필요는 없어요 — 가끔은 다른 사람이 해결하게 둬도 괜찮습니다.`,
+    mediator: (n) =>
+      `당신은 가족 사이에서 분위기를 살피고 갈등을 조율하는 역할을 자연스럽게 맡아 왔어요. 아무도 몰라줘도 그 노력은 분명 가치 있어요 — 평화를 지키는 일을 혼자 다 떠안지 않아도 됩니다.`,
+    martyr: (n) =>
+      `당신은 자기 마음은 뒤로 하고 가족을 먼저 챙기려 애써 온 편이에요. 누군가를 돕기 전에 "나는 요즘 어떤지" 먼저 물어봐 주세요 — 당신도 인정받아 마땅한 사람이에요.`,
+    independent: (n) =>
+      `당신은 가족에게 기대기보다 혼자 해결하려는 편이에요. 좋은 힘이지만, 도움을 청해도 괜찮아요 — 독립이 거리감이 될 필요는 없습니다.`,
+    emotional_dump: (n) =>
+      `당신은 다른 가족의 감정을 조용히 받아주다 정작 자기 마음은 못 챙기기 쉬워요. 집안일이 있을 때만이 아니라, 스스로에게 "요즘 마음은 어때?"라고 물어봐 주세요.`,
+    puppy: (n) =>
+      `당신은 집안 분위기를 밝게 띄우며 인정받고 싶어하는 편이에요. 분위기를 띄울 때만이 아니라 존재 자체로 충분히 소중해요 — 밝음이 노력이 되지 않아도 괜찮습니다.`,
+  },
+};
+
 export type FamilyRoleSection = {
   child_role: FamilyPsychRole;
   role_label: string;
   role_description: string;
 };
 
-/** psych(설문) 없으면 null — 설문 미완료 안전 처리 */
+/**
+ * psych(설문) 없으면 null — 설문 미완료 안전 처리.
+ * childIsViewer=true(Track B)면 자녀 본인向 자기진단 톤, 기본(false, Track A)은
+ * 부모向 3인칭 설명 톤. 역할 판정 자체는 트랙 무관 동일.
+ */
 export function buildFamilyRoleSection(
   psychChild: PsychMasterJson | null | undefined,
   childNickname: string,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  childIsViewer = false,
 ): FamilyRoleSection | null {
   const axes = psychChild?.secondary_axes;
   if (!axes) return null;
 
   const role = resolveFamilyPsychRole(axes);
+  const descriptionMap = childIsViewer ? ROLE_DESCRIPTION_SELF : ROLE_DESCRIPTION;
   return {
     child_role: role,
     role_label: ROLE_LABEL[locale][role],
     role_description: sanitizeFamilyParentText(
-      ROLE_DESCRIPTION[locale][role](childNickname),
+      descriptionMap[locale][role](childNickname),
     ),
   };
 }

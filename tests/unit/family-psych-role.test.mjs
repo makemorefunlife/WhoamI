@@ -131,4 +131,37 @@ assert.equal(enSection.child_role, "puppy");
 assert.notEqual(koSection.role_description, enSection.role_description);
 ok("동일 축 입력에서 ko-KR/en-US가 서로 다른 문구를 냄(같은 역할 판정은 유지)");
 
+// ---------------------------------------------------------------------------
+section("5) childIsViewer(Track B) — 자기진단 톤으로 문구가 달라지지만 역할 판정은 동일");
+
+const trackAMartyr = buildFamilyRoleSection(
+  psych({ recognition: 90, resilience: 10 }),
+  "동글",
+  "ko-KR",
+  false,
+);
+const trackBMartyr = buildFamilyRoleSection(
+  psych({ recognition: 90, resilience: 10 }),
+  "동글",
+  "ko-KR",
+  true,
+);
+assert.equal(trackAMartyr.child_role, trackBMartyr.child_role);
+assert.equal(trackAMartyr.role_label, trackBMartyr.role_label);
+assert.notEqual(trackAMartyr.role_description, trackBMartyr.role_description);
+ok("Track A/B 모두 동일 역할(martyr) 판정, role_description만 달라짐");
+
+assert.ok(!trackBMartyr.role_description.includes("희생자"));
+assert.ok(trackBMartyr.role_description.includes("당신"));
+assert.ok(!trackBMartyr.role_description.includes("동글은(는)"));
+ok("Track B 문구는 무거운 코드명 미노출 유지 + 3인칭('동글은(는)') 대신 자녀 본인向 2인칭('당신') 톤");
+
+const defaultTrack = buildFamilyRoleSection(
+  psych({ recognition: 90, resilience: 10 }),
+  "동글",
+  "ko-KR",
+);
+assert.equal(defaultTrack.role_description, trackAMartyr.role_description);
+ok("childIsViewer 생략 시 기존 Track A(부모向) 동작 그대로 유지 — 호환성 보장");
+
 console.log("\nOK: family psych role tests passed");

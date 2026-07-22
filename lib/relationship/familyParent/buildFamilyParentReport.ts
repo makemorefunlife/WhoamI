@@ -111,13 +111,14 @@ export function buildFamilyParentReport(params: {
       familySignalsParent: ctx.familySignalsParent,
       familySignalsChild: ctx.familySignalsChild,
       pairFamily: params.pairFamily,
-      viewerIsChild: params.childIsViewer === true,
+      viewerIsChild: ctx.childIsViewer,
       locale,
     }),
     section_family_role: buildFamilyRoleSection(
       ctx.roles.roleA !== "child" ? params.psychMasterB : params.psychMasterA,
       ctx.childNickname,
       locale,
+      ctx.childIsViewer,
     ),
   };
 
