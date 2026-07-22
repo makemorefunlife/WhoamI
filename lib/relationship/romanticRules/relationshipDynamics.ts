@@ -27,6 +27,9 @@ const ROLE_CONTRIBUTION_MARGIN = 5;
 const SAJU_COUNT_GAP = 2;
 const SUBLEAD_GAP = 1;
 const RESIDUAL_TENSION_HITS = 2;
+const AXIS_NOTE_EMPATHY_HIGH = 60;
+const AXIS_NOTE_EMPATHY_LOW = 40;
+const AXIS_NOTE_CONFLICT_GAP = 30;
 
 const STRONG_DAY_STAGES = new Set([
   "jangsaeng",
@@ -292,4 +295,45 @@ export function resolveRolePlayWithSajuFrame(
   const primaryFrame = resolveUnconsciousRolePlay(profileA, profileB);
   const sajuFrame = resolveSajuFrame(romanticA, romanticB, dayStemInteraction);
   return { primaryFrame, sajuFrame, agrees: primaryFrame === sajuFrame };
+}
+
+// ---- Part1① 종합 관계 지수(친밀·끌림/갈등·긴장) — 11축 확인 문구 ----------------
+//
+// computeRelationshipEventScores(pairEventScores.ts)의 intimacy/conflict 원점수는
+// grade(triScoreToGrade)에도 쓰이는 넓은 영향 범위라 손대지 않는다. 대신
+// buildSnapshotNarrative.ts::interpretTopic이 이미 만드는 해석 문장에, 관계공감/
+// 갈등직면성 11축으로 확인/유보하는 문구만 별도로 덧붙인다(친구 Batch 1과 동일한
+// non-invasive 원칙). 안정·균형(stability)은 스펙이 특정 11축을 지정하지 않아 대상 아님.
+
+/** Part1① 친밀·끌림 — 관계공감(empathy) 평균으로 확인/유보 */
+export function resolveIntimacyAxisNote(
+  profileA: CurrentSelfProfile | null | undefined,
+  profileB: CurrentSelfProfile | null | undefined,
+): string | null {
+  const empathyA = axisScore(profileA, "empathy");
+  const empathyB = axisScore(profileB, "empathy");
+  if (empathyA == null || empathyB == null) return null;
+  const avg = (empathyA + empathyB) / 2;
+  if (avg >= AXIS_NOTE_EMPATHY_HIGH) {
+    return "관계공감 축도 둘 다 높은 편이라, 사주로 보이는 끌림이 실제 느낌으로도 잘 이어질 가능성이 커요.";
+  }
+  if (avg <= AXIS_NOTE_EMPATHY_LOW) {
+    return "관계공감 축은 낮은 편이라, 끌림이 있어도 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.";
+  }
+  return null;
+}
+
+/** Part1① 갈등·긴장 — 갈등직면성(conflict_style) 격차로 확인 */
+export function resolveConflictAxisNote(
+  profileA: CurrentSelfProfile | null | undefined,
+  profileB: CurrentSelfProfile | null | undefined,
+): string | null {
+  const conflictA = axisScore(profileA, "conflict_style");
+  const conflictB = axisScore(profileB, "conflict_style");
+  if (conflictA == null || conflictB == null) return null;
+  const gap = Math.abs(conflictA - conflictB);
+  if (gap >= AXIS_NOTE_CONFLICT_GAP) {
+    return "갈등을 대하는 방식(갈등직면성) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.";
+  }
+  return null;
 }

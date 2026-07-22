@@ -1,4 +1,8 @@
 import type { RomanticRuleContext } from "@/lib/relationship/romanticRules/types";
+import {
+  resolveIntimacyAxisNote,
+  resolveConflictAxisNote,
+} from "@/lib/relationship/romanticRules/relationshipDynamics";
 import { polishRomanticDisplayText } from "@/lib/relationship/romanticEverydayText";
 import type { RelationshipTopicGauge } from "./buildRomanticSnapshot";
 
@@ -13,6 +17,8 @@ export type SnapshotTopicNarrative = {
   risk: number;
   interpretation: string;
   isWarning: boolean;
+  /** Part1① 11축(관계공감/갈등직면성) 확인 문구 — intimacy/conflict만, profile 없으면 없음 */
+  axisNote?: string | null;
 };
 
 export type SnapshotPositiveContext = {
@@ -71,6 +77,7 @@ export function interpretTopic(
     hasYukhap: false,
     positiveCrossCount: 0,
   },
+  axisNote?: string | null,
 ): SnapshotTopicNarrative {
   const activation = Math.round(gauge.activation);
   const benefit = Math.round(gauge.benefit);
@@ -96,6 +103,7 @@ export function interpretTopic(
       risk,
       interpretation: appendBondNote(`${core}${extra}`, positive),
       isWarning: false,
+      axisNote,
     };
   }
 
@@ -143,7 +151,21 @@ export function interpretTopic(
     risk,
     interpretation: `${core}${caution}${growth}`,
     isWarning,
+    axisNote,
   };
+}
+
+function axisNoteForTopic(
+  topic: RelationshipTopicGauge["topic"],
+  ctx: RomanticRuleContext,
+): string | null | undefined {
+  if (topic === "intimacy") {
+    return resolveIntimacyAxisNote(ctx.surveyProfileA, ctx.surveyProfileB);
+  }
+  if (topic === "conflict") {
+    return resolveConflictAxisNote(ctx.surveyProfileA, ctx.surveyProfileB);
+  }
+  return undefined;
 }
 
 export function buildSnapshotNarrative(params: {
@@ -152,7 +174,9 @@ export function buildSnapshotNarrative(params: {
 }): SnapshotNarrative {
   const positive = buildPositiveContext(params.ctx);
   return {
-    topics: params.relationshipGauges.map((g) => interpretTopic(g, positive)),
+    topics: params.relationshipGauges.map((g) =>
+      interpretTopic(g, positive, axisNoteForTopic(g.topic, params.ctx)),
+    ),
   };
 }
 

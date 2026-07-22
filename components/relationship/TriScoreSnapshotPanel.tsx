@@ -116,6 +116,9 @@ function TopicCard({
       <p className={`text-[15px] leading-[1.7] ${bodyClass}`}>
         {topic.interpretation}
       </p>
+      {topic.axisNote ? (
+        <p className={`mt-2 text-xs leading-relaxed ${subtitleClass}`}>{topic.axisNote}</p>
+      ) : null}
     </div>
   );
 }
