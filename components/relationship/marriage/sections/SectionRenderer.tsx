@@ -307,6 +307,10 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
 }
 
 function ParentingCard({ section }: { section: ParentingSection }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  const roleNotes = [section.personARoleNote, section.personBRoleNote].filter(
+    (note): note is string => Boolean(note),
+  );
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
@@ -316,6 +320,16 @@ function ParentingCard({ section }: { section: ParentingSection }) {
         <RelationshipReportInset>
           <RelationshipReportParagraph>{section.harmonyTip}</RelationshipReportParagraph>
         </RelationshipReportInset>
+        {roleNotes.length > 0 ? (
+          <RelationshipReportInset>
+            <RelationshipReportLabel>{t.parentingRoleNoteLabel}</RelationshipReportLabel>
+            {roleNotes.map((note) => (
+              <RelationshipReportParagraph key={note} className="mt-1.5">
+                {note}
+              </RelationshipReportParagraph>
+            ))}
+          </RelationshipReportInset>
+        ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );

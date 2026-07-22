@@ -1021,6 +1021,7 @@ export const messagesKoKR: MessageCatalog = {
       familyBoundaryCardTitle: "👪 원가족과의 바운더리 & 독립성",
       inlawStressLabel: "⚠️ 시댁·처가 스트레스 지수",
       parentingCardTitle: "👶 육아·교육 가치관",
+      parentingRoleNoteLabel: "🎭 육아 롤 확인",
       privacyCardTitle: "🤝 사생활 존중 가이드",
       myPrivacyLineLabel: "[내가 침범받기 싫은 선] ",
       partnerPrivacyLineLabel: "[상대에게 보장해 줄 선] ",

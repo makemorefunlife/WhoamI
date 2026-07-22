@@ -192,6 +192,8 @@ function buildParentingSection(
     personAStyle: p.person_a_style,
     personBStyle: p.person_b_style,
     harmonyTip: p.harmony_tip,
+    personARoleNote: p.person_a_role_note,
+    personBRoleNote: p.person_b_role_note,
   };
 }
 

@@ -101,6 +101,8 @@ export type ParentingSection = BaseSection & {
   personAStyle: string;
   personBStyle: string;
   harmonyTip: string;
+  personARoleNote?: string | null;
+  personBRoleNote?: string | null;
 };
 
 export type FamilyBoundarySection = BaseSection & {

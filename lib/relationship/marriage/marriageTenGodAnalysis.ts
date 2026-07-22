@@ -5,6 +5,7 @@ import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 
 type WealthOfficerPower = CohabitationSajuSignals["wealth_officer_power"];
 
@@ -230,6 +231,58 @@ export function resolveParentingStyle(
     return { style: "empathy", label: EMPATHY_LABEL[locale] };
   }
   return { style: "structure", label: STRUCTURE_LABEL[locale] };
+}
+
+const AXIS_NOTE_HIGH = 60;
+const AXIS_NOTE_LOW = 40;
+
+/**
+ * Part4① "Good Cop vs Bad Cop" 역할 네이밍 + 11축[자기통제/관계공감] 확인문구.
+ * `resolveParentingStyle`의 공감형/규칙형 판정 자체는 전혀 안 건드리고, 스펙이
+ * 요구하는 롤 네이밍과 11축 확인만 별도 필드로 얹는다.
+ */
+export function resolveParentingRoleNote(
+  style: ParentingStyle,
+  psych: PsychMasterJson | null | undefined,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  if (style === "structure") {
+    const score = psych?.secondary_axes?.self_control;
+    if (typeof score !== "number") return null;
+    if (score >= AXIS_NOTE_HIGH) {
+      return pick(
+        locale,
+        "This person naturally settles into the \"Bad Cop\" role at home — setting rules and holding the line — and the 11-axis survey backs it up too: self-control runs high.",
+        "이 사람은 집에서 자연스럽게 'Bad Cop' 역할을 맡게 돼요 — 규칙을 세우고 원칙을 지키는 쪽. 11축 설문에서도 확인돼요 — 자기통제 축이 높은 편이에요.",
+      );
+    }
+    if (score <= AXIS_NOTE_LOW) {
+      return pick(
+        locale,
+        "This person tends toward the \"Bad Cop\" role at home, but survey scores lean the other way — self-control runs low, so sticking to the rules consistently may take more conscious effort than the chart suggests.",
+        "이 사람은 집에서 'Bad Cop' 역할에 가깝지만, 설문 점수는 오히려 반대로 나와요 — 자기통제 축이 낮은 편이라 원칙을 꾸준히 지키는 데 생각보다 의식적인 노력이 필요할 수 있어요.",
+      );
+    }
+    return null;
+  }
+
+  const score = psych?.secondary_axes?.empathy;
+  if (typeof score !== "number") return null;
+  if (score >= AXIS_NOTE_HIGH) {
+    return pick(
+      locale,
+      "This person naturally settles into the \"Good Cop\" role at home — reading the child's hurt feelings and softening them — and the 11-axis survey backs it up too: relational empathy runs high.",
+      "이 사람은 집에서 자연스럽게 'Good Cop' 역할을 맡게 돼요 — 아이의 서운한 마음을 읽고 녹여주는 쪽. 11축 설문에서도 확인돼요 — 관계공감 축이 높은 편이에요.",
+    );
+  }
+  if (score <= AXIS_NOTE_LOW) {
+    return pick(
+      locale,
+      "This person tends toward the \"Good Cop\" role at home, but survey scores lean the other way — relational empathy runs low, so reading the child's emotional signals may take more conscious effort than the chart suggests.",
+      "이 사람은 집에서 'Good Cop' 역할에 가깝지만, 설문 점수는 오히려 반대로 나와요 — 관계공감 축이 낮은 편이라 아이의 감정 신호를 읽는 데 생각보다 의식적인 노력이 필요할 수 있어요.",
+    );
+  }
+  return null;
 }
 
 export type FamilyBoundaryProfile = {

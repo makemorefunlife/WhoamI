@@ -72,6 +72,9 @@ export type ParentingSection = {
   person_a_style: string;
   person_b_style: string;
   harmony_tip: string;
+  /** psych(설문) 필요 — buildMarriageReport.ts에서 나중에 patch(section_money_chores와 동일 패턴) */
+  person_a_role_note?: string | null;
+  person_b_role_note?: string | null;
 };
 
 export type PrivacyRespectSection = {
@@ -492,6 +495,8 @@ export function buildHouseholdPartnershipReport(
         ctx.locale,
       ),
       harmony_tip: buildParentingHarmonyTip(ctx),
+      person_a_role_note: null,
+      person_b_role_note: null,
     },
     section_privacy: {
       person_a_private_line: buildPrivateBoundary(

@@ -1065,6 +1065,7 @@ export const messagesEnUS = {
       familyBoundaryCardTitle: "👪 Boundaries with family of origin & independence",
       inlawStressLabel: "⚠️ In-law stress index",
       parentingCardTitle: "👶 Parenting & education values",
+      parentingRoleNoteLabel: "🎭 Parenting role check",
       privacyCardTitle: "🤝 A guide to respecting each other's privacy",
       myPrivacyLineLabel: "[The line I don't want crossed] ",
       partnerPrivacyLineLabel: "[The line I'll guarantee for my partner] ",
@@ -2126,6 +2127,7 @@ export type MessageCatalog = {
       familyBoundaryCardTitle: string;
       inlawStressLabel: string;
       parentingCardTitle: string;
+      parentingRoleNoteLabel: string;
       privacyCardTitle: string;
       myPrivacyLineLabel: string;
       partnerPrivacyLineLabel: string;

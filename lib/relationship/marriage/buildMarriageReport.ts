@@ -17,6 +17,7 @@ import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
 import { resolveCfoAxisNote } from "./marriageCfoConsumption";
 import { resolveEnergyStyleAxisNote } from "./homeLifeLanguage";
 import { resolveRejectionAxisNote } from "./bedroomProfile";
+import { resolveParentingRoleNote } from "./marriageTenGodAnalysis";
 import {
   buildCohabitationKillerQuestions,
 } from "./buildCohabitationKillerQuestions";
@@ -144,6 +145,19 @@ export function buildMarriageReport(params: {
       ...baseHousehold.section_bedroom,
       rejection_axis_note: resolveRejectionAxisNote(
         params.psychMasterA,
+        params.psychMasterB,
+        locale,
+      ),
+    },
+    section_parenting: {
+      ...baseHousehold.section_parenting,
+      person_a_role_note: resolveParentingRoleNote(
+        ctx.tenGod.parentingA.style,
+        params.psychMasterA,
+        locale,
+      ),
+      person_b_role_note: resolveParentingRoleNote(
+        ctx.tenGod.parentingB.style,
         params.psychMasterB,
         locale,
       ),
