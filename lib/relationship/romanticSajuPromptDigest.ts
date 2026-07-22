@@ -26,6 +26,24 @@ function formatHitsBrief(
     .join(" | ");
 }
 
+/**
+ * Part2① comparison_table 6행 ↔ 11축 매핑 — 스펙(마스터 사양서 532~537행)이
+ * "11축 6대 대조 지표"라고만 하고 어느 축인지 특정하지 않아서, 각 행의 의미와
+ * 가장 가까운 축을 골라 표로 분리해 둔다(매핑을 바꿔야 하면 이 배열만 수정).
+ */
+const COMPARISON_TABLE_AXIS_MAP: Array<{
+  rowLabel: string;
+  axisKey: keyof CurrentSelfProfile["secondary_axes"];
+  axisLabel: string;
+}> = [
+  { rowLabel: "감정 표현", axisKey: "energy_style", axisLabel: "외향에너지" },
+  { rowLabel: "갈등 반응", axisKey: "conflict_style", axisLabel: "갈등직면성" },
+  { rowLabel: "애정 언어", axisKey: "empathy", axisLabel: "관계공감" },
+  { rowLabel: "스트레스 패턴", axisKey: "self_control", axisLabel: "자기통제" },
+  { rowLabel: "의사결정", axisKey: "decision_style", axisLabel: "신중결정" },
+  { rowLabel: "소통 방식", axisKey: "structure", axisLabel: "계획구조화" },
+];
+
 /** PersonCore v2 domain_signals + stem_focus 엑기스 — LLM 입력 토큰 압축용 */
 export function buildRomanticPersonSignalsDigest(params: {
   nickname: string;
@@ -34,6 +52,7 @@ export function buildRomanticPersonSignalsDigest(params: {
   birthPlace: string;
   master: SajuMasterJson;
   uncertainItems?: string[];
+  profile?: CurrentSelfProfile | null;
 }): string {
   const m = params.master;
   const ds = m.domain_signals;
@@ -68,6 +87,17 @@ export function buildRomanticPersonSignalsDigest(params: {
   · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})`
     : "- romantic_signals: 없음(구버전 스냅샷) — comparison_table은 원국 데이터만으로 해석";
 
+  // 11축(profile)이 없으면(레거시·설문 미완료) 이 블록 자체를 생략 — romantic_signals
+  // 블록은 그대로 유지되므로 사주만으로도 기존과 동일하게 동작한다.
+  const axes = params.profile?.secondary_axes;
+  const elevenAxesBlock = axes
+    ? `\n- eleven_axes(이 사람의 심리 11축 — 위 romantic_signals와 같은 순서로 6개 행에 대응):
+${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 대응: ${row.axisLabel} ${axes[row.axisKey]}`).join("\n")}`
+    : "";
+  const combineNote = axes
+    ? "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 및 eleven_axes 두 소스를 결합해서 comparison_table의 6개 aspect를 채우고, A/B가 실제로 다른 band/축일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요."
+    : "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.";
+
   return `## ${params.nickname} — saju_master_v2 엑기스 Digest
 - 생년월일시: ${params.birthDate} ${params.birthTime} | 출생지: ${params.birthPlace}
 - 원국: ${pillars}
@@ -75,8 +105,8 @@ export function buildRomanticPersonSignalsDigest(params: {
 - 조후: ${m.johu_climate.temperature_band} (열${m.johu_climate.heat_score}/습${m.johu_climate.moisture_score}) | 오행 목${ec.wood} 화${ec.fire} 토${ec.earth} 금${ec.metal} 수${ec.water}
 - 원국 역학(상위): ${relations || "없음"}
 - 신살 보유: ${possessed.join(", ") || "없음"}
-${romanticSignalsBlock}${uncertain}
-⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`.trim();
+${romanticSignalsBlock}${elevenAxesBlock}${uncertain}
+${combineNote}`.trim();
 }
 
 function crossHitsDigest(

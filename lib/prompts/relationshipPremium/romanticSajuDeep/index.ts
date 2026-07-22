@@ -163,6 +163,7 @@ export function prepareRomanticSajuDeepRun(
           birthPlace: params.birthA.place,
           master: params.sajuMasterA,
           uncertainItems: uncertainA,
+          profile: params.surveyProfileA,
         })
       : `## ${params.nicknameA}\n(PersonCore master 없음 — 규칙 엔진만 사용)`,
     params.sajuMasterB != null
@@ -173,6 +174,7 @@ export function prepareRomanticSajuDeepRun(
           birthPlace: params.birthB.place,
           master: params.sajuMasterB,
           uncertainItems: uncertainB,
+          profile: params.surveyProfileB,
         })
       : `## ${params.nicknameB}\n(PersonCore master 없음 — 규칙 엔진만 사용)`,
   ];
