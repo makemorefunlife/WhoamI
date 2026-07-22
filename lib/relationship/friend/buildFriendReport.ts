@@ -26,6 +26,8 @@ import {
   resolveTravelStyleSplit,
   resolveCounselingStyleForPerson,
   resolveTreasurerConfirmNote,
+  resolveJealousyGuardNote,
+  resolveReconciliationScript,
 } from "./friendPsychFit";
 
 export type FriendReportBody = {
@@ -119,6 +121,26 @@ export function buildFriendReport(params: {
     locale,
   );
 
+  // Part4① 질투 방지 — 완전 신규. Part5① 화해 스위치 — 기존 카드에 11축 스크립트만 추가.
+  const jealousyGuardA = resolveJealousyGuardNote(
+    ctx.tenGodsA,
+    params.psychMasterA,
+    params.nicknameA,
+    locale,
+  );
+  const jealousyGuardB = resolveJealousyGuardNote(
+    ctx.tenGodsB,
+    params.psychMasterB,
+    params.nicknameB,
+    locale,
+  );
+  const deEscUpsetIsA = friendBase.section_de_escalation.upset_nickname === params.nicknameA;
+  const reconciliationScript = resolveReconciliationScript(
+    deEscUpsetIsA ? params.psychMasterA : params.psychMasterB,
+    deEscUpsetIsA ? params.nicknameA : params.nicknameB,
+    locale,
+  );
+
   const snapshot_panel = buildFriendSnapshotPanel(
     ctx,
     {
@@ -161,6 +183,15 @@ export function buildFriendReport(params: {
       travel_style: travelStyle,
       counseling_style_a: counselingA,
       counseling_style_b: counselingB,
+    },
+    section_breakup_guide: {
+      ...friendBase.section_breakup_guide,
+      jealousy_guard_a: jealousyGuardA,
+      jealousy_guard_b: jealousyGuardB,
+    },
+    section_de_escalation: {
+      ...friendBase.section_de_escalation,
+      reconciliation_script: reconciliationScript,
     },
     section_compare_table: buildFriendSajuCompareTable({
       nicknameA: params.nicknameA,

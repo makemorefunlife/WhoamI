@@ -299,3 +299,47 @@ export function resolveTreasurerConfirmNote(
   }
   return null;
 }
+
+/** Part4① 제3자(연애·다른 친구) 질투 방지 — 겁재(비겁) + 11축(인정욕구/현실실리) */
+export function resolveJealousyGuardNote(
+  counts: TenGodCounts,
+  psych: PsychMasterJson | null | undefined,
+  nickname: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  if (!psych) return null;
+  const gyeopjaeCount = counts["겁재"] ?? 0;
+  if (gyeopjaeCount < 2) return null;
+  const avg = axisAvg(psych, "recognition", "practicality");
+  if (avg < 55) return null;
+
+  return pick(
+    locale,
+    `${nickname} may quietly feel left out when you're dating someone new or hanging out with other friends — giving each other room to have an independent life is what keeps this friendship going long-term.`,
+    `${nickname}은(는) 상대에게 애인이 생기거나 다른 친구와 놀 때 미묘한 서운함을 느낄 수 있어요 — 서로의 독립적 삶을 응원해 주는 유연한 거리가 이 우정을 오래 지켜줘요.`,
+  );
+}
+
+/** Part5① 관계 회복 스위치(화해 트리거) — 11축(관계공감/인정욕구 vs 현실실리) */
+export function resolveReconciliationScript(
+  psych: PsychMasterJson | null | undefined,
+  nickname: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string | null {
+  if (!psych) return null;
+  const { practicality } = psych.secondary_axes;
+  const recognitionAvg = axisAvg(psych, "empathy", "recognition");
+
+  if (recognitionAvg > practicality) {
+    return pick(
+      locale,
+      `Recognize ${nickname}'s worth and pride first — a line like "honestly, you're the best friend I've got" is what opens the door.`,
+      `${nickname}의 존재 가치와 자존심부터 인정해 주세요 — "역시 내 친구 중엔 네가 최고야" 같은 한마디가 문을 엽니다.`,
+    );
+  }
+  return pick(
+    locale,
+    `A hundred words won't do it for ${nickname} — a reservation link to their favorite restaurant, a gift card, or a late-night snack unlocks it fast, no big speech needed.`,
+    `${nickname}에게는 백 마디 말보다 좋아하는 맛집 예약 링크, 기프티콘, 야식 선물이 훨씬 빨리 통해요 — 거창한 사과 없이 쿨하게 푸는 타입.`,
+  );
+}

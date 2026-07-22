@@ -268,6 +268,54 @@ function buildFriendshipBaseline(
   };
 }
 
+/** Part5② 절친 싸움 해독제 & 우정 유지 체크리스트 — 신호 게이팅 없는 범용 안내(스펙 원문에 SSOT 소스 없음) */
+function buildConflictTimeoutPrescription(
+  nicknameA: string,
+  nicknameB: string,
+  locale: Locale,
+): FriendPrescriptionItem {
+  return {
+    topic: "conflict_timeout_protocol",
+    headline: pick(locale, "Fight antidote & friendship-maintenance checklist", "절친 싸움 해독제 & 우정 유지 체크리스트"),
+    evidence: {
+      source: "pair_friendship_signals",
+      signal_paths: ["friend_prescription.conflict_timeout"],
+      summary: pick(
+        locale,
+        "Right after a conflict is the worst time to hash it out — a short cooldown and a recurring check-in do more for the friendship long-term.",
+        "갈등 직후는 감정을 다 쏟아내기 가장 나쁜 타이밍입니다 — 짧은 냉각기와 정기적인 체크인이 우정을 훨씬 오래 지켜줍니다.",
+      ),
+      snapshot: {},
+    },
+    do_list: pick(
+      locale,
+      [
+        "Stop the argument the same day it happens and take a 24-hour timeout before revisiting it.",
+        "After the timeout, each of you states your side in one sentence, then talk it through calmly.",
+        `Lock in one recurring hangout per quarter for ${nicknameA} and ${nicknameB} — it resets the friendship before small frictions pile up.`,
+      ],
+      [
+        "갈등이 생긴 당일엔 감정 싸움을 멈추고 24시간 타임아웃을 갖기.",
+        "타임아웃 후 각자 입장을 한 문장으로 정리해서 차분하게 재대화하기.",
+        `분기 1회 ${nicknameA}·${nicknameB}만의 고정 약속을 잡아 — 작은 마찰이 쌓이기 전에 관계를 리셋하기.`,
+      ],
+    ),
+    dont_list: pick(
+      locale,
+      [
+        "Don't try to reach a conclusion while emotions are still running hot.",
+        "Don't vent about the fight to a group chat or mutual friends during the timeout.",
+        "Don't bring the same fight back up again once you've already made up.",
+      ],
+      [
+        "감정이 격해진 상태에서 바로 결론 내리려 하지 않기.",
+        "타임아웃 중에 단톡방이나 공통 지인에게 상황을 흘리지 않기.",
+        "이미 화해한 싸움을 나중에 다시 소환해서 재점화하지 않기.",
+      ],
+    ),
+  };
+}
+
 function resolveIntroLine(items: FriendPrescriptionItem[], locale: Locale): string {
   const topics = new Set(items.map((i) => i.topic));
   if (topics.has("energy_drain_prevention") && topics.has("communication_climate")) {
@@ -329,9 +377,13 @@ export function buildFriendPrescriptions(params: {
     items.push(buildFriendshipBaseline(params.nicknameA, params.nicknameB, locale));
   }
 
+  // Part5② 싸움 해독제 체크리스트 — 스펙 원문에 SSOT 소스가 없는 유일한 항목이라 항상 포함.
+  items.push(buildConflictTimeoutPrescription(params.nicknameA, params.nicknameB, locale));
+
   const priority: Record<FriendPrescriptionItem["topic"], number> = {
     energy_drain_prevention: 100,
     communication_climate: 85,
+    conflict_timeout_protocol: 60,
     friendship_baseline: 10,
   };
   items.sort((a, b) => priority[b.topic] - priority[a.topic]);

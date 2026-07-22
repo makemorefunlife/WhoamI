@@ -69,6 +69,9 @@ export type PlayMoneySection = {
 export type BreakupGuideSection = {
   trigger_warning_a: string;
   trigger_warning_b: string;
+  /** Part4① 제3자 질투 방지 — 겁재+11축(인정욕구/현실실리) 확인 문구. psychMaster 없으면 null */
+  jealousy_guard_a?: string | null;
+  jealousy_guard_b?: string | null;
 };
 
 export type TravelStyleSplit = import("./friendPsychFit").FriendTravelStyleSplit;

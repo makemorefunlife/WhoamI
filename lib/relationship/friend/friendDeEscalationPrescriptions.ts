@@ -8,6 +8,10 @@ export type FriendDeEscalationCard = {
   color: "red" | "yellow" | "orange" | "blue" | "green";
   archetype_label: string;
   cheat_script: string;
+  /** 화가 난 쪽 닉네임 — buildFriendReport.ts가 어느 사람의 psychMaster로 화해 스크립트를 낼지 판단할 때 씀 */
+  upset_nickname: string;
+  /** Part5① 화해 스위치 11축(관계공감/인정욕구 vs 현실실리) 확인 문구. psychMaster 없으면 null */
+  reconciliation_script?: string | null;
 };
 
 type PrescriptionDef = {
@@ -125,6 +129,7 @@ export function buildFriendDeEscalationCard(params: {
     color: def.color,
     archetype_label: def.archetype_label(locale),
     cheat_script: def.cheat_script(params.upsetNickname, locale),
+    upset_nickname: params.upsetNickname,
   };
 }
 

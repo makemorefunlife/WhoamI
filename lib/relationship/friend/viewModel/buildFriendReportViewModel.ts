@@ -199,12 +199,18 @@ function buildBreakupGuideSection(
     bg.trigger_warning_b,
     viewerIsReportA,
   );
+  const jealousyGuard = pickViewerFirstPair(
+    bg.jealousy_guard_a ?? null,
+    bg.jealousy_guard_b ?? null,
+    viewerIsReportA,
+  );
   return {
     id: "breakup_guide",
     type: "breakup_guide",
     partNumber: 4,
     title: t.breakupGuideCardTitle,
     warnings: { me, partner },
+    jealousyGuard,
   };
 }
 
@@ -223,6 +229,7 @@ function buildDeEscalationSection(
     color: de.color,
     archetypeLabel: de.archetype_label,
     cheatScript: de.cheat_script,
+    reconciliationScript: de.reconciliation_script,
   };
 }
 

@@ -3,6 +3,7 @@ import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTyp
 export type FriendPrescriptionTopic =
   | "energy_drain_prevention"
   | "communication_climate"
+  | "conflict_timeout_protocol"
   | "friendship_baseline";
 
 export type FriendPrescriptionEvidence = {

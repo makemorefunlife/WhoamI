@@ -85,6 +85,7 @@ export type HiddenFlowSection = BaseSection & {
 export type BreakupGuideSection = BaseSection & {
   type: "breakup_guide";
   warnings: PersonSlot<string>;
+  jealousyGuard: PersonSlot<string | null>;
 };
 
 export type DeEscalationSection = BaseSection & {
@@ -93,6 +94,7 @@ export type DeEscalationSection = BaseSection & {
   color: "red" | "yellow" | "orange" | "blue" | "green";
   archetypeLabel: string;
   cheatScript: string;
+  reconciliationScript?: string | null;
 };
 
 export type PrescriptionSection = BaseSection & {

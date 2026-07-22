@@ -285,8 +285,18 @@ function BreakupGuideCard({ section }: { section: BreakupGuideSection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
       <RelationshipReportBody>
-        <RelationshipReportParagraph>{section.warnings.me}</RelationshipReportParagraph>
-        <RelationshipReportParagraph>{section.warnings.partner}</RelationshipReportParagraph>
+        <div>
+          <RelationshipReportParagraph>{section.warnings.me}</RelationshipReportParagraph>
+          {section.jealousyGuard.me ? (
+            <p className="mt-1.5 text-xs text-white/50">{section.jealousyGuard.me}</p>
+          ) : null}
+        </div>
+        <div>
+          <RelationshipReportParagraph>{section.warnings.partner}</RelationshipReportParagraph>
+          {section.jealousyGuard.partner ? (
+            <p className="mt-1.5 text-xs text-white/50">{section.jealousyGuard.partner}</p>
+          ) : null}
+        </div>
       </RelationshipReportBody>
     </RelationshipReportCard>
   );
@@ -309,6 +319,9 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
             💬 {section.cheatScript}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
+        {section.reconciliationScript ? (
+          <p className="text-xs text-white/50">{section.reconciliationScript}</p>
+        ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );
