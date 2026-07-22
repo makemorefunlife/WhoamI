@@ -51,6 +51,23 @@ function buildOpening(
   };
 }
 
+function buildOriginStorySection(
+  report: MarriageReportBody,
+  t: ReturnType<typeof catalog>,
+): MarriageReportSection | null {
+  const s = report.household?.section_origin_story;
+  if (!s) return null;
+  return {
+    id: "origin_story",
+    type: "origin_story",
+    partNumber: 1,
+    title: t.originStoryCardTitle,
+    whyUs: s.why_us,
+    positiveChangeA: s.positive_change_a,
+    positiveChangeB: s.positive_change_b,
+  };
+}
+
 function buildHouseholdSnapshotSection(
   report: MarriageReportBody,
   t: ReturnType<typeof catalog>,
@@ -280,6 +297,7 @@ export function buildMarriageReportViewModel(
   const t = catalog(locale ?? "ko-KR");
 
   const builders: Array<() => MarriageReportSection | null> = [
+    () => buildOriginStorySection(report, t),
     () => buildHouseholdSnapshotSection(report, t),
     () => buildCompareTableSection(report, t),
     () => buildPsychRadarSection(report, viewerIsReportA, t),

@@ -6,9 +6,8 @@
  * 유일한 저장 SSOT이고, 여기 정의된 shape는 buildMarriageReportViewModel()이
  * 렌더링 직전에 파생시키는 비영속(non-persisted) 값이다.
  *
- * Part1(낭만/운명 서사)은 아직 신규 콘텐츠가 없어 이번 단계에서는 섹션
- * 타입을 만들지 않는다 — 콘텐츠가 생기면 partNumber:1인 섹션을 추가할
- * 예정(단계적 작업, 사용자 승인됨).
+ * Part1(낭만/운명 서사) — `OriginStorySection`(partNumber:1)으로 예고된
+ * 단계적 작업이 반영됨(마스터 사양서 Batch 1).
  */
 import type { TriScoreSnapshotPanel as TriScoreSnapshotPanelData } from "@/lib/relationship/triScoreSnapshot/types";
 import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
@@ -35,8 +34,17 @@ export type OpeningBlock = {
 
 type BaseSection = {
   id: string;
-  partNumber: 2 | 3 | 4 | 5;
+  partNumber: 1 | 2 | 3 | 4 | 5;
   title: string;
+};
+
+// ---- Part 1: 우리가 부부가 된 이유 (낭만/운명 서사) --------------------------
+
+export type OriginStorySection = BaseSection & {
+  type: "origin_story";
+  whyUs: string;
+  positiveChangeA: string;
+  positiveChangeB: string;
 };
 
 // ---- Part 2: 스코어링 + 11축 매칭 + 비교표 + 자산관리 ------------------------
@@ -129,6 +137,7 @@ export type PrescriptionSection = BaseSection & {
 };
 
 export type MarriageReportSection =
+  | OriginStorySection
   | HouseholdSnapshotSection
   | CompareTableSection
   | PsychRadarSection

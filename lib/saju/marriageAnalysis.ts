@@ -19,6 +19,7 @@ import {
   detectGongmangCrossHit,
   detectMarriageWonjinGuimun,
 } from "@/lib/saju/workPairRiskSignals";
+import { ELEMENT_GENERATES } from "@/lib/saju/elements";
 
 const stemElement = new Map<string, string>(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
@@ -74,6 +75,7 @@ export type MarriageScoringSignals = {
   hasDayBranchCombine: boolean;
   hasDayBranchJohuComplement: boolean;
   hasDayStemMutualSupport: boolean;
+  hasHeavenlyStemCombine: boolean;
   hasDayBranchChungHyung: boolean;
   hasWealthOfficerComplement: boolean;
   hasFoodSealHarmony: boolean;
@@ -124,6 +126,48 @@ function dayBranchJohuComplement(
     (tempA === "cold" && tempB === "hot") ||
     (tempA === "hot" && tempB === "cold");
   return interaction.includes("상생") && tempContrast;
+}
+
+/**
+ * 갑기/을경/병신/정임/무계 — 일간 천간합 5쌍. 로맨틱 도메인의
+ * `hasHeavenlyStemCombine`(lib/relationship/romanticRules/types.ts)와 같은
+ * 판정이지만, 도메인 간 교차 임포트 없이 각자 소유하는 기존 컨벤션(조후/오행
+ * 맵도 도메인마다 로컬)을 따라 여기 별도로 둔다.
+ */
+const HEAVENLY_STEM_COMBINE_PAIRS = new Set(
+  [
+    ["gap", "gi"],
+    ["eul", "gyeong"],
+    ["byeong", "sin"],
+    ["jeong", "im"],
+    ["mu", "gye"],
+  ].map(([a, b]) => [a, b].sort().join("-")),
+);
+
+function hasHeavenlyStemCombine(
+  chartA: ChartContext,
+  chartB: ChartContext,
+): boolean {
+  const key = [chartA.dayStemCode, chartB.dayStemCode].sort().join("-");
+  return HEAVENLY_STEM_COMBINE_PAIRS.has(key);
+}
+
+/**
+ * "상대 원국이 내 식상/인성을 생해주는 구조"(사양서 Part1②)의 간이 근사 —
+ * 정확한 십성(식상/인성) 비교 대신, 두 일간 오행 중 어느 쪽이 어느 쪽을
+ * 생하는지(상생 방향)만으로 "누가 상대에게서 치유·안정을 받는가"를 판정한다
+ * (오행 상생은 5각 순환이라 둘이 다르면 방향은 항상 한쪽으로만 정해짐).
+ */
+export function resolveHealingDirection(
+  chartA: ChartContext,
+  chartB: ChartContext,
+): "a_healed_by_b" | "b_healed_by_a" | "none" {
+  const elA = stemElement.get(chartA.dayStemCode) ?? "";
+  const elB = stemElement.get(chartB.dayStemCode) ?? "";
+  if (!elA || !elB || elA === elB) return "none";
+  if (ELEMENT_GENERATES[elB] === elA) return "a_healed_by_b";
+  if (ELEMENT_GENERATES[elA] === elB) return "b_healed_by_a";
+  return "none";
 }
 
 function findDirectDayDayHit(
@@ -361,6 +405,7 @@ export function analyzeMarriagePairSaju(
     hasDayBranchCombine: dayBranch.hasDayBranchCombine,
     hasDayBranchJohuComplement: dayBranch.hasJohuComplement,
     hasDayStemMutualSupport: dayStemSupport,
+    hasHeavenlyStemCombine: hasHeavenlyStemCombine(chartA, chartB),
     hasDayBranchChungHyung: dayBranch.hasDayBranchChungHyung,
     hasWealthOfficerComplement:
       tenGodSignals?.hasWealthOfficerComplement ?? false,

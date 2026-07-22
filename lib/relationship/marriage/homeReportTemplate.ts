@@ -10,6 +10,11 @@ import {
   type BedroomMatrixSection,
 } from "./bedroomProfile";
 import type { ParentingStyle } from "./marriageTenGodAnalysis";
+import { profileTenGods } from "./marriageTenGodAnalysis";
+import {
+  buildOriginStorySection,
+  type OriginStorySection,
+} from "./marriageOriginStory";
 import {
   buildPrivateBoundary,
   buildPersonFamilyBoundaryNote,
@@ -79,6 +84,7 @@ export type HomeWarningSection = {
 export type HouseholdPartnershipReport = {
   section_dna: HomeDnaSection;
   section_snapshot: HouseholdSnapshotSection;
+  section_origin_story: OriginStorySection;
   section_weather_forecast: HomeWeatherForecastSection;
   section_bedroom: BedroomSection;
   section_money_chores: MoneyChoresSection;
@@ -95,7 +101,44 @@ export type HouseholdPartnershipReport = {
   section_compare_table?: import("./marriageSajuCompareTable").MarriageCompareRow[];
 };
 
+/**
+ * 사양서 시그니처 규칙: 천간합/일지합 존재 ➔ "운명적 정서 끌림형 패밀리",
+ * 관성/재성 중심 ➔ "체계적 패밀리 경영형". 기존 점수 기반 5개 케이스보다
+ * 먼저 확인하되, 어느 쪽도 안 걸리면 null을 반환해 기존 로직으로 그대로
+ * 폴백한다(레거시 세이프티 — 새 분기 미스매치 시 byte-identical 유지).
+ */
+export function resolveHouseholdArchetype(ctx: MarriageRuleContext): string | null {
+  const { hasHeavenlyStemCombine, hasDayBranchCombine } =
+    ctx.marriagePairAnalysis.scoringSignals;
+  const locale = ctx.locale;
+  const titleA = ctx.householdDnaA.lifestyle_title.split(" ")[0] ?? "Warm";
+  const titleB = ctx.householdDnaB.lifestyle_title.split(" ")[0] ?? "Steady";
+
+  if (hasHeavenlyStemCombine || hasDayBranchCombine) {
+    return pick(
+      locale,
+      `${titleA} & ${titleB} — a fated-pull family, drawn together by a chemistry neither of you can quite explain`,
+      `${titleA} & ${titleB} — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스`,
+    );
+  }
+
+  const wealthOfficerA = profileTenGods(ctx.tenGod.countsA).wealthOfficer;
+  const wealthOfficerB = profileTenGods(ctx.tenGod.countsB).wealthOfficer;
+  if (wealthOfficerA + wealthOfficerB >= 4) {
+    return pick(
+      locale,
+      `${titleA} & ${titleB} — a systematic-management family, running the household on clear roles and responsibility`,
+      `${titleA} & ${titleB} — 체계적 패밀리 경영형, 뚜렷한 역할과 책임감으로 살림을 꾸려가는 하우스`,
+    );
+  }
+
+  return null;
+}
+
 function resolveHouseholdOneLiner(ctx: MarriageRuleContext): string {
+  const archetype = resolveHouseholdArchetype(ctx);
+  if (archetype) return archetype;
+
   const { activation, benefit, risk } = ctx.masterScores;
   const titleA = ctx.householdDnaA.lifestyle_title.split(" ")[0] ?? "Warm";
   const titleB = ctx.householdDnaB.lifestyle_title.split(" ")[0] ?? "Steady";
@@ -381,6 +424,7 @@ export function buildHouseholdPartnershipReport(
       person_a: ctx.householdDnaA,
       person_b: ctx.householdDnaB,
     },
+    section_origin_story: buildOriginStorySection(ctx),
     section_snapshot: {
       romantic_fit_pct: ctx.masterScores.activation,
       life_synergy_pct: ctx.masterScores.benefit,

@@ -27,6 +27,7 @@ import type {
   MarriageReportSection,
   MarriageReportViewModel,
   MoneyChoresSection,
+  OriginStorySection,
   ParentingSection,
   PrescriptionSection,
   PrivacySection,
@@ -47,6 +48,40 @@ function PartHeading({ title }: { title: string }) {
       <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">{title}</h2>
       <div className="h-px flex-1" style={{ backgroundColor: `${ACCENT}33` }} />
     </div>
+  );
+}
+
+// ---- Part 1: 우리가 부부가 된 이유 (낭만/운명 서사) --------------------------
+
+function OriginStoryCard({
+  section,
+  names,
+}: {
+  section: OriginStorySection;
+  names: [string, string];
+}) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <div>
+          <RelationshipReportLabel>{t.originStoryWhyUsLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">{section.whyUs}</RelationshipReportParagraph>
+        </div>
+        <div>
+          <RelationshipReportLabel>{t.originStoryPositiveChangeLabel(names[0])}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.positiveChangeA}
+          </RelationshipReportParagraph>
+        </div>
+        <div>
+          <RelationshipReportLabel>{t.originStoryPositiveChangeLabel(names[1])}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.positiveChangeB}
+          </RelationshipReportParagraph>
+        </div>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
   );
 }
 
@@ -397,6 +432,8 @@ export function MarriageReportSectionCard({
   viewerIsReportA: boolean;
 }): ReactNode {
   switch (section.type) {
+    case "origin_story":
+      return <OriginStoryCard section={section} names={names} />;
     case "compare_table":
       return <CompareTableCard section={section} viewerIsReportA={viewerIsReportA} names={names} />;
     case "psych_radar":
@@ -439,7 +476,8 @@ export function MarriageReportViewModelView({
   viewerIsReportA: boolean;
 }) {
   const t = useMessages().relationshipDrilldown.cohabitation;
-  const partTitles: Record<2 | 3 | 4 | 5, string> = {
+  const partTitles: Record<1 | 2 | 3 | 4 | 5, string> = {
+    1: t.part1Title,
     2: t.part2Title,
     3: t.part3Title,
     4: t.part4Title,

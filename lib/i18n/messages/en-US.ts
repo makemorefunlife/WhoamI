@@ -1093,6 +1093,9 @@ export const messagesEnUS = {
       psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
       prescriptionCardTitle: "💊 Your Household Playbook",
       upsetSectionCardTitle: "😤 How You Each Respond When Upset",
+      originStoryCardTitle: "💕 Why You Two, of All People",
+      originStoryWhyUsLabel: "✨ Why you were drawn together",
+      originStoryPositiveChangeLabel: (nickname: string) => `🌱 What ${nickname} gains from this`,
       part1Title: "💕 Part 1. Why You Became a Household",
       part2Title: "📊 Part 2. Your Household, Fully Scored",
       part3Title: "🔞 Part 3. Bedroom Chemistry & Attachment",
@@ -2139,6 +2142,9 @@ export type MessageCatalog = {
       psychRadarCardTitle: string;
       prescriptionCardTitle: string;
       upsetSectionCardTitle: string;
+      originStoryCardTitle: string;
+      originStoryWhyUsLabel: string;
+      originStoryPositiveChangeLabel: (nickname: string) => string;
       part1Title: string;
       part2Title: string;
       part3Title: string;
