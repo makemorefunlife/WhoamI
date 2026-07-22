@@ -6,6 +6,7 @@ import {
   buildRomanticPairSignalsDigest,
   buildRomanticPersonSignalsDigest,
   buildRomanticDynamicsDigest,
+  buildRomanticSewoonTimelineDigest,
 } from "@/lib/relationship/romanticSajuPromptDigest";
 import {
   hasDayStemRootInDayBranch,
@@ -75,6 +76,7 @@ type RomanticPreparedContext = {
   ctx: ReturnType<typeof buildRomanticRulesBundle>["ctx"];
   screenPlan: RomanticScreenSlot[];
   snapshotPanel: unknown;
+  fortuneFlow: ReturnType<typeof buildRomanticFortuneFlow>;
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
@@ -102,20 +104,6 @@ function buildPsychMatchParallel(
   return buildPsychMatchResult({
     profileA: params.surveyProfileA,
     profileB: params.surveyProfileB,
-  });
-}
-
-function buildFortuneFlowParallel(params: RomanticSajuDeepRunParams) {
-  return buildRomanticFortuneFlow({
-    birthDateA: params.birthA.date,
-    birthDateB: params.birthB.date,
-    sajuA: sajuJsonToPillars(
-      params.sajuJsonA.saju as Required<NonNullable<typeof params.sajuJsonA.saju>>,
-    ),
-    sajuB: sajuJsonToPillars(
-      params.sajuJsonB.saju as Required<NonNullable<typeof params.sajuJsonB.saju>>,
-    ),
-    currentYear: new Date().getFullYear(),
   });
 }
 
@@ -244,6 +232,21 @@ export function prepareRomanticSajuDeepRun(
         })
       : "## dynamics_digest\n(구버전 사주 스냅샷이라 romantic_signals 없음 — 관계 역학 4종은 이번 리포트에서 생략)";
 
+  // Part5② 신뢰 타임라인 — LLM에 세운(연간 운) 데이터를 실제로 전달하려면
+  // userPrompt 조립 이전(LLM 호출과 병렬이 아니라)에 동기 계산해야 한다.
+  const fortuneFlow = buildRomanticFortuneFlow({
+    birthDateA: params.birthA.date,
+    birthDateB: params.birthB.date,
+    sajuA: sajuJsonToPillars(
+      params.sajuJsonA.saju as Required<NonNullable<typeof params.sajuJsonA.saju>>,
+    ),
+    sajuB: sajuJsonToPillars(
+      params.sajuJsonB.saju as Required<NonNullable<typeof params.sajuJsonB.saju>>,
+    ),
+    currentYear: new Date().getFullYear(),
+  });
+  const timelineBlock = buildRomanticSewoonTimelineDigest(fortuneFlow?.sewoon ?? null);
+
   const userPrompt = buildRomanticSajuDeepUserPrompt({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -253,6 +256,7 @@ export function prepareRomanticSajuDeepRun(
     personBlockB,
     pairBlock,
     dynamicsBlock,
+    timelineBlock,
     locale,
     anchorIsA,
     expressionSpeedDirection,
@@ -268,6 +272,7 @@ export function prepareRomanticSajuDeepRun(
     ctx,
     screenPlan,
     snapshotPanel: snapshotPanel ?? null,
+    fortuneFlow,
   };
 }
 
@@ -277,10 +282,9 @@ function finalizeRomanticSajuDeepReport(
   params: RomanticSajuDeepRunParams,
   extras: {
     psychMatch: ReturnType<typeof buildPsychMatchResult> | null;
-    fortuneFlow: ReturnType<typeof buildRomanticFortuneFlow>;
   },
 ): RomanticSajuDeepPayload["report"] {
-  const { opening, ctx, screenPlan, ruleScreenPlan, snapshotPanel, locale } =
+  const { opening, ctx, screenPlan, ruleScreenPlan, snapshotPanel, locale, fortuneFlow } =
     prepared;
   const generatedAt = new Date().toISOString();
 
@@ -310,7 +314,7 @@ function finalizeRomanticSajuDeepReport(
       },
       uncertain_items: ctx.uncertainItems,
       event_scores: opening.event_scores ?? ctx.eventScores,
-      romantic_fortune_flow: extras.fortuneFlow,
+      romantic_fortune_flow: fortuneFlow,
       psych_match: extras.psychMatch,
       chemistry_approx: extras.psychMatch?.axis_results?.length
         ? buildChemistryApproxScores(extras.psychMatch.axis_results)
@@ -384,7 +388,7 @@ export async function runRomanticSajuDeepAnalysis(
   const prepared = prepareRomanticSajuDeepRun(params);
   const abortSignal = options?.abortSignal;
 
-  const [parsed, psychMatch, fortuneFlow] = await Promise.all([
+  const [parsed, psychMatch] = await Promise.all([
     callLlmJsonAndParse<RomanticSajuDeepReport>(
       openai,
       prepared.systemPrompt,
@@ -393,7 +397,6 @@ export async function runRomanticSajuDeepAnalysis(
       abortSignal,
     ),
     Promise.resolve().then(() => buildPsychMatchParallel(params)),
-    Promise.resolve().then(() => buildFortuneFlowParallel(params)),
   ]);
 
   if (!isRomanticSajuDeepReport(parsed)) {
@@ -402,7 +405,6 @@ export async function runRomanticSajuDeepAnalysis(
 
   const report = finalizeRomanticSajuDeepReport(parsed, prepared, params, {
     psychMatch,
-    fortuneFlow,
   });
 
   return {

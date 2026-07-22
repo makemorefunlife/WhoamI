@@ -2,6 +2,7 @@ import type { SajuMasterJson, YongsinEstimateSnapshot } from "@/lib/personCore/t
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
+import type { SewoonResult } from "@/lib/relationship/romanticRules/fortuneFlow";
 import { isPrimaryPalaceCross } from "@/lib/saju/palaceWeight";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import {
@@ -200,6 +201,42 @@ export function buildRomanticDynamicsDigest(params: {
 - reassurance: ${nicknameA} need=${needA} vs ${nicknameB} give=${giveBText} → 일치:${matchBGivesA} | ${nicknameB} need=${needB} vs ${nicknameA} give=${giveAText} → 일치:${matchAGivesB}
 - role_play: 심리축 판정=${rolePlay.primaryFrame} / 사주 판정=${rolePlay.sajuFrame} (일치:${rolePlay.agrees})
 ⚠️ 위 밴드·판정 이름 자체는 출력하지 말고, 이미 정해진 방향으로만 자연스러운 문장을 쓰세요.`.trim();
+}
+
+const TIMELINE_HORIZON_KEYS: Record<number, string> = {
+  0: "current",
+  1: "in_1_year",
+  3: "in_3_years",
+  5: "in_5_years",
+  10: "in_10_years",
+};
+
+const BRANCH_RELATION_HINT: Record<SewoonResult["years"][number]["branch_relation"], string> = {
+  combine: "협력·이해가 깊어지기 좋은 해",
+  clash: "자극과 변화가 큰 해, 마찰 가능성 언급",
+  neutral: "무난한 흐름",
+};
+
+/**
+ * Part5② 신뢰 타임라인(section_6_timeline) 근거 — 이미 계산된
+ * sewoon.years[].branch_relation을 LLM이 참고할 텍스트로 옮기기만 한다.
+ * 판정 로직 신규 없음(간이 근사 그대로 재사용).
+ */
+export function buildRomanticSewoonTimelineDigest(sewoon: SewoonResult | null): string {
+  if (!sewoon) {
+    return "## timeline_digest\n(출생연도 파싱 실패로 세운 계산 불가 — section_6_timeline은 일반적인 관계 성장 서술로만 작성)";
+  }
+
+  const lines = sewoon.years.map((row) => {
+    const horizonOffset = row.year - sewoon.current_year;
+    const key = TIMELINE_HORIZON_KEYS[horizonOffset] ?? `in_${horizonOffset}_years`;
+    const hint = BRANCH_RELATION_HINT[row.branch_relation];
+    return `- ${key}(${row.year}년) 세운 ${row.sewoon_pillar} — 지지관계: ${row.branch_relation}(${hint})`;
+  });
+
+  return `## timeline_digest — 세운(연간 운) 흐름, section_6_timeline 각 구간의 근거로 참고할 것
+${lines.join("\n")}
+⚠️ 위 흐름은 서버가 계산한 근사치입니다. section_6_timeline 서술 시 참고만 하고, "세운"/"지지"/간지 이름(예: 갑진) 같은 명리 용어는 절대 출력하지 말고 일상어로 흐름만 반영하세요.`.trim();
 }
 
 /** pairAnalysis + eventScores 압축 — formatPairSajuBlock 대체 */

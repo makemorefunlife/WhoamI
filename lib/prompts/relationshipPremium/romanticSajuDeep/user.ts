@@ -140,6 +140,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
   personBlockB: string;
   pairBlock: string;
   dynamicsBlock?: string;
+  timelineBlock?: string;
   userCustomMyName?: string;
   userCustomTargetName?: string;
   locale?: RomanticSajuDeepLocale;
@@ -153,6 +154,7 @@ export function buildRomanticSajuDeepUserPrompt(params: {
     personBlockB,
     pairBlock,
     dynamicsBlock = "",
+    timelineBlock = "",
     userCustomMyName,
     userCustomTargetName,
     locale: _locale = "ko",
@@ -249,6 +251,10 @@ ${pairBlock}
 ---
 
 ${dynamicsBlock}
+
+---
+
+${timelineBlock}
 
 ---
 

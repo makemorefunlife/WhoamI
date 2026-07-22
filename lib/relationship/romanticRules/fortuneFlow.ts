@@ -172,7 +172,7 @@ function buildSewoon(params: {
   const chartA = buildChartContext(params.sajuA);
   const chartB = buildChartContext(params.sajuB);
 
-  const years = [params.currentYear, params.currentYear + 1, params.currentYear + 2].map(
+  const years = [0, 1, 3, 5, 10].map((horizonOffset) => params.currentYear + horizonOffset).map(
     (year) => {
       const offset = ((year - 1984) % 60 + 60) % 60;
       const stem = STEM_ORDER[offset % STEM_ORDER.length]!;
