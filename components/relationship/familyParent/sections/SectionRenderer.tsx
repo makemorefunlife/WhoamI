@@ -35,6 +35,7 @@ import type {
   HouseholdRolesSection,
   PrescriptionSection,
   PsychRadarSection,
+  RelationshipIndexSection,
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
@@ -60,6 +61,30 @@ function PartHeading({ title }: { title: string }) {
 }
 
 // ---- Part 2: 스코어링 + 비교표 + 11축 매칭 -----------------------------------
+
+function RelationshipIndexCard({ section }: { section: RelationshipIndexSection }) {
+  const t = useMessages().relationshipDrilldown.family;
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <p className="text-lg font-semibold text-white/92">{section.frictionIndex}%</p>
+        <div>
+          <RelationshipReportLabel>{t.relationshipIndexSafeDistanceLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.safeDistanceNote}
+          </RelationshipReportParagraph>
+        </div>
+        {section.decisionAxisNote ? (
+          <RelationshipReportInset>
+            <RelationshipReportParagraph className="text-white/78">
+              {section.decisionAxisNote}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        ) : null}
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
 
 function CompareTableCard({
   section,
@@ -372,6 +397,8 @@ export function FamilyReportSectionCard({
   names: [string, string];
 }): ReactNode {
   switch (section.type) {
+    case "relationship_index":
+      return <RelationshipIndexCard section={section} />;
     case "compare_table":
       return <CompareTableCard section={section} names={names} />;
     case "household_roles":

@@ -950,6 +950,8 @@ export const messagesEnUS = {
       scoreLabelBond: "Emotional bond",
       scoreLabelSynergy: "Growth synergy",
       scoreLabelFriction: "Discipline friction",
+      relationshipIndexCardTitle: "🧭 Discipline Friction Index",
+      relationshipIndexSafeDistanceLabel: "Safe distance",
       dnaCardTitle: "🧬 Child DNA profile",
       dnaLayerLabel: "Innate pattern",
       dnaLayerHint: "How this child naturally learns, relates, and focuses",
@@ -2016,6 +2018,8 @@ export type MessageCatalog = {
       scoreLabelBond: string;
       scoreLabelSynergy: string;
       scoreLabelFriction: string;
+      relationshipIndexCardTitle: string;
+      relationshipIndexSafeDistanceLabel: string;
       dnaCardTitle: string;
       dnaLayerLabel: string;
       dnaLayerHint: string;

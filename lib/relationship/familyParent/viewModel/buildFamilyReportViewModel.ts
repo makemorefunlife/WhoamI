@@ -69,6 +69,23 @@ function buildSnapshotSection(
   };
 }
 
+function buildRelationshipIndexSection(
+  report: FamilyParentReportBody,
+  t: ReturnType<typeof catalog>,
+): FamilyReportSection | null {
+  const r = report.family?.section_relationship_index;
+  if (!r) return null;
+  return {
+    id: "relationship_index",
+    type: "relationship_index",
+    partNumber: 2,
+    title: r.headline || t.relationshipIndexCardTitle,
+    frictionIndex: r.friction_index,
+    safeDistanceNote: r.safe_distance_note,
+    decisionAxisNote: r.decision_axis_note,
+  };
+}
+
 function buildCompareTableSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
@@ -253,6 +270,7 @@ export function buildFamilyReportViewModel(
 
   const builders: Array<() => FamilyReportSection | null> = [
     () => buildSnapshotSection(report),
+    () => buildRelationshipIndexSection(report, t),
     () => buildCompareTableSection(report, t),
     () => buildHouseholdRolesSection(report, t),
     () => buildPsychRadarSection(report, t),

@@ -108,14 +108,15 @@ const {
   section_compare_table: _omitCompare,
   section_household_roles: _omitRoles,
   section_family_role: _omitFamilyRole,
+  section_relationship_index: _omitRelationshipIndex,
   ...reportFamilyWithoutPart2Extras
 } = koReport.family;
 assert.deepEqual(
   reportFamilyWithoutPart2Extras,
   baselineFamily,
-  "Part2 extras(compare/household_roles/family_role)를 제외한 필드는 buildFamilyParentChildReport(ctx) 원본과 동일해야 함",
+  "Part2 extras(compare/household_roles/family_role/relationship_index)를 제외한 필드는 buildFamilyParentChildReport(ctx) 원본과 동일해야 함",
 );
-ok("Part2/Part3 extras 외에는 기존 family 서사 결과가 한 글자도 안 바뀜");
+ok("Part2/Part3/Part1 extras 외에는 기존 family 서사 결과가 한 글자도 안 바뀜");
 
 // ---------------------------------------------------------------------------
 section("4) B bond_distance는 parent_bond_band(기존 Family SSOT)를 사용함");

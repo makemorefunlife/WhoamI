@@ -5,8 +5,10 @@
  * SSOT이고, 여기 정의된 shape는 buildFamilyReportViewModel()이 렌더링
  * 직전에 파생시키는 비영속(non-persisted) 값이다.
  *
- * Part1(가족 서사)은 아직 신규 콘텐츠가 없어 이번 단계에서는 섹션 타입을
- * 만들지 않는다 — marriage와 동일 원칙(콘텐츠 생기면 partNumber:1 추가 예정).
+ * Part1(관계 입체 진단)은 `RelationshipIndexSection`으로 partNumber:2(스코어링
+ * 그룹)에 편입 — 마스터 사양서의 Part 번호와 이 파일의 partNumber는 1:1이
+ * 아니다(누적 개발 순서를 따름, family_role도 스펙 Part3이지만 partNumber:3
+ * 그룹인 것과 동일한 사정).
  *
  * family는 friend/marriage와 달리 대칭 페어(A/B)가 아니라 비대칭
  * 부모-자녀 관계라, `PersonSlot<T>`(me/partner) 대신 항상 고정된
@@ -42,6 +44,13 @@ export type SnapshotSection = BaseSection & {
   type: "snapshot";
   scores: { bondPct: number; synergyPct: number; riskPct: number };
   panel: TriScoreSnapshotPanelData;
+};
+
+export type RelationshipIndexSection = BaseSection & {
+  type: "relationship_index";
+  frictionIndex: number;
+  safeDistanceNote: string;
+  decisionAxisNote: string | null;
 };
 
 export type CompareTableSection = BaseSection & {
@@ -122,6 +131,7 @@ export type PrescriptionSection = BaseSection & {
 
 export type FamilyReportSection =
   | SnapshotSection
+  | RelationshipIndexSection
   | CompareTableSection
   | HouseholdRolesSection
   | PsychRadarSection

@@ -25,6 +25,7 @@ import { buildFamilySajuCompareTable } from "./familySajuCompareTable";
 import { buildFamilyHouseholdRoles } from "./buildFamilyHouseholdRoles";
 import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment";
 import { buildFamilyRoleSection } from "./familyPsychRoles";
+import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -120,6 +121,14 @@ export function buildFamilyParentReport(params: {
       locale,
       ctx.childIsViewer,
     ),
+    section_relationship_index: buildFamilyRelationshipIndexSection({
+      pairFamily: params.pairFamily,
+      fallbackRisk: ctx.masterScores.risk,
+      psychChild: ctx.roles.roleA !== "child" ? params.psychMasterB : params.psychMasterA,
+      psychParent: ctx.roles.roleA !== "child" ? params.psychMasterA : params.psychMasterB,
+      childIsViewer: ctx.childIsViewer,
+      locale,
+    }),
   };
 
   const snapshot_panel = buildFamilyParentSnapshotPanel(
