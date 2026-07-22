@@ -17,8 +17,10 @@ import {
   crossHits,
   dayStemIncludes,
   hasCross,
+  hasHeavenlyStemCombine,
   romanticCrossBodyContext,
   strengthComplement,
+  temperatureComplement,
   TENSION_CROSS,
 } from "./types";
 
@@ -26,6 +28,8 @@ const HEADLINE_TENSION_DAY_CROSS_KO = "가까울수록 예민해지는 조합";
 const HEADLINE_TENSION_DAY_CROSS_EN = "Closeness that turns sharp";
 const HEADLINE_YUKHAP_PULL_KO = "끌리는데 이유가 있는 관계";
 const HEADLINE_YUKHAP_PULL_EN = "There's a reason you're drawn together";
+const HEADLINE_STEM_COMBINE_KO = "이유 없이 끌리는 본능적 케미";
+const HEADLINE_STEM_COMBINE_EN = "A pull you can't quite explain";
 
 function headlineTensionDayCross(locale: RomanticRuleContext["locale"]): string {
   return normalizeRomanticHeadlineLocale(locale) === "en"
@@ -37,6 +41,29 @@ function headlineYukhapPull(locale: RomanticRuleContext["locale"]): string {
   return normalizeRomanticHeadlineLocale(locale) === "en"
     ? HEADLINE_YUKHAP_PULL_EN
     : HEADLINE_YUKHAP_PULL_KO;
+}
+
+function headlineStemCombine(locale: RomanticRuleContext["locale"]): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en"
+    ? HEADLINE_STEM_COMBINE_EN
+    : HEADLINE_STEM_COMBINE_KO;
+}
+
+function johuComplementBody(
+  ctx: RomanticRuleContext,
+  coldName: string,
+  hotName: string,
+): string {
+  return normalizeRomanticHeadlineLocale(ctx.locale) === "en"
+    ? `${coldName} runs cool and ${hotName} runs warm — together you fill in each other's temperature, like two candles lighting up the same room.`
+    : `${coldName}은(는) 차분하고 ${hotName}은(는) 따뜻해서, 서로의 온도를 채워주는 촛불과 촛불 같은 조합이에요.`;
+}
+
+function stemCombineBody(ctx: RomanticRuleContext): string {
+  const { nicknameA, nicknameB } = ctx;
+  return normalizeRomanticHeadlineLocale(ctx.locale) === "en"
+    ? `${nicknameA} and ${nicknameB} — your day-stems form one of the five classic heavenly-stem combines, the kind of chemistry that runs on instinct rather than logic.`
+    : `${nicknameA}와 ${nicknameB} — 두 사람의 일간이 천간합을 이루는 조합이라, 이유를 따지기 전에 이미 본능적으로 끌리는 케미예요.`;
 }
 
 export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
@@ -60,6 +87,18 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
         insightTags: ["pair_cross", hit.type, "close"],
       };
     },
+  },
+  {
+    id: "headline_stem_combine_pull",
+    screen: 1,
+    priority: 90,
+    when: (ctx) => hasHeavenlyStemCombine(ctx),
+    build: (ctx) => ({
+      ruleId: "headline_stem_combine_pull",
+      headline: headlineStemCombine(ctx.locale),
+      body: stemCombineBody(ctx),
+      insightTags: ["day_stem_combine"],
+    }),
   },
   {
     id: "headline_day_stem_sangsaeng",
@@ -104,6 +143,25 @@ export const HEADLINE_RULES: RomanticRule<HeadlineRuleOutput>[] = [
         headline: headlineYukhapPull(ctx.locale),
         body: humanizeRomanticCrossBody(hit, romanticCrossBodyContext(ctx)),
         insightTags: ["pair_cross", "육합"],
+      };
+    },
+  },
+  {
+    id: "headline_johu_complement",
+    screen: 1,
+    priority: 82,
+    when: (ctx) => temperatureComplement(ctx) != null,
+    build: (ctx) => {
+      const dir = temperatureComplement(ctx);
+      const [coldName, hotName] =
+        dir === "ab"
+          ? [ctx.nicknameA, ctx.nicknameB]
+          : [ctx.nicknameB, ctx.nicknameA];
+      return {
+        ruleId: "headline_johu_complement",
+        headline: joinPersonalityHeadline(ctx.metaphorA, ctx.metaphorB, ctx.locale),
+        body: johuComplementBody(ctx, coldName, hotName),
+        insightTags: ["johu_complement"],
       };
     },
   },

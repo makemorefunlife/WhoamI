@@ -72,6 +72,12 @@ export type RomanticRuleContext = {
   pairAnalysis: PairSajuAnalysis;
   strengthA: StrengthSnapshot;
   strengthB: StrengthSnapshot;
+  /** 조후(온도) 밴드 — [시작점] 헤드라인의 "촛불과 촛불" 계열 한난 상호보완 규칙에 씀 */
+  temperatureBandA: "cold" | "neutral" | "hot";
+  temperatureBandB: "cold" | "neutral" | "hot";
+  /** 일간 천간 코드(gap/eul/byeong/...) — 천간합(A/B 간 일간 합) 판정에 씀 */
+  dayStemCodeA: string;
+  dayStemCodeB: string;
   metaphorA: string;
   metaphorB: string;
   metaphorCombo: string;
@@ -201,6 +207,33 @@ export function strengthComplement(ctx: RomanticRuleContext): "ab" | "ba" | null
   if (aStrong && bWeak) return "ab";
   if (bStrong && aWeak) return "ba";
   return null;
+}
+
+/** 한쪽 cold, 다른 쪽 hot일 때만 "ab"(A가 cold)/"ba"(B가 cold) — 조후(온도) 상호보완 */
+export function temperatureComplement(ctx: RomanticRuleContext): "ab" | "ba" | null {
+  if (ctx.temperatureBandA === "cold" && ctx.temperatureBandB === "hot") return "ab";
+  if (ctx.temperatureBandB === "cold" && ctx.temperatureBandA === "hot") return "ba";
+  return null;
+}
+
+/**
+ * 갑기/을경/병신/정임/무계 — 일간 천간합 5쌍. `analyzeCrossChartRelations`(allCrossHits)는
+ * 지지(육합/충/형/해/파)만 A-B 교차 비교하고 천간 자체는 안 봐서(`analyzeStemCombines`는
+ * 한 사람 사주 내부 기둥끼리만 비교하는 별개 함수), A/B 일간끼리의 천간합은 여기서 직접 판정한다.
+ */
+const HEAVENLY_STEM_COMBINE_PAIRS = new Set(
+  [
+    ["gap", "gi"],
+    ["eul", "gyeong"],
+    ["byeong", "sin"],
+    ["jeong", "im"],
+    ["mu", "gye"],
+  ].map(([a, b]) => [a, b].sort().join("-")),
+);
+
+export function hasHeavenlyStemCombine(ctx: RomanticRuleContext): boolean {
+  const key = [ctx.dayStemCodeA, ctx.dayStemCodeB].sort().join("-");
+  return HEAVENLY_STEM_COMBINE_PAIRS.has(key);
 }
 
 export function topTenGod(ctx: RomanticRuleContext, who: "a" | "b"): string | null {

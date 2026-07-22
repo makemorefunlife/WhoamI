@@ -21,6 +21,8 @@ import { analyzeTenGodActivation } from "@/lib/saju/tenGodActivation";
 import { validateSajuPillars } from "@/lib/saju/validateSajuBundle";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
+import { buildChartContext } from "@/lib/saju/chartContext";
+import { buildJohuClimate } from "@/lib/personCore/mappers/mapSajuMasterJson";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
@@ -198,6 +200,11 @@ export function buildRomanticRuleContext(params: {
       return (aStrong && bWeak) || (bStrong && aWeak);
     })();
 
+  const chartA = buildChartContext(pillarsA);
+  const chartB = buildChartContext(pillarsB);
+  const temperatureBandA = buildJohuClimate(chartA).temperature_band;
+  const temperatureBandB = buildJohuClimate(chartB).temperature_band;
+
   const fullLocale = fromLegacyShortLocale(locale);
   const validationA = validateSajuPillars(pillarsA, {
     birthTimeUnknown: params.birthTimeUnknownA,
@@ -270,6 +277,10 @@ export function buildRomanticRuleContext(params: {
     pairAnalysis,
     strengthA: estimateStrengthBalance(pillarsA),
     strengthB: estimateStrengthBalance(pillarsB),
+    temperatureBandA,
+    temperatureBandB,
+    dayStemCodeA: chartA.dayStemCode,
+    dayStemCodeB: chartB.dayStemCode,
     metaphorA,
     metaphorB,
     metaphorCombo,

@@ -60,7 +60,7 @@ function stemKorName(stemCode: string): string | null {
   return REF_HEAVENLY_STEMS.find((r) => r.code === stemCode)?.kor_name ?? null;
 }
 
-function buildJohuClimate(chart: ChartContext): JohuClimateSnapshot {
+export function buildJohuClimate(chart: ChartContext): JohuClimateSnapshot {
   const el = countElements(chart);
   const wood = el.wood ?? 0;
   const fire = el.fire ?? 0;
