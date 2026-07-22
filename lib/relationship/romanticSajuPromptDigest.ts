@@ -1,4 +1,4 @@
-import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
+import type { SajuMasterJson, YongsinEstimateSnapshot } from "@/lib/personCore/types/sajuMaster";
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
@@ -98,6 +98,17 @@ function crossHitsDigest(
 }
 
 /**
+ * yongsin_candidates[0](예: "화 — 부족한 기운, 관계에서 채우고 싶은 에너지")에서
+ * 오행명만 뽑는다. estimateYongsinGisin은 간이 추정(confidence 항상 "low")이라
+ * 판정에는 안 쓰고 digest에 추가 근거 텍스트로만 병기한다.
+ */
+function shortYongsinElement(y: YongsinEstimateSnapshot | null | undefined): string | null {
+  const first = y?.yongsin_candidates?.[0];
+  if (!first) return null;
+  return first.split(" —")[0]?.trim() || null;
+}
+
+/**
  * 관계 역학 4종(균형추/회복속도/안심신호/무의식역할극) — 심리축+사주 보정으로
  * 서버가 이미 판정해 둔 결과를 LLM에게 근거로 전달한다. LLM은 이 판정을
  * 문장으로 풀어쓰기만 하고, 새로 유형을 정하지 않는다.
@@ -112,6 +123,8 @@ export function buildRomanticDynamicsDigest(params: {
   rootedA: boolean;
   rootedB: boolean;
   dayStemInteraction: string;
+  yongsinA?: YongsinEstimateSnapshot | null;
+  yongsinB?: YongsinEstimateSnapshot | null;
 }): string {
   const {
     nicknameA,
@@ -123,6 +136,8 @@ export function buildRomanticDynamicsDigest(params: {
     rootedA,
     rootedB,
     dayStemInteraction,
+    yongsinA,
+    yongsinB,
   } = params;
 
   const bop = resolveBalanceOfPower(profileA, profileB);
@@ -144,10 +159,15 @@ export function buildRomanticDynamicsDigest(params: {
     dayStemInteraction,
   );
 
+  const yongsinElementA = shortYongsinElement(yongsinA);
+  const yongsinElementB = shortYongsinElement(yongsinB);
+  const giveBText = yongsinElementB ? `${giveB}(희용신 ${yongsinElementB})` : giveB;
+  const giveAText = yongsinElementA ? `${giveA}(희용신 ${yongsinElementA})` : giveA;
+
   return `## dynamics_digest — 관계 역학 4종 (서버 판정 완료, 그대로 서술만 할 것)
 - balance_of_power: ${nicknameA}=${bop.bandA} / ${nicknameB}=${bop.bandB} (서브 리드 — 아이디어·분위기:${subLeads.ideaMoodLead}, 결정·승인:${subLeads.decisionApprovalLead}, 실행:${subLeads.executionLead})
 - recovery_speed: ${nicknameA}=${recovery.bandA}(잔류도 ${residualA}) / ${nicknameB}=${recovery.bandB}(잔류도 ${residualB}) ${recovery.mismatch ? "— 격차 큼(주의)" : ""}
-- reassurance: ${nicknameA} need=${needA} vs ${nicknameB} give=${giveB} → 일치:${matchBGivesA} | ${nicknameB} need=${needB} vs ${nicknameA} give=${giveA} → 일치:${matchAGivesB}
+- reassurance: ${nicknameA} need=${needA} vs ${nicknameB} give=${giveBText} → 일치:${matchBGivesA} | ${nicknameB} need=${needB} vs ${nicknameA} give=${giveAText} → 일치:${matchAGivesB}
 - role_play: 심리축 판정=${rolePlay.primaryFrame} / 사주 판정=${rolePlay.sajuFrame} (일치:${rolePlay.agrees})
 ⚠️ 위 밴드·판정 이름 자체는 출력하지 말고, 이미 정해진 방향으로만 자연스러운 문장을 쓰세요.`.trim();
 }

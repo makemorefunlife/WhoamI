@@ -216,6 +216,8 @@ export function prepareRomanticSajuDeepRun(
             ),
           ),
           dayStemInteraction: pairAnalysis.dayStemInteraction,
+          yongsinA: params.sajuMasterA?.yongsin_estimate ?? null,
+          yongsinB: params.sajuMasterB?.yongsin_estimate ?? null,
         })
       : "## dynamics_digest\n(구버전 사주 스냅샷이라 romantic_signals 없음 — 관계 역학 4종은 이번 리포트에서 생략)";
 
