@@ -1028,6 +1028,8 @@ export const messagesKoKR: MessageCatalog = {
       warningCardTitle: "⚠️ 홈 워닝 & 부부 싸움 해독제",
       conflictTriggerLabel: "갈등 트리거",
       neglectRiskLabel: "정서적 방임 리스크",
+      coldWarGoldenTimeLabel: "⏰ 냉전 골든타임",
+      reconciliationCueLabel: "🤍 화해 치트키",
       dePrescriptionHeading: "💊 화 풀림 처방전 — 두 사람 각각 1장",
       deIntro: (myName: string, partnerName: string) =>
         `각 카드 = 「${myName} 또는 ${partnerName}가 화났을 때 → 상대가 할 말·행동」입니다.`,

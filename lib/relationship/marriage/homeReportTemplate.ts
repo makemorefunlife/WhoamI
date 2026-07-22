@@ -1,5 +1,6 @@
 import type { MarriageRuleContext } from "./buildMarriageRuleContext";
-import type { HomeDeEscalationPair } from "./homeDeEscalationPrescriptions";
+import type { HomeDeEscalationPair, ColdWarProtocol } from "./homeDeEscalationPrescriptions";
+import { resolveColdWarProtocol } from "./homeDeEscalationPrescriptions";
 import type {
   ThreeYearHomeRiskForecast,
   SleepFitSection,
@@ -91,6 +92,7 @@ export type HomeWarningSection = {
   conflict_communication: ConflictCommunicationSection;
   conflict_trigger: string;
   de_escalation: HomeDeEscalationPair;
+  cold_war_protocol: ColdWarProtocol;
 };
 
 export type HouseholdPartnershipReport = {
@@ -530,6 +532,13 @@ export function buildHouseholdPartnershipReport(
       conflict_communication: ctx.conflictCommunication,
       conflict_trigger: buildConflictTrigger(ctx),
       de_escalation: deEscalation,
+      cold_war_protocol: resolveColdWarProtocol({
+        nicknameA: ctx.nicknameA,
+        nicknameB: ctx.nicknameB,
+        countsA: ctx.tenGod.countsA,
+        countsB: ctx.tenGod.countsB,
+        locale: ctx.locale,
+      }),
     },
   };
 }

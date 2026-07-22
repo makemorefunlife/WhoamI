@@ -1072,6 +1072,8 @@ export const messagesEnUS = {
       warningCardTitle: "⚠️ Home warnings & marital-fight antidotes",
       conflictTriggerLabel: "Conflict trigger",
       neglectRiskLabel: "Emotional neglect risk",
+      coldWarGoldenTimeLabel: "⏰ Cold-war golden time",
+      reconciliationCueLabel: "🤍 Reconciliation cheat code",
       dePrescriptionHeading: "💊 De-escalation prescriptions — one card each",
       deIntro: (myName: string, partnerName: string) =>
         `Each card is "what ${myName} or ${partnerName} should say or do when their partner is upset."`,
@@ -2134,6 +2136,8 @@ export type MessageCatalog = {
       warningCardTitle: string;
       conflictTriggerLabel: string;
       neglectRiskLabel: string;
+      coldWarGoldenTimeLabel: string;
+      reconciliationCueLabel: string;
       dePrescriptionHeading: string;
       deIntro: (myName: string, partnerName: string) => string;
       deSameTypeSuffix: string;

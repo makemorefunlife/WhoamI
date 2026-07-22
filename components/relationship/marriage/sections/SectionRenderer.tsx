@@ -458,6 +458,21 @@ function WarningCard({ section }: { section: WarningSection }) {
             💬 {section.deEscalation.person_b.solution_script}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
+        <div>
+          <RelationshipReportLabel>{t.coldWarGoldenTimeLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.coldWarProtocol.golden_time_note}
+          </RelationshipReportParagraph>
+        </div>
+        <RelationshipReportInset>
+          <RelationshipReportLabel>{t.reconciliationCueLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5">
+            {section.coldWarProtocol.reconciliation_cue_a}
+          </RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-2">
+            {section.coldWarProtocol.reconciliation_cue_b}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
       </RelationshipReportBody>
     </RelationshipReportCard>
   );

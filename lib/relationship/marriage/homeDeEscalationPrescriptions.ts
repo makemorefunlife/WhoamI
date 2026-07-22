@@ -1,5 +1,6 @@
 import type { TenGodCounts } from "./marriageTenGodAnalysis";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
+import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import type { Locale } from "@/lib/i18n/locale";
 
 export type HomeDeEscalationCard = {
@@ -208,7 +209,7 @@ function buildCardFromDef(
   };
 }
 
-function topCategory(counts: TenGodCounts): PrescriptionDef["category"] {
+export function topCategory(counts: TenGodCounts): PrescriptionDef["category"] {
   return rankCategoriesForPerson(counts)[0]!;
 }
 
@@ -293,4 +294,73 @@ export function pickHomeDeEscalationForPerson(
     partnerNickname: "상대",
     counts,
   });
+}
+
+export type ColdWarProtocol = {
+  golden_time_note: string;
+  reconciliation_cue_a: string;
+  reconciliation_cue_b: string;
+};
+
+const RECONCILIATION_CUE_COPY: Record<
+  Locale,
+  Record<PrescriptionDef["category"], (nickname: string) => string>
+> = {
+  "en-US": {
+    self: (n) => `Leave a short note or small gift acknowledging how much ${n} does — being seen and valued matters more than the words "I'm sorry."`,
+    food: (n) => `Bring ${n} their favorite late-night snack without saying much — a shared bite does more than a long explanation.`,
+    seal: (n) => `Give ${n} some alone time first, then quietly leave a favorite drink where they'll find it — presence without pressure.`,
+    officer: (n) => `Suggest a concrete next plan to ${n} — "let's do X differently next time" — before any apology in words.`,
+    wealth: (n) => `Offer ${n} something real — running an errand, covering a chore, a small treat — actions land better than words here.`,
+  },
+  "ko-KR": {
+    self: (n) => `${n}에게 짧은 메모나 작은 선물로 그동안 고생을 알아준다는 걸 표현하세요 — "미안해"라는 말보다 존재를 인정받는 게 먼저예요.`,
+    food: (n) => `${n}에게 좋아하는 야식을 말없이 사다 주세요 — 긴 설명보다 같이 먹는 한 입이 더 잘 통해요.`,
+    seal: (n) => `${n}에게 먼저 혼자만의 시간을 주고, 좋아하는 음료를 조용히 거실에 두세요 — 압박 없이 곁에 있다는 신호면 충분해요.`,
+    officer: (n) => `${n}에게 말로 사과하기 전에 "다음엔 이렇게 하자"는 구체적인 다음 계획을 먼저 제안하세요.`,
+    wealth: (n) => `${n}에게 심부름·집안일 대신 해주기, 작은 선물처럼 실질적인 걸 챙겨주세요 — 여기선 말보다 행동이 더 잘 통해요.`,
+  },
+};
+
+/**
+ * Part5① 냉전 골든타임 & 화해 치트키 — 완전 신규 항목. 비겁(고집) 세기는
+ * 이미 여러 곳에서 쓰는 카운트 패턴 그대로 재사용하고, 화해 치트키는 새
+ * 십성 분류를 만들지 않고 기존 5카테고리(`topCategory`)를 그대로 확장한다.
+ */
+export function resolveColdWarProtocol(params: {
+  nicknameA: string;
+  nicknameB: string;
+  countsA: TenGodCounts;
+  countsB: TenGodCounts;
+  locale?: Locale;
+}): ColdWarProtocol {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const selfA = (params.countsA["비견"] ?? 0) + (params.countsA["겁재"] ?? 0);
+  const selfB = (params.countsB["비견"] ?? 0) + (params.countsB["겁재"] ?? 0);
+
+  const golden_time_note =
+    selfA === selfB
+      ? sanitizeHomeLifeText(
+          pick(
+            locale,
+            `${params.nicknameA} and ${params.nicknameB} are evenly matched in stubbornness, so a cold war can drag on for either of you. Agree in advance: max 24 hours, or 2 days in separate rooms at the very most — no silent treatment beyond that.`,
+            `${params.nicknameA}와 ${params.nicknameB} 둘 다 고집이 팽팽해서, 누구든 냉전이 길어질 수 있어요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지 — 그 이상 침묵은 안 됩니다.`,
+          ),
+        )
+      : sanitizeHomeLifeText(
+          pick(
+            locale,
+            `${selfA > selfB ? params.nicknameA : params.nicknameB} tends to hold their ground longer once upset, so a cold war can stretch out on their side. Agree in advance: max 24 hours, or 2 days in separate rooms at the very most — no silent treatment beyond that.`,
+            `${selfA > selfB ? params.nicknameA : params.nicknameB} 쪽이 한번 삐치면 더 오래 버티는 편이라 냉전이 길어지기 쉬워요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지 — 그 이상 침묵은 안 됩니다.`,
+          ),
+        );
+
+  const cueFor = (nickname: string, counts: TenGodCounts): string =>
+    sanitizeHomeLifeText(RECONCILIATION_CUE_COPY[locale][topCategory(counts)](nickname));
+
+  return {
+    golden_time_note,
+    reconciliation_cue_a: cueFor(params.nicknameA, params.countsA),
+    reconciliation_cue_b: cueFor(params.nicknameB, params.countsB),
+  };
 }

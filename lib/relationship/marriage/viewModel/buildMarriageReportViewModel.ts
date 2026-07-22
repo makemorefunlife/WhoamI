@@ -276,6 +276,7 @@ function buildWarningSection(
     conflictCommunication: w.conflict_communication,
     conflictTrigger: w.conflict_trigger,
     deEscalation: w.de_escalation,
+    coldWarProtocol: w.cold_war_protocol,
   };
 }
 

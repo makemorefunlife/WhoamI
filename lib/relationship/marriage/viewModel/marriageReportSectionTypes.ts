@@ -18,7 +18,10 @@ import type { BedroomMatrixSection } from "@/lib/relationship/marriage/bedroomPr
 import type { SleepFitSection } from "@/lib/relationship/marriage/marriageSleepFitSection";
 import type { ThreeYearHomeRiskForecast } from "@/lib/relationship/marriage/marriageHomeRiskForecast";
 import type { ConflictCommunicationSection } from "@/lib/relationship/marriage/marriageConflictCommunication";
-import type { HomeDeEscalationPair } from "@/lib/relationship/marriage/homeDeEscalationPrescriptions";
+import type {
+  HomeDeEscalationPair,
+  ColdWarProtocol,
+} from "@/lib/relationship/marriage/homeDeEscalationPrescriptions";
 import type { CohabitationPrescriptionItem } from "@/lib/relationship/marriage/cohabitationPrescriptionTypes";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 
@@ -135,6 +138,7 @@ export type WarningSection = BaseSection & {
   conflictCommunication: ConflictCommunicationSection;
   conflictTrigger: string;
   deEscalation: HomeDeEscalationPair;
+  coldWarProtocol: ColdWarProtocol;
 };
 
 export type PrescriptionSection = BaseSection & {
