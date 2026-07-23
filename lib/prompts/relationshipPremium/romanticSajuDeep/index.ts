@@ -14,6 +14,12 @@ import {
   collectRomanticDynamicsTypedSnapshot,
   type RomanticContextInput,
 } from "@/lib/relationship/romantic/romanticContextInput";
+import {
+  balanceOfPowerValueFromDominantCategories,
+  buildRomanticBalanceOfPowerCanonical,
+  buildRomanticBalanceClientProjection,
+  injectRomanticBalanceClientProjection,
+} from "@/lib/relationship/romantic/romanticBalanceOfPowerCanonical";
 import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
 import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
@@ -451,8 +457,27 @@ function finalizeRomanticSajuDeepReport(
     prepared;
   const generatedAt = new Date().toISOString();
 
+  // Phase 6-2d1 — after LLM spread, server balance projection wins.
+  const balanceFinalized = balanceOfPowerValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const balanceCanonical =
+    buildRomanticBalanceOfPowerCanonical(balanceFinalized);
+  const balanceProjection = buildRomanticBalanceClientProjection(
+    balanceCanonical?.value,
+  );
+  const reportWithBalanceProjection = injectRomanticBalanceClientProjection(
+    parsed.report as RomanticSajuDeepReport["report"] & {
+      canonical_projections?: {
+        balance_of_power?: unknown;
+        [key: string]: unknown;
+      };
+    },
+    balanceProjection,
+  );
+
   return {
-    ...parsed.report,
+    ...reportWithBalanceProjection,
     section_1_summary: {
       relationship_name: opening.relationship_name,
       one_line_summary: opening.one_line_summary,

@@ -49,6 +49,10 @@ import {
 } from "@/lib/relationship/psychMatch";
 import { buildRomanticDisplayContext } from "@/lib/relationship/romanticReportViewModel";
 import {
+  formatRomanticBalanceCanonicalLabel,
+  readRomanticBalanceCanonicalProjection,
+} from "@/lib/relationship/romantic/romanticBalanceOfPowerCanonical";
+import {
   dedupeActionGuidelines,
   normalizeActionGuideline,
 } from "@/lib/relationship/essenceActionGuideline";
@@ -610,6 +614,19 @@ export default function RomanticSajuDeepReportView({
 
   const s1 = report.section_1_summary ?? {};
   const dynamics = report.section_1_relationship_dynamics;
+  const balanceCanonical = readRomanticBalanceCanonicalProjection(report);
+  const balanceCanonicalLabel = balanceCanonical
+    ? formatRomanticBalanceCanonicalLabel(balanceCanonical, {
+        nameA,
+        nameB,
+        locale:
+          typeof report.meta?.locale === "string"
+            ? report.meta.locale
+            : typeof report.meta?.language === "string"
+              ? report.meta.language
+              : null,
+      })
+    : null;
   const s2 = report.section_2_nature ?? {};
   const special = report.section_4_special_bond;
   const frames = report.section_4_relationship_frames;
@@ -930,6 +947,16 @@ export default function RomanticSajuDeepReportView({
                     ? ` — ${displayText(dynamics.balance_of_power.headline)}`
                     : ""}
                 </RelationshipReportLabel>
+                {balanceCanonicalLabel ? (
+                  <p
+                    className={[
+                      "text-sm font-semibold tracking-tight",
+                      tone.bodyMedium,
+                    ].join(" ")}
+                  >
+                    {balanceCanonicalLabel}
+                  </p>
+                ) : null}
                 <P>{displayText(dynamics.balance_of_power.body)}</P>
               </div>
             ) : null}

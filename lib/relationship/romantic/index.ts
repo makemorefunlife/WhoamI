@@ -13,6 +13,22 @@ export {
   stripRomanticContextInputForClient,
   omitRomanticContextInputFromReport,
 } from "./stripRomanticContextInputForClient";
+export {
+  buildRomanticBalanceOfPowerCanonical,
+  buildRomanticBalanceClientProjection,
+  injectRomanticBalanceClientProjection,
+  balanceOfPowerValueFromDominantCategories,
+  balanceOfPowerValueFromDynamicsSnapshot,
+  balanceOfPowerJudgmentFields,
+  readRomanticBalanceCanonicalProjection,
+  formatRomanticBalanceCanonicalLabel,
+  ROMANTIC_BALANCE_OF_POWER_CLIENT_PATH,
+  ROMANTIC_BALANCE_OF_POWER_PERSISTENCE_PATH,
+} from "./romanticBalanceOfPowerCanonical";
+export type {
+  RomanticBalanceOfPowerValue,
+  RomanticBalanceOfPowerCanonical,
+} from "./romanticBalanceOfPowerCanonical";
 export { refineExpressionSpeedCorroboration } from "./expressionSpeedCorroboration";
 export type {
   ExpressionSpeedAlign,
