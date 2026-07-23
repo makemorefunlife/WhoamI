@@ -6,6 +6,7 @@ import {
   type FamilyPrescriptionItem,
   type FamilyPrescriptionPack,
 } from "./familyPrescriptionTypes";
+import { applyGuidanceFitToneToPrescriptions } from "./familyGuidancePrescriptionTone";
 
 function buildUmbilicalPrescription(
   pair: PairFamilySignals,
@@ -313,9 +314,16 @@ export function buildFamilyPrescriptions(params: {
   };
   items.sort((a, b) => priority[b.topic] - priority[a.topic]);
 
-  return {
+  const pack: FamilyPrescriptionPack = {
     schema_version: FAMILY_PRESCRIPTION_VERSION,
     intro_line: resolveIntroLine(items, locale, false),
     items,
   };
+
+  // Part2 C guidance_fit — 전달 톤 보조만 (bucket/item 수/핵심 지침 불변)
+  return applyGuidanceFitToneToPrescriptions(
+    pack,
+    pair.guidance_fit,
+    locale,
+  );
 }
