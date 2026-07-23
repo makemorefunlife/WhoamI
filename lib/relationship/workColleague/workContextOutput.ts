@@ -1,11 +1,16 @@
 /**
  * Work Colleague Context Output — 이미 계산된 RuleContext·office 결과의 표준 재포장.
  * 새 판정·점수·문구 없음. 순수 매핑만.
+ *
+ * Phase 6-2a: leadership fields are copied only from
+ * `office.section_roles.leadership_split` (canonical). Never re-call
+ * resolveLeadershipRoleSplit / refineLeadershipRoleSplit here.
  */
 import type { WorkScoringSignals } from "@/lib/saju/workPairAnalysis";
 import type { WorkColleagueContext } from "./buildWorkColleagueContext";
 import type { WorkMasterScores } from "@/lib/relationship/workPairEventScores";
 import type { OfficePartnershipReport } from "./officeReportTemplate";
+import type { LeadershipRoleSplit } from "./officeLanguage";
 
 export const WORK_CONTEXT_OUTPUT_SCHEMA_VERSION = "context_output_v1" as const;
 
@@ -63,6 +68,30 @@ export type BuildWorkContextOutputOptions = {
     inputFingerprintB: string;
   } | null;
 };
+
+/**
+ * Pure map: canonical leadership_split → Context Output category keys.
+ * No resolver calls — input is the finalized judgment only.
+ */
+export function leadershipContextCategoriesFromSplit(
+  leadership: LeadershipRoleSplit,
+): Record<string, WorkContextDominantCategory> {
+  const dominant_categories: Record<string, WorkContextDominantCategory> = {
+    external_lead: { category: leadership.external_lead },
+    internal_qa_lead: { category: leadership.internal_qa_lead },
+  };
+  if (leadership.confidence) {
+    dominant_categories.leadership_confidence = {
+      category: leadership.confidence,
+    };
+  }
+  if (leadership.align) {
+    dominant_categories.leadership_align = {
+      category: leadership.align,
+    };
+  }
+  return dominant_categories;
+}
 
 /**
  * ctx + 최종 office section 결과를 Context Output으로 모은다.
@@ -123,24 +152,13 @@ export function buildWorkContextOutput(
     dominant_categories.contribution_style_b = { category: contribB };
   }
 
+  // Phase 6-2a — leadership from canonical section field only
   const leadership = office.section_roles.leadership_split;
   if (leadership) {
-    dominant_categories.external_lead = {
-      category: leadership.external_lead,
-    };
-    dominant_categories.internal_qa_lead = {
-      category: leadership.internal_qa_lead,
-    };
-    if (leadership.confidence) {
-      dominant_categories.leadership_confidence = {
-        category: leadership.confidence,
-      };
-    }
-    if (leadership.align) {
-      dominant_categories.leadership_align = {
-        category: leadership.align,
-      };
-    }
+    Object.assign(
+      dominant_categories,
+      leadershipContextCategoriesFromSplit(leadership),
+    );
   }
 
   const personCoreMeta = options?.personCoreMeta ?? null;

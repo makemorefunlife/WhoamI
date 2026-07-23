@@ -30,6 +30,7 @@ import {
   resolveFeedbackCushionScript,
   refineLeadershipRoleSplit,
 } from "./officePsychFit";
+import { buildWorkLeadershipCanonical } from "./workLeadershipCanonical";
 import {
   buildWorkContextOutput,
   type WorkContextOutput,
@@ -157,8 +158,10 @@ export function buildWorkColleagueReport(params: {
     params.psychMasterB,
     locale,
   );
-  const leadershipSplit = refineLeadershipRoleSplit({
-    base: officeBase.section_roles.leadership_split,
+  // Phase 6-2a — refine once, wrap as canonical, persist .value (SSOT).
+  const leadershipBase = officeBase.section_roles.leadership_split ?? null;
+  const leadershipRefined = refineLeadershipRoleSplit({
+    base: leadershipBase,
     workSignalsA: ctx.workSignalsA,
     workSignalsB: ctx.workSignalsB,
     psychA: params.psychMasterA,
@@ -170,6 +173,10 @@ export function buildWorkColleagueReport(params: {
     nicknameB: ctx.nicknameB,
     locale,
   });
+  const leadershipCanonical = buildWorkLeadershipCanonical(leadershipRefined, {
+    base: leadershipBase,
+  });
+  const leadershipSplit = leadershipCanonical?.value ?? null;
 
   const office = {
     ...officeBase,
