@@ -1,12 +1,15 @@
 /**
  * Friend Context Output — 이미 계산된 RuleContext·friend section 결과의 표준 재포장.
- * treasurer pick은 재계산하지 않는다.
- * Phase 5-2: section의 treasurer_align / treasurer_confidence(composite)를 그대로 매핑.
+ * Phase 6-2b: treasurer fields come only from
+ * `friend.section_play_money` (canonical). Never re-call
+ * pickFriendTreasurer / refineFriendTreasurer here.
+ * Not hangout_planning — that remains a separate compare-row question.
  */
 import type { FriendScoringSignals } from "@/lib/saju/friendAnalysis";
 import type { FriendMasterScores } from "@/lib/relationship/friendEventScores";
 import type { FriendRuleContext } from "./buildFriendRuleContext";
 import type { FriendSocialReport } from "./friendReportTemplate";
+import { treasurerSideFromNickname } from "./friendTreasurerCanonical";
 
 export const FRIEND_CONTEXT_OUTPUT_SCHEMA_VERSION = "context_output_v1" as const;
 
@@ -70,6 +73,40 @@ export type BuildFriendContextOutputOptions = {
 };
 
 /**
+ * Pure map: finalized section_play_money treasurer fields → Context Output keys.
+ * No pick/refine — input is the canonical section result only.
+ */
+export function treasurerContextCategoriesFromPlayMoney(
+  money: {
+    treasurer_nickname: string;
+    treasurer_align?: "confirms" | "caution";
+    treasurer_confidence?: "high" | "low";
+  },
+  nicknameA: string,
+  nicknameB: string,
+): Record<string, FriendContextDominantCategory> {
+  const dominant_categories: Record<string, FriendContextDominantCategory> =
+    {};
+  const side = treasurerSideFromNickname(
+    money.treasurer_nickname,
+    nicknameA,
+    nicknameB,
+  );
+  if (side) {
+    dominant_categories.treasurer = { category: side };
+  }
+  if (money.treasurer_align) {
+    dominant_categories.treasurer_align = { category: money.treasurer_align };
+  }
+  if (money.treasurer_confidence) {
+    dominant_categories.treasurer_confidence = {
+      category: money.treasurer_confidence,
+    };
+  }
+  return dominant_categories;
+}
+
+/**
  * ctx + 최종 friend section 결과를 Context Output으로 모은다.
  * treasurer pick / align / confidence 재호출 없음 — section 값만 읽는다.
  */
@@ -91,24 +128,15 @@ export function buildFriendContextOutput(
     dominant_categories.guardian_b = { category: guardianB.key };
   }
 
-  // treasurer — pick/refine 결과가 nickname으로 저장됨 → a/b 측만 기록
   const money = friend.section_play_money;
-  const treasurerNick = money.treasurer_nickname;
-  if (treasurerNick === ctx.nicknameA) {
-    dominant_categories.treasurer = { category: "a" };
-  } else if (treasurerNick === ctx.nicknameB) {
-    dominant_categories.treasurer = { category: "b" };
-  }
-
-  // Phase 5-2 composite — 기존 키 재사용 (psych 누락·legacy면 section에 없어 omit)
-  if (money.treasurer_align) {
-    dominant_categories.treasurer_align = { category: money.treasurer_align };
-  }
-  if (money.treasurer_confidence) {
-    dominant_categories.treasurer_confidence = {
-      category: money.treasurer_confidence,
-    };
-  }
+  Object.assign(
+    dominant_categories,
+    treasurerContextCategoriesFromPlayMoney(
+      money,
+      ctx.nicknameA,
+      ctx.nicknameB,
+    ),
+  );
 
   // tikitaka / battery — FriendDnaProfile raw mode (ctx에 이미 계산됨; section에는 label만)
   dominant_categories.tikitaka_a = {

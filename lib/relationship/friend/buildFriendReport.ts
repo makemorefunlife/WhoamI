@@ -31,6 +31,7 @@ import {
   resolveReconciliationScript,
   refineFriendTreasurer,
 } from "./friendPsychFit";
+import { buildFriendTreasurerCanonical } from "./friendTreasurerCanonical";
 import {
   buildFriendContextOutput,
   type FriendContextOutput,
@@ -139,9 +140,14 @@ export function buildFriendReport(params: {
   const counselingA = resolveCounselingStyleForPerson(ctx.tenGodsA, params.psychMasterA, locale);
   const counselingB = resolveCounselingStyleForPerson(ctx.tenGodsB, params.psychMasterB, locale);
   const baseMoney = friendBase.section_play_money;
+  const treasurerBase = {
+    nickname: baseMoney.treasurer_nickname,
+    reason: baseMoney.treasurer_reason,
+  };
+  // Phase 6-2b — pick (in base sections) → refine once → wrap → persist .value
   const refinedTreasurer = refineFriendTreasurer({
-    baseNickname: baseMoney.treasurer_nickname,
-    baseReason: baseMoney.treasurer_reason,
+    baseNickname: treasurerBase.nickname,
+    baseReason: treasurerBase.reason,
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     countsA: ctx.tenGodsA,
@@ -150,7 +156,11 @@ export function buildFriendReport(params: {
     psychB: params.psychMasterB,
     locale,
   });
-  const treasurerIsA = refinedTreasurer.nickname === params.nicknameA;
+  const treasurerCanonical = buildFriendTreasurerCanonical(refinedTreasurer, {
+    base: treasurerBase,
+  });
+  const treasurerFinal = treasurerCanonical?.value ?? refinedTreasurer;
+  const treasurerIsA = treasurerFinal.nickname === params.nicknameA;
   const treasurerNote = resolveTreasurerConfirmNote(
     treasurerIsA ? params.psychMasterA : params.psychMasterB,
     locale,
@@ -212,14 +222,14 @@ export function buildFriendReport(params: {
     },
     section_play_money: {
       ...baseMoney,
-      treasurer_nickname: refinedTreasurer.nickname,
-      treasurer_reason: refinedTreasurer.reason,
+      treasurer_nickname: treasurerFinal.nickname,
+      treasurer_reason: treasurerFinal.reason,
       psych_confirm_note: treasurerNote,
-      ...(refinedTreasurer.align
-        ? { treasurer_align: refinedTreasurer.align }
+      ...(treasurerFinal.align
+        ? { treasurer_align: treasurerFinal.align }
         : {}),
-      ...(refinedTreasurer.confidence
-        ? { treasurer_confidence: refinedTreasurer.confidence }
+      ...(treasurerFinal.confidence
+        ? { treasurer_confidence: treasurerFinal.confidence }
         : {}),
     },
     section_hidden_flow: {
