@@ -15,7 +15,7 @@ import type { TenGodCategory } from "./tenGodComplement";
  * 설문(11축 심리) 기반이 아니라 **사주 신호가 메인**이 되도록 설계했다(제품
  * 방향: 심리 설문 11축은 Part 3 레이더로 그대로 두고, 이 표는 사주를 읽는
  * 자리). 6행 중 5개는 이미 다른 곳에서 계산되고 있던 신호를 재사용하고,
- * 양간/음간(보고·협업 리듬)만 이번에 새로 추가했다.
+ * 양간/음간(협업 추진 리듬)만 이번에 새로 추가했다.
  *
  * | 행 | 신호 | 근거 |
  * |---|---|---|
@@ -24,7 +24,7 @@ import type { TenGodCategory } from "./tenGodComplement";
  * | 협업 시너지 포지션 | 오행(일간 기준 우세 오행) | dominantElement — ELEMENT_OFFICE 라벨 재사용 |
  * | 번아웃 대처 | 일지(day branch) | BRANCH_CRISIS_STYLE과 동일 소스, 표용 짧은 라벨만 신규 |
  * | 딜메이킹·추진 기질 | 신강/신약(일간 강약) | ctx.strengthA/B — 이미 계산돼 있던 값(경계 문구에서만 쓰이던 것) |
- * | 보고·협업 리듬 | 일간 양간/음간 | 신규 — 이번에 추가한 유일한 새 신호 |
+ * | 협업 추진 리듬 | 일간 양간/음간 | 개인 전달·추진 톤. section reporting_style_fit(보고 포맷)과 다른 질문 |
  */
 
 export type WorkCompareRowId =
@@ -174,7 +174,11 @@ const RISK_MEANING: Record<Locale, { same: string; diff: string }> = {
   },
 };
 
-// ---- 행 6: 일간 양간/음간 --------------------------------------------------
+// ---- 행 6: 일간 양간/음간 (협업 추진 리듬) ---------------------------------
+//
+// Phase 5-2: 이 행은 개인별 협업 전달·추진 리듬만 비교한다. section의
+// reporting_style_fit(격국+psych 보고 포맷)과 산식·질문이 다르므로 카피에
+// 「결론/맥락/보고 방식」을 쓰지 않는다. resolver(양간/음간)는 그대로.
 
 const YANG_STEMS = new Set(["gap", "byeong", "mu", "gyeong", "im"]);
 
@@ -186,23 +190,23 @@ function resolveRhythmBand(dayStemCode: string): RhythmBand {
 
 const RHYTHM_LABEL: Record<Locale, Record<RhythmBand, string>> = {
   "ko-KR": {
-    yang: "결론 우선형 — 핵심부터 짚고 세부는 나중",
-    yin: "맥락 설명형 — 과정과 배경을 함께 짚어야 이해",
+    yang: "직진형 전달 — 할 말을 먼저 밀어 올리는 편",
+    yin: "호흡형 전달 — 상대 페이스에 맞춰 풀어 가는 편",
   },
   "en-US": {
-    yang: "Conclusion-first — leads with the point, details later",
-    yin: "Context-first — needs the process and background explained",
+    yang: "Push-forward style — shares direction quickly and clearly",
+    yin: "Paced style — builds the thread with the other person's tempo",
   },
 };
 
 const RHYTHM_MEANING: Record<Locale, { same: string; diff: string }> = {
   "ko-KR": {
-    same: "보고·회의에서 원하는 정보량이 비슷해서 대화 리듬이 잘 맞아요.",
-    diff: "보고할 때 한쪽은 결론부터, 다른 쪽은 맥락부터 원해요. '결론 한 줄 + 필요하면 배경 설명' 순서로 합의하면 서로 답답함이 줄어요.",
+    same: "협업할 때 생각을 전달하는 리듬이 비슷해서 대화가 잘 맞아요.",
+    diff: "협업 전달·추진 리듬이 서로 달라요 — 한쪽에만 맞추기보다 짧게 방향을 공유한 뒤 세부 호흡을 맞추면 좋아요.",
   },
   "en-US": {
-    same: "You want a similar amount of detail in reports and meetings, so your conversation rhythm matches naturally.",
-    diff: "One of you wants the conclusion first, the other wants context first. Agreeing on 'headline first, background on request' cuts down on frustration for both.",
+    same: "You share ideas at a similar collaboration pace, so work conversations sync easily.",
+    diff: "You differ in how you push ideas forward when collaborating — share a short direction check first, then match pacing on the details.",
   },
 };
 
@@ -302,7 +306,7 @@ export function buildWorkSajuCompareTable(
     ),
     row(
       "reporting_rhythm",
-      pick(locale, "Reporting & Collaboration Rhythm", "보고·협업 리듬"),
+      pick(locale, "Collaboration Rhythm", "협업 추진 리듬"),
       RHYTHM_LABEL[locale][rhythmBandA],
       RHYTHM_LABEL[locale][rhythmBandB],
       rhythmBandA === rhythmBandB
