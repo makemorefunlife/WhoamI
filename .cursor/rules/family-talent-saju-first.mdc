@@ -1,0 +1,35 @@
+---
+description: Family talent — saju SSOT first, psych absolute-band aux only
+globs: lib/relationship/familyParent/**/*,tests/unit/family-*.mjs,components/relationship/familyParent/**/*
+alwaysApply: false
+---
+
+# Family talent: 사주 우선 / psych 보조
+
+## 우선순위
+
+1. **사주** `study_type`, `wealth_vessel` — 본문 판단·핵심 카피 SSOT
+2. **psych 11축** `study_align` / `wealth_align` — 자녀 축 **절대 밴드** 메타만 (사주 대체·뒤집기 금지)
+
+기본 해석 순서: **사주 > psych 11축**
+
+## align 의미
+
+- `confirms` / `caution` = psych 축 평균 고/저 (60 / 40). **사주 pick과의 일치가 아님**
+- mid·psych 누락 → null / 키 omit
+- 사주와 방향이 달라 보여도 **충돌·불일치로 판정하지 말 것** (직접 비교 대상 아님)
+
+## 카피
+
+- 사주 결과를 먼저 쓰고, psych는 **두 번째 문장·보조 관찰**만
+- 허용: “별도의 관찰로, 현재 성향에서도 공부·구조 축이…”
+- 금지: “사주 판단을 확인”, “사주와 11축이 일치”, psych로 사주 신뢰도 인상
+- psych 없으면 **사주 카피만으로 완결**
+
+## 구현
+
+- `resolveStudyType` / `resolveWealthVessel` 불변
+- CO: `study_align` / `wealth_align` confirm-only 보조
+- 보조 문구: `buildFamilyTalentPsychAuxNote` / `applyFamilyTalentPsychAuxNotes` (Track A만)
+- soft flip / fill / lock 금지
+- `FAMILY_TALENT_PSYCH_FORBIDDEN_PHRASES`는 **테스트 가드만** (카피 생성 미사용)

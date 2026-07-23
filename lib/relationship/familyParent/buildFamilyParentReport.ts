@@ -27,6 +27,7 @@ import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment
 import { buildFamilyRoleSection } from "./familyPsychRoles";
 import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSection";
 import { buildFamilyTalentSection } from "./familyTalentProfile";
+import { applyFamilyTalentPsychAuxNotes } from "./familyTalentAlign";
 import { buildFamilySosSection } from "./familySosScript";
 import { buildFamilyFilialFrequencySection } from "./familyFilialFrequency";
 import {
@@ -99,6 +100,10 @@ export function buildFamilyParentReport(params: {
 }): FamilyParentReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const ctx = buildFamilyRuleContext({ ...params, locale });
+  const psychChild =
+    ctx.roles.roleA !== "child"
+      ? (params.psychMasterB ?? null)
+      : (params.psychMasterA ?? null);
   const family: FamilyParentChildReport = {
     ...buildFamilyParentChildReport(ctx),
     section_compare_table: buildFamilySajuCompareTable({
@@ -128,7 +133,7 @@ export function buildFamilyParentReport(params: {
       locale,
     }),
     section_family_role: buildFamilyRoleSection(
-      ctx.roles.roleA !== "child" ? params.psychMasterB : params.psychMasterA,
+      psychChild,
       ctx.childNickname,
       locale,
       ctx.childIsViewer,
@@ -136,19 +141,30 @@ export function buildFamilyParentReport(params: {
     section_relationship_index: buildFamilyRelationshipIndexSection({
       pairFamily: params.pairFamily,
       fallbackRisk: ctx.masterScores.risk,
-      psychChild: ctx.roles.roleA !== "child" ? params.psychMasterB : params.psychMasterA,
-      psychParent: ctx.roles.roleA !== "child" ? params.psychMasterA : params.psychMasterB,
+      psychChild,
+      psychParent:
+        ctx.roles.roleA !== "child"
+          ? (params.psychMasterA ?? null)
+          : (params.psychMasterB ?? null),
       childIsViewer: ctx.childIsViewer,
       locale,
     }),
-    section_talent: buildFamilyTalentSection({
-      countsChild: ctx.tenGod.countsChild,
-      countsParent: ctx.tenGod.countsParent,
-      childNickname: ctx.childNickname,
-      parentNickname: ctx.parentNickname,
-      childIsViewer: ctx.childIsViewer,
-      locale,
-    }),
+    // 사주 SSOT 노트 → Track A에서만 자녀 psych 절대밴드 보조 문장 (enum 불변)
+    section_talent: applyFamilyTalentPsychAuxNotes(
+      buildFamilyTalentSection({
+        countsChild: ctx.tenGod.countsChild,
+        countsParent: ctx.tenGod.countsParent,
+        childNickname: ctx.childNickname,
+        parentNickname: ctx.parentNickname,
+        childIsViewer: ctx.childIsViewer,
+        locale,
+      }),
+      {
+        psychChild,
+        childIsViewer: ctx.childIsViewer,
+        locale,
+      },
+    ),
     section_sos_script: buildFamilySosSection({
       scoringSignals: ctx.familyPairAnalysis.scoringSignals,
       countsParent: ctx.tenGod.countsParent,
@@ -232,10 +248,7 @@ export function buildFamilyParentReport(params: {
     },
     context_output: buildFamilyContextOutput(ctx, family, {
       personCoreMeta: params.personCoreMeta,
-      psychChild:
-        ctx.roles.roleA !== "child"
-          ? (params.psychMasterB ?? null)
-          : (params.psychMasterA ?? null),
+      psychChild,
     }),
   };
 }

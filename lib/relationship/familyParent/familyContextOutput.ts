@@ -1,7 +1,10 @@
 /**
  * Family Context Output — 이미 계산된 RuleContext·section 결과의 표준 재포장.
- * study/wealth 사주 pick은 재계산하지 않는다.
- * Phase 5-1: psych가 있을 때만 study_align / wealth_align confirm 키를 추가.
+ * study/wealth 사주 pick(`study_type` / `wealth_vessel`)은 재계산·변경하지 않는다.
+ *
+ * Phase 5-1: 자녀 psych 절대 밴드로 `study_align` / `wealth_align`만 선택 추가.
+ * 이 키는 사주 분류와의 일치·확인이 아니다 — 보조 context 메타만.
+ * 카피 소비 시 사주 키를 먼저 쓰고, align은 보조 관찰로만 해석할 것.
  */
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { FamilyScoringSignals } from "@/lib/saju/familyAnalysis";
@@ -62,13 +65,16 @@ export type BuildFamilyContextOutputOptions = {
     inputFingerprintA: string;
     inputFingerprintB: string;
   } | null;
-  /** 자녀 psych — 있으면 study/wealth align만 추가 (없으면 키 omit) */
+/**
+   * 자녀 psych — 있으면 study/wealth 절대밴드 align만 추가 (없으면 키 omit).
+   * 사주 study_type / wealth_vessel과 직접 비교하지 않는다.
+   */
   psychChild?: PsychMasterJson | null;
 };
 
 /**
  * ctx + 최종 family section 결과를 Context Output으로 모은다.
- * study_type / wealth_vessel 사주 판정은 재호출하지 않는다.
+ * study_type / wealth_vessel 사주 판정은 재호출하지 않는다 (SSOT = section_talent).
  */
 export function buildFamilyContextOutput(
   ctx: FamilyRuleContext,
@@ -95,7 +101,7 @@ export function buildFamilyContextOutput(
     };
   }
 
-  // Phase 5-1 confirm — mid/누락 시 omit (추정 금지)
+  // Phase 5-1 — psych 절대 밴드 메타만 (사주 일치 판정 아님). mid/누락 시 omit.
   const studyAlign = resolveStudyAlign(options?.psychChild);
   if (studyAlign) {
     dominant_categories.study_align = { category: studyAlign };
