@@ -1,6 +1,11 @@
 /**
  * Marriage/Cohabitation Context Output — 내부용 순수 매핑 (파일럿).
  *
+ * Phase 6-2c: operating CFO fields come primarily from
+ * `household.section_money_chores` (canonical). Never re-call
+ * pickHouseholdCfo / refineHouseholdCfo here.
+ * Not asset_management compare row, cfo_power_struggle, chores, or bedroom_lead.
+ *
  * 기존 판정·점수·문구·section builder를 수정하지 않고,
  * 이미 계산된 MarriageRuleContext + HouseholdPartnershipReport(+ optional psych_match)만 옮긴다.
  * 새 판정·문장 생성·판정 함수 재호출 금지 (특히 resolveMannerArchetype).
@@ -17,6 +22,7 @@ import type {
   MannerArchetype,
   StaminaArchetype,
 } from "./bedroomProfile";
+import { operatingCfoSideFromNickname } from "./marriageOperatingCfoCanonical";
 
 export const MARRIAGE_CONTEXT_OUTPUT_SCHEMA_VERSION =
   "context_output_v1" as const;
@@ -170,17 +176,60 @@ export type BuildMarriageContextOutputOptions = {
   } | null;
 };
 
-function nicknameToAb(
-  nickname: string | null | undefined,
+/**
+ * Pure map: finalized section_money_chores operating-CFO fields → CO keys.
+ * No pick/refine — primary input is the canonical section result.
+ * Optional legacy nick only when section nick cannot map to a|b.
+ */
+export function operatingCfoContextCategoriesFromMoney(
+  money: {
+    cfo_nickname: string;
+    cfo_confidence?: "high" | "low";
+    cfo_align?: "confirms" | "caution";
+    cfo_dual?: boolean;
+  },
   nicknameA: string,
   nicknameB: string,
-): "a" | "b" | null {
-  if (!nickname) return null;
-  // 동명이인이면 A/B slot을 추정하지 않음
-  if (nicknameA === nicknameB) return null;
-  if (nickname === nicknameA) return "a";
-  if (nickname === nicknameB) return "b";
-  return null;
+  options?: {
+    legacyCfoNickname?: string | null;
+  },
+): {
+  household_cfo?: MarriageContextDominantCategory;
+  cfo_confidence?: MarriageContextDominantCategory;
+  cfo_align?: MarriageContextDominantCategory;
+  cfo_dual?: MarriageContextDominantCategory;
+} {
+  const out: {
+    household_cfo?: MarriageContextDominantCategory;
+    cfo_confidence?: MarriageContextDominantCategory;
+    cfo_align?: MarriageContextDominantCategory;
+    cfo_dual?: MarriageContextDominantCategory;
+  } = {};
+
+  const cfoSlot =
+    operatingCfoSideFromNickname(
+      money.cfo_nickname,
+      nicknameA,
+      nicknameB,
+    ) ??
+    operatingCfoSideFromNickname(
+      options?.legacyCfoNickname,
+      nicknameA,
+      nicknameB,
+    );
+  if (cfoSlot) {
+    out.household_cfo = { category: cfoSlot };
+  }
+  if (money.cfo_confidence) {
+    out.cfo_confidence = { category: money.cfo_confidence };
+  }
+  if (money.cfo_align) {
+    out.cfo_align = { category: money.cfo_align };
+  }
+  if (money.cfo_dual) {
+    out.cfo_dual = { category: "dual" };
+  }
+  return out;
 }
 
 function findPsychAxis(
@@ -221,10 +270,6 @@ export function buildMarriageContextOutput(
   const snapshot = household.section_snapshot;
   const origin = household.section_origin_story;
 
-  const cfoSlot =
-    nicknameToAb(money.cfo_nickname, ctx.nicknameA, ctx.nicknameB) ??
-    nicknameToAb(ctx.tenGod.cfo.nickname, ctx.nicknameA, ctx.nicknameB);
-
   const dominant_categories: MarriageContextOutput["dominant_categories"] = {
     parenting_style_a: {
       category:
@@ -256,19 +301,13 @@ export function buildMarriageContextOutput(
         ? "needs_distance"
         : "comfortable",
     },
+    ...operatingCfoContextCategoriesFromMoney(
+      money,
+      ctx.nicknameA,
+      ctx.nicknameB,
+      { legacyCfoNickname: ctx.tenGod.cfo.nickname },
+    ),
   };
-  if (cfoSlot) {
-    dominant_categories.household_cfo = { category: cfoSlot };
-  }
-  if (money.cfo_confidence) {
-    dominant_categories.cfo_confidence = { category: money.cfo_confidence };
-  }
-  if (money.cfo_align) {
-    dominant_categories.cfo_align = { category: money.cfo_align };
-  }
-  if (money.cfo_dual) {
-    dominant_categories.cfo_dual = { category: "dual" };
-  }
   if (parenting.parenting_a_confidence) {
     dominant_categories.parenting_a_confidence = {
       category: parenting.parenting_a_confidence,

@@ -18,6 +18,7 @@ import {
 } from "./homeReportTemplate";
 import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
 import { resolveCfoAxisNote, refineHouseholdCfo } from "./marriageCfoConsumption";
+import { buildMarriageOperatingCfoCanonical } from "./marriageOperatingCfoCanonical";
 import { resolveEnergyStyleAxisNote } from "./homeLifeLanguage";
 import { resolveRejectionAxisNote } from "./bedroomProfile";
 import {
@@ -114,9 +115,14 @@ export function buildMarriageReport(params: {
 
   const baseHousehold = buildHouseholdPartnershipReport(ctx);
   const baseMoney = baseHousehold.section_money_chores;
+  const cfoBase = {
+    nickname: baseMoney.cfo_nickname,
+    reason: baseMoney.cfo_reason,
+  };
+  // Phase 6-2c — pick (in base sections) → refine once → wrap → persist .value
   const refinedCfo = refineHouseholdCfo({
-    baseNickname: baseMoney.cfo_nickname,
-    baseReason: baseMoney.cfo_reason,
+    baseNickname: cfoBase.nickname,
+    baseReason: cfoBase.reason,
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     countsA: ctx.tenGod.countsA,
@@ -132,6 +138,10 @@ export function buildMarriageReport(params: {
     dualCfoWar: params.pairCohabitation?.cfo_power_struggle?.dual_cfo_war,
     locale,
   });
+  const cfoCanonical = buildMarriageOperatingCfoCanonical(refinedCfo, {
+    base: cfoBase,
+  });
+  const cfoFinal = cfoCanonical?.value ?? refinedCfo;
 
   const refinedParentingA = refineParentingStyle({
     baseStyle: ctx.tenGod.parentingA.style,
@@ -163,18 +173,18 @@ export function buildMarriageReport(params: {
     }),
     section_money_chores: {
       ...baseMoney,
-      cfo_nickname: refinedCfo.nickname,
-      cfo_reason: refinedCfo.reason,
+      cfo_nickname: cfoFinal.nickname,
+      cfo_reason: cfoFinal.reason,
       cfo_axis_note: resolveCfoAxisNote(
         psychBundle?.psych_match ?? null,
-        refinedCfo.nickname === params.nicknameA,
+        cfoFinal.nickname === params.nicknameA,
         locale,
       ),
-      ...(refinedCfo.confidence
-        ? { cfo_confidence: refinedCfo.confidence }
+      ...(cfoFinal.confidence
+        ? { cfo_confidence: cfoFinal.confidence }
         : {}),
-      ...(refinedCfo.align ? { cfo_align: refinedCfo.align } : {}),
-      ...(refinedCfo.dual ? { cfo_dual: true } : {}),
+      ...(cfoFinal.align ? { cfo_align: cfoFinal.align } : {}),
+      ...(cfoFinal.dual ? { cfo_dual: true } : {}),
     },
     section_dna: {
       person_a: {
