@@ -17,6 +17,7 @@ import { calculateSajuBundle } from "../../lib/v2/saju/calculateSajuBundle.ts";
 import { toV1SajuApiPayload } from "../../lib/saju/toApiPayload.ts";
 import { COHABITATION_DEEP_FORMAT } from "../../lib/prompts/relationshipPremium/cohabitation/outputSchema.ts";
 import { stripMarriageContextOutputForClient } from "../../lib/relationship/marriage/stripMarriageContextOutputForClient.ts";
+import { buildCohabitationPrescriptions } from "../../lib/relationship/marriage/buildCohabitationPrescriptions.ts";
 
 function section(title) {
   console.log(`\n=== ${title} ===`);
@@ -545,5 +546,109 @@ assert.equal(
   "Jordan",
 );
 ok("case5 strip removes CO only");
+
+// ---------------------------------------------------------------------------
+section("8) operating CFO ≠ pair leader_side (independent contracts)");
+
+const pairStruggleAlex = {
+  secret_affinity: {
+    present: false,
+    links: [],
+    affinity_index: 0,
+  },
+  cfo_power_struggle: {
+    dual_cfo_war: false,
+    struggle_score: 72,
+    struggle_band: "high",
+    // pair-affinity struggle driver — must NOT be forced to match operating CFO
+    leader_side: "a",
+    a_cfo_affinity: 70,
+    b_cfo_affinity: 40,
+  },
+  day_palace_cross: {
+    branch_a: "o",
+    branch_b: "o",
+    cross_relation_type: null,
+    cross_tension_index: 20,
+  },
+};
+
+const independentReport = buildMarriageReport(
+  reportParams(
+    power(45, "medium"),
+    power(40, "medium"),
+    samplePsych({ practicality: 15, self_control: 20 }),
+    samplePsych({ practicality: 90, self_control: 88 }),
+    { pairCohabitation: pairStruggleAlex },
+  ),
+);
+
+assert.equal(
+  independentReport.household.section_money_chores.cfo_nickname,
+  "Jordan",
+  "operating CFO can be Jordan after psych flip",
+);
+assert.equal(
+  independentReport.meta.prescription_cohabitation?.items?.some(
+    (i) => i.topic === "cfo_power_struggle",
+  ),
+  true,
+);
+const struggleItem =
+  independentReport.meta.prescription_cohabitation.items.find(
+    (i) => i.topic === "cfo_power_struggle",
+  );
+assert.equal(struggleItem.evidence.snapshot.leader_side, "a");
+assertConsumersShareCfo(independentReport, "Jordan", "b");
+
+const packKo = buildCohabitationPrescriptions({
+  pair: pairStruggleAlex,
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  locale: "ko-KR",
+});
+const packEn = buildCohabitationPrescriptions({
+  pair: pairStruggleAlex,
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  locale: "en-US",
+});
+const cfoItemKo = packKo.items.find((i) => i.topic === "cfo_power_struggle");
+const cfoItemEn = packEn.items.find((i) => i.topic === "cfo_power_struggle");
+assert.ok(cfoItemKo && cfoItemEn);
+
+function assertNoOperatingCfoAssign(blob, locale) {
+  const banned =
+    locale === "ko-KR"
+      ? [/통장\s*담당/, /최종\s*CFO/, /큰\s*지출\s*담당/, /통장·큰\s*지출은/, /CFO를\s*맡/]
+      : [
+          /bank account and big (spending|expenses)/i,
+          /final CFO/i,
+          /should hold the bank/i,
+          /designated (the )?household CFO/i,
+          /make the final call on the bank/i,
+        ];
+  for (const re of banned) {
+    assert.equal(
+      re.test(blob),
+      false,
+      `${locale} prescription must not assign operating CFO: ${re} in ${blob.slice(0, 120)}`,
+    );
+  }
+}
+
+assertNoOperatingCfoAssign(
+  [cfoItemKo.headline, cfoItemKo.evidence.summary, ...cfoItemKo.do_list, ...cfoItemKo.dont_list].join(
+    "\n",
+  ),
+  "ko-KR",
+);
+assertNoOperatingCfoAssign(
+  [cfoItemEn.headline, cfoItemEn.evidence.summary, ...cfoItemEn.do_list, ...cfoItemEn.dont_list].join(
+    "\n",
+  ),
+  "en-US",
+);
+ok("operating CFO Jordan ≠ leader_side a; prescription is struggle-only");
 
 console.log("\nAll marriage-cfo-composite tests passed.");

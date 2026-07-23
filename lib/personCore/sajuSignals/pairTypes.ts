@@ -23,6 +23,11 @@ export type PairCohabitationSignals = {
     dual_cfo_war: boolean;
     struggle_score: number;
     struggle_band: PairIntensityBand;
+    /**
+     * Side more likely to drive or intensify a money-control struggle
+     * (pair affinity gap). Not the recommended household operating CFO —
+     * that lives on Marriage `section_money_chores.cfo_nickname` (refined).
+     */
     leader_side: "a" | "b" | "even" | null;
     a_cfo_affinity: number;
     b_cfo_affinity: number;

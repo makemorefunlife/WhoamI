@@ -163,9 +163,11 @@ export function buildHouseholdCfoReason(
 }
 
 /**
- * PersonCore SSOT `CohabitationSajuSignals.wealth_officer_power` — 계산은 되지만
- * 리포트 어디서도 안 쓰이던 신호. `cfo_affinity_score`/`economic_dominance_band`가
- * 있으면 그걸 우선 쓰고, 없으면(레거시 캐시 호환) 기존 십신 카운트 계산으로 폴백한다.
+ * PersonCore SSOT `CohabitationSajuSignals.wealth_officer_power` —
+ * base saju CFO candidate used as the input/fallback for final refinement
+ * (`refineHouseholdCfo` → `section_money_chores`). Prefer
+ * `cfo_affinity_score` / `economic_dominance_band` when present; otherwise
+ * (legacy cache) fall back to ten-god / branch counts.
  */
 export function pickHouseholdCfo(
   nicknameA: string,

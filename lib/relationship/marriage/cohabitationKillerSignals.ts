@@ -16,7 +16,8 @@ export type CohabitationKillerSignals = {
   nicknameA: string;
   nicknameB: string;
 
-  sajuCfoNickname: string;
+  /** Canonical refined operating CFO (section_money_chores.cfo_nickname). */
+  finalCfoNickname: string;
   sajuWealthPowerStruggle: boolean;
   psychPracticality: PsychAxisSignal;
 
@@ -60,8 +61,8 @@ function countBedroomMismatches(matrix: BedroomMatrixSection): number {
 
 /**
  * PersonCore psych_master + 사주 rule context → 킬러 IF-THEN 입력 신호.
- * `sajuCfoNickname`에는 최종 운영 CFO(section_money_chores)를 넣는다.
- * finalCfoNickname 생략 시에만 base `ctx.tenGod.cfo` fallback.
+ * `finalCfoNickname` = 최종 운영 CFO(section_money_chores).
+ * finalCfoNickname 인자 생략 시에만 base `ctx.tenGod.cfo` fallback.
  */
 export function extractCohabitationKillerSignals(params: {
   ctx: MarriageRuleContext;
@@ -90,7 +91,7 @@ export function extractCohabitationKillerSignals(params: {
   return {
     nicknameA: ctx.nicknameA,
     nicknameB: ctx.nicknameB,
-    sajuCfoNickname: finalCfo,
+    finalCfoNickname: finalCfo,
     sajuWealthPowerStruggle: sig.hasWealthOfficerPowerStruggle,
     psychPracticality: pickPsychAxis(axisResults, "practicality"),
     bedroomMismatchCount: countBedroomMismatches(bedroomMatrix),

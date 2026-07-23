@@ -70,7 +70,8 @@ export type MarriageReportBody = {
     home_psych_lens?: MarriageHomePsychLens | null;
     /** 1안 — 사주×설문 교차 검증 킬러 질문 팩 */
     killer_questions?: CohabitationKillerQuestionPack;
-    /** 3보 — pair 교차 신호 기반 실행 처방전 (기존 household 서사와 독립) */
+    /** 3보 — pair 교차 신호 기반 실행 처방전 (기존 household 서사와 독립).
+     * cfo_power_struggle.leader_side ≠ section_money_chores 운영 CFO. */
     prescription_cohabitation?: CohabitationPrescriptionPack;
   };
 };

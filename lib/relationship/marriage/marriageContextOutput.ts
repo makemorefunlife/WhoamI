@@ -88,8 +88,9 @@ export type MarriageContextOutput = {
   signals: MarriageScoringSignals;
   dominant_categories: {
     /**
-     * pickHouseholdCfo nickname → "a" | "b".
-     * 닉네임 불일치·동명이인·값 없음이면 키 생략 (임의 "a" 폴백 없음).
+     * Refined money-section CFO nickname → "a" | "b".
+     * Falls back to base `tenGod.cfo` only when money nick cannot map;
+     * omitted on mismatch / same-name / missing (no arbitrary "a").
      */
     household_cfo?: MarriageContextDominantCategory;
     /** Phase 5-2 — section_money_chores.cfo_confidence */

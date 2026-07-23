@@ -110,6 +110,13 @@ function buildSecretAffinityPrescription(
   });
 }
 
+/**
+ * Money-control struggle prescription — PersonCore pair affinity only.
+ * `leader_side` = who tends to intensify money-power tension (not operating CFO).
+ * Do not map to `section_money_chores.cfo_nickname` or re-call refineHouseholdCfo.
+ * 돈 주도권 갈등 처방전 — pair affinity만 사용.
+ * leader_side = 갈등을 키우기 쉬운 쪽(운영 CFO 담당자와 별개).
+ */
 function buildCfoPowerPrescription(
   pair: PairCohabitationSignals,
   nicknameA: string,
