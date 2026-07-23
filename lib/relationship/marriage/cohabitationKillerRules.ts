@@ -38,7 +38,7 @@ function evidenceFrom(
   return out;
 }
 
-/** 경제권·CFO — 사주 pickHouseholdCfo × practicality 축 교차 */
+/** 경제권·CFO — 최종 운영 CFO(section_money_chores) × practicality 축 교차 */
 function ruleEconomicDominance(
   s: CohabitationKillerSignals,
   locale: Locale,
@@ -73,9 +73,9 @@ function ruleEconomicDominance(
     narrative = sanitizeHomeLifeText(
       pick(
         locale,
-        `In your chart, wealth-star energy runs strong on both sides, setting up a 'dual CFO' power struggle — and the survey shows a big gap in your sense of money and practicality too. Put final decision-making power in ${s.sajuCfoNickname}'s hands alone, with the other person only offering input, and write the rule down. Be sure to check 「Money & Chores」 together.`,
-        `명리상 재성·편재가 양쪽 모두 강해 '듀얼 CFO' 전쟁 구조이고, 설문에서도 돈·실리 감각 격차가 큽니다. ` +
-          `${s.sajuCfoNickname} 한 명에게 최종 결정권을 몰고, 다른 한 명은 의견만 내는 규칙을 문서로 정하세요. 「돈과 집안일」을 꼭 같이 보세요.`,
+        `Wealth-star energy runs strong on both sides, setting up a 'dual CFO' power struggle — and the survey shows a big gap in your sense of money and practicality too. Put final decision-making power in ${s.sajuCfoNickname}'s hands alone, with the other person only offering input, and write the rule down. Be sure to check 「Money & Chores」 together.`,
+        `재성·편재가 양쪽 모두 강해 '듀얼 CFO' 전쟁 구조이고, 설문에서도 돈·실리 감각 격차가 큽니다. ` +
+          `현재 운영 조합에서는 ${s.sajuCfoNickname} 한 명에게 최종 결정권을 몰고, 다른 한 명은 의견만 내는 규칙을 문서로 정하세요. 「돈과 집안일」을 꼭 같이 보세요.`,
       ),
     );
   } else if (s.sajuWealthPowerStruggle) {
@@ -90,8 +90,8 @@ function ruleEconomicDominance(
     narrative = sanitizeHomeLifeText(
       pick(
         locale,
-        `In your chart, financial leadership overlaps on both sides, creating a real 'dual CFO' risk. Let ${s.sajuCfoNickname} alone handle the bank account and big expenses — if you both hold the reins at once, it turns into a household war.`,
-        `명리상 재정 주도권이 양쪽에 겹쳐 '듀얼 CFO' 위험이 큽니다. 통장·큰 지출은 ${s.sajuCfoNickname} 한 명만 — 둘이 동시에 쥐면 집안 전쟁으로 번집니다.`,
+        `Financial leadership overlaps on both sides, creating a real 'dual CFO' risk. Let ${s.sajuCfoNickname} alone handle the bank account and big expenses — if you both hold the reins at once, it turns into a household war.`,
+        `재정 주도권이 양쪽에 겹쳐 '듀얼 CFO' 위험이 큽니다. 통장·큰 지출은 ${s.sajuCfoNickname} 한 명만 — 둘이 동시에 쥐면 집안 전쟁으로 번집니다.`,
       ),
     );
   } else if (psychTension) {
@@ -107,8 +107,8 @@ function ruleEconomicDominance(
     narrative = sanitizeHomeLifeText(
       pick(
         locale,
-        `The survey shows a big gap in your standards around money and practicality. Your chart favors ${s.sajuCfoNickname} as CFO, but the emotional side can easily turn into a fight over numbers. Just splitting up the roles cuts down on fighting.`,
-        `설문에서 돈·실리 기준 격차가 커요. 사주 CFO는 ${s.sajuCfoNickname} 쪽이 유리하지만, 감정선은 숫자 싸움으로 번지기 쉽습니다. 역할만 나눠도 덜 싸워요.`,
+        `The survey shows a big gap in your standards around money and practicality. In your operating mix, ${s.sajuCfoNickname} as CFO is the more stable call, but the emotional side can easily turn into a fight over numbers. Just splitting up the roles cuts down on fighting.`,
+        `설문에서 돈·실리 기준 격차가 커요. 현재 운영 조합에서는 ${s.sajuCfoNickname}가 CFO로 맡는 편이 안정적이지만, 감정선은 숫자 싸움으로 번지기 쉽습니다. 역할만 나눠도 덜 싸워요.`,
       ),
     );
   } else {
@@ -123,8 +123,8 @@ function ruleEconomicDominance(
     narrative = sanitizeHomeLifeText(
       pick(
         locale,
-        `In your chart, ${s.sajuCfoNickname} is favored as the household CFO. The survey gap isn't large — just designating a CFO cuts down on fights over living expenses.`,
-        `명리상 ${s.sajuCfoNickname}이(가) 집안 CFO로 유리합니다. 설문 격차는 크지 않아 — CFO만 정해두면 생활비 싸움이 줄어요.`,
+        `In your operating mix, ${s.sajuCfoNickname} as household CFO is the more stable setup. The survey gap isn't large — just designating a CFO cuts down on fights over living expenses.`,
+        `현재 두 사람의 운영 조합에서는 ${s.sajuCfoNickname}이(가) 집안 CFO를 맡는 편이 안정적입니다. 설문 격차는 크지 않아 — CFO만 정해두면 생활비 싸움이 줄어요.`,
       ),
     );
   }

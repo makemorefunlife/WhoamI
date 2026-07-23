@@ -60,12 +60,16 @@ function countBedroomMismatches(matrix: BedroomMatrixSection): number {
 
 /**
  * PersonCore psych_master + 사주 rule context → 킬러 IF-THEN 입력 신호.
+ * `sajuCfoNickname`에는 최종 운영 CFO(section_money_chores)를 넣는다.
+ * finalCfoNickname 생략 시에만 base `ctx.tenGod.cfo` fallback.
  */
 export function extractCohabitationKillerSignals(params: {
   ctx: MarriageRuleContext;
   bedroomMatrix: BedroomMatrixSection;
   psychA?: PsychMasterJson | null;
   psychB?: PsychMasterJson | null;
+  /** canonical refined CFO from section_money_chores */
+  finalCfoNickname?: string | null;
 }): CohabitationKillerSignals {
   const { ctx, bedroomMatrix, psychA, psychB } = params;
   const sig = ctx.marriagePairAnalysis.scoringSignals;
@@ -80,10 +84,13 @@ export function extractCohabitationKillerSignals(params: {
     ctx.sleepFit.sensor_nickname != null &&
     ctx.sleepFit.easy_sleeper_nickname != null;
 
+  const finalCfo =
+    params.finalCfoNickname?.trim() || ctx.tenGod.cfo.nickname;
+
   return {
     nicknameA: ctx.nicknameA,
     nicknameB: ctx.nicknameB,
-    sajuCfoNickname: ctx.tenGod.cfo.nickname,
+    sajuCfoNickname: finalCfo,
     sajuWealthPowerStruggle: sig.hasWealthOfficerPowerStruggle,
     psychPracticality: pickPsychAxis(axisResults, "practicality"),
     bedroomMismatchCount: countBedroomMismatches(bedroomMatrix),

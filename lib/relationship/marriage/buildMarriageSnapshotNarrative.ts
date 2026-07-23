@@ -84,6 +84,8 @@ function interpretMarriageTopic(
   ctx: MarriageRuleContext,
   psychA?: PsychMasterJson | null,
   psychB?: PsychMasterJson | null,
+  /** patched section_money_chores.cfo_nickname — omit → base fallback */
+  finalCfoNickname?: string | null,
 ): SnapshotTopicNarrative {
   const locale = ctx.locale ?? LEGACY_FALLBACK_LOCALE;
   const config = getTriScoreKindConfig("cohabitation", locale);
@@ -147,7 +149,8 @@ function interpretMarriageTopic(
           ? "역할 합의와 CFO 지정으로 끌어올릴 수 있습니다."
           : "돈·역할·육아에서 마찰이 잦을 수 있습니다. 시스템이 없으면 서운함만 쌓입니다.",
     );
-    const cfo = ctx.tenGod.cfo.nickname;
+    // final CFO(section_money_chores) 우선 — legacy/direct-call만 base fallback
+    const cfo = finalCfoNickname?.trim() || ctx.tenGod.cfo.nickname;
     return {
       topic: gauge.topic,
       title: topicMeta?.cardTitle ?? pick(locale, "② Life Synergy", "② 라이프 시너지"),
@@ -157,8 +160,8 @@ function interpretMarriageTopic(
       risk,
       interpretation: pick(
         locale,
-        `${core} Only ${cfo} should hold the bank account and big spending.`,
-        `${core} 통장·큰 지출은 ${cfo} 한 명만 쥐세요.`,
+        `${core} In your operating mix, having ${cfo} make the final call on the bank account and big spending is the more stable setup.`,
+        `${core} 현재 두 사람의 운영 조합에서는 ${cfo}가 통장·큰 지출의 최종 확인을 맡는 편이 안정적입니다.`,
       ),
       isWarning: false,
       axisNote: resolveLifeSynergyAxisNote(psychA, psychB, locale),
@@ -206,10 +209,18 @@ export function buildMarriageSnapshotNarrative(params: {
   relationshipGauges: RelationshipTopicGauge[];
   psychA?: PsychMasterJson | null;
   psychB?: PsychMasterJson | null;
+  /** canonical refined CFO from section_money_chores; omit → ctx.tenGod.cfo */
+  finalCfoNickname?: string | null;
 }): SnapshotNarrative {
   return {
     topics: params.relationshipGauges.map((g) =>
-      interpretMarriageTopic(g, params.ctx, params.psychA, params.psychB),
+      interpretMarriageTopic(
+        g,
+        params.ctx,
+        params.psychA,
+        params.psychB,
+        params.finalCfoNickname,
+      ),
     ),
   };
 }

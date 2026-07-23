@@ -64,6 +64,7 @@ export function buildCohabitationKillerQuestions(params: {
     bedroomMatrix: params.household.section_bedroom.matrix,
     psychA: params.psychA,
     psychB: params.psychB,
+    finalCfoNickname: params.household.section_money_chores.cfo_nickname,
   });
 
   const questions = dedupeByTopic(

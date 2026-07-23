@@ -44,6 +44,8 @@ export function buildMarriageSnapshotPanel(
     psychA?: PsychMasterJson | null;
     psychB?: PsychMasterJson | null;
   },
+  /** canonical refined CFO from section_money_chores; omit → base fallback */
+  finalCfoNickname?: string | null,
 ): TriScoreSnapshotPanel {
   const topicLabels = getTriScoreKindConfig("cohabitation", ctx.locale).topics;
   const psychA = personCorePsych?.psychA ?? null;
@@ -90,7 +92,13 @@ export function buildMarriageSnapshotPanel(
     },
   ];
 
-  const narrative = buildMarriageSnapshotNarrative({ ctx, relationshipGauges, psychA, psychB });
+  const narrative = buildMarriageSnapshotNarrative({
+    ctx,
+    relationshipGauges,
+    psychA,
+    psychB,
+    finalCfoNickname,
+  });
 
   return {
     grade: ctx.grade,

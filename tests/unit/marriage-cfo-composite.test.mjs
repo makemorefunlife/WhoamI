@@ -359,4 +359,162 @@ assert.equal(
 );
 ok("builder CO + VM + strip");
 
+// ---------------------------------------------------------------------------
+section("7) canonical final CFO — snapshot/killer consumer 통일");
+
+function palace() {
+  return {
+    branch_code: "o",
+    harmony_hits: [],
+    tension_hits: [],
+    harmony_index: 0,
+    tension_index: 0,
+  };
+}
+function intimacy() {
+  return {
+    day_stem_rooted_in_spouse_palace: false,
+    stem_combine_links: [],
+    intimacy_index: 0,
+  };
+}
+function reportParams(wealthA, wealthB, psychA, psychB, extra = {}) {
+  return {
+    nicknameA: "Alex",
+    nicknameB: "Jordan",
+    sajuJsonA: sajuFromBirth("1990-05-15"),
+    sajuJsonB: sajuFromBirth("1992-08-20"),
+    locale: "ko-KR",
+    cohabitationSignalsA: {
+      day_palace: palace(),
+      hidden_stem_intimacy: intimacy(),
+      wealth_officer_power: wealthA,
+    },
+    cohabitationSignalsB: {
+      day_palace: palace(),
+      hidden_stem_intimacy: intimacy(),
+      wealth_officer_power: wealthB,
+    },
+    ...(psychA ? { psychMasterA: psychA } : {}),
+    ...(psychB ? { psychMasterB: psychB } : {}),
+    ...extra,
+  };
+}
+
+function stabilityInterp(report) {
+  const topics =
+    report.snapshot_panel?.narrative?.topics ??
+    report.snapshot_panel?.topics ??
+    [];
+  const row = topics.find((t) => t.topic === "stability");
+  assert.ok(row?.interpretation, "stability interpretation present");
+  return row.interpretation;
+}
+
+function economicKillerNarrative(report) {
+  const q = (report.meta?.killer_questions?.questions ?? []).find(
+    (item) => item.topic === "economic_dominance",
+  );
+  assert.ok(q?.narrative, "economic_dominance killer present");
+  return q.narrative;
+}
+
+function assertConsumersShareCfo(report, expectedNick, expectedAb) {
+  const money = report.household.section_money_chores.cfo_nickname;
+  assert.equal(money, expectedNick);
+  assert.equal(
+    report.context_output.dominant_categories.household_cfo.category,
+    expectedAb,
+  );
+  const snap = stabilityInterp(report);
+  const killer = economicKillerNarrative(report);
+  assert.ok(snap.includes(expectedNick), `snapshot names ${expectedNick}`);
+  assert.ok(killer.includes(expectedNick), `killer names ${expectedNick}`);
+  const other = expectedNick === "Alex" ? "Jordan" : "Alex";
+  // CFO-related lines must not name the other person as the CFO holder
+  assert.equal(
+    snap.includes(other),
+    false,
+    `snapshot must not name other CFO ${other}: ${snap}`,
+  );
+  assert.equal(
+    killer.includes(other),
+    false,
+    `killer must not name other CFO ${other}: ${killer}`,
+  );
+  assert.equal(/명리상|사주 CFO|chart favors|In your chart, \w+ is favored/i.test(snap), false);
+  assert.equal(/명리상|사주 CFO|Your chart favors/i.test(killer), false);
+}
+
+// Case 1 — weak saju flip: base Alex → refined Jordan
+const flipReport = buildMarriageReport(
+  reportParams(
+    power(45, "medium"),
+    power(40, "medium"),
+    samplePsych({ practicality: 15, self_control: 20 }),
+    samplePsych({ practicality: 90, self_control: 88 }),
+  ),
+);
+assert.equal(weakBase.nickname, "Alex");
+assert.equal(flipReport.household.section_money_chores.cfo_nickname, "Jordan");
+assertConsumersShareCfo(flipReport, "Jordan", "b");
+ok("case1 weak flip money/snapshot/killer/CO = Jordan");
+
+// Case 2 — no psych → refined = base; consumers align
+const noPsychWeak = buildMarriageReport(
+  reportParams(power(45, "medium"), power(40, "medium")),
+);
+assert.equal(noPsychWeak.household.section_money_chores.cfo_confidence, undefined);
+assertConsumersShareCfo(
+  noPsychWeak,
+  noPsychWeak.household.section_money_chores.cfo_nickname,
+  noPsychWeak.household.section_money_chores.cfo_nickname === "Alex" ? "a" : "b",
+);
+assert.equal(noPsychWeak.household.section_money_chores.cfo_nickname, "Alex");
+ok("case2 no psych fallback consumers share base Alex");
+
+// Case 3 — strong saju lock keeps Alex across consumers
+const lockedReport = buildMarriageReport(
+  reportParams(
+    power(70, "high"),
+    power(40, "low"),
+    samplePsych({ practicality: 15, self_control: 20 }),
+    samplePsych({ practicality: 90, self_control: 88 }),
+  ),
+);
+assert.equal(lockedReport.household.section_money_chores.cfo_nickname, "Alex");
+assertConsumersShareCfo(lockedReport, "Alex", "a");
+ok("case3 saju lock consumers share Alex");
+
+// Case 4 — dual keeps base nickname; all consumers match
+const dualReport = buildMarriageReport(
+  reportParams(
+    power(65, "high", true),
+    power(62, "high", true),
+    samplePsych({ practicality: 80, self_control: 75 }),
+    samplePsych({ practicality: 78, self_control: 70 }),
+  ),
+);
+assert.equal(dualReport.household.section_money_chores.cfo_dual, true);
+const dualNick = dualReport.household.section_money_chores.cfo_nickname;
+assertConsumersShareCfo(
+  dualReport,
+  dualNick,
+  dualNick === "Alex" ? "a" : "b",
+);
+ok("case4 dual consumers share same nickname");
+
+// Case 5 — client strip shape unchanged
+const strippedFlip = stripMarriageContextOutputForClient({
+  format: COHABITATION_DEEP_FORMAT,
+  report: flipReport,
+});
+assert.equal(strippedFlip.report.context_output, undefined);
+assert.ok(flipReport.context_output.dominant_categories.household_cfo);
+assert.equal(
+  strippedFlip.report.household.section_money_chores.cfo_nickname,
+  "Jordan",
+);
+ok("case5 strip removes CO only");
+
 console.log("\nAll marriage-cfo-composite tests passed.");

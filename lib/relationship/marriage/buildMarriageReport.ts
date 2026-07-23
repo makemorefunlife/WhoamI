@@ -265,6 +265,7 @@ export function buildMarriageReport(params: {
       psychA: params.psychMasterA ?? null,
       psychB: params.psychMasterB ?? null,
     },
+    household.section_money_chores.cfo_nickname,
   );
 
   const personCoreMeta =
