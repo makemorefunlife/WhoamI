@@ -29,6 +29,10 @@ import {
   resolveJealousyGuardNote,
   resolveReconciliationScript,
 } from "./friendPsychFit";
+import {
+  buildFriendContextOutput,
+  type FriendContextOutput,
+} from "./friendContextOutput";
 
 export type FriendReportBody = {
   headline: string;
@@ -51,6 +55,11 @@ export type FriendReportBody = {
     /** pair.friendship 교차 신호 기반 실행 처방전 */
     prescription_friendship?: FriendPrescriptionPack;
   };
+  /**
+   * Context Output — 이미 계산된 ctx/friend 재포장.
+   * 옵셔널·순수 추가. 클라이언트 응답에서는 strip/omit으로 제거.
+   */
+  context_output?: FriendContextOutput;
 };
 
 export function buildFriendReport(params: {
@@ -241,5 +250,8 @@ export function buildFriendReport(params: {
         : {}),
       ...(prescription_friendship ? { prescription_friendship } : {}),
     },
+    context_output: buildFriendContextOutput(ctx, friend, {
+      personCoreMeta: params.personCoreMeta,
+    }),
   };
 }

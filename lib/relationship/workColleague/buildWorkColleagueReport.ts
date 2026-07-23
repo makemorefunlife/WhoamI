@@ -29,6 +29,10 @@ import {
   resolveContributionStyle,
   resolveFeedbackCushionScript,
 } from "./officePsychFit";
+import {
+  buildWorkContextOutput,
+  type WorkContextOutput,
+} from "./workContextOutput";
 
 export type WorkColleagueReportBody = {
   headline: string;
@@ -49,6 +53,11 @@ export type WorkColleagueReportBody = {
     /** pair.work 교차 신호 기반 실행 처방전 */
     prescription_work?: WorkPrescriptionPack;
   };
+  /**
+   * Context Output — 이미 계산된 ctx/office 재포장.
+   * 옵셔널·순수 추가. 클라이언트 응답에서는 strip으로 제거.
+   */
+  context_output?: WorkContextOutput;
 };
 
 /**
@@ -231,5 +240,8 @@ export function buildWorkColleagueReport(params: {
         : {}),
       ...(prescription_work ? { prescription_work } : {}),
     },
+    context_output: buildWorkContextOutput(ctx, office, {
+      personCoreMeta: params.personCoreMeta,
+    }),
   };
 }

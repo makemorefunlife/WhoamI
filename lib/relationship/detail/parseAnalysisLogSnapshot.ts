@@ -4,6 +4,11 @@ import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/r
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
+import { omitWorkContextOutputFromReport } from "@/lib/relationship/workColleague/stripWorkContextOutputForClient";
+import { omitFamilyContextOutputFromReport } from "@/lib/relationship/familyParent/stripFamilyContextOutputForClient";
+import { omitFriendContextOutputFromReport } from "@/lib/relationship/friend/stripFriendContextOutputForClient";
+import { omitMarriageContextOutputFromReport } from "@/lib/relationship/marriage/stripMarriageContextOutputForClient";
+import { omitRomanticContextInputFromReport } from "@/lib/relationship/romantic/stripRomanticContextInputForClient";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
@@ -51,7 +56,9 @@ export function parseAnalysisLogSnapshot(
       snapshot: {
         logId: log.id,
         kind: "romantic",
-        romanticDeep: report ?? null,
+        romanticDeep: report
+          ? omitRomanticContextInputFromReport(report)
+          : null,
         workDeep: null,
         cohabitationDeep: null,
         premium: null,
@@ -66,7 +73,9 @@ export function parseAnalysisLogSnapshot(
       snapshot: {
         logId: log.id,
         kind: "work",
-        workDeep: report ?? null,
+        workDeep: report
+          ? omitWorkContextOutputFromReport(report)
+          : null,
         romanticDeep: null,
         cohabitationDeep: null,
         premium: null,
@@ -81,7 +90,9 @@ export function parseAnalysisLogSnapshot(
       snapshot: {
         logId: log.id,
         kind: "cohabitation",
-        cohabitationDeep: report ?? null,
+        cohabitationDeep: report
+          ? omitMarriageContextOutputFromReport(report)
+          : null,
         romanticDeep: null,
         workDeep: null,
         familyDeep: null,
@@ -98,7 +109,9 @@ export function parseAnalysisLogSnapshot(
       snapshot: {
         logId: log.id,
         kind: "family",
-        familyDeep: report ?? null,
+        familyDeep: report
+          ? omitFamilyContextOutputFromReport(report)
+          : null,
         romanticDeep: null,
         workDeep: null,
         cohabitationDeep: null,
@@ -115,7 +128,9 @@ export function parseAnalysisLogSnapshot(
       snapshot: {
         logId: log.id,
         kind: "friendship",
-        friendshipDeep: report ?? null,
+        friendshipDeep: report
+          ? omitFriendContextOutputFromReport(report)
+          : null,
         romanticDeep: null,
         workDeep: null,
         cohabitationDeep: null,

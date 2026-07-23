@@ -13,6 +13,16 @@ export {
   type BuildFamilyContextParams as BuildFamilyParentContextParams,
 } from "./buildFamilyRuleContext";
 export { buildFamilyParentReport, type FamilyParentReportBody } from "./buildFamilyParentReport";
+export {
+  buildFamilyContextOutput,
+  FAMILY_CONTEXT_OUTPUT_SCHEMA_VERSION,
+  type FamilyContextOutput,
+  type FamilyContextOutputMeta,
+  type FamilyContextDominantCategory,
+  type BuildFamilyContextOutputOptions,
+} from "./familyContextOutput";
+export { stripFamilyContextOutputForClient } from "./stripFamilyContextOutputForClient";
+export { omitFamilyContextOutputFromReport } from "./stripFamilyContextOutputForClient";
 export { buildFamilyPrescriptions } from "./buildFamilyPrescriptions";
 export type {
   FamilyPrescriptionPack,

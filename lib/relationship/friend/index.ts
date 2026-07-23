@@ -4,6 +4,18 @@ export {
   type BuildFriendContextParams,
 } from "./buildFriendRuleContext";
 export { buildFriendReport, type FriendReportBody } from "./buildFriendReport";
+export {
+  buildFriendContextOutput,
+  FRIEND_CONTEXT_OUTPUT_SCHEMA_VERSION,
+  type FriendContextOutput,
+  type FriendContextOutputMeta,
+  type FriendContextDominantCategory,
+  type BuildFriendContextOutputOptions,
+} from "./friendContextOutput";
+export {
+  stripFriendContextOutputForClient,
+  omitFriendContextOutputFromReport,
+} from "./stripFriendContextOutputForClient";
 export { buildFriendPrescriptions } from "./buildFriendPrescriptions";
 export type {
   FriendPrescriptionPack,

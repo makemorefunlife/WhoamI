@@ -27,6 +27,11 @@ import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisp
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
+import { omitWorkContextOutputFromReport } from "@/lib/relationship/workColleague/stripWorkContextOutputForClient";
+import { omitFamilyContextOutputFromReport } from "@/lib/relationship/familyParent/stripFamilyContextOutputForClient";
+import { omitFriendContextOutputFromReport } from "@/lib/relationship/friend/stripFriendContextOutputForClient";
+import { omitMarriageContextOutputFromReport } from "@/lib/relationship/marriage/stripMarriageContextOutputForClient";
+import { omitRomanticContextInputFromReport } from "@/lib/relationship/romantic/stripRomanticContextInputForClient";
 
 export const runtime = "nodejs";
 
@@ -123,32 +128,47 @@ export async function GET(req: Request) {
       { partnerReportName: partner?.name },
     );
 
-    const romanticDeepReport =
+    const romanticDeepRaw =
       activeKind === "romantic"
-        ? parseRomanticDeepViewModel(
-            getRomanticSajuDeepReport(byKind, locale),
-          )
+        ? getRomanticSajuDeepReport(byKind, locale)
         : null;
+    const romanticDeepReport = romanticDeepRaw
+      ? parseRomanticDeepViewModel(
+          omitRomanticContextInputFromReport(romanticDeepRaw),
+        )
+      : null;
 
-    const workColleagueDeepReport =
+    const workColleagueDeepRaw =
       activeKind === "work"
         ? getWorkColleagueDeepReport(byKind, locale)
         : null;
+    const workColleagueDeepReport = workColleagueDeepRaw
+      ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
+      : null;
 
-    const cohabitationDeepReport =
+    const cohabitationDeepRaw =
       activeKind === "cohabitation"
         ? getCohabitationDeepReport(byKind, locale)
         : null;
+    const cohabitationDeepReport = cohabitationDeepRaw
+      ? omitMarriageContextOutputFromReport(cohabitationDeepRaw)
+      : null;
 
-    const familyDeepReport =
+    const familyDeepRaw =
       activeKind === "family"
         ? getFamilyParentDeepReport(byKind, locale)
         : null;
+    const familyDeepReport = familyDeepRaw
+      ? omitFamilyContextOutputFromReport(familyDeepRaw)
+      : null;
 
-    const friendshipDeepReport =
+    const friendshipDeepRaw =
       activeKind === "friendship"
         ? getFriendSocialDeepReport(byKind, locale)
         : null;
+    const friendshipDeepReport = friendshipDeepRaw
+      ? omitFriendContextOutputFromReport(friendshipDeepRaw)
+      : null;
 
     const favorited = await isRelationshipFavorite(
       supabase,

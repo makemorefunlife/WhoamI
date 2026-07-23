@@ -29,6 +29,10 @@ import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSe
 import { buildFamilyTalentSection } from "./familyTalentProfile";
 import { buildFamilySosSection } from "./familySosScript";
 import { buildFamilyFilialFrequencySection } from "./familyFilialFrequency";
+import {
+  buildFamilyContextOutput,
+  type FamilyContextOutput,
+} from "./familyContextOutput";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -55,6 +59,11 @@ export type FamilyParentReportBody = {
     /** pair.family 교차 신호 기반 실행 처방전 */
     prescription_family?: FamilyPrescriptionPack;
   };
+  /**
+   * Context Output — 이미 계산된 ctx/section 재포장.
+   * 옵셔널·순수 추가. 기존 필드·문구·캐시 소비처는 미사용.
+   */
+  context_output?: FamilyContextOutput;
 };
 
 export function buildFamilyParentReport(params: {
@@ -221,5 +230,8 @@ export function buildFamilyParentReport(params: {
         : {}),
       prescription_family,
     },
+    context_output: buildFamilyContextOutput(ctx, family, {
+      personCoreMeta: params.personCoreMeta,
+    }),
   };
 }

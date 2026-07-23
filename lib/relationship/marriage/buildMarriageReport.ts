@@ -28,6 +28,10 @@ import type { PairCohabitationSignals } from "@/lib/personCore/sajuSignals/pairT
 import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import {
+  buildMarriageContextOutput,
+  type MarriageContextOutput,
+} from "./marriageContextOutput";
 
 export type MarriageReportBody = {
   headline: string;
@@ -35,6 +39,8 @@ export type MarriageReportBody = {
   one_line_household: string;
   snapshot_panel: TriScoreSnapshotPanel;
   household: HouseholdPartnershipReport;
+  /** 내부용 Context Output — 클라이언트 응답에서는 strip/omit */
+  context_output?: MarriageContextOutput;
   meta: {
     grade: string;
     grade_reason: string;
@@ -213,6 +219,10 @@ export function buildMarriageReport(params: {
     one_line_household: household.section_snapshot.one_line_household,
     snapshot_panel,
     household,
+    context_output: buildMarriageContextOutput(ctx, household, {
+      psychMatch: psychBundle?.psych_match ?? null,
+      personCoreMeta: params.personCoreMeta ?? null,
+    }),
     meta: {
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,

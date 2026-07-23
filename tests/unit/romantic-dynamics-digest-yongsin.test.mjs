@@ -16,6 +16,11 @@
  */
 import assert from "node:assert/strict";
 import { buildRomanticDynamicsDigest } from "../../lib/relationship/romanticSajuPromptDigest.ts";
+import { collectRomanticDynamicsTypedSnapshot } from "../../lib/relationship/romantic/romanticContextInput.ts";
+import { hasDayStemRootInDayBranch } from "../../lib/relationship/romanticRules/relationshipDynamics.ts";
+import { buildChartContext } from "../../lib/saju/chartContext.ts";
+import { calculateSajuBundle } from "../../lib/v2/saju/calculateSajuBundle.ts";
+import { sajuJsonToPillars } from "../../lib/saju/pairChartAnalysis.ts";
 
 function section(title) {
   console.log(`\n=== ${title} ===`);
@@ -138,5 +143,41 @@ const lineWithYongsinStripped = extractTokens(reassuranceLine);
 
 assert.equal(lineWithYongsinStripped, lineWithout);
 ok("희용신 괄호만 제거하면 두 digest의 reassurance 줄이 완전히 동일 — 판정 로직 자체는 안 바뀜");
+
+// ---------------------------------------------------------------------------
+section("4) dynamics typed snapshot 재사용 — legacy digest와 byte-identical");
+
+const chartBundleA = calculateSajuBundle({
+  birthDate: "1990-05-15",
+  birthTime: "12:00",
+});
+const chartBundleB = calculateSajuBundle({
+  birthDate: "1992-08-20",
+  birthTime: "12:00",
+});
+const chartA = buildChartContext(sajuJsonToPillars(chartBundleA.saju));
+const chartB = buildChartContext(sajuJsonToPillars(chartBundleB.saju));
+const rootedFromChartA = hasDayStemRootInDayBranch(chartA);
+const rootedFromChartB = hasDayStemRootInDayBranch(chartB);
+const snap = collectRomanticDynamicsTypedSnapshot({
+  profileA: baseParams.profileA,
+  profileB: baseParams.profileB,
+  romanticA: baseParams.romanticA,
+  romanticB: baseParams.romanticB,
+  chartA,
+  chartB,
+  dayStemInteraction: baseParams.dayStemInteraction,
+});
+const legacyAligned = buildRomanticDynamicsDigest({
+  ...baseParams,
+  rootedA: rootedFromChartA,
+  rootedB: rootedFromChartB,
+});
+const viaSnap = buildRomanticDynamicsDigest({
+  ...baseParams,
+  dynamics: snap,
+});
+assert.equal(viaSnap, legacyAligned);
+ok("dynamics snapshot 경로 ≡ 동일 rooted 기준 resolver 경로 digest");
 
 console.log("\nOK: romantic dynamics digest yongsin tests passed");

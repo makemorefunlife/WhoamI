@@ -5,6 +5,7 @@ import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores
 import type { SewoonResult } from "@/lib/relationship/romanticRules/fortuneFlow";
 import { isPrimaryPalaceCross } from "@/lib/saju/palaceWeight";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import type { RomanticDynamicsTypedSnapshot } from "@/lib/relationship/romantic/romanticContextInput";
 import {
   resolveBalanceOfPower,
   resolveSubLeads,
@@ -143,6 +144,9 @@ function shortYongsinElement(y: YongsinEstimateSnapshot | null | undefined): str
  * 관계 역학 4종(균형추/회복속도/안심신호/무의식역할극) — 심리축+사주 보정으로
  * 서버가 이미 판정해 둔 결과를 LLM에게 근거로 전달한다. LLM은 이 판정을
  * 문장으로 풀어쓰기만 하고, 새로 유형을 정하지 않는다.
+ *
+ * `dynamics` typed snapshot이 있으면 resolver를 재호출하지 않고 그 값만 쓴다
+ * (prepareRomanticSajuDeepRun 경로). 없으면 레거시처럼 내부에서 판정한다.
  */
 export function buildRomanticDynamicsDigest(params: {
   nicknameA: string;
@@ -151,11 +155,14 @@ export function buildRomanticDynamicsDigest(params: {
   profileB?: CurrentSelfProfile | null;
   romanticA: RomanticSajuSignals;
   romanticB: RomanticSajuSignals;
-  rootedA: boolean;
-  rootedB: boolean;
+  /** snapshot 없을 때만 사용(레거시·단독 호출). snapshot이 있으면 무시. */
+  rootedA?: boolean;
+  rootedB?: boolean;
   dayStemInteraction: string;
   yongsinA?: YongsinEstimateSnapshot | null;
   yongsinB?: YongsinEstimateSnapshot | null;
+  /** prepare에서 collect한 typed 결과 — 있으면 resolver 재호출 없음 */
+  dynamics?: RomanticDynamicsTypedSnapshot | null;
 }): string {
   const {
     nicknameA,
@@ -164,31 +171,42 @@ export function buildRomanticDynamicsDigest(params: {
     profileB,
     romanticA,
     romanticB,
-    rootedA,
-    rootedB,
+    rootedA = false,
+    rootedB = false,
     dayStemInteraction,
     yongsinA,
     yongsinB,
+    dynamics: dynamicsSnap,
   } = params;
 
-  const bop = resolveBalanceOfPower(profileA, profileB);
-  const subLeads = resolveSubLeads(romanticA, romanticB);
-  const recovery = resolveRecoverySpeedGap(profileA, profileB);
-  const residualA = resolveResidualBand(romanticA);
-  const residualB = resolveResidualBand(romanticB);
-  const needA = resolveReassuranceBand(profileA, rootedA);
-  const needB = resolveReassuranceBand(profileB, rootedB);
-  const giveA = resolveGiveStyle(romanticA);
-  const giveB = resolveGiveStyle(romanticB);
-  const matchBGivesA = resolveReassuranceMatch(needA, giveB);
-  const matchAGivesB = resolveReassuranceMatch(needB, giveA);
-  const rolePlay = resolveRolePlayWithSajuFrame(
-    profileA,
-    profileB,
-    romanticA,
-    romanticB,
-    dayStemInteraction,
-  );
+  const bop = dynamicsSnap?.balance ?? resolveBalanceOfPower(profileA, profileB);
+  const subLeads =
+    dynamicsSnap?.subLeads ?? resolveSubLeads(romanticA, romanticB);
+  const recovery =
+    dynamicsSnap?.recovery ?? resolveRecoverySpeedGap(profileA, profileB);
+  const residualA =
+    dynamicsSnap?.residualA ?? resolveResidualBand(romanticA);
+  const residualB =
+    dynamicsSnap?.residualB ?? resolveResidualBand(romanticB);
+  const needA =
+    dynamicsSnap?.needA ?? resolveReassuranceBand(profileA, rootedA);
+  const needB =
+    dynamicsSnap?.needB ?? resolveReassuranceBand(profileB, rootedB);
+  const giveA = dynamicsSnap?.giveA ?? resolveGiveStyle(romanticA);
+  const giveB = dynamicsSnap?.giveB ?? resolveGiveStyle(romanticB);
+  const matchBGivesA =
+    dynamicsSnap?.matchBGivesA ?? resolveReassuranceMatch(needA, giveB);
+  const matchAGivesB =
+    dynamicsSnap?.matchAGivesB ?? resolveReassuranceMatch(needB, giveA);
+  const rolePlay =
+    dynamicsSnap?.rolePlay ??
+    resolveRolePlayWithSajuFrame(
+      profileA,
+      profileB,
+      romanticA,
+      romanticB,
+      dayStemInteraction,
+    );
 
   const yongsinElementA = shortYongsinElement(yongsinA);
   const yongsinElementB = shortYongsinElement(yongsinB);

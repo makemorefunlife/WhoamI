@@ -9,10 +9,12 @@ import {
   buildRomanticSewoonTimelineDigest,
 } from "@/lib/relationship/romanticSajuPromptDigest";
 import {
-  hasDayStemRootInDayBranch,
-  resolveSajuFrameDirection,
-  resolveExpressionSpeedDirection,
-} from "@/lib/relationship/romanticRules/relationshipDynamics";
+  buildRomanticContextInput,
+  collectRomanticAxisNotes,
+  collectRomanticDynamicsTypedSnapshot,
+  type RomanticContextInput,
+} from "@/lib/relationship/romantic/romanticContextInput";
+import { resolveExpressionSpeedDirection } from "@/lib/relationship/romanticRules/relationshipDynamics";
 import { buildChartContext } from "@/lib/saju/chartContext";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
 import {
@@ -77,6 +79,8 @@ type RomanticPreparedContext = {
   screenPlan: RomanticScreenSlot[];
   snapshotPanel: unknown;
   fortuneFlow: ReturnType<typeof buildRomanticFortuneFlow>;
+  /** deterministic input — LLM prose와 분리. digest/prompt 미변경. */
+  romanticContextInput: RomanticContextInput;
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
@@ -183,12 +187,36 @@ export function prepareRomanticSajuDeepRun(
   const romanticSignalsA = params.sajuMasterA?.domain_signals?.romantic_signals;
   const romanticSignalsB = params.sajuMasterB?.domain_signals?.romantic_signals;
 
-  // Part3② special_bond 역할 배정 — 신호 없으면(레거시) null로 둬서
-  // buildSectionRoleSeparationGuide가 기존 기본 문구를 그대로 쓰게 한다.
-  const sajuFrameDirection =
+  const chartA = buildChartContext(
+    sajuJsonToPillars(
+      params.sajuJsonA.saju as Required<
+        NonNullable<typeof params.sajuJsonA.saju>
+      >,
+    ),
+  );
+  const chartB = buildChartContext(
+    sajuJsonToPillars(
+      params.sajuJsonB.saju as Required<
+        NonNullable<typeof params.sajuJsonB.saju>
+      >,
+    ),
+  );
+
+  const dynamicsTyped =
     romanticSignalsA != null && romanticSignalsB != null
-      ? resolveSajuFrameDirection(romanticSignalsA, romanticSignalsB)
+      ? collectRomanticDynamicsTypedSnapshot({
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+          romanticA: romanticSignalsA,
+          romanticB: romanticSignalsB,
+          chartA,
+          chartB,
+          dayStemInteraction: pairAnalysis.dayStemInteraction,
+        })
       : null;
+
+  // Part3② special_bond 역할 배정 — dynamics 스냅샷과 동일 소스(있으면).
+  const sajuFrameDirection = dynamicsTyped?.sajuFrameDirection ?? null;
   const anchorIsA =
     sajuFrameDirection === "A" ? true : sajuFrameDirection === "B" ? false : null;
 
@@ -200,35 +228,16 @@ export function prepareRomanticSajuDeepRun(
   );
 
   const dynamicsBlock =
-    romanticSignalsA != null && romanticSignalsB != null
+    dynamicsTyped != null
       ? buildRomanticDynamicsDigest({
           nicknameA: params.nicknameA,
           nicknameB: params.nicknameB,
-          profileA: params.surveyProfileA,
-          profileB: params.surveyProfileB,
-          romanticA: romanticSignalsA,
-          romanticB: romanticSignalsB,
-          rootedA: hasDayStemRootInDayBranch(
-            buildChartContext(
-              sajuJsonToPillars(
-                params.sajuJsonA.saju as Required<
-                  NonNullable<typeof params.sajuJsonA.saju>
-                >,
-              ),
-            ),
-          ),
-          rootedB: hasDayStemRootInDayBranch(
-            buildChartContext(
-              sajuJsonToPillars(
-                params.sajuJsonB.saju as Required<
-                  NonNullable<typeof params.sajuJsonB.saju>
-                >,
-              ),
-            ),
-          ),
+          romanticA: romanticSignalsA!,
+          romanticB: romanticSignalsB!,
           dayStemInteraction: pairAnalysis.dayStemInteraction,
           yongsinA: params.sajuMasterA?.yongsin_estimate ?? null,
           yongsinB: params.sajuMasterB?.yongsin_estimate ?? null,
+          dynamics: dynamicsTyped,
         })
       : "## dynamics_digest\n(구버전 사주 스냅샷이라 romantic_signals 없음 — 관계 역학 4종은 이번 리포트에서 생략)";
 
@@ -262,6 +271,26 @@ export function prepareRomanticSajuDeepRun(
     expressionSpeedDirection,
   });
 
+  const eventScores = opening.event_scores ?? ctx.eventScores;
+  const axisNotes = collectRomanticAxisNotes({
+    profileA: params.surveyProfileA,
+    profileB: params.surveyProfileB,
+    locale,
+  });
+  const romanticContextInput = buildRomanticContextInput({
+    grade: opening.grade,
+    eventScores,
+    romanticSignalsA: romanticSignalsA ?? null,
+    romanticSignalsB: romanticSignalsB ?? null,
+    dynamics: dynamicsTyped,
+    expressionSpeedDirection,
+    axisNotes,
+    meta: {
+      sajuMasterSchemaA: params.sajuMasterA?.schema_version ?? null,
+      sajuMasterSchemaB: params.sajuMasterB?.schema_version ?? null,
+    },
+  });
+
   return {
     locale,
     systemPrompt,
@@ -273,6 +302,7 @@ export function prepareRomanticSajuDeepRun(
     screenPlan,
     snapshotPanel: snapshotPanel ?? null,
     fortuneFlow,
+    romanticContextInput,
   };
 }
 
@@ -284,7 +314,7 @@ function finalizeRomanticSajuDeepReport(
     psychMatch: ReturnType<typeof buildPsychMatchResult> | null;
   },
 ): RomanticSajuDeepPayload["report"] {
-  const { opening, ctx, screenPlan, ruleScreenPlan, snapshotPanel, locale, fortuneFlow } =
+  const { opening, ctx, screenPlan, ruleScreenPlan, snapshotPanel, locale, fortuneFlow, romanticContextInput } =
     prepared;
   const generatedAt = new Date().toISOString();
 
@@ -295,6 +325,7 @@ function finalizeRomanticSajuDeepReport(
       one_line_summary: opening.one_line_summary,
       grade: opening.grade,
     },
+    romantic_context_input: romanticContextInput,
     meta: {
       ...(parsed.report.meta ?? {}),
       language: locale,

@@ -241,6 +241,8 @@ export type RomanticSajuDeepReport = {
       total_score?: number;
       keywords?: string[];
     };
+    /** deterministic input context — 클라이언트 strip 대상. LLM prose 아님. */
+    romantic_context_input?: import("@/lib/relationship/romantic/romanticContextInput").RomanticContextInput;
     section_1_relationship_dynamics?: {
       balance_of_power?: { headline?: string; body?: string };
       recovery_speed?: { headline?: string; body?: string };

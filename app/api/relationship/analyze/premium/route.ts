@@ -26,6 +26,11 @@ import { getMessages } from "@/lib/i18n/messages";
 import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
 import { COHABITATION_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/cohabitation";
 import { FAMILY_PARENT_CHILD_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/familyParentChild";
+import { stripFamilyContextOutputForClient } from "@/lib/relationship/familyParent/stripFamilyContextOutputForClient";
+import { stripWorkContextOutputForClient } from "@/lib/relationship/workColleague/stripWorkContextOutputForClient";
+import { stripFriendContextOutputForClient } from "@/lib/relationship/friend/stripFriendContextOutputForClient";
+import { stripMarriageContextOutputForClient } from "@/lib/relationship/marriage/stripMarriageContextOutputForClient";
+import { stripRomanticContextInputForClient } from "@/lib/relationship/romantic/stripRomanticContextInputForClient";
 import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
 import { relationshipKindUsesDeepPipeline } from "@/lib/relationship/relationshipAnalysisKinds";
 import {
@@ -213,10 +218,32 @@ export async function POST(req: Request) {
 
     if (!forceRegenerate && hasPremiumCacheForKindLocale(byKind, kind, locale)) {
       const cached = getPremiumPayloadForKindLocale(byKind, kind, locale);
+      const forClient =
+        kind === "family"
+          ? stripFamilyContextOutputForClient(
+              cached as { report?: Record<string, unknown> },
+            )
+          : kind === "work"
+            ? stripWorkContextOutputForClient(
+                cached as { report?: Record<string, unknown> },
+              )
+            : kind === "friendship"
+              ? stripFriendContextOutputForClient(
+                  cached as { report?: Record<string, unknown> },
+                )
+              : kind === "cohabitation"
+                ? stripMarriageContextOutputForClient(
+                    cached as { report?: Record<string, unknown> },
+                  )
+                : kind === "romantic"
+                  ? stripRomanticContextInputForClient(
+                      cached as { report?: Record<string, unknown> },
+                    )
+                  : cached;
       return NextResponse.json({
         relationship_kind: kind,
         locale,
-        result_premium: cached,
+        result_premium: forClient,
       });
     }
 
@@ -359,7 +386,8 @@ export async function POST(req: Request) {
       return NextResponse.json({
         relationship_kind: kind,
         locale,
-        result_premium: romanticPayload,
+        // DB·분석 로그는 romanticPayload(romantic_context_input 포함) 유지.
+        result_premium: stripRomanticContextInputForClient(romanticPayload),
       });
     }
 
@@ -449,7 +477,9 @@ export async function POST(req: Request) {
       return NextResponse.json({
         relationship_kind: kind,
         locale,
-        result_premium: workWithLocale,
+        // DB·분석 로그는 workWithLocale(context_output 포함) 유지.
+        // 클라이언트에는 내부 분류·signals 노출 방지를 위해 사본에서만 제거.
+        result_premium: stripWorkContextOutputForClient(workWithLocale),
       });
     }
 
@@ -498,21 +528,23 @@ export async function POST(req: Request) {
         locale,
       });
 
+      const cohabitationWithLocale = {
+        ...cohabitationPayload,
+        report: {
+          ...cohabitationPayload.report,
+          meta: {
+            ...(cohabitationPayload.report?.meta ?? {}),
+            locale,
+            language: toLegacyShortLocale(locale),
+          },
+        },
+      };
+
       const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
         "cohabitation",
-        {
-          ...cohabitationPayload,
-          report: {
-            ...cohabitationPayload.report,
-            meta: {
-              ...(cohabitationPayload.report?.meta ?? {}),
-              locale,
-              language: toLegacyShortLocale(locale),
-            },
-          },
-        },
+        cohabitationWithLocale,
         { relationshipKind: kind, locale },
       );
 
@@ -531,14 +563,16 @@ export async function POST(req: Request) {
           relationshipKind: kind,
           analysisLevel: "premium",
           resultFormat: COHABITATION_DEEP_FORMAT,
-          payload: cohabitationPayload,
+          payload: cohabitationWithLocale,
         });
       }
 
       return NextResponse.json({
         relationship_kind: kind,
         locale,
-        result_premium: cohabitationPayload,
+        // DB·분석 로그는 cohabitationWithLocale(context_output 포함) 유지.
+        // 클라이언트에는 내부 분류·signals 노출 방지를 위해 사본에서만 제거.
+        result_premium: stripMarriageContextOutputForClient(cohabitationWithLocale),
       });
     }
 
@@ -647,7 +681,9 @@ export async function POST(req: Request) {
       return NextResponse.json({
         relationship_kind: kind,
         locale,
-        result_premium: familyPayload,
+        // DB·분석 로그는 familyPayload(context_output 포함) 유지.
+        // 클라이언트에는 내부 분류 코드 노출 방지를 위해 사본에서만 제거.
+        result_premium: stripFamilyContextOutputForClient(familyPayload),
       });
     }
 
@@ -736,7 +772,8 @@ export async function POST(req: Request) {
       return NextResponse.json({
         relationship_kind: kind,
         locale,
-        result_premium: friendshipPayload,
+        // DB·분석 로그는 friendshipPayload(context_output 포함) 유지.
+        result_premium: stripFriendContextOutputForClient(friendshipPayload),
       });
     }
 
