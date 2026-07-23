@@ -129,8 +129,6 @@ export function buildMarriageReport(params: {
     psychA: params.psychMasterA,
     psychB: params.psychMasterB,
     dualCfoWar: params.pairCohabitation?.cfo_power_struggle?.dual_cfo_war,
-    masterBenefit: ctx.masterScores.benefit,
-    masterRisk: ctx.masterScores.risk,
     locale,
   });
 

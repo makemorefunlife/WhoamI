@@ -136,8 +136,6 @@ const confirms = refineHouseholdCfo({
   wealthOfficerPowerB: power(40, "low"),
   psychA: samplePsych({ practicality: 85, self_control: 80 }),
   psychB: samplePsych({ practicality: 30, self_control: 35 }),
-  masterBenefit: 70,
-  masterRisk: 30,
   locale: "ko-KR",
 });
 assert.equal(confirms.nickname, "Alex");
@@ -162,7 +160,7 @@ const weakBase = pickHouseholdCfo(
 );
 assert.ok(Math.abs(45 - 40) < 12, "saju unlocked");
 
-const flipped = refineHouseholdCfo({
+const flipParams = {
   baseNickname: weakBase.nickname,
   baseReason: weakBase.reason,
   nicknameA: "Alex",
@@ -176,10 +174,10 @@ const flipped = refineHouseholdCfo({
   // base is Alex (45>=40); psych strongly favors Jordan
   psychA: samplePsych({ practicality: 15, self_control: 20 }),
   psychB: samplePsych({ practicality: 90, self_control: 88 }),
-  masterBenefit: 50,
-  masterRisk: 40,
   locale: "ko-KR",
-});
+};
+
+const flipped = refineHouseholdCfo(flipParams);
 assert.equal(flipped.nickname, "Jordan");
 assert.equal(flipped.confidence, "high");
 assert.equal(flipped.align, "caution");
@@ -189,6 +187,37 @@ assert.ok(
     flipped.reason.includes("Survey axes"),
 );
 ok("weak saju flip");
+
+// ---------------------------------------------------------------------------
+section("3b) home/chores risk is not CFO SSOT (former choresPenalty)");
+
+// Dead args (pre-removal API) must be ignored if passed — proves pair home
+// risk is not part of CFO refine SSOT. Audit: risk 40 vs 55 were identical.
+const flippedRisk40 = refineHouseholdCfo({
+  ...flipParams,
+  masterBenefit: 50,
+  masterRisk: 40,
+});
+const flippedRisk55 = refineHouseholdCfo({
+  ...flipParams,
+  masterBenefit: 50,
+  masterRisk: 55,
+});
+assert.equal(flippedRisk40.nickname, flippedRisk55.nickname);
+assert.equal(flippedRisk40.confidence, flippedRisk55.confidence);
+assert.equal(flippedRisk40.align, flippedRisk55.align);
+assert.equal(flippedRisk40.dual, flippedRisk55.dual);
+assert.equal(flippedRisk40.reason, flippedRisk55.reason);
+assert.equal(flippedRisk40.nickname, flipped.nickname);
+assert.equal(flippedRisk40.confidence, flipped.confidence);
+assert.equal(flippedRisk40.align, flipped.align);
+assert.equal(flippedRisk40.dual, flipped.dual);
+assert.equal(flippedRisk40.reason, flipped.reason);
+assert.equal(flipped.nickname, "Jordan");
+assert.equal(flipped.confidence, "high");
+assert.equal(flipped.align, "caution");
+assert.equal(flipped.dual, undefined);
+ok("risk 40/55 ignored — identical refine outcome");
 
 // ---------------------------------------------------------------------------
 section("4) 강한 saju lock → psych 반대해도 pick 유지");

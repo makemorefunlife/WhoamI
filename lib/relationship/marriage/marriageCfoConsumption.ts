@@ -1,7 +1,7 @@
 /**
  * Part2③ 자산 관리 주도권(CFO) & 소비 스위치 — 사양서의 "정재/관성(미래 안정)
  * vs 편재/식상(현재 삶의 질)" 소비가치관 분리 + 11축[현실실리/자기통제] 확인문구.
- * Phase 5-2: refineHouseholdCfo가 base pick + psych/spending/chores 신호를 조합한다.
+ * Phase 5-2: refineHouseholdCfo가 base pick + psych/spending 신호를 조합한다.
  * pickHouseholdCfo 자체는 재호출하지 않는다.
  */
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
@@ -147,23 +147,6 @@ function spendingCfoBonus(lean: SpendingLean): number {
   return 0;
 }
 
-/** chores 신호 — masterScores는 이미 계산됨. risk 높으면 flip 억제. */
-function choresFlipPenalty(
-  benefit: number | undefined,
-  risk: number | undefined,
-): number {
-  if (typeof risk === "number" && risk >= 55) return 8;
-  if (
-    typeof benefit === "number" &&
-    benefit >= 65 &&
-    typeof risk === "number" &&
-    risk < 50
-  ) {
-    return -2;
-  }
-  return 0;
-}
-
 function softCfoReason(baseReason: string, locale: Locale): string {
   return `${baseReason} ${pick(
     locale,
@@ -187,8 +170,6 @@ export type RefineHouseholdCfoParams = {
   psychB?: PsychMasterJson | null;
   /** 이미 계산된 pair dual 신호 */
   dualCfoWar?: boolean | null;
-  masterBenefit?: number;
-  masterRisk?: number;
   locale?: Locale;
 };
 
@@ -201,7 +182,7 @@ export type RefinedHouseholdCfo = {
 };
 
 /**
- * Phase 5-2 — pickHouseholdCfo base + psych/spending/chores 조합.
+ * Phase 5-2 — pickHouseholdCfo base + psych/spending 조합.
  * psych 누락 시 base 그대로. 강한 saju(|affinity|≥12) flip 금지.
  * pickHouseholdCfo 재호출 없음.
  */
@@ -241,15 +222,11 @@ export function refineHouseholdCfo(
 
   const leanA = resolveSpendingLean(params.countsA);
   const leanB = resolveSpendingLean(params.countsB);
-  const choresPenalty = choresFlipPenalty(
-    params.masterBenefit,
-    params.masterRisk,
-  );
 
   const compositeA =
-    scoreA + psychAScore * 0.35 + spendingCfoBonus(leanA) - choresPenalty / 2;
+    scoreA + psychAScore * 0.35 + spendingCfoBonus(leanA);
   const compositeB =
-    scoreB + psychBScore * 0.35 + spendingCfoBonus(leanB) - choresPenalty / 2;
+    scoreB + psychBScore * 0.35 + spendingCfoBonus(leanB);
   const compositeDiff = compositeA - compositeB;
 
   const dualFromSignals =
