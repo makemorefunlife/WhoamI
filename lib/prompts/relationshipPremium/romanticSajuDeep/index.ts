@@ -26,6 +26,18 @@ import {
   buildRomanticRecoveryClientProjection,
   injectRomanticRecoveryClientProjection,
 } from "@/lib/relationship/romantic/romanticRecoverySpeedCanonical";
+import {
+  reassuranceValueFromDominantCategories,
+  buildRomanticReassuranceCanonical,
+  buildRomanticReassuranceClientProjection,
+  injectRomanticReassuranceClientProjection,
+} from "@/lib/relationship/romantic/romanticReassuranceCanonical";
+import {
+  rolePlayValueFromDominantCategories,
+  buildRomanticRolePlayCanonical,
+  buildRomanticRolePlayClientProjection,
+  injectRomanticRolePlayClientProjection,
+} from "@/lib/relationship/romantic/romanticRolePlayCanonical";
 import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
 import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
@@ -492,9 +504,37 @@ function finalizeRomanticSajuDeepReport(
   const recoveryProjection = buildRomanticRecoveryClientProjection(
     recoveryCanonical?.value,
   );
-  const reportWithProjections = injectRomanticRecoveryClientProjection(
+  const reportWithRecoveryProjection = injectRomanticRecoveryClientProjection(
     reportWithBalanceProjection,
     recoveryProjection,
+  );
+
+  // Phase 6-2d3 — reassurance_signal (need/give/match facets).
+  const reassuranceFinalized = reassuranceValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const reassuranceCanonical =
+    buildRomanticReassuranceCanonical(reassuranceFinalized);
+  const reassuranceProjection = buildRomanticReassuranceClientProjection(
+    reassuranceCanonical?.value,
+  );
+  const reportWithReassuranceProjection =
+    injectRomanticReassuranceClientProjection(
+      reportWithRecoveryProjection,
+      reassuranceProjection,
+    );
+
+  // Phase 6-2d4 — unconscious_role_play (no saju_frame_direction).
+  const rolePlayFinalized = rolePlayValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const rolePlayCanonical = buildRomanticRolePlayCanonical(rolePlayFinalized);
+  const rolePlayProjection = buildRomanticRolePlayClientProjection(
+    rolePlayCanonical?.value,
+  );
+  const reportWithProjections = injectRomanticRolePlayClientProjection(
+    reportWithReassuranceProjection,
+    rolePlayProjection,
   );
 
   return {

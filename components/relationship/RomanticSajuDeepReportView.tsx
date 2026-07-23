@@ -57,6 +57,14 @@ import {
   readRomanticRecoveryCanonicalProjection,
 } from "@/lib/relationship/romantic/romanticRecoverySpeedCanonical";
 import {
+  formatRomanticReassuranceCanonicalLabel,
+  readRomanticReassuranceCanonicalProjection,
+} from "@/lib/relationship/romantic/romanticReassuranceCanonical";
+import {
+  formatRomanticRolePlayCanonicalLabel,
+  readRomanticRolePlayCanonicalProjection,
+} from "@/lib/relationship/romantic/romanticRolePlayCanonical";
+import {
   dedupeActionGuidelines,
   normalizeActionGuideline,
 } from "@/lib/relationship/essenceActionGuideline";
@@ -640,6 +648,23 @@ export default function RomanticSajuDeepReportView({
         locale: reportLocale,
       })
     : null;
+  const reassuranceCanonical =
+    readRomanticReassuranceCanonicalProjection(report);
+  const reassuranceCanonicalLabel = reassuranceCanonical
+    ? formatRomanticReassuranceCanonicalLabel(reassuranceCanonical, {
+        nameA,
+        nameB,
+        locale: reportLocale,
+      })
+    : null;
+  const rolePlayCanonical = readRomanticRolePlayCanonicalProjection(report);
+  const rolePlayCanonicalLabel = rolePlayCanonical
+    ? formatRomanticRolePlayCanonicalLabel(rolePlayCanonical, {
+        nameA,
+        nameB,
+        locale: reportLocale,
+      })
+    : null;
   const s2 = report.section_2_nature ?? {};
   const special = report.section_4_special_bond;
   const frames = report.section_4_relationship_frames;
@@ -1104,6 +1129,16 @@ export default function RomanticSajuDeepReportView({
                     ? ` — ${displayText(reassurance.headline)}`
                     : ""}
                 </RelationshipReportLabel>
+                {reassuranceCanonicalLabel ? (
+                  <p
+                    className={[
+                      "text-sm font-semibold tracking-tight",
+                      tone.bodyMedium,
+                    ].join(" ")}
+                  >
+                    {reassuranceCanonicalLabel}
+                  </p>
+                ) : null}
                 {myReassurance.body ? (
                   <P>{`${myName}: ${displayText(myReassurance.body)}`}</P>
                 ) : null}
@@ -1123,6 +1158,16 @@ export default function RomanticSajuDeepReportView({
                     ? ` — ${displayText(frames.unconscious_role_play.headline)}`
                     : ""}
                 </RelationshipReportLabel>
+                {rolePlayCanonicalLabel ? (
+                  <p
+                    className={[
+                      "text-sm font-semibold tracking-tight",
+                      tone.bodyMedium,
+                    ].join(" ")}
+                  >
+                    {rolePlayCanonicalLabel}
+                  </p>
+                ) : null}
                 <P>{displayText(frames.unconscious_role_play.body)}</P>
               </div>
             ) : null}

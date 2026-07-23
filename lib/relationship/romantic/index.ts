@@ -45,6 +45,38 @@ export type {
   RomanticRecoverySpeedValue,
   RomanticRecoverySpeedCanonical,
 } from "./romanticRecoverySpeedCanonical";
+export {
+  buildRomanticReassuranceCanonical,
+  buildRomanticReassuranceClientProjection,
+  injectRomanticReassuranceClientProjection,
+  reassuranceValueFromDominantCategories,
+  reassuranceValueFromDynamicsSnapshot,
+  reassuranceJudgmentFields,
+  readRomanticReassuranceCanonicalProjection,
+  formatRomanticReassuranceCanonicalLabel,
+  ROMANTIC_REASSURANCE_CLIENT_PATH,
+  ROMANTIC_REASSURANCE_PERSISTENCE_PATH,
+} from "./romanticReassuranceCanonical";
+export type {
+  RomanticReassuranceValue,
+  RomanticReassuranceCanonical,
+} from "./romanticReassuranceCanonical";
+export {
+  buildRomanticRolePlayCanonical,
+  buildRomanticRolePlayClientProjection,
+  injectRomanticRolePlayClientProjection,
+  rolePlayValueFromDominantCategories,
+  rolePlayValueFromDynamicsSnapshot,
+  rolePlayJudgmentFields,
+  readRomanticRolePlayCanonicalProjection,
+  formatRomanticRolePlayCanonicalLabel,
+  ROMANTIC_ROLE_PLAY_CLIENT_PATH,
+  ROMANTIC_ROLE_PLAY_PERSISTENCE_PATH,
+} from "./romanticRolePlayCanonical";
+export type {
+  RomanticRolePlayValue,
+  RomanticRolePlayCanonical,
+} from "./romanticRolePlayCanonical";
 export { refineExpressionSpeedCorroboration } from "./expressionSpeedCorroboration";
 export type {
   ExpressionSpeedAlign,
