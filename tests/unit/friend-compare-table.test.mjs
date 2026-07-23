@@ -1,12 +1,13 @@
 /**
  * buildFriendSajuCompareTable() — v4 structural fixes (2026-07-20):
- *   1. Row②(서운함 표출)와 행⑤(총무 기질)가 더 이상 같은 신호를 재사용하지
+ *   1. Row②(서운함 표출)와 행⑤(모임 준비)가 더 이상 같은 신호를 재사용하지
  *      않고 독립적으로 움직여야 한다.
  *   2. 행④(배터리 충전)는 신강/신약/중화 모든 조합에서 "혼자/만나서" 식으로
  *      단정하지 않고 조합별 문구를 내야 한다.
  *   3. 행③(애정 언어)의 "마음의 크기는 같아요" 문구가 더 이상 출력되지
  *      않아야 한다.
  *   4. 동일 입력은 항상 동일 결과(결정론성)를 내야 한다.
+ * Phase 5-3: 행⑤ 카피는 개인 계획·물류 기질만 — "총무/treasurer" 금지.
  * No DB, no LLM — 순수 함수 입력만으로 검증. saju pillars는 실제 두 사람의
  * 생년월일시(880202 11:10 / 871027 22:30)로 진단 스크립트를 돌려 확인한
  * 실제 간지 문자열을 그대로 사용한다.
@@ -14,6 +15,11 @@
  */
 import assert from "node:assert/strict";
 import { buildFriendSajuCompareTable } from "../../lib/relationship/friend/friendSajuCompareTable.ts";
+import {
+  pickFriendTreasurer,
+  buildFriendTreasurerReason,
+} from "../../lib/relationship/friend/friendDeEscalationPrescriptions.ts";
+import { refineFriendTreasurer } from "../../lib/relationship/friend/friendPsychFit.ts";
 import { buildChartContext } from "../../lib/saju/chartContext.ts";
 
 function section(title) {
@@ -264,5 +270,101 @@ assert.equal(
   "동일 인물 데이터를 A/B에 중복 입력하면 6/6 전부 동일해야 함(대조군) — classifier는 정상 동작 중임을 증명",
 );
 ok("동일 데이터 중복 입력 시 6/6 전부 동일 — classifier가 아니라 데이터 유입 문제였음을 재확인하는 대조군");
+
+// ---------------------------------------------------------------------------
+section("6) Phase 5-3 — hangout_planning 카피 ≠ Part3 총무 추천");
+
+const TREASURER_COPY_RE = /총무|treasurer/i;
+
+/** F1: compare A=strong planning(편관), Part3 B=treasurer(정재) */
+const F1_COUNTS_A = { 편관: 2 };
+const F1_COUNTS_B = { 정재: 1 };
+
+for (const locale of ["ko-KR", "en-US"]) {
+  const f1Rows = buildFriendSajuCompareTable({
+    nicknameA: "Alex",
+    nicknameB: "Jordan",
+    tenGodsA: F1_COUNTS_A,
+    tenGodsB: F1_COUNTS_B,
+    dnaA: dna("fire"),
+    dnaB: dna("wood"),
+    chartA: chartSera,
+    chartB: chartDasigogo,
+    locale,
+  });
+  const f1Hangout = findRow(f1Rows, "hangout_planning");
+  assert.equal(f1Hangout.id, "hangout_planning");
+
+  const hangoutBlob = JSON.stringify(f1Hangout);
+  assert.doesNotMatch(
+    hangoutBlob,
+    TREASURER_COPY_RE,
+    `hangout_planning must not use treasurer/총무 copy (${locale})`,
+  );
+
+  if (locale === "ko-KR") {
+    assert.equal(f1Hangout.label, "모임 준비 스타일");
+    assert.equal(f1Hangout.personA.shortLabel, "약속·동선을 주도적으로 짜는 편");
+    assert.equal(f1Hangout.personB.shortLabel, "필요할 때는 계획도 짜는 균형형");
+    assert.equal(
+      f1Hangout.meaning,
+      "모임 준비·계획 성향의 정도가 서로 달라요 — 준비를 더 즐기는 쪽에 자연스럽게 맡기되, 가끔은 반대쪽도 골라보면 좋아요.",
+    );
+  } else {
+    assert.equal(f1Hangout.label, "Planning Style");
+    assert.equal(f1Hangout.personA.shortLabel, "Naturally takes charge of logistics");
+    assert.equal(
+      f1Hangout.personB.shortLabel,
+      "Plans when it matters, goes with the flow otherwise",
+    );
+    assert.equal(
+      f1Hangout.meaning,
+      "You differ in how much you enjoy organizing plans — let the one who enjoys it more lead, but let the other pick sometimes too.",
+    );
+  }
+}
+ok("F1 compare snapshot — A planning-strong / B mid, no treasurer wording");
+
+const f1Base = pickFriendTreasurer({
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  countsA: F1_COUNTS_A,
+  countsB: F1_COUNTS_B,
+  locale: "ko-KR",
+});
+const f1Refined = refineFriendTreasurer({
+  baseNickname: f1Base.nickname,
+  baseReason: f1Base.reason,
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  countsA: F1_COUNTS_A,
+  countsB: F1_COUNTS_B,
+  locale: "ko-KR",
+});
+assert.equal(f1Refined.nickname, "Jordan");
+assert.match(f1Refined.reason, /총무/);
+assert.equal(
+  f1Refined.reason,
+  buildFriendTreasurerReason("Jordan", "ko-KR"),
+);
+ok("F1 Part3 still recommends Jordan as treasurer — orthogonal to compare planning bands");
+
+for (const locale of ["ko-KR", "en-US"]) {
+  const allBandsRows = buildFriendSajuCompareTable({
+    nicknameA: "X",
+    nicknameB: "Y",
+    tenGodsA: {},
+    tenGodsB: { 편관: 1, 정재: 1 },
+    dnaA: dna("earth"),
+    dnaB: dna("earth"),
+    chartA: chartSera,
+    chartB: chartSera,
+    locale,
+  });
+  const row = findRow(allBandsRows, "hangout_planning");
+  assert.doesNotMatch(JSON.stringify(row), TREASURER_COPY_RE);
+  assert.doesNotMatch(row.label, /Who's the Treasurer|총무 기질/);
+}
+ok("hangout_planning bands/title never say treasurer across locales");
 
 console.log("\nAll friend-compare-table tests passed.");

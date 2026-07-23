@@ -39,7 +39,7 @@ import { countElements } from "@/lib/saju/pairChartAnalysis";
  * | 서운함 표출 방식 | 십신 우세 카테고리(최댓값) | resolveDominantCategory |
  * | 애정 언어 & 의리 스타일 | 오행(우세 원소) | FriendDnaProfile.dominantElement(이미 계산됨) |
  * | 우정 배터리 충전 | 일간 강약(신강/신약/중화, margin=1 로컬 재계산) | 오행 생/극(받치는 기운 vs 소모·압박 기운) — 공용 함수와 동일 원리, margin만 좁힘 |
- * | 노는 코드 & 총무 기질 | 재성+관성 합산(wealthOfficer), 0/1/2+ | profileTenGods().wealthOfficer — Part3 총무 처방(pickFriendTreasurer)과 같은 계열 개념 |
+ * | 모임 준비 스타일 | 재성+관성 합산(wealthOfficer), 0/1/2+ | 개인별 계획·물류 기질. Part3 총무(friendTreasurerScore)와는 다른 질문 — 역할 추천이 아님 |
  * | 티키타카 대화 리듬 | 식상(food) 원점수, 0/1/2+ | profileTenGods().food — 기존 ≥2 컷오프보다 세분화 |
  */
 
@@ -291,13 +291,15 @@ function resolveBatteryMeaning(locale: Locale, a: StrengthBand, b: StrengthBand)
   return BATTERY_COMBO_MEANING[locale][battteryComboKey(a, b)]!;
 }
 
-// ---- 행 5: 노는 코드 & 총무 기질 (재성+관성 합산, 0/1/2+) --------------------
+// ---- 행 5: 모임 준비 스타일 (재성+관성 합산, 0/1/2+) -------------------------
 //
 // 이전엔 행②(서운함 표출)와 같은 resolveDominantCategory(5개 중 최댓값)를
 // 재사용해 두 행이 항상 같이 움직였다. profileTenGods().wealthOfficer(재성+
-// 관성 합산)로 교체 — Part3 총무 처방(pickFriendTreasurer)이 정재·정관·편재
-// 가중치로 "총무" 개념을 이미 이 신호 계열로 정의하고 있어 의미상 맞고,
-// "최댓값 하나"가 아니라 "두 카테고리의 합"이라 ②와 수학적으로 다른 값이다.
+// 관성 합산)로 교체 — "최댓값 하나"가 아니라 "두 카테고리의 합"이라 ②와
+// 수학적으로 다른 값이다.
+// Phase 5-3: 이 행은 개인별 모임 준비·계획·물류 기질만 비교한다. Part3
+// 총무(friendTreasurerScore → refineFriendTreasurer)와 산식·질문이 다르므로
+// 카피에 "총무/treasurer"를 쓰지 않는다.
 
 function resolveWealthOfficerBand(counts: TenGodCounts): ThreeBand {
   return resolveThreeBand(profileTenGods(counts).wealthOfficer);
@@ -305,25 +307,25 @@ function resolveWealthOfficerBand(counts: TenGodCounts): ThreeBand {
 
 const HANGOUT_LABEL: Record<Locale, Record<ThreeBand, string>> = {
   "ko-KR": {
-    none: "\"아무거나 다 좋아\" 따라가는 베짱이형",
+    none: "\"아무거나 다 좋아\" 따라가는 편",
     some: "필요할 때는 계획도 짜는 균형형",
-    strong: "약속·동선을 주도적으로 짜는 총무형",
+    strong: "약속·동선을 주도적으로 짜는 편",
   },
   "en-US": {
     none: "\"Anything's fine\" — happy to go along",
     some: "Plans when it matters, goes with the flow otherwise",
-    strong: "Naturally takes charge of logistics — the treasurer type",
+    strong: "Naturally takes charge of logistics",
   },
 };
 
 const HANGOUT_MEANING: Record<Locale, { same: string; diff: string }> = {
   "ko-KR": {
-    same: "노는 스타일이 비슷해서 약속 잡을 때 실랑이가 적어요.",
-    diff: "총무 성향의 정도가 서로 달라요 — 계획을 더 즐기는 쪽에 자연스럽게 맡기되, 가끔은 반대쪽도 골라보면 좋아요.",
+    same: "모임 준비 스타일이 비슷해서 약속 잡을 때 실랑이가 적어요.",
+    diff: "모임 준비·계획 성향의 정도가 서로 달라요 — 준비를 더 즐기는 쪽에 자연스럽게 맡기되, 가끔은 반대쪽도 골라보면 좋아요.",
   },
   "en-US": {
     same: "Your planning style matches, so there's little back-and-forth when making plans.",
-    diff: "You differ in how much you enjoy taking charge of logistics — let the one who enjoys it more lead, but let the other pick sometimes too.",
+    diff: "You differ in how much you enjoy organizing plans — let the one who enjoys it more lead, but let the other pick sometimes too.",
   },
 };
 
@@ -444,7 +446,7 @@ export function buildFriendSajuCompareTable(params: {
     ),
     row(
       "hangout_planning",
-      pick(locale, "Planning Style & Who's the Treasurer", "노는 코드 & 총무 기질"),
+      pick(locale, "Planning Style", "모임 준비 스타일"),
       HANGOUT_LABEL[locale][wealthOfficerBandA],
       HANGOUT_LABEL[locale][wealthOfficerBandB],
       wealthOfficerBandA === wealthOfficerBandB
