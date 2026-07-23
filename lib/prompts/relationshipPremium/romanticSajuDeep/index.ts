@@ -50,6 +50,19 @@ import {
   buildRomanticExpressionSpeedClientProjection,
   injectRomanticExpressionSpeedClientProjection,
 } from "@/lib/relationship/romantic/romanticExpressionSpeedCanonical";
+import {
+  comparisonTableValueFromDominantCategories,
+  buildRomanticComparisonTableCanonical,
+  buildRomanticComparisonTableClientProjection,
+  injectRomanticComparisonTableClientProjection,
+} from "@/lib/relationship/romantic/romanticComparisonTableCanonical";
+import {
+  sajuFrameDirectionValueFromDominantCategories,
+  buildRomanticSajuFrameDirectionCanonical,
+  buildRomanticSajuFrameDirectionClientProjection,
+  injectRomanticSajuFrameDirectionClientProjection,
+} from "@/lib/relationship/romantic/romanticSajuFrameDirectionCanonical";
+import { bindDialogueTableToExpressionSpeed } from "@/lib/relationship/romantic/romanticDialogueTableBinding";
 import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
 import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
@@ -573,10 +586,79 @@ function finalizeRomanticSajuDeepReport(
     buildRomanticExpressionSpeedClientProjection(
       expressionSpeedCanonical?.value,
     );
-  const reportWithProjections = injectRomanticExpressionSpeedClientProjection(
-    reportWithResidualProjection,
-    expressionSpeedProjection,
+  const reportWithExpressionProjection =
+    injectRomanticExpressionSpeedClientProjection(
+      reportWithResidualProjection,
+      expressionSpeedProjection,
+    );
+
+  // Phase 6-2d7 — comparison_table ×6 (per-row lean/align/confidence).
+  const comparisonFinalized = comparisonTableValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
   );
+  const comparisonCanonical =
+    buildRomanticComparisonTableCanonical(comparisonFinalized);
+  const comparisonProjection = buildRomanticComparisonTableClientProjection(
+    comparisonCanonical?.value,
+  );
+  const reportWithComparisonProjection =
+    injectRomanticComparisonTableClientProjection(
+      reportWithExpressionProjection,
+      comparisonProjection,
+    );
+
+  // Phase 6-2d7 — saju_frame_direction (+ derived anchor_is_a).
+  const sajuFrameFinalized = sajuFrameDirectionValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const sajuFrameCanonical =
+    buildRomanticSajuFrameDirectionCanonical(sajuFrameFinalized);
+  const sajuFrameProjection =
+    buildRomanticSajuFrameDirectionClientProjection(
+      sajuFrameCanonical?.value,
+    );
+  const reportWithSajuFrameProjection =
+    injectRomanticSajuFrameDirectionClientProjection(
+      reportWithComparisonProjection,
+      sajuFrameProjection,
+    );
+
+  // Phase 6-2d7 — dialogue faster/slower slots follow expression_speed.direction.
+  const priorConflict =
+    (
+      reportWithSajuFrameProjection as {
+        section_3_conversation_patterns?: {
+          conflict_situation?: {
+            dialogue_table?: unknown;
+            [key: string]: unknown;
+          };
+          [key: string]: unknown;
+        };
+      }
+    ).section_3_conversation_patterns?.conflict_situation ?? null;
+  const boundDialogue = bindDialogueTableToExpressionSpeed(
+    (priorConflict?.dialogue_table ?? null) as
+      | Array<Record<string, unknown>>
+      | null,
+    expressionSpeedFinalized?.direction ?? null,
+    { nameA: params.nicknameA, nameB: params.nicknameB },
+  );
+  const reportWithProjections = priorConflict
+    ? {
+        ...reportWithSajuFrameProjection,
+        section_3_conversation_patterns: {
+          ...(
+            reportWithSajuFrameProjection as {
+              section_3_conversation_patterns?: Record<string, unknown>;
+            }
+          ).section_3_conversation_patterns,
+          conflict_situation: {
+            ...priorConflict,
+            dialogue_table: boundDialogue,
+          },
+        },
+      }
+    : reportWithSajuFrameProjection;
 
   return {
     ...reportWithProjections,

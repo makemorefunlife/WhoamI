@@ -69,6 +69,17 @@ import {
   readRomanticExpressionSpeedCanonicalProjection,
 } from "@/lib/relationship/romantic/romanticExpressionSpeedCanonical";
 import {
+  formatRomanticCompareLeanLabel,
+  readRomanticComparisonTableCanonicalProjection,
+  romanticCompareLeanForViewerColumn,
+  romanticComparisonRowKeyForAspect,
+} from "@/lib/relationship/romantic/romanticComparisonTableCanonical";
+import {
+  formatRomanticSajuFrameDirectionCanonicalLabel,
+  readRomanticSajuFrameDirectionCanonicalProjection,
+} from "@/lib/relationship/romantic/romanticSajuFrameDirectionCanonical";
+import { bindDialogueTableToExpressionSpeed } from "@/lib/relationship/romantic/romanticDialogueTableBinding";
+import {
   dedupeActionGuidelines,
   normalizeActionGuideline,
 } from "@/lib/relationship/essenceActionGuideline";
@@ -678,6 +689,20 @@ export default function RomanticSajuDeepReportView({
         locale: reportLocale,
       })
     : null;
+  const comparisonCanonical =
+    readRomanticComparisonTableCanonicalProjection(report);
+  const sajuFrameDirectionCanonical =
+    readRomanticSajuFrameDirectionCanonicalProjection(report);
+  const sajuFrameDirectionCanonicalLabel = sajuFrameDirectionCanonical
+    ? formatRomanticSajuFrameDirectionCanonicalLabel(
+        sajuFrameDirectionCanonical,
+        {
+          nameA,
+          nameB,
+          locale: reportLocale,
+        },
+      )
+    : null;
   const s2 = report.section_2_nature ?? {};
   const special = report.section_4_special_bond;
   const frames = report.section_4_relationship_frames;
@@ -782,8 +807,12 @@ export default function RomanticSajuDeepReportView({
       ),
     [s2.comparison_table, myName, partnerName, viewerIsReportA, polishLine],
   );
-  const dialogueTable = filterDialogueTable(
-    (conflict?.dialogue_table ?? []) as DialogueTableRow[],
+  const dialogueTable = bindDialogueTableToExpressionSpeed(
+    filterDialogueTable(
+      (conflict?.dialogue_table ?? []) as DialogueTableRow[],
+    ),
+    expressionSpeedCanonical?.direction ?? null,
+    { nameA, nameB },
   );
 
   const bondGifts = special
@@ -962,7 +991,23 @@ export default function RomanticSajuDeepReportView({
               </tr>
             </thead>
             <tbody>
-              {comparisonTable.map((row) => (
+              {comparisonTable.map((row) => {
+                const rowKey = romanticComparisonRowKeyForAspect(row.aspect);
+                const typedRow =
+                  rowKey && comparisonCanonical
+                    ? comparisonCanonical[rowKey]
+                    : null;
+                const meLean = romanticCompareLeanForViewerColumn(
+                  typedRow,
+                  viewerIsReportA,
+                  "me",
+                );
+                const partnerLean = romanticCompareLeanForViewerColumn(
+                  typedRow,
+                  viewerIsReportA,
+                  "partner",
+                );
+                return (
                 <tr
                   key={row.aspect}
                   className={["border-b last:border-0", tone.tableBorder].join(
@@ -974,10 +1019,43 @@ export default function RomanticSajuDeepReportView({
                       row.aspect as keyof typeof t.comparisonAspectLabels
                     ] ?? row.aspect}
                   </td>
-                  <td className={["px-4 py-3", tone.body].join(" ")}>{row.a}</td>
-                  <td className={["px-4 py-3", tone.body].join(" ")}>{row.b}</td>
+                  <td className={["px-4 py-3", tone.body].join(" ")}>
+                    {meLean ? (
+                      <p
+                        className={[
+                          "mb-1 text-xs font-semibold tracking-tight",
+                          tone.bodyMedium,
+                        ].join(" ")}
+                      >
+                        {formatRomanticCompareLeanLabel(
+                          meLean,
+                          reportLocale,
+                          rowKey,
+                        )}
+                      </p>
+                    ) : null}
+                    {row.a}
+                  </td>
+                  <td className={["px-4 py-3", tone.body].join(" ")}>
+                    {partnerLean ? (
+                      <p
+                        className={[
+                          "mb-1 text-xs font-semibold tracking-tight",
+                          tone.bodyMedium,
+                        ].join(" ")}
+                      >
+                        {formatRomanticCompareLeanLabel(
+                          partnerLean,
+                          reportLocale,
+                          rowKey,
+                        )}
+                      </p>
+                    ) : null}
+                    {row.b}
+                  </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1077,6 +1155,16 @@ export default function RomanticSajuDeepReportView({
           accentColor={theme.accent}
         >
           <RelationshipReportBody className="space-y-6">
+            {sajuFrameDirectionCanonicalLabel ? (
+              <p
+                className={[
+                  "text-sm font-semibold tracking-tight",
+                  tone.bodyMedium,
+                ].join(" ")}
+              >
+                {sajuFrameDirectionCanonicalLabel}
+              </p>
+            ) : null}
             <InsightHook slot={screenByKey(screenPlan, "bond")} />
             {bondGifts.map((gift) =>
               gift.text && !isGenericBondParagraph(gift.text) ? (

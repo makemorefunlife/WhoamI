@@ -115,3 +115,41 @@ export type {
   ExpressionSpeedConfidence,
   ExpressionSpeedCorroboration,
 } from "./expressionSpeedCorroboration";
+export {
+  buildRomanticComparisonTableCanonical,
+  buildRomanticComparisonTableClientProjection,
+  injectRomanticComparisonTableClientProjection,
+  comparisonTableValueFromDominantCategories,
+  comparisonTableJudgmentFields,
+  readRomanticComparisonTableCanonicalProjection,
+  formatRomanticCompareLeanLabel,
+  romanticComparisonRowKeyForAspect,
+  romanticCompareLeanForViewerColumn,
+  ROMANTIC_COMPARISON_ASPECT_TO_ROW,
+  ROMANTIC_COMPARISON_TABLE_CLIENT_PATH,
+  ROMANTIC_COMPARISON_TABLE_PERSISTENCE_PATH,
+} from "./romanticComparisonTableCanonical";
+export type {
+  RomanticComparisonTableValue,
+  RomanticComparisonTableCanonical,
+  RomanticCompareRowKey,
+} from "./romanticComparisonTableCanonical";
+export {
+  buildRomanticSajuFrameDirectionCanonical,
+  buildRomanticSajuFrameDirectionClientProjection,
+  injectRomanticSajuFrameDirectionClientProjection,
+  sajuFrameDirectionValueFromDominantCategories,
+  sajuFrameDirectionValueFromFinalized,
+  sajuFrameDirectionJudgmentFields,
+  readRomanticSajuFrameDirectionCanonicalProjection,
+  formatRomanticSajuFrameDirectionCanonicalLabel,
+  anchorIsAFromSajuFrameDirection,
+  ROMANTIC_SAJU_FRAME_DIRECTION_CLIENT_PATH,
+  ROMANTIC_SAJU_FRAME_DIRECTION_PERSISTENCE_PATH,
+} from "./romanticSajuFrameDirectionCanonical";
+export type {
+  RomanticSajuFrameDirectionValue,
+  RomanticSajuFrameDirectionCanonical,
+} from "./romanticSajuFrameDirectionCanonical";
+export { bindDialogueTableToExpressionSpeed } from "./romanticDialogueTableBinding";
+export type { DialogueTableRowLike } from "./romanticDialogueTableBinding";

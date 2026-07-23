@@ -254,6 +254,8 @@ export type RomanticSajuDeepReport = {
       unconscious_role_play?: import("@/lib/relationship/romantic/romanticRolePlayCanonical").RomanticRolePlayValue;
       residual?: import("@/lib/relationship/romantic/romanticResidualCanonical").RomanticResidualValue;
       expression_speed?: import("@/lib/relationship/romantic/romanticExpressionSpeedCanonical").RomanticExpressionSpeedValue;
+      comparison_table?: import("@/lib/relationship/romantic/romanticComparisonTableCanonical").RomanticComparisonTableValue;
+      saju_frame_direction?: import("@/lib/relationship/romantic/romanticSajuFrameDirectionCanonical").RomanticSajuFrameDirectionValue;
     };
     section_1_relationship_dynamics?: {
       balance_of_power?: { headline?: string; body?: string };
