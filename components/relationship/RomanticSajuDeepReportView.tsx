@@ -65,6 +65,10 @@ import {
   readRomanticRolePlayCanonicalProjection,
 } from "@/lib/relationship/romantic/romanticRolePlayCanonical";
 import {
+  formatRomanticExpressionSpeedCanonicalLabel,
+  readRomanticExpressionSpeedCanonicalProjection,
+} from "@/lib/relationship/romantic/romanticExpressionSpeedCanonical";
+import {
   dedupeActionGuidelines,
   normalizeActionGuideline,
 } from "@/lib/relationship/essenceActionGuideline";
@@ -665,6 +669,15 @@ export default function RomanticSajuDeepReportView({
         locale: reportLocale,
       })
     : null;
+  const expressionSpeedCanonical =
+    readRomanticExpressionSpeedCanonicalProjection(report);
+  const expressionSpeedCanonicalLabel = expressionSpeedCanonical
+    ? formatRomanticExpressionSpeedCanonicalLabel(expressionSpeedCanonical, {
+        nameA,
+        nameB,
+        locale: reportLocale,
+      })
+    : null;
   const s2 = report.section_2_nature ?? {};
   const special = report.section_4_special_bond;
   const frames = report.section_4_relationship_frames;
@@ -1223,6 +1236,16 @@ export default function RomanticSajuDeepReportView({
           className="scroll-mt-24"
           id="relationship-conflict-map"
         >
+          {expressionSpeedCanonicalLabel ? (
+            <p
+              className={[
+                "mb-3 text-sm font-semibold tracking-tight",
+                tone.bodyMedium,
+              ].join(" ")}
+            >
+              {expressionSpeedCanonicalLabel}
+            </p>
+          ) : null}
           <div
             className={[
               "overflow-x-auto rounded-xl border",

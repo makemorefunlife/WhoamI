@@ -38,6 +38,18 @@ import {
   buildRomanticRolePlayClientProjection,
   injectRomanticRolePlayClientProjection,
 } from "@/lib/relationship/romantic/romanticRolePlayCanonical";
+import {
+  residualValueFromDominantCategories,
+  buildRomanticResidualCanonical,
+  buildRomanticResidualClientProjection,
+  injectRomanticResidualClientProjection,
+} from "@/lib/relationship/romantic/romanticResidualCanonical";
+import {
+  expressionSpeedValueFromDominantCategories,
+  buildRomanticExpressionSpeedCanonical,
+  buildRomanticExpressionSpeedClientProjection,
+  injectRomanticExpressionSpeedClientProjection,
+} from "@/lib/relationship/romantic/romanticExpressionSpeedCanonical";
 import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
 import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
@@ -532,9 +544,38 @@ function finalizeRomanticSajuDeepReport(
   const rolePlayProjection = buildRomanticRolePlayClientProjection(
     rolePlayCanonical?.value,
   );
-  const reportWithProjections = injectRomanticRolePlayClientProjection(
+  const reportWithRolePlayProjection = injectRomanticRolePlayClientProjection(
     reportWithReassuranceProjection,
     rolePlayProjection,
+  );
+
+  // Phase 6-2d5 — residual (independent of recovery_speed).
+  const residualFinalized = residualValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const residualCanonical = buildRomanticResidualCanonical(residualFinalized);
+  const residualProjection = buildRomanticResidualClientProjection(
+    residualCanonical?.value,
+  );
+  const reportWithResidualProjection = injectRomanticResidualClientProjection(
+    reportWithRolePlayProjection,
+    residualProjection,
+  );
+
+  // Phase 6-2d6 — expression_speed (direction + optional corroboration meta).
+  const expressionSpeedFinalized = expressionSpeedValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const expressionSpeedCanonical = buildRomanticExpressionSpeedCanonical(
+    expressionSpeedFinalized,
+  );
+  const expressionSpeedProjection =
+    buildRomanticExpressionSpeedClientProjection(
+      expressionSpeedCanonical?.value,
+    );
+  const reportWithProjections = injectRomanticExpressionSpeedClientProjection(
+    reportWithResidualProjection,
+    expressionSpeedProjection,
   );
 
   return {

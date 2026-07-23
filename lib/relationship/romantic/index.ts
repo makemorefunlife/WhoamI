@@ -77,6 +77,38 @@ export type {
   RomanticRolePlayValue,
   RomanticRolePlayCanonical,
 } from "./romanticRolePlayCanonical";
+export {
+  buildRomanticResidualCanonical,
+  buildRomanticResidualClientProjection,
+  injectRomanticResidualClientProjection,
+  residualValueFromDominantCategories,
+  residualValueFromDynamicsSnapshot,
+  residualJudgmentFields,
+  readRomanticResidualCanonicalProjection,
+  formatRomanticResidualCanonicalLabel,
+  ROMANTIC_RESIDUAL_CLIENT_PATH,
+  ROMANTIC_RESIDUAL_PERSISTENCE_PATH,
+} from "./romanticResidualCanonical";
+export type {
+  RomanticResidualValue,
+  RomanticResidualCanonical,
+} from "./romanticResidualCanonical";
+export {
+  buildRomanticExpressionSpeedCanonical,
+  buildRomanticExpressionSpeedClientProjection,
+  injectRomanticExpressionSpeedClientProjection,
+  expressionSpeedValueFromDominantCategories,
+  expressionSpeedValueFromFinalized,
+  expressionSpeedJudgmentFields,
+  readRomanticExpressionSpeedCanonicalProjection,
+  formatRomanticExpressionSpeedCanonicalLabel,
+  ROMANTIC_EXPRESSION_SPEED_CLIENT_PATH,
+  ROMANTIC_EXPRESSION_SPEED_PERSISTENCE_PATH,
+} from "./romanticExpressionSpeedCanonical";
+export type {
+  RomanticExpressionSpeedValue,
+  RomanticExpressionSpeedCanonical,
+} from "./romanticExpressionSpeedCanonical";
 export { refineExpressionSpeedCorroboration } from "./expressionSpeedCorroboration";
 export type {
   ExpressionSpeedAlign,

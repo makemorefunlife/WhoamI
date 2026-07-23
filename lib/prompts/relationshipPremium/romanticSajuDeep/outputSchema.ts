@@ -252,6 +252,8 @@ export type RomanticSajuDeepReport = {
       recovery_speed?: import("@/lib/relationship/romantic/romanticRecoverySpeedCanonical").RomanticRecoverySpeedValue;
       reassurance_signal?: import("@/lib/relationship/romantic/romanticReassuranceCanonical").RomanticReassuranceValue;
       unconscious_role_play?: import("@/lib/relationship/romantic/romanticRolePlayCanonical").RomanticRolePlayValue;
+      residual?: import("@/lib/relationship/romantic/romanticResidualCanonical").RomanticResidualValue;
+      expression_speed?: import("@/lib/relationship/romantic/romanticExpressionSpeedCanonical").RomanticExpressionSpeedValue;
     };
     section_1_relationship_dynamics?: {
       balance_of_power?: { headline?: string; body?: string };
