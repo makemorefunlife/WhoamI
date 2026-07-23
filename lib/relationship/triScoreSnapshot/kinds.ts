@@ -276,6 +276,49 @@ export const TRI_SCORE_KIND_CONFIG: Record<
   family: FAMILY_CONFIG,
 };
 
+const ROMANTIC_CONFIG_EN: TriScoreKindConfig = {
+  kind: "romantic",
+  labels: {
+    activation: { short: "🔥 Attraction" },
+    benefit: { short: "🧩 Chemistry" },
+    risk: { short: "⚡ Sensitivity" },
+  },
+  legendItems: [
+    {
+      label: "Attraction",
+      emoji: "🔥",
+      meaning: "How much you're drawn in, want to meet, and feel attraction/charm.",
+    },
+    {
+      label: "Chemistry",
+      emoji: "🧩",
+      meaning: "How comfortable, well-matched, and mutually supportive being together feels (close to an energy fit).",
+    },
+    {
+      label: "Sensitivity",
+      emoji: "⚡",
+      meaning: "How much you get sensitive, stressed, or friction/clashes grow.",
+    },
+  ],
+  topics: [
+    {
+      topic: "intimacy",
+      cardTitle: "① Chemistry & Attraction",
+      cardSubtitle: "A spark, dates, alone together",
+    },
+    {
+      topic: "stability",
+      cardTitle: "② Stability & Balance",
+      cardSubtitle: "Daily life, the future, matching your pace",
+    },
+    {
+      topic: "conflict",
+      cardTitle: "③ Conflict & Tension",
+      cardSubtitle: "When opinions clash or you fight",
+    },
+  ],
+};
+
 const WORK_CONFIG_EN: TriScoreKindConfig = {
   kind: "work",
   labels: {
@@ -456,6 +499,7 @@ const FRIENDSHIP_CONFIG_EN: TriScoreKindConfig = {
 
 /** English variants only exist for kinds already migrated to locale-aware content. */
 const EN_KIND_CONFIG: Partial<Record<TriScoreSnapshotKind, TriScoreKindConfig>> = {
+  romantic: ROMANTIC_CONFIG_EN,
   work: WORK_CONFIG_EN,
   family: FAMILY_CONFIG_EN,
   cohabitation: COHABITATION_CONFIG_EN,

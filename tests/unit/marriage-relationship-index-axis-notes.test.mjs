@@ -12,10 +12,9 @@
  *   3. psych(11축)가 없으면 axisNote는 undefined/null이고, 그 외 필드
  *      (title/subtitle/interpretation/isWarning)는 axisNote 유무와 무관하게 항상 동일해야
  *      한다(레거시 캐시·설문 미완료 페어에서 기존 동작이 깨지면 안 됨).
- *   4. [알려진 갭, 의도적으로 고정] axisNote 리졸버는 로케일 파라미터가 없는
- *      국문 전용 함수다 — en-US 리포트에서도 axisNote는 그대로 한글로 나간다는
- *      것을 이 테스트가 명시적으로 고정해 둔다(main interpretation은 pick()으로
- *      로케일 대응되지만 axisNote는 로맨틱과 동일한 사전 존재 갭).
+ *   4. axisNote 리졸버도 로케일 파라미터를 받는다 — en-US 리포트에서는
+ *      axisNote도 영문으로 나가야 한다(과거엔 main interpretation만 pick()으로
+ *      로케일 대응되고 axisNote는 국문 전용이던 사전 존재 갭을 이번에 수정).
  *
  * No DB, no LLM — 순수 함수라 결정론적으로 assert 가능.
  * Run: npx tsx tests/unit/marriage-relationship-index-axis-notes.test.mjs
@@ -192,7 +191,7 @@ assert.equal(restored.conflict.axisNote, undefined);
 ok("캐시 복원 경로에서는 psych 자체가 없어 intimacy/stability는 axisNote=null, conflict는 필드 자체가 없음");
 
 // ---------------------------------------------------------------------------
-section("6) [알려진 갭, 의도적으로 고정] en-US locale이어도 axisNote는 한글로 나간다");
+section("6) en-US locale이면 axisNote도 영문으로 나간다");
 
 const HANGUL_RE = /[ㄱ-ㆎ가-힣]/;
 const enTopics = topicsFrom(
@@ -203,13 +202,21 @@ const enTopics = topicsFrom(
     psychB: psych({ empathy: 75, structure: 75 }),
   }),
 );
-assert.ok(
-  HANGUL_RE.test(enTopics.intimacy.axisNote ?? ""),
-  "TODO(marriage locale): resolveRomanticFitAxisNote/resolveLifeSynergyAxisNote에 로케일 파라미터가 " +
-    "없어서 en-US 리포트에서도 axisNote가 한글로 나간다 — main interpretation은 pick()으로 로케일 " +
-    "대응되지만 axisNote는 로맨틱과 동일한 사전 존재 갭. 로케일 지원 추가 시 이 assert가 깨지도록 " +
-    "일부러 반대 방향으로 고정해 둔다.",
+assert.ok(!HANGUL_RE.test(enTopics.intimacy.axisNote ?? ""), "intimacy.axisNote는 en-US에서 한글 없음");
+assert.ok(!HANGUL_RE.test(enTopics.stability.axisNote ?? ""), "stability.axisNote는 en-US에서 한글 없음");
+assert.ok(!HANGUL_RE.test(enTopics.intimacy.interpretation), "intimacy.interpretation도 여전히 한글 없음(회귀 확인)");
+ok("en-US ctx에서 axisNote도 영문으로 나감 — 로케일 갭 수정 확인");
+
+const koTopics = topicsFrom(
+  buildMarriageSnapshotNarrative({
+    ctx: stubCtx("ko-KR"),
+    relationshipGauges: GAUGES,
+    psychA: psych({ empathy: 80, structure: 80 }),
+    psychB: psych({ empathy: 75, structure: 75 }),
+  }),
 );
-ok("en-US ctx여도 axisNote가 국문 그대로임을 확인(로맨틱과 동일한 로케일 갭, 이번 배치 범위 아님 — TODO로 고정)");
+assert.notEqual(enTopics.intimacy.axisNote, koTopics.intimacy.axisNote);
+assert.notEqual(enTopics.stability.axisNote, koTopics.stability.axisNote);
+ok("동일 입력이라도 locale에 따라 axisNote가 실제로 달라짐(단순 통과가 아니라 진짜 분기)");
 
 console.log("\nOK: marriage relationship-index axis-notes tests passed");

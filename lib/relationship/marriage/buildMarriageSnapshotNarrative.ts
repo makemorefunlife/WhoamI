@@ -1,6 +1,7 @@
 import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import { getTriScoreKindConfig } from "@/lib/relationship/triScoreSnapshot/kinds";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
+import type { Locale } from "@/lib/i18n/locale";
 import type {
   SnapshotTopicNarrative,
   SnapshotNarrative,
@@ -28,16 +29,25 @@ function axisScore(
 function resolveRomanticFitAxisNote(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
+  locale: Locale,
 ): string | null {
   const empathyA = axisScore(psychA, "empathy");
   const empathyB = axisScore(psychB, "empathy");
   if (empathyA == null || empathyB == null) return null;
   const avg = (empathyA + empathyB) / 2;
   if (avg >= AXIS_NOTE_HIGH) {
-    return "관계공감 축도 둘 다 높은 편이라, 사주로 보이는 로맨틱 핏이 실제 애정 표현으로도 잘 이어질 가능성이 커요.";
+    return pick(
+      locale,
+      "Your empathy axis scores are both on the high side, so the romantic fit your charts show has a good chance of coming through as real affection.",
+      "관계공감 축도 둘 다 높은 편이라, 사주로 보이는 로맨틱 핏이 실제 애정 표현으로도 잘 이어질 가능성이 커요.",
+    );
   }
   if (avg <= AXIS_NOTE_LOW) {
-    return "관계공감 축은 낮은 편이라, 핏이 좋아도 애정 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.";
+    return pick(
+      locale,
+      "Your empathy axis is on the low side, so even with good fit, it may take a bit more conscious effort for it to come through as affection.",
+      "관계공감 축은 낮은 편이라, 핏이 좋아도 애정 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.",
+    );
   }
   return null;
 }
@@ -46,16 +56,25 @@ function resolveRomanticFitAxisNote(
 function resolveLifeSynergyAxisNote(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
+  locale: Locale,
 ): string | null {
   const structureA = axisScore(psychA, "structure");
   const structureB = axisScore(psychB, "structure");
   if (structureA == null || structureB == null) return null;
   const avg = (structureA + structureB) / 2;
   if (avg >= AXIS_NOTE_HIGH) {
-    return "계획구조화 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.";
+    return pick(
+      locale,
+      "Your planning-structure axis scores are both on the high side, a good combination for turning chores, finances, and childcare into a working system together.",
+      "계획구조화 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.",
+    );
   }
   if (avg <= AXIS_NOTE_LOW) {
-    return "계획구조화 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.";
+    return pick(
+      locale,
+      "Your planning-structure axis is on the low side, so without putting your role agreements into writing or routine, the synergy can fizzle out.",
+      "계획구조화 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.",
+    );
   }
   return null;
 }
@@ -110,7 +129,7 @@ function interpretMarriageTopic(
       risk,
       interpretation: `${core}${bed}`,
       isWarning: false,
-      axisNote: resolveRomanticFitAxisNote(psychA, psychB),
+      axisNote: resolveRomanticFitAxisNote(psychA, psychB, locale),
     };
   }
 
@@ -142,7 +161,7 @@ function interpretMarriageTopic(
         `${core} 통장·큰 지출은 ${cfo} 한 명만 쥐세요.`,
       ),
       isWarning: false,
-      axisNote: resolveLifeSynergyAxisNote(psychA, psychB),
+      axisNote: resolveLifeSynergyAxisNote(psychA, psychB, locale),
     };
   }
 

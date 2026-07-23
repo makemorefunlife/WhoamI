@@ -1,4 +1,5 @@
 import type { RomanticRuleContext } from "@/lib/relationship/romanticRules/types";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import { polishRomanticDisplayText } from "@/lib/relationship/romanticEverydayText";
 import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
@@ -270,30 +271,34 @@ export function buildRomanticSnapshotPanel(
 
 export function hydrateSnapshotPanel(
   panel: RomanticSnapshotPanel,
+  locale?: RomanticHeadlineLocale,
 ): RomanticSnapshotPanel {
   if (panel.narrative?.topics?.length) return panel;
   return {
     ...panel,
     personAxesSource: panel.personAxesSource ?? "hidden",
-    narrative: buildSnapshotNarrativeFromGauges(panel.relationshipGauges),
+    narrative: buildSnapshotNarrativeFromGauges(panel.relationshipGauges, locale),
   };
 }
 
-export function resolveSnapshotPanelFromReport(meta: unknown): RomanticSnapshotPanel | null {
+export function resolveSnapshotPanelFromReport(
+  meta: unknown,
+  locale?: RomanticHeadlineLocale,
+): RomanticSnapshotPanel | null {
   if (!meta || typeof meta !== "object") return null;
   const m = meta as {
     snapshot_panel?: RomanticSnapshotPanel;
     rule_screen_plan?: Array<{ screen: number; key: string; output: unknown }>;
   };
   if (m.snapshot_panel?.personA?.axes?.length) {
-    return hydrateSnapshotPanel(m.snapshot_panel);
+    return hydrateSnapshotPanel(m.snapshot_panel, locale);
   }
   const hit = m.rule_screen_plan?.find(
     (s) => s.screen === 2 && s.key === "snapshot",
   );
   const out = hit?.output as { panel?: RomanticSnapshotPanel } | undefined;
   if (out?.panel?.personA?.axes?.length) {
-    return hydrateSnapshotPanel(out.panel);
+    return hydrateSnapshotPanel(out.panel, locale);
   }
   return null;
 }

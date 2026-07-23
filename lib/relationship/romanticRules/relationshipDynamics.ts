@@ -2,6 +2,17 @@ import { getHiddenStemsData, calculateTwelveStage } from "@/lib/saju/repository"
 import type { ChartContext } from "@/lib/saju/chartContext";
 import type { CurrentSelfProfile, SecondaryAxisKey } from "@/lib/v2/survey/types";
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import { normalizeRomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+
+/** en/ko 문구 선택 — dayStemRomanticProfile.ts와 동일한 정규화 컨벤션. */
+export function pick(
+  locale: RomanticHeadlineLocale | undefined,
+  en: string,
+  ko: string,
+): string {
+  return normalizeRomanticHeadlineLocale(locale) === "en" ? en : ko;
+}
 
 /**
  * 연인 전용 "관계 역학" 4종 — 개인별 신호가 아니라 A·B를 같이 놓고 비교하는
@@ -359,16 +370,25 @@ export function resolveRolePlayWithSajuFrame(
 export function resolveIntimacyAxisNote(
   profileA: CurrentSelfProfile | null | undefined,
   profileB: CurrentSelfProfile | null | undefined,
+  locale?: RomanticHeadlineLocale,
 ): string | null {
   const empathyA = axisScore(profileA, "empathy");
   const empathyB = axisScore(profileB, "empathy");
   if (empathyA == null || empathyB == null) return null;
   const avg = (empathyA + empathyB) / 2;
   if (avg >= AXIS_NOTE_EMPATHY_HIGH) {
-    return "관계공감 축도 둘 다 높은 편이라, 사주로 보이는 끌림이 실제 느낌으로도 잘 이어질 가능성이 커요.";
+    return pick(
+      locale,
+      "Your empathy axis scores are both on the high side, so the attraction your charts show has a good chance of coming through in how you actually feel.",
+      "관계공감 축도 둘 다 높은 편이라, 사주로 보이는 끌림이 실제 느낌으로도 잘 이어질 가능성이 커요.",
+    );
   }
   if (avg <= AXIS_NOTE_EMPATHY_LOW) {
-    return "관계공감 축은 낮은 편이라, 끌림이 있어도 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.";
+    return pick(
+      locale,
+      "Your empathy axis is on the low side, so even with attraction present, it may take a bit more conscious effort for it to come through as expression.",
+      "관계공감 축은 낮은 편이라, 끌림이 있어도 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.",
+    );
   }
   return null;
 }
@@ -377,13 +397,18 @@ export function resolveIntimacyAxisNote(
 export function resolveConflictAxisNote(
   profileA: CurrentSelfProfile | null | undefined,
   profileB: CurrentSelfProfile | null | undefined,
+  locale?: RomanticHeadlineLocale,
 ): string | null {
   const conflictA = axisScore(profileA, "conflict_style");
   const conflictB = axisScore(profileB, "conflict_style");
   if (conflictA == null || conflictB == null) return null;
   const gap = Math.abs(conflictA - conflictB);
   if (gap >= AXIS_NOTE_CONFLICT_GAP) {
-    return "갈등을 대하는 방식(갈등직면성) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.";
+    return pick(
+      locale,
+      "The gap in how you each face conflict (conflict-facing axis) is also fairly wide, so the tension you feel when you clash may run higher than what your charts alone suggest.",
+      "갈등을 대하는 방식(갈등직면성) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.",
+    );
   }
   return null;
 }

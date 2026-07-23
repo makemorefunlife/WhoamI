@@ -10,10 +10,9 @@
  *   3. profile(11축)이 없으면 axisNote는 undefined/null이고, 그 외 필드
  *      (title/subtitle/interpretation/isWarning)는 axisNote 유무와 무관하게 항상 동일해야
  *      한다(레거시 캐시·설문 미완료 페어에서 기존 동작이 깨지면 안 됨).
- *   4. interpretTopic/buildSnapshotNarrative는 로케일 파라미터가 없는 국문 전용
- *      함수다(사전 존재 갭) — axisNote도 en-US 요청에서 그대로 한글로 나간다는 것을
- *      이 테스트가 명시적으로 고정해 둔다(향후 로케일 지원 작업 시 이 assert를
- *      고쳐야 한다는 신호가 되도록).
+ *   4. interpretTopic/buildSnapshotNarrative/axisNote 리졸버 전부 로케일
+ *      파라미터를 받는다 — en 요청에서는 title/interpretation/axisNote 전부
+ *      영문으로 나가야 한다(과거엔 국문 전용이던 사전 존재 갭을 이번에 수정).
  *
  * No DB, no LLM — 순수 함수 + 실제 saju 계산 파이프라인만으로 검증.
  * Run: npx tsx tests/unit/romantic-relationship-index-axis-notes.test.mjs
@@ -203,7 +202,7 @@ console.log("conflict.interpretation:", topicsKo.conflict.interpretation);
 console.log("conflict.axisNote      :", topicsKo.conflict.axisNote);
 
 // ---------------------------------------------------------------------------
-section("6) [알려진 갭, 의도적으로 고정] en-US 요청에서도 axisNote는 한글로 나간다");
+section("6) en 요청에서는 카드 전체(title/interpretation/axisNote)가 영문으로 나간다");
 
 const ctxEn = buildRomanticRuleContext({
   nicknameA: "Alex",
@@ -221,13 +220,17 @@ const panelEn = buildRomanticSnapshotPanel(ctxEn, {
 const topicsEn = Object.fromEntries(panelEn.narrative.topics.map((t) => [t.topic, t]));
 const HANGUL_RE = /[ㄱ-ㆎ가-힣]/;
 
-assert.ok(
-  HANGUL_RE.test(topicsEn.intimacy.axisNote ?? ""),
-  "TODO(romantic locale): interpretTopic/buildSnapshotNarrative에 로케일 파라미터가 없어서 " +
-    "en-US 리포트에서도 이 카드 전체(title/interpretation/axisNote)가 한글로 나간다. " +
-    "이 assert는 '고쳐야 할 버그가 남아있다'를 능동적으로 표시하는 용도 — 로케일 지원을 " +
-    "추가하면 이 assert가 깨지도록 일부러 반대 방향으로 걸어 둔다. 그때 이 테스트를 갱신할 것.",
-);
-ok("en 요청에서도 axisNote가 국문 그대로임을 확인(사전 존재 로케일 갭, 이번 배치 범위 아님 — TODO로 고정)");
+for (const topic of ["intimacy", "stability", "conflict"]) {
+  assert.ok(!HANGUL_RE.test(topicsEn[topic].title), `${topic}.title은 en 요청에서 한글 없음`);
+  assert.ok(!HANGUL_RE.test(topicsEn[topic].subtitle), `${topic}.subtitle은 en 요청에서 한글 없음`);
+  assert.ok(!HANGUL_RE.test(topicsEn[topic].interpretation), `${topic}.interpretation은 en 요청에서 한글 없음`);
+}
+assert.ok(!HANGUL_RE.test(topicsEn.intimacy.axisNote ?? ""), "intimacy.axisNote는 en 요청에서 한글 없음");
+assert.ok(!HANGUL_RE.test(topicsEn.conflict.axisNote ?? ""), "conflict.axisNote는 en 요청에서 한글 없음");
+ok("en 요청 전체(title/subtitle/interpretation/axisNote)가 한글 없이 영문으로 나감 — 로케일 갭 수정 확인");
+
+assert.notEqual(topicsEn.intimacy.title, topicsKo.intimacy.title);
+assert.notEqual(topicsEn.intimacy.axisNote, topicsKo.intimacy.axisNote);
+ok("동일 입력이라도 locale에 따라 title/axisNote가 실제로 달라짐(단순 통과가 아니라 진짜 분기)");
 
 console.log("\nOK: romantic relationship-index axis-notes tests passed");

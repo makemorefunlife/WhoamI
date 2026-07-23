@@ -777,7 +777,7 @@ export default function RomanticSajuDeepReportView({
     ...openingRaw,
     headline: viewerFirstHeadline ?? openingRaw.headline,
   };
-  const snapshotPanel = resolveSnapshotPanelFromReport(report.meta);
+  const snapshotPanel = resolveSnapshotPanelFromReport(report.meta, locale);
   const scores = extractRomanticScores(report.meta, t);
   const psychMatch = report.meta?.psych_match ?? null;
   const { chemistryApprox: chemistryScores, strengthWeakness: strengthWeaknessResult } =
