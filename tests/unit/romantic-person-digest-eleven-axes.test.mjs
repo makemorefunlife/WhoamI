@@ -6,10 +6,12 @@
  *   1. profile(11축) 없으면(레거시·설문 미완료) digest 문자열이 이전과 완전히
  *      동일해야 한다(byte-identical) — romantic_signals(사주 6축) 블록은
  *      이번 변경으로 절대 안 바뀐다.
- *   2. profile이 있으면 6개 대응 라인이 COMPARISON_TABLE_AXIS_MAP과 정확히
- *      같은 순서·값으로 나온다.
+ *   2. profile이 있으면 6개 참고 라인이 COMPARISON_TABLE_AXIS_MAP과 정확히
+ *      같은 순서·값으로 나온다(Phase 5-4: supporting context — 「대응」이 아닌 「참고」).
  *   3. 사주(romantic_signals) 블록 자체의 값은 profile 유무와 무관하게 항상
  *      동일하다 — 11축은 추가 블록일 뿐 사주 블록을 건드리지 않는다.
+ *   4. Phase 5-4: 「결합」·재판정 유도 문구 없음. lean 있으면 Server classification
+ *      canonical + eleven_axes supporting only.
  *
  * No DB, no LLM — buildRomanticPersonSignalsDigest는 순수 함수라 문자열
  * 자체를 결정론적으로 assert 가능. LLM이 이 근거를 실제로 잘 쓰는지는
@@ -121,17 +123,17 @@ const withProfile = buildRomanticPersonSignalsDigest({
 });
 
 const expectedLines = [
-  "· 감정 표현 대응: 외향에너지 71",
-  "· 갈등 반응 대응: 갈등직면성 62",
-  "· 애정 언어 대응: 관계공감 53",
-  "· 스트레스 패턴 대응: 자기통제 44",
-  "· 의사결정 대응: 신중결정 35",
-  "· 소통 방식 대응: 계획구조화 26",
+  "· 감정 표현 참고: 외향에너지 71",
+  "· 갈등 반응 참고: 갈등직면성 62",
+  "· 애정 언어 참고: 관계공감 53",
+  "· 스트레스 패턴 참고: 자기통제 44",
+  "· 의사결정 참고: 신중결정 35",
+  "· 소통 방식 참고: 계획구조화 26",
 ];
 for (const line of expectedLines) {
   assert.ok(withProfile.includes(line), `digest에 "${line}" 라인이 포함되어야 함`);
 }
-ok("6개 대응 라인이 COMPARISON_TABLE_AXIS_MAP과 정확히 같은 순서·값으로 포함됨");
+ok("6개 참고 라인이 COMPARISON_TABLE_AXIS_MAP과 정확히 같은 순서·값으로 포함됨");
 
 const axesBlockIndex = withProfile.indexOf("eleven_axes");
 const firstLineIndex = withProfile.indexOf(expectedLines[0]);
@@ -140,10 +142,19 @@ assert.ok(axesBlockIndex < firstLineIndex && firstLineIndex < lastLineIndex);
 ok("eleven_axes 헤더 → 감정표현 → ... → 소통방식 순서로 나옴(COMPARISON_TABLE_AXIS_MAP 순서 그대로)");
 
 assert.ok(
-  withProfile.includes("romantic_signals 및 eleven_axes 두 소스를 결합해서"),
-  "profile 있으면 두 소스를 결합하라는 보강된 안내 문구가 나와야 함",
+  withProfile.includes("supporting context only"),
+  "profile 있으면 eleven_axes가 supporting context로만 안내되어야 함",
 );
-ok("profile 있을 때는 결합 안내 문구로 교체됨");
+assert.ok(
+  withProfile.includes("romantic_signals 6축 band가 comparison_table의 canonical classification"),
+  "lean 없을 때 romantic_signals band가 canonical",
+);
+assert.doesNotMatch(
+  withProfile,
+  /결합해서|두 소스를 결합/,
+  "Phase 5-4: 「결합」재판정 유도 문구 금지",
+);
+ok("profile 있을 때 grounding — supporting only, no combine");
 
 // ---------------------------------------------------------------------------
 section("3) 사주(romantic_signals) 블록 자체는 profile 유무와 무관하게 항상 동일하다");
@@ -161,5 +172,54 @@ const sajuBlockWithout = extractRomanticSignalsBlock(withoutProfile);
 const sajuBlockWith = extractRomanticSignalsBlock(withProfile);
 assert.equal(sajuBlockWith, sajuBlockWithout);
 ok("romantic_signals 블록 내용은 profile 유무와 무관하게 완전히 동일 — 11축은 순수 추가 블록");
+
+// ---------------------------------------------------------------------------
+section("4) Phase 5-4 — lean + profile → Server classification canonical");
+
+const withLeanAndProfile = buildRomanticPersonSignalsDigest({
+  ...baseParams,
+  profile: profile({
+    energy_style: 71,
+    conflict_style: 62,
+    empathy: 53,
+    self_control: 44,
+    decision_style: 35,
+    structure: 26,
+  }),
+  expressionLean: { lean: "expressive", base: "steady" },
+  conflictLean: { lean: "principled", base: "steady" },
+  affectionLean: { lean: "emotional_care", base: "steady" },
+  stressLean: { lean: "withdrawn", base: "steady" },
+  decisionLean: { lean: "consultative", base: "steady" },
+  communicationLean: { lean: "considerate", base: "steady" },
+});
+
+assert.ok(
+  withLeanAndProfile.includes("Server classification is canonical"),
+  "lean 있으면 Server classification canonical 문구",
+);
+assert.ok(
+  withLeanAndProfile.includes("supporting context only"),
+  "lean 있어도 eleven_axes는 supporting context",
+);
+assert.ok(
+  withLeanAndProfile.includes(
+    "do not reinterpret, reclassify, rescore, or override",
+  ),
+  "재분류·재판정 금지 명시",
+);
+assert.doesNotMatch(withLeanAndProfile, /결합해서|두 소스를 결합|결합하되/);
+assert.ok(withLeanAndProfile.includes("서버 lean=expressive"));
+assert.ok(withLeanAndProfile.includes("감정 표현 참고: 외향에너지 71"));
+assert.ok(
+  withLeanAndProfile.includes("corroboration/background"),
+  "lean 경로 eleven_axes 헤더가 corroboration/background",
+);
+assert.doesNotMatch(
+  withLeanAndProfile,
+  /같은 순서로 6개 행에 대응/,
+  "lean 경로에서 eleven_axes를 대응 입력으로 읽히게 하면 안 됨",
+);
+ok("lean+profile grounding snapshot");
 
 console.log("\nOK: romantic person digest eleven-axes tests passed");

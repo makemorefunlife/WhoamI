@@ -150,7 +150,7 @@ export function buildRomanticPersonSignalsDigest(params: {
       : `  · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})`
     : null;
   const romanticSignalsBlock = rs
-    ? `- romantic_signals(이 사람의 연애 성향 — comparison_table 6축과 1:1 대응):
+    ? `- romantic_signals(이 사람의 연애 성향 — comparison_table 6축과 1:1 대응; 서버 분류 SSOT):
 ${expressionLine}
 ${conflictLine}
 ${affectionLine}
@@ -159,14 +159,6 @@ ${decisionLine}
 ${communicationLine}`
     : "- romantic_signals: 없음(구버전 스냅샷) — comparison_table은 원국 데이터만으로 해석";
 
-  // 11축(profile)이 없으면(레거시·설문 미완료) 이 블록 자체를 생략 — romantic_signals
-  // 블록은 그대로 유지되므로 사주만으로도 기존과 동일하게 동작한다.
-  const axes = params.profile?.secondary_axes;
-  const elevenAxesBlock = axes
-    ? `\n- eleven_axes(이 사람의 심리 11축 — 위 romantic_signals와 같은 순서로 6개 행에 대응):
-${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 대응: ${row.axisLabel} ${axes[row.axisKey]}`).join("\n")}`
-    : "";
-
   const ssotRows: string[] = [];
   if (params.expressionLean) ssotRows.push("「감정 표현」");
   if (params.conflictLean) ssotRows.push("「갈등 반응」");
@@ -174,16 +166,26 @@ ${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 대응: ${row.axi
   if (params.stressLean) ssotRows.push("「스트레스 패턴」");
   if (params.decisionLean) ssotRows.push("「의사결정」");
   if (params.communicationLean) ssotRows.push("「소통 방식」");
-  const ssotPhrase =
-    ssotRows.length > 0
-      ? `${ssotRows.join("·")}행만 서버 lean을 재분류하지 말고 문장화하세요. 나머지 행은`
-      : null;
-  const combineNote = ssotPhrase
+  const hasServerLean = ssotRows.length > 0;
+
+  // 11축(profile)이 없으면(레거시·설문 미완료) 이 블록 자체를 생략.
+  // Phase 5-4: eleven_axes는 판정 입력이 아니라 supporting/corroboration only.
+  const axes = params.profile?.secondary_axes;
+  const elevenAxesBlock = axes
+    ? hasServerLean
+      ? `\n- eleven_axes(supporting context only — corroboration/background; server lean above is canonical — do not reclassify, rescore, or override):
+${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 참고: ${row.axisLabel} ${axes[row.axisKey]}`).join("\n")}`
+      : `\n- eleven_axes(supporting context only — romantic_signals bands above are canonical — do not reclassify or override):
+${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 참고: ${row.axisLabel} ${axes[row.axisKey]}`).join("\n")}`
+    : "";
+
+  // Phase 5-4 — Server classification → LLM 문장화만. 「결합」으로 재판정 유도 금지.
+  const groundingNote = hasServerLean
     ? axes
-      ? `⚠️ 전문용어·한자 출력 금지. romantic_signals 및 eleven_axes를 결합하되, ${ssotPhrase} A/B가 실제로 다른 band/축일 때 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`
-      : `⚠️ 전문용어·한자 출력 금지. romantic_signals 6축을 comparison_table에 매칭하되, ${ssotPhrase} A/B band 차이를 분명히 드러내게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`
+      ? `⚠️ 전문용어·한자 출력 금지. Server classification is canonical for ${ssotRows.join("·")} — phrase the supplied lean only; do not reinterpret, reclassify, rescore, or override. eleven_axes is supporting context only. A/B lean이 다르면 그 차이가 분명히 드러나게 문장화하세요. 수치·밴드명 자체는 출력하지 마세요.`
+      : `⚠️ 전문용어·한자 출력 금지. Server classification is canonical for ${ssotRows.join("·")} — phrase the supplied lean only; do not reinterpret, reclassify, or override. A/B lean이 다르면 그 차이가 분명히 드러나게 문장화하세요. 수치·밴드명 자체는 출력하지 마세요.`
     : axes
-      ? "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 및 eleven_axes 두 소스를 결합해서 comparison_table의 6개 aspect를 채우고, A/B가 실제로 다른 band/축일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요."
+      ? "⚠️ 전문용어·한자 출력 금지. romantic_signals 6축 band가 comparison_table의 canonical classification입니다 — 문장화만 하고 재분류·재판정하지 마세요. eleven_axes is supporting context only (do not override). A/B가 실제로 다른 band일 때 차이가 분명히 드러나게 쓰세요. 수치·밴드명 자체는 출력하지 마세요."
       : "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.";
 
   return `## ${params.nickname} — saju_master_v2 엑기스 Digest
@@ -194,7 +196,7 @@ ${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 대응: ${row.axi
 - 원국 역학(상위): ${relations || "없음"}
 - 신살 보유: ${possessed.join(", ") || "없음"}
 ${romanticSignalsBlock}${elevenAxesBlock}${uncertain}
-${combineNote}`.trim();
+${groundingNote}`.trim();
 }
 
 function crossHitsDigest(
