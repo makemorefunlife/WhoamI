@@ -20,7 +20,11 @@ import { parseAnalysisLogSnapshot } from "../../lib/relationship/detail/parseAna
 import { buildChartContext } from "../../lib/saju/chartContext.ts";
 import { sajuJsonToPillars } from "../../lib/saju/pairChartAnalysis.ts";
 import { buildRomanticDynamicsDigest } from "../../lib/relationship/romanticSajuPromptDigest.ts";
-import { hasDayStemRootInDayBranch } from "../../lib/relationship/romanticRules/relationshipDynamics.ts";
+import {
+  hasDayStemRootInDayBranch,
+  resolveExpressionSpeedDirection,
+} from "../../lib/relationship/romanticRules/relationshipDynamics.ts";
+import { refineExpressionSpeedCorroboration } from "../../lib/relationship/romantic/expressionSpeedCorroboration.ts";
 
 function section(title) {
   console.log(`\n=== ${title} ===`);
@@ -274,6 +278,14 @@ section("7) dynamics snapshot 재사용 — digest 동일 · resolver 미재호�
 const rootedA = hasDayStemRootInDayBranch(chartA);
 const rootedB = hasDayStemRootInDayBranch(chartB);
 const dayStemInteraction = prepared.ctx.pairAnalysis.dayStemInteraction;
+const expressionSpeedCorroboration = refineExpressionSpeedCorroboration({
+  direction: resolveExpressionSpeedDirection(
+    baseRun.surveyProfileA,
+    baseRun.surveyProfileB,
+  ),
+  residualA: snap.residualA,
+  residualB: snap.residualB,
+});
 const legacyDigest = buildRomanticDynamicsDigest({
   nicknameA: baseRun.nicknameA,
   nicknameB: baseRun.nicknameB,
@@ -286,6 +298,7 @@ const legacyDigest = buildRomanticDynamicsDigest({
   dayStemInteraction,
   yongsinA: masterA.yongsin_estimate ?? null,
   yongsinB: masterB.yongsin_estimate ?? null,
+  expressionSpeedCorroboration,
 });
 const fromSnap = buildRomanticDynamicsDigest({
   nicknameA: baseRun.nicknameA,
@@ -296,6 +309,7 @@ const fromSnap = buildRomanticDynamicsDigest({
   yongsinA: masterA.yongsin_estimate ?? null,
   yongsinB: masterB.yongsin_estimate ?? null,
   dynamics: snap,
+  expressionSpeedCorroboration,
 });
 assert.equal(fromSnap, legacyDigest, "snapshot digest ≡ legacy digest");
 
@@ -327,6 +341,7 @@ const withPoison = buildRomanticDynamicsDigest({
   yongsinA: masterA.yongsin_estimate ?? null,
   yongsinB: masterB.yongsin_estimate ?? null,
   dynamics: snap,
+  expressionSpeedCorroboration,
 });
 assert.equal(
   withPoison,

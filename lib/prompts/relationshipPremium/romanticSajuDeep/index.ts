@@ -20,6 +20,7 @@ import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStre
 import { refineCompareDecisionPair } from "@/lib/relationship/romantic/compareDecisionComposite";
 import { refineCompareExpressionPair } from "@/lib/relationship/romantic/compareExpressionComposite";
 import { refineCompareCommunicationPair } from "@/lib/relationship/romantic/compareCommunicationComposite";
+import { refineExpressionSpeedCorroboration } from "@/lib/relationship/romantic/expressionSpeedCorroboration";
 import { resolveExpressionSpeedDirection } from "@/lib/relationship/romanticRules/relationshipDynamics";
 import { buildChartContext } from "@/lib/saju/chartContext";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
@@ -257,6 +258,12 @@ export function prepareRomanticSajuDeepRun(
     params.surveyProfileA,
     params.surveyProfileB,
   );
+  // Phase 5-3 — residual confirm-only (direction 절대 불변; residual 재호출 없음)
+  const expressionSpeedCorroboration = refineExpressionSpeedCorroboration({
+    direction: expressionSpeedDirection,
+    residualA: dynamicsTyped?.residualA ?? null,
+    residualB: dynamicsTyped?.residualB ?? null,
+  });
 
   const dynamicsBlock =
     dynamicsTyped != null
@@ -275,6 +282,7 @@ export function prepareRomanticSajuDeepRun(
           decisionComposite,
           expressionComposite,
           communicationComposite,
+          expressionSpeedCorroboration,
         })
       : "## dynamics_digest\n(구버전 사주 스냅샷이라 romantic_signals 없음 — 관계 역학 4종은 이번 리포트에서 생략)";
 
@@ -400,6 +408,7 @@ export function prepareRomanticSajuDeepRun(
     romanticSignalsB: romanticSignalsB ?? null,
     dynamics: dynamicsTyped,
     expressionSpeedDirection,
+    expressionSpeedCorroboration,
     profileA: params.surveyProfileA ?? null,
     profileB: params.surveyProfileB ?? null,
     conflictComposite,

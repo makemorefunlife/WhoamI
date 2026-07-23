@@ -12,6 +12,7 @@ import type { RefinedCompareStressPair } from "@/lib/relationship/romantic/compa
 import type { RefinedCompareDecisionPair } from "@/lib/relationship/romantic/compareDecisionComposite";
 import type { RefinedCompareExpressionPair } from "@/lib/relationship/romantic/compareExpressionComposite";
 import type { RefinedCompareCommunicationPair } from "@/lib/relationship/romantic/compareCommunicationComposite";
+import type { ExpressionSpeedCorroboration } from "@/lib/relationship/romantic/expressionSpeedCorroboration";
 import {
   resolveBalanceOfPower,
   resolveSubLeads,
@@ -260,6 +261,11 @@ export function buildRomanticDynamicsDigest(params: {
   expressionComposite?: RefinedCompareExpressionPair | null;
   /** Phase 5-3 — 소통 방식 행 SSOT */
   communicationComposite?: RefinedCompareCommunicationPair | null;
+  /**
+   * Phase 5-3 — expression_speed confirm-only SSOT.
+   * direction 재분류 금지 · residual은 보강/긴장만 (recovery 잔류도와 분리).
+   */
+  expressionSpeedCorroboration?: ExpressionSpeedCorroboration | null;
 }): string {
   const {
     nicknameA,
@@ -280,6 +286,7 @@ export function buildRomanticDynamicsDigest(params: {
     decisionComposite,
     expressionComposite,
     communicationComposite,
+    expressionSpeedCorroboration,
   } = params;
 
   const bop = dynamicsSnap?.balance ?? resolveBalanceOfPower(profileA, profileB);
@@ -341,9 +348,19 @@ export function buildRomanticDynamicsDigest(params: {
 ⚠️ comparison_table의 「소통 방식」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(direct/considerate 등)은 출력하지 마세요.`
     : "";
 
+  const escAlignPart =
+    expressionSpeedCorroboration?.align != null &&
+    expressionSpeedCorroboration?.confidence != null
+      ? ` · align=${expressionSpeedCorroboration.align} · confidence=${expressionSpeedCorroboration.confidence}`
+      : "";
+  const expressionSpeedLine = expressionSpeedCorroboration
+    ? `\n- expression_speed (표현 속도 SSOT): direction=${expressionSpeedCorroboration.direction}${escAlignPart}
+⚠️ expression_speed_direction(누가 빠른 감정 표현인지)은 재분류하지 마세요. residual은 보강·긴장 설명용일 뿐 직접 증거가 아니며, faster 슬롯·dialogue_table·section_5 tip 배치를 바꾸지 마세요. recovery_speed 줄의 잔류도와 의미를 섞지 마세요.`
+    : "";
+
   return `## dynamics_digest — 관계 역학 4종 (서버 판정 완료, 그대로 서술만 할 것)
 - balance_of_power: ${nicknameA}=${bop.bandA} / ${nicknameB}=${bop.bandB} (서브 리드 — 아이디어·분위기:${subLeads.ideaMoodLead}, 결정·승인:${subLeads.decisionApprovalLead}, 실행:${subLeads.executionLead})
-- recovery_speed: ${nicknameA}=${recovery.bandA}(잔류도 ${residualA}) / ${nicknameB}=${recovery.bandB}(잔류도 ${residualB}) ${recovery.mismatch ? "— 격차 큼(주의)" : ""}
+- recovery_speed: ${nicknameA}=${recovery.bandA}(잔류도 ${residualA}) / ${nicknameB}=${recovery.bandB}(잔류도 ${residualB}) ${recovery.mismatch ? "— 격차 큼(주의)" : ""}${expressionSpeedLine}
 - reassurance: ${nicknameA} need=${needA} vs ${nicknameB} give=${giveBText} → 일치:${matchBGivesA} | ${nicknameB} need=${needB} vs ${nicknameA} give=${giveAText} → 일치:${matchAGivesB}
 - role_play: 심리축 판정=${rolePlay.primaryFrame} / 사주 판정=${rolePlay.sajuFrame} (일치:${rolePlay.agrees})${expressionLine}${conflictLine}${affectionLine}${stressLine}${decisionLine}${communicationLine}
 ⚠️ 위 밴드·판정 이름 자체는 출력하지 말고, 이미 정해진 방향으로만 자연스러운 문장을 쓰세요.`.trim();

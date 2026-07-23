@@ -50,6 +50,7 @@ import type { RefinedCompareStressPair } from "@/lib/relationship/romantic/compa
 import type { RefinedCompareDecisionPair } from "@/lib/relationship/romantic/compareDecisionComposite";
 import type { RefinedCompareExpressionPair } from "@/lib/relationship/romantic/compareExpressionComposite";
 import type { RefinedCompareCommunicationPair } from "@/lib/relationship/romantic/compareCommunicationComposite";
+import type { ExpressionSpeedCorroboration } from "@/lib/relationship/romantic/expressionSpeedCorroboration";
 
 export const ROMANTIC_CONTEXT_INPUT_SCHEMA_VERSION = "context_output_v1" as const;
 
@@ -134,6 +135,11 @@ export type BuildRomanticContextInputParams = {
   /** signals A/B 모두 있을 때만 — 없으면 dynamics/compare pair 카테고리 생략 */
   dynamics?: RomanticDynamicsTypedSnapshot | null;
   expressionSpeedDirection?: ExpressionSpeedDirection | null;
+  /**
+   * Phase 5-3 — expression_speed residual corroboration (confirm-only).
+   * direction은 변경하지 않음. align/confidence가 null이면 해당 키 omit.
+   */
+  expressionSpeedCorroboration?: ExpressionSpeedCorroboration | null;
   /**
    * Phase 5-1 — comparison psych twin raw.
    * secondary_axes 없으면 해당 side twin 키 전부 omit (추정 금지).
@@ -551,6 +557,15 @@ export function buildRomanticContextInput(
   if (params.expressionSpeedDirection) {
     dominant_categories.expression_speed_direction = {
       category: params.expressionSpeedDirection,
+    };
+  }
+
+  // Phase 5-3 — expression_speed confirm-only (direction 불변, residual 보강만)
+  const esc = params.expressionSpeedCorroboration;
+  if (esc?.align != null && esc.confidence != null) {
+    dominant_categories.expression_speed_align = { category: esc.align };
+    dominant_categories.expression_speed_confidence = {
+      category: esc.confidence,
     };
   }
 

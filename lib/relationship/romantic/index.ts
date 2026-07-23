@@ -13,3 +13,9 @@ export {
   stripRomanticContextInputForClient,
   omitRomanticContextInputFromReport,
 } from "./stripRomanticContextInputForClient";
+export { refineExpressionSpeedCorroboration } from "./expressionSpeedCorroboration";
+export type {
+  ExpressionSpeedAlign,
+  ExpressionSpeedConfidence,
+  ExpressionSpeedCorroboration,
+} from "./expressionSpeedCorroboration";
