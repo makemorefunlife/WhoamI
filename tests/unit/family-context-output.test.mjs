@@ -296,4 +296,110 @@ assert.equal(
 assert.ok(report.context_output, "로그 파싱이 원본 report를 mutate하지 않음");
 ok("omit + log snapshot: detail/log 경로 비노출");
 
+// ---------------------------------------------------------------------------
+section("10) Phase 5-1 — study/wealth align · 판정 불변 · omit");
+
+assert.equal(
+  report.context_output.dominant_categories.study_align,
+  undefined,
+  "psych 없으면 study_align omit",
+);
+assert.equal(
+  report.context_output.dominant_categories.wealth_align,
+  undefined,
+  "psych 없으면 wealth_align omit",
+);
+
+const midPsych = buildFamilyParentReport({
+  ...baseParams,
+  psychMasterA: samplePsych({
+    thinking_style: 50,
+    structure: 50,
+    practicality: 50,
+    self_control: 50,
+  }),
+});
+assert.equal(
+  midPsych.context_output.dominant_categories.study_align,
+  undefined,
+  "mid-range study_align omit",
+);
+assert.equal(
+  midPsych.context_output.dominant_categories.wealth_align,
+  undefined,
+  "mid-range wealth_align omit",
+);
+assert.equal(
+  midPsych.family.section_talent.study_type,
+  report.family.section_talent.study_type,
+  "study_type pick 불변",
+);
+assert.equal(
+  midPsych.family.section_talent.wealth_vessel,
+  report.family.section_talent.wealth_vessel,
+  "wealth_vessel pick 불변",
+);
+assert.equal(
+  midPsych.family.section_talent.study_type_note,
+  report.family.section_talent.study_type_note,
+  "study 문구 불변",
+);
+assert.equal(
+  midPsych.family.section_talent.wealth_vessel_note,
+  report.family.section_talent.wealth_vessel_note,
+  "wealth 문구 불변",
+);
+
+const highPsych = buildFamilyParentReport({
+  ...baseParams,
+  psychMasterA: samplePsych({
+    thinking_style: 80,
+    structure: 70,
+    practicality: 75,
+    self_control: 70,
+  }),
+});
+assert.equal(
+  highPsych.context_output.dominant_categories.study_align.category,
+  "confirms",
+);
+assert.equal(
+  highPsych.context_output.dominant_categories.wealth_align.category,
+  "confirms",
+);
+assert.equal(
+  highPsych.family.section_talent.study_type,
+  report.family.section_talent.study_type,
+);
+assert.equal(
+  highPsych.family.section_talent.wealth_vessel,
+  report.family.section_talent.wealth_vessel,
+);
+
+const lowPsych = buildFamilyParentReport({
+  ...baseParams,
+  psychMasterA: samplePsych({
+    thinking_style: 20,
+    structure: 25,
+    practicality: 15,
+    self_control: 30,
+  }),
+});
+assert.equal(
+  lowPsych.context_output.dominant_categories.study_align.category,
+  "caution",
+);
+assert.equal(
+  lowPsych.context_output.dominant_categories.wealth_align.category,
+  "caution",
+);
+
+const strippedHigh = stripFamilyContextOutputForClient({
+  format: FAMILY_PARENT_CHILD_DEEP_FORMAT,
+  report: highPsych,
+});
+assert.equal(strippedHigh.report.context_output, undefined);
+assert.ok(highPsych.context_output.dominant_categories.study_align);
+ok("Phase 5-1 study/wealth align + strip 유지");
+
 console.log("\nAll family-context-output tests passed.");

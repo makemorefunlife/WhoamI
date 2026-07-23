@@ -1,11 +1,17 @@
 /**
  * Family Context Output — 이미 계산된 RuleContext·section 결과의 표준 재포장.
- * 새 판정·점수·문구 없음. 순수 매핑만.
+ * study/wealth 사주 pick은 재계산하지 않는다.
+ * Phase 5-1: psych가 있을 때만 study_align / wealth_align confirm 키를 추가.
  */
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { FamilyScoringSignals } from "@/lib/saju/familyAnalysis";
 import type { FamilyRuleContext } from "./buildFamilyRuleContext";
 import type { FamilyMasterScores } from "./familyEventScores";
 import type { FamilyParentChildReport } from "./familyReportTemplate";
+import {
+  resolveStudyAlign,
+  resolveWealthAlign,
+} from "./familyTalentAlign";
 
 export const FAMILY_CONTEXT_OUTPUT_SCHEMA_VERSION = "context_output_v1" as const;
 
@@ -56,11 +62,13 @@ export type BuildFamilyContextOutputOptions = {
     inputFingerprintA: string;
     inputFingerprintB: string;
   } | null;
+  /** 자녀 psych — 있으면 study/wealth align만 추가 (없으면 키 omit) */
+  psychChild?: PsychMasterJson | null;
 };
 
 /**
  * ctx + 최종 family section 결과를 Context Output으로 모은다.
- * 판정 함수 재호출 없음 — 이미 있는 값만 읽는다.
+ * study_type / wealth_vessel 사주 판정은 재호출하지 않는다.
  */
 export function buildFamilyContextOutput(
   ctx: FamilyRuleContext,
@@ -85,6 +93,16 @@ export function buildFamilyContextOutput(
     dominant_categories.wealth_vessel = {
       category: family.section_talent.wealth_vessel,
     };
+  }
+
+  // Phase 5-1 confirm — mid/누락 시 omit (추정 금지)
+  const studyAlign = resolveStudyAlign(options?.psychChild);
+  if (studyAlign) {
+    dominant_categories.study_align = { category: studyAlign };
+  }
+  const wealthAlign = resolveWealthAlign(options?.psychChild);
+  if (wealthAlign) {
+    dominant_categories.wealth_align = { category: wealthAlign };
   }
 
   // familyPairAnalysis.childSignals — analyzeFamilyPairSaju가 이미 채움

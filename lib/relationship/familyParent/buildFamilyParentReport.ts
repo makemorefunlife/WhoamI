@@ -232,6 +232,10 @@ export function buildFamilyParentReport(params: {
     },
     context_output: buildFamilyContextOutput(ctx, family, {
       personCoreMeta: params.personCoreMeta,
+      psychChild:
+        ctx.roles.roleA !== "child"
+          ? (params.psychMasterB ?? null)
+          : (params.psychMasterA ?? null),
     }),
   };
 }
