@@ -38,11 +38,33 @@ import {
   resolveConflictAxisNote,
   resolveIntimacyAxisNote,
 } from "@/lib/relationship/romanticRules/relationshipDynamics";
-import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
+import type {
+  CurrentSelfProfile,
+  SecondaryAxisKey,
+} from "@/lib/v2/survey/types";
 import type { ChartContext } from "@/lib/saju/chartContext";
 import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
+import type { RefinedCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
+import type { RefinedCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
+import type { RefinedCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
+import type { RefinedCompareDecisionPair } from "@/lib/relationship/romantic/compareDecisionComposite";
+import type { RefinedCompareExpressionPair } from "@/lib/relationship/romantic/compareExpressionComposite";
+import type { RefinedCompareCommunicationPair } from "@/lib/relationship/romantic/compareCommunicationComposite";
 
 export const ROMANTIC_CONTEXT_INPUT_SCHEMA_VERSION = "context_output_v1" as const;
+
+/**
+ * comparison_table 6행 ↔ psych twin — digest `COMPARISON_TABLE_AXIS_MAP`과 동일.
+ * Phase 5-1: psych twin raw. Phase 5-3: compare 6행 lean composite 전부.
+ */
+export const ROMANTIC_COMPARE_PSYCH_TWINS = [
+  { compareKey: "expression", axisKey: "energy_style" as SecondaryAxisKey },
+  { compareKey: "conflict", axisKey: "conflict_style" as SecondaryAxisKey },
+  { compareKey: "affection", axisKey: "empathy" as SecondaryAxisKey },
+  { compareKey: "stress", axisKey: "self_control" as SecondaryAxisKey },
+  { compareKey: "decision", axisKey: "decision_style" as SecondaryAxisKey },
+  { compareKey: "communication", axisKey: "structure" as SecondaryAxisKey },
+] as const;
 
 export type RomanticContextDominantCategory = {
   category: string;
@@ -112,6 +134,49 @@ export type BuildRomanticContextInputParams = {
   /** signals A/B 모두 있을 때만 — 없으면 dynamics/compare pair 카테고리 생략 */
   dynamics?: RomanticDynamicsTypedSnapshot | null;
   expressionSpeedDirection?: ExpressionSpeedDirection | null;
+  /**
+   * Phase 5-1 — comparison psych twin raw.
+   * secondary_axes 없으면 해당 side twin 키 전부 omit (추정 금지).
+   */
+  profileA?: CurrentSelfProfile | null;
+  profileB?: CurrentSelfProfile | null;
+  /**
+   * Phase 5-3 — 「갈등 반응」 composite.
+   * 있으면 compare_conflict_{a|b} category를 lean으로 덮고
+   * compare_conflict_align / compare_conflict_confidence를 추가.
+   * null이면 사주 band 유지(align/confidence omit).
+   */
+  conflictComposite?: RefinedCompareConflictPair | null;
+  /**
+   * Phase 5-3 — 「애정 언어」 composite.
+   * 있으면 compare_affection_{a|b} category를 lean으로 덮고
+   * compare_affection_align / compare_affection_confidence를 추가.
+   */
+  affectionComposite?: RefinedCompareAffectionPair | null;
+  /**
+   * Phase 5-3 — 「스트레스 패턴」 composite.
+   * 있으면 compare_stress_{a|b} category를 lean으로 덮고
+   * compare_stress_align / compare_stress_confidence를 추가.
+   */
+  stressComposite?: RefinedCompareStressPair | null;
+  /**
+   * Phase 5-3 — 「의사결정」 composite.
+   * 있으면 compare_decision_{a|b} category를 lean으로 덮고
+   * compare_decision_align / compare_decision_confidence를 추가.
+   */
+  decisionComposite?: RefinedCompareDecisionPair | null;
+  /**
+   * Phase 5-3 — 「감정 표현」 composite.
+   * 있으면 compare_expression_{a|b} category를 lean으로 덮고
+   * compare_expression_align / compare_expression_confidence를 추가.
+   */
+  expressionComposite?: RefinedCompareExpressionPair | null;
+  /**
+   * Phase 5-3 — 「소통 방식」 composite.
+   * 있으면 compare_communication_{a|b} category를 lean으로 덮고
+   * compare_communication_align / compare_communication_confidence를 추가.
+   */
+  communicationComposite?: RefinedCompareCommunicationPair | null;
   axisNotes?: {
     intimacy: string | null;
     conflict: string | null;
@@ -150,6 +215,25 @@ function mapCompareBands(
       category: rs.communication_style.communication_band,
     },
   };
+}
+
+/** Phase 5-1 — saju compare band와 1:1 대응되는 psych twin 수치만 (composite 없음). */
+function mapComparePsychTwins(
+  side: "a" | "b",
+  profile: CurrentSelfProfile | null | undefined,
+): Record<string, RomanticContextDominantCategory> {
+  const axes = profile?.secondary_axes;
+  if (!axes) return {};
+  const out: Record<string, RomanticContextDominantCategory> = {};
+  for (const row of ROMANTIC_COMPARE_PSYCH_TWINS) {
+    const score = axes[row.axisKey];
+    if (typeof score !== "number") continue;
+    out[`compare_${row.compareKey}_psych_${side}`] = {
+      category: row.axisKey,
+      scores: { score },
+    };
+  }
+  return out;
 }
 
 function mapDynamicsCategories(
@@ -295,6 +379,169 @@ export function buildRomanticContextInput(
       dominant_categories,
       mapCompareBands("b", params.romanticSignalsB),
     );
+  }
+
+  Object.assign(
+    dominant_categories,
+    mapComparePsychTwins("a", params.profileA),
+  );
+  Object.assign(
+    dominant_categories,
+    mapComparePsychTwins("b", params.profileB),
+  );
+
+  // Phase 5-3 — 기존 compare_conflict_{a|b} category를 lean으로 확장 (중복 키 없음)
+  const cc = params.conflictComposite;
+  if (cc) {
+    dominant_categories.compare_conflict_a = {
+      category: cc.leanA,
+      scores: {
+        officer_count: cc.personA.scores.officer_count,
+        food_count: cc.personA.scores.food_count,
+        saju_margin: cc.personA.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_conflict_b = {
+      category: cc.leanB,
+      scores: {
+        officer_count: cc.personB.scores.officer_count,
+        food_count: cc.personB.scores.food_count,
+        saju_margin: cc.personB.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_conflict_align = {
+      category: cc.align,
+    };
+    dominant_categories.compare_conflict_confidence = {
+      category: cc.confidence,
+    };
+  }
+
+  // Phase 5-3 — compare_affection_{a|b} lean 확장 (reassurance 키와 별개)
+  const ac = params.affectionComposite;
+  if (ac) {
+    dominant_categories.compare_affection_a = {
+      category: ac.leanA,
+      scores: {
+        wealth_count: ac.personA.scores.wealth_count,
+        seal_count: ac.personA.scores.seal_count,
+        saju_margin: ac.personA.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_affection_b = {
+      category: ac.leanB,
+      scores: {
+        wealth_count: ac.personB.scores.wealth_count,
+        seal_count: ac.personB.scores.seal_count,
+        saju_margin: ac.personB.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_affection_align = {
+      category: ac.align,
+    };
+    dominant_categories.compare_affection_confidence = {
+      category: ac.confidence,
+    };
+  }
+
+  // Phase 5-3 — compare_stress_{a|b} lean 확장 (recovery/residual 키와 별개)
+  const sc = params.stressComposite;
+  if (sc) {
+    dominant_categories.compare_stress_a = {
+      category: sc.leanA,
+      scores: {
+        heat_score: sc.personA.scores.heat_score,
+        saju_margin: sc.personA.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_stress_b = {
+      category: sc.leanB,
+      scores: {
+        heat_score: sc.personB.scores.heat_score,
+        saju_margin: sc.personB.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_stress_align = {
+      category: sc.align,
+    };
+    dominant_categories.compare_stress_confidence = {
+      category: sc.confidence,
+    };
+  }
+
+  // Phase 5-3 — compare_decision_{a|b} lean 확장 (balance/sublead 키와 별개)
+  const dc = params.decisionComposite;
+  if (dc) {
+    dominant_categories.compare_decision_a = {
+      category: dc.leanA,
+      scores: {
+        saju_margin: dc.personA.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_decision_b = {
+      category: dc.leanB,
+      scores: {
+        saju_margin: dc.personB.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_decision_align = {
+      category: dc.align,
+    };
+    dominant_categories.compare_decision_confidence = {
+      category: dc.confidence,
+    };
+  }
+
+  // Phase 5-3 — compare_expression_{a|b} lean 확장 (balance/expression_speed 키와 별개)
+  const ec = params.expressionComposite;
+  if (ec) {
+    dominant_categories.compare_expression_a = {
+      category: ec.leanA,
+      scores: {
+        food_count: ec.personA.scores.food_count,
+        saju_margin: ec.personA.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_expression_b = {
+      category: ec.leanB,
+      scores: {
+        food_count: ec.personB.scores.food_count,
+        saju_margin: ec.personB.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_expression_align = {
+      category: ec.align,
+    };
+    dominant_categories.compare_expression_confidence = {
+      category: ec.confidence,
+    };
+  }
+
+  // Phase 5-3 — compare_communication_{a|b} lean 확장
+  const cmc = params.communicationComposite;
+  if (cmc) {
+    dominant_categories.compare_communication_a = {
+      category: cmc.leanA,
+      scores: {
+        self_count: cmc.personA.scores.self_count,
+        seal_count: cmc.personA.scores.seal_count,
+        saju_margin: cmc.personA.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_communication_b = {
+      category: cmc.leanB,
+      scores: {
+        self_count: cmc.personB.scores.self_count,
+        seal_count: cmc.personB.scores.seal_count,
+        saju_margin: cmc.personB.scores.saju_margin,
+      },
+    };
+    dominant_categories.compare_communication_align = {
+      category: cmc.align,
+    };
+    dominant_categories.compare_communication_confidence = {
+      category: cmc.confidence,
+    };
   }
 
   if (params.dynamics) {

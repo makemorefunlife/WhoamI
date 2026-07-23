@@ -14,6 +14,12 @@ import {
   collectRomanticDynamicsTypedSnapshot,
   type RomanticContextInput,
 } from "@/lib/relationship/romantic/romanticContextInput";
+import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
+import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
+import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
+import { refineCompareDecisionPair } from "@/lib/relationship/romantic/compareDecisionComposite";
+import { refineCompareExpressionPair } from "@/lib/relationship/romantic/compareExpressionComposite";
+import { refineCompareCommunicationPair } from "@/lib/relationship/romantic/compareCommunicationComposite";
 import { resolveExpressionSpeedDirection } from "@/lib/relationship/romanticRules/relationshipDynamics";
 import { buildChartContext } from "@/lib/saju/chartContext";
 import { buildRomanticFortuneFlow } from "@/lib/relationship/romanticRules/fortuneFlow";
@@ -150,42 +156,67 @@ export function prepareRomanticSajuDeepRun(
     pool: insightPool,
   });
 
-  const [personBlockA, personBlockB] = [
-    params.sajuMasterA != null
-      ? buildRomanticPersonSignalsDigest({
-          nickname: params.nicknameA,
-          birthDate: params.birthA.date,
-          birthTime: params.birthA.time,
-          birthPlace: params.birthA.place,
-          master: params.sajuMasterA,
-          uncertainItems: uncertainA,
-          profile: params.surveyProfileA,
-        })
-      : `## ${params.nicknameA}\n(PersonCore master 없음 — 규칙 엔진만 사용)`,
-    params.sajuMasterB != null
-      ? buildRomanticPersonSignalsDigest({
-          nickname: params.nicknameB,
-          birthDate: params.birthB.date,
-          birthTime: params.birthB.time,
-          birthPlace: params.birthB.place,
-          master: params.sajuMasterB,
-          uncertainItems: uncertainB,
-          profile: params.surveyProfileB,
-        })
-      : `## ${params.nicknameB}\n(PersonCore master 없음 — 규칙 엔진만 사용)`,
-  ];
-  const pairBlock = buildRomanticPairSignalsDigest({
-    labelA: params.nicknameA,
-    labelB: params.nicknameB,
-    pairAnalysis,
-    eventScores: opening.event_scores ?? ctx.eventScores,
-  });
-
   // romantic_signals는 오늘 추가된 필드라 이전에 저장된 saju_master_json에는
   // 없을 수 있다 — sajuMaster 존재 여부뿐 아니라 이 필드 자체도 확인해서
   // 없으면 크래시 대신 dynamics_digest를 생략한다(구버전 스냅샷 안전 처리).
   const romanticSignalsA = params.sajuMasterA?.domain_signals?.romantic_signals;
   const romanticSignalsB = params.sajuMasterB?.domain_signals?.romantic_signals;
+
+  // Phase 5-3 — compare 6행 composite (양쪽 signals + 해당 psych 있을 때만)
+  const conflictComposite =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? refineCompareConflictPair({
+          conflictA: romanticSignalsA.conflict_response,
+          conflictB: romanticSignalsB.conflict_response,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
+  const affectionComposite =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? refineCompareAffectionPair({
+          affectionA: romanticSignalsA.affection_language,
+          affectionB: romanticSignalsB.affection_language,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
+  const stressComposite =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? refineCompareStressPair({
+          stressA: romanticSignalsA.stress_pattern,
+          stressB: romanticSignalsB.stress_pattern,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
+  const decisionComposite =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? refineCompareDecisionPair({
+          decisionA: romanticSignalsA.decision_making,
+          decisionB: romanticSignalsB.decision_making,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
+  const expressionComposite =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? refineCompareExpressionPair({
+          expressionA: romanticSignalsA.expression_style,
+          expressionB: romanticSignalsB.expression_style,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
+  const communicationComposite =
+    romanticSignalsA != null && romanticSignalsB != null
+      ? refineCompareCommunicationPair({
+          communicationA: romanticSignalsA.communication_style,
+          communicationB: romanticSignalsB.communication_style,
+          profileA: params.surveyProfileA,
+          profileB: params.surveyProfileB,
+        })
+      : null;
 
   const chartA = buildChartContext(
     sajuJsonToPillars(
@@ -238,6 +269,12 @@ export function prepareRomanticSajuDeepRun(
           yongsinA: params.sajuMasterA?.yongsin_estimate ?? null,
           yongsinB: params.sajuMasterB?.yongsin_estimate ?? null,
           dynamics: dynamicsTyped,
+          conflictComposite,
+          affectionComposite,
+          stressComposite,
+          decisionComposite,
+          expressionComposite,
+          communicationComposite,
         })
       : "## dynamics_digest\n(구버전 사주 스냅샷이라 romantic_signals 없음 — 관계 역학 4종은 이번 리포트에서 생략)";
 
@@ -255,6 +292,85 @@ export function prepareRomanticSajuDeepRun(
     currentYear: new Date().getFullYear(),
   });
   const timelineBlock = buildRomanticSewoonTimelineDigest(fortuneFlow?.sewoon ?? null);
+
+  const [personBlockA, personBlockB] = [
+    params.sajuMasterA != null
+      ? buildRomanticPersonSignalsDigest({
+          nickname: params.nicknameA,
+          birthDate: params.birthA.date,
+          birthTime: params.birthA.time,
+          birthPlace: params.birthA.place,
+          master: params.sajuMasterA,
+          uncertainItems: uncertainA,
+          profile: params.surveyProfileA,
+          conflictLean: conflictComposite
+            ? { lean: conflictComposite.leanA, base: conflictComposite.baseA }
+            : null,
+          affectionLean: affectionComposite
+            ? { lean: affectionComposite.leanA, base: affectionComposite.baseA }
+            : null,
+          stressLean: stressComposite
+            ? { lean: stressComposite.leanA, base: stressComposite.baseA }
+            : null,
+          decisionLean: decisionComposite
+            ? { lean: decisionComposite.leanA, base: decisionComposite.baseA }
+            : null,
+          expressionLean: expressionComposite
+            ? {
+                lean: expressionComposite.leanA,
+                base: expressionComposite.baseA,
+              }
+            : null,
+          communicationLean: communicationComposite
+            ? {
+                lean: communicationComposite.leanA,
+                base: communicationComposite.baseA,
+              }
+            : null,
+        })
+      : `## ${params.nicknameA}\n(PersonCore master 없음 — 규칙 엔진만 사용)`,
+    params.sajuMasterB != null
+      ? buildRomanticPersonSignalsDigest({
+          nickname: params.nicknameB,
+          birthDate: params.birthB.date,
+          birthTime: params.birthB.time,
+          birthPlace: params.birthB.place,
+          master: params.sajuMasterB,
+          uncertainItems: uncertainB,
+          profile: params.surveyProfileB,
+          conflictLean: conflictComposite
+            ? { lean: conflictComposite.leanB, base: conflictComposite.baseB }
+            : null,
+          affectionLean: affectionComposite
+            ? { lean: affectionComposite.leanB, base: affectionComposite.baseB }
+            : null,
+          stressLean: stressComposite
+            ? { lean: stressComposite.leanB, base: stressComposite.baseB }
+            : null,
+          decisionLean: decisionComposite
+            ? { lean: decisionComposite.leanB, base: decisionComposite.baseB }
+            : null,
+          expressionLean: expressionComposite
+            ? {
+                lean: expressionComposite.leanB,
+                base: expressionComposite.baseB,
+              }
+            : null,
+          communicationLean: communicationComposite
+            ? {
+                lean: communicationComposite.leanB,
+                base: communicationComposite.baseB,
+              }
+            : null,
+        })
+      : `## ${params.nicknameB}\n(PersonCore master 없음 — 규칙 엔진만 사용)`,
+  ];
+  const pairBlock = buildRomanticPairSignalsDigest({
+    labelA: params.nicknameA,
+    labelB: params.nicknameB,
+    pairAnalysis,
+    eventScores: opening.event_scores ?? ctx.eventScores,
+  });
 
   const userPrompt = buildRomanticSajuDeepUserPrompt({
     nicknameA: params.nicknameA,
@@ -284,6 +400,14 @@ export function prepareRomanticSajuDeepRun(
     romanticSignalsB: romanticSignalsB ?? null,
     dynamics: dynamicsTyped,
     expressionSpeedDirection,
+    profileA: params.surveyProfileA ?? null,
+    profileB: params.surveyProfileB ?? null,
+    conflictComposite,
+    affectionComposite,
+    stressComposite,
+    decisionComposite,
+    expressionComposite,
+    communicationComposite,
     axisNotes,
     meta: {
       sajuMasterSchemaA: params.sajuMasterA?.schema_version ?? null,

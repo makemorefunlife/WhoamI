@@ -339,4 +339,208 @@ assert.ok(
 );
 ok("digest snapshot 재사용 · prepare 경로 일치");
 
+// ---------------------------------------------------------------------------
+section("8) Phase 5-1 — compare psych twin raw · band 불변 · profile 없으면 omit");
+
+assert.equal(
+  ctxIn.dominant_categories.compare_expression_psych_a,
+  undefined,
+  "survey profile 없으면 psych twin omit",
+);
+assert.equal(
+  ctxIn.dominant_categories.compare_conflict_psych_b,
+  undefined,
+);
+
+function sampleProfile(overrides = {}) {
+  const secondary_axes = Object.fromEntries(
+    [
+      "stimulation",
+      "self_control",
+      "practicality",
+      "structure",
+      "empathy",
+      "conflict_style",
+      "resilience",
+      "recognition",
+      "energy_style",
+      "thinking_style",
+      "decision_style",
+    ].map((k) => [k, 50]),
+  );
+  Object.assign(secondary_axes, overrides);
+  return {
+    profile_type: "current_self",
+    primary_axes: {
+      autonomy: 50,
+      connection: 50,
+      stability: 50,
+      growth: 50,
+      structure: 50,
+      adaptability: 50,
+    },
+    secondary_axes,
+    personalization: { primary_concern: null },
+    meta: {
+      survey_version: "v2",
+      completed_at: "2026-01-01T00:00:00.000Z",
+      completion_time_seconds: null,
+    },
+  };
+}
+
+const profileA = sampleProfile({
+  energy_style: 72,
+  conflict_style: 33,
+  empathy: 61,
+  self_control: 44,
+  decision_style: 80,
+  structure: 55,
+});
+const profileB = sampleProfile({
+  energy_style: 40,
+  conflict_style: 70,
+  empathy: 50,
+  self_control: 60,
+  decision_style: 35,
+  structure: 90,
+});
+
+const withPsychTwin = buildRomanticContextInput({
+  grade: prepared.opening.grade,
+  eventScores: prepared.opening.event_scores,
+  romanticSignalsA: rsA,
+  romanticSignalsB: rsB,
+  dynamics: snap,
+  expressionSpeedDirection: "balanced",
+  profileA,
+  profileB,
+  axisNotes: { intimacy: null, conflict: null },
+});
+
+assert.equal(
+  withPsychTwin.dominant_categories.compare_expression_a.category,
+  rsA.expression_style.expression_band,
+  "saju band 불변",
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_expression_psych_a.category,
+  "energy_style",
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_expression_psych_a.scores.score,
+  72,
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_conflict_psych_b.category,
+  "conflict_style",
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_conflict_psych_b.scores.score,
+  70,
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_affection_psych_a.scores.score,
+  61,
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_stress_psych_a.category,
+  "self_control",
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_decision_psych_b.scores.score,
+  35,
+);
+assert.equal(
+  withPsychTwin.dominant_categories.compare_communication_psych_b.scores.score,
+  90,
+);
+
+const onlyA = buildRomanticContextInput({
+  grade: prepared.opening.grade,
+  eventScores: prepared.opening.event_scores,
+  romanticSignalsA: rsA,
+  romanticSignalsB: rsB,
+  dynamics: snap,
+  profileA,
+  profileB: null,
+});
+assert.ok(onlyA.dominant_categories.compare_expression_psych_a);
+assert.equal(
+  onlyA.dominant_categories.compare_expression_psych_b,
+  undefined,
+  "B profile 없으면 B twin omit",
+);
+
+const preparedWithSurvey = prepareRomanticSajuDeepRun({
+  ...baseRun,
+  surveyProfileA: profileA,
+  surveyProfileB: profileB,
+});
+assert.equal(
+  preparedWithSurvey.romanticContextInput.dominant_categories
+    .compare_expression_psych_a.scores.score,
+  72,
+);
+assert.ok(
+  preparedWithSurvey.romanticContextInput.dominant_categories
+    .compare_expression_align,
+  "Phase 5-3 — expression align 확장",
+);
+assert.ok(
+  ["expressive", "reserved", "balanced"].includes(
+    preparedWithSurvey.romanticContextInput.dominant_categories
+      .compare_expression_a.category,
+  ),
+  "expression lean은 허용 band만",
+);
+assert.ok(
+  ["direct", "considerate", "balanced"].includes(
+    preparedWithSurvey.romanticContextInput.dominant_categories
+      .compare_communication_a.category,
+  ),
+  "소통 방식 lean은 허용 band만",
+);
+assert.ok(
+  preparedWithSurvey.romanticContextInput.dominant_categories
+    .compare_communication_align,
+  "Phase 5-3 — communication align 확장",
+);
+assert.ok(
+  preparedWithSurvey.romanticContextInput.dominant_categories
+    .compare_conflict_align,
+  "Phase 5-3 — conflict align 확장",
+);
+assert.ok(
+  preparedWithSurvey.romanticContextInput.dominant_categories
+    .compare_conflict_confidence,
+);
+assert.ok(
+  preparedWithSurvey.userPrompt.includes("compare_conflict"),
+  "갈등 반응 SSOT가 prompt에 전달",
+);
+assert.ok(
+  preparedWithSurvey.userPrompt.includes("compare_expression"),
+  "감정 표현 SSOT가 prompt에 전달",
+);
+assert.ok(
+  preparedWithSurvey.userPrompt.includes("romantic_signals"),
+  "digest/prompt 경로 유지",
+);
+assert.equal(
+  preparedWithSurvey.userPrompt.includes("compare_expression_psych"),
+  false,
+  "다른 행 psych twin은 prompt에 새로 넣지 않음",
+);
+
+const strippedTwin = stripRomanticContextInputForClient({
+  format: ROMANTIC_SAJU_DEEP_FORMAT,
+  report: {
+    ...reportBody,
+    romantic_context_input: withPsychTwin,
+  },
+});
+assert.equal(strippedTwin.report.romantic_context_input, undefined);
+ok("Phase 5-1 compare psych twin + strip 유지");
+
 console.log("\nAll romantic-context-input tests passed.");

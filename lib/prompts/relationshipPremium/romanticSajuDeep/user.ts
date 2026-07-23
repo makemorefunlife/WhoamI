@@ -122,6 +122,13 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - Each cell: describe without names/subjects (names are in headers). Ban "OO is…", "OO does…"
     - Referring to the partner: use **"to the partner"** / **"the partner"** (report for the two of them)
     - e.g. "Often shows gratitude to the partner." / "Tries to show love through actions."
+    - **Emotion expression (감정 표현) row only**: if \`dynamics_digest.compare_expression\` is present, phrase that server lean — do **not** re-classify expressive vs reserved, and do **not** conflate with balance_of_power / expression_speed.
+    - **Conflict reaction row only**: if \`dynamics_digest.compare_conflict\` (or person digest \`서버 lean=\`) is present, phrase that server lean — do **not** re-classify who is direct vs principled.
+    - **Love language (애정 언어) row only**: if \`dynamics_digest.compare_affection\` is present, phrase that server lean — do **not** re-classify action_gift vs emotional_care, and do **not** conflate with reassurance need/give.
+    - **Stress pattern (스트레스 패턴) row only**: if \`dynamics_digest.compare_stress\` is present, phrase that server lean — do **not** re-classify explosive vs withdrawn, and do **not** conflate with recovery_speed / residual.
+    - **Decision-making (의사결정) row only**: if \`dynamics_digest.compare_decision\` is present, phrase that server lean — do **not** re-classify independent vs consultative, and do **not** conflate with balance_of_power / sublead.
+    - **Communication (소통 방식) row only**: if \`dynamics_digest.compare_communication\` is present, phrase that server lean — do **not** re-classify direct vs considerate.
+    - All 6 compare rows with server lean: phrase only; do not re-classify.
 11. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones
 12. **section_3 conflict**: dialogue_table **exactly 2 rows** — faster expresser + slower processor each ❌/✅. 50:50 balance; no model answers. Ban hidden_psychology
 13. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms

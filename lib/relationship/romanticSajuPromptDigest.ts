@@ -6,6 +6,12 @@ import type { SewoonResult } from "@/lib/relationship/romanticRules/fortuneFlow"
 import { isPrimaryPalaceCross } from "@/lib/saju/palaceWeight";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { RomanticDynamicsTypedSnapshot } from "@/lib/relationship/romantic/romanticContextInput";
+import type { RefinedCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
+import type { RefinedCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
+import type { RefinedCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
+import type { RefinedCompareDecisionPair } from "@/lib/relationship/romantic/compareDecisionComposite";
+import type { RefinedCompareExpressionPair } from "@/lib/relationship/romantic/compareExpressionComposite";
+import type { RefinedCompareCommunicationPair } from "@/lib/relationship/romantic/compareCommunicationComposite";
 import {
   resolveBalanceOfPower,
   resolveSubLeads,
@@ -55,6 +61,39 @@ export function buildRomanticPersonSignalsDigest(params: {
   master: SajuMasterJson;
   uncertainItems?: string[];
   profile?: CurrentSelfProfile | null;
+  /**
+   * Phase 5-3 — 이 사람의 갈등 lean (있으면 갈등 반응 줄에 서버 lean 표기).
+   * A/B 각각 다른 값으로 넘긴다.
+   */
+  conflictLean?: {
+    lean: string;
+    base: string;
+  } | null;
+  /** Phase 5-3 — 애정 언어 lean */
+  affectionLean?: {
+    lean: string;
+    base: string;
+  } | null;
+  /** Phase 5-3 — 스트레스 패턴 lean */
+  stressLean?: {
+    lean: string;
+    base: string;
+  } | null;
+  /** Phase 5-3 — 의사결정 lean */
+  decisionLean?: {
+    lean: string;
+    base: string;
+  } | null;
+  /** Phase 5-3 — 감정 표현 lean */
+  expressionLean?: {
+    lean: string;
+    base: string;
+  } | null;
+  /** Phase 5-3 — 소통 방식 lean */
+  communicationLean?: {
+    lean: string;
+    base: string;
+  } | null;
 }): string {
   const m = params.master;
   const ds = m.domain_signals;
@@ -79,14 +118,44 @@ export function buildRomanticPersonSignalsDigest(params: {
   // romantic_signals는 오늘 추가된 필드라, 그 이전에 이미 계산·저장된 기존 유저의
   // saju_master_json에는 없을 수 있다 — 없으면 크래시 대신 이 블록만 생략한다.
   const rs = ds.romantic_signals;
+  const conflictLine = rs
+    ? params.conflictLean
+      ? `  · 갈등 반응: 서버 lean=${params.conflictLean.lean} (사주 base=${params.conflictLean.base}, 관성${rs.conflict_response.officer_count}/식상${rs.conflict_response.food_count}, 일지충형${rs.conflict_response.day_branch_tension_hits.length}건) — 재분류 금지`
+      : `  · 갈등 반응: ${rs.conflict_response.conflict_band} (관성${rs.conflict_response.officer_count}/식상${rs.conflict_response.food_count}, 일지충형${rs.conflict_response.day_branch_tension_hits.length}건)`
+    : null;
+  const expressionLine = rs
+    ? params.expressionLean
+      ? `  · 감정 표현: 서버 lean=${params.expressionLean.lean} (사주 base=${params.expressionLean.base}, 식상${rs.expression_style.food_count}) — 재분류 금지`
+      : `  · 감정 표현: ${rs.expression_style.expression_band} (식상${rs.expression_style.food_count})`
+    : null;
+  const affectionLine = rs
+    ? params.affectionLean
+      ? `  · 애정 언어: 서버 lean=${params.affectionLean.lean} (사주 base=${params.affectionLean.base}, 재성${rs.affection_language.wealth_count}/인성${rs.affection_language.seal_count}) — 재분류 금지`
+      : `  · 애정 언어: ${rs.affection_language.affection_band} (재성${rs.affection_language.wealth_count}/인성${rs.affection_language.seal_count})`
+    : null;
+  const stressLine = rs
+    ? params.stressLean
+      ? `  · 스트레스 패턴: 서버 lean=${params.stressLean.lean} (사주 base=${params.stressLean.base}, ${rs.stress_pattern.temperature_band}, 열${rs.stress_pattern.heat_score}) — 재분류 금지`
+      : `  · 스트레스 패턴: ${rs.stress_pattern.stress_band} (${rs.stress_pattern.temperature_band}, 열${rs.stress_pattern.heat_score})`
+    : null;
+  const decisionLine = rs
+    ? params.decisionLean
+      ? `  · 의사결정: 서버 lean=${params.decisionLean.lean} (사주 base=${params.decisionLean.base}, ${rs.decision_making.strength_label}) — 재분류 금지`
+      : `  · 의사결정: ${rs.decision_making.decision_band} (${rs.decision_making.strength_label})`
+    : null;
+  const communicationLine = rs
+    ? params.communicationLean
+      ? `  · 소통 방식: 서버 lean=${params.communicationLean.lean} (사주 base=${params.communicationLean.base}, 비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count}) — 재분류 금지`
+      : `  · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})`
+    : null;
   const romanticSignalsBlock = rs
     ? `- romantic_signals(이 사람의 연애 성향 — comparison_table 6축과 1:1 대응):
-  · 감정 표현: ${rs.expression_style.expression_band} (식상${rs.expression_style.food_count})
-  · 갈등 반응: ${rs.conflict_response.conflict_band} (관성${rs.conflict_response.officer_count}/식상${rs.conflict_response.food_count}, 일지충형${rs.conflict_response.day_branch_tension_hits.length}건)
-  · 애정 언어: ${rs.affection_language.affection_band} (재성${rs.affection_language.wealth_count}/인성${rs.affection_language.seal_count})
-  · 스트레스 패턴: ${rs.stress_pattern.stress_band} (${rs.stress_pattern.temperature_band}, 열${rs.stress_pattern.heat_score})
-  · 의사결정: ${rs.decision_making.decision_band} (${rs.decision_making.strength_label})
-  · 소통 방식: ${rs.communication_style.communication_band} (비겁${rs.communication_style.self_count}/인성${rs.communication_style.seal_count})`
+${expressionLine}
+${conflictLine}
+${affectionLine}
+${stressLine}
+${decisionLine}
+${communicationLine}`
     : "- romantic_signals: 없음(구버전 스냅샷) — comparison_table은 원국 데이터만으로 해석";
 
   // 11축(profile)이 없으면(레거시·설문 미완료) 이 블록 자체를 생략 — romantic_signals
@@ -96,9 +165,25 @@ export function buildRomanticPersonSignalsDigest(params: {
     ? `\n- eleven_axes(이 사람의 심리 11축 — 위 romantic_signals와 같은 순서로 6개 행에 대응):
 ${COMPARISON_TABLE_AXIS_MAP.map((row) => `  · ${row.rowLabel} 대응: ${row.axisLabel} ${axes[row.axisKey]}`).join("\n")}`
     : "";
-  const combineNote = axes
-    ? "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 및 eleven_axes 두 소스를 결합해서 comparison_table의 6개 aspect를 채우고, A/B가 실제로 다른 band/축일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요."
-    : "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.";
+
+  const ssotRows: string[] = [];
+  if (params.expressionLean) ssotRows.push("「감정 표현」");
+  if (params.conflictLean) ssotRows.push("「갈등 반응」");
+  if (params.affectionLean) ssotRows.push("「애정 언어」");
+  if (params.stressLean) ssotRows.push("「스트레스 패턴」");
+  if (params.decisionLean) ssotRows.push("「의사결정」");
+  if (params.communicationLean) ssotRows.push("「소통 방식」");
+  const ssotPhrase =
+    ssotRows.length > 0
+      ? `${ssotRows.join("·")}행만 서버 lean을 재분류하지 말고 문장화하세요. 나머지 행은`
+      : null;
+  const combineNote = ssotPhrase
+    ? axes
+      ? `⚠️ 전문용어·한자 출력 금지. romantic_signals 및 eleven_axes를 결합하되, ${ssotPhrase} A/B가 실제로 다른 band/축일 때 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`
+      : `⚠️ 전문용어·한자 출력 금지. romantic_signals 6축을 comparison_table에 매칭하되, ${ssotPhrase} A/B band 차이를 분명히 드러내게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.`
+    : axes
+      ? "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 및 eleven_axes 두 소스를 결합해서 comparison_table의 6개 aspect를 채우고, A/B가 실제로 다른 band/축일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요."
+      : "⚠️ 전문용어·한자 출력 금지. 위 romantic_signals 6축을 comparison_table의 6개 aspect와 그대로 매칭해서, A/B가 실제로 다른 band일 때는 그 차이가 분명히 드러나게 쓰세요. Few-Shot 규칙으로 조합 해석만 하고 수치·밴드명 자체는 출력하지 마세요.";
 
   return `## ${params.nickname} — saju_master_v2 엑기스 Digest
 - 생년월일시: ${params.birthDate} ${params.birthTime} | 출생지: ${params.birthPlace}
@@ -163,6 +248,18 @@ export function buildRomanticDynamicsDigest(params: {
   yongsinB?: YongsinEstimateSnapshot | null;
   /** prepare에서 collect한 typed 결과 — 있으면 resolver 재호출 없음 */
   dynamics?: RomanticDynamicsTypedSnapshot | null;
+  /** Phase 5-3 — 갈등 반응 행 SSOT */
+  conflictComposite?: RefinedCompareConflictPair | null;
+  /** Phase 5-3 — 애정 언어 행 SSOT (reassurance 줄과 별개) */
+  affectionComposite?: RefinedCompareAffectionPair | null;
+  /** Phase 5-3 — 스트레스 패턴 행 SSOT (recovery/residual과 별개) */
+  stressComposite?: RefinedCompareStressPair | null;
+  /** Phase 5-3 — 의사결정 행 SSOT (balance/sublead와 별개) */
+  decisionComposite?: RefinedCompareDecisionPair | null;
+  /** Phase 5-3 — 감정 표현 행 SSOT (balance/expression_speed와 별개) */
+  expressionComposite?: RefinedCompareExpressionPair | null;
+  /** Phase 5-3 — 소통 방식 행 SSOT */
+  communicationComposite?: RefinedCompareCommunicationPair | null;
 }): string {
   const {
     nicknameA,
@@ -177,6 +274,12 @@ export function buildRomanticDynamicsDigest(params: {
     yongsinA,
     yongsinB,
     dynamics: dynamicsSnap,
+    conflictComposite,
+    affectionComposite,
+    stressComposite,
+    decisionComposite,
+    expressionComposite,
+    communicationComposite,
   } = params;
 
   const bop = dynamicsSnap?.balance ?? resolveBalanceOfPower(profileA, profileB);
@@ -213,11 +316,36 @@ export function buildRomanticDynamicsDigest(params: {
   const giveBText = yongsinElementB ? `${giveB}(희용신 ${yongsinElementB})` : giveB;
   const giveAText = yongsinElementA ? `${giveA}(희용신 ${yongsinElementA})` : giveA;
 
+  const conflictLine = conflictComposite
+    ? `\n- compare_conflict (갈등 반응 행 SSOT): ${nicknameA}=${conflictComposite.leanA} / ${nicknameB}=${conflictComposite.leanB} · align=${conflictComposite.align} · confidence=${conflictComposite.confidence}
+⚠️ comparison_table의 「갈등 반응」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(direct/principled 등)은 출력하지 마세요.`
+    : "";
+  const affectionLine = affectionComposite
+    ? `\n- compare_affection (애정 언어 행 SSOT): ${nicknameA}=${affectionComposite.leanA} / ${nicknameB}=${affectionComposite.leanB} · align=${affectionComposite.align} · confidence=${affectionComposite.confidence}
+⚠️ comparison_table의 「애정 언어」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(action_gift/emotional_care 등)은 출력하지 마세요. reassurance need/give와 혼동하지 마세요.`
+    : "";
+  const stressLine = stressComposite
+    ? `\n- compare_stress (스트레스 패턴 행 SSOT): ${nicknameA}=${stressComposite.leanA} / ${nicknameB}=${stressComposite.leanB} · align=${stressComposite.align} · confidence=${stressComposite.confidence}
+⚠️ comparison_table의 「스트레스 패턴」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(explosive/withdrawn 등)은 출력하지 마세요. recovery_speed·residual과 혼동하지 마세요.`
+    : "";
+  const decisionLine = decisionComposite
+    ? `\n- compare_decision (의사결정 행 SSOT): ${nicknameA}=${decisionComposite.leanA} / ${nicknameB}=${decisionComposite.leanB} · align=${decisionComposite.align} · confidence=${decisionComposite.confidence}
+⚠️ comparison_table의 「의사결정」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(independent/consultative 등)은 출력하지 마세요. balance_of_power·sublead와 혼동하지 마세요.`
+    : "";
+  const expressionLine = expressionComposite
+    ? `\n- compare_expression (감정 표현 행 SSOT): ${nicknameA}=${expressionComposite.leanA} / ${nicknameB}=${expressionComposite.leanB} · align=${expressionComposite.align} · confidence=${expressionComposite.confidence}
+⚠️ comparison_table의 「감정 표현」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(expressive/reserved 등)은 출력하지 마세요. balance_of_power·expression_speed와 혼동하지 마세요.`
+    : "";
+  const communicationLine = communicationComposite
+    ? `\n- compare_communication (소통 방식 행 SSOT): ${nicknameA}=${communicationComposite.leanA} / ${nicknameB}=${communicationComposite.leanB} · align=${communicationComposite.align} · confidence=${communicationComposite.confidence}
+⚠️ comparison_table의 「소통 방식」행만 위 lean을 재분류하지 말고 문장화하세요. 밴드명(direct/considerate 등)은 출력하지 마세요.`
+    : "";
+
   return `## dynamics_digest — 관계 역학 4종 (서버 판정 완료, 그대로 서술만 할 것)
 - balance_of_power: ${nicknameA}=${bop.bandA} / ${nicknameB}=${bop.bandB} (서브 리드 — 아이디어·분위기:${subLeads.ideaMoodLead}, 결정·승인:${subLeads.decisionApprovalLead}, 실행:${subLeads.executionLead})
 - recovery_speed: ${nicknameA}=${recovery.bandA}(잔류도 ${residualA}) / ${nicknameB}=${recovery.bandB}(잔류도 ${residualB}) ${recovery.mismatch ? "— 격차 큼(주의)" : ""}
 - reassurance: ${nicknameA} need=${needA} vs ${nicknameB} give=${giveBText} → 일치:${matchBGivesA} | ${nicknameB} need=${needB} vs ${nicknameA} give=${giveAText} → 일치:${matchAGivesB}
-- role_play: 심리축 판정=${rolePlay.primaryFrame} / 사주 판정=${rolePlay.sajuFrame} (일치:${rolePlay.agrees})
+- role_play: 심리축 판정=${rolePlay.primaryFrame} / 사주 판정=${rolePlay.sajuFrame} (일치:${rolePlay.agrees})${expressionLine}${conflictLine}${affectionLine}${stressLine}${decisionLine}${communicationLine}
 ⚠️ 위 밴드·판정 이름 자체는 출력하지 말고, 이미 정해진 방향으로만 자연스러운 문장을 쓰세요.`.trim();
 }
 
