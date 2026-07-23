@@ -11,13 +11,19 @@ import { buildMarriageRuleContext } from "./buildMarriageRuleContext";
 import { buildMarriageSnapshotPanel } from "./buildMarriageSnapshotPanel";
 import {
   buildHouseholdPartnershipReport,
+  formatParentingStyleLine,
+  buildParentingCombinedFromStyles,
+  buildParentingHarmonyTipFromStyles,
   type HouseholdPartnershipReport,
 } from "./homeReportTemplate";
 import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
-import { resolveCfoAxisNote } from "./marriageCfoConsumption";
+import { resolveCfoAxisNote, refineHouseholdCfo } from "./marriageCfoConsumption";
 import { resolveEnergyStyleAxisNote } from "./homeLifeLanguage";
 import { resolveRejectionAxisNote } from "./bedroomProfile";
-import { resolveParentingRoleNote } from "./marriageTenGodAnalysis";
+import {
+  resolveParentingRoleNote,
+  refineParentingStyle,
+} from "./marriageTenGodAnalysis";
 import {
   buildCohabitationKillerQuestions,
 } from "./buildCohabitationKillerQuestions";
@@ -106,6 +112,41 @@ export function buildMarriageReport(params: {
   );
 
   const baseHousehold = buildHouseholdPartnershipReport(ctx);
+  const baseMoney = baseHousehold.section_money_chores;
+  const refinedCfo = refineHouseholdCfo({
+    baseNickname: baseMoney.cfo_nickname,
+    baseReason: baseMoney.cfo_reason,
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    countsA: ctx.tenGod.countsA,
+    countsB: ctx.tenGod.countsB,
+    branchCodesA: ctx.marriagePairAnalysis.chartA.branchCodes,
+    branchCodesB: ctx.marriagePairAnalysis.chartB.branchCodes,
+    wealthOfficerPowerA:
+      params.cohabitationSignalsA?.wealth_officer_power ?? null,
+    wealthOfficerPowerB:
+      params.cohabitationSignalsB?.wealth_officer_power ?? null,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    dualCfoWar: params.pairCohabitation?.cfo_power_struggle?.dual_cfo_war,
+    masterBenefit: ctx.masterScores.benefit,
+    masterRisk: ctx.masterScores.risk,
+    locale,
+  });
+
+  const refinedParentingA = refineParentingStyle({
+    baseStyle: ctx.tenGod.parentingA.style,
+    counts: ctx.tenGod.countsA,
+    psych: params.psychMasterA,
+    locale,
+  });
+  const refinedParentingB = refineParentingStyle({
+    baseStyle: ctx.tenGod.parentingB.style,
+    counts: ctx.tenGod.countsB,
+    psych: params.psychMasterB,
+    locale,
+  });
+
   const household: HouseholdPartnershipReport = {
     ...baseHousehold,
     section_compare_table: buildMarriageSajuCompareTable({
@@ -115,19 +156,26 @@ export function buildMarriageReport(params: {
       tenGodsB: ctx.tenGod.countsB,
       needsStrongBoundaryA: ctx.tenGod.boundaryA.needsStrongBoundary,
       needsStrongBoundaryB: ctx.tenGod.boundaryB.needsStrongBoundary,
-      parentingStyleA: ctx.tenGod.parentingA.style,
-      parentingStyleB: ctx.tenGod.parentingB.style,
+      parentingStyleA: refinedParentingA.style,
+      parentingStyleB: refinedParentingB.style,
       economicDominanceBandA: params.cohabitationSignalsA?.wealth_officer_power.economic_dominance_band,
       economicDominanceBandB: params.cohabitationSignalsB?.wealth_officer_power.economic_dominance_band,
       locale,
     }),
     section_money_chores: {
-      ...baseHousehold.section_money_chores,
+      ...baseMoney,
+      cfo_nickname: refinedCfo.nickname,
+      cfo_reason: refinedCfo.reason,
       cfo_axis_note: resolveCfoAxisNote(
         psychBundle?.psych_match ?? null,
-        baseHousehold.section_money_chores.cfo_nickname === params.nicknameA,
+        refinedCfo.nickname === params.nicknameA,
         locale,
       ),
+      ...(refinedCfo.confidence
+        ? { cfo_confidence: refinedCfo.confidence }
+        : {}),
+      ...(refinedCfo.align ? { cfo_align: refinedCfo.align } : {}),
+      ...(refinedCfo.dual ? { cfo_dual: true } : {}),
     },
     section_dna: {
       person_a: {
@@ -156,17 +204,54 @@ export function buildMarriageReport(params: {
       ),
     },
     section_parenting: {
-      ...baseHousehold.section_parenting,
+      combined_attitude: buildParentingCombinedFromStyles(
+        params.nicknameA,
+        params.nicknameB,
+        refinedParentingA.style,
+        refinedParentingB.style,
+        locale,
+      ),
+      person_a_style: formatParentingStyleLine(
+        refinedParentingA.style,
+        refinedParentingA.label,
+        locale,
+      ),
+      person_b_style: formatParentingStyleLine(
+        refinedParentingB.style,
+        refinedParentingB.label,
+        locale,
+      ),
+      harmony_tip: buildParentingHarmonyTipFromStyles(
+        params.nicknameA,
+        params.nicknameB,
+        refinedParentingA.style,
+        refinedParentingB.style,
+        locale,
+      ),
       person_a_role_note: resolveParentingRoleNote(
-        ctx.tenGod.parentingA.style,
+        refinedParentingA.style,
         params.psychMasterA,
         locale,
       ),
       person_b_role_note: resolveParentingRoleNote(
-        ctx.tenGod.parentingB.style,
+        refinedParentingB.style,
         params.psychMasterB,
         locale,
       ),
+      style_key_a: refinedParentingA.style,
+      style_key_b: refinedParentingB.style,
+      ...(refinedParentingA.confidence
+        ? { parenting_a_confidence: refinedParentingA.confidence }
+        : {}),
+      ...(refinedParentingB.confidence
+        ? { parenting_b_confidence: refinedParentingB.confidence }
+        : {}),
+      ...(refinedParentingA.align
+        ? { parenting_a_align: refinedParentingA.align }
+        : {}),
+      ...(refinedParentingB.align
+        ? { parenting_b_align: refinedParentingB.align }
+        : {}),
     },
   };
 

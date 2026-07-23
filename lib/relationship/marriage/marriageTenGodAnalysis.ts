@@ -133,6 +133,35 @@ function legacyCfoScore(
   return s;
 }
 
+/** PersonCore wealth_officer_power 우선, 없으면 기존 십신·지지 폴백 — pick 재호출 없이 점수만. */
+export function resolveCfoAffinityScore(
+  counts: TenGodCounts,
+  branchCodes: Set<string>,
+  wealthOfficerPower?: WealthOfficerPower | null,
+): number {
+  if (wealthOfficerPower?.cfo_affinity_score != null) {
+    return wealthOfficerPower.cfo_affinity_score;
+  }
+  return legacyCfoScore(profileTenGods(counts), branchCodes);
+}
+
+export function buildHouseholdCfoReason(
+  winnerNick: string,
+  loserNick: string,
+  winnerIsHighDominance: boolean,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  return pick(
+    locale,
+    winnerIsHighDominance
+      ? `${winnerNick} is the sole CFO leader of the household. Budget, bank accounts, and big-spending decisions should all go to this one person, or the household gets shaky. ${loserNick} should give input but leave the final call to them.`
+      : `${winnerNick} has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A "dual CFO" setup is banned — only one person should hold the reins.`,
+    winnerIsHighDominance
+      ? `${winnerNick}이(가) 집안 CFO 단독 리더입니다. 예산·통장·큰 지출 결정권은 이 사람 한 명에게 몰아야 집이 안 흔들립니다. ${loserNick}은(는) 의견은 내되 최종 결정은 맡기세요.`
+      : `${winnerNick}이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요.`,
+  );
+}
+
 /**
  * PersonCore SSOT `CohabitationSajuSignals.wealth_officer_power` — 계산은 되지만
  * 리포트 어디서도 안 쓰이던 신호. `cfo_affinity_score`/`economic_dominance_band`가
@@ -152,8 +181,16 @@ export function pickHouseholdCfo(
   const a = profileTenGods(countsA);
   const b = profileTenGods(countsB);
 
-  const scoreA = wealthOfficerPowerA?.cfo_affinity_score ?? legacyCfoScore(a, chartABranchCodes);
-  const scoreB = wealthOfficerPowerB?.cfo_affinity_score ?? legacyCfoScore(b, chartBBranchCodes);
+  const scoreA = resolveCfoAffinityScore(
+    countsA,
+    chartABranchCodes,
+    wealthOfficerPowerA,
+  );
+  const scoreB = resolveCfoAffinityScore(
+    countsB,
+    chartBBranchCodes,
+    wealthOfficerPowerB,
+  );
   const isHighDominance = (nick: "A" | "B"): boolean =>
     nick === "A"
       ? wealthOfficerPowerA
@@ -182,14 +219,11 @@ export function pickHouseholdCfo(
 
   return {
     nickname: winnerNick,
-    reason: pick(
+    reason: buildHouseholdCfoReason(
+      winnerNick,
+      loserNick,
+      winnerIsHighDominance,
       locale,
-      winnerIsHighDominance
-        ? `${winnerNick} is the sole CFO leader of the household. Budget, bank accounts, and big-spending decisions should all go to this one person, or the household gets shaky. ${loserNick} should give input but leave the final call to them.`
-        : `${winnerNick} has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A "dual CFO" setup is banned — only one person should hold the reins.`,
-      winnerIsHighDominance
-        ? `${winnerNick}이(가) 집안 CFO 단독 리더입니다. 예산·통장·큰 지출 결정권은 이 사람 한 명에게 몰아야 집이 안 흔들립니다. ${loserNick}은(는) 의견은 내되 최종 결정은 맡기세요.`
-        : `${winnerNick}이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요.`,
     ),
   };
 }
@@ -231,6 +265,107 @@ export function resolveParentingStyle(
     return { style: "empathy", label: EMPATHY_LABEL[locale] };
   }
   return { style: "structure", label: STRUCTURE_LABEL[locale] };
+}
+
+/** 식상 vs 인성+관성 한쪽만 뚜렷할 때 강한 사주 — flip 잠금용 */
+export function isParentingSajuLocked(counts: TenGodCounts): boolean {
+  const p = profileTenGods(counts);
+  const foodDeveloped =
+    p.food >= 2 || p.food > p.seal + p.officer;
+  const structureDeveloped =
+    p.seal + p.officer >= 2 || p.seal + p.officer > p.food;
+  return (
+    (foodDeveloped && !structureDeveloped) ||
+    (structureDeveloped && !foodDeveloped)
+  );
+}
+
+export function labelForParentingStyle(
+  style: ParentingStyle,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  return style === "empathy" ? EMPATHY_LABEL[locale] : STRUCTURE_LABEL[locale];
+}
+
+const PSYCH_PARENTING_FLIP_GAP = 20;
+
+export type RefineParentingStyleParams = {
+  baseStyle: ParentingStyle;
+  counts: TenGodCounts;
+  psych?: PsychMasterJson | null;
+  locale?: Locale;
+};
+
+export type RefinedParentingStyle = {
+  style: ParentingStyle;
+  label: string;
+  confidence?: "high" | "low";
+  align?: "confirms" | "caution";
+};
+
+/**
+ * Phase 5-2 — resolveParentingStyle base + empathy/self_control 보정.
+ * psych 없거나 mid·강한 사주면 base 유지. 약한 사주에서만 제한적 flip.
+ * resolveParentingStyle 재호출 없음.
+ */
+export function refineParentingStyle(
+  params: RefineParentingStyleParams,
+): RefinedParentingStyle {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const baseStyle = params.baseStyle;
+  const baseLabel = labelForParentingStyle(baseStyle, locale);
+
+  if (!params.psych?.secondary_axes) {
+    return { style: baseStyle, label: baseLabel };
+  }
+
+  const empathy = params.psych.secondary_axes.empathy;
+  const selfControl = params.psych.secondary_axes.self_control;
+  const psychDiff = empathy - selfControl;
+  const locked = isParentingSajuLocked(params.counts);
+
+  const psychLean: ParentingStyle | "balanced" =
+    psychDiff >= PSYCH_PARENTING_FLIP_GAP
+      ? "empathy"
+      : psychDiff <= -PSYCH_PARENTING_FLIP_GAP
+        ? "structure"
+        : "balanced";
+
+  if (psychLean === "balanced") {
+    return {
+      style: baseStyle,
+      label: baseLabel,
+      confidence: "low",
+      align: "caution",
+    };
+  }
+
+  if (psychLean === baseStyle) {
+    return {
+      style: baseStyle,
+      label: baseLabel,
+      confidence: "high",
+      align: "confirms",
+    };
+  }
+
+  // psych가 base와 반대
+  if (locked) {
+    return {
+      style: baseStyle,
+      label: baseLabel,
+      confidence: "low",
+      align: "caution",
+    };
+  }
+
+  // 약한 사주 + 뚜렷한 psych 반대 → flip
+  return {
+    style: psychLean,
+    label: labelForParentingStyle(psychLean, locale),
+    confidence: "high",
+    align: "caution",
+  };
 }
 
 const AXIS_NOTE_HIGH = 60;

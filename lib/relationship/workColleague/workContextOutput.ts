@@ -131,6 +131,16 @@ export function buildWorkContextOutput(
     dominant_categories.internal_qa_lead = {
       category: leadership.internal_qa_lead,
     };
+    if (leadership.confidence) {
+      dominant_categories.leadership_confidence = {
+        category: leadership.confidence,
+      };
+    }
+    if (leadership.align) {
+      dominant_categories.leadership_align = {
+        category: leadership.align,
+      };
+    }
   }
 
   const personCoreMeta = options?.personCoreMeta ?? null;

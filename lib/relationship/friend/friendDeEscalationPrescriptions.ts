@@ -133,6 +133,25 @@ export function buildFriendDeEscalationCard(params: {
   };
 }
 
+export function friendTreasurerScore(counts: TenGodCounts): number {
+  return (
+    (counts["정재"] ?? 0) * 3 +
+    (counts["정관"] ?? 0) * 2 +
+    (counts["편재"] ?? 0)
+  );
+}
+
+export function buildFriendTreasurerReason(
+  nickname: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  return pick(
+    locale,
+    `${nickname} has the sharper sense for money and rules, making them this friendship's official treasurer. Put them in charge of the math — it's the only way to keep a single cent from ever cracking this friendship.`,
+    `돈·규칙 감각이 더 반듯한 ${nickname}이(가) 이 우정의 절대적 총무입니다. 돈 계산을 이 사람에게 일임해야 1원짜리 하나 때문에 우정에 금이 가는 대참사를 막을 수 있습니다.`,
+  );
+}
+
 export function pickFriendTreasurer(params: {
   nicknameA: string;
   nicknameB: string;
@@ -141,32 +160,18 @@ export function pickFriendTreasurer(params: {
   locale?: Locale;
 }): { nickname: string; reason: string } {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const scoreA =
-    (params.countsA["정재"] ?? 0) * 3 +
-    (params.countsA["정관"] ?? 0) * 2 +
-    (params.countsA["편재"] ?? 0);
-  const scoreB =
-    (params.countsB["정재"] ?? 0) * 3 +
-    (params.countsB["정관"] ?? 0) * 2 +
-    (params.countsB["편재"] ?? 0);
+  const scoreA = friendTreasurerScore(params.countsA);
+  const scoreB = friendTreasurerScore(params.countsB);
 
   if (scoreA >= scoreB) {
     return {
       nickname: params.nicknameA,
-      reason: pick(
-        locale,
-        `${params.nicknameA} has the sharper sense for money and rules, making them this friendship's official treasurer. Put them in charge of the math — it's the only way to keep a single cent from ever cracking this friendship.`,
-        `돈·규칙 감각이 더 반듯한 ${params.nicknameA}이(가) 이 우정의 절대적 총무입니다. 돈 계산을 이 사람에게 일임해야 1원짜리 하나 때문에 우정에 금이 가는 대참사를 막을 수 있습니다.`,
-      ),
+      reason: buildFriendTreasurerReason(params.nicknameA, locale),
     };
   }
   return {
     nickname: params.nicknameB,
-    reason: pick(
-      locale,
-      `${params.nicknameB} has the sharper sense for money and rules, making them this friendship's official treasurer. Put them in charge of the math — it's the only way to keep a single cent from ever cracking this friendship.`,
-      `돈·규칙 감각이 더 반듯한 ${params.nicknameB}이(가) 이 우정의 절대적 총무입니다. 돈 계산을 이 사람에게 일임해야 1원짜리 하나 때문에 우정에 금이 가는 대참사를 막을 수 있습니다.`,
-    ),
+    reason: buildFriendTreasurerReason(params.nicknameB, locale),
   };
 }
 

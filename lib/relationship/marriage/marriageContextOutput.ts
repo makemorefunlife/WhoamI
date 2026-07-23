@@ -92,14 +92,25 @@ export type MarriageContextOutput = {
      * 닉네임 불일치·동명이인·값 없음이면 키 생략 (임의 "a" 폴백 없음).
      */
     household_cfo?: MarriageContextDominantCategory;
-    /** tenGod.parentingA.style */
+    /** Phase 5-2 — section_money_chores.cfo_confidence */
+    cfo_confidence?: MarriageContextDominantCategory;
+    /** Phase 5-2 — section_money_chores.cfo_align */
+    cfo_align?: MarriageContextDominantCategory;
+    /** Phase 5-2 — dual CFO risk flag */
+    cfo_dual?: MarriageContextDominantCategory;
+    /** tenGod.parentingA.style — refine 후 section.style_key_a 우선 */
     parenting_style_a: MarriageContextDominantCategory & {
       category: ParentingStyle;
     };
-    /** tenGod.parentingB.style */
+    /** tenGod.parentingB.style — refine 후 section.style_key_b 우선 */
     parenting_style_b: MarriageContextDominantCategory & {
       category: ParentingStyle;
     };
+    /** Phase 5-2 */
+    parenting_a_confidence?: MarriageContextDominantCategory;
+    parenting_b_confidence?: MarriageContextDominantCategory;
+    parenting_a_align?: MarriageContextDominantCategory;
+    parenting_b_align?: MarriageContextDominantCategory;
     /** stemIntimacy.attachmentLeanA */
     attachment_lean_a: MarriageContextDominantCategory & {
       category: MarriageAttachmentLean;
@@ -214,8 +225,14 @@ export function buildMarriageContextOutput(
     nicknameToAb(ctx.tenGod.cfo.nickname, ctx.nicknameA, ctx.nicknameB);
 
   const dominant_categories: MarriageContextOutput["dominant_categories"] = {
-    parenting_style_a: { category: ctx.tenGod.parentingA.style },
-    parenting_style_b: { category: ctx.tenGod.parentingB.style },
+    parenting_style_a: {
+      category:
+        parenting.style_key_a ?? ctx.tenGod.parentingA.style,
+    },
+    parenting_style_b: {
+      category:
+        parenting.style_key_b ?? ctx.tenGod.parentingB.style,
+    },
     attachment_lean_a: {
       category: ctx.marriagePairAnalysis.stemIntimacy.attachmentLeanA,
     },
@@ -241,6 +258,35 @@ export function buildMarriageContextOutput(
   };
   if (cfoSlot) {
     dominant_categories.household_cfo = { category: cfoSlot };
+  }
+  if (money.cfo_confidence) {
+    dominant_categories.cfo_confidence = { category: money.cfo_confidence };
+  }
+  if (money.cfo_align) {
+    dominant_categories.cfo_align = { category: money.cfo_align };
+  }
+  if (money.cfo_dual) {
+    dominant_categories.cfo_dual = { category: "dual" };
+  }
+  if (parenting.parenting_a_confidence) {
+    dominant_categories.parenting_a_confidence = {
+      category: parenting.parenting_a_confidence,
+    };
+  }
+  if (parenting.parenting_b_confidence) {
+    dominant_categories.parenting_b_confidence = {
+      category: parenting.parenting_b_confidence,
+    };
+  }
+  if (parenting.parenting_a_align) {
+    dominant_categories.parenting_a_align = {
+      category: parenting.parenting_a_align,
+    };
+  }
+  if (parenting.parenting_b_align) {
+    dominant_categories.parenting_b_align = {
+      category: parenting.parenting_b_align,
+    };
   }
 
   const psychPracticality = findPsychAxis(options?.psychMatch, "practicality");

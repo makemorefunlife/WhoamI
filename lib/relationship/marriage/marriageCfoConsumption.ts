@@ -1,17 +1,26 @@
 /**
  * Part2③ 자산 관리 주도권(CFO) & 소비 스위치 — 사양서의 "정재/관성(미래 안정)
  * vs 편재/식상(현재 삶의 질)" 소비가치관 분리 + 11축[현실실리/자기통제] 확인문구.
- * 둘 다 기존 CFO 판정(`pickHouseholdCfo`)이나 `WEALTH_GODS` 합산 로직은 안
- * 건드리고, 별도 확인/보강 텍스트만 만든다(Batch 2와 동일한 non-invasive 원칙).
+ * Phase 5-2: refineHouseholdCfo가 base pick + psych/spending/chores 신호를 조합한다.
+ * pickHouseholdCfo 자체는 재호출하지 않는다.
  */
-import type { TenGodCounts } from "./marriageTenGodAnalysis";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { PsychMatchResult } from "@/lib/relationship/psychMatch";
+import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import {
+  buildHouseholdCfoReason,
+  profileTenGods,
+  resolveCfoAffinityScore,
+  type TenGodCounts,
+} from "./marriageTenGodAnalysis";
 
-type SpendingLean = "stability" | "experience" | "balanced";
+type WealthOfficerPower = CohabitationSajuSignals["wealth_officer_power"];
 
-function resolveSpendingLean(counts: TenGodCounts): SpendingLean {
+export type SpendingLean = "stability" | "experience" | "balanced";
+
+export function resolveSpendingLean(counts: TenGodCounts): SpendingLean {
   const jeongJae = counts["정재"] ?? 0;
   const pyeonJae = counts["편재"] ?? 0;
   if (jeongJae === pyeonJae) return "balanced";
@@ -52,7 +61,9 @@ export function resolveSpendingStyleNote(
   }
 
   const [stableName, otherName, otherLean] =
-    leanA === "stability" ? [nicknameA, nicknameB, leanB] : [nicknameB, nicknameA, leanA];
+    leanA === "stability"
+      ? [nicknameA, nicknameB, leanB]
+      : [nicknameB, nicknameA, leanA];
 
   if (otherLean === "experience") {
     return pick(
@@ -83,8 +94,12 @@ export function resolveCfoAxisNote(
   locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): string | null {
   if (!psychMatch) return null;
-  const practicality = psychMatch.axis_results.find((r) => r.axis_key === "practicality");
-  const selfControl = psychMatch.axis_results.find((r) => r.axis_key === "self_control");
+  const practicality = psychMatch.axis_results.find(
+    (r) => r.axis_key === "practicality",
+  );
+  const selfControl = psychMatch.axis_results.find(
+    (r) => r.axis_key === "self_control",
+  );
   if (!practicality || !selfControl) return null;
 
   const cfoScore =
@@ -112,4 +127,214 @@ export function resolveCfoAxisNote(
     );
   }
   return null;
+}
+
+// ─── Phase 5-2 CFO composite ────────────────────────────────────────────────
+
+/** pair cohabitation leader threshold와 동일 */
+const SAJU_CFO_LOCK = 12;
+const COMPOSITE_MARGIN = 12;
+const PSYCH_FLIP_GAP = 20;
+
+function psychCfoAvg(psych: PsychMasterJson): number {
+  const { practicality, self_control } = psych.secondary_axes;
+  return (practicality + self_control) / 2;
+}
+
+function spendingCfoBonus(lean: SpendingLean): number {
+  if (lean === "stability") return 6;
+  if (lean === "experience") return -4;
+  return 0;
+}
+
+/** chores 신호 — masterScores는 이미 계산됨. risk 높으면 flip 억제. */
+function choresFlipPenalty(
+  benefit: number | undefined,
+  risk: number | undefined,
+): number {
+  if (typeof risk === "number" && risk >= 55) return 8;
+  if (
+    typeof benefit === "number" &&
+    benefit >= 65 &&
+    typeof risk === "number" &&
+    risk < 50
+  ) {
+    return -2;
+  }
+  return 0;
+}
+
+function softCfoReason(baseReason: string, locale: Locale): string {
+  return `${baseReason} ${pick(
+    locale,
+    "Survey axes are mixed — keep the CFO split flexible and review big spends together.",
+    "설문 축은 엇갈려 있어요 — CFO 역할을 너무 굳히지 말고 큰 지출은 함께 확인해 보세요.",
+  )}`;
+}
+
+export type RefineHouseholdCfoParams = {
+  baseNickname: string;
+  baseReason: string;
+  nicknameA: string;
+  nicknameB: string;
+  countsA: TenGodCounts;
+  countsB: TenGodCounts;
+  branchCodesA: Set<string>;
+  branchCodesB: Set<string>;
+  wealthOfficerPowerA?: WealthOfficerPower | null;
+  wealthOfficerPowerB?: WealthOfficerPower | null;
+  psychA?: PsychMasterJson | null;
+  psychB?: PsychMasterJson | null;
+  /** 이미 계산된 pair dual 신호 */
+  dualCfoWar?: boolean | null;
+  masterBenefit?: number;
+  masterRisk?: number;
+  locale?: Locale;
+};
+
+export type RefinedHouseholdCfo = {
+  nickname: string;
+  reason: string;
+  confidence?: "high" | "low";
+  align?: "confirms" | "caution";
+  dual?: boolean;
+};
+
+/**
+ * Phase 5-2 — pickHouseholdCfo base + psych/spending/chores 조합.
+ * psych 누락 시 base 그대로. 강한 saju(|affinity|≥12) flip 금지.
+ * pickHouseholdCfo 재호출 없음.
+ */
+export function refineHouseholdCfo(
+  params: RefineHouseholdCfoParams,
+): RefinedHouseholdCfo {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const {
+    baseNickname,
+    baseReason,
+    nicknameA,
+    nicknameB,
+    psychA,
+    psychB,
+  } = params;
+
+  if (!psychA || !psychB) {
+    return { nickname: baseNickname, reason: baseReason };
+  }
+
+  const scoreA = resolveCfoAffinityScore(
+    params.countsA,
+    params.branchCodesA,
+    params.wealthOfficerPowerA,
+  );
+  const scoreB = resolveCfoAffinityScore(
+    params.countsB,
+    params.branchCodesB,
+    params.wealthOfficerPowerB,
+  );
+  const sajuDiff = scoreA - scoreB;
+  const sajuLocked = Math.abs(sajuDiff) >= SAJU_CFO_LOCK;
+
+  const psychAScore = psychCfoAvg(psychA);
+  const psychBScore = psychCfoAvg(psychB);
+  const psychDiff = psychAScore - psychBScore;
+
+  const leanA = resolveSpendingLean(params.countsA);
+  const leanB = resolveSpendingLean(params.countsB);
+  const choresPenalty = choresFlipPenalty(
+    params.masterBenefit,
+    params.masterRisk,
+  );
+
+  const compositeA =
+    scoreA + psychAScore * 0.35 + spendingCfoBonus(leanA) - choresPenalty / 2;
+  const compositeB =
+    scoreB + psychBScore * 0.35 + spendingCfoBonus(leanB) - choresPenalty / 2;
+  const compositeDiff = compositeA - compositeB;
+
+  const dualFromSignals =
+    Boolean(params.wealthOfficerPowerA?.dual_power_risk) &&
+    Boolean(params.wealthOfficerPowerB?.dual_power_risk);
+  const dual =
+    Boolean(params.dualCfoWar) ||
+    dualFromSignals ||
+    (params.wealthOfficerPowerA?.economic_dominance_band === "high" &&
+      params.wealthOfficerPowerB?.economic_dominance_band === "high");
+
+  const baseIsA = baseNickname === nicknameA;
+  const compositeWinner: "a" | "b" | "balanced" =
+    compositeDiff >= COMPOSITE_MARGIN
+      ? "a"
+      : compositeDiff <= -COMPOSITE_MARGIN
+        ? "b"
+        : "balanced";
+
+  const clearFlip =
+    compositeWinner !== "balanced" &&
+    ((compositeWinner === "a" && !baseIsA) ||
+      (compositeWinner === "b" && baseIsA)) &&
+    Math.abs(psychDiff) >= PSYCH_FLIP_GAP;
+
+  if (dual) {
+    return {
+      nickname: baseNickname,
+      reason: softCfoReason(baseReason, locale),
+      confidence: "low",
+      align: "caution",
+      dual: true,
+    };
+  }
+
+  if (clearFlip && !sajuLocked) {
+    const nickname = compositeWinner === "a" ? nicknameA : nicknameB;
+    const loser = nickname === nicknameA ? nicknameB : nicknameA;
+    const winnerPower =
+      nickname === nicknameA
+        ? params.wealthOfficerPowerA
+        : params.wealthOfficerPowerB;
+    const winnerCounts =
+      nickname === nicknameA ? params.countsA : params.countsB;
+    const high =
+      winnerPower?.economic_dominance_band === "high" ||
+      profileTenGods(winnerCounts).wealthOfficer >= 3;
+    return {
+      nickname,
+      reason: softCfoReason(
+        buildHouseholdCfoReason(nickname, loser, high, locale),
+        locale,
+      ),
+      confidence: "high",
+      align: "caution",
+    };
+  }
+
+  if (clearFlip && sajuLocked) {
+    return {
+      nickname: baseNickname,
+      reason: softCfoReason(baseReason, locale),
+      confidence: "low",
+      align: "caution",
+    };
+  }
+
+  if (compositeWinner === "balanced") {
+    return {
+      nickname: baseNickname,
+      reason: softCfoReason(baseReason, locale),
+      confidence: "low",
+      align: "caution",
+    };
+  }
+
+  const matchesBase =
+    (compositeWinner === "a" && baseIsA) ||
+    (compositeWinner === "b" && !baseIsA);
+  return {
+    nickname: baseNickname,
+    reason: matchesBase
+      ? baseReason
+      : softCfoReason(baseReason, locale),
+    confidence: matchesBase ? "high" : "low",
+    align: matchesBase ? "confirms" : "caution",
+  };
 }

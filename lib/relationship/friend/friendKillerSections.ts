@@ -64,6 +64,10 @@ export type PlayMoneySection = {
   optimal_hangout: string;
   /** Part3② 더치페이·총무 — 11축(현실실리+계획구조화) 확인/유보 문구. psychMaster 없으면 null */
   psych_confirm_note?: string | null;
+  /** Phase 5-2 composite — Context Output treasurer_align */
+  treasurer_align?: "confirms" | "caution";
+  /** Phase 5-2 composite — Context Output treasurer_confidence (high|low) */
+  treasurer_confidence?: "high" | "low";
 };
 
 export type BreakupGuideSection = {

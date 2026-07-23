@@ -4,6 +4,7 @@ import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 import { resolveWorkCategory, sanitizeOfficeText } from "./officeLanguage";
+import type { LeadershipRoleSplit } from "./officeLanguage";
 import type { TenGodCategory } from "./tenGodComplement";
 
 /**
@@ -297,3 +298,266 @@ export function resolveFeedbackCushionScript(
     ),
   };
 }
+
+// ─── Part3② 주도권 복합 (Phase 5-2) ─────────────────────────────────────────
+
+const LEADERSHIP_MARGIN = 12;
+/** saju officer+self 격차가 이 이상이면 psych로 pick flip 금지 */
+const SAJU_EXT_LOCK = 2;
+
+function sajuExternalScore(s: WorkSajuSignals): number {
+  return s.drive_stubborn.officer_count + s.drive_stubborn.self_count;
+}
+
+function sajuInternalScore(s: WorkSajuSignals): number {
+  return s.drive_stubborn.seal_count + s.drive_stubborn.wealth_count;
+}
+
+function psychExternalScore(psych: PsychMasterJson): number {
+  const { practicality, structure, self_control } = psych.secondary_axes;
+  // 대외 발표: 실리↑, 검수형 구조·통제는 상대적으로 낮을수록 가산
+  return practicality - (structure + self_control) / 2;
+}
+
+function psychInternalScore(psych: PsychMasterJson): number {
+  const { structure, self_control, empathy } = psych.secondary_axes;
+  return (structure + self_control + empathy) / 3;
+}
+
+function reportingExtBonus(
+  style: ReportingStyleFit["person_a"]["style"] | undefined,
+): number {
+  if (style === "headline_first") return 8;
+  if (style === "context_first") return -6;
+  return 0;
+}
+
+function reportingIntBonus(
+  style: ReportingStyleFit["person_a"]["style"] | undefined,
+): number {
+  if (style === "context_first") return 8;
+  if (style === "headline_first") return -4;
+  return 0;
+}
+
+function contributionExtBonus(style: ContributionStyle | null | undefined): number {
+  if (style === "outcome_gain") return 8;
+  if (style === "support_care") return -6;
+  return 0;
+}
+
+function contributionIntBonus(style: ContributionStyle | null | undefined): number {
+  if (style === "support_care") return 8;
+  if (style === "outcome_gain") return -4;
+  return 0;
+}
+
+function breakExtBonus(
+  style: BreakBoundaryFit["person_a"]["style"] | undefined,
+): number {
+  if (style === "social") return 4;
+  if (style === "solo_reset") return -4;
+  return 0;
+}
+
+function breakIntBonus(
+  style: BreakBoundaryFit["person_a"]["style"] | undefined,
+): number {
+  if (style === "solo_reset") return 4;
+  if (style === "social") return -2;
+  return 0;
+}
+
+function winnerFromDiff(diff: number, margin: number): "a" | "b" | "balanced" {
+  if (diff >= margin) return "a";
+  if (diff <= -margin) return "b";
+  return "balanced";
+}
+
+function buildLeadershipSummary(
+  external: "a" | "b" | "balanced",
+  internal: "a" | "b" | "balanced",
+  nicknameA: string,
+  nicknameB: string,
+  locale: Locale,
+  soft: boolean,
+): string {
+  if (external === "balanced" || internal === "balanced" || external === internal) {
+    const base = pick(
+      locale,
+      `${nicknameA} and ${nicknameB} are evenly matched on presenting vs. reviewing — decide case by case rather than fixing roles.`,
+      `${nicknameA}와 ${nicknameB}는 대외 발표·실무 검수 성향이 비슷해요. 역할을 고정하기보다 상황에 따라 나누는 게 좋아요.`,
+    );
+    if (!soft) return sanitizeOfficeText(base);
+    return sanitizeOfficeText(
+      `${base} ${pick(
+        locale,
+        "Survey axes don't lock this in — treat the split as a soft default.",
+        "설문 축만으로는 역할이 단정되지 않아요 — 참고용 기본값으로 두세요.",
+      )}`,
+    );
+  }
+
+  const externalName = external === "a" ? nicknameA : nicknameB;
+  const internalName = internal === "a" ? nicknameA : nicknameB;
+  const base = pick(
+    locale,
+    `${externalName} fits presenting and reporting externally, while ${internalName} is stronger at internal review and quality control — split it officially instead of both trying to do everything.`,
+    `${externalName}는 대외 발표·리포팅 쪽이 잘 맞고, ${internalName}는 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
+  );
+  if (!soft) return sanitizeOfficeText(base);
+  return sanitizeOfficeText(
+    `${base} ${pick(
+      locale,
+      "Survey axes are mixed here — keep the split flexible.",
+      "설문 축은 엇갈려 있어요 — 역할을 너무 굳히지 말고 유연하게 가져가세요.",
+    )}`,
+  );
+}
+
+export type RefineLeadershipRoleSplitParams = {
+  /** officeLanguage.resolveLeadershipRoleSplit 결과 — 재호출하지 않고 조합만 */
+  base: LeadershipRoleSplit | null;
+  workSignalsA: WorkSajuSignals | undefined;
+  workSignalsB: WorkSajuSignals | undefined;
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  reporting?: ReportingStyleFit | null;
+  contribution?: ContributionStyleFit | null;
+  breakBoundary?: BreakBoundaryFit | null;
+  nicknameA: string;
+  nicknameB: string;
+  locale?: Locale;
+};
+
+/**
+ * Phase 5-2 — drive_stubborn legacy pick + psych/reporting/contribution/break 조합.
+ * psych 누락 시 base 그대로(legacy). 불확실·역할 충돌 시 base pick 유지 + low/caution.
+ * reporting·contribution·break resolver는 호출하지 않는다(이미 계산된 값만).
+ */
+export function refineLeadershipRoleSplit(
+  params: RefineLeadershipRoleSplitParams,
+): LeadershipRoleSplit | null {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const base = params.base;
+  if (!base) return null;
+
+  const { workSignalsA, workSignalsB, psychA, psychB } = params;
+  if (!workSignalsA || !workSignalsB || !psychA || !psychB) {
+    return base;
+  }
+
+  const styleBonusExtA =
+    reportingExtBonus(params.reporting?.person_a.style) +
+    contributionExtBonus(params.contribution?.person_a.style) +
+    breakExtBonus(params.breakBoundary?.person_a.style);
+  const styleBonusExtB =
+    reportingExtBonus(params.reporting?.person_b.style) +
+    contributionExtBonus(params.contribution?.person_b.style) +
+    breakExtBonus(params.breakBoundary?.person_b.style);
+  const styleBonusIntA =
+    reportingIntBonus(params.reporting?.person_a.style) +
+    contributionIntBonus(params.contribution?.person_a.style) +
+    breakIntBonus(params.breakBoundary?.person_a.style);
+  const styleBonusIntB =
+    reportingIntBonus(params.reporting?.person_b.style) +
+    contributionIntBonus(params.contribution?.person_b.style) +
+    breakIntBonus(params.breakBoundary?.person_b.style);
+
+  const compositeExtA =
+    sajuExternalScore(workSignalsA) * 10 +
+    psychExternalScore(psychA) +
+    styleBonusExtA;
+  const compositeExtB =
+    sajuExternalScore(workSignalsB) * 10 +
+    psychExternalScore(psychB) +
+    styleBonusExtB;
+  const compositeIntA =
+    sajuInternalScore(workSignalsA) * 10 +
+    psychInternalScore(psychA) +
+    styleBonusIntA;
+  const compositeIntB =
+    sajuInternalScore(workSignalsB) * 10 +
+    psychInternalScore(psychB) +
+    styleBonusIntB;
+
+  const extDiff = compositeExtA - compositeExtB;
+  const intDiff = compositeIntA - compositeIntB;
+  const compositeExternal = winnerFromDiff(extDiff, LEADERSHIP_MARGIN);
+  const compositeInternal = winnerFromDiff(intDiff, LEADERSHIP_MARGIN);
+
+  const sajuExtDiff =
+    sajuExternalScore(workSignalsA) - sajuExternalScore(workSignalsB);
+  const sajuLocked = Math.abs(sajuExtDiff) >= SAJU_EXT_LOCK;
+
+  const rolesOverlap =
+    compositeExternal !== "balanced" &&
+    compositeInternal !== "balanced" &&
+    compositeExternal === compositeInternal;
+  const bothBalanced =
+    compositeExternal === "balanced" && compositeInternal === "balanced";
+  const clearSplit =
+    compositeExternal !== "balanced" &&
+    compositeInternal !== "balanced" &&
+    compositeExternal !== compositeInternal;
+
+  let external = base.external_lead;
+  let internal = base.internal_qa_lead;
+  let confidence: "high" | "low" = "low";
+  let align: "confirms" | "caution" = "caution";
+  let soft = true;
+
+  if (clearSplit) {
+    const flipsExternal =
+      base.external_lead !== "balanced" &&
+      compositeExternal !== base.external_lead;
+    if (flipsExternal && sajuLocked) {
+      // 강한 사주 pick 유지
+      external = base.external_lead;
+      internal = base.internal_qa_lead;
+      confidence = "low";
+      align = "caution";
+      soft = true;
+    } else {
+      external = compositeExternal;
+      internal = compositeInternal;
+      const matchesBase =
+        external === base.external_lead && internal === base.internal_qa_lead;
+      confidence = "high";
+      align = matchesBase ? "confirms" : flipsExternal ? "caution" : "confirms";
+      soft = align === "caution";
+    }
+  } else if (bothBalanced || rolesOverlap) {
+    external = base.external_lead;
+    internal = base.internal_qa_lead;
+    confidence = "low";
+    align =
+      base.external_lead === "balanced" && bothBalanced
+        ? "confirms"
+        : "caution";
+    soft = align === "caution";
+  } else {
+    // 한쪽만 뚜렷 — 불확실하면 base 유지
+    external = base.external_lead;
+    internal = base.internal_qa_lead;
+    confidence = "low";
+    align = "caution";
+    soft = true;
+  }
+
+  return {
+    external_lead: external,
+    internal_qa_lead: internal,
+    summary: buildLeadershipSummary(
+      external,
+      internal,
+      params.nicknameA,
+      params.nicknameB,
+      locale,
+      soft,
+    ),
+    confidence,
+    align,
+  };
+}
+

@@ -890,6 +890,10 @@ export type LeadershipRoleSplit = {
   external_lead: "a" | "b" | "balanced";
   internal_qa_lead: "a" | "b" | "balanced";
   summary: string;
+  /** Phase 5-2 — psych 복합 시만. legacy(무 psych)는 omit */
+  confidence?: "high" | "low";
+  /** Phase 5-2 — composite가 legacy pick과 같은지 */
+  align?: "confirms" | "caution";
 };
 
 /**

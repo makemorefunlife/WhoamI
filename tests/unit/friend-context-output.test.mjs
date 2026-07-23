@@ -266,4 +266,74 @@ assert.ok(vm);
 assert.ok(Array.isArray(vm.sections));
 ok("ViewModel context_output 미소비");
 
+// ---------------------------------------------------------------------------
+section("8) Phase 5-2 — treasurer_align/confidence composite · omit · strip");
+
+assert.equal(
+  report.context_output.dominant_categories.treasurer_align,
+  undefined,
+  "psych 없으면 treasurer_align omit",
+);
+assert.equal(
+  report.context_output.dominant_categories.treasurer_confidence,
+  undefined,
+  "psych 없으면 treasurer_confidence omit",
+);
+
+const baseTreasurer = report.friend.section_play_money.treasurer_nickname;
+
+const midFriend = buildFriendReport({
+  ...baseParams,
+  psychMasterA: samplePsych({ practicality: 50, structure: 50 }),
+  psychMasterB: samplePsych({ practicality: 50, structure: 50 }),
+});
+assert.ok(
+  midFriend.context_output.dominant_categories.treasurer_align?.category ===
+    "confirms" ||
+    midFriend.context_output.dominant_categories.treasurer_align?.category ===
+      "caution",
+);
+assert.ok(
+  midFriend.context_output.dominant_categories.treasurer_confidence
+    ?.category === "high" ||
+    midFriend.context_output.dominant_categories.treasurer_confidence
+      ?.category === "low",
+);
+assert.equal(
+  midFriend.friend.section_play_money.treasurer_nickname,
+  baseTreasurer,
+  "mid psych — pick 유지(약한 flip 조건 미충족)",
+);
+
+const highFriend = buildFriendReport({
+  ...baseParams,
+  psychMasterA: samplePsych({ practicality: 80, structure: 75 }),
+  psychMasterB: samplePsych({ practicality: 30, structure: 25 }),
+});
+// A가 psych 우세 — base가 A면 confirms, B면 flip 가능(약한 saju일 때만)
+assert.ok(
+  highFriend.context_output.dominant_categories.treasurer_align?.category ===
+    "confirms" ||
+    highFriend.context_output.dominant_categories.treasurer_align?.category ===
+      "caution",
+);
+assert.ok(
+  highFriend.context_output.dominant_categories.treasurer_confidence
+    ?.category === "high" ||
+    highFriend.context_output.dominant_categories.treasurer_confidence
+      ?.category === "low",
+);
+assert.equal(
+  highFriend.friend.section_play_money.treasurer_align,
+  highFriend.context_output.dominant_categories.treasurer_align.category,
+);
+
+const stripped = stripFriendContextOutputForClient({
+  format: FRIEND_SOCIAL_DEEP_FORMAT,
+  report: highFriend,
+});
+assert.equal(stripped.report.context_output, undefined);
+assert.ok(highFriend.context_output.dominant_categories.treasurer_align);
+ok("Phase 5-2 treasurer_align/confidence + strip 유지");
+
 console.log("\nAll friend-context-output tests passed.");

@@ -3,6 +3,10 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import { profileTenGods } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./friendCopy";
+import {
+  buildFriendTreasurerReason,
+  friendTreasurerScore,
+} from "./friendDeEscalationPrescriptions";
 
 /**
  * 마스터 사양서(01 참고/marster_Prd.txt) 친구 섹션 Part1(시그니처 한줄요약,
@@ -180,7 +184,48 @@ export type FriendTravelStyleSplit = {
   planner: { nickname: string; description: string };
   flexible: { nickname: string; description: string };
   role_prescription: string;
+  /** Phase 5-2 composite — Context Output travel_align */
+  align?: "confirms" | "caution";
+  /** Phase 5-2 composite — Context Output travel_confidence */
+  confidence?: "high" | "low";
 };
+
+function buildTravelStyleSplitResult(
+  plannerNickname: string,
+  flexibleNickname: string,
+  locale: Locale,
+  soft: boolean,
+): FriendTravelStyleSplit {
+  const role = pick(
+    locale,
+    `Let ${plannerNickname} own the itinerary and logistics, and hand ${flexibleNickname} the final call on restaurants and cafe vibes — that split keeps the trip smooth for both of you.`,
+    `일정·동선 세팅은 ${plannerNickname}에게 맡기고, 맛집·카페 분위기 선택권은 ${flexibleNickname}에게 주면 여행이 훨씬 편해져요.`,
+  );
+  const softNote = pick(
+    locale,
+    " Battery and chat-tempo signals are mixed — keep the split flexible.",
+    " 배터리·티키타카 신호가 엇갈려 있어요 — 역할을 너무 굳히지 말고 유연하게 가져가세요.",
+  );
+  return {
+    planner: {
+      nickname: plannerNickname,
+      description: pick(
+        locale,
+        "The spreadsheet planner — needs a minute-by-minute itinerary of hot spots to feel at ease.",
+        "분 단위 핫플 동선과 타임테이블을 완벽히 짜야 마음이 편한 엑셀 계획파.",
+      ),
+    },
+    flexible: {
+      nickname: flexibleNickname,
+      description: pick(
+        locale,
+        "The go-with-the-flow healer — sleeps in, wanders, and ducks into any cute café that catches their eye.",
+        "발길 닿는 대로 늦잠 자고 예쁜 카페 보이면 들어가는 유연한 힐링파.",
+      ),
+    },
+    role_prescription: soft ? `${role}${softNote}` : role,
+  };
+}
 
 /** Part3① 여행 & 액티비티 동선 마찰 — 계획구조화(structure) 격차 기반 역할 분리 */
 export function resolveTravelStyleSplit(
@@ -200,28 +245,160 @@ export function resolveTravelStyleSplit(
   const plannerNickname = aIsPlanner ? nicknameA : nicknameB;
   const flexibleNickname = aIsPlanner ? nicknameB : nicknameA;
 
+  return buildTravelStyleSplitResult(
+    plannerNickname,
+    flexibleNickname,
+    locale,
+    false,
+  );
+}
+
+/** structure 격차 ≥ 이 값이면 강한 판정 — flip 잠금 */
+const TRAVEL_STRUCTURE_LOCK = 25;
+const TRAVEL_CORRECTION_FLIP = 12;
+const TRAVEL_CORRECTION_CONFIRM = 8;
+
+function travelPlannerLeanFromSignals(
+  psych: PsychMasterJson,
+  batteryMode: "outdoor" | "homebody",
+  tikitakaMode: "popcorn" | "silent",
+): number {
+  let lean = 0;
+  // homebody → 계획/루틴(planner), outdoor → 즉흥(flexible)
+  if (batteryMode === "homebody") lean += 8;
+  else lean -= 8;
+  // silent → 계획파, popcorn → 즉흥파
+  if (tikitakaMode === "silent") lean += 4;
+  else lean -= 4;
+  const energy = psych.secondary_axes.energy_style;
+  if (energy <= 40) lean += 6;
+  else if (energy >= 60) lean -= 6;
+  return lean;
+}
+
+export type RefineTravelStyleSplitParams = {
+  /** resolveTravelStyleSplit 결과 — 재호출하지 않고 조합만 */
+  base: FriendTravelStyleSplit | null;
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  batteryModeA: "outdoor" | "homebody";
+  batteryModeB: "outdoor" | "homebody";
+  tikitakaModeA: "popcorn" | "silent";
+  tikitakaModeB: "popcorn" | "silent";
+  nicknameA: string;
+  nicknameB: string;
+  locale?: Locale;
+};
+
+/**
+ * Phase 5-2 — structure base + battery/tikitaka/energy 보정.
+ * base null(구조 격차 약함·psych 없음)이면 null 유지.
+ * 신호 충돌·약한 보정이면 base 유지 + caution.
+ */
+export function refineTravelStyleSplit(
+  params: RefineTravelStyleSplitParams,
+): FriendTravelStyleSplit | null {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const base = params.base;
+  if (!base) return null;
+
+  const { psychA, psychB, nicknameA, nicknameB } = params;
+  if (!psychA || !psychB) {
+    return base;
+  }
+
+  const structA = psychA.secondary_axes.structure;
+  const structB = psychB.secondary_axes.structure;
+  const structGap = Math.abs(structA - structB);
+  const locked = structGap >= TRAVEL_STRUCTURE_LOCK;
+
+  const leanA = travelPlannerLeanFromSignals(
+    psychA,
+    params.batteryModeA,
+    params.tikitakaModeA,
+  );
+  const leanB = travelPlannerLeanFromSignals(
+    psychB,
+    params.batteryModeB,
+    params.tikitakaModeB,
+  );
+  const correctionDiff = leanA - leanB;
+
+  // battery vs tikitaka vs energy가 한 사람 안에서 강하게 엇갈리면 충돌 → legacy
+  const conflictA =
+    (params.batteryModeA === "homebody" &&
+      params.tikitakaModeA === "popcorn" &&
+      psychA.secondary_axes.energy_style >= 60) ||
+    (params.batteryModeA === "outdoor" &&
+      params.tikitakaModeA === "silent" &&
+      psychA.secondary_axes.energy_style <= 40);
+  const conflictB =
+    (params.batteryModeB === "homebody" &&
+      params.tikitakaModeB === "popcorn" &&
+      psychB.secondary_axes.energy_style >= 60) ||
+    (params.batteryModeB === "outdoor" &&
+      params.tikitakaModeB === "silent" &&
+      psychB.secondary_axes.energy_style <= 40);
+
+  const basePlannerIsA = base.planner.nickname === nicknameA;
+  const correctionWantsA =
+    correctionDiff >= TRAVEL_CORRECTION_FLIP
+      ? true
+      : correctionDiff <= -TRAVEL_CORRECTION_FLIP
+        ? false
+        : null;
+
+  if (conflictA || conflictB || correctionWantsA == null) {
+    return {
+      ...base,
+      role_prescription: buildTravelStyleSplitResult(
+        base.planner.nickname,
+        base.flexible.nickname,
+        locale,
+        true,
+      ).role_prescription,
+      align: "caution",
+      confidence: "low",
+    };
+  }
+
+  const clearFlip = correctionWantsA !== basePlannerIsA;
+
+  if (clearFlip && !locked) {
+    const plannerNickname = correctionWantsA ? nicknameA : nicknameB;
+    const flexibleNickname = correctionWantsA ? nicknameB : nicknameA;
+    return {
+      ...buildTravelStyleSplitResult(
+        plannerNickname,
+        flexibleNickname,
+        locale,
+        true,
+      ),
+      align: "caution",
+      confidence: "high",
+    };
+  }
+
+  if (clearFlip && locked) {
+    return {
+      ...base,
+      role_prescription: buildTravelStyleSplitResult(
+        base.planner.nickname,
+        base.flexible.nickname,
+        locale,
+        true,
+      ).role_prescription,
+      align: "caution",
+      confidence: "low",
+    };
+  }
+
+  // correction agrees with base
+  const strongConfirm = Math.abs(correctionDiff) >= TRAVEL_CORRECTION_CONFIRM;
   return {
-    planner: {
-      nickname: plannerNickname,
-      description: pick(
-        locale,
-        "The spreadsheet planner — needs a minute-by-minute itinerary of hot spots to feel at ease.",
-        "분 단위 핫플 동선과 타임테이블을 완벽히 짜야 마음이 편한 엑셀 계획파.",
-      ),
-    },
-    flexible: {
-      nickname: flexibleNickname,
-      description: pick(
-        locale,
-        "The go-with-the-flow healer — sleeps in, wanders, and ducks into any cute café that catches their eye.",
-        "발길 닿는 대로 늦잠 자고 예쁜 카페 보이면 들어가는 유연한 힐링파.",
-      ),
-    },
-    role_prescription: pick(
-      locale,
-      `Let ${plannerNickname} own the itinerary and logistics, and hand ${flexibleNickname} the final call on restaurants and cafe vibes — that split keeps the trip smooth for both of you.`,
-      `일정·동선 세팅은 ${plannerNickname}에게 맡기고, 맛집·카페 분위기 선택권은 ${flexibleNickname}에게 주면 여행이 훨씬 편해져요.`,
-    ),
+    ...base,
+    align: strongConfirm ? "confirms" : "caution",
+    confidence: strongConfirm ? "high" : "low",
   };
 }
 
@@ -276,21 +453,52 @@ export function resolveCounselingStyleForPerson(
   };
 }
 
+/** Phase 5-1/5-2 — practicality+structure. composite의 psych lean에 사용. */
+export type TreasurerAlign = "confirms" | "caution";
+export type TreasurerConfidenceBand = "high" | "low";
+
+export function resolveTreasurerPsychAvg(
+  psych: PsychMasterJson | null | undefined,
+): number | null {
+  if (!psych) return null;
+  return axisAvg(psych, "practicality", "structure");
+}
+
+/** @deprecated Phase 5-2 — refineFriendTreasurer의 align으로 대체. 단일 psych 확인용 유지. */
+export function resolveTreasurerAlign(
+  psych: PsychMasterJson | null | undefined,
+): TreasurerAlign | null {
+  const avg = resolveTreasurerPsychAvg(psych);
+  if (avg == null) return null;
+  if (avg >= 60) return "confirms";
+  if (avg <= 40) return "caution";
+  return null;
+}
+
+/** @deprecated Phase 5-2 — refineFriendTreasurer의 confidence로 대체. */
+export function resolveTreasurerConfidence(
+  psych: PsychMasterJson | null | undefined,
+): number | null {
+  const avg = resolveTreasurerPsychAvg(psych);
+  if (avg == null) return null;
+  if (avg >= 60 || avg <= 40) return avg;
+  return null;
+}
+
 /** Part3② 더치페이·총무 — 재성 기반 지정 결과에 대한 11축(현실실리+계획구조화) 확인/유보 문구 */
 export function resolveTreasurerConfirmNote(
   psych: PsychMasterJson | null | undefined,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): string | null {
-  if (!psych) return null;
-  const avg = axisAvg(psych, "practicality", "structure");
-  if (avg >= 60) {
+  const align = resolveTreasurerAlign(psych);
+  if (align === "confirms") {
     return pick(
       locale,
       "The 11-axis scores back this up too — high reality-sense and planning-structure make them a natural fit for the job.",
       "현실실리·계획구조화 축도 이 판정을 뒷받침해요 — 이 역할이 잘 맞는 타입이에요.",
     );
   }
-  if (avg <= 40) {
+  if (align === "caution") {
     return pick(
       locale,
       "That said, the 11-axis scores suggest the treasurer role might feel like a bit of a burden — a splitting app can take some pressure off.",
@@ -298,6 +506,146 @@ export function resolveTreasurerConfirmNote(
     );
   }
   return null;
+}
+
+// ─── Phase 5-2 treasurer composite ─────────────────────────────────────────
+
+/** 재성 가중 점수 격차 — CFO affinity 12에 해당하는 강한 사주 */
+const SAJU_TREASURER_LOCK = 2;
+const COMPOSITE_MARGIN = 12;
+const PSYCH_FLIP_GAP = 20;
+
+function softTreasurerReason(baseReason: string, locale: Locale): string {
+  return `${baseReason} ${pick(
+    locale,
+    "Survey axes are mixed — keep the treasurer role flexible and use a splitting app when needed.",
+    "설문 축은 엇갈려 있어요 — 총무 역할을 너무 굳히지 말고 필요하면 정산 앱을 같이 쓰세요.",
+  )}`;
+}
+
+export type RefineFriendTreasurerParams = {
+  baseNickname: string;
+  baseReason: string;
+  nicknameA: string;
+  nicknameB: string;
+  countsA: TenGodCounts;
+  countsB: TenGodCounts;
+  psychA?: PsychMasterJson | null;
+  psychB?: PsychMasterJson | null;
+  locale?: Locale;
+};
+
+export type RefinedFriendTreasurer = {
+  nickname: string;
+  reason: string;
+  /** Phase 5-2 — 기존 treasurer_align 키에 저장 */
+  align?: TreasurerAlign;
+  /** Phase 5-2 — 기존 treasurer_confidence 키에 high|low로 저장 */
+  confidence?: TreasurerConfidenceBand;
+  scores?: { psych_avg_a: number; psych_avg_b: number; saju_diff: number };
+};
+
+/**
+ * Phase 5-2 — pickFriendTreasurer base + practicality/structure 보정.
+ * psych 쌍 누락 시 base 그대로(align/confidence omit).
+ * 강한 사주(|score|≥2) flip 금지. pickFriendTreasurer 재호출 없음.
+ */
+export function refineFriendTreasurer(
+  params: RefineFriendTreasurerParams,
+): RefinedFriendTreasurer {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const {
+    baseNickname,
+    baseReason,
+    nicknameA,
+    nicknameB,
+    psychA,
+    psychB,
+  } = params;
+
+  if (!psychA || !psychB) {
+    return { nickname: baseNickname, reason: baseReason };
+  }
+
+  const scoreA = friendTreasurerScore(params.countsA);
+  const scoreB = friendTreasurerScore(params.countsB);
+  const sajuDiff = scoreA - scoreB;
+  const sajuLocked = Math.abs(sajuDiff) >= SAJU_TREASURER_LOCK;
+
+  const psychAvgA = axisAvg(psychA, "practicality", "structure");
+  const psychAvgB = axisAvg(psychB, "practicality", "structure");
+  const psychDiff = psychAvgA - psychAvgB;
+
+  const compositeA = scoreA * 10 + psychAvgA;
+  const compositeB = scoreB * 10 + psychAvgB;
+  const compositeDiff = compositeA - compositeB;
+
+  const baseIsA = baseNickname === nicknameA;
+  const compositeWinner: "a" | "b" | "balanced" =
+    compositeDiff >= COMPOSITE_MARGIN
+      ? "a"
+      : compositeDiff <= -COMPOSITE_MARGIN
+        ? "b"
+        : "balanced";
+
+  const clearFlip =
+    compositeWinner !== "balanced" &&
+    ((compositeWinner === "a" && !baseIsA) ||
+      (compositeWinner === "b" && baseIsA)) &&
+    Math.abs(psychDiff) >= PSYCH_FLIP_GAP;
+
+  const scores = {
+    psych_avg_a: psychAvgA,
+    psych_avg_b: psychAvgB,
+    saju_diff: sajuDiff,
+  };
+
+  if (clearFlip && !sajuLocked) {
+    const nickname = compositeWinner === "a" ? nicknameA : nicknameB;
+    return {
+      nickname,
+      reason: softTreasurerReason(
+        buildFriendTreasurerReason(nickname, locale),
+        locale,
+      ),
+      align: "caution",
+      confidence: "high",
+      scores,
+    };
+  }
+
+  if (clearFlip && sajuLocked) {
+    return {
+      nickname: baseNickname,
+      reason: softTreasurerReason(baseReason, locale),
+      align: "caution",
+      confidence: "low",
+      scores,
+    };
+  }
+
+  if (compositeWinner === "balanced") {
+    return {
+      nickname: baseNickname,
+      reason: softTreasurerReason(baseReason, locale),
+      align: "caution",
+      confidence: "low",
+      scores,
+    };
+  }
+
+  const matchesBase =
+    (compositeWinner === "a" && baseIsA) ||
+    (compositeWinner === "b" && !baseIsA);
+  return {
+    nickname: baseNickname,
+    reason: matchesBase
+      ? baseReason
+      : softTreasurerReason(baseReason, locale),
+    align: matchesBase ? "confirms" : "caution",
+    confidence: matchesBase ? "high" : "low",
+    scores,
+  };
 }
 
 /** Part4① 제3자(연애·다른 친구) 질투 방지 — 겁재(비겁) + 11축(인정욕구/현실실리) */

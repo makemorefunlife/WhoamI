@@ -24,10 +24,12 @@ import {
   resolveGuardianCharacterForPerson,
   resolveCommunicationRhythmNote,
   resolveTravelStyleSplit,
+  refineTravelStyleSplit,
   resolveCounselingStyleForPerson,
   resolveTreasurerConfirmNote,
   resolveJealousyGuardNote,
   resolveReconciliationScript,
+  refineFriendTreasurer,
 } from "./friendPsychFit";
 import {
   buildFriendContextOutput,
@@ -115,16 +117,40 @@ export function buildFriendReport(params: {
   );
 
   // Part3① 여행동선, Part3③ F/T형 — 완전 신규. Part3② 더치페이 — 기존 재성 판정에 11축 확인만 추가.
-  const travelStyle = resolveTravelStyleSplit(
+  const travelBase = resolveTravelStyleSplit(
     params.psychMasterA,
     params.psychMasterB,
     params.nicknameA,
     params.nicknameB,
     locale,
   );
+  const travelStyle = refineTravelStyleSplit({
+    base: travelBase,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    batteryModeA: ctx.friendPairAnalysis.dnaA.batteryMode,
+    batteryModeB: ctx.friendPairAnalysis.dnaB.batteryMode,
+    tikitakaModeA: ctx.friendPairAnalysis.dnaA.tikitakaMode,
+    tikitakaModeB: ctx.friendPairAnalysis.dnaB.tikitakaMode,
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    locale,
+  });
   const counselingA = resolveCounselingStyleForPerson(ctx.tenGodsA, params.psychMasterA, locale);
   const counselingB = resolveCounselingStyleForPerson(ctx.tenGodsB, params.psychMasterB, locale);
-  const treasurerIsA = friendBase.section_play_money.treasurer_nickname === params.nicknameA;
+  const baseMoney = friendBase.section_play_money;
+  const refinedTreasurer = refineFriendTreasurer({
+    baseNickname: baseMoney.treasurer_nickname,
+    baseReason: baseMoney.treasurer_reason,
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    countsA: ctx.tenGodsA,
+    countsB: ctx.tenGodsB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
+  const treasurerIsA = refinedTreasurer.nickname === params.nicknameA;
   const treasurerNote = resolveTreasurerConfirmNote(
     treasurerIsA ? params.psychMasterA : params.psychMasterB,
     locale,
@@ -185,8 +211,16 @@ export function buildFriendReport(params: {
       guardian_character: guardianB,
     },
     section_play_money: {
-      ...friendBase.section_play_money,
+      ...baseMoney,
+      treasurer_nickname: refinedTreasurer.nickname,
+      treasurer_reason: refinedTreasurer.reason,
       psych_confirm_note: treasurerNote,
+      ...(refinedTreasurer.align
+        ? { treasurer_align: refinedTreasurer.align }
+        : {}),
+      ...(refinedTreasurer.confidence
+        ? { treasurer_confidence: refinedTreasurer.confidence }
+        : {}),
     },
     section_hidden_flow: {
       travel_style: travelStyle,

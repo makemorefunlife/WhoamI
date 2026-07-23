@@ -1,6 +1,7 @@
 /**
  * Friend Context Output — 이미 계산된 RuleContext·friend section 결과의 표준 재포장.
- * 새 판정·점수·문구 없음. 순수 매핑만.
+ * treasurer pick은 재계산하지 않는다.
+ * Phase 5-2: section의 treasurer_align / treasurer_confidence(composite)를 그대로 매핑.
  */
 import type { FriendScoringSignals } from "@/lib/saju/friendAnalysis";
 import type { FriendMasterScores } from "@/lib/relationship/friendEventScores";
@@ -70,7 +71,7 @@ export type BuildFriendContextOutputOptions = {
 
 /**
  * ctx + 최종 friend section 결과를 Context Output으로 모은다.
- * 판정 함수 재호출 없음.
+ * treasurer pick / align / confidence 재호출 없음 — section 값만 읽는다.
  */
 export function buildFriendContextOutput(
   ctx: FriendRuleContext,
@@ -90,12 +91,23 @@ export function buildFriendContextOutput(
     dominant_categories.guardian_b = { category: guardianB.key };
   }
 
-  // treasurer — pickFriendTreasurer 결과가 nickname으로 저장됨 → a/b 측만 기록
-  const treasurerNick = friend.section_play_money.treasurer_nickname;
+  // treasurer — pick/refine 결과가 nickname으로 저장됨 → a/b 측만 기록
+  const money = friend.section_play_money;
+  const treasurerNick = money.treasurer_nickname;
   if (treasurerNick === ctx.nicknameA) {
     dominant_categories.treasurer = { category: "a" };
   } else if (treasurerNick === ctx.nicknameB) {
     dominant_categories.treasurer = { category: "b" };
+  }
+
+  // Phase 5-2 composite — 기존 키 재사용 (psych 누락·legacy면 section에 없어 omit)
+  if (money.treasurer_align) {
+    dominant_categories.treasurer_align = { category: money.treasurer_align };
+  }
+  if (money.treasurer_confidence) {
+    dominant_categories.treasurer_confidence = {
+      category: money.treasurer_confidence,
+    };
   }
 
   // tikitaka / battery — FriendDnaProfile raw mode (ctx에 이미 계산됨; section에는 label만)
@@ -120,6 +132,22 @@ export function buildFriendContextOutput(
   }
   if (counselingB) {
     dominant_categories.counseling_b = { category: counselingB };
+  }
+
+  // travel — refineTravelStyleSplit 결과 (structure base + battery/tikitaka/energy)
+  const travel = friend.section_hidden_flow?.travel_style ?? null;
+  if (travel) {
+    if (travel.planner.nickname === ctx.nicknameA) {
+      dominant_categories.travel_planner = { category: "a" };
+    } else if (travel.planner.nickname === ctx.nicknameB) {
+      dominant_categories.travel_planner = { category: "b" };
+    }
+    if (travel.align) {
+      dominant_categories.travel_align = { category: travel.align };
+    }
+    if (travel.confidence) {
+      dominant_categories.travel_confidence = { category: travel.confidence };
+    }
   }
 
   const vibe = friend.section_snapshot.vibe_axis_notes ?? null;
@@ -156,11 +184,11 @@ export function buildFriendContextOutput(
       connection: vibe?.connection_note ?? null,
       banter: vibe?.banter_note ?? null,
       risk: vibe?.risk_note ?? null,
-      treasurer_confirm: friend.section_play_money.psych_confirm_note ?? null,
+      treasurer_confirm: money.psych_confirm_note ?? null,
       communication_rhythm: rhythmNote,
     },
     section_summaries: {
-      treasurer_reason: friend.section_play_money.treasurer_reason ?? null,
+      treasurer_reason: money.treasurer_reason ?? null,
       travel_role:
         friend.section_hidden_flow?.travel_style?.role_prescription ?? null,
     },

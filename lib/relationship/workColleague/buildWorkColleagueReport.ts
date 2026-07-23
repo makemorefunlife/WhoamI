@@ -28,6 +28,7 @@ import {
   resolveBreakBoundaryFit,
   resolveContributionStyle,
   resolveFeedbackCushionScript,
+  refineLeadershipRoleSplit,
 } from "./officePsychFit";
 import {
   buildWorkContextOutput,
@@ -156,6 +157,19 @@ export function buildWorkColleagueReport(params: {
     params.psychMasterB,
     locale,
   );
+  const leadershipSplit = refineLeadershipRoleSplit({
+    base: officeBase.section_roles.leadership_split,
+    workSignalsA: ctx.workSignalsA,
+    workSignalsB: ctx.workSignalsB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    reporting: reportingStyleFit,
+    contribution: contributionStyle,
+    breakBoundary: breakBoundaryFit,
+    nicknameA: ctx.nicknameA,
+    nicknameB: ctx.nicknameB,
+    locale,
+  });
 
   const office = {
     ...officeBase,
@@ -178,6 +192,10 @@ export function buildWorkColleagueReport(params: {
         contribution_style: contributionStyle?.person_b.style ?? null,
         contribution_style_label: contributionStyle?.person_b.label ?? null,
       },
+    },
+    section_roles: {
+      ...officeBase.section_roles,
+      leadership_split: leadershipSplit,
     },
     section_upset: {
       ...officeBase.section_upset,

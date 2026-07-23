@@ -60,6 +60,10 @@ export type MoneyChoresSection = {
   spending_style_note: string;
   /** psych(설문) 필요 — buildMarriageReport.ts에서 나중에 patch(section_compare_table과 동일 패턴) */
   cfo_axis_note?: string | null;
+  /** Phase 5-2 — psych 복합 시만. UI 미소비 */
+  cfo_confidence?: "high" | "low";
+  cfo_align?: "confirms" | "caution";
+  cfo_dual?: boolean;
 };
 
 export type FamilyBoundarySection = {
@@ -76,6 +80,13 @@ export type ParentingSection = {
   /** psych(설문) 필요 — buildMarriageReport.ts에서 나중에 patch(section_money_chores와 동일 패턴) */
   person_a_role_note?: string | null;
   person_b_role_note?: string | null;
+  /** Phase 5-2 — raw style (표시 문자열과 별도, CO·compare용) */
+  style_key_a?: ParentingStyle;
+  style_key_b?: ParentingStyle;
+  parenting_a_confidence?: "high" | "low";
+  parenting_b_confidence?: "high" | "low";
+  parenting_a_align?: "confirms" | "caution";
+  parenting_b_align?: "confirms" | "caution";
 };
 
 export type PrivacyRespectSection = {
@@ -274,21 +285,25 @@ function parentingStyleDescription(label: string): string {
   return label.replace(/^🎨\s*|^📐\s*/, "").trim();
 }
 
-function formatParentingStyleLine(style: ParentingStyle, label: string, locale: Locale): string {
+export function formatParentingStyleLine(
+  style: ParentingStyle,
+  label: string,
+  locale: Locale,
+): string {
   return sanitizeHomeLifeText(
     `${parentingBadge(style, locale)} — ${parentingStyleDescription(label)}`,
   );
 }
 
-function buildParentingCombined(ctx: MarriageRuleContext): string {
-  const pA = ctx.tenGod.parentingA;
-  const pB = ctx.tenGod.parentingB;
-  const nameA = ctx.nicknameA;
-  const nameB = ctx.nicknameB;
-  const locale = ctx.locale;
-
-  if (pA.style === pB.style) {
-    if (pA.style === "empathy") {
+export function buildParentingCombinedFromStyles(
+  nameA: string,
+  nameB: string,
+  styleA: ParentingStyle,
+  styleB: ParentingStyle,
+  locale: Locale,
+): string {
+  if (styleA === styleB) {
+    if (styleA === "empathy") {
       return sanitizeHomeLifeText(
         pick(
           locale,
@@ -308,24 +323,24 @@ function buildParentingCombined(ctx: MarriageRuleContext): string {
   return sanitizeHomeLifeText(
     pick(
       locale,
-      `${nameA} → ${parentingBadge(pA.style, locale)} · ${nameB} → ${parentingBadge(pB.style, locale)} — ` +
+      `${nameA} → ${parentingBadge(styleA, locale)} · ${nameB} → ${parentingBadge(styleB, locale)} — ` +
         `you love the child at the same temperature but in different ways. Clashing your parenting styles in front of the child only shakes the child.`,
-      `${nameA} → ${parentingBadge(pA.style, locale)} · ${nameB} → ${parentingBadge(pB.style, locale)} — ` +
+      `${nameA} → ${parentingBadge(styleA, locale)} · ${nameB} → ${parentingBadge(styleB, locale)} — ` +
         `아이를 사랑하는 온도는 같지만 방식이 다릅니다. 아이 앞에서 양육 방식을 충돌시키면 아이만 흔들립니다.`,
     ),
   );
 }
 
-function buildParentingHarmonyTip(ctx: MarriageRuleContext): string {
-  const pA = ctx.tenGod.parentingA;
-  const pB = ctx.tenGod.parentingB;
-  const nameA = ctx.nicknameA;
-  const nameB = ctx.nicknameB;
-  const locale = ctx.locale;
-
-  if (pA.style !== pB.style) {
-    const empathyName = pA.style === "empathy" ? nameA : nameB;
-    const structureName = pA.style === "structure" ? nameA : nameB;
+export function buildParentingHarmonyTipFromStyles(
+  nameA: string,
+  nameB: string,
+  styleA: ParentingStyle,
+  styleB: ParentingStyle,
+  locale: Locale,
+): string {
+  if (styleA !== styleB) {
+    const empathyName = styleA === "empathy" ? nameA : nameB;
+    const structureName = styleA === "structure" ? nameA : nameB;
     return sanitizeHomeLifeText(
       pick(
         locale,
@@ -340,7 +355,7 @@ function buildParentingHarmonyTip(ctx: MarriageRuleContext): string {
       ),
     );
   }
-  if (pA.style === "empathy") {
+  if (styleA === "empathy") {
     return sanitizeHomeLifeText(
       pick(
         locale,
@@ -355,6 +370,26 @@ function buildParentingHarmonyTip(ctx: MarriageRuleContext): string {
       `💬 ${nameA} & ${nameB} — two structure types align on standards, but the emotional side can dry up. Set a weekly "child mood check-in" and make one night about asking the heart before the rules.`,
       `💬 ${nameA} & ${nameB} — 규칙형끼리는 기준이 맞지만 감정 쪽이 메마를 수 있습니다. 주 1회 '아이 기분 체크인' 시간을 정해, 룰보다 마음을 먼저 묻는 밤을 만드세요.`,
     ),
+  );
+}
+
+function buildParentingCombined(ctx: MarriageRuleContext): string {
+  return buildParentingCombinedFromStyles(
+    ctx.nicknameA,
+    ctx.nicknameB,
+    ctx.tenGod.parentingA.style,
+    ctx.tenGod.parentingB.style,
+    ctx.locale,
+  );
+}
+
+function buildParentingHarmonyTip(ctx: MarriageRuleContext): string {
+  return buildParentingHarmonyTipFromStyles(
+    ctx.nicknameA,
+    ctx.nicknameB,
+    ctx.tenGod.parentingA.style,
+    ctx.tenGod.parentingB.style,
+    ctx.locale,
   );
 }
 
