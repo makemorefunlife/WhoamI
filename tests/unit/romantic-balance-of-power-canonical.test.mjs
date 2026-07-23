@@ -411,9 +411,12 @@ const finalizeFn = finalizeSrc.slice(
 );
 const injectIdx = finalizeFn.indexOf("injectRomanticBalanceClientProjection");
 const returnIdx = finalizeFn.indexOf("return {");
-const spreadIdx = finalizeFn.indexOf("...reportWithBalanceProjection");
+const spreadBalanceIdx = finalizeFn.indexOf("...reportWithBalanceProjection");
+const spreadProjectionsIdx = finalizeFn.indexOf("...reportWithProjections");
+const spreadIdx =
+  spreadProjectionsIdx >= 0 ? spreadProjectionsIdx : spreadBalanceIdx;
 assert.ok(injectIdx >= 0 && returnIdx > injectIdx);
-assert.ok(spreadIdx > returnIdx || spreadIdx > injectIdx);
+assert.ok(spreadIdx >= 0 && (spreadIdx > returnIdx || spreadIdx > injectIdx));
 assert.ok(
   finalizeFn.includes("section_1_summary") &&
     finalizeFn.includes("romantic_context_input") &&

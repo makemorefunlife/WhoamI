@@ -20,6 +20,12 @@ import {
   buildRomanticBalanceClientProjection,
   injectRomanticBalanceClientProjection,
 } from "@/lib/relationship/romantic/romanticBalanceOfPowerCanonical";
+import {
+  recoverySpeedValueFromDominantCategories,
+  buildRomanticRecoverySpeedCanonical,
+  buildRomanticRecoveryClientProjection,
+  injectRomanticRecoveryClientProjection,
+} from "@/lib/relationship/romantic/romanticRecoverySpeedCanonical";
 import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
 import { refineCompareStressPair } from "@/lib/relationship/romantic/compareStressComposite";
@@ -470,14 +476,29 @@ function finalizeRomanticSajuDeepReport(
     parsed.report as RomanticSajuDeepReport["report"] & {
       canonical_projections?: {
         balance_of_power?: unknown;
+        recovery_speed?: unknown;
         [key: string]: unknown;
       };
     },
     balanceProjection,
   );
 
+  // Phase 6-2d2 — recovery_speed only (residual excluded; Option B).
+  const recoveryFinalized = recoverySpeedValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const recoveryCanonical =
+    buildRomanticRecoverySpeedCanonical(recoveryFinalized);
+  const recoveryProjection = buildRomanticRecoveryClientProjection(
+    recoveryCanonical?.value,
+  );
+  const reportWithProjections = injectRomanticRecoveryClientProjection(
+    reportWithBalanceProjection,
+    recoveryProjection,
+  );
+
   return {
-    ...reportWithBalanceProjection,
+    ...reportWithProjections,
     section_1_summary: {
       relationship_name: opening.relationship_name,
       one_line_summary: opening.one_line_summary,

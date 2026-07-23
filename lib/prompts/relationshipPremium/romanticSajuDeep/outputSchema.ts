@@ -244,11 +244,12 @@ export type RomanticSajuDeepReport = {
     /** deterministic input context — 클라이언트 strip 대상. LLM prose 아님. */
     romantic_context_input?: import("@/lib/relationship/romantic/romanticContextInput").RomanticContextInput;
     /**
-     * Phase 6-2d1 — server-injected client-safe classifications (optional for legacy).
-     * Not part of the LLM-required response schema.
+     * Phase 6 — server-injected client-safe classifications (optional for legacy).
+     * Not part of the LLM-required response schema / ROMANTIC_SAJU_DEEP_OUTPUT_SCHEMA string.
      */
     canonical_projections?: {
       balance_of_power?: import("@/lib/relationship/romantic/romanticBalanceOfPowerCanonical").RomanticBalanceOfPowerValue;
+      recovery_speed?: import("@/lib/relationship/romantic/romanticRecoverySpeedCanonical").RomanticRecoverySpeedValue;
     };
     section_1_relationship_dynamics?: {
       balance_of_power?: { headline?: string; body?: string };

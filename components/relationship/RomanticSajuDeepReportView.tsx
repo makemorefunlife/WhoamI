@@ -53,6 +53,10 @@ import {
   readRomanticBalanceCanonicalProjection,
 } from "@/lib/relationship/romantic/romanticBalanceOfPowerCanonical";
 import {
+  formatRomanticRecoveryCanonicalLabel,
+  readRomanticRecoveryCanonicalProjection,
+} from "@/lib/relationship/romantic/romanticRecoverySpeedCanonical";
+import {
   dedupeActionGuidelines,
   normalizeActionGuideline,
 } from "@/lib/relationship/essenceActionGuideline";
@@ -614,17 +618,26 @@ export default function RomanticSajuDeepReportView({
 
   const s1 = report.section_1_summary ?? {};
   const dynamics = report.section_1_relationship_dynamics;
+  const reportLocale =
+    typeof report.meta?.locale === "string"
+      ? report.meta.locale
+      : typeof report.meta?.language === "string"
+        ? report.meta.language
+        : null;
   const balanceCanonical = readRomanticBalanceCanonicalProjection(report);
   const balanceCanonicalLabel = balanceCanonical
     ? formatRomanticBalanceCanonicalLabel(balanceCanonical, {
         nameA,
         nameB,
-        locale:
-          typeof report.meta?.locale === "string"
-            ? report.meta.locale
-            : typeof report.meta?.language === "string"
-              ? report.meta.language
-              : null,
+        locale: reportLocale,
+      })
+    : null;
+  const recoveryCanonical = readRomanticRecoveryCanonicalProjection(report);
+  const recoveryCanonicalLabel = recoveryCanonical
+    ? formatRomanticRecoveryCanonicalLabel(recoveryCanonical, {
+        nameA,
+        nameB,
+        locale: reportLocale,
       })
     : null;
   const s2 = report.section_2_nature ?? {};
@@ -968,6 +981,16 @@ export default function RomanticSajuDeepReportView({
                     ? ` — ${displayText(dynamics.recovery_speed.headline)}`
                     : ""}
                 </RelationshipReportLabel>
+                {recoveryCanonicalLabel ? (
+                  <p
+                    className={[
+                      "text-sm font-semibold tracking-tight",
+                      tone.bodyMedium,
+                    ].join(" ")}
+                  >
+                    {recoveryCanonicalLabel}
+                  </p>
+                ) : null}
                 <P>{displayText(dynamics.recovery_speed.body)}</P>
               </div>
             ) : null}

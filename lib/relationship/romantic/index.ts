@@ -29,6 +29,22 @@ export type {
   RomanticBalanceOfPowerValue,
   RomanticBalanceOfPowerCanonical,
 } from "./romanticBalanceOfPowerCanonical";
+export {
+  buildRomanticRecoverySpeedCanonical,
+  buildRomanticRecoveryClientProjection,
+  injectRomanticRecoveryClientProjection,
+  recoverySpeedValueFromDominantCategories,
+  recoverySpeedValueFromDynamicsSnapshot,
+  recoverySpeedJudgmentFields,
+  readRomanticRecoveryCanonicalProjection,
+  formatRomanticRecoveryCanonicalLabel,
+  ROMANTIC_RECOVERY_SPEED_CLIENT_PATH,
+  ROMANTIC_RECOVERY_SPEED_PERSISTENCE_PATH,
+} from "./romanticRecoverySpeedCanonical";
+export type {
+  RomanticRecoverySpeedValue,
+  RomanticRecoverySpeedCanonical,
+} from "./romanticRecoverySpeedCanonical";
 export { refineExpressionSpeedCorroboration } from "./expressionSpeedCorroboration";
 export type {
   ExpressionSpeedAlign,
