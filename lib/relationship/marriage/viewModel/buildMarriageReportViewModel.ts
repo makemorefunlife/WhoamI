@@ -21,11 +21,20 @@ import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarria
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
 import { messagesKoKR } from "@/lib/i18n/messages/ko-KR";
+import {
+  formatMarriageCompareCanonicalLabel,
+  readMarriageComparisonTableCanonicalProjection,
+} from "@/lib/relationship/marriage/marriageComparisonTableCanonical";
+import {
+  formatMarriageOperatingCfoCanonicalLabel,
+  readMarriageOperatingCfoCanonicalProjection,
+} from "@/lib/relationship/marriage/marriageOperatingCfoCanonical";
 import type {
   OpeningBlock,
   MarriageReportSection,
   MarriageReportViewModel,
 } from "./marriageReportSectionTypes";
+import type { MarriageCompareRow } from "@/lib/relationship/marriage/marriageSajuCompareTable";
 
 export type BuildMarriageReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -90,16 +99,43 @@ function buildHouseholdSnapshotSection(
 
 function buildCompareTableSection(
   report: MarriageReportBody,
+  locale: Locale,
   t: ReturnType<typeof catalog>,
 ): MarriageReportSection | null {
   const rows = report.household?.section_compare_table;
   if (!rows?.length) return null;
+  const typed = readMarriageComparisonTableCanonicalProjection(report);
+  const authorityRows: MarriageCompareRow[] = rows.map((row) => {
+    const typedRow = typed?.[row.id];
+    if (!typedRow) return row;
+    return {
+      ...row,
+      personA: {
+        ...row.personA,
+        band: typedRow.band_a,
+        shortLabel: formatMarriageCompareCanonicalLabel(
+          row.id,
+          typedRow.band_a,
+          locale,
+        ),
+      },
+      personB: {
+        ...row.personB,
+        band: typedRow.band_b,
+        shortLabel: formatMarriageCompareCanonicalLabel(
+          row.id,
+          typedRow.band_b,
+          locale,
+        ),
+      },
+    };
+  });
   return {
     id: "compare_table",
     type: "compare_table",
     partNumber: 2,
     title: t.compareTableCardTitle,
-    rows,
+    rows: authorityRows,
   };
 }
 
@@ -123,10 +159,27 @@ function buildPsychRadarSection(
 
 function buildMoneyChoresSection(
   report: MarriageReportBody,
+  locale: Locale,
   t: ReturnType<typeof catalog>,
 ): MarriageReportSection | null {
   const m = report.household?.section_money_chores;
   if (!m) return null;
+  const cfoProj = readMarriageOperatingCfoCanonicalProjection(report);
+  const nameA =
+    report.household?.section_dna?.person_a?.nickname ??
+    report.household?.section_compare_table?.[0]?.personA.nickname ??
+    "";
+  const nameB =
+    report.household?.section_dna?.person_b?.nickname ??
+    report.household?.section_compare_table?.[0]?.personB.nickname ??
+    "";
+  const cfoCanonicalLabel = cfoProj
+    ? formatMarriageOperatingCfoCanonicalLabel(cfoProj, {
+        nameA,
+        nameB,
+        locale,
+      })
+    : null;
   return {
     id: "money_chores",
     type: "money_chores",
@@ -137,6 +190,7 @@ function buildMoneyChoresSection(
     choresGuideline: m.chores_guideline,
     spendingStyleNote: m.spending_style_note,
     cfoAxisNote: m.cfo_axis_note,
+    cfoCanonicalLabel,
   };
 }
 
@@ -307,9 +361,9 @@ export function buildMarriageReportViewModel(
   const builders: Array<() => MarriageReportSection | null> = [
     () => buildOriginStorySection(report, t),
     () => buildHouseholdSnapshotSection(report, t),
-    () => buildCompareTableSection(report, t),
+    () => buildCompareTableSection(report, locale ?? "ko-KR", t),
     () => buildPsychRadarSection(report, viewerIsReportA, t),
-    () => buildMoneyChoresSection(report, t),
+    () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
     () => buildBedroomSection(report, t),
     () => buildHomeDnaSection(report, viewerIsReportA, t),
     () => buildParentingSection(report, t),

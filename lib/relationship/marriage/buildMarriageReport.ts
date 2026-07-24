@@ -18,7 +18,20 @@ import {
 } from "./homeReportTemplate";
 import { buildMarriageSajuCompareTable } from "./marriageSajuCompareTable";
 import { resolveCfoAxisNote, refineHouseholdCfo } from "./marriageCfoConsumption";
-import { buildMarriageOperatingCfoCanonical } from "./marriageOperatingCfoCanonical";
+import {
+  buildMarriageOperatingCfoCanonical,
+  buildMarriageOperatingCfoClientProjection,
+  injectMarriageOperatingCfoClientProjection,
+  operatingCfoClientValueFromFinalized,
+  type MarriageOperatingCfoClientValue,
+} from "./marriageOperatingCfoCanonical";
+import {
+  buildMarriageComparisonTableCanonical,
+  buildMarriageComparisonTableClientProjection,
+  comparisonTableValueFromResolver,
+  injectMarriageComparisonTableClientProjection,
+  type MarriageComparisonTableValue,
+} from "./marriageComparisonTableCanonical";
 import { resolveEnergyStyleAxisNote } from "./homeLifeLanguage";
 import { resolveRejectionAxisNote } from "./bedroomProfile";
 import {
@@ -48,6 +61,14 @@ export type MarriageReportBody = {
   household: HouseholdPartnershipReport;
   /** 내부용 Context Output — 클라이언트 응답에서는 strip/omit */
   context_output?: MarriageContextOutput;
+  /**
+   * Typed Context Engine projections for MUST judgments.
+   * Survives strip (context_output only removed). Legacy reports omit.
+   */
+  canonical_projections?: {
+    comparison_table?: MarriageComparisonTableValue;
+    operating_cfo?: MarriageOperatingCfoClientValue;
+  };
   meta: {
     grade: string;
     grade_reason: string;
@@ -308,7 +329,31 @@ export function buildMarriageReport(params: {
       })
     : undefined;
 
-  return {
+  const compareParams = {
+    tenGodsA: ctx.tenGod.countsA,
+    tenGodsB: ctx.tenGod.countsB,
+    needsStrongBoundaryA: ctx.tenGod.boundaryA.needsStrongBoundary,
+    needsStrongBoundaryB: ctx.tenGod.boundaryB.needsStrongBoundary,
+    parentingStyleA: refinedParentingA.style,
+    parentingStyleB: refinedParentingB.style,
+    economicDominanceBandA:
+      params.cohabitationSignalsA?.wealth_officer_power.economic_dominance_band,
+    economicDominanceBandB:
+      params.cohabitationSignalsB?.wealth_officer_power.economic_dominance_band,
+  };
+  const comparisonTyped = comparisonTableValueFromResolver(compareParams);
+  const comparisonProjection = buildMarriageComparisonTableClientProjection(
+    buildMarriageComparisonTableCanonical(comparisonTyped)?.value,
+  );
+  const cfoProjection = buildMarriageOperatingCfoClientProjection(
+    operatingCfoClientValueFromFinalized(
+      cfoFinal,
+      params.nicknameA,
+      params.nicknameB,
+    ),
+  );
+
+  let reportBody: MarriageReportBody = {
     headline: household.section_snapshot.one_line_household,
     summary_line: `🔥 ${ctx.masterScores.activation}% · 🧩 ${ctx.masterScores.benefit}% · ⚡ ${ctx.masterScores.risk}%`,
     one_line_household: household.section_snapshot.one_line_household,
@@ -339,4 +384,15 @@ export function buildMarriageReport(params: {
         : {}),
     },
   };
+
+  reportBody = injectMarriageComparisonTableClientProjection(
+    reportBody,
+    comparisonProjection,
+  );
+  reportBody = injectMarriageOperatingCfoClientProjection(
+    reportBody,
+    cfoProjection,
+  );
+
+  return reportBody;
 }

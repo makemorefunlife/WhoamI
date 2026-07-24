@@ -39,18 +39,61 @@ export type MarriageCompareRowId =
   | "asset_management"
   | "parenting_style";
 
+export type MarriageTenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
+export type MarriageConflictBand = "explosive" | "stonewall" | "balanced";
+export type MarriageBedroomLeadBand = "sweet_guide" | "power_leader";
+export type MarriageFamilyBoundaryBand = "true" | "false";
+export type MarriageParentingBand = "empathy" | "structure";
+
+export type MarriageCompareRowTypedValue = {
+  band_a: string;
+  band_b: string;
+};
+
+export type MarriageComparisonTableTypedValue = {
+  household_stress: MarriageCompareRowTypedValue & {
+    band_a: MarriageTenGodCategory;
+    band_b: MarriageTenGodCategory;
+  };
+  marital_conflict: MarriageCompareRowTypedValue & {
+    band_a: MarriageConflictBand;
+    band_b: MarriageConflictBand;
+  };
+  bedroom_lead: MarriageCompareRowTypedValue & {
+    band_a: MarriageBedroomLeadBand;
+    band_b: MarriageBedroomLeadBand;
+  };
+  family_boundary: MarriageCompareRowTypedValue & {
+    band_a: MarriageFamilyBoundaryBand;
+    band_b: MarriageFamilyBoundaryBand;
+  };
+  asset_management: MarriageCompareRowTypedValue & {
+    band_a: EconomicDominanceBand;
+    band_b: EconomicDominanceBand;
+  };
+  parenting_style: MarriageCompareRowTypedValue & {
+    band_a: MarriageParentingBand;
+    band_b: MarriageParentingBand;
+  };
+};
+
+export type MarriageComparePersonCell = {
+  nickname: string;
+  shortLabel: string;
+  /** Locale-independent band — optional on legacy cached rows */
+  band?: string;
+};
+
 export type MarriageCompareRow = {
   id: MarriageCompareRowId;
   label: string;
-  personA: { nickname: string; shortLabel: string };
-  personB: { nickname: string; shortLabel: string };
+  personA: MarriageComparePersonCell;
+  personB: MarriageComparePersonCell;
   meaning: string;
 };
 
-type MarriageTenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
-
 /** 격국과 같은 원리 — 5개 카테고리 중 가장 우세한 것을 고른다(동률이면 고정 우선순위). */
-function resolveDominantCategory(counts: TenGodCounts): MarriageTenGodCategory {
+export function resolveDominantCategory(counts: TenGodCounts): MarriageTenGodCategory {
   const p = profileTenGods(counts);
   const entries: Array<[MarriageTenGodCategory, number]> = [
     ["food", p.food],
@@ -95,9 +138,9 @@ const HOUSEHOLD_STRESS_MEANING: Record<Locale, { same: string; diff: string }> =
 
 // ---- 행 2: 부부싸움 소통 (explosive vs stonewall, 자기 내 상대 비교) ---------
 
-type ConflictBand = "explosive" | "stonewall" | "balanced";
+type ConflictBand = MarriageConflictBand;
 
-function resolveConflictBand(counts: TenGodCounts): ConflictBand {
+export function resolveConflictBand(counts: TenGodCounts): ConflictBand {
   const { explosive, stonewall } = communicationArchetype(counts);
   if (explosive >= stonewall + 2) return "explosive";
   if (stonewall >= explosive + 2) return "stonewall";
@@ -222,7 +265,7 @@ function resolveFamilyBoundaryMeaning(locale: Locale, a: boolean, b: boolean): s
 
 // ---- 행 5: 자산관리(CFO) 기질 (economic dominance band, SSOT 우선) -----------
 
-function resolveEconomicBand(
+export function resolveEconomicBand(
   counts: TenGodCounts,
   ssotBand?: EconomicDominanceBand,
 ): EconomicDominanceBand {
@@ -333,6 +376,85 @@ function resolveParentingMeaning(
   return PARENTING_COMBO_MEANING[locale][parentingComboKey(a, b)]!;
 }
 
+// ---- Typed resolver + label format -----------------------------------------
+
+export type MarriageCompareTableResolverParams = {
+  tenGodsA: TenGodCounts;
+  tenGodsB: TenGodCounts;
+  needsStrongBoundaryA: boolean;
+  needsStrongBoundaryB: boolean;
+  parentingStyleA: MarriageParentingBand;
+  parentingStyleB: MarriageParentingBand;
+  economicDominanceBandA?: EconomicDominanceBand;
+  economicDominanceBandB?: EconomicDominanceBand;
+};
+
+/**
+ * Locale-independent typed bands for all six Marriage compare rows.
+ * Labels are derived afterward, never the reverse.
+ */
+export function resolveMarriageComparisonTableTyped(
+  params: MarriageCompareTableResolverParams,
+): MarriageComparisonTableTypedValue {
+  return {
+    household_stress: {
+      band_a: resolveDominantCategory(params.tenGodsA),
+      band_b: resolveDominantCategory(params.tenGodsB),
+    },
+    marital_conflict: {
+      band_a: resolveConflictBand(params.tenGodsA),
+      band_b: resolveConflictBand(params.tenGodsB),
+    },
+    bedroom_lead: {
+      band_a: resolveMannerArchetype(params.tenGodsA),
+      band_b: resolveMannerArchetype(params.tenGodsB),
+    },
+    family_boundary: {
+      band_a: params.needsStrongBoundaryA ? "true" : "false",
+      band_b: params.needsStrongBoundaryB ? "true" : "false",
+    },
+    asset_management: {
+      band_a: resolveEconomicBand(
+        params.tenGodsA,
+        params.economicDominanceBandA,
+      ),
+      band_b: resolveEconomicBand(
+        params.tenGodsB,
+        params.economicDominanceBandB,
+      ),
+    },
+    parenting_style: {
+      band_a: params.parentingStyleA,
+      band_b: params.parentingStyleB,
+    },
+  };
+}
+
+export function formatMarriageCompareBandLabel(
+  rowId: MarriageCompareRowId,
+  band: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  switch (rowId) {
+    case "household_stress":
+      return HOUSEHOLD_STRESS_LABEL[locale][band as MarriageTenGodCategory] ?? band;
+    case "marital_conflict":
+      return CONFLICT_LABEL[locale][band as MarriageConflictBand] ?? band;
+    case "bedroom_lead":
+      return BEDROOM_LEAD_LABEL[locale][band as MarriageBedroomLeadBand] ?? band;
+    case "family_boundary":
+      return (
+        FAMILY_BOUNDARY_LABEL[locale][band as MarriageFamilyBoundaryBand] ?? band
+      );
+    case "asset_management":
+      return ASSET_LABEL[locale][band as EconomicDominanceBand] ?? band;
+    case "parenting_style":
+      return PARENTING_LABEL[locale][band as MarriageParentingBand] ?? band;
+    default:
+      return band;
+  }
+}
+
 // ---- 빌더 -------------------------------------------------------------------
 
 export function buildMarriageSajuCompareTable(params: {
@@ -349,51 +471,54 @@ export function buildMarriageSajuCompareTable(params: {
   locale?: Locale;
 }): MarriageCompareRow[] {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const {
-    nicknameA,
-    nicknameB,
-    tenGodsA,
-    tenGodsB,
-    needsStrongBoundaryA,
-    needsStrongBoundaryB,
-    parentingStyleA,
-    parentingStyleB,
-    economicDominanceBandA,
-    economicDominanceBandB,
-  } = params;
+  const { nicknameA, nicknameB } = params;
+  const typed = resolveMarriageComparisonTableTyped(params);
 
   const row = (
     id: MarriageCompareRowId,
     label: string,
-    shortLabelA: string,
-    shortLabelB: string,
+    bandA: string,
+    bandB: string,
     meaning: string,
   ): MarriageCompareRow => ({
     id,
     label,
-    personA: { nickname: nicknameA, shortLabel: sanitizeHomeLifeText(shortLabelA) },
-    personB: { nickname: nicknameB, shortLabel: sanitizeHomeLifeText(shortLabelB) },
+    personA: {
+      nickname: nicknameA,
+      shortLabel: sanitizeHomeLifeText(
+        formatMarriageCompareBandLabel(id, bandA, locale),
+      ),
+      band: bandA,
+    },
+    personB: {
+      nickname: nicknameB,
+      shortLabel: sanitizeHomeLifeText(
+        formatMarriageCompareBandLabel(id, bandB, locale),
+      ),
+      band: bandB,
+    },
     meaning: sanitizeHomeLifeText(meaning),
   });
 
-  const categoryA = resolveDominantCategory(tenGodsA);
-  const categoryB = resolveDominantCategory(tenGodsB);
-
-  const conflictBandA = resolveConflictBand(tenGodsA);
-  const conflictBandB = resolveConflictBand(tenGodsB);
-
-  const mannerA = resolveMannerArchetype(tenGodsA);
-  const mannerB = resolveMannerArchetype(tenGodsB);
-
-  const economicBandA = resolveEconomicBand(tenGodsA, economicDominanceBandA);
-  const economicBandB = resolveEconomicBand(tenGodsB, economicDominanceBandB);
+  const categoryA = typed.household_stress.band_a;
+  const categoryB = typed.household_stress.band_b;
+  const conflictBandA = typed.marital_conflict.band_a;
+  const conflictBandB = typed.marital_conflict.band_b;
+  const mannerA = typed.bedroom_lead.band_a;
+  const mannerB = typed.bedroom_lead.band_b;
+  const boundaryA = typed.family_boundary.band_a === "true";
+  const boundaryB = typed.family_boundary.band_b === "true";
+  const economicBandA = typed.asset_management.band_a;
+  const economicBandB = typed.asset_management.band_b;
+  const parentingStyleA = typed.parenting_style.band_a;
+  const parentingStyleB = typed.parenting_style.band_b;
 
   return [
     row(
       "household_stress",
       pick(locale, "Household Stress Reaction", "가사/루틴 스트레스"),
-      HOUSEHOLD_STRESS_LABEL[locale][categoryA],
-      HOUSEHOLD_STRESS_LABEL[locale][categoryB],
+      categoryA,
+      categoryB,
       categoryA === categoryB
         ? HOUSEHOLD_STRESS_MEANING[locale].same
         : HOUSEHOLD_STRESS_MEANING[locale].diff,
@@ -401,15 +526,15 @@ export function buildMarriageSajuCompareTable(params: {
     row(
       "marital_conflict",
       pick(locale, "Conflict Communication Style", "부부싸움 소통"),
-      CONFLICT_LABEL[locale][conflictBandA],
-      CONFLICT_LABEL[locale][conflictBandB],
+      conflictBandA,
+      conflictBandB,
       resolveConflictMeaning(locale, conflictBandA, conflictBandB),
     ),
     row(
       "bedroom_lead",
       pick(locale, "Bedroom Leadership Style", "밤의 리드 스타일"),
-      BEDROOM_LEAD_LABEL[locale][mannerA],
-      BEDROOM_LEAD_LABEL[locale][mannerB],
+      mannerA,
+      mannerB,
       mannerA === mannerB
         ? BEDROOM_LEAD_MEANING[locale].same
         : BEDROOM_LEAD_MEANING[locale].diff,
@@ -417,22 +542,22 @@ export function buildMarriageSajuCompareTable(params: {
     row(
       "family_boundary",
       pick(locale, "Family-of-Origin Boundary", "원가족 바운더리"),
-      FAMILY_BOUNDARY_LABEL[locale][String(needsStrongBoundaryA) as "true" | "false"],
-      FAMILY_BOUNDARY_LABEL[locale][String(needsStrongBoundaryB) as "true" | "false"],
-      resolveFamilyBoundaryMeaning(locale, needsStrongBoundaryA, needsStrongBoundaryB),
+      typed.family_boundary.band_a,
+      typed.family_boundary.band_b,
+      resolveFamilyBoundaryMeaning(locale, boundaryA, boundaryB),
     ),
     row(
       "asset_management",
       pick(locale, "Financial Leadership (CFO) Style", "자산관리(CFO) 기질"),
-      ASSET_LABEL[locale][economicBandA],
-      ASSET_LABEL[locale][economicBandB],
+      economicBandA,
+      economicBandB,
       resolveAssetMeaning(locale, economicBandA, economicBandB),
     ),
     row(
       "parenting_style",
       pick(locale, "Parenting & Education Values", "육아/교육 가치관"),
-      PARENTING_LABEL[locale][parentingStyleA],
-      PARENTING_LABEL[locale][parentingStyleB],
+      parentingStyleA,
+      parentingStyleB,
       resolveParentingMeaning(locale, parentingStyleA, parentingStyleB),
     ),
   ];

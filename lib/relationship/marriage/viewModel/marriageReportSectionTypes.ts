@@ -77,6 +77,8 @@ export type MoneyChoresSection = BaseSection & {
   choresGuideline: string;
   spendingStyleNote: string;
   cfoAxisNote?: string | null;
+  /** Typed CE badge from canonical_projections (optional legacy) */
+  cfoCanonicalLabel?: string | null;
 };
 
 // ---- Part 3: 침실 케미스트리 + 수면 + 애착 -----------------------------------

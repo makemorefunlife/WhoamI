@@ -167,6 +167,11 @@ function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
       <RelationshipReportBody>
         <div>
           <RelationshipReportLabel>{t.cfoQuestionLabel}</RelationshipReportLabel>
+          {section.cfoCanonicalLabel ? (
+            <RelationshipReportLabel className="mt-1.5">
+              {section.cfoCanonicalLabel}
+            </RelationshipReportLabel>
+          ) : null}
           <RelationshipReportParagraph className="mt-1.5">
             {section.cfoNickname} — {section.cfoReason}
           </RelationshipReportParagraph>
