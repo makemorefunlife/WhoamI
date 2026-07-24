@@ -95,6 +95,13 @@ export type MarriageReportBody = {
     /** 3보 — pair 교차 신호 기반 실행 처방전 (기존 household 서사와 독립).
      * cfo_power_struggle.leader_side ≠ section_money_chores 운영 CFO. */
     prescription_cohabitation?: CohabitationPrescriptionPack;
+    /**
+     * Round 2 — marriedSajuDeep LLM explain overlay (optional).
+     * Does not own classifications; CE projections remain SSOT.
+     */
+    married_saju_deep?: import("@/lib/prompts/relationshipPremium/marriedSajuDeep").MarriedSajuDeepReport;
+    locale?: string;
+    language?: string;
   };
 };
 

@@ -6,6 +6,7 @@ import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/
 import { buildMarriageReport } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { Locale } from "@/lib/i18n/locale";
+import { attachMarriedSajuDeepOverlay } from "@/lib/prompts/relationshipPremium/marriedSajuDeep";
 import {
   COHABITATION_DEEP_FORMAT,
   type CohabitationDeepReport,
@@ -18,10 +19,13 @@ export { isCohabitationDeepReport } from "./outputSchema";
 export type CohabitationDeepPayload = CohabitationDeepReport;
 
 /**
- * 동거·결혼 심화 분석 — 일주·시주·가정궁 규칙 기반 (연인·동료 파이프라인과 분리)
+ * 동거·결혼 심화 분석
+ * 1) rule-only CE (`buildMarriageReport`) — classifications SSOT
+ * 2) optional marriedSajuDeep LLM explain overlay → meta.married_saju_deep
+ *    (RELATIONSHIP_MARRIED_NARRATIVE=0 to skip)
  */
 export async function runCohabitationDeepAnalysis(
-  _openai: OpenAI,
+  openai: OpenAI,
   params: {
     nicknameA: string;
     nicknameB: string;
@@ -42,7 +46,12 @@ export async function runCohabitationDeepAnalysis(
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
     locale?: Locale;
+    userCustomMyName?: string;
+    userCustomTargetName?: string;
+    /** Skip LLM overlay even if env enabled (tests). */
+    skipMarriedNarrative?: boolean;
   },
+  options?: { abortSignal?: AbortSignal },
 ): Promise<CohabitationDeepPayload> {
   const pairCohabitation =
     params.sajuMasterA && params.sajuMasterB
@@ -51,10 +60,12 @@ export async function runCohabitationDeepAnalysis(
           params.sajuMasterB,
         ).cohabitation
       : null;
-  const cohabitationSignalsA = params.sajuMasterA?.domain_signals.cohabitation_signals;
-  const cohabitationSignalsB = params.sajuMasterB?.domain_signals.cohabitation_signals;
+  const cohabitationSignalsA =
+    params.sajuMasterA?.domain_signals.cohabitation_signals;
+  const cohabitationSignalsB =
+    params.sajuMasterB?.domain_signals.cohabitation_signals;
 
-  const report = buildMarriageReport({
+  let report = buildMarriageReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,
@@ -71,6 +82,25 @@ export async function runCohabitationDeepAnalysis(
     cohabitationSignalsB,
     locale: params.locale,
   });
+
+  if (!params.skipMarriedNarrative) {
+    const short =
+      typeof params.locale === "string" && params.locale.startsWith("en")
+        ? "en"
+        : "ko";
+    report = await attachMarriedSajuDeepOverlay(
+      openai,
+      {
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+        report,
+        userCustomMyName: params.userCustomMyName,
+        userCustomTargetName: params.userCustomTargetName,
+        locale: short,
+      },
+      options,
+    );
+  }
 
   return {
     format: COHABITATION_DEEP_FORMAT,
