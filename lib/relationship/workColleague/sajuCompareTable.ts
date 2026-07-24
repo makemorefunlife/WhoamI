@@ -35,11 +35,67 @@ export type WorkCompareRowId =
   | "risk_taking"
   | "reporting_rhythm";
 
+export type WorkRiskBand = "strong" | "weak" | "balanced";
+export type WorkRhythmBand = "yang" | "yin";
+export type WorkSynergyElement = "wood" | "fire" | "earth" | "metal" | "water";
+export type WorkBurnoutBranch =
+  | "ja"
+  | "chuk"
+  | "in"
+  | "myo"
+  | "jin"
+  | "sa"
+  | "o"
+  | "mi"
+  | "sin"
+  | "yu"
+  | "sul"
+  | "hae";
+
+export type WorkCompareRowTypedValue = {
+  band_a: string;
+  band_b: string;
+};
+
+export type WorkComparisonTableTypedValue = {
+  boundary: WorkCompareRowTypedValue & {
+    band_a: TenGodCategory;
+    band_b: TenGodCategory;
+  };
+  feedback: WorkCompareRowTypedValue & {
+    band_a: TenGodCategory;
+    band_b: TenGodCategory;
+  };
+  synergy_position: WorkCompareRowTypedValue & {
+    band_a: WorkSynergyElement;
+    band_b: WorkSynergyElement;
+  };
+  burnout: WorkCompareRowTypedValue & {
+    band_a: WorkBurnoutBranch;
+    band_b: WorkBurnoutBranch;
+  };
+  risk_taking: WorkCompareRowTypedValue & {
+    band_a: WorkRiskBand;
+    band_b: WorkRiskBand;
+  };
+  reporting_rhythm: WorkCompareRowTypedValue & {
+    band_a: WorkRhythmBand;
+    band_b: WorkRhythmBand;
+  };
+};
+
+export type WorkComparePersonCell = {
+  nickname: string;
+  shortLabel: string;
+  /** Locale-independent band — optional on legacy cached rows */
+  band?: string;
+};
+
 export type WorkCompareRow = {
   id: WorkCompareRowId;
   label: string;
-  personA: { nickname: string; shortLabel: string };
-  personB: { nickname: string; shortLabel: string };
+  personA: WorkComparePersonCell;
+  personB: WorkComparePersonCell;
   meaning: string;
 };
 
@@ -142,15 +198,13 @@ const BURNOUT_MEANING: Record<Locale, { same: string; diff: string }> = {
 
 // ---- 행 5: 신강/신약(일간 강약) 기반 ---------------------------------------
 
-type RiskBand = "strong" | "weak" | "balanced";
-
-function resolveRiskBand(strengthLabel: string): RiskBand {
+export function resolveRiskBand(strengthLabel: string): WorkRiskBand {
   if (strengthLabel.includes("신강")) return "strong";
   if (strengthLabel.includes("신약")) return "weak";
   return "balanced";
 }
 
-const RISK_LABEL: Record<Locale, Record<RiskBand, string>> = {
+const RISK_LABEL: Record<Locale, Record<WorkRiskBand, string>> = {
   "ko-KR": {
     strong: "돌격형 — 리스크 감수하고 밀어붙임",
     weak: "신중형 — 리스크 최소화하며 확인",
@@ -182,13 +236,11 @@ const RISK_MEANING: Record<Locale, { same: string; diff: string }> = {
 
 const YANG_STEMS = new Set(["gap", "byeong", "mu", "gyeong", "im"]);
 
-type RhythmBand = "yang" | "yin";
-
-function resolveRhythmBand(dayStemCode: string): RhythmBand {
+export function resolveRhythmBand(dayStemCode: string): WorkRhythmBand {
   return YANG_STEMS.has(dayStemCode) ? "yang" : "yin";
 }
 
-const RHYTHM_LABEL: Record<Locale, Record<RhythmBand, string>> = {
+const RHYTHM_LABEL: Record<Locale, Record<WorkRhythmBand, string>> = {
   "ko-KR": {
     yang: "직진형 전달 — 할 말을 먼저 밀어 올리는 편",
     yin: "호흡형 전달 — 상대 페이스에 맞춰 풀어 가는 편",
@@ -210,48 +262,148 @@ const RHYTHM_MEANING: Record<Locale, { same: string; diff: string }> = {
   },
 };
 
+// ---- Typed resolver + label format -----------------------------------------
+
+const SYNERGY_ELEMENTS = new Set<string>([
+  "wood",
+  "fire",
+  "earth",
+  "metal",
+  "water",
+]);
+
+function asSynergyElement(raw: string): WorkSynergyElement {
+  return SYNERGY_ELEMENTS.has(raw) ? (raw as WorkSynergyElement) : "earth";
+}
+
+const BURNOUT_BRANCHES = new Set<string>([
+  "ja",
+  "chuk",
+  "in",
+  "myo",
+  "jin",
+  "sa",
+  "o",
+  "mi",
+  "sin",
+  "yu",
+  "sul",
+  "hae",
+]);
+
+function asBurnoutBranch(raw: string): WorkBurnoutBranch {
+  return BURNOUT_BRANCHES.has(raw) ? (raw as WorkBurnoutBranch) : "jin";
+}
+
+/**
+ * Locale-independent typed bands for all six Work compare rows.
+ * Single resolver path — labels are derived afterward, never the reverse.
+ */
+export function resolveWorkComparisonTableTyped(
+  ctx: WorkColleagueContext,
+): WorkComparisonTableTypedValue {
+  return {
+    boundary: {
+      band_a: resolveWorkCategory(ctx.tenGodsA, ctx.workSignalsA),
+      band_b: resolveWorkCategory(ctx.tenGodsB, ctx.workSignalsB),
+    },
+    feedback: {
+      band_a: resolveWorkCategory(ctx.tenGodsA, ctx.workSignalsA),
+      band_b: resolveWorkCategory(ctx.tenGodsB, ctx.workSignalsB),
+    },
+    synergy_position: {
+      band_a: asSynergyElement(dominantElement(ctx.workPairAnalysis.chartA)),
+      band_b: asSynergyElement(dominantElement(ctx.workPairAnalysis.chartB)),
+    },
+    burnout: {
+      band_a: asBurnoutBranch(ctx.workPairAnalysis.chartA.dayBranchCode),
+      band_b: asBurnoutBranch(ctx.workPairAnalysis.chartB.dayBranchCode),
+    },
+    risk_taking: {
+      band_a: resolveRiskBand(ctx.strengthA.label),
+      band_b: resolveRiskBand(ctx.strengthB.label),
+    },
+    reporting_rhythm: {
+      band_a: resolveRhythmBand(ctx.workPairAnalysis.chartA.dayStemCode),
+      band_b: resolveRhythmBand(ctx.workPairAnalysis.chartB.dayStemCode),
+    },
+  };
+}
+
+export function formatWorkCompareBandLabel(
+  rowId: WorkCompareRowId,
+  band: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  switch (rowId) {
+    case "boundary":
+      return BOUNDARY_LABEL[locale][band as TenGodCategory] ?? band;
+    case "feedback":
+      return FEEDBACK_LABEL[locale][band as TenGodCategory] ?? band;
+    case "synergy_position":
+      return ELEMENT_OFFICE[locale][band] ?? band;
+    case "burnout":
+      return BRANCH_BURNOUT_LABEL[locale][band] ?? band;
+    case "risk_taking":
+      return RISK_LABEL[locale][band as WorkRiskBand] ?? band;
+    case "reporting_rhythm":
+      return RHYTHM_LABEL[locale][band as WorkRhythmBand] ?? band;
+    default:
+      return band;
+  }
+}
+
 // ---- 빌더 ------------------------------------------------------------------
 
 export function buildWorkSajuCompareTable(
   ctx: WorkColleagueContext,
 ): WorkCompareRow[] {
   const locale = ctx.locale ?? LEGACY_FALLBACK_LOCALE;
-
-  const categoryA = resolveWorkCategory(ctx.tenGodsA, ctx.workSignalsA);
-  const categoryB = resolveWorkCategory(ctx.tenGodsB, ctx.workSignalsB);
-
-  const elementA = dominantElement(ctx.workPairAnalysis.chartA);
-  const elementB = dominantElement(ctx.workPairAnalysis.chartB);
-
-  const branchA = ctx.workPairAnalysis.chartA.dayBranchCode;
-  const branchB = ctx.workPairAnalysis.chartB.dayBranchCode;
-
-  const riskBandA = resolveRiskBand(ctx.strengthA.label);
-  const riskBandB = resolveRiskBand(ctx.strengthB.label);
-
-  const rhythmBandA = resolveRhythmBand(ctx.workPairAnalysis.chartA.dayStemCode);
-  const rhythmBandB = resolveRhythmBand(ctx.workPairAnalysis.chartB.dayStemCode);
+  const typed = resolveWorkComparisonTableTyped(ctx);
 
   const row = (
     id: WorkCompareRowId,
     label: string,
-    shortLabelA: string,
-    shortLabelB: string,
+    bandA: string,
+    bandB: string,
     meaning: string,
   ): WorkCompareRow => ({
     id,
     label,
-    personA: { nickname: ctx.nicknameA, shortLabel: sanitizeOfficeText(shortLabelA) },
-    personB: { nickname: ctx.nicknameB, shortLabel: sanitizeOfficeText(shortLabelB) },
+    personA: {
+      nickname: ctx.nicknameA,
+      shortLabel: sanitizeOfficeText(
+        formatWorkCompareBandLabel(id, bandA, locale),
+      ),
+      band: bandA,
+    },
+    personB: {
+      nickname: ctx.nicknameB,
+      shortLabel: sanitizeOfficeText(
+        formatWorkCompareBandLabel(id, bandB, locale),
+      ),
+      band: bandB,
+    },
     meaning: sanitizeOfficeText(meaning),
   });
+
+  const categoryA = typed.boundary.band_a;
+  const categoryB = typed.boundary.band_b;
+  const elementA = typed.synergy_position.band_a;
+  const elementB = typed.synergy_position.band_b;
+  const branchA = typed.burnout.band_a;
+  const branchB = typed.burnout.band_b;
+  const riskBandA = typed.risk_taking.band_a;
+  const riskBandB = typed.risk_taking.band_b;
+  const rhythmBandA = typed.reporting_rhythm.band_a;
+  const rhythmBandB = typed.reporting_rhythm.band_b;
 
   return [
     row(
       "boundary",
       pick(locale, "Work/Life Boundary", "공사 구분선"),
-      BOUNDARY_LABEL[locale][categoryA],
-      BOUNDARY_LABEL[locale][categoryB],
+      categoryA,
+      categoryB,
       categoryA === categoryB
         ? pick(
             locale,
@@ -267,9 +419,9 @@ export function buildWorkSajuCompareTable(
     row(
       "feedback",
       pick(locale, "Feedback Receptivity", "피드백 수용 스타일"),
-      FEEDBACK_LABEL[locale][categoryA],
-      FEEDBACK_LABEL[locale][categoryB],
-      categoryA === categoryB
+      typed.feedback.band_a,
+      typed.feedback.band_b,
+      typed.feedback.band_a === typed.feedback.band_b
         ? pick(
             locale,
             "You process feedback in a similar way, so corrections rarely turn into hurt feelings between you.",
@@ -284,8 +436,8 @@ export function buildWorkSajuCompareTable(
     row(
       "synergy_position",
       pick(locale, "Collaboration Synergy Position", "협업 시너지 포지션"),
-      ELEMENT_OFFICE[locale][elementA] ?? elementA,
-      ELEMENT_OFFICE[locale][elementB] ?? elementB,
+      elementA,
+      elementB,
       elementA === elementB
         ? ELEMENT_SYNERGY_MEANING[locale].same
         : ELEMENT_SYNERGY_MEANING[locale].diff,
@@ -293,22 +445,22 @@ export function buildWorkSajuCompareTable(
     row(
       "burnout",
       pick(locale, "Office Burnout Coping", "오피스 번아웃 대처"),
-      BRANCH_BURNOUT_LABEL[locale][branchA] ?? branchA,
-      BRANCH_BURNOUT_LABEL[locale][branchB] ?? branchB,
+      branchA,
+      branchB,
       branchA === branchB ? BURNOUT_MEANING[locale].same : BURNOUT_MEANING[locale].diff,
     ),
     row(
       "risk_taking",
       pick(locale, "Deal-Making & Risk Appetite", "딜메이킹 & 추진 기질"),
-      RISK_LABEL[locale][riskBandA],
-      RISK_LABEL[locale][riskBandB],
+      riskBandA,
+      riskBandB,
       riskBandA === riskBandB ? RISK_MEANING[locale].same : RISK_MEANING[locale].diff,
     ),
     row(
       "reporting_rhythm",
       pick(locale, "Collaboration Rhythm", "협업 추진 리듬"),
-      RHYTHM_LABEL[locale][rhythmBandA],
-      RHYTHM_LABEL[locale][rhythmBandB],
+      rhythmBandA,
+      rhythmBandB,
       rhythmBandA === rhythmBandB
         ? RHYTHM_MEANING[locale].same
         : RHYTHM_MEANING[locale].diff,

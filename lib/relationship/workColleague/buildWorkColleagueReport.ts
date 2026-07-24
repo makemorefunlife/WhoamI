@@ -30,7 +30,20 @@ import {
   resolveFeedbackCushionScript,
   refineLeadershipRoleSplit,
 } from "./officePsychFit";
-import { buildWorkLeadershipCanonical } from "./workLeadershipCanonical";
+import {
+  buildWorkLeadershipCanonical,
+  buildWorkLeadershipClientProjection,
+  injectWorkLeadershipClientProjection,
+  leadershipClientValueFromFinalized,
+  type WorkLeadershipClientValue,
+} from "./workLeadershipCanonical";
+import {
+  buildWorkComparisonTableCanonical,
+  buildWorkComparisonTableClientProjection,
+  comparisonTableValueFromResolver,
+  injectWorkComparisonTableClientProjection,
+  type WorkComparisonTableValue,
+} from "./workComparisonTableCanonical";
 import {
   buildWorkContextOutput,
   type WorkContextOutput,
@@ -60,6 +73,14 @@ export type WorkColleagueReportBody = {
    * 옵셔널·순수 추가. 클라이언트 응답에서는 strip으로 제거.
    */
   context_output?: WorkContextOutput;
+  /**
+   * Typed Context Engine projections for MUST judgments.
+   * Survives strip (context_output only removed). Legacy reports omit.
+   */
+  canonical_projections?: {
+    comparison_table?: WorkComparisonTableValue;
+    leadership_split?: WorkLeadershipClientValue;
+  };
 };
 
 /**
@@ -243,7 +264,15 @@ export function buildWorkColleagueReport(params: {
       })
     : undefined;
 
-  return {
+  const comparisonTyped = comparisonTableValueFromResolver(ctx);
+  const comparisonProjection = buildWorkComparisonTableClientProjection(
+    buildWorkComparisonTableCanonical(comparisonTyped)?.value,
+  );
+  const leadershipProjection = buildWorkLeadershipClientProjection(
+    leadershipClientValueFromFinalized(leadershipSplit),
+  );
+
+  let reportBody: WorkColleagueReportBody = {
     headline: headlineBlock.headline,
     summary_line: headlineBlock.summary_line,
     one_line_definition: office.section_snapshot.one_line_definition,
@@ -269,4 +298,15 @@ export function buildWorkColleagueReport(params: {
       personCoreMeta: params.personCoreMeta,
     }),
   };
+
+  reportBody = injectWorkComparisonTableClientProjection(
+    reportBody,
+    comparisonProjection,
+  );
+  reportBody = injectWorkLeadershipClientProjection(
+    reportBody,
+    leadershipProjection,
+  );
+
+  return reportBody;
 }

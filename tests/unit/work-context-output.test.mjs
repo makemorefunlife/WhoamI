@@ -207,6 +207,7 @@ const { context_output: _c1, ...body1 } = buildWorkColleagueReport(baseParams);
 const { context_output: _c2, ...body2 } = buildWorkColleagueReport(baseParams);
 assert.deepEqual(body1, body2);
 assert.deepEqual(Object.keys(body1).sort(), [
+  "canonical_projections",
   "headline",
   "meta",
   "office",

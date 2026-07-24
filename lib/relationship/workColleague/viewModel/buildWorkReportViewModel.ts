@@ -18,11 +18,20 @@ import {
 import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { Locale } from "@/lib/i18n/locale";
+import {
+  formatWorkCompareCanonicalLabel,
+  readWorkComparisonTableCanonicalProjection,
+} from "@/lib/relationship/workColleague/workComparisonTableCanonical";
+import {
+  formatWorkLeadershipCanonicalLabel,
+  readWorkLeadershipCanonicalProjection,
+} from "@/lib/relationship/workColleague/workLeadershipCanonical";
 import type {
   OpeningBlock,
   WorkReportSection,
   WorkReportViewModel,
 } from "./workReportSectionTypes";
+import type { WorkCompareRow } from "@/lib/relationship/workColleague/sajuCompareTable";
 
 export type BuildWorkReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -138,17 +147,45 @@ function buildPsychRadarSection(
 function buildCompareTableSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  locale: Locale,
   titles: SectionTitleSet,
 ): WorkReportSection | null {
   const rows = report.office?.section_compare_table;
   if (!rows?.length) return null;
+
+  const typed = readWorkComparisonTableCanonicalProjection(report);
+  const authorityRows: WorkCompareRow[] = rows.map((row) => {
+    const typedRow = typed?.[row.id];
+    if (!typedRow) return row;
+    return {
+      ...row,
+      personA: {
+        ...row.personA,
+        band: typedRow.band_a,
+        shortLabel: formatWorkCompareCanonicalLabel(
+          row.id,
+          typedRow.band_a,
+          locale,
+        ),
+      },
+      personB: {
+        ...row.personB,
+        band: typedRow.band_b,
+        shortLabel: formatWorkCompareCanonicalLabel(
+          row.id,
+          typedRow.band_b,
+          locale,
+        ),
+      },
+    };
+  });
 
   return {
     id: "compare_table",
     type: "compare_table",
     partNumber: 1,
     title: titles.compareTable,
-    rows: rows.map((row) => {
+    rows: authorityRows.map((row) => {
       const { me, partner } = pickViewerFirstPair(
         row.personA,
         row.personB,
@@ -224,6 +261,7 @@ function buildComparisonSection(
 function buildRoleMatrixSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  locale: Locale,
   titles: SectionTitleSet,
 ): WorkReportSection | null {
   const office = report.office;
@@ -242,6 +280,15 @@ function buildRoleMatrixSection(
       )
     : undefined;
 
+  const leadershipProj = readWorkLeadershipCanonicalProjection(report);
+  const leadershipCanonicalLabel = leadershipProj
+    ? formatWorkLeadershipCanonicalLabel(leadershipProj, {
+        nameA: office.section_roles.person_a.nickname,
+        nameB: office.section_roles.person_b.nickname,
+        locale,
+      })
+    : null;
+
   return {
     id: "role_matrix",
     type: "role_matrix",
@@ -252,6 +299,7 @@ function buildRoleMatrixSection(
     idealFit,
     togetherCombo: office.section_ideal_roles?.together_combo,
     leadershipSplit: office.section_roles.leadership_split ?? undefined,
+    leadershipCanonicalLabel,
   };
 }
 
@@ -345,10 +393,22 @@ export function buildWorkReportViewModel(
 
   const builders: Array<() => WorkReportSection | null> = [
     () => buildSnapshotSection(report, titles),
-    () => buildCompareTableSection(report, viewerIsReportA, titles),
+    () =>
+      buildCompareTableSection(
+        report,
+        viewerIsReportA,
+        locale ?? "ko-KR",
+        titles,
+      ),
     () => buildPsychRadarSection(report, viewerIsReportA, titles),
     () => buildComparisonSection(report, viewerIsReportA, titles),
-    () => buildRoleMatrixSection(report, viewerIsReportA, titles),
+    () =>
+      buildRoleMatrixSection(
+        report,
+        viewerIsReportA,
+        locale ?? "ko-KR",
+        titles,
+      ),
     () => buildRelationshipLoopSection(report, titles),
     () => buildWarningSection(report, viewerIsReportA, titles),
     () => buildPrescriptionSection(report, titles),

@@ -110,6 +110,8 @@ export type RoleMatrixSection = BaseSection & {
   togetherCombo?: string;
   /** leadership_split이 없는 레거시 payload·균형 케이스에서는 생략 */
   leadershipSplit?: LeadershipRoleSplit;
+  /** Typed CE badge from canonical_projections (optional legacy) */
+  leadershipCanonicalLabel?: string | null;
 };
 
 export type RelationshipLoopSection = BaseSection & {
