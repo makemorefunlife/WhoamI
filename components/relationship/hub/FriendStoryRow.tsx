@@ -10,8 +10,7 @@ import {
 } from "@/components/relationship/hub/FriendAvatarCircle";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 import type { MessageCatalog } from "@/lib/i18n/messages";
-
-const STORY_VISIBLE = 3;
+import { HUB_FRIEND_STORY_VISIBLE } from "@/lib/relationship/hubFriendList";
 
 type Props = {
   friends: RelationshipListItem[];
@@ -72,7 +71,7 @@ export default function FriendStoryRow({
   onToggleFavorite,
 }: Props) {
   const messages = useMessages();
-  const maxVisible = isSignedIn ? STORY_VISIBLE : 1;
+  const maxVisible = isSignedIn ? HUB_FRIEND_STORY_VISIBLE : 1;
   const visible = friends.slice(0, maxVisible);
   const hasMore = friends.length > maxVisible;
   const selected = friends.find((i) => itemKey(i) === selectedId);

@@ -4,10 +4,14 @@ import type { ResultPremiumByKind } from "@/lib/relationship/premiumByKind";
 import { mergePremiumKindLocale } from "@/lib/relationship/premiumByKind";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 import type { PremiumKindPayload } from "@/lib/relationship/premiumByKind";
+import {
+  compareStringTieBreakDesc,
+  sortByIsoTimestampDesc,
+} from "@/lib/relationship/sortByIsoTimestampDesc";
 
 /** Dev SSOT — no result_premium column */
 export const RR_SELECT =
-  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium_by_kind, relationship_kind";
+  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium_by_kind, relationship_kind, created_at";
 
 /** @deprecated Use RR_SELECT */
 export const RR_SELECT_FULL = RR_SELECT;
@@ -44,7 +48,21 @@ function normalizeRow(row: Record<string, unknown>): RelationshipReportRow {
     result_basic: row.result_basic,
     result_premium_by_kind: row.result_premium_by_kind ?? {},
     relationship_kind: (row.relationship_kind as string) ?? "friendship",
+    created_at:
+      typeof row.created_at === "string" && row.created_at.trim()
+        ? row.created_at
+        : null,
   };
+}
+
+export function sortRelationshipRowsByCreatedAtDesc(
+  rows: RelationshipReportRow[],
+): RelationshipReportRow[] {
+  return sortByIsoTimestampDesc(
+    rows,
+    (r) => r.created_at,
+    (a, b) => compareStringTieBreakDesc(a.id, b.id),
+  );
 }
 
 async function selectByReportSide(
@@ -56,7 +74,8 @@ async function selectByReportSide(
   const { data, error } = await supabase
     .from("relationship_reports")
     .select(select)
-    .eq(column, reportId);
+    .eq(column, reportId)
+    .order("created_at", { ascending: false });
 
   if (error) return { data: [], error };
   return {
@@ -84,7 +103,7 @@ export async function fetchRelationshipReportRowsForReportIdSafe(
   for (const r of [...aSide.data, ...bSide.data]) {
     map.set(r.id, r);
   }
-  return [...map.values()];
+  return sortRelationshipRowsByCreatedAtDesc([...map.values()]);
 }
 
 export async function fetchRelationshipReportByIdSafe(

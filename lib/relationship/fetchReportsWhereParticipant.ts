@@ -3,6 +3,7 @@ import { logServerError } from "@/lib/security/safeLog";
 import {
   fetchRelationshipReportRowsForReportIdSafe,
   fetchRelationshipReportsByIdsSafe,
+  sortRelationshipRowsByCreatedAtDesc,
 } from "@/lib/relationship/relationshipReportQuery";
 
 /** relationship_reports 한 행 (조회용) */
@@ -14,6 +15,8 @@ export type RelationshipReportRow = {
   result_basic: unknown;
   result_premium_by_kind?: unknown;
   relationship_kind?: string | null;
+  /** 친구 추가(=관계 행 생성) 시각 — 허브 목록 정렬용 */
+  created_at?: string | null;
 };
 
 /**
@@ -89,7 +92,7 @@ export async function fetchRelationshipReportRowsForHub(
   for (const row of extra) {
     map.set(row.id, row);
   }
-  return [...map.values()];
+  return sortRelationshipRowsByCreatedAtDesc([...map.values()]);
 }
 
 /**

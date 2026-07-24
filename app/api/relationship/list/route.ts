@@ -16,6 +16,11 @@ import {
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
+import {
+  compareStringTieBreakDesc,
+  isoTimestampMs,
+  sortByIsoTimestampDesc,
+} from "@/lib/relationship/sortByIsoTimestampDesc";
 
 export const runtime = "nodejs";
 
@@ -181,6 +186,7 @@ export async function GET(req: Request) {
       status_hint: string | null;
       is_favorite: boolean;
       relationship_kind: string;
+      added_at: string | null;
     }[] = [];
 
     if (includeWaiting) {
@@ -201,6 +207,7 @@ export async function GET(req: Request) {
           status_hint: null,
           is_favorite: false,
           relationship_kind: "friendship",
+          added_at: inv.created_at ?? null,
         });
       }
     }
@@ -277,6 +284,7 @@ export async function GET(req: Request) {
         status_hint,
         is_favorite: favoriteIds.has(r.id),
         relationship_kind: parseRelationshipKind(r.relationship_kind),
+        added_at: r.created_at ?? null,
       });
     }
 
@@ -301,11 +309,26 @@ export async function GET(req: Request) {
         if (item.row_kind === "relationship_manual") s += 1;
         return s;
       };
-      if (score(rel) > score(prev)) byPartner.set(pid, rel);
+      const sRel = score(rel);
+      const sPrev = score(prev);
+      if (sRel > sPrev) {
+        byPartner.set(pid, rel);
+      } else if (sRel === sPrev) {
+        if (isoTimestampMs(rel.added_at) > isoTimestampMs(prev.added_at)) {
+          byPartner.set(pid, rel);
+        }
+      }
     }
     deduped.push(...byPartner.values());
     relationships.length = 0;
-    relationships.push(...deduped);
+    relationships.push(
+      ...sortByIsoTimestampDesc(
+        deduped,
+        (r) => r.added_at,
+        (a, b) =>
+          compareStringTieBreakDesc(a.list_key ?? "", b.list_key ?? ""),
+      ),
+    );
 
     if (favoritesOnly) {
       const favOnly = relationships.filter(
