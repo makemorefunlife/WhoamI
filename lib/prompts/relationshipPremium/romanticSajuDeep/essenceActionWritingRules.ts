@@ -79,12 +79,18 @@ export function buildEssenceActionSystemPromptBlock(): string {
   - For A: respect partner's emotional timing / regulate expression density / check feelings before solving
   - For B: break silence and name the inner state / sync empathy before solving / try honesty over perfect words
 
-## Digest-backed advice (required — Round 3)
+## Digest-backed advice (required — Round 4)
 - Every tip derives from **exactly one** digest fact (compare row / reassurance mismatch / expression_speed / recovery / role frame).
-- Internally: \`[source]\` + observed fact + action + expected effect — then **delete tags**; never print internal keys.
+- Internally: \`[source]\` + observed fact + action + expected effect — then **delete tags**; never print internal keys or Mingli jargon (오행/격국/십성).
 - **Hard**: \`saju_reason\` **sentence 1** = evidence bridge only (digest fact in natural Korean). Sentence 2+ = concrete action + benefit.
-- Valid bridge starters: "…균형형으로 잡히기 때문에", "안심…방식이 어긋날 수 있어서", "감정 표현 속도가 다르게 잡히므로", "갈등 뒤 회복 속도 차이가 보이기 때문에", "스트레스 반응 결이 다르게 잡히므로"
-- Invalid starters: "어떤 상황에서도…", "상대의 감정을 이해하고…", "서로의 관계를 더욱…" without a digest fact first.
+- **Anti-drift**: tip1, tip2, **and tip3** each restart the bridge gate — later tips must not drop the bridge.
+- **Generic bridge starters** (structure only — pick the one that matches *this* pair's digest; do not invent a fact the digest lacks):
+  - Same lean: "두 사람 모두 … 결을 공유하는 편으로 잡히기 때문에…"
+  - Different lean: "… 결이 다르게 잡히기 때문에…" / "… 기울기가 다르게 보이기 때문에…"
+  - Mismatch: "안심을 원하는 방식과 건네는 방식이 어긋날 수 있어서…"
+  - Speed/recovery: "감정 표현 속도가 다르게 잡히므로…" / "갈등 뒤 회복 속도 차이가 보이기 때문에…"
+  - Also valid: "스트레스 반응 결이 다르게 잡히므로…", "애정 언어 결이 다르게 잡히기 때문에…", "소통 방식이 다르게 잡히므로…", "의사결정에서 기울기가 다르게 잡히기 때문에…"
+- Invalid starters: "어떤 상황에서도…", "상대의 감정을 이해하고…", "서로의 관계를 더욱…", "갈등 상황에서 서로의 감정을 확인…" without a digest fact first.
 - **Forbidden generic-only tips**: "서로 존중하며 소통하세요", "감정을 솔직히 표현하세요", "서로의 차이를 이해하세요", or any tip copyable unchanged to an unrelated couple.
 - Write display names **exactly** as given — ban \`나님\` / \`저님\` / inventing \`님\` on bare names.
 - Few-shot bodies below are **structure/tone only** — never reuse their content. If a tip lacks a bridge, discard and rewrite.
@@ -137,17 +143,20 @@ export function buildEssenceActionFewShotExample(params: {
 
 - 01. ${targetName}의 정서적 타이밍 존중하기:
   \`action_title\`: "${targetName}의 정서적 타이밍 존중하기"
-  \`saju_reason\`: "(증거 다리 예: 감정 표현 속도가 다르게 잡히므로…) ${myName}은 … (구체 행동 1개) … (그 신호에 Tied된 기대 효과). **예시 문장 복사 금지**"
+  \`saju_reason\`: "[다리] 감정 표현 속도가 다르게 잡히므로… [행동] … [효과] … **문장 복사 금지**"
   \`real_speech_tip\`: "${targetName}, 네가 이 상황을 어떻게 느끼고 정리하고 있는지 내심 궁금해. 천천히 얘기해 줘."
   \`real_life_example\`: ""
 
 - 02. 표현의 밀도 조절하기:
   \`action_title\`: "표현의 밀도 조절하기"
-  \`saju_reason\`: "(다른 digest 사실의 증거 다리 + 다른 행동 강령 — 3~4문장)"
+  \`saju_reason\`: "[다리] (다른 digest 사실 — 예: 갈등 뒤 회복 속도 차이가 보이기 때문에…) [행동] … [효과] …"
   \`real_speech_tip\`: "(01번과 다른 실전 대사)"
   \`real_life_example\`: ""
 
 - 03. (세 번째 **고유** 행동 강령 — 01·02와 주제·문장 골격 중복 금지)
+  \`action_title\`: "(고유 제목)"
+  \`saju_reason\`: "[다리] (또 다른 digest 사실 — 예: 스트레스 반응 결이 다르게 잡히므로… / 안심 방식이 어긋날 수 있어서…) [행동] … [효과] … — **tip3도 다리 필수**"
+  \`real_speech_tip\`: "(01·02와 다른 실전 대사)"
   \`real_life_example\`: ""
 
 ✨ ${targetName}을 위한 에센스 가이드
@@ -155,17 +164,20 @@ export function buildEssenceActionFewShotExample(params: {
 
 - 01. 침묵을 깨고 내면의 지도 보여주기:
   \`action_title\`: "침묵을 깨고 내면의 지도 보여주기"
-  \`saju_reason\`: "(증거 다리 예: 갈등 뒤 회복/표현 속도 신호가 …이므로) ${targetName}은 … **예시 문장 복사 금지**"
+  \`saju_reason\`: "[다리] 갈등 뒤 회복 속도 차이가 보이기 때문에… [행동] … [효과] … **문장 복사 금지**"
   \`real_speech_tip\`: "사실 나도 지금 이 상황이 당황스럽고 속상한 감정이 들어. 잘 얘기하고 싶어서 멈춰 있는 거야."
   \`real_life_example\`: ""
 
 - 02. '해결'하기 전에 '주파수' 맞춰주기:
   \`action_title\`: "'해결'하기 전에 '주파수' 맞춰주기"
-  \`saju_reason\`: "(논리적 해결보다 감정 공감·리듬 맞추기 — 3~4문장, 01번과 **다른 강령**)"
+  \`saju_reason\`: "[다리] (다른 digest 사실 — 예: 애정 언어 결이 다르게 잡히기 때문에…) [행동: 논리 해결 전 공감 리듬] … [효과] …"
   \`real_speech_tip\`: "(01번과 다른 실전 대사)"
   \`real_life_example\`: ""
 
 - 03. (세 번째 **고유** 행동 강령)
+  \`action_title\`: "(고유 제목)"
+  \`saju_reason\`: "[다리] (또 다른 digest 사실 — 예: 소통 방식이 다르게 잡히므로…) [행동] … [효과] … — **tip3도 다리 필수**"
+  \`real_speech_tip\`: "(01·02와 다른 실전 대사)"
   \`real_life_example\`: ""
 
 💌 에센스 다이어리 : 우리만의 관계 아카이브
@@ -178,7 +190,7 @@ export function buildEssenceActionFewShotExample(params: {
 1. 호칭: write **${myName}** / **${targetName}** exactly as given (do not invent 님 if absent; ban 나님/저님)
 2. "이런 순간에 —" **0개**, \`real_life_example\` **전부 빈 문자열**
 3. A·B 각 3팁 — **제목·본문·대사 모두 서로 다름** (감정 드러내라 복제 금지)
-4. Each tip starts with a **user-facing evidence bridge** + concrete action + pair-specific benefit — never copy example bodies; never expose internal source keys
+4. tip1·tip2·**tip3** each start with a **user-facing evidence bridge** + concrete action + pair-specific benefit — never copy example bodies; never expose internal source keys; never drop the bridge on later tips
 5. \`together\` = 에센스 다이어리 **3문장+**, \`together_starter\` = 대화 문 여는 대사
 `.trim();
 }
@@ -194,6 +206,7 @@ export function buildEssenceActionSelfDedupChecklist(
 - [ ] 모든 \`real_life_example\`이 **\`""\`** 인가요?
 - [ ] "${planning}" 등 기획 메모식 문구가 **0개**인가요?
 - [ ] 6개 팁이 **서로 다른 행동 강령**인가요? ("감정을 드러내라" 복제 없음)
+- [ ] tip1·tip2·**tip3** 모두 \`saju_reason\` **첫 문장**이 evidence bridge인가요? (후반 tip 드롭 금지)
 - [ ] 각 팁이 **구체 digest 신호**(compare_* / 일치 / expression_speed / recovery / residual)에 연결됐나요? (아무 커플에나 통하는 일반론 0개)
 - [ ] ${nicknameA}용·${nicknameB}용 팁이 **주어만 바꾼 미러링**이 아닌가요?
 - [ ] 호칭이 제공 이름 그대로인가요? (\`나님\`/\`저님\`/이중 존칭 0개)

@@ -139,12 +139,17 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - Honor that row's \`confidence\` / \`align\` (see epistemic voice above).
     - **Low-confidence polish (Round 3)**: for \`expression\` / \`conflict\` / \`stress\` rows with \`confidence=low\` or \`align=caution\`, each cell must include one tentative marker (e.g. "~하는 편으로 보일 수 있다", "~에 가까울 가능성이 있다", "실제 관계에서 확인해 볼 부분이다"). Do **not** over-hedge high-confidence / confirms rows.
 12. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones.
-    - **Evidence bridge (Round 3 — hard)**: the **first sentence** of every \`saju_reason\` MUST be a user-facing evidence bridge tied to exactly one digest fact. No soft opener before it.
-      - Valid bridges: "두 사람 모두 결정에서 균형형으로 잡히기 때문에…", "안심을 원하는 방식과 건네는 방식이 어긋날 수 있어서…", "감정 표현 속도가 다르게 잡히므로…", "갈등 뒤 회복 속도 차이가 보이기 때문에…", "스트레스 반응 결이 다르게 잡히므로…"
-      - Invalid: starting with "어떤 상황에서도…", "상대의 감정을 이해하고…", "서로 존중하며…" without a digest fact first.
+    - **Per-tip loop (Round 4 — anti context-drift)**: write tips in order tip1 → tip2 → tip3 for A, then tip1 → tip2 → tip3 for B. **Before every tip** (including tip2 and tip3), re-apply this gate:
+      1. Pick **exactly one** unused digest fact for this tip.
+      2. Write sentence 1 of \`saju_reason\` as an evidence bridge from that fact (natural Korean — digest signal translated; never print 오행/격국/십성/한자 or \`compare_*\` keys).
+      3. Only then write action + benefit.
+      - Tip3 is **not** exempt. If tip3 would start with soft openers ("어떤 상황에서도", "상대의 감정을", "갈등 상황에서 서로의…") without a digest fact, **discard and rewrite tip3**.
+    - **Evidence bridge (Round 4 — hard, every tip)**: the **first sentence** of every \`saju_reason\` MUST be a user-facing evidence bridge. No soft opener before it. tip1·tip2·tip3 all identical rule.
+      - Valid bridges: "두 사람 모두 결정에서 균형형으로 잡히기 때문에…", "안심을 원하는 방식과 건네는 방식이 어긋날 수 있어서…", "감정 표현 속도가 다르게 잡히므로…", "갈등 뒤 회복 속도 차이가 보이기 때문에…", "스트레스 반응 결이 다르게 잡히므로…", "애정 언어 결이 다르게 잡히기 때문에…", "갈등 반응 기울기가 다르게 보이기 때문에…", "소통 방식이 다르게 잡히므로…"
+      - Invalid: starting with "어떤 상황에서도…", "상대의 감정을 이해하고…", "서로 존중하며…", "갈등 상황에서 서로의 감정을 확인…" without a digest fact first.
     - After the bridge: one concrete action + benefit specific to that evidence. Internally draft source/fact/action/effect; emit Korean only (strip tags; never print \`compare_*\` keys).
     - **Forbidden**: "서로 존중하며 소통하세요", "감정을 솔직히 표현하세요", "서로의 차이를 이해하세요", tips copyable unchanged to an unrelated couple, few-shot content reuse.
-    - If a tip lacks a bridge, **discard and rewrite** that tip before output.
+    - Final self-check before JSON: scan all 6 \`saju_reason\` openings; any tip missing a bridge → rewrite that tip only.
 13. **section_3 conflict**: dialogue_table **exactly 2 rows** — faster expresser + slower processor each ❌/✅. 50:50 balance; no model answers. Ban hidden_psychology. If \`dynamics_digest.expression_speed\` is present, keep the server \`direction\` for faster slot — do **not** reassign faster/slower from residual (residual is corroboration only, not direct evidence of expression speed)
 14. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms
 15. **section_4_hidden_hearts**: both a_hidden and b_hidden required. Fully separate from special_bond

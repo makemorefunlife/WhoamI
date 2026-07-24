@@ -277,15 +277,127 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   };
 }
 
+/** Leading evidence-bridge patterns (digest-grounded natural Korean). Round 4 expanded. */
 const EVIDENCE_BRIDGE =
-  /결정.{0,12}균형|균형형|안심.{0,20}(방식|어긋|원하|건네|필요)|건네는\s*방식|감정\s*표현\s*속도|표현\s*속도|정서적\s*타이밍|회복\s*속도|갈등\s*뒤|갈등.{0,10}(반응|직면)|스트레스|애정\s*(언어|표현)|소통\s*방식|역할|프레임|잔류|일치하지|어긋|같은\s*결|공유|의사결정/;
+  /결정.{0,16}균형|균형형|안심.{0,24}(방식|어긋|원하|건네|필요)|건네는\s*방식|감정\s*표현(\s*속도|\s*결)?|표현\s*(속도|결|타이밍)|정서적\s*타이밍|회복\s*속도|갈등\s*뒤|갈등.{0,14}(반응|직면|결|기울)|스트레스(\s*반응)?(\s*결)?|애정\s*(언어|표현|결)|소통\s*방식|의사결정|역할|프레임|잔류|일치하지|어긋|같은\s*결|공유하는\s*편|기울기가?\s*다르|기질.{0,8}(결|반응)|반응\s*결|잡히기\s*때문에|잡히므로|보이기\s*때문에/;
 
 /** True if the opening sentence (before first 。/.) contains an evidence bridge. */
 function adviceHasLeadingEvidenceBridge(reason: string): boolean {
   const first = reason.split(/(?<=[.。])\s+/)[0] || reason;
-  // Also allow bridge in first ~80 chars if no period yet
+  // Also allow bridge in first ~100 chars if no period yet
   const head = first.length >= 12 ? first : reason.slice(0, 100);
   return EVIDENCE_BRIDGE.test(head);
+}
+
+type LeanRow = {
+  lean_a?: string | null;
+  lean_b?: string | null;
+  confidence?: string | null;
+  align?: string | null;
+};
+
+const ASPECT_BRIDGE_LABEL: Record<string, string> = {
+  expression: "감정 표현",
+  conflict: "갈등 반응",
+  affection: "애정 언어",
+  stress: "스트레스 반응",
+  decision: "의사결정",
+  communication: "소통 방식",
+};
+
+/**
+ * Digest-grounded bridge pool for Round 4 fallback.
+ * Prefer mismatch + lean diffs; rotate by tip index so tip2/tip3 get distinct bridges.
+ */
+function buildAdviceBridgePool(params: {
+  mismatch: boolean;
+  comparisonLeans?: Partial<Record<string, LeanRow>>;
+}): string[] {
+  const pool: string[] = [];
+  const seen = new Set<string>();
+  const push = (s: string) => {
+    if (!s || seen.has(s)) return;
+    seen.add(s);
+    pool.push(s);
+  };
+
+  if (params.mismatch) {
+    push("안심을 원하는 방식과 건네는 방식이 어긋날 수 있어서");
+  }
+
+  const leans = params.comparisonLeans ?? {};
+  const order = [
+    "expression",
+    "conflict",
+    "affection",
+    "stress",
+    "decision",
+    "communication",
+  ] as const;
+
+  for (const key of order) {
+    const row = leans[key];
+    const a = row?.lean_a ?? null;
+    const b = row?.lean_b ?? null;
+    if (!a || !b) continue;
+    const label = ASPECT_BRIDGE_LABEL[key] ?? key;
+    if (a === b) {
+      if (key === "decision" && a === "balanced") {
+        push("두 사람 모두 결정에서 균형형으로 잡히기 때문에");
+      } else {
+        push(`두 사람 모두 ${label}에서 같은 결을 공유하는 편으로 잡히기 때문에`);
+      }
+    } else if (key === "expression") {
+      push("감정 표현 속도가 다르게 잡히므로");
+    } else if (key === "conflict") {
+      push("갈등 반응 기울기가 다르게 보이기 때문에");
+    } else if (key === "affection") {
+      push("애정 언어 결이 다르게 잡히기 때문에");
+    } else if (key === "stress") {
+      push("스트레스 반응 결이 다르게 잡히므로");
+    } else if (key === "decision") {
+      push("의사결정에서 기울기가 다르게 잡히기 때문에");
+    } else if (key === "communication") {
+      push("소통 방식이 다르게 잡히므로");
+    }
+  }
+
+  // Always keep at least one safe structural fallback (still digest-shaped wording).
+  push("관계에서 잡힌 반응 결이 달라 보일 수 있어서");
+  return pool;
+}
+
+function pickAdviceBridge(pool: string[], tipIndex: number, used: Set<string>): string {
+  if (pool.length === 0) {
+    return "관계에서 잡힌 반응 결이 달라 보일 수 있어서";
+  }
+  for (let i = 0; i < pool.length; i++) {
+    const candidate = pool[(tipIndex + i) % pool.length]!;
+    if (!used.has(candidate)) {
+      used.add(candidate);
+      return candidate;
+    }
+  }
+  const fallback = pool[tipIndex % pool.length]!;
+  used.add(fallback);
+  return fallback;
+}
+
+/** Prepend a digest-grounded bridge when the leading sentence lacks one. */
+function ensureAdviceEvidenceBridge(
+  reason: string,
+  bridgeClause: string,
+): { text: string; fixed: boolean } {
+  const raw = reason.trim();
+  if (!raw) return { text: reason, fixed: false };
+  if (adviceHasLeadingEvidenceBridge(raw)) {
+    return { text: raw, fixed: false };
+  }
+  const clause = bridgeClause.replace(/[,，.\s]+$/u, "");
+  return {
+    text: `${clause}, ${raw}`,
+    fixed: true,
+  };
 }
 
 const GENERIC_ONLY_ADVICE =
@@ -518,15 +630,20 @@ export function postValidateRomanticNarrative(
     }
   }
 
-  // Strip accidental internal source tags; light advice bridge check (no broad rewrite).
+  // Strip source tags; Round 4 — prepend digest-grounded bridge when missing (narrow fallback).
   const action = asObj(stripped.section_5_action);
   if (action) {
+    const bridgePool = buildAdviceBridgePool({
+      mismatch,
+      comparisonLeans: leans,
+    });
     for (const listKey of ["advice_for_a", "advice_for_b"] as const) {
       const list = Array.isArray(action[listKey])
         ? (action[listKey] as AnyRec[])
         : [];
       let touched = false;
-      for (const tip of list) {
+      const usedBridges = new Set<string>();
+      list.forEach((tip, tipIndex) => {
         const reason = asStr(tip.saju_reason);
         const cleaned = reason
           .replace(/\[source:\s*[a-z0-9_*]+\]\s*/gi, "")
@@ -534,18 +651,34 @@ export function postValidateRomanticNarrative(
         if (cleaned !== reason) {
           tip.saju_reason = cleaned;
           touched = true;
+          fixes.push(`strip_source_tag:${listKey}`);
         }
-        const finalReason = asStr(tip.saju_reason);
-        if (finalReason && !adviceHasLeadingEvidenceBridge(finalReason)) {
-          fixes.push(`advice_missing_evidence_bridge:${listKey}`);
+        let finalReason = asStr(tip.saju_reason);
+        if (finalReason && adviceHasLeadingEvidenceBridge(finalReason)) {
+          // Reserve the leading clause so later fallbacks prefer unused digest bridges.
+          const head = (finalReason.split(/(?<=[.。])\s+/)[0] || finalReason).slice(0, 48);
+          usedBridges.add(head);
+        } else if (finalReason && !adviceHasLeadingEvidenceBridge(finalReason)) {
+          const bridge = pickAdviceBridge(bridgePool, tipIndex, usedBridges);
+          const { text, fixed } = ensureAdviceEvidenceBridge(finalReason, bridge);
+          if (fixed) {
+            tip.saju_reason = text;
+            finalReason = text;
+            touched = true;
+            fixes.push(`advice_bridge_fallback:${listKey}:${tipIndex + 1}`);
+          } else {
+            fixes.push(`advice_missing_evidence_bridge:${listKey}`);
+          }
         }
-        if (GENERIC_ONLY_ADVICE.test(finalReason) || GENERIC_ONLY_ADVICE.test(asStr(tip.action_title))) {
+        if (
+          GENERIC_ONLY_ADVICE.test(finalReason) ||
+          GENERIC_ONLY_ADVICE.test(asStr(tip.action_title))
+        ) {
           fixes.push(`advice_generic_only:${listKey}`);
         }
-      }
+      });
       if (touched) {
         action[listKey] = list;
-        fixes.push(`strip_source_tag:${listKey}`);
       }
     }
     stripped.section_5_action = action;
