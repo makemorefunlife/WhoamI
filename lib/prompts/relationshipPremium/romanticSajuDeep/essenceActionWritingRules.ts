@@ -75,14 +75,20 @@ export function buildEssenceActionSystemPromptBlock(): string {
 ## Tip fragmentation (anti copy-paste)
 - \`advice_for_a\` ×3 and \`advice_for_b\` ×3 — discard title-only mirrors with same body.
 - Do not repeat the same "express your feelings" line across tips (${cliches} and variants = 0).
-- Each tip needs a distinct action mandate. Example axes:
+- Each tip needs a distinct action mandate. Example axes (structure only — still must be digest-backed):
   - For A: respect partner's emotional timing / regulate expression density / check feelings before solving
   - For B: break silence and name the inner state / sync empathy before solving / try honesty over perfect words
+
+## Digest-backed advice (required — Patch 4)
+- Every tip's \`saju_reason\` must **point to a concrete \`dynamics_digest\` clause** (e.g. a \`compare_*\` lean, reassurance \`일치\`, expression_speed direction, recovery band, residual).
+- Ban advice that would fit any couple without that digest signal.
+- If you cannot name the digest clause behind a tip, discard it and write another.
+- Write display names **exactly** as given — ban \`나님\` / \`저님\` / doubled honorifics.
 
 ## Output structure (required)
 Per person, 3 tips — each item:
 - \`action_title\`: hooky one-line mandate
-- \`saju_reason\`: why/how — **3–4 sentences** (situations only here; no planning-memo tone)
+- \`saju_reason\`: why/how — **3–4 sentences**, cite the digest signal, situations only here; no planning-memo tone
 - \`real_speech_tip\`: 1–2 speakable lines (no wrapping quotes)
 - \`real_life_example\`: must be \`""\`
 
@@ -164,10 +170,11 @@ export function buildEssenceActionFewShotExample(params: {
 ---
 
 위 예시에서 **반드시 흡수할 핵심**:
-1. 호칭: ${myName} / ${targetName} 커스텀 이름 1순위
+1. 호칭: write **${myName}** / **${targetName}** exactly as given (do not invent 님 if absent; ban 나님/저님)
 2. "이런 순간에 —" **0개**, \`real_life_example\` **전부 빈 문자열**
 3. A·B 각 3팁 — **제목·본문·대사 모두 서로 다름** (감정 드러내라 복제 금지)
-4. \`together\` = 에센스 다이어리 **3문장+**, \`together_starter\` = 대화 문 여는 대사
+4. Each tip's \`saju_reason\` must cite a concrete \`dynamics_digest\` clause — example bodies above are **structure/tone only**, not generic advice to copy
+5. \`together\` = 에센스 다이어리 **3문장+**, \`together_starter\` = 대화 문 여는 대사
 `.trim();
 }
 
@@ -182,7 +189,9 @@ export function buildEssenceActionSelfDedupChecklist(
 - [ ] 모든 \`real_life_example\`이 **\`""\`** 인가요?
 - [ ] "${planning}" 등 기획 메모식 문구가 **0개**인가요?
 - [ ] 6개 팁이 **서로 다른 행동 강령**인가요? ("감정을 드러내라" 복제 없음)
+- [ ] 각 팁이 **구체 digest 신호**(compare_* / 일치 / expression_speed / recovery / residual)에 연결됐나요? (아무 커플에나 통하는 일반론 0개)
 - [ ] ${nicknameA}용·${nicknameB}용 팁이 **주어만 바꾼 미러링**이 아닌가요?
+- [ ] 호칭이 제공 이름 그대로인가요? (\`나님\`/\`저님\`/이중 존칭 0개)
 - [ ] \`together\`가 **3문장+** 에센스 다이어리 톤인가요? ("함께보면 좋아요" 한 줄 금지)
 - [ ] \`together_starter\`가 실전 대화 시작 대사인가요?
 - [ ] 명리 용어·자연물 비유(산·불·물 등) **0개**인가요?

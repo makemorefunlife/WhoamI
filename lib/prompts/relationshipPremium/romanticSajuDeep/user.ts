@@ -109,15 +109,16 @@ const UX_SECTION_GUIDE = `
 const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 # Final instructions
 1. **Must use input data** — ground writing only in calculated values under "Input data". Do not copy quality/exemplar sentences.
-2. No technical jargon — no Saju terms / Hanja in JSON values
-3. **Must combine data** — apply 3 steps (confirm → combine/image → relational reading). State steps 1–2 in data_combination_note.
-4. **No length caps** — do not summarize/compress. Aim for 5–8+ sentences per rich field
-5. First-person dialogue — raw "Actually, I…" phrasing
-6. Dialogue — conflict uses **dialogue_table only** (ban bad_example · hidden_psychology · positive_situation)
-7. Prefer direct, specific voice; avoid vague hedges
-8. Balance A and B
-9. Fill every Output Schema field (no empties where required)
-10. **comparison_table**: emotion expression · conflict reaction · love language · stress pattern · decision-making · communication — **6 rows required**
+2. **Canonical priority** — \`dynamics_digest\` (and other server Input lines) are authoritative. Narrative may explain and soften wording; it must **never contradict** leans, bands, match flags, directions, align, or confidence. If prose conflicts with canonical values, rewrite the prose.
+3. No technical jargon — no Saju terms / Hanja in JSON values
+4. **Must combine data** — apply 3 steps (confirm → combine/image → relational reading). State steps 1–2 in data_combination_note.
+5. **Rich fields without claim rehash** — aim for 5–8+ sentences when adding a new function; do not pad by restating another section's thesis
+6. First-person dialogue — raw "Actually, I…" phrasing with correct speaker binding (see naming rules)
+7. Dialogue — conflict uses **dialogue_table only** (ban bad_example · hidden_psychology · positive_situation)
+8. **Epistemic voice** — when digest shows \`confidence=high\` and \`align=confirms\` (or confidence absent), prefer direct wording. When \`confidence=low\` or \`align=caution\`, use offer-to-verify language only (lean / may / worth checking against real life). Do not assert low-confidence rows as plain facts.
+9. Balance A and B
+10. Fill every Output Schema field (no empties where required)
+11. **comparison_table**: emotion expression · conflict reaction · love language · stress pattern · decision-making · communication — **6 rows required**
     - \`a\` column = **${nicknameA}** only, \`b\` column = **${nicknameB}** only (do not swap)
     - Each cell: describe without names/subjects (names are in headers). Ban "OO is…", "OO does…"
     - Referring to the partner: use **"to the partner"** / **"the partner"** (report for the two of them)
@@ -129,13 +130,16 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - **Decision-making (의사결정) row only**: if \`dynamics_digest.compare_decision\` is present, phrase that server lean — do **not** re-classify independent vs consultative, and do **not** conflate with balance_of_power / sublead.
     - **Communication (소통 방식) row only**: if \`dynamics_digest.compare_communication\` is present, phrase that server lean — do **not** re-classify direct vs considerate.
     - All 6 compare rows with server lean: phrase only; do not re-classify.
-11. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones
-12. **section_3 conflict**: dialogue_table **exactly 2 rows** — faster expresser + slower processor each ❌/✅. 50:50 balance; no model answers. Ban hidden_psychology. If \`dynamics_digest.expression_speed\` is present, keep the server \`direction\` for faster slot — do **not** reassign faster/slower from residual (residual is corroboration only, not direct evidence of expression speed)
-13. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms
-14. **section_4_hidden_hearts**: both a_hidden and b_hidden required. Fully separate from special_bond
-15. **section_1_summary**: do not generate (Headline Selector fills from Saju rules)
-16. **section_1_relationship_dynamics / section_4_relationship_frames**: these 4 fields (balance_of_power, recovery_speed, reassurance_signal, unconscious_role_play) must be phrased **only** from \`dynamics_digest\` in Input data. Do not invent a different verdict than what the digest already decided — you are writing the narrative, not re-classifying. Never print the internal band/frame names (e.g. "leader", "savior_dependent") literally — translate them into natural language. Keep \`recovery_speed\` residual phrasing separate from \`expression_speed\` (do not treat residual as who expresses faster)
-17. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, or bond nature metaphors — **fully rewrite** that field
+    - **Same lean = similarity**: if lean_A and lean_B are the **same** token (including both \`balanced\`), narrate **similarity** and its own risk if any. **Do not invent** opposing styles for that row.
+    - Honor that row's \`confidence\` / \`align\` (see epistemic voice above).
+12. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones. **Each \`saju_reason\` must cite a concrete \`dynamics_digest\` clause** (a compare_* lean, reassurance match flag, expression_speed, recovery, or residual). If you cannot point to one digest clause, discard that tip and write another. Ban advice that would fit any couple without that digest.
+13. **section_3 conflict**: dialogue_table **exactly 2 rows** — faster expresser + slower processor each ❌/✅. 50:50 balance; no model answers. Ban hidden_psychology. If \`dynamics_digest.expression_speed\` is present, keep the server \`direction\` for faster slot — do **not** reassign faster/slower from residual (residual is corroboration only, not direct evidence of expression speed)
+14. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms
+15. **section_4_hidden_hearts**: both a_hidden and b_hidden required. Fully separate from special_bond
+16. **section_1_summary**: do not generate (Headline Selector fills from Saju rules)
+17. **section_1_relationship_dynamics / section_4_relationship_frames**: these 4 fields (balance_of_power, recovery_speed, reassurance_signal, unconscious_role_play) must be phrased **only** from \`dynamics_digest\` in Input data. Do not invent a different verdict than what the digest already decided — you are writing the narrative, not re-classifying. Never print the internal band/frame names (e.g. "leader", "savior_dependent") literally — translate them into natural language. Keep \`recovery_speed\` residual phrasing separate from \`expression_speed\` (do not treat residual as who expresses faster). **If any \`일치:\` value is \`false\`, reassurance bodies + \`match_note\` must name the need/give gap before any repair tip** — do not rewrite mismatch as mutual comfort.
+18. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, bond nature metaphors, or cross-section claim rehash (same "comfort/stability/support" thesis in special_bond + frames + mutual_gift + nature) — **fully rewrite** that field
+19. **Names**: write display names **exactly** as given. Ban **나님**, **저님**, and doubling 님/씨. Never address yourself with your own display name + honorific. In \`a_*\` 1st-person fields, "나" = **${nicknameA}** and partner = **${nicknameB}** only. In \`b_*\` 1st-person fields, "나" = **${nicknameB}** and partner = **${nicknameA}** only.
 
 Output language follows the system prompt locale instruction — do not hardcode a language here.
 `.trim();

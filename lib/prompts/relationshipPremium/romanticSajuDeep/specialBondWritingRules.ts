@@ -56,7 +56,8 @@ export function buildSpecialBondSystemPromptBlock(): string {
 
 ## Names
 - Prefer \`userCustomMyName\` / \`userCustomTargetName\` (User Prompt name map) everywhere in prose.
-- Keep JSON slot names + honorifics consistent; if nicknames exist, use the same forms throughout.
+- Write display names **exactly** as given — do not invent 님/씨; ban \`나님\` / \`저님\` / doubled honorifics.
+- Keep JSON slot names consistent; if nicknames exist, use the same forms throughout.
 
 ## Psychological journal (no Mingli / nature metaphors in output)
 - Internally: compute dynamics from Saju, astrology, survey.
@@ -94,6 +95,7 @@ export function buildSpecialBondFewShotExample(
 # [최종 통합 출력 예시] section_4_special_bond
 
 ⚠️ 아래는 **구조·문장 밀도·톤**만 참고하세요. ${nicknameA}·${nicknameB}의 **실제 입력 데이터**로 새로 작성. 예시 문장·형용사 **복사 금지**.
+⚠️ 예시의 "님"은 구조 참고용 — 실제 출력은 display name을 **그대로** (나님/저님/임의 존칭 추가 금지).
 
 ---
 ⚖️ 이 관계가 특별한 이유

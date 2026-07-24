@@ -81,9 +81,16 @@ export function buildEssenceJournalNameMappingBlock(params: {
 - 본문·대사·조언의 **주어·호칭**은 커스텀 이름을 **1순위**로 씁니다.
   - 내 이름: **${userCustomMyName}** → 없으면 슬롯 기본명 → "나"
   - 상대 이름: **${userCustomTargetName}** → 없으면 슬롯 기본명 → "상대"
+- Write display names **exactly** as given (no added 님/씨 unless already in the string).
+- **Ban**: \`나님\`, \`저님\`, doubled honorifics (e.g. name already ending in 님 + another 님).
+- Never refer to yourself with your own display name + honorific inside 1st-person fields.
 - 유저가 별칭·애칭(예: 창창이, 우리 여보)으로 수정했다면, 문맥 **전체 호칭을 동일하게** 유지하세요.
 - JSON 키는 A/B 슬롯: \`a_hidden\` = **${nicknameA}**, \`b_hidden\` = **${nicknameB}**.
 - "A", "B", "첫 번째 사람", "두 번째 사람", "상대방" 같은 플레이스홀더 **금지**.
+
+## 1인칭 화자 바인딩 (필수)
+- \`a_hidden.*\` / \`a_nature.first_person_voice\` / other \`a_*\` 1st-person: **"나" = ${nicknameA}** only; partner references = **${nicknameB}** only (never ${nicknameA} as the partner).
+- \`b_hidden.*\` / \`b_nature.first_person_voice\` / other \`b_*\` 1st-person: **"나" = ${nicknameB}** only; partner references = **${nicknameA}** only (never ${nicknameB} as the partner).
 `.trim();
 }
 
@@ -107,6 +114,7 @@ export function buildEssenceJournalToneRules(): string {
 
 ## 중복 표현 원천 차단 (자기 검열)
 - 하위 섹션 간 **문장 구조·핵심 형용사·동사**가 50% 이상 겹치면 해당 필드를 **파기하고** 완전히 새 어휘로 재작성.
+- Dedup is also **claim-level**: do not restate the same "mutual comfort / stability / emotional support" thesis across special_bond, frames, mutual_gift, and nature — each section must carry a **new function**.
 - 주어만 바꾼 복사 붙여넣기(미러링) **즉시 폐기**.
 - 같은 형용사(예: "따뜻한", "섬세한", "든든한")를 3개 이상 필드에서 반복하지 마세요.
 `.trim();
@@ -139,6 +147,18 @@ export function buildSectionRoleSeparationGuide(
 
 > JSON 슬롯: \`a_*\` = **${nicknameA}**, \`b_*\` = **${nicknameB}**. 본문 주어·호칭은 위 이름 매핑표의 커스텀 이름 1순위.
 
+## Section jobs (one purpose each — do not borrow another section's thesis)
+
+| Section | Unique job | Must not become |
+|---|---|---|
+| \`section_2_nature\` | Solo lean + 1st-person self-portrait | Relationship praise / mutual comfort essay |
+| \`section_4_special_bond\` | What each gives the other + interlocking roles | Soft reassurance mismatch cover-up; hidden-hearts confession |
+| \`section_4_relationship_frames\` | Reassurance need/give + role-play frame from digest | Second special_bond; erase \`일치:false\` |
+| \`section_4_hidden_hearts\` | Unspoken need/fear + raw voice | Bond synergy / "we comfort each other" |
+| \`mutual_gift\` | Unconscious tension **or** quiet safety — one sharp insight | Restate special_bond or frames comfort thesis |
+| \`section_5_action\` | Digest-backed concrete handles + speakable lines | Generic "communicate more" tips |
+| \`why_special\` | Named conflict/tempo pattern + one practical tip | Bond praise rehash |
+
 ## section_4_special_bond
 
 | 필드 | 서술 역할 | 금지 |
@@ -165,7 +185,7 @@ export function buildSectionRoleSeparationGuide(
 ## section_5_action vs why_special
 - action: 개인별 **행동 강령 + real_speech_tip** (기획 메모 "이런 순간에" 금지, real_life_example **""**)
 - why_special: 관계 **패턴 진단** — 같은 대사를 양쪽에 넣지 마세요.
-- advice_for_a 3개·advice_for_b 3개 — **서로 다른 구체 행동** (감정 드러내라 복제 금지)
+- advice_for_a 3개·advice_for_b 3개 — **서로 다른 구체 행동** (감정 드러내라 복제 금지); each tip must cite a digest signal
 - together: **💌 에센스 다이어리** 3문장+ / together_starter: 대화 문 여는 대사
 `.trim();
 }
@@ -201,7 +221,7 @@ export function buildHiddenHeartsRoleGuide(
 ## 내부 계산 / 외부 표현
 - 내부: 십신(정재·편재·정관·편관 등), 달(Moon) 별자리, 용신/기신 신호로 무의식 역동 계산.
 - **본문 출력**: 정재·편관·Moon 등 **전문 용어 0개**. 현대 심리학적 일상어로만.
-- 치환 예: "${nicknameA}님이 내심 가장 바라는 것은…", "${nicknameB}님이 겉보기와 달리 두려워하는 지점은…"
+- 치환 예: use bare names — "${nicknameA}가 내심 가장 바라는 것은…", "${nicknameB}가 겉보기와 달리 두려워하는 지점은…" (do **not** invent 나님 / doubled 님)
 
 ## 필드별 후킹 정의
 
@@ -209,12 +229,15 @@ export function buildHiddenHeartsRoleGuide(
 |---|---|---|
 | \`a_hidden\` (${nicknameA}) | **${nicknameA}의 숨은 마음** | 겉으론 쿨·씩씩해 보여도, 내심 ${nicknameB}에게 **인정받고 싶은 욕구**·말 못 한 **정서적 갈증**(불안·서운함의 진짜 원인). "내 마음을 들켰다" 소름 |
 | \`b_hidden\` (${nicknameB}) | **${nicknameB}의 숨은 마음** | 겉으론 든든·무뚝뚝해 보여도, ${nicknameA}와의 관계에서 **조심스럽고 상처받기 싫어 방어하는** 인간적 취약점. a_hidden과 **문장 골격·형용사 중복 금지** |
-| \`mutual_gift\` | **💡 두 사람의 무의식 시너지** | 말하지 않아도 느끼는 **묘한 긴장감** 또는 **보이지 않는 정서적 안전지대**. 날카로운 심리 저널 톤. 칭찬·치유 클리셰 금지 |
+| \`mutual_gift\` | **💡 두 사람의 무의식 시너지** | 말하지 않아도 느끼는 **묘한 긴장감** 또는 **보이지 않는 정서적 안전지대**. 날카로운 심리 저널 톤. 칭찬·치유 클리셰 금지. Must **not** restate special_bond / reassurance comfort thesis. |
 
 ## 각 hidden 블록 구조 (필수)
 - \`need\`: 한 줄 **후킹** — 무의식적 욕구·두려움의 핵심 (2문장 이내)
 - \`reason\`: 왜 그런지 — **3문장+**, 구체적 장면·습관
-- \`voice\`: "사실 나는…" **1인칭 5~8문장**, 날것의 고백 (${nicknameA} 또는 ${nicknameB} 시점)
+- \`voice\`: "사실 나는…" **1인칭 5~8문장**, 날것의 고백
+  - \`a_hidden.voice\`: speaker = **${nicknameA}**; partner = **${nicknameB}** only
+  - \`b_hidden.voice\`: speaker = **${nicknameB}**; partner = **${nicknameA}** only
+  - Never call yourself by your own display name inside voice
 
 ## 금지 미사여구
 ${hiddenForbidden} 및 유사 변형 **0개**.

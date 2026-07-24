@@ -44,11 +44,14 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 
 
 
-## 4. 1인칭 대화체 검토
+## 4. 1인칭 대화체·화자 바인딩 검토
 
 - [ ] first_person_voice / voice가 "사실 나는..."으로 시작하나요?
-
 - [ ] 구체적이고 날것 같은 표현인가요?
+- [ ] \`a_*\` 1인칭에서 "나" = 슬롯 A display name, 상대 = 슬롯 B만인가요? (자기 이름을 3인칭으로 부르지 않음)
+- [ ] \`b_*\` 1인칭에서 "나" = 슬롯 B display name, 상대 = 슬롯 A만인가요?
+- [ ] \`나님\` / \`저님\` / 이중 존칭 **0개**인가요?
+- [ ] 제공된 display name을 **그대로** 썼나요? (임의로 님/씨 추가 금지)
 
 
 
@@ -74,6 +77,7 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 - [ ] 모든 \`real_life_example\`이 **\`""\`** 인가요?
 - [ ] "이런 순간에" 등 기획 메모식 문구 **0개**?
 - [ ] 6개 팁이 **서로 다른 행동 강령**인가요? ("감정을 드러내라" 복제 없음)
+- [ ] **Digest-backed advice**: 각 \`saju_reason\`이 구체 \`dynamics_digest\` 신호(compare_* / 일치 / expression_speed / recovery / residual)를 가리키나요? (아무 커플에나 통하는 일반론 0개)
 - [ ] \`together\`가 에센스 다이어리 **3문장+** 인가요?
 - [ ] \`together_starter\`가 대화 시작 실전 대사인가요?
 
@@ -93,13 +97,25 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 
 - [ ] hidden 금지 미사여구("깊은 정서적 교감", "솔직한 대화", "서로 존중") **0개**?
 
+- [ ] special_bond / frames / hidden / mutual / action이 **서로 다른 서술 역할**인가요? (같은 "서로 안아주는 안정감" 테제 재탕 금지)
+
 - [ ] section_3: 갈등이 **양쪽 기질의 힘듦**으로 50:50 서술됐나요? (한쪽만 잘못 프레이밍 없음)
 
 - [ ] section_5: action_title + saju_reason(3문장+) + real_speech_tip. real_life_example **""**. 자연물 비유·"이런 순간에" **0개**?
 
 
 
-## 8. 은유 & 깊이
+## 8. Epistemic · Canonical · Same-lean · Mismatch (Patch 1 / 1.5)
+
+- [ ] \`confidence=low\` 또는 \`align=caution\` 행을 **단정 사실**로 쓰지 않았나요? (제안·검증 톤만)
+- [ ] \`confidence=high\` / confirms 행은 불필요한 헤지 없이 직접적으로 썼나요?
+- [ ] Canonical digest 값(lean/band/일치/direction/align/confidence)과 **모순되는 문장**이 있으면 산문을 고쳤나요? (판정을 바꾸지 않음)
+- [ ] Same lean (incl. balanced/balanced): **유사성**으로만 서술했나요? (가짜 대비·유연 vs 신중 발명 금지)
+- [ ] \`일치:false\` / mismatch를 **상호 안심·서로 잘 맞춰줌**으로 soft-wash하지 않았나요? (갭을 먼저 명명)
+
+
+
+## 9. 은유 & 깊이
 
 - [ ] 관계 이름·방정식에 구체적 이미지?
 
@@ -107,15 +123,15 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 
 
 
-## 9. 말투·균형
+## 10. 말투·균형
 
-- [ ] "~것 같아요" 없음? A/B 비중 균형?
+- [ ] 고신뢰 행에서 불필요한 "~것 같아요" 남발 없음? A/B 비중 균형?
 
 - [ ] "깊은 교감", "깊은 신뢰", "특별한 에너지" 등 **금지 미사여구 0개**?
 
 
 
-부족하거나 예시 복사·중복 흔적이 있으면 **해당 필드를 입력 데이터 기반으로 전면 재작성**하세요.
+부족하거나 예시 복사·중복·canonical 모순·same-lean 가짜 대비·mismatch soft-wash·self-name·나님·일반론 advice 흔적이 있으면 **해당 필드를 입력 데이터 기반으로 전면 재작성**하세요.
 
 markdown·코드펜스 없이 유효한 JSON 한 덩어리만 출력하세요.
 
@@ -142,6 +158,11 @@ export function buildRomanticSajuDeepSelfRefinePrompt(
   return `${ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE}
 
 
+
+## Speaker names for this report
+- \`a_*\` 1st-person: "나" = **${nicknameA}**; partner refs = **${nicknameB}** only
+- \`b_*\` 1st-person: "나" = **${nicknameB}**; partner refs = **${nicknameA}** only
+- Ban self-reference as "${nicknameA}님" / "${nicknameB}님" inside own 1st-person fields; ban 나님/저님
 
 ${buildEssenceJournalSelfDedupChecklist(nicknameA, nicknameB)}
 
