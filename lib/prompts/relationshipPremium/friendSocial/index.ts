@@ -6,6 +6,7 @@ import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisFo
 import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { Locale } from "@/lib/i18n/locale";
+import { attachFriendSajuDeepOverlay } from "@/lib/prompts/relationshipPremium/friendSajuDeep";
 import {
   FRIEND_SOCIAL_DEEP_FORMAT,
   type FriendSocialDeepReport,
@@ -17,9 +18,14 @@ export { isFriendSocialDeepReport } from "./outputSchema";
 
 export type FriendSocialDeepPayload = FriendSocialDeepReport;
 
-/** 친구(Social DNA) 심화 분석 — rule-only */
+/**
+ * 친구(Social DNA) 심화 분석
+ * 1) rule-only CE (`buildFriendReport`) — classifications SSOT
+ * 2) optional friendSajuDeep LLM explain overlay → meta.friend_saju_deep
+ *    (RELATIONSHIP_FRIEND_NARRATIVE=0 to skip)
+ */
 export async function runFriendSocialDeepAnalysis(
-  _openai: OpenAI,
+  openai: OpenAI,
   params: {
     nicknameA: string;
     nicknameB: string;
@@ -40,7 +46,12 @@ export async function runFriendSocialDeepAnalysis(
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
     locale?: Locale;
+    userCustomMyName?: string;
+    userCustomTargetName?: string;
+    /** Skip LLM overlay even if env enabled (tests). */
+    skipFriendNarrative?: boolean;
   },
+  options?: { abortSignal?: AbortSignal },
 ): Promise<FriendSocialDeepPayload> {
   const pairFriendship =
     params.sajuMasterA && params.sajuMasterB
@@ -56,7 +67,7 @@ export async function runFriendSocialDeepAnalysis(
   const friendSignalsA = params.sajuMasterA?.domain_signals.friendship_signals;
   const friendSignalsB = params.sajuMasterB?.domain_signals.friendship_signals;
 
-  const report = buildFriendReport({
+  let report = buildFriendReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,
@@ -73,6 +84,25 @@ export async function runFriendSocialDeepAnalysis(
     friendSignalsB,
     locale: params.locale,
   });
+
+  if (!params.skipFriendNarrative) {
+    const short =
+      typeof params.locale === "string" && params.locale.startsWith("en")
+        ? "en"
+        : "ko";
+    report = await attachFriendSajuDeepOverlay(
+      openai,
+      {
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+        report,
+        userCustomMyName: params.userCustomMyName ?? params.nicknameA,
+        userCustomTargetName: params.userCustomTargetName ?? params.nicknameB,
+        locale: short,
+      },
+      options,
+    );
+  }
 
   return {
     format: FRIEND_SOCIAL_DEEP_FORMAT,

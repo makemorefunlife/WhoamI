@@ -77,6 +77,13 @@ export type FriendReportBody = {
     psych_lens?: DomainPsychLens | null;
     /** pair.friendship 교차 신호 기반 실행 처방전 */
     prescription_friendship?: FriendPrescriptionPack;
+    /**
+     * Round 2 — friendSajuDeep LLM explain overlay (optional).
+     * Does not own classifications; CE projections remain SSOT.
+     */
+    friend_saju_deep?: import("@/lib/prompts/relationshipPremium/friendSajuDeep").FriendSajuDeepReport;
+    locale?: string;
+    language?: string;
   };
   /**
    * Context Output — 이미 계산된 ctx/friend 재포장.
