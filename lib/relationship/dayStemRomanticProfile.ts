@@ -347,6 +347,18 @@ function waGwaAfter(phrase: string): "과" | "와" {
   return hasBatchimKorean(lastToken) ? "과" : "와";
 }
 
+/** Subject particle 이/가 after the last Hangul token of a phrase. */
+function iGaAfter(phrase: string): "이" | "가" {
+  const lastToken = phrase.trim().split(/\s+/).at(-1) ?? phrase.trim();
+  return hasBatchimKorean(lastToken) ? "이" : "가";
+}
+
+/** Topic particle 은/는 after the last Hangul token of a phrase. */
+function eunNeunAfter(phrase: string): "은" | "는" {
+  const lastToken = phrase.trim().split(/\s+/).at(-1) ?? phrase.trim();
+  return hasBatchimKorean(lastToken) ? "은" : "는";
+}
+
 /** "꾸준히 빛나고 따뜻한 콩콩" / EN: "Sera, growing steady and strong" */
 export function formatRomanticEssenceNickname(
   profile: DayStemRomanticProfile,
@@ -458,18 +470,18 @@ export function buildRomanticDayStemOneLiner(params: {
   }
 
   if (params.dayStemInteraction.includes("상생")) {
-    return `${opener} ${pair}가 ${closer}`;
+    return `${opener} ${pair}${iGaAfter(pair)} ${closer}`;
   }
   if (params.dayStemInteraction.includes("상극")) {
-    return `${opener} ${pair}는 ${closer}`;
+    return `${opener} ${pair}${eunNeunAfter(pair)} ${closer}`;
   }
   if (
     params.dayStemInteraction.includes("같은") &&
     params.dayStemInteraction.includes("기운")
   ) {
-    return `${opener} ${pair}는 ${closer}`;
+    return `${opener} ${pair}${eunNeunAfter(pair)} ${closer}`;
   }
-  return `${opener} ${pair}는 서로 다른 강점으로 관계를 채워 가요.`;
+  return `${opener} ${pair}${eunNeunAfter(pair)} 서로 다른 강점으로 관계를 채워 가요.`;
 }
 
 /** stem code 쌍 → "촛불과 강철" 형태 헤드라인 */
@@ -520,5 +532,5 @@ export function formatRomanticMetaphorComboBody(
   if (normalizeRomanticHeadlineLocale(locale) === "en") {
     return `${pairLine} come together, filling in each other's rhythm.`;
   }
-  return `${pairLine}가 만나 서로 다른 리듬을 채워요.`;
+  return `${pairLine}${iGaAfter(pairLine)} 만나 서로 다른 리듬을 채워요.`;
 }
