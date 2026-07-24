@@ -36,7 +36,7 @@ import {
 import { filterHubFriendList } from "@/lib/relationship/hubFriendList";
 import { hubItemKey } from "@/lib/relationship/hubItemKey";
 import { buildRelationshipAnalyzeUrl } from "@/lib/relationship/hubNavigation";
-import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import type { AnalysisSurface } from "@/lib/relationship/analysisSurface";
 import type { FamilyPerspective } from "@/lib/relationship/hubNavigation";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import { buildInviteUrl, copyInviteLink } from "@/lib/relationship/inviteShare";
@@ -476,7 +476,7 @@ export default function RelationHubDashboard() {
 
   function navigateAnalyze(
     item: RelationshipListItem,
-    kind: RelationshipKind,
+    surface: AnalysisSurface,
     family?: { perspective: FamilyPerspective; parentType: FamilyParentRole },
   ) {
     if (!item.relationship_report_id) {
@@ -496,7 +496,7 @@ export default function RelationHubDashboard() {
         buildRelationshipAnalyzeUrl(
           item.relationship_report_id,
           viewerId,
-          kind,
+          surface,
           family,
         ),
       ),
@@ -670,8 +670,8 @@ export default function RelationHubDashboard() {
             : ""
         }
         onClose={() => setKindPickerTarget(null)}
-        onSelect={(kind, family) => {
-          if (kindPickerTarget) navigateAnalyze(kindPickerTarget, kind, family);
+        onSelect={(surface, family) => {
+          if (kindPickerTarget) navigateAnalyze(kindPickerTarget, surface, family);
         }}
       />
 

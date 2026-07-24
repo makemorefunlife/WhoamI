@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipKindPicker from "@/components/relationship/RelationshipKindPicker";
+import type { AnalysisSurface } from "@/lib/relationship/analysisSurface";
+import { buildRelationshipAnalyzeUrl } from "@/lib/relationship/hubNavigation";
 import {
   parseRelationshipKind,
   type RelationshipKind,
@@ -38,6 +40,8 @@ export type RelationshipListItem = {
   status_hint?: string | null;
   is_favorite?: boolean;
   relationship_kind?: string;
+  /** 관계(친구) 추가 시각 ISO — 최신 추가가 목록 앞에 */
+  added_at?: string | null;
 };
 
 function kindBadgeMap(
@@ -147,20 +151,28 @@ export default function RelationshipCard({
   const isWaiting = !isDone && kind === "outbound_waiting";
   const isManual = kind === "relationship_manual";
 
-  function navigateToRelationship(relationshipKind: RelationshipKind) {
+  function navigateToRelationship(surface: AnalysisSurface) {
     if (!item.relationship_report_id) return;
     setPickerOpen(false);
     router.push(
-      `/relationship/${item.relationship_report_id}?viewer=${encodeURIComponent(myReportId)}&kind=${encodeURIComponent(relationshipKind)}`,
+      buildRelationshipAnalyzeUrl(
+        item.relationship_report_id,
+        myReportId,
+        surface,
+      ),
     );
   }
 
   function viewCompletedReport() {
+    if (item.analysis_type === "basic" || !item.relationship_kind) {
+      navigateToRelationship("basic");
+      return;
+    }
     navigateToRelationship(defaultKind);
   }
 
   function openForFirstAnalysis() {
-    navigateToRelationship("friendship");
+    navigateToRelationship("basic");
   }
 
   const outlineBtn =

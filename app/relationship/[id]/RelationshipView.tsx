@@ -41,6 +41,7 @@ export default function RelationshipView({
     viewerBirthPlaceUnknown,
     partnerBirthPlaceUnknown,
     analysisType,
+    analysisSurface,
     premiumKind,
     snapshotView,
     logs,
@@ -61,7 +62,7 @@ export default function RelationshipView({
     displayFriendshipDeep,
     premiumReady,
     retryAnalysis,
-    onPremiumKindChange,
+    onAnalysisSurfaceChange,
     viewAnalysisLog,
     clearSnapshotView,
     reloadDetail,
@@ -71,6 +72,7 @@ export default function RelationshipView({
     regeneratePremium,
   } = detail;
 
+  const viewingBasicSurface = analysisSurface === "basic";
   const generating = busy || autostartActive;
   const usedBirthFallback =
     viewerBirthTimeUnknown ||
@@ -234,12 +236,12 @@ export default function RelationshipView({
           ) : null}
 
           <RelationshipKindTabs
-            value={premiumKind}
-            onChange={onPremiumKindChange}
+            value={analysisSurface}
+            onChange={onAnalysisSurfaceChange}
             disabled={generating}
           />
 
-          {premiumKind === "family" ? (
+          {!viewingBasicSurface && analysisSurface === "family" ? (
             <RelationshipFamilyRolePanel
               familyParentType={familyParentType}
               onFamilyParentTypeChange={setFamilyParentType}
@@ -253,7 +255,7 @@ export default function RelationshipView({
             />
           ) : null}
 
-          {!showGeneratingPanel ? (
+          {viewingBasicSurface && !showGeneratingPanel ? (
             <RelationshipBasicCards
               perspective={displayBasic}
               partnerName={partnerName}
@@ -261,7 +263,8 @@ export default function RelationshipView({
             />
           ) : null}
 
-          {(!displayBasic || Object.keys(displayBasic).length === 0) &&
+          {viewingBasicSurface &&
+          (!displayBasic || Object.keys(displayBasic).length === 0) &&
           !err &&
           !snapshotView &&
           !showGeneratingPanel ? (
@@ -277,36 +280,38 @@ export default function RelationshipView({
             </div>
           ) : null}
 
-          <RelationshipPremiumSection
-            busy={generating}
-            premiumKind={premiumKind}
-            analysisType={analysisType}
-            premiumReady={premiumReady}
-            hasSnapshotView={viewingPremiumSnapshot}
-            partnerName={partnerName}
-            viewerName={viewerName}
-            nameA={nameA}
-            nameB={nameB}
-            viewerIsReportA={viewerIsReportA}
-            displayPremium={displayPremium}
-            displayRomanticDeep={displayRomanticDeep}
-            displayWorkDeep={displayWorkDeep}
-            displayCohabitationDeep={displayCohabitationDeep}
-            displayFamilyDeep={displayFamilyDeep}
-            displayFriendshipDeep={displayFriendshipDeep}
-            onRunPremium={runPremium}
-            onRegeneratePremium={regeneratePremium}
-            forceVisible={urlAutostart || generating}
-            onReportReadyRef={reportAnchorRef}
-          />
+          {!viewingBasicSurface ? (
+            <RelationshipPremiumSection
+              busy={generating}
+              premiumKind={premiumKind}
+              analysisType={analysisType}
+              premiumReady={premiumReady}
+              hasSnapshotView={viewingPremiumSnapshot}
+              partnerName={partnerName}
+              viewerName={viewerName}
+              nameA={nameA}
+              nameB={nameB}
+              viewerIsReportA={viewerIsReportA}
+              displayPremium={displayPremium}
+              displayRomanticDeep={displayRomanticDeep}
+              displayWorkDeep={displayWorkDeep}
+              displayCohabitationDeep={displayCohabitationDeep}
+              displayFamilyDeep={displayFamilyDeep}
+              displayFriendshipDeep={displayFriendshipDeep}
+              onRunPremium={runPremium}
+              onRegeneratePremium={regeneratePremium}
+              forceVisible={urlAutostart || generating}
+              onReportReadyRef={reportAnchorRef}
+            />
+          ) : null}
 
-          {premiumReady && !showGeneratingPanel ? (
+          {!viewingBasicSurface && premiumReady && !showGeneratingPanel ? (
             <p className="mt-4 text-center text-sm font-medium text-secondary">
               {messages.report.reportReadyNotice}
             </p>
           ) : null}
 
-          {analysisType === "basic" && !urlAutostart ? (
+          {viewingBasicSurface && analysisType === "basic" && !urlAutostart ? (
             <p className="mt-8 text-center text-xs text-on-surface-variant">
               {messages.report.chooseKindHint}
             </p>

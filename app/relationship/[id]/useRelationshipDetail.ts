@@ -16,6 +16,11 @@ import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/fri
 import { ROMANTIC_SAJU_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import type { FamilyParentRole } from "@/lib/relationship/familyParent/types";
 import {
+  isPremiumAnalysisSurface,
+  parseAnalysisSurface,
+  type AnalysisSurface,
+} from "@/lib/relationship/analysisSurface";
+import {
   parseRelationshipKind,
   type RelationshipKind,
 } from "@/lib/relationship/relationshipKind";
@@ -67,6 +72,8 @@ export type UseRelationshipDetailReturn = {
   viewerBirthPlaceUnknown: boolean;
   partnerBirthPlaceUnknown: boolean;
   analysisType: string;
+  /** 탭/URL 표면: basic(무료) 또는 심화 kind */
+  analysisSurface: AnalysisSurface;
   premiumKind: RelationshipKind;
   favorited: boolean;
   favoriteBusy: boolean;
@@ -91,7 +98,7 @@ export type UseRelationshipDetailReturn = {
   premiumReady: boolean;
   toggleFavorite: () => Promise<void>;
   retryAnalysis: () => void;
-  onPremiumKindChange: (kind: RelationshipKind) => void;
+  onAnalysisSurfaceChange: (surface: AnalysisSurface) => void;
   viewAnalysisLog: (log: AnalysisLogListItem) => void;
   clearSnapshotView: () => void;
   reloadDetail: () => void;
@@ -178,12 +185,18 @@ export function useRelationshipDetail({
   const [nameA, setNameA] = useState("");
   const [nameB, setNameB] = useState("");
   const [viewerIsReportA, setViewerIsReportA] = useState(true);
-  const [premiumKind, setPremiumKind] = useState<RelationshipKind>(() =>
-    parseRelationshipKind(urlKindHint || undefined),
+  const [analysisSurface, setAnalysisSurface] = useState<AnalysisSurface>(() =>
+    parseAnalysisSurface(urlKindHint || "basic"),
   );
-  const premiumKindRef = useRef<RelationshipKind>(
-    parseRelationshipKind(urlKindHint || undefined),
-  );
+  const analysisSurfaceRef = useRef<AnalysisSurface>(analysisSurface);
+  analysisSurfaceRef.current = analysisSurface;
+  const [premiumKind, setPremiumKind] = useState<RelationshipKind>(() => {
+    const surface = parseAnalysisSurface(urlKindHint || "basic");
+    return isPremiumAnalysisSurface(surface)
+      ? surface
+      : parseRelationshipKind(undefined);
+  });
+  const premiumKindRef = useRef<RelationshipKind>(premiumKind);
   premiumKindRef.current = premiumKind;
   const [favorited, setFavorited] = useState(false);
   const [favoriteBusy, setFavoriteBusy] = useState(false);
@@ -267,7 +280,9 @@ export function useRelationshipDetail({
         options?.silent === true || detailOkRef.current === true;
       const explicitKind =
         kindOverride ??
-        (urlKindHint ? parseRelationshipKind(urlKindHint) : null);
+        (urlKindHint && isPremiumAnalysisSurface(parseAnalysisSurface(urlKindHint))
+          ? (parseAnalysisSurface(urlKindHint) as RelationshipKind)
+          : null);
       const kindForRequest = explicitKind ?? premiumKindRef.current;
       setErr(null);
       if (!silent) setLoading(true);
@@ -378,10 +393,16 @@ export function useRelationshipDetail({
   /** Same-route soft navigations: sync ?kind= and reload (state otherwise sticks). */
   useEffect(() => {
     if (!urlKindHint) return;
-    const k = parseRelationshipKind(urlKindHint);
-    if (k === premiumKindRef.current) return;
+    const surface = parseAnalysisSurface(urlKindHint);
+    if (surface === analysisSurfaceRef.current) return;
     setSnapshotView(null);
-    setPremiumKind(k);
+    setAnalysisSurface(surface);
+    if (!isPremiumAnalysisSurface(surface)) {
+      setServerPremiumReady(false);
+      return;
+    }
+    if (surface === premiumKindRef.current) return;
+    setPremiumKind(surface);
     setServerPremiumReady(false);
     setPremium(null);
     setRomanticDeep(null);
@@ -390,7 +411,7 @@ export function useRelationshipDetail({
     setFamilyDeep(null);
     setFriendshipDeep(null);
     premiumSeqRef.current += 1;
-    void load(k, { silent: true });
+    void load(surface, { silent: true });
   }, [urlKindHint, load]);
 
   /** Whether we've already attempted an ensureBasic() call for this relationship (this mount). */
@@ -471,6 +492,7 @@ export function useRelationshipDetail({
     );
     setSnapshotView(snapshot);
     setPremiumKind(kind);
+    setAnalysisSurface(kind);
   }, []);
 
   useEffect(() => {
@@ -658,10 +680,25 @@ export function useRelationshipDetail({
     void runPremium(premiumKind, { forceRegenerate: true });
   }, [premiumKind, runPremium, messages]);
 
-  const onPremiumKindChange = useCallback(
-    (kind: RelationshipKind) => {
+  const onAnalysisSurfaceChange = useCallback(
+    (surface: AnalysisSurface) => {
       setSnapshotView(null);
-      setPremiumKind(kind);
+      setAnalysisSurface(surface);
+      if (effectiveViewerReportId && resolvedRelationshipId) {
+        const q = new URLSearchParams({
+          viewer: effectiveViewerReportId,
+          kind: surface,
+        });
+        router.replace(
+          href(buildRelationshipDetailPath(resolvedRelationshipId, q)),
+          { scroll: false },
+        );
+      }
+      if (!isPremiumAnalysisSurface(surface)) {
+        setServerPremiumReady(false);
+        return;
+      }
+      setPremiumKind(surface);
       setServerPremiumReady(false);
       setPremium(null);
       setRomanticDeep(null);
@@ -669,18 +706,8 @@ export function useRelationshipDetail({
       setCohabitationDeep(null);
       setFamilyDeep(null);
       setFriendshipDeep(null);
-      if (effectiveViewerReportId && resolvedRelationshipId) {
-        const q = new URLSearchParams({
-          viewer: effectiveViewerReportId,
-          kind,
-        });
-        router.replace(
-          href(buildRelationshipDetailPath(resolvedRelationshipId, q)),
-          { scroll: false },
-        );
-      }
       premiumSeqRef.current += 1;
-      void load(kind, { silent: true });
+      void load(surface, { silent: true });
     },
     [load, router, effectiveViewerReportId, resolvedRelationshipId, href],
   );
@@ -770,6 +797,7 @@ export function useRelationshipDetail({
 
   useEffect(() => {
     if (!urlAutostart || autostartTriggered.current) return;
+    if (analysisSurface === "basic") return;
     if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
       return;
     if (!basic || Object.keys(basic).length === 0) return;
@@ -782,6 +810,7 @@ export function useRelationshipDetail({
     void runAutostartPremium();
   }, [
     urlAutostart,
+    analysisSurface,
     loading,
     detailOk,
     effectiveViewerReportId,
@@ -809,6 +838,7 @@ export function useRelationshipDetail({
     viewerBirthPlaceUnknown,
     partnerBirthPlaceUnknown,
     analysisType,
+    analysisSurface,
     premiumKind,
     favorited,
     favoriteBusy,
@@ -833,7 +863,7 @@ export function useRelationshipDetail({
     premiumReady,
     toggleFavorite,
     retryAnalysis,
-    onPremiumKindChange,
+    onAnalysisSurfaceChange,
     viewAnalysisLog,
     clearSnapshotView,
     reloadDetail,

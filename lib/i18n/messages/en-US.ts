@@ -100,10 +100,19 @@ export const messagesEnUS = {
     resendInvite: "Resend",
     cancelInvite: "Cancel invite",
     kindPickerTitle: (partnerName: string) =>
-      `How would you like to view your relationship with ${partnerName}?`,
-    kindPickerSubtitle: "The analysis changes based on the relationship you pick.",
+      `What analysis would you like for ${partnerName}?`,
+    kindPickerSubtitle:
+      "Basic analysis is free. Deep analysis changes with the relationship type.",
     kindPickerSubtitlePremium:
       "The deep analysis changes based on the relationship you pick.",
+    kindPickerSectionBasic: "Basic",
+    kindPickerSectionPremium: "Deep",
+    kindPickerBasicFree: "Basic analysis (free)",
+    kindPickerFamily: "Family (parent–child)",
+    kindPickerRomantic: "Romantic",
+    kindPickerFriendship: "Friends",
+    kindPickerWork: "Colleague",
+    kindPickerCohabitation: "Couple (cohabiting)",
     perspectiveSelectLabel: "Choose a perspective",
     parentPerspectiveTitle: "Parent's perspective",
     parentPerspectiveSubtitle: "Viewing the child",
@@ -245,7 +254,7 @@ export const messagesEnUS = {
     createBasicAnalysis: "Create basic analysis",
     reportReadyNotice: "Your report is ready. Check it out below.",
     chooseKindHint:
-      "Pick a relationship type to generate deep analysis right away.",
+      "Use the tabs above to pick a relationship type for deep analysis.",
     analysisHistoryTitle: "Analysis history",
     loadingReportTitle: "Loading your report",
     generatingReportTitle: "Generating your report",
@@ -1290,6 +1299,14 @@ export type MessageCatalog = {
     kindPickerTitle: (partnerName: string) => string;
     kindPickerSubtitle: string;
     kindPickerSubtitlePremium: string;
+    kindPickerSectionBasic: string;
+    kindPickerSectionPremium: string;
+    kindPickerBasicFree: string;
+    kindPickerFamily: string;
+    kindPickerRomantic: string;
+    kindPickerFriendship: string;
+    kindPickerWork: string;
+    kindPickerCohabitation: string;
     perspectiveSelectLabel: string;
     parentPerspectiveTitle: string;
     parentPerspectiveSubtitle: string;

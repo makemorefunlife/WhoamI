@@ -2,11 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import GlowButton from "@/components/space/GlowButton";
+import type { AnalysisSurface } from "@/lib/relationship/analysisSurface";
+import { ANALYSIS_SURFACE_ORDER } from "@/lib/relationship/analysisSurface";
 import { RelationshipKindBadge } from "@/components/relationship/RelationshipKindBadge";
-import {
-  RELATIONSHIP_KINDS,
-  type RelationshipKind,
-} from "@/lib/relationship/relationshipKind";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function RelationshipKindPicker({
@@ -18,7 +16,7 @@ export default function RelationshipKindPicker({
   partnerName: string;
   open: boolean;
   onClose: () => void;
-  onSelect: (kind: RelationshipKind) => void;
+  onSelect: (surface: AnalysisSurface) => void;
 }) {
   const messages = useMessages();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -55,19 +53,28 @@ export default function RelationshipKindPicker({
           {messages.hub.kindPickerTitle(partnerName)}
         </h2>
         <p className="mt-2 text-center text-xs text-[var(--space-text-muted)]">
-          {messages.hub.kindPickerSubtitlePremium}
+          {messages.hub.kindPickerSubtitle}
         </p>
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          {RELATIONSHIP_KINDS.map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              className="flex items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] py-3 transition hover:border-[#67B7FF]/40 hover:bg-[#67B7FF]/10"
-              onClick={() => onSelect(kind)}
-            >
-              <RelationshipKindBadge kind={kind} />
-            </button>
-          ))}
+        <div className="mt-5 space-y-3">
+          <button
+            type="button"
+            className="flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] py-3 text-sm font-semibold text-[var(--space-text)] transition hover:border-[#67B7FF]/40 hover:bg-[#67B7FF]/10"
+            onClick={() => onSelect("basic")}
+          >
+            {messages.hub.kindPickerBasicFree}
+          </button>
+          <div className="grid grid-cols-2 gap-2">
+            {ANALYSIS_SURFACE_ORDER.filter((s) => s !== "basic").map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                className="flex items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] py-3 transition hover:border-[#67B7FF]/40 hover:bg-[#67B7FF]/10"
+                onClick={() => onSelect(kind)}
+              >
+                <RelationshipKindBadge kind={kind} />
+              </button>
+            ))}
+          </div>
         </div>
         <GlowButton
           type="button"
