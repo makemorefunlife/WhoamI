@@ -79,13 +79,15 @@ export function buildEssenceActionSystemPromptBlock(): string {
   - For A: respect partner's emotional timing / regulate expression density / check feelings before solving
   - For B: break silence and name the inner state / sync empathy before solving / try honesty over perfect words
 
-## Digest-backed advice (required — Round 2)
-- Every tip derives from **exactly one** named digest source: \`compare_*\` | \`reassurance\` | \`expression_speed\` | \`recovery\` | \`role_play\`.
-- Draft with an internal tag in \`saju_reason\` (e.g. \`[source: compare_affection]\` / \`[source: reassurance]\`), then **remove the tag** before final JSON.
-- First sentence of finished \`saju_reason\` must still name that digest signal in natural language.
-- Ban advice that would fit any couple without that digest; if no source, discard and rewrite.
-- Write display names **exactly** as given — ban \`나님\` / \`저님\` / doubled honorifics.
-- Few-shot bodies below are **structure/tone only** — never reuse their content.
+## Digest-backed advice (required — Round 3)
+- Every tip derives from **exactly one** digest fact (compare row / reassurance mismatch / expression_speed / recovery / role frame).
+- Internally: \`[source]\` + observed fact + action + expected effect — then **delete tags**; never print internal keys.
+- **Hard**: \`saju_reason\` **sentence 1** = evidence bridge only (digest fact in natural Korean). Sentence 2+ = concrete action + benefit.
+- Valid bridge starters: "…균형형으로 잡히기 때문에", "안심…방식이 어긋날 수 있어서", "감정 표현 속도가 다르게 잡히므로", "갈등 뒤 회복 속도 차이가 보이기 때문에", "스트레스 반응 결이 다르게 잡히므로"
+- Invalid starters: "어떤 상황에서도…", "상대의 감정을 이해하고…", "서로의 관계를 더욱…" without a digest fact first.
+- **Forbidden generic-only tips**: "서로 존중하며 소통하세요", "감정을 솔직히 표현하세요", "서로의 차이를 이해하세요", or any tip copyable unchanged to an unrelated couple.
+- Write display names **exactly** as given — ban \`나님\` / \`저님\` / inventing \`님\` on bare names.
+- Few-shot bodies below are **structure/tone only** — never reuse their content. If a tip lacks a bridge, discard and rewrite.
 
 ## Output structure (required)
 Per person, 3 tips — each item:
@@ -130,30 +132,30 @@ export function buildEssenceActionFewShotExample(params: {
 ---
 🌱 서로에게 도움이 되는 행동들
 
-✨ ${myName}님을 위한 에센스 가이드
+✨ ${myName}을 위한 에센스 가이드
 (JSON: \`advice_for_a\` if viewer=A, else mapping per 슬롯 — 각 항목 \`target_user\`는 조언 **받는 사람** = ${nicknameA})
 
-- 01. ${targetName}님의 정서적 타이밍 존중하기:
-  \`action_title\`: "${targetName}님의 정서적 타이밍 존중하기"
-  \`saju_reason\`: "${myName}님은 감정의 온도가 빠르게 올라가고 표현이 직관적인 만큼, 대화할 때 ${targetName}님의 호흡을 기다려주는 지혜가 필요합니다. ${myName}님이 먼저 한 걸음 물러나 안정감을 보여줄 때, ${targetName}님은 비로소 안전하다고 느끼며 숨겨둔 속마음을 더 잘 꺼내놓게 됩니다."
+- 01. ${targetName}의 정서적 타이밍 존중하기:
+  \`action_title\`: "${targetName}의 정서적 타이밍 존중하기"
+  \`saju_reason\`: "(증거 다리 예: 감정 표현 속도가 다르게 잡히므로…) ${myName}은 … (구체 행동 1개) … (그 신호에 Tied된 기대 효과). **예시 문장 복사 금지**"
   \`real_speech_tip\`: "${targetName}, 네가 이 상황을 어떻게 느끼고 정리하고 있는지 내심 궁금해. 천천히 얘기해 줘."
   \`real_life_example\`: ""
 
 - 02. 표현의 밀도 조절하기:
   \`action_title\`: "표현의 밀도 조절하기"
-  \`saju_reason\`: "(감정이 올라올 때 말의 양·속도를 조절해 상대가 방어하지 않게 하는 구체 행동 — 3~4문장, 01번과 **다른 강령**)"
+  \`saju_reason\`: "(다른 digest 사실의 증거 다리 + 다른 행동 강령 — 3~4문장)"
   \`real_speech_tip\`: "(01번과 다른 실전 대사)"
   \`real_life_example\`: ""
 
 - 03. (세 번째 **고유** 행동 강령 — 01·02와 주제·문장 골격 중복 금지)
   \`real_life_example\`: ""
 
-✨ ${targetName}님을 위한 에센스 가이드
+✨ ${targetName}을 위한 에센스 가이드
 (JSON: \`advice_for_b\` — \`target_user\` = ${nicknameB})
 
 - 01. 침묵을 깨고 내면의 지도 보여주기:
   \`action_title\`: "침묵을 깨고 내면의 지도 보여주기"
-  \`saju_reason\`: "${targetName}님은 갈등 상황에서 ${myName}님의 강한 감정 에너지에 조심스럽게 대처하느라, 혹은 상황을 완벽히 정리하느라 내심 자신의 감정을 억누르는 경향이 있습니다. 하지만 침묵이 길어지면 ${myName}님은 거절당했다고 느끼므로 미완성된 생각이라도 꺼내어 보여주는 것이 중요합니다."
+  \`saju_reason\`: "(증거 다리 예: 갈등 뒤 회복/표현 속도 신호가 …이므로) ${targetName}은 … **예시 문장 복사 금지**"
   \`real_speech_tip\`: "사실 나도 지금 이 상황이 당황스럽고 속상한 감정이 들어. 잘 얘기하고 싶어서 멈춰 있는 거야."
   \`real_life_example\`: ""
 
@@ -176,7 +178,7 @@ export function buildEssenceActionFewShotExample(params: {
 1. 호칭: write **${myName}** / **${targetName}** exactly as given (do not invent 님 if absent; ban 나님/저님)
 2. "이런 순간에 —" **0개**, \`real_life_example\` **전부 빈 문자열**
 3. A·B 각 3팁 — **제목·본문·대사 모두 서로 다름** (감정 드러내라 복제 금지)
-4. Each tip's \`saju_reason\` must cite a concrete \`dynamics_digest\` clause — example bodies above are **structure/tone only**, not generic advice to copy
+4. Each tip starts with a **user-facing evidence bridge** + concrete action + pair-specific benefit — never copy example bodies; never expose internal source keys
 5. \`together\` = 에센스 다이어리 **3문장+**, \`together_starter\` = 대화 문 여는 대사
 `.trim();
 }

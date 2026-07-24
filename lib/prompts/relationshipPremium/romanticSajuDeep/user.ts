@@ -137,25 +137,28 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
       - **Valid** balanced/balanced: both cells about balanced/flexible decision (not 유연 vs 신중).
       - **Forbidden**: same lean → "A는 감정, B는 행동" / "A는 유연, B는 신중".
     - Honor that row's \`confidence\` / \`align\` (see epistemic voice above).
+    - **Low-confidence polish (Round 3)**: for \`expression\` / \`conflict\` / \`stress\` rows with \`confidence=low\` or \`align=caution\`, each cell must include one tentative marker (e.g. "~하는 편으로 보일 수 있다", "~에 가까울 가능성이 있다", "실제 관계에서 확인해 볼 부분이다"). Do **not** over-hedge high-confidence / confirms rows.
 12. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones.
-    - **Digest source (Round 2)**: each tip derives from **exactly one** named digest source: \`compare_*\` | \`reassurance\` | \`expression_speed\` | \`recovery\` | \`role_play\`.
-    - While drafting, prefix the reason with an internal tag e.g. \`[source: compare_decision]\` / \`[source: reassurance]\`, then **delete the tag** before final JSON (schema must not expose it).
-    - The finished \`saju_reason\` must still name that digest signal in natural language in the first sentence.
-    - If you cannot identify a source, omit/regenerate the tip. Ban wording that could be copied unchanged to an unrelated couple. Few-shots are **structure only** — never reuse example content.
+    - **Evidence bridge (Round 3 — hard)**: the **first sentence** of every \`saju_reason\` MUST be a user-facing evidence bridge tied to exactly one digest fact. No soft opener before it.
+      - Valid bridges: "두 사람 모두 결정에서 균형형으로 잡히기 때문에…", "안심을 원하는 방식과 건네는 방식이 어긋날 수 있어서…", "감정 표현 속도가 다르게 잡히므로…", "갈등 뒤 회복 속도 차이가 보이기 때문에…", "스트레스 반응 결이 다르게 잡히므로…"
+      - Invalid: starting with "어떤 상황에서도…", "상대의 감정을 이해하고…", "서로 존중하며…" without a digest fact first.
+    - After the bridge: one concrete action + benefit specific to that evidence. Internally draft source/fact/action/effect; emit Korean only (strip tags; never print \`compare_*\` keys).
+    - **Forbidden**: "서로 존중하며 소통하세요", "감정을 솔직히 표현하세요", "서로의 차이를 이해하세요", tips copyable unchanged to an unrelated couple, few-shot content reuse.
+    - If a tip lacks a bridge, **discard and rewrite** that tip before output.
 13. **section_3 conflict**: dialogue_table **exactly 2 rows** — faster expresser + slower processor each ❌/✅. 50:50 balance; no model answers. Ban hidden_psychology. If \`dynamics_digest.expression_speed\` is present, keep the server \`direction\` for faster slot — do **not** reassign faster/slower from residual (residual is corroboration only, not direct evidence of expression speed)
 14. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms
 15. **section_4_hidden_hearts**: both a_hidden and b_hidden required. Fully separate from special_bond
 16. **section_1_summary**: do not generate (Headline Selector fills from Saju rules)
 17. **section_1_relationship_dynamics / section_4_relationship_frames**: these 4 fields (balance_of_power, recovery_speed, reassurance_signal, unconscious_role_play) must be phrased **only** from \`dynamics_digest\` in Input data. Do not invent a different verdict than what the digest already decided — you are writing the narrative, not re-classifying. Never print the internal band/frame names (e.g. "leader", "savior_dependent") literally — translate them into natural language. Keep \`recovery_speed\` residual phrasing separate from \`expression_speed\` (do not treat residual as who expresses faster).
-    - **Hard mismatch preservation (Round 2)**: when any \`일치:\` is \`false\`:
+    - **Hard mismatch preservation (Round 3)**: when any \`일치:\` is \`false\`:
       1. First sentence of \`a_body\` / \`b_body\` / \`match_note\` must **explicitly** state the need/give gap.
-      2. Final sentence must **not** reinterpret the pair as already mutually reassuring.
-      3. Repair tips may follow only in future/conditional language ("맞출 수 있다", "확인해 볼 수 있다") — never "서로에게 위안이 된다" / "서로에게 안정감을 주는 관계".
+      2. **Entire body** must stay consistent with mismatch — later sentences may name needs, current give styles, and how to translate between them, but must **not** claim they already reassure each other well, that the relationship currently provides mutual comfort, or that the mismatch is already resolved.
+      3. Repair language only conditional/future: "맞춰 갈 수 있다", "확인해 볼 필요가 있다", "번역해 주면 도움이 된다".
       4. \`match_note\` must contain an audible mismatch phrase (어긋/불일치/맞지 않/갭…).
-      - **Forbidden**: false → "서로에게 안정감을 주는 관계"
-      - **Valid**: false → "필요한 안심과 실제로 건네는 방식이 어긋날 수 있다"
+      - **Forbidden**: "결국 서로에게 큰 안심이 된다" / "이미 서로의 위안이 되고 있다" / "서로의 부족한 안심을 채워 준다" / "서로에게 안정감을 주는 관계"
+      - **Valid**: "필요한 안심과 건네는 방식이 다를 수 있다." / "상대가 안심으로 받아들이는 표현을 따로 확인해야 한다."
 18. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, bond nature metaphors, or cross-section claim rehash (same "comfort/stability/support" thesis in special_bond + frames + mutual_gift + nature) — **fully rewrite** that field
-19. **Names & B-speaker binding (Round 2)**: write display names **exactly** as given. Ban **나님**, **저님**, and doubling 님/씨.
+19. **Names & B-speaker binding**: write display names **exactly** as given. Ban **나님**, **저님**, doubling 님/씨, and inventing \`님\` on bare names (e.g. **${nicknameB}님** when the display name is **${nicknameB}**). Ban awkward \`${nicknameB}이의\` — use \`${nicknameB}의\`.
     - \`a_*\` 1st-person: "나" = **${nicknameA}**; partner = **${nicknameB}** only.
     - \`b_*\` 1st-person (\`b_nature.first_person_voice\`, \`b_hidden.*\`): speaker = **${nicknameB}**; "나" = **${nicknameB}** only; partner = **${nicknameA}** only.
     - If **${nicknameA}** is the literal string \`나\`, B may call A **"상대"** (or another supplied non-self label) — never invent a second self.

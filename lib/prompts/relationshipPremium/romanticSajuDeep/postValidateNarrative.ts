@@ -163,12 +163,13 @@ export function rewriteBSpeakerSelfName(
 function ensureMismatchNote(matchNote: string): string {
   const base = matchNote.trim();
   const gap =
-    "필요한 안심과 실제로 건네는 방식이 어긋날 수 있다. 맞춰 가려면 서로의 need/give를 확인해 볼 수 있다.";
+    "필요한 안심과 건네는 방식이 다를 수 있다. 상대가 안심으로 받아들이는 표현을 따로 확인해 볼 필요가 있다.";
   if (!base) return gap;
   let out = base;
   if (!MISMATCH_AUDIBLE.test(out)) {
     out = `${gap} ${out}`.trim();
   }
+  out = scrubPresentMutualComfortClauses(out);
   if (SOFT_WASH_FINAL.test(out)) {
     out =
       `${out.replace(SOFT_WASH_FINAL, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
@@ -176,12 +177,82 @@ function ensureMismatchNote(matchNote: string): string {
   return out;
 }
 
+/**
+ * Round 3 — scrub present-tense mutual-comfort claims while keeping
+ * evidence-specific need/give sentences. Clause-level only.
+ */
+function scrubPresentMutualComfortClauses(body: string): string {
+  let out = body;
+  // Longest / most specific first to avoid stacked "맞추려면…맞추려면"
+  const replacements: Array<[RegExp, string]> = [
+    [
+      /이를\s*통해\s*나의\s*감정이\s*존중받고\s*있다는\s*느낌을\s*받으며,?\s*안정감을\s*느낍니다\.?/g,
+      "존중받는 느낌과 안심을 맞추려면, 상대가 안심으로 받아들이는 표현인지 확인해 볼 필요가 있다.",
+    ],
+    [
+      /결국\s*서로에게\s*큰\s*안심이\s*됩니다?/g,
+      "맞춰 가면 안심으로 이어질 수 있다",
+    ],
+    [
+      /이미\s*서로의?\s*위안이\s*되고\s*있습니다?/g,
+      "아직 안심 방식이 어긋날 수 있다",
+    ],
+    [
+      /서로의\s*부족한\s*안심을\s*채워\s*줍니다?/g,
+      "부족한 안심을 맞추려면 표현을 확인해 볼 필요가 있다",
+    ],
+    [
+      /서로에게\s*(?:큰\s*)?(?:안심|위안|안정감)을\s*주는\s*관계입니다?/g,
+      "안심 방식을 맞출 여지는 확인해 볼 수 있다",
+    ],
+    [
+      /서로에게\s*(?:큰\s*)?(?:안심|위안)이\s*됩니다?/g,
+      "맞춰 가면 안심이 될 수 있다",
+    ],
+    [/서로\s*잘\s*맞춰\s*주는/g, "맞춰 가려면 확인이 필요한"],
+    [
+      /(?:나에게?|나의)\s*감정적\s*돌봄이\s*([^.]{0,24}?)큰\s*위안이\s*되며/g,
+      "감정적 돌봄이 $1위안이 되려면 방식이 맞는지 확인해 볼 필요가 있으며",
+    ],
+    [
+      /큰\s*위안이\s*되며/g,
+      "위안이 되려면 방식이 맞는지 확인해 볼 필요가 있으며",
+    ],
+    [
+      /큰\s*위안이\s*됩니다?/g,
+      "위안이 되려면 방식이 맞는지 확인해 볼 필요가 있다",
+    ],
+    [
+      /위안이\s*되며/g,
+      "위안이 되려면 방식이 맞는지 확인해 볼 필요가 있으며",
+    ],
+    [
+      /안정감을\s*느낍니다\.?/g,
+      "안정감을 맞출 여지는 확인해 볼 수 있다.",
+    ],
+    [/안정감을\s*느끼며/g, "안정감을 맞추려 할 때"],
+    [
+      /존중받고\s*있다는\s*느낌을\s*받으며,?\s*/g,
+      "존중받는 느낌을 맞추려면 확인이 필요하며, ",
+    ],
+    [
+      /무의식적으로\s*서로에게\s*안정감을\s*주는\s*관계를\s*형성하고\s*있습니다/g,
+      "안심 방식이 어긋날 수 있어 표현을 번역해 주면 도움이 된다",
+    ],
+  ];
+  for (const [re, rep] of replacements) {
+    out = out.replace(re, rep);
+  }
+  return out.replace(/\s{2,}/g, " ").trim();
+}
+
 function softWashBody(body: string): string {
   if (!body.trim()) return body;
   let out = body.trim();
   if (!MISMATCH_AUDIBLE.test(out.slice(0, Math.min(out.length, 120)))) {
-    out = `필요한 안심과 실제로 건네는 방식이 어긋날 수 있다. ${out}`;
+    out = `필요한 안심과 건네는 방식이 다를 수 있다. ${out}`;
   }
+  out = scrubPresentMutualComfortClauses(out);
   out = out
     .replace(/서로에게\s*위안이\s*됩니다?/g, "맞춰 가면 위안이 될 수 있다")
     .replace(
@@ -190,6 +261,60 @@ function softWashBody(body: string): string {
     )
     .replace(/이미\s*서로\s*안심/g, "아직 안심 방식이 어긋날 수 있어");
   return out;
+}
+
+const TENTATIVE_MARKER =
+  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울/;
+
+function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } {
+  const raw = cell.trim();
+  if (!raw) return { text: cell, fixed: false };
+  if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
+  const base = raw.replace(/[.。]\s*$/, "");
+  return {
+    text: `${base} — 편으로 보일 수 있으며, 실제 관계에서 확인해 볼 부분이다.`,
+    fixed: true,
+  };
+}
+
+const EVIDENCE_BRIDGE =
+  /결정.{0,12}균형|균형형|안심.{0,20}(방식|어긋|원하|건네|필요)|건네는\s*방식|감정\s*표현\s*속도|표현\s*속도|정서적\s*타이밍|회복\s*속도|갈등\s*뒤|갈등.{0,10}(반응|직면)|스트레스|애정\s*(언어|표현)|소통\s*방식|역할|프레임|잔류|일치하지|어긋|같은\s*결|공유|의사결정/;
+
+/** True if the opening sentence (before first 。/.) contains an evidence bridge. */
+function adviceHasLeadingEvidenceBridge(reason: string): boolean {
+  const first = reason.split(/(?<=[.。])\s+/)[0] || reason;
+  // Also allow bridge in first ~80 chars if no period yet
+  const head = first.length >= 12 ? first : reason.slice(0, 100);
+  return EVIDENCE_BRIDGE.test(head);
+}
+
+const GENERIC_ONLY_ADVICE =
+  /서로\s*존중하며\s*소통하세요|감정을\s*솔직히\s*표현하세요|서로의\s*차이를\s*이해하세요|깊은\s*교감|특별한\s*에너지|작은\s*신호부터/;
+
+function polishInventedNameForms(
+  text: string,
+  name: string,
+): { text: string; fixed: boolean } {
+  const n = name.trim();
+  if (!n || n === "나" || n === "저" || n === "상대") {
+    return { text, fixed: false };
+  }
+  let out = text;
+  let fixed = false;
+  if (!n.endsWith("님")) {
+    const withNim = new RegExp(`${escapeRe(n)}님`, "g");
+    if (withNim.test(out)) {
+      out = out.replace(withNim, n);
+      fixed = true;
+    }
+  }
+  // Awkward "이름의" after batchim subject particle bleed: 동글이의 → 동글의
+  const iui = new RegExp(`${escapeRe(n)}이의`, "g");
+  if (iui.test(out)) {
+    out = out.replace(iui, `${n}의`);
+    fixed = true;
+  }
+  return { text: out, fixed };
 }
 
 function sameLeanCellsLookOpposed(a: string, b: string): boolean {
@@ -336,6 +461,7 @@ export function postValidateRomanticNarrative(
     "의사결정": "decision",
     "소통 방식": "communication",
   };
+  const lowConfAspects = new Set(["expression", "conflict", "stress"]);
   const s2 = asObj(stripped.section_2_nature);
   const table = Array.isArray(s2?.comparison_table)
     ? [...(s2!.comparison_table as AnyRec[])]
@@ -350,19 +476,41 @@ export function postValidateRomanticNarrative(
       const leanRow = key ? leans[key] : undefined;
       const leanA = leanRow?.lean_a ?? null;
       const leanB = leanRow?.lean_b ?? null;
-      if (!leanA || !leanB || leanA !== leanB) continue;
-      const a = asStr(row.a);
-      const b = asStr(row.b);
-      if (!sameLeanCellsLookOpposed(a, b)) continue;
-      row.a = similarityCell(leanA, "a");
-      row.b = similarityCell(leanB, "b");
-      if (leanRow?.confidence === "low" || leanRow?.align === "caution") {
-        row.a = `${asStr(row.a)} (실제 생활에서 확인해 볼 신호)`;
-        row.b = `${asStr(row.b)} (단정하지 말고 맞춰 보세요)`;
+
+      // Same-lean invented opposition rewrite
+      if (leanA && leanB && leanA === leanB) {
+        const a = asStr(row.a);
+        const b = asStr(row.b);
+        if (sameLeanCellsLookOpposed(a, b)) {
+          row.a = similarityCell(leanA, "a");
+          row.b = similarityCell(leanB, "b");
+          if (leanRow?.confidence === "low" || leanRow?.align === "caution") {
+            row.a = `${asStr(row.a)} (실제 생활에서 확인해 볼 신호)`;
+            row.b = `${asStr(row.b)} (단정하지 말고 맞춰 보세요)`;
+          }
+          table[i] = row;
+          changed = true;
+          fixes.push(`same_lean_rewrite:${aspect}`);
+          continue;
+        }
       }
-      table[i] = row;
-      changed = true;
-      fixes.push(`same_lean_rewrite:${aspect}`);
+
+      // Round 3 — low-conf tentative markers on expression/conflict/stress
+      if (
+        key &&
+        lowConfAspects.has(key) &&
+        (leanRow?.confidence === "low" || leanRow?.align === "caution")
+      ) {
+        for (const cell of ["a", "b"] as const) {
+          const { text, fixed } = ensureLowConfTentative(asStr(row[cell]));
+          if (fixed) {
+            row[cell] = text;
+            changed = true;
+            fixes.push(`low_conf_hedge:${aspect}.${cell}`);
+          }
+        }
+        table[i] = row;
+      }
     }
     if (changed) {
       s2.comparison_table = table;
@@ -370,7 +518,7 @@ export function postValidateRomanticNarrative(
     }
   }
 
-  // Strip accidental internal source tags if the model left them in output.
+  // Strip accidental internal source tags; light advice bridge check (no broad rewrite).
   const action = asObj(stripped.section_5_action);
   if (action) {
     for (const listKey of ["advice_for_a", "advice_for_b"] as const) {
@@ -387,6 +535,13 @@ export function postValidateRomanticNarrative(
           tip.saju_reason = cleaned;
           touched = true;
         }
+        const finalReason = asStr(tip.saju_reason);
+        if (finalReason && !adviceHasLeadingEvidenceBridge(finalReason)) {
+          fixes.push(`advice_missing_evidence_bridge:${listKey}`);
+        }
+        if (GENERIC_ONLY_ADVICE.test(finalReason) || GENERIC_ONLY_ADVICE.test(asStr(tip.action_title))) {
+          fixes.push(`advice_generic_only:${listKey}`);
+        }
       }
       if (touched) {
         action[listKey] = list;
@@ -396,5 +551,29 @@ export function postValidateRomanticNarrative(
     stripped.section_5_action = action;
   }
 
-  return { report: stripped, fixes: [...new Set(fixes)] };
+  // Naming polish: invented 님 / awkward 이의 on display names
+  const polishTree = (node: unknown): unknown => {
+    if (typeof node === "string") {
+      let s = node;
+      let any = false;
+      for (const name of [nicknameA, nicknameB]) {
+        const { text, fixed } = polishInventedNameForms(s, name);
+        if (fixed) {
+          s = text;
+          any = true;
+        }
+      }
+      if (any) fixes.push("naming_polish");
+      return s;
+    }
+    if (Array.isArray(node)) return node.map(polishTree);
+    const obj = asObj(node);
+    if (!obj) return node;
+    const out: AnyRec = {};
+    for (const [k, v] of Object.entries(obj)) out[k] = polishTree(v);
+    return out;
+  };
+  const polished = polishTree(stripped) as AnyRec;
+
+  return { report: polished, fixes: [...new Set(fixes)] };
 }
