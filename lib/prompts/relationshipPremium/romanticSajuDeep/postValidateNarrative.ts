@@ -403,6 +403,13 @@ function ensureAdviceEvidenceBridge(
 const GENERIC_ONLY_ADVICE =
   /서로\s*존중하며\s*소통하세요|감정을\s*솔직히\s*표현하세요|서로의\s*차이를\s*이해하세요|깊은\s*교감|특별한\s*에너지|작은\s*신호부터/;
 
+/** Known few-shot diary bleed (structural examples must never ship verbatim). */
+const FEWSHOT_TOGETHER_BLEED =
+  /가장\s*아름다운\s*조각|따뜻한\s*차\s*한\s*잔을\s*사이에\s*두고|깊이\s*있는\s*저널을\s*써보듯|방어벽\s*뒤로\s*숨기지/;
+
+const FEWSHOT_STARTER_BLEED =
+  /마음의\s*온도가\s*어땠는지.*속마음에\s*대해\s*편안하게\s*얘기해\s*볼까/;
+
 function polishInventedNameForms(
   text: string,
   name: string,
@@ -504,18 +511,20 @@ export function postValidateRomanticNarrative(
   };
   const stripped = stripTree(next) as AnyRec;
 
-  // B 1st-person only
+  // B 1st-person only (voice + description both speak as B)
   const nature = asObj(stripped.section_2_nature);
   if (nature) {
     const bNature = asObj(nature.b_nature);
     if (bNature) {
-      patchStringField(
-        bNature,
-        "first_person_voice",
-        (s) => rewriteBSpeakerSelfName(s, nicknameB, nicknameA),
-        fixes,
-        "b_nature.first_person_voice",
-      );
+      for (const key of ["first_person_voice", "description"] as const) {
+        patchStringField(
+          bNature,
+          key,
+          (s) => rewriteBSpeakerSelfName(s, nicknameB, nicknameA),
+          fixes,
+          `b_nature.${key}`,
+        );
+      }
       nature.b_nature = bNature;
       stripped.section_2_nature = nature;
     }
@@ -681,6 +690,22 @@ export function postValidateRomanticNarrative(
         action[listKey] = list;
       }
     }
+
+    // Few-shot together prose bleed (Style Bible V2) — narrow fingerprint rewrite only.
+    const together = asStr(action.together);
+    if (together && FEWSHOT_TOGETHER_BLEED.test(together)) {
+      action.together = mismatch
+        ? "안심을 건네는 방식과 받아들이는 방식이 어긋날 수 있다는 전제로, 이번 주에는 상대가 안심으로 느낀 표현을 하나만 짧게 적어 보자. 차이를 없애려 하기보다 번역해 주는 한 문장이 도움이 된다. 주말에 10분만 서로의 온도를 확인해 보자."
+        : "이 페어에서 잡힌 반응·표현 결의 차이를 이번 주 한 가지만 짚어 기록해 보자. 같은 상황에서 서로 다른 속도로 움직이는 점을 확인하는 것만으로도 다음 대화가 달라진다. 주말에 짧은 점검 시간을 잡아 보자.";
+      fixes.push("together_fewshot_rewrite");
+    }
+    const starter = asStr(action.together_starter);
+    if (starter && FEWSHOT_STARTER_BLEED.test(starter)) {
+      action.together_starter =
+        "이번 주에 서로 마음이 달랐던 순간이 있었어? 하나만 짧게 말해 볼까?";
+      fixes.push("together_starter_fewshot_rewrite");
+    }
+
     stripped.section_5_action = action;
   }
 

@@ -181,8 +181,8 @@ export function buildEssenceActionFewShotExample(params: {
   \`real_life_example\`: ""
 
 💌 에센스 다이어리 : 우리만의 관계 아카이브
-\`together\`: "두 사람의 다름은 틀린 것이 아니라 서로를 채워주는 가장 아름다운 조각입니다. 서로의 감정을 억누르거나 방어벽 뒤로 숨기지 않고, 있는 그대로 흐를 수 있는 안전한 대화의 공간을 집 안에 만들어보세요. 이번 주말에는 따뜻한 차 한 잔을 사이에 두고 깊이 있는 저널을 써보듯 대화를 시작해 보세요."
-\`together_starter\`: "우리 요즘 서로 마음의 온도가 어땠는지, 한 주 동안 고생한 서로의 속마음에 대해 편안하게 얘기해 볼까?"
+\`together\`: "(구조만) ① 이 페어 digest에서 고른 차이/공통 1개 ② 그 차이를 확인하는 짧은 기록 습관 1개 ③ 이번 주 실행 제안 1문장 — **예시 문장·비유 복사 금지**"
+\`together_starter\`: "(구조만) 이번 주 온도를 묻는 실전 대사 1–2줄 — **예시 문장 복사 금지**"
 
 ---
 
@@ -191,7 +191,7 @@ export function buildEssenceActionFewShotExample(params: {
 2. "이런 순간에 —" **0개**, \`real_life_example\` **전부 빈 문자열**
 3. A·B 각 3팁 — **제목·본문·대사 모두 서로 다름** (감정 드러내라 복제 금지)
 4. tip1·tip2·**tip3** each start with a **user-facing evidence bridge** + concrete action + pair-specific benefit — never copy example bodies; never expose internal source keys; never drop the bridge on later tips
-5. \`together\` = 에센스 다이어리 **3문장+**, \`together_starter\` = 대화 문 여는 대사
+5. \`together\` / \`together_starter\` = digest-shaped diary + opener — **never** paste few-shot prose; ban fluff like "가장 아름다운 조각" / "따뜻한 차 한 잔"
 `.trim();
 }
 

@@ -1,3 +1,10 @@
+/**
+ * Romantic premium — saju-deep LLM narrative pipeline.
+ *
+ * FROZEN (2026-07-24): docs/dev/decisions/027_romantic-saju-deep-narrative-freeze.md
+ * after Style Bible Master Check on same + independent reports.
+ * Do not reopen without repeated QA evidence; keep self-refine OFF.
+ */
 import type OpenAI from "openai";
 import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
 import { buildRomanticRulesBundle } from "@/lib/relationship/romanticRules";

@@ -165,7 +165,7 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 18. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, bond nature metaphors, or cross-section claim rehash (same "comfort/stability/support" thesis in special_bond + frames + mutual_gift + nature) — **fully rewrite** that field
 19. **Names & B-speaker binding**: write display names **exactly** as given. Ban **나님**, **저님**, doubling 님/씨, and inventing \`님\` on bare names (e.g. **${nicknameB}님** when the display name is **${nicknameB}**). Ban awkward \`${nicknameB}이의\` — use \`${nicknameB}의\`.
     - \`a_*\` 1st-person: "나" = **${nicknameA}**; partner = **${nicknameB}** only.
-    - \`b_*\` 1st-person (\`b_nature.first_person_voice\`, \`b_hidden.*\`): speaker = **${nicknameB}**; "나" = **${nicknameB}** only; partner = **${nicknameA}** only.
+    - \`b_*\` 1st-person (\`b_nature.first_person_voice\`, \`b_nature.description\`, \`b_hidden.*\`): speaker = **${nicknameB}**; "나" = **${nicknameB}** only; partner = **${nicknameA}** only.
     - If **${nicknameA}** is the literal string \`나\`, B may call A **"상대"** (or another supplied non-self label) — never invent a second self.
     - **Forbid** in any \`b_*\` 1st-person string: \`${nicknameB}와의 관계\`, \`나와 ${nicknameB}\`, or using **${nicknameB}** as the partner.
     - Final self-check: scan all \`b_*\` 1st-person fields; if B's own display name appears as partner, rewrite before output.
