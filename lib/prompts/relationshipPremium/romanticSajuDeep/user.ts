@@ -137,7 +137,7 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
       - **Valid** balanced/balanced: both cells about balanced/flexible decision (not 유연 vs 신중).
       - **Forbidden**: same lean → "A는 감정, B는 행동" / "A는 유연, B는 신중".
     - Honor that row's \`confidence\` / \`align\` (see epistemic voice above).
-    - **Low-confidence polish (Round 3)**: for \`expression\` / \`conflict\` / \`stress\` rows with \`confidence=low\` or \`align=caution\`, each cell must include one tentative marker (e.g. "~하는 편으로 보일 수 있다", "~에 가까울 가능성이 있다", "실제 관계에서 확인해 볼 부분이다"). Do **not** over-hedge high-confidence / confirms rows.
+    - **Low-confidence polish (Round 3)**: for \`expression\` / \`conflict\` / \`stress\` rows with \`confidence=low\` or \`align=caution\`, each cell must include one tentative marker (e.g. "~하는 편으로 보일 수 있어요", "~에 가까울 수 있어요", "실제 관계에서 확인해 볼 부분이에요"). Do **not** over-hedge high-confidence / confirms rows.
 12. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones.
     - **Per-tip loop (Round 4 — anti context-drift)**: write tips in order tip1 → tip2 → tip3 for A, then tip1 → tip2 → tip3 for B. **Before every tip** (including tip2 and tip3), re-apply this gate:
       1. Pick **exactly one** unused digest fact for this tip.
@@ -158,10 +158,10 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - **Hard mismatch preservation (Round 3)**: when any \`일치:\` is \`false\`:
       1. First sentence of \`a_body\` / \`b_body\` / \`match_note\` must **explicitly** state the need/give gap.
       2. **Entire body** must stay consistent with mismatch — later sentences may name needs, current give styles, and how to translate between them, but must **not** claim they already reassure each other well, that the relationship currently provides mutual comfort, or that the mismatch is already resolved.
-      3. Repair language only conditional/future: "맞춰 갈 수 있다", "확인해 볼 필요가 있다", "번역해 주면 도움이 된다".
+      3. Repair language only conditional/future: "맞춰 갈 수 있어요", "확인해 보면 좋아요", "번역해 주면 도움이 돼요".
       4. \`match_note\` must contain an audible mismatch phrase (어긋/불일치/맞지 않/갭…).
       - **Forbidden**: "결국 서로에게 큰 안심이 된다" / "이미 서로의 위안이 되고 있다" / "서로의 부족한 안심을 채워 준다" / "서로에게 안정감을 주는 관계"
-      - **Valid**: "필요한 안심과 건네는 방식이 다를 수 있다." / "상대가 안심으로 받아들이는 표현을 따로 확인해야 한다."
+      - **Valid**: "필요한 안심과 건네는 방식이 다를 수 있어요." / "상대가 안심으로 받아들이는 표현을 따로 확인해 보는 게 좋아요."
 18. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, bond nature metaphors, or cross-section claim rehash (same "comfort/stability/support" thesis in special_bond + frames + mutual_gift + nature) — **fully rewrite** that field
 19. **Names & B-speaker binding**: write display names **exactly** as given. Ban **나님**, **저님**, doubling 님/씨, and inventing \`님\` on bare names (e.g. **${nicknameB}님** when the display name is **${nicknameB}**). Ban awkward \`${nicknameB}이의\` — use \`${nicknameB}의\`.
     - \`a_*\` 1st-person: "나" = **${nicknameA}**; partner = **${nicknameB}** only.
@@ -169,6 +169,8 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - If **${nicknameA}** is the literal string \`나\`, B may call A **"상대"** (or another supplied non-self label) — never invent a second self.
     - **Forbid** in any \`b_*\` 1st-person string: \`${nicknameB}와의 관계\`, \`나와 ${nicknameB}\`, or using **${nicknameB}** as the partner.
     - Final self-check: scan all \`b_*\` 1st-person fields; if B's own display name appears as partner, rewrite before output.
+
+20. **문체(Tone) — Korean output**: 모든 한국어 서술은 자연스럽고 다정한 해요체(~해요/~죠/~예요, 필요시 ~입니다)로 100% 통일한다. 문어체·개조식 종결(~이다/~있다/~한다/~경향이 있다/~부분이다) 금지. 한 화면 안에서 존댓말과 반말·문어체를 섞지 않는다(인용 대화문 제외). 딱딱한 보고서체 대신, 감각 있는 에디터가 다정하게 설명하듯 생생하고 공감 가는 표현을 쓴다 — 예: "속마음을 겉으로 잘 드러내지 않는 신중파예요", "답답한 건 못 참고 바로 풀어야 마음이 놓이는 스타일이에요". 상대의 행동 이유를 감싸주는 공감형 문장 구조를 우선한다.
 
 Output language follows the system prompt locale instruction — do not hardcode a language here.
 `.trim();

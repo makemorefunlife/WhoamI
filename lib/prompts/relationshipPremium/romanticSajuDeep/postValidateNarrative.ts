@@ -3,6 +3,8 @@
  * Cheap string fixes — not a second LLM pass.
  */
 
+import { polishKoTone } from "../shared/koToneGuards";
+
 type AnyRec = Record<string, unknown>;
 
 const MISMATCH_AUDIBLE =
@@ -163,7 +165,7 @@ export function rewriteBSpeakerSelfName(
 function ensureMismatchNote(matchNote: string): string {
   const base = matchNote.trim();
   const gap =
-    "필요한 안심과 건네는 방식이 다를 수 있다. 상대가 안심으로 받아들이는 표현을 따로 확인해 볼 필요가 있다.";
+    "안심을 원하는 방식과 건네는 방식이 서로 어긋날 수 있어요. 상대가 어떤 표현을 안심으로 받아들이는지 한 번 확인해 보면 좋아요.";
   if (!base) return gap;
   let out = base;
   if (!MISMATCH_AUDIBLE.test(out)) {
@@ -172,7 +174,7 @@ function ensureMismatchNote(matchNote: string): string {
   out = scrubPresentMutualComfortClauses(out);
   if (SOFT_WASH_FINAL.test(out)) {
     out =
-      `${out.replace(SOFT_WASH_FINAL, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
+      `${out.replace(SOFT_WASH_FINAL, "").trim()} 맞춰 갈 여지는 충분히 확인해 볼 수 있어요.`.trim();
   }
   return out;
 }
@@ -187,57 +189,57 @@ function scrubPresentMutualComfortClauses(body: string): string {
   const replacements: Array<[RegExp, string]> = [
     [
       /이를\s*통해\s*나의\s*감정이\s*존중받고\s*있다는\s*느낌을\s*받으며,?\s*안정감을\s*느낍니다\.?/g,
-      "존중받는 느낌과 안심을 맞추려면, 상대가 안심으로 받아들이는 표현인지 확인해 볼 필요가 있다.",
+      "존중받는 느낌과 안심이 맞으려면, 상대가 안심으로 받아들이는 표현인지 확인해 보는 게 좋아요.",
     ],
     [
       /결국\s*서로에게\s*큰\s*안심이\s*됩니다?/g,
-      "맞춰 가면 안심으로 이어질 수 있다",
+      "맞춰 가면 안심으로 이어질 수 있어요",
     ],
     [
       /이미\s*서로의?\s*위안이\s*되고\s*있습니다?/g,
-      "아직 안심 방식이 어긋날 수 있다",
+      "아직은 안심 방식이 서로 어긋날 수 있어요",
     ],
     [
       /서로의\s*부족한\s*안심을\s*채워\s*줍니다?/g,
-      "부족한 안심을 맞추려면 표현을 확인해 볼 필요가 있다",
+      "부족한 안심을 채우려면 서로의 표현부터 확인해 보는 게 좋아요",
     ],
     [
       /서로에게\s*(?:큰\s*)?(?:안심|위안|안정감)을\s*주는\s*관계입니다?/g,
-      "안심 방식을 맞출 여지는 확인해 볼 수 있다",
+      "안심 방식을 맞춰 갈 여지는 충분해요",
     ],
     [
       /서로에게\s*(?:큰\s*)?(?:안심|위안)이\s*됩니다?/g,
-      "맞춰 가면 안심이 될 수 있다",
+      "맞춰 가면 안심이 될 수 있어요",
     ],
     [/서로\s*잘\s*맞춰\s*주는/g, "맞춰 가려면 확인이 필요한"],
     [
       /(?:나에게?|나의)\s*감정적\s*돌봄이\s*([^.]{0,24}?)큰\s*위안이\s*되며/g,
-      "감정적 돌봄이 $1위안이 되려면 방식이 맞는지 확인해 볼 필요가 있으며",
+      "감정적 돌봄이 $1위안이 되려면 방식이 맞는지 확인해 보는 게 좋고",
     ],
     [
       /큰\s*위안이\s*되며/g,
-      "위안이 되려면 방식이 맞는지 확인해 볼 필요가 있으며",
+      "위안이 되려면 방식이 맞는지 확인해 보는 게 좋고",
     ],
     [
       /큰\s*위안이\s*됩니다?/g,
-      "위안이 되려면 방식이 맞는지 확인해 볼 필요가 있다",
+      "위안이 되려면 방식이 맞는지 확인해 보는 게 좋아요",
     ],
     [
       /위안이\s*되며/g,
-      "위안이 되려면 방식이 맞는지 확인해 볼 필요가 있으며",
+      "위안이 되려면 방식이 맞는지 확인해 보는 게 좋고",
     ],
     [
       /안정감을\s*느낍니다\.?/g,
-      "안정감을 맞출 여지는 확인해 볼 수 있다.",
+      "안정감을 맞춰 갈 여지는 충분해요.",
     ],
     [/안정감을\s*느끼며/g, "안정감을 맞추려 할 때"],
     [
       /존중받고\s*있다는\s*느낌을\s*받으며,?\s*/g,
-      "존중받는 느낌을 맞추려면 확인이 필요하며, ",
+      "존중받는 느낌이 서로 맞는지는 확인이 필요하고, ",
     ],
     [
       /무의식적으로\s*서로에게\s*안정감을\s*주는\s*관계를\s*형성하고\s*있습니다/g,
-      "안심 방식이 어긋날 수 있어 표현을 번역해 주면 도움이 된다",
+      "안심 방식이 어긋날 수 있어서, 서로의 표현을 번역해 주면 도움이 돼요",
     ],
   ];
   for (const [re, rep] of replacements) {
@@ -250,14 +252,14 @@ function softWashBody(body: string): string {
   if (!body.trim()) return body;
   let out = body.trim();
   if (!MISMATCH_AUDIBLE.test(out.slice(0, Math.min(out.length, 120)))) {
-    out = `필요한 안심과 건네는 방식이 다를 수 있다. ${out}`;
+    out = `필요한 안심과 건네는 방식이 서로 어긋날 수 있어요. ${out}`;
   }
   out = scrubPresentMutualComfortClauses(out);
   out = out
-    .replace(/서로에게\s*위안이\s*됩니다?/g, "맞춰 가면 위안이 될 수 있다")
+    .replace(/서로에게\s*위안이\s*됩니다?/g, "맞춰 가면 위안이 될 수 있어요")
     .replace(
       /서로에게\s*안정감을\s*주는\s*관계입니다?/g,
-      "안정감을 맞출 여지는 확인해 볼 수 있다",
+      "안정감을 맞춰 갈 여지는 충분해요",
     )
     .replace(/이미\s*서로\s*안심/g, "아직 안심 방식이 어긋날 수 있어");
   return out;
@@ -272,7 +274,7 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base} — 편으로 보일 수 있으며, 실제 관계에서 확인해 볼 부분이다.`,
+    text: `${base}. 다만 실제 관계에서는 조금 다르게 나타날 수도 있으니, 함께 확인해 볼 부분이에요.`,
     fixed: true,
   };
 }
@@ -446,9 +448,9 @@ function sameLeanCellsLookOpposed(a: string, b: string): boolean {
 function similarityCell(lean: string, side: "a" | "b"): string {
   const label = LEAN_LABEL_KO[lean] ?? lean;
   if (side === "a") {
-    return `${label} 쪽으로 기울 수 있는 신호가 있습니다. 같은 결을 공유할 때 생기는 맹점도 함께 살펴볼 필요가 있습니다.`;
+    return `${label} 쪽으로 기우는 신호가 보여요. 결이 같아서 편한 만큼, 둘 다 놓치기 쉬운 맹점도 함께 살펴보면 좋아요.`;
   }
-  return `같은 ${label} 결을 공유하는 편으로 읽힐 수 있습니다. 대비되는 스타일로 단정하기보다 공통 경향과 맹점을 확인하는 편이 안전합니다.`;
+  return `같은 ${label} 결을 공유하는 편이에요. 반대 스타일로 단정하기보다, 공통 경향과 맹점을 확인해 보는 쪽이 훨씬 정확해요.`;
 }
 
 function patchStringField(
@@ -606,8 +608,8 @@ export function postValidateRomanticNarrative(
           row.a = similarityCell(leanA, "a");
           row.b = similarityCell(leanB, "b");
           if (leanRow?.confidence === "low" || leanRow?.align === "caution") {
-            row.a = `${asStr(row.a)} (실제 생활에서 확인해 볼 신호)`;
-            row.b = `${asStr(row.b)} (단정하지 말고 맞춰 보세요)`;
+            row.a = `${asStr(row.a)} 실제 생활에서 확인해 볼 신호예요.`;
+            row.b = `${asStr(row.b)} 아직 단정하긴 일러요. 천천히 맞춰 보면 돼요.`;
           }
           table[i] = row;
           changed = true;
@@ -695,8 +697,8 @@ export function postValidateRomanticNarrative(
     const together = asStr(action.together);
     if (together && FEWSHOT_TOGETHER_BLEED.test(together)) {
       action.together = mismatch
-        ? "안심을 건네는 방식과 받아들이는 방식이 어긋날 수 있다는 전제로, 이번 주에는 상대가 안심으로 느낀 표현을 하나만 짧게 적어 보자. 차이를 없애려 하기보다 번역해 주는 한 문장이 도움이 된다. 주말에 10분만 서로의 온도를 확인해 보자."
-        : "이 페어에서 잡힌 반응·표현 결의 차이를 이번 주 한 가지만 짚어 기록해 보자. 같은 상황에서 서로 다른 속도로 움직이는 점을 확인하는 것만으로도 다음 대화가 달라진다. 주말에 짧은 점검 시간을 잡아 보자.";
+        ? "안심을 건네는 방식과 받아들이는 방식이 어긋날 수 있다는 전제로, 이번 주에는 상대가 안심으로 느꼈던 표현을 하나만 짧게 적어 보세요. 차이를 없애려 하기보다, 서로의 표현을 번역해 주는 한 문장이 큰 도움이 돼요. 주말에 10분만 서로의 온도를 확인해 보세요."
+        : "두 분에게서 잡힌 반응·표현 결의 차이를 이번 주에 한 가지만 짚어 기록해 보세요. 같은 상황에서 서로 다른 속도로 움직인다는 걸 확인하는 것만으로도 다음 대화가 달라져요. 주말에 짧은 점검 시간을 잡아 보세요.";
       fixes.push("together_fewshot_rewrite");
     }
     const starter = asStr(action.together_starter);
@@ -710,6 +712,7 @@ export function postValidateRomanticNarrative(
   }
 
   // Naming polish: invented 님 / awkward 이의 on display names
+  // + ko tone polish: 대시 매크로·파편 수리 및 문어체→해요체 정규화
   const polishTree = (node: unknown): unknown => {
     if (typeof node === "string") {
       let s = node;
@@ -722,6 +725,11 @@ export function postValidateRomanticNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
+      const tone = polishKoTone(s);
+      if (tone.fixed) {
+        s = tone.text;
+        fixes.push("ko_tone_polish");
+      }
       return s;
     }
     if (Array.isArray(node)) return node.map(polishTree);

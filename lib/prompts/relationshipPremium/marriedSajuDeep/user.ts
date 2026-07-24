@@ -18,7 +18,7 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 ## Epistemics
 - Canonical server values (compare bands, operating_cfo, confidence/align) are authoritative.
 - Narrative may explain and soften wording; must never contradict.
-- \`confidence=low\` or \`align=caution\` → tentative markers ("~하는 편으로 보일 수 있다", "실제 생활에서 확인해 볼 부분이다").
+- \`confidence=low\` or \`align=caution\` → tentative markers ("~하는 편으로 보일 수 있어요", "실제 생활에서 확인해 볼 부분이에요").
 - High confidence may stay direct.
 
 ## Soft-wash ban (household)

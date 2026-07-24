@@ -4,6 +4,8 @@
  * Not a second LLM pass. Do not import romanticSajuDeep.
  */
 
+import { polishKoTone } from "../shared/koToneGuards";
+
 type AnyRec = Record<string, unknown>;
 
 const SOFT_WASH_HOUSEHOLD =
@@ -200,7 +202,7 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base} — 편으로 보일 수 있으며, 실제 생활에서 확인해 볼 부분이다.`,
+    text: `${base}. 다만 실제 생활에서는 조금 다르게 나타날 수도 있으니, 함께 확인해 볼 부분이에요.`,
     fixed: true,
   };
 }
@@ -609,6 +611,11 @@ export function postValidateMarriedNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
+      const tone = polishKoTone(s);
+      if (tone.fixed) {
+        s = tone.text;
+        fixes.push("ko_tone_polish");
+      }
       return s;
     }
     if (Array.isArray(node)) return node.map(polishTree);
