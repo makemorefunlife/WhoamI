@@ -244,6 +244,7 @@ const { context_output: _c1, ...body1 } = buildFriendReport(baseParams);
 const { context_output: _c2, ...body2 } = buildFriendReport(baseParams);
 assert.deepEqual(body1, body2);
 assert.deepEqual(Object.keys(body1).sort(), [
+  "canonical_projections",
   "friend",
   "headline",
   "meta",
@@ -251,7 +252,7 @@ assert.deepEqual(Object.keys(body1).sort(), [
   "snapshot_panel",
   "summary_line",
 ].sort());
-ok("기존 필드 세트 + 결정론");
+ok("기존 필드 세트 + canonical_projections + 결정론");
 
 // ---------------------------------------------------------------------------
 section("7) ViewModel 비크래시");

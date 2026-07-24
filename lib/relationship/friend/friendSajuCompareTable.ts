@@ -51,20 +51,74 @@ export type FriendCompareRowId =
   | "hangout_planning"
   | "communication_rhythm";
 
+/** Typed compare bands — locale-independent authority (Phase CE). */
+export type FriendRhythmBand = "active" | "steady";
+export type FriendTenGodCategory =
+  | "wealth"
+  | "officer"
+  | "food"
+  | "seal"
+  | "self";
+export type FriendAffectionElement =
+  | "wood"
+  | "fire"
+  | "earth"
+  | "metal"
+  | "water";
+export type FriendStrengthBand = "strong" | "weak" | "balanced";
+export type FriendThreeBand = "none" | "some" | "strong";
+
+export type FriendComparePersonCell = {
+  nickname: string;
+  shortLabel: string;
+  /** Typed band when built by current engine; absent on legacy cache rows */
+  band?: string;
+};
+
 export type FriendCompareRow = {
   id: FriendCompareRowId;
   label: string;
-  personA: { nickname: string; shortLabel: string };
-  personB: { nickname: string; shortLabel: string };
+  personA: FriendComparePersonCell;
+  personB: FriendComparePersonCell;
   meaning: string;
   /** 11축 확인 문구 — 현재는 communication_rhythm 행에만 부착. psychMaster 없으면 null */
   psych_note?: string | null;
 };
 
-type FriendTenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
+export type FriendCompareRowTypedValue = {
+  band_a: string;
+  band_b: string;
+};
+
+export type FriendComparisonTableTypedValue = {
+  daily_share_tempo: FriendCompareRowTypedValue & {
+    band_a: FriendRhythmBand;
+    band_b: FriendRhythmBand;
+  };
+  upset_expression: FriendCompareRowTypedValue & {
+    band_a: FriendTenGodCategory;
+    band_b: FriendTenGodCategory;
+  };
+  affection_language: FriendCompareRowTypedValue & {
+    band_a: FriendAffectionElement;
+    band_b: FriendAffectionElement;
+  };
+  battery_recharge: FriendCompareRowTypedValue & {
+    band_a: FriendStrengthBand;
+    band_b: FriendStrengthBand;
+  };
+  hangout_planning: FriendCompareRowTypedValue & {
+    band_a: FriendThreeBand;
+    band_b: FriendThreeBand;
+  };
+  communication_rhythm: FriendCompareRowTypedValue & {
+    band_a: FriendThreeBand;
+    band_b: FriendThreeBand;
+  };
+};
 
 /** 격국과 같은 원리 — 5개 카테고리 중 가장 우세한 것을 고른다(동률이면 고정 우선순위). */
-function resolveDominantCategory(counts: TenGodCounts): FriendTenGodCategory {
+export function resolveDominantCategory(counts: TenGodCounts): FriendTenGodCategory {
   const p = profileTenGods(counts);
   const entries: Array<[FriendTenGodCategory, number]> = [
     ["food", p.food],
@@ -78,9 +132,7 @@ function resolveDominantCategory(counts: TenGodCounts): FriendTenGodCategory {
 }
 
 /** 0 / 1 / 2+ 3단계 공용 밴드 — 행⑤(재관 합산)·행⑥(식상)에서 재사용. */
-type ThreeBand = "none" | "some" | "strong";
-
-function resolveThreeBand(score: number): ThreeBand {
+function resolveThreeBand(score: number): FriendThreeBand {
   if (score >= 2) return "strong";
   if (score >= 1) return "some";
   return "none";
@@ -91,7 +143,7 @@ function resolveThreeBand(score: number): ThreeBand {
 /** work의 sajuCompareTable.ts와 동일한 세트 — 정확히 5:5로 갈라지는 균형 신호. */
 const YANG_STEMS = new Set(["gap", "byeong", "mu", "gyeong", "im"]);
 
-function resolveRhythmBand(dayStemCode: string): "active" | "steady" {
+export function resolveRhythmBand(dayStemCode: string): FriendRhythmBand {
   return YANG_STEMS.has(dayStemCode) ? "active" : "steady";
 }
 
@@ -192,9 +244,7 @@ const AFFECTION_MEANING: Record<Locale, { same: string; diff: string }> = {
 // 871027 22:30)에서 support:drain이 5:3, 3:4로 실제로는 다른데 margin=2
 // 에서는 둘 다 "중화"로 뭉쳤고, margin=1로는 강/약으로 갈라지는 걸 확인했다.
 
-type StrengthBand = "strong" | "weak" | "balanced";
-
-const STEM_ELEMENT: Record<string, "wood" | "fire" | "earth" | "metal" | "water"> = {
+const STEM_ELEMENT: Record<string, FriendAffectionElement> = {
   gap: "wood",
   eul: "wood",
   byeong: "fire",
@@ -223,7 +273,7 @@ const ELEMENT_OVERCOMES: Record<string, string> = {
   metal: "wood",
 };
 
-function resolveFriendStrengthBand(chart: ChartContext): StrengthBand {
+export function resolveFriendStrengthBand(chart: ChartContext): FriendStrengthBand {
   const dayEl = STEM_ELEMENT[chart.dayStemCode] ?? "earth";
   const counts = countElements(chart);
   const resourceEl = Object.entries(ELEMENT_GENERATES).find(([, v]) => v === dayEl)?.[0];
@@ -238,7 +288,7 @@ function resolveFriendStrengthBand(chart: ChartContext): StrengthBand {
   return "balanced";
 }
 
-const BATTERY_LABEL: Record<Locale, Record<StrengthBand, string>> = {
+const BATTERY_LABEL: Record<Locale, Record<FriendStrengthBand, string>> = {
   "ko-KR": {
     strong: "본인 페이스가 강해서, 친구를 만나 에너지를 발산해야 풀리는 타입",
     weak: "외부 자극에 예민해서, 혼자만의 시간이 있어야 회복되는 타입",
@@ -252,7 +302,7 @@ const BATTERY_LABEL: Record<Locale, Record<StrengthBand, string>> = {
 };
 
 /** 신강×신약×중화 조합별 문구. 순서 무관 — [a,b].sort().join("|")로 조회. */
-function battteryComboKey(a: StrengthBand, b: StrengthBand): string {
+function battteryComboKey(a: FriendStrengthBand, b: FriendStrengthBand): string {
   return [a, b].sort().join("|");
 }
 
@@ -287,7 +337,11 @@ const BATTERY_COMBO_MEANING: Record<Locale, Record<string, string>> = {
   },
 };
 
-function resolveBatteryMeaning(locale: Locale, a: StrengthBand, b: StrengthBand): string {
+function resolveBatteryMeaning(
+  locale: Locale,
+  a: FriendStrengthBand,
+  b: FriendStrengthBand,
+): string {
   return BATTERY_COMBO_MEANING[locale][battteryComboKey(a, b)]!;
 }
 
@@ -301,11 +355,11 @@ function resolveBatteryMeaning(locale: Locale, a: StrengthBand, b: StrengthBand)
 // 총무(friendTreasurerScore → refineFriendTreasurer)와 산식·질문이 다르므로
 // 카피에 "총무/treasurer"를 쓰지 않는다.
 
-function resolveWealthOfficerBand(counts: TenGodCounts): ThreeBand {
+export function resolveWealthOfficerBand(counts: TenGodCounts): FriendThreeBand {
   return resolveThreeBand(profileTenGods(counts).wealthOfficer);
 }
 
-const HANGOUT_LABEL: Record<Locale, Record<ThreeBand, string>> = {
+const HANGOUT_LABEL: Record<Locale, Record<FriendThreeBand, string>> = {
   "ko-KR": {
     none: "\"아무거나 다 좋아\" 따라가는 편",
     some: "필요할 때는 계획도 짜는 균형형",
@@ -336,11 +390,11 @@ const HANGOUT_MEANING: Record<Locale, { same: string; diff: string }> = {
 // 세분화한다. 2026-07-20 실측에서 food 0과 1이 둘 다 옛 컷오프 미달로
 // "silent"에 뭉쳤던 걸 확인했다.
 
-function resolveFoodBand(counts: TenGodCounts): ThreeBand {
+export function resolveFoodBand(counts: TenGodCounts): FriendThreeBand {
   return resolveThreeBand(profileTenGods(counts).food);
 }
 
-const RHYTHM_LABEL: Record<Locale, Record<ThreeBand, string>> = {
+const RHYTHM_LABEL: Record<Locale, Record<FriendThreeBand, string>> = {
   "ko-KR": {
     none: "말 없이 있어도 편한 침묵 아지트파",
     some: "필요할 때 적당히 주고받는 잔잔한 대화파",
@@ -366,6 +420,69 @@ const RHYTHM_MEANING: Record<Locale, { same: string; diff: string }> = {
 
 // ---- 빌더 ------------------------------------------------------------------
 
+/**
+ * Locale-independent typed bands for all six compare rows.
+ * Single resolver path — labels are derived afterward, never the reverse.
+ */
+export function resolveFriendComparisonTableTyped(params: {
+  tenGodsA: TenGodCounts;
+  tenGodsB: TenGodCounts;
+  dnaA: FriendDnaProfile;
+  dnaB: FriendDnaProfile;
+  chartA: ChartContext;
+  chartB: ChartContext;
+}): FriendComparisonTableTypedValue {
+  return {
+    daily_share_tempo: {
+      band_a: resolveRhythmBand(params.chartA.dayStemCode),
+      band_b: resolveRhythmBand(params.chartB.dayStemCode),
+    },
+    upset_expression: {
+      band_a: resolveDominantCategory(params.tenGodsA),
+      band_b: resolveDominantCategory(params.tenGodsB),
+    },
+    affection_language: {
+      band_a: params.dnaA.dominantElement,
+      band_b: params.dnaB.dominantElement,
+    },
+    battery_recharge: {
+      band_a: resolveFriendStrengthBand(params.chartA),
+      band_b: resolveFriendStrengthBand(params.chartB),
+    },
+    hangout_planning: {
+      band_a: resolveWealthOfficerBand(params.tenGodsA),
+      band_b: resolveWealthOfficerBand(params.tenGodsB),
+    },
+    communication_rhythm: {
+      band_a: resolveFoodBand(params.tenGodsA),
+      band_b: resolveFoodBand(params.tenGodsB),
+    },
+  };
+}
+
+export function formatFriendCompareBandLabel(
+  rowId: FriendCompareRowId,
+  band: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  switch (rowId) {
+    case "daily_share_tempo":
+      return DAILY_SHARE_LABEL[locale][band as FriendRhythmBand] ?? band;
+    case "upset_expression":
+      return UPSET_EXPRESSION_LABEL[locale][band as FriendTenGodCategory] ?? band;
+    case "affection_language":
+      return AFFECTION_LABEL[locale][band as FriendAffectionElement] ?? band;
+    case "battery_recharge":
+      return BATTERY_LABEL[locale][band as FriendStrengthBand] ?? band;
+    case "hangout_planning":
+      return HANGOUT_LABEL[locale][band as FriendThreeBand] ?? band;
+    case "communication_rhythm":
+      return RHYTHM_LABEL[locale][band as FriendThreeBand] ?? band;
+    default:
+      return band;
+  }
+}
+
 export function buildFriendSajuCompareTable(params: {
   nicknameA: string;
   nicknameB: string;
@@ -378,43 +495,54 @@ export function buildFriendSajuCompareTable(params: {
   locale?: Locale;
 }): FriendCompareRow[] {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const { nicknameA, nicknameB, tenGodsA, tenGodsB, dnaA, dnaB, chartA, chartB } = params;
+  const { nicknameA, nicknameB } = params;
+  const typed = resolveFriendComparisonTableTyped(params);
 
   const row = (
     id: FriendCompareRowId,
     label: string,
-    shortLabelA: string,
-    shortLabelB: string,
+    bandA: string,
+    bandB: string,
     meaning: string,
   ): FriendCompareRow => ({
     id,
     label,
-    personA: { nickname: nicknameA, shortLabel: sanitizeFriendText(shortLabelA) },
-    personB: { nickname: nicknameB, shortLabel: sanitizeFriendText(shortLabelB) },
+    personA: {
+      nickname: nicknameA,
+      shortLabel: sanitizeFriendText(
+        formatFriendCompareBandLabel(id, bandA, locale),
+      ),
+      band: bandA,
+    },
+    personB: {
+      nickname: nicknameB,
+      shortLabel: sanitizeFriendText(
+        formatFriendCompareBandLabel(id, bandB, locale),
+      ),
+      band: bandB,
+    },
     meaning: sanitizeFriendText(meaning),
   });
 
-  const categoryA = resolveDominantCategory(tenGodsA);
-  const categoryB = resolveDominantCategory(tenGodsB);
-
-  const rhythmBandA = resolveRhythmBand(chartA.dayStemCode);
-  const rhythmBandB = resolveRhythmBand(chartB.dayStemCode);
-
-  const strengthBandA = resolveFriendStrengthBand(chartA);
-  const strengthBandB = resolveFriendStrengthBand(chartB);
-
-  const wealthOfficerBandA = resolveWealthOfficerBand(tenGodsA);
-  const wealthOfficerBandB = resolveWealthOfficerBand(tenGodsB);
-
-  const foodBandA = resolveFoodBand(tenGodsA);
-  const foodBandB = resolveFoodBand(tenGodsB);
+  const rhythmBandA = typed.daily_share_tempo.band_a;
+  const rhythmBandB = typed.daily_share_tempo.band_b;
+  const categoryA = typed.upset_expression.band_a;
+  const categoryB = typed.upset_expression.band_b;
+  const elA = typed.affection_language.band_a;
+  const elB = typed.affection_language.band_b;
+  const strengthBandA = typed.battery_recharge.band_a;
+  const strengthBandB = typed.battery_recharge.band_b;
+  const wealthOfficerBandA = typed.hangout_planning.band_a;
+  const wealthOfficerBandB = typed.hangout_planning.band_b;
+  const foodBandA = typed.communication_rhythm.band_a;
+  const foodBandB = typed.communication_rhythm.band_b;
 
   return [
     row(
       "daily_share_tempo",
       pick(locale, "Daily Sharing & Contact Tempo", "일상 공유 & 연락 템포"),
-      DAILY_SHARE_LABEL[locale][rhythmBandA],
-      DAILY_SHARE_LABEL[locale][rhythmBandB],
+      rhythmBandA,
+      rhythmBandB,
       rhythmBandA === rhythmBandB
         ? DAILY_SHARE_MEANING[locale].same
         : DAILY_SHARE_MEANING[locale].diff,
@@ -422,8 +550,8 @@ export function buildFriendSajuCompareTable(params: {
     row(
       "upset_expression",
       pick(locale, "How You Show You're Hurt", "서운함 표출 방식"),
-      UPSET_EXPRESSION_LABEL[locale][categoryA],
-      UPSET_EXPRESSION_LABEL[locale][categoryB],
+      categoryA,
+      categoryB,
       categoryA === categoryB
         ? UPSET_EXPRESSION_MEANING[locale].same
         : UPSET_EXPRESSION_MEANING[locale].diff,
@@ -431,24 +559,24 @@ export function buildFriendSajuCompareTable(params: {
     row(
       "affection_language",
       pick(locale, "How You Show Loyalty", "우정 표현 & 의리 스타일"),
-      AFFECTION_LABEL[locale][dnaA.dominantElement],
-      AFFECTION_LABEL[locale][dnaB.dominantElement],
-      dnaA.dominantElement === dnaB.dominantElement
+      elA,
+      elB,
+      elA === elB
         ? AFFECTION_MEANING[locale].same
         : AFFECTION_MEANING[locale].diff,
     ),
     row(
       "battery_recharge",
       pick(locale, "How You Recharge", "우정 배터리 충전"),
-      BATTERY_LABEL[locale][strengthBandA],
-      BATTERY_LABEL[locale][strengthBandB],
+      strengthBandA,
+      strengthBandB,
       resolveBatteryMeaning(locale, strengthBandA, strengthBandB),
     ),
     row(
       "hangout_planning",
       pick(locale, "Planning Style", "모임 준비 스타일"),
-      HANGOUT_LABEL[locale][wealthOfficerBandA],
-      HANGOUT_LABEL[locale][wealthOfficerBandB],
+      wealthOfficerBandA,
+      wealthOfficerBandB,
       wealthOfficerBandA === wealthOfficerBandB
         ? HANGOUT_MEANING[locale].same
         : HANGOUT_MEANING[locale].diff,
@@ -456,9 +584,12 @@ export function buildFriendSajuCompareTable(params: {
     row(
       "communication_rhythm",
       pick(locale, "Back-and-Forth Conversation Style", "티키타카 대화 리듬"),
-      RHYTHM_LABEL[locale][foodBandA],
-      RHYTHM_LABEL[locale][foodBandB],
-      foodBandA === foodBandB ? RHYTHM_MEANING[locale].same : RHYTHM_MEANING[locale].diff,
+      foodBandA,
+      foodBandB,
+      foodBandA === foodBandB
+        ? RHYTHM_MEANING[locale].same
+        : RHYTHM_MEANING[locale].diff,
     ),
   ];
 }
+

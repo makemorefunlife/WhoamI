@@ -204,6 +204,11 @@ function PlayMoneyCard({ section }: { section: PlayMoneySection }) {
       <RelationshipReportBody>
         <div>
           <RelationshipReportLabel>{t.treasurerLabel}</RelationshipReportLabel>
+          {section.treasurerCanonicalLabel ? (
+            <p className="mt-1.5 text-sm font-semibold tracking-tight text-white/90">
+              {section.treasurerCanonicalLabel}
+            </p>
+          ) : null}
           <RelationshipReportParagraph className="mt-1.5">
             {section.treasurerNickname} — {section.treasurerReason}
           </RelationshipReportParagraph>
@@ -232,6 +237,11 @@ function HiddenFlowCard({ section }: { section: HiddenFlowSection }) {
         {section.travelStyle ? (
           <div>
             <RelationshipReportLabel>{t.travelStyleLabel}</RelationshipReportLabel>
+            {section.travelCanonicalLabel ? (
+              <p className="mt-1.5 text-sm font-semibold tracking-tight text-white/90">
+                {section.travelCanonicalLabel}
+              </p>
+            ) : null}
             <div className="mt-2 grid gap-3 sm:grid-cols-2">
               <RelationshipReportInset>
                 <p className="text-sm font-bold text-white/92">🗺️ {section.travelStyle.planner.nickname}</p>

@@ -74,12 +74,15 @@ export type PlayMoneySection = BaseSection & {
   treasurerReason: string;
   optimalHangout: string;
   psychConfirmNote?: string | null;
+  /** Typed treasurer badge from canonical_projections (optional legacy) */
+  treasurerCanonicalLabel?: string | null;
 };
 
 export type HiddenFlowSection = BaseSection & {
   type: "hidden_flow";
   travelStyle: TravelStyleSplit | null;
   counseling: PersonSlot<CounselingStyle | null>;
+  travelCanonicalLabel?: string | null;
 };
 
 export type BreakupGuideSection = BaseSection & {

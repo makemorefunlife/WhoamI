@@ -19,11 +19,24 @@ import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendRepo
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
 import { messagesKoKR } from "@/lib/i18n/messages/ko-KR";
+import {
+  formatFriendCompareCanonicalLabel,
+  readFriendComparisonTableCanonicalProjection,
+} from "@/lib/relationship/friend/friendComparisonTableCanonical";
+import {
+  formatFriendTreasurerCanonicalLabel,
+  readFriendTreasurerCanonicalProjection,
+} from "@/lib/relationship/friend/friendTreasurerCanonical";
+import {
+  formatFriendTravelPlannerCanonicalLabel,
+  readFriendTravelPlannerCanonicalProjection,
+} from "@/lib/relationship/friend/friendTravelPlannerCanonical";
 import type {
   OpeningBlock,
   FriendReportSection,
   FriendReportViewModel,
 } from "./friendReportSectionTypes";
+import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
 
 export type BuildFriendReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -79,16 +92,44 @@ function buildSnapshotSection(
 
 function buildCompareTableSection(
   report: FriendReportBody,
+  locale: Locale,
   t: ReturnType<typeof catalog>,
 ): FriendReportSection | null {
   const rows = report.friend?.section_compare_table;
   if (!rows?.length) return null;
+  const typed = readFriendComparisonTableCanonicalProjection(report);
+  const authorityRows: FriendCompareRow[] = rows.map((row) => {
+    const typedRow = typed?.[row.id];
+    if (!typedRow) return row;
+    // Typed projection wins over any stale/conflicting shortLabel prose.
+    return {
+      ...row,
+      personA: {
+        ...row.personA,
+        band: typedRow.band_a,
+        shortLabel: formatFriendCompareCanonicalLabel(
+          row.id,
+          typedRow.band_a,
+          locale,
+        ),
+      },
+      personB: {
+        ...row.personB,
+        band: typedRow.band_b,
+        shortLabel: formatFriendCompareCanonicalLabel(
+          row.id,
+          typedRow.band_b,
+          locale,
+        ),
+      },
+    };
+  });
   return {
     id: "compare_table",
     type: "compare_table",
     partNumber: 1,
     title: t.compareTableCardTitle,
-    rows,
+    rows: authorityRows,
   };
 }
 
@@ -148,10 +189,19 @@ function buildSoulmateSection(
 
 function buildPlayMoneySection(
   report: FriendReportBody,
+  locale: Locale,
   t: ReturnType<typeof catalog>,
 ): FriendReportSection | null {
   const pm = report.friend?.section_play_money;
   if (!pm) return null;
+  const treasurerProj = readFriendTreasurerCanonicalProjection(report);
+  const treasurerCanonicalLabel = treasurerProj
+    ? formatFriendTreasurerCanonicalLabel(treasurerProj, {
+        nameA: report.meta.nickname_a,
+        nameB: report.meta.nickname_b,
+        locale,
+      })
+    : null;
   return {
     id: "play_money",
     type: "play_money",
@@ -161,12 +211,14 @@ function buildPlayMoneySection(
     treasurerReason: pm.treasurer_reason,
     optimalHangout: pm.optimal_hangout,
     psychConfirmNote: pm.psych_confirm_note,
+    treasurerCanonicalLabel,
   };
 }
 
 function buildHiddenFlowSection(
   report: FriendReportBody,
   viewerIsReportA: boolean,
+  locale: Locale,
   t: ReturnType<typeof catalog>,
 ): FriendReportSection | null {
   const hf = report.friend?.section_hidden_flow;
@@ -177,6 +229,14 @@ function buildHiddenFlowSection(
     hf.counseling_style_b,
     viewerIsReportA,
   );
+  const travelProj = readFriendTravelPlannerCanonicalProjection(report);
+  const travelCanonicalLabel = travelProj
+    ? formatFriendTravelPlannerCanonicalLabel(travelProj, {
+        nameA: report.meta.nickname_a,
+        nameB: report.meta.nickname_b,
+        locale,
+      })
+    : null;
   return {
     id: "hidden_flow",
     type: "hidden_flow",
@@ -184,6 +244,7 @@ function buildHiddenFlowSection(
     title: t.hiddenFlowCardTitle,
     travelStyle: hf.travel_style,
     counseling,
+    travelCanonicalLabel,
   };
 }
 
@@ -259,12 +320,12 @@ export function buildFriendReportViewModel(
 
   const builders: Array<() => FriendReportSection | null> = [
     () => buildSnapshotSection(report, t),
-    () => buildCompareTableSection(report, t),
+    () => buildCompareTableSection(report, locale ?? "ko-KR", t),
     () => buildPsychRadarSection(report, viewerIsReportA, t),
     () => buildSocialDnaSection(report, viewerIsReportA, t),
     () => buildSoulmateSection(report, t),
-    () => buildPlayMoneySection(report, t),
-    () => buildHiddenFlowSection(report, viewerIsReportA, t),
+    () => buildPlayMoneySection(report, locale ?? "ko-KR", t),
+    () => buildHiddenFlowSection(report, viewerIsReportA, locale ?? "ko-KR", t),
     () => buildBreakupGuideSection(report, viewerIsReportA, t),
     () => buildDeEscalationSection(report, t),
     () => buildPrescriptionSection(report, t),

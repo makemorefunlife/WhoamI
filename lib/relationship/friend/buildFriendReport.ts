@@ -33,9 +33,29 @@ import {
 } from "./friendPsychFit";
 import { buildFriendTreasurerCanonical } from "./friendTreasurerCanonical";
 import {
+  buildFriendTreasurerClientProjection,
+  injectFriendTreasurerClientProjection,
+  treasurerClientValueFromFinalized,
+} from "./friendTreasurerCanonical";
+import {
+  buildFriendComparisonTableCanonical,
+  buildFriendComparisonTableClientProjection,
+  injectFriendComparisonTableClientProjection,
+  comparisonTableValueFromResolver,
+} from "./friendComparisonTableCanonical";
+import {
+  buildFriendTravelPlannerCanonical,
+  buildFriendTravelPlannerClientProjection,
+  injectFriendTravelPlannerClientProjection,
+  travelPlannerValueFromSplit,
+} from "./friendTravelPlannerCanonical";
+import {
   buildFriendContextOutput,
   type FriendContextOutput,
 } from "./friendContextOutput";
+import type { FriendComparisonTableValue } from "./friendComparisonTableCanonical";
+import type { FriendTravelPlannerValue } from "./friendTravelPlannerCanonical";
+import type { FriendTreasurerClientValue } from "./friendTreasurerCanonical";
 
 export type FriendReportBody = {
   headline: string;
@@ -63,6 +83,15 @@ export type FriendReportBody = {
    * 옵셔널·순수 추가. 클라이언트 응답에서는 strip/omit으로 제거.
    */
   context_output?: FriendContextOutput;
+  /**
+   * Friendship Context Engine — client-safe typed projections.
+   * Survive strip of context_output. Legacy reports may omit.
+   */
+  canonical_projections?: {
+    comparison_table?: FriendComparisonTableValue;
+    travel_planner?: FriendTravelPlannerValue;
+    treasurer?: FriendTreasurerClientValue;
+  };
 };
 
 export function buildFriendReport(params: {
@@ -270,7 +299,37 @@ export function buildFriendReport(params: {
       })
     : undefined;
 
-  return {
+  const comparisonTyped = comparisonTableValueFromResolver({
+    tenGodsA: ctx.tenGodsA,
+    tenGodsB: ctx.tenGodsB,
+    dnaA: ctx.friendPairAnalysis.dnaA,
+    dnaB: ctx.friendPairAnalysis.dnaB,
+    chartA: ctx.friendPairAnalysis.chartA,
+    chartB: ctx.friendPairAnalysis.chartB,
+  });
+  const comparisonProjection = buildFriendComparisonTableClientProjection(
+    buildFriendComparisonTableCanonical(comparisonTyped)?.value,
+  );
+
+  const travelTyped = travelPlannerValueFromSplit(
+    travelStyle,
+    params.nicknameA,
+    params.nicknameB,
+  );
+  const travelProjection = buildFriendTravelPlannerClientProjection(
+    buildFriendTravelPlannerCanonical(travelTyped)?.value,
+  );
+
+  const treasurerTyped = treasurerClientValueFromFinalized(
+    treasurerFinal,
+    params.nicknameA,
+    params.nicknameB,
+  );
+  const treasurerProjection = buildFriendTreasurerClientProjection(
+    treasurerTyped,
+  );
+
+  let reportBody: FriendReportBody = {
     headline: oneLineFriendship,
     summary_line: `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
     one_line_friendship: oneLineFriendship,
@@ -298,4 +357,19 @@ export function buildFriendReport(params: {
       personCoreMeta: params.personCoreMeta,
     }),
   };
+
+  reportBody = injectFriendComparisonTableClientProjection(
+    reportBody,
+    comparisonProjection,
+  );
+  reportBody = injectFriendTravelPlannerClientProjection(
+    reportBody,
+    travelProjection,
+  );
+  reportBody = injectFriendTreasurerClientProjection(
+    reportBody,
+    treasurerProjection,
+  );
+
+  return reportBody;
 }
