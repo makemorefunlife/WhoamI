@@ -4,9 +4,13 @@ import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
 import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/pairDomainSignals";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { buildFamilyParentReport } from "@/lib/relationship/familyParent/buildFamilyParentReport";
-import type { FamilyParentPairRoles, FamilyParentRole } from "@/lib/relationship/familyParent/types";
+import type {
+  FamilyParentPairRoles,
+  FamilyParentRole,
+} from "@/lib/relationship/familyParent/types";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { Locale } from "@/lib/i18n/locale";
+import { attachFamilySajuDeepOverlay } from "@/lib/prompts/relationshipPremium/familySajuDeep";
 import {
   FAMILY_PARENT_CHILD_DEEP_FORMAT,
   type FamilyParentChildDeepReport,
@@ -19,12 +23,13 @@ export { isFamilyParentChildDeepReport } from "./outputSchema";
 export type FamilyParentChildDeepPayload = FamilyParentChildDeepReport;
 
 /**
- * 가족(자녀-부모) 심화 분석 — 엄마/아빠 렌즈 분리 (rule-only, 스켈레톤)
- *
- * TODO: premium/route.ts family 분기 · RelationshipView 역할 선택 UX 연동
+ * 가족(자녀-부모) 심화 분석
+ * 1) rule-only CE (`buildFamilyParentReport`) — classifications SSOT
+ * 2) optional familySajuDeep LLM explain overlay → meta.family_saju_deep
+ *    (RELATIONSHIP_FAMILY_NARRATIVE=0 to skip)
  */
 export async function runFamilyParentChildDeepAnalysis(
-  _openai: OpenAI,
+  openai: OpenAI,
   params: {
     nicknameA: string;
     nicknameB: string;
@@ -49,7 +54,12 @@ export async function runFamilyParentChildDeepAnalysis(
     locale?: Locale;
     /** true면 시청자=자녀 — household_roles 나/상대 */
     childIsViewer?: boolean;
+    userCustomParentName?: string;
+    userCustomChildName?: string;
+    /** Skip LLM overlay even if env enabled (tests). */
+    skipFamilyNarrative?: boolean;
   },
+  options?: { abortSignal?: AbortSignal },
 ): Promise<FamilyParentChildDeepPayload> {
   const pairFamily =
     params.sajuMasterA && params.sajuMasterB
@@ -60,12 +70,12 @@ export async function runFamilyParentChildDeepAnalysis(
       : null;
   const familySignalsA = params.sajuMasterA?.domain_signals.family_signals;
   const familySignalsB = params.sajuMasterB?.domain_signals.family_signals;
-  // 006 로드맵 Step3 — 비교표 ⑥(대화온도, johu_profile)용. cohabitation의
-  // wealth_officer_power와 동일한 패턴(있으면 사용, 없으면 폴백).
-  const friendshipSignalsA = params.sajuMasterA?.domain_signals.friendship_signals;
-  const friendshipSignalsB = params.sajuMasterB?.domain_signals.friendship_signals;
+  const friendshipSignalsA =
+    params.sajuMasterA?.domain_signals.friendship_signals;
+  const friendshipSignalsB =
+    params.sajuMasterB?.domain_signals.friendship_signals;
 
-  const report = buildFamilyParentReport({
+  let report = buildFamilyParentReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     roles: params.roles,
@@ -87,6 +97,30 @@ export async function runFamilyParentChildDeepAnalysis(
     locale: params.locale,
     childIsViewer: params.childIsViewer,
   });
+
+  if (!params.skipFamilyNarrative) {
+    const short =
+      typeof params.locale === "string" && params.locale.startsWith("en")
+        ? "en"
+        : "ko";
+    const nicknameParent =
+      report.meta.parent_nickname || params.nicknameA;
+    const nicknameChild =
+      report.meta.child_nickname || params.nicknameB;
+    report = await attachFamilySajuDeepOverlay(
+      openai,
+      {
+        nicknameParent,
+        nicknameChild,
+        report,
+        userCustomParentName:
+          params.userCustomParentName ?? nicknameParent,
+        userCustomChildName: params.userCustomChildName ?? nicknameChild,
+        locale: short,
+      },
+      options,
+    );
+  }
 
   return {
     format: FAMILY_PARENT_CHILD_DEEP_FORMAT,

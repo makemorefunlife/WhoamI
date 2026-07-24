@@ -66,6 +66,13 @@ export type FamilyParentReportBody = {
     psych_lens?: DomainPsychLens | null;
     /** pair.family 교차 신호 기반 실행 처방전 */
     prescription_family?: FamilyPrescriptionPack;
+    /**
+     * Round 2 — familySajuDeep LLM explain overlay (optional).
+     * Does not own classifications; CE projections remain SSOT.
+     */
+    family_saju_deep?: import("@/lib/prompts/relationshipPremium/familySajuDeep").FamilySajuDeepReport;
+    locale?: string;
+    language?: string;
   };
   /**
    * Context Output — 이미 계산된 ctx/section 재포장.
