@@ -98,6 +98,7 @@ import {
   isRomanticSajuDeepReport,
   type RomanticSajuDeepReport,
 } from "./outputSchema";
+import { postValidateRomanticNarrative } from "./postValidateNarrative";
 
 export const ROMANTIC_SAJU_DEEP_FORMAT = "romantic_saju_deep_v2" as const;
 
@@ -140,6 +141,8 @@ type RomanticPreparedContext = {
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
+  // Round 2 decision: keep disabled. A second full LLM rewrite would roughly
+  // double latency/cost. Use deterministic postValidateRomanticNarrative instead.
   return false;
 }
 
@@ -500,6 +503,39 @@ function finalizeRomanticSajuDeepReport(
     prepared;
   const generatedAt = new Date().toISOString();
 
+  // Round 2 — deterministic narrative guards (no second LLM). Uses canonical
+  // facets already available on romanticContextInput before projection inject.
+  const reassuranceFinalizedEarly = reassuranceValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const comparisonFinalizedEarly = comparisonTableValueFromDominantCategories(
+    romanticContextInput.dominant_categories,
+  );
+  const postValidated = postValidateRomanticNarrative(
+    parsed.report as Record<string, unknown>,
+    {
+      nicknameA: params.nicknameA,
+      nicknameB: params.nicknameB,
+      matchAGivesB: reassuranceFinalizedEarly?.match_a_gives_b ?? null,
+      matchBGivesA: reassuranceFinalizedEarly?.match_b_gives_a ?? null,
+      comparisonLeans: comparisonFinalizedEarly
+        ? {
+            conflict: comparisonFinalizedEarly.conflict,
+            affection: comparisonFinalizedEarly.affection,
+            stress: comparisonFinalizedEarly.stress,
+            expression: comparisonFinalizedEarly.expression,
+            decision: comparisonFinalizedEarly.decision,
+            communication: comparisonFinalizedEarly.communication,
+          }
+        : undefined,
+    },
+  );
+  const narrativeGuards = postValidated.fixes;
+  parsed = {
+    ...parsed,
+    report: postValidated.report as RomanticSajuDeepReport["report"],
+  };
+
   // Phase 6-2d1 — after LLM spread, server balance projection wins.
   const balanceFinalized = balanceOfPowerValueFromDominantCategories(
     romanticContextInput.dominant_categories,
@@ -681,6 +717,8 @@ function finalizeRomanticSajuDeepReport(
         params.sajuMasterB?.schema_version ??
         null,
       prompt_input_mode: "domain_signals_digest_v1",
+      narrative_guards: narrativeGuards,
+      narrative_guards_mode: "deterministic_post_validate_v1",
       saju_provenance: {
         a: params.sajuProvenanceA ?? null,
         b: params.sajuProvenanceB ?? null,

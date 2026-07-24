@@ -79,11 +79,13 @@ export function buildEssenceActionSystemPromptBlock(): string {
   - For A: respect partner's emotional timing / regulate expression density / check feelings before solving
   - For B: break silence and name the inner state / sync empathy before solving / try honesty over perfect words
 
-## Digest-backed advice (required — Patch 4)
-- Every tip's \`saju_reason\` must **point to a concrete \`dynamics_digest\` clause** (e.g. a \`compare_*\` lean, reassurance \`일치\`, expression_speed direction, recovery band, residual).
-- Ban advice that would fit any couple without that digest signal.
-- If you cannot name the digest clause behind a tip, discard it and write another.
+## Digest-backed advice (required — Round 2)
+- Every tip derives from **exactly one** named digest source: \`compare_*\` | \`reassurance\` | \`expression_speed\` | \`recovery\` | \`role_play\`.
+- Draft with an internal tag in \`saju_reason\` (e.g. \`[source: compare_affection]\` / \`[source: reassurance]\`), then **remove the tag** before final JSON.
+- First sentence of finished \`saju_reason\` must still name that digest signal in natural language.
+- Ban advice that would fit any couple without that digest; if no source, discard and rewrite.
 - Write display names **exactly** as given — ban \`나님\` / \`저님\` / doubled honorifics.
+- Few-shot bodies below are **structure/tone only** — never reuse their content.
 
 ## Output structure (required)
 Per person, 3 tips — each item:
@@ -121,7 +123,8 @@ export function buildEssenceActionFewShotExample(params: {
   return `
 # [최종 통합 출력 예시] section_5_action
 
-⚠️ 아래는 **구조·문장 밀도·톤·길이**만 참고. ${nicknameA}·${nicknameB} 실제 입력 데이터로 **새로** 작성. 예시 문장·형용사 **복사 금지**.
+⚠️ 아래는 **구조·문장 밀도·톤·길이**만 참고. ${nicknameA}·${nicknameB} 실제 입력 데이터로 **새로** 작성. 예시 문장·형용사·조언 내용 **복사 금지** (structural only).
+⚠️ 각 팁은 digest source 1개에만 연결. Draft \`[source: …]\` then strip before JSON.
 ⚠️ \`real_life_example\`은 모든 항목 **\`""\`**. "이런 순간에 —" **절대 금지**.${serverSignalLine}
 
 ---

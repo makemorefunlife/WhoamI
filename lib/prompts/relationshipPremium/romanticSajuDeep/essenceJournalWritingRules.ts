@@ -88,9 +88,11 @@ export function buildEssenceJournalNameMappingBlock(params: {
 - JSON 키는 A/B 슬롯: \`a_hidden\` = **${nicknameA}**, \`b_hidden\` = **${nicknameB}**.
 - "A", "B", "첫 번째 사람", "두 번째 사람", "상대방" 같은 플레이스홀더 **금지**.
 
-## 1인칭 화자 바인딩 (필수)
+## 1인칭 화자 바인딩 (필수 — Round 2)
 - \`a_hidden.*\` / \`a_nature.first_person_voice\` / other \`a_*\` 1st-person: **"나" = ${nicknameA}** only; partner references = **${nicknameB}** only (never ${nicknameA} as the partner).
-- \`b_hidden.*\` / \`b_nature.first_person_voice\` / other \`b_*\` 1st-person: **"나" = ${nicknameB}** only; partner references = **${nicknameA}** only (never ${nicknameB} as the partner).
+- \`b_hidden.*\` / \`b_nature.first_person_voice\` / other \`b_*\` 1st-person: **"나" = ${nicknameB}** only; partner references = **${nicknameA === "나" ? "상대" : nicknameA}** only (never ${nicknameB} as the partner).
+- When A display name is literally \`나\`, B must use **"상대"** (or another non-self label) — never \`나와 ${nicknameB}\` / \`${nicknameB}와의 관계\`.
+- **Final scan**: every \`b_*\` 1st-person string; if **${nicknameB}** appears as partner, rewrite before emit.
 `.trim();
 }
 
@@ -236,8 +238,9 @@ export function buildHiddenHeartsRoleGuide(
 - \`reason\`: 왜 그런지 — **3문장+**, 구체적 장면·습관
 - \`voice\`: "사실 나는…" **1인칭 5~8문장**, 날것의 고백
   - \`a_hidden.voice\`: speaker = **${nicknameA}**; partner = **${nicknameB}** only
-  - \`b_hidden.voice\`: speaker = **${nicknameB}**; partner = **${nicknameA}** only
+  - \`b_hidden.voice\`: speaker = **${nicknameB}**; partner = **${nicknameA === "나" ? "상대" : nicknameA}** only
   - Never call yourself by your own display name inside voice
+  - Ban in \`b_hidden\`: \`${nicknameB}와의 관계\`, \`나와 ${nicknameB}\`
 
 ## 금지 미사여구
 ${hiddenForbidden} 및 유사 변형 **0개**.

@@ -105,13 +105,16 @@ const ROMANTIC_SAJU_DEEP_SELF_REFINE_BASE = `# 분석 결과 검토
 
 
 
-## 8. Epistemic · Canonical · Same-lean · Mismatch (Patch 1 / 1.5)
+## 8. Epistemic · Canonical · Same-lean · Mismatch (Round 2)
 
 - [ ] \`confidence=low\` 또는 \`align=caution\` 행을 **단정 사실**로 쓰지 않았나요? (제안·검증 톤만)
-- [ ] \`confidence=high\` / confirms 행은 불필요한 헤지 없이 직접적으로 썼나요?
-- [ ] Canonical digest 값(lean/band/일치/direction/align/confidence)과 **모순되는 문장**이 있으면 산문을 고쳤나요? (판정을 바꾸지 않음)
-- [ ] Same lean (incl. balanced/balanced): **유사성**으로만 서술했나요? (가짜 대비·유연 vs 신중 발명 금지)
-- [ ] \`일치:false\` / mismatch를 **상호 안심·서로 잘 맞춰줌**으로 soft-wash하지 않았나요? (갭을 먼저 명명)
+- [ ] Canonical digest 값과 **모순되는 문장**이 있으면 산문을 고쳤나요?
+- [ ] Same lean: 양 셀이 **같은 카테고리**인가요? (감정 vs 행동 / 유연 vs 신중 발명 금지)
+- [ ] \`일치:false\`: 첫 문장이 갭을 말하고, 마지막 문장이 상호 안심으로 soft-wash하지 않나요?
+- [ ] \`match_note\`에 어긋/불일치 등 **가청 mismatch** 문구가 있나요?
+- [ ] \`b_*\` 1인칭에 B 자기 이름을 파트너로 쓰지 않았나요? (\`{B}와의\` / \`나와 {B}\` 금지)
+- [ ] \`나님\` / \`저님\` **0개**인가요?
+- [ ] 각 advice가 digest source 1개에 연결되고, 예시 문장 복제가 아닌가요?
 
 
 
@@ -161,8 +164,9 @@ export function buildRomanticSajuDeepSelfRefinePrompt(
 
 ## Speaker names for this report
 - \`a_*\` 1st-person: "나" = **${nicknameA}**; partner refs = **${nicknameB}** only
-- \`b_*\` 1st-person: "나" = **${nicknameB}**; partner refs = **${nicknameA}** only
-- Ban self-reference as "${nicknameA}님" / "${nicknameB}님" inside own 1st-person fields; ban 나님/저님
+- \`b_*\` 1st-person: "나" = **${nicknameB}**; partner refs = **${nicknameA === "나" ? "상대" : nicknameA}** only
+- Ban self-reference as partner: "${nicknameB}와의 관계", "나와 ${nicknameB}"; ban 나님/저님
+- Same-lean cells must share one category; mismatch fields must keep audible gap
 
 ${buildEssenceJournalSelfDedupChecklist(nicknameA, nicknameB)}
 

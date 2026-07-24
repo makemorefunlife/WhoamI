@@ -130,16 +130,37 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - **Decision-making (의사결정) row only**: if \`dynamics_digest.compare_decision\` is present, phrase that server lean — do **not** re-classify independent vs consultative, and do **not** conflate with balance_of_power / sublead.
     - **Communication (소통 방식) row only**: if \`dynamics_digest.compare_communication\` is present, phrase that server lean — do **not** re-classify direct vs considerate.
     - All 6 compare rows with server lean: phrase only; do not re-classify.
-    - **Same lean = similarity**: if lean_A and lean_B are the **same** token (including both \`balanced\`), narrate **similarity** and its own risk if any. **Do not invent** opposing styles for that row.
+    - **Same lean = similarity ONLY (Round 2)**: if lean_A === lean_B (same token, including \`balanced\`/\`balanced\` and \`emotional_care\`/\`emotional_care\`):
+      - Both \`a\` and \`b\` cells must describe the **same category**.
+      - Differences only in intensity/context **if** canonical data supplies them; otherwise narrate **shared tendency + shared blind spot**.
+      - **Valid** emotional_care/emotional_care: both cells about emotional care (not action/gift).
+      - **Valid** balanced/balanced: both cells about balanced/flexible decision (not 유연 vs 신중).
+      - **Forbidden**: same lean → "A는 감정, B는 행동" / "A는 유연, B는 신중".
     - Honor that row's \`confidence\` / \`align\` (see epistemic voice above).
-12. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones. **Each \`saju_reason\` must cite a concrete \`dynamics_digest\` clause** (a compare_* lean, reassurance match flag, expression_speed, recovery, or residual). If you cannot point to one digest clause, discard that tip and write another. Ban advice that would fit any couple without that digest.
+12. **section_5**: advice_for_a·b **3 each** — action_title + saju_reason (3+ sentences) + real_speech_tip required. real_life_example = **""**. together = Essence diary (3+ sentences), together_starter = conversation opener. Ban "in moments like this" scaffolding, nature metaphors, "just express feelings" clones.
+    - **Digest source (Round 2)**: each tip derives from **exactly one** named digest source: \`compare_*\` | \`reassurance\` | \`expression_speed\` | \`recovery\` | \`role_play\`.
+    - While drafting, prefix the reason with an internal tag e.g. \`[source: compare_decision]\` / \`[source: reassurance]\`, then **delete the tag** before final JSON (schema must not expose it).
+    - The finished \`saju_reason\` must still name that digest signal in natural language in the first sentence.
+    - If you cannot identify a source, omit/regenerate the tip. Ban wording that could be copied unchanged to an unrelated couple. Few-shots are **structure only** — never reuse example content.
 13. **section_3 conflict**: dialogue_table **exactly 2 rows** — faster expresser + slower processor each ❌/✅. 50:50 balance; no model answers. Ban hidden_psychology. If \`dynamics_digest.expression_speed\` is present, keep the server \`direction\` for faster slot — do **not** reassign faster/slower from residual (residual is corroboration only, not direct evidence of expression speed)
 14. **section_4_special_bond**: \`a_gives_b_headline\`+\`a_gives_b\`, \`b_gives_a_headline\`+\`b_gives_a\`, \`only_together_headline\`+\`only_together\` required. Follow few-shot structure. Ban nature metaphors and Mingli terms
 15. **section_4_hidden_hearts**: both a_hidden and b_hidden required. Fully separate from special_bond
 16. **section_1_summary**: do not generate (Headline Selector fills from Saju rules)
-17. **section_1_relationship_dynamics / section_4_relationship_frames**: these 4 fields (balance_of_power, recovery_speed, reassurance_signal, unconscious_role_play) must be phrased **only** from \`dynamics_digest\` in Input data. Do not invent a different verdict than what the digest already decided — you are writing the narrative, not re-classifying. Never print the internal band/frame names (e.g. "leader", "savior_dependent") literally — translate them into natural language. Keep \`recovery_speed\` residual phrasing separate from \`expression_speed\` (do not treat residual as who expresses faster). **If any \`일치:\` value is \`false\`, reassurance bodies + \`match_note\` must name the need/give gap before any repair tip** — do not rewrite mismatch as mutual comfort.
+17. **section_1_relationship_dynamics / section_4_relationship_frames**: these 4 fields (balance_of_power, recovery_speed, reassurance_signal, unconscious_role_play) must be phrased **only** from \`dynamics_digest\` in Input data. Do not invent a different verdict than what the digest already decided — you are writing the narrative, not re-classifying. Never print the internal band/frame names (e.g. "leader", "savior_dependent") literally — translate them into natural language. Keep \`recovery_speed\` residual phrasing separate from \`expression_speed\` (do not treat residual as who expresses faster).
+    - **Hard mismatch preservation (Round 2)**: when any \`일치:\` is \`false\`:
+      1. First sentence of \`a_body\` / \`b_body\` / \`match_note\` must **explicitly** state the need/give gap.
+      2. Final sentence must **not** reinterpret the pair as already mutually reassuring.
+      3. Repair tips may follow only in future/conditional language ("맞출 수 있다", "확인해 볼 수 있다") — never "서로에게 위안이 된다" / "서로에게 안정감을 주는 관계".
+      4. \`match_note\` must contain an audible mismatch phrase (어긋/불일치/맞지 않/갭…).
+      - **Forbidden**: false → "서로에게 안정감을 주는 관계"
+      - **Valid**: false → "필요한 안심과 실제로 건네는 방식이 어긋날 수 있다"
 18. **Dedup audit**: on subject-swapped mirroring, banned fluff, Saju jargon, bond nature metaphors, or cross-section claim rehash (same "comfort/stability/support" thesis in special_bond + frames + mutual_gift + nature) — **fully rewrite** that field
-19. **Names**: write display names **exactly** as given. Ban **나님**, **저님**, and doubling 님/씨. Never address yourself with your own display name + honorific. In \`a_*\` 1st-person fields, "나" = **${nicknameA}** and partner = **${nicknameB}** only. In \`b_*\` 1st-person fields, "나" = **${nicknameB}** and partner = **${nicknameA}** only.
+19. **Names & B-speaker binding (Round 2)**: write display names **exactly** as given. Ban **나님**, **저님**, and doubling 님/씨.
+    - \`a_*\` 1st-person: "나" = **${nicknameA}**; partner = **${nicknameB}** only.
+    - \`b_*\` 1st-person (\`b_nature.first_person_voice\`, \`b_hidden.*\`): speaker = **${nicknameB}**; "나" = **${nicknameB}** only; partner = **${nicknameA}** only.
+    - If **${nicknameA}** is the literal string \`나\`, B may call A **"상대"** (or another supplied non-self label) — never invent a second self.
+    - **Forbid** in any \`b_*\` 1st-person string: \`${nicknameB}와의 관계\`, \`나와 ${nicknameB}\`, or using **${nicknameB}** as the partner.
+    - Final self-check: scan all \`b_*\` 1st-person fields; if B's own display name appears as partner, rewrite before output.
 
 Output language follows the system prompt locale instruction — do not hardcode a language here.
 `.trim();
