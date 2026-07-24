@@ -22,6 +22,13 @@ import type { FamilyPrescriptionPack } from "./familyPrescriptionTypes";
 import type { PairFamilySignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import type { FamilySajuSignals, FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { buildFamilySajuCompareTable } from "./familySajuCompareTable";
+import {
+  buildFamilyComparisonTableCanonical,
+  buildFamilyComparisonTableClientProjection,
+  comparisonTableValueFromResolver,
+  injectFamilyComparisonTableClientProjection,
+  type FamilyComparisonTableValue,
+} from "./familyComparisonTableCanonical";
 import { buildFamilyHouseholdRoles } from "./buildFamilyHouseholdRoles";
 import { appendFilialRecognitionEnrichment } from "./familyRecognitionEnrichment";
 import { buildFamilyRoleSection } from "./familyPsychRoles";
@@ -65,6 +72,13 @@ export type FamilyParentReportBody = {
    * 옵셔널·순수 추가. 기존 필드·문구·캐시 소비처는 미사용.
    */
   context_output?: FamilyContextOutput;
+  /**
+   * Typed Context Engine projections for MUST judgments.
+   * Survives strip (context_output only removed). Legacy reports omit.
+   */
+  canonical_projections?: {
+    comparison_table?: FamilyComparisonTableValue;
+  };
 };
 
 export function buildFamilyParentReport(params: {
@@ -218,7 +232,19 @@ export function buildFamilyParentReport(params: {
     locale,
   });
 
-  return {
+  const comparisonTyped = comparisonTableValueFromResolver({
+    countsParent: ctx.tenGod.countsParent,
+    countsChild: ctx.tenGod.countsChild,
+    chartParent: ctx.chartParent,
+    chartChild: ctx.chartChild,
+    familySignalsParent: ctx.familySignalsParent,
+    familySignalsChild: ctx.familySignalsChild,
+  });
+  const comparisonProjection = buildFamilyComparisonTableClientProjection(
+    buildFamilyComparisonTableCanonical(comparisonTyped)?.value,
+  );
+
+  let reportBody: FamilyParentReportBody = {
     headline: family.section_snapshot.one_line_family,
     summary_line: `🔥 ${ctx.masterScores.bond}% · 🧩 ${ctx.masterScores.synergy}% · ⚡ ${ctx.masterScores.risk}%`,
     one_line_family: family.section_snapshot.one_line_family,
@@ -251,4 +277,11 @@ export function buildFamilyParentReport(params: {
       psychChild,
     }),
   };
+
+  reportBody = injectFamilyComparisonTableClientProjection(
+    reportBody,
+    comparisonProjection,
+  );
+
+  return reportBody;
 }

@@ -58,12 +58,59 @@ export type LegacyCareBalanceRowId = "care_balance";
 /** @deprecated Part2 이전 id — 테스트 마이그레이션용 별칭 */
 export type LegacyFamilyCompareRowId = "nagging_reaction" | "origin_family_distance";
 
+export type FamilyTenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
+export type FamilyAffectionElement = "wood" | "fire" | "earth" | "metal" | "water";
+export type FamilyStrengthBand = "weak" | "balanced" | "strong";
+
+type TenGodCategory = FamilyTenGodCategory;
+type ElementKey = FamilyAffectionElement;
+type StrengthBand = FamilyStrengthBand;
+
+export type FamilyComparePersonCell = {
+  nickname: string;
+  shortLabel: string;
+  /** Locale-independent band — optional on legacy cached rows */
+  band?: string;
+};
+
 export type FamilyCompareRow = {
   id: FamilyCompareRowId;
   label: string;
-  personParent: { nickname: string; shortLabel: string };
-  personChild: { nickname: string; shortLabel: string };
+  personParent: FamilyComparePersonCell;
+  personChild: FamilyComparePersonCell;
   meaning: string;
+};
+
+export type FamilyCompareRowTypedValue = {
+  band_parent: string;
+  band_child: string;
+};
+
+export type FamilyComparisonTableTypedValue = {
+  correction_style: FamilyCompareRowTypedValue & {
+    band_parent: FamilyTenGodCategory;
+    band_child: FamilyTenGodCategory;
+  };
+  bond_distance: FamilyCompareRowTypedValue & {
+    band_parent: ParentBondBand;
+    band_child: ParentBondBand;
+  };
+  affection_expression: FamilyCompareRowTypedValue & {
+    band_parent: FamilyAffectionElement;
+    band_child: FamilyAffectionElement;
+  };
+  guidance_balance: FamilyCompareRowTypedValue & {
+    band_parent: GuidanceMode;
+    band_child: GuidanceMode;
+  };
+  gathering_recovery: FamilyCompareRowTypedValue & {
+    band_parent: FamilyStrengthBand;
+    band_child: FamilyStrengthBand;
+  };
+  home_climate: FamilyCompareRowTypedValue & {
+    band_parent: HomeClimateBand;
+    band_child: HomeClimateBand;
+  };
 };
 
 export type PairRelation = "same" | "near" | "different";
@@ -147,8 +194,6 @@ function resolveComparePairFamily(params: {
 // 계산 레이어 (source value + bucket) — 카피 없음. parentRole 미사용.
 // ---------------------------------------------------------------------------
 
-type TenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
-
 /** A person — 십신 우세 카테고리 = 교정 반응 유형 (de-escalation과 동일 5범주). */
 export function resolveCorrectionStyleBucket(
   counts: TenGodCounts,
@@ -204,8 +249,6 @@ export function resolveBondDistanceBucket(
   return { sourceValue: { band, seal_count: p.seal }, bucket: band };
 }
 
-type ElementKey = "wood" | "fire" | "earth" | "metal" | "water";
-
 /** ③용 — 오행 우세(resolveDominantElement SSOT, Part3 genius와 동일 primitive). */
 export function resolveAffectionExpressionBucket(
   chart: ChartContext,
@@ -231,8 +274,6 @@ export function resolveGuidanceBalanceBucket(
   const profile = resolveGuidanceProfile(counts);
   return { sourceValue: profile, bucket: profile.mode };
 }
-
-type StrengthBand = "weak" | "balanced" | "strong";
 
 // friend의 resolveFriendStrengthBand(margin=1)와 완전히 동일한 공식 —
 // 007 문서에서 "잠정 채택"으로 명시된 그대로, 이 파일 안에서 재현(friend 파일
@@ -748,6 +789,81 @@ function comboKey(a: string, b: string): string {
   return [a, b].sort().join("|");
 }
 
+// ---- Typed resolver + label format -----------------------------------------
+
+export type FamilyCompareTableResolverParams = {
+  countsParent: TenGodCounts;
+  countsChild: TenGodCounts;
+  chartParent: ChartContext;
+  chartChild: ChartContext;
+  familySignalsParent?: FamilySajuSignals;
+  familySignalsChild?: FamilySajuSignals;
+};
+
+/**
+ * Locale-independent typed bands for all six Family compare rows.
+ * Always parent/child oriented (never report A/B). parentRole unused.
+ */
+export function resolveFamilyComparisonTableTyped(
+  params: FamilyCompareTableResolverParams,
+): FamilyComparisonTableTypedValue {
+  return {
+    correction_style: {
+      band_parent: resolveCorrectionStyleBucket(params.countsParent).bucket,
+      band_child: resolveCorrectionStyleBucket(params.countsChild).bucket,
+    },
+    bond_distance: {
+      band_parent: resolveBondDistanceBucket(
+        params.countsParent,
+        params.familySignalsParent,
+      ).bucket,
+      band_child: resolveBondDistanceBucket(
+        params.countsChild,
+        params.familySignalsChild,
+      ).bucket,
+    },
+    affection_expression: {
+      band_parent: resolveAffectionExpressionBucket(params.chartParent).bucket,
+      band_child: resolveAffectionExpressionBucket(params.chartChild).bucket,
+    },
+    guidance_balance: {
+      band_parent: resolveGuidanceBalanceBucket(params.countsParent).bucket,
+      band_child: resolveGuidanceBalanceBucket(params.countsChild).bucket,
+    },
+    gathering_recovery: {
+      band_parent: resolveGatheringRecoveryBucket(params.chartParent).bucket,
+      band_child: resolveGatheringRecoveryBucket(params.chartChild).bucket,
+    },
+    home_climate: {
+      band_parent: resolveHomeClimateBucket(params.familySignalsParent).bucket,
+      band_child: resolveHomeClimateBucket(params.familySignalsChild).bucket,
+    },
+  };
+}
+
+export function formatFamilyCompareBandLabel(
+  rowId: FamilyCompareRowId,
+  band: string,
+  locale: Locale = LEGACY_FALLBACK_LOCALE,
+): string {
+  switch (rowId) {
+    case "correction_style":
+      return CORRECTION_STYLE_LABEL[locale][band as TenGodCategory] ?? band;
+    case "bond_distance":
+      return BOND_DISTANCE_LABEL[locale][band as ParentBondBand] ?? band;
+    case "affection_expression":
+      return AFFECTION_EXPRESSION_LABEL[locale][band as ElementKey] ?? band;
+    case "guidance_balance":
+      return GUIDANCE_BALANCE_LABEL[locale][band as GuidanceMode] ?? band;
+    case "gathering_recovery":
+      return GATHERING_RECOVERY_LABEL[locale][band as StrengthBand] ?? band;
+    case "home_climate":
+      return HOME_CLIMATE_LABEL[locale][band as HomeClimateBand] ?? band;
+    default:
+      return band;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // 빌더
 // ---------------------------------------------------------------------------
@@ -786,10 +902,18 @@ export function buildFamilySajuCompareTable(params: {
     parentRole,
   } = params;
   const roleLensKey = resolveRoleLensKey(parentRole);
+  const typed = resolveFamilyComparisonTableTyped({
+    countsParent,
+    countsChild,
+    chartParent,
+    chartChild,
+    familySignalsParent,
+    familySignalsChild,
+  });
 
   // C person modes — pair 재구성·fit에 필요하므로 A/B보다 먼저 계산(SSOT 함수만 호출)
-  const guideP = resolveGuidanceBalanceBucket(countsParent);
-  const guideC = resolveGuidanceBalanceBucket(countsChild);
+  const guideP = { bucket: typed.guidance_balance.band_parent };
+  const guideC = { bucket: typed.guidance_balance.band_child };
 
   const pairFamily = resolveComparePairFamily({
     pairFamily: params.pairFamily,
@@ -804,61 +928,81 @@ export function buildFamilySajuCompareTable(params: {
   const row = (
     id: FamilyCompareRowId,
     label: string,
-    shortLabelParent: string,
-    shortLabelChild: string,
+    bandParent: string,
+    bandChild: string,
     meaning: string,
   ): FamilyCompareRow => ({
     id,
     label,
-    personParent: { nickname: parentNickname, shortLabel: sanitizeFamilyParentText(shortLabelParent) },
-    personChild: { nickname: childNickname, shortLabel: sanitizeFamilyParentText(shortLabelChild) },
+    personParent: {
+      nickname: parentNickname,
+      shortLabel: sanitizeFamilyParentText(
+        formatFamilyCompareBandLabel(id, bandParent, locale),
+      ),
+      band: bandParent,
+    },
+    personChild: {
+      nickname: childNickname,
+      shortLabel: sanitizeFamilyParentText(
+        formatFamilyCompareBandLabel(id, bandChild, locale),
+      ),
+      band: bandChild,
+    },
     meaning: sanitizeFamilyParentText(meaning),
   });
 
   // A — person style + pair nagging friction (+ person contrast in meaning)
-  const styleP = resolveCorrectionStyleBucket(countsParent);
-  const styleC = resolveCorrectionStyleBucket(countsChild);
-  const labelStyleP = CORRECTION_STYLE_LABEL[locale][styleP.bucket];
-  const labelStyleC = CORRECTION_STYLE_LABEL[locale][styleC.bucket];
+  const styleP = typed.correction_style.band_parent;
+  const styleC = typed.correction_style.band_child;
+  const labelStyleP = formatFamilyCompareBandLabel("correction_style", styleP, locale);
+  const labelStyleC = formatFamilyCompareBandLabel("correction_style", styleC, locale);
   const frictionBand = pairFamily.nagging_band;
   const correctionMeaning =
     personAxisLead(locale, parentNickname, labelStyleP, childNickname, labelStyleC) +
-    (styleP.bucket === styleC.bucket
+    (styleP === styleC
       ? CORRECTION_FRICTION_SAME[locale][roleLensKey][frictionBand]
       : CORRECTION_FRICTION_DIFF[locale][roleLensKey][frictionBand]);
 
   // B — person bond + pair umbilical (+ person contrast in meaning)
-  const bondP = resolveBondDistanceBucket(countsParent, familySignalsParent);
-  const bondC = resolveBondDistanceBucket(countsChild, familySignalsChild);
-  const labelBondP = BOND_DISTANCE_LABEL[locale][bondP.bucket];
-  const labelBondC = BOND_DISTANCE_LABEL[locale][bondC.bucket];
+  const bondP = typed.bond_distance.band_parent;
+  const bondC = typed.bond_distance.band_child;
+  const labelBondP = formatFamilyCompareBandLabel("bond_distance", bondP, locale);
+  const labelBondC = formatFamilyCompareBandLabel("bond_distance", bondC, locale);
   const umbilicalBand = pairFamily.umbilical_band;
   const bondMeaning =
     personAxisLead(locale, parentNickname, labelBondP, childNickname, labelBondC) +
-    (bondP.bucket === bondC.bucket
+    (bondP === bondC
       ? UMBILICAL_SAME[locale][roleLensKey][umbilicalBand]
       : UMBILICAL_DIFF[locale][roleLensKey][umbilicalBand]);
 
   // ③⑤⑥ — Part2 D~F 이전 유지; C는 guidance_balance
-  const affectionP = resolveAffectionExpressionBucket(chartParent);
-  const affectionC = resolveAffectionExpressionBucket(chartChild);
-  const affectionRelation = nominalRelation(affectionP.bucket, affectionC.bucket);
+  const affectionP = typed.affection_expression.band_parent;
+  const affectionC = typed.affection_expression.band_child;
+  const affectionRelation = nominalRelation(affectionP, affectionC);
 
   const guidanceFit: GuidanceFit =
     pairFamily.guidance_fit ?? resolveGuidanceFit(guideP.bucket, guideC.bucket);
-  const labelGuideP = GUIDANCE_BALANCE_LABEL[locale][guideP.bucket];
-  const labelGuideC = GUIDANCE_BALANCE_LABEL[locale][guideC.bucket];
+  const labelGuideP = formatFamilyCompareBandLabel(
+    "guidance_balance",
+    guideP.bucket,
+    locale,
+  );
+  const labelGuideC = formatFamilyCompareBandLabel(
+    "guidance_balance",
+    guideC.bucket,
+    locale,
+  );
   const guidanceMeaning =
     personAxisLead(locale, parentNickname, labelGuideP, childNickname, labelGuideC) +
     GUIDANCE_FIT_MEANING[locale][roleLensKey][guidanceFit];
 
-  const recoveryP = resolveGatheringRecoveryBucket(chartParent);
-  const recoveryC = resolveGatheringRecoveryBucket(chartChild);
+  const recoveryP = typed.gathering_recovery.band_parent;
+  const recoveryC = typed.gathering_recovery.band_child;
 
-  const climateP = resolveHomeClimateBucket(familySignalsParent);
-  const climateC = resolveHomeClimateBucket(familySignalsChild);
-  const labelClimateP = HOME_CLIMATE_LABEL[locale][climateP.bucket];
-  const labelClimateC = HOME_CLIMATE_LABEL[locale][climateC.bucket];
+  const climateP = typed.home_climate.band_parent;
+  const climateC = typed.home_climate.band_child;
+  const labelClimateP = formatFamilyCompareBandLabel("home_climate", climateP, locale);
+  const labelClimateC = formatFamilyCompareBandLabel("home_climate", climateC, locale);
   const climateMeaning =
     personAxisLead(
       locale,
@@ -868,29 +1012,29 @@ export function buildFamilySajuCompareTable(params: {
       labelClimateC,
     ) +
     HOME_CLIMATE_MEANING[locale][roleLensKey][
-      comboKey(climateP.bucket, climateC.bucket)
+      comboKey(climateP, climateC)
     ]!;
 
   return [
     row(
       "correction_style",
       CORRECTION_STYLE_TITLE[locale][roleLensKey],
-      labelStyleP,
-      labelStyleC,
+      styleP,
+      styleC,
       correctionMeaning,
     ),
     row(
       "bond_distance",
       BOND_DISTANCE_TITLE[locale][roleLensKey],
-      labelBondP,
-      labelBondC,
+      bondP,
+      bondC,
       bondMeaning,
     ),
     row(
       "affection_expression",
       pick(locale, "How You Express Care", "가족에게 마음을 표현하는 방식"),
-      AFFECTION_EXPRESSION_LABEL[locale][affectionP.bucket],
-      AFFECTION_EXPRESSION_LABEL[locale][affectionC.bucket],
+      affectionP,
+      affectionC,
       affectionRelation === "same"
         ? AFFECTION_EXPRESSION_MEANING[locale].same
         : AFFECTION_EXPRESSION_MEANING[locale].diff,
@@ -898,22 +1042,22 @@ export function buildFamilySajuCompareTable(params: {
     row(
       "guidance_balance",
       GUIDANCE_BALANCE_TITLE[locale][roleLensKey],
-      labelGuideP,
-      labelGuideC,
+      guideP.bucket,
+      guideC.bucket,
       guidanceMeaning,
     ),
     row(
       "gathering_recovery",
       pick(locale, "How You Recover After Family Events", "가족행사 후 에너지 회복 방식"),
-      GATHERING_RECOVERY_LABEL[locale][recoveryP.bucket],
-      GATHERING_RECOVERY_LABEL[locale][recoveryC.bucket],
-      GATHERING_RECOVERY_MEANING[locale][comboKey(recoveryP.bucket, recoveryC.bucket)]!,
+      recoveryP,
+      recoveryC,
+      GATHERING_RECOVERY_MEANING[locale][comboKey(recoveryP, recoveryC)]!,
     ),
     row(
       "home_climate",
       HOME_CLIMATE_TITLE[locale][roleLensKey],
-      labelClimateP,
-      labelClimateC,
+      climateP,
+      climateC,
       climateMeaning,
     ),
   ];

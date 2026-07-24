@@ -201,6 +201,7 @@ const { context_output: _co2, ...body2 } = buildFamilyParentReport(baseParams);
 assert.deepEqual(body1, body2, "동일 입력 → context_output 제외 body 완전 동일");
 
 const expectedKeys = [
+  "canonical_projections",
   "headline",
   "summary_line",
   "one_line_family",

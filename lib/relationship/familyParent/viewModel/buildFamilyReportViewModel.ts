@@ -17,11 +17,16 @@ import type { FamilyCompareRowId } from "@/lib/relationship/familyParent/familyS
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
 import { messagesKoKR } from "@/lib/i18n/messages/ko-KR";
+import {
+  formatFamilyCompareCanonicalLabel,
+  readFamilyComparisonTableCanonicalProjection,
+} from "@/lib/relationship/familyParent/familyComparisonTableCanonical";
 import type {
   OpeningBlock,
   FamilyReportSection,
   FamilyReportViewModel,
 } from "./familyReportSectionTypes";
+import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySajuCompareTable";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -88,11 +93,38 @@ function buildRelationshipIndexSection(
 
 function buildCompareTableSection(
   report: FamilyParentReportBody,
+  locale: Locale,
   t: ReturnType<typeof catalog>,
 ): FamilyReportSection | null {
   const allRows = report.family?.section_compare_table;
   if (!allRows?.length) return null;
-  const byId = new Map(allRows.map((row) => [row.id, row]));
+  const typed = readFamilyComparisonTableCanonicalProjection(report);
+  const authorityAll: FamilyCompareRow[] = allRows.map((row) => {
+    const typedRow = typed?.[row.id];
+    if (!typedRow) return row;
+    return {
+      ...row,
+      personParent: {
+        ...row.personParent,
+        band: typedRow.band_parent,
+        shortLabel: formatFamilyCompareCanonicalLabel(
+          row.id,
+          typedRow.band_parent,
+          locale,
+        ),
+      },
+      personChild: {
+        ...row.personChild,
+        band: typedRow.band_child,
+        shortLabel: formatFamilyCompareCanonicalLabel(
+          row.id,
+          typedRow.band_child,
+          locale,
+        ),
+      },
+    };
+  });
+  const byId = new Map(authorityAll.map((row) => [row.id, row]));
   const rows = PART2_COMPARE_TABLE_DISPLAY_IDS.map((id) => byId.get(id)).filter(
     (row): row is NonNullable<typeof row> => row != null,
   );
@@ -318,12 +350,13 @@ export function buildFamilyReportViewModel(
   report: FamilyParentReportBody,
   params: BuildFamilyReportViewModelParams,
 ): FamilyReportViewModel {
-  const t = catalog(params.locale ?? "ko-KR");
+  const locale = params.locale ?? "ko-KR";
+  const t = catalog(locale);
 
   const builders: Array<() => FamilyReportSection | null> = [
     () => buildSnapshotSection(report),
     () => buildRelationshipIndexSection(report, t),
-    () => buildCompareTableSection(report, t),
+    () => buildCompareTableSection(report, locale, t),
     () => buildHouseholdRolesSection(report, t),
     () => buildPsychRadarSection(report, t),
     () => buildChildDnaSection(report, t),
