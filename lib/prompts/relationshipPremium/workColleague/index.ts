@@ -6,6 +6,7 @@ import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisFo
 import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { Locale } from "@/lib/i18n/locale";
+import { attachBusinessSajuDeepOverlay } from "@/lib/prompts/relationshipPremium/businessSajuDeep";
 import {
   WORK_COLLEAGUE_DEEP_FORMAT,
   type WorkColleagueDeepReport,
@@ -19,10 +20,12 @@ export type WorkColleagueDeepPayload = WorkColleagueDeepReport;
 
 /**
  * 동료·비즈니스 파트너 심화 분석
- * — 월지·천간·십신 보완 규칙 기반 (연인 일지 중심 로직과 분리)
+ * 1) rule-only CE (`buildWorkColleagueReport`) — classifications SSOT
+ * 2) optional businessSajuDeep LLM explain overlay → meta.business_saju_deep
+ *    (RELATIONSHIP_BUSINESS_NARRATIVE=0 to skip)
  */
 export async function runWorkColleagueDeepAnalysis(
-  _openai: OpenAI,
+  openai: OpenAI,
   params: {
     nicknameA: string;
     nicknameB: string;
@@ -43,7 +46,12 @@ export async function runWorkColleagueDeepAnalysis(
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
     locale?: Locale;
+    userCustomMyName?: string;
+    userCustomTargetName?: string;
+    /** Skip LLM overlay even if env enabled (tests). */
+    skipBusinessNarrative?: boolean;
   },
+  options?: { abortSignal?: AbortSignal },
 ): Promise<WorkColleagueDeepPayload> {
   const pairWork =
     params.sajuMasterA && params.sajuMasterB
@@ -60,7 +68,7 @@ export async function runWorkColleagueDeepAnalysis(
   const workSignalsA = params.sajuMasterA?.domain_signals.work_signals;
   const workSignalsB = params.sajuMasterB?.domain_signals.work_signals;
 
-  const report = buildWorkColleagueReport({
+  let report = buildWorkColleagueReport({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,
@@ -77,6 +85,25 @@ export async function runWorkColleagueDeepAnalysis(
     workSignalsB,
     locale: params.locale,
   });
+
+  if (!params.skipBusinessNarrative) {
+    const short =
+      typeof params.locale === "string" && params.locale.startsWith("en")
+        ? "en"
+        : "ko";
+    report = await attachBusinessSajuDeepOverlay(
+      openai,
+      {
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+        report,
+        userCustomMyName: params.userCustomMyName ?? params.nicknameA,
+        userCustomTargetName: params.userCustomTargetName ?? params.nicknameB,
+        locale: short,
+      },
+      options,
+    );
+  }
 
   return {
     format: WORK_COLLEAGUE_DEEP_FORMAT,

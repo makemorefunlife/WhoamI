@@ -67,6 +67,13 @@ export type WorkColleagueReportBody = {
     psych_lens?: DomainPsychLens | null;
     /** pair.work 교차 신호 기반 실행 처방전 */
     prescription_work?: WorkPrescriptionPack;
+    /**
+     * Round 2 — businessSajuDeep LLM explain overlay (optional).
+     * Does not own classifications; CE projections remain SSOT.
+     */
+    business_saju_deep?: import("@/lib/prompts/relationshipPremium/businessSajuDeep").BusinessSajuDeepReport;
+    locale?: string;
+    language?: string;
   };
   /**
    * Context Output — 이미 계산된 ctx/office 재포장.
