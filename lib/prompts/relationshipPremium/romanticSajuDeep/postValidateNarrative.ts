@@ -266,7 +266,7 @@ function softWashBody(body: string): string {
 }
 
 const TENTATIVE_MARKER =
-  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울/;
+  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울|상황에\s*따라|다르게\s*나타날/;
 
 function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } {
   const raw = cell.trim();
@@ -274,7 +274,7 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base}. 다만 실제 관계에서는 조금 다르게 나타날 수도 있으니, 함께 확인해 볼 부분이에요.`,
+    text: `${base}. 다만 실제 관계에서는 상황에 따라 다르게 나타날 수 있어요.`,
     fixed: true,
   };
 }

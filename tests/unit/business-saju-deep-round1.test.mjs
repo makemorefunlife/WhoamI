@@ -170,8 +170,8 @@ function ok(name) {
   const riskRow = out.section_2_nature.comparison_table.find(
     (r) => r.aspect === "리스크 감수",
   );
-  assert.match(riskRow.a, /편으로 보일 수 있으며|확인해 볼/);
-  assert.match(riskRow.b, /편으로 보일 수 있으며|확인해 볼/);
+  assert.match(riskRow.a, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
+  assert.match(riskRow.b, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
 
   assert.ok(out.meta.narrative_guards.length >= 1);
   assert.equal(

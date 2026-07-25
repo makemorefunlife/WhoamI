@@ -156,8 +156,8 @@ function ok(name) {
   const conflictRow = out.section_2_nature.comparison_table.find(
     (r) => r.aspect === "부부 갈등",
   );
-  assert.match(conflictRow.a, /편으로 보일 수 있으며|확인해 볼/);
-  assert.match(conflictRow.b, /편으로 보일 수 있으며|확인해 볼/);
+  assert.match(conflictRow.a, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
+  assert.match(conflictRow.b, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
 
   assert.ok(out.meta.narrative_guards.length >= 1);
   assert.equal(

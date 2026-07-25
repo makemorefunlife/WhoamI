@@ -165,8 +165,8 @@ function ok(name) {
   const distRow = out.section_2_nature.comparison_table.find(
     (r) => r.aspect === "정서적 거리",
   );
-  assert.match(distRow.parent, /편으로 보일 수 있으며|확인해 볼/);
-  assert.match(distRow.child, /편으로 보일 수 있으며|확인해 볼/);
+  assert.match(distRow.parent, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
+  assert.match(distRow.child, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
 
   assert.ok(out.meta.narrative_guards.length >= 1);
   assert.equal(

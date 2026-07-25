@@ -173,8 +173,8 @@ function ok(name) {
   const tempoRow = out.section_2_nature.comparison_table.find(
     (r) => r.aspect === "연락 템포",
   );
-  assert.match(tempoRow.a, /편으로 보일 수 있으며|확인해 볼/);
-  assert.match(tempoRow.b, /편으로 보일 수 있으며|확인해 볼/);
+  assert.match(tempoRow.a, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
+  assert.match(tempoRow.b, /편으로 보일 수 있으며|확인해 볼|상황에 따라/);
 
   assert.ok(out.meta.narrative_guards.length >= 1);
   assert.equal(

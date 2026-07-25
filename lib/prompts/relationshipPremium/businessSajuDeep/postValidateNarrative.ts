@@ -18,7 +18,7 @@ const GAP_AUDIBLE =
   /어긋|불일치|맞지\s*않|갭|다를\s*수|확인해\s*볼|조율|역할|소유|리스크|보고|핸드오프|의사결정|추진|한도/;
 
 const TENTATIVE_MARKER =
-  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울/;
+  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울|상황에\s*따라|다르게\s*나타날/;
 
 const EVIDENCE_BRIDGE =
   /업무\s*경계|역할\s*소유|피드백|시너지|번아웃|회복\s*리듬|리스크|손익|보고|공유\s*리듬|대외\s*리드|내부\s*점검|의사결정|추진\s*속도|권한|위임|잡히기\s*때문에|잡히므로|보이기\s*때문에|어긋날\s*수\s*있어서|같은\s*결|기울기가?\s*다르|다르게\s*잡히/;
@@ -215,7 +215,7 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base}. 다만 실제 협업에서는 다르게 나타날 수 있으므로, 확인해 볼 필요가 있습니다.`,
+    text: `${base}. 다만 실제 협업 상황에 따라 다르게 나타날 수 있습니다.`,
     fixed: true,
   };
 }
@@ -231,7 +231,7 @@ function scrubBusinessSoftWash(body: string): string {
   const replacements: Array<[RegExp, string]> = [
     [
       /일이\s*잘\s*안\s*풀려도\s*서로\s*믿으면\s*된다\.?/g,
-      "역할·리스크·보고 리듬 차이를 확인해 볼 필요가 있다",
+      "역할·리스크·보고 리듬에서 차이가 나타날 수 있다",
     ],
     [
       /파트너니까\s*괜찮습니다?/g,
@@ -239,16 +239,16 @@ function scrubBusinessSoftWash(body: string): string {
     ],
     [
       /사이만\s*좋으면\s*사업은\s*된다\.?/g,
-      "손익·리스크 감각 차이를 조율해 볼 필요가 있다",
+      "손익·리스크 감각에서 차이가 나타날 수 있다",
     ],
     [
       /신뢰만\s*있으면\s*된다\.?/g,
       "핸드오프와 의사결정 규칙을 합의하면 도움이 된다",
     ],
-    [/다\s*잘될\s*거예요\.?/g, "실제 운영에서 확인해 볼 부분이다."],
+    [/다\s*잘될\s*거예요\.?/g, "실제 운영 상황에 따라 다르게 나타날 수 있다."],
     [
       /그냥\s*파트너라서\s*괜찮다\.?/g,
-      "역할 분담과 추진 속도를 조율해 볼 필요가 있다.",
+      "역할 분담과 추진 속도에서 차이가 나타날 수 있다.",
     ],
     [
       /서로\s*믿으면\s*된다\.?/g,
@@ -269,8 +269,7 @@ function softWashBody(body: string): string {
   }
   out = scrubBusinessSoftWash(out);
   if (SOFT_WASH_BUSINESS.test(out)) {
-    out =
-      `${out.replace(SOFT_WASH_BUSINESS, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
+    out = `${out.replace(SOFT_WASH_BUSINESS, "").trim()} 맞춰 갈 여지가 있다.`.trim();
   }
   return out;
 }
@@ -466,7 +465,7 @@ export function postValidateBusinessNarrative(
                 let note = prev;
                 if (!GAP_AUDIBLE.test(note)) {
                   note =
-                    "역할·리스크·보고에서 어긋날 수 있다. 상대가 편하다고 느끼는 소유권·한도를 따로 확인해 볼 필요가 있다.";
+                    "역할·리스크·보고에서 차이가 나타날 수 있다. 상대가 선호하는 소유권·한도 방식은 실제 협업 상황에 따라 다를 수 있다.";
                 }
                 return scrubBusinessSoftWash(note);
               })()

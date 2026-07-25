@@ -15,7 +15,7 @@ const GAP_AUDIBLE =
   /어긋|불일치|맞지\s*않|갭|다를\s*수|확인해\s*볼|조율|거리|경계|성향\s*차이|기대가\s*어긋/;
 
 const TENTATIVE_MARKER =
-  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울/;
+  /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울|상황에\s*따라|다르게\s*나타날/;
 
 const EVIDENCE_BRIDGE =
   /양육|잔소리|지적|교정|정서적\s*거리|유대|애정\s*표현|돌봄|지도|수용|설명|기준|가정\s*기후|회복|세대|독립|성찰|소통|잡히기\s*때문에|잡히므로|보이기\s*때문에|어긋날\s*수\s*있어서|같은\s*결|기울기가?\s*다르|다르게\s*잡히/;
@@ -219,7 +219,7 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base}. 다만 실제 관계에서는 조금 다르게 나타날 수도 있으니, 함께 확인해 볼 부분이에요.`,
+    text: `${base}. 다만 실제 관계에서는 상황에 따라 다르게 나타날 수 있어요.`,
     fixed: true,
   };
 }
