@@ -123,6 +123,7 @@ export function finalizeFriendSajuDeepNarrative(
       nicknameB: params.nicknameB,
       mismatchRoles: params.mismatchRoles ?? null,
       comparisonLeans: params.comparisonLeans,
+      locale: params.locale,
     },
   );
   const next = validated.report as FriendSajuDeepReport;

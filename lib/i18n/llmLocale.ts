@@ -35,6 +35,22 @@ const KOREAN_TONE_LAW = `
 - 예시: ❌ "다정한 편 — 갈등 시 침묵으로 후퇴" → ✅ "대체로 다정한 편이지만, 갈등이 생기면 잠시 침묵으로 물러나는 편이에요."`.trim();
 
 /**
+ * English tone law — the en-US counterpart to KOREAN_TONE_LAW. Applies to
+ * every en-US report surface via the same choke point. English has no
+ * grammatical register system, so this targets the actual LLM English
+ * failure modes instead: em-dash clause-chaining and consultant/self-help
+ * clichés ("delve into", "navigate the complexities of", "it's important to
+ * note that"...).
+ */
+const ENGLISH_TONE_LAW = `
+# Tone — English output
+- Write like a sharp, warm friend talking to one person — contractions on (it's, you're, that's), second person, active voice.
+- Do not chain two independent clauses with an em dash (" — "). Use a period, or a plain connector (but/since/so), instead.
+- Ban consultant/self-help filler: "it's important to note that", "when it comes to", "delve into", "navigate the complexities of", "foster a deeper connection", "unlock your potential", "embark on a journey", "at the end of the day", "a testament to". Say the plain thing instead.
+- Do not flip register mid-paragraph (casual sentence next to a stiff, clinical one). Pick one voice and hold it.
+- Example: ❌ "You two navigate the complexities of scheduling differently — one plans ahead, the other improvises." → ✅ "You two plan differently. One likes to map things out ahead of time; the other figures it out as they go."`.trim();
+
+/**
  * Appended to English canonical system prompts.
  * Single LLM call — no MT pass.
  */
@@ -54,7 +70,9 @@ ${KOREAN_TONE_LAW}`.trim();
 # Output language
 - Write ALL user-facing JSON string values in natural North American English (en-US).
 - Clear, warm, specific — not generic self-help fluff.
-- Keep JSON keys, enums, scores, and schema exactly as specified.`.trim();
+- Keep JSON keys, enums, scores, and schema exactly as specified.
+
+${ENGLISH_TONE_LAW}`.trim();
 }
 
 /** Short tag for legacy romantic locale union ("en" | "ko"). */

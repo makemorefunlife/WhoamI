@@ -5,6 +5,7 @@
  */
 
 import { polishKoTableCell, polishKoTone } from "@/lib/i18n/koToneGuards";
+import { polishEnTone } from "@/lib/i18n/enToneGuards";
 
 type AnyRec = Record<string, unknown>;
 
@@ -398,8 +399,10 @@ export function postValidateFamilyNarrative(
     nicknameB?: string;
     mismatchGenerations?: boolean | null;
     comparisonLeans?: Partial<Record<string, LeanRow>>;
+    locale?: string;
   },
 ): FamilyPostValidateResult {
+  const isEn = (params.locale ?? "").toLowerCase().startsWith("en");
   const fixes: string[] = [];
   const nicknameParent =
     params.nicknameParent?.trim() || params.nicknameA?.trim() || "부모";
@@ -570,6 +573,7 @@ export function postValidateFamilyNarrative(
       const key = aspectToKey[aspect];
       const leanRow = key ? leans[key] : undefined;
       if (
+        !isEn &&
         key &&
         lowConfAspects.has(key) &&
         (leanRow?.confidence === "low" || leanRow?.align === "caution")
@@ -586,10 +590,12 @@ export function postValidateFamilyNarrative(
         table[i] = row;
       }
 
-      // 전 행 공통 — 셀 단위 존댓말·대시 정화 (개조식/반말 셀 방어)
+      // 전 행 공통 — 셀 단위 톤 정화 (개조식/반말/em-dash 방어)
       for (const cell of ["a", "b", "parent", "child"] as const) {
         if (!asStr(row[cell])) continue;
-        const { text, fixed } = polishKoTableCell(asStr(row[cell]));
+        const { text, fixed } = isEn
+          ? polishEnTone(asStr(row[cell]))
+          : polishKoTableCell(asStr(row[cell]));
         if (fixed) {
           row[cell] = text;
           changed = true;
@@ -689,7 +695,7 @@ export function postValidateFamilyNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
-      const tone = polishKoTone(s);
+      const tone = isEn ? polishEnTone(s) : polishKoTone(s);
       if (tone.fixed) {
         s = tone.text;
         fixes.push("ko_tone_polish");

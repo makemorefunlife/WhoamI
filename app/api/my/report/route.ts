@@ -30,6 +30,7 @@ import {
   resolveRequestLocale,
 } from "@/lib/i18n/llmLocale";
 import { polishKoTone } from "@/lib/i18n/koToneGuards";
+import { polishEnTone } from "@/lib/i18n/enToneGuards";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -87,7 +88,7 @@ ${buildLlmOutputLocaleInstruction(locale)}`;
 
   const text = completion.choices[0]?.message.content?.trim();
   if (!text) return null;
-  return locale === "ko-KR" ? polishKoTone(text).text : text;
+  return locale === "ko-KR" ? polishKoTone(text).text : polishEnTone(text).text;
 }
 
 /**

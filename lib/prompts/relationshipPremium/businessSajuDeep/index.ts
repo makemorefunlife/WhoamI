@@ -123,6 +123,7 @@ export function finalizeBusinessSajuDeepNarrative(
       nicknameB: params.nicknameB,
       mismatchRoles: params.mismatchRoles ?? null,
       comparisonLeans: params.comparisonLeans,
+      locale: params.locale,
     },
   );
   const next = validated.report as BusinessSajuDeepReport;

@@ -121,6 +121,7 @@ export function finalizeFamilySajuDeepNarrative(
       nicknameChild: params.nicknameChild,
       mismatchGenerations: params.mismatchGenerations ?? null,
       comparisonLeans: params.comparisonLeans,
+      locale: params.locale,
     },
   );
   const next = validated.report as FamilySajuDeepReport;

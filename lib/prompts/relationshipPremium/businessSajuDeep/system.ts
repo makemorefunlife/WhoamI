@@ -43,13 +43,27 @@ const BUSINESS_KO_REGISTER_OVERRIDE = `
 - 정서적 공감·위로 쿠션 표현은 줄이고, 근거 → 리스크/시사점 → 권고 순서의 직접적인 어조를 씁니다.
 - 성격·스타일을 압축하는 비유·레이블(예: "독불장군형", "정확성 우선형")은 빠른 판단을 돕는 도구이므로 계속 적극적으로 사용합니다 — 이 부분은 다른 도메인과 동일합니다.`.trim();
 
+/**
+ * English has no grammatical register to swap (no 해요체/합쇼체 equivalent),
+ * so this override is content-only: drop the warm-consumer empathy cushions,
+ * keep vivid compression labels. Still placed after the shared tone law so
+ * it reads as the more specific, later instruction.
+ */
+const BUSINESS_EN_REGISTER_OVERRIDE = `
+# Register override (Business / Partnership only)
+- Skip empathetic cushioning ("that's completely understandable", "you deserve better", reassurance phrasing). Go straight to evidence → risk/implication → recommendation.
+- Keep vivid type-labels as compression aids (e.g., "the lone wolf", "the details-first type") — same as every other domain. Only the emotional cushioning is dialed back, not the labels.
+- Direct, decision-support tone throughout — this reads like a hiring/fit assessment, not relationship coaching.`.trim();
+
 export function getBusinessSajuDeepSystemPrompt(
   locale: BusinessSajuDeepLocale = "ko",
 ): string {
   const fullLocale = fromLegacyShortLocale(locale);
   const localeInstruction = buildLlmOutputLocaleInstruction(fullLocale);
   const registerOverride =
-    fullLocale === "ko-KR" ? `\n\n${BUSINESS_KO_REGISTER_OVERRIDE}` : "";
+    fullLocale === "ko-KR"
+      ? `\n\n${BUSINESS_KO_REGISTER_OVERRIDE}`
+      : `\n\n${BUSINESS_EN_REGISTER_OVERRIDE}`;
   return `${BUSINESS_SAJU_DEEP_SYSTEM_RULES}
 
 ${localeInstruction}${registerOverride}`;

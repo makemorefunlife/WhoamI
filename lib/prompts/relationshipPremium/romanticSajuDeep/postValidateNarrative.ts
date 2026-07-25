@@ -4,6 +4,7 @@
  */
 
 import { polishKoTableCell, polishKoTone } from "@/lib/i18n/koToneGuards";
+import { polishEnTone } from "@/lib/i18n/enToneGuards";
 
 type AnyRec = Record<string, unknown>;
 
@@ -492,8 +493,10 @@ export function postValidateRomanticNarrative(
         }
       >
     >;
+    locale?: string;
   },
 ): RomanticPostValidateResult {
+  const isEn = (params.locale ?? "").toLowerCase().startsWith("en");
   const fixes: string[] = [];
   const { nicknameA, nicknameB } = params;
   const next: AnyRec = { ...report };
@@ -620,6 +623,7 @@ export function postValidateRomanticNarrative(
 
       // Round 3 — low-conf tentative markers on expression/conflict/stress
       if (
+        !isEn &&
         key &&
         lowConfAspects.has(key) &&
         (leanRow?.confidence === "low" || leanRow?.align === "caution")
@@ -635,9 +639,11 @@ export function postValidateRomanticNarrative(
         table[i] = row;
       }
 
-      // 전 행 공통 — 셀 단위 존댓말·대시 정화 (개조식/반말 셀 방어)
+      // 전 행 공통 — 셀 단위 톤 정화 (개조식/반말/em-dash 방어)
       for (const cell of ["a", "b"] as const) {
-        const { text, fixed } = polishKoTableCell(asStr(row[cell]));
+        const { text, fixed } = isEn
+          ? polishEnTone(asStr(row[cell]))
+          : polishKoTableCell(asStr(row[cell]));
         if (fixed) {
           row[cell] = text;
           changed = true;
@@ -723,7 +729,7 @@ export function postValidateRomanticNarrative(
   }
 
   // Naming polish: invented 님 / awkward 이의 on display names
-  // + ko tone polish: 대시 매크로·파편 수리 및 문어체→해요체 정규화
+  // + tone polish: dash/fragment repair, ko 문어체→해요체 or en cliché/em-dash scrub
   const polishTree = (node: unknown): unknown => {
     if (typeof node === "string") {
       let s = node;
@@ -736,7 +742,7 @@ export function postValidateRomanticNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
-      const tone = polishKoTone(s);
+      const tone = isEn ? polishEnTone(s) : polishKoTone(s);
       if (tone.fixed) {
         s = tone.text;
         fixes.push("ko_tone_polish");

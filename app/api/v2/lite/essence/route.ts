@@ -6,6 +6,7 @@ import {
 } from "@/lib/v2/prompts/essenceSelfLite";
 import { normalizeLocale } from "@/lib/i18n/locale";
 import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
+import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
 import { buildEssenceSelfLiteFallback } from "@/lib/v2/lite/fallbackEssence";
 import { runLiteLlmJson } from "@/lib/v2/lite/runLiteLlm";
 import type { EssenceSelfLiteReport } from "@/lib/v2/lite/types";
@@ -67,9 +68,10 @@ export async function POST(req: Request) {
       report = buildEssenceSelfLiteFallback(liteInput);
     }
 
-    if (language === "ko-KR") {
-      report = polishKoStringTree(report);
-    }
+    report =
+      language === "ko-KR"
+        ? polishKoStringTree(report)
+        : polishEnStringTree(report);
 
     return NextResponse.json({ ok: true, report, source: "essence_self_lite" });
   } catch (e) {

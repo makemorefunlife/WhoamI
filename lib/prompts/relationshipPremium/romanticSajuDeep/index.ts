@@ -535,6 +535,7 @@ function finalizeRomanticSajuDeepReport(
             communication: comparisonFinalizedEarly.communication,
           }
         : undefined,
+      locale,
     },
   );
   const narrativeGuards = postValidated.fixes;

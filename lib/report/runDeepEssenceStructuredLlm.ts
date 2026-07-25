@@ -15,6 +15,7 @@ import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
+import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
 
 import type {
   DeepEssenceStrengthOrWatchout,
@@ -170,10 +171,11 @@ export async function runDeepEssenceStructuredLlm(
         input.currentAxisScores,
       ),
     };
+    const resolvedLocale = normalizeLocale(input.locale);
     const structured =
-      normalizeLocale(input.locale) === "ko-KR"
+      resolvedLocale === "ko-KR"
         ? polishKoStringTree(withClampedRadar)
-        : withClampedRadar;
+        : polishEnStringTree(withClampedRadar);
 
     return { structured, source: "llm" };
   } catch (e) {

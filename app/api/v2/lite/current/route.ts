@@ -6,6 +6,7 @@ import {
 } from "@/lib/v2/prompts/currentSelfLite";
 import { normalizeLocale } from "@/lib/i18n/locale";
 import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
+import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
 import { buildCurrentSelfLiteFallback } from "@/lib/v2/lite/fallbackCurrent";
 import { runLiteLlmJson } from "@/lib/v2/lite/runLiteLlm";
 import type { CurrentSelfLiteReport } from "@/lib/v2/lite/types";
@@ -55,9 +56,10 @@ export async function POST(req: Request) {
       report = buildCurrentSelfLiteFallback(profile);
     }
 
-    if (language === "ko-KR") {
-      report = polishKoStringTree(report);
-    }
+    report =
+      language === "ko-KR"
+        ? polishKoStringTree(report)
+        : polishEnStringTree(report);
 
     return NextResponse.json({ ok: true, report, source: "current_self_lite" });
   } catch (e) {

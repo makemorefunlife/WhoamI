@@ -123,6 +123,7 @@ export function finalizeMarriedSajuDeepNarrative(
       mismatchRoles: params.mismatchRoles ?? null,
       operatingCfoSide: params.operatingCfoSide ?? null,
       comparisonLeans: params.comparisonLeans,
+      locale: params.locale,
     },
   );
   const next = validated.report as MarriedSajuDeepReport;

@@ -8,6 +8,7 @@ import {
   polishKoFormalTableCell,
   polishKoFormalTone,
 } from "@/lib/i18n/koToneGuards";
+import { polishEnFormalTone } from "@/lib/i18n/enToneGuards";
 
 type AnyRec = Record<string, unknown>;
 
@@ -397,8 +398,10 @@ export function postValidateBusinessNarrative(
     nicknameB: string;
     mismatchRoles?: boolean | null;
     comparisonLeans?: Partial<Record<string, LeanRow>>;
+    locale?: string;
   },
 ): BusinessPostValidateResult {
+  const isEn = (params.locale ?? "").toLowerCase().startsWith("en");
   const fixes: string[] = [];
   const nicknameA = params.nicknameA?.trim() || "나";
   const nicknameB = params.nicknameB?.trim() || "상대";
@@ -512,6 +515,7 @@ export function postValidateBusinessNarrative(
       const key = aspectToKey[aspect];
       const leanRow = key ? leans[key] : undefined;
       if (
+        !isEn &&
         key &&
         lowConfAspects.has(key) &&
         (leanRow?.confidence === "low" || leanRow?.align === "caution")
@@ -528,10 +532,12 @@ export function postValidateBusinessNarrative(
         table[i] = row;
       }
 
-      // 전 행 공통 — 셀 단위 합쇼체·대시 정화 (개조식/반말/해요체 셀 방어)
+      // 전 행 공통 — 셀 단위 톤 정화 (개조식/반말/해요체/em-dash 셀 방어)
       for (const cell of ["a", "b"] as const) {
         if (!asStr(row[cell])) continue;
-        const { text, fixed } = polishKoFormalTableCell(asStr(row[cell]));
+        const { text, fixed } = isEn
+          ? polishEnFormalTone(asStr(row[cell]))
+          : polishKoFormalTableCell(asStr(row[cell]));
         if (fixed) {
           row[cell] = text;
           changed = true;
@@ -626,7 +632,7 @@ export function postValidateBusinessNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
-      const tone = polishKoFormalTone(s);
+      const tone = isEn ? polishEnFormalTone(s) : polishKoFormalTone(s);
       if (tone.fixed) {
         s = tone.text;
         fixes.push("ko_tone_polish");
