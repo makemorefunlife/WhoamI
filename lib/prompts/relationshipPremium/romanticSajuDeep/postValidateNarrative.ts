@@ -3,7 +3,7 @@
  * Cheap string fixes — not a second LLM pass.
  */
 
-import { polishKoTone } from "../shared/koToneGuards";
+import { polishKoTableCell, polishKoTone } from "../shared/koToneGuards";
 
 type AnyRec = Record<string, unknown>;
 
@@ -634,6 +634,17 @@ export function postValidateRomanticNarrative(
         }
         table[i] = row;
       }
+
+      // 전 행 공통 — 셀 단위 존댓말·대시 정화 (개조식/반말 셀 방어)
+      for (const cell of ["a", "b"] as const) {
+        const { text, fixed } = polishKoTableCell(asStr(row[cell]));
+        if (fixed) {
+          row[cell] = text;
+          changed = true;
+          fixes.push(`cell_tone_polish:${aspect}.${cell}`);
+        }
+      }
+      table[i] = row;
     }
     if (changed) {
       s2.comparison_table = table;

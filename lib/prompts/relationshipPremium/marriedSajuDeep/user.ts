@@ -26,9 +26,9 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
   1. First sentence must name the operational gap.
   2. Entire body stays mismatch-consistent — may describe what each needs / currently does / how to translate.
   3. Must not claim the household already runs smoothly, roles are already perfect, or conflict is already resolved.
-  4. Repair language = conditional/future: "맞춰 갈 수 있다", "확인해 볼 필요가 있다", "운영 규칙을 합의하면 도움이 된다".
+  4. Repair language = conditional/future: "맞춰 갈 수 있어요", "확인해 보면 좋아요", "운영 규칙을 합의하면 도움이 돼요".
   - Forbidden: "이미 잘 맞춰 사는 부부", "갈등이 없는 가정", "역할이 이미 완벽히 분담되어 있다".
-  - Valid: "역할·생활 분담이 어긋날 수 있다.", "상대가 편하다고 느끼는 운영 방식을 따로 확인해야 한다."
+  - Valid: "역할·생활 분담이 어긋날 수 있어요.", "상대가 편하다고 느끼는 운영 방식을 따로 확인해 보는 게 좋아요."
 
 ## section_5 advice — Evidence bridge (hard, anti-drift)
 - Write tips tip1 → tip2 → tip3 for A, then B.
@@ -48,6 +48,13 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 
 ## Mingli
 - Zero user-facing Saju jargon. Digest → natural Korean only.
+
+## 문체 (Tone) — Korean output
+- 모든 한국어 서술은 자연스럽고 다정한 해요체(~해요/~죠/~예요, 필요시 ~입니다)로 100% 통일.
+- 문어체·개조식 종결 금지: "~이다", "~있다", "~한다", "~하는 편", "~함", "~경향이 있다"로 문장·표 셀을 끝내지 않는다. 비교 표 셀도 완결된 해요체 문장으로 쓴다.
+- 한 화면/표 안에서 존댓말과 반말·문어체를 섞지 않는다(인용 대화문 제외).
+- 대시(—, –, ㅡ)로 절을 잇지 않는다. 쉼표나 새 문장으로 분리한다.
+- 딱딱한 보고서체 대신, 감각 있는 에디터가 다정하게 설명하듯 생생하고 공감 가는 표현을 쓴다.
 `.trim();
 
 export function buildMarriedSajuDeepUserPrompt(params: {

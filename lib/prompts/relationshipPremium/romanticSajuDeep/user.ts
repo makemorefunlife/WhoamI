@@ -170,7 +170,7 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - **Forbid** in any \`b_*\` 1st-person string: \`${nicknameB}와의 관계\`, \`나와 ${nicknameB}\`, or using **${nicknameB}** as the partner.
     - Final self-check: scan all \`b_*\` 1st-person fields; if B's own display name appears as partner, rewrite before output.
 
-20. **문체(Tone) — Korean output**: 모든 한국어 서술은 자연스럽고 다정한 해요체(~해요/~죠/~예요, 필요시 ~입니다)로 100% 통일한다. 문어체·개조식 종결(~이다/~있다/~한다/~경향이 있다/~부분이다) 금지. 한 화면 안에서 존댓말과 반말·문어체를 섞지 않는다(인용 대화문 제외). 딱딱한 보고서체 대신, 감각 있는 에디터가 다정하게 설명하듯 생생하고 공감 가는 표현을 쓴다 — 예: "속마음을 겉으로 잘 드러내지 않는 신중파예요", "답답한 건 못 참고 바로 풀어야 마음이 놓이는 스타일이에요". 상대의 행동 이유를 감싸주는 공감형 문장 구조를 우선한다.
+20. **문체(Tone) — Korean output**: 모든 한국어 서술은 자연스럽고 다정한 해요체(~해요/~죠/~예요, 필요시 ~입니다)로 100% 통일한다. 문어체·개조식 종결(~이다/~있다/~한다/~하는 편/~함/~경향이 있다/~부분이다) 금지 — comparison_table 셀도 완결된 해요체 문장으로 쓴다. 한 화면/표 안에서 존댓말과 반말·문어체를 섞지 않는다(인용 대화문 제외). 대시(—, –, ㅡ)로 절을 잇지 않는다. 쉼표나 새 문장으로 분리한다. 딱딱한 보고서체 대신, 감각 있는 에디터가 다정하게 설명하듯 생생하고 공감 가는 표현을 쓴다. 예: "속마음을 겉으로 잘 드러내지 않는 신중파예요", "답답한 건 못 참고 바로 풀어야 마음이 놓이는 스타일이에요". 상대의 행동 이유를 감싸주는 공감형 문장 구조를 우선한다.
 
 Output language follows the system prompt locale instruction — do not hardcode a language here.
 `.trim();
