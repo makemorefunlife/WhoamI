@@ -4,7 +4,10 @@
  * Do not import romanticSajuDeep, marriedSajuDeep, or familySajuDeep.
  */
 
-import { polishKoTableCell, polishKoTone } from "@/lib/i18n/koToneGuards";
+import {
+  polishKoFormalTableCell,
+  polishKoFormalTone,
+} from "@/lib/i18n/koToneGuards";
 
 type AnyRec = Record<string, unknown>;
 
@@ -212,7 +215,7 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base}. 다만 실제 협업에서는 조금 다르게 나타날 수도 있으니, 함께 확인해 볼 부분이에요.`,
+    text: `${base}. 다만 실제 협업에서는 다르게 나타날 수 있으므로, 확인해 볼 필요가 있습니다.`,
     fixed: true,
   };
 }
@@ -526,10 +529,10 @@ export function postValidateBusinessNarrative(
         table[i] = row;
       }
 
-      // 전 행 공통 — 셀 단위 존댓말·대시 정화 (개조식/반말 셀 방어)
+      // 전 행 공통 — 셀 단위 합쇼체·대시 정화 (개조식/반말/해요체 셀 방어)
       for (const cell of ["a", "b"] as const) {
         if (!asStr(row[cell])) continue;
-        const { text, fixed } = polishKoTableCell(asStr(row[cell]));
+        const { text, fixed } = polishKoFormalTableCell(asStr(row[cell]));
         if (fixed) {
           row[cell] = text;
           changed = true;
@@ -604,8 +607,8 @@ export function postValidateBusinessNarrative(
     const together = asStr(action.together);
     if (together && FEWSHOT_TOGETHER_BLEED.test(together)) {
       action.together = mismatch
-        ? "역할·리스크·보고처럼 이 파트너십에서 잡힌 차이를 이번 주 한 가지만 짧게 적어 보자. 없애려 하기보다 소유권과 한도를 문서로 합의하는 편이 도움이 된다. 주간 점검에서 10분만 핸드오프를 맞춰 보자."
-        : "파트너 사이에서 잡힌 역할·리스크·보고 결을 이번 주 한 가지만 짚어 기록해 보자. 같은 안건에도 추진 속도가 다를 수 있다. 주간에 짧은 운영 점검을 잡아 보자.";
+        ? "역할·리스크·보고 체계에서 확인된 차이를 이번 주 한 가지 항목으로 기록해 두는 것을 권장합니다. 차이를 없애려 하기보다 소유권과 권한 범위를 문서로 합의하는 편이 효과적입니다. 주간 점검 시 10분간 핸드오프 절차를 맞춰볼 것을 제안합니다."
+        : "이 파트너십에서 확인된 역할·리스크·보고 성향 차이를 이번 주 한 가지 항목으로 점검하는 것을 권장합니다. 동일한 안건에도 추진 속도 차이가 나타날 수 있습니다. 주간 운영 점검 시간을 별도로 확보하는 것이 효과적입니다.";
       fixes.push("together_fewshot_rewrite");
     }
 
@@ -624,7 +627,7 @@ export function postValidateBusinessNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
-      const tone = polishKoTone(s);
+      const tone = polishKoFormalTone(s);
       if (tone.fixed) {
         s = tone.text;
         fixes.push("ko_tone_polish");

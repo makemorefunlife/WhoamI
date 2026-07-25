@@ -289,6 +289,161 @@ export function polishKoTableCell(text: string): {
   return { text: polite.text, fixed: base.fixed || polite.fixed };
 }
 
+// ---------------------------------------------------------------------------
+// 합쇼체(formal) 변형 — Business/Partnership처럼 분석적·의사결정 지원 톤이
+// 필요한 도메인 전용. 해요체(polishKoTone 등)와 반대로 이 쪽은 종결이
+// 받침 유무와 무관하게 통일되어 실제로 더 단순하다 — "~이다"는 항상
+// "~입니다", ㄴ받침 축약형(간다/온다/만든다 등)은 ㄴ→ㅂ 치환 + "니다"만
+// 붙이면 되므로 모음별 분기가 필요 없다.
+// ---------------------------------------------------------------------------
+
+/** 고빈도 형용사 — 합쇼체 활용. */
+const PLAIN_TO_HASOSEO: Array<[RegExp, string]> = [
+  [new RegExp(`많다${END}`, "g"), "많습니다"],
+  [new RegExp(`적다${END}`, "g"), "적습니다"],
+  [new RegExp(`크다${END}`, "g"), "큽니다"],
+  [new RegExp(`작다${END}`, "g"), "작습니다"],
+  [new RegExp(`높다${END}`, "g"), "높습니다"],
+  [new RegExp(`낮다${END}`, "g"), "낮습니다"],
+  [new RegExp(`길다${END}`, "g"), "깁니다"],
+  [new RegExp(`짧다${END}`, "g"), "짧습니다"],
+  [new RegExp(`빠르다${END}`, "g"), "빠릅니다"],
+  [new RegExp(`느리다${END}`, "g"), "느립니다"],
+  [new RegExp(`다르다${END}`, "g"), "다릅니다"],
+  [new RegExp(`같다${END}`, "g"), "같습니다"],
+  [new RegExp(`좋다${END}`, "g"), "좋습니다"],
+  [new RegExp(`싫다${END}`, "g"), "싫습니다"],
+  [new RegExp(`쉽다${END}`, "g"), "쉽습니다"],
+  [new RegExp(`어렵다${END}`, "g"), "어렵습니다"],
+  [new RegExp(`무겁다${END}`, "g"), "무겁습니다"],
+  [new RegExp(`가볍다${END}`, "g"), "가볍습니다"],
+  [new RegExp(`깊다${END}`, "g"), "깊습니다"],
+  [new RegExp(`넓다${END}`, "g"), "넓습니다"],
+  [new RegExp(`강하다${END}`, "g"), "강합니다"],
+  [new RegExp(`약하다${END}`, "g"), "약합니다"],
+];
+
+/** "먹는다"류 — 받침 있는 어간 + "는다" → 어간 + "습니다" (모음조화 불필요). */
+function convertNeundaEndingFormal(text: string): string {
+  return text.replace(
+    new RegExp(`([가-힣])는다${END}`, "g"),
+    (_m, stem: string) => `${stem}습니다`,
+  );
+}
+
+/**
+ * "간다/온다/만든다"류 — ㄴ받침 축약형. ㄴ→ㅂ으로 바꾸고 "니다"를 붙이면
+ * 끝난다 (예: 간다→갑니다, 만든다→만듭니다). ㄹ-불규칙 치환형(안다←알다,
+ * 든다←들다 등)도 표면형은 같은 치환으로 정확한 합쇼체가 나온다.
+ */
+function convertNdaEndingFormal(text: string): string {
+  return text.replace(
+    new RegExp(`([가-힣])다${END}`, "g"),
+    (match, prev: string) => {
+      const { cho, jung, jong } = decompose(prev);
+      if (jong !== 4) return match; // ㄴ받침이 아니면 어간 축약형이 아님
+      return `${compose(cho, jung, 17)}니다`; // 17 = ㅂ 종성
+    },
+  );
+}
+
+export function normalizeSpeechLevelKoFormal(text: string): {
+  text: string;
+  fixed: boolean;
+} {
+  let out = text;
+
+  out = out.replace(/있으며(?=[,\s])/g, "있고");
+
+  for (const [re, rep] of PLAIN_TO_HASOSEO) {
+    out = out.replace(re, rep);
+  }
+
+  out = out.replace(new RegExp(`했다${END}`, "g"), "했습니다");
+  out = out.replace(new RegExp(`([가-힣])었다${END}`, "g"), "$1었습니다");
+  out = out.replace(new RegExp(`([가-힣])았다${END}`, "g"), "$1았습니다");
+  out = out.replace(new RegExp(`있다${END}`, "g"), "있습니다");
+  out = out.replace(new RegExp(`없다${END}`, "g"), "없습니다");
+  out = out.replace(new RegExp(`된다${END}`, "g"), "됩니다");
+  out = out.replace(new RegExp(`한다${END}`, "g"), "합니다");
+  out = out.replace(new RegExp(`하다${END}`, "g"), "합니다");
+
+  out = convertNeundaEndingFormal(out);
+  out = convertNdaEndingFormal(out);
+
+  // 명사형 종결 "~함." → "~합니다." / "~임" → "~입니다."
+  out = out.replace(new RegExp(`([가-힣])함${END}`, "g"), "$1합니다");
+  out = out.replace(
+    new RegExp(`(스타일|타입|편|것|쪽)임${END}`, "g"),
+    "$1입니다",
+  );
+
+  // 서술격 조사 "~이다" → "~입니다" (받침 구분 불필요 — 해요체보다 단순).
+  out = out.replace(new RegExp(`([가-힣])이다${END}`, "g"), "$1입니다");
+
+  return { text: out, fixed: out !== text };
+}
+
+/** 합쇼체 종결(습니다/입니다)인지 검사. */
+const FORMAL_ENDING_RE = /(습니다|입니다)$/;
+
+/**
+ * 비교 표 셀 전용(합쇼체) — normalize 이후에도 명사형("~하는 편")으로
+ * 끝나면 입니다를, 하다-동작명사("~후퇴")로 끝나면 합니다를 붙인다.
+ */
+export function ensureFormalKoCellEnding(cell: string): {
+  text: string;
+  fixed: boolean;
+} {
+  const raw = cell.trim();
+  if (!raw) return { text: cell, fixed: false };
+
+  const sentences = raw.split(/(?<=[.。!?…])\s+/);
+  const out = sentences.map((sentence) => {
+    const body = sentence.replace(/[.。!?…]+\s*$/, "");
+    const punct = sentence.slice(body.length) || "";
+    if (!body.trim()) return sentence;
+    if (FORMAL_ENDING_RE.test(body.trim())) return sentence;
+
+    const verbalHit = body.match(CELL_VERBAL_NOUN_ENDING_RE);
+    if (verbalHit) {
+      return `${body.trim()}합니다${punct || "."}`;
+    }
+
+    const nounHit = body.match(CELL_NOUN_ENDING_RE);
+    if (nounHit) {
+      return `${body.trim()}입니다${punct || "."}`;
+    }
+    return sentence;
+  });
+
+  const joined = out.join(" ").trim();
+  return { text: joined, fixed: joined !== raw };
+}
+
+/** repair → normalize(formal) 순서로 한 번에 적용. */
+export function polishKoFormalTone(text: string): {
+  text: string;
+  fixed: boolean;
+} {
+  const repaired = repairBrokenKoFragments(text);
+  const normalized = normalizeSpeechLevelKoFormal(repaired.text);
+  return {
+    text: normalized.text,
+    fixed: repaired.fixed || normalized.fixed,
+  };
+}
+
+/** 비교 표 셀 전용(합쇼체) — polishKoFormalTone + 셀 종결 강제. */
+export function polishKoFormalTableCell(text: string): {
+  text: string;
+  fixed: boolean;
+} {
+  const base = polishKoFormalTone(text);
+  const formal = ensureFormalKoCellEnding(base.text);
+  return { text: formal.text, fixed: base.fixed || formal.fixed };
+}
+
 /**
  * 임의의 JSON 트리(개인분석·Blueprint·심화 리포트 등)를 순회하며 모든 문자열
  * 리프에 polishKoTone을 적용한다. 표 셀처럼 명사형 종결 강제가 필요하면

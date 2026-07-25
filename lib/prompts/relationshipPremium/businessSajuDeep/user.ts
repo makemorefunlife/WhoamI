@@ -26,7 +26,7 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
   1. First sentence must name the operational / ownership / risk gap.
   2. Entire body stays gap-consistent — may describe what each owns / currently does / how to hand off.
   3. Must not claim trust alone cancels the gap ("일이 잘 안 풀려도 서로 믿으면 된다", "파트너니까 괜찮다", "사이만 좋으면 사업은 된다").
-  4. Repair language = conditional/future: "맞춰 갈 수 있다", "확인해 볼 필요가 있다", "역할·한도를 문서로 합의하면 도움이 된다".
+  4. Repair language = conditional/future: "맞춰 갈 수 있습니다", "확인해 볼 필요가 있습니다", "역할·한도를 문서로 합의하면 도움이 됩니다".
 
 ## section_5 advice — Evidence bridge (hard, anti-drift)
 - Write tips tip1 → tip2 → tip3 for A, then B.
@@ -47,13 +47,14 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 ## Mingli
 - Zero user-facing Saju jargon. Digest → natural Korean only.
 
-## 문체 (Tone) — Korean output
-- 모든 한국어 서술은 자연스럽고 다정한 해요체(~해요/~죠/~예요, 필요시 ~입니다)로 100% 통일.
-- 문어체·개조식 종결 금지: "~이다", "~있다", "~한다", "~하는 편", "~함", "~경향이 있다"로 문장·표 셀을 끝내지 않는다. 비교 표 셀도 완결된 해요체 문장으로 쓴다.
-- 한 화면/표 안에서 존댓말과 반말·문어체를 섞지 않는다(인용 대화문 제외).
-- 대시(—, –, ㅡ)로 절을 잇지 않는다. 쉼표나 새 문장으로 분리한다.
-- 딱딱한 보고서체 대신, 감각 있는 에디터가 다정하게 설명하듯 생생하고 공감 가는 표현을 쓴다.
-- 셀 예시: ❌ "다정한 편 — 갈등 시 침묵으로 후퇴" → ✅ "대체로 다정한 편이지만, 갈등이 생기면 잠시 침묵으로 물러나는 편이에요."
+## 문체 (Tone) — Korean output (Business/Partnership 전용 — 다른 관계 도메인과 다름)
+- 이 도메인은 공용 해요체 규칙의 예외입니다. 정중하고 분석적인 합쇼체(~습니다/~입니다/~합니다)로 100% 통일합니다. ~해요/~예요/~죠 캐주얼 종결 금지.
+- 정서적 쿠션 문구 금지: "그럴 수밖에 없었을 거예요", "이해해 주시면 좋겠습니다", "속상하셨겠지만" 같은 감정적 다독임 대신, **근거 → 리스크/시사점 → 권고** 순서로 직접 서술합니다.
+- 비유·유형 레이블은 오히려 적극 사용합니다 — 빠른 판단을 돕는 압축 도구이기 때문입니다 (예: "독불장군형", "정확성 우선형"). 단, 인신공격성·비하 표현은 금지합니다.
+- 문어체·개조식 종결도 금지: "~이다", "~있다", "~한다"로 문장·표 셀을 끝내지 않고 반드시 합쇼체로 마무리합니다.
+- 한 화면/표 안에서 합쇼체와 반말·해요체를 섞지 않습니다(인용 대화문 제외).
+- 대시(—, –, ㅡ)로 절을 잇지 않습니다. 쉼표나 새 문장으로 분리합니다.
+- 셀 예시: ❌ "협업할 때 다정한 편이지만, 갈등이 생기면 마음이 상할 수 있어요" (감정적 프레이밍, 해요체) → ✅ "협업 국면에서 원칙을 고수하는 '독불장군형'에 가깝습니다. 실행 속도보다 기준의 일관성을 우선하는 파트너와 궁합이 좋습니다."
 `.trim();
 
 export function buildBusinessSajuDeepUserPrompt(params: {
