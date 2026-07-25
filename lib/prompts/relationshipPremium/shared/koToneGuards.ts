@@ -55,7 +55,14 @@ export function repairBrokenKoFragments(text: string): {
 
   // 대시 매크로 파편: "…다 — 편으로 보일 수 있으며, 실제 …" → 머리 없는 절 제거
   out = out.replace(/\s*[—–-]\s*편으로\s*보일\s*수\s*있으며[,，]?\s*/g, ". ");
-  // 한글 문장 사이의 대시(— – ㅡ) → 쉼표. 숫자 범위(10-20)·영문은 제외
+  // 명사구 뒤 대시 → 연결어미로 자연 연결: "다정한 편 — 갈등…" → "다정한 편인데, 갈등…"
+  out = out.replace(
+    /(편|쪽|스타일|타입|성향)\s*[—–ㅡ]+\s*(?=[가-힣])/g,
+    "$1인데, ",
+  );
+  // 평서 종결 뒤 대시 → 문장 분리: "보여준다ㅡ선물을…" → "보여준다. 선물을…"
+  out = out.replace(/([다요])\s*[—–ㅡ]+\s*(?=[가-힣])/g, "$1. ");
+  // 그 외 한글 사이의 대시(— – ㅡ) → 쉼표. 숫자 범위(10-20)·영문은 제외
   out = out.replace(/([가-힣.,!?%)])\s*[—–ㅡ]+\s*(?=[가-힣])/g, "$1, ");
   // 셀/문장 맨 앞의 고아 대시 제거
   out = out.replace(/^\s*[—–ㅡ]+\s*/g, "");
@@ -216,6 +223,10 @@ const POLITE_ENDING_RE = /(요|죠|니다|니까)$/;
 const CELL_NOUN_ENDING_RE =
   /(편|쪽|스타일|타입|성향|사람|모습|주의)\s*$/;
 
+/** 하다-동작명사로 끝나는 문장 → "해요" 부착 ("침묵으로 후퇴" → "후퇴해요"). */
+const CELL_VERBAL_NOUN_ENDING_RE =
+  /(후퇴|회피|철수|집중|몰입|정리|소통|표현|노력|배려|양보|휴식|충전)\s*$/;
+
 /**
  * 비교 표 셀 전용 — 셀의 각 문장이 존댓말로 끝나도록 강제.
  * normalize 이후에도 명사형("~하는 편")으로 끝나면 이에요/예요를 붙인다.
@@ -234,6 +245,11 @@ export function ensurePoliteKoCellEnding(cell: string): {
     const punct = sentence.slice(body.length) || "";
     if (!body.trim()) return sentence;
     if (POLITE_ENDING_RE.test(body.trim())) return sentence;
+
+    const verbalHit = body.match(CELL_VERBAL_NOUN_ENDING_RE);
+    if (verbalHit) {
+      return `${body.trim()}해요${punct || "."}`;
+    }
 
     const nounHit = body.match(CELL_NOUN_ENDING_RE);
     if (nounHit) {

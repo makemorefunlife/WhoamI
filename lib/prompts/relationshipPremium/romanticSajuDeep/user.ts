@@ -123,6 +123,9 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
     - Each cell: describe without names/subjects (names are in headers). Ban "OO is…", "OO does…"
     - Referring to the partner: use **"to the partner"** / **"the partner"** (report for the two of them)
     - e.g. "Often shows gratitude to the partner." / "Tries to show love through actions."
+    - **Cell style (ko)**: 각 셀은 개조식이 아니라 완결된 해요체 문장 1~2개. 절을 대시로 잇지 말 것.
+      - ❌ "행동으로 마음을 보여준다ㅡ선물을 즐긴다" → ✅ "마음을 행동으로 보여주는 쪽이에요. 선물을 주고받는 걸 좋아해요."
+      - ❌ "다정한 편 — 갈등 시 침묵으로 후퇴" → ✅ "대체로 다정한 편이지만, 갈등이 생기면 잠시 침묵으로 물러나는 편이에요."
     - **Emotion expression (감정 표현) row only**: if \`dynamics_digest.compare_expression\` is present, phrase that server lean — do **not** re-classify expressive vs reserved, and do **not** conflate with balance_of_power / expression_speed.
     - **Conflict reaction row only**: if \`dynamics_digest.compare_conflict\` (or person digest \`서버 lean=\`) is present, phrase that server lean — do **not** re-classify who is direct vs principled.
     - **Love language (애정 언어) row only**: if \`dynamics_digest.compare_affection\` is present, phrase that server lean — do **not** re-classify action_gift vs emotional_care, and do **not** conflate with reassurance need/give.

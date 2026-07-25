@@ -1,5 +1,6 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
+import { polishKoTone } from "@/lib/prompts/relationshipPremium/shared/koToneGuards";
 import {
   buildRomanticDayStemOneLiner,
   resolveDayStemRomanticProfileFromSaju,
@@ -466,7 +467,7 @@ function stripLeadingNameSubject(text: string, name: string): string {
   /** UI·저장 훅 공통 — 노출 직전 한 번 더 정리 */
 export function polishRomanticDisplayText(text: string | undefined | null): string {
   if (!text?.trim()) return "";
-  const cleaned = stripSajuJargon(text)
+  let cleaned = stripSajuJargon(text)
     .replace(/([가-힣,\s]+)\s+같은\s+[^,.·]+?\s+같은\s+/g, "$1 같은 ")
     .replace(
       /가까운 관계에서\s+[가-힣]{1,4}(?:와|과)\s+[가-힣]{1,4}(?:는|은)\s+/g,
@@ -476,12 +477,13 @@ export function polishRomanticDisplayText(text: string | undefined | null): stri
     .replace(/\s+요\.?$/g, "요.")
     .trim();
   if (hasBranchMetaphorLeak(cleaned)) {
-    return cleaned
+    cleaned = cleaned
       .replace(BRANCH_METAPHOR_LEAK_RE, "")
       .replace(/\s+/g, " ")
       .trim();
   }
-  return cleaned;
+  // 생성 시점 postValidate를 거치지 않은 캐시·구버전도 화면에서 해요체/대시 정리
+  return polishKoTone(cleaned).text;
 }
 
 export function joinPersonalityHeadline(

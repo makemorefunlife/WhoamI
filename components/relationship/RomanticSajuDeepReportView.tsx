@@ -2,13 +2,12 @@
 
 import { useCallback, useMemo, type ReactNode } from "react";
 import {
-  filterShareSummaryKeywords,
   isGenericRomanticActionPhrase,
-  isShareSummaryRelationshipNameExcluded,
   polishConflictDialogueLine,
   polishRomanticDisplayText,
   stripComparisonCellSubject,
 } from "@/lib/relationship/romanticEverydayText";
+import { polishKoTableCell } from "@/lib/prompts/relationshipPremium/shared/koToneGuards";
 import { buildRomanticTimelineBlocks, type TimelineBlock } from "@/lib/relationship/romanticTimeline";
 import { romanticHeadlineViewerFirst } from "@/lib/relationship/dayStemRomanticProfile";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
@@ -35,7 +34,6 @@ import {
   RelationshipReportInset,
   ChemistryBreakdown,
   PsychMatchRadarChart,
-  ShareSummaryCard,
   StrengthWeaknessCard,
   EssenceActionGuidelineList,
   getStitchTabTheme,
@@ -578,7 +576,12 @@ export default function RomanticSajuDeepReportView({
   );
 
   const polishLine = useCallback(
-    (raw: string | undefined | null) => displayText(raw),
+    (raw: string | undefined | null) => {
+      const base = displayText(raw);
+      if (!base || /^[—–\-ㅡ]+$/.test(base)) return base;
+      // 비교 표 셀: 캐시된 구버전 문어도 셀 단위 해요체·종결 강제
+      return polishKoTableCell(base).text;
+    },
     [displayText],
   );
 
@@ -914,10 +917,6 @@ export default function RomanticSajuDeepReportView({
     aGivesB: special?.a_gives_b,
     bGivesA: special?.b_gives_a,
   });
-  const shareFormula =
-    showBondFormula && special?.relationship_formula
-      ? displayText(special.relationship_formula)
-      : "";
   const hasActionContent =
     myAdvice.length > 0 ||
     partnerAdvice.length > 0 ||
@@ -1073,7 +1072,7 @@ export default function RomanticSajuDeepReportView({
                 <RelationshipReportLabel>
                   {t.dynamicsBalanceLabel}
                   {dynamics.balance_of_power.headline?.trim()
-                    ? ` — ${displayText(dynamics.balance_of_power.headline)}`
+                    ? ` · ${displayText(dynamics.balance_of_power.headline)}`
                     : ""}
                 </RelationshipReportLabel>
                 {balanceCanonicalLabel ? (
@@ -1094,7 +1093,7 @@ export default function RomanticSajuDeepReportView({
                 <RelationshipReportLabel>
                   {t.dynamicsRecoveryLabel}
                   {dynamics.recovery_speed.headline?.trim()
-                    ? ` — ${displayText(dynamics.recovery_speed.headline)}`
+                    ? ` · ${displayText(dynamics.recovery_speed.headline)}`
                     : ""}
                 </RelationshipReportLabel>
                 {recoveryCanonicalLabel ? (
@@ -1227,7 +1226,7 @@ export default function RomanticSajuDeepReportView({
                 <RelationshipReportLabel>
                   {t.framesReassuranceLabel}
                   {reassurance?.headline?.trim()
-                    ? ` — ${displayText(reassurance.headline)}`
+                    ? ` · ${displayText(reassurance.headline)}`
                     : ""}
                 </RelationshipReportLabel>
                 {reassuranceCanonicalLabel ? (
@@ -1256,7 +1255,7 @@ export default function RomanticSajuDeepReportView({
                 <RelationshipReportLabel>
                   {t.framesRolePlayLabel}
                   {frames.unconscious_role_play.headline?.trim()
-                    ? ` — ${displayText(frames.unconscious_role_play.headline)}`
+                    ? ` · ${displayText(frames.unconscious_role_play.headline)}`
                     : ""}
                 </RelationshipReportLabel>
                 {rolePlayCanonicalLabel ? (
@@ -1460,25 +1459,6 @@ export default function RomanticSajuDeepReportView({
         </RelationshipReportBody>
       </RelationshipReportCard>
       ) : null}
-
-      <ShareSummaryCard
-        summary={{
-          ...s1,
-          keywords: filterShareSummaryKeywords(s1.keywords ?? []),
-          relationship_name: isShareSummaryRelationshipNameExcluded(
-            s1.relationship_name,
-          )
-            ? ""
-            : s1.relationship_name,
-        }}
-        showGrade={false}
-        relationshipFormula={
-          shareFormula ||
-          displayText(s1.one_line_summary) ||
-          s1.relationship_name ||
-          t.shareFormulaFallback
-        }
-      />
     </RelationshipReportLayout>
   );
 }
