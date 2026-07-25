@@ -7,6 +7,8 @@ import {
   buildIntegratedPhase2UserPrompt,
 } from "@/lib/prompts/integratedPremiumReport";
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import { polishKoTone } from "@/lib/i18n/koToneGuards";
+import { polishEnTone } from "@/lib/i18n/enToneGuards";
 
 export type IntegratedPremiumLlmInput = {
   surveyAnalysis: string;
@@ -65,6 +67,9 @@ export async function runIntegratedPremiumLlm(
     { role: "user", content: phase1User },
   ];
 
+  const polishTone = (text: string): string =>
+    locale === "ko-KR" ? polishKoTone(text).text : polishEnTone(text).text;
+
   try {
     const c1 = await openai.chat.completions.create({
       model: process.env.OPENAI_INTEGRATED_MODEL?.trim() || "gpt-4o-mini",
@@ -72,7 +77,10 @@ export async function runIntegratedPremiumLlm(
       temperature: 0.65,
       max_tokens: 8192,
     });
-    const part1 = c1.choices[0].message.content ?? "";
+    // Polish each phase before joining — the "\n\n—\n\n" separator below is
+    // an intentional structural divider between phases, not a clause-join
+    // dash, so it must never pass through the tone guards.
+    const part1 = polishTone(c1.choices[0].message.content ?? "");
     const excerpt = part1.length > 12000 ? part1.slice(-12000) : part1;
     const phase2User = buildIntegratedPhase2UserPrompt(
       input.surveyAnalysis,
@@ -90,7 +98,7 @@ export async function runIntegratedPremiumLlm(
       temperature: 0.65,
       max_tokens: 8192,
     });
-    const part2 = c2.choices[0].message.content ?? "";
+    const part2 = polishTone(c2.choices[0].message.content ?? "");
     const report = `${part1}\n\n—\n\n${part2}`.trim();
     if (!report) {
       return {

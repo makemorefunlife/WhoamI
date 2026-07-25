@@ -19,6 +19,8 @@ import {
 import { insertRelationshipAnalysisLog } from "@/lib/relationship/analysisLog";
 import { parseRelationshipKind } from "@/lib/relationship/relationshipKind";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
+import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
+import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import { enforceRateLimit } from "@/lib/security/rateLimit";
@@ -300,7 +302,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const payload = { ...normalized, locale };
+    const toned =
+      locale === "ko-KR"
+        ? polishKoStringTree(normalized)
+        : polishEnStringTree(normalized);
+    const payload = { ...toned, locale };
 
     const { error: upErr } = await supabase
       .from("relationship_reports")
