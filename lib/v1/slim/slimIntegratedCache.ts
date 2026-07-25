@@ -8,15 +8,28 @@ import type { Locale } from "@/lib/i18n/locale";
 import { normalizeLocale } from "@/lib/i18n/locale";
 import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 
+/**
+ * Bump when Inner Compass structured schema or cache contract changes.
+ * Old keys are ignored → client refetches instead of serving a prose-only
+ * shell that lost structured/radar.
+ */
+export const SLIM_INTEGRATED_CACHE_VERSION = 3;
+
 const PREFIX = "ahaitsme_v2_slim_integrated_";
 
 function storageKey(reportId: string, locale: Locale) {
-  return `${PREFIX}${locale}_${reportId}`;
+  return `${PREFIX}v${SLIM_INTEGRATED_CACHE_VERSION}_${locale}_${reportId}`;
 }
 
-/** Pre-locale legacy key (no locale segment) — read-only, for one-time migration. */
-function legacyStorageKey(reportId: string) {
-  return `${PREFIX}${reportId}`;
+/** Pre-locale / pre-version legacy keys — cleared on write/clear only. */
+function legacyStorageKeys(reportId: string, locale: Locale): string[] {
+  return [
+    `${PREFIX}${reportId}`,
+    `${PREFIX}${locale}_${reportId}`,
+    // v1/v2 keys before CACHE_VERSION was introduced as v3
+    `${PREFIX}v1_${locale}_${reportId}`,
+    `${PREFIX}v2_${locale}_${reportId}`,
+  ];
 }
 
 export function readSlimIntegratedCache(
@@ -31,17 +44,14 @@ export function readSlimIntegratedCache(
   );
   if (!data?.slim_v1?.report?.trim()) return null;
 
-  // 스키마가 바뀌면(예: Part 02~05 필드 추가) 예전 캐시의 structured는 새 필드가
-  // 없어 그대로 렌더링하면 런타임 에러가 난다. 캐시에 남은 structured가 현재
-  // 스키마와 안 맞으면 버리고 report(산문) 폴백만 살려서 돌려준다 — report 자체는
-  // 항상 안전하므로 캐시 전체를 무효화할 필요는 없다.
+  // 스키마 불일치 structured만 제거. radar_current는 설문 SSOT라 유지.
   if (
     data.slim_v1.structured != null &&
     !isDeepEssenceStructuredReport(data.slim_v1.structured)
   ) {
     return {
       ...data,
-      slim_v1: { ...data.slim_v1, structured: null, radar_current: null },
+      slim_v1: { ...data.slim_v1, structured: null },
     };
   }
 
@@ -56,13 +66,18 @@ export function writeSlimIntegratedCache(
   if (!reportId) return;
   const loc = normalizeLocale(locale);
   writeJsonStorage(storageKey(reportId, loc), data);
+  // Drop legacy keys so a stale prose-only shell cannot win on next read.
+  for (const key of legacyStorageKeys(reportId, loc)) {
+    removeJsonStorage(key, key);
+  }
 }
 
 export function clearSlimIntegratedCache(reportId: string) {
   if (!reportId) return;
   for (const loc of ["en-US", "ko-KR"] as const) {
     removeJsonStorage(storageKey(reportId, loc), storageKey(reportId, loc));
+    for (const key of legacyStorageKeys(reportId, loc)) {
+      removeJsonStorage(key, key);
+    }
   }
-  // legacy key from before locale-scoping
-  removeJsonStorage(legacyStorageKey(reportId), legacyStorageKey(reportId));
 }

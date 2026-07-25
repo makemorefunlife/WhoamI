@@ -11,11 +11,15 @@ import {
   isDeepEssencePartB,
   isDeepEssenceStructuredReport,
 } from "@/lib/report/deepEssenceStructuredSchema";
+import {
+  coerceDeepEssencePartA,
+  coerceDeepEssencePartB,
+} from "@/lib/report/coerceDeepEssenceStructured";
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
-import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
-import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
-import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
+import { type Locale } from "@/lib/i18n/locale";
+import { polishDeepEssenceStructuredReport } from "@/lib/report/polishDeepEssenceStructured";
+import { logServerEvent } from "@/lib/security/safeLog";
 
 import type {
   DeepEssenceStrengthOrWatchout,
@@ -119,19 +123,25 @@ export async function runDeepEssenceStructuredLlm(
       currentAxisScores: input.currentAxisScores,
       locale: input.locale,
     });
-    const partA = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
+    const partARaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
       () => callLlmJson(openai, systemPrompt, userA),
       { label: "deep-essence-structured-a" },
     );
-
-    if (!isDeepEssencePartA(partA)) {
+    const coercedA = coerceDeepEssencePartA(partARaw, input.currentAxisScores);
+    if (coercedA.notes.length) {
+      logServerEvent("runDeepEssenceStructuredLlm", "part_a_coerced", {
+        notes: coercedA.notes.slice(0, 8),
+      });
+    }
+    if (!isDeepEssencePartA(coercedA.value)) {
       logServerError(
         "runDeepEssenceStructuredLlm:",
-        new Error("part A schema validation failed"),
-        "internal_error",
+        undefined,
+        "part_a_invalid",
       );
       return { structured: null, source: "fallback" };
     }
+    const partA = coercedA.value;
 
     const userB = buildDeepEssenceStructuredPartBUserPrompt({
       surveyAnalysis: input.surveyAnalysis,
@@ -140,26 +150,32 @@ export async function runDeepEssenceStructuredLlm(
       partAExcerpt: buildPartAExcerpt(partA),
       locale: input.locale,
     });
-    const partB = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
+    const partBRaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
       () => callLlmJson(openai, systemPrompt, userB),
       { label: "deep-essence-structured-b" },
     );
-
-    if (!isDeepEssencePartB(partB)) {
+    const coercedB = coerceDeepEssencePartB(partBRaw);
+    if (coercedB.notes.length) {
+      logServerEvent("runDeepEssenceStructuredLlm", "part_b_coerced", {
+        notes: coercedB.notes.slice(0, 8),
+      });
+    }
+    if (!isDeepEssencePartB(coercedB.value)) {
       logServerError(
         "runDeepEssenceStructuredLlm:",
-        new Error("part B schema validation failed"),
-        "internal_error",
+        undefined,
+        "part_b_invalid",
       );
       return { structured: null, source: "fallback" };
     }
+    const partB = coercedB.value;
 
     const merged = { ...partA, ...partB };
     if (!isDeepEssenceStructuredReport(merged)) {
       logServerError(
         "runDeepEssenceStructuredLlm:",
-        new Error("merged schema validation failed"),
-        "internal_error",
+        undefined,
+        "merged_invalid",
       );
       return { structured: null, source: "fallback" };
     }
@@ -171,15 +187,19 @@ export async function runDeepEssenceStructuredLlm(
         input.currentAxisScores,
       ),
     };
-    const resolvedLocale = normalizeLocale(input.locale);
-    const structured =
-      resolvedLocale === "ko-KR"
-        ? polishKoStringTree(withClampedRadar)
-        : polishEnStringTree(withClampedRadar);
+    // Prose-only tone polish — never blind tree-walk. Invalid polish → original.
+    const structured = polishDeepEssenceStructuredReport(
+      withClampedRadar,
+      input.locale,
+    );
 
     return { structured, source: "llm" };
   } catch (e) {
-    logServerError("runDeepEssenceStructuredLlm:", e, "internal_error");
+    const code =
+      e && typeof e === "object" && "name" in e && e.name === "LlmJsonParseRetryError"
+        ? "json_parse_exhausted"
+        : "structured_throw";
+    logServerError("runDeepEssenceStructuredLlm:", e, code);
     return { structured: null, source: "fallback" };
   }
 }

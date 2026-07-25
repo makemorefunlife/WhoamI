@@ -1090,8 +1090,8 @@ export const messagesKoKR: MessageCatalog = {
       scoreIndexEyebrow: "Relationship Index",
       scoreIndexTitle: "한눈에 보는 관계 지수",
       scoreCalcAria: "관계 지수 계산 방법",
-      toggleOpenLabel: "이 점수들이 뭔가요?",
-      toggleClosedLabel: "지표가 궁금하다면 눌러보세요",
+      toggleOpenLabel: "자세히 접기",
+      toggleClosedLabel: "각 지표 자세히 보기",
       insufficientData: "데이터가 부족해 계산할 수 없어요",
       chemistryCalcAria: "케미 점수 계산 방법",
       emotionalChemistryLabel: "감정 케미",
@@ -1158,5 +1158,8 @@ export const messagesKoKR: MessageCatalog = {
     generatingReportNotice: "리포트 생성 중… 보통 1~2분 걸려요.",
     dontCloseWindow: "창을 닫지 마세요.",
     regeneratingOverlay: "다시 생성 중…",
+    structuredDesignFallbackTitle: "구조화 리포트 디자인을 불러오지 못했어요",
+    structuredDesignFallbackBody:
+      "산문 버전으로 보여 드리는 중이에요. 다시 생성하면 Part 01~05 디자인이 복구됩니다.",
   },
 };

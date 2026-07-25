@@ -9,10 +9,10 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 /**
  * essence/deep 페이지 본문. 로버블(Lovable) "Inner Compass" 디자인 이식 — Phase 3.
  *
- * - structured + radar_current가 모두 있으면 전체 리포트(Part 01~05 + 부록)를
- *   새 디자인으로 렌더링한다 (en-US · ko-KR 둘 다 지원).
- * - 구조화 생성이 실패했으면(폴백) 기존 산문 리포트(report)를 그대로 보여줘
- *   절대 깨지지 않게 한다.
+ * - 유효한 structured가 있으면 Part 01~05 디자인을 렌더한다.
+ * - radar_current가 없어도 structured.radar_potential으로 레이더를 유지한다.
+ * - structured가 없을 때만 산문 폴백 + 재생성 CTA (톤 폴리시로 UI가 꺼지지 않게
+ *   서버는 polishDeepEssenceStructuredReport로 스키마를 보호한다).
  */
 export default function StitchDeepEssenceView({
   data,
@@ -58,8 +58,18 @@ export default function StitchDeepEssenceView({
   const { structured, radar_current } = data.slim_v1;
   // 캐시·API 어느 경로로 오든, 스키마가 안 맞는 structured는 여기서 한 번 더 걸러
   // DeepEssenceReport가 undefined 필드에 접근해 죽는 일이 없게 한다.
-  const hasStructuredReport =
-    Boolean(radar_current) && isDeepEssenceStructuredReport(structured);
+  // radar_current가 비어도 structured.radar_potential으로 레이더를 그린다
+  // (설문 축이 잠시 빠진 캐시에서도 Inner Compass UI가 유지되게).
+  const validStructured = isDeepEssenceStructuredReport(structured)
+    ? structured
+    : null;
+  const radarForUi =
+    radar_current ?? validStructured?.radar_potential ?? null;
+  const hasStructuredReport = Boolean(validStructured && radarForUi);
+  const reportLooksLikeJsonDump = (() => {
+    const t = report.trim();
+    return t.startsWith("```") || t.startsWith("{") || t.startsWith("[");
+  })();
 
   return (
     <div className="relative">
@@ -73,16 +83,37 @@ export default function StitchDeepEssenceView({
 
       <div className="stitch-hero-panel rounded-extra-large p-5 sm:p-6">
         <div className="max-h-[70vh] overflow-y-auto">
-          {hasStructuredReport && structured && radar_current ? (
+          {hasStructuredReport && validStructured && radarForUi ? (
             <DeepEssenceReport
-              structured={structured}
-              radarCurrent={radar_current}
+              structured={validStructured}
+              radarCurrent={radarForUi}
               locale={locale}
             />
           ) : (
-            <p className="text-on-surface whitespace-pre-wrap text-sm leading-relaxed">
-              {report}
-            </p>
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-accent-rose/25 bg-accent-rose-soft/40 px-4 py-3 text-sm text-on-surface">
+                <p className="font-medium text-primary">
+                  {messages.blueprint.structuredDesignFallbackTitle}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                  {messages.blueprint.structuredDesignFallbackBody}
+                </p>
+                {onRegenerateFresh || onRetry ? (
+                  <button
+                    type="button"
+                    onClick={() => void (onRegenerateFresh ?? onRetry)?.()}
+                    className="stitch-cta-primary mt-3 !min-w-0 !px-5 !py-2.5 !text-sm"
+                  >
+                    {messages.blueprint.regenerate}
+                  </button>
+                ) : null}
+              </div>
+              {reportLooksLikeJsonDump ? null : (
+                <p className="text-on-surface whitespace-pre-wrap text-sm leading-relaxed">
+                  {report}
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>

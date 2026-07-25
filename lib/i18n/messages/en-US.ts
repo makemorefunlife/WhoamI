@@ -1134,8 +1134,8 @@ export const messagesEnUS = {
       scoreIndexEyebrow: "Relationship Index",
       scoreIndexTitle: "Your relationship index, at a glance",
       scoreCalcAria: "How the relationship index is calculated",
-      toggleOpenLabel: "What are these scores?",
-      toggleClosedLabel: "Curious about these metrics? Tap to see",
+      toggleOpenLabel: "Hide details",
+      toggleClosedLabel: "See each metric in detail",
       insufficientData: "Not enough data to calculate this",
       chemistryCalcAria: "How the chemistry score is calculated",
       emotionalChemistryLabel: "Emotional chemistry",
@@ -1204,6 +1204,9 @@ export const messagesEnUS = {
     generatingReportNotice: "Generating your report… this usually takes 1–2 minutes.",
     dontCloseWindow: "Please don't close this window.",
     regeneratingOverlay: "Regenerating…",
+    structuredDesignFallbackTitle: "Couldn't load the structured report design",
+    structuredDesignFallbackBody:
+      "Showing the plain-text version for now. Regenerate to restore the Part 01–05 layout.",
   },
 };
 
@@ -2275,5 +2278,7 @@ export type MessageCatalog = {
     generatingReportNotice: string;
     dontCloseWindow: string;
     regeneratingOverlay: string;
+    structuredDesignFallbackTitle: string;
+    structuredDesignFallbackBody: string;
   };
 };
