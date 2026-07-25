@@ -5,6 +5,7 @@ import {
   buildEssenceSelfLiteUserPrompt,
 } from "@/lib/v2/prompts/essenceSelfLite";
 import { normalizeLocale } from "@/lib/i18n/locale";
+import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
 import { buildEssenceSelfLiteFallback } from "@/lib/v2/lite/fallbackEssence";
 import { runLiteLlmJson } from "@/lib/v2/lite/runLiteLlm";
 import type { EssenceSelfLiteReport } from "@/lib/v2/lite/types";
@@ -64,6 +65,10 @@ export async function POST(req: Request) {
     } catch (e) {
       logServerError("v2/lite/essence LLM fallback:", e, "internal_error");
       report = buildEssenceSelfLiteFallback(liteInput);
+    }
+
+    if (language === "ko-KR") {
+      report = polishKoStringTree(report);
     }
 
     return NextResponse.json({ ok: true, report, source: "essence_self_lite" });

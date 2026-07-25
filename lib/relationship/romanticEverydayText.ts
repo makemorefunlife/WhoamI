@@ -1,6 +1,6 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import { REF_HEAVENLY_STEMS } from "@/lib/hardcoded/sajuReferenceData";
-import { polishKoTone } from "@/lib/prompts/relationshipPremium/shared/koToneGuards";
+import { polishKoTone } from "@/lib/i18n/koToneGuards";
 import {
   buildRomanticDayStemOneLiner,
   resolveDayStemRomanticProfileFromSaju,

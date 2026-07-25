@@ -13,7 +13,8 @@ import {
 } from "@/lib/report/deepEssenceStructuredSchema";
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
-import type { Locale } from "@/lib/i18n/locale";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
 
 import type {
   DeepEssenceStrengthOrWatchout,
@@ -162,13 +163,17 @@ export async function runDeepEssenceStructuredLlm(
       return { structured: null, source: "fallback" };
     }
 
-    const structured: DeepEssenceStructuredReport = {
+    const withClampedRadar: DeepEssenceStructuredReport = {
       ...merged,
       radar_potential: clampAxisScores(
         merged.radar_potential as unknown as Record<string, unknown>,
         input.currentAxisScores,
       ),
     };
+    const structured =
+      normalizeLocale(input.locale) === "ko-KR"
+        ? polishKoStringTree(withClampedRadar)
+        : withClampedRadar;
 
     return { structured, source: "llm" };
   } catch (e) {

@@ -5,6 +5,7 @@ import {
   buildCurrentSelfLiteUserPrompt,
 } from "@/lib/v2/prompts/currentSelfLite";
 import { normalizeLocale } from "@/lib/i18n/locale";
+import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
 import { buildCurrentSelfLiteFallback } from "@/lib/v2/lite/fallbackCurrent";
 import { runLiteLlmJson } from "@/lib/v2/lite/runLiteLlm";
 import type { CurrentSelfLiteReport } from "@/lib/v2/lite/types";
@@ -52,6 +53,10 @@ export async function POST(req: Request) {
     } catch (e) {
       logServerError("v2/lite/current LLM fallback:", e, "internal_error");
       report = buildCurrentSelfLiteFallback(profile);
+    }
+
+    if (language === "ko-KR") {
+      report = polishKoStringTree(report);
     }
 
     return NextResponse.json({ ok: true, report, source: "current_self_lite" });

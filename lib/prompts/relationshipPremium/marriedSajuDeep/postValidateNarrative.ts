@@ -4,7 +4,7 @@
  * Not a second LLM pass. Do not import romanticSajuDeep.
  */
 
-import { polishKoTableCell, polishKoTone } from "../shared/koToneGuards";
+import { polishKoTableCell, polishKoTone } from "@/lib/i18n/koToneGuards";
 
 type AnyRec = Record<string, unknown>;
 

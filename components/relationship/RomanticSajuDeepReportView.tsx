@@ -7,7 +7,7 @@ import {
   polishRomanticDisplayText,
   stripComparisonCellSubject,
 } from "@/lib/relationship/romanticEverydayText";
-import { polishKoTableCell } from "@/lib/prompts/relationshipPremium/shared/koToneGuards";
+import { polishKoTableCell } from "@/lib/i18n/koToneGuards";
 import { buildRomanticTimelineBlocks, type TimelineBlock } from "@/lib/relationship/romanticTimeline";
 import { romanticHeadlineViewerFirst } from "@/lib/relationship/dayStemRomanticProfile";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";

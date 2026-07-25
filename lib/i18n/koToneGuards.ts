@@ -1,9 +1,11 @@
 /**
- * Korean tone guards shared by all relationshipPremium postValidate passes.
+ * Korean tone guards — shared across every LLM-generated report surface
+ * (relationship premium domains, personal Blueprint/Essence, deep reports,
+ * and any future diary/journal analysis). Not relationship-specific.
  *
  * 1) repairBrokenKoFragments — 기계적 파편 수리:
  *    - "… — 편으로 보일 수 있으며," 대시 매크로 잔재 제거
- *    - 한글 문장 사이에 낀 대시(— – ㅡ)를 쉼표로 순화
+ *    - 한글 문장 사이에 낀 대시(— – ㅡ)를 쉼표/연결어미/문장 분리로 순화
  *    - "단정하지 고" / "신중하게 통하는" 등 알려진 텍스트 파손 복구
  * 2) normalizeSpeechLevelKo — 문어체/해라체 종결을 해요체로 정규화.
  *    합쇼체(~입니다/~합니다)는 허용 문체이므로 건드리지 않는다.
@@ -11,6 +13,9 @@
  *    "~다"는 손대지 않는다.
  * 3) ensurePoliteKoCellEnding — 비교 표 셀 전용. 명사형 종결("~하는 편",
  *    "~스타일")에 이에요/예요를 붙여 셀 단위로 존댓말을 강제한다.
+ * 4) polishKoStringTree — 임의의 JSON 구조(개인분석 리포트 등)를 순회하며
+ *    모든 문자열 리프에 polishKoTone을 적용한다. 한글이 없는 값(enum, locale
+ *    코드 등)은 정규식이 매치되지 않아 그대로 통과한다.
  */
 
 const HANGUL_BASE = 0xac00;
@@ -282,4 +287,27 @@ export function polishKoTableCell(text: string): {
   const base = polishKoTone(text);
   const polite = ensurePoliteKoCellEnding(base.text);
   return { text: polite.text, fixed: base.fixed || polite.fixed };
+}
+
+/**
+ * 임의의 JSON 트리(개인분석·Blueprint·심화 리포트 등)를 순회하며 모든 문자열
+ * 리프에 polishKoTone을 적용한다. 표 셀처럼 명사형 종결 강제가 필요하면
+ * polishKoTableCell을 별도로 쓸 것 — 여기서는 제목·라벨처럼 완결 문장이 아닌
+ * 문자열도 섞여 있을 수 있어 종결 강제는 하지 않는다.
+ */
+export function polishKoStringTree<T>(value: T): T {
+  if (typeof value === "string") {
+    return polishKoTone(value).text as unknown as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => polishKoStringTree(v)) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = polishKoStringTree(v);
+    }
+    return out as unknown as T;
+  }
+  return value;
 }

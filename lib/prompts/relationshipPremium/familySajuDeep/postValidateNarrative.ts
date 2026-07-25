@@ -4,7 +4,7 @@
  * Do not import romanticSajuDeep or marriedSajuDeep.
  */
 
-import { polishKoTableCell, polishKoTone } from "../shared/koToneGuards";
+import { polishKoTableCell, polishKoTone } from "@/lib/i18n/koToneGuards";
 
 type AnyRec = Record<string, unknown>;
 
