@@ -4,6 +4,7 @@
  */
 import type {
   ConflictTranslationVM,
+  DailyLifeVM,
   DifferenceMapVM,
   DoDontVM,
   HiddenHeartVM,
@@ -65,7 +66,7 @@ export function emptyWhySpecial(): WhySpecialVM {
   };
 }
 
-/** M4 Difference Map — deferred */
+/** M4 Difference Map */
 export function emptyDifferenceMap(): DifferenceMapVM {
   return {
     id: "M4",
@@ -79,7 +80,7 @@ export function emptyDifferenceMap(): DifferenceMapVM {
   };
 }
 
-/** M5 Relationship Flow — deferred */
+/** M5 Relationship Flow */
 export function emptyRelationshipFlow(): RelationshipFlowVM {
   return {
     id: "M5",
@@ -105,9 +106,23 @@ export function emptyConflictTranslation(): ConflictTranslationVM {
   };
 }
 
-export function emptyDoDont(): DoDontVM {
+/** M7 Daily Life */
+export function emptyDailyLife(): DailyLifeVM {
   return {
     id: "M7",
+    title: "",
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    domains: [],
+  };
+}
+
+/** M8 Do / Don't */
+export function emptyDoDont(): DoDontVM {
+  return {
+    id: "M8",
+    title: "",
     available: false,
     confidence: "tentative",
     evidence: EMPTY_EVIDENCE,
@@ -115,9 +130,10 @@ export function emptyDoDont(): DoDontVM {
   };
 }
 
+/** M9 Repair Guide */
 export function emptyRepairGuide(): RepairGuideVM {
   return {
-    id: "M8",
+    id: "M9",
     title: "",
     available: false,
     confidence: "tentative",
@@ -130,10 +146,9 @@ export function emptyRepairGuide(): RepairGuideVM {
   };
 }
 
+/** Deferred Next Step (not M1–M10 in B3). */
 export function emptyNextStep(): NextStepVM {
   return {
-    id: "M9",
-    title: "",
     available: false,
     confidence: "tentative",
     evidence: EMPTY_EVIDENCE,

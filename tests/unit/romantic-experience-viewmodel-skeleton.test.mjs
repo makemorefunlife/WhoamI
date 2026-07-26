@@ -34,7 +34,7 @@ console.log("\n=== 1) deterministic mapping ===");
 const report = makeMinimalRomanticReport();
 const vm1 = build(report);
 const vm2 = build(report);
-assert.equal(vm1.meta.buildId, "b2-content-projectors");
+assert.equal(vm1.meta.buildId, "b3-content-projectors");
 assert.equal(vm1.meta.accentToken, "#E2C4A8");
 assert.equal(vm1.meta.myName, "Mina");
 assert.deepEqual(
@@ -47,15 +47,16 @@ assert.deepEqual(
 );
 ok("deterministic meta + module order");
 
-console.log("\n=== 2) deepRead null; deferred modules unavailable ===");
+console.log("\n=== 2) deepRead null; dynamics-dependent modules empty on minimal ===");
 assert.equal(vm1.deepRead, null);
 assert.equal(vm1.saveShare, null);
 assert.equal(vm1.doDont.pack, null);
 assert.equal(vm1.differenceMap.available, false);
 assert.equal(vm1.flow.available, false);
+assert.equal(vm1.dailyLife.available, false);
 assert.equal(vm1.repair.available, false);
 assert.equal(vm1.nextStep.available, false);
-ok("deepRead null; M4/M5/M7/M8/M9-class slots empty on minimal");
+ok("deepRead null; M4/M5/M7/M9 empty on minimal");
 
 console.log("\n=== 3) missing optional / empty names fallback ===");
 const vmNames = build(report, {
@@ -74,7 +75,7 @@ ok("empty names/locale fall back safely");
 
 console.log("\n=== 4) partial report does not throw ===");
 const vmPartial = build(makePartialRomanticReport());
-assert.equal(vmPartial.meta.buildId, "b2-content-projectors");
+assert.equal(vmPartial.meta.buildId, "b3-content-projectors");
 assert.equal(
   summarizeRomanticModuleSlots(vmPartial).every((s) => !s.available),
   true,

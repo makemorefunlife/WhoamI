@@ -1,5 +1,5 @@
 /**
- * Romantic Experience view-model contracts (Batch B1).
+ * Romantic Experience view-model contracts.
  *
  * UI modules must import only from this file (and shared presentation types
  * like PairPrescriptionPack). They must not read section_1_* … section_6_* or
@@ -7,6 +7,11 @@
  *
  * Grade, relationship_formula, and ScoreBoard identity scores are intentionally
  * absent from this surface.
+ *
+ * Module ID map (B3):
+ * M1 Opening · M2 Hidden · M3 Special · M4 Difference · M5 Flow ·
+ * M6 Conflict · M7 Daily Life · M8 Do/Don't · M9 Repair · M10 Horizon
+ * (Next Step experiments remain deferred on `nextStep`, not in M1–M10.)
  */
 
 import type { PairPrescriptionPack } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
@@ -46,7 +51,7 @@ export type EvidenceRef = {
 /** Shared header on every module-ready payload. `available: false` → omit in UI. */
 export type RomanticModuleBase = {
   id: RomanticModuleId;
-  /** Human question / module title key material — may be empty in B1. */
+  /** Human question / module title key material — may be empty in skeleton. */
   title: string;
   available: boolean;
   confidence: ConfidenceLevel;
@@ -64,7 +69,7 @@ export type OpeningSceneVM = RomanticModuleBase & {
   dayStemLine: string | null;
 };
 
-/** M2 — Hidden Dynamic (05A Hidden Heart content). Difference Map deferred to later batch on M4. */
+/** M2 — Hidden Dynamic */
 export type HiddenHeartPersonVM = {
   name: string;
   need: string | null;
@@ -79,7 +84,7 @@ export type HiddenHeartVM = RomanticModuleBase & {
   mutualGift: string | null;
 };
 
-/** M3 — What's Special (05A Why Special). Relationship Flow deferred to later batch on M5. */
+/** M3 — What's Special */
 export type WhySpecialGiftVM = {
   from: string;
   to: string;
@@ -95,16 +100,26 @@ export type WhySpecialVM = RomanticModuleBase & {
   frameDirectionLabel: string | null;
 };
 
-/** M4 — Difference Map (deferred; empty in B2). */
+/** M4 — Difference Map */
 export type DifferenceBucketKind =
   | "shared"
   | "complementary"
   | "translation_required";
 
+export type DifferenceItemVM = {
+  aspect: string;
+  me: string;
+  partner: string;
+  rowKey: string | null;
+  align: "confirms" | "caution" | null;
+  confidence: ConfidenceLevel | null;
+  sourceKeys: string[];
+};
+
 export type DifferenceBucketVM = {
   kind: DifferenceBucketKind;
   label: string;
-  items: Array<{ aspect: string; me: string; partner: string }>;
+  items: DifferenceItemVM[];
 };
 
 export type DifferenceMapVM = RomanticModuleBase & {
@@ -114,11 +129,12 @@ export type DifferenceMapVM = RomanticModuleBase & {
   openingContrast: string | null;
 };
 
-/** M5 — Relationship Flow (deferred; empty in B2). */
+/** M5 — Relationship Flow */
 export type FlowNodeVM = {
   key: string;
   label: string;
   body: string | null;
+  sourceKeys: string[];
 };
 
 export type RelationshipFlowVM = RomanticModuleBase & {
@@ -144,28 +160,63 @@ export type ConflictTranslationVM = RomanticModuleBase & {
   rows: ConflictDialogueRowVM[];
 };
 
+/** M7 — Daily Life (ordinary shared-life observations; not marriage household). */
+export type DailyLifeDomainId =
+  | "money_practicality"
+  | "chores_structure"
+  | "space_closeness"
+  | "social_energy"
+  | "decision_making"
+  | "routine_rhythm";
+
+export type DailyLifeDomainVM = {
+  id: DailyLifeDomainId;
+  label: string;
+  supported: boolean;
+  observation: string | null;
+  sourceKeys: string[];
+  confidence: ConfidenceLevel | null;
+  /** Deterministic owner/direction summary when known. */
+  ownerDirection: string | null;
+};
+
+export type DailyLifeVM = RomanticModuleBase & {
+  id: "M7";
+  domains: DailyLifeDomainVM[];
+};
+
 /**
- * M7 — Do / Don’t uses shared PairPrescriptionPack when available.
- * Null slot = omit (same as available:false).
+ * M8 — Do / Don’t uses shared PairPrescriptionPack when available.
+ * Null pack = omit (same as available:false).
  */
 export type DoDontVM = {
-  id: "M7";
+  id: "M8";
+  title: string;
   available: boolean;
   confidence: ConfidenceLevel;
   evidence: EvidenceRef[];
   pack: PairPrescriptionPack | null;
 };
 
-/** M8 — Repair Guide (composer fills in B4). */
+/** M9 — Repair Guide (deterministic composer; ordered recovery sequence). */
 export type RepairStageId =
-  | "stop_escalation"
-  | "name_without_verdict"
-  | "match_slower_window"
-  | "time_anchor_for_faster"
-  | "reconnect_sentence";
+  | "pause"
+  | "re_entry"
+  | "acknowledgement"
+  | "clarification"
+  | "reassurance"
+  | "closure";
+
+export type RepairStageVM = {
+  id: RepairStageId;
+  title: string;
+  body: string;
+  speakable?: string;
+  sourceKeys: string[];
+};
 
 export type RepairGuideVM = RomanticModuleBase & {
-  id: "M8";
+  id: "M9";
   asymmetry: {
     slowerProcessor: "me" | "partner" | "balanced";
     fasterExpresser: "me" | "partner" | "balanced";
@@ -174,24 +225,24 @@ export type RepairGuideVM = RomanticModuleBase & {
     reassuranceForm: "listening" | "behavior_proof" | "presence" | "both";
   } | null;
   interrupt: { id: string; label: string } | null;
-  stages: Array<{
-    id: RepairStageId;
-    title: string;
-    body: string;
-    speakable?: string;
-  }>;
+  stages: RepairStageVM[];
   doNotDemand: string[];
   polishEligiblePaths: string[];
 };
 
-/** M9 — Next Step */
+/**
+ * Deferred past B3 — Next Step experiments (05A Module 9).
+ * Not part of M1–M10 slot map while Repair occupies M9.
+ */
 export type NextStepExperimentVM = {
   kind: "24h" | "weekly" | "sentence" | "ritual" | "question";
   text: string;
 };
 
-export type NextStepVM = RomanticModuleBase & {
-  id: "M9";
+export type NextStepVM = {
+  available: boolean;
+  confidence: ConfidenceLevel;
+  evidence: EvidenceRef[];
   defaultTab: "viewer" | "partner";
   viewerExperiments: NextStepExperimentVM[];
   partnerExperiments: NextStepExperimentVM[];
@@ -227,9 +278,9 @@ export type RomanticExperienceMeta = {
   accentToken: "#E2C4A8";
   /**
    * Projector generation id.
-   * B1 skeleton = "b1-skeleton"; B2+ content projectors = "b2-content-projectors".
+   * B1 = "b1-skeleton"; B2 = "b2-content-projectors"; B3 = "b3-content-projectors".
    */
-  buildId: "b1-skeleton" | "b2-content-projectors";
+  buildId: "b1-skeleton" | "b2-content-projectors" | "b3-content-projectors";
 };
 
 /**
@@ -243,18 +294,24 @@ export type RomanticExperienceViewModel = {
   hiddenHeart: HiddenHeartVM;
   /** M3 What's Special */
   whySpecial: WhySpecialVM;
-  /** M4 Difference Map — deferred */
+  /** M4 Difference Map */
   differenceMap: DifferenceMapVM;
-  /** M5 Relationship Flow — deferred */
+  /** M5 Relationship Flow */
   flow: RelationshipFlowVM;
+  /** M6 Conflict */
   conflict: ConflictTranslationVM;
+  /** M7 Daily Life */
+  dailyLife: DailyLifeVM;
+  /** M8 Do / Don't */
   doDont: DoDontVM;
+  /** M9 Repair Guide */
   repair: RepairGuideVM;
+  /** Deferred Next Step (not an M1–M10 slot in B3). */
   nextStep: NextStepVM;
+  /** M10 Horizon */
   horizon: HorizonVM;
   /**
-   * B1–B2: always null. Shared DeepReadViewModel is connected in B5
-   * (`lib/relationship/shared/deepReadViewModel.ts`).
+   * B1–B3: always null. Shared DeepReadViewModel is connected later.
    */
   deepRead: null;
   saveShare: SaveShareVM | null;
@@ -276,9 +333,9 @@ export function summarizeRomanticModuleSlots(
     { id: "M4", available: vm.differenceMap.available },
     { id: "M5", available: vm.flow.available },
     { id: "M6", available: vm.conflict.available },
-    { id: "M7", available: vm.doDont.available },
-    { id: "M8", available: vm.repair.available },
-    { id: "M9", available: vm.nextStep.available },
+    { id: "M7", available: vm.dailyLife.available },
+    { id: "M8", available: vm.doDont.available },
+    { id: "M9", available: vm.repair.available },
     { id: "M10", available: vm.horizon.available },
   ];
 }

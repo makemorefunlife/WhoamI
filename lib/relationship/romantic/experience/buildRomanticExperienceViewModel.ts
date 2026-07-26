@@ -1,22 +1,21 @@
 /**
- * buildRomanticExperienceViewModel — B2 content projectors for
- * M1 Opening, M2 Hidden Dynamic, M3 What's Special, M6 Conflict, M10 Horizon.
- * M4/M5/M7/M8/M9 remain unavailable. deepRead stays null.
- * Does not mutate the source report. No grade/ScoreBoard/formula on VM.
+ * buildRomanticExperienceViewModel — B3 content projectors for
+ * M1–M10 (M7 Daily Life, M8 Do/Don't, M9 Repair). Next Step deferred.
+ * deepRead stays null. Does not mutate the source report.
+ * No grade/ScoreBoard/formula on VM.
  */
 
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
-import {
-  emptyDifferenceMap,
-  emptyDoDont,
-  emptyNextStep,
-  emptyRelationshipFlow,
-  emptyRepairGuide,
-} from "./projectors/_empty";
+import { emptyNextStep } from "./projectors/_empty";
 import { projectConflictPattern } from "./projectors/projectConflictPattern";
+import { projectDailyLife } from "./projectors/projectDailyLife";
+import { projectDifferenceMap } from "./projectors/projectDifferenceMap";
+import { projectDoDont } from "./projectors/projectDoDont";
 import { projectHiddenDynamic } from "./projectors/projectHiddenDynamic";
 import { projectHorizon } from "./projectors/projectHorizon";
 import { projectOpening } from "./projectors/projectOpening";
+import { projectRelationshipFlow } from "./projectors/projectRelationshipFlow";
+import { projectRepairGuide } from "./projectors/projectRepairGuide";
 import { projectWhatsSpecial } from "./projectors/projectWhatsSpecial";
 import type { RomanticExperienceViewModel } from "./romanticExperienceTypes";
 
@@ -36,6 +35,29 @@ function normalizeName(value: string | undefined | null, fallback: string): stri
   return trimmed || fallback;
 }
 
+function collectDialoguePhrases(
+  conflict: RomanticExperienceViewModel["conflict"],
+): string[] {
+  const out: string[] = [];
+  for (const row of conflict.rows) {
+    if (row.said) out.push(row.said);
+    if (row.better) out.push(row.better);
+  }
+  return out;
+}
+
+function collectPreventiveTexts(
+  doDont: RomanticExperienceViewModel["doDont"],
+): string[] {
+  const out: string[] = [];
+  for (const item of doDont.pack?.items ?? []) {
+    out.push(item.headline);
+    out.push(...item.do_list);
+    out.push(...item.dont_list);
+  }
+  return out;
+}
+
 export function buildRomanticExperienceViewModel(
   input: BuildRomanticExperienceViewModelInput,
 ): RomanticExperienceViewModel {
@@ -47,6 +69,27 @@ export function buildRomanticExperienceViewModel(
   const viewerIsReportA = Boolean(input.viewerIsReportA);
   const report = input.report;
 
+  const conflict = projectConflictPattern({
+    report,
+    nameA,
+    nameB,
+    myName,
+    partnerName,
+    viewerIsReportA,
+  });
+  const forbiddenPhrases = collectDialoguePhrases(conflict);
+
+  const doDont = projectDoDont({
+    report,
+    nameA,
+    nameB,
+    myName,
+    partnerName,
+    viewerIsReportA,
+    forbiddenPhrases,
+  });
+  const preventiveTexts = collectPreventiveTexts(doDont);
+
   return {
     meta: {
       viewerIsReportA,
@@ -56,7 +99,7 @@ export function buildRomanticExperienceViewModel(
       nameB,
       locale,
       accentToken: "#E2C4A8",
-      buildId: "b2-content-projectors",
+      buildId: "b3-content-projectors",
     },
     opening: projectOpening({ report, myName, partnerName }),
     hiddenHeart: projectHiddenDynamic({
@@ -74,9 +117,12 @@ export function buildRomanticExperienceViewModel(
       viewerIsReportA,
       locale,
     }),
-    differenceMap: emptyDifferenceMap(),
-    flow: emptyRelationshipFlow(),
-    conflict: projectConflictPattern({
+    differenceMap: projectDifferenceMap({
+      report,
+      viewerIsReportA,
+      locale,
+    }),
+    flow: projectRelationshipFlow({
       report,
       nameA,
       nameB,
@@ -84,8 +130,25 @@ export function buildRomanticExperienceViewModel(
       partnerName,
       viewerIsReportA,
     }),
-    doDont: emptyDoDont(),
-    repair: emptyRepairGuide(),
+    conflict,
+    dailyLife: projectDailyLife({
+      report,
+      viewerIsReportA,
+      myName,
+      partnerName,
+      locale,
+    }),
+    doDont,
+    repair: projectRepairGuide({
+      report,
+      nameA,
+      nameB,
+      myName,
+      partnerName,
+      viewerIsReportA,
+      locale,
+      preventiveTexts,
+    }),
     nextStep: emptyNextStep(),
     horizon: projectHorizon({ report }),
     deepRead: null,

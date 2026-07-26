@@ -43,7 +43,7 @@ const experienceUiPath = join(
 console.log("\n=== 1) complete report projection ===");
 const complete = makeCompleteRomanticReport();
 const vm = build(complete);
-assert.equal(vm.meta.buildId, "b2-content-projectors");
+assert.equal(vm.meta.buildId, "b3-content-projectors");
 assert.equal(vm.opening.available, true);
 assert.ok(vm.opening.signature);
 assert.equal(Object.hasOwn(vm.opening, "grade"), false);
@@ -59,22 +59,10 @@ assert.equal(vm.horizon.available, true);
 assert.ok(vm.horizon.waypoints.length >= 1);
 ok("M1/M2/M3/M6/M10 available from complete fixture");
 
-console.log("\n=== 2) deferred modules stay unavailable ===");
-assert.equal(vm.differenceMap.available, false);
-assert.equal(vm.flow.available, false);
-assert.equal(vm.doDont.available, false);
-assert.equal(vm.repair.available, false);
-assert.equal(vm.nextStep.available, false);
+console.log("\n=== 2) deepRead null; Next Step deferred ===");
 assert.equal(vm.deepRead, null);
-const byId = Object.fromEntries(
-  summarizeRomanticModuleSlots(vm).map((s) => [s.id, s.available]),
-);
-assert.equal(byId.M4, false);
-assert.equal(byId.M5, false);
-assert.equal(byId.M7, false);
-assert.equal(byId.M8, false);
-assert.equal(byId.M9, false);
-ok("M4/M5/M7/M8/M9 unavailable; deepRead null");
+assert.equal(vm.nextStep.available, false);
+ok("deepRead null; nextStep deferred");
 
 console.log("\n=== 3) partial / missing optional sections ===");
 const partial = build(makePartialRomanticReport());

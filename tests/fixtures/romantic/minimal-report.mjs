@@ -65,9 +65,53 @@ export function makePartialRomanticReport() {
   };
 }
 
-/** Rich fixture exercising M1/M2/M3/M6/M10 projectors. */
+/** Rich fixture exercising M1–M10 B3 projectors. */
 export function makeCompleteRomanticReport(overrides = {}) {
   return makeMinimalRomanticReport({
+    section_2_nature: {
+      comparison_table: [
+        { aspect: "감정 표현", a: "바로 말해 풀어요.", b: "잠시 정리한 뒤 말해요." },
+        { aspect: "갈등 반응", a: "바로 맞닥뜨려요.", b: "원칙을 먼저 세워요." },
+        { aspect: "애정 언어", a: "말로 챙겨요.", b: "행동으로 보여요." },
+        { aspect: "스트레스 패턴", a: "한꺼번에 토로해요.", b: "거리를 두고 식혀요." },
+        { aspect: "의사결정", a: "빠르게 정해요.", b: "상의하며 정해요." },
+        { aspect: "소통 방식", a: "직접적으로 말해요.", b: "상대 기분을 살피며 말해요." },
+      ],
+      a_nature: {
+        description: "A desc",
+        meeting_b: "meets B",
+        together_change: "changes",
+      },
+      b_nature: {
+        description: "B desc",
+        meeting_a: "meets A",
+        together_change: "changes",
+      },
+    },
+    section_5_action: {
+      advice_for_a: [
+        {
+          relationship_kind: "연인",
+          target_user: "A",
+          action_title: "평소에 짧은 확인 문장을 먼저 보내기",
+          saju_reason: "표현이 빠른 쪽이 침묵을 오해하기 쉬워요.",
+          real_speech_tip: "지금 바쁜지 30분만 기다려도 될까?",
+          real_life_example: "",
+        },
+      ],
+      advice_for_b: [
+        {
+          relationship_kind: "연인",
+          target_user: "B",
+          action_title: "평소에 정리 창을 미리 알려 주기",
+          saju_reason: "숙성 리듬을 상대가 예측할 수 있으면 긴장이 줄어요.",
+          real_speech_tip: "한 템포 쉬고 꼭 이어서 말할게.",
+          real_life_example: "",
+        },
+      ],
+      together: "주말에 템포 이야기를 짧게 나눠요.",
+      together_starter: "우리 평소 속도 이야기 좀 할까?",
+    },
     section_4_hidden_hearts: {
       a_hidden: {
         need: "확인받고 싶어하는 마음",
@@ -136,6 +180,70 @@ export function makeCompleteRomanticReport(overrides = {}) {
     canonical_projections: {
       expression_speed: { direction: "A", align: "confirms", confidence: "high" },
       saju_frame_direction: { direction: "A", anchor_is_a: true },
+      recovery_speed: {
+        recovery_a: "quick_recovery",
+        recovery_b: "deep_processing",
+        recovery_mismatch: true,
+      },
+      reassurance_signal: {
+        need_a: "listening",
+        need_b: "behavior_proof",
+        give_a: "expression",
+        give_b: "action",
+        match_a_gives_b: false,
+        match_b_gives_a: false,
+      },
+      unconscious_role_play: {
+        primary_frame: "peer",
+        saju_frame: "peer",
+        agrees: true,
+      },
+      balance_of_power: {
+        balance_a: "leader",
+        balance_b: "receiver",
+        sublead_idea_mood: "A",
+        sublead_decision_approval: "balanced",
+        sublead_execution: "B",
+      },
+      residual: { residual_a: "clears_fast", residual_b: "lingers" },
+      comparison_table: {
+        conflict: {
+          lean_a: "direct",
+          lean_b: "principled",
+          align: "caution",
+          confidence: "high",
+        },
+        affection: {
+          lean_a: "emotional_care",
+          lean_b: "action_gift",
+          align: "confirms",
+          confidence: "high",
+        },
+        stress: {
+          lean_a: "explosive",
+          lean_b: "withdrawn",
+          align: "caution",
+          confidence: "high",
+        },
+        expression: {
+          lean_a: "expressive",
+          lean_b: "reserved",
+          align: "confirms",
+          confidence: "high",
+        },
+        decision: {
+          lean_a: "independent",
+          lean_b: "consultative",
+          align: "caution",
+          confidence: "low",
+        },
+        communication: {
+          lean_a: "direct",
+          lean_b: "considerate",
+          align: "caution",
+          confidence: "high",
+        },
+      },
     },
     ...overrides,
   });
