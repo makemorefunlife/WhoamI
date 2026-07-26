@@ -2,6 +2,7 @@ import { useState, type RefObject } from "react";
 import GlowButton from "@/components/space/GlowButton";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
+import RomanticExperienceView from "@/components/relationship/romantic/experience/RomanticExperienceView";
 import WorkColleagueReportView from "@/components/relationship/WorkColleagueReportView";
 import MarriageReportView from "@/components/relationship/MarriageReportView";
 import FamilyParentReportView from "@/components/relationship/FamilyParentReportView";
@@ -14,6 +15,7 @@ import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarria
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import { shouldRenderRomanticExperienceV2 } from "@/lib/relationship/romantic/experience/romanticExperienceFlag";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type RelationshipPremiumSectionProps = {
@@ -69,6 +71,8 @@ export default function RelationshipPremiumSection({
   if (hideSection) return null;
 
   const kindLabel = messages.report.relationshipKindNames[premiumKind];
+  /** Romantic-only; other kinds never read this path. Default = legacy. */
+  const useRomanticExperienceV2 = shouldRenderRomanticExperienceV2(premiumKind);
 
   async function handleGenerateClick() {
     if (submitting) return;
@@ -111,14 +115,25 @@ export default function RelationshipPremiumSection({
       ) : null}
       {premiumKind === "romantic" && displayRomanticDeep ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
-          <RomanticSajuDeepReportView
-            report={displayRomanticDeep}
-            nameA={nameA}
-            nameB={nameB}
-            myName={viewerName}
-            partnerName={partnerName}
-            viewerIsReportA={viewerIsReportA}
-          />
+          {useRomanticExperienceV2 ? (
+            <RomanticExperienceView
+              report={displayRomanticDeep}
+              nameA={nameA}
+              nameB={nameB}
+              myName={viewerName}
+              partnerName={partnerName}
+              viewerIsReportA={viewerIsReportA}
+            />
+          ) : (
+            <RomanticSajuDeepReportView
+              report={displayRomanticDeep}
+              nameA={nameA}
+              nameB={nameB}
+              myName={viewerName}
+              partnerName={partnerName}
+              viewerIsReportA={viewerIsReportA}
+            />
+          )}
         </div>
       ) : premiumKind === "romantic" ? (
         <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-4 sm:p-6">
