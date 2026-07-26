@@ -96,23 +96,25 @@ It does not override Ahaitsme's governing product principles.
 
 ---
 
-## `04_Relationship_Experience_Blueprint.md`
+## `05_Relationship_Product_Bible.md`
 
 ### Owns
 
-- shared relationship experience architecture
-- relationship reading journey
+- shared relationship experience architecture (product SSOT)
+- relationship reading journey and emotional pacing
 - information hierarchy
-- component responsibilities
+- component responsibilities (product intent)
 - cards, scores, graphs, and narrative roles
 - progressive disclosure
 - evidence presentation
 - reflection and decision-support structure
 - shared cross-product experience laws
+- Relationship Insight Bible and Romantic + Marriage elaboration
 
 ### Inherited by
 
 - Romantic
+- Marriage / Cohabitation
 - Friend
 - Work
 - Family
@@ -129,26 +131,23 @@ It does not override Ahaitsme's governing product principles.
 
 ---
 
-## `05_Romantic_Product_Blueprint.md`
+## `05A_Romantic_Product_Blueprint.md`
 
 ### Owns
 
-- Romantic-specific product questions
-- Romantic information hierarchy
-- Romantic modules
-- Romantic signal families
-- Romantic card candidates
-- Romantic measurement meaning
-- Romantic graphs
-- Romantic decision-support boundaries
-- Romantic action design
-- Romantic-specific risk considerations
+- Romantic Product SSOT (sole)
+- Romantic-specific product questions, jobs, and promise
+- Romantic narrative laws and storytelling principles
+- Romantic module architecture (ten modules + depth/share surfaces)
+- Romantic signal and asset keep/reframe/reposition rules
+- Romantic premium strategy and success criteria
+- Romantic-specific boundaries vs Marriage
 
 ### Inherits
 
 - `01_Product_Vision.md`
-- `02_Relationship_UX_Bible.md`
-- `04_Relationship_Experience_Blueprint.md`
+- `02_Relationship_UX_Bible.md` / `02_Relationship-ux-bible.md`
+- `05_Relationship_Product_Bible.md`
 
 ### Use when
 
@@ -159,7 +158,7 @@ It does not override Ahaitsme's governing product principles.
 
 ---
 
-## `06_Romantic_Technical_Blueprint.md`
+## `06_Romantic_Technical_Blueprint.md` / `06A_Romantic_Technical_Blueprint.md`
 
 ### Owns
 
@@ -175,8 +174,8 @@ It does not override Ahaitsme's governing product principles.
 
 ### Inherits
 
-- `04_Relationship_Experience_Blueprint.md`
-- `05_Romantic_Product_Blueprint.md`
+- `05_Relationship_Product_Bible.md`
+- `05A_Romantic_Product_Blueprint.md`
 
 ### Use when
 
@@ -205,9 +204,9 @@ When multiple documents apply, use the following order:
 ↓
 02 Relationship UX Bible
 ↓
-04 Relationship Experience Blueprint
+05 Relationship Product Bible
 ↓
-Relationship-Specific Product Blueprint
+05A Romantic Product Blueprint (Romantic domain SSOT)
 ↓
 Relationship-Specific Technical Blueprint
 ↓
@@ -245,7 +244,7 @@ Use:
 Use:
 
 ```text
-04_Relationship_Experience_Blueprint.md
+05_Relationship_Product_Bible.md
 ```
 
 ## Romantic-specific product conflict
@@ -253,7 +252,7 @@ Use:
 Use:
 
 ```text
-05_Romantic_Product_Blueprint.md
+05A_Romantic_Product_Blueprint.md
 ```
 
 ## Romantic implementation conflict
@@ -343,10 +342,10 @@ Task:
 Redesign Romantic key relationship cards.
 
 Read:
-- 04_Relationship_Experience_Blueprint.md
-  - Part 3: Information Architecture
-  - Part 4: Experience Component System
-- 05_Romantic_Product_Blueprint.md
+- 05_Relationship_Product_Bible.md
+  - Information Architecture
+  - Story & Module Architecture / Measurement intent
+- 05A_Romantic_Product_Blueprint.md
   - Romantic card and signal sections
 - 06_Romantic_Technical_Blueprint.md
   - canonical signal and projection sections
@@ -495,8 +494,8 @@ Use stable numbered names for governing documents.
 01_Product_Vision.md
 02_Relationship_UX_Bible.md
 03_Market_Research.md
-04_Relationship_Experience_Blueprint.md
-05_Romantic_Product_Blueprint.md
+05_Relationship_Product_Bible.md
+05A_Romantic_Product_Blueprint.md
 06_Romantic_Technical_Blueprint.md
 ```
 
