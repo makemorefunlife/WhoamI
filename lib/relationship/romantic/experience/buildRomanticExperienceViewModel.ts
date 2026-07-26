@@ -1,26 +1,23 @@
 /**
- * buildRomanticExperienceViewModel — Batch B1 skeleton.
- *
- * Maps display meta only. All M1–M10 slots are unavailable placeholders.
- * Legacy Part 1–5 / grade / formula knowledge stays inside later projectors —
- * this file must not copy those fields onto the VM surface.
- *
- * Does not mutate the source report.
+ * buildRomanticExperienceViewModel — B2 content projectors for
+ * M1 Opening, M2 Hidden Dynamic, M3 What's Special, M6 Conflict, M10 Horizon.
+ * M4/M5/M7/M8/M9 remain unavailable. deepRead stays null.
+ * Does not mutate the source report. No grade/ScoreBoard/formula on VM.
  */
 
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import {
-  emptyConflictTranslation,
   emptyDifferenceMap,
   emptyDoDont,
-  emptyHiddenHeart,
-  emptyHorizon,
   emptyNextStep,
-  emptyOpeningScene,
   emptyRelationshipFlow,
   emptyRepairGuide,
-  emptyWhySpecial,
 } from "./projectors/_empty";
+import { projectConflictPattern } from "./projectors/projectConflictPattern";
+import { projectHiddenDynamic } from "./projectors/projectHiddenDynamic";
+import { projectHorizon } from "./projectors/projectHorizon";
+import { projectOpening } from "./projectors/projectOpening";
+import { projectWhatsSpecial } from "./projectors/projectWhatsSpecial";
 import type { RomanticExperienceViewModel } from "./romanticExperienceTypes";
 
 export type BuildRomanticExperienceViewModelInput = {
@@ -39,43 +36,58 @@ function normalizeName(value: string | undefined | null, fallback: string): stri
   return trimmed || fallback;
 }
 
-/**
- * Null-safe skeleton builder. Survives empty/partial reports because it does
- * not walk section_* payloads yet (B2+ projectors will).
- */
 export function buildRomanticExperienceViewModel(
   input: BuildRomanticExperienceViewModelInput,
 ): RomanticExperienceViewModel {
-  // Touch report only to prove presence for future projectors / fail closed.
-  // Do not read grade, formula, or event scores onto the VM.
-  void input.report;
-
   const myName = normalizeName(input.myName, "A");
   const partnerName = normalizeName(input.partnerName, "B");
   const nameA = normalizeName(input.nameA, "A");
   const nameB = normalizeName(input.nameB, "B");
+  const locale = input.locale?.trim() || "ko-KR";
+  const viewerIsReportA = Boolean(input.viewerIsReportA);
+  const report = input.report;
 
   return {
     meta: {
-      viewerIsReportA: Boolean(input.viewerIsReportA),
+      viewerIsReportA,
       myName,
       partnerName,
       nameA,
       nameB,
-      locale: input.locale?.trim() || "ko-KR",
+      locale,
       accentToken: "#E2C4A8",
-      buildId: "b1-skeleton",
+      buildId: "b2-content-projectors",
     },
-    opening: emptyOpeningScene({ myName, partnerName }),
+    opening: projectOpening({ report, myName, partnerName }),
+    hiddenHeart: projectHiddenDynamic({
+      report,
+      myName,
+      partnerName,
+      viewerIsReportA,
+    }),
+    whySpecial: projectWhatsSpecial({
+      report,
+      myName,
+      partnerName,
+      nameA,
+      nameB,
+      viewerIsReportA,
+      locale,
+    }),
     differenceMap: emptyDifferenceMap(),
     flow: emptyRelationshipFlow(),
-    hiddenHeart: emptyHiddenHeart(),
-    whySpecial: emptyWhySpecial(),
-    conflict: emptyConflictTranslation(),
+    conflict: projectConflictPattern({
+      report,
+      nameA,
+      nameB,
+      myName,
+      partnerName,
+      viewerIsReportA,
+    }),
     doDont: emptyDoDont(),
     repair: emptyRepairGuide(),
     nextStep: emptyNextStep(),
-    horizon: emptyHorizon(),
+    horizon: projectHorizon({ report }),
     deepRead: null,
     saveShare: null,
   };

@@ -1,6 +1,6 @@
 /**
- * Unavailable module factories for B1 skeleton / omit-empty defaults.
- * Projectors replace these with available:true payloads in later batches.
+ * Unavailable module factories for omit-empty defaults.
+ * Projectors replace these with available:true payloads when evidence exists.
  */
 import type {
   ConflictTranslationVM,
@@ -36,35 +36,10 @@ export function emptyOpeningScene(params: {
   };
 }
 
-export function emptyDifferenceMap(): DifferenceMapVM {
-  return {
-    id: "M2",
-    title: "",
-    available: false,
-    confidence: "tentative",
-    evidence: EMPTY_EVIDENCE,
-    buckets: [],
-    hasRadar: false,
-    openingContrast: null,
-  };
-}
-
-export function emptyRelationshipFlow(): RelationshipFlowVM {
-  return {
-    id: "M3",
-    title: "",
-    available: false,
-    confidence: "tentative",
-    evidence: EMPTY_EVIDENCE,
-    nodes: [],
-    interrupt: null,
-    signalChips: [],
-  };
-}
-
+/** M2 Hidden Dynamic */
 export function emptyHiddenHeart(): HiddenHeartVM {
   return {
-    id: "M4",
+    id: "M2",
     title: "",
     available: false,
     confidence: "tentative",
@@ -75,9 +50,10 @@ export function emptyHiddenHeart(): HiddenHeartVM {
   };
 }
 
+/** M3 What's Special */
 export function emptyWhySpecial(): WhySpecialVM {
   return {
-    id: "M5",
+    id: "M3",
     title: "",
     available: false,
     confidence: "tentative",
@@ -86,6 +62,34 @@ export function emptyWhySpecial(): WhySpecialVM {
     onlyTogether: null,
     whySpecial: null,
     frameDirectionLabel: null,
+  };
+}
+
+/** M4 Difference Map — deferred */
+export function emptyDifferenceMap(): DifferenceMapVM {
+  return {
+    id: "M4",
+    title: "",
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    buckets: [],
+    hasRadar: false,
+    openingContrast: null,
+  };
+}
+
+/** M5 Relationship Flow — deferred */
+export function emptyRelationshipFlow(): RelationshipFlowVM {
+  return {
+    id: "M5",
+    title: "",
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    nodes: [],
+    interrupt: null,
+    signalChips: [],
   };
 }
 

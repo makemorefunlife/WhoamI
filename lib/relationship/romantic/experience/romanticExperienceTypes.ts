@@ -64,7 +64,38 @@ export type OpeningSceneVM = RomanticModuleBase & {
   dayStemLine: string | null;
 };
 
-/** M2 — Difference Map buckets (projector fills later). */
+/** M2 — Hidden Dynamic (05A Hidden Heart content). Difference Map deferred to later batch on M4. */
+export type HiddenHeartPersonVM = {
+  name: string;
+  need: string | null;
+  reason: string | null;
+  voice: string | null;
+};
+
+export type HiddenHeartVM = RomanticModuleBase & {
+  id: "M2";
+  me: HiddenHeartPersonVM | null;
+  partner: HiddenHeartPersonVM | null;
+  mutualGift: string | null;
+};
+
+/** M3 — What's Special (05A Why Special). Relationship Flow deferred to later batch on M5. */
+export type WhySpecialGiftVM = {
+  from: string;
+  to: string;
+  headline: string | null;
+  body: string | null;
+};
+
+export type WhySpecialVM = RomanticModuleBase & {
+  id: "M3";
+  gifts: WhySpecialGiftVM[];
+  onlyTogether: string | null;
+  whySpecial: string | null;
+  frameDirectionLabel: string | null;
+};
+
+/** M4 — Difference Map (deferred; empty in B2). */
 export type DifferenceBucketKind =
   | "shared"
   | "complementary"
@@ -77,13 +108,13 @@ export type DifferenceBucketVM = {
 };
 
 export type DifferenceMapVM = RomanticModuleBase & {
-  id: "M2";
+  id: "M4";
   buckets: DifferenceBucketVM[];
   hasRadar: boolean;
   openingContrast: string | null;
 };
 
-/** M3 — Relationship Flow */
+/** M5 — Relationship Flow (deferred; empty in B2). */
 export type FlowNodeVM = {
   key: string;
   label: string;
@@ -91,41 +122,10 @@ export type FlowNodeVM = {
 };
 
 export type RelationshipFlowVM = RomanticModuleBase & {
-  id: "M3";
+  id: "M5";
   nodes: FlowNodeVM[];
   interrupt: { id: string; label: string } | null;
   signalChips: Array<{ key: string; label: string }>;
-};
-
-/** M4 — Hidden Heart */
-export type HiddenHeartPersonVM = {
-  name: string;
-  need: string | null;
-  reason: string | null;
-  voice: string | null;
-};
-
-export type HiddenHeartVM = RomanticModuleBase & {
-  id: "M4";
-  me: HiddenHeartPersonVM | null;
-  partner: HiddenHeartPersonVM | null;
-  mutualGift: string | null;
-};
-
-/** M5 — Why Special (no formula field). */
-export type WhySpecialGiftVM = {
-  from: string;
-  to: string;
-  headline: string | null;
-  body: string | null;
-};
-
-export type WhySpecialVM = RomanticModuleBase & {
-  id: "M5";
-  gifts: WhySpecialGiftVM[];
-  onlyTogether: string | null;
-  whySpecial: string | null;
-  frameDirectionLabel: string | null;
 };
 
 /** M6 — Conflict Translation */
@@ -226,10 +226,10 @@ export type RomanticExperienceMeta = {
   /** Locked Romantic accent target (visual migration later). */
   accentToken: "#E2C4A8";
   /**
-   * Skeleton build id — projectors bump this when they start filling modules.
-   * B1 = "b1-skeleton".
+   * Projector generation id.
+   * B1 skeleton = "b1-skeleton"; B2+ content projectors = "b2-content-projectors".
    */
-  buildId: "b1-skeleton";
+  buildId: "b1-skeleton" | "b2-content-projectors";
 };
 
 /**
@@ -239,17 +239,21 @@ export type RomanticExperienceMeta = {
 export type RomanticExperienceViewModel = {
   meta: RomanticExperienceMeta;
   opening: OpeningSceneVM;
-  differenceMap: DifferenceMapVM;
-  flow: RelationshipFlowVM;
+  /** M2 Hidden Dynamic */
   hiddenHeart: HiddenHeartVM;
+  /** M3 What's Special */
   whySpecial: WhySpecialVM;
+  /** M4 Difference Map — deferred */
+  differenceMap: DifferenceMapVM;
+  /** M5 Relationship Flow — deferred */
+  flow: RelationshipFlowVM;
   conflict: ConflictTranslationVM;
   doDont: DoDontVM;
   repair: RepairGuideVM;
   nextStep: NextStepVM;
   horizon: HorizonVM;
   /**
-   * B1: always null. Shared DeepReadViewModel is connected in B5
+   * B1–B2: always null. Shared DeepReadViewModel is connected in B5
    * (`lib/relationship/shared/deepReadViewModel.ts`).
    */
   deepRead: null;
@@ -267,10 +271,10 @@ export function summarizeRomanticModuleSlots(
 ): RomanticModuleSlotSummary[] {
   return [
     { id: "M1", available: vm.opening.available },
-    { id: "M2", available: vm.differenceMap.available },
-    { id: "M3", available: vm.flow.available },
-    { id: "M4", available: vm.hiddenHeart.available },
-    { id: "M5", available: vm.whySpecial.available },
+    { id: "M2", available: vm.hiddenHeart.available },
+    { id: "M3", available: vm.whySpecial.available },
+    { id: "M4", available: vm.differenceMap.available },
+    { id: "M5", available: vm.flow.available },
     { id: "M6", available: vm.conflict.available },
     { id: "M7", available: vm.doDont.available },
     { id: "M8", available: vm.repair.available },

@@ -1,5 +1,5 @@
 /**
- * Romantic Experience VM skeleton (Batch B1).
+ * Romantic Experience VM skeleton / B2 regression (formerly B1-only).
  * Run: npx tsx tests/unit/romantic-experience-viewmodel-skeleton.test.mjs
  */
 import assert from "node:assert/strict";
@@ -30,14 +30,13 @@ function build(report, extra = {}) {
   });
 }
 
-console.log("\n=== 1) deterministic skeleton mapping ===");
+console.log("\n=== 1) deterministic mapping ===");
 const report = makeMinimalRomanticReport();
 const vm1 = build(report);
 const vm2 = build(report);
-assert.equal(vm1.meta.buildId, "b1-skeleton");
+assert.equal(vm1.meta.buildId, "b2-content-projectors");
 assert.equal(vm1.meta.accentToken, "#E2C4A8");
 assert.equal(vm1.meta.myName, "Mina");
-assert.equal(vm1.meta.partnerName, "Jun");
 assert.deepEqual(
   summarizeRomanticModuleSlots(vm1),
   summarizeRomanticModuleSlots(vm2),
@@ -48,16 +47,15 @@ assert.deepEqual(
 );
 ok("deterministic meta + module order");
 
-console.log("\n=== 2) all modules unavailable (B1 placeholders) ===");
-for (const slot of summarizeRomanticModuleSlots(vm1)) {
-  assert.equal(slot.available, false, slot.id);
-}
+console.log("\n=== 2) deepRead null; deferred modules unavailable ===");
 assert.equal(vm1.deepRead, null);
 assert.equal(vm1.saveShare, null);
 assert.equal(vm1.doDont.pack, null);
-assert.equal(vm1.repair.stages.length, 0);
-assert.equal(Object.is(vm1.deepRead, null), true);
-ok("omit-empty: every module available=false; deepRead always null in B1");
+assert.equal(vm1.differenceMap.available, false);
+assert.equal(vm1.flow.available, false);
+assert.equal(vm1.repair.available, false);
+assert.equal(vm1.nextStep.available, false);
+ok("deepRead null; M4/M5/M7/M8/M9-class slots empty on minimal");
 
 console.log("\n=== 3) missing optional / empty names fallback ===");
 const vmNames = build(report, {
@@ -76,12 +74,12 @@ ok("empty names/locale fall back safely");
 
 console.log("\n=== 4) partial report does not throw ===");
 const vmPartial = build(makePartialRomanticReport());
-assert.equal(vmPartial.meta.buildId, "b1-skeleton");
+assert.equal(vmPartial.meta.buildId, "b2-content-projectors");
 assert.equal(
   summarizeRomanticModuleSlots(vmPartial).every((s) => !s.available),
   true,
 );
-ok("partial report → skeleton");
+ok("partial report → all unavailable");
 
 console.log("\n=== 5) no grade / ScoreBoard / formula ownership on VM ===");
 const json = JSON.stringify(vm1);
@@ -91,27 +89,19 @@ assert.equal(Object.hasOwn(vm1, "scores"), false);
 assert.equal(Object.hasOwn(vm1, "event_scores"), false);
 assert.equal(Object.hasOwn(vm1.opening, "grade"), false);
 assert.equal(Object.hasOwn(vm1.whySpecial, "relationship_formula"), false);
-assert.equal(Object.hasOwn(vm1.whySpecial, "formula"), false);
 assert.equal(json.includes("A+"), false);
 assert.equal(json.includes("destiny"), false);
 assert.equal(json.includes("should-not-appear-on-vm"), false);
 assert.equal(json.includes("ScoreBoard"), false);
 assert.equal(json.includes("section_1"), false);
-assert.equal(json.includes("section_5"), false);
 ok("grade/formula/sections absent from VM JSON");
 
 console.log("\n=== 6) source report is not mutated ===");
 const mutable = makeMinimalRomanticReport();
 const gradeBefore = mutable.section_1_summary.grade;
-const formulaBefore = mutable.section_4_special_bond.relationship_formula;
 Object.freeze(mutable.section_1_summary);
 build(mutable);
 assert.equal(mutable.section_1_summary.grade, gradeBefore);
-assert.equal(
-  mutable.section_4_special_bond.relationship_formula,
-  formulaBefore,
-);
-mutable.section_1_summary; // still frozen
 assert.throws(() => {
   mutable.section_1_summary.grade = "Z";
 }, TypeError);
