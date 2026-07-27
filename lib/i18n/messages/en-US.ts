@@ -922,7 +922,7 @@ export const messagesEnUS = {
       reportingStyleFitLabel: "📝 Reporting & feedback fit",
       respectCardTitle: "🤝 A guide to mutual respect that keeps the peace",
       boundaryLabel: (name: string) => `[${name}'s territory]`,
-      breakBoundaryFitLabel: "☕ Lunch & break-room boundary",
+      breakBoundaryFitLabel: "☕ Lunch & recharge boundary",
       rolesCardTitle: "🎯 Role-split cheat sheet",
       myWeaponsLabel: (name: string) => `[What ${name} should own]`,
       roleWeaponsLabel: (nickname: string) => `What ${nickname} should own`,

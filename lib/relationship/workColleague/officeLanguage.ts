@@ -555,18 +555,18 @@ const DE_ESCALATION_CARDS: Record<
     {
       hashtag: "#OnePraiseFlipsTheSwitch",
       color: "red",
-      title: "One Word of Recognition Is the Switch",
+      title: "Name the Contribution Before the Critique",
       detail:
-        "They go into defense mode the moment they feel ignored. Don't put them down publicly — lead with 'we got this done thanks to you.'",
+        "Feeling dismissed flips them into defense. Don't correct them in the group thread — DM or pull aside first: 'We got this across the line because of your piece — can we tweak one handoff?'",
       categories: ["비겁"],
       elements: ["wood"],
     },
     {
-      hashtag: "#FoodFixesEverything",
+      hashtag: "#CoolDownThenTalk",
       color: "yellow",
-      title: "A Meal, Coffee, or Snack Is the Peace Treaty",
+      title: "Take It Offline Before It Escalates",
       detail:
-        "Even when emotions rise, a soft mood resolves things fast. Skip the stiff meeting room — talk it out over something to eat.",
+        "Forcing a win in the same meeting or chat usually hardens the stance. Pause, then reconnect: 'Want ten minutes after this, or an async note this afternoon?' Cooler channel, same substance.",
       categories: ["식상"],
       elements: ["fire"],
     },
@@ -575,25 +575,25 @@ const DE_ESCALATION_CARDS: Record<
       color: "orange",
       title: "Demanding an Instant Answer Is the Poison",
       detail:
-        "Pushing for a conclusion right away only makes them more rigid. 'Let's pick this up tomorrow' is the best antidote.",
+        "Pushing for a conclusion on the spot only makes them more rigid. Try: 'Let's park this and pick it up tomorrow with clearer options.'",
       categories: ["인성"],
       elements: ["earth"],
     },
     {
       hashtag: "#SayItDirectlyOrItBlowsUp",
       color: "blue",
-      title: "Talking Around It Backfires",
+      title: "Vague Hints Backfire",
       detail:
-        "They hate having to guess. State the core point politely but directly, and skip the hidden messages.",
+        "Guessing games drain them. State the core point politely and plainly — skip side-channel hints and expect productive disagreement, not silent reading between the lines.",
       categories: ["관성"],
       elements: ["metal"],
     },
     {
       hashtag: "#ActionsBeatApologies",
       color: "green",
-      title: "Results and Repayment Beat Words",
+      title: "A Concrete Fix Beats a Soft Apology",
       detail:
-        "An emotional apology alone isn't enough. A real fix — 'here's how I'll make up for it' — plus covering the loss gets you past it fast.",
+        "Warm words alone aren't enough. Offer a real repair: 'Here's how I'll make the next handoff cleaner, and here's the date I'll close the gap.'",
       categories: ["재성"],
       elements: ["water"],
     },
@@ -604,16 +604,16 @@ const DE_ESCALATION_CARDS: Record<
       color: "red",
       title: "인정 한 마디가 스위치",
       detail:
-        "무시당했다고 느끼면 바로 방어 모드예요. 공개적으로 깎아내리지 말고, '네 덕분에 됐다'는 인정을 먼저 주세요.",
+        "무시당했다고 느끼면 바로 방어 모드예요. 회의·단체 채팅에서 바로 지적하기보다 따로 말씀드리며, '덕분에 여기까지 왔어요'를 먼저 건네 보세요.",
       categories: ["비겁"],
       elements: ["wood"],
     },
     {
-      hashtag: "#맛있는거주면풀린다",
+      hashtag: "#분위기부터풀면풀린다",
       color: "yellow",
-      title: "밥·커피·간식이 화해 비자",
+      title: "분위기부터 풀면 이야기도 풀려요",
       detail:
-        "감정이 올라와도 분위기가 부드러우면 금방 풀려요. 딱딱한 회의실 대신 가볍게 먹으면서 이야기하세요.",
+        "감정이 올라온 뒤엔 딱딱한 회의실에서 결론을 몰아붙이기보다, 짧은 커피나 업무 중 가벼운 자리로 톤을 낮춘 뒤 이어서 이야기하세요. 회식·야근 강요는 필요 없어요.",
       categories: ["식상"],
       elements: ["fire"],
     },
@@ -622,25 +622,25 @@ const DE_ESCALATION_CARDS: Record<
       color: "orange",
       title: "즉답 압박이 독",
       detail:
-        "당장 결론을 강요하면 더 굳어요. '오늘은 여기까지, 내일 다시'가 최고의 갈등 해독제입니다.",
+        "당장 결론을 강요하면 더 굳어요. '오늘은 여기까지 두시고, 내일 다시 맞춰 볼까요?'가 갈등을 푸는 데 도움이 됩니다.",
       categories: ["인성"],
       elements: ["earth"],
     },
     {
-      hashtag: "#대놓고이야기해야풀린다",
+      hashtag: "#정중히_직접_말하기",
       color: "blue",
-      title: "돌려 말하면 오히려 폭발",
+      title: "돌려 말하면 오해가 커져요",
       detail:
-        "눈치 보는 게 싫어요. 핵심을 정중하지만 직접적으로 말하고, 숨은 메시지는 피하세요.",
+        "돌려 말하거나 눈치만 기대하면 해석이 갈려요. 핵심을 존중하는 톤으로 직접 말씀드리고, 숨은 메시지는 피하세요.",
       categories: ["관성"],
       elements: ["metal"],
     },
     {
       hashtag: "#실속형사과가최고",
       color: "green",
-      title: "말보다 결과·보상",
+      title: "말보다 결과·보완",
       detail:
-        "감정 사과만으로는 부족해요. '이렇게 보완하겠다'는 실질 액션과 손해 보상이 있으면 금방 넘어갑니다.",
+        "감정 사과만으로는 부족해요. '이렇게 보완하겠습니다'와 일정·손실 보완이 보이면 금방 넘어가는 편입니다.",
       categories: ["재성"],
       elements: ["water"],
     },

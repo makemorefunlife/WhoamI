@@ -66,9 +66,9 @@ export function resolveReportingStyleFit(
 
   const STYLE_LABEL: Record<Locale, Record<typeof styleA, string>> = {
     "en-US": {
-      headline_first: "leads with the conclusion",
-      context_first: "wants context and background first",
-      flexible: "adapts either way",
+      headline_first: "leads with the bottom line",
+      context_first: "wants context before the ask",
+      flexible: "flexes either way",
     },
     "ko-KR": {
       headline_first: "결론부터 두괄식으로",
@@ -77,17 +77,18 @@ export function resolveReportingStyleFit(
     },
   };
 
+  // Locale adapts workplace framing only — style enums stay identical across locales.
   const summary =
     styleA === styleB
       ? pick(
           locale,
-          `${nicknameA} and ${nicknameB} report the same way — ${STYLE_LABEL[locale][styleA]}.`,
-          `${nicknameA}와 ${nicknameB} 둘 다 보고 스타일이 비슷해요 — ${STYLE_LABEL[locale][styleA]}.`,
+          `${nicknameA} and ${nicknameB} share the same update style — ${STYLE_LABEL[locale][styleA]}. In standups, Slack/Teams handoffs, or async notes, matching that format keeps reviews short.`,
+          `${nicknameA}와 ${nicknameB} 둘 다 공유·보고 스타일이 비슷해요 — ${STYLE_LABEL[locale][styleA]}. 회의나 메신저로 전달할 때도 그 포맷을 맞추면 덜 어긋나요.`,
         )
       : pick(
           locale,
-          `${nicknameA} ${STYLE_LABEL[locale][styleA]}, while ${nicknameB} ${STYLE_LABEL[locale][styleB]} — match the format to the listener.`,
-          `${nicknameA}는 ${STYLE_LABEL[locale][styleA]} 편이고, ${nicknameB}는 ${STYLE_LABEL[locale][styleB]} 편이에요 — 듣는 사람에 맞춰 포맷을 바꿔보세요.`,
+          `${nicknameA} ${STYLE_LABEL[locale][styleA]}, while ${nicknameB} ${STYLE_LABEL[locale][styleB]} — match the format to whoever you're updating, not to a fixed hierarchy.`,
+          `${nicknameA}는 ${STYLE_LABEL[locale][styleA]} 편이고, ${nicknameB}는 ${STYLE_LABEL[locale][styleB]} 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.`,
         );
 
   return {
@@ -254,28 +255,28 @@ function resolveCushionLine(
   if (strong && highRecognition) {
     return pick(
       locale,
-      `Open by naming what ${nickname} already does well, then bring up the improvement — they need their expertise acknowledged first.`,
-      `${nickname}가 이미 잘하고 있는 부분을 먼저 짚어준 뒤 개선점을 꺼내세요 — 전문성 인정이 먼저 필요한 타입이에요.`,
+      `With ${nickname}, name one thing that already worked on the deliverable, then raise a single ask — try: "The structure held up — one tweak before we ship?" Peer recognition first, then the change.`,
+      `${nickname}에게는 잘된 점을 먼저 짚은 뒤 개선점을 꺼내 주세요 — 예: "지난 초안 구조는 잘 잡히었어요. 하나만 맞춰보면 어떨까요?" 공개 지적보다 1:1이 덜 부담스러워요.`,
     );
   }
   if (strong) {
     return pick(
       locale,
-      `Get straight to the point with ${nickname} — a clear, direct ask lands better than a long preamble.`,
-      `${nickname}에게는 바로 핵심부터 말하세요 — 긴 서론보다 명확하고 직접적인 요청이 잘 통해요.`,
+      `Keep it direct with ${nickname} — a clear ask beats a long softener. Try: "Here's the gap I see, and here's what would unblock me." Skip hedging that hides the request.`,
+      `${nickname}에게는 핵심부터 정중히 말씀하세요 — 예: "이 부분이 막혀서요. 이렇게 맞춰주시면 바로 이어갈 수 있어요." 긴 서론보다 명확한 요청이 잘 통해요.`,
     );
   }
   if (highRecognition) {
     return pick(
       locale,
-      `Reassure ${nickname} first — a warm, supportive tone before the ask helps them hear it without feeling criticized.`,
-      `${nickname}에게는 먼저 다독여 주세요 — 따뜻한 톤으로 시작하면 지적처럼 안 느끼고 받아들여요.`,
+      `Warm the door before the ask with ${nickname}. Try: "I value how you ran this — can we adjust one piece together?" Supportive tone first so it doesn't land as a character critique.`,
+      `${nickname}에게는 먼저 안심을 주세요 — 예: "덕분에 여기까지 왔어요. 하나만 같이 손보면 더 편할 것 같아요." 공개 자리보다 따로 이야기하는 편이 덜 날카로워요.`,
     );
   }
   return pick(
     locale,
-    `Keep it simple and low-pressure with ${nickname} — a calm, matter-of-fact suggestion works well.`,
-    `${nickname}에게는 부담 없이 담백하게 말해도 괜찮아요 — 차분한 제안이면 충분해요.`,
+    `Keep it light and specific with ${nickname}. Try: "Quick suggestion — want to try X on the next pass?" A calm, matter-of-fact note works better than a heavy frame.`,
+    `${nickname}에게는 부담 없이 담백하게 — 예: "다음엔 이렇게 한 번만 맞춰볼까요?" 차분한 제안이면 충분해요.`,
   );
 }
 
