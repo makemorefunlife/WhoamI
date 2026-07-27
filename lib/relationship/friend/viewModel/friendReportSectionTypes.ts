@@ -17,6 +17,7 @@ import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/ty
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
+import type { DeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type PersonSlot<T> = { me: T; partner: T };
 
@@ -106,6 +107,16 @@ export type PrescriptionSection = BaseSection & {
   items: PairPrescriptionItem[];
 };
 
+/**
+ * meta.friend_saju_deep LLM explain overlay — attach-only 이후 처음 렌더.
+ * CE 판정을 재분류하지 않는다(explain-only); 원본 스키마는
+ * lib/prompts/relationshipPremium/friendSajuDeep/outputSchema.ts.
+ */
+export type DeepReadSection = BaseSection & {
+  type: "deep_read";
+  vm: DeepReadViewModel;
+};
+
 export type FriendReportSection =
   | SnapshotSection
   | PsychRadarSection
@@ -114,6 +125,7 @@ export type FriendReportSection =
   | SoulmateSection
   | PlayMoneySection
   | HiddenFlowSection
+  | DeepReadSection
   | BreakupGuideSection
   | DeEscalationSection
   | PrescriptionSection;

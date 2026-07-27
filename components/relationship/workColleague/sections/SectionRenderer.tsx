@@ -36,6 +36,7 @@ import type { PairPrescriptionPack } from "@/lib/relationship/shared/pairPrescri
 import type {
   CompareTableSection,
   ComparisonSection,
+  DeepReadSection,
   PrescriptionSection,
   PsychRadarSection,
   RelationshipLoopSection,
@@ -44,6 +45,7 @@ import type {
   WorkReportSection,
   WorkReportViewModel,
 } from "@/lib/relationship/workColleague/viewModel/workReportSectionTypes";
+import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("work").accent;
@@ -240,6 +242,27 @@ function RelationshipLoopCard({ section }: { section: RelationshipLoopSection })
   );
 }
 
+// ---- Part 3b: 심층 리드 (business_saju_deep 오버레이) ------------------------
+
+function DeepReadSectionCard({ section }: { section: DeepReadSection }) {
+  const t = useMessages().relationshipDrilldown.work;
+  return (
+    <DeepReadCard
+      vm={section.vm}
+      accentColor={ACCENT}
+      labels={{
+        cardTitle: section.title,
+        voiceMe: t.deepReadVoiceMeLabel,
+        voicePartner: t.deepReadVoicePartnerLabel,
+        pattern: t.deepReadPatternLabel,
+        adviceMe: t.deepReadAdviceMeLabel,
+        advicePartner: t.deepReadAdvicePartnerLabel,
+        together: t.deepReadTogetherLabel,
+      }}
+    />
+  );
+}
+
 // ---- Part 4: 협업 안전장치 --------------------------------------------------
 
 function WarningCard({ section }: { section: WarningSection }) {
@@ -336,6 +359,8 @@ export function WorkReportSectionCard({
       return <RoleMatrixCard section={section} />;
     case "relationship_loop":
       return <RelationshipLoopCard section={section} />;
+    case "deep_read":
+      return <DeepReadSectionCard section={section} />;
     case "warning":
       return <WarningCard section={section} />;
     case "prescription":

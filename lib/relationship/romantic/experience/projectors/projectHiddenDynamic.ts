@@ -1,5 +1,5 @@
 /**
- * M2 Hidden Dynamic projector (section_4_hidden_hearts).
+ * M5 Hidden Heart projector (section_4_hidden_hearts).
  * Does not pull reassurance frames / special_bond (owned by M3 / deferred M5).
  */
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
@@ -109,7 +109,7 @@ export function projectHiddenDynamic(
 
   return {
     ...base,
-    title: "Hidden Dynamic",
+    title: "Hidden Heart",
     available: true,
     confidence,
     evidence,

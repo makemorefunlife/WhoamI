@@ -8,10 +8,12 @@
  * Grade, relationship_formula, and ScoreBoard identity scores are intentionally
  * absent from this surface.
  *
- * Module ID map (B3):
- * M1 Opening · M2 Hidden · M3 Special · M4 Difference · M5 Flow ·
- * M6 Conflict · M7 Daily Life · M8 Do/Don't · M9 Repair · M10 Horizon
- * (Next Step experiments remain deferred on `nextStep`, not in M1–M10.)
+ * Experience V2 shell (Blueprint-aligned current scope):
+ * M1 Hero · M2 Relationship Snapshot · M3 Difference Map ·
+ * M4 Relationship Flow · M5 Hidden Heart · M6 Special Dynamics ·
+ * M7 Conflict Translation · M8 Repair Guide · M9 Do / Don't · M10 Next Step
+ *
+ * Legacy RomanticSajuDeepReportView remains default outside the feature flag.
  */
 
 import type { PairPrescriptionPack } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
@@ -69,38 +71,25 @@ export type OpeningSceneVM = RomanticModuleBase & {
   dayStemLine: string | null;
 };
 
-/** M2 — Hidden Dynamic */
-export type HiddenHeartPersonVM = {
-  name: string;
-  need: string | null;
-  reason: string | null;
-  voice: string | null;
+export type SnapshotSignalKind =
+  | "defining_dynamic"
+  | "stabilizing_resource"
+  | "meaningful_tension";
+
+/** M2 — Relationship Snapshot */
+export type RelationshipSnapshotSignalVM = {
+  kind: SnapshotSignalKind;
+  label: string;
+  summary: string;
+  sourcePath: string;
 };
 
-export type HiddenHeartVM = RomanticModuleBase & {
+export type RelationshipSnapshotVM = RomanticModuleBase & {
   id: "M2";
-  me: HiddenHeartPersonVM | null;
-  partner: HiddenHeartPersonVM | null;
-  mutualGift: string | null;
+  signals: RelationshipSnapshotSignalVM[];
 };
 
-/** M3 — What's Special */
-export type WhySpecialGiftVM = {
-  from: string;
-  to: string;
-  headline: string | null;
-  body: string | null;
-};
-
-export type WhySpecialVM = RomanticModuleBase & {
-  id: "M3";
-  gifts: WhySpecialGiftVM[];
-  onlyTogether: string | null;
-  whySpecial: string | null;
-  frameDirectionLabel: string | null;
-};
-
-/** M4 — Difference Map */
+/** M3 — Difference Map */
 export type DifferenceBucketKind =
   | "shared"
   | "complementary"
@@ -123,13 +112,43 @@ export type DifferenceBucketVM = {
 };
 
 export type DifferenceMapVM = RomanticModuleBase & {
-  id: "M4";
+  id: "M3";
   buckets: DifferenceBucketVM[];
   hasRadar: boolean;
   openingContrast: string | null;
 };
 
-/** M5 — Relationship Flow */
+/** M5 — Hidden Heart */
+export type HiddenHeartPersonVM = {
+  name: string;
+  need: string | null;
+  reason: string | null;
+  voice: string | null;
+};
+
+export type HiddenHeartVM = RomanticModuleBase & {
+  id: "M5";
+  me: HiddenHeartPersonVM | null;
+  partner: HiddenHeartPersonVM | null;
+  mutualGift: string | null;
+};
+
+export type WhySpecialGiftVM = {
+  from: string;
+  to: string;
+  headline: string | null;
+  body: string | null;
+};
+
+/** M6 — Special Dynamics */
+export type WhySpecialVM = RomanticModuleBase & {
+  id: "M6";
+  gifts: WhySpecialGiftVM[];
+  onlyTogether: string | null;
+  whySpecial: string | null;
+  frameDirectionLabel: string | null;
+};
+
 export type FlowNodeVM = {
   key: string;
   label: string;
@@ -137,14 +156,14 @@ export type FlowNodeVM = {
   sourceKeys: string[];
 };
 
+/** M4 — Relationship Flow */
 export type RelationshipFlowVM = RomanticModuleBase & {
-  id: "M5";
+  id: "M4";
   nodes: FlowNodeVM[];
   interrupt: { id: string; label: string } | null;
   signalChips: Array<{ key: string; label: string }>;
 };
 
-/** M6 — Conflict Translation */
 export type ConflictDialogueRowVM = {
   speakerLabel: string;
   said: string | null;
@@ -154,13 +173,15 @@ export type ConflictDialogueRowVM = {
 };
 
 export type ConflictTranslationVM = RomanticModuleBase & {
-  id: "M6";
-  /** Conflict situation headline (not the module chrome title). */
+  id: "M7";
   situationTitle: string | null;
   rows: ConflictDialogueRowVM[];
 };
 
-/** M7 — Daily Life (ordinary shared-life observations; not marriage household). */
+/**
+ * Legacy compatibility only. Romantic runtime keeps this suppressed permanently;
+ * daily-life operations belong to Marriage/Cohabitation products.
+ */
 export type DailyLifeDomainId =
   | "money_practicality"
   | "chores_structure"
@@ -176,7 +197,6 @@ export type DailyLifeDomainVM = {
   observation: string | null;
   sourceKeys: string[];
   confidence: ConfidenceLevel | null;
-  /** Deterministic owner/direction summary when known. */
   ownerDirection: string | null;
 };
 
@@ -185,12 +205,8 @@ export type DailyLifeVM = RomanticModuleBase & {
   domains: DailyLifeDomainVM[];
 };
 
-/**
- * M8 — Do / Don’t uses shared PairPrescriptionPack when available.
- * Null pack = omit (same as available:false).
- */
 export type DoDontVM = {
-  id: "M8";
+  id: "M9";
   title: string;
   available: boolean;
   confidence: ConfidenceLevel;
@@ -198,7 +214,6 @@ export type DoDontVM = {
   pack: PairPrescriptionPack | null;
 };
 
-/** M9 — Repair Guide (deterministic composer; ordered recovery sequence). */
 export type RepairStageId =
   | "pause"
   | "re_entry"
@@ -216,7 +231,7 @@ export type RepairStageVM = {
 };
 
 export type RepairGuideVM = RomanticModuleBase & {
-  id: "M9";
+  id: "M8";
   asymmetry: {
     slowerProcessor: "me" | "partner" | "balanced";
     fasterExpresser: "me" | "partner" | "balanced";
@@ -230,16 +245,14 @@ export type RepairGuideVM = RomanticModuleBase & {
   polishEligiblePaths: string[];
 };
 
-/**
- * Deferred past B3 — Next Step experiments (05A Module 9).
- * Not part of M1–M10 slot map while Repair occupies M9.
- */
 export type NextStepExperimentVM = {
   kind: "24h" | "weekly" | "sentence" | "ritual" | "question";
   text: string;
 };
 
 export type NextStepVM = {
+  id: "M10";
+  title: string;
   available: boolean;
   confidence: ConfidenceLevel;
   evidence: EvidenceRef[];
@@ -250,7 +263,6 @@ export type NextStepVM = {
   togetherStarter: string | null;
 };
 
-/** M10 — Horizon */
 export type HorizonWaypointVM = {
   period: string;
   body: string;
@@ -278,9 +290,9 @@ export type RomanticExperienceMeta = {
   accentToken: "#E2C4A8";
   /**
    * Projector generation id.
-   * B1 = "b1-skeleton"; B2 = "b2-content-projectors"; B3 = "b3-content-projectors".
+   * V2 shell behind feature-flag, deterministic-only scope.
    */
-  buildId: "b1-skeleton" | "b2-content-projectors" | "b3-content-projectors";
+  buildId: "b6-v2-ch3-m1-m10";
 };
 
 /**
@@ -290,28 +302,26 @@ export type RomanticExperienceMeta = {
 export type RomanticExperienceViewModel = {
   meta: RomanticExperienceMeta;
   opening: OpeningSceneVM;
-  /** M2 Hidden Dynamic */
-  hiddenHeart: HiddenHeartVM;
-  /** M3 What's Special */
-  whySpecial: WhySpecialVM;
-  /** M4 Difference Map */
+  /** M2 Relationship Snapshot */
+  snapshot: RelationshipSnapshotVM;
+  /** M3 Difference Map */
   differenceMap: DifferenceMapVM;
-  /** M5 Relationship Flow */
+  /** M4 Relationship Flow */
   flow: RelationshipFlowVM;
-  /** M6 Conflict */
-  conflict: ConflictTranslationVM;
-  /** M7 Daily Life */
-  dailyLife: DailyLifeVM;
-  /** M8 Do / Don't */
+  /** M5 Hidden Heart */
+  hiddenHeart: HiddenHeartVM;
+  /** M6 Special Dynamics */
+  specialDynamics: WhySpecialVM;
+  /** M7 Conflict Translation */
+  conflictTranslation: ConflictTranslationVM;
+  /** M8 Repair Guide */
+  repairGuide: RepairGuideVM;
+  /** M9 Do / Don't */
   doDont: DoDontVM;
-  /** M9 Repair Guide */
-  repair: RepairGuideVM;
-  /** Deferred Next Step (not an M1–M10 slot in B3). */
+  /** M10 Next Step */
   nextStep: NextStepVM;
-  /** M10 Horizon */
-  horizon: HorizonVM;
   /**
-   * B1–B3: always null. Shared DeepReadViewModel is connected later.
+   * B4: always null. Shared DeepReadViewModel is connected later.
    */
   deepRead: null;
   saveShare: SaveShareVM | null;
@@ -328,14 +338,14 @@ export function summarizeRomanticModuleSlots(
 ): RomanticModuleSlotSummary[] {
   return [
     { id: "M1", available: vm.opening.available },
-    { id: "M2", available: vm.hiddenHeart.available },
-    { id: "M3", available: vm.whySpecial.available },
-    { id: "M4", available: vm.differenceMap.available },
-    { id: "M5", available: vm.flow.available },
-    { id: "M6", available: vm.conflict.available },
-    { id: "M7", available: vm.dailyLife.available },
-    { id: "M8", available: vm.doDont.available },
-    { id: "M9", available: vm.repair.available },
-    { id: "M10", available: vm.horizon.available },
+    { id: "M2", available: vm.snapshot.available },
+    { id: "M3", available: vm.differenceMap.available },
+    { id: "M4", available: vm.flow.available },
+    { id: "M5", available: vm.hiddenHeart.available },
+    { id: "M6", available: vm.specialDynamics.available },
+    { id: "M7", available: vm.conflictTranslation.available },
+    { id: "M8", available: vm.repairGuide.available },
+    { id: "M9", available: vm.doDont.available },
+    { id: "M10", available: vm.nextStep.available },
   ];
 }

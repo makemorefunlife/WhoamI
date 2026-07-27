@@ -1,5 +1,5 @@
 /**
- * M4 Difference Map projector.
+ * M3 Difference Map projector.
  * Canonical comparison_table leans only — no grade, scores, or why_special copy.
  */
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";

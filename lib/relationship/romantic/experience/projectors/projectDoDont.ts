@@ -1,8 +1,8 @@
 /**
- * M8 Do / Don't projector — preventive PairPrescriptionPack only.
+ * M9 Do / Don't projector — preventive PairPrescriptionPack only.
  * Canonical deterministic signals only. section_5_action is LLM narrative and
  * is intentionally excluded so provenance is not collapsed into "deterministic".
- * No M6 dialogue lines, no M9 repair steps.
+ * No M7 dialogue lines, no M8 repair steps.
  */
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { readRomanticExpressionSpeedCanonicalProjection } from "@/lib/relationship/romantic/romanticExpressionSpeedCanonical";

@@ -49,6 +49,8 @@ Do not treat every document as equally authoritative for every question.
 
 ## `02_Relationship_UX_Bible.md`
 
+> **Filename note:** the file on disk is `02_Relationship-ux-bible.md` (hyphenated, lowercase). This is the same document; other governing docs cite it under both spellings. Treat them as one file — a rename to match this canonical name is a low-risk cleanup item still open (see `10` §1.2).
+
 ### Owns
 
 - universal relationship UX laws
@@ -110,6 +112,7 @@ It does not override Ahaitsme's governing product principles.
 - reflection and decision-support structure
 - shared cross-product experience laws
 - Relationship Insight Bible and Romantic + Marriage elaboration
+- **§13D Shared Visualization & Evidence Contract** (selective 11-axis; Psych vs Saju separation; Saju comparison-table law; visual explanation; Visual First → Explanation → Story → Action; one canonical judgment / multiple projections; type not rank; shared visual / product-specific meaning)
 
 ### Inherited by
 
@@ -128,6 +131,7 @@ It does not override Ahaitsme's governing product principles.
 - consolidating duplicated output
 - defining shared relationship components
 - reviewing whether a report feels coherent and premium
+- locking cross-product visualization and evidence laws before domain blueprints (e.g. Work `05C`)
 
 ---
 
@@ -158,6 +162,141 @@ It does not override Ahaitsme's governing product principles.
 
 ---
 
+## `06_Visual_Design_System.md` (titled internally "06. Experience Design System")
+
+> **Scope expanded 2026-07-27** (canonicalization refactor, see `10`): this document grew from a visual-tokens-only spec into the full Experience Design System — it now also owns brand identity, IA/navigation principles, and the complete report-grammar/component-verdict ledger that used to be split across this file, `05` §14–§18, and the archived Visual Foundations / Romantic module-evaluation trails (`docs/product/archive/`).
+
+### Owns
+
+- brand identity (mark, color, type) and the relationship Visual Design System (sole expression SSOT)
+- typography, color, spacing, motion, and accessibility boundaries
+- IA and navigation principles (progressive disclosure, navigation patterns, interaction safety)
+- card / section / chart / loop / evidence / empty-state anatomy — the full report grammar
+- the complete Romantic Module Visual Evaluation Ledger (§6A) and visualization concept vocabulary (§10A)
+- **Shared Visual Asset Library** (stable VA-01…VA-09 geometry IDs)
+- Save/Share/Revisit presentation rules
+- future app-shell / extensibility considerations
+- visualization decision rubric
+
+### Inherits
+
+- `05_Relationship_Product_Bible.md` (metaphor, measurement intent, §13D visualization/evidence contract)
+- `05A_Romantic_Product_Blueprint.md` (Romantic module catalog and anti-dashboard laws)
+
+### Does not own
+
+- product meaning, classifications, confidence/severity, or narrative voice
+- product-specific axes, row vocabularies, thresholds, warnings, or actions
+- current-implementation status (→ `08`) or design-exploration rationale/product-owner decisions (→ `09`)
+
+### Superseded (archived, historical only — do not cite as authority)
+
+- `docs/product/archive/ARCHIVE_Visual_Foundations.md` (ex-`06A_Visual_Foundations`) — archived; content in `06` §1, §6A, §10A
+- `docs/product/archive/ARCHIVE_Romantic_Module_Visual_Evaluation.md` (ex-`06D_Module_Evaluation`) — archived; full ledger in `06` §6A
+- `11_relationship_product_visual_blueprint_integrated.md` — reduced to a pointer; content already fully present in `05`
+
+### Use when
+
+- designing or reviewing any relationship report UI
+- choosing or rejecting a visualization
+- citing a shared VA-ID instead of inventing parallel geometry
+- defining tokens, brand values, IA/navigation patterns, empty states, or share surfaces
+- migrating legacy chrome (gauges, grade dials, traffic-light score colors)
+
+---
+
+## `05N_Ahaitsme_Narrative_Style_Bible.md`
+
+### Owns
+
+- narrator identity, tone, and emotional posture
+- evidence-aware and confidence-aware interpretation language
+- advice/action writing rules, repetition control, humor budget
+- address, naming, dignity, and bilingual meaning-parity rules
+- genre bans (fortune-telling, diagnosis, horoscope copy, personality-test copy, corporate-assessment copy, generic self-help)
+
+### Does not own
+
+- product meaning, classifications, or visual expression
+- domain-specific module catalogs (owned by `05A`–`05E`)
+
+### Known open issue
+
+- A second, structurally different document, `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` (an "Invariant Core" with register dials, domain bands, and a frozen lexicon system), is still cited by `01`, `05B`, `06B`, and `07A`. The two have not been reconciled — treat `05N` as primary since it is the version under `docs/product/` and the one required by name in design-brief work, but resolving this fully requires a product-owner decision (tracked in `09` §6.3 and `10` §10.3).
+
+### Use when
+
+- writing or reviewing any user-facing narrative copy
+- defining or auditing a domain's narrative supplement
+
+---
+
+## `08_Current_Product_Implementation_Design_Extraction.md`
+
+### Owns
+
+- **current implementation reality only** — repository-backed sitemap, user journey, IA, data contracts, UI/visualization inventory, and documentation-vs-code gaps
+- the factual Stitch/Lovable vs. legacy Space brand-baseline classification (Appendix A)
+
+### Does not own
+
+- product philosophy (→ `05`), visual/brand rule authority (→ `06`), or design intent/rationale/open decisions (→ `09`)
+
+### Use when
+
+- determining what is actually shipping today, as opposed to what a blueprint targets
+- briefing a design tool on current UI/IA reality before proposing a new one
+- auditing documentation-vs-code drift
+
+---
+
+## `09_Product_and_Design_Intent_Package.md`
+
+### Owns
+
+- product-owner decisions and the rationale that binds a design brief
+- brand-preservation rationale (token values live in `06`; as-built inventory in `08`)
+- preserve / reinterpret / do-not-invent constraints for exploration
+- unresolved decisions and inputs needed for a final brief
+- UX exploration composition models (Editorial / Exploration / Guided Discovery) and the evaluation rubric
+
+### Does not own
+
+- product philosophy or journey law (→ `05` / `05A`–`05E` / `05N`)
+- brand/visual token values or report grammar (→ `06`)
+- current-implementation fact (→ `08`)
+- cleanup / migration roadmap (→ `10`)
+
+### Use when
+
+- briefing a design tool for a new UX/UI exploration round
+- resolving a disputed design rule (see its conflict table, §2.3)
+- checking whether a given design direction is already ruled in/out by product-owner decision
+
+---
+
+## `10_Design_IA_Canonicalization_Refactor_Plan.md`
+
+### Owns
+
+- the documentation, visual-system, IA, copy, and code-path **cleanup roadmap**
+- the phased **migration roadmap** (Phase 0–9) and its sequencing/dependencies
+- **regression protection** recommendations (CI checks, forbidden-pattern tests)
+- the **archive plan** for superseded documents and dead code
+
+### Does not own
+
+- product philosophy, visual rules, current-implementation fact, or design intent/decisions — those are recorded in `05`/`06`/`08`/`09` respectively and only referenced here
+- any decision this plan doesn't have standing to make — see its own §10.3 pointer to `09` §6
+
+### Use when
+
+- planning or sequencing a documentation, visual-system, or code cleanup pass
+- deciding what to archive vs. preserve vs. delete
+- defining a CI regression check against a known-forbidden pattern (grades, traffic-light colors, dark+gold chrome, etc.)
+
+---
+
 ## `06_Romantic_Technical_Blueprint.md` / `06A_Romantic_Technical_Blueprint.md`
 
 ### Owns
@@ -176,6 +315,7 @@ It does not override Ahaitsme's governing product principles.
 
 - `05_Relationship_Product_Bible.md`
 - `05A_Romantic_Product_Blueprint.md`
+- `06_Visual_Design_System.md` (for expression constraints during implementation)
 
 ### Use when
 
@@ -189,9 +329,9 @@ It does not override Ahaitsme's governing product principles.
 
 ### Limitation
 
-Technical architecture implements product meaning.
+Technical architecture implements product meaning and visual rules.
 
-It must not redefine product meaning.
+It must not redefine product meaning or silently invent a conflicting visual language.
 
 ---
 
@@ -204,18 +344,26 @@ When multiple documents apply, use the following order:
 ↓
 02 Relationship UX Bible
 ↓
-05 Relationship Product Bible
+05 Relationship Product Bible  ·  05N Narrative Style Bible (parallel authority, voice/tone)
 ↓
-05A Romantic Product Blueprint (Romantic domain SSOT)
+05A–05E Domain Product Blueprints (domain SSOT)
 ↓
-Relationship-Specific Technical Blueprint
+06 Experience Design System (expression SSOT — brand, visual, IA/navigation, report grammar)
+↓
+06A–06E Relationship-Specific Technical Blueprints
+↓
+07A–07E Implementation Checklists (tracking only, not authority)
 ↓
 Implementation
 ```
 
-`03_Market_Research.md` provides supporting evidence and context.
+`03_Market_Research.md` provides supporting evidence and context. It is not above the governing product documents.
 
-It is not above the governing product documents.
+`08_Current_Product_Implementation_Design_Extraction.md` sits alongside this order as the **as-built reality reference** — not a governing layer, but the required cross-check before treating any target IA above as already shipped.
+
+`09_Product_and_Design_Intent_Package.md` sits above **implementation** but below the governing product/visual layers — it synthesizes them into a design brief and records product-owner decisions; it does not itself define product meaning or visual rule.
+
+`10_Design_IA_Canonicalization_Refactor_Plan.md` is process, not authority — it plans how to converge documentation and code on the order above; it does not change what the order means.
 
 ---
 
@@ -239,6 +387,12 @@ Use:
 02_Relationship_UX_Bible.md
 ```
 
+For narrator voice, tone register, or genre-ban specifics rather than UX architecture, use `05N_Ahaitsme_Narrative_Style_Bible.md` (see its "Known open issue" entry above for its unreconciled relationship to `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`).
+
+## Current-implementation vs. target-spec conflict
+
+Use `08_Current_Product_Implementation_Design_Extraction.md` to determine what is actually shipping; use the owning `05*`/`06*` document to determine what the target should be. `08` never overrides product meaning — it only prevents mistaking a target spec for shipped reality, or vice versa.
+
 ## Shared relationship-experience conflict
 
 Use:
@@ -255,6 +409,24 @@ Use:
 05A_Romantic_Product_Blueprint.md
 ```
 
+## Visual expression / UI presentation conflict
+
+Use:
+
+```text
+06_Visual_Design_System.md
+```
+
+Including Shared Visual Asset Library geometry (VA-IDs).
+
+## Shared visualization / evidence-contract conflict
+
+Use:
+
+```text
+05_Relationship_Product_Bible.md (§13D)
+```
+
 ## Romantic implementation conflict
 
 Use:
@@ -262,7 +434,7 @@ Use:
 ```text
 06_Romantic_Technical_Blueprint.md
 ```
-
+(or `06A_Romantic_Technical_Blueprint.md` when that is the active technical SSOT)
 A lower-level document may provide additional specificity.
 
 It may not silently override a higher-level principle.
@@ -315,6 +487,10 @@ Narrative may not:
 Visual components communicate meaning.
 
 They do not independently define meaning.
+
+Shared Visual Asset IDs (**VA-01…VA-09**) live in `06_Visual_Design_System.md`.  
+Cross-product visualization and evidence laws live in `05_Relationship_Product_Bible.md` §13D.  
+Domain blueprints own axes, labels, thresholds, warnings, and actions.
 
 ---
 
@@ -496,7 +672,12 @@ Use stable numbered names for governing documents.
 03_Market_Research.md
 05_Relationship_Product_Bible.md
 05A_Romantic_Product_Blueprint.md
+05N_Ahaitsme_Narrative_Style_Bible.md
+06_Visual_Design_System.md (internally titled "Experience Design System")
 06_Romantic_Technical_Blueprint.md
+08_Current_Product_Implementation_Design_Extraction.md
+09_Product_and_Design_Intent_Package.md
+10_Design_IA_Canonicalization_Refactor_Plan.md
 ```
 
 Avoid:

@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+tests/scripts/work-narrative-pilot/artifacts/
 
 # next.js
 /.next/

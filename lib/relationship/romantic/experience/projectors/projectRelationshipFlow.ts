@@ -1,5 +1,5 @@
 /**
- * M5 Relationship Flow projector.
+ * M4 Relationship Flow projector.
  * Sequence from canonical dynamics — not M2 needs or M6 dialogue copy.
  */
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";

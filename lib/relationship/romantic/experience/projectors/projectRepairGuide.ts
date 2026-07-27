@@ -1,5 +1,5 @@
 /**
- * M9 Repair Guide projector — thin wrapper around composeRepairGuide.
+ * M8 Repair Guide projector — thin wrapper around composeRepairGuide.
  */
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { composeRepairGuide } from "../composers/composeRepairGuide";

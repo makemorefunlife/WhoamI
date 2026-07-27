@@ -32,6 +32,7 @@ import type {
   WorkReportViewModel,
 } from "./workReportSectionTypes";
 import type { WorkCompareRow } from "@/lib/relationship/workColleague/sajuCompareTable";
+import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type BuildWorkReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -48,6 +49,7 @@ type SectionTitleSet = {
   comparison: string;
   roleMatrix: string;
   relationshipLoop: string;
+  deepRead: string;
   warning: string;
   prescription: string;
   conflictTrigger: string;
@@ -61,6 +63,7 @@ const SECTION_TITLES: Record<Locale, SectionTitleSet> = {
     comparison: "두 사람의 업무 스타일",
     roleMatrix: "역할 및 기여 방식",
     relationshipLoop: "함께 일할 때 반복되는 흐름",
+    deepRead: "🔍 심층 리드 — 사주가 더해주는 이야기",
     warning: "협업 안전장치",
     prescription: "실전 운영 가이드",
     conflictTrigger: "갈등 트리거",
@@ -72,6 +75,7 @@ const SECTION_TITLES: Record<Locale, SectionTitleSet> = {
     comparison: "Work Styles Compared",
     roleMatrix: "Roles & How You Each Contribute",
     relationshipLoop: "The Loop You Fall Into at Work",
+    deepRead: "🔍 Deep Read — What the Chart Adds",
     warning: "Collaboration Safeguards",
     prescription: "Playbook for Working Together",
     conflictTrigger: "Conflict Trigger",
@@ -337,6 +341,37 @@ function buildRelationshipLoopSection(
   };
 }
 
+function buildDeepReadSection(
+  report: WorkColleagueReportBody,
+  viewerIsReportA: boolean,
+  titles: SectionTitleSet,
+): WorkReportSection | null {
+  const overlay = report.meta?.business_saju_deep;
+  const nature = overlay?.section_2_nature;
+  const gap = overlay?.section_4_business_frames?.role_gap_signal;
+  const action = overlay?.section_5_action;
+
+  const vm = buildDeepReadViewModel({
+    natureA: nature?.a_nature,
+    natureB: nature?.b_nature,
+    gapSignal: gap,
+    adviceA: action?.advice_for_a,
+    adviceB: action?.advice_for_b,
+    together: action?.together,
+    togetherStarter: action?.together_starter,
+    swap: !viewerIsReportA,
+  });
+  if (!vm) return null;
+
+  return {
+    id: "deep_read",
+    type: "deep_read",
+    partNumber: 3,
+    title: titles.deepRead,
+    vm,
+  };
+}
+
 function buildWarningSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
@@ -410,6 +445,7 @@ export function buildWorkReportViewModel(
         titles,
       ),
     () => buildRelationshipLoopSection(report, titles),
+    () => buildDeepReadSection(report, viewerIsReportA, titles),
     () => buildWarningSection(report, viewerIsReportA, titles),
     () => buildPrescriptionSection(report, titles),
   ];

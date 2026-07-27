@@ -1,5 +1,5 @@
 /**
- * M6 Conflict Pattern projector.
+ * M7 Conflict Translation projector.
  * Dialogue rows + expression_speed binding. bad→said, good→better.
  * meant/heard left null in B2 (no invention).
  */
@@ -123,7 +123,7 @@ export function projectConflictPattern(
 
   return {
     ...base,
-    title: "Conflict Pattern",
+    title: "Conflict Translation",
     available: true,
     confidence,
     evidence,

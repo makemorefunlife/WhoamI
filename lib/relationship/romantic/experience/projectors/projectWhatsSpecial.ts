@@ -1,5 +1,5 @@
 /**
- * M3 What's Special projector (section_4_special_bond).
+ * M6 Special Dynamics projector (section_4_special_bond).
  * Drops relationship_formula. Uses romanticBondDisplay gates for generics.
  * Does not copy hidden mutual_gift (M2) or conflict tips into this module.
  */
@@ -169,7 +169,7 @@ export function projectWhatsSpecial(
 
   return {
     ...base,
-    title: "What's Special",
+    title: "Special Dynamics",
     available: true,
     confidence,
     evidence,

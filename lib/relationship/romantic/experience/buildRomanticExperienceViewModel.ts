@@ -1,21 +1,20 @@
 /**
- * buildRomanticExperienceViewModel — B3 content projectors for
- * M1–M10 (M7 Daily Life, M8 Do/Don't, M9 Repair). Next Step deferred.
+ * buildRomanticExperienceViewModel — Experience V2 shell (feature-flag path).
+ * Current implementation scope: M1..M10 (without Daily Life / Horizon / SaveShare rollout).
  * deepRead stays null. Does not mutate the source report.
  * No grade/ScoreBoard/formula on VM.
  */
 
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
-import { emptyNextStep } from "./projectors/_empty";
-import { projectConflictPattern } from "./projectors/projectConflictPattern";
-import { projectDailyLife } from "./projectors/projectDailyLife";
 import { projectDifferenceMap } from "./projectors/projectDifferenceMap";
-import { projectDoDont } from "./projectors/projectDoDont";
 import { projectHiddenDynamic } from "./projectors/projectHiddenDynamic";
-import { projectHorizon } from "./projectors/projectHorizon";
+import { projectConflictPattern } from "./projectors/projectConflictPattern";
+import { projectDoDont } from "./projectors/projectDoDont";
+import { projectNextStep } from "./projectors/projectNextStep";
 import { projectOpening } from "./projectors/projectOpening";
-import { projectRelationshipFlow } from "./projectors/projectRelationshipFlow";
 import { projectRepairGuide } from "./projectors/projectRepairGuide";
+import { projectRelationshipFlow } from "./projectors/projectRelationshipFlow";
+import { projectRelationshipSnapshot } from "./projectors/projectRelationshipSnapshot";
 import { projectWhatsSpecial } from "./projectors/projectWhatsSpecial";
 import type { RomanticExperienceViewModel } from "./romanticExperienceTypes";
 
@@ -35,29 +34,6 @@ function normalizeName(value: string | undefined | null, fallback: string): stri
   return trimmed || fallback;
 }
 
-function collectDialoguePhrases(
-  conflict: RomanticExperienceViewModel["conflict"],
-): string[] {
-  const out: string[] = [];
-  for (const row of conflict.rows) {
-    if (row.said) out.push(row.said);
-    if (row.better) out.push(row.better);
-  }
-  return out;
-}
-
-function collectPreventiveTexts(
-  doDont: RomanticExperienceViewModel["doDont"],
-): string[] {
-  const out: string[] = [];
-  for (const item of doDont.pack?.items ?? []) {
-    out.push(item.headline);
-    out.push(...item.do_list);
-    out.push(...item.dont_list);
-  }
-  return out;
-}
-
 export function buildRomanticExperienceViewModel(
   input: BuildRomanticExperienceViewModelInput,
 ): RomanticExperienceViewModel {
@@ -68,8 +44,7 @@ export function buildRomanticExperienceViewModel(
   const locale = input.locale?.trim() || "ko-KR";
   const viewerIsReportA = Boolean(input.viewerIsReportA);
   const report = input.report;
-
-  const conflict = projectConflictPattern({
+  const conflictTranslation = projectConflictPattern({
     report,
     nameA,
     nameB,
@@ -77,18 +52,35 @@ export function buildRomanticExperienceViewModel(
     partnerName,
     viewerIsReportA,
   });
-  const forbiddenPhrases = collectDialoguePhrases(conflict);
-
-  const doDont = projectDoDont({
+  const conflictTexts = conflictTranslation.rows
+    .flatMap((row) => [row.said, row.better])
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+  const repairGuide = projectRepairGuide({
     report,
     nameA,
     nameB,
     myName,
     partnerName,
     viewerIsReportA,
-    forbiddenPhrases,
+    locale,
   });
-  const preventiveTexts = collectPreventiveTexts(doDont);
+  const repairTexts = repairGuide.stages.flatMap((stage) =>
+    [stage.body, stage.speakable].filter(
+      (value): value is string => typeof value === "string" && value.trim().length > 0,
+    ),
+  );
+  const doDontInput = {
+    report,
+    nameA,
+    nameB,
+    myName,
+    partnerName,
+    viewerIsReportA,
+    forbiddenPhrases: conflictTexts,
+    repairTexts,
+  };
+  const doDont = projectDoDont(doDontInput);
+  const nextStep = projectNextStep({ doDont });
 
   return {
     meta: {
@@ -99,22 +91,13 @@ export function buildRomanticExperienceViewModel(
       nameB,
       locale,
       accentToken: "#E2C4A8",
-      buildId: "b3-content-projectors",
+      buildId: "b6-v2-ch3-m1-m10",
     },
     opening: projectOpening({ report, myName, partnerName }),
-    hiddenHeart: projectHiddenDynamic({
+    snapshot: projectRelationshipSnapshot({
       report,
-      myName,
-      partnerName,
-      viewerIsReportA,
-    }),
-    whySpecial: projectWhatsSpecial({
-      report,
-      myName,
-      partnerName,
       nameA,
       nameB,
-      viewerIsReportA,
       locale,
     }),
     differenceMap: projectDifferenceMap({
@@ -130,27 +113,25 @@ export function buildRomanticExperienceViewModel(
       partnerName,
       viewerIsReportA,
     }),
-    conflict,
-    dailyLife: projectDailyLife({
+    hiddenHeart: projectHiddenDynamic({
       report,
-      viewerIsReportA,
       myName,
       partnerName,
-      locale,
+      viewerIsReportA,
     }),
-    doDont,
-    repair: projectRepairGuide({
+    specialDynamics: projectWhatsSpecial({
       report,
+      myName,
+      partnerName,
       nameA,
       nameB,
-      myName,
-      partnerName,
       viewerIsReportA,
       locale,
-      preventiveTexts,
     }),
-    nextStep: emptyNextStep(),
-    horizon: projectHorizon({ report }),
+    conflictTranslation,
+    repairGuide,
+    doDont,
+    nextStep,
     deepRead: null,
     saveShare: null,
   };

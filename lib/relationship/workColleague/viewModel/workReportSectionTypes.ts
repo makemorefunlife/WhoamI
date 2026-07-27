@@ -26,6 +26,7 @@ import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/ty
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { WorkCompareRowId } from "@/lib/relationship/workColleague/sajuCompareTable";
+import type { DeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 /** viewer-first로 이미 정렬된 사람 슬롯 — me/partner 스왑은 어댑터에서 1회만 수행 */
 export type PersonSlot<T> = { me: T; partner: T };
@@ -140,6 +141,16 @@ export type PrescriptionSection = BaseSection & {
   weeklyCheckIn?: PairPrescriptionItem;
 };
 
+/**
+ * meta.business_saju_deep LLM explain overlay — attach-only 이후 처음 렌더.
+ * CE 판정을 재분류하지 않는다(explain-only); 원본 스키마는
+ * lib/prompts/relationshipPremium/businessSajuDeep/outputSchema.ts.
+ */
+export type DeepReadSection = BaseSection & {
+  type: "deep_read";
+  vm: DeepReadViewModel;
+};
+
 export type WorkReportSection =
   | SnapshotSection
   | PsychRadarSection
@@ -147,6 +158,7 @@ export type WorkReportSection =
   | ComparisonSection
   | RoleMatrixSection
   | RelationshipLoopSection
+  | DeepReadSection
   | WarningSection
   | PrescriptionSection;
 

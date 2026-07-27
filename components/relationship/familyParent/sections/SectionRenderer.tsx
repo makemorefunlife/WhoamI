@@ -26,6 +26,7 @@ import type {
   ChildDnaSection,
   CompareTableSection,
   DeEscalationSection,
+  DeepReadSection,
   DestinySection,
   FamilyReportSection,
   FamilyReportViewModel,
@@ -40,6 +41,7 @@ import type {
   SosScriptSection,
   TalentSection,
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
+import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("family").accent;
@@ -317,6 +319,27 @@ function FilialFrequencyCard({ section }: { section: FilialFrequencySection }) {
   );
 }
 
+// ---- Part 4a: 심층 리드 (family_saju_deep 오버레이) ---------------------------
+
+function DeepReadSectionCard({ section }: { section: DeepReadSection }) {
+  const t = useMessages().relationshipDrilldown.family;
+  return (
+    <DeepReadCard
+      vm={section.vm}
+      accentColor={ACCENT}
+      labels={{
+        cardTitle: section.title,
+        voiceMe: t.deepReadVoiceParentLabel,
+        voicePartner: t.deepReadVoiceChildLabel,
+        pattern: t.deepReadPatternLabel,
+        adviceMe: t.deepReadAdviceParentLabel,
+        advicePartner: t.deepReadAdviceChildLabel,
+        together: t.deepReadTogetherLabel,
+      }}
+    />
+  );
+}
+
 // ---- Part 4: 운명적 케미 + 부모 렌즈 + 미래 보답 ------------------------------
 
 function DestinyCard({ section }: { section: DestinySection }) {
@@ -486,6 +509,8 @@ export function FamilyReportSectionCard({
       return <FamilyRoleCard section={section} />;
     case "filial_frequency":
       return <FilialFrequencyCard section={section} />;
+    case "deep_read":
+      return <DeepReadSectionCard section={section} />;
     case "destiny":
       return <DestinyCard section={section} />;
     case "filial_reward":

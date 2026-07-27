@@ -24,6 +24,7 @@ import type {
 } from "@/lib/relationship/marriage/homeDeEscalationPrescriptions";
 import type { CohabitationPrescriptionItem } from "@/lib/relationship/marriage/cohabitationPrescriptionTypes";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
+import type { DeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type PersonSlot<T> = { me: T; partner: T };
 
@@ -149,12 +150,23 @@ export type PrescriptionSection = BaseSection & {
   items: CohabitationPrescriptionItem[];
 };
 
+/**
+ * meta.married_saju_deep LLM explain overlay — attach-only 이후 처음 렌더.
+ * CE 판정을 재분류하지 않는다(explain-only); 원본 스키마는
+ * lib/prompts/relationshipPremium/marriedSajuDeep/outputSchema.ts.
+ */
+export type DeepReadSection = BaseSection & {
+  type: "deep_read";
+  vm: DeepReadViewModel;
+};
+
 export type MarriageReportSection =
   | OriginStorySection
   | HouseholdSnapshotSection
   | CompareTableSection
   | PsychRadarSection
   | MoneyChoresSection
+  | DeepReadSection
   | BedroomSection
   | HomeDnaSection
   | ParentingSection

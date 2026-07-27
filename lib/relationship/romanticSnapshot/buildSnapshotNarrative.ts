@@ -122,8 +122,8 @@ export function interpretTopic(
     );
     const extra = pick(
       locale,
-      risk < 55 ? " Tension runs low, so it's easy to just enjoy the butterflies." : "",
-      risk < 55 ? " 긴장은 낮은 편이라, 설레는 마음을 즐기기 좋아요." : "",
+      risk < 55 ? " Sensitivity runs low, so it's easy to just enjoy the butterflies." : "",
+      risk < 55 ? " 예민은 낮은 편이라, 설레는 마음을 즐기기 좋아요." : "",
     );
     return {
       topic: gauge.topic,
@@ -142,19 +142,19 @@ export function interpretTopic(
     const core = pick(
       locale,
       benefit >= 68
-        ? `Even when matching daily life and the future, attraction ${activation} · synergy ${benefit} keeps a sense of stability with you.`
+        ? `Even when matching daily life and the future, attraction ${activation} · chemistry ${benefit} keeps a sense of stability with you.`
         : `When matching your everyday rhythm, attraction ${activation} holds steady, leaving plenty of room to tune it further.`,
       benefit >= 68
-        ? `일상·미래를 맞출 때도 끌림 ${activation} · 시너지 ${benefit}로 안정감이 따라와요.`
-        : `생활 리듬을 맞출 때 끌림 ${activation}이 버텨 주어, 조율할 여지가 충분해요.`,
+        ? `일상·미래를 맞출 때도 호감 ${activation} · 케미 ${benefit}로 안정감이 따라와요.`
+        : `생활 리듬을 맞출 때 호감 ${activation}이 버텨 주어, 조율할 여지가 충분해요.`,
     );
     const balance = pick(
       locale,
       risk >= 58
-        ? ` There may be occasional friction (tension ${risk}), but the care you have for each other makes this a good stage to find balance.`
+        ? ` There may be occasional friction (sensitivity ${risk}), but the care you have for each other makes this a good stage to find balance.`
         : " Respecting each other's pace makes this a good foundation for the long run.",
       risk >= 58
-        ? ` 가끔 신경전(긴장 ${risk})이 있어도, 서로를 향한 마음이 있어 균형을 찾기 좋은 단계예요.`
+        ? ` 가끔 신경전(예민 ${risk})이 있어도, 서로를 향한 마음이 있어 균형을 찾기 좋은 단계예요.`
         : " 서로의 속도를 존중하면 오래 가기 좋은 흐름이에요.",
     );
     return {
@@ -176,17 +176,17 @@ export function interpretTopic(
       ? `Even when opinions clash, attraction (${activation}) sticks around, so the relationship doesn't break easily.`
       : `Even when conflict comes up, your feelings for each other tend not to bottom out.`,
     activation >= 65
-      ? `의견이 부딪혀도 끌림(${activation})은 남아 있어, 관계가 쉽게 끊기지는 않아요.`
+      ? `의견이 부딪혀도 호감(${activation})은 남아 있어, 관계가 쉽게 끊기지는 않아요.`
       : `갈등이 와도 서로에 대한 마음이 바닥까지 떨어지지 않는 편이에요.`,
   );
   const caution = pick(
     locale,
     benefit <= 45
-      ? ` Synergy (${benefit}) dips a bit at times like this — pause a beat instead of a sharp word and it recovers quickly.`
-      : ` Synergy ${benefit} · tension ${risk} — acknowledging your differences can actually deepen the bond.`,
+      ? ` Chemistry (${benefit}) dips a bit at times like this — pause a beat instead of a sharp word and it recovers quickly.`
+      : ` Chemistry ${benefit} · sensitivity ${risk} — acknowledging your differences can actually deepen the bond.`,
     benefit <= 45
-      ? ` 이때는 시너지(${benefit})가 잠깐 낮아지니, 날카로운 말 대신 한 박자 쉬었다가 말하면 금방 회복돼요.`
-      : ` 시너지 ${benefit} · 긴장 ${risk} — 서로의 다름을 인정하면 오히려 깊어질 수 있어요.`,
+      ? ` 이때는 케미(${benefit})가 잠깐 낮아지니, 날카로운 말 대신 한 박자 쉬었다가 말하면 금방 회복돼요.`
+      : ` 케미 ${benefit} · 예민 ${risk} — 서로의 다름을 인정하면 오히려 깊어질 수 있어요.`,
   );
   const growth = pick(
     locale,

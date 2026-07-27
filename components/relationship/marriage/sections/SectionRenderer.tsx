@@ -22,6 +22,7 @@ import PairPrescriptionSection from "@/components/relationship/shared/PairPrescr
 import type {
   BedroomSection,
   CompareTableSection,
+  DeepReadSection,
   FamilyBoundarySection,
   HomeDnaSection,
   MarriageReportSection,
@@ -36,6 +37,7 @@ import type {
   WarningSection,
   WeatherForecastSection,
 } from "@/lib/relationship/marriage/viewModel/marriageReportSectionTypes";
+import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("cohabitation").accent;
@@ -192,6 +194,27 @@ function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
         ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
+  );
+}
+
+// ---- Part 3a: 심층 리드 (married_saju_deep 오버레이) -------------------------
+
+function DeepReadSectionCard({ section }: { section: DeepReadSection }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  return (
+    <DeepReadCard
+      vm={section.vm}
+      accentColor={ACCENT}
+      labels={{
+        cardTitle: section.title,
+        voiceMe: t.deepReadVoiceMeLabel,
+        voicePartner: t.deepReadVoicePartnerLabel,
+        pattern: t.deepReadPatternLabel,
+        adviceMe: t.deepReadAdviceMeLabel,
+        advicePartner: t.deepReadAdvicePartnerLabel,
+        together: t.deepReadTogetherLabel,
+      }}
+    />
   );
 }
 
@@ -508,6 +531,8 @@ export function MarriageReportSectionCard({
   switch (section.type) {
     case "origin_story":
       return <OriginStoryCard section={section} names={names} />;
+    case "deep_read":
+      return <DeepReadSectionCard section={section} />;
     case "compare_table":
       return <CompareTableCard section={section} viewerIsReportA={viewerIsReportA} names={names} />;
     case "psych_radar":

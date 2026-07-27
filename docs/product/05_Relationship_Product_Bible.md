@@ -193,6 +193,28 @@ Ahaitsme Relationship is not a compatibility verdict.
 
 It is a guided discovery experience that gives users three rewards:
 
+## 2.0 Shared Product Mission
+
+Every Ahaitsme relationship product—Romantic, Marriage / Cohabitation, Friend, Work, Family (Child / Parent), and future domains—serves one mission:
+
+> We analyze the **relationship**, not the worth of the people in it.
+> We seek **understanding**, not a verdict.
+> Understanding reduces **unnecessary relational friction**.
+> Clearer understanding supports clearer **communication**.
+> Clearer communication supports better **decisions**.
+> Better decisions help relationships become healthier and more satisfying.
+
+This mission does not change domain questions, modules, or stakes (see §0A.3 and domain Blueprints). It binds how every product must behave.
+
+### Mission laws (shared)
+
+1. **Relationship is the subject.** Individual traits appear only to explain what happens between people (§2.4, §3).
+2. **Difference is not defect.** Variation may create attraction, complementarity, or friction—but difference alone is never failure, inferiority, or a reason to rank people (see also severity S1 in the measurement rules).
+3. **Guide action after recognition.** Reports must move users toward translation, repair, or wiser structure—not stop at personality description (§2.3, §2.4).
+4. **AI explains evidence; it does not judge people.** Language generation may narrate deterministic findings. It must not invent classifications, ranks, moral verdicts, or destiny claims (see LLM / evidence ownership later in this Bible).
+
+Recognition, Explanation, and Possibility (§2.1–2.3) are the user’s rewards for this mission. The Experience Constitution (§2.4) remains binding.
+
 ## 2.1 Recognition
 
 > “This really sounds like us.”
@@ -230,11 +252,14 @@ Advice has no value until recognition has occurred. Create “That’s exactly u
 ### Honest confidence
 Never pretend certainty where it does not exist. Unknown is better than fabricated precision. Confidence changes tone; it never changes facts.
 
+### Visual First → Explanation → Story → Action
+Major relationship visuals are navigation, not decoration. Within the first few seconds, the user should grasp the core insight the visual exists to answer. Then expand into explanation, story, and action—not the reverse. See §13D.
+
 ### Human understanding
 The experience should feel like reading an exceptional editor—not software, not a textbook, not fortune telling.
 
 ### One product family, distinct products
-Shared feel and shared laws; different life questions and module sets per product (see §0A and §19).
+Shared feel and shared laws; different life questions and module sets per product (see §0A and §19). Shared visual **geometry** (Visual Asset Library in `06_Visual_Design_System.md`) never forces shared axes, labels, thresholds, warnings, or actions.
 
 ---
 
@@ -371,6 +396,14 @@ Across products and surfaces, preserve:
 ```text
 Result → Evidence → Meaning → Action
 ```
+
+For **major visuals** specifically, the binding UX law is:
+
+```text
+Visual First → Explanation → Story → Action
+```
+
+The visual must answer one human question immediately. Narrative and action follow; they do not precede an unexplained chart. Full contract: §13D.
 
 Domain Blueprints must **not** replace this hierarchy, treat domain differences as copy-only substitutions under one identical module set, merge Romantic with Marriage / Cohabitation, or collapse Family Child and Family Parent into one undifferentiated report.
 
@@ -1318,11 +1351,15 @@ Avoid undefensible precision (arbitrary decimals, rankings without a valid popul
 
 The 11-axis system is an **analysis foundation**, not automatic user navigation.
 
+**Evidence identity (locked):** These axes are **real-world survey / psych evidence**. They must never be described, stored, labeled, or presented as if they were derived from Saju.
+
 Axes: stimulation, self_control, practicality, structure, empathy, conflict_style, resilience, recognition, energy_style, thinking_style, decision_style.
 
 Users arrive with relationship questions, not “What is our self_control score?” Translate axes into relationship questions.
 
 **Usage roles:** evidence · comparison · explanation · deep reference. Do not create 11 equal report sections.
+
+**Selective 11-axis law (summary):** A product or module may use an axis in a primary narrative section only when it answers a real user question, changes interpretation or advice, has supported direction, and does not duplicate another visible insight. An expandable overview may show all eleven when useful. Full law: §13D.1.
 
 **Promotion rules:** promote an axis only when materially different, unusually strong/weak for both, directly relevant to a major pattern, supported by context, and useful to a current user question.
 
@@ -1330,7 +1367,7 @@ Users arrive with relationship questions, not “What is our self_control score?
 
 Deterministic systems own axis values, differences, thresholds, classifications, confidence, eligible interpretations. Narrative may explain meaning but must not invent values, reverse direction, create unsupported classifications, promote ineligible axes, or imply clinical diagnosis.
 
-Whether the 11-axis **radar chart** remains as an optional evidence companion is still a UI validation item (§25); the product rule that axes are subordinate evidence is locked.
+Whether the 11-axis **radar chart** remains as an optional evidence companion is still a UI validation item (§25); the product rule that axes are subordinate evidence is locked. Prefer shared asset **VA-01** (see Visual Asset Library in `06`) with product-owned axis selection.
 
 ## 13C.5 Chart selection by question (intent)
 
@@ -1361,255 +1398,114 @@ Do not reduce to extrovert/introvert, active/passive, or social/antisocial. When
 
 ---
 
-# 14. Visual Language Decision
+# 13D. Shared Visualization & Evidence Contract
 
-The product should not choose one metaphor for every chapter.
+These laws bind **every** relationship product (Romantic, Marriage / Cohabitation, Friend, Work, Family, and future domains). Domain Blueprints own which questions, axes, rows, thresholds, warnings, and actions apply. They may not weaken these laws.
 
-A single global metaphor would either become repetitive or distort certain insights.
+Expression geometry and stable asset IDs live in `06_Visual_Design_System.md` (**Shared Visual Asset Library**). Product meaning does not.
 
-**Implementation detail** (type, color tokens, animation curves, breakpoints) belongs in `06_Visual_Design_System.md`. This section locks **product metaphor intent** only.
+## 13D.1 Selective 11-axis law
 
-## 14.1 Recommended System: Organic Editorial Hybrid
+The 11-axis system is a shared **real-world psych / survey** evidence system (§13C.4).
 
-### Primary atmosphere
-**Fluid Dynamics**
+A product or module may use an axis in a **primary narrative section** only when:
 
-Use for:
-- emotional climate,
-- mutual influence,
-- blended states,
-- chemistry,
-- subtle overlap.
+1. it answers a real user question,
+2. it changes interpretation or advice,
+3. its direction is supported,
+4. and it is not duplicating another visible insight.
 
-### Structural relationship metaphor
-**Celestial / Binary Orbit**
+All eleven axes may appear in an **expandable overview** if useful. Primary sections must not dump all eleven merely because the data exists.
 
-Use for:
-- autonomy and connection,
-- optimal distance,
-- mutual gravity,
-- closeness rhythms.
+## 13D.2 Evidence separation law
 
-### Conflict and repair metaphor
-**Threads / Tension / Mending**
+Psych and Saju are **independent evidence families**.
 
-Use for:
-- friction loop,
-- emotional carrying load,
-- repair,
-- shared history.
+The system must preserve:
 
-### Journey metaphor
-**Topography**
+- source identity,
+- provenance,
+- confidence,
+- contradiction,
+- and source-specific limitations.
 
-Use sparingly for:
-- becoming,
-- long-term development,
-- transition from current pattern to healthier pattern.
+The UI may place Psych and Saju near each other for comparison. It must **not** visually or narratively imply that one produced the other. Labels, chips, and methodology copy must keep source identity readable.
 
-## 14.2 Why Not One Direction
+## 13D.3 Saju comparison-table law
 
-- Fluid systems communicate feeling but not chronology or structure well.
-- Orbits communicate distance but can feel cold and imply a center.
-- Threads communicate history and repair but can clutter mobile layouts.
-- Topography communicates journey but risks gamification.
+Every relationship product may use a Saju-derived two-person comparison table (**VA-02**) when it improves fast comprehension.
 
-Therefore, these should function as a **coherent visual vocabulary**, not competing themes.
+The table must:
 
-## 14.3 Shared style intent (product rules)
+- compare supported **tendencies**, not fixed identities,
+- explain A, B, and what happens **between** them,
+- distinguish similarity, complement, translation need, and friction,
+- avoid good/bad or winner/loser framing,
+- avoid decorative elemental mysticism,
+- include human interpretation,
+- and link to a later narrative, scenario, or action.
 
-- soft but not vague,
-- premium but not mystical kitsch,
-- emotionally warm but not childish,
-- organic motion with reduced-motion alternatives,
-- no red/green judgment coding,
-- no one person visually dominating as the “main” person,
-- no ornamental animation that does not clarify meaning,
-- every visual answers one explicit question.
+Current domain table builders are **implementation evidence**, not automatic shared canon. Each product Blueprint locks its row vocabulary and questions.
 
-Visual hierarchy of emphasis (product):
+## 13D.4 Visual explanation law
+
+No radar, chart, map, axis, score, or table is self-explanatory.
+
+Every major visual must state:
+
+1. what it represents,
+2. what each axis or direction means,
+3. why the pair appears in that position / pattern,
+4. and what the user should do with the insight.
+
+## 13D.5 Visual First → Explanation → Story → Action
 
 ```text
-Interpretation → Key pattern → Meaningful measurement → Supporting evidence → Methodology
+Visual First → Explanation → Story → Action
 ```
 
-Visual intensity should decrease as technical detail increases.
+Users should understand the core insight within the first few seconds. Visuals are **navigation**, not decoration. Every major visual answers **one** human question before expanding into narrative and action (see also §2.4, §4.5).
 
-The experience should communicate calm authority, warmth, clarity, editorial quality, and emotional intelligence—not a medical dashboard, astrology generator, enterprise analytics tool, game result screen, compatibility quiz, or social-media personality test.
+## 13D.6 One canonical judgment, multiple projections
 
-Token-level color, type, spacing, motion curves, and responsive layout → `06_Visual_Design_System.md`.
+A conclusion shown in a radar, comparison table, badge, narrative card, or guide must come from **one** canonical judgment or evidence package.
 
----
+The client must not reinterpret raw values into a second, competing classification. Multiple surfaces may **project** the same judgment; they must not invent parallel judgments.
 
-# 15. Insight-to-Visual Pattern Map
+## 13D.7 Type, not rank
 
-| Insight | Recommended Pattern | Interaction |
-|---|---|---|
-| Relationship Identity | Paired emblem / dynamic mark | subtle reveal |
-| Emotional Climate | Gradient field | scroll blend / focus labels |
-| Mutual Activation | Dual flow | directional tap |
-| Social Energy | Three-zone ecology | toggle A / B / Together |
-| Synergy & Drain | Resource trade-off | reveal same-root mechanism |
-| Why This Person | Constellation cause chain | progressive disclosure |
-| Optimal Distance | Binary orbit / optimal band | adjust closeness carefully |
-| Role Formation | Dynamic role field | scenario toggle |
-| Balance of Power | Situational influence map | context tabs |
-| Friction Loop | Feedback loop | pause / interrupt point |
-| Hidden Need | Outer/inner layer | tap to reveal meaning |
-| Reassurance Signal | Signal pair | compare offered vs received |
-| Recovery Speed | Dual curves | time progression |
-| Residual Emotion | Emotional tail | fade duration |
-| Repair Path | Mending sequence | slow guided reveal |
-| Becoming | Topographic routes | current / possible toggle |
-| Daily Life | Scenario system | situation cards |
+Colors, quadrants, labels, and shapes identify collaboration or relationship **patterns**—not grades.
 
----
+Red or danger styling is reserved for an independently supported warning, strain, or risk overlay—not for ordinary difference, tension-of-style, or gap magnitude alone.
 
-# 16. Module and Component Blueprint
+## 13D.8 Shared visual, product-specific meaning
 
-## 16.1 New Romantic Page Architecture
+Reusable visual assets (**VA-01…**) may be shared across products.
 
-The current monolithic `RomanticSajuDeepReportView` should be decomposed.
+Each product owns its:
 
-Recommended structure:
+- axes or row dimensions,
+- labels,
+- narrative meaning,
+- interpretation thresholds,
+- warning overlays,
+- and action consequences.
 
-```text
-RomanticReportShell
-├─ RelationshipTrailerSection
-├─ RelationshipIdentitySection
-├─ CompositionSection
-├─ RelationalAlchemySection
-│  ├─ EmotionalClimateModule
-│  ├─ MutualActivationModule
-│  ├─ SocialEnergyModule
-│  ├─ SynergyDrainModule
-│  ├─ WhyThisPersonDeepRead
-│  └─ OptimalDistanceModule
-├─ FrictionLoopSection
-├─ HiddenHeartSection
-├─ RepairResilienceSection
-├─ BecomingSection
-├─ RealLifeTranslationSection
-└─ ReflectionSection
-```
-
-## 16.2 Existing Asset Decisions
-
-### KEEP
-- shared card/surface/layout primitives,
-- accessible responsive infrastructure,
-- StrengthWeakness where it supports a story,
-- Action Guide,
-- ScoreDefinitions only where technically necessary and not product-facing,
-- base loading and navigation chrome.
-
-### REFINE
-- Hero → Relationship Trailer,
-- Chemistry → Emotional Climate / Mutual Activation,
-- Comparison tables → selective Composition support,
-- Hidden Hearts → Hidden Heart insight layer,
-- Dialogue tables → context-specific script support,
-- Bond / Dynamics / Frames → remap to insight architecture.
-
-### REPOSITION
-- TriScore Snapshot → optional secondary evidence, not opening,
-- Deep Read → Why This Person,
-- Loop → Friction Loop,
-- PairPrescription → Repair & Translation,
-- ConflictScriptTable → repair scenario support.
-
-### REBUILD
-- part headings,
-- canonical signal presentation,
-- timeline,
-- scenario system,
-- monolithic report view.
-
-### REMOVE
-- letter-grade badge,
-- dashboard-first score framing,
-- unused ShareSummaryCard,
-- ConflictTriggerBanner if it duplicates the loop insight.
+Do not force Romantic logic onto Work, Friend, or Family. Shared geometry never implies shared interpretation.
 
 ---
 
-# 17. Canonical Signal Presentation
+# 14. Visual Language, Pattern Map, Component Grammar, and Motion (moved to `06`)
 
-Current canonical signals should stop appearing as bold suffixes inside unrelated prose.
+*(Consolidated into `06_Visual_Design_System.md` (Experience Design System). This Bible owns product **meaning**; `06` owns visual **expression**. Items below keep one canonical home via pointer, not restatement.)*
 
-## 17.1 Signal Families
+- **Visual metaphor vocabulary** (Fluid Dynamics / Celestial-Orbit / Threads / Topography, and which chapter each serves) → `06` §5 "Organic Editorial Hybrid."
+- **Insight-to-visual pattern map** (which pattern renders which named insight, e.g. Emotional Climate → Gradient Field) → `06` §5A. The insight *definitions* themselves (user question, emotional value, evidence, narrative rules) remain owned here, in §12 Relationship Insight Bible.
+- **Romantic page/module architecture and the full per-module KEEP/REFINE/REPOSITION/REBUILD/REMOVE ledger** → `06` §6A "Romantic Module Visual Evaluation Ledger" (the sole canonical copy; earlier trails archived under `docs/product/archive/`).
+- **Canonical signal display rule** (evidence-backed micro-insight, never a badge/rank) → `06` §4.6. The signal *families* that exist for Romantic (Balance of Power, Recovery Speed, Reassurance Signal, Unconscious Role Play, Residual Emotion, Expression Speed, Compare Lean, Saju Frame Direction) remain product meaning and are listed once, with their per-module placement, in `06` §6A.11 — that is now the single canonical placement table (a near-duplicate placement table formerly here has been removed).
+- **Progressive disclosure, motion intent, reduced motion, interaction safety, and cultural/localization adaptation for navigation** → `06` §2A "IA and Navigation Principles" and §3.4/§3.5/§9. The underlying product law — recognition before advice, meaning before measurement, information hierarchy stays consistent across breakpoints — remains owned here (§2.4, §13A) and is not repeated in `06`; `06` owns only the structural/navigation expression of that law.
 
-- Balance of Power
-- Recovery Speed
-- Reassurance Signal
-- Unconscious Role Play
-- Residual Emotion
-- Expression Speed
-- Compare Lean
-- Saju Frame Direction
-
-## 17.2 Display Rule
-
-Canonical signals are **evidence-backed micro-insights**, not badges or rankings.
-
-Recommended UI:
-
-- small contextual signal line,
-- directional A→B/B→A when supported,
-- expandable “Why we see this” evidence layer,
-- no score,
-- no universal signal dashboard.
-
-## 17.3 Placement
-
-Signals should appear where they answer a relevant story question:
-
-| Signal | Placement |
-|---|---|
-| Balance of Power | Role Formation / Marriage Decision & Power |
-| Recovery Speed | Repair & Resilience |
-| Reassurance Signal | Hidden Heart / Repair |
-| Role Play | Mutual Activation / Role Formation |
-| Residual Emotion | Repair |
-| Expression Speed | Friction Loop / Repair |
-| Compare Lean | Composition |
-| Saju Frame Direction | Deep Read evidence layer |
-
----
-
-# 18. Progressive Disclosure & Interaction Safety
-
-## 18.1 Progressive disclosure
-
-Do not place the whole relational system on one screen.
-
-- reveal one question at a time,
-- use sticky visuals only when they improve understanding,
-- use pauses after emotionally dense material,
-- do not use aggressive scroll-jacking,
-- provide clear textual meaning independent of motion.
-
-Device-specific layout patterns and accessibility implementation → Visual Design System / engineering standards. Product law: the **information hierarchy remains consistent** across mobile and desktop; desktop must not become a dense dashboard merely because space is available.
-
-## 18.2 Motion (product intent)
-
-Motion should communicate approach/distance, activation, escalation, recovery, blending, interruption. Motion should never exist solely to feel “premium,” dramatize scores, simulate certainty, gamify serious findings, or delay access to content.
-
-## 18.3 Reduced motion
-
-All motion-based meaning must have a static alternative (labeled states, directional indicators, sequential cards, accessible descriptions). Implementation details → Visual Design System.
-
-## 18.4 Interaction safety
-
-Avoid interactions that imply users can physically “fix” a relationship with one gesture.
-
-The proposed hold-to-mend Kintsugi experiment is emotionally compelling, but it should be treated as a prototype, not an immediate production requirement. Repair must remain practical and relational, not magical.
-
-## 18.5 Localization & cultural adaptation
-
-Localization is not direct translation. Shared structure remains stable; examples and assumptions may adapt. Areas requiring cultural care include independence, family involvement, social obligations, gender expectations, household roles, marriage expectations, workplace hierarchy, emotional directness, public vs private affection, and financial coordination.
-
-Do not assume one cultural pattern is universally healthy. Distinguish difference, preference, cultural norm, coordination burden, and harmful behavior—without erasing genuine strain.
+The product-level style intent this section used to state directly is unchanged and is restated briefly, since it is genuinely product meaning, not expression detail: the experience must communicate calm authority, warmth, clarity, editorial quality, and emotional intelligence — never a medical dashboard, astrology generator, enterprise analytics tool, game result screen, compatibility quiz, or social-media personality test. `06` §1 operationalizes this into specific forbidden tells and tokens.
 
 ---
 
@@ -1848,6 +1744,8 @@ LLM may not invent:
 
 # 23. Visual and Editorial Guardrails
 
+*(This list states product-level judgment guardrails — the "never/carefully/always" the whole experience must satisfy. The corresponding implementation-level detail — the six forbidden visual "tells," exact token/motion rules — lives in `06` §1.1 and §3; the two lists are complementary, not duplicates, and neither restates the other's specifics.)*
+
 ## 23.1 Never Use
 
 - grade badges,
@@ -2041,7 +1939,7 @@ Policy: merge unique valid product decisions; exclude visual-implementation deta
 | Part 1 Constitution / goals / inheritance | Represented in §0, §0A, §2.4 |
 | Part 2 Journey stages & integrity | Represented in §4.2–4.5 (mapped to Final Journey) |
 | Part 3 Information Architecture | Represented in §13A |
-| Part 4 Component constitution & stack | Represented in §13B, §16 (architecture), §13C |
+| Part 4 Component constitution & stack | Represented in §13B, §13C (module visual ledger → `06` §6A) |
 | Measurement / false precision / indices | Represented in §13C |
 | 11-axis policy | Represented in §13C.4 |
 | Narrative ownership / contracts | Represented in §13.6 (+ §22.4) |
@@ -2050,8 +1948,8 @@ Policy: merge unique valid product decisions; exclude visual-implementation deta
 | Digest vs deep | Represented in §13A.7 |
 | Suppression / cross-product consistency | Represented in §13A.8, §19.5–19.6 |
 | Social energy as dynamic | Represented in §6.3, §13C.6 |
-| Implementation mapping / canonical insight fields | Partially in §12, §17, §22; field schema intent in §12 + §22.2 |
-| Mobile/desktop/a11y/color/motion implementation | **Excluded** → `06_Visual_Design_System.md` (product intent kept in §14, §18) |
+| Implementation mapping / canonical insight fields | Partially in §12, §22; signal families now in §14 (pointer to `06` §6A.11 for placement); field schema intent in §12 + §22.2 |
+| Mobile/desktop/a11y/color/motion implementation | **Excluded** → `06` Experience Design System (product intent kept in §14 pointer + §2.4/§13A) |
 | Local validation checklist | Represented in §28 |
 | Domain-specific module catalogs | **Not merged as catalogs** → domain Blueprints (`05A`, etc.) |
 | LLM prompts / rule-engine code rules | **Excluded** → technical / prompt SSOTs |

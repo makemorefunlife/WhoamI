@@ -24,6 +24,8 @@ export type TriScoreLegendItem = {
   label: string;
   emoji: string;
   meaning: string;
+  /** 점수 옆·상단 범례용 초단 요약 (없으면 meaning 앞머리 사용) */
+  glance?: string;
 };
 
 export type TriScoreTopicConfig = {
@@ -53,18 +55,21 @@ const ROMANTIC_CONFIG: TriScoreKindConfig = {
     {
       label: "호감",
       emoji: "🔥",
+      glance: "끌림·만나고 싶음",
       meaning:
         "마음이 가고, 만나고 싶고, 호감·매력이 느껴지는 정도",
     },
     {
       label: "케미",
       emoji: "🧩",
+      glance: "잘 맞음·시너지",
       meaning:
         "함께 있을 때 편하고, 잘 맞고, 서로에게 도움이 되는 정도 (에너지가 맞는 느낌에 가깝게 보시면 돼요)",
     },
     {
       label: "예민",
       emoji: "⚡",
+      glance: "마찰·스트레스 · 높을수록 주의",
       meaning: "예민해지고, 스트레스·마찰·부딪힘이 커지는 정도",
     },
   ],
@@ -287,16 +292,19 @@ const ROMANTIC_CONFIG_EN: TriScoreKindConfig = {
     {
       label: "Attraction",
       emoji: "🔥",
+      glance: "Pull · want to meet",
       meaning: "How much you're drawn in, want to meet, and feel attraction/charm.",
     },
     {
       label: "Chemistry",
       emoji: "🧩",
+      glance: "Fit · synergy",
       meaning: "How comfortable, well-matched, and mutually supportive being together feels (close to an energy fit).",
     },
     {
       label: "Sensitivity",
       emoji: "⚡",
+      glance: "Friction · stress · higher = caution",
       meaning: "How much you get sensitive, stressed, or friction/clashes grow.",
     },
   ],

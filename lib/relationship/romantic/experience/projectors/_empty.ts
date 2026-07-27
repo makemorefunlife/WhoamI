@@ -12,6 +12,7 @@ import type {
   NextStepVM,
   OpeningSceneVM,
   RelationshipFlowVM,
+  RelationshipSnapshotVM,
   RepairGuideVM,
   WhySpecialVM,
 } from "../romanticExperienceTypes";
@@ -37,10 +38,36 @@ export function emptyOpeningScene(params: {
   };
 }
 
-/** M2 Hidden Dynamic */
-export function emptyHiddenHeart(): HiddenHeartVM {
+/** M2 Relationship Snapshot */
+export function emptyRelationshipSnapshot(): RelationshipSnapshotVM {
   return {
     id: "M2",
+    title: "",
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    signals: [],
+  };
+}
+
+/** M3 Difference Map */
+export function emptyDifferenceMap(): DifferenceMapVM {
+  return {
+    id: "M3",
+    title: "",
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    buckets: [],
+    hasRadar: false,
+    openingContrast: null,
+  };
+}
+
+/** M5 Hidden Heart */
+export function emptyHiddenHeart(): HiddenHeartVM {
+  return {
+    id: "M5",
     title: "",
     available: false,
     confidence: "tentative",
@@ -51,10 +78,10 @@ export function emptyHiddenHeart(): HiddenHeartVM {
   };
 }
 
-/** M3 What's Special */
+/** M6 Special Dynamics */
 export function emptyWhySpecial(): WhySpecialVM {
   return {
-    id: "M3",
+    id: "M6",
     title: "",
     available: false,
     confidence: "tentative",
@@ -66,24 +93,10 @@ export function emptyWhySpecial(): WhySpecialVM {
   };
 }
 
-/** M4 Difference Map */
-export function emptyDifferenceMap(): DifferenceMapVM {
-  return {
-    id: "M4",
-    title: "",
-    available: false,
-    confidence: "tentative",
-    evidence: EMPTY_EVIDENCE,
-    buckets: [],
-    hasRadar: false,
-    openingContrast: null,
-  };
-}
-
-/** M5 Relationship Flow */
+/** M4 Relationship Flow */
 export function emptyRelationshipFlow(): RelationshipFlowVM {
   return {
-    id: "M5",
+    id: "M4",
     title: "",
     available: false,
     confidence: "tentative",
@@ -94,9 +107,10 @@ export function emptyRelationshipFlow(): RelationshipFlowVM {
   };
 }
 
+/** Legacy compatibility: previously M6 Conflict projector output. */
 export function emptyConflictTranslation(): ConflictTranslationVM {
   return {
-    id: "M6",
+    id: "M7",
     title: "",
     available: false,
     confidence: "tentative",
@@ -106,7 +120,7 @@ export function emptyConflictTranslation(): ConflictTranslationVM {
   };
 }
 
-/** M7 Daily Life */
+/** Legacy compatibility: M7 Daily Life projector default. */
 export function emptyDailyLife(): DailyLifeVM {
   return {
     id: "M7",
@@ -118,10 +132,10 @@ export function emptyDailyLife(): DailyLifeVM {
   };
 }
 
-/** M8 Do / Don't */
+/** Legacy compatibility: M8 Do / Don't projector default. */
 export function emptyDoDont(): DoDontVM {
   return {
-    id: "M8",
+    id: "M9",
     title: "",
     available: false,
     confidence: "tentative",
@@ -130,10 +144,10 @@ export function emptyDoDont(): DoDontVM {
   };
 }
 
-/** M9 Repair Guide */
+/** Legacy compatibility: M9 Repair Guide projector default. */
 export function emptyRepairGuide(): RepairGuideVM {
   return {
-    id: "M9",
+    id: "M8",
     title: "",
     available: false,
     confidence: "tentative",
@@ -146,9 +160,11 @@ export function emptyRepairGuide(): RepairGuideVM {
   };
 }
 
-/** Deferred Next Step (not M1–M10 in B3). */
+/** Legacy compatibility: deferred Next Step default. */
 export function emptyNextStep(): NextStepVM {
   return {
+    id: "M10",
+    title: "",
     available: false,
     confidence: "tentative",
     evidence: EMPTY_EVIDENCE,
@@ -160,6 +176,7 @@ export function emptyNextStep(): NextStepVM {
   };
 }
 
+/** Legacy compatibility: M10 Horizon default. */
 export function emptyHorizon(): HorizonVM {
   return {
     id: "M10",

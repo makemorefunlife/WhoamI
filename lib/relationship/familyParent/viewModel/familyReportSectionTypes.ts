@@ -24,6 +24,7 @@ import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescri
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyPsychRole } from "@/lib/relationship/familyParent/familyPsychRoles";
 import type { FilialFrequencyType } from "@/lib/relationship/familyParent/familyFilialFrequency";
+import type { DeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type OpeningBlock = {
   headline: string;
@@ -122,6 +123,17 @@ export type FilialFrequencySection = BaseSection & {
 
 // ---- Part 4: 운명적 케미 + 부모 렌즈 + 미래 보답 ------------------------------
 
+/**
+ * meta.family_saju_deep LLM explain overlay — attach-only 이후 처음 렌더.
+ * CE 판정을 재분류하지 않는다(explain-only); 원본 스키마는
+ * lib/prompts/relationshipPremium/familySajuDeep/outputSchema.ts.
+ * family는 viewer 스왑이 없다 — 항상 부모가 첫 슬롯, 자녀가 두 번째 슬롯.
+ */
+export type DeepReadSection = BaseSection & {
+  type: "deep_read";
+  vm: DeepReadViewModel;
+};
+
 export type DestinySection = BaseSection & {
   type: "destiny";
   harmonyOneLiner: string;
@@ -165,6 +177,7 @@ export type FamilyReportSection =
   | GrowthTunnelSection
   | FamilyRoleSection
   | FilialFrequencySection
+  | DeepReadSection
   | DestinySection
   | FilialRewardSection
   | SosScriptSection

@@ -27,6 +27,7 @@ import type {
   FamilyReportViewModel,
 } from "./familyReportSectionTypes";
 import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySajuCompareTable";
+import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -267,6 +268,45 @@ function buildFilialFrequencySection(
   };
 }
 
+function buildDeepReadSection(
+  report: FamilyParentReportBody,
+  t: ReturnType<typeof catalog>,
+): FamilyReportSection | null {
+  const overlay = report.meta?.family_saju_deep;
+  const nature = overlay?.section_2_nature;
+  const gap = overlay?.section_4_family_frames?.generation_gap_signal;
+  const action = overlay?.section_5_action;
+
+  // family에는 viewer 스왑이 없다 — 부모가 항상 첫 슬롯, 자녀가 두 번째 슬롯.
+  // LLM이 parent_nature/child_nature 대신 legacy a_nature/b_nature만 채웠을
+  // 수도 있어 둘 다 허용한다(explain-only, 재분류 없음).
+  const vm = buildDeepReadViewModel({
+    natureA: nature?.parent_nature ?? nature?.a_nature,
+    natureB: nature?.child_nature ?? nature?.b_nature,
+    gapSignal: gap
+      ? {
+          a_body: gap.parent_body ?? gap.a_body,
+          b_body: gap.child_body ?? gap.b_body,
+          match_note: gap.match_note,
+        }
+      : undefined,
+    adviceA: action?.advice_for_parent ?? action?.advice_for_a,
+    adviceB: action?.advice_for_child ?? action?.advice_for_b,
+    together: action?.together,
+    togetherStarter: action?.together_starter,
+    swap: false,
+  });
+  if (!vm) return null;
+
+  return {
+    id: "deep_read",
+    type: "deep_read",
+    partNumber: 4,
+    title: t.deepReadCardTitle,
+    vm,
+  };
+}
+
 function buildDestinySection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
@@ -364,6 +404,7 @@ export function buildFamilyReportViewModel(
     () => buildGrowthTunnelSection(report, t),
     () => buildFamilyRoleSectionView(report, t),
     () => buildFilialFrequencySection(report, t),
+    () => buildDeepReadSection(report, t),
     () => buildDestinySection(report, t),
     () => buildFilialRewardSection(report, t),
     () => buildSosScriptSection(report),

@@ -4,12 +4,53 @@ import type { SnapshotTopicNarrative } from "@/lib/relationship/romanticSnapshot
 import type { TriScoreSnapshotPanel } from "@/lib/relationship/triScoreSnapshot/types";
 import {
   getTriScoreKindConfig,
+  type TriScoreLegendItem,
   type TriScoreSnapshotKind,
 } from "@/lib/relationship/triScoreSnapshot/kinds";
 import { resolveScoreBarAppearance } from "@/lib/relationship/scoreBarAppearance";
 import { useReportTone } from "@/components/relationship/reportLayout/ReportSurface";
 import RelationshipScoreDefinitions from "@/components/relationship/reportLayout/RelationshipScoreDefinitions";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+
+function legendGlance(item: TriScoreLegendItem): string {
+  if (item.glance?.trim()) return item.glance.trim();
+  const head = item.meaning.split(/[·.]/)[0]?.trim();
+  return head || item.meaning;
+}
+
+function ScoreKeyStrip({
+  items,
+}: {
+  items: readonly TriScoreLegendItem[];
+}) {
+  const tone = useReportTone();
+  const stitch = tone.surface === "stitch";
+  const wrapClass = stitch
+    ? "border-outline-variant/30 bg-surface-container-low/50"
+    : "border-white/10 bg-black/20";
+  const labelClass = stitch ? "text-primary" : "text-white/88";
+  const glanceClass = stitch
+    ? "text-on-surface-variant"
+    : "text-white/55";
+
+  return (
+    <ul
+      className={`grid gap-2 rounded-xl border px-3 py-2.5 sm:grid-cols-3 ${wrapClass}`}
+      aria-label="Score key"
+    >
+      {items.map((item) => (
+        <li key={item.label} className="min-w-0">
+          <p className={`text-[12px] font-semibold tracking-tight ${labelClass}`}>
+            {item.emoji} {item.label}
+          </p>
+          <p className={`mt-0.5 text-[10px] leading-snug ${glanceClass}`}>
+            {legendGlance(item)}
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function MiniScoreBar({
   label,
@@ -27,10 +68,13 @@ function MiniScoreBar({
   const labelClass = stitch ? "text-on-surface-variant" : "text-[var(--space-text)]";
   const valueClass = stitch ? "text-primary" : "text-[var(--space-text)]";
   const trackClass = stitch ? "bg-outline-variant/25" : "bg-white/8";
+  const hintClass = stitch
+    ? "text-on-surface-variant/75"
+    : "text-[var(--space-text-muted)]";
 
   return (
     <div className="flex items-center gap-2 text-[11px]">
-      <span className={`w-[3.25rem] shrink-0 font-medium ${labelClass}`}>
+      <span className={`w-[4.5rem] shrink-0 font-medium ${labelClass}`}>
         {label}
       </span>
       <div className={`h-1.5 flex-1 overflow-hidden rounded-full ${trackClass}`}>
@@ -41,6 +85,9 @@ function MiniScoreBar({
       </div>
       <span className={`w-6 shrink-0 text-right tabular-nums ${valueClass}`}>
         {pct}
+      </span>
+      <span className={`w-12 shrink-0 text-[10px] ${hintClass}`}>
+        {appearance.hint}
       </span>
     </div>
   );
@@ -58,6 +105,7 @@ function TopicCard({
   const tone = useReportTone();
   const { locale } = useLocale();
   const labels = getTriScoreKindConfig(kind, locale).labels;
+
   const primary =
     topic.topic === "intimacy"
       ? { label: labels.activation.short, value: topic.activation }
@@ -86,7 +134,7 @@ function TopicCard({
       <p className={`mb-3 text-xs leading-relaxed ${subtitleClass}`}>
         {topic.subtitle}
       </p>
-      <div className="mb-2 space-y-1.5">
+      <div className="mb-3 space-y-1.5">
         {singlePrimaryMetric ? (
           <MiniScoreBar
             label={primary.label}
@@ -131,11 +179,14 @@ export default function TriScoreSnapshotPanel({
   panel: TriScoreSnapshotPanel;
   kind: TriScoreSnapshotKind;
 }) {
+  const { locale } = useLocale();
+  const config = getTriScoreKindConfig(kind, locale);
   const topics = panel.narrative?.topics ?? [];
   const singlePrimaryMetric = kind === "cohabitation";
 
   return (
     <div className="space-y-3">
+      {!singlePrimaryMetric ? <ScoreKeyStrip items={config.legendItems} /> : null}
       {topics.map((topic) => (
         <TopicCard
           key={topic.topic}

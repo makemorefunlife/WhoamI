@@ -168,7 +168,7 @@ ok("axisNote 인자 유무와 무관하게 title/subtitle/interpretation/isWarni
 
 assert.equal(
   withoutAxisNoteArg.interpretation,
-  "단둘이 감정을 나눌 때는 최고예요. 매력과 함께 있을 때의 즐거움이 크게 올라옵니다. 긴장은 낮은 편이라, 설레는 마음을 즐기기 좋아요.",
+  "단둘이 감정을 나눌 때는 최고예요. 매력과 함께 있을 때의 즐거움이 크게 올라옵니다. 예민은 낮은 편이라, 설레는 마음을 즐기기 좋아요.",
 );
 ok("기존 interpretation 문구 자체가 이번 변경으로 한 글자도 안 바뀜(고정 스냅샷)");
 

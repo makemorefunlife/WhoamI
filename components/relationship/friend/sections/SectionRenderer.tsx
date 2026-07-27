@@ -22,6 +22,7 @@ import type {
   BreakupGuideSection,
   CompareTableSection,
   DeEscalationSection,
+  DeepReadSection,
   FriendReportSection,
   FriendReportViewModel,
   HiddenFlowSection,
@@ -31,6 +32,7 @@ import type {
   SocialDnaSection,
   SoulmateSection,
 } from "@/lib/relationship/friend/viewModel/friendReportSectionTypes";
+import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("friendship").accent;
@@ -289,6 +291,27 @@ function HiddenFlowCard({ section }: { section: HiddenFlowSection }) {
   );
 }
 
+// ---- Part 3b: 심층 리드 (friend_saju_deep 오버레이) ---------------------------
+
+function DeepReadSectionCard({ section }: { section: DeepReadSection }) {
+  const t = useMessages().relationshipDrilldown.friendship;
+  return (
+    <DeepReadCard
+      vm={section.vm}
+      accentColor={ACCENT}
+      labels={{
+        cardTitle: section.title,
+        voiceMe: t.deepReadVoiceMeLabel,
+        voicePartner: t.deepReadVoicePartnerLabel,
+        pattern: t.deepReadPatternLabel,
+        adviceMe: t.deepReadAdviceMeLabel,
+        advicePartner: t.deepReadAdvicePartnerLabel,
+        together: t.deepReadTogetherLabel,
+      }}
+    />
+  );
+}
+
 // ---- Part 4: 방어벽 -------------------------------------------------------------
 
 function BreakupGuideCard({ section }: { section: BreakupGuideSection }) {
@@ -372,6 +395,8 @@ export function FriendReportSectionCard({
       return <PlayMoneyCard section={section} />;
     case "hidden_flow":
       return <HiddenFlowCard section={section} />;
+    case "deep_read":
+      return <DeepReadSectionCard section={section} />;
     case "breakup_guide":
       return <BreakupGuideCard section={section} />;
     case "de_escalation":

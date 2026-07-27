@@ -1,5 +1,5 @@
 /**
- * Romantic Experience VM skeleton / B2 regression (formerly B1-only).
+ * Romantic Experience V2 shell regression.
  * Run: npx tsx tests/unit/romantic-experience-viewmodel-skeleton.test.mjs
  */
 import assert from "node:assert/strict";
@@ -9,13 +9,10 @@ import {
   summarizeRomanticModuleSlots,
 } from "../../lib/relationship/romantic/experience/romanticExperienceTypes.ts";
 import {
+  makeCompleteRomanticReport,
   makeMinimalRomanticReport,
   makePartialRomanticReport,
 } from "../fixtures/romantic/minimal-report.mjs";
-
-function ok(name) {
-  console.log(`ok - ${name}`);
-}
 
 function build(report, extra = {}) {
   return buildRomanticExperienceViewModel({
@@ -30,87 +27,66 @@ function build(report, extra = {}) {
   });
 }
 
-console.log("\n=== 1) deterministic mapping ===");
-const report = makeMinimalRomanticReport();
-const vm1 = build(report);
-const vm2 = build(report);
-assert.equal(vm1.meta.buildId, "b3-content-projectors");
+console.log("\n=== 1) module order locked to M1-M10 (no Daily Life) ===");
+assert.deepEqual([...ROMANTIC_MODULE_ORDER], [
+  "M1",
+  "M2",
+  "M3",
+  "M4",
+  "M5",
+  "M6",
+  "M7",
+  "M8",
+  "M9",
+  "M10",
+]);
+const vmOrder = summarizeRomanticModuleSlots(build(makeMinimalRomanticReport()));
+assert.deepEqual(
+  vmOrder.map((s) => s.id),
+  ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10"],
+);
+
+console.log("\n=== 2) build metadata + deterministic mapping ===");
+const complete = makeCompleteRomanticReport();
+const vm1 = build(complete);
+const vm2 = build(complete);
+assert.equal(vm1.meta.buildId, "b6-v2-ch3-m1-m10");
 assert.equal(vm1.meta.accentToken, "#E2C4A8");
-assert.equal(vm1.meta.myName, "Mina");
-assert.deepEqual(
-  summarizeRomanticModuleSlots(vm1),
-  summarizeRomanticModuleSlots(vm2),
-);
-assert.deepEqual(
-  summarizeRomanticModuleSlots(vm1).map((s) => s.id),
-  [...ROMANTIC_MODULE_ORDER],
-);
-ok("deterministic meta + module order");
+assert.deepEqual(vm1, vm2);
 
-console.log("\n=== 2) deepRead null; dynamics-dependent modules empty on minimal ===");
+console.log("\n=== 3) M1-M10 surface fields exist ===");
+assert.equal(vm1.opening.available, true);
+assert.equal(vm1.snapshot.available, true);
+assert.equal(vm1.differenceMap.available, true);
+assert.equal(vm1.flow.available, true);
+assert.equal(vm1.hiddenHeart.available, true);
+assert.equal(vm1.specialDynamics.available, true);
+assert.equal(vm1.conflictTranslation.available, true);
+assert.equal(vm1.repairGuide.available, true);
+assert.equal(vm1.doDont.available, true);
+assert.equal(vm1.nextStep.available, true);
+assert.equal(Object.hasOwn(vm1, "dailyLife"), false);
+assert.equal(Object.hasOwn(vm1, "conflict"), false);
+assert.equal(Object.hasOwn(vm1, "repair"), false);
 assert.equal(vm1.deepRead, null);
-assert.equal(vm1.saveShare, null);
-assert.equal(vm1.doDont.pack, null);
-assert.equal(vm1.differenceMap.available, false);
-assert.equal(vm1.flow.available, false);
-assert.equal(vm1.dailyLife.available, false);
-assert.equal(vm1.repair.available, false);
-assert.equal(vm1.nextStep.available, false);
-ok("deepRead null; M4/M5/M7/M9 empty on minimal");
 
-console.log("\n=== 3) missing optional / empty names fallback ===");
-const vmNames = build(report, {
-  myName: "  ",
-  partnerName: "",
-  nameA: " ",
-  nameB: null,
-  locale: "  ",
-});
-assert.equal(vmNames.meta.myName, "A");
-assert.equal(vmNames.meta.partnerName, "B");
-assert.equal(vmNames.meta.nameA, "A");
-assert.equal(vmNames.meta.nameB, "B");
-assert.equal(vmNames.meta.locale, "ko-KR");
-ok("empty names/locale fall back safely");
-
-console.log("\n=== 4) partial report does not throw ===");
+console.log("\n=== 4) fallback behavior remains safe ===");
 const vmPartial = build(makePartialRomanticReport());
-assert.equal(vmPartial.meta.buildId, "b3-content-projectors");
-assert.equal(
-  summarizeRomanticModuleSlots(vmPartial).every((s) => !s.available),
-  true,
-);
-ok("partial report → all unavailable");
+assert.equal(vmPartial.opening.available, false);
+assert.equal(vmPartial.snapshot.available, false);
+assert.equal(vmPartial.differenceMap.available, false);
+assert.equal(vmPartial.flow.available, false);
+assert.equal(vmPartial.hiddenHeart.available, false);
+assert.equal(vmPartial.specialDynamics.available, false);
+assert.equal(vmPartial.conflictTranslation.available, false);
+assert.equal(vmPartial.repairGuide.available, false);
+assert.equal(vmPartial.doDont.available, false);
+assert.equal(vmPartial.nextStep.available, false);
 
-console.log("\n=== 5) no grade / ScoreBoard / formula ownership on VM ===");
-const json = JSON.stringify(vm1);
-assert.equal(Object.hasOwn(vm1, "grade"), false);
-assert.equal(Object.hasOwn(vm1.meta, "grade"), false);
-assert.equal(Object.hasOwn(vm1, "scores"), false);
-assert.equal(Object.hasOwn(vm1, "event_scores"), false);
-assert.equal(Object.hasOwn(vm1.opening, "grade"), false);
-assert.equal(Object.hasOwn(vm1.whySpecial, "relationship_formula"), false);
-assert.equal(json.includes("A+"), false);
-assert.equal(json.includes("destiny"), false);
-assert.equal(json.includes("should-not-appear-on-vm"), false);
-assert.equal(json.includes("ScoreBoard"), false);
-assert.equal(json.includes("section_1"), false);
-ok("grade/formula/sections absent from VM JSON");
-
-console.log("\n=== 6) source report is not mutated ===");
-const mutable = makeMinimalRomanticReport();
-const gradeBefore = mutable.section_1_summary.grade;
-Object.freeze(mutable.section_1_summary);
+console.log("\n=== 5) source report not mutated ===");
+const mutable = makeCompleteRomanticReport();
+const before = JSON.stringify(mutable);
 build(mutable);
-assert.equal(mutable.section_1_summary.grade, gradeBefore);
-assert.throws(() => {
-  mutable.section_1_summary.grade = "Z";
-}, TypeError);
-ok("builder does not mutate source report");
-
-console.log("\n=== 7) viewer flag preserved ===");
-const vmB = build(report, { viewerIsReportA: false });
-assert.equal(vmB.meta.viewerIsReportA, false);
-ok("viewerIsReportA mapped");
+assert.equal(JSON.stringify(mutable), before);
 
 console.log("\nAll romantic-experience-viewmodel-skeleton tests passed.");

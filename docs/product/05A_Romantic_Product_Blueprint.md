@@ -4,8 +4,8 @@
 **Product:** Ahaitsme — Romantic Relationship Experience  
 **Status:** Permanent Romantic Product SSOT  
 **Audience:** Product, Design, Content, Engineering, QA, Localization  
-**Purpose:** Define what the Romantic product is, how it should feel, what it must include, what it must never become, and how every future implementation should be judged.  
-**Inherits:** `01_Product_Vision.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md`  
+**Purpose:** Define what the Romantic product is, how the user moves through it screen by screen, what each module must accomplish, what it must never become, and how every future implementation should be judged.  
+**Inherits:** `01_Product_Vision.md` · `02_Relationship-ux-bible.md` · `04_Relationship_Experience_Bible.md` · `05_Relationship_Product_Bible.md`  
 **Technical companion:** `06A_Romantic_Technical_Blueprint.md` (and related technical docs)  
 **Absorbed:** Unique product decisions from former `05_Romantic_Product_Blueprint.md` (deleted; no archive).
 
@@ -779,9 +779,95 @@ Incorrect direction:
 
 ---
 
+# 6A. Canonical Screen Flow
+
+This section locks the default **mobile reading order**. It is the product target that design and engineering must implement. It does not prescribe exact component styling; `06_Visual_Design_System.md` owns visual expression.
+
+```text
+1. Entry / Hero
+2. Relationship Snapshot
+3. Difference Map
+4. Relationship Flow
+5. Hidden Heart
+6. Why This Relationship Is Special
+7. Conflict Translation
+8. Repair Guide
+9. Do / Don’t
+10. Next Step
+11. Relationship Horizon
+12. Reflection / Save / Share
+```
+
+## 6A.1 First-scroll contract
+
+Within the first mobile scroll, the user must understand:
+
+1. who the report is about,
+2. the relationship signature,
+3. one recognizable relational truth,
+4. the central strength–tension paradox,
+5. why continuing will reveal something useful.
+
+The first scroll must not lead with a grade, total compatibility percentage, raw radar, methodology, or long explanatory text.
+
+## 6A.2 Screen responsibilities
+
+| Screen | User question | Required output | Primary form | Must lead to |
+|---|---|---|---|---|
+| **Entry / Hero** | “Is this really about us?” | Signature, relational truth, paradox | Editorial Hero | Curiosity |
+| **Relationship Snapshot** | “What is the basic shape of us?” | Defining dynamic, stabilizing resource, meaningful tension | Up to three key signals; optional orientation visual | Difference Map |
+| **Difference Map** | “Where do we naturally meet or miss?” | Shared ground, complement, translation need | Selective comparison visual/table | Relationship Flow |
+| **Relationship Flow** | “What pattern do we keep entering?” | Trigger, directional responses, loop, interruption point | Sequence / loop | Hidden Heart |
+| **Hidden Heart** | “What is each behavior trying to protect or receive?” | Intention, impact, need, misread signal | Paired reveal / narrative | Specialness |
+| **Why Special** | “Why do I become this way with this person?” | Mutual activation, relationship-only behavior, gift and blind spot | Deep Read / cause chain | Conflict |
+| **Conflict Translation** | “What do we say, mean, and hear?” | Pair-specific translation and escalation point | Dialogue table/scenario | Repair |
+| **Repair Guide** | “How do we return to closeness?” | Timing, first move, reassurance, restart sentence | Repair sequence | Guidance |
+| **Do / Don’t** | “What helps and what makes this worse?” | Limited evidence-linked behaviors for each side / pattern | Paired guidance cards | Next Step |
+| **Next Step** | “What can we try now?” | One immediate action, one experiment, one conversation prompt | Action card | Horizon |
+| **Relationship Horizon** | “What could this become?” | Conditional future routes and watchpoint | Path / timeline | Reflection |
+| **Reflection / Save / Share** | “What do I want to remember?” | One integrated realization and one carry-forward choice | Reflection / saved asset | Return |
+
+## 6A.3 Reading-order protections
+
+- Story must appear before technical evidence.
+- Strength must appear before deeper risk or strain.
+- Difference must be explained before it is treated as friction.
+- Conflict must always connect directly to repair.
+- The deepest analytical density belongs in the middle, not the opening or closing.
+- The ending must narrow to a small number of usable priorities.
+- Deep Read may expand a screen, but may not restart the journey or repeat earlier cards in longer prose.
+
+## 6A.4 Desktop adaptation
+
+Desktop may place related content side by side, but must preserve the same information hierarchy and emotional sequence. Parallel columns must not allow users to encounter evidence, strain, or action before the recognition and explanation that make it understandable.
+
+## 6A.5 Navigation model
+
+The report should feel continuous. Sticky chapter navigation, progress indicators, accordions, or deep links may be used, but visible navigation must not make the experience feel like ten unrelated reports. Module names are orientation aids, not the story itself.
+
+---
+
 # 7. Core Experience Architecture
 
-The final experience is organized as modules, not numbered report parts.
+The final experience is organized as modules, not numbered report parts. The module sequence below implements the canonical screen flow in §6A.
+
+## 7.0 Shared module contract
+
+Every visible module must define and satisfy:
+
+| Field | Requirement |
+|---|---|
+| **Experience job** | One reason this module exists in the journey |
+| **User question** | One human question it answers |
+| **Primary realization** | One new idea the user should retain |
+| **Required evidence** | Minimum deterministic or approved evidence needed to show it |
+| **Primary component** | The default communication form |
+| **Optional depth** | Evidence, Deep Read, scenario, or reflection shown only when useful |
+| **Suppression rule** | When the module or subcomponent must not render |
+| **Transition** | Why the next module now matters |
+| **Success test** | Observable comprehension or action outcome |
+
+A module is not ready merely because data exists. It is ready only when its evidence, interpretation, visual purpose, transition, and fallback behavior are defined.
 
 Recommended architecture:
 
@@ -1149,9 +1235,124 @@ This is a product surface around the ten modules—not a replacement narrative c
 
 ---
 
+# 7A. Rendering, Suppression, and Fallback Rules
+
+## 7A.1 Required versus conditional content
+
+**Required experience jobs:** Hero recognition, relationship shape, meaningful difference, shared pattern, relational reframe, repair/action, and closing integration.
+
+A specific visual or insight is conditional. If evidence is insufficient, the product must preserve the experience job using a smaller supported output rather than fabricate content.
+
+## 7A.2 Suppression law
+
+Suppress a module, card, visual, table row, badge, or narrative claim when:
+
+- evidence is unsupported or direction is unknown,
+- it duplicates a stronger earlier insight,
+- the difference is too small to matter,
+- it does not answer the current user question,
+- the visual cannot be explained clearly,
+- the output would imply false precision,
+- it belongs primarily to Marriage / Cohabitation,
+- or it exists only to preserve layout symmetry.
+
+A shorter report is preferable to filler.
+
+## 7A.3 Fallback hierarchy
+
+When a preferred module cannot be fully supported:
+
+```text
+Full visual + interpretation
+→ concise supported comparison
+→ narrative-only supported insight
+→ explicit mixed / insufficient state
+→ omit
+```
+
+Never replace missing evidence with an average-looking score or generic relationship advice.
+
+## 7A.4 One judgment, multiple projections
+
+A canonical signal or conclusion may appear in the Snapshot, visual, module narrative, dialogue, or guide only when every surface projects the same server-owned judgment. The client must not reclassify raw values into a competing interpretation.
+
+## 7A.5 Repetition budget
+
+The same core insight may appear more than once only when its function changes:
+
+- Hero: recognition,
+- Difference Map: evidence,
+- Relationship Flow: causal role,
+- Repair: intervention target,
+- Horizon: future watchpoint.
+
+Otherwise merge or remove it.
+
+---
+
+# 7B. Free and Premium Reveal Flow
+
+## 7B.1 Free target
+
+Free must deliver a coherent mini-journey, not a broken preview:
+
+1. Hero / relationship signature,
+2. Relationship Snapshot,
+3. one important Difference Map insight,
+4. one shared-pattern insight,
+5. one practical preview or reflection.
+
+The free user should understand the basic shape of the relationship and why the premium report could add meaningful depth.
+
+## 7B.2 Premium target
+
+Premium completes the causal and practical journey:
+
+- full selective Difference Map,
+- directional Relationship Flow,
+- Hidden Heart,
+- Why This Relationship Is Special,
+- conflict scenarios and translation,
+- repair sequence,
+- person- or pattern-shaped guidance,
+- Next Step,
+- Horizon,
+- deeper evidence and optional Deep Read,
+- save/share/revisit surfaces where productized.
+
+## 7B.3 Paywall rule
+
+The paywall may interrupt depth, but it must not interrupt comprehension mid-sentence or hide the meaning of a visible warning. Free must not expose fear or tension without enough explanation to understand it safely.
+
+---
+
 # 8. Existing Product Assets: Keep, Reframe, Reposition
 
 The following assets are considered validated and should be preserved unless a future audit proves they are ineffective.
+
+## 8.0 Canonical asset disposition
+
+| Asset | Decision | Canonical placement | Product condition |
+|---|---|---|---|
+| Hero | **REFRAME** | Entry | Remove grade-led identity; story-led opening only |
+| Relationship Snapshot / key signals | **BUILD / CONSOLIDATE** | After Hero | Up to three non-duplicative signals; omit unearned card |
+| Difference Map | **KEEP + ELEVATE** | Early evidence bridge | Selective axes and highest-value contrasts |
+| 11-axis overview / radar | **KEEP CONDITIONALLY** | Difference Map evidence depth | Never opening; optional if shape aids comprehension |
+| Saju comparison table | **KEEP + REFINE** | Difference Map / evidence | Human interpretation required; row vocabulary Romantic-specific |
+| Relationship Loop | **BUILD** | Relationship Flow | Dedicated loop/sequence; show interruption point |
+| Canonical signals | **REPOSITION** | Contextual modules | Evidence modules, not badge collection or separate tour |
+| Hidden Heart | **KEEP + ELEVATE** | After Flow | Must connect motive, impact, and need |
+| A→B / B→A Gift | **KEEP** | Hidden Heart / Why Special | Must be directional and evidence-backed |
+| Why This Person / Deep Read | **ELEVATE** | Why Special | Major synthesis; not a short paraphrase card |
+| Scenario UX | **KEEP + STRENGTHEN** | Conflict Translation | Pair-specific and evidence-linked |
+| Before / After dialogue | **KEEP + ELEVATE** | Conflict Translation / Repair | Must translate both sides fairly |
+| Repair Guide | **REPOSITION + REFINE** | Directly after Conflict | Account for timing, recovery, reassurance, residual |
+| Do / Don’t guide | **KEEP + LIMIT** | After Repair | Few high-value evidence-linked actions |
+| Timeline / Horizon | **KEEP + REFRAME** | Near close | Conditional development, never prediction |
+| Save / Share | **FUTURE / CONDITIONAL** | Closing / return surface | Preserve dignity; no weaponizable scores |
+| Grade badge / compatibility verdict | **REMOVE** | Nowhere | Violates product law |
+| Decorative elemental metaphor | **REMOVE** | Nowhere | Behavior translation only |
+
 
 ## 8.1 Hero
 
@@ -1884,6 +2085,84 @@ Before approving a Romantic experience, ask:
 - Is any copy generic, mystical, repetitive, or unsupported?
 
 If any answer is no, the experience is not ready.
+
+---
+
+# 18A. Implementation-Readiness and Audit Contract
+
+This section defines how the current codebase must be compared with this Product Blueprint before implementation begins.
+
+## 18A.1 Audit unit
+
+Audit the product by canonical screen/module, not by existing file or legacy section name. For each target screen, record:
+
+1. current renderer and route,
+2. current data source and contract,
+3. deterministic owner,
+4. LLM-owned fields,
+5. current component(s),
+6. current order and visibility,
+7. free/premium behavior,
+8. locale behavior,
+9. null/fallback behavior,
+10. tests,
+11. product verdict,
+12. implementation gap and dependency.
+
+## 18A.2 Allowed audit verdicts
+
+| Verdict | Meaning |
+|---|---|
+| **KEEP** | Product job, placement, contract, and presentation already satisfy this Blueprint |
+| **REFINE** | Correct asset and placement; content, contract, or presentation needs bounded improvement |
+| **REPOSITION** | Useful asset exists but appears in the wrong chapter or order |
+| **CONSOLIDATE** | Multiple surfaces repeat one job and should become one canonical projection |
+| **REBUILD** | Current structure cannot satisfy the target experience without material redesign |
+| **REMOVE** | Violates product law, duplicates a stronger asset, or belongs outside Romantic |
+| **MISSING** | Required experience job has no current implementation |
+| **BLOCKED** | Product direction is clear but required deterministic evidence or contract does not yet exist |
+
+## 18A.3 Audit evidence rules
+
+- Cite exact files, exported types, builders, routes, and tests.
+- Do not infer implementation from UI names alone. Trace data end to end.
+- Separate “data exists” from “canonical judgment exists” from “UI projects it.”
+- Separate server-owned classification from client display logic.
+- Identify any client-side reinterpretation of raw values.
+- Identify any LLM output that creates facts, direction, confidence, severity, or classification.
+- Identify Korean/English contract divergence.
+- Identify legacy Marriage-owned content still visible in Romantic.
+- Do not modify code during the audit.
+
+## 18A.4 Implementation-ready definition
+
+A module is implementation-ready only when:
+
+- its user question and experience job are locked,
+- required evidence and source identity are known,
+- deterministic versus narrative ownership is explicit,
+- its primary projection and fallback are defined,
+- suppression conditions are known,
+- free/premium behavior is known,
+- locale and address rules are known,
+- and acceptance tests can be written.
+
+## 18A.5 Final implementation acceptance
+
+The Romantic experience is complete only when:
+
+1. the rendered mobile order matches §6A,
+2. the first-scroll contract passes without score-led framing,
+3. every visible module answers one human question,
+4. every major claim traces to an eligible canonical evidence package,
+5. every conflict path leads to repair,
+6. missing data produces an honest fallback or omission,
+7. free and premium each form a coherent journey,
+8. repeated conclusions serve distinct functions or are consolidated,
+9. KO and EN preserve the same canonical findings,
+10. Romantic contains no primary Marriage-operation module,
+11. the user can identify the relationship signature, central misunderstanding, shared loop, and next step,
+12. `npm run dev` review confirms the report feels continuous rather than monolithic or dashboard-first.
 
 ---
 

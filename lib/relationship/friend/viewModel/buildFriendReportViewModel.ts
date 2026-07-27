@@ -37,6 +37,7 @@ import type {
   FriendReportViewModel,
 } from "./friendReportSectionTypes";
 import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
+import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type BuildFriendReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -248,6 +249,37 @@ function buildHiddenFlowSection(
   };
 }
 
+function buildDeepReadSection(
+  report: FriendReportBody,
+  viewerIsReportA: boolean,
+  t: ReturnType<typeof catalog>,
+): FriendReportSection | null {
+  const overlay = report.meta?.friend_saju_deep;
+  const nature = overlay?.section_2_nature;
+  const gap = overlay?.section_4_friend_frames?.friendship_gap_signal;
+  const action = overlay?.section_5_action;
+
+  const vm = buildDeepReadViewModel({
+    natureA: nature?.a_nature,
+    natureB: nature?.b_nature,
+    gapSignal: gap,
+    adviceA: action?.advice_for_a,
+    adviceB: action?.advice_for_b,
+    together: action?.together,
+    togetherStarter: action?.together_starter,
+    swap: !viewerIsReportA,
+  });
+  if (!vm) return null;
+
+  return {
+    id: "deep_read",
+    type: "deep_read",
+    partNumber: 3,
+    title: t.deepReadCardTitle,
+    vm,
+  };
+}
+
 function buildBreakupGuideSection(
   report: FriendReportBody,
   viewerIsReportA: boolean,
@@ -326,6 +358,7 @@ export function buildFriendReportViewModel(
     () => buildSoulmateSection(report, t),
     () => buildPlayMoneySection(report, locale ?? "ko-KR", t),
     () => buildHiddenFlowSection(report, viewerIsReportA, locale ?? "ko-KR", t),
+    () => buildDeepReadSection(report, viewerIsReportA, t),
     () => buildBreakupGuideSection(report, viewerIsReportA, t),
     () => buildDeEscalationSection(report, t),
     () => buildPrescriptionSection(report, t),

@@ -31,9 +31,16 @@ export function isEnvFlagTruthy(value: string | undefined): boolean {
 }
 
 function flagFromEnv(env: EnvLike, bareKey: string): boolean {
+  const publicDirect =
+    bareKey === "ROMANTIC_EXPERIENCE_V2"
+      ? process.env.NEXT_PUBLIC_ROMANTIC_EXPERIENCE_V2
+      : bareKey === "ROMANTIC_EXPERIENCE_LEGACY"
+        ? process.env.NEXT_PUBLIC_ROMANTIC_EXPERIENCE_LEGACY
+        : undefined;
   return (
     isEnvFlagTruthy(readEnv(env, bareKey)) ||
-    isEnvFlagTruthy(readEnv(env, `NEXT_PUBLIC_${bareKey}`))
+    isEnvFlagTruthy(readEnv(env, `NEXT_PUBLIC_${bareKey}`)) ||
+    isEnvFlagTruthy(publicDirect)
   );
 }
 

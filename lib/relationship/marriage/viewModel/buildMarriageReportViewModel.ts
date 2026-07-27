@@ -35,6 +35,7 @@ import type {
   MarriageReportViewModel,
 } from "./marriageReportSectionTypes";
 import type { MarriageCompareRow } from "@/lib/relationship/marriage/marriageSajuCompareTable";
+import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
 export type BuildMarriageReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -191,6 +192,37 @@ function buildMoneyChoresSection(
     spendingStyleNote: m.spending_style_note,
     cfoAxisNote: m.cfo_axis_note,
     cfoCanonicalLabel,
+  };
+}
+
+function buildDeepReadSection(
+  report: MarriageReportBody,
+  viewerIsReportA: boolean,
+  t: ReturnType<typeof catalog>,
+): MarriageReportSection | null {
+  const overlay = report.meta?.married_saju_deep;
+  const nature = overlay?.section_2_nature;
+  const gap = overlay?.section_4_household_frames?.role_balance_signal;
+  const action = overlay?.section_5_action;
+
+  const vm = buildDeepReadViewModel({
+    natureA: nature?.a_nature,
+    natureB: nature?.b_nature,
+    gapSignal: gap,
+    adviceA: action?.advice_for_a,
+    adviceB: action?.advice_for_b,
+    together: action?.together,
+    togetherStarter: action?.together_starter,
+    swap: !viewerIsReportA,
+  });
+  if (!vm) return null;
+
+  return {
+    id: "deep_read",
+    type: "deep_read",
+    partNumber: 3,
+    title: t.deepReadCardTitle,
+    vm,
   };
 }
 
@@ -364,6 +396,7 @@ export function buildMarriageReportViewModel(
     () => buildCompareTableSection(report, locale ?? "ko-KR", t),
     () => buildPsychRadarSection(report, viewerIsReportA, t),
     () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
+    () => buildDeepReadSection(report, viewerIsReportA, t),
     () => buildBedroomSection(report, t),
     () => buildHomeDnaSection(report, viewerIsReportA, t),
     () => buildParentingSection(report, t),
