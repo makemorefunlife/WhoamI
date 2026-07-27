@@ -68,7 +68,7 @@ export default function StitchLandingPage({
 }: Props) {
   const router = useRouter();
   const mainRef = useScrollReveal();
-  const { messages, href: localize } = useLocale();
+  const { locale, messages, href: localize } = useLocale();
   const { reportId: sessionReportId } = useAppSession({ hydrate: false });
   const hydrated = useHydrated();
   const [storedReportId, setStoredReportId] = useState("");
@@ -355,13 +355,63 @@ export default function StitchLandingPage({
                   {messages.footer.refund}
                 </LocaleLink>
               </li>
+              {locale === "en-US" ? (
+                <li>
+                  <LocaleLink
+                    href={ROUTES.doNotSell}
+                    className="transition hover:text-accent-rose-soft"
+                  >
+                    {messages.cookieBanner.doNotSell}
+                  </LocaleLink>
+                </li>
+              ) : null}
             </ul>
           </div>
         </div>
         <div className="mx-auto mt-16 flex max-w-[1200px] flex-col justify-between gap-4 border-t border-on-primary/15 pt-8 text-xs md:flex-row">
-          <p className="text-on-primary/60">
-            © {new Date().getFullYear()} Aha It&apos;s me! {messages.footer.copyrightSuffix}
-          </p>
+          <div className="space-y-3 text-on-primary/60">
+            <p>
+              © {new Date().getFullYear()} Aha It&apos;s me!{" "}
+              {messages.footer.copyrightSuffix}
+            </p>
+            {locale === "ko-KR" ? (
+              <div className="max-w-xl space-y-0.5 text-[11px] leading-relaxed text-on-primary/55">
+                <p>
+                  {messages.footer.business.companyLabel}:{" "}
+                  {messages.footer.business.companyName}
+                </p>
+                <p>
+                  {messages.footer.business.ceoLabel}:{" "}
+                  {messages.footer.business.ceoName}
+                </p>
+                <p>
+                  {messages.footer.business.bizNumberLabel}:{" "}
+                  {messages.footer.business.bizNumber}
+                </p>
+                <p>
+                  {messages.footer.business.mailOrderLabel}:{" "}
+                  {messages.footer.business.mailOrderNumber}
+                </p>
+                <p>
+                  {messages.footer.business.addressLabel}:{" "}
+                  {messages.footer.business.address}
+                </p>
+                <p>
+                  {messages.footer.business.phoneLabel}:{" "}
+                  {messages.footer.business.phone}
+                </p>
+                <p>
+                  {messages.footer.business.emailLabel}:{" "}
+                  <a
+                    href={`mailto:${messages.footer.business.email}`}
+                    className="underline underline-offset-2 hover:text-on-primary"
+                  >
+                    {messages.footer.business.email}
+                  </a>
+                </p>
+              </div>
+            ) : null}
+          </div>
           <nav
             className="flex flex-wrap gap-x-4 gap-y-1 text-on-primary/55"
             aria-label="Hub shortcuts"

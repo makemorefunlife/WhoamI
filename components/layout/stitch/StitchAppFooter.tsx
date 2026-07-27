@@ -8,10 +8,20 @@ import { ROUTES } from "@/constants/routes";
 
 export default function StitchAppFooter() {
   const pathname = usePathname();
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const path = pathnameWithoutLocalePrefix(pathname ?? "/");
+  const biz = messages.footer.business;
 
   if (path === ROUTES.home) return null;
+
+  const legalLinks = [
+    { href: ROUTES.terms, label: messages.footer.terms },
+    { href: ROUTES.privacy, label: messages.footer.privacy },
+    { href: ROUTES.refund, label: messages.footer.refund },
+    ...(locale === "en-US"
+      ? [{ href: ROUTES.doNotSell, label: messages.cookieBanner.doNotSell }]
+      : []),
+  ];
 
   const footerGroups = [
     {
@@ -35,11 +45,7 @@ export default function StitchAppFooter() {
     {
       id: "legal",
       label: messages.footer.legal,
-      links: [
-        { href: ROUTES.terms, label: messages.footer.terms },
-        { href: ROUTES.privacy, label: messages.footer.privacy },
-        { href: ROUTES.refund, label: messages.footer.refund },
-      ],
+      links: legalLinks,
     },
   ];
 
@@ -73,6 +79,35 @@ export default function StitchAppFooter() {
             </div>
           ))}
         </div>
+
+        {locale === "ko-KR" ? (
+          <div className="border-t border-outline-variant/25 pt-5 text-[11px] leading-relaxed text-on-surface-variant">
+            <p>
+              {biz.companyLabel}: {biz.companyName}
+            </p>
+            <p>
+              {biz.ceoLabel}: {biz.ceoName}
+            </p>
+            <p>
+              {biz.bizNumberLabel}: {biz.bizNumber}
+            </p>
+            <p>
+              {biz.mailOrderLabel}: {biz.mailOrderNumber}
+            </p>
+            <p>
+              {biz.addressLabel}: {biz.address}
+            </p>
+            <p>
+              {biz.phoneLabel}: {biz.phone}
+            </p>
+            <p>
+              {biz.emailLabel}:{" "}
+              <a href={`mailto:${biz.email}`} className="underline underline-offset-2">
+                {biz.email}
+              </a>
+            </p>
+          </div>
+        ) : null}
 
         <p className="border-t border-outline-variant/25 pt-5 text-[11px] text-on-surface-variant">
           © {new Date().getFullYear()} Aha It&apos;s me!

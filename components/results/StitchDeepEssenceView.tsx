@@ -2,6 +2,7 @@
 
 import { StitchReportError } from "@/components/results/deep/StitchReportStatus";
 import { DeepEssenceReport } from "@/components/results/deep/DeepEssenceReport";
+import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -115,6 +116,7 @@ export default function StitchDeepEssenceView({
               )}
             </div>
           )}
+          <AiAnalysisDisclaimer className="mt-8 border-t border-outline-variant/20 pt-4" />
         </div>
       </div>
     </div>

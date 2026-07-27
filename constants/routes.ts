@@ -25,6 +25,8 @@ export const ROUTES = {
   terms: "/terms",
   privacy: "/privacy",
   refund: "/refund",
+  doNotSell: "/do-not-sell",
+  legalConsent: "/onboarding/legal-consent",
   invite: "/invite",
 } as const;
 

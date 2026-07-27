@@ -17,6 +17,7 @@ import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendRepo
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 import { shouldRenderRomanticExperienceV2 } from "@/lib/relationship/romantic/experience/romanticExperienceFlag";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 
 type RelationshipPremiumSectionProps = {
   busy: boolean;
@@ -213,6 +214,9 @@ export default function RelationshipPremiumSection({
           viewerName={viewerName}
         />
       )}
+      {premiumReady || hasSnapshotView ? (
+        <AiAnalysisDisclaimer className="mt-6 px-1" />
+      ) : null}
       {!premiumReady && !hasSnapshotView ? (
         <div className="mt-4 space-y-2 text-center">
           <GlowButton

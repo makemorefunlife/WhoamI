@@ -431,7 +431,22 @@ export const messagesEnUS = {
     billingComingSoon: "The billing history screen is coming soon.",
     backToProfile: "Back to personal info",
     settingsTitle: "Account settings",
-    settingsSubtitle: "This is your Clerk account info (email, password, etc.).",
+    settingsSubtitle:
+      "Manage email, password, security, and delete your account (Delete Account) here.",
+    deleteAccountHint:
+      "To permanently delete your account, open Account settings below and use Delete Account.",
+    profileMenuLabel: "My account / Delete account",
+    deleteAccountButton: "Delete account",
+    deleteAccountConfirmTitle: "Are you sure you want to delete your account?",
+    deleteAccountConfirmBody:
+      "This action is permanent. Your account and related data will be deleted.",
+    deleteAccountCancel: "Cancel",
+    deleteAccountConfirm: "Yes, delete my account",
+    deleteAccountDeleting: "Deleting account…",
+    deleteAccountError:
+      "We couldn't complete account deletion. Please try again.",
+    deleteAccountFarewell:
+      "We're sorry to see you go. We hope this helped you understand yourself a little better, and we'd love to see you again someday!",
     surveyChecking: "Checking survey status…",
     surveyTitle: "Survey",
     surveyCompleteBody:
@@ -819,6 +834,63 @@ export const messagesEnUS = {
     privacy: "Privacy Policy",
     refund: "Refund Policy",
     copyrightSuffix: "All rights reserved.",
+    business: {
+      companyLabel: "Company",
+      companyName: "Ahaitsme",
+      ceoLabel: "CEO",
+      ceoName: "Hong Seonghyeon",
+      bizNumberLabel: "Business registration no.",
+      bizNumber: "387-06-03769",
+      mailOrderLabel: "Mail-order registration no.",
+      mailOrderNumber: "[통신판매업 번호]",
+      addressLabel: "Address",
+      address: "Yongsan-gu, Seoul (detailed address TBD)",
+      phoneLabel: "Phone",
+      phone: "02-1234-5678",
+      emailLabel: "Email",
+      email: "hong@ahaitsme.com",
+    },
+  },
+  legalConsent: {
+    ageLabel: "I confirm that I am at least 13 years of age (required)",
+    termsPrefix: "I agree to the ",
+    termsLink: "Terms of Service",
+    termsMiddle: " and ",
+    privacyLink: "Privacy Policy",
+    termsSuffix: " (required)",
+    gateHint: "Please check both boxes above to continue with sign-up.",
+    pageTitle: "Age & terms confirmation",
+    pageSubtitle:
+      "Before using Aha It's me, please confirm your age and accept our terms.",
+    submit: "Agree and continue",
+    saving: "Saving…",
+    loading: "Loading…",
+    saveError: "Could not save your consent. Please try again.",
+    marketingLabel: "(Optional) I agree to receive marketing and event updates",
+    marketingLabelOptional: "(Optional) I agree to receive marketing emails",
+    byContinuingPrefix: "By continuing, you agree to our",
+    byContinuingMiddle: "and",
+    byContinuingSuffix: ".",
+  },
+  aiDisclaimer:
+    "This analysis is AI-generated and provided for entertainment and informational purposes only. We assume no liability for any decisions made based on this report.",
+  cookieBanner: {
+    ariaLabel: "Cookie consent",
+    message: "We use cookies to provide a smooth service experience.",
+    accept: "Accept",
+    reject: "Decline",
+    doNotSell: "Do Not Sell My Personal Information",
+  },
+  doNotSellPage: {
+    title: "Do Not Sell My Personal Information",
+    body: "Under the California Consumer Privacy Act (CCPA), you may request that we do not sell or share your personal information. Email us with the subject “Do Not Sell” and we will process your request.",
+    emailLabel: "Contact",
+  },
+  paymentRefund: {
+    checkboxLabel:
+      "I agree that due to the nature of digital goods (AI Saju results), refunds are not available after results have been generated. (required)",
+    requiredHint: "Please check the refund notice before continuing to payment.",
+    processing: "Starting checkout…",
   },
   birthForm: {
     heading: "Birth date, time & place",
@@ -1580,6 +1652,16 @@ export type MessageCatalog = {
     backToProfile: string;
     settingsTitle: string;
     settingsSubtitle: string;
+    deleteAccountHint: string;
+    profileMenuLabel: string;
+    deleteAccountButton: string;
+    deleteAccountConfirmTitle: string;
+    deleteAccountConfirmBody: string;
+    deleteAccountCancel: string;
+    deleteAccountConfirm: string;
+    deleteAccountDeleting: string;
+    deleteAccountError: string;
+    deleteAccountFarewell: string;
     surveyChecking: string;
     surveyTitle: string;
     surveyCompleteBody: string;
@@ -1917,6 +1999,60 @@ export type MessageCatalog = {
     privacy: string;
     refund: string;
     copyrightSuffix: string;
+    business: {
+      companyLabel: string;
+      companyName: string;
+      ceoLabel: string;
+      ceoName: string;
+      bizNumberLabel: string;
+      bizNumber: string;
+      mailOrderLabel: string;
+      mailOrderNumber: string;
+      addressLabel: string;
+      address: string;
+      phoneLabel: string;
+      phone: string;
+      emailLabel: string;
+      email: string;
+    };
+  };
+  legalConsent: {
+    ageLabel: string;
+    termsPrefix: string;
+    termsLink: string;
+    termsMiddle: string;
+    privacyLink: string;
+    termsSuffix: string;
+    gateHint: string;
+    pageTitle: string;
+    pageSubtitle: string;
+    submit: string;
+    saving: string;
+    loading: string;
+    saveError: string;
+    marketingLabel: string;
+    marketingLabelOptional: string;
+    byContinuingPrefix: string;
+    byContinuingMiddle: string;
+    byContinuingSuffix: string;
+  };
+  aiDisclaimer: string;
+  cookieBanner: {
+    ariaLabel: string;
+    message: string;
+    accept: string;
+    reject: string;
+    doNotSell: string;
+  };
+  doNotSellPage: {
+    title: string;
+    body: string;
+    emailLabel: string;
+  };
+  paymentRefund: {
+    checkboxLabel: string;
+    requiredHint: string;
+    processing: string;
   };
   birthForm: {
     heading: string;

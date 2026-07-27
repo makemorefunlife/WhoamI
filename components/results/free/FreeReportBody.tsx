@@ -2,6 +2,7 @@
 
 import { FreeMiniIndicator } from "@/components/results/free/FreeMiniIndicator";
 import { FreeUpsellCard } from "@/components/results/free/FreeUpsellCard";
+import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 import type { FreeReportUiStrings } from "@/components/results/free/freeReportUiStrings";
 import type { LiteSection } from "@/lib/v2/lite/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
@@ -104,6 +105,8 @@ export function FreeReportBody({
           <FreeSection key={`${section?.title ?? "section"}-${i}`} section={section} tag={tag} tone={tone} />
         ))}
       </div>
+
+      <AiAnalysisDisclaimer className="mt-8" />
 
       {showUpsell ? <FreeUpsellCard t={t.upsell} onClick={onUpsellClick} /> : null}
     </div>

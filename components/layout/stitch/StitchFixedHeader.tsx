@@ -5,10 +5,11 @@ import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePathname } from "next/navigation";
 import { useClerk, UserButton } from "@clerk/nextjs";
-import { Menu, User } from "lucide-react";
+import { Menu, Settings, User } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import StitchSideMenu from "@/components/layout/stitch/StitchSideMenu";
+import { ROUTES } from "@/constants/routes";
 
 export default function StitchFixedHeader({
   onOpenAuth,
@@ -18,7 +19,7 @@ export default function StitchFixedHeader({
   const [sideOpen, setSideOpen] = useState(false);
   const [shadow, setShadow] = useState(false);
   const pathname = usePathname();
-  const { messages } = useLocale();
+  const { messages, href } = useLocale();
   const { openSignIn } = useClerk();
   const { isSignedIn, isLoaded, clerkUnavailable } = useClerkReady();
 
@@ -96,12 +97,22 @@ export default function StitchFixedHeader({
               />
             ) : isSignedIn ? (
               <UserButton
+                userProfileMode="navigation"
+                userProfileUrl={href(ROUTES.accountProfile)}
                 appearance={{
                   elements: {
                     avatarBox: "h-8 w-8 border-2 border-outline-variant/40",
                   },
                 }}
-              />
+              >
+                <UserButton.MenuItems>
+                  <UserButton.Link
+                    label={messages.account.profileMenuLabel}
+                    labelIcon={<Settings className="h-4 w-4" />}
+                    href={href(ROUTES.accountProfile)}
+                  />
+                </UserButton.MenuItems>
+              </UserButton>
             ) : clerkUnavailable ? (
               <button
                 type="button"

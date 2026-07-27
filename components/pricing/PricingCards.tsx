@@ -2,6 +2,7 @@
 
 import GlowButton from "@/components/space/GlowButton";
 import GlassCard from "@/components/space/GlassCard";
+import CheckoutWithRefundConsent from "@/components/payment/CheckoutWithRefundConsent";
 import { Check, Sparkles, Zap } from "lucide-react";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
@@ -76,15 +77,23 @@ export default function PricingCards() {
             ))}
           </ul>
 
-          <div className="mt-8">
-            <GlowButton
-              href={plan.href}
-              variant={plan.highlighted ? "primary" : "secondary"}
-              className="w-full text-sm font-semibold"
-            >
-              {plan.cta}
-            </GlowButton>
-          </div>
+          {plan.id === "free" ? (
+            <div className="mt-8">
+              <GlowButton
+                href={plan.href}
+                variant="secondary"
+                className="w-full text-sm font-semibold"
+              >
+                {plan.cta}
+              </GlowButton>
+            </div>
+          ) : (
+            <CheckoutWithRefundConsent
+              planId={plan.id}
+              ctaLabel={plan.cta}
+              highlighted={plan.highlighted}
+            />
+          )}
         </article>
       ))}
     </div>
