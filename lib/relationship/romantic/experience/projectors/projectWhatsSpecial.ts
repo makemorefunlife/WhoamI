@@ -8,6 +8,8 @@ import {
   isGenericBondParagraph,
   shouldShowWhySpecial,
 } from "@/lib/relationship/romanticBondDisplay";
+import { polishRomanticDisplayText } from "@/lib/relationship/romanticEverydayText";
+import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
 import {
   formatRomanticSajuFrameDirectionCanonicalLabel,
   readRomanticSajuFrameDirectionCanonicalProjection,
@@ -15,10 +17,51 @@ import {
 import type {
   ConfidenceLevel,
   EvidenceRef,
+  SpecialFramesNarrativeVM,
   WhySpecialGiftVM,
   WhySpecialVM,
 } from "../romanticExperienceTypes";
 import { emptyWhySpecial } from "./_empty";
+
+function polishOrNull(value: string | undefined | null): string | null {
+  const t = typeof value === "string" ? polishRomanticDisplayText(value).trim() : "";
+  return t ? t : null;
+}
+
+/** Sprint 2 — legacy section_4_relationship_frames narrative (additive). */
+function readFramesNarrative(
+  report: RomanticSajuDeepReport["report"],
+  myName: string,
+  partnerName: string,
+  viewerIsReportA: boolean,
+): { narrative: SpecialFramesNarrativeVM | null; hasContent: boolean } {
+  const frames = (
+    report as { section_4_relationship_frames?: Record<string, unknown> }
+  ).section_4_relationship_frames;
+  const reassuranceRaw = frames?.reassurance_signal as
+    | { a_body?: string; b_body?: string; match_note?: string }
+    | undefined;
+  const rolePlayRaw = frames?.unconscious_role_play as { body?: string } | undefined;
+
+  const { me: myReassurance, partner: partnerReassurance } = pickViewerFirstPair(
+    polishOrNull(reassuranceRaw?.a_body),
+    polishOrNull(reassuranceRaw?.b_body),
+    viewerIsReportA,
+  );
+  const matchNote = polishOrNull(reassuranceRaw?.match_note);
+
+  const reassuranceLines = [
+    myReassurance ? `${myName}: ${myReassurance}` : null,
+    partnerReassurance ? `${partnerName}: ${partnerReassurance}` : null,
+    matchNote,
+  ].filter((line): line is string => Boolean(line));
+  const reassurance = reassuranceLines.length ? reassuranceLines.join(" ") : null;
+
+  const rolePlay = polishOrNull(rolePlayRaw?.body);
+
+  if (!reassurance && !rolePlay) return { narrative: null, hasContent: false };
+  return { narrative: { reassurance, rolePlay }, hasContent: true };
+}
 
 export type ProjectWhatsSpecialInput = {
   report: RomanticSajuDeepReport["report"];
@@ -132,11 +175,30 @@ export function projectWhatsSpecial(
       })
     : null;
 
-  if (gifts.length === 0 && !onlyTogether && !whySpecial && !frameDirectionLabel) {
+  const frames = readFramesNarrative(
+    input.report,
+    input.myName,
+    input.partnerName,
+    input.viewerIsReportA,
+  );
+
+  if (
+    gifts.length === 0 &&
+    !onlyTogether &&
+    !whySpecial &&
+    !frameDirectionLabel &&
+    !frames.hasContent
+  ) {
     return base;
   }
 
   const evidence: EvidenceRef[] = [];
+  if (frames.hasContent) {
+    evidence.push({
+      path: "section_4_relationship_frames",
+      summary: "reassurance/role-play narrative",
+    });
+  }
   if (gifts.length) {
     evidence.push({
       path: "section_4_special_bond.a_gives_b|b_gives_a",
@@ -177,5 +239,6 @@ export function projectWhatsSpecial(
     onlyTogether,
     whySpecial,
     frameDirectionLabel,
+    framesNarrative: frames.narrative,
   };
 }

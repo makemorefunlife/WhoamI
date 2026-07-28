@@ -50,7 +50,7 @@ console.log("\n=== 2) build metadata + deterministic mapping ===");
 const complete = makeCompleteRomanticReport();
 const vm1 = build(complete);
 const vm2 = build(complete);
-assert.equal(vm1.meta.buildId, "b6-v2-ch3-m1-m10");
+assert.equal(vm1.meta.buildId, "b7-v2-production");
 assert.equal(vm1.meta.accentToken, "#E2C4A8");
 assert.deepEqual(vm1, vm2);
 
@@ -68,6 +68,9 @@ assert.equal(vm1.nextStep.available, true);
 assert.equal(Object.hasOwn(vm1, "dailyLife"), false);
 assert.equal(Object.hasOwn(vm1, "conflict"), false);
 assert.equal(Object.hasOwn(vm1, "repair"), false);
+assert.equal(vm1.horizon.available, true);
+assert.equal(vm1.reflection.available, true);
+assert.equal(vm1.saveShare.available, true);
 assert.equal(vm1.deepRead, null);
 
 console.log("\n=== 4) fallback behavior remains safe ===");
@@ -82,6 +85,9 @@ assert.equal(vmPartial.conflictTranslation.available, false);
 assert.equal(vmPartial.repairGuide.available, false);
 assert.equal(vmPartial.doDont.available, false);
 assert.equal(vmPartial.nextStep.available, false);
+assert.equal(vmPartial.horizon.available, false);
+assert.equal(vmPartial.reflection.available, false);
+assert.equal(vmPartial.saveShare.available, false);
 
 console.log("\n=== 5) source report not mutated ===");
 const mutable = makeCompleteRomanticReport();

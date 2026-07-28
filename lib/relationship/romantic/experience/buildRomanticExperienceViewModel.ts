@@ -1,20 +1,28 @@
 /**
- * buildRomanticExperienceViewModel — Experience V2 shell (feature-flag path).
- * Current implementation scope: M1..M10 (without Daily Life / Horizon / SaveShare rollout).
+ * buildRomanticExperienceViewModel — Experience V2 (feature-flag path).
+ * Scope: M1..M10 + Horizon + Reflection/SaveShare. Daily Life suppressed.
  * deepRead stays null. Does not mutate the source report.
- * No grade/ScoreBoard/formula on VM.
+ * No grade/formula on VM. Sprint 5 restores event_scores gauges + the
+ * shared 11-axis comparison via premiumOverview/axisComparison.
  */
 
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import { projectActionAdvice } from "./projectors/projectActionAdvice";
+import { projectAxisComparison } from "./projectors/projectAxisComparison";
 import { projectDifferenceMap } from "./projectors/projectDifferenceMap";
+import { projectEssence } from "./projectors/projectEssence";
+import { projectPremiumOverview } from "./projectors/projectPremiumOverview";
 import { projectHiddenDynamic } from "./projectors/projectHiddenDynamic";
 import { projectConflictPattern } from "./projectors/projectConflictPattern";
 import { projectDoDont } from "./projectors/projectDoDont";
+import { projectHorizon } from "./projectors/projectHorizon";
 import { projectNextStep } from "./projectors/projectNextStep";
 import { projectOpening } from "./projectors/projectOpening";
+import { projectReflection } from "./projectors/projectReflection";
 import { projectRepairGuide } from "./projectors/projectRepairGuide";
 import { projectRelationshipFlow } from "./projectors/projectRelationshipFlow";
 import { projectRelationshipSnapshot } from "./projectors/projectRelationshipSnapshot";
+import { projectSaveShare } from "./projectors/projectSaveShare";
 import { projectWhatsSpecial } from "./projectors/projectWhatsSpecial";
 import type { RomanticExperienceViewModel } from "./romanticExperienceTypes";
 
@@ -81,6 +89,19 @@ export function buildRomanticExperienceViewModel(
   };
   const doDont = projectDoDont(doDontInput);
   const nextStep = projectNextStep({ doDont });
+  const opening = projectOpening({ report, myName, partnerName });
+  const horizon = projectHorizon({ report });
+  const reflection = projectReflection({ repairGuide, partnerName });
+  const saveShare = projectSaveShare({ opening, myName, partnerName });
+  const essence = projectEssence({ report, myName, partnerName, viewerIsReportA });
+  const actionAdvice = projectActionAdvice({
+    report,
+    myName,
+    partnerName,
+    viewerIsReportA,
+  });
+  const premiumOverview = projectPremiumOverview({ report });
+  const axisComparison = projectAxisComparison({ report, viewerIsReportA });
 
   return {
     meta: {
@@ -91,9 +112,12 @@ export function buildRomanticExperienceViewModel(
       nameB,
       locale,
       accentToken: "#E2C4A8",
-      buildId: "b6-v2-ch3-m1-m10",
+      buildId: "b7-v2-production",
     },
-    opening: projectOpening({ report, myName, partnerName }),
+    premiumOverview,
+    axisComparison,
+    opening,
+    essence,
     snapshot: projectRelationshipSnapshot({
       report,
       nameA,
@@ -131,8 +155,11 @@ export function buildRomanticExperienceViewModel(
     conflictTranslation,
     repairGuide,
     doDont,
+    actionAdvice,
     nextStep,
+    horizon,
+    reflection,
     deepRead: null,
-    saveShare: null,
+    saveShare,
   };
 }

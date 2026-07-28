@@ -3,14 +3,18 @@
  * Projectors replace these with available:true payloads when evidence exists.
  */
 import type {
+  ActionAdviceVM,
+  AxisComparisonVM,
   ConflictTranslationVM,
   DailyLifeVM,
   DifferenceMapVM,
   DoDontVM,
+  EssenceVM,
   HiddenHeartVM,
   HorizonVM,
   NextStepVM,
   OpeningSceneVM,
+  PremiumOverviewVM,
   RelationshipFlowVM,
   RelationshipSnapshotVM,
   RepairGuideVM,
@@ -18,6 +22,27 @@ import type {
 } from "../romanticExperienceTypes";
 
 const EMPTY_EVIDENCE: [] = [];
+
+/** Sprint 5 — 30-second Premium Overview. No module id. */
+export function emptyPremiumOverview(): PremiumOverviewVM {
+  return {
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    eventScores: null,
+  };
+}
+
+/** Sprint 5 — shared 11-axis comparison. No module id. */
+export function emptyAxisComparison(): AxisComparisonVM {
+  return {
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    axisResults: [],
+    hasTension: false,
+  };
+}
 
 export function emptyOpeningScene(params: {
   myName: string;
@@ -61,6 +86,31 @@ export function emptyDifferenceMap(): DifferenceMapVM {
     buckets: [],
     hasRadar: false,
     openingContrast: null,
+    dynamicsNarrative: null,
+  };
+}
+
+/** Sprint 2 — Essence (legacy section_2_nature). No module id. */
+export function emptyEssence(): EssenceVM {
+  return {
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    me: null,
+    partner: null,
+  };
+}
+
+/** Sprint 2 — Action Advice (legacy section_5_action). No module id. */
+export function emptyActionAdvice(): ActionAdviceVM {
+  return {
+    available: false,
+    confidence: "tentative",
+    evidence: EMPTY_EVIDENCE,
+    me: [],
+    partner: [],
+    together: null,
+    togetherStarter: null,
   };
 }
 
@@ -90,6 +140,7 @@ export function emptyWhySpecial(): WhySpecialVM {
     onlyTogether: null,
     whySpecial: null,
     frameDirectionLabel: null,
+    framesNarrative: null,
   };
 }
 
@@ -176,10 +227,10 @@ export function emptyNextStep(): NextStepVM {
   };
 }
 
-/** Legacy compatibility: M10 Horizon default. */
+/** M11 Relationship Horizon default. */
 export function emptyHorizon(): HorizonVM {
   return {
-    id: "M10",
+    id: "M11",
     title: "",
     available: false,
     confidence: "tentative",

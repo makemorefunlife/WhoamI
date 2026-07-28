@@ -14,15 +14,33 @@ import {
   type RomanticComparisonTableValue,
   ROMANTIC_COMPARISON_ASPECT_TO_ROW,
 } from "@/lib/relationship/romantic/romanticComparisonTableCanonical";
+import { polishRomanticDisplayText } from "@/lib/relationship/romanticEverydayText";
 import type {
   ConfidenceLevel,
   DifferenceBucketKind,
   DifferenceBucketVM,
+  DifferenceDynamicsNarrativeVM,
   DifferenceItemVM,
   DifferenceMapVM,
   EvidenceRef,
 } from "../romanticExperienceTypes";
 import { emptyDifferenceMap } from "./_empty";
+
+function trimOrNull(value: string | undefined | null): string | null {
+  const t = typeof value === "string" ? polishRomanticDisplayText(value).trim() : "";
+  return t ? t : null;
+}
+
+/** Sprint 2 — legacy section_1_relationship_dynamics narrative (additive). */
+function readDynamicsNarrative(
+  report: RomanticSajuDeepReport["report"],
+): { narrative: DifferenceDynamicsNarrativeVM | null; hasContent: boolean } {
+  const dynamics = report.section_1_relationship_dynamics;
+  const balance = trimOrNull(dynamics?.balance_of_power?.body);
+  const recovery = trimOrNull(dynamics?.recovery_speed?.body);
+  if (!balance && !recovery) return { narrative: null, hasContent: false };
+  return { narrative: { balance, recovery }, hasContent: true };
+}
 
 export type ProjectDifferenceMapInput = {
   report: RomanticSajuDeepReport["report"];
@@ -182,12 +200,21 @@ export function projectDifferenceMap(
   else if (anyHigh) confidence = "high";
   else if (buckets.length === 1 && byKind.shared.length) confidence = "low";
 
+  const dynamics = readDynamicsNarrative(input.report);
+  if (dynamics.hasContent) {
+    evidence.push({
+      path: "section_1_relationship_dynamics",
+      summary: "balance/recovery narrative",
+    });
+  }
+
   return {
     ...base,
     title: "Difference Map",
     available: true,
     confidence,
     evidence,
+    dynamicsNarrative: dynamics.narrative,
     buckets,
     hasRadar: false,
     openingContrast,

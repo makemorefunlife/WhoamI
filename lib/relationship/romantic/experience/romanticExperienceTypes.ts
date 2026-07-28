@@ -5,13 +5,17 @@
  * like PairPrescriptionPack). They must not read section_1_* … section_6_* or
  * Part labels.
  *
- * Grade, relationship_formula, and ScoreBoard identity scores are intentionally
- * absent from this surface.
+ * Grade and relationship_formula are intentionally absent from this surface.
+ * Sprint 5 restores the deterministic event_scores gauges (RelationshipScoreBoard)
+ * and the snapshot panel as a "30-second overview" — these are real deterministic
+ * numbers, not a letter-grade identity score, and are distinct from the banned
+ * grade/rank chrome.
  *
  * Experience V2 shell (Blueprint-aligned current scope):
  * M1 Hero · M2 Relationship Snapshot · M3 Difference Map ·
  * M4 Relationship Flow · M5 Hidden Heart · M6 Special Dynamics ·
- * M7 Conflict Translation · M8 Repair Guide · M9 Do / Don't · M10 Next Step
+ * M7 Conflict Translation · M8 Repair Guide · M9 Do / Don't · M10 Next Step ·
+ * M11 Relationship Horizon · M12 Reflection / Save-Share
  *
  * Legacy RomanticSajuDeepReportView remains default outside the feature flag.
  */
@@ -28,7 +32,8 @@ export type RomanticModuleId =
   | "M7"
   | "M8"
   | "M9"
-  | "M10";
+  | "M10"
+  | "M11";
 
 export const ROMANTIC_MODULE_ORDER: readonly RomanticModuleId[] = [
   "M1",
@@ -58,6 +63,40 @@ export type RomanticModuleBase = {
   available: boolean;
   confidence: ConfidenceLevel;
   evidence: EvidenceRef[];
+};
+
+/**
+ * Sprint 5 — 30-second Premium Overview (restored legacy header gauges).
+ * No RomanticModuleId — additive slot, not part of the frozen M1-M10 order.
+ * Renders via the existing, unmodified RelationshipScoreBoard component.
+ * Sprint 6: first-screen content below the gauges is re-selected from the
+ * Product Bible / Romantic Blueprint's M2 "Relationship Snapshot" signals
+ * (vm.snapshot, already computed) rather than legacy's rule-screen-plan
+ * narrative panel.
+ */
+export type PremiumOverviewEventScores = {
+  activation: number;
+  benefit: number;
+  risk: number;
+};
+
+export type PremiumOverviewVM = {
+  available: boolean;
+  confidence: ConfidenceLevel;
+  evidence: EvidenceRef[];
+  eventScores: PremiumOverviewEventScores | null;
+};
+
+/**
+ * Sprint 5 — shared 11-axis two-person comparison (bar form, not radar).
+ * Binds to meta.psych_match. No RomanticModuleId — additive slot.
+ */
+export type AxisComparisonVM = {
+  available: boolean;
+  confidence: ConfidenceLevel;
+  evidence: EvidenceRef[];
+  axisResults: import("@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema").RomanticPsychMatchAxisResult[];
+  hasTension: boolean;
 };
 
 /** M1 — Opening Scene (no grade / no score dial). */
@@ -111,11 +150,33 @@ export type DifferenceBucketVM = {
   items: DifferenceItemVM[];
 };
 
+/** Sprint 2 — legacy section_1_relationship_dynamics narrative, additive. */
+export type DifferenceDynamicsNarrativeVM = {
+  balance: string | null;
+  recovery: string | null;
+};
+
 export type DifferenceMapVM = RomanticModuleBase & {
   id: "M3";
   buckets: DifferenceBucketVM[];
   hasRadar: boolean;
   openingContrast: string | null;
+  dynamicsNarrative: DifferenceDynamicsNarrativeVM | null;
+};
+
+/** Sprint 2 — Essence (legacy section_2_nature). No RomanticModuleId: not part of the frozen M1-M10 order. */
+export type EssencePersonVM = {
+  name: string;
+  imageMetaphor: string | null;
+  narrative: string | null;
+};
+
+export type EssenceVM = {
+  available: boolean;
+  confidence: ConfidenceLevel;
+  evidence: EvidenceRef[];
+  me: EssencePersonVM | null;
+  partner: EssencePersonVM | null;
 };
 
 /** M5 — Hidden Heart */
@@ -140,6 +201,12 @@ export type WhySpecialGiftVM = {
   body: string | null;
 };
 
+/** Sprint 2 — legacy section_4_relationship_frames narrative, additive. */
+export type SpecialFramesNarrativeVM = {
+  reassurance: string | null;
+  rolePlay: string | null;
+};
+
 /** M6 — Special Dynamics */
 export type WhySpecialVM = RomanticModuleBase & {
   id: "M6";
@@ -147,6 +214,24 @@ export type WhySpecialVM = RomanticModuleBase & {
   onlyTogether: string | null;
   whySpecial: string | null;
   frameDirectionLabel: string | null;
+  framesNarrative: SpecialFramesNarrativeVM | null;
+};
+
+/** Sprint 2 — Action Advice (legacy section_5_action). No RomanticModuleId: additive, not part of M1-M10. */
+export type ActionAdviceItemVM = {
+  title: string;
+  reason: string;
+  speechTip: string;
+};
+
+export type ActionAdviceVM = {
+  available: boolean;
+  confidence: ConfidenceLevel;
+  evidence: EvidenceRef[];
+  me: ActionAdviceItemVM[];
+  partner: ActionAdviceItemVM[];
+  together: string | null;
+  togetherStarter: string | null;
 };
 
 export type FlowNodeVM = {
@@ -270,13 +355,26 @@ export type HorizonWaypointVM = {
 };
 
 export type HorizonVM = RomanticModuleBase & {
-  id: "M10";
+  id: "M11";
   waypoints: HorizonWaypointVM[];
+};
+
+/**
+ * M12 Reflection (lightweight closing). Sole owner of the closing
+ * realization line — sourced from Repair Guide's interrupt point (content
+ * not otherwise rendered anywhere), never from Opening or Do/Don't, so it
+ * never restates text the reader has already seen.
+ */
+export type ReflectionVM = {
+  available: boolean;
+  realization: string | null;
+  prompt: string | null;
 };
 
 export type SaveShareVM = {
   available: boolean;
   signatureLine: string | null;
+  insightLines: string[];
 };
 
 export type RomanticExperienceMeta = {
@@ -292,16 +390,24 @@ export type RomanticExperienceMeta = {
    * Projector generation id.
    * V2 shell behind feature-flag, deterministic-only scope.
    */
-  buildId: "b6-v2-ch3-m1-m10";
+  buildId: "b7-v2-production";
 };
 
 /**
  * Full experience VM. UI renders only `available: true` (or non-null packs).
- * Intentionally has no `grade`, `formula`, or ScoreBoard score fields.
+ * Intentionally has no `grade` or `formula` fields. Sprint 5 restores the
+ * deterministic event_scores gauges via `premiumOverview` (see that type's
+ * doc comment) — not the banned grade/rank identity chrome.
  */
 export type RomanticExperienceViewModel = {
   meta: RomanticExperienceMeta;
   opening: OpeningSceneVM;
+  /** Sprint 5 — 30-second Premium Overview. Additive, no module id. */
+  premiumOverview: PremiumOverviewVM;
+  /** Sprint 5 — shared 11-axis comparison. Additive, no module id. */
+  axisComparison: AxisComparisonVM;
+  /** Sprint 2 — Essence (legacy section_2_nature). Additive, no module id. */
+  essence: EssenceVM;
   /** M2 Relationship Snapshot */
   snapshot: RelationshipSnapshotVM;
   /** M3 Difference Map */
@@ -318,13 +424,20 @@ export type RomanticExperienceViewModel = {
   repairGuide: RepairGuideVM;
   /** M9 Do / Don't */
   doDont: DoDontVM;
+  /** Sprint 2 — Action Advice (legacy section_5_action). Additive, no module id. */
+  actionAdvice: ActionAdviceVM;
   /** M10 Next Step */
   nextStep: NextStepVM;
+  /** M11 Relationship Horizon */
+  horizon: HorizonVM;
+  /** M12 Reflection (lightweight closing) */
+  reflection: ReflectionVM;
   /**
    * B4: always null. Shared DeepReadViewModel is connected later.
    */
   deepRead: null;
-  saveShare: SaveShareVM | null;
+  /** M12 Save / Share surface */
+  saveShare: SaveShareVM;
 };
 
 export type RomanticModuleSlotSummary = {

@@ -59,8 +59,9 @@ assert.equal(vm.conflictTranslation.available, true);
 assert.equal(vm.repairGuide.available, true);
 assert.equal(vm.doDont.available, true);
 assert.equal(vm.nextStep.available, true);
-assert.equal(Object.hasOwn(vm, "nextStep"), true);
-assert.equal(Object.hasOwn(vm, "horizon"), false);
+assert.equal(vm.horizon.available, true);
+assert.equal(vm.reflection.available, true);
+assert.equal(vm.saveShare.available, true);
 assert.equal(Object.hasOwn(vm, "dailyLife"), false);
 
 console.log("\n=== 3) M7 Daily Life is suppressed in VM contract ===");

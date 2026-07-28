@@ -1,23 +1,63 @@
 "use client";
 
 /**
- * Romantic Experience V2 shell behind feature flag.
- * Current scope: M1..M10 (Daily Life suppressed).
- * No ScoreBoard / RelationshipReportLayout / legacy section_* access.
+ * Romantic Experience V2 — production UI behind feature flag.
+ * Renders M1..M10 + Horizon + Reflection/SaveShare from VM only.
+ * No ScoreBoard / legacy section_* access.
  */
-import { useMemo } from "react";
-import {
-  RelationshipReportBody,
-  RelationshipReportCard,
-  RelationshipReportParagraph,
-} from "@/components/relationship/reportLayout";
+import { Fragment, useMemo, type ReactNode } from "react";
 import { buildRomanticExperienceViewModel } from "@/lib/relationship/romantic/experience/buildRomanticExperienceViewModel";
-import {
-  ROMANTIC_MODULE_ORDER,
-  summarizeRomanticModuleSlots,
-  type RomanticExperienceViewModel,
-} from "@/lib/relationship/romantic/experience/romanticExperienceTypes";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import {
+  RomanticActionAdviceSection,
+  RomanticAxisComparisonSection,
+  RomanticConflictSection,
+  RomanticDifferenceMapSection,
+  RomanticDoDontSection,
+  RomanticEssenceSection,
+  RomanticFlowSection,
+  RomanticHeroSection,
+  RomanticHiddenHeartSection,
+  RomanticHorizonSection,
+  RomanticPremiumOverviewSection,
+  RomanticReflectionSection,
+  RomanticRepairSection,
+  RomanticSaveShareSection,
+  RomanticSpecialSection,
+  hasSpecialContent,
+} from "./RomanticExperienceModules";
+
+/**
+ * Sprint 1/2: deterministic, content-agnostic chapter-transition bridges
+ * between visible sections. Snapshot/NextStep stay in the ViewModel and
+ * projector layer unchanged (see romanticExperienceTypes.ts) — only their
+ * cards are retired; Flow/Do-Don't remain the sole owners of that data.
+ * Sprint 2: upgraded from a plain text line to a large-spaced chapter break
+ * with a subtle serif numeral.
+ */
+const FLOW_BRIDGES = [
+  "여기서 조금 더 들어가 볼게요.",
+  "이 지점에서 다른 결이 보여요.",
+  "그리고 이런 장면도 있어요.",
+  "이제 조금 더 가까이에서 볼게요.",
+];
+
+function ModuleBridge({ index }: { index: number }) {
+  return (
+    <div role="separator" className="flex flex-col items-center gap-3 py-3 sm:py-6">
+      <div className="flex items-center justify-center gap-4">
+        <span aria-hidden className="h-px w-10 bg-outline-variant/25 sm:w-16" />
+        <span className="font-serif text-sm text-outline-variant/70 sm:text-base">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <span aria-hidden className="h-px w-10 bg-outline-variant/25 sm:w-16" />
+      </div>
+      <p className="px-4 text-center text-xs font-medium tracking-wide text-on-surface-variant/60">
+        {FLOW_BRIDGES[index % FLOW_BRIDGES.length]}
+      </p>
+    </div>
+  );
+}
 
 export type RomanticExperienceViewProps = {
   report: RomanticSajuDeepReport["report"];
@@ -28,10 +68,6 @@ export type RomanticExperienceViewProps = {
   viewerIsReportA?: boolean;
   locale?: string;
 };
-
-function availableModuleCount(vm: RomanticExperienceViewModel): number {
-  return summarizeRomanticModuleSlots(vm).filter((s) => s.available).length;
-}
 
 export default function RomanticExperienceView({
   report,
@@ -56,261 +92,62 @@ export default function RomanticExperienceView({
     [report, nameA, nameB, myName, partnerName, viewerIsReportA, locale],
   );
 
-  const slots = summarizeRomanticModuleSlots(vm);
-  const readyCount = availableModuleCount(vm);
+  /**
+   * Sprint 4 — module order preserved exactly; each slot's `visible` mirrors
+   * the same condition its own component already gates on internally, so a
+   * bridge is only ever placed between two sections that actually render.
+   */
+  const premiumOverviewVisible =
+    vm.premiumOverview.available && Boolean(vm.premiumOverview.eventScores);
+
+  const slots: Array<{ key: string; visible: boolean; render: () => ReactNode }> = [
+    { key: "hero", visible: vm.opening.available, render: () => <RomanticHeroSection vm={vm} /> },
+    {
+      key: "premiumOverview",
+      visible: premiumOverviewVisible,
+      render: () => <RomanticPremiumOverviewSection vm={vm} />,
+    },
+    {
+      key: "axisComparison",
+      visible: vm.axisComparison.available,
+      render: () => <RomanticAxisComparisonSection vm={vm} />,
+    },
+    { key: "essence", visible: vm.essence.available, render: () => <RomanticEssenceSection vm={vm} /> },
+    { key: "differenceMap", visible: vm.differenceMap.available, render: () => <RomanticDifferenceMapSection vm={vm} /> },
+    { key: "flow", visible: vm.flow.available, render: () => <RomanticFlowSection vm={vm} /> },
+    { key: "special", visible: hasSpecialContent(vm), render: () => <RomanticSpecialSection vm={vm} /> },
+    {
+      key: "hiddenHeart",
+      visible: vm.hiddenHeart.available,
+      render: () => <RomanticHiddenHeartSection vm={vm} />,
+    },
+    { key: "conflict", visible: vm.conflictTranslation.available, render: () => <RomanticConflictSection vm={vm} /> },
+    { key: "repair", visible: vm.repairGuide.available, render: () => <RomanticRepairSection vm={vm} /> },
+    { key: "doDont", visible: vm.doDont.available && Boolean(vm.doDont.pack), render: () => <RomanticDoDontSection vm={vm} /> },
+    { key: "actionAdvice", visible: vm.actionAdvice.available, render: () => <RomanticActionAdviceSection vm={vm} /> },
+    { key: "horizon", visible: vm.horizon.available, render: () => <RomanticHorizonSection vm={vm} /> },
+    {
+      key: "reflection",
+      visible: vm.reflection.available && Boolean(vm.reflection.realization),
+      render: () => <RomanticReflectionSection vm={vm} />,
+    },
+    { key: "saveShare", visible: vm.saveShare.available && Boolean(vm.saveShare.signatureLine), render: () => <RomanticSaveShareSection vm={vm} /> },
+  ];
+  const visibleSlots = slots.filter((slot) => slot.visible);
 
   return (
     <div
       data-romantic-experience="v2"
       data-romantic-build={vm.meta.buildId}
-      className="space-y-6 sm:space-y-8"
+      data-test-romantic="VISIBLE-V2"
+      className="space-y-8 sm:space-y-10"
     >
-      <RelationshipReportCard title="Romantic Experience V2">
-        <RelationshipReportBody>
-          <RelationshipReportParagraph>
-            {vm.meta.myName} · {vm.meta.partnerName}
-          </RelationshipReportParagraph>
-          <RelationshipReportParagraph muted>
-            Feature-flag shell ({vm.meta.buildId}). Ready modules: {readyCount}/
-            {ROMANTIC_MODULE_ORDER.length}. Legacy report remains default unless
-            V2 is explicitly enabled.
-          </RelationshipReportParagraph>
-          <ul className="mt-3 space-y-1 text-sm text-on-surface-variant">
-            {slots.map((slot) => (
-              <li key={slot.id} data-module={slot.id} data-available={slot.available}>
-                {slot.id}
-                {slot.available ? " · ready" : " · omitted"}
-              </li>
-            ))}
-          </ul>
-        </RelationshipReportBody>
-      </RelationshipReportCard>
-
-      {vm.opening.available ? (
-        <RelationshipReportCard title="M1 Hero">
-          <RelationshipReportBody>
-            {vm.opening.signature ? (
-              <RelationshipReportParagraph>
-                {vm.opening.signature}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.opening.paradox ? (
-              <RelationshipReportParagraph muted>
-                {vm.opening.paradox}
-              </RelationshipReportParagraph>
-            ) : null}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.snapshot.available ? (
-        <RelationshipReportCard title="M2 Relationship Snapshot">
-          <RelationshipReportBody>
-            <ul className="space-y-2">
-              {vm.snapshot.signals.map((signal) => (
-                <li key={signal.kind} className="text-sm leading-relaxed">
-                  <span className="font-medium">{signal.label}:</span>{" "}
-                  {signal.summary}
-                </li>
-              ))}
-            </ul>
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.differenceMap.available ? (
-        <RelationshipReportCard title="M3 Difference Map">
-          <RelationshipReportBody>
-            {vm.differenceMap.openingContrast ? (
-              <RelationshipReportParagraph>
-                {vm.differenceMap.openingContrast}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.differenceMap.buckets.map((bucket) => (
-              <div key={bucket.kind} className="space-y-2">
-                <RelationshipReportParagraph className="font-medium">
-                  {bucket.label}
-                </RelationshipReportParagraph>
-                <ul className="space-y-2">
-                  {bucket.items.map((item) => (
-                    <li
-                      key={`${bucket.kind}-${item.aspect}`}
-                      className="text-sm leading-relaxed"
-                    >
-                      {item.aspect}: {item.me} ↔ {item.partner}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.flow.available ? (
-        <RelationshipReportCard title="M4 Relationship Flow">
-          <RelationshipReportBody>
-            <ul className="space-y-2">
-              {vm.flow.nodes.map((node) => (
-                <li key={node.key} className="text-sm leading-relaxed">
-                  <span className="font-medium">{node.label}:</span>{" "}
-                  {node.body}
-                </li>
-              ))}
-            </ul>
-            {vm.flow.interrupt ? (
-              <RelationshipReportParagraph className="mt-3" muted>
-                {vm.flow.interrupt.label}
-              </RelationshipReportParagraph>
-            ) : null}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.hiddenHeart.available ? (
-        <RelationshipReportCard title="M5 Hidden Heart">
-          <RelationshipReportBody>
-            {vm.hiddenHeart.me ? (
-              <RelationshipReportParagraph>
-                <span className="font-medium">{vm.hiddenHeart.me.name}:</span>{" "}
-                {vm.hiddenHeart.me.need ?? vm.hiddenHeart.me.reason ?? vm.hiddenHeart.me.voice}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.hiddenHeart.partner ? (
-              <RelationshipReportParagraph>
-                <span className="font-medium">{vm.hiddenHeart.partner.name}:</span>{" "}
-                {vm.hiddenHeart.partner.need ??
-                  vm.hiddenHeart.partner.reason ??
-                  vm.hiddenHeart.partner.voice}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.hiddenHeart.mutualGift ? (
-              <RelationshipReportParagraph muted>
-                {vm.hiddenHeart.mutualGift}
-              </RelationshipReportParagraph>
-            ) : null}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.specialDynamics.available ? (
-        <RelationshipReportCard title="M6 Special Dynamics">
-          <RelationshipReportBody>
-            {vm.specialDynamics.gifts.map((gift, idx) => (
-              <RelationshipReportParagraph key={`${gift.from}-${gift.to}-${idx}`}>
-                <span className="font-medium">
-                  {gift.from} → {gift.to}
-                </span>
-                : {gift.body}
-              </RelationshipReportParagraph>
-            ))}
-            {vm.specialDynamics.onlyTogether ? (
-              <RelationshipReportParagraph>
-                {vm.specialDynamics.onlyTogether}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.specialDynamics.whySpecial ? (
-              <RelationshipReportParagraph muted>
-                {vm.specialDynamics.whySpecial}
-              </RelationshipReportParagraph>
-            ) : null}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.conflictTranslation.available ? (
-        <RelationshipReportCard title="M7 Conflict Translation">
-          <RelationshipReportBody>
-            {vm.conflictTranslation.situationTitle ? (
-              <RelationshipReportParagraph>
-                {vm.conflictTranslation.situationTitle}
-              </RelationshipReportParagraph>
-            ) : null}
-            {!vm.conflictTranslation.rows.some((row) => row.meant || row.heard) ? (
-              <RelationshipReportParagraph muted>
-                Current payload exposes said/better only; meant/heard rows are safely reduced.
-              </RelationshipReportParagraph>
-            ) : null}
-            <ul className="space-y-3">
-              {vm.conflictTranslation.rows.map((row, idx) => (
-                <li
-                  key={`${row.speakerLabel}-${idx}`}
-                  className="rounded-xl border border-outline-variant/25 p-3 text-sm leading-relaxed"
-                >
-                  <p>
-                    <span className="font-medium">{row.speakerLabel}</span>:{" "}
-                    {row.said ?? "—"}
-                  </p>
-                  {row.meant || row.heard ? (
-                    <>
-                      <p className="mt-1 text-on-surface-variant">
-                        Meant: {row.meant ?? "—"}
-                      </p>
-                      <p className="mt-1 text-on-surface-variant">
-                        Heard: {row.heard ?? "—"}
-                      </p>
-                    </>
-                  ) : null}
-                  {row.better ? (
-                    <p className="mt-2">
-                      <span className="font-medium">Better:</span> {row.better}
-                    </p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.repairGuide.available ? (
-        <RelationshipReportCard title="M8 Repair Guide">
-          <RelationshipReportBody>
-            <ul className="space-y-3">
-              {vm.repairGuide.stages.map((stage) => (
-                <li key={stage.id} className="text-sm leading-relaxed">
-                  <span className="font-medium">{stage.title}:</span> {stage.body}
-                  {stage.speakable ? ` (${stage.speakable})` : ""}
-                </li>
-              ))}
-            </ul>
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.doDont.available && vm.doDont.pack ? (
-        <RelationshipReportCard title="M9 Do / Don't">
-          <RelationshipReportBody>
-            {vm.doDont.pack.items.map((item) => (
-              <div key={item.topic} className="space-y-2">
-                <RelationshipReportParagraph className="font-medium">
-                  {item.headline}
-                </RelationshipReportParagraph>
-                <ul className="space-y-1 text-sm leading-relaxed">
-                  {item.do_list.map((line, idx) => (
-                    <li key={`do-${item.topic}-${idx}`}>Do: {line}</li>
-                  ))}
-                  {item.dont_list.map((line, idx) => (
-                    <li key={`dont-${item.topic}-${idx}`}>Don't: {line}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {vm.nextStep.available ? (
-        <RelationshipReportCard title="M10 Next Step">
-          <RelationshipReportBody>
-            {vm.nextStep.viewerExperiments.map((step, idx) => (
-              <RelationshipReportParagraph key={`${step.kind}-${idx}`}>
-                <span className="font-medium">Next 24h:</span> {step.text}
-              </RelationshipReportParagraph>
-            ))}
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
+      {visibleSlots.map((slot, idx) => (
+        <Fragment key={slot.key}>
+          {slot.render()}
+          {idx < visibleSlots.length - 1 ? <ModuleBridge index={idx} /> : null}
+        </Fragment>
+      ))}
     </div>
   );
 }

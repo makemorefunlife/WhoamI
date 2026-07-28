@@ -32,7 +32,27 @@ export const romanticExperienceMinimalFixture: RomanticReportBody = {
     why_special: "special",
   },
   meta: {
-    event_scores: { activation: 80, benefit: 70, risk: 20 },
+    // Real production shape (see extractRomanticScores in the legacy view,
+    // and projectPremiumOverview.ts): activation/benefit/risk nest under
+    // `.overall`. Previously flat here — fixed so this dev fixture actually
+    // exercises the Sprint 5 Premium Overview gauges.
+    event_scores: { overall: { activation: 80, benefit: 70, risk: 20 } },
+    psych_match: {
+      axis_results: [
+        { axis_key: "stimulation", score_a: 72, score_b: 40, gap: 32, match_type: "tension" },
+        { axis_key: "self_control", score_a: 55, score_b: 60, gap: 5, match_type: "similarity" },
+        { axis_key: "practicality", score_a: 48, score_b: 66, gap: 18, match_type: "complementary" },
+        { axis_key: "structure", score_a: 70, score_b: 35, gap: 35, match_type: "tension" },
+        { axis_key: "empathy", score_a: 65, score_b: 62, gap: 3, match_type: "similarity" },
+        { axis_key: "conflict_style", score_a: 58, score_b: 44, gap: 14, match_type: "complementary" },
+        { axis_key: "resilience", score_a: 50, score_b: 53, gap: 3, match_type: "similarity" },
+        { axis_key: "recognition", score_a: 62, score_b: 47, gap: 15, match_type: "complementary" },
+        { axis_key: "energy_style", score_a: 75, score_b: 41, gap: 34, match_type: "tension" },
+        { axis_key: "thinking_style", score_a: 53, score_b: 57, gap: 4, match_type: "similarity" },
+        { axis_key: "decision_style", score_a: 60, score_b: 46, gap: 14, match_type: "complementary" },
+      ],
+      conflict_triggers: [],
+    },
   },
 };
 
@@ -95,6 +115,10 @@ export const romanticExperienceCompleteFixture: RomanticReportBody = {
   canonical_projections: {
     expression_speed: { direction: "A", align: "confirms", confidence: "high" },
     saju_frame_direction: { direction: "A", anchor_is_a: true },
+    // recovery_mismatch: true is required for Repair Guide to produce an
+    // `interrupt` point — which is Reflection's sole realization source
+    // (see projectReflection.ts). Without it, the /dev/romantic-v2-visual
+    // "complete" variant would silently omit the Reflection section.
     recovery_speed: {
       recovery_a: "quick_recovery",
       recovery_b: "deep_processing",

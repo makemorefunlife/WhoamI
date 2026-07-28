@@ -30,6 +30,10 @@ const experienceUiPath = join(
   __dir,
   "../../components/relationship/romantic/experience/RomanticExperienceView.tsx",
 );
+const experienceModulesPath = join(
+  __dir,
+  "../../components/relationship/romantic/experience/RomanticExperienceModules.tsx",
+);
 
 console.log("\n=== 1) complete projection includes M1..M10 ===");
 const complete = makeCompleteRomanticReport();
@@ -78,10 +82,15 @@ assert.equal(json.includes("ScoreBoard"), false);
 
 console.log("\n=== 5) UI still keeps VM boundary only ===");
 const uiSrc = readFileSync(experienceUiPath, "utf8");
+const modulesSrc = readFileSync(experienceModulesPath, "utf8");
 const uiCode = uiSrc
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/\/\/.*$/gm, "");
+const modulesCode = modulesSrc
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/\/\/.*$/gm, "");
 assert.equal(uiCode.includes("section_"), false);
+assert.equal(modulesCode.includes("section_"), false);
 assert.equal(uiCode.includes("ScoreBoard"), false);
 assert.match(uiSrc, /buildRomanticExperienceViewModel/);
 

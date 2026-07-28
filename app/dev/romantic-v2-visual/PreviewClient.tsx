@@ -1,36 +1,27 @@
 "use client";
 
-import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
+import RomanticExperienceView from "@/components/relationship/romantic/experience/RomanticExperienceView";
+import { ReportSurfaceProvider } from "@/components/relationship/reportLayout";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 
 type PreviewClientProps = {
   report: RomanticSajuDeepReport["report"];
 };
 
+/** Dev-only: always renders V2 (no env flag required). */
 export default function PreviewClient({ report }: PreviewClientProps) {
   return (
-    <main className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6">
-      <RelationshipPremiumSection
-        busy={false}
-        premiumKind="romantic"
-        analysisType="premium"
-        premiumReady
-        hasSnapshotView={false}
-        partnerName="Jun"
-        viewerName="Mina"
-        nameA="Mina"
-        nameB="Jun"
-        viewerIsReportA
-        displayPremium={null}
-        displayRomanticDeep={report}
-        displayWorkDeep={null}
-        displayCohabitationDeep={null}
-        displayFamilyDeep={null}
-        displayFriendshipDeep={null}
-        onRunPremium={async () => false}
-        onRegeneratePremium={() => {}}
-        forceVisible
-      />
-    </main>
+    <ReportSurfaceProvider surface="stitch">
+      <main className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6">
+        <RomanticExperienceView
+          report={report}
+          nameA="Mina"
+          nameB="Jun"
+          myName="Mina"
+          partnerName="Jun"
+          viewerIsReportA
+        />
+      </main>
+    </ReportSurfaceProvider>
   );
 }
