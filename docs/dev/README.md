@@ -13,6 +13,7 @@ docs/dev/
   00_Status.md        ← 살아있는 Todo / NOW·NEXT
   TODO.md             ← 나중용 메모 (Error Boundary / Maps / i18n)
   CORE_MAP.md         ← 코어 vs 나중에 지울 코드 구분
+  personCore/         ← PersonCore engine policy (Personal CE selection SSOT)
   daily/              ← 하루 devlog
   decisions/          ← 중요한 결정 기록 (회의록)
 

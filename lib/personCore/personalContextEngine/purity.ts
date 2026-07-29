@@ -40,8 +40,8 @@ export function assertPersonalContextPurity(
     if (!p.reference_ids.length) {
       errors.push(`${p.packet_id}: empty reference_ids`);
     }
-    if (p.weight < 0 || p.weight > 1.5) {
-      errors.push(`${p.packet_id}: weight out of range`);
+    if (p.selection_priority < 0 || p.selection_priority > 1.5) {
+      errors.push(`${p.packet_id}: selection_priority out of range`);
     }
     for (const m of p.base_meanings) {
       if (!m.resolved) errors.push(`${p.packet_id}: base_meaning not resolved`);

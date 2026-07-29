@@ -82,13 +82,17 @@ export {
   assertPersonalContextPurity,
   adaptPersonalContextForSlim,
   SLIM_INSERTION_POINTS,
+  POLICY_DEFAULTS,
+  DOCUMENTED_SSOT_GAPS,
 } from "./personalContextEngine";
 export type {
   PersonalContextEngineInput,
   PersonalContextEngineOutput,
   PersonalContextPacket,
   SlimPersonalContextPackage,
+  PersonalSignalTier,
 } from "./personalContextEngine";
+
 
 export { PersonCoreError } from "./errors";
 export type { PersonCoreErrorCode } from "./errors";

@@ -4,9 +4,12 @@ import {
 } from "../referenceDictionary";
 import type { ReferenceDictionary } from "../referenceDictionary";
 import {
+  DOCUMENTED_SSOT_GAPS,
   PERSONAL_CE_VERSION,
   PERSONAL_INNATE_LENS,
+  POLICY_DEFAULTS,
   type PersonalContextGroupId,
+  type PersonalSignalTier,
 } from "./constants";
 import {
   aggregateTenGodStemCounts,
@@ -75,9 +78,26 @@ function resolveMeanings(
   return { resolved, unresolvedIds };
 }
 
+function canAdmitTier(
+  tier: PersonalSignalTier,
+  groupCounts: { total: number; t12: number },
+  maxPerGroup: number,
+  reservedT12: number,
+): boolean {
+  if (groupCounts.total >= maxPerGroup) return false;
+  if (tier <= 2) return true;
+  // T3/T4 only after reserved T1–T2 slots filled OR remaining slots exceed reserve need
+  const remaining = maxPerGroup - groupCounts.total;
+  const t12StillNeeded = Math.max(0, reservedT12 - groupCounts.t12);
+  // Allow T3/T4 only if we still leave room for unmet T1–T2 reserve,
+  // OR reserve already satisfied.
+  if (groupCounts.t12 >= reservedT12) return true;
+  return remaining > t12StillNeeded;
+}
+
 /**
  * Personal Context Engine — personal_innate_v1.
- * Reads Individual SSOT + Dictionary; emits structured packets only.
+ * Individual SSOT facts + Dictionary base meanings → structured packets.
  */
 export function runPersonalContextEngine(
   input: PersonalContextEngineInput,
@@ -92,16 +112,22 @@ export function runPersonalContextEngine(
   const dictVersion =
     input.dictionary_version ?? dict.schema_version ?? REFERENCE_DICTIONARY_VERSION;
   if (dictVersion !== dict.schema_version) {
-    // Soft note via unresolved-style provenance mismatch is avoided; fail closed.
     throw new Error(
       `Dictionary version mismatch: input=${dictVersion} catalog=${dict.schema_version}`,
     );
   }
 
-  const maxPerGroup = input.options?.max_packets_per_group ?? 8;
+  const maxPerGroup =
+    input.options?.max_packets_per_group ?? POLICY_DEFAULTS.max_packets_per_group;
+  const reservedT12 =
+    input.options?.reserved_t1_t2_per_group ??
+    POLICY_DEFAULTS.reserved_t1_t2_per_group;
+
   const candidates = selectPersonalInnateCandidates(chart, {
     include_low_confidence: input.options?.include_low_confidence,
     include_unpossessed_specials: input.options?.include_unpossessed_specials,
+    max_nobles: input.options?.max_nobles,
+    max_non_noble_shinsal: input.options?.max_non_noble_shinsal,
   });
 
   const unresolved_references: UnresolvedReference[] = [];
@@ -110,21 +136,27 @@ export function runPersonalContextEngine(
   const packets: PersonalContextPacket[] = [];
   let packetSeq = 0;
 
-  // Sort for determinism: group order, then -weight, then fact_path
   const groupRank = new Map(GROUP_ORDER.map((g, i) => [g, i]));
+  // Sort: group → tier asc → selection_priority desc → fact_path
   const sorted = [...candidates].sort((a, b) => {
     const gr = (groupRank.get(a.group) ?? 99) - (groupRank.get(b.group) ?? 99);
     if (gr !== 0) return gr;
-    if (b.weight !== a.weight) return b.weight - a.weight;
+    if (a.tier !== b.tier) return a.tier - b.tier;
+    if (b.selection_priority !== a.selection_priority) {
+      return b.selection_priority - a.selection_priority;
+    }
     return a.fact_path.localeCompare(b.fact_path);
   });
 
-  const groupCounts: Record<PersonalContextGroupId, number> = {
-    identity: 0,
-    energy: 0,
-    strengths: 0,
-    cautions: 0,
-    growth: 0,
+  const groupState: Record<
+    PersonalContextGroupId,
+    { total: number; t12: number }
+  > = {
+    identity: { total: 0, t12: 0 },
+    energy: { total: 0, t12: 0 },
+    strengths: { total: 0, t12: 0 },
+    cautions: { total: 0, t12: 0 },
+    growth: { total: 0, t12: 0 },
   };
 
   for (const c of sorted) {
@@ -135,7 +167,6 @@ export function runPersonalContextEngine(
         reason: c.exclude.reason,
         detail: c.exclude.detail,
       });
-      // Still record unresolved lookups for excluded refs (visibility)
       resolveMeanings(
         c.reference_ids,
         c.fact_path,
@@ -145,12 +176,13 @@ export function runPersonalContextEngine(
       continue;
     }
 
-    if (groupCounts[c.group] >= maxPerGroup) {
+    const state = groupState[c.group];
+    if (!canAdmitTier(c.tier, state, maxPerGroup, reservedT12)) {
       exclusions.push({
         fact_path: c.fact_path,
         reference_ids: c.reference_ids,
         reason: "low_priority_cap",
-        detail: `max_packets_per_group=${maxPerGroup}`,
+        detail: `tier=${c.tier} max=${maxPerGroup} reserved_t12=${reservedT12}`,
       });
       continue;
     }
@@ -167,22 +199,23 @@ export function runPersonalContextEngine(
       packet_id: `pce_${String(packetSeq).padStart(3, "0")}`,
       group: c.group,
       role_in_lens: c.role_in_lens,
+      tier: c.tier,
       fact_path: c.fact_path,
       codes: c.codes.filter((x) => x !== ""),
       reference_ids: c.reference_ids,
       base_meanings: resolved,
       unresolved_reference_ids: unresolvedIds,
-      weight: c.weight,
+      selection_priority: c.selection_priority,
       confidence: c.confidence,
       evidence: c.evidence,
     };
 
     groups[c.group].push(packet);
     packets.push(packet);
-    groupCounts[c.group] += 1;
+    state.total += 1;
+    if (c.tier <= 2) state.t12 += 1;
   }
 
-  // Dedupe unresolved by reference_id + fact_path; sort for determinism
   const unresolvedSeen = new Set<string>();
   const unresolvedDeduped: UnresolvedReference[] = [];
   for (const u of unresolved_references) {
@@ -211,6 +244,7 @@ export function runPersonalContextEngine(
       weakest_element: chart.five_elements.weakest,
       strength_token: chart.strength.label_token,
       birth_time_unknown: birthUnknown,
+      ssot_gaps: [...DOCUMENTED_SSOT_GAPS],
     },
     exclusions,
     unresolved_references: unresolvedDeduped,
@@ -224,6 +258,7 @@ export function runPersonalContextEngine(
       chart_ref_data_fingerprint: chart.engine.ref_data_fingerprint,
       report_id: chart.birth.report_id,
       built_at: chart.engine.built_at,
+      policy_id: "personal_context_engine_policy_v1",
     },
   };
 }

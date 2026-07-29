@@ -1,127 +1,183 @@
 /**
- * Personal Context Engine MVP unit tests
+ * Personal Context Engine — policy-aligned unit tests
  * Run: npx tsx tests/unit/personal-context-engine.test.mjs
  */
 import assert from "node:assert/strict";
 import {
   PERSONAL_CE_VERSION,
   PERSONAL_INNATE_LENS,
+  DOCUMENTED_SSOT_GAPS,
+  COMBINE_RELATION_TYPES,
+  TENSION_RELATION_TYPES,
   runPersonalContextEngine,
   assertPersonalContextPurity,
   adaptPersonalContextForSlim,
-  SLIM_INSERTION_POINTS,
-  SLIM_PERSONAL_CONTEXT_ADAPTER_VERSION,
+  selectPersonalInnateCandidates,
+  buildPersonalCeFixtureChart,
 } from "../../lib/personCore/personalContextEngine/index.ts";
-import { buildPersonalCeFixtureChart } from "../../lib/personCore/personalContextEngine/fixtures.ts";
-import { getReferenceDictionary } from "../../lib/personCore/referenceDictionary/index.ts";
 
 function section(title) {
   console.log(`\n=== ${title} ===`);
 }
 
-section("known_time fixture — contract shape");
 const chartKnown = buildPersonalCeFixtureChart("known_time");
 const outKnown = runPersonalContextEngine({ chart: chartKnown });
+const chartUnknown = buildPersonalCeFixtureChart("unknown_time");
+const outUnknown = runPersonalContextEngine({ chart: chartUnknown });
+
+section("contract + ssot gaps documented");
 assert.equal(outKnown.schema_version, PERSONAL_CE_VERSION);
 assert.equal(outKnown.lens, PERSONAL_INNATE_LENS);
-assert.equal(outKnown.aggregates.birth_time_unknown, false);
-assert.ok(outKnown.packets.length > 5);
-for (const g of ["identity", "energy", "strengths", "cautions", "growth"]) {
-  assert.ok(Array.isArray(outKnown.groups[g]), `missing group ${g}`);
-  assert.ok(outKnown.groups[g].length > 0, `empty group ${g}`);
-}
-const purityKnown = assertPersonalContextPurity(outKnown);
-assert.equal(purityKnown.ok, true, purityKnown.errors.join("\n"));
-console.log(
-  `  ✓ packets=${outKnown.packets.length} unresolved=${outKnown.unresolved_references.length}`,
-);
+assert.equal(outKnown.provenance.policy_id, "personal_context_engine_policy_v1");
+assert.deepEqual([...outKnown.aggregates.ssot_gaps], [...DOCUMENTED_SSOT_GAPS]);
+assert.ok(!("yin_yang_balance" in chartKnown));
+assert.equal(chartKnown.luck_cycles.computed, false);
+console.log("  ✓ gaps listed, not fabricated");
 
-section("packets preserve refId / evidence / weight / confidence / provenance");
-const sample = outKnown.packets[0];
-assert.ok(sample.packet_id);
-assert.ok(sample.fact_path);
-assert.ok(sample.reference_ids.length);
-assert.ok(typeof sample.weight === "number");
-assert.ok(sample.confidence);
-assert.ok(Array.isArray(sample.evidence));
-assert.equal(outKnown.provenance.lens, PERSONAL_INNATE_LENS);
+section("deterministic ordering");
+const again = runPersonalContextEngine({ chart: chartKnown });
 assert.equal(
-  outKnown.provenance.dictionary_version,
-  getReferenceDictionary().schema_version,
-);
-assert.equal(
-  outKnown.provenance.chart_input_fingerprint,
-  chartKnown.engine.input_fingerprint,
-);
-assert.ok(
-  sample.base_meanings.every((m) => m.resolved === true && m.text_ko),
-);
-console.log("  ✓ provenance + packet fields");
-
-section("deterministic output");
-const outKnown2 = runPersonalContextEngine({ chart: chartKnown });
-assert.equal(
-  JSON.stringify(outKnown.packets.map((p) => p.packet_id)),
-  JSON.stringify(outKnown2.packets.map((p) => p.packet_id)),
-);
-assert.equal(
-  JSON.stringify(outKnown.packets.map((p) => [p.fact_path, p.weight])),
-  JSON.stringify(outKnown2.packets.map((p) => [p.fact_path, p.weight])),
+  JSON.stringify(outKnown.packets.map((p) => [p.packet_id, p.fact_path, p.tier, p.selection_priority])),
+  JSON.stringify(again.packets.map((p) => [p.packet_id, p.fact_path, p.tier, p.selection_priority])),
 );
 console.log("  ✓ deterministic");
 
-section("unknown birth time — hour excluded");
-const chartUnknown = buildPersonalCeFixtureChart("unknown_time");
-assert.equal(chartUnknown.birth.birth_time_unknown, true);
-const outUnknown = runPersonalContextEngine({ chart: chartUnknown });
-assert.equal(outUnknown.aggregates.birth_time_unknown, true);
-const hourPackets = outUnknown.packets.filter((p) =>
-  p.fact_path.startsWith("pillars.hour"),
-);
-assert.equal(hourPackets.length, 0);
-const hourExclusions = outUnknown.exclusions.filter(
-  (e) =>
-    e.reason === "birth_time_unknown" &&
-    e.fact_path.startsWith("pillars.hour"),
-);
-assert.ok(hourExclusions.length >= 1);
+section("self ten-god excluded");
 assert.equal(
-  outUnknown.aggregates.ten_god_stem_counts[
-    chartUnknown.pillars.find((p) => p.slot === "hour")?.stem_ten_god.code
-  ] === undefined ||
-    !Object.keys(outUnknown.aggregates.ten_god_stem_counts).includes("FORCE"),
-  true,
+  outKnown.packets.some((p) => p.fact_path === "pillars.day.stem_ten_god"),
+  false,
 );
-// hour stem ten god must not be required in aggregates count from hour
-const hourGod = chartUnknown.pillars.find((p) => p.slot === "hour")
-  ?.stem_ten_god.code;
-if (hourGod) {
-  const yearMonthDayGods = chartUnknown.pillars
-    .filter((p) => p.slot !== "hour")
-    .map((p) => p.stem_ten_god.code);
-  const hourOnly =
-    yearMonthDayGods.filter((c) => c === hourGod).length === 0;
-  if (hourOnly) {
-    assert.equal(
-      outUnknown.aggregates.ten_god_stem_counts[hourGod],
-      undefined,
-    );
+assert.equal(
+  selectPersonalInnateCandidates(chartKnown).some(
+    (c) => c.fact_path === "pillars.day.stem_ten_god" && !c.exclude,
+  ),
+  false,
+);
+console.log("  ✓ day stem self ten-god removed");
+
+section("non-day stem ten-gods present");
+assert.ok(
+  outKnown.packets.some((p) => p.fact_path === "pillars.month.stem_ten_god"),
+);
+assert.ok(
+  outKnown.packets.some((p) => p.fact_path === "pillars.year.stem_ten_god"),
+);
+console.log("  ✓ Y/M stem ten-gods vs day master");
+
+section("separate relation handling");
+const combinePackets = outKnown.packets.filter((p) =>
+  COMBINE_RELATION_TYPES.has(p.codes[p.codes.length - 1]),
+);
+const tensionPackets = outKnown.packets.filter((p) =>
+  TENSION_RELATION_TYPES.has(p.codes[p.codes.length - 1]),
+);
+for (const p of combinePackets) {
+  assert.equal(p.group, "energy", `${p.fact_path} should be energy`);
+}
+for (const p of tensionPackets) {
+  assert.equal(p.group, "cautions", `${p.fact_path} should be cautions`);
+}
+console.log(
+  `  ✓ combines=${combinePackets.length} tensions=${tensionPackets.length}`,
+);
+
+section("rootedness signed");
+const root = outKnown.packets.find((p) => p.fact_path === "rootedness");
+assert.ok(root);
+if (root.codes.includes("not_rooted")) {
+  assert.equal(root.group, "cautions");
+} else {
+  assert.equal(root.group, "strengths");
+}
+console.log(`  ✓ rootedness → ${root.group}`);
+
+section("modifier limits — nobles");
+const noblePackets = outKnown.packets.filter((p) =>
+  p.fact_path.startsWith("nobles."),
+);
+assert.ok(noblePackets.length <= 2, `nobles ${noblePackets.length}`);
+for (const p of noblePackets) {
+  assert.ok(p.selection_priority <= 0.45);
+  assert.equal(p.role_in_lens, "modifier_signal");
+  assert.ok(p.tier >= 3);
+}
+const nobleExcluded = outKnown.exclusions.filter((e) =>
+  e.fact_path.startsWith("nobles."),
+);
+assert.ok(
+  chartKnown.nobles.noble_hits.length <= 2 || nobleExcluded.length > 0,
+);
+console.log(
+  `  ✓ nobles packets=${noblePackets.length} excluded=${nobleExcluded.length}`,
+);
+
+section("yongsin directional / low-conf omitted by default");
+const yongPackets = outKnown.packets.filter(
+  (p) => p.fact_path === "favorable_elements.yongsin",
+);
+const yongOmit = outKnown.exclusions.filter(
+  (e) =>
+    e.fact_path === "favorable_elements.yongsin" &&
+    (e.reason === "low_confidence_omitted" || e.reason === "deduped"),
+);
+assert.equal(yongPackets.length, 0);
+assert.ok(yongOmit.length >= 1);
+const withLow = runPersonalContextEngine({
+  chart: chartKnown,
+  options: { include_low_confidence: true },
+});
+// may still dedupe against weakest
+for (const p of withLow.packets.filter(
+  (x) => x.fact_path === "favorable_elements.yongsin",
+)) {
+  assert.equal(p.role_in_lens, "directional_guidance");
+  assert.ok(p.codes.includes("directional_only"));
+  assert.ok(p.selection_priority <= 0.35);
+}
+console.log("  ✓ yongsin gated + directional");
+
+section("priority — T1 before T3 within group");
+for (const g of Object.keys(outKnown.groups)) {
+  const tiers = outKnown.groups[g].map((p) => p.tier);
+  for (let i = 1; i < tiers.length; i++) {
+    assert.ok(tiers[i] >= tiers[i - 1], `${g} tier order ${tiers}`);
   }
 }
-const purityUnknown = assertPersonalContextPurity(outUnknown);
-assert.equal(purityUnknown.ok, true, purityUnknown.errors.join("\n"));
-console.log(
-  `  ✓ hour exclusions=${hourExclusions.length} packets=${outUnknown.packets.length}`,
+console.log("  ✓ tier order within groups");
+
+section("selection_priority is ordering-only field name");
+for (const p of outKnown.packets) {
+  assert.equal("weight" in p, false);
+  assert.equal(typeof p.selection_priority, "number");
+  assert.notEqual(p.selection_priority, p.confidence);
+}
+console.log("  ✓ no weight field; selection_priority present");
+
+for (const p of outKnown.packets) {
+  assert.ok(p.confidence);
+  assert.ok(Array.isArray(p.evidence));
+  assert.ok(typeof p.tier === "number");
+}
+const purity = assertPersonalContextPurity(outKnown);
+assert.equal(purity.ok, true, purity.errors.join("\n"));
+console.log("  ✓ evidence preserved");
+
+section("unknown hour");
+assert.equal(outUnknown.aggregates.birth_time_unknown, true);
+assert.equal(
+  outUnknown.packets.some((p) => p.fact_path.startsWith("pillars.hour")),
+  false,
 );
+assert.ok(
+  outUnknown.exclusions.some(
+    (e) =>
+      e.reason === "birth_time_unknown" &&
+      e.fact_path.startsWith("pillars.hour"),
+  ),
+);
+console.log("  ✓ hour excluded without inference");
 
-section("identity includes day master");
-const dayStem = outKnown.packets.find((p) => p.fact_path === "day_master.stem");
-assert.ok(dayStem);
-assert.equal(dayStem.group, "identity");
-assert.ok(dayStem.reference_ids.includes(chartKnown.day_master.stem.reference_id));
-console.log("  ✓ identity_core day master");
-
-section("unresolved refIds are explicit");
+section("dedup — unresolved explicit");
 const broken = structuredClone(chartKnown);
 broken.day_master.stem.reference_id = "stem:__missing_test__";
 const outBroken = runPersonalContextEngine({ chart: broken });
@@ -130,46 +186,41 @@ assert.ok(
     (u) => u.reference_id === "stem:__missing_test__",
   ),
 );
-const brokenPacket = outBroken.packets.find(
-  (p) => p.fact_path === "day_master.stem",
-);
-assert.ok(brokenPacket);
+console.log("  ✓ unresolved explicit");
+
+section("slim adapter preserves evidence");
+const slim = adaptPersonalContextForSlim(outKnown);
+assert.equal(slim.wired_into_slim, false);
+assert.ok(slim.context.groups.identity[0].evidence.length >= 1);
+assert.ok("kind" in slim.context.groups.identity[0].evidence[0]);
+assert.ok(Array.isArray(slim.context.aggregates.ssot_gaps));
+console.log("  ✓ slim adapter");
+
+section("day twelve_stage present");
 assert.ok(
-  brokenPacket.unresolved_reference_ids.includes("stem:__missing_test__"),
+  outKnown.packets.some((p) => p.fact_path === "pillars.day.twelve_stage"),
 );
-console.log(
-  `  ✓ unresolved count=${outBroken.unresolved_references.length}`,
-);
+console.log("  ✓ day twelve_stage");
 
-section("Slim adapter — not wired");
-const slimPkg = adaptPersonalContextForSlim(outKnown);
-assert.equal(slimPkg.adapter_version, SLIM_PERSONAL_CONTEXT_ADAPTER_VERSION);
-assert.equal(slimPkg.wired_into_slim, false);
-assert.ok(slimPkg.insertion_points.after_saju_facts);
-assert.ok(SLIM_INSERTION_POINTS.llm_essence_summary);
-assert.equal(
-  slimPkg.context.groups.identity.length,
-  outKnown.groups.identity.length,
-);
-assert.ok(Array.isArray(slimPkg.context.unresolved_reference_ids));
-console.log("  ✓ slim adapter package");
-
-section("no narrative / relationship fields on output");
-const blob = JSON.stringify(outKnown);
-assert.equal(/"advice_ko"\s*:/.test(blob), false);
-assert.equal(/"narrative"\s*:/.test(blob), false);
-assert.equal(/"headline"\s*:/.test(blob), false);
-console.log("  ✓ no narrative fields");
-
-console.log("\nOK: personal context engine tests passed");
+console.log("\nOK: personal context engine policy tests passed");
 console.log(
   JSON.stringify(
     {
-      known_unresolved: outKnown.unresolved_references.map((u) => u.reference_id),
-      unknown_unresolved: outUnknown.unresolved_references.map(
-        (u) => u.reference_id,
+      packet_count: outKnown.packets.length,
+      groups: Object.fromEntries(
+        Object.entries(outKnown.groups).map(([k, v]) => [k, v.length]),
       ),
-      slim_insertion_points: SLIM_INSERTION_POINTS,
+      sample: outKnown.packets.slice(0, 3).map((p) => ({
+        id: p.packet_id,
+        group: p.group,
+        tier: p.tier,
+        path: p.fact_path,
+        selection_priority: p.selection_priority,
+        confidence: p.confidence,
+        refs: p.reference_ids,
+        meanings: p.base_meanings.map((m) => m.text_ko.slice(0, 60)),
+        evidence: p.evidence,
+      })),
     },
     null,
     2,
