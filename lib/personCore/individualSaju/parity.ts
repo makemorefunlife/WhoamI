@@ -107,45 +107,61 @@ export function verifyIndividualParity(params: {
   }
 
   // Stem focus / day master
-  if (individual.day_master.stem.code !== legacy.stem_focus.day_stem_code) {
-    push("day_master.stem", "day stem mismatch");
-  }
-  if (individual.day_master.day_branch.code !== legacy.stem_focus.day_branch_code) {
-    push("day_master.day_branch", "day branch mismatch");
+  if (!legacy.stem_focus) {
+    push("stem_focus", "legacy stem_focus missing — cannot compare", "warn");
+  } else {
+    if (individual.day_master.stem.code !== legacy.stem_focus.day_stem_code) {
+      push("day_master.stem", "day stem mismatch");
+    }
+    if (individual.day_master.day_branch.code !== legacy.stem_focus.day_branch_code) {
+      push("day_master.day_branch", "day branch mismatch");
+    }
   }
 
   // Johu / elements
   const lc = legacy.johu_climate;
-  if (lc.heat_score !== individual.johu.heat_score) {
-    push("johu.heat_score", "mismatch");
-  }
-  if (lc.moisture_score !== individual.johu.moisture_score) {
-    push("johu.moisture_score", "mismatch");
-  }
-  if (lc.temperature_band !== individual.johu.temperature_band) {
-    push("johu.temperature_band", "mismatch");
-  }
-  if (lc.moisture_band !== individual.johu.moisture_band) {
-    push("johu.moisture_band", "mismatch");
-  }
-  for (const el of ["wood", "fire", "earth", "metal", "water"] as const) {
-    if (
-      (lc.element_counts[el] ?? 0) !==
-      (individual.five_elements.surface_counts[el] ?? 0)
-    ) {
-      push(`five_elements.surface_counts.${el}`, "element count mismatch");
+  if (!lc) {
+    push("johu_climate", "legacy johu_climate missing — cannot compare", "warn");
+  } else {
+    if (lc.heat_score !== individual.johu.heat_score) {
+      push("johu.heat_score", "mismatch");
+    }
+    if (lc.moisture_score !== individual.johu.moisture_score) {
+      push("johu.moisture_score", "mismatch");
+    }
+    if (lc.temperature_band !== individual.johu.temperature_band) {
+      push("johu.temperature_band", "mismatch");
+    }
+    if (lc.moisture_band !== individual.johu.moisture_band) {
+      push("johu.moisture_band", "mismatch");
+    }
+    for (const el of ["wood", "fire", "earth", "metal", "water"] as const) {
+      if (
+        (lc.element_counts?.[el] ?? 0) !==
+        (individual.five_elements.surface_counts[el] ?? 0)
+      ) {
+        push(`five_elements.surface_counts.${el}`, "element count mismatch");
+      }
     }
   }
 
   // Strength token vs legacy label
-  const expectedToken = strengthTokenFromLegacyLabel(
-    legacy.strength_balance.label,
-  );
-  if (individual.strength.label_token !== expectedToken) {
-    push("strength.label_token", "strength class mismatch", "error", {
-      legacy: legacy.strength_balance.label,
-      individual: individual.strength.label_token,
-    });
+  if (!legacy.strength_balance?.label) {
+    push(
+      "strength_balance.label",
+      "legacy strength_balance missing — cannot compare",
+      "warn",
+    );
+  } else {
+    const expectedToken = strengthTokenFromLegacyLabel(
+      legacy.strength_balance.label,
+    );
+    if (individual.strength.label_token !== expectedToken) {
+      push("strength.label_token", "strength class mismatch", "error", {
+        legacy: legacy.strength_balance.label,
+        individual: individual.strength.label_token,
+      });
+    }
   }
 
   // Yongsin: legacy stores Korean prose; individual stores element codes.
@@ -160,25 +176,29 @@ export function verifyIndividualParity(params: {
 
   // Hidden stems: legacy = day branch only — must be subset of individual day pillar
   const dayPillar = individual.pillars.find((p) => p.slot === "day");
-  const legacyHiddenCodes = legacy.hidden_stems.map((h) => h.stem_code).sort();
-  const dayHiddenCodes = (dayPillar?.hidden_stems ?? [])
-    .map((h) => h.stem.code)
-    .sort();
-  if (legacyHiddenCodes.join(",") !== dayHiddenCodes.join(",")) {
-    // order may differ — compare as sets
-    const a = new Set(legacyHiddenCodes);
-    const b = new Set(dayHiddenCodes);
-    const missing = [...a].filter((c) => !b.has(c));
-    if (missing.length) {
-      push(
-        "hidden_stems.day",
-        `legacy day hidden stems missing: ${missing.join(",")}`,
-      );
+  if (!Array.isArray(legacy.hidden_stems)) {
+    push("hidden_stems", "legacy hidden_stems missing — cannot compare", "warn");
+  } else {
+    const legacyHiddenCodes = legacy.hidden_stems.map((h) => h.stem_code).sort();
+    const dayHiddenCodes = (dayPillar?.hidden_stems ?? [])
+      .map((h) => h.stem.code)
+      .sort();
+    if (legacyHiddenCodes.join(",") !== dayHiddenCodes.join(",")) {
+      // order may differ — compare as sets
+      const a = new Set(legacyHiddenCodes);
+      const b = new Set(dayHiddenCodes);
+      const missing = [...a].filter((c) => !b.has(c));
+      if (missing.length) {
+        push(
+          "hidden_stems.day",
+          `legacy day hidden stems missing: ${missing.join(",")}`,
+        );
+      }
     }
   }
 
   // Ten gods (stem)
-  for (const lt of legacy.ten_gods) {
+  for (const lt of legacy.ten_gods ?? []) {
     const ip = individual.pillars.find((p) => p.slot === lt.pillar_slot);
     if (!ip) {
       push(`ten_gods.${lt.pillar_slot}`, "pillar missing");
@@ -193,7 +213,7 @@ export function verifyIndividualParity(params: {
   }
 
   // Twelve stages
-  for (const ls of legacy.twelve_stages) {
+  for (const ls of legacy.twelve_stages ?? []) {
     const ip = individual.pillars.find((p) => p.slot === ls.pillar_slot);
     if (!ip) {
       push(`twelve_stages.${ls.pillar_slot}`, "pillar missing");
@@ -205,7 +225,7 @@ export function verifyIndividualParity(params: {
   }
 
   // Relations: every legacy type must appear as type_id (원진/귀문 may be extra in individual)
-  for (const lr of legacy.relation_dynamics) {
+  for (const lr of legacy.relation_dynamics ?? []) {
     const typeId = LEGACY_TYPE_TO_ID[lr.type];
     if (!typeId) {
       push(`relations_intra.${lr.type}`, "unknown legacy relation type", "warn");
@@ -223,7 +243,7 @@ export function verifyIndividualParity(params: {
   }
 
   // Shinsal by slug/name
-  for (const ls of legacy.shinsal_hits) {
+  for (const ls of legacy.shinsal_hits ?? []) {
     const slug = ls.name_ko.trim().replace(/\s+/g, "_");
     const found = individual.shinsal_hits.some(
       (h) => h.slug === slug || h.evidence.some((e) => e.codes.includes(ls.name_ko)),
@@ -234,7 +254,7 @@ export function verifyIndividualParity(params: {
   }
 
   // Special signals
-  for (const ss of legacy.special_signals) {
+  for (const ss of legacy.special_signals ?? []) {
     const ind = individual.special_signals.find((s) => s.signal_id === ss.key);
     if (!ind) {
       push(`special_signals.${ss.key}`, "signal missing");
@@ -246,7 +266,7 @@ export function verifyIndividualParity(params: {
   }
 
   // Validation
-  if (legacy.validation.ok !== individual.validation.ok) {
+  if (legacy.validation && legacy.validation.ok !== individual.validation.ok) {
     push("validation.ok", "validation ok mismatch");
   }
 
