@@ -46,6 +46,22 @@ export type {
 } from "./types/personCoreBlueprint";
 
 export {
+  INDIVIDUAL_SAJU_CHART_VERSION,
+  INDIVIDUAL_SAJU_ENGINE_ID,
+  buildIndividualSajuChart,
+  verifyIndividualParity,
+  computeRefDataFingerprint,
+} from "./individualSaju";
+export type {
+  IndividualSajuChart,
+  ParityReport,
+  PillarSlot,
+  StemRef,
+  BranchRef,
+  TenGodRef,
+} from "./individualSaju";
+
+export {
   REFERENCE_DICTIONARY_VERSION,
   buildReferenceDictionary,
   getReferenceDictionary,
@@ -58,6 +74,21 @@ export type {
   ReferenceEntry,
   DictionaryCategory,
 } from "./referenceDictionary";
+
+export {
+  PERSONAL_CE_VERSION,
+  PERSONAL_INNATE_LENS,
+  runPersonalContextEngine,
+  assertPersonalContextPurity,
+  adaptPersonalContextForSlim,
+  SLIM_INSERTION_POINTS,
+} from "./personalContextEngine";
+export type {
+  PersonalContextEngineInput,
+  PersonalContextEngineOutput,
+  PersonalContextPacket,
+  SlimPersonalContextPackage,
+} from "./personalContextEngine";
 
 export { PersonCoreError } from "./errors";
 export type { PersonCoreErrorCode } from "./errors";
@@ -97,8 +128,17 @@ export {
   personCoreRelationParamsFromBundles,
   type PremiumPersonCoreBundle,
   type PremiumPersonCorePairBundles,
+  type PersonCoreSajuSource,
 } from "./services/bundlePersonCoreForPremium";
 export {
   legacySajuInputsFromPersonCore,
   rehydrateSajuDataForIntegrated,
 } from "./adapters/rehydrateSajuFromPersonCore";
+export {
+  legacySajuInputsFromIndividual,
+  rehydrateChartContextFromIndividual,
+  rehydrateProvenanceFromIndividual,
+  rehydrateSajuDataFromIndividual,
+  rehydrateSajuMasterFromIndividual,
+} from "./adapters/rehydrateFromIndividual";
+export type { LegacySajuInputsFromIndividual } from "./adapters/rehydrateFromIndividual";

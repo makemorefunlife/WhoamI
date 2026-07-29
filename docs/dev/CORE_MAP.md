@@ -19,6 +19,7 @@ components/             # UI (space/, v2/ Blueprint·Lite 등)
 lib/saju/               # 만세력, 십성, 신살, 합충, chartContext
 lib/personCore/individualSaju/       # Individual SSOT chart
 lib/personCore/referenceDictionary/  # Reference Dictionary MVP (base meanings)
+lib/personCore/personalContextEngine/ # Personal CE MVP (personal_innate_v1)
 lib/report/             # 유료 파이프라인, 통합 LLM, 점성 좌표
 lib/prompts/            # integratedPremiumReport 등 프로덕션 프롬프트
 lib/hardcoded/          # REF_* upstream tables (calc + legacy display)

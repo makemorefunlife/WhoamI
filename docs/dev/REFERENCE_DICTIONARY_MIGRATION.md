@@ -45,14 +45,14 @@ Individual SSOT
 
 ## Consumer migration (next sprints — not this PR)
 
-1. Personal Context Engine should call `lookupReference` / `lookupReferences` only.
-2. Slim: stop feeding `formatEssenceAnalysisForIntegrated` advice/strength blobs; use Dictionary base + CE structure.
+1. ~~Personal Context Engine should call `lookupReference` / `lookupReferences` only.~~ → Sprint 2 done (`personal_ce_v1`).
+2. Slim: stop feeding `formatEssenceAnalysisForIntegrated` advice/strength blobs; use Dictionary base + CE structure (adapter ready, not wired).
 3. Do **not** yet rewrite relationship products to this module.
 4. Keep `lib/hardcoded/sajuReferenceData.ts` as upstream calculation + legacy display source until consumers migrate.
 
 ## Non-goals (explicit)
 
-- Context Engine
+- ~~Context Engine~~ (Personal CE MVP shipped Sprint 2)
 - Pair SSOT
 - Relationship product changes
 - UI
