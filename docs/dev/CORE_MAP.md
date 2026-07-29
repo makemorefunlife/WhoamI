@@ -17,9 +17,11 @@ components/             # UI (space/, v2/ Blueprint·Lite 등)
 
 ```text
 lib/saju/               # 만세력, 십성, 신살, 합충, chartContext
+lib/personCore/individualSaju/       # Individual SSOT chart
+lib/personCore/referenceDictionary/  # Reference Dictionary MVP (base meanings)
 lib/report/             # 유료 파이프라인, 통합 LLM, 점성 좌표
 lib/prompts/            # integratedPremiumReport 등 프로덕션 프롬프트
-lib/hardcoded/          # ref_shinsal, relation rules 등
+lib/hardcoded/          # REF_* upstream tables (calc + legacy display)
 ```
 
 ### Slim V1 (본래의 나 심화)

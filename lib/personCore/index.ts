@@ -45,6 +45,20 @@ export type {
   PersonCoreBlueprintRecord,
 } from "./types/personCoreBlueprint";
 
+export {
+  REFERENCE_DICTIONARY_VERSION,
+  buildReferenceDictionary,
+  getReferenceDictionary,
+  lookupReference,
+  listByCategory,
+  assertDictionaryPurity,
+} from "./referenceDictionary";
+export type {
+  ReferenceDictionary,
+  ReferenceEntry,
+  DictionaryCategory,
+} from "./referenceDictionary";
+
 export { PersonCoreError } from "./errors";
 export type { PersonCoreErrorCode } from "./errors";
 
