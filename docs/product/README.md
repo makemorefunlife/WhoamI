@@ -98,6 +98,39 @@ It does not override Ahaitsme's governing product principles.
 
 ---
 
+## `04_Assessment_Philosophy.md`
+
+### Owns
+
+- assessment purpose and constitutional assessment principles
+- evidence philosophy
+- confidence philosophy
+- uncertainty philosophy
+- prediction boundaries and assessment limits
+- dignity and independence principles
+- internal-versus-user-visible assessment philosophy
+
+### Does not own
+
+- company mission / why Ahaitsme exists → `01_Product_Vision.md`
+- relationship experience architecture / module catalogs → `05` / `05A`–`05E`
+- UX reading journey and progressive disclosure mechanics → `02_Relationship-ux-bible.md`
+- narrative wording, assertion ceilings, register → `05N_Ahaitsme_Narrative_Style_Bible.md`
+- visual encoding of confidence/uncertainty → `06_Visual_Design_System.md`
+- schemas, resolvers, provenance, engine contracts → `06*` / PersonCore / decisions
+
+### Use when
+
+- deciding how any assessment must behave
+- resolving conflicts about evidence, confidence, uncertainty, prediction, ranking, or dignity
+- distinguishing constitutional principle from domain, UX, narrative, visual, or technical application
+
+### Numbering note
+
+A separate tracked file, `04_Relationship_Experience_Bible.md`, also uses the `04_` prefix for relationship **journey** architecture. README authority for shared relationship experience remains `05_Relationship_Product_Bible.md` (which absorbed the former `04_Relationship_Experience_Blueprint.md`). Resolve the Experience Bible filename/authority with a product-owner decision; do not treat it as Assessment Philosophy.
+
+---
+
 ## `05_Relationship_Product_Bible.md`
 
 ### Owns
@@ -113,6 +146,7 @@ It does not override Ahaitsme's governing product principles.
 - shared cross-product experience laws
 - Relationship Insight Bible and Romantic + Marriage elaboration
 - **§13D Shared Visualization & Evidence Contract** (selective 11-axis; Psych vs Saju separation; Saju comparison-table law; visual explanation; Visual First → Explanation → Story → Action; one canonical judgment / multiple projections; type not rank; shared visual / product-specific meaning)
+- Assessment constitution (evidence, confidence, uncertainty, prediction, dignity, internal vs visible) → `04_Assessment_Philosophy.md`
 
 ### Inherited by
 
@@ -150,6 +184,7 @@ It does not override Ahaitsme's governing product principles.
 ### Inherits
 
 - `01_Product_Vision.md`
+- `04_Assessment_Philosophy.md`
 - `02_Relationship_UX_Bible.md` / `02_Relationship-ux-bible.md`
 - `05_Relationship_Product_Bible.md`
 
@@ -185,7 +220,7 @@ It does not override Ahaitsme's governing product principles.
 
 ### Does not own
 
-- product meaning, classifications, confidence/severity, or narrative voice
+- product meaning, classifications, confidence/severity assignment (constitution → `04_Assessment_Philosophy.md`; product application → `05` / domain blueprints), or narrative voice
 - product-specific axes, row vocabularies, thresholds, warnings, or actions
 - current-implementation status (→ `08`) or design-exploration rationale/product-owner decisions (→ `09`)
 
@@ -219,6 +254,7 @@ It does not override Ahaitsme's governing product principles.
 
 - product meaning, classifications, or visual expression
 - domain-specific module catalogs (owned by `05A`–`05E`)
+- assessment constitution (owned by `04_Assessment_Philosophy.md`) - this document owns narrative application only
 
 ### Known open issue
 
@@ -341,16 +377,25 @@ When multiple documents apply, use the following order:
 
 ```text
 01 Product Vision
+Why Ahaitsme exists
+↓
+04 Assessment Philosophy
+How every assessment must behave
 ↓
 02 Relationship UX Bible
+How the experience is structured and understood
 ↓
-05 Relationship Product Bible  ·  05N Narrative Style Bible (parallel authority, voice/tone)
+05 Relationship Product Bible  ·  05N Narrative Style Bible (parallel: product contents / voice)
+What products promise and contain  ·  How supported findings are expressed
 ↓
-05A–05E Domain Product Blueprints (domain SSOT)
+05A–05E Domain Product Blueprints
+How the principles apply to each domain
 ↓
 06 Experience Design System (expression SSOT — brand, visual, IA/navigation, report grammar)
+How the experience is visually communicated
 ↓
 06A–06E Relationship-Specific Technical Blueprints
+How the system is implemented
 ↓
 07A–07E Implementation Checklists (tracking only, not authority)
 ↓
@@ -378,6 +423,16 @@ Use:
 ```text
 01_Product_Vision.md
 ```
+
+## Assessment, evidence, confidence, uncertainty, or prediction conflict
+
+Use:
+
+```text
+04_Assessment_Philosophy.md
+```
+
+Lower-level documents may apply these laws (UX disclosure, narrative wording, visual encoding, technical schemas). They must not redefine the constitutional principles.
 
 ## UX, tone, or narrative conflict
 
@@ -670,6 +725,7 @@ Use stable numbered names for governing documents.
 01_Product_Vision.md
 02_Relationship_UX_Bible.md
 03_Market_Research.md
+04_Assessment_Philosophy.md
 05_Relationship_Product_Bible.md
 05A_Romantic_Product_Blueprint.md
 05N_Ahaitsme_Narrative_Style_Bible.md
@@ -679,6 +735,8 @@ Use stable numbered names for governing documents.
 09_Product_and_Design_Intent_Package.md
 10_Design_IA_Canonicalization_Refactor_Plan.md
 ```
+
+> Note: `04_Relationship_Experience_Bible.md` exists on disk but is not listed here as a governing authority name until its collision with Assessment Philosophy is resolved. Shared experience SSOT remains `05_Relationship_Product_Bible.md`.
 
 Avoid:
 

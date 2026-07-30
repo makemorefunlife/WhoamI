@@ -1,8 +1,9 @@
 # 04 Relationship Experience Bible
 
-> **Status:** Canonical SSOT  
+> **Status:** Canonical SSOT *(authority contested — see note)*  
 > **Authority:** Defines the universal experience architecture for every Relationship Product.  
-> **Applies to:** Romantic, Marriage/Cohabitation, Family, Friend, Work
+> **Applies to:** Romantic, Marriage/Cohabitation, Family, Friend, Work  
+> **Numbering / authority note:** This file shares the `04_` prefix with the new Assessment Philosophy SSOT (`04_Assessment_Philosophy.md`). Shared relationship **experience** authority in the product README remains `05_Relationship_Product_Bible.md` (which absorbed the former `04_Relationship_Experience_Blueprint.md`). Do not treat this file as Assessment Philosophy. Filename and active-vs-absorbed status require a product-owner decision.
 
 > This document defines the user's journey, not the interface or the narration.  
 > UI, visual design, language, prompts, and implementation are governed by their own SSOT documents.
