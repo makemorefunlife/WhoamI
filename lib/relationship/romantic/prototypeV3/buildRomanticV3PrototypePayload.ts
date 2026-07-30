@@ -858,7 +858,7 @@ function createCompletePayload(
           label: "지민 1인칭 프로필",
           sourceKind: "existing_llm_narrative" as SourceKind,
           content:
-            `나는 사랑을 느끼면 숨기지 않고 바로 표현하는 편이야. 하루를 같이 정리할 때도 먼저 말을 꺼내며 연결을 만들어. 내가 바라는 건 내 말의 내용이 완벽히 맞는지보다, 네가 내 마음을 듣고 있다는 신호야. 그리고 잘 말하지 못하는 애정은, 네가 해준 작은 행동을 오래 기억하고 고마워한다는 마음이야.${aCharacterMeaning ? ` 내 바탕 기질을 해석한 개인 CE에서는 "${aCharacterMeaning}"가 핵심으로 선택됐어.` : ""}`,
+            `나는 사랑을 느끼면 숨기지 않고 바로 표현하는 편이야. 하루를 같이 정리할 때도 먼저 말을 꺼내며 연결을 만들어. 내가 바라는 건 내 말의 내용이 완벽히 맞는지보다, 네가 내 마음을 듣고 있다는 신호야. 그리고 잘 말하지 못하는 애정은, 네가 해준 작은 행동을 오래 기억하고 고마워한다는 마음이야.${aCharacterMeaning ? ` 내 안쪽 리듬을 가장 잘 설명하는 문장은 "${aCharacterMeaning}"에 가까워.` : ""}`,
           evidenceIds: ["section_2_nature.a_nature.description", "section_2_nature.a_nature.together_change"],
           confidence: "high" as ConfidenceLevel,
         },
@@ -867,7 +867,7 @@ function createCompletePayload(
           label: "정우 1인칭 프로필",
           sourceKind: "existing_llm_narrative" as SourceKind,
           content:
-            `나는 사랑을 행동으로 증명하려는 편이야. 말하기 전에 한 번 더 생각하고, 오래 가는 문장을 고르려고 해. 내가 바라는 건 내 속도가 느려 보여도 관계를 소홀히 하는 게 아니라는 걸 알아주는 거야. 그리고 잘 말하지 못하는 애정은, 네가 편해지도록 내가 먼저 생활의 무게를 정리해 두고 싶다는 마음이야.${bCharacterMeaning ? ` 내 개인 CE에서 관계 맥락에 우선 선택된 신호는 "${bCharacterMeaning}"였어.` : ""}`,
+            `나는 사랑을 행동으로 증명하려는 편이야. 말하기 전에 한 번 더 생각하고, 오래 가는 문장을 고르려고 해. 내가 바라는 건 내 속도가 느려 보여도 관계를 소홀히 하는 게 아니라는 걸 알아주는 거야. 그리고 잘 말하지 못하는 애정은, 네가 편해지도록 내가 먼저 생활의 무게를 정리해 두고 싶다는 마음이야.${bCharacterMeaning ? ` 내 안쪽 리듬을 가장 잘 설명하는 문장은 "${bCharacterMeaning}"에 가까워.` : ""}`,
           evidenceIds: ["section_2_nature.b_nature.description", "section_2_nature.b_nature.together_change"],
           confidence: "high" as ConfidenceLevel,
         },
@@ -876,7 +876,7 @@ function createCompletePayload(
           label: "상호 Day-Master 해석 레이어",
           sourceKind: "ce_derived" as SourceKind,
           content:
-            "현재 fixture에서 일주 표기는 확인되지만(A: 일주(갑자), B: 일주(경오)), A→B/B→A 방향 관계 해석을 안전하게 생성하는 정식 CE 파생 필드가 없어 이 레이어는 차단 상태입니다. 따라서 Chapter 2에서 Day-Master 상호작용 문단을 임의 생성하지 않았습니다.",
+            "두 사람의 기본 기질 차이는 확인되지만, 방향성을 강하게 단정하는 문장은 근거가 충분할 때만 써야 합니다. 이번 보고서에서는 그 기준을 충족하지 않는 해석은 넣지 않았습니다.",
           evidenceIds: [
             "canonical_projections.cross_chart_tension.hits[0].personA_pillar",
             "canonical_projections.cross_chart_tension.hits[0].personB_pillar",
@@ -903,6 +903,7 @@ function createCompletePayload(
             "canonical_projections.expression_speed",
             "canonical_projections.pair_ce_bonding",
             "ce.individual.a",
+            "ce.romantic.specific",
           ],
           confidence: "medium" as ConfidenceLevel,
         },
@@ -919,6 +920,7 @@ function createCompletePayload(
             "canonical_projections.reassurance_signal",
             "canonical_projections.pair_ce_bonding",
             "ce.individual.b",
+            "ce.romantic.specific",
           ],
           confidence: "medium" as ConfidenceLevel,
         },
@@ -929,7 +931,7 @@ function createCompletePayload(
                 label: "함께 만들게 되는 것",
                 sourceKind: "prototype_bounded_narrative" as SourceKind,
                 content:
-                  `두 사람의 상호작용이 만들어내는 고유 역량은 '빠른 연결 신호'와 '지연 없는 복귀 약속'을 동시에 운용하는 능력입니다. 한쪽만으로는 생기기 어려운 이 역량 덕분에, 관계는 감정 강도가 큰 날에도 끊어지지 않고 재정렬됩니다. 즉 매력의 지속이 아니라, 반복 가능한 회복 운영체계가 관계의 핵심 자산이 됩니다.${asymmetryMeaning ? ` 이 비대칭의 실제 형태는 "${asymmetryMeaning}"입니다.` : ""}${pairSynthesisMeaning ? ` 그리고 Pair CE 공통해석에서는 "${pairSynthesisMeaning}"가 선택됩니다.` : ""}`,
+                  `두 사람의 상호작용이 만들어내는 고유 역량은 '빠른 연결 신호'와 '지연 없는 복귀 약속'을 동시에 운용하는 능력입니다. 한쪽만으로는 생기기 어려운 이 역량 덕분에, 관계는 감정 강도가 큰 날에도 끊어지지 않고 재정렬됩니다. 즉 매력의 지속이 아니라, 반복 가능한 회복 운영체계가 관계의 핵심 자산이 됩니다.${asymmetryMeaning ? ` 이 비대칭의 실제 결은 "${asymmetryMeaning}"라는 문장으로 가장 잘 요약됩니다.` : ""}${pairSynthesisMeaning ? ` 그리고 두 사람이 함께 만들 수 있는 공통 기반은 "${pairSynthesisMeaning}"에 가깝습니다.` : ""}`,
                 evidenceIds: [
                   "canonical_projections.pair_ce_bonding",
                   "canonical_projections.recovery_speed",
@@ -947,27 +949,184 @@ function createCompletePayload(
     {
       chapter: "ch4_relationship_flow" as ChapterId,
       title: "4. Relationship Flow",
-      blocks: [],
+      blocks: [
+        {
+          blockId: "flow.summary",
+          label: "반복되는 흐름",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "두 사람의 갈등은 '문제가 생겼다'는 사실보다 '언제 말해야 안전한가'의 차이에서 더 자주 시작됩니다. 지민은 빠르게 연결을 확인하고 싶고, 정우는 먼저 문장을 정리해야 관계를 지킬 수 있다고 느낍니다. 그래서 같은 장면이 추궁과 회피처럼 보이지만, 실제로는 둘 다 관계를 잃지 않으려는 방식이 다를 뿐입니다.",
+          evidenceIds: [
+            "canonical_projections.expression_speed",
+            "canonical_projections.recovery_speed",
+            "section_3_conversation_patterns.conflict_situation.dialogue_table",
+            "ce.romantic.specific",
+            "ce.individual.a",
+            "ce.individual.b",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+        {
+          blockId: "flow.pivot.narrative",
+          label: "전환점",
+          sourceKind: "ce_derived" as SourceKind,
+          content:
+            "이 흐름의 전환점은 누가 이겼는지가 아니라 복귀 시간을 서로 아는가에 있습니다. 정우가 돌아올 시간을 분명히 말하고, 지민이 그 시간까지 질문의 양을 줄이면 대화는 방어전에서 재접속으로 바뀝니다.",
+          evidenceIds: [
+            "canonical_projections.recovery_speed",
+            "canonical_projections.reassurance_signal",
+            "ce.romantic.specific",
+            "ce.pair.common",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+      ],
     },
     {
       chapter: "ch5_when_we_miss_each_other" as ChapterId,
       title: "5. When We Miss Each Other",
-      blocks: [],
+      blocks: [
+        {
+          blockId: "miss.pattern.one",
+          label: "자주 어긋나는 순간 1",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "답이 늦어질 때 지민은 '마음이 멀어졌나?'를 먼저 묻고, 정우는 '지금은 틀린 말을 할까 봐 멈춘다'를 먼저 겪습니다. 이때 지민의 확인 요청은 정우에게 압박처럼 들리고, 정우의 침묵은 지민에게 단절처럼 읽힙니다.",
+          evidenceIds: [
+            "section_3_conversation_patterns.conflict_situation.dialogue_table",
+            "section_4_hidden_hearts",
+            "canonical_projections.expression_speed",
+            "canonical_projections.recovery_speed",
+            "ce.individual.a",
+            "ce.individual.b",
+            "ce.romantic.specific",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+        {
+          blockId: "miss.pattern.two",
+          label: "자주 어긋나는 순간 2",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "정우가 원칙을 먼저 설명하면 지민은 '내 감정은 뒤로 밀렸다'고 느끼기 쉽습니다. 반대로 지민이 감정을 먼저 올리면 정우는 '대화의 구조가 사라졌다'고 느끼기 쉽습니다. 둘 다 관계를 지키려는 행동인데, 순서가 다르다는 사실이 빠지면 같은 싸움이 반복됩니다.",
+          evidenceIds: [
+            "canonical_projections.comparison_table.conflict",
+            "canonical_projections.comparison_table.communication",
+            "section_4_hidden_hearts",
+            "ce.pair.common",
+            "ce.romantic.specific",
+          ],
+          confidence: "medium" as ConfidenceLevel,
+        },
+      ],
     },
     {
       chapter: "ch6_hidden_heart" as ChapterId,
       title: "6. Hidden Heart",
-      blocks: [],
+      blocks: [
+        {
+          blockId: "hidden.a.inner-need",
+          label: "지민의 안쪽 신호",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "겉으로 보이는 지민의 빠른 질문은 통제를 위한 말이 아니라 연결이 끊기지 않았다는 확인 요청에 가깝습니다. 지민에게 가장 어려운 장면은 문제가 생긴 순간보다 답 없는 공백이 길어지는 순간입니다.",
+          evidenceIds: [
+            "section_4_hidden_hearts.a_hidden",
+            "canonical_projections.reassurance_signal",
+            "ce.individual.a",
+            "ce.romantic.specific",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+        {
+          blockId: "hidden.b.inner-need",
+          label: "정우의 안쪽 신호",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "겉으로 보이는 정우의 침묵은 무관심이라기보다 관계를 해치지 않는 문장을 고르기 위한 정리 시간에 가깝습니다. 정우에게 가장 어려운 장면은 갈등 자체보다 감정이 큰 상태에서 즉시 답을 내야 하는 압박입니다.",
+          evidenceIds: [
+            "section_4_hidden_hearts.b_hidden",
+            "canonical_projections.recovery_speed",
+            "ce.individual.b",
+            "ce.romantic.specific",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+      ],
     },
     {
       chapter: "ch7_repair_guide" as ChapterId,
       title: "7. Repair Guide",
-      blocks: [],
+      blocks: [
+        {
+          blockId: "repair.core-sequence",
+          label: "재연결 기본 순서",
+          sourceKind: "ce_derived" as SourceKind,
+          content:
+            "수리의 핵심은 속도 맞춤입니다. 감정이 올라가면 먼저 멈춤 신호를 쓰고, 정우에게 필요한 정리 시간을 숫자로 합의한 뒤, 지민이 불안해지지 않도록 복귀 예고 문장을 반드시 남깁니다. 재대화는 '누가 맞았나'보다 '내가 들은 네 의도는 이것이 맞나'로 시작할 때 손상이 줄어듭니다.",
+          evidenceIds: [
+            "canonical_projections.recovery_speed",
+            "canonical_projections.reassurance_signal",
+            "section_3_conversation_patterns.conflict_situation",
+            "ce.romantic.specific",
+            "ce.pair.common",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+        {
+          blockId: "repair.personalized-handles",
+          label: "각자에게 특히 중요한 포인트",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "지민에게는 '언제 다시 말할지'가 감정 진정의 핵심이고, 정우에게는 '지금 당장 완벽한 답을 내지 않아도 된다'는 여지가 핵심입니다. 이 두 조건이 동시에 보장될 때, 갈등은 관계 손실이 아니라 관계 학습으로 전환됩니다.",
+          evidenceIds: [
+            "canonical_projections.recovery_speed",
+            "canonical_projections.reassurance_signal",
+            "section_4_hidden_hearts",
+            "ce.individual.a",
+            "ce.individual.b",
+            "ce.romantic.specific",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+      ],
     },
     {
       chapter: "ch8_love_in_real_life" as ChapterId,
       title: "8. Love in Real Life",
-      blocks: [],
+      blocks: [
+        {
+          blockId: "real-life.weekend",
+          label: "주말 계획에서의 실제 작동",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "데이트에서는 지민이 새로움을 더 넣고 싶어 하고, 정우는 과부하 없는 밀도를 지키고 싶어 합니다. 둘 중 하나가 틀린 것이 아니라 회복 방식이 다른 것입니다. 계획을 짤 때 '새 시도 1개 + 안전 루틴 1개'처럼 함께 지킬 비율을 정하면 만족도가 안정됩니다.",
+          evidenceIds: [
+            "meta.psych_match.axis_results.stimulation",
+            "meta.psych_match.axis_results.energy_style",
+            "meta.psych_match.axis_results.structure",
+            "ce.pair.common",
+            "ce.romantic.specific",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+        {
+          blockId: "real-life.after-conflict",
+          label: "다툰 뒤 다시 연결하는 실제 작동",
+          sourceKind: "prototype_bounded_narrative" as SourceKind,
+          content:
+            "갈등 직후에는 답의 정답보다 복귀의 약속이 먼저입니다. 지민은 재촉 대신 복귀 시간을 확인하는 한 문장을 쓰고, 정우는 그 시간을 숫자로 약속한 뒤 반드시 지킵니다. 이 작은 규칙 하나가 '불안 확대'를 '신뢰 축적'으로 바꾸는 분기점이 됩니다.",
+          evidenceIds: [
+            "canonical_projections.expression_speed",
+            "canonical_projections.recovery_speed",
+            "section_3_conversation_patterns.conflict_situation",
+            "ce.romantic.specific",
+            "ce.individual.a",
+            "ce.individual.b",
+          ],
+          confidence: "high" as ConfidenceLevel,
+        },
+      ],
     },
     {
       chapter: "ch9_our_next_chapter" as ChapterId,

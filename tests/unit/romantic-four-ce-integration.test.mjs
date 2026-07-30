@@ -48,6 +48,26 @@ const ch3 = getChapter(complete, "ch3_why_this_works");
 const whyA = getBlock(ch3, "why.a_to_b");
 assert.ok(whyA?.evidenceIds.includes("ce.individual.a"));
 assert.ok(whyA?.evidenceIds.includes("canonical_projections.pair_ce_bonding"));
+assert.ok(whyA?.evidenceIds.includes("ce.romantic.specific"));
+
+const majorFourCeBlocks = [
+  getBlock(getChapter(complete, "ch4_relationship_flow"), "flow.summary"),
+  getBlock(getChapter(complete, "ch5_when_we_miss_each_other"), "miss.pattern.one"),
+  getBlock(getChapter(complete, "ch6_hidden_heart"), "hidden.a.inner-need"),
+  getBlock(getChapter(complete, "ch7_repair_guide"), "repair.core-sequence"),
+  getBlock(getChapter(complete, "ch8_love_in_real_life"), "real-life.after-conflict"),
+].filter(Boolean);
+
+assert.ok(majorFourCeBlocks.length >= 5);
+for (const block of majorFourCeBlocks) {
+  const evidence = block.evidenceIds.join(" ");
+  assert.ok(
+    evidence.includes("ce.individual.") ||
+      evidence.includes("ce.pair.common") ||
+      evidence.includes("ce.romantic.specific"),
+    `missing CE provenance: ${block.blockId}`,
+  );
+}
 
 const plan = complete.fourCeSemanticPlan;
 assert.ok(plan);
@@ -119,7 +139,7 @@ const fallbackProfileA = getBlock(
   getChapter(fallbackPayload, "ch2_you_and_me"),
   "profile.a",
 );
-assert.ok(!fallbackProfileA?.content.includes("핵심으로 선택됐어."));
+assert.ok(!fallbackProfileA?.content.includes("내 안쪽 리듬을 가장 잘 설명하는 문장"));
 
 const fallbackWhyTogether = getBlock(
   getChapter(fallbackPayload, "ch3_why_this_works"),
@@ -134,7 +154,24 @@ for (const chapterId of [
   "ch7_repair_guide",
   "ch8_love_in_real_life",
 ]) {
-  assert.equal(getChapter(complete, chapterId)?.blocks.length, 0);
+  assert.ok((getChapter(complete, chapterId)?.blocks.length ?? 0) > 0);
+}
+
+const chapterText = complete.chapters
+  .flatMap((c) => c.blocks.map((b) => b.content))
+  .join("\n");
+for (const leaked of [
+  "personal_ce_v1",
+  "pair_ce_v1",
+  "individual_saju_json",
+  "ce.individual.a",
+  "ce.individual.b",
+  "ce.pair.common",
+  "ce.romantic.specific",
+  "ch2_",
+  "sourceKind",
+]) {
+  assert.equal(chapterText.includes(leaked), false, `leaked internal token: ${leaked}`);
 }
 
 console.log("romantic four-ce integration tests passed");
