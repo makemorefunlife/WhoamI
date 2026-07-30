@@ -160,14 +160,23 @@ export function projectDifferenceMap(
       rowKey,
     );
 
+    const aspectLabel = ROW_ASPECT_LABEL[rowKey];
+    const relationshipMeaning =
+      bucket === "translation_required"
+        ? `${aspectLabel}에서 방식이 달라, 같은 순간을 서로 다르게 읽을 수 있어요. 차이는 결함이 아니라 통역이 필요한 지점입니다.`
+        : bucket === "complementary"
+          ? `${aspectLabel}에서 서로 다른 경향이 만나면 역할이 자연스럽게 나뉠 수 있어요. 그 다름이 보완이 되기도 합니다.`
+          : `${aspectLabel}에서는 비슷한 경향이 있어, 이 영역에서는 서로를 비교적 바로 이해하기 쉬워요.`;
+
     byKind[bucket].push({
-      aspect: ROW_ASPECT_LABEL[rowKey],
+      aspect: aspectLabel,
       me: meLabel,
       partner: partnerLabel,
       rowKey,
       align: row.align,
       confidence: mapConfidence(row.confidence),
       sourceKeys: [`canonical_projections.comparison_table.${rowKey}`],
+      relationshipMeaning,
     });
   }
 

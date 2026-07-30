@@ -142,6 +142,11 @@ export type DifferenceItemVM = {
   align: "confirms" | "caution" | null;
   confidence: ConfidenceLevel | null;
   sourceKeys: string[];
+  /**
+   * Presentation meaning of this difference, projected from bucket kind +
+   * lean labels — not a new analytical score.
+   */
+  relationshipMeaning: string;
 };
 
 export type DifferenceBucketVM = {

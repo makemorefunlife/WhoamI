@@ -92,9 +92,15 @@ export function projectHorizon(input: ProjectHorizonInput): HorizonVM {
     }
     const body = pickBlockText(block);
     if (!body) continue;
+    // Narrative ceiling: omit fortune-like / deterministic fate language (04 Law 6).
+    if (containsFateLanguage(body)) continue;
     const period =
       trimPeriod(block?.period) || periodLabel(offset, baseYear + offset);
     const subRaw = pickBlockSub(block);
+    if (subRaw && containsFateLanguage(subRaw)) {
+      waypoints.push({ period, body, sub: null });
+      continue;
+    }
     waypoints.push({
       period,
       body,
@@ -126,4 +132,13 @@ export function projectHorizon(input: ProjectHorizonInput): HorizonVM {
 
 function trimPeriod(value: string | undefined): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function containsFateLanguage(text: string): boolean {
+  const t = text.toLowerCase();
+  return (
+    /운명|반드시|틀림없이|헤어질|결혼할 것|보장|정해져|will (definitely|certainly) break|destined|fated/.test(
+      t,
+    ) || /깨질 운명|파국이 확정/.test(text)
+  );
 }

@@ -75,8 +75,19 @@ export function projectEssence(input: ProjectEssenceInput): EssenceVM {
     (s2.b_nature ?? {}) as NatureBlock,
     input.viewerIsReportA,
   );
-  const myMeetingHint = input.viewerIsReportA ? myBlockRaw.meeting_b : myBlockRaw.meeting_a;
-  const partnerMeetingHint = input.viewerIsReportA ? partnerBlockRaw.meeting_a : partnerBlockRaw.meeting_b;
+  // Skip ASCII-only fixture stubs (e.g. "meets B") so they never surface as Korean narrative.
+  const usableHint = (hint?: string): string | undefined => {
+    const t = typeof hint === "string" ? hint.trim() : "";
+    if (!t || t.length < 12) return undefined;
+    if (/^[\x00-\x7F]+$/.test(t)) return undefined;
+    return t;
+  };
+  const myMeetingHint = usableHint(
+    input.viewerIsReportA ? myBlockRaw.meeting_b : myBlockRaw.meeting_a,
+  );
+  const partnerMeetingHint = usableHint(
+    input.viewerIsReportA ? partnerBlockRaw.meeting_a : partnerBlockRaw.meeting_b,
+  );
 
   const me = personFromBlock(input.myName, myBlockRaw, myMeetingHint);
   const partner = personFromBlock(input.partnerName, partnerBlockRaw, partnerMeetingHint);

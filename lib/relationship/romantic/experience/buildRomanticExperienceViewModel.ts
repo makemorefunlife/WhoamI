@@ -92,7 +92,13 @@ export function buildRomanticExperienceViewModel(
   const opening = projectOpening({ report, myName, partnerName });
   const horizon = projectHorizon({ report });
   const reflection = projectReflection({ repairGuide, partnerName });
-  const saveShare = projectSaveShare({ opening, myName, partnerName });
+  const saveShare = projectSaveShare({
+    opening,
+    reflection,
+    repairGuide,
+    myName,
+    partnerName,
+  });
   const essence = projectEssence({ report, myName, partnerName, viewerIsReportA });
   const actionAdvice = projectActionAdvice({
     report,

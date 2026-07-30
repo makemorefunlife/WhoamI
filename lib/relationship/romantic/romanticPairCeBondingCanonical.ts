@@ -72,7 +72,7 @@ export function injectRomanticPairCeBondingClientProjection<
       ...(Object.keys(next).length
         ? { canonical_projections: next }
         : {}),
-    } as T;
+    } as unknown as T;
   }
   return {
     ...rest,
@@ -80,13 +80,16 @@ export function injectRomanticPairCeBondingClientProjection<
       ...next,
       pair_ce_bonding: projection,
     },
-  } as T;
+  } as unknown as T;
 }
 
 export function readRomanticPairCeBondingProjection(
-  report: { canonical_projections?: { pair_ce_bonding?: unknown } } | null | undefined,
+  report: unknown,
 ): RomanticPairCeBondingValue | null {
-  const raw = report?.canonical_projections?.pair_ce_bonding;
+  if (!report || typeof report !== "object") return null;
+  const projections = (report as { canonical_projections?: { pair_ce_bonding?: unknown } })
+    .canonical_projections;
+  const raw = projections?.pair_ce_bonding;
   if (!raw || typeof raw !== "object") return null;
   const o = raw as RomanticPairCeBondingValue;
   if (!Array.isArray(o.packets) || typeof o.count !== "number") return null;
