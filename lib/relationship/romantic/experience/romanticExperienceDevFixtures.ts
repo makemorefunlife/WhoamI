@@ -4,22 +4,22 @@ type RomanticReportBody = RomanticSajuDeepReport["report"];
 
 export const romanticExperienceMinimalFixture: RomanticReportBody = {
   section_1_summary: {
-    relationship_name: "Test Bond",
-    one_line_summary: "A short line",
+    relationship_name: "깊어지는 계절",
+    one_line_summary: "서로의 다름이 안식이 되는 특별한 균형",
     grade: "A+",
     total_score: 99,
-    keywords: ["should-not-appear-on-vm"],
+    keywords: [],
   },
   section_2_nature: {
     a_nature: {
-      description: "A desc",
-      meeting_b: "meets B",
-      together_change: "changes",
+      description: "지민 쪽은 감정을 숨기지 않고 솔직하게 내보이는 편이에요.",
+      meeting_b: "",
+      together_change: "함께 있으면 마음이 빨리 열립니다.",
     },
     b_nature: {
-      description: "B desc",
-      meeting_a: "meets A",
-      together_change: "changes",
+      description: "정우 쪽은 상황을 차분하게 정리하고 나서 행동하는 편이에요.",
+      meeting_a: "",
+      together_change: "함께 있으면 속도가 한 템포 느려집니다.",
     },
   },
   section_3_conversation_patterns: {},
@@ -27,9 +27,9 @@ export const romanticExperienceMinimalFixture: RomanticReportBody = {
   section_5_action: {},
   section_6_timeline: {},
   section_4_special_bond: {
-    only_together: "together",
-    relationship_formula: "A + B = destiny",
-    why_special: "special",
+    only_together: "두 사람이 함께할 때 비로소 긴장을 풀 수 있는 여유가 생겨요.",
+    relationship_formula: "지민 쪽의 표현력과 정우 쪽의 수용력",
+    why_special: "서로의 빈 공간을 아주 자연스럽게 채워주고 있기 때문이에요.",
   },
   meta: {
     // Real production shape (see extractRomanticScores in the legacy view,
@@ -102,12 +102,12 @@ export const romanticExperienceCompleteFixture: RomanticReportBody = {
       { aspect: "소통 방식", a: "직접적으로 말해요.", b: "상대 기분을 살피며 말해요." },
     ],
     a_nature: {
-      description: "A desc",
+      description: "지민 쪽은 감정을 숨기지 않고 솔직하게 내보이는 편이에요.",
       meeting_b: "meets B",
       together_change: "changes",
     },
     b_nature: {
-      description: "B desc",
+      description: "정우 쪽은 상황을 차분하게 정리하고 나서 행동하는 편이에요.",
       meeting_a: "meets A",
       together_change: "changes",
     },
@@ -145,6 +145,28 @@ export const romanticExperienceCompleteFixture: RomanticReportBody = {
       sublead_execution: "B",
     },
     residual: { residual_a: "clears_fast", residual_b: "lingers" },
+    cross_chart_tension: {
+      band: "moderate",
+      dominant_type: "충",
+      hit_count: 1,
+      hits: [
+        {
+          personA_pillar: "일주(갑자)",
+          personB_pillar: "일주(경오)",
+          type: "충",
+          interpretation: "자오충 — 감정을 다루는 속도와 방향이 정면으로 부딪히기 쉬운 조합입니다.",
+          priority: 80,
+          palaceWeight: 1,
+          weightedPriority: 80,
+          category: "branch_pair",
+          personA_pillarSlot: "일주",
+          personA_code: "ja",
+          personB_pillarSlot: "일주",
+          personB_code: "o",
+          detail: "자오충",
+        },
+      ],
+    },
     comparison_table: {
       conflict: {
         lean_a: "direct",
@@ -182,6 +204,59 @@ export const romanticExperienceCompleteFixture: RomanticReportBody = {
         align: "caution",
         confidence: "high",
       },
+    },
+  },
+};
+
+/**
+ * Isolates cross_chart_tension's effect on Conflict Translation: no
+ * expression_speed (projector would otherwise fall to "low" confidence),
+ * high-band structural tension present instead. Demonstrates the
+ * confidence-only-ever-rises-one-step corroboration rule (low → medium),
+ * visible in DEV as the "잠정적인 해석이에요" note disappearing versus the
+ * "minimal" variant. See projectConflictPattern.ts.
+ */
+export const romanticExperienceStructuralTensionFixture: RomanticReportBody = {
+  ...romanticExperienceCompleteFixture,
+  canonical_projections: {
+    ...romanticExperienceCompleteFixture.canonical_projections,
+    expression_speed: undefined,
+    cross_chart_tension: {
+      band: "high",
+      dominant_type: "충",
+      hit_count: 2,
+      hits: [
+        {
+          personA_pillar: "일주(갑자)",
+          personB_pillar: "일주(경오)",
+          type: "충",
+          interpretation: "자오충 — 감정을 다루는 속도와 방향이 정면으로 부딪히기 쉬운 조합입니다.",
+          priority: 80,
+          palaceWeight: 1,
+          weightedPriority: 80,
+          category: "branch_pair",
+          personA_pillarSlot: "일주",
+          personA_code: "ja",
+          personB_pillarSlot: "일주",
+          personB_code: "o",
+          detail: "자오충",
+        },
+        {
+          personA_pillar: "월주(을묘)",
+          personB_pillar: "월주(신유)",
+          type: "충",
+          interpretation: "묘유충 — 서로의 생활 리듬을 맞추는 방식에서 반복적으로 부딪히는 조합입니다.",
+          priority: 70,
+          palaceWeight: 0.75,
+          weightedPriority: 52.5,
+          category: "branch_pair",
+          personA_pillarSlot: "월주",
+          personA_code: "myo",
+          personB_pillarSlot: "월주",
+          personB_code: "yu",
+          detail: "묘유충",
+        },
+      ],
     },
   },
 };
