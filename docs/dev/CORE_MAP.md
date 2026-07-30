@@ -21,6 +21,9 @@ lib/personCore/individualSaju/       # Individual SSOT chart
 lib/personCore/referenceDictionary/  # Reference Dictionary MVP (base meanings)
 lib/personCore/personalContextEngine/ # Personal CE MVP (personal_innate_v1)
 # Policy SSOT: docs/dev/personCore/PERSONAL_CONTEXT_ENGINE_POLICY.md
+lib/personCore/pairSaju/             # Pair Fact Layer (pair_saju_facts_v1)
+lib/personCore/pairContextEngine/    # Pair CE + domain lenses (pair_ce_v1)
+# Design: docs/dev/personCore/PAIR_CONTEXT_ENGINE_DESIGN.md
 lib/report/             # 유료 파이프라인, 통합 LLM, 점성 좌표
 lib/prompts/            # integratedPremiumReport 등 프로덕션 프롬프트
 lib/hardcoded/          # REF_* upstream tables (calc + legacy display)

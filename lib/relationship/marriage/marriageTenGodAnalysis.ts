@@ -17,11 +17,15 @@ const FOOD_GODS = ["식신", "상관"];
 const SEAL_GODS = ["정인", "편인"];
 const SELF_GODS = ["비견", "겁재"];
 
-export function countTenGodsForMarriage(
-  sajuJson: SajuDataForIntegrated,
+export function countTenGodsFromPillarEntries(
+  entries: Array<{
+    pillar?: string;
+    godData?: { kor_name?: string } | null;
+    godCode?: string | null;
+  }>,
 ): TenGodCounts {
   const counts: TenGodCounts = {};
-  for (const t of sajuJson.tenGods ?? []) {
+  for (const t of entries) {
     // 일주(day pillar)는 일간을 자기 자신과 비교하는 항목이라 정의상 항상
     // 비견(self)으로 계산됨 — 실제 신호가 아니므로 카운트에서 제외한다.
     if (t.pillar === "일주") continue;
@@ -30,6 +34,12 @@ export function countTenGodsForMarriage(
     counts[name] = (counts[name] ?? 0) + 1;
   }
   return counts;
+}
+
+export function countTenGodsForMarriage(
+  sajuJson: SajuDataForIntegrated,
+): TenGodCounts {
+  return countTenGodsFromPillarEntries(sajuJson.tenGods ?? []);
 }
 
 function sumGods(counts: TenGodCounts, gods: string[]): number {

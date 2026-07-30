@@ -11,6 +11,8 @@ import { DOMAIN_SAJU_SIGNALS_VERSION } from "@/lib/personCore/sajuSignals/types"
 import type {
   BalanceOfPowerBand,
   BalanceOfPowerResult,
+  CrossChartTensionBand,
+  CrossChartTensionResult,
   ExpressionSpeedDirection,
   GiveStyle,
   ReassuranceBand,
@@ -26,6 +28,7 @@ import type {
 import {
   hasDayStemRootInDayBranch,
   resolveBalanceOfPower,
+  resolveCrossChartTension,
   resolveExpressionSpeedDirection,
   resolveGiveStyle,
   resolveReassuranceBand,
@@ -43,6 +46,15 @@ import type {
   SecondaryAxisKey,
 } from "@/lib/v2/survey/types";
 import type { ChartContext } from "@/lib/saju/chartContext";
+import type { CrossChartHit, CrossChartTrioHit } from "@/lib/saju/pairChartAnalysis";
+import { buildPairSajuFacts } from "@/lib/personCore/pairSaju";
+import {
+  applyRomanticPairLens,
+  romanticNonTensionPackets,
+  runPairContextEngine,
+  type DomainPairLensOutput,
+  type PairContextPacket,
+} from "@/lib/personCore/pairContextEngine";
 import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
 import type { RefinedCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import type { RefinedCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
@@ -97,6 +109,17 @@ export type RomanticDynamicsTypedSnapshot = {
   matchAGivesB: boolean;
   rolePlay: RolePlayResult;
   sajuFrameDirection: SajuFrameDirection;
+  crossChartTension: CrossChartTensionResult;
+  /**
+   * 육합/충형파해 + 천간합 + 원진/귀문 + 공망 + 천간충 —
+   * Pair Fact Layer (`buildPairSajuFacts`) 단일 소스. hour unknown 제외 적용.
+   */
+  crossChartHits: CrossChartHit[];
+  crossTrioHits: CrossChartTrioHit[];
+  /** Shared Pair CE → Romantic lens (context-neutral packets). */
+  pairLens: DomainPairLensOutput | null;
+  /** Bonding/energy packets for non-tension projectors. */
+  pairNonTensionPackets: PairContextPacket[];
 };
 
 export type RomanticContextInput = {
@@ -268,6 +291,11 @@ function mapDynamicsCategories(
     sublead_idea_mood: { category: d.subLeads.ideaMoodLead },
     sublead_decision_approval: { category: d.subLeads.decisionApprovalLead },
     sublead_execution: { category: d.subLeads.executionLead },
+    cross_chart_tension_band: { category: d.crossChartTension.band },
+    cross_chart_tension_type: {
+      category: d.crossChartTension.dominantType ?? "none",
+      scores: { hit_count: d.crossChartTension.hitCount },
+    },
   };
   if (d.balance.scoreA != null && d.balance.scoreB != null) {
     out.balance_a = {
@@ -304,6 +332,14 @@ export function collectRomanticDynamicsTypedSnapshot(params: {
   chartA: ChartContext;
   chartB: ChartContext;
   dayStemInteraction: string;
+  /** analyzePairSaju(pairChartAnalysis.ts) 결과 — 일주 교차 충형해파 근거. */
+  dayBranchCrossHits?: CrossChartHit[];
+  /** @deprecated Prefer Pair Fact Layer; kept for call-site compat, ignored when Pair CE runs. */
+  allCrossHits?: CrossChartHit[];
+  birthTimeUnknownA?: boolean;
+  birthTimeUnknownB?: boolean;
+  reportIdA?: string;
+  reportIdB?: string;
 }): RomanticDynamicsTypedSnapshot {
   const rootedA = hasDayStemRootInDayBranch(params.chartA);
   const rootedB = hasDayStemRootInDayBranch(params.chartB);
@@ -311,6 +347,18 @@ export function collectRomanticDynamicsTypedSnapshot(params: {
   const needB = resolveReassuranceBand(params.profileB, rootedB);
   const giveA = resolveGiveStyle(params.romanticA);
   const giveB = resolveGiveStyle(params.romanticB);
+
+  const pairFacts = buildPairSajuFacts({
+    chartA: params.chartA,
+    chartB: params.chartB,
+    birthTimeUnknownA: params.birthTimeUnknownA,
+    birthTimeUnknownB: params.birthTimeUnknownB,
+    reportIdA: params.reportIdA,
+    reportIdB: params.reportIdB,
+  });
+  const pairCe = runPairContextEngine({ facts: pairFacts });
+  const pairLens = applyRomanticPairLens(pairCe);
+
   return {
     balance: resolveBalanceOfPower(params.profileA, params.profileB),
     subLeads: resolveSubLeads(params.romanticA, params.romanticB),
@@ -334,6 +382,11 @@ export function collectRomanticDynamicsTypedSnapshot(params: {
       params.romanticA,
       params.romanticB,
     ),
+    crossChartTension: resolveCrossChartTension(params.dayBranchCrossHits ?? []),
+    crossChartHits: pairFacts.cross_hits,
+    crossTrioHits: pairFacts.trio_hits,
+    pairLens,
+    pairNonTensionPackets: romanticNonTensionPackets(pairLens),
   };
 }
 
@@ -623,4 +676,5 @@ export type {
   SubLeadBand,
   ExpressionSpeedDirection,
   SajuFrameDirection,
+  CrossChartTensionBand,
 };

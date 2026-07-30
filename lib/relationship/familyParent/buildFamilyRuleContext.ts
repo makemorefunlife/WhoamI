@@ -3,6 +3,8 @@ import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores
 import type { Locale } from "@/lib/i18n/locale";
 import { LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
+import { buildDomainPairLensFromCharts } from "@/lib/personCore/pairContextEngine";
+import type { DomainPairLensOutput } from "@/lib/personCore/pairContextEngine";
 import {
   analyzeFamilyPairSaju,
   type FamilyPairSajuAnalysis,
@@ -61,6 +63,8 @@ export type FamilyRuleContext = {
    * 여전히 사실), 일부 섹션의 서술 톤만 이 값으로 분기한다.
    */
   childIsViewer: boolean;
+  /** Shared Pair CE → Family lens (packets only; no fact recalc). */
+  pairLens: DomainPairLensOutput;
 };
 
 export type BuildFamilyContextParams = {
@@ -214,6 +218,15 @@ export function buildFamilyRuleContext(
     familySignalsParent,
     familySignalsChild,
     childIsViewer,
+    pairLens: buildDomainPairLensFromCharts(
+      "family",
+      core.chartA,
+      core.chartB,
+      {
+        birthTimeUnknownA: birthTimeUnknownParent,
+        birthTimeUnknownB: birthTimeUnknownChild,
+      },
+    ),
   };
 }
 

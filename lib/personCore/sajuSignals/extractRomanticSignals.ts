@@ -2,7 +2,10 @@ import type { JohuClimateSnapshot } from "@/lib/personCore/types/sajuMaster";
 import type { SajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 import type { SajuPillars } from "@/lib/saju/chartContext";
 import { profileTenGods } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
-import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
+import {
+  countTenGodsFromPillarEntries,
+  type TenGodCounts,
+} from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import { collectBranchPalaceRelations } from "./intraPalaceRelations";
 import type {
@@ -16,15 +19,7 @@ import type {
 } from "./types";
 
 function countTenGods(bundle: SajuBundle): TenGodCounts {
-  const counts: TenGodCounts = {};
-  for (const t of bundle.tenGods) {
-    // 일주(day pillar)는 일간 자기비교라 정의상 항상 비견(self)이 됨 — 제외.
-    if (t.pillar === "일주") continue;
-    const name = t.godData?.kor_name ?? t.godCode ?? "";
-    if (!name) continue;
-    counts[name] = (counts[name] ?? 0) + 1;
-  }
-  return counts;
+  return countTenGodsFromPillarEntries(bundle.tenGods);
 }
 
 function chartToSajuPillars(bundle: SajuBundle): SajuPillars {

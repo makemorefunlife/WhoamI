@@ -20,6 +20,7 @@ import {
   collectRomanticAxisNotes,
   collectRomanticDynamicsTypedSnapshot,
   type RomanticContextInput,
+  type RomanticDynamicsTypedSnapshot,
 } from "@/lib/relationship/romantic/romanticContextInput";
 import {
   balanceOfPowerValueFromDominantCategories,
@@ -69,6 +70,47 @@ import {
   buildRomanticSajuFrameDirectionClientProjection,
   injectRomanticSajuFrameDirectionClientProjection,
 } from "@/lib/relationship/romantic/romanticSajuFrameDirectionCanonical";
+import {
+  crossChartTensionValueFromFinalized,
+  buildRomanticCrossChartTensionCanonical,
+  buildRomanticCrossChartTensionClientProjection,
+  injectRomanticCrossChartTensionClientProjection,
+} from "@/lib/relationship/romantic/romanticCrossChartTensionCanonical";
+import {
+  stemCombineValueFromDynamicsSnapshot,
+  buildRomanticStemCombineCanonical,
+  buildRomanticStemCombineClientProjection,
+  injectRomanticStemCombineClientProjection,
+} from "@/lib/relationship/romantic/romanticStemCombineCanonical";
+import {
+  sixCombineValueFromDynamicsSnapshot,
+  buildRomanticSixCombineCanonical,
+  buildRomanticSixCombineClientProjection,
+  injectRomanticSixCombineClientProjection,
+} from "@/lib/relationship/romantic/romanticSixCombineCanonical";
+import {
+  crossTrioValueFromDynamicsSnapshot,
+  buildRomanticCrossTrioCanonical,
+  buildRomanticCrossTrioClientProjection,
+  injectRomanticCrossTrioClientProjection,
+} from "@/lib/relationship/romantic/romanticCrossTrioCanonical";
+import {
+  wonjinGuimunValueFromDynamicsSnapshot,
+  buildRomanticWonjinGuimunCanonical,
+  buildRomanticWonjinGuimunClientProjection,
+  injectRomanticWonjinGuimunClientProjection,
+} from "@/lib/relationship/romantic/romanticWonjinGuimunCanonical";
+import {
+  gongmangValueFromDynamicsSnapshot,
+  buildRomanticGongmangCanonical,
+  buildRomanticGongmangClientProjection,
+  injectRomanticGongmangClientProjection,
+} from "@/lib/relationship/romantic/romanticGongmangCanonical";
+import {
+  buildRomanticPairCeBondingValue,
+  buildRomanticPairCeBondingCanonical,
+  injectRomanticPairCeBondingClientProjection,
+} from "@/lib/relationship/romantic/romanticPairCeBondingCanonical";
 import { bindDialogueTableToExpressionSpeed } from "@/lib/relationship/romantic/romanticDialogueTableBinding";
 import { refineCompareConflictPair } from "@/lib/relationship/romantic/compareConflictComposite";
 import { refineCompareAffectionPair } from "@/lib/relationship/romantic/compareAffectionComposite";
@@ -145,6 +187,12 @@ type RomanticPreparedContext = {
   fortuneFlow: ReturnType<typeof buildRomanticFortuneFlow>;
   /** deterministic input — LLM prose와 분리. digest/prompt 미변경. */
   romanticContextInput: RomanticContextInput;
+  /**
+   * dominant_categories로 평탄화되기 전 원본 스냅샷 — cross_chart_* 캐노니컬처럼
+   * hits[] 배열을 담아야 하는 신호는 dominant_categories를 거칠 수 없어 여기서
+   * 직접 finalize한다 (프롬프트/postValidate 미변경, Context Engine 플러밍만 추가).
+   */
+  dynamicsTyped: RomanticDynamicsTypedSnapshot | null;
 };
 
 export function romanticSajuDeepSelfRefineEnabled(): boolean {
@@ -303,6 +351,8 @@ export function prepareRomanticSajuDeepRun(
           chartA,
           chartB,
           dayStemInteraction: pairAnalysis.dayStemInteraction,
+          dayBranchCrossHits: pairAnalysis.dayBranchCrossHits,
+          allCrossHits: pairAnalysis.allCrossHits,
         })
       : null;
 
@@ -495,6 +545,7 @@ export function prepareRomanticSajuDeepRun(
     snapshotPanel: snapshotPanel ?? null,
     fortuneFlow,
     romanticContextInput,
+    dynamicsTyped,
   };
 }
 
@@ -506,7 +557,7 @@ function finalizeRomanticSajuDeepReport(
     psychMatch: ReturnType<typeof buildPsychMatchResult> | null;
   },
 ): RomanticSajuDeepPayload["report"] {
-  const { opening, ctx, screenPlan, ruleScreenPlan, snapshotPanel, locale, fortuneFlow, romanticContextInput } =
+  const { opening, ctx, screenPlan, ruleScreenPlan, snapshotPanel, locale, fortuneFlow, romanticContextInput, dynamicsTyped } =
     prepared;
   const generatedAt = new Date().toISOString();
 
@@ -667,10 +718,113 @@ function finalizeRomanticSajuDeepReport(
       sajuFrameProjection,
     );
 
+  // cross_chart_tension — 일주 교차 충형해파(pairAnalysis.dayBranchCrossHits),
+  // Conflict Translation의 구조적 사주 근거로만 쓰임 (대사 생성 없음). dynamicsTyped
+  // 에서 직접 finalize — dominant_categories는 hits[] 배열을 담을 수 없음.
+  const crossChartTensionFinalized = crossChartTensionValueFromFinalized(
+    dynamicsTyped?.crossChartTension,
+  );
+  const crossChartTensionCanonical = buildRomanticCrossChartTensionCanonical(
+    crossChartTensionFinalized,
+  );
+  const crossChartTensionProjection =
+    buildRomanticCrossChartTensionClientProjection(
+      crossChartTensionCanonical?.value,
+    );
+  const reportWithCrossChartTensionProjection =
+    injectRomanticCrossChartTensionClientProjection(
+      reportWithSajuFrameProjection,
+      crossChartTensionProjection,
+    );
+
+  // cross_chart_stem_combine — 천간합(A×B), 4×4 궁위 전체.
+  const stemCombineFinalized = stemCombineValueFromDynamicsSnapshot(
+    dynamicsTyped ?? undefined,
+  );
+  const stemCombineCanonical = buildRomanticStemCombineCanonical(
+    stemCombineFinalized,
+  );
+  const stemCombineProjection = buildRomanticStemCombineClientProjection(
+    stemCombineCanonical?.value,
+  );
+  const reportWithStemCombineProjection = injectRomanticStemCombineClientProjection(
+    reportWithCrossChartTensionProjection,
+    stemCombineProjection,
+  );
+
+  // cross_chart_six_combine — 지지 육합(A×B), 이미 계산된 pairAnalysis.allCrossHits 재사용.
+  const sixCombineFinalized = sixCombineValueFromDynamicsSnapshot(
+    dynamicsTyped ?? undefined,
+  );
+  const sixCombineCanonical = buildRomanticSixCombineCanonical(
+    sixCombineFinalized,
+  );
+  const sixCombineProjection = buildRomanticSixCombineClientProjection(
+    sixCombineCanonical?.value,
+  );
+  const reportWithSixCombineProjection = injectRomanticSixCombineClientProjection(
+    reportWithStemCombineProjection,
+    sixCombineProjection,
+  );
+
+  // cross_chart_trio — 삼합/방합(A+B 합산 지지), 양쪽 모두 기여한 경우만.
+  const crossTrioFinalized = crossTrioValueFromDynamicsSnapshot(
+    dynamicsTyped ?? undefined,
+  );
+  const crossTrioCanonical = buildRomanticCrossTrioCanonical(crossTrioFinalized);
+  const crossTrioProjection = buildRomanticCrossTrioClientProjection(
+    crossTrioCanonical?.value,
+  );
+  const reportWithCrossTrioProjection = injectRomanticCrossTrioClientProjection(
+    reportWithSixCombineProjection,
+    crossTrioProjection,
+  );
+
+  // cross_chart_wonjin_guimun — 원진/귀문(A×B), 4×4 궁위 전체.
+  const wonjinGuimunFinalized = wonjinGuimunValueFromDynamicsSnapshot(
+    dynamicsTyped ?? undefined,
+  );
+  const wonjinGuimunCanonical = buildRomanticWonjinGuimunCanonical(
+    wonjinGuimunFinalized,
+  );
+  const wonjinGuimunProjection = buildRomanticWonjinGuimunClientProjection(
+    wonjinGuimunCanonical?.value,
+  );
+  const reportWithWonjinGuimunProjection =
+    injectRomanticWonjinGuimunClientProjection(
+      reportWithCrossTrioProjection,
+      wonjinGuimunProjection,
+    );
+
+  // cross_chart_gongmang — 공망 교차(A×B, 양방향).
+  const gongmangFinalized = gongmangValueFromDynamicsSnapshot(
+    dynamicsTyped ?? undefined,
+  );
+  const gongmangCanonical = buildRomanticGongmangCanonical(gongmangFinalized);
+  const gongmangProjection = buildRomanticGongmangClientProjection(
+    gongmangCanonical?.value,
+  );
+  const reportWithGongmangProjection = injectRomanticGongmangClientProjection(
+    reportWithWonjinGuimunProjection,
+    gongmangProjection,
+  );
+
+  // pair_ce_bonding — shared Pair CE non-tension packets for Special Dynamics.
+  const pairCeBondingValue = buildRomanticPairCeBondingValue(
+    dynamicsTyped?.pairNonTensionPackets ?? null,
+  );
+  const pairCeBondingCanonical =
+    buildRomanticPairCeBondingCanonical(pairCeBondingValue);
+  const reportWithPairCeBondingProjection =
+    injectRomanticPairCeBondingClientProjection(
+      reportWithGongmangProjection,
+      pairCeBondingCanonical?.value ?? null,
+    );
+
   // Phase 6-2d7 — dialogue faster/slower slots follow expression_speed.direction.
   const priorConflict =
     (
-      reportWithSajuFrameProjection as {
+      reportWithPairCeBondingProjection as {
         section_3_conversation_patterns?: {
           conflict_situation?: {
             dialogue_table?: unknown;
@@ -689,10 +843,10 @@ function finalizeRomanticSajuDeepReport(
   );
   const reportWithProjections = priorConflict
     ? {
-        ...reportWithSajuFrameProjection,
+        ...reportWithPairCeBondingProjection,
         section_3_conversation_patterns: {
           ...(
-            reportWithSajuFrameProjection as {
+            reportWithPairCeBondingProjection as {
               section_3_conversation_patterns?: Record<string, unknown>;
             }
           ).section_3_conversation_patterns,
@@ -702,7 +856,7 @@ function finalizeRomanticSajuDeepReport(
           },
         },
       }
-    : reportWithSajuFrameProjection;
+    : reportWithPairCeBondingProjection;
 
   return {
     ...reportWithProjections,

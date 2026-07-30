@@ -6,6 +6,8 @@ import {
   type WorkMasterScores,
 } from "@/lib/relationship/workPairEventScores";
 import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
+import { buildDomainPairLensFromCharts } from "@/lib/personCore/pairContextEngine";
+import type { DomainPairLensOutput } from "@/lib/personCore/pairContextEngine";
 import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
 import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import {
@@ -47,6 +49,8 @@ export type WorkColleagueContext = {
    */
   workSignalsA?: WorkSajuSignals;
   workSignalsB?: WorkSajuSignals;
+  /** Shared Pair CE → Work lens (packets only; no fact recalc). */
+  pairLens: DomainPairLensOutput;
 };
 
 /** 동료 전용 컨텍스트 — 연인 rule context·일지 친밀 점수 미사용 */
@@ -108,5 +112,14 @@ export function buildWorkColleagueContext(params: {
     locale,
     workSignalsA: params.workSignalsA,
     workSignalsB: params.workSignalsB,
+    pairLens: buildDomainPairLensFromCharts(
+      "work",
+      core.chartA,
+      core.chartB,
+      {
+        birthTimeUnknownA: params.birthTimeUnknownA,
+        birthTimeUnknownB: params.birthTimeUnknownB,
+      },
+    ),
   };
 }

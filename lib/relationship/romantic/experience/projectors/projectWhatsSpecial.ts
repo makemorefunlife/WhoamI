@@ -14,6 +14,7 @@ import {
   formatRomanticSajuFrameDirectionCanonicalLabel,
   readRomanticSajuFrameDirectionCanonicalProjection,
 } from "@/lib/relationship/romantic/romanticSajuFrameDirectionCanonical";
+import { readRomanticPairCeBondingProjection } from "@/lib/relationship/romantic/romanticPairCeBondingCanonical";
 import type {
   ConfidenceLevel,
   EvidenceRef,
@@ -182,12 +183,15 @@ export function projectWhatsSpecial(
     input.viewerIsReportA,
   );
 
+  const pairBonding = readRomanticPairCeBondingProjection(input.report);
+
   if (
     gifts.length === 0 &&
     !onlyTogether &&
     !whySpecial &&
     !frameDirectionLabel &&
-    !frames.hasContent
+    !frames.hasContent &&
+    !(pairBonding && pairBonding.count > 0)
   ) {
     return base;
   }
@@ -221,6 +225,12 @@ export function projectWhatsSpecial(
     evidence.push({
       path: "canonical_projections.saju_frame_direction",
       summary: "frame direction",
+    });
+  }
+  if (pairBonding && pairBonding.count > 0) {
+    evidence.push({
+      path: "canonical_projections.pair_ce_bonding",
+      summary: `pair CE non-tension packets (${pairBonding.count})`,
     });
   }
 

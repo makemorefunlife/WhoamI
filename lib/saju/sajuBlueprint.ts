@@ -1,6 +1,11 @@
 /**
  * 사주 블루프린트 — 만세력·십성·합충·신살을 1회만 계산하고
  * 5대 관계 탭(연인·동료·결혼·가족·친구)은 가중치·텍스트 매핑만 수행.
+ *
+ * Role: orchestration / assembly layer (not Pair Fact SSOT).
+ * Pair Fact Layer: lib/personCore/pairSaju/buildPairSajuFacts.
+ * Pair CE palace weights: lib/saju/palaceWeight.ts (canonical default);
+ * domain WORK / MARRIAGE / FRIEND tables may re-rank scoring only.
  */
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type {

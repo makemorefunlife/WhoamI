@@ -93,6 +93,34 @@ export type {
   PersonalSignalTier,
 } from "./personalContextEngine";
 
+export {
+  PAIR_SAJU_FACTS_VERSION,
+  buildPairSajuFacts,
+  isStemClash,
+} from "./pairSaju";
+export type { PairSajuFacts, PairSajuFactsInput } from "./pairSaju";
+
+export {
+  PAIR_CE_VERSION,
+  PAIR_SHARED_LENS,
+  runPairContextEngine,
+  assertPairContextPurity,
+  applyDomainPairLens,
+  applyRomanticPairLens,
+  applyFriendPairLens,
+  applyFamilyPairLens,
+  applyWorkPairLens,
+  romanticNonTensionPackets,
+  buildDomainPairLensFromCharts,
+  buildPairCeFixtureInput,
+} from "./pairContextEngine";
+export type {
+  PairContextEngineInput,
+  PairContextEngineOutput,
+  PairContextPacket,
+  DomainPairLensOutput,
+  DomainPairLensId,
+} from "./pairContextEngine";
 
 export { PersonCoreError } from "./errors";
 export type { PersonCoreErrorCode } from "./errors";

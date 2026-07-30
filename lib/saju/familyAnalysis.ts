@@ -20,7 +20,6 @@ import {
 import { analyzeIntraChartPalaceHits } from "@/lib/saju/marriageAnalysis";
 import {
   detectFamilyWonjinGuimunBranches,
-  detectGongmangCrossHit,
   isGuimun,
   isWonjin,
 } from "@/lib/saju/workPairRiskSignals";
@@ -468,8 +467,6 @@ export function analyzeFamilyPairSaju(
     scoringSignals.hasParentBoostsChildTalent =
       scoringSignals.parentSupportsChildWealth;
   }
-
-  void detectGongmangCrossHit(chartParent, chartChild);
 
   return {
     base,

@@ -41,6 +41,8 @@ import type { Locale } from "@/lib/i18n/locale";
 import { LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 
 import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import { buildDomainPairLensFromCharts } from "@/lib/personCore/pairContextEngine";
+import type { DomainPairLensOutput } from "@/lib/personCore/pairContextEngine";
 
 
 
@@ -83,6 +85,8 @@ export type FriendRuleContext = {
   uncertainItems: string[];
 
   locale: Locale;
+
+  pairLens: DomainPairLensOutput;
 
 };
 
@@ -219,6 +223,11 @@ export function buildFriendRuleContext(
     uncertainItems,
 
     locale,
+
+    pairLens: buildDomainPairLensFromCharts("friend", core.chartA, core.chartB, {
+      birthTimeUnknownA: params.birthTimeUnknownA,
+      birthTimeUnknownB: params.birthTimeUnknownB,
+    }),
 
   };
 
