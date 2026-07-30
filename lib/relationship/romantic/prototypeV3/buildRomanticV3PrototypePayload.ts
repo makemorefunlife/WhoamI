@@ -127,24 +127,24 @@ function buildComparisonTable(params: {
     );
     const manifestation =
       rowKey === "conflict"
-        ? "같은 갈등 장면에서 한 사람은 바로 맞추고, 다른 사람은 기준부터 세우려 해 타이밍이 어긋납니다."
+        ? "같은 갈등 상황에서 한 사람은 곧바로 맞추려 하고, 다른 사람은 기준부터 세우려 해서 타이밍이 자꾸 어긋납니다."
         : rowKey === "stress"
-          ? "압박이 커질수록 한쪽은 빠르게 쏟아내고, 다른 쪽은 잠시 물러나 정리해 서로가 상대를 거절로 오해하기 쉽습니다."
+          ? "압박이 커질수록 한쪽은 감정을 빠르게 쏟아내고, 다른 쪽은 잠시 물러나 마음을 정리합니다. 그 모습이 서로에게는 거절로 보이기 쉽습니다."
           : rowKey === "communication"
-            ? "직설과 배려형 문장이 만나면서 내용보다 어조와 순서가 먼저 쟁점이 됩니다."
+            ? "직설적인 표현과 배려 섞인 표현이 만나면서, 정작 하려던 말의 내용보다 어조와 순서가 먼저 쟁점이 되곤 합니다."
             : rowKey === "affection"
-              ? "말과 행동의 애정 언어가 달라 고마움은 크지만 전달 방식이 엇갈릴 수 있습니다."
-              : "결정을 고르는 기준(속도 vs 합의)이 달라 일정·돈·계획에서 미세한 마찰이 반복됩니다.";
+              ? "말과 행동, 서로 다른 방식으로 애정을 표현하다 보니 고마운 마음은 크지만 그 마음이 잘 전달되지 않을 때가 있습니다."
+              : "결정을 내리는 기준이 서로 달라서(속도 중심과 합의 중심), 일정과 돈, 계획을 정할 때마다 작은 마찰이 반복됩니다.";
     const understandingPoint =
       rowKey === "conflict"
-        ? "감정의 강도보다 처리 순서를 먼저 합의하면 같은 문제를 덜 상처받고 다룰 수 있습니다."
+        ? "감정을 얼마나 강하게 표현하느냐보다, 어떤 순서로 풀어갈지를 먼저 맞춰두면 같은 문제도 덜 다치면서 다룰 수 있습니다."
         : rowKey === "stress"
-          ? "거리 두기는 회피가 아니라 과부하 방지 신호로 해석하고, 복귀 시간을 문장으로 약속합니다."
+          ? "거리를 두는 모습은 회피가 아니라 과부하를 막으려는 신호로 봐 주고, 언제 다시 돌아올지 말로 약속해 두면 좋습니다."
           : rowKey === "communication"
-            ? "핵심 요구를 한 줄로 먼저 말하고, 톤 조정은 그다음으로 미루면 오해가 줄어듭니다."
+            ? "하고 싶은 말의 핵심을 한 줄로 먼저 전하고, 표현 방식을 다듬는 건 그다음으로 미루면 오해가 줄어듭니다."
             : rowKey === "affection"
-              ? "말로 받은 안심과 행동으로 받은 안심을 서로 번역해 주면 체감 만족이 급격히 올라갑니다."
-              : "독자 결정권과 공동 확인권의 경계를 미리 정해 결정 피로를 줄입니다.";
+              ? "말로 느끼는 안심과 행동으로 느끼는 안심을 서로 번역해 주면, 마음으로 느끼는 만족이 눈에 띄게 달라집니다."
+              : "혼자 정해도 되는 것과 함께 확인해야 하는 것의 경계를 미리 정해두면, 결정할 때마다 지치는 일이 줄어듭니다.";
     return {
       rowId: `compare.${rowKey}`,
       relationshipQuestion: COMPARE_QUESTION[rowKey],
@@ -234,19 +234,19 @@ function selectAxisInsights(params: {
           : "공명";
     const whyItMatters =
       c.axis.axis_key === "structure"
-        ? "두 사람의 일정·돈·우선순위 조율에서 갈등 비용을 가장 크게 만드는 축이라, 규칙을 먼저 맞추는 것이 관계 체력에 직결됩니다."
+        ? "일정과 돈, 우선순위를 함께 정할 때 가장 자주 부딪히는 부분이라, 미리 규칙을 맞춰두면 관계가 한결 수월해집니다."
         : c.axis.axis_key === "energy_style"
-          ? "함께 있을 때 회복되는 방식이 달라 주말과 모임의 만족도가 크게 갈리는 핵심 축입니다."
+          ? "함께 있을 때 에너지를 회복하는 방식이 서로 달라서, 주말이나 모임에서 느끼는 만족도가 유독 크게 갈리는 부분입니다."
           : c.axis.axis_key === "stimulation"
-            ? "새로운 자극을 원하는 속도가 달라 데이트 밀도와 피로도가 같이 흔들리기 때문입니다."
-            : "일상 대화의 의도 해석과 기대치 형성에 직접 연결되는 축이라 반복 패턴을 설명해 줍니다.";
+            ? "새로운 자극을 원하는 속도가 서로 달라서, 데이트를 얼마나 촘촘히 잡을지와 그로 인한 피로감이 함께 흔들리기 때문입니다."
+            : "일상 대화에서 서로의 의도를 해석하고 기대를 갖는 방식과 바로 이어지는 부분이라, 반복되는 패턴을 이해하는 실마리가 됩니다.";
     const dailyManifestation =
       c.axis.axis_key === "structure"
         ? "여행 준비에서 한 사람은 체크리스트를 완성하려 하고, 다른 사람은 상황에 맞춰 즉흥 수정하려다 출발 직전에 다툼이 납니다."
         : c.axis.axis_key === "energy_style"
           ? "한쪽은 사람 많은 자리에서 충전되고, 다른 쪽은 둘만의 정리 시간이 있어야 다음 대화가 부드럽게 이어집니다."
           : c.axis.axis_key === "stimulation"
-            ? "새로운 장소를 계속 열어보려는 쪽과 익숙한 루틴을 선호하는 쪽이 데이트 횟수보다 강도를 두고 부딪힙니다."
+            ? "새로운 장소를 계속 가보고 싶은 쪽과 익숙한 루틴을 지키고 싶은 쪽이, 데이트 횟수보다 강도를 두고 자주 엇갈립니다."
             : "중요한 메시지를 보낼 때 한 사람은 맥락을 길게, 다른 사람은 요점 위주로 보내 해석이 엇갈립니다.";
     return {
       axisKey: c.axis.axis_key,
@@ -341,7 +341,7 @@ function createCompletePayload(
           sourceKind: "ce_derived" as SourceKind,
           content:
             locale === "ko-KR"
-              ? "지민의 빠른 표현과 정우의 신중한 숙성이 부딪힐 때, 갈등의 시작점은 같아도 회복의 속도는 다르게 흐릅니다."
+              ? "지민은 마음을 빠르게 꺼내 보이고, 정우는 충분히 생각을 정리한 뒤에야 말을 꺼냅니다. 같은 순간에 부딪히더라도, 그 뒤로 회복해 가는 속도는 서로 다르게 흘러갑니다."
               : "Jimin's fast expression and Jungwoo's deliberate processing often collide at the same trigger but recover on different clocks.",
           evidenceIds: [
             "canonical_projections.expression_speed",
@@ -356,7 +356,7 @@ function createCompletePayload(
           sourceKind: "prototype_bounded_narrative" as SourceKind,
           content:
             locale === "ko-KR"
-              ? "이 보고서는 누가 맞는지 판정하지 않습니다. 두 사람이 실제로 반복해 온 장면을 정확히 붙잡고, 같은 장면을 덜 아프게 통과하는 방법을 찾기 위한 지도입니다."
+              ? "이 보고서는 누가 맞고 틀린지를 가리지 않습니다. 두 사람이 실제로 반복해 온 장면을 있는 그대로 짚어보고, 같은 장면을 조금 덜 아프게 지나가는 방법을 함께 찾기 위한 안내서입니다."
               : "This report does not judge who is right. It maps recurring scenes in your relationship and shows how to pass through the same moments with less hurt.",
           evidenceIds: ["meta.screen_plan", "meta.ranked_insights"],
           confidence: "high" as ConfidenceLevel,
@@ -409,14 +409,14 @@ function createCompletePayload(
     relationshipFlow: {
       title: "표현 속도 차이가 관계 루프를 만드는 방식",
       steps: [
-        "A의 접근: 지민이 불편함을 느끼는 순간 바로 이유를 확인하려고 질문한다.",
-        "B의 내부 해석: 정우는 질문의 속도를 압박으로 받아들이고 먼저 문장을 정리해야 안전하다고 느낀다.",
-        "B의 반응: 답을 미루거나 짧게 끊어 말해 시간을 확보한다.",
-        "A의 해석: 지민은 그 침묵을 무관심 또는 회피로 읽어 감정 강도를 올린다.",
-        "결과: 대화의 내용보다 톤이 중심이 되면서 친밀감이 줄고 갈등 피로가 커진다.",
+        "지민은 마음이 불편해지는 순간 바로 이유를 확인하고 싶어 질문을 던집니다.",
+        "정우는 그 질문의 속도를 압박으로 느끼고, 먼저 생각을 정리해야 안전하다고 느낍니다.",
+        "그래서 정우는 답을 미루거나 짧게 끊어 말하며 시간을 확보합니다.",
+        "지민은 그 침묵을 무관심이나 회피로 읽고, 감정이 더 커집니다.",
+        "결국 대화 내용보다 말투가 중심이 되면서 친밀감은 줄고 갈등의 피로만 쌓입니다.",
       ],
       pivotPoint:
-        "루프 전환점: 정우가 '30분 뒤 반드시 돌아오겠다'고 시간을 명시하고, 지민은 그 시간까지 질문 수를 줄이면 갈등이 복구 루프로 이동한다.",
+        "이 흐름이 바뀌는 지점은, 정우가 '30분 뒤에는 꼭 다시 이야기하자'고 시간을 정해 말하고, 지민이 그 시간까지 질문을 줄여 기다려 줄 때입니다. 그러면 갈등은 다시 이어지는 방향으로 흘러갑니다.",
       evidenceIds: [
         "canonical_projections.expression_speed",
         "section_3_conversation_patterns.conflict_situation.dialogue_table",
@@ -426,12 +426,12 @@ function createCompletePayload(
     conflicts: [
       {
         patternId: "conflict.speed-delay",
-        trigger: "답장/답변이 늦어지는 순간",
-        whatIMeant: "지민: 지금 마음이 멀어진 건지 확인하고 싶었어.",
+        trigger: "답장이나 답이 늦어지는 순간",
+        whatIMeant: "지민: 지금 마음이 멀어진 건 아닌지 확인하고 싶었어.",
         whatYouHeard: "정우: 나를 몰아붙이고 당장 답하라고 요구하는 걸로 들렸어.",
-        hiddenNeed: "지민은 연결이 끊기지 않았다는 확인, 정우는 과부하 없이 정리할 시간을 원함.",
+        hiddenNeed: "지민은 연결이 끊기지 않았다는 확인을 원하고, 정우는 과부하 없이 정리할 시간을 원합니다.",
         betterWords: "지민: '지금 답을 강요하려는 건 아니고, 언제 다시 이야기할 수 있을지 알려줘.'",
-        repairTiming: "갈등 직후 30~40분 정리 시간을 확보한 뒤 재진입.",
+        repairTiming: "갈등 직후 30~40분 정리 시간을 가진 뒤 다시 대화 시작하기.",
         evidenceIds: [
           "section_3_conversation_patterns.conflict_situation.dialogue_table",
           "canonical_projections.expression_speed",
@@ -447,7 +447,7 @@ function createCompletePayload(
         whatYouHeard: "지민: 내 감정보다 규칙이 더 중요하다고 말하는 것처럼 들렸어.",
         hiddenNeed: "정우는 대화의 구조가 있어야 안전하고, 지민은 먼저 감정이 인정되어야 대화가 열린다.",
         betterWords: "정우: '네가 속상한 건 먼저 이해해. 그다음에 우리가 지킬 기준을 같이 정해보자.'",
-        repairTiming: "감정 확인 한 문장 → 기준 협의 순서로 같은 대화 안에서 전환.",
+        repairTiming: "감정을 먼저 확인한 뒤, 같은 대화 안에서 기준을 협의하는 순서로 전환하기.",
         evidenceIds: [
           "canonical_projections.comparison_table.conflict",
           "canonical_projections.comparison_table.communication",
@@ -472,27 +472,27 @@ function createCompletePayload(
     },
     repairGuide: {
       sequence: [
-        "1) 멈춤 신호: 목소리가 올라가면 '잠깐, 지금은 감정이 앞서'를 공통 신호로 사용한다.",
-        "2) 시간/공간: 지민 10분 정리, 정우 30~40분 정리 시간을 기본값으로 둔다.",
-        "3) 첫 행동: 먼저 돌아오는 쪽이 '대화를 끝내지 않았다'는 문장 한 줄을 보낸다.",
-        "4) 재진입 문장: '내가 들은 건 ___인데 맞아?'로 사실 확인부터 시작한다.",
-        "5) 공동 약속: 갈등 중에는 성격 판정 문장을 금지하고, 행동·요청 문장만 사용한다.",
+        "목소리가 올라가기 시작하면, '잠깐, 지금은 감정이 앞서'라는 말을 함께 신호로 쓰기로 정해 둡니다.",
+        "지민은 10분, 정우는 30~40분 정도 각자 마음을 정리할 시간을 기본으로 둡니다.",
+        "먼저 마음이 정리된 사람이 '대화를 끝낸 게 아니야'라는 문장 한 줄을 먼저 보냅니다.",
+        "다시 이야기를 시작할 때는 '내가 들은 건 ___인데 맞아?'처럼 사실을 확인하는 것부터 시작합니다.",
+        "갈등 중에는 서로의 성격을 단정 짓는 말 대신, 지금 필요한 행동이나 부탁을 말로 전합니다.",
       ],
       sideBySide: {
         helpsA: [
-          "침묵 시간을 숫자로 알면 불안이 급격히 줄어든다.",
-          "감정 인정 문장을 먼저 들으면 방어가 낮아진다.",
-          "질문은 한 번에 하나씩 할 때 대화 품질이 좋아진다.",
+          "침묵이 얼마나 이어질지 숫자로 알면 불안이 한결 줄어듭니다.",
+          "먼저 내 감정을 알아주는 말을 들으면 마음의 방어가 누그러집니다.",
+          "질문을 한 번에 하나씩 할 때 대화가 훨씬 편안해집니다.",
         ],
         helpsB: [
-          "즉시 해명 강요가 줄면 정확한 표현이 가능해진다.",
-          "말하기 전 핵심 문장을 메모하면 과부하가 줄어든다.",
-          "비난 대신 요청형 문장을 들을 때 복귀 속도가 빨라진다.",
+          "바로 해명하라는 압박이 줄면 더 정확하게 표현할 수 있게 됩니다.",
+          "말하기 전에 핵심만 짧게 메모해 두면 부담이 줄어듭니다.",
+          "비난이 아니라 부탁하는 말을 들을 때 더 빨리 마음을 열고 돌아올 수 있습니다.",
         ],
         together: [
-          "갈등 24시간 내 반드시 재대화한다.",
-          "사과와 해결책을 분리해 말한다.",
-          "끝맺음 문장 없이 대화를 종료하지 않는다.",
+          "갈등이 생기면 24시간 안에는 다시 이야기 나누기로 합니다.",
+          "사과와 해결책은 따로따로 말하기로 합니다.",
+          "마무리하는 말 없이 대화를 끝내지 않기로 합니다.",
         ],
       },
       evidenceIds: [
@@ -506,10 +506,10 @@ function createCompletePayload(
       {
         sceneId: "scene.weekend-plan",
         sceneTitle: "주말 일정과 데이트 밀도",
-        whatHappens: "지민은 새로운 장소를 연속으로 넣고, 정우는 한두 개 핵심 일정만 깊게 가고 싶어합니다.",
-        whyForThisPair: "자극추구·에너지 축 차이와 구조화 성향 차이가 동시에 작동하기 때문입니다.",
+        whatHappens: "지민은 가고 싶은 새로운 장소를 계속 일정에 넣고 싶어 하고, 정우는 한두 개 정도를 정해 여유 있게 즐기고 싶어 합니다.",
+        whyForThisPair: "새로운 자극을 원하는 정도와 에너지를 쓰는 방식이 다르고, 계획을 세우는 성향도 서로 다르기 때문입니다.",
         whatACanDo: "새로운 일정은 최대 2개로 압축하고, 마지막 2시간은 정리 시간을 비워둡니다.",
-        whatBCanDo: "루틴 유지가 필요한 이유를 미리 말하고, 한 개는 새 시도를 수용합니다.",
+        whatBCanDo: "루틴을 지키고 싶은 이유를 미리 이야기하고, 그중 하나는 새로운 시도를 받아들여 봅니다.",
         sharedAgreement: "데이트 전날 10분 계획 싱크를 하고 당일 변경 횟수 상한을 1회로 둡니다.",
         evidenceIds: [
           "meta.psych_match.axis_results.stimulation",
@@ -521,7 +521,7 @@ function createCompletePayload(
         sceneId: "scene.after-conflict-text",
         sceneTitle: "다툰 뒤 메시지 재개",
         whatHappens: "한쪽은 즉시 확인 문자를 보내고, 다른 쪽은 답변을 미루며 긴장이 커집니다.",
-        whyForThisPair: "표현 속도와 회복 속도 불일치가 동일 트리거에서 반복됩니다.",
+        whyForThisPair: "표현하는 속도와 회복하는 속도가 다르다 보니, 비슷한 상황에서 같은 어긋남이 반복됩니다.",
         whatACanDo: "재촉 대신 복귀 시간 확인 문장 하나만 보냅니다.",
         whatBCanDo: "정리 완료 시간을 숫자로 제시하고 그 시간에 반드시 복귀합니다.",
         sharedAgreement: "대화 중단 후 40분 이내 첫 복귀 신호를 보냅니다.",
@@ -535,9 +535,9 @@ function createCompletePayload(
         sceneId: "scene.major-decision",
         sceneTitle: "큰 결정(이사/지출/휴가)",
         whatHappens: "지민은 빠른 확정을 선호하고, 정우는 검토와 합의 과정을 더 중시합니다.",
-        whyForThisPair: "의사결정·소통 canonical 행에서 caution 정렬이 반복됩니다.",
+        whyForThisPair: "결정을 내리는 방식과 대화하는 방식 모두에서, 신중해지는 정도의 차이가 반복해서 나타나기 때문입니다.",
         whatACanDo: "결정 기한을 제시하되 선택지 2개를 함께 남깁니다.",
-        whatBCanDo: "검토 항목을 3개 이내로 압축해 의사결정 지연을 줄입니다.",
+        whatBCanDo: "검토할 항목을 3개 이내로 줄여서, 결정이 너무 늦어지지 않도록 합니다.",
         sharedAgreement: "결정 회의는 1차(선호 공유)·2차(확정) 두 단계로 나눕니다.",
         evidenceIds: [
           "canonical_projections.comparison_table.decision",
@@ -552,9 +552,9 @@ function createCompletePayload(
       confidence: "high",
       safetyRulesPassed: ["no-safe-near-term-timing-evidence"],
       renderedCopy: [
-        "지금 조율할 것: 갈등 시 복귀 시간 약속을 습관화해 침묵-오해 루프를 끊습니다.",
-        "익숙해지며 좋아질 것: 서로의 애정 언어(말/행동) 번역 속도가 빨라져 같은 표현의 체감 차이가 줄어듭니다.",
-        "시간이 지나도 지킬 것: 감정 인정 먼저, 기준 협의 나중의 순서를 무너뜨리지 않습니다.",
+        "지금 맞춰가야 할 것은, 갈등이 생겼을 때 언제 다시 돌아올지 약속하는 습관을 들이는 것입니다. 그러면 침묵이 오해로 이어지는 반복을 끊을 수 있습니다.",
+        "시간이 지나며 좋아질 부분은, 서로 다른 애정 표현(말과 행동)을 번역하는 속도가 빨라지면서 같은 마음인데도 다르게 느껴지던 차이가 줄어드는 것입니다.",
+        "시간이 지나도 지켜야 할 것은, 감정을 먼저 알아준 다음에 기준을 함께 정하는 순서입니다. 이 순서를 바꾸지 않는 것이 중요합니다.",
       ],
       rationale:
         "section_6_timeline에 안전 규칙을 통과한 근거리 시계열 근거가 없어 예측형 모드를 사용하지 않음.",
@@ -567,12 +567,12 @@ function createCompletePayload(
     closing: {
       concludingStatement:
         "두 사람의 차이는 관계의 약점이 아니라, 제대로 번역될 때 신뢰를 두껍게 만드는 재료입니다.",
-      rememberA: "지민이 기억할 문장: 빠른 확인보다 '돌아올 시간'을 받는 것이 더 큰 안심을 만든다.",
-      rememberB: "정우가 기억할 문장: 정리의 정확성은 공감의 첫 문장을 건넨 뒤에 더 잘 작동한다.",
+      rememberA: "지민이 기억할 문장: 빠른 확인보다, 언제 돌아올지 아는 것이 더 큰 안심을 준다.",
+      rememberB: "정우가 기억할 문장: 정확하게 정리해서 말하는 것도, 공감하는 말을 먼저 건넨 뒤에 훨씬 더 잘 전해진다.",
       shareLines: [
-        "우리는 감정의 속도는 다르지만, 복귀 약속이 있을 때 가장 단단해진다.",
+        "감정을 표현하는 속도는 다르지만, 다시 돌아오겠다는 약속이 있을 때 우리는 가장 단단해진다.",
         "말의 방식이 다른 만큼, 서로의 애정 언어를 번역해 줄수록 만족이 커진다.",
-        "갈등의 승패보다 관계의 재접속 시간을 줄이는 것이 우리에게 더 중요하다.",
+        "갈등에서 누가 이기고 지는지보다, 다시 이어지는 시간을 줄이는 것이 우리에게 더 중요하다.",
       ],
       reflectionQuestion: "다음 갈등에서 우리가 가장 먼저 지킬 한 문장을 지금 정한다면 무엇일까?",
     },
@@ -814,7 +814,7 @@ function createCompletePayload(
           label: "관계 정체성",
           sourceKind: "prototype_bounded_narrative" as SourceKind,
           content:
-            "지민과 정우는 감정의 속도가 다른 커플입니다. 지민은 관계의 온도를 빠르게 확인하며 연결을 지키고, 정우는 정리된 언어로 관계를 안정시키려 합니다. 그래서 처음에는 엇갈리지만, 서로의 리듬을 번역해 주는 순간 오히려 다른 커플보다 회복의 질이 높아집니다.",
+            "지민과 정우는 감정을 표현하는 속도가 다른 커플입니다. 지민은 관계의 온도를 빠르게 확인하며 연결을 지키고, 정우는 정리된 언어로 관계를 안정시키려 합니다. 그래서 처음에는 서로 다른 리듬 때문에 엇갈리지만, 그 리듬을 서로 번역해 주는 순간부터 회복의 질이 눈에 띄게 좋아집니다.",
           evidenceIds: [
             "canonical_projections.expression_speed",
             "canonical_projections.recovery_speed",
@@ -896,8 +896,8 @@ function createCompletePayload(
           sourceKind: "prototype_bounded_narrative" as SourceKind,
           content:
             hasIndividualA && hasIndividualB && hasPairCe && hasRomanticCe
-              ? "정우에게 어려운 지점은 감정이 빠르게 오갈 때 관계의 현재감을 놓치지 않는 것입니다. 지민이 먼저 감정을 언어로 꺼내 주면, 정우는 상황을 추정하지 않고 실제 신호를 받습니다. 이 효과는 갈등이 아닐 때 더 분명한데, 일상 대화·데이트 계획·하루 정리에서 정우의 반응 속도가 안정적으로 빨라집니다."
-              : "정우에게 어려운 지점은 감정 신호를 놓치지 않는 것입니다. 지민의 선제적 표현은 정우가 관계의 현재 상태를 읽도록 도와줍니다.",
+              ? "정우에게 어려운 부분은 감정이 빠르게 오갈 때도 관계가 지금 어떤 상태인지 놓치지 않는 것입니다. 지민이 먼저 감정을 말로 꺼내 주면, 정우는 짐작하지 않고 실제 신호를 받을 수 있습니다. 이런 도움은 갈등이 없을 때 오히려 더 잘 드러나서, 일상 대화나 데이트 계획, 하루를 정리하는 순간에 정우의 반응이 한결 안정적으로 빨라집니다."
+              : "정우에게 어려운 부분은 감정의 신호를 놓치지 않는 것입니다. 지민이 먼저 마음을 표현해 주는 것이 정우가 관계의 지금 상태를 읽는 데 도움이 됩니다.",
           evidenceIds: [
             "section_4_special_bond.a_gives_b",
             "canonical_projections.expression_speed",
@@ -913,8 +913,8 @@ function createCompletePayload(
           sourceKind: "prototype_bounded_narrative" as SourceKind,
           content:
             hasIndividualA && hasIndividualB && hasPairCe && hasRomanticCe
-              ? "지민에게 어려운 지점은 감정 에너지가 큰 날에도 관계의 안전감을 유지하는 것입니다. 정우가 행동 증거와 일정한 복귀 패턴을 보여 주면, 지민은 확인을 위해 강도를 올리지 않아도 됩니다. 이 효과는 평상시에도 나타나서, 약속 이행·생활 정리·작은 실행에서 지민의 체감 불안이 줄고 친밀감이 누적됩니다."
-              : "지민에게 어려운 지점은 감정 강도가 높은 날 안정감을 유지하는 것입니다. 정우의 행동 기반 응답은 지민의 불안을 낮추는 쪽으로 작동합니다.",
+              ? "지민에게 어려운 부분은 감정이 크게 흔들리는 날에도 관계에 대한 안전감을 지키는 것입니다. 정우가 행동으로 보여주고 일정하게 돌아와 주면, 지민은 확인하려고 애써 목소리를 높이지 않아도 됩니다. 이런 도움은 평소에도 꾸준히 나타나서, 약속을 지키고 생활을 정리하는 작은 순간들 속에서 지민이 느끼는 불안이 줄고 친밀감이 차곡차곡 쌓입니다."
+              : "지민에게 어려운 부분은 감정이 크게 흔들리는 날에도 안정감을 지키는 것입니다. 정우가 행동으로 보여주는 반응은 지민의 불안을 낮추는 방향으로 도움이 됩니다.",
           evidenceIds: [
             "section_4_special_bond.b_gives_a",
             "canonical_projections.reassurance_signal",
@@ -931,7 +931,7 @@ function createCompletePayload(
                 label: "함께 만들게 되는 것",
                 sourceKind: "prototype_bounded_narrative" as SourceKind,
                 content:
-                  `두 사람의 상호작용이 만들어내는 고유 역량은 '빠른 연결 신호'와 '지연 없는 복귀 약속'을 동시에 운용하는 능력입니다. 한쪽만으로는 생기기 어려운 이 역량 덕분에, 관계는 감정 강도가 큰 날에도 끊어지지 않고 재정렬됩니다. 즉 매력의 지속이 아니라, 반복 가능한 회복 운영체계가 관계의 핵심 자산이 됩니다.${asymmetryMeaning ? ` 이 비대칭의 실제 결은 "${asymmetryMeaning}"라는 문장으로 가장 잘 요약됩니다.` : ""}${pairSynthesisMeaning ? ` 그리고 두 사람이 함께 만들 수 있는 공통 기반은 "${pairSynthesisMeaning}"에 가깝습니다.` : ""}`,
+                  `두 사람이 함께 있을 때만 생기는 힘은, '빠르게 마음을 확인하는 신호'와 '늦지 않게 돌아오겠다는 약속'을 동시에 지켜내는 힘입니다. 어느 한 사람만으로는 만들어지기 어려운 이 힘 덕분에, 감정이 크게 흔들리는 날에도 관계는 끊어지지 않고 다시 제자리를 찾습니다. 결국 오래가는 건 한때의 설렘이 아니라, 반복해서 쓸 수 있는 회복의 습관이며, 이 습관이 두 사람 관계를 지탱하는 가장 큰 힘이 됩니다.${asymmetryMeaning ? ` 이 비대칭의 실제 결은 "${asymmetryMeaning}"라는 문장으로 가장 잘 요약됩니다.` : ""}${pairSynthesisMeaning ? ` 그리고 두 사람이 함께 만들 수 있는 공통 기반은 "${pairSynthesisMeaning}"에 가깝습니다.` : ""}`,
                 evidenceIds: [
                   "canonical_projections.pair_ce_bonding",
                   "canonical_projections.recovery_speed",
@@ -955,7 +955,7 @@ function createCompletePayload(
           label: "반복되는 흐름",
           sourceKind: "prototype_bounded_narrative" as SourceKind,
           content:
-            "두 사람의 갈등은 '문제가 생겼다'는 사실보다 '언제 말해야 안전한가'의 차이에서 더 자주 시작됩니다. 지민은 빠르게 연결을 확인하고 싶고, 정우는 먼저 문장을 정리해야 관계를 지킬 수 있다고 느낍니다. 그래서 같은 장면이 추궁과 회피처럼 보이지만, 실제로는 둘 다 관계를 잃지 않으려는 방식이 다를 뿐입니다.",
+            "두 사람의 갈등은 '문제가 생겼다'는 사실보다 '언제 말해야 안전한가'의 차이에서 더 자주 시작됩니다. 지민은 빠르게 연결을 확인하고 싶고, 정우는 먼저 문장을 정리해야 관계를 지킬 수 있다고 느낍니다. 그래서 같은 장면이 추궁과 회피처럼 보이지만, 실제로는 둘 다 관계를 지키려는 방식이 다를 뿐입니다.",
           evidenceIds: [
             "canonical_projections.expression_speed",
             "canonical_projections.recovery_speed",
@@ -971,7 +971,7 @@ function createCompletePayload(
           label: "전환점",
           sourceKind: "ce_derived" as SourceKind,
           content:
-            "이 흐름의 전환점은 누가 이겼는지가 아니라 복귀 시간을 서로 아는가에 있습니다. 정우가 돌아올 시간을 분명히 말하고, 지민이 그 시간까지 질문의 양을 줄이면 대화는 방어전에서 재접속으로 바뀝니다.",
+            "이 흐름이 바뀌는 지점은 누가 이겼는지가 아니라, 언제 다시 돌아올지 서로 아는가에 있습니다. 정우가 돌아올 시간을 분명히 말하고, 지민이 그 시간까지 질문을 줄이면 대화는 서로를 방어하는 자리에서 다시 이어지는 자리로 바뀝니다.",
           evidenceIds: [
             "canonical_projections.recovery_speed",
             "canonical_projections.reassurance_signal",
