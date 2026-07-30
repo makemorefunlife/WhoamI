@@ -3,21 +3,25 @@
 > **Document scope / authority**  
 > SSOT for **company mission** and **company-level product philosophy** only.  
 > Not the home of UX operating rules, narrative voice laws, market evidence, typed classification authority, or domain blueprints.  
-> See also: `02_Relationship-ux-bible.md` (relationship UX) · `03_Market_Research.md` (evidence) · `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` (writing) · `docs/dev/decisions/018_romantic-context-engine-completion.md` (typed Fact authority).
+> See also: `02_Relationship-ux-bible.md` (relationship UX) · `03_Market_Research.md` (evidence) · `05N_Ahaitsme_Narrative_Style_Bible.md` (writing) · `docs/dev/decisions/018_romantic-context-engine-completion.md` (typed Fact authority).
+
+---
+
+## North Star
+
+Reveal hidden patterns so people can understand themselves and others—and make better decisions.
 
 ---
 
 ## Mission
 
-**Ahaitsme helps people understand themselves, understand the people they care about, and make better-informed relationship decisions—with clarity, confidence, and empathy.**
+**Ahaitsme helps people understand themselves, understand the people they care about, and make better-informed decisions—with clarity, confidence, and empathy.**
 
-Ahaitsme is understanding-led decision support.
+Ahaitsme is understanding-led decision support. It is relationship-first, and the same philosophy extends to self-understanding and broader life contexts.
 
 It is not built to predict the future.
 
-It is built to create understanding that strengthens the user’s own judgment.
-
-Ahaitsme supports user judgment. It never decides for the user.
+Ahaitsme does not replace human judgment. It strengthens it.
 
 ---
 
@@ -31,7 +35,7 @@ The product should transform complex analysis into simple human understanding—
 
 Every report should answer:
 
-> "What does this mean for us?"
+> "What does this mean for me, for us, or for this situation?"
 
 rather than
 
@@ -48,6 +52,14 @@ Technical accuracy is essential.
 But accuracy alone does not create value.
 
 Value is created when accurate information becomes understandable.
+
+---
+
+## Understanding before Advice
+
+Insight exists to create understanding first.
+
+Advice, if offered, follows that understanding—never the reverse.
 
 ---
 
@@ -72,6 +84,14 @@ Not software exposing calculations.
 Every screen should communicate one meaningful insight.
 
 Avoid presenting raw data without interpretation.
+
+---
+
+## Personalized before Categorized
+
+Each reading should feel specific to this person, these people, or this relationship—not to a generic category.
+
+Evidence-based understanding always outranks generalized labels, type names, or one-size-fits-all frames.
 
 ---
 
@@ -102,13 +122,21 @@ Premium is measured by:
 
 ---
 
+## Agency before Prescription
+
+The product supports decisions. It never makes them.
+
+Judgment remains with the user—scores and prescriptions never stand in for it.
+
+---
+
 # What Ahaitsme Is
 
 Ahaitsme is:
 
 - a self-understanding platform
 - a relationship understanding platform
-- understanding-led decision support for relationships
+- understanding-led decision support (relationship-first; self and broader contexts in the same philosophy)
 - an AI-assisted interpretation experience
 - a premium reading experience
 
@@ -125,6 +153,10 @@ Ahaitsme is not:
 - an astrology encyclopedia
 - a fortune telling service
 - a system that makes decisions on the user’s behalf
+- a factory of generalized personality labels
+- a one-size-fits-all interpretation engine
+- a generalized zodiac-style reading service
+- a product that explains people through a single trait or single framework
 
 ---
 
@@ -134,9 +166,17 @@ Every report—whether Romantic, Friend, Work, Family, or Self—should feel lik
 
 Different facts.
 
-Different relationships.
+Different relationships—and, over time, broader contexts of self and life.
 
 One product philosophy.
+
+Over time, Ahaitsme grows as two connected experiences:
+
+**Insight Service** — helps users understand themselves and others.
+
+**Decision Service** — helps users turn that understanding into better everyday decisions. It supports human judgment; it never substitutes scores, prescriptions, or decisions for it.
+
+These are one philosophy expressed in two stages. Decision never precedes understanding.
 
 Experience architecture and UX operating rules live in `02_Relationship-ux-bible.md`, not here.
 
@@ -155,3 +195,7 @@ Success is when users say:
 Even better:
 
 "This report understands us."
+
+And eventually:
+
+"Because of this, I can decide with more clarity."
