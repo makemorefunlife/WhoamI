@@ -21,6 +21,25 @@
 6. **Shared geometry ≠ shared meaning.** Products reference Visual Asset IDs (VA-xx). They must not redefine asset geometry, and shared assets must not force shared axes, labels, thresholds, warnings, or actions.
 7. Binding UX sequence for major visuals (Product Bible §13D.5): **Visual First → Explanation → Story → Action**.
 
+### Visualization as understanding (absorbed experience principle)
+
+Visualization is a tool of understanding, not decoration and not proof by appearance.
+
+A visualization must perform at least one clear job:
+
+1. make a pattern easier to understand;
+2. make two people easier to compare;
+3. reveal change, distance, balance, direction, or interaction;
+4. make an important insight easier to remember.
+
+A visualization should not exist when prose communicates the point more clearly.
+
+- **Meaning before graphic** — The reader should know what question a visual answers.
+- **Selective, not exhaustive** — Not every measurable trait deserves a chart.
+- **Comparison must be fair** — Visual scales, labels, and ranges must not exaggerate difference or imply precision unsupported by the engine.
+- **Visuals need interpretation** — A chart does not replace insight; every important visual should be paired with a concise explanation of what matters and why.
+- **No decorative complexity** — Complex visuals are justified only when they simplify a complex idea.
+
 ---
 
 # 1. Brand and Visual Identity

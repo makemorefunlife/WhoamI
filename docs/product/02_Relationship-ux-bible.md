@@ -96,6 +96,20 @@ before
 
 > Why?
 
+### Meaning before detail
+
+A score, axis, signal, or trait has no experience value until the reader understands what it means in real life.
+
+The report should introduce the human meaning first, then provide the detail needed to support it.
+
+### Story before inventory
+
+The report must not expose every available insight simply because the system can produce it.
+
+Content belongs only when it advances the reader’s realization journey.
+
+A smaller number of connected insights is more valuable than a large inventory of unrelated truths.
+
 ### Story and decision relevance
 
 **Story leads the reading experience; decision relevance determines what deserves attention.**

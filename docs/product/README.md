@@ -113,7 +113,7 @@ It does not override Ahaitsme's governing product principles.
 ### Does not own
 
 - company mission / why Ahaitsme exists → `01_Product_Vision.md`
-- relationship experience architecture / module catalogs → `05` / `05A`–`05E`
+- relationship experience architecture / module catalogs → `05_Relationship_Product_Bible.md` / `05A`–`05E`
 - UX reading journey and progressive disclosure mechanics → `02_Relationship-ux-bible.md`
 - narrative wording, assertion ceilings, register → `05N_Ahaitsme_Narrative_Style_Bible.md`
 - visual encoding of confidence/uncertainty → `06_Visual_Design_System.md`
@@ -125,13 +125,11 @@ It does not override Ahaitsme's governing product principles.
 - resolving conflicts about evidence, confidence, uncertainty, prediction, ranking, or dignity
 - distinguishing constitutional principle from domain, UX, narrative, visual, or technical application
 
-### Numbering note
-
-A separate tracked file, `04_Relationship_Experience_Bible.md`, also uses the `04_` prefix for relationship **journey** architecture. README authority for shared relationship experience remains `05_Relationship_Product_Bible.md` (which absorbed the former `04_Relationship_Experience_Blueprint.md`). Resolve the Experience Bible filename/authority with a product-owner decision; do not treat it as Assessment Philosophy.
-
 ---
 
 ## `05_Relationship_Product_Bible.md`
+
+> Former `04_Relationship_Experience_Bible.md` is retired. Historical note: `archive/ARCHIVE_Relationship_Experience_Bible.md`.
 
 ### Owns
 
@@ -735,8 +733,6 @@ Use stable numbered names for governing documents.
 09_Product_and_Design_Intent_Package.md
 10_Design_IA_Canonicalization_Refactor_Plan.md
 ```
-
-> Note: `04_Relationship_Experience_Bible.md` exists on disk but is not listed here as a governing authority name until its collision with Assessment Philosophy is resolved. Shared experience SSOT remains `05_Relationship_Product_Bible.md`.
 
 Avoid:
 

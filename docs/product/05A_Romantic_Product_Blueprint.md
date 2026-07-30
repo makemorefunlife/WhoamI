@@ -6,7 +6,6 @@
 **Audience:** Product, Design, Content, Engineering, QA, Localization  
 **Purpose:** Define what the Romantic product is, how the user moves through it screen by screen, what each module must accomplish, what it must never become, and how every future implementation should be judged.  
 **Inherits:** `01_Product_Vision.md` · `04_Assessment_Philosophy.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md`  
-*(Also currently cites `04_Relationship_Experience_Bible.md` for journey language — numbering collision with Assessment Philosophy; treat `05` as shared experience SSOT until that file is resolved.)*  
 **Technical companion:** `06A_Romantic_Technical_Blueprint.md` (and related technical docs)  
 **Absorbed:** Unique product decisions from former `05_Romantic_Product_Blueprint.md` (deleted; no archive).
 

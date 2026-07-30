@@ -3,7 +3,7 @@
 
 > **Status:** Canonical product SSOT for Ahaitsme relationship experience architecture  
 > **Purpose:** Define how every relationship product should feel, flow, prioritize information, structure insight, and guide decisions—while elaborating Romantic and Marriage / Cohabitation as the first fully specified pair.  
-> **Absorbed & archived:** Shared experience constitution formerly in `04_Relationship_Experience_Blueprint.md` (file deleted; historical content lives only in git history).  
+> **Absorbed & archived:** Shared experience constitution formerly in `04_Relationship_Experience_Blueprint.md` and `04_Relationship_Experience_Bible.md` (both retired; historical content lives in `docs/product/archive/ARCHIVE_Relationship_Experience_Bible.md` and git history). This document is the sole shared relationship **experience** SSOT.  
 > **Does not own:** Detailed typography, color tokens, component styling, animation implementation, or responsive layout rules → `06_Visual_Design_System.md` (and related visual docs). UX writing laws → `02_Relationship-ux-bible.md`. Company vision → `01_Product_Vision.md`. Assessment constitution (evidence, confidence, uncertainty, prediction, dignity, internal vs visible) → `04_Assessment_Philosophy.md`. Domain module catalogs → product-specific blueprints (`05A`, etc.).  
 > **Scope:** Product rules for all relationship products. Romantic + Marriage / Cohabitation are fully elaborated here. Friend, Work, and Family (Child / Parent) inherit the same constitution and Insight Bible, with domain Blueprints defining distinct questions, modules, and stakes.
 
@@ -406,6 +406,352 @@ Visual First → Explanation → Story → Action
 The visual must answer one human question immediately. Narrative and action follow; they do not precede an unexplained chart. Full contract: §13D.
 
 Domain Blueprints must **not** replace this hierarchy, treat domain differences as copy-only substitutions under one identical module set, merge Romantic with Marriage / Cohabitation, or collapse Family Child and Family Parent into one undifferentiated report.
+
+## 4.6 Experience realization (absorbed from former Experience Bible)
+
+Ahaitsme does not exist to deliver more relationship information.
+
+It exists to help people recognize themselves, understand another person, make sense of a shared pattern, and see what they can do next.
+
+A Relationship Report is therefore not a collection of sections. It is a designed realization journey.
+
+Its success is measured by whether the reader naturally arrives at:
+
+> "아, 그래서 내가 그랬구나."  
+> "그래서 상대는 그렇게 느꼈구나."  
+> "그래서 우리는 이런 흐름을 만들었구나."  
+> "그러면 앞으로는 이렇게 해볼 수 있겠네."
+
+The product does not merely explain relationships.
+
+It designs the moment of **“AHA! It’s ME.”**
+
+### Discovery, not delivery
+
+A report should not feel like the system is announcing conclusions.
+
+It should feel like the reader is gradually discovering something that becomes increasingly clear.
+
+Insights must feel earned through progression, not dropped as isolated claims.
+
+### The reader’s expanding understanding
+
+The relationship is the analytical subject (§2.4; domain Laws). The experience remains anchored in what the reader can recognize, understand, and act on:
+
+```text
+Understand myself
+↓
+Understand the other person
+↓
+Understand our interaction
+↓
+Recognize choice and possibility
+```
+
+Even when a report analyzes two people equally, the protagonist of the reading experience is the reader’s expanding understanding.
+
+### Relationship insight must return to self-understanding
+
+Relationship analysis is valuable because relationships reveal the self.
+
+The report may explain compatibility, conflict, roles, rhythm, environment, or shared potential, but it must ultimately help the reader see:
+
+- what they need;
+- how they interpret behavior;
+- what they repeatedly contribute;
+- what they misunderstand;
+- what they can choose differently.
+
+The relationship is the lens. Self-understanding is the lasting value.
+
+### One continuous story
+
+Visible “Part 1,” “Part 2,” and “Part 3” structures should not define the user experience.
+
+Internal modules may remain necessary for planning and implementation. The reader, however, should experience one connected journey in which each stage answers the question created by the stage before it.
+
+The report should feel discovered, not assembled.
+
+### Hope without false reassurance
+
+Every report should leave room for agency and growth.
+
+Hope must come from a clearer understanding of choices, not from minimizing genuine difficulty.
+
+### Complexity without confusion
+
+The engine may be complex. The experience must not be.
+
+The report should preserve nuance while presenting one clear realization at a time.
+
+## 4.7 Canonical cross-product experience architecture
+
+Every Relationship Product inherits the following architecture.
+
+Product Blueprints may rename or combine stages, but they must preserve each stage’s experience job. Romantic’s Final Journey chapters (§4.1, §5) are one elaboration of this architecture, not a replacement for it.
+
+### Opening: Emotional Entry
+
+**Job:** Create immediate relevance and invite the reader into the report.
+
+The opening should:
+
+- establish the relationship’s central emotional truth;
+- feel personal without overstating certainty;
+- create recognition before presenting structure;
+- give the reader a reason to continue.
+
+The opening should not:
+
+- summarize the entire report;
+- begin with methodology;
+- overwhelm the reader with scores;
+- define the relationship with a final verdict.
+
+### Self Recognition: “How I Enter This Relationship”
+
+**Job:** Help the reader recognize their own needs, expectations, and default responses.
+
+This stage anchors the report in self-understanding. It should explain the reader’s internal logic before evaluating the relationship.
+
+### Other-Person Recognition: “How They May Experience It”
+
+**Job:** Introduce the other person as a coherent human perspective.
+
+This is not a second personality report. It includes only the traits and needs required to understand the shared dynamic.
+
+### Shared Pattern Discovery: “What Happens Between Us”
+
+**Job:** Show how two tendencies combine into a recurring interaction.
+
+This stage converts “me” and “you” into “us.” It should reveal a pattern neither individual profile can explain alone.
+
+### Meaning and Evidence: “Why This Pattern Exists”
+
+**Job:** Deepen trust by connecting the pattern to its strongest supporting signals.
+
+Evidence should clarify:
+
+- what drives the pattern;
+- which differences matter;
+- which similarities reinforce it;
+- how confident the interpretation is;
+- where the reading remains tentative.
+
+### Strength and Potential: “What Works Because of This”
+
+**Job:** Reveal the value already present in the relationship.
+
+Strength must not be decorative praise. It should emerge from the same pattern that creates difficulty, showing the full shape of the dynamic.
+
+### Friction and Risk: “Where the Pattern Can Hurt”
+
+**Job:** Name the cost of the pattern without turning it into a verdict.
+
+The experience should distinguish manageable friction from deeper strain and explain the conditions under which difficulty grows.
+
+### Growth Leverage: “What Changes the Pattern”
+
+**Job:** Identify the smallest meaningful shifts with the greatest relational effect.
+
+Growth should focus on translation, timing, environment, boundaries, repair, or role adjustment—not personality replacement.
+
+### Practical Action: “What We Can Try”
+
+**Job:** Convert insight into behavior.
+
+Actions should be:
+
+- specific;
+- feasible;
+- connected to earlier findings;
+- proportionate to the severity of the issue;
+- useful in a real situation.
+
+### Closing Reflection: “What I Understand Now”
+
+**Job:** Integrate the experience and leave the reader with grounded hope.
+
+The closing should not introduce major new analysis. It should help the reader carry forward one clear understanding and one possible next step.
+
+## 4.8 Experience layers
+
+A complete Relationship Experience uses several layers. No single layer should dominate the report.
+
+- **Emotional Layer** — Creates recognition, trust, curiosity, relief, and hope.
+- **Narrative Layer** — Connects separate insights into one understandable journey.
+- **Analytical Layer** — Provides the reasoning, comparisons, and distinctions that make the interpretation credible.
+- **Evidence Layer** — Shows the strongest supporting signals and communicates confidence honestly.
+- **Visual Layer** — Reduces cognitive effort and makes meaningful comparison easier.
+- **Action Layer** — Turns understanding into realistic behavior.
+
+These layers should operate together. A report fails when it is emotionally engaging but analytically weak, analytically rich but exhausting, visually polished but empty, or actionable without sufficient understanding.
+
+## 4.9 Story and reading flow (shared)
+
+### One realization at a time
+
+Each stage should have one primary job.
+
+A section may contain multiple signals, but it should produce one dominant realization.
+
+### Every stage must connect
+
+A stage should either:
+
+- answer a question created earlier;
+- deepen a previous realization;
+- reveal a consequence;
+- prepare the reader for action.
+
+If it does none of these, it does not belong in the canonical flow.
+
+### The middle holds the greatest depth
+
+The experience should begin lightly, deepen in the middle, and become lighter again near the end.
+
+```text
+Accessible opening
+↓
+Increasing depth
+↓
+Deepest interaction insight
+↓
+Practical simplification
+↓
+Reflective close
+```
+
+The reader should not experience continuous cognitive escalation.
+
+### Transitions carry the story
+
+Transitions must communicate why the next idea matters.
+
+A report should not move from one topic to another merely because the content inventory requires it.
+
+### Repetition must add meaning
+
+A core pattern may appear more than once only when its function changes.
+
+For example:
+
+- first as recognition;
+- later as causal explanation;
+- later as an action target.
+
+Repeating the same conclusion in different words is not progression.
+
+## 4.10 Product adaptation map
+
+Every Relationship Product inherits the same experience arc while answering a different central question.
+
+| Product | Central question |
+|---|---|
+| **Romantic** | How do we love, seek closeness, and repair differently? |
+| **Marriage / Cohabitation** | How do we build and sustain a shared life? |
+| **Family** | Why can people shaped by the same family experience it so differently? |
+| **Friend** | What makes this friendship feel easy, meaningful, distant, or difficult? |
+| **Work** | How do we create better work together? |
+
+Products must not redesign the emotional journey from zero.
+
+They may vary entry question, selected evidence, visual forms, interaction patterns, action types, and narrative register.
+
+They must preserve:
+
+- recognition before explanation;
+- self before shared pattern;
+- understanding before advice;
+- evidence before severity;
+- agency before ending.
+
+The goal is consistency of experience, not uniformity of content.
+
+Domain Blueprints own module catalogs and domain emphasis. This section does not replace `05A`–`05E`.
+
+## 4.11 Inheritance rules for Product Blueprints
+
+Every Product Blueprint must explicitly map its content to this Product Bible’s experience constitution (§4).
+
+At minimum, each Blueprint must define:
+
+1. its central reader question;
+2. its opening recognition moment;
+3. how self-understanding is established;
+4. how the other person is made understandable;
+5. its primary shared-pattern discoveries;
+6. which evidence and axes are necessary;
+7. how strengths and difficulties are balanced;
+8. its highest-value growth levers;
+9. its practical action format;
+10. its closing reflection.
+
+A Product Blueprint may depart from the canonical order only when:
+
+- the product’s relationship context makes the default sequence harmful or confusing;
+- the alternative still preserves the emotional arc;
+- the exception is documented with rationale;
+- the exception does not create an unnecessary standalone UX system.
+
+## 4.12 Canonical experience validation
+
+A Relationship Product is not experience-ready until it passes the following review.
+
+### Recognition
+
+- Does the opening feel immediately relevant?
+- Can the reader recognize themselves before encountering technical detail?
+- Is the recognition specific enough to feel earned?
+
+### Progression
+
+- Does each stage answer or deepen the stage before it?
+- Is there a clear emotional and logical arc?
+- Does the report feel like one story rather than stacked modules?
+
+### Discovery
+
+- Does the report produce at least one genuine new realization?
+- Is the discovery more than a paraphrase of visible traits?
+- Does it explain interaction rather than merely compare two people?
+
+### Evidence
+
+- Are major claims supported by relevant evidence?
+- Is confidence communicated honestly?
+- Are the 11 axes used selectively rather than mechanically?
+
+### Density
+
+- Is every included insight necessary?
+- Are repeated ideas performing different jobs?
+- Does complexity peak in the middle and reduce toward the end?
+
+### Visualization
+
+- Does every major visual answer a clear question?
+- Does it simplify rather than decorate?
+- Is the scale fair and the interpretation explicit?
+
+### Emotional safety
+
+- Are differences separated from defects?
+- Is severity proportionate to evidence?
+- Does the report avoid destiny, diagnosis, blame, and fear-based language?
+
+### Action
+
+- Does every action trace back to a prior insight?
+- Are the actions realistic in the product’s relationship context?
+- Does the reader know where to begin?
+
+### Ending
+
+- Does the closing integrate rather than add new complexity?
+- Does the reader finish with greater clarity?
+- Does the report leave grounded hope and agency?
+- Is the final emotional result consistent with **“AHA! It’s ME.”**?
 
 ---
 
@@ -1821,7 +2167,7 @@ It fails when users primarily remember:
 10. The current monolithic Romantic view must be decomposed.
 11. The visual metaphor system will be hybrid: fluid, orbit, thread, and topographic patterns used by meaning; implementation lives in the Visual Design System.
 12. The Relationship Insight Bible becomes the common IP layer for all relationship products.
-13. This document (`05_Relationship_Product_Bible.md`) is the shared experience SSOT; former `04_Relationship_Experience_Blueprint.md` is absorbed and deleted.
+13. This document (`05_Relationship_Product_Bible.md`) is the shared experience SSOT; former `04_Relationship_Experience_Blueprint.md` and `04_Relationship_Experience_Bible.md` are absorbed and retired (see `docs/product/archive/ARCHIVE_Relationship_Experience_Bible.md`).
 14. Emotional pacing stages (Curiosity → … → Action) underlie the Final Journey chapters; recognition must precede advice.
 15. Meaning before measurement; unknown states must remain visible; confidence ≠ severity ≠ relationship quality.
 16. The 11 axes are analysis evidence, not automatic navigation or 11 equal sections.

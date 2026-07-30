@@ -7,8 +7,7 @@
 > Narrative expression of supported findings → `05N_Ahaitsme_Narrative_Style_Bible.md`.  
 > UX reading architecture → `02_Relationship-ux-bible.md`.  
 > Visual expression → `06_Visual_Design_System.md`.  
-> Technical implementation → domain `06*` blueprints and engine contracts.  
-> **Numbering note:** This file is the canonical `04_` Assessment Philosophy SSOT. A separate tracked file, `04_Relationship_Experience_Bible.md`, also uses the `04_` prefix (experience journey). That naming collision is flagged for human resolution; it does not share this document’s ownership.
+> Technical implementation → domain `06*` blueprints and engine contracts.
 
 > **Define the constitutional principles governing every assessment produced by Ahaitsme.**
 
