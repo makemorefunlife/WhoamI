@@ -1,5 +1,6 @@
 import { getHiddenStemsData, calculateTwelveStage } from "@/lib/saju/repository";
 import type { ChartContext } from "@/lib/saju/chartContext";
+import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 import type { CurrentSelfProfile, SecondaryAxisKey } from "@/lib/v2/survey/types";
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { RomanticHeadlineLocale } from "@/lib/relationship/romanticHeadline/locale";
@@ -338,6 +339,56 @@ export function resolveSajuFrameDirection(
   const gap = structureA - structureB;
   if (Math.abs(gap) < SAJU_COUNT_GAP) return "balanced";
   return gap > 0 ? "A" : "B";
+}
+
+// ---- ⑤ 교차 사주 갈등 신호 (충형해파) --------------------------------------
+//
+// analyzeCrossChartRelations(pairChartAnalysis.ts)가 이미 두 사람 원국을
+// 궁위 가중치까지 계산해 산출하는 충/형/파/해 히트를 갈등 해석의 구조적 근거로
+// 요약한다. 육합(조화)은 갈등 신호가 아니므로 제외. 새 사주 계산을 만들지
+// 않고 기존 CrossChartHit[]만 재사용한다.
+
+export type CrossChartTensionBand = "high" | "moderate" | "none";
+export type CrossChartTensionType = "충" | "형" | "파" | "해";
+
+export type CrossChartTensionResult = {
+  band: CrossChartTensionBand;
+  dominantType: CrossChartTensionType | null;
+  hitCount: number;
+  /** 이미 필터·정렬된 tensionHits 전체 — 집계 외 개별 히트 보존용. */
+  hits: CrossChartHit[];
+};
+
+const CROSS_TENSION_TYPES = new Set<CrossChartTensionType>(["충", "형", "파", "해"]);
+const CROSS_TENSION_HIGH_HIT_COUNT = 2;
+
+function isCrossChartTensionType(v: string): v is CrossChartTensionType {
+  return CROSS_TENSION_TYPES.has(v as CrossChartTensionType);
+}
+
+/**
+ * 일주 교차 히트(dayBranchCrossHits) 중 충/형/파/해만 걸러 밴드로 요약한다.
+ * hitCount>=2면 high, 1개면 moderate, 0개면 none. dominantType은 궁위
+ * 가중치가 가장 높은 히트(입력이 이미 weightedPriority 내림차순 정렬됨을 가정).
+ */
+export function resolveCrossChartTension(
+  crossHits: CrossChartHit[],
+): CrossChartTensionResult {
+  const tensionHits = crossHits
+    .filter((h) => isCrossChartTensionType(h.type))
+    .sort((a, b) => b.weightedPriority - a.weightedPriority);
+  if (tensionHits.length === 0) {
+    return { band: "none", dominantType: null, hitCount: 0, hits: [] };
+  }
+  const dominant = tensionHits[0]!;
+  const band: CrossChartTensionBand =
+    tensionHits.length >= CROSS_TENSION_HIGH_HIT_COUNT ? "high" : "moderate";
+  return {
+    band,
+    dominantType: dominant.type as CrossChartTensionType,
+    hitCount: tensionHits.length,
+    hits: tensionHits,
+  };
 }
 
 export type RolePlayResult = {
