@@ -2,10 +2,13 @@
  * M7 Conflict Translation projector.
  * Dialogue rows + expression_speed binding. bad→said, good→better.
  * meant/heard left null in B2 (no invention).
+ * cross_chart_tension (충/형/파/해) adds structural Saju evidence and can
+ * only raise confidence one step — it never supplies row text.
  */
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { bindDialogueTableToExpressionSpeed } from "@/lib/relationship/romantic/romanticDialogueTableBinding";
 import { readRomanticExpressionSpeedCanonicalProjection } from "@/lib/relationship/romantic/romanticExpressionSpeedCanonical";
+import { readRomanticCrossChartTensionCanonicalProjection } from "@/lib/relationship/romantic/romanticCrossChartTensionCanonical";
 import type {
   ConfidenceLevel,
   ConflictDialogueRowVM,
@@ -50,6 +53,9 @@ export function projectConflictPattern(
     ? conflict!.dialogue_table!
     : [];
   const expression = readRomanticExpressionSpeedCanonicalProjection(
+    input.report,
+  );
+  const tension = readRomanticCrossChartTensionCanonicalProjection(
     input.report,
   );
   const bound = bindDialogueTableToExpressionSpeed(
@@ -108,6 +114,12 @@ export function projectConflictPattern(
       summary: "expression speed direction",
     });
   }
+  if (tension && tension.band !== "none") {
+    evidence.push({
+      path: "canonical_projections.cross_chart_tension",
+      summary: "cross-chart structural tension (충/형/파/해)",
+    });
+  }
 
   let confidence: ConfidenceLevel = "medium";
   if (expression?.direction && expression.direction !== "balanced") {
@@ -119,6 +131,12 @@ export function projectConflictPattern(
           : "medium";
   } else if (!expression) {
     confidence = "low";
+  }
+  // Structural cross-chart tension corroborates (never invents) the read —
+  // it can only raise confidence one step, never lower it or set it alone.
+  if (tension?.band === "high") {
+    if (confidence === "low") confidence = "medium";
+    else if (confidence === "medium") confidence = "high";
   }
 
   return {
