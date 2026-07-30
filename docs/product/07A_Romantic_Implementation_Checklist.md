@@ -6,7 +6,7 @@
 **Applies to:** Ahaitsme Romantic  
 **Depends on:**
 
-- `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`
+- `05N_Ahaitsme_Narrative_Style_Bible.md`
 - `docs/dev/decisions/027_romantic-saju-deep-narrative-freeze.md`
 - `05A_Romantic_Product_Blueprint.md`
 - `06A_Romantic_Technical_Blueprint.md`
@@ -24,7 +24,7 @@ Authority hierarchy:
 1. `01_Product_Vision.md`
 2. `02_Relationship-ux-bible.md`
 3. `05_Relationship_Product_Bible.md`
-4. `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` — shared narrative and voice SSOT
+4. `05N_Ahaitsme_Narrative_Style_Bible.md` — shared narrative and voice SSOT
 5. `05A_Romantic_Product_Blueprint.md`
 6. `06A_Romantic_Technical_Blueprint.md`
 7. `07A_Romantic_Implementation_Checklist.md`

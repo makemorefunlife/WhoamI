@@ -7,7 +7,7 @@
 **Purpose:** Define how Friend relationship evidence is transformed into deterministic judgments, projections, and bounded narrative outputs.  
 **Product companion:** `05B_Friend_Product_Blueprint.md`  
 **Implementation companion:** `07B_Friend_Implementation_Checklist.md`  
-**Inherits:** `05_Relationship_Product_Bible.md` · `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`  
+**Inherits:** `05_Relationship_Product_Bible.md` · `05N_Ahaitsme_Narrative_Style_Bible.md`  
 **Supersedes:** Any ad hoc Friend-specific inference, prompt-only classification, or UI-owned relationship judgment that conflicts with this document.
 
 ---

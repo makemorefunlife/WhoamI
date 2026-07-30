@@ -20,7 +20,7 @@ This plan's own §1 (Documentation cleanup inventory) proposed a set of document
 | Reconcile `05` visual-language sections against `06` | Done — `05` §14–§18 (visual language, pattern map, module/component blueprint, canonical signal presentation, progressive disclosure/motion/interaction-safety) consolidated into `06`, with `05` retaining only product-meaning content and short pointers |
 | Expand `06` from "Visual Design System" to the full "Experience Design System" scope | Done — brand identity, IA/navigation principles, the full Romantic module ledger, the visualization vocabulary appendix, and future app-shell considerations added |
 | Trim `08` to current-implementation-only | Done — `08`'s former "Must Preserve / May Reinterpret / Must Not Invent" and "Open Questions" sections, plus Appendix A's prescriptive preserve/may-change framing, moved to `09` |
-| Single narrative SSOT (`05N` ↔ `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`) | **Not done** — still requires a product-owner decision (§10.3); the two documents remain unreconciled |
+| Single narrative SSOT (`05N` ↔ `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`) | **Done** (2026-07-27) — merged into `05N` v2.0; `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` reduced to a superseded pointer; all citing docs (`01`, `05B`, `05D`, `06B`, `07A`) updated |
 | Rename `02` to match the README's filename, or vice versa | **Not done** — a small, low-risk fix still pending; noted again in §1.2 below |
 
 Everything below this point (§1 onward) is the **original planning content**, retained for its still-relevant code/runtime cleanup roadmap, updated in place only where a documentation-level item it referenced has now changed status.
@@ -53,7 +53,7 @@ This plan identifies what must later be **preserved, promoted, merged, migrated,
 | Market | `03_Market_Research.md` | Supporting only |
 | Shared product | `05_Relationship_Product_Bible.md` | Keep |
 | Domain product | `05A`–`05E` | Keep; flag draft maturity on Work/Partnership |
-| Narrative | **Owner decision** between `05N` and `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` | Still open — `09` §6.3 |
+| Narrative | `05N_Ahaitsme_Narrative_Style_Bible.md` (v2.0) | **Done** — single SSOT; `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` archived as pointer (`09` §6.3) |
 | Visual expression | `06_Visual_Design_System.md` (Experience Design System) | **Done for brand tokens** — aligned to shipping Stitch emerald; remaining drift = grades / traffic-lights / dual registers (`08`) |
 | Domain technical | `06A`–`06E` *Technical* | Keep; supporting `06A`/`06D` collisions resolved via stubs |
 | Checklists | `07A`–`07E` | Tracking only, not product authority |
@@ -66,13 +66,13 @@ This plan identifies what must later be **preserved, promoted, merged, migrated,
 | File | Current role | Conflict | Proposed action | Replacement/authority | Risk |
 |------|--------------|----------|-----------------|----------------------|------|
 | `docs/product/README.md` | Authority map | Omits/under-specifies `05N`, `08`–`10`; cites `02_Relationship_UX_Bible.md` while disk file is `02_Relationship-ux-bible.md` | **Rewrite** map section; **rename** or symlink naming | Itself after update | Low if careful |
-| `01_Product_Vision.md` | Canonical vision | Points to `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` not `05N` | **Rewrite** cross-refs after narrative merge | Remains canonical | Low |
+| `01_Product_Vision.md` | Canonical vision | None — **fixed** | **Done** — cross-ref now points to `05N` | Remains canonical | Low |
 | `02_Relationship-ux-bible.md` | Canonical UX | Misnamed vs README; may still cite old narrative path | **Rename** to stable name OR update README; fix narrative refs | Remains canonical | Medium (many inbound links) |
 | `03_Market_Research.md` | Supporting | None | **Preserve** as supporting | README limitation clause | None |
 | `05_Relationship_Product_Bible.md` | Shared product SSOT | Overlaps heavily with `11_*_integrated.md` | **Preserve**; ensure README marks `11` superseded | Canonical | Low |
 | `05A`–`05E` Product Blueprints | Domain product SSOT | Target IA ≠ shipped IA (`08`); Partnership vs Romantic inheritance tension (`09` §6.2) | **Preserve**; **owner decision** on Partnership framing; mark “target vs as-built” | Product owner + `08` for as-built | High if treated as shipped UI |
-| `05N_Ahaitsme_Narrative_Style_Bible.md` | Narrative SSOT (product tree) | Duplicate with `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` | **Promote** or **merge** — owner decision | One narrative SSOT | High until resolved |
-| `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` | Technical “Invariant Core” (register dials, lexicon) | Still cited by `01`, `05B`, `06B`, `07A` | **Merge into `05N`** or demote to supporting appendix under `docs/product/` | Owner decision | High — agents pick randomly |
+| `05N_Ahaitsme_Narrative_Style_Bible.md` | Narrative SSOT (product tree), v2.0 | None — **resolved** | **Done** — merged register dials, address law, severity/evidence ceilings, and lexicon from the dev-tree doc | Sole narrative SSOT | Low (resolved) |
+| `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` | Superseded pointer (was: technical "Invariant Core") | None — content fully absorbed into `05N` | **Done** — reduced to a superseded pointer with a section-by-section mapping table | `05N` | Low (resolved) |
 | `06_Visual_Design_System.md` | Expression SSOT | Brand tokens **reconciled** to shipping Stitch emerald (`06` L5); still forbids grades/traffic-lights that remain in code | **Preserve** as expression SSOT; link `08` for remaining code drift | `06` + `08` | Medium (code migration) |
 | `06A_Romantic_Technical_Blueprint.md` | Romantic technical SSOT | Former foundations collision — **mitigated** (foundations archived) | Keep technical as `06A` | Technical remains `06A` Romantic | Low |
 | `docs/product/archive/ARCHIVE_Visual_Foundations.md` | Archived visual trail (ex-`06A_Visual_Foundations`) | — | **Done** — archived; use `06` | `06` | None |
@@ -89,15 +89,15 @@ This plan identifies what must later be **preserved, promoted, merged, migrated,
 | `lib/relationship/romanticproject/*` | Pre-lock mockup + KO plan | Explicitly rejected as design reference (`06` §6A / L3) | **Archive** out of `lib/` after design freeze (code path unused by app) | `05A`/`06` | Low runtime; high agent confusion |
 | `docs/dev/decisions/004`–`031` (relationship) | Frozen engineering decisions | Must not be “cleaned” away | **Preserve**; index from README | Decision records | High if deleted |
 | `docs/dev/01_IA_AND_USER_JOURNEY.md`, `DEVELOPER_HANDBOOK_*` | Stitch-era process docs | May drift from `08` | **Merge** useful bits into `08`/README or mark supporting | `08` | Low |
-| Duplicate Narrative Bibles | Two SSOT candidates | Agents disagree | **Owner decision** then merge/archive | Single path under `docs/product/` | **Highest doc risk** |
+| Duplicate Narrative Bibles | Two SSOT candidates | **Resolved** (2026-07-27) | **Done** — merged into `05N` v2.0; dev-tree doc archived as pointer | Single path under `docs/product/` | Low (resolved) |
 
 ### 1.3 Documentation actions summary
 
 | Action | Candidates |
 |--------|------------|
 | Preserve | `01`, `02`, `03`, `05`, `05A`–`05E`, `06`, `06A`–`06E` technical, `07*`, decisions, `08` |
-| Promote to canonical | `08` (as-built), single narrative bible after merge, updated README map |
-| Merge | Two narrative bibles; useful handbook IA notes into `08`/README |
+| Promote to canonical | `08` (as-built), `05N` v2.0 (single narrative bible, merge complete), updated README map |
+| Merge | ~~Two narrative bibles~~ **done**; useful handbook IA notes into `08`/README |
 | Rename / misfile fix | `02` filename; Partnership naming in indexes (`06A`/`06D` supporting collisions resolved via archive) |
 | Archive | `11_*`, `platform/*` (after stamp), `prep/*` (after stamp), romanticproject, visual foundations/module eval |
 | Delete after confirmation | Only empty stubs / confirmed unused docs — **none recommended for immediate delete** |
@@ -325,10 +325,10 @@ archive/
 - **Vs design approval:** **Before** design generation preferred; does not block exploration if `08`/`09` already briefed.
 
 ### Phase 1 — Documentation authority
-- **Status:** **Mostly done** for map / stubs / `06` expansion / `09` decision polish / brand-token reconcile. **Still open:** narrative dual-SSOT merge; `02` filename alias.
-- **Goal:** One narrative SSOT; fix numbering/misfiles; archive trails.
-- **Files:** Narrative bibles, `06A`/`06D` supporting renames, `11`, platform/prep archive moves, `09` stale fixes, cross-refs in `01`/`05B`/`06B`/`07A`.
-- **Deps:** Owner decision on narrative merge; Partnership naming.
+- **Status:** **Done** for map / stubs / `06` expansion / `09` decision polish / brand-token reconcile / narrative dual-SSOT merge (2026-07-27). **Still open:** `02` filename alias.
+- **Goal:** ~~One narrative SSOT~~ done; fix numbering/misfiles; archive trails.
+- **Files:** Narrative bibles (merged), `06A`/`06D` supporting renames, `11`, platform/prep archive moves, `09` stale fixes, cross-refs in `01`/`05B`/`05D`/`06B`/`07A` (updated).
+- **Deps:** Partnership naming (narrative merge no longer a dependency).
 - **Tests:** Link checker / doc path grep in CI (optional).
 - **Rollback:** Restore paths via git.
 - **DoD:** Single narrative path; README without ambiguous duplicates.
@@ -429,7 +429,7 @@ archive/
 
 ### Must clean before design generation
 - Point tools at **`08` + Appendix A + `09` + this `10`** (not `11`, not romanticproject mockup, not Space marketing as brand).
-- Resolve **narrative bible dual-SSOT** at least as “primary = X for this brief” (full merge can wait).
+- ~~Resolve narrative bible dual-SSOT~~ — **done**; `05N` v2.0 is the sole narrative SSOT.
 - State explicitly: **preserve Stitch identity**; exploration = composition/IA/pacing.
 
 ### Can clean after UX direction selection
@@ -456,7 +456,7 @@ archive/
 
 ### 10.1 Top 10 highest-risk remnants
 
-1. **Dual Narrative Style Bibles** (`05N` vs `docs/dev/05_…`) — agents pick different voice law  
+1. ~~Dual Narrative Style Bibles~~ (`05N` vs `docs/dev/05_…`) — **resolved 2026-07-27**, merged into `05N` v2.0  
 2. **Grade badges** still shipping on all premium openings — contradicts every domain bible  
 3. **Traffic-light `scoreBarAppearance`** — contradicts Visual SSOT  
 4. **Friend “손절 폭탄 해체”** — contradicts Friend product law  
@@ -472,7 +472,7 @@ archive/
 - ~~Update `docs/product/README.md` authority map~~ — **Done**.  
 - ~~Stamp/archive guidance on `11`, foundations, module eval~~ — **Done** (superseded stubs).  
 - ~~Fix `09` leftover “08 missing” / decision-package polish~~ — **Done**.  
-- Still open: narrative dual-SSOT owner resolution (`09` §6.3); `02` filename alias.  
+- ~~Narrative dual-SSOT owner resolution~~ — **done** (`09` §6.3). Still open: `02` filename alias.  
 - Inventory-only: list GlowButton/SpaceBackground import sites (this plan §2–§5).  
 - Add CI **documentation path** allowlist for agent prompts (optional).
 
@@ -504,7 +504,7 @@ archive/
 | Question | Answer |
 |----------|--------|
 | Ready for **visual exploration / second design generation**? | **Yes** — use `08` + Appendix A + `09` + this plan; preserve Stitch identity; do not treat grades/Space/mockups as brand. |
-| Ready for **production UI implementation** of a new IA? | **Not yet** — resolve `09` §6 owner decisions; finish remaining Phase 1 items (narrative merge, `02` rename); preferably Phase 3 copy policy for forbidden patterns. |
+| Ready for **production UI implementation** of a new IA? | **Not yet** — resolve `09` §6 owner decisions; finish remaining Phase 1 items (`02` rename); preferably Phase 3 copy policy for forbidden patterns. |
 | Ready for **dead-code deletion**? | **No** — only after migrated consumers and import-graph verification (Phase 8). |
 
 ---

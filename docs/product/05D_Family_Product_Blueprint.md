@@ -10,7 +10,7 @@
 - `04_Assessment_Philosophy.md`
 - `02_Relationship-ux-bible.md`
 - `05_Relationship_Product_Bible.md`
-- `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`
+- `05N_Ahaitsme_Narrative_Style_Bible.md`
 
 ---
 

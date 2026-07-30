@@ -7,7 +7,7 @@
 **Purpose:** Convert the Friend Product Blueprint and Technical Blueprint into an auditable, testable, commit-safe implementation sequence.  
 **Product SSOT:** `05B_Friend_Product_Blueprint.md`  
 **Technical SSOT:** `06B_Friend_Technical_Blueprint.md`  
-**Inherits:** `05_Relationship_Product_Bible.md` · `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`  
+**Inherits:** `05_Relationship_Product_Bible.md` · `05N_Ahaitsme_Narrative_Style_Bible.md`  
 **Execution rule:** No implementation batch may silently redefine product meaning, evidence ownership, directionality, confidence, or narrative authority.
 
 ---
@@ -62,7 +62,7 @@ Before implementation begins, verify that the following exist and are treated as
 - [ ] `05_Relationship_Product_Bible.md`
 - [ ] `05B_Friend_Product_Blueprint.md`
 - [ ] `06B_Friend_Technical_Blueprint.md`
-- [ ] `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`
+- [ ] `05N_Ahaitsme_Narrative_Style_Bible.md`
 - [ ] Repository authority map or README references the Friend documents
 - [ ] No older Friend document is incorrectly treated as a competing SSOT
 

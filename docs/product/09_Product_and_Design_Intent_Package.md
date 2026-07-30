@@ -176,7 +176,7 @@ Items marked **RESOLVED** stay for the record. Implementation detail for each op
 
 1. ~~Brand-mark / teal-led / Romantic accent core / gold principle~~ — **RESOLVED**, §2.
 2. **Romantic ↔ Partnership boundary** — `05E` “inherits emotional truth” vs `05` + decision `023` “infrastructure only.” Shipped “로맨틱 핏” chip is evidence of separation leak, not settled continuity. `[UNRESOLVED]`
-3. **Two Narrative Style Bibles** — `docs/product/05N_…` vs `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`. This package treats product-tree `05N` as primary for briefing until reconciled. `[UNRESOLVED]`
+3. ~~Two Narrative Style Bibles~~ — **RESOLVED** (2026-07-27). `docs/product/05N_…` is now v2.0, merging in the former `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` (register bands, address law, severity/evidence ceilings, lexicon). The dev-tree file is now a superseded pointer. Brief from `05N` directly.
 4. **Missing closing-synthesis chapter** — absent or under-built in all five domains (`08`). Highest-leverage consistent content gap. `[UNRESOLVED]`
 5. **Friend / Work target architectures substantially unstarted** relative to their blueprints — brief from what ships (`08`), treat blueprint territories as future room. `[UNRESOLVED]` (scope for brief)
 6. **Computed-but-hidden fields** — surface vs leave as future content (Family `reward_index`, Partnership killer-questions, Friend align/confidence badges, etc.). `[UNRESOLVED]`
@@ -212,7 +212,7 @@ Items marked **RESOLVED** stay for the record. Implementation detail for each op
 4. Whether draft Work docs `06C` / `07C` are stable brief inputs.
 5. Closing-synthesis gap: design a new module now vs defer (§6.4).
 6. At least one full real report sample per domain (both languages if possible) — skeleton/fallback strings in docs are not enough for prose-quality briefing.
-7. Whether `05N` ↔ `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` reconciliation affects voice guidance for this UX/IA round (likely “no,” needs explicit confirm).
+7. ~~Whether `05N` ↔ `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` reconciliation affects voice guidance for this UX/IA round~~ — resolved: reconciliation is complete (§6.3); no voice guidance changed in substance, only consolidated into one document.
 8. Domain accent differentiation vs one shared accent (§6.13).
 9. Exact governed gold occasions (§6.14).
 10. Explicit answers or deferrals for §6.15–§6.21 (register, grades, free/invite/paywall, Partnership naming, Family roadmap, Work pilot).

@@ -4,7 +4,7 @@
 > SSOT for **relationship UX operating principles** and the **Fact → Meaning → Experience** reading architecture.  
 > Company mission and product philosophy → `01_Product_Vision.md`.  
 > Assessment constitution (evidence, confidence, uncertainty, prediction, dignity, internal vs visible) → `04_Assessment_Philosophy.md`.  
-> Narrative voice laws and **Recognition before Advice** → `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`.  
+> Narrative voice laws and **Recognition before Advice** → `05N_Ahaitsme_Narrative_Style_Bible.md`.  
 > Market evidence → `03_Market_Research.md`.  
 > Typed classification authority (canonical projections; LLM never owns client-visible classification) → `docs/dev/decisions/018_romantic-context-engine-completion.md`.  
 > Domain experience blueprints (e.g. Romantic modules) are out of scope for this file.

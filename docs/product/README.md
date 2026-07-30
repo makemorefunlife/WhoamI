@@ -113,7 +113,7 @@ It does not override Ahaitsme's governing product principles.
 ### Does not own
 
 - company mission / why Ahaitsme exists → `01_Product_Vision.md`
-- relationship experience architecture / module catalogs → `05_Relationship_Product_Bible.md` / `05A`–`05E`
+- relationship experience architecture / module catalogs → `05` / `05A`–`05E`
 - UX reading journey and progressive disclosure mechanics → `02_Relationship-ux-bible.md`
 - narrative wording, assertion ceilings, register → `05N_Ahaitsme_Narrative_Style_Bible.md`
 - visual encoding of confidence/uncertainty → `06_Visual_Design_System.md`
@@ -144,6 +144,12 @@ It does not override Ahaitsme's governing product principles.
 - shared cross-product experience laws
 - Relationship Insight Bible and Romantic + Marriage elaboration
 - **§13D Shared Visualization & Evidence Contract** (selective 11-axis; Psych vs Saju separation; Saju comparison-table law; visual explanation; Visual First → Explanation → Story → Action; one canonical judgment / multiple projections; type not rank; shared visual / product-specific meaning)
+
+### Does not own
+
+- Personal / innate Saju **engine selection policy** (tiers, packets, 합·충 rules, weights) → `docs/dev/personCore/PERSONAL_CONTEXT_ENGINE_POLICY.md`
+- Individual SSOT fact schema / Reference Dictionary purity → PersonCore + `docs/dev/REFERENCE_DICTIONARY_*.md`
+- Implementation-level Context Engine code contracts → `docs/dev/PERSONAL_CONTEXT_ENGINE_MVP.md`
 - Assessment constitution (evidence, confidence, uncertainty, prediction, dignity, internal vs visible) → `04_Assessment_Philosophy.md`
 
 ### Inherited by
@@ -243,20 +249,22 @@ It does not override Ahaitsme's governing product principles.
 ### Owns
 
 - narrator identity, tone, and emotional posture
-- evidence-aware and confidence-aware interpretation language
+- domain register bands (six dials; per-domain floor/ceiling)
+- evidence states, assertion tiers, and the severity ladder — including the severity × evidence ceiling table
 - advice/action writing rules, repetition control, humor budget
 - address, naming, dignity, and bilingual meaning-parity rules
-- genre bans (fortune-telling, diagnosis, horoscope copy, personality-test copy, corporate-assessment copy, generic self-help)
+- lexicon and terminology control (fixed labels vs. controlled families vs. free prose)
+- genre bans (fortune-telling, diagnosis, horoscope copy, personality-test copy, corporate-assessment copy, generic self-help, template AI writing)
 
 ### Does not own
 
 - product meaning, classifications, or visual expression
 - domain-specific module catalogs (owned by `05A`–`05E`)
-- assessment constitution (owned by `04_Assessment_Philosophy.md`) - this document owns narrative application only
+- assessment constitution (owned by `04_Assessment_Philosophy.md`) — this document owns narrative application only
 
-### Known open issue
+### Resolved (2026-07-27)
 
-- A second, structurally different document, `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` (an "Invariant Core" with register dials, domain bands, and a frozen lexicon system), is still cited by `01`, `05B`, `06B`, and `07A`. The two have not been reconciled — treat `05N` as primary since it is the version under `docs/product/` and the one required by name in design-brief work, but resolving this fully requires a product-owner decision (tracked in `09` §6.3 and `10` §10.3).
+- This document is now v2.0 and the sole narrative SSOT. It merges the former `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` ("Invariant Core" — register dials, address law, severity/evidence ceilings, lexicon system) into this file; that document is now a superseded pointer. All prior citations (`01`, `05B`, `05D`, `06B`, `07A`) have been updated to cite `05N` directly. See `05N` §0 changelog and `docs/dev/05_NARRATIVE_STYLE_BIBLE.md` for the section-by-section mapping.
 
 ### Use when
 
@@ -440,7 +448,7 @@ Use:
 02_Relationship_UX_Bible.md
 ```
 
-For narrator voice, tone register, or genre-ban specifics rather than UX architecture, use `05N_Ahaitsme_Narrative_Style_Bible.md` (see its "Known open issue" entry above for its unreconciled relationship to `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`).
+For narrator voice, tone register, domain register bands, severity/evidence ceilings, or genre-ban specifics rather than UX architecture, use `05N_Ahaitsme_Narrative_Style_Bible.md` — the sole narrative SSOT as of v2.0 (see its "Resolved" entry above).
 
 ## Current-implementation vs. target-spec conflict
 

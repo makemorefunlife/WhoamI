@@ -5,7 +5,7 @@
 **Status:** Permanent Friend Product SSOT  
 **Audience:** Product, Design, Content, Engineering, QA, Localization  
 **Purpose:** Define what the Friend product is, how it should feel, what it must include, what it must never become, and how every future implementation should be judged.  
-**Inherits:** `01_Product_Vision.md` · `04_Assessment_Philosophy.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md` · `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`  
+**Inherits:** `01_Product_Vision.md` · `04_Assessment_Philosophy.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md` · `05N_Ahaitsme_Narrative_Style_Bible.md`  
 **Technical companion:** `06B_Friend_Technical_Blueprint.md`  
 **Implementation companion:** `07B_Friend_Implementation_Checklist.md`  
 
@@ -2081,7 +2081,7 @@ This document is the target product contract.
 1. `01_Product_Vision.md`
 2. `02_Relationship-ux-bible.md`
 3. `05_Relationship_Product_Bible.md`
-4. `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`
+4. `05N_Ahaitsme_Narrative_Style_Bible.md`
 5. `05B_Friend_Product_Blueprint.md`
 6. `06B_Friend_Technical_Blueprint.md`
 7. `07B_Friend_Implementation_Checklist.md`
