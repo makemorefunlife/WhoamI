@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import PsychMatchRadarChart from "@/components/relationship/reportLayout/PsychMatchRadarChart";
-import type { RomanticV3PrototypePayload, RomanticPsychMatchAxisResult } from "@/lib/relationship/romantic/prototypeV3/types";
-import { ChevronDown, ChevronUp, Share2, Bookmark, ArrowRight, Heart, RefreshCw, AlertCircle, Quote, HeartPulse, Check, Camera, MessageCircle } from "lucide-react";
+import type { RomanticV3PrototypePayload } from "@/lib/relationship/romantic/prototypeV3/types";
+import { ChevronDown, ChevronUp, Bookmark, ArrowRight, Heart, RefreshCw, AlertCircle, Quote, HeartPulse, Check, MessageCircle } from "lucide-react";
 
 export type SectionProps = {
   payload: RomanticV3PrototypePayload;
@@ -78,6 +78,74 @@ export const HeroSection = ({ payload, personA, personB, t, debug }: SectionProp
           <DebugPanel>
             <p>Variant: {payload.variant}</p>
           </DebugPanel>
+        )}
+      </div>
+    </section>
+  );
+};
+
+// 1-1) 우리라는 관계 (Who We Are Together)
+export const RelationshipIdentitySection = ({ payload, personA, personB, t }: SectionProps) => {
+  const chapter1 = payload.chapters.find((c) => c.chapter === "ch1_who_we_are_together");
+  const narrative = chapter1?.blocks.find((b) => b.blockId === "together.narrative");
+  const signals = chapter1?.blocks.find((b) => b.blockId === "together.signals");
+  const scene = chapter1?.blocks.find((b) => b.blockId === "together.scene");
+
+  const hasNarrative = Boolean(narrative && !isDevKey(narrative.content));
+  const hasScene = Boolean(scene && !isDevKey(scene.content));
+
+  // signals is authored as "① 문장 ② 문장 ③ 문장" — split into short supporting
+  // chips for display without changing the underlying payload content.
+  const signalItems =
+    signals && !isDevKey(signals.content)
+      ? cleanText(signals.content, t)
+          .split(/①|②|③/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+  if (!hasNarrative && signalItems.length === 0 && !hasScene) return null;
+
+  return (
+    <section className="bg-white py-16 sm:py-20 px-4 sm:px-6 border-t border-[#E2E8F0]">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-10 text-center">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#083F45]">우리라는 관계</h2>
+        </div>
+
+        {hasNarrative && (
+          <p className="text-base sm:text-xl font-medium leading-relaxed text-[#334155] text-center max-w-2xl mx-auto mb-10 break-keep">
+            {cleanText(narrative!.content, t)}
+          </p>
+        )}
+
+        {signalItems.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-3 mb-10 max-w-3xl mx-auto">
+            {signalItems.map((item, idx) => {
+              const sepIdx = item.indexOf(":");
+              const itemLabel = sepIdx > -1 ? item.slice(0, sepIdx).trim() : null;
+              const itemValue = sepIdx > -1 ? item.slice(sepIdx + 1).trim() : item;
+              return (
+                <div key={idx} className="bg-[#F8FAFA] rounded-2xl p-4 border border-[#E2E8F0] text-center">
+                  {itemLabel && (
+                    <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1 break-keep">
+                      {itemLabel}
+                    </p>
+                  )}
+                  <p className="text-sm font-semibold text-[#083F45] break-keep">{itemValue}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {hasScene && (
+          <div className="bg-[#F8FAFA] rounded-2xl p-6 sm:p-8 border border-[#E2E8F0] max-w-3xl mx-auto">
+            <p className="text-[11px] font-bold text-[#C9A66B] uppercase tracking-wider mb-2">
+              {personA} & {personB}의 일상 장면
+            </p>
+            <p className="text-[#334155] leading-relaxed break-keep">{cleanText(scene!.content, t)}</p>
+          </div>
         )}
       </div>
     </section>
@@ -629,22 +697,11 @@ export const ClosingSection = ({ payload, personA, personB, t, debug }: SectionP
           </div>
         </div>
 
-        <div className="text-center mb-12">
+        <div className="text-center">
           <p className="text-[#64748B] text-xs font-bold uppercase tracking-widest mb-4">마지막 질문</p>
           <p className="font-serif text-xl sm:text-2xl text-[#083F45] font-bold italic break-keep px-4">
             "{cleanText(closing.reflectionQuestion, t)}"
           </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button className="flex items-center gap-2 bg-[#083F45] text-white px-8 py-4 rounded-full font-bold hover:bg-[#0E5A63] transition-colors w-full sm:w-auto justify-center shadow-md">
-            <Camera size={20} />
-            기억에 남기기
-          </button>
-          <button className="flex items-center gap-2 bg-white text-[#083F45] border border-[#E2E8F0] px-8 py-4 rounded-full font-bold hover:bg-[#F8FAFA] transition-colors w-full sm:w-auto justify-center shadow-sm">
-            <Share2 size={20} />
-            링크로 공유하기
-          </button>
         </div>
       </div>
     </section>
