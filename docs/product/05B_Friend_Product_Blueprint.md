@@ -5,7 +5,7 @@
 **Status:** Permanent Friend Product SSOT  
 **Audience:** Product, Design, Content, Engineering, QA, Localization  
 **Purpose:** Define what the Friend product is, how it should feel, what it must include, what it must never become, and how every future implementation should be judged.  
-**Inherits:** `01_Product_Vision.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md` · `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`  
+**Inherits:** `01_Product_Vision.md` · `04_Assessment_Philosophy.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md` · `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`  
 **Technical companion:** `06B_Friend_Technical_Blueprint.md`  
 **Implementation companion:** `07B_Friend_Implementation_Checklist.md`  
 
@@ -298,6 +298,8 @@ The product must show:
 ---
 
 ## Law 2 — No single signal owns the story
+
+Constitutional multi-signal preference: `04_Assessment_Philosophy.md` §4.3.
 
 No friendship conclusion may come solely from:
 

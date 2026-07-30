@@ -5,7 +5,7 @@
 **Status:** Draft v1.0 for product review  
 **Audience:** Product, Design, Content, Engineering, QA, Localization  
 **Purpose:** Define what the Work product is, how it should feel, what it must include, what it must never become, and how every future implementation should be judged.  
-**Inherits:** `01_Product_Vision.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md`  
+**Inherits:** `01_Product_Vision.md` · `04_Assessment_Philosophy.md` · `02_Relationship-ux-bible.md` · `05_Relationship_Product_Bible.md`  
 **Technical companion:** `06C_Work_Technical_Blueprint.md`  
 **Implementation gate:** `07C_Work_Implementation_Checklist.md`
 

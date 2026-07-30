@@ -3,7 +3,7 @@
 **Document type:** Technical Constitution / Technical SSOT  
 **Product:** Ahaitsme — Romantic Relationship Experience  
 **Status:** Draft v1.0 for technical lock  
-**Depends on:** `05A_Romantic_Product_Blueprint.md`  
+**Depends on:** `05A_Romantic_Product_Blueprint.md` · `04_Assessment_Philosophy.md`  
 **Audience:** Engineering, Product, Design, Content Systems, QA, Data, Localization  
 **Purpose:** Define how the Romantic product constitution is translated into a reliable, explainable, testable, localizable, and implementation-independent technical system.
 
@@ -16,6 +16,8 @@ Ahaitsme Romantic is not an LLM report generator.
 It is a relationship interpretation system.
 
 The system must begin with structured evidence, derive relationship meaning through deterministic rules, and use language generation only to translate supported meaning into a human experience.
+
+Constitutional assessment limits are owned by `04_Assessment_Philosophy.md`. This Technical Blueprint implements them for Romantic; it does not redefine them.
 
 The technical system exists to protect four things:
 

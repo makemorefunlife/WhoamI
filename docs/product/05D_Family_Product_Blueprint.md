@@ -7,8 +7,8 @@
 **Depends on:**
 
 - `01_Product_Vision.md`
+- `04_Assessment_Philosophy.md`
 - `02_Relationship-ux-bible.md`
-- `04_Relationship_Experience_Blueprint.md`
 - `05_Relationship_Product_Bible.md`
 - `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`
 

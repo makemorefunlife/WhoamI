@@ -4,7 +4,7 @@
 > **Status:** Canonical product SSOT for Ahaitsme relationship experience architecture  
 > **Purpose:** Define how every relationship product should feel, flow, prioritize information, structure insight, and guide decisions—while elaborating Romantic and Marriage / Cohabitation as the first fully specified pair.  
 > **Absorbed & archived:** Shared experience constitution formerly in `04_Relationship_Experience_Blueprint.md` (file deleted; historical content lives only in git history).  
-> **Does not own:** Detailed typography, color tokens, component styling, animation implementation, or responsive layout rules → `06_Visual_Design_System.md` (and related visual docs). UX writing laws → `02_Relationship-ux-bible.md`. Company vision → `01_Product_Vision.md`. Domain module catalogs → product-specific blueprints (`05A`, etc.).  
+> **Does not own:** Detailed typography, color tokens, component styling, animation implementation, or responsive layout rules → `06_Visual_Design_System.md` (and related visual docs). UX writing laws → `02_Relationship-ux-bible.md`. Company vision → `01_Product_Vision.md`. Assessment constitution (evidence, confidence, uncertainty, prediction, dignity, internal vs visible) → `04_Assessment_Philosophy.md`. Domain module catalogs → product-specific blueprints (`05A`, etc.).  
 > **Scope:** Product rules for all relationship products. Romantic + Marriage / Cohabitation are fully elaborated here. Friend, Work, and Family (Child / Parent) inherit the same constitution and Insight Bible, with domain Blueprints defining distinct questions, modules, and stakes.
 
 ---
@@ -43,7 +43,7 @@ The frozen product rules remain authoritative:
 - no winner/loser framing,
 - no hard truth without a path to understanding or repair.
 
-Understanding creates confidence. Confidence supports better decisions. Ahaitsme never replaces the user’s judgment—it strengthens it.
+Assessment constitution — including judgment, evidence, confidence, uncertainty, prediction, dignity, and internal-versus-visible rules — is owned by `04_Assessment_Philosophy.md`. This Bible applies those laws to shared relationship experience architecture; it does not redefine them.
 
 ---
 
@@ -209,9 +209,9 @@ This mission does not change domain questions, modules, or stakes (see §0A.3 an
 ### Mission laws (shared)
 
 1. **Relationship is the subject.** Individual traits appear only to explain what happens between people (§2.4, §3).
-2. **Difference is not defect.** Variation may create attraction, complementarity, or friction—but difference alone is never failure, inferiority, or a reason to rank people (see also severity S1 in the measurement rules).
-3. **Guide action after recognition.** Reports must move users toward translation, repair, or wiser structure—not stop at personality description (§2.3, §2.4).
-4. **AI explains evidence; it does not judge people.** Language generation may narrate deterministic findings. It must not invent classifications, ranks, moral verdicts, or destiny claims (see LLM / evidence ownership later in this Bible).
+2. **Difference is not defect.** Variation may create attraction, complementarity, or friction—but difference alone is never failure, inferiority, or a reason to rank people (constitutional: `04_Assessment_Philosophy.md` Law 2; severity S1 in the measurement rules).
+3. **Guide action after recognition.** Reports must move users toward translation, repair, or wiser structure—not stop at personality description (§2.3, §2.4; constitutional: `04_Assessment_Philosophy.md` Law 7).
+4. **AI explains evidence; it does not judge people.** Language generation may narrate deterministic findings. It must not invent classifications, ranks, moral verdicts, or destiny claims (constitutional: `04_Assessment_Philosophy.md` Laws 1–3, 6, 9; see also LLM / evidence ownership later in this Bible).
 
 Recognition, Explanation, and Possibility (§2.1–2.3) are the user’s rewards for this mission. The Experience Constitution (§2.4) remains binding.
 
@@ -250,7 +250,7 @@ Graphs, scores, and numbers exist only to support understanding. When showing an
 Advice has no value until recognition has occurred. Create “That’s exactly us” before telling people what to do.
 
 ### Honest confidence
-Never pretend certainty where it does not exist. Unknown is better than fabricated precision. Confidence changes tone; it never changes facts.
+Constitutional rule: `04_Assessment_Philosophy.md` Laws 4–5. Applied here: Never pretend certainty where it does not exist. Unknown is better than fabricated precision. Confidence changes tone; it never changes facts.
 
 ### Visual First → Explanation → Story → Action
 Major relationship visuals are navigation, not decoration. Within the first few seconds, the user should grasp the core insight the visual exists to answer. Then expand into explanation, story, and action—not the reverse. See §13D.
@@ -1013,6 +1013,8 @@ This distinguishes true repair from temporary calm.
 ---
 
 # 13. Evidence-to-Story Framework
+
+Constitutional evidence, confidence, and uncertainty philosophy is owned by `04_Assessment_Philosophy.md`. This section defines how relationship products turn supported findings into story architecture.
 
 ## 13.1 Evidence Layers
 

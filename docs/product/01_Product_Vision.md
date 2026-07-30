@@ -2,6 +2,7 @@
 
 > **Document scope / authority**  
 > SSOT for **company mission** and **company-level product philosophy** only.  
+> How every assessment must behave → `04_Assessment_Philosophy.md`.  
 > Not the home of UX operating rules, narrative voice laws, market evidence, typed classification authority, or domain blueprints.  
 > See also: `02_Relationship-ux-bible.md` (relationship UX) · `03_Market_Research.md` (evidence) · `05N_Ahaitsme_Narrative_Style_Bible.md` (writing) · `docs/dev/decisions/018_romantic-context-engine-completion.md` (typed Fact authority).
 

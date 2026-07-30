@@ -3,7 +3,7 @@
 > **Document status:** Shared Narrative SSOT  
 > **Applies to:** Self · Romantic · Marriage · Friend · Work · Family · Decision support surfaces  
 > **Version:** v1.0  
-> **Authority:** This document defines how Ahaitsme speaks. It does not redefine company philosophy, UX architecture, product scope, deterministic facts, typed classifications, or domain-specific implementation contracts.
+> **Authority:** This document defines how Ahaitsme speaks. It does not redefine company philosophy, assessment constitution, UX architecture, product scope, deterministic facts, typed classifications, or domain-specific implementation contracts. Assessment constitution → `04_Assessment_Philosophy.md`.
 
 ---
 
@@ -12,6 +12,10 @@
 Ahaitsme's company mission and product philosophy are owned by:
 
 - `docs/product/01_Product_Vision.md`
+
+Assessment constitution — evidence, confidence, uncertainty, prediction boundaries, dignity, and internal-versus-visible assessment philosophy — is owned by:
+
+- `docs/product/04_Assessment_Philosophy.md`
 
 Relationship UX principles and the Fact → Meaning → Experience architecture are owned by:
 

@@ -3,6 +3,7 @@
 > **Document scope / authority**  
 > SSOT for **relationship UX operating principles** and the **Fact → Meaning → Experience** reading architecture.  
 > Company mission and product philosophy → `01_Product_Vision.md`.  
+> Assessment constitution (evidence, confidence, uncertainty, prediction, dignity, internal vs visible) → `04_Assessment_Philosophy.md`.  
 > Narrative voice laws and **Recognition before Advice** → `docs/dev/05_NARRATIVE_STYLE_BIBLE.md`.  
 > Market evidence → `03_Market_Research.md`.  
 > Typed classification authority (canonical projections; LLM never owns client-visible classification) → `docs/dev/decisions/018_romantic-context-engine-completion.md`.  
@@ -19,6 +20,8 @@ This document defines how that mission shows up in **relationship UX**: a premiu
 The goal is not to overwhelm users with information.
 
 The goal is to create repeated moments of clarity that support better-informed judgment—never to decide for the user.
+
+Assessment constitution governing that boundary is owned by `04_Assessment_Philosophy.md`. This Bible applies it to relationship reading UX.
 
 ---
 
@@ -194,6 +197,10 @@ not more paragraphs.
 
 # 4. Truthfulness
 
+Constitutional assessment limits (evidence before interpretation, uncertainty over false certainty, confidence vs truth) are owned by `04_Assessment_Philosophy.md`.
+
+This section states the UX-facing application of those laws.
+
 Never invent.
 
 Never exaggerate.
@@ -210,6 +217,8 @@ Confidence should influence tone.
 
 Confidence should never replace evidence.
 
+(See `04_Assessment_Philosophy.md` Law 5.)
+
 Why we believe these trust patterns → `03_Market_Research.md`.
 
 ---
@@ -219,6 +228,8 @@ Why we believe these trust patterns → `03_Market_Research.md`.
 Only display scores when they are deterministic.
 
 Never create cosmetic numbers for aesthetics.
+
+(Internal validity does not require user visibility — `04_Assessment_Philosophy.md` Law 8.)
 
 ---
 
