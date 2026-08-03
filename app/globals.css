@@ -50,27 +50,27 @@
   --color-space-accent: var(--space-accent);
   --color-space-accent-sub: var(--space-accent-sub);
 
-  /* Stitch landing — warm cream, deep green, emerald & rose accents */
-  --color-surface: #faf7f0;
-  --color-surface-dim: #ebe4d8;
-  --color-surface-container-lowest: #fffdf8;
-  --color-surface-container-low: #f5f0e8;
-  --color-surface-container: #ede8de;
-  --color-surface-container-high: #e5dfd3;
-  --color-on-surface: #1a3328;
-  --color-on-surface-variant: #4a5c52;
-  --color-outline-variant: #d4cfc4;
-  --color-primary: #1a3328;
-  --color-on-primary: #fffdf8;
-  --color-primary-container: #dceee6;
-  --color-secondary: #3a8f6e;
-  --color-secondary-container: #e3f2ec;
-  --color-tertiary: #c49a9c;
-  --color-tertiary-container: #f5e8e8;
-  --color-accent-emerald: #3a8f6e;
-  --color-accent-rose: #c49a9c;
-  --color-accent-rose-soft: #f3e4e4;
-  --color-accent-emerald-soft: #dceee6;
+  /* Official Ahaitsme design system */
+  --color-surface: #F8FAFA;
+  --color-surface-dim: #EEF3F3;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low: #F3F7F7;
+  --color-surface-container: #EDF1F1;
+  --color-surface-container-high: #E3EBEB;
+  --color-on-surface: #083F45;
+  --color-on-surface-variant: #14737A;
+  --color-outline-variant: #CDE0E1;
+  --color-primary: #0E5A63;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #DCEEE6;
+  --color-secondary: #14737A;
+  --color-secondary-container: #E3F2EC;
+  --color-tertiary: #C9A66B;
+  --color-tertiary-container: #F8F2E6;
+  --color-accent-emerald: #0E5A63;
+  --color-accent-rose: #C9A66B;
+  --color-accent-rose-soft: #F8F2E6;
+  --color-accent-emerald-soft: #DCEEE6;
   --font-stitch-serif: var(--font-lora-var), Georgia, "Times New Roman", serif;
   --spacing-edge-margin-mobile: 1.25rem;
   --spacing-edge-margin-desktop: 4rem;
@@ -83,27 +83,18 @@
 html:has(.stitch-landing),
 html:has(.stitch-survey),
 html:has(.stitch-results),
-html:has(.stitch-legal) {
-  background: #faf7f0;
+html:has(.stitch-legal),
+html:has([data-romantic-experience="v2"]) {
+  background: #F8FAFA;
 }
 
 body:has(.stitch-landing),
 body:has(.stitch-survey),
 body:has(.stitch-results),
-body:has(.stitch-legal) {
-  background:
-    radial-gradient(
-      ellipse 90% 60% at 100% 0%,
-      rgba(58, 143, 110, 0.09),
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 70% 50% at 0% 100%,
-      rgba(196, 154, 156, 0.12),
-      transparent 50%
-    ),
-  linear-gradient(180deg, #fffdf8 0%, #faf7f0 45%, #f5f0e8 100%);
-  color: #1a3328;
+body:has(.stitch-legal),
+body:has([data-romantic-experience="v2"]) {
+  background: #F8FAFA;
+  color: #083F45;
 }
 
 html,
@@ -465,5 +456,63 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .animate-pre-launch {
   animation: preLaunch 0.8s ease-in-out infinite;
+}
+
+/* Romantic V4 report design tokens (dev route only).
+   Scoped by unique "rel-" and "v4-" prefixes; ported from the Lovable
+   "Inner Compass Reports" -> romantic-v4-concept design source.
+   Used only under app/dev/romantic-v4-content-prototype/. */
+:root {
+  --rel-bg: #f9f8f3;
+  --rel-surface: #ffffff;
+  --rel-ink: #222222;
+  --rel-ink-soft: rgba(34, 34, 34, 0.72);
+  --rel-ink-mute: rgba(34, 34, 34, 0.5);
+  --rel-line: rgba(34, 34, 34, 0.12);
+  --rel-deep: #1b3b2b;
+  --rel-deep-soft: rgba(27, 59, 43, 0.1);
+  --rel-taupe: #8c827a;
+  --rel-taupe-soft: rgba(140, 130, 122, 0.12);
+  --v4-a: #3b6c93;
+  --v4-a-soft: rgba(59, 108, 147, 0.12);
+  --v4-b: #8e7561;
+  --v4-b-soft: rgba(142, 117, 97, 0.14);
+  --v4-good: #2f6b4f;
+  --v4-good-soft: rgba(47, 107, 79, 0.12);
+  --v4-bad: #c1443a;
+  --v4-bad-soft: rgba(193, 68, 58, 0.1);
+  --font-rel-serif-stack: "Noto Serif KR", Georgia, serif;
+  --font-rel-sans-stack: "Noto Sans KR", ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-rel-bg: var(--rel-bg);
+  --color-rel-surface: var(--rel-surface);
+  --color-rel-ink: var(--rel-ink);
+  --color-rel-ink-soft: var(--rel-ink-soft);
+  --color-rel-ink-mute: var(--rel-ink-mute);
+  --color-rel-line: var(--rel-line);
+  --color-rel-deep: var(--rel-deep);
+  --color-rel-deep-soft: var(--rel-deep-soft);
+  --color-rel-taupe: var(--rel-taupe);
+  --color-rel-taupe-soft: var(--rel-taupe-soft);
+  --color-v4-a: var(--v4-a);
+  --color-v4-a-soft: var(--v4-a-soft);
+  --color-v4-b: var(--v4-b);
+  --color-v4-b-soft: var(--v4-b-soft);
+  --color-v4-good: var(--v4-good);
+  --color-v4-good-soft: var(--v4-good-soft);
+  --color-v4-bad: var(--v4-bad);
+  --color-v4-bad-soft: var(--v4-bad-soft);
+}
+
+/* Plain CSS classes for the two Romantic V4 report fonts. Written directly
+   (not via @theme) since custom --font-* theme keys were not reliably
+   generating font-{name} utilities in this Tailwind v4 build. */
+.font-rel-serif {
+  font-family: var(--font-rel-serif-stack);
+}
+.font-rel-sans {
+  font-family: var(--font-rel-sans-stack);
 }
 
