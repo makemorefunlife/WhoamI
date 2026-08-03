@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
@@ -21,6 +22,13 @@ const relSerif = Noto_Serif_KR({
 
 type PageProps = {
   searchParams?: Promise<{ variant?: string; locale?: string; debug?: string }>;
+};
+
+// Defense-in-depth: even if ROMANTIC_V4_REPORT is ever enabled in a deployed
+// environment for design review, keep this fixture-driven route out of
+// search results.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
 };
 
 export default async function RomanticV4ContentPrototypePage({ searchParams }: PageProps) {

@@ -7,7 +7,12 @@
  * to review the fixture-driven v4 UI at its existing dev URL without opening
  * it up to real users or touching the production analyze pipeline.
  *
- * Client components must use NEXT_PUBLIC_* so the browser bundle sees it.
+ * Server-only by design: the only consumer is page.tsx, an async Server
+ * Component, so this deliberately does NOT read a NEXT_PUBLIC_* variant.
+ * Next.js inlines `process.env.NEXT_PUBLIC_*` at build time regardless of
+ * server/client context, so a NEXT_PUBLIC_ flag here would silently require
+ * a rebuild to take effect and could look "stuck" if toggled post-deploy.
+ * ROMANTIC_V4_REPORT (plain) is read live at request time — no rebuild needed.
  */
 
 type EnvLike = Record<string, string | undefined>;
@@ -30,9 +35,5 @@ function isEnvFlagTruthy(value: string | undefined): boolean {
 }
 
 export function isRomanticV4ReportEnabled(env: EnvLike = process.env): boolean {
-  return (
-    isEnvFlagTruthy(readEnv(env, "ROMANTIC_V4_REPORT")) ||
-    isEnvFlagTruthy(readEnv(env, "NEXT_PUBLIC_ROMANTIC_V4_REPORT")) ||
-    isEnvFlagTruthy(process.env.NEXT_PUBLIC_ROMANTIC_V4_REPORT)
-  );
+  return isEnvFlagTruthy(readEnv(env, "ROMANTIC_V4_REPORT"));
 }

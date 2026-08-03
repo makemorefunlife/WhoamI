@@ -4,14 +4,14 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { buildActualFourCeContract } from "@/lib/relationship/romantic/prototypeV3/buildActualFourCeContract";
-import { buildRomanticV3PrototypePayload } from "@/lib/relationship/romantic/prototypeV3/buildRomanticV3PrototypePayload";
+import { buildActualFourCeContract } from "@/lib/relationship/romantic/prototypeV4/buildActualFourCeContract";
+import { buildRomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
 
-const outDir = path.resolve("tests/artifacts/romantic-v3-prototype");
+const outDir = path.resolve("tests/artifacts/romantic-v4-prototype");
 fs.mkdirSync(outDir, { recursive: true });
 
 const { contract, prepared, pairCeBondingValue } = buildActualFourCeContract("ko-KR");
-const payload = buildRomanticV3PrototypePayload("complete", "ko-KR", {
+const payload = buildRomanticV4PrototypePayload("complete", "ko-KR", {
   contractOverride: contract,
 });
 

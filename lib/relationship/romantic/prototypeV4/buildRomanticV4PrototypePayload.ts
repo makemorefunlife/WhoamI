@@ -30,7 +30,7 @@ import type {
   SourceKind,
 } from "./types";
 
-const AXIS_LABELS: Record<PrototypeLocale, Record<string, string>> = {
+export const AXIS_LABELS: Record<PrototypeLocale, Record<string, string>> = {
   "ko-KR": {
     stimulation: "자극추구",
     self_control: "자기통제",
@@ -86,7 +86,7 @@ function fixtureOf(variant: PrototypeVariant) {
   return romanticExperienceCompleteFixture;
 }
 
-function labelOfAxis(locale: PrototypeLocale, axisKey: string) {
+export function labelOfAxis(locale: PrototypeLocale, axisKey: string) {
   return AXIS_LABELS[locale][axisKey] ?? axisKey;
 }
 

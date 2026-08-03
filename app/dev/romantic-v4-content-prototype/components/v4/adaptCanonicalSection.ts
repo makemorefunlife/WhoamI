@@ -20,6 +20,7 @@ import type {
   DirectionalMisread,
 } from "@/lib/relationship/romantic/prototypeV4/canonicalStoryPlanTypes";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
+import { labelOfAxis } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
 
 /**
  * The full Story Plan (payload.canonicalReport.storyPlan) carries richer
@@ -170,7 +171,10 @@ export type ConflictData = {
   loop: string | null;
 };
 
-/** First sentence only — see the identical helper below for translator panels. */
+/** Only the first sentence of the (often long) observedBehavior text — the
+ * engine writes it as a full behavioral-pattern paragraph, not a short scene,
+ * so this trims to the first sentence rather than inventing a shorter one.
+ * Shared by the Conflict pairs and the Translator panels below. */
 function firstSentenceOf(text: string): string {
   const match = text.match(/^[^.!?]*[.!?]/);
   return (match ? match[0] : text).trim();
@@ -307,14 +311,6 @@ export function adaptDifference(
   return { comparison, details };
 }
 
-/** Only the first sentence of the (often long) observedBehavior text — the
- * engine writes it as a full behavioral-pattern paragraph, not a short scene,
- * so this trims to the first sentence rather than inventing a shorter one. */
-function firstSentence(text: string): string {
-  const match = text.match(/^[^.!?]*[.!?]/);
-  return (match ? match[0] : text).trim();
-}
-
 /**
  * Translator panels, read directly from storyPlan.misreads (not the
  * flattened block text) so the rewritten line and helpful-response guidance
@@ -328,7 +324,7 @@ export function adaptTranslatorPanels(payload: RomanticV4PrototypePayload): Tran
     return {
       observer,
       other: observer === "a" ? "b" : "a",
-      what: firstSentence(m.observedBehavior),
+      what: firstSentenceOf(m.observedBehavior),
       easyReading: m.commonNegativeReading,
       actualMeaning: m.meaningGap,
       betterExpression: m.betterExpression,
@@ -339,27 +335,14 @@ export function adaptTranslatorPanels(payload: RomanticV4PrototypePayload): Tran
 
 /**
  * 11-axis radar comes from payload-level axisOverview, not section blocks.
- * axis_key values match the same psych-axis vocabulary used elsewhere in the
- * canonical report (confirmed against real payload output, not guessed).
+ * Labels are read from the engine's own locale-aware AXIS_LABELS (not
+ * duplicated here) so this renders correctly for both ko-KR and en-US —
+ * axisOverview entries only carry the raw axis_key, not a display label.
  */
-const AXIS_LABELS: Record<string, string> = {
-  stimulation: "자극추구",
-  self_control: "자기통제",
-  practicality: "현실실리",
-  structure: "계획구조화",
-  empathy: "관계공감",
-  conflict_style: "갈등직면성",
-  resilience: "회복탄력성",
-  recognition: "인정욕구",
-  energy_style: "외향에너지",
-  thinking_style: "분석사고",
-  decision_style: "신중결정",
-};
-
 export function adaptRadarAxes(payload: RomanticV4PrototypePayload) {
   return (payload.axisOverview ?? []).map((a) => ({
     key: a.axis_key,
-    label: AXIS_LABELS[a.axis_key] ?? a.axis_key,
+    label: labelOfAxis(payload.locale, a.axis_key),
     a: a.score_a,
     b: a.score_b,
   }));

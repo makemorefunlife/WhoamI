@@ -50,27 +50,27 @@
   --color-space-accent: var(--space-accent);
   --color-space-accent-sub: var(--space-accent-sub);
 
-  /* Official Ahaitsme design system */
-  --color-surface: #F8FAFA;
-  --color-surface-dim: #EEF3F3;
-  --color-surface-container-lowest: #FFFFFF;
-  --color-surface-container-low: #F3F7F7;
-  --color-surface-container: #EDF1F1;
-  --color-surface-container-high: #E3EBEB;
-  --color-on-surface: #083F45;
-  --color-on-surface-variant: #14737A;
-  --color-outline-variant: #CDE0E1;
-  --color-primary: #0E5A63;
-  --color-on-primary: #FFFFFF;
-  --color-primary-container: #DCEEE6;
-  --color-secondary: #14737A;
-  --color-secondary-container: #E3F2EC;
-  --color-tertiary: #C9A66B;
-  --color-tertiary-container: #F8F2E6;
-  --color-accent-emerald: #0E5A63;
-  --color-accent-rose: #C9A66B;
-  --color-accent-rose-soft: #F8F2E6;
-  --color-accent-emerald-soft: #DCEEE6;
+  /* Stitch landing — warm cream, deep green, emerald & rose accents */
+  --color-surface: #faf7f0;
+  --color-surface-dim: #ebe4d8;
+  --color-surface-container-lowest: #fffdf8;
+  --color-surface-container-low: #f5f0e8;
+  --color-surface-container: #ede8de;
+  --color-surface-container-high: #e5dfd3;
+  --color-on-surface: #1a3328;
+  --color-on-surface-variant: #4a5c52;
+  --color-outline-variant: #d4cfc4;
+  --color-primary: #1a3328;
+  --color-on-primary: #fffdf8;
+  --color-primary-container: #dceee6;
+  --color-secondary: #3a8f6e;
+  --color-secondary-container: #e3f2ec;
+  --color-tertiary: #c49a9c;
+  --color-tertiary-container: #f5e8e8;
+  --color-accent-emerald: #3a8f6e;
+  --color-accent-rose: #c49a9c;
+  --color-accent-rose-soft: #f3e4e4;
+  --color-accent-emerald-soft: #dceee6;
   --font-stitch-serif: var(--font-lora-var), Georgia, "Times New Roman", serif;
   --spacing-edge-margin-mobile: 1.25rem;
   --spacing-edge-margin-desktop: 4rem;
@@ -83,18 +83,27 @@
 html:has(.stitch-landing),
 html:has(.stitch-survey),
 html:has(.stitch-results),
-html:has(.stitch-legal),
-html:has([data-romantic-experience="v2"]) {
-  background: #F8FAFA;
+html:has(.stitch-legal) {
+  background: #faf7f0;
 }
 
 body:has(.stitch-landing),
 body:has(.stitch-survey),
 body:has(.stitch-results),
-body:has(.stitch-legal),
-body:has([data-romantic-experience="v2"]) {
-  background: #F8FAFA;
-  color: #083F45;
+body:has(.stitch-legal) {
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 100% 0%,
+      rgba(58, 143, 110, 0.09),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 0% 100%,
+      rgba(196, 154, 156, 0.12),
+      transparent 50%
+    ),
+  linear-gradient(180deg, #fffdf8 0%, #faf7f0 45%, #f5f0e8 100%);
+  color: #1a3328;
 }
 
 html,

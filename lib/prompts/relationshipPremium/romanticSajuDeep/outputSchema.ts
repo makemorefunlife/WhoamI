@@ -256,6 +256,12 @@ export type RomanticSajuDeepReport = {
       expression_speed?: import("@/lib/relationship/romantic/romanticExpressionSpeedCanonical").RomanticExpressionSpeedValue;
       comparison_table?: import("@/lib/relationship/romantic/romanticComparisonTableCanonical").RomanticComparisonTableValue;
       saju_frame_direction?: import("@/lib/relationship/romantic/romanticSajuFrameDirectionCanonical").RomanticSajuFrameDirectionValue;
+      cross_chart_tension?: import("@/lib/relationship/romantic/romanticCrossChartTensionCanonical").RomanticCrossChartTensionValue;
+      cross_chart_stem_combine?: import("@/lib/relationship/romantic/romanticStemCombineCanonical").RomanticStemCombineValue;
+      cross_chart_six_combine?: import("@/lib/relationship/romantic/romanticSixCombineCanonical").RomanticSixCombineValue;
+      cross_chart_trio?: import("@/lib/relationship/romantic/romanticCrossTrioCanonical").RomanticCrossTrioValue;
+      cross_chart_wonjin_guimun?: import("@/lib/relationship/romantic/romanticWonjinGuimunCanonical").RomanticWonjinGuimunValue;
+      cross_chart_gongmang?: import("@/lib/relationship/romantic/romanticGongmangCanonical").RomanticGongmangValue;
     };
     section_1_relationship_dynamics?: {
       balance_of_power?: { headline?: string; body?: string };
