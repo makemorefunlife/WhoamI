@@ -5,6 +5,7 @@ import { ReportSurfaceProvider } from "@/components/relationship/reportLayout";
 import {
   buildRomanticV4PrototypePayload,
 } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
+import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
 import PrototypeClient from "./PrototypeClient";
 
 const relSans = Noto_Sans_KR({
@@ -23,7 +24,7 @@ type PageProps = {
 };
 
 export default async function RomanticV4ContentPrototypePage({ searchParams }: PageProps) {
-  if (process.env.NODE_ENV !== "development") notFound();
+  if (process.env.NODE_ENV !== "development" && !isRomanticV4ReportEnabled()) notFound();
 
   const params = await searchParams;
   const variant =
