@@ -10,7 +10,7 @@
  * Run: npx tsx tests/unit/romantic-v4-consolidation-boundaries.test.mjs
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
 
 function section(title) {
@@ -104,18 +104,68 @@ for (const forbidden of [
 ok("confirmed: adaptCanonicalSection.ts imports only from prototypeV4's own output types");
 
 // ---------------------------------------------------------------------------
-section("5) V1 production path is unchanged by this batch (test-only commit)");
+section("5) V1's own module is unmodified (only V4's caller was ever changed)");
 
 const romanticSajuDeepSrc = read("lib/prompts/relationshipPremium/romanticSajuDeep/index.ts");
 assert.ok(
   romanticSajuDeepSrc.includes("FROZEN (2026-07-24)"),
-  "V1's frozen-module marker must still be present — Batch A made no implementation changes",
+  "V1's frozen-module marker must still be present",
 );
 assert.ok(
   typeof (await import("../../lib/prompts/relationshipPremium/romanticSajuDeep/index.ts")).prepareRomanticSajuDeepRun ===
     "function",
-  "V1's prepareRomanticSajuDeepRun must still import and resolve as a callable function",
+  "V1's prepareRomanticSajuDeepRun must still import and resolve as a callable function on its own — " +
+    "Batch C only stopped V4 from calling it, V1's production path itself is untouched",
 );
 ok("confirmed: V1's frozen module is present, unmodified, and still importable");
+
+// ---------------------------------------------------------------------------
+section("6) Batch C exit gates — grep-verified, not just narrative claims");
+
+const prototypeV4Dir = `${root}/lib/relationship/romantic/prototypeV4`;
+function grepDir(dir, pattern) {
+  const hits = [];
+  for (const entry of readdirSync(dir)) {
+    const full = `${dir}/${entry}`;
+    if (statSync(full).isDirectory()) {
+      hits.push(...grepDir(full, pattern));
+    } else if (entry.endsWith(".ts") || entry.endsWith(".tsx")) {
+      const content = readFileSync(full, "utf8");
+      for (const line of content.split("\n")) {
+        if (pattern.test(line) && !line.trim().startsWith("//") && !line.trim().startsWith("*")) {
+          hits.push(`${full}: ${line.trim()}`);
+        }
+      }
+    }
+  }
+  return hits;
+}
+
+const prepareCalls = grepDir(prototypeV4Dir, /prepareRomanticSajuDeepRun/);
+assert.deepEqual(prepareCalls, [], `prototypeV4/** must not call prepareRomanticSajuDeepRun: ${JSON.stringify(prepareCalls)}`);
+ok("zero non-comment references to prepareRomanticSajuDeepRun anywhere in prototypeV4/**");
+
+const ruleBundleCalls = grepDir(prototypeV4Dir, /buildRomanticRulesBundle/);
+assert.deepEqual(ruleBundleCalls, [], `prototypeV4/** must not call buildRomanticRulesBundle: ${JSON.stringify(ruleBundleCalls)}`);
+ok("zero non-comment references to buildRomanticRulesBundle anywhere in prototypeV4/**");
+
+// romanticExperienceCompleteFixture IS still used, but only in buildRomanticV4PrototypePayload.ts's
+// createCompletePayload for the SEPARATE, non-canonical axisOverview/comparisonTable view-model path
+// (psych-axis survey data, which has the exact same CurrentSelfProfile-unavailable blocker as the 5
+// pair-dynamics signals) — NOT as the base object for buildActualFourCeContract's canonical_projections
+// anymore (that usage is what Batch C removed). This is a known, reported, separate remaining item.
+const fixtureAsOutputBaseInContract = read(
+  "lib/relationship/romantic/prototypeV4/buildActualFourCeContract.ts",
+).includes("romanticExperienceCompleteFixture");
+assert.equal(
+  fixtureAsOutputBaseInContract,
+  false,
+  "buildActualFourCeContract.ts (the canonical/Story-Planner path) must not reference romanticExperienceCompleteFixture at all",
+);
+ok(
+  "confirmed: romanticExperienceCompleteFixture is gone from the canonical Story-Planner path " +
+    "(buildActualFourCeContract.ts); it remains in buildRomanticV4PrototypePayload.ts's separate " +
+    "axisOverview view-model construction — flagged as a known remaining item, not silently ignored",
+);
 
 console.log("\nOK: romantic-v4-consolidation-boundaries tests passed");

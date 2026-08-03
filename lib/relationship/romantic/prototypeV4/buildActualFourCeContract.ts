@@ -2,7 +2,6 @@ import { calculateSajuBundle } from "../../../v2/saju/calculateSajuBundle";
 import { mapSajuBundleToMasterJson } from "../../../personCore/mappers/mapSajuMasterJson";
 import { buildIndividualSajuChart } from "../../../personCore/individualSaju/buildIndividualSajuChart";
 import { runPersonalContextEngine } from "../../../personCore/personalContextEngine";
-import { prepareRomanticSajuDeepRun } from "../../../prompts/relationshipPremium/romanticSajuDeep";
 import { buildRomanticPairCeBondingValue } from "../romanticPairCeBondingCanonical";
 import { buildPairSajuFacts } from "../../../personCore/pairSaju";
 import {
@@ -10,22 +9,47 @@ import {
   runPairContextEngine,
 } from "../../../personCore/pairContextEngine";
 import { buildChartContext } from "../../../saju/chartContext";
-import { sajuJsonToPillars } from "../../../saju/pairChartAnalysis";
-import { romanticExperienceCompleteFixture } from "../experience/romanticExperienceDevFixtures";
+import { sajuJsonToPillars, analyzeCrossChartRelations, analyzeCrossChartStemCombines, analyzeCrossChartTrioCombines } from "../../../saju/pairChartAnalysis";
+import { analyzeCrossChartWonjinGuimun, analyzeCrossChartGongmang } from "../../../saju/workPairRiskSignals";
+import { resolveCrossChartTension } from "../../romanticRules/relationshipDynamics";
+import {
+  buildRomanticStemCombineCanonical,
+  stemCombineValueFromDynamicsSnapshot,
+} from "../romanticStemCombineCanonical";
+import {
+  buildRomanticSixCombineCanonical,
+  sixCombineValueFromDynamicsSnapshot,
+} from "../romanticSixCombineCanonical";
+import {
+  buildRomanticCrossTrioCanonical,
+  crossTrioValueFromDynamicsSnapshot,
+} from "../romanticCrossTrioCanonical";
+import {
+  buildRomanticWonjinGuimunCanonical,
+  wonjinGuimunValueFromDynamicsSnapshot,
+} from "../romanticWonjinGuimunCanonical";
+import {
+  buildRomanticGongmangCanonical,
+  gongmangValueFromDynamicsSnapshot,
+} from "../romanticGongmangCanonical";
+import {
+  buildRomanticCrossChartTensionCanonical,
+  crossChartTensionValueFromFinalized,
+} from "../romanticCrossChartTensionCanonical";
 import { buildRomanticNarrativeInputContract } from "./fourCeNarrativeInput";
 import { buildPersonalRelationshipCe } from "./personalRelationshipCe";
+import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 
-function toSajuJson(bundle: ReturnType<typeof calculateSajuBundle>) {
-  return {
-    saju: bundle.saju,
-    dayStemData: bundle.dayStemData,
-    dayBranchData: bundle.dayBranchData,
-    hiddenStemsData: bundle.hiddenStemsData,
-    tenGods: bundle.tenGods,
-    relations: bundle.relations,
-    shinsals: bundle.shinsals,
-  };
-}
+/**
+ * RomanticSajuDeepReport["report"] declares section_1_summary/section_2_nature/etc.
+ * as required because V1's LLM pipeline always produces all of them. V4's canonical
+ * pipeline deliberately only populates canonical_projections (Consolidation Batch C —
+ * no more V2 fixture spread as a stand-in for the rest). Every consumer already reads
+ * these section_* fields defensively (`report.section_1_summary as {...} | undefined`,
+ * see buildCanonicalRelationshipStoryPlan.ts), so the type is safe to widen locally
+ * rather than fabricating placeholder section content just to satisfy it.
+ */
+type CanonicalOnlyReport = Partial<RomanticSajuDeepReport["report"]>;
 
 export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
   const birthA = { date: "1990-05-15", time: "14:30", place: "서울" };
@@ -49,19 +73,6 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
     birthDate: birthB.date,
     birthTime: birthB.time,
     birthTimeUnknown: false,
-  });
-  const prepared = prepareRomanticSajuDeepRun({
-    nicknameA: "지민",
-    nicknameB: "정우",
-    birthA,
-    birthB,
-    sajuJsonA: toSajuJson(bundleA),
-    sajuJsonB: toSajuJson(bundleB),
-    sajuMasterA: masterA,
-    sajuMasterB: masterB,
-    surveyProfileA: null,
-    surveyProfileB: null,
-    locale: locale === "ko-KR" ? "ko" : "en",
   });
   const individualCeA = buildIndividualSajuChart({
     reportId: "a",
@@ -110,25 +121,63 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
   const romanticPairLens = applyRomanticPairLens(pairCe);
 
   const pairCeBondingValue = buildRomanticPairCeBondingValue(
-    prepared.dynamicsTyped?.pairNonTensionPackets ??
-      romanticPairLens.packets.filter(
-        (p) =>
-          p.group === "bonding" ||
-          p.group === "energy" ||
-          p.fact_kind === "branch_trio" ||
-          p.fact_kind === "gongmang_shared",
-      ),
+    romanticPairLens.packets.filter(
+      (p) =>
+        p.group === "bonding" ||
+        p.group === "energy" ||
+        p.fact_kind === "branch_trio" ||
+        p.fact_kind === "gongmang_shared",
+    ),
   );
-  const reportWithPair = {
-    ...romanticExperienceCompleteFixture,
-    romantic_context_input: prepared.romanticContextInput,
-    canonical_projections: {
-      ...(romanticExperienceCompleteFixture.canonical_projections ?? {}),
-      pair_ce_bonding: pairCeBondingValue,
-    },
+
+  // Consolidation Batch C: cross-chart canonical projections computed directly
+  // from chartA/chartB (the same charts already built above), not read from a
+  // static V2 fixture. Mirrors the exact pattern already proven in
+  // tests/unit/romantic-v4-consolidation-cross-chart.test.mjs.
+  const crossChartBranchHits = analyzeCrossChartRelations(chartA, chartB);
+  const stemHits = analyzeCrossChartStemCombines(chartA, chartB);
+  const trioHits = analyzeCrossChartTrioCombines(chartA, chartB);
+  const wonjinGuimunHits = analyzeCrossChartWonjinGuimun(chartA, chartB);
+  const gongmangHits = analyzeCrossChartGongmang(chartA, chartB);
+  const tensionResult = resolveCrossChartTension(crossChartBranchHits);
+
+  const canonicalProjections: Record<string, unknown> = { pair_ce_bonding: pairCeBondingValue };
+  const stemCombineValue = buildRomanticStemCombineCanonical(
+    stemCombineValueFromDynamicsSnapshot({ crossChartHits: stemHits }),
+  )?.value;
+  if (stemCombineValue) canonicalProjections.cross_chart_stem_combine = stemCombineValue;
+  const sixCombineValue = buildRomanticSixCombineCanonical(
+    sixCombineValueFromDynamicsSnapshot({ crossChartHits: crossChartBranchHits }),
+  )?.value;
+  if (sixCombineValue) canonicalProjections.cross_chart_six_combine = sixCombineValue;
+  const trioValue = buildRomanticCrossTrioCanonical(
+    crossTrioValueFromDynamicsSnapshot({ crossTrioHits: trioHits }),
+  )?.value;
+  if (trioValue) canonicalProjections.cross_chart_trio = trioValue;
+  const wonjinGuimunValue = buildRomanticWonjinGuimunCanonical(
+    wonjinGuimunValueFromDynamicsSnapshot({ crossChartHits: wonjinGuimunHits }),
+  )?.value;
+  if (wonjinGuimunValue) canonicalProjections.cross_chart_wonjin_guimun = wonjinGuimunValue;
+  const gongmangValue = buildRomanticGongmangCanonical(
+    gongmangValueFromDynamicsSnapshot({ crossChartHits: gongmangHits }),
+  )?.value;
+  if (gongmangValue) canonicalProjections.cross_chart_gongmang = gongmangValue;
+  const tensionValue = buildRomanticCrossChartTensionCanonical(
+    crossChartTensionValueFromFinalized(tensionResult),
+  )?.value;
+  if (tensionValue) canonicalProjections.cross_chart_tension = tensionValue;
+
+  // NOT populated (documented blocker, see tests/unit/romantic-v4-consolidation-pair-dynamics.test.mjs
+  // and the Batch C report): balance_of_power, expression_speed, reassurance_signal,
+  // recovery_speed, unconscious_role_play all require CurrentSelfProfile (11-axis
+  // survey data), which Personal CE / Pair CE do not construct anywhere in this
+  // pipeline. Left absent (explicit "unavailable" state) rather than reusing a
+  // static fixture value or fabricating survey data.
+  const reportWithPair: CanonicalOnlyReport = {
+    canonical_projections: canonicalProjections,
   };
   const contract = buildRomanticNarrativeInputContract({
-    report: reportWithPair,
+    report: reportWithPair as RomanticSajuDeepReport["report"],
     locale,
     nameA: "지민",
     nameB: "정우",
@@ -142,7 +191,6 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
 
   return {
     contract,
-    prepared,
     individualCeA,
     individualCeB,
     personalCeA,

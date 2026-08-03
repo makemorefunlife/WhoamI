@@ -32,9 +32,13 @@ export type FourCeNarrativeSiblingInput = {
     }>;
   };
   romanticCeSpecific: {
-    source: "romantic_context_input+canonical_projections";
+    // Consolidation Batch C: romantic_context_input was V1-routed and has been
+    // removed from the V4 pipeline — always null now (see fourCeNarrativeInput.ts
+    // for the full explanation). Availability is judged on canonical_projections
+    // alone (real cross-chart + pair_ce_bonding computation) instead.
+    source: "canonical_projections";
     output: MaybeUnavailable<{
-      romanticContextInput: RomanticContextInput;
+      romanticContextInput: RomanticContextInput | null;
       canonicalProjections: Report["canonical_projections"];
     }>;
   };
@@ -99,21 +103,26 @@ export function buildRomanticNarrativeInputContract(params: {
             },
     },
     romanticCeSpecific: {
-      source: "romantic_context_input+canonical_projections",
-      output:
-        romanticContextInput && canonicalProjections
-          ? {
-              status: "available",
-              value: {
-                romanticContextInput,
-                canonicalProjections,
-              },
-            }
-          : {
-              status: "unavailable",
-              reason:
-                "missing romantic_context_input or canonical_projections",
+      // Consolidation Batch C: romantic_context_input was V1-routed
+      // (prepareRomanticSajuDeepRun -> buildRomanticRulesBundle) and has been
+      // removed from the V4 pipeline entirely — it is always null now, by
+      // design, not a missing-data defect. Availability is judged on
+      // canonical_projections alone (real cross-chart + pair_ce_bonding
+      // computation), which is what buildActualFourCeContract.ts actually
+      // populates today.
+      source: "canonical_projections",
+      output: canonicalProjections
+        ? {
+            status: "available",
+            value: {
+              romanticContextInput,
+              canonicalProjections,
             },
+          }
+        : {
+            status: "unavailable",
+            reason: "missing canonical_projections",
+          },
     },
   };
 

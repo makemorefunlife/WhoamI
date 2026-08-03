@@ -3,6 +3,7 @@
  */
 import { buildRomanticExperienceViewModel } from "../experience/buildRomanticExperienceViewModel";
 import { buildActualFourCeContract } from "./buildActualFourCeContract";
+import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { buildCanonicalRelationshipStoryPlan } from "./buildCanonicalRelationshipStoryPlan";
 import {
   composeCanonicalSectionNarratives,
@@ -13,19 +14,6 @@ import {
   type CanonicalValidationIssue,
 } from "./validateCanonicalRomanticReport";
 import type { CanonicalRelationshipStoryPlan } from "./canonicalStoryPlanTypes";
-import {
-  stemCombineValueFromDynamicsSnapshot,
-  injectRomanticStemCombineClientProjection,
-} from "../romanticStemCombineCanonical";
-import {
-  sixCombineValueFromDynamicsSnapshot,
-  injectRomanticSixCombineClientProjection,
-} from "../romanticSixCombineCanonical";
-import {
-  wonjinGuimunValueFromDynamicsSnapshot,
-  injectRomanticWonjinGuimunClientProjection,
-} from "../romanticWonjinGuimunCanonical";
-
 import {
   generateExpertSynthesesForStoryPlan,
 } from "./buildExpertSynthesis";
@@ -55,18 +43,16 @@ export function buildCanonicalRomanticV4Report(
   },
 ): CanonicalRomanticV4Report {
   const actual = buildActualFourCeContract(locale);
-  let report = actual.reportWithPair;
-
-  // CONNECT previously unused cross-chart projections into report when dynamics exist
-  const dynamics = actual.prepared.dynamicsTyped ?? null;
-  if (dynamics) {
-    const stem = stemCombineValueFromDynamicsSnapshot(dynamics);
-    const six = sixCombineValueFromDynamicsSnapshot(dynamics);
-    const won = wonjinGuimunValueFromDynamicsSnapshot(dynamics);
-    report = injectRomanticStemCombineClientProjection(report, stem);
-    report = injectRomanticSixCombineClientProjection(report, six);
-    report = injectRomanticWonjinGuimunClientProjection(report, won);
-  }
+  // Consolidation Batch C: cross_chart_stem_combine/six_combine/wonjin_guimun (and
+  // trio/gongmang/tension) are now computed directly in buildActualFourCeContract.ts
+  // from chartA/chartB, so reportWithPair already carries them — no V1-routed
+  // re-injection needed here anymore (previously sourced from actual.prepared.dynamicsTyped,
+  // which came from V1's prepareRomanticSajuDeepRun; that call has been removed).
+  // See buildActualFourCeContract.ts's CanonicalOnlyReport comment: the full
+  // Report type declares several section_* fields as required (V1's LLM always
+  // produced them); V4's canonical-only report deliberately omits them, and every
+  // downstream consumer already reads them defensively as possibly-absent.
+  const report = actual.reportWithPair as RomanticSajuDeepReport["report"];
 
   const vm = buildRomanticExperienceViewModel({
     report,
@@ -84,7 +70,10 @@ export function buildCanonicalRomanticV4Report(
     axisResults: vm.axisComparison.axisResults,
     locale,
     reportYear,
-    dynamicsCrossHits: dynamics?.crossChartHits,
+    // dynamicsCrossHits was a fallback for when canonical_projections.cross_chart_*
+    // was empty (previously sourced from V1's prepareRomanticSajuDeepRun). That call
+    // is gone; canonical_projections is now populated directly from real chartA/chartB
+    // computation in buildActualFourCeContract.ts, so this fallback is no longer needed.
   });
 
   const expertSyntheses = options?.enableExpertSynthesis !== false

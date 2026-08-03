@@ -10,7 +10,7 @@ import { buildRomanticV4PrototypePayload } from "@/lib/relationship/romantic/pro
 const outDir = path.resolve("tests/artifacts/romantic-v4-prototype");
 fs.mkdirSync(outDir, { recursive: true });
 
-const { contract, prepared, pairCeBondingValue } = buildActualFourCeContract("ko-KR");
+const { contract, pairCeBondingValue } = buildActualFourCeContract("ko-KR");
 const payload = buildRomanticV4PrototypePayload("complete", "ko-KR", {
   contractOverride: contract,
 });
@@ -34,17 +34,13 @@ const result = {
     source: contract.siblingInputs.pairCeCommon.source,
     value: contract.siblingInputs.pairCeCommon.output,
     pairCeBondingValue,
-    pairLensFromPrepared: prepared.dynamicsTyped?.pairLens ?? null,
   },
   "4_actual_romantic_ce_input": {
+    // Consolidation Batch C: romantic_context_input (V1-routed) is gone;
+    // romanticCeSpecific is now sourced from canonical_projections alone
+    // (real cross-chart + pair_ce_bonding computation).
     source: contract.siblingInputs.romanticCeSpecific.source,
     value: contract.siblingInputs.romanticCeSpecific.output,
-    dominantCategoryKeys: Object.keys(
-      (prepared.romanticContextInput?.dominant_categories ?? {}) as Record<
-        string,
-        unknown
-      >,
-    ),
   },
   "5_combined_pre_narrative_payload": contract,
   "6_resulting_korean_romantic_narrative": narrativeBlocks.filter((row) =>
