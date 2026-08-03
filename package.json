@@ -11,9 +11,12 @@
     "test:security-flow": "npx tsx tests/unit/security-flow.test.mjs",
     "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
     "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",
-    "test:parse-report": "node tests/scripts/parse-report-structure-smoke.mjs",
+    "test:parse-report": "npx tsx tests/scripts/parse-report-structure-smoke.mjs",
     "test:astrology-cache": "node tests/scripts/validate-astrology-cache.mjs",
-    "test:pre-payment-qa": "node tests/scripts/pre-payment-qa-check.mjs"
+    "test:pre-payment-qa": "node tests/scripts/pre-payment-qa-check.mjs",
+    "test:verify-attraction": "npx tsx tests/scripts/verify-attraction-vertical-slice.ts",
+    "test:verify-three-chapters": "npx tsx tests/scripts/verify-three-chapters-vertical-slice.ts",
+    "test:verify-ce": "npx tsx tests/scripts/verify-romantic-v4-rendered-ce.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.0",

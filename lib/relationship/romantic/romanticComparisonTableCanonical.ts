@@ -411,39 +411,39 @@ function localeIsEn(locale?: string | null): boolean {
 }
 
 const CONFLICT_LEAN_LABELS: Record<string, { ko: string; en: string }> = {
-  principled: { ko: "원칙형", en: "Principled" },
-  balanced: { ko: "균형", en: "Balanced" },
-  direct: { ko: "직면형", en: "Direct" },
+  principled: { ko: "원칙 중시", en: "Principled" },
+  balanced: { ko: "유연한 조율", en: "Balanced" },
+  direct: { ko: "직접 대화", en: "Direct" },
 };
 
 const AFFECTION_LEAN_LABELS: Record<string, { ko: string; en: string }> = {
-  action_gift: { ko: "행동·선물형", en: "Action & gifts" },
-  balanced: { ko: "균형", en: "Balanced" },
-  emotional_care: { ko: "정서 돌봄형", en: "Emotional care" },
+  action_gift: { ko: "행동과 챙김", en: "Action & gifts" },
+  balanced: { ko: "상황 맞춤", en: "Balanced" },
+  emotional_care: { ko: "정서적 공감", en: "Emotional care" },
 };
 
 const STRESS_LEAN_LABELS: Record<string, { ko: string; en: string }> = {
-  explosive: { ko: "폭발형", en: "Explosive" },
-  steady: { ko: "안정형", en: "Steady" },
-  withdrawn: { ko: "철수형", en: "Withdrawn" },
+  explosive: { ko: "즉각 표현", en: "Immediate" },
+  steady: { ko: "평정 유지", en: "Steady" },
+  withdrawn: { ko: "혼자 정리", en: "Takes space" },
 };
 
 const EXPRESSION_LEAN_LABELS: Record<string, { ko: string; en: string }> = {
-  expressive: { ko: "표현형", en: "Expressive" },
-  balanced: { ko: "균형", en: "Balanced" },
-  reserved: { ko: "절제형", en: "Reserved" },
+  expressive: { ko: "적극적 표현", en: "Expressive" },
+  balanced: { ko: "상황 맞춤", en: "Balanced" },
+  reserved: { ko: "신중한 표현", en: "Reserved" },
 };
 
 const DECISION_LEAN_LABELS: Record<string, { ko: string; en: string }> = {
-  independent: { ko: "독립형", en: "Independent" },
-  balanced: { ko: "균형", en: "Balanced" },
-  consultative: { ko: "상의형", en: "Consultative" },
+  independent: { ko: "독립적 결정", en: "Independent" },
+  balanced: { ko: "유연한 조율", en: "Balanced" },
+  consultative: { ko: "충분한 상의", en: "Consultative" },
 };
 
 const COMMUNICATION_LEAN_LABELS: Record<string, { ko: string; en: string }> = {
-  direct: { ko: "직접형", en: "Direct" },
-  balanced: { ko: "균형", en: "Balanced" },
-  considerate: { ko: "배려형", en: "Considerate" },
+  direct: { ko: "솔직한 전달", en: "Direct" },
+  balanced: { ko: "상황 맞춤", en: "Balanced" },
+  considerate: { ko: "상대 배려", en: "Considerate" },
 };
 
 const ROW_LEAN_LABELS: Record<
