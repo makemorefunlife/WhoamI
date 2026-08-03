@@ -1,5 +1,6 @@
 import type { IndividualSajuChart } from "../../../personCore/individualSaju/types";
 import type { RomanticSajuSignals } from "../../../personCore/sajuSignals/types";
+import type { PersonalRelationalProfile } from "../../../personCore/personalContextEngine/types";
 import {
   type TenGodRomanticProfile,
   getTenGodRomanticProfile,
@@ -25,6 +26,36 @@ export type EvidenceBackedMeaning = {
   confidence: ConfidenceLevel;
   elementOrTenGod?: string;
   behavioralContext?: string;
+};
+
+/**
+ * Consolidation Batch B — tracks where Personal CE's evidence-graded
+ * relational_profile agrees/disagrees with this file's own saju-derived
+ * selectors, and surfaces the two categories (conflict_decompression,
+ * criticism_sensitivity) that don't yet have an authoritative mapping onto
+ * existing text variants. Not rendered by the UI; audit/diff metadata only.
+ * See docs referenced in the Batch B commit message for the mapping tables.
+ */
+export type PersonalCeAlignment = {
+  stressResponse: {
+    /** The johu-temperature-band selector this file used before Batch B. */
+    legacyBand: "hot" | "cold" | "neutral";
+    /** Personal CE's pressure_response, mapped onto the same band vocabulary. */
+    ceBand: "hot" | "cold" | "neutral" | null;
+    /** Whether Personal CE was actually used to select the rendered text. */
+    ceAuthoritative: boolean;
+    agrees: boolean;
+  };
+  careExpression: {
+    legacyBand: "emotional_care" | "action_gift" | "other";
+    ceBand: "emotional_care" | "action_gift" | null;
+    ceAuthoritative: boolean;
+    agrees: boolean;
+  };
+  /** Not yet wired as authoritative — no existing text variant to map onto without new copy. */
+  conflictDecompressionCeCategory: PersonalRelationalProfile["conflict_decompression"] | null;
+  /** Not yet wired as authoritative — no existing text variant to map onto without new copy. */
+  criticismSensitivityCeCategory: PersonalRelationalProfile["criticism_sensitivity"] | null;
 };
 
 export type PersonalRelationshipCe = {
@@ -70,6 +101,8 @@ export type PersonalRelationshipCe = {
   supportNeededFromPartner: EvidenceBackedMeaning[];
   depletionRisk: EvidenceBackedMeaning;
   confidence: ConfidenceLevel;
+  /** Present only when a Personal CE relational_profile was passed in. */
+  personalCeAlignment?: PersonalCeAlignment;
 };
 
 // Day Master Core Translations
@@ -225,13 +258,45 @@ const FIVE_ELEMENT_BALANCE_INTERPRETATIONS: Record<
   },
 };
 
+/**
+ * Consolidation Batch B — maps Personal CE's evidence-graded pressure_response
+ * category onto the same hot/cold/neutral band vocabulary this file already
+ * used (johu temperature_band), so Personal CE becomes the authoritative
+ * selector without inventing new stress-response copy. "mixed_*" and
+ * "neutral_unspecified" have no clear hot/cold lean, so they fall back to
+ * the legacy johu-band selector rather than guessing.
+ */
+const PRESSURE_RESPONSE_TO_BAND: Partial<
+  Record<PersonalRelationalProfile["pressure_response"], "hot" | "cold" | "neutral">
+> = {
+  resolute_crisis_fighter: "hot",
+  stress_vulnerable_anchor_needed: "cold",
+  adaptive_pacing: "neutral",
+};
+
+/**
+ * Maps Personal CE's support_giving_style onto the existing
+ * emotional_care/action_gift affection-band vocabulary this file already
+ * branched on (previously sourced from romantic_saju_signals.affection_band).
+ * "silent_standby"/"mixed_*"/"neutral_unspecified" have no clean match to
+ * either existing branch, so they fall back to the legacy signal-band selector.
+ */
+const SUPPORT_GIVING_TO_AFFECTION_BAND: Partial<
+  Record<PersonalRelationalProfile["support_giving_style"], "emotional_care" | "action_gift">
+> = {
+  nurturing_empath: "emotional_care",
+  practical_troubleshooter: "action_gift",
+};
+
 export function buildPersonalRelationshipCe(params: {
   personId: string;
   name: string;
   chart: IndividualSajuChart;
   signals?: RomanticSajuSignals | null;
+  /** Personal CE's relational_profile (personalCe.aggregates.relational_profile). */
+  relationalProfile?: PersonalRelationalProfile | null;
 }): PersonalRelationshipCe {
-  const { personId, name, chart, signals } = params;
+  const { personId, name, chart, signals, relationalProfile } = params;
   const dm = chart.day_master;
   const stemKey = dm.stem.code;
   const stemEl = dm.stem.element;
@@ -302,8 +367,19 @@ export function buildPersonalRelationshipCe(params: {
     ? getTenGodRomanticProfile(dominantTenGodCode)
     : undefined;
 
-  // Care Expression: dynamically composed from Day Master behavior, Spouse Palace Ten God expression style, and affection signal band
-  const affBand = signals?.affection_language?.affection_band ?? "action_gift";
+  // Care Expression: dynamically composed from Day Master behavior, Spouse Palace Ten God expression style, and affection band.
+  // Consolidation Batch B: Personal CE's support_giving_style is authoritative when it maps
+  // cleanly onto an existing branch; otherwise falls back to the legacy signal-band selector.
+  const legacyAffBand: "emotional_care" | "action_gift" | "other" =
+    signals?.affection_language?.affection_band === "emotional_care"
+      ? "emotional_care"
+      : signals?.affection_language?.affection_band === "action_gift"
+        ? "action_gift"
+        : "other";
+  const ceAffBand = relationalProfile
+    ? (SUPPORT_GIVING_TO_AFFECTION_BAND[relationalProfile.support_giving_style] ?? null)
+    : null;
+  const affBand = ceAffBand ?? (legacyAffBand === "other" ? "action_gift" : legacyAffBand);
   const expStyle = spousePalaceProfile.profile.expressionStyle;
   const expPredicate = expStyle.endsWith("소통") || expStyle.endsWith("제시") || expStyle.endsWith("전달") || expStyle.endsWith("표현") || expStyle.endsWith("형성") || expStyle.endsWith("설정") || expStyle.endsWith("과시")
     ? `${expStyle}합니다.`
@@ -320,8 +396,14 @@ export function buildPersonalRelationshipCe(params: {
     careText = `${translation.behavior} ${expPredicate}`;
   }
 
-  // Stress Response: dynamically composed from Day Master stress, Johu climate, and Spouse Palace stress response
-  const tempBand = chart.johu.temperature_band;
+  // Stress Response: dynamically composed from Day Master stress, Johu climate, and Spouse Palace stress response.
+  // Consolidation Batch B: Personal CE's pressure_response is authoritative when it maps
+  // cleanly onto hot/cold/neutral; otherwise falls back to the legacy johu-band selector.
+  const legacyTempBand = chart.johu.temperature_band;
+  const ceTempBand = relationalProfile
+    ? (PRESSURE_RESPONSE_TO_BAND[relationalProfile.pressure_response] ?? null)
+    : null;
+  const tempBand = ceTempBand ?? legacyTempBand;
   let stressText = "";
   if (tempBand === "hot") {
     stressText = `${translation.stress} 스트레스가 차오르면 감정이 즉각 고조되며 대화로 즉시 풀고자 하고, ${spousePalaceProfile.profile.stressResponse}`;
@@ -330,6 +412,25 @@ export function buildPersonalRelationshipCe(params: {
   } else {
     stressText = `${translation.stress} 감정적인 동요를 가라앉힌 뒤 상황의 본질을 차분히 짚어가며, ${spousePalaceProfile.profile.stressResponse}`;
   }
+
+  const personalCeAlignment: PersonalCeAlignment | undefined = relationalProfile
+    ? {
+        stressResponse: {
+          legacyBand: legacyTempBand,
+          ceBand: ceTempBand,
+          ceAuthoritative: ceTempBand != null,
+          agrees: (ceTempBand ?? legacyTempBand) === legacyTempBand,
+        },
+        careExpression: {
+          legacyBand: legacyAffBand,
+          ceBand: ceAffBand,
+          ceAuthoritative: ceAffBand != null,
+          agrees: (ceAffBand ?? legacyAffBand) === legacyAffBand,
+        },
+        conflictDecompressionCeCategory: relationalProfile.conflict_decompression,
+        criticismSensitivityCeCategory: relationalProfile.criticism_sensitivity,
+      }
+    : undefined;
 
   // Conflict Response: dynamically composed from Day Master decision and Spouse Palace repair need
   const conflictText = `${translation.decision} 갈등이 발생했을 때는 ${spousePalaceProfile.profile.repairNeed}의 태도를 지향하며 차근차근 문제를 풀어가고자 합니다.`;
@@ -495,5 +596,6 @@ export function buildPersonalRelationshipCe(params: {
     natalTenGodProfiles,
     dominantTenGodProfile,
     confidence: "high",
+    personalCeAlignment,
   };
 }

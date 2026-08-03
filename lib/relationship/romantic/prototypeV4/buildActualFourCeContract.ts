@@ -86,12 +86,14 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
     name: "지민",
     chart: individualCeA,
     signals: masterA?.domain_signals?.romantic_signals,
+    relationalProfile: personalCeA.aggregates.relational_profile,
   });
   const personalRelationshipCeB = buildPersonalRelationshipCe({
     personId: "b",
     name: "정우",
     chart: individualCeB,
     signals: masterB?.domain_signals?.romantic_signals,
+    relationalProfile: personalCeB.aggregates.relational_profile,
   });
 
   const chartA = buildChartContext(sajuJsonToPillars(bundleA.saju));

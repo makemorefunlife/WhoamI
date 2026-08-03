@@ -26,19 +26,30 @@ function read(relPath) {
 }
 
 // ---------------------------------------------------------------------------
-section("1) Personal CE output -> Romantic Personal Lens input (CURRENT GAP, not fixed here)");
+section("1) Personal CE output -> Romantic Personal Lens input (Batch B: partially wired)");
 
 const personalRelationshipCeSrc = read(
   "lib/relationship/romantic/prototypeV4/personalRelationshipCe.ts",
 );
 assert.ok(
-  !personalRelationshipCeSrc.includes("PersonalRelationalProfile"),
-  "[documents the Batch B target, not yet true] personalRelationshipCe.ts does not currently import " +
-    "Personal CE's PersonalRelationalProfile type at all — it re-derives conflict/stress/care axes " +
-    "independently from chart+signals instead of consuming Personal CE's already-computed output. " +
-    "Batch B must flip this assertion to `.includes(...) === true`.",
+  personalRelationshipCeSrc.includes("PersonalRelationalProfile"),
+  "Batch B: personalRelationshipCe.ts must import Personal CE's PersonalRelationalProfile type",
 );
-ok("confirmed (as expected pre-Batch-B): Romantic Personal Lens does not consume Personal CE's relational_profile");
+assert.ok(
+  personalRelationshipCeSrc.includes("relationalProfile") &&
+    personalRelationshipCeSrc.includes("ceAuthoritative"),
+  "Batch B: buildPersonalRelationshipCe must accept a relationalProfile param and track ceAuthoritative per axis",
+);
+const contractSrcForCe = read("lib/relationship/romantic/prototypeV4/buildActualFourCeContract.ts");
+assert.ok(
+  /relationalProfile: personalCeA\.aggregates\.relational_profile/.test(contractSrcForCe),
+  "buildActualFourCeContract.ts must pass Personal CE's real relational_profile through, not omit it",
+);
+ok(
+  "confirmed: pressure_response -> stressResponse and support_giving_style -> careExpression are now " +
+    "CE-authoritative with legacy fallback. conflict_decompression and criticism_sensitivity are still " +
+    "exposed-but-not-authoritative (see romantic-v4-personal-ce-alignment.test.mjs) — open item, not a defect.",
+);
 
 // ---------------------------------------------------------------------------
 section("2) Pair CE output -> Romantic Pair Lens input (ALREADY CORRECT today)");
