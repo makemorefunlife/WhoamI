@@ -24,14 +24,18 @@ export type {
   PairDirectionality,
   ResolvedBaseMeaning,
   UnresolvedReference,
+  CanonicalPairCapabilityId,
+  CanonicalPairCapability,
 } from "./types";
 
 export { runPairContextEngine } from "./runPairContextEngine";
+export { buildCanonicalPairCapabilities } from "./canonicalPairCapabilities";
 export { selectPairSharedCandidates } from "./selectPairShared";
 export { assertPairContextPurity } from "./purity";
 export {
   applyDomainPairLens,
   applyRomanticPairLens,
+  applyPartnerPairLens,
   applyFriendPairLens,
   applyFamilyPairLens,
   applyWorkPairLens,

@@ -13,8 +13,12 @@ export type {
   PairSajuFactsInput,
   PairElementFlowFact,
   PairJohuRelationFact,
+  PairJohuRelationFact as PairJohuFact,
   PairYongsinAlignmentFact,
+  PairYongsinAlignmentFact as PairYongsinFact,
   PairGongmangSharedFact,
   PairPartyId,
   EnPillarSlot,
 } from "./types";
+
+export type { CrossChartHit, CrossChartTrioHit } from "@/lib/saju/pairChartAnalysis";

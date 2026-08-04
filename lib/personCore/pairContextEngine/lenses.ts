@@ -22,6 +22,19 @@ const ROMANTIC_KINDS = new Set([
   "yongsin_alignment",
 ]);
 
+const PARTNER_KINDS = new Set([
+  "stem_combine",
+  "stem_clash",
+  "branch_pair",
+  "branch_trio",
+  "wonjin_guimun",
+  "gongmang_cross",
+  "gongmang_shared",
+  "element_flow",
+  "johu_relation",
+  "yongsin_alignment",
+]);
+
 const FRIEND_KINDS = new Set([
   "stem_combine",
   "branch_pair",
@@ -54,6 +67,8 @@ function kindsFor(domain: DomainPairLensId): Set<string> {
   switch (domain) {
     case "romantic":
       return ROMANTIC_KINDS;
+    case "partner":
+      return PARTNER_KINDS;
     case "friend":
       return FRIEND_KINDS;
     case "family":
@@ -79,6 +94,17 @@ function relevance(
     if (p.group === "bonding" || p.group === "friction") return "primary";
     if (p.group === "energy") return "supporting";
     return "background";
+  }
+  if (domain === "partner") {
+    if (
+      p.group === "bonding" ||
+      p.group === "friction" ||
+      p.fact_kind === "johu_relation" ||
+      p.fact_kind === "element_flow"
+    ) {
+      return "primary";
+    }
+    return "supporting";
   }
   if (domain === "work") {
     if (p.fact_kind === "stem_clash" || p.fact_kind === "stem_combine") {
@@ -121,6 +147,9 @@ export function applyDomainPairLens(
 
 export function applyRomanticPairLens(ce: PairContextEngineOutput) {
   return applyDomainPairLens("romantic", ce);
+}
+export function applyPartnerPairLens(ce: PairContextEngineOutput) {
+  return applyDomainPairLens("partner", ce);
 }
 export function applyFriendPairLens(ce: PairContextEngineOutput) {
   return applyDomainPairLens("friend", ce);

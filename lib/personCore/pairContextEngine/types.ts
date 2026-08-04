@@ -107,11 +107,61 @@ export type PairContextEngineInput = {
   /** Prefer prebuilt facts; otherwise built from `facts_input`. */
   facts?: PairSajuFacts;
   facts_input?: PairSajuFactsInput;
+  profile_a?: import("../personalContextEngine/types").PersonalRelationalProfile;
+  profile_b?: import("../personalContextEngine/types").PersonalRelationalProfile;
   dictionary_version?: string;
   options?: {
     max_packets_per_group?: number;
     reserved_t1_t2_per_group?: number;
   };
+};
+
+export type CanonicalPairCapabilityId =
+  | "directional_support_exchange"
+  | "initiative_and_response"
+  | "mutual_recognition"
+  | "expression_emotional_pace_mismatch"
+  | "closeness_space_mismatch"
+  | "decision_coordination"
+  | "role_formation"
+  | "resource_responsibility_exchange"
+  | "pressure_amplification_buffering"
+  | "conflict_activation"
+  | "misunderstanding_translation"
+  | "repair_entry_loop"
+  | "hidden_needs_interaction"
+  | "stable_bonding_resources"
+  | "recurring_friction";
+
+export type CanonicalPairCapabilityStatus = "supported" | "mixed" | "abstained" | "unavailable";
+
+export type CanonicalPairCapability<TId extends CanonicalPairCapabilityId = CanonicalPairCapabilityId> = {
+  capability_id: TId;
+  status: CanonicalPairCapabilityStatus;
+  canonical_meaning_id: string | null;
+  variant: string | null;
+  summary_ko: string;
+  summary_en?: string;
+  directionality: PairDirectionality;
+  lead_party?: PairPartyId;
+  confidence: "high" | "medium" | "low" | "insufficient";
+  tension_level: "low" | "moderate" | "high" | "critical";
+  is_abstaining: boolean;
+  abstain_reason?: string;
+  diagnostic_reason?: string;
+  is_mixed: boolean;
+  mixed_details?: string;
+  evidence_sources: Array<{
+    source_kind: "pair_ce_packet" | "personal_ce_dimension" | "ten_god_matrix" | "raw_fact";
+    ref_id: string;
+    detail: string;
+  }>;
+  corroboration: {
+    is_corroborated: boolean;
+    corroborating_evidence_count: number;
+    independent_sources: string[];
+  };
+  prohibited_claims: string[];
 };
 
 export type PairContextEngineOutput = {
@@ -126,9 +176,11 @@ export type PairContextEngineOutput = {
   provenance: PairContextProvenance;
   /** Pass-through for domain consumers that still need raw hits. */
   facts: PairSajuFacts;
+  /** Canonical Relational Pair CE Capabilities. */
+  canonical_capabilities?: Record<CanonicalPairCapabilityId, CanonicalPairCapability>;
 };
 
-export type DomainPairLensId = "romantic" | "friend" | "family" | "work";
+export type DomainPairLensId = "romantic" | "partner" | "friend" | "family" | "work";
 
 export type DomainPairLensOutput = {
   domain: DomainPairLensId;

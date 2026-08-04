@@ -12,6 +12,7 @@ import {
   type PersonalSignalTier,
 } from "./constants";
 import {
+  aggregatePersonalRelationalProfile,
   aggregateTenGodStemCounts,
   selectPersonalInnateCandidates,
 } from "./selectPersonalInnate";
@@ -244,6 +245,7 @@ export function runPersonalContextEngine(
       weakest_element: chart.five_elements.weakest,
       strength_token: chart.strength.label_token,
       birth_time_unknown: birthUnknown,
+      relational_profile: aggregatePersonalRelationalProfile(chart, birthUnknown),
       ssot_gaps: [...DOCUMENTED_SSOT_GAPS],
     },
     exclusions,

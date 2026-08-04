@@ -12,6 +12,7 @@ import {
   type PairSignalTier,
 } from "./constants";
 import { selectPairSharedCandidates } from "./selectPairShared";
+import { buildCanonicalPairCapabilities } from "./canonicalPairCapabilities";
 import type {
   PairContextEngineInput,
   PairContextEngineOutput,
@@ -197,6 +198,13 @@ export function runPairContextEngine(
     hit_counts_by_kind[p.fact_kind] = (hit_counts_by_kind[p.fact_kind] ?? 0) + 1;
   }
 
+  const canonical_capabilities = buildCanonicalPairCapabilities(
+    facts,
+    packets,
+    input.profile_a,
+    input.profile_b,
+  );
+
   return {
     schema_version: PAIR_CE_VERSION,
     lens: PAIR_SHARED_LENS,
@@ -229,5 +237,6 @@ export function runPairContextEngine(
       policy_id: "pair_context_engine_policy_v1",
     },
     facts,
+    canonical_capabilities,
   };
 }

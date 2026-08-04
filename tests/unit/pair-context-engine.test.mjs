@@ -10,6 +10,7 @@ import {
   assertPairContextPurity,
   applyFamilyPairLens,
   applyFriendPairLens,
+  applyPartnerPairLens,
   applyRomanticPairLens,
   applyWorkPairLens,
   buildPairCeFixtureInput,
@@ -104,19 +105,22 @@ console.log("  ✓ supportive present");
 
 console.log("=== domain lenses ===");
 const romantic = applyRomanticPairLens(ce);
+const partner = applyPartnerPairLens(ce);
 const friend = applyFriendPairLens(ce);
 const family = applyFamilyPairLens(ce);
 const work = applyWorkPairLens(ce);
 assert.equal(romantic.domain, "romantic");
+assert.equal(partner.domain, "partner");
 assert.equal(friend.domain, "friend");
 assert.equal(family.domain, "family");
 assert.equal(work.domain, "work");
 assert.ok(romantic.packets.every((p) => p.fact_path && p.evidence));
+assert.ok(partner.packets.every((p) => p.fact_path && p.evidence));
 // Lenses must not invent new fact_paths
-for (const p of romantic.packets) {
+for (const p of partner.packets) {
   assert.ok(ce.packets.some((c) => c.packet_id === p.packet_id));
 }
-console.log("  ✓ four lenses consume shared packets");
+console.log("  ✓ five lenses consume shared packets");
 
 console.log("=== Romantic non-tension → projector ===");
 const nonTension = romanticNonTensionPackets(romantic);
