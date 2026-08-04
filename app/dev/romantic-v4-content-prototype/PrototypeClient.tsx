@@ -2,20 +2,6 @@
 
 import { useEffect, useState } from "react";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
-import {
-  HeroSection,
-  RelationshipIdentitySection,
-  CoreDifferencesSection,
-  YouAndMeSection,
-  WhyItWorksSection,
-  RelationshipFlowSection,
-  MisunderstandingSection,
-  HiddenHeartSection,
-  RepairGuideSection,
-  RealLifeSection,
-  NextChapterSection,
-  ClosingSection
-} from "./components/ReportSections";
 import { CanonicalReportView } from "./CanonicalReportView";
 
 type Props = {
@@ -26,10 +12,6 @@ type Props = {
 export default function PrototypeClient({ payload, debug = false }: Props) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const isComplete = payload.variant === "complete";
-  const enSmoke = payload.locale === "en-US";
-  const personA = enSmoke ? "Person A" : payload.pair.personA;
-  const personB = enSmoke ? "Person B" : payload.pair.personB;
-  const t = (text: string) => (enSmoke ? "[EN smoke content block]" : text);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,15 +23,6 @@ export default function PrototypeClient({ payload, debug = false }: Props) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const sectionProps = {
-    payload,
-    debug,
-    personA,
-    personB,
-    enSmoke,
-    t
-  };
 
   return (
     <main data-v4-prototype-root className="w-full bg-rel-bg min-h-screen text-rel-ink relative">
@@ -74,20 +47,17 @@ export default function PrototypeClient({ payload, debug = false }: Props) {
           <CanonicalReportView report={payload.canonicalReport} payload={payload} debug={debug} />
         </article>
       ) : isComplete ? (
-        <article className="pb-24">
-          <HeroSection {...sectionProps} />
-          <RelationshipIdentitySection {...sectionProps} />
-          <CoreDifferencesSection {...sectionProps} />
-          <YouAndMeSection {...sectionProps} />
-          <WhyItWorksSection {...sectionProps} />
-          <RelationshipFlowSection {...sectionProps} />
-          <MisunderstandingSection {...sectionProps} />
-          <HiddenHeartSection {...sectionProps} />
-          <RepairGuideSection {...sectionProps} />
-          <RealLifeSection {...sectionProps} />
-          <NextChapterSection {...sectionProps} />
-          <ClosingSection {...sectionProps} />
-        </article>
+        // canonicalReport is built for every PrototypeLocale ("ko-KR" | "en-US"),
+        // so this is not a normal state — canonicalReport.sections is the single
+        // ViewModel source for this route; there is no fixture-shaped fallback
+        // (chapters/hiddenHeart/repairGuide/...) to render instead, since those
+        // fields are explicit empty states in real mode, not renderable content.
+        <section className="mx-auto max-w-4xl p-8 mt-12 bg-white rounded-3xl border border-[#e9dccf]">
+          <h2 className="font-serif text-2xl text-[#2c3e35]">Canonical report unavailable</h2>
+          <p className="mt-4 text-[#5b4736]">
+            This payload has no canonicalReport for locale &quot;{payload.locale}&quot;.
+          </p>
+        </section>
       ) : (
         <section className="mx-auto max-w-4xl p-8 mt-12 bg-white rounded-3xl border border-[#e9dccf]">
           <h2 className="font-serif text-2xl text-[#2c3e35]">
@@ -99,8 +69,10 @@ export default function PrototypeClient({ payload, debug = false }: Props) {
         </section>
       )}
 
-      {/* Global Debug Info */}
-      {isComplete && debug && (
+      {/* Global Debug Info — insightOwnership is a dev_fixture-only audit trail
+          (empty in real mode; canonicalReport.validation/hiddenChapters is the
+          real-mode equivalent, already shown inside CanonicalReportView). */}
+      {isComplete && debug && payload.insightOwnership.length > 0 && (
         <section className="mx-auto max-w-5xl py-12 px-6">
           <div className="bg-[#faf7f3] rounded-3xl p-8 border border-[#e9dccf]">
             <h2 className="font-serif text-xl text-[#2c3e35] mb-4">Debug: Global IA Info</h2>
@@ -117,7 +89,7 @@ export default function PrototypeClient({ payload, debug = false }: Props) {
                   {payload.insightOwnership.map((row) => (
                     <tr key={row.insightId}>
                       <td className="border p-2">{row.insightId}</td>
-                      <td className="border p-2">{t(row.phenomenon)}</td>
+                      <td className="border p-2">{row.phenomenon}</td>
                       <td className="border p-2">{row.primaryChapter}</td>
                     </tr>
                   ))}
