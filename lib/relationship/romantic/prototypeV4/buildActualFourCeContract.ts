@@ -201,5 +201,9 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
     romanticPairLens,
     reportWithPair,
     pairCeBondingValue,
+    // Saju base bands for the comparisonTable fusion resolver (romanticV4ComparisonFusion.ts) —
+    // same domain_signals.romantic_signals PersonCore already bakes in for V1's production path.
+    romanticSignalsA: masterA?.domain_signals?.romantic_signals ?? null,
+    romanticSignalsB: masterB?.domain_signals?.romantic_signals ?? null,
   };
 }

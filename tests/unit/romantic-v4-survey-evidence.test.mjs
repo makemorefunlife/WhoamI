@@ -215,11 +215,13 @@ const payloadReal = buildRomanticV4PrototypePayload("complete", "ko-KR", {
 });
 assert.equal(payloadReal.surveyEvidence?.mode, "real");
 assert.equal(payloadReal.surveyEvidence?.axisOverviewSource, "survey_resolver");
-assert.equal(payloadReal.surveyEvidence?.comparisonTableSource, "unavailable_pending_saju_wiring");
-assert.deepEqual(
-  payloadReal.comparisonTable,
-  [],
-  "comparisonTable must not silently fall back to fixture rows in real mode",
+// Batch: "Wire fused Romantic comparison profiles into V4" — comparisonTable is now
+// real-wired via the Saju-fusion resolver (romanticV4ComparisonFusion.ts) whenever
+// romantic_signals are available (they are, via buildActualFourCeContract's demo pair).
+assert.equal(payloadReal.surveyEvidence?.comparisonTableSource, "saju_fusion_resolver");
+assert.ok(
+  payloadReal.comparisonTable.length > 0,
+  "comparisonTable must be populated from the real fusion resolver, not left empty, when Saju signals are available",
 );
 assert.equal(payloadReal.axisOverview.length, 11);
 const structureOverviewRow = payloadReal.axisOverview.find((r) => r.axis_key === "structure");
@@ -229,6 +231,22 @@ const structureEvidenceRow = payloadReal.axisOverviewEvidence?.find((r) => r.axi
 assert.equal(structureEvidenceRow.gap, structureOverviewRow.gap);
 assert.equal(structureEvidenceRow.match_type, structureOverviewRow.match_type);
 ok("axisOverview and comparisonTable both read off the single resolveV4AxisData() call — no independent recompute");
+
+// comparisonTable (display rows) and comparisonTableEvidence (typed fusion rows) must
+// agree — the display formatter must not recompute lean/align/confidence itself.
+const communicationEvidenceRow = payloadReal.comparisonTableEvidence?.find(
+  (r) => r.rowKey === "communication",
+);
+const communicationDisplayRow = payloadReal.comparisonTable.find(
+  (r) => r.rowId === "compare.communication",
+);
+if (communicationEvidenceRow && communicationDisplayRow) {
+  assert.equal(
+    communicationDisplayRow.confidence,
+    communicationEvidenceRow.confidence === "insufficient" ? "tentative" : communicationEvidenceRow.confidence,
+    "display confidence must be a pure formatting of the fusion resolver's confidence, not recomputed",
+  );
+}
 
 // ---------------------------------------------------------------------------
 section("13) KO/EN use the same canonical axis keys");

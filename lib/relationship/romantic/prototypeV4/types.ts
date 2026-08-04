@@ -8,6 +8,7 @@ import type {
   SurveyDisclosureCode,
   SurveyPairEvidenceStatus,
 } from "./romanticV4SurveyEvidence";
+import type { RomanticV4ComparisonRow } from "./romanticV4ComparisonFusion";
 
 export type PrototypeLocale = "ko-KR" | "en-US";
 export type PrototypeVariant = "complete" | "tension" | "minimal";
@@ -139,6 +140,8 @@ export type RomanticV4PrototypePayload = {
   toc: Array<{ chapter: ChapterId; label: string }>;
   chapters: PrototypeChapterPayload[];
   comparisonTable: SajuComparisonRow[];
+  /** Evidence-aware mirror of comparisonTable — Saju base + survey correction per row. Present in real mode only. */
+  comparisonTableEvidence?: RomanticV4ComparisonRow[];
   axisOverview: RomanticPsychMatchAxisResult[];
   /** Evidence-aware mirror of axisOverview — source/confidence per axis. Present in real mode only. */
   axisOverviewEvidence?: RomanticAxisOverviewRow[];
@@ -199,10 +202,11 @@ export type RomanticV4PrototypePayload = {
     axisOverviewSource: "survey_resolver" | "dev_fixture";
     /**
      * comparisonTable rows are Saju-band + survey fused (see
-     * romanticComparisonTableCanonical.ts) and cannot be built from
-     * CurrentSelfProfile alone; real mode does not yet supply this.
+     * romanticV4ComparisonFusion.ts / compare*Composite.ts) — "saju_fusion_resolver"
+     * when real romantic_signals were supplied, "unavailable_pending_saju_wiring"
+     * if a real surveyInput was given without Saju signals (never falls back to fixture).
      */
-    comparisonTableSource: "dev_fixture" | "unavailable_pending_saju_wiring";
+    comparisonTableSource: "dev_fixture" | "saju_fusion_resolver" | "unavailable_pending_saju_wiring";
   };
   antiOverfitCheck?: {
     variant: PrototypeVariant;

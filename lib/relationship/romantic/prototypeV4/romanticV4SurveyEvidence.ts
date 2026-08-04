@@ -83,6 +83,33 @@ function confidenceFor(
   return "insufficient";
 }
 
+export type SurveyPairEvidence = {
+  hasA: boolean;
+  hasB: boolean;
+  evidenceStatus: SurveyPairEvidenceStatus;
+  disclosureCode: SurveyDisclosureCode;
+};
+
+/**
+ * Single classification of A/B profile presence — axisOverview and the
+ * comparisonTable fusion resolver both derive evidenceStatus/disclosureCode
+ * from this one function so they never disagree.
+ */
+export function computeSurveyPairEvidence(
+  profileA: CurrentSelfProfile | null,
+  profileB: CurrentSelfProfile | null,
+): SurveyPairEvidence {
+  const hasA = profileA != null;
+  const hasB = profileB != null;
+  const evidenceStatus = evidenceStatusFor(hasA, hasB);
+  return {
+    hasA,
+    hasB,
+    evidenceStatus,
+    disclosureCode: disclosureCodeFor(evidenceStatus),
+  };
+}
+
 /**
  * CurrentSelfProfile A/B -> shared 11-axis evidence for axisOverview.
  * Missing profiles are filled with buildNeutralV2Profile() (score 50, all axes)
@@ -91,10 +118,10 @@ function confidenceFor(
 export function resolveRomanticV4SurveyEvidence(
   input: RomanticV4SurveyInput,
 ): RomanticV4SurveyEvidence {
-  const hasA = input.profileA != null;
-  const hasB = input.profileB != null;
-  const evidenceStatus = evidenceStatusFor(hasA, hasB);
-  const disclosureCode = disclosureCodeFor(evidenceStatus);
+  const { hasA, hasB, evidenceStatus, disclosureCode } = computeSurveyPairEvidence(
+    input.profileA,
+    input.profileB,
+  );
   const confidence = confidenceFor(evidenceStatus);
 
   const filledA = input.profileA ?? buildNeutralV2Profile();
