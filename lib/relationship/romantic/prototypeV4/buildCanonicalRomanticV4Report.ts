@@ -18,6 +18,7 @@ import {
   generateExpertSynthesesForStoryPlan,
 } from "./buildExpertSynthesis";
 import type { ExpertSynthesisResult } from "./expertSynthesisTypes";
+import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 
 export type CanonicalRomanticV4Report = {
   schemaVersion: "romantic_canonical_report_v1";
@@ -40,9 +41,11 @@ export function buildCanonicalRomanticV4Report(
   options?: {
     enableExpertSynthesis?: boolean;
     customSyntheses?: Record<string, ExpertSynthesisResult | null | undefined>;
+    /** mode "real" wires this report's Saju/CE to actual A/B birth data; omitted = dev-fixture demo pair. */
+    pairSajuInput?: RomanticV4PairSajuInput;
   },
 ): CanonicalRomanticV4Report {
-  const actual = buildActualFourCeContract(locale);
+  const actual = buildActualFourCeContract(locale, options?.pairSajuInput);
   // Consolidation Batch C: cross_chart_stem_combine/six_combine/wonjin_guimun (and
   // trio/gongmang/tension) are now computed directly in buildActualFourCeContract.ts
   // from chartA/chartB, so reportWithPair already carries them — no V1-routed
@@ -56,10 +59,10 @@ export function buildCanonicalRomanticV4Report(
 
   const vm = buildRomanticExperienceViewModel({
     report,
-    nameA: "지민",
-    nameB: "정우",
-    myName: "지민",
-    partnerName: "정우",
+    nameA: actual.nameA,
+    nameB: actual.nameB,
+    myName: actual.nameA,
+    partnerName: actual.nameB,
     viewerIsReportA: true,
     locale,
   });
@@ -93,7 +96,7 @@ export function buildCanonicalRomanticV4Report(
   return {
     schemaVersion: "romantic_canonical_report_v1",
     locale,
-    names: { a: "지민", b: "정우" },
+    names: { a: actual.nameA, b: actual.nameB },
     storyPlan,
     sections,
     expertSyntheses,

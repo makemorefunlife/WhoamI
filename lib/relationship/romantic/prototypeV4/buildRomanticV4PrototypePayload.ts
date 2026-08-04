@@ -475,16 +475,23 @@ function createCompletePayload(
   surveyInput?: RomanticV4SurveyInput,
   pairSajuInput?: RomanticV4PairSajuInput,
 ): RomanticV4PrototypePayload {
-  const report = romanticExperienceCompleteFixture;
-  const vm = buildRomanticExperienceViewModel({
-    report,
-    nameA: "지민",
-    nameB: "정우",
-    myName: "지민",
-    partnerName: "정우",
-    viewerIsReportA: true,
-    locale,
-  });
+  // Real pair mode: the fixture's hand-authored 지민/정우 narrative must never
+  // reach the payload — vm stays unbuilt (dev_fixture's only consumer below,
+  // fixtureAxisResults, is itself unused once axisOverview is real-resolved),
+  // and every fixture-prose field is overridden to an explicit unavailable
+  // state right before return (see "Real pair mode override" below).
+  const isRealPairMode = pairSajuInput?.mode === "real";
+  const vm = isRealPairMode
+    ? null
+    : buildRomanticExperienceViewModel({
+        report: romanticExperienceCompleteFixture,
+        nameA: "지민",
+        nameB: "정우",
+        myName: "지민",
+        partnerName: "정우",
+        viewerIsReportA: true,
+        locale,
+      });
 
   const evidenceTrace: EvidenceTraceRow[] = [];
   const omitted: OmittedContentRow[] = [];
@@ -501,12 +508,14 @@ function createCompletePayload(
 
   const fourCeResult = contractOverride ? null : buildActualFourCeContract(locale, pairSajuInput);
   const preNarrativeContract = contractOverride ?? fourCeResult!.contract;
+  const nameA = fourCeResult?.nameA ?? "지민";
+  const nameB = fourCeResult?.nameB ?? "정우";
 
   const axisData = resolveV4AxisData({
     locale,
     variant: "complete",
     viewerIsReportA: true,
-    fixtureAxisResults: vm.axisComparison.axisResults,
+    fixtureAxisResults: vm?.axisComparison.axisResults ?? [],
     surveyInput,
     romanticSignalsA: fourCeResult?.romanticSignalsA,
     romanticSignalsB: fourCeResult?.romanticSignalsB,
@@ -531,7 +540,7 @@ function createCompletePayload(
   const fourCeSemanticPlan = buildFourCeSemanticPlan(preNarrativeContract);
   const canonicalReport =
     locale === "ko-KR" || locale === "en-US"
-      ? buildCanonicalRomanticV4Report(locale)
+      ? buildCanonicalRomanticV4Report(locale, undefined, { pairSajuInput })
       : undefined;
   const aCharacterMeaning = fourCeSemanticPlan.aRelationshipCharacter.selectedMeaning;
   const bCharacterMeaning = fourCeSemanticPlan.bRelationshipCharacter.selectedMeaning;
@@ -1503,6 +1512,44 @@ function createCompletePayload(
     },
   );
 
+  // Real pair mode override: everything above this point is the fixture's
+  // hand-authored 지민/정우 scenario (chapters/hiddenHeart/repairGuide/
+  // conflicts/realLifeScenes/closing/nextChapter/insightOwnership/
+  // evidenceTrace/omittedContent) — computing it is harmless (pure, no I/O)
+  // but none of it may reach a real-mode payload. axisOverview, comparisonTable,
+  // preNarrativeContract, fourCeSemanticPlan, and canonicalReport are already
+  // real-computed above and are left untouched here.
+  payload.pair = { personA: nameA, personB: nameB, perspective: "A" };
+  if (isRealPairMode) {
+    payload.chapters = [];
+    payload.relationshipFlow = { title: "", steps: [], pivotPoint: "", evidenceIds: [] };
+    payload.conflicts = [];
+    payload.hiddenHeart = {
+      personA: "",
+      personB: "",
+      personAOneLineForPartner: "",
+      personBOneLineForPartner: "",
+      evidenceIds: [],
+    };
+    payload.repairGuide = {
+      sequence: [],
+      sideBySide: { helpsA: [], helpsB: [], together: [] },
+      evidenceIds: [],
+    };
+    payload.realLifeScenes = [];
+    payload.nextChapter = [];
+    payload.closing = {
+      concludingStatement: "",
+      rememberA: "",
+      rememberB: "",
+      shareLines: [],
+      reflectionQuestion: "",
+    };
+    payload.insightOwnership = [];
+    payload.evidenceTrace = [];
+    payload.omittedContent = [];
+  }
+
   return payload;
 }
 
@@ -1565,7 +1612,11 @@ function createVariantSelectionCheck(
   return {
     locale,
     variant,
-    pair: { personA: "지민", personB: "정우", perspective: "A" },
+    pair: {
+      personA: fourCeResult?.nameA ?? "지민",
+      personB: fourCeResult?.nameB ?? "정우",
+      perspective: "A",
+    },
     routeLabel: `/dev/romantic-v4-content-prototype?variant=${variant}&locale=${locale}`,
     toc: [],
     chapters: [],

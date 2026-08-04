@@ -54,7 +54,7 @@ export function generateDeterministicExpertSynthesis(
       interactionMechanism = `${a}의 명쾌한 결단력이 ${b}의 신중함과 맞물려 균형 잡힌 실행력을 이룹니다.`;
       conditionalNuance = `다만 각자의 기준이 확고할 때 사소한 이견에서도 대치가 길어질 수 있으므로 유연한 수용이 권장됩니다.`;
     } else {
-      primaryInterpretation = `지민과 정우가 마주할 때 비로소 만들어지는 특별한 정서적 공명과 몰입감이 존재합니다.`;
+      primaryInterpretation = `${a}와 ${b}가 마주할 때 비로소 만들어지는 특별한 정서적 공명과 몰입감이 존재합니다.`;
       expertSynthesis = `서로 다른 고유한 리듬이 조화롭게 맞물리면서, 둘이 함께할 때 더 깊은 안도감과 편안한 활력을 경험합니다.`;
       interactionMechanism = `긴 설명 없이도 서로의 생각과 감정이 자연스럽게 포개어지는 정서적 유대를 형성합니다.`;
       conditionalNuance = `끌림이 강한 만큼 확인에 대한 조급함이 부담으로 다가올 가능성을 유의할 필요가 있습니다.`;

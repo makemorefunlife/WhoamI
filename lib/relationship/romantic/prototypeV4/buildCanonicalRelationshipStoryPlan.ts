@@ -151,7 +151,11 @@ export function buildCanonicalRelationshipStoryPlan(params: {
 }): CanonicalRelationshipStoryPlan {
   const { contract, report, axisResults, locale } = params;
   const year = params.reportYear ?? new Date().getFullYear();
-  const names = { a: "\uC9C0\uBBFC", b: "\uC815\uC6B0" };
+  // Was hardcoded to the fixture demo pair's names via \u escape sequences
+  // (invisible to a plain-text grep) regardless of caller. contract.names
+  // already carries the real A/B names (buildRomanticNarrativeInputContract's
+  // nameA/nameB params) \u2014 use that instead of a local literal.
+  const names = contract.names;
   const plan = buildFourCeSemanticPlan(contract);
   const relCeA = plan.aRelationshipCe;
   const relCeB = plan.bRelationshipCe;
