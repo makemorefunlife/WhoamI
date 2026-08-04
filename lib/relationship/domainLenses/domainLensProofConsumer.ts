@@ -5,10 +5,9 @@
  * through Domain Lens evaluations into typed ViewModels for Partner, Family, Friend, and Cowork.
  */
 
-import type { DomainPairLensId } from "@/lib/personCore/pairContextEngine/types";
-import type { PairSajuFacts } from "@/lib/personCore/pairSaju";
-import type { PairContextPacket } from "@/lib/personCore/pairContextEngine/types";
-import type { PersonalContextEngineOutput } from "@/lib/personCore/personalContextEngine/types";
+import type { DomainPairLensId, PairContextPacket } from "../../personCore/pairContextEngine/types";
+import type { PairSajuFacts } from "../../personCore/pairSaju/types";
+import type { PersonalContextEngineOutput } from "../../personCore/personalContextEngine/types";
 import { resolveDomainLenses } from "./resolveDomainLenses";
 import { buildDomainStoryPlannerInput } from "./buildDomainStoryPlannerInput";
 import type {
@@ -19,85 +18,85 @@ import type {
 
 export type DomainReportCardViewModel = {
   lens_id: string;
-  badge_label_ko: string;
+  domain: DomainPairLensId;
+  question_ko: string;
   headline_ko: string;
   narrative_ko: string;
   confidence: LensConfidenceLevel;
-  evidence_tag_ko: string;
-  action_tip_ko?: string;
+  tension_level: string;
+  is_abstaining: boolean;
+  abstain_reason?: string;
+  polarity: string;
+  primary_evidence: Array<{ kind: string; description: string }>;
+  prohibited_claims: string[];
 };
 
-export type DomainReportViewModel = {
+export type DomainSectionViewModel = {
   domain: DomainPairLensId;
-  party_a_display_name: string;
-  party_b_display_name: string;
-  overall_summary_ko: string;
-  cards: DomainReportCardViewModel[];
+  total_lenses: number;
+  active_lenses: number;
+  abstained_lenses: number;
+  report_cards: DomainReportCardViewModel[];
   story_planner_input: DomainStoryPlannerInput;
-  provenance: {
-    lens_count: number;
-    packet_ids_consumed: string[];
-    schema_version: string;
-  };
 };
 
-export function buildDomainReportViewModel(params: {
+/**
+ * Builds a complete domain view model from raw facts and context engine output.
+ */
+export function buildDomainSectionViewModel(params: {
   domain: DomainPairLensId;
   facts: PairSajuFacts;
-  pairPackets: PairContextPacket[];
-  personalCeA?: PersonalContextEngineOutput;
-  personalCeB?: PersonalContextEngineOutput;
+  packets: PairContextPacket[];
+  personalCeA?: PersonalContextEngineOutput | null;
+  personalCeB?: PersonalContextEngineOutput | null;
   partyNames?: { a: string; b: string };
-}): DomainReportViewModel {
-  const { domain, facts, pairPackets, personalCeA, personalCeB, partyNames } = params;
-
-  // 1. Resolve domain lenses
-  const evaluations = resolveDomainLenses({
-    domain,
-    facts,
-    pairPackets,
-    personalCeA,
-    personalCeB,
-    partyNames,
+  roleLabels?: { a: string; b: string };
+}): DomainSectionViewModel {
+  const evaluations: DomainLensEvaluation[] = resolveDomainLenses({
+    domain: params.domain,
+    facts: params.facts,
+    packets: params.packets,
+    personalCeA: params.personalCeA,
+    personalCeB: params.personalCeB,
+    partyNames: params.partyNames,
+    roleLabels: params.roleLabels,
   });
 
-  // 2. Build story planner input
-  const storyPlannerInput = buildDomainStoryPlannerInput({
-    domain,
-    facts,
+  const storyPlannerInput: DomainStoryPlannerInput = buildDomainStoryPlannerInput({
+    domain: params.domain,
+    facts: params.facts,
     evaluations,
-    partyNames,
+    partyNames: params.partyNames,
+    roleLabels: params.roleLabels,
   });
 
-  // 3. Map to UI cards
-  const cards: DomainReportCardViewModel[] = evaluations.map((evalItem) => ({
-    lens_id: evalItem.lens_id,
-    badge_label_ko: evalItem.user_question,
-    headline_ko: evalItem.headline_ko,
-    narrative_ko: evalItem.narrative_ko,
-    confidence: evalItem.confidence,
-    evidence_tag_ko: evalItem.primary_saju_evidence[0]?.description_ko ?? "사주 기질 및 조화 분석",
-    action_tip_ko: evalItem.llm_synthesis_allowance.allowed_themes.slice(0, 2).join(" · "),
+  const reportCards: DomainReportCardViewModel[] = evaluations.map((ev) => ({
+    lens_id: ev.lens_id,
+    domain: ev.domain,
+    question_ko: ev.user_question,
+    headline_ko: ev.headline_ko,
+    narrative_ko: ev.narrative_ko,
+    confidence: ev.confidence,
+    tension_level: ev.tension_level,
+    is_abstaining: Boolean(ev.is_abstaining),
+    abstain_reason: ev.abstain_reason,
+    polarity: ev.directionality?.polarity ?? "symmetric",
+    primary_evidence: ev.primary_saju_evidence.map((s) => ({
+      kind: s.kind,
+      description: s.description_ko,
+    })),
+    prohibited_claims: ev.llm_synthesis_allowance.prohibited_claims,
   }));
 
-  const allPacketIds = new Set<string>();
-  for (const item of evaluations) {
-    for (const id of item.supporting_packet_ids) {
-      allPacketIds.add(id);
-    }
-  }
+  const activeCount = reportCards.filter((c) => !c.is_abstaining).length;
+  const abstainedCount = reportCards.filter((c) => c.is_abstaining).length;
 
   return {
-    domain,
-    party_a_display_name: partyNames?.a ?? "A",
-    party_b_display_name: partyNames?.b ?? "B",
-    overall_summary_ko: storyPlannerInput.chapters[0]?.summary_ko ?? "관계의 본질적 역동 분석",
-    cards,
+    domain: params.domain,
+    total_lenses: reportCards.length,
+    active_lenses: activeCount,
+    abstained_lenses: abstainedCount,
+    report_cards: reportCards,
     story_planner_input: storyPlannerInput,
-    provenance: {
-      lens_count: evaluations.length,
-      packet_ids_consumed: Array.from(allPacketIds),
-      schema_version: "domain_report_vm_v1",
-    },
   };
 }

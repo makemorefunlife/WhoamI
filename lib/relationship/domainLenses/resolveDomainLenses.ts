@@ -1,81 +1,81 @@
 /**
- * Unified Domain Lens Resolver
+ * Domain Lens Resolution Dispatcher
  *
- * Takes normalized Pair CE output, Pair Saju Facts, and Personal CE outputs,
- * and executes domain-specific lens evaluations with complete evidence provenance.
+ * Dispatches domain-specific 34-lens evaluations across Partner, Family, Friend, and Cowork.
+ * Strictly consumes from canonical SSOT PairSajuFacts, Pair Context Engine Packets, and Personal CE.
  */
 
-import type { DomainPairLensId } from "@/lib/personCore/pairContextEngine/types";
 import type {
-  DomainLensEvaluation,
-  DomainLensResolverInput,
-  PartnerLensId,
-  FamilyLensId,
-  FriendLensId,
-  WorkLensId,
-} from "./types";
+  DomainPairLensId,
+  PairContextPacket,
+} from "../../personCore/pairContextEngine/types";
+import type { PairSajuFacts } from "../../personCore/pairSaju/types";
+import type { PersonalContextEngineOutput } from "../../personCore/personalContextEngine/types";
+import type { DomainLensEvaluation } from "./types";
+
 import { evaluatePartnerLenses } from "./partner/partnerLenses";
 import { evaluateFamilyLenses } from "./family/familyLenses";
 import { evaluateFriendLenses } from "./friend/friendLenses";
 import { evaluateWorkLenses } from "./work/workLenses";
 
-export function resolveDomainLenses(
-  input: DomainLensResolverInput,
-): DomainLensEvaluation[] {
-  const {
-    domain,
-    facts,
-    pairPackets,
-    personalCeA,
-    personalCeB,
-    partyNames,
-    domainPsychScores,
-  } = input;
+export function resolveDomainLenses(params: {
+  domain: DomainPairLensId;
+  facts: PairSajuFacts;
+  packets: PairContextPacket[];
+  personalCeA?: PersonalContextEngineOutput | null;
+  personalCeB?: PersonalContextEngineOutput | null;
+  partyNames?: { a: string; b: string };
+  roleLabels?: { a: string; b: string };
+}): DomainLensEvaluation[] {
+  const { domain, facts, packets, personalCeA, personalCeB, partyNames, roleLabels } = params;
+  const ceA = personalCeA ?? undefined;
+  const ceB = personalCeB ?? undefined;
 
   switch (domain) {
     case "partner":
       return evaluatePartnerLenses({
         facts,
-        packets: pairPackets,
-        personalCeA,
-        personalCeB,
+        packets,
+        personalCeA: ceA,
+        personalCeB: ceB,
         partyNames,
-        psychScores: domainPsychScores,
       });
 
     case "family":
       return evaluateFamilyLenses({
         facts,
-        packets: pairPackets,
-        personalCeA,
-        personalCeB,
+        packets,
+        personalCeA: ceA,
+        personalCeB: ceB,
         partyNames,
-        psychScores: domainPsychScores,
       });
 
     case "friend":
       return evaluateFriendLenses({
         facts,
-        packets: pairPackets,
-        personalCeA,
-        personalCeB,
+        packets,
+        personalCeA: ceA,
+        personalCeB: ceB,
         partyNames,
-        psychScores: domainPsychScores,
       });
 
     case "work":
       return evaluateWorkLenses({
         facts,
-        packets: pairPackets,
-        personalCeA,
-        personalCeB,
+        packets,
+        personalCeA: ceA,
+        personalCeB: ceB,
         partyNames,
-        psychScores: domainPsychScores,
       });
 
-    case "romantic":
     default:
-      // Romantic is handled by its dedicated Reference Implementation in lib/relationship/romantic
-      return [];
+      // Fallback for romantic domain or unhandled domains: return partner lens evaluation
+      return evaluatePartnerLenses({
+        facts,
+        packets,
+        personalCeA: ceA,
+        personalCeB: ceB,
+        partyNames,
+      });
   }
 }

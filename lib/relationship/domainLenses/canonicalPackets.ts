@@ -52,3 +52,52 @@ export function buildAbstainedCanonicalPacket<T = null>(
     value: defaultValue,
   };
 }
+
+/** Helper to construct a standard canonical meaning packet */
+export function makeCanonicalPacket<T = unknown>(params: {
+  meaning_id: string | null;
+  status: CanonicalEvaluationStatus;
+  confidence: LensConfidenceLevel;
+  directionality:
+    | {
+        polarity?: "symmetric" | "a_to_b" | "b_to_a" | "dual" | string;
+        lead_party?: "A" | "B" | null;
+      }
+    | "symmetric"
+    | "a_to_b"
+    | "b_to_a"
+    | "dual";
+  value: T;
+  evidence?: (CanonicalPacketEvidence | string)[];
+  source_mode?: CanonicalSourceMode;
+  reason?: string;
+  is_abstaining?: boolean;
+  abstain_reason?: string;
+}): CanonicalMeaningPacket<T> {
+  const dir =
+    typeof params.directionality === "string"
+      ? (params.directionality as "symmetric" | "a_to_b" | "b_to_a" | "dual")
+      : (params.directionality?.polarity as any ?? "symmetric");
+  const leadParty =
+    typeof params.directionality === "object"
+      ? params.directionality.lead_party
+      : undefined;
+
+  const evList: CanonicalPacketEvidence[] = (params.evidence ?? []).map((ev) =>
+    typeof ev === "string" ? { kind: ev, detail: ev, source: "saju" as const } : ev
+  );
+  if (params.reason) {
+    evList.push({ kind: "summary_reason", detail: params.reason });
+  }
+
+  return {
+    meaning_id: params.meaning_id ?? "unknown",
+    status: params.is_abstaining ? "abstained" : params.status,
+    confidence: params.confidence,
+    directionality: dir,
+    lead_party: leadParty,
+    evidence: evList,
+    source_mode: params.source_mode ?? "hybrid",
+    value: params.value,
+  };
+}

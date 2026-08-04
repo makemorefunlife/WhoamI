@@ -86,11 +86,12 @@ export function evaluateFriendLenses(params: {
   const nameB = partyNames?.b ?? "친구 B";
   const unknownHour = facts.birth_time_unknown_a || facts.birth_time_unknown_b;
 
-  const stemCombines = facts.cross_hits.filter((h) => h.type === "천간합");
-  const stemClashes = facts.cross_hits.filter((h) => h.type === "천간충");
-  const branchCombines = facts.cross_hits.filter((h) => ["육합", "삼합", "반합"].includes(h.type));
-  const branchClashes = facts.cross_hits.filter((h) => ["충", "형", "파", "해"].includes(h.type));
-  const wonjinHits = facts.cross_hits.filter((h) => ["원진", "귀문"].includes(h.type));
+  const crossHits = facts.cross_hits ?? [];
+  const stemCombines = crossHits.filter((h) => h.type === "천간합");
+  const stemClashes = crossHits.filter((h) => h.type === "천간충");
+  const branchCombines = crossHits.filter((h) => ["육합", "삼합", "반합"].includes(h.type));
+  const branchClashes = crossHits.filter((h) => ["충", "형", "파", "해"].includes(h.type));
+  const wonjinHits = crossHits.filter((h) => ["원진", "귀문"].includes(h.type));
   const elementFlow = facts.element_flow;
 
   const profA = personalCeA?.aggregates?.relational_profile;

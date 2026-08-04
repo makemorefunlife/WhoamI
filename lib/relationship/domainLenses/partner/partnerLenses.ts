@@ -77,14 +77,15 @@ export function evaluatePartnerLenses(params: {
   const nameB = partyNames?.b ?? "B";
   const unknownHour = facts.birth_time_unknown_a || facts.birth_time_unknown_b;
 
-  const stemCombines = facts.cross_hits.filter((h) => h.type === "천간합");
-  const stemClashes = facts.cross_hits.filter((h) => h.type === "천간충");
-  const branchCombines = facts.cross_hits.filter((h) => ["육합", "삼합", "반합"].includes(h.type));
-  const branchClashes = facts.cross_hits.filter((h) => ["충", "형", "파", "해"].includes(h.type));
-  const wonjinHits = facts.cross_hits.filter((h) => ["원진", "귀문"].includes(h.type));
+  const crossHits = facts.cross_hits ?? [];
+  const stemCombines = crossHits.filter((h) => h.type === "천간합");
+  const stemClashes = crossHits.filter((h) => h.type === "천간충");
+  const branchCombines = crossHits.filter((h) => ["육합", "삼합", "반합"].includes(h.type));
+  const branchClashes = crossHits.filter((h) => ["충", "형", "파", "해"].includes(h.type));
+  const wonjinHits = crossHits.filter((h) => ["원진", "귀문"].includes(h.type));
   const elementFlow = facts.element_flow;
   const johu = facts.johu_relation;
-  const trioHits = facts.trio_hits;
+  const trioHits = facts.trio_hits ?? [];
   const yongsin = facts.yongsin_alignment;
 
   const profA = personalCeA?.aggregates?.relational_profile;
@@ -103,7 +104,7 @@ export function evaluatePartnerLenses(params: {
         hasBranchCombine: branchCombines.length > 0,
         hasClash: stemClashes.length > 0 || branchClashes.length > 0,
         elementFlow,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -188,7 +189,7 @@ export function evaluatePartnerLenses(params: {
         profA,
         profB,
         elementFlow: facts.element_flow,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         birthTimeUnknownA: facts.birth_time_unknown_a,
         birthTimeUnknownB: facts.birth_time_unknown_b,
       });
@@ -273,7 +274,7 @@ export function evaluatePartnerLenses(params: {
       const canonicalPacket = resolvePartnerHouseholdChoresCanonical({
         hasBranchClash: branchClashes.length > 0,
         hasBranchCombine: branchCombines.length > 0,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -351,7 +352,7 @@ export function evaluatePartnerLenses(params: {
         hasWonjin: wonjinHits.length > 0,
         profA,
         profB,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -417,7 +418,7 @@ export function evaluatePartnerLenses(params: {
     (() => {
       const canonicalPacket = resolvePartnerBedroomCanonical({
         johuRelation: johu,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -474,7 +475,7 @@ export function evaluatePartnerLenses(params: {
           impact_on_b_ko: "취침 전 10분 온기 교감 및 온도 타협",
         },
         primary_saju_evidence: johu ? [{ kind: "johu_thermal", description_ko: `조후 관계: ${johu.relation} (${johu.temperature_complement ? "상호 보열/보한" : "조후 격차"})` }] : [],
-        supporting_packet_ids: packets.filter((p) => p.fact_path.includes("johu") || p.group === "energy").map((p) => p.packet_id),
+        supporting_packet_ids: (packets ?? []).filter((p) => p.fact_path?.includes("johu") || p.group === "energy").map((p) => p.packet_id),
         personal_ce_contributions: {},
         llm_synthesis_allowance: {
           allowed_themes: ["이불 분리", "수면 온도 조절", "취침 전 루틴"],
@@ -490,7 +491,7 @@ export function evaluatePartnerLenses(params: {
         hasBranchClash: branchClashes.length > 0,
         profA,
         profB,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -568,7 +569,7 @@ export function evaluatePartnerLenses(params: {
         elementFlow,
         profA,
         profB,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -637,7 +638,7 @@ export function evaluatePartnerLenses(params: {
         hasBranchCombine: branchCombines.length > 0,
         profA,
         profB,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -716,7 +717,7 @@ export function evaluatePartnerLenses(params: {
         stemCountsB,
         profA,
         profB,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow),
         unknownHour,
       });
 
@@ -790,7 +791,7 @@ export function evaluatePartnerLenses(params: {
         hasTrio: trioHits.length > 0,
         yongsinAlignment: yongsin,
         hasStemCombine: stemCombines.length > 0,
-        hasFacts: facts.cross_hits.length > 0 || Boolean(facts.element_flow) || Boolean(facts.yongsin_alignment),
+        hasFacts: crossHits.length > 0 || Boolean(facts.element_flow) || Boolean(facts.yongsin_alignment),
         unknownHour,
       });
 

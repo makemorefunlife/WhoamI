@@ -1,22 +1,19 @@
 /**
- * Domain Lenses Module Index
+ * Domain Lenses Root Export
+ *
+ * Exports 34 Domain Lenses across Partner, Family, Friend, and Cowork.
+ * Exports Layer and Ten-God Matrices, Proof Consumer, V1 Migration Inventory,
+ * and 7-Scene Domain Story Planners.
  */
 
 export type {
-  PartnerLensId,
-  FamilyLensId,
-  FriendLensId,
-  WorkLensId,
-  RomanticLensId,
   DomainLensId,
+  DomainLensEvaluation,
   LensConfidenceLevel,
   LensTensionLevel,
   LensDirectionalityEvaluation,
   LensSajuEvidenceItem,
-  DomainLensEvaluation,
-  StoryPlannerChapter,
   DomainStoryPlannerInput,
-  DomainLensResolverInput,
 } from "./types";
 
 export { TEN_GOD_LENS_MATRIX } from "./tenGodLensMatrix";
@@ -28,13 +25,8 @@ export type {
 
 export {
   FIVE_ELEMENT_DOMAIN_MATRIX,
-  INTERACTION_DOMAIN_MATRIX,
 } from "./layersLensMatrix";
-export type {
-  ElementCode,
-  DomainElementFlowExpression,
-  InteractionDomainTranslation,
-} from "./layersLensMatrix";
+export type { ElementCode, DomainElementFlowExpression } from "./layersLensMatrix";
 
 export { V1_MIGRATION_INVENTORY } from "./v1MigrationInventory";
 export type {
@@ -45,14 +37,37 @@ export type {
 export { resolveDomainLenses } from "./resolveDomainLenses";
 export { buildDomainStoryPlannerInput } from "./buildDomainStoryPlannerInput";
 export {
-  buildDomainReportViewModel,
-} from "./domainLensProofConsumer";
-export type {
-  DomainReportCardViewModel,
-  DomainReportViewModel,
+  buildDomainSectionViewModel,
+  type DomainReportCardViewModel,
+  type DomainSectionViewModel,
 } from "./domainLensProofConsumer";
 
 export { evaluatePartnerLenses } from "./partner/partnerLenses";
 export { evaluateFamilyLenses } from "./family/familyLenses";
 export { evaluateFriendLenses } from "./friend/friendLenses";
 export { evaluateWorkLenses } from "./work/workLenses";
+
+export { buildFriendStoryPlan } from "./friend/friendStoryPlanner";
+export { buildWorkStoryPlan } from "./work/workStoryPlanner";
+export { buildFamilyStoryPlan } from "./family/familyStoryPlanner";
+export { buildPartnerStoryPlan } from "./partner/partnerStoryPlanner";
+export { buildDomain7SceneStoryPlan } from "./domainStoryPlanner";
+export type {
+  DomainStoryPlan,
+  DomainStoryScene,
+  DomainStorySceneNumber,
+  StoryBeats,
+  StoryBeatRecognitionSlot,
+  StoryBeatTranslationSlot,
+  StoryBeatReframingSlot,
+  StoryBeatActionSlot,
+} from "./storyPlannerTypes";
+
+export {
+  makeCanonicalPacket,
+  buildAbstainedCanonicalPacket,
+  type CanonicalMeaningPacket,
+  type CanonicalEvaluationStatus,
+  type CanonicalSourceMode,
+  type CanonicalPacketEvidence,
+} from "./canonicalPackets";
