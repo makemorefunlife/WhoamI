@@ -31,6 +31,7 @@ import {
   type RomanticV4ComparisonRow,
 } from "./romanticV4ComparisonFusion";
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 import type {
   AxisInsightRow,
   AxisSelectionRejected,
@@ -93,15 +94,19 @@ function buildComparisonTable(params: {
   const table = report.canonical_projections?.comparison_table;
   if (!table) return [] as SajuComparisonRow[];
 
+  // All 6 canonical rows — previously capped at 5 with "expression" silently
+  // dropped despite the fixture (and projectDifferenceMap.ts) already having
+  // it; no documented product rule limits display, so show every row present.
   const selectedKeys = [
     "conflict",
     "stress",
     "communication",
     "affection",
     "decision",
+    "expression",
   ].filter((rowKey) => Boolean(table[rowKey as RomanticCompareRowKey])) as RomanticCompareRowKey[];
 
-  return selectedKeys.slice(0, 5).map((rowKey) => {
+  return selectedKeys.slice(0, 6).map((rowKey) => {
     const row = table[rowKey]!;
     const personA = formatRomanticCompareLeanLabel(
       params.viewerIsReportA ? row.lean_a : row.lean_b,
@@ -122,7 +127,9 @@ function buildComparisonTable(params: {
             ? "직설적인 표현과 배려 섞인 표현이 만나면서, 정작 하려던 말의 내용보다 어조와 순서가 먼저 쟁점이 되곤 합니다."
             : rowKey === "affection"
               ? "말과 행동, 서로 다른 방식으로 애정을 표현하다 보니 고마운 마음은 크지만 그 마음이 잘 전달되지 않을 때가 있습니다."
-              : "결정을 내리는 기준이 서로 달라서(속도 중심과 합의 중심), 일정과 돈, 계획을 정할 때마다 작은 마찰이 반복됩니다.";
+              : rowKey === "expression"
+                ? "감정을 표현하는 속도와 밀도가 서로 달라서, 한 사람은 마음을 그때그때 꺼내고 다른 사람은 충분히 정리한 뒤에야 말을 꺼냅니다."
+                : "결정을 내리는 기준이 서로 달라서(속도 중심과 합의 중심), 일정과 돈, 계획을 정할 때마다 작은 마찰이 반복됩니다.";
     const understandingPoint =
       rowKey === "conflict"
         ? "감정을 얼마나 강하게 표현하느냐보다, 어떤 순서로 풀어갈지를 먼저 맞춰두면 같은 문제도 덜 다치면서 다룰 수 있습니다."
@@ -132,7 +139,9 @@ function buildComparisonTable(params: {
             ? "하고 싶은 말의 핵심을 한 줄로 먼저 전하고, 표현 방식을 다듬는 건 그다음으로 미루면 오해가 줄어듭니다."
             : rowKey === "affection"
               ? "말로 느끼는 안심과 행동으로 느끼는 안심을 서로 번역해 주면, 마음으로 느끼는 만족이 눈에 띄게 달라집니다."
-              : "혼자 정해도 되는 것과 함께 확인해야 하는 것의 경계를 미리 정해두면, 결정할 때마다 지치는 일이 줄어듭니다.";
+              : rowKey === "expression"
+                ? "표현이 빠르다고 마음이 더 크거나, 느리다고 마음이 없는 게 아니라는 걸 먼저 인정하면, 같은 감정도 다르게 전달되는 방식을 이해하기 쉬워집니다."
+                : "혼자 정해도 되는 것과 함께 확인해야 하는 것의 경계를 미리 정해두면, 결정할 때마다 지치는 일이 줄어듭니다.";
     return {
       rowId: `compare.${rowKey}`,
       relationshipQuestion: COMPARE_QUESTION[rowKey],
@@ -193,6 +202,14 @@ function comparisonRowProse(rowKey: RomanticCompareRowKey): { manifestation: str
         "말로 느끼는 안심과 행동으로 느끼는 안심을 서로 번역해 주면, 마음으로 느끼는 만족이 눈에 띄게 달라집니다.",
     };
   }
+  if (rowKey === "expression") {
+    return {
+      manifestation:
+        "감정을 표현하는 속도와 밀도가 서로 달라서, 한 사람은 마음을 그때그때 꺼내고 다른 사람은 충분히 정리한 뒤에야 말을 꺼냅니다.",
+      understanding:
+        "표현이 빠르다고 마음이 더 크거나, 느리다고 마음이 없는 게 아니라는 걸 먼저 인정하면, 같은 감정도 다르게 전달되는 방식을 이해하기 쉬워집니다.",
+    };
+  }
   return {
     manifestation:
       "결정을 내리는 기준이 서로 달라서(속도 중심과 합의 중심), 일정과 돈, 계획을 정할 때마다 작은 마찰이 반복됩니다.",
@@ -203,9 +220,10 @@ function comparisonRowProse(rowKey: RomanticCompareRowKey): { manifestation: str
 
 /**
  * RomanticV4ComparisonRow (fusion resolver output) -> the display-ready
- * SajuComparisonRow shape, same top-5 row selection/priority the fixture
- * path already used. Confidence/labels come straight from the fused row —
- * this function only formats, it does not recompute lean/align/confidence.
+ * SajuComparisonRow shape. Shows all 6 canonical rows (no documented product
+ * rule limits display — see buildComparisonTable's matching fix). Confidence/
+ * labels come straight from the fused row — this function only formats, it
+ * does not recompute lean/align/confidence.
  */
 function comparisonRowsFromFusion(params: {
   rows: RomanticV4ComparisonRow[];
@@ -213,8 +231,15 @@ function comparisonRowsFromFusion(params: {
   viewerIsReportA: boolean;
 }): SajuComparisonRow[] {
   const byKey = new Map(params.rows.map((r) => [r.rowKey, r] as const));
-  const priority: RomanticCompareRowKey[] = ["conflict", "stress", "communication", "affection", "decision"];
-  const selected = priority.filter((k) => byKey.has(k)).slice(0, 5);
+  const priority: RomanticCompareRowKey[] = [
+    "conflict",
+    "stress",
+    "communication",
+    "affection",
+    "decision",
+    "expression",
+  ];
+  const selected = priority.filter((k) => byKey.has(k)).slice(0, 6);
 
   return selected.map((rowKey) => {
     const row = byKey.get(rowKey)!;
@@ -448,6 +473,7 @@ function createCompletePayload(
   locale: PrototypeLocale,
   contractOverride?: RomanticNarrativeInputContract,
   surveyInput?: RomanticV4SurveyInput,
+  pairSajuInput?: RomanticV4PairSajuInput,
 ): RomanticV4PrototypePayload {
   const report = romanticExperienceCompleteFixture;
   const vm = buildRomanticExperienceViewModel({
@@ -473,7 +499,7 @@ function createCompletePayload(
     evidenceTrace.push({ blockId, chapter, sourceKind, text, evidenceIds, plannerInstruction });
   };
 
-  const fourCeResult = contractOverride ? null : buildActualFourCeContract(locale);
+  const fourCeResult = contractOverride ? null : buildActualFourCeContract(locale, pairSajuInput);
   const preNarrativeContract = contractOverride ?? fourCeResult!.contract;
 
   const axisData = resolveV4AxisData({
@@ -609,6 +635,7 @@ function createCompletePayload(
       rejected: axisSelection.rejected,
     },
     surveyEvidence,
+    pairSajuProvenance: fourCeResult?.pairSajuProvenance,
     relationshipFlow: {
       title: "표현 속도 차이가 관계 루프를 만드는 방식",
       steps: [
@@ -1483,6 +1510,7 @@ function createVariantSelectionCheck(
   locale: PrototypeLocale,
   variant: PrototypeVariant,
   surveyInput?: RomanticV4SurveyInput,
+  pairSajuInput?: RomanticV4PairSajuInput,
 ): RomanticV4PrototypePayload {
   const report = fixtureOf(variant);
   const vm = buildRomanticExperienceViewModel({
@@ -1494,7 +1522,8 @@ function createVariantSelectionCheck(
     viewerIsReportA: true,
     locale,
   });
-  const fourCeResult = surveyInput?.mode === "real" ? buildActualFourCeContract(locale) : null;
+  const needsFourCe = surveyInput?.mode === "real" || pairSajuInput?.mode === "real";
+  const fourCeResult = needsFourCe ? buildActualFourCeContract(locale, pairSajuInput) : null;
   const axisData = resolveV4AxisData({
     locale,
     variant,
@@ -1553,6 +1582,7 @@ function createVariantSelectionCheck(
       rejected: axisSelection.rejected,
     },
     surveyEvidence,
+    pairSajuProvenance: fourCeResult?.pairSajuProvenance,
     relationshipFlow: { title: "", steps: [], pivotPoint: "", evidenceIds: [] },
     conflicts: [],
     hiddenHeart: {
@@ -1615,9 +1645,16 @@ export function buildRomanticV4PrototypePayload(
     contractOverride?: RomanticNarrativeInputContract;
     /** mode "real" wires axisOverview to actual CurrentSelfProfile A/B; omitted = dev_fixture. */
     surveyInput?: RomanticV4SurveyInput;
+    /** mode "real" wires Saju/CE to actual A/B birth data; omitted = dev-fixture demo pair. */
+    pairSajuInput?: RomanticV4PairSajuInput;
   },
 ): RomanticV4PrototypePayload {
   if (variant === "complete")
-    return createCompletePayload(locale, options?.contractOverride, options?.surveyInput);
-  return createVariantSelectionCheck(locale, variant, options?.surveyInput);
+    return createCompletePayload(
+      locale,
+      options?.contractOverride,
+      options?.surveyInput,
+      options?.pairSajuInput,
+    );
+  return createVariantSelectionCheck(locale, variant, options?.surveyInput, options?.pairSajuInput);
 }

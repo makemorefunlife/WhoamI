@@ -9,6 +9,7 @@ import type {
   SurveyPairEvidenceStatus,
 } from "./romanticV4SurveyEvidence";
 import type { RomanticV4ComparisonRow } from "./romanticV4ComparisonFusion";
+import type { RomanticV4PairSajuProvenance } from "./romanticV4SajuInput";
 
 export type PrototypeLocale = "ko-KR" | "en-US";
 export type PrototypeVariant = "complete" | "tension" | "minimal";
@@ -208,6 +209,8 @@ export type RomanticV4PrototypePayload = {
      */
     comparisonTableSource: "dev_fixture" | "saju_fusion_resolver" | "unavailable_pending_saju_wiring";
   };
+  /** Provenance for the Saju/CE inputs behind romanticSignals A/B — real birth data vs the dev-fixture demo pair. Present whenever the CE contract was built. */
+  pairSajuProvenance?: RomanticV4PairSajuProvenance;
   antiOverfitCheck?: {
     variant: PrototypeVariant;
     selectedComparisonRows: string[];

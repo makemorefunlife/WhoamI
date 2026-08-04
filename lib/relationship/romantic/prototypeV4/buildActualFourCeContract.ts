@@ -39,6 +39,15 @@ import {
 import { buildRomanticNarrativeInputContract } from "./fourCeNarrativeInput";
 import { buildPersonalRelationshipCe } from "./personalRelationshipCe";
 import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import {
+  pairSajuProvenance,
+  type RomanticV4PairSajuInput,
+  type SajuBirthInput,
+} from "./romanticV4SajuInput";
+
+/** Existing dev-fixture demo pair — unchanged values, just reshaped to SajuBirthInput. */
+const DEV_FIXTURE_BIRTH_A: SajuBirthInput = { birthDate: "1990-05-15", birthTime: "14:30", birthTimeUnknown: false };
+const DEV_FIXTURE_BIRTH_B: SajuBirthInput = { birthDate: "1992-08-20", birthTime: "09:00", birthTimeUnknown: false };
 
 /**
  * RomanticSajuDeepReport["report"] declares section_1_summary/section_2_nature/etc.
@@ -51,41 +60,68 @@ import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremiu
  */
 type CanonicalOnlyReport = Partial<RomanticSajuDeepReport["report"]>;
 
-export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
-  const birthA = { date: "1990-05-15", time: "14:30", place: "서울" };
-  const birthB = { date: "1992-08-20", time: "09:00", place: "부산" };
+export function buildActualFourCeContract(
+  locale: "ko-KR" | "en-US",
+  pairSajuInput?: RomanticV4PairSajuInput,
+) {
+  const mode = pairSajuInput?.mode ?? "dev_fixture";
+  let birthA: SajuBirthInput;
+  let birthB: SajuBirthInput;
+  let nameA: string;
+  let nameB: string;
+  if (mode === "real") {
+    if (!pairSajuInput?.birthA || !pairSajuInput?.birthB) {
+      throw new Error(
+        "buildActualFourCeContract: mode 'real' requires both birthA and birthB — refusing to silently fall back to the dev-fixture demo pair.",
+      );
+    }
+    birthA = pairSajuInput.birthA;
+    birthB = pairSajuInput.birthB;
+    nameA = pairSajuInput.nameA ?? "Person A";
+    nameB = pairSajuInput.nameB ?? "Person B";
+  } else {
+    birthA = DEV_FIXTURE_BIRTH_A;
+    birthB = DEV_FIXTURE_BIRTH_B;
+    nameA = pairSajuInput?.nameA ?? "지민";
+    nameB = pairSajuInput?.nameB ?? "정우";
+  }
+  const birthTimeUnknownA = birthA.birthTimeUnknown ?? false;
+  const birthTimeUnknownB = birthB.birthTimeUnknown ?? false;
+
   const bundleA = calculateSajuBundle({
-    birthDate: birthA.date,
-    birthTime: birthA.time,
+    birthDate: birthA.birthDate,
+    birthTime: birthA.birthTime,
+    birthTimeUnknown: birthTimeUnknownA,
   });
   const bundleB = calculateSajuBundle({
-    birthDate: birthB.date,
-    birthTime: birthB.time,
+    birthDate: birthB.birthDate,
+    birthTime: birthB.birthTime,
+    birthTimeUnknown: birthTimeUnknownB,
   });
   const masterA = mapSajuBundleToMasterJson({
     bundle: bundleA,
-    birthDate: birthA.date,
-    birthTime: birthA.time,
-    birthTimeUnknown: false,
+    birthDate: birthA.birthDate,
+    birthTime: birthA.birthTime ?? null,
+    birthTimeUnknown: birthTimeUnknownA,
   });
   const masterB = mapSajuBundleToMasterJson({
     bundle: bundleB,
-    birthDate: birthB.date,
-    birthTime: birthB.time,
-    birthTimeUnknown: false,
+    birthDate: birthB.birthDate,
+    birthTime: birthB.birthTime ?? null,
+    birthTimeUnknown: birthTimeUnknownB,
   });
   const individualCeA = buildIndividualSajuChart({
     reportId: "a",
-    birthDate: birthA.date,
-    birthTime: birthA.time,
-    birthTimeUnknown: false,
+    birthDate: birthA.birthDate,
+    birthTime: birthA.birthTime ?? null,
+    birthTimeUnknown: birthTimeUnknownA,
     bundle: bundleA,
   });
   const individualCeB = buildIndividualSajuChart({
     reportId: "b",
-    birthDate: birthB.date,
-    birthTime: birthB.time,
-    birthTimeUnknown: false,
+    birthDate: birthB.birthDate,
+    birthTime: birthB.birthTime ?? null,
+    birthTimeUnknown: birthTimeUnknownB,
     bundle: bundleB,
   });
 
@@ -94,14 +130,14 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
 
   const personalRelationshipCeA = buildPersonalRelationshipCe({
     personId: "a",
-    name: "지민",
+    name: nameA,
     chart: individualCeA,
     signals: masterA?.domain_signals?.romantic_signals,
     relationalProfile: personalCeA.aggregates.relational_profile,
   });
   const personalRelationshipCeB = buildPersonalRelationshipCe({
     personId: "b",
-    name: "정우",
+    name: nameB,
     chart: individualCeB,
     signals: masterB?.domain_signals?.romantic_signals,
     relationalProfile: personalCeB.aggregates.relational_profile,
@@ -114,8 +150,8 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
     chartB,
     reportIdA: "a",
     reportIdB: "b",
-    birthTimeUnknownA: false,
-    birthTimeUnknownB: false,
+    birthTimeUnknownA,
+    birthTimeUnknownB,
   });
   const pairCe = runPairContextEngine({ facts: pairFacts });
   const romanticPairLens = applyRomanticPairLens(pairCe);
@@ -179,8 +215,8 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
   const contract = buildRomanticNarrativeInputContract({
     report: reportWithPair as RomanticSajuDeepReport["report"],
     locale,
-    nameA: "지민",
-    nameB: "정우",
+    nameA,
+    nameB,
     personalCeA,
     personalCeB,
     personalRelationshipCeA,
@@ -205,5 +241,9 @@ export function buildActualFourCeContract(locale: "ko-KR" | "en-US") {
     // same domain_signals.romantic_signals PersonCore already bakes in for V1's production path.
     romanticSignalsA: masterA?.domain_signals?.romantic_signals ?? null,
     romanticSignalsB: masterB?.domain_signals?.romantic_signals ?? null,
+    nameA,
+    nameB,
+    /** Provenance for every Saju/CE value returned above — real A/B birth vs the dev-fixture demo pair. */
+    pairSajuProvenance: pairSajuProvenance(mode),
   };
 }
