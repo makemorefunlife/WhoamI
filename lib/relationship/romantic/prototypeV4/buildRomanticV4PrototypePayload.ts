@@ -166,69 +166,85 @@ const V4_COMPARISON_ROW_CONFIDENCE: Record<RomanticV4ComparisonRow["confidence"]
   insufficient: "tentative",
 };
 
-// Static per-row prose, unchanged from the fixture-driven table — reused as-is
-// (the comparison_table's specific manifestation/understanding-point copy is
-// out of scope here; only the underlying lean/confidence values are real now).
-function comparisonRowProse(rowKey: RomanticCompareRowKey): { manifestation: string; understanding: string } {
-  if (rowKey === "conflict") {
+/**
+ * Real per-row prose, generated from the fused row's own structured fields
+ * (leanA/leanB/align/confidence/source) instead of static per-rowKey text —
+ * only for the real fusion path (dev_fixture keeps its own authored copy,
+ * per "keep fixture content only in explicit dev_fixture or tests"). Template
+ * only: assembles labels/facts the resolver already computed, invents no new
+ * claim beyond what leanA/leanB/align/confidence/source already say.
+ */
+function localizeComparisonRowProse(params: {
+  row: RomanticV4ComparisonRow;
+  locale: PrototypeLocale;
+  nameA: string;
+  nameB: string;
+}): { manifestation: string; understanding: string } {
+  const { row, locale, nameA, nameB } = params;
+  const isEn = locale === "en-US";
+  const leanALabel = formatRomanticCompareLeanLabel(row.leanA, locale, row.rowKey);
+  const leanBLabel = formatRomanticCompareLeanLabel(row.leanB, locale, row.rowKey);
+
+  if (row.source === "saju_only") {
     return {
-      manifestation:
-        "같은 갈등 상황에서 한 사람은 곧바로 맞추려 하고, 다른 사람은 기준부터 세우려 해서 타이밍이 자꾸 어긋납니다.",
-      understanding:
-        "감정을 얼마나 강하게 표현하느냐보다, 어떤 순서로 풀어갈지를 먼저 맞춰두면 같은 문제도 덜 다치면서 다룰 수 있습니다.",
+      manifestation: isEn
+        ? `Based on birth-chart signals alone, ${nameA} leans toward ${leanALabel} and ${nameB} leans toward ${leanBLabel} here.`
+        : `사주 신호만으로 볼 때, ${nameA}는 ${leanALabel} 쪽에, ${nameB}는 ${leanBLabel} 쪽에 가까운 경향을 보입니다.`,
+      understanding: isEn
+        ? "No survey data is available yet, so current behavior differences aren't judged here — this is a chart-only reference."
+        : "설문 데이터가 없어 현재 행동 차이는 판단하지 않고, 사주 기반 경향만 참고로 보여드립니다.",
     };
   }
-  if (rowKey === "stress") {
-    return {
-      manifestation:
-        "압박이 커질수록 한쪽은 감정을 빠르게 쏟아내고, 다른 쪽은 잠시 물러나 마음을 정리합니다. 그 모습이 서로에게는 거절로 보이기 쉽습니다.",
-      understanding:
-        "거리를 두는 모습은 회피가 아니라 과부하를 막으려는 신호로 봐 주고, 언제 다시 돌아올지 말로 약속해 두면 좋습니다.",
-    };
+
+  const sameLean = row.leanA === row.leanB;
+  let manifestation = sameLean
+    ? isEn
+      ? `${nameA} and ${nameB} both lean toward ${leanALabel} here.`
+      : `${nameA}와 ${nameB} 모두 ${leanALabel} 성향에 가깝습니다.`
+    : isEn
+      ? `${nameA} leans toward ${leanALabel}, while ${nameB} leans toward ${leanBLabel}.`
+      : `${nameA}는 ${leanALabel} 쪽에 가깝고, ${nameB}는 ${leanBLabel} 쪽에 가깝습니다.`;
+
+  if (row.align === "confirms") {
+    manifestation += isEn
+      ? " This matches each person's own chart tendency."
+      : " 이 성향은 각자의 사주 경향과도 일치해요.";
+  } else if (row.align === "caution") {
+    manifestation += isEn
+      ? " Their survey answers actually run counter to their chart tendency here, so this may look different moment to moment."
+      : " 다만 설문 응답이 사주 경향과는 다르게 나타나, 상황에 따라 다르게 보일 수 있어요.";
   }
-  if (rowKey === "communication") {
-    return {
-      manifestation:
-        "직설적인 표현과 배려 섞인 표현이 만나면서, 정작 하려던 말의 내용보다 어조와 순서가 먼저 쟁점이 되곤 합니다.",
-      understanding:
-        "하고 싶은 말의 핵심을 한 줄로 먼저 전하고, 표현 방식을 다듬는 건 그다음으로 미루면 오해가 줄어듭니다.",
-    };
+
+  let understanding =
+    row.confidence === "high"
+      ? isEn
+        ? "This difference tends to show up fairly clearly, so it helps to know it ahead of time."
+        : "이 차이는 비교적 분명하게 나타나는 편이니, 미리 알아두면 도움이 됩니다."
+      : isEn
+        ? "Treat this as a tentative signal rather than a fixed read."
+        : "아직은 확정적이라기보다 잠정적인 신호로 봐 주세요.";
+  if (row.confidence === "low") {
+    understanding += isEn
+      ? " One side's survey answers are missing, so this is only a partial reference."
+      : " 한쪽의 설문 응답이 없어 참고 수준으로만 봐 주세요.";
   }
-  if (rowKey === "affection") {
-    return {
-      manifestation:
-        "말과 행동, 서로 다른 방식으로 애정을 표현하다 보니 고마운 마음은 크지만 그 마음이 잘 전달되지 않을 때가 있습니다.",
-      understanding:
-        "말로 느끼는 안심과 행동으로 느끼는 안심을 서로 번역해 주면, 마음으로 느끼는 만족이 눈에 띄게 달라집니다.",
-    };
-  }
-  if (rowKey === "expression") {
-    return {
-      manifestation:
-        "감정을 표현하는 속도와 밀도가 서로 달라서, 한 사람은 마음을 그때그때 꺼내고 다른 사람은 충분히 정리한 뒤에야 말을 꺼냅니다.",
-      understanding:
-        "표현이 빠르다고 마음이 더 크거나, 느리다고 마음이 없는 게 아니라는 걸 먼저 인정하면, 같은 감정도 다르게 전달되는 방식을 이해하기 쉬워집니다.",
-    };
-  }
-  return {
-    manifestation:
-      "결정을 내리는 기준이 서로 달라서(속도 중심과 합의 중심), 일정과 돈, 계획을 정할 때마다 작은 마찰이 반복됩니다.",
-    understanding:
-      "혼자 정해도 되는 것과 함께 확인해야 하는 것의 경계를 미리 정해두면, 결정할 때마다 지치는 일이 줄어듭니다.",
-  };
+
+  return { manifestation, understanding };
 }
 
 /**
  * RomanticV4ComparisonRow (fusion resolver output) -> the display-ready
  * SajuComparisonRow shape. Shows all 6 canonical rows (no documented product
  * rule limits display — see buildComparisonTable's matching fix). Confidence/
- * labels come straight from the fused row — this function only formats, it
- * does not recompute lean/align/confidence.
+ * labels/prose all come straight from the fused row — this function only
+ * formats, it does not recompute lean/align/confidence.
  */
 function comparisonRowsFromFusion(params: {
   rows: RomanticV4ComparisonRow[];
   locale: PrototypeLocale;
   viewerIsReportA: boolean;
+  nameA: string;
+  nameB: string;
 }): SajuComparisonRow[] {
   const byKey = new Map(params.rows.map((r) => [r.rowKey, r] as const));
   const priority: RomanticCompareRowKey[] = [
@@ -246,7 +262,12 @@ function comparisonRowsFromFusion(params: {
     const leanForViewer = (mine: string, theirs: string) => (params.viewerIsReportA ? mine : theirs);
     const personA = formatRomanticCompareLeanLabel(leanForViewer(row.leanA, row.leanB), params.locale, rowKey);
     const personB = formatRomanticCompareLeanLabel(leanForViewer(row.leanB, row.leanA), params.locale, rowKey);
-    const prose = comparisonRowProse(rowKey);
+    const prose = localizeComparisonRowProse({
+      row,
+      locale: params.locale,
+      nameA: params.viewerIsReportA ? params.nameA : params.nameB,
+      nameB: params.viewerIsReportA ? params.nameB : params.nameA,
+    });
     return {
       rowId: `compare.${rowKey}`,
       relationshipQuestion: COMPARE_QUESTION[rowKey],
@@ -276,6 +297,10 @@ function resolveV4AxisData(params: {
   surveyInput?: RomanticV4SurveyInput;
   romanticSignalsA?: RomanticSajuSignals | null;
   romanticSignalsB?: RomanticSajuSignals | null;
+  nameA: string;
+  nameB: string;
+  /** True when pairSajuInput.mode === "real" — real Saju/CE requested even if surveyInput was omitted entirely (survey then reads as "unobserved", never fixture). */
+  pairSajuIsReal: boolean;
 }): {
   comparisonTable: SajuComparisonRow[];
   usedRows: RomanticCompareRowKey[];
@@ -285,8 +310,15 @@ function resolveV4AxisData(params: {
   evidenceStatus: SurveyPairEvidenceStatus;
   surveyEvidence: V4SurveyEvidenceMetadata;
 } {
-  if (params.surveyInput?.mode === "real") {
-    const evidence = resolveRomanticV4SurveyEvidence(params.surveyInput);
+  // pairSajuInput real alone (surveyInput entirely omitted) must also take the
+  // real path — survey then reads as "unobserved" (real Saju-only bands), never
+  // silently falling back to fixture just because surveyInput wasn't supplied.
+  if (params.surveyInput?.mode === "real" || params.pairSajuIsReal) {
+    const effectiveSurveyInput: RomanticV4SurveyInput =
+      params.surveyInput?.mode === "real"
+        ? params.surveyInput
+        : { mode: "real", profileA: null, profileB: null };
+    const evidence = resolveRomanticV4SurveyEvidence(effectiveSurveyInput);
     // Both sides synthetic: never surface a numeric-only view that could be
     // misread as a real similarity/complementary/tension claim.
     const axisOverview: RomanticPsychMatchAxisResult[] =
@@ -308,8 +340,8 @@ function resolveV4AxisData(params: {
       ? buildRomanticV4ComparisonFusion({
           signalsA: params.romanticSignalsA!,
           signalsB: params.romanticSignalsB!,
-          profileA: params.surveyInput.profileA,
-          profileB: params.surveyInput.profileB,
+          profileA: effectiveSurveyInput.profileA,
+          profileB: effectiveSurveyInput.profileB,
         })
       : undefined;
     const comparisonTable = comparisonTableEvidence
@@ -317,6 +349,8 @@ function resolveV4AxisData(params: {
           rows: comparisonTableEvidence,
           locale: params.locale,
           viewerIsReportA: params.viewerIsReportA,
+          nameA: params.nameA,
+          nameB: params.nameB,
         })
       : [];
     const usedRows = comparisonTable.map((row) => row.rowId.split(".")[1] as RomanticCompareRowKey);
@@ -506,7 +540,9 @@ function createCompletePayload(
     evidenceTrace.push({ blockId, chapter, sourceKind, text, evidenceIds, plannerInstruction });
   };
 
-  const fourCeResult = contractOverride ? null : buildActualFourCeContract(locale, pairSajuInput);
+  const fourCeResult = contractOverride
+    ? null
+    : buildActualFourCeContract(locale, pairSajuInput, surveyInput);
   const preNarrativeContract = contractOverride ?? fourCeResult!.contract;
   const nameA = fourCeResult?.nameA ?? "지민";
   const nameB = fourCeResult?.nameB ?? "정우";
@@ -519,6 +555,9 @@ function createCompletePayload(
     surveyInput,
     romanticSignalsA: fourCeResult?.romanticSignalsA,
     romanticSignalsB: fourCeResult?.romanticSignalsB,
+    nameA,
+    nameB,
+    pairSajuIsReal: isRealPairMode,
   });
   const {
     comparisonTable,
@@ -540,7 +579,7 @@ function createCompletePayload(
   const fourCeSemanticPlan = buildFourCeSemanticPlan(preNarrativeContract);
   const canonicalReport =
     locale === "ko-KR" || locale === "en-US"
-      ? buildCanonicalRomanticV4Report(locale, undefined, { pairSajuInput })
+      ? buildCanonicalRomanticV4Report(locale, undefined, { pairSajuInput, surveyInput })
       : undefined;
   const aCharacterMeaning = fourCeSemanticPlan.aRelationshipCharacter.selectedMeaning;
   const bCharacterMeaning = fourCeSemanticPlan.bRelationshipCharacter.selectedMeaning;
@@ -1570,15 +1609,22 @@ function createVariantSelectionCheck(
     locale,
   });
   const needsFourCe = surveyInput?.mode === "real" || pairSajuInput?.mode === "real";
-  const fourCeResult = needsFourCe ? buildActualFourCeContract(locale, pairSajuInput) : null;
+  const fourCeResult = needsFourCe
+    ? buildActualFourCeContract(locale, pairSajuInput, surveyInput)
+    : null;
+  const nameA = fourCeResult?.nameA ?? "지민";
+  const nameB = fourCeResult?.nameB ?? "정우";
   const axisData = resolveV4AxisData({
     locale,
     variant,
     viewerIsReportA: true,
     fixtureAxisResults: vm.axisComparison.axisResults,
+    nameA,
+    nameB,
     surveyInput,
     romanticSignalsA: fourCeResult?.romanticSignalsA,
     romanticSignalsB: fourCeResult?.romanticSignalsB,
+    pairSajuIsReal: pairSajuInput?.mode === "real",
   });
   const {
     comparisonTable: comparison,
@@ -1613,8 +1659,8 @@ function createVariantSelectionCheck(
     locale,
     variant,
     pair: {
-      personA: fourCeResult?.nameA ?? "지민",
-      personB: fourCeResult?.nameB ?? "정우",
+      personA: nameA,
+      personB: nameB,
       perspective: "A",
     },
     routeLabel: `/dev/romantic-v4-content-prototype?variant=${variant}&locale=${locale}`,

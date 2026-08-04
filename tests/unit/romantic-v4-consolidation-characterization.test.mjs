@@ -13,6 +13,17 @@
  * absent — a documented blocker (CurrentSelfProfile survey data unavailable),
  * not fixed by Batch C, see romantic-v4-consolidation-pair-dynamics.test.mjs.
  *
+ * Update (Restore Romantic 11-axis Gold Logic batch): balance_of_power/
+ * expression_speed/reassurance_signal/recovery_speed/unconscious_role_play
+ * are no longer blocked — romanticV4PairDynamicsFusion.ts now populates them
+ * via collectRomanticDynamicsTypedSnapshot + the *Canonical.ts wrap layer
+ * (same functions V1 uses), reading real CurrentSelfProfile when surveyInput
+ * is passed. This call site (buildActualFourCeContract("ko-KR") with no
+ * survey arg) still has no survey, so every survey-dependent band correctly
+ * reads its safe neutral value ("balanced"/"peer") — see
+ * romantic-v4-pair-dynamics.test.mjs for the real-survey exact values and
+ * the "cannot activate strong claims when synthetic" characterization.
+ *
  * Run: npx tsx tests/unit/romantic-v4-consolidation-characterization.test.mjs
  */
 import assert from "node:assert/strict";
@@ -41,23 +52,28 @@ assert.equal(contract.reportWithPair?.section_4_special_bond, undefined, "sectio
 ok("no more static fixture text masquerading as computed report sections");
 
 // ---------------------------------------------------------------------------
-section("STILL BLOCKED (documented, not fixed by Batch C) — CurrentSelfProfile unavailable");
+section("RESOLVED (Gold Logic restoration) — populated even without survey, safely neutral");
 
-for (const key of [
-  "balance_of_power",
-  "expression_speed",
-  "reassurance_signal",
-  "recovery_speed",
-  "unconscious_role_play",
-]) {
-  assert.equal(
-    proj[key],
-    undefined,
-    `[BLOCKED, not a regression] canonical_projections.${key} intentionally absent — ` +
-      "requires CurrentSelfProfile survey data that Personal CE/Pair CE do not provide in this pipeline",
-  );
-}
-ok("5 signals remain in the explicit 'unavailable' state rather than a fabricated or stale fixture value");
+// No surveyInput was passed to buildActualFourCeContract above, so every
+// survey-dependent band must be the safe neutral value — never a fabricated
+// leader/receiver, quick/deep, or role-play claim from missing data.
+assert.equal(contract.pairDynamics.evidenceStatus, "unobserved");
+assert.deepEqual(proj.balance_of_power, {
+  balance_a: "balanced",
+  balance_b: "balanced",
+  sublead_idea_mood: proj.balance_of_power.sublead_idea_mood,
+  sublead_decision_approval: proj.balance_of_power.sublead_decision_approval,
+  sublead_execution: proj.balance_of_power.sublead_execution,
+});
+assert.deepEqual(proj.recovery_speed, {
+  recovery_a: "balanced",
+  recovery_b: "balanced",
+  recovery_mismatch: false,
+});
+assert.equal(proj.expression_speed.direction, "balanced");
+assert.equal(proj.unconscious_role_play.primary_frame, "peer");
+assert.equal(proj.reassurance_signal.need_a != null, true, "reassurance is Saju+empathy — still resolves without survey (empathy just reads as not-high)");
+ok("5 previously-blocked signals are now populated; all survey-dependent bands read their safe neutral value with no survey");
 
 // ---------------------------------------------------------------------------
 section("NOW REAL COMPUTATION (Batch C) — cross-chart projections from chartA/chartB");

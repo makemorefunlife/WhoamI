@@ -9,8 +9,19 @@
  * *-canonical.test.mjs wrap/inject tests, which never call the resolvers
  * themselves (see romantic-balance-of-power-canonical.test.mjs etc.).
  *
- * IMPORTANT — documented blocker (do not silently work around):
- * resolveBalanceOfPower, resolveRecoverySpeedGap, resolveExpressionSpeedDirection,
+ * RESOLVED (Restore Romantic 11-axis Gold Logic batch): the blocker described
+ * below — no real CurrentSelfProfile reaching these functions anywhere in
+ * prototypeV4 — is now closed. romanticV4PairDynamicsFusion.ts calls these
+ * exact functions (via collectRomanticDynamicsTypedSnapshot) with the real
+ * profileA/profileB threaded from RomanticV4SurveyInput, and
+ * buildActualFourCeContract.ts injects the result into canonical_projections.
+ * See romantic-v4-pair-dynamics.test.mjs for the wiring-level exact-value
+ * characterization (including the "cannot activate strong claims when
+ * synthetic" safety property). This file still stands as-is: it tests the
+ * FUNCTIONS in isolation, which is valid and unaffected by the wiring fix.
+ *
+ * Original blocker note (kept for history): resolveBalanceOfPower,
+ * resolveRecoverySpeedGap, resolveExpressionSpeedDirection,
  * resolveUnconsciousRolePlay, and resolveReassuranceBand all require
  * CurrentSelfProfile (lib/v2/survey/types — an 11-axis SURVEY-derived psych
  * profile), not saju facts. Neither Personal CE (personalContextEngine,
@@ -20,8 +31,8 @@
  * This is exactly the stop condition "Pair CE가 relationshipDynamics 계산에
  * 필요한 input을 제공하지 않음". This file tests the FUNCTIONS in isolation
  * (proving the calculation rule survives relocation) but does NOT resolve
- * how V4 obtains a real CurrentSelfProfile per person — that is a Batch C
- * blocker, reported separately, not worked around here.
+ * how V4 obtains a real CurrentSelfProfile per person — that was the Batch C
+ * blocker, now resolved (see above).
  *
  * resolveReassuranceMatch, resolveGiveStyle, resolveSajuFrame,
  * resolveSajuFrameDirection, and resolveCrossChartTension (tested in the
@@ -215,7 +226,7 @@ ok("equal sums -> balanced");
 
 console.log("\nOK: romantic-v4-consolidation-pair-dynamics tests passed");
 console.log(
-  "\nBLOCKER DOCUMENTED (not resolved here): resolveBalanceOfPower/RecoverySpeedGap/" +
-    "ExpressionSpeedDirection/UnconsciousRolePlay/ReassuranceBand require CurrentSelfProfile " +
-    "(survey psych axes), which prototypeV4's pipeline never constructs for either person.",
+  "\nBLOCKER RESOLVED (Restore Romantic 11-axis Gold Logic batch): resolveBalanceOfPower/" +
+    "RecoverySpeedGap/ExpressionSpeedDirection/UnconsciousRolePlay/ReassuranceBand now receive " +
+    "real CurrentSelfProfile via romanticV4PairDynamicsFusion.ts — see romantic-v4-pair-dynamics.test.mjs.",
 );

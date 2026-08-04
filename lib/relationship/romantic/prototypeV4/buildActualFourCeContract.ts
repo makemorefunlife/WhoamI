@@ -44,6 +44,8 @@ import {
   type RomanticV4PairSajuInput,
   type SajuBirthInput,
 } from "./romanticV4SajuInput";
+import { buildRomanticV4PairDynamicsProjections } from "./romanticV4PairDynamicsFusion";
+import type { RomanticV4SurveyInput } from "./romanticV4SurveyEvidence";
 
 /** Existing dev-fixture demo pair — unchanged values, just reshaped to SajuBirthInput. */
 const DEV_FIXTURE_BIRTH_A: SajuBirthInput = { birthDate: "1990-05-15", birthTime: "14:30", birthTimeUnknown: false };
@@ -63,6 +65,7 @@ type CanonicalOnlyReport = Partial<RomanticSajuDeepReport["report"]>;
 export function buildActualFourCeContract(
   locale: "ko-KR" | "en-US",
   pairSajuInput?: RomanticV4PairSajuInput,
+  surveyInput?: RomanticV4SurveyInput,
 ) {
   const mode = pairSajuInput?.mode ?? "dev_fixture";
   let birthA: SajuBirthInput;
@@ -128,23 +131,30 @@ export function buildActualFourCeContract(
   const personalCeA = runPersonalContextEngine({ chart: individualCeA });
   const personalCeB = runPersonalContextEngine({ chart: individualCeB });
 
+  // Freshly computed (not a loaded legacy snapshot), so domain_signals.romantic_signals
+  // is always present — SajuMasterJson declares it required.
+  const romanticSignalsA = masterA.domain_signals.romantic_signals;
+  const romanticSignalsB = masterB.domain_signals.romantic_signals;
+
   const personalRelationshipCeA = buildPersonalRelationshipCe({
     personId: "a",
     name: nameA,
     chart: individualCeA,
-    signals: masterA?.domain_signals?.romantic_signals,
+    signals: romanticSignalsA,
     relationalProfile: personalCeA.aggregates.relational_profile,
   });
   const personalRelationshipCeB = buildPersonalRelationshipCe({
     personId: "b",
     name: nameB,
     chart: individualCeB,
-    signals: masterB?.domain_signals?.romantic_signals,
+    signals: romanticSignalsB,
     relationalProfile: personalCeB.aggregates.relational_profile,
   });
 
-  const chartA = buildChartContext(sajuJsonToPillars(bundleA.saju));
-  const chartB = buildChartContext(sajuJsonToPillars(bundleB.saju));
+  const sajuA = sajuJsonToPillars(bundleA.saju);
+  const sajuB = sajuJsonToPillars(bundleB.saju);
+  const chartA = buildChartContext(sajuA);
+  const chartB = buildChartContext(sajuB);
   const pairFacts = buildPairSajuFacts({
     chartA,
     chartB,
@@ -203,12 +213,27 @@ export function buildActualFourCeContract(
   )?.value;
   if (tensionValue) canonicalProjections.cross_chart_tension = tensionValue;
 
-  // NOT populated (documented blocker, see tests/unit/romantic-v4-consolidation-pair-dynamics.test.mjs
-  // and the Batch C report): balance_of_power, expression_speed, reassurance_signal,
-  // recovery_speed, unconscious_role_play all require CurrentSelfProfile (11-axis
-  // survey data), which Personal CE / Pair CE do not construct anywhere in this
-  // pipeline. Left absent (explicit "unavailable" state) rather than reusing a
-  // static fixture value or fabricating survey data.
+  // Gold Logic restoration: balance_of_power, recovery_speed, expression_speed,
+  // reassurance_signal, residual, and unconscious_role_play — previously
+  // "NOT populated" here (see tests/unit/romantic-v4-consolidation-pair-dynamics.test.mjs
+  // and the Batch C report) because nothing threaded a real CurrentSelfProfile
+  // in. Now that surveyInput carries real (or null) profileA/profileB, reuse
+  // the same collectRomanticDynamicsTypedSnapshot + *Canonical.ts wrap layer
+  // V1 already uses (romanticV4PairDynamicsFusion.ts) — every one of these
+  // resolvers already degrades to its neutral band when a profile is null,
+  // so no extra "keep it safe" logic is needed here.
+  const pairDynamics = buildRomanticV4PairDynamicsProjections({
+    profileA: surveyInput?.profileA ?? null,
+    profileB: surveyInput?.profileB ?? null,
+    romanticSignalsA,
+    romanticSignalsB,
+    chartA,
+    chartB,
+    sajuA,
+    sajuB,
+  });
+  Object.assign(canonicalProjections, pairDynamics.projections);
+
   const reportWithPair: CanonicalOnlyReport = {
     canonical_projections: canonicalProjections,
   };
@@ -239,11 +264,13 @@ export function buildActualFourCeContract(
     pairCeBondingValue,
     // Saju base bands for the comparisonTable fusion resolver (romanticV4ComparisonFusion.ts) —
     // same domain_signals.romantic_signals PersonCore already bakes in for V1's production path.
-    romanticSignalsA: masterA?.domain_signals?.romantic_signals ?? null,
-    romanticSignalsB: masterB?.domain_signals?.romantic_signals ?? null,
+    romanticSignalsA,
+    romanticSignalsB,
     nameA,
     nameB,
     /** Provenance for every Saju/CE value returned above — real A/B birth vs the dev-fixture demo pair. */
     pairSajuProvenance: pairSajuProvenance(mode),
+    /** Gold Logic pair-dynamics projections (balance/recovery/expression_speed/reassurance/residual/role_play) + their survey evidence status. */
+    pairDynamics,
   };
 }

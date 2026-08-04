@@ -19,6 +19,7 @@ import {
 } from "./buildExpertSynthesis";
 import type { ExpertSynthesisResult } from "./expertSynthesisTypes";
 import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
+import type { RomanticV4SurveyInput } from "./romanticV4SurveyEvidence";
 
 export type CanonicalRomanticV4Report = {
   schemaVersion: "romantic_canonical_report_v1";
@@ -43,9 +44,11 @@ export function buildCanonicalRomanticV4Report(
     customSyntheses?: Record<string, ExpertSynthesisResult | null | undefined>;
     /** mode "real" wires this report's Saju/CE to actual A/B birth data; omitted = dev-fixture demo pair. */
     pairSajuInput?: RomanticV4PairSajuInput;
+    /** mode "real" wires balance/recovery/reassurance/role-play/comparison to actual survey profiles; omitted = no survey evidence. */
+    surveyInput?: RomanticV4SurveyInput;
   },
 ): CanonicalRomanticV4Report {
-  const actual = buildActualFourCeContract(locale, options?.pairSajuInput);
+  const actual = buildActualFourCeContract(locale, options?.pairSajuInput, options?.surveyInput);
   // Consolidation Batch C: cross_chart_stem_combine/six_combine/wonjin_guimun (and
   // trio/gongmang/tension) are now computed directly in buildActualFourCeContract.ts
   // from chartA/chartB, so reportWithPair already carries them — no V1-routed
