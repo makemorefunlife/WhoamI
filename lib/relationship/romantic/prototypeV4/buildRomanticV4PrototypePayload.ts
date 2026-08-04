@@ -8,7 +8,11 @@ import {
   formatRomanticCompareLeanLabel,
   type RomanticCompareRowKey,
 } from "../romanticComparisonTableCanonical";
-import type { RomanticPsychMatchAxisResult } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import type {
+  RomanticPsychMatchAxisResult,
+  RomanticPsychMatchType,
+} from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import { psychMatchAxisLabel } from "@/lib/relationship/psychMatch";
 import {
   explainFourCeInfluence,
   type RomanticNarrativeInputContract,
@@ -16,6 +20,12 @@ import {
 import { buildActualFourCeContract } from "./buildActualFourCeContract";
 import { buildFourCeSemanticPlan } from "./fourCeSemanticPlanner";
 import { buildCanonicalRomanticV4Report } from "./buildCanonicalRomanticV4Report";
+import {
+  resolveRomanticV4SurveyEvidence,
+  type RomanticAxisOverviewRow,
+  type RomanticV4SurveyInput,
+  type SurveyPairEvidenceStatus,
+} from "./romanticV4SurveyEvidence";
 import type {
   AxisInsightRow,
   AxisSelectionRejected,
@@ -29,35 +39,6 @@ import type {
   SajuComparisonRow,
   SourceKind,
 } from "./types";
-
-export const AXIS_LABELS: Record<PrototypeLocale, Record<string, string>> = {
-  "ko-KR": {
-    stimulation: "자극추구",
-    self_control: "자기통제",
-    practicality: "현실실리",
-    structure: "계획구조화",
-    empathy: "관계공감",
-    conflict_style: "갈등직면성",
-    resilience: "회복탄력성",
-    recognition: "인정욕구",
-    energy_style: "외향에너지",
-    thinking_style: "분석사고",
-    decision_style: "신중결정",
-  },
-  "en-US": {
-    stimulation: "Novelty seeking",
-    self_control: "Self-control",
-    practicality: "Practicality",
-    structure: "Structure",
-    empathy: "Empathy",
-    conflict_style: "Conflict directness",
-    resilience: "Resilience",
-    recognition: "Recognition need",
-    energy_style: "Social energy",
-    thinking_style: "Thinking style",
-    decision_style: "Decision style",
-  },
-};
 
 const AXIS_TO_COMPARE_ROW: Partial<Record<string, RomanticCompareRowKey>> = {
   conflict_style: "conflict",
@@ -86,8 +67,9 @@ function fixtureOf(variant: PrototypeVariant) {
   return romanticExperienceCompleteFixture;
 }
 
+/** Thin wrapper over the canonical production psych-match label authority. */
 export function labelOfAxis(locale: PrototypeLocale, axisKey: string) {
-  return AXIS_LABELS[locale][axisKey] ?? axisKey;
+  return psychMatchAxisLabel(axisKey, locale);
 }
 
 function confidenceFromGap(gap: number): ConfidenceLevel {
@@ -162,10 +144,86 @@ function buildComparisonTable(params: {
   });
 }
 
+type V4SurveyEvidenceMetadata = NonNullable<RomanticV4PrototypePayload["surveyEvidence"]>;
+
+/**
+ * Single entry point for axisOverview/comparisonTable provenance — real mode
+ * never falls through to fixture data, dev_fixture mode never claims to be real.
+ */
+function resolveV4AxisData(params: {
+  locale: PrototypeLocale;
+  variant: PrototypeVariant;
+  viewerIsReportA: boolean;
+  fixtureAxisResults: RomanticPsychMatchAxisResult[];
+  surveyInput?: RomanticV4SurveyInput;
+}): {
+  comparisonTable: SajuComparisonRow[];
+  usedRows: RomanticCompareRowKey[];
+  axisOverview: RomanticPsychMatchAxisResult[];
+  axisOverviewEvidence?: RomanticAxisOverviewRow[];
+  evidenceStatus: SurveyPairEvidenceStatus;
+  surveyEvidence: V4SurveyEvidenceMetadata;
+} {
+  if (params.surveyInput?.mode === "real") {
+    const evidence = resolveRomanticV4SurveyEvidence(params.surveyInput);
+    // Both sides synthetic: never surface a numeric-only view that could be
+    // misread as a real similarity/complementary/tension claim.
+    const axisOverview: RomanticPsychMatchAxisResult[] =
+      evidence.evidenceStatus === "unobserved"
+        ? []
+        : evidence.rows.map((row) => ({
+            axis_key: row.axis_key,
+            score_a: row.score_a,
+            score_b: row.score_b,
+            gap: row.gap,
+            match_type: row.match_type as RomanticPsychMatchType,
+          }));
+    return {
+      comparisonTable: [],
+      usedRows: [],
+      axisOverview,
+      axisOverviewEvidence: evidence.rows,
+      evidenceStatus: evidence.evidenceStatus,
+      surveyEvidence: {
+        mode: "real",
+        evidenceStatus: evidence.evidenceStatus,
+        disclosureCode: evidence.disclosureCode,
+        isSampleData: false,
+        axisOverviewSource: "survey_resolver",
+        comparisonTableSource: "unavailable_pending_saju_wiring",
+      },
+    };
+  }
+
+  const comparisonTable = buildComparisonTable({
+    locale: params.locale,
+    viewerIsReportA: params.viewerIsReportA,
+    variant: params.variant,
+  });
+  const usedRows = comparisonTable.map((row) => row.rowId.split(".")[1] as RomanticCompareRowKey);
+  return {
+    comparisonTable,
+    usedRows,
+    axisOverview: params.fixtureAxisResults,
+    axisOverviewEvidence: undefined,
+    evidenceStatus: "observed",
+    surveyEvidence: {
+      mode: "dev_fixture",
+      evidenceStatus: "observed",
+      disclosureCode: "none",
+      isSampleData: true,
+      axisOverviewSource: "dev_fixture",
+      comparisonTableSource: "dev_fixture",
+    },
+  };
+}
+
 function selectAxisInsights(params: {
   locale: PrototypeLocale;
   axisResults: RomanticPsychMatchAxisResult[];
   usedRows: RomanticCompareRowKey[];
+  /** When set to "partial_inference", selected-axis confidence is capped at "low" — one side is synthetic. */
+  evidenceStatus?: SurveyPairEvidenceStatus;
 }) {
   const rejected: AxisSelectionRejected[] = [];
   const scored = params.axisResults
@@ -259,7 +317,7 @@ function selectAxisInsights(params: {
       whyItMatters,
       dailyManifestation,
       relationshipEffect,
-      confidence: confidenceFromGap(c.axis.gap),
+      confidence: params.evidenceStatus === "partial_inference" ? "low" : confidenceFromGap(c.axis.gap),
       evidenceIds: [`meta.psych_match.axis_results.${c.axis.axis_key}`],
     };
   });
@@ -269,6 +327,7 @@ function selectAxisInsights(params: {
 function createCompletePayload(
   locale: PrototypeLocale,
   contractOverride?: RomanticNarrativeInputContract,
+  surveyInput?: RomanticV4SurveyInput,
 ): RomanticV4PrototypePayload {
   const report = romanticExperienceCompleteFixture;
   const vm = buildRomanticExperienceViewModel({
@@ -294,15 +353,19 @@ function createCompletePayload(
     evidenceTrace.push({ blockId, chapter, sourceKind, text, evidenceIds, plannerInstruction });
   };
 
-  const comparisonTable = buildComparisonTable({ locale, viewerIsReportA: true, variant: "complete" });
-  const usedRows = comparisonTable
-    .map((row) => row.rowId.split(".")[1] as RomanticCompareRowKey);
-
-  const axisOverview = vm.axisComparison.axisResults;
+  const axisData = resolveV4AxisData({
+    locale,
+    variant: "complete",
+    viewerIsReportA: true,
+    fixtureAxisResults: vm.axisComparison.axisResults,
+    surveyInput,
+  });
+  const { comparisonTable, usedRows, axisOverview, axisOverviewEvidence, surveyEvidence } = axisData;
   const axisSelection = selectAxisInsights({
     locale,
     axisResults: axisOverview,
     usedRows,
+    evidenceStatus: axisData.evidenceStatus,
   });
   const selectedAxisInsights = axisSelection.selected;
 
@@ -404,6 +467,7 @@ function createCompletePayload(
     chapters,
     comparisonTable,
     axisOverview,
+    axisOverviewEvidence,
     selectedAxisInsights,
     axisSelectionAudit: {
       selectedReason:
@@ -412,6 +476,7 @@ function createCompletePayload(
           : `${selectedAxisInsights.length}개만 충분한 증거를 충족`,
       rejected: axisSelection.rejected,
     },
+    surveyEvidence,
     relationshipFlow: {
       title: "표현 속도 차이가 관계 루프를 만드는 방식",
       steps: [
@@ -1285,6 +1350,7 @@ function createCompletePayload(
 function createVariantSelectionCheck(
   locale: PrototypeLocale,
   variant: PrototypeVariant,
+  surveyInput?: RomanticV4SurveyInput,
 ): RomanticV4PrototypePayload {
   const report = fixtureOf(variant);
   const vm = buildRomanticExperienceViewModel({
@@ -1296,13 +1362,19 @@ function createVariantSelectionCheck(
     viewerIsReportA: true,
     locale,
   });
-  const comparison = buildComparisonTable({ locale, viewerIsReportA: true, variant });
-  const usedRows = comparison
-    .map((row) => row.rowId.split(".")[1] as RomanticCompareRowKey);
+  const axisData = resolveV4AxisData({
+    locale,
+    variant,
+    viewerIsReportA: true,
+    fixtureAxisResults: vm.axisComparison.axisResults,
+    surveyInput,
+  });
+  const { comparisonTable: comparison, usedRows, axisOverview, axisOverviewEvidence, surveyEvidence } = axisData;
   const axisSelection = selectAxisInsights({
     locale,
-    axisResults: vm.axisComparison.axisResults,
+    axisResults: axisOverview,
     usedRows,
+    evidenceStatus: axisData.evidenceStatus,
   });
   const axis = axisSelection.selected;
   const selectedConflict = vm.conflictTranslation.rows.length > 0 ? ["speed-delay"] : [];
@@ -1327,7 +1399,8 @@ function createVariantSelectionCheck(
     toc: [],
     chapters: [],
     comparisonTable: comparison,
-    axisOverview: vm.axisComparison.axisResults,
+    axisOverview,
+    axisOverviewEvidence,
     selectedAxisInsights: axis,
     axisSelectionAudit: {
       selectedReason:
@@ -1336,6 +1409,7 @@ function createVariantSelectionCheck(
           : "선택 기준을 통과한 축 없음",
       rejected: axisSelection.rejected,
     },
+    surveyEvidence,
     relationshipFlow: { title: "", steps: [], pivotPoint: "", evidenceIds: [] },
     conflicts: [],
     hiddenHeart: {
@@ -1394,9 +1468,13 @@ function createVariantSelectionCheck(
 export function buildRomanticV4PrototypePayload(
   variant: PrototypeVariant,
   locale: PrototypeLocale,
-  options?: { contractOverride?: RomanticNarrativeInputContract },
+  options?: {
+    contractOverride?: RomanticNarrativeInputContract;
+    /** mode "real" wires axisOverview to actual CurrentSelfProfile A/B; omitted = dev_fixture. */
+    surveyInput?: RomanticV4SurveyInput;
+  },
 ): RomanticV4PrototypePayload {
   if (variant === "complete")
-    return createCompletePayload(locale, options?.contractOverride);
-  return createVariantSelectionCheck(locale, variant);
+    return createCompletePayload(locale, options?.contractOverride, options?.surveyInput);
+  return createVariantSelectionCheck(locale, variant, options?.surveyInput);
 }

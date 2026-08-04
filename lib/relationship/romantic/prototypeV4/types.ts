@@ -2,6 +2,12 @@ import type { RomanticPsychMatchAxisResult } from "../../../prompts/relationship
 import type { RomanticNarrativeInputContract } from "./fourCeNarrativeInput";
 import type { FourCeSemanticPlan } from "./fourCeSemanticPlanner";
 import type { CanonicalRomanticV4Report } from "./buildCanonicalRomanticV4Report";
+import type {
+  RomanticAxisOverviewRow,
+  RomanticV4SurveyMode,
+  SurveyDisclosureCode,
+  SurveyPairEvidenceStatus,
+} from "./romanticV4SurveyEvidence";
 
 export type PrototypeLocale = "ko-KR" | "en-US";
 export type PrototypeVariant = "complete" | "tension" | "minimal";
@@ -134,6 +140,8 @@ export type RomanticV4PrototypePayload = {
   chapters: PrototypeChapterPayload[];
   comparisonTable: SajuComparisonRow[];
   axisOverview: RomanticPsychMatchAxisResult[];
+  /** Evidence-aware mirror of axisOverview — source/confidence per axis. Present in real mode only. */
+  axisOverviewEvidence?: RomanticAxisOverviewRow[];
   selectedAxisInsights: AxisInsightRow[];
   axisSelectionAudit?: {
     selectedReason: string;
@@ -179,6 +187,23 @@ export type RomanticV4PrototypePayload = {
   insightOwnership: InsightOwnershipRow[];
   evidenceTrace: EvidenceTraceRow[];
   omittedContent: OmittedContentRow[];
+  /**
+   * Provenance for axisOverview/comparisonTable — how much of this payload's
+   * survey-derived content reflects real CurrentSelfProfile A/B vs sample data.
+   */
+  surveyEvidence?: {
+    mode: RomanticV4SurveyMode;
+    evidenceStatus: SurveyPairEvidenceStatus;
+    disclosureCode: SurveyDisclosureCode;
+    isSampleData: boolean;
+    axisOverviewSource: "survey_resolver" | "dev_fixture";
+    /**
+     * comparisonTable rows are Saju-band + survey fused (see
+     * romanticComparisonTableCanonical.ts) and cannot be built from
+     * CurrentSelfProfile alone; real mode does not yet supply this.
+     */
+    comparisonTableSource: "dev_fixture" | "unavailable_pending_saju_wiring";
+  };
   antiOverfitCheck?: {
     variant: PrototypeVariant;
     selectedComparisonRows: string[];
