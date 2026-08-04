@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
-import { CanonicalReportView } from "./CanonicalReportView";
+import { CanonicalReportView } from "@/components/relationship/romantic/v4/CanonicalReportView";
 
 type Props = {
   payload: RomanticV4PrototypePayload;

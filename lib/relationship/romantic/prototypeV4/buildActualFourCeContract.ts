@@ -1,5 +1,6 @@
-import { calculateSajuBundle } from "../../../v2/saju/calculateSajuBundle";
+import { calculateSajuBundle, type SajuBundle } from "../../../v2/saju/calculateSajuBundle";
 import { mapSajuBundleToMasterJson } from "../../../personCore/mappers/mapSajuMasterJson";
+import type { SajuMasterJson } from "../../../personCore/types/sajuMaster";
 import { buildIndividualSajuChart } from "../../../personCore/individualSaju/buildIndividualSajuChart";
 import { runPersonalContextEngine } from "../../../personCore/personalContextEngine";
 import { buildRomanticPairCeBondingValue } from "../romanticPairCeBondingCanonical";
@@ -62,10 +63,26 @@ const DEV_FIXTURE_BIRTH_B: SajuBirthInput = { birthDate: "1992-08-20", birthTime
  */
 type CanonicalOnlyReport = Partial<RomanticSajuDeepReport["report"]>;
 
+/**
+ * Already-computed Saju bundle/master JSON for A/B, when a caller (e.g. the
+ * production analyze route, which already ran calculateSajuBundle/
+ * mapSajuBundleToMasterJson once via bundlePersonCoreForPremium) wants to
+ * avoid recomputing them here. Purely an optimization — output is identical
+ * either way since calculateSajuBundle/mapSajuBundleToMasterJson are pure
+ * functions of birthA/birthB.
+ */
+export type RomanticV4PrecomputedSaju = {
+  bundleA?: SajuBundle;
+  bundleB?: SajuBundle;
+  masterA?: SajuMasterJson;
+  masterB?: SajuMasterJson;
+};
+
 export function buildActualFourCeContract(
   locale: "ko-KR" | "en-US",
   pairSajuInput?: RomanticV4PairSajuInput,
   surveyInput?: RomanticV4SurveyInput,
+  precomputed?: RomanticV4PrecomputedSaju,
 ) {
   const mode = pairSajuInput?.mode ?? "dev_fixture";
   let birthA: SajuBirthInput;
@@ -91,23 +108,23 @@ export function buildActualFourCeContract(
   const birthTimeUnknownA = birthA.birthTimeUnknown ?? false;
   const birthTimeUnknownB = birthB.birthTimeUnknown ?? false;
 
-  const bundleA = calculateSajuBundle({
+  const bundleA = precomputed?.bundleA ?? calculateSajuBundle({
     birthDate: birthA.birthDate,
     birthTime: birthA.birthTime,
     birthTimeUnknown: birthTimeUnknownA,
   });
-  const bundleB = calculateSajuBundle({
+  const bundleB = precomputed?.bundleB ?? calculateSajuBundle({
     birthDate: birthB.birthDate,
     birthTime: birthB.birthTime,
     birthTimeUnknown: birthTimeUnknownB,
   });
-  const masterA = mapSajuBundleToMasterJson({
+  const masterA = precomputed?.masterA ?? mapSajuBundleToMasterJson({
     bundle: bundleA,
     birthDate: birthA.birthDate,
     birthTime: birthA.birthTime ?? null,
     birthTimeUnknown: birthTimeUnknownA,
   });
-  const masterB = mapSajuBundleToMasterJson({
+  const masterB = precomputed?.masterB ?? mapSajuBundleToMasterJson({
     bundle: bundleB,
     birthDate: birthB.birthDate,
     birthTime: birthB.birthTime ?? null,
@@ -142,6 +159,7 @@ export function buildActualFourCeContract(
     chart: individualCeA,
     signals: romanticSignalsA,
     relationalProfile: personalCeA.aggregates.relational_profile,
+    locale,
   });
   const personalRelationshipCeB = buildPersonalRelationshipCe({
     personId: "b",
@@ -149,6 +167,7 @@ export function buildActualFourCeContract(
     chart: individualCeB,
     signals: romanticSignalsB,
     relationalProfile: personalCeB.aggregates.relational_profile,
+    locale,
   });
 
   const sajuA = sajuJsonToPillars(bundleA.saju);

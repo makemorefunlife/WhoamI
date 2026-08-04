@@ -32,6 +32,8 @@ import { omitFamilyContextOutputFromReport } from "@/lib/relationship/familyPare
 import { omitFriendContextOutputFromReport } from "@/lib/relationship/friend/stripFriendContextOutputForClient";
 import { omitMarriageContextOutputFromReport } from "@/lib/relationship/marriage/stripMarriageContextOutputForClient";
 import { omitRomanticContextInputFromReport } from "@/lib/relationship/romantic/stripRomanticContextInputForClient";
+import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
+import { readRomanticV4Block } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 
 export const runtime = "nodejs";
 
@@ -138,6 +140,14 @@ export async function GET(req: Request) {
         )
       : null;
 
+    // Romantic V4: response-presence is the flag signal for the client (see
+    // romanticV4ReportFlag.ts) — the field is only included when the server
+    // flag is on AND a persisted V4 block actually exists for this locale.
+    const romanticDeepReportV4 =
+      activeKind === "romantic" && isRomanticV4ReportEnabled()
+        ? readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale)?.payload ?? null
+        : null;
+
     const workColleagueDeepRaw =
       activeKind === "work"
         ? getWorkColleagueDeepReport(byKind, locale)
@@ -215,6 +225,7 @@ export async function GET(req: Request) {
       perspective_basic: perspectiveBasic,
       perspective_premium: perspectivePremium,
       romantic_deep_report: romanticDeepReport,
+      romantic_deep_report_v4: romanticDeepReportV4,
       work_colleague_deep_report: workColleagueDeepReport,
       cohabitation_deep_report: cohabitationDeepReport,
       family_deep_report: familyDeepReport,

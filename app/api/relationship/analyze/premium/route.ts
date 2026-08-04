@@ -52,6 +52,14 @@ import type {
   RomanticSajuDeepLocale,
   RomanticSajuDeepRunParams,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
+import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
+import { buildRomanticV4ProductionInput } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/buildRomanticV4ProductionInput";
+import { buildRomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
+import {
+  attachRomanticV4Block,
+  type RomanticV4PersistedBlock,
+} from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
+import { applyHourEvidenceCapToComparisonTable } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4HourEvidence";
 import {
   assertRelationshipPremiumLlmAccess,
   getRelationshipPremiumAnalysisFailedMessage,
@@ -371,6 +379,55 @@ export async function POST(req: Request) {
         romanticAnalysisParams,
         { abortSignal: req.signal },
       );
+
+      // Romantic V4: additive, best-effort. A failure here must never affect
+      // the V1 response above — it's caught and logged, not rethrown, and
+      // simply results in no `.v4` block being attached this run.
+      if (isRomanticV4ReportEnabled()) {
+        try {
+          const v4Input = buildRomanticV4ProductionInput({
+            personA: {
+              reportId: rr.report_id_a,
+              name: labelA,
+              birthDate: reportBirthDate(repA),
+              birthTime: reportBirthTime(repA),
+              birthTimeUnknown: !reportBirthTime(repA)?.trim(),
+              surveyProfile: surveyProfileA,
+              sajuMaster: bundles.a.blueprint.saju_master_json,
+            },
+            personB: {
+              reportId: rr.report_id_b,
+              name: labelB,
+              birthDate: reportBirthDate(repB),
+              birthTime: reportBirthTime(repB),
+              birthTimeUnknown: !reportBirthTime(repB)?.trim(),
+              surveyProfile: surveyProfileB,
+              sajuMaster: bundles.b.blueprint.saju_master_json,
+            },
+            locale,
+          });
+
+          const v4PayloadRaw = buildRomanticV4PrototypePayload("complete", locale, {
+            surveyInput: v4Input.surveyInput,
+            pairSajuInput: v4Input.pairSajuInput,
+            precomputed: v4Input.precomputed,
+          });
+          const v4Payload = applyHourEvidenceCapToComparisonTable(
+            v4PayloadRaw,
+            v4Input.birthHourEvidence,
+          );
+
+          const v4Block: RomanticV4PersistedBlock = {
+            schemaVersion: "romantic_canonical_report_v1",
+            payload: v4Payload,
+            birthHourDisclosure: v4Input.birthHourEvidence.disclosureCode,
+            generatedAt: new Date().toISOString(),
+          };
+          attachRomanticV4Block(romanticPayload, v4Block);
+        } catch (err) {
+          logServerError("romantic_v4_production_compute_failed", err);
+        }
+      }
 
       const persist = await persistRomanticPremiumResult(supabase, {
         relationshipReportId,

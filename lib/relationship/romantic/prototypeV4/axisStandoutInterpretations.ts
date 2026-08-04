@@ -10,6 +10,130 @@ export type AxisInterpretation = {
   misreadLowObservingHigh: string;
 };
 
+export const AXIS_INTERPRETATIONS_EN: Record<string, AxisInterpretation> = {
+  decision: {
+    plainLanguageDefinition: "How you tend to act when making big or small decisions.",
+    highBehavior: "You tend to reach conclusions quickly and want to settle things.",
+    lowBehavior: "You tend to keep options open and need time to think things through.",
+    sceneHint: "When setting weekend plans or making an important life choice",
+    tensionClash: "One of you may feel frustrated that a decision is taking too long, while the other feels rushed or pushed.",
+    tensionBenefit: "One of you moves a stalled situation forward, while the other catches risks the first might miss.",
+    practicalTranslation: "Instead of deciding on the spot, try setting a specific time to revisit it — 'let's talk again tomorrow evening.'",
+    misreadHighObservingLow: "Taking time to think carefully can be mistaken for indecision or stalling.",
+    misreadLowObservingHigh: "Wanting to solve things quickly can be mistaken for being controlling or impatient.",
+  },
+  emotion: {
+    plainLanguageDefinition: "How you express feelings like joy or hurt outwardly.",
+    highBehavior: "You tend to express what you feel clearly and right away.",
+    lowBehavior: "You tend to process feelings internally first, then express them calmly.",
+    sceneHint: "When something upsetting or something wonderful happens",
+    tensionClash: "One of you may feel hurt that the other's reaction seems too small, while the other feels overwhelmed by how intense the expression is.",
+    tensionBenefit: "One person's vivid expression brings warmth to the relationship, while the other's calm keeps things from running too hot emotionally.",
+    practicalTranslation: "The quicker-to-express partner can wait a beat; the calmer partner can share just their current state — 'I'm still thinking about this' — as a start.",
+    misreadHighObservingLow: "Not showing emotion outwardly can be mistaken for indifference or not caring.",
+    misreadLowObservingHigh: "Expressing emotion openly and strongly can be mistaken for being unstable or impulsive.",
+  },
+  recovery: {
+    plainLanguageDefinition: "How quickly you bounce back after conflict or stress.",
+    highBehavior: "You tend to shake off negative feelings fairly quickly and move on.",
+    lowBehavior: "You tend to sit with what went wrong and take real time to process it.",
+    sceneHint: "When trying to have a calm conversation again after a big fight",
+    tensionClash: "One of you may want to just move past it, while the other still feels unresolved.",
+    tensionBenefit: "One person's quick recovery lightens the relationship's load, while the other's thorough processing prevents the same mistake from repeating.",
+    practicalTranslation: "Rather than forcing a conclusion right after a fight, agree on a specific time to talk again once both of you have calmed down.",
+    misreadHighObservingLow: "Taking time to heal can be mistaken for stubbornness or holding a grudge.",
+    misreadLowObservingHigh: "Letting go of feelings quickly can be mistaken for not taking the issue seriously or being indifferent.",
+  },
+  structure: {
+    plainLanguageDefinition: "How much you value plans and structure.",
+    highBehavior: "You feel secure when you've planned ahead and things go as scheduled.",
+    lowBehavior: "You prefer to adapt flexibly to the situation and go with the flow.",
+    sceneHint: "When planning a trip together or deciding a date itinerary",
+    tensionClash: "One of you gets stressed when plans change, while the other feels stifled by a schedule that's too tight.",
+    tensionBenefit: "Within a stable framework set in advance, you can still respond flexibly — creating a life that's neither monotonous nor anxious.",
+    practicalTranslation: "Agree in advance only on the big items — travel time, lodging — and leave the rest open to how you both feel that day.",
+    misreadHighObservingLow: "Adapting flexibly to the moment can be mistaken for being unplanned or careless.",
+    misreadLowObservingHigh: "Sticking to a plan made in advance can be mistaken for being inflexible or controlling.",
+  },
+  intimacy: {
+    plainLanguageDefinition: "How you regulate psychological and physical distance in the relationship.",
+    highBehavior: "You feel secure when you closely share daily life and spend a lot of time together.",
+    lowBehavior: "You feel comfortable in the relationship only when your own time and space are clearly guaranteed.",
+    sceneHint: "When coordinating how often to check in during a busy day, or planning the weekend",
+    tensionClash: "One of you wants to be in touch more often, while the other feels there isn't enough time alone to rest.",
+    tensionBenefit: "One of you keeps the relationship from drifting too far apart, while the other makes sure it doesn't become suffocating.",
+    practicalTranslation: "Instead of arguing over how often to check in, agree in advance on undisturbed personal time — like 'the hour right after work.'",
+    misreadHighObservingLow: "Wanting alone time can be mistaken for cooling affection or pushing the other away.",
+    misreadLowObservingHigh: "Wanting more time together can be mistaken for excessive intrusion on personal space.",
+  },
+  energy_style: {
+    plainLanguageDefinition: "Whether you recharge by being out in the world or by being alone.",
+    highBehavior: "You feel energized meeting people and being active out in the world.",
+    lowBehavior: "You recharge by staying home quietly and spending time with yourself.",
+    sceneHint: "When deciding how to spend a weekend or day off",
+    tensionClash: "One of you keeps wanting to go out, while the other wants to fully rest at home.",
+    tensionBenefit: "Thanks to the more active partner, you get new experiences; thanks to the quieter partner, you get calm, deep rest.",
+    practicalTranslation: "Rather than matching one person's style, alternate — an outdoor date one weekend, staying in the next.",
+    misreadHighObservingLow: "A request to rest at home can be mistaken for the date being boring or not wanting to be together.",
+    misreadLowObservingHigh: "Repeatedly suggesting going out can be mistaken for an unreasonable demand that ignores the other's energy.",
+  },
+  focus: {
+    plainLanguageDefinition: "Whether you tend to see the big picture or the specific details.",
+    highBehavior: "You tend to look broadly at the overall flow or future possibilities.",
+    lowBehavior: "You tend to focus on the concrete facts and details right in front of you.",
+    sceneHint: "When having an important conversation or solving a complex problem together",
+    tensionClash: "One of you feels the conversation is stuck on trivial details, while the other feels it's too vague and unrealistic.",
+    tensionBenefit: "One of you sets the big-picture direction so you don't lose your way, while the other handles the concrete execution plan to get there.",
+    practicalTranslation: "Before a conversation starts, say up front whether it's for 'empathy and imagining possibilities' or 'solving a specific problem.'",
+    misreadHighObservingLow: "Checking concrete facts can be mistaken for being overly picky or nitpicking.",
+    misreadLowObservingHigh: "Talking about the future or possibilities can be mistaken for escapism or vague talk.",
+  },
+  conflict_style: {
+    plainLanguageDefinition: "How you approach and resolve problems when conflict arises.",
+    highBehavior: "When opinions clash, you tend to want to talk it through to the end, right there.",
+    lowBehavior: "In conflict, you tend to step back first to calm down and think.",
+    sceneHint: "Right after opinions clash hard and the mood turns heavy",
+    tensionClash: "One of you pushes to reach a conclusion right now, while the other feels suffocated and just wants to step away.",
+    tensionBenefit: "Thanks to one of you, there's room for emotions to cool; thanks to the other, the issue gets resolved clearly instead of fading away unaddressed.",
+    practicalTranslation: "When the conversation gets heated, try asking for a timeout — 'let's each take 30 minutes in our own space and talk again.'",
+    misreadHighObservingLow: "Taking a moment to think can be mistaken for cutting off the conversation or giving up on the relationship.",
+    misreadLowObservingHigh: "Trying to resolve things immediately can be mistaken for an attack or pressure directed at you.",
+  },
+  stimulation: {
+    plainLanguageDefinition: "Whether you crave new experiences or familiar comfort.",
+    highBehavior: "You feel energized by constant change, fresh events, and unfamiliar stimulation.",
+    lowBehavior: "You prefer the steady comfort of a proven, familiar routine.",
+    sceneHint: "When deciding whether to go to the usual restaurant or try somewhere brand new",
+    tensionClash: "One of you finds daily life too monotonous and gets bored, while the other feels worn out by frequent change and new attempts.",
+    tensionBenefit: "Thanks to one of you, daily life gets a pleasant spark; thanks to the other, there's a stable home base to return to when tired.",
+    practicalTranslation: "Keep most dates at familiar, comfortable places, but plan one fully new outing once a month.",
+    misreadHighObservingLow: "Seeking the familiar can be mistaken for the relationship losing its spark or not putting in effort.",
+    misreadLowObservingHigh: "Chasing new experiences can be mistaken for disrupting the relationship's stability or being fickle.",
+  },
+  independence: {
+    plainLanguageDefinition: "Whether you tend to solve problems on your own or want to talk them through together.",
+    highBehavior: "You tend to want to work through hard things yourself, and protect your autonomy within the relationship.",
+    lowBehavior: "When something is troubling you, you want to talk it through together and lean on each other emotionally.",
+    sceneHint: "When something difficult happens at work, or you badly need someone's help",
+    tensionClash: "One of you may feel hurt that the other draws too firm a line, while the other feels burdened by too much reliance on them.",
+    tensionBenefit: "Thanks to one of you, each person's individual growth is supported; thanks to the other, there's a safety net to lean on deeply whenever needed.",
+    practicalTranslation: "When you want to solve something alone, say so gently up front — 'I appreciate you wanting to help, but I want to try this one myself.'",
+    misreadHighObservingLow: "Wanting to work through a difficulty together can be mistaken for being unable to stand on your own and offloading a burden.",
+    misreadLowObservingHigh: "Quietly working through a problem alone can be mistaken for emotionally shutting the other person out.",
+  },
+  stability: {
+    plainLanguageDefinition: "How sensitively you react to outside change or stress.",
+    highBehavior: "Your emotional baseline stays fairly steady even amid outside change or stress.",
+    lowBehavior: "You react sensitively to small changes or stimuli around you, moving through a range of feelings.",
+    sceneHint: "When an unexpected crisis hits, or plans suddenly fall apart",
+    tensionClash: "One of you may feel the other is being overly sensitive, while the other feels the first is too indifferent to the situation.",
+    tensionBenefit: "One of you picks up on subtle shifts in mood that are easy to miss, while the other stays a steady anchor when things get shaky.",
+    practicalTranslation: "When a sensitive reaction shows up, lead with naming the feeling — 'that must have really thrown you' — rather than assigning blame.",
+    misreadHighObservingLow: "Reacting sensitively to a situation can be mistaken for being needlessly touchy or emotionally volatile.",
+    misreadLowObservingHigh: "Staying unshaken can be mistaken for lacking empathy or being indifferent to your feelings.",
+  },
+};
+
 export const AXIS_INTERPRETATIONS: Record<string, AxisInterpretation> = {
   decision: {
     plainLanguageDefinition: "크고 작은 결정을 내릴 때 나타나는 행동 방식이에요.",
@@ -133,3 +257,10 @@ export const AXIS_INTERPRETATIONS: Record<string, AxisInterpretation> = {
     misreadLowObservingHigh: "크게 동요하지 않는 모습을 공감 능력이 부족하거나 내 감정에 무관심한 것으로 잘못 볼 수 있어요."
   }
 };
+
+/** Locale-selecting accessor — real callers should use this instead of reading AXIS_INTERPRETATIONS directly. */
+export function getAxisInterpretations(
+  locale: "ko-KR" | "en-US",
+): Record<string, AxisInterpretation> {
+  return locale === "en-US" ? AXIS_INTERPRETATIONS_EN : AXIS_INTERPRETATIONS;
+}

@@ -288,13 +288,14 @@ export function adaptDifference(
     .map((b) => b.structuredData as AxisPriorityRow | undefined)
     .filter((d): d is AxisPriorityRow => Boolean(d));
 
+  const isEn = payload.locale === "en-US";
   const comparison: ComparisonRow[] = [
-    comparisonRowFromTable(payload, "compare.stress", "감정 처리"),
-    comparisonRowFromTable(payload, "compare.conflict", "갈등 대응"),
-    comparisonRowFromAxis(payload, "structure", "계획 방식"),
-    comparisonRowFromTable(payload, "compare.affection", "애정 확인"),
-    comparisonRowFromAxis(payload, "resilience", "회복 속도"),
-    comparisonRowFromAxis(payload, "energy_style", "에너지 충전"),
+    comparisonRowFromTable(payload, "compare.stress", isEn ? "Handling Emotion" : "감정 처리"),
+    comparisonRowFromTable(payload, "compare.conflict", isEn ? "Facing Conflict" : "갈등 대응"),
+    comparisonRowFromAxis(payload, "structure", isEn ? "Planning Style" : "계획 방식"),
+    comparisonRowFromTable(payload, "compare.affection", isEn ? "Confirming Affection" : "애정 확인"),
+    comparisonRowFromAxis(payload, "resilience", isEn ? "Recovery Speed" : "회복 속도"),
+    comparisonRowFromAxis(payload, "energy_style", isEn ? "Recharging Energy" : "에너지 충전"),
   ].filter((r): r is ComparisonRow => Boolean(r));
 
   const details: DifferenceDetail[] = rows.map((d) => ({
@@ -459,13 +460,23 @@ export function adaptStrength(
 /* ── Chapter 9 · Daily Life ───────────────────────────────── */
 export type DailyLifeCard = { title: string; difference: string; agreement: string; usableLine: string };
 
+/**
+ * Prefers structuredData (the RealLifeDomain object, locale-independent
+ * fields) over parsing "차이:"/"합의:"/"문장:" labels out of body — those
+ * labels are Korean-only literals in composeCanonicalSectionNarratives.ts
+ * and return nothing once body is rendered in English. pickLine stays only
+ * as a defensive fallback for any legacy block without structuredData.
+ */
 export function adaptDailyLife(section: CanonicalSection | undefined): DailyLifeCard[] {
-  return (section?.blocks ?? []).map((b) => ({
-    title: b.title,
-    difference: pickLine(b.body, "차이:") ?? "",
-    agreement: pickLine(b.body, "합의:") ?? "",
-    usableLine: pickLine(b.body, "문장:") ?? "",
-  }));
+  return (section?.blocks ?? []).map((b) => {
+    const d = b.structuredData as { difference?: string; agreement?: string; usableLine?: string } | undefined;
+    return {
+      title: b.title,
+      difference: d?.difference ?? pickLine(b.body, "차이:") ?? "",
+      agreement: d?.agreement ?? pickLine(b.body, "합의:") ?? "",
+      usableLine: d?.usableLine ?? pickLine(b.body, "문장:") ?? "",
+    };
+  });
 }
 
 /* ── Chapter 10 · Future ──────────────────────────────────── */

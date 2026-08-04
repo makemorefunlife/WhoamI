@@ -2,7 +2,7 @@
  * Assemble Canonical Romantic V4 report from live four-CE + fixture/report evidence.
  */
 import { buildRomanticExperienceViewModel } from "../experience/buildRomanticExperienceViewModel";
-import { buildActualFourCeContract } from "./buildActualFourCeContract";
+import { buildActualFourCeContract, type RomanticV4PrecomputedSaju } from "./buildActualFourCeContract";
 import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import { buildCanonicalRelationshipStoryPlan } from "./buildCanonicalRelationshipStoryPlan";
 import {
@@ -46,9 +46,16 @@ export function buildCanonicalRomanticV4Report(
     pairSajuInput?: RomanticV4PairSajuInput;
     /** mode "real" wires balance/recovery/reassurance/role-play/comparison to actual survey profiles; omitted = no survey evidence. */
     surveyInput?: RomanticV4SurveyInput;
+    /** Already-computed Saju bundle/master JSON for A/B — avoids recomputing calculateSajuBundle/mapSajuBundleToMasterJson when the caller (e.g. the production route) already has them. */
+    precomputed?: RomanticV4PrecomputedSaju;
   },
 ): CanonicalRomanticV4Report {
-  const actual = buildActualFourCeContract(locale, options?.pairSajuInput, options?.surveyInput);
+  const actual = buildActualFourCeContract(
+    locale,
+    options?.pairSajuInput,
+    options?.surveyInput,
+    options?.precomputed,
+  );
   // Consolidation Batch C: cross_chart_stem_combine/six_combine/wonjin_guimun (and
   // trio/gongmang/tension) are now computed directly in buildActualFourCeContract.ts
   // from chartA/chartB, so reportWithPair already carries them — no V1-routed

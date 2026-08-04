@@ -36,6 +36,7 @@ import {
   type RomanticDeepMetaViewModel,
   type RomanticDeepViewModel,
 } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
+import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /**
@@ -91,6 +92,7 @@ export type UseRelationshipDetailReturn = {
   displayPremium: RelationshipPerspective | null;
   displayRomanticDeep: RomanticDeepViewModel | null;
   displayRomanticMeta: RomanticDeepMetaViewModel | null;
+  displayRomanticDeepV4: RomanticV4PrototypePayload | null;
   displayWorkDeep: WorkColleagueReportBody | null;
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
@@ -162,6 +164,8 @@ export function useRelationshipDetail({
   const [romanticDeep, setRomanticDeep] = useState<RomanticDeepViewModel | null>(
     null,
   );
+  const [romanticDeepV4, setRomanticDeepV4] =
+    useState<RomanticV4PrototypePayload | null>(null);
   const [workDeep, setWorkDeep] = useState<WorkColleagueReportBody | null>(
     null,
   );
@@ -339,6 +343,9 @@ export function useRelationshipDetail({
           (data.perspective_premium ?? null) as RelationshipPerspective,
         );
         setRomanticDeep(parseRomanticDeepViewModel(data.romantic_deep_report));
+        setRomanticDeepV4(
+          (data.romantic_deep_report_v4 ?? null) as RomanticV4PrototypePayload | null,
+        );
         setWorkDeep(
           (data.work_colleague_deep_report ?? null) as WorkColleagueReportBody | null,
         );
@@ -406,6 +413,7 @@ export function useRelationshipDetail({
     setServerPremiumReady(false);
     setPremium(null);
     setRomanticDeep(null);
+    setRomanticDeepV4(null);
     setWorkDeep(null);
     setCohabitationDeep(null);
     setFamilyDeep(null);
@@ -531,6 +539,7 @@ export function useRelationshipDetail({
         setServerPremiumReady(false);
         if (kind === "romantic") {
           setRomanticDeep(null);
+          setRomanticDeepV4(null);
         } else if (kind === "work") {
           setWorkDeep(null);
         } else if (kind === "cohabitation") {
@@ -720,6 +729,7 @@ export function useRelationshipDetail({
     snapshotView?.romanticDeep !== undefined
       ? parseRomanticDeepViewModel(snapshotView.romanticDeep)
       : romanticDeep;
+  const displayRomanticDeepV4 = romanticDeepV4;
   const displayRomanticMeta = displayRomanticDeep?.meta
     ? {
         psych_match: displayRomanticDeep.meta.psych_match ?? null,
@@ -856,6 +866,7 @@ export function useRelationshipDetail({
     displayPremium,
     displayRomanticDeep,
     displayRomanticMeta,
+    displayRomanticDeepV4,
     displayWorkDeep,
     displayCohabitationDeep,
     displayFamilyDeep,

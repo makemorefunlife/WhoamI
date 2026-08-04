@@ -321,23 +321,271 @@ export const TEN_GOD_ROMANTIC_PROFILES: Record<TenGodCode, TenGodRomanticProfile
   },
 };
 
-export function getTenGodRomanticProfile(code: string): TenGodRomanticProfile {
+/**
+ * English mirror of TEN_GOD_ROMANTIC_PROFILES. code/hanja/family/korName/
+ * familyKorName stay as the Korean domain identifiers (used for provenance,
+ * not narrative prose) — only the descriptive/narrative fields are
+ * translated. Selected via getTenGodRomanticProfile(code, locale).
+ */
+export const TEN_GOD_ROMANTIC_PROFILES_EN: Record<TenGodCode, TenGodRomanticProfile> = {
+  siksin: {
+    ...TEN_GOD_ROMANTIC_PROFILES.siksin,
+    core: "The energy of natural, everyday ease and easygoing, generous care",
+    behavior: "Doesn't try to control the other person and accepts their own pace, creating a relaxed mood with gentle humor and small everyday moments shared.",
+    relationshipTendency: "Shares a natural, comfortable daily life together, caring for the other with unpressured warmth and ease",
+    relationshipNeed: "A comfortable emotional safety to rest at their own full pace, without impatient pushing or harsh judgment",
+    relationshipGift: "A soft warmth that disarms the other's tension and anxiety, and an ease that lets you both enjoy life's small daily pleasures together",
+    stressResponse: "Under conflict or pressure, tends to delay confronting it and withdraws into their own comfortable space in silence rather than facing it immediately.",
+    shadow: "Risk of settling into comfort and delaying or avoiding real decisions or the resolution of a deeper conflict",
+    recognitionNeed: "Having their modest care and warm gestures met with a genuine, warm smile instead of being taken for granted",
+    expressionStyle: "Soft and natural, conveying feeling through unpressured warmth and light humor rather than a heavy hand",
+    decisionStyle: "Broadly accommodates the other's wishes, preferring natural flow and consensus over forcing things through",
+    repairNeed: "Instead of being pressed for answers right away, a short window to settle down and a warm, gentle smile as a signal",
+    trustSignal: "When their expression and care are happily received, and their easygoing daily pace is respected without impatient pushing",
+    intimateNeed: "The psychological freedom to rest and express themselves at their own full pace, without control or coercion",
+    partnerExpectation: "An easygoing, warm partner who comfortably receives their gentle goodwill and humor, and enjoys small everyday moments together",
+    attractionRelevance: "A warmth and reassurance that puts no undue pressure on the other, where simply being together is enough to ease the mind",
+    datingVibe: "Foodie dates and warmth. Genuinely loves feeding and taking care of you — a healing kind of date that comfortably looks after their partner.",
+    excessRisk: "May avoid facing conflict directly and instead settle into comfort or keep pushing the problem down the road",
+    allowedInference: ["Prefers sharing everyday life", "Soft, natural expression of affection", "Needs a buffer window during conflict"],
+    forbiddenInference: ["Assuming they have no decisiveness at all", "Assuming they're passive in every situation"],
+    forbiddenExtensions: ["Assuming they gave everything from the very first meeting", "Exaggerating that they can never resolve any conflict"],
+  },
+  sanggwan: {
+    ...TEN_GOD_ROMANTIC_PROFILES.sanggwan,
+    core: "The energy of sharp intuition and witty sense, breaking the mold to spark stimulation and connection",
+    behavior: "Exchanges original conversation and honest feedback that never gets stuck in a rut, never letting the relationship go stale.",
+    relationshipTendency: "Offers special stimulation through sharp, witty language, exchanging quick, honest feedback",
+    relationshipNeed: "A partnership where their sharp sense and honest thoughts aren't suppressed, and intellectual back-and-forth flows freely",
+    relationshipGift: "A fresh inspiration that broadens the other's view, and a light, lively energy that turns monotonous days into something special",
+    stressResponse: "When they feel misunderstood or unfairly boxed in, puts up a defense with sharp criticism and blunt language.",
+    shadow: "Risk that a momentary blunt or critical remark wounds the other's self-esteem and sparks unnecessary emotional conflict",
+    recognitionNeed: "Having their distinctive sense and original perspective recognized as charm and wit instead of drawing a rebuke",
+    expressionStyle: "Intuitive and witty, giving honest, unfiltered feedback on emotional nuance",
+    decisionStyle: "Not bound by convention or habit, leads with creative, immediate solutions",
+    repairNeed: "Noticing the hurt behind their bluntness first, and responding with witty humor or intellectual respect instead of blame",
+    trustSignal: "When their sharp insight and original perspective are recognized as charm and distinctiveness instead of drawing a rebuke",
+    intimateNeed: "Intellectual and emotional connection, back-and-forth conversation, honest feedback free of pretense on both sides",
+    partnerExpectation: "A sharp, quick-witted partner who can keep up with their intellectual curiosity and trade stimulation back and forth so things never go stale",
+    attractionRelevance: "Conversation that's never boring, sharp humor, and a quickness that seems to see right through you",
+    datingVibe: "Trendy and sharp. Skips the places everyone already knows, leading dates to the hippest, most distinctive spots.",
+    excessRisk: "A sudden sharp remark or pointed criticism can land as hurtful or controlling to the other",
+    allowedInference: ["Prefers sharp, witty conversation", "Exchanges quick feedback", "Tires of a relationship going stale"],
+    forbiddenInference: ["Assuming they're always aggressive", "Assuming their sincerity is shallow"],
+    forbiddenExtensions: ["Fatalistically claiming they saw through their partner at first sight", "Assuming they always rebel against their partner"],
+  },
+  jeongjae: {
+    ...TEN_GOD_ROMANTIC_PROFILES.jeongjae,
+    core: "The energy of trust built through diligent day-to-day management and predictable responsibility",
+    behavior: "Keeps promises meticulously and looks after even small everyday details, building the relationship's foundation with transparent, consistent behavior.",
+    relationshipTendency: "Diligently and carefully manages the practical side of daily life, building unshakable trust by keeping promises and planning transparently",
+    relationshipNeed: "A predictable daily rhythm, transparent sharing of information, and the practical security of even small promises being kept",
+    relationshipGift: "Holds up the relationship's practical details without a single gap, providing a clear, grounding sense of stability and reassurance even amid chaos",
+    stressResponse: "When plans or schedules run into an unexpected snag, gets caught up in the details and holds strictly to rules and principle.",
+    shadow: "Risk of becoming overly rigid over minor changes, making the partner feel a suffocating sense of control or frustration",
+    recognitionNeed: "Having their diligence and effort in quietly managing the relationship's practical side fairly acknowledged",
+    expressionStyle: "Calm and concrete, expressing trust through practical action and careful attention rather than sentimental words",
+    decisionStyle: "Makes gradual, stable choices based on a thorough review of reality and practical cost-benefit analysis",
+    repairNeed: "Showing a concrete plan for improvement and real intent to follow through, rather than just an apology in words",
+    trustSignal: "When promises are kept and concrete, practical care is proven through action rather than empty words of comfort",
+    intimateNeed: "A predictable daily life, transparent communication, and the security of building a concrete, solid future together",
+    partnerExpectation: "A dependable, trustworthy partner who keeps promises diligently and transparently shares the practical details of daily life, rather than offering empty sweet talk",
+    attractionRelevance: "A responsible grasp of reality and a reassuring diligence in looking after even the small details of daily life",
+    datingVibe: "Stability and planning. Doesn't overspend, weighs value for money and efficiency, and delivers a polished, well-planned date booked well in advance.",
+    excessRisk: "May react sensitively to small changes in plans or principle, coming across to the other as overly controlling or stifling",
+    allowedInference: ["Shares a planned daily life", "Builds trust through concrete action", "Oriented toward a stable future"],
+    forbiddenInference: ["Assuming they have no romance in them at all", "Assuming they act only out of calculation"],
+    forbiddenExtensions: ["Assuming they only ever care about money", "Exaggerating that they can't tolerate a single variable"],
+  },
+  pyeonjae: {
+    ...TEN_GOD_ROMANTIC_PROFILES.pyeonjae,
+    core: "A dynamic energy that expands the relationship's horizons with a broad view and flexible mobility",
+    behavior: "Doesn't get stuck in a routine, proposes new opportunities and experiences, and lightens the mood with a flexible, easygoing attitude.",
+    relationshipTendency: "Brings life and energy to the relationship with a broad view and active drive, enjoying varied experiences and expansion together",
+    relationshipNeed: "Having their own autonomous space for activity respected even within the relationship, and the freedom to curiously explore new worlds together",
+    relationshipGift: "A optimism that instantly lifts a stagnant mood, and a bold drive that broadens the relationship's real-world horizons",
+    stressResponse: "When the relationship starts to feel tight or confining, turns attention to outside activities or other interests and creates some distance.",
+    shadow: "Risk of missing subtle shifts in the other's feelings or handling the details of a promise loosely, leaving the other feeling hurt",
+    recognitionNeed: "Having their generous care and flexible drive recognized as reassuring energy instead of being misread as reckless",
+    expressionStyle: "Bold and open-hearted, building closeness through cheerful jokes and generous support",
+    decisionStyle: "Seizes opportunities boldly and picks flexible alternatives through big-picture vision and quick situational judgment",
+    repairNeed: "Rather than nitpicking every detail, reaffirming the big-picture trust and setting up a light moment to reset the mood",
+    trustSignal: "When their flexible range of activity is respected, and they get to curiously explore new worlds together",
+    intimateNeed: "Freedom without constraint, everyday fun, and sharing lively, varied experiences",
+    partnerExpectation: "A flexible, upbeat partner who doesn't suppress their active energy and can happily share new experiences and challenges together",
+    attractionRelevance: "Generous care and a cheerful drive, a dynamic, lively energy that breaks up the monotony of daily life",
+    datingVibe: "Scale and surprise. Treats generously or suddenly whisks you away on a trip — a grand, impressive date that leaves a big impression.",
+    excessRisk: "May handle careful emotional attunement somewhat loosely, or unexpected changes can pop up in the details of a plan",
+    allowedInference: ["Proposes new experiences", "Prefers flexible relationship expansion", "Respects autonomous space"],
+    forbiddenInference: ["Assuming they have no real sense of responsibility", "Assuming their heart wavers easily"],
+    forbiddenExtensions: ["Exaggerating that they're fatalistically always out and about", "The bias that they have no emotional depth at all"],
+  },
+  jeonggwan: {
+    ...TEN_GOD_ROMANTIC_PROFILES.jeonggwan,
+    core: "The energy of setting order in the relationship through dignified manners and upright principle",
+    behavior: "Strictly upholds mutual respect and propriety, maintaining a relationship that stays dignified and socially secure wherever you go.",
+    relationshipTendency: "Upholds proper order through courtesy and mutual respect, aiming for a dignified relationship that can stand proudly in public",
+    relationshipNeed: "Courteous respect that never puts the other down, and clear reassurance and social recognition of the relationship",
+    relationshipGift: "A loyalty that protects the relationship's dignity and trust in any situation, guarding your shared standards firmly against outside pressure",
+    stressResponse: "When they feel the other has broken a principle or acted rudely, their expression hardens and they create distance with a strict moral standard.",
+    shadow: "Risk of becoming rigid, too bound by appearances and principle to show natural emotional vulnerability",
+    recognitionNeed: "Having their upright effort to fulfill relationship duty and maintain dignity deeply respected",
+    expressionStyle: "Courteous and measured, expressing themselves with propriety rather than freely showing emotional swings",
+    decisionStyle: "Prioritizes mutual duty and long-term stability, deciding from a fair, principled standard",
+    repairNeed: "A composed attitude that respects each other's position, and a sincere reaffirmation of trust, instead of an emotional outburst",
+    trustSignal: "When mutual duty and principle are faithfully upheld, and firm loyalty and courtesy are shown to each other",
+    intimateNeed: "The reassurance of a stable, publicly acknowledged relationship, mutual respect that lifts each other's dignity and self-esteem",
+    partnerExpectation: "An upright partner with clear moral standards and manners, who stays honest and diligent and holds the center in every matter",
+    attractionRelevance: "A composed, honest dignity, and a dependable steadiness in staying centered and keeping trust in every matter",
+    datingVibe: "Manners and being a gentleman/gentlewoman. So naturally courteous you'd want to introduce them to your parents — a date that feels proper and respectful.",
+    excessRisk: "May become too bound by rules and formality, suppressing or stiffening the natural flow of emotion",
+    allowedInference: ["Trust based on principle", "Values a mutually respectful attitude", "Prefers public stability"],
+    forbiddenInference: ["Assuming they're an inflexible traditionalist", "Assuming their emotions have dried up"],
+    forbiddenExtensions: ["Assuming they're forever trapped in rigid rules", "The distortion that they always suppress their partner"],
+  },
+  pyeongwan: {
+    ...TEN_GOD_ROMANTIC_PROFILES.pyeongwan,
+    core: "The energy of decisiveness and protection that doesn't back down in a crisis and carries the weight",
+    behavior: "When a hard situation arrives, doesn't avoid it and takes responsibility themselves, becoming their partner's shield with a weighty charisma.",
+    relationshipTendency: "Steps up to protect their partner and carry responsibility in a crisis, becoming the relationship's shield through deep devotion and charisma",
+    relationshipNeed: "Genuine recognition of their heavy devotion and responsibility, and unwavering trust that stands back-to-back with them even in crisis",
+    relationshipGift: "An overwhelming decisiveness and protective instinct that keeps the relationship standing firm even through unexpected crisis and hardship",
+    stressResponse: "When a situation feels out of control or dangerous, drives themselves hard and exerts compulsive control.",
+    shadow: "Risk that their inner tension and heavy burden transfers to the other as unspoken intimidation or suffocating pressure",
+    recognitionNeed: "Having someone notice the heavy load they've carried alone and sincerely acknowledge that 'your effort protected us'",
+    expressionStyle: "Says little but proves their weight through action, setting clear protective boundaries with a decisive attitude",
+    decisionStyle: "Steps up to make the call to minimize risk, and takes full personal responsibility for the outcome",
+    repairNeed: "Warmly wrapping around their partner's heavy shoulders instead of criticizing or complaining, becoming a place where they can finally breathe easy",
+    trustSignal: "When someone doesn't run from a hard moment and stands firm together, and sincerely recognizes their devotion and weight",
+    intimateNeed: "Their partner's firm trust and sincere respect for their protection and devotion",
+    partnerExpectation: "A dependable partner with the inner steadiness to stand firm together through hard moments, who trusts and respects their devotion",
+    attractionRelevance: "Strong decisiveness and a dependable protective instinct, a reassuring charisma that feels like it could get you through anything together",
+    datingVibe: "Charisma and leadership. Decisive enough to firmly lead the whole course, stirring a strong sense of responsibility and protective instinct you can lean on.",
+    excessRisk: "Excessive tension and strict responsibility can come across to the other as unspoken pressure or a sense of control",
+    allowedInference: ["Leadership in overcoming crisis", "Strong protective instinct", "Devoted decisiveness"],
+    forbiddenInference: ["Assuming they're coercive or domineering", "Assuming they're only after power"],
+    forbiddenExtensions: ["The distortion that they're inherently violent or coercive", "The leap that they always try to dominate their partner"],
+  },
+  jeongin: {
+    code: "jeongin",
+    korName: "정인",
+    hanja: "正印",
+    family: "resource",
+    familyKorName: "인성 (수용·성찰)",
+    core: "The energy of acceptance, embracing with unconditional warmth and deep emotional rest",
+    behavior: "Generously embraces even the other's vulnerable side, offering a warm emotional refuge to always return and rest in at the end of a hard day.",
+    relationshipTendency: "Fully accepts the other with unconditional warmth and acceptance, becoming a deep emotional refuge",
+    relationshipNeed: "Having their own warmth fully accepted, and unconditional emotional support that makes it safe to show their vulnerable side",
+    relationshipGift: "A deep capacity to comfort a wounded heart, and a steady emotional stability that quiets anxiety",
+    stressResponse: "When they feel the other's attitude has turned cold or that they've been rejected, doesn't show the hurt outwardly and instead swallows it and goes quietly passive.",
+    shadow: "Risk of becoming overly dependent on the other, or waiting silently for the other to just know and fill the gap, deepening emotional distance",
+    recognitionNeed: "Having their quiet care and devotion answered with a warm gaze and sincere gratitude instead of being taken for granted",
+    expressionStyle: "Gentle and warm, communicating with careful, considerate language while watching the other's emotional state",
+    decisionStyle: "Softly coordinates with mutual emotional comfort and relationship harmony as the top priority",
+    repairNeed: "A warm embrace and emotional reassurance that 'I still care for you and love you,' instead of a cold, logical back-and-forth",
+    trustSignal: "When their warm care and devotion are met with unwavering trust and love",
+    intimateNeed: "Unconditional emotional acceptance, a warm gaze, and a warm place to safely lean on",
+    partnerExpectation: "A considerate, warm partner who responds warmly to their affection and lets them lean on them comfortably anytime",
+    attractionRelevance: "A deep capacity to hold a wounded heart, and a warmth that puts your mind at ease just by being near",
+    datingVibe: "Warm emotion and connection. Quietly sharing feeling in a pretty café or exhibition, endlessly making sure you feel loved.",
+    excessRisk: "May become overly dependent on the other, or get stuck in passive expectation while swallowing hurt in silence",
+    allowedInference: ["Emotional acceptance", "Warm caretaking", "Prefers unconditional support"],
+    forbiddenInference: ["Assuming they can't stand on their own", "Assuming they're just being clingy"],
+    forbiddenExtensions: ["The bias that they only ever want maternal-style devotion", "Assuming they have no independent judgment at all"],
+  },
+  pyeonin: {
+    ...TEN_GOD_ROMANTIC_PROFILES.pyeonin,
+    core: "The contemplative energy of deep intuition and insight, sensing the essence beneath the surface",
+    behavior: "Picks up on the subtle nuance behind the other's words, sharing an original, deep mental connection in the space of quiet reflection.",
+    relationshipTendency: "Reads the other's complex inner world with deep insight and intuition, forming an original, special mental bond",
+    relationshipNeed: "Emotional room where their solitude and complex inner world aren't hastily judged, and their space for quiet reflection is respected",
+    relationshipGift: "A subtle insight that sees through to a hurt or a truth even the other hasn't fully noticed themselves",
+    stressResponse: "When faced with excessive interference or emotional pressure, closes the door and withdraws into their own cave, cutting off with a cool detachment.",
+    shadow: "Risk of over-suspecting the other's intent or getting stuck in their own thoughts, growing misunderstanding and putting distance in the relationship",
+    recognitionNeed: "Having their distinctive worldview and deep reflection fully recognized as special wisdom rather than something strange",
+    expressionStyle: "Metaphorical and deep, communicating with intuitive language that gets to the heart of it rather than many words",
+    decisionStyle: "Carefully decides only after a deep review of hidden variables and long-term context, rather than surface conditions",
+    repairNeed: "Not dragging them out of their cave by force — giving them time to sort things out alone, then quietly staying close by",
+    trustSignal: "When, without needing to be told, their solitude and distinctive inner world are deeply recognized rather than hastily judged",
+    intimateNeed: "Space for solitary reflection and respect for privacy, emotional room to think safely without interference",
+    partnerExpectation: "An insightful, generous partner who doesn't hastily judge their complex inner world and solitude, and quietly holds space for it",
+    attractionRelevance: "Conversation with mystery and depth, and a deep intuition that seems to see through to the other's hidden hurt or subtle nuance",
+    datingVibe: "Understated feeling and deep talk. A deep kind of date sharing a soul-level connection over philosophy or the meaning of life, somewhere only the two of you know.",
+    excessRisk: "May suddenly close the door and retreat into a cave, growing suspicious or keeping a cool distance",
+    allowedInference: ["Values mental connection", "Needs independent space for reflection", "Intuitive insight"],
+    forbiddenInference: ["Assuming they're cold-hearted", "Assuming their heart is completely closed"],
+    forbiddenExtensions: ["Exaggerating that they're always suspicious of their partner", "The leap that they live cut off from the world for good"],
+  },
+  bigyeon: {
+    ...TEN_GOD_ROMANTIC_PROFILES.bigyeon,
+    core: "A healthy, companionable energy that stands at eye level and holds an independent center",
+    behavior: "Respects each other's independent space without crossing it, walking side by side with a straightforward, honest attitude.",
+    relationshipTendency: "Fully respects each other's autonomy and independence at eye level, walking alongside as a dependable companion",
+    relationshipNeed: "An equal partnership where autonomy and equal standing are fully guaranteed on both sides, without one-sided dependence or sacrifice",
+    relationshipGift: "A steadiness that doesn't lean on or burden the other, quietly supporting each other's individual growth while each stands on their own",
+    stressResponse: "When they feel their pride has been hurt or that they're being forced into one-sided concessions, holds firm without an inch of give.",
+    shadow: "Risk of treating compromise as surrender, refusing to budge even on small disagreements and letting conflict run in parallel lines",
+    recognitionNeed: "Having their independent standards and sense of self respected as an equal, not dismissed",
+    expressionStyle: "Straightforward and clear, stating their own thoughts and standards as an equal rather than talking around them",
+    decisionStyle: "Clearly divides responsibilities and reaches agreement within a range that doesn't infringe on mutual independence",
+    repairNeed: "A straightforward conversation at eye level that respects each other's territory and position, without trying to force the other to back down",
+    trustSignal: "When each other's independent space and choices are respected as equals, without one-sided sacrifice or coercion",
+    intimateNeed: "Freedom without constraint, respect as an equal companion, and healthy personal space guaranteed",
+    partnerExpectation: "An independent, dependable partner who fully respects their independent space while still walking alongside them at eye level",
+    attractionRelevance: "A strong sense of independence and a straightforward manner, a healthy steadiness of standing side by side without being a burden to each other",
+    datingVibe: "The comfort of a best friend. An equal, playful back-and-forth like friends, sharing hobbies together.",
+    excessRisk: "May hold firm without backing down on their pride, treating even small compromises as giving in or surrendering",
+    allowedInference: ["Equal partnership", "Respects personal boundaries", "Straightforward independence"],
+    forbiddenInference: ["Assuming they have no interest in dating", "Assuming they're selfish"],
+    forbiddenExtensions: ["The distortion that they force identical lives on each other", "Exaggerating that they never make any concessions at all"],
+  },
+  geopjae: {
+    ...TEN_GOD_ROMANTIC_PROFILES.geopjae,
+    core: "A powerful bonding energy of intense devotion and exclusive trust, rallying behind their own person",
+    behavior: "Once they're certain someone is 'their person,' backs them without holding anything back, standing as their unmistakable ally against any outside challenge.",
+    relationshipTendency: "Throws themselves fully into the relationship with quickness and intense passion, forming a firm, exclusive bond and unwavering loyalty toward their person",
+    relationshipNeed: "Firm, exclusive trust that they're chosen first no matter the situation, and are someone's person more than anyone else in the world",
+    relationshipGift: "An all-in support and competitive drive that stands unshaken as their partner's dependable ally through the world's judgment or any crisis",
+    stressResponse: "When trust feels shaken or attention seems split toward a rival or outside factor, reacts with strong jealousy and anxiety and tries to control it.",
+    shadow: "Risk that excessive possessiveness and competitiveness make them sensitive to even small comparisons and lead to controlling the other",
+    recognitionNeed: "Getting the certainty that they are the most special, irreplaceable priority in their partner's life",
+    expressionStyle: "Passionate and intuitive, showing closeness through strong attachment and clearly taking their partner's side",
+    decisionStyle: "Seizes the initiative quickly and boldly, taking decisive gambles to get ahead",
+    repairNeed: "Stopping any comparison to others or ambiguous behavior, and clearly expressing that their affection and priority belong only to their partner",
+    trustSignal: "The unwavering certainty of being someone's undeniable person, chosen first no matter the situation",
+    intimateNeed: "Unshakeable, exclusive trust, and firm support as someone's person more than anyone else in the world",
+    partnerExpectation: "A passionate partner who gives them the certainty of being their undeniable person, and backs them without hesitation even in a crisis",
+    attractionRelevance: "A powerful charisma and a competitive devotion, an intense passion that feels like they'd stake everything for you",
+    datingVibe: "Thrilling tension and push-and-pull. A thrilling date built around games, sports, or bets — anything that stirs up a bit of competitive spirit.",
+    excessRisk: "Strong jealousy and possessiveness can make them react sensitively even to the other's passing glance or outside relationships",
+    allowedInference: ["Passionate commitment", "Absolute loyalty to their person", "Intense bonding"],
+    forbiddenInference: ["Assuming it's violent possessiveness", "Assuming they're always unstable"],
+    forbiddenExtensions: ["The cursed leap that they always lead their partner to ruin", "The distortion that they live forever blinded by jealousy"],
+  },
+};
+
+/** locale defaults to "ko-KR" so every pre-existing call site (which never passed one) keeps returning exactly what it did before. */
+export function getTenGodRomanticProfile(
+  code: string,
+  locale: "ko-KR" | "en-US" = "ko-KR",
+): TenGodRomanticProfile {
+  const table = locale === "en-US" ? TEN_GOD_ROMANTIC_PROFILES_EN : TEN_GOD_ROMANTIC_PROFILES;
   const normalized = code.toLowerCase().trim();
-  if (normalized in TEN_GOD_ROMANTIC_PROFILES) {
-    return TEN_GOD_ROMANTIC_PROFILES[normalized as TenGodCode];
+  if (normalized in table) {
+    return table[normalized as TenGodCode];
   }
   // Fallbacks for common variations or substrings
-  if (normalized.includes("siksin") || normalized === "식신") return TEN_GOD_ROMANTIC_PROFILES.siksin;
-  if (normalized.includes("sanggwan") || normalized === "상관") return TEN_GOD_ROMANTIC_PROFILES.sanggwan;
-  if (normalized.includes("jeongjae") || normalized === "정재") return TEN_GOD_ROMANTIC_PROFILES.jeongjae;
-  if (normalized.includes("pyeonjae") || normalized === "편재") return TEN_GOD_ROMANTIC_PROFILES.pyeonjae;
-  if (normalized.includes("jeonggwan") || normalized === "정관") return TEN_GOD_ROMANTIC_PROFILES.jeonggwan;
-  if (normalized.includes("pyeongwan") || normalized === "편관") return TEN_GOD_ROMANTIC_PROFILES.pyeongwan;
-  if (normalized.includes("jeongin") || normalized === "정인") return TEN_GOD_ROMANTIC_PROFILES.jeongin;
-  if (normalized.includes("pyeonin") || normalized === "편인") return TEN_GOD_ROMANTIC_PROFILES.pyeonin;
-  if (normalized.includes("bigyeon") || normalized === "비견") return TEN_GOD_ROMANTIC_PROFILES.bigyeon;
-  if (normalized.includes("geopjae") || normalized === "겁재") return TEN_GOD_ROMANTIC_PROFILES.geopjae;
+  if (normalized.includes("siksin") || normalized === "식신") return table.siksin;
+  if (normalized.includes("sanggwan") || normalized === "상관") return table.sanggwan;
+  if (normalized.includes("jeongjae") || normalized === "정재") return table.jeongjae;
+  if (normalized.includes("pyeonjae") || normalized === "편재") return table.pyeonjae;
+  if (normalized.includes("jeonggwan") || normalized === "정관") return table.jeonggwan;
+  if (normalized.includes("pyeongwan") || normalized === "편관") return table.pyeongwan;
+  if (normalized.includes("jeongin") || normalized === "정인") return table.jeongin;
+  if (normalized.includes("pyeonin") || normalized === "편인") return table.pyeonin;
+  if (normalized.includes("bigyeon") || normalized === "비견") return table.bigyeon;
+  if (normalized.includes("geopjae") || normalized === "겁재") return table.geopjae;
 
   // Default to bigyeon if unrecognized
-  return TEN_GOD_ROMANTIC_PROFILES.bigyeon;
+  return table.bigyeon;
 }

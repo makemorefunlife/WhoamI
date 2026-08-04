@@ -9,14 +9,14 @@ import {
   DynamicsSection,
   ConflictSection,
   MisunderstandingSection,
-} from "./components/v4/ChaptersA";
+} from "./ChaptersA";
 import {
   HiddenHeartsSection,
   RepairSection,
   StrengthVulnerabilitySection,
   FutureTimingSection,
   ChoiceSection,
-} from "./components/v4/ChaptersB";
+} from "./ChaptersB";
 
 type Props = {
   report: CanonicalRomanticV4Report;

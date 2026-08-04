@@ -9,7 +9,7 @@ import {
   type SpousePalaceProfile,
   resolveSpousePalaceProfile,
 } from "./spousePalaceMatcher";
-import { objectParticle, sanitizeKoreanParticles } from "../../koreanParticles";
+import { objectP, sanitizeParticles, pick, type NarrativeLocale } from "./narrativeLocale";
 
 export type ConfidenceLevel =
   | "deterministic"
@@ -103,6 +103,15 @@ export type PersonalRelationshipCe = {
   confidence: ConfidenceLevel;
   /** Present only when a Personal CE relational_profile was passed in. */
   personalCeAlignment?: PersonalCeAlignment;
+  /**
+   * Locale-independent categorical read of stress style ("cold" = withdraws/
+   * goes quiet, "hot" = pushes for immediate confirmation, "neutral" =
+   * neither) — the same value used to select stressResponse.text above.
+   * Consumers that need to classify stress style (e.g. chapterLensResolvers.ts)
+   * must read this instead of pattern-matching Korean keywords in
+   * stressResponse.text, which breaks the moment that text is in English.
+   */
+  stressTempBand: "hot" | "cold" | "neutral";
 };
 
 // Day Master Core Translations
@@ -221,6 +230,110 @@ export const DAY_STEM_TRANSLATIONS: Record<
   },
 };
 
+// Day Master Core Translations — English mirror of DAY_STEM_TRANSLATIONS.
+export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
+  gyeong: {
+    nature: "A nature that holds the relationship's center with clear standards and steady responsibility",
+    behavior: "Values trust and principle — may look firm and plain on the surface, but becomes an unshakeable pillar for anyone who's earned their trust.",
+    role: "The relationship's unshakeable anchor and decisive guardian",
+    decision: "Makes clear decisions based on fact, principle, and long-term stability, without being swayed by emotion.",
+    stress: "In uncontrollable chaos or an unclear situation, inner tension rises and they become more firm and strict.",
+    strength: "A decisiveness and steady dependability that stays clear-headed and points the way even in a crisis",
+    need: "Clear confidence and respect that their devotion and effort are recognized and valued",
+    depletionRisk: "Risk of shutting down emotionally after trying to carry the full weight of every responsibility alone",
+  },
+  sin: {
+    nature: "A nature that cultivates a polished, high-quality relationship through delicate sensitivity and precise care",
+    behavior: "Values mutual courtesy and refinement, remembering and attending to even small promises or details.",
+    role: "A mediator who maintains emotional dignity and a delicate balance",
+    decision: "Decides carefully, weighing small details along with the relationship's aesthetic and emotional completeness.",
+    stress: "Deeply hurt by a rough or careless attitude, draws a cool line and creates distance through silence.",
+    strength: "A precise, delicate care that notices and smooths over even the other's smallest discomfort or emotional shift",
+    need: "A safe, courteous conversation environment, protected from rough or careless treatment",
+    depletionRisk: "Risk of quickly draining their energy over small flaws or rough reactions while trying to maintain perfect care and dignity",
+  },
+  gap: {
+    nature: "A nature aimed at an honest, forward-driving, growth-oriented partnership",
+    behavior: "Leads the relationship's vision and growth, wanting to be their partner's strength and step forward to solve problems.",
+    role: "A forward-driving leader and dependable protector who leads toward a better future",
+    decision: "Prioritizes the big picture and future growth potential, pushing decisions forward decisively and confidently.",
+    stress: "Grows impatient and voices frustration strongly when they feel their direction is blocked or unsupported.",
+    strength: "A spirited drive that doesn't lose hope and leads the way forward even in a hard situation",
+    need: "Sincere encouragement from a partner who trusts and supports their leadership and direction",
+    depletionRisk: "Risk of getting trapped in the compulsion to always be strong and dependable, swallowing their own weak moments until they burn out",
+  },
+  eul: {
+    nature: "A warm, flexible nature that gently blends into the other and shares everyday warmth",
+    behavior: "Highly adaptable and puts the mood at ease, building connection through gentle empathy and close communication.",
+    role: "A warm, flexible refuge that always fills the space beside them with warmth",
+    decision: "Considers the other's mood and situation, coordinating decisions flexibly through gentle compromise and harmony.",
+    stress: "Grows anxious in the face of strong pressure or a controlling environment, flexibly sidestepping or looking for somewhere to hide.",
+    strength: "A remarkable flexibility that gently matches the other's emotions and melts away tension in the relationship",
+    need: "Gentle room and support to rest at their own pace, without sudden pressure or control",
+    depletionRisk: "Risk of emotional depletion from constantly reading the mood and suppressing their own real needs to accommodate the other",
+  },
+  byeong: {
+    nature: "A nature that expresses love generously with unhidden, bright passion and honesty",
+    behavior: "Shows feelings transparently, valuing immediate emotional exchange that brings joy and positive energy to their partner.",
+    role: "An honest, warm source of energy that brings life and warmth to the relationship",
+    decision: "Follows intuitive, immediate inspiration, deciding quickly on positive energy and confidence.",
+    stress: "Feels strong anxiety and frustration when the relationship's warmth cools or the other's response feels distant, and demands immediate reassurance.",
+    strength: "An unreserved authenticity that opens their heart honestly and shares warmth without pretense in any moment",
+    need: "Warm, immediate feedback in response to their passion and expressions of affection",
+    depletionRisk: "Risk of running themselves down by always radiating bright, warm energy while neglecting their own inner shadows and loneliness",
+  },
+  jeong: {
+    nature: "A devoted nature that reads the other deeply with a quiet, delicate warmth",
+    behavior: "Calm on the surface but carries deep warmth within, sensitively noticing the other's subtle psychological shifts.",
+    role: "A warm lighthouse that quietly stays close and lights the way",
+    decision: "Deeply considers the other's emotional state and its ripple effects before deciding quietly and carefully.",
+    stress: "Doesn't let hurt or disappointment erupt outwardly, and instead quietly smolders, burning it away inside.",
+    strength: "A deep emotional capacity and devotion that quietly holds the other's deep hurt or loneliness",
+    need: "A warm gaze and sincere recognition that doesn't take their quiet devotion for granted",
+    depletionRisk: "Risk of a silent burnout from endlessly burning their inner flame in devotion to the other",
+  },
+  mu: {
+    nature: "A steady nature that embraces the other with unwavering calm and a broad embrace",
+    behavior: "Doesn't get easily shaken by emotional ups and downs, holding steady ground as a place to always come back and rest.",
+    role: "An unshakeable ground and refuge through any storm",
+    decision: "Doesn't rush, waiting for the moment to ripen and choosing the steadiest, most stable path.",
+    stress: "When feelings get complicated, shuts down and sinks into silence, trying to bear the weight alone.",
+    strength: "An outstanding patience and steady reassurance that holds firm without rushing, even through conflict or crisis",
+    need: "Deep trust and consideration that waits patiently instead of pressing their silence and thoughts",
+    depletionRisk: "Risk of not expressing what's inside and carrying the full weight alone until their feelings harden and they lose energy",
+  },
+  gi: {
+    nature: "A nature that warmly and attentively holds the other's everyday reality and life",
+    behavior: "Attentively looks after the other's small daily needs in advance, offering a grounded, comfortable reassurance.",
+    role: "A caring helper who tends to life's small happiness and stability",
+    decision: "Makes practical, harmonious decisions after carefully weighing real feasibility and everyone's comfort.",
+    stress: "When overthinking builds up, quietly grows anxious and gets caught up worrying over small things.",
+    strength: "A grounded, warm generosity that offers practical life sense and puts the other comfortably at ease",
+    need: "Care that reaches out first so they don't wear themselves out managing everything alone",
+    depletionRisk: "Risk of putting their own rest and needs last while taking on the other's daily errands and upkeep",
+  },
+  im: {
+    nature: "A nature that shares deep emotional connection through a broad view and flexible acceptance",
+    behavior: "Isn't bound by convention, broadly accepting the other's differences and growing close through deep conversation and free-flowing exchange.",
+    role: "A wise companion who holds the other like a wide sea",
+    decision: "Sees through the overall flow and essence rather than getting stuck on fixed ideas, deciding flexibly and with a big-picture view.",
+    stress: "When constrained or caught up in tangled thoughts, hides their feelings below the surface and turns to a deep, unreadable silence.",
+    strength: "A wisdom and ease that flows flexibly with any situation and broadly embraces the other's many sides",
+    need: "Emotional freedom that doesn't suppress or constrain their independent reflection and flow of feeling",
+    depletionRisk: "Risk of getting lost in overly deep thought or swallowing every emotion alone until they lose touch with reality and become isolated",
+  },
+  gye: {
+    nature: "A nature that seeps gently into the heart with delicate sensitivity and a warm, tender touch",
+    behavior: "Delicately picks up on even the other's smallest emotional shifts and offers tailored care, forming a quiet but deep attachment.",
+    role: "A warm healer who moistens a parched heart like rain after a drought",
+    decision: "Values intuitive gut feeling and emotional resonance, deciding carefully in the direction that won't hurt the other's heart.",
+    stress: "Absorbs negative energy or a cold mood around them like a sponge, easily growing anxious and withdrawn.",
+    strength: "A warm sensitivity that intuitively notices the other's unspoken struggles and empathizes deeply",
+    need: "Warmth that wraps their delicate feelings gently and safely, rather than treating them roughly",
+    depletionRisk: "Risk of fully absorbing the other's anxiety and hurt and getting swept up in an emotional whirlpool until they're drained",
+  },
+};
+
 // Five Elements Interpretations
 const FIVE_ELEMENT_BALANCE_INTERPRETATIONS: Record<
   string,
@@ -255,6 +368,39 @@ const FIVE_ELEMENT_BALANCE_INTERPRETATIONS: Record<
     deficiency: "생각이 깊어지면 혼자만의 생각에 갇히거나 명확한 현실적 결정을 미룰 수 있습니다.",
     behavior: "상대의 기류에 민감하게 맞추며, 겉으로 드러난 말 이면의 진심을 읽어냅니다.",
     dynamic: "깊은 정서적 교감을 가능하게 하지만, 관계의 명확한 경계와 현실적 기준을 세울 때 파트너의 지지가 필요합니다.",
+  },
+};
+
+const FIVE_ELEMENT_BALANCE_INTERPRETATIONS_EN: typeof FIVE_ELEMENT_BALANCE_INTERPRETATIONS = {
+  metal_dominant: {
+    dominant: "Has clear decisiveness and standards, and places real value on trust and principle.",
+    deficiency: "May come across as firm or stubborn to the other, lacking emotional give and a soft cushion.",
+    behavior: "Sorts out their thoughts clearly before speaking to the point, proving trust through consistency of action more than words.",
+    dynamic: "Builds a solid frame for the relationship, but needs their partner's warm lead in conversations that touch subtle emotional shifts.",
+  },
+  fire_dominant: {
+    dominant: "Expresses affection honestly and immediately, bringing energy and warmth to the relationship.",
+    deficiency: "Feelings heat up quickly and they want an immediate answer, so there may be little room for things to settle calmly.",
+    behavior: "Expresses and checks in the moment their heart moves, and finds it hard to sit with a flat, quiet mood.",
+    dynamic: "Quickly raises the relationship's warmth, but needs their partner's calm hand on the brake so conflict doesn't overheat.",
+  },
+  wood_dominant: {
+    dominant: "Full of motivation for new beginnings and growth, approaching things with honest, pure passion.",
+    deficiency: "May be awkward at closing things out cleanly, or feel worn down at the finishing stage.",
+    behavior: "Steps up to propose plans and expand the relationship, sharing feelings honestly and openly.",
+    dynamic: "Brings new stimulation and growth, but needs their partner's steady follow-through to tie up loose ends in reality.",
+  },
+  earth_dominant: {
+    dominant: "Gives a steady, unwavering sense of trust, broadly holding space for the other's feelings and situation.",
+    deficiency: "Tends to swallow their inner thoughts rather than voice them right away, which can feel slow or frustrating to express.",
+    behavior: "Doesn't easily shift their stance, waits steadily, and quietly looks out for the other's comfort.",
+    dynamic: "Offers the deepest sense of stability, but needs their partner's warm nudge to open up what's really on their mind first.",
+  },
+  water_dominant: {
+    dominant: "Has deep intuition and flexible empathy, and reads the other's feelings well.",
+    deficiency: "When thoughts run deep, may get stuck in their own head or put off a clear, practical decision.",
+    behavior: "Tunes in sensitively to the other's mood, and reads the sincerity behind what's said out loud.",
+    dynamic: "Enables deep emotional connection, but needs their partner's support in setting clear relationship boundaries and practical standards.",
   },
 };
 
@@ -295,26 +441,29 @@ export function buildPersonalRelationshipCe(params: {
   signals?: RomanticSajuSignals | null;
   /** Personal CE's relational_profile (personalCe.aggregates.relational_profile). */
   relationalProfile?: PersonalRelationalProfile | null;
+  /** Defaults to "ko-KR" so every pre-existing caller that never passed one keeps its current behavior. */
+  locale?: NarrativeLocale;
 }): PersonalRelationshipCe {
-  const { personId, name, chart, signals, relationalProfile } = params;
+  const { personId, name, chart, signals, relationalProfile, locale = "ko-KR" } = params;
+  const isEn = locale === "en-US";
   const dm = chart.day_master;
   const stemKey = dm.stem.code;
   const stemEl = dm.stem.element;
   const branchEl = dm.day_branch.element;
   const branchKey = dm.day_branch.code;
 
-  const translation = DAY_STEM_TRANSLATIONS[stemKey] ?? DAY_STEM_TRANSLATIONS.gyeong;
+  const dayStemTable = isEn ? DAY_STEM_TRANSLATIONS_EN : DAY_STEM_TRANSLATIONS;
+  const translation = dayStemTable[stemKey] ?? dayStemTable.gyeong;
 
   const domEl = chart.five_elements.dominant;
   const weakEl = chart.five_elements.weakest;
   const domKey = `${domEl}_dominant`;
-  const elInterp =
-    FIVE_ELEMENT_BALANCE_INTERPRETATIONS[domKey] ??
-    FIVE_ELEMENT_BALANCE_INTERPRETATIONS.metal_dominant;
+  const fiveElementTable = isEn ? FIVE_ELEMENT_BALANCE_INTERPRETATIONS_EN : FIVE_ELEMENT_BALANCE_INTERPRETATIONS;
+  const elInterp = fiveElementTable[domKey] ?? fiveElementTable.metal_dominant;
 
   // Day Branch Ten God (Spouse Palace) strictly resolved from Day Pillar
   const personRole: "a" | "b" = personId === "b" ? "b" : "a";
-  const spousePalaceProfile = resolveSpousePalaceProfile(chart, personRole, name);
+  const spousePalaceProfile = resolveSpousePalaceProfile(chart, personRole, name, locale);
   const partnerPreferenceText = spousePalaceProfile.partnerExpectation;
   const needText = spousePalaceProfile.intimateNeed;
 
@@ -324,11 +473,11 @@ export function buildPersonalRelationshipCe(params: {
   for (const pillar of chart.pillars) {
     if (pillar.stem_ten_god?.code && !seenTenGods.has(pillar.stem_ten_god.code)) {
       seenTenGods.add(pillar.stem_ten_god.code);
-      natalTenGodProfiles.push(getTenGodRomanticProfile(pillar.stem_ten_god.code));
+      natalTenGodProfiles.push(getTenGodRomanticProfile(pillar.stem_ten_god.code, locale));
     }
     if (pillar.branch_ten_god?.code && !seenTenGods.has(pillar.branch_ten_god.code)) {
       seenTenGods.add(pillar.branch_ten_god.code);
-      natalTenGodProfiles.push(getTenGodRomanticProfile(pillar.branch_ten_god.code));
+      natalTenGodProfiles.push(getTenGodRomanticProfile(pillar.branch_ten_god.code, locale));
     }
   }
 
@@ -364,7 +513,7 @@ export function buildPersonalRelationshipCe(params: {
   }
   dominantTenGodCode ??= monthBranchTenGodCode;
   const dominantTenGodProfile = dominantTenGodCode
-    ? getTenGodRomanticProfile(dominantTenGodCode)
+    ? getTenGodRomanticProfile(dominantTenGodCode, locale)
     : undefined;
 
   // Care Expression: dynamically composed from Day Master behavior, Spouse Palace Ten God expression style, and affection band.
@@ -381,14 +530,24 @@ export function buildPersonalRelationshipCe(params: {
     : null;
   const affBand = ceAffBand ?? (legacyAffBand === "other" ? "action_gift" : legacyAffBand);
   const expStyle = spousePalaceProfile.profile.expressionStyle;
-  const expPredicate = expStyle.endsWith("소통") || expStyle.endsWith("제시") || expStyle.endsWith("전달") || expStyle.endsWith("표현") || expStyle.endsWith("형성") || expStyle.endsWith("설정") || expStyle.endsWith("과시")
-    ? `${expStyle}합니다.`
-    : expStyle.endsWith("피드백")
-      ? `${expStyle}을 주고받습니다.`
-      : `${expStyle}하며 신뢰를 쌓아갑니다.`;
+  const expPredicate = isEn
+    ? `${expStyle}.`
+    : expStyle.endsWith("소통") || expStyle.endsWith("제시") || expStyle.endsWith("전달") || expStyle.endsWith("표현") || expStyle.endsWith("형성") || expStyle.endsWith("설정") || expStyle.endsWith("과시")
+      ? `${expStyle}합니다.`
+      : expStyle.endsWith("피드백")
+        ? `${expStyle}을 주고받습니다.`
+        : `${expStyle}하며 신뢰를 쌓아갑니다.`;
 
   let careText = "";
-  if (affBand === "emotional_care") {
+  if (isEn) {
+    if (affBand === "emotional_care") {
+      careText = `${translation.behavior} Pays close attention to the other's emotional state, and ${expPredicate.charAt(0).toLowerCase()}${expPredicate.slice(1)}`;
+    } else if (affBand === "action_gift") {
+      careText = `${translation.behavior} Takes care of daily life through practical thoughtfulness and dependable action, and ${expPredicate.charAt(0).toLowerCase()}${expPredicate.slice(1)}`;
+    } else {
+      careText = `${translation.behavior} ${expPredicate}`;
+    }
+  } else if (affBand === "emotional_care") {
     careText = `${translation.behavior} 상대의 감정선을 세심하게 살피며, ${expPredicate}`;
   } else if (affBand === "action_gift") {
     careText = `${translation.behavior} 실질적인 배려와 든든한 행동으로 일상을 챙기며, ${expPredicate}`;
@@ -405,7 +564,15 @@ export function buildPersonalRelationshipCe(params: {
     : null;
   const tempBand = ceTempBand ?? legacyTempBand;
   let stressText = "";
-  if (tempBand === "hot") {
+  if (isEn) {
+    if (tempBand === "hot") {
+      stressText = `${translation.stress} As stress builds, their emotions spike right away and they want to work it out through immediate conversation. ${spousePalaceProfile.profile.stressResponse}`;
+    } else if (tempBand === "cold") {
+      stressText = `${translation.stress} Under stress, they avoid direct emotional confrontation and need to withdraw to their own space to sort out their thoughts. ${spousePalaceProfile.profile.stressResponse}`;
+    } else {
+      stressText = `${translation.stress} They calmly settle their emotions before working through the heart of the situation. ${spousePalaceProfile.profile.stressResponse}`;
+    }
+  } else if (tempBand === "hot") {
     stressText = `${translation.stress} 스트레스가 차오르면 감정이 즉각 고조되며 대화로 즉시 풀고자 하고, ${spousePalaceProfile.profile.stressResponse}`;
   } else if (tempBand === "cold") {
     stressText = `${translation.stress} 스트레스 상황에서는 감정 충돌을 피해 혼자만의 공간(동굴)으로 물러나 생각을 정리할 시간이 필요하며, ${spousePalaceProfile.profile.stressResponse}`;
@@ -433,12 +600,18 @@ export function buildPersonalRelationshipCe(params: {
     : undefined;
 
   // Conflict Response: dynamically composed from Day Master decision and Spouse Palace repair need
-  const conflictText = `${translation.decision} 갈등이 발생했을 때는 ${spousePalaceProfile.profile.repairNeed}의 태도를 지향하며 차근차근 문제를 풀어가고자 합니다.`;
+  const conflictText = isEn
+    ? `${translation.decision} When conflict arises, they aim for ${spousePalaceProfile.profile.repairNeed}, working through the problem step by step.`
+    : `${translation.decision} 갈등이 발생했을 때는 ${spousePalaceProfile.profile.repairNeed}의 태도를 지향하며 차근차근 문제를 풀어가고자 합니다.`;
 
   // Hidden Vulnerability: dynamically composed from Day Master nature/need and Spouse Palace excess risk
-  const vulnText = sanitizeKoreanParticles(
-    `${translation.nature} 때문에 겉으로는 의연하고 덤덤해 보이지만, 내면 깊은 곳에서는 ${objectParticle(translation.need)} 간절히 바라고 있습니다. 또한 관계가 흔들릴 때 ${spousePalaceProfile.profile.excessRisk}에 대한 조심스러운 긴장을 품고 있습니다.`
-  );
+  const vulnText = isEn
+    ? `Because of ${translation.nature.charAt(0).toLowerCase()}${translation.nature.slice(1)}, they can look composed and unbothered on the surface, but deep inside they're quietly longing for ${translation.need.charAt(0).toLowerCase()}${translation.need.slice(1)}. They also carry a quiet tension, worried that when the relationship feels shaky, ${spousePalaceProfile.profile.excessRisk.charAt(0).toLowerCase()}${spousePalaceProfile.profile.excessRisk.slice(1)}.`
+    : sanitizeParticles(
+        `${translation.nature} 때문에 겉으로는 의연하고 덤덤해 보이지만, 내면 깊은 곳에서는 ${objectP(translation.need, locale)} 간절히 바라고 있습니다. 또한 관계가 흔들릴 때 ${spousePalaceProfile.profile.excessRisk}에 대한 조심스러운 긴장을 품고 있습니다.`,
+        [],
+        locale,
+      );
 
   return {
     personId,
@@ -553,8 +726,8 @@ export function buildPersonalRelationshipCe(params: {
     recoveryPattern: {
       text:
         tempBand === "cold"
-          ? "충분히 혼자만의 시간을 가지며 감정의 온도가 차분하게 내려가는 회복 과정"
-          : "문제에 대한 명확한 사과나 확답이 오가며 뒤끝 없이 빠르게 평온을 되찾는 소통",
+          ? pick(locale, "충분히 혼자만의 시간을 가지며 감정의 온도가 차분하게 내려가는 회복 과정", "A recovery process of taking real time alone, letting emotions settle and cool down")
+          : pick(locale, "문제에 대한 명확한 사과나 확답이 오가며 뒤끝 없이 빠르게 평온을 되찾는 소통", "Reaching calm quickly and cleanly through a clear apology or clear answers about the issue"),
       evidenceId: `chart.${personId}.recovery_pattern`,
       source: "personal_saju_chart",
       sourcePath: "johu.recovery",
@@ -597,5 +770,6 @@ export function buildPersonalRelationshipCe(params: {
     dominantTenGodProfile,
     confidence: "high",
     personalCeAlignment,
+    stressTempBand: tempBand,
   };
 }

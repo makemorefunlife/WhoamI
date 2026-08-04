@@ -29,7 +29,7 @@ const { buildRomanticV4PrototypePayload } = await import(
 );
 const { buildNeutralV2Profile } = await import("../../lib/v2/survey/neutralProfile.ts");
 const { adaptHero, adaptRadarAxes, adaptDifference } = await import(
-  "../../app/dev/romantic-v4-content-prototype/components/v4/adaptCanonicalSection.ts"
+  "../../components/relationship/romantic/v4/adaptCanonicalSection.ts"
 );
 
 function makeProfile(overrides) {
@@ -122,10 +122,10 @@ ok("real and dev_fixture payloads both carry all 6 comparison rows");
 section("7) UI source-level grep gate: presentation layer never reads legacy fixture-shaped fields");
 
 const uiFiles = [
-  "app/dev/romantic-v4-content-prototype/components/v4/adaptCanonicalSection.ts",
-  "app/dev/romantic-v4-content-prototype/components/v4/ChaptersA.tsx",
-  "app/dev/romantic-v4-content-prototype/components/v4/ChaptersB.tsx",
-  "app/dev/romantic-v4-content-prototype/CanonicalReportView.tsx",
+  "components/relationship/romantic/v4/adaptCanonicalSection.ts",
+  "components/relationship/romantic/v4/ChaptersA.tsx",
+  "components/relationship/romantic/v4/ChaptersB.tsx",
+  "components/relationship/romantic/v4/CanonicalReportView.tsx",
   "app/dev/romantic-v4-content-prototype/PrototypeClient.tsx",
 ];
 const forbidden = [

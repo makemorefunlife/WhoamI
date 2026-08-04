@@ -31,21 +31,27 @@ import {
   resolveHiddenHeartsLens,
   resolveStrengthVulnerabilityLens,
 } from "./chapterLensResolvers";
-import copy from "./canonicalStoryPlanCopy.ko.json";
+import copyKo from "./canonicalStoryPlanCopy.ko.json";
+import copyEn from "./canonicalStoryPlanCopy.en.json";
 
 import {
-  topicParticle as topic,
-  subjectParticle as subject,
-  objectParticle,
-  withParticle,
-  sanitizeKoreanParticles,
-} from "../../koreanParticles";
+  topicP,
+  subjectP,
+  objectP,
+  withP,
+  sanitizeParticles,
+  pick,
+  type NarrativeLocale,
+} from "./narrativeLocale";
 
 type Report = RomanticSajuDeepReport["report"];
+type CopyTable = typeof copyKo;
 
-function fill(tpl: string, vars: Record<string, string>): string {
-  return sanitizeKoreanParticles(
+function fill(tpl: string, vars: Record<string, string>, locale: NarrativeLocale): string {
+  return sanitizeParticles(
     tpl.replace(/\{(\w+)\}/g, (_, key: string) => vars[key] ?? ""),
+    [],
+    locale,
   );
 }
 
@@ -74,11 +80,11 @@ function leanLabel(
   rowKey: RomanticCompareRowKey,
   locale: "ko-KR" | "en-US",
 ): string {
-  if (!lean) return locale === "ko-KR" ? copy.leanFallback : copy.leanFallbackEn;
+  if (!lean) return pick(locale, copyKo.leanFallback, copyEn.leanFallbackEn);
   return formatRomanticCompareLeanLabel(lean as never, locale, rowKey);
 }
 
-import { AXIS_INTERPRETATIONS } from "./axisStandoutInterpretations";
+import { getAxisInterpretations } from "./axisStandoutInterpretations";
 
 function axisRow(
   axis: RomanticPsychMatchAxisResult,
@@ -87,17 +93,31 @@ function axisRow(
 ): AxisPriorityRow {
   const label = psychMatchAxisLabel(axis.axis_key, locale);
   const aHigh = axis.score_a >= axis.score_b;
-  const interp = AXIS_INTERPRETATIONS[axis.axis_key] || {
-    plainLanguageDefinition: "서로의 다름과 같음을 보여주는 성향이에요.",
-    highBehavior: "스스로의 성향을 선명하게 드러내는 편이에요.",
-    lowBehavior: "상황에 맞춰 유연하게 반응하는 편이에요.",
-    sceneHint: "일상 속에서 선택을 내릴 때",
-    tensionClash: "차이가 오해로 이어질 수 있어요.",
-    tensionBenefit: "서로 다른 강점을 살릴 수 있어요.",
-    practicalTranslation: "다름을 이해하고 맞춰가려는 노력이 필요해요.",
-    misreadHighObservingLow: "상대의 유연함을 무심함으로 잘못 읽을 수 있어요.",
-    misreadLowObservingHigh: "상대의 선명함을 부담으로 잘못 읽을 수 있어요.",
-  };
+  const interp = getAxisInterpretations(locale)[axis.axis_key] || pick(
+    locale,
+    {
+      plainLanguageDefinition: "서로의 다름과 같음을 보여주는 성향이에요.",
+      highBehavior: "스스로의 성향을 선명하게 드러내는 편이에요.",
+      lowBehavior: "상황에 맞춰 유연하게 반응하는 편이에요.",
+      sceneHint: "일상 속에서 선택을 내릴 때",
+      tensionClash: "차이가 오해로 이어질 수 있어요.",
+      tensionBenefit: "서로 다른 강점을 살릴 수 있어요.",
+      practicalTranslation: "다름을 이해하고 맞춰가려는 노력이 필요해요.",
+      misreadHighObservingLow: "상대의 유연함을 무심함으로 잘못 읽을 수 있어요.",
+      misreadLowObservingHigh: "상대의 선명함을 부담으로 잘못 읽을 수 있어요.",
+    },
+    {
+      plainLanguageDefinition: "A tendency that shows where you're different and where you're alike.",
+      highBehavior: "Tends to show their own tendency clearly and openly.",
+      lowBehavior: "Tends to respond flexibly, adapting to the situation.",
+      sceneHint: "When making choices in everyday life",
+      tensionClash: "This difference can turn into misunderstanding.",
+      tensionBenefit: "You can each draw on your own distinct strengths.",
+      practicalTranslation: "It helps to make an effort to understand the difference and meet in the middle.",
+      misreadHighObservingLow: "The other's flexibility can be misread as indifference.",
+      misreadLowObservingHigh: "The other's clarity can be misread as pressure.",
+    },
+  );
 
   const aPattern = aHigh ? interp.highBehavior : interp.lowBehavior;
   const bPattern = !aHigh ? interp.highBehavior : interp.lowBehavior;
@@ -108,19 +128,23 @@ function axisRow(
     id: `axis.${axis.axis_key}`,
     sourceType: "psych",
     confidence: "high",
-    userQuestion: `${label} 차이가 우리에게 미치는 영향은 무엇인가요?`,
+    userQuestion: pick(
+      locale,
+      `${label} 차이가 우리에게 미치는 영향은 무엇인가요?`,
+      `What effect does our difference in ${label} have on us?`,
+    ),
     plainLanguageDefinition: interp.plainLanguageDefinition,
     personATendency: aPattern,
     personBTendency: bPattern,
-    pairDynamic: isSimilar 
-      ? "비슷한 성향으로 인해 행동의 이유를 쉽게 이해할 수 있어요." 
+    pairDynamic: isSimilar
+      ? pick(locale, "비슷한 성향으로 인해 행동의 이유를 쉽게 이해할 수 있어요.", "Because you're similar here, it's easy to understand why the other acts the way they do.")
       : interp.tensionClash,
     observableScene: interp.sceneHint,
     likelyMisreadingA: isSimilar ? null : (isHighLow ? interp.misreadHighObservingLow : interp.misreadLowObservingHigh),
     likelyMisreadingB: isSimilar ? null : (isHighLow ? interp.misreadLowObservingHigh : interp.misreadHighObservingLow),
-    relationshipStrength: isSimilar ? copy.calmSim : interp.tensionBenefit,
-    relationshipRisk: isSimilar ? copy.stressLow : interp.tensionClash,
-    practicalTranslation: isSimilar ? "지금의 긍정적인 균형을 유지하세요." : interp.practicalTranslation,
+    relationshipStrength: isSimilar ? pick(locale, copyKo.calmSim, copyEn.calmSim) : interp.tensionBenefit,
+    relationshipRisk: isSimilar ? pick(locale, copyKo.stressLow, copyEn.stressLow) : interp.tensionClash,
+    practicalTranslation: isSimilar ? pick(locale, "지금의 긍정적인 균형을 유지하세요.", "Keep up the positive balance you already have.") : interp.practicalTranslation,
     evidenceRefs: [
       prov(
         `meta.psych_match.axis_results.${axis.axis_key}`,
@@ -150,6 +174,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   dynamicsCrossHits?: Array<{ category?: string; type?: string }>;
 }): CanonicalRelationshipStoryPlan {
   const { contract, report, axisResults, locale } = params;
+  const copy: CopyTable = locale === "en-US" ? copyEn : copyKo;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
   const year = params.reportYear ?? new Date().getFullYear();
   // Was hardcoded to the fixture demo pair's names via \u escape sequences
   // (invisible to a plain-text grep) regardless of caller. contract.names
@@ -326,7 +352,10 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     (typeof summary === "object" && summary?.relationship_name) ||
     (typeof summary === "string" ? summary : null) ||
     (relCeA && relCeB
-      ? `${names.a}의 ${relCeA.coreRelationshipNature.text}와 ${names.b}의 ${relCeB.coreRelationshipNature.text}가 서로의 부족한 점을 채우며 완성해가는 관계`
+      ? L(
+          `${names.a}의 ${relCeA.coreRelationshipNature.text}와 ${names.b}의 ${relCeB.coreRelationshipNature.text}가 서로의 부족한 점을 채우며 완성해가는 관계`,
+          `A relationship where ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} and ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)} complete each other by filling in what the other lacks`,
+        )
       : plan.pairSynthesis.selectedMeaning || copy.defFallback);
   mark("section_1_summary");
 
@@ -342,12 +371,13 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           relCeB,
           names: { a: names.a, b: names.b },
           comparisonTable: table as any,
+          locale,
         })
       : [
           {
             situation: "private",
-            appearance: fill(copy.tpl.facePrivateApp, { a: names.a, b: names.b }),
-            mechanism: fill(copy.tpl.facePrivateMech, { affA: affLeanA, affB: affLeanB }),
+            appearance: fill(copy.tpl.facePrivateApp, { a: names.a, b: names.b }, locale),
+            mechanism: fill(copy.tpl.facePrivateMech, { affA: affLeanA, affB: affLeanB }, locale),
             benefit: copy.facePrivateBen,
             riskWhenExcess: copy.facePrivateRisk,
             observableSignal: copy.facePrivateSig,
@@ -364,7 +394,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           },
           {
             situation: "responsibility",
-            appearance: fill(copy.tpl.faceRespApp, { dA: decisionLeanA, dB: decisionLeanB }),
+            appearance: fill(copy.tpl.faceRespApp, { dA: decisionLeanA, dB: decisionLeanB }, locale),
             mechanism: copy.faceRespMech,
             benefit: copy.faceRespBen,
             riskWhenExcess: copy.faceRespRisk,
@@ -382,7 +412,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           },
           {
             situation: "stress",
-            appearance: fill(copy.tpl.faceStressApp, { sA: stressLeanA, sB: stressLeanB }),
+            appearance: fill(copy.tpl.faceStressApp, { sA: stressLeanA, sB: stressLeanB }, locale),
             mechanism: copy.faceStressMech,
             benefit: copy.faceStressBen,
             riskWhenExcess: copy.faceStressRisk,
@@ -409,6 +439,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           partnerId: "b",
           seekerName: names.a,
           partnerName: names.b,
+          locale,
         })
       : undefined;
 
@@ -421,10 +452,11 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           partnerId: "a",
           seekerName: names.b,
           partnerName: names.a,
+          locale,
         })
       : undefined;
 
-  const cleanUniqueCombination = sanitizeKoreanParticles(
+  const cleanUniqueCombination = sanitizeParticles(
     hitNotes.join(" ") ||
       (plan.pairSynthesis.selectedMeaning && !plan.pairSynthesis.selectedMeaning.includes("육합")
         ? plan.pairSynthesis.selectedMeaning
@@ -432,30 +464,48 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       specialBond?.only_together ||
       copy.attrUniqueFallback,
     [names.a, names.b],
+    locale,
   );
 
   const mutualUnit: AttractionNarrativeUnit = {
     subject: "mutual",
-    recognition: sanitizeKoreanParticles(
-      hitNotes[0] ?? `${withParticle(names.a)} ${names.b}가 마주할 때 비로소 만들어지는 특별한 정서적 공명과 몰입감이 존재합니다.`,
+    recognition: sanitizeParticles(
+      hitNotes[0] ?? L(
+        `${withP(names.a, locale)} ${names.b}가 마주할 때 비로소 만들어지는 특별한 정서적 공명과 몰입감이 존재합니다.`,
+        `There's a special emotional resonance and immersion that only comes into being when ${withP(names.a, locale)} ${names.b} face each other.`,
+      ),
       [names.a, names.b],
+      locale,
     ),
-    emotionalMeaning: sanitizeKoreanParticles(
-      "서로 다른 고유한 리듬이 조화롭게 맞물리면서, 둘이 함께할 때 더 깊은 안도감과 편안한 활력을 경험하기 쉽습니다.",
+    emotionalMeaning: sanitizeParticles(
+      L(
+        "서로 다른 고유한 리듬이 조화롭게 맞물리면서, 둘이 함께할 때 더 깊은 안도감과 편안한 활력을 경험하기 쉽습니다.",
+        "Your distinct rhythms interlock harmoniously, so being together tends to bring a deeper reassurance and a comfortable sense of energy.",
+      ),
       [names.a, names.b],
+      locale,
     ),
-    partnerEvidence: hitNotes.slice(1).map((n) => sanitizeKoreanParticles(n, [names.a, names.b])),
-    scene: sanitizeKoreanParticles(
-      "세상의 분주함을 뒤로하고 둘만의 공간에서 대화를 시작할 때, 굳이 긴 설명 없이도 서로의 생각과 감정이 자연스럽게 포개어지는 순간",
+    partnerEvidence: hitNotes.slice(1).map((n) => sanitizeParticles(n, [names.a, names.b], locale)),
+    scene: sanitizeParticles(
+      L(
+        "세상의 분주함을 뒤로하고 둘만의 공간에서 대화를 시작할 때, 굳이 긴 설명 없이도 서로의 생각과 감정이 자연스럽게 포개어지는 순간",
+        "The moment you leave the busy world behind and start talking in a space that's just the two of you, and your thoughts and feelings naturally fall into place without needing a long explanation",
+      ),
       [names.a, names.b],
+      locale,
     ),
-    pairSpecificEffect: sanitizeKoreanParticles(
-      "서로의 다른 기질을 자연스럽게 보완하며, 둘만의 깊은 유대감과 회복 탄력성을 차분히 키워나갑니다.",
+    pairSpecificEffect: sanitizeParticles(
+      L(
+        "서로의 다른 기질을 자연스럽게 보완하며, 둘만의 깊은 유대감과 회복 탄력성을 차분히 키워나갑니다.",
+        "Naturally complements each other's different temperaments, quietly building a deep bond and resilience that belong only to the two of you.",
+      ),
       [names.a, names.b],
+      locale,
     ),
-    tensionBridge: sanitizeKoreanParticles(
+    tensionBridge: sanitizeParticles(
       copy.attrFlip,
       [names.a, names.b],
+      locale,
     ),
     evidenceIds: attractionProv.map((p) => p.evidenceId),
     confidence: "high",
@@ -468,17 +518,23 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       seeksInPartner: bilateralMatchAToB
         ? `${bilateralMatchAToB.narrativeUnit.recognition} ${bilateralMatchAToB.narrativeUnit.emotionalMeaning}`
         : relCeA && relCeB
-        ? `${topic(names.a)} ${relCeA.partnerPreferences[0]?.text ?? affLeanB}를 자연스럽게 바라며, ${names.b}의 ${relCeB.coreRelationshipNature.text}에 깊은 매력을 느낍니다.`
+        ? L(
+            `${topicP(names.a, locale)} ${relCeA.partnerPreferences[0]?.text ?? affLeanB}를 자연스럽게 바라며, ${names.b}의 ${relCeB.coreRelationshipNature.text}에 깊은 매력을 느낍니다.`,
+            `${topicP(names.a, locale)} naturally wants ${(relCeA.partnerPreferences[0]?.text ?? affLeanB).charAt(0).toLowerCase()}${(relCeA.partnerPreferences[0]?.text ?? affLeanB).slice(1)}, and feels deeply drawn to ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)}`,
+          )
         : fill(copy.tpl.attrASeeks, {
-            topicA: topic(names.a),
+            topicA: topicP(names.a, locale),
             affB: affLeanB,
-            char: aCharacter ? fill(copy.tpl.charSuffix, { char: aCharacter }) : "",
-          }),
+            char: aCharacter ? fill(copy.tpl.charSuffix, { char: aCharacter }, locale) : "",
+          }, locale),
       partnerMatchPoint: bilateralMatchAToB
         ? bilateralMatchAToB.supportingReasons.map((r) => r.text).join(" ")
         : relCeB
-        ? `${subject(names.b)} 보여주는 ${relCeB.strengthsGivenToPartner[0]?.text ?? "안정감"}이 ${names.a}의 마음을 든든하게 받쳐줍니다.`
-        : fill(copy.tpl.attrAMatch, { subjB: subject(names.b) }),
+        ? L(
+            `${subjectP(names.b, locale)} 보여주는 ${relCeB.strengthsGivenToPartner[0]?.text ?? "안정감"}이 ${names.a}의 마음을 든든하게 받쳐줍니다.`,
+            `The ${(relCeB.strengthsGivenToPartner[0]?.text ?? "sense of stability").charAt(0).toLowerCase()}${(relCeB.strengthsGivenToPartner[0]?.text ?? "sense of stability").slice(1)} that ${subjectP(names.b, locale)} shows gives ${names.a}'s heart something dependable to lean on.`,
+          )
+        : fill(copy.tpl.attrAMatch, { subjB: subjectP(names.b, locale) }, locale),
       supportingReasons: bilateralMatchAToB?.supportingReasons.map((r) => r.text),
       cautionReasons: bilateralMatchAToB?.cautionReasons.map((r) => r.text),
       preferenceMatch: bilateralMatchAToB,
@@ -525,17 +581,23 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       seeksInPartner: bilateralMatchBToA
         ? `${bilateralMatchBToA.narrativeUnit.recognition} ${bilateralMatchBToA.narrativeUnit.emotionalMeaning}`
         : relCeA && relCeB
-        ? `${topic(names.b)} ${relCeB.partnerPreferences[0]?.text ?? affLeanA}를 원하며, ${names.a}의 ${relCeA.coreRelationshipNature.text}에서 신선한 활력과 이끌림을 경험합니다.`
+        ? L(
+            `${topicP(names.b, locale)} ${relCeB.partnerPreferences[0]?.text ?? affLeanA}를 원하며, ${names.a}의 ${relCeA.coreRelationshipNature.text}에서 신선한 활력과 이끌림을 경험합니다.`,
+            `${topicP(names.b, locale)} wants ${(relCeB.partnerPreferences[0]?.text ?? affLeanA).charAt(0).toLowerCase()}${(relCeB.partnerPreferences[0]?.text ?? affLeanA).slice(1)}, and finds a fresh energy and pull in ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)}`,
+          )
         : fill(copy.tpl.attrBSeeks, {
-            topicB: topic(names.b),
+            topicB: topicP(names.b, locale),
             affA: affLeanA,
-            char: bCharacter ? fill(copy.tpl.charSuffix, { char: bCharacter }) : "",
-          }),
+            char: bCharacter ? fill(copy.tpl.charSuffix, { char: bCharacter }, locale) : "",
+          }, locale),
       partnerMatchPoint: bilateralMatchBToA
         ? bilateralMatchBToA.supportingReasons.map((r) => r.text).join(" ")
         : relCeA
-        ? `${subject(names.a)} 보여주는 ${relCeA.strengthsGivenToPartner[0]?.text ?? "명확한 결단력"}이 ${names.b}에게 큰 확신이 됩니다.`
-        : fill(copy.tpl.attrBMatch, { subjA: subject(names.a) }),
+        ? L(
+            `${subjectP(names.a, locale)} 보여주는 ${relCeA.strengthsGivenToPartner[0]?.text ?? "명확한 결단력"}이 ${names.b}에게 큰 확신이 됩니다.`,
+            `The ${(relCeA.strengthsGivenToPartner[0]?.text ?? "clear decisiveness").charAt(0).toLowerCase()}${(relCeA.strengthsGivenToPartner[0]?.text ?? "clear decisiveness").slice(1)} that ${subjectP(names.a, locale)} shows becomes a real source of confidence for ${names.b}.`,
+          )
+        : fill(copy.tpl.attrBMatch, { subjA: subjectP(names.a, locale) }, locale),
       supportingReasons: bilateralMatchBToA?.supportingReasons.map((r) => r.text),
       cautionReasons: bilateralMatchBToA?.cautionReasons.map((r) => r.text),
       preferenceMatch: bilateralMatchBToA,
@@ -578,15 +640,27 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       ],
     },
     uniqueCombination: cleanUniqueCombination,
-    flipsToConflictWhen: sanitizeKoreanParticles(copy.attrFlip, [names.a, names.b]),
+    flipsToConflictWhen: sanitizeParticles(copy.attrFlip, [names.a, names.b], locale),
     units: {
       aToB: bilateralMatchAToB?.narrativeUnit ?? {
         subject: "a_to_b",
-        recognition: `${topic(names.a)} ${names.b}의 묵묵한 태도에 자연스럽게 마음이 열립니다.`,
-        emotionalMeaning: `${topic(names.a)} 바라는 안정감을 ${names.b}에게서 발견하기 때문입니다.`,
+        recognition: L(
+          `${topicP(names.a, locale)} ${names.b}의 묵묵한 태도에 자연스럽게 마음이 열립니다.`,
+          `${topicP(names.a, locale)} naturally opens up to ${names.b}'s quiet, steady manner.`,
+        ),
+        emotionalMeaning: L(
+          `${topicP(names.a, locale)} 바라는 안정감을 ${names.b}에게서 발견하기 때문입니다.`,
+          `That's because ${topicP(names.a, locale)} finds the stability they've been wanting in ${names.b}.`,
+        ),
         partnerEvidence: [bilateralMatchAToB?.supportingReasons[0]?.text ?? ""].filter(Boolean),
-        scene: "함께 중요한 일정을 의논하거나 결정을 내리는 순간",
-        pairSpecificEffect: "서로에게 든든한 버팀목이 되어주는 신뢰를 형성합니다.",
+        scene: L(
+          "함께 중요한 일정을 의논하거나 결정을 내리는 순간",
+          "The moment you discuss an important plan together or make a decision",
+        ),
+        pairSpecificEffect: L(
+          "서로에게 든든한 버팀목이 되어주는 신뢰를 형성합니다.",
+          "Builds a trust where you each become a dependable pillar for the other.",
+        ),
         tensionBridge: copy.attrFlip,
         evidenceIds: [],
         confidence: "high",
@@ -594,11 +668,23 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       },
       bToA: bilateralMatchBToA?.narrativeUnit ?? {
         subject: "b_to_a",
-        recognition: `${topic(names.b)} ${names.a}의 분명한 기준과 결단력에 신선한 매력을 느낍니다.`,
-        emotionalMeaning: `${topic(names.b)} 바라는 확실한 방향성을 ${names.a}에게서 얻기 때문입니다.`,
+        recognition: L(
+          `${topicP(names.b, locale)} ${names.a}의 분명한 기준과 결단력에 신선한 매력을 느낍니다.`,
+          `${topicP(names.b, locale)} feels a fresh pull toward ${names.a}'s clear standards and decisiveness.`,
+        ),
+        emotionalMeaning: L(
+          `${topicP(names.b, locale)} 바라는 확실한 방향성을 ${names.a}에게서 얻기 때문입니다.`,
+          `That's because ${topicP(names.b, locale)} gets the clear sense of direction they've been wanting from ${names.a}.`,
+        ),
         partnerEvidence: [bilateralMatchBToA?.supportingReasons[0]?.text ?? ""].filter(Boolean),
-        scene: "방향이 불확실할 때 명쾌하게 결정을 내리고 상황을 정리하는 순간",
-        pairSpecificEffect: "불안을 덜어내고 확실한 목표를 향해 나아가는 추진력을 얻습니다.",
+        scene: L(
+          "방향이 불확실할 때 명쾌하게 결정을 내리고 상황을 정리하는 순간",
+          "The moment they make a clear-headed decision and sort out a situation when the direction is uncertain",
+        ),
+        pairSpecificEffect: L(
+          "불안을 덜어내고 확실한 목표를 향해 나아가는 추진력을 얻습니다.",
+          "Eases anxiety and gives you the drive to move toward a clear goal.",
+        ),
         tensionBridge: copy.attrFlip,
         evidenceIds: [],
         confidence: "high",
@@ -643,10 +729,10 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   const recurringLoop = {
     triggerScene: copy.loopTrigger,
     steps: [
-      fill(copy.tpl.loop1, { subjA: subject(names.a) }),
-      fill(copy.tpl.loop2, { subjB: subject(names.b) }),
-      fill(copy.tpl.loop3, { topicA: topic(names.a) }),
-      fill(copy.tpl.loop4, { topicB: topic(names.b) }),
+      fill(copy.tpl.loop1, { subjA: subjectP(names.a, locale) }, locale),
+      fill(copy.tpl.loop2, { subjB: subjectP(names.b, locale) }, locale),
+      fill(copy.tpl.loop3, { topicA: topicP(names.a, locale) }, locale),
+      fill(copy.tpl.loop4, { topicB: topicP(names.b, locale) }, locale),
     ],
     residue: copy.loopResidue,
     provenance: [
@@ -683,6 +769,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           relCeA,
           relCeB,
           names: { a: names.a, b: names.b },
+          locale,
         })
       : null;
 
@@ -691,8 +778,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       {
         from: "a",
         to: "b",
-        change: fill(copy.tpl.giftAtoB, { subjA: subject(names.a), b: names.b }),
-        excessVulnerability: fill(copy.tpl.giftARisk, { b: names.b }),
+        change: fill(copy.tpl.giftAtoB, { subjA: subjectP(names.a, locale), b: names.b }, locale),
+        excessVulnerability: fill(copy.tpl.giftARisk, { b: names.b }, locale),
         provenance: [
           prov(
             "canonical_projections.expression_speed",
@@ -708,10 +795,10 @@ export function buildCanonicalRelationshipStoryPlan(params: {
         from: "b",
         to: "a",
         change: fill(copy.tpl.giftBtoA, {
-          subjB: subject(names.b),
-          topicA: topic(names.a),
-        }),
-        excessVulnerability: fill(copy.tpl.giftBRisk, { a: names.a }),
+          subjB: subjectP(names.b, locale),
+          topicA: topicP(names.a, locale),
+        }, locale),
+        excessVulnerability: fill(copy.tpl.giftBRisk, { a: names.a }, locale),
         provenance: [
           prov(
             "canonical_projections.reassurance_signal",
@@ -729,14 +816,29 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     {
       direction: "a_observes_b",
       observedBehavior: relCeB
-        ? `${subject(names.b)} 갈등 상황에서 ${relCeB.stressResponse.text}`
-        : fill(copy.tpl.misreadAObs, { subjB: subject(names.b) }),
-      observerFelt: fill(copy.tpl.misreadAFelt, { topicA: topic(names.a) }),
-      commonNegativeReading: "대화를 회피하거나 관계에 무성의하다고 오해하기 쉽습니다.",
+        ? L(
+            `${subjectP(names.b, locale)} 갈등 상황에서 ${relCeB.stressResponse.text}`,
+            `In a conflict, ${subjectP(names.b, locale)} ${relCeB.stressResponse.text.charAt(0).toLowerCase()}${relCeB.stressResponse.text.slice(1)}`,
+          )
+        : fill(copy.tpl.misreadAObs, { subjB: subjectP(names.b, locale) }, locale),
+      observerFelt: fill(copy.tpl.misreadAFelt, { topicA: topicP(names.a, locale) }, locale),
+      commonNegativeReading: L(
+        "대화를 회피하거나 관계에 무성의하다고 오해하기 쉽습니다.",
+        "It's easy to misread this as avoiding the conversation or not taking the relationship seriously.",
+      ),
       actorPossibleNeed: relCeB?.relationshipNeeds[0]?.text ?? copy.misreadANeed,
-      meaningGap: "표현의 속도와 생각 정리의 방식 차이일 뿐, 무관심이 아닙니다.",
-      betterExpression: `${names.b}: "지금 화가 난 게 아니라, 차분하게 생각할 시간이 필요해. 조금만 기다려주면 정리해서 말할게."`,
-      helpfulResponse: `${names.a}: 침묵을 거절로 받아들이지 않고, ${names.b}가 생각을 정리할 여유를 존중해주기.`,
+      meaningGap: L(
+        "표현의 속도와 생각 정리의 방식 차이일 뿐, 무관심이 아닙니다.",
+        "It's only a difference in the pace of expressing and how you each sort out your thoughts — not indifference.",
+      ),
+      betterExpression: L(
+        `${names.b}: "지금 화가 난 게 아니라, 차분하게 생각할 시간이 필요해. 조금만 기다려주면 정리해서 말할게."`,
+        `${names.b}: "I'm not angry right now — I just need some calm time to think. Give me a bit and I'll come back with my thoughts sorted out."`,
+      ),
+      helpfulResponse: L(
+        `${names.a}: 침묵을 거절로 받아들이지 않고, ${names.b}가 생각을 정리할 여유를 존중해주기.`,
+        `${names.a}: Not reading the silence as rejection, and respecting ${names.b}'s need for room to sort out their thoughts.`,
+      ),
       confidence: "medium",
       provenance: [
         prov(
@@ -764,14 +866,29 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     {
       direction: "b_observes_a",
       observedBehavior: relCeA
-        ? `${subject(names.a)} 긴장 상황에서 ${relCeA.stressResponse.text}`
-        : fill(copy.tpl.misreadBObs, { subjA: subject(names.a) }),
-      observerFelt: fill(copy.tpl.misreadBFelt, { topicB: topic(names.b) }),
-      commonNegativeReading: "자신을 탓하거나 성급하게 몰아붙인다고 오해하기 쉽습니다.",
+        ? L(
+            `${subjectP(names.a, locale)} 긴장 상황에서 ${relCeA.stressResponse.text}`,
+            `Under tension, ${subjectP(names.a, locale)} ${relCeA.stressResponse.text.charAt(0).toLowerCase()}${relCeA.stressResponse.text.slice(1)}`,
+          )
+        : fill(copy.tpl.misreadBObs, { subjA: subjectP(names.a, locale) }, locale),
+      observerFelt: fill(copy.tpl.misreadBFelt, { topicB: topicP(names.b, locale) }, locale),
+      commonNegativeReading: L(
+        "자신을 탓하거나 성급하게 몰아붙인다고 오해하기 쉽습니다.",
+        "It's easy to misread this as blaming you or pushing you too hard, too fast.",
+      ),
       actorPossibleNeed: relCeA?.relationshipNeeds[0]?.text ?? copy.misreadBNeed,
-      meaningGap: "공격하려는 것이 아니라, 관계를 빠르게 바로잡고 안심하고 싶은 다급함입니다.",
-      betterExpression: `${names.a}: "너를 탓하려는 게 아니라, 우리 문제가 빨리 풀렸으면 해서 다급한 마음이 앞섰어."`,
-      helpfulResponse: `${names.b}: ${names.a}의 다급한 표현 이면에 있는 안심 욕구를 먼저 알아채고 짧게라도 따뜻한 반응을 보여주기.`,
+      meaningGap: L(
+        "공격하려는 것이 아니라, 관계를 빠르게 바로잡고 안심하고 싶은 다급함입니다.",
+        "It's not an attack — it's an urgency to fix things quickly and feel reassured again.",
+      ),
+      betterExpression: L(
+        `${names.a}: "너를 탓하려는 게 아니라, 우리 문제가 빨리 풀렸으면 해서 다급한 마음이 앞섰어."`,
+        `${names.a}: "I'm not trying to blame you — I just got ahead of myself wanting our problem resolved quickly."`,
+      ),
+      helpfulResponse: L(
+        `${names.b}: ${names.a}의 다급한 표현 이면에 있는 안심 욕구를 먼저 알아채고 짧게라도 따뜻한 반응을 보여주기.`,
+        `${names.b}: Noticing the need for reassurance behind ${names.a}'s urgency, and offering even a brief, warm response first.`,
+      ),
       confidence: "medium",
       provenance: [
         prov(
@@ -814,14 +931,21 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           relCeA,
           relCeB,
           names: { a: names.a, b: names.b },
+          locale,
         })
       : [
           {
             person: "a",
             visibleReaction: hidden?.a_hidden?.visible ?? copy.hiddenAVis,
             innerFeeling: hidden?.a_hidden?.inner ?? copy.hiddenAInner,
-            reason: "솔직한 마음을 털어놓고 관계를 온전히 지키고 싶기 때문",
-            fear: "자신의 열정과 표현이 상대에게 부담이나 거절로 돌아올지 모른다는 두려움",
+            reason: L(
+              "솔직한 마음을 털어놓고 관계를 온전히 지키고 싶기 때문",
+              "Because they want to be honest about what's in their heart and fully protect the relationship",
+            ),
+            fear: L(
+              "자신의 열정과 표현이 상대에게 부담이나 거절로 돌아올지 모른다는 두려움",
+              "The fear that their passion and how they express it might come back to them as a burden or a rejection",
+            ),
             whatHelps: copy.hiddenAHelp,
             unspokenNeed: hidden?.a_hidden?.need ?? copy.hiddenANeed,
             provenance: [
@@ -839,8 +963,14 @@ export function buildCanonicalRelationshipStoryPlan(params: {
             person: "b",
             visibleReaction: hidden?.b_hidden?.visible ?? copy.hiddenBVis,
             innerFeeling: hidden?.b_hidden?.inner ?? copy.hiddenBInner,
-            reason: "충분히 이성적이고 책임감 있게 문제를 다루고 싶기 때문",
-            fear: "자신의 정돈되지 않은 감정이 관계를 망치거나 오해를 부를지 모른다는 두려움",
+            reason: L(
+              "충분히 이성적이고 책임감 있게 문제를 다루고 싶기 때문",
+              "Because they want to handle the problem in a fully level-headed, responsible way",
+            ),
+            fear: L(
+              "자신의 정돈되지 않은 감정이 관계를 망치거나 오해를 부를지 모른다는 두려움",
+              "The fear that their unsorted emotions might damage the relationship or invite a misunderstanding",
+            ),
             whatHelps: copy.hiddenBHelp,
             unspokenNeed: hidden?.b_hidden?.need ?? copy.hiddenBNeed,
             provenance: [
@@ -859,14 +989,32 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   const repair = {
     sequence: copy.repairSeq,
     helpsA: [
-      `${names.a}에게는 ${relCeA?.recoveryPattern.text ?? '불안을 덜어주는 즉각적인 정서적 안심'}이 가장 필요합니다.`,
-      `${relCeA?.supportNeededFromPartner[0]?.text ?? '자신의 솔직한 헌신을 인정해주는 따뜻한 피드백'}을 전해주세요.`,
-      `대화를 미루지 않고 언제 다시 이야기할지 구체적인 시점을 약속해주세요.`,
+      L(
+        `${names.a}에게는 ${relCeA?.recoveryPattern.text ?? '불안을 덜어주는 즉각적인 정서적 안심'}이 가장 필요합니다.`,
+        `${names.a} needs ${(relCeA?.recoveryPattern.text ?? "immediate emotional reassurance that eases their anxiety").charAt(0).toLowerCase()}${(relCeA?.recoveryPattern.text ?? "immediate emotional reassurance that eases their anxiety").slice(1)} most of all.`,
+      ),
+      L(
+        `${relCeA?.supportNeededFromPartner[0]?.text ?? '자신의 솔직한 헌신을 인정해주는 따뜻한 피드백'}을 전해주세요.`,
+        `Offer them ${(relCeA?.supportNeededFromPartner[0]?.text ?? "warm feedback that recognizes their honest devotion").charAt(0).toLowerCase()}${(relCeA?.supportNeededFromPartner[0]?.text ?? "warm feedback that recognizes their honest devotion").slice(1)}.`,
+      ),
+      L(
+        `대화를 미루지 않고 언제 다시 이야기할지 구체적인 시점을 약속해주세요.`,
+        `Don't put off the conversation — promise a concrete time for when you'll talk again.`,
+      ),
     ],
     helpsB: [
-      `${names.b}에게는 ${relCeB?.recoveryPattern.text ?? '생각을 정리할 수 있는 충분한 침묵의 시간'}이 필요합니다.`,
-      `${relCeB?.supportNeededFromPartner[0]?.text ?? '자신의 침묵과 생각을 다그치지 않고 기다려주는 신뢰'}를 보여주세요.`,
-      `감정적인 압박 대신 차분하고 논리적인 톤으로 천천히 다가가세요.`,
+      L(
+        `${names.b}에게는 ${relCeB?.recoveryPattern.text ?? '생각을 정리할 수 있는 충분한 침묵의 시간'}이 필요합니다.`,
+        `${names.b} needs ${(relCeB?.recoveryPattern.text ?? "enough quiet time to sort out their thoughts").charAt(0).toLowerCase()}${(relCeB?.recoveryPattern.text ?? "enough quiet time to sort out their thoughts").slice(1)}.`,
+      ),
+      L(
+        `${relCeB?.supportNeededFromPartner[0]?.text ?? '자신의 침묵과 생각을 다그치지 않고 기다려주는 신뢰'}를 보여주세요.`,
+        `Show them ${(relCeB?.supportNeededFromPartner[0]?.text ?? "the trust of waiting instead of pressing their silence and thoughts").charAt(0).toLowerCase()}${(relCeB?.supportNeededFromPartner[0]?.text ?? "the trust of waiting instead of pressing their silence and thoughts").slice(1)}.`,
+      ),
+      L(
+        `감정적인 압박 대신 차분하고 논리적인 톤으로 천천히 다가가세요.`,
+        `Approach them slowly, with a calm, level tone instead of emotional pressure.`,
+      ),
     ],
     avoid: copy.repairAvoid,
     sharedCommitments: copy.repairCommit,
@@ -897,9 +1045,9 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       domainId: "weekend",
       title: copy.weekendTitle,
       difference: fill(copy.tpl.weekendDiff, {
-        topicA: topic(names.a),
-        topicB: topic(names.b),
-      }),
+        topicA: topicP(names.a, locale),
+        topicB: topicP(names.b, locale),
+      }, locale),
       riskCondition: copy.weekendRisk,
       agreement: copy.weekendAgree,
       usableLine: copy.weekendLine,
@@ -937,7 +1085,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     {
       domainId: "big_decision",
       title: copy.decisionTitle,
-      difference: fill(copy.tpl.decisionDiff, { dA: decisionLeanA, dB: decisionLeanB }),
+      difference: fill(copy.tpl.decisionDiff, { dA: decisionLeanA, dB: decisionLeanB }, locale),
       riskCondition: copy.decisionRisk,
       agreement: copy.decisionAgree,
       usableLine: copy.decisionLine,
@@ -992,10 +1140,10 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     relationshipDefinition,
     bondMode: balance
       ? fill(copy.tpl.bondWithBalance, {
-          topicA: topic(names.a),
-          topicB: topic(names.b),
-        })
-      : fill(copy.tpl.bondWithout, { topicA: topic(names.a), b: names.b }),
+          topicA: topicP(names.a, locale),
+          topicB: topicP(names.b, locale),
+        }, locale)
+      : fill(copy.tpl.bondWithout, { topicA: topicP(names.a, locale), b: names.b }, locale),
     growthOrStability: specialBond?.why_special ?? copy.growthFallback,
     primaryTension,
     specialCodePreview:
@@ -1057,8 +1205,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     },
     closing: {
       presentPossibility: copy.closePossibility,
-      rememberA: fill(copy.tpl.rememberA, { topicA: topic(names.a) }),
-      rememberB: fill(copy.tpl.rememberB, { topicB: topic(names.b) }),
+      rememberA: fill(copy.tpl.rememberA, { topicA: topicP(names.a, locale) }, locale),
+      rememberB: fill(copy.tpl.rememberB, { topicB: topicP(names.b, locale) }, locale),
       watchSignals: repair.observationSignals,
       improvingSignals: [copy.improveSignal],
       cautionSignals: repair.warningIfRepeats,

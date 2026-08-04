@@ -88,7 +88,7 @@ ok("confirmed: buildCanonicalRelationshipStoryPlan.ts contains zero raw-calculat
 section("4) UI adapter does not perform raw CE computation");
 
 const adapterSrc = read(
-  "app/dev/romantic-v4-content-prototype/components/v4/adaptCanonicalSection.ts",
+  "components/relationship/romantic/v4/adaptCanonicalSection.ts",
 );
 for (const forbidden of [
   "personalContextEngine",

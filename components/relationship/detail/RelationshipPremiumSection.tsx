@@ -3,6 +3,7 @@ import GlowButton from "@/components/space/GlowButton";
 import RelationshipPremiumCards from "@/components/relationship/RelationshipPremiumCards";
 import RomanticSajuDeepReportView from "@/components/relationship/RomanticSajuDeepReportView";
 import RomanticExperienceView from "@/components/relationship/romantic/experience/RomanticExperienceView";
+import RomanticV4ReportView from "@/components/relationship/romantic/v4/RomanticV4ReportView";
 import WorkColleagueReportView from "@/components/relationship/WorkColleagueReportView";
 import MarriageReportView from "@/components/relationship/MarriageReportView";
 import FamilyParentReportView from "@/components/relationship/FamilyParentReportView";
@@ -10,6 +11,7 @@ import FriendReportView from "@/components/relationship/FriendReportView";
 import { ReportSurfaceProvider } from "@/components/relationship/reportLayout";
 import type { RelationshipPerspective } from "@/components/relationship/RelationshipBasicCards";
 import type { RomanticSajuDeepReport } from "@/lib/prompts/relationshipPremium/romanticSajuDeep/outputSchema";
+import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
@@ -32,6 +34,7 @@ type RelationshipPremiumSectionProps = {
   viewerIsReportA?: boolean;
   displayPremium: RelationshipPerspective | null;
   displayRomanticDeep: RomanticSajuDeepReport["report"] | null;
+  displayRomanticDeepV4?: RomanticV4PrototypePayload | null;
   displayWorkDeep: WorkColleagueReportBody | null;
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
@@ -55,6 +58,7 @@ export default function RelationshipPremiumSection({
   viewerIsReportA = true,
   displayPremium,
   displayRomanticDeep,
+  displayRomanticDeepV4 = null,
   displayWorkDeep,
   displayCohabitationDeep,
   displayFamilyDeep,
@@ -114,7 +118,11 @@ export default function RelationshipPremiumSection({
           {localError}
         </p>
       ) : null}
-      {premiumKind === "romantic" && displayRomanticDeep ? (
+      {premiumKind === "romantic" && displayRomanticDeepV4 ? (
+        <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
+          <RomanticV4ReportView payload={displayRomanticDeepV4} />
+        </div>
+      ) : premiumKind === "romantic" && displayRomanticDeep ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
           {useRomanticExperienceV2 ? (
             <RomanticExperienceView

@@ -17,7 +17,10 @@ import {
   explainFourCeInfluence,
   type RomanticNarrativeInputContract,
 } from "./fourCeNarrativeInput";
-import { buildActualFourCeContract } from "./buildActualFourCeContract";
+import {
+  buildActualFourCeContract,
+  type RomanticV4PrecomputedSaju,
+} from "./buildActualFourCeContract";
 import { buildFourCeSemanticPlan } from "./fourCeSemanticPlanner";
 import { buildCanonicalRomanticV4Report } from "./buildCanonicalRomanticV4Report";
 import {
@@ -508,6 +511,7 @@ function createCompletePayload(
   contractOverride?: RomanticNarrativeInputContract,
   surveyInput?: RomanticV4SurveyInput,
   pairSajuInput?: RomanticV4PairSajuInput,
+  precomputed?: RomanticV4PrecomputedSaju,
 ): RomanticV4PrototypePayload {
   // Real pair mode: the fixture's hand-authored 지민/정우 narrative must never
   // reach the payload — vm stays unbuilt (dev_fixture's only consumer below,
@@ -542,7 +546,7 @@ function createCompletePayload(
 
   const fourCeResult = contractOverride
     ? null
-    : buildActualFourCeContract(locale, pairSajuInput, surveyInput);
+    : buildActualFourCeContract(locale, pairSajuInput, surveyInput, precomputed);
   const preNarrativeContract = contractOverride ?? fourCeResult!.contract;
   const nameA = fourCeResult?.nameA ?? "지민";
   const nameB = fourCeResult?.nameB ?? "정우";
@@ -579,7 +583,7 @@ function createCompletePayload(
   const fourCeSemanticPlan = buildFourCeSemanticPlan(preNarrativeContract);
   const canonicalReport =
     locale === "ko-KR" || locale === "en-US"
-      ? buildCanonicalRomanticV4Report(locale, undefined, { pairSajuInput, surveyInput })
+      ? buildCanonicalRomanticV4Report(locale, undefined, { pairSajuInput, surveyInput, precomputed })
       : undefined;
   const aCharacterMeaning = fourCeSemanticPlan.aRelationshipCharacter.selectedMeaning;
   const bCharacterMeaning = fourCeSemanticPlan.bRelationshipCharacter.selectedMeaning;
@@ -1744,6 +1748,8 @@ export function buildRomanticV4PrototypePayload(
     surveyInput?: RomanticV4SurveyInput;
     /** mode "real" wires Saju/CE to actual A/B birth data; omitted = dev-fixture demo pair. */
     pairSajuInput?: RomanticV4PairSajuInput;
+    /** Already-computed Saju bundle/master JSON for A/B — avoids recomputing when the caller (e.g. the production route) already has them. */
+    precomputed?: RomanticV4PrecomputedSaju;
   },
 ): RomanticV4PrototypePayload {
   if (variant === "complete")
@@ -1752,6 +1758,7 @@ export function buildRomanticV4PrototypePayload(
       options?.contractOverride,
       options?.surveyInput,
       options?.pairSajuInput,
+      options?.precomputed,
     );
   return createVariantSelectionCheck(locale, variant, options?.surveyInput, options?.pairSajuInput);
 }
