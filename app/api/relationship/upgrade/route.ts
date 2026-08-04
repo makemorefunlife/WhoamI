@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     );
     if (participantGuard) return participantGuard;
 
-    const limited = enforceRateLimit("upgrade", userId);
+    const limited = await enforceRateLimit("upgrade", userId);
     if (!limited.ok) {
       return NextResponse.json(
         { error: limited.error },

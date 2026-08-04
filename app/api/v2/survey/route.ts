@@ -50,7 +50,7 @@ export async function GET(req: Request) {
     );
     if (!idCheck.ok) return idCheck.response;
 
-    const limited = enforceRateLimit("survey_persist", userId);
+    const limited = await enforceRateLimit("survey_persist", userId);
     if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
       raw.profile as CurrentSelfProfile,
     );
 
-    const limited = enforceRateLimit("survey_persist", userId);
+    const limited = await enforceRateLimit("survey_persist", userId);
     if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();
@@ -208,7 +208,7 @@ export async function DELETE(req: Request) {
     );
     if (!idCheck.ok) return idCheck.response;
 
-    const limited = enforceRateLimit("survey_persist", userId);
+    const limited = await enforceRateLimit("survey_persist", userId);
     if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();

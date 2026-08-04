@@ -120,9 +120,9 @@ async function run() {
   {
     resetRateLimitMemoryForTests();
     for (let i = 0; i < 5; i++) {
-      assert.equal(enforceRateLimit("llm", "u1").ok, true);
+      assert.equal((await enforceRateLimit("llm", "u1")).ok, true);
     }
-    const blocked = enforceRateLimit("llm", "u1");
+    const blocked = await enforceRateLimit("llm", "u1");
     assert.equal(blocked.ok, false);
     assert.equal(blocked.status, 429);
     assert.ok(blocked.retryAfterSec >= 1);
@@ -142,12 +142,16 @@ async function run() {
     const prevVercel = process.env.VERCEL_ENV;
     const prevUpstash = process.env.UPSTASH_REDIS_REST_URL;
     const prevKv = process.env.KV_REST_API_URL;
+    const prevUpstashTok = process.env.UPSTASH_REDIS_REST_TOKEN;
+    const prevKvTok = process.env.KV_REST_API_TOKEN;
     delete process.env.RATE_LIMIT_ALLOW_MEMORY;
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.KV_REST_API_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.KV_REST_API_TOKEN;
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "production";
-    const r = enforceRateLimit("llm", "prod_user");
+    const r = await enforceRateLimit("llm", "prod_user");
     assert.equal(r.ok, false);
     assert.equal(r.status, 503);
     process.env.RATE_LIMIT_ALLOW_MEMORY = prev;
@@ -158,6 +162,10 @@ async function run() {
     else process.env.UPSTASH_REDIS_REST_URL = prevUpstash;
     if (prevKv === undefined) delete process.env.KV_REST_API_URL;
     else process.env.KV_REST_API_URL = prevKv;
+    if (prevUpstashTok === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    else process.env.UPSTASH_REDIS_REST_TOKEN = prevUpstashTok;
+    if (prevKvTok === undefined) delete process.env.KV_REST_API_TOKEN;
+    else process.env.KV_REST_API_TOKEN = prevKvTok;
     ok("production without rate-limit backend → 503");
   }
 
@@ -168,14 +176,18 @@ async function run() {
     const prevVercel = process.env.VERCEL_ENV;
     const prevUpstash = process.env.UPSTASH_REDIS_REST_URL;
     const prevKv = process.env.KV_REST_API_URL;
+    const prevUpstashTok = process.env.UPSTASH_REDIS_REST_TOKEN;
+    const prevKvTok = process.env.KV_REST_API_TOKEN;
     process.env.RATE_LIMIT_ALLOW_MEMORY = "true";
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.KV_REST_API_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.KV_REST_API_TOKEN;
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "production";
     assert.equal(isStrictDeployEnv(), true);
     assert.equal(allowsMemoryRateLimitFallback(), false);
-    const r = enforceRateLimit("llm", "prod_memory_flag");
+    const r = await enforceRateLimit("llm", "prod_memory_flag");
     assert.equal(r.ok, false);
     assert.equal(r.status, 503);
     process.env.RATE_LIMIT_ALLOW_MEMORY = prev;
@@ -186,6 +198,10 @@ async function run() {
     else process.env.UPSTASH_REDIS_REST_URL = prevUpstash;
     if (prevKv === undefined) delete process.env.KV_REST_API_URL;
     else process.env.KV_REST_API_URL = prevKv;
+    if (prevUpstashTok === undefined) delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    else process.env.UPSTASH_REDIS_REST_TOKEN = prevUpstashTok;
+    if (prevKvTok === undefined) delete process.env.KV_REST_API_TOKEN;
+    else process.env.KV_REST_API_TOKEN = prevKvTok;
     ok("production ignores RATE_LIMIT_ALLOW_MEMORY → 503");
   }
 

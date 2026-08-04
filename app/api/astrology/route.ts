@@ -85,7 +85,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "birthPlace too long" }, { status: 400 });
     }
 
-    const limited = enforceRateLimit("astrology", userId);
+    const limited = await enforceRateLimit("astrology", userId);
     if (!limited.ok) {
       return NextResponse.json(
         { error: limited.error },

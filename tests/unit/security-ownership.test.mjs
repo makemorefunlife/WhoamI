@@ -166,10 +166,10 @@ async function run() {
   {
     resetRateLimitMemoryForTests();
     for (let i = 0; i < 5; i++) {
-      const r = enforceRateLimit("llm", "user_limit");
+      const r = await enforceRateLimit("llm", "user_limit");
       assert.equal(r.ok, true);
     }
-    const blocked = enforceRateLimit("llm", "user_limit");
+    const blocked = await enforceRateLimit("llm", "user_limit");
     assert.equal(blocked.ok, false);
     assert.equal(blocked.status, 429);
     ok("llm rate limit → 429 after 5/hour");

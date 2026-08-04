@@ -1,15 +1,17 @@
 /**
- * API rate limit helper — in-memory store when explicitly allowed in development only.
+ * API rate limit helper.
  *
- * Env:
- * - UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN (preferred, not wired yet)
- * - KV_REST_API_URL + KV_REST_API_TOKEN (Vercel KV, not wired yet)
+ * Env (prefer Upstash; Vercel KV is the same REST shape):
+ * - UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+ * - KV_REST_API_URL + KV_REST_API_TOKEN
  * - RATE_LIMIT_ALLOW_MEMORY=true — development local/tests only
+ * - RATE_LIMIT_DEV_UNLIMITED=true — development skip only
  *
  * Policy:
- * - development: memory only if RATE_LIMIT_ALLOW_MEMORY=true; else 503
- * - preview / production: remote required; memory flag ignored → 503 fail-closed
- * - store errors on paid/cost APIs → fail-closed
+ * - development: remote if configured; else memory when ALLOW_MEMORY; else 503
+ * - preview / production: remote required (url+token); memory flag ignored → 503
+ * - remote errors / invalid responses → fail-closed 503
+ * - never log URL tokens or subjects
  */
 
 export type RateLimitBucket =
@@ -39,16 +41,50 @@ type Entry = { count: number; resetAt: number };
 
 const memoryStore = new Map<string, Entry>();
 
+type RemoteConfig = { url: string; token: string };
+
+type FetchLike = (
+  input: string,
+  init?: { method?: string; headers?: Record<string, string>; body?: string },
+) => Promise<{
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+}>;
+
+let fetchImpl: FetchLike = globalThis.fetch.bind(globalThis) as FetchLike;
+
 /** Test-only: clear in-memory counters */
 export function resetRateLimitMemoryForTests(): void {
   memoryStore.clear();
 }
 
-function hasRemoteRateLimitBackend(): boolean {
-  return Boolean(
-    process.env.UPSTASH_REDIS_REST_URL?.trim() ||
-      process.env.KV_REST_API_URL?.trim(),
+/** Test-only: inject fetch (pass null to restore). Never used in production. */
+export function setRateLimitFetchForTests(fn: FetchLike | null): void {
+  fetchImpl =
+    fn ?? (globalThis.fetch.bind(globalThis) as FetchLike);
+}
+
+function pairFromEnv(
+  urlKey: string,
+  tokenKey: string,
+): RemoteConfig | null {
+  const url = process.env[urlKey]?.trim() ?? "";
+  const token = process.env[tokenKey]?.trim() ?? "";
+  if (!url || !token) return null;
+  return { url, token };
+}
+
+/** Prefer Upstash; fall back to Vercel KV REST (same protocol). */
+export function resolveRemoteRateLimitConfig(): RemoteConfig | null {
+  return (
+    pairFromEnv("UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN") ??
+    pairFromEnv("KV_REST_API_URL", "KV_REST_API_TOKEN")
   );
+}
+
+export function hasRemoteRateLimitBackend(): boolean {
+  return resolveRemoteRateLimitConfig() !== null;
 }
 
 /** preview + production deploy targets (and NODE_ENV=production). */
@@ -74,9 +110,6 @@ export function allowsMemoryRateLimitFallback(): boolean {
 /**
  * Local-dev-only escape hatch — set RATE_LIMIT_DEV_UNLIMITED=true in
  * .env.local to skip all rate limits while building/testing.
- * Double-gated behind isStrictDeployEnv()/NODE_ENV so it can never apply
- * in preview/production, regardless of what env vars are present there.
- * Remove or unset before shipping to keep the real limits active again.
  */
 export function isDevRateLimitUnlimited(): boolean {
   if (isStrictDeployEnv()) return false;
@@ -88,56 +121,106 @@ export type RateLimitResult =
   | { ok: true }
   | { ok: false; status: 401 | 429 | 503; error: string; retryAfterSec?: number };
 
-/**
- * @param keySubject — Clerk userId (required for paid/PII routes). Guest not allowed.
- * Subject is never returned in HTTP responses.
- */
-export function enforceRateLimit(
-  bucket: RateLimitBucket,
-  keySubject: string | null | undefined,
+async function redisCommand(
+  config: RemoteConfig,
+  command: Array<string | number>,
+): Promise<unknown> {
+  const res = await fetchImpl(config.url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(command),
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    console.error("[rate-limit]", "remote_auth_failed");
+    throw new Error("remote_auth_failed");
+  }
+  if (!res.ok) {
+    console.error("[rate-limit]", "remote_http_error");
+    throw new Error("remote_http_error");
+  }
+
+  let payload: unknown;
+  try {
+    payload = await res.json();
+  } catch {
+    console.error("[rate-limit]", "remote_invalid_json");
+    throw new Error("remote_invalid_json");
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "error" in payload &&
+    (payload as { error?: unknown }).error
+  ) {
+    console.error("[rate-limit]", "remote_command_error");
+    throw new Error("remote_command_error");
+  }
+
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "result" in payload
+  ) {
+    return (payload as { result: unknown }).result;
+  }
+
+  console.error("[rate-limit]", "remote_invalid_response");
+  throw new Error("remote_invalid_response");
+}
+
+async function consumeRemoteLimit(
+  config: RemoteConfig,
+  key: string,
+  max: number,
+  windowMs: number,
+): Promise<RateLimitResult> {
+  const windowSec = Math.max(1, Math.ceil(windowMs / 1000));
+  const countRaw = await redisCommand(config, ["INCR", key]);
+  const count = typeof countRaw === "number" ? countRaw : Number(countRaw);
+  if (!Number.isFinite(count) || count < 1) {
+    console.error("[rate-limit]", "remote_invalid_response");
+    return {
+      ok: false,
+      status: 503,
+      error: "temporarily unavailable",
+    };
+  }
+
+  if (count === 1) {
+    await redisCommand(config, ["EXPIRE", key, windowSec]);
+  }
+
+  if (count > max) {
+    let retryAfterSec = windowSec;
+    try {
+      const ttlRaw = await redisCommand(config, ["TTL", key]);
+      const ttl = typeof ttlRaw === "number" ? ttlRaw : Number(ttlRaw);
+      if (Number.isFinite(ttl) && ttl > 0) retryAfterSec = Math.ceil(ttl);
+    } catch {
+      // keep windowSec fallback
+    }
+    return {
+      ok: false,
+      status: 429,
+      error: "rate limit exceeded",
+      retryAfterSec: Math.max(1, retryAfterSec),
+    };
+  }
+
+  return { ok: true };
+}
+
+function consumeMemoryLimit(
+  key: string,
+  max: number,
+  windowMs: number,
 ): RateLimitResult {
-  const subject = typeof keySubject === "string" ? keySubject.trim() : "";
-  if (!subject) {
-    return { ok: false, status: 401, error: "unauthorized" };
-  }
-
-  if (isDevRateLimitUnlimited()) {
-    return { ok: true };
-  }
-
-  const hasRemote = hasRemoteRateLimitBackend();
-  const allowMemory = allowsMemoryRateLimitFallback();
-
-  if (!hasRemote && !allowMemory) {
-    // Fail-closed — do not log subject/IP/key
-    console.error("[rate-limit]", "backend_missing");
-    return {
-      ok: false,
-      status: 503,
-      error: "temporarily unavailable",
-    };
-  }
-
-  // Remote not wired yet: memory path only when allowMemory (dev).
-  // When remote is configured, future wiring should use it; until then
-  // treat "has remote env" without client as still needing a store —
-  // if remote URLs exist but client not installed, fail closed in deploy.
-  if (hasRemote && isStrictDeployEnv()) {
-    // Placeholder until Upstash/KV client is wired: fail-closed rather than
-    // silently using memory in production/preview.
-    console.error("[rate-limit]", "remote_not_wired");
-    return {
-      ok: false,
-      status: 503,
-      error: "temporarily unavailable",
-    };
-  }
-
-  const { max, windowMs } = LIMITS[bucket];
-  // Internal key — never expose in responses
-  const key = `${bucket}:${subject}`;
   const now = Date.now();
-
   try {
     const existing = memoryStore.get(key);
 
@@ -163,7 +246,6 @@ export function enforceRateLimit(
     memoryStore.set(key, existing);
     return { ok: true };
   } catch {
-    // Store errors → fail-closed for cost APIs
     console.error("[rate-limit]", "store_error");
     return {
       ok: false,
@@ -171,6 +253,55 @@ export function enforceRateLimit(
       error: "temporarily unavailable",
     };
   }
+}
+
+/**
+ * @param keySubject — Clerk userId (required for paid/PII routes). Guest not allowed.
+ * Subject is never returned in HTTP responses.
+ */
+export async function enforceRateLimit(
+  bucket: RateLimitBucket,
+  keySubject: string | null | undefined,
+): Promise<RateLimitResult> {
+  const subject = typeof keySubject === "string" ? keySubject.trim() : "";
+  if (!subject) {
+    return { ok: false, status: 401, error: "unauthorized" };
+  }
+
+  if (isDevRateLimitUnlimited()) {
+    return { ok: true };
+  }
+
+  const remote = resolveRemoteRateLimitConfig();
+  const allowMemory = allowsMemoryRateLimitFallback();
+
+  if (!remote && !allowMemory) {
+    console.error("[rate-limit]", "backend_missing");
+    return {
+      ok: false,
+      status: 503,
+      error: "temporarily unavailable",
+    };
+  }
+
+  const { max, windowMs } = LIMITS[bucket];
+  // Internal key — never expose in responses or logs
+  const key = `rl:${bucket}:${subject}`;
+
+  if (remote) {
+    try {
+      return await consumeRemoteLimit(remote, key, max, windowMs);
+    } catch {
+      console.error("[rate-limit]", "backend_unavailable");
+      return {
+        ok: false,
+        status: 503,
+        error: "temporarily unavailable",
+      };
+    }
+  }
+
+  return consumeMemoryLimit(key, max, windowMs);
 }
 
 export function rateLimitResponse(

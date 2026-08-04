@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const birthTime = parseBirthTime(body.birthTime);
     if (!birthTime.ok) return birthTime.response;
 
-    const limited = enforceRateLimit("saju", userId);
+    const limited = await enforceRateLimit("saju", userId);
     if (!limited.ok) {
       return NextResponse.json(
         { error: limited.error },

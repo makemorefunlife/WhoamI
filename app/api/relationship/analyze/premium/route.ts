@@ -172,7 +172,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const limited = enforceRateLimit("relationship_premium", userId);
+    const limited = await enforceRateLimit("relationship_premium", userId);
     if (!limited.ok) {
       return NextResponse.json(
         { error: limited.error },

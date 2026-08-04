@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const idCheck = requireUuid(body.reportId, "reportId");
     if (!idCheck.ok) return idCheck.response;
 
-    const limited = enforceRateLimit("invite", userId);
+    const limited = await enforceRateLimit("invite", userId);
     if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();

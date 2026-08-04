@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const limited = enforceRateLimit("relationship_basic", userId);
+    const limited = await enforceRateLimit("relationship_basic", userId);
     if (!limited.ok) {
       return NextResponse.json(
         { error: limited.error },

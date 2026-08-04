@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         : {}) as Record<string, unknown>,
     );
 
-    const limited = enforceRateLimit("report_create", userId);
+    const limited = await enforceRateLimit("report_create", userId);
     if (!limited.ok) return rateLimitResponse(limited);
 
     const supabase = createRouteSupabaseClient();
