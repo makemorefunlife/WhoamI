@@ -19,6 +19,10 @@ import {
   extractSafeErrorShape,
   formatSafeErrorShape,
 } from "@/lib/security/errorShape";
+import {
+  diagnosePostgrestErrorFields,
+  formatPostgrestErrorFieldDiagnostic,
+} from "@/lib/security/postgrestErrorFieldDiagnostics";
 
 export const runtime = "nodejs";
 
@@ -119,6 +123,17 @@ export async function POST(req: Request) {
           "[error-shape]",
           "context=report/create.insert",
           ...formatSafeErrorShape(extractSafeErrorShape(error)),
+          `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+        );
+        // Deeper field-level diagnostic: why code came through as "none"
+        // above (empty string? null? undefined? not pg-code-shaped?) and a
+        // bounded, non-raw category classification of the message text.
+        console.error(
+          "[error-fields]",
+          "context=report/create.insert",
+          ...formatPostgrestErrorFieldDiagnostic(
+            diagnosePostgrestErrorFields(error),
+          ),
           `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
         );
       }

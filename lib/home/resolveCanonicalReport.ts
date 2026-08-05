@@ -6,6 +6,10 @@ import {
   extractSafeErrorShape,
   formatSafeErrorShape,
 } from "@/lib/security/errorShape";
+import {
+  diagnosePostgrestErrorFields,
+  formatPostgrestErrorFieldDiagnostic,
+} from "@/lib/security/postgrestErrorFieldDiagnostics";
 
 export type CanonicalReportRow = {
   id: string;
@@ -61,6 +65,14 @@ async function fetchOwnedReports(
       "[error-shape]",
       "context=resolveCanonicalReport.owned",
       ...formatSafeErrorShape(extractSafeErrorShape(error)),
+      `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+    );
+    console.error(
+      "[error-fields]",
+      "context=resolveCanonicalReport.owned",
+      ...formatPostgrestErrorFieldDiagnostic(
+        diagnosePostgrestErrorFields(error),
+      ),
       `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
     );
     logServerError("resolveCanonicalReport.owned", error);
