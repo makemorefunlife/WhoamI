@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import GlowButton from "@/components/space/GlowButton";
 import StitchBirthDateTimeFields, {
   stitchBirthIsoDate,
@@ -84,6 +84,11 @@ export default function ManualRelationshipForm({
   const [birthPlaceUnknown, setBirthPlaceUnknown] = useState(false);
   const [surveyMode, setSurveyMode] = useState<SurveyMode>("answer");
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [hintPulse, setHintPulse] = useState(0);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const birthBlockRef = useRef<HTMLDivElement>(null);
+  const placeRef = useRef<HTMLInputElement>(null);
+  const surveyRef = useRef<HTMLDivElement>(null);
   const s = useFormStyles(theme);
   const { locale, messages } = useLocale();
   const surveyQuestions = useMemo(() => getSurveyQuestions(locale), [locale]);
@@ -106,25 +111,19 @@ export default function ManualRelationshipForm({
     surveyMode === "skip" ||
     answeredCount === surveyQuestions.length;
 
-  const canSubmit =
-    partnerName.trim().length >= 1 &&
-    birthDate.length === 10 &&
-    (birthPlaceUnknown || birthPlace.trim().length >= 1) &&
-    surveyOk &&
-    (birthTimeUnknown || birthTime != null);
+  const nameOk = partnerName.trim().length >= 1;
+  const dateOk = birthDate.length === 10;
+  const timeOk = birthTimeUnknown || birthTime != null;
+  const placeOk = birthPlaceUnknown || birthPlace.trim().length >= 1;
+
+  const canSubmit = nameOk && dateOk && timeOk && placeOk && surveyOk;
 
   const submitHint = useMemo(() => {
     if (canSubmit) return null;
-    if (!partnerName.trim()) return messages.relationshipForm.nameRequired;
-    if (!birthDate.trim() || birthDate.length !== 10) {
-      return messages.relationshipForm.birthDateRequired;
-    }
-    if (!birthTimeUnknown && !birthTime) {
-      return messages.relationshipForm.birthTimeRequired;
-    }
-    if (!birthPlaceUnknown && !birthPlace.trim()) {
-      return messages.relationshipForm.birthPlaceRequired;
-    }
+    if (!nameOk) return messages.relationshipForm.nameRequired;
+    if (!dateOk) return messages.relationshipForm.birthDateRequired;
+    if (!timeOk) return messages.relationshipForm.birthTimeRequired;
+    if (!placeOk) return messages.relationshipForm.birthPlaceRequired;
     if (surveyMode === "answer" && !surveyOk) {
       return messages.relationshipForm.surveyIncomplete(
         answeredCount,
@@ -134,12 +133,10 @@ export default function ManualRelationshipForm({
     return messages.relationshipForm.fieldsRequired;
   }, [
     canSubmit,
-    partnerName,
-    birthDate,
-    birthTimeUnknown,
-    birthTime,
-    birthPlaceUnknown,
-    birthPlace,
+    nameOk,
+    dateOk,
+    timeOk,
+    placeOk,
     surveyMode,
     surveyOk,
     answeredCount,
@@ -147,11 +144,53 @@ export default function ManualRelationshipForm({
     messages,
   ]);
 
+  function focusFirstIncomplete() {
+    setHintPulse((n) => n + 1);
+    if (!nameOk) {
+      nameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      nameRef.current?.focus();
+      return;
+    }
+    if (!dateOk || !timeOk) {
+      birthBlockRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      return;
+    }
+    if (!placeOk) {
+      placeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (!birthPlaceUnknown) placeRef.current?.focus();
+      return;
+    }
+    surveyRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function handleCreateClick() {
+    if (busy) return;
+    if (!canSubmit) {
+      focusFirstIncomplete();
+      return;
+    }
+    void onSubmit({
+      partnerName: partnerName.trim(),
+      birthDate,
+      birthTime: birthTimeUnknown ? null : birthTime,
+      birthTimeUnknown,
+      birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
+      birthPlaceUnknown,
+      surveySkipped: surveyMode === "skip",
+      surveyAnswers:
+        surveyMode === "skip" ? null : (answers as SurveyAnswersInput),
+    });
+  }
+
   return (
     <div className="space-y-4">
       <label className="block space-y-1">
         <span className={s.label}>{messages.relationshipForm.nameLabel}</span>
         <input
+          ref={nameRef}
           value={partnerName}
           onChange={(e) => setPartnerName(e.target.value)}
           className={s.input}
@@ -160,33 +199,37 @@ export default function ManualRelationshipForm({
         />
       </label>
 
-      <StitchBirthDateTimeFields
-        year={year}
-        month={month}
-        day={day}
-        onYearChange={setYear}
-        onMonthChange={setMonth}
-        onDayChange={setDay}
-        period={period}
-        onPeriodChange={setPeriod}
-        hour={hour}
-        minute={minute}
-        onHourChange={setHour}
-        onMinuteChange={setMinute}
-        birthTimeUnknown={birthTimeUnknown}
-        onBirthTimeUnknownChange={setBirthTimeUnknown}
-        busy={busy}
-        theme={theme}
-      />
+      <div ref={birthBlockRef}>
+        <StitchBirthDateTimeFields
+          year={year}
+          month={month}
+          day={day}
+          onYearChange={setYear}
+          onMonthChange={setMonth}
+          onDayChange={setDay}
+          period={period}
+          onPeriodChange={setPeriod}
+          hour={hour}
+          minute={minute}
+          onHourChange={setHour}
+          onMinuteChange={setMinute}
+          birthTimeUnknown={birthTimeUnknown}
+          onBirthTimeUnknownChange={setBirthTimeUnknown}
+          busy={busy}
+          theme={theme}
+        />
+      </div>
 
       <label className="block space-y-1">
         <span className={s.label}>{messages.onboarding.birthPlace}</span>
         <input
+          ref={placeRef}
           value={birthPlace}
           onChange={(e) => setBirthPlace(e.target.value)}
           disabled={busy || birthPlaceUnknown}
           className={s.input}
           placeholder={messages.relationshipForm.birthPlacePlaceholder}
+          aria-invalid={!placeOk}
         />
       </label>
 
@@ -200,7 +243,7 @@ export default function ManualRelationshipForm({
         {messages.relationshipForm.birthPlaceSkip}
       </label>
 
-      <div className={s.surveyBox}>
+      <div ref={surveyRef} className={s.surveyBox}>
         <div className="space-y-2">
           <p className={s.surveyTitle}>{messages.relationshipForm.surveyTitle}</p>
           <div className="flex gap-2">
@@ -276,6 +319,19 @@ export default function ManualRelationshipForm({
             : "space-y-2"
         }
       >
+        {!canSubmit && submitHint && !busy ? (
+          <p
+            key={hintPulse}
+            role="status"
+            className={
+              theme === "stitch"
+                ? "rounded-lg bg-accent-rose-soft/80 px-3 py-2 text-center text-xs font-medium text-primary"
+                : "text-center text-[10px] text-[#ffb4a2]"
+            }
+          >
+            {submitHint}
+          </p>
+        ) : null}
         <div className="flex gap-2">
           {onCancel ? (
             <button
@@ -290,54 +346,29 @@ export default function ManualRelationshipForm({
           {theme === "stitch" ? (
             <button
               type="button"
-              className="stitch-cta-primary flex-1 !min-h-[48px] !min-w-0 !text-sm disabled:opacity-45"
-              disabled={busy || !canSubmit}
-              onClick={() =>
-                void onSubmit({
-                  partnerName: partnerName.trim(),
-                  birthDate,
-                  birthTime: birthTimeUnknown ? null : birthTime,
-                  birthTimeUnknown,
-                  birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
-                  birthPlaceUnknown,
-                  surveySkipped: surveyMode === "skip",
-                  surveyAnswers:
-                    surveyMode === "skip"
-                      ? null
-                      : (answers as SurveyAnswersInput),
-                })
-              }
+              className={`stitch-cta-primary flex-1 !min-h-[48px] !min-w-0 !text-sm ${
+                busy || !canSubmit ? "opacity-45" : ""
+              }`}
+              disabled={busy}
+              aria-disabled={!canSubmit}
+              onClick={handleCreateClick}
             >
               {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
             </button>
           ) : (
             <GlowButton
               type="button"
-              className="flex-1 !min-h-[44px] text-sm"
-              disabled={busy || !canSubmit}
-              onClick={() =>
-                void onSubmit({
-                  partnerName: partnerName.trim(),
-                  birthDate,
-                  birthTime: birthTimeUnknown ? null : birthTime,
-                  birthTimeUnknown,
-                  birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
-                  birthPlaceUnknown,
-                  surveySkipped: surveyMode === "skip",
-                  surveyAnswers:
-                    surveyMode === "skip"
-                      ? null
-                      : (answers as SurveyAnswersInput),
-                })
-              }
+              className={`flex-1 !min-h-[44px] text-sm ${
+                !canSubmit ? "!opacity-45" : ""
+              }`}
+              disabled={busy}
+              aria-disabled={!canSubmit}
+              onClick={handleCreateClick}
             >
               {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
             </GlowButton>
           )}
         </div>
-        {!canSubmit && submitHint && !busy ? (
-          <p className={s.hint}>{submitHint}</p>
-        ) : null}
       </div>
     </div>
   );
