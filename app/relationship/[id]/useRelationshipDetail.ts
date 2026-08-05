@@ -424,9 +424,12 @@ export function useRelationshipDetail({
 
   /** Whether we've already attempted an ensureBasic() call for this relationship (this mount). */
   const basicAttempted = useRef(false);
+  /** In-flight guard — one click / one auto-start → one request. */
+  const basicInFlight = useRef(false);
 
   useEffect(() => {
     basicAttempted.current = false;
+    basicInFlight.current = false;
   }, [resolvedRelationshipId]);
 
   useEffect(() => {
@@ -435,6 +438,8 @@ export function useRelationshipDetail({
 
   const ensureBasic = useCallback(async () => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
+    if (basicInFlight.current) return;
+    basicInFlight.current = true;
     setBusy(true);
     setErr(null);
     try {
@@ -452,16 +457,22 @@ export function useRelationshipDetail({
           locale,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setErr(data?.error ?? messages.report.basicAnalysisFailed);
+        // Do not auto-retry on failure (prevents rate-limit storms).
+        setErr(
+          typeof data?.error === "string"
+            ? data.error
+            : messages.report.basicAnalysisFailed,
+        );
         return;
       }
       await load(undefined, { silent: true });
     } finally {
+      basicInFlight.current = false;
       setBusy(false);
     }
-  }, [effectiveViewerReportId, resolvedRelationshipId, load, premiumKind, messages, locale]);
+  }, [effectiveViewerReportId, resolvedRelationshipId, load, messages, locale]);
 
   const toggleFavorite = useCallback(async () => {
     if (!effectiveViewerReportId || !resolvedRelationshipId) return;
@@ -520,6 +531,7 @@ export function useRelationshipDetail({
   ]);
 
   const retryAnalysis = useCallback(() => {
+    if (basicInFlight.current) return;
     basicAttempted.current = false;
     setErr(null);
     void ensureBasic();

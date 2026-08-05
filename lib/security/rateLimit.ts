@@ -31,7 +31,8 @@ export type RateLimitBucket =
 
 const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   llm: { max: 5, windowMs: 60 * 60 * 1000 },
-  relationship_basic: { max: 10, windowMs: 60 * 60 * 1000 },
+  // Successful free basic generations only (consume after validation; refund on fail).
+  relationship_basic: { max: 30, windowMs: 60 * 60 * 1000 },
   relationship_premium: { max: 3, windowMs: 60 * 60 * 1000 },
   astrology: { max: 10, windowMs: 60 * 60 * 1000 },
   saju: { max: 10, windowMs: 60 * 60 * 1000 },
@@ -72,6 +73,39 @@ export function resetRateLimitMemoryForTests(): void {
 /** Test-only: bucket ceilings (do not use for product logic). */
 export function getRateLimitMaxForTests(bucket: RateLimitBucket): number {
   return LIMITS[bucket].max;
+}
+
+/** Test-only: window ms (do not use for product logic). */
+export function getRateLimitWindowMsForTests(bucket: RateLimitBucket): number {
+  return LIMITS[bucket].windowMs;
+}
+
+/** Buckets that an authenticated operator may reset for themselves only. */
+export const SELF_RESETABLE_RATE_LIMIT_BUCKETS = [
+  "relationship_basic",
+  "survey_write",
+  "survey_read",
+  "survey_delete",
+  "report_create",
+  "invite",
+  "astrology",
+  "saju",
+  "upgrade",
+] as const satisfies ReadonlyArray<RateLimitBucket>;
+
+export type SelfResetableRateLimitBucket =
+  (typeof SELF_RESETABLE_RATE_LIMIT_BUCKETS)[number];
+
+export function isSelfResetableRateLimitBucket(
+  bucket: string,
+): bucket is SelfResetableRateLimitBucket {
+  return (SELF_RESETABLE_RATE_LIMIT_BUCKETS as ReadonlyArray<string>).includes(
+    bucket,
+  );
+}
+
+function rateLimitKey(bucket: RateLimitBucket, subject: string): string {
+  return `rl:${bucket}:${subject}`;
 }
 
 /** Test-only: inject fetch (pass null to restore). Never used in production. */
@@ -338,7 +372,7 @@ export async function enforceRateLimit(
 
   const { max, windowMs } = LIMITS[bucket];
   // Internal key — never expose in responses or logs
-  const key = `rl:${bucket}:${subject}`;
+  const key = rateLimitKey(bucket, subject);
 
   if (remote) {
     try {
@@ -375,6 +409,148 @@ export async function enforceRateLimit(
     console.error("[rate-limit]", "backend_missing_memory_fallback");
   }
   return consumeMemoryLimit(key, max, windowMs);
+}
+
+function releaseMemorySlot(key: string): void {
+  const existing = memoryStore.get(key);
+  if (!existing) return;
+  if (existing.count <= 1) {
+    memoryStore.delete(key);
+    return;
+  }
+  existing.count -= 1;
+  memoryStore.set(key, existing);
+}
+
+async function releaseRemoteSlot(
+  config: RemoteConfig,
+  key: string,
+): Promise<void> {
+  const countRaw = await redisCommand(config, ["DECR", key]);
+  const count = typeof countRaw === "number" ? countRaw : Number(countRaw);
+  if (!Number.isFinite(count) || count <= 0) {
+    await redisCommand(config, ["DEL", key]);
+  }
+}
+
+/**
+ * Refund one consumed slot after a failed expensive request.
+ * Never throws to callers; never logs the subject.
+ */
+export async function releaseRateLimitSlot(
+  bucket: RateLimitBucket,
+  keySubject: string | null | undefined,
+): Promise<void> {
+  const subject = typeof keySubject === "string" ? keySubject.trim() : "";
+  if (!subject) return;
+  const key = rateLimitKey(bucket, subject);
+  const remote = resolveRemoteRateLimitConfig();
+  if (remote) {
+    try {
+      await releaseRemoteSlot(remote, key);
+      return;
+    } catch {
+      console.error("[rate-limit]", "release_remote_failed");
+      // fall through to memory
+    }
+  }
+  releaseMemorySlot(key);
+}
+
+export type RateLimitBucketStatus = {
+  bucket: RateLimitBucket;
+  max: number;
+  windowSec: number;
+  /** Remaining seconds until window reset; 0 if no active counter */
+  retryAfterSec: number;
+  limited: boolean;
+};
+
+/**
+ * Peek current window status for an authenticated subject.
+ * Does not mutate counters. Never returns the subject or Redis key.
+ */
+export async function peekRateLimitBucketStatus(
+  bucket: RateLimitBucket,
+  keySubject: string | null | undefined,
+): Promise<RateLimitBucketStatus | null> {
+  const subject = typeof keySubject === "string" ? keySubject.trim() : "";
+  if (!subject) return null;
+  const { max, windowMs } = LIMITS[bucket];
+  const windowSec = Math.max(1, Math.ceil(windowMs / 1000));
+  const key = rateLimitKey(bucket, subject);
+  const remote = resolveRemoteRateLimitConfig();
+
+  if (remote) {
+    try {
+      const countRaw = await redisCommand(remote, ["GET", key]);
+      const count =
+        countRaw == null || countRaw === false
+          ? 0
+          : typeof countRaw === "number"
+            ? countRaw
+            : Number(countRaw);
+      let retryAfterSec = 0;
+      if (Number.isFinite(count) && count > 0) {
+        const ttlRaw = await redisCommand(remote, ["TTL", key]);
+        const ttl = typeof ttlRaw === "number" ? ttlRaw : Number(ttlRaw);
+        if (Number.isFinite(ttl) && ttl > 0) retryAfterSec = Math.ceil(ttl);
+        else if (ttl === -1) retryAfterSec = windowSec;
+      }
+      const safeCount = Number.isFinite(count) ? Math.max(0, count) : 0;
+      return {
+        bucket,
+        max,
+        windowSec,
+        retryAfterSec,
+        limited: safeCount > max,
+      };
+    } catch {
+      console.error("[rate-limit]", "peek_remote_failed");
+    }
+  }
+
+  const now = Date.now();
+  const existing = memoryStore.get(key);
+  if (!existing || existing.resetAt <= now) {
+    return { bucket, max, windowSec, retryAfterSec: 0, limited: false };
+  }
+  return {
+    bucket,
+    max,
+    windowSec,
+    retryAfterSec: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
+    limited: existing.count > max,
+  };
+}
+
+/**
+ * Delete the caller's own bucket counter only (operational recovery).
+ * Never accepts a different subject — pass auth().userId.
+ */
+export async function resetOwnRateLimitBucket(
+  bucket: SelfResetableRateLimitBucket,
+  keySubject: string | null | undefined,
+): Promise<{ ok: true } | { ok: false; status: 401 | 400; error: string }> {
+  const subject = typeof keySubject === "string" ? keySubject.trim() : "";
+  if (!subject) {
+    return { ok: false, status: 401, error: "unauthorized" };
+  }
+  if (!isSelfResetableRateLimitBucket(bucket)) {
+    return { ok: false, status: 400, error: "bucket not resetable" };
+  }
+  const key = rateLimitKey(bucket, subject);
+  const remote = resolveRemoteRateLimitConfig();
+  if (remote) {
+    try {
+      await redisCommand(remote, ["DEL", key]);
+    } catch {
+      console.error("[rate-limit]", "reset_remote_failed");
+      return { ok: false, status: 400, error: "reset failed" };
+    }
+  }
+  memoryStore.delete(key);
+  return { ok: true };
 }
 
 export function rateLimitResponse(

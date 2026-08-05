@@ -23,7 +23,11 @@ import { polishKoStringTree } from "@/lib/i18n/koToneGuards";
 import { polishEnStringTree } from "@/lib/i18n/enToneGuards";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
-import { enforceRateLimit } from "@/lib/security/rateLimit";
+import {
+  enforceRateLimit,
+  rateLimitResponse,
+  releaseRateLimitSlot,
+} from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -61,19 +65,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "relationship_report_id와 viewer_report_id가 필요합니다." },
         { status: 400 },
-      );
-    }
-
-    const limited = await enforceRateLimit("relationship_basic", userId);
-    if (!limited.ok) {
-      return NextResponse.json(
-        { error: limited.error },
-        {
-          status: limited.status,
-          headers: limited.retryAfterSec
-            ? { "Retry-After": String(limited.retryAfterSec) }
-            : undefined,
-        },
       );
     }
 
@@ -252,6 +243,12 @@ export async function POST(req: Request) {
       );
     }
 
+    // Consume only when about to call the model (not on cache/validation paths).
+    const limited = await enforceRateLimit("relationship_basic", userId);
+    if (!limited.ok) {
+      return rateLimitResponse(limited);
+    }
+
     const userPrompt = buildRelationshipBasicPrompt(
       blockA,
       blockB,
@@ -262,26 +259,33 @@ export async function POST(req: Request) {
       locale,
     );
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Output one valid JSON object only. No markdown or code fences. Follow the user prompt locale instruction for prose language.",
-        },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.55,
-      max_tokens: 4096,
-      response_format: { type: "json_object" },
-    });
+    let completion;
+    try {
+      completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Output one valid JSON object only. No markdown or code fences. Follow the user prompt locale instruction for prose language.",
+          },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.55,
+        max_tokens: 4096,
+        response_format: { type: "json_object" },
+      });
+    } catch (e) {
+      await releaseRateLimitSlot("relationship_basic", userId);
+      throw e;
+    }
 
     const raw = completion.choices[0]?.message.content?.trim() ?? "";
     const parsed = parseJsonObject<{ perspectives?: Record<string, unknown> }>(
       raw,
     );
     if (!parsed.perspectives) {
+      await releaseRateLimitSlot("relationship_basic", userId);
       return NextResponse.json(
         { error: "LLM 응답 형식이 올바르지 않습니다." },
         { status: 502 },
@@ -296,6 +300,7 @@ export async function POST(req: Request) {
       labelB,
     );
     if (!normalized) {
+      await releaseRateLimitSlot("relationship_basic", userId);
       return NextResponse.json(
         { error: "LLM이 두 사람 시점 데이터를 만들지 못했습니다." },
         { status: 502 },
@@ -317,6 +322,7 @@ export async function POST(req: Request) {
       .eq("id", relationshipReportId);
 
     if (upErr) {
+      await releaseRateLimitSlot("relationship_basic", userId);
       console.error("relationship/analyze/basic update failed");
       return NextResponse.json(
         { error: "관계 기본 분석을 처리할 수 없습니다." },
