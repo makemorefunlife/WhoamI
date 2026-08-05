@@ -24,7 +24,9 @@ export type RateLimitBucket =
   | "saju"
   | "upgrade"
   | "report_create"
-  | "survey_persist"
+  | "survey_read"
+  | "survey_write"
+  | "survey_delete"
   | "invite";
 
 const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
@@ -34,8 +36,14 @@ const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   astrology: { max: 10, windowMs: 60 * 60 * 1000 },
   saju: { max: 10, windowMs: 60 * 60 * 1000 },
   upgrade: { max: 10, windowMs: 60 * 60 * 1000 },
-  report_create: { max: 20, windowMs: 60 * 60 * 1000 },
-  survey_persist: { max: 30, windowMs: 60 * 60 * 1000 },
+  // Idempotent create can be called on resume; keep room for retries without blocking hydrate.
+  report_create: { max: 60, windowMs: 60 * 60 * 1000 },
+  // Hydration / account resume — must not share the write bucket.
+  survey_read: { max: 300, windowMs: 60 * 60 * 1000 },
+  // Final 10q POST only (abuse floor; not a credit gate).
+  survey_write: { max: 60, windowMs: 60 * 60 * 1000 },
+  // Explicit redo — separate from read/write.
+  survey_delete: { max: 20, windowMs: 60 * 60 * 1000 },
   invite: { max: 30, windowMs: 60 * 60 * 1000 },
 };
 
@@ -59,6 +67,11 @@ let fetchImpl: FetchLike = globalThis.fetch.bind(globalThis) as FetchLike;
 /** Test-only: clear in-memory counters */
 export function resetRateLimitMemoryForTests(): void {
   memoryStore.clear();
+}
+
+/** Test-only: bucket ceilings (do not use for product logic). */
+export function getRateLimitMaxForTests(bucket: RateLimitBucket): number {
+  return LIMITS[bucket].max;
 }
 
 /** Test-only: inject fetch (pass null to restore). Never used in production. */

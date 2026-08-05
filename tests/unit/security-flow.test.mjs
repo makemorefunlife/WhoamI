@@ -373,11 +373,15 @@ async function run() {
     const src = fs.readFileSync("app/api/v2/survey/route.ts", "utf8");
     const postSrc = src.slice(src.indexOf("/** POST"));
     const authIdx = postSrc.indexOf("await auth()");
-    const rateIdx = postSrc.indexOf('enforceRateLimit("survey_persist"');
+    const rateIdx = postSrc.indexOf('enforceRateLimit("survey_write"');
     const ownIdx = postSrc.indexOf("assertOwnedReportAccess");
     const insertIdx = postSrc.indexOf(".insert({");
     assert.ok(authIdx >= 0 && rateIdx > authIdx && ownIdx > rateIdx && insertIdx > ownIdx);
+    assert.match(src, /enforceRateLimit\("survey_read"/);
+    assert.match(src, /enforceRateLimit\("survey_delete"/);
+    assert.ok(!/survey_persist/.test(src));
     ok("survey POST: auth → rate limit → ownership → insert");
+    ok("survey GET/POST/DELETE use split rate-limit buckets");
   }
 
   // --- Invite complete race filter ---

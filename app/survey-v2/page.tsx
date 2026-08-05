@@ -23,6 +23,8 @@ import {
   clearSurveyOnServer,
   persistSurveyToServer,
 } from "@/lib/v2/survey/surveyClient";
+import { createOwnedReportIdempotent } from "@/lib/v2/survey/createOwnedReportIdempotent";
+import { finalizeSurveySubmit } from "@/lib/v2/survey/finalizeSurveySubmit";
 import { resolveCanonicalReportIdClient } from "@/lib/home/resolveCanonicalReportIdClient";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { SCORED_QUESTION_IDS } from "@/lib/v2/survey/types";
@@ -44,62 +46,8 @@ const EMPTY_ANSWERS = Object.fromEntries(
   [...SCORED_QUESTION_IDS, "q10"].map((id) => [id, ""]),
 );
 
-const CREATE_LOCK_KEY = "ahaitsme_report_create_inflight";
+/** Set only when user deliberately awaits sign-in; never on submit failure. */
 const PENDING_COMPLETE_KEY = "ahaitsme_v2_survey_pending_complete";
-
-async function createOwnedReportIdempotent(): Promise<
-  { ok: true; reportId: string } | { ok: false; error: string }
-> {
-  if (typeof window !== "undefined") {
-    const existing = localStorage.getItem("reportId")?.trim();
-    if (existing) {
-      // Prefer reusing owned id after login via resume when available.
-    }
-    if (sessionStorage.getItem(CREATE_LOCK_KEY) === "1") {
-      return { ok: false, error: "Saving already in progress. Please wait." };
-    }
-    sessionStorage.setItem(CREATE_LOCK_KEY, "1");
-  }
-
-  try {
-    const resumeRes = await fetch("/api/home/resume", { method: "GET" });
-    if (resumeRes.ok) {
-      const resume = (await resumeRes.json()) as {
-        reportId?: string | null;
-        surveyCompleted?: boolean;
-      };
-      const rid = resume.reportId?.trim();
-      if (rid && resume.surveyCompleted !== true) {
-        localStorage.setItem("reportId", rid);
-        return { ok: true, reportId: rid };
-      }
-      if (rid && resume.surveyCompleted === true) {
-        // Already has completed survey — still allow redo path to create? reuse for persist redo
-        localStorage.setItem("reportId", rid);
-        return { ok: true, reportId: rid };
-      }
-    }
-
-    const res = await fetch("/api/report/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_type: "self" }),
-    });
-    const data = (await res.json()) as { id?: string; error?: string };
-    if (!res.ok || !data.id) {
-      return {
-        ok: false,
-        error: data.error ?? "Could not create your report. Please try again.",
-      };
-    }
-    localStorage.setItem("reportId", data.id);
-    return { ok: true, reportId: data.id };
-  } catch {
-    return { ok: false, error: "Network error. Please try again." };
-  } finally {
-    sessionStorage.removeItem(CREATE_LOCK_KEY);
-  }
-}
 
 export default function SurveyV2Page() {
   const router = useRouter();
@@ -113,8 +61,10 @@ export default function SurveyV2Page() {
   const [advancing, setAdvancing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const pendingCompleteRef = useRef(false);
   const ownedReportIdRef = useRef<string>("");
+  const submitStartedRef = useRef(false);
+  const postLoginResumeConsumedRef = useRef(false);
+  const errorShownRef = useRef(false);
 
   const busy = finishing;
 
@@ -128,7 +78,6 @@ export default function SurveyV2Page() {
       const urlReportId = params.get("reportId")?.trim() ?? "";
       if (token) localStorage.setItem("inviteToken", token);
 
-      // Prefer pending draft (pre-login) then optional owned report session.
       const pending = readPendingSurveyDraft();
       let reportId = "";
 
@@ -140,7 +89,6 @@ export default function SurveyV2Page() {
         reportId = resolved.canonicalReportId;
         ownedReportIdRef.current = reportId;
       } else if (urlReportId) {
-        // Guest must not resume UUID-owned report from URL alone.
         reportId = "";
       }
 
@@ -178,7 +126,6 @@ export default function SurveyV2Page() {
         return;
       }
 
-      // Guest / no report yet — survey allowed in browser only.
       if (!cancelled) {
         if (pending?.answers) {
           setAnswers({ ...EMPTY_ANSWERS, ...pending.answers });
@@ -200,63 +147,68 @@ export default function SurveyV2Page() {
     return () => {
       cancelled = true;
     };
-  }, [router, isLoaded, isSignedIn]);
+  }, [router, isLoaded, isSignedIn, localize, questionCount]);
 
-  // Persist answers to sessionStorage while answering (pre-login safe).
   useEffect(() => {
     if (!sessionReady) return;
     writePendingSurveyDraft({ answers, currentIndex });
   }, [answers, currentIndex, sessionReady]);
 
+  const showSubmitErrorOnce = useCallback((message: string) => {
+    if (errorShownRef.current) return;
+    errorShownRef.current = true;
+    alert(message);
+  }, []);
+
   const completeAfterLogin = useCallback(
     async (payload: Record<string, string>) => {
+      if (submitStartedRef.current) return;
+      submitStartedRef.current = true;
       setFinishing(true);
-      const created = await createOwnedReportIdempotent();
-      if (!created.ok) {
-        alert(created.error);
+      errorShownRef.current = false;
+      // Never leave pending armed across a failed submit (prevents effect retry storm).
+      sessionStorage.removeItem(PENDING_COMPLETE_KEY);
+
+      const result = await finalizeSurveySubmit(payload, {
+        createOwnedReport: createOwnedReportIdempotent,
+        persistSurvey: persistSurveyToServer,
+        scoreAnswers: scoreSurveyAnswers,
+        writeLocalSession: writeSurveyV2Session,
+        clearPendingDraft: clearPendingSurveyDraft,
+      });
+
+      if (!result.ok) {
+        showSubmitErrorOnce(result.error);
         setFinishing(false);
-        pendingCompleteRef.current = true;
-        sessionStorage.setItem(PENDING_COMPLETE_KEY, "1");
+        submitStartedRef.current = false;
         return;
       }
 
-      const reportId = created.reportId;
-      ownedReportIdRef.current = reportId;
-      const profile = scoreSurveyAnswers(payload);
-      writeSurveyV2Session(reportId, { answers: payload, profile });
-
-      const saved = await persistSurveyToServer(reportId, payload, profile);
-      if (!saved.ok) {
-        alert(
-          saved.error ??
-            "Could not save your answers. Check your connection and try again.",
-        );
-        setFinishing(false);
-        pendingCompleteRef.current = true;
-        sessionStorage.setItem(PENDING_COMPLETE_KEY, "1");
-        return;
-      }
-
-      clearPendingSurveyDraft();
-      pendingCompleteRef.current = false;
+      ownedReportIdRef.current = result.reportId;
       router.push(
-        localize(`/survey-v2/complete?reportId=${encodeURIComponent(reportId)}`),
+        localize(
+          `/survey-v2/complete?reportId=${encodeURIComponent(result.reportId)}`,
+        ),
       );
     },
-    [router, localize],
+    [router, localize, showSubmitErrorOnce],
   );
 
+  // Post-sign-in resume only: consume PENDING_COMPLETE once. Failures must not re-arm it.
   useEffect(() => {
     if (!isSignedIn || !sessionReady || finishing) return;
+    if (postLoginResumeConsumedRef.current) return;
     if (sessionStorage.getItem(PENDING_COMPLETE_KEY) !== "1") return;
     const draft = readPendingSurveyDraft();
     const payload = draft?.answers ?? answers;
     if (!isSurveyV2AnswersComplete(payload)) return;
+    postLoginResumeConsumedRef.current = true;
     sessionStorage.removeItem(PENDING_COMPLETE_KEY);
     void completeAfterLogin(payload);
   }, [isSignedIn, sessionReady, finishing, answers, completeAfterLogin]);
 
   const finishSurvey = async (payload: Record<string, string>) => {
+    if (submitStartedRef.current || finishing) return;
     if (!isSurveyV2AnswersComplete(payload)) {
       alert("Please answer every question.");
       return;
@@ -265,7 +217,7 @@ export default function SurveyV2Page() {
     writePendingSurveyDraft({ answers: payload, currentIndex });
 
     if (!isSignedIn) {
-      pendingCompleteRef.current = true;
+      postLoginResumeConsumedRef.current = false;
       sessionStorage.setItem(PENDING_COMPLETE_KEY, "1");
       setAuthModalOpen(true);
       return;
@@ -276,13 +228,14 @@ export default function SurveyV2Page() {
 
   const cancelAuth = () => {
     setAuthModalOpen(false);
-    pendingCompleteRef.current = false;
     sessionStorage.removeItem(PENDING_COMPLETE_KEY);
+    postLoginResumeConsumedRef.current = false;
     setFinishing(false);
+    submitStartedRef.current = false;
   };
 
   const pickAnswer = (value: string) => {
-    if (busy || advancing) return;
+    if (busy || advancing || submitStartedRef.current) return;
 
     const next = { ...answers, [currentQuestion.id]: value };
     setAnswers(next);
