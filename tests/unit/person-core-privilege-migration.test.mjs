@@ -51,6 +51,24 @@ async function run() {
   assert.ok(/to service_role/i.test(grants));
   ok("person_core_blueprints SELECT/INSERT/UPDATE for service_role only");
 
+  // Final follow-up adds DELETE (invalidate + account-delete CASCADE)
+  const finalMig = read(
+    "supabase/migrations/20260805220000_restore_service_role_production_runtime_privileges.sql",
+  );
+  assert.match(
+    finalMig,
+    /grant select, insert, update, delete\s+on table public\.person_core_blueprints\s+to service_role/i,
+  );
+  assert.match(
+    finalMig,
+    /grant select, insert, update, delete\s+on table public\.report_analyses\s+to service_role/i,
+  );
+  assert.match(
+    finalMig,
+    /grant select, insert, update, delete\s+on table public\.relationship_favorites\s+to service_role/i,
+  );
+  ok("final migration closes person_core DELETE + report_analyses + favorites UPDATE");
+
   // Romantic premium path tables already covered by prior migration
   for (const table of [
     "reports",
