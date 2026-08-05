@@ -55,8 +55,11 @@ export function stitchBirthTime24h(
   unknown: boolean,
 ): string | null {
   if (unknown) return null;
-  if (!hour || minute.length < 2) return null;
-  return convert12hTo24h(period, Number(hour), Number(minute));
+  const h = hour.trim();
+  const m = minute.trim();
+  // Allow 1-digit minutes ("0"/"5") — same padStart idea as birth date parts.
+  if (!h || !m || m.length > 2) return null;
+  return convert12hTo24h(period, Number(h), Number(m.padStart(2, "0")));
 }
 
 export default function StitchBirthDateTimeFields({
