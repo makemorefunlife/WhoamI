@@ -14,6 +14,7 @@ import {
 } from "@/lib/security/requestValidation";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { logServerError } from "@/lib/security/safeLog";
+import { diagnoseReportCreateError } from "@/lib/security/pgErrorDiagnostics";
 
 export const runtime = "nodejs";
 
@@ -71,44 +72,48 @@ export async function POST(req: Request) {
       }
     }
 
+    const insertPayload = {
+      name: null,
+      clerk_user_id: userId,
+      birth_date: null,
+      birth_time: null,
+      birth_place: null,
+      report_type: "self",
+      entitlement: "free",
+    };
+
     const { data, error } = await supabase
       .from("reports")
-      .insert([
-        {
-          name: null,
-          clerk_user_id: userId,
-          birth_date: null,
-          birth_time: null,
-          birth_place: null,
-          report_type: "self",
-          entitlement: "free",
-        },
-      ])
+      .insert([insertPayload])
       .select("id")
       .single();
 
     if (error || !data?.id) {
-      // Bounded: supabase error code only (e.g. 23505), never message/PII.
-      const pgCode =
-        error && typeof error === "object" && "code" in error
-          ? String((error as { code?: unknown }).code ?? "").slice(0, 16)
-          : "none";
+      // Bounded: pg code + a strictly-whitelisted (alnum/underscore, <=64
+      // char) constraint/column identifier only. Field NAMES only, never
+      // values. Never error.message/details/hint, never row data.
+      const diag = diagnoseReportCreateError(error);
+      const status = 503;
       console.error(
         "[save-diag]",
         "route=POST /api/report/create",
         "branch=insert_failed",
-        "status=503",
-        "code=report_create_insert_failed",
-        `pg=${pgCode || "none"}`,
+        `status=${status}`,
+        `code=${diag.responseCode}`,
+        `pg=${diag.pgCode}`,
+        `category=${diag.category}`,
+        `constraint=${diag.constraint ?? "none"}`,
+        `column=${diag.column ?? "none"}`,
+        `fields=${Object.keys(insertPayload).join(",")}`,
         `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
       );
-      logServerError("report/create.insert", error, "insert_failed");
+      logServerError("report/create.insert", error, diag.responseCode);
       return NextResponse.json(
         {
           error: "temporarily unavailable",
-          code: "report_create_insert_failed",
+          code: diag.responseCode,
         },
-        { status: 503 },
+        { status },
       );
     }
 
