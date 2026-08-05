@@ -429,7 +429,11 @@ export default function RelationHubDashboard() {
     surveyAnswers: Record<string, string> | null;
   }) {
     const reportIdForCreate = hubReportId.trim();
-    if (!reportIdForCreate || manualBusy) return;
+    if (!reportIdForCreate) {
+      alert(messages.hub.viewerReportMissing);
+      return;
+    }
+    if (manualBusy) return;
     setManualBusy(true);
     try {
       const res = await fetch("/api/relationship/manual", {

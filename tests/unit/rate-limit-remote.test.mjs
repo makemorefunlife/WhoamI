@@ -129,7 +129,7 @@ async function run() {
     setRateLimitFetchForTests(null);
   }
 
-  // --- missing credentials ---
+  // --- missing credentials → production memory fallback ---
   {
     const snap = snapEnv(ENV_KEYS);
     process.env.NODE_ENV = "production";
@@ -140,15 +140,15 @@ async function run() {
     delete process.env.KV_REST_API_TOKEN;
     delete process.env.RATE_LIMIT_ALLOW_MEMORY;
     setRateLimitFetchForTests(null);
+    resetRateLimitMemoryForTests();
     const r = await enforceRateLimit("llm", "user_missing");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
+    assert.equal(r.ok, true);
     assert.equal(hasRemoteRateLimitBackend(), false);
-    ok("missing credentials in production → 503");
+    ok("missing credentials in production → memory fallback ok");
     restoreEnv(snap);
   }
 
-  // --- URL without token is not a valid backend ---
+  // --- URL without token is not a valid backend → memory fallback ---
   {
     const snap = snapEnv(ENV_KEYS);
     process.env.NODE_ENV = "production";
@@ -158,11 +158,11 @@ async function run() {
     delete process.env.KV_REST_API_URL;
     delete process.env.KV_REST_API_TOKEN;
     delete process.env.RATE_LIMIT_ALLOW_MEMORY;
+    resetRateLimitMemoryForTests();
     assert.equal(hasRemoteRateLimitBackend(), false);
     const r = await enforceRateLimit("llm", "user_url_only");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
-    ok("URL without token → backend_missing 503");
+    assert.equal(r.ok, true);
+    ok("URL without token → memory fallback ok");
     restoreEnv(snap);
   }
 
@@ -240,8 +240,9 @@ async function run() {
     delete process.env.KV_REST_API_TOKEN;
     assert.equal(isStrictDeployEnv(), true);
     assert.equal(allowsMemoryRateLimitFallback(), false);
+    resetRateLimitMemoryForTests();
     const prod = await enforceRateLimit("llm", "prod_mem");
-    assert.equal(prod.status, 503);
+    assert.equal(prod.ok, true);
 
     process.env.NODE_ENV = "development";
     delete process.env.VERCEL_ENV;
@@ -250,7 +251,7 @@ async function run() {
     assert.equal(allowsMemoryRateLimitFallback(), true);
     const dev = await enforceRateLimit("llm", "dev_mem");
     assert.equal(dev.ok, true);
-    ok("production rejects memory; development allows memory");
+    ok("production memory-fallback when unconfigured; development allows memory");
     restoreEnv(snap);
   }
 
