@@ -38,7 +38,17 @@ export async function POST(req: Request) {
     );
 
     const limited = await enforceRateLimit("report_create", userId);
-    if (!limited.ok) return rateLimitResponse(limited);
+    if (!limited.ok) {
+      console.error(
+        "[save-diag]",
+        "route=POST /api/report/create",
+        "branch=rate_limit",
+        `status=${limited.status}`,
+        `code=${limited.code ?? "none"}`,
+        `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+      );
+      return rateLimitResponse(limited);
+    }
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
@@ -78,18 +88,46 @@ export async function POST(req: Request) {
       .single();
 
     if (error || !data?.id) {
-      logServerError("report/create.insert", error);
+      // Bounded: supabase error code only (e.g. 23505), never message/PII.
+      const pgCode =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: unknown }).code ?? "").slice(0, 16)
+          : "none";
+      console.error(
+        "[save-diag]",
+        "route=POST /api/report/create",
+        "branch=insert_failed",
+        "status=503",
+        "code=report_create_insert_failed",
+        `pg=${pgCode || "none"}`,
+        `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+      );
+      logServerError("report/create.insert", error, "insert_failed");
       return NextResponse.json(
-        { error: "temporarily unavailable" },
+        {
+          error: "temporarily unavailable",
+          code: "report_create_insert_failed",
+        },
         { status: 503 },
       );
     }
 
     return NextResponse.json({ id: data.id, reused: false });
   } catch (e) {
+    console.error(
+      "[save-diag]",
+      "route=POST /api/report/create",
+      "branch=exception",
+      "status=503",
+      "code=report_create_exception",
+      `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+    );
     logServerError("report/create", e);
     return NextResponse.json(
-      { error: "temporarily unavailable" },
+      {
+        error: "temporarily unavailable",
+        code: "report_create_exception",
+      },
       { status: 503 },
     );
   }

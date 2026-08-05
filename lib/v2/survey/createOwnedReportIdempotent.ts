@@ -33,11 +33,14 @@ export async function createOwnedReportIdempotent(): Promise<
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ report_type: "self" }),
     });
-    const data = (await res.json()) as { id?: string; error?: string };
+    const data = (await res.json()) as { id?: string; error?: string; code?: string };
     if (!res.ok || !data.id) {
+      const code = data.code?.trim();
       return {
         ok: false,
-        error: data.error ?? "Could not create your report. Please try again.",
+        error: code
+          ? `${data.error ?? "Could not create your report. Please try again."} [${code}]`
+          : (data.error ?? "Could not create your report. Please try again."),
       };
     }
     localStorage.setItem("reportId", data.id);

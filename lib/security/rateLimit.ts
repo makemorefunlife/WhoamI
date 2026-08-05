@@ -384,6 +384,13 @@ export function rateLimitResponse(
   if (result.retryAfterSec) {
     headers["Retry-After"] = String(result.retryAfterSec);
   }
+  console.error(
+    "[save-diag]",
+    "route=rateLimitResponse",
+    `status=${result.status}`,
+    `code=${result.code ?? "none"}`,
+    `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+  );
   return Response.json(
     {
       error: result.error,

@@ -152,7 +152,17 @@ export async function POST(req: Request) {
     );
 
     const limited = await enforceRateLimit("survey_write", userId);
-    if (!limited.ok) return rateLimitResponse(limited);
+    if (!limited.ok) {
+      console.error(
+        "[save-diag]",
+        "route=POST /api/v2/survey",
+        "branch=rate_limit",
+        `status=${limited.status}`,
+        `code=${limited.code ?? "none"}`,
+        `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+      );
+      return rateLimitResponse(limited);
+    }
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
@@ -161,7 +171,16 @@ export async function POST(req: Request) {
       idCheck.value,
       userId,
     );
-    if (access.error) return access.error;
+    if (access.error) {
+      console.error(
+        "[save-diag]",
+        "route=POST /api/v2/survey",
+        "branch=ownership",
+        `status=${access.error.status}`,
+        `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+      );
+      return access.error;
+    }
 
     const payload = {
       ...answersCheck.value,
@@ -175,8 +194,24 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      logServerError("v2/survey POST", error);
-      return NextResponse.json({ error: "save failed" }, { status: 500 });
+      const pgCode =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: unknown }).code ?? "").slice(0, 16)
+          : "none";
+      console.error(
+        "[save-diag]",
+        "route=POST /api/v2/survey",
+        "branch=insert_failed",
+        "status=500",
+        "code=survey_insert_failed",
+        `pg=${pgCode || "none"}`,
+        `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+      );
+      logServerError("v2/survey POST", error, "insert_failed");
+      return NextResponse.json(
+        { error: "save failed", code: "survey_insert_failed" },
+        { status: 500 },
+      );
     }
 
     await Promise.all([

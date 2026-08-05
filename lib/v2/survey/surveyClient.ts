@@ -12,8 +12,16 @@ export async function persistSurveyToServer(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reportId, answers, profile }),
     });
-    const data = (await res.json()) as { error?: string };
-    if (!res.ok) return { ok: false, error: data.error ?? "저장 실패" };
+    const data = (await res.json()) as { error?: string; code?: string };
+    if (!res.ok) {
+      const code = data.code?.trim();
+      return {
+        ok: false,
+        error: code
+          ? `${data.error ?? "저장 실패"} [${code}]`
+          : (data.error ?? "저장 실패"),
+      };
+    }
     return { ok: true };
   } catch {
     return { ok: false, error: "네트워크 오류" };
