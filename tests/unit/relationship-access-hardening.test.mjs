@@ -74,6 +74,29 @@ async function run() {
     ok("migration is idempotent (GRANT + CREATE OR REPLACE)");
   }
 
+  section("person_core follow-up migration");
+  {
+    const mig = read(
+      "supabase/migrations/20260805213000_restore_service_role_person_core_privileges.sql",
+    );
+    assert.match(
+      mig,
+      /grant select, insert, update\s+on table public\.person_core_blueprints\s+to service_role/i,
+    );
+    const grantLines = mig
+      .split(/\r?\n/)
+      .filter((l) => /^\s*grant\b/i.test(l))
+      .join("\n");
+    assert.ok(
+      !/person_core_blueprints[\s\S]*\bdelete\b|\bdelete\b[\s\S]*person_core_blueprints/i.test(
+        grantLines,
+      ),
+    );
+    assert.ok(!/\bto\s+anon\b/i.test(grantLines));
+    assert.ok(!/\bto\s+authenticated\b/i.test(grantLines));
+    ok("person_core_blueprints SELECT/INSERT/UPDATE; no DELETE/anon/authenticated");
+  }
+
   section("remove route ownership + atomic RPC");
   {
     const src = read("app/api/relationship/remove/route.ts");
