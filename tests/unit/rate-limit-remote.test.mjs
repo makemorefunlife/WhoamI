@@ -166,7 +166,7 @@ async function run() {
     restoreEnv(snap);
   }
 
-  // --- invalid remote response ---
+  // --- invalid remote response → memory fallback in production ---
   {
     const snap = snapEnv(ENV_KEYS);
     process.env.NODE_ENV = "production";
@@ -180,15 +180,15 @@ async function run() {
         json: async () => ({ unexpected: true }),
       }),
     });
+    resetRateLimitMemoryForTests();
     const r = await enforceRateLimit("llm", "user_bad_json_shape");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
-    ok("invalid remote response → 503");
+    assert.equal(r.ok, true);
+    ok("invalid remote response → memory fallback ok");
     restoreEnv(snap);
     setRateLimitFetchForTests(null);
   }
 
-  // --- backend unavailable (network / 5xx) ---
+  // --- backend unavailable (network / 5xx) → memory fallback in production ---
   {
     const snap = snapEnv(ENV_KEYS);
     process.env.NODE_ENV = "production";
@@ -198,15 +198,15 @@ async function run() {
     setRateLimitFetchForTests(async () => {
       throw new Error("network down");
     });
+    resetRateLimitMemoryForTests();
     const r = await enforceRateLimit("relationship_premium", "user_down");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
-    ok("backend unavailable → 503");
+    assert.equal(r.ok, true);
+    ok("backend unavailable → memory fallback ok");
     restoreEnv(snap);
     setRateLimitFetchForTests(null);
   }
 
-  // --- auth failure from remote ---
+  // --- auth failure from remote → memory fallback in production ---
   {
     const snap = snapEnv(ENV_KEYS);
     process.env.NODE_ENV = "production";
@@ -220,10 +220,10 @@ async function run() {
         json: async () => ({ error: "Unauthorized" }),
       }),
     });
+    resetRateLimitMemoryForTests();
     const r = await enforceRateLimit("llm", "user_auth");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
-    ok("invalid remote credentials → 503");
+    assert.equal(r.ok, true);
+    ok("invalid remote credentials → memory fallback ok");
     restoreEnv(snap);
     setRateLimitFetchForTests(null);
   }

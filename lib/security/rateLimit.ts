@@ -9,10 +9,10 @@
  *
  * Policy:
  * - development: remote if configured; else memory when ALLOW_MEMORY; else 503
- * - preview / production: prefer remote (url+token); if unset, in-process memory
- *   fallback (ponytail: multi-instance limits are best-effort until Upstash/KV is
- *   wired — remove fallback once Production always has REST credentials)
- * - remote configured but errors / invalid responses → fail-closed 503
+ * - preview / production: prefer remote (https REST url+token); if unset or URL
+ *   is TCP/non-https, in-process memory fallback
+ * - remote configured but errors / invalid responses → memory fallback in
+ *   preview/production (and when ALLOW_MEMORY in development); else 503
  * - never log URL tokens or subjects
  */
 
@@ -80,6 +80,21 @@ export function setRateLimitFetchForTests(fn: FetchLike | null): void {
     fn ?? (globalThis.fetch.bind(globalThis) as FetchLike);
 }
 
+/**
+ * Upstash/KV REST must be HTTPS. TCP endpoints (`redis://` / `rediss://`) are
+ * not usable with fetch+Bearer and must not be treated as a configured backend
+ * (that path fail-closed to 503 on every write).
+ */
+export function isHttpsRestRateLimitUrl(url: string): boolean {
+  const u = url.trim();
+  if (!u || /^rediss?:\/\//i.test(u)) return false;
+  try {
+    return new URL(u).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function pairFromEnv(
   urlKey: string,
   tokenKey: string,
@@ -87,6 +102,10 @@ function pairFromEnv(
   const url = process.env[urlKey]?.trim() ?? "";
   const token = process.env[tokenKey]?.trim() ?? "";
   if (!url || !token) return null;
+  if (!isHttpsRestRateLimitUrl(url)) {
+    console.error("[rate-limit]", "remote_url_not_https_rest");
+    return null;
+  }
   return { url, token };
 }
 
@@ -216,6 +235,11 @@ async function consumeRemoteLimit(
       error: "temporarily unavailable",
       code: "rate_limit_backend_unavailable",
     };
+  }
+
+  // First hit in the window must set TTL — previously EXPIRE was dead code
+  // after the invalid-count return, so keys never expired.
+  if (count === 1) {
     await redisCommand(config, ["EXPIRE", key, windowSec]);
   }
 
@@ -318,8 +342,24 @@ export async function enforceRateLimit(
 
   if (remote) {
     try {
-      return await consumeRemoteLimit(remote, key, max, windowMs);
+      const result = await consumeRemoteLimit(remote, key, max, windowMs);
+      if (
+        !result.ok &&
+        result.code === "rate_limit_backend_unavailable" &&
+        allowMemory
+      ) {
+        console.error("[rate-limit]", "backend_unavailable_memory_fallback");
+        return consumeMemoryLimit(key, max, windowMs);
+      }
+      return result;
     } catch {
+      // ponytail: misconfigured/unreachable REST must not block profile creation.
+      // Keep per-instance memory ceiling; fix Upstash REST URL+token to restore
+      // cross-instance limits.
+      if (allowMemory) {
+        console.error("[rate-limit]", "backend_unavailable_memory_fallback");
+        return consumeMemoryLimit(key, max, windowMs);
+      }
       console.error("[rate-limit]", "backend_unavailable");
       return {
         ok: false,
