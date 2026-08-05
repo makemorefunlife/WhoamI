@@ -137,4 +137,33 @@ const joined = lines.join(" ");
 assert.equal(joined.includes(sensitiveText), false);
 ok("formatted body diagnostic line is bounded and never contains raw non-allowlisted field text");
 
+// ---------------------------------------------------------------------------
+section("9) A 5-digit SQLSTATE code is revealed exactly (42501), regardless of the allowlist");
+
+const d9 = diagnoseHttpJsonBody(
+  403,
+  "application/json",
+  JSON.stringify({
+    code: "42501",
+    details: null,
+    hint: null,
+    message: "permission denied for table reports",
+  }),
+);
+assert.equal(d9.code.exactValue, "42501");
+assert.equal(d9.code.category, null);
+assert.equal(d9.message.exactValue, null);
+assert.equal(d9.message.category, "permission");
+assert.equal(d9.message.length, "permission denied for table reports".length);
+ok("a 5-digit SQLSTATE (42501) is revealed exactly, and 'permission denied for table reports' is classified category='permission' without exposing the raw message");
+
+// ---------------------------------------------------------------------------
+section("10) Non-5-digit code values (too short, too long, non-numeric) are never revealed via the SQLSTATE pattern");
+
+for (const badCode of ["123", "1234567", "PGRST301", "4250a", "-2501"]) {
+  const d = diagnoseHttpJsonBody(403, "application/json", JSON.stringify({ code: badCode }));
+  assert.equal(d.code.exactValue, null);
+}
+ok("only exactly-5-digit numeric strings are revealed as an exact code value; near-misses stay redacted");
+
 console.log("\nOK: supabase-http-body-diagnostics tests passed");

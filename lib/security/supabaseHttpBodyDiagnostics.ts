@@ -42,9 +42,15 @@ const CATEGORY_PATTERNS: Array<[string, RegExp]> = [
   ["jwt", /\bjwt\b/i],
   ["paused", /paused/i],
   ["restoring", /restoring/i],
+  ["permission", /permission/i],
   ["forbidden", /forbidden/i],
   ["unauthorized", /unauthorized/i],
 ];
+
+// Raw Postgres SQLSTATE codes (e.g. 42501) are 5 digits — safe to reveal
+// exactly, since a SQLSTATE alone carries no project- or user-specific
+// data, only which class of database error occurred.
+const SAFE_SQLSTATE = /^[0-9]{5}$/;
 
 const SAFE_KEY_TOKEN = /^[a-zA-Z0-9_]{1,64}$/;
 const MAX_KEYS = 20;
@@ -56,7 +62,10 @@ function categorize(value: string): string | null {
   return null;
 }
 
-function diagnoseField(value: unknown): BodyFieldDiagnostic {
+function diagnoseField(
+  value: unknown,
+  extraSafePattern?: RegExp,
+): BodyFieldDiagnostic {
   if (typeof value !== "string") {
     return {
       present: value !== undefined,
@@ -65,7 +74,9 @@ function diagnoseField(value: unknown): BodyFieldDiagnostic {
       category: null,
     };
   }
-  const exactValue = SAFE_ALLOWLIST_VALUES.has(value) ? value : null;
+  const matchesAllowlist = SAFE_ALLOWLIST_VALUES.has(value);
+  const matchesExtra = extraSafePattern ? extraSafePattern.test(value) : false;
+  const exactValue = matchesAllowlist || matchesExtra ? value : null;
   return {
     present: true,
     exactValue,
@@ -109,7 +120,7 @@ export function diagnoseHttpJsonBody(
     contentType,
     isJson,
     jsonKeys,
-    code: diagnoseField(obj?.code),
+    code: diagnoseField(obj?.code, SAFE_SQLSTATE),
     error: diagnoseField(obj?.error),
     message: diagnoseField(obj?.message),
   };
