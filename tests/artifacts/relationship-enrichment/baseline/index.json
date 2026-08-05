@@ -1,0 +1,456 @@
+{
+  "generated_at": "2026-08-05T15:12:01.856Z",
+  "ok": 64,
+  "fail": 0,
+  "total": 64,
+  "entries": [
+    {
+      "tag": "friend/strong/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/strong/ko-KR.json",
+      "headline": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/strong/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/strong/en-US.json",
+      "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/mixed/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/mixed/ko-KR.json",
+      "headline": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/mixed/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/mixed/en-US.json",
+      "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/weak/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/weak/ko-KR.json",
+      "headline": "Alex & Jordan — 각자 다른 주파수, 그래서 오래 가는 우정 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/weak/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/weak/en-US.json",
+      "headline": "Alex & Jordan — different frequencies, which is exactly why this friendship lasts You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/reversed_ab/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/reversed_ab/ko-KR.json",
+      "headline": "Jordan & Alex — 영혼을 나눈 환상의 덤앤더머 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/reversed_ab/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/reversed_ab/en-US.json",
+      "headline": "Jordan & Alex — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/unknown_hour/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/unknown_hour/ko-KR.json",
+      "headline": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/unknown_hour/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/unknown_hour/en-US.json",
+      "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/sparse_psych/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/sparse_psych/ko-KR.json",
+      "headline": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머",
+      "sections": 8,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/sparse_psych/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/sparse_psych/en-US.json",
+      "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo",
+      "sections": 8,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/psych_saju_agree/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/psych_saju_agree/ko-KR.json",
+      "headline": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/psych_saju_agree/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/psych_saju_agree/en-US.json",
+      "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/psych_saju_conflict/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/psych_saju_conflict/ko-KR.json",
+      "headline": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머 충전 방식까지 비슷해서, 놀 때나 쉴 때나 주파수가 잘 맞아요.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "friend/psych_saju_conflict/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/friend/psych_saju_conflict/en-US.json",
+      "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+      "sections": 9,
+      "lenses_active": 7
+    },
+    {
+      "tag": "work/strong/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/strong/ko-KR.json",
+      "headline": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/strong/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/strong/en-US.json",
+      "headline": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/mixed/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/mixed/ko-KR.json",
+      "headline": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/mixed/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/mixed/en-US.json",
+      "headline": "Problem Solver and Process-Guardian PM — a complementary combo that fills the team with different weapons. Your core instincts pull in different directions — a spark that needs channeling.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/weak/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/weak/ko-KR.json",
+      "headline": "프로세스 지킴이 PM와 성과 달성가 CFO — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/weak/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/weak/en-US.json",
+      "headline": "Process-Guardian PM and Results-Driven CFO — a golden combo where the gears mesh perfectly. Your core instincts pull in different directions — a spark that needs channeling.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/reversed_ab/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/reversed_ab/ko-KR.json",
+      "headline": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/reversed_ab/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/reversed_ab/en-US.json",
+      "headline": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/unknown_hour/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/unknown_hour/ko-KR.json",
+      "headline": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/unknown_hour/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/unknown_hour/en-US.json",
+      "headline": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/sparse_psych/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/sparse_psych/ko-KR.json",
+      "headline": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "sections": 6,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/sparse_psych/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/sparse_psych/en-US.json",
+      "headline": "Problem Solver and Process-Guardian PM — a complementary combo that fills the team with different weapons. Your core instincts pull in different directions — a spark that needs channeling.",
+      "sections": 6,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/psych_saju_agree/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/psych_saju_agree/ko-KR.json",
+      "headline": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/psych_saju_agree/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/psych_saju_agree/en-US.json",
+      "headline": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/psych_saju_conflict/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/psych_saju_conflict/ko-KR.json",
+      "headline": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "work/psych_saju_conflict/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/work/psych_saju_conflict/en-US.json",
+      "headline": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+      "sections": 7,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/strong/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/strong/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/strong/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/strong/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/mixed/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/mixed/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/mixed/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/mixed/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/weak/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/weak/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/weak/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/weak/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/reversed_ab/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/reversed_ab/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/reversed_ab/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/reversed_ab/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/unknown_hour/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/unknown_hour/ko-KR.json",
+      "headline": "Alex & Jordan — 서로의 빈틈을 채워 주는 성장 파트너",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/unknown_hour/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/unknown_hour/en-US.json",
+      "headline": "Alex & Jordan — growth partners who fill in each other's gaps",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/sparse_psych/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/sparse_psych/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 13,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/sparse_psych/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/sparse_psych/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 13,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/psych_saju_agree/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/psych_saju_agree/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/psych_saju_agree/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/psych_saju_agree/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/psych_saju_conflict/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/psych_saju_conflict/ko-KR.json",
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "family/psych_saju_conflict/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/family/psych_saju_conflict/en-US.json",
+      "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+      "sections": 14,
+      "lenses_active": 8
+    },
+    {
+      "tag": "partner/strong/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/strong/ko-KR.json",
+      "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/strong/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/strong/en-US.json",
+      "headline": "Loyal & Pride — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/mixed/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/mixed/ko-KR.json",
+      "headline": "Balanced & Flexible — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/mixed/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/mixed/en-US.json",
+      "headline": "Balanced & Flexible — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/weak/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/weak/ko-KR.json",
+      "headline": "Rule-of-Love & Flexible — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/weak/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/weak/en-US.json",
+      "headline": "Rule-of-Love & Flexible — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/reversed_ab/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/reversed_ab/ko-KR.json",
+      "headline": "Pride & Loyal — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/reversed_ab/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/reversed_ab/en-US.json",
+      "headline": "Pride & Loyal — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/unknown_hour/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/unknown_hour/ko-KR.json",
+      "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/unknown_hour/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/unknown_hour/en-US.json",
+      "headline": "Loyal & Pride — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/sparse_psych/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/sparse_psych/ko-KR.json",
+      "headline": "Balanced & Flexible — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 12,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/sparse_psych/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/sparse_psych/en-US.json",
+      "headline": "Balanced & Flexible — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 12,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/psych_saju_agree/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/psych_saju_agree/ko-KR.json",
+      "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/psych_saju_agree/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/psych_saju_agree/en-US.json",
+      "headline": "Loyal & Pride — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/psych_saju_conflict/ko-KR",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/psych_saju_conflict/ko-KR.json",
+      "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "sections": 13,
+      "lenses_active": 10
+    },
+    {
+      "tag": "partner/psych_saju_conflict/en-US",
+      "file": "tests/artifacts/relationship-enrichment/baseline/partner/psych_saju_conflict/en-US.json",
+      "headline": "Loyal & Pride — a fated-pull family, drawn together by a chemistry neither of you can quite explain",
+      "sections": 13,
+      "lenses_active": 10
+    }
+  ]
+}

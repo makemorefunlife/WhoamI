@@ -1,0 +1,2490 @@
+{
+  "domain": "family",
+  "caseId": "reversed_ab",
+  "locale": "ko-KR",
+  "generated_at": "2026-08-05T15:25:11.114Z",
+  "case_meta": {
+    "label_ko": "A/B 반전",
+    "label_en": "Reversed A/B",
+    "birth": {
+      "birthA": "1992-03-08",
+      "birthB": "1990-05-15",
+      "timeA": "09:00",
+      "timeB": "14:30",
+      "nicknameA": "Jordan",
+      "nicknameB": "Alex",
+      "roles": {
+        "roleA": "mother",
+        "roleB": "child"
+      },
+      "parentType": "mother"
+    },
+    "psych": "balanced"
+  },
+  "current": {
+    "mode": "current_ce",
+    "summary": {
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "summary_line": "🔥 30% · 🧩 100% · ⚡ 85%",
+      "one_liner": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "grade": "D",
+      "grade_reason": "가족(자녀-엄마) 등급 D — 정서적 유대 30% · 성장 시너지 100% · 훈육 마찰 85%",
+      "canonical_projection_keys": [
+        "comparison_table"
+      ],
+      "section_keys": [
+        "section_roles",
+        "section_child_dna",
+        "section_snapshot",
+        "section_destiny",
+        "section_growth_tunnel",
+        "section_filial_reward",
+        "section_de_escalation",
+        "section_compare_table",
+        "section_household_roles",
+        "section_family_role",
+        "section_relationship_index",
+        "section_talent",
+        "section_sos_script",
+        "section_filial_frequency"
+      ]
+    },
+    "report": {
+      "headline": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "summary_line": "🔥 30% · 🧩 100% · ⚡ 85%",
+      "one_line_family": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+      "snapshot_panel": {
+        "grade": "D",
+        "gaugeLabel": "Child DNA Playbook · 패밀리 스냅샷",
+        "representativeLine": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+        "keywords": [
+          "엄마",
+          "자녀",
+          "Child DNA"
+        ],
+        "relationshipGauges": [
+          {
+            "topic": "intimacy",
+            "label": "① 정서적 유대 (엄마↔자녀)",
+            "activation": 30,
+            "benefit": 30,
+            "risk": 70
+          },
+          {
+            "topic": "stability",
+            "label": "② 성장 시너지",
+            "activation": 100,
+            "benefit": 100,
+            "risk": 43
+          },
+          {
+            "topic": "conflict",
+            "label": "③ 훈육 마찰 리스크",
+            "activation": 15,
+            "benefit": 15,
+            "risk": 85
+          }
+        ],
+        "personA": {
+          "nickname": "Jordan",
+          "metaphor": "관계공감형 · 62",
+          "axes": [
+            {
+              "key": "connection",
+              "label": "관계지향성",
+              "value": 59
+            },
+            {
+              "key": "stability",
+              "label": "안정지향성",
+              "value": 54
+            },
+            {
+              "key": "growth",
+              "label": "성장지향성",
+              "value": 50
+            },
+            {
+              "key": "structure",
+              "label": "체계성",
+              "value": 50
+            },
+            {
+              "key": "adaptability",
+              "label": "적응성",
+              "value": 50
+            }
+          ]
+        },
+        "personB": {
+          "nickname": "Alex",
+          "metaphor": "관계공감형 · 57",
+          "axes": [
+            {
+              "key": "connection",
+              "label": "관계지향성",
+              "value": 53
+            },
+            {
+              "key": "stability",
+              "label": "안정지향성",
+              "value": 56
+            },
+            {
+              "key": "growth",
+              "label": "성장지향성",
+              "value": 50
+            },
+            {
+              "key": "structure",
+              "label": "체계성",
+              "value": 50
+            },
+            {
+              "key": "adaptability",
+              "label": "적응성",
+              "value": 50
+            }
+          ]
+        },
+        "personAxesSource": "survey",
+        "narrative": {
+          "topics": [
+            {
+              "topic": "intimacy",
+              "title": "① 정서적 유대 (엄마↔자녀)",
+              "subtitle": "Alex ↔ Jordan",
+              "activation": 30,
+              "benefit": 30,
+              "risk": 70,
+              "interpretation": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+              "isWarning": true
+            },
+            {
+              "topic": "stability",
+              "title": "② 성장 시너지",
+              "subtitle": "Alex ↔ Jordan",
+              "activation": 100,
+              "benefit": 100,
+              "risk": 43,
+              "interpretation": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+              "isWarning": false
+            },
+            {
+              "topic": "conflict",
+              "title": "③ 훈육 마찰 리스크",
+              "subtitle": "Alex ↔ Jordan",
+              "activation": 15,
+              "benefit": 15,
+              "risk": 85,
+              "interpretation": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계",
+              "isWarning": true
+            }
+          ]
+        }
+      },
+      "family": {
+        "section_roles": {
+          "child_nickname": "Alex",
+          "parent_nickname": "Jordan",
+          "parent_role": "mother",
+          "parent_role_label": "엄마"
+        },
+        "section_child_dna": {
+          "genius_title": "💎 명확한 기준형 천재",
+          "communication_style": "Alex는 논리와 사실로 마음을 정리해요. 감정만 받아들이기보다 '왜 그랬는지' 이해해야 안심합니다.",
+          "hidden_sensitivity": "Alex는 겉으론 괜찮아 보여도, 작은 비난에도 오래 마음에 담아두는 편일 수 있어요.",
+          "attention_focus_style": "Alex는 관심 분야에 몰입하면 시간 가는 줄 모르는 타입이에요.",
+          "hidden_genius": "Alex는 겉보기엔 늦게 성숙하는 대기만성형이에요. 어른들이 '벌써?'라고 재촉하는 시기보다, 스스로 '해냈다'는 경험을 쌓는 시기에 실력이 뛰어나게 튀어 오릅니다. 비교 대신 \"네 페이스가 좋아\"라고 믿어 주세요.",
+          "praise_trigger_note": "Alex에게는 구체적이고 타이밍 맞는 칭찬이 중요해요. 막연한 칭찬 세 번보다 관찰된 행동 한 번이 낫습니다."
+        },
+        "section_snapshot": {
+          "bond_pct": 30,
+          "synergy_pct": 100,
+          "risk_pct": 85,
+          "one_line_family": "Alex & Jordan — 사랑하지만 한 걸음 떨어져 지켜봐야 할 소중한 고슴도치 관계"
+        },
+        "section_destiny": {
+          "harmony_one_liner": "사랑은 깊지만, 붙어 있으면 가시로 찌를 수 있어요. 독립적인 거리두기·각자만의 공간·감정 쿨다운 시간이 정답인 관계입니다.",
+          "favoritism_warning": "다른 가족에 비해 Alex를 무의식적으로 더 편하게 느낄 수 있어요. 편애 리스크가 있으니 형제·다른 자녀에게도 같은 존중과 시간을 공평하게 나눠 주세요."
+        },
+        "section_growth_tunnel": {
+          "current_challenge": "2026년, Alex는 올해의 성장 터널을 지나고 있어요 — '내가 누구인지'를 스스로 다듬는 시기적 과제이며, 고정된 성격이 아닙니다.",
+          "focus_areas": [
+            "새로운 도전",
+            "감정 표현"
+          ]
+        },
+        "section_filial_reward": {
+          "future_reward": "Alex는 Jordan의 인생 후반전에 든든한 '패밀리 리워드'가 될 수 있어요 — 지금 관계 패턴에서 이어질 가능성이지, 정해진 성격의 단정은 아닙니다. 경제·돌봄·정서 중 하나 이상에서 보답으로 이어질 여지가 있습니다. 설문 참고: 인정·칭찬에 비슷하게 반응하는 편이에요. 짧고 꾸준한 알아줌이 이미 있는 긍정적 흐름을 더 단단히 할 수 있습니다.",
+          "reward_index": "high"
+        },
+        "section_de_escalation": {
+          "hashtag": "#우쭈쭈_자존심이생명",
+          "color": "red",
+          "archetype_label": "자존심·존재감 민감형",
+          "category": "self",
+          "psych_state": "Alex는 \"날 무시한다\"는 느낌이 들면 이성적인 대화가 불가능해져요. 잘잘못을 따지는 순간 방어벽을 높입니다.",
+          "avoid_actions": "【Jordan → Alex】 \"너 때문에…\"라며 책임 전가, 형제와 비교, Alex의 노력을 가볍게 치부하기.",
+          "solution_script": "【Jordan(엄마) → Alex】 \"Alex, 네가 얼마나 소중한지 내가 다 알아. 아까 내 말이 상처였다면 정말 미안해. 네 자존심은 지켜줄게.\" — 존재 가치를 먼저 인정한 뒤, 규칙 이야기는 내일로 미루세요.",
+          "contact_wait_note": "Alex는 한번 삐지면 답장이 늦어지는 편이에요. 카톡 보내고 3시간까지는 다그치지 말고 기다려 주세요 — 그 이상 침묵하면 그때 다시 말 걸어도 늦지 않아요.",
+          "boundary_script": null
+        },
+        "parent_lens_summary": "엄마로서 Alex와의 관계에서는, 숨겨진 감수성·안정 욕구를 먼저 읽습니다.",
+        "section_compare_table": [
+          {
+            "id": "correction_style",
+            "label": "지적·교정이 들어오는 순간의 반응",
+            "personParent": {
+              "nickname": "Jordan",
+              "shortLabel": "감정이 먼저 드러나는 타입",
+              "band": "self"
+            },
+            "personChild": {
+              "nickname": "Alex",
+              "shortLabel": "감정이 먼저 드러나는 타입",
+              "band": "self"
+            },
+            "meaning": "Jordan와 Alex 모두 ‘감정이 먼저 드러나는 타입’이에요. 같은 반응 타입이라 속도 싸움은 적고, 지금 마찰도 낮은 편이에요."
+          },
+          {
+            "id": "bond_distance",
+            "label": "보호와 독립의 전환",
+            "personParent": {
+              "nickname": "Jordan",
+              "shortLabel": "거리를 둘 때 더 편안한 타입",
+              "band": "distant"
+            },
+            "personChild": {
+              "nickname": "Alex",
+              "shortLabel": "거리를 둘 때 더 편안한 타입",
+              "band": "distant"
+            },
+            "meaning": "Jordan와 Alex 모두 ‘거리를 둘 때 더 편안한 타입’이에요. 같은 거리 감각끼리라 통하지만, 챙김·독립이 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요."
+          },
+          {
+            "id": "affection_expression",
+            "label": "가족에게 마음을 표현하는 방식",
+            "personParent": {
+              "nickname": "Jordan",
+              "shortLabel": "깊이 헤아리며 마음을 표현하는 타입",
+              "band": "water"
+            },
+            "personChild": {
+              "nickname": "Alex",
+              "shortLabel": "실질적인 도움으로 마음을 표현하는 타입",
+              "band": "metal"
+            },
+            "meaning": "표현 방식이 서로 달라요 — 서로 다른 언어로 마음을 표현한다는 걸 알아두면 오해가 줄어요."
+          },
+          {
+            "id": "guidance_balance",
+            "label": "돌봄이 필요할 때 — 수용·설명·기준",
+            "personParent": {
+              "nickname": "Jordan",
+              "shortLabel": "수용·설명·기준을 섞어 쓰는 타입",
+              "band": "mixed"
+            },
+            "personChild": {
+              "nickname": "Alex",
+              "shortLabel": "이유와 맥락을 설명하며 지도하는 타입",
+              "band": "explanatory"
+            },
+            "meaning": "Jordan 쪽은 ‘수용·설명·기준을 섞어 쓰는 타입’, Alex 쪽은 ‘이유와 맥락을 설명하며 지도하는 타입’이에요. 돌봄 장면에서 한쪽이 혼합형이라, 일상 개입 강도를 장면마다 조율할 여지가 있어요."
+          },
+          {
+            "id": "gathering_recovery",
+            "label": "가족행사 후 에너지 회복 방식",
+            "personParent": {
+              "nickname": "Jordan",
+              "shortLabel": "그때그때 컨디션 따라 발산과 휴식을 오가는 타입",
+              "band": "balanced"
+            },
+            "personChild": {
+              "nickname": "Alex",
+              "shortLabel": "가족 모임에서 에너지를 발산해야 풀리는 타입",
+              "band": "strong"
+            },
+            "meaning": "한쪽은 확실한 발산형이고, 다른 쪽은 그날그날 달라요."
+          },
+          {
+            "id": "home_climate",
+            "label": "집 안에서 걱정과 긴장이 쌓이는 방식",
+            "personParent": {
+              "nickname": "Jordan",
+              "shortLabel": "집 안 긴장을 오래 붙잡지 않는 편",
+              "band": "low"
+            },
+            "personChild": {
+              "nickname": "Alex",
+              "shortLabel": "집 안 긴장을 오래 붙잡지 않는 편",
+              "band": "low"
+            },
+            "meaning": "Jordan와 Alex 모두 ‘집 안 긴장을 오래 붙잡지 않는 편’이에요. 걱정이 집 전체 분위기로 오래 남기 어려운 조합이에요."
+          }
+        ],
+        "section_household_roles": {
+          "self_name": "Jordan",
+          "partner_name": "Alex",
+          "self_role_label": "유연 조율형",
+          "self_role_detail": "Jordan 쪽은 가정에서 받아들이기·풀어 주기·기준 잡기를 번갈아 쓰는 자리에 서기 쉬워요(유연 조율형). Alex(맥락 설명형)와 비교하면 — Jordan 쪽은 장면마다 방식을 바꿔 가요, Alex 쪽은 맥락부터 풀려 해요.",
+          "partner_role_label": "맥락 설명형",
+          "partner_role_detail": "Alex 쪽은 가정에서 상황의 이유와 맥락을 풀어 주는 자리에 서기 쉬워요(맥락 설명형). Jordan(유연 조율형)와 비교하면 — Alex 쪽은 맥락부터 풀려 해요, Jordan 쪽은 장면마다 방식을 바꿔 가요.",
+          "complement": "Jordan 쪽은 유연 조율형이고, Alex 쪽은 맥락 설명형이에요. Jordan 쪽이 지금 장면이 받아들이기·풀어 주기·기준 중 무엇인지 한 줄로 먼저 말해 주면 Alex와 보완되기 쉬워요.",
+          "tension": "Jordan와 Alex는 첫 수가 한 가지로 고정되지 않아요. 조율하는 쪽이 말 없이 모드를 바꾸면, 상대는 이전 방식에 답을 하다가 마찰이 나요."
+        },
+        "section_family_role": {
+          "child_role": "mediator",
+          "role_label": "🕊️ 중재자",
+          "role_description": "Alex은(는) 가족 사이에서 분위기를 살피고 갈등을 조율하는 역할을 자연스럽게 맡아요. 그 노력을 직접 고맙다고 말해주세요 — 안 그러면 티 안 나게 지나가기 쉬워요."
+        },
+        "section_relationship_index": {
+          "friction_index": 85,
+          "headline": "훈육 마찰 지수",
+          "safe_distance_note": "가끔 개입이 과하거나 부족하다고 느껴질 수 있어요. 한 걸음 물러나 자녀가 먼저 다가올 시간을 줘 보세요.",
+          "decision_axis_note": null
+        },
+        "section_talent": {
+          "headline": "공부 타입 & 성공 그릇",
+          "study_type": "diligent",
+          "study_type_label": "📚 암기·성실형",
+          "study_type_note": "Alex는 꾸준히 반복하고 익히는 성실형이라 시간이 쌓일수록 강해져요.",
+          "wealth_vessel": "developing",
+          "wealth_vessel_label": "🌱 잠재 성장형",
+          "wealth_vessel_note": "Alex는 아직 뚜렷한 방향이 자리 잡는 중인 잠재 성장형이에요 — 다양한 경험이 그릇을 키워줄 거예요.",
+          "inherited_note": null
+        },
+        "section_sos_script": {
+          "headline": "위기의 순간, 부모의 SOS 룰",
+          "trigger_label": "취업·재정 위기",
+          "sos_line": "Alex가 힘든 시기를 지날 때는 잔소리 대신 딱 한마디만 건네 주세요 — \"난 너를 믿어.\" 그 말이 백 마디 조언보다 힘이 셉니다."
+        },
+        "section_filial_frequency": null
+      },
+      "meta": {
+        "grade": "D",
+        "grade_reason": "가족(자녀-엄마) 등급 D — 정서적 유대 30% · 성장 시너지 100% · 훈육 마찰 85%",
+        "uncertain_items": [
+          "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+          "년주 팔자 형식이 올바르지 않습니다 (임신).",
+          "월주 팔자 형식이 올바르지 않습니다 (계묘).",
+          "일주 팔자 형식이 올바르지 않습니다 (계미).",
+          "시주 팔자 형식이 올바르지 않습니다 (병진).",
+          "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+          "년주 팔자 형식이 올바르지 않습니다 (경오).",
+          "월주 팔자 형식이 올바르지 않습니다 (신사).",
+          "일주 팔자 형식이 올바르지 않습니다 (경진).",
+          "시주 팔자 형식이 올바르지 않습니다 (계미)."
+        ],
+        "bond_pct": 30,
+        "synergy_pct": 100,
+        "risk_pct": 85,
+        "parent_role": "mother",
+        "parent_type": "mother",
+        "child_nickname": "Alex",
+        "parent_nickname": "Jordan",
+        "nickname_a": "Jordan",
+        "nickname_b": "Alex",
+        "psych_match": {
+          "axis_results": [
+            {
+              "axis_key": "stimulation",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "self_control",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "practicality",
+              "score_a": 58,
+              "score_b": 61,
+              "gap": 3,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "structure",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "empathy",
+              "score_a": 62,
+              "score_b": 57,
+              "gap": 5,
+              "match_type": "complementary"
+            },
+            {
+              "axis_key": "conflict_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "resilience",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "recognition",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "energy_style",
+              "score_a": 55,
+              "score_b": 48,
+              "gap": 7,
+              "match_type": "complementary"
+            },
+            {
+              "axis_key": "thinking_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "decision_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            }
+          ],
+          "conflict_triggers": []
+        },
+        "psych_lens": {
+          "lens_title": "👨‍👩‍👧 가족 관계에서 특히 눈에 띄는 축",
+          "chart_note": "부모와 자녀의 현재 모습을 11축 설문으로 비교했어요. (연인·동거와 같은 기준이에요.)",
+          "intro_line": "위 차트는 11축 전체예요. 아래는 부모·자녀 사이에서 체감되기 쉬운 질문들이에요.",
+          "highlights": [
+            {
+              "axis_key": "empathy",
+              "axis_label": "관계공감",
+              "gap": 5,
+              "match_type": "complementary",
+              "topic": "소통·공감",
+              "section_hint": "「Child DNA」",
+              "hook": "감정 토크 vs 행동·해결, 누가 어느 쪽에 가깝나요?",
+              "narrative": "위로 담당·실행 담당으로 나누면 훈육이 덜 아파요."
+            },
+            {
+              "axis_key": "self_control",
+              "axis_label": "자기통제",
+              "gap": 0,
+              "match_type": "similarity",
+              "topic": "감정 조절",
+              "section_hint": "「Child DNA」",
+              "hook": "둘 다 감정을 비교적 차분히 다루는 편인가요?",
+              "narrative": "폭발 전에 멈출 여유가 있어요."
+            },
+            {
+              "axis_key": "structure",
+              "axis_label": "계획구조화",
+              "gap": 0,
+              "match_type": "similarity",
+              "topic": "규칙·루틴",
+              "section_hint": "「성장 터널」",
+              "hook": "집안 규칙·루틴에 대한 기대가 비슷한가요?",
+              "narrative": "약속과 일정이 맞아 생활이 덜 흔들려요."
+            },
+            {
+              "axis_key": "conflict_style",
+              "axis_label": "갈등직면성",
+              "gap": 0,
+              "match_type": "similarity",
+              "topic": "갈등·훈육",
+              "section_hint": "「갈등 진정」",
+              "hook": "둘 다 불편한 얘기를 비교적 빨리 꺼내는 편인가요?",
+              "narrative": "서운함이 쌓이지 않아 훈육 마찰이 줄어요."
+            }
+          ]
+        },
+        "prescription_family": {
+          "schema_version": "family_prescription_v1",
+          "intro_line": "이번 리포트에는 관계 교차 신호가 없어, 공통 기본 루틴만 담았어요 — 확정 예언이 아니라 실천 습관입니다.",
+          "items": [
+            {
+              "topic": "family_baseline",
+              "headline": "가족 관계 유지 기본 루틴 (공통)",
+              "evidence": {
+                "source": "pair_family_signals",
+                "signal_paths": [
+                  "family_prescription.baseline"
+                ],
+                "summary": "특정 주제가 강하게 치솟지 않아도, 부모·자녀는 작은 말투 차이가 오래 갑니다. 관계를 안정적으로 유지하는 공통 습관입니다.",
+                "snapshot": {}
+              },
+              "do_list": [
+                "월 1회 'Jordan·Alex 커피 20분' — 안건 없이 근황만.",
+                "고마움은 행동 1개로 — 말만 '고마워' 반복하지 않기.",
+                "큰 결정은 '정보 주 → 숙려 → 결정' 3단계로."
+              ],
+              "dont_list": [
+                "피곤한 밤 11시 이후 장문 카톡 잔소리.",
+                "제3자 앞에서 훈계·반박.",
+                "선물·돈으로 갈등 덮기만 하기."
+              ]
+            }
+          ]
+        }
+      },
+      "context_output": {
+        "schema_version": "context_output_v1",
+        "domain": "family",
+        "grade": "D",
+        "scores": {
+          "bond": 30,
+          "synergy": 100,
+          "risk": 85
+        },
+        "dominant_categories": {
+          "family_role": {
+            "category": "mediator"
+          },
+          "study_type": {
+            "category": "diligent"
+          },
+          "wealth_vessel": {
+            "category": "developing"
+          },
+          "child_archetype": {
+            "category": "metal"
+          },
+          "child_communication": {
+            "category": "analytical"
+          },
+          "parent_support_strength": {
+            "category": "developing"
+          }
+        },
+        "signals": {
+          "hasDayBranchCombine": false,
+          "hasJohuElementSupport": false,
+          "hasDayMonthTensionBond": true,
+          "hasParentBoostsChildTalent": true,
+          "hasTemperamentComplement": true,
+          "hasParentOvercontrol": false,
+          "hasDayMonthPalaceChungHyung": true,
+          "hasWonjinOrGuimun": true,
+          "hasParentTemperatureExtreme": true,
+          "hasStrongParentChildCombine": true,
+          "hasStrongParentChildClash": false,
+          "childSealStrong": false,
+          "parentSupportsChildSeal": false,
+          "childWealthStrong": false,
+          "parentSupportsChildWealth": false
+        },
+        "axis_notes": {
+          "decision_style": null
+        },
+        "section_summaries": {}
+      },
+      "canonical_projections": {
+        "comparison_table": {
+          "correction_style": {
+            "band_parent": "self",
+            "band_child": "self"
+          },
+          "bond_distance": {
+            "band_parent": "distant",
+            "band_child": "distant"
+          },
+          "affection_expression": {
+            "band_parent": "water",
+            "band_child": "metal"
+          },
+          "guidance_balance": {
+            "band_parent": "mixed",
+            "band_child": "explanatory"
+          },
+          "gathering_recovery": {
+            "band_parent": "balanced",
+            "band_child": "strong"
+          },
+          "home_climate": {
+            "band_parent": "low",
+            "band_child": "low"
+          }
+        }
+      }
+    },
+    "view_model_sections": [
+      {
+        "id": "snapshot",
+        "type": "snapshot",
+        "title": ""
+      },
+      {
+        "id": "relationship_index",
+        "type": "relationship_index",
+        "title": "훈육 마찰 지수"
+      },
+      {
+        "id": "compare_table",
+        "type": "compare_table",
+        "title": "📊 한눈에 비교 — 4가지 가족 축"
+      },
+      {
+        "id": "household_roles",
+        "type": "household_roles",
+        "title": "🏠 가정에서의 나와 상대의 역할"
+      },
+      {
+        "id": "psych_radar",
+        "type": "psych_radar",
+        "title": "🎯 11축 궁합 레이더"
+      },
+      {
+        "id": "child_dna",
+        "type": "child_dna",
+        "title": "🧬 Child DNA 프로필"
+      },
+      {
+        "id": "talent",
+        "type": "talent",
+        "title": "공부 타입 & 성공 그릇"
+      },
+      {
+        "id": "growth_tunnel",
+        "type": "growth_tunnel",
+        "title": "⚠️ 올해의 성장 과제"
+      },
+      {
+        "id": "family_role",
+        "type": "family_role",
+        "title": "🎭 우리 아이의 마음속 역할"
+      },
+      {
+        "id": "destiny",
+        "type": "destiny",
+        "title": "🤝 우리의 운명적 스코어"
+      },
+      {
+        "id": "filial_reward",
+        "type": "filial_reward",
+        "title": "🎯 미래의 패밀리 리워드"
+      },
+      {
+        "id": "sos_script",
+        "type": "sos_script",
+        "title": "위기의 순간, 부모의 SOS 룰"
+      },
+      {
+        "id": "de_escalation",
+        "type": "de_escalation",
+        "title": "⚡ 화 풀림 치트키"
+      },
+      {
+        "id": "prescription",
+        "type": "prescription",
+        "title": "💊 실전 행동 처방전"
+      }
+    ]
+  },
+  "v1": {
+    "mode": "v1_gold",
+    "inventory": [
+      {
+        "asset_id": "family_v1_household_roles",
+        "target_lens_id": "family_household_roles",
+        "status": "ADAPT_INTO_DOMAIN_LENS",
+        "user_question_answered_ko": "한집에서 살아갈 때 부모와 자녀의 생활 역할과 권한 분담은 어떻게 이뤄질까?"
+      },
+      {
+        "asset_id": "family_v1_talent_align",
+        "target_lens_id": "family_hidden_needs",
+        "status": "ADAPT_INTO_DOMAIN_LENS",
+        "user_question_answered_ko": "자녀가 가진 숨은 재능과 본질적 기질을 어떻게 발현시켜 줄 수 있을까?"
+      },
+      {
+        "asset_id": "family_v1_sos_script",
+        "target_lens_id": "family_crisis_recovery",
+        "status": "ADAPT_INTO_CANONICAL_MEANING",
+        "user_question_answered_ko": "심각한 감정 대립이나 훈육 마찰 후 어떻게 안전하게 화해할까?"
+      }
+    ],
+    "projections": {
+      "comparison_table": {
+        "correction_style": {
+          "band_parent": "self",
+          "band_child": "self"
+        },
+        "bond_distance": {
+          "band_parent": "distant",
+          "band_child": "distant"
+        },
+        "affection_expression": {
+          "band_parent": "water",
+          "band_child": "metal"
+        },
+        "guidance_balance": {
+          "band_parent": "mixed",
+          "band_child": "explanatory"
+        },
+        "gathering_recovery": {
+          "band_parent": "balanced",
+          "band_child": "strong"
+        },
+        "home_climate": {
+          "band_parent": "low",
+          "band_child": "low"
+        }
+      }
+    }
+  },
+  "dev": {
+    "mode": "domain_lens_dev",
+    "evidence": {
+      "packet_count": 9,
+      "packet_ids": [
+        "pce_002",
+        "pce_003",
+        "pce_007",
+        "pce_004",
+        "pce_005",
+        "pce_006",
+        "pce_008",
+        "pce_001",
+        "pce_009"
+      ],
+      "abstained_lenses": 0,
+      "active_lenses": 8
+    },
+    "personal_ce": "not_wired_in_this_package",
+    "pair_ce_packets": [
+      {
+        "packet_id": "pce_002",
+        "group": "bonding",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_003",
+        "group": "bonding",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_007",
+        "group": "bonding",
+        "fact_kind": "stem_combine"
+      },
+      {
+        "packet_id": "pce_004",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_005",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_006",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_008",
+        "group": "friction",
+        "fact_kind": "wonjin_guimun"
+      },
+      {
+        "packet_id": "pce_001",
+        "group": "energy",
+        "fact_kind": "element_flow"
+      },
+      {
+        "packet_id": "pce_009",
+        "group": "structure",
+        "fact_kind": "gongmang_shared"
+      }
+    ],
+    "lenses": [
+      {
+        "lens_id": "family_core_dynamic",
+        "question_ko": "부모와 자녀 사이에 흐르는 본질적인 애착 관계와 기본 정서는?",
+        "headline_ko": "Jordan와(과) Alex의 천간합 기반 깊은 정서적 유대와 신뢰 안전기지",
+        "narrative_ko": "부모의 헌신과 자녀의 수용이 아름답게 맞물려 세상에서 가장 든든한 안전기지가 되어 줍니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함",
+        "confidence": "high",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_discipline_friction",
+        "question_ko": "부모의 훈육과 기대가 자녀에게 잔소리나 압박으로 느껴질 때의 충돌은?",
+        "headline_ko": "Jordan와(과) Alex의 감정 격화 시 물리적 쿨링 스페이스 확보",
+        "narrative_ko": "지지충의 감정적 충돌을 방지하기 위해 훈육 중 감정이 격해지면 즉각 개별 공간으로 분리하는 것이 효과적입니다.",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_emotional_distance",
+        "question_ko": "자녀의 독립적인 사생활과 부모의 애정 어린 관심 사이의 적정 거리는?",
+        "headline_ko": "Alex의 사적 성역(동굴) 보장과 Jordan의 한 걸음 물러선 신뢰 지원",
+        "narrative_ko": "원진/귀문의 민감성으로 인해 문을 닫고 혼자 있는 자녀의 시간을 존중하는 것이 관계를 지키는 비결입니다. 아이의 남모르는 속마음과 특이한 관심사를 섬세하게 이해해 줌",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_hidden_needs",
+        "question_ko": "자녀가 부모에게 겉으로 툴툴거리면서도 속으로 가장 바라는 인정의 형태는?",
+        "headline_ko": "Alex이(가) 갈망하는 Jordan의 조건 없는 존재 가치 인정",
+        "narrative_ko": "천간합의 정서적 일치감으로 인해 '결과'보다 '존재 자체'를 인정해 주는 부모의 따뜻한 눈빛을 가장 필요로 합니다. 자녀의 기질을 따뜻하게 수용하고 맛있는 음식과 정서적 안정 제공",
+        "confidence": "high",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_praise_trigger",
+        "question_ko": "자녀의 잠재력을 폭발시키고 기를 살려주는 가장 효과적인 칭찬 방식은?",
+        "headline_ko": "Jordan의 디테일한 노력 과정 맞춤형 칭찬과 Alex의 성취 동기 폭발",
+        "narrative_ko": "지지합의 감수성 조화로 인해 '잘했다'는 한마디보다 '이 디테일을 고민한 게 대단하다'는 과정 칭찬이 아이를 춤추게 합니다. 자녀의 창의력과 개성을 기민하게 캐치하고 재능을 발굴함",
+        "confidence": "high",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_household_roles",
+        "question_ko": "집안일, 심부름, 용돈 관리 등 가정 내 책임과 역할 분담의 룰은?",
+        "headline_ko": "Jordan와(과) Alex의 자발적 역할 분담과 투명한 경제 관념 교육 룰",
+        "narrative_ko": "합의 조화로 인해 자녀가 집안의 작은 일에 기여하며 스스로 가치를 느끼도록 유도하는 것이 매우 효과적입니다. 규칙적인 생활 습관과 성실함의 본보기를 보여주는 안정적 양육",
+        "confidence": "high",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_safe_boundary",
+        "question_ko": "자녀가 사춘기나 반항기에 접어들었을 때 선을 넘지 않는 안전한 한계선은?",
+        "headline_ko": "Jordan의 절대적 비난 금지 원칙과 Alex의 감정 폭발 안전 브레이크",
+        "narrative_ko": "원진의 예민한 시기에는 사소한 잔소리도 자녀에게는 거대한 비난으로 느껴지므로 '너를 사랑하지만 이 행동은 위험하다'는 단호하되 따뜻한 경계선이 필요합니다. 바른 사회인으로 성장할 수 있는 합리적인 규범과 예절의 모범 교육",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "family_crisis_recovery",
+        "question_ko": "한바탕 크게 부딪히거나 문을 쾅 닫고 들어갔을 때의 골든타임 화해법은?",
+        "headline_ko": "Jordan의 따뜻한 간식 노크와 Alex의 마음을 여는 골든타임 회복 루틴",
+        "narrative_ko": "천간합의 근원적 결속력 덕분에 화가 난 상태에서도 과일 접시를 들고 들어가는 부모의 작은 제스처가 즉각 아이의 닫힌 문을 엽니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      }
+    ],
+    "story_planner": {
+      "input": {
+        "schema_version": "domain_story_planner_v1",
+        "domain": "family",
+        "parties": {
+          "a_name": "Jordan",
+          "b_name": "Alex"
+        },
+        "overall_confidence": "high",
+        "birth_time_unknown_a": false,
+        "birth_time_unknown_b": false,
+        "chapters": [],
+        "grounding_summary": {
+          "total_lenses_evaluated": 8,
+          "high_confidence_count": 8,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "standard",
+          "primary_synergy_lens_id": "family_core_dynamic"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "안전기지",
+            "정서적 유대",
+            "독립적 존중",
+            "질문형 대화",
+            "쿠션어",
+            "비교 금지",
+            "동굴 시간 보장",
+            "노크 에티켓",
+            "건강한 거리",
+            "존재 자체 인정",
+            "무조건적 사랑",
+            "기다림",
+            "과정 중심 칭찬",
+            "디테일 관찰",
+            "성장 마인드셋",
+            "1인 1역할",
+            "경제 관념",
+            "자발적 기여",
+            "안전 울타리",
+            "3대 핵심 룰",
+            "비난 금지",
+            "골든타임 화해",
+            "간식 노크",
+            "쿨링 타임"
+          ],
+          "strict_prohibitions": [
+            "자식을 망치는 과잉보호",
+            "학대하는 부모",
+            "자녀에게 독이 되는 부모",
+            "자녀를 망친다",
+            "정서적 학대자",
+            "강박증 환자",
+            "감정 없는 로봇 부모"
+          ]
+        }
+      },
+      "plan": {
+        "schema_version": "domain_7_scene_story_plan_v1",
+        "domain": "family",
+        "parties": {
+          "a_name": "Jordan",
+          "b_name": "Alex"
+        },
+        "overall_confidence": "high",
+        "birth_time_unknown_a": false,
+        "birth_time_unknown_b": false,
+        "scenes": [
+          {
+            "scene_number": 1,
+            "scene_id": "family_scene_1_core_dynamic",
+            "title_ko": "가족의 기본 온도와 애착 역동",
+            "title_en": "Core Attachment Climate",
+            "primary_lens_id": "family_core_dynamic",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "family_core_warm_nurture",
+            "canonical_packet": {
+              "meaning_id": "family_core_warm_nurture",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "b_to_a",
+              "lead_party": "B",
+              "evidence": [
+                {
+                  "kind": "stem_combine",
+                  "detail": "stem_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "부모의 헌신과 자녀의 수용이 아름답게 맞물려 세상에서 가장 든든한 안전기지가 되어 줍니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_core_warm_nurture"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "b_to_a",
+              "lead_party": "B",
+              "impact_on_a_ko": "정서적 안도감과 자존감 형성",
+              "impact_on_b_ko": "안정적인 울타리와 무조건적 지지"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_core_warm_nurture"
+                ],
+                "observable_contrast_facts": [
+                  "Jordan와(과) Alex의 천간합 기반 깊은 정서적 유대와 신뢰 안전기지"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "stem_combine",
+                    "description_ko": "시주(병진)×월주(신사) 병신합수"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "일주(계미)×년주(경오) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(임신)×월주(신사) 사신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "부모와 자녀 사이에 흐르는 본질적인 애착 관계와 기본 정서는?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_007"
+                ],
+                "saju_source_attribution": [
+                  "stem_combine:pair",
+                  "branch_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "b_to_a",
+                  "lead_party": "B",
+                  "impact_on_a_ko": "정서적 안도감과 자존감 형성",
+                  "impact_on_b_ko": "안정적인 울타리와 무조건적 지지"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "부모의 헌신과 자녀의 수용이 아름답게 맞물려 세상에서 가장 든든한 안전기지가 되어 줍니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함",
+                "gift_to_cost_relationship": "서로에게 가장 든든한 정서적 안전기지가 되어주는 따뜻한 부모-자녀 유대 확인",
+                "prohibited_generic_interpretations": [
+                  "자식을 망치는 과잉보호"
+                ],
+                "allowed_themes": [
+                  "안전기지",
+                  "정서적 유대",
+                  "독립적 존중"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_core_dynamic_action",
+                "prescription_keys": [
+                  "family_core_dynamic"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Jordan와(과) Alex의 천간합 기반 깊은 정서적 유대와 신뢰 안전기지",
+                    "script_template_id": "family_core_warm_nurture",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "B_leads_nurturing_rhythm"
+                ],
+                "behavioral_assets": [
+                  "안전기지",
+                  "정서적 유대",
+                  "독립적 존중"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 2,
+            "scene_id": "family_scene_2_distance",
+            "title_ko": "서로가 숨 쉴 수 있는 편안한 거리감",
+            "title_en": "Emotional Proximity & Sanctuary Space",
+            "primary_lens_id": "family_emotional_distance",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "family_distance_respect_sanctuary",
+            "canonical_packet": {
+              "meaning_id": "family_distance_respect_sanctuary",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "wonjin",
+                  "detail": "wonjin",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "원진/귀문의 민감성으로 인해 문을 닫고 혼자 있는 자녀의 시간을 존중하는 것이 관계를 지키는 비결입니다. 아이의 남모르는 속마음과 특이한 관심사를 섬세하게 이해해 줌"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_distance_respect_sanctuary"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "방문 노크 준수 및 일기/스마트폰 사생활 불침범",
+              "impact_on_b_ko": "식사 시간 참여 및 정기 안부 표현"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_distance_respect_sanctuary"
+                ],
+                "observable_contrast_facts": [
+                  "Alex의 사적 성역(동굴) 보장과 Jordan의 한 걸음 물러선 신뢰 지원"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "년주(임신)×월주(신사) 원진"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "자녀의 독립적인 사생활과 부모의 애정 어린 관심 사이의 적정 거리는?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_008"
+                ],
+                "saju_source_attribution": [
+                  "wonjin:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "방문 노크 준수 및 일기/스마트폰 사생활 불침범",
+                  "impact_on_b_ko": "식사 시간 참여 및 정기 안부 표현"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "원진/귀문의 민감성으로 인해 문을 닫고 혼자 있는 자녀의 시간을 존중하는 것이 관계를 지키는 비결입니다. 아이의 남모르는 속마음과 특이한 관심사를 섬세하게 이해해 줌",
+                "gift_to_cost_relationship": "과잉 밀착으로 인한 숨 막힘 없이 각자의 방과 시간을 존중하는 건강한 거리감 유지",
+                "prohibited_generic_interpretations": [
+                  "자녀에게 독이 되는 부모"
+                ],
+                "allowed_themes": [
+                  "동굴 시간 보장",
+                  "노크 에티켓",
+                  "건강한 거리"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_emotional_distance_action",
+                "prescription_keys": [
+                  "family_emotional_distance"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex의 사적 성역(동굴) 보장과 Jordan의 한 걸음 물러선 신뢰 지원",
+                    "script_template_id": "family_distance_respect_sanctuary",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "mutual_parent_child_respect"
+                ],
+                "behavioral_assets": [
+                  "동굴 시간 보장",
+                  "노크 에티켓",
+                  "건강한 거리"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 3,
+            "scene_id": "family_scene_3_hidden_needs",
+            "title_ko": "말하지 않아도 바라는 인정과 속마음",
+            "title_en": "Hidden Needs & Validation",
+            "primary_lens_id": "family_hidden_needs",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "family_needs_validation_longing",
+            "canonical_packet": {
+              "meaning_id": "family_needs_validation_longing",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "a_to_b",
+              "lead_party": "A",
+              "evidence": [
+                {
+                  "kind": "stem_combine",
+                  "detail": "stem_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "천간합의 정서적 일치감으로 인해 '결과'보다 '존재 자체'를 인정해 주는 부모의 따뜻한 눈빛을 가장 필요로 합니다. 자녀의 기질을 따뜻하게 수용하고 맛있는 음식과 정서적 안정 제공"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_needs_validation_longing"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "a_to_b",
+              "lead_party": "A",
+              "impact_on_a_ko": "'네가 있어서 자랑스럽다'는 존재적 지지 표현",
+              "impact_on_b_ko": "자존감 충전 및 부모에 대한 깊은 신뢰"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_needs_validation_longing"
+                ],
+                "observable_contrast_facts": [
+                  "Alex이(가) 갈망하는 Jordan의 조건 없는 존재 가치 인정"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "stem_combine",
+                    "description_ko": "시주(병진)×월주(신사) 병신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "자녀가 부모에게 겉으로 툴툴거리면서도 속으로 가장 바라는 인정의 형태는?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_007"
+                ],
+                "saju_source_attribution": [
+                  "stem_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "'네가 있어서 자랑스럽다'는 존재적 지지 표현",
+                  "impact_on_b_ko": "자존감 충전 및 부모에 대한 깊은 신뢰"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "천간합의 정서적 일치감으로 인해 '결과'보다 '존재 자체'를 인정해 주는 부모의 따뜻한 눈빛을 가장 필요로 합니다. 자녀의 기질을 따뜻하게 수용하고 맛있는 음식과 정서적 안정 제공",
+                "gift_to_cost_relationship": "부모의 칭찬 한마디에 자존감이 채워지며 스스로 동기부여를 얻는 긍정적 순환",
+                "prohibited_generic_interpretations": [
+                  "자녀를 망친다"
+                ],
+                "allowed_themes": [
+                  "존재 자체 인정",
+                  "무조건적 사랑",
+                  "기다림"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_hidden_needs_action",
+                "prescription_keys": [
+                  "family_hidden_needs"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex이(가) 갈망하는 Jordan의 조건 없는 존재 가치 인정",
+                    "script_template_id": "family_needs_validation_longing",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "A_leads_nurturing_rhythm"
+                ],
+                "behavioral_assets": [
+                  "존재 자체 인정",
+                  "무조건적 사랑",
+                  "기다림"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 4,
+            "scene_id": "family_scene_4_praise",
+            "title_ko": "마음에 닿는 진짜 칭찬의 언어",
+            "title_en": "Praise Language & Affirmation Trigger",
+            "primary_lens_id": "family_praise_trigger",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "family_praise_specific_process",
+            "canonical_packet": {
+              "meaning_id": "family_praise_specific_process",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "a_to_b",
+              "lead_party": "A",
+              "evidence": [
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "지지합의 감수성 조화로 인해 '잘했다'는 한마디보다 '이 디테일을 고민한 게 대단하다'는 과정 칭찬이 아이를 춤추게 합니다. 자녀의 창의력과 개성을 기민하게 캐치하고 재능을 발굴함"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_praise_specific_process"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "a_to_b",
+              "lead_party": "A",
+              "impact_on_a_ko": "구체적인 관찰 기반의 과정 칭찬",
+              "impact_on_b_ko": "성취 동기 고취 및 자발적 몰입"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_praise_specific_process"
+                ],
+                "observable_contrast_facts": [
+                  "Jordan의 디테일한 노력 과정 맞춤형 칭찬과 Alex의 성취 동기 폭발"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "일주(계미)×년주(경오) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(임신)×월주(신사) 사신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "자녀의 잠재력을 폭발시키고 기를 살려주는 가장 효과적인 칭찬 방식은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_007"
+                ],
+                "saju_source_attribution": [
+                  "branch_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "구체적인 관찰 기반의 과정 칭찬",
+                  "impact_on_b_ko": "성취 동기 고취 및 자발적 몰입"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "지지합의 감수성 조화로 인해 '잘했다'는 한마디보다 '이 디테일을 고민한 게 대단하다'는 과정 칭찬이 아이를 춤추게 합니다. 자녀의 창의력과 개성을 기민하게 캐치하고 재능을 발굴함",
+                "gift_to_cost_relationship": "막연한 칭찬이 아닌 구체적인 과정 인정으로 자녀의 날개를 달아주는 칭찬 공식",
+                "prohibited_generic_interpretations": [
+                  "정서적 학대자"
+                ],
+                "allowed_themes": [
+                  "과정 중심 칭찬",
+                  "디테일 관찰",
+                  "성장 마인드셋"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_praise_trigger_action",
+                "prescription_keys": [
+                  "family_praise_trigger"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Jordan의 디테일한 노력 과정 맞춤형 칭찬과 Alex의 성취 동기 폭발",
+                    "script_template_id": "family_praise_specific_process",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "A_leads_nurturing_rhythm"
+                ],
+                "behavioral_assets": [
+                  "과정 중심 칭찬",
+                  "디테일 관찰",
+                  "성장 마인드셋"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 5,
+            "scene_id": "family_scene_5_household_roles",
+            "title_ko": "집안일과 생활 규칙의 유연한 조화",
+            "title_en": "Household Order & Daily Cooperation",
+            "primary_lens_id": "family_household_roles",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "family_roles_flexible_cooperation",
+            "canonical_packet": {
+              "meaning_id": "family_roles_flexible_cooperation",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "stem_combine",
+                  "detail": "stem_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "합의 조화로 인해 자녀가 집안의 작은 일에 기여하며 스스로 가치를 느끼도록 유도하는 것이 매우 효과적입니다. 규칙적인 생활 습관과 성실함의 본보기를 보여주는 안정적 양육"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_roles_flexible_cooperation"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "자녀 전용 역할 존중 및 정기 용돈 원칙 준수",
+              "impact_on_b_ko": "자기 구역 정리 책임 완수 및 용돈 기입장 기록"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_roles_flexible_cooperation"
+                ],
+                "observable_contrast_facts": [
+                  "Jordan와(과) Alex의 자발적 역할 분담과 투명한 경제 관념 교육 룰"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "일주(계미)×년주(경오) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(임신)×월주(신사) 사신합수"
+                  },
+                  {
+                    "kind": "stem_combine",
+                    "description_ko": "시주(병진)×월주(신사) 병신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "집안일, 심부름, 용돈 관리 등 가정 내 책임과 역할 분담의 룰은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_007",
+                  "pce_009"
+                ],
+                "saju_source_attribution": [
+                  "branch_combine:pair",
+                  "stem_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "자녀 전용 역할 존중 및 정기 용돈 원칙 준수",
+                  "impact_on_b_ko": "자기 구역 정리 책임 완수 및 용돈 기입장 기록"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "합의 조화로 인해 자녀가 집안의 작은 일에 기여하며 스스로 가치를 느끼도록 유도하는 것이 매우 효과적입니다. 규칙적인 생활 습관과 성실함의 본보기를 보여주는 안정적 양육",
+                "gift_to_cost_relationship": "일방적 심부름이 아닌 주체적인 책임감과 경제 관념을 심어주는 가족 룰 수립",
+                "prohibited_generic_interpretations": [
+                  "강박증 환자"
+                ],
+                "allowed_themes": [
+                  "1인 1역할",
+                  "경제 관념",
+                  "자발적 기여"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_household_roles_action",
+                "prescription_keys": [
+                  "family_household_roles"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Jordan와(과) Alex의 자발적 역할 분담과 투명한 경제 관념 교육 룰",
+                    "script_template_id": "family_roles_flexible_cooperation",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "mutual_parent_child_respect"
+                ],
+                "behavioral_assets": [
+                  "1인 1역할",
+                  "경제 관념",
+                  "자발적 기여"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 6,
+            "scene_id": "family_scene_6_discipline_boundary",
+            "title_ko": "상처 주지 않는 훈육과 안전한 경계",
+            "title_en": "Discipline Cushion & Healthy Boundaries",
+            "primary_lens_id": "family_discipline_friction",
+            "contributing_lens_ids": [
+              "family_safe_boundary"
+            ],
+            "canonical_meaning_id": "family_discipline_cooling_space",
+            "canonical_packet": {
+              "meaning_id": "family_discipline_cooling_space",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "a_to_b",
+              "lead_party": "A",
+              "evidence": [
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "지지충의 감정적 충돌을 방지하기 위해 훈육 중 감정이 격해지면 즉각 개별 공간으로 분리하는 것이 효과적입니다."
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_discipline_cooling_space"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "a_to_b",
+              "lead_party": "A",
+              "impact_on_a_ko": "명령조 대신 질문형 대화로 전환",
+              "impact_on_b_ko": "압박감 해소 및 자율적 행동 수정"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_discipline_cooling_space",
+                  "family_boundary_clear_respect"
+                ],
+                "observable_contrast_facts": [
+                  "Jordan와(과) Alex의 감정 격화 시 물리적 쿨링 스페이스 확보",
+                  "Jordan의 절대적 비난 금지 원칙과 Alex의 감정 폭발 안전 브레이크"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "시주(병진)×일주(경진) 진진 자형"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "월주(계묘)×일주(경진) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "월주(계묘)×년주(경오) 오묘파"
+                  },
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "년주(임신)×월주(신사) 원진"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "부모의 훈육과 기대가 자녀에게 잔소리나 압박으로 느껴질 때의 충돌은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_004",
+                  "pce_005",
+                  "pce_006",
+                  "pce_008"
+                ],
+                "saju_source_attribution": [
+                  "branch_clash:pair",
+                  "wonjin:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "명령조 대신 질문형 대화로 전환",
+                  "impact_on_b_ko": "압박감 해소 및 자율적 행동 수정"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "지지충의 감정적 충돌을 방지하기 위해 훈육 중 감정이 격해지면 즉각 개별 공간으로 분리하는 것이 효과적입니다.",
+                "gift_to_cost_relationship": "훈육이 통제나 비난으로 변질되지 않고 자녀의 자존감을 살리는 지혜로운 대화법 정착",
+                "prohibited_generic_interpretations": [
+                  "학대하는 부모",
+                  "감정 없는 로봇 부모"
+                ],
+                "allowed_themes": [
+                  "질문형 대화",
+                  "쿠션어",
+                  "비교 금지",
+                  "안전 울타리",
+                  "3대 핵심 룰",
+                  "비난 금지"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_discipline_friction_action",
+                "prescription_keys": [
+                  "family_discipline_friction",
+                  "family_safe_boundary"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Jordan와(과) Alex의 감정 격화 시 물리적 쿨링 스페이스 확보",
+                    "script_template_id": "family_discipline_cooling_space",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "A_leads_nurturing_rhythm"
+                ],
+                "behavioral_assets": [
+                  "질문형 대화",
+                  "쿠션어",
+                  "비교 금지",
+                  "안전 울타리",
+                  "3대 핵심 룰",
+                  "비난 금지"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 7,
+            "scene_id": "family_scene_7_crisis_recovery",
+            "title_ko": "갈등 후 마음을 여는 회복의 문",
+            "title_en": "Family Crisis Recovery & Reconciliation",
+            "primary_lens_id": "family_crisis_recovery",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "family_repair_conversational_apology",
+            "canonical_packet": {
+              "meaning_id": "family_repair_conversational_apology",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "stem_combine",
+                  "detail": "stem_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "천간합의 근원적 결속력 덕분에 화가 난 상태에서도 과일 접시를 들고 들어가는 부모의 작은 제스처가 즉각 아이의 닫힌 문을 엽니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "family_repair_conversational_apology"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "자존심 세우지 않고 먼저 따뜻한 손 내밀기",
+              "impact_on_b_ko": "부모의 사과 수용 및 속마음 털어놓기"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "family_repair_conversational_apology"
+                ],
+                "observable_contrast_facts": [
+                  "Jordan의 따뜻한 간식 노크와 Alex의 마음을 여는 골든타임 회복 루틴"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "stem_combine",
+                    "description_ko": "시주(병진)×월주(신사) 병신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "한바탕 크게 부딪히거나 문을 쾅 닫고 들어갔을 때의 골든타임 화해법은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_007",
+                  "pce_004",
+                  "pce_005",
+                  "pce_006",
+                  "pce_008"
+                ],
+                "saju_source_attribution": [
+                  "stem_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "자존심 세우지 않고 먼저 따뜻한 손 내밀기",
+                  "impact_on_b_ko": "부모의 사과 수용 및 속마음 털어놓기"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "천간합의 근원적 결속력 덕분에 화가 난 상태에서도 과일 접시를 들고 들어가는 부모의 작은 제스처가 즉각 아이의 닫힌 문을 엽니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함",
+                "gift_to_cost_relationship": "뒤끝 남기지 않고 따뜻한 밥 한 끼와 진심 어린 사과로 다시 끈끈해지는 회복 탄력성",
+                "prohibited_generic_interpretations": [
+                  "자식을 망치는 과잉보호"
+                ],
+                "allowed_themes": [
+                  "골든타임 화해",
+                  "간식 노크",
+                  "쿨링 타임"
+                ]
+              },
+              "action": {
+                "prescription_id": "family_crisis_recovery_action",
+                "prescription_keys": [
+                  "family_crisis_recovery"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Jordan의 따뜻한 간식 노크와 Alex의 마음을 여는 골든타임 회복 루틴",
+                    "script_template_id": "family_repair_conversational_apology",
+                    "category": "family"
+                  }
+                ],
+                "role_rules": [
+                  "mutual_parent_child_respect"
+                ],
+                "behavioral_assets": [
+                  "골든타임 화해",
+                  "간식 노크",
+                  "쿨링 타임"
+                ]
+              }
+            }
+          }
+        ],
+        "grounding_summary": {
+          "total_scenes": 7,
+          "high_confidence_count": 7,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "금(金)이(가) 수(水)을(를) 살림(상생)",
+          "primary_synergy_scene_id": "family_scene_1_core_dynamic"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "안전기지",
+            "정서적 유대",
+            "독립적 존중",
+            "동굴 시간 보장",
+            "노크 에티켓",
+            "건강한 거리",
+            "존재 자체 인정",
+            "무조건적 사랑",
+            "기다림",
+            "과정 중심 칭찬",
+            "디테일 관찰",
+            "성장 마인드셋",
+            "1인 1역할",
+            "경제 관념",
+            "자발적 기여",
+            "질문형 대화",
+            "쿠션어",
+            "비교 금지",
+            "안전 울타리",
+            "3대 핵심 룰",
+            "비난 금지",
+            "골든타임 화해",
+            "간식 노크",
+            "쿨링 타임"
+          ],
+          "strict_prohibitions": [
+            "자식을 망치는 과잉보호",
+            "자녀에게 독이 되는 부모",
+            "자녀를 망친다",
+            "정서적 학대자",
+            "강박증 환자",
+            "학대하는 부모",
+            "감정 없는 로봇 부모"
+          ]
+        }
+      }
+    },
+    "narrative": {
+      "schema_version": "domain_7_scene_narrative_v1",
+      "domain": "family",
+      "parties": {
+        "a_name": "Jordan",
+        "b_name": "Alex"
+      },
+      "overall_confidence": "high",
+      "overview": {
+        "headline_ko": "Jordan님과 Alex님의 가족 스토리: 사랑을 확인하고 상처 없이 성장하는 7가지 지혜",
+        "headline_en": "Parent-Child Family Playbook for Jordan & Alex: 7 Pillars of Nurturing Connection",
+        "summary_ko": "정서적 온기, 건강한 거리두기, 숨겨진 인정 욕구, 맞춤형 칭찬, 가사 협력, 비폭력 훈육, 갈등 회복까지 대를 잇는 든든한 가족 안식처 가이드입니다.",
+        "summary_en": "A compassionate parent-child guide spanning emotional warmth, healthy autonomy, validation, praise triggers, domestic teamwork, and peaceful reconciliation.",
+        "core_vibe_badge_ko": "무조건적 사랑과 자율적 존중의 가족",
+        "core_vibe_badge_en": "Unconditional Love & Respectful Autonomy"
+      },
+      "scenes": [
+        {
+          "scene_number": 1,
+          "scene_id": "family_scene_1_core_dynamic",
+          "title_ko": "가족의 기본 온도와 애착 역동",
+          "title_en": "Core Attachment Climate",
+          "primary_lens_id": "family_core_dynamic",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "b_to_a",
+            "lead_party": "B",
+            "impact_on_a_ko": "정서적 안도감과 자존감 형성",
+            "impact_on_b_ko": "안정적인 울타리와 무조건적 지지"
+          },
+          "headline_ko": "부모와 자녀 사이를 잇는 따뜻한 보살핌과 애정의 기운",
+          "headline_en": "Foundational nurturing warmth and emotional attachment bond",
+          "recognition_ko": "Jordan님과 Alex님 사이에는 말로 다 표현하지 않아도 서로의 존재만으로 큰 안정감을 주는 깊은 가족의 유대감이 자리 잡고 있습니다.",
+          "recognition_en": "Between Jordan님 and Alex님, a profound foundational bond provides deep security, transcending the need for constant verbal validation.",
+          "translation_ko": "Jordan님에게는 정서적 안도감과 자존감 형성, Alex님에게는 안정적인 울타리와 무조건적 지지의 온기가 전달되며 세대 간 정서적 안식처를 형성합니다.",
+          "translation_en": "Nurturing dedication paired with empowering trust creates a healthy, secure home environment.",
+          "reframing_ko": "가족이라는 익숙함 때문에 고마움을 표현하는 데 인색해지지 않도록, 사소한 배려에도 감사한 마음을 표현하는 것이 온도를 유지하는 비결입니다.",
+          "reframing_en": "Familiarity can sometimes dilute explicit gratitude; openly expressing appreciation keeps the home atmosphere bright.",
+          "action_guidance_ko": "하루에 한 번 눈을 마주치고 '오늘도 고생했어'라는 다정한 한마디를 건네보세요.",
+          "action_guidance_en": "Make intentional eye contact daily and share an affectionate word of appreciation.",
+          "scripts": [
+            {
+              "category": "family_warmth",
+              "title_ko": "다정한 애정 표현",
+              "title_en": "Affectionate Validation Script",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"네가 우리 가족이라서 참 고맙고 든든해.\"",
+              "dialogue_en": "\"Having you in our family brings so much warmth and pride to my heart.\""
+            }
+          ],
+          "role_rules_ko": [
+            "가족 간의 사랑을 당연하게 여기지 않고 매일 작은 감사를 표현하기"
+          ],
+          "role_rules_en": [
+            "Never take family love for granted; voice small appreciations every single day."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "자식을 망치는 과잉보호"
+            ],
+            "allowed_themes": [
+              "안전기지",
+              "정서적 유대",
+              "독립적 존중"
+            ]
+          }
+        },
+        {
+          "scene_number": 2,
+          "scene_id": "family_scene_2_distance",
+          "title_ko": "서로가 숨 쉴 수 있는 편안한 거리감",
+          "title_en": "Emotional Proximity & Sanctuary Space",
+          "primary_lens_id": "family_emotional_distance",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "방문 노크 준수 및 일기/스마트폰 사생활 불침범",
+            "impact_on_b_ko": "식사 시간 참여 및 정기 안부 표현"
+          },
+          "headline_ko": "성장에 따른 건강한 심리적 거리두기와 독립 공간의 존중",
+          "headline_en": "Healthy individuation: Respecting the transition from protection to autonomy",
+          "recognition_ko": "자녀가 성장함에 따라 모든 것을 공유하던 시절을 지나, 각자의 독립적인 생각과 사생활을 보장해 주는 '건강한 심리적 안식처'가 필요해집니다.",
+          "recognition_en": "As children mature, moving from all-encompassing protection toward respectful psychological autonomy sustains long-term closeness.",
+          "translation_ko": "품 안의 자식에서 하나의 온전한 인격체로 인정받는 과정에서, 지나친 간섭은 방어적 침묵을 부르고 적절한 거리는 자발적 소통을 이끕니다.",
+          "translation_en": "Over-involvement can trigger defensive withdrawal; granting dignified space naturally invites open, authentic conversation.",
+          "reframing_ko": "문을 닫고 혼자만의 시간을 갖는 것은 가족을 밀어내는 것이 아니라 건강한 어른으로 자라나는 성장의 징표입니다.",
+          "reframing_en": "Needing personal space is not rejection—it is an essential developmental milestone of healthy maturation.",
+          "action_guidance_ko": "방에 들어갈 때는 반드시 노크를 하고, 묻고 싶은 것이 있어도 상대방이 준비될 때까지 기다려주는 배려를 실천하세요.",
+          "action_guidance_en": "Always knock before entering personal rooms and patiently allow family members to share thoughts when they feel ready.",
+          "scripts": [
+            {
+              "category": "boundary_respect",
+              "title_ko": "거리 존중과 열린 대화",
+              "title_en": "Respectful Boundary Script",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"혼자 생각 정리할 시간 필요하면 편하게 있어. 얘기하고 싶을 때 언제든 찾아와.\"",
+              "dialogue_en": "\"Take all the quiet time you need. Whenever you feel like talking, I'm always here.\""
+            }
+          ],
+          "role_rules_ko": [
+            "사적인 영역을 캐묻지 않고 자율적으로 털어놓을 때까지 경청하기"
+          ],
+          "role_rules_en": [
+            "Respect private boundaries and listen attentively when thoughts are voluntarily shared."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "자녀에게 독이 되는 부모"
+            ],
+            "allowed_themes": [
+              "동굴 시간 보장",
+              "노크 에티켓",
+              "건강한 거리"
+            ]
+          }
+        },
+        {
+          "scene_number": 3,
+          "scene_id": "family_scene_3_hidden_needs",
+          "title_ko": "말하지 않아도 바라는 인정과 속마음",
+          "title_en": "Hidden Needs & Validation",
+          "primary_lens_id": "family_hidden_needs",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "a_to_b",
+            "lead_party": "A",
+            "impact_on_a_ko": "'네가 있어서 자랑스럽다'는 존재적 지지 표현",
+            "impact_on_b_ko": "자존감 충전 및 부모에 대한 깊은 신뢰"
+          },
+          "headline_ko": "마음속 깊이 바랐던 '조건 없는 인정과 내 편이 되어주기'",
+          "headline_en": "Unspoken emotional needs: Unconditional validation over behavioral correction",
+          "recognition_ko": "Jordan님과 Alex님 모두 겉으로는 완벽하고 의연해 보여도, 속으로는 '내 수고와 힘듦을 있는 그대로 알아주었으면' 하는 인정에 대한 갈망이 있습니다.",
+          "recognition_en": "Beneath strong exteriors, both Jordan님 and Alex님 carry a deep yearning for their unseen efforts and vulnerabilities to be fully acknowledged.",
+          "translation_ko": "부모의 훈계나 자녀의 침묵 뒤에는 '나를 있는 그대로 사랑해 줄까?'라는 원초적인 인정 욕구가 숨어 있습니다.",
+          "translation_en": "Behind parental concern or filial quietude lies an instinctive longing for unconditional acceptance without strings attached.",
+          "reframing_ko": "결과에 대한 평가보다 '그동안 애썼다'는 과정의 인정이 굳어있던 마음의 빗장을 여는 가장 강력한 열쇠입니다.",
+          "reframing_en": "Validating the exhausting process rather than grading the final outcome melts defensiveness instantly.",
+          "action_guidance_ko": "잘잘못을 따지기 전에 '그동안 혼자 마음고생 많았지'라며 감정을 먼저 안아주세요.",
+          "action_guidance_en": "Before diagnosing what went wrong, hug the emotion first: acknowledge the heavy emotional burden carried alone.",
+          "scripts": [
+            {
+              "category": "hidden_validation",
+              "title_ko": "진심 어린 수고 인정",
+              "title_en": "Heartfelt Effort Validation",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"결과가 어찌 됐든 네가 얼마나 치열하게 노력했는지 다 알아. 정말 자랑스러워.\"",
+              "dialogue_en": "\"Regardless of the outcome, I saw how fiercely you tried. I'm endlessly proud of you.\""
+            }
+          ],
+          "role_rules_ko": [
+            "조언하기 전에 상대방의 감정적 수고를 먼저 100% 인정하기"
+          ],
+          "role_rules_en": [
+            "Validate emotional effort completely before offering any life guidance."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "자녀를 망친다"
+            ],
+            "allowed_themes": [
+              "존재 자체 인정",
+              "무조건적 사랑",
+              "기다림"
+            ]
+          }
+        },
+        {
+          "scene_number": 4,
+          "scene_id": "family_scene_4_praise",
+          "title_ko": "마음에 닿는 진짜 칭찬의 언어",
+          "title_en": "Praise Language & Affirmation Trigger",
+          "primary_lens_id": "family_praise_trigger",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "a_to_b",
+            "lead_party": "A",
+            "impact_on_a_ko": "구체적인 관찰 기반의 과정 칭찬",
+            "impact_on_b_ko": "성취 동기 고취 및 자발적 몰입"
+          },
+          "headline_ko": "자존감을 채워주는 맞춤형 칭찬과 성취 인정의 기술",
+          "headline_en": "Tailored praise triggers: Celebrating intrinsic character and persistence",
+          "recognition_ko": "막연한 '잘했다'는 말보다, 어떤 어려움을 어떻게 견뎌냈는지 구체적인 노력의 과정을 짚어줄 때 진정한 자존감이 살아납니다.",
+          "recognition_en": "Generic compliments feel hollow; acknowledging specific perseverance and resilience anchors deep self-esteem.",
+          "translation_ko": "결과 중심의 칭찬은 '다음에도 잘해야 한다'는 압박감을 주지만, 태도와 성장에 대한 칭찬은 실패를 두려워하지 않는 용기를 줍니다.",
+          "translation_en": "Outcome praise creates performance anxiety, whereas recognizing inner tenacity builds courageous character.",
+          "reframing_ko": "칭찬은 단순히 기분을 좋게 만드는 수단이 아니라, '너의 존재 가치'를 확인해 주는 사랑의 언어입니다.",
+          "reframing_en": "Thoughtful praise is an explicit affirmation of intrinsic human worth, not a behavioral reward.",
+          "action_guidance_ko": "결과물 대신 상대방이 보여준 성실함, 배려심, 포기하지 않은 끈기를 구체적인 언어로 칭찬하세요.",
+          "action_guidance_en": "Praise specific virtues—kindness, consistency, and resilience—rather than mere external accolades.",
+          "scripts": [
+            {
+              "category": "process_praise",
+              "title_ko": "과정 중심 칭찬",
+              "title_en": "Process-Centric Praise Script",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"힘든 상황에서도 포기하지 않고 끝까지 해낸 네 끈기가 정말 대단해.\"",
+              "dialogue_en": "\"Your resilience in pushing through despite such difficult obstacles is truly inspiring.\""
+            }
+          ],
+          "role_rules_ko": [
+            "남과의 비교 칭찬을 금지하고 오직 어제보다 성장한 모습만 칭찬하기"
+          ],
+          "role_rules_en": [
+            "Never compare against peers; praise personal growth relative to the past."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "정서적 학대자"
+            ],
+            "allowed_themes": [
+              "과정 중심 칭찬",
+              "디테일 관찰",
+              "성장 마인드셋"
+            ]
+          }
+        },
+        {
+          "scene_number": 5,
+          "scene_id": "family_scene_5_household_roles",
+          "title_ko": "집안일과 생활 규칙의 유연한 조화",
+          "title_en": "Household Order & Daily Cooperation",
+          "primary_lens_id": "family_household_roles",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "자녀 전용 역할 존중 및 정기 용돈 원칙 준수",
+            "impact_on_b_ko": "자기 구역 정리 책임 완수 및 용돈 기입장 기록"
+          },
+          "headline_ko": "가사 루틴과 일상 돌봄에서의 공평하고 유연한 협력",
+          "headline_en": "Domestic routine harmony: Collaborative living and chore balance",
+          "recognition_ko": "집안 정리, 식사 준비, 일상 생활 습관에서 한 사람만 일방적으로 희생하지 않고 각자의 몫을 명확히 나누어 협력할 때 가정의 평화가 유지됩니다.",
+          "recognition_en": "Peace at home thrives when domestic responsibilities and daily routines are shared equitably without single-party burnout.",
+          "translation_ko": "반복되는 잔소리는 피로감을 부르고, 명확하게 고정된 역할 분담은 불필요한 마찰을 줄이고 협력의 보람을 줍니다.",
+          "translation_en": "Repeated nagging drains domestic joy; clearly defined individual responsibilities eliminate daily friction.",
+          "reframing_ko": "집안일은 '도와주는 것'이 아니라 '함께 가꾸는 삶의 터전'을 위한 공동의 기여입니다.",
+          "reframing_en": "Household care is not 'helping out'—it is an equal co-ownership of shared family living.",
+          "action_guidance_ko": "가족회의를 통해 각자 맡을 가사 영역을 명확히 정하고, 완료된 일에 대해서는 아낌없는 감사를 표현하세요.",
+          "action_guidance_en": "Establish clear, visible chore ownership through a gentle family discussion and voice appreciation upon completion.",
+          "scripts": [
+            {
+              "category": "chore_agreement",
+              "title_ko": "가사 분담 대화",
+              "title_en": "Household Chore Collaboration",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"분리수거랑 설거지는 내가 맡을 테니, 넌 빨래 개는 것만 부탁할게! 같이 하니까 훨씬 빠르네.\"",
+              "dialogue_en": "\"I'll handle the recycling and dishes if you can fold the laundry—working together makes it so much faster.\""
+            }
+          ],
+          "role_rules_ko": [
+            "담당한 가사는 미루지 않고 스스로 챙기며 서로의 수고를 칭찬하기"
+          ],
+          "role_rules_en": [
+            "Take proactive ownership of assigned chores and acknowledge domestic labor."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "강박증 환자"
+            ],
+            "allowed_themes": [
+              "1인 1역할",
+              "경제 관념",
+              "자발적 기여"
+            ]
+          }
+        },
+        {
+          "scene_number": 6,
+          "scene_id": "family_scene_6_discipline_boundary",
+          "title_ko": "상처 주지 않는 훈육과 안전한 경계",
+          "title_en": "Discipline Cushion & Healthy Boundaries",
+          "primary_lens_id": "family_discipline_friction",
+          "contributing_lens_ids": [
+            "family_safe_boundary"
+          ],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "a_to_b",
+            "lead_party": "A",
+            "impact_on_a_ko": "명령조 대신 질문형 대화로 전환",
+            "impact_on_b_ko": "압박감 해소 및 자율적 행동 수정"
+          },
+          "headline_ko": "훈육과 조언 과정에서 상처를 막는 안전한 경계선 설정",
+          "headline_en": "Constructive guidance boundaries: Eliminating emotional punishment",
+          "recognition_ko": "삶의 방향이나 생활 습관에 대해 조언할 때, 감정적 분노나 인신공격 없이 핵심 메시지만 차분하게 전달하는 경계선이 필요합니다.",
+          "recognition_en": "When providing parental guidance or discussing difficult habits, separating constructive advice from emotional frustration protects mutual dignity.",
+          "translation_ko": "화가 난 상태에서의 훈계는 교훈 대신 방어 기제와 반발심만 키우므로, 감정이 가라앉은 후 대화하는 지혜가 필수적입니다.",
+          "translation_en": "Guidance delivered in anger fosters defiance rather than understanding; a calm, timeboxed discussion ensures guidance is heard.",
+          "reframing_ko": "행동을 지적하는 것이지 인격을 부정하는 것이 아님을 분명히 밝힐 때 자녀는 상처받지 않고 배웁니다.",
+          "reframing_en": "Distinguishing the specific action from the child's inherent character prevents deep emotional scarring.",
+          "action_guidance_ko": "감정이 격해질 때는 '10분 뒤에 다시 이야기하자'고 멈추고, 조언할 때는 '행동의 영향'에만 초점을 맞추세요.",
+          "action_guidance_en": "Pause heated moments with a 10-minute timeout and focus solely on the observable behavior rather than character labels.",
+          "scripts": [
+            {
+              "category": "calm_guidance",
+              "title_ko": "차분한 경계 설정",
+              "title_en": "Calm Boundary Setting Script",
+              "speaker": "A",
+              "dialogue_ko": "\"너를 비난하려는 게 아니라, 이 습관이 네 건강에 안 좋은 영향을 줄까 봐 걱정돼서 그래.\"",
+              "dialogue_en": "\"I'm not trying to criticize you; I'm genuinely concerned about the impact this habit is having on your wellbeing.\""
+            }
+          ],
+          "role_rules_ko": [
+            "과거의 잘못을 들추지 않고 현재의 사안에만 집중하여 대화하기"
+          ],
+          "role_rules_en": [
+            "Never bring up past resolved errors; address only the present topic."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "학대하는 부모",
+              "감정 없는 로봇 부모"
+            ],
+            "allowed_themes": [
+              "질문형 대화",
+              "쿠션어",
+              "비교 금지",
+              "안전 울타리",
+              "3대 핵심 룰",
+              "비난 금지"
+            ]
+          }
+        },
+        {
+          "scene_number": 7,
+          "scene_id": "family_scene_7_crisis_recovery",
+          "title_ko": "갈등 후 마음을 여는 회복의 문",
+          "title_en": "Family Crisis Recovery & Reconciliation",
+          "primary_lens_id": "family_crisis_recovery",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "자존심 세우지 않고 먼저 따뜻한 손 내밀기",
+            "impact_on_b_ko": "부모의 사과 수용 및 속마음 털어놓기"
+          },
+          "headline_ko": "갈등 후 먼저 손 내밀어 서먹함을 녹이는 회복의 지혜",
+          "headline_en": "Post-conflict reconciliation: Modeling emotional maturity and unconditional return",
+          "recognition_ko": "크게 다투고 난 뒤 냉전 상태가 길어지지 않도록, 따뜻한 밥 한 끼나 작은 호의로 먼저 손을 내미는 화해의 공식이 필요합니다.",
+          "recognition_en": "Following severe arguments, preventing prolonged cold wars requires a warm gesture—such as sharing a meal—to restore safe connection.",
+          "translation_ko": "가족 간의 사과는 자존심의 굴복이 아니라 '우리의 관계가 이 갈등보다 훨씬 소중하다'는 성숙함의 선언입니다.",
+          "translation_en": "A familial apology is not defeat; it is an empowering affirmation that the relationship outlasts any disagreement.",
+          "reframing_ko": "다툼은 가족이 끝나는 신호가 아니라 서로의 속마음을 더 깊이 이해하기 위한 성장통입니다.",
+          "reframing_en": "Ruptures are not fractures; they are profound opportunities to learn each other's deeper emotional sensitivities.",
+          "action_guidance_ko": "어색한 침묵을 깰 때 '밥 먹었어?'라는 소박한 질문이나 간식을 건네며 화해의 물꼬를 트세요.",
+          "action_guidance_en": "Break lingering tension with a simple, caring question—'Have you eaten?'—to bridge the silence with warmth.",
+          "scripts": [
+            {
+              "category": "family_reconciliation",
+              "title_ko": "화해와 관계 회복",
+              "title_en": "Family Reconciliation Script",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"아까는 내가 말이 너무 심했어, 미안해. 좋아하는 반찬 해뒀으니 나와서 같이 밥 먹자.\"",
+              "dialogue_en": "\"My words were too harsh earlier—I'm truly sorry. I made your favorite dish, let's eat together.\""
+            }
+          ],
+          "role_rules_ko": [
+            "갈등 후 24시간 이상 냉전을 지속하지 않고 먼저 손 내밀기"
+          ],
+          "role_rules_en": [
+            "Never allow silent treatments to exceed 24 hours; take the courageous first step toward connection."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "자식을 망치는 과잉보호"
+            ],
+            "allowed_themes": [
+              "골든타임 화해",
+              "간식 노크",
+              "쿨링 타임"
+            ]
+          }
+        }
+      ],
+      "action_playbook": {
+        "summary_ko": "지나친 간섭을 멈추고 자율성을 인정하며, 결과보다 과정의 수고를 먼저 안아줄 때 가족의 유대감은 가장 단단해집니다.",
+        "summary_en": "Replace control with empowering autonomy and validate effort before diagnosing outcomes to cultivate resilient family trust.",
+        "golden_rules_ko": [
+          "성장에 따른 독립 공간과 개인 시간을 온전히 존중한다.",
+          "조언하기 전에 상대방의 감정적 수고를 먼저 100% 인정한다.",
+          "갈등 후에는 밥 한 끼나 따뜻한 안부로 먼저 손을 내민다."
+        ],
+        "golden_rules_en": [
+          "Fully respect personal privacy and autonomous developmental timing.",
+          "Validate unseen emotional effort before providing any life advice.",
+          "Bridge post-argument silence swiftly through shared meals and care."
+        ]
+      },
+      "metadata": {
+        "total_scenes": 7,
+        "active_scenes_count": 7,
+        "abstained_scenes_count": 0,
+        "prohibited_claims_count": 7
+      }
+    },
+    "section_view_model": {
+      "domain": "family",
+      "total_lenses": 8,
+      "active_lenses": 8,
+      "abstained_lenses": 0,
+      "report_cards": [
+        {
+          "lens_id": "family_core_dynamic",
+          "domain": "family",
+          "question_ko": "부모와 자녀 사이에 흐르는 본질적인 애착 관계와 기본 정서는?",
+          "headline_ko": "Jordan와(과) Alex의 천간합 기반 깊은 정서적 유대와 신뢰 안전기지",
+          "narrative_ko": "부모의 헌신과 자녀의 수용이 아름답게 맞물려 세상에서 가장 든든한 안전기지가 되어 줍니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함",
+          "confidence": "high",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "b_to_a",
+          "primary_evidence": [
+            {
+              "kind": "stem_combine",
+              "description": "시주(병진)×월주(신사) 병신합수"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "일주(계미)×년주(경오) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(임신)×월주(신사) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "자식을 망치는 과잉보호"
+          ]
+        },
+        {
+          "lens_id": "family_discipline_friction",
+          "domain": "family",
+          "question_ko": "부모의 훈육과 기대가 자녀에게 잔소리나 압박으로 느껴질 때의 충돌은?",
+          "headline_ko": "Jordan와(과) Alex의 감정 격화 시 물리적 쿨링 스페이스 확보",
+          "narrative_ko": "지지충의 감정적 충돌을 방지하기 위해 훈육 중 감정이 격해지면 즉각 개별 공간으로 분리하는 것이 효과적입니다.",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "branch_clash",
+              "description": "시주(병진)×일주(경진) 진진 자형"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "월주(계묘)×일주(경진) 묘진해"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "월주(계묘)×년주(경오) 오묘파"
+            }
+          ],
+          "prohibited_claims": [
+            "학대하는 부모"
+          ]
+        },
+        {
+          "lens_id": "family_emotional_distance",
+          "domain": "family",
+          "question_ko": "자녀의 독립적인 사생활과 부모의 애정 어린 관심 사이의 적정 거리는?",
+          "headline_ko": "Alex의 사적 성역(동굴) 보장과 Jordan의 한 걸음 물러선 신뢰 지원",
+          "narrative_ko": "원진/귀문의 민감성으로 인해 문을 닫고 혼자 있는 자녀의 시간을 존중하는 것이 관계를 지키는 비결입니다. 아이의 남모르는 속마음과 특이한 관심사를 섬세하게 이해해 줌",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "wonjin",
+              "description": "년주(임신)×월주(신사) 원진"
+            }
+          ],
+          "prohibited_claims": [
+            "자녀에게 독이 되는 부모"
+          ]
+        },
+        {
+          "lens_id": "family_hidden_needs",
+          "domain": "family",
+          "question_ko": "자녀가 부모에게 겉으로 툴툴거리면서도 속으로 가장 바라는 인정의 형태는?",
+          "headline_ko": "Alex이(가) 갈망하는 Jordan의 조건 없는 존재 가치 인정",
+          "narrative_ko": "천간합의 정서적 일치감으로 인해 '결과'보다 '존재 자체'를 인정해 주는 부모의 따뜻한 눈빛을 가장 필요로 합니다. 자녀의 기질을 따뜻하게 수용하고 맛있는 음식과 정서적 안정 제공",
+          "confidence": "high",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "stem_combine",
+              "description": "시주(병진)×월주(신사) 병신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "자녀를 망친다"
+          ]
+        },
+        {
+          "lens_id": "family_praise_trigger",
+          "domain": "family",
+          "question_ko": "자녀의 잠재력을 폭발시키고 기를 살려주는 가장 효과적인 칭찬 방식은?",
+          "headline_ko": "Jordan의 디테일한 노력 과정 맞춤형 칭찬과 Alex의 성취 동기 폭발",
+          "narrative_ko": "지지합의 감수성 조화로 인해 '잘했다'는 한마디보다 '이 디테일을 고민한 게 대단하다'는 과정 칭찬이 아이를 춤추게 합니다. 자녀의 창의력과 개성을 기민하게 캐치하고 재능을 발굴함",
+          "confidence": "high",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "일주(계미)×년주(경오) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(임신)×월주(신사) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "정서적 학대자"
+          ]
+        },
+        {
+          "lens_id": "family_household_roles",
+          "domain": "family",
+          "question_ko": "집안일, 심부름, 용돈 관리 등 가정 내 책임과 역할 분담의 룰은?",
+          "headline_ko": "Jordan와(과) Alex의 자발적 역할 분담과 투명한 경제 관념 교육 룰",
+          "narrative_ko": "합의 조화로 인해 자녀가 집안의 작은 일에 기여하며 스스로 가치를 느끼도록 유도하는 것이 매우 효과적입니다. 규칙적인 생활 습관과 성실함의 본보기를 보여주는 안정적 양육",
+          "confidence": "high",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "일주(계미)×년주(경오) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(임신)×월주(신사) 사신합수"
+            },
+            {
+              "kind": "stem_combine",
+              "description": "시주(병진)×월주(신사) 병신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "강박증 환자"
+          ]
+        },
+        {
+          "lens_id": "family_safe_boundary",
+          "domain": "family",
+          "question_ko": "자녀가 사춘기나 반항기에 접어들었을 때 선을 넘지 않는 안전한 한계선은?",
+          "headline_ko": "Jordan의 절대적 비난 금지 원칙과 Alex의 감정 폭발 안전 브레이크",
+          "narrative_ko": "원진의 예민한 시기에는 사소한 잔소리도 자녀에게는 거대한 비난으로 느껴지므로 '너를 사랑하지만 이 행동은 위험하다'는 단호하되 따뜻한 경계선이 필요합니다. 바른 사회인으로 성장할 수 있는 합리적인 규범과 예절의 모범 교육",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "wonjin",
+              "description": "년주(임신)×월주(신사) 원진"
+            }
+          ],
+          "prohibited_claims": [
+            "감정 없는 로봇 부모"
+          ]
+        },
+        {
+          "lens_id": "family_crisis_recovery",
+          "domain": "family",
+          "question_ko": "한바탕 크게 부딪히거나 문을 쾅 닫고 들어갔을 때의 골든타임 화해법은?",
+          "headline_ko": "Jordan의 따뜻한 간식 노크와 Alex의 마음을 여는 골든타임 회복 루틴",
+          "narrative_ko": "천간합의 근원적 결속력 덕분에 화가 난 상태에서도 과일 접시를 들고 들어가는 부모의 작은 제스처가 즉각 아이의 닫힌 문을 엽니다. 아이의 자존감을 무한히 지지하고 학업과 성장을 든든하게 뒷바라지함",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "stem_combine",
+              "description": "시주(병진)×월주(신사) 병신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "자식을 망치는 과잉보호"
+          ]
+        }
+      ],
+      "story_planner_input": {
+        "schema_version": "domain_story_planner_v1",
+        "domain": "family",
+        "parties": {
+          "a_name": "Jordan",
+          "b_name": "Alex"
+        },
+        "overall_confidence": "high",
+        "birth_time_unknown_a": false,
+        "birth_time_unknown_b": false,
+        "chapters": [],
+        "grounding_summary": {
+          "total_lenses_evaluated": 8,
+          "high_confidence_count": 8,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "standard",
+          "primary_synergy_lens_id": "family_core_dynamic"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "안전기지",
+            "정서적 유대",
+            "독립적 존중",
+            "질문형 대화",
+            "쿠션어",
+            "비교 금지",
+            "동굴 시간 보장",
+            "노크 에티켓",
+            "건강한 거리",
+            "존재 자체 인정",
+            "무조건적 사랑",
+            "기다림",
+            "과정 중심 칭찬",
+            "디테일 관찰",
+            "성장 마인드셋",
+            "1인 1역할",
+            "경제 관념",
+            "자발적 기여",
+            "안전 울타리",
+            "3대 핵심 룰",
+            "비난 금지",
+            "골든타임 화해",
+            "간식 노크",
+            "쿨링 타임"
+          ],
+          "strict_prohibitions": [
+            "자식을 망치는 과잉보호",
+            "학대하는 부모",
+            "자녀에게 독이 되는 부모",
+            "자녀를 망친다",
+            "정서적 학대자",
+            "강박증 환자",
+            "감정 없는 로봇 부모"
+          ]
+        }
+      }
+    }
+  }
+}

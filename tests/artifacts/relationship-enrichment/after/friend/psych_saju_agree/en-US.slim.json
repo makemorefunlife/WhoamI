@@ -1,0 +1,226 @@
+{
+  "domain": "friend",
+  "caseId": "psych_saju_agree",
+  "locale": "en-US",
+  "case_meta": {
+    "label_ko": "심리·사주 합의",
+    "label_en": "Psych/saju agree",
+    "birth": {
+      "birthA": "1990-05-15",
+      "birthB": "1992-03-08",
+      "timeA": "14:30",
+      "timeB": "09:00",
+      "nicknameA": "Alex",
+      "nicknameB": "Jordan",
+      "roles": {
+        "roleA": "child",
+        "roleB": "mother"
+      },
+      "parentType": "mother"
+    },
+    "psych": "agree_high_empathy"
+  },
+  "current_summary": {
+    "headline": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+    "summary_line": "🔥 70% · 🧩 50% · ⚡ 10%",
+    "one_liner": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo You even recharge the same way — the same frequency, on and off the clock.",
+    "grade": "C",
+    "grade_reason": "Friendship (Social DNA) grade C — Friend chemistry 70% · Banter 50% · Social risk 10%",
+    "canonical_projection_keys": [
+      "comparison_table",
+      "treasurer"
+    ],
+    "section_keys": [
+      "section_social_dna_a",
+      "section_social_dna_b",
+      "section_snapshot",
+      "section_soulmate",
+      "section_play_money",
+      "section_breakup_guide",
+      "section_de_escalation",
+      "section_hidden_flow",
+      "section_compare_table"
+    ]
+  },
+  "current_sections": [
+    {
+      "id": "snapshot",
+      "type": "snapshot",
+      "title": "🧬 Social DNA profile"
+    },
+    {
+      "id": "compare_table",
+      "type": "compare_table",
+      "title": "📊 At a glance — 6 ways you compare"
+    },
+    {
+      "id": "psych_radar",
+      "type": "psych_radar",
+      "title": "🎯 11-Axis Compatibility Radar"
+    },
+    {
+      "id": "social_dna",
+      "type": "social_dna",
+      "title": "🧬 Social DNA profile"
+    },
+    {
+      "id": "soulmate",
+      "type": "soulmate",
+      "title": "🤝 Friendship frequency match"
+    },
+    {
+      "id": "play_money",
+      "type": "play_money",
+      "title": "💸 Hangout style & money habits"
+    },
+    {
+      "id": "hidden_flow",
+      "type": "hidden_flow",
+      "title": "🔄 The hidden flow of your friendship"
+    },
+    {
+      "id": "breakup_guide",
+      "type": "breakup_guide",
+      "title": "⚠️ Falling-out prevention guide"
+    },
+    {
+      "id": "de_escalation",
+      "type": "de_escalation",
+      "title": "⚡ Best-friend fight antidote"
+    }
+  ],
+  "v1_inventory": [
+    {
+      "asset_id": "friend_v1_treasurer_canonical",
+      "target_lens_id": "friend_treasurer_split",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "친구 모임에서 총무/정산과 모임 비용 관리는 누가 맡는 것이 자연스러울까?"
+    },
+    {
+      "asset_id": "friend_v1_travel_planner",
+      "target_lens_id": "friend_travel_lead",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "함께 여행을 떠날 때 코스 기획과 현장 길잡이는 누가 리드해야 편할까?"
+    },
+    {
+      "asset_id": "friend_v1_deescalation",
+      "target_lens_id": "friend_repair_reconciliation",
+      "status": "ADAPT_INTO_CANONICAL_MEANING",
+      "user_question_answered_ko": "서운한 점이 생겼을 때 자존심 상하지 않고 쿨하게 푸는 방법은?"
+    }
+  ],
+  "v1_projection_keys": [
+    "comparison_table",
+    "treasurer"
+  ],
+  "dev_evidence": {
+    "packet_count": 9,
+    "packet_ids": [
+      "pce_002",
+      "pce_003",
+      "pce_007",
+      "pce_004",
+      "pce_005",
+      "pce_006",
+      "pce_008",
+      "pce_001",
+      "pce_009"
+    ],
+    "abstained_lenses": 1,
+    "active_lenses": 7
+  },
+  "dev_lenses": [
+    {
+      "id": "friend_core_vibe",
+      "headline": "Alex와(과) Jordan의 코드가 찰떡같이 맞아떨어지는 티키타카 케미",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "friend_treasurer_split",
+      "headline": "Alex이(가) 이 우정의 1/N 정산과 모임 총무를 전담하는 깔끔한 룰",
+      "abstain": false,
+      "confidence": "low"
+    },
+    {
+      "id": "friend_travel_lead",
+      "headline": "Alex와(과) Jordan의 맛집/코스를 짜는 리더와 즐겁게 호응하는 팔로워의 조화",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "friend_emotional_vent",
+      "headline": "Alex와(과) Jordan의 해결책 제시보다 오롯이 내 편이 되어주는 무조건적 공감",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "friend_jealousy_guard",
+      "headline": "Alex와(과) Jordan의 비교 의식을 내려놓고 각자의 속도를 인정하며 축하하는 성숙함",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "friend_comfort_distance",
+      "headline": "소통 빈도 및 거리에 대한 특이 지표가 확인되지 않습니다.",
+      "abstain": true,
+      "confidence": "insufficient"
+    },
+    {
+      "id": "friend_taste_shared",
+      "headline": "Alex와(과) Jordan의 서로의 취향을 공유하며 새로운 경험을 넓혀가는 시너지",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "friend_repair_reconciliation",
+      "headline": "Alex와(과) Jordan의 긴 설명보다 맛있는 밥 한 끼와 진솔한 사과로 즉시 리셋하는 쿨함",
+      "abstain": false,
+      "confidence": "medium"
+    }
+  ],
+  "narrative_scenes": [
+    {
+      "n": 1,
+      "id": "friend_scene_1_vibe",
+      "title_ko": "첫 만남의 주파수와 시그니처 바이브",
+      "title_en": "First Vibe & Chemistry Resonance"
+    },
+    {
+      "n": 2,
+      "id": "friend_scene_2_taste",
+      "title_ko": "취향과 놀이 코드의 시너지",
+      "title_en": "Shared Taste & Play Code"
+    },
+    {
+      "n": 3,
+      "id": "friend_scene_3_treasurer",
+      "title_ko": "정산과 지출의 깔끔한 룰",
+      "title_en": "Expense Splitting & The Treasurer Rule"
+    },
+    {
+      "n": 4,
+      "id": "friend_scene_4_travel",
+      "title_ko": "여행과 일정 기획의 핑퐁",
+      "title_en": "Travel Planning & Pace Harmony"
+    },
+    {
+      "n": 5,
+      "id": "friend_scene_5_emotional_vent",
+      "title_ko": "속마음 토로와 위로의 언어",
+      "title_en": "Emotional Venting & Listening Cadence"
+    },
+    {
+      "n": 6,
+      "id": "friend_scene_6_distance_jealousy",
+      "title_ko": "편안한 거리감과 성장의 축복",
+      "title_en": "Comfort Distance & Growth Security"
+    },
+    {
+      "n": 7,
+      "id": "friend_scene_7_repair",
+      "title_ko": "서운함 해소와 쿨한 회복 스크립트",
+      "title_en": "De-escalation & Restorative Repair"
+    }
+  ]
+}

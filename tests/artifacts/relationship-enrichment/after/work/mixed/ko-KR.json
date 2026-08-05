@@ -1,0 +1,2665 @@
+{
+  "domain": "work",
+  "caseId": "mixed",
+  "locale": "ko-KR",
+  "generated_at": "2026-08-05T15:25:10.426Z",
+  "case_meta": {
+    "label_ko": "혼합",
+    "label_en": "Mixed",
+    "birth": {
+      "birthA": "1988-11-22",
+      "birthB": "1995-07-04",
+      "timeA": "06:20",
+      "timeB": "18:45",
+      "nicknameA": "Alex",
+      "nicknameB": "Jordan",
+      "roles": {
+        "roleA": "child",
+        "roleB": "father"
+      },
+      "parentType": "father"
+    },
+    "psych": "balanced"
+  },
+  "current": {
+    "mode": "current_ce",
+    "summary": {
+      "headline": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "summary_line": "업무적 핏 55% · 협업 시너지 70% · 오피스 리스크 50%",
+      "one_liner": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "grade": "D",
+      "grade_reason": "파트너십 등급 D — 업무적 핏 55% · 협업 시너지 70% · 오피스 리스크 50%",
+      "canonical_projection_keys": [
+        "comparison_table"
+      ],
+      "section_keys": [
+        "section_dna",
+        "section_snapshot",
+        "section_mix_fit",
+        "section_respect",
+        "section_roles",
+        "section_upset",
+        "section_ideal_roles",
+        "section_warning",
+        "section_compare_table"
+      ]
+    },
+    "report": {
+      "headline": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "summary_line": "업무적 핏 55% · 협업 시너지 70% · 오피스 리스크 50%",
+      "one_line_definition": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다.",
+      "snapshot_panel": {
+        "grade": "D",
+        "gaugeLabel": "오피스 파트너십 스냅샷",
+        "representativeLine": "업무적 핏 55% · 협업 시너지 70% · 오피스 리스크 50%",
+        "keywords": [
+          "협업 D",
+          "완성도를 중시하고, 퀄리티가 떨어지면 바로잡으려는 품질형",
+          "빠르게 판단하고, 에너지가 모이면 주변을 끌어올리는 실행형",
+          "역할 보완"
+        ],
+        "relationshipGauges": [
+          {
+            "topic": "intimacy",
+            "label": "① 업무 핏·신뢰",
+            "activation": 55,
+            "benefit": 45,
+            "risk": 25
+          },
+          {
+            "topic": "stability",
+            "label": "② 프로젝트 시너지",
+            "activation": 49,
+            "benefit": 70,
+            "risk": 30
+          },
+          {
+            "topic": "conflict",
+            "label": "③ 업무 마찰·갈등",
+            "activation": 22,
+            "benefit": 25,
+            "risk": 50
+          }
+        ],
+        "personA": {
+          "nickname": "Alex",
+          "metaphor": "현실실리형 · 58",
+          "axes": [
+            {
+              "key": "connection",
+              "label": "관계지향성",
+              "value": 59
+            },
+            {
+              "key": "stability",
+              "label": "안정지향성",
+              "value": 54
+            },
+            {
+              "key": "growth",
+              "label": "성장지향성",
+              "value": 50
+            },
+            {
+              "key": "structure",
+              "label": "체계성",
+              "value": 50
+            },
+            {
+              "key": "adaptability",
+              "label": "적응성",
+              "value": 50
+            }
+          ]
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "metaphor": "현실실리형 · 61",
+          "axes": [
+            {
+              "key": "connection",
+              "label": "관계지향성",
+              "value": 53
+            },
+            {
+              "key": "stability",
+              "label": "안정지향성",
+              "value": 56
+            },
+            {
+              "key": "growth",
+              "label": "성장지향성",
+              "value": 50
+            },
+            {
+              "key": "structure",
+              "label": "체계성",
+              "value": 50
+            },
+            {
+              "key": "adaptability",
+              "label": "적응성",
+              "value": 50
+            }
+          ]
+        },
+        "personAxesSource": "survey",
+        "narrative": {
+          "topics": [
+            {
+              "topic": "intimacy",
+              "title": "① 업무 핏·신뢰",
+              "subtitle": "처음 맞닿거나 역할을 맡길 때",
+              "activation": 55,
+              "benefit": 45,
+              "risk": 25,
+              "interpretation": "처음엔 회의 스타일 차이가 있어도, 프로세스를 정하면 신뢰가 쌓여요. 업무 리듬 마찰은 낮은 편이라, 안건만 나누면 편하게 맞물립니다. 함께 일할 때 시너지가 살아나는 조합이에요.",
+              "isWarning": false
+            },
+            {
+              "topic": "stability",
+              "title": "② 프로젝트 시너지",
+              "subtitle": "장기 협업·일정·결과를 맞출 때",
+              "activation": 49,
+              "benefit": 70,
+              "risk": 30,
+              "interpretation": "협업 시너지 70% — 장기 프로젝트·일정 맞추기에 유리합니다. 업무 리듬만 맞추면 오래 가는 파트너십이 됩니다. 함께 일할 때 시너지가 살아나는 조합이에요.",
+              "isWarning": false
+            },
+            {
+              "topic": "conflict",
+              "title": "③ 업무 마찰·갈등",
+              "subtitle": "의견이 갈리거나 압박이 올 때",
+              "activation": 22,
+              "benefit": 25,
+              "risk": 50,
+              "interpretation": "오피스 리스크 50% — 갈등이 와도 협업 관계가 쉽게 끊기지는 않는 편이에요. 이때는 협업 시너지(25)가 잠깐 낮아지니, 회의 전에 안건·결정권을 문서로 정리하세요. 회의에서 한쪽은 빠른 결론, 다른 쪽은 꼼꼼한 검토를 원해 부딪히기 쉬워요. 안건을 나누거나 '오늘은 방향만 / 내일은 디테일'처럼 순서를 정하면 편해요.",
+              "isWarning": false
+            }
+          ]
+        }
+      },
+      "office": {
+        "section_dna": {
+          "person_a": {
+            "nickname": "Alex",
+            "character_title": "문제 해결사 · 안정·실무 DNA",
+            "work_style": "정밀함과 완성도를 추구하고, 퀄리티가 떨어지면 참기 어려워요.",
+            "inner_standard": "압박이 오면 속도를 올리고, 결론을 빨리 내고 싶어 합니다.",
+            "overall_character": "오피스에서 안정·실무 에너지가 두드러져요. 아이디어·표현·산출 쪽 강점이 살아나며, 팀에서 '문제 해결사' 포지션이 잘 맞습니다.",
+            "contribution_style": "balanced",
+            "contribution_style_label": "균형형 — 상황에 따라 지원과 성과 사이를 오가요"
+          },
+          "person_b": {
+            "nickname": "Jordan",
+            "character_title": "프로세스 지킴이 PM · 표현·속도 DNA",
+            "work_style": "빠르고 직관적으로 판단하고, 에너지가 모이면 팀을 끌어올려요.",
+            "inner_standard": "날카롭게 반응하며, 기준이 무너지면 바로 지적합니다.",
+            "overall_character": "오피스에서 표현·속도 에너지가 두드러져요. 책임·관리·추진 쪽 강점이 살아나며, 팀에서 '프로세스 지킴이 PM' 포지션이 잘 맞습니다.",
+            "contribution_style": "balanced",
+            "contribution_style_label": "균형형 — 상황에 따라 지원과 성과 사이를 오가요"
+          }
+        },
+        "section_snapshot": {
+          "fit_pct": 55,
+          "synergy_pct": 70,
+          "risk_pct": 50,
+          "one_line_definition": "문제 해결사와 프로세스 지킴이 PM — 서로 다른 무기로 팀을 채우는 보완 조합. 기운이 서로 부딪히는 편이라, 방향을 잘 잡아야 스파크가 됩니다."
+        },
+        "section_mix_fit": {
+          "person_a_work_style": "Alex — 완성도를 중시하고, 퀄리티가 떨어지면 바로잡으려는 품질형. 서비스·제품 기획 쪽 업무에서 강점이 잘 드러나요.",
+          "person_b_work_style": "Jordan — 빠르게 판단하고, 에너지가 모이면 주변을 끌어올리는 실행형. 프로젝트 매니저 쪽 업무에서 강점이 잘 드러나요.",
+          "communication_fit": "안건만 정리하면 꽤 잘 맞아요. 회의에서 한쪽은 빠른 결론, 다른 쪽은 꼼꼼한 검토를 원해 부딪히기 쉬워요. 안건을 나누거나 '오늘은 방향만 / 내일은 디테일'처럼 순서를 정하면 편해요.",
+          "reporting_style_fit": {
+            "person_a": {
+              "nickname": "Alex",
+              "style": "flexible"
+            },
+            "person_b": {
+              "nickname": "Jordan",
+              "style": "headline_first"
+            },
+            "summary": "Alex는 상황에 따라 유연하게 편이고, Jordan는 결론부터 두괄식으로 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요."
+          }
+        },
+        "section_respect": {
+          "person_a_boundary": "Alex에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요. 압박이 오면 속도를 올리고, 결론을 빨리 내고 싶어 합니다.",
+          "person_b_boundary": "Jordan에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요. 날카롭게 반응하며, 기준이 무너지면 바로 지적합니다.",
+          "break_boundary_fit": {
+            "person_a": {
+              "nickname": "Alex",
+              "style": "balanced"
+            },
+            "person_b": {
+              "nickname": "Jordan",
+              "style": "balanced"
+            },
+            "summary": "Alex는 그때그때 유연하게이고, Jordan는 그때그때 유연하게이에요. 신호가 잘 맞는 편이라, 같이 쉬는 시간이 부담보다는 편안함에 가까워요."
+          }
+        },
+        "section_roles": {
+          "person_a": {
+            "nickname": "Alex",
+            "weapons": [
+              "협업·실행",
+              "팀 조율"
+            ],
+            "handoff_tasks": [
+              {
+                "task_label": "프로젝트 관리",
+                "handoff_to": "Jordan",
+                "reason": "Jordan에게 관리·추진 역량이 있어요. 프로젝트 관리 쪽은 Jordan에게 맡기세요."
+              }
+            ]
+          },
+          "person_b": {
+            "nickname": "Jordan",
+            "weapons": [
+              "협업·실행",
+              "팀 조율"
+            ],
+            "handoff_tasks": [
+              {
+                "task_label": "기획·아이디어",
+                "handoff_to": "Alex",
+                "reason": "Alex에게 기획·표현 역량이 있어요. 기획·아이디어 쪽은 Alex에게 맡기세요."
+              }
+            ]
+          },
+          "synergy_one_liner": "두 사람은 서로 다른 비즈니스 무기를 갖고 있어요. Alex는 협업·실행·팀 조율 쪽, Jordan는 협업·실행·팀 조율 쪽으로 나누면 톱니바퀴가 돌아갑니다.",
+          "leadership_split": null
+        },
+        "section_upset": {
+          "person_a": {
+            "nickname": "Alex",
+            "upset_signals": "말이 많아지거나 반대로 입을 닫고, 표현·아이디어가 거부당했다고 느껴요. 답답함에 말이 거칠어지거나, 빨리 끝내고 싶어 해요.",
+            "do_list": [
+              "가벼운 식사·커피 자리에서 대화하기",
+              "아이디어 일부를 인정하고 다음 스텝 제안하기",
+              "유머나 가벼운 분위기로 긴장 풀기"
+            ],
+            "avoid_list": [
+              "회의실에서 딱딱하게 결론만 강요하기",
+              "'그건 안 돼'만 반복하기"
+            ]
+          },
+          "person_b": {
+            "nickname": "Jordan",
+            "upset_signals": "말이 짧아지고, 규칙·프로세스 언급이 늘거나 딱딱하게 굳어요. 디테일 하나로 분위기가 싸해지거나, 날카롭게 지적할 수 있어요.",
+            "do_list": [
+              "핵심을 정중하지만 직접적으로 말하기",
+              "역할·책임 경계를 문서로 다시 정리해 주기",
+              "결정권을 인정하는 한 마디 먼저 하기"
+            ],
+            "avoid_list": [
+              "돌려 말하거나 애매하게 넘기기",
+              "프로세스 없이 갑자기 방향만 바꾸기"
+            ]
+          },
+          "feedback_cushion": {
+            "to_a": "Alex에게는 부담 없이 담백하게 — 예: \"다음엔 이렇게 한 번만 맞춰볼까요?\" 차분한 제안이면 충분해요.",
+            "to_b": "Jordan에게는 부담 없이 담백하게 — 예: \"다음엔 이렇게 한 번만 맞춰볼까요?\" 차분한 제안이면 충분해요."
+          }
+        },
+        "section_ideal_roles": {
+          "person_a": {
+            "nickname": "Alex",
+            "ideal_roles": [
+              "서비스·제품 기획",
+              "콘텐츠 기획",
+              "브랜드·마케팅",
+              "UX 라이팅"
+            ],
+            "ideal_departments": [
+              "기획팀",
+              "마케팅",
+              "콘텐츠·크리에이티브"
+            ],
+            "why": "Alex은(는) 문제 해결사 기질이라 기획팀·서비스·제품 기획 같은 자리에서 역량이 잘 드러나요."
+          },
+          "person_b": {
+            "nickname": "Jordan",
+            "ideal_roles": [
+              "프로젝트 매니저",
+              "운영 총괄",
+              "품질·일정 관리",
+              "대외 협력"
+            ],
+            "ideal_departments": [
+              "PMO",
+              "운영팀",
+              "경영지원"
+            ],
+            "why": "Jordan은(는) 프로세스 지킴이 PM 기질이라 PMO·프로젝트 매니저 같은 자리에서 역량이 잘 드러나요."
+          },
+          "together_combo": "함께 일할 때는 Alex가 서비스·제품 기획 쪽, Jordan가 프로젝트 매니저 쪽으로 역할을 나누면 팀이 가장 잘 돌아갑니다. 기획팀 × PMO 조합이 특히 잘 맞아요."
+        },
+        "section_warning": {
+          "conflict_trigger": "가까워질수록 오해가 쌓이는 패턴이 있어요. 겉으로는 멀쩡한데 속으로 서운함이 쌓이면, 갑자기 냉각되거나 톤이 세져집니다.",
+          "de_escalation": {
+            "hashtag": "#분위기부터풀면풀린다",
+            "color": "yellow",
+            "title": "분위기부터 풀면 이야기도 풀려요",
+            "detail": "감정이 올라온 뒤엔 딱딱한 회의실에서 결론을 몰아붙이기보다, 짧은 커피나 업무 중 가벼운 자리로 톤을 낮춘 뒤 이어서 이야기하세요. 회식·야근 강요는 필요 없어요."
+          }
+        },
+        "section_compare_table": [
+          {
+            "id": "boundary",
+            "label": "공사 구분선",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "사교형 — 잡담도 업무 에너지",
+              "band": "식상"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "공사 구분형 — 일은 일, 사는 사",
+              "band": "관성"
+            },
+            "meaning": "한쪽은 스몰토크를 업무 리듬의 일부로 여기고, 다른 쪽은 분리해요 — 서로 냉정하다/산만하다고 오해하지 않으려면 이 차이를 미리 알아두면 좋아요."
+          },
+          {
+            "id": "feedback",
+            "label": "피드백 수용 스타일",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "즉시 반응형 — 그 자리에서 바로 표현",
+              "band": "식상"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "근거 확인형 — 기준부터 짚고 넘어감",
+              "band": "관성"
+            },
+            "meaning": "피드백 전달 방식을 다르게 가져가세요 — 한쪽에는 지적과 함께 인정을 얹고, 다른 쪽에는 기준만 담백하게 말하는 게 더 잘 통해요."
+          },
+          {
+            "id": "synergy_position",
+            "label": "협업 시너지 포지션",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "안정·실무",
+              "band": "earth"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "표현·속도",
+              "band": "fire"
+            },
+            "meaning": "한쪽은 새 판을 짜는 데, 다른 쪽은 이미 있는 룰을 정교하게 다듬는 데 강해요. 신사업·개척은 앞쪽에, 리스크 점검·운영은 뒤쪽에 맡기면 시너지가 나요."
+          },
+          {
+            "id": "burnout",
+            "label": "오피스 번아웃 대처",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "속도전형 — 빨리 끝내고 털어냄",
+              "band": "sa"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "즉시지적형 — 기준 무너지면 바로 표현",
+              "band": "sin"
+            },
+            "meaning": "한쪽은 표현하며 풀고 다른 쪽은 혼자 정리하는 편이라, 힘들어 보여도 방식이 다를 뿐 무관심이 아니라는 걸 서로 알아두면 좋아요."
+          },
+          {
+            "id": "risk_taking",
+            "label": "딜메이킹 & 추진 기질",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "상황대응형 — 판마다 다르게 움직임",
+              "band": "balanced"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "상황대응형 — 판마다 다르게 움직임",
+              "band": "balanced"
+            },
+            "meaning": "리스크를 대하는 온도가 비슷해서, 큰 결정에서 속도가 안 어긋나요."
+          },
+          {
+            "id": "reporting_rhythm",
+            "label": "협업 추진 리듬",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "호흡형 전달 — 상대 페이스에 맞춰 풀어 가는 편",
+              "band": "yin"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "직진형 전달 — 할 말을 먼저 밀어 올리는 편",
+              "band": "yang"
+            },
+            "meaning": "협업 전달·추진 리듬이 서로 달라요 — 한쪽에만 맞추기보다 짧게 방향을 공유한 뒤 세부 호흡을 맞추면 좋아요."
+          }
+        ]
+      },
+      "meta": {
+        "grade": "D",
+        "grade_reason": "파트너십 등급 D — 업무적 핏 55% · 협업 시너지 70% · 오피스 리스크 50%",
+        "uncertain_items": [
+          "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+          "년주 팔자 형식이 올바르지 않습니다 (무진).",
+          "월주 팔자 형식이 올바르지 않습니다 (계해).",
+          "일주 팔자 형식이 올바르지 않습니다 (신사).",
+          "시주 팔자 형식이 올바르지 않습니다 (신묘).",
+          "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+          "년주 팔자 형식이 올바르지 않습니다 (을해).",
+          "월주 팔자 형식이 올바르지 않습니다 (임오).",
+          "일주 팔자 형식이 올바르지 않습니다 (병신).",
+          "시주 팔자 형식이 올바르지 않습니다 (정유)."
+        ],
+        "fit_pct": 55,
+        "synergy_pct": 70,
+        "risk_pct": 50,
+        "psych_match": {
+          "axis_results": [
+            {
+              "axis_key": "stimulation",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "self_control",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "practicality",
+              "score_a": 58,
+              "score_b": 61,
+              "gap": 3,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "structure",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "empathy",
+              "score_a": 62,
+              "score_b": 57,
+              "gap": 5,
+              "match_type": "complementary"
+            },
+            {
+              "axis_key": "conflict_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "resilience",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "recognition",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "energy_style",
+              "score_a": 55,
+              "score_b": 48,
+              "gap": 7,
+              "match_type": "complementary"
+            },
+            {
+              "axis_key": "thinking_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "decision_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            }
+          ],
+          "conflict_triggers": []
+        },
+        "psych_lens": {
+          "lens_title": "🏢 같이 일할 때 특히 눈에 띄는 축",
+          "chart_note": "동료·파트너 둘의 현재 모습을 11축 설문으로 비교했어요. (연인 심화와 같은 기준이에요.)",
+          "intro_line": "위 차트는 11축 전체예요. 아래는 협업에서 체감되기 쉬운 질문들이에요. 역할만 나눠도 훨씬 편해져요.",
+          "highlights": [
+            {
+              "axis_key": "energy_style",
+              "axis_label": "외향에너지",
+              "gap": 7,
+              "match_type": "complementary",
+              "topic": "협업 에너지",
+              "section_hint": "「오피스 DNA」",
+              "hook": "외부 미팅 vs 책상 작업, 누가 더 편한가요?",
+              "narrative": "대외·내부 역할을 나누면 각자 강점이 살아나요."
+            },
+            {
+              "axis_key": "practicality",
+              "axis_label": "현실실리",
+              "gap": 3,
+              "match_type": "similarity",
+              "topic": "실리·효율",
+              "section_hint": "「믹스 핏」",
+              "hook": "둘 다 '일단 효율'부터 보는 편인가요?",
+              "narrative": "현실적인 판단이 맞아 업무 결정이 빨라요."
+            },
+            {
+              "axis_key": "structure",
+              "axis_label": "계획구조화",
+              "gap": 0,
+              "match_type": "similarity",
+              "topic": "업무 루틴",
+              "section_hint": "「역할 분담」",
+              "hook": "둘 다 체크리스트·일정 관리를 좋아하는 편인가요?",
+              "narrative": "계획 스타일이 비슷해 프로젝트 진행이 매끄러운 편이에요."
+            },
+            {
+              "axis_key": "conflict_style",
+              "axis_label": "갈등직면성",
+              "gap": 0,
+              "match_type": "similarity",
+              "topic": "갈등·피드백",
+              "section_hint": "「삐졌을 때」",
+              "hook": "둘 다 불편한 얘기를 비교적 빨리 꺼내는 편인가요?",
+              "narrative": "미루지 않아서 팀 내 오해가 덜해요. 말투만 부드럽게 조절하면 충분해요."
+            }
+          ]
+        }
+      },
+      "context_output": {
+        "schema_version": "context_output_v1",
+        "domain": "work",
+        "grade": "D",
+        "scores": {
+          "activation": 55,
+          "benefit": 70,
+          "risk": 50
+        },
+        "dominant_categories": {
+          "person_a_lacking": {
+            "category": "재성"
+          },
+          "person_b_lacking": {
+            "category": "재성"
+          },
+          "reporting_style_a": {
+            "category": "flexible"
+          },
+          "reporting_style_b": {
+            "category": "headline_first"
+          },
+          "break_boundary_a": {
+            "category": "balanced"
+          },
+          "break_boundary_b": {
+            "category": "balanced"
+          },
+          "contribution_style_a": {
+            "category": "balanced"
+          },
+          "contribution_style_b": {
+            "category": "balanced"
+          }
+        },
+        "signals": {
+          "hasStemCombine": false,
+          "hasElementMutualComplement": true,
+          "hasStemClashOrOvercome": true,
+          "hasMonthDirectCombine": false,
+          "hasMonthElementFlow": false,
+          "hasMonthClashOrPunish": false,
+          "hasMonthDirectChung": false,
+          "hasWonjinOrGuimun": true,
+          "hasHaPaHae": true,
+          "hasGongmangHit": false
+        },
+        "axis_notes": {},
+        "section_summaries": {
+          "reporting_style": "Alex는 상황에 따라 유연하게 편이고, Jordan는 결론부터 두괄식으로 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.",
+          "break_boundary": "Alex는 그때그때 유연하게이고, Jordan는 그때그때 유연하게이에요. 신호가 잘 맞는 편이라, 같이 쉬는 시간이 부담보다는 편안함에 가까워요.",
+          "leadership": null
+        }
+      },
+      "canonical_projections": {
+        "comparison_table": {
+          "boundary": {
+            "band_a": "식상",
+            "band_b": "관성"
+          },
+          "feedback": {
+            "band_a": "식상",
+            "band_b": "관성"
+          },
+          "synergy_position": {
+            "band_a": "earth",
+            "band_b": "fire"
+          },
+          "burnout": {
+            "band_a": "sa",
+            "band_b": "sin"
+          },
+          "risk_taking": {
+            "band_a": "balanced",
+            "band_b": "balanced"
+          },
+          "reporting_rhythm": {
+            "band_a": "yin",
+            "band_b": "yang"
+          }
+        }
+      }
+    },
+    "view_model_sections": [
+      {
+        "id": "snapshot",
+        "type": "snapshot",
+        "title": "파트너십 한눈에 보기"
+      },
+      {
+        "id": "compare_table",
+        "type": "compare_table",
+        "title": "한눈에 비교 — 6가지 협업 축"
+      },
+      {
+        "id": "psych_radar",
+        "type": "psych_radar",
+        "title": "11축 궁합 레이더"
+      },
+      {
+        "id": "comparison",
+        "type": "comparison",
+        "title": "두 사람의 업무 스타일"
+      },
+      {
+        "id": "role_matrix",
+        "type": "role_matrix",
+        "title": "역할 및 기여 방식"
+      },
+      {
+        "id": "relationship_loop",
+        "type": "relationship_loop",
+        "title": "함께 일할 때 반복되는 흐름"
+      },
+      {
+        "id": "warning",
+        "type": "warning",
+        "title": "협업 안전장치"
+      }
+    ]
+  },
+  "v1": {
+    "mode": "v1_gold",
+    "inventory": [
+      {
+        "asset_id": "work_v1_leadership_canonical",
+        "target_lens_id": "work_leadership_split",
+        "status": "ADAPT_INTO_DOMAIN_LENS",
+        "user_question_answered_ko": "업무 협업에서 프로젝트 리딩과 실무 조율의 주도권은 어떻게 나뉠까?"
+      },
+      {
+        "asset_id": "work_v1_office_language",
+        "target_lens_id": "work_feedback_cushion",
+        "status": "ADAPT_INTO_CANONICAL_MEANING",
+        "user_question_answered_ko": "상대방의 기분을 상하게 하지 않고 핵심 피드백을 전달하는 쿠션어는?"
+      },
+      {
+        "asset_id": "work_v1_ten_god_complement",
+        "target_lens_id": "work_special_weapon",
+        "status": "ADAPT_INTO_DOMAIN_LENS",
+        "user_question_answered_ko": "서로의 다른 기질이 어떻게 조직 내에서 상호보완적 무기로 작동할까?"
+      }
+    ],
+    "projections": {
+      "comparison_table": {
+        "boundary": {
+          "band_a": "식상",
+          "band_b": "관성"
+        },
+        "feedback": {
+          "band_a": "식상",
+          "band_b": "관성"
+        },
+        "synergy_position": {
+          "band_a": "earth",
+          "band_b": "fire"
+        },
+        "burnout": {
+          "band_a": "sa",
+          "band_b": "sin"
+        },
+        "risk_taking": {
+          "band_a": "balanced",
+          "band_b": "balanced"
+        },
+        "reporting_rhythm": {
+          "band_a": "yin",
+          "band_b": "yang"
+        }
+      }
+    }
+  },
+  "dev": {
+    "mode": "domain_lens_dev",
+    "evidence": {
+      "packet_count": 15,
+      "packet_ids": [
+        "pce_001",
+        "pce_003",
+        "pce_006",
+        "pce_014",
+        "pce_004",
+        "pce_005",
+        "pce_007",
+        "pce_008",
+        "pce_009",
+        "pce_010",
+        "pce_011",
+        "pce_012",
+        "pce_013",
+        "pce_015",
+        "pce_002"
+      ],
+      "abstained_lenses": 0,
+      "active_lenses": 8
+    },
+    "personal_ce": "not_wired_in_this_package",
+    "pair_ce_packets": [
+      {
+        "packet_id": "pce_001",
+        "group": "bonding",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_003",
+        "group": "bonding",
+        "fact_kind": "stem_combine"
+      },
+      {
+        "packet_id": "pce_006",
+        "group": "bonding",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_014",
+        "group": "bonding",
+        "fact_kind": "stem_combine"
+      },
+      {
+        "packet_id": "pce_004",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_005",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_007",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_008",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_009",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_010",
+        "group": "friction",
+        "fact_kind": "wonjin_guimun"
+      },
+      {
+        "packet_id": "pce_011",
+        "group": "friction",
+        "fact_kind": "stem_clash"
+      },
+      {
+        "packet_id": "pce_012",
+        "group": "friction",
+        "fact_kind": "wonjin_guimun"
+      },
+      {
+        "packet_id": "pce_013",
+        "group": "friction",
+        "fact_kind": "wonjin_guimun"
+      },
+      {
+        "packet_id": "pce_015",
+        "group": "friction",
+        "fact_kind": "stem_clash"
+      },
+      {
+        "packet_id": "pce_002",
+        "group": "energy",
+        "fact_kind": "element_flow"
+      }
+    ],
+    "lenses": [
+      {
+        "lens_id": "work_leadership_split",
+        "question_ko": "프로젝트를 리드할 때 대외적 방향 결정과 내부 실행 조율은 어떻게 나눌까?",
+        "headline_ko": "Alex와(과) Jordan의 전략적 비전과 치밀한 운영이 결합된 원팀 리더십",
+        "narrative_ko": "Alex와(과) Jordan는 대외 발표·실무 검수 성향이 비슷하여 유연하게 호흡을 맞춥니다. 체계적인 조직 관리, 공정한 평가와 원칙 준수, 안정된 프로세스 수립",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_task_execution",
+        "question_ko": "실제 업무를 쳐낼 때 마일스톤 관리와 마감 기한 핸드오프는 어떻게 맞출까?",
+        "headline_ko": "Alex와(과) Jordan의 마일스톤 관리와 치밀한 스프린트 완주 호흡",
+        "narrative_ko": "삼합과 육합의 결합력으로 인해 기획부터 QA까지 병목 현상 없이 부드러운 핸드오프가 일어납니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_feedback_cushion",
+        "question_ko": "코드 리뷰나 업무 피드백을 주고받을 때 감정 상하지 않는 쿠션 화법은?",
+        "headline_ko": "Alex와(과) Jordan의 인신공격 배제 및 데이터 기반 객관적 피드백 프로토콜",
+        "narrative_ko": "천간충의 언어적 직설성으로 인해 '사람'이 아닌 '코드/데이터'에 초점을 맞추는 쿠션어가 필수적입니다. 팀원들을 한계까지 몰아붙이는 하드워킹 강요와 탑다운 독단",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_micromanage_guard",
+        "question_ko": "지나친 간섭이나 불신 없이 각자의 오너십과 자율성을 보장하는 경계선은?",
+        "headline_ko": "Alex와(과) Jordan의 과정 간섭 배제와 비동기 결과 중심 스크럼 체계",
+        "narrative_ko": "원진/귀문의 민감성으로 인해 수시 구두 확인보다 슬랙/지라를 통한 비동기 상태 공유가 훨씬 높은 몰입도를 만듭니다. 남들이 보지 못하는 사각지대 발견, 특수 기술/R&D, 독창적 솔루션",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_stress_reaction",
+        "question_ko": "서버 장애, 배포 오류 등 긴급 장애 상황에서 패닉 없이 대응하는 룰은?",
+        "headline_ko": "Alex와(과) Jordan의 긴급 장애 시 범인 찾기 금지 및 롤백 우선 원칙",
+        "narrative_ko": "천간충의 압박 상황에서는 '누구 탓인가'를 따지기보다 즉각 서비스 정상화에만 집중하는 룰이 필수입니다. 피드백 시 쿠션어 부재, 상사나 규정에 대한 노골적 반발",
+        "confidence": "high",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_decision_style",
+        "question_ko": "데이터 기반 분석과 직관적 빠른 실행 사이의 의사결정 방식 충돌은?",
+        "headline_ko": "Alex와(과) Jordan의 가설 검증의 속도와 데이터 분석의 정밀함이 균형을 잡는 의사결정",
+        "narrative_ko": "오행 상생의 흐름으로 한쪽이 신속하게 MVP를 만들어 실험하고 다른 쪽이 지표를 분석해 방향을 최적화합니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_special_weapon",
+        "question_ko": "둘이 뭉쳤을 때 어떤 프로젝트나 과제도 뚫어내는 둘만의 필살 무기는?",
+        "headline_ko": "Alex와(과) Jordan의 기획력과 실행력이 결합되어 불가능한 납기도 뚫어내는 전사적 시너지",
+        "narrative_ko": "삼합/육합의 강력한 결합력은 기술적 난제나 촉박한 일정 앞에서도 완벽한 분업으로 돌파구를 만들어냅니다. 탁월한 전문성과 장인정신, 꾸준한 제품/서비스 퀄리티 향상",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "work_burnout_recovery",
+        "question_ko": "업무 과부하나 번아웃이 왔을 때 서로를 지치지 않게 지탱해 주는 회복법은?",
+        "headline_ko": "Alex와(과) Jordan의 동료의 과부하를 먼저 알아채고 업무를 백업해 주는 성숙한 동료애",
+        "narrative_ko": "지지 합의 끈끈함으로 인해 스프린트 막바지에 동료의 지친 기색을 먼저 알아채고 티켓을 분담해 줍니다. 신입 멘토링, 조직의 지식 자산화, 문서화와 안정적인 교육 체계 구축",
+        "confidence": "high",
+        "tension_level": "low",
+        "is_abstaining": false
+      }
+    ],
+    "story_planner": {
+      "input": {
+        "schema_version": "domain_story_planner_v1",
+        "domain": "work",
+        "parties": {
+          "a_name": "Alex",
+          "b_name": "Jordan"
+        },
+        "overall_confidence": "medium",
+        "birth_time_unknown_a": false,
+        "birth_time_unknown_b": false,
+        "chapters": [],
+        "grounding_summary": {
+          "total_lenses_evaluated": 8,
+          "high_confidence_count": 4,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "standard",
+          "primary_synergy_lens_id": "work_burnout_recovery"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "원팀 리더십",
+            "R&R 명시",
+            "전략과 실행",
+            "스프린트 완주",
+            "병목 제로",
+            "치밀한 핸드오프",
+            "쿠션어",
+            "블레임리스",
+            "데이터 기반 리뷰",
+            "비동기 스크럼",
+            "결과 중심",
+            "오너십 위임",
+            "블레임리스 포스트모텀",
+            "롤백 우선",
+            "온콜 2인1조",
+            "A/B 테스트",
+            "가설과 데이터",
+            "신속한 프로토타입",
+            "필살 무기",
+            "블로커 돌파",
+            "페어 오너십",
+            "태스크 백업",
+            "지속 가능한 롱런",
+            "따뜻한 배려"
+          ],
+          "strict_prohibitions": [
+            "꼰대 관리자",
+            "발전 없는 꼰대",
+            "악덕 상사",
+            "협업 불가자",
+            "조직 부적응자",
+            "일머리가 없다",
+            "탁상공론자"
+          ]
+        }
+      },
+      "plan": {
+        "schema_version": "domain_7_scene_story_plan_v1",
+        "domain": "work",
+        "parties": {
+          "a_name": "Alex",
+          "b_name": "Jordan"
+        },
+        "overall_confidence": "high",
+        "birth_time_unknown_a": false,
+        "birth_time_unknown_b": false,
+        "scenes": [
+          {
+            "scene_number": 1,
+            "scene_id": "work_scene_1_leadership",
+            "title_ko": "리더십과 의사결정 권한 분담",
+            "title_en": "Leadership & Authority Split",
+            "primary_lens_id": "work_leadership_split",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "work_leadership_co_architect",
+            "canonical_packet": {
+              "meaning_id": "work_leadership_co_architect",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "b_to_a",
+              "lead_party": "B",
+              "evidence": [
+                {
+                  "kind": "stem_combine",
+                  "detail": "stem_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "stem_combine",
+                  "detail": "stem_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "Alex와(과) Jordan는 대외 발표·실무 검수 성향이 비슷하여 유연하게 호흡을 맞춥니다. 체계적인 조직 관리, 공정한 평가와 원칙 준수, 안정된 프로세스 수립"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_leadership_co_architect"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "b_to_a",
+              "lead_party": "B",
+              "impact_on_a_ko": "프로세스 최적화 및 리소스 조율",
+              "impact_on_b_ko": "전략 기획 및 의사결정 총괄"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_leadership_co_architect"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 전략적 비전과 치밀한 운영이 결합된 원팀 리더십"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "stem_combine",
+                    "description_ko": "일주(신사)×일주(병신) 병신합수"
+                  },
+                  {
+                    "kind": "stem_combine",
+                    "description_ko": "시주(신묘)×일주(병신) 병신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "프로젝트를 리드할 때 대외적 방향 결정과 내부 실행 조율은 어떻게 나눌까?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_001",
+                  "pce_003",
+                  "pce_006",
+                  "pce_014"
+                ],
+                "saju_source_attribution": [
+                  "stem_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "b_to_a",
+                  "lead_party": "B",
+                  "impact_on_a_ko": "프로세스 최적화 및 리소스 조율",
+                  "impact_on_b_ko": "전략 기획 및 의사결정 총괄"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "Alex와(과) Jordan는 대외 발표·실무 검수 성향이 비슷하여 유연하게 호흡을 맞춥니다. 체계적인 조직 관리, 공정한 평가와 원칙 준수, 안정된 프로세스 수립",
+                "gift_to_cost_relationship": "주도권 다툼 없이 비전 제시와 디테일 실행이 완벽하게 맞물리는 원팀 리더십",
+                "prohibited_generic_interpretations": [
+                  "꼰대 관리자"
+                ],
+                "allowed_themes": [
+                  "원팀 리더십",
+                  "R&R 명시",
+                  "전략과 실행"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_leadership_split_action",
+                "prescription_keys": [
+                  "work_leadership_split"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 전략적 비전과 치밀한 운영이 결합된 원팀 리더십",
+                    "script_template_id": "work_leadership_co_architect",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "B_leads_work_execution"
+                ],
+                "behavioral_assets": [
+                  "원팀 리더십",
+                  "R&R 명시",
+                  "전략과 실행"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 2,
+            "scene_id": "work_scene_2_execution",
+            "title_ko": "업무 추진 템포와 납기 실행력",
+            "title_en": "Task Execution & Delivery Cadence",
+            "primary_lens_id": "work_task_execution",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "work_execution_strategic_cadence",
+            "canonical_packet": {
+              "meaning_id": "work_execution_strategic_cadence",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "삼합과 육합의 결합력으로 인해 기획부터 QA까지 병목 현상 없이 부드러운 핸드오프가 일어납니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_execution_strategic_cadence"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "기획안 및 요구사항 명세 작성",
+              "impact_on_b_ko": "스프린트 개발 및 QA 패스"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_execution_strategic_cadence"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 마일스톤 관리와 치밀한 스프린트 완주 호흡"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "일주(신사)×일주(병신) 사신합수"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(무진)×시주(정유) 진유합금"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "실제 업무를 쳐낼 때 마일스톤 관리와 마감 기한 핸드오프는 어떻게 맞출까?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_001",
+                  "pce_003",
+                  "pce_006",
+                  "pce_014"
+                ],
+                "saju_source_attribution": [
+                  "branch_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "기획안 및 요구사항 명세 작성",
+                  "impact_on_b_ko": "스프린트 개발 및 QA 패스"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "삼합과 육합의 결합력으로 인해 기획부터 QA까지 병목 현상 없이 부드러운 핸드오프가 일어납니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬",
+                "gift_to_cost_relationship": "일정 딜레이 없이 톱니바퀴처럼 빈틈없이 맞물리는 완벽한 태스크 핸드오프",
+                "prohibited_generic_interpretations": [
+                  "발전 없는 꼰대"
+                ],
+                "allowed_themes": [
+                  "스프린트 완주",
+                  "병목 제로",
+                  "치밀한 핸드오프"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_task_execution_action",
+                "prescription_keys": [
+                  "work_task_execution"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 마일스톤 관리와 치밀한 스프린트 완주 호흡",
+                    "script_template_id": "work_execution_strategic_cadence",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "co_architect_partnership"
+                ],
+                "behavioral_assets": [
+                  "스프린트 완주",
+                  "병목 제로",
+                  "치밀한 핸드오프"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 3,
+            "scene_id": "work_scene_3_decision",
+            "title_ko": "판단의 기준과 리스크 대응 스타일",
+            "title_en": "Decision Heuristics & Risk Response",
+            "primary_lens_id": "work_decision_style",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "work_decision_balanced_heuristics",
+            "canonical_packet": {
+              "meaning_id": "work_decision_balanced_heuristics",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "b_to_a",
+              "lead_party": "B",
+              "evidence": [
+                {
+                  "kind": "element_flow",
+                  "detail": "element_flow",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "오행 상생의 흐름으로 한쪽이 신속하게 MVP를 만들어 실험하고 다른 쪽이 지표를 분석해 방향을 최적화합니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_decision_balanced_heuristics"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "b_to_a",
+              "lead_party": "B",
+              "impact_on_a_ko": "데이터 검증 및 리스크 사전 방어",
+              "impact_on_b_ko": "가설 수립 및 신속한 프로토타이핑"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_decision_balanced_heuristics"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 가설 검증의 속도와 데이터 분석의 정밀함이 균형을 잡는 의사결정"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "element_flow",
+                    "description_ko": "오행 상생 흐름: overcomes_b_to_a"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "데이터 기반 분석과 직관적 빠른 실행 사이의 의사결정 방식 충돌은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002"
+                ],
+                "saju_source_attribution": [
+                  "element_flow:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "b_to_a",
+                  "lead_party": "B",
+                  "impact_on_a_ko": "데이터 검증 및 리스크 사전 방어",
+                  "impact_on_b_ko": "가설 수립 및 신속한 프로토타이핑"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "오행 상생의 흐름으로 한쪽이 신속하게 MVP를 만들어 실험하고 다른 쪽이 지표를 분석해 방향을 최적화합니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬",
+                "gift_to_cost_relationship": "탁상공론에 빠지지 않고 정밀한 데이터와 빠른 실행력이 결합된 완벽한 의사결정",
+                "prohibited_generic_interpretations": [
+                  "발전 없는 꼰대"
+                ],
+                "allowed_themes": [
+                  "A/B 테스트",
+                  "가설과 데이터",
+                  "신속한 프로토타입"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_decision_style_action",
+                "prescription_keys": [
+                  "work_decision_style"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 가설 검증의 속도와 데이터 분석의 정밀함이 균형을 잡는 의사결정",
+                    "script_template_id": "work_decision_balanced_heuristics",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "B_leads_work_execution"
+                ],
+                "behavioral_assets": [
+                  "A/B 테스트",
+                  "가설과 데이터",
+                  "신속한 프로토타입"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 4,
+            "scene_id": "work_scene_4_synergy",
+            "title_ko": "직무 보완과 십성 스페셜 웨폰",
+            "title_en": "Cross-Functional Special Weapon Synergy",
+            "primary_lens_id": "work_special_weapon",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "work_synergy_cross_functional_power",
+            "canonical_packet": {
+              "meaning_id": "work_synergy_cross_functional_power",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "삼합/육합의 강력한 결합력은 기술적 난제나 촉박한 일정 앞에서도 완벽한 분업으로 돌파구를 만들어냅니다. 탁월한 전문성과 장인정신, 꾸준한 제품/서비스 퀄리티 향상"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_synergy_cross_functional_power"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "아키텍처 설계 및 핵심 로직 구현",
+              "impact_on_b_ko": "인프라 최적화 및 프로덕션 안정화"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_synergy_cross_functional_power"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 기획력과 실행력이 결합되어 불가능한 납기도 뚫어내는 전사적 시너지"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "일주(신사)×일주(병신) 사신합수"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(무진)×시주(정유) 진유합금"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "둘이 뭉쳤을 때 어떤 프로젝트나 과제도 뚫어내는 둘만의 필살 무기는?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_001",
+                  "pce_003",
+                  "pce_006",
+                  "pce_014"
+                ],
+                "saju_source_attribution": [
+                  "branch_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "아키텍처 설계 및 핵심 로직 구현",
+                  "impact_on_b_ko": "인프라 최적화 및 프로덕션 안정화"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "삼합/육합의 강력한 결합력은 기술적 난제나 촉박한 일정 앞에서도 완벽한 분업으로 돌파구를 만들어냅니다. 탁월한 전문성과 장인정신, 꾸준한 제품/서비스 퀄리티 향상",
+                "gift_to_cost_relationship": "고난도 기술 블로커나 불가능한 일정 앞에서도 판을 뒤집는 둘만의 치명적 시너지",
+                "prohibited_generic_interpretations": [
+                  "일머리가 없다"
+                ],
+                "allowed_themes": [
+                  "필살 무기",
+                  "블로커 돌파",
+                  "페어 오너십"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_special_weapon_action",
+                "prescription_keys": [
+                  "work_special_weapon"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 기획력과 실행력이 결합되어 불가능한 납기도 뚫어내는 전사적 시너지",
+                    "script_template_id": "work_synergy_cross_functional_power",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "co_architect_partnership"
+                ],
+                "behavioral_assets": [
+                  "필살 무기",
+                  "블로커 돌파",
+                  "페어 오너십"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 5,
+            "scene_id": "work_scene_5_autonomy",
+            "title_ko": "자율성 보장과 마이크로매니징 방지",
+            "title_en": "Autonomy & Working Boundaries",
+            "primary_lens_id": "work_micromanage_guard",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "work_autonomy_asynchronous_scrum",
+            "canonical_packet": {
+              "meaning_id": "work_autonomy_asynchronous_scrum",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "wonjin",
+                  "detail": "wonjin",
+                  "source": "saju"
+                },
+                {
+                  "kind": "wonjin",
+                  "detail": "wonjin",
+                  "source": "saju"
+                },
+                {
+                  "kind": "wonjin",
+                  "detail": "wonjin",
+                  "source": "saju"
+                },
+                {
+                  "kind": "wonjin",
+                  "detail": "wonjin",
+                  "source": "saju"
+                },
+                {
+                  "kind": "wonjin",
+                  "detail": "wonjin",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "원진/귀문의 민감성으로 인해 수시 구두 확인보다 슬랙/지라를 통한 비동기 상태 공유가 훨씬 높은 몰입도를 만듭니다. 남들이 보지 못하는 사각지대 발견, 특수 기술/R&D, 독창적 솔루션"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_autonomy_asynchronous_scrum"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "과정 간섭 금지 및 마일스톤 결과 확인",
+              "impact_on_b_ko": "비동기 상태 업데이트 및 블로커 즉시 공유"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_autonomy_asynchronous_scrum"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 과정 간섭 배제와 비동기 결과 중심 스크럼 체계"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "시주(신묘)×일주(병신) 귀문"
+                  },
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "일주(신사)×일주(병신) 원진"
+                  },
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "월주(계해)×월주(임오) 원진"
+                  },
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "년주(무진)×시주(정유) 원진"
+                  },
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "년주(무진)×년주(을해) 귀문"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "지나친 간섭이나 불신 없이 각자의 오너십과 자율성을 보장하는 경계선은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_010",
+                  "pce_012",
+                  "pce_013"
+                ],
+                "saju_source_attribution": [
+                  "wonjin:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "과정 간섭 금지 및 마일스톤 결과 확인",
+                  "impact_on_b_ko": "비동기 상태 업데이트 및 블로커 즉시 공유"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "원진/귀문의 민감성으로 인해 수시 구두 확인보다 슬랙/지라를 통한 비동기 상태 공유가 훨씬 높은 몰입도를 만듭니다. 남들이 보지 못하는 사각지대 발견, 특수 기술/R&D, 독창적 솔루션",
+                "gift_to_cost_relationship": "사소한 과정 체크에 시달리지 않고 결과로 증명하는 완벽한 심리적 안전감",
+                "prohibited_generic_interpretations": [
+                  "협업 불가자"
+                ],
+                "allowed_themes": [
+                  "비동기 스크럼",
+                  "결과 중심",
+                  "오너십 위임"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_micromanage_guard_action",
+                "prescription_keys": [
+                  "work_micromanage_guard"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 과정 간섭 배제와 비동기 결과 중심 스크럼 체계",
+                    "script_template_id": "work_autonomy_asynchronous_scrum",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "co_architect_partnership"
+                ],
+                "behavioral_assets": [
+                  "비동기 스크럼",
+                  "결과 중심",
+                  "오너십 위임"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 6,
+            "scene_id": "work_scene_6_stress",
+            "title_ko": "압박 상황에서의 스트레스 반응 모드",
+            "title_en": "Pressure Mode & Psychological Safety",
+            "primary_lens_id": "work_stress_reaction",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "work_stress_blameless_protocol",
+            "canonical_packet": {
+              "meaning_id": "work_stress_blameless_protocol",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "stem_clash",
+                  "detail": "stem_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "stem_clash",
+                  "detail": "stem_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "stem_clash",
+                  "detail": "stem_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "천간충의 압박 상황에서는 '누구 탓인가'를 따지기보다 즉각 서비스 정상화에만 집중하는 룰이 필수입니다. 피드백 시 쿠션어 부재, 상사나 규정에 대한 노골적 반발"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_stress_blameless_protocol"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "로그 분석 및 핫픽스 코드 작성",
+              "impact_on_b_ko": "배포 파이프라인 트리거 및 대외 상황 공유"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_stress_blameless_protocol"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 긴급 장애 시 범인 찾기 금지 및 롤백 우선 원칙"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "stem_clash",
+                    "description_ko": "일주(신사)×년주(을해) stem_clash"
+                  },
+                  {
+                    "kind": "stem_clash",
+                    "description_ko": "월주(계해)×시주(정유) stem_clash"
+                  },
+                  {
+                    "kind": "stem_clash",
+                    "description_ko": "시주(신묘)×년주(을해) stem_clash"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(신사)×년주(을해) 사해충"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "월주(계해)×일주(병신) 신해해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "월주(계해)×년주(을해) 해해 자형"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "시주(신묘)×월주(임오) 오묘파"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "시주(신묘)×시주(정유) 묘유충"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "서버 장애, 배포 오류 등 긴급 장애 상황에서 패닉 없이 대응하는 룰은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_004",
+                  "pce_005",
+                  "pce_007",
+                  "pce_008",
+                  "pce_009",
+                  "pce_010",
+                  "pce_011",
+                  "pce_012",
+                  "pce_013",
+                  "pce_015"
+                ],
+                "saju_source_attribution": [
+                  "stem_clash:pair",
+                  "branch_clash:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "로그 분석 및 핫픽스 코드 작성",
+                  "impact_on_b_ko": "배포 파이프라인 트리거 및 대외 상황 공유"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "천간충의 압박 상황에서는 '누구 탓인가'를 따지기보다 즉각 서비스 정상화에만 집중하는 룰이 필수입니다. 피드백 시 쿠션어 부재, 상사나 규정에 대한 노골적 반발",
+                "gift_to_cost_relationship": "위기 앞에서 서로 탓하지 않고 침착하게 롤백과 복구를 해내는 든든한 전우애",
+                "prohibited_generic_interpretations": [
+                  "조직 부적응자"
+                ],
+                "allowed_themes": [
+                  "블레임리스 포스트모텀",
+                  "롤백 우선",
+                  "온콜 2인1조"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_stress_reaction_action",
+                "prescription_keys": [
+                  "work_stress_reaction"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 긴급 장애 시 범인 찾기 금지 및 롤백 우선 원칙",
+                    "script_template_id": "work_stress_blameless_protocol",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "co_architect_partnership"
+                ],
+                "behavioral_assets": [
+                  "블레임리스 포스트모텀",
+                  "롤백 우선",
+                  "온콜 2인1조"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 7,
+            "scene_id": "work_scene_7_feedback_recovery",
+            "title_ko": "피드백 쿠션과 지속 가능한 번아웃 회복",
+            "title_en": "Feedback Cushion & Burnout Recovery",
+            "primary_lens_id": "work_feedback_cushion",
+            "contributing_lens_ids": [
+              "work_burnout_recovery"
+            ],
+            "canonical_meaning_id": "work_feedback_objective_cushion",
+            "canonical_packet": {
+              "meaning_id": "work_feedback_objective_cushion",
+              "status": "supported",
+              "confidence": "high",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "stem_clash",
+                  "detail": "stem_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "stem_clash",
+                  "detail": "stem_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "stem_clash",
+                  "detail": "stem_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "천간충의 언어적 직설성으로 인해 '사람'이 아닌 '코드/데이터'에 초점을 맞추는 쿠션어가 필수적입니다. 팀원들을 한계까지 몰아붙이는 하드워킹 강요와 탑다운 독단"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "work_feedback_objective_cushion"
+            },
+            "confidence": "high",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "질문형 리뷰(PBI) 제안 및 칭찬 선행",
+              "impact_on_b_ko": "기술적 근거 제시 및 신속한 반영"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "work_feedback_objective_cushion",
+                  "work_burnout_sustainable_pacing"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 인신공격 배제 및 데이터 기반 객관적 피드백 프로토콜",
+                  "Alex와(과) Jordan의 동료의 과부하를 먼저 알아채고 업무를 백업해 주는 성숙한 동료애"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "stem_clash",
+                    "description_ko": "일주(신사)×년주(을해) stem_clash"
+                  },
+                  {
+                    "kind": "stem_clash",
+                    "description_ko": "월주(계해)×시주(정유) stem_clash"
+                  },
+                  {
+                    "kind": "stem_clash",
+                    "description_ko": "시주(신묘)×년주(을해) stem_clash"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "일주(신사)×일주(병신) 사신합수"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(무진)×시주(정유) 진유합금"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "코드 리뷰나 업무 피드백을 주고받을 때 감정 상하지 않는 쿠션 화법은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_004",
+                  "pce_005",
+                  "pce_007",
+                  "pce_008",
+                  "pce_009",
+                  "pce_010",
+                  "pce_011",
+                  "pce_012",
+                  "pce_013",
+                  "pce_015",
+                  "pce_001",
+                  "pce_003",
+                  "pce_006",
+                  "pce_014"
+                ],
+                "saju_source_attribution": [
+                  "stem_clash:pair",
+                  "branch_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "질문형 리뷰(PBI) 제안 및 칭찬 선행",
+                  "impact_on_b_ko": "기술적 근거 제시 및 신속한 반영"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "천간충의 언어적 직설성으로 인해 '사람'이 아닌 '코드/데이터'에 초점을 맞추는 쿠션어가 필수적입니다. 팀원들을 한계까지 몰아붙이는 하드워킹 강요와 탑다운 독단",
+                "gift_to_cost_relationship": "방어적 태도 없이 제품 퀄리티만을 위해 치열하고 솔직하게 피드백하는 문화 정착",
+                "prohibited_generic_interpretations": [
+                  "악덕 상사",
+                  "탁상공론자"
+                ],
+                "allowed_themes": [
+                  "쿠션어",
+                  "블레임리스",
+                  "데이터 기반 리뷰",
+                  "태스크 백업",
+                  "지속 가능한 롱런",
+                  "따뜻한 배려"
+                ]
+              },
+              "action": {
+                "prescription_id": "work_feedback_cushion_action",
+                "prescription_keys": [
+                  "work_feedback_cushion",
+                  "work_burnout_recovery"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 인신공격 배제 및 데이터 기반 객관적 피드백 프로토콜",
+                    "script_template_id": "work_feedback_objective_cushion",
+                    "category": "work"
+                  }
+                ],
+                "role_rules": [
+                  "co_architect_partnership"
+                ],
+                "behavioral_assets": [
+                  "쿠션어",
+                  "블레임리스",
+                  "데이터 기반 리뷰",
+                  "태스크 백업",
+                  "지속 가능한 롱런",
+                  "따뜻한 배려"
+                ]
+              }
+            }
+          }
+        ],
+        "grounding_summary": {
+          "total_scenes": 7,
+          "high_confidence_count": 7,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "화(火)이(가) 금(金)을(를) 누름(상극·긴장)"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "원팀 리더십",
+            "R&R 명시",
+            "전략과 실행",
+            "스프린트 완주",
+            "병목 제로",
+            "치밀한 핸드오프",
+            "A/B 테스트",
+            "가설과 데이터",
+            "신속한 프로토타입",
+            "필살 무기",
+            "블로커 돌파",
+            "페어 오너십",
+            "비동기 스크럼",
+            "결과 중심",
+            "오너십 위임",
+            "블레임리스 포스트모텀",
+            "롤백 우선",
+            "온콜 2인1조",
+            "쿠션어",
+            "블레임리스",
+            "데이터 기반 리뷰",
+            "태스크 백업",
+            "지속 가능한 롱런",
+            "따뜻한 배려"
+          ],
+          "strict_prohibitions": [
+            "꼰대 관리자",
+            "발전 없는 꼰대",
+            "일머리가 없다",
+            "협업 불가자",
+            "조직 부적응자",
+            "악덕 상사",
+            "탁상공론자"
+          ]
+        }
+      }
+    },
+    "narrative": {
+      "schema_version": "domain_7_scene_narrative_v1",
+      "domain": "work",
+      "parties": {
+        "a_name": "Alex",
+        "b_name": "Jordan"
+      },
+      "overall_confidence": "high",
+      "overview": {
+        "headline_ko": "Alex님과 Jordan님의 직무 협업 스토리: 역할 분담과 상호 보완의 7가지 원칙",
+        "headline_en": "Professional Collaboration Playbook for Alex & Jordan: 7 Core Principles of Synergy",
+        "summary_ko": "리더십 분담, 실행 템포, 비동기 자율성, 피드백 안전성, 무비난 스트레스 관리까지 비즈니스 임팩트를 극대화하는 고성과 협업 가이드입니다.",
+        "summary_en": "A high-performance workplace playbook covering leadership alignment, sprint velocity, async autonomy, feedback safety, and blameless resilience.",
+        "core_vibe_badge_ko": "상호 신뢰와 고성과 전문성 파트너십",
+        "core_vibe_badge_en": "High-Trust Professional Excellence"
+      },
+      "scenes": [
+        {
+          "scene_number": 1,
+          "scene_id": "work_scene_1_leadership",
+          "title_ko": "리더십과 의사결정 권한 분담",
+          "title_en": "Leadership & Authority Split",
+          "primary_lens_id": "work_leadership_split",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "b_to_a",
+            "lead_party": "B",
+            "impact_on_a_ko": "프로세스 최적화 및 리소스 조율",
+            "impact_on_b_ko": "전략 기획 및 의사결정 총괄"
+          },
+          "headline_ko": "Jordan님의 방향 제시와 Alex님의 체계적 실행이 이끄는 리더십 분담",
+          "headline_en": "Strategic leadership alignment: Jordan's directional drive complemented by Alex's structural execution",
+          "recognition_ko": "프로젝트의 큰 그림을 그리고 전략을 수립할 때 Jordan님이 방향키를 쥐면, Alex님이 리스크를 점검하고 실행 로드맵을 체계화하는 최적의 리더십 밸런스를 보여줍니다.",
+          "recognition_en": "When setting strategic direction, Jordan provides high-level vision while Alex stress-tests risks and operationalizes the roadmap.",
+          "translation_ko": "Alex님에게는 프로세스 최적화 및 리소스 조율, Jordan님에게는 전략 기획 및 의사결정 총괄의 업무 에너지가 교차하며 건강한 공동 설계를 이룹니다.",
+          "translation_en": "The complementary skill sets eliminate blind spots, creating a robust dual-lead governance structure.",
+          "reframing_ko": "두 사람 모두 책임감이 강할 때 영역 침범으로 인한 주도권 갈등이 생길 수 있으므로, 프로젝트별 최종 의사결정자(DRI)를 사전에 정의해야 합니다.",
+          "reframing_en": "High mutual ownership can lead to overlapping jurisdiction; defining a Single Directly Responsible Individual (DRI) per domain ensures frictionless momentum.",
+          "action_guidance_ko": "기획 단계에서 최종 승인권자와 실행 주관자의 역할을 명문화하고 영역별 권한을 전적으로 위임하세요.",
+          "action_guidance_en": "Explicitly codify the approval owner versus execution lead at kickoff and delegate full autonomy within domains.",
+          "scripts": [
+            {
+              "category": "leadership_raci",
+              "title_ko": "권한 위임 및 DRI 설정",
+              "title_en": "Authority Delegation & DRI Agreement",
+              "speaker": "A",
+              "dialogue_ko": "\"이번 건은 Alex님의 전문성이 중요한 영역이니, 최종 의사결정권을 위임하고 저는 리소스 지원에 집중하겠습니다.\"",
+              "dialogue_en": "\"This feature requires your domain expertise, so I'm delegating final call authority to you while I focus on unblocking resources.\""
+            }
+          ],
+          "role_rules_ko": [
+            "프로젝트 착수 시 RACI 매트릭스를 정의하고 상대방 영역의 결정 존중하기"
+          ],
+          "role_rules_en": [
+            "Define a clear RACI matrix at project kickoff and respect domain ownership."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "꼰대 관리자"
+            ],
+            "allowed_themes": [
+              "원팀 리더십",
+              "R&R 명시",
+              "전략과 실행"
+            ]
+          }
+        },
+        {
+          "scene_number": 2,
+          "scene_id": "work_scene_2_execution",
+          "title_ko": "업무 추진 템포와 납기 실행력",
+          "title_en": "Task Execution & Delivery Cadence",
+          "primary_lens_id": "work_task_execution",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "기획안 및 요구사항 명세 작성",
+            "impact_on_b_ko": "스프린트 개발 및 QA 패스"
+          },
+          "headline_ko": "빠른 프로토타이핑과 정밀한 완성도의 조화로운 실행 템포",
+          "headline_en": "Optimized execution cadence: Fast-paced prototyping balanced with precision delivery",
+          "recognition_ko": "업무를 추진할 때 속도감 있게 핵심 가설을 검증하는 동력과 결과물의 완성도를 끌어올리는 꼼꼼함이 만나 높은 생산성을 만듭니다.",
+          "recognition_en": "Rapid hypothesis validation meets meticulous quality control, driving high-velocity yet stable project delivery.",
+          "translation_ko": "초기 발산 속도와 후반 수렴 안정성이 조화를 이루어, 납기 준수와 품질 유지라는 두 마리 토끼를 잡을 수 있습니다.",
+          "translation_en": "Balancing agile early sprints with structured closing phases ensures both deadline adherence and production quality.",
+          "reframing_ko": "속도 지향적 태도가 꼼꼼함을 답답해하거나 반대로 세밀한 검증이 속도를 불안해하지 않도록, 개발/기획 단계별 마일스톤을 명확히 구분하세요.",
+          "reframing_en": "Preventing speed-versus-perfection friction requires explicit phase separation: rapid draft mode followed by polish mode.",
+          "action_guidance_ko": "초기 '러프한 가설 검증' 단계와 후반 '안정화 및 QA' 단계를 분리하여 일정표에 반영하세요.",
+          "action_guidance_en": "Explicitly separate the rapid exploratory phase from the rigorous QA phase on sprint timelines.",
+          "scripts": [
+            {
+              "category": "sprint_pacing",
+              "title_ko": "단계별 완성도 합의",
+              "title_en": "Phase-based Quality Sync",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"지금은 v1 초안 검증 단계이니 80% 완성도로 빠르게 공유하고, 다음 주에 디테일을 함께 보완하시죠.\"",
+              "dialogue_en": "\"Since this is the v1 draft validation phase, let's ship at 80% fidelity and polish the fine details next week.\""
+            }
+          ],
+          "role_rules_ko": [
+            "초안 단계에서는 속도에, 배포 전 단계에서는 안정성에 우선순위 두기"
+          ],
+          "role_rules_en": [
+            "Prioritize velocity during drafts and uncompromising stability prior to launch."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "발전 없는 꼰대"
+            ],
+            "allowed_themes": [
+              "스프린트 완주",
+              "병목 제로",
+              "치밀한 핸드오프"
+            ]
+          }
+        },
+        {
+          "scene_number": 3,
+          "scene_id": "work_scene_3_decision",
+          "title_ko": "판단의 기준과 리스크 대응 스타일",
+          "title_en": "Decision Heuristics & Risk Response",
+          "primary_lens_id": "work_decision_style",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "b_to_a",
+            "lead_party": "B",
+            "impact_on_a_ko": "데이터 검증 및 리스크 사전 방어",
+            "impact_on_b_ko": "가설 수립 및 신속한 프로토타이핑"
+          },
+          "headline_ko": "불확실한 상황에서 신속한 결단과 데이터 검증의 의사결정 균형",
+          "headline_en": "Balanced decision heuristics: Fast-track pivoting paired with analytical rigor",
+          "recognition_ko": "새로운 기능 런칭이나 방향 전환이 필요할 때, 직관적인 빠른 가설 수립과 냉철한 지표 분석이 상호 보완되어 실패 확률을 최소화합니다.",
+          "recognition_en": "When pivoting or launching features, fast intuitive hypothesis formulation and rigorous metrics analysis combine to derisk execution.",
+          "translation_ko": "되돌릴 수 있는 결정(Type 2)은 신속하게 실행하고, 되돌릴 수 없는 결정(Type 1)은 다각도로 검토하는 지혜로운 기준을 공유합니다.",
+          "translation_en": "Distinguishing between reversible decisions (Type 2) and irreversible architecture (Type 1) prevents organizational bottlenecks.",
+          "reframing_ko": "의견 대립은 불협화음이 아니라 비즈니스 리스크를 사전에 걸러내는 가장 저렴한 품질 보증 과정입니다.",
+          "reframing_en": "Debate on strategy is not friction; it is the most cost-effective pre-mortem process for the business.",
+          "action_guidance_ko": "결정 지연이 발생할 경우 '실패했을 때 감당 가능한 비용'을 기준으로 의사결정 타임라인을 설정하세요.",
+          "action_guidance_en": "When deliberations stall, establish a timeboxed decision framework based on the reversibility of the outcome.",
+          "scripts": [
+            {
+              "category": "decision_framework",
+              "title_ko": "가역적 결정 신속 추진",
+              "title_en": "Reversible Decision Fast-Track",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"이 사안은 수정이 용이한 가역적 결정이니, 우선 2주간 A안으로 테스트하고 데이터를 확인하죠.\"",
+              "dialogue_en": "\"Since this is easily reversible, let's ship Option A for a two-week test and let user data decide.\""
+            }
+          ],
+          "role_rules_ko": [
+            "데이터가 부족할 때는 작은 실험으로 가설을 먼저 검증하기"
+          ],
+          "role_rules_en": [
+            "When data is scarce, run micro-experiments rather than engaging in prolonged theoretical debates."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "발전 없는 꼰대"
+            ],
+            "allowed_themes": [
+              "A/B 테스트",
+              "가설과 데이터",
+              "신속한 프로토타입"
+            ]
+          }
+        },
+        {
+          "scene_number": 4,
+          "scene_id": "work_scene_4_synergy",
+          "title_ko": "직무 보완과 십성 스페셜 웨폰",
+          "title_en": "Cross-Functional Special Weapon Synergy",
+          "primary_lens_id": "work_special_weapon",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "아키텍처 설계 및 핵심 로직 구현",
+            "impact_on_b_ko": "인프라 최적화 및 프로덕션 안정화"
+          },
+          "headline_ko": "서로 다른 무기가 결합될 때 발생하는 독보적인 직무 시너지",
+          "headline_en": "Cross-functional synergy: Unlocking unmatched collective superpowers",
+          "recognition_ko": "Alex님의 전문 영역과 Jordan님의 핵심 역량이 융합될 때, 단독으로는 해결하기 어려운 복합적인 비즈니스 과제를 탁월하게 돌파합니다.",
+          "recognition_en": "When Alex's domain mastery combines with Jordan's analytical strengths, complex cross-functional challenges are resolved effortlessly.",
+          "translation_ko": "서로의 강점을 정확히 인정하고 상대방의 영역을 믿고 맡길 때 1+1 이상의 폭발적인 시너지가 발현됩니다.",
+          "translation_en": "Uncompromising mutual respect for distinct competencies unlocks compounding organizational velocity.",
+          "reframing_ko": "서로의 업무 방식 차이는 비효율이 아니라 문제를 다각도에서 바라볼 수 있게 해주는 가장 강력한 경쟁력입니다.",
+          "reframing_en": "Divergent operational habits are not friction—they represent multifaceted problem-solving capability.",
+          "action_guidance_ko": "분기별로 상호 기여도를 축하하고, 두 사람의 협업 성공 모델을 팀 전체의 베스트 프랙티스로 전파하세요.",
+          "action_guidance_en": "Celebrate shared milestone wins quarterly and codify your collaboration patterns as company-wide best practices.",
+          "scripts": [
+            {
+              "category": "synergy_recognition",
+              "title_ko": "협업 시너지 감사",
+              "title_en": "Collaborative Synergy Validation",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"이번 프로젝트는 두 사람의 강점이 완벽하게 맞아떨어져서 가능했습니다. 다음 목표도 함께하시죠!\"",
+              "dialogue_en": "\"This delivery succeeded because our respective strengths locked together seamlessly. Excited for our next milestone!\""
+            }
+          ],
+          "role_rules_ko": [
+            "동료의 전문성을 공개적으로 인정하고 상호 보완적 팀워크 구축하기"
+          ],
+          "role_rules_en": [
+            "Publicly champion your coworker's domain expertise and foster an empowering partnership."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "일머리가 없다"
+            ],
+            "allowed_themes": [
+              "필살 무기",
+              "블로커 돌파",
+              "페어 오너십"
+            ]
+          }
+        },
+        {
+          "scene_number": 5,
+          "scene_id": "work_scene_5_autonomy",
+          "title_ko": "자율성 보장과 마이크로매니징 방지",
+          "title_en": "Autonomy & Working Boundaries",
+          "primary_lens_id": "work_micromanage_guard",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "과정 간섭 금지 및 마일스톤 결과 확인",
+            "impact_on_b_ko": "비동기 상태 업데이트 및 블로커 즉시 공유"
+          },
+          "headline_ko": "과도한 확인을 없애고 자율성을 극대화하는 비동기 업무 계약",
+          "headline_en": "Anti-micromanagement guardrails: Asynchronous autonomy contracts that foster high trust",
+          "recognition_ko": "잦은 구두 확인이나 실시간 독촉 없이도 정해진 이슈 트래커와 슬랙 스레드를 통해 진행 상황을 자율적으로 투명하게 공유할 때 최고의 몰입이 가능합니다.",
+          "recognition_en": "High-trust collaboration flourishes when continuous verbal check-ins are replaced with transparent, asynchronous progress dashboards.",
+          "translation_ko": "깊은 업무 몰입(Deep Work)을 방해받지 않는 독립적 실행 시간 보장이 번아웃을 막고 산출물의 밀도를 높입니다.",
+          "translation_en": "Guaranteed uninterrupted deep-work blocks protect against context-switching fatigue and maximize cognitive output.",
+          "reframing_ko": "진행 상황을 묻는 것은 불신이 아니라 전체 일정 관리를 위한 불안감 때문입니다. 선제적인 현황 공유가 자율성을 확보해 줍니다.",
+          "reframing_en": "Status inquiries reflect project timeline accountability, not personal distrust; proactive updates guarantee continuous autonomy.",
+          "action_guidance_ko": "일일 스탠드업 대신 비동기 슬랙 봇을 활용하고, 블로커(Blocker)가 발생했을 때만 즉시 핑을 찍는 규칙을 적용하세요.",
+          "action_guidance_en": "Utilize async daily check-ins and agree on immediate escalation protocols only when genuine blockers arise.",
+          "scripts": [
+            {
+              "category": "async_status",
+              "title_ko": "선제적 비동기 현황 공유",
+              "title_en": "Proactive Async Status Update",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"현재 태스크 70% 완료되었고 내일 오후 3시까지 PR 올리겠습니다. 특이 블로커는 없습니다.\"",
+              "dialogue_en": "\"Task is currently at 70%; PR will be ready tomorrow by 3 PM. No blockers currently.\""
+            }
+          ],
+          "role_rules_ko": [
+            "정해진 마일스톤 전에는 불필요한 중간 개입을 자제하고 자율성 보장하기"
+          ],
+          "role_rules_en": [
+            "Refrain from ad-hoc mid-sprint interruptions and respect assigned ownership."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "협업 불가자"
+            ],
+            "allowed_themes": [
+              "비동기 스크럼",
+              "결과 중심",
+              "오너십 위임"
+            ]
+          }
+        },
+        {
+          "scene_number": 6,
+          "scene_id": "work_scene_6_stress",
+          "title_ko": "압박 상황에서의 스트레스 반응 모드",
+          "title_en": "Pressure Mode & Psychological Safety",
+          "primary_lens_id": "work_stress_reaction",
+          "contributing_lens_ids": [],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "로그 분석 및 핫픽스 코드 작성",
+            "impact_on_b_ko": "배포 파이프라인 트리거 및 대외 상황 공유"
+          },
+          "headline_ko": "프로젝트 마감 압박 속 무비난 원칙과 지속 가능한 페이스 유지",
+          "headline_en": "High-pressure resilience: Blameless post-mortem culture and sustainable pacing",
+          "recognition_ko": "릴리즈 직전의 긴급 장애나 고부하 상황에서도 누구의 탓을 하기보다 시스템 개선에 집중하는 무비난(Blameless) 문화가 조직의 회복 탄력성을 지켜줍니다.",
+          "recognition_en": "Under release crunch or incident triage, a blameless culture focused on systemic fixes preserves team cohesion and velocity.",
+          "translation_ko": "스트레스 상황에서 감정의 온도가 높아지는 것을 감지하고, 인시던트 종료 후 즉각적인 심리적 안도감을 제공합니다.",
+          "translation_en": "Recognizing heightened emotional temperature during crunches allows the team to decompress swiftly once stabilized.",
+          "reframing_ko": "장애나 실수는 개인의 무능이 아니라 프로세스 결함의 신호입니다. 이를 함께 고쳐나갈 때 시스템이 견고해집니다.",
+          "reframing_en": "Incidents are signals of process gaps, not personal failures; addressing root causes builds an antifragile workflow.",
+          "action_guidance_ko": "고강도 스프린트 직후에는 반드시 팀 회고와 리프레시 시간을 배정하여 번아웃을 선제적으로 차단하세요.",
+          "action_guidance_en": "Schedule mandatory retrospectives and recovery buffers immediately following high-intensity product releases.",
+          "scripts": [
+            {
+              "category": "blameless_postmortem",
+              "title_ko": "무비난 원인 분석 회고",
+              "title_en": "Blameless Root-Cause Retrospective",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"장애 대응 정말 고생 많으셨습니다. 이번 이슈를 계기로 재발 방지 모니터링 룰을 추가하시죠.\"",
+              "dialogue_en": "\"Incredible effort during incident triage. Let's use this learning to implement automated regression safeguards.\""
+            }
+          ],
+          "role_rules_ko": [
+            "인시던트 발생 시 원인 분석에 집중하고 개인에 대한 책임 전가 금지"
+          ],
+          "role_rules_en": [
+            "Focus entirely on root cause analysis and prohibit personal blame during incident reviews."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "조직 부적응자"
+            ],
+            "allowed_themes": [
+              "블레임리스 포스트모텀",
+              "롤백 우선",
+              "온콜 2인1조"
+            ]
+          }
+        },
+        {
+          "scene_number": 7,
+          "scene_id": "work_scene_7_feedback_recovery",
+          "title_ko": "피드백 쿠션과 지속 가능한 번아웃 회복",
+          "title_en": "Feedback Cushion & Burnout Recovery",
+          "primary_lens_id": "work_feedback_cushion",
+          "contributing_lens_ids": [
+            "work_burnout_recovery"
+          ],
+          "confidence": "high",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "질문형 리뷰(PBI) 제안 및 칭찬 선행",
+            "impact_on_b_ko": "기술적 근거 제시 및 신속한 반영"
+          },
+          "headline_ko": "인격적 비판을 배제하고 과업 성과에 집중하는 객관적 피드백과 회복",
+          "headline_en": "Constructive feedback safety & sustainable burnout recovery",
+          "recognition_ko": "결과물에 대한 리뷰나 개선점 전달 시, 감정적 소모 없이 데이터와 구체적 행동(SBI)에 기반한 피드백이 오갈 때 심리적 안전감이 단단해집니다.",
+          "recognition_en": "Critiques delivered through objective data and behavioral observation (Situation-Behavior-Impact) build deep professional psychological safety.",
+          "translation_ko": "직설적 화법이 의도치 않게 상대의 전문성을 부정하는 느낌을 주지 않도록, 해결책 중심의 제안형 화법이 관계를 보호합니다.",
+          "translation_en": "Constructive phrasing focused on outcomes prevents direct feedback from being misconstrued as personal competence doubt.",
+          "reframing_ko": "날카로운 피드백은 상대방의 성장을 바라는 높은 기대치에서 나옵니다. 맥락(Why)을 먼저 공유하면 오해 없이 수용됩니다.",
+          "reframing_en": "Direct feedback stems from high shared standards; framing the broader context ('Why') first ensures seamless receptivity.",
+          "action_guidance_ko": "피드백을 줄 때는 '상황(Situation) - 관찰된 현상(Behavior) - 비즈니스 영향(Impact)' 순서로 전달하세요.",
+          "action_guidance_en": "Structure feedback using Situation-Behavior-Impact to keep discussions anchored in shared business goals.",
+          "scripts": [
+            {
+              "category": "sbi_feedback",
+              "title_ko": "객관적 개선 피드백",
+              "title_en": "Objective Improvement Feedback",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"이 부분은 유저 이탈률을 낮추기 위해 이런 방식으로 대안을 테스트해 보면 어떨까요?\"",
+              "dialogue_en": "\"To mitigate user drop-off here, what do you think about A/B testing this alternative approach?\""
+            }
+          ],
+          "role_rules_ko": [
+            "피드백은 산출물에 한정하고 칭찬과 개선점을 샌드위치 구조로 전달하기"
+          ],
+          "role_rules_en": [
+            "Direct all critique solely at deliverables and balance improvements with recognized wins."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "악덕 상사",
+              "탁상공론자"
+            ],
+            "allowed_themes": [
+              "쿠션어",
+              "블레임리스",
+              "데이터 기반 리뷰",
+              "태스크 백업",
+              "지속 가능한 롱런",
+              "따뜻한 배려"
+            ]
+          }
+        }
+      ],
+      "action_playbook": {
+        "summary_ko": "권한의 경계를 사전에 명확히 합의하고, 객관적이고 비동기적인 업무 방식을 정착시킬 때 최고의 성과가 창출됩니다.",
+        "summary_en": "Establish explicit domain ownership early and anchor communication in objective, asynchronous workflows.",
+        "golden_rules_ko": [
+          "영역별 최종 의사결정자(DRI)를 명문화하고 권한을 전적으로 위임한다.",
+          "피드백은 산출물과 구체적 행동에 한정하여 감정 소모를 차단한다.",
+          "인시던트 발생 시 개인을 탓하지 않고 프로세스 개선에 집중한다."
+        ],
+        "golden_rules_en": [
+          "Codify the DRI per domain and empower full autonomous execution.",
+          "Anchor all critiques strictly in deliverables using SBI principles.",
+          "Maintain a blameless post-mortem posture focused on process refinement."
+        ]
+      },
+      "metadata": {
+        "total_scenes": 7,
+        "active_scenes_count": 7,
+        "abstained_scenes_count": 0,
+        "prohibited_claims_count": 7
+      }
+    },
+    "section_view_model": {
+      "domain": "work",
+      "total_lenses": 8,
+      "active_lenses": 8,
+      "abstained_lenses": 0,
+      "report_cards": [
+        {
+          "lens_id": "work_leadership_split",
+          "domain": "work",
+          "question_ko": "프로젝트를 리드할 때 대외적 방향 결정과 내부 실행 조율은 어떻게 나눌까?",
+          "headline_ko": "Alex와(과) Jordan의 전략적 비전과 치밀한 운영이 결합된 원팀 리더십",
+          "narrative_ko": "Alex와(과) Jordan는 대외 발표·실무 검수 성향이 비슷하여 유연하게 호흡을 맞춥니다. 체계적인 조직 관리, 공정한 평가와 원칙 준수, 안정된 프로세스 수립",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "b_to_a",
+          "primary_evidence": [
+            {
+              "kind": "stem_combine",
+              "description": "일주(신사)×일주(병신) 병신합수"
+            },
+            {
+              "kind": "stem_combine",
+              "description": "시주(신묘)×일주(병신) 병신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "꼰대 관리자"
+          ]
+        },
+        {
+          "lens_id": "work_task_execution",
+          "domain": "work",
+          "question_ko": "실제 업무를 쳐낼 때 마일스톤 관리와 마감 기한 핸드오프는 어떻게 맞출까?",
+          "headline_ko": "Alex와(과) Jordan의 마일스톤 관리와 치밀한 스프린트 완주 호흡",
+          "narrative_ko": "삼합과 육합의 결합력으로 인해 기획부터 QA까지 병목 현상 없이 부드러운 핸드오프가 일어납니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "일주(신사)×일주(병신) 사신합수"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(무진)×시주(정유) 진유합금"
+            }
+          ],
+          "prohibited_claims": [
+            "발전 없는 꼰대"
+          ]
+        },
+        {
+          "lens_id": "work_feedback_cushion",
+          "domain": "work",
+          "question_ko": "코드 리뷰나 업무 피드백을 주고받을 때 감정 상하지 않는 쿠션 화법은?",
+          "headline_ko": "Alex와(과) Jordan의 인신공격 배제 및 데이터 기반 객관적 피드백 프로토콜",
+          "narrative_ko": "천간충의 언어적 직설성으로 인해 '사람'이 아닌 '코드/데이터'에 초점을 맞추는 쿠션어가 필수적입니다. 팀원들을 한계까지 몰아붙이는 하드워킹 강요와 탑다운 독단",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "stem_clash",
+              "description": "일주(신사)×년주(을해) stem_clash"
+            },
+            {
+              "kind": "stem_clash",
+              "description": "월주(계해)×시주(정유) stem_clash"
+            },
+            {
+              "kind": "stem_clash",
+              "description": "시주(신묘)×년주(을해) stem_clash"
+            }
+          ],
+          "prohibited_claims": [
+            "악덕 상사"
+          ]
+        },
+        {
+          "lens_id": "work_micromanage_guard",
+          "domain": "work",
+          "question_ko": "지나친 간섭이나 불신 없이 각자의 오너십과 자율성을 보장하는 경계선은?",
+          "headline_ko": "Alex와(과) Jordan의 과정 간섭 배제와 비동기 결과 중심 스크럼 체계",
+          "narrative_ko": "원진/귀문의 민감성으로 인해 수시 구두 확인보다 슬랙/지라를 통한 비동기 상태 공유가 훨씬 높은 몰입도를 만듭니다. 남들이 보지 못하는 사각지대 발견, 특수 기술/R&D, 독창적 솔루션",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "wonjin",
+              "description": "시주(신묘)×일주(병신) 귀문"
+            },
+            {
+              "kind": "wonjin",
+              "description": "일주(신사)×일주(병신) 원진"
+            },
+            {
+              "kind": "wonjin",
+              "description": "월주(계해)×월주(임오) 원진"
+            },
+            {
+              "kind": "wonjin",
+              "description": "년주(무진)×시주(정유) 원진"
+            },
+            {
+              "kind": "wonjin",
+              "description": "년주(무진)×년주(을해) 귀문"
+            }
+          ],
+          "prohibited_claims": [
+            "협업 불가자"
+          ]
+        },
+        {
+          "lens_id": "work_stress_reaction",
+          "domain": "work",
+          "question_ko": "서버 장애, 배포 오류 등 긴급 장애 상황에서 패닉 없이 대응하는 룰은?",
+          "headline_ko": "Alex와(과) Jordan의 긴급 장애 시 범인 찾기 금지 및 롤백 우선 원칙",
+          "narrative_ko": "천간충의 압박 상황에서는 '누구 탓인가'를 따지기보다 즉각 서비스 정상화에만 집중하는 룰이 필수입니다. 피드백 시 쿠션어 부재, 상사나 규정에 대한 노골적 반발",
+          "confidence": "high",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "stem_clash",
+              "description": "일주(신사)×년주(을해) stem_clash"
+            },
+            {
+              "kind": "stem_clash",
+              "description": "월주(계해)×시주(정유) stem_clash"
+            },
+            {
+              "kind": "stem_clash",
+              "description": "시주(신묘)×년주(을해) stem_clash"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "일주(신사)×년주(을해) 사해충"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "월주(계해)×일주(병신) 신해해"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "월주(계해)×년주(을해) 해해 자형"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "시주(신묘)×월주(임오) 오묘파"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "시주(신묘)×시주(정유) 묘유충"
+            }
+          ],
+          "prohibited_claims": [
+            "조직 부적응자"
+          ]
+        },
+        {
+          "lens_id": "work_decision_style",
+          "domain": "work",
+          "question_ko": "데이터 기반 분석과 직관적 빠른 실행 사이의 의사결정 방식 충돌은?",
+          "headline_ko": "Alex와(과) Jordan의 가설 검증의 속도와 데이터 분석의 정밀함이 균형을 잡는 의사결정",
+          "narrative_ko": "오행 상생의 흐름으로 한쪽이 신속하게 MVP를 만들어 실험하고 다른 쪽이 지표를 분석해 방향을 최적화합니다. 오차 없는 회계/정산, 철저한 공정 관리, 안정적인 운영 리듬",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "b_to_a",
+          "primary_evidence": [
+            {
+              "kind": "element_flow",
+              "description": "오행 상생 흐름: overcomes_b_to_a"
+            }
+          ],
+          "prohibited_claims": [
+            "발전 없는 꼰대"
+          ]
+        },
+        {
+          "lens_id": "work_special_weapon",
+          "domain": "work",
+          "question_ko": "둘이 뭉쳤을 때 어떤 프로젝트나 과제도 뚫어내는 둘만의 필살 무기는?",
+          "headline_ko": "Alex와(과) Jordan의 기획력과 실행력이 결합되어 불가능한 납기도 뚫어내는 전사적 시너지",
+          "narrative_ko": "삼합/육합의 강력한 결합력은 기술적 난제나 촉박한 일정 앞에서도 완벽한 분업으로 돌파구를 만들어냅니다. 탁월한 전문성과 장인정신, 꾸준한 제품/서비스 퀄리티 향상",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "일주(신사)×일주(병신) 사신합수"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(무진)×시주(정유) 진유합금"
+            }
+          ],
+          "prohibited_claims": [
+            "일머리가 없다"
+          ]
+        },
+        {
+          "lens_id": "work_burnout_recovery",
+          "domain": "work",
+          "question_ko": "업무 과부하나 번아웃이 왔을 때 서로를 지치지 않게 지탱해 주는 회복법은?",
+          "headline_ko": "Alex와(과) Jordan의 동료의 과부하를 먼저 알아채고 업무를 백업해 주는 성숙한 동료애",
+          "narrative_ko": "지지 합의 끈끈함으로 인해 스프린트 막바지에 동료의 지친 기색을 먼저 알아채고 티켓을 분담해 줍니다. 신입 멘토링, 조직의 지식 자산화, 문서화와 안정적인 교육 체계 구축",
+          "confidence": "high",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "b_to_a",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "일주(신사)×일주(병신) 사신합수"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(무진)×시주(정유) 진유합금"
+            }
+          ],
+          "prohibited_claims": [
+            "탁상공론자"
+          ]
+        }
+      ],
+      "story_planner_input": {
+        "schema_version": "domain_story_planner_v1",
+        "domain": "work",
+        "parties": {
+          "a_name": "Alex",
+          "b_name": "Jordan"
+        },
+        "overall_confidence": "medium",
+        "birth_time_unknown_a": false,
+        "birth_time_unknown_b": false,
+        "chapters": [],
+        "grounding_summary": {
+          "total_lenses_evaluated": 8,
+          "high_confidence_count": 4,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "standard",
+          "primary_synergy_lens_id": "work_burnout_recovery"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "원팀 리더십",
+            "R&R 명시",
+            "전략과 실행",
+            "스프린트 완주",
+            "병목 제로",
+            "치밀한 핸드오프",
+            "쿠션어",
+            "블레임리스",
+            "데이터 기반 리뷰",
+            "비동기 스크럼",
+            "결과 중심",
+            "오너십 위임",
+            "블레임리스 포스트모텀",
+            "롤백 우선",
+            "온콜 2인1조",
+            "A/B 테스트",
+            "가설과 데이터",
+            "신속한 프로토타입",
+            "필살 무기",
+            "블로커 돌파",
+            "페어 오너십",
+            "태스크 백업",
+            "지속 가능한 롱런",
+            "따뜻한 배려"
+          ],
+          "strict_prohibitions": [
+            "꼰대 관리자",
+            "발전 없는 꼰대",
+            "악덕 상사",
+            "협업 불가자",
+            "조직 부적응자",
+            "일머리가 없다",
+            "탁상공론자"
+          ]
+        }
+      }
+    }
+  }
+}

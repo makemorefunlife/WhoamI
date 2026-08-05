@@ -1,0 +1,214 @@
+{
+  "domain": "work",
+  "caseId": "reversed_ab",
+  "locale": "en-US",
+  "case_meta": {
+    "label_ko": "A/B 반전",
+    "label_en": "Reversed A/B",
+    "birth": {
+      "birthA": "1992-03-08",
+      "birthB": "1990-05-15",
+      "timeA": "09:00",
+      "timeB": "14:30",
+      "nicknameA": "Jordan",
+      "nicknameB": "Alex",
+      "roles": {
+        "roleA": "mother",
+        "roleB": "child"
+      },
+      "parentType": "mother"
+    },
+    "psych": "balanced"
+  },
+  "current_summary": {
+    "headline": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+    "summary_line": "Work fit 80% · Collab synergy 85% · Office risk 25%",
+    "one_liner": "Independent Driver and Independent Driver — a golden combo where the gears mesh perfectly. Your core instincts naturally feed each other.",
+    "grade": "B",
+    "grade_reason": "Partnership grade B — Work fit 80% · Collab synergy 85% · Office risk 25%",
+    "canonical_projection_keys": [
+      "comparison_table"
+    ],
+    "section_keys": [
+      "section_dna",
+      "section_snapshot",
+      "section_mix_fit",
+      "section_respect",
+      "section_roles",
+      "section_upset",
+      "section_ideal_roles",
+      "section_warning",
+      "section_compare_table"
+    ]
+  },
+  "current_sections": [
+    {
+      "id": "snapshot",
+      "type": "snapshot",
+      "title": "Partnership at a Glance"
+    },
+    {
+      "id": "compare_table",
+      "type": "compare_table",
+      "title": "Side-by-Side — 6 Collaboration Axes"
+    },
+    {
+      "id": "psych_radar",
+      "type": "psych_radar",
+      "title": "11-Axis Compatibility Radar"
+    },
+    {
+      "id": "comparison",
+      "type": "comparison",
+      "title": "Work Styles Compared"
+    },
+    {
+      "id": "role_matrix",
+      "type": "role_matrix",
+      "title": "Roles & How You Each Contribute"
+    },
+    {
+      "id": "relationship_loop",
+      "type": "relationship_loop",
+      "title": "The Loop You Fall Into at Work"
+    },
+    {
+      "id": "warning",
+      "type": "warning",
+      "title": "Collaboration Safeguards"
+    }
+  ],
+  "v1_inventory": [
+    {
+      "asset_id": "work_v1_leadership_canonical",
+      "target_lens_id": "work_leadership_split",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "업무 협업에서 프로젝트 리딩과 실무 조율의 주도권은 어떻게 나뉠까?"
+    },
+    {
+      "asset_id": "work_v1_office_language",
+      "target_lens_id": "work_feedback_cushion",
+      "status": "ADAPT_INTO_CANONICAL_MEANING",
+      "user_question_answered_ko": "상대방의 기분을 상하게 하지 않고 핵심 피드백을 전달하는 쿠션어는?"
+    },
+    {
+      "asset_id": "work_v1_ten_god_complement",
+      "target_lens_id": "work_special_weapon",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "서로의 다른 기질이 어떻게 조직 내에서 상호보완적 무기로 작동할까?"
+    }
+  ],
+  "v1_projection_keys": [
+    "comparison_table"
+  ],
+  "dev_evidence": {
+    "packet_count": 9,
+    "packet_ids": [
+      "pce_002",
+      "pce_003",
+      "pce_007",
+      "pce_004",
+      "pce_005",
+      "pce_006",
+      "pce_008",
+      "pce_001",
+      "pce_009"
+    ],
+    "abstained_lenses": 0,
+    "active_lenses": 8
+  },
+  "dev_lenses": [
+    {
+      "id": "work_leadership_split",
+      "headline": "Jordan와(과) Alex의 전략적 비전과 치밀한 운영이 결합된 원팀 리더십",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "work_task_execution",
+      "headline": "Jordan와(과) Alex의 마일스톤 관리와 치밀한 스프린트 완주 호흡",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "work_feedback_cushion",
+      "headline": "Jordan와(과) Alex의 PR 템플릿과 정형화된 루브릭 기반의 안전한 리뷰",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "work_micromanage_guard",
+      "headline": "Jordan와(과) Alex의 과정 간섭 배제와 비동기 결과 중심 스크럼 체계",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "work_stress_reaction",
+      "headline": "Jordan와(과) Alex의 상황 전파와 핫픽스 롤백의 즉각적 2인 1조 분담",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "work_decision_style",
+      "headline": "Jordan와(과) Alex의 가설 검증의 속도와 데이터 분석의 정밀함이 균형을 잡는 의사결정",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "work_special_weapon",
+      "headline": "Jordan와(과) Alex의 기획력과 실행력이 결합되어 불가능한 납기도 뚫어내는 전사적 시너지",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "work_burnout_recovery",
+      "headline": "Jordan와(과) Alex의 동료의 과부하를 먼저 알아채고 업무를 백업해 주는 성숙한 동료애",
+      "abstain": false,
+      "confidence": "high"
+    }
+  ],
+  "narrative_scenes": [
+    {
+      "n": 1,
+      "id": "work_scene_1_leadership",
+      "title_ko": "리더십과 의사결정 권한 분담",
+      "title_en": "Leadership & Authority Split"
+    },
+    {
+      "n": 2,
+      "id": "work_scene_2_execution",
+      "title_ko": "업무 추진 템포와 납기 실행력",
+      "title_en": "Task Execution & Delivery Cadence"
+    },
+    {
+      "n": 3,
+      "id": "work_scene_3_decision",
+      "title_ko": "판단의 기준과 리스크 대응 스타일",
+      "title_en": "Decision Heuristics & Risk Response"
+    },
+    {
+      "n": 4,
+      "id": "work_scene_4_synergy",
+      "title_ko": "직무 보완과 십성 스페셜 웨폰",
+      "title_en": "Cross-Functional Special Weapon Synergy"
+    },
+    {
+      "n": 5,
+      "id": "work_scene_5_autonomy",
+      "title_ko": "자율성 보장과 마이크로매니징 방지",
+      "title_en": "Autonomy & Working Boundaries"
+    },
+    {
+      "n": 6,
+      "id": "work_scene_6_stress",
+      "title_ko": "압박 상황에서의 스트레스 반응 모드",
+      "title_en": "Pressure Mode & Psychological Safety"
+    },
+    {
+      "n": 7,
+      "id": "work_scene_7_feedback_recovery",
+      "title_ko": "피드백 쿠션과 지속 가능한 번아웃 회복",
+      "title_en": "Feedback Cushion & Burnout Recovery"
+    }
+  ]
+}

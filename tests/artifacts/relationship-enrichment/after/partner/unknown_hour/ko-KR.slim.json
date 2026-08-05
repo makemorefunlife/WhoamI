@@ -1,0 +1,265 @@
+{
+  "domain": "partner",
+  "caseId": "unknown_hour",
+  "locale": "ko-KR",
+  "case_meta": {
+    "label_ko": "시간 모름",
+    "label_en": "Unknown hour",
+    "birth": {
+      "birthA": "1990-05-15",
+      "birthB": "1992-03-08",
+      "timeA": null,
+      "timeB": null,
+      "nicknameA": "Alex",
+      "nicknameB": "Jordan",
+      "roles": {
+        "roleA": "child",
+        "roleB": "mother"
+      },
+      "parentType": "mother"
+    },
+    "psych": "balanced"
+  },
+  "current_summary": {
+    "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+    "summary_line": "🔥 85% · 🧩 50% · ⚡ 48%",
+    "one_liner": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+    "grade": "D",
+    "grade_reason": "동거·결혼 등급 D — 로맨틱 핏 85% · 라이프 시너지 50% · 홈 리스크 48%",
+    "canonical_projection_keys": [
+      "comparison_table",
+      "operating_cfo"
+    ],
+    "section_keys": [
+      "section_dna",
+      "section_origin_story",
+      "section_snapshot",
+      "section_weather_forecast",
+      "section_bedroom",
+      "section_money_chores",
+      "section_family_boundary",
+      "section_parenting",
+      "section_privacy",
+      "section_upset",
+      "section_warning",
+      "section_compare_table"
+    ]
+  },
+  "current_sections": [
+    {
+      "id": "origin_story",
+      "type": "origin_story",
+      "title": "💕 왜 우리였을까"
+    },
+    {
+      "id": "household_snapshot",
+      "type": "household_snapshot",
+      "title": "🧬 홈 라이프 DNA — 한 지붕 아래, 우린 각각 어떤 사람일까?"
+    },
+    {
+      "id": "compare_table",
+      "type": "compare_table",
+      "title": "📊 한눈에 비교 — 6가지 살림 축"
+    },
+    {
+      "id": "psych_radar",
+      "type": "psych_radar",
+      "title": "🎯 11축 궁합 레이더"
+    },
+    {
+      "id": "money_chores",
+      "type": "money_chores",
+      "title": "💸 자산 관리 주도권 & 가사 분담"
+    },
+    {
+      "id": "bedroom",
+      "type": "bedroom",
+      "title": "🔞 침실 케미스트리 & 애착 유형"
+    },
+    {
+      "id": "home_dna",
+      "type": "home_dna",
+      "title": "🧬 홈 라이프 DNA — 한 지붕 아래, 우린 각각 어떤 사람일까?"
+    },
+    {
+      "id": "parenting",
+      "type": "parenting",
+      "title": "👶 육아·교육 가치관"
+    },
+    {
+      "id": "family_boundary",
+      "type": "family_boundary",
+      "title": "👪 원가족과의 바운더리 & 독립성"
+    },
+    {
+      "id": "weather_forecast",
+      "type": "weather_forecast",
+      "title": "⏳ 향후 3년 홈 리스크 기상도"
+    },
+    {
+      "id": "privacy",
+      "type": "privacy",
+      "title": "🤝 사생활 존중 가이드"
+    },
+    {
+      "id": "upset",
+      "type": "upset",
+      "title": "😤 서운함에 반응하는 방식"
+    },
+    {
+      "id": "warning",
+      "type": "warning",
+      "title": "⚠️ 홈 워닝 & 부부 싸움 해독제"
+    }
+  ],
+  "v1_inventory": [
+    {
+      "asset_id": "partner_v1_cfo_canonical",
+      "target_lens_id": "partner_operating_cfo",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "우리 집 재정과 지출 관리는 누가 더 적합하고 어떻게 합의해야 할까?"
+    },
+    {
+      "asset_id": "partner_v1_bedroom_profile",
+      "target_lens_id": "partner_bedroom_intimacy",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "우리 둘의 침실 온도와 스킨십/수면 리듬은 어떻게 조화시킬까?"
+    },
+    {
+      "asset_id": "partner_v1_parenting_style",
+      "target_lens_id": "partner_parenting_alignment",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "자녀 양육 시 부모로서의 역할 분담과 훈육 방식의 차이는 어떻게 조율할까?"
+    },
+    {
+      "asset_id": "partner_v1_cohabitation_killer",
+      "target_lens_id": "partner_household_chores",
+      "status": "PRESERVED_AS_IS",
+      "user_question_answered_ko": "동거 및 결혼 생활에서 가장 먼저 부딪힐 현실적 생활 문제는 무엇일까?"
+    }
+  ],
+  "v1_projection_keys": [
+    "comparison_table",
+    "operating_cfo"
+  ],
+  "dev_evidence": {
+    "packet_count": 7,
+    "packet_ids": [
+      "pce_002",
+      "pce_003",
+      "pce_004",
+      "pce_005",
+      "pce_006",
+      "pce_001",
+      "pce_007"
+    ],
+    "abstained_lenses": 0,
+    "active_lenses": 10
+  },
+  "dev_lenses": [
+    {
+      "id": "partner_core_bond",
+      "headline": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_operating_cfo",
+      "headline": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_household_chores",
+      "headline": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_private_sanctuary",
+      "headline": "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_bedroom_intimacy",
+      "headline": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_conflict_trigger",
+      "headline": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_tempo_rhythm",
+      "headline": "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_crisis_protector",
+      "headline": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_parenting_alignment",
+      "headline": "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십",
+      "abstain": false,
+      "confidence": "medium"
+    },
+    {
+      "id": "partner_longterm_vision",
+      "headline": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+      "abstain": false,
+      "confidence": "medium"
+    }
+  ],
+  "narrative_scenes": [
+    {
+      "n": 1,
+      "id": "partner_scene_1_foundational_bond",
+      "title_ko": "본질적 결속과 끌림의 중력",
+      "title_en": "Foundational Bond & Chemistry Gravity"
+    },
+    {
+      "n": 2,
+      "id": "partner_scene_2_cfo_finances",
+      "title_ko": "재정 거버넌스와 신뢰의 CFO",
+      "title_en": "Financial CFO Governance & Resource Trust"
+    },
+    {
+      "n": 3,
+      "id": "partner_scene_3_home_living",
+      "title_ko": "한 지붕 생활과 개인 동굴의 조화",
+      "title_en": "Household Chores & Private Sanctuary"
+    },
+    {
+      "n": 4,
+      "id": "partner_scene_4_intimate_resonance",
+      "title_ko": "친밀감의 온도와 베드룸 리듬",
+      "title_en": "Intimate Thermal Resonance & Bedroom Calibration"
+    },
+    {
+      "n": 5,
+      "id": "partner_scene_5_conflict_protocol",
+      "title_ko": "다툼의 뇌관 해체와 쿨링 프로토콜",
+      "title_en": "Conflict Trigger & Cooling Pause"
+    },
+    {
+      "n": 6,
+      "id": "partner_scene_6_crisis_shield",
+      "title_ko": "삶의 폭풍 속을 지키는 든든한 방패",
+      "title_en": "Crisis Protector & Life Shield"
+    },
+    {
+      "n": 7,
+      "id": "partner_scene_7_future_horizons",
+      "title_ko": "자녀 양육과 함께 그리는 미래 비전",
+      "title_en": "Parenting Alignment & Long-Term Horizons"
+    }
+  ]
+}

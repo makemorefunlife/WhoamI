@@ -1,0 +1,254 @@
+{
+  "domain": "family",
+  "caseId": "reversed_ab",
+  "locale": "en-US",
+  "case_meta": {
+    "label_ko": "A/B 반전",
+    "label_en": "Reversed A/B",
+    "birth": {
+      "birthA": "1992-03-08",
+      "birthB": "1990-05-15",
+      "timeA": "09:00",
+      "timeB": "14:30",
+      "nicknameA": "Jordan",
+      "nicknameB": "Alex",
+      "roles": {
+        "roleA": "mother",
+        "roleB": "child"
+      },
+      "parentType": "mother"
+    },
+    "psych": "balanced"
+  },
+  "current_summary": {
+    "headline": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+    "summary_line": "🔥 30% · 🧩 100% · ⚡ 85%",
+    "one_liner": "Alex & Jordan — a precious hedgehog's-dilemma relationship: loving, but needing one step of distance",
+    "grade": "D",
+    "grade_reason": "Family (child–Mom) grade D — Emotional bond 30% · Growth synergy 100% · Discipline friction 85%",
+    "canonical_projection_keys": [
+      "comparison_table"
+    ],
+    "section_keys": [
+      "section_roles",
+      "section_child_dna",
+      "section_snapshot",
+      "section_destiny",
+      "section_growth_tunnel",
+      "section_filial_reward",
+      "section_de_escalation",
+      "section_compare_table",
+      "section_household_roles",
+      "section_family_role",
+      "section_relationship_index",
+      "section_talent",
+      "section_sos_script",
+      "section_filial_frequency"
+    ]
+  },
+  "current_sections": [
+    {
+      "id": "snapshot",
+      "type": "snapshot",
+      "title": ""
+    },
+    {
+      "id": "relationship_index",
+      "type": "relationship_index",
+      "title": "Discipline Friction Index"
+    },
+    {
+      "id": "compare_table",
+      "type": "compare_table",
+      "title": "📊 At a Glance — 4 Family Axes"
+    },
+    {
+      "id": "household_roles",
+      "type": "household_roles",
+      "title": "🏠 Your roles at home"
+    },
+    {
+      "id": "psych_radar",
+      "type": "psych_radar",
+      "title": "🎯 11-Axis Compatibility Radar"
+    },
+    {
+      "id": "child_dna",
+      "type": "child_dna",
+      "title": "🧬 Child DNA profile"
+    },
+    {
+      "id": "talent",
+      "type": "talent",
+      "title": "Study Type & Vessel for Success"
+    },
+    {
+      "id": "growth_tunnel",
+      "type": "growth_tunnel",
+      "title": "⚠️ This year's growth challenge"
+    },
+    {
+      "id": "family_role",
+      "type": "family_role",
+      "title": "🎭 What role your child carries at home"
+    },
+    {
+      "id": "destiny",
+      "type": "destiny",
+      "title": "🤝 Your destined score"
+    },
+    {
+      "id": "filial_reward",
+      "type": "filial_reward",
+      "title": "🎯 Future family reward"
+    },
+    {
+      "id": "sos_script",
+      "type": "sos_script",
+      "title": "Parent's Crisis SOS Rule"
+    },
+    {
+      "id": "de_escalation",
+      "type": "de_escalation",
+      "title": "⚡ De-escalation cheat sheet"
+    },
+    {
+      "id": "prescription",
+      "type": "prescription",
+      "title": "💊 Real-Life Action Prescription"
+    }
+  ],
+  "v1_inventory": [
+    {
+      "asset_id": "family_v1_household_roles",
+      "target_lens_id": "family_household_roles",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "한집에서 살아갈 때 부모와 자녀의 생활 역할과 권한 분담은 어떻게 이뤄질까?"
+    },
+    {
+      "asset_id": "family_v1_talent_align",
+      "target_lens_id": "family_hidden_needs",
+      "status": "ADAPT_INTO_DOMAIN_LENS",
+      "user_question_answered_ko": "자녀가 가진 숨은 재능과 본질적 기질을 어떻게 발현시켜 줄 수 있을까?"
+    },
+    {
+      "asset_id": "family_v1_sos_script",
+      "target_lens_id": "family_crisis_recovery",
+      "status": "ADAPT_INTO_CANONICAL_MEANING",
+      "user_question_answered_ko": "심각한 감정 대립이나 훈육 마찰 후 어떻게 안전하게 화해할까?"
+    }
+  ],
+  "v1_projection_keys": [
+    "comparison_table"
+  ],
+  "dev_evidence": {
+    "packet_count": 9,
+    "packet_ids": [
+      "pce_002",
+      "pce_003",
+      "pce_007",
+      "pce_004",
+      "pce_005",
+      "pce_006",
+      "pce_008",
+      "pce_001",
+      "pce_009"
+    ],
+    "abstained_lenses": 0,
+    "active_lenses": 8
+  },
+  "dev_lenses": [
+    {
+      "id": "family_core_dynamic",
+      "headline": "Jordan와(과) Alex의 천간합 기반 깊은 정서적 유대와 신뢰 안전기지",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_discipline_friction",
+      "headline": "Jordan와(과) Alex의 감정 격화 시 물리적 쿨링 스페이스 확보",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_emotional_distance",
+      "headline": "Alex의 사적 성역(동굴) 보장과 Jordan의 한 걸음 물러선 신뢰 지원",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_hidden_needs",
+      "headline": "Alex이(가) 갈망하는 Jordan의 조건 없는 존재 가치 인정",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_praise_trigger",
+      "headline": "Jordan의 디테일한 노력 과정 맞춤형 칭찬과 Alex의 성취 동기 폭발",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_household_roles",
+      "headline": "Jordan와(과) Alex의 자발적 역할 분담과 투명한 경제 관념 교육 룰",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_safe_boundary",
+      "headline": "Jordan의 절대적 비난 금지 원칙과 Alex의 감정 폭발 안전 브레이크",
+      "abstain": false,
+      "confidence": "high"
+    },
+    {
+      "id": "family_crisis_recovery",
+      "headline": "Jordan의 따뜻한 간식 노크와 Alex의 마음을 여는 골든타임 회복 루틴",
+      "abstain": false,
+      "confidence": "high"
+    }
+  ],
+  "narrative_scenes": [
+    {
+      "n": 1,
+      "id": "family_scene_1_core_dynamic",
+      "title_ko": "가족의 기본 온도와 애착 역동",
+      "title_en": "Core Attachment Climate"
+    },
+    {
+      "n": 2,
+      "id": "family_scene_2_distance",
+      "title_ko": "서로가 숨 쉴 수 있는 편안한 거리감",
+      "title_en": "Emotional Proximity & Sanctuary Space"
+    },
+    {
+      "n": 3,
+      "id": "family_scene_3_hidden_needs",
+      "title_ko": "말하지 않아도 바라는 인정과 속마음",
+      "title_en": "Hidden Needs & Validation"
+    },
+    {
+      "n": 4,
+      "id": "family_scene_4_praise",
+      "title_ko": "마음에 닿는 진짜 칭찬의 언어",
+      "title_en": "Praise Language & Affirmation Trigger"
+    },
+    {
+      "n": 5,
+      "id": "family_scene_5_household_roles",
+      "title_ko": "집안일과 생활 규칙의 유연한 조화",
+      "title_en": "Household Order & Daily Cooperation"
+    },
+    {
+      "n": 6,
+      "id": "family_scene_6_discipline_boundary",
+      "title_ko": "상처 주지 않는 훈육과 안전한 경계",
+      "title_en": "Discipline Cushion & Healthy Boundaries"
+    },
+    {
+      "n": 7,
+      "id": "family_scene_7_crisis_recovery",
+      "title_ko": "갈등 후 마음을 여는 회복의 문",
+      "title_en": "Family Crisis Recovery & Reconciliation"
+    }
+  ]
+}
