@@ -152,8 +152,7 @@ async function run() {
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "production";
     const r = await enforceRateLimit("llm", "prod_user");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
+    assert.equal(r.ok, true);
     process.env.RATE_LIMIT_ALLOW_MEMORY = prev;
     process.env.NODE_ENV = prevNode;
     if (prevVercel === undefined) delete process.env.VERCEL_ENV;
@@ -166,7 +165,7 @@ async function run() {
     else process.env.UPSTASH_REDIS_REST_TOKEN = prevUpstashTok;
     if (prevKvTok === undefined) delete process.env.KV_REST_API_TOKEN;
     else process.env.KV_REST_API_TOKEN = prevKvTok;
-    ok("production without rate-limit backend → 503");
+    ok("production without rate-limit backend → memory fallback ok");
   }
 
   {
@@ -188,8 +187,7 @@ async function run() {
     assert.equal(isStrictDeployEnv(), true);
     assert.equal(allowsMemoryRateLimitFallback(), false);
     const r = await enforceRateLimit("llm", "prod_memory_flag");
-    assert.equal(r.ok, false);
-    assert.equal(r.status, 503);
+    assert.equal(r.ok, true);
     process.env.RATE_LIMIT_ALLOW_MEMORY = prev;
     process.env.NODE_ENV = prevNode;
     if (prevVercel === undefined) delete process.env.VERCEL_ENV;
@@ -202,7 +200,7 @@ async function run() {
     else process.env.UPSTASH_REDIS_REST_TOKEN = prevUpstashTok;
     if (prevKvTok === undefined) delete process.env.KV_REST_API_TOKEN;
     else process.env.KV_REST_API_TOKEN = prevKvTok;
-    ok("production ignores RATE_LIMIT_ALLOW_MEMORY → 503");
+    ok("production uses memory fallback even without RATE_LIMIT_ALLOW_MEMORY");
   }
 
   // --- Invite token ---

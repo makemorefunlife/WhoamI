@@ -118,6 +118,16 @@ export default function ManualRelationshipForm({
 
   const canSubmit = nameOk && dateOk && timeOk && placeOk && surveyOk;
 
+  const submitBlockers = useMemo(() => {
+    const blockers: string[] = [];
+    if (!nameOk) blockers.push("name");
+    if (!dateOk) blockers.push("birth_date");
+    if (!timeOk) blockers.push("birth_time");
+    if (!placeOk) blockers.push("birth_place");
+    if (!surveyOk) blockers.push("survey");
+    return blockers;
+  }, [nameOk, dateOk, timeOk, placeOk, surveyOk]);
+
   const submitHint = useMemo(() => {
     if (canSubmit) return null;
     if (!nameOk) return messages.relationshipForm.nameRequired;
@@ -351,6 +361,8 @@ export default function ManualRelationshipForm({
               }`}
               disabled={busy}
               aria-disabled={!canSubmit}
+              data-submit-blockers={submitBlockers.join(",") || undefined}
+              data-can-submit={canSubmit ? "true" : "false"}
               onClick={handleCreateClick}
             >
               {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
@@ -363,6 +375,8 @@ export default function ManualRelationshipForm({
               }`}
               disabled={busy}
               aria-disabled={!canSubmit}
+              data-submit-blockers={submitBlockers.join(",") || undefined}
+              data-can-submit={canSubmit ? "true" : "false"}
               onClick={handleCreateClick}
             >
               {busy ? messages.common.creating : messages.relationshipForm.createRelationship}

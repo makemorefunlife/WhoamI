@@ -9,8 +9,10 @@
  *
  * Policy:
  * - development: remote if configured; else memory when ALLOW_MEMORY; else 503
- * - preview / production: remote required (url+token); memory flag ignored → 503
- * - remote errors / invalid responses → fail-closed 503
+ * - preview / production: prefer remote (url+token); if unset, in-process memory
+ *   fallback (ponytail: multi-instance limits are best-effort until Upstash/KV is
+ *   wired — remove fallback once Production always has REST credentials)
+ * - remote configured but errors / invalid responses → fail-closed 503
  * - never log URL tokens or subjects
  */
 
@@ -119,7 +121,18 @@ export function isDevRateLimitUnlimited(): boolean {
 
 export type RateLimitResult =
   | { ok: true }
-  | { ok: false; status: 401 | 429 | 503; error: string; retryAfterSec?: number };
+  | {
+      ok: false;
+      status: 401 | 429 | 503;
+      error: string;
+      /** Bounded machine code — never includes subjects or secrets */
+      code?:
+        | "unauthorized"
+        | "rate_limit_exceeded"
+        | "rate_limit_backend_missing"
+        | "rate_limit_backend_unavailable";
+      retryAfterSec?: number;
+    };
 
 async function redisCommand(
   config: RemoteConfig,
@@ -188,10 +201,8 @@ async function consumeRemoteLimit(
       ok: false,
       status: 503,
       error: "temporarily unavailable",
+      code: "rate_limit_backend_unavailable",
     };
-  }
-
-  if (count === 1) {
     await redisCommand(config, ["EXPIRE", key, windowSec]);
   }
 
@@ -208,6 +219,7 @@ async function consumeRemoteLimit(
       ok: false,
       status: 429,
       error: "rate limit exceeded",
+      code: "rate_limit_exceeded",
       retryAfterSec: Math.max(1, retryAfterSec),
     };
   }
@@ -238,6 +250,7 @@ function consumeMemoryLimit(
         ok: false,
         status: 429,
         error: "rate limit exceeded",
+        code: "rate_limit_exceeded",
         retryAfterSec,
       };
     }
@@ -265,7 +278,7 @@ export async function enforceRateLimit(
 ): Promise<RateLimitResult> {
   const subject = typeof keySubject === "string" ? keySubject.trim() : "";
   if (!subject) {
-    return { ok: false, status: 401, error: "unauthorized" };
+    return { ok: false, status: 401, error: "unauthorized", code: "unauthorized" };
   }
 
   if (isDevRateLimitUnlimited()) {
@@ -273,7 +286,8 @@ export async function enforceRateLimit(
   }
 
   const remote = resolveRemoteRateLimitConfig();
-  const allowMemory = allowsMemoryRateLimitFallback();
+  const allowMemory =
+    allowsMemoryRateLimitFallback() || isStrictDeployEnv();
 
   if (!remote && !allowMemory) {
     console.error("[rate-limit]", "backend_missing");
@@ -281,6 +295,7 @@ export async function enforceRateLimit(
       ok: false,
       status: 503,
       error: "temporarily unavailable",
+      code: "rate_limit_backend_missing",
     };
   }
 
@@ -297,10 +312,15 @@ export async function enforceRateLimit(
         ok: false,
         status: 503,
         error: "temporarily unavailable",
+        code: "rate_limit_backend_unavailable",
       };
     }
   }
 
+  if (isStrictDeployEnv()) {
+    // ponytail: per-instance only; upgrade = require Upstash/KV and delete this branch
+    console.error("[rate-limit]", "backend_missing_memory_fallback");
+  }
   return consumeMemoryLimit(key, max, windowMs);
 }
 
@@ -312,7 +332,10 @@ export function rateLimitResponse(
     headers["Retry-After"] = String(result.retryAfterSec);
   }
   return Response.json(
-    { error: result.error },
+    {
+      error: result.error,
+      ...(result.code ? { code: result.code } : {}),
+    },
     { status: result.status, headers },
   );
 }
