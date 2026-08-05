@@ -38,9 +38,13 @@ export async function PATCH(req: Request) {
     );
     if (access.error) return access.error;
 
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
     const { data: partner } = await supabase
       .from("reports")
-      .select("id, report_type")
+      .select("id, report_type, clerk_user_id")
       .eq("id", partnerReportId)
       .maybeSingle();
 
@@ -49,6 +53,10 @@ export async function PATCH(req: Request) {
         { error: "직접 입력 친구만 이름을 변경할 수 있어요." },
         { status: 400 },
       );
+    }
+
+    if (partner.clerk_user_id !== userId) {
+      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
     }
 
     const rows = await fetchRelationshipReportRowsForReportId(
@@ -66,7 +74,9 @@ export async function PATCH(req: Request) {
     const { error } = await supabase
       .from("reports")
       .update({ name })
-      .eq("id", partnerReportId);
+      .eq("id", partnerReportId)
+      .eq("clerk_user_id", userId)
+      .eq("report_type", "partner_manual");
 
     if (error) {
       return NextResponse.json({ error: "request failed" }, { status: 500 });

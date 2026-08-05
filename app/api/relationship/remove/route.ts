@@ -1,12 +1,35 @@
 import { auth } from "@clerk/nextjs/server";
 import { logServerError } from "@/lib/security/safeLog";
-import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
+import {
+  createRouteSupabaseClient,
+  supabaseConfigErrorResponse,
+} from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
-import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 
 export const runtime = "nodejs";
 
-/** 직접 입력 친구 관계 삭제 — 허브 리포트 소유자·게스트만 */
+function mapRpcError(message: string | undefined): {
+  status: number;
+  error: string;
+} {
+  const msg = message ?? "";
+  if (/unauthorized|viewer_forbidden|not_participant|partner_forbidden|42501/i.test(msg)) {
+    return { status: 403, error: "이 관계를 삭제할 권한이 없습니다." };
+  }
+  if (/viewer_not_found|relationship_not_found|partner_not_found|P0002/i.test(msg)) {
+    return { status: 404, error: "관계를 찾지 못했습니다." };
+  }
+  if (/not_partner_manual|22023/i.test(msg)) {
+    return {
+      status: 400,
+      error: "직접 입력한 친구만 여기서 삭제할 수 있어요.",
+    };
+  }
+  return { status: 500, error: "request failed" };
+}
+
+/** 직접 입력 친구 관계 삭제 — 소유자만, RR+partner_manual 원자 삭제 */
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as {
@@ -23,76 +46,44 @@ export async function POST(req: Request) {
       );
     }
 
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
-    const { userId } = await auth();
-    const access = await assertGuestOrOwnerReportAccess(
+
+    const access = await assertOwnedReportAccess(
       supabase,
       viewerReportId,
       userId,
     );
     if (access.error) return access.error;
 
-    const { data: rr, error: rrErr } = await supabase
-      .from("relationship_reports")
-      .select("id, report_id_a, report_id_b")
-      .eq("id", relationshipReportId)
-      .maybeSingle();
+    const { error: rpcErr } = await supabase.rpc(
+      "delete_owned_partner_manual_relationship",
+      {
+        p_relationship_report_id: relationshipReportId,
+        p_viewer_report_id: viewerReportId,
+        p_clerk_user_id: userId,
+      },
+    );
 
-    if (rrErr || !rr) {
+    if (rpcErr) {
+      const mapped = mapRpcError(rpcErr.message);
+      if (mapped.status >= 500) {
+        logServerError("relationship/remove:", rpcErr, "rpc_failed");
+      }
       return NextResponse.json(
-        { error: "관계를 찾지 못했습니다." },
-        { status: 404 },
+        { error: mapped.error },
+        { status: mapped.status },
       );
     }
-
-    if (rr.report_id_a !== viewerReportId) {
-      return NextResponse.json(
-        { error: "이 관계를 삭제할 권한이 없습니다." },
-        { status: 403 },
-      );
-    }
-
-    const partnerId =
-      rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
-
-    const { data: partner, error: pErr } = await supabase
-      .from("reports")
-      .select("id, report_type")
-      .eq("id", partnerId)
-      .maybeSingle();
-
-    if (pErr || !partner) {
-      return NextResponse.json(
-        { error: "상대 리포트를 찾지 못했습니다." },
-        { status: 404 },
-      );
-    }
-
-    if (partner.report_type !== "partner_manual") {
-      return NextResponse.json(
-        { error: "직접 입력한 친구만 여기서 삭제할 수 있어요." },
-        { status: 400 },
-      );
-    }
-
-    const { error: delRrErr } = await supabase
-      .from("relationship_reports")
-      .delete()
-      .eq("id", relationshipReportId);
-
-    if (delRrErr) {
-      return NextResponse.json({ error: delRrErr.message }, { status: 500 });
-    }
-
-    await supabase.from("reports").delete().eq("id", partnerId);
 
     return NextResponse.json({ ok: true });
   } catch (e) {
     logServerError("relationship/remove:", e, "internal_error");
-    return NextResponse.json(
-      { error: "request failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "request failed" }, { status: 500 });
   }
 }
