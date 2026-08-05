@@ -88,6 +88,11 @@ export const messagesEnUS = {
     viewerReportMissing:
       "We couldn't find your report. Please complete your blueprint first, then try again.",
     renameSaveFailed: "We couldn't save the name.",
+    removeFriendTitle: "Remove friend",
+    removeFriendConfirm: (name: string) =>
+      `Remove your relationship with ${name}? Their manually added profile will be deleted too.`,
+    removeFriendCta: "Remove friend",
+    removeFriendFailed: "Couldn't remove this friend.",
     selectFriendFirst: "Please select a friend first.",
     analyzeCta: "Analyze relationship",
     analyzeWithName: (name: string) => `Analyze with ${name}`,
@@ -1360,6 +1365,10 @@ export type MessageCatalog = {
     pendingFriendCannotAnalyze: string;
     viewerReportMissing: string;
     renameSaveFailed: string;
+    removeFriendTitle: string;
+    removeFriendConfirm: (name: string) => string;
+    removeFriendCta: string;
+    removeFriendFailed: string;
     selectFriendFirst: string;
     analyzeCta: string;
     analyzeWithName: (name: string) => string;

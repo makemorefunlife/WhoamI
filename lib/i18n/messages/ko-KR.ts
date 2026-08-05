@@ -84,6 +84,11 @@ export const messagesKoKR: MessageCatalog = {
     viewerReportMissing:
       "내 리포트 정보를 찾을 수 없어요. 블루프린트를 먼저 완료한 뒤 다시 시도해 주세요.",
     renameSaveFailed: "이름을 저장하지 못했어요.",
+    removeFriendTitle: "친구 삭제",
+    removeFriendConfirm: (name: string) =>
+      `${name}님과의 관계를 삭제할까요? 직접 입력한 프로필도 함께 삭제돼요.`,
+    removeFriendCta: "친구 삭제하기",
+    removeFriendFailed: "친구를 삭제하지 못했어요.",
     selectFriendFirst: "친구를 먼저 선택해 주세요.",
     analyzeCta: "관계 분석하기",
     analyzeWithName: (name: string) => `${name}님과 분석하기`,

@@ -14,6 +14,7 @@ import FriendStoryRow from "@/components/relationship/hub/FriendStoryRow";
 import RelationHubActionButtons from "@/components/relationship/hub/RelationHubActionButtons";
 import HubAnalysisSection from "@/components/relationship/hub/HubAnalysisSection";
 import RenameFriendDialog from "@/components/relationship/hub/RenameFriendDialog";
+import RemoveFriendDialog from "@/components/relationship/hub/RemoveFriendDialog";
 import StitchKindPickerSheet from "@/components/relationship/hub/StitchKindPickerSheet";
 import AddFriendSheet from "@/components/relationship/hub/AddFriendSheet";
 import SentRequestsSheet from "@/components/relationship/hub/SentRequestsSheet";
@@ -83,6 +84,11 @@ export default function RelationHubDashboard() {
   const [renameTarget, setRenameTarget] = useState<RelationshipListItem | null>(
     null,
   );
+  const [removeTarget, setRemoveTarget] = useState<RelationshipListItem | null>(
+    null,
+  );
+  const [removeBusy, setRemoveBusy] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   const [kindPickerTarget, setKindPickerTarget] =
     useState<RelationshipListItem | null>(null);
   const [addFriendOpen, setAddFriendOpen] = useState(false);
@@ -539,6 +545,50 @@ export default function RelationHubDashboard() {
     })();
   }
 
+  async function handleRemoveConfirm() {
+    const item = removeTarget;
+    if (
+      !item?.relationship_report_id ||
+      !hubReportId ||
+      item.row_kind !== "relationship_manual" ||
+      removeBusy
+    ) {
+      return;
+    }
+    setRemoveBusy(true);
+    setRemoveError(null);
+    try {
+      const res = await fetch("/api/relationship/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          relationshipReportId: item.relationship_report_id,
+          viewerReportId: hubReportId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setRemoveError(
+          typeof data?.error === "string"
+            ? data.error
+            : messages.hub.removeFriendFailed,
+        );
+        return;
+      }
+      const removedKey = hubItemKey(item);
+      setItems((prev) =>
+        prev.filter((row) => hubItemKey(row) !== removedKey),
+      );
+      setSelectedKey((prev) => (prev === removedKey ? null : prev));
+      setRemoveTarget(null);
+      await loadWaiting();
+    } catch {
+      setRemoveError(messages.hub.removeFriendFailed);
+    } finally {
+      setRemoveBusy(false);
+    }
+  }
+
   function handleSelectFriend(item: RelationshipListItem) {
     const key = hubItemKey(item);
     setSelectedKey((prev) => (prev === key ? null : key));
@@ -623,6 +673,11 @@ export default function RelationHubDashboard() {
                     }}
                     onShowAll={() => setFriendsListOpen(true)}
                     onRename={(item) => setRenameTarget(item)}
+                    onRemove={(item) => {
+                      if (item.row_kind !== "relationship_manual") return;
+                      setRemoveError(null);
+                      setRemoveTarget(item);
+                    }}
                     onToggleFavorite={(item) =>
                       void toggleFavorite(item, !item.is_favorite)
                     }
@@ -664,6 +719,19 @@ export default function RelationHubDashboard() {
         initialName={renameTarget?.partner_name ?? ""}
         onClose={() => setRenameTarget(null)}
         onSave={handleRenameSave}
+      />
+
+      <RemoveFriendDialog
+        open={removeTarget != null}
+        partnerName={removeTarget?.partner_name ?? ""}
+        busy={removeBusy}
+        error={removeError}
+        onClose={() => {
+          if (removeBusy) return;
+          setRemoveTarget(null);
+          setRemoveError(null);
+        }}
+        onConfirm={() => void handleRemoveConfirm()}
       />
 
       <StitchKindPickerSheet

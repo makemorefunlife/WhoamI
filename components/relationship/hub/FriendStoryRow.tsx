@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Pencil, Star } from "lucide-react";
+import { Pencil, Star, Trash2 } from "lucide-react";
 import type { RelationshipListItem } from "@/components/relationship/RelationshipCard";
 import {
   FriendAddCircle,
@@ -23,6 +23,7 @@ type Props = {
   onAddFriend: () => void;
   onShowAll: () => void;
   onRename: (item: RelationshipListItem) => void;
+  onRemove: (item: RelationshipListItem) => void;
   onToggleFavorite: (item: RelationshipListItem) => void;
 };
 
@@ -68,6 +69,7 @@ export default function FriendStoryRow({
   onAddFriend,
   onShowAll,
   onRename,
+  onRemove,
   onToggleFavorite,
 }: Props) {
   const messages = useMessages();
@@ -180,6 +182,16 @@ export default function FriendStoryRow({
             />
             {selected.is_favorite ? messages.hub.unfavorite : messages.hub.favorite}
           </button>
+          {selected.row_kind === "relationship_manual" ? (
+            <button
+              type="button"
+              onClick={() => onRemove(selected)}
+              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-surface px-3 text-sm font-medium text-red-800 transition hover:bg-surface-container-high active:scale-[0.98]"
+            >
+              <Trash2 className="h-4 w-4" />
+              {messages.hub.removeFriendCta}
+            </button>
+          ) : null}
         </motion.div>
       ) : null}
     </section>

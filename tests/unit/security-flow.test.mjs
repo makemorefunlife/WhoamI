@@ -421,6 +421,18 @@ async function run() {
 
   {
     const fs = await import("node:fs");
+    const removeSrc = fs.readFileSync(
+      "app/api/relationship/remove/route.ts",
+      "utf8",
+    );
+    assert.match(removeSrc, /assertOwnedReportAccess/);
+    assert.match(removeSrc, /delete_owned_partner_manual_relationship/);
+    assert.match(removeSrc, /p_clerk_user_id/);
+    ok("relationship remove: owned viewer + clerk-bound atomic RPC");
+  }
+
+  {
+    const fs = await import("node:fs");
     const premiumSrc = fs.readFileSync(
       "app/api/relationship/analyze/premium/route.ts",
       "utf8",
