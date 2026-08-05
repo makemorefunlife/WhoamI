@@ -23,6 +23,12 @@ import { clientSafeErrorMessage, logServerError } from "@/lib/security/safeLog";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function boundedIdentifier(input: unknown): string {
+  const s = typeof input === "string" ? input : "";
+  const cleaned = s.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 80);
+  return cleaned || "none";
+}
+
 function profileFromRow(answers: Record<string, unknown>): CurrentSelfProfile | null {
   const embedded = answers.v2_profile;
   if (embedded && typeof embedded === "object" && !Array.isArray(embedded)) {
@@ -134,6 +140,7 @@ export async function POST(req: Request) {
 
     const idCheck = requireUuid(raw.reportId, "reportId");
     if (!idCheck.ok) return idCheck.response;
+    const reportIdPresentInRequest = typeof raw.reportId === "string" && raw.reportId.trim().length > 0;
 
     const answersCheck = parseSurveyAnswers(raw.answers);
     if (!answersCheck.ok) return answersCheck.response;
@@ -166,6 +173,52 @@ export async function POST(req: Request) {
 
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
+    const reportIdSource = boundedIdentifier(req.headers.get("x-aha-report-id-source"));
+    const submitTrigger = boundedIdentifier(req.headers.get("x-aha-submit-trigger"));
+    const { data: parentReport, error: parentLookupError } = await supabase
+      .from("reports")
+      .select("id, clerk_user_id")
+      .eq("id", idCheck.value)
+      .maybeSingle();
+    const parentReportExists = Boolean(parentReport?.id);
+    const parentReportOwnedByCurrentClerkUser =
+      Boolean(parentReport?.clerk_user_id) &&
+      String(parentReport?.clerk_user_id) === userId;
+    if (parentLookupError) {
+      const pgCode = boundedIdentifier((parentLookupError as { code?: unknown })?.code);
+      console.error(
+        "[save-diag]",
+        "route=POST /api/v2/survey",
+        "branch=parent_lookup_failed",
+        "status=500",
+        "code=survey_parent_lookup_failed",
+        `reportIdPresentInRequest=${reportIdPresentInRequest}`,
+        "parentReportExists=false",
+        "parentReportOwnedByCurrentClerkUser=false",
+        `insertSqlState=${pgCode}`,
+        "safeConstraint=none",
+        `reportIdSource=${reportIdSource}`,
+        `submitTrigger=${submitTrigger}`,
+        `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+      );
+      return NextResponse.json(
+        { error: "save failed", code: "survey_parent_lookup_failed" },
+        { status: 500 },
+      );
+    }
+    console.error(
+      "[save-diag]",
+      "route=POST /api/v2/survey",
+      "branch=pre_insert_parent_check",
+      `reportIdPresentInRequest=${reportIdPresentInRequest}`,
+      `parentReportExists=${parentReportExists}`,
+      `parentReportOwnedByCurrentClerkUser=${parentReportOwnedByCurrentClerkUser}`,
+      "insertSqlState=none",
+      "safeConstraint=none",
+      `reportIdSource=${reportIdSource}`,
+      `submitTrigger=${submitTrigger}`,
+      `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+    );
     const access = await assertOwnedReportAccess(
       supabase,
       idCheck.value,
@@ -196,7 +249,11 @@ export async function POST(req: Request) {
     if (error) {
       const pgCode =
         error && typeof error === "object" && "code" in error
-          ? String((error as { code?: unknown }).code ?? "").slice(0, 16)
+          ? boundedIdentifier((error as { code?: unknown }).code)
+          : "none";
+      const safeConstraint =
+        error && typeof error === "object" && "constraint" in error
+          ? boundedIdentifier((error as { constraint?: unknown }).constraint)
           : "none";
       console.error(
         "[save-diag]",
@@ -204,12 +261,18 @@ export async function POST(req: Request) {
         "branch=insert_failed",
         "status=500",
         "code=survey_insert_failed",
-        `pg=${pgCode || "none"}`,
+        `reportIdPresentInRequest=${reportIdPresentInRequest}`,
+        `parentReportExists=${parentReportExists}`,
+        `parentReportOwnedByCurrentClerkUser=${parentReportOwnedByCurrentClerkUser}`,
+        `insertSqlState=${pgCode || "none"}`,
+        `safeConstraint=${safeConstraint || "none"}`,
+        `reportIdSource=${reportIdSource}`,
+        `submitTrigger=${submitTrigger}`,
         `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
       );
       logServerError("v2/survey POST", error, "insert_failed");
       return NextResponse.json(
-        { error: "save failed", code: "survey_insert_failed" },
+        { error: "save failed", code: `survey_insert_failed_${pgCode}` },
         { status: 500 },
       );
     }

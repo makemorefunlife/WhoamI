@@ -161,7 +161,10 @@ export default function SurveyV2Page() {
   }, []);
 
   const completeAfterLogin = useCallback(
-    async (payload: Record<string, string>) => {
+    async (
+      payload: Record<string, string>,
+      submitTrigger: "direct_submit" | "pending_resume",
+    ) => {
       if (submitStartedRef.current) return;
       submitStartedRef.current = true;
       setFinishing(true);
@@ -171,7 +174,11 @@ export default function SurveyV2Page() {
 
       const result = await finalizeSurveySubmit(payload, {
         createOwnedReport: createOwnedReportIdempotent,
-        persistSurvey: persistSurveyToServer,
+        persistSurvey: (reportId, a, p, meta) =>
+          persistSurveyToServer(reportId, a, p, {
+            ...meta,
+            submitTrigger,
+          }),
         scoreAnswers: scoreSurveyAnswers,
         writeLocalSession: writeSurveyV2Session,
         clearPendingDraft: clearPendingSurveyDraft,
@@ -204,7 +211,7 @@ export default function SurveyV2Page() {
     if (!isSurveyV2AnswersComplete(payload)) return;
     postLoginResumeConsumedRef.current = true;
     sessionStorage.removeItem(PENDING_COMPLETE_KEY);
-    void completeAfterLogin(payload);
+    void completeAfterLogin(payload, "pending_resume");
   }, [isSignedIn, sessionReady, finishing, answers, completeAfterLogin]);
 
   const finishSurvey = async (payload: Record<string, string>) => {
@@ -223,7 +230,7 @@ export default function SurveyV2Page() {
       return;
     }
 
-    await completeAfterLogin(payload);
+    await completeAfterLogin(payload, "direct_submit");
   };
 
   const cancelAuth = () => {

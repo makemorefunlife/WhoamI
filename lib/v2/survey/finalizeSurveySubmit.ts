@@ -18,12 +18,17 @@ export type FinalizeSurveyResult =
 
 export type FinalizeSurveyDeps = {
   createOwnedReport: () => Promise<
-    { ok: true; reportId: string } | { ok: false; error: string }
+    | { ok: true; reportId: string; source: "home_resume" | "report_create" }
+    | { ok: false; error: string }
   >;
   persistSurvey: (
     reportId: string,
     answers: Record<string, string>,
     profile: CurrentSelfProfile,
+    meta?: {
+      reportIdSource?: string;
+      submitTrigger?: string;
+    },
   ) => Promise<{ ok: boolean; error?: string }>;
   scoreAnswers: (answers: Record<string, string>) => CurrentSelfProfile;
   writeLocalSession: (
@@ -69,6 +74,7 @@ export async function finalizeSurveySubmit(
       created.reportId,
       answers,
       profile,
+      { reportIdSource: created.source },
     );
     if (!saved.ok) {
       return {

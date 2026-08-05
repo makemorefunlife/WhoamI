@@ -5,7 +5,8 @@ const CREATE_LOCK_KEY = "ahaitsme_report_create_inflight";
  * finalizeSurveySubmit provides the hard single-flight around the full submit.
  */
 export async function createOwnedReportIdempotent(): Promise<
-  { ok: true; reportId: string } | { ok: false; error: string }
+  | { ok: true; reportId: string; source: "home_resume" | "report_create" }
+  | { ok: false; error: string }
 > {
   if (typeof window !== "undefined") {
     if (sessionStorage.getItem(CREATE_LOCK_KEY) === "1") {
@@ -24,7 +25,7 @@ export async function createOwnedReportIdempotent(): Promise<
       const rid = resume.reportId?.trim();
       if (rid) {
         localStorage.setItem("reportId", rid);
-        return { ok: true, reportId: rid };
+        return { ok: true, reportId: rid, source: "home_resume" };
       }
     }
 
@@ -44,7 +45,7 @@ export async function createOwnedReportIdempotent(): Promise<
       };
     }
     localStorage.setItem("reportId", data.id);
-    return { ok: true, reportId: data.id };
+    return { ok: true, reportId: data.id, source: "report_create" };
   } catch {
     return { ok: false, error: "Network error. Please try again." };
   } finally {
