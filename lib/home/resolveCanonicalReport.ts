@@ -2,6 +2,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { countHubRelationshipSummary } from "@/lib/relationship/hubRelationshipSummary";
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { logServerError } from "@/lib/security/safeLog";
+import {
+  extractSafeErrorShape,
+  formatSafeErrorShape,
+} from "@/lib/security/errorShape";
 
 export type CanonicalReportRow = {
   id: string;
@@ -50,6 +54,15 @@ async function fetchOwnedReports(
     .limit(30);
 
   if (error) {
+    // Structural-only diagnostic: property names + short scalar code/status
+    // fields, never message/details/hint — same bounded shape used for the
+    // report/create insert-failure diagnostics.
+    console.error(
+      "[error-shape]",
+      "context=resolveCanonicalReport.owned",
+      ...formatSafeErrorShape(extractSafeErrorShape(error)),
+      `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+    );
     logServerError("resolveCanonicalReport.owned", error);
     return [];
   }

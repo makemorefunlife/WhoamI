@@ -15,6 +15,10 @@ import {
 import { isV2SurveyCompleteForReport } from "@/lib/v2/survey/dbCompletion";
 import { logServerError } from "@/lib/security/safeLog";
 import { diagnoseReportCreateError } from "@/lib/security/pgErrorDiagnostics";
+import {
+  extractSafeErrorShape,
+  formatSafeErrorShape,
+} from "@/lib/security/errorShape";
 
 export const runtime = "nodejs";
 
@@ -107,6 +111,17 @@ export async function POST(req: Request) {
         `fields=${Object.keys(insertPayload).join(",")}`,
         `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
       );
+      if (diag.category === "unknown_db_error") {
+        // Structural-only fallback when pg code / regex classification
+        // couldn't place the error: property names + short scalar
+        // code/status fields, never message/details/hint.
+        console.error(
+          "[error-shape]",
+          "context=report/create.insert",
+          ...formatSafeErrorShape(extractSafeErrorShape(error)),
+          `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+        );
+      }
       logServerError("report/create.insert", error, diag.responseCode);
       return NextResponse.json(
         {
