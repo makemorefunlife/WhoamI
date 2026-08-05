@@ -13,9 +13,16 @@ export default function AppClerkProvider({
   children: React.ReactNode;
 }) {
   const { locale, href } = useLocale();
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  // Worktree / local DEV without env: skip Clerk rather than crash on null key.
+  if (!publishableKey) {
+    return <>{children}</>;
+  }
 
   return (
     <ClerkProvider
+      publishableKey={publishableKey}
       signInUrl={href(ROUTES.signIn)}
       signUpUrl={href(ROUTES.signUp)}
       afterSignOutUrl={href(ROUTES.home)}
