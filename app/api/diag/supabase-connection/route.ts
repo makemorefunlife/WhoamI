@@ -13,6 +13,10 @@ import {
   probeSupabaseConnection,
   formatSupabaseConnectionProbeResult,
 } from "@/lib/security/supabaseConnectionProbe";
+import {
+  compareRawFetchAndSupabaseJs,
+  formatRawFetchProbeResult,
+} from "@/lib/security/rawSupabaseFetchProbe";
 
 export const runtime = "nodejs";
 
@@ -23,12 +27,13 @@ const EXPECTED_SUPABASE_PROJECT_REF = "gncjslondpvysjaytagd";
 /**
  * Read-only, authenticated diagnostic: audits the configured Supabase
  * URL/service-role key (structural facts + non-secret JWT claims only —
- * never the raw key) and runs one harmless head-count probe query.
- * Added to diagnose report_create_unknown_db_error after production
- * evidence showed the Supabase client's fallback empty-code error shape,
- * which points at a connection/config problem rather than a schema or
- * constraint violation. No schema, RLS, Clerk, Upstash, entitlement, or
- * Romantic changes.
+ * never the raw key), runs the supabase-js head-count probe, and — since
+ * that probe failed with the same empty-code fallback shape as the
+ * original incident even against a proven-correct URL/key pair — also
+ * runs a raw fetch() probe that bypasses supabase-js entirely, to recover
+ * the underlying network error's cause (DNS/TCP/TLS/timeout) that
+ * supabase-js's error wrapper discards. No schema, RLS, Clerk, Upstash,
+ * entitlement, or Romantic changes.
  */
 export async function GET() {
   const { userId } = await auth();
@@ -36,9 +41,12 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
+  const url = getSupabaseUrl();
+  const key = getSupabaseServiceRoleKey();
+
   const envAudit = auditSupabaseEnvConfig(
-    getSupabaseUrl(),
-    getSupabaseServiceRoleKey(),
+    url,
+    key,
     EXPECTED_SUPABASE_PROJECT_REF,
   );
   console.error(
@@ -57,8 +65,25 @@ export async function GET() {
     `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
   );
 
+  let comparison: Awaited<ReturnType<typeof compareRawFetchAndSupabaseJs>> | null =
+    null;
+  if (url && key) {
+    comparison = await compareRawFetchAndSupabaseJs(url, key, probe);
+    console.error(
+      "[diag-supabase-raw-fetch]",
+      ...formatRawFetchProbeResult(comparison.rawFetch),
+      `verdict=${comparison.verdict}`,
+      `region=${process.env.VERCEL_REGION ?? "none"}`,
+      `sha=${process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`,
+    );
+  }
+
   return NextResponse.json({
     envAudit,
     probe,
+    rawFetch: comparison?.rawFetch ?? null,
+    verdict: comparison?.verdict ?? null,
+    region: process.env.VERCEL_REGION ?? null,
+    sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local",
   });
 }
