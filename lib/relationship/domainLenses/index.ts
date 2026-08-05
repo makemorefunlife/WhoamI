@@ -71,3 +71,17 @@ export {
   type CanonicalSourceMode,
   type CanonicalPacketEvidence,
 } from "./canonicalPackets";
+
+export { composeDomain7SceneNarrative } from "./domainNarrativeComposer";
+export { composeFriendNarrative } from "./friend/friendNarrativeComposer";
+export { composeWorkNarrative } from "./work/workNarrativeComposer";
+export { composeFamilyNarrative } from "./family/familyNarrativeComposer";
+export { composePartnerNarrative } from "./partner/partnerNarrativeComposer";
+export type {
+  DomainNarrativePlan,
+  DomainNarrativeScene,
+  DomainNarrativeOverview,
+  DomainNarrativeActionPlaybook,
+  NarrativeScriptItem,
+} from "./narrativeTypes";
+
