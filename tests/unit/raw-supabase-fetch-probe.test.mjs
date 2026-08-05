@@ -249,4 +249,86 @@ await withMockFetch(
   },
 );
 
+// ---------------------------------------------------------------------------
+section("11) Legacy JWT key -> both apikey and Authorization headers sent, keyFormat=legacy_jwt");
+
+const legacyJwt = "aaa.bbb.ccc";
+await withMockFetch(
+  async (_url, opts) => {
+    assert.equal(opts.headers.apikey, legacyJwt);
+    assert.equal(opts.headers.Authorization, `Bearer ${legacyJwt}`);
+    return fakeResponse(200, "application/json", "[]");
+  },
+  async () => {
+    const r11 = await probeRawSupabaseFetch("https://x.supabase.co", legacyJwt);
+    assert.equal(r11.keyFormat, "legacy_jwt");
+    assert.equal(r11.sentAuthorizationHeader, true);
+    ok("a legacy 3-segment JWT key is sent as both apikey and Authorization: Bearer");
+  },
+);
+
+// ---------------------------------------------------------------------------
+section("12) sb_secret_ key -> only apikey header sent, Authorization omitted, keyFormat=sb_secret");
+
+const sbSecretKey = "sb_secret_abcdef1234567890notarealkey";
+await withMockFetch(
+  async (_url, opts) => {
+    assert.equal(opts.headers.apikey, sbSecretKey);
+    assert.equal("Authorization" in opts.headers, false);
+    return fakeResponse(200, "application/json", "[]");
+  },
+  async () => {
+    const r12 = await probeRawSupabaseFetch("https://x.supabase.co", sbSecretKey);
+    assert.equal(r12.keyFormat, "sb_secret");
+    assert.equal(r12.sentAuthorizationHeader, false);
+    ok("a new-format sb_secret_ key is sent only via apikey, Authorization header omitted entirely");
+  },
+);
+
+// ---------------------------------------------------------------------------
+section("13) 403 body diagnostic: allowlisted exact phrase is captured verbatim");
+
+await withMockFetch(
+  async () =>
+    fakeResponse(
+      403,
+      "application/json",
+      JSON.stringify({ message: "Invalid API key" }),
+    ),
+  async () => {
+    const r13 = await probeRawSupabaseFetch("https://x.supabase.co", "fake-key");
+    assert.equal(r13.httpStatus, 403);
+    assert.ok(r13.bodyDiagnostic);
+    assert.equal(r13.bodyDiagnostic.message.exactValue, "Invalid API key");
+    assert.equal(r13.bodyDiagnostic.message.category, null);
+    assert.deepEqual(r13.bodyDiagnostic.jsonKeys, ["message"]);
+    ok("an allowlisted exact phrase ('Invalid API key') is returned verbatim, since it's Supabase's own standard error text");
+  },
+);
+
+// ---------------------------------------------------------------------------
+section("14) 403 body diagnostic: non-allowlisted message degrades to length + category, never raw text");
+
+await withMockFetch(
+  async () =>
+    fakeResponse(
+      403,
+      "application/json",
+      JSON.stringify({
+        code: "PGRST301",
+        message: "Some unexpected free-text explanation containing possibly sensitive project detail",
+      }),
+    ),
+  async () => {
+    const r14 = await probeRawSupabaseFetch("https://x.supabase.co", "fake-key");
+    assert.ok(r14.bodyDiagnostic);
+    assert.equal(r14.bodyDiagnostic.message.exactValue, null);
+    assert.ok(typeof r14.bodyDiagnostic.message.length === "number");
+    assert.equal(r14.bodyDiagnostic.code.exactValue, null);
+    const formatted = formatRawFetchProbeResult(r14).join(" ");
+    assert.equal(formatted.includes("possibly sensitive project detail"), false);
+    ok("a non-allowlisted message degrades to length + category only; the raw free text never appears in the diagnostic or its formatted log line");
+  },
+);
+
 console.log("\nOK: raw-supabase-fetch-probe tests passed");

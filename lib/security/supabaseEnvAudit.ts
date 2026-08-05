@@ -17,6 +17,8 @@ export type SupabaseUrlAudit = {
   matchesExpectedRef: boolean | null;
 };
 
+export type SupabaseKeyFormat = "legacy_jwt" | "sb_secret" | "unknown";
+
 export type SupabaseServiceKeyAudit = {
   present: boolean;
   length: number;
@@ -29,6 +31,7 @@ export type SupabaseServiceKeyAudit = {
   claimExpiresAt: number | null;
   looksLikeServiceRole: boolean;
   looksLikeAnonKey: boolean;
+  keyFormat: SupabaseKeyFormat;
 };
 
 export type SupabaseEnvAudit = {
@@ -72,6 +75,26 @@ function auditUrl(
     projectRef,
     matchesExpectedRef: expectedRef ? projectRef === expectedRef : null,
   };
+}
+
+const SB_SECRET_PREFIX = "sb_secret_";
+
+/**
+ * Distinguishes Supabase's legacy service-role JWT (three dot-separated
+ * base64url segments, decodable payload) from the newer opaque
+ * `sb_secret_...`-prefixed API key format, which is not a JWT and must
+ * only ever be sent via the `apikey` header — sending it as
+ * `Authorization: Bearer` can itself cause the gateway to reject the
+ * request. Never inspects or returns anything beyond the prefix/segment
+ * shape of the key.
+ */
+export function detectSupabaseKeyFormat(
+  rawKey: string | undefined,
+): SupabaseKeyFormat {
+  if (typeof rawKey !== "string" || rawKey.length === 0) return "unknown";
+  if (rawKey.startsWith(SB_SECRET_PREFIX)) return "sb_secret";
+  if (rawKey.split(".").length === 3) return "legacy_jwt";
+  return "unknown";
 }
 
 function base64UrlDecode(segment: string): string | null {
@@ -131,6 +154,7 @@ function auditServiceKey(rawKey: string | undefined): SupabaseServiceKeyAudit {
     claimExpiresAt,
     looksLikeServiceRole: claimRole === "service_role",
     looksLikeAnonKey: claimRole === "anon",
+    keyFormat: detectSupabaseKeyFormat(rawKey),
   };
 }
 
@@ -174,6 +198,7 @@ export function formatSupabaseEnvAudit(audit: SupabaseEnvAudit): string[] {
     `keyClaimExpiresAt=${audit.key.claimExpiresAt ?? "none"}`,
     `keyLooksLikeServiceRole=${audit.key.looksLikeServiceRole}`,
     `keyLooksLikeAnonKey=${audit.key.looksLikeAnonKey}`,
+    `keyFormat=${audit.key.keyFormat}`,
     `refsMatch=${audit.refsMatch ?? "n/a"}`,
   ];
 }

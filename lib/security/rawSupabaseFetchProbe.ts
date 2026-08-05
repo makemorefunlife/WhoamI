@@ -10,6 +10,14 @@
  * succeeded).
  */
 import type { SupabaseConnectionProbeResult } from "@/lib/security/supabaseConnectionProbe";
+import {
+  detectSupabaseKeyFormat,
+  type SupabaseKeyFormat,
+} from "@/lib/security/supabaseEnvAudit";
+import {
+  diagnoseHttpJsonBody,
+  type HttpJsonBodyDiagnostic,
+} from "@/lib/security/supabaseHttpBodyDiagnostics";
 
 export type RawFetchProbeResult = {
   fetchStarted: boolean;
@@ -17,6 +25,9 @@ export type RawFetchProbeResult = {
   httpStatus: number | null;
   responseContentType: string | null;
   responseBodyLength: number | null;
+  bodyDiagnostic: HttpJsonBodyDiagnostic | null;
+  keyFormat: SupabaseKeyFormat;
+  sentAuthorizationHeader: boolean;
   errorName: string | null;
   errorCauseName: string | null;
   errorCauseCode: string | null;
@@ -51,12 +62,26 @@ export async function probeRawSupabaseFetch(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+  // The newer sb_secret_-prefixed key format is not a JWT and must only be
+  // sent via `apikey` — sending it as `Authorization: Bearer` as well can
+  // itself cause the gateway to reject the request. The legacy service-role
+  // JWT format accepts both headers.
+  const keyFormat = detectSupabaseKeyFormat(serviceRoleKey);
+  const sentAuthorizationHeader = keyFormat !== "sb_secret";
+  const headers: Record<string, string> = { apikey: serviceRoleKey };
+  if (sentAuthorizationHeader) {
+    headers.Authorization = `Bearer ${serviceRoleKey}`;
+  }
+
   const result: RawFetchProbeResult = {
     fetchStarted: false,
     fetchCompleted: false,
     httpStatus: null,
     responseContentType: null,
     responseBodyLength: null,
+    bodyDiagnostic: null,
+    keyFormat,
+    sentAuthorizationHeader,
     errorName: null,
     errorCauseName: null,
     errorCauseCode: null,
@@ -68,10 +93,7 @@ export async function probeRawSupabaseFetch(
     result.fetchStarted = true;
     const res = await fetch(endpoint, {
       method: "GET",
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-      },
+      headers,
       signal: controller.signal,
     });
     result.fetchCompleted = true;
@@ -79,6 +101,11 @@ export async function probeRawSupabaseFetch(
     result.responseContentType = safeMime(res.headers.get("content-type"));
     const text = await res.text();
     result.responseBodyLength = text.length;
+    result.bodyDiagnostic = diagnoseHttpJsonBody(
+      res.status,
+      result.responseContentType,
+      text,
+    );
   } catch (err) {
     if (controller.signal.aborted) result.timeout = true;
     const e = err as { name?: unknown; cause?: unknown } | undefined;
@@ -107,6 +134,21 @@ export function formatRawFetchProbeResult(r: RawFetchProbeResult): string[] {
     `httpStatus=${r.httpStatus ?? "none"}`,
     `responseContentType=${r.responseContentType ?? "none"}`,
     `responseBodyLength=${r.responseBodyLength ?? "none"}`,
+    `keyFormat=${r.keyFormat}`,
+    `sentAuthorizationHeader=${r.sentAuthorizationHeader}`,
+    ...(r.bodyDiagnostic
+      ? [
+          `bodyIsJson=${r.bodyDiagnostic.isJson}`,
+          `bodyKeys=${r.bodyDiagnostic.jsonKeys.length ? r.bodyDiagnostic.jsonKeys.join(",") : "none"}`,
+          `bodyCodeExact=${r.bodyDiagnostic.code.exactValue ?? "none"}`,
+          `bodyCodeCategory=${r.bodyDiagnostic.code.category ?? "none"}`,
+          `bodyErrorExact=${r.bodyDiagnostic.error.exactValue ?? "none"}`,
+          `bodyErrorCategory=${r.bodyDiagnostic.error.category ?? "none"}`,
+          `bodyMessageExact=${r.bodyDiagnostic.message.exactValue ?? "none"}`,
+          `bodyMessageLength=${r.bodyDiagnostic.message.length ?? "none"}`,
+          `bodyMessageCategory=${r.bodyDiagnostic.message.category ?? "none"}`,
+        ]
+      : []),
     `errorName=${r.errorName ?? "none"}`,
     `errorCauseName=${r.errorCauseName ?? "none"}`,
     `errorCauseCode=${r.errorCauseCode ?? "none"}`,

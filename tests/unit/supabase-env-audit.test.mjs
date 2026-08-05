@@ -19,9 +19,8 @@ function ok(name) {
   console.log(`ok - ${name}`);
 }
 
-const { auditSupabaseEnvConfig, formatSupabaseEnvAudit } = await import(
-  "../../lib/security/supabaseEnvAudit.ts"
-);
+const { auditSupabaseEnvConfig, formatSupabaseEnvAudit, detectSupabaseKeyFormat } =
+  await import("../../lib/security/supabaseEnvAudit.ts");
 
 function b64url(obj) {
   return Buffer.from(JSON.stringify(obj))
@@ -58,6 +57,7 @@ assert.equal(a1.key.claimRef, "gncjslondpvysjaytagd");
 assert.equal(a1.key.claimRole, "service_role");
 assert.equal(a1.key.looksLikeServiceRole, true);
 assert.equal(a1.key.looksLikeAnonKey, false);
+assert.equal(a1.key.keyFormat, "legacy_jwt");
 assert.equal(a1.refsMatch, true);
 const s1 = JSON.stringify(a1);
 assert.equal(s1.includes("fake-signature-not-a-real-secret"), false);
@@ -164,5 +164,32 @@ const joined = lines.join(" ");
 assert.equal(joined.includes(goodKey), false);
 assert.equal(joined.includes("fake-signature-not-a-real-secret"), false);
 ok("formatted audit line is bounded and never contains the raw key string or signature segment");
+
+// ---------------------------------------------------------------------------
+section("9) detectSupabaseKeyFormat: legacy JWT, new sb_secret_ format, and unknown are all distinguished");
+
+assert.equal(detectSupabaseKeyFormat(goodKey), "legacy_jwt");
+assert.equal(
+  detectSupabaseKeyFormat("sb_secret_abcdef1234567890notarealkey"),
+  "sb_secret",
+);
+assert.equal(detectSupabaseKeyFormat("not-a-jwt-and-not-sb-secret"), "unknown");
+assert.equal(detectSupabaseKeyFormat(undefined), "unknown");
+assert.equal(detectSupabaseKeyFormat(""), "unknown");
+ok("detectSupabaseKeyFormat correctly distinguishes legacy_jwt, sb_secret, and unknown, never throws on empty/undefined");
+
+// ---------------------------------------------------------------------------
+section("10) A sb_secret_-formatted key run through the full audit reports keyFormat=sb_secret and jwtSegmentCount=1 (no fake JWT decode attempt)");
+
+const sbSecretKey = "sb_secret_abcdef1234567890notarealkey";
+const a10 = auditSupabaseEnvConfig(
+  "https://gncjslondpvysjaytagd.supabase.co",
+  sbSecretKey,
+  "gncjslondpvysjaytagd",
+);
+assert.equal(a10.key.keyFormat, "sb_secret");
+assert.equal(a10.key.jwtDecodable, false);
+assert.equal(a10.key.claimRole, null);
+ok("a sb_secret_ key is classified sb_secret, and never misreported as a decodable/undecodable JWT claim");
 
 console.log("\nOK: supabase-env-audit tests passed");
