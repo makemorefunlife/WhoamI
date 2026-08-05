@@ -195,6 +195,7 @@ function buildChildDnaSection(
     hiddenSensitivity: dna.hidden_sensitivity,
     attentionFocusStyle: dna.attention_focus_style,
     hiddenGenius: dna.hidden_genius,
+    praiseTriggerNote: dna.praise_trigger_note ?? null,
   };
 }
 

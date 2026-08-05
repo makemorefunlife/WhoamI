@@ -88,6 +88,7 @@ export type ChildDnaSection = BaseSection & {
   hiddenSensitivity: string;
   attentionFocusStyle: string;
   hiddenGenius: string;
+  praiseTriggerNote?: string | null;
 };
 
 export type TalentSection = BaseSection & {

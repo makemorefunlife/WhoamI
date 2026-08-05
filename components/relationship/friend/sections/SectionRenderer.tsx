@@ -465,6 +465,14 @@ export function FriendReportViewModelView({
                 {snapshot.vibeAxisNotes.riskNote ? <p>{snapshot.vibeAxisNotes.riskNote}</p> : null}
               </div>
             ) : null}
+            {snapshot.shineWhenBest ? (
+              <div className="mt-3 rounded-md border border-amber-200/20 bg-amber-200/5 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-amber-200/70">
+                  When this friendship shines
+                </p>
+                <p className="mt-1 text-sm text-white/80">{snapshot.shineWhenBest}</p>
+              </div>
+            ) : null}
           </>
         ) : undefined
       }

@@ -88,6 +88,7 @@ function buildSnapshotSection(
           riskNote: notes.risk_note,
         }
       : undefined,
+    shineWhenBest: f.section_snapshot.shine_when_best ?? null,
   };
 }
 

@@ -56,6 +56,7 @@ import {
 import type { FriendComparisonTableValue } from "./friendComparisonTableCanonical";
 import type { FriendTravelPlannerValue } from "./friendTravelPlannerCanonical";
 import type { FriendTreasurerClientValue } from "./friendTreasurerCanonical";
+import { buildFriendShineInsight } from "@/lib/relationship/enrichment/friendShineInsight";
 
 export type FriendReportBody = {
   headline: string;
@@ -241,12 +242,22 @@ export function buildFriendReport(params: {
     locale,
   );
 
+  const shineWhenBest = buildFriendShineInsight({
+    connectionPct: friendBase.section_snapshot.connection_pct,
+    banterPct: friendBase.section_snapshot.banter_pct,
+    riskPct: friendBase.section_snapshot.risk_pct,
+    hangoutHint: friendBase.section_play_money.optimal_hangout,
+    travelLeadNickname: travelStyle?.planner?.nickname ?? null,
+    locale,
+  });
+
   const friend = {
     ...friendBase,
     section_snapshot: {
       ...friendBase.section_snapshot,
       one_line_friendship: oneLineFriendship,
       vibe_axis_notes: vibeAxisNotes,
+      shine_when_best: shineWhenBest,
     },
     section_social_dna_a: {
       ...friendBase.section_social_dna_a,

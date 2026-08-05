@@ -36,6 +36,7 @@ import { buildFamilyRelationshipIndexSection } from "./familyRelationshipIndexSe
 import { buildFamilyTalentSection } from "./familyTalentProfile";
 import { applyFamilyTalentPsychAuxNotes } from "./familyTalentAlign";
 import { buildFamilySosSection } from "./familySosScript";
+import { buildFamilyPraiseTriggerNote } from "@/lib/relationship/enrichment/familyPraiseTriggerNote";
 import { buildFamilyFilialFrequencySection } from "./familyFilialFrequency";
 import {
   buildFamilyContextOutput,
@@ -231,6 +232,16 @@ export function buildFamilyParentReport(params: {
       ),
     };
   }
+
+  family.section_child_dna = {
+    ...family.section_child_dna,
+    praise_trigger_note: buildFamilyPraiseTriggerNote({
+      childNickname: ctx.childNickname,
+      parentNickname: ctx.parentNickname,
+      psychChild,
+      locale,
+    }),
+  };
 
   const prescription_family = buildFamilyPrescriptions({
     pair: params.pairFamily ?? null,

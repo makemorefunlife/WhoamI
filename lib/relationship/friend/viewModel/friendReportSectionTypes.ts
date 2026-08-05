@@ -45,6 +45,8 @@ export type SnapshotSection = BaseSection & {
     banterNote: string | null;
     riskNote: string | null;
   };
+  /** Research gap — when friendship shines */
+  shineWhenBest?: string | null;
 };
 
 export type PsychRadarSection = BaseSection & {

@@ -192,6 +192,7 @@ function buildMoneyChoresSection(
     spendingStyleNote: m.spending_style_note,
     cfoAxisNote: m.cfo_axis_note,
     cfoCanonicalLabel,
+    mentalLoadNote: m.mental_load_note ?? null,
   };
 }
 

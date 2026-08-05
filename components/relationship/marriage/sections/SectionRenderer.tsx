@@ -192,6 +192,12 @@ function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
             <RelationshipReportParagraph className="mt-1.5">{section.cfoAxisNote}</RelationshipReportParagraph>
           </RelationshipReportInset>
         ) : null}
+        {section.mentalLoadNote ? (
+          <RelationshipReportInset>
+            <RelationshipReportLabel>Mental load</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.mentalLoadNote}</RelationshipReportParagraph>
+          </RelationshipReportInset>
+        ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );

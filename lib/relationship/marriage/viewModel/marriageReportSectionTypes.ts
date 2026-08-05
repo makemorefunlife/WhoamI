@@ -80,6 +80,8 @@ export type MoneyChoresSection = BaseSection & {
   cfoAxisNote?: string | null;
   /** Typed CE badge from canonical_projections (optional legacy) */
   cfoCanonicalLabel?: string | null;
+  /** Invisible mental load enrichment */
+  mentalLoadNote?: string | null;
 };
 
 // ---- Part 3: 침실 케미스트리 + 수면 + 애착 -----------------------------------

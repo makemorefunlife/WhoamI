@@ -52,6 +52,8 @@ export type FriendshipSnapshotSection = {
     banter_note: string | null;
     risk_note: string | null;
   } | null;
+  /** Incremental enrichment — when this friendship shines (research gap #3) */
+  shine_when_best?: string | null;
 };
 
 export type SoulmateFrequencySection = {

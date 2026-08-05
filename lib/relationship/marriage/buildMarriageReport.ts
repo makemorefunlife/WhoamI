@@ -25,6 +25,7 @@ import {
   operatingCfoClientValueFromFinalized,
   type MarriageOperatingCfoClientValue,
 } from "./marriageOperatingCfoCanonical";
+import { buildPartnerMentalLoadNote } from "@/lib/relationship/enrichment/partnerMentalLoadNote";
 import {
   buildMarriageComparisonTableCanonical,
   buildMarriageComparisonTableClientProjection,
@@ -208,6 +209,14 @@ export function buildMarriageReport(params: {
         cfoFinal.nickname === params.nicknameA,
         locale,
       ),
+      mental_load_note: buildPartnerMentalLoadNote({
+        nicknameA: params.nicknameA,
+        nicknameB: params.nicknameB,
+        cfoNickname: cfoFinal.nickname,
+        psychA: params.psychMasterA,
+        psychB: params.psychMasterB,
+        locale,
+      }),
       ...(cfoFinal.confidence
         ? { cfo_confidence: cfoFinal.confidence }
         : {}),

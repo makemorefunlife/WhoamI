@@ -65,6 +65,8 @@ export type ChildDnaSection = {
   hidden_sensitivity: string;
   attention_focus_style: string;
   hidden_genius: string;
+  /** Incremental enrichment — praise / recognition trigger */
+  praise_trigger_note?: string | null;
 };
 
 export type DestinyScoreSection = {

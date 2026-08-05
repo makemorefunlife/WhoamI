@@ -231,6 +231,12 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
             <RelationshipReportLabel>{t.dnaHiddenGeniusLabel}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{section.hiddenGenius}</RelationshipReportParagraph>
           </div>
+          {section.praiseTriggerNote ? (
+            <div>
+              <RelationshipReportLabel>Praise trigger</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1.5">{section.praiseTriggerNote}</RelationshipReportParagraph>
+            </div>
+          ) : null}
         </div>
       </RelationshipReportBody>
     </RelationshipReportCard>

@@ -64,6 +64,8 @@ export type MoneyChoresSection = {
   cfo_confidence?: "high" | "low";
   cfo_align?: "confirms" | "caution";
   cfo_dual?: boolean;
+  /** Incremental enrichment — invisible mental load (research gap) */
+  mental_load_note?: string | null;
 };
 
 export type FamilyBoundarySection = {
