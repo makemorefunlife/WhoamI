@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "unknown_hour",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:01.727Z",
+  "generated_at": "2026-08-05T16:09:22.229Z",
   "case_meta": {
     "label_ko": "시간 모름",
     "label_en": "Unknown hour",
@@ -297,6 +297,7 @@
           "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
           "spending_style_note": "Alex & Jordan 둘 다 저축·소비 사이에서 비교적 균형 잡힌 편이에요 — 딱히 교정할 성향은 없고, 가끔 서로 확인만 하면 돼요.",
           "cfo_axis_note": null,
+          "mental_load_note": "보이지 않는 집안 운영 부담이 비슷해 보여요. 캘린더·할 일·후속 확인의 주인을 이름 붙여 두면, 한쪽이 조용히 둘 다 짊어지지 않게 됩니다.",
           "cfo_confidence": "low",
           "cfo_align": "caution"
         },

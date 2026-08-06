@@ -79,7 +79,7 @@ function assertNoForbiddenKeys(e: ReferenceEntry): void {
   const blob = JSON.stringify(e).toLowerCase();
   for (const key of FORBIDDEN_ENTRY_KEYS) {
     // Structural limits flags mention "advice" / "narrative" — skip those keys on limits.
-    if (key === "advice" || key === "narrative") continue;
+    if ((key as string) === "advice" || key === "narrative") continue;
     if (key.endsWith("_ko") || key.endsWith("_en")) {
       if (Object.prototype.hasOwnProperty.call(e, key)) {
         throw new Error(`${e.reference_id} leaked forbidden field ${key}`);

@@ -1024,6 +1024,12 @@ export const messagesEnUS = {
       loopStrengthLabel: "Where your strengths connect",
       loopFrictionLabel: "Where misunderstandings build up",
       weeklyCheckInTitle: "Weekly 10-min check-in",
+      deepReadVoiceMeLabel: "From my perspective",
+      deepReadVoicePartnerLabel: "From their perspective",
+      deepReadPatternLabel: "Where instincts diverge",
+      deepReadAdviceMeLabel: "Advice for me",
+      deepReadAdvicePartnerLabel: "Advice for my colleague",
+      deepReadTogetherLabel: "Things to try together",
       defaultKindLabel: "Colleague · Business Partner",
       part1Title: "📊 Part 1. Where You Stand, at a Glance",
       part2Title: "👥 Part 2. How You Each Work",
@@ -1082,6 +1088,13 @@ export const messagesEnUS = {
       householdRolesComplementLabel: "Where the roles complement each other",
       householdRolesTensionLabel: "Where roles clash or one side carries more load",
       psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
+      deepReadCardTitle: "🔍 Deep Read — Beyond the Saju Chart",
+      deepReadVoiceParentLabel: "From the parent's perspective",
+      deepReadVoiceChildLabel: "From the child's perspective",
+      deepReadPatternLabel: "Where instincts diverge",
+      deepReadAdviceParentLabel: "Advice for the parent",
+      deepReadAdviceChildLabel: "Advice for the child",
+      deepReadTogetherLabel: "Things to try together",
       prescriptionCardTitle: "💊 Real-Life Action Prescription",
       prescriptionLayerLabel: "Relationship routines",
       prescriptionLayerHint: "Habits that soften repeating patterns — not a forecast",
@@ -1118,6 +1131,13 @@ export const messagesEnUS = {
       compareTableColPartner: "Friend",
       compareTableColMeaning: "What it means for the friendship",
       psychRadarCardTitle: "🎯 11-Axis Compatibility Radar",
+      deepReadCardTitle: "🔍 Deep Read — Beyond the Numbers",
+      deepReadVoiceMeLabel: "From my perspective",
+      deepReadVoicePartnerLabel: "From their perspective",
+      deepReadPatternLabel: "Where instincts diverge",
+      deepReadAdviceMeLabel: "Advice for me",
+      deepReadAdvicePartnerLabel: "Advice for my friend",
+      deepReadTogetherLabel: "Things to try together",
       part1Title: "📊 Part 1. Your Friendship, Fully Diagnosed",
       part2Title: "👥 Part 2. Compared Side by Side (Social DNA)",
       part3Title: "🔄 Part 3. The Hidden Flow Between You",
@@ -1199,6 +1219,13 @@ export const messagesEnUS = {
       originStoryCardTitle: "💕 Why You Two, of All People",
       originStoryWhyUsLabel: "✨ Why you were drawn together",
       originStoryPositiveChangeLabel: (nickname: string) => `🌱 What ${nickname} gains from this`,
+      deepReadCardTitle: "🔍 Deep Read — Reading Between the Lines",
+      deepReadVoiceMeLabel: "From my perspective",
+      deepReadVoicePartnerLabel: "From their perspective",
+      deepReadPatternLabel: "Where instincts diverge",
+      deepReadAdviceMeLabel: "Advice for me",
+      deepReadAdvicePartnerLabel: "Advice for my partner",
+      deepReadTogetherLabel: "Things to try together",
       part1Title: "💕 Part 1. Why You Became a Household",
       part2Title: "📊 Part 2. Your Household, Fully Scored",
       part3Title: "🔞 Part 3. Bedroom Chemistry & Attachment",
@@ -2175,6 +2202,12 @@ export type MessageCatalog = {
       loopStrengthLabel: string;
       loopFrictionLabel: string;
       weeklyCheckInTitle: string;
+      deepReadVoiceMeLabel: string;
+      deepReadVoicePartnerLabel: string;
+      deepReadPatternLabel: string;
+      deepReadAdviceMeLabel: string;
+      deepReadAdvicePartnerLabel: string;
+      deepReadTogetherLabel: string;
       defaultKindLabel: string;
       part1Title: string;
       part2Title: string;
@@ -2233,6 +2266,13 @@ export type MessageCatalog = {
       householdRolesComplementLabel: string;
       householdRolesTensionLabel: string;
       psychRadarCardTitle: string;
+      deepReadCardTitle: string;
+      deepReadVoiceParentLabel: string;
+      deepReadVoiceChildLabel: string;
+      deepReadPatternLabel: string;
+      deepReadAdviceParentLabel: string;
+      deepReadAdviceChildLabel: string;
+      deepReadTogetherLabel: string;
       prescriptionCardTitle: string;
       prescriptionLayerLabel: string;
       prescriptionLayerHint: string;
@@ -2269,6 +2309,13 @@ export type MessageCatalog = {
       compareTableColPartner: string;
       compareTableColMeaning: string;
       psychRadarCardTitle: string;
+      deepReadCardTitle: string;
+      deepReadVoiceMeLabel: string;
+      deepReadVoicePartnerLabel: string;
+      deepReadPatternLabel: string;
+      deepReadAdviceMeLabel: string;
+      deepReadAdvicePartnerLabel: string;
+      deepReadTogetherLabel: string;
       part1Title: string;
       part2Title: string;
       part3Title: string;
@@ -2344,6 +2391,13 @@ export type MessageCatalog = {
       originStoryCardTitle: string;
       originStoryWhyUsLabel: string;
       originStoryPositiveChangeLabel: (nickname: string) => string;
+      deepReadCardTitle: string;
+      deepReadVoiceMeLabel: string;
+      deepReadVoicePartnerLabel: string;
+      deepReadPatternLabel: string;
+      deepReadAdviceMeLabel: string;
+      deepReadAdvicePartnerLabel: string;
+      deepReadTogetherLabel: string;
       part1Title: string;
       part2Title: string;
       part3Title: string;

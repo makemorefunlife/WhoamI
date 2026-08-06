@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "psych_saju_conflict",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:00.806Z",
+  "generated_at": "2026-08-05T16:09:20.992Z",
   "case_meta": {
     "label_ko": "심리·사주 충돌",
     "label_en": "Psych/saju conflict",
@@ -218,7 +218,8 @@
             "connection_note": null,
             "banter_note": null,
             "risk_note": "갈등을 대하는 방식이 서로 달라서, 사주 신호보다 마찰이 더 크게 느껴질 수 있어요."
-          }
+          },
+          "shine_when_best": "이 우정은 끊임없는 메시지보다, 산책·식사·작은 약속처럼 부담 낮은 함께 있는 시간에 가장 잘 작동해요. 한 명은 집순이, 한 명은 밖순이 — 집순이 친구 집을 아지트로 정하고, 밖순이 친구가 동선 리드. 여행·동선은 Alex이(가) 리드할 때 더 편해져요."
         },
         "section_soulmate": {
           "soulmate_verdict": "Alex & Jordan — 완벽한 단짝은 아니지만, 솔직해질수록 깊어지는 우정."

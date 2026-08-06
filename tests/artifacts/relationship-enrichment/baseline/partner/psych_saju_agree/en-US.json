@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "psych_saju_agree",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:01.813Z",
+  "generated_at": "2026-08-05T16:09:22.355Z",
   "case_meta": {
     "label_ko": "심리·사주 합의",
     "label_en": "Psych/saju agree",
@@ -297,6 +297,7 @@
           "chores_guideline": "A 'this week's assignment' checklist is more realistic than a perfect division chart. Write down the invisible labor (tidying, bookings, childcare scheduling) first.",
           "spending_style_note": "Jordan leans toward saving, and Alex is fairly balanced — Jordan's instinct toward security can guide shared savings, with room for Alex's occasional splurges.",
           "cfo_axis_note": null,
+          "mental_load_note": "Invisible household planning load looks shared — name who owns calendar, chores list, and follow-ups so neither person silently carries both.",
           "cfo_confidence": "low",
           "cfo_align": "caution"
         },

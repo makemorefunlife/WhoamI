@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "weak",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:00.647Z",
+  "generated_at": "2026-08-05T16:09:20.785Z",
   "case_meta": {
     "label_ko": "약 호환",
     "label_en": "Weak compatibility",
@@ -217,7 +217,8 @@
             "connection_note": null,
             "banter_note": null,
             "risk_note": null
-          }
+          },
+          "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. Both certified out-and-about types — braving the wait at a hot new spot or touring festivals and pop-up stores is the move."
         },
         "section_soulmate": {
           "soulmate_verdict": "Alex & Jordan — not the perfect best-friend pair, but a friendship that deepens the more honest you get."

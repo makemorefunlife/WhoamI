@@ -160,7 +160,6 @@ export {
   personCoreRelationParamsFromBundles,
   type PremiumPersonCoreBundle,
   type PremiumPersonCorePairBundles,
-  type PersonCoreSajuSource,
 } from "./services/bundlePersonCoreForPremium";
 export {
   legacySajuInputsFromPersonCore,

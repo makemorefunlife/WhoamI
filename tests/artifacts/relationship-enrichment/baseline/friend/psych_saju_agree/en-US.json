@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "psych_saju_agree",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:00.786Z",
+  "generated_at": "2026-08-05T16:09:20.977Z",
   "case_meta": {
     "label_ko": "심리·사주 합의",
     "label_en": "Psych/saju agree",
@@ -217,7 +217,8 @@
             "connection_note": "Your relational-empathy scores line up too — the chemistry runs deeper than saju alone suggests.",
             "banter_note": null,
             "risk_note": null
-          }
+          },
+          "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. One's the homebody, one's the outdoor type — make the homebody's place the home base, and let the outdoor friend lead the route."
         },
         "section_soulmate": {
           "soulmate_verdict": "Alex & Jordan — not the perfect best-friend pair, but a friendship that deepens the more honest you get."

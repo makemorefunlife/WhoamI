@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "sparse_psych",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:00.749Z",
+  "generated_at": "2026-08-05T16:09:20.939Z",
   "case_meta": {
     "label_ko": "심리 희소",
     "label_en": "Sparse psych",
@@ -183,7 +183,8 @@
           "banter_pct": 50,
           "risk_pct": 35,
           "one_line_friendship": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-          "vibe_axis_notes": null
+          "vibe_axis_notes": null,
+          "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. Both certified out-and-about types — braving the wait at a hot new spot or touring festivals and pop-up stores is the move."
         },
         "section_soulmate": {
           "soulmate_verdict": "Alex & Jordan — an instinctively perfect friendship chemistry. Time flies whenever you two hang out."

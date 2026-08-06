@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "sparse_psych",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:00.734Z",
+  "generated_at": "2026-08-05T16:09:20.918Z",
   "case_meta": {
     "label_ko": "심리 희소",
     "label_en": "Sparse psych",
@@ -183,7 +183,8 @@
           "banter_pct": 50,
           "risk_pct": 35,
           "one_line_friendship": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머",
-          "vibe_axis_notes": null
+          "vibe_axis_notes": null,
+          "shine_when_best": "이 우정은 끊임없는 메시지보다, 산책·식사·작은 약속처럼 부담 낮은 함께 있는 시간에 가장 잘 작동해요. 둘 다 밖순이 — 핫플 웨이팅 조지고 페스티벌·팝업스토어 투어가 정답."
         },
         "section_soulmate": {
           "soulmate_verdict": "Alex & Jordan — 본능적으로 쿵 맞는 우정 케미. 만나면 시간 가는 줄 모른다."

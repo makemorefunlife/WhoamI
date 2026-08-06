@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "reversed_ab",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:00.682Z",
+  "generated_at": "2026-08-05T16:09:20.830Z",
   "case_meta": {
     "label_ko": "A/B 반전",
     "label_en": "Reversed A/B",
@@ -217,7 +217,8 @@
             "connection_note": null,
             "banter_note": null,
             "risk_note": null
-          }
+          },
+          "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. One's the outdoor type, one's the homebody — a hybrid plan that starts light outside during the day and ends back at a cozy home base at night."
         },
         "section_soulmate": {
           "soulmate_verdict": "Jordan & Alex — not the perfect best-friend pair, but a friendship that deepens the more honest you get."

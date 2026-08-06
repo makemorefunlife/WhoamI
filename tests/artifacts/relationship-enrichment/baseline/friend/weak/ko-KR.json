@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "weak",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:00.625Z",
+  "generated_at": "2026-08-05T16:09:20.763Z",
   "case_meta": {
     "label_ko": "약 호환",
     "label_en": "Weak compatibility",
@@ -217,7 +217,8 @@
             "connection_note": null,
             "banter_note": null,
             "risk_note": null
-          }
+          },
+          "shine_when_best": "이 우정은 끊임없는 메시지보다, 산책·식사·작은 약속처럼 부담 낮은 함께 있는 시간에 가장 잘 작동해요. 둘 다 밖순이 — 핫플 웨이팅 조지고 페스티벌·팝업스토어 투어가 정답."
         },
         "section_soulmate": {
           "soulmate_verdict": "Alex & Jordan — 완벽한 단짝은 아니지만, 솔직해질수록 깊어지는 우정."

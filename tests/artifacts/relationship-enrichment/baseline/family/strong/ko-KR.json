@@ -2,7 +2,7 @@
   "domain": "family",
   "caseId": "strong",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:01.235Z",
+  "generated_at": "2026-08-05T16:09:21.589Z",
   "case_meta": {
     "label_ko": "강 호환",
     "label_en": "Strong compatibility",
@@ -195,7 +195,8 @@
           "communication_style": "Alex는 논리와 사실로 마음을 정리해요. 감정만 받아들이기보다 '왜 그랬는지' 이해해야 안심합니다.",
           "hidden_sensitivity": "Alex는 겉으론 괜찮아 보여도, 작은 비난에도 오래 마음에 담아두는 편일 수 있어요.",
           "attention_focus_style": "Alex는 관심 분야에 몰입하면 시간 가는 줄 모르는 타입이에요.",
-          "hidden_genius": "Alex는 겉보기엔 늦게 성숙하는 대기만성형이에요. 어른들이 '벌써?'라고 재촉하는 시기보다, 스스로 '해냈다'는 경험을 쌓는 시기에 실력이 뛰어나게 튀어 오릅니다. 비교 대신 \"네 페이스가 좋아\"라고 믿어 주세요."
+          "hidden_genius": "Alex는 겉보기엔 늦게 성숙하는 대기만성형이에요. 어른들이 '벌써?'라고 재촉하는 시기보다, 스스로 '해냈다'는 경험을 쌓는 시기에 실력이 뛰어나게 튀어 오릅니다. 비교 대신 \"네 페이스가 좋아\"라고 믿어 주세요.",
+          "praise_trigger_note": "Alex에게는 구체적이고 타이밍 맞는 칭찬이 중요해요. 막연한 칭찬 세 번보다 관찰된 행동 한 번이 낫습니다."
         },
         "section_snapshot": {
           "bond_pct": 30,

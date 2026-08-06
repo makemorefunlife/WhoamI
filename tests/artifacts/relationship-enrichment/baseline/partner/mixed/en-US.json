@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "mixed",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:01.636Z",
+  "generated_at": "2026-08-05T16:09:22.114Z",
   "case_meta": {
     "label_ko": "혼합",
     "label_en": "Mixed",
@@ -298,6 +298,7 @@
           "chores_guideline": "Winging it by what's visible guarantees a fight. A weekly 15-minute chore meeting isn't optional — it's essential.",
           "spending_style_note": "Alex & Jordan are both fairly balanced between saving and spending — no strong tendency to correct, just keep checking in occasionally.",
           "cfo_axis_note": null,
+          "mental_load_note": "Invisible household planning load looks shared — name who owns calendar, chores list, and follow-ups so neither person silently carries both.",
           "cfo_confidence": "low",
           "cfo_align": "caution"
         },

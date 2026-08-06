@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "unknown_hour",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:01.749Z",
+  "generated_at": "2026-08-05T16:09:22.260Z",
   "case_meta": {
     "label_ko": "시간 모름",
     "label_en": "Unknown hour",
@@ -297,6 +297,7 @@
           "chores_guideline": "A 'this week's assignment' checklist is more realistic than a perfect division chart. Write down the invisible labor (tidying, bookings, childcare scheduling) first.",
           "spending_style_note": "Alex & Jordan are both fairly balanced between saving and spending — no strong tendency to correct, just keep checking in occasionally.",
           "cfo_axis_note": null,
+          "mental_load_note": "Invisible household planning load looks shared — name who owns calendar, chores list, and follow-ups so neither person silently carries both.",
           "cfo_confidence": "low",
           "cfo_align": "caution"
         },

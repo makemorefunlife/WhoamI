@@ -269,9 +269,6 @@ export function buildEnrichmentReviewPackage(params: {
     });
     report = r as unknown as Record<string, unknown>;
     const vm = buildFamilyReportViewModel(r, {
-      viewerIsReportA: true,
-      myName: birth.nicknameA,
-      partnerName: birth.nicknameB,
       locale,
     });
     vmSections = vm.sections.map((s) => ({

@@ -37,6 +37,11 @@ export type DomainSectionViewModel = {
   active_lenses: number;
   abstained_lenses: number;
   report_cards: DomainReportCardViewModel[];
+  cards: DomainReportCardViewModel[];
+  provenance: {
+    schema_version: string;
+    lens_count: number;
+  };
   story_planner_input: DomainStoryPlannerInput;
 };
 
@@ -46,16 +51,18 @@ export type DomainSectionViewModel = {
 export function buildDomainSectionViewModel(params: {
   domain: DomainPairLensId;
   facts: PairSajuFacts;
-  packets: PairContextPacket[];
+  packets?: PairContextPacket[];
+  pairPackets?: PairContextPacket[];
   personalCeA?: PersonalContextEngineOutput | null;
   personalCeB?: PersonalContextEngineOutput | null;
   partyNames?: { a: string; b: string };
   roleLabels?: { a: string; b: string };
 }): DomainSectionViewModel {
+  const actualPackets = params.packets ?? params.pairPackets ?? [];
   const evaluations: DomainLensEvaluation[] = resolveDomainLenses({
     domain: params.domain,
     facts: params.facts,
-    packets: params.packets,
+    packets: actualPackets,
     personalCeA: params.personalCeA,
     personalCeB: params.personalCeB,
     partyNames: params.partyNames,
@@ -97,6 +104,13 @@ export function buildDomainSectionViewModel(params: {
     active_lenses: activeCount,
     abstained_lenses: abstainedCount,
     report_cards: reportCards,
+    cards: reportCards,
+    provenance: {
+      schema_version: "domain_report_vm_v1",
+      lens_count: reportCards.length,
+    },
     story_planner_input: storyPlannerInput,
   };
 }
+
+export const buildDomainReportViewModel = buildDomainSectionViewModel;

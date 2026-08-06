@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "sparse_psych",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:01.766Z",
+  "generated_at": "2026-08-05T16:09:22.282Z",
   "case_meta": {
     "label_ko": "심리 희소",
     "label_en": "Sparse psych",
@@ -271,7 +271,8 @@
           "cfo_reason": "Alex이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요.",
           "chores_guideline": "눈에 보이는 대로 하면 100% 싸웁니다. 주간 가사 회의 15분은 선택이 아니라 필수예요.",
           "spending_style_note": "Alex & Jordan 둘 다 저축·소비 사이에서 비교적 균형 잡힌 편이에요 — 딱히 교정할 성향은 없고, 가끔 서로 확인만 하면 돼요.",
-          "cfo_axis_note": null
+          "cfo_axis_note": null,
+          "mental_load_note": "보이지 않는 집안 운영 부담이 비슷해 보여요. 캘린더·할 일·후속 확인의 주인을 이름 붙여 두면, 한쪽이 조용히 둘 다 짊어지지 않게 됩니다."
         },
         "section_family_boundary": {
           "inlaw_stress_summary": "시댁·처가 스트레스 지수 20% — 비교적 독립적이지만, 피곤할 때 가족 이슈가 침실까지 따라오지 않게 경계는 유지하세요.",

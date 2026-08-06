@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "reversed_ab",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:00.662Z",
+  "generated_at": "2026-08-05T16:09:20.807Z",
   "case_meta": {
     "label_ko": "A/B 반전",
     "label_en": "Reversed A/B",
@@ -217,7 +217,8 @@
             "connection_note": null,
             "banter_note": null,
             "risk_note": null
-          }
+          },
+          "shine_when_best": "이 우정은 끊임없는 메시지보다, 산책·식사·작은 약속처럼 부담 낮은 함께 있는 시간에 가장 잘 작동해요. 한 명은 밖순이, 한 명은 집순이 — 낮엔 가볍게 밖에서, 밤엔 편한 아지트로 마무리하는 하이브리드 동선."
         },
         "section_soulmate": {
           "soulmate_verdict": "Jordan & Alex — 완벽한 단짝은 아니지만, 솔직해질수록 깊어지는 우정."

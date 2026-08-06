@@ -64,13 +64,13 @@ function deriveDirectionality(
 
 export function evaluateFamilyLenses(params: {
   facts: PairSajuFacts;
-  packets: PairContextPacket[];
+  packets?: PairContextPacket[];
   personalCeA?: PersonalContextEngineOutput;
   personalCeB?: PersonalContextEngineOutput;
   partyNames?: { a: string; b: string };
   psychScores?: Record<string, number>;
 }): DomainLensEvaluation<FamilyLensId>[] {
-  const { facts, packets, personalCeA, personalCeB, partyNames } = params;
+  const { facts, packets = [], personalCeA, personalCeB, partyNames } = params;
   const nameA = partyNames?.a ?? "부모(A)";
   const nameB = partyNames?.b ?? "자녀(B)";
   const unknownHour = facts.birth_time_unknown_a || facts.birth_time_unknown_b;

@@ -39,7 +39,7 @@ export function assertEntryPurity(entry: ReferenceEntry): string[] {
       key === "work" ||
       key === "narrative" ||
       key === "prompt" ||
-      key === "advice"
+      (key as string) === "advice"
     ) {
       continue;
     }

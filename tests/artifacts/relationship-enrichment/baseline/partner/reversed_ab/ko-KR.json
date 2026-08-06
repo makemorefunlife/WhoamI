@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "reversed_ab",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:01.697Z",
+  "generated_at": "2026-08-05T16:09:22.197Z",
   "case_meta": {
     "label_ko": "A/B 반전",
     "label_en": "Reversed A/B",
@@ -297,6 +297,7 @@
           "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
           "spending_style_note": "Jordan은(는) 저축 쪽으로 기울고 Alex은(는) 비교적 균형 잡힌 편이에요 — Jordan의 안정 감각을 공동 저축 기준으로 삼되, Alex의 가끔의 지출은 여유를 둬도 좋아요.",
           "cfo_axis_note": null,
+          "mental_load_note": "보이지 않는 집안 운영 부담이 비슷해 보여요. 캘린더·할 일·후속 확인의 주인을 이름 붙여 두면, 한쪽이 조용히 둘 다 짊어지지 않게 됩니다.",
           "cfo_confidence": "low",
           "cfo_align": "caution"
         },

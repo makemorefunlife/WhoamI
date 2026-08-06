@@ -2,7 +2,7 @@
   "domain": "family",
   "caseId": "reversed_ab",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:01.372Z",
+  "generated_at": "2026-08-05T16:09:21.809Z",
   "case_meta": {
     "label_ko": "A/B 반전",
     "label_en": "Reversed A/B",
@@ -195,7 +195,8 @@
           "communication_style": "Alex settles their heart with logic and facts. Accepting emotion alone isn't enough — they need to understand \"why\" before they feel at ease.",
           "hidden_sensitivity": "Alex may look fine on the surface, but can hold onto even small criticism for a long time.",
           "attention_focus_style": "Alex is the type to lose track of time once absorbed in something they're interested in.",
-          "hidden_genius": "Alex is a late bloomer who matures more slowly on the surface. Rather than the moment adults rush with \"already?\", their skills tend to leap forward during the period when they build their own experience of \"I did it.\" Trust them with \"your pace is good\" instead of comparison."
+          "hidden_genius": "Alex is a late bloomer who matures more slowly on the surface. Rather than the moment adults rush with \"already?\", their skills tend to leap forward during the period when they build their own experience of \"I did it.\" Trust them with \"your pace is good\" instead of comparison.",
+          "praise_trigger_note": "Keep praise specific and timely for Alex — one observed behavior beats three generic compliments."
         },
         "section_snapshot": {
           "bond_pct": 30,

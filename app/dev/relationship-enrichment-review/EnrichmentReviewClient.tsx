@@ -104,7 +104,7 @@ function CurrentRenderedReport({
   };
   if (domain === "friend") {
     const vm = buildFriendReportViewModel(report as FriendReportBody, params);
-    return <FriendReportViewModelView vm={vm} />;
+    return <FriendReportViewModelView vm={vm} viewerIsReportA={true} />;
   }
   if (domain === "work") {
     const vm = buildWorkReportViewModel(report as WorkColleagueReportBody, params);
@@ -115,7 +115,7 @@ function CurrentRenderedReport({
     return <FamilyReportViewModelView vm={vm} />;
   }
   const vm = buildMarriageReportViewModel(report as MarriageReportBody, params);
-  return <MarriageReportViewModelView vm={vm} />;
+  return <MarriageReportViewModelView vm={vm} viewerIsReportA={true} />;
 }
 
 function enrichmentHighlights(pkg: EnrichmentReviewPackage) {

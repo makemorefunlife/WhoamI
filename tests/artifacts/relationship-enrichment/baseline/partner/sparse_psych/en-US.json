@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "sparse_psych",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:01.782Z",
+  "generated_at": "2026-08-05T16:09:22.307Z",
   "case_meta": {
     "label_ko": "심리 희소",
     "label_en": "Sparse psych",
@@ -271,7 +271,8 @@
           "cfo_reason": "Alex has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A \"dual CFO\" setup is banned — only one person should hold the reins.",
           "chores_guideline": "Winging it by what's visible guarantees a fight. A weekly 15-minute chore meeting isn't optional — it's essential.",
           "spending_style_note": "Alex & Jordan are both fairly balanced between saving and spending — no strong tendency to correct, just keep checking in occasionally.",
-          "cfo_axis_note": null
+          "cfo_axis_note": null,
+          "mental_load_note": "Invisible household planning load looks shared — name who owns calendar, chores list, and follow-ups so neither person silently carries both."
         },
         "section_family_boundary": {
           "inlaw_stress_summary": "In-law stress index 20% — relatively independent, but keep the boundary so family issues don't follow you into the bedroom when you're tired.",

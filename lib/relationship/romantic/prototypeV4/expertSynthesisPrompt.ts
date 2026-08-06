@@ -130,8 +130,8 @@ export function buildAttractionSynthesisInput(
       forbiddenInference: ["외도 가능성", "운명적 종속", "일방적 구원"],
     },
     exactTenGods: [
-      plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodKo ?? "편인",
-      plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodKo ?? "비견",
+      plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodName ?? "편인",
+      plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodName ?? "비견",
     ],
     confidence: "high",
     supportingEvidence,
@@ -202,8 +202,8 @@ export function buildDynamicsSynthesisInput(
       forbiddenInference: ["가스라이팅 진단", "회피형/불안형 낙인"],
     },
     exactTenGods: [
-      plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodKo ?? "편인",
-      plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodKo ?? "비견",
+      plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodName ?? "편인",
+      plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodName ?? "비견",
     ],
     confidence: "high",
     supportingEvidence: [],
@@ -283,8 +283,8 @@ export function buildHiddenHeartsSynthesisInput(
     },
     exactTenGods: [
       person === "a"
-        ? (plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodKo ?? "편인")
-        : (plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodKo ?? "비견"),
+        ? (plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodName ?? "편인")
+        : (plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodName ?? "비견"),
     ],
     confidence: "high",
     supportingEvidence: [],
@@ -404,8 +404,8 @@ export function buildStrengthVulnerabilitySynthesisInput(
       forbiddenInference: ["착취 관계 단정", "파국적 종말 예측"],
     },
     exactTenGods: [
-      plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodKo ?? "편인",
-      plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodKo ?? "비견",
+      plan.personalRelationshipCeA?.spousePalaceProfile?.tenGodName ?? "편인",
+      plan.personalRelationshipCeB?.spousePalaceProfile?.tenGodName ?? "비견",
     ],
     confidence: "high",
     supportingEvidence: [],

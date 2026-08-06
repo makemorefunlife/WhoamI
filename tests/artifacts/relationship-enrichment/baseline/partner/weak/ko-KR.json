@@ -2,7 +2,7 @@
   "domain": "partner",
   "caseId": "weak",
   "locale": "ko-KR",
-  "generated_at": "2026-08-05T15:12:01.663Z",
+  "generated_at": "2026-08-05T16:09:22.135Z",
   "case_meta": {
     "label_ko": "약 호환",
     "label_en": "Weak compatibility",
@@ -299,6 +299,7 @@
           "chores_guideline": "눈에 보이는 대로 하면 100% 싸웁니다. 주간 가사 회의 15분은 선택이 아니라 필수예요.",
           "spending_style_note": "Jordan은(는) 저축 쪽으로 기울고 Alex은(는) 비교적 균형 잡힌 편이에요 — Jordan의 안정 감각을 공동 저축 기준으로 삼되, Alex의 가끔의 지출은 여유를 둬도 좋아요.",
           "cfo_axis_note": null,
+          "mental_load_note": "보이지 않는 집안 운영 부담이 비슷해 보여요. 캘린더·할 일·후속 확인의 주인을 이름 붙여 두면, 한쪽이 조용히 둘 다 짊어지지 않게 됩니다.",
           "cfo_confidence": "low",
           "cfo_align": "caution"
         },

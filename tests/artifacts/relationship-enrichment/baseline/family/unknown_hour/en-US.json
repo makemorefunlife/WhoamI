@@ -2,7 +2,7 @@
   "domain": "family",
   "caseId": "unknown_hour",
   "locale": "en-US",
-  "generated_at": "2026-08-05T15:12:01.413Z",
+  "generated_at": "2026-08-05T16:09:21.856Z",
   "case_meta": {
     "label_ko": "시간 모름",
     "label_en": "Unknown hour",
@@ -195,7 +195,8 @@
           "communication_style": "Alex tends to say what's on their mind the moment it comes up — sharing how they feel right now rather than turning it over silently first.",
           "hidden_sensitivity": "Alex may look fine on the surface, but can hold onto even small criticism for a long time.",
           "attention_focus_style": "Alex is the type to lose track of time once absorbed in something they're interested in.",
-          "hidden_genius": "Alex is a late bloomer who matures more slowly on the surface. Rather than the moment adults rush with \"already?\", their skills tend to leap forward during the period when they build their own experience of \"I did it.\" Trust them with \"your pace is good\" instead of comparison."
+          "hidden_genius": "Alex is a late bloomer who matures more slowly on the surface. Rather than the moment adults rush with \"already?\", their skills tend to leap forward during the period when they build their own experience of \"I did it.\" Trust them with \"your pace is good\" instead of comparison.",
+          "praise_trigger_note": "Keep praise specific and timely for Alex — one observed behavior beats three generic compliments."
         },
         "section_snapshot": {
           "bond_pct": 50,

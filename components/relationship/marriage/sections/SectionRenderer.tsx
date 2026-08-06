@@ -439,11 +439,11 @@ function UpsetCard({ section }: { section: UpsetSection }) {
             <p className="text-sm font-bold text-white/92">{t.upsetGuideTitle(guide.nickname)}</p>
             <div className="mt-3 space-y-2.5">
               <div>
-                <RelationshipReportLabel>{t.upsetSignalLabel}</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.upsetPointLabel}</RelationshipReportLabel>
                 <RelationshipReportParagraph className="mt-1">{guide.upset_signals}</RelationshipReportParagraph>
               </div>
               <div>
-                <RelationshipReportLabel>{t.upsetDoLabel}</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.resolveLabel}</RelationshipReportLabel>
                 <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-white/80">
                   {guide.do_list.map((item, i) => (
                     <li key={i}>{item}</li>
@@ -451,7 +451,7 @@ function UpsetCard({ section }: { section: UpsetSection }) {
                 </ul>
               </div>
               <div>
-                <RelationshipReportLabel>{t.upsetAvoidLabel}</RelationshipReportLabel>
+                <RelationshipReportLabel>{t.avoidLabel}</RelationshipReportLabel>
                 <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-white/80">
                   {guide.avoid_list.map((item, i) => (
                     <li key={i}>{item}</li>

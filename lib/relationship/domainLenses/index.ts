@@ -25,8 +25,13 @@ export type {
 
 export {
   FIVE_ELEMENT_DOMAIN_MATRIX,
+  INTERACTION_DOMAIN_MATRIX,
 } from "./layersLensMatrix";
-export type { ElementCode, DomainElementFlowExpression } from "./layersLensMatrix";
+export type {
+  ElementCode,
+  DomainElementFlowExpression,
+  InteractionDomainTranslation,
+} from "./layersLensMatrix";
 
 export { V1_MIGRATION_INVENTORY } from "./v1MigrationInventory";
 export type {
@@ -38,6 +43,7 @@ export { resolveDomainLenses } from "./resolveDomainLenses";
 export { buildDomainStoryPlannerInput } from "./buildDomainStoryPlannerInput";
 export {
   buildDomainSectionViewModel,
+  buildDomainReportViewModel,
   type DomainReportCardViewModel,
   type DomainSectionViewModel,
 } from "./domainLensProofConsumer";

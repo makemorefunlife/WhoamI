@@ -7,6 +7,8 @@ export type SajuPillars = {
   hourPillar: string;
 };
 
+export type PillarSlot = "년주" | "월주" | "일주" | "시주" | "year" | "month" | "day" | "hour" | string;
+
 export type ChartPillar = {
   name: string;
   pillar: string;

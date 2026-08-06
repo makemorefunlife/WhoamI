@@ -6,7 +6,7 @@
 import { readFileSync } from "fs";
 
 const failureFile = readFileSync(
-  new URL("../lib/report/premiumPipelineFailure.ts", import.meta.url),
+  new URL("../../lib/report/premiumPipelineFailure.ts", import.meta.url),
   "utf8",
 );
 
