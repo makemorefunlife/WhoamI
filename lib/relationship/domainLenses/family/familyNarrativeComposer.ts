@@ -118,8 +118,8 @@ function composeFamilyScene(
       trEn = "Over-involvement can trigger defensive withdrawal; granting dignified space naturally invites open, authentic conversation.";
       refKo = "문을 닫고 혼자만의 시간을 갖는 것은 가족을 밀어내는 것이 아니라 건강한 어른으로 자라나는 성장의 징표입니다.";
       refEn = "Needing personal space is not rejection—it is an essential developmental milestone of healthy maturation.";
-      actKo = "방에 들어갈 때는 반드시 노크를 하고, 묻고 싶은 것이 있어도 상대방이 준비될 때까지 기다려주는 배려를 실천하세요.";
-      actEn = "Always knock before entering personal rooms and patiently allow family members to share thoughts when they feel ready.";
+      actKo = "방에 들어갈 때는 반드시 노크를 하고, '혼자 정리할 시간 필요하면 편하게 있어, 얘기하고 싶을 때 언제든 찾아와'라는 열린 문을 열어두세요.";
+      actEn = "Always knock before entering personal rooms and offer an open invitation to talk whenever they feel ready.";
       scripts = [
         {
           category: "boundary_respect",
@@ -218,8 +218,8 @@ function composeFamilyScene(
       trEn = "Guidance delivered in anger fosters defiance rather than understanding; a calm, timeboxed discussion ensures guidance is heard.";
       refKo = "행동을 지적하는 것이지 인격을 부정하는 것이 아님을 분명히 밝힐 때 자녀는 상처받지 않고 배웁니다.";
       refEn = "Distinguishing the specific action from the child's inherent character prevents deep emotional scarring.";
-      actKo = "감정이 격해질 때는 '10분 뒤에 다시 이야기하자'고 멈추고, 조언할 때는 '행동의 영향'에만 초점을 맞추세요.";
-      actEn = "Pause heated moments with a 10-minute timeout and focus solely on the observable behavior rather than character labels.";
+      actKo = "행동을 바로잡을 때는 과거의 잘못을 들추거나 인격을 비난하지 마세요. 감정이 가라앉은 후 '너를 비난하려는 게 아니라, 이 습관이 네 미래에 안 좋은 영향을 줄까 봐 걱정돼서 그래'라며 행동의 영향에만 초점을 맞추세요.";
+      actEn = "Never bring up past grievances or attack personality. Once tempers cool, focus purely on behavioral impact: 'I'm not blaming you as a person; I'm just concerned about how this specific habit affects your well-being.'";
       scripts = [
         {
           category: "calm_guidance",
@@ -243,8 +243,8 @@ function composeFamilyScene(
       trEn = "A familial apology is not defeat; it is an empowering affirmation that the relationship outlasts any disagreement.";
       refKo = "다툼은 가족이 끝나는 신호가 아니라 서로의 속마음을 더 깊이 이해하기 위한 성장통입니다.";
       refEn = "Ruptures are not fractures; they are profound opportunities to learn each other's deeper emotional sensitivities.";
-      actKo = "어색한 침묵을 깰 때 '밥 먹었어?'라는 소박한 질문이나 간식을 건네며 화해의 물꼬를 트세요.";
-      actEn = "Break lingering tension with a simple, caring question—'Have you eaten?'—to bridge the silence with warmth.";
+      actKo = "가족 간에 서먹함이 생겼을 때 '아까는 말이 좀 심했어 미안해, 좋아하는 반찬 해뒀으니 나와서 밥 먹자'며 소박하게 건네는 한마디로 화해의 물꼬를 트세요.";
+      actEn = "When family tension lingers, bridge the silence simply: 'I was a bit harsh earlier, I’m sorry; I made your favorite dish, come eat together.'";
       scripts = [
         {
           category: "family_reconciliation",
@@ -322,8 +322,8 @@ export function composeFamilyNarrative(plan: DomainStoryPlan): DomainNarrativePl
       headline_en: `Parent-Child Family Playbook for ${nameA} & ${nameB}: 7 Pillars of Nurturing Connection`,
       summary_ko: "정서적 온기, 건강한 거리두기, 숨겨진 인정 욕구, 맞춤형 칭찬, 가사 협력, 비폭력 훈육, 갈등 회복까지 대를 잇는 든든한 가족 안식처 가이드입니다.",
       summary_en: "A compassionate parent-child guide spanning emotional warmth, healthy autonomy, validation, praise triggers, domestic teamwork, and peaceful reconciliation.",
-      core_vibe_badge_ko: "무조건적 사랑과 자율적 존중의 가족",
-      core_vibe_badge_en: "Unconditional Love & Respectful Autonomy",
+      core_vibe_badge_ko: "따뜻한 보살핌과 독립적 성장의 고슴도치 가족",
+      core_vibe_badge_en: "Warm Nurturing & Autonomous Growth (Hedgehog Family)",
     },
     scenes,
     action_playbook: {

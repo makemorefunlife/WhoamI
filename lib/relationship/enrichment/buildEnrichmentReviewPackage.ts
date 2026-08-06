@@ -201,6 +201,30 @@ export type EnrichmentReviewPackage = {
     narrative: unknown;
     section_view_model: unknown;
   };
+  previous_dev: {
+    mode: "previous_dev_raw_lenses";
+    evidence: {
+      packet_count: number;
+      packet_ids: string[];
+      abstained_lenses: number;
+      active_lenses: number;
+    };
+    lenses: Array<{
+      lens_id: string;
+      question_ko: string;
+      headline_ko: string;
+      narrative_ko: string;
+      confidence: string;
+      tension_level: string;
+      is_abstaining: boolean;
+    }>;
+    story_planner: unknown;
+  };
+  final_dev: {
+    mode: "final_dev_7_scene_narrative";
+    narrative: unknown;
+    section_view_model: unknown;
+  };
 };
 
 export function buildEnrichmentReviewPackage(params: {
@@ -388,6 +412,33 @@ export function buildEnrichmentReviewPackage(params: {
         input: storyPlannerInput,
         plan: storyPlan,
       },
+      narrative,
+      section_view_model: sectionVm,
+    },
+    previous_dev: {
+      mode: "previous_dev_raw_lenses",
+      evidence: {
+        packet_count: pairCe.packets.length,
+        packet_ids: pairCe.packets.map((p) => p.packet_id),
+        abstained_lenses: evaluations.filter((e) => e.is_abstaining).length,
+        active_lenses: evaluations.filter((e) => !e.is_abstaining).length,
+      },
+      lenses: evaluations.map((e) => ({
+        lens_id: e.lens_id,
+        question_ko: e.user_question,
+        headline_ko: e.headline_ko,
+        narrative_ko: e.narrative_ko,
+        confidence: e.confidence,
+        tension_level: e.tension_level,
+        is_abstaining: Boolean(e.is_abstaining),
+      })),
+      story_planner: {
+        input: storyPlannerInput,
+        plan: storyPlan,
+      },
+    },
+    final_dev: {
+      mode: "final_dev_7_scene_narrative",
       narrative,
       section_view_model: sectionVm,
     },

@@ -141,16 +141,16 @@ function composeFriendScene(
       trEn = "When expense boundaries are clear and immediate, no emotional friction lingers, making gatherings stress-free.";
       refKo = "'친하니까 대충 넘어가자'는 태도보다 100원 단위까지 투명하게 정산하는 배려가 오히려 서로의 자존감을 지켜줍니다.";
       refEn = "Transparent accounting is not pettiness—it is a proactive demonstration of relational care and dignity.";
-      actKo = "모임 직후 영수증 공유와 송금을 습관화하고, 선결제한 친구에게 즉시 정산 링크를 전달하세요.";
-      actEn = "Establish an immediate habit of receipt sharing and prompt digital transfers after shared outings.";
+      actKo = "모임 직후 영수증 공유와 100원 단위 송금을 습관화하고, 선결제한 친구에게 즉시 정산 링크를 전달하세요.";
+      actEn = "Establish an immediate habit of receipt sharing and precise digital transfers down to the last cent after shared outings.";
       scripts = [
         {
           category: "money_split",
           title_ko: "깔끔한 즉시 정산",
           title_en: "Immediate Clear Split",
           speaker: "BOTH",
-          dialogue_ko: `"오늘 계산 영수증이야! 편할 때 바로 보내주면 돼, 오늘 너무 즐거웠어."`,
-          dialogue_en: `"Here's the receipt from today! Whenever you have a second, no rush—had a wonderful time."`,
+          dialogue_ko: `"오늘 계산 영수증이야! 100원 단위까지 딱 나눠서 편할 때 바로 보내주면 돼, 오늘 너무 즐거웠어."`,
+          dialogue_en: `"Here's the receipt from today! Settle up whenever you have a second—had an amazing time."`,
         },
       ];
       roleRulesKo = ["정산은 모임 당일 내로 마무리하고 금전 부탁은 원천적으로 삼가기"];
@@ -166,8 +166,8 @@ function composeFriendScene(
       trEn = `${lead}'s proactive drive paired with ${partner}'s adaptability navigates unexpected travel delays smoothly.`;
       refKo = "총대 멘 사람에게만 모든 짐이 쏠리지 않도록, 일정 중 발생하는 돌발 상황에 대해서는 불평 대신 적극적인 도움을 건네야 합니다.";
       refEn = "Never leave the planner carrying the entire logistical weight alone; offer proactive help during unexpected hiccups.";
-      actKo = "여행 전 '동선 계획'과 '현장 서포트' 역할을 나누고, 일정 중간에 1시간의 자유시간을 넣어 피로를 방지하세요.";
-      actEn = "Clarify planning versus on-site support roles in advance and schedule built-in quiet buffers during trips.";
+      actKo = "여행 전 '동선 계획'과 '현장 서포트' 역할을 나누고, 전체 일정의 30%는 무계획 충전 시간으로 비워두세요.";
+      actEn = "Clarify planning versus on-site support roles in advance and leave 30% of the itinerary unbooked for flexible rest.";
       scripts = [
         {
           category: "travel_cooperation",
@@ -210,8 +210,8 @@ function composeFriendScene(
     case "friend_scene_6_distance_jealousy":
       headlineKo = "서로의 다른 성장 계절을 축하하며 안심 거리를 지키는 지혜";
       headlineEn = "Honoring individual seasons: Protecting safe distance and celebrating milestones without comparison";
-      recKo = `연락이 뜸해지거나 각자의 커리어·연애 등 삶의 변화가 생겼을 때, 서운함이나 비교 의식 없이 서로의 계절을 온전히 응원해 주는 성숙함이 필요합니다.`;
-      recEn = `When life stages shift or contact frequency fluctuates, mature friends maintain secure distance without feeling insecure or competitive.`;
+      recKo = `연락이 뜸해지거나 각자의 커리어·연애 등 삶의 변화가 생겼을 때, 서운함이나 질투 없이 서로의 반짝이는 순간을 온전히 축하해 주는 성숙함이 필요합니다.`;
+      recEn = `When life stages shift or contact frequency fluctuates, mature friends maintain secure distance without jealousy, celebrating each other's shining moments.`;
       trKo = "답장이 늦거나 만남이 뜸한 것은 우정의 식음이 아니라 삶의 전환기에 몰입하고 있는 건강한 자율성의 신호입니다.";
       trEn = "Fluctuating contact cadence reflects seasonal immersion in life milestones rather than diminished friendship warmth.";
       refKo = "친구의 성취는 내 기회의 상실이 아니며, 오랜 친구일수록 서로의 다른 속도를 묵묵히 지켜봐 주는 버팀목이 되어야 합니다.";
@@ -241,16 +241,16 @@ function composeFriendScene(
       trEn = "A timing mismatch in conflict processing means rapid confrontation feels like pressure; defining a specific reconnection time restores equilibrium.";
       refKo = "잠깐의 침묵은 관계의 단절이 아니라 상대방에게 상처 주지 않기 위한 배려의 시간입니다.";
       refEn = "A short pause is not avoidance; it is an intentional boundary to protect mutual dignity.";
-      actKo = "서운한 점을 이야기할 때는 '너'를 비난하기보다 '내 느낌'을 중심으로 전달하고, 대화 후에는 묵은 감정을 남기지 마세요.";
-      actEn = "Use 'I' statements to convey vulnerability rather than accusations, and commit to a clean reset once resolved.";
+      actKo = "서운한 점이 있을 때는 '24시간 쿨다운 골든타임'을 거친 후 '내 느낌'을 중심으로 전달하고, 대화 후에는 묵은 감정을 남기지 마세요.";
+      actEn = "Observe a 24-hour golden cooling-off window before expressing hurt using 'I' statements, committing to a complete emotional reset once resolved.";
       scripts = [
         {
           category: "reconciliation_reset",
           title_ko: "감정 정리 후 대화 제안",
           title_en: "Post-Cooling Reconciliation Proposal",
           speaker: "BOTH",
-          dialogue_ko: `"아까는 나도 감정이 좀 격했는데, 우리 감정 좀 가라앉히고 내일 저녁에 편하게 얘기하자."`,
-          dialogue_en: `"I was a bit overwhelmed earlier—let's take some time to breathe and talk it through calmly tomorrow evening."`,
+          dialogue_ko: `"아까는 나도 감정이 좀 격했는데, 24시간만 감정 좀 가라앉히고 내일 저녁에 편하게 얘기하자."`,
+          dialogue_en: `"I was a bit overwhelmed earlier—let's take 24 hours to breathe and talk it through calmly tomorrow evening."`,
         },
       ];
       roleRulesKo = ["감정적 흥분 상태에서는 결론을 내리지 않고 차분한 재대화 약속 지키기"];

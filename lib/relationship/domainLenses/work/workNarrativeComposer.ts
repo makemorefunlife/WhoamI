@@ -191,8 +191,8 @@ function composeWorkScene(
       trEn = "Guaranteed uninterrupted deep-work blocks protect against context-switching fatigue and maximize cognitive output.";
       refKo = "진행 상황을 묻는 것은 불신이 아니라 전체 일정 관리를 위한 불안감 때문입니다. 선제적인 현황 공유가 자율성을 확보해 줍니다.";
       refEn = "Status inquiries reflect project timeline accountability, not personal distrust; proactive updates guarantee continuous autonomy.";
-      actKo = "일일 스탠드업 대신 비동기 슬랙 봇을 활용하고, 블로커(Blocker)가 발생했을 때만 즉시 핑을 찍는 규칙을 적용하세요.";
-      actEn = "Utilize async daily check-ins and agree on immediate escalation protocols only when genuine blockers arise.";
+      actKo = "오전 10~12시는 '무음 집중 블록'으로 지정하고, 일일 스탠드업 대신 비동기 슬랙 봇을 활용하여 회의 피로를 최소화하세요.";
+      actEn = "Designate morning blocks as silent focus hours and replace sync standups with asynchronous status bots to avoid meeting fatigue.";
       scripts = [
         {
           category: "async_status",
@@ -241,8 +241,8 @@ function composeWorkScene(
       trEn = "Constructive phrasing focused on outcomes prevents direct feedback from being misconstrued as personal competence doubt.";
       refKo = "날카로운 피드백은 상대방의 성장을 바라는 높은 기대치에서 나옵니다. 맥락(Why)을 먼저 공유하면 오해 없이 수용됩니다.";
       refEn = "Direct feedback stems from high shared standards; framing the broader context ('Why') first ensures seamless receptivity.";
-      actKo = "피드백을 줄 때는 '상황(Situation) - 관찰된 현상(Behavior) - 비즈니스 영향(Impact)' 순서로 전달하세요.";
-      actEn = "Structure feedback using Situation-Behavior-Impact to keep discussions anchored in shared business goals.";
+      actKo = "피드백을 줄 때는 '상황(Situation) - 관찰된 현상(Behavior) - 비즈니스 영향(Impact)' 순서로 전달하고, 갈등 발생 시 24시간 내에 '비즈니스 목표 정렬 대화'로 복원하세요.";
+      actEn = "Structure feedback using Situation-Behavior-Impact, and initiate a business-alignment dialogue within 24 hours if conflict occurs.";
       scripts = [
         {
           category: "sbi_feedback",

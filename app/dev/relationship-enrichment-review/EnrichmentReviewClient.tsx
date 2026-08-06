@@ -17,7 +17,7 @@ import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/b
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 
-type Mode = "current" | "v1" | "dev";
+type Mode = "current" | "v1" | "previous_dev" | "final_dev" | "dev";
 
 type Props = {
   domain: EnrichmentDomain;
@@ -179,10 +179,19 @@ export function EnrichmentReviewClient(props: Props) {
             Current
           </Pill>
           <Pill href={qs({ mode: "v1" }, props)} active={mode === "v1"}>
-            V1
+            V1 Gold
           </Pill>
-          <Pill href={qs({ mode: "dev" }, props)} active={mode === "dev"}>
-            DEV
+          <Pill
+            href={qs({ mode: "previous_dev" }, props)}
+            active={mode === "previous_dev"}
+          >
+            Previous DEV
+          </Pill>
+          <Pill
+            href={qs({ mode: "final_dev" }, props)}
+            active={mode === "final_dev" || mode === "dev"}
+          >
+            Final DEV
           </Pill>
         </div>
       </header>
@@ -247,7 +256,45 @@ export function EnrichmentReviewClient(props: Props) {
             </>
           ) : null}
 
-          {mode === "dev" ? (
+          {mode === "previous_dev" ? (
+            <>
+              <Block title="Previous DEV — Evidence Packet (Pair CE)">
+                <Pre
+                  value={{
+                    evidence: pkg.previous_dev.evidence,
+                    lenses_count: pkg.previous_dev.lenses.length,
+                  }}
+                />
+              </Block>
+              <Block title="Previous DEV — Domain Lenses (Raw)">
+                <div className="space-y-3">
+                  {pkg.previous_dev.lenses.map((l) => (
+                    <div
+                      key={l.lens_id}
+                      className="rounded border border-white/10 p-3"
+                    >
+                      <div className="mb-1 flex flex-wrap gap-2 text-[11px] text-white/45">
+                        <span>{l.lens_id}</span>
+                        <span>{l.confidence}</span>
+                        <span>tension {l.tension_level}</span>
+                        {l.is_abstaining ? (
+                          <span className="text-rose-300">abstain</span>
+                        ) : null}
+                      </div>
+                      <p className="text-xs text-white/50">{l.question_ko}</p>
+                      <p className="mt-1 text-sm font-medium">{l.headline_ko}</p>
+                      <p className="mt-1 text-sm text-white/70">{l.narrative_ko}</p>
+                    </div>
+                  ))}
+                </div>
+              </Block>
+              <Block title="Previous DEV — Story Planner Plan">
+                <Pre value={pkg.previous_dev.story_planner} />
+              </Block>
+            </>
+          ) : null}
+
+          {mode === "final_dev" || mode === "dev" ? (
             <>
               <Block title="Evidence Packet (Pair CE)">
                 <Pre
@@ -283,7 +330,159 @@ export function EnrichmentReviewClient(props: Props) {
               <Block title="Story Planner">
                 <Pre value={pkg.dev.story_planner} />
               </Block>
-              <Block title="Final Narrative (7 scenes)">
+              <Block title="Final DEV 7-Scene Narrative (Rendered Product View)">
+                {(() => {
+                  const narrative = pkg.final_dev?.narrative as any || pkg.dev.narrative as any;
+                  if (!narrative || !narrative.scenes) return <Pre value={pkg.dev.narrative} />;
+                  return (
+                    <div className="space-y-6">
+                      <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="inline-block rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-300">
+                            {locale === "en-US"
+                              ? narrative.overview.core_vibe_badge_en
+                              : narrative.overview.core_vibe_badge_ko}
+                          </span>
+                          <span className="text-xs text-white/50">
+                            Confidence: {narrative.overall_confidence}
+                          </span>
+                        </div>
+                        <h3 className="mt-2 text-lg font-bold text-white">
+                          {locale === "en-US"
+                            ? narrative.overview.headline_en
+                            : narrative.overview.headline_ko}
+                        </h3>
+                        <p className="mt-1 text-sm text-white/70">
+                          {locale === "en-US"
+                            ? narrative.overview.summary_en
+                            : narrative.overview.summary_ko}
+                        </p>
+                      </div>
+
+                      <div className="space-y-4">
+                        {narrative.scenes.map((scene: any) => (
+                          <div
+                            key={scene.scene_id}
+                            className="rounded-lg border border-white/10 bg-white/[0.02] p-4 transition-colors hover:border-white/20"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="rounded bg-white/10 px-2 py-0.5 text-xs font-bold text-amber-200">
+                                  Scene {scene.scene_number}
+                                </span>
+                                <h4 className="text-sm font-semibold text-white">
+                                  {locale === "en-US" ? scene.title_en : scene.title_ko}
+                                </h4>
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-white/40">
+                                <span>Tension: {scene.tension_level}</span>
+                                <span>·</span>
+                                <span>Primary Lens: {scene.primary_lens_id}</span>
+                              </div>
+                            </div>
+
+                            <p className="mt-3 text-sm font-semibold text-amber-100">
+                              {locale === "en-US" ? scene.headline_en : scene.headline_ko}
+                            </p>
+
+                            <div className="mt-3 grid gap-3 text-xs md:grid-cols-2">
+                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                                <span className="font-semibold text-sky-300">
+                                  [1. 인지 / Recognition]
+                                </span>
+                                <p className="text-white/75 leading-relaxed">
+                                  {locale === "en-US"
+                                    ? scene.recognition_en
+                                    : scene.recognition_ko}
+                                </p>
+                              </div>
+                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                                <span className="font-semibold text-indigo-300">
+                                  [2. 번역 / Translation]
+                                </span>
+                                <p className="text-white/75 leading-relaxed">
+                                  {locale === "en-US"
+                                    ? scene.translation_en
+                                    : scene.translation_ko}
+                                </p>
+                              </div>
+                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                                <span className="font-semibold text-emerald-300">
+                                  [3. 재해석 / Reframing]
+                                </span>
+                                <p className="text-white/75 leading-relaxed">
+                                  {locale === "en-US"
+                                    ? scene.reframing_en
+                                    : scene.reframing_ko}
+                                </p>
+                              </div>
+                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                                <span className="font-semibold text-amber-300">
+                                  [4. 실천 가이드 / Action Guidance]
+                                </span>
+                                <p className="text-white/75 leading-relaxed">
+                                  {locale === "en-US"
+                                    ? scene.action_guidance_en
+                                    : scene.action_guidance_ko}
+                                </p>
+                              </div>
+                            </div>
+
+                            {scene.scripts?.length ? (
+                              <div className="mt-3 rounded border border-white/5 bg-white/[0.03] p-2.5 text-xs">
+                                <span className="font-semibold text-purple-300">
+                                  [실천 대화 스크립트 / Dialogue Script]
+                                </span>
+                                {scene.scripts.map((script: any, idx: number) => (
+                                  <div key={idx} className="mt-1.5 space-y-0.5">
+                                    <div className="flex items-center gap-1.5 text-[11px] text-white/50">
+                                      <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-purple-200">
+                                        Speaker: {script.speaker}
+                                      </span>
+                                      <span>
+                                        {locale === "en-US"
+                                          ? script.title_en
+                                          : script.title_ko}
+                                      </span>
+                                    </div>
+                                    <p className="italic text-purple-100/90">
+                                      {locale === "en-US"
+                                        ? script.dialogue_en
+                                        : script.dialogue_ko}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+
+                      {narrative.action_playbook ? (
+                        <div className="rounded-lg border border-emerald-400/20 bg-emerald-500/5 p-4">
+                          <h4 className="text-sm font-bold text-emerald-300">
+                            [Action Playbook & Golden Rules]
+                          </h4>
+                          <p className="mt-1 text-xs text-white/70">
+                            {locale === "en-US"
+                              ? narrative.action_playbook.summary_en
+                              : narrative.action_playbook.summary_ko}
+                          </p>
+                          <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-emerald-100/90">
+                            {(locale === "en-US"
+                              ? narrative.action_playbook.golden_rules_en
+                              : narrative.action_playbook.golden_rules_ko
+                            ).map((rule: string, idx: number) => (
+                              <li key={idx}>{rule}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })()}
+              </Block>
+              <Block title="Final Narrative (Raw JSON)">
                 <Pre value={pkg.dev.narrative} />
               </Block>
             </>

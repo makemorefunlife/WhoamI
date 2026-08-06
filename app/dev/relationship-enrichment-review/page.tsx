@@ -16,7 +16,7 @@ import type { Locale } from "@/lib/i18n/locale";
 export const dynamic = "force-dynamic";
 export const robots = { index: false, follow: false };
 
-const MODES = ["current", "v1", "dev"] as const;
+const MODES = ["current", "v1", "previous_dev", "final_dev", "dev"] as const;
 
 type Search = {
   domain?: string;
@@ -42,9 +42,10 @@ export default async function RelationshipEnrichmentReviewPage({
     ? sp.case
     : "strong") as CorpusCaseId;
   const locale = (sp.locale === "en-US" ? "en-US" : "ko-KR") as Locale;
-  const mode = MODES.includes(sp.mode as (typeof MODES)[number])
+  const rawMode = MODES.includes(sp.mode as (typeof MODES)[number])
     ? (sp.mode as (typeof MODES)[number])
-    : "current";
+    : "final_dev";
+  const mode = rawMode === "dev" ? "final_dev" : rawMode;
 
   let pkg = null as ReturnType<typeof buildEnrichmentReviewPackage> | null;
   let error: string | null = null;
