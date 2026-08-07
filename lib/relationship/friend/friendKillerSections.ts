@@ -54,6 +54,29 @@ export type FriendshipSnapshotSection = {
   } | null;
   /** Incremental enrichment — when this friendship shines (research gap #3) */
   shine_when_best?: string | null;
+  /**
+   * current_enriched 전용 — 3대 스코어 카드(우정 케미/티키타카/소셜 리스크)
+   * 감사 결과. 무엇을 측정하는지 / 이 커플이 왜 이 점수인지 / 높음·중간·낮음
+   * 의미를 담는다. production `current`(buildFriendReport.ts)는 이 필드를
+   * 채우지 않는다(undefined) — buildFriendReportEnriched.ts에서만 채움.
+   */
+  score_card_audit?: FriendScoreCardAudit | null;
+};
+
+/** current_enriched 전용 — 개별 스코어 카드 감사 항목. friendScoreCardAudit.ts 참고 */
+export type FriendScoreCardAuditItem = {
+  /** 무엇을 측정하는 점수인지 */
+  measures: string;
+  /** 이 커플이 왜 이 점수인지(실제 계산 신호 기반) */
+  why: string;
+  /** 높음/중간/낮음 구간별 의미 — risk는 방향(낮을수록 좋음)을 명시 */
+  level_meaning: string;
+};
+
+export type FriendScoreCardAudit = {
+  connection: FriendScoreCardAuditItem;
+  banter: FriendScoreCardAuditItem;
+  risk: FriendScoreCardAuditItem;
 };
 
 export type SoulmateFrequencySection = {
@@ -88,6 +111,11 @@ export type HiddenFlowSection = {
   travel_style: TravelStyleSplit | null;
   counseling_style_a: CounselingStyle | null;
   counseling_style_b: CounselingStyle | null;
+  /**
+   * current_enriched 전용 — 공감(empathy) vs 해결 성향 11축 격차를 현실
+   * 상담 장면으로 풀어낸 문구. production `current`는 채우지 않는다.
+   */
+  counseling_gap_note?: string | null;
 };
 
 export type FriendKillerSections = {
@@ -95,7 +123,7 @@ export type FriendKillerSections = {
   section_social_dna_b: SocialDnaPersonSection;
   section_snapshot: FriendshipSnapshotSection;
   section_soulmate: SoulmateFrequencySection;
-  section_play_money: PlayMoneySection;
+  section_play_money?: PlayMoneySection;
   section_breakup_guide: BreakupGuideSection;
   section_de_escalation: FriendDeEscalationCard;
   /**

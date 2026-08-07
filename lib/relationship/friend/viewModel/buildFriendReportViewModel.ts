@@ -89,6 +89,7 @@ function buildSnapshotSection(
         }
       : undefined,
     shineWhenBest: f.section_snapshot.shine_when_best ?? null,
+    scoreCardAudit: f.section_snapshot.score_card_audit ?? null,
   };
 }
 
@@ -247,6 +248,7 @@ function buildHiddenFlowSection(
     travelStyle: hf.travel_style,
     counseling,
     travelCanonicalLabel,
+    counselingGapNote: hf.counseling_gap_note ?? null,
   };
 }
 
@@ -324,6 +326,7 @@ function buildDeEscalationSection(
     archetypeLabel: de.archetype_label,
     cheatScript: de.cheat_script,
     reconciliationScript: de.reconciliation_script,
+    recoveryPaceNote: de.recovery_pace_note ?? null,
   };
 }
 

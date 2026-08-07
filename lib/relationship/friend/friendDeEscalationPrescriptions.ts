@@ -12,6 +12,11 @@ export type FriendDeEscalationCard = {
   upset_nickname: string;
   /** Part5① 화해 스위치 11축(관계공감/인정욕구 vs 현실실리) 확인 문구. psychMaster 없으면 null */
   reconciliation_script?: string | null;
+  /**
+   * current_enriched 전용 — 회복탄력성(resilience) 11축 격차를 화해 속도
+   * 현실 장면으로 풀어낸 문구. production `current`는 채우지 않는다.
+   */
+  recovery_pace_note?: string | null;
 };
 
 type PrescriptionDef = {

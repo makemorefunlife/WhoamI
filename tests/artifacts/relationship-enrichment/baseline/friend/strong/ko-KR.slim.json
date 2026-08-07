@@ -3,8 +3,8 @@
   "caseId": "strong",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "강 호환",
-    "label_en": "Strong compatibility",
+    "label_ko": "조화가 많은 테스트 사례",
+    "label_en": "High Harmony Test Case",
     "birth": {
       "birthA": "1990-05-15",
       "birthB": "1992-03-08",

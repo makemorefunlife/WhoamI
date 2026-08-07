@@ -3,8 +3,8 @@
   "caseId": "sparse_psych",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "심리 희소",
-    "label_en": "Sparse psych",
+    "label_ko": "설문 데이터 부족",
+    "label_en": "Sparse Survey Data Test Case",
     "birth": {
       "birthA": "1988-11-22",
       "birthB": "1995-07-04",

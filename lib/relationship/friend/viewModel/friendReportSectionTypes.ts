@@ -11,6 +11,7 @@ import type {
   FriendKillerSections,
   TravelStyleSplit,
   CounselingStyle,
+  FriendScoreCardAudit,
 } from "@/lib/relationship/friend/friendKillerSections";
 import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
 import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
@@ -47,6 +48,8 @@ export type SnapshotSection = BaseSection & {
   };
   /** Research gap — when friendship shines */
   shineWhenBest?: string | null;
+  /** current_enriched 전용 — 3대 스코어 카드 감사(measures/why/level_meaning) */
+  scoreCardAudit?: FriendScoreCardAudit | null;
 };
 
 export type PsychRadarSection = BaseSection & {
@@ -86,6 +89,8 @@ export type HiddenFlowSection = BaseSection & {
   travelStyle: TravelStyleSplit | null;
   counseling: PersonSlot<CounselingStyle | null>;
   travelCanonicalLabel?: string | null;
+  /** current_enriched 전용 — 공감 vs 해결 11축 격차 현실 해석 문구 */
+  counselingGapNote?: string | null;
 };
 
 export type BreakupGuideSection = BaseSection & {
@@ -101,6 +106,8 @@ export type DeEscalationSection = BaseSection & {
   archetypeLabel: string;
   cheatScript: string;
   reconciliationScript?: string | null;
+  /** current_enriched 전용 — 회복탄력성 11축 격차 현실 해석 문구(화해 속도) */
+  recoveryPaceNote?: string | null;
 };
 
 export type PrescriptionSection = BaseSection & {

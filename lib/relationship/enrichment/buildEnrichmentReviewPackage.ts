@@ -14,6 +14,7 @@ import type { Locale } from "@/lib/i18n/locale";
 import { PSYCH_MASTER_JSON_VERSION } from "@/lib/personCore/schemaVersion";
 
 import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
+import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFriendReportEnriched";
 import { buildFriendReportViewModel } from "@/lib/relationship/friend/viewModel/buildFriendReportViewModel";
 import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import { buildWorkReportViewModel } from "@/lib/relationship/workColleague/viewModel/buildWorkReportViewModel";
@@ -163,7 +164,13 @@ export type EnrichmentReviewPackage = {
     psych: string;
   };
   current: {
-    mode: "current_ce";
+    mode: "current";
+    summary: ReturnType<typeof summarizeCeReport>;
+    report: unknown;
+    view_model_sections: Array<{ id: string; type: string; title?: string }>;
+  };
+  current_enriched: {
+    mode: "current_enriched";
     summary: ReturnType<typeof summarizeCeReport>;
     report: unknown;
     view_model_sections: Array<{ id: string; type: string; title?: string }>;
@@ -177,6 +184,29 @@ export type EnrichmentReviewPackage = {
       user_question_answered_ko: string;
     }>;
     projections: unknown;
+  };
+  dev_evidence: {
+    mode: "dev_evidence";
+    evidence: {
+      packet_count: number;
+      packet_ids: string[];
+      abstained_lenses: number;
+      active_lenses: number;
+    };
+    personal_ce: "not_wired_in_this_package";
+    pair_ce_packets: Array<{ packet_id: string; group: string; fact_kind: string }>;
+    lenses: Array<{
+      lens_id: string;
+      question_ko: string;
+      headline_ko: string;
+      narrative_ko: string;
+      confidence: string;
+      tension_level: string;
+      is_abstaining: boolean;
+    }>;
+    story_planner: unknown;
+    narrative: unknown;
+    section_view_model: unknown;
   };
   dev: {
     mode: "domain_lens_dev";
@@ -244,6 +274,8 @@ export function buildEnrichmentReviewPackage(params: {
 
   let report: Record<string, unknown>;
   let vmSections: Array<{ id: string; type: string; title?: string }>;
+  let enrichedReport: Record<string, unknown> | null = null;
+  let enrichedVmSections: Array<{ id: string; type: string; title?: string }> | null = null;
 
   const common = {
     nicknameA: birth.nicknameA,
@@ -267,6 +299,20 @@ export function buildEnrichmentReviewPackage(params: {
       locale,
     });
     vmSections = vm.sections.map((s) => ({
+      id: s.id,
+      type: s.type,
+      title: "title" in s ? String((s as { title?: string }).title ?? "") : undefined,
+    }));
+
+    const rEnriched = buildFriendReportEnriched(common);
+    enrichedReport = rEnriched as unknown as Record<string, unknown>;
+    const vmEnriched = buildFriendReportViewModel(rEnriched, {
+      viewerIsReportA: true,
+      myName: birth.nicknameA,
+      partnerName: birth.nicknameB,
+      locale,
+    });
+    enrichedVmSections = vmEnriched.sections.map((s) => ({
       id: s.id,
       type: s.type,
       title: "title" in s ? String((s as { title?: string }).title ?? "") : undefined,
@@ -375,18 +421,24 @@ export function buildEnrichmentReviewPackage(params: {
       psych: caseDef.psych,
     },
     current: {
-      mode: "current_ce",
+      mode: "current",
       summary: summarizeCeReport(params.domain, report),
       report,
       view_model_sections: vmSections,
     },
+    current_enriched: {
+      mode: "current_enriched",
+      summary: summarizeCeReport(params.domain, enrichedReport ?? report),
+      report: enrichedReport ?? report,
+      view_model_sections: enrichedVmSections ?? vmSections,
+    },
     v1: {
       mode: "v1_gold",
       inventory,
-      projections: report.canonical_projections ?? null,
+      projections: (report as { canonical_projections?: unknown }).canonical_projections ?? null,
     },
-    dev: {
-      mode: "domain_lens_dev",
+    dev_evidence: {
+      mode: "dev_evidence",
       evidence: {
         packet_count: pairCe.packets.length,
         packet_ids: pairCe.packets.map((p) => p.packet_id),
@@ -439,6 +491,36 @@ export function buildEnrichmentReviewPackage(params: {
     },
     final_dev: {
       mode: "final_dev_7_scene_narrative",
+      narrative,
+      section_view_model: sectionVm,
+    },
+    dev: {
+      mode: "domain_lens_dev",
+      evidence: {
+        packet_count: pairCe.packets.length,
+        packet_ids: pairCe.packets.map((p) => p.packet_id),
+        abstained_lenses: evaluations.filter((e) => e.is_abstaining).length,
+        active_lenses: evaluations.filter((e) => !e.is_abstaining).length,
+      },
+      personal_ce: "not_wired_in_this_package",
+      pair_ce_packets: pairCe.packets.map((p) => ({
+        packet_id: p.packet_id,
+        group: String(p.group),
+        fact_kind: String(p.fact_kind),
+      })),
+      lenses: evaluations.map((e) => ({
+        lens_id: e.lens_id,
+        question_ko: e.user_question,
+        headline_ko: e.headline_ko,
+        narrative_ko: e.narrative_ko,
+        confidence: e.confidence,
+        tension_level: e.tension_level,
+        is_abstaining: Boolean(e.is_abstaining),
+      })),
+      story_planner: {
+        input: storyPlannerInput,
+        plan: storyPlan,
+      },
       narrative,
       section_view_model: sectionVm,
     },

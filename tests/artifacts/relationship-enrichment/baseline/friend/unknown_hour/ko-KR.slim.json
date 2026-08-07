@@ -3,8 +3,8 @@
   "caseId": "unknown_hour",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "시간 모름",
-    "label_en": "Unknown hour",
+    "label_ko": "출생시간 없음",
+    "label_en": "Birth Hour Unknown Test Case",
     "birth": {
       "birthA": "1990-05-15",
       "birthB": "1992-03-08",

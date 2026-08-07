@@ -17,7 +17,14 @@ import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/b
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 
-type Mode = "current" | "v1" | "previous_dev" | "final_dev" | "dev";
+type Mode =
+  | "current"
+  | "current_enriched"
+  | "v1"
+  | "dev_evidence"
+  | "previous_dev"
+  | "final_dev"
+  | "dev";
 
 type Props = {
   domain: EnrichmentDomain;
@@ -55,10 +62,10 @@ function Pill({
   return (
     <Link
       href={href}
-      className={`rounded px-2.5 py-1 text-xs ${
+      className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? "bg-white text-black"
-          : "bg-white/10 text-white/80 hover:bg-white/20"
+          ? "bg-amber-300 text-black shadow-sm"
+          : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
       }`}
     >
       {children}
@@ -68,8 +75,8 @@ function Pill({
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-      <h2 className="mb-3 text-sm font-semibold tracking-wide text-amber-200/90">
+    <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5 shadow-sm">
+      <h2 className="mb-3 text-sm font-bold tracking-wide text-amber-200/90">
         {title}
       </h2>
       {children}
@@ -79,7 +86,7 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 
 function Pre({ value }: { value: unknown }) {
   return (
-    <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap break-words rounded bg-black/40 p-3 text-[11px] leading-relaxed text-white/75">
+    <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap break-words rounded-lg bg-black/50 p-4 text-[11px] leading-relaxed text-white/80 font-mono">
       {typeof value === "string" ? value : JSON.stringify(value, null, 2)}
     </pre>
   );
@@ -118,44 +125,51 @@ function CurrentRenderedReport({
   return <MarriageReportViewModelView vm={vm} viewerIsReportA={true} />;
 }
 
-function enrichmentHighlights(pkg: EnrichmentReviewPackage) {
-  const added: string[] = [];
-  const report = pkg.current.report as Record<string, any>;
-  const friendSnap = report?.friend?.section_snapshot?.shine_when_best;
-  const money = report?.household?.section_money_chores?.mental_load_note;
-  const praise = report?.family?.section_child_dna?.praise_trigger_note;
-  if (friendSnap) added.push(`Friend snapshot.shine_when_best: ${friendSnap}`);
-  if (money) added.push(`Partner money_chores.mental_load_note: ${money}`);
-  if (praise) added.push(`Family child_dna.praise_trigger_note: ${praise}`);
-  return added;
-}
-
 export function EnrichmentReviewClient(props: Props) {
   const { pkg, error, mode, locale } = props;
-  const added = pkg ? enrichmentHighlights(pkg) : [];
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-      <header className="space-y-3 border-b border-white/10 pb-5">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-white/40">
-          DEV · Relationship Incremental Enrichment
-        </p>
-        <h1 className="text-2xl font-semibold">Review Package</h1>
-        <p className="text-sm text-white/55">
-          Current = CE report UI · V1 = gold inventory/projections · DEV = Lens →
-          Story → Narrative. Production untouched.
-        </p>
+      {/* Disclaimer Banner */}
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200/95 flex items-center justify-between">
+        <span className="font-semibold">
+          ⚠️ DEV 테스트 사례이며 실제 사용자 등급이 아닙니다. (DEV test fixture — not a real user rating.)
+        </span>
+        <span className="text-[11px] text-amber-300/70 font-mono">
+          Production Untouched
+        </span>
+      </div>
 
-        <div className="flex flex-wrap gap-2 pt-2">
-          <span className="mr-1 self-center text-xs text-white/40">Domain</span>
+      <header className="space-y-4 border-b border-white/10 pb-5">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-mono">
+            DEV · Relationship Incremental Enrichment
+          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-white mt-1">
+            Product Director Review Package
+          </h1>
+          <p className="text-sm text-white/60 mt-1">
+            <span className="text-amber-300 font-medium">Current Enriched</span> preserves the exact production report design while merging approved copy improvements.
+          </p>
+        </div>
+
+        {/* Domain Selection */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="mr-1 text-xs font-semibold text-white/40 uppercase tracking-wider">
+            Domain
+          </span>
           {props.domains.map((d) => (
             <Pill key={d} href={qs({ domain: d }, props)} active={props.domain === d}>
-              {d}
+              {d.toUpperCase()}
             </Pill>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="mr-1 self-center text-xs text-white/40">Case</span>
+
+        {/* Test Case Selection */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs font-semibold text-white/40 uppercase tracking-wider">
+            Fixture Case
+          </span>
           {props.cases.map((c) => (
             <Pill
               key={c.id}
@@ -166,32 +180,47 @@ export function EnrichmentReviewClient(props: Props) {
             </Pill>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="mr-1 self-center text-xs text-white/40">Locale</span>
+
+        {/* Locale and Mode Selection */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="mr-1 text-xs font-semibold text-white/40 uppercase tracking-wider">
+            Locale
+          </span>
           <Pill href={qs({ locale: "ko-KR" }, props)} active={locale === "ko-KR"}>
-            KO
+            KO (한국어)
           </Pill>
           <Pill href={qs({ locale: "en-US" }, props)} active={locale === "en-US"}>
-            EN
+            EN (English)
           </Pill>
-          <span className="mx-2 self-center text-xs text-white/40">Source</span>
-          <Pill href={qs({ mode: "current" }, props)} active={mode === "current"}>
-            Current
+
+          <span className="mx-2 text-xs font-semibold text-white/40 uppercase tracking-wider">
+            Review Mode
+          </span>
+          <Pill
+            href={qs({ mode: "current" }, props)}
+            active={mode === "current"}
+          >
+            1. Current (기존 원본)
+          </Pill>
+          <Pill
+            href={qs({ mode: "current_enriched" }, props)}
+            active={mode === "current_enriched"}
+          >
+            2. Current Enriched (심층 개선본)
           </Pill>
           <Pill href={qs({ mode: "v1" }, props)} active={mode === "v1"}>
-            V1 Gold
+            3. V1 Gold (참조용)
           </Pill>
           <Pill
-            href={qs({ mode: "previous_dev" }, props)}
-            active={mode === "previous_dev"}
+            href={qs({ mode: "dev_evidence" }, props)}
+            active={
+              mode === "dev_evidence" ||
+              mode === "final_dev" ||
+              mode === "previous_dev" ||
+              mode === "dev"
+            }
           >
-            Previous DEV
-          </Pill>
-          <Pill
-            href={qs({ mode: "final_dev" }, props)}
-            active={mode === "final_dev" || mode === "dev"}
-          >
-            Final DEV
+            4. DEV Evidence (내부 도구)
           </Pill>
         </div>
       </header>
@@ -204,26 +233,16 @@ export function EnrichmentReviewClient(props: Props) {
 
       {pkg ? (
         <>
-          {added.length ? (
-            <Block title="Added (this DEV branch)">
-              <ul className="space-y-2 text-sm text-emerald-200/90">
-                {added.map((a) => (
-                  <li key={a.slice(0, 40)}>{a}</li>
-                ))}
-              </ul>
-            </Block>
-          ) : (
-            <Block title="Added (this DEV branch)">
-              <p className="text-sm text-white/50">
-                No enrichment fields on this domain/case (Work has no new CE fields
-                yet; review DEV lenses instead).
-              </p>
-            </Block>
-          )}
-
+          {/* MODE 1: CURRENT BASELINE */}
           {mode === "current" ? (
-            <>
-              <Block title="Current CE — rendered report">
+            <div className="space-y-6">
+              <div className="rounded-lg border border-sky-400/20 bg-sky-500/5 p-4 text-xs text-sky-200">
+                <span className="font-semibold text-sky-100">
+                  [Current Production Report]
+                </span>{" "}
+                기존 프로덕션 레이아웃 및 원본 카피입니다.
+              </div>
+              <Block title="Current — Rendered Production Layout">
                 <CurrentRenderedReport
                   domain={pkg.domain}
                   locale={pkg.locale}
@@ -234,7 +253,7 @@ export function EnrichmentReviewClient(props: Props) {
                   }}
                 />
               </Block>
-              <Block title="Current CE — summary + section ids">
+              <Block title="Current — Schema Summary & ViewModel Sections">
                 <Pre
                   value={{
                     summary: pkg.current.summary,
@@ -242,98 +261,119 @@ export function EnrichmentReviewClient(props: Props) {
                   }}
                 />
               </Block>
-            </>
+            </div>
           ) : null}
 
+          {/* MODE 2: CURRENT ENRICHED */}
+          {mode === "current_enriched" ? (
+            <div className="space-y-6">
+              <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-4 text-xs text-amber-200">
+                <div className="font-bold text-amber-100 mb-1">
+                  ✨ [Current Enriched Report — Candidate for Production]
+                </div>
+                <div>
+                  프로덕션의 기존 <strong>페이지 디자인, 섹션 순서, 카드 레이아웃, 차트, 여백, 인터랙션</strong>을 100% 동일하게 유지하면서,
+                  각 섹션 내부의 텍스트와 통찰을 검토 승인된 V1/DEV 개선본으로 업그레이드한 화면입니다.
+                </div>
+              </div>
+
+              <Block title="Current Enriched — Rendered Report (Identical Design, Enriched Content)">
+                <CurrentRenderedReport
+                  domain={pkg.domain}
+                  locale={pkg.locale}
+                  report={pkg.current_enriched.report}
+                  names={{
+                    a: pkg.case_meta.birth.nicknameA,
+                    b: pkg.case_meta.birth.nicknameB,
+                  }}
+                />
+              </Block>
+
+              <Block title="Enriched Content Summary & ViewModel Sections">
+                <Pre
+                  value={{
+                    summary: pkg.current_enriched.summary,
+                    sections: pkg.current_enriched.view_model_sections,
+                  }}
+                />
+              </Block>
+            </div>
+          ) : null}
+
+          {/* MODE 3: V1 GOLD */}
           {mode === "v1" ? (
-            <>
+            <div className="space-y-6">
+              <div className="rounded-lg border border-purple-400/20 bg-purple-500/5 p-4 text-xs text-purple-200">
+                <span className="font-semibold text-purple-100">
+                  [V1 Gold Migration Reference]
+                </span>{" "}
+                V1 자산 인벤토리 및 마이그레이션 투영 데이터입니다.
+              </div>
               <Block title="V1 Migration Inventory">
                 <Pre value={pkg.v1.inventory} />
               </Block>
-              <Block title="V1 Gold — canonical_projections">
+              <Block title="V1 Gold — Canonical Projections">
                 <Pre value={pkg.v1.projections} />
               </Block>
-            </>
+            </div>
           ) : null}
 
-          {mode === "previous_dev" ? (
-            <>
-              <Block title="Previous DEV — Evidence Packet (Pair CE)">
-                <Pre
-                  value={{
-                    evidence: pkg.previous_dev.evidence,
-                    lenses_count: pkg.previous_dev.lenses.length,
-                  }}
-                />
-              </Block>
-              <Block title="Previous DEV — Domain Lenses (Raw)">
-                <div className="space-y-3">
-                  {pkg.previous_dev.lenses.map((l) => (
-                    <div
-                      key={l.lens_id}
-                      className="rounded border border-white/10 p-3"
-                    >
-                      <div className="mb-1 flex flex-wrap gap-2 text-[11px] text-white/45">
-                        <span>{l.lens_id}</span>
-                        <span>{l.confidence}</span>
-                        <span>tension {l.tension_level}</span>
-                        {l.is_abstaining ? (
-                          <span className="text-rose-300">abstain</span>
-                        ) : null}
-                      </div>
-                      <p className="text-xs text-white/50">{l.question_ko}</p>
-                      <p className="mt-1 text-sm font-medium">{l.headline_ko}</p>
-                      <p className="mt-1 text-sm text-white/70">{l.narrative_ko}</p>
-                    </div>
-                  ))}
+          {/* MODE 4: DEV EVIDENCE MATRIX */}
+          {mode === "dev_evidence" ||
+          mode === "final_dev" ||
+          mode === "previous_dev" ||
+          mode === "dev" ? (
+            <div className="space-y-6">
+              <div className="rounded-lg border border-rose-400/30 bg-rose-500/10 p-4 text-xs text-rose-200">
+                <div className="font-bold text-rose-100 mb-1">
+                  🔬 [내부 연구 도구 전용] 7-Scene / Pair CE Lens Evidence Matrix
                 </div>
-              </Block>
-              <Block title="Previous DEV — Story Planner Plan">
-                <Pre value={pkg.previous_dev.story_planner} />
-              </Block>
-            </>
-          ) : null}
+                <div>
+                  <strong>주의:</strong> 본 뷰는 엔진 증거 패킷 분석 및 카피 개발용 내부 도구이며, 최종 사용자 대상 리포트 디자인이 아닙니다.
+                </div>
+              </div>
 
-          {mode === "final_dev" || mode === "dev" ? (
-            <>
               <Block title="Evidence Packet (Pair CE)">
                 <Pre
                   value={{
-                    evidence: pkg.dev.evidence,
-                    personal_ce: pkg.dev.personal_ce,
-                    packets: pkg.dev.pair_ce_packets,
+                    evidence: pkg.dev_evidence.evidence,
+                    personal_ce: pkg.dev_evidence.personal_ce,
+                    packets: pkg.dev_evidence.pair_ce_packets,
                   }}
                 />
               </Block>
-              <Block title="Domain Lenses">
+
+              <Block title="Domain Lenses (Raw Evaluation)">
                 <div className="space-y-3">
-                  {pkg.dev.lenses.map((l) => (
+                  {pkg.dev_evidence.lenses.map((l) => (
                     <div
                       key={l.lens_id}
-                      className="rounded border border-white/10 p-3"
+                      className="rounded-lg border border-white/10 bg-white/[0.02] p-3"
                     >
                       <div className="mb-1 flex flex-wrap gap-2 text-[11px] text-white/45">
-                        <span>{l.lens_id}</span>
-                        <span>{l.confidence}</span>
-                        <span>tension {l.tension_level}</span>
+                        <span className="font-mono">{l.lens_id}</span>
+                        <span>confidence: {l.confidence}</span>
+                        <span>tension: {l.tension_level}</span>
                         {l.is_abstaining ? (
-                          <span className="text-rose-300">abstain</span>
+                          <span className="text-rose-300 font-semibold">abstain</span>
                         ) : null}
                       </div>
                       <p className="text-xs text-white/50">{l.question_ko}</p>
-                      <p className="mt-1 text-sm font-medium">{l.headline_ko}</p>
-                      <p className="mt-1 text-sm text-white/70">{l.narrative_ko}</p>
+                      <p className="mt-1 text-sm font-semibold text-amber-200">{l.headline_ko}</p>
+                      <p className="mt-1 text-sm text-white/70 leading-relaxed">{l.narrative_ko}</p>
                     </div>
                   ))}
                 </div>
               </Block>
-              <Block title="Story Planner">
-                <Pre value={pkg.dev.story_planner} />
+
+              <Block title="Story Planner Plan">
+                <Pre value={pkg.dev_evidence.story_planner} />
               </Block>
-              <Block title="Final DEV 7-Scene Narrative (Rendered Product View)">
+
+              <Block title="Internal 7-Scene / 4-Beat Narrative Matrix">
                 {(() => {
-                  const narrative = pkg.final_dev?.narrative as any || pkg.dev.narrative as any;
-                  if (!narrative || !narrative.scenes) return <Pre value={pkg.dev.narrative} />;
+                  const narrative = (pkg.dev_evidence.narrative ?? (pkg.final_dev as any)?.narrative) as any;
+                  if (!narrative || !narrative.scenes) return <Pre value={pkg.dev_evidence.narrative} />;
                   return (
                     <div className="space-y-6">
                       <div className="rounded-lg border border-amber-400/20 bg-amber-500/5 p-4">
@@ -363,7 +403,7 @@ export function EnrichmentReviewClient(props: Props) {
                         {narrative.scenes.map((scene: any) => (
                           <div
                             key={scene.scene_id}
-                            className="rounded-lg border border-white/10 bg-white/[0.02] p-4 transition-colors hover:border-white/20"
+                            className="rounded-lg border border-white/10 bg-white/[0.02] p-4"
                           >
                             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
                               <div className="flex items-center gap-2">
@@ -386,7 +426,7 @@ export function EnrichmentReviewClient(props: Props) {
                             </p>
 
                             <div className="mt-3 grid gap-3 text-xs md:grid-cols-2">
-                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                              <div className="space-y-1 rounded bg-black/30 p-3">
                                 <span className="font-semibold text-sky-300">
                                   [1. 인지 / Recognition]
                                 </span>
@@ -396,7 +436,7 @@ export function EnrichmentReviewClient(props: Props) {
                                     : scene.recognition_ko}
                                 </p>
                               </div>
-                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                              <div className="space-y-1 rounded bg-black/30 p-3">
                                 <span className="font-semibold text-indigo-300">
                                   [2. 번역 / Translation]
                                 </span>
@@ -406,7 +446,7 @@ export function EnrichmentReviewClient(props: Props) {
                                     : scene.translation_ko}
                                 </p>
                               </div>
-                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                              <div className="space-y-1 rounded bg-black/30 p-3">
                                 <span className="font-semibold text-emerald-300">
                                   [3. 재해석 / Reframing]
                                 </span>
@@ -416,7 +456,7 @@ export function EnrichmentReviewClient(props: Props) {
                                     : scene.reframing_ko}
                                 </p>
                               </div>
-                              <div className="space-y-1 rounded bg-black/20 p-2.5">
+                              <div className="space-y-1 rounded bg-black/30 p-3">
                                 <span className="font-semibold text-amber-300">
                                   [4. 실천 가이드 / Action Guidance]
                                 </span>
@@ -429,12 +469,12 @@ export function EnrichmentReviewClient(props: Props) {
                             </div>
 
                             {scene.scripts?.length ? (
-                              <div className="mt-3 rounded border border-white/5 bg-white/[0.03] p-2.5 text-xs">
+                              <div className="mt-3 rounded border border-purple-500/20 bg-purple-500/5 p-3 text-xs">
                                 <span className="font-semibold text-purple-300">
                                   [실천 대화 스크립트 / Dialogue Script]
                                 </span>
                                 {scene.scripts.map((script: any, idx: number) => (
-                                  <div key={idx} className="mt-1.5 space-y-0.5">
+                                  <div key={idx} className="mt-2 space-y-0.5">
                                     <div className="flex items-center gap-1.5 text-[11px] text-white/50">
                                       <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-purple-200">
                                         Speaker: {script.speaker}
@@ -445,10 +485,10 @@ export function EnrichmentReviewClient(props: Props) {
                                           : script.title_ko}
                                       </span>
                                     </div>
-                                    <p className="italic text-purple-100/90">
-                                      {locale === "en-US"
+                                    <p className="italic text-purple-100/90 pl-1">
+                                      "{locale === "en-US"
                                         ? script.dialogue_en
-                                        : script.dialogue_ko}
+                                        : script.dialogue_ko}"
                                     </p>
                                   </div>
                                 ))}
@@ -457,41 +497,18 @@ export function EnrichmentReviewClient(props: Props) {
                           </div>
                         ))}
                       </div>
-
-                      {narrative.action_playbook ? (
-                        <div className="rounded-lg border border-emerald-400/20 bg-emerald-500/5 p-4">
-                          <h4 className="text-sm font-bold text-emerald-300">
-                            [Action Playbook & Golden Rules]
-                          </h4>
-                          <p className="mt-1 text-xs text-white/70">
-                            {locale === "en-US"
-                              ? narrative.action_playbook.summary_en
-                              : narrative.action_playbook.summary_ko}
-                          </p>
-                          <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-emerald-100/90">
-                            {(locale === "en-US"
-                              ? narrative.action_playbook.golden_rules_en
-                              : narrative.action_playbook.golden_rules_ko
-                            ).map((rule: string, idx: number) => (
-                              <li key={idx}>{rule}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
                     </div>
                   );
                 })()}
               </Block>
-              <Block title="Final Narrative (Raw JSON)">
-                <Pre value={pkg.dev.narrative} />
-              </Block>
-            </>
+            </div>
           ) : null}
 
-          <Block title="Side-by-side quick compare">
-            <div className="grid gap-3 md:grid-cols-3">
+          {/* Side-by-side quick compare card */}
+          <Block title="Side-by-side Quick Compare">
+            <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <p className="mb-1 text-xs text-emerald-300/80">Current</p>
+                <p className="mb-1 text-xs font-semibold text-sky-300">1. Current (기존 원본)</p>
                 <Pre
                   value={{
                     headline: pkg.current.summary.headline,
@@ -500,24 +517,21 @@ export function EnrichmentReviewClient(props: Props) {
                 />
               </div>
               <div>
-                <p className="mb-1 text-xs text-sky-300/80">V1</p>
+                <p className="mb-1 text-xs font-semibold text-amber-300">2. Current Enriched (개선본)</p>
                 <Pre
                   value={{
-                    assets: pkg.v1.inventory.map((a) => a.asset_id),
-                    projections: pkg.v1.projections
-                      ? Object.keys(pkg.v1.projections as object)
-                      : [],
+                    headline: pkg.current_enriched.summary.headline,
+                    sections: pkg.current_enriched.view_model_sections.map((s) => s.type),
                   }}
                 />
               </div>
               <div>
-                <p className="mb-1 text-xs text-violet-300/80">DEV</p>
+                <p className="mb-1 text-xs font-semibold text-rose-300">4. DEV Evidence (내부 증거)</p>
                 <Pre
                   value={{
-                    active: pkg.dev.evidence.active_lenses,
-                    abstained: pkg.dev.evidence.abstained_lenses,
-                    scenes: (pkg.dev.narrative as { scenes?: unknown[] })?.scenes
-                      ?.length,
+                    active_lenses: pkg.dev_evidence.evidence.active_lenses,
+                    abstained: pkg.dev_evidence.evidence.abstained_lenses,
+                    packets: pkg.dev_evidence.evidence.packet_count,
                   }}
                 />
               </div>

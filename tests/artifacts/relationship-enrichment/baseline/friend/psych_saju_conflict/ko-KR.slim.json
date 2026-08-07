@@ -3,8 +3,8 @@
   "caseId": "psych_saju_conflict",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "심리·사주 충돌",
-    "label_en": "Psych/saju conflict",
+    "label_ko": "사주·설문 충돌",
+    "label_en": "Saju & Psych Conflict Test Case",
     "birth": {
       "birthA": "1990-05-15",
       "birthB": "1992-03-08",

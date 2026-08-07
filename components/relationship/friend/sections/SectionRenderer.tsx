@@ -284,6 +284,9 @@ function HiddenFlowCard({ section }: { section: HiddenFlowSection }) {
                 ) : null,
               )}
             </div>
+            {section.counselingGapNote ? (
+              <p className="mt-2 text-xs text-white/50">{section.counselingGapNote}</p>
+            ) : null}
           </div>
         ) : null}
       </RelationshipReportBody>
@@ -354,6 +357,9 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
         </RelationshipReportInset>
         {section.reconciliationScript ? (
           <p className="text-xs text-white/50">{section.reconciliationScript}</p>
+        ) : null}
+        {section.recoveryPaceNote ? (
+          <p className="text-xs text-white/50">{section.recoveryPaceNote}</p>
         ) : null}
       </RelationshipReportBody>
     </RelationshipReportCard>
@@ -463,6 +469,26 @@ export function FriendReportViewModelView({
                 {snapshot.vibeAxisNotes.connectionNote ? <p>{snapshot.vibeAxisNotes.connectionNote}</p> : null}
                 {snapshot.vibeAxisNotes.banterNote ? <p>{snapshot.vibeAxisNotes.banterNote}</p> : null}
                 {snapshot.vibeAxisNotes.riskNote ? <p>{snapshot.vibeAxisNotes.riskNote}</p> : null}
+              </div>
+            ) : null}
+            {snapshot.scoreCardAudit ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {(
+                  [
+                    { emoji: "🔥", label: t.scoreLabelChemistry, item: snapshot.scoreCardAudit.connection },
+                    { emoji: "🧩", label: t.scoreLabelBanter, item: snapshot.scoreCardAudit.banter },
+                    { emoji: "⚡", label: t.scoreLabelRisk, item: snapshot.scoreCardAudit.risk },
+                  ] as const
+                ).map(({ emoji, label, item }) => (
+                  <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <p className="text-xs font-semibold text-white/85">
+                      {emoji} {label}
+                    </p>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-white/65">{item.measures}</p>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-white/70">{item.why}</p>
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-white/50">{item.level_meaning}</p>
+                  </div>
+                ))}
               </div>
             ) : null}
             {snapshot.shineWhenBest ? (

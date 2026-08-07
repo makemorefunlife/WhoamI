@@ -3,7 +3,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
 import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/pairDomainSignals";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
+import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFriendReportEnriched";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { Locale } from "@/lib/i18n/locale";
 import { attachFriendSajuDeepOverlay } from "@/lib/prompts/relationshipPremium/friendSajuDeep";
@@ -67,7 +67,7 @@ export async function runFriendSocialDeepAnalysis(
   const friendSignalsA = params.sajuMasterA?.domain_signals.friendship_signals;
   const friendSignalsB = params.sajuMasterB?.domain_signals.friendship_signals;
 
-  let report = buildFriendReport({
+  let report = buildFriendReportEnriched({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,
