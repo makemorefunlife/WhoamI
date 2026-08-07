@@ -33,6 +33,15 @@ import {
 } from "./chapterLensResolvers";
 import copyKo from "./canonicalStoryPlanCopy.ko.json";
 import copyEn from "./canonicalStoryPlanCopy.en.json";
+import {
+  buildEmpathyVsSolvingScene,
+  buildPhysicalIntimacyScene,
+  buildGiveUpPointScene,
+  buildRomanticChemistryScene,
+  buildPossessivenessScene,
+  buildLongTermGrowthScene,
+} from "./romanticV4DateSceneInsights";
+import type { RomanticPairCeBondingValue } from "../romanticPairCeBondingCanonical";
 
 import {
   topicP,
@@ -199,7 +208,9 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   const balance = projections.balance_of_power as
     | { balance_a?: string; balance_b?: string }
     | undefined;
-  const bonding = (projections as any).pair_ce_bonding as { summary?: string } | undefined;
+  const bonding = (projections as any).pair_ce_bonding as
+    | (RomanticPairCeBondingValue & { summary?: string })
+    | undefined;
   const stemCombine = projections.cross_chart_stem_combine as
     | { hitCount?: number }
     | undefined;
@@ -1102,6 +1113,25 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       ],
     },
   ];
+
+  const dateSceneCards = [
+    buildEmpathyVsSolvingScene({ axisResults, nameA: names.a, nameB: names.b, locale }),
+    buildPhysicalIntimacyScene({ axisResults, nameA: names.a, nameB: names.b, locale }),
+    buildGiveUpPointScene({ axisResults, nameA: names.a, nameB: names.b, locale }),
+    buildRomanticChemistryScene({ bonding, nameA: names.a, nameB: names.b, locale }),
+    buildPossessivenessScene({ wonjin, nameA: names.a, nameB: names.b, locale }),
+    buildLongTermGrowthScene({
+      hasBalance: Boolean(balance),
+      combineHitCount: Number(stemCombine?.hitCount ?? 0) + Number(sixCombine?.hitCount ?? 0),
+      nameA: names.a,
+      nameB: names.b,
+      locale,
+    }),
+  ].filter((card): card is NonNullable<typeof card> => card !== null);
+  for (const card of dateSceneCards) {
+    for (const p of card.provenance) mark(p.evidenceId);
+  }
+  realLifeDomains.push(...dateSceneCards);
 
   const horizon = projectHorizon({ report });
   const hasTiming = horizon.available && horizon.waypoints.length > 0;
