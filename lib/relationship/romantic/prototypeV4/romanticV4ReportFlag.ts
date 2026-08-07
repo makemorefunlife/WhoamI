@@ -1,11 +1,12 @@
 /**
  * Romantic V4 report review flag.
  *
- * Default: OFF everywhere, including production. When off, the v4 dev
- * prototype route stays gated to NODE_ENV==="development" exactly as before.
- * Enable in a deployed environment (e.g. Vercel Preview/Production env vars)
- * to review the fixture-driven v4 UI at its existing dev URL without opening
- * it up to real users or touching the production analyze pipeline.
+ * Default: ON everywhere, including production — the review gate has been
+ * lifted (2026-08-07, user decision) so this ships to real users without
+ * requiring a per-environment env var. Set ROMANTIC_V4_REPORT to an explicit
+ * falsy value (0 / false / no / off) in a specific environment to opt that
+ * environment back out, e.g. to disable temporarily on one Vercel preview
+ * without touching the default.
  *
  * Server-only by design: consumers are page.tsx (async Server Component)
  * and app/api/relationship/analyze/premium/route.ts (the production analyze
@@ -28,18 +29,18 @@ function readEnv(env: EnvLike, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-/** True for 1 / true / yes / on (case-insensitive). */
-function isEnvFlagTruthy(value: string | undefined): boolean {
+/** True for 0 / false / no / off (case-insensitive) — explicit opt-out only. */
+function isEnvFlagExplicitlyFalse(value: string | undefined): boolean {
   if (!value) return false;
   const normalized = value.trim().toLowerCase();
   return (
-    normalized === "1" ||
-    normalized === "true" ||
-    normalized === "yes" ||
-    normalized === "on"
+    normalized === "0" ||
+    normalized === "false" ||
+    normalized === "no" ||
+    normalized === "off"
   );
 }
 
 export function isRomanticV4ReportEnabled(env: EnvLike = process.env): boolean {
-  return isEnvFlagTruthy(readEnv(env, "ROMANTIC_V4_REPORT"));
+  return !isEnvFlagExplicitlyFalse(readEnv(env, "ROMANTIC_V4_REPORT"));
 }
