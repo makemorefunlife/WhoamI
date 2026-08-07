@@ -137,8 +137,8 @@ function deriveGroupVs1on1Insight(
 
   if (modeA === "outdoor" && modeB === "outdoor") {
     return isKo
-      ? `단둘이 있을 때도, 여러 친구들과 어울리는 활기찬 모임에서도 둘 다 에너지가 넘치고 분위기를 주도합니다. 다만 둘 다 지칠 때까지 멈추지 않는 경향이 있으니, 가끔은 의식적인 1:1 휴식 시간을 갖는 것이 좋습니다.`
-      : `High-energy both one-on-one and in large social circles. You amplify each other's enthusiasm everywhere, though scheduling intentional quiet downtime prevents sudden mutual burnout.`;
+      ? `단둘이 있을 때도, 여러 친구들과 어울리는 모임에서도 둘 다 에너지를 내는 편이에요. 다만 텐션을 스스로 못 낮추는 편이라, 만나고 난 뒤에 오히려 한꺼번에 기 빨림이 올 수 있어요. 텐션이 오를 때일수록 의식적으로 쉬는 타이밍을 넣어주는 게 관계를 오래 편하게 만들어요.`
+      : `High-energy both one-on-one and in large social circles. But since neither of you naturally dials it down, you can both crash hard right after hanging out. Building in quiet downtime while the energy is still high is what keeps this comfortable long-term.`;
   }
 
   // Asymmetric
@@ -148,6 +148,56 @@ function deriveGroupVs1on1Insight(
   return isKo
     ? `단둘이 있을 때는 깊고 편안한 대화가 자연스럽게 흐르지만, 다수 모임에서는 ${outdoorName}이(가) 분위기를 주도하며 에너지를 발산하는 반면, ${homebodyName}은(는) 관찰자 모드로 전환되어 쉽게 피로해질 수 있습니다. 단체 모임 중간에 조용한 휴식 공간을 배려하거나 둘만의 1:1 시간을 적절히 섞어주는 것이 피로를 줄이는 핵심입니다.`
     : `One-on-one time creates deep emotional resonance, but in group settings ${outdoorName} naturally takes the floor while ${homebodyName} shifts into observation mode and burns battery faster. Blending 1:1 hangouts with group activities prevents social fatigue.`;
+}
+
+/**
+ * `buildFriendPrescriptions` (production, `lib/relationship/friend/`) ships a
+ * handful of specific numbers (30분/10분/24시간/분기 1회/2주 등) that were never
+ * derived from a computed signal — they're flavor text. current_enriched strips
+ * them down to non-numeric phrasing without touching the production file or
+ * changing which cards fire. Exact-substring replacement (not regex) so this
+ * can never accidentally mangle an interpolated name.
+ */
+const PRESCRIPTION_NUMBER_STRIP: Array<[string, string]> = [
+  // ko-KR
+  ["30분만 말하기", "짧게 말하기"],
+  ["카페 30분·산책만으로", "가벼운 카페·산책만으로"],
+  ["긴 만남(2시간+)은 중간 10분", "긴 만남에는 중간에"],
+  ["5분 '오늘 좋았던 1가지'만", "'오늘 좋았던 1가지'만 짧게"],
+  ["월 1회 '가벼운 만남'만 하는 달 정하기", "가끔 '가벼운 만남'만 하는 날 정하기"],
+  ["밤 11시 이후", "늦은 밤"],
+  [
+    "연락 기대치를 숫자로 합의 — 예: '평일 답장 24시간 이내, 주말은 자유'처럼.",
+    "연락 기대치를 서로 합의 — 예: '급한 거 아니면 천천히 답장해도 OK, 주말은 자유'처럼.",
+  ],
+  ["3주에 한 번 '우리 연락 방식 괜찮아?' 5분 체크", "가끔 '우리 연락 방식 괜찮아?' 짧게 체크"],
+  ["분기 1회", "가끔"],
+  ["2주 안에", "너무 늦기 전에"],
+  ["24시간 타임아웃", "하루 정도 타임아웃"],
+  // en-US
+  ["in 30 seconds", ""],
+  ["a 30-minute coffee", "a quick coffee"],
+  ["(2 hours+), take a 10-minute mid-way", ", take a mid-way"],
+  ["spend 5 minutes texting", "send a quick text about"],
+  ["Once a month, set aside", "Every so often, set aside"],
+  ["after 11pm", "late at night"],
+  [
+    "Agree on contact expectations with actual numbers — e.g., 'reply within 24 hours on weekdays, no pressure on weekends.'",
+    "Agree on contact expectations in general terms — e.g., 'no rush unless it's urgent, weekends are free.'",
+  ],
+  ["Once every three weeks, spend 5 minutes checking", "Every so often, take a moment to check"],
+  ["once a quarter", "every so often"],
+  ["within two weeks", "before it piles up"],
+  ["a 24-hour timeout", "a short timeout"],
+  ["one recurring hangout per quarter for", "a recurring hangout every so often for"],
+];
+
+function stripUnsupportedFixedNumbers(text: string): string {
+  let out = text;
+  for (const [find, replace] of PRESCRIPTION_NUMBER_STRIP) {
+    out = out.split(find).join(replace);
+  }
+  return out.replace(/\s{2,}/g, " ").trim();
 }
 
 /**
@@ -313,9 +363,12 @@ export function buildFriendReportEnriched(params: {
     ? "서로의 다름을 편안하게 인정하며, 억지 노력 없이도 곁에 머물 수 있는 든든한 안식처입니다."
     : "An effortless bond that honors mutual individuality without forced expectations.";
 
+  // 등급(A~D)과 위 3개 지표(케미/티키타카/리스크)가 서로 다른 인상을 줄 수
+  // 있어(가중 합산이라 개별 점수가 다 괜찮아도 등급은 낮게 나올 수 있음),
+  // 등급 하나만 보지 말고 3개 지표를 직접 참고하라고 명시한다.
   const enrichedGradeReason = isKo
-    ? "상호 존중과 자유로운 공존의 우정 — 억지 노력 없이도 곁에 머물 수 있는 조화"
-    : "Mutual Respect & Autonomous Synergy — Effortless harmony with natural space";
+    ? `우정 케미 ${ctx.masterScores.connection}% · 티키타카 ${ctx.masterScores.banter}% · 소셜 리스크 ${ctx.masterScores.risk}% — 등급은 이 세 지표를 가중 합산한 값이라, 등급 한 글자보다는 위 3개 지표를 그대로 참고하는 게 더 정확해요.`
+    : `Friend chemistry ${ctx.masterScores.connection}% · Banter ${ctx.masterScores.banter}% · Social risk ${ctx.masterScores.risk}% — the letter grade is a weighted blend of these three, so read the three scores above directly rather than the single grade.`;
 
   // 7. Hidden Flow (Travel & Counseling) — PRESERVED & ENRICHED
   const travelBase = resolveTravelStyleSplit(
@@ -348,9 +401,15 @@ export function buildFriendReportEnriched(params: {
     base.friend?.section_hidden_flow?.counseling_style_b ??
     null;
 
-  // Item 5 (힘들 때 왜 이 친구를 찾는가) — 상담을 주는 쪽(A/B)의 우세 psych 축 근거.
-  const whyTurnToALine = buildWhyTurnToFriendLine(params.psychMasterA, nameA, locale);
-  const whyTurnToBLine = buildWhyTurnToFriendLine(params.psychMasterB, nameB, locale);
+  // Item 5 (힘들 때 왜 이 친구를 찾는가) — counselingBase.type(F/T/balanced)을
+  // 그대로 재사용해, "감정 힐러" 라벨인데 "사이다 솔루션" 이유가 붙는 것 같은
+  // 불일치를 막는다(라벨과 설명이 서로 다른 축 판정을 쓰면 어긋날 수 있음).
+  const whyTurnToALine = counselingBaseA
+    ? buildWhyTurnToFriendLine(counselingBaseA.type, params.psychMasterA, nameA, locale)
+    : null;
+  const whyTurnToBLine = counselingBaseB
+    ? buildWhyTurnToFriendLine(counselingBaseB.type, params.psychMasterB, nameB, locale)
+    : null;
   // 성장과 기대 Q2 (힘들 때 무엇까지 기대해도 되는가) — capability, not obligation.
   const capabilityBoundaryA = counselingBaseA
     ? buildCapabilityBoundaryClause(counselingBaseA.type, nameA, locale)
@@ -430,12 +489,23 @@ export function buildFriendReportEnriched(params: {
     nicknameB: nameB,
     locale,
   });
+  // 근거 없는 고정 숫자(30분/10분/24시간/분기 1회/2주 등) 제거 — production
+  // 파일은 그대로 두고 current_enriched에서만 문구를 순화한다.
+  prescriptionPack.items = prescriptionPack.items.map((item) => ({
+    ...item,
+    do_list: item.do_list.map(stripUnsupportedFixedNumbers),
+    dont_list: item.dont_list.map(stripUnsupportedFixedNumbers),
+  }));
 
   // 성장과 기대 Q3 (무엇을 기대하면 실망하기 쉬운가) — Prescription Don't List에 배치.
   // Hidden Flow counseling_gap_note와 같은 신호(사고방식 vs 관계공감)를 재사용하되
   // "왜 어긋나는가"가 아니라 "무엇을 내려놓을지"로 프레이밍만 바꾼다(Law 9).
-  const expectationResetForA = buildExpectationResetLine(params.psychMasterA, nameA, locale);
-  const expectationResetForB = buildExpectationResetLine(params.psychMasterB, nameB, locale);
+  const expectationResetForA = counselingBaseA
+    ? buildExpectationResetLine(counselingBaseA.type, nameA, locale)
+    : null;
+  const expectationResetForB = counselingBaseB
+    ? buildExpectationResetLine(counselingBaseB.type, nameB, locale)
+    : null;
   const expectationResetLines = [expectationResetForA, expectationResetForB].filter(
     (l): l is string => Boolean(l),
   );
@@ -527,6 +597,7 @@ export function buildFriendReportEnriched(params: {
         guardian_character: {
           key: giftA.key,
           label: giftA.label,
+          // emergenceLine(성장/시너지, pair 단위 결론)은 A 카드에만 싣는다.
           description: [giftA.description, giftLineExtraA, emergenceLine].filter(Boolean).join(" "),
         },
         battery_description: groupVs1on1A,
@@ -536,7 +607,9 @@ export function buildFriendReportEnriched(params: {
         guardian_character: {
           key: giftB.key,
           label: giftB.label,
-          description: [giftB.description, giftLineExtraB, emergenceLine].filter(Boolean).join(" "),
+          // emergenceLine은 pair 단위 결론이라 A 카드에만 한 번 싣는다(양쪽에
+          // 동일 문장을 반복하면 "중복된 mutual-growth 문단" 문제가 생김).
+          description: [giftB.description, giftLineExtraB].filter(Boolean).join(" "),
         },
         battery_description: groupVs1on1B,
       },
@@ -559,8 +632,9 @@ export function buildFriendReportEnriched(params: {
       // 6. De-escalation
       section_de_escalation: {
         ...base.friend?.section_de_escalation,
-        hashtag: isKo ? "#24시간_쿨다운_후_맛집_리셋" : "#24h_Cooling_Reset_Over_Food",
-        archetype_label: isKo ? "24시간 냉각기 & 저자극 맛집 리셋형" : "24-Hour Cooling & Low-Pressure Reset",
+        // 근거 없는 고정 숫자("24시간") 제거 — 실제 계산된 신호가 아님.
+        hashtag: isKo ? "#쿨다운_후_맛집_리셋" : "#Cooling_Reset_Over_Food",
+        archetype_label: isKo ? "냉각기 & 저자극 맛집 리셋형" : "Cooling & Low-Pressure Reset",
         cheat_script: isKo
           ? "아까는 나도 감정이 좀 격했는데, 우리 감정 가라앉히고 편하게 맛있는 거 먹으러 가자."
           : "I was a bit overwhelmed earlier; let's grab some good food together and chat comfortably whenever you're ready.",
@@ -575,16 +649,37 @@ export function buildFriendReportEnriched(params: {
         soulmate_verdict: soulmateVerdict,
       },
     },
+    // 3점수 스냅샷 패널의 topic 카드(①②③)를 비운다 — 이 카드들은 intimacy/
+    // stability/conflict 세 하위지표를 "Friend Chemistry/Banter/Social Risk"라는
+    // 동일한 라벨로 3번 반복 표시해, 상단 진짜 3대 지표(connection/banter/risk)와
+    // 숫자가 달라 보이는 모순처럼 읽힌다. 범례(ScoreKeyStrip)·정의 패널은 유지하고
+    // 중복되는 topic 카드만 제거 — 상단 점수판이 유일한 3대 지표 표시가 된다.
+    snapshot_panel: {
+      ...base.snapshot_panel,
+      narrative: {
+        ...base.snapshot_panel.narrative,
+        topics: [],
+      },
+    },
     meta: {
       ...base.meta,
       grade_reason: enrichedGradeReason,
-      // REMOVE user-facing psych radar match / lens from current_enriched
+      // REMOVE user-facing psych radar match / lens from current_enriched.
+      // person_core도 함께 지워야 한다 — resolveReportPsychDisplay가
+      // psych_match/psych_lens 없으면 meta.person_core.psych_a/b로 되돌아가
+      // 우정 주파수 매칭을 다시 조립해버리는 폴백 경로가 있기 때문.
       psych_match: undefined,
       psych_lens: undefined,
+      person_core: undefined,
       // RESTORE actionable prescriptions conforming to PairPrescriptionSection
       prescription_friendship: prescriptionPack,
     },
     // Underlying canonical projections preserved intact
     canonical_projections: base.canonical_projections,
+    // context_output is already stripped before any real client response
+    // (stripFriendContextOutputForClient), but it still carries treasurer/
+    // money text internally (built from the pre-removal section_play_money).
+    // Drop it here too so no raw dump of this report object leaks money copy.
+    context_output: undefined,
   };
 }

@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "sparse_psych",
   "locale": "en-US",
-  "generated_at": "2026-08-07T01:25:59.969Z",
+  "generated_at": "2026-08-07T01:49:32.424Z",
   "case_meta": {
     "label_ko": "설문 데이터 부족",
     "label_en": "Sparse Survey Data Test Case",
@@ -471,7 +471,7 @@
       "summary_line": "🔥 80% · 🧩 50% · ⚡ 35%",
       "one_liner": "An effortless bond that honors mutual individuality without forced expectations.",
       "grade": "D",
-      "grade_reason": "Mutual Respect & Autonomous Synergy — Effortless harmony with natural space",
+      "grade_reason": "Friend chemistry 80% · Banter 50% · Social risk 35% — the letter grade is a weighted blend of these three, so read the three scores above directly rather than the single grade.",
       "canonical_projection_keys": [
         "comparison_table",
         "treasurer"
@@ -562,38 +562,7 @@
         },
         "personAxesSource": "hidden",
         "narrative": {
-          "topics": [
-            {
-              "topic": "intimacy",
-              "title": "① Friend Chemistry",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 80,
-              "benefit": 80,
-              "risk": 20,
-              "interpretation": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-              "isWarning": false
-            },
-            {
-              "topic": "stability",
-              "title": "② Banter",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 50,
-              "benefit": 50,
-              "risk": 18,
-              "interpretation": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-              "isWarning": false
-            },
-            {
-              "topic": "conflict",
-              "title": "③ Social Risk",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 65,
-              "benefit": 65,
-              "risk": 35,
-              "interpretation": "Alex & Jordan — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-              "isWarning": false
-            }
-          ]
+          "topics": []
         }
       },
       "friend": {
@@ -603,7 +572,7 @@
           "friend_position": "The reality-check leader who sets the group's standard on promises, manners, and facts",
           "tikitaka_label": "☕ Comfortable-Silence Home-Base Type",
           "tikitaka_description": "Prefers sharing the same space in comfortable silence — scrolling your phone or zoning out — over small talk for its own sake.",
-          "battery_description": "High-energy both one-on-one and in large social circles. You amplify each other's enthusiasm everywhere, though scheduling intentional quiet downtime prevents sudden mutual burnout.",
+          "battery_description": "High-energy both one-on-one and in large social circles. But since neither of you naturally dials it down, you can both crash hard right after hanging out. Building in quiet downtime while the energy is still high is what keeps this comfortable long-term.",
           "private_self": "Gets more hyped and shows their true self the closer you get",
           "guardian_character": {
             "key": "bamboo",
@@ -617,12 +586,12 @@
           "friend_position": "The entertainer who blows up the room with jokes, memes, and reactions",
           "tikitaka_label": "☕ Comfortable-Silence Home-Base Type",
           "tikitaka_description": "Prefers sharing the same space in comfortable silence — scrolling your phone or zoning out — over small talk for its own sake.",
-          "battery_description": "High-energy both one-on-one and in large social circles. You amplify each other's enthusiasm everywhere, though scheduling intentional quiet downtime prevents sudden mutual burnout.",
+          "battery_description": "High-energy both one-on-one and in large social circles. But since neither of you naturally dials it down, you can both crash hard right after hanging out. Building in quiet downtime while the energy is still high is what keeps this comfortable long-term.",
           "private_self": "Their real feelings show when the jokes stop and the talk gets serious and factual",
           "guardian_character": {
             "key": "brain",
             "label": "Strategic Compass & Reality Grounding",
-            "description": "Jordan serves as a clear-eyed strategic anchor for Alex, cutting through emotional clutter to provide objective perspective when it matters most. [Mutual Growth & Synergy] The interplay of Alex's Empathy Sanctuary & Safe Harbor and Jordan's Strategic Compass & Reality Grounding creates a safe foundation where both can grow authentically without competitive pressure."
+            "description": "Jordan serves as a clear-eyed strategic anchor for Alex, cutting through emotional clutter to provide objective perspective when it matters most."
           }
         },
         "section_snapshot": {
@@ -661,9 +630,9 @@
           "jealousy_guard_b": "Jordan maintains healthy boundaries that support individual independence. Validate feelings first before jumping to logical problem-solving."
         },
         "section_de_escalation": {
-          "hashtag": "#24h_Cooling_Reset_Over_Food",
+          "hashtag": "#Cooling_Reset_Over_Food",
           "color": "orange",
-          "archetype_label": "24-Hour Cooling & Low-Pressure Reset",
+          "archetype_label": "Cooling & Low-Pressure Reset",
           "cheat_script": "I was a bit overwhelmed earlier; let's grab some good food together and chat comfortably whenever you're ready.",
           "upset_nickname": "Jordan",
           "reconciliation_script": "A brief pause after friction is protective cooling time. Express feelings calmly and reopen dialogue with a casual meal or coffee.",
@@ -775,7 +744,7 @@
       },
       "meta": {
         "grade": "D",
-        "grade_reason": "Mutual Respect & Autonomous Synergy — Effortless harmony with natural space",
+        "grade_reason": "Friend chemistry 80% · Banter 50% · Social risk 35% — the letter grade is a weighted blend of these three, so read the three scores above directly rather than the single grade.",
         "uncertain_items": [
           "Birth place not entered — using Manseryeok defaults without longitude/timezone correction.",
           "Year Pillar pillar format is invalid (무진).",
@@ -809,9 +778,9 @@
                 "snapshot": {}
               },
               "do_list": [
-                "Stop the argument the same day it happens and take a 24-hour timeout before revisiting it.",
+                "Stop the argument the same day it happens and take a short timeout before revisiting it.",
                 "After the timeout, each of you states your side in one sentence, then talk it through calmly.",
-                "Lock in one recurring hangout per quarter for Alex and Jordan — it resets the friendship before small frictions pile up."
+                "Lock in a recurring hangout every so often for Alex and Jordan — it resets the friendship before small frictions pile up."
               ],
               "dont_list": [
                 "Don't try to reach a conclusion while emotions are still running hot.",
@@ -831,73 +800,18 @@
                 "snapshot": {}
               },
               "do_list": [
-                "Lock in a \"just-us light plan\" once a quarter (a good meal, a walk) — take turns letting Alex and Jordan lead it.",
-                "Say what's bothering you in one sentence within two weeks — don't let it pile up.",
+                "Lock in a \"just-us light plan\" every so often (a good meal, a walk) — take turns letting Alex and Jordan lead it.",
+                "Say what's bothering you in one sentence before it piles up — don't let it pile up.",
                 "When your friend's going through a hard time, lead with 'I'm here to listen' before jumping to advice."
               ],
               "dont_list": [
                 "Don't act close only on social media while never actually being in touch.",
                 "Don't quiz or compare your friendship in front of mutual friends.",
-                "Don't reach out after a long silence only to immediately ask for a favor."
+                "Don't reach out after a long silence only to immediately ask for a favor.",
+                "Expecting Alex to hand you a crisp, ready-made solution on the spot — that's a setup for disappointment. Their care shows up as sitting with you in the feeling, not solving it fast."
               ]
             }
           ]
-        }
-      },
-      "context_output": {
-        "schema_version": "context_output_v1",
-        "domain": "friendship",
-        "grade": "D",
-        "scores": {
-          "connection": 80,
-          "banter": 50,
-          "risk": 35
-        },
-        "dominant_categories": {
-          "guardian_a": {
-            "category": "bamboo"
-          },
-          "treasurer": {
-            "category": "a"
-          },
-          "tikitaka_a": {
-            "category": "silent"
-          },
-          "tikitaka_b": {
-            "category": "silent"
-          },
-          "battery_a": {
-            "category": "outdoor"
-          },
-          "battery_b": {
-            "category": "outdoor"
-          },
-          "counseling_a": {
-            "category": "F"
-          }
-        },
-        "signals": {
-          "hasDayBranchCombine": true,
-          "hasBijiepMutualResonance": false,
-          "hasDayBranchChungHyung": false,
-          "hasFoodSealHarmony": false,
-          "hasJohuComplement": false,
-          "hasFoodClashFriction": false,
-          "hasDayBranchFullTension": false,
-          "hasWonjinOrGuimun": true,
-          "hasWealthOfficerClash": false,
-          "hasDayStemMutualSupport": false
-        },
-        "axis_notes": {
-          "connection": null,
-          "banter": null,
-          "risk": null,
-          "treasurer_confirm": null,
-          "communication_rhythm": null
-        },
-        "section_summaries": {
-          "treasurer_reason": "Alex has the sharper sense for money and rules, making them this friendship's official treasurer. Put them in charge of the math — it's the only way to keep a single cent from ever cracking this friendship.",
-          "travel_role": null
         }
       },
       "canonical_projections": {

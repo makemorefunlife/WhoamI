@@ -42,21 +42,21 @@ export function buildCapabilityBoundaryClause(
 
 /**
  * 성장과 기대 Q3 — "무엇을 기대하면 실망하기 쉬운가"
- * counseling_gap_note(Hidden Flow, empathy_vs_solution 축)와 같은 신호(공감 vs
- * 사고방식)를 재사용하되, "왜 어긋나는가"가 아니라 "무엇을 내려놓을지"로
- * 프레이밍만 바꾼다 — Law 9(recognition before advice)에 따라 별도 홈(Prescription
- * Don't List)에 배치.
+ * counseling_gap_note(Hidden Flow, empathy_vs_solution 축)와 같은 신호를
+ * 재사용하되, "왜 어긋나는가"가 아니라 "무엇을 내려놓을지"로 프레이밍만
+ * 바꾼다 — Law 9(recognition before advice)에 따라 별도 홈(Prescription Don't
+ * List)에 배치. `type`은 Hidden Flow counseling_style.type과 동일한 값을
+ * 받아, 라벨(F/T)과 여기 문구가 서로 다른 신호로 어긋나지 않게 한다.
+ * balanced는 강한 신호가 아니므로 null(가짜 문장 강제 금지).
  */
 export function buildExpectationResetLine(
-  psychOther: PsychMasterJson | null | undefined,
+  type: "F" | "T" | "balanced",
   nameOther: string,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): string | null {
-  if (!psychOther) return null;
-  const { thinking_style, empathy } = psychOther.secondary_axes;
-  if (Math.abs(thinking_style - empathy) < 15) return null;
+  if (type === "balanced") return null;
 
-  if (thinking_style > empathy) {
+  if (type === "T") {
     return pick(
       locale,
       `Expecting ${nameOther} to drop everything and give you a long, emotionally validating conversation every time — that's a setup for disappointment. Their care shows up as showing up with a plan, not a monologue of comfort.`,

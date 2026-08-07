@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "unknown_hour",
   "locale": "ko-KR",
-  "generated_at": "2026-08-07T01:25:59.888Z",
+  "generated_at": "2026-08-07T01:49:32.375Z",
   "case_meta": {
     "label_ko": "출생시간 없음",
     "label_en": "Birth Hour Unknown Test Case",
@@ -661,7 +661,7 @@
       "summary_line": "🔥 70% · 🧩 50% · ⚡ 10%",
       "one_liner": "서로의 다름을 편안하게 인정하며, 억지 노력 없이도 곁에 머물 수 있는 든든한 안식처입니다.",
       "grade": "C",
-      "grade_reason": "상호 존중과 자유로운 공존의 우정 — 억지 노력 없이도 곁에 머물 수 있는 조화",
+      "grade_reason": "우정 케미 70% · 티키타카 50% · 소셜 리스크 10% — 등급은 이 세 지표를 가중 합산한 값이라, 등급 한 글자보다는 위 3개 지표를 그대로 참고하는 게 더 정확해요.",
       "canonical_projection_keys": [
         "comparison_table",
         "treasurer"
@@ -778,38 +778,7 @@
         },
         "personAxesSource": "survey",
         "narrative": {
-          "topics": [
-            {
-              "topic": "intimacy",
-              "title": "① 우정 케미",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 70,
-              "benefit": 70,
-              "risk": 30,
-              "interpretation": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머",
-              "isWarning": false
-            },
-            {
-              "topic": "stability",
-              "title": "② 티키타카",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 50,
-              "benefit": 50,
-              "risk": 5,
-              "interpretation": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머",
-              "isWarning": false
-            },
-            {
-              "topic": "conflict",
-              "title": "③ 소셜 리스크",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 90,
-              "benefit": 90,
-              "risk": 10,
-              "interpretation": "Alex & Jordan — 영혼을 나눈 환상의 덤앤더머",
-              "isWarning": false
-            }
-          ]
+          "topics": []
         }
       },
       "friend": {
@@ -838,7 +807,7 @@
           "guardian_character": {
             "key": "bamboo",
             "label": "영혼의 대나무숲 & 무조건적 공감",
-            "description": "Jordan은(는) Alex에게 세상의 평가와 판단 없이 속마음을 털어놓을 수 있는 감정의 안전지대이자, 지친 마음을 온전히 쉬게 해주는 든든한 쉼터가 되어줍니다. [우정의 시너지 & 성장] Alex의 '실행 추진력 & 현실 에너자이저'과(와) Jordan의 '영혼의 대나무숲 & 무조건적 공감'이(가) 맞물려, 혼자일 때보다 더 멀리 내다보고 서로의 자존감을 지켜주며 건강하게 성장하는 상호보완적 우정입니다."
+            "description": "Jordan은(는) Alex에게 세상의 평가와 판단 없이 속마음을 털어놓을 수 있는 감정의 안전지대이자, 지친 마음을 온전히 쉬게 해주는 든든한 쉼터가 되어줍니다."
           }
         },
         "section_snapshot": {
@@ -881,9 +850,9 @@
           "jealousy_guard_b": "Jordan은(는) 상대의 새로운 인간관계나 변화를 질투 없이 응원하는 건강한 자존감을 지니고 있습니다. 감정이 상했을 때는 차가운 팩트보다 감정의 온도를 먼저 맞춰주세요."
         },
         "section_de_escalation": {
-          "hashtag": "#24시간_쿨다운_후_맛집_리셋",
+          "hashtag": "#쿨다운_후_맛집_리셋",
           "color": "red",
-          "archetype_label": "24시간 냉각기 & 저자극 맛집 리셋형",
+          "archetype_label": "냉각기 & 저자극 맛집 리셋형",
           "cheat_script": "아까는 나도 감정이 좀 격했는데, 우리 감정 가라앉히고 편하게 맛있는 거 먹으러 가자.",
           "upset_nickname": "Alex",
           "reconciliation_script": "Alex에게는 백 마디 말보다 좋아하는 맛집 예약 링크, 기프티콘, 야식 선물이 훨씬 빨리 통해요 — 거창한 사과 없이 쿨하게 푸는 타입.",
@@ -899,7 +868,7 @@
           "counseling_style_b": {
             "type": "T",
             "label": "사이다 솔루션",
-            "description": "\"그래서 해결책이 뭔데?\" 하고 냉철하게 대안을 제시하는 타입. 힘들 때 Jordan을(를) 찾게 되는 이유 중 하나는, 설명하지 않아도 무조건 내 편을 들어줄 거란 믿음이 있기 때문이에요. 다만 Jordan에게 항상 완벽한 해결책을 기대하진 마세요 — 그냥 들어주는 게 필요할 땐 그렇다고 솔직히 말해도 괜찮아요."
+            "description": "\"그래서 해결책이 뭔데?\" 하고 냉철하게 대안을 제시하는 타입. 힘들 때 Jordan을(를) 찾게 되는 이유 중 하나는, 감정에 휩쓸리지 않고 객관적인 팩트로 정신이 번쩍 들게 해주기 때문이에요. 다만 Jordan에게 항상 완벽한 해결책을 기대하진 마세요 — 그냥 들어주는 게 필요할 땐 그렇다고 솔직히 말해도 괜찮아요."
           },
           "counseling_gap_note": "힘든 얘기를 꺼낼 때 Alex은(는) \"그랬구나, 힘들었겠다\"며 감정부터 알아주길 바라는 편이고, Jordan은(는) \"그래서 어떻게 할 거야?\" 하고 해결책부터 던지는 편이에요. 공감 방식이 달라서 Alex은(는) \"내 말을 왜 못 알아들어\" 서운함을, Jordan은(는) \"왜 해결책을 싫어하지\" 답답함을 느끼기 쉬워요. 고민을 꺼낼 때 \"위로가 필요해\" 또는 \"해결책이 필요해\"를 먼저 말해주면 엇박자가 사라져요."
         },
@@ -1004,7 +973,7 @@
       },
       "meta": {
         "grade": "C",
-        "grade_reason": "상호 존중과 자유로운 공존의 우정 — 억지 노력 없이도 곁에 머물 수 있는 조화",
+        "grade_reason": "우정 케미 70% · 티키타카 50% · 소셜 리스크 10% — 등급은 이 세 지표를 가중 합산한 값이라, 등급 한 글자보다는 위 3개 지표를 그대로 참고하는 게 더 정확해요.",
         "uncertain_items": [
           "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
           "년주 팔자 형식이 올바르지 않습니다 (경오).",
@@ -1040,9 +1009,9 @@
                 "snapshot": {}
               },
               "do_list": [
-                "갈등이 생긴 당일엔 감정 싸움을 멈추고 24시간 타임아웃을 갖기.",
+                "갈등이 생긴 당일엔 감정 싸움을 멈추고 하루 정도 타임아웃을 갖기.",
                 "타임아웃 후 각자 입장을 한 문장으로 정리해서 차분하게 재대화하기.",
-                "분기 1회 Alex·Jordan만의 고정 약속을 잡아 — 작은 마찰이 쌓이기 전에 관계를 리셋하기."
+                "가끔 Alex·Jordan만의 고정 약속을 잡아 — 작은 마찰이 쌓이기 전에 관계를 리셋하기."
               ],
               "dont_list": [
                 "감정이 격해진 상태에서 바로 결론 내리려 하지 않기.",
@@ -1062,85 +1031,19 @@
                 "snapshot": {}
               },
               "do_list": [
-                "분기 1회 '우리만의 가벼운 약속'(맛집·산책) 고정 — Alex·Jordan 번갈아 주도.",
-                "서운함은 2주 안에 한 문장으로 전달 — 쌓아 두지 않기.",
+                "가끔 '우리만의 가벼운 약속'(맛집·산책) 고정 — Alex·Jordan 번갈아 주도.",
+                "서운함은 너무 늦기 전에 한 문장으로 전달 — 쌓아 두지 않기.",
                 "상대 힘든 시기엔 조언보다 '들을게' 한 마디 먼저."
               ],
               "dont_list": [
                 "SNS에서만 친한 척하고 실제 연락은 0.",
                 "공통 지인 앞에서 우정 퀴즈·비교.",
-                "오랜만에 연락 와서 바로 부탁만 하기."
+                "오랜만에 연락 와서 바로 부탁만 하기.",
+                "Alex에게 매번 즉각적이고 깔끔한 해결책을 기대하면 실망하기 쉬워요 — 이 사람의 관심은 빠른 정답보다 함께 감정을 견뎌주는 쪽으로 나타나는 편이에요.",
+                "Jordan에게 매번 길게 감정을 알아주는 위로 대화를 기대하면 실망하기 쉬워요 — 이 사람의 관심은 위로의 말보다 실질적인 대안으로 나타나는 편이에요."
               ]
             }
           ]
-        }
-      },
-      "context_output": {
-        "schema_version": "context_output_v1",
-        "domain": "friendship",
-        "grade": "C",
-        "scores": {
-          "connection": 70,
-          "banter": 50,
-          "risk": 10
-        },
-        "dominant_categories": {
-          "guardian_a": {
-            "category": "bamboo"
-          },
-          "guardian_b": {
-            "category": "business"
-          },
-          "treasurer": {
-            "category": "b"
-          },
-          "treasurer_align": {
-            "category": "confirms"
-          },
-          "treasurer_confidence": {
-            "category": "high"
-          },
-          "tikitaka_a": {
-            "category": "silent"
-          },
-          "tikitaka_b": {
-            "category": "silent"
-          },
-          "battery_a": {
-            "category": "homebody"
-          },
-          "battery_b": {
-            "category": "outdoor"
-          },
-          "counseling_a": {
-            "category": "F"
-          },
-          "counseling_b": {
-            "category": "T"
-          }
-        },
-        "signals": {
-          "hasDayBranchCombine": false,
-          "hasBijiepMutualResonance": true,
-          "hasDayBranchChungHyung": false,
-          "hasFoodSealHarmony": false,
-          "hasJohuComplement": false,
-          "hasFoodClashFriction": false,
-          "hasDayBranchFullTension": false,
-          "hasWonjinOrGuimun": false,
-          "hasWealthOfficerClash": false,
-          "hasDayStemMutualSupport": true
-        },
-        "axis_notes": {
-          "connection": null,
-          "banter": null,
-          "risk": null,
-          "treasurer_confirm": null,
-          "communication_rhythm": null
-        },
-        "section_summaries": {
-          "treasurer_reason": "돈·규칙 감각이 더 반듯한 Jordan이(가) 이 우정의 절대적 총무입니다. 돈 계산을 이 사람에게 일임해야 1원짜리 하나 때문에 우정에 금이 가는 대참사를 막을 수 있습니다.",
-          "travel_role": null
         }
       },
       "canonical_projections": {

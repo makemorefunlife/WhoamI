@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "weak",
   "locale": "ko-KR",
-  "generated_at": "2026-08-07T01:25:59.792Z",
+  "generated_at": "2026-08-07T01:49:32.290Z",
   "case_meta": {
     "label_ko": "주의점이 많은 테스트 사례",
     "label_en": "High Caution Test Case",
@@ -659,7 +659,7 @@
       "summary_line": "🔥 50% · 🧩 50% · ⚡ 10%",
       "one_liner": "서로의 다름을 편안하게 인정하며, 억지 노력 없이도 곁에 머물 수 있는 든든한 안식처입니다.",
       "grade": "D",
-      "grade_reason": "상호 존중과 자유로운 공존의 우정 — 억지 노력 없이도 곁에 머물 수 있는 조화",
+      "grade_reason": "우정 케미 50% · 티키타카 50% · 소셜 리스크 10% — 등급은 이 세 지표를 가중 합산한 값이라, 등급 한 글자보다는 위 3개 지표를 그대로 참고하는 게 더 정확해요.",
       "canonical_projection_keys": [
         "comparison_table",
         "treasurer"
@@ -776,38 +776,7 @@
         },
         "personAxesSource": "survey",
         "narrative": {
-          "topics": [
-            {
-              "topic": "intimacy",
-              "title": "① 우정 케미",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 50,
-              "benefit": 50,
-              "risk": 50,
-              "interpretation": "Alex & Jordan — 각자 다른 주파수, 그래서 오래 가는 우정",
-              "isWarning": false
-            },
-            {
-              "topic": "stability",
-              "title": "② 티키타카",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 50,
-              "benefit": 50,
-              "risk": 5,
-              "interpretation": "Alex & Jordan — 각자 다른 주파수, 그래서 오래 가는 우정",
-              "isWarning": false
-            },
-            {
-              "topic": "conflict",
-              "title": "③ 소셜 리스크",
-              "subtitle": "Alex ↔ Jordan",
-              "activation": 90,
-              "benefit": 90,
-              "risk": 10,
-              "interpretation": "Alex & Jordan — 각자 다른 주파수, 그래서 오래 가는 우정",
-              "isWarning": false
-            }
-          ]
+          "topics": []
         }
       },
       "friend": {
@@ -817,7 +786,7 @@
           "friend_position": "친구들 감정 캐치하고 중재하는 우정 수호자",
           "tikitaka_label": "☕ 말 없이 있어도 편한 침묵 아지트파",
           "tikitaka_description": "영혼 없는 수다보다는 같은 공간에서 각자 폰을 보거나 멍 때려도 편안한 스타일.",
-          "battery_description": "단둘이 있을 때도, 여러 친구들과 어울리는 활기찬 모임에서도 둘 다 에너지가 넘치고 분위기를 주도합니다. 다만 둘 다 지칠 때까지 멈추지 않는 경향이 있으니, 가끔은 의식적인 1:1 휴식 시간을 갖는 것이 좋습니다.",
+          "battery_description": "단둘이 있을 때도, 여러 친구들과 어울리는 모임에서도 둘 다 에너지를 내는 편이에요. 다만 텐션을 스스로 못 낮추는 편이라, 만나고 난 뒤에 오히려 한꺼번에 기 빨림이 올 수 있어요. 텐션이 오를 때일수록 의식적으로 쉬는 타이밍을 넣어주는 게 관계를 오래 편하게 만들어요.",
           "private_self": "장난 줄이고 진지한 팩트 토크할 때 진짜 속마음",
           "guardian_character": {
             "key": "brain",
@@ -831,12 +800,12 @@
           "friend_position": "모임에서 분위기 띄우고 새 친구 끌어오는 네트워킹 캡틴",
           "tikitaka_label": "☕ 말 없이 있어도 편한 침묵 아지트파",
           "tikitaka_description": "영혼 없는 수다보다는 같은 공간에서 각자 폰을 보거나 멍 때려도 편안한 스타일.",
-          "battery_description": "단둘이 있을 때도, 여러 친구들과 어울리는 활기찬 모임에서도 둘 다 에너지가 넘치고 분위기를 주도합니다. 다만 둘 다 지칠 때까지 멈추지 않는 경향이 있으니, 가끔은 의식적인 1:1 휴식 시간을 갖는 것이 좋습니다.",
+          "battery_description": "단둘이 있을 때도, 여러 친구들과 어울리는 모임에서도 둘 다 에너지를 내는 편이에요. 다만 텐션을 스스로 못 낮추는 편이라, 만나고 난 뒤에 오히려 한꺼번에 기 빨림이 올 수 있어요. 텐션이 오를 때일수록 의식적으로 쉬는 타이밍을 넣어주는 게 관계를 오래 편하게 만들어요.",
           "private_self": "편한 술자리에서도 자유롭게 움직이며 솔직해지는 타입",
           "guardian_character": {
             "key": "business",
             "label": "실행 추진력 & 현실 에너자이저",
-            "description": "Jordan은(는) Alex의 막연한 아이디어와 고민을 실제 행동으로 이끌어주는 추진 엔진이자, 새로운 기회와 활력을 불어넣는 든든한 페이스메이커입니다. [우정의 시너지 & 성장] Alex의 '현실 나침반 & 명쾌한 전략 멘토'과(와) Jordan의 '실행 추진력 & 현실 에너자이저'이(가) 맞물려, 혼자일 때보다 더 멀리 내다보고 서로의 자존감을 지켜주며 건강하게 성장하는 상호보완적 우정입니다."
+            "description": "Jordan은(는) Alex의 막연한 아이디어와 고민을 실제 행동으로 이끌어주는 추진 엔진이자, 새로운 기회와 활력을 불어넣는 든든한 페이스메이커입니다."
           }
         },
         "section_snapshot": {
@@ -879,9 +848,9 @@
           "jealousy_guard_b": "Jordan은(는) 상대의 새로운 인간관계나 변화를 질투 없이 응원하는 건강한 자존감을 지니고 있습니다. 감정이 상했을 때는 차가운 팩트보다 감정의 온도를 먼저 맞춰주세요."
         },
         "section_de_escalation": {
-          "hashtag": "#24시간_쿨다운_후_맛집_리셋",
+          "hashtag": "#쿨다운_후_맛집_리셋",
           "color": "blue",
-          "archetype_label": "24시간 냉각기 & 저자극 맛집 리셋형",
+          "archetype_label": "냉각기 & 저자극 맛집 리셋형",
           "cheat_script": "아까는 나도 감정이 좀 격했는데, 우리 감정 가라앉히고 편하게 맛있는 거 먹으러 가자.",
           "upset_nickname": "Alex",
           "reconciliation_script": "Alex에게는 백 마디 말보다 좋아하는 맛집 예약 링크, 기프티콘, 야식 선물이 훨씬 빨리 통해요 — 거창한 사과 없이 쿨하게 푸는 타입.",
@@ -1002,7 +971,7 @@
       },
       "meta": {
         "grade": "D",
-        "grade_reason": "상호 존중과 자유로운 공존의 우정 — 억지 노력 없이도 곁에 머물 수 있는 조화",
+        "grade_reason": "우정 케미 50% · 티키타카 50% · 소셜 리스크 10% — 등급은 이 세 지표를 가중 합산한 값이라, 등급 한 글자보다는 위 3개 지표를 그대로 참고하는 게 더 정확해요.",
         "uncertain_items": [
           "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
           "년주 팔자 형식이 올바르지 않습니다 (갑자).",
@@ -1036,9 +1005,9 @@
                 "snapshot": {}
               },
               "do_list": [
-                "갈등이 생긴 당일엔 감정 싸움을 멈추고 24시간 타임아웃을 갖기.",
+                "갈등이 생긴 당일엔 감정 싸움을 멈추고 하루 정도 타임아웃을 갖기.",
                 "타임아웃 후 각자 입장을 한 문장으로 정리해서 차분하게 재대화하기.",
-                "분기 1회 Alex·Jordan만의 고정 약속을 잡아 — 작은 마찰이 쌓이기 전에 관계를 리셋하기."
+                "가끔 Alex·Jordan만의 고정 약속을 잡아 — 작은 마찰이 쌓이기 전에 관계를 리셋하기."
               ],
               "dont_list": [
                 "감정이 격해진 상태에서 바로 결론 내리려 하지 않기.",
@@ -1058,85 +1027,19 @@
                 "snapshot": {}
               },
               "do_list": [
-                "분기 1회 '우리만의 가벼운 약속'(맛집·산책) 고정 — Alex·Jordan 번갈아 주도.",
-                "서운함은 2주 안에 한 문장으로 전달 — 쌓아 두지 않기.",
+                "가끔 '우리만의 가벼운 약속'(맛집·산책) 고정 — Alex·Jordan 번갈아 주도.",
+                "서운함은 너무 늦기 전에 한 문장으로 전달 — 쌓아 두지 않기.",
                 "상대 힘든 시기엔 조언보다 '들을게' 한 마디 먼저."
               ],
               "dont_list": [
                 "SNS에서만 친한 척하고 실제 연락은 0.",
                 "공통 지인 앞에서 우정 퀴즈·비교.",
-                "오랜만에 연락 와서 바로 부탁만 하기."
+                "오랜만에 연락 와서 바로 부탁만 하기.",
+                "Alex에게 매번 즉각적이고 깔끔한 해결책을 기대하면 실망하기 쉬워요 — 이 사람의 관심은 빠른 정답보다 함께 감정을 견뎌주는 쪽으로 나타나는 편이에요.",
+                "Jordan에게 매번 즉각적이고 깔끔한 해결책을 기대하면 실망하기 쉬워요 — 이 사람의 관심은 빠른 정답보다 함께 감정을 견뎌주는 쪽으로 나타나는 편이에요."
               ]
             }
           ]
-        }
-      },
-      "context_output": {
-        "schema_version": "context_output_v1",
-        "domain": "friendship",
-        "grade": "D",
-        "scores": {
-          "connection": 50,
-          "banter": 50,
-          "risk": 10
-        },
-        "dominant_categories": {
-          "guardian_a": {
-            "category": "brain"
-          },
-          "guardian_b": {
-            "category": "business"
-          },
-          "treasurer": {
-            "category": "b"
-          },
-          "treasurer_align": {
-            "category": "caution"
-          },
-          "treasurer_confidence": {
-            "category": "low"
-          },
-          "tikitaka_a": {
-            "category": "silent"
-          },
-          "tikitaka_b": {
-            "category": "silent"
-          },
-          "battery_a": {
-            "category": "outdoor"
-          },
-          "battery_b": {
-            "category": "outdoor"
-          },
-          "counseling_a": {
-            "category": "F"
-          },
-          "counseling_b": {
-            "category": "F"
-          }
-        },
-        "signals": {
-          "hasDayBranchCombine": false,
-          "hasBijiepMutualResonance": false,
-          "hasDayBranchChungHyung": false,
-          "hasFoodSealHarmony": false,
-          "hasJohuComplement": false,
-          "hasFoodClashFriction": false,
-          "hasDayBranchFullTension": false,
-          "hasWonjinOrGuimun": false,
-          "hasWealthOfficerClash": false,
-          "hasDayStemMutualSupport": false
-        },
-        "axis_notes": {
-          "connection": null,
-          "banter": null,
-          "risk": null,
-          "treasurer_confirm": null,
-          "communication_rhythm": null
-        },
-        "section_summaries": {
-          "treasurer_reason": "돈·규칙 감각이 더 반듯한 Jordan이(가) 이 우정의 절대적 총무입니다. 돈 계산을 이 사람에게 일임해야 1원짜리 하나 때문에 우정에 금이 가는 대참사를 막을 수 있습니다. 설문 축은 엇갈려 있어요 — 총무 역할을 너무 굳히지 말고 필요하면 정산 앱을 같이 쓰세요.",
-          "travel_role": null
         }
       },
       "canonical_projections": {

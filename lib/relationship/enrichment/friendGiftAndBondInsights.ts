@@ -77,27 +77,43 @@ export function buildGrowthDynamicLine(params: {
   );
 }
 
-/** 항목 5 — 힘들 때 왜 이 친구를 찾는가 (상담 스타일 인물의 우세 축 근거) */
+/**
+ * 항목 5 — 힘들 때 왜 이 친구를 찾는가 (상담 스타일 인물의 우세 축 근거)
+ *
+ * `type`은 Hidden Flow에 이미 표시된 counseling_style.type(F/T/balanced,
+ * `resolveCounselingStyleForPerson`이 십성+psych로 계산한 값)을 그대로
+ * 재사용한다 — 이 함수가 raw psych 축만으로 독자적으로 재판정하면 라벨은
+ * "감정 힐러"인데 이유 문장은 "사이다 솔루션" 논리를 쓰는 불일치가 생길 수
+ * 있어서(십성 가중 판정과 raw 축 판정이 다른 결과를 낼 수 있음), 반드시 같은
+ * `type` 값을 공유해 라벨-설명 일관성을 보장한다.
+ */
 export function buildWhyTurnToFriendLine(
+  type: "F" | "T" | "balanced",
   psychOther: PsychMasterJson | null | undefined,
   nameOther: string,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): string | null {
   if (!psychOther) return null;
-  const { thinking_style, empathy, resilience } = psychOther.secondary_axes;
+  const { resilience } = psychOther.secondary_axes;
 
   const base =
-    thinking_style > empathy
+    type === "T"
       ? pick(
           locale,
           `Part of why I turn to ${nameOther} when things are hard: they don't get swept up in the feelings, they cut straight to an objective read that snaps me back to clear-headed.`,
           `힘들 때 ${nameOther}을(를) 찾게 되는 이유 중 하나는, 감정에 휩쓸리지 않고 객관적인 팩트로 정신이 번쩍 들게 해주기 때문이에요.`,
         )
-      : pick(
-          locale,
-          `Part of why I turn to ${nameOther} when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed.`,
-          `힘들 때 ${nameOther}을(를) 찾게 되는 이유 중 하나는, 설명하지 않아도 무조건 내 편을 들어줄 거란 믿음이 있기 때문이에요.`,
-        );
+      : type === "F"
+        ? pick(
+            locale,
+            `Part of why I turn to ${nameOther} when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed.`,
+            `힘들 때 ${nameOther}을(를) 찾게 되는 이유 중 하나는, 설명하지 않아도 무조건 내 편을 들어줄 거란 믿음이 있기 때문이에요.`,
+          )
+        : pick(
+            locale,
+            `Part of why I turn to ${nameOther} when things are hard: they read the moment and switch between comfort and a clear-eyed plan as needed, instead of always leading with one or the other.`,
+            `힘들 때 ${nameOther}을(를) 찾게 되는 이유 중 하나는, 상황을 봐가며 위로가 먼저일 때와 현실적인 조언이 먼저일 때를 알아서 오가주기 때문이에요.`,
+          );
 
   if (resilience >= 65) {
     return `${base} ${pick(

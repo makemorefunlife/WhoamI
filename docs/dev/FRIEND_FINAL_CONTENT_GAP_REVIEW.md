@@ -332,4 +332,49 @@ Work/Family/Partner/main 도메인 코드 및 production `current`(`buildFriendR
 
 typecheck 신규 에러 0(기존 `section_play_money` pre-existing 에러만 남음) · `verify-friend-11axis-and-score-audit.ts`·`verify-friend-product-director-review.ts` 16/16 통과 · `npm run build` 성공 · `mixed`/`reversed_ab`/`psych_saju_conflict`/`psych_saju_agree`로 capability 절·기대치 리셋 문장(A/B 방향 분리 확인)·`shine_when_low`·`battery_recharge` 포인터 전수 확인 · `DOMAIN=friend` baseline 재생성(타 도메인 `index.json` 훼손분은 원복).
 
+---
+
+## 9. 최종 콘텐츠 클린업 — Lovable 전달 전 확정 (2026-08-07 4차 후속)
+
+실제 프로덕션 리포트(실사용자 데이터)에서 발견된 모순·잔재 8건을 `current_enriched` 전용으로 수정했다. `buildFriendPrescriptions.ts`(production, `current`와 공유) 자체는 건드리지 않고, `buildFriendReportEnriched.ts`에서 결과물을 후처리하는 방식으로 격리했다.
+
+### 9.1 발견된 버그와 근본 원인
+
+| # | 증상 | 근본 원인 | 수정 |
+|---|---|---|---|
+| 1 | Relationship Index(80/100 등)와 우정 등급 D가 모순되어 보임 | `triScoreToGrade`(공유 유틸)가 `banter*0.45+connection*0.25-risk*0.3`로 가중 합산 — 개별 점수가 준수해도 등급은 낮게 나올 수 있는 정상 계산. 공식 자체는 로맨틱 도메인과 공유라 미수정 | `grade_reason`을 실제 3개 점수를 인용해 "등급 한 글자보다 위 3개 지표를 참고하라"고 명시하는 동적 문구로 교체 |
+| 2 | ①②③ 3개 카드가 "Friend Chemistry/Banter/Social Risk"를 반복 표시하며 서로 다른 숫자를 보여줌(중복·모순처럼 보임) | `TriScoreSnapshotPanel`(5개 도메인 공유 컴포넌트)이 intimacy/stability/conflict 3개 하위지표를 도메인 공용 라벨로 재사용 — 실제로는 다른 지표인데 같은 이름표를 3번 붙임 | 컴포넌트는 안 건드리고, `snapshot_panel.narrative.topics`를 빈 배열로 만들어 중복 카드만 제거(범례·정의 패널은 유지, 상단 진짜 3대 지표만 남음) |
+| 3 | 우정 주파수 매칭(심리 레이더)이 실제 리포트에서 여전히 노출 | `resolveReportPsychDisplay`에 `meta.person_core.psych_a/b`로 되돌아가 다시 조립하는 폴백 경로가 있었음 — `psych_match`/`psych_lens`만 지워서는 안 막힘 | `meta.person_core`도 함께 `undefined` 처리 |
+| 4 | 돈 계산(총무) 문구 잔존 | `context_output.section_summaries.treasurer_reason`이 (제거 전) `section_play_money` 기반으로 이미 계산돼 캐리됨. production API는 클라이언트 응답에서 stripping하지만, 원본 리포트 객체 자체에는 남아있었음 | `context_output: undefined`로 current_enriched에서 통째로 제거(뷰모델은 애초에 이 필드를 안 읽으므로 렌더링 영향 없음) |
+| 5 | "감정 힐러" 라벨인데 설명 문장은 "사이다 솔루션" 논리 | `buildWhyTurnToFriendLine`/`buildExpectationResetLine`이 `resolveCounselingStyleForPerson`(십성+psych 가중)과 별개로 raw psych 축(thinking_style vs empathy)만으로 독자 재판정 — 두 판정이 어긋날 수 있었음 | 두 함수 모두 이미 계산된 `counseling_style.type`(F/T/balanced)을 파라미터로 받아 재사용하도록 변경, 독자 재계산 제거 |
+| 6 | Social DNA A·B 카드에 "[우정의 시너지 & 성장]" 문단이 토씨 하나 안 틀리고 두 번 반복 | `emergenceLine`(pair 단위 결론)을 A·B 양쪽 `guardian_character.description`에 동일하게 append | A 카드에만 유지, B 카드에서 제거 |
+| 7 | "둘 다 모임에서 에너지 넘침"(Social DNA) vs "기 빨림 신호"(Prescription 처방전) 모순처럼 보임 | 서로 다른 신호 소스(saju batteryMode vs `PairFriendshipSignals.energy_drain_index`)가 각자 계산되어 표현이 상충 | 산식은 안 건드리고, batteryMode "둘 다 outdoor" 문구를 "텐션을 못 낮춰서 만난 뒤 한꺼번에 지칠 수 있다"로 재작성 — 기 빨림 프레이밍과 자연스럽게 연결 |
+| 8 | 근거 없는 고정 숫자(30분/10분/24시간/분기 1회/2주/3주 등) | `buildFriendPrescriptions.ts`(production)의 do/dont 문구가 실제 계산된 신호가 아닌 flavor 숫자를 하드코딩 | production 파일은 무수정, `buildFriendReportEnriched.ts`에서 `stripUnsupportedFixedNumbers`(정확 문자열 치환 테이블, 정규식 아님)로 후처리해 비수치 표현으로 순화. 같은 원리로 De-escalation 해시태그/아키타입의 "24시간"도 제거 |
+
+### 9.2 구현
+
+- `lib/relationship/enrichment/friendGiftAndBondInsights.ts`: `buildWhyTurnToFriendLine` 시그니처에 `type` 파라미터 추가(선두), balanced 케이스 문구 신설
+- `lib/relationship/enrichment/friendExpectationAndStruggle.ts`: `buildExpectationResetLine` 시그니처를 `psychOther` → `type`로 교체(balanced는 null)
+- `lib/relationship/enrichment/buildFriendReportEnriched.ts`: `person_core`/`context_output` 제거, `snapshot_panel.narrative.topics=[]`, 동적 `grade_reason`, `deriveGroupVs1on1Insight`의 "둘 다 outdoor" 문구 재작성, De-escalation 해시태그/아키타입 숫자 제거, `PRESCRIPTION_NUMBER_STRIP` 치환 테이블 + `stripUnsupportedFixedNumbers` 신설·적용, 성장 문단(emergenceLine) A 카드 전용화
+
+### 9.3 캐노니컬 질문 → 최종 홈 재확인 (5개 승인 질문, 새 섹션 없음)
+
+| 질문 | 최종 홈 | 비고 |
+|---|---|---|
+| 이 친구가 나를 어떤 사람으로 만들어주는가 | Social DNA `guardian_character`(A 카드) | §8에서 배치, 이번에 중복 제거 |
+| 힘들 때 무엇까지 기대해도 되는가 / 기대하면 실망할 것 | Hidden Flow(기대해도 되는 것) / Prescription Don't List(실망할 것) | §8에서 배치, F/T 일관성 이번에 수정 |
+| 다른 친구들이 있을 때 어떻게 달라지는가 | Social DNA `battery_description`(주 홈) + 비교표 1줄 포인터(보조) | §8에서 병합 확정, 이번에 문구 모순 해소 |
+| 오래 안 봐도 괜찮은지 / 자주 연결돼야 하는지 | Soulmate `soulmate_verdict`(장기) + 비교표 `daily_share_tempo`(일상 리듬, 보조) | §8에서 배치, 변경 없음 |
+| Friendship Shines / Struggles | Snapshot(같은 카드 안 2번째 문단) | §8에서 신설, 변경 없음 |
+
+새 섹션·새 카드 0개. 실제 렌더링 섹션 순서(변경 없음): `snapshot → compare_table → social_dna → soulmate → hidden_flow → breakup_guide → de_escalation → prescription` (psych_radar·play_money는 항상 null이라 렌더 안 됨).
+
+**요청하신 "Hero → 3지표 → Part1~5" 계층은 콘텐츠상 이 순서와 대응되지만, 실제 DOM 섹션 재배치(특히 Shines/Struggles를 Part3 뒤로 옮기는 것)는 "UI 재설계 금지" 지침에 따라 이번 라운드에서는 하지 않았다** — 필요하면 별도 확인 후 순서 변경만 다음 라운드에서 진행 가능.
+
+### 9.4 테스트
+
+typecheck 신규 에러 0 · `verify-friend-11axis-and-score-audit.ts`·`verify-friend-product-director-review.ts` 16/16 통과 · `npm run build` 성공 · 실제 personCoreMeta+상반된 F/T psych를 주입한 수동 스모크 테스트로 8개 버그 전부 재현 후 수정 확인(우정 주파수 매칭 미노출, 돈 계산 텍스트 0건, 감정힐러/사이다솔루션 라벨-설명 일치, 성장 문단 1회만 노출, 고정 숫자 잔존 0건) · `DOMAIN=friend` baseline 재생성.
+
+범위: Work/Family/Partner/main 및 production `current`(`buildFriendReport.ts`, `buildFriendPrescriptions.ts`) 무수정. 커밋하지 않음(사용자 요청).
+
 범위: Work/Family/Partner/main 및 production `current` 계산 로직 무수정. 이번 라운드도 커밋 진행 여부는 별도 확인 필요.

@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "reversed_ab",
   "locale": "en-US",
-  "generated_at": "2026-08-07T01:25:59.861Z",
+  "generated_at": "2026-08-07T01:49:32.359Z",
   "case_meta": {
     "label_ko": "A/B 방향 반전 검증",
     "label_en": "A/B Direction Reversal Test Case",
@@ -659,7 +659,7 @@
       "summary_line": "🔥 70% · 🧩 50% · ⚡ 10%",
       "one_liner": "An effortless bond that honors mutual individuality without forced expectations.",
       "grade": "C",
-      "grade_reason": "Mutual Respect & Autonomous Synergy — Effortless harmony with natural space",
+      "grade_reason": "Friend chemistry 70% · Banter 50% · Social risk 10% — the letter grade is a weighted blend of these three, so read the three scores above directly rather than the single grade.",
       "canonical_projection_keys": [
         "comparison_table",
         "treasurer"
@@ -776,38 +776,7 @@
         },
         "personAxesSource": "survey",
         "narrative": {
-          "topics": [
-            {
-              "topic": "intimacy",
-              "title": "① Friend Chemistry",
-              "subtitle": "Jordan ↔ Alex",
-              "activation": 70,
-              "benefit": 70,
-              "risk": 30,
-              "interpretation": "Jordan & Alex — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-              "isWarning": false
-            },
-            {
-              "topic": "stability",
-              "title": "② Banter",
-              "subtitle": "Jordan ↔ Alex",
-              "activation": 50,
-              "benefit": 50,
-              "risk": 5,
-              "interpretation": "Jordan & Alex — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-              "isWarning": false
-            },
-            {
-              "topic": "conflict",
-              "title": "③ Social Risk",
-              "subtitle": "Jordan ↔ Alex",
-              "activation": 90,
-              "benefit": 90,
-              "risk": 10,
-              "interpretation": "Jordan & Alex — soulmates who share a brain, the ultimate Dumb and Dumber duo",
-              "isWarning": false
-            }
-          ]
+          "topics": []
         }
       },
       "friend": {
@@ -836,7 +805,7 @@
           "guardian_character": {
             "key": "business",
             "label": "Execution Momentum & Action Energizer",
-            "description": "Alex acts as a catalyst for Jordan, turning vague doubts into decisive action and injecting contagious forward momentum into their life. [Mutual Growth & Synergy] The interplay of Jordan's Empathy Sanctuary & Safe Harbor and Alex's Execution Momentum & Action Energizer creates a safe foundation where both can grow authentically without competitive pressure."
+            "description": "Alex acts as a catalyst for Jordan, turning vague doubts into decisive action and injecting contagious forward momentum into their life."
           }
         },
         "section_snapshot": {
@@ -879,9 +848,9 @@
           "jealousy_guard_b": "Alex maintains healthy boundaries that support individual independence. Validate feelings first before jumping to logical problem-solving."
         },
         "section_de_escalation": {
-          "hashtag": "#24h_Cooling_Reset_Over_Food",
+          "hashtag": "#Cooling_Reset_Over_Food",
           "color": "red",
-          "archetype_label": "24-Hour Cooling & Low-Pressure Reset",
+          "archetype_label": "Cooling & Low-Pressure Reset",
           "cheat_script": "I was a bit overwhelmed earlier; let's grab some good food together and chat comfortably whenever you're ready.",
           "upset_nickname": "Jordan",
           "reconciliation_script": "A hundred words won't do it for Jordan — a reservation link to their favorite restaurant, a gift card, or a late-night snack unlocks it fast, no big speech needed.",
@@ -1002,7 +971,7 @@
       },
       "meta": {
         "grade": "C",
-        "grade_reason": "Mutual Respect & Autonomous Synergy — Effortless harmony with natural space",
+        "grade_reason": "Friend chemistry 70% · Banter 50% · Social risk 10% — the letter grade is a weighted blend of these three, so read the three scores above directly rather than the single grade.",
         "uncertain_items": [
           "Birth place not entered — using Manseryeok defaults without longitude/timezone correction.",
           "Year Pillar pillar format is invalid (임신).",
@@ -1036,9 +1005,9 @@
                 "snapshot": {}
               },
               "do_list": [
-                "Stop the argument the same day it happens and take a 24-hour timeout before revisiting it.",
+                "Stop the argument the same day it happens and take a short timeout before revisiting it.",
                 "After the timeout, each of you states your side in one sentence, then talk it through calmly.",
-                "Lock in one recurring hangout per quarter for Jordan and Alex — it resets the friendship before small frictions pile up."
+                "Lock in a recurring hangout every so often for Jordan and Alex — it resets the friendship before small frictions pile up."
               ],
               "dont_list": [
                 "Don't try to reach a conclusion while emotions are still running hot.",
@@ -1058,85 +1027,19 @@
                 "snapshot": {}
               },
               "do_list": [
-                "Lock in a \"just-us light plan\" once a quarter (a good meal, a walk) — take turns letting Jordan and Alex lead it.",
-                "Say what's bothering you in one sentence within two weeks — don't let it pile up.",
+                "Lock in a \"just-us light plan\" every so often (a good meal, a walk) — take turns letting Jordan and Alex lead it.",
+                "Say what's bothering you in one sentence before it piles up — don't let it pile up.",
                 "When your friend's going through a hard time, lead with 'I'm here to listen' before jumping to advice."
               ],
               "dont_list": [
                 "Don't act close only on social media while never actually being in touch.",
                 "Don't quiz or compare your friendship in front of mutual friends.",
-                "Don't reach out after a long silence only to immediately ask for a favor."
+                "Don't reach out after a long silence only to immediately ask for a favor.",
+                "Expecting Jordan to hand you a crisp, ready-made solution on the spot — that's a setup for disappointment. Their care shows up as sitting with you in the feeling, not solving it fast.",
+                "Expecting Alex to hand you a crisp, ready-made solution on the spot — that's a setup for disappointment. Their care shows up as sitting with you in the feeling, not solving it fast."
               ]
             }
           ]
-        }
-      },
-      "context_output": {
-        "schema_version": "context_output_v1",
-        "domain": "friendship",
-        "grade": "C",
-        "scores": {
-          "connection": 70,
-          "banter": 50,
-          "risk": 10
-        },
-        "dominant_categories": {
-          "guardian_a": {
-            "category": "business"
-          },
-          "guardian_b": {
-            "category": "business"
-          },
-          "treasurer": {
-            "category": "a"
-          },
-          "treasurer_align": {
-            "category": "confirms"
-          },
-          "treasurer_confidence": {
-            "category": "high"
-          },
-          "tikitaka_a": {
-            "category": "silent"
-          },
-          "tikitaka_b": {
-            "category": "silent"
-          },
-          "battery_a": {
-            "category": "outdoor"
-          },
-          "battery_b": {
-            "category": "homebody"
-          },
-          "counseling_a": {
-            "category": "F"
-          },
-          "counseling_b": {
-            "category": "F"
-          }
-        },
-        "signals": {
-          "hasDayBranchCombine": false,
-          "hasBijiepMutualResonance": true,
-          "hasDayBranchChungHyung": false,
-          "hasFoodSealHarmony": false,
-          "hasJohuComplement": false,
-          "hasFoodClashFriction": false,
-          "hasDayBranchFullTension": false,
-          "hasWonjinOrGuimun": false,
-          "hasWealthOfficerClash": false,
-          "hasDayStemMutualSupport": true
-        },
-        "axis_notes": {
-          "connection": null,
-          "banter": null,
-          "risk": null,
-          "treasurer_confirm": null,
-          "communication_rhythm": null
-        },
-        "section_summaries": {
-          "treasurer_reason": "Jordan has the sharper sense for money and rules, making them this friendship's official treasurer. Put them in charge of the math — it's the only way to keep a single cent from ever cracking this friendship.",
-          "travel_role": null
         }
       },
       "canonical_projections": {
