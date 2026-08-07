@@ -191,6 +191,7 @@ function buildChildDnaSection(
     partNumber: 3,
     title: t.dnaCardTitle,
     geniusTitle: dna.genius_title,
+    geniusArchetype: dna.genius_archetype,
     communicationStyle: dna.communication_style,
     hiddenSensitivity: dna.hidden_sensitivity,
     attentionFocusStyle: dna.attention_focus_style,

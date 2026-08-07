@@ -3,8 +3,8 @@
   "caseId": "psych_saju_agree",
   "locale": "en-US",
   "case_meta": {
-    "label_ko": "심리·사주 합의",
-    "label_en": "Psych/saju agree",
+    "label_ko": "사주·설문 일치",
+    "label_en": "Saju & Psych Align Test Case",
     "birth": {
       "birthA": "1990-05-15",
       "birthB": "1992-03-08",

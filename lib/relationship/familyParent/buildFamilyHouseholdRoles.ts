@@ -16,6 +16,7 @@ import { buildPairFamilySignals } from "@/lib/personCore/sajuSignals/pairFamilyS
 import { synthesizeFamilySignalsFromCounts } from "@/lib/personCore/sajuSignals/extractFamilySignals";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import { sanitizeFamilyParentText } from "./familyParentLanguage";
+import { topicParticle, withParticle } from "@/lib/relationship/koreanParticles";
 import {
   resolveBondDistanceBucket,
   resolveCorrectionStyleBucket,
@@ -253,7 +254,7 @@ function buildComplement(
         pick(
           locale,
           `${self.name} and ${partner.name} share the same home-role channel (${selfLabel}). They complement each other when ${self.name} leads with “${CORRECTION_MOVE[locale][self.correction]} / ${BOND_MOVE[locale][self.bond]}” and ${partner.name} answers with “${CORRECTION_MOVE[locale][partner.correction]} / ${BOND_MOVE[locale][partner.bond]}” instead of copying the same move.`,
-          `${self.name}와 ${partner.name}는 같은 자리 채널(${selfLabel})이에요. ${self.name} 쪽이 ‘${CORRECTION_MOVE[locale][self.correction]} · ${BOND_MOVE[locale][self.bond]}’로 갈 때, ${partner.name} 쪽이 ‘${CORRECTION_MOVE[locale][partner.correction]} · ${BOND_MOVE[locale][partner.bond]}’로 받아 주면 같은 말이 겹치지 않고 보완돼요.`,
+          `${withParticle(self.name)} ${topicParticle(partner.name)} 같은 자리 채널(${selfLabel})이에요. ${self.name} 쪽이 ‘${CORRECTION_MOVE[locale][self.correction]} · ${BOND_MOVE[locale][self.bond]}’로 갈 때, ${partner.name} 쪽이 ‘${CORRECTION_MOVE[locale][partner.correction]} · ${BOND_MOVE[locale][partner.bond]}’로 받아 주면 같은 말이 겹치지 않고 보완돼요.`,
         ),
       );
     }
@@ -261,7 +262,7 @@ function buildComplement(
       pick(
         locale,
         `${self.name} and ${partner.name} share the same home-role channel (${selfLabel} · ${partnerLabel}). Complement shows up when one names the feeling and the other names the ask — same language, two beats.`,
-        `${self.name}와 ${partner.name}는 같은 자리 채널(${selfLabel} · ${partnerLabel})이에요. 한 사람은 감정 한 줄, 다른 사람은 요청 한 줄로 나누면 같은 언어가 보완으로 바뀌어요.`,
+        `${withParticle(self.name)} ${topicParticle(partner.name)} 같은 자리 채널(${selfLabel} · ${partnerLabel})이에요. 한 사람은 감정 한 줄, 다른 사람은 요청 한 줄로 나누면 같은 언어가 보완으로 바뀌어요.`,
       ),
     );
   }
@@ -325,7 +326,7 @@ function buildTension(
       pick(
         locale,
         `${self.name} and ${partner.name} don’t share one fixed first move — friction rises when the flexible side switches without saying so, and the other side keeps answering the previous mode.`,
-        `${self.name}와 ${partner.name}는 첫 수가 한 가지로 고정되지 않아요. 조율하는 쪽이 말 없이 모드를 바꾸면, 상대는 이전 방식에 답을 하다가 마찰이 나요.`,
+        `${withParticle(self.name)} ${topicParticle(partner.name)} 첫 수가 한 가지로 고정되지 않아요. 조율하는 쪽이 말 없이 모드를 바꾸면, 상대는 이전 방식에 답을 하다가 마찰이 나요.`,
       ),
     );
   } else if (self.correction !== partner.correction) {
@@ -365,7 +366,7 @@ function buildTension(
       pick(
         locale,
         `Closeness–boundary tuning between ${self.name} and ${partner.name} is recurring homework — name the gap before it becomes a fight.`,
-        `${self.name}와 ${partner.name} 사이 가까움·경계 조율이 반복 과제예요 — 싸움이 되기 전에 간격을 말로 맞춰 보세요.`,
+        `${withParticle(self.name)} ${partner.name} 사이 가까움·경계 조율이 반복 과제예요 — 싸움이 되기 전에 간격을 말로 맞춰 보세요.`,
       ),
     );
   }
@@ -375,7 +376,7 @@ function buildTension(
       pick(
         locale,
         `Correction friction runs high between ${self.name} and ${partner.name} — repeated remarks make one person carry the ‘same fight again’ load.`,
-        `${self.name}와 ${partner.name} 사이 지적·교정 마찰이 커지기 쉬워요 — 반복되는 한마디가 한쪽에게 ‘또 그 싸움’ 부담으로 쌓일 수 있어요.`,
+        `${withParticle(self.name)} ${partner.name} 사이 지적·교정 마찰이 커지기 쉬워요 — 반복되는 한마디가 한쪽에게 ‘또 그 싸움’ 부담으로 쌓일 수 있어요.`,
       ),
     );
   } else if (nagging === "medium" && parts.length === 0) {
@@ -383,7 +384,7 @@ function buildTension(
       pick(
         locale,
         `Moderate correction friction can show up between ${self.name} and ${partner.name} — keep asks short so one side doesn’t absorb all the tension.`,
-        `${self.name}와 ${partner.name} 사이 교정 장면에서 중간 마찰이 생길 수 있어요 — 요청을 짧게 해 한쪽이 긴장을 다 받지 않게 하세요.`,
+        `${withParticle(self.name)} ${partner.name} 사이 교정 장면에서 중간 마찰이 생길 수 있어요 — 요청을 짧게 해 한쪽이 긴장을 다 받지 않게 하세요.`,
       ),
     );
   }
@@ -393,7 +394,7 @@ function buildTension(
       pick(
         locale,
         `No strong role-clash signal stands out between ${self.name} and ${partner.name} right now — watch the moment care turns into repeated correction.`,
-        `${self.name}와 ${partner.name} 사이 지금은 역할 충돌 신호가 크지 않아요 — 챙김이 반복 지적로 바뀌는 순간만 잘 살펴 보세요.`,
+        `${withParticle(self.name)} ${partner.name} 사이 지금은 역할 충돌 신호가 크지 않아요 — 챙김이 반복 지적로 바뀌는 순간만 잘 살펴 보세요.`,
       ),
     );
   }

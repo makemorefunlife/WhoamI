@@ -3,8 +3,8 @@
   "caseId": "mixed",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "혼합",
-    "label_en": "Mixed",
+    "label_ko": "장점과 긴장이 섞인 테스트 사례",
+    "label_en": "Mixed Strengths & Tension Test Case",
     "birth": {
       "birthA": "1988-11-22",
       "birthB": "1995-07-04",

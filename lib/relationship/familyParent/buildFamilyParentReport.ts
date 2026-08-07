@@ -37,6 +37,16 @@ import { buildFamilyTalentSection } from "./familyTalentProfile";
 import { applyFamilyTalentPsychAuxNotes } from "./familyTalentAlign";
 import { buildFamilySosSection } from "./familySosScript";
 import { buildFamilyPraiseTriggerNote } from "@/lib/relationship/enrichment/familyPraiseTriggerNote";
+import {
+  buildParentGivingLine,
+  buildAchievementPressureLine,
+  buildRelationshipEvolutionLine,
+} from "@/lib/relationship/enrichment/familyParentSajuGapInsights";
+import {
+  buildInterferenceTriggerLine,
+  buildRoleReversalLine,
+  buildLoveLanguageLine,
+} from "@/lib/relationship/enrichment/familyParentPsychGapInsights";
 import { buildFamilyFilialFrequencySection } from "./familyFilialFrequency";
 import {
   buildFamilyContextOutput,
@@ -126,6 +136,10 @@ export function buildFamilyParentReport(params: {
     ctx.roles.roleA !== "child"
       ? (params.psychMasterB ?? null)
       : (params.psychMasterA ?? null);
+  const psychParent =
+    ctx.roles.roleA !== "child"
+      ? (params.psychMasterA ?? null)
+      : (params.psychMasterB ?? null);
   const family: FamilyParentChildReport = {
     ...buildFamilyParentChildReport(ctx),
     section_compare_table: buildFamilySajuCompareTable({
@@ -242,6 +256,88 @@ export function buildFamilyParentReport(params: {
       locale,
     }),
   };
+
+  // ---- 가족 6개 갭 항목 — 데이터 원천 분리 원칙(사용자 지정) ----
+  // 사주 Pair CE만: 1(부모가 채워줘야 할 것), 2(성취 압박), 3(관계 진화)
+  // 11축 psych만: 4(간섭 트리거), 5(역할 역전), 6(사랑의 언어)
+  // 새 카드 없이 기존 필드에 append — join(...)은 falsy를 건너뛴다.
+  const join = (...parts: Array<string | null | undefined>) =>
+    parts.filter((p): p is string => Boolean(p && p.trim())).join(" ");
+
+  const parentGivingLine = buildParentGivingLine({
+    chartParent: ctx.chartParent,
+    chartChild: ctx.chartChild,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
+  const achievementPressureLine = buildAchievementPressureLine({
+    countsParent: ctx.tenGod.countsParent,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
+  const relationshipEvolutionLine = buildRelationshipEvolutionLine({
+    pairFamily: params.pairFamily,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
+  const interferenceTriggerLine = buildInterferenceTriggerLine({
+    psychParent,
+    psychChild,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
+  const roleReversalLine = buildRoleReversalLine({
+    psychParent,
+    psychChild,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
+  const loveLanguageLine = buildLoveLanguageLine({
+    psychParent,
+    psychChild,
+    parentNickname: ctx.parentNickname,
+    childNickname: ctx.childNickname,
+    locale,
+  });
+
+  // 항목 1 — 부모가 해줘야 할 것 / 아이가 원하는 것.
+  family.parent_lens_summary = join(family.parent_lens_summary, parentGivingLine);
+  // 항목 2 — 통제 vs 자율 & 성취 기대.
+  family.section_growth_tunnel = {
+    ...family.section_growth_tunnel,
+    current_challenge: join(family.section_growth_tunnel.current_challenge, achievementPressureLine),
+  };
+  // 항목 3 — 성장하며 관계가 어떻게 바뀌어야 하는가.
+  family.section_destiny = {
+    ...family.section_destiny,
+    harmony_one_liner: join(family.section_destiny.harmony_one_liner, relationshipEvolutionLine),
+  };
+  // 항목 4 — 간섭으로 느껴지는 지점.
+  if (family.section_relationship_index) {
+    family.section_relationship_index = {
+      ...family.section_relationship_index,
+      safe_distance_note: join(family.section_relationship_index.safe_distance_note, interferenceTriggerLine),
+    };
+  }
+  // 항목 5 — 누가 보호하고 누가 기대는가.
+  if (family.section_sos_script) {
+    family.section_sos_script = {
+      ...family.section_sos_script,
+      sos_line: join(family.section_sos_script.sos_line, roleReversalLine),
+    };
+  }
+  // 항목 6 — 사랑과 관심을 어떻게 표현하는가.
+  if (family.section_household_roles) {
+    family.section_household_roles = {
+      ...family.section_household_roles,
+      complement: join(family.section_household_roles.complement, loveLanguageLine),
+    };
+  }
 
   const prescription_family = buildFamilyPrescriptions({
     pair: params.pairFamily ?? null,

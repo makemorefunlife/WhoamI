@@ -2,10 +2,10 @@
   "domain": "partner",
   "caseId": "unknown_hour",
   "locale": "ko-KR",
-  "generated_at": "2026-08-06T11:31:02.703Z",
+  "generated_at": "2026-08-07T06:23:01.184Z",
   "case_meta": {
-    "label_ko": "시간 모름",
-    "label_en": "Unknown hour",
+    "label_ko": "출생시간 없음",
+    "label_en": "Birth Hour Unknown Test Case",
     "birth": {
       "birthA": "1990-05-15",
       "birthB": "1992-03-08",
@@ -22,7 +22,7 @@
     "psych": "balanced"
   },
   "current": {
-    "mode": "current_ce",
+    "mode": "current",
     "summary": {
       "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
       "summary_line": "🔥 85% · 🧩 50% · ⚡ 48%",
@@ -294,7 +294,7 @@
         "section_money_chores": {
           "cfo_nickname": "Jordan",
           "cfo_reason": "Jordan이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요. 설문 축은 엇갈려 있어요 — CFO 역할을 너무 굳히지 말고 큰 지출은 함께 확인해 보세요.",
-          "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
+          "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.  집을 구하거나 목돈이 들어가는 큰 결정 앞에서는 Alex는 정보를 모으고 선택지를 늘어놓는 역할을 자연스럽게 맡고, Jordan는 마지막에 도장을 찍는 역할을 맡는 편이에요. 둘 다 있어야 완성되는 조합이니, 당연하게 여기지 말고 가끔은 서로에게 고맙다고 말해 주세요.",
           "spending_style_note": "Alex & Jordan 둘 다 저축·소비 사이에서 비교적 균형 잡힌 편이에요 — 딱히 교정할 성향은 없고, 가끔 서로 확인만 하면 돼요.",
           "cfo_axis_note": null,
           "mental_load_note": "보이지 않는 집안 운영 부담이 비슷해 보여요. 캘린더·할 일·후속 확인의 주인을 이름 붙여 두면, 한쪽이 조용히 둘 다 짊어지지 않게 됩니다.",
@@ -594,7 +594,912 @@
         },
         "section_summaries": {
           "cfo_reason": "Jordan이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요. 설문 축은 엇갈려 있어요 — CFO 역할을 너무 굳히지 말고 큰 지출은 함께 확인해 보세요.",
-          "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.",
+          "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.  집을 구하거나 목돈이 들어가는 큰 결정 앞에서는 Alex는 정보를 모으고 선택지를 늘어놓는 역할을 자연스럽게 맡고, Jordan는 마지막에 도장을 찍는 역할을 맡는 편이에요. 둘 다 있어야 완성되는 조합이니, 당연하게 여기지 말고 가끔은 서로에게 고맙다고 말해 주세요.",
+          "spending_style_note": "Alex & Jordan 둘 다 저축·소비 사이에서 비교적 균형 잡힌 편이에요 — 딱히 교정할 성향은 없고, 가끔 서로 확인만 하면 돼요.",
+          "sexual_chemistry_summary": "침실 DNA는 같은 편입니다. 다만 루틴에 안주하면 불씨가 약해질 수 있어 — 솔직한 피드백이 쌓일수록 깊어집니다.",
+          "bedroom_frequency": "같은 유형끼리 맞물리지만, 피로·스트레스가 쌓이면 둘 다 예민해집니다. 밤의 템포·수위·주도권을 말로 확인하지 않으면 각자 다른 밤을 꿈꾸고 있을 수 있습니다.",
+          "inlaw_stress_summary": "시댁·처가 스트레스 지수 20% — 비교적 독립적이지만, 피곤할 때 가족 이슈가 침실까지 따라오지 않게 경계는 유지하세요.",
+          "conflict_trigger": "역할·돈·육아를 한 번에 꺼내면 마찰이 치솟습니다. 오늘은 하나만. 나머지는 내일.",
+          "emotional_neglect_risk": "추격하는 쪽은 '나를 무시한다'고 느끼고, 물러서는 쪽은 '숨 쉴 틈이 없다'고 느낍니다. 싸움이 길어질수록 둘 다 정서적으로 방치된 기분이 듭니다. 타임아웃 20분 + '돌아올 시간' 약속만이 이 루프를 끊습니다.",
+          "sleep_prescription": "취침 30분 전 대화·폰은 침실 밖으로. 피곤한 날은 '오늘은 조용 모드'만 말해 주는 신호를 정해 두세요.",
+          "why_us": "극적인 신호 하나로 설명되는 인연은 아니에요 — 일상의 리듬과 작은 선택이 반복되며 서로를 골랐고, 그게 오히려 오래가는 이유예요.",
+          "one_line_household": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스"
+        }
+      },
+      "meta": {
+        "grade": "D",
+        "grade_reason": "동거·결혼 등급 D — 로맨틱 핏 85% · 라이프 시너지 50% · 홈 리스크 48%",
+        "uncertain_items": [
+          "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+          "년주 팔자 형식이 올바르지 않습니다 (경오).",
+          "월주 팔자 형식이 올바르지 않습니다 (신사).",
+          "일주 팔자 형식이 올바르지 않습니다 (경진).",
+          "시주 팔자 형식이 올바르지 않습니다 (임오).",
+          "출생 시간 미상 — 시주는 참고용(12:00 기준)이며 시주·말년 해석은 확실하지 않습니다.",
+          "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+          "년주 팔자 형식이 올바르지 않습니다 (임신).",
+          "월주 팔자 형식이 올바르지 않습니다 (계묘).",
+          "일주 팔자 형식이 올바르지 않습니다 (계미).",
+          "시주 팔자 형식이 올바르지 않습니다 (무오).",
+          "출생 시간 미상 — 시주는 참고용(12:00 기준)이며 시주·말년 해석은 확실하지 않습니다."
+        ],
+        "romantic_fit_pct": 85,
+        "life_synergy_pct": 50,
+        "home_risk_pct": 48,
+        "psych_match": {
+          "axis_results": [
+            {
+              "axis_key": "stimulation",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "self_control",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "practicality",
+              "score_a": 58,
+              "score_b": 61,
+              "gap": 3,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "structure",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "empathy",
+              "score_a": 62,
+              "score_b": 57,
+              "gap": 5,
+              "match_type": "complementary"
+            },
+            {
+              "axis_key": "conflict_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "resilience",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "recognition",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "energy_style",
+              "score_a": 55,
+              "score_b": 48,
+              "gap": 7,
+              "match_type": "complementary"
+            },
+            {
+              "axis_key": "thinking_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            },
+            {
+              "axis_key": "decision_style",
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0,
+              "match_type": "similarity"
+            }
+          ],
+          "conflict_triggers": []
+        },
+        "psych_lens": {
+          "lens_title": "🏠 동거에서 특히 눈에 띄는 축",
+          "chart_note": "둘의 현재 모습에서 어디가 비슷하고 어디가 다른지 한눈에 볼 수 있게 정리했어요. (연인 심화 분석과 같은 11축 설문 기준이에요.)",
+          "intro_line": "위 차트는 11축 전체예요. 아래는 한 지붕 아래서 자주 나오는 질문들이에요. 편한 건 그대로 두고, 엇갈리는 부분만 역할로 나눠 보세요.",
+          "highlights": [
+            {
+              "axis_key": "energy_style",
+              "axis_label": "외향에너지",
+              "gap": 7,
+              "match_type": "complementary",
+              "topic": "에너지·활동량",
+              "section_hint": "「홈 라이프 DNA」",
+              "hook": "주말에 '집이 최고' vs '나가야 숨 쉰다'가 갈리나요?",
+              "narrative": "에너지를 채우는 방식이 달라, 휴일 계획에서 자주 엇갈릴 수 있어요. 번갈아 '집콕 주'·'외출 주'만 정해도 싸움이 줄어요."
+            },
+            {
+              "axis_key": "empathy",
+              "axis_label": "관계공감",
+              "gap": 5,
+              "match_type": "complementary",
+              "topic": "시댁·경계",
+              "section_hint": "「가족 경계」",
+              "hook": "시댁 문자 왔을 때, 먼저 표정 읽는 쪽이 한 명인가요?",
+              "narrative": "한쪽은 분위기·감정부터, 다른 쪽은 사실·해결부터 잡으려 할 수 있어요. 시댁·처가 이야기는 '감정 담당·정리 담당'만 나눠도 덜 지쳐요."
+            },
+            {
+              "axis_key": "practicality",
+              "axis_label": "현실실리",
+              "gap": 3,
+              "match_type": "similarity",
+              "topic": "돈·생활 실리",
+              "section_hint": "「돈과 집안일」",
+              "hook": "영수증·통장, 둘 다 챙기는 편인가요?",
+              "narrative": "돈·실리 감각이 비슷해서 생활비·저축 얘기가 수월해요. 「돈과 집안일」에서 역할만 나누면 더 편해져요."
+            }
+          ]
+        },
+        "home_psych_lens": {
+          "intro_line": "위 차트는 11축 전체예요. 아래는 한 지붕 아래서 자주 나오는 질문들이에요. 편한 건 그대로 두고, 엇갈리는 부분만 역할로 나눠 보세요.",
+          "highlights": [
+            {
+              "axis_key": "energy_style",
+              "axis_label": "외향에너지",
+              "gap": 7,
+              "match_type": "complementary",
+              "home_topic": "에너지·활동량",
+              "section_hint": "「홈 라이프 DNA」",
+              "hook": "주말에 '집이 최고' vs '나가야 숨 쉰다'가 갈리나요?",
+              "narrative": "에너지를 채우는 방식이 달라, 휴일 계획에서 자주 엇갈릴 수 있어요. 번갈아 '집콕 주'·'외출 주'만 정해도 싸움이 줄어요."
+            },
+            {
+              "axis_key": "empathy",
+              "axis_label": "관계공감",
+              "gap": 5,
+              "match_type": "complementary",
+              "home_topic": "시댁·경계",
+              "section_hint": "「가족 경계」",
+              "hook": "시댁 문자 왔을 때, 먼저 표정 읽는 쪽이 한 명인가요?",
+              "narrative": "한쪽은 분위기·감정부터, 다른 쪽은 사실·해결부터 잡으려 할 수 있어요. 시댁·처가 이야기는 '감정 담당·정리 담당'만 나눠도 덜 지쳐요."
+            },
+            {
+              "axis_key": "practicality",
+              "axis_label": "현실실리",
+              "gap": 3,
+              "match_type": "similarity",
+              "home_topic": "돈·생활 실리",
+              "section_hint": "「돈과 집안일」",
+              "hook": "영수증·통장, 둘 다 챙기는 편인가요?",
+              "narrative": "돈·실리 감각이 비슷해서 생활비·저축 얘기가 수월해요. 「돈과 집안일」에서 역할만 나누면 더 편해져요."
+            }
+          ]
+        },
+        "killer_questions": {
+          "intro_line": "아래 질문은 만세력(사주)과 11축 설문을 함께 읽어 뽑았어요. '우리만 그런 거 아니야?'가 나오면 해당 섹션을 펼쳐 보세요.",
+          "questions": [
+            {
+              "priority": 52,
+              "topic": "inlaw_boundary",
+              "section_key": "family_boundary",
+              "hook": "시댁·처가 문자 왔을 때, 먼저 표정 읽는 쪽이 한 명인가요?",
+              "narrative": "감정을 읽는 속도가 달라 시댁·처가 이슈에서 '왜 몰라줘' vs '그냥 해결하면 되잖아'가 생기기 쉬워요.",
+              "evidence": [
+                "psych"
+              ],
+              "alignment": "psych_only",
+              "psych_axis_key": "empathy"
+            },
+            {
+              "priority": 50,
+              "topic": "bedroom_risk",
+              "section_key": "bedroom",
+              "hook": "침실에서 한 축만 다른데, 그걸 말 안 하고 참고 있나요?",
+              "narrative": "한 축만 다른 조합입니다. 맞는 부분은 시너지가 나지만, 다른 축 마찰을 방치하면 침실 전체가 식을 수 있어요.",
+              "evidence": [
+                "psych"
+              ],
+              "alignment": "psych_only",
+              "psych_axis_key": "self_control"
+            },
+            {
+              "priority": 48,
+              "topic": "economic_dominance",
+              "section_key": "money_chores",
+              "hook": "장보기·통장 확인, 손이 더 빨리 가는 쪽이 한 명인가요?",
+              "narrative": "현재 두 사람의 운영 조합에서는 Jordan이(가) 집안 CFO를 맡는 편이 안정적입니다. 설문 격차는 크지 않아 — CFO만 정해두면 생활비 싸움이 줄어요.",
+              "evidence": [
+                "saju",
+                "psych",
+                "cross"
+              ],
+              "alignment": "psych_only",
+              "psych_axis_key": "practicality"
+            }
+          ]
+        }
+      },
+      "canonical_projections": {
+        "comparison_table": {
+          "household_stress": {
+            "band_a": "self",
+            "band_b": "self"
+          },
+          "marital_conflict": {
+            "band_a": "explosive",
+            "band_b": "balanced"
+          },
+          "bedroom_lead": {
+            "band_a": "power_leader",
+            "band_b": "power_leader"
+          },
+          "family_boundary": {
+            "band_a": "false",
+            "band_b": "false"
+          },
+          "asset_management": {
+            "band_a": "low",
+            "band_b": "medium"
+          },
+          "parenting_style": {
+            "band_a": "empathy",
+            "band_b": "structure"
+          }
+        },
+        "operating_cfo": {
+          "side": "b",
+          "align": "caution",
+          "confidence": "low"
+        }
+      }
+    },
+    "view_model_sections": [
+      {
+        "id": "origin_story",
+        "type": "origin_story",
+        "title": "💕 왜 우리였을까"
+      },
+      {
+        "id": "household_snapshot",
+        "type": "household_snapshot",
+        "title": "🧬 홈 라이프 DNA — 한 지붕 아래, 우린 각각 어떤 사람일까?"
+      },
+      {
+        "id": "compare_table",
+        "type": "compare_table",
+        "title": "📊 한눈에 비교 — 6가지 살림 축"
+      },
+      {
+        "id": "psych_radar",
+        "type": "psych_radar",
+        "title": "🎯 11축 궁합 레이더"
+      },
+      {
+        "id": "money_chores",
+        "type": "money_chores",
+        "title": "💸 자산 관리 주도권 & 가사 분담"
+      },
+      {
+        "id": "bedroom",
+        "type": "bedroom",
+        "title": "🔞 침실 케미스트리 & 애착 유형"
+      },
+      {
+        "id": "home_dna",
+        "type": "home_dna",
+        "title": "🧬 홈 라이프 DNA — 한 지붕 아래, 우린 각각 어떤 사람일까?"
+      },
+      {
+        "id": "parenting",
+        "type": "parenting",
+        "title": "👶 육아·교육 가치관"
+      },
+      {
+        "id": "family_boundary",
+        "type": "family_boundary",
+        "title": "👪 원가족과의 바운더리 & 독립성"
+      },
+      {
+        "id": "weather_forecast",
+        "type": "weather_forecast",
+        "title": "⏳ 향후 3년 홈 리스크 기상도"
+      },
+      {
+        "id": "privacy",
+        "type": "privacy",
+        "title": "🤝 사생활 존중 가이드"
+      },
+      {
+        "id": "upset",
+        "type": "upset",
+        "title": "😤 서운함에 반응하는 방식"
+      },
+      {
+        "id": "warning",
+        "type": "warning",
+        "title": "⚠️ 홈 워닝 & 부부 싸움 해독제"
+      }
+    ]
+  },
+  "current_enriched": {
+    "mode": "current_enriched",
+    "summary": {
+      "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "summary_line": "🔥 85% · 🧩 50% · ⚡ 48%",
+      "one_liner": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "grade": "D",
+      "grade_reason": "동거·결혼 등급 D — 로맨틱 핏 85% · 라이프 시너지 50% · 홈 리스크 48%",
+      "canonical_projection_keys": [
+        "comparison_table",
+        "operating_cfo"
+      ],
+      "section_keys": [
+        "section_dna",
+        "section_origin_story",
+        "section_snapshot",
+        "section_weather_forecast",
+        "section_bedroom",
+        "section_money_chores",
+        "section_family_boundary",
+        "section_parenting",
+        "section_privacy",
+        "section_upset",
+        "section_warning",
+        "section_compare_table"
+      ]
+    },
+    "report": {
+      "headline": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "summary_line": "🔥 85% · 🧩 50% · ⚡ 48%",
+      "one_line_household": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+      "snapshot_panel": {
+        "grade": "D",
+        "gaugeLabel": "하우스홀드 파트너십 스냅샷",
+        "representativeLine": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스",
+        "keywords": [
+          "홈 D",
+          "Loyal",
+          "Pride"
+        ],
+        "relationshipGauges": [
+          {
+            "topic": "intimacy",
+            "label": "① 로맨틱 핏·애착",
+            "activation": 85,
+            "benefit": 85,
+            "risk": 0
+          },
+          {
+            "topic": "stability",
+            "label": "② 라이프 시너지",
+            "activation": 50,
+            "benefit": 50,
+            "risk": 0
+          },
+          {
+            "topic": "conflict",
+            "label": "③ 홈 리스크",
+            "activation": 0,
+            "benefit": 0,
+            "risk": 48
+          }
+        ],
+        "personA": {
+          "nickname": "Alex",
+          "metaphor": "t",
+          "axes": [
+            {
+              "key": "connection",
+              "label": "관계지향성",
+              "value": 59
+            },
+            {
+              "key": "stability",
+              "label": "안정지향성",
+              "value": 54
+            },
+            {
+              "key": "growth",
+              "label": "성장지향성",
+              "value": 50
+            },
+            {
+              "key": "structure",
+              "label": "체계성",
+              "value": 50
+            },
+            {
+              "key": "adaptability",
+              "label": "적응성",
+              "value": 50
+            }
+          ]
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "metaphor": "t",
+          "axes": [
+            {
+              "key": "connection",
+              "label": "관계지향성",
+              "value": 53
+            },
+            {
+              "key": "stability",
+              "label": "안정지향성",
+              "value": 56
+            },
+            {
+              "key": "growth",
+              "label": "성장지향성",
+              "value": 50
+            },
+            {
+              "key": "structure",
+              "label": "체계성",
+              "value": 50
+            },
+            {
+              "key": "adaptability",
+              "label": "적응성",
+              "value": 50
+            }
+          ]
+        },
+        "personAxesSource": "survey",
+        "narrative": {
+          "topics": [
+            {
+              "topic": "intimacy",
+              "title": "① 로맨틱 핏·애착",
+              "subtitle": "침실·스킨십·정서적 거리",
+              "activation": 85,
+              "benefit": 85,
+              "risk": 0,
+              "interpretation": "침실·애착 리듬이 자연스럽게 맞습니다. 스킨십과 밤의 주파수가 잘 맞는 편.",
+              "isWarning": false,
+              "axisNote": null
+            },
+            {
+              "topic": "stability",
+              "title": "② 라이프 시너지",
+              "subtitle": "가사·재정·육아·일상 리듬",
+              "activation": 50,
+              "benefit": 50,
+              "risk": 0,
+              "interpretation": "역할 합의와 CFO 지정으로 끌어올릴 수 있습니다. 현재 두 사람의 운영 조합에서는 Jordan가 통장·큰 지출의 최종 확인을 맡는 편이 안정적입니다.",
+              "isWarning": false,
+              "axisNote": null
+            },
+            {
+              "topic": "conflict",
+              "title": "③ 홈 리스크",
+              "subtitle": "집 안 갈등·스트레스·회복",
+              "activation": 0,
+              "benefit": 0,
+              "risk": 48,
+              "interpretation": "갈등이 와도 회복 여지는 있지만, 한 번에 여러 주제를 꺼내면 폭발합니다.",
+              "isWarning": false
+            }
+          ]
+        }
+      },
+      "household": {
+        "section_dna": {
+          "person_a": {
+            "nickname": "Alex",
+            "lifestyle_title": "Loyal Co-Captain",
+            "life_values": "원칙·공정·효율을 중시하고, 관계에서도 명확한 기준과 약속을 원해요.",
+            "private_home_self": "가정 내 구조·역할을 재정비하려 하며, 변화가 올 때 주도적으로 움직여요.",
+            "energy_battery": "집돌이형 — 집 안에서 충전해요. 소파·침실·조용한 루틴이 배터리를 채웁니다.",
+            "family_identity": "동반·독립 중심 — 서로의 자존심과 공간을 지키는 동반자 관계를 원해요.",
+            "energy_axis_note": null
+          },
+          "person_b": {
+            "nickname": "Jordan",
+            "lifestyle_title": "Pride & Partnership Type",
+            "life_values": "신중한 선택과 깊은 성찰을 중시하며, 섣부른 결정보다 확신이 필요해요.",
+            "private_home_self": "문 닫으면 방어적으로 조용해지며, 혼자만의 동굴 시간이 필수예요.",
+            "energy_battery": "집돌이형 — 집 안에서 충전해요. 소파·침실·조용한 루틴이 배터리를 채웁니다.",
+            "family_identity": "동반·독립 중심 — 서로의 자존심과 공간을 지키는 동반자 관계를 원해요.",
+            "energy_axis_note": null
+          }
+        },
+        "section_origin_story": {
+          "why_us": "극적인 신호 하나로 설명되는 인연은 아니에요 — 일상의 리듬과 작은 선택이 반복되며 서로를 골랐고, 그게 오히려 오래가는 이유예요.",
+          "positive_change_a": "Jordan이(가) 기댈 수 있는 사람이 되어 주면서, 스스로에게 이런 힘이 있었는지 새삼 확인해요 — 받을 때보다 줄 때 오히려 자존감이 단단해지는 변화예요.",
+          "positive_change_b": "Alex 곁에 있으면 날카로운 모서리가 다듬어져요 — 예상보다 훨씬 편안하고 단단해지는, 마음 한구석이 치유받는 변화예요."
+        },
+        "section_snapshot": {
+          "romantic_fit_pct": 85,
+          "life_synergy_pct": 50,
+          "home_risk_pct": 48,
+          "one_line_household": "Loyal & Pride — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스"
+        },
+        "section_weather_forecast": {
+          "years": [
+            {
+              "year": 2026,
+              "year_label": "올해",
+              "icon": "☁️",
+              "level": "cloudy",
+              "weather_label": "흐림",
+              "advisory": "작은 오해가 쌓이기 쉬운 해예요. 주 1회 '집 안 기분 체크인'과 가벼운 데이트 밤을 캘린더에 박아 두세요.",
+              "severity_score": 4
+            },
+            {
+              "year": 2027,
+              "year_label": "내년",
+              "icon": "☀️",
+              "level": "sunny",
+              "weather_label": "맑음",
+              "advisory": null,
+              "severity_score": 0
+            },
+            {
+              "year": 2028,
+              "year_label": "내후년",
+              "icon": "☀️",
+              "level": "sunny",
+              "weather_label": "맑음",
+              "advisory": null,
+              "severity_score": 0
+            }
+          ],
+          "summary_line": "☁️ [올해]: 흐림 | ☀️ [내년]: 맑음 | ☀️ [내후년]: 맑음",
+          "max_severity": 4,
+          "storm_year_count": 0
+        },
+        "section_bedroom": {
+          "matrix": {
+            "sexual_chemistry_summary": "침실 DNA는 같은 편입니다. 다만 루틴에 안주하면 불씨가 약해질 수 있어 — 솔직한 피드백이 쌓일수록 깊어집니다.",
+            "person_a": {
+              "nickname": "Alex",
+              "stamina": "[⚡ 짧고 굵게 타오르는 단거리 연출가형] — 지구력보다는 순간적인 몰입도와 화려한 테크닉, 정신적 스파크에 집중하는 스타일입니다.",
+              "fantasy": "[🧬 틀을 깨는 과감한 판타지파] — 반복되는 지루함을 싫어하며, 색다르고 과감한 시도나 은밀한 판타지를 추구할 때 에너지가 깨어나는 타입입니다.",
+              "manner": "[👑 거침없이 이끄는 파워풀 리더] — 침실 주도권을 강하게 쥐고 직진형으로 상대를 리드하며 쟁취하는 타입입니다.",
+              "stamina_precision_note": null,
+              "archetypes": {
+                "stamina": "sprint",
+                "fantasy": "fantasy_breaker",
+                "manner": "power_leader"
+              }
+            },
+            "person_b": {
+              "nickname": "Jordan",
+              "stamina": "[⚡ 짧고 굵게 타오르는 단거리 연출가형] — 지구력보다는 순간적인 몰입도와 화려한 테크닉, 정신적 스파크에 집중하는 스타일입니다.",
+              "fantasy": "[🧬 틀을 깨는 과감한 판타지파] — 반복되는 지루함을 싫어하며, 색다르고 과감한 시도나 은밀한 판타지를 추구할 때 에너지가 깨어나는 타입입니다.",
+              "manner": "[👑 거침없이 이끄는 파워풀 리더] — 침실 주도권을 강하게 쥐고 직진형으로 상대를 리드하며 쟁취하는 타입입니다.",
+              "stamina_precision_note": "차분히 가라앉은 시기의 라, 순간의 몰입과 스파크에 강점이 있는 타입이라는 게 로도 확인돼요.",
+              "archetypes": {
+                "stamina": "sprint",
+                "fantasy": "fantasy_breaker",
+                "manner": "power_leader"
+              }
+            },
+            "frequency_one_liner": "같은 유형끼리 맞물리지만, 피로·스트레스가 쌓이면 둘 다 예민해집니다. 밤의 템포·수위·주도권을 말로 확인하지 않으면 각자 다른 밤을 꿈꾸고 있을 수 있습니다."
+          },
+          "attachment_style": "둘 다 안정형에 가깝습니다. 갈등 후 회복은 빠른 편이지만, 감정 확인을 건너뛰면 '괜찮은 척'만 하다가 쌓일 수 있어요.",
+          "sleep_fit": {
+            "title": "🛏️ 우리의 수면 주파수 (Sleep Fit)",
+            "narrative": "수면 예민도는 비슷한 편이라 기본 리듬은 맞습니다. 다만 스트레스가 쌓이는 주에는 한 명이라도 깊은 잠이 깨지면 둘 다 다음 날 예민해집니다.",
+            "prescription": "취침 30분 전 대화·폰은 침실 밖으로. 피곤한 날은 '오늘은 조용 모드'만 말해 주는 신호를 정해 두세요.",
+            "sensor_nickname": "Alex",
+            "easy_sleeper_nickname": null
+          },
+          "rejection_script_a": "이 사람에게는 크게 눈치 볼 것 없이 '오늘은 피곤해, 내일은 어때?'처럼 담백하고 솔직하게 말해도 괜찮아요.",
+          "rejection_script_b": "이 사람에게는 크게 눈치 볼 것 없이 '오늘은 피곤해, 내일은 어때?'처럼 담백하고 솔직하게 말해도 괜찮아요.",
+          "rejection_axis_note": null
+        },
+        "section_money_chores": {
+          "cfo_nickname": "Jordan",
+          "cfo_reason": "Jordan이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요. 설문 축은 엇갈려 있어요 — CFO 역할을 너무 굳히지 말고 큰 지출은 함께 확인해 보세요.",
+          "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.  집을 구하거나 목돈이 들어가는 큰 결정 앞에서는 Alex는 정보를 모으고 선택지를 늘어놓는 역할을 자연스럽게 맡고, Jordan는 마지막에 도장을 찍는 역할을 맡는 편이에요. 둘 다 있어야 완성되는 조합이니, 당연하게 여기지 말고 가끔은 서로에게 고맙다고 말해 주세요.",
+          "spending_style_note": "Alex & Jordan 둘 다 저축·소비 사이에서 비교적 균형 잡힌 편이에요 — 딱히 교정할 성향은 없고, 가끔 서로 확인만 하면 돼요.",
+          "cfo_axis_note": null,
+          "mental_load_note": "보이지 않는 집안 운영 부담이 비슷해 보여요. 캘린더·할 일·후속 확인의 주인을 이름 붙여 두면, 한쪽이 조용히 둘 다 짊어지지 않게 됩니다.",
+          "cfo_confidence": "low",
+          "cfo_align": "caution"
+        },
+        "section_family_boundary": {
+          "inlaw_stress_summary": "시댁·처가 스트레스 지수 20% — 비교적 독립적이지만, 피곤할 때 가족 이슈가 침실까지 따라오지 않게 경계는 유지하세요.",
+          "person_a_boundary_note": "Alex은(는) 원가족 관계가 비교적 안정적이에요. 피로할 때 가족 일이 우리 관계로 번 않게 경계만 지키면 됩니다. 집이 성역이라, 가족 방문이 길어지면 회복에 며칠이 걸려요.",
+          "person_b_boundary_note": "Jordan은(는) 원가족 관계가 비교적 안정적이에요. 피로할 때 가족 일이 우리 관계로 번 않게 경계만 지키면 됩니다. 집이 성역이라, 가족 방문이 길어지면 회복에 며칠이 걸려요."
+        },
+        "section_parenting": {
+          "combined_attitude": "Alex → 🎨 공감형 · Jordan → 📐 규칙형 — 아이를 사랑하는 온도는 같지만 방식이 다릅니다. 아이 앞에서 양육 방식을 충돌시키면 아이만 흔들립니다.",
+          "person_a_style": "🎨 공감형 — 눈물·불안·숨겨진 마음을 먼저 받아 주지만, 규칙과 경계가 흐려지기 쉬워요.",
+          "person_b_style": "📐 규칙형 — 일정·기준·원칙으로 아이에게 안전망을 주지만, 감정 요구는 뒤로 밀릴 수 있어요.",
+          "harmony_tip": "💬 Alex(🎨 공감형)과 Jordan(📐 규칙형)은 아이를 사랑하는 방식의 온도가 다릅니다. 아이 앞에서는 절대 서로의 양육 방식을 지적하거나 깎아내리지 마세요. 아이가 없는 독립된 부부만의 공간에서 훈육 가이드라인을 완벽히 합의한 뒤, 아이 앞에서는 오직 단호하고 일관된 하나의 목소리만 들려주어야 아이의 정서가 흔들리지 않습니다.",
+          "person_a_role_note": "이 사람은 집에서 자연스럽게 'Good Cop' 역할을 맡게 돼요 — 아이의 서운한 마음을 읽고 녹여주는 쪽. 11축 설문에서도 확인돼요 — 관계공감 축이 높은 편이에요.",
+          "person_b_role_note": null,
+          "style_key_a": "empathy",
+          "style_key_b": "structure",
+          "parenting_a_confidence": "low",
+          "parenting_b_confidence": "low",
+          "parenting_a_align": "caution",
+          "parenting_b_align": "caution"
+        },
+        "section_privacy": {
+          "person_a_private_line": "Alex에게 집 안에서 공개적으로 지적하거나, 퇴근 직후 바로 무거운 대화를 강요하지 마세요. 결정권·자존심을 건드리면 바로 방어 모드로 전환됩니다. 집은 충전 공간 — 소음·방문·갑작스런 일정이 침범되면 스트레스예요.",
+          "person_b_private_line": "Jordan에게 집 안에서 공개적으로 지적하거나, 퇴근 직후 바로 무거운 대화를 강요하지 마세요. 결정권·자존심을 건드리면 바로 방어 모드로 전환됩니다. 집은 충전 공간 — 소음·방문·갑작스런 일정이 침범되면 스트레스예요."
+        },
+        "section_upset": {
+          "person_a": {
+            "nickname": "Alex",
+            "upset_signals": "예민해지고, 무시당했다고 느끼면 말투가 세지거나 거리를 둬요. 집안 역할·구조를 다시 짜야 한다고 느끼며 딱딱해질 수 있어요.",
+            "do_list": [
+              "'네 덕분에 됐다'는 인정을 먼저 하기",
+              "1:1로 조용히 대화 자리 만들기",
+              "집안에서 역할·노력을 구체적으로 인정해 주기"
+            ],
+            "avoid_list": [
+              "가족·친구 앞에서 공개적으로 깎아내리기",
+              "속도만 강조하며 감정 무시하기"
+            ]
+          },
+          "person_b": {
+            "nickname": "Jordan",
+            "upset_signals": "예민해지고, 무시당했다고 느끼면 말투가 세지거나 거리를 둬요. 방어적으로 굳고, 혼자만의 시간이 필요해 보여요.",
+            "do_list": [
+              "'네 덕분에 됐다'는 인정을 먼저 하기",
+              "1:1로 조용히 대화 자리 만들기",
+              "집안에서 역할·노력을 구체적으로 인정해 주기"
+            ],
+            "avoid_list": [
+              "가족·친구 앞에서 공개적으로 깎아내리기",
+              "속도만 강조하며 감정 무시하기"
+            ]
+          }
+        },
+        "section_warning": {
+          "conflict_communication": {
+            "title": "🗣️ 갈등 소통 스타일 (Conflict Communication Dynamic)",
+            "pattern_label": "폭발형 × 벽창호 (Pursue–Withdraw)",
+            "narrative": "Alex는 서운함을 즉시 풀고 싶어 말을 쏟아내는 폭발형이고, Jordan는 감정이 커지면 입을 닫는 벽창호(Stonewalling)형입니다. 한 명이 쫓을수록 다른 한 명은 문을 더 단단히 닫는 악순환 구조예요.",
+            "emotional_neglect_risk": "추격하는 쪽은 '나를 무시한다'고 느끼고, 물러서는 쪽은 '숨 쉴 틈이 없다'고 느낍니다. 싸움이 길어질수록 둘 다 정서적으로 방치된 기분이 듭니다. 타임아웃 20분 + '돌아올 시간' 약속만이 이 루프를 끊습니다.",
+            "explosive_nickname": "Alex",
+            "stonewall_nickname": "Jordan"
+          },
+          "conflict_trigger": "역할·돈·육아를 한 번에 꺼내면 마찰이 치솟습니다. 오늘은 하나만. 나머지는 내일.",
+          "de_escalation": {
+            "person_a": {
+              "hashtag": "#우쭈쭈_당신이최고야",
+              "color": "red",
+              "archetype_label": "존재감·자존심 민감형",
+              "upset_nickname": "Alex",
+              "partner_nickname": "Jordan",
+              "psych_state": "Alex는 자신의 존재 가치나 자존심에 상처를 입었다고 느끼면 이성적인 대화가 불가능해집니다. 잘잘못을 따지는 순간 '날 무시한다'고 받아들여 방어벽을 높입니다.",
+              "avoid_actions": "【Jordan → Alex】 \"네가 잘못한 부분도 있잖아\"라며 시시비비 가리기, 한숨·한심한 눈빛, Alex의 노력을 가볍게 치부하기.",
+              "solution_script": "【Jordan → Alex】 \"Alex, 당신이 우리 집을 위해 얼마나 고생하는지 내가 다 알아. 당신 없으면 이 집이 안 돌아가. 아까 내 말이 상처였다면 정말 미안해.\" — 존재 가치를 먼저 인정한 뒤, 논쟁은 내일로 미루세요."
+            },
+            "person_b": {
+              "hashtag": "#우쭈쭈_당신이최고야",
+              "color": "red",
+              "archetype_label": "존재감·자존심 민감형",
+              "upset_nickname": "Jordan",
+              "partner_nickname": "Alex",
+              "psych_state": "Jordan는 자신의 존재 가치나 자존심에 상처를 입었다고 느끼면 이성적인 대화가 불가능해집니다. 잘잘못을 따지는 순간 '날 무시한다'고 받아들여 방어벽을 높입니다.",
+              "avoid_actions": "【Alex → Jordan】 \"네가 잘못한 부분도 있잖아\"라며 시시비비 가리기, 한숨·한심한 눈빛, Jordan의 노력을 가볍게 치부하기.",
+              "solution_script": "【Alex → Jordan】 \"Jordan, 당신이 우리 집을 위해 얼마나 고생하는지 내가 다 알아. 당신 없으면 이 집이 안 돌아가. 아까 내 말이 상처였다면 정말 미안해.\" — 존재 가치를 먼저 인정한 뒤, 논쟁은 내일로 미루세요."
+            },
+            "shared_trigger": true,
+            "shared_trigger_note": "Alex와 Jordan는 같은 화 풀림 유형(존재감·자존심 민감형)입니다. 둘 다 비슷한 지점에서 터지기 쉬워, 싸울 때 '서로 같은 방식'으로 맞부딪히면 대화가 두 배로 길어집니다. 한 명이 먼저 \"지금은 쉬고 30분 뒤 다시\"라고 타임아웃을 선언하고, 아래 처방을 번갈아 써 보세요."
+          },
+          "cold_war_protocol": {
+            "golden_time_note": "Alex와 Jordan 둘 다 고집이 팽팽해서, 누구든 냉전이 길어질 수 있어요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지 — 그 이상 침묵은 안 됩니다.",
+            "reconciliation_cue_a": "Alex에게 짧은 메모나 작은 선물로 그동안 고생을 알아준다는 걸 표현하세요 — \"미안해\"라는 말보다 존재를 인정받는 게 먼저예요.",
+            "reconciliation_cue_b": "Jordan에게 짧은 메모나 작은 선물로 그동안 고생을 알아준다는 걸 표현하세요 — \"미안해\"라는 말보다 존재를 인정받는 게 먼저예요."
+          }
+        },
+        "section_compare_table": [
+          {
+            "id": "household_stress",
+            "label": "가사/루틴 스트레스",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "감정 그대로 티 내며 반응하는 타입",
+              "band": "self"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "감정 그대로 티 내며 반응하는 타입",
+              "band": "self"
+            },
+            "meaning": "가사 스트레스를 표현하는 방식이 비슷해서 서로 눈치 볼 일이 적어요."
+          },
+          {
+            "id": "marital_conflict",
+            "label": "부부싸움 소통",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "감정이 올라오면 바로 말로 쏟아내는 타입",
+              "band": "explosive"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "극단적이지 않게 대화로 풀려는 타입",
+              "band": "balanced"
+            },
+            "meaning": "한쪽은 감정을 바로 쏟아내는 편이고, 다른 쪽은 비교적 차분해요. 차분한 쪽이 먼저 들어주면 빨리 풀려요."
+          },
+          {
+            "id": "bedroom_lead",
+            "label": "밤의 리드 스타일",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "침실 주도권을 확실히 쥐는 타입",
+              "band": "power_leader"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "침실 주도권을 확실히 쥐는 타입",
+              "band": "power_leader"
+            },
+            "meaning": "침실에서 원하는 역할이 비슷해서 조율이 필요할 수 있어요 — 가끔은 먼저 리드를 양보해 보세요."
+          },
+          {
+            "id": "family_boundary",
+            "label": "원가족 바운더리",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "원가족과 적당히 가까워도 괜찮은 타입",
+              "band": "false"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "원가족과 적당히 가까워도 괜찮은 타입",
+              "band": "false"
+            },
+            "meaning": "둘 다 원가족과 가깝게 지내도 괜찮은 타입이라 왕래에 대한 마찰이 적어요."
+          },
+          {
+            "id": "asset_management",
+            "label": "자산관리(CFO) 기질",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "실리보다 감정·편안함을 더 중시하는 타입",
+              "band": "low"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "필요할 때는 챙기는 균형형",
+              "band": "medium"
+            },
+            "meaning": "한쪽은 실리보다 편안함을, 다른 쪽은 균형을 중시해요. 균형형 쪽이 큰 결정을 리드하면 무난해요."
+          },
+          {
+            "id": "parenting_style",
+            "label": "육아/교육 가치관",
+            "personA": {
+              "nickname": "Alex",
+              "shortLabel": "아이 감정을 먼저 읽어주는 공감형",
+              "band": "empathy"
+            },
+            "personB": {
+              "nickname": "Jordan",
+              "shortLabel": "규칙·기준을 먼저 세우는 원칙형",
+              "band": "structure"
+            },
+            "meaning": "한쪽은 감정을, 다른 쪽은 원칙을 먼저 챙기는 조합이라 균형이 좋아요. 두 기준이 충돌할 때는 미리 합의해두면 아이 앞에서 의견이 갈리는 걸 막을 수 있어요."
+          }
+        ]
+      },
+      "context_output": {
+        "schema_version": "context_output_v1",
+        "domain": "cohabitation",
+        "grade": "D",
+        "scores": {
+          "activation": 85,
+          "benefit": 50,
+          "risk": 48
+        },
+        "signals": {
+          "hasDayBranchCombine": true,
+          "hasDayBranchJohuComplement": false,
+          "hasDayStemMutualSupport": true,
+          "hasHeavenlyStemCombine": false,
+          "hasDayBranchChungHyung": false,
+          "hasWealthOfficerComplement": false,
+          "hasFoodSealHarmony": false,
+          "hasWealthOfficerPowerStruggle": false,
+          "hasDayHourHomeTension": true,
+          "hasWonjinOrGuimun": false,
+          "hasGongmangOverlap": false
+        },
+        "dominant_categories": {
+          "parenting_style_a": {
+            "category": "empathy"
+          },
+          "parenting_style_b": {
+            "category": "structure"
+          },
+          "attachment_lean_a": {
+            "category": "secure"
+          },
+          "attachment_lean_b": {
+            "category": "secure"
+          },
+          "bedroom_stamina_a": {
+            "category": "sprint"
+          },
+          "bedroom_stamina_b": {
+            "category": "sprint"
+          },
+          "bedroom_fantasy_a": {
+            "category": "fantasy_breaker"
+          },
+          "bedroom_fantasy_b": {
+            "category": "fantasy_breaker"
+          },
+          "bedroom_manner_a": {
+            "category": "power_leader"
+          },
+          "bedroom_manner_b": {
+            "category": "power_leader"
+          },
+          "boundary_a": {
+            "category": "comfortable"
+          },
+          "boundary_b": {
+            "category": "comfortable"
+          },
+          "household_cfo": {
+            "category": "b"
+          },
+          "cfo_confidence": {
+            "category": "low"
+          },
+          "cfo_align": {
+            "category": "caution"
+          },
+          "parenting_a_confidence": {
+            "category": "low"
+          },
+          "parenting_b_confidence": {
+            "category": "low"
+          },
+          "parenting_a_align": {
+            "category": "caution"
+          },
+          "parenting_b_align": {
+            "category": "caution"
+          },
+          "psych_practicality": {
+            "category": "similarity",
+            "scores": {
+              "score_a": 58,
+              "score_b": 61,
+              "gap": 3
+            }
+          },
+          "psych_self_control": {
+            "category": "similarity",
+            "scores": {
+              "score_a": 50,
+              "score_b": 50,
+              "gap": 0
+            }
+          }
+        },
+        "axis_notes": {
+          "cfo": null,
+          "energy_a": null,
+          "energy_b": null,
+          "rejection": null,
+          "parenting_role_a": "이 사람은 집에서 자연스럽게 'Good Cop' 역할을 맡게 돼요 — 아이의 서운한 마음을 읽고 녹여주는 쪽. 11축 설문에서도 확인돼요 — 관계공감 축이 높은 편이에요.",
+          "parenting_role_b": null,
+          "bedroom_stamina_a": null,
+          "bedroom_stamina_b": "차분히 가라앉은 시기의 라, 순간의 몰입과 스파크에 강점이 있는 타입이라는 게 로도 확인돼요."
+        },
+        "section_summaries": {
+          "cfo_reason": "Jordan이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요. 설문 축은 엇갈려 있어요 — CFO 역할을 너무 굳히지 말고 큰 지출은 함께 확인해 보세요.",
+          "chores_guideline": "완벽한 분담표보다 '이번 주 담당' 체크리스트가 현실적입니다. 안 보이는 노동(정리·예약·육아 스케줄)을 먼저 적으세요.  집을 구하거나 목돈이 들어가는 큰 결정 앞에서는 Alex는 정보를 모으고 선택지를 늘어놓는 역할을 자연스럽게 맡고, Jordan는 마지막에 도장을 찍는 역할을 맡는 편이에요. 둘 다 있어야 완성되는 조합이니, 당연하게 여기지 말고 가끔은 서로에게 고맙다고 말해 주세요.",
           "spending_style_note": "Alex & Jordan 둘 다 저축·소비 사이에서 비교적 균형 잡힌 편이에요 — 딱히 교정할 성향은 없고, 가끔 서로 확인만 하면 돼요.",
           "sexual_chemistry_summary": "침실 DNA는 같은 편입니다. 다만 루틴에 안주하면 불씨가 약해질 수 있어 — 솔직한 피드백이 쌓일수록 깊어집니다.",
           "bedroom_frequency": "같은 유형끼리 맞물리지만, 피로·스트레스가 쌓이면 둘 다 예민해집니다. 밤의 템포·수위·주도권을 말로 확인하지 않으면 각자 다른 밤을 꿈꾸고 있을 수 있습니다.",
@@ -988,8 +1893,8 @@
       }
     }
   },
-  "dev": {
-    "mode": "domain_lens_dev",
+  "dev_evidence": {
+    "mode": "dev_evidence",
     "evidence": {
       "packet_count": 7,
       "packet_ids": [
@@ -5480,6 +6385,2975 @@
   },
   "final_dev": {
     "mode": "final_dev_7_scene_narrative",
+    "narrative": {
+      "schema_version": "domain_7_scene_narrative_v1",
+      "domain": "partner",
+      "parties": {
+        "a_name": "Alex",
+        "b_name": "Jordan"
+      },
+      "overall_confidence": "medium",
+      "overview": {
+        "headline_ko": "Alex님과 Jordan님의 부부/파트너십 스토리: 평생의 안식처를 가꾸는 7가지 동행의 지혜",
+        "headline_en": "Life Partnership Playbook for Alex & Jordan: 7 Pillars of Lifelong Sanctuary",
+        "summary_ko": "근원적 유대, 가계 CFO 시스템, 가사·동굴 조화, 침실 온기, 갈등 타임아웃, 위기 방패, 10년 비전까지 흔들리지 않는 가정을 완성하는 종합 동반자 가이드입니다.",
+        "summary_en": "A comprehensive marital roadmap spanning foundational bond, household CFO governance, sanctuary balance, bedroom intimacy, conflict timeouts, crisis shielding, and future horizons.",
+        "core_vibe_badge_ko": "견고한 신뢰와 평생의 안식처 파트너십",
+        "core_vibe_badge_en": "Lifelong Trust & Sacred Sanctuary"
+      },
+      "scenes": [
+        {
+          "scene_number": 1,
+          "scene_id": "partner_scene_1_foundational_bond",
+          "title_ko": "본질적 결속과 끌림의 중력",
+          "title_en": "Foundational Bond & Chemistry Gravity",
+          "primary_lens_id": "partner_core_bond",
+          "contributing_lens_ids": [
+            "partner_tempo_rhythm"
+          ],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "a_to_b",
+            "lead_party": "A",
+            "impact_on_a_ko": "든든한 지지 기반 형성",
+            "impact_on_b_ko": "안정적 정서 안식처 체감"
+          },
+          "headline_ko": "두 사람을 하나로 묶는 근원적 결합력과 일상 생활 리듬의 조화",
+          "headline_en": "Foundational marital bond and synchronized co-living tempo",
+          "recognition_ko": "Alex님과 Jordan님 사이에는 서로의 존재가 삶의 중심을 잡아주는 깊은 결합력과, 함께 생활할 때 안정감을 주는 생활 리듬이 형성되어 있습니다.",
+          "recognition_en": "Between Alex and Jordan, a profound foundational bond anchors daily life, creating a synchronized co-living rhythm that offers mutual security.",
+          "translation_ko": "Alex님에게는 든든한 지지 기반 형성, Jordan님에게는 안정적 정서 안식처 체감의 기운이 맞물리며 단단한 동반자적 안식처를 이룹니다.",
+          "translation_en": "The interplay of dynamic initiative and grounded stability forms an unshakeable cornerstone for the home.",
+          "reframing_ko": "생활 속도의 미세한 차이는 서로를 둔하게 만들거나 재촉하기 위함이 아니라, 가정이 지나치게 과열되거나 침체되지 않도록 조율하는 안전 밸브입니다.",
+          "reframing_en": "Minor pacing variations act as a stabilizing thermostat, preventing the household from either burning out or stagnating.",
+          "action_guidance_ko": "아침 출근 전과 저녁 취침 전 5분씩 손을 잡고 일상을 공유하는 짧은 체크인 리추얼을 만드세요.",
+          "action_guidance_en": "Establish a 5-minute morning and evening connection ritual to sync emotional presence.",
+          "scripts": [
+            {
+              "category": "morning_sync",
+              "title_ko": "아침 온기 나누기",
+              "title_en": "Morning Connection Ritual",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"오늘 하루도 우리 힘내자. 이따 저녁에 맛있는 거 먹으면서 얘기 나눠.\"",
+              "dialogue_en": "\"Let's have a great day today. Looking forward to our cozy dinner together tonight.\""
+            }
+          ],
+          "role_rules_ko": [
+            "서로의 일상 템포를 인정하고 하루의 시작과 끝을 다정한 인사로 채우기"
+          ],
+          "role_rules_en": [
+            "Honor individual pacing and frame every morning and evening with genuine affection."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "비견이 있으면 반드시 배우자와 싸운다",
+              "무조건 이혼수다",
+              "게으르고 무책임하다"
+            ],
+            "allowed_themes": [
+              "핵심 가치관 일치",
+              "상호 성장",
+              "안전기지",
+              "주말 50:50",
+              "페이스메이커",
+              "에너지 충전"
+            ]
+          }
+        },
+        {
+          "scene_number": 2,
+          "scene_id": "partner_scene_2_cfo_finances",
+          "title_ko": "재정 거버넌스와 신뢰의 CFO",
+          "title_en": "Financial CFO Governance & Resource Trust",
+          "primary_lens_id": "partner_operating_cfo",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "a_to_b",
+            "lead_party": "A",
+            "impact_on_a_ko": "가계부 총괄 및 고정비 집행",
+            "impact_on_b_ko": "자율 예산 범위 준수"
+          },
+          "headline_ko": "Alex님의 체계적 관리와 Jordan님의 안목이 만드는 가계 CFO 시스템",
+          "headline_en": "Household CFO governance: Alex's systematic budgeting paired with Jordan's strategic foresight",
+          "recognition_ko": "가계 경제와 자산 운용에 있어 Alex님이 꼼꼼한 예산 집행과 지출 통제를 주도하고, Jordan님이 장기적인 투자와 가치 소비의 균형을 맞출 때 가계가 번영합니다.",
+          "recognition_en": "In household financial management, Alex's disciplined budgeting harmonizes with Jordan's strategic long-term vision, ensuring family prosperity.",
+          "translation_ko": "금전에 대한 명확한 규칙과 투명한 자산 공개가 부부 사이의 불필요한 의심과 불안을 원천 차단합니다.",
+          "translation_en": "Transparent asset tracking and explicit financial ground rules eliminate underlying economic anxiety.",
+          "reframing_ko": "예산을 꼼꼼히 따지는 것은 인색함이 아니라 가족의 미래를 지키려는 가장 헌신적인 사랑의 표현입니다.",
+          "reframing_en": "Meticulous accounting is not frugality—it is a proactive demonstration of deep familial protection.",
+          "action_guidance_ko": "매월 1회 정기 '가계 CFO 결산 데이'를 열어 수입·지출을 투명하게 점검하고 50만 원 이상의 비정기 지출은 사전 상의 규칙을 세우세요.",
+          "action_guidance_en": "Host a monthly household CFO sync and agree on a clear monetary threshold requiring mutual pre-consultation.",
+          "scripts": [
+            {
+              "category": "financial_sync",
+              "title_ko": "월간 가계 결산 대화",
+              "title_en": "Monthly Financial Review",
+              "speaker": "A",
+              "dialogue_ko": "\"이번 달 생활비 결산해 봤는데 예산 안에서 잘 운영됐어! 고생 많았어, 다음 달 저축 목표도 같이 볼까?\"",
+              "dialogue_en": "\"Finished this month's budget review—we stayed right on track! Great teamwork; let's check our savings target for next month.\""
+            }
+          ],
+          "role_rules_ko": [
+            "일정 금액 이상의 지출은 반드시 사전 상의하고 금전 내역 투명하게 공개하기"
+          ],
+          "role_rules_en": [
+            "Consult mutually on major discretionary expenses and maintain complete financial transparency."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "구두쇠"
+            ],
+            "allowed_themes": [
+              "CFO 총괄",
+              "월간 결산",
+              "비상금 한도"
+            ]
+          }
+        },
+        {
+          "scene_number": 3,
+          "scene_id": "partner_scene_3_home_living",
+          "title_ko": "한 지붕 생활과 개인 동굴의 조화",
+          "title_en": "Household Chores & Private Sanctuary",
+          "primary_lens_id": "partner_household_chores",
+          "contributing_lens_ids": [
+            "partner_private_sanctuary"
+          ],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "지정 구역 완결 책임 및 상대 방식 간섭 금지",
+            "impact_on_b_ko": "지정 구역 완결 책임 및 결과물 지적 자제"
+          },
+          "headline_ko": "가사 분담의 공평함과 각자의 사적인 동굴 공간의 평화로운 공존",
+          "headline_en": "Domestic chore synergy and autonomous sanctuary preservation",
+          "recognition_ko": "청소, 빨래, 식사 등 반복되는 가사 노동을 구역별로 명확히 책임지고, 지친 날에는 방해받지 않는 각자만의 '동굴 시간'을 보장해 주는 배려가 집을 진정한 휴식처로 만듭니다.",
+          "recognition_en": "Dividing recurring domestic chores by clear zones while guaranteeing uninterrupted 'recharge caves' transforms the home into a true sanctuary.",
+          "translation_ko": "외부 스트레스로 소진된 에너지를 충전할 수 있는 사적인 공간과 시간이 보장될 때, 다시 배우자에게 다정함을 건넬 여유가 생깁니다.",
+          "translation_en": "Guaranteed personal decompression space replenishes cognitive and emotional capacity to show up warmly as a partner.",
+          "reframing_ko": "배우자가 조용히 혼자 있고 싶어 하는 것은 사랑이 식어서가 아니라, 에너지를 채워 다시 연결되기 위한 필수적인 재충전 과정입니다.",
+          "reframing_en": "A partner's retreat into quiet solitude is not withdrawal; it is the necessary refueling process that protects marital warmth.",
+          "action_guidance_ko": "서로의 청소/정리 기준을 존중하는 가사 영역을 지정하고, '지금은 혼자 충전할게'라는 신호가 있을 때 1시간의 온전한 자유를 선물하세요.",
+          "action_guidance_en": "Establish designated household chore zones and honor an explicit 1-hour quiet signal without taking it personally.",
+          "scripts": [
+            {
+              "category": "sanctuary_request",
+              "title_ko": "동굴 시간 존중 요청",
+              "title_en": "Sanctuary Time Request",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"오늘 회사에서 에너지를 다 썼어. 1시간만 방에서 조용히 쉬고 나와서 저녁 같이 준비할게!\"",
+              "dialogue_en": "\"I'm pretty drained from work. I'll take a 1-hour quiet recharge and come out to help with dinner!\""
+            }
+          ],
+          "role_rules_ko": [
+            "가사는 미루지 않고 내 구역을 책임지며 상대의 혼자 있는 시간 방해하지 않기"
+          ],
+          "role_rules_en": [
+            "Own your assigned domestic chore zone and respect uninterrupted solitude periods."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "위선자",
+              "의처증/의부증",
+              "정신적 결함"
+            ],
+            "allowed_themes": [
+              "구역 책임제",
+              "기준치 조율",
+              "가전 적극 활용",
+              "동굴 시간",
+              "무언의 충전",
+              "물리적 공간 분리"
+            ]
+          }
+        },
+        {
+          "scene_number": 4,
+          "scene_id": "partner_scene_4_intimate_resonance",
+          "title_ko": "친밀감의 온도와 베드룸 리듬",
+          "title_en": "Intimate Thermal Resonance & Bedroom Calibration",
+          "primary_lens_id": "partner_bedroom_intimacy",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "개별 이불/암막 커튼 활용 및 수면 리듬 존중",
+            "impact_on_b_ko": "취침 전 10분 온기 교감 및 온도 타협"
+          },
+          "headline_ko": "침실의 정서적 교감과 친밀한 온도의 섬세한 조율",
+          "headline_en": "Intimate resonance: Emotional vulnerability and physical pacing harmony",
+          "recognition_ko": "Alex님과 Jordan님 사이의 육체적 친밀감은 단순한 신체적 접촉을 넘어, 낮 동안 나누었던 정서적 안정감과 대화의 온도가 침실로 이어질 때 가장 깊게 피어납니다.",
+          "recognition_en": "Physical intimacy between Alex and Jordan deepens profoundly when daytime emotional safety and tender communication seamlessly extend into the bedroom.",
+          "translation_ko": "마음이 열려야 몸이 반응하는 자연스러운 온도의 법칙을 이해하고, 서두르지 않는 배려와 비언어적 교감이 친밀도의 핵심으로 작용합니다.",
+          "translation_en": "Understanding that physical connection flows from emotional reassurance prevents performance pressure and nurtures affection.",
+          "reframing_ko": "친밀감의 주도권이나 빈도에 대한 차이는 거절이 아니라 정서적 준비 속도의 차이일 뿐입니다.",
+          "reframing_en": "Divergence in intimate pacing is not personal rejection; it simply reflects different speeds of emotional deceleration.",
+          "action_guidance_ko": "잠들기 전 스마트폰을 내려놓고 침대에서 10분간 손을 잡거나 포옹하며 가벼운 온기를 나누세요.",
+          "action_guidance_en": "Put away screens 10 minutes before sleep and cultivate gentle non-demanding physical closeness.",
+          "scripts": [
+            {
+              "category": "intimate_warmth",
+              "title_ko": "침실 온기 나누기",
+              "title_en": "Bedtime Emotional Warmth",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"오늘 하루도 정말 고생 많았어. 곁에 있어 줘서 따뜻하고 좋아.\"",
+              "dialogue_en": "\"You worked so hard today. Having you right beside me brings such deep peace to my heart.\""
+            }
+          ],
+          "role_rules_ko": [
+            "신체적 친밀감을 의무로 만들지 않고 정서적 대화와 스킨십 먼저 챙기기"
+          ],
+          "role_rules_en": [
+            "Never turn intimacy into an obligation; nurture daytime emotional tenderness first."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "남편/아내를 잡아먹는다",
+              "상관견관 백호살 극단론"
+            ],
+            "allowed_themes": [
+              "이불 분리",
+              "수면 온도 조절",
+              "취침 전 루틴"
+            ]
+          }
+        },
+        {
+          "scene_number": 5,
+          "scene_id": "partner_scene_5_conflict_protocol",
+          "title_ko": "다툼의 뇌관 해체와 쿨링 프로토콜",
+          "title_en": "Conflict Trigger & Cooling Pause",
+          "primary_lens_id": "partner_conflict_trigger",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "moderate",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "지적하고 싶은 순간 3초 멈춤 및 쿠션어 사용",
+            "impact_on_b_ko": "상대 지적을 인격 비하로 해석하지 않는 인지 필터"
+          },
+          "headline_ko": "갈등 상황에서 폭발을 막는 20분 타임아웃과 안전한 복원 규칙",
+          "headline_en": "Constructive conflict de-escalation: 20-minute cooling timeout and repair protocol",
+          "recognition_ko": "부부 싸움 중 감정의 수위가 임계점을 넘을 때, 극단적인 말로 상처를 주기 전에 대화를 잠시 멈추고 감정을 가라앉히는 '냉각 프로토콜'이 가정을 지킵니다.",
+          "recognition_en": "When arguments approach high emotional heat, an agreed 20-minute cooling timeout prevents hurtful words and protects marital safety.",
+          "translation_ko": "즉각 매듭지으려는 조급함과 회피하려는 침묵이 충돌할 때 관계가 손상되므로, '언제 다시 이야기하자'는 명확한 복귀 시간이 불안을 잠재웁니다.",
+          "translation_en": "Clashing needs between immediate resolution and reflective silence are harmonized by defining a concrete return time.",
+          "reframing_ko": "싸움을 멈추고 자리를 비우는 것은 도망치는 것이 아니라 배우자를 지키기 위해 내 입술을 다스리는 용기입니다.",
+          "reframing_en": "Calling a pause is not avoidance; it is the courageous decision to guard your spouse from destructive speech.",
+          "action_guidance_ko": "심박수가 올라가면 '타임아웃' 신호를 외치고 20분간 각자 방에서 물을 마시며 진정한 후 대화를 재개하세요.",
+          "action_guidance_en": "Invoke a formal 'timeout' sign when emotions flare, take 20 minutes to breathe, and return at the promised time.",
+          "scripts": [
+            {
+              "category": "conflict_timeout",
+              "title_ko": "20분 타임아웃 선언",
+              "title_en": "20-Minute De-escalation Timeout",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"지금 우리 둘 다 감정이 격해졌으니, 20분만 각자 쉬고 8시에 거실에서 차 한잔하면서 다시 얘기하자.\"",
+              "dialogue_en": "\"We're both overwhelmed right now. Let's take a 20-minute pause and meet in the living room at 8:00 to talk calmly.\""
+            }
+          ],
+          "role_rules_ko": [
+            "타임아웃 시 상대방을 비난하지 않고 정해진 복귀 시간에 반드시 대화 재개하기"
+          ],
+          "role_rules_en": [
+            "Never use timeouts to punish; honor the exact agreed time to resume conversation."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "가정폭력 사주",
+              "배우자 살"
+            ],
+            "allowed_themes": [
+              "쿠션어",
+              "타임아웃",
+              "비난 필터링"
+            ]
+          }
+        },
+        {
+          "scene_number": 6,
+          "scene_id": "partner_scene_6_crisis_shield",
+          "title_ko": "삶의 폭풍 속을 지키는 든든한 방패",
+          "title_en": "Crisis Protector & Life Shield",
+          "primary_lens_id": "partner_crisis_protector",
+          "contributing_lens_ids": [],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "위기 시 멘탈 기둥 역할 및 현실적 대안 제시",
+            "impact_on_b_ko": "정서적 안도감 회복 및 전폭적 신뢰 지지"
+          },
+          "headline_ko": "삶의 시련과 외부 위기 앞에서 등을 맞대는 원팀(One-Team) 방패",
+          "headline_en": "Crisis resilience: United one-team shielding against external adversity",
+          "recognition_ko": "건강, 재정, 가족 문제 등 외부의 거센 풍파가 닥쳤을 때, 서로를 탓하지 않고 '우리 둘이 힘을 합쳐 문제를 해결한다'는 절대적 신뢰가 발휘됩니다.",
+          "recognition_en": "When adversity strikes—health scares, financial shocks, or family crises—a united 'us against the problem' posture anchors resilience.",
+          "translation_ko": "위기 상황에서 서로의 등을 지켜주는 든든한 보호 본능과 헌신이 발현되어, 고난을 거칠수록 부부의 결속력이 더욱 단단해집니다.",
+          "translation_en": "Mutual crisis stewardship transforms external storms into profound demonstrations of lifelong loyalty.",
+          "reframing_ko": "위기는 부부를 흔들기 위해 오는 것이 아니라 우리가 얼마나 강력한 원팀인지를 증명하기 위한 시험대입니다.",
+          "reframing_en": "Adversity is not a sign of marital failure; it is the crucible that proves the strength of your united partnership.",
+          "action_guidance_ko": "위기가 닥쳤을 때 '누구 탓인가'를 묻지 말고 '지금 당장 우리가 취할 수 있는 최선의 선택' 3가지를 함께 적어보세요.",
+          "action_guidance_en": "When facing crises, eliminate blame questions and collaboratively list the top 3 actionable steps forward.",
+          "scripts": [
+            {
+              "category": "crisis_solidarity",
+              "title_ko": "원팀 연대감 확인",
+              "title_en": "One-Team Solidarity Declaration",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"어떤 일이 있어도 난 항상 네 편이야. 우리 둘이 함께라면 이 문제도 반드시 이겨낼 수 있어.\"",
+              "dialogue_en": "\"No matter what happens, I am unconditionally on your side. Together, there is nothing we cannot overcome.\""
+            }
+          ],
+          "role_rules_ko": [
+            "외부 위기 앞에서 배우자를 탓하지 않고 단일한 팀으로 뭉쳐 대응하기"
+          ],
+          "role_rules_en": [
+            "Refrain from spousal blame during external crises; face every challenge as a unified front."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "마마보이/마마걸"
+            ],
+            "allowed_themes": [
+              "난세의 동반자",
+              "철벽 방패",
+              "정서적 안전판"
+            ]
+          }
+        },
+        {
+          "scene_number": 7,
+          "scene_id": "partner_scene_7_future_horizons",
+          "title_ko": "자녀 양육과 함께 그리는 미래 비전",
+          "title_en": "Parenting Alignment & Long-Term Horizons",
+          "primary_lens_id": "partner_longterm_vision",
+          "contributing_lens_ids": [
+            "partner_parenting_alignment"
+          ],
+          "confidence": "medium",
+          "is_abstaining": false,
+          "tension_level": "low",
+          "directionality": {
+            "polarity": "symmetric",
+            "impact_on_a_ko": "공동의 10년 로드맵 구축 및 평생 신뢰",
+            "impact_on_b_ko": "공동의 노후 비전 설계 및 상호 지지"
+          },
+          "headline_ko": "10년 후의 삶의 비전과 자녀 양육 철학의 아름다운 일치",
+          "headline_en": "Long-term horizons: Unified retirement vision and harmonized parenting philosophy",
+          "recognition_ko": "노후의 삶의 모습, 은퇴 계획, 자녀를 어떤 가치관으로 길러낼지에 대한 장기적인 비전이 조화롭게 정렬되어 흔들리지 않는 북극성이 됩니다.",
+          "recognition_en": "Long-term life horizons, retirement dreams, and core parenting values align harmoniously to provide a steady relational North Star.",
+          "translation_ko": "단기적 일상에 매몰되지 않고 5년, 10년 후의 미래를 함께 설계하며, 서로의 꿈을 응원하는 든든한 조력자로 동행합니다.",
+          "translation_en": "Stepping back from daily logistics to co-create 5- and 10-year milestones fuels shared purpose and joy.",
+          "reframing_ko": "서로 다른 꿈과 취향은 충돌하는 것이 아니라, 두 사람의 가정을 더욱 풍성하고 다채롭게 만드는 자산입니다.",
+          "reframing_en": "Divergent aspirations are not conflicting paths; they weave a richer, multifaceted family tapestry.",
+          "action_guidance_ko": "매년 연말 '부부 비전 워크숍'을 열어 올해의 감사를 나누고 내년의 버킷리스트와 10년 뒤의 그림을 업데이트하세요.",
+          "action_guidance_en": "Hold an annual year-end vision retreat to celebrate gratitude and update your 10-year life bucket list.",
+          "scripts": [
+            {
+              "category": "future_vision",
+              "title_ko": "미래 비전 나누기",
+              "title_en": "Future Horizons Dialogue",
+              "speaker": "BOTH",
+              "dialogue_ko": "\"우리가 10년 뒤에 어떤 집에서 어떤 모습으로 살아가고 있을지 함께 상상해 볼까? 난 당신과 함께할 그 미래가 너무 기대돼.\"",
+              "dialogue_en": "\"Let's imagine where we'll be and how we'll live 10 years from now. I'm endlessly excited for the future we're building together.\""
+            }
+          ],
+          "role_rules_ko": [
+            "배우자의 개인적 꿈을 적극적으로 응원하고 공동의 미래 로드맵 업데이트하기"
+          ],
+          "role_rules_en": [
+            "Actively champion your spouse's personal dreams and co-author a vibrant shared roadmap."
+          ],
+          "safety_guardrails": {
+            "prohibited_claims": [
+              "비견이 있으면 반드시 배우자와 싸운다",
+              "무조건 이혼수다",
+              "위선자"
+            ],
+            "allowed_themes": [
+              "소울메이트",
+              "평생의 지향점",
+              "10년 로드맵",
+              "원팀 양육",
+              "아이 앞 한목소리",
+              "자율 존중"
+            ]
+          }
+        }
+      ],
+      "action_playbook": {
+        "summary_ko": "가계 재정과 가사 역할을 투명하게 분담하고, 갈등 시 20분 냉각 타임아웃을 지켜 부부의 안전망을 굳건히 유지하세요.",
+        "summary_en": "Anchor domestic life in transparent financial and chore governance, and practice the 20-minute de-escalation rule during conflicts.",
+        "golden_rules_ko": [
+          "가계 CFO 결산 데이를 정례화하고 주요 지출은 사전 상의한다.",
+          "싸움 중 감정이 격해지면 20분 타임아웃 후 약속된 시간에 재개한다.",
+          "외부 위기 앞에서는 배우자를 탓하지 않고 원팀으로 대응한다."
+        ],
+        "golden_rules_en": [
+          "Regularize household CFO syncs and consult mutually on major expenses.",
+          "Invoke a 20-minute de-escalation timeout during conflicts and honor return commitments.",
+          "Face external adversity as an unconditional one-team alliance without internal blame."
+        ]
+      },
+      "metadata": {
+        "total_scenes": 7,
+        "active_scenes_count": 7,
+        "abstained_scenes_count": 0,
+        "prohibited_claims_count": 12
+      }
+    },
+    "section_view_model": {
+      "domain": "partner",
+      "total_lenses": 10,
+      "active_lenses": 10,
+      "abstained_lenses": 0,
+      "report_cards": [
+        {
+          "lens_id": "partner_core_bond",
+          "domain": "partner",
+          "question_ko": "우리가 서로를 인생의 동반자로 선택한 근본적인 결속력과 끌림은 무엇일까?",
+          "headline_ko": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+          "narrative_ko": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "년주(경오)×일주(계미) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "월주(신사)×년주(임신) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다"
+          ]
+        },
+        {
+          "lens_id": "partner_operating_cfo",
+          "domain": "partner",
+          "question_ko": "가계 경제, 자산 관리, 통장 관리는 누구 주도로 어떻게 투명하게 운영해야 할까?",
+          "headline_ko": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+          "narrative_ko": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "ten_god_matrix",
+              "description": "재성 십신 분포: A(0정재/0편재) vs B(0정재/0편재)"
+            }
+          ],
+          "prohibited_claims": [
+            "구두쇠"
+          ]
+        },
+        {
+          "lens_id": "partner_household_chores",
+          "domain": "partner",
+          "question_ko": "청소, 빨래, 요리 등 일상 가사 분담에서 생기는 보이지 않는 피로를 없애는 룰은?",
+          "headline_ko": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+          "narrative_ko": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율",
+          "confidence": "medium",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_clash",
+              "description": "일주(경진)×월주(계묘) 묘진해"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "년주(경오)×월주(계묘) 오묘파"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(경오)×일주(계미) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "월주(신사)×년주(임신) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "위선자"
+          ]
+        },
+        {
+          "lens_id": "partner_private_sanctuary",
+          "domain": "partner",
+          "question_ko": "한 공간에 함께 살면서도 서로의 사생활과 혼자만의 동굴 시간을 어떻게 보장할까?",
+          "headline_ko": "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장",
+          "narrative_ko": "원진/귀문의 민감성으로 인해 하루 1시간 혼자만의 서재나 방에 틀어박혀 침묵하는 시간은 애정의 식음이 아니라 필수 충전 과정입니다. 깊은 통찰력과 직관, 복잡한 문제의 본질을 꿰뚫어 보는 전략적 조언",
+          "confidence": "medium",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "wonjin",
+              "description": "월주(신사)×년주(임신) 원진"
+            }
+          ],
+          "prohibited_claims": [
+            "의처증/의부증",
+            "정신적 결함"
+          ]
+        },
+        {
+          "lens_id": "partner_bedroom_intimacy",
+          "domain": "partner",
+          "question_ko": "수면 패턴, 침실 환경(온도/조명), 그리고 스킨십 친밀도의 리듬을 어떻게 맞출까?",
+          "headline_ko": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+          "narrative_ko": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [],
+          "prohibited_claims": [
+            "남편/아내를 잡아먹는다",
+            "상관견관 백호살 극단론"
+          ]
+        },
+        {
+          "lens_id": "partner_conflict_trigger",
+          "domain": "partner",
+          "question_ko": "말투, 표정, 혹은 가치관 차이로 부딪힐 때 감정싸움으로 번지지 않게 막는 트리거는?",
+          "headline_ko": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+          "narrative_ko": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다.",
+          "confidence": "medium",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_clash",
+              "description": "일주(경진)×월주(계묘) 묘진해"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "년주(경오)×월주(계묘) 오묘파"
+            }
+          ],
+          "prohibited_claims": [
+            "가정폭력 사주",
+            "배우자 살"
+          ]
+        },
+        {
+          "lens_id": "partner_tempo_rhythm",
+          "domain": "partner",
+          "question_ko": "주말 휴식 방식, 외출/집콕 선호도, 일상 행동 속도(Pace)의 차이는?",
+          "headline_ko": "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬",
+          "narrative_ko": "서로의 활동성과 휴식 주기가 비슷하여 주말 일정을 잡고 여가를 즐길 때 의견 일치가 매우 쉽습니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "element_flow",
+              "description": "오행 흐름: a_to_b (generates_a_to_b)"
+            }
+          ],
+          "prohibited_claims": [
+            "게으르고 무책임하다"
+          ]
+        },
+        {
+          "lens_id": "partner_crisis_protector",
+          "domain": "partner",
+          "question_ko": "이직, 질병, 재정 위기 등 인생의 풍파가 닥쳤을 때 서로를 지탱하는 회복 탄력성은?",
+          "headline_ko": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+          "narrative_ko": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "년주(경오)×일주(계미) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "월주(신사)×년주(임신) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "마마보이/마마걸"
+          ]
+        },
+        {
+          "lens_id": "partner_parenting_alignment",
+          "domain": "partner",
+          "question_ko": "자녀 훈육관, 교육열, 그리고 아이 앞에서의 부모 역할 분담 원칙은?",
+          "headline_ko": "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십",
+          "narrative_ko": "자녀의 개별적 소질과 자율성을 최대한 존중하며 친구처럼 소통하는 양육 스타일을 공유합니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "ten_god_matrix",
+              "description": "관성/인성 분포: 관성(0 vs 0), 인성(0 vs 0)"
+            }
+          ],
+          "prohibited_claims": [
+            "위선자"
+          ]
+        },
+        {
+          "lens_id": "partner_longterm_vision",
+          "domain": "partner",
+          "question_ko": "10년 후, 20년 후 우리가 그리는 노후와 인생의 종착역은 같은 곳을 향하고 있을까?",
+          "headline_ko": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+          "narrative_ko": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [],
+          "prohibited_claims": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다"
+          ]
+        }
+      ],
+      "cards": [
+        {
+          "lens_id": "partner_core_bond",
+          "domain": "partner",
+          "question_ko": "우리가 서로를 인생의 동반자로 선택한 근본적인 결속력과 끌림은 무엇일까?",
+          "headline_ko": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+          "narrative_ko": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "년주(경오)×일주(계미) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "월주(신사)×년주(임신) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다"
+          ]
+        },
+        {
+          "lens_id": "partner_operating_cfo",
+          "domain": "partner",
+          "question_ko": "가계 경제, 자산 관리, 통장 관리는 누구 주도로 어떻게 투명하게 운영해야 할까?",
+          "headline_ko": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+          "narrative_ko": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "ten_god_matrix",
+              "description": "재성 십신 분포: A(0정재/0편재) vs B(0정재/0편재)"
+            }
+          ],
+          "prohibited_claims": [
+            "구두쇠"
+          ]
+        },
+        {
+          "lens_id": "partner_household_chores",
+          "domain": "partner",
+          "question_ko": "청소, 빨래, 요리 등 일상 가사 분담에서 생기는 보이지 않는 피로를 없애는 룰은?",
+          "headline_ko": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+          "narrative_ko": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율",
+          "confidence": "medium",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_clash",
+              "description": "일주(경진)×월주(계묘) 묘진해"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "년주(경오)×월주(계묘) 오묘파"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "년주(경오)×일주(계미) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "월주(신사)×년주(임신) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "위선자"
+          ]
+        },
+        {
+          "lens_id": "partner_private_sanctuary",
+          "domain": "partner",
+          "question_ko": "한 공간에 함께 살면서도 서로의 사생활과 혼자만의 동굴 시간을 어떻게 보장할까?",
+          "headline_ko": "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장",
+          "narrative_ko": "원진/귀문의 민감성으로 인해 하루 1시간 혼자만의 서재나 방에 틀어박혀 침묵하는 시간은 애정의 식음이 아니라 필수 충전 과정입니다. 깊은 통찰력과 직관, 복잡한 문제의 본질을 꿰뚫어 보는 전략적 조언",
+          "confidence": "medium",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "wonjin",
+              "description": "월주(신사)×년주(임신) 원진"
+            }
+          ],
+          "prohibited_claims": [
+            "의처증/의부증",
+            "정신적 결함"
+          ]
+        },
+        {
+          "lens_id": "partner_bedroom_intimacy",
+          "domain": "partner",
+          "question_ko": "수면 패턴, 침실 환경(온도/조명), 그리고 스킨십 친밀도의 리듬을 어떻게 맞출까?",
+          "headline_ko": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+          "narrative_ko": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [],
+          "prohibited_claims": [
+            "남편/아내를 잡아먹는다",
+            "상관견관 백호살 극단론"
+          ]
+        },
+        {
+          "lens_id": "partner_conflict_trigger",
+          "domain": "partner",
+          "question_ko": "말투, 표정, 혹은 가치관 차이로 부딪힐 때 감정싸움으로 번지지 않게 막는 트리거는?",
+          "headline_ko": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+          "narrative_ko": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다.",
+          "confidence": "medium",
+          "tension_level": "moderate",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_clash",
+              "description": "일주(경진)×월주(계묘) 묘진해"
+            },
+            {
+              "kind": "branch_clash",
+              "description": "년주(경오)×월주(계묘) 오묘파"
+            }
+          ],
+          "prohibited_claims": [
+            "가정폭력 사주",
+            "배우자 살"
+          ]
+        },
+        {
+          "lens_id": "partner_tempo_rhythm",
+          "domain": "partner",
+          "question_ko": "주말 휴식 방식, 외출/집콕 선호도, 일상 행동 속도(Pace)의 차이는?",
+          "headline_ko": "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬",
+          "narrative_ko": "서로의 활동성과 휴식 주기가 비슷하여 주말 일정을 잡고 여가를 즐길 때 의견 일치가 매우 쉽습니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "a_to_b",
+          "primary_evidence": [
+            {
+              "kind": "element_flow",
+              "description": "오행 흐름: a_to_b (generates_a_to_b)"
+            }
+          ],
+          "prohibited_claims": [
+            "게으르고 무책임하다"
+          ]
+        },
+        {
+          "lens_id": "partner_crisis_protector",
+          "domain": "partner",
+          "question_ko": "이직, 질병, 재정 위기 등 인생의 풍파가 닥쳤을 때 서로를 지탱하는 회복 탄력성은?",
+          "headline_ko": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+          "narrative_ko": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "branch_combine",
+              "description": "년주(경오)×일주(계미) 오미합토"
+            },
+            {
+              "kind": "branch_combine",
+              "description": "월주(신사)×년주(임신) 사신합수"
+            }
+          ],
+          "prohibited_claims": [
+            "마마보이/마마걸"
+          ]
+        },
+        {
+          "lens_id": "partner_parenting_alignment",
+          "domain": "partner",
+          "question_ko": "자녀 훈육관, 교육열, 그리고 아이 앞에서의 부모 역할 분담 원칙은?",
+          "headline_ko": "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십",
+          "narrative_ko": "자녀의 개별적 소질과 자율성을 최대한 존중하며 친구처럼 소통하는 양육 스타일을 공유합니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [
+            {
+              "kind": "ten_god_matrix",
+              "description": "관성/인성 분포: 관성(0 vs 0), 인성(0 vs 0)"
+            }
+          ],
+          "prohibited_claims": [
+            "위선자"
+          ]
+        },
+        {
+          "lens_id": "partner_longterm_vision",
+          "domain": "partner",
+          "question_ko": "10년 후, 20년 후 우리가 그리는 노후와 인생의 종착역은 같은 곳을 향하고 있을까?",
+          "headline_ko": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+          "narrative_ko": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다.",
+          "confidence": "medium",
+          "tension_level": "low",
+          "is_abstaining": false,
+          "polarity": "symmetric",
+          "primary_evidence": [],
+          "prohibited_claims": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다"
+          ]
+        }
+      ],
+      "provenance": {
+        "schema_version": "domain_report_vm_v1",
+        "lens_count": 10
+      },
+      "story_planner_input": {
+        "schema_version": "domain_story_planner_v1",
+        "domain": "partner",
+        "parties": {
+          "a_name": "Alex",
+          "b_name": "Jordan"
+        },
+        "overall_confidence": "low",
+        "birth_time_unknown_a": true,
+        "birth_time_unknown_b": true,
+        "chapters": [
+          {
+            "chapter_id": "ch1_core_bond",
+            "title_ko": "핵심 결속과 본질적 끌림",
+            "title_en": "Core Attachment & Synergy",
+            "summary_ko": "두 사람의 기질과 사주 원국이 만들어내는 근본적인 끌림과 결속력",
+            "summary_en": "Foundational attraction and bonding energy between the two charts",
+            "lens_evaluations": [
+              {
+                "lens_id": "partner_core_bond",
+                "domain": "partner",
+                "user_question": "우리가 서로를 인생의 동반자로 선택한 근본적인 결속력과 끌림은 무엇일까?",
+                "emotional_outcome": "두 사람의 만남이 우연을 넘어 서로의 존재 자체로 완성되는 필연적 신뢰감 확인",
+                "canonical_meaning_id": "partner_bond_complementary_values",
+                "headline_ko": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+                "headline_en": "A complementary partnership where distinct temperaments support one another",
+                "narrative_ko": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다.",
+                "narrative_en": "Evidence indicates foundational bond resonance between the partners.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "든든한 지지 기반 형성",
+                  "impact_on_b_ko": "안정적 정서 안식처 체감"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "핵심 가치관 일치",
+                    "상호 성장",
+                    "안전기지"
+                  ],
+                  "prohibited_claims": [
+                    "비견이 있으면 반드시 배우자와 싸운다",
+                    "무조건 이혼수다"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_operating_cfo",
+                "domain": "partner",
+                "user_question": "가계 경제, 자산 관리, 통장 관리는 누구 주도로 어떻게 투명하게 운영해야 할까?",
+                "emotional_outcome": "돈 문제로 인한 불필요한 감정 소모를 원천 차단하고 미래 자산을 극대화하는 재정 시스템 안착",
+                "canonical_meaning_id": "partner_cfo_party_a_lead",
+                "headline_ko": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+                "headline_en": "Alex leading household CFO governance with transparent budgetary alignment",
+                "narrative_ko": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적",
+                "narrative_en": "Structured fiscal governance minimizes financial friction and accelerates joint wealth compounding.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "가계부 총괄 및 고정비 집행",
+                  "impact_on_b_ko": "자율 예산 범위 준수"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "ten_god_matrix",
+                    "description_ko": "재성 십신 분포: A(0정재/0편재) vs B(0정재/0편재)"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_007"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "CFO 총괄",
+                    "월간 결산",
+                    "비상금 한도"
+                  ],
+                  "prohibited_claims": [
+                    "구두쇠"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_household_chores",
+                "domain": "partner",
+                "user_question": "청소, 빨래, 요리 등 일상 가사 분담에서 생기는 보이지 않는 피로를 없애는 룰은?",
+                "emotional_outcome": "'왜 나만 해?'라는 억울함 없이 각자의 강점 구역을 책임지는 매끄러운 룸메이트 시스템",
+                "canonical_meaning_id": "partner_chores_zone_division",
+                "headline_ko": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+                "headline_en": "Mitigating cleanliness standard disparities via strictly designated single-owner zones",
+                "narrative_ko": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율",
+                "narrative_en": "Clear ownership zones eliminate invisible cognitive load and household resentment.",
+                "confidence": "medium",
+                "tension_level": "moderate",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "지정 구역 완결 책임 및 상대 방식 간섭 금지",
+                  "impact_on_b_ko": "지정 구역 완결 책임 및 결과물 지적 자제"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(경진)×월주(계묘) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "년주(경오)×월주(계묘) 오묘파"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_007"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "구역 책임제",
+                    "기준치 조율",
+                    "가전 적극 활용"
+                  ],
+                  "prohibited_claims": [
+                    "위선자"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_private_sanctuary",
+                "domain": "partner",
+                "user_question": "한 공간에 함께 살면서도 서로의 사생활과 혼자만의 동굴 시간을 어떻게 보장할까?",
+                "emotional_outcome": "상대방의 침묵을 거절로 오해하지 않고 각자의 에너지를 충전할 수 있는 심리적 안전거리 확보",
+                "canonical_meaning_id": "partner_space_solitude_cave_required",
+                "headline_ko": "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장",
+                "headline_en": "Securing non-negotiable psychological sanctuary time to prevent shared-space burnout",
+                "narrative_ko": "원진/귀문의 민감성으로 인해 하루 1시간 혼자만의 서재나 방에 틀어박혀 침묵하는 시간은 애정의 식음이 아니라 필수 충전 과정입니다. 깊은 통찰력과 직관, 복잡한 문제의 본질을 꿰뚫어 보는 전략적 조언",
+                "narrative_en": "Allocating dedicated solo recharge zones prevents sensory overload and preserves relational tenderness.",
+                "confidence": "medium",
+                "tension_level": "moderate",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "상대의 침묵 요구 존중 및 서운함 배제",
+                  "impact_on_b_ko": "동굴 진입 전 '충전 후 복귀' 사전 신호 공유"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "월주(신사)×년주(임신) 원진"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_006"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "동굴 시간",
+                    "무언의 충전",
+                    "물리적 공간 분리"
+                  ],
+                  "prohibited_claims": [
+                    "의처증/의부증",
+                    "정신적 결함"
+                  ]
+                }
+              }
+            ],
+            "synthesis_guide_ko": "원국의 합과 오행 생조 흐름을 중심으로 본질적 안정감을 해석합니다.",
+            "synthesis_guide_en": "Synthesize foundational stability from chart combines and supportive flows."
+          },
+          {
+            "chapter_id": "ch2_daily_dynamics",
+            "title_ko": "일상 역동과 상호 역할 분담",
+            "title_en": "Daily Dynamics & Operating Roles",
+            "summary_ko": "생활 공간과 실무 현장에서 나타나는 의사소통, 자원 관리 및 역할 조율",
+            "summary_en": "Daily communication, resource governance, and task coordination",
+            "lens_evaluations": [
+              {
+                "lens_id": "partner_bedroom_intimacy",
+                "domain": "partner",
+                "user_question": "수면 패턴, 침실 환경(온도/조명), 그리고 스킨십 친밀도의 리듬을 어떻게 맞출까?",
+                "emotional_outcome": "수면의 질을 최우선으로 지키면서도 서로의 온도를 교환하는 깊은 신체적 안식",
+                "canonical_meaning_id": "partner_bedroom_pace_calibration",
+                "headline_ko": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+                "headline_en": "Harmonious thermal balance creating a soothing and comforting nocturnal rhythm",
+                "narrative_ko": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다.",
+                "narrative_en": "Nocturnal thermal alignment and sensory hygiene preserve long-term restorative intimacy.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "개별 이불/암막 커튼 활용 및 수면 리듬 존중",
+                  "impact_on_b_ko": "취침 전 10분 온기 교감 및 온도 타협"
+                },
+                "primary_saju_evidence": [],
+                "supporting_packet_ids": [
+                  "pce_001"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "이불 분리",
+                    "수면 온도 조절",
+                    "취침 전 루틴"
+                  ],
+                  "prohibited_claims": [
+                    "남편/아내를 잡아먹는다",
+                    "상관견관 백호살 극단론"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_conflict_trigger",
+                "domain": "partner",
+                "user_question": "말투, 표정, 혹은 가치관 차이로 부딪힐 때 감정싸움으로 번지지 않게 막는 트리거는?",
+                "emotional_outcome": "상대의 말을 비난으로 듣지 않고 본심을 알아채는 성숙한 대화 필터 장착",
+                "canonical_meaning_id": "partner_conflict_cooling_pause",
+                "headline_ko": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+                "headline_en": "Mandatory 20-minute physical cooldown timeouts during heated branch friction",
+                "narrative_ko": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다.",
+                "narrative_en": "Structured communication buffers protect emotional safety during inevitable partner friction.",
+                "confidence": "medium",
+                "tension_level": "moderate",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "지적하고 싶은 순간 3초 멈춤 및 쿠션어 사용",
+                  "impact_on_b_ko": "상대 지적을 인격 비하로 해석하지 않는 인지 필터"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(경진)×월주(계묘) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "년주(경오)×월주(계묘) 오묘파"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_004",
+                  "pce_005",
+                  "pce_006"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "쿠션어",
+                    "타임아웃",
+                    "비난 필터링"
+                  ],
+                  "prohibited_claims": [
+                    "가정폭력 사주",
+                    "배우자 살"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_tempo_rhythm",
+                "domain": "partner",
+                "user_question": "주말 휴식 방식, 외출/집콕 선호도, 일상 행동 속도(Pace)의 차이는?",
+                "emotional_outcome": "속도 차이로 인해 서로를 재촉하거나 답답해하지 않는 페이스메이커 호흡",
+                "canonical_meaning_id": "partner_tempo_pace_asymmetry",
+                "headline_ko": "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬",
+                "headline_en": "Synchronized daily living paces creating a calm and effortless lifestyle rhythm",
+                "narrative_ko": "서로의 활동성과 휴식 주기가 비슷하여 주말 일정을 잡고 여가를 즐길 때 의견 일치가 매우 쉽습니다.",
+                "narrative_en": "Pacing alignment ensures sustainable coexistence without relational exhaustion.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "활동성 제안 및 에너지 리드",
+                  "impact_on_b_ko": "내적 안정감 및 충전 밸런스"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "element_flow",
+                    "description_ko": "오행 흐름: a_to_b (generates_a_to_b)"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_004",
+                  "pce_005",
+                  "pce_006"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "주말 50:50",
+                    "페이스메이커",
+                    "에너지 충전"
+                  ],
+                  "prohibited_claims": [
+                    "게으르고 무책임하다"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_crisis_protector",
+                "domain": "partner",
+                "user_question": "이직, 질병, 재정 위기 등 인생의 풍파가 닥쳤을 때 서로를 지탱하는 회복 탄력성은?",
+                "emotional_outcome": "세상이 다 등을 돌려도 내 곁에 이 사람이 있다는 절대적 심리적 보루 확인",
+                "canonical_meaning_id": "partner_crisis_resilient_support",
+                "headline_ko": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+                "headline_en": "Resilient mutual support structure dissolving external adversity through branch harmony",
+                "narrative_ko": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다.",
+                "narrative_en": "Trio and branch harmony formations create robust systemic buffers against external adversity.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "위기 시 멘탈 기둥 역할 및 현실적 대안 제시",
+                  "impact_on_b_ko": "정서적 안도감 회복 및 전폭적 신뢰 지지"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "난세의 동반자",
+                    "철벽 방패",
+                    "정서적 안전판"
+                  ],
+                  "prohibited_claims": [
+                    "마마보이/마마걸"
+                  ]
+                }
+              }
+            ],
+            "synthesis_guide_ko": "십신 및 층위별 상호작용을 기반으로 일상적인 조율 패턴을 조명합니다.",
+            "synthesis_guide_en": "Highlight daily coordination dynamics grounded in Ten-God and layer interactions."
+          },
+          {
+            "chapter_id": "ch3_conflict_safeguards",
+            "title_ko": "갈등 안전장치와 장기적 시너지",
+            "title_en": "Conflict Safeguards & Longterm Synergy",
+            "summary_ko": "충·원진 등 긴장 뇌관을 해독하고 위기 시 회복탄력성을 확보하는 안전장치",
+            "summary_en": "Conflict resolution buffers and long-term relational resilience",
+            "lens_evaluations": [
+              {
+                "lens_id": "partner_parenting_alignment",
+                "domain": "partner",
+                "user_question": "자녀 훈육관, 교육열, 그리고 아이 앞에서의 부모 역할 분담 원칙은?",
+                "emotional_outcome": "아이 앞에서 부모가 한목소리를 내어 혼란 없이 자녀의 자존감을 지켜주는 팀 양육",
+                "canonical_meaning_id": "partner_parenting_unified_standard",
+                "headline_ko": "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십",
+                "headline_en": "Autonomy-respecting and democratic modern parenting partnership",
+                "narrative_ko": "자녀의 개별적 소질과 자율성을 최대한 존중하며 친구처럼 소통하는 양육 스타일을 공유합니다.",
+                "narrative_en": "Complementary parenting roles establish secure boundaries while preserving emotional warmth.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "훈육 원칙 일관성 유지 및 아이 앞 비난 금지",
+                  "impact_on_b_ko": "정서적 공감대 형성 및 양육 방침 일치"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "ten_god_matrix",
+                    "description_ko": "관성/인성 분포: 관성(0 vs 0), 인성(0 vs 0)"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_007"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "원팀 양육",
+                    "아이 앞 한목소리",
+                    "자율 존중"
+                  ],
+                  "prohibited_claims": [
+                    "위선자"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_longterm_vision",
+                "domain": "partner",
+                "user_question": "10년 후, 20년 후 우리가 그리는 노후와 인생의 종착역은 같은 곳을 향하고 있을까?",
+                "emotional_outcome": "시간이 흐를수록 단순한 부부를 넘어 인생이라는 위대한 여정을 함께 완주하는 소울메이트 확인",
+                "canonical_meaning_id": "partner_vision_dynamic_recalibration",
+                "headline_ko": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+                "headline_en": "A respectful parallel journey celebrating and bolstering each other's distinct lifetime dreams",
+                "narrative_ko": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다.",
+                "narrative_en": "Long-term architectural alignment secures shared multi-decade legacy compounding.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "공동의 10년 로드맵 구축 및 평생 신뢰",
+                  "impact_on_b_ko": "공동의 노후 비전 설계 및 상호 지지"
+                },
+                "primary_saju_evidence": [],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_001"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "소울메이트",
+                    "평생의 지향점",
+                    "10년 로드맵"
+                  ],
+                  "prohibited_claims": [
+                    "비견이 있으면 반드시 배우자와 싸운다",
+                    "무조건 이혼수다"
+                  ]
+                }
+              }
+            ],
+            "synthesis_guide_ko": "긴장 요인을 객관적으로 짚고 실천 가능한 대화법과 안전장치를 제시합니다.",
+            "synthesis_guide_en": "Objectively identify friction points and provide actionable communication safeguards."
+          }
+        ],
+        "grounding_summary": {
+          "total_lenses_evaluated": 10,
+          "high_confidence_count": 0,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "standard"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "핵심 가치관 일치",
+            "상호 성장",
+            "안전기지",
+            "CFO 총괄",
+            "월간 결산",
+            "비상금 한도",
+            "구역 책임제",
+            "기준치 조율",
+            "가전 적극 활용",
+            "동굴 시간",
+            "무언의 충전",
+            "물리적 공간 분리",
+            "이불 분리",
+            "수면 온도 조절",
+            "취침 전 루틴",
+            "쿠션어",
+            "타임아웃",
+            "비난 필터링",
+            "주말 50:50",
+            "페이스메이커",
+            "에너지 충전",
+            "난세의 동반자",
+            "철벽 방패",
+            "정서적 안전판",
+            "원팀 양육",
+            "아이 앞 한목소리",
+            "자율 존중",
+            "소울메이트",
+            "평생의 지향점",
+            "10년 로드맵"
+          ],
+          "strict_prohibitions": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다",
+            "구두쇠",
+            "위선자",
+            "의처증/의부증",
+            "정신적 결함",
+            "남편/아내를 잡아먹는다",
+            "상관견관 백호살 극단론",
+            "가정폭력 사주",
+            "배우자 살",
+            "게으르고 무책임하다",
+            "마마보이/마마걸"
+          ]
+        }
+      }
+    }
+  },
+  "dev": {
+    "mode": "domain_lens_dev",
+    "evidence": {
+      "packet_count": 7,
+      "packet_ids": [
+        "pce_002",
+        "pce_003",
+        "pce_004",
+        "pce_005",
+        "pce_006",
+        "pce_001",
+        "pce_007"
+      ],
+      "abstained_lenses": 0,
+      "active_lenses": 10
+    },
+    "personal_ce": "not_wired_in_this_package",
+    "pair_ce_packets": [
+      {
+        "packet_id": "pce_002",
+        "group": "bonding",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_003",
+        "group": "bonding",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_004",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_005",
+        "group": "friction",
+        "fact_kind": "branch_pair"
+      },
+      {
+        "packet_id": "pce_006",
+        "group": "friction",
+        "fact_kind": "wonjin_guimun"
+      },
+      {
+        "packet_id": "pce_001",
+        "group": "energy",
+        "fact_kind": "element_flow"
+      },
+      {
+        "packet_id": "pce_007",
+        "group": "structure",
+        "fact_kind": "gongmang_shared"
+      }
+    ],
+    "lenses": [
+      {
+        "lens_id": "partner_core_bond",
+        "question_ko": "우리가 서로를 인생의 동반자로 선택한 근본적인 결속력과 끌림은 무엇일까?",
+        "headline_ko": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+        "narrative_ko": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다.",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_operating_cfo",
+        "question_ko": "가계 경제, 자산 관리, 통장 관리는 누구 주도로 어떻게 투명하게 운영해야 할까?",
+        "headline_ko": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+        "narrative_ko": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_household_chores",
+        "question_ko": "청소, 빨래, 요리 등 일상 가사 분담에서 생기는 보이지 않는 피로를 없애는 룰은?",
+        "headline_ko": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+        "narrative_ko": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율",
+        "confidence": "medium",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_private_sanctuary",
+        "question_ko": "한 공간에 함께 살면서도 서로의 사생활과 혼자만의 동굴 시간을 어떻게 보장할까?",
+        "headline_ko": "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장",
+        "narrative_ko": "원진/귀문의 민감성으로 인해 하루 1시간 혼자만의 서재나 방에 틀어박혀 침묵하는 시간은 애정의 식음이 아니라 필수 충전 과정입니다. 깊은 통찰력과 직관, 복잡한 문제의 본질을 꿰뚫어 보는 전략적 조언",
+        "confidence": "medium",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_bedroom_intimacy",
+        "question_ko": "수면 패턴, 침실 환경(온도/조명), 그리고 스킨십 친밀도의 리듬을 어떻게 맞출까?",
+        "headline_ko": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+        "narrative_ko": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다.",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_conflict_trigger",
+        "question_ko": "말투, 표정, 혹은 가치관 차이로 부딪힐 때 감정싸움으로 번지지 않게 막는 트리거는?",
+        "headline_ko": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+        "narrative_ko": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다.",
+        "confidence": "medium",
+        "tension_level": "moderate",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_tempo_rhythm",
+        "question_ko": "주말 휴식 방식, 외출/집콕 선호도, 일상 행동 속도(Pace)의 차이는?",
+        "headline_ko": "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬",
+        "narrative_ko": "서로의 활동성과 휴식 주기가 비슷하여 주말 일정을 잡고 여가를 즐길 때 의견 일치가 매우 쉽습니다.",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_crisis_protector",
+        "question_ko": "이직, 질병, 재정 위기 등 인생의 풍파가 닥쳤을 때 서로를 지탱하는 회복 탄력성은?",
+        "headline_ko": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+        "narrative_ko": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다.",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_parenting_alignment",
+        "question_ko": "자녀 훈육관, 교육열, 그리고 아이 앞에서의 부모 역할 분담 원칙은?",
+        "headline_ko": "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십",
+        "narrative_ko": "자녀의 개별적 소질과 자율성을 최대한 존중하며 친구처럼 소통하는 양육 스타일을 공유합니다.",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      },
+      {
+        "lens_id": "partner_longterm_vision",
+        "question_ko": "10년 후, 20년 후 우리가 그리는 노후와 인생의 종착역은 같은 곳을 향하고 있을까?",
+        "headline_ko": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+        "narrative_ko": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다.",
+        "confidence": "medium",
+        "tension_level": "low",
+        "is_abstaining": false
+      }
+    ],
+    "story_planner": {
+      "input": {
+        "schema_version": "domain_story_planner_v1",
+        "domain": "partner",
+        "parties": {
+          "a_name": "Alex",
+          "b_name": "Jordan"
+        },
+        "overall_confidence": "low",
+        "birth_time_unknown_a": true,
+        "birth_time_unknown_b": true,
+        "chapters": [
+          {
+            "chapter_id": "ch1_core_bond",
+            "title_ko": "핵심 결속과 본질적 끌림",
+            "title_en": "Core Attachment & Synergy",
+            "summary_ko": "두 사람의 기질과 사주 원국이 만들어내는 근본적인 끌림과 결속력",
+            "summary_en": "Foundational attraction and bonding energy between the two charts",
+            "lens_evaluations": [
+              {
+                "lens_id": "partner_core_bond",
+                "domain": "partner",
+                "user_question": "우리가 서로를 인생의 동반자로 선택한 근본적인 결속력과 끌림은 무엇일까?",
+                "emotional_outcome": "두 사람의 만남이 우연을 넘어 서로의 존재 자체로 완성되는 필연적 신뢰감 확인",
+                "canonical_meaning_id": "partner_bond_complementary_values",
+                "headline_ko": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+                "headline_en": "A complementary partnership where distinct temperaments support one another",
+                "narrative_ko": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다.",
+                "narrative_en": "Evidence indicates foundational bond resonance between the partners.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "든든한 지지 기반 형성",
+                  "impact_on_b_ko": "안정적 정서 안식처 체감"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "핵심 가치관 일치",
+                    "상호 성장",
+                    "안전기지"
+                  ],
+                  "prohibited_claims": [
+                    "비견이 있으면 반드시 배우자와 싸운다",
+                    "무조건 이혼수다"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_operating_cfo",
+                "domain": "partner",
+                "user_question": "가계 경제, 자산 관리, 통장 관리는 누구 주도로 어떻게 투명하게 운영해야 할까?",
+                "emotional_outcome": "돈 문제로 인한 불필요한 감정 소모를 원천 차단하고 미래 자산을 극대화하는 재정 시스템 안착",
+                "canonical_meaning_id": "partner_cfo_party_a_lead",
+                "headline_ko": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+                "headline_en": "Alex leading household CFO governance with transparent budgetary alignment",
+                "narrative_ko": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적",
+                "narrative_en": "Structured fiscal governance minimizes financial friction and accelerates joint wealth compounding.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "가계부 총괄 및 고정비 집행",
+                  "impact_on_b_ko": "자율 예산 범위 준수"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "ten_god_matrix",
+                    "description_ko": "재성 십신 분포: A(0정재/0편재) vs B(0정재/0편재)"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_007"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "CFO 총괄",
+                    "월간 결산",
+                    "비상금 한도"
+                  ],
+                  "prohibited_claims": [
+                    "구두쇠"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_household_chores",
+                "domain": "partner",
+                "user_question": "청소, 빨래, 요리 등 일상 가사 분담에서 생기는 보이지 않는 피로를 없애는 룰은?",
+                "emotional_outcome": "'왜 나만 해?'라는 억울함 없이 각자의 강점 구역을 책임지는 매끄러운 룸메이트 시스템",
+                "canonical_meaning_id": "partner_chores_zone_division",
+                "headline_ko": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+                "headline_en": "Mitigating cleanliness standard disparities via strictly designated single-owner zones",
+                "narrative_ko": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율",
+                "narrative_en": "Clear ownership zones eliminate invisible cognitive load and household resentment.",
+                "confidence": "medium",
+                "tension_level": "moderate",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "지정 구역 완결 책임 및 상대 방식 간섭 금지",
+                  "impact_on_b_ko": "지정 구역 완결 책임 및 결과물 지적 자제"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(경진)×월주(계묘) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "년주(경오)×월주(계묘) 오묘파"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_007"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "구역 책임제",
+                    "기준치 조율",
+                    "가전 적극 활용"
+                  ],
+                  "prohibited_claims": [
+                    "위선자"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_private_sanctuary",
+                "domain": "partner",
+                "user_question": "한 공간에 함께 살면서도 서로의 사생활과 혼자만의 동굴 시간을 어떻게 보장할까?",
+                "emotional_outcome": "상대방의 침묵을 거절로 오해하지 않고 각자의 에너지를 충전할 수 있는 심리적 안전거리 확보",
+                "canonical_meaning_id": "partner_space_solitude_cave_required",
+                "headline_ko": "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장",
+                "headline_en": "Securing non-negotiable psychological sanctuary time to prevent shared-space burnout",
+                "narrative_ko": "원진/귀문의 민감성으로 인해 하루 1시간 혼자만의 서재나 방에 틀어박혀 침묵하는 시간은 애정의 식음이 아니라 필수 충전 과정입니다. 깊은 통찰력과 직관, 복잡한 문제의 본질을 꿰뚫어 보는 전략적 조언",
+                "narrative_en": "Allocating dedicated solo recharge zones prevents sensory overload and preserves relational tenderness.",
+                "confidence": "medium",
+                "tension_level": "moderate",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "상대의 침묵 요구 존중 및 서운함 배제",
+                  "impact_on_b_ko": "동굴 진입 전 '충전 후 복귀' 사전 신호 공유"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "월주(신사)×년주(임신) 원진"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_006"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "동굴 시간",
+                    "무언의 충전",
+                    "물리적 공간 분리"
+                  ],
+                  "prohibited_claims": [
+                    "의처증/의부증",
+                    "정신적 결함"
+                  ]
+                }
+              }
+            ],
+            "synthesis_guide_ko": "원국의 합과 오행 생조 흐름을 중심으로 본질적 안정감을 해석합니다.",
+            "synthesis_guide_en": "Synthesize foundational stability from chart combines and supportive flows."
+          },
+          {
+            "chapter_id": "ch2_daily_dynamics",
+            "title_ko": "일상 역동과 상호 역할 분담",
+            "title_en": "Daily Dynamics & Operating Roles",
+            "summary_ko": "생활 공간과 실무 현장에서 나타나는 의사소통, 자원 관리 및 역할 조율",
+            "summary_en": "Daily communication, resource governance, and task coordination",
+            "lens_evaluations": [
+              {
+                "lens_id": "partner_bedroom_intimacy",
+                "domain": "partner",
+                "user_question": "수면 패턴, 침실 환경(온도/조명), 그리고 스킨십 친밀도의 리듬을 어떻게 맞출까?",
+                "emotional_outcome": "수면의 질을 최우선으로 지키면서도 서로의 온도를 교환하는 깊은 신체적 안식",
+                "canonical_meaning_id": "partner_bedroom_pace_calibration",
+                "headline_ko": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+                "headline_en": "Harmonious thermal balance creating a soothing and comforting nocturnal rhythm",
+                "narrative_ko": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다.",
+                "narrative_en": "Nocturnal thermal alignment and sensory hygiene preserve long-term restorative intimacy.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "개별 이불/암막 커튼 활용 및 수면 리듬 존중",
+                  "impact_on_b_ko": "취침 전 10분 온기 교감 및 온도 타협"
+                },
+                "primary_saju_evidence": [],
+                "supporting_packet_ids": [
+                  "pce_001"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "이불 분리",
+                    "수면 온도 조절",
+                    "취침 전 루틴"
+                  ],
+                  "prohibited_claims": [
+                    "남편/아내를 잡아먹는다",
+                    "상관견관 백호살 극단론"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_conflict_trigger",
+                "domain": "partner",
+                "user_question": "말투, 표정, 혹은 가치관 차이로 부딪힐 때 감정싸움으로 번지지 않게 막는 트리거는?",
+                "emotional_outcome": "상대의 말을 비난으로 듣지 않고 본심을 알아채는 성숙한 대화 필터 장착",
+                "canonical_meaning_id": "partner_conflict_cooling_pause",
+                "headline_ko": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+                "headline_en": "Mandatory 20-minute physical cooldown timeouts during heated branch friction",
+                "narrative_ko": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다.",
+                "narrative_en": "Structured communication buffers protect emotional safety during inevitable partner friction.",
+                "confidence": "medium",
+                "tension_level": "moderate",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "지적하고 싶은 순간 3초 멈춤 및 쿠션어 사용",
+                  "impact_on_b_ko": "상대 지적을 인격 비하로 해석하지 않는 인지 필터"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(경진)×월주(계묘) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "년주(경오)×월주(계묘) 오묘파"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_004",
+                  "pce_005",
+                  "pce_006"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "쿠션어",
+                    "타임아웃",
+                    "비난 필터링"
+                  ],
+                  "prohibited_claims": [
+                    "가정폭력 사주",
+                    "배우자 살"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_tempo_rhythm",
+                "domain": "partner",
+                "user_question": "주말 휴식 방식, 외출/집콕 선호도, 일상 행동 속도(Pace)의 차이는?",
+                "emotional_outcome": "속도 차이로 인해 서로를 재촉하거나 답답해하지 않는 페이스메이커 호흡",
+                "canonical_meaning_id": "partner_tempo_pace_asymmetry",
+                "headline_ko": "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬",
+                "headline_en": "Synchronized daily living paces creating a calm and effortless lifestyle rhythm",
+                "narrative_ko": "서로의 활동성과 휴식 주기가 비슷하여 주말 일정을 잡고 여가를 즐길 때 의견 일치가 매우 쉽습니다.",
+                "narrative_en": "Pacing alignment ensures sustainable coexistence without relational exhaustion.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "활동성 제안 및 에너지 리드",
+                  "impact_on_b_ko": "내적 안정감 및 충전 밸런스"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "element_flow",
+                    "description_ko": "오행 흐름: a_to_b (generates_a_to_b)"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_004",
+                  "pce_005",
+                  "pce_006"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "주말 50:50",
+                    "페이스메이커",
+                    "에너지 충전"
+                  ],
+                  "prohibited_claims": [
+                    "게으르고 무책임하다"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_crisis_protector",
+                "domain": "partner",
+                "user_question": "이직, 질병, 재정 위기 등 인생의 풍파가 닥쳤을 때 서로를 지탱하는 회복 탄력성은?",
+                "emotional_outcome": "세상이 다 등을 돌려도 내 곁에 이 사람이 있다는 절대적 심리적 보루 확인",
+                "canonical_meaning_id": "partner_crisis_resilient_support",
+                "headline_ko": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+                "headline_en": "Resilient mutual support structure dissolving external adversity through branch harmony",
+                "narrative_ko": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다.",
+                "narrative_en": "Trio and branch harmony formations create robust systemic buffers against external adversity.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "위기 시 멘탈 기둥 역할 및 현실적 대안 제시",
+                  "impact_on_b_ko": "정서적 안도감 회복 및 전폭적 신뢰 지지"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003"
+                ],
+                "personal_ce_contributions": {
+                  "a": [],
+                  "b": []
+                },
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "난세의 동반자",
+                    "철벽 방패",
+                    "정서적 안전판"
+                  ],
+                  "prohibited_claims": [
+                    "마마보이/마마걸"
+                  ]
+                }
+              }
+            ],
+            "synthesis_guide_ko": "십신 및 층위별 상호작용을 기반으로 일상적인 조율 패턴을 조명합니다.",
+            "synthesis_guide_en": "Highlight daily coordination dynamics grounded in Ten-God and layer interactions."
+          },
+          {
+            "chapter_id": "ch3_conflict_safeguards",
+            "title_ko": "갈등 안전장치와 장기적 시너지",
+            "title_en": "Conflict Safeguards & Longterm Synergy",
+            "summary_ko": "충·원진 등 긴장 뇌관을 해독하고 위기 시 회복탄력성을 확보하는 안전장치",
+            "summary_en": "Conflict resolution buffers and long-term relational resilience",
+            "lens_evaluations": [
+              {
+                "lens_id": "partner_parenting_alignment",
+                "domain": "partner",
+                "user_question": "자녀 훈육관, 교육열, 그리고 아이 앞에서의 부모 역할 분담 원칙은?",
+                "emotional_outcome": "아이 앞에서 부모가 한목소리를 내어 혼란 없이 자녀의 자존감을 지켜주는 팀 양육",
+                "canonical_meaning_id": "partner_parenting_unified_standard",
+                "headline_ko": "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십",
+                "headline_en": "Autonomy-respecting and democratic modern parenting partnership",
+                "narrative_ko": "자녀의 개별적 소질과 자율성을 최대한 존중하며 친구처럼 소통하는 양육 스타일을 공유합니다.",
+                "narrative_en": "Complementary parenting roles establish secure boundaries while preserving emotional warmth.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "훈육 원칙 일관성 유지 및 아이 앞 비난 금지",
+                  "impact_on_b_ko": "정서적 공감대 형성 및 양육 방침 일치"
+                },
+                "primary_saju_evidence": [
+                  {
+                    "kind": "ten_god_matrix",
+                    "description_ko": "관성/인성 분포: 관성(0 vs 0), 인성(0 vs 0)"
+                  }
+                ],
+                "supporting_packet_ids": [
+                  "pce_007"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "원팀 양육",
+                    "아이 앞 한목소리",
+                    "자율 존중"
+                  ],
+                  "prohibited_claims": [
+                    "위선자"
+                  ]
+                }
+              },
+              {
+                "lens_id": "partner_longterm_vision",
+                "domain": "partner",
+                "user_question": "10년 후, 20년 후 우리가 그리는 노후와 인생의 종착역은 같은 곳을 향하고 있을까?",
+                "emotional_outcome": "시간이 흐를수록 단순한 부부를 넘어 인생이라는 위대한 여정을 함께 완주하는 소울메이트 확인",
+                "canonical_meaning_id": "partner_vision_dynamic_recalibration",
+                "headline_ko": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+                "headline_en": "A respectful parallel journey celebrating and bolstering each other's distinct lifetime dreams",
+                "narrative_ko": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다.",
+                "narrative_en": "Long-term architectural alignment secures shared multi-decade legacy compounding.",
+                "confidence": "medium",
+                "tension_level": "low",
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "공동의 10년 로드맵 구축 및 평생 신뢰",
+                  "impact_on_b_ko": "공동의 노후 비전 설계 및 상호 지지"
+                },
+                "primary_saju_evidence": [],
+                "supporting_packet_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_001"
+                ],
+                "personal_ce_contributions": {},
+                "llm_synthesis_allowance": {
+                  "allowed_themes": [
+                    "소울메이트",
+                    "평생의 지향점",
+                    "10년 로드맵"
+                  ],
+                  "prohibited_claims": [
+                    "비견이 있으면 반드시 배우자와 싸운다",
+                    "무조건 이혼수다"
+                  ]
+                }
+              }
+            ],
+            "synthesis_guide_ko": "긴장 요인을 객관적으로 짚고 실천 가능한 대화법과 안전장치를 제시합니다.",
+            "synthesis_guide_en": "Objectively identify friction points and provide actionable communication safeguards."
+          }
+        ],
+        "grounding_summary": {
+          "total_lenses_evaluated": 10,
+          "high_confidence_count": 0,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "standard"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "핵심 가치관 일치",
+            "상호 성장",
+            "안전기지",
+            "CFO 총괄",
+            "월간 결산",
+            "비상금 한도",
+            "구역 책임제",
+            "기준치 조율",
+            "가전 적극 활용",
+            "동굴 시간",
+            "무언의 충전",
+            "물리적 공간 분리",
+            "이불 분리",
+            "수면 온도 조절",
+            "취침 전 루틴",
+            "쿠션어",
+            "타임아웃",
+            "비난 필터링",
+            "주말 50:50",
+            "페이스메이커",
+            "에너지 충전",
+            "난세의 동반자",
+            "철벽 방패",
+            "정서적 안전판",
+            "원팀 양육",
+            "아이 앞 한목소리",
+            "자율 존중",
+            "소울메이트",
+            "평생의 지향점",
+            "10년 로드맵"
+          ],
+          "strict_prohibitions": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다",
+            "구두쇠",
+            "위선자",
+            "의처증/의부증",
+            "정신적 결함",
+            "남편/아내를 잡아먹는다",
+            "상관견관 백호살 극단론",
+            "가정폭력 사주",
+            "배우자 살",
+            "게으르고 무책임하다",
+            "마마보이/마마걸"
+          ]
+        }
+      },
+      "plan": {
+        "schema_version": "domain_7_scene_story_plan_v1",
+        "domain": "partner",
+        "parties": {
+          "a_name": "Alex",
+          "b_name": "Jordan"
+        },
+        "overall_confidence": "medium",
+        "birth_time_unknown_a": true,
+        "birth_time_unknown_b": true,
+        "scenes": [
+          {
+            "scene_number": 1,
+            "scene_id": "partner_scene_1_foundational_bond",
+            "title_ko": "본질적 결속과 끌림의 중력",
+            "title_en": "Foundational Bond & Chemistry Gravity",
+            "primary_lens_id": "partner_core_bond",
+            "contributing_lens_ids": [
+              "partner_tempo_rhythm"
+            ],
+            "canonical_meaning_id": "partner_bond_complementary_values",
+            "canonical_packet": {
+              "meaning_id": "partner_bond_complementary_values",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "a_to_b",
+              "lead_party": "A",
+              "evidence": [
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다."
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_bond_complementary_values"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "a_to_b",
+              "lead_party": "A",
+              "impact_on_a_ko": "든든한 지지 기반 형성",
+              "impact_on_b_ko": "안정적 정서 안식처 체감"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_bond_complementary_values",
+                  "partner_tempo_pace_asymmetry"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+                  "Alex와(과) Jordan의 동기화된 일상 템포와 편안한 라이프 리듬"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  },
+                  {
+                    "kind": "element_flow",
+                    "description_ko": "오행 흐름: a_to_b (generates_a_to_b)"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "우리가 서로를 인생의 동반자로 선택한 근본적인 결속력과 끌림은 무엇일까?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_004",
+                  "pce_005",
+                  "pce_006"
+                ],
+                "saju_source_attribution": [
+                  "branch_combine:pair",
+                  "element_flow:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "든든한 지지 기반 형성",
+                  "impact_on_b_ko": "안정적 정서 안식처 체감"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "오행 상생의 흐름으로 서로의 부족한 에너지를 자연스럽게 채워주는 관계입니다.",
+                "gift_to_cost_relationship": "두 사람의 만남이 우연을 넘어 서로의 존재 자체로 완성되는 필연적 신뢰감 확인",
+                "prohibited_generic_interpretations": [
+                  "비견이 있으면 반드시 배우자와 싸운다",
+                  "무조건 이혼수다",
+                  "게으르고 무책임하다"
+                ],
+                "allowed_themes": [
+                  "핵심 가치관 일치",
+                  "상호 성장",
+                  "안전기지",
+                  "주말 50:50",
+                  "페이스메이커",
+                  "에너지 충전"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_core_bond_action",
+                "prescription_keys": [
+                  "partner_core_bond",
+                  "partner_tempo_rhythm"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 서로 다른 기질이 상호보완적으로 지탱해 주는 동반자 결속",
+                    "script_template_id": "partner_bond_complementary_values",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "A_leads_domain_governance"
+                ],
+                "behavioral_assets": [
+                  "핵심 가치관 일치",
+                  "상호 성장",
+                  "안전기지",
+                  "주말 50:50",
+                  "페이스메이커",
+                  "에너지 충전"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 2,
+            "scene_id": "partner_scene_2_cfo_finances",
+            "title_ko": "재정 거버넌스와 신뢰의 CFO",
+            "title_en": "Financial CFO Governance & Resource Trust",
+            "primary_lens_id": "partner_operating_cfo",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "partner_cfo_party_a_lead",
+            "canonical_packet": {
+              "meaning_id": "partner_cfo_party_a_lead",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "a_to_b",
+              "lead_party": "A",
+              "evidence": [
+                {
+                  "kind": "ten_god_matrix",
+                  "detail": "ten_god_matrix",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_cfo_party_a_lead"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "a_to_b",
+              "lead_party": "A",
+              "impact_on_a_ko": "가계부 총괄 및 고정비 집행",
+              "impact_on_b_ko": "자율 예산 범위 준수"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_cfo_party_a_lead"
+                ],
+                "observable_contrast_facts": [
+                  "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "ten_god_matrix",
+                    "description_ko": "재성 십신 분포: A(0정재/0편재) vs B(0정재/0편재)"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "가계 경제, 자산 관리, 통장 관리는 누구 주도로 어떻게 투명하게 운영해야 할까?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_007"
+                ],
+                "saju_source_attribution": [
+                  "ten_god_matrix:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "a_to_b",
+                  "lead_party": "A",
+                  "impact_on_a_ko": "가계부 총괄 및 고정비 집행",
+                  "impact_on_b_ko": "자율 예산 범위 준수"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "Alex의 정재/편재 현실 감각을 활용하여 고정비 관리와 저축 설계를 총괄하는 것이 가계 안정에 가장 유리합니다. 철저한 가계부 관리와 예측 가능한 생활 리듬, 성실한 자산 축적",
+                "gift_to_cost_relationship": "돈 문제로 인한 불필요한 감정 소모를 원천 차단하고 미래 자산을 극대화하는 재정 시스템 안착",
+                "prohibited_generic_interpretations": [
+                  "구두쇠"
+                ],
+                "allowed_themes": [
+                  "CFO 총괄",
+                  "월간 결산",
+                  "비상금 한도"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_operating_cfo_action",
+                "prescription_keys": [
+                  "partner_operating_cfo"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex의 꼼꼼한 가계 총괄 CFO 주도와 Jordan의 신뢰 기반 예산 협력",
+                    "script_template_id": "partner_cfo_party_a_lead",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "A_leads_domain_governance"
+                ],
+                "behavioral_assets": [
+                  "CFO 총괄",
+                  "월간 결산",
+                  "비상금 한도"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 3,
+            "scene_id": "partner_scene_3_home_living",
+            "title_ko": "한 지붕 생활과 개인 동굴의 조화",
+            "title_en": "Household Chores & Private Sanctuary",
+            "primary_lens_id": "partner_household_chores",
+            "contributing_lens_ids": [
+              "partner_private_sanctuary"
+            ],
+            "canonical_meaning_id": "partner_chores_zone_division",
+            "canonical_packet": {
+              "meaning_id": "partner_chores_zone_division",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율"
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_chores_zone_division"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "지정 구역 완결 책임 및 상대 방식 간섭 금지",
+              "impact_on_b_ko": "지정 구역 완결 책임 및 결과물 지적 자제"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_chores_zone_division",
+                  "partner_space_solitude_cave_required"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+                  "Alex와(과) Jordan의 심리적 탈진을 막는 독립 동굴 시간(Sanctuary) 공식 보장"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(경진)×월주(계묘) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "년주(경오)×월주(계묘) 오묘파"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  },
+                  {
+                    "kind": "wonjin",
+                    "description_ko": "월주(신사)×년주(임신) 원진"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "청소, 빨래, 요리 등 일상 가사 분담에서 생기는 보이지 않는 피로를 없애는 룰은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_007",
+                  "pce_006"
+                ],
+                "saju_source_attribution": [
+                  "branch_clash:pair",
+                  "branch_combine:pair",
+                  "wonjin:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "지정 구역 완결 책임 및 상대 방식 간섭 금지",
+                  "impact_on_b_ko": "지정 구역 완결 책임 및 결과물 지적 자제"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "지지충의 생활 습관 차이로 인해 '눈에 보일 때 치우자'는 방식은 한쪽의 독박 피로를 낳으므로 청소/설거지 등 영역을 칼같이 나누는 것이 평화를 지킵니다. 사회적 신뢰와 예의, 합리적인 가사 역할 분담과 원만한 외가/친가 조율",
+                "gift_to_cost_relationship": "'왜 나만 해?'라는 억울함 없이 각자의 강점 구역을 책임지는 매끄러운 룸메이트 시스템",
+                "prohibited_generic_interpretations": [
+                  "위선자",
+                  "의처증/의부증",
+                  "정신적 결함"
+                ],
+                "allowed_themes": [
+                  "구역 책임제",
+                  "기준치 조율",
+                  "가전 적극 활용",
+                  "동굴 시간",
+                  "무언의 충전",
+                  "물리적 공간 분리"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_household_chores_action",
+                "prescription_keys": [
+                  "partner_household_chores",
+                  "partner_private_sanctuary"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 완벽주의 기준차 완화와 명확한 구역별 1인 1책임제",
+                    "script_template_id": "partner_chores_zone_division",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "co_governance_alliance"
+                ],
+                "behavioral_assets": [
+                  "구역 책임제",
+                  "기준치 조율",
+                  "가전 적극 활용",
+                  "동굴 시간",
+                  "무언의 충전",
+                  "물리적 공간 분리"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 4,
+            "scene_id": "partner_scene_4_intimate_resonance",
+            "title_ko": "친밀감의 온도와 베드룸 리듬",
+            "title_en": "Intimate Thermal Resonance & Bedroom Calibration",
+            "primary_lens_id": "partner_bedroom_intimacy",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "partner_bedroom_pace_calibration",
+            "canonical_packet": {
+              "meaning_id": "partner_bedroom_pace_calibration",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "summary_reason",
+                  "detail": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다."
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_bedroom_pace_calibration"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "개별 이불/암막 커튼 활용 및 수면 리듬 존중",
+              "impact_on_b_ko": "취침 전 10분 온기 교감 및 온도 타협"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_bedroom_pace_calibration"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감"
+                ],
+                "evidence_refs": [],
+                "required_v1_assets": [],
+                "observed_scene_focus": "수면 패턴, 침실 환경(온도/조명), 그리고 스킨십 친밀도의 리듬을 어떻게 맞출까?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_001"
+                ],
+                "saju_source_attribution": [],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "개별 이불/암막 커튼 활용 및 수면 리듬 존중",
+                  "impact_on_b_ko": "취침 전 10분 온기 교감 및 온도 타협"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "조후가 조화로워 침실의 분위기와 정서적 스킨십 교감이 매우 자연스럽고 따뜻하게 유지됩니다.",
+                "gift_to_cost_relationship": "수면의 질을 최우선으로 지키면서도 서로의 온도를 교환하는 깊은 신체적 안식",
+                "prohibited_generic_interpretations": [
+                  "남편/아내를 잡아먹는다",
+                  "상관견관 백호살 극단론"
+                ],
+                "allowed_themes": [
+                  "이불 분리",
+                  "수면 온도 조절",
+                  "취침 전 루틴"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_bedroom_intimacy_action",
+                "prescription_keys": [
+                  "partner_bedroom_intimacy"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 포근한 조후 균형 기반 편안한 수면 일체감",
+                    "script_template_id": "partner_bedroom_pace_calibration",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "co_governance_alliance"
+                ],
+                "behavioral_assets": [
+                  "이불 분리",
+                  "수면 온도 조절",
+                  "취침 전 루틴"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 5,
+            "scene_id": "partner_scene_5_conflict_protocol",
+            "title_ko": "다툼의 뇌관 해체와 쿨링 프로토콜",
+            "title_en": "Conflict Trigger & Cooling Pause",
+            "primary_lens_id": "partner_conflict_trigger",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "partner_conflict_cooling_pause",
+            "canonical_packet": {
+              "meaning_id": "partner_conflict_cooling_pause",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_clash",
+                  "detail": "branch_clash",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다."
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_conflict_cooling_pause"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "지적하고 싶은 순간 3초 멈춤 및 쿠션어 사용",
+              "impact_on_b_ko": "상대 지적을 인격 비하로 해석하지 않는 인지 필터"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_conflict_cooling_pause"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "일주(경진)×월주(계묘) 묘진해"
+                  },
+                  {
+                    "kind": "branch_clash",
+                    "description_ko": "년주(경오)×월주(계묘) 오묘파"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "말투, 표정, 혹은 가치관 차이로 부딪힐 때 감정싸움으로 번지지 않게 막는 트리거는?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_004",
+                  "pce_005",
+                  "pce_006"
+                ],
+                "saju_source_attribution": [
+                  "branch_clash:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "지적하고 싶은 순간 3초 멈춤 및 쿠션어 사용",
+                  "impact_on_b_ko": "상대 지적을 인격 비하로 해석하지 않는 인지 필터"
+                },
+                "tension_level": "moderate"
+              },
+              "reframing": {
+                "protected_meaning": "지지충의 감정 분출 시 즉각 논쟁을 멈추고 각자의 방으로 흩어져 심박수를 낮춘 뒤 재대화해야 합니다.",
+                "gift_to_cost_relationship": "상대의 말을 비난으로 듣지 않고 본심을 알아채는 성숙한 대화 필터 장착",
+                "prohibited_generic_interpretations": [
+                  "가정폭력 사주",
+                  "배우자 살"
+                ],
+                "allowed_themes": [
+                  "쿠션어",
+                  "타임아웃",
+                  "비난 필터링"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_conflict_trigger_action",
+                "prescription_keys": [
+                  "partner_conflict_trigger"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 지지충 감정 격화 시 20분 의무 쿨링 타임아웃",
+                    "script_template_id": "partner_conflict_cooling_pause",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "co_governance_alliance"
+                ],
+                "behavioral_assets": [
+                  "쿠션어",
+                  "타임아웃",
+                  "비난 필터링"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 6,
+            "scene_id": "partner_scene_6_crisis_shield",
+            "title_ko": "삶의 폭풍 속을 지키는 든든한 방패",
+            "title_en": "Crisis Protector & Life Shield",
+            "primary_lens_id": "partner_crisis_protector",
+            "contributing_lens_ids": [],
+            "canonical_meaning_id": "partner_crisis_resilient_support",
+            "canonical_packet": {
+              "meaning_id": "partner_crisis_resilient_support",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "branch_combine",
+                  "detail": "branch_combine",
+                  "source": "saju"
+                },
+                {
+                  "kind": "summary_reason",
+                  "detail": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다."
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_crisis_resilient_support"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "위기 시 멘탈 기둥 역할 및 현실적 대안 제시",
+              "impact_on_b_ko": "정서적 안도감 회복 및 전폭적 신뢰 지지"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_crisis_resilient_support"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "년주(경오)×일주(계미) 오미합토"
+                  },
+                  {
+                    "kind": "branch_combine",
+                    "description_ko": "월주(신사)×년주(임신) 사신합수"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "이직, 질병, 재정 위기 등 인생의 풍파가 닥쳤을 때 서로를 지탱하는 회복 탄력성은?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003"
+                ],
+                "saju_source_attribution": [
+                  "branch_combine:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "위기 시 멘탈 기둥 역할 및 현실적 대안 제시",
+                  "impact_on_b_ko": "정서적 안도감 회복 및 전폭적 신뢰 지지"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "서로에 대한 든든한 정서적 안전판이 되어주어 외부 스트레스가 침실 문턱을 넘지 못하게 지켜냅니다.",
+                "gift_to_cost_relationship": "세상이 다 등을 돌려도 내 곁에 이 사람이 있다는 절대적 심리적 보루 확인",
+                "prohibited_generic_interpretations": [
+                  "마마보이/마마걸"
+                ],
+                "allowed_themes": [
+                  "난세의 동반자",
+                  "철벽 방패",
+                  "정서적 안전판"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_crisis_protector_action",
+                "prescription_keys": [
+                  "partner_crisis_protector"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 지지합 온기 기반 위기 극복 회복 탄력성",
+                    "script_template_id": "partner_crisis_resilient_support",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "co_governance_alliance"
+                ],
+                "behavioral_assets": [
+                  "난세의 동반자",
+                  "철벽 방패",
+                  "정서적 안전판"
+                ]
+              }
+            }
+          },
+          {
+            "scene_number": 7,
+            "scene_id": "partner_scene_7_future_horizons",
+            "title_ko": "자녀 양육과 함께 그리는 미래 비전",
+            "title_en": "Parenting Alignment & Long-Term Horizons",
+            "primary_lens_id": "partner_longterm_vision",
+            "contributing_lens_ids": [
+              "partner_parenting_alignment"
+            ],
+            "canonical_meaning_id": "partner_vision_dynamic_recalibration",
+            "canonical_packet": {
+              "meaning_id": "partner_vision_dynamic_recalibration",
+              "status": "supported",
+              "confidence": "medium",
+              "directionality": "symmetric",
+              "evidence": [
+                {
+                  "kind": "summary_reason",
+                  "detail": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다."
+                }
+              ],
+              "source_mode": "hybrid",
+              "value": "partner_vision_dynamic_recalibration"
+            },
+            "confidence": "medium",
+            "directionality": {
+              "polarity": "symmetric",
+              "impact_on_a_ko": "공동의 10년 로드맵 구축 및 평생 신뢰",
+              "impact_on_b_ko": "공동의 노후 비전 설계 및 상호 지지"
+            },
+            "is_abstaining": false,
+            "beats": {
+              "recognition": {
+                "canonical_meaning_ids": [
+                  "partner_vision_dynamic_recalibration",
+                  "partner_parenting_unified_standard"
+                ],
+                "observable_contrast_facts": [
+                  "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+                  "Alex와(과) Jordan의 친구 같은 자율 존중형 현대적 양육 파트너십"
+                ],
+                "evidence_refs": [
+                  {
+                    "kind": "ten_god_matrix",
+                    "description_ko": "관성/인성 분포: 관성(0 vs 0), 인성(0 vs 0)"
+                  }
+                ],
+                "required_v1_assets": [],
+                "observed_scene_focus": "10년 후, 20년 후 우리가 그리는 노후와 인생의 종착역은 같은 곳을 향하고 있을까?"
+              },
+              "translation": {
+                "mechanism_ids": [
+                  "pce_002",
+                  "pce_003",
+                  "pce_001",
+                  "pce_007"
+                ],
+                "saju_source_attribution": [
+                  "ten_god_matrix:pair"
+                ],
+                "survey_axis_attribution": [],
+                "directionality": {
+                  "polarity": "symmetric",
+                  "impact_on_a_ko": "공동의 10년 로드맵 구축 및 평생 신뢰",
+                  "impact_on_b_ko": "공동의 노후 비전 설계 및 상호 지지"
+                },
+                "tension_level": "low"
+              },
+              "reframing": {
+                "protected_meaning": "각자의 꿈과 커리어를 존중하되 나란히 발맞추어 걷는 건강한 평행선 동반자로 오랜 시간 함께합니다.",
+                "gift_to_cost_relationship": "시간이 흐를수록 단순한 부부를 넘어 인생이라는 위대한 여정을 함께 완주하는 소울메이트 확인",
+                "prohibited_generic_interpretations": [
+                  "비견이 있으면 반드시 배우자와 싸운다",
+                  "무조건 이혼수다",
+                  "위선자"
+                ],
+                "allowed_themes": [
+                  "소울메이트",
+                  "평생의 지향점",
+                  "10년 로드맵",
+                  "원팀 양육",
+                  "아이 앞 한목소리",
+                  "자율 존중"
+                ]
+              },
+              "action": {
+                "prescription_id": "partner_longterm_vision_action",
+                "prescription_keys": [
+                  "partner_longterm_vision",
+                  "partner_parenting_alignment"
+                ],
+                "script_assets": [
+                  {
+                    "title": "Alex와(과) Jordan의 서로의 개별 꿈을 나란히 응원하는 평행선 동행",
+                    "script_template_id": "partner_vision_dynamic_recalibration",
+                    "category": "partner"
+                  }
+                ],
+                "role_rules": [
+                  "co_governance_alliance"
+                ],
+                "behavioral_assets": [
+                  "소울메이트",
+                  "평생의 지향점",
+                  "10년 로드맵",
+                  "원팀 양육",
+                  "아이 앞 한목소리",
+                  "자율 존중"
+                ]
+              }
+            }
+          }
+        ],
+        "grounding_summary": {
+          "total_scenes": 7,
+          "high_confidence_count": 7,
+          "abstaining_count": 0,
+          "dominant_element_dynamic": "금(金)이(가) 수(水)을(를) 살림(상생)"
+        },
+        "evidence_boundary": {
+          "allowed_synthesis_bullet_points": [
+            "핵심 가치관 일치",
+            "상호 성장",
+            "안전기지",
+            "주말 50:50",
+            "페이스메이커",
+            "에너지 충전",
+            "CFO 총괄",
+            "월간 결산",
+            "비상금 한도",
+            "구역 책임제",
+            "기준치 조율",
+            "가전 적극 활용",
+            "동굴 시간",
+            "무언의 충전",
+            "물리적 공간 분리",
+            "이불 분리",
+            "수면 온도 조절",
+            "취침 전 루틴",
+            "쿠션어",
+            "타임아웃",
+            "비난 필터링",
+            "난세의 동반자",
+            "철벽 방패",
+            "정서적 안전판",
+            "소울메이트",
+            "평생의 지향점",
+            "10년 로드맵",
+            "원팀 양육",
+            "아이 앞 한목소리",
+            "자율 존중"
+          ],
+          "strict_prohibitions": [
+            "비견이 있으면 반드시 배우자와 싸운다",
+            "무조건 이혼수다",
+            "게으르고 무책임하다",
+            "구두쇠",
+            "위선자",
+            "의처증/의부증",
+            "정신적 결함",
+            "남편/아내를 잡아먹는다",
+            "상관견관 백호살 극단론",
+            "가정폭력 사주",
+            "배우자 살",
+            "마마보이/마마걸"
+          ]
+        }
+      }
+    },
     "narrative": {
       "schema_version": "domain_7_scene_narrative_v1",
       "domain": "partner",

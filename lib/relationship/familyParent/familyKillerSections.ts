@@ -44,23 +44,28 @@ function getCalendarYearBranch(calendarYear: number): string {
 
 const GENIUS_TITLES: Record<Locale, Record<string, string>> = {
   "en-US": {
-    wood: "🌿 Free-Spirited Explorer Genius",
-    fire: "🔥 Idea-Sparking Genius",
-    earth: "🧸 Steady Comfort Genius",
-    metal: "💎 Clear-Standards Genius",
-    water: "🌊 Deeply Empathetic Genius",
+    wood: "Free-Spirited Explorer Genius",
+    fire: "Idea-Sparking Genius",
+    earth: "Steady Comfort Genius",
+    metal: "Clear-Standards Genius",
+    water: "Deeply Empathetic Genius",
   },
   "ko-KR": {
-    wood: "🌿 자유로운 탐험가형 천재",
-    fire: "🔥 아이디어 폭발형 천재",
-    earth: "🧸 든든한 안정감 천재",
-    metal: "💎 명확한 기준형 천재",
-    water: "🌊 깊은 공감형 천재",
+    wood: "자유로운 탐험가형 천재",
+    fire: "아이디어 폭발형 천재",
+    earth: "든든한 안정감 천재",
+    metal: "명확한 기준형 천재",
+    water: "깊은 공감형 천재",
   },
 };
 
+/** UI 아이콘 매핑용 — 오행 키를 그대로 노출(값 자체는 화면에 안 씀). */
+export type GeniusArchetype = "wood" | "fire" | "earth" | "metal" | "water";
+
 export type ChildDnaSection = {
   genius_title: string;
+  /** UI 아이콘 매핑용(Lucide) — 이모지 대신 렌더러에서 아이콘으로 변환. */
+  genius_archetype: GeniusArchetype;
   communication_style: string;
   hidden_sensitivity: string;
   attention_focus_style: string;
@@ -382,6 +387,7 @@ export function buildFamilyKillerSections(params: {
   return {
     section_child_dna: {
       genius_title: sanitizeFamilyParentText(geniusTitle),
+      genius_archetype: (childSig.dominantArchetype as GeniusArchetype | undefined) ?? "earth",
       communication_style: sanitizeFamilyParentText(
         commMap[childSig.communicationStyle] ?? commMap.steady!,
       ),

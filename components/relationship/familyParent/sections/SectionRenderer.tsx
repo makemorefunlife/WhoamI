@@ -11,6 +11,21 @@
  */
 import type { ReactNode } from "react";
 import {
+  MessageCircle,
+  ShieldCheck,
+  Sprout,
+  Flame,
+  Mountain,
+  Gem,
+  Waves,
+  Wrench,
+  HeartHandshake,
+  CloudRain,
+  Compass,
+  Sparkles,
+  PawPrint,
+} from "lucide-react";
+import {
   RelationshipReportLayout,
   RelationshipReportCard,
   RelationshipReportBody,
@@ -45,6 +60,25 @@ import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("family").accent;
+
+/** 하드코딩 이모지 대신 — 오행 아키타입 → Lucide 아이콘. */
+const GENIUS_ICON: Record<ChildDnaSection["geniusArchetype"], typeof Sprout> = {
+  wood: Sprout,
+  fire: Flame,
+  earth: Mountain,
+  metal: Gem,
+  water: Waves,
+};
+
+/** 하드코딩 이모지 대신 — 6대 심리 역할 → Lucide 아이콘. */
+const ROLE_ICON: Record<FamilyRoleSection["childRole"], typeof Wrench> = {
+  fixer: Wrench,
+  mediator: HeartHandshake,
+  martyr: CloudRain,
+  independent: Compass,
+  emotional_dump: Sparkles,
+  puppy: PawPrint,
+};
 
 const DE_VARIANT: Record<string, "warning" | "success" | "default"> = {
   red: "warning",
@@ -204,6 +238,7 @@ function PsychRadarCard({ section, names }: { section: PsychRadarSection; names:
 
 function ChildDnaCard({ section }: { section: ChildDnaSection }) {
   const t = useMessages().relationshipDrilldown.family;
+  const GeniusIcon = GENIUS_ICON[section.geniusArchetype] ?? Sparkles;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
@@ -213,7 +248,15 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
           </p>
           <p className="mt-1 text-sm text-white/55">{t.dnaLayerHint}</p>
         </div>
-        <p className="text-lg font-semibold text-white/92">{section.geniusTitle}</p>
+        <p className="flex items-center gap-2 text-lg font-semibold text-white/92">
+          <span
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}
+          >
+            <GeniusIcon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          </span>
+          {section.geniusTitle}
+        </p>
         <div className="mt-4 space-y-4">
           <div>
             <RelationshipReportLabel>{t.dnaCommunicationLabel}</RelationshipReportLabel>
@@ -295,10 +338,19 @@ function GrowthTunnelCard({ section }: { section: GrowthTunnelSection }) {
 
 function FamilyRoleCard({ section }: { section: FamilyRoleSection }) {
   const t = useMessages().relationshipDrilldown.family;
+  const RoleIcon = ROLE_ICON[section.childRole] ?? Sparkles;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
-        <p className="text-lg font-semibold text-white/92">{section.roleLabel}</p>
+        <p className="flex items-center gap-2 text-lg font-semibold text-white/92">
+          <span
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}
+          >
+            <RoleIcon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          </span>
+          {section.roleLabel}
+        </p>
         <RelationshipReportInset>
           <RelationshipReportLabel>{t.familyRoleDescriptionLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
@@ -400,8 +452,9 @@ function SosScriptCard({ section }: { section: SosScriptSection }) {
       <RelationshipReportBody>
         <RelationshipReportLabel>{section.triggerLabel}</RelationshipReportLabel>
         <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-          <RelationshipReportParagraph className="italic text-emerald-100/85">
-            💬 {section.sosLine}
+          <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-100/85">
+            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" strokeWidth={1.75} aria-hidden />
+            {section.sosLine}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
       </RelationshipReportBody>
@@ -439,14 +492,16 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
             <RelationshipReportParagraph className="mt-1.5">{card.avoid_actions}</RelationshipReportParagraph>
           </div>
           <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-            <RelationshipReportParagraph className="italic text-emerald-100/85">
-              💬 {card.solution_script}
+            <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-100/85">
+              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" strokeWidth={1.75} aria-hidden />
+              {card.solution_script}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
           {card.boundary_script ? (
             <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
-              <RelationshipReportParagraph className="italic text-sky-100/85">
-                💬 {card.boundary_script}
+              <RelationshipReportParagraph className="flex items-start gap-2 italic text-sky-100/85">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" strokeWidth={1.75} aria-hidden />
+                {card.boundary_script}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
           ) : null}

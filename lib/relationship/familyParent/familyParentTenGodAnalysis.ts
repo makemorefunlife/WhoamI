@@ -85,7 +85,7 @@ function buildMotherProfile(
 
   return {
     role: "mother",
-    label: "🌸 Gentle Parenting · Mom",
+    label: "Gentle Parenting · Mom",
     care_style: sanitizeFamilyParentText(
       sealFocus
         ? `${childNickname}의 정서적 안식처 역할을 자연스럽게 하려는 엄마예요. 걱정·챙김·기억으로 사랑을 표현하기 쉽습니다.`
@@ -130,7 +130,7 @@ function buildFatherProfile(
 
   return {
     role: "father",
-    label: "🛡️ Gentle Parenting · Dad",
+    label: "Gentle Parenting · Dad",
     care_style: sanitizeFamilyParentText(
       wealthFocus
         ? `${childNickname}에게 현실적인 도구·기회·방향을 주려는 아빠예요. '어떻게 해낼지'를 함께 고민해 주는 타입입니다.`
@@ -161,14 +161,14 @@ function buildChildProfile(
   return {
     label: sanitizeFamilyParentText(
       sig?.dominantArchetype === "fire"
-        ? "🔥 에너지 넘치는 크리에이터"
+        ? "에너지 넘치는 크리에이터"
         : sig?.dominantArchetype === "water"
-          ? "🌊 깊은 공감형 드리머"
+          ? "깊은 공감형 드리머"
           : sig?.dominantArchetype === "metal"
-            ? "💎 기준이 분명한 리더"
+            ? "기준이 분명한 리더"
             : sig?.dominantArchetype === "wood"
-              ? "🌿 자유로운 탐험가"
-              : "🧸 든든한 온기형",
+              ? "자유로운 탐험가"
+              : "든든한 온기형",
     ),
     attachment_need: sanitizeFamilyParentText(
       child.self >= 2

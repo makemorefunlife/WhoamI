@@ -3,8 +3,8 @@
   "caseId": "weak",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "약 호환",
-    "label_en": "Weak compatibility",
+    "label_ko": "주의점이 많은 테스트 사례",
+    "label_en": "High Caution Test Case",
     "birth": {
       "birthA": "1985-01-10",
       "birthB": "1999-12-28",

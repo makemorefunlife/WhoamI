@@ -44,20 +44,20 @@ export function resolveFamilyPsychRole(axes: SecondaryAxesScores): FamilyPsychRo
 
 const ROLE_LABEL: Record<Locale, Record<FamilyPsychRole, string>> = {
   "en-US": {
-    fixer: "🧩 The Fixer",
-    mediator: "🕊️ The Mediator",
-    martyr: "🌧️ The Quiet Giver",
-    independent: "🧭 The Independent One",
-    emotional_dump: "🎈 The Emotional Sponge",
-    puppy: "🐶 The Mood-Lifter",
+    fixer: "The Fixer",
+    mediator: "The Mediator",
+    martyr: "The Quiet Giver",
+    independent: "The Independent One",
+    emotional_dump: "The Emotional Sponge",
+    puppy: "The Mood-Lifter",
   },
   "ko-KR": {
-    fixer: "🧩 문제 해결사",
-    mediator: "🕊️ 중재자",
-    martyr: "🌧️ 조용히 참는 아이",
-    independent: "🧭 독립자",
-    emotional_dump: "🎈 감정을 받아주는 아이",
-    puppy: "🐶 분위기 메이커 강아지",
+    fixer: "문제 해결사",
+    mediator: "중재자",
+    martyr: "조용히 참는 아이",
+    independent: "독립자",
+    emotional_dump: "감정을 받아주는 아이",
+    puppy: "분위기 메이커 강아지",
   },
 };
 

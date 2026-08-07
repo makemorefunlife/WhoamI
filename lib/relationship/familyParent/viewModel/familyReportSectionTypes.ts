@@ -23,6 +23,7 @@ import type { ChildDeEscalationCard } from "@/lib/relationship/familyParent/chil
 import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescriptionUiTypes";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyPsychRole } from "@/lib/relationship/familyParent/familyPsychRoles";
+import type { GeniusArchetype } from "@/lib/relationship/familyParent/familyKillerSections";
 import type { FilialFrequencyType } from "@/lib/relationship/familyParent/familyFilialFrequency";
 import type { DeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 
@@ -84,6 +85,7 @@ export type PsychRadarSection = BaseSection & {
 export type ChildDnaSection = BaseSection & {
   type: "child_dna";
   geniusTitle: string;
+  geniusArchetype: GeniusArchetype;
   communicationStyle: string;
   hiddenSensitivity: string;
   attentionFocusStyle: string;

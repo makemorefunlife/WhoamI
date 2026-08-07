@@ -27,6 +27,17 @@ import {
 } from "./marriageOperatingCfoCanonical";
 import { buildPartnerMentalLoadNote } from "@/lib/relationship/enrichment/partnerMentalLoadNote";
 import {
+  buildDecisionMakingLine,
+  buildCrisisRoleLine,
+  buildDrainPatternLine,
+} from "@/lib/relationship/enrichment/marriageSajuGapInsights";
+import {
+  buildSpaceVsTogetherClauses,
+  buildCareerBalanceLine,
+  buildHouseholdPmLine,
+  buildLongTermSynergyLine,
+} from "@/lib/relationship/enrichment/marriagePsychGapInsights";
+import {
   buildMarriageComparisonTableCanonical,
   buildMarriageComparisonTableClientProjection,
   comparisonTableValueFromResolver,
@@ -185,8 +196,104 @@ export function buildMarriageReport(params: {
     locale,
   });
 
+  // ---- 부부·동거 8개 갭 항목 — 데이터 원천 분리 원칙(사용자 지정) ----
+  // 사주 Pair CE만: 1(주도권), 2(위기 대응 역할), 3(소진 패턴/마찰)
+  // 11축 psych만: 4(Mental Load, 이미 구현됨), 5(개인공간 vs 함께시간),
+  //               6(커리어 인정욕구), 7(가정의 PM), 8(장기 시너지)
+  // 새 카드 없이 기존 필드에 append — join(...)은 falsy를 건너뛴다.
+  const join = (...parts: Array<string | null | undefined>) =>
+    parts.filter((p): p is string => Boolean(p && p.trim())).join(" ");
+
+  const decisionMakingLine = buildDecisionMakingLine({
+    countsA: ctx.tenGod.countsA,
+    countsB: ctx.tenGod.countsB,
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    locale,
+  });
+  const crisisRoleLine = buildCrisisRoleLine({
+    countsA: ctx.tenGod.countsA,
+    countsB: ctx.tenGod.countsB,
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    locale,
+  });
+  const drainPatternLine = buildDrainPatternLine({
+    sig: ctx.marriagePairAnalysis.scoringSignals,
+    locale,
+  });
+  const spaceVsTogether = buildSpaceVsTogetherClauses({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA: params.nicknameA,
+    nameB: params.nicknameB,
+    locale,
+  });
+  const careerBalanceLine = buildCareerBalanceLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA: params.nicknameA,
+    nameB: params.nicknameB,
+    locale,
+  });
+  const householdPmLine = buildHouseholdPmLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA: params.nicknameA,
+    nameB: params.nicknameB,
+    locale,
+  });
+  const longTermSynergyLine = buildLongTermSynergyLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA: params.nicknameA,
+    nameB: params.nicknameB,
+    locale,
+  });
+
   const household: HouseholdPartnershipReport = {
     ...baseHousehold,
+    // 항목 8 — 장기 시너지, pair 단위 문장이라 why_us 한 곳에만.
+    section_origin_story: {
+      ...baseHousehold.section_origin_story,
+      why_us: join(baseHousehold.section_origin_story.why_us, longTermSynergyLine),
+    },
+    // 항목 5 — 개인 공간 vs 함께하는 시간, 사람별로 다른 절이라 양쪽에 각각.
+    section_privacy: {
+      person_a_private_line: join(
+        baseHousehold.section_privacy.person_a_private_line,
+        spaceVsTogether?.clauseA,
+      ),
+      person_b_private_line: join(
+        baseHousehold.section_privacy.person_b_private_line,
+        spaceVsTogether?.clauseB,
+      ),
+    },
+    // 항목 2(위기 대응, saju) + 항목 6(커리어 인정욕구, psych) — 둘 다 pair
+    // 단위 문장이라 겹치지 않게 A/B 한쪽씩만.
+    section_upset: {
+      person_a: {
+        ...baseHousehold.section_upset.person_a,
+        upset_signals: join(baseHousehold.section_upset.person_a.upset_signals, crisisRoleLine),
+      },
+      person_b: {
+        ...baseHousehold.section_upset.person_b,
+        upset_signals: join(baseHousehold.section_upset.person_b.upset_signals, careerBalanceLine),
+      },
+    },
+    // 항목 7 — 가정의 PM, 명절·여행 등 대소사 총괄이라 원가족 경계선 섹션에.
+    section_family_boundary: {
+      ...baseHousehold.section_family_boundary,
+      inlaw_stress_summary: join(
+        baseHousehold.section_family_boundary.inlaw_stress_summary,
+        householdPmLine,
+      ),
+    },
+    // 항목 3 — 소진 패턴/마찰, 이미 단일 필드(conflict_trigger)라 그대로 append.
+    section_warning: {
+      ...baseHousehold.section_warning,
+      conflict_trigger: join(baseHousehold.section_warning.conflict_trigger, drainPatternLine),
+    },
     section_compare_table: buildMarriageSajuCompareTable({
       nicknameA: params.nicknameA,
       nicknameB: params.nicknameB,
@@ -204,6 +311,8 @@ export function buildMarriageReport(params: {
       ...baseMoney,
       cfo_nickname: cfoFinal.nickname,
       cfo_reason: cfoFinal.reason,
+      // 항목 1 — 큰 결정을 함께 만들어가는 방식(주도권), 이미 단일 필드라 append.
+      chores_guideline: join(baseMoney.chores_guideline, decisionMakingLine),
       cfo_axis_note: resolveCfoAxisNote(
         psychBundle?.psych_match ?? null,
         cfoFinal.nickname === params.nicknameA,

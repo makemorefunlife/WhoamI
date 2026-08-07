@@ -7,6 +7,7 @@
  * `useMessages().relationshipDrilldown.cohabitation`에서 가져온다.
  */
 import type { ReactNode } from "react";
+import { User, MessageCircle, Sun, Cloud, CloudLightning } from "lucide-react";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -41,6 +42,25 @@ import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("cohabitation").accent;
+
+/** 하드코딩 이모지 대신 — 3년 날씨 레벨 → Lucide 아이콘 + 테마 컬러. */
+const WEATHER_ICON: Record<string, { Icon: typeof Sun; className: string }> = {
+  sunny: { Icon: Sun, className: "text-emerald-300" },
+  cloudy: { Icon: Cloud, className: "text-amber-400" },
+  storm: { Icon: CloudLightning, className: "text-rose-500" },
+};
+
+/** 사람 이름 앞에 붙는 원형 아이콘 뱃지 — 👤 대체. */
+function PersonBadge() {
+  return (
+    <span
+      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+      style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}
+    >
+      <User className="h-3 w-3" strokeWidth={2} aria-hidden />
+    </span>
+  );
+}
 
 // ---- Part 구분선 --------------------------------------------------------------
 
@@ -236,7 +256,7 @@ function BedroomCard({ section }: { section: BedroomSection }) {
       <RelationshipReportBody className="mt-3 grid gap-4 sm:grid-cols-2">
         {people.map((person) => (
           <RelationshipReportInset key={person.nickname}>
-            <p className="text-sm font-bold text-white/92">👤 {person.nickname}</p>
+            <p className="flex items-center gap-1.5 text-sm font-bold text-white/92"><PersonBadge /> {person.nickname}</p>
             <div className="mt-3 space-y-2.5">
               <div>
                 <RelationshipReportLabel>{t.bedroomStaminaLabel}</RelationshipReportLabel>
@@ -303,7 +323,7 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
       <RelationshipReportBody className="grid gap-4 sm:grid-cols-2">
         {people.map(({ label, person }) => (
           <RelationshipReportInset key={label}>
-            <p className="text-sm font-bold text-white/92">👤 {person.nickname}</p>
+            <p className="flex items-center gap-1.5 text-sm font-bold text-white/92"><PersonBadge /> {person.nickname}</p>
             <p className="mt-2 text-base font-semibold" style={{ color: ACCENT }}>
               {person.lifestyle_title}
             </p>
@@ -390,16 +410,21 @@ function WeatherForecastCard({ section }: { section: WeatherForecastSection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportParagraph>{section.forecast.summary_line}</RelationshipReportParagraph>
       <ul className="mt-4 space-y-3">
-        {section.forecast.years.map((y) => (
+        {section.forecast.years.map((y) => {
+          const weather = WEATHER_ICON[y.level] ?? WEATHER_ICON.cloudy!;
+          const WeatherIcon = weather.Icon;
+          return (
           <li key={y.year} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-            <p className="text-sm font-semibold text-white/92">
-              {y.icon} {y.year_label} — {y.weather_label}
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-white/92">
+              <WeatherIcon className={`h-4 w-4 ${weather.className}`} strokeWidth={1.75} aria-hidden />
+              {y.year_label} — {y.weather_label}
             </p>
             {y.advisory ? (
               <RelationshipReportParagraph className="mt-1.5 text-white/78">{y.advisory}</RelationshipReportParagraph>
             ) : null}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </RelationshipReportCard>
   );
@@ -486,10 +511,10 @@ function WarningCard({ section }: { section: WarningSection }) {
         </div>
         <RelationshipReportInset className="mt-2 border-emerald-400/20 bg-emerald-950/10">
           <RelationshipReportParagraph className="italic text-emerald-100/85">
-            💬 {section.deEscalation.person_a.solution_script}
+            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-emerald-300" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_a.solution_script}
           </RelationshipReportParagraph>
           <RelationshipReportParagraph className="mt-2 italic text-emerald-100/85">
-            💬 {section.deEscalation.person_b.solution_script}
+            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-emerald-300" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_b.solution_script}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <div>

@@ -3,8 +3,8 @@
   "caseId": "reversed_ab",
   "locale": "ko-KR",
   "case_meta": {
-    "label_ko": "A/B 반전",
-    "label_en": "Reversed A/B",
+    "label_ko": "A/B 방향 반전 검증",
+    "label_en": "A/B Direction Reversal Test Case",
     "birth": {
       "birthA": "1992-03-08",
       "birthB": "1990-05-15",
