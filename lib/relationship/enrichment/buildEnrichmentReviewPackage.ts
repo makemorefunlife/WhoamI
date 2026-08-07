@@ -17,6 +17,7 @@ import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
 import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFriendReportEnriched";
 import { buildFriendReportViewModel } from "@/lib/relationship/friend/viewModel/buildFriendReportViewModel";
 import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import { buildWorkColleagueReportEnriched } from "@/lib/relationship/enrichment/buildWorkColleagueReportEnriched";
 import { buildWorkReportViewModel } from "@/lib/relationship/workColleague/viewModel/buildWorkReportViewModel";
 import { buildFamilyParentReport } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import { buildFamilyReportViewModel } from "@/lib/relationship/familyParent/viewModel/buildFamilyReportViewModel";
@@ -327,6 +328,20 @@ export function buildEnrichmentReviewPackage(params: {
       locale,
     });
     vmSections = vm.sections.map((s) => ({
+      id: s.id,
+      type: s.type,
+      title: "title" in s ? String((s as { title?: string }).title ?? "") : undefined,
+    }));
+
+    const rEnriched = buildWorkColleagueReportEnriched(common);
+    enrichedReport = rEnriched as unknown as Record<string, unknown>;
+    const vmEnriched = buildWorkReportViewModel(rEnriched, {
+      viewerIsReportA: true,
+      myName: birth.nicknameA,
+      partnerName: birth.nicknameB,
+      locale,
+    });
+    enrichedVmSections = vmEnriched.sections.map((s) => ({
       id: s.id,
       type: s.type,
       title: "title" in s ? String((s as { title?: string }).title ?? "") : undefined,

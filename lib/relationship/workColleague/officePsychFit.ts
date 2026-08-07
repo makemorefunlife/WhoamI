@@ -3,6 +3,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { CrossChartHit } from "@/lib/saju/pairChartAnalysis";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
+import { topicParticle, withParticle } from "@/lib/relationship/koreanParticles";
 import { resolveWorkCategory, sanitizeOfficeText } from "./officeLanguage";
 import type { LeadershipRoleSplit } from "./officeLanguage";
 import type { TenGodCategory } from "./tenGodComplement";
@@ -83,12 +84,12 @@ export function resolveReportingStyleFit(
       ? pick(
           locale,
           `${nicknameA} and ${nicknameB} share the same update style — ${STYLE_LABEL[locale][styleA]}. In standups, Slack/Teams handoffs, or async notes, matching that format keeps reviews short.`,
-          `${nicknameA}와 ${nicknameB} 둘 다 공유·보고 스타일이 비슷해요 — ${STYLE_LABEL[locale][styleA]}. 회의나 메신저로 전달할 때도 그 포맷을 맞추면 덜 어긋나요.`,
+          `${withParticle(nicknameA)} ${nicknameB} 둘 다 공유·보고 스타일이 비슷해요 — ${STYLE_LABEL[locale][styleA]}. 회의나 메신저로 전달할 때도 그 포맷을 맞추면 덜 어긋나요.`,
         )
       : pick(
           locale,
           `${nicknameA} ${STYLE_LABEL[locale][styleA]}, while ${nicknameB} ${STYLE_LABEL[locale][styleB]} — match the format to whoever you're updating, not to a fixed hierarchy.`,
-          `${nicknameA}는 ${STYLE_LABEL[locale][styleA]} 편이고, ${nicknameB}는 ${STYLE_LABEL[locale][styleB]} 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.`,
+          `${topicParticle(nicknameA)} ${STYLE_LABEL[locale][styleA]} 편이고, ${topicParticle(nicknameB)} ${STYLE_LABEL[locale][styleB]} 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.`,
         );
 
   return {
@@ -171,7 +172,7 @@ export function resolveBreakBoundaryFit(
     person_a: { nickname: nicknameA, style: styleA },
     person_b: { nickname: nicknameB, style: styleB },
     summary: sanitizeOfficeText(
-      `${pick(locale, `${nicknameA} ${STYLE_LABEL[locale][styleA]}, ${nicknameB} ${STYLE_LABEL[locale][styleB]}.`, `${nicknameA}는 ${STYLE_LABEL[locale][styleA]}이고, ${nicknameB}는 ${STYLE_LABEL[locale][styleB]}이에요.`)} ${pairNote}`,
+      `${pick(locale, `${nicknameA} ${STYLE_LABEL[locale][styleA]}, ${nicknameB} ${STYLE_LABEL[locale][styleB]}.`, `${topicParticle(nicknameA)} ${STYLE_LABEL[locale][styleA]}이고, ${topicParticle(nicknameB)} ${STYLE_LABEL[locale][styleB]}이에요.`)} ${pairNote}`,
     ),
   };
 }
@@ -387,7 +388,7 @@ function buildLeadershipSummary(
     const base = pick(
       locale,
       `${nicknameA} and ${nicknameB} are evenly matched on presenting vs. reviewing — decide case by case rather than fixing roles.`,
-      `${nicknameA}와 ${nicknameB}는 대외 발표·실무 검수 성향이 비슷해요. 역할을 고정하기보다 상황에 따라 나누는 게 좋아요.`,
+      `${withParticle(nicknameA)} ${topicParticle(nicknameB)} 대외 발표·실무 검수 성향이 비슷해요. 역할을 고정하기보다 상황에 따라 나누는 게 좋아요.`,
     );
     if (!soft) return sanitizeOfficeText(base);
     return sanitizeOfficeText(
@@ -404,7 +405,7 @@ function buildLeadershipSummary(
   const base = pick(
     locale,
     `${externalName} fits presenting and reporting externally, while ${internalName} is stronger at internal review and quality control — split it officially instead of both trying to do everything.`,
-    `${externalName}는 대외 발표·리포팅 쪽이 잘 맞고, ${internalName}는 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
+    `${topicParticle(externalName)} 대외 발표·리포팅 쪽이 잘 맞고, ${topicParticle(internalName)} 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
   );
   if (!soft) return sanitizeOfficeText(base);
   return sanitizeOfficeText(

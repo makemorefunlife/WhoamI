@@ -3,7 +3,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SajuMasterJson } from "@/lib/personCore/types/sajuMaster";
 import { buildPairDomainSignalsFromMasters } from "@/lib/personCore/sajuSignals/pairDomainSignals";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import { buildWorkColleagueReport } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import { buildWorkColleagueReportEnriched } from "@/lib/relationship/enrichment/buildWorkColleagueReportEnriched";
 import type { SajuChartProvenance } from "@/lib/saju/loadSajuBundleFromReport";
 import type { Locale } from "@/lib/i18n/locale";
 import { attachBusinessSajuDeepOverlay } from "@/lib/prompts/relationshipPremium/businessSajuDeep";
@@ -68,7 +68,7 @@ export async function runWorkColleagueDeepAnalysis(
   const workSignalsA = params.sajuMasterA?.domain_signals.work_signals;
   const workSignalsB = params.sajuMasterB?.domain_signals.work_signals;
 
-  let report = buildWorkColleagueReport({
+  let report = buildWorkColleagueReportEnriched({
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     sajuJsonA: params.sajuJsonA,

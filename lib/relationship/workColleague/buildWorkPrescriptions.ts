@@ -1,5 +1,6 @@
 import type { PairWorkSignals } from "@/lib/personCore/sajuSignals/pairTypes";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
+import { subjectParticle, topicParticle, withParticle } from "@/lib/relationship/koreanParticles";
 import type { Locale } from "@/lib/i18n/locale";
 import {
   WORK_PRESCRIPTION_VERSION,
@@ -18,14 +19,14 @@ function micromanagingSummary(
     return pick(
       locale,
       `${nicknameA}'s drive overlaps with ${nicknameB}'s strong sense of ownership, so if ${nicknameA} pushes one-sidedly with "do it this way," ${nicknameB} tends to go passive or push back. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
-      `${nicknameA}의 추진력(식상)이 ${nicknameB}의 업무 주체성(비겁) 영역과 겹쳐, ${nicknameA}가 일방적으로 '이렇게 해'라고 밀어붙이면 ${nicknameB}는 수동적이거나 반발하기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
+      `${nicknameA}의 추진력(식상)이 ${nicknameB}의 업무 주체성(비겁) 영역과 겹쳐, ${subjectParticle(nicknameA)} 일방적으로 '이렇게 해'라고 밀어붙이면 ${topicParticle(nicknameB)} 수동적이거나 반발하기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
     );
   }
   if (notes.includes("b_food_high_vs_a_self_low")) {
     return pick(
       locale,
       `${nicknameB}'s drive overlaps with ${nicknameA}'s strong sense of ownership — the more detailed instructions ${nicknameB} gives, the more ${nicknameA} tends to lose energy or hold a grudge. Micromanaging-poison index ${pair.micromanaging_poison_index} (${pair.micromanaging_band}).`,
-      `${nicknameB}의 추진력이 ${nicknameA}의 주체성 영역과 겹쳐, ${nicknameB}가 세부 지시를 많이 할수록 ${nicknameA}는 에너지가 빠지거나 뒤끝이 남기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
+      `${nicknameB}의 추진력이 ${nicknameA}의 주체성 영역과 겹쳐, ${subjectParticle(nicknameB)} 세부 지시를 많이 할수록 ${topicParticle(nicknameA)} 에너지가 빠지거나 뒤끝이 남기 쉽습니다. 마이크로 매니징 피독점 지수 ${pair.micromanaging_poison_index}(${pair.micromanaging_band}).`,
     );
   }
   if (notes.includes("both_managerish")) {
@@ -125,7 +126,7 @@ function buildLeadershipPrescription(
     ? pick(
         locale,
         `Both ${nicknameA} and ${nicknameB} have a strong sense of ownership, so when opinions diverge, "who's right" fights tend to drag on. Leadership-conflict index ${pair.leadership_conflict_index} (${pair.leadership_conflict_band}).`,
-        `${nicknameA}와 ${nicknameB} 모두 주체성 밴드가 강해, 의견이 갈리면 '누가 맞는지' 싸움이 길어지기 쉽습니다. 주도권 충돌 지수 ${pair.leadership_conflict_index}(${pair.leadership_conflict_band}).`,
+        `${withParticle(nicknameA)} ${nicknameB} 모두 주체성 밴드가 강해, 의견이 갈리면 '누가 맞는지' 싸움이 길어지기 쉽습니다. 주도권 충돌 지수 ${pair.leadership_conflict_index}(${pair.leadership_conflict_band}).`,
       )
     : dualHighSelf
       ? pick(
@@ -170,7 +171,7 @@ function buildLeadershipPrescription(
       ],
       [
         "안건당 '결정자 1명'을 미리 지정 — 같은 안건에서 둘 다 최종 결정권을 쥐지 않기.",
-        `의견 충돌 시 '2분 각자 발언 → 1분 침묵 → 결정자 한 줄 선언' 프로토콜 — ${nicknameA}·${nicknameB}가 동시에 말 높이지 않게.`,
+        `의견 충돌 시 '2분 각자 발언 → 1분 침묵 → 결정자 한 줄 선언' 프로토콜 — ${nicknameA}·${subjectParticle(nicknameB)} 동시에 말 높이지 않게.`,
         "주도권이 갈리는 주제(일정·방향·외부 커뮤니케이션)는 주간 회의 안건 1번으로 고정 — 갑자기 채팅방에서 재판하지 않기.",
         "결정 후 24시간 '재논의 유예' 규칙 — 급하게 뒤집지 않고, 데이터가 바뀌면 다음 정기 미팅에서만 수정.",
       ],

@@ -6,6 +6,7 @@ import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import type { WorkStemCommunicationAnalysis } from "@/lib/saju/workPairAnalysis";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
+import { subjectParticle, topicParticle, withParticle } from "@/lib/relationship/koreanParticles";
 import type { TenGodCategory } from "./tenGodComplement";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 
@@ -880,7 +881,7 @@ export function buildPairIdealRoleCombo(
     pick(
       locale,
       `When working together, the team runs best if ${nicknameA} takes ${fitA.ideal_roles[0]} and ${nicknameB} takes ${fitB.ideal_roles[0]}. The ${fitA.ideal_departments[0]} × ${fitB.ideal_departments[0]} combination fits especially well.`,
-      `함께 일할 때는 ${nicknameA}가 ${fitA.ideal_roles[0]} 쪽, ${nicknameB}가 ${fitB.ideal_roles[0]} 쪽으로 역할을 나누면 팀이 가장 잘 돌아갑니다. ` +
+      `함께 일할 때는 ${subjectParticle(nicknameA)} ${fitA.ideal_roles[0]} 쪽, ${subjectParticle(nicknameB)} ${fitB.ideal_roles[0]} 쪽으로 역할을 나누면 팀이 가장 잘 돌아갑니다. ` +
         `${fitA.ideal_departments[0]} × ${fitB.ideal_departments[0]} 조합이 특히 잘 맞아요.`,
     ),
   );
@@ -927,7 +928,7 @@ export function resolveLeadershipRoleSplit(
         pick(
           locale,
           `${nicknameA} and ${nicknameB} are evenly matched on presenting vs. reviewing — decide case by case rather than fixing roles.`,
-          `${nicknameA}와 ${nicknameB}는 대외 발표·실무 검수 성향이 비슷해요. 역할을 고정하기보다 상황에 따라 나누는 게 좋아요.`,
+          `${withParticle(nicknameA)} ${topicParticle(nicknameB)} 대외 발표·실무 검수 성향이 비슷해요. 역할을 고정하기보다 상황에 따라 나누는 게 좋아요.`,
         ),
       ),
     };
@@ -945,7 +946,7 @@ export function resolveLeadershipRoleSplit(
       pick(
         locale,
         `${externalName} fits presenting and reporting externally, while ${internalName} is stronger at internal review and quality control — split it officially instead of both trying to do everything.`,
-        `${externalName}는 대외 발표·리포팅 쪽이 잘 맞고, ${internalName}는 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
+        `${topicParticle(externalName)} 대외 발표·리포팅 쪽이 잘 맞고, ${topicParticle(internalName)} 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
       ),
     ),
   };

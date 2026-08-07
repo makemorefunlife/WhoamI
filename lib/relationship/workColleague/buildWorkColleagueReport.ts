@@ -48,6 +48,7 @@ import {
   buildWorkContextOutput,
   type WorkContextOutput,
 } from "./workContextOutput";
+import type { SnapshotTopicNarrative } from "@/lib/relationship/romanticSnapshot/buildSnapshotNarrative";
 
 export type WorkColleagueReportBody = {
   headline: string;
@@ -67,6 +68,12 @@ export type WorkColleagueReportBody = {
     psych_lens?: DomainPsychLens | null;
     /** pair.work 교차 신호 기반 실행 처방전 */
     prescription_work?: WorkPrescriptionPack;
+    /**
+     * current_enriched 전용 — snapshot_panel.narrative.topics의 상황별 재라벨
+     * 사본(Part3 "함께 일할 때 반복되는 흐름" 전용). 새 계산 없음, 제목만 교체.
+     * production `buildWorkColleagueReport`는 이 필드를 채우지 않는다.
+     */
+    situational_relationship_topics?: SnapshotTopicNarrative[];
     /**
      * Round 2 — businessSajuDeep LLM explain overlay (optional).
      * Does not own classifications; CE projections remain SSOT.

@@ -751,6 +751,48 @@ Below are the exact 5 requirements where a `MERGE CURRENT + DEV` action was appr
 
 ---
 
+## 5. Final `current_enriched` Content Cleanup Pass (2026-08-07)
+
+> Scope: `current_enriched` only. Production `buildWorkColleagueReport()` classification
+> logic untouched. Friend/Family/Partner/main untouched. No new UI cards or sections.
+> Verified against a real production report (names "Sera"/"동글").
+
+### 5.1 Duplicates removed / consolidated
+
+| Duplicate | Where it showed twice | Fix |
+|---|---|---|
+| Hero one-liner | `headline` (H1) and `subtitle` rendered the exact same `one_line_definition` string | `subtitle` now shows `grade_reason` (fit/synergy/risk citation) instead of repeating the headline — [buildWorkReportViewModel.ts](../../lib/relationship/workColleague/viewModel/buildWorkReportViewModel.ts) `buildOpening()` |
+| Representative score vs ①②③ cards | Top 🔥🧩⚡ gauges and the 3 snapshot topic cards (`section_snapshot`) rendered the *identical* fit/synergy/risk numbers as bar charts a second time | `snapshot_panel.narrative.topics` cleared in `current_enriched` (legend + score definitions still show); original topic text preserved separately, relabeled to situational titles ("처음 같이 일할 때" / "장기 프로젝트에서" / "압박·갈등 상황일 때") and fed to Part 3's Loop instead — [buildWorkColleagueReportEnriched.ts](../../lib/relationship/enrichment/buildWorkColleagueReportEnriched.ts) |
+| Conflict trigger | Appeared in Part 3 ("함께 일할 때 반복되는 흐름" frictionLoop) *and* Part 4 (협업 안전장치) | Removed from `buildRelationshipLoopSection`'s frictionLoop — Part 4 Warning is now the sole home |
+| Weekly check-in prescription | `office_baseline` item rendered once as the "주간 체크인" card, then again inside the general Do/Don't list below it | `buildPrescriptionSection` now excludes `office_baseline` from `items` whenever it's already extracted as `weeklyCheckIn` |
+
+### 5.2 Correctness bugs fixed (found in the real "Sera"/"동글" report)
+
+- **역할 충돌 (weapons badge vs synergy sentence)**: when both people's ten-god profile is too thin for `buildMyWeapons()` to assign distinct weapons, it silently gives both people the *same* generic label ("협업·실행 / 팀 조율"). The synergy one-liner would then say "Sera는 방향, 동글는 실행" right next to two identical badges. Fix: `resolveDirectionExecutionSplit()` (new, [workSajuRoleInsights.ts](../../lib/relationship/enrichment/workSajuRoleInsights.ts)) is computed once and used for *both* the badges (`person_a/b.weapons`) and the sentence, so they always agree; the contradictory base sentence is replaced (not appended) when this fires.
+- **조사(particle) 오류 — "동글는 ... 편이에요"**: six hardcoded `는`/`가`/`와`/`이고` particles in `officePsychFit.ts`, `officeLanguage.ts`, `buildWorkPrescriptions.ts`, and `officeReportTemplate.ts` didn't check batchim, so any Korean name ending in a consonant (동글, 지민, etc.) rendered ungrammatically. Fixed in place using the shared [`koreanParticles.ts`](../../lib/relationship/koreanParticles.ts) helpers (`topicParticle`/`subjectParticle`/`withParticle`) — these are Work-domain-only files, not shared with other domains, so the fix was applied directly rather than patched around in `current_enriched`.
+- **등급 vs 대표 점수 모순**: `grade_reason` already cited the exact fit/synergy/risk numbers, but was never rendered anywhere — the grade badge looked like an unexplained letter. Relocated `grade_reason` into `opening.subtitle` (directly under the badge) instead of inventing new copy.
+
+### 5.3 Fixed-number prescriptions minimized
+
+`stripWorkUnsupportedFixedNumbers()` (current_enriched, exact-substring replacement — mirrors the Friend `stripUnsupportedFixedNumbers` pattern) removes flavor-only numbers with no computed basis from Part 5 do/dont lists: 금요일/월요일 → "정기적으로"/"다음 정기 미팅", 10분/15분/30분 → non-numeric phrasing, 24시간 재논의 유예 → 숫자 없는 원칙. `buildWorkPrescriptions.ts` (production) itself is untouched.
+
+### 5.4 Not changed in this pass
+
+- Full Part 1–5 content restructuring (compare-table rows into "축 차이 → 상황 → 마찰 → 조정" 4-clause format, Part 2's explicit A→B/B→A directional-gift rewrite, Part 5's 4-bucket "기본 원칙/지금 당장/피해야 할 것/합의할 것" reorganization) — scoped out as content-authoring work beyond dedup/bug-fix, consistent with "do not redesign UI yet."
+- Section 3's per-question STRONG/PARTIAL/WEAK/ABSENT audit was not produced as a formal table.
+- `businessSajuDeep` generic-AI-sentence quality (LLM overlay) was not investigated — out of scope for this rule-only cleanup pass.
+- `resolveFeedbackCushionScript` sameness: verified this already branches on strength/recognition per person — it only looks identical when both people genuinely land in the same branch (not a bug).
+
+### 5.5 Verification
+
+- `npx tsc --noEmit`: no new errors (baseline errors are all pre-existing, unrelated Friend/romantic/test-script issues).
+- `npm run build`: succeeds.
+- `DOMAIN=work` fixture corpus regenerated for all 8 cases × 2 locales (16/16 ok); shared `baseline/index.json` restored after the scoped run (known regen side-effect).
+- Direct synthetic verification ([tests/scripts/verify-work-final-cleanup.ts](../../tests/scripts/verify-work-final-cleanup.ts)) using the real problem names (동글/Sera) confirms the particle fix, weapons/synergy consistency, topic dedup, and prescription stripping all behave correctly in both locales.
+- Manually inspected `/dev/relationship-enrichment-review?domain=work&case=mixed&mode=current_enriched` in-browser — badges and sentence now agree, no duplicate score cards, conflict trigger appears once.
+
+---
+
 ### MERGE 5 — Requirement BR-WK-12: Burnout Defense & Long-Term Team Sustainability
 
 - **CURRENT Actual Copy:**

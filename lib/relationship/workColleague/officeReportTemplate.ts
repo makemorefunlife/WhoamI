@@ -17,6 +17,7 @@ import {
 } from "./officeLanguage";
 import { CATEGORY_OFFICE_LABEL } from "./tenGodComplement";
 import { pick } from "./workColleagueCopy";
+import { topicParticle } from "@/lib/relationship/koreanParticles";
 import type { Locale } from "@/lib/i18n/locale";
 import { buildWorkSajuCompareTable, type WorkCompareRow } from "./sajuCompareTable";
 import type {
@@ -282,7 +283,7 @@ function buildSynergyOneLiner(ctx: WorkColleagueContext): string {
       pick(
         ctx.locale,
         `You two have different business weapons. If ${ctx.nicknameA} takes ${buildMyWeapons(ctx, "a").join(" · ")} and ${ctx.nicknameB} takes ${buildMyWeapons(ctx, "b").join(" · ")}, the gears turn smoothly.`,
-        `두 사람은 서로 다른 비즈니스 무기를 갖고 있어요. ${ctx.nicknameA}는 ${buildMyWeapons(ctx, "a").join("·")} 쪽, ${ctx.nicknameB}는 ${buildMyWeapons(ctx, "b").join("·")} 쪽으로 나누면 톱니바퀴가 돌아갑니다.`,
+        `두 사람은 서로 다른 비즈니스 무기를 갖고 있어요. ${topicParticle(ctx.nicknameA)} ${buildMyWeapons(ctx, "a").join("·")} 쪽, ${topicParticle(ctx.nicknameB)} ${buildMyWeapons(ctx, "b").join("·")} 쪽으로 나누면 톱니바퀴가 돌아갑니다.`,
       ),
     );
   }

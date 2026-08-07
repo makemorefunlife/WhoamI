@@ -87,11 +87,19 @@ function buildOpening(
   names: [string, string],
 ): OpeningBlock {
   const snapshot = report.office?.section_snapshot;
+  const headline = report.headline || snapshot?.one_line_definition || report.one_line_definition;
+  const oneLine = snapshot?.one_line_definition ?? report.one_line_definition ?? "";
+  // 헤드라인과 완전히 같은 문장을 subtitle로 그대로 반복 노출하던 "Hero 문장
+  // 중복" 버그 — one_line_definition이 headline과 동일할 때는 그 자리에
+  // grade_reason(등급이 인용하는 실제 fit/synergy/risk 수치)을 보여줘 등급
+  // 배지 바로 아래에서 근거가 보이게 한다. 새 계산 없이 이미 존재하는
+  // meta.grade_reason을 재배치만 한다.
+  const gradeReason = report.meta?.grade_reason ?? "";
   return {
-    headline: report.headline || snapshot?.one_line_definition || report.one_line_definition,
-    subtitle: snapshot?.one_line_definition ?? report.one_line_definition ?? "",
+    headline,
+    subtitle: oneLine === headline ? gradeReason : oneLine,
     grade: report.meta?.grade ?? "",
-    gradeReason: report.meta?.grade_reason ?? "",
+    gradeReason,
     names,
   };
 }
@@ -311,23 +319,24 @@ function buildRelationshipLoopSection(
   report: WorkColleagueReportBody,
   titles: SectionTitleSet,
 ): WorkReportSection | null {
-  const topics = report.snapshot_panel?.narrative?.topics ?? [];
-  const conflictTrigger = report.office?.section_warning?.conflict_trigger;
-  if (topics.length === 0 && !conflictTrigger) return null;
+  // current_enriched가 채워둔 상황별 재라벨 사본을 우선 사용(제목만 다르고
+  // 내용은 동일한 topics) — 없으면(레거시/current) 원본 topics로 폴백.
+  const topics =
+    report.meta?.situational_relationship_topics ??
+    report.snapshot_panel?.narrative?.topics ??
+    [];
+  if (topics.length === 0) return null;
 
   const positiveLoop = topics
     .filter((t) => !t.isWarning)
     .map((t) => ({ title: t.title, body: t.interpretation }));
 
+  // 갈등 트리거(section_warning.conflict_trigger)는 Part4 "협업 안전장치"의
+  // 유일한 홈으로만 남긴다 — 여기서도 다시 밀어 넣으면 Part3/Part4에 같은
+  // 갈등 트리거 문장이 반복 노출된다(최종 클린업 지시 사항).
   const frictionLoop: Array<{ title: string; body: string }> = topics
     .filter((t) => t.isWarning)
     .map((t) => ({ title: t.title, body: t.interpretation }));
-  if (conflictTrigger) {
-    frictionLoop.push({
-      title: titles.conflictTrigger,
-      body: conflictTrigger,
-    });
-  }
 
   if (positiveLoop.length === 0 && frictionLoop.length === 0) return null;
 
@@ -407,14 +416,22 @@ function buildPrescriptionSection(
   const pack = report.meta?.prescription_work;
   if (!pack?.items?.length) return null;
 
+  const weeklyCheckIn = pack.items.find((item) => item.topic === "office_baseline");
+  // office_baseline이 별도 "주간 체크인" 카드로 위에서 한 번 보여지면, 아래
+  // 일반 처방 목록에 같은 항목이 그대로 또 나오는 Part5 운영 처방 중복이
+  // 생긴다 — weeklyCheckIn으로 뽑아낸 항목은 items에서 제외한다.
+  const items = weeklyCheckIn
+    ? pack.items.filter((item) => item.topic !== "office_baseline")
+    : pack.items;
+
   return {
     id: "prescription",
     type: "prescription",
     partNumber: 5,
     title: titles.prescription,
     introLine: pack.intro_line,
-    items: pack.items,
-    weeklyCheckIn: pack.items.find((item) => item.topic === "office_baseline"),
+    items,
+    weeklyCheckIn,
   };
 }
 
