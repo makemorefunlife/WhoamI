@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "sparse_psych",
   "locale": "en-US",
-  "generated_at": "2026-08-07T00:55:13.131Z",
+  "generated_at": "2026-08-07T01:25:59.969Z",
   "case_meta": {
     "label_ko": "설문 데이터 부족",
     "label_en": "Sparse Survey Data Test Case",
@@ -632,6 +632,7 @@
           "one_line_friendship": "An effortless bond that honors mutual individuality without forced expectations.",
           "vibe_axis_notes": null,
           "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. Both certified out-and-about types — braving the wait at a hot new spot or touring festivals and pop-up stores is the move. Alex's chart leans earth, the kind of energy that tends to stay guarded — but Jordan carries fire, and being around them thaws that out, bringing out a side that lets itself lean in and be a little needy. Around most people Alex keeps that in check — but around Jordan, it comes out with no filter.",
+          "shine_when_low": "This friendship gets hardest in moments that are hard to explain logically — a mood shift or a small comment lands harder than either of you expects. See the prescription below for what to do when this happens.",
           "score_card_audit": {
             "connection": {
               "measures": "How instinctively comfortable and drawn to each other you are — calculated from saju signals like a day-branch combine, the kind of 'click' that doesn't need an explanation.",
@@ -673,7 +674,7 @@
           "counseling_style_a": {
             "type": "F",
             "label": "Emotional healer",
-            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Alex when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed."
+            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Alex when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed. That said, Alex can offer this presence — it's not something they owe you every time. It's okay to also lean on someone else, or on yourself, sometimes."
           },
           "counseling_style_b": null,
           "counseling_gap_note": null

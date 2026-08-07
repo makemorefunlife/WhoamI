@@ -280,4 +280,56 @@
 
 ### 7.5 범위
 
-Work/Family/Partner/main 도메인 코드 및 production `current`(`buildFriendReport.ts`) 계산 로직은 무수정. 신규 로직은 전부 `lib/relationship/enrichment/`(current_enriched 전용) 및 friend 도메인 타입에 추가된 optional 필드로, `current`에서는 `undefined`로 남아 기존 프로덕션 출력에 영향 없음. 커밋은 진행하지 않음(사용자 요청).
+Work/Family/Partner/main 도메인 코드 및 production `current`(`buildFriendReport.ts`) 계산 로직은 무수정. 신규 로직은 전부 `lib/relationship/enrichment/`(current_enriched 전용) 및 friend 도메인 타입에 추가된 optional 필드로, `current`에서는 `undefined`로 남아 기존 프로덕션 출력에 영향 없음.
+
+**프로덕션 연결 (2026-08-07 추가):** `lib/prompts/relationshipPremium/friendSocial/index.ts`(실제 친구 리포트 생성 경로, `/api/relationship/analyze/premium`이 호출하는 유일한 지점)를 `buildFriendReport()` → `buildFriendReportEnriched()`로 교체. 새로 생성되는 리포트부터 본 문서의 모든 항목이 실제 반영됨. 이미 생성·캐시된 기존 리포트는 재분석해야 갱신됨.
+
+---
+
+## 8. 캐노니컬 질문 맵 & 3-Block 통합 (2026-08-07 3차 후속)
+
+`docs/product/05B_Friend_Product_Blueprint.md` §4A.1(캐노니컬 질문) 전수 대조 + 기존 current_enriched 커버리지를 합쳐 중복 제거 맵을 만들고, 신규 3개 질문(성장과 기대 Q2·Q3, Relationship Low)을 기존 섹션에만 배치했다. 새 카드 없음.
+
+### 8.1 캐노니컬 질문 맵 (중복 제거)
+
+| 클러스터 | 05B 질문(병합) | 1차 홈 | 비고 |
+|---|---|---|---|
+| C1 | 이 친구가 왜 중요한가 / 무엇을 주는가 / 어떤 역할인가 | Social DNA `guardian_character` | — |
+| C2 | 나는 이 친구에게 어떤 역할인가 | Social DNA `guardian_character_b` | — |
+| C3 | 힘들 때 이 친구를 찾는 이유 / 어떤 지지를 주는가 | Hidden Flow `counseling_style.description` | **확장**: 성장과 기대 Q2 절 추가 |
+| C4 | 왜 엇박자 도움을 줄 때가 있는가 | Hidden Flow `counseling_gap_note` | Law 9(설명이 조언보다 먼저) — Q3와 분리 유지 |
+| C5 | 대화 vs 공간 / 즉흥 vs 계획 / 감정 vs 해결 | 비교표(`upset_expression`,`hangout_planning`) | — |
+| C6 | 왜 더 장난스럽/용감/차분해지는가 / 어떤 활동이 맞는가 | Snapshot `shine_when_best` + Hidden Flow `travel_style` | — |
+| C7 | 서로에게서 무엇을 끌어내는가(성장) | Social DNA `guardian_character`(성장절) | Law 6 — 선물과 한 흐름 유지 |
+| C8 | 둘만 vs 모임 | Social DNA `battery_description`(주 홈) | **병합**: 비교표 `battery_recharge` 전체 문단 → 1줄 corroboration pointer로 축소 |
+| C9 | 서운함·당연시·질투 | Breakup Guide `jealousy_guard` | — |
+| C10 | 왜 한 사람만 연락 주도하는가(일상 리듬) | 비교표 `daily_share_tempo` | C12와 시간축이 달라 그대로 유지 |
+| C11 | 서로에게 무엇을 기대하지 말아야 하는가 | Prescription `dont_list` | 🔴 **신규**: 성장과 기대 Q3 |
+| C12 | 변화 속 우정 유지 / 거리에도 버티는가 | Soulmate `soulmate_verdict` | 장기 시야, C10과 구분 |
+| C13 | 언제 이 우정이 가장 빛나는가 | Snapshot `shine_when_best` | 05B §17 캐노니컬 |
+| C14 | 같은 강점이 언제 힘들어지는가(Relationship Low) | Snapshot — `shine_when_low`(신규 필드) | 🔴 **신규** |
+
+### 8.2 3-Block 통합 — Personal CE → Pair CE → Friend Lens → 사용자 의미
+
+| Block | 질문 | Personal CE | Pair CE | Friend Lens | 홈 |
+|---|---|---|---|---|---|
+| 성장과 기대 | 나를 어떤 사람으로 만들어주는가 | `decision_style`,`stimulation` | — | `buildGrowthDynamicLine`(기존) | Social DNA |
+| 성장과 기대 | 힘들 때 무엇까지 기대해도 되는가 | `thinking_style/empathy/resilience` + F/T | — | `buildWhyTurnToFriendLine`(기존)+`buildCapabilityBoundaryClause`(신규) | Hidden Flow |
+| 성장과 기대 | 무엇을 기대하면 실망하기 쉬운가 | `empathy` vs `thinking_style` 격차 | — | `buildExpectationResetLine`(신규) | Prescription Don't List |
+| 거리감·사회맥락 | 둘만 vs 모임 | `batteryMode`,`stimulation` | — | `deriveGroupVs1on1Insight`(주)+`duo_vs_group`(1줄 포인터로 축소) | Social DNA(주)/비교표(보조 포인터) |
+| 거리감·사회맥락 | 자주 연결 vs 오래 안 봐도 유지 | `yeomaCount`,`recognition`,`resilience` | — | `buildDistanceResilienceLine`(기존) | Soulmate |
+| Relationship High/Low | 언제 빛나는가 | 점수 밴드 | `scoringSignals`(bonding/energy) | 기존 | Snapshot |
+| Relationship High/Low | 언제 힘들어지는가 | `conflict_style` 격차 | `scoringSignals` friction군(`score_card_audit.risk.why`와 동일 신호 재사용) | `buildFriendshipStruggleLine`(신규, Law 10: 처방전으로 포인터) | Snapshot(`shine_when_low`, 기존 카드 안 2번째 문단) |
+
+### 8.3 구현
+
+- 신규 파일: `lib/relationship/enrichment/friendExpectationAndStruggle.ts` (`buildCapabilityBoundaryClause`, `buildExpectationResetLine`, `buildFriendshipStruggleLine`)
+- `friendKillerSections.ts`: `FriendshipSnapshotSection.shine_when_low?` 추가(optional, `current` 영향 없음)
+- 뷰모델·렌더러: `shineWhenLow`를 `shineWhenBest`와 동일 패턴으로 배선, **같은** Snapshot 카드 안에 "When this friendship struggles" 2번째 문단으로 렌더(새 카드 아님)
+- `buildFriendReportEnriched.ts`: 상담 스타일 description에 capability 절 추가, Prescription `friendship_baseline.dont_list`에 기대치 리셋 문장 추가(A/B 각각, 신호 있을 때만), `battery_recharge` 행 psych_note를 전체 문단 → 1줄 포인터로 축소, `shine_when_low` 계산 및 스냅샷에 설정
+
+### 8.4 테스트
+
+typecheck 신규 에러 0(기존 `section_play_money` pre-existing 에러만 남음) · `verify-friend-11axis-and-score-audit.ts`·`verify-friend-product-director-review.ts` 16/16 통과 · `npm run build` 성공 · `mixed`/`reversed_ab`/`psych_saju_conflict`/`psych_saju_agree`로 capability 절·기대치 리셋 문장(A/B 방향 분리 확인)·`shine_when_low`·`battery_recharge` 포인터 전수 확인 · `DOMAIN=friend` baseline 재생성(타 도메인 `index.json` 훼손분은 원복).
+
+범위: Work/Family/Partner/main 및 production `current` 계산 로직 무수정. 이번 라운드도 커밋 진행 여부는 별도 확인 필요.

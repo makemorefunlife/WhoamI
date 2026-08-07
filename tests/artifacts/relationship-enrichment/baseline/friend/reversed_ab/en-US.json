@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "reversed_ab",
   "locale": "en-US",
-  "generated_at": "2026-08-07T00:55:13.056Z",
+  "generated_at": "2026-08-07T01:25:59.861Z",
   "case_meta": {
     "label_ko": "A/B 방향 반전 검증",
     "label_en": "A/B Direction Reversal Test Case",
@@ -850,6 +850,7 @@
             "risk_note": null
           },
           "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. One's the outdoor type, one's the homebody — a hybrid plan that starts light outside during the day and ends back at a cozy home base at night. Jordan's chart leans water, the kind of energy that tends to stay guarded — but Alex carries metal, and being around them thaws that out, bringing out a softer, more vulnerable side that stops hiding what it feels. Around most people Jordan keeps that in check — but around Alex, it comes out with no filter.",
+          "shine_when_low": "This friendship gets hardest when one of you is running on empty and the other doesn't notice in time — the strain builds quietly before it's said out loud. See the prescription below for what to do when this happens.",
           "score_card_audit": {
             "connection": {
               "measures": "How instinctively comfortable and drawn to each other you are — calculated from saju signals like a day-branch combine, the kind of 'click' that doesn't need an explanation.",
@@ -891,12 +892,12 @@
           "counseling_style_a": {
             "type": "F",
             "label": "Emotional healer",
-            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Jordan when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed."
+            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Jordan when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed. That said, Jordan can offer this presence — it's not something they owe you every time. It's okay to also lean on someone else, or on yourself, sometimes."
           },
           "counseling_style_b": {
             "type": "F",
             "label": "Emotional healer",
-            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Alex when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed."
+            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Alex when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed. That said, Alex can offer this presence — it's not something they owe you every time. It's okay to also lean on someone else, or on yourself, sometimes."
           },
           "counseling_gap_note": "When something's hard, Jordan wants their feelings acknowledged first — \"that sounds so hard\" — while Alex jumps straight to \"so what's the plan?\" A mismatch in comfort style means Jordan can feel unheard, while Alex can feel frustrated that their solution isn't landing. Simply saying \"I need comfort\" or \"I need a solution\" up front clears up the mismatch."
         },
@@ -963,7 +964,7 @@
               "band": "strong"
             },
             "meaning": "One of you is clearly the outward-recharging type, the other shifts day to day. Let the outward type lead, but remember the other sometimes just needs space.",
-            "psych_note": "Your appetite for stimulation matches, so group hangouts and one-on-one time both feel easy. Keep hanging out the way you already do."
+            "psych_note": "Your stimulation-seeking scores back this up too — see the Social DNA battery description above for the full picture."
           },
           {
             "id": "hangout_planning",

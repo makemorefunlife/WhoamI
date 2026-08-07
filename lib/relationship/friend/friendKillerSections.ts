@@ -55,6 +55,11 @@ export type FriendshipSnapshotSection = {
   /** Incremental enrichment — when this friendship shines (research gap #3) */
   shine_when_best?: string | null;
   /**
+   * current_enriched 전용 — shine_when_best의 대칭 짝. 이 우정이 유독 힘들어지는
+   * 순간(05B Relationship Low). production `current`는 채우지 않는다.
+   */
+  shine_when_low?: string | null;
+  /**
    * current_enriched 전용 — 3대 스코어 카드(우정 케미/티키타카/소셜 리스크)
    * 감사 결과. 무엇을 측정하는지 / 이 커플이 왜 이 점수인지 / 높음·중간·낮음
    * 의미를 담는다. production `current`(buildFriendReport.ts)는 이 필드를

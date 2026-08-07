@@ -32,6 +32,11 @@ import {
   buildJealousyTriggerSceneLine,
   buildDailyContactRhythmClause,
 } from "./friendGiftAndBondInsights";
+import {
+  buildCapabilityBoundaryClause,
+  buildExpectationResetLine,
+  buildFriendshipStruggleLine,
+} from "./friendExpectationAndStruggle";
 
 /**
  * Derives dynamic directional gift (A→B or B→A) based on 10-god profile, element, and psych axes.
@@ -284,6 +289,16 @@ export function buildFriendReportEnriched(params: {
     ? `${situationalShineBase} ${unlockedSelfLine}`
     : situationalShineBase;
 
+  // Relationship Low — shine_when_best의 대칭 짝 ("이 우정이 유독 힘들어지는 순간").
+  const shineWhenLow = buildFriendshipStruggleLine({
+    sig: ctx.friendPairAnalysis.scoringSignals,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+
   // 6. Signature Headline & Subtitle
   const signatureClause = resolveFriendSignatureClause(
     params.psychMasterA,
@@ -336,20 +351,27 @@ export function buildFriendReportEnriched(params: {
   // Item 5 (힘들 때 왜 이 친구를 찾는가) — 상담을 주는 쪽(A/B)의 우세 psych 축 근거.
   const whyTurnToALine = buildWhyTurnToFriendLine(params.psychMasterA, nameA, locale);
   const whyTurnToBLine = buildWhyTurnToFriendLine(params.psychMasterB, nameB, locale);
+  // 성장과 기대 Q2 (힘들 때 무엇까지 기대해도 되는가) — capability, not obligation.
+  const capabilityBoundaryA = counselingBaseA
+    ? buildCapabilityBoundaryClause(counselingBaseA.type, nameA, locale)
+    : null;
+  const capabilityBoundaryB = counselingBaseB
+    ? buildCapabilityBoundaryClause(counselingBaseB.type, nameB, locale)
+    : null;
   const counselingA = counselingBaseA
     ? {
         ...counselingBaseA,
-        description: whyTurnToALine
-          ? `${counselingBaseA.description} ${whyTurnToALine}`
-          : counselingBaseA.description,
+        description: [counselingBaseA.description, whyTurnToALine, capabilityBoundaryA]
+          .filter(Boolean)
+          .join(" "),
       }
     : counselingBaseA;
   const counselingB = counselingBaseB
     ? {
         ...counselingBaseB,
-        description: whyTurnToBLine
-          ? `${counselingBaseB.description} ${whyTurnToBLine}`
-          : counselingBaseB.description,
+        description: [counselingBaseB.description, whyTurnToBLine, capabilityBoundaryB]
+          .filter(Boolean)
+          .join(" "),
       }
     : counselingBaseB;
 
@@ -409,6 +431,25 @@ export function buildFriendReportEnriched(params: {
     locale,
   });
 
+  // 성장과 기대 Q3 (무엇을 기대하면 실망하기 쉬운가) — Prescription Don't List에 배치.
+  // Hidden Flow counseling_gap_note와 같은 신호(사고방식 vs 관계공감)를 재사용하되
+  // "왜 어긋나는가"가 아니라 "무엇을 내려놓을지"로 프레이밍만 바꾼다(Law 9).
+  const expectationResetForA = buildExpectationResetLine(params.psychMasterA, nameA, locale);
+  const expectationResetForB = buildExpectationResetLine(params.psychMasterB, nameB, locale);
+  const expectationResetLines = [expectationResetForA, expectationResetForB].filter(
+    (l): l is string => Boolean(l),
+  );
+  if (expectationResetLines.length > 0 && prescriptionPack.items.length > 0) {
+    const targetIndex = prescriptionPack.items.findIndex(
+      (item) => item.topic === "friendship_baseline",
+    );
+    const idx = targetIndex >= 0 ? targetIndex : 0;
+    prescriptionPack.items[idx] = {
+      ...prescriptionPack.items[idx]!,
+      dont_list: [...prescriptionPack.items[idx]!.dont_list, ...expectationResetLines],
+    };
+  }
+
   // 10. 11-Axis Reality Insights — real-life scenes for contact/reply cadence,
   // empathy vs solutions, planning vs spontaneity, duo vs group energy,
   // conflict pace, reassurance needs, and reconciliation speed. Distributed
@@ -430,11 +471,23 @@ export function buildFriendReportEnriched(params: {
         )}`
       : axisInsights?.contact_frequency;
 
+  // 관계 거리감 Q1 (둘만 있을 때 vs 모임) dedup — Social DNA battery_description이
+  // primary(saju 기반, deriveGroupVs1on1Insight)이므로 이 행은 전체 문단을 다시
+  // 쓰지 않고 짧은 corroboration pointer만 남긴다(05B: one primary home, others
+  // reference only when necessary).
+  const duoVsGroupPointer = axisInsights?.duo_vs_group
+    ? pick(
+        locale,
+        "Your stimulation-seeking scores back this up too — see the Social DNA battery description above for the full picture.",
+        "11축 자극추구 점수로도 이 차이가 뒷받침돼요 — 자세한 설명은 위 Social DNA 배터리 항목을 참고하세요.",
+      )
+    : undefined;
+
   const COMPARE_ROW_AXIS_NOTE: Record<string, string | undefined> = {
     daily_share_tempo: contactFrequencyWithRhythm,
     communication_rhythm: axisInsights?.reply_speed,
     hangout_planning: axisInsights?.plan_vs_spontaneous,
-    battery_recharge: axisInsights?.duo_vs_group,
+    battery_recharge: duoVsGroupPointer,
     upset_expression: axisInsights?.speak_up_vs_hold,
     affection_language: axisInsights?.reassurance_vs_trust,
   };
@@ -465,6 +518,7 @@ export function buildFriendReportEnriched(params: {
         ...base.friend?.section_snapshot,
         one_line_friendship: enrichedSubtitle,
         shine_when_best: situationalShine,
+        shine_when_low: shineWhenLow,
         score_card_audit: scoreCardAudit,
       },
       // 2. Social DNA A & B: Update with Q2/Q5 Directional Gifts & Q19 Social Energy Battery

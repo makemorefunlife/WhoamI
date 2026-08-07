@@ -2,7 +2,7 @@
   "domain": "friend",
   "caseId": "psych_saju_conflict",
   "locale": "en-US",
-  "generated_at": "2026-08-07T00:55:13.212Z",
+  "generated_at": "2026-08-07T01:26:00.183Z",
   "case_meta": {
     "label_ko": "사주·설문 충돌",
     "label_en": "Saju & Psych Conflict Test Case",
@@ -889,6 +889,7 @@
             "risk_note": "Your conflict styles pull in different directions, which can amplify friction beyond what the saju signals alone show."
           },
           "shine_when_best": "This friendship works best in low-pressure shared time — a walk, a meal, a small plan — rather than constant messaging. One's the homebody, one's the outdoor type — make the homebody's place the home base, and let the outdoor friend lead the route.",
+          "shine_when_low": "This friendship gets hardest when one of you is running on empty and the other doesn't notice in time — the strain builds quietly before it's said out loud. Alex and Jordan also handle conflict at very different speeds, which can make the same friction feel bigger to one of you than the other. See the prescription below for what to do when this happens.",
           "score_card_audit": {
             "connection": {
               "measures": "How instinctively comfortable and drawn to each other you are — calculated from saju signals like a day-branch combine, the kind of 'click' that doesn't need an explanation.",
@@ -942,12 +943,12 @@
           "counseling_style_a": {
             "type": "T",
             "label": "Cool-headed problem solver",
-            "description": "\"So what's the actual plan here?\" Cuts straight to a clear-eyed solution. Part of why I turn to Alex when things are hard: they don't get swept up in the feelings, they cut straight to an objective read that snaps me back to clear-headed."
+            "description": "\"So what's the actual plan here?\" Cuts straight to a clear-eyed solution. Part of why I turn to Alex when things are hard: they don't get swept up in the feelings, they cut straight to an objective read that snaps me back to clear-headed. That said, don't expect Alex to always have the perfect answer ready — it's fine to tell them plainly when what you actually need is just someone to listen."
           },
           "counseling_style_b": {
             "type": "F",
             "label": "Emotional healer",
-            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Jordan when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed."
+            "description": "\"That must've been so hard — I'm on your side no matter what.\" Sits with the feeling first. Part of why I turn to Jordan when things are hard: there's an unconditional sense that they'll take my side no matter what, before any explanation is even needed. That said, Jordan can offer this presence — it's not something they owe you every time. It's okay to also lean on someone else, or on yourself, sometimes."
           },
           "counseling_gap_note": "When something's hard, Jordan wants their feelings acknowledged first — \"that sounds so hard\" — while Alex jumps straight to \"so what's the plan?\" A mismatch in comfort style means Jordan can feel unheard, while Alex can feel frustrated that their solution isn't landing. Simply saying \"I need comfort\" or \"I need a solution\" up front clears up the mismatch."
         },
@@ -1014,7 +1015,7 @@
               "band": "balanced"
             },
             "meaning": "One of you is clearly the outward-recharging type, the other shifts day to day. Let the outward type lead, but remember the other sometimes just needs space.",
-            "psych_note": "Your appetite for stimulation matches, so group hangouts and one-on-one time both feel easy. Keep hanging out the way you already do."
+            "psych_note": "Your stimulation-seeking scores back this up too — see the Social DNA battery description above for the full picture."
           },
           {
             "id": "hangout_planning",
@@ -1115,7 +1116,9 @@
               "dont_list": [
                 "Don't act close only on social media while never actually being in touch.",
                 "Don't quiz or compare your friendship in front of mutual friends.",
-                "Don't reach out after a long silence only to immediately ask for a favor."
+                "Don't reach out after a long silence only to immediately ask for a favor.",
+                "Expecting Alex to drop everything and give you a long, emotionally validating conversation every time — that's a setup for disappointment. Their care shows up as showing up with a plan, not a monologue of comfort.",
+                "Expecting Jordan to hand you a crisp, ready-made solution on the spot — that's a setup for disappointment. Their care shows up as sitting with you in the feeling, not solving it fast."
               ]
             }
           ]

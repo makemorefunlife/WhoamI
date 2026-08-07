@@ -48,6 +48,8 @@ export type SnapshotSection = BaseSection & {
   };
   /** Research gap — when friendship shines */
   shineWhenBest?: string | null;
+  /** current_enriched 전용 — shine_when_best의 대칭 짝(이 우정이 힘들어지는 순간) */
+  shineWhenLow?: string | null;
   /** current_enriched 전용 — 3대 스코어 카드 감사(measures/why/level_meaning) */
   scoreCardAudit?: FriendScoreCardAudit | null;
 };

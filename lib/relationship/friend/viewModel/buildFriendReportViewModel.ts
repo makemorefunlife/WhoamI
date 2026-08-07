@@ -89,6 +89,7 @@ function buildSnapshotSection(
         }
       : undefined,
     shineWhenBest: f.section_snapshot.shine_when_best ?? null,
+    shineWhenLow: f.section_snapshot.shine_when_low ?? null,
     scoreCardAudit: f.section_snapshot.score_card_audit ?? null,
   };
 }

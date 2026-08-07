@@ -491,12 +491,24 @@ export function FriendReportViewModelView({
                 ))}
               </div>
             ) : null}
-            {snapshot.shineWhenBest ? (
-              <div className="mt-3 rounded-md border border-amber-200/20 bg-amber-200/5 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-amber-200/70">
-                  When this friendship shines
-                </p>
-                <p className="mt-1 text-sm text-white/80">{snapshot.shineWhenBest}</p>
+            {snapshot.shineWhenBest || snapshot.shineWhenLow ? (
+              <div className="mt-3 space-y-3 rounded-md border border-amber-200/20 bg-amber-200/5 p-3">
+                {snapshot.shineWhenBest ? (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-amber-200/70">
+                      When this friendship shines
+                    </p>
+                    <p className="mt-1 text-sm text-white/80">{snapshot.shineWhenBest}</p>
+                  </div>
+                ) : null}
+                {snapshot.shineWhenLow ? (
+                  <div className={snapshot.shineWhenBest ? "border-t border-amber-200/10 pt-3" : undefined}>
+                    <p className="text-[11px] uppercase tracking-wide text-rose-200/70">
+                      When this friendship struggles
+                    </p>
+                    <p className="mt-1 text-sm text-white/80">{snapshot.shineWhenLow}</p>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </>
