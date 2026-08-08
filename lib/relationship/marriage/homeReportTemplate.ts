@@ -66,6 +66,8 @@ export type MoneyChoresSection = {
   cfo_dual?: boolean;
   /** Incremental enrichment — invisible mental load (research gap) */
   mental_load_note?: string | null;
+  /** "우리를 위한 맞춤 제안" — CFO/갈등직면성/계획구조화 신호 게이트, 없으면 undefined */
+  couple_action_plan?: import("@/lib/relationship/enrichment/marriageCoupleActionPlan").CoupleActionPlanSection;
 };
 
 export type FamilyBoundarySection = {
@@ -277,14 +279,14 @@ function buildInlawStressSummary(ctx: MarriageRuleContext): string {
 }
 
 function parentingBadge(style: ParentingStyle, locale: Locale): string {
-  if (style === "empathy") return pick(locale, "🎨 Empathy Type", "🎨 공감형");
-  return pick(locale, "📐 Structure Type", "📐 규칙형");
+  if (style === "empathy") return pick(locale, "Empathy Type", "공감형");
+  return pick(locale, "Structure Type", "규칙형");
 }
 
 function parentingStyleDescription(label: string): string {
   const dash = label.indexOf(" — ");
   if (dash >= 0) return label.slice(dash + 3).trim();
-  return label.replace(/^🎨\s*|^📐\s*/, "").trim();
+  return label.replace(/^\s*|^\s*/, "").trim();
 }
 
 export function formatParentingStyleLine(
@@ -309,16 +311,16 @@ export function buildParentingCombinedFromStyles(
       return sanitizeHomeLifeText(
         pick(
           locale,
-          `${nameA} & ${nameB} — you're both close to 🎨 empathy type. You read the child's emotions well, but once rules blur, you both wear yourselves out repeating "it's fine." Pin boundaries and routines down in writing.`,
-          `${nameA} & ${nameB} — 둘 다 🎨 공감형에 가깝습니다. 아이의 감정을 잘 읽지만, 규칙이 흐려지면 둘 다 '괜찮아'만 반복하다 지칩니다. 경계와 루틴을 문서로 박아 두세요.`,
+          `${nameA} & ${nameB} — you're both close to empathy type. You read the child's emotions well, but once rules blur, you both wear yourselves out repeating "it's fine." Pin boundaries and routines down in writing.`,
+          `${nameA} & ${nameB} — 둘 다 공감형에 가깝습니다. 아이의 감정을 잘 읽지만, 규칙이 흐려지면 둘 다 '괜찮아'만 반복하다 지칩니다. 경계와 루틴을 문서로 박아 두세요.`,
         ),
       );
     }
     return sanitizeHomeLifeText(
       pick(
         locale,
-        `${nameA} & ${nameB} — you're both close to 📐 structure type. Standards and schedules are solid, but missing the child's emotional signals stiffens the air at home. Add one line — "how are you feeling today?" — to the routine.`,
-        `${nameA} & ${nameB} — 둘 다 📐 규칙형에 가깝습니다. 기준과 일정은 단단하지만, 아이의 감정 신호를 놓치면 집안 공기가 딱딱해집니다. '오늘 기분은?' 한 마디를 루틴에 넣으세요.`,
+        `${nameA} & ${nameB} — you're both close to structure type. Standards and schedules are solid, but missing the child's emotional signals stiffens the air at home. Add one line — "how are you feeling today?" — to the routine.`,
+        `${nameA} & ${nameB} — 둘 다 규칙형에 가깝습니다. 기준과 일정은 단단하지만, 아이의 감정 신호를 놓치면 집안 공기가 딱딱해집니다. '오늘 기분은?' 한 마디를 루틴에 넣으세요.`,
       ),
     );
   }
@@ -346,11 +348,11 @@ export function buildParentingHarmonyTipFromStyles(
     return sanitizeHomeLifeText(
       pick(
         locale,
-        `💬 ${empathyName} (🎨 empathy type) and ${structureName} (📐 structure type) run at a different temperature in how they love the child. ` +
+        `${empathyName} (empathy type) and ${structureName} (structure type) run at a different temperature in how they love the child. ` +
           `Never point out or put down each other's parenting style in front of the child. ` +
           `Fully agree on discipline guidelines somewhere private, just the two of you without the child, and ` +
           `then show the child only one firm, consistent voice — that's what keeps the child's emotions steady.`,
-        `💬 ${empathyName}(🎨 공감형)과 ${structureName}(📐 규칙형)은 아이를 사랑하는 방식의 온도가 다릅니다. ` +
+        `${empathyName}(공감형)과 ${structureName}(규칙형)은 아이를 사랑하는 방식의 온도가 다릅니다. ` +
           `아이 앞에서는 절대 서로의 양육 방식을 지적하거나 깎아내리지 마세요. ` +
           `아이가 없는 독립된 부부만의 공간에서 훈육 가이드라인을 완벽히 합의한 뒤, ` +
           `아이 앞에서는 오직 단호하고 일관된 하나의 목소리만 들려주어야 아이의 정서가 흔들리지 않습니다.`,
@@ -361,16 +363,16 @@ export function buildParentingHarmonyTipFromStyles(
     return sanitizeHomeLifeText(
       pick(
         locale,
-        `💬 ${nameA} & ${nameB} — two empathy types both wear out trying to match the child's every emotion. Agree to "add just one rule this week," and take turns being the firm one.`,
-        `💬 ${nameA} & ${nameB} — 공감형끼리는 아이 감정에 맞추다 부모 둘 다 지칩니다. '이번 주는 규칙 한 줄만 추가'하기로 합의하고, 번갈아 단호한 역할을 맡으세요.`,
+        `${nameA} & ${nameB} — two empathy types both wear out trying to match the child's every emotion. Agree to "add just one rule this week," and take turns being the firm one.`,
+        `${nameA} & ${nameB} — 공감형끼리는 아이 감정에 맞추다 부모 둘 다 지칩니다. '이번 주는 규칙 한 줄만 추가'하기로 합의하고, 번갈아 단호한 역할을 맡으세요.`,
       ),
     );
   }
   return sanitizeHomeLifeText(
     pick(
       locale,
-      `💬 ${nameA} & ${nameB} — two structure types align on standards, but the emotional side can dry up. Set a weekly "child mood check-in" and make one night about asking the heart before the rules.`,
-      `💬 ${nameA} & ${nameB} — 규칙형끼리는 기준이 맞지만 감정 쪽이 메마를 수 있습니다. 주 1회 '아이 기분 체크인' 시간을 정해, 룰보다 마음을 먼저 묻는 밤을 만드세요.`,
+      `${nameA} & ${nameB} — two structure types align on standards, but the emotional side can dry up. Set a weekly "child mood check-in" and make one night about asking the heart before the rules.`,
+      `${nameA} & ${nameB} — 규칙형끼리는 기준이 맞지만 감정 쪽이 메마를 수 있습니다. 주 1회 '아이 기분 체크인' 시간을 정해, 룰보다 마음을 먼저 묻는 밤을 만드세요.`,
     ),
   );
 }

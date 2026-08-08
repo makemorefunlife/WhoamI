@@ -91,6 +91,8 @@ export type OfficeUpsetSection = {
   person_b: OfficeUpsetGuide;
   /** 피드백 쿠션 멘트 — 11축 없으면 null */
   feedback_cushion?: FeedbackCushionScript | null;
+  /** 갈등직면성 격차 기반 불만 신호/대처법 — current_enriched 전용, 11축 없으면 undefined */
+  pair_complaint_note?: string;
 };
 
 export type OfficeIdealRolesSection = {

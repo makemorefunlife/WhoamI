@@ -72,9 +72,9 @@ export function resolveReportingStyleFit(
       flexible: "flexes either way",
     },
     "ko-KR": {
-      headline_first: "결론부터 두괄식으로",
-      context_first: "맥락·배경부터 짚어야 이해",
-      flexible: "상황에 따라 유연하게",
+      headline_first: "결론부터 두괄식으로 말하는 편",
+      context_first: "맥락과 배경부터 짚어야 이해가 되는 편",
+      flexible: "상황에 따라 유연하게 대응하는 편",
     },
   };
 
@@ -89,7 +89,7 @@ export function resolveReportingStyleFit(
       : pick(
           locale,
           `${nicknameA} ${STYLE_LABEL[locale][styleA]}, while ${nicknameB} ${STYLE_LABEL[locale][styleB]} — match the format to whoever you're updating, not to a fixed hierarchy.`,
-          `${topicParticle(nicknameA)} ${STYLE_LABEL[locale][styleA]} 편이고, ${topicParticle(nicknameB)} ${STYLE_LABEL[locale][styleB]} 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.`,
+          `${topicParticle(nicknameA)} ${STYLE_LABEL[locale][styleA]}이고, ${topicParticle(nicknameB)} ${STYLE_LABEL[locale][styleB]}이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.`,
         );
 
   return {
@@ -146,7 +146,7 @@ export function resolveBreakBoundaryFit(
     "ko-KR": {
       social: "커피·점심 스몰토크로 충전하는 편",
       solo_reset: "혼자만의 조용한 시간이 필요한 편",
-      balanced: "그때그때 유연하게",
+      balanced: "그때그때 상황에 맞춰 충전하는 편",
     },
   };
 

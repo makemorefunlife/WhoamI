@@ -15,12 +15,16 @@ import {
   buildDirectionExecutionLine,
   buildAvoidCombinationLine,
   resolveDirectionExecutionSplit,
+  buildRoleOwnershipClarityLine,
+  buildSynergyFrictionCheckInNote,
 } from "./workSajuRoleInsights";
 import {
   buildCrisisModeLine,
   buildMutualGrowthLine,
   buildDetailVsBigPictureClauses,
   buildSoloVsDiscussLine,
+  buildComplaintSignalLine,
+  buildRiskAndRhythmLine,
 } from "./workPsychRoleInsights";
 
 /**
@@ -150,6 +154,15 @@ export function buildWorkColleagueReportEnriched(params: {
     sig: ctx.workPairAnalysis.scoringSignals,
     locale,
   });
+  const roleOwnershipClarityLine = buildRoleOwnershipClarityLine({
+    countsA: ctx.tenGodsA,
+    countsB: ctx.tenGodsB,
+    locale,
+  });
+  const synergyFrictionCheckInNote = buildSynergyFrictionCheckInNote({
+    sig: ctx.workPairAnalysis.scoringSignals,
+    locale,
+  });
 
   // ---- 11축 psych 전용 4항목 ----
   const crisisModeLine = buildCrisisModeLine({
@@ -180,6 +193,18 @@ export function buildWorkColleagueReportEnriched(params: {
     nameB,
     locale,
   });
+  const complaintSignalLine = buildComplaintSignalLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+  const riskAndRhythmLine = buildRiskAndRhythmLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
 
   const join = (...parts: Array<string | null | undefined>) =>
     parts.filter((p): p is string => Boolean(p && p.trim())).join(" ");
@@ -197,10 +222,23 @@ export function buildWorkColleagueReportEnriched(params: {
     JSON.stringify(base.office.section_roles.person_a.weapons) ===
       JSON.stringify(base.office.section_roles.person_b.weapons);
   const directionSplit = resolveDirectionExecutionSplit(ctx.tenGodsA, ctx.tenGodsB);
-  const synergyOneLiner =
-    weaponsCollide && directionExecutionLine
-      ? directionExecutionLine
-      : join(base.office.section_roles.synergy_one_liner, directionExecutionLine);
+  // base.office.section_roles.synergy_one_liner always claims "different
+  // business weapons" (officeReportTemplate.ts buildSynergyOneLiner), even
+  // when weaponsCollide is true and both badges are identical — that reads
+  // as a self-contradiction. Whenever weapons collide, never fall back to
+  // that base sentence; use the direction/execution split if available, else
+  // a neutral shared-strength line that doesn't claim a difference that
+  // doesn't exist.
+  const sharedStrengthFallback = pick(
+    locale,
+    `${nameA} and ${nameB} lean on similar strengths here — instead of forcing a strict split, flex the roles based on the situation.`,
+    `${nameA}와 ${nameB} 둘 다 비슷한 강점을 갖고 있어요 — 억지로 역할을 나누기보다 상황에 따라 유연하게 맡아도 좋아요.`,
+  );
+  const synergyOneLinerBase = weaponsCollide
+    ? (directionExecutionLine ?? sharedStrengthFallback)
+    : join(base.office.section_roles.synergy_one_liner, directionExecutionLine);
+  // 항목 8 — 방향/실행 split이 실제로 성립할 때만(같은 게이트) 경계 문서화 조언 추가.
+  const synergyOneLiner = join(synergyOneLinerBase, roleOwnershipClarityLine);
 
   const DIRECTION_WEAPONS = pick(locale, ["Direction & final call", "Big-picture ownership"], ["방향 설정", "최종 결정"]);
   const EXECUTION_WEAPONS = pick(locale, ["Fast execution", "Turning ideas real"], ["실행력", "빠른 구현"]);
@@ -239,10 +277,37 @@ export function buildWorkColleagueReportEnriched(params: {
   // 보인다는 것 — buildWorkReportViewModel.ts의 opening.subtitle에 이
   // grade_reason을 연결해 배지 바로 아래에서 근거가 보이게 한다(새 계산 없음).
 
+  // 항목 9 (R&R 점검, Chapter 8 전용) — synergy + friction 패킷이 동시에
+  // 있을 때만 새 처방 아이템을 하나 추가한다. evidence.source는
+  // WorkPrescriptionEvidence 타입이 "pair_work_signals" 리터럴만 허용해서
+  // 실제 출처(WorkScoringSignals)와 이름이 정확히 일치하진 않지만, 이 항목의
+  // 진짜 근거(signal_paths)는 summary에 그대로 남겨 추적 가능하게 했다.
+  const rrCheckInItem: WorkPrescriptionItem | null = synergyFrictionCheckInNote
+    ? {
+        topic: "office_baseline",
+        headline: pick(locale, "Check In on Roles & Ownership", "역할·소유권 점검"),
+        evidence: {
+          source: "pair_work_signals",
+          signal_paths: ["workPairAnalysis.scoringSignals"],
+          summary: pick(
+            locale,
+            "Both a synergy signal and a friction signal are present — this pairing needs ongoing role alignment, not a one-time fix.",
+            "시너지 신호와 마찰 신호가 동시에 있어요 — 한 번 정리하고 끝나는 게 아니라 꾸준한 역할 조율이 필요한 조합이에요.",
+          ),
+          snapshot: {},
+        },
+        do_list: [synergyFrictionCheckInNote],
+        dont_list: [],
+      }
+    : null;
+
   const prescriptionWork = base.meta.prescription_work
     ? {
         ...base.meta.prescription_work,
-        items: base.meta.prescription_work.items.map(sanitizeWorkPrescriptionItem),
+        items: [
+          ...base.meta.prescription_work.items.map(sanitizeWorkPrescriptionItem),
+          ...(rrCheckInItem ? [rrCheckInItem] : []),
+        ],
       }
     : base.meta.prescription_work;
 
@@ -255,12 +320,14 @@ export function buildWorkColleagueReportEnriched(params: {
         ...base.office.section_respect,
         person_a_boundary: join(base.office.section_respect.person_a_boundary, energyDrainLine),
       },
+      // 항목 8 (불만 신호/대처법, Chapter 7 전용) — pair 단위 문장, 새 필드로.
       section_upset: {
         ...base.office.section_upset,
         person_a: {
           ...base.office.section_upset.person_a,
           upset_signals: join(base.office.section_upset.person_a.upset_signals, crisisModeLine),
         },
+        pair_complaint_note: complaintSignalLine ?? undefined,
       },
       // 항목 3 (성장) — pair 단위 문장, A쪽 overall_character에만.
       section_dna: {
@@ -293,9 +360,11 @@ export function buildWorkColleagueReportEnriched(params: {
           base.office.section_mix_fit.person_b_work_style,
           detailVsBigPicture?.clauseB,
         ),
+        // 항목 10 (리스크 한도/보고 리듬) — 이미 단일 필드(communication_fit)에 함께 append.
         communication_fit: join(
           base.office.section_mix_fit.communication_fit,
           soloVsDiscussLine,
+          riskAndRhythmLine,
         ),
       },
       // 항목 7 (피해야 할 조합) — 이미 단일 필드(conflict_trigger).

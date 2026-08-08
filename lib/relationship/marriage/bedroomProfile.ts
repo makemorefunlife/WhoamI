@@ -54,18 +54,18 @@ const STRONG_DAY_STAGES = new Set([
 const STAMINA_COPY: Record<Locale, Record<StaminaArchetype, string>> = {
   "en-US": {
     marathon: sanitizeHomeLifeText(
-      "[🔥 Tireless Energizer, Marathon Type] — Blessed with natural stamina and endurance strong enough to keep the rhythm going all night without tiring.",
+      "[Tireless Energizer, Marathon Type] — Blessed with natural stamina and endurance strong enough to keep the rhythm going all night without tiring.",
     ),
     sprint: sanitizeHomeLifeText(
-      "[⚡ Short, Intense Sprint Director Type] — Instead of endurance, focuses on momentary immersion, flashy technique, and mental spark.",
+      "[Short, Intense Sprint Director Type] — Instead of endurance, focuses on momentary immersion, flashy technique, and mental spark.",
     ),
   },
   "ko-KR": {
     marathon: sanitizeHomeLifeText(
-      "[🔥 지치지 않는 에너자이저 마라톤형] — 타고난 기력과 지구력이 굳건하여 밤새 리듬이 지치지 않는 강인한 체력의 소유자입니다.",
+      "[지치지 않는 에너자이저 마라톤형] — 타고난 기력과 지구력이 굳건하여 밤새 리듬이 지치지 않는 강인한 체력의 소유자입니다.",
     ),
     sprint: sanitizeHomeLifeText(
-      "[⚡ 짧고 굵게 타오르는 단거리 연출가형] — 지구력보다는 순간적인 몰입도와 화려한 테크닉, 정신적 스파크에 집중하는 스타일입니다.",
+      "[짧고 굵게 타오르는 단거리 연출가형] — 지구력보다는 순간적인 몰입도와 화려한 테크닉, 정신적 스파크에 집중하는 스타일입니다.",
     ),
   },
 };
@@ -73,18 +73,18 @@ const STAMINA_COPY: Record<Locale, Record<StaminaArchetype, string>> = {
 const FANTASY_COPY: Record<Locale, Record<FantasyArchetype, string>> = {
   "en-US": {
     fantasy_breaker: sanitizeHomeLifeText(
-      "[🧬 Boundary-Breaking Fantasy Type] — Dislikes repetitive boredom, and comes alive when pursuing something different, daring, or a secret fantasy.",
+      "[Boundary-Breaking Fantasy Type] — Dislikes repetitive boredom, and comes alive when pursuing something different, daring, or a secret fantasy.",
     ),
     romantic_classic: sanitizeHomeLifeText(
-      "[🕯️ Stability-Seeking Romantic Classic Type] — Prioritizes mutual trust, a traditional mood, and the security of a cozy environment above all.",
+      "[Stability-Seeking Romantic Classic Type] — Prioritizes mutual trust, a traditional mood, and the security of a cozy environment above all.",
     ),
   },
   "ko-KR": {
     fantasy_breaker: sanitizeHomeLifeText(
-      "[🧬 틀을 깨는 과감한 판타지파] — 반복되는 지루함을 싫어하며, 색다르고 과감한 시도나 은밀한 판타지를 추구할 때 에너지가 깨어나는 타입입니다.",
+      "[틀을 깨는 과감한 판타지파] — 반복되는 지루함을 싫어하며, 색다르고 과감한 시도나 은밀한 판타지를 추구할 때 에너지가 깨어나는 타입입니다.",
     ),
     romantic_classic: sanitizeHomeLifeText(
-      "[🕯️ 안정감을 추구하는 로맨틱 클래식파] — 서로에 대한 신뢰와 정석적인 무드, 아늑한 환경에서 오는 안정감을 최우선으로 하는 타입입니다.",
+      "[안정감을 추구하는 로맨틱 클래식파] — 서로에 대한 신뢰와 정석적인 무드, 아늑한 환경에서 오는 안정감을 최우선으로 하는 타입입니다.",
     ),
   },
 };
@@ -92,18 +92,18 @@ const FANTASY_COPY: Record<Locale, Record<FantasyArchetype, string>> = {
 const MANNER_COPY: Record<Locale, Record<MannerArchetype, string>> = {
   "en-US": {
     sweet_guide: sanitizeHomeLifeText(
-      "[🎁 Sweet Guide Who Satisfies the Partner First] — Feels greater thrill from taking care of the partner's climax, happiness, and emotional satisfaction over their own pleasure.",
+      "[Sweet Guide Who Satisfies the Partner First] — Feels greater thrill from taking care of the partner's climax, happiness, and emotional satisfaction over their own pleasure.",
     ),
     power_leader: sanitizeHomeLifeText(
-      "[👑 Unstoppable Powerful Leader] — Holds bedroom leadership firmly, leading the partner straight-on and taking charge.",
+      "[Unstoppable Powerful Leader] — Holds bedroom leadership firmly, leading the partner straight-on and taking charge.",
     ),
   },
   "ko-KR": {
     sweet_guide: sanitizeHomeLifeText(
-      "[🎁 상대를 먼저 만족시키는 스위트 가이드] — 내 쾌감보다 상대방의 절정과 행복, 정서적 만족을 챙겨줄 때 더 큰 희열을 느끼는 성향입니다.",
+      "[상대를 먼저 만족시키는 스위트 가이드] — 내 쾌감보다 상대방의 절정과 행복, 정서적 만족을 챙겨줄 때 더 큰 희열을 느끼는 성향입니다.",
     ),
     power_leader: sanitizeHomeLifeText(
-      "[👑 거침없이 이끄는 파워풀 리더] — 침실 주도권을 강하게 쥐고 직진형으로 상대를 리드하며 쟁취하는 타입입니다.",
+      "[거침없이 이끄는 파워풀 리더] — 침실 주도권을 강하게 쥐고 직진형으로 상대를 리드하며 쟁취하는 타입입니다.",
     ),
   },
 };

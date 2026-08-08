@@ -110,7 +110,7 @@ export function buildConflictCommunicationSection(params: {
   }
 
   return {
-    title: pick(locale, "🗣️ Conflict Communication Dynamic", "🗣️ 갈등 소통 스타일 (Conflict Communication Dynamic)"),
+    title: pick(locale, "Conflict Communication Dynamic", "갈등 소통 스타일 (Conflict Communication Dynamic)"),
     pattern_label,
     narrative,
     emotional_neglect_risk,

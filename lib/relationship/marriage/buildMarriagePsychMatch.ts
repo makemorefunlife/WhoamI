@@ -56,7 +56,7 @@ export function homePsychLensToDomain(
   home: MarriageHomePsychLens,
 ): DomainPsychLens {
   return {
-    lens_title: "🏠 동거에서 특히 눈에 띄는 축",
+    lens_title: "동거에서 특히 눈에 띄는 축",
     chart_note: COHABITATION_CHART_NOTE,
     intro_line: home.intro_line,
     highlights: home.highlights.map(

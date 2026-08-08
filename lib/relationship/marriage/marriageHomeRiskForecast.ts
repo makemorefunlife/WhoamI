@@ -146,7 +146,7 @@ export function buildThreeYearHomeRiskForecast(
   const maxSeverity = Math.max(...years.map((y) => y.severity_score));
   const stormYearCount = years.filter((y) => y.level === "storm").length;
   const parts = years.map(
-    (y) => `${y.icon} [${y.year_label}]: ${y.weather_label}`,
+    (y) => `[${y.year_label}]: ${y.weather_label}`,
   );
 
   return {

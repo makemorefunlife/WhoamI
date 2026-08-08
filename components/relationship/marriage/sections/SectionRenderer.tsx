@@ -39,7 +39,9 @@ import type {
   WeatherForecastSection,
 } from "@/lib/relationship/marriage/viewModel/marriageReportSectionTypes";
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
+import { MarriageChapterNav, MarriageChapterSection } from "@/components/relationship/marriage/chapters/MarriageChapterShell";
+import type { ActionPlanItem, CoupleActionPlanSection } from "@/lib/relationship/enrichment/marriageCoupleActionPlan";
 
 const ACCENT = getTabTheme("cohabitation").accent;
 
@@ -62,16 +64,73 @@ function PersonBadge() {
   );
 }
 
-// ---- Part 구분선 --------------------------------------------------------------
+// ---- 8-chapter structure ------------------------------------------------------
+// Regroups the same 14 MarriageReportSection cards (no data change) into a
+// numbered 8-chapter read, mirroring the Romantic V4 / Family / Work chapter
+// nav+numbering pattern. `deep_read` (the optional married_saju_deep LLM
+// overlay) sits outside the numbered sequence as a bonus chapter — it isn't
+// always present, so giving it a fixed number would risk the same
+// hidden-chapter numbering gap fixed earlier on the Romantic side.
+type MarriageSectionType = MarriageReportSection["type"];
 
-function PartHeading({ title }: { title: string }) {
-  return (
-    <div className="flex items-center gap-3 pt-2">
-      <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">{title}</h2>
-      <div className="h-px flex-1" style={{ backgroundColor: `${ACCENT}33` }} />
-    </div>
-  );
-}
+const CHAPTER_GROUPS: Array<{
+  id: string;
+  types: Exclude<MarriageSectionType, "household_snapshot">[];
+  titleKo: string;
+  titleEn: string;
+}> = [
+  {
+    id: "ch_temperature",
+    types: ["origin_story"],
+    titleKo: "한눈에 보는 우리 부부의 온도",
+    titleEn: "Your Marriage at a Glance",
+  },
+  {
+    id: "ch_life_sync",
+    types: ["compare_table", "psych_radar", "home_dna"],
+    titleKo: "함께 사는 방식과 라이프 시너지",
+    titleEn: "How You Live Together",
+  },
+  {
+    id: "ch_money_chores",
+    types: ["money_chores"],
+    titleKo: "가사와 재정의 완벽한 분담",
+    titleEn: "Splitting Chores & Finances",
+  },
+  {
+    id: "ch_fight_pattern",
+    types: ["warning", "upset", "privacy"],
+    titleKo: "부부싸움의 패턴과 해독제",
+    titleEn: "Your Fight Pattern & the Antidote",
+  },
+  {
+    id: "ch_parenting_boundary",
+    types: ["parenting", "family_boundary"],
+    titleKo: "육아 가치관과 원가족 바운더리",
+    titleEn: "Parenting Values & In-Law Boundaries",
+  },
+  {
+    id: "ch_bedroom",
+    types: ["bedroom"],
+    titleKo: "침실 케미스트리와 정서적 애착",
+    titleEn: "Bedroom Chemistry & Attachment",
+  },
+  {
+    id: "ch_weather",
+    types: ["weather_forecast"],
+    titleKo: "향후 3년의 홈 리스크 기상도",
+    titleEn: "Your 3-Year Home Risk Forecast",
+  },
+  {
+    id: "ch_playbook",
+    types: ["prescription"],
+    titleKo: "오래 단단할 우리를 위한 절대 처방전",
+    titleEn: "The Playbook for the Long Run",
+  },
+];
+
+/** deep_read renders after the 8 core chapters, unnumbered — see comment above. */
+const BONUS_CHAPTER_TYPES: MarriageSectionType[] = ["deep_read"];
 
 // ---- Part 1: 우리가 부부가 된 이유 (낭만/운명 서사) --------------------------
 
@@ -182,44 +241,81 @@ function PsychRadarCard({ section, names }: { section: PsychRadarSection; names:
   );
 }
 
+function ActionPlanList({ heading, items }: { heading: string; items: ActionPlanItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <RelationshipReportLabel>{heading}</RelationshipReportLabel>
+      <div className="mt-2 space-y-3">
+        {items.map((item) => (
+          <RelationshipReportInset key={item.title}>
+            <p className="text-sm font-semibold text-white/92">{item.title}</p>
+            <RelationshipReportParagraph className="mt-1.5">{item.body}</RelationshipReportParagraph>
+            <RelationshipReportParagraph className="mt-1.5 flex items-start gap-2 italic text-emerald-100/85">
+              <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} aria-hidden />
+              {item.quote}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CoupleActionPlanBlock({ plan }: { plan: CoupleActionPlanSection }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  return (
+    <RelationshipReportCard title={t.coupleActionPlanCardTitle} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <ActionPlanList heading={t.coupleActionPlanForMeLabel} items={plan.forMe} />
+        <ActionPlanList heading={t.coupleActionPlanForPartnerLabel} items={plan.forPartner} />
+        <ActionPlanList heading={t.coupleActionPlanTogetherLabel} items={plan.together} />
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
 function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
   const t = useMessages().relationshipDrilldown.cohabitation;
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportBody>
-        <div>
-          <RelationshipReportLabel>{t.cfoQuestionLabel}</RelationshipReportLabel>
-          {section.cfoCanonicalLabel ? (
-            <RelationshipReportLabel className="mt-1.5">
-              {section.cfoCanonicalLabel}
-            </RelationshipReportLabel>
+    <>
+      <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+        <RelationshipReportBody>
+          <div>
+            <RelationshipReportLabel>{t.cfoQuestionLabel}</RelationshipReportLabel>
+            {section.cfoCanonicalLabel ? (
+              <RelationshipReportLabel className="mt-1.5">
+                {section.cfoCanonicalLabel}
+              </RelationshipReportLabel>
+            ) : null}
+            <RelationshipReportParagraph className="mt-1.5">
+              {section.cfoNickname} — {section.cfoReason}
+            </RelationshipReportParagraph>
+          </div>
+          <div>
+            <RelationshipReportLabel>{t.choresLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.choresGuideline}</RelationshipReportParagraph>
+          </div>
+          <div>
+            <RelationshipReportLabel>{t.spendingStyleLabel}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.spendingStyleNote}</RelationshipReportParagraph>
+          </div>
+          {section.cfoAxisNote ? (
+            <RelationshipReportInset>
+              <RelationshipReportLabel>{t.cfoAxisNoteLabel}</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1.5">{section.cfoAxisNote}</RelationshipReportParagraph>
+            </RelationshipReportInset>
           ) : null}
-          <RelationshipReportParagraph className="mt-1.5">
-            {section.cfoNickname} — {section.cfoReason}
-          </RelationshipReportParagraph>
-        </div>
-        <div>
-          <RelationshipReportLabel>{t.choresLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">{section.choresGuideline}</RelationshipReportParagraph>
-        </div>
-        <div>
-          <RelationshipReportLabel>{t.spendingStyleLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">{section.spendingStyleNote}</RelationshipReportParagraph>
-        </div>
-        {section.cfoAxisNote ? (
-          <RelationshipReportInset>
-            <RelationshipReportLabel>{t.cfoAxisNoteLabel}</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">{section.cfoAxisNote}</RelationshipReportParagraph>
-          </RelationshipReportInset>
-        ) : null}
-        {section.mentalLoadNote ? (
-          <RelationshipReportInset>
-            <RelationshipReportLabel>Mental load</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">{section.mentalLoadNote}</RelationshipReportParagraph>
-          </RelationshipReportInset>
-        ) : null}
-      </RelationshipReportBody>
-    </RelationshipReportCard>
+          {section.mentalLoadNote ? (
+            <RelationshipReportInset>
+              <RelationshipReportLabel>Mental load</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1.5">{section.mentalLoadNote}</RelationshipReportParagraph>
+            </RelationshipReportInset>
+          ) : null}
+        </RelationshipReportBody>
+      </RelationshipReportCard>
+      {section.coupleActionPlan ? <CoupleActionPlanBlock plan={section.coupleActionPlan} /> : null}
+    </>
   );
 }
 
@@ -605,14 +701,10 @@ export function MarriageReportViewModelView({
   kindLabel?: string;
   viewerIsReportA: boolean;
 }) {
+  const { locale } = useLocale();
   const t = useMessages().relationshipDrilldown.cohabitation;
-  const partTitles: Record<1 | 2 | 3 | 4 | 5, string> = {
-    1: t.part1Title,
-    2: t.part2Title,
-    3: t.part3Title,
-    4: t.part4Title,
-    5: t.part5Title,
-  };
+  const isEn = locale === "en-US";
+
   const snapshot = vm.sections.find(
     (s): s is Extract<MarriageReportSection, { type: "household_snapshot" }> =>
       s.type === "household_snapshot",
@@ -620,6 +712,29 @@ export function MarriageReportViewModelView({
   const otherSections = vm.sections.filter(
     (s): s is NonSnapshotSection => s.type !== "household_snapshot",
   );
+  const byType = new Map<MarriageSectionType, NonSnapshotSection[]>();
+  for (const section of otherSections) {
+    const list = byType.get(section.type) ?? [];
+    list.push(section);
+    byType.set(section.type, list);
+  }
+
+  const chapters = CHAPTER_GROUPS.map((group) => ({
+    ...group,
+    sections: group.types.flatMap((type) => byType.get(type) ?? []),
+  })).filter((group) => group.sections.length > 0);
+  const bonusSections = BONUS_CHAPTER_TYPES.flatMap((type) => byType.get(type) ?? []);
+
+  const navItems = [
+    ...chapters.map((chapter, i) => ({
+      id: chapter.id,
+      number: String(i + 1).padStart(2, "0"),
+      title: isEn ? chapter.titleEn : chapter.titleKo,
+    })),
+    ...(bonusSections.length > 0
+      ? [{ id: "ch_deep_read", number: null, title: bonusSections[0]!.title }]
+      : []),
+  ];
 
   return (
     <RelationshipReportLayout
@@ -642,19 +757,37 @@ export function MarriageReportViewModelView({
       }
       scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="cohabitation" /> : undefined}
     >
-      {(() => {
-        let lastPartNumber: number | null = null;
-        return otherSections.map((section) => {
-          const showHeading = section.partNumber !== lastPartNumber;
-          lastPartNumber = section.partNumber;
-          return (
-            <div key={section.id} className="space-y-5 sm:space-y-6">
-              {showHeading ? <PartHeading title={partTitles[section.partNumber]} /> : null}
-              <MarriageReportSectionCard section={section} names={vm.opening.names} viewerIsReportA={viewerIsReportA} />
-            </div>
-          );
-        });
-      })()}
+      <MarriageChapterNav items={navItems} />
+      {chapters.map((chapter, i) => (
+        <MarriageChapterSection
+          key={chapter.id}
+          id={chapter.id}
+          number={String(i + 1).padStart(2, "0")}
+          title={isEn ? chapter.titleEn : chapter.titleKo}
+          accent={ACCENT}
+        >
+          {chapter.sections.map((section) => (
+            <MarriageReportSectionCard
+              key={section.id}
+              section={section}
+              names={vm.opening.names}
+              viewerIsReportA={viewerIsReportA}
+            />
+          ))}
+        </MarriageChapterSection>
+      ))}
+      {bonusSections.length > 0 ? (
+        <MarriageChapterSection id="ch_deep_read" number={null} title={bonusSections[0]!.title} accent={ACCENT}>
+          {bonusSections.map((section) => (
+            <MarriageReportSectionCard
+              key={section.id}
+              section={section}
+              names={vm.opening.names}
+              viewerIsReportA={viewerIsReportA}
+            />
+          ))}
+        </MarriageChapterSection>
+      ) : null}
     </RelationshipReportLayout>
   );
 }

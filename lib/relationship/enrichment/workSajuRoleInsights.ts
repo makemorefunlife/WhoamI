@@ -138,6 +138,61 @@ export function buildDirectionExecutionLine(params: {
 }
 
 /**
+ * 항목 8 (Chapter 4 보강) — 업무 경계·역할 소유 명확화.
+ * resolveDirectionExecutionSplit(십성 관성 vs 식상)이 실제로 성립할 때만
+ * — 방향/실행이 이미 갈려 있다는 뜻이라 "경계를 문서화하라"는 조언이
+ * 근거를 갖는다. 새 판정 없이 항목4와 같은 split을 재사용한다.
+ */
+export function buildRoleOwnershipClarityLine(params: {
+  countsA: TenGodCounts;
+  countsB: TenGodCounts;
+  locale?: Locale;
+}): string | null {
+  const { countsA, countsB } = params;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const split = resolveDirectionExecutionSplit(countsA, countsB);
+  if (!split) return null;
+
+  return pick(
+    locale,
+    "On top of that, put the boundary in writing — document who owns what and share it, so there's no confusion later. Agree up front on who leads externally versus who owns internal review.",
+    "여기에 더해 업무 경계를 문서로 남겨두면 좋아요 — 각자 맡은 책임을 정리해서 공유하면 나중에 혼란이 줄어들어요. 대외 리드와 내부 점검, 어느 쪽을 누가 맡을지도 미리 합의해두세요.",
+  );
+}
+
+/**
+ * 항목 9 (Chapter 8 보강) — Synergy 패킷과 Friction 패킷이 동시에 존재할
+ * 때만 "장기 조율이 필요한 파트너십" 신호로 보고 R&R 점검 습관을 제안한다.
+ * 한쪽만 있으면(순수 시너지 또는 순수 마찰) 출력하지 않는다.
+ */
+export function buildSynergyFrictionCheckInNote(params: {
+  sig: WorkScoringSignals;
+  locale?: Locale;
+}): string | null {
+  const { sig } = params;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const hasSynergy =
+    sig.hasStemCombine ||
+    sig.hasElementMutualComplement ||
+    sig.hasMonthDirectCombine ||
+    sig.hasMonthElementFlow;
+  const hasFriction =
+    sig.hasStemClashOrOvercome ||
+    sig.hasMonthClashOrPunish ||
+    sig.hasMonthDirectChung ||
+    sig.hasWonjinOrGuimun ||
+    sig.hasHaPaHae ||
+    sig.hasGongmangHit;
+  if (!hasSynergy || !hasFriction) return null;
+
+  return pick(
+    locale,
+    "Go beyond just venting frustrations to each other — regularly check in on whether each person's role and ownership are actually being respected in practice.",
+    "단순히 불만을 나누는 것을 넘어, 정기적으로 서로의 역할과 소유권이 실제로 잘 지켜지고 있는지 점검해보세요.",
+  );
+}
+
+/**
  * 항목 7 — 피해야 할 업무 조합 (friction 패킷: 원진/귀문/충/해파만 사용).
  */
 export function buildAvoidCombinationLine(params: {

@@ -1,0 +1,743 @@
+==================================================
+=== CURRENT WORK REPORT PROD/CE OUTPUT (KO-KR) ===
+==================================================
+{
+  "headline": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+  "summary_line": "업무적 핏 80% · 협업 시너지 85% · 오피스 리스크 25%",
+  "one_line_definition": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요.",
+  "snapshot_panel": {
+    "grade": "B",
+    "gaugeLabel": "오피스 파트너십 스냅샷",
+    "representativeLine": "업무적 핏 80% · 협업 시너지 85% · 오피스 리스크 25%",
+    "keywords": [
+      "협업 B",
+      "원칙과 효율을 중시하고, 핵심만 짚어 정리하는 분석형",
+      "깊이 생각한 뒤 움직이고, 섣부른 결론을 피하는 신중형",
+      "업무 리듬 맞음",
+      "통 핏",
+      "역할 보완"
+    ],
+    "relationshipGauges": [
+      {
+        "topic": "intimacy",
+        "label": "① 업무 핏·신뢰",
+        "activation": 80,
+        "benefit": 58,
+        "risk": 13
+      },
+      {
+        "topic": "stability",
+        "label": "② 프로젝트 시너지",
+        "activation": 66,
+        "benefit": 85,
+        "risk": 15
+      },
+      {
+        "topic": "conflict",
+        "label": "③ 업무 마찰·갈등",
+        "activation": 32,
+        "benefit": 30,
+        "risk": 25
+      }
+    ],
+    "personA": {
+      "nickname": "Alex",
+      "metaphor": "현실실리형 · 58",
+      "axes": [
+        {
+          "key": "connection",
+          "label": "관계지향성",
+          "value": 59
+        },
+        {
+          "key": "stability",
+          "label": "안정지향성",
+          "value": 54
+        },
+        {
+          "key": "growth",
+          "label": "성장지향성",
+          "value": 50
+        },
+        {
+          "key": "structure",
+          "label": "체계성",
+          "value": 50
+        },
+        {
+          "key": "adaptability",
+          "label": "적응성",
+          "value": 50
+        }
+      ]
+    },
+    "personB": {
+      "nickname": "Jordan",
+      "metaphor": "현실실리형 · 61",
+      "axes": [
+        {
+          "key": "connection",
+          "label": "관계지향성",
+          "value": 53
+        },
+        {
+          "key": "stability",
+          "label": "안정지향성",
+          "value": 56
+        },
+        {
+          "key": "growth",
+          "label": "성장지향성",
+          "value": 50
+        },
+        {
+          "key": "structure",
+          "label": "체계성",
+          "value": 50
+        },
+        {
+          "key": "adaptability",
+          "label": "적응성",
+          "value": 50
+        }
+      ]
+    },
+    "personAxesSource": "survey",
+    "narrative": {
+      "topics": [
+        {
+          "topic": "intimacy",
+          "title": "① 업무 핏·신뢰",
+          "subtitle": "처음 맞닿거나 역할을 맡길 때",
+          "activation": 80,
+          "benefit": 58,
+          "risk": 13,
+          "interpretation": "회의·보고에서 말이 잘 통해요(업무적 핏 80%). 역할을 맡기기 좋은 조합입니다. 업무 리듬 마찰은 낮은 편이라, 안건만 나누면 편하게 맞물립니다. 일터 리듬이 자연스럽게 맞물리는 조합이에요. 첫 프로젝트부터 호흡이 나오기 쉽습니다.",
+          "isWarning": false
+        },
+        {
+          "topic": "stability",
+          "title": "② 프로젝트 시너지",
+          "subtitle": "장기 협업·일정·결과를 맞출 때",
+          "activation": 66,
+          "benefit": 85,
+          "risk": 15,
+          "interpretation": "협업 시너지 85% — 장기 프로젝트·일정 맞추기에 유리합니다. 업무 리듬만 맞추면 오래 가는 파트너십이 됩니다. 일터 리듬이 자연스럽게 맞물리는 조합이에요. 첫 프로젝트부터 호흡이 나오기 쉽습니다.",
+          "isWarning": false
+        },
+        {
+          "topic": "conflict",
+          "title": "③ 업무 마찰·갈등",
+          "subtitle": "의견이 갈리거나 압박이 올 때",
+          "activation": 32,
+          "benefit": 30,
+          "risk": 25,
+          "interpretation": "오피스 리스크 25% — 갈등이 와도 협업 관계가 쉽게 끊기지는 않는 편이에요. 이때는 협업 시너지(30)가 잠깐 낮아지니, 회의 전에 안건·결정권을 문서로 정리하세요. 회의에서 한쪽은 빠른 결론, 다른 쪽은 꼼꼼한 검토를 원해 부딪히기 쉬워요. 안건을 나누거나 '오늘은 방향만 / 내일은 디테일'처럼 순서를 정하면 편해요.",
+          "isWarning": false
+        }
+      ]
+    }
+  },
+  "office": {
+    "section_dna": {
+      "person_a": {
+        "nickname": "Alex",
+        "character_title": "독립적 추진가 · 원칙·정밀 DNA",
+        "work_style": "원칙과 효율을 중시하고, 날카롭게 핵심만 짚어요.",
+        "inner_standard": "큰 변화를 감당하며, 구조를 다시 짜려 합니다.",
+        "overall_character": "오피스에서 원칙·정밀 에너지가 두드러져요. 동료심·실행·현장 쪽 강점이 살아나며, 팀에서 '독립적 추진가' 포지션이 잘 맞습니다.",
+        "contribution_style": "balanced",
+        "contribution_style_label": "균형형 — 상황에 따라 지원과 성과 사이를 오가요"
+      },
+      "person_b": {
+        "nickname": "Jordan",
+        "character_title": "독립적 추진가 · 분석·유연 DNA",
+        "work_style": "깊이 생각한 뒤 움직이고, 섣부른 결론은 피하려 해요.",
+        "inner_standard": "상처받으면 방어적으로 굳고, 혼자 정리할 시간이 필요해요.",
+        "overall_character": "오피스에서 분석·유연 에너지가 두드러져요. 동료심·실행·현장 쪽 강점이 살아나며, 팀에서 '독립적 추진가' 포지션이 잘 맞습니다.",
+        "contribution_style": "balanced",
+        "contribution_style_label": "균형형 — 상황에 따라 지원과 성과 사이를 오가요"
+      }
+    },
+    "section_snapshot": {
+      "fit_pct": 80,
+      "synergy_pct": 85,
+      "risk_pct": 25,
+      "one_line_definition": "독립적 추진가와 독립적 추진가 — 톱니바퀴가 맞물리는 황금 조합. 기운이 서로를 자연스럽게 살려줘요."
+    },
+    "section_mix_fit": {
+      "person_a_work_style": "Alex — 원칙과 효율을 중시하고, 핵심만 짚어 정리하는 분석형. 현장 실행 쪽 업무에서 강점이 잘 드러나요.",
+      "person_b_work_style": "Jordan — 깊이 생각한 뒤 움직이고, 섣부른 결론을 피하는 신중형. 현장 실행 쪽 업무에서 강점이 잘 드러나요.",
+      "communication_fit": "회의실에서 방향이 잘 맞는 편이에요. 회의에서 한쪽은 빠른 결론, 다른 쪽은 꼼꼼한 검토를 원해 부딪히기 쉬워요. 안건을 나누거나 '오늘은 방향만 / 내일은 디테일'처럼 순서를 정하면 편해요.",
+      "reporting_style_fit": {
+        "person_a": {
+          "nickname": "Alex",
+          "style": "flexible"
+        },
+        "person_b": {
+          "nickname": "Jordan",
+          "style": "flexible"
+        },
+        "summary": "Alex와 Jordan 둘 다 공유·보고 스타일이 비슷해요 — 상황에 따라 유연하게. 회의나 메신저로 전달할 때도 그 포맷을 맞추면 덜 어긋나요."
+      }
+    },
+    "section_respect": {
+      "person_a_boundary": "Alex에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요. 큰 변화를 감당하며, 구조를 다시 짜려 합니다.",
+      "person_b_boundary": "Jordan에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요. 상처받으면 방어적으로 굳고, 혼자 정리할 시간이 필요해요.",
+      "break_boundary_fit": {
+        "person_a": {
+          "nickname": "Alex",
+          "style": "balanced"
+        },
+        "person_b": {
+          "nickname": "Jordan",
+          "style": "balanced"
+        },
+        "summary": "Alex는 그때그때 유연하게이고, Jordan는 그때그때 유연하게이에요. 신호가 잘 맞는 편이라, 같이 쉬는 시간이 부담보다는 편안함에 가까워요."
+      }
+    },
+    "section_roles": {
+      "person_a": {
+        "nickname": "Alex",
+        "weapons": [
+          "현장 실행",
+          "팀 빌딩"
+        ],
+        "handoff_tasks": [
+          {
+            "task_label": "예산·수익 관리",
+            "handoff_to": "Jordan",
+            "reason": "Jordan에게 실속·자원 역량이 있어요. 예산·수익 관리 쪽은 Jordan에게 맡기세요."
+          }
+        ]
+      },
+      "person_b": {
+        "nickname": "Jordan",
+        "weapons": [
+          "현장 실행",
+          "팀 빌딩"
+        ],
+        "handoff_tasks": [
+          {
+            "task_label": "기획·아이디어",
+            "handoff_to": "Alex",
+            "reason": "Alex에게 기획·표현 역량이 있어요. 기획·아이디어 쪽은 Alex에게 맡기세요."
+          }
+        ]
+      },
+      "synergy_one_liner": "두 사람은 서로 다른 비즈니스 무기를 갖고 있어요. Alex는 현장 실행·팀 빌딩 쪽, Jordan는 현장 실행·팀 빌딩 쪽으로 나누면 톱니바퀴가 돌아갑니다.",
+      "leadership_split": null
+    },
+    "section_upset": {
+      "person_a": {
+        "nickname": "Alex",
+        "upset_signals": "예민해지고, 무시당했다고 느끼면 말투가 세지거나 거리를 둬요. 구조·역할을 다시 짜야 한다고 느끼며 딱딱해질 수 있어요.",
+        "do_list": [
+          "'네 덕분에 됐다'는 인정을 먼저 하기",
+          "1:1로 조용히 대화 자리 만들기",
+          "팀 안에서 공개적으로 역할을 인정해 주기"
+        ],
+        "avoid_list": [
+          "회의에서 공개적으로 깎아내리기",
+          "속도만 강조하며 감정 무시하기"
+        ]
+      },
+      "person_b": {
+        "nickname": "Jordan",
+        "upset_signals": "예민해지고, 무시당했다고 느끼면 말투가 세지거나 거리를 둬요. 방어적으로 굳고, 혼자만의 시간이 필요해 보여요.",
+        "do_list": [
+          "'네 덕분에 됐다'는 인정을 먼저 하기",
+          "1:1로 조용히 대화 자리 만들기",
+          "팀 안에서 공개적으로 역할을 인정해 주기"
+        ],
+        "avoid_list": [
+          "회의에서 공개적으로 깎아내리기",
+          "속도만 강조하며 감정 무시하기"
+        ]
+      },
+      "feedback_cushion": {
+        "to_a": "Alex에게는 부담 없이 담백하게 — 예: \"다음엔 이렇게 한 번만 맞춰볼까요?\" 차분한 제안이면 충분해요.",
+        "to_b": "Jordan에게는 부담 없이 담백하게 — 예: \"다음엔 이렇게 한 번만 맞춰볼까요?\" 차분한 제안이면 충분해요."
+      }
+    },
+    "section_ideal_roles": {
+      "person_a": {
+        "nickname": "Alex",
+        "ideal_roles": [
+          "현장 실행",
+          "고객·CS 리드",
+          "팀 리더",
+          "파트너 조율"
+        ],
+        "ideal_departments": [
+          "현장·필드",
+          "고객지원",
+          "팀 단위 실행 조직"
+        ],
+        "why": "Alex은(는) 독립적 추진가 기질이라 현장·필드·현장 실행 같은 자리에서 역량이 잘 드러나요."
+      },
+      "person_b": {
+        "nickname": "Jordan",
+        "ideal_roles": [
+          "현장 실행",
+          "고객·CS 리드",
+          "팀 리더",
+          "파트너 조율"
+        ],
+        "ideal_departments": [
+          "현장·필드",
+          "고객지원",
+          "팀 단위 실행 조직"
+        ],
+        "why": "Jordan은(는) 독립적 추진가 기질이라 현장·필드·현장 실행 같은 자리에서 역량이 잘 드러나요."
+      },
+      "together_combo": "함께 일할 때는 Alex가 현장 실행 쪽, Jordan가 현장 실행 쪽으로 역할을 나누면 팀이 가장 잘 돌아갑니다. 현장·필드 × 현장·필드 조합이 특히 잘 맞아요."
+    },
+    "section_warning": {
+      "conflict_trigger": "회의에서 의견이 정면 충돌할 때 — 한쪽은 빠른 결론, 다른 쪽은 신중한 검토를 원해서 '태클 대 태클'로 번지기 쉽습니다.",
+      "de_escalation": {
+        "hashtag": "#인정받으면_풀려요",
+        "color": "red",
+        "title": "인정 한 마디가 스위치",
+        "detail": "무시당했다고 느끼면 바로 방어 모드예요. 회의·단체 채팅에서 바로 지적하기보다 따로 말씀드리며, '덕분에 여기까지 왔어요'를 먼저 건네 보세요."
+      }
+    },
+    "section_compare_table": [
+      {
+        "id": "boundary",
+        "label": "공사 구분선",
+        "personA": {
+          "nickname": "Alex",
+          "shortLabel": "동료 밀착형 — 분위기·스몰토크 중요",
+          "band": "비겁"
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "shortLabel": "동료 밀착형 — 분위기·스몰토크 중요",
+          "band": "비겁"
+        },
+        "meaning": "일과 사적인 대화의 경계를 비슷한 곳에 긋는 편이라 이 지점에서는 마찰이 적어요."
+      },
+      {
+        "id": "feedback",
+        "label": "피드백 수용 스타일",
+        "personA": {
+          "nickname": "Alex",
+          "shortLabel": "주체성 스위치형 — 인정이 먼저 필요",
+          "band": "비겁"
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "shortLabel": "주체성 스위치형 — 인정이 먼저 필요",
+          "band": "비겁"
+        },
+        "meaning": "피드백을 받아들이는 방식이 비슷해서, 지적이 감정싸움으로 잘 안 번져요."
+      },
+      {
+        "id": "synergy_position",
+        "label": "협업 시너지 포지션",
+        "personA": {
+          "nickname": "Alex",
+          "shortLabel": "원칙·정밀",
+          "band": "metal"
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "shortLabel": "분석·유연",
+          "band": "water"
+        },
+        "meaning": "한쪽은 새 판을 짜는 데, 다른 쪽은 이미 있는 룰을 정교하게 다듬는 데 강해요. 신사업·개척은 앞쪽에, 리스크 점검·운영은 뒤쪽에 맡기면 시너지가 나요."
+      },
+      {
+        "id": "burnout",
+        "label": "오피스 번아웃 대처",
+        "personA": {
+          "nickname": "Alex",
+          "shortLabel": "재구성형 — 구조부터 다시 짜려 함",
+          "band": "jin"
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "shortLabel": "방어형 — 방어적으로 굳고 혼자 시간 필요",
+          "band": "mi"
+        },
+        "meaning": "한쪽은 표현하며 풀고 다른 쪽은 혼자 정리하는 편이라, 힘들어 보여도 방식이 다를 뿐 무관심이 아니라는 걸 서로 알아두면 좋아요."
+      },
+      {
+        "id": "risk_taking",
+        "label": "딜메이킹 & 추진 기질",
+        "personA": {
+          "nickname": "Alex",
+          "shortLabel": "상황대응형 — 판마다 다르게 움직임",
+          "band": "balanced"
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "shortLabel": "상황대응형 — 판마다 다르게 움직임",
+          "band": "balanced"
+        },
+        "meaning": "리스크를 대하는 온도가 비슷해서, 큰 결정에서 속도가 안 어긋나요."
+      },
+      {
+        "id": "reporting_rhythm",
+        "label": "협업 추진 리듬",
+        "personA": {
+          "nickname": "Alex",
+          "shortLabel": "직진형 전달 — 할 말을 먼저 밀어 올리는 편",
+          "band": "yang"
+        },
+        "personB": {
+          "nickname": "Jordan",
+          "shortLabel": "호흡형 전달 — 상대 페이스에 맞춰 풀어 가는 편",
+          "band": "yin"
+        },
+        "meaning": "협업 전달·추진 리듬이 서로 달라요 — 한쪽에만 맞추기보다 짧게 방향을 공유한 뒤 세부 호흡을 맞추면 좋아요."
+      }
+    ]
+  },
+  "meta": {
+    "grade": "B",
+    "grade_reason": "파트너십 등급 B — 업무적 핏 80% · 협업 시너지 85% · 오피스 리스크 25%",
+    "uncertain_items": [
+      "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+      "년주 팔자 형식이 올바르지 않습니다 (경오).",
+      "월주 팔자 형식이 올바르지 않습니다 (신사).",
+      "일주 팔자 형식이 올바르지 않습니다 (경진).",
+      "시주 팔자 형식이 올바르지 않습니다 (계미).",
+      "출생지 미입력 — 경도·시차 보정 없이 만세력 기본값을 씁니다.",
+      "년주 팔자 형식이 올바르지 않습니다 (임신).",
+      "월주 팔자 형식이 올바르지 않습니다 (계묘).",
+      "일주 팔자 형식이 올바르지 않습니다 (계미).",
+      "시주 팔자 형식이 올바르지 않습니다 (병진)."
+    ],
+    "fit_pct": 80,
+    "synergy_pct": 85,
+    "risk_pct": 25,
+    "psych_match": {
+      "axis_results": [
+        {
+          "axis_key": "stimulation",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "self_control",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "practicality",
+          "score_a": 58,
+          "score_b": 61,
+          "gap": 3,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "structure",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "empathy",
+          "score_a": 62,
+          "score_b": 57,
+          "gap": 5,
+          "match_type": "complementary"
+        },
+        {
+          "axis_key": "conflict_style",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "resilience",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "recognition",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "energy_style",
+          "score_a": 55,
+          "score_b": 48,
+          "gap": 7,
+          "match_type": "complementary"
+        },
+        {
+          "axis_key": "thinking_style",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        },
+        {
+          "axis_key": "decision_style",
+          "score_a": 50,
+          "score_b": 50,
+          "gap": 0,
+          "match_type": "similarity"
+        }
+      ],
+      "conflict_triggers": []
+    },
+    "psych_lens": {
+      "lens_title": "🏢 같이 일할 때 특히 눈에 띄는 축",
+      "chart_note": "동료·파트너 둘의 현재 모습을 11축 설문으로 비교했어요. (연인 심화와 같은 기준이에요.)",
+      "intro_line": "위 차트는 11축 전체예요. 아래는 협업에서 체감되기 쉬운 질문들이에요. 역할만 나눠도 훨씬 편해져요.",
+      "highlights": [
+        {
+          "axis_key": "energy_style",
+          "axis_label": "외향에너지",
+          "gap": 7,
+          "match_type": "complementary",
+          "topic": "협업 에너지",
+          "section_hint": "「오피스 DNA」",
+          "hook": "외부 미팅 vs 책상 작업, 누가 더 편한가요?",
+          "narrative": "대외·내부 역할을 나누면 각자 강점이 살아나요."
+        },
+        {
+          "axis_key": "practicality",
+          "axis_label": "현실실리",
+          "gap": 3,
+          "match_type": "similarity",
+          "topic": "실리·효율",
+          "section_hint": "「믹스 핏」",
+          "hook": "둘 다 '일단 효율'부터 보는 편인가요?",
+          "narrative": "현실적인 판단이 맞아 업무 결정이 빨라요."
+        },
+        {
+          "axis_key": "structure",
+          "axis_label": "계획구조화",
+          "gap": 0,
+          "match_type": "similarity",
+          "topic": "업무 루틴",
+          "section_hint": "「역할 분담」",
+          "hook": "둘 다 체크리스트·일정 관리를 좋아하는 편인가요?",
+          "narrative": "계획 스타일이 비슷해 프로젝트 진행이 매끄러운 편이에요."
+        },
+        {
+          "axis_key": "conflict_style",
+          "axis_label": "갈등직면성",
+          "gap": 0,
+          "match_type": "similarity",
+          "topic": "갈등·피드백",
+          "section_hint": "「삐졌을 때」",
+          "hook": "둘 다 불편한 얘기를 비교적 빨리 꺼내는 편인가요?",
+          "narrative": "미루지 않아서 팀 내 오해가 덜해요. 말투만 부드럽게 조절하면 충분해요."
+        }
+      ]
+    }
+  },
+  "context_output": {
+    "schema_version": "context_output_v1",
+    "domain": "work",
+    "grade": "B",
+    "scores": {
+      "activation": 80,
+      "benefit": 85,
+      "risk": 25
+    },
+    "dominant_categories": {
+      "person_a_strong": {
+        "category": "비겁"
+      },
+      "person_b_strong": {
+        "category": "비겁"
+      },
+      "person_a_lacking": {
+        "category": "재성"
+      },
+      "person_b_lacking": {
+        "category": "관성"
+      },
+      "reporting_style_a": {
+        "category": "flexible"
+      },
+      "reporting_style_b": {
+        "category": "flexible"
+      },
+      "break_boundary_a": {
+        "category": "balanced"
+      },
+      "break_boundary_b": {
+        "category": "balanced"
+      },
+      "contribution_style_a": {
+        "category": "balanced"
+      },
+      "contribution_style_b": {
+        "category": "balanced"
+      }
+    },
+    "signals": {
+      "hasStemCombine": true,
+      "hasElementMutualComplement": true,
+      "hasStemClashOrOvercome": true,
+      "hasMonthDirectCombine": false,
+      "hasMonthElementFlow": true,
+      "hasMonthClashOrPunish": false,
+      "hasMonthDirectChung": false,
+      "hasWonjinOrGuimun": false,
+      "hasHaPaHae": true,
+      "hasGongmangHit": false
+    },
+    "axis_notes": {},
+    "section_summaries": {
+      "reporting_style": "Alex와 Jordan 둘 다 공유·보고 스타일이 비슷해요 — 상황에 따라 유연하게. 회의나 메신저로 전달할 때도 그 포맷을 맞추면 덜 어긋나요.",
+      "break_boundary": "Alex는 그때그때 유연하게이고, Jordan는 그때그때 유연하게이에요. 신호가 잘 맞는 편이라, 같이 쉬는 시간이 부담보다는 편안함에 가까워요.",
+      "leadership": null
+    }
+  },
+  "canonical_projections": {
+    "comparison_table": {
+      "boundary": {
+        "band_a": "비겁",
+        "band_b": "비겁"
+      },
+      "feedback": {
+        "band_a": "비겁",
+        "band_b": "비겁"
+      },
+      "synergy_position": {
+        "band_a": "metal",
+        "band_b": "water"
+      },
+      "burnout": {
+        "band_a": "jin",
+        "band_b": "mi"
+      },
+      "risk_taking": {
+        "band_a": "balanced",
+        "band_b": "balanced"
+      },
+      "reporting_rhythm": {
+        "band_a": "yang",
+        "band_b": "yin"
+      }
+    }
+  }
+}
+
+==================================================
+=== DEV NARRATIVE 7 SCENES (KO-KR) ===
+==================================================
+
+--- SCENE 1: 리더십과 의사결정 권한 분담 (work_scene_1_leadership) ---
+Headline: Alex님의 방향 제시와 Jordan님의 체계적 실행이 이끄는 리더십 분담
+[Beat 1 - Recognition]:
+프로젝트의 큰 그림을 그리고 전략을 수립할 때 Alex님이 방향키를 쥐면, Jordan님이 리스크를 점검하고 실행 로드맵을 체계화하는 최적의 리더십 밸런스를 보여줍니다.
+[Beat 2 - Translation]:
+Alex님에게는 전략 기획 및 의사결정 총괄, Jordan님에게는 프로세스 최적화 및 리소스 조율의 업무 에너지가 교차하며 건강한 공동 설계를 이룹니다.
+[Beat 3 - Reframing]:
+두 사람 모두 책임감이 강할 때 영역 침범으로 인한 주도권 갈등이 생길 수 있으므로, 프로젝트별 최종 의사결정자(DRI)를 사전에 정의해야 합니다.
+[Beat 4 - Action Guidance]:
+기획 단계에서 최종 승인권자와 실행 주관자의 역할을 명문화하고 영역별 권한을 전적으로 위임하세요.
+[Scripts]:
+  - (A) [권한 위임 및 DRI 설정] "이번 건은 Jordan님의 전문성이 중요한 영역이니, 최종 의사결정권을 위임하고 저는 리소스 지원에 집중하겠습니다."
+[Role Rules]:
+  - 프로젝트 착수 시 RACI 매트릭스를 정의하고 상대방 영역의 결정 존중하기
+
+--- SCENE 2: 업무 추진 템포와 납기 실행력 (work_scene_2_execution) ---
+Headline: 빠른 프로토타이핑과 정밀한 완성도의 조화로운 실행 템포
+[Beat 1 - Recognition]:
+업무를 추진할 때 속도감 있게 핵심 가설을 검증하는 동력과 결과물의 완성도를 끌어올리는 꼼꼼함이 만나 높은 생산성을 만듭니다.
+[Beat 2 - Translation]:
+초기 발산 속도와 후반 수렴 안정성이 조화를 이루어, 납기 준수와 품질 유지라는 두 마리 토끼를 잡을 수 있습니다.
+[Beat 3 - Reframing]:
+속도 지향적 태도가 꼼꼼함을 답답해하거나 반대로 세밀한 검증이 속도를 불안해하지 않도록, 개발/기획 단계별 마일스톤을 명확히 구분하세요.
+[Beat 4 - Action Guidance]:
+초기 '러프한 가설 검증' 단계와 후반 '안정화 및 QA' 단계를 분리하여 일정표에 반영하세요.
+[Scripts]:
+  - (BOTH) [단계별 완성도 합의] "지금은 v1 초안 검증 단계이니 80% 완성도로 빠르게 공유하고, 다음 주에 디테일을 함께 보완하시죠."
+[Role Rules]:
+  - 초안 단계에서는 속도에, 배포 전 단계에서는 안정성에 우선순위 두기
+
+--- SCENE 3: 판단의 기준과 리스크 대응 스타일 (work_scene_3_decision) ---
+Headline: 불확실한 상황에서 신속한 결단과 데이터 검증의 의사결정 균형
+[Beat 1 - Recognition]:
+새로운 기능 런칭이나 방향 전환이 필요할 때, 직관적인 빠른 가설 수립과 냉철한 지표 분석이 상호 보완되어 실패 확률을 최소화합니다.
+[Beat 2 - Translation]:
+되돌릴 수 있는 결정(Type 2)은 신속하게 실행하고, 되돌릴 수 없는 결정(Type 1)은 다각도로 검토하는 지혜로운 기준을 공유합니다.
+[Beat 3 - Reframing]:
+의견 대립은 불협화음이 아니라 비즈니스 리스크를 사전에 걸러내는 가장 저렴한 품질 보증 과정입니다.
+[Beat 4 - Action Guidance]:
+결정 지연이 발생할 경우 '실패했을 때 감당 가능한 비용'을 기준으로 의사결정 타임라인을 설정하세요.
+[Scripts]:
+  - (BOTH) [가역적 결정 신속 추진] "이 사안은 수정이 용이한 가역적 결정이니, 우선 2주간 A안으로 테스트하고 데이터를 확인하죠."
+[Role Rules]:
+  - 데이터가 부족할 때는 작은 실험으로 가설을 먼저 검증하기
+
+--- SCENE 4: 직무 보완과 십성 스페셜 웨폰 (work_scene_4_synergy) ---
+Headline: 서로 다른 무기가 결합될 때 발생하는 독보적인 직무 시너지
+[Beat 1 - Recognition]:
+Alex님의 전문 영역과 Jordan님의 핵심 역량이 융합될 때, 단독으로는 해결하기 어려운 복합적인 비즈니스 과제를 탁월하게 돌파합니다.
+[Beat 2 - Translation]:
+서로의 강점을 정확히 인정하고 상대방의 영역을 믿고 맡길 때 1+1 이상의 폭발적인 시너지가 발현됩니다.
+[Beat 3 - Reframing]:
+서로의 업무 방식 차이는 비효율이 아니라 문제를 다각도에서 바라볼 수 있게 해주는 가장 강력한 경쟁력입니다.
+[Beat 4 - Action Guidance]:
+분기별로 상호 기여도를 축하하고, 두 사람의 협업 성공 모델을 팀 전체의 베스트 프랙티스로 전파하세요.
+[Scripts]:
+  - (BOTH) [협업 시너지 감사] "이번 프로젝트는 두 사람의 강점이 완벽하게 맞아떨어져서 가능했습니다. 다음 목표도 함께하시죠!"
+[Role Rules]:
+  - 동료의 전문성을 공개적으로 인정하고 상호 보완적 팀워크 구축하기
+
+--- SCENE 5: 자율성 보장과 마이크로매니징 방지 (work_scene_5_autonomy) ---
+Headline: 과도한 확인을 없애고 자율성을 극대화하는 비동기 업무 계약
+[Beat 1 - Recognition]:
+잦은 구두 확인이나 실시간 독촉 없이도 정해진 이슈 트래커와 슬랙 스레드를 통해 진행 상황을 자율적으로 투명하게 공유할 때 최고의 몰입이 가능합니다.
+[Beat 2 - Translation]:
+깊은 업무 몰입(Deep Work)을 방해받지 않는 독립적 실행 시간 보장이 번아웃을 막고 산출물의 밀도를 높입니다.
+[Beat 3 - Reframing]:
+진행 상황을 묻는 것은 불신이 아니라 전체 일정 관리를 위한 불안감 때문입니다. 선제적인 현황 공유가 자율성을 확보해 줍니다.
+[Beat 4 - Action Guidance]:
+일일 스탠드업 대신 비동기 슬랙 봇을 활용하고, 블로커(Blocker)가 발생했을 때만 즉시 핑을 찍는 규칙을 적용하세요.
+[Scripts]:
+  - (BOTH) [선제적 비동기 현황 공유] "현재 태스크 70% 완료되었고 내일 오후 3시까지 PR 올리겠습니다. 특이 블로커는 없습니다."
+[Role Rules]:
+  - 정해진 마일스톤 전에는 불필요한 중간 개입을 자제하고 자율성 보장하기
+
+--- SCENE 6: 압박 상황에서의 스트레스 반응 모드 (work_scene_6_stress) ---
+Headline: 프로젝트 마감 압박 속 무비난 원칙과 지속 가능한 페이스 유지
+[Beat 1 - Recognition]:
+릴리즈 직전의 긴급 장애나 고부하 상황에서도 누구의 탓을 하기보다 시스템 개선에 집중하는 무비난(Blameless) 문화가 조직의 회복 탄력성을 지켜줍니다.
+[Beat 2 - Translation]:
+스트레스 상황에서 감정의 온도가 높아지는 것을 감지하고, 인시던트 종료 후 즉각적인 심리적 안도감을 제공합니다.
+[Beat 3 - Reframing]:
+장애나 실수는 개인의 무능이 아니라 프로세스 결함의 신호입니다. 이를 함께 고쳐나갈 때 시스템이 견고해집니다.
+[Beat 4 - Action Guidance]:
+고강도 스프린트 직후에는 반드시 팀 회고와 리프레시 시간을 배정하여 번아웃을 선제적으로 차단하세요.
+[Scripts]:
+  - (BOTH) [무비난 원인 분석 회고] "장애 대응 정말 고생 많으셨습니다. 이번 이슈를 계기로 재발 방지 모니터링 룰을 추가하시죠."
+[Role Rules]:
+  - 인시던트 발생 시 원인 분석에 집중하고 개인에 대한 책임 전가 금지
+
+--- SCENE 7: 피드백 쿠션과 지속 가능한 번아웃 회복 (work_scene_7_feedback_recovery) ---
+Headline: 인격적 비판을 배제하고 과업 성과에 집중하는 객관적 피드백과 회복
+[Beat 1 - Recognition]:
+결과물에 대한 리뷰나 개선점 전달 시, 감정적 소모 없이 데이터와 구체적 행동(SBI)에 기반한 피드백이 오갈 때 심리적 안전감이 단단해집니다.
+[Beat 2 - Translation]:
+직설적 화법이 의도치 않게 상대의 전문성을 부정하는 느낌을 주지 않도록, 해결책 중심의 제안형 화법이 관계를 보호합니다.
+[Beat 3 - Reframing]:
+날카로운 피드백은 상대방의 성장을 바라는 높은 기대치에서 나옵니다. 맥락(Why)을 먼저 공유하면 오해 없이 수용됩니다.
+[Beat 4 - Action Guidance]:
+피드백을 줄 때는 '상황(Situation) - 관찰된 현상(Behavior) - 비즈니스 영향(Impact)' 순서로 전달하세요.
+[Scripts]:
+  - (BOTH) [객관적 개선 피드백] "이 부분은 유저 이탈률을 낮추기 위해 이런 방식으로 대안을 테스트해 보면 어떨까요?"
+[Role Rules]:
+  - 피드백은 산출물에 한정하고 칭찬과 개선점을 샌드위치 구조로 전달하기

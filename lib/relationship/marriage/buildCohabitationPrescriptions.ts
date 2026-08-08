@@ -39,9 +39,10 @@ function buildSecretAffinityPrescription(
   nicknameA: string,
   nicknameB: string,
   locale: Locale,
+  force = false,
 ): CohabitationPrescriptionItem | null {
   const { secret_affinity } = pair;
-  if (!secret_affinity.present && secret_affinity.affinity_index < 45) {
+  if (!force && !secret_affinity.present && secret_affinity.affinity_index < 45) {
     return null;
   }
 
@@ -214,12 +215,13 @@ function buildDayPalacePrescription(
   nicknameA: string,
   nicknameB: string,
   locale: Locale,
+  force = false,
 ): CohabitationPrescriptionItem | null {
   const cross = pair.day_palace_cross;
   const isTension =
     cross.cross_relation_type != null &&
     TENSION_BRANCH_TYPES.has(cross.cross_relation_type);
-  if (!isTension && cross.cross_tension_index < 35) {
+  if (!force && !isTension && cross.cross_tension_index < 35) {
     return null;
   }
 
@@ -282,7 +284,7 @@ function buildDayPalacePrescription(
       ],
       [
         "문 앞에서 따라가며 대화 이어가기 — 물리적 거리 확보 없이는 생활 리듬 차이 자극이 계속 증폭됩니다.",
-        "'너 성격이 원래 그렇다'며 상대를 한 가지 타입으로 고정하기 — 성향 설명은 이해용이지 면죅부가 아닙니다.",
+        "'너 성격이 원래 그렇다'며 상대를 한 가지 타입으로 고정하기 — 성향 설명은 이해용이지 면죄부가 아닙니다.",
         "부모님·자녀 앞에서 배우자 습관을 지적하며 연대 요청하기 — 공개 망신은 집안 긴장을 장기화합니다.",
         "갈등 직후 즉시 '이사·이혼·각방' 같은 구조 변경을 카드로 꺼내기 — 구조 이야기는 감정 온도가 내려간 뒤에만.",
       ],
@@ -381,37 +383,38 @@ export function buildCohabitationPrescriptions(params: {
   locale?: Locale;
 }): CohabitationPrescriptionPack {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const candidates = [
-    buildSecretAffinityPrescription(
-      params.pair,
-      params.nicknameA,
-      params.nicknameB,
-      locale,
-    ),
-    buildCfoPowerPrescription(
-      params.pair,
-      params.nicknameA,
-      params.nicknameB,
-      locale,
-    ),
-    buildDayPalacePrescription(
-      params.pair,
-      params.nicknameA,
-      params.nicknameB,
-      locale,
-    ),
-  ].filter((item): item is CohabitationPrescriptionItem => item != null);
+  // A/B/C (생활 리듬 긴장 / 비언어적 친밀 / 집안 운영 기본) — 사용자 지정
+  // "무조건 고정 노출" 요청에 따라 개별 게이트를 강제로 건너뛴다(force=true).
+  // 이 3개는 매 리포트마다 항상 전부 나온다. cfo_power_struggle(4번째 처방)은
+  // 사용자가 지정한 A/B/C에 없으므로 기존 게이트를 그대로 둔다.
+  const dayPalaceTension = buildDayPalacePrescription(
+    params.pair,
+    params.nicknameA,
+    params.nicknameB,
+    locale,
+    true,
+  )!;
+  const secretAffinity = buildSecretAffinityPrescription(
+    params.pair,
+    params.nicknameA,
+    params.nicknameB,
+    locale,
+    true,
+  )!;
+  const homeBaseline = buildBaselinePrescription(params.nicknameA, params.nicknameB, locale);
+  const cfoPower = buildCfoPowerPrescription(
+    params.pair,
+    params.nicknameA,
+    params.nicknameB,
+    locale,
+  );
 
-  const items =
-    candidates.length > 0
-      ? candidates
-      : [
-          buildBaselinePrescription(params.nicknameA, params.nicknameB, locale),
-        ];
-
-  if (candidates.length > 0 && candidates.length < 3) {
-    items.push(buildBaselinePrescription(params.nicknameA, params.nicknameB, locale));
-  }
+  const items: CohabitationPrescriptionItem[] = [
+    dayPalaceTension,
+    secretAffinity,
+    homeBaseline,
+    ...(cfoPower ? [cfoPower] : []),
+  ];
 
   const priority: Record<CohabitationPrescriptionItem["topic"], number> = {
     cfo_power_struggle: 100,

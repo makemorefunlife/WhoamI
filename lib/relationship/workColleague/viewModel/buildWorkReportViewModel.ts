@@ -63,7 +63,7 @@ const SECTION_TITLES: Record<Locale, SectionTitleSet> = {
     comparison: "두 사람의 업무 스타일",
     roleMatrix: "역할 및 기여 방식",
     relationshipLoop: "함께 일할 때 반복되는 흐름",
-    deepRead: "🔍 심층 리드 — 사주가 더해주는 이야기",
+    deepRead: "심층 리드 — 사주가 더해주는 이야기",
     warning: "협업 안전장치",
     prescription: "실전 운영 가이드",
     conflictTrigger: "갈등 트리거",
@@ -75,7 +75,7 @@ const SECTION_TITLES: Record<Locale, SectionTitleSet> = {
     comparison: "Work Styles Compared",
     roleMatrix: "Roles & How You Each Contribute",
     relationshipLoop: "The Loop You Fall Into at Work",
-    deepRead: "🔍 Deep Read — What the Chart Adds",
+    deepRead: "Deep Read — What the Chart Adds",
     warning: "Collaboration Safeguards",
     prescription: "Playbook for Working Together",
     conflictTrigger: "Conflict Trigger",
@@ -406,6 +406,7 @@ function buildWarningSection(
     deEscalation: sectionWarning.de_escalation,
     upset,
     feedbackCushion: report.office?.section_upset?.feedback_cushion ?? undefined,
+    pairComplaintNote: report.office?.section_upset?.pair_complaint_note,
   };
 }
 

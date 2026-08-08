@@ -131,6 +131,8 @@ export type WarningSection = BaseSection & {
   upset?: PersonSlot<OfficeUpsetGuide>;
   /** 11축 없는 구버전 캐시·설문 미완료 시 생략 */
   feedbackCushion?: FeedbackCushionScript;
+  /** 갈등직면성/자기통제 기반 불만 신호·대처법 — 11축 없거나 격차 작으면 생략 */
+  pairComplaintNote?: string;
 };
 
 export type PrescriptionSection = BaseSection & {

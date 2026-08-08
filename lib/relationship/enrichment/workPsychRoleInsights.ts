@@ -177,3 +177,92 @@ export function buildSoloVsDiscussLine(params: {
 
   return `${base}${tail}`;
 }
+
+/**
+ * 항목 10 (Chapter 3 보강 — 사용자 요청상 "회의실" 맥락, 리포트 구조상
+ * 보고·소통 핏 카드에 안착) — 신중결정 격차는 리스크 한도 숫자화, 계획구조화
+ * 격차는 보고 리듬 고정 일정화로 각각 분리해 조언한다. 둘 다 psych 전용.
+ */
+export function buildRiskAndRhythmLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  locale?: Locale;
+}): string | null {
+  const { psychA, psychB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const decisionGap = Math.abs(psychA.secondary_axes.decision_style - psychB.secondary_axes.decision_style);
+  const structureGap = Math.abs(psychA.secondary_axes.structure - psychB.secondary_axes.structure);
+  if (decisionGap < 15 && structureGap < 15) return null;
+
+  const parts: string[] = [];
+  if (decisionGap >= 15) {
+    parts.push(
+      pick(
+        locale,
+        "Since you weigh risk differently, put a rough number on how much risk each of you can live with before a decision — that alone stops a lot of back-and-forth.",
+        "리스크를 받아들이는 정도가 서로 달라요 — 각자 감당할 수 있는 리스크 한도를 대략적인 숫자로 미리 정해두면 논쟁이 제자리를 도는 걸 막을 수 있어요.",
+      ),
+    );
+  }
+  if (structureGap >= 15) {
+    parts.push(
+      pick(
+        locale,
+        "Your reporting rhythms differ too, so make check-ins a fixed, recurring slot instead of leaving them ad hoc.",
+        "보고·피드백 리듬도 서로 다른 편이니, 그때그때 챙기기보다 정기적인 체크인을 고정 일정으로 만들어두세요.",
+      ),
+    );
+  }
+  return parts.join(" ");
+}
+
+/**
+ * 항목 7 — 불만이 쌓였을 때(갈등직면성 conflict_style 격차로 신호 분리,
+ * 자기통제 self_control 격차로 대처법 톤 분리). 두 축 다 psych 전용.
+ */
+export function buildComplaintSignalLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  nameA: string;
+  nameB: string;
+  locale?: Locale;
+}): string | null {
+  const { psychA, psychB, nameA, nameB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const csA = psychA.secondary_axes.conflict_style;
+  const csB = psychB.secondary_axes.conflict_style;
+  const csGap = Math.abs(csA - csB);
+  if (csGap < 15) return null;
+
+  const directIsA = csA > csB;
+  const directName = directIsA ? nameA : nameB;
+  const quietName = directIsA ? nameB : nameA;
+
+  const base = pick(
+    locale,
+    `When something's bothering them, ${directName} tends to get terser and cut straight to the point, while ${quietName} tends to go quiet and hold it in rather than name it.`,
+    `불만이 쌓이면 ${directName}은(는) 평소보다 말이 짧아지고 핵심만 툭 던지는 쪽으로 티가 나고, ${quietName}은(는) 말수를 줄이며 조용히 입을 닫는 쪽으로 신호가 와요.`,
+  );
+
+  const scA = psychA.secondary_axes.self_control;
+  const scB = psychB.secondary_axes.self_control;
+  const scGap = Math.abs(scA - scB);
+  const tail =
+    scGap >= 15
+      ? pick(
+          locale,
+          ` With ${directName}, a polite, direct check-in works best. With ${quietName}, skip the formal sit-down — a casual coffee break gets more out of them.`,
+          ` ${directName}에게는 돌려 말하지 말고 정중하게 직접 물어보는 게 가장 잘 통하고, ${quietName}에게는 무겁게 면담 자리를 잡기보다 가벼운 커피 타임으로 슬쩍 풀어보는 게 더 효과적이에요.`,
+        )
+      : pick(
+          locale,
+          ` Either way, checking in early beats waiting for it to surface on its own.`,
+          ` 어느 쪽이든, 스스로 터지길 기다리기보다 먼저 가볍게 물어봐 주는 게 나아요.`,
+        );
+
+  return `${base}${tail}`;
+}

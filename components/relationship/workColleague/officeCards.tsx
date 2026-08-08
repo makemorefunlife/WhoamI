@@ -15,6 +15,7 @@ import type {
 } from "@/lib/relationship/workColleague/officeLanguage";
 import type { OfficePersonRoleCard } from "@/lib/relationship/workColleague/officeReportTemplate";
 import type { WorkCompareRow } from "@/lib/relationship/workColleague/sajuCompareTable";
+import { User } from "lucide-react";
 import {
   RelationshipReportParagraph,
   RelationshipReportLabel,
@@ -22,12 +23,19 @@ import {
 } from "@/components/relationship/reportLayout";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
+function PersonLabel({ name, accent }: { name: string; accent: string }) {
+  return (
+    <p className="flex items-center gap-1.5 text-sm font-bold text-white/92">
+      <User className="h-3.5 w-3.5 shrink-0" style={{ color: accent }} strokeWidth={1.75} aria-hidden />
+      {name}
+    </p>
+  );
+}
+
 export function DnaCard({
-  label,
   profile,
   accent,
 }: {
-  label: string;
   profile: OfficeDnaProfile & {
     nickname: string;
     contribution_style_label?: string | null;
@@ -37,9 +45,7 @@ export function DnaCard({
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">
-        {label} {profile.nickname}
-      </p>
+      <PersonLabel name={profile.nickname} accent={accent} />
       <p className="mt-2 text-base font-semibold" style={{ color: accent }}>
         {profile.character_title}
       </p>
@@ -119,20 +125,16 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
 }
 
 export function IdealRoleCard({
-  label,
   fit,
   accent,
 }: {
-  label: string;
   fit: OfficeIdealRoleFit;
   accent: string;
 }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">
-        {label} {fit.nickname}
-      </p>
+      <PersonLabel name={fit.nickname} accent={accent} />
       <RelationshipReportParagraph className="mt-3">{fit.why}</RelationshipReportParagraph>
       <div className="mt-4">
         <RelationshipReportLabel>{t.idealRolesLabel}</RelationshipReportLabel>
@@ -162,7 +164,7 @@ export function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent:
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">👤 {card.nickname}</p>
+      <PersonLabel name={card.nickname} accent={accent} />
       <div className="mt-4">
         <RelationshipReportLabel>
           {t.roleWeaponsLabel(card.nickname)}

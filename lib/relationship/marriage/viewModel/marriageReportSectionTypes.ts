@@ -82,6 +82,8 @@ export type MoneyChoresSection = BaseSection & {
   cfoCanonicalLabel?: string | null;
   /** Invisible mental load enrichment */
   mentalLoadNote?: string | null;
+  /** "우리를 위한 맞춤 제안" — CFO/갈등직면성/계획구조화 신호 게이트, 없으면 undefined */
+  coupleActionPlan?: import("@/lib/relationship/enrichment/marriageCoupleActionPlan").CoupleActionPlanSection;
 };
 
 // ---- Part 3: 침실 케미스트리 + 수면 + 애착 -----------------------------------

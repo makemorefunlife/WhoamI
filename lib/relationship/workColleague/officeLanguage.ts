@@ -780,8 +780,15 @@ export function buildUpsetResponseGuide(
 
   return {
     nickname,
+    // Named lead-in so two people who share a work category never render a
+    // byte-identical signals sentence — branchNuance already differs per
+    // person, but the base category line alone did not.
     upset_signals: sanitizeOfficeText(
-      `${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
+      pick(
+        locale,
+        `${nickname} tends to show it like this: ${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
+        `${topicParticle(nickname)} 이런 신호를 보여요 — ${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
+      ),
     ),
     do_list: base.doList.map((item) => sanitizeOfficeText(item)),
     avoid_list: base.avoidList.map((item) => sanitizeOfficeText(item)),
@@ -809,19 +816,19 @@ const NOBLE_STAR_BONUS: Record<
 > = {
   "en-US": {
     jangseong:
-      "On top of that, they carry the '장성살(General Star)' — leadership and management roles bring out even more of their strength.",
+      "On top of that, they carry a strong, natural leadership drive — management and team-lead roles bring out even more of their strength.",
     cheoneul:
-      "On top of that, they carry '천을귀인(Heaven's Noble)' — the luckiest star in saju — so they tend to draw in people who help them along the way.",
+      "On top of that, they carry a lucky pull that draws helpful people toward them — support tends to show up right when they need it.",
     munchang:
-      "On top of that, they carry a scholarly noble star — research, planning, and documentation work is where this really shines.",
+      "On top of that, they carry a scholarly streak — research, planning, and documentation work is where this really shines.",
   },
   "ko-KR": {
     jangseong:
-      "게다가 '장성살'까지 있어서, 팀을 이끄는 관리·리더십 자리에서 강점이 한층 배가돼요.",
+      "게다가 주도적인 리더십 기운까지 있어서, 팀을 이끄는 관리 자리에서 강점이 한층 배가돼요.",
     cheoneul:
-      "게다가 사주에서 가장 좋은 길신인 '천을귀인'까지 있어서, 주변에서 도와주는 사람이 잘 붙는 편이에요.",
+      "게다가 주변에서 자연스럽게 도움의 손길이 모이는 기운까지 있어서, 힘든 순간에 도와주는 사람이 잘 붙는 편이에요.",
     munchang:
-      "게다가 학문·글재주를 뜻하는 귀인까지 있어서, 리서치·기획·문서 작업 쪽에서 유독 빛을 발해요.",
+      "게다가 학문·글재주가 두드러지는 기운까지 있어서, 리서치·기획·문서 작업 쪽에서 유독 빛을 발해요.",
   },
 };
 

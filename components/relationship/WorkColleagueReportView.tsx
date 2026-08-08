@@ -292,9 +292,8 @@ export default function WorkColleagueReportView({
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <DnaCard label="👤" profile={dnaPair.me} accent={theme.accent} />
+            <DnaCard profile={dnaPair.me} accent={theme.accent} />
             <DnaCard
-              label="👤"
               profile={dnaPair.partner}
               accent={theme.accent}
             />
@@ -388,9 +387,8 @@ export default function WorkColleagueReportView({
           accentColor={theme.accent}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <IdealRoleCard label="👤" fit={idealPair.me} accent={theme.accent} />
+            <IdealRoleCard fit={idealPair.me} accent={theme.accent} />
             <IdealRoleCard
-              label="👤"
               fit={idealPair.partner}
               accent={theme.accent}
             />

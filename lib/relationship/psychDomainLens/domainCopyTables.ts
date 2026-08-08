@@ -106,7 +106,7 @@ export const WORK_AXIS_COPY: Partial<Record<SecondaryAxisKey, AxisCopySet>> = {
   conflict_style: {
     tension: c(
       "불편한 피드백, 바로 말할 사람과 미루는 사람이 있나요?",
-      "갈등을 다루는 속도가 달라 작은 불만이 쌓이기 쉬워요. 「삐졌을 때」 가이드를 꼭 보세요.",
+      "갈등을 다루는 속도가 달라 작은 불만이 쌓이기 쉬워요. 「업무 스트레스 대응」 가이드를 꼭 보세요.",
     ),
     similarity: c(
       "둘 다 불편한 얘기를 비교적 빨리 꺼내는 편인가요?",
@@ -240,7 +240,7 @@ export const WORK_DOMAIN_AXES: Partial<
   },
   conflict_style: {
     topic: "갈등·피드백",
-    section_hint: "「삐졌을 때」",
+    section_hint: "「업무 스트레스 대응」",
     section_key: "upset",
   },
   decision_style: {

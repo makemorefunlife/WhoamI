@@ -13,6 +13,7 @@
  * 같이 추가할 것.
  */
 import type { ReactNode } from "react";
+import { MessageCircle, Mic, AlertTriangle } from "lucide-react";
 import {
   RelationshipReportLayout,
   RelationshipReportCard,
@@ -23,6 +24,7 @@ import {
   PsychMatchRadarChart,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
+import { WorkChapterNav, WorkChapterSection } from "@/components/relationship/workColleague/chapters/WorkChapterShell";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
@@ -46,7 +48,7 @@ import type {
   WorkReportViewModel,
 } from "@/lib/relationship/workColleague/viewModel/workReportSectionTypes";
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 
 const ACCENT = getTabTheme("work").accent;
 
@@ -122,8 +124,8 @@ function ComparisonCard({ section, names }: { section: ComparisonSection; names:
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <DnaCard label="👤" profile={section.dna.me} accent={ACCENT} />
-        <DnaCard label="👤" profile={section.dna.partner} accent={ACCENT} />
+        <DnaCard profile={section.dna.me} accent={ACCENT} />
+        <DnaCard profile={section.dna.partner} accent={ACCENT} />
       </div>
       <RelationshipReportBody className="mt-4">
         <div>
@@ -177,16 +179,22 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
         <RoleCard card={section.roles.partner} accent={ACCENT} />
       </div>
       {section.synergyOneLiner ? (
-        <RelationshipReportParagraph className="mt-4 italic">💬 {section.synergyOneLiner}</RelationshipReportParagraph>
+        <RelationshipReportParagraph className="mt-4 flex items-start gap-2 italic">
+          <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: ACCENT }} strokeWidth={1.75} aria-hidden />
+          {section.synergyOneLiner}
+        </RelationshipReportParagraph>
       ) : null}
       {section.idealFit ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <IdealRoleCard label="👤" fit={section.idealFit.me} accent={ACCENT} />
-          <IdealRoleCard label="👤" fit={section.idealFit.partner} accent={ACCENT} />
+          <IdealRoleCard fit={section.idealFit.me} accent={ACCENT} />
+          <IdealRoleCard fit={section.idealFit.partner} accent={ACCENT} />
         </div>
       ) : null}
       {section.togetherCombo ? (
-        <RelationshipReportParagraph className="mt-4 italic">💬 {section.togetherCombo}</RelationshipReportParagraph>
+        <RelationshipReportParagraph className="mt-4 flex items-start gap-2 italic">
+          <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: ACCENT }} strokeWidth={1.75} aria-hidden />
+          {section.togetherCombo}
+        </RelationshipReportParagraph>
       ) : null}
       {section.leadershipSplit ? (
         <div className="mt-4">
@@ -195,8 +203,9 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
               {section.leadershipCanonicalLabel}
             </RelationshipReportLabel>
           ) : null}
-          <RelationshipReportParagraph className="italic">
-            🎤 {section.leadershipSplit.summary}
+          <RelationshipReportParagraph className="flex items-start gap-2 italic">
+            <Mic className="mt-0.5 h-4 w-4 shrink-0" style={{ color: ACCENT }} strokeWidth={1.75} aria-hidden />
+            {section.leadershipSplit.summary}
           </RelationshipReportParagraph>
         </div>
       ) : null}
@@ -275,6 +284,14 @@ function WarningCard({ section }: { section: WarningSection }) {
           <RelationshipReportParagraph className="mt-1.5">{section.conflictTrigger}</RelationshipReportParagraph>
         </div>
         <DeEscalationBlock deCard={section.deEscalation} />
+        {section.pairComplaintNote ? (
+          <RelationshipReportInset className="border-amber-400/20 bg-amber-950/10">
+            <RelationshipReportParagraph className="flex items-start gap-2 text-amber-100/85">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" strokeWidth={1.75} aria-hidden />
+              {section.pairComplaintNote}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        ) : null}
       </RelationshipReportBody>
       {section.upset ? (
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -285,8 +302,14 @@ function WarningCard({ section }: { section: WarningSection }) {
       {section.feedbackCushion ? (
         <div className="mt-4">
           <RelationshipReportLabel>{t.feedbackCushionLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">{section.feedbackCushion.to_a}</RelationshipReportParagraph>
-          <RelationshipReportParagraph className="mt-1.5">{section.feedbackCushion.to_b}</RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-1.5 flex items-start gap-2">
+            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: ACCENT }} strokeWidth={1.75} aria-hidden />
+            {section.feedbackCushion.to_a}
+          </RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-1.5 flex items-start gap-2">
+            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0" style={{ color: ACCENT }} strokeWidth={1.75} aria-hidden />
+            {section.feedbackCushion.to_b}
+          </RelationshipReportParagraph>
         </div>
       ) : null}
     </RelationshipReportCard>
@@ -321,21 +344,29 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
   );
 }
 
-// ---- Part 구분선 --------------------------------------------------------------
+// ---- 8-chapter structure ------------------------------------------------------
+// Regroups the same 8 WorkReportSection types (no data change) into a numbered
+// 8-chapter read, one existing section type per chapter — mirrors the
+// Romantic V4 / Family chapter nav+numbering pattern. `deep_read` (the
+// optional business_saju_deep LLM overlay) is the only section that can be
+// absent; numbers are computed from whichever chapters are actually present
+// each render, so a missing deep_read can never leave a gap in the sequence.
+type WorkSectionType = WorkReportSection["type"];
 
-/**
- * `WorkReportSection.partNumber`(1~5)는 원래 존재했지만 렌더러가 소비한 적이
- * 없어서 화면에는 "Part로 나뉘어 있다"는 표시가 전혀 없었다(카드만 쭉 나열).
- * 이 컴포넌트가 partNumber가 바뀔 때마다 눈에 보이는 구분선/타이틀을 넣는다.
- */
-function PartHeading({ title }: { title: string }) {
-  return (
-    <div className="flex items-center gap-3 pt-2">
-      <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">{title}</h2>
-      <div className="h-px flex-1" style={{ backgroundColor: `${ACCENT}33` }} />
-    </div>
-  );
-}
+const CHAPTER_ORDER: Array<{
+  type: Exclude<WorkSectionType, "snapshot">;
+  titleKo: string;
+  titleEn: string;
+}> = [
+  { type: "compare_table", titleKo: "한눈에 보는 오피스 파트너십", titleEn: "Your Office Partnership at a Glance" },
+  { type: "psych_radar", titleKo: "우리가 일하는 방식의 차이", titleEn: "How We Work Differently" },
+  { type: "comparison", titleKo: "나의 오피스 캐릭터와 강점", titleEn: "My Office Character & Strengths" },
+  { type: "role_matrix", titleKo: "가장 완벽한 업무 분담법", titleEn: "The Perfect Way to Split the Work" },
+  { type: "relationship_loop", titleKo: "회의실에서 부딪히는 순간", titleEn: "Where We Clash in the Meeting Room" },
+  { type: "deep_read", titleKo: "차이가 만든 오피스 오해 번역기", titleEn: "Translating Our Office Misunderstandings" },
+  { type: "warning", titleKo: "스트레스와 불만이 쌓였을 때", titleEn: "When Stress and Frustration Build Up" },
+  { type: "prescription", titleKo: "성공적인 협업을 위한 행동 처방전", titleEn: "The Playbook for Working Well Together" },
+];
 
 // ---- Dispatcher -------------------------------------------------------------
 
@@ -381,13 +412,29 @@ export function WorkReportViewModelView({
   vm: WorkReportViewModel;
   kindLabel?: string;
 }) {
+  const { locale } = useLocale();
   const t = useMessages().relationshipDrilldown.work;
+  const isEn = locale === "en-US";
+
   const snapshot = vm.sections.find(
     (s): s is Extract<WorkReportSection, { type: "snapshot" }> => s.type === "snapshot",
   );
   const otherSections = vm.sections.filter(
     (s): s is NonSnapshotSection => s.type !== "snapshot",
   );
+  const byType = new Map<WorkSectionType, NonSnapshotSection>();
+  for (const section of otherSections) byType.set(section.type, section);
+
+  const chapters = CHAPTER_ORDER.map((chapter) => ({
+    ...chapter,
+    section: byType.get(chapter.type),
+  })).filter((chapter): chapter is typeof chapter & { section: NonSnapshotSection } => Boolean(chapter.section));
+
+  const navItems = chapters.map((chapter, i) => ({
+    id: `ch_${chapter.type}`,
+    number: String(i + 1).padStart(2, "0"),
+    title: isEn ? chapter.titleEn : chapter.titleKo,
+  }));
 
   return (
     <RelationshipReportLayout
@@ -410,26 +457,18 @@ export function WorkReportViewModelView({
       }
       scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="work" /> : undefined}
     >
-      {(() => {
-        const partTitles: Record<1 | 2 | 3 | 4 | 5, string> = {
-          1: t.part1Title,
-          2: t.part2Title,
-          3: t.part3Title,
-          4: t.part4Title,
-          5: t.part5Title,
-        };
-        let lastPartNumber: number | null = null;
-        return otherSections.map((section) => {
-          const showHeading = section.partNumber !== lastPartNumber;
-          lastPartNumber = section.partNumber;
-          return (
-            <div key={section.id} className="space-y-5 sm:space-y-6">
-              {showHeading ? <PartHeading title={partTitles[section.partNumber]} /> : null}
-              <WorkReportSectionCard section={section} names={vm.opening.names} />
-            </div>
-          );
-        });
-      })()}
+      <WorkChapterNav items={navItems} />
+      {chapters.map((chapter, i) => (
+        <WorkChapterSection
+          key={chapter.type}
+          id={`ch_${chapter.type}`}
+          number={String(i + 1).padStart(2, "0")}
+          title={isEn ? chapter.titleEn : chapter.titleKo}
+          accent={ACCENT}
+        >
+          <WorkReportSectionCard section={chapter.section} names={vm.opening.names} />
+        </WorkChapterSection>
+      ))}
     </RelationshipReportLayout>
   );
 }

@@ -38,6 +38,10 @@ import {
   buildLongTermSynergyLine,
 } from "@/lib/relationship/enrichment/marriagePsychGapInsights";
 import {
+  buildCoupleActionPlanSection,
+  type CoupleActionPlanSection,
+} from "@/lib/relationship/enrichment/marriageCoupleActionPlan";
+import {
   buildMarriageComparisonTableCanonical,
   buildMarriageComparisonTableClientProjection,
   comparisonTableValueFromResolver,
@@ -250,6 +254,16 @@ export function buildMarriageReport(params: {
     nameB: params.nicknameB,
     locale,
   });
+  // "우리를 위한 맞춤 제안" — Chapter 3 전용, 사용자 지정으로 항상 노출(게이트 없음).
+  // cfoFinal은 이미 위에서 계산 완료(재판정 없음).
+  const coupleActionPlan: CoupleActionPlanSection = buildCoupleActionPlanSection({
+    cfoNickname: cfoFinal.nickname,
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
 
   const household: HouseholdPartnershipReport = {
     ...baseHousehold,
@@ -331,6 +345,7 @@ export function buildMarriageReport(params: {
         : {}),
       ...(cfoFinal.align ? { cfo_align: cfoFinal.align } : {}),
       ...(cfoFinal.dual ? { cfo_dual: true } : {}),
+      couple_action_plan: coupleActionPlan,
     },
     section_dna: {
       person_a: {
