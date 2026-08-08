@@ -25,14 +25,14 @@ export function resolveFilialFrequencyType(counts: TenGodCounts): FilialFrequenc
 
 const FREQUENCY_LABEL: Record<Locale, Record<FilialFrequencyType, string>> = {
   "en-US": {
-    cash_gift: "💰 Cash & Gift type",
-    quality_time: "⏰ Quality-Time type",
-    emotional_recognition: "🙏 Emotional-Recognition type",
+    cash_gift: "Cash & Gift type",
+    quality_time: "Quality-Time type",
+    emotional_recognition: "Emotional-Recognition type",
   },
   "ko-KR": {
-    cash_gift: "💰 현금·선물형",
-    quality_time: "⏰ 함께하는 시간형",
-    emotional_recognition: "🙏 정서적 인정형",
+    cash_gift: "현금·선물형",
+    quality_time: "함께하는 시간형",
+    emotional_recognition: "정서적 인정형",
   },
 };
 

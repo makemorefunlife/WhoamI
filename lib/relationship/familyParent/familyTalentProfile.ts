@@ -33,27 +33,27 @@ export function resolveWealthVessel(counts: TenGodCounts): WealthVesselType {
 
 const STUDY_TYPE_LABEL: Record<Locale, Record<StudyType, string>> = {
   "en-US": {
-    creative: "🎨 Creative type",
-    understanding: "🧩 Understanding type",
-    diligent: "📚 Diligent-memory type",
+    creative: "Creative type",
+    understanding: "Understanding type",
+    diligent: "Diligent-memory type",
   },
   "ko-KR": {
-    creative: "🎨 창의형",
-    understanding: "🧩 이해형",
-    diligent: "📚 암기·성실형",
+    creative: "창의형",
+    understanding: "이해형",
+    diligent: "암기·성실형",
   },
 };
 
 const WEALTH_VESSEL_LABEL: Record<Locale, Record<WealthVesselType, string>> = {
   "en-US": {
-    practical_finance: "💰 Practical-finance type",
-    career_honor: "🏆 Career & honor type",
-    developing: "🌱 Still-developing type",
+    practical_finance: "Practical-finance type",
+    career_honor: "Career & honor type",
+    developing: "Still-developing type",
   },
   "ko-KR": {
-    practical_finance: "💰 실속 재무형",
-    career_honor: "🏆 명예·커리어형",
-    developing: "🌱 잠재 성장형",
+    practical_finance: "실속 재무형",
+    career_honor: "명예·커리어형",
+    developing: "잠재 성장형",
   },
 };
 

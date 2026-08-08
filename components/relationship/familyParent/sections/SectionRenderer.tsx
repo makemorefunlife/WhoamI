@@ -24,6 +24,15 @@ import {
   Compass,
   Sparkles,
   PawPrint,
+  Palette,
+  Lightbulb,
+  BookOpen,
+  Wallet,
+  Trophy,
+  Leaf,
+  Gift,
+  Clock,
+  Heart,
 } from "lucide-react";
 import {
   RelationshipReportLayout,
@@ -57,7 +66,8 @@ import type {
   TalentSection,
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
+import { FamilyChapterNav, FamilyChapterSection } from "@/components/relationship/familyParent/chapters/FamilyChapterShell";
 
 const ACCENT = getTabTheme("family").accent;
 
@@ -80,6 +90,27 @@ const ROLE_ICON: Record<FamilyRoleSection["childRole"], typeof Wrench> = {
   puppy: PawPrint,
 };
 
+/** 하드코딩 이모지 대신 — 공부 타입 → Lucide 아이콘. */
+const STUDY_TYPE_ICON: Record<string, typeof Palette> = {
+  creative: Palette,
+  understanding: Lightbulb,
+  diligent: BookOpen,
+};
+
+/** 하드코딩 이모지 대신 — 성공 그릇 → Lucide 아이콘. */
+const WEALTH_VESSEL_ICON: Record<string, typeof Wallet> = {
+  practical_finance: Wallet,
+  career_honor: Trophy,
+  developing: Leaf,
+};
+
+/** 하드코딩 이모지 대신 — 효도 주파수 → Lucide 아이콘. */
+const FREQUENCY_ICON: Record<string, typeof Gift> = {
+  cash_gift: Gift,
+  quality_time: Clock,
+  emotional_recognition: Heart,
+};
+
 const DE_VARIANT: Record<string, "warning" | "success" | "default"> = {
   red: "warning",
   yellow: "warning",
@@ -88,16 +119,73 @@ const DE_VARIANT: Record<string, "warning" | "success" | "default"> = {
   blue: "default",
 };
 
-// ---- Part 구분선 --------------------------------------------------------------
+// ---- 8-chapter structure ------------------------------------------------------
+// Reorganizes the same 16 FamilyReportSection cards (no data change) into a
+// numbered 8-chapter read, mirroring the Romantic V4 report's chapter
+// nav/numbering pattern. `deep_read` (the optional family_saju_deep LLM
+// overlay) sits outside the numbered sequence as a bonus chapter — it isn't
+// always present, so giving it a fixed number would risk the same
+// hidden-chapter numbering gap that was just fixed on the Romantic side.
+type FamilySectionType = FamilyReportSection["type"];
 
-function PartHeading({ title }: { title: string }) {
-  return (
-    <div className="flex items-center gap-3 pt-2">
-      <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">{title}</h2>
-      <div className="h-px flex-1" style={{ backgroundColor: `${ACCENT}33` }} />
-    </div>
-  );
-}
+const CHAPTER_GROUPS: Array<{
+  id: string;
+  types: FamilySectionType[];
+  titleKo: string;
+  titleEn: string;
+}> = [
+  {
+    id: "ch_temperature",
+    types: ["relationship_index", "destiny"],
+    titleKo: "한눈에 보는 우리의 가족 온도",
+    titleEn: "Your Family at a Glance",
+  },
+  {
+    id: "ch_friction_style",
+    types: ["household_roles", "psych_radar"],
+    titleKo: "우리가 집 안에서 부딪히는 방식",
+    titleEn: "How Friction Shows Up at Home",
+  },
+  {
+    id: "ch_child_dna",
+    types: ["child_dna"],
+    titleKo: "우리 아이의 타고난 기질과 잠재력",
+    titleEn: "Your Child's Natural Temperament",
+  },
+  {
+    id: "ch_praise_growth",
+    types: ["talent"],
+    titleKo: "맞춤형 칭찬과 성장의 그릇",
+    titleEn: "Praise That Lands, and Room to Grow",
+  },
+  {
+    id: "ch_growth_edge",
+    types: ["growth_tunnel", "family_role", "sos_script"],
+    titleKo: "올해의 성장 과제와 부모의 역할",
+    titleEn: "This Year's Growth Edge, and Your Role",
+  },
+  {
+    id: "ch_hidden_hearts",
+    types: ["compare_table", "filial_frequency"],
+    titleKo: "차이가 만든 오해와 숨은 마음",
+    titleEn: "Where Differences Turn Into Misunderstanding",
+  },
+  {
+    id: "ch_cooldown",
+    types: ["de_escalation"],
+    titleKo: "화가 났을 때 마음을 푸는 치트키",
+    titleEn: "The Cheat Code for Cooling Down",
+  },
+  {
+    id: "ch_playbook",
+    types: ["filial_reward", "prescription"],
+    titleKo: "오래 단단할 우리를 위한 행동 처방전",
+    titleEn: "A Playbook for the Long Run",
+  },
+];
+
+/** deep_read renders after the 8 core chapters, unnumbered — see comment above. */
+const BONUS_CHAPTER_TYPES: FamilySectionType[] = ["deep_read"];
 
 // ---- Part 2: 스코어링 + 비교표 + 11축 매칭 -----------------------------------
 
@@ -286,19 +374,38 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
   );
 }
 
+function TypeIconBadge({ Icon }: { Icon: typeof Palette }) {
+  return (
+    <span
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+      style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}
+    >
+      <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+    </span>
+  );
+}
+
 function TalentCard({ section }: { section: TalentSection }) {
   const t = useMessages().relationshipDrilldown.family;
+  const StudyIcon = STUDY_TYPE_ICON[section.studyType] ?? Sparkles;
+  const WealthIcon = WEALTH_VESSEL_ICON[section.wealthVessel] ?? Sparkles;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
         <div>
           <RelationshipReportLabel>{t.talentStudyTypeLabel}</RelationshipReportLabel>
-          <p className="mt-1.5 text-base font-semibold text-white/92">{section.studyTypeLabel}</p>
+          <p className="mt-1.5 flex items-center gap-2 text-base font-semibold text-white/92">
+            <TypeIconBadge Icon={StudyIcon} />
+            {section.studyTypeLabel}
+          </p>
           <RelationshipReportParagraph className="mt-1.5">{section.studyTypeNote}</RelationshipReportParagraph>
         </div>
         <div>
           <RelationshipReportLabel>{t.talentWealthVesselLabel}</RelationshipReportLabel>
-          <p className="mt-1.5 text-base font-semibold text-white/92">{section.wealthVesselLabel}</p>
+          <p className="mt-1.5 flex items-center gap-2 text-base font-semibold text-white/92">
+            <TypeIconBadge Icon={WealthIcon} />
+            {section.wealthVesselLabel}
+          </p>
           <RelationshipReportParagraph className="mt-1.5">{section.wealthVesselNote}</RelationshipReportParagraph>
         </div>
         {section.inheritedNote ? (
@@ -363,10 +470,14 @@ function FamilyRoleCard({ section }: { section: FamilyRoleSection }) {
 }
 
 function FilialFrequencyCard({ section }: { section: FilialFrequencySection }) {
+  const FrequencyIcon = FREQUENCY_ICON[section.frequencyType] ?? Sparkles;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
-        <p className="text-lg font-semibold text-white/92">{section.frequencyLabel}</p>
+        <p className="flex items-center gap-2 text-lg font-semibold text-white/92">
+          <TypeIconBadge Icon={FrequencyIcon} />
+          {section.frequencyLabel}
+        </p>
         <RelationshipReportInset>
           <RelationshipReportParagraph className="mt-1.5">
             {section.frequencyNote}
@@ -597,19 +708,39 @@ export function FamilyReportViewModelView({
   vm: FamilyReportViewModel;
   kindLabel?: string;
 }) {
+  const { locale } = useLocale();
   const t = useMessages().relationshipDrilldown.family;
-  const partTitles: Record<2 | 3 | 4 | 5, string> = {
-    2: t.part2Title,
-    3: t.part3Title,
-    4: t.part4Title,
-    5: t.part5Title,
-  };
+  const isEn = locale === "en-US";
+
   const snapshot = vm.sections.find(
     (s): s is Extract<FamilyReportSection, { type: "snapshot" }> => s.type === "snapshot",
   );
   const otherSections = vm.sections.filter(
     (s): s is NonSnapshotSection => s.type !== "snapshot",
   );
+  const byType = new Map<FamilySectionType, NonSnapshotSection[]>();
+  for (const section of otherSections) {
+    const list = byType.get(section.type) ?? [];
+    list.push(section);
+    byType.set(section.type, list);
+  }
+
+  const chapters = CHAPTER_GROUPS.map((group) => ({
+    ...group,
+    sections: group.types.flatMap((type) => byType.get(type) ?? []),
+  })).filter((group) => group.sections.length > 0);
+  const bonusSections = BONUS_CHAPTER_TYPES.flatMap((type) => byType.get(type) ?? []);
+
+  const navItems = [
+    ...chapters.map((chapter, i) => ({
+      id: chapter.id,
+      number: String(i + 1).padStart(2, "0"),
+      title: isEn ? chapter.titleEn : chapter.titleKo,
+    })),
+    ...(bonusSections.length > 0
+      ? [{ id: "ch_deep_read", number: null, title: bonusSections[0]!.title }]
+      : []),
+  ];
 
   return (
     <RelationshipReportLayout
@@ -632,19 +763,32 @@ export function FamilyReportViewModelView({
       }
       scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="family" /> : undefined}
     >
-      {(() => {
-        let lastPartNumber: number | null = null;
-        return otherSections.map((section) => {
-          const showHeading = section.partNumber !== lastPartNumber;
-          lastPartNumber = section.partNumber;
-          return (
-            <div key={section.id} className="space-y-5 sm:space-y-6">
-              {showHeading ? <PartHeading title={partTitles[section.partNumber]} /> : null}
-              <FamilyReportSectionCard section={section} names={vm.opening.names} />
-            </div>
-          );
-        });
-      })()}
+      <FamilyChapterNav items={navItems} />
+      {chapters.map((chapter, i) => (
+        <FamilyChapterSection
+          key={chapter.id}
+          id={chapter.id}
+          number={String(i + 1).padStart(2, "0")}
+          title={isEn ? chapter.titleEn : chapter.titleKo}
+          accent={ACCENT}
+        >
+          {chapter.sections.map((section) => (
+            <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
+          ))}
+        </FamilyChapterSection>
+      ))}
+      {bonusSections.length > 0 ? (
+        <FamilyChapterSection
+          id="ch_deep_read"
+          number={null}
+          title={bonusSections[0]!.title}
+          accent={ACCENT}
+        >
+          {bonusSections.map((section) => (
+            <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
+          ))}
+        </FamilyChapterSection>
+      ) : null}
     </RelationshipReportLayout>
   );
 }
