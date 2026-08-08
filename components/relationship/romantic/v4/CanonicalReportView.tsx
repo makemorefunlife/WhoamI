@@ -52,19 +52,63 @@ function moveBefore(
  * and the in-page chapter header never disagree. The engine's own
  * section.title (used elsewhere, e.g. evidence trace / debug views) is
  * untouched; this only affects what this view renders.
+ *
+ * Wellness-tone copy for a sophisticated, self-aware audience — chosen to
+ * read as insight rather than diagnosis. Keyed by the SAME 8 chapterIds that
+ * make up CORE_CHAPTER_ORDER below (c10_future_timing intentionally has no
+ * entry — it renders as an unnumbered bonus chapter, see reorderForDisplay).
  */
-const TITLE_OVERRIDES: Partial<Record<CanonicalSection["chapterId"], string>> = {
-  c5_misunderstanding: "답답해하기 전에 알면 좋은 우리의 차이",
-  c6_hidden_hearts: "차이가 만든 오해와 숨은 마음",
-  c7_repair: "곧장 사용 가능한 행동 안내서",
+const TITLE_OVERRIDES_KO: Partial<Record<CanonicalSection["chapterId"], string>> = {
+  c3_dynamics: "우리가 연결되는 방식",
+  c2_attraction: "서로를 선택한 이유",
+  c4_conflict: "마찰이 생기는 지점",
+  c5_misunderstanding: "다름을 번역하는 법",
+  c6_hidden_hearts: "오해 너머의 진심",
+  c8_strength_vulnerability: "시너지와 취약점",
+  c7_repair: "관계를 위한 액션 플랜",
+  c12_choice: "우리의 넥스트 챕터",
+};
+
+const TITLE_OVERRIDES_EN: Partial<Record<CanonicalSection["chapterId"], string>> = {
+  c3_dynamics: "How We Connect",
+  c2_attraction: "Why We Chose Each Other",
+  c4_conflict: "Friction Points",
+  c5_misunderstanding: "Translating Differences",
+  c6_hidden_hearts: "Beneath the Surface",
+  c8_strength_vulnerability: "Synergy & Vulnerability",
+  c7_repair: "Action Plan",
+  c12_choice: "Our Next Chapter",
 };
 
 /**
- * Repair and Daily Life render as one merged chapter ("곧장 사용 가능한 행동
- * 안내서"), and Reflection has been dropped from the flow entirely — both are
- * presentation-only decisions; the engine's own section list is untouched.
+ * Display order of the 8 core numbered chapters ("Chapter 01".."Chapter
+ * 08"). c1_hero and c10_future_timing sit outside this sequence and render
+ * without a number badge — Hero as a cover, Future/Timing as an optional
+ * bonus chapter that only appears when timing data is available, so it can
+ * never leave a gap in the core numbering.
  */
-function reorderForDisplay(sections: CanonicalSection[]): CanonicalSection[] {
+const CORE_CHAPTER_ORDER: CanonicalSection["chapterId"][] = [
+  "c3_dynamics",
+  "c2_attraction",
+  "c4_conflict",
+  "c5_misunderstanding",
+  "c6_hidden_hearts",
+  "c8_strength_vulnerability",
+  "c7_repair",
+  "c12_choice",
+];
+
+/**
+ * Repair and Daily Life render as one merged chapter ("관계를 위한 액션
+ * 플랜"/"Action Plan"), and Reflection has been dropped from the flow
+ * entirely — both are presentation-only decisions; the engine's own section
+ * list is untouched.
+ */
+function reorderForDisplay(
+  sections: CanonicalSection[],
+  locale: "ko-KR" | "en-US",
+): CanonicalSection[] {
+  const titleOverrides = locale === "en-US" ? TITLE_OVERRIDES_EN : TITLE_OVERRIDES_KO;
   let result = sections;
   result = moveBefore(result, "c3_dynamics", "c2_attraction");
   result = moveBefore(result, "c8_strength_vulnerability", "c7_repair");
@@ -72,12 +116,32 @@ function reorderForDisplay(sections: CanonicalSection[]): CanonicalSection[] {
     (s) => s.chapterId !== "c9_daily_life" && s.chapterId !== "c11_reflection",
   );
   return result.map((s) =>
-    TITLE_OVERRIDES[s.chapterId] ? { ...s, title: TITLE_OVERRIDES[s.chapterId]! } : s,
+    titleOverrides[s.chapterId] ? { ...s, title: titleOverrides[s.chapterId]! } : s,
   );
 }
 
+/**
+ * Sequential "01".."08" for whichever of the 8 core chapters are actually
+ * visible, computed fresh from the real display order every render — never
+ * hardcoded per-component, so a hidden chapter (e.g. Future/Timing, which
+ * isn't part of this sequence at all) can never cause a skipped number.
+ */
+function computeChapterNumbers(
+  visible: CanonicalSection[],
+): Partial<Record<CanonicalSection["chapterId"], string>> {
+  const numbers: Partial<Record<CanonicalSection["chapterId"], string>> = {};
+  const coreVisible = visible.filter((s) => CORE_CHAPTER_ORDER.includes(s.chapterId));
+  coreVisible
+    .sort((a, b) => CORE_CHAPTER_ORDER.indexOf(a.chapterId) - CORE_CHAPTER_ORDER.indexOf(b.chapterId))
+    .forEach((s, i) => {
+      numbers[s.chapterId] = String(i + 1).padStart(2, "0");
+    });
+  return numbers;
+}
+
 export function CanonicalReportView({ report, payload, debug = false }: Props) {
-  const visible = reorderForDisplay(report.sections.filter((s) => s.visible));
+  const visible = reorderForDisplay(report.sections.filter((s) => s.visible), payload.locale);
+  const chapterNumbers = computeChapterNumbers(visible);
   const dailyLifeSection = report.sections.find((s) => s.chapterId === "c9_daily_life");
   const { a, b } = report.names;
 
@@ -86,6 +150,7 @@ export function CanonicalReportView({ report, payload, debug = false }: Props) {
     payload,
     personA: a,
     personB: b,
+    n: chapterNumbers[s.chapterId],
     debug,
     ...(s.chapterId === "c7_repair" ? { dailyLifeSection } : {}),
   });

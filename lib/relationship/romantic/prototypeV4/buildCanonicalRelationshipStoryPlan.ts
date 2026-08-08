@@ -42,6 +42,8 @@ import {
   buildLongTermGrowthScene,
 } from "./romanticV4DateSceneInsights";
 import type { RomanticPairCeBondingValue } from "../romanticPairCeBondingCanonical";
+import type { RomanticFortuneFlowResult } from "../../romanticRules/fortuneFlow";
+import { buildRomanticV4TimingFromFortuneFlow } from "./romanticV4TimingCanonical";
 
 import {
   topicP,
@@ -180,6 +182,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   axisResults: RomanticPsychMatchAxisResult[];
   locale: "ko-KR" | "en-US";
   reportYear?: number;
+  /** Pure Saju daewoon/sewoon calculation for c10_future_timing — when provided, this replaces the old report.section_6_timeline dependency (never populated by V4's canonical-only report). Omit to keep the legacy fallback. */
+  fortuneFlow?: RomanticFortuneFlowResult | null;
   dynamicsCrossHits?: Array<{ category?: string; type?: string }>;
 }): CanonicalRelationshipStoryPlan {
   const { contract, report, axisResults, locale } = params;
@@ -1133,10 +1137,24 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   }
   realLifeDomains.push(...dateSceneCards);
 
+  const fortuneFlowTiming =
+    params.fortuneFlow !== undefined
+      ? buildRomanticV4TimingFromFortuneFlow(params.fortuneFlow, locale)
+      : null;
   const horizon = projectHorizon({ report });
-  const hasTiming = horizon.available && horizon.waypoints.length > 0;
+  const legacyHasTiming = horizon.available && horizon.waypoints.length > 0;
+  const hasTiming = fortuneFlowTiming ? fortuneFlowTiming.available : legacyHasTiming;
 
-  if (!hasTiming) {
+  if (fortuneFlowTiming) {
+    if (fortuneFlowTiming.available) {
+      mark("romantic_fortune_flow.sewoon");
+    } else {
+      suppressed.push({
+        evidenceId: "romantic_fortune_flow.sewoon",
+        reason: fortuneFlowTiming.hideReason ?? copy.suppressTiming,
+      });
+    }
+  } else if (!legacyHasTiming) {
     suppressed.push({
       evidenceId: "section_6_timeline",
       reason: copy.suppressTiming,
@@ -1212,27 +1230,28 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     hiddenHearts,
     repair,
     realLifeDomains,
-    timing: {
-      available: hasTiming,
-      year,
-      theme: hasTiming ? (horizon.title ?? null) : null,
-      favorableWindows: hasTiming ? horizon.waypoints.filter((w: any) => !w.sub).map((w: any) => `${w.period}: ${w.body}`) : [],
-      cautionWindows: hasTiming ? horizon.waypoints.filter((w: any) => w.sub).map((w: any) => `${w.period}: ${w.sub}`) : [],
-      observationSignals: hasTiming ? copy.timingObs : [],
-      hideReason: hasTiming ? null : copy.hideTiming,
-      provenance: hasTiming
-        ? [
-            prov(
-              "section_6_timeline",
-              "report",
-              "section_6_timeline",
-              "relationship",
-              "medium",
-              "observation",
-            ),
-          ]
-        : [],
-    },
+    timing:
+      fortuneFlowTiming ?? {
+        available: hasTiming,
+        year,
+        theme: hasTiming ? (horizon.title ?? null) : null,
+        favorableWindows: hasTiming ? horizon.waypoints.filter((w: any) => !w.sub).map((w: any) => `${w.period}: ${w.body}`) : [],
+        cautionWindows: hasTiming ? horizon.waypoints.filter((w: any) => w.sub).map((w: any) => `${w.period}: ${w.sub}`) : [],
+        observationSignals: hasTiming ? copy.timingObs : [],
+        hideReason: hasTiming ? null : copy.hideTiming,
+        provenance: hasTiming
+          ? [
+              prov(
+                "section_6_timeline",
+                "report",
+                "section_6_timeline",
+                "relationship",
+                "medium",
+                "observation",
+              ),
+            ]
+          : [],
+      },
     closing: {
       presentPossibility: copy.closePossibility,
       rememberA: fill(copy.tpl.rememberA, { topicA: topicP(names.a, locale) }, locale),

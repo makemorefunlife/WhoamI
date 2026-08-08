@@ -47,6 +47,8 @@ export type SectionProps = {
   section: CanonicalSection;
   personA: string;
   personB: string;
+  /** Sequential "01".."08" position among the core numbered chapters, computed once in CanonicalReportView.tsx — omit for chapters outside that sequence. */
+  n?: string;
   debug?: boolean;
   /** Only used by RepairSection — Repair + Daily Life are merged into one
    * visual chapter, so Repair needs the Daily Life section's data too. */
@@ -61,7 +63,7 @@ const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
 );
 
 /* ── Chapter 6 · Hidden Hearts ────────────────────────────────── */
-export const HiddenHeartsSection = ({ section, payload, personA, personB, debug }: SectionProps) => {
+export const HiddenHeartsSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
   const hearts = adaptHiddenHearts(section);
   const panels = adaptTranslatorPanels(payload);
   const names = { a: personA, b: personB };
@@ -69,7 +71,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, debug 
   return (
     <ChapterSection
       id={section.chapterId}
-      n="05"
+      n={n}
       label={section.userQuestion}
       title={section.title}
     >
@@ -189,7 +191,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, debug 
 };
 
 /* ── Chapter 7 · Repair Guide ─────────────────────────────────── */
-export const RepairSection = ({ section, personA, personB, dailyLifeSection, debug }: SectionProps) => {
+export const RepairSection = ({ section, personA, personB, n, dailyLifeSection, debug }: SectionProps) => {
   const { steps, helps } = adaptRepair(section);
   const dailyCards = dailyLifeSection ? adaptDailyLife(dailyLifeSection) : [];
   const names = { a: personA, b: personB };
@@ -197,7 +199,7 @@ export const RepairSection = ({ section, personA, personB, dailyLifeSection, deb
   return (
     <ChapterSection
       id={section.chapterId}
-      n="07"
+      n={n}
       label={section.userQuestion}
       title={section.title}
       tint="cream"
@@ -294,14 +296,14 @@ export const RepairSection = ({ section, personA, personB, dailyLifeSection, deb
 };
 
 /* ── Chapter 8 · Strength & Vulnerability ─────────────────────── */
-export const StrengthVulnerabilitySection = ({ section, payload, personA, personB, debug }: SectionProps) => {
+export const StrengthVulnerabilitySection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
   const { gives, sharedStrength, sharedVulnerability } = adaptStrength(section, payload);
   const names = { a: personA, b: personB };
 
   return (
     <ChapterSection
       id={section.chapterId}
-      n="06"
+      n={n}
       label={section.userQuestion}
       title={section.title}
       tint="cream"
@@ -381,7 +383,6 @@ export const FutureTimingSection = ({ section, debug }: SectionProps) => {
   return (
     <ChapterSection
       id={section.chapterId}
-      n="08"
       label={section.userQuestion}
       title={section.title}
     >
@@ -424,7 +425,7 @@ export const FutureTimingSection = ({ section, debug }: SectionProps) => {
 };
 
 /* ── Chapter 09 · Choice ──────────────────────────────────────── */
-export const ChoiceSection = ({ section, payload, personA, personB, debug }: SectionProps) => {
+export const ChoiceSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
   const { possibility, remember, watchSignals, improvingSignals, cautionSignals } = adaptChoice(
     section,
     payload,
@@ -434,7 +435,7 @@ export const ChoiceSection = ({ section, payload, personA, personB, debug }: Sec
   return (
     <ChapterSection
       id={section.chapterId}
-      n="09"
+      n={n}
       label={section.userQuestion}
       title={section.title}
       tint="cream"

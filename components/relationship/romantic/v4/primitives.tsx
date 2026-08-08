@@ -178,7 +178,8 @@ export function ChapterSection({
   children,
 }: {
   id: string;
-  n: string;
+  /** Omit for chapters that sit outside the core numbered sequence (e.g. an optional bonus chapter) — renders without a "Chapter N" badge. */
+  n?: string;
   label: string;
   title: string;
   lead?: string;
@@ -201,10 +202,14 @@ export function ChapterSection({
           <div className="flex items-start justify-between gap-5">
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-rel-deep">
-                  Chapter {n}
-                </span>
-                <span className="h-px w-6 bg-rel-deep/40" />
+                {n && (
+                  <>
+                    <span className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-rel-deep">
+                      Chapter {n}
+                    </span>
+                    <span className="h-px w-6 bg-rel-deep/40" />
+                  </>
+                )}
                 <span className="min-w-0 truncate font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-ink-mute">
                   {label}
                 </span>

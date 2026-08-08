@@ -24,6 +24,8 @@ export type SectionProps = {
   section: CanonicalSection;
   personA: string;
   personB: string;
+  /** Sequential "01".."08" position among the core numbered chapters, computed once in CanonicalReportView.tsx — omit for chapters outside that sequence. */
+  n?: string;
   debug?: boolean;
 };
 
@@ -116,7 +118,7 @@ function RelationshipGlyph({ aName, bName }: { aName: string; bName: string }) {
 }
 
 /* ── Chapter 2 · Attraction ─────────────────────────────────── */
-export const AttractionSection = ({ payload, section, personA, personB, debug }: SectionProps) => {
+export const AttractionSection = ({ payload, section, personA, personB, n, debug }: SectionProps) => {
   const data = adaptAttraction(section, payload);
   const dirs = [data.whyYou, data.whyMe];
   const names = { a: personA, b: personB };
@@ -124,7 +126,7 @@ export const AttractionSection = ({ payload, section, personA, personB, debug }:
   return (
     <ChapterSection
       id={section.chapterId}
-      n="02"
+      n={n}
       label={section.userQuestion}
       title={section.title}
     >
@@ -239,12 +241,12 @@ const statusTone: Record<string, string> = {
   "주의가 필요한 지점": "border-v4-bad/50 bg-v4-bad-soft text-v4-bad",
 };
 
-export const DynamicsSection = ({ section, debug }: SectionProps) => {
+export const DynamicsSection = ({ section, n, debug }: SectionProps) => {
   const states = adaptDynamics(section);
   return (
     <ChapterSection
       id={section.chapterId}
-      n="01"
+      n={n}
       label={section.userQuestion}
       title={section.title}
       tint="cream"
@@ -322,14 +324,14 @@ function FlowArrow({ loop = false }: { loop?: boolean }) {
   );
 }
 
-export const ConflictSection = ({ section, payload, personA, personB, debug }: SectionProps) => {
+export const ConflictSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
   const data = adaptConflict(section, payload);
   const names = { a: personA, b: personB };
 
   return (
     <ChapterSection
       id={section.chapterId}
-      n="03"
+      n={n}
       label={section.userQuestion}
       title={section.title}
       tint="cream"
@@ -412,14 +414,14 @@ export const ConflictSection = ({ section, payload, personA, personB, debug }: S
 };
 
 /* ── Chapter 5 · Difference & Misunderstanding ────────────────── */
-export const MisunderstandingSection = ({ section, payload, personA, personB, debug }: SectionProps) => {
+export const MisunderstandingSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
   const { comparison, details } = adaptDifference(section, payload);
   const axes = adaptRadarAxes(payload);
 
   return (
     <ChapterSection
       id={section.chapterId}
-      n="04"
+      n={n}
       label={section.userQuestion}
       title={section.title}
     >

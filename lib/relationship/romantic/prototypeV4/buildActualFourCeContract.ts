@@ -38,6 +38,7 @@ import {
   crossChartTensionValueFromFinalized,
 } from "../romanticCrossChartTensionCanonical";
 import { buildRomanticNarrativeInputContract } from "./fourCeNarrativeInput";
+import { buildRomanticFortuneFlow } from "../../romanticRules/fortuneFlow";
 import { buildPersonalRelationshipCe } from "./personalRelationshipCe";
 import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import {
@@ -174,6 +175,15 @@ export function buildActualFourCeContract(
   const sajuB = sajuJsonToPillars(bundleB.saju);
   const chartA = buildChartContext(sajuA);
   const chartB = buildChartContext(sajuB);
+  // Pure Saju calculation (daewoon/sewoon) — birth date + pillars only, no LLM,
+  // so "this year's flow" never depends on the legacy V1 report's
+  // section_6_timeline (which V4's canonical-only report never populates).
+  const fortuneFlow = buildRomanticFortuneFlow({
+    birthDateA: birthA.birthDate,
+    birthDateB: birthB.birthDate,
+    sajuA,
+    sajuB,
+  });
   const pairFacts = buildPairSajuFacts({
     chartA,
     chartB,
@@ -281,6 +291,7 @@ export function buildActualFourCeContract(
     romanticPairLens,
     reportWithPair,
     pairCeBondingValue,
+    fortuneFlow,
     // Saju base bands for the comparisonTable fusion resolver (romanticV4ComparisonFusion.ts) —
     // same domain_signals.romantic_signals PersonCore already bakes in for V1's production path.
     romanticSignalsA,
