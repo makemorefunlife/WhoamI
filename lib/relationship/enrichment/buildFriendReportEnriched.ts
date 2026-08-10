@@ -664,13 +664,6 @@ export function buildFriendReportEnriched(params: {
     meta: {
       ...base.meta,
       grade_reason: enrichedGradeReason,
-      // REMOVE user-facing psych radar match / lens from current_enriched.
-      // person_core도 함께 지워야 한다 — resolveReportPsychDisplay가
-      // psych_match/psych_lens 없으면 meta.person_core.psych_a/b로 되돌아가
-      // 우정 주파수 매칭을 다시 조립해버리는 폴백 경로가 있기 때문.
-      psych_match: undefined,
-      psych_lens: undefined,
-      person_core: undefined,
       // RESTORE actionable prescriptions conforming to PairPrescriptionSection
       prescription_friendship: prescriptionPack,
     },

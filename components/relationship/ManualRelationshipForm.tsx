@@ -18,7 +18,7 @@ function useFormStyles(theme: "space" | "stitch") {
   return {
     label: isStitch ? "text-xs font-medium text-on-surface-variant" : "text-xs text-white/55",
     input: isStitch
-      ? "w-full rounded-xl border-0 bg-surface-container-low/80 px-3 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/35 focus:ring-2 focus:ring-primary/15 disabled:opacity-40"
+      ? "w-full rounded-xl border border-outline-variant/50 bg-white px-3 py-3 text-sm text-on-surface outline-none transition focus:border-secondary/50 focus:ring-2 focus:ring-secondary/15 disabled:opacity-40"
       : "w-full rounded-xl border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white disabled:opacity-40",
     check: isStitch ? "text-xs text-on-surface-variant" : "text-xs text-white/55",
     segmentBtn: (active: boolean) =>
