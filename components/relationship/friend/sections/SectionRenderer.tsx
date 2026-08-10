@@ -28,6 +28,7 @@ import {
   RiskSection,
   SignalsSection,
   SocialDnaSection,
+  WhyYouMeUsChapter,
 } from "@/components/relationship/friend/editorial/FriendEditorialSections";
 
 const relSans = Noto_Sans_KR({
@@ -58,6 +59,9 @@ export function FriendReportViewModelView({
   const types = new Set(vm.sections.map((s) => s.type));
   const navItems: NavItem[] = [
     { id: "overview", label: pick(locale, "Overview", "한눈에 보기") },
+    ...(types.has("why_you_me_us")
+      ? [{ id: "why_you_me_us", label: pick(locale, "Why us", "서로를 선택한 이유") }]
+      : []),
     ...(types.has("compare_table") || types.has("psych_radar")
       ? [{ id: "part1", label: pick(locale, "Our differences", "우리 차이") }]
       : []),
@@ -137,6 +141,7 @@ export function FriendReportViewModelView({
       <main>
         <FriendHero {...ctx} />
         <SignalsSection {...ctx} />
+        <WhyYouMeUsChapter {...ctx} />
         <DimensionsSection {...ctx} />
         <SocialDnaSection {...ctx} />
         <HiddenFlowSection {...ctx} />

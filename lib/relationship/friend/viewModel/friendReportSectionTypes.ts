@@ -19,6 +19,7 @@ import type { PairPrescriptionItem } from "@/lib/relationship/shared/pairPrescri
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
 import type { DeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
+import type { WhyYouMeUsData } from "@/lib/relationship/shared/whyYouMeUs/whyYouMeUsTypes";
 
 export type PersonSlot<T> = { me: T; partner: T };
 
@@ -128,6 +129,15 @@ export type DeepReadSection = BaseSection & {
   vm: DeepReadViewModel;
 };
 
+/**
+ * "왜 너일까 / 왜 나일까 / 왜 우리일까" — shared cross-domain chapter
+ * (Romantic/Marriage/Friend only). See lib/relationship/friend/buildFriendWhyYouMeUs.ts.
+ */
+export type WhyYouMeUsSection = BaseSection & {
+  type: "why_you_me_us";
+  data: WhyYouMeUsData;
+};
+
 export type FriendReportSection =
   | SnapshotSection
   | PsychRadarSection
@@ -137,6 +147,7 @@ export type FriendReportSection =
   | PlayMoneySection
   | HiddenFlowSection
   | DeepReadSection
+  | WhyYouMeUsSection
   | BreakupGuideSection
   | DeEscalationSection
   | PrescriptionSection;

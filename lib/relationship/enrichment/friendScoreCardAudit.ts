@@ -32,8 +32,8 @@ import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/friend/friendCo
 function connectionMeasures(locale: Locale): string {
   return pick(
     locale,
-    "How instinctively comfortable and drawn to each other you are — calculated from saju signals like a day-branch combine, the kind of 'click' that doesn't need an explanation.",
-    "두 사람이 만났을 때 얼마나 본능적으로 편안하게 끌리는지를 보는 점수예요. 일지(생활 기반) 합처럼 '이유 없이 통하는' 사주 신호를 기준으로 계산해요.",
+    "How instinctively comfortable and drawn to each other you are — calculated from the kind of 'click' that doesn't need an explanation.",
+    "두 사람이 만났을 때 얼마나 본능적으로 편안하게 끌리는지를 보는 점수예요. '이유 없이 통하는' 사주 궁합 신호를 기준으로 계산해요.",
   );
 }
 
@@ -57,8 +57,8 @@ function connectionWhy(
     parts.push(
       pick(
         locale,
-        `${nameA} and ${nameB}'s day branches form a combine, which pushed this score up — an instinctive, low-effort closeness.`,
-        `${nameA}·${nameB}의 일지가 합을 이뤄서 점수가 올라갔어요 — 애쓰지 않아도 본능적으로 편안하게 통하는 지점이에요.`,
+        `${nameA} and ${nameB}'s charts line up in a way that pushed this score up — an instinctive, low-effort closeness.`,
+        `${nameA}·${nameB}의 사주 궁합이 잘 맞아서 점수가 올라갔어요 — 애쓰지 않아도 본능적으로 편안하게 통하는 지점이에요.`,
       ),
     );
   }
@@ -66,8 +66,8 @@ function connectionWhy(
     parts.push(
       pick(
         locale,
-        "Your core temperament (bijiup) resonates with each other, adding to the sense of 'we're the same kind of person.'",
-        "둘의 기본 기질(비겁)이 서로 공명해서 '우리 결이 비슷하다'는 느낌을 더해줘요.",
+        "Your core temperaments resonate with each other, adding to the sense of 'we're the same kind of person.'",
+        "둘의 기본 기질이 서로 공명해서 '우리 결이 비슷하다'는 느낌을 더해줘요.",
       ),
     );
   }
@@ -75,8 +75,8 @@ function connectionWhy(
     parts.push(
       pick(
         locale,
-        "There's also a day-branch clash/punishment signal, which pulled the score down a bit — a sharper edge you can bump into occasionally.",
-        "다만 일지 충/형(날카롭게 부딪히는 신호)도 있어서 점수를 깎아 먹었어요 — 가끔 뾰족하게 부딪힐 수 있는 지점이에요.",
+        "There's also a clash signal between you, which pulled the score down a bit — a sharper edge you can bump into occasionally.",
+        "다만 서로 부딪히는 신호도 있어서 점수를 깎아 먹었어요 — 가끔 뾰족하게 부딪힐 수 있는 지점이에요.",
       ),
     );
   }
@@ -95,8 +95,8 @@ function connectionWhy(
 function banterMeasures(locale: Locale): string {
   return pick(
     locale,
-    "How well the back-and-forth banter and sense of humor click — calculated from signals like expression-reaction harmony and how well your chart's seasonal 'temperature' complements each other.",
-    "대화가 핑퐁처럼 잘 오가고 유머 코드가 맞아떨어지는 정도예요. 식상-인성 조화(표현과 리액션의 합)와 조후 보완(성향의 온도차를 서로 상쇄하는지) 신호로 계산해요.",
+    "How well the back-and-forth banter and sense of humor click — calculated from how well your expression and reactions harmonize, and how well your temperaments complement each other.",
+    "대화가 핑퐁처럼 잘 오가고 유머 코드가 맞아떨어지는 정도예요. 표현과 리액션의 조화, 그리고 성향의 온도차를 서로 상쇄하는지를 사주 신호로 계산해요.",
   );
 }
 
@@ -118,8 +118,8 @@ function banterWhy(
     parts.push(
       pick(
         locale,
-        "Your expression and support signals (food-seal) are in harmony, which is what keeps the conversational rhythm flowing.",
-        "표현과 리액션(식상-인성) 신호가 조화를 이뤄서 대화의 핑퐁 리듬을 만들어줘요.",
+        "Your expression and reaction signals are in harmony, which is what keeps the conversational rhythm flowing.",
+        "표현과 리액션 신호가 조화를 이뤄서 대화의 핑퐁 리듬을 만들어줘요.",
       ),
     );
   }
@@ -127,8 +127,8 @@ function banterWhy(
     parts.push(
       pick(
         locale,
-        "Your charts' seasonal temperament complements each other, smoothing out any energy mismatch when you're chatting.",
-        "조후(계절 기운)가 서로 보완돼서, 대화할 때 텐션 차이가 자연스럽게 상쇄돼요.",
+        "Your temperaments complement each other, smoothing out any energy mismatch when you're chatting.",
+        "두 사람의 성향 온도가 서로 보완돼서, 대화할 때 텐션 차이가 자연스럽게 상쇄돼요.",
       ),
     );
   }
@@ -136,8 +136,8 @@ function banterWhy(
     parts.push(
       pick(
         locale,
-        "There's also an expression-clash signal, which pulled the score down — humor or communication timing can occasionally miss each other.",
-        "다만 식상 충돌 신호도 있어서 점수를 깎아 먹었어요 — 유머나 대화 타이밍이 가끔 어긋날 수 있어요.",
+        "There's also a friction signal in how you each express yourselves, which pulled the score down — humor or communication timing can occasionally miss each other.",
+        "다만 표현이 부딪히는 신호도 있어서 점수를 깎아 먹었어요 — 유머나 대화 타이밍이 가끔 어긋날 수 있어요.",
       ),
     );
   }
@@ -156,8 +156,8 @@ function banterWhy(
 function riskMeasures(locale: Locale): string {
   return pick(
     locale,
-    "How likely friction or conflict is between you. Unlike the other two scores, LOWER is better here — it's calculated from clash-prone saju signals like day-branch tension, wonjin/guimun friction points, and wealth-officer clashes.",
-    "친구 사이에 마찰·갈등이 생길 가능성을 보는 점수예요. 우정 케미·티키타카와 반대로 이 점수는 낮을수록 좋아요 — 일지 충형해파, 원진/귀문, 재관 충돌처럼 부딪히기 쉬운 사주 신호를 기준으로 계산해요.",
+    "How likely friction or conflict is between you. Unlike the other two scores, LOWER is better here — it's calculated from clash-prone signals in your charts.",
+    "친구 사이에 마찰·갈등이 생길 가능성을 보는 점수예요. 우정 케미·티키타카와 반대로 이 점수는 낮을수록 좋아요 — 부딪히기 쉬운 사주 신호를 기준으로 계산해요.",
   );
 }
 
@@ -179,8 +179,8 @@ function riskWhy(
     parts.push(
       pick(
         locale,
-        "There's a day-branch tension signal (clash/punishment/harm/break) between you, which is the main driver pushing this score up.",
-        "일지 사이에 충/형/해/파(강한 텐션) 신호가 있어서, 이게 점수를 끌어올리는 주된 이유예요.",
+        "There's a strong tension signal between your charts, which is the main driver pushing this score up.",
+        "두 사람 사이에 강한 긴장 신호가 있어서, 이게 점수를 끌어올리는 주된 이유예요.",
       ),
     );
   }
@@ -188,8 +188,8 @@ function riskWhy(
     parts.push(
       pick(
         locale,
-        "A wonjin/guimun signal is also present — the kind of friction that flares up over things that are hard to explain logically.",
-        "원진·귀문 신호도 있어요 — 논리적으로 설명하기 어려운 지점에서 갑자기 예민해질 수 있는 신호예요.",
+        "There's also a signal for the kind of friction that flares up over things that are hard to explain logically.",
+        "논리적으로 설명하기 어려운 지점에서 갑자기 예민해질 수 있는 신호도 있어요.",
       ),
     );
   }
@@ -197,8 +197,8 @@ function riskWhy(
     parts.push(
       pick(
         locale,
-        "There's also a wealth-officer clash signal, meaning money or fairness/rules disputes are a likely friction point.",
-        "재성-관성 충돌 신호도 있어서, 돈이나 공정함·규칙 문제로 부딪힐 가능성이 있어요.",
+        "There's also a signal meaning money or fairness/rules disputes are a likely friction point.",
+        "돈이나 공정함·규칙 문제로 부딪힐 가능성을 보이는 신호도 있어요.",
       ),
     );
   }

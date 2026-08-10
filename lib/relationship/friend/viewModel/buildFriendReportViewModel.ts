@@ -15,6 +15,7 @@ import {
   swapPsychAxisForViewer,
 } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildFriendPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFriendPsychMatch";
+import { nameExplicitHighlights } from "@/lib/relationship/psychDomainLens/shared";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
@@ -38,6 +39,7 @@ import type {
 } from "./friendReportSectionTypes";
 import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
+import { buildFriendWhyYouMeUs } from "@/lib/relationship/friend/buildFriendWhyYouMeUs";
 
 export type BuildFriendReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -141,17 +143,20 @@ function buildPsychRadarSection(
   report: FriendReportBody,
   viewerIsReportA: boolean,
   t: ReturnType<typeof catalog>,
+  names: [string, string],
+  locale: Locale,
 ): FriendReportSection | null {
   const psychDisplay = resolveReportPsychDisplay(report.meta, buildFriendPsychMatchBundle);
   if (!psychDisplay) return null;
+  const axisResults = swapPsychAxisForViewer(psychDisplay.psych_match.axis_results, viewerIsReportA);
   return {
     id: "psych_radar",
     type: "psych_radar",
     partNumber: 1,
     title: t.psychRadarCardTitle,
-    axisResults: swapPsychAxisForViewer(psychDisplay.psych_match.axis_results, viewerIsReportA),
+    axisResults,
     chartNote: psychDisplay.psych_lens.chart_note,
-    highlights: psychDisplay.psych_lens.highlights,
+    highlights: nameExplicitHighlights(psychDisplay.psych_lens.highlights, axisResults, names[0], names[1], locale),
   };
 }
 
@@ -284,6 +289,23 @@ function buildDeepReadSection(
   };
 }
 
+function buildWhyYouMeUsSection(
+  report: FriendReportBody,
+  viewerIsReportA: boolean,
+  names: [string, string],
+  locale: Locale,
+): FriendReportSection | null {
+  const data = buildFriendWhyYouMeUs(report, viewerIsReportA, names, locale);
+  if (!data) return null;
+  return {
+    id: "why_you_me_us",
+    type: "why_you_me_us",
+    partNumber: 1,
+    title: locale === "en-US" ? "Why We're Drawn to Each Other" : "서로에게 끌리는 이유",
+    data,
+  };
+}
+
 function buildBreakupGuideSection(
   report: FriendReportBody,
   viewerIsReportA: boolean,
@@ -357,8 +379,9 @@ export function buildFriendReportViewModel(
 
   const builders: Array<() => FriendReportSection | null> = [
     () => buildSnapshotSection(report, t),
+    () => buildWhyYouMeUsSection(report, viewerIsReportA, names, locale ?? "ko-KR"),
     () => buildCompareTableSection(report, locale ?? "ko-KR", t),
-    () => buildPsychRadarSection(report, viewerIsReportA, t),
+    () => buildPsychRadarSection(report, viewerIsReportA, t, names, locale ?? "ko-KR"),
     () => buildSocialDnaSection(report, viewerIsReportA, t),
     () => buildSoulmateSection(report, t),
     () => buildPlayMoneySection(report, locale ?? "ko-KR", t),

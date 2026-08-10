@@ -15,6 +15,12 @@
  * `current_enriched` in an earlier cleanup pass (see
  * docs/dev/FRIEND_FINAL_CONTENT_GAP_REVIEW.md §9) and is effectively always
  * absent in production payloads.
+ *
+ * The `deep_read` overlay (meta.friend_saju_deep) is not rendered as its own
+ * card either — it has no standalone section here. Its four pieces are woven
+ * into the sections they thematically belong to instead: person voice ->
+ * SocialDnaSection, gap signal -> DimensionsSection, advice/together ->
+ * ManualSection. See findSection(vm, "deep_read") in each.
  */
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "@/lib/relationship/friend/friendCopy";
@@ -24,6 +30,7 @@ import type {
   BreakupGuideSection as BreakupGuideSectionVM,
   CompareTableSection as CompareTableSectionVM,
   DeEscalationSection as DeEscalationSectionVM,
+  DeepReadSection as DeepReadSectionVM,
   HiddenFlowSection as HiddenFlowSectionVM,
   PrescriptionSection as PrescriptionSectionVM,
   PsychRadarSection as PsychRadarSectionVM,
@@ -31,8 +38,20 @@ import type {
   SocialDnaSection as SocialDnaSectionVM,
   SoulmateSection as SoulmateSectionVM,
 } from "@/lib/relationship/friend/viewModel/friendReportSectionTypes";
-import { Evidence, NameChip, Quote, Reveal, Rule, Scale, Section, VersusStrip } from "./FriendEditorialUI";
-import { FriendEditorialRadar } from "./FriendEditorialRadar";
+import {
+  Evidence,
+  NameChip,
+  Quote,
+  Reveal,
+  Rule,
+  Section,
+  VersusStrip,
+} from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
+import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
+import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
+import { WhyYouMeUsSection as SharedWhyYouMeUsSection } from "@/components/relationship/shared/whyYouMeUs/WhyYouMeUsSection";
+import type { WhyYouMeUsSection as WhyYouMeUsSectionVM } from "@/lib/relationship/friend/viewModel/friendReportSectionTypes";
 
 type Ctx = {
   vm: FriendReportViewModel;
@@ -51,7 +70,6 @@ function findSection<T extends FriendReportViewModel["sections"][number]["type"]
 
 export function FriendHero({ vm, locale }: Ctx) {
   const [nameA, nameB] = vm.opening.names;
-  const gradeReason = vm.opening.gradeReason;
   return (
     <header className="relative overflow-hidden">
       <div className="mx-auto w-full max-w-[820px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
@@ -69,17 +87,6 @@ export function FriendHero({ vm, locale }: Ctx) {
           <h1 className="mt-6 max-w-[22ch] font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
             {vm.opening.headline}
           </h1>
-          {gradeReason && gradeReason !== vm.opening.headline ? (
-            <p className="mt-6 max-w-[54ch] font-rel-sans text-[15px] leading-[1.9] text-rel-ink-soft">
-              {gradeReason}
-            </p>
-          ) : null}
-          {vm.opening.grade && (
-            <p className="mt-7 font-rel-sans text-[11px] tracking-[0.06em] text-rel-ink-mute">
-              {pick(locale, "Reference grade", "참고 등급")}{" "}
-              <span className="text-rel-ink-soft">{vm.opening.grade}</span>
-            </p>
-          )}
         </Reveal>
       </div>
     </header>
@@ -88,13 +95,60 @@ export function FriendHero({ vm, locale }: Ctx) {
 
 /* -------------------------- 01 three core signals --------------------------- */
 
+type SignalKey = "connection" | "banter" | "risk";
+type SignalBand = "high" | "mid" | "low";
+
+/**
+ * Presentation-only banding — mirrors the exact cutoffs already documented in
+ * lib/relationship/enrichment/friendScoreCardAudit.ts's connectionLevelMeaning
+ * (70/40) / banterLevelMeaning (65/35) / riskLevelMeaning (30/60, inverted).
+ * Do not drift these numbers from that source of truth; this function only
+ * turns the same bands into a UI tone + short natural-language grade.
+ */
+function signalBand(key: SignalKey, score: number): SignalBand {
+  if (key === "connection") return score >= 70 ? "high" : score >= 40 ? "mid" : "low";
+  if (key === "banter") return score >= 65 ? "high" : score >= 35 ? "mid" : "low";
+  return score >= 60 ? "high" : score >= 30 ? "mid" : "low"; // risk: high band = high risk
+}
+
+function signalTone(key: SignalKey, band: SignalBand): "good" | "neutral" | "warn" {
+  if (band === "mid") return "neutral";
+  const inverted = key === "risk";
+  if (band === "high") return inverted ? "warn" : "good";
+  return inverted ? "good" : "warn";
+}
+
+const SIGNAL_GRADE_COPY: Record<SignalKey, Record<SignalBand, [en: string, ko: string]>> = {
+  connection: {
+    high: ["Clicks easily", "잘 통하는 편"],
+    mid: ["Comfortable & steady", "무난하게 편안한 편"],
+    low: ["Warms up over time", "천천히 가까워지는 사이"],
+  },
+  banter: {
+    high: ["Banter flows easily", "티키타카가 잘 맞는 편"],
+    mid: ["Comfortable back-and-forth", "편안한 대화"],
+    low: ["Calm, easygoing conversation", "잔잔하게 흐르는 대화"],
+  },
+  risk: {
+    high: ["Clear friction points", "갈등 포인트 뚜렷"],
+    mid: ["Occasional friction", "가끔 주의"],
+    low: ["Rarely clashes", "마찰이 적은 편"],
+  },
+};
+
+const SIGNAL_ONE_LINER_COPY: Record<SignalKey, [en: string, ko: string]> = {
+  connection: ["How naturally at ease you feel around each other", "애쓰지 않아도 서로 편안하게 끌리는 정도"],
+  banter: ["How naturally the back-and-forth flows", "말과 리액션이 자연스럽게 오가는 정도"],
+  risk: ["How likely friction is to come up", "친구 사이에 마찰이 생길 가능성"],
+};
+
 export function SignalsSection({ vm, locale }: Ctx) {
   const snap = findSection(vm, "snapshot") as SnapshotSectionVM | undefined;
   const t = useMessages().relationshipDrilldown.friendship;
   if (!snap) return null;
   const audit = snap.scoreCardAudit;
 
-  const signals = [
+  const raw = [
     {
       key: "connection" as const,
       icon: "🔥",
@@ -127,9 +181,53 @@ export function SignalsSection({ vm, locale }: Ctx) {
     },
   ];
 
+  const cards: OverviewCardData[] = raw.map((s) => {
+    const band = signalBand(s.key, s.score);
+    const [gradeEn, gradeKo] = SIGNAL_GRADE_COPY[s.key][band];
+    const [oneLinerEn, oneLinerKo] = SIGNAL_ONE_LINER_COPY[s.key];
+    return {
+      key: s.key,
+      icon: s.icon,
+      label: s.label,
+      score: s.score,
+      inverted: s.inverted,
+      tone: signalTone(s.key, band),
+      gradeLabel: pick(locale, gradeEn, gradeKo),
+      oneLiner: pick(locale, oneLinerEn, oneLinerKo),
+      measures: s.definition,
+      why: s.why,
+      thresholdText: s.status,
+    };
+  });
+
+  const extra =
+    snap.shineWhenBest || snap.shineWhenLow
+      ? {
+          ruleLabel: pick(locale, "Shines / Struggles", "빛나는 순간 / 조심할 순간"),
+          items: [
+            snap.shineWhenBest
+              ? {
+                  icon: "☀️",
+                  heading: pick(locale, "When this friendship shines", "이 우정이 빛나는 순간"),
+                  body: snap.shineWhenBest,
+                  tone: "good" as const,
+                }
+              : null,
+            snap.shineWhenLow
+              ? {
+                  icon: "🌧️",
+                  heading: pick(locale, "When this friendship struggles", "이 우정이 조심해야 하는 순간"),
+                  body: snap.shineWhenLow,
+                }
+              : null,
+          ].filter((x): x is NonNullable<typeof x> => x != null),
+        }
+      : null;
+
   return (
-    <Section
+    <OverviewSection
       id="overview"
+      locale={locale}
       eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
       title={pick(locale, "What kind of friends are we?", "우리는 어떤 친구일까")}
       lead={pick(
@@ -137,90 +235,28 @@ export function SignalsSection({ vm, locale }: Ctx) {
         "Three signals frame the shape of this friendship first. The numbers are just evidence — the reading is the point.",
         "세 가지 신호로 이 우정의 성격을 먼저 봅니다. 숫자는 근거일 뿐, 해석이 본문이에요.",
       )}
-      tint="cream"
-    >
-      <ul className="space-y-8">
-        {signals.map((s, i) => {
-          const tone = s.inverted
-            ? s.score <= 35
-              ? "good"
-              : s.score >= 60
-                ? "warn"
-                : "neutral"
-            : s.score >= 65
-              ? "good"
-              : s.score <= 40
-                ? "warn"
-                : "neutral";
-          return (
-            <li key={s.key}>
-              <Reveal delay={i * 70}>
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="flex min-w-0 items-center gap-2 font-rel-sans text-[14px] font-semibold tracking-[0.02em] text-rel-ink">
-                    <span aria-hidden>{s.icon}</span>
-                    {s.label}
-                  </span>
-                  <span className="shrink-0 font-rel-serif text-[22px] leading-none text-rel-ink">
-                    {s.score}
-                    <span className="ml-1 font-rel-sans text-[10px] tracking-[0.14em] text-rel-ink-mute">
-                      {s.inverted ? pick(locale, "lower is better", "낮을수록 좋아요") : "/100"}
-                    </span>
-                  </span>
-                </div>
-                <div className="mt-3">
-                  <Scale value={s.score} tone={tone as "good" | "neutral" | "warn"} />
-                </div>
-                {s.status ? (
-                  <p className="mt-3 font-rel-sans text-[14px] leading-[1.75] text-rel-ink">{s.status}</p>
-                ) : null}
-                {s.definition ? (
-                  <p className="mt-1 font-rel-sans text-[12.5px] leading-[1.7] text-rel-ink-mute">
-                    {s.definition}
-                  </p>
-                ) : null}
-                {s.why ? (
-                  <Evidence label={pick(locale, "Why did this come out this way?", "왜 이렇게 나왔나요?")}>
-                    {s.why}
-                  </Evidence>
-                ) : null}
-              </Reveal>
-            </li>
-          );
-        })}
-      </ul>
+      heroSummary={vm.opening.subtitle}
+      cards={cards}
+      extra={extra}
+    />
+  );
+}
 
-      {(snap.shineWhenBest || snap.shineWhenLow) && (
-        <>
-          <Rule label={pick(locale, "Shines / Struggles", "빛나는 순간 / 조심할 순간")} />
-          <div className="grid gap-6 sm:grid-cols-2">
-            {snap.shineWhenBest ? (
-              <Reveal>
-                <div className="h-full rounded-2xl border border-v4-good/25 bg-v4-good-soft p-6">
-                  <h3 className="font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-v4-good">
-                    ☀️ {pick(locale, "When this friendship shines", "이 우정이 빛나는 순간")}
-                  </h3>
-                  <p className="mt-4 font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink">
-                    {snap.shineWhenBest}
-                  </p>
-                </div>
-              </Reveal>
-            ) : null}
-            {snap.shineWhenLow ? (
-              <Reveal delay={90}>
-                <div className="h-full rounded-2xl border border-rel-line bg-rel-surface p-6">
-                  <h3 className="font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-rel-ink-soft">
-                    🌧️ {pick(locale, "When this friendship struggles", "이 우정이 조심해야 하는 순간")}
-                  </h3>
-                  <p className="mt-4 font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink">
-                    {snap.shineWhenLow}
-                  </p>
-                </div>
-              </Reveal>
-            ) : null}
-          </div>
-        </>
-      )}
-    </Section>
+/* ------------------- 01b why you / why me / why us -------------------- */
+
+export function WhyYouMeUsChapter({ vm, locale }: Ctx) {
+  const section = findSection(vm, "why_you_me_us") as WhyYouMeUsSectionVM | undefined;
+  if (!section) return null;
+  const [nameA, nameB] = vm.opening.names;
+  return (
+    <SharedWhyYouMeUsSection
+      id="why_you_me_us"
+      eyebrow={pick(locale, "Why us", "서로를 선택한 이유")}
+      title={section.title}
+      data={section.data}
+      names={{ a: nameA, b: nameB }}
+      locale={locale}
+    />
   );
 }
 
@@ -229,8 +265,10 @@ export function SignalsSection({ vm, locale }: Ctx) {
 export function DimensionsSection({ vm, viewerIsReportA, locale }: Ctx) {
   const compare = findSection(vm, "compare_table") as CompareTableSectionVM | undefined;
   const radar = findSection(vm, "psych_radar") as PsychRadarSectionVM | undefined;
+  const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
   if (!compare && !radar) return null;
   const [nameA, nameB] = vm.opening.names;
+  const gap = deepRead?.vm.gapSignal;
 
   return (
     <Section
@@ -243,6 +281,18 @@ export function DimensionsSection({ vm, viewerIsReportA, locale }: Ctx) {
         "여섯 가지 지점에서 두 사람이 어떻게 다른지, 그 차이가 실제 생활에서 어떤 장면을 만드는지 봅니다.",
       )}
     >
+      {radar ? (
+        <div className="mb-12">
+          <PsychAxisComparisonSection
+            axisResults={radar.axisResults}
+            highlights={radar.highlights}
+            chartNote={radar.chartNote}
+            names={[nameA, nameB]}
+            locale={locale}
+          />
+        </div>
+      ) : null}
+
       {compare ? (
         <ul className="space-y-12">
           {compare.rows.map((row, i) => {
@@ -264,41 +314,36 @@ export function DimensionsSection({ vm, viewerIsReportA, locale }: Ctx) {
         </ul>
       ) : null}
 
-      {radar ? (
+      {gap && (gap.matchNote || gap.meBody || gap.partnerBody) ? (
         <>
-          <Rule label={pick(locale, "Psych 11-Axis", "심리 11축")} />
-          {radar.highlights.length > 0 ? (
-            <ul className="space-y-5">
-              {radar.highlights.map((h, i) => {
-                const color =
-                  h.match_type === "similarity"
-                    ? "text-v4-good border-v4-good/30"
-                    : h.match_type === "tension"
-                      ? "text-v4-bad border-v4-bad/30"
-                      : "text-rel-deep border-rel-deep/25";
-                return (
-                  <li key={h.axis_key}>
-                    <Reveal delay={i * 60}>
-                      <div className={`border-l-2 pl-4 ${color}`}>
-                        <p className="font-rel-sans text-[12.5px] font-semibold tracking-[0.04em]">{h.hook}</p>
-                        <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">
-                          {h.narrative}
-                        </p>
-                      </div>
-                    </Reveal>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
-          <div className="mt-10">
-            <Reveal>
-              <FriendEditorialRadar axisResults={radar.axisResults} aName={nameA} bName={nameB} />
-            </Reveal>
-            <Evidence label={pick(locale, "How do I read the 11 axes?", "11축은 어떻게 읽나요?")}>
-              {radar.chartNote}
-            </Evidence>
-          </div>
+          <Rule label={pick(locale, "Where instincts diverge", "결이 갈리는 지점")} />
+          <Reveal>
+            <div className="space-y-4">
+              {gap.matchNote ? (
+                <p className="font-rel-sans text-[14px] leading-[1.85] text-rel-ink">{gap.matchNote}</p>
+              ) : null}
+              {gap.meBody || gap.partnerBody ? (
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {gap.meBody ? (
+                    <div>
+                      <span className="block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] text-v4-a">
+                        {nameA}
+                      </span>
+                      <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">{gap.meBody}</p>
+                    </div>
+                  ) : null}
+                  {gap.partnerBody ? (
+                    <div>
+                      <span className="block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] text-v4-b">
+                        {nameB}
+                      </span>
+                      <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">{gap.partnerBody}</p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </Reveal>
         </>
       ) : null}
     </Section>
@@ -309,11 +354,12 @@ export function DimensionsSection({ vm, viewerIsReportA, locale }: Ctx) {
 
 export function SocialDnaSection({ vm, locale }: Ctx) {
   const social = findSection(vm, "social_dna") as SocialDnaSectionVM | undefined;
+  const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
   const t = useMessages().relationshipDrilldown.friendship;
   if (!social) return null;
   const people = [
-    { key: "a" as const, person: social.dna.me },
-    { key: "b" as const, person: social.dna.partner },
+    { key: "a" as const, person: social.dna.me, voice: deepRead?.vm.meNature },
+    { key: "b" as const, person: social.dna.partner, voice: deepRead?.vm.partnerNature },
   ];
   const synthesis = social.dna.me.guardian_character;
 
@@ -330,7 +376,7 @@ export function SocialDnaSection({ vm, locale }: Ctx) {
       tint="cream"
     >
       <div className="grid gap-5 sm:grid-cols-2">
-        {people.map(({ key, person }, i) => (
+        {people.map(({ key, person, voice }, i) => (
           <Reveal key={key} delay={i * 90}>
             <article
               className={`h-full rounded-2xl border bg-rel-surface p-6 ${
@@ -373,6 +419,23 @@ export function SocialDnaSection({ vm, locale }: Ctx) {
                   </dd>
                 </div>
               </dl>
+              {voice && (voice.voice || voice.description) ? (
+                <div className="mt-5 border-t border-rel-line/60 pt-4">
+                  <span className="font-rel-sans text-[10px] uppercase tracking-[0.18em] text-rel-ink-mute">
+                    {key === "a" ? t.deepReadVoiceMeLabel : t.deepReadVoicePartnerLabel}
+                  </span>
+                  {voice.voice ? (
+                    <p className="mt-1.5 font-rel-sans text-[13.5px] italic leading-[1.75] text-rel-ink">
+                      &ldquo;{voice.voice}&rdquo;
+                    </p>
+                  ) : null}
+                  {voice.description ? (
+                    <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
+                      {voice.description}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </article>
           </Reveal>
         ))}
@@ -562,7 +625,12 @@ export function RiskSection({ vm, locale }: Ctx) {
 export function ManualSection({ vm, locale }: Ctx) {
   const de = findSection(vm, "de_escalation") as DeEscalationSectionVM | undefined;
   const prescription = findSection(vm, "prescription") as PrescriptionSectionVM | undefined;
-  if (!de && !prescription) return null;
+  const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
+  const t = useMessages().relationshipDrilldown.friendship;
+  const adviceForMe = deepRead?.vm.adviceForMe ?? [];
+  const adviceForPartner = deepRead?.vm.adviceForPartner ?? [];
+  const together = deepRead?.vm.together;
+  if (!de && !prescription && adviceForMe.length === 0 && adviceForPartner.length === 0 && !together) return null;
 
   return (
     <Section
@@ -636,6 +704,90 @@ export function ManualSection({ vm, locale }: Ctx) {
             </section>
           </Reveal>
         </div>
+      ) : null}
+
+      {adviceForMe.length > 0 || adviceForPartner.length > 0 ? (
+        <div className="mt-12">
+          <Rule label={pick(locale, "Tailored to each of you", "각자에게 맞는 제안")} />
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
+            {adviceForMe.length > 0 ? (
+              <Reveal>
+                <section>
+                  <h3 className="border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-rel-ink">
+                    {t.deepReadAdviceMeLabel}
+                  </h3>
+                  <div className="mt-4 space-y-3">
+                    {adviceForMe.map((tip, i) => (
+                      <div key={i} className="rounded-xl border border-rel-line bg-rel-surface p-4">
+                        {tip.actionTitle ? (
+                          <p className="font-rel-sans text-[13.5px] font-semibold leading-snug text-rel-ink">
+                            {tip.actionTitle}
+                          </p>
+                        ) : null}
+                        {tip.reason ? (
+                          <p className="mt-1.5 font-rel-sans text-[12.5px] leading-[1.7] text-rel-ink-mute">
+                            {tip.reason}
+                          </p>
+                        ) : null}
+                        {tip.speechTip ? (
+                          <p className="mt-1.5 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink">
+                            &ldquo;{tip.speechTip}&rdquo;
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </Reveal>
+            ) : null}
+            {adviceForPartner.length > 0 ? (
+              <Reveal delay={60}>
+                <section>
+                  <h3 className="border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-rel-ink">
+                    {t.deepReadAdvicePartnerLabel}
+                  </h3>
+                  <div className="mt-4 space-y-3">
+                    {adviceForPartner.map((tip, i) => (
+                      <div key={i} className="rounded-xl border border-rel-line bg-rel-surface p-4">
+                        {tip.actionTitle ? (
+                          <p className="font-rel-sans text-[13.5px] font-semibold leading-snug text-rel-ink">
+                            {tip.actionTitle}
+                          </p>
+                        ) : null}
+                        {tip.reason ? (
+                          <p className="mt-1.5 font-rel-sans text-[12.5px] leading-[1.7] text-rel-ink-mute">
+                            {tip.reason}
+                          </p>
+                        ) : null}
+                        {tip.speechTip ? (
+                          <p className="mt-1.5 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink">
+                            &ldquo;{tip.speechTip}&rdquo;
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </Reveal>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {together ? (
+        <Reveal>
+          <div className="mt-12 rounded-2xl border border-rel-deep/20 bg-rel-taupe-soft/35 p-6 text-center">
+            <span className="font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-ink-mute">
+              {t.deepReadTogetherLabel}
+            </span>
+            <p className="mt-3 font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink">{together}</p>
+            {deepRead?.vm.togetherStarter ? (
+              <p className="mt-3 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink-soft">
+                &ldquo;{deepRead.vm.togetherStarter}&rdquo;
+              </p>
+            ) : null}
+          </div>
+        </Reveal>
       ) : null}
 
       <div className="mt-16">
