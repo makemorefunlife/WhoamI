@@ -16,6 +16,7 @@ import {
   swapPsychAxisForViewer,
 } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildWorkPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildWorkPsychMatch";
+import { nameExplicitHighlights } from "@/lib/relationship/psychDomainLens/shared";
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 import type { Locale } from "@/lib/i18n/locale";
 import {
@@ -134,7 +135,9 @@ function buildSnapshotSection(
 function buildPsychRadarSection(
   report: WorkColleagueReportBody,
   viewerIsReportA: boolean,
+  names: [string, string],
   titles: SectionTitleSet,
+  locale: Locale,
 ): WorkReportSection | null {
   const psychDisplay = resolveReportPsychDisplay(
     report.meta,
@@ -152,7 +155,13 @@ function buildPsychRadarSection(
       viewerIsReportA,
     ),
     chartNote: psychDisplay.psych_lens.chart_note,
-    highlights: psychDisplay.psych_lens.highlights,
+    highlights: nameExplicitHighlights(
+      psychDisplay.psych_lens.highlights,
+      psychDisplay.psych_match.axis_results,
+      names[0],
+      names[1],
+      locale
+    ),
   };
 }
 
@@ -453,7 +462,7 @@ export function buildWorkReportViewModel(
         locale ?? "ko-KR",
         titles,
       ),
-    () => buildPsychRadarSection(report, viewerIsReportA, titles),
+    () => buildPsychRadarSection(report, viewerIsReportA, names, titles, locale ?? "ko-KR"),
     () => buildComparisonSection(report, viewerIsReportA, titles),
     () =>
       buildRoleMatrixSection(

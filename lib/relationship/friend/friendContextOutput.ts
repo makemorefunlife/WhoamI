@@ -129,14 +129,16 @@ export function buildFriendContextOutput(
   }
 
   const money = friend.section_play_money;
-  Object.assign(
-    dominant_categories,
-    treasurerContextCategoriesFromPlayMoney(
-      money,
-      ctx.nicknameA,
-      ctx.nicknameB,
-    ),
-  );
+  if (money) {
+    Object.assign(
+      dominant_categories,
+      treasurerContextCategoriesFromPlayMoney(
+        money,
+        ctx.nicknameA,
+        ctx.nicknameB,
+      ),
+    );
+  }
 
   // tikitaka / battery — FriendDnaProfile raw mode (ctx에 이미 계산됨; section에는 label만)
   dominant_categories.tikitaka_a = {
@@ -212,11 +214,11 @@ export function buildFriendContextOutput(
       connection: vibe?.connection_note ?? null,
       banter: vibe?.banter_note ?? null,
       risk: vibe?.risk_note ?? null,
-      treasurer_confirm: money.psych_confirm_note ?? null,
+      treasurer_confirm: money?.psych_confirm_note ?? null,
       communication_rhythm: rhythmNote,
     },
     section_summaries: {
-      treasurer_reason: money.treasurer_reason ?? null,
+      treasurer_reason: money?.treasurer_reason ?? null,
       travel_role:
         friend.section_hidden_flow?.travel_style?.role_prescription ?? null,
     },

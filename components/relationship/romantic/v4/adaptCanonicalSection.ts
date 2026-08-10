@@ -21,6 +21,8 @@ import type {
 } from "@/lib/relationship/romantic/prototypeV4/canonicalStoryPlanTypes";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import { labelOfAxis } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
+import { buildAxisAttributionSentence } from "@/lib/relationship/psychDomainLens/shared";
+import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
 
 /**
  * The full Story Plan (payload.canonicalReport.storyPlan) carries richer
@@ -342,11 +344,53 @@ export function adaptTranslatorPanels(payload: RomanticV4PrototypePayload): Tran
  */
 export function adaptRadarAxes(payload: RomanticV4PrototypePayload) {
   return (payload.axisOverview ?? []).map((a) => ({
+    axis_key: a.axis_key, // Ensure axis_key is present for PsychAxisComparisonSection
     key: a.axis_key,
     label: labelOfAxis(payload.locale, a.axis_key),
     a: a.score_a,
     b: a.score_b,
+    score_a: a.score_a, // Adding these to satisfy PsychMatchAxisResult if needed
+    score_b: a.score_b,
+    gap: Math.abs(a.score_a - a.score_b),
+    match_type: a.match_type,
   }));
+}
+
+export function adaptRadarHighlights(
+  payload: RomanticV4PrototypePayload,
+  personA: string,
+  personB: string,
+): DomainPsychHighlight[] {
+  return (payload.selectedAxisInsights ?? []).slice(0, 4).map((row) => {
+    const axis = payload.axisOverview.find((a) => a.axis_key === row.axisKey);
+    const scoreA = axis?.score_a ?? 50;
+    const scoreB = axis?.score_b ?? 50;
+    const gap = Math.abs(scoreA - scoreB);
+    let lean: "even" | "a_high" | "b_high" = "even";
+    if (gap >= 10) {
+      lean = scoreA > scoreB ? "a_high" : "b_high";
+    }
+
+    const hook = buildAxisAttributionSentence({
+      axisLabel: row.axisLabel,
+      matchType: row.matchType,
+      lean,
+      nameA: personA,
+      nameB: personB,
+      locale: payload.locale,
+    });
+
+    return {
+      axis_key: row.axisKey as DomainPsychHighlight["axis_key"],
+      axis_label: row.axisLabel,
+      gap: row.gap,
+      match_type: row.matchType,
+      topic: "",
+      section_hint: "",
+      hook,
+      narrative: [row.whyItMatters, row.relationshipEffect].filter(Boolean).join(" "),
+    };
+  });
 }
 
 /* ── Chapter 6 · Hidden Hearts ────────────────────────────── */

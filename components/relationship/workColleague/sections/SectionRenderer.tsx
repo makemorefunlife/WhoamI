@@ -26,6 +26,11 @@ import {
 } from "@/components/relationship/reportLayout";
 import { WorkChapterNav, WorkChapterSection } from "@/components/relationship/workColleague/chapters/WorkChapterShell";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
+import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
+import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
+import { VersusStrip, Evidence, Reveal } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { pick } from "@/lib/relationship/friend/friendCopy";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
   DnaCard,
@@ -57,63 +62,38 @@ const ACCENT = getTabTheme("work").accent;
 function CompareTableCard({ section, names }: { section: CompareTableSection; names: [string, string] }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <div className="overflow-x-auto rounded-2xl border border-white/10">
-        <table className="w-full min-w-[520px] border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-white/10 bg-white/[0.04]">
-              <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
-              <th className="px-4 py-3 font-semibold text-white/80">{names[0]}</th>
-              <th className="px-4 py-3 font-semibold text-white/80">{names[1]}</th>
-              <th className="px-4 py-3 font-semibold text-white/55">{t.compareTableColMeaning}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {section.rows.map((row, i) => (
-              <tr key={row.id} className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
-                  {row.label}
-                </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold" style={{ color: ACCENT }}>
-                  {row.me.shortLabel}
-                </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
-                  {row.partner.shortLabel}
-                </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
-                  {row.meaning}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </RelationshipReportCard>
+    <div className="mt-8">
+      <ul className="space-y-12">
+        {section.rows.map((row, i) => (
+          <li key={row.id}>
+            <Reveal delay={i * 50}>
+              <VersusStrip label={row.label} aName={names[0]} bName={names[1]} a={row.me.shortLabel} b={row.partner.shortLabel} />
+              <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
+                {row.meaning}
+              </p>
+              <div className="mt-10 h-px w-full bg-rel-line" />
+            </Reveal>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
 // ---- Part 1b: 11축 궁합 레이더 --------------------------------------------
 
 function PsychRadarCard({ section, names }: { section: PsychRadarSection; names: [string, string] }) {
+  const { locale } = useLocale();
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportParagraph className="mb-3" muted>
-        {section.chartNote}
-      </RelationshipReportParagraph>
-      <div className="rounded-2xl border border-white/10 bg-[#f8f6f3] p-3 sm:p-4">
-        <PsychMatchRadarChart axisResults={section.axisResults} personALabel={names[0]} personBLabel={names[1]} />
-      </div>
-      {section.highlights.length > 0 ? (
-        <ul className="mt-4 space-y-3">
-          {section.highlights.map((item) => (
-            <li key={item.axis_key} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-sm font-semibold leading-snug text-white/92">{item.hook}</p>
-              <RelationshipReportParagraph className="mt-2 text-white/78">{item.narrative}</RelationshipReportParagraph>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </RelationshipReportCard>
+    <div className="mt-6">
+      <PsychAxisComparisonSection
+        axisResults={section.axisResults}
+        highlights={section.highlights}
+        chartNote={section.chartNote}
+        names={names}
+        locale={locale}
+      />
+    </div>
   );
 }
 
@@ -446,17 +426,71 @@ export function WorkReportViewModelView({
         names: vm.opening.names,
         badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
       }}
-      scores={
-        snapshot
-          ? [
-              { emoji: "🔥", label: t.scoreLabelFit, value: snapshot.scores.fitPct, tone: "warm" },
-              { emoji: "🧩", label: t.scoreLabelSynergy, value: snapshot.scores.synergyPct, tone: "cool" },
-              { emoji: "⚡", label: t.scoreLabelRisk, value: snapshot.scores.riskPct, tone: "alert" },
-            ]
-          : []
-      }
-      scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="work" /> : undefined}
+      scores={[]}
     >
+      {snapshot ? (() => {
+        const fit = snapshot.panel.narrative.topics.find(t => t.topic === "intimacy")!;
+        const synergy = snapshot.panel.narrative.topics.find(t => t.topic === "stability")!;
+        const risk = snapshot.panel.narrative.topics.find(t => t.topic === "conflict")!;
+        
+        const cards: OverviewCardData[] = [
+          {
+            key: "fit",
+            icon: "🔥",
+            label: t.scoreLabelFit,
+            score: snapshot.scores.fitPct,
+            tone: "good",
+            inverted: false,
+            gradeLabel: fit.title,
+            oneLiner: fit.subtitle,
+            measures: pick(locale, "How smoothly your work styles and paces align", "서로의 업무 템포와 방식이 얼마나 매끄럽게 호흡을 맞추는지"),
+            why: fit.interpretation,
+            thresholdText: fit.axisNote,
+          },
+          {
+            key: "synergy",
+            icon: "🧩",
+            label: t.scoreLabelSynergy,
+            score: snapshot.scores.synergyPct,
+            tone: "neutral",
+            inverted: false,
+            gradeLabel: synergy.title,
+            oneLiner: synergy.subtitle,
+            measures: pick(locale, "How well your different strengths complement each other for better output", "서로 다른 강점이 시너지를 내어 결과물의 퀄리티를 얼마나 높이는지"),
+            why: synergy.interpretation,
+            thresholdText: synergy.axisNote,
+          },
+          {
+            key: "risk",
+            icon: "⚡",
+            label: t.scoreLabelRisk,
+            score: snapshot.scores.riskPct,
+            tone: "warn",
+            inverted: true,
+            gradeLabel: risk.title,
+            oneLiner: risk.subtitle,
+            measures: pick(locale, "The potential for friction or misunderstanding during collaboration", "협업 과정에서 의사소통 오해나 마찰이 발생할 가능성"),
+            why: risk.interpretation,
+            thresholdText: risk.axisNote,
+          },
+        ];
+
+        return (
+          <div className="mb-12 mt-4">
+            <OverviewSection
+              locale={locale}
+              eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
+              title={pick(locale, "How You Work Together", "함께 일하는 방식과 시너지")}
+              lead={pick(
+                locale,
+                "Three signals frame the shape of this partnership.",
+                "세 가지 신호로 이 파트너십의 성격을 먼저 봅니다."
+              )}
+              cards={cards}
+            />
+          </div>
+        );
+      })() : null}
       <WorkChapterNav items={navItems} />
       {chapters.map((chapter, i) => (
         <WorkChapterSection

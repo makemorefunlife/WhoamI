@@ -9,15 +9,17 @@ import { ArrowDown, ArrowRight, RefreshCw, Sparkles } from "lucide-react";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import type { CanonicalSection } from "@/lib/relationship/romantic/prototypeV4/composeCanonicalSectionNarratives";
 import { ChapterSection, PersonTag, Pull, Reveal, SubHeading, Bridge } from "./primitives";
-import { MatchRadar } from "./MatchRadar";
+import { PsychAxisComparisonSection } from "../../shared/psychAxis/PsychAxisComparisonSection";
+import { WhyYouMeUsSection } from "../../shared/whyYouMeUs/WhyYouMeUsSection";
 import {
   adaptHero,
   adaptAttraction,
   adaptDynamics,
   adaptConflict,
-  adaptDifference,
   adaptRadarAxes,
+  adaptRadarHighlights,
 } from "./adaptCanonicalSection";
+import { VersusStrip, Evidence } from "../../shared/editorial/EditorialPrimitives";
 
 export type SectionProps = {
   payload: RomanticV4PrototypePayload;
@@ -120,117 +122,18 @@ function RelationshipGlyph({ aName, bName }: { aName: string; bName: string }) {
 /* ── Chapter 2 · Attraction ─────────────────────────────────── */
 export const AttractionSection = ({ payload, section, personA, personB, n, debug }: SectionProps) => {
   const data = adaptAttraction(section, payload);
-  const dirs = [data.whyYou, data.whyMe];
   const names = { a: personA, b: personB };
 
   return (
-    <ChapterSection
+    <WhyYouMeUsSection
       id={section.chapterId}
       n={n}
-      label={section.userQuestion}
+      eyebrow={section.userQuestion}
       title={section.title}
-    >
-      <div className="mt-2 grid gap-6 md:grid-cols-2">
-        {dirs.map((d, i) => (
-          <Reveal key={`${d.from}-${d.to}`} delay={i * 80}>
-            <article
-              className={`h-full rounded-2xl border bg-rel-surface p-6 shadow-sm sm:p-7 ${
-                d.from === "a" ? "border-v4-a/25" : "border-v4-b/30"
-              }`}
-            >
-              <div className="flex flex-wrap items-center gap-2 font-rel-sans text-[11px] tracking-[0.1em] text-rel-ink-mute">
-                <PersonTag name={names[d.from]} side={d.from} />
-                <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-                <PersonTag name={names[d.to]} side={d.to} />
-              </div>
-              <h3 className="mt-4 font-rel-serif text-[20px] leading-[1.35] tracking-[-0.01em] text-rel-ink">
-                {d.title}
-              </h3>
-              <p className="mt-3 font-rel-sans text-[14.5px] leading-[1.85] text-rel-ink-soft">
-                {d.body}
-              </p>
-              {d.scene && (
-                <div
-                  className={`mt-4 rounded-xl px-4 py-3 ${
-                    d.from === "a" ? "bg-v4-a-soft" : "bg-v4-b-soft"
-                  }`}
-                >
-                  <div
-                    className={`font-rel-sans text-[10px] uppercase tracking-[0.16em] ${
-                      d.from === "a" ? "text-v4-a" : "text-v4-b"
-                    }`}
-                  >
-                    이럴 때, 이런 모습
-                  </div>
-                  <p className="mt-1.5 font-rel-sans text-[13px] leading-[1.7] text-rel-ink-soft">
-                    {d.scene}
-                  </p>
-                </div>
-              )}
-              {d.datingVibe && (
-                <p className="mt-3 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink-mute">
-                  데이트할 때는 {d.datingVibe}
-                </p>
-              )}
-              {d.signals.length > 0 && (
-                <ul className="mt-5 space-y-2 border-t border-rel-line pt-4">
-                  {d.signals.map((s) => (
-                    <li key={s} className="flex items-start gap-2.5">
-                      <span
-                        className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                          d.from === "a" ? "bg-v4-a" : "bg-v4-b"
-                        }`}
-                        aria-hidden
-                      />
-                      <span className="min-w-0 font-rel-sans text-[13px] leading-[1.6] text-rel-ink-soft">
-                        {s}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </article>
-          </Reveal>
-        ))}
-      </div>
-
-      <Reveal>
-        <div className="mt-8 rounded-2xl bg-rel-deep p-7 sm:p-10">
-          <SubHeading title={data.whyUs.title} invert tag="Why us" />
-          <p className="mt-5 max-w-[62ch] font-rel-sans text-[15px] leading-[1.9] text-white/80">
-            {data.whyUs.body}
-          </p>
-          {data.whyUs.mechanism.length > 0 && (
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {data.whyUs.mechanism.map((m) => (
-                <div
-                  key={m}
-                  className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 font-rel-sans text-[13px] leading-[1.7] text-white/85"
-                >
-                  {m}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Reveal>
-
-      {data.moment && (
-        <Reveal>
-          <figure className="mt-10 border-y border-rel-line py-9">
-            <blockquote>
-              <Pull>{data.moment.line}</Pull>
-            </blockquote>
-            <figcaption className="mx-auto mt-5 max-w-[54ch] text-center font-rel-sans text-[13px] leading-[1.75] text-rel-ink-mute">
-              {data.moment.scene}
-            </figcaption>
-          </figure>
-        </Reveal>
-      )}
-
-      {data.bridge && <Bridge text={data.bridge} label="그런데" />}
-      {debug && <DebugPanel evidenceIds={section.primaryEvidenceIds} />}
-    </ChapterSection>
+      data={data}
+      names={names}
+      locale={payload.locale}
+    />
   );
 };
 
@@ -415,8 +318,9 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
 
 /* ── Chapter 5 · Difference & Misunderstanding ────────────────── */
 export const MisunderstandingSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
-  const { comparison, details } = adaptDifference(section, payload);
-  const axes = adaptRadarAxes(payload);
+  const axes = adaptRadarAxes(payload) as any[]; // Cast to bypass TS excess property checking if strict
+  const highlights = adaptRadarHighlights(payload, personA, personB);
+  const compare = payload.comparisonTable;
 
   return (
     <ChapterSection
@@ -425,116 +329,42 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
       label={section.userQuestion}
       title={section.title}
     >
-      {comparison.length > 0 && (
-        <div>
-          <SubHeading title="나란히 놓고 보기" tag="Comparison" />
-          <div className="mt-5 overflow-hidden rounded-2xl border border-rel-line bg-rel-surface shadow-sm">
-            <div className="hidden grid-cols-[minmax(0,120px)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] items-center gap-4 border-b border-rel-line bg-rel-taupe-soft/60 px-5 py-3.5 text-center font-rel-sans text-[13px] font-semibold tracking-[0.06em] text-rel-ink-soft sm:grid">
-              <span>축</span>
-              <span className="flex justify-center">
-                <PersonTag name={personA} side="a" />
-              </span>
-              <span>의미</span>
-              <span className="flex justify-center">
-                <PersonTag name={personB} side="b" />
-              </span>
-            </div>
-            {comparison.map((row, i) => (
-              <div
-                key={row.axis}
-                className={`grid gap-3 px-5 py-4 text-center sm:grid-cols-[minmax(0,120px)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)] sm:gap-4 ${
-                  i > 0 ? "border-t border-rel-line" : ""
-                }`}
-              >
-                <div className="font-rel-sans text-[13px] font-semibold text-rel-ink">{row.axis}</div>
-                <div className="min-w-0 font-rel-sans text-[13.5px] leading-[1.6] text-rel-ink-soft">
-                  {row.a}
-                </div>
-                <div className="min-w-0 font-rel-sans text-[12.5px] leading-[1.65] text-rel-ink-mute">
-                  {row.meaning}
-                </div>
-                <div className="min-w-0 font-rel-sans text-[13.5px] leading-[1.6] text-rel-ink-soft">
-                  {row.b}
-                </div>
-              </div>
-            ))}
+      {axes.length > 0 && (
+        <div className="mb-14">
+          <SubHeading title="심리 축 매칭" tone="coral" tag={`${axes.length} axes`} />
+          <div className="mt-6">
+            <PsychAxisComparisonSection
+              axisResults={axes}
+              highlights={highlights}
+              chartNote=""
+              names={[personA, personB]}
+              locale={payload.locale}
+            />
           </div>
         </div>
       )}
 
-      {axes.length > 0 && (
-        <div className="mt-14">
-          <SubHeading title="심리 축 매칭" tone="coral" tag={`${axes.length} axes`} />
-          <Reveal>
-            <div className="mt-6 overflow-x-auto rounded-2xl border border-rel-line bg-rel-surface shadow-sm">
-              <div className="min-w-[420px] px-8 py-6 sm:min-w-0 sm:px-14 sm:py-10 [&_svg]:overflow-visible">
-                <MatchRadar axes={axes} aName={personA} bName={personB} />
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      )}
-
-      {details.length > 0 && (
-        <div className="mt-14 space-y-6">
-          <SubHeading title="가장 크게 갈라지는 지점" tag={`${details.length}개 축`} />
-          {details.map((d, i) => (
-            <Reveal key={d.axis} delay={i * 60}>
-              <article className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm sm:p-7">
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <h4 className="truncate font-rel-serif text-[19px] tracking-[-0.01em] text-rel-ink">
-                      {d.axis}
-                    </h4>
-                    <p className="mt-1 font-rel-sans text-[12.5px] leading-[1.6] text-rel-ink-mute">
-                      {d.meaning}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded-full border border-v4-bad/40 bg-v4-bad-soft px-2.5 py-1 font-rel-sans text-[10.5px] tracking-[0.12em] text-v4-bad">
-                    격차 {d.gap}
-                  </span>
-                </div>
-
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl border border-rel-line bg-rel-bg px-4 py-3">
-                    <PersonTag name={personA} side="a" />
-                    <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink-soft">
-                      {d.aPattern}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-rel-line bg-rel-bg px-4 py-3">
-                    <PersonTag name={personB} side="b" />
-                    <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink-soft">
-                      {d.bPattern}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="mt-5 font-rel-serif text-[16px] leading-[1.75] text-rel-ink">
-                  {d.between}
-                </p>
-
-                <dl className="mt-5 grid gap-x-6 gap-y-3 border-t border-rel-line pt-4 sm:grid-cols-2">
-                  <div className="min-w-0">
-                    <dt className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-v4-good">
-                      이 차이가 주는 것
-                    </dt>
-                    <dd className="mt-1.5 font-rel-sans text-[13px] leading-[1.7] text-rel-ink-soft">
-                      {d.benefit}
-                    </dd>
-                  </div>
-                  <div className="min-w-0">
-                    <dt className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-v4-bad">
-                      지칠 때 나타나는 것
-                    </dt>
-                    <dd className="mt-1.5 font-rel-sans text-[13px] leading-[1.7] text-rel-ink-soft">
-                      {d.stress}
-                    </dd>
-                  </div>
-                </dl>
-              </article>
-            </Reveal>
-          ))}
+      {compare && compare.length > 0 && (
+        <div>
+          <SubHeading title="나란히 놓고 보기" tag="Comparison" />
+          <ul className="mt-8 space-y-12">
+            {compare.map((row, i) => (
+              <li key={row.rowId}>
+                <Reveal delay={i * 50}>
+                  <VersusStrip label={row.relationshipQuestion} aName={personA} bName={personB} a={row.personA} b={row.personB} />
+                  <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
+                    {row.relationshipManifestation}
+                  </p>
+                  {row.understandingPoint ? (
+                    <Evidence label={payload.locale === "en-US" ? "Note" : "확인 문구"}>
+                      {row.understandingPoint}
+                    </Evidence>
+                  ) : null}
+                  <div className="mt-10 h-px w-full bg-rel-line" />
+                </Reveal>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

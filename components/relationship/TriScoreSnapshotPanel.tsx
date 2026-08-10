@@ -93,7 +93,7 @@ function MiniScoreBar({
   );
 }
 
-function TopicCard({
+export function TopicCard({
   topic,
   kind,
   singlePrimaryMetric,

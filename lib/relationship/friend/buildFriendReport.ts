@@ -178,8 +178,8 @@ export function buildFriendReport(params: {
   const counselingB = resolveCounselingStyleForPerson(ctx.tenGodsB, params.psychMasterB, locale);
   const baseMoney = friendBase.section_play_money;
   const treasurerBase = {
-    nickname: baseMoney.treasurer_nickname,
-    reason: baseMoney.treasurer_reason,
+    nickname: baseMoney?.treasurer_nickname ?? "",
+    reason: baseMoney?.treasurer_reason ?? "",
   };
   // Phase 6-2b — pick (in base sections) → refine once → wrap → persist .value
   const refinedTreasurer = refineFriendTreasurer({
@@ -246,7 +246,7 @@ export function buildFriendReport(params: {
     connectionPct: friendBase.section_snapshot.connection_pct,
     banterPct: friendBase.section_snapshot.banter_pct,
     riskPct: friendBase.section_snapshot.risk_pct,
-    hangoutHint: friendBase.section_play_money.optimal_hangout,
+    hangoutHint: friendBase.section_play_money?.optimal_hangout ?? "",
     travelLeadNickname: travelStyle?.planner?.nickname ?? null,
     locale,
   });
@@ -269,6 +269,7 @@ export function buildFriendReport(params: {
     },
     section_play_money: {
       ...baseMoney,
+      optimal_hangout: baseMoney?.optimal_hangout ?? "",
       treasurer_nickname: treasurerFinal.nickname,
       treasurer_reason: treasurerFinal.reason,
       psych_confirm_note: treasurerNote,

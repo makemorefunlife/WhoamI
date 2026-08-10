@@ -17,6 +17,8 @@ import {
   FutureTimingSection,
   ChoiceSection,
 } from "./ChaptersB";
+import { OverviewSection } from "../../shared/overview/OverviewSection";
+import React from "react";
 
 type Props = {
   report: CanonicalRomanticV4Report;
@@ -177,7 +179,20 @@ export function CanonicalReportView({ report, payload, debug = false }: Props) {
       {visible.map((section) => {
         switch (section.chapterId) {
           case "c1_hero":
-            return <HeroSection key={section.chapterId} {...sectionProps(section)} />;
+            return (
+              <React.Fragment key={section.chapterId}>
+                <HeroSection {...sectionProps(section)} />
+                {report.overviewCards?.length > 0 && (
+                  <OverviewSection
+                    locale={payload.locale}
+                    eyebrow="OVERVIEW"
+                    title={payload.locale === "en-US" ? "At a Glance" : "한눈에 보기"}
+                    lead=""
+                    cards={report.overviewCards}
+                  />
+                )}
+              </React.Fragment>
+            );
           case "c2_attraction":
             return <AttractionSection key={section.chapterId} {...sectionProps(section)} />;
           case "c3_dynamics":

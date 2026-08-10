@@ -53,7 +53,7 @@ export function PsychAxisComparisonSection({
           {highlights.map((h, i) => (
             <li key={h.axis_key}>
               <Reveal delay={i * 60}>
-                <div className="rounded-xl bg-rel-deep px-4 py-3">
+                <div className="rounded-xl bg-[#8a8a8a] px-4 py-3">
                   <p className="font-rel-sans text-[13px] font-semibold leading-snug text-white/92">{h.hook}</p>
                   <p className="mt-2 font-rel-sans text-[13px] leading-[1.75] text-white/78">{h.narrative}</p>
                 </div>

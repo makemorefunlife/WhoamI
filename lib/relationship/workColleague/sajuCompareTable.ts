@@ -8,6 +8,7 @@ import {
   ELEMENT_OFFICE,
 } from "./officeLanguage";
 import type { TenGodCategory } from "./tenGodComplement";
+import { getWorkCompareProse } from "./workCompareInsights";
 
 /**
  * "한눈에 비교" 표 — 팀 회의에서 확정한 6개 협업 비교축.
@@ -404,66 +405,90 @@ export function buildWorkSajuCompareTable(
       pick(locale, "Work/Life Boundary", "공사 구분선"),
       categoryA,
       categoryB,
-      categoryA === categoryB
-        ? pick(
-            locale,
-            "You draw the line between work and personal chat in a similar place, so there's little friction there.",
-            "일과 사적인 대화의 경계를 비슷한 곳에 긋는 편이라 이 지점에서는 마찰이 적어요.",
-          )
-        : pick(
-            locale,
-            "One of you treats small talk as part of the work rhythm, the other keeps it separate — knowing this up front avoids reading the other as cold or unfocused.",
-            "한쪽은 스몰토크를 업무 리듬의 일부로 여기고, 다른 쪽은 분리해요 — 서로 냉정하다/산만하다고 오해하지 않으려면 이 차이를 미리 알아두면 좋아요.",
-          ),
+      getWorkCompareProse(
+        "boundary",
+        locale,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        BOUNDARY_LABEL[locale][categoryA] ?? categoryA,
+        BOUNDARY_LABEL[locale][categoryB] ?? categoryB,
+        categoryA === categoryB
+      ),
     ),
     row(
       "feedback",
       pick(locale, "Feedback Receptivity", "피드백 수용 스타일"),
       typed.feedback.band_a,
       typed.feedback.band_b,
-      typed.feedback.band_a === typed.feedback.band_b
-        ? pick(
-            locale,
-            "You process feedback in a similar way, so corrections rarely turn into hurt feelings between you.",
-            "피드백을 받아들이는 방식이 비슷해서, 지적이 감정싸움으로 잘 안 번져요.",
-          )
-        : pick(
-            locale,
-            "Give feedback to each other differently — one needs recognition alongside the correction, the other just wants the standard stated plainly.",
-            "피드백 전달 방식을 다르게 가져가세요 — 한쪽에는 지적과 함께 인정을 얹고, 다른 쪽에는 기준만 담백하게 말하는 게 더 잘 통해요.",
-          ),
+      getWorkCompareProse(
+        "feedback",
+        locale,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        FEEDBACK_LABEL[locale][typed.feedback.band_a] ?? typed.feedback.band_a,
+        FEEDBACK_LABEL[locale][typed.feedback.band_b] ?? typed.feedback.band_b,
+        typed.feedback.band_a === typed.feedback.band_b
+      ),
     ),
     row(
       "synergy_position",
       pick(locale, "Collaboration Synergy Position", "협업 시너지 포지션"),
       elementA,
       elementB,
-      elementA === elementB
-        ? ELEMENT_SYNERGY_MEANING[locale].same
-        : ELEMENT_SYNERGY_MEANING[locale].diff,
+      getWorkCompareProse(
+        "synergy_position",
+        locale,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        ELEMENT_OFFICE[locale][elementA] ?? elementA,
+        ELEMENT_OFFICE[locale][elementB] ?? elementB,
+        elementA === elementB
+      ),
     ),
     row(
       "burnout",
       pick(locale, "Office Burnout Coping", "오피스 번아웃 대처"),
       branchA,
       branchB,
-      branchA === branchB ? BURNOUT_MEANING[locale].same : BURNOUT_MEANING[locale].diff,
+      getWorkCompareProse(
+        "burnout",
+        locale,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        BRANCH_BURNOUT_LABEL[locale][branchA] ?? branchA,
+        BRANCH_BURNOUT_LABEL[locale][branchB] ?? branchB,
+        branchA === branchB
+      ),
     ),
     row(
       "risk_taking",
       pick(locale, "Deal-Making & Risk Appetite", "딜메이킹 & 추진 기질"),
       riskBandA,
       riskBandB,
-      riskBandA === riskBandB ? RISK_MEANING[locale].same : RISK_MEANING[locale].diff,
+      getWorkCompareProse(
+        "risk_taking",
+        locale,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        RISK_LABEL[locale][riskBandA] ?? riskBandA,
+        RISK_LABEL[locale][riskBandB] ?? riskBandB,
+        riskBandA === riskBandB
+      ),
     ),
     row(
       "reporting_rhythm",
       pick(locale, "Collaboration Rhythm", "협업 추진 리듬"),
       rhythmBandA,
       rhythmBandB,
-      rhythmBandA === rhythmBandB
-        ? RHYTHM_MEANING[locale].same
-        : RHYTHM_MEANING[locale].diff,
+      getWorkCompareProse(
+        "reporting_rhythm",
+        locale,
+        ctx.nicknameA,
+        ctx.nicknameB,
+        RHYTHM_LABEL[locale][rhythmBandA] ?? rhythmBandA,
+        RHYTHM_LABEL[locale][rhythmBandB] ?? rhythmBandB,
+        rhythmBandA === rhythmBandB
+      ),
     ),
   ];
 }

@@ -18,6 +18,32 @@ import {
 } from "./buildWorkSnapshotNarrative";
 import { pick } from "./workColleagueCopy";
 
+function resolveWorkVibeAxisNotes(
+  psychA: PsychMasterJson | null,
+  psychB: PsychMasterJson | null,
+  locale: import("@/lib/i18n/locale").Locale,
+) {
+  if (!psychA || !psychB) return {};
+  const commGap = Math.abs(psychA.secondary_axes.thinking_style - psychB.secondary_axes.thinking_style);
+  const fitNote = commGap >= 30
+    ? pick(locale, "Communication styles differ significantly, so deliberate effort is needed to sync up.", "소통 방식이 크게 달라서 템포를 맞추려면 의도적인 노력이 필요해요.")
+    : pick(locale, "Communication styles are similar, making it easier to get on the same page.", "소통 방식이 꽤 비슷해서 회의나 업무를 맞출 때 수월한 편입니다.");
+    
+  const stimAvg = (psychA.secondary_axes.stimulation + psychB.secondary_axes.stimulation) / 2;
+  const synergyNote = stimAvg >= 60
+    ? pick(locale, "Both lean towards novelty and bold ideas, which boosts creative output.", "둘 다 새로운 시도와 도전을 즐겨서 창의적인 기획에서 시너지가 높습니다.")
+    : stimAvg <= 40
+      ? pick(locale, "Both value stability, making execution solid and predictable.", "둘 다 안정을 추구하는 편이라 예측 가능하고 탄탄한 실행력에서 시너지가 납니다.")
+      : undefined;
+
+  const conflictGap = Math.abs(psychA.secondary_axes.conflict_style - psychB.secondary_axes.conflict_style);
+  const riskNote = conflictGap >= 30
+    ? pick(locale, "Different approaches to conflict could escalate friction if roles blur.", "갈등을 대하는 태도가 달라서 역할이 겹칠 때 마찰이 더 커질 수 있어요.")
+    : undefined;
+
+  return { fitNote, synergyNote, riskNote };
+}
+
 function buildWorkKeywords(ctx: WorkColleagueContext): string[] {
   const raw = new Set<string>();
   raw.add(pick(ctx.locale, `Collab ${ctx.grade}`, `협업 ${ctx.grade}`));
@@ -102,6 +128,14 @@ export function buildWorkSnapshotPanel(
   ];
 
   const narrative = buildWorkSnapshotNarrative({ ctx, relationshipGauges });
+  const vibeNotes = resolveWorkVibeAxisNotes(psychA, psychB, ctx.locale);
+  narrative.topics = narrative.topics.map(t => {
+    let axisNote: string | undefined;
+    if (t.topic === "intimacy") axisNote = vibeNotes.fitNote;
+    if (t.topic === "stability") axisNote = vibeNotes.synergyNote;
+    if (t.topic === "conflict") axisNote = vibeNotes.riskNote;
+    return { ...t, axisNote };
+  });
 
   return {
     grade: ctx.grade,

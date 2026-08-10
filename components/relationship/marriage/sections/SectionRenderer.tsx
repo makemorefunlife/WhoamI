@@ -18,7 +18,12 @@ import {
   PsychMatchRadarChart,
   getTabTheme,
 } from "@/components/relationship/reportLayout";
-import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import {
+  default as TriScoreSnapshotPanel,
+} from "@/components/relationship/TriScoreSnapshotPanel";
+import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
+import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
+import { pick } from "@/lib/relationship/friend/friendCopy";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import type {
   BedroomSection,
@@ -42,6 +47,8 @@ import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 import { MarriageChapterNav, MarriageChapterSection } from "@/components/relationship/marriage/chapters/MarriageChapterShell";
 import type { ActionPlanItem, CoupleActionPlanSection } from "@/lib/relationship/enrichment/marriageCoupleActionPlan";
+import { VersusStrip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
 
 const ACCENT = getTabTheme("cohabitation").accent;
 
@@ -87,7 +94,7 @@ const CHAPTER_GROUPS: Array<{
   },
   {
     id: "ch_life_sync",
-    types: ["compare_table", "psych_radar", "home_dna"],
+    types: ["psych_radar", "compare_table", "home_dna"],
     titleKo: "함께 사는 방식과 라이프 시너지",
     titleEn: "How You Live Together",
   },
@@ -180,63 +187,34 @@ function CompareTableCard({
   const t = useMessages().relationshipDrilldown.cohabitation;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <div className="overflow-x-auto rounded-2xl border border-white/10">
-        <table className="w-full min-w-[520px] border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-white/10 bg-white/[0.04]">
-              <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
-              <th className="px-4 py-3 font-semibold text-white/80">{names[0]}</th>
-              <th className="px-4 py-3 font-semibold text-white/80">{names[1]}</th>
-              <th className="px-4 py-3 font-semibold text-white/55">{t.compareTableColMeaning}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {section.rows.map((row, i) => {
-              const me = viewerIsReportA ? row.personA : row.personB;
-              const partner = viewerIsReportA ? row.personB : row.personA;
-              return (
-                <tr key={row.id} className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}>
-                  <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
-                    {row.label}
-                  </td>
-                  <td className="border-t border-white/8 px-4 py-3 align-top font-semibold" style={{ color: ACCENT }}>
-                    {me.shortLabel}
-                  </td>
-                  <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
-                    {partner.shortLabel}
-                  </td>
-                  <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
-                    {row.meaning}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <ul className="space-y-12">
+        {section.rows.map((row) => {
+          const me = viewerIsReportA ? row.personA : row.personB;
+          const partner = viewerIsReportA ? row.personB : row.personA;
+          return (
+            <li key={row.id}>
+              <VersusStrip label={row.label} aName={names[0]} bName={names[1]} a={me.shortLabel} b={partner.shortLabel} />
+              <RelationshipReportParagraph className="mt-3 text-white/72">{row.meaning}</RelationshipReportParagraph>
+              <div className="mt-8 h-px w-full bg-white/10" />
+            </li>
+          );
+        })}
+      </ul>
     </RelationshipReportCard>
   );
 }
 
 function PsychRadarCard({ section, names }: { section: PsychRadarSection; names: [string, string] }) {
+  const { locale } = useLocale();
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportParagraph className="mb-3" muted>
-        {section.chartNote}
-      </RelationshipReportParagraph>
-      <div className="rounded-2xl border border-white/10 bg-[#f8f6f3] p-3 sm:p-4">
-        <PsychMatchRadarChart axisResults={section.axisResults} personALabel={names[0]} personBLabel={names[1]} />
-      </div>
-      {section.highlights.length > 0 ? (
-        <ul className="mt-4 space-y-3">
-          {section.highlights.map((item) => (
-            <li key={item.axis_key} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-sm font-semibold leading-snug text-white/92">{item.hook}</p>
-              <RelationshipReportParagraph className="mt-2 text-white/78">{item.narrative}</RelationshipReportParagraph>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <PsychAxisComparisonSection
+        axisResults={section.axisResults}
+        highlights={section.highlights}
+        chartNote={section.chartNote}
+        names={names}
+        locale={locale}
+      />
     </RelationshipReportCard>
   );
 }
@@ -746,17 +724,71 @@ export function MarriageReportViewModelView({
         names: vm.opening.names,
         badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
       }}
-      scores={
-        snapshot
-          ? [
-              { emoji: "🔥", label: t.scoreLabelRomanticFit, value: snapshot.scores.romanticFitPct, tone: "warm" },
-              { emoji: "🧩", label: t.scoreLabelLifeSynergy, value: snapshot.scores.lifeSynergyPct, tone: "cool" },
-              { emoji: "⚡", label: t.scoreLabelHomeRisk, value: snapshot.scores.homeRiskPct, tone: "alert" },
-            ]
-          : []
-      }
-      scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="cohabitation" /> : undefined}
+      scores={[]}
     >
+      {snapshot ? (() => {
+        const intimacy = snapshot.panel.narrative!.topics.find(t => t.topic === "intimacy")!;
+        const stability = snapshot.panel.narrative!.topics.find(t => t.topic === "stability")!;
+        const conflict = snapshot.panel.narrative!.topics.find(t => t.topic === "conflict")!;
+        
+        const cards: OverviewCardData[] = [
+          {
+            key: "intimacy",
+            icon: "🔥",
+            label: t.scoreLabelRomanticFit,
+            score: snapshot.scores.romanticFitPct,
+            tone: "good",
+            inverted: false,
+            gradeLabel: intimacy.title,
+            oneLiner: intimacy.subtitle,
+            measures: locale === "en-US" ? "How deeply you connect on a romantic and emotional level" : "두 사람이 정서적으로 얼마나 깊이 연결되어 있는지",
+            why: intimacy.interpretation,
+            thresholdText: intimacy.axisNote,
+          },
+          {
+            key: "stability",
+            icon: "🧩",
+            label: t.scoreLabelLifeSynergy,
+            score: snapshot.scores.lifeSynergyPct,
+            tone: "neutral",
+            inverted: false,
+            gradeLabel: stability.title,
+            oneLiner: stability.subtitle,
+            measures: locale === "en-US" ? "How well you navigate real-world challenges and life together" : "현실적인 문제와 삶의 방향성을 얼마나 잘 맞춰갈 수 있는지",
+            why: stability.interpretation,
+            thresholdText: stability.axisNote,
+          },
+          {
+            key: "conflict",
+            icon: "⚡",
+            label: t.scoreLabelHomeRisk,
+            score: snapshot.scores.homeRiskPct,
+            tone: "warn",
+            inverted: true,
+            gradeLabel: conflict.title,
+            oneLiner: conflict.subtitle,
+            measures: locale === "en-US" ? "The potential for friction or misunderstanding in daily life" : "결혼 생활 중 의사소통이나 가치관 차이로 마찰이 생길 가능성",
+            why: conflict.interpretation,
+            thresholdText: conflict.axisNote,
+          },
+        ];
+
+        return (
+          <div className="mb-12 mt-4">
+            <OverviewSection
+              locale={locale}
+              eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
+              title={pick(locale, "How You Live Together", "함께 사는 방식과 라이프 시너지")}
+              lead={pick(
+                locale,
+                "Three signals frame the shape of this relationship.",
+                "세 가지 신호로 이 관계의 성격을 먼저 봅니다. 숫자는 근거일 뿐, 해석이 본문이에요."
+              )}
+              cards={cards}
+            />
+          </div>
+        );
+      })() : null}
       <MarriageChapterNav items={navItems} />
       {chapters.map((chapter, i) => (
         <MarriageChapterSection

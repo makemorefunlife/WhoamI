@@ -33,6 +33,7 @@ import {
   buildRomanticV4ComparisonFusion,
   type RomanticV4ComparisonRow,
 } from "./romanticV4ComparisonFusion";
+import { getRomanticV4CompareProse } from "./romanticV4CompareInsights";
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 import type {
@@ -200,36 +201,28 @@ function localizeComparisonRowProse(params: {
   }
 
   const sameLean = row.leanA === row.leanB;
-  let manifestation = sameLean
-    ? isEn
-      ? `${nameA} and ${nameB} both lean toward ${leanALabel} here.`
-      : `${nameA}와 ${nameB} 모두 ${leanALabel} 성향에 가깝습니다.`
-    : isEn
-      ? `${nameA} leans toward ${leanALabel}, while ${nameB} leans toward ${leanBLabel}.`
-      : `${nameA}는 ${leanALabel} 쪽에 가깝고, ${nameB}는 ${leanBLabel} 쪽에 가깝습니다.`;
-
+  const prose = getRomanticV4CompareProse(row.rowKey, locale, nameA, nameB, leanALabel, leanBLabel, sameLean);
+  
+  let manifestation = prose.manifestation;
   if (row.align === "confirms") {
     manifestation += isEn
       ? " This matches each person's own chart tendency."
-      : " 이 성향은 각자의 사주 경향과도 일치해요.";
+      : " 이 성향은 각자의 원래 기질과도 잘 맞아요.";
   } else if (row.align === "caution") {
     manifestation += isEn
       ? " Their survey answers actually run counter to their chart tendency here, so this may look different moment to moment."
-      : " 다만 설문 응답이 사주 경향과는 다르게 나타나, 상황에 따라 다르게 보일 수 있어요.";
+      : " 다만 설문 응답이 기질과는 다르게 나타나, 상황에 따라 다르게 보일 수 있어요.";
   }
 
-  let understanding =
-    row.confidence === "high"
-      ? isEn
-        ? "This difference tends to show up fairly clearly, so it helps to know it ahead of time."
-        : "이 차이는 비교적 분명하게 나타나는 편이니, 미리 알아두면 도움이 됩니다."
-      : isEn
-        ? "Treat this as a tentative signal rather than a fixed read."
-        : "아직은 확정적이라기보다 잠정적인 신호로 봐 주세요.";
+  let understanding = prose.understanding;
   if (row.confidence === "low") {
     understanding += isEn
       ? " One side's survey answers are missing, so this is only a partial reference."
-      : " 한쪽의 설문 응답이 없어 참고 수준으로만 봐 주세요.";
+      : " 한쪽의 설문 응답이 없어 아직은 참고 수준으로만 봐 주세요.";
+  } else if (row.confidence === "insufficient") {
+    understanding += isEn
+      ? " Treat this as a tentative signal rather than a fixed read."
+      : " 아직은 확정적이라기보다 잠정적인 신호로 봐 주세요.";
   }
 
   return { manifestation, understanding };

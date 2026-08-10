@@ -10,7 +10,7 @@ import {
   runPairContextEngine,
 } from "../../../personCore/pairContextEngine";
 import { buildChartContext } from "../../../saju/chartContext";
-import { sajuJsonToPillars, analyzeCrossChartRelations, analyzeCrossChartStemCombines, analyzeCrossChartTrioCombines } from "../../../saju/pairChartAnalysis";
+import { sajuJsonToPillars, analyzeCrossChartRelations, analyzeCrossChartStemCombines, analyzeCrossChartTrioCombines, analyzePairSaju } from "../../../saju/pairChartAnalysis";
 import { analyzeCrossChartWonjinGuimun, analyzeCrossChartGongmang } from "../../../saju/workPairRiskSignals";
 import { resolveCrossChartTension } from "../../romanticRules/relationshipDynamics";
 import {
@@ -263,6 +263,8 @@ export function buildActualFourCeContract(
   });
   Object.assign(canonicalProjections, pairDynamics.projections);
 
+  const pairSajuAnalysis = analyzePairSaju(sajuA, sajuB, { chartA, chartB });
+
   const reportWithPair: CanonicalOnlyReport = {
     canonical_projections: canonicalProjections,
   };
@@ -302,5 +304,6 @@ export function buildActualFourCeContract(
     pairSajuProvenance: pairSajuProvenance(mode),
     /** Gold Logic pair-dynamics projections (balance/recovery/expression_speed/reassurance/residual/role_play) + their survey evidence status. */
     pairDynamics,
+    pairSajuAnalysis,
   };
 }

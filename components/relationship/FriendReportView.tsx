@@ -329,26 +329,28 @@ export default function FriendReportView({
         </RelationshipReportParagraph>
       </RelationshipReportCard>
 
-      <RelationshipReportCard
-        title={t.playMoneyCardTitle}
-        accentColor={theme.accent}
-      >
-        <RelationshipReportBody>
-          <div>
-            <RelationshipReportLabel>{t.treasurerLabel}</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">
-              {f.section_play_money.treasurer_nickname} —{" "}
-              {f.section_play_money.treasurer_reason}
-            </RelationshipReportParagraph>
-          </div>
-          <div>
-            <RelationshipReportLabel>{t.optimalHangoutLabel}</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">
-              {f.section_play_money.optimal_hangout}
-            </RelationshipReportParagraph>
-          </div>
-        </RelationshipReportBody>
-      </RelationshipReportCard>
+      {f.section_play_money ? (
+        <RelationshipReportCard
+          title={t.playMoneyCardTitle}
+          accentColor={theme.accent}
+        >
+          <RelationshipReportBody>
+            <div>
+              <RelationshipReportLabel>{t.treasurerLabel}</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1.5">
+                {f.section_play_money.treasurer_nickname} —{" "}
+                {f.section_play_money.treasurer_reason}
+              </RelationshipReportParagraph>
+            </div>
+            <div>
+              <RelationshipReportLabel>{t.optimalHangoutLabel}</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1.5">
+                {f.section_play_money.optimal_hangout}
+              </RelationshipReportParagraph>
+            </div>
+          </RelationshipReportBody>
+        </RelationshipReportCard>
+      ) : null}
 
       <RelationshipReportCard
         title={t.breakupGuideCardTitle}

@@ -9,6 +9,8 @@ import {
   composeCanonicalSectionNarratives,
   type CanonicalSection,
 } from "./composeCanonicalSectionNarratives";
+import { buildRomanticOverviewSnapshot } from "./buildRomanticOverviewSnapshot";
+import type { OverviewCardData } from "../../../relationship/shared/overview/overviewTypes";
 import {
   validateCanonicalRomanticReport,
   type CanonicalValidationIssue,
@@ -32,6 +34,7 @@ export type CanonicalRomanticV4Report = {
   axisOverview: ReturnType<
     typeof buildRomanticExperienceViewModel
   >["axisComparison"]["axisResults"];
+  overviewCards: OverviewCardData[];
   connectedFromExistingEngine: string[];
   hiddenChapters: Array<{ chapterId: string; reason: string }>;
 };
@@ -77,6 +80,11 @@ export function buildCanonicalRomanticV4Report(
     locale,
   });
 
+  const overviewCards = buildRomanticOverviewSnapshot({
+    pairSajuAnalysis: actual.pairSajuAnalysis,
+    locale: locale === "en-US" ? "en" : "ko",
+  });
+
   const storyPlan = buildCanonicalRelationshipStoryPlan({
     contract: actual.contract,
     report,
@@ -113,6 +121,7 @@ export function buildCanonicalRomanticV4Report(
     expertSyntheses,
     validation,
     axisOverview: vm.axisComparison.axisResults,
+    overviewCards,
     connectedFromExistingEngine: storyPlan.connectedEvidenceIds,
     hiddenChapters,
   };

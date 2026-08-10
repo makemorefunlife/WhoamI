@@ -10,8 +10,12 @@
  * 카드 타이틀은 en-US/ko-KR 메시지 카탈로그를 직접 재사용한다 — ko-KR 전용
  * 하드코딩 금지 원칙 유지.
  */
-import { resolveReportPsychDisplay, swapPsychAxisForViewer } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
+import {
+  resolveReportPsychDisplay,
+  swapPsychAxisForViewer,
+} from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildFamilyPsychMatchBundle } from "@/lib/relationship/psychDomainLens/buildFamilyPsychMatch";
+import { nameExplicitHighlights } from "@/lib/relationship/psychDomainLens/shared";
 import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/buildFamilyParentReport";
 import type { FamilyCompareRowId } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import type { Locale } from "@/lib/i18n/locale";
@@ -164,6 +168,7 @@ function buildHouseholdRolesSection(
 function buildPsychRadarSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
+  locale: Locale,
 ): FamilyReportSection | null {
   const psychDisplay = resolveReportPsychDisplay(report.meta, buildFamilyPsychMatchBundle);
   if (!psychDisplay) return null;
@@ -175,7 +180,13 @@ function buildPsychRadarSection(
     // family는 viewer 토글이 없는 고정 parent/child 순서라 swap을 항상 false로 둔다.
     axisResults: swapPsychAxisForViewer(psychDisplay.psych_match.axis_results, true),
     chartNote: psychDisplay.psych_lens.chart_note,
-    highlights: psychDisplay.psych_lens.highlights,
+    highlights: nameExplicitHighlights(
+      psychDisplay.psych_lens.highlights,
+      psychDisplay.psych_match.axis_results,
+      report.meta.nickname_a,
+      report.meta.nickname_b,
+      locale
+    ),
   };
 }
 
@@ -400,7 +411,7 @@ export function buildFamilyReportViewModel(
     () => buildRelationshipIndexSection(report, t),
     () => buildCompareTableSection(report, locale, t),
     () => buildHouseholdRolesSection(report, t),
-    () => buildPsychRadarSection(report, t),
+    () => buildPsychRadarSection(report, t, locale),
     () => buildChildDnaSection(report, t),
     () => buildTalentSection(report),
     () => buildGrowthTunnelSection(report, t),

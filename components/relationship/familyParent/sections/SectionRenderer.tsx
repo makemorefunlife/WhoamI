@@ -45,6 +45,11 @@ import {
   getTabTheme,
 } from "@/components/relationship/reportLayout";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
+import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
+import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
+import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
+import { VersusStrip, Reveal } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { pick } from "@/lib/relationship/friend/friendCopy";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import type {
   ChildDnaSection,
@@ -222,38 +227,27 @@ function CompareTableCard({
 }) {
   const t = useMessages().relationshipDrilldown.family;
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <div className="overflow-x-auto rounded-2xl border border-white/10">
-        <table className="w-full min-w-[520px] border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-white/10 bg-white/[0.04]">
-              <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
-              <th className="px-4 py-3 font-semibold text-white/80">{t.compareTableColParent} · {names[1]}</th>
-              <th className="px-4 py-3 font-semibold text-white/80">{t.compareTableColChild} · {names[0]}</th>
-              <th className="px-4 py-3 font-semibold text-white/55">{t.compareTableColMeaning}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {section.rows.map((row, i) => (
-              <tr key={row.id} className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
-                  {row.label}
-                </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold" style={{ color: ACCENT }}>
-                  {row.personParent.shortLabel}
-                </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
-                  {row.personChild.shortLabel}
-                </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
-                  {row.meaning}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </RelationshipReportCard>
+    <div className="mt-8">
+      <ul className="space-y-12">
+        {section.rows.map((row, i) => (
+          <li key={row.id}>
+            <Reveal delay={i * 50}>
+              <VersusStrip
+                label={row.label}
+                aName={`${t.compareTableColParent} · ${names[1]}`}
+                bName={`${t.compareTableColChild} · ${names[0]}`}
+                a={row.personParent.shortLabel}
+                b={row.personChild.shortLabel}
+              />
+              <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
+                {row.meaning}
+              </p>
+              <div className="mt-10 h-px w-full bg-rel-line" />
+            </Reveal>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -300,25 +294,17 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
 }
 
 function PsychRadarCard({ section, names }: { section: PsychRadarSection; names: [string, string] }) {
+  const { locale } = useLocale();
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportParagraph className="mb-3" muted>
-        {section.chartNote}
-      </RelationshipReportParagraph>
-      <div className="rounded-2xl border border-white/10 bg-[#f8f6f3] p-3 sm:p-4">
-        <PsychMatchRadarChart axisResults={section.axisResults} personALabel={names[0]} personBLabel={names[1]} />
-      </div>
-      {section.highlights.length > 0 ? (
-        <ul className="mt-4 space-y-3">
-          {section.highlights.map((item) => (
-            <li key={item.axis_key} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-              <p className="text-sm font-semibold leading-snug text-white/92">{item.hook}</p>
-              <RelationshipReportParagraph className="mt-2 text-white/78">{item.narrative}</RelationshipReportParagraph>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </RelationshipReportCard>
+    <div className="mt-6">
+      <PsychAxisComparisonSection
+        axisResults={section.axisResults}
+        highlights={section.highlights}
+        chartNote={section.chartNote}
+        names={names}
+        locale={locale}
+      />
+    </div>
   );
 }
 
@@ -752,17 +738,71 @@ export function FamilyReportViewModelView({
         names: vm.opening.names,
         badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
       }}
-      scores={
-        snapshot
-          ? [
-              { emoji: "🔥", label: t.scoreLabelBond, value: snapshot.scores.bondPct, tone: "warm" },
-              { emoji: "🧩", label: t.scoreLabelSynergy, value: snapshot.scores.synergyPct, tone: "cool" },
-              { emoji: "⚡", label: t.scoreLabelFriction, value: snapshot.scores.riskPct, tone: "alert" },
-            ]
-          : []
-      }
-      scoreFooter={snapshot ? <TriScoreSnapshotPanel panel={snapshot.panel} kind="family" /> : undefined}
+      scores={[]}
     >
+      {snapshot ? (() => {
+        const bond = snapshot.panel.narrative.topics.find(t => t.topic === "intimacy")! || snapshot.panel.narrative.topics[0];
+        const synergy = snapshot.panel.narrative.topics.find(t => t.topic === "stability")! || snapshot.panel.narrative.topics[1];
+        const risk = snapshot.panel.narrative.topics.find(t => t.topic === "conflict")! || snapshot.panel.narrative.topics[2];
+        
+        const cards: OverviewCardData[] = [
+          {
+            key: "bond",
+            icon: "🔥",
+            label: t.scoreLabelBond,
+            score: snapshot.scores.bondPct,
+            tone: "good",
+            inverted: false,
+            gradeLabel: bond.title,
+            oneLiner: bond.subtitle,
+            measures: pick(locale, "How deeply you understand and support each other emotionally", "서로의 마음을 얼마나 깊이 이해하고 지지하는지"),
+            why: bond.interpretation,
+            thresholdText: bond.axisNote,
+          },
+          {
+            key: "synergy",
+            icon: "🧩",
+            label: t.scoreLabelSynergy,
+            score: snapshot.scores.synergyPct,
+            tone: "neutral",
+            inverted: false,
+            gradeLabel: synergy.title,
+            oneLiner: synergy.subtitle,
+            measures: pick(locale, "How well your different strengths complement each other for growth", "서로 다른 강점이 시너지를 내어 어떻게 성장을 돕는지"),
+            why: synergy.interpretation,
+            thresholdText: synergy.axisNote,
+          },
+          {
+            key: "risk",
+            icon: "⚡",
+            label: t.scoreLabelFriction,
+            score: snapshot.scores.riskPct,
+            tone: "warn",
+            inverted: true,
+            gradeLabel: risk.title,
+            oneLiner: risk.subtitle,
+            measures: pick(locale, "The potential for friction or misunderstanding in daily life", "훈육이나 일상에서 오해나 마찰이 생길 가능성"),
+            why: risk.interpretation,
+            thresholdText: risk.axisNote,
+          },
+        ];
+
+        return (
+          <div className="mb-12 mt-4">
+            <OverviewSection
+              locale={locale}
+              eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
+              title={pick(locale, "How You Connect", "우리가 연결되는 방식")}
+              lead={pick(
+                locale,
+                "Three signals frame the shape of this family bond.",
+                "세 가지 신호로 가족 관계의 성격을 먼저 봅니다."
+              )}
+              cards={cards}
+            />
+          </div>
+        );
+      })() : null}
       <FamilyChapterNav items={navItems} />
       {chapters.map((chapter, i) => (
         <FamilyChapterSection
