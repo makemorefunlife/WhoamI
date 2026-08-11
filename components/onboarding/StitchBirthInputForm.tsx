@@ -113,7 +113,7 @@ export default function StitchBirthInputForm({
   const placeComplete = birthPlaceUnknown || birthPlace.trim().length >= 1;
 
   const inputClass =
-    "w-full rounded-2xl border border-outline-variant/60 bg-surface-container-low px-3 py-3.5 text-center text-lg tabular-nums text-on-surface outline-none transition focus:border-primary/45 focus:ring-2 focus:ring-primary/15";
+    "w-full rounded-2xl border border-outline-variant/60 bg-white px-3 py-3.5 text-center text-lg tabular-nums text-on-surface outline-none transition focus:border-primary/45 focus:ring-2 focus:ring-primary/15";
 
   const handleYear = (raw: string) => {
     const v = digitsOnly(raw, 4);
