@@ -11,8 +11,6 @@ import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
 import type { AmPm } from "@/lib/v2/onboarding/birthTime";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
-type SurveyMode = "answer" | "skip";
-
 function useFormStyles(theme: "space" | "stitch") {
   const isStitch = theme === "stitch";
   return {
@@ -21,29 +19,26 @@ function useFormStyles(theme: "space" | "stitch") {
       ? "w-full rounded-xl border border-outline-variant/50 bg-white px-3 py-3 text-sm text-on-surface outline-none transition focus:border-secondary/50 focus:ring-2 focus:ring-secondary/15 disabled:opacity-40"
       : "w-full rounded-xl border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white disabled:opacity-40",
     check: isStitch ? "text-xs text-on-surface-variant" : "text-xs text-white/55",
-    segmentBtn: (active: boolean) =>
-      isStitch
-        ? [
-            "flex-1 rounded-lg border py-2.5 text-xs font-semibold transition",
-            active
-              ? "border-secondary/50 bg-secondary/15 text-primary"
-              : "border-outline-variant/40 bg-transparent text-on-surface-variant",
-          ].join(" ")
-        : [
-            "flex-1 rounded-lg border py-2 text-xs font-medium transition",
-            active
-              ? "border-[#67B7FF]/50 bg-[#67B7FF]/15 text-[var(--space-text)]"
-              : "border-white/12 bg-transparent text-white/55 hover:border-white/25",
-          ].join(" "),
     surveyBox: isStitch
       ? "space-y-3 rounded-xl border border-outline-variant/25 bg-surface-container-low/40 p-3"
       : "space-y-3 rounded-xl border border-white/10 bg-black/20 p-3",
     surveyTitle: isStitch
       ? "text-xs font-semibold text-secondary"
       : "text-xs font-medium text-[#67B7FF]",
-    optionLabel: isStitch
-      ? "flex cursor-pointer gap-2 rounded-lg border border-outline-variant/30 px-2 py-2 text-[11px] text-on-surface-variant has-[:checked]:border-secondary/40 has-[:checked]:bg-secondary/10"
-      : "flex cursor-pointer gap-2 rounded-lg border border-white/8 px-2 py-1.5 text-[11px] text-white/65 has-[:checked]:border-[#67B7FF]/40 has-[:checked]:bg-[#67B7FF]/10",
+    optionBtn: (selected: boolean) =>
+      isStitch
+        ? [
+            "w-full rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition disabled:opacity-40",
+            selected
+              ? "border-secondary bg-secondary/10 text-on-surface"
+              : "border-outline-variant/50 bg-white text-on-surface hover:border-secondary/40",
+          ].join(" ")
+        : [
+            "w-full rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition disabled:opacity-40",
+            selected
+              ? "border-[#67B7FF] bg-[#67B7FF]/15 text-[var(--space-text)]"
+              : "border-white/12 bg-black/20 text-white/75 hover:border-white/25",
+          ].join(" "),
     cancelBtn: isStitch
       ? "flex-1 min-h-[48px] rounded-full border border-outline-variant/45 py-2.5 text-sm font-semibold text-on-surface-variant"
       : "flex-1 rounded-xl border border-white/15 py-2.5 text-xs text-white/60",
@@ -82,8 +77,9 @@ export default function ManualRelationshipForm({
   const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
   const [birthPlace, setBirthPlace] = useState("");
   const [birthPlaceUnknown, setBirthPlaceUnknown] = useState(false);
-  const [surveyMode, setSurveyMode] = useState<SurveyMode>("answer");
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [advancing, setAdvancing] = useState(false);
   const [hintPulse, setHintPulse] = useState(0);
   const nameRef = useRef<HTMLInputElement>(null);
   const birthBlockRef = useRef<HTMLDivElement>(null);
@@ -106,10 +102,9 @@ export default function ManualRelationshipForm({
     () => surveyQuestions.filter((q) => answers[q.id]).length,
     [answers, surveyQuestions],
   );
+  const currentQuestion = surveyQuestions[currentQuestionIndex];
 
-  const surveyOk =
-    surveyMode === "skip" ||
-    answeredCount === surveyQuestions.length;
+  const surveyOk = answeredCount === surveyQuestions.length;
 
   const nameOk = partnerName.trim().length >= 1;
   const dateOk = birthDate.length === 10;
@@ -134,7 +129,7 @@ export default function ManualRelationshipForm({
     if (!dateOk) return messages.relationshipForm.birthDateRequired;
     if (!timeOk) return messages.relationshipForm.birthTimeRequired;
     if (!placeOk) return messages.relationshipForm.birthPlaceRequired;
-    if (surveyMode === "answer" && !surveyOk) {
+    if (!surveyOk) {
       return messages.relationshipForm.surveyIncomplete(
         answeredCount,
         surveyQuestions.length,
@@ -147,7 +142,6 @@ export default function ManualRelationshipForm({
     dateOk,
     timeOk,
     placeOk,
-    surveyMode,
     surveyOk,
     answeredCount,
     surveyQuestions.length,
@@ -189,10 +183,27 @@ export default function ManualRelationshipForm({
       birthTimeUnknown,
       birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
       birthPlaceUnknown,
-      surveySkipped: surveyMode === "skip",
-      surveyAnswers:
-        surveyMode === "skip" ? null : (answers as SurveyAnswersInput),
+      surveySkipped: false,
+      surveyAnswers: answers as SurveyAnswersInput,
     });
+  }
+
+  function pickAnswer(value: string) {
+    if (busy || advancing || !currentQuestion) return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+    const isLast = currentQuestionIndex >= surveyQuestions.length - 1;
+    if (!isLast) {
+      setAdvancing(true);
+      window.setTimeout(() => {
+        setCurrentQuestionIndex((i) => i + 1);
+        setAdvancing(false);
+      }, 160);
+    }
+  }
+
+  function goPrevQuestion() {
+    if (busy || advancing || currentQuestionIndex <= 0) return;
+    setCurrentQuestionIndex((i) => i - 1);
   }
 
   return (
@@ -254,72 +265,46 @@ export default function ManualRelationshipForm({
       </label>
 
       <div ref={surveyRef} className={s.surveyBox}>
-        <div className="space-y-2">
+        <div className="flex items-baseline justify-between gap-2">
           <p className={s.surveyTitle}>{messages.relationshipForm.surveyTitle}</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className={s.segmentBtn(surveyMode === "answer")}
-              onClick={() => setSurveyMode("answer")}
-              disabled={busy}
-            >
-              {messages.relationshipForm.surveyModeAnswer}
-            </button>
-            <button
-              type="button"
-              className={s.segmentBtn(surveyMode === "skip")}
-              onClick={() => setSurveyMode("skip")}
-              disabled={busy}
-            >
-              {messages.relationshipForm.surveyModeSkip}
-            </button>
-          </div>
+          <span className={s.hint}>
+            {messages.relationshipForm.responses(
+              answeredCount,
+              surveyQuestions.length,
+            )}
+          </span>
         </div>
 
-        {surveyMode === "answer" ? (
-          <>
-            <p className={s.hint}>
-              {messages.relationshipForm.responses(
-                answeredCount,
-                surveyQuestions.length,
-              )}
-            </p>
-            <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
-              {surveyQuestions.map((q) => (
-                <fieldset key={q.id} className="space-y-2">
-                  <legend className={`text-[11px] leading-relaxed ${theme === "stitch" ? "text-on-surface" : "text-white/75"}`}>
-                    {q.prompt.split("\n")[0]}
-                  </legend>
-                  <div className="space-y-1">
-                    {q.options.map((opt: { value: string; label: string }) => (
-                      <label key={opt.value} className={s.optionLabel}>
-                        <input
-                          type="radio"
-                          name={q.id}
-                          value={opt.value}
-                          checked={answers[q.id] === opt.value}
-                          onChange={() =>
-                            setAnswers((prev) => ({
-                              ...prev,
-                              [q.id]: opt.value,
-                            }))
-                          }
-                          disabled={busy}
-                          className="mt-0.5"
-                        />
-                        <span>{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+        {currentQuestion ? (
+          <fieldset key={currentQuestion.id} className="space-y-2.5">
+            <legend className={`text-[13px] leading-relaxed ${theme === "stitch" ? "text-on-surface" : "text-white/75"}`}>
+              {currentQuestion.prompt.split("\n")[0]}
+            </legend>
+            <div className="space-y-2">
+              {currentQuestion.options.map((opt: { value: string; label: string }) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  disabled={busy || advancing}
+                  onClick={() => pickAnswer(opt.value)}
+                  className={s.optionBtn(answers[currentQuestion.id] === opt.value)}
+                >
+                  {opt.label}
+                </button>
               ))}
             </div>
-          </>
-        ) : (
-          <p className={`text-[11px] leading-relaxed ${theme === "stitch" ? "text-on-surface-variant" : "text-white/45"}`}>
-            {messages.relationshipForm.surveySkippedNote}
-          </p>
-        )}
+            <div className="flex justify-start pt-1">
+              <button
+                type="button"
+                onClick={goPrevQuestion}
+                disabled={busy || advancing || currentQuestionIndex <= 0}
+                className={`text-xs disabled:opacity-40 ${theme === "stitch" ? "text-on-surface-variant" : "text-white/55"}`}
+              >
+                {messages.cta.back}
+              </button>
+            </div>
+          </fieldset>
+        ) : null}
       </div>
 
       <div
