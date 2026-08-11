@@ -3,7 +3,12 @@ import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
+import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
+import {
+  readPersistedDeepEssenceAnalysis,
+  writePersistedDeepEssenceAnalysis,
+} from "@/lib/report/reportAnalyses";
 import type {
   CurrentSelfProfile,
   SurveyAnswersInput,
@@ -61,6 +66,23 @@ export async function POST(req: Request) {
     );
     if (access.error) return access.error;
 
+    // Read-before-generate: this report is a paid, "lifetime access" feature —
+    // reuse the stored copy instead of re-invoking the LLM on every view.
+    // report_analyses has no locale column, so the stored copy is only reused
+    // when its recorded locale matches the current request; a locale switch
+    // regenerates (and overwrites the single stored row for this report).
+    const stored = await readPersistedDeepEssenceAnalysis(supabase, reportId);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as { locale: string; slim_v1: SlimV1ReportResult };
+        if (parsed.locale === locale && parsed.slim_v1) {
+          return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 });
+        }
+      } catch (e) {
+        logServerError("v2/deep/essence:stored_parse", e, "invalid_json");
+      }
+    }
+
     const slim_v1 = await runSlimIntegratedReport({
       birthDate,
       birthTime: body.birthTime ?? null,
@@ -70,6 +92,13 @@ export async function POST(req: Request) {
       currentSelfProfile: body.currentSelfProfile ?? null,
       locale,
     });
+
+    await writePersistedDeepEssenceAnalysis(
+      supabase,
+      reportId,
+      JSON.stringify({ locale, slim_v1 }),
+      { locale },
+    );
 
     return NextResponse.json({ ok: true, locale, slim_v1 });
   } catch (e) {

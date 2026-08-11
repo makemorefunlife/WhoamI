@@ -112,3 +112,26 @@ alter table public.person_core_blueprints
 
 comment on column public.person_core_blueprints.saju_master_json is
   '만세력·십성·신살·합충·12운성·조후·domain_signals (saju_master_v1 | saju_master_v2 — 전환 중)';
+
+-- 7) report_analyses — deep_essence_structured 추가 (Slim V1 "심화 통합 분석" 저장)
+--    파일: supabase/migrations/20260810120000_report_analyses_deep_essence.sql
+--    이 리포트가 지금까지 서버에 저장이 안 되고 브라우저 localStorage에만
+--    캐시돼서, 리포트를 다시 볼 때마다 LLM을 재호출해 재생성되던 문제 수정.
+alter table public.report_analyses
+  drop constraint if exists report_analyses_type_check;
+
+alter table public.report_analyses
+  add constraint report_analyses_type_check check (
+    analysis_type in (
+      'basic',
+      'premium',
+      'integrated',
+      'relationship',
+      'detailed_survey',
+      'astrology',
+      'deep_essence_structured'
+    )
+  );
+
+comment on column public.report_analyses.analysis_type is
+  'basic | premium | integrated | relationship | detailed_survey | astrology | deep_essence_structured';

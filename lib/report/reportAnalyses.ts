@@ -8,6 +8,7 @@ export const REPORT_ANALYSIS_TYPES = [
   "relationship",
   "detailed_survey",
   "astrology",
+  "deep_essence_structured",
 ] as const;
 
 export type ReportAnalysisType = (typeof REPORT_ANALYSIS_TYPES)[number];
@@ -276,4 +277,21 @@ export async function writePersistedAstrologyAnalysis(
   metadata?: Record<string, unknown> | null,
 ): Promise<boolean> {
   return writeReportAnalysis(supabase, reportId, "astrology", text, metadata);
+}
+
+/** Slim V1 "심화 통합 분석" (deep essence, Part 01~05 + 부록) — 전체 SlimV1ReportResult를 JSON 문자열로 저장 */
+export async function readPersistedDeepEssenceAnalysis(
+  supabase: SupabaseClient,
+  reportId: string,
+): Promise<string | null> {
+  return readReportAnalysis(supabase, reportId, "deep_essence_structured");
+}
+
+export async function writePersistedDeepEssenceAnalysis(
+  supabase: SupabaseClient,
+  reportId: string,
+  text: string,
+  metadata?: Record<string, unknown> | null,
+): Promise<boolean> {
+  return writeReportAnalysis(supabase, reportId, "deep_essence_structured", text, metadata);
 }
