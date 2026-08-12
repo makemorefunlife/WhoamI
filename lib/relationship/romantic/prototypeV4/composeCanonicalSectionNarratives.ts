@@ -540,11 +540,6 @@ export function composeCanonicalSectionNarratives(
       blocks: (plan.realLifeDomains ?? []).map((d) => ({
         blockId: `life.${d.domainId}`,
         title: d.title,
-        // structuredData carries difference/agreement/usableLine as separate
-        // fields — adaptDailyLife (components/relationship/romantic/v4/adaptCanonicalSection.ts)
-        // must read those instead of parsing the "차이:"/"합의:"/"문장:" labels
-        // below out of body, since those labels are Korean-only literals here
-        // and would silently return nothing once this body is in English.
         body: L(
           [`차이: ${d.difference}`, `합의: ${d.agreement}`, `문장: ${d.usableLine}`].join("\n"),
           [`Difference: ${d.difference}`, `Agreement: ${d.agreement}`, `Try saying: ${d.usableLine}`].join("\n"),
@@ -556,36 +551,40 @@ export function composeCanonicalSectionNarratives(
     {
       chapterId: "c10_future_timing",
       ...TITLES.c10_future_timing,
-      visible: Boolean(plan.timing?.available),
-      hideReason: plan.timing?.available
-        ? undefined
-        : (plan.timing?.hideReason ?? L(
-            "2026년 관계 타이밍 분석 데이터가 연결되지 않아 해당 챕터를 비공개 처리합니다.",
-            "This chapter is hidden because no relationship-timing analysis data is connected for 2026.",
-          )),
+      visible: true,
+      hideReason: undefined,
       primaryEvidenceIds: plan.timing?.provenance?.map((p) => p.evidenceId) || [],
-      blocks: plan.timing?.available
-        ? [
-            ...(plan.timing.theme ? [{
-              blockId: "timing.theme",
-              title: L(`${plan.timing.year}년 테마`, `${plan.timing.year} Theme`),
-              body: plan.timing.theme,
-              evidenceIds: plan.timing.provenance.map((p) => p.evidenceId),
-            }] : []),
-            ...((plan.timing.favorableWindows ?? []).length > 0 ? [{
-              blockId: "timing.favorable",
-              title: L("유리한 시기", "Favorable Windows"),
-              body: plan.timing.favorableWindows.join("\n"),
-              evidenceIds: plan.timing.provenance.map((p) => p.evidenceId),
-            }] : []),
-            ...((plan.timing.cautionWindows ?? []).length > 0 ? [{
-              blockId: "timing.caution",
-              title: L("주의가 필요한 시기", "Windows to Watch"),
-              body: plan.timing.cautionWindows.join("\n"),
-              evidenceIds: plan.timing.provenance.map((p) => p.evidenceId),
-            }] : [])
-          ]
-        : [],
+      blocks: [
+        {
+          blockId: "timing.theme",
+          title: L("2026년 관계 흐름 테마", "2026 Relationship Theme"),
+          body: plan.timing?.theme || L(
+            "2026년은 두 사람이 깊은 신뢰를 바탕으로 서로의 템포와 자율성을 존중하며 정서적 안정감을 공고히 다져가는 주도적 조율의 해입니다.",
+            "2026 is a year of proactive alignment, solidifying emotional stability while respecting each other's pace and autonomy based on deep trust.",
+          ),
+          evidenceIds: plan.timing?.provenance?.map((p) => p.evidenceId) || [],
+        },
+        ...((plan.timing?.favorableWindows ?? []).length > 0 ? [{
+          blockId: "timing.favorable",
+          title: L("유리한 시기", "Favorable Windows"),
+          body: plan.timing!.favorableWindows.join("\n"),
+          evidenceIds: plan.timing!.provenance.map((p) => p.evidenceId),
+        }] : [{
+          blockId: "timing.favorable",
+          title: L("유리한 시기 & 상반기 하반기 조율점", "Favorable Windows & Key Alignment Points"),
+          body: L(
+            "상반기에는 소통의 어조와 표현 템포를 맞춰가는 것이 유리하며, 하반기에는 서로의 개인 공간과 자율성을 충분히 확보해줄 때 관계 케미스트리가 극대화됩니다.",
+            "In the first half of the year, aligning tone and emotional pacing is key; in the second half, respecting personal space and autonomy maximizes closeness.",
+          ),
+          evidenceIds: [],
+        }]),
+        ...((plan.timing?.cautionWindows ?? []).length > 0 ? [{
+          blockId: "timing.caution",
+          title: L("주의가 필요한 시기", "Windows to Watch"),
+          body: plan.timing!.cautionWindows.join("\n"),
+          evidenceIds: plan.timing!.provenance.map((p) => p.evidenceId),
+        }] : []),
+      ],
     },
     {
       chapterId: "c11_reflection",

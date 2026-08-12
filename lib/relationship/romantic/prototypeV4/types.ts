@@ -138,6 +138,7 @@ export type RomanticV4PrototypePayload = {
   fourCeSemanticPlan?: FourCeSemanticPlan;
   /** Canonical 12-chapter report (Story Plan → sections → validator). */
   canonicalReport?: CanonicalRomanticV4Report;
+  storyPlan?: CanonicalRomanticV4Report["storyPlan"];
   toc: Array<{ chapter: ChapterId; label: string }>;
   chapters: PrototypeChapterPayload[];
   comparisonTable: SajuComparisonRow[];

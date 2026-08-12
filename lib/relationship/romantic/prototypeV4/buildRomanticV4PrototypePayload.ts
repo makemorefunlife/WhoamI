@@ -653,6 +653,7 @@ function createCompletePayload(
     fourCeInfluenceAudit,
     fourCeSemanticPlan,
     canonicalReport,
+    storyPlan: canonicalReport?.storyPlan,
     toc: [
       { chapter: "ch0_opening", label: "0. Opening: Relationship Signature" },
       { chapter: "ch1_who_we_are_together", label: "1. Who We Are Together" },

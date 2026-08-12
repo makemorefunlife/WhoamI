@@ -7,10 +7,7 @@ import type {
   RomanticPsychMatchAxisResult,
   RomanticSajuDeepReport,
 } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
-import {
-  formatRomanticCompareLeanLabel,
-  type RomanticCompareRowKey,
-} from "../romanticComparisonTableCanonical";
+import { josa, josaIGa, josaEunNeun, josaGwaWa, josaEulReul } from "./romanticLanguage";
 import { psychMatchAxisLabel } from "../../psychMatch/axisLabels";
 import type { RomanticNarrativeInputContract } from "./fourCeNarrativeInput";
 import { buildFourCeSemanticPlan } from "./fourCeSemanticPlanner";
@@ -52,6 +49,7 @@ import {
 import { buildRomanticMultiSignalSynthesis } from "./buildRomanticMultiSignalSynthesis";
 import { buildRomanticCandidateEngine } from "./buildRomanticCandidateEngine";
 import { computeRomanticRelationshipNeedsEngine } from "./romanticRelationshipNeedsEngine";
+import { computeRomanticV4GapBatchEngine } from "./romanticV4GapBatchEngine";
 
 import {
   topicP,
@@ -376,7 +374,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     (typeof summary === "string" ? summary : null) ||
     (relCeA && relCeB
       ? L(
-          `${names.a}의 ${relCeA.coreRelationshipNature.text}와 ${names.b}의 ${relCeB.coreRelationshipNature.text}가 서로의 부족한 점을 채우며 완성해가는 관계`,
+          `${names.a}의 ${josaGwaWa(relCeA.coreRelationshipNature.text)} ${names.b}의 ${josaIGa(relCeB.coreRelationshipNature.text)} 서로의 부족한 점을 채우며 완성해가는 관계`,
           `A relationship where ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} and ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)} complete each other by filling in what the other lacks`,
         )
       : plan.pairSynthesis.selectedMeaning || copy.defFallback);
@@ -1309,8 +1307,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     nicknameB: names.b,
     countsA: {},
     countsB: {},
-    psychA: inputContract.meta.psych_master_a ?? null,
-    psychB: inputContract.meta.psych_master_b ?? null,
+    psychA: contract.meta?.psych_master_a ?? null,
+    psychB: contract.meta?.psych_master_b ?? null,
   });
 
   const pairMeanings = {
@@ -1335,9 +1333,17 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     pairNeedsDetailed,
   };
 
+  const romanticGapBatch = computeRomanticV4GapBatchEngine({
+    nameA: names.a,
+    nameB: names.b,
+    psychA: contract.meta?.psych_master_a ?? (contract as any).surveyInput?.psychA ?? (params as any).surveyInput?.psychA ?? null,
+    psychB: contract.meta?.psych_master_b ?? (contract as any).surveyInput?.psychB ?? (params as any).surveyInput?.psychB ?? null,
+  });
+
   return {
     ...finalStoryPlan,
     pairMeanings,
+    romanticGapBatch,
     conflictLoopP0,
     repairPatternP0,
     actionCandidatesP0,

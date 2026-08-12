@@ -174,6 +174,7 @@ export type HiddenHeartBits = {
 
 import type { PersonalRelationshipCe } from "./personalRelationshipCe";
 import type { RomanticPairNeedsOutput } from "./romanticRelationshipNeedsEngine";
+import type { RomanticGapBatchOutput } from "./romanticV4GapBatchEngine";
 
 export type CanonicalRomanticPairMeanings = {
   dependencyProtection?: {
@@ -210,6 +211,9 @@ export type CanonicalRelationshipStoryPlan = {
 
   /** Extended Romantic Pair-Level Core Meanings & Need x Supply x Gap Engine */
   pairMeanings?: CanonicalRomanticPairMeanings;
+
+  /** Romantic V4 Final Gap Batch Engine */
+  romanticGapBatch?: RomanticGapBatchOutput;
   primaryTension: string;
   specialCodePreview: string;
   faces: StoryFace[];

@@ -92,6 +92,7 @@ export function buildCanonicalRomanticV4Report(
     locale,
     reportYear,
     fortuneFlow: actual.fortuneFlow,
+    surveyInput: options?.surveyInput,
     // dynamicsCrossHits was a fallback for when canonical_projections.cross_chart_*
     // was empty (previously sourced from V1's prepareRomanticSajuDeepRun). That call
     // is gone; canonical_projections is now populated directly from real chartA/chartB

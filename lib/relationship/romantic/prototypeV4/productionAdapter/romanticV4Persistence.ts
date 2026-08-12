@@ -55,9 +55,21 @@ export function readRomanticV4Block(
   if (!isPlainObject(payload)) return null;
   const v4 = payload.v4;
   if (!isPlainObject(v4)) return null;
-  if (v4.schemaVersion !== "romantic_canonical_report_v1") return null;
+  if (v4.schemaVersion !== "romantic_canonical_report_v1" && v4.schemaVersion !== "romantic_canonical_report_v2_gap_batch") return null;
   if (!isPlainObject(v4.payload)) return null;
   return v4 as unknown as RomanticV4PersistedBlock;
+}
+
+/**
+ * Check if a persisted Romantic V4 block is stale (e.g. missing new gap batch engine capabilities).
+ */
+export function isStaleRomanticV4Block(v4: RomanticV4PersistedBlock | null): boolean {
+  if (!v4 || !v4.payload || !v4.payload.storyPlan) return true;
+  const plan = v4.payload.storyPlan as any;
+  if (!plan.romanticGapBatch) return true;
+  if (!plan.romanticGapBatch.physicalIntimacy) return true;
+  if (!plan.romanticGapBatch.conflictTransitions) return true;
+  return false;
 }
 
 /**

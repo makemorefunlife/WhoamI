@@ -33,7 +33,8 @@ import { omitFriendContextOutputFromReport } from "@/lib/relationship/friend/str
 import { omitMarriageContextOutputFromReport } from "@/lib/relationship/marriage/stripMarriageContextOutputForClient";
 import { omitRomanticContextInputFromReport } from "@/lib/relationship/romantic/stripRomanticContextInputForClient";
 import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
-import { readRomanticV4Block } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
+import { readRomanticV4Block, isStaleRomanticV4Block } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
+import { buildCanonicalRelationshipStoryPlan } from "@/lib/relationship/romantic/prototypeV4/buildCanonicalRelationshipStoryPlan";
 
 export const runtime = "nodejs";
 
@@ -143,10 +144,40 @@ export async function GET(req: Request) {
     // Romantic V4: response-presence is the flag signal for the client (see
     // romanticV4ReportFlag.ts) — the field is only included when the server
     // flag is on AND a persisted V4 block actually exists for this locale.
-    const romanticDeepReportV4 =
+    let romanticDeepReportV4 =
       activeKind === "romantic" && isRomanticV4ReportEnabled()
         ? readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale)?.payload ?? null
         : null;
+
+    // Production Cache Regeneration: If persisted V4 block exists but is stale (missing romanticGapBatch),
+    // build a fresh payload on-the-fly from the stored saju/psych data.
+    if (activeKind === "romantic" && isRomanticV4ReportEnabled() && (!romanticDeepReportV4 || isStaleRomanticV4Block(readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale)))) {
+      const persistedV4Block = readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale);
+      if (persistedV4Block?.payload) {
+        // If we have an existing payload structure, upgrade its storyPlan with the fresh gap batch
+        try {
+          const freshPlan = buildCanonicalRelationshipStoryPlan({
+            contract: persistedV4Block.payload.storyPlan.connectedEvidenceIds ? (persistedV4Block.payload as any).contract : undefined as any,
+            report: (persistedV4Block.payload as any).report,
+            axisResults: (persistedV4Block.payload as any).axisOverview || [],
+            locale: locale as any,
+            reportYear: new Date().getFullYear(),
+            fortuneFlow: (persistedV4Block.payload as any).fortuneFlow,
+          });
+          if (freshPlan && freshPlan.romanticGapBatch) {
+            romanticDeepReportV4 = {
+              ...persistedV4Block.payload,
+              storyPlan: {
+                ...persistedV4Block.payload.storyPlan,
+                romanticGapBatch: freshPlan.romanticGapBatch,
+              },
+            };
+          }
+        } catch {
+          // If partial upgrade fails, preserve existing payload safely
+        }
+      }
+    }
 
     const workColleagueDeepRaw =
       activeKind === "work"

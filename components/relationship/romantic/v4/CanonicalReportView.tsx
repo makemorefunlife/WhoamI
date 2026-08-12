@@ -58,7 +58,7 @@ function moveBefore(
  * Wellness-tone copy for a sophisticated, self-aware audience — chosen to
  * read as insight rather than diagnosis. Keyed by the SAME 8 chapterIds that
  * make up CORE_CHAPTER_ORDER below (c10_future_timing intentionally has no
- * entry — it renders as an unnumbered bonus chapter, see reorderForDisplay).
+ * entry — it renders as an unnumbered bonus chapter, see reorderForDisplay)
  */
 const TITLE_OVERRIDES_KO: Partial<Record<CanonicalSection["chapterId"], string>> = {
   c3_dynamics: "우리가 연결되는 방식",
@@ -66,8 +66,9 @@ const TITLE_OVERRIDES_KO: Partial<Record<CanonicalSection["chapterId"], string>>
   c4_conflict: "마찰이 생기는 지점",
   c5_misunderstanding: "다름을 번역하는 법",
   c6_hidden_hearts: "오해 너머의 진심",
-  c8_strength_vulnerability: "시너지와 취약점",
   c7_repair: "관계를 위한 액션 플랜",
+  c10_future_timing: "올해 우리 관계의 흐름",
+  c8_strength_vulnerability: "시너지와 취약점",
   c12_choice: "우리의 넥스트 챕터",
 };
 
@@ -77,17 +78,15 @@ const TITLE_OVERRIDES_EN: Partial<Record<CanonicalSection["chapterId"], string>>
   c4_conflict: "Friction Points",
   c5_misunderstanding: "Translating Differences",
   c6_hidden_hearts: "Beneath the Surface",
-  c8_strength_vulnerability: "Synergy & Vulnerability",
   c7_repair: "Action Plan",
+  c10_future_timing: "Timing & Flow This Year",
+  c8_strength_vulnerability: "Synergy & Vulnerability",
   c12_choice: "Our Next Chapter",
 };
 
 /**
- * Display order of the 8 core numbered chapters ("Chapter 01".."Chapter
- * 08"). c1_hero and c10_future_timing sit outside this sequence and render
- * without a number badge — Hero as a cover, Future/Timing as an optional
- * bonus chapter that only appears when timing data is available, so it can
- * never leave a gap in the core numbering.
+ * Display order of all core numbered chapters ("Chapter 01".."Chapter 09").
+ * c1_hero sits outside as the cover page.
  */
 const CORE_CHAPTER_ORDER: CanonicalSection["chapterId"][] = [
   "c3_dynamics",
@@ -95,8 +94,9 @@ const CORE_CHAPTER_ORDER: CanonicalSection["chapterId"][] = [
   "c4_conflict",
   "c5_misunderstanding",
   "c6_hidden_hearts",
-  "c8_strength_vulnerability",
   "c7_repair",
+  "c10_future_timing",
+  "c8_strength_vulnerability",
   "c12_choice",
 ];
 
@@ -113,7 +113,7 @@ function reorderForDisplay(
   const titleOverrides = locale === "en-US" ? TITLE_OVERRIDES_EN : TITLE_OVERRIDES_KO;
   let result = sections;
   result = moveBefore(result, "c3_dynamics", "c2_attraction");
-  result = moveBefore(result, "c8_strength_vulnerability", "c7_repair");
+  result = moveBefore(result, "c10_future_timing", "c8_strength_vulnerability");
   result = result.filter(
     (s) => s.chapterId !== "c9_daily_life" && s.chapterId !== "c11_reflection",
   );
@@ -123,25 +123,43 @@ function reorderForDisplay(
 }
 
 /**
- * Sequential "01".."08" for whichever of the 8 core chapters are actually
- * visible, computed fresh from the real display order every render — never
- * hardcoded per-component, so a hidden chapter (e.g. Future/Timing, which
- * isn't part of this sequence at all) can never cause a skipped number.
+ * Sequential "01".."09" computed directly from actual visible display order.
+ * Ensures 1:1 exact match between rendered DOM order and Chapter Number badges.
  */
 function computeChapterNumbers(
   visible: CanonicalSection[],
 ): Partial<Record<CanonicalSection["chapterId"], string>> {
   const numbers: Partial<Record<CanonicalSection["chapterId"], string>> = {};
-  const coreVisible = visible.filter((s) => CORE_CHAPTER_ORDER.includes(s.chapterId));
-  coreVisible
-    .sort((a, b) => CORE_CHAPTER_ORDER.indexOf(a.chapterId) - CORE_CHAPTER_ORDER.indexOf(b.chapterId))
-    .forEach((s, i) => {
-      numbers[s.chapterId] = String(i + 1).padStart(2, "0");
-    });
+  const coreVisible = visible.filter((s) => s.chapterId !== "c1_hero");
+  coreVisible.forEach((s, i) => {
+    numbers[s.chapterId] = String(i + 1).padStart(2, "0");
+  });
   return numbers;
 }
 
-export function CanonicalReportView({ report, payload, debug = false }: Props) {
+export function CanonicalReportView({ report, payload: rawPayload, debug = false }: Props) {
+  const axisOverview =
+    rawPayload?.axisOverview && rawPayload.axisOverview.length > 0
+      ? rawPayload.axisOverview
+      : report?.storyPlan?.axisOverview ?? [];
+
+  const selectedAxisInsights =
+    rawPayload?.selectedAxisInsights && rawPayload.selectedAxisInsights.length > 0
+      ? rawPayload.selectedAxisInsights
+      : report?.storyPlan?.selectedAxisInsights ?? [];
+
+  const comparisonTable =
+    rawPayload?.comparisonTable && rawPayload.comparisonTable.length > 0
+      ? rawPayload.comparisonTable
+      : report?.storyPlan?.comparisonTable ?? [];
+
+  const payload = {
+    ...rawPayload,
+    axisOverview,
+    selectedAxisInsights,
+    comparisonTable,
+  };
+
   const visible = reorderForDisplay(report.sections.filter((s) => s.visible), payload.locale);
   const chapterNumbers = computeChapterNumbers(visible);
   const dailyLifeSection = report.sections.find((s) => s.chapterId === "c9_daily_life");

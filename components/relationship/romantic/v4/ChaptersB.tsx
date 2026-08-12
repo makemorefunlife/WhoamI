@@ -12,6 +12,7 @@ import { ArrowRight, Heart, ShieldCheck } from "lucide-react";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import type { CanonicalSection } from "@/lib/relationship/romantic/prototypeV4/composeCanonicalSectionNarratives";
 import { ChapterSection, PersonTag, Reveal, SubHeading } from "./primitives";
+import { josa, josaIGa, josaEunNeun, josaGwaWa, josaEulReul, josaEge } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 import {
   adaptHiddenHearts,
   adaptTranslatorPanels,
@@ -128,6 +129,39 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
         </div>
       )}
 
+      {/* Gap Batch: Relational Role Matrix & Mutual Growth */}
+      {payload.storyPlan?.romanticGapBatch?.chapter06 ? (
+        <div className="mt-12 rounded-2xl border border-rel-deep/20 bg-rel-deep-soft/40 p-6 sm:p-8 space-y-6">
+          <SubHeading title="연애 관계 역학 포지션 & 역할 밸런스" tag="Role Matrix" tone="deep" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-xl border border-rel-line bg-rel-surface p-5">
+              <PersonTag name={personA} side="a" />
+              <h4 className="mt-2 font-rel-serif text-[17px] font-semibold text-rel-ink">
+                {payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.roleA.title}
+              </h4>
+              <p className="mt-1 text-xs text-rel-ink-soft leading-relaxed">
+                {payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.roleA.description}
+              </p>
+            </div>
+            <div className="rounded-xl border border-rel-line bg-rel-surface p-5">
+              <PersonTag name={personB} side="b" />
+              <h4 className="mt-2 font-rel-serif text-[17px] font-semibold text-rel-ink">
+                {payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.roleB.title}
+              </h4>
+              <p className="mt-1 text-xs text-rel-ink-soft leading-relaxed">
+                {payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.roleB.description}
+              </p>
+            </div>
+          </div>
+          <div className="rounded-xl bg-rel-surface/80 p-5 border border-rel-line/80 space-y-2 text-xs text-rel-ink-soft">
+            <p><span className="font-semibold text-rel-deep">✨ 시너지 · </span>{payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.complement}</p>
+            <p><span className="font-semibold text-rose-500">⚡ 마찰 마찰 지점 · </span>{payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.collision}</p>
+            <p><span className="font-semibold text-amber-600">🌱 양방향 성장 (A) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB}</p>
+            <p><span className="font-semibold text-amber-600">🌱 양방향 성장 (B) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA}</p>
+          </div>
+        </div>
+      ) : null}
+
       <SubHeading title="숨은 마음" tag="Hidden hearts" />
       <div className="mt-10 space-y-16">
         {hearts.map((h) => {
@@ -191,7 +225,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
 };
 
 /* ── Chapter 7 · Repair Guide ─────────────────────────────────── */
-export const RepairSection = ({ section, personA, personB, n, dailyLifeSection, debug }: SectionProps) => {
+export const RepairSection = ({ section, payload, personA, personB, n, dailyLifeSection, debug }: SectionProps) => {
   const { steps, helps } = adaptRepair(section);
   const dailyCards = dailyLifeSection ? adaptDailyLife(dailyLifeSection) : [];
   const names = { a: personA, b: personB };
@@ -204,6 +238,41 @@ export const RepairSection = ({ section, personA, personB, n, dailyLifeSection, 
       title={section.title}
       tint="cream"
     >
+      {/* Gap Batch: Emergency Romantic SOS Scripts */}
+      {payload.storyPlan?.romanticGapBatch?.emergencySos ? (
+        <div className="mb-8 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-6">
+          <SubHeading title="싸웠을 때 즉시 꺼내 쓰는 3단계 SOS 응급 대화 대본" tag="Emergency SOS" tone="coral" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <PersonTag name={personA} side="a" />
+                <span className="text-xs text-rel-ink-mute">→ {personB}에게 말할 때</span>
+              </div>
+              <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.trigger}</p>
+              <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.doNot}</p>
+              <div className="space-y-1.5 pt-2 text-xs border-t border-rel-line">
+                <p className="font-semibold text-rel-deep">1단계 (첫 문장): {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.firstLine}</p>
+                <p className="font-semibold text-rel-ink">2단계 (징검다리): {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.bridgeLine}</p>
+                <p className="font-semibold text-v4-good">3단계 (재접속): {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.reconnectionLine}</p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <PersonTag name={personB} side="b" />
+                <span className="text-xs text-rel-ink-mute">→ {personA}에게 말할 때</span>
+              </div>
+              <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.trigger}</p>
+              <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.doNot}</p>
+              <div className="space-y-1.5 pt-2 text-xs border-t border-rel-line">
+                <p className="font-semibold text-rel-deep">1단계 (첫 문장): {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.firstLine}</p>
+                <p className="font-semibold text-rel-ink">2단계 (징검다리): {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.bridgeLine}</p>
+                <p className="font-semibold text-v4-good">3단계 (재접속): {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.reconnectionLine}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {helps.length > 0 && (
         <div>
           <SubHeading title="각자에게 도움이 되는 것" tag="What helps" />
@@ -308,6 +377,103 @@ export const StrengthVulnerabilitySection = ({ section, payload, personA, person
       title={section.title}
       tint="cream"
     >
+      {/* Gap Batch: What Not to Expect & Long-Term Bond Prescriptions */}
+      {payload.storyPlan?.romanticGapBatch ? (
+        <div className="mb-10 space-y-8">
+          {/* Gap Batch: Wanted Love vs Given Love */}
+          {payload.storyPlan.romanticGapBatch.wantedVsGivenLove ? (
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+              <SubHeading title="8.1 서로 주고받는 사랑의 표현과 체감 톤 (Wanted Love vs Given Love)" tag="Love Language Match" tone="coral" />
+              <p className="text-xs text-rel-ink-soft italic">💬 {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.summary}</p>
+              <div className="grid gap-6 md:grid-cols-2 text-xs">
+                <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+                  <PersonTag name={personA} side="a" />
+                  <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>
+                  <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.givenLove}</p>
+                  <p className="text-rel-deep italic">· 파트너 수용 체감: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
+                </div>
+                <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+                  <PersonTag name={personB} side="b" />
+                  <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.wantedLove}</p>
+                  <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.givenLove}</p>
+                  <p className="text-rel-deep italic">· 파트너 수용 체감: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Gap Batch: When We Need Each Other Most */}
+          {payload.storyPlan.romanticGapBatch.whenWeNeedEachOtherMost ? (
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+              <SubHeading title="8.2 서로를 가장 절실히 필요로 하는 구체적 순간들 (When Needed Most)" tag="When Needed Most" tone="deep" />
+              <div className="grid gap-6 md:grid-cols-2 text-xs">
+                <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+                  <PersonTag name={personA} side="a" />
+                  <p className="font-semibold text-rel-ink mt-1">💡 {josaIGa(personA)} {josaEulReul(personB)} 필요로 할 때:</p>
+                  {payload.storyPlan.romanticGapBatch.whenWeNeedEachOtherMost.whenANeedsB.map((item, i) => (
+                    <div key={i} className="space-y-1">
+                      <p className="font-medium text-rel-deep">· {item.sceneTitle}</p>
+                      <p className="text-rel-ink-soft">{item.concreteContext}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+                  <PersonTag name={personB} side="b" />
+                  <p className="font-semibold text-rel-ink mt-1">💡 {josaIGa(personB)} {josaEulReul(personA)} 필요로 할 때:</p>
+                  {payload.storyPlan.romanticGapBatch.whenWeNeedEachOtherMost.whenBNeedsA.map((item, i) => (
+                    <div key={i} className="space-y-1">
+                      <p className="font-medium text-rel-deep">· {item.sceneTitle}</p>
+                      <p className="text-rel-ink-soft">{item.concreteContext}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+            <SubHeading title="8.3 서로에게 이것까지 요구하면 관계가 힘들어집니다 (What Not to Expect)" tag="What Not to Expect" tone="coral" />
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+                <PersonTag name={personA} side="a" />
+                <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personA)} {josaEge(personB)} 내려놓아야 할 기대:</p>
+                <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
+                  {payload.storyPlan.romanticGapBatch.whatNotToExpect.notToExpectAFromB.map((item, i) => (
+                    <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+                <PersonTag name={personB} side="b" />
+                <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personB)} {josaEge(personA)} 내려놓아야 할 기대:</p>
+                <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
+                  {payload.storyPlan.romanticGapBatch.whatNotToExpect.notToExpectBFromA.map((item, i) => (
+                    <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+            <SubHeading title="8.4 오래 단단한 관계를 유지하는 3가지 약속 (Long-Term Bond)" tag="Long-Term Bond" tone="deep" />
+            <div className="grid gap-4 sm:grid-cols-3 text-xs">
+              <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+                <p className="font-semibold text-v4-good mb-1">✅ KEEP DOING</p>
+                {payload.storyPlan.romanticGapBatch.longTermBond.keepDoing.map((k, i) => <p key={i} className="text-rel-ink-soft mt-1">• {k}</p>)}
+              </div>
+              <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+                <p className="font-semibold text-v4-bad mb-1">⚠️ WATCH OUT</p>
+                {payload.storyPlan.romanticGapBatch.longTermBond.watchOut.map((w, i) => <p key={i} className="text-rel-ink-soft mt-1">• {w}</p>)}
+              </div>
+              <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+                <p className="font-semibold text-rel-deep mb-1">🕯️ RELATIONSHIP RITUAL</p>
+                {payload.storyPlan.romanticGapBatch.longTermBond.relationshipRitual.map((r, i) => <p key={i} className="text-rel-ink-soft mt-1">• {r}</p>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {gives.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2">
           {gives.map((g, i) => (
@@ -378,11 +544,12 @@ export const StrengthVulnerabilitySection = ({ section, payload, personA, person
 };
 
 /* ── Chapter 8 · Future & Timing ──────────────────────────────── */
-export const FutureTimingSection = ({ section, debug }: SectionProps) => {
+export const FutureTimingSection = ({ section, n, debug }: SectionProps) => {
   const cards = adaptFuture(section);
   return (
     <ChapterSection
       id={section.chapterId}
+      n={n}
       label={section.userQuestion}
       title={section.title}
     >

@@ -49,7 +49,7 @@ export function buildRomanticExperienceViewModel(
   const partnerName = normalizeName(input.partnerName, "B");
   const nameA = normalizeName(input.nameA, "A");
   const nameB = normalizeName(input.nameB, "B");
-  const locale = input.locale?.trim() || "ko-KR";
+  const locale = typeof input.locale === "string" ? input.locale.trim() : "ko-KR";
   const viewerIsReportA = Boolean(input.viewerIsReportA);
   const report = input.report;
   const conflictTranslation = projectConflictPattern({

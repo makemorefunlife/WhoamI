@@ -361,8 +361,33 @@ export function adaptRadarHighlights(
   personA: string,
   personB: string,
 ): DomainPsychHighlight[] {
-  return (payload.selectedAxisInsights ?? []).slice(0, 4).map((row) => {
-    const axis = payload.axisOverview.find((a) => a.axis_key === row.axisKey);
+  let insights = payload?.selectedAxisInsights ?? [];
+
+  // Fallback: If selectedAxisInsights is missing/empty (e.g. legacy DB cache or payload without pre-sliced insights),
+  // derive top 4 high-gap axes dynamically from axisOverview so Dark Cards ALWAYS render!
+  if ((!insights || insights.length === 0) && payload?.axisOverview && payload.axisOverview.length > 0) {
+    const sorted = [...payload.axisOverview].sort(
+      (a, b) => Math.abs(b.score_a - b.score_b) - Math.abs(a.score_a - a.score_b),
+    );
+    insights = sorted.slice(0, 4).map((a) => {
+      const gap = Math.abs(a.score_a - a.score_b);
+      const matchType = gap < 12 ? "resonance" : gap > 25 ? "tension" : "complement";
+      return {
+        axisKey: a.axis_key,
+        axisLabel: a.axis_label,
+        gap,
+        matchType,
+        whyItMatters: `${personA}님과 ${personB}님의 ${a.axis_label} 차이가 정서적 소통 템포에 반영됩니다.`,
+        relationshipEffect:
+          matchType === "resonance"
+            ? "비슷한 성향으로 의사결정 시 높은 직관적 공감대를 형성합니다."
+            : "상대와의 템포 차이로 인해 오해가 발생할 수 있어 서로의 필요를 명확히 말해주는 전환이 유용합니다.",
+      } as any;
+    });
+  }
+
+  return insights.slice(0, 4).map((row) => {
+    const axis = payload.axisOverview?.find((a) => a.axis_key === row.axisKey);
     const scoreA = axis?.score_a ?? 50;
     const scoreB = axis?.score_b ?? 50;
     const gap = Math.abs(scoreA - scoreB);

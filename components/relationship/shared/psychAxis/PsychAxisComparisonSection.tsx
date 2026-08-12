@@ -18,7 +18,7 @@
 import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMatchAxisResult } from "@/lib/relationship/psychMatch";
 import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
-import { Reveal } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { Reveal, SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import PsychMatchRadarChart from "@/components/relationship/reportLayout/PsychMatchRadarChart";
 
 export type PsychAxisComparisonSectionProps = {
@@ -49,18 +49,41 @@ export function PsychAxisComparisonSection({
       </Reveal>
 
       {highlights.length > 0 ? (
-        <ul className="mt-6 space-y-3">
-          {highlights.map((h, i) => (
-            <li key={h.axis_key}>
-              <Reveal delay={i * 60}>
-                <div className="rounded-xl bg-[#8a8a8a] px-4 py-3">
-                  <p className="font-rel-sans text-[13px] font-semibold leading-snug text-white/92">{h.hook}</p>
-                  <p className="mt-2 font-rel-sans text-[13px] leading-[1.75] text-white/78">{h.narrative}</p>
-                </div>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-10 space-y-5">
+          <SubHeading title="11축 심리 차이 핵심 인사이트" tag="Psych Dynamics" tone="coral" />
+          <ul className="space-y-4">
+            {highlights.map((h, i) => {
+              const isMatch = h.match_type === "resonance";
+              const tagLabel = isMatch ? "✨ 공감 유대 (Resonance)" : h.match_type === "complement" ? "🌿 상보 보완 (Complement)" : "⚡ 성향 차이 (Tension)";
+              return (
+                <li key={h.axis_key}>
+                  <Reveal delay={i * 60}>
+                    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-rel-serif text-[17px] font-semibold text-rel-ink">🎯 {h.axis_label}</span>
+                        <span
+                          className={`text-[11px] font-semibold tracking-wider px-2.5 py-0.5 rounded-full border ${
+                            isMatch
+                              ? "border-v4-good/30 bg-v4-good-soft text-v4-good"
+                              : "border-v4-bad/30 bg-v4-bad-soft text-v4-bad"
+                          }`}
+                        >
+                          {tagLabel}
+                        </span>
+                      </div>
+                      <p className="font-rel-sans text-[13.5px] font-medium leading-relaxed text-rel-deep bg-rel-taupe-soft/60 p-3 rounded-xl border border-rel-line">
+                        {h.hook}
+                      </p>
+                      <p className="font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">
+                        {h.narrative}
+                      </p>
+                    </div>
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       ) : null}
     </>
   );

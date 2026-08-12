@@ -314,5 +314,10 @@ export function buildActualFourCeContract(
     canonicalPersonalA,
     canonicalPersonalB,
     canonicalPairFacts,
+    surveyInput,
+    meta: {
+      psych_master_a: surveyInput?.psychA ?? null,
+      psych_master_b: surveyInput?.psychB ?? null,
+    },
   };
 }

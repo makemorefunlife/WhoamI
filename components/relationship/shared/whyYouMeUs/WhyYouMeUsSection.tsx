@@ -32,9 +32,10 @@ export type WhyYouMeUsSectionProps = {
   data: WhyYouMeUsData;
   names: { a: string; b: string };
   locale: Locale;
+  children?: React.ReactNode;
 };
 
-export function WhyYouMeUsSection({ id, n, eyebrow, title, data, names, locale }: WhyYouMeUsSectionProps) {
+export function WhyYouMeUsSection({ id, n, eyebrow, title, data, names, locale, children }: WhyYouMeUsSectionProps) {
   const dirs = [data.whyYou, data.whyMe];
 
   return (
@@ -127,6 +128,7 @@ export function WhyYouMeUsSection({ id, n, eyebrow, title, data, names, locale }
       )}
 
       {data.bridge && <Bridge text={data.bridge} label={ec(locale, "Meanwhile", "그런데")} />}
+      {children}
     </ChapterSection>
   );
 }

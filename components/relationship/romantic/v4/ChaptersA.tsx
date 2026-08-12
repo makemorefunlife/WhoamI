@@ -124,6 +124,8 @@ export const AttractionSection = ({ payload, section, personA, personB, n, debug
   const data = adaptAttraction(section, payload);
   const names = { a: personA, b: personB };
 
+  const physicalIntimacyCard = payload.storyPlan?.realLifeDomains?.find(d => d.domainId === "item_2" || d.title.includes("스킨십") || d.title.includes("친밀감"));
+
   return (
     <WhyYouMeUsSection
       id={section.chapterId}
@@ -133,7 +135,19 @@ export const AttractionSection = ({ payload, section, personA, personB, n, debug
       data={data}
       names={names}
       locale={payload.locale}
-    />
+    >
+      {payload.storyPlan?.romanticGapBatch?.physicalIntimacy ? (
+        <div className="mt-10 pt-8 border-t border-rel-line space-y-4">
+          <SubHeading title="피지컬 친밀감 & 스킨십 템포 조율 (Physical Intimacy & Tempo)" tag="Physical Intimacy" tone="coral" />
+          <div className="rounded-xl bg-rel-taupe-soft p-5 border border-rel-line space-y-2 text-xs">
+            <p className="font-semibold text-rel-ink text-sm">💋 {payload.storyPlan.romanticGapBatch.physicalIntimacy.summary}</p>
+            <p className="text-rel-ink-soft">· {personA}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessA}</p>
+            <p className="text-rel-ink-soft">· {personB}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessB}</p>
+            <p className="text-rel-deep italic mt-2">· 공간/경계 필요성: {payload.storyPlan.romanticGapBatch.physicalIntimacy.spaceNeed}</p>
+          </div>
+        </div>
+      ) : null}
+    </WhyYouMeUsSection>
   );
 };
 
@@ -253,6 +267,31 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
         </div>
       </Reveal>
 
+      {/* Gap Batch: Conflict Narrative State Transitions */}
+      {payload.storyPlan?.romanticGapBatch?.conflictTransitions ? (
+        <div className="mt-6 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+          <SubHeading title="갈등 시 각자의 감정 상태 변화 모델 (Normal → Overload → Recovery)" tag="State Transition" tone="coral" />
+          <div className="grid gap-4 sm:grid-cols-2 text-xs">
+            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line space-y-1.5">
+              <PersonTag name={personA} side="a" />
+              <p className="mt-1 font-semibold text-rel-ink">{payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.canonicalSummary}</p>
+              <p className="text-rel-ink-soft">1. 평소 (Normal): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.normalState}</p>
+              <p className="text-v4-bad font-medium">2. 텐션 고조 (Tension): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.tensionRising}</p>
+              <p className="text-rel-deep font-semibold">3. 과부하 (Overload): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.overloadState}</p>
+              <p className="text-v4-good font-semibold">4. 회복 단계 (Recovery): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.recoveryState}</p>
+            </div>
+            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line space-y-1.5">
+              <PersonTag name={personB} side="b" />
+              <p className="mt-1 font-semibold text-rel-ink">{payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.canonicalSummary}</p>
+              <p className="text-rel-ink-soft">1. 평소 (Normal): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.normalState}</p>
+              <p className="text-v4-bad font-medium">2. 텐션 고조 (Tension): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.tensionRising}</p>
+              <p className="text-rel-deep font-semibold">3. 과부하 (Overload): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.overloadState}</p>
+              <p className="text-v4-good font-semibold">4. 회복 단계 (Recovery): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.recoveryState}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {data.pairs.length > 0 && (
         <>
           <FlowArrow />
@@ -344,9 +383,10 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
         </div>
       )}
 
+      {/* 4. Pair Comparison Table (나란히 놓고 보기) */}
       {compare && compare.length > 0 && (
         <div>
-          <SubHeading title="나란히 놓고 보기" tag="Comparison" />
+          <SubHeading title="나란히 놓고 보기 (Pair Comparison Table)" tag="Comparison" />
           <ul className="mt-8 space-y-12">
             {compare.map((row, i) => (
               <li key={row.rowId}>

@@ -81,7 +81,8 @@ export function buildRomanticV4TimingFromFortuneFlow(
     };
   }
 
-  const theme = THEME_BY_INTERACTION[locale][fortuneFlow.daewoon.relationship_interaction];
+  const langKey = locale === "en-US" ? "en-US" : "ko-KR";
+  const theme = THEME_BY_INTERACTION[langKey][fortuneFlow.daewoon.relationship_interaction] || THEME_BY_INTERACTION["ko-KR"].supportive;
   const favorableWindows = fortuneFlow.sewoon.years
     .filter((y) => y.branch_relation === "combine")
     .map((y) => favorableLine(locale, y.year));
