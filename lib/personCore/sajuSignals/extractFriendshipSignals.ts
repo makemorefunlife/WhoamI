@@ -20,16 +20,7 @@ function countTenGods(bundle: SajuBundle): TenGodCounts {
   return counts;
 }
 
-function dominantElement(
-  el: JohuClimateSnapshot["element_counts"],
-): FriendshipSajuSignals["johu_profile"]["dominant_element"] {
-  const entries = Object.entries(el) as [
-    FriendshipSajuSignals["johu_profile"]["dominant_element"],
-    number,
-  ][];
-  entries.sort((a, b) => b[1] - a[1]);
-  return entries[0]?.[0] ?? "earth";
-}
+import { extractCanonicalPersonalFacts } from "@/lib/saju/pairChartAnalysis";
 
 function isolationBand(score: number): IsolationBand {
   if (score >= 65) return "lone_wolf";
@@ -63,6 +54,8 @@ export function extractFriendshipSignals(
   else if (profile.self >= 4) isolationScore += 40;
   else if (profile.self >= 3) isolationScore += 22;
   const peerCluster = clampScore(100 - isolationScore);
+  
+  const canonicalPersonal = extractCanonicalPersonalFacts(chart);
 
   return {
     year_month_palace: {
@@ -74,7 +67,7 @@ export function extractFriendshipSignals(
       heat_score: johu.heat_score,
       moisture_score: johu.moisture_score,
       temperature_band: johu.temperature_band,
-      dominant_element: dominantElement(johu.element_counts),
+      dominant_element: canonicalPersonal.dominantElement,
     },
     bijie_isolation: {
       self_count: profile.self,

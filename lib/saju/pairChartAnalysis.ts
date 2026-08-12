@@ -382,3 +382,93 @@ export function sajuJsonToPillars(saju: {
     hourPillar: saju.hourPillar,
   };
 }
+
+export type CanonicalPersonalSajuFacts = {
+  dominantElement: DominantElementKey;
+  weakestElement: DominantElementKey;
+};
+
+export function extractCanonicalPersonalFacts(chart: ChartContext): CanonicalPersonalSajuFacts {
+  const counts = countElements(chart);
+  const entries: Array<[DominantElementKey, number]> = DOMINANT_ELEMENT_ORDER.map(
+    (k) => [k, counts[k] ?? 0],
+  );
+  entries.sort((a, b) => b[1] - a[1]);
+  const dominant = entries[0]![0];
+  
+  const weakEntries = [...entries].sort((a, b) => a[1] - b[1]);
+  const weakest = weakEntries[0]![0];
+
+  return { dominantElement: dominant, weakestElement: weakest };
+}
+
+export type CanonicalPairSajuFacts = {
+  hasWonjin: boolean;
+  hasGuimun: boolean;
+  hasWonjinOrGuimun: boolean;
+  hasChung: boolean;
+  hasHyung: boolean;
+  hasPa: boolean;
+  hasHae: boolean;
+  hasClash: boolean; // 충 또는 형
+  hasDayBranchCombine: boolean;
+  hasDayBranchChungHyung: boolean;
+  elementSupport: {
+    aToB: boolean;
+    bToA: boolean;
+  };
+};
+
+export function extractCanonicalPairFacts(
+  chartA: ChartContext,
+  chartB: ChartContext,
+): CanonicalPairSajuFacts {
+  const cross = analyzeCrossChartRelations(chartA, chartB);
+  
+  const wonjinHits = cross.filter((h) => h.type === "원진");
+  const guimunHits = cross.filter((h) => h.type === "귀문");
+  
+  const hasWonjin = wonjinHits.length > 0;
+  const hasGuimun = guimunHits.length > 0;
+  const hasWonjinOrGuimun = hasWonjin || hasGuimun;
+
+  const hasChung = cross.some((h) => h.type === "충");
+  const hasHyung = cross.some((h) => h.type === "형");
+  const hasPa = cross.some((h) => h.type === "파");
+  const hasHae = cross.some((h) => h.type === "해");
+  
+  const hasClash = hasChung || hasHyung;
+
+  const dayBranchCross = cross.filter(
+    (h) => h.personA_pillar.startsWith("일주") || h.personB_pillar.startsWith("일주"),
+  );
+  
+  const hasDayBranchCombine = dayBranchCross.some((h) => h.type === "육합");
+  const hasDayBranchChungHyung = dayBranchCross.some((h) => h.type === "충" || h.type === "형");
+
+  const pA = extractCanonicalPersonalFacts(chartA);
+  const pB = extractCanonicalPersonalFacts(chartB);
+  const ELEMENT_GENERATES: Record<string, string> = {
+    wood: "fire",
+    fire: "earth",
+    earth: "metal",
+    metal: "water",
+    water: "wood",
+  };
+  const aToB = ELEMENT_GENERATES[pA.dominantElement] === pB.weakestElement;
+  const bToA = ELEMENT_GENERATES[pB.dominantElement] === pA.weakestElement;
+
+  return {
+    hasWonjin,
+    hasGuimun,
+    hasWonjinOrGuimun,
+    hasChung,
+    hasHyung,
+    hasPa,
+    hasHae,
+    hasClash,
+    hasDayBranchCombine,
+    hasDayBranchChungHyung,
+    elementSupport: { aToB, bToA },
+  };
+}

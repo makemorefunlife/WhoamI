@@ -57,6 +57,8 @@ import type { FriendComparisonTableValue } from "./friendComparisonTableCanonica
 import type { FriendTravelPlannerValue } from "./friendTravelPlannerCanonical";
 import type { FriendTreasurerClientValue } from "./friendTreasurerCanonical";
 import { buildFriendShineInsight } from "@/lib/relationship/enrichment/friendShineInsight";
+import { buildCanonicalFriendStoryPlan } from "./buildCanonicalFriendStoryPlan";
+import type { CanonicalFriendStoryPlan } from "./friendStoryPlanTypes";
 
 export type FriendReportBody = {
   headline: string;
@@ -100,6 +102,7 @@ export type FriendReportBody = {
     travel_planner?: FriendTravelPlannerValue;
     treasurer?: FriendTreasurerClientValue;
   };
+  story_plan?: CanonicalFriendStoryPlan;
 };
 
 export function buildFriendReport(params: {
@@ -374,6 +377,14 @@ export function buildFriendReport(params: {
     },
     context_output: buildFriendContextOutput(ctx, friend, {
       personCoreMeta: params.personCoreMeta,
+    }),
+    story_plan: buildCanonicalFriendStoryPlan({
+      nameA: ctx.nicknameA,
+      nameB: ctx.nicknameB,
+      oneLineFriendship,
+      socialReport: friend,
+      prescriptions: prescription_friendship,
+      locale: params.locale ?? "ko-KR",
     }),
   };
 

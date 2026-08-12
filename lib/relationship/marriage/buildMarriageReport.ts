@@ -68,6 +68,8 @@ import {
   buildMarriageContextOutput,
   type MarriageContextOutput,
 } from "./marriageContextOutput";
+import { buildCanonicalCoupleStoryPlan } from "./buildCanonicalCoupleStoryPlan";
+import type { CanonicalCoupleStoryPlan } from "./coupleStoryPlanTypes";
 
 export type MarriageReportBody = {
   headline: string;
@@ -85,6 +87,7 @@ export type MarriageReportBody = {
     comparison_table?: MarriageComparisonTableValue;
     operating_cfo?: MarriageOperatingCfoClientValue;
   };
+  story_plan?: CanonicalCoupleStoryPlan;
   meta: {
     grade: string;
     grade_reason: string;
@@ -502,6 +505,14 @@ export function buildMarriageReport(params: {
     context_output: buildMarriageContextOutput(ctx, household, {
       psychMatch: psychBundle?.psych_match ?? null,
       personCoreMeta: params.personCoreMeta ?? null,
+    }),
+    story_plan: buildCanonicalCoupleStoryPlan({
+      nameA: ctx.nicknameA,
+      nameB: ctx.nicknameB,
+      oneLineDefinition: household.section_snapshot.one_line_definition,
+      homeReport: household,
+      actionPlan: coupleActionPlan,
+      locale: params.locale ?? "ko-KR",
     }),
     meta: {
       grade: ctx.grade,

@@ -19,17 +19,7 @@ import { subjectParticle, topicParticle, withParticle } from "@/lib/relationship
 
 type Element = "wood" | "fire" | "earth" | "metal" | "water";
 
-function dominantElement(chart: ChartContext): Element {
-  const counts = countElements(chart);
-  const sorted = (Object.entries(counts) as [Element, number][]).sort((a, b) => b[1] - a[1]);
-  return sorted[0]?.[0] ?? "earth";
-}
-
-function weakestElement(chart: ChartContext): Element {
-  const counts = countElements(chart);
-  const sorted = (Object.entries(counts) as [Element, number][]).sort((a, b) => a[1] - b[1]);
-  return sorted[0]?.[0] ?? "earth";
-}
+import { extractCanonicalPersonalFacts } from "@/lib/saju/pairChartAnalysis";
 
 /** 오행을 "이 아이에게 필요한 것"으로 번역 — 절대 오행 이름 자체를 노출하지 않는다. */
 const ELEMENT_NEED: Record<Locale, Record<Element, string>> = {
@@ -83,8 +73,8 @@ export function buildParentGivingLine(params: {
   const { chartParent, chartChild, parentNickname, childNickname } = params;
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
 
-  const needed = weakestElement(chartChild);
-  const parentDominant = dominantElement(chartParent);
+  const needed = extractCanonicalPersonalFacts(chartChild).weakestElement;
+  const parentDominant = extractCanonicalPersonalFacts(chartParent).dominantElement;
   const parentNaturallyFills = ELEMENT_GENERATES[parentDominant] === needed;
   const need = ELEMENT_NEED[locale][needed];
 

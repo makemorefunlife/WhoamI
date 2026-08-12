@@ -698,35 +698,19 @@ export function FamilyReportViewModelView({
   const t = useMessages().relationshipDrilldown.family;
   const isEn = locale === "en-US";
 
-  const snapshot = vm.sections.find(
+  const snapshot = vm.snapshot ?? vm.sections.find(
     (s): s is Extract<FamilyReportSection, { type: "snapshot" }> => s.type === "snapshot",
   );
-  const otherSections = vm.sections.filter(
-    (s): s is NonSnapshotSection => s.type !== "snapshot",
-  );
-  const byType = new Map<FamilySectionType, NonSnapshotSection[]>();
-  for (const section of otherSections) {
-    const list = byType.get(section.type) ?? [];
-    list.push(section);
-    byType.set(section.type, list);
-  }
 
-  const chapters = CHAPTER_GROUPS.map((group) => ({
-    ...group,
-    sections: group.types.flatMap((type) => byType.get(type) ?? []),
-  })).filter((group) => group.sections.length > 0);
-  const bonusSections = BONUS_CHAPTER_TYPES.flatMap((type) => byType.get(type) ?? []);
+  const editorialChapters = vm.editorialChapters && vm.editorialChapters.length > 0
+    ? vm.editorialChapters
+    : [];
 
-  const navItems = [
-    ...chapters.map((chapter, i) => ({
-      id: chapter.id,
-      number: String(i + 1).padStart(2, "0"),
-      title: isEn ? chapter.titleEn : chapter.titleKo,
-    })),
-    ...(bonusSections.length > 0
-      ? [{ id: "ch_deep_read", number: null, title: bonusSections[0]!.title }]
-      : []),
-  ];
+  const navItems = editorialChapters.map((ch) => ({
+    id: ch.id,
+    number: ch.number,
+    title: ch.title,
+  }));
 
   return (
     <RelationshipReportLayout
@@ -803,32 +787,254 @@ export function FamilyReportViewModelView({
           </div>
         );
       })() : null}
-      <FamilyChapterNav items={navItems} />
-      {chapters.map((chapter, i) => (
+
+      {navItems.length > 0 ? <FamilyChapterNav items={navItems} /> : null}
+
+      {editorialChapters.map((chapter) => (
         <FamilyChapterSection
           key={chapter.id}
           id={chapter.id}
-          number={String(i + 1).padStart(2, "0")}
-          title={isEn ? chapter.titleEn : chapter.titleKo}
+          number={chapter.number}
+          title={chapter.title}
           accent={ACCENT}
         >
-          {chapter.sections.map((section) => (
+          {chapter.summary ? (
+            <p className="mb-6 font-rel-sans text-[15px] font-medium leading-[1.7] text-emerald-200/90 italic border-l-2 border-emerald-400/40 pl-3">
+              💡 {chapter.summary}
+            </p>
+          ) : null}
+
+          {/* StoryPlan Synthesis or Claim Highlight */}
+          {chapter.synthesis.length > 0 ? (
+            <div className="mb-6 space-y-3">
+              {chapter.synthesis.map((syn, idx) => (
+                <div key={idx} className="rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4">
+                  <p className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+                    ✨ Synthesis · {syn.headline}
+                  </p>
+                  <p className="mt-1 text-sm text-white/88 leading-relaxed">
+                    {syn.summary}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Coverage Model: Conflict Loop */}
+          {chapter.conflictLoop && (chapter.conflictLoop.parentTrigger || chapter.conflictLoop.breakPattern) ? (
+            <div className="mb-6 rounded-xl border border-rose-400/20 bg-rose-950/20 p-4">
+              <p className="text-xs font-semibold text-rose-300 uppercase tracking-wider">
+                ⚡ 갈등 양상과 조율 포인트 · Conflict Loop
+              </p>
+              {chapter.conflictLoop.parentTrigger ? (
+                <p className="mt-1.5 text-sm font-medium text-white/90">
+                  트리거: {chapter.conflictLoop.parentTrigger}
+                </p>
+              ) : null}
+              {chapter.conflictLoop.childReaction ? (
+                <p className="mt-1 text-sm text-white/75">
+                  자녀 반응: {chapter.conflictLoop.childReaction}
+                </p>
+              ) : null}
+              {chapter.conflictLoop.parentEscalation ? (
+                <p className="mt-1 text-sm text-white/75">
+                  증폭 방식: {chapter.conflictLoop.parentEscalation}
+                </p>
+              ) : null}
+              {chapter.conflictLoop.breakPattern ? (
+                <p className="mt-2 text-xs italic text-rose-200/70">
+                  💡 출구 전략: {chapter.conflictLoop.breakPattern}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Core Pair Meaning 1: Dependency / Protection Dynamic */}
+          {chapter.dependencyProtection ? (
+            <div className="mb-6 rounded-xl border border-indigo-400/20 bg-indigo-950/20 p-4">
+              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
+                🛡️ 의존과 보호 구도 · Dependency & Protection
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-white/90">
+                부모의 보호 방식: {chapter.dependencyProtection.provider}
+              </p>
+              <p className="mt-1 text-sm text-white/75">
+                자녀의 의존 톤: {chapter.dependencyProtection.reliance}
+              </p>
+              {chapter.dependencyProtection.roleReversalRisk ? (
+                <p className="mt-2 text-xs italic text-amber-300/90">
+                  ⚠️ {chapter.dependencyProtection.summary}
+                </p>
+              ) : (
+                <p className="mt-2 text-xs italic text-indigo-200/75">
+                  💡 {chapter.dependencyProtection.summary}
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          {/* Core Pair Meaning 2: Love Expression vs Reception */}
+          {chapter.loveExpressionVsReception ? (
+            <div className="mb-6 rounded-xl border border-pink-400/20 bg-pink-950/20 p-4">
+              <p className="text-xs font-semibold text-pink-300 uppercase tracking-wider">
+                ❤️ 사랑의 표현과 수용 · Love Expression & Reception
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-white/90">
+                부모의 표현 방식: {chapter.loveExpressionVsReception.parentExpresses}
+              </p>
+              <p className="mt-1 text-sm text-white/75">
+                자녀가 느끼는 체감 톤: {chapter.loveExpressionVsReception.childReceives}
+              </p>
+              <p className="mt-2 text-xs italic text-pink-200/80">
+                💬 {chapter.loveExpressionVsReception.summary}
+              </p>
+            </div>
+          ) : null}
+
+          {/* Coverage Model: Repair Pattern */}
+          {chapter.repairPattern && chapter.repairPattern.effectiveRepairStyle ? (
+            <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-950/20 p-4">
+              <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
+                🌱 관계 회복 단계 · Emotional Repair
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-white/90">
+                효과적인 화해 방식: {chapter.repairPattern.effectiveRepairStyle}
+              </p>
+              {chapter.repairPattern.ineffectiveRepairStyle ? (
+                <p className="mt-1 text-sm text-white/75">
+                  주의할 역효과 톤: {chapter.repairPattern.ineffectiveRepairStyle}
+                </p>
+              ) : null}
+              {chapter.repairPattern.reconnectionAction ? (
+                <p className="mt-2 text-xs italic text-amber-200/80">
+                  💡 재연결 실천 행동: {chapter.repairPattern.reconnectionAction}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Coverage Model: Growth Transition */}
+          {chapter.growthTransition && chapter.growthTransition.currentRolePattern ? (
+            <div className="mb-6 rounded-xl border border-sky-400/20 bg-sky-950/20 p-4">
+              <p className="text-xs font-semibold text-sky-300 uppercase tracking-wider">
+                🚀 성장 전환점 · Growth Transition
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-white/90">
+                현재 역할 패턴: {chapter.growthTransition.currentRolePattern}
+              </p>
+              <p className="mt-1 text-sm text-white/75">
+                추천 전환 포지션: {chapter.growthTransition.recommendedShift}
+              </p>
+              {chapter.growthTransition.transitionReason ? (
+                <p className="mt-2 text-xs italic text-sky-200/80">
+                  💡 전환 이유: {chapter.growthTransition.transitionReason}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Core Pair Meaning 3: Expectation vs Pressure */}
+          {chapter.expectationVsPressure ? (
+            <div className="mb-6 rounded-xl border border-purple-400/20 bg-purple-950/20 p-4">
+              <p className="text-xs font-semibold text-purple-300 uppercase tracking-wider">
+                🎯 부모의 기대와 성취 중압감 · Expectation & Pressure
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-white/90">
+                부모의 기대 톤: {chapter.expectationVsPressure.parentExpectation}
+              </p>
+              <p className="mt-1 text-sm text-white/75">
+                자녀의 체감 중압감: {chapter.expectationVsPressure.childPressureReception}
+              </p>
+              <p className="mt-2 text-xs italic text-purple-200/80">
+                ⚖️ {chapter.expectationVsPressure.summary}
+              </p>
+            </div>
+          ) : null}
+
+          {/* Core Pair Meaning 4: Child Core Needs (3-Tier Structure: Desired Style x Parent Supply x Pair Gap) */}
+          {chapter.childCoreNeeds ? (
+            <div className="mb-6 rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4 space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+                  🎁 Child's Core Needs · 자녀 핵심 양육 욕구 종합
+                </p>
+                <p className="mt-1 text-xs text-white/70 italic">
+                  {chapter.childCoreNeeds.summary}
+                </p>
+              </div>
+
+              {/* Tier 1: Child Desired Parenting Style (Innate Needs) */}
+              {chapter.childCoreNeedsDetailed?.innateParentingNeeds?.length ? (
+                <div className="rounded-lg bg-emerald-900/30 p-3 border border-emerald-400/15">
+                  <p className="text-xs font-medium text-emerald-200 mb-1.5 flex items-center gap-1.5">
+                    <span>🌱</span> 이 아이가 편안하게 자라는 본래 부모 태도
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {chapter.childCoreNeedsDetailed.innateParentingNeeds.map((need, idx) => (
+                      <span key={idx} className="rounded-md bg-emerald-800/40 px-2 py-0.5 text-xs text-emerald-100 font-medium">
+                        #{need.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Tier 2: Well Supplied Needs */}
+              {chapter.childCoreNeedsDetailed?.wellSuppliedNeeds?.length ? (
+                <div className="rounded-lg bg-emerald-900/30 p-3 border border-emerald-400/15">
+                  <p className="text-xs font-medium text-emerald-300 mb-1.5 flex items-center gap-1.5">
+                    <span>✅</span> 지금 이 부모가 잘 주고 있는 것 (충분함)
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {chapter.childCoreNeedsDetailed.wellSuppliedNeeds.map((need, idx) => (
+                      <span key={idx} className="rounded-md bg-emerald-950/60 px-2 py-0.5 text-xs text-emerald-200 border border-emerald-500/30">
+                        ✓ {need.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Tier 3: Primary Pair Gapped Needs */}
+              {chapter.childCoreNeedsDetailed?.primaryNeeds?.length ? (
+                <div className="rounded-lg bg-amber-950/30 p-3 border border-amber-400/20">
+                  <p className="text-xs font-medium text-amber-200 mb-1.5 flex items-center gap-1.5">
+                    <span>💡</span> 이 관계에서 조금 더 필요한 1~3가지 핵심 욕구
+                  </p>
+                  <ul className="space-y-1.5">
+                    {chapter.childCoreNeedsDetailed.primaryNeeds.map((need, idx) => (
+                      <li key={idx} className="text-xs text-amber-100 flex items-start gap-1.5">
+                        <span className="font-semibold text-amber-300 shrink-0">[{need.gapStatus}]</span>
+                        <span><strong>{need.label}</strong>: {need.description}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {/* Discrepancy Caution Signal if present */}
+              {chapter.childCoreNeedsDetailed?.discrepancySummary ? (
+                <p className="text-xs text-rose-200/80 italic bg-rose-950/20 p-2.5 rounded-lg border border-rose-400/20">
+                  ⚠️ 참고: {chapter.childCoreNeedsDetailed.discrepancySummary}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Mapped Legacy Reusable Content Sections */}
+          {chapter.legacySections.map((section) => (
             <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
           ))}
         </FamilyChapterSection>
       ))}
-      {bonusSections.length > 0 ? (
-        <FamilyChapterSection
-          id="ch_deep_read"
-          number={null}
-          title={bonusSections[0]!.title}
-          accent={ACCENT}
-        >
-          {bonusSections.map((section) => (
-            <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
-          ))}
-        </FamilyChapterSection>
+
+      {/* Legacy flat fallback when no editorial chapters */}
+      {editorialChapters.length === 0 ? (
+        vm.sections.map((section) => (
+          <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
+        ))
       ) : null}
     </RelationshipReportLayout>
   );
 }
+

@@ -1,6 +1,6 @@
 import { REF_HEAVENLY_STEMS, REF_EARTHLY_BRANCHES } from "@/lib/hardcoded/sajuReferenceData";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import { countElements } from "@/lib/saju/pairChartAnalysis";
+import { countElements, extractCanonicalPersonalFacts } from "@/lib/saju/pairChartAnalysis";
 import { buildChartContext, type ChartContext } from "@/lib/saju/chartContext";
 import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
 import type { WorkStemCommunicationAnalysis } from "@/lib/saju/workPairAnalysis";
@@ -427,9 +427,7 @@ export function sanitizeOfficeText(text: string): string {
 }
 
 export function dominantElement(chart: ChartContext): string {
-  const counts = countElements(chart);
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  return sorted[0]?.[0] ?? "earth";
+  return extractCanonicalPersonalFacts(chart).dominantElement;
 }
 
 function dominantCategory(

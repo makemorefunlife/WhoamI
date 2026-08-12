@@ -9,7 +9,15 @@ import {
   analyzeFamilyPairSaju,
   type FamilyPairSajuAnalysis,
 } from "@/lib/saju/familyAnalysis";
-import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
+import type {
+  PairSajuAnalysis,
+  CanonicalPairSajuFacts,
+  CanonicalPersonalSajuFacts,
+} from "@/lib/saju/pairChartAnalysis";
+import {
+  extractCanonicalPairFacts,
+  extractCanonicalPersonalFacts,
+} from "@/lib/saju/pairChartAnalysis";
 import {
   computeFamilyCompatibilityGrade,
   type FamilyMasterScores,
@@ -51,6 +59,9 @@ export type FamilyRuleContext = {
   /** 006 로드맵 Step3 — 비교표(원가족긴장도/오행/신강신약)용 chart 노출. 기존 필드는 안 건드림(순수 추가). */
   chartParent: ChartContext;
   chartChild: ChartContext;
+  canonicalPersonalParent: CanonicalPersonalSajuFacts;
+  canonicalPersonalChild: CanonicalPersonalSajuFacts;
+  canonicalPairFacts: CanonicalPairSajuFacts;
   /** 006 로드맵 Step3 — 비교표 ⑥(대화온도, johu_profile)용. PersonCore SSOT, 없으면 undefined. */
   friendshipSignalsParent?: FriendshipSajuSignals;
   friendshipSignalsChild?: FriendshipSajuSignals;
@@ -191,6 +202,10 @@ export function buildFamilyRuleContext(
     },
   });
 
+  const canonicalPersonalParent = extractCanonicalPersonalFacts(core.chartA);
+  const canonicalPersonalChild = extractCanonicalPersonalFacts(core.chartB);
+  const canonicalPairFacts = extractCanonicalPairFacts(core.chartA, core.chartB);
+
   return {
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
@@ -213,6 +228,9 @@ export function buildFamilyRuleContext(
     locale,
     chartParent: core.chartA,
     chartChild: core.chartB,
+    canonicalPersonalParent,
+    canonicalPersonalChild,
+    canonicalPairFacts,
     friendshipSignalsParent,
     friendshipSignalsChild,
     familySignalsParent,

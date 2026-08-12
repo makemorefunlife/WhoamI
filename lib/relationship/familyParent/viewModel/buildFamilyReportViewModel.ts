@@ -29,6 +29,7 @@ import type {
   OpeningBlock,
   FamilyReportSection,
   FamilyReportViewModel,
+  FamilyEditorialChapterViewModel,
 } from "./familyReportSectionTypes";
 import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
@@ -290,9 +291,6 @@ function buildDeepReadSection(
   const gap = overlay?.section_4_family_frames?.generation_gap_signal;
   const action = overlay?.section_5_action;
 
-  // family에는 viewer 스왑이 없다 — 부모가 항상 첫 슬롯, 자녀가 두 번째 슬롯.
-  // LLM이 parent_nature/child_nature 대신 legacy a_nature/b_nature만 채웠을
-  // 수도 있어 둘 다 허용한다(explain-only, 재분류 없음).
   const vm = buildDeepReadViewModel({
     natureA: nature?.parent_nature ?? nature?.a_nature,
     natureB: nature?.child_nature ?? nature?.b_nature,
@@ -404,35 +402,174 @@ export function buildFamilyReportViewModel(
   params: BuildFamilyReportViewModelParams,
 ): FamilyReportViewModel {
   const locale = params.locale ?? "ko-KR";
+  const isEn = locale === "en-US";
   const t = catalog(locale);
 
-  const builders: Array<() => FamilyReportSection | null> = [
-    () => buildSnapshotSection(report),
-    () => buildRelationshipIndexSection(report, t),
-    () => buildCompareTableSection(report, locale, t),
-    () => buildHouseholdRolesSection(report, t),
-    () => buildPsychRadarSection(report, t, locale),
-    () => buildChildDnaSection(report, t),
-    () => buildTalentSection(report),
-    () => buildGrowthTunnelSection(report, t),
-    () => buildFamilyRoleSectionView(report, t),
-    () => buildFilialFrequencySection(report, t),
-    () => buildDeepReadSection(report, t),
-    () => buildDestinySection(report, t),
-    () => buildFilialRewardSection(report, t),
-    () => buildSosScriptSection(report),
-    () => buildDeEscalationSection(report, t),
-    () => buildPrescriptionSection(report, t),
-  ];
+  const snapshotSec = buildSnapshotSection(report);
+  const relationshipIndexSec = buildRelationshipIndexSection(report, t);
+  const compareTableSec = buildCompareTableSection(report, locale, t);
+  const householdRolesSec = buildHouseholdRolesSection(report, t);
+  const psychRadarSec = buildPsychRadarSection(report, t, locale);
+  const childDnaSec = buildChildDnaSection(report, t);
+  const talentSec = buildTalentSection(report);
+  const growthTunnelSec = buildGrowthTunnelSection(report, t);
+  const familyRoleSec = buildFamilyRoleSectionView(report, t);
+  const filialFrequencySec = buildFilialFrequencySection(report, t);
+  const deepReadSec = buildDeepReadSection(report, t);
+  const destinySec = buildDestinySection(report, t);
+  const filialRewardSec = buildFilialRewardSection(report, t);
+  const sosScriptSec = buildSosScriptSection(report);
+  const deEscalationSec = buildDeEscalationSection(report, t);
+  const prescriptionSec = buildPrescriptionSection(report, t);
 
-  const sections = builders
-    .map((build) => build())
-    .filter((section): section is FamilyReportSection => section != null);
+  const legacySectionsList: FamilyReportSection[] = [
+    snapshotSec,
+    relationshipIndexSec,
+    compareTableSec,
+    householdRolesSec,
+    psychRadarSec,
+    childDnaSec,
+    talentSec,
+    growthTunnelSec,
+    familyRoleSec,
+    filialFrequencySec,
+    deepReadSec,
+    destinySec,
+    filialRewardSec,
+    sosScriptSec,
+    deEscalationSec,
+    prescriptionSec,
+  ].filter((s): s is FamilyReportSection => s != null);
+
+  const storyPlan = report.canonical_projections?.story_plan ?? null;
+
+  // Build Editorial 8 Chapters mapping StoryPlan SSOT + Legacy Reusable Content
+  const selectedClaims = storyPlan?.selectedClaims ?? [];
+  const insightCandidates = storyPlan?.insightCandidates ?? [];
+  const actionCandidates = storyPlan?.actionCandidates ?? [];
+  const synthesisResults = storyPlan?.synthesisResults ?? [];
+
+  const filterClaims = (topics: string[]) =>
+    selectedClaims.filter((c) => topics.includes(c.topic) || topics.some(tp => c.topic.startsWith(tp)));
+
+  const editorialChapters: FamilyEditorialChapterViewModel[] = [
+    {
+      id: "ch_core",
+      number: "01",
+      title: isEn ? "01. Essential Temperament" : "01. 본질과 기질 — 아이의 타고난 결",
+      subtitle: isEn ? "Natural Identity & Emotional Core" : "아이 본래의 에너지와 감수성 밴드",
+      summary: storyPlan?.relationshipCore?.identityLine || report.one_line_family,
+      claims: filterClaims(["relationshipCore", "childProfile"]),
+      insights: insightCandidates.filter(i => i.topic === "relationshipCore" || i.topic === "childProfile"),
+      actions: [],
+      synthesis: synthesisResults.filter(s => s.topic === "relationshipCore"),
+      legacySections: [childDnaSec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_roles",
+      number: "02",
+      title: isEn ? "02. Family Roles & Dynamics" : "02. 역할과 구조 — 가정 내 기운과 포지션",
+      subtitle: isEn ? "Interpersonal Dynamics & Balance" : "부모와 자녀가 주고받는 역할의 궤적",
+      summary: storyPlan?.familyRoles?.psychologicalChildRole
+        ? `가정 내 심리적 포지션: ${storyPlan.familyRoles.psychologicalChildRole}`
+        : undefined,
+      claims: filterClaims(["familyRoles"]),
+      insights: insightCandidates.filter(i => i.topic === "familyRoles"),
+      actions: [],
+      synthesis: synthesisResults.filter(s => s.topic === "familyRoles"),
+      dependencyProtection: storyPlan?.pairMeanings?.dependencyProtection,
+      legacySections: [householdRolesSec, familyRoleSec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_comm",
+      number: "03",
+      title: isEn ? "03. Communication & Temperature" : "03. 소통과 반응 — 차이가 만드는 대화 온도",
+      subtitle: isEn ? "Differences in Thinking & Expression" : "표현과 수용의 밴드 차이로 발생하는 시널",
+      summary: storyPlan?.childProfile?.guidanceMode || undefined,
+      claims: filterClaims(["communication", "psych."]),
+      insights: insightCandidates.filter(i => i.topic === "communication"),
+      actions: [],
+      synthesis: synthesisResults.filter(s => s.topic === "communication"),
+      loveExpressionVsReception: storyPlan?.pairMeanings?.loveExpressionVsReception,
+      legacySections: [psychRadarSec, compareTableSec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_conflict",
+      number: "04",
+      title: isEn ? "04. Conflict & De-escalation" : "04. 마찰과 경계 — 갈등 루프와 감정 안전거리",
+      subtitle: isEn ? "Understanding Friction Triggers" : "부딪히는 순환 고리와 안전한 거리두기",
+      summary: storyPlan?.conflict?.safeDistance || undefined,
+      claims: filterClaims(["conflict"]),
+      insights: insightCandidates.filter(i => i.topic === "conflict"),
+      actions: actionCandidates.filter(a => a.type === "de_escalation"),
+      synthesis: synthesisResults.filter(s => s.topic === "conflict"),
+      conflictLoop: storyPlan?.conflictLoop ?? null,
+      legacySections: [deEscalationSec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_growth",
+      number: "05",
+      title: isEn ? "05. Autonomy & Growth Path" : "05. 자율과 성장 — 적성과 성원의 방향",
+      subtitle: isEn ? "Talent Direction & Growth Edge" : "학업·재물 그릇과 올해의 성장 도전",
+      summary: storyPlan?.growth?.synergy || undefined,
+      claims: filterClaims(["growth"]),
+      insights: insightCandidates.filter(i => i.topic === "growth"),
+      actions: [],
+      synthesis: synthesisResults.filter(s => s.topic === "growth"),
+      growthTransition: storyPlan?.growthTransition ?? null,
+      expectationVsPressure: storyPlan?.pairMeanings?.expectationVsPressure,
+      legacySections: [talentSec, growthTunnelSec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_repair",
+      number: "06",
+      title: isEn ? "06. Emotional Repair & Connection" : "06. 화해와 표현 — 감정 복원과 마음 주파수",
+      subtitle: isEn ? "Restoring Trust & Frequency" : "마음이 풀리는 지점과 관계 회복의 순서",
+      summary: undefined,
+      claims: filterClaims(["actions", "repair"]),
+      insights: insightCandidates.filter(i => i.topic === "actions" || i.topic === "repair"),
+      actions: actionCandidates.filter(a => a.type === "sos_script"),
+      synthesis: synthesisResults.filter(s => s.topic === "actions" || s.topic === "repair"),
+      repairPattern: storyPlan?.repairPattern ?? null,
+      legacySections: [filialFrequencySec, sosScriptSec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_deep",
+      number: "07",
+      title: isEn ? "07. Deep Perspectives" : "07. 깊은 이해 — 부모와 자녀 각각의 시선",
+      subtitle: isEn ? "Deep Read & Shared Wisdom" : "서로 다른 입장에서 바라보는 관계의 조화",
+      summary: storyPlan?.deepRead?.parentAdvice || undefined,
+      claims: filterClaims(["deepRead"]),
+      insights: insightCandidates.filter(i => i.topic === "deepRead"),
+      actions: [],
+      synthesis: synthesisResults.filter(s => s.topic === "deepRead"),
+      legacySections: [deepReadSec, destinySec].filter((s): s is FamilyReportSection => s != null),
+    },
+    {
+      id: "ch_action",
+      number: "08",
+      title: isEn ? "08. Actionable Playbook" : "08. 실천과 단단한 관계 유지 — 오래 이어질 행복 행동 처방전",
+      subtitle: isEn ? "Daily Routines & Long-term Bond" : "일상의 스크립트와 앞으로 다가올 보답",
+      summary: storyPlan?.actions?.maintenanceRoutine || undefined,
+      claims: filterClaims(["action"]),
+      insights: [],
+      actions: actionCandidates.filter(a => a.type === "routine"),
+      synthesis: [],
+      childCoreNeeds: storyPlan?.pairMeanings?.childCoreNeeds,
+      legacySections: [filialRewardSec, prescriptionSec].filter((s): s is FamilyReportSection => s != null),
+    },
+  ];
 
   return {
     kind: "family",
     opening: buildOpening(report),
-    sections,
+    snapshot: snapshotSec as Extract<FamilyReportSection, { type: "snapshot" }> | null,
+    relationshipIndex: relationshipIndexSec as Extract<FamilyReportSection, { type: "relationship_index" }> | null,
+    psychRadar: psychRadarSec as Extract<FamilyReportSection, { type: "psych_radar" }> | null,
+    editorialChapters,
+    storyPlan,
+    sections: legacySectionsList,
     raw: { report },
   };
 }
+

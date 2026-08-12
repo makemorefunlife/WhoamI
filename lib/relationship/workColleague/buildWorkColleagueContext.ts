@@ -21,6 +21,15 @@ import {
   type TenGodComplementResult,
 } from "./tenGodComplement";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type { ChartContext } from "@/lib/saju/chartContext";
+import type {
+  CanonicalPairSajuFacts,
+  CanonicalPersonalSajuFacts,
+} from "@/lib/saju/pairChartAnalysis";
+import {
+  extractCanonicalPairFacts,
+  extractCanonicalPersonalFacts,
+} from "@/lib/saju/pairChartAnalysis";
 
 export type WorkColleagueContext = {
   nicknameA: string;
@@ -51,6 +60,11 @@ export type WorkColleagueContext = {
   workSignalsB?: WorkSajuSignals;
   /** Shared Pair CE → Work lens (packets only; no fact recalc). */
   pairLens: DomainPairLensOutput;
+  canonicalPersonalA: CanonicalPersonalSajuFacts;
+  canonicalPersonalB: CanonicalPersonalSajuFacts;
+  canonicalPairFacts: CanonicalPairSajuFacts;
+  chartA: ChartContext;
+  chartB: ChartContext;
 };
 
 /** 동료 전용 컨텍스트 — 연인 rule context·일지 친밀 점수 미사용 */
@@ -121,5 +135,10 @@ export function buildWorkColleagueContext(params: {
         birthTimeUnknownB: params.birthTimeUnknownB,
       },
     ),
+    canonicalPersonalA: extractCanonicalPersonalFacts(core.chartA),
+    canonicalPersonalB: extractCanonicalPersonalFacts(core.chartB),
+    canonicalPairFacts: extractCanonicalPairFacts(core.chartA, core.chartB),
+    chartA: core.chartA,
+    chartB: core.chartB,
   };
 }

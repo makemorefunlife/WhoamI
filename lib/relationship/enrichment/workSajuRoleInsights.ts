@@ -22,11 +22,7 @@ const ELEMENT_GENERATES: Record<Element, Element> = {
   water: "wood",
 };
 
-function dominantElement(chart: ChartContext): Element {
-  const counts = countElements(chart);
-  const sorted = (Object.entries(counts) as [Element, number][]).sort((a, b) => b[1] - a[1]);
-  return sorted[0]?.[0] ?? "earth";
-}
+import { extractCanonicalPersonalFacts } from "@/lib/saju/pairChartAnalysis";
 
 /**
  * 항목 1 — 상대 때문에 지치는 부분 (설기 hasElementMutualComplement + 충
@@ -49,8 +45,8 @@ export function buildEnergyDrainLine(params: {
 
   let core: string | null = null;
   if (sig.hasElementMutualComplement) {
-    const elA = dominantElement(chartA);
-    const elB = dominantElement(chartB);
+    const elA = extractCanonicalPersonalFacts(chartA).dominantElement;
+    const elB = extractCanonicalPersonalFacts(chartB).dominantElement;
     const aDrains = ELEMENT_GENERATES[elA] === elB;
     const bDrains = ELEMENT_GENERATES[elB] === elA;
     const drainedName = aDrains ? nameA : bDrains ? nameB : null;

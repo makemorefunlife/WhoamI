@@ -1,4 +1,4 @@
-import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
+﻿import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 
 import { resolvePersonalityLabel } from "@/lib/relationship/romanticEverydayText";
 
@@ -43,6 +43,15 @@ import { LEGACY_FALLBACK_LOCALE } from "./friendCopy";
 import type { FriendshipSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import { buildDomainPairLensFromCharts } from "@/lib/personCore/pairContextEngine";
 import type { DomainPairLensOutput } from "@/lib/personCore/pairContextEngine";
+import type { ChartContext } from "@/lib/saju/chartContext";
+import type {
+  CanonicalPairSajuFacts,
+  CanonicalPersonalSajuFacts,
+} from "@/lib/saju/pairChartAnalysis";
+import {
+  extractCanonicalPairFacts,
+  extractCanonicalPersonalFacts,
+} from "@/lib/saju/pairChartAnalysis";
 
 
 
@@ -87,7 +96,11 @@ export type FriendRuleContext = {
   locale: Locale;
 
   pairLens: DomainPairLensOutput;
-
+  canonicalPersonalA: CanonicalPersonalSajuFacts;
+  canonicalPersonalB: CanonicalPersonalSajuFacts;
+  canonicalPairFacts: CanonicalPairSajuFacts;
+  chartA: ChartContext;
+  chartB: ChartContext;
 };
 
 
@@ -182,6 +195,10 @@ export function buildFriendRuleContext(
 
   });
 
+  
+  const canonicalPersonalA = extractCanonicalPersonalFacts(core.chartA);
+  const canonicalPersonalB = extractCanonicalPersonalFacts(core.chartB);
+  const canonicalPairFacts = extractCanonicalPairFacts(core.chartA, core.chartB);
 
 
   return {
@@ -228,8 +245,15 @@ export function buildFriendRuleContext(
       birthTimeUnknownA: params.birthTimeUnknownA,
       birthTimeUnknownB: params.birthTimeUnknownB,
     }),
+    
+    canonicalPersonalA,
+    canonicalPersonalB,
+    canonicalPairFacts,
+    chartA: core.chartA,
+    chartB: core.chartB,
 
   };
+
 
 }
 

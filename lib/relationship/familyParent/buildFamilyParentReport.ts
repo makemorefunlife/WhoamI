@@ -52,6 +52,8 @@ import {
   buildFamilyContextOutput,
   type FamilyContextOutput,
 } from "./familyContextOutput";
+import { buildCanonicalFamilyStoryPlan } from "./buildCanonicalFamilyStoryPlan";
+import type { CanonicalFamilyStoryPlan } from "./familyStoryPlanTypes";
 
 export type FamilyParentReportBody = {
   headline: string;
@@ -96,6 +98,7 @@ export type FamilyParentReportBody = {
    */
   canonical_projections?: {
     comparison_table?: FamilyComparisonTableValue;
+    story_plan?: CanonicalFamilyStoryPlan;
   };
 };
 
@@ -377,6 +380,8 @@ export function buildFamilyParentReport(params: {
       parent_nickname: ctx.parentNickname,
       nickname_a: ctx.nicknameA,
       nickname_b: ctx.nicknameB,
+      psych_master_a: params.psychMasterA ?? null,
+      psych_master_b: params.psychMasterB ?? null,
       ...(personCoreMeta ? { person_core: personCoreMeta } : {}),
       ...(psychBundle
         ? {
@@ -390,6 +395,9 @@ export function buildFamilyParentReport(params: {
       personCoreMeta: params.personCoreMeta,
       psychChild,
     }),
+    canonical_projections: {
+      story_plan: buildCanonicalFamilyStoryPlan(ctx, family, psychParent, psychChild),
+    },
   };
 
   reportBody = injectFamilyComparisonTableClientProjection(

@@ -10,7 +10,7 @@ import {
   runPairContextEngine,
 } from "../../../personCore/pairContextEngine";
 import { buildChartContext } from "../../../saju/chartContext";
-import { sajuJsonToPillars, analyzeCrossChartRelations, analyzeCrossChartStemCombines, analyzeCrossChartTrioCombines, analyzePairSaju } from "../../../saju/pairChartAnalysis";
+import { sajuJsonToPillars, analyzeCrossChartRelations, analyzeCrossChartStemCombines, analyzeCrossChartTrioCombines, analyzePairSaju, extractCanonicalPersonalFacts, extractCanonicalPairFacts } from "@/lib/saju/pairChartAnalysis";
 import { analyzeCrossChartWonjinGuimun, analyzeCrossChartGongmang } from "../../../saju/workPairRiskSignals";
 import { resolveCrossChartTension } from "../../romanticRules/relationshipDynamics";
 import {
@@ -40,6 +40,7 @@ import {
 import { buildRomanticNarrativeInputContract } from "./fourCeNarrativeInput";
 import { buildRomanticFortuneFlow } from "../../romanticRules/fortuneFlow";
 import { buildPersonalRelationshipCe } from "./personalRelationshipCe";
+import { buildPsychMatchResult } from "@/lib/relationship/psychMatch";
 import type { RomanticSajuDeepReport } from "../../../prompts/relationshipPremium/romanticSajuDeep/outputSchema";
 import {
   pairSajuProvenance,
@@ -205,16 +206,16 @@ export function buildActualFourCeContract(
     ),
   );
 
-  // Consolidation Batch C: cross-chart canonical projections computed directly
-  // from chartA/chartB (the same charts already built above), not read from a
-  // static V2 fixture. Mirrors the exact pattern already proven in
-  // tests/unit/romantic-v4-consolidation-cross-chart.test.mjs.
   const crossChartBranchHits = analyzeCrossChartRelations(chartA, chartB);
   const stemHits = analyzeCrossChartStemCombines(chartA, chartB);
   const trioHits = analyzeCrossChartTrioCombines(chartA, chartB);
   const wonjinGuimunHits = analyzeCrossChartWonjinGuimun(chartA, chartB);
   const gongmangHits = analyzeCrossChartGongmang(chartA, chartB);
   const tensionResult = resolveCrossChartTension(crossChartBranchHits);
+
+  const canonicalPersonalA = extractCanonicalPersonalFacts(chartA);
+  const canonicalPersonalB = extractCanonicalPersonalFacts(chartB);
+  const canonicalPairFacts = extractCanonicalPairFacts(chartA, chartB);
 
   const canonicalProjections: Record<string, unknown> = { pair_ce_bonding: pairCeBondingValue };
   const stemCombineValue = buildRomanticStemCombineCanonical(
@@ -265,8 +266,13 @@ export function buildActualFourCeContract(
 
   const pairSajuAnalysis = analyzePairSaju(sajuA, sajuB, { chartA, chartB });
 
+  const psychMatch = surveyInput?.profileA && surveyInput?.profileB
+    ? buildPsychMatchResult({ profileA: surveyInput.profileA, profileB: surveyInput.profileB })
+    : undefined;
+
   const reportWithPair: CanonicalOnlyReport = {
     canonical_projections: canonicalProjections,
+    meta: psychMatch ? { psych_match: psychMatch } : undefined,
   };
   const contract = buildRomanticNarrativeInputContract({
     report: reportWithPair as RomanticSajuDeepReport["report"],
@@ -305,5 +311,8 @@ export function buildActualFourCeContract(
     /** Gold Logic pair-dynamics projections (balance/recovery/expression_speed/reassurance/residual/role_play) + their survey evidence status. */
     pairDynamics,
     pairSajuAnalysis,
+    canonicalPersonalA,
+    canonicalPersonalB,
+    canonicalPairFacts,
   };
 }

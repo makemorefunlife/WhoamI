@@ -55,17 +55,7 @@ function stubbornBand(
 
 const NOBLE_STAR_NAMES = ["문창귀인", "장성살", "천을귀인", "학당귀인"] as const;
 
-/** extractFriendshipSignals.ts/extractRomanticSignals.ts와 동일한 정의 — 오행 우세 판정. */
-function dominantElement(
-  el: JohuClimateSnapshot["element_counts"],
-): WorkSajuSignals["johu_profile"]["dominant_element"] {
-  const entries = Object.entries(el) as [
-    WorkSajuSignals["johu_profile"]["dominant_element"],
-    number,
-  ][];
-  entries.sort((a, b) => b[1] - a[1]);
-  return entries[0]?.[0] ?? "earth";
-}
+import { extractCanonicalPersonalFacts } from "@/lib/saju/pairChartAnalysis";
 
 export function extractWorkSignals(
   bundle: SajuBundle,
@@ -130,7 +120,7 @@ export function extractWorkSignals(
       heat_score: johuClimate.heat_score,
       moisture_score: johuClimate.moisture_score,
       temperature_band: johuClimate.temperature_band,
-      dominant_element: dominantElement(johuClimate.element_counts),
+      dominant_element: extractCanonicalPersonalFacts(chart).dominantElement,
     },
   };
 }

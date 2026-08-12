@@ -265,4 +265,86 @@ export type CanonicalRelationshipStoryPlan = {
   };
   connectedEvidenceIds: string[];
   suppressedEvidence: Array<{ evidenceId: string; reason: string }>;
+  conflictLoopP0?: RomanticConflictLoop;
+  repairPatternP0?: RomanticRepairPattern;
+  actionCandidatesP0?: RomanticActionCandidate[];
+  synthesisResultsP1?: RomanticSynthesisResult[];
+  insightCandidatesP1?: RomanticInsightCandidate[];
+  normalizedActionCandidatesP1?: RomanticActionCandidate[];
+  growthTransitionP1?: RomanticGrowthTransition;
+};
+
+export type RomanticGrowthTransition = {
+  currentPattern: string;
+  recommendedShift: string;
+  longTermGoal: string;
+  evidenceIds: string[];
+  confidence: "high" | "medium";
+};
+
+export type RomanticInsightCandidate = {
+  id: string;
+  topic: string;
+  perspective: "self" | "partner" | "couple";
+  meaningId: string;
+  evidenceIds: string[];
+  reinforcementEvidenceIds?: string[];
+  primarySemanticOwner: string;
+  confidence: "high" | "medium" | "low";
+  priority: number;
+  currentCopy?: string;
+  recommendedActionIds?: string[];
+  isSuppressed?: boolean;
+  suppressionReason?: string;
+};
+
+export type RomanticInnateVsCurrentCategory =
+  | "ALIGNED"
+  | "CURRENTLY_EXPRESSED"
+  | "CURRENTLY_SUPPRESSED"
+  | "CONTEXT_SHIFT"
+  | "INNER_OUTER_GAP"
+  | "RELATIONSHIP_ACTIVATED";
+
+export type RomanticSynthesisResult = {
+  id: string;
+  sourceClaimIds: string[];
+  evidenceIds: string[];
+  topic: string;
+  perspective: "self" | "partner" | "couple";
+  canonicalMeaningId: string;
+  interactionCategory?: RomanticInnateVsCurrentCategory;
+  confidence: "high" | "medium";
+  narrative?: string;
+};
+
+export type RomanticConflictLoop = {
+  triggerEvidenceIds: string[];
+  trigger?: string;
+  selfResponse?: string;
+  partnerResponse?: string;
+  escalationMechanism?: string;
+  breakPattern?: string;
+  confidence: "high" | "medium" | "low";
+};
+
+export type RomanticRepairPattern = {
+  coolingNeed: "none" | "short" | "moderate" | "extended";
+  initiatorRole: "self" | "partner" | "either" | "unclear";
+  effectiveRepairStyle?: string;
+  ineffectiveRepairStyle?: string;
+  reconnectionAction?: string;
+  evidenceIds: string[];
+  confidence: "high" | "medium" | "low";
+};
+
+export type RomanticActionCandidate = {
+  id: string;
+  perspective: "self" | "partner" | "couple";
+  actionType: "SOS" | "REPAIR" | "ROUTINE" | "BOUNDARY";
+  evidenceIds: string[];
+  targetTopic: string;
+  priority: number;
+  copy: string;
+  confidence: "high" | "medium";
 };

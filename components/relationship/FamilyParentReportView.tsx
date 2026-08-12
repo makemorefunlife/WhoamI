@@ -76,9 +76,13 @@ export default function FamilyParentReportView({
     () => buildFamilyReportViewModel(report, { locale }),
     [report, locale],
   );
-  if (partRendererViewModel.sections.length > 0) {
+  if (
+    partRendererViewModel.editorialChapters.length > 0 ||
+    partRendererViewModel.sections.length > 0
+  ) {
     return <FamilyReportViewModelView vm={partRendererViewModel} />;
   }
+
 
   return (
     <RelationshipReportLayout

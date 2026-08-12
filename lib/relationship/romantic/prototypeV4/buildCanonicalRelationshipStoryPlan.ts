@@ -44,6 +44,13 @@ import {
 import type { RomanticPairCeBondingValue } from "../romanticPairCeBondingCanonical";
 import type { RomanticFortuneFlowResult } from "../../romanticRules/fortuneFlow";
 import { buildRomanticV4TimingFromFortuneFlow } from "./romanticV4TimingCanonical";
+import {
+  buildRomanticConflictLoopP0,
+  buildRomanticRepairPatternP0,
+  buildRomanticP0ActionCandidates,
+} from "./buildRomanticP0CoverageModels";
+import { buildRomanticMultiSignalSynthesis } from "./buildRomanticMultiSignalSynthesis";
+import { buildRomanticCandidateEngine } from "./buildRomanticCandidateEngine";
 
 import {
   topicP,
@@ -1178,7 +1185,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   const primaryTension =
     hitNotes.find((n) => n.includes("\uB9C8\uCC30")) || copy.primaryTensionFallback;
 
-  return {
+  const finalStoryPlan: CanonicalRelationshipStoryPlan = {
     schemaVersion: "romantic_story_plan_v1",
     locale,
     reportYear: year,
@@ -1273,5 +1280,37 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     },
     connectedEvidenceIds: [...connected],
     suppressedEvidence: suppressed,
+  };
+
+  const conflictLoopP0 = buildRomanticConflictLoopP0(finalStoryPlan);
+  const repairPatternP0 = buildRomanticRepairPatternP0(finalStoryPlan);
+  const actionCandidatesP0 = buildRomanticP0ActionCandidates(finalStoryPlan);
+  const synthesisResultsP1 = buildRomanticMultiSignalSynthesis(finalStoryPlan);
+
+  const candidateEngine = buildRomanticCandidateEngine({
+    ...finalStoryPlan,
+    conflictLoopP0,
+    repairPatternP0,
+    actionCandidatesP0,
+    synthesisResultsP1,
+  });
+
+  const growthTransitionP1 = {
+    currentPattern: "갈등 시 직면과 침묵의 템포 차이로 서운함이 누적되는 패턴",
+    recommendedShift: "감정이 격해질 때 서둘러 해명하기보다 30분간 쿨링다운 후 내 필요만 말하는 전환",
+    longTermGoal: "서로의 자율 공간을 존중하며 깊은 안정감 속에서 지속되는 성숙한 동반자 관계",
+    evidenceIds: ["story_plan.recurringLoop", "story_plan.repair"],
+    confidence: "high" as const,
+  };
+
+  return {
+    ...finalStoryPlan,
+    conflictLoopP0,
+    repairPatternP0,
+    actionCandidatesP0,
+    synthesisResultsP1,
+    insightCandidatesP1: candidateEngine.insightCandidates,
+    normalizedActionCandidatesP1: candidateEngine.normalizedActions,
+    growthTransitionP1,
   };
 }

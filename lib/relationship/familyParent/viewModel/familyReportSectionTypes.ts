@@ -187,9 +187,65 @@ export type FamilyReportSection =
   | DeEscalationSection
   | PrescriptionSection;
 
+import type {
+  CanonicalFamilyPairMeanings,
+  CanonicalFamilyStoryPlan,
+  FamilyClaim,
+  FamilyInsightCandidate,
+  FamilyActionCandidate,
+  FamilySynthesisResult,
+  FamilyConflictLoopModel,
+  FamilyRepairPatternModel,
+  FamilyGrowthTransitionModel,
+} from "@/lib/relationship/familyParent/familyStoryPlanTypes";
+
+export type FamilyEditorialChapterId =
+  | "ch_core"
+  | "ch_roles"
+  | "ch_comm"
+  | "ch_conflict"
+  | "ch_growth"
+  | "ch_repair"
+  | "ch_deep"
+  | "ch_action";
+
+export type FamilyEditorialChapterViewModel = {
+  id: FamilyEditorialChapterId;
+  number: string;
+  title: string;
+  subtitle: string;
+  summary?: string;
+  claims: FamilyClaim[];
+  insights: FamilyInsightCandidate[];
+  actions: FamilyActionCandidate[];
+  synthesis: FamilySynthesisResult[];
+  conflictLoop?: FamilyConflictLoopModel | null;
+  repairPattern?: FamilyRepairPatternModel | null;
+  growthTransition?: FamilyGrowthTransitionModel | null;
+  
+  /** 4 Core Pair Meanings UI Bindings */
+  dependencyProtection?: CanonicalFamilyPairMeanings["dependencyProtection"];
+  loveExpressionVsReception?: CanonicalFamilyPairMeanings["loveExpressionVsReception"];
+  expectationVsPressure?: CanonicalFamilyPairMeanings["expectationVsPressure"];
+  childCoreNeeds?: CanonicalFamilyPairMeanings["childCoreNeeds"];
+
+  /** Reusable legacy section contents attached to this chapter ownership */
+  legacySections: FamilyReportSection[];
+};
+
 export type FamilyReportViewModel = {
   kind: "family";
   opening: OpeningBlock;
+  /** High-level overview cards & 11-axis snapshot */
+  snapshot?: SnapshotSection | null;
+  relationshipIndex?: RelationshipIndexSection | null;
+  psychRadar?: PsychRadarSection | null;
+  /** Editorial 8 chapters driven by canonical_projections.story_plan */
+  editorialChapters: FamilyEditorialChapterViewModel[];
+  /** StoryPlan SSOT payload reference */
+  storyPlan?: CanonicalFamilyStoryPlan | null;
+  /** Fallback: Legacy flat sections list for backwards compatibility */
   sections: FamilyReportSection[];
   raw: { report: FamilyParentReportBody };
 };
+

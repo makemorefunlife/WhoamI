@@ -49,6 +49,8 @@ import {
   type WorkContextOutput,
 } from "./workContextOutput";
 import type { SnapshotTopicNarrative } from "@/lib/relationship/romanticSnapshot/buildSnapshotNarrative";
+import { buildCanonicalWorkStoryPlan } from "./buildCanonicalWorkStoryPlan";
+import type { CanonicalWorkStoryPlan } from "./workStoryPlanTypes";
 
 export type WorkColleagueReportBody = {
   headline: string;
@@ -95,6 +97,7 @@ export type WorkColleagueReportBody = {
     comparison_table?: WorkComparisonTableValue;
     leadership_split?: WorkLeadershipClientValue;
   };
+  story_plan?: CanonicalWorkStoryPlan;
 };
 
 /**
@@ -310,6 +313,14 @@ export function buildWorkColleagueReport(params: {
     },
     context_output: buildWorkContextOutput(ctx, office, {
       personCoreMeta: params.personCoreMeta,
+    }),
+    story_plan: buildCanonicalWorkStoryPlan({
+      nameA: ctx.nicknameA,
+      nameB: ctx.nicknameB,
+      oneLineDefinition: office.section_snapshot.one_line_definition,
+      officeReport: office,
+      prescriptions: prescription_work,
+      locale: params.locale ?? "ko-KR",
     }),
   };
 

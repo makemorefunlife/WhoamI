@@ -7,6 +7,25 @@ export function sanitizeFamilyParentText(text: string): string {
   return text.replace(SAJU_JARGON_RE, "").replace(/\s{2,}/g, " ").trim();
 }
 
+export function formatJosa(name: string, type: "은는" | "이가" | "을를" | "과의"): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+  const lastChar = trimmed.charCodeAt(trimmed.length - 1);
+  if (lastChar < 0xac00 || lastChar > 0xd7a3) {
+    if (type === "은는") return `${trimmed}는`;
+    if (type === "이가") return `${trimmed}가`;
+    if (type === "을를") return `${trimmed}를`;
+    if (type === "과의") return `${trimmed}와`;
+    return trimmed;
+  }
+  const hasJongsung = (lastChar - 0xac00) % 28 !== 0;
+  if (type === "은는") return hasJongsung ? `${trimmed}은` : `${trimmed}는`;
+  if (type === "이가") return hasJongsung ? `${trimmed}이가` : `${trimmed}가`;
+  if (type === "을를") return hasJongsung ? `${trimmed}을` : `${trimmed}를`;
+  if (type === "과의") return hasJongsung ? `${trimmed}과` : `${trimmed}와`;
+  return trimmed;
+}
+
 /** 엄마-자녀 전용 서술 렌즈 */
 export function buildMotherParentLens(params: {
   childNickname: string;
