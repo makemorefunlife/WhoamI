@@ -51,6 +51,7 @@ import {
 } from "./buildRomanticP0CoverageModels";
 import { buildRomanticMultiSignalSynthesis } from "./buildRomanticMultiSignalSynthesis";
 import { buildRomanticCandidateEngine } from "./buildRomanticCandidateEngine";
+import { computeRomanticRelationshipNeedsEngine } from "./romanticRelationshipNeedsEngine";
 
 import {
   topicP,
@@ -1303,8 +1304,40 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     confidence: "high" as const,
   };
 
+  const pairNeedsDetailed = computeRomanticRelationshipNeedsEngine({
+    nicknameA: names.a,
+    nicknameB: names.b,
+    countsA: {},
+    countsB: {},
+    psychA: inputContract.meta.psych_master_a ?? null,
+    psychB: inputContract.meta.psych_master_b ?? null,
+  });
+
+  const pairMeanings = {
+    dependencyProtection: {
+      provider: `${names.a}님의 정서적 포용과 ${names.b}님의 안정적인 지지`,
+      reliance: "독립된 공간을 존중하면서도 필요할 때 기댈 수 있는 호환 수용 구도",
+      roleReversalRisk: false,
+      summary: `${names.a}님과 ${names.b}님이 서로의 독립성을 존중하면서 정서적 안전지대를 제공하는 조화로운 구도`,
+    },
+    loveExpressionVsReception: {
+      expressesA: `${names.a}님의 신뢰 기반 다정한 관심`,
+      receivesB: `${names.b}님의 존중 중심 수용 톤`,
+      alignment: "matched" as const,
+      summary: `${names.a}님과 ${names.b}님의 사랑 표현 톤이 왜곡 없이 잘 전달되는 매칭 상태`,
+    },
+    expectationVsPressure: {
+      expectationA: `${names.a}님의 유연하고 성숙한 가치관`,
+      pressureB: `${names.b}님이 부담 없이 자극을 흡수하는 상태`,
+      gapLevel: "low" as const,
+      summary: `${names.a}님의 기대가 ${names.b}님에게 성장의 좋은 동기부여로 작용함`,
+    },
+    pairNeedsDetailed,
+  };
+
   return {
     ...finalStoryPlan,
+    pairMeanings,
     conflictLoopP0,
     repairPatternP0,
     actionCandidatesP0,

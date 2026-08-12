@@ -173,6 +173,29 @@ export type HiddenHeartBits = {
 };
 
 import type { PersonalRelationshipCe } from "./personalRelationshipCe";
+import type { RomanticPairNeedsOutput } from "./romanticRelationshipNeedsEngine";
+
+export type CanonicalRomanticPairMeanings = {
+  dependencyProtection?: {
+    provider: string;
+    reliance: string;
+    roleReversalRisk: boolean;
+    summary: string;
+  };
+  loveExpressionVsReception?: {
+    expressesA: string;
+    receivesB: string;
+    alignment: "matched" | "misaligned" | "partially_matched";
+    summary: string;
+  };
+  expectationVsPressure?: {
+    expectationA: string;
+    pressureB: string;
+    gapLevel: "high" | "moderate" | "low";
+    summary: string;
+  };
+  pairNeedsDetailed?: RomanticPairNeedsOutput;
+};
 
 export type CanonicalRelationshipStoryPlan = {
   schemaVersion: "romantic_story_plan_v1";
@@ -184,6 +207,9 @@ export type CanonicalRelationshipStoryPlan = {
   relationshipDefinition: string;
   bondMode: string;
   growthOrStability: string;
+
+  /** Extended Romantic Pair-Level Core Meanings & Need x Supply x Gap Engine */
+  pairMeanings?: CanonicalRomanticPairMeanings;
   primaryTension: string;
   specialCodePreview: string;
   faces: StoryFace[];
