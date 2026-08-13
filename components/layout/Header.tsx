@@ -5,11 +5,14 @@ import { UserButton, SignInButton } from "@clerk/nextjs";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
 import Logo from "@/components/brand/Logo";
 import SideMenu from "./SideMenu";
+import { ROUTES } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function Header() {
   const [sideOpen, setSideOpen] = useState(false);
   const [chromeVisible, setChromeVisible] = useState(true);
   const { isSignedIn, isLoaded, clerkUnavailable } = useClerkReady();
+  const { href } = useLocale();
   const hideTimerRef = useRef<number | null>(null);
 
   const clearHideTimer = useCallback(() => {
@@ -149,7 +152,7 @@ export default function Header() {
               로그인
             </button>
           ) : (
-            <SignInButton mode="modal" forceRedirectUrl="/">
+            <SignInButton mode="modal" forceRedirectUrl={href(ROUTES.home)}>
               <button
                 type="button"
                 className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white/90 ring-2 ring-white/15 transition hover:bg-white/[0.08]"

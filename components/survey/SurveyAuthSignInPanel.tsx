@@ -1,15 +1,19 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
+import { ROUTES } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /** Survey completion gate — stay on survey after login */
 export default function SurveyAuthSignInPanel() {
+  const { href } = useLocale();
+
   return (
     <SignIn
       routing="hash"
-      signUpUrl="/sign-up"
-      fallbackRedirectUrl="/survey-v2"
-      forceRedirectUrl="/survey-v2"
+      signUpUrl={href(ROUTES.signUp)}
+      fallbackRedirectUrl={href(ROUTES.surveyV2)}
+      forceRedirectUrl={href(ROUTES.surveyV2)}
       appearance={{
         variables: {
           colorPrimary: "#4a90e2",

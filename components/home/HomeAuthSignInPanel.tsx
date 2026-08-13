@@ -1,14 +1,18 @@
 "use client";
 
 import { SignIn } from "@clerk/nextjs";
+import { ROUTES } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /** 홈 로그인 모달 전용 — dynamic import 대상 (초기 번들 분리) */
 export default function HomeAuthSignInPanel() {
+  const { href } = useLocale();
+
   return (
     <SignIn
       routing="hash"
-      signUpUrl="/sign-up"
-      fallbackRedirectUrl="/"
+      signUpUrl={href(ROUTES.signUp)}
+      fallbackRedirectUrl={href(ROUTES.home)}
       appearance={{
         variables: {
           colorPrimary: "#4a90e2",
