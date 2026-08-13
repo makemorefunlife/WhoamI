@@ -4,6 +4,7 @@ import type {
   TriScoreSnapshotPanel,
 } from "@/lib/relationship/triScoreSnapshot/types";
 import { PRIMARY_AXIS_LABELS, PRIMARY_AXIS_EN_LABELS } from "@/lib/v2/framework/axisLabels";
+import { PRIMARY_TO_SECONDARY_AXIS_KEYS } from "@/lib/v2/framework/primarySecondaryAxisMap";
 import type { PrimaryAxisKey, SecondaryAxisKey } from "@/lib/v2/survey/types";
 import type { PsychMasterJson } from "../types/psychMaster";
 import type { SnapshotAxisBar } from "@/lib/relationship/triScoreSnapshot/types";
@@ -43,14 +44,16 @@ export function mapPsychMasterToSnapshotAxes(
   locale: Locale = "ko-KR",
 ): SnapshotAxisBar[] {
   const s = psych.secondary_axes;
-  const derived: Record<(typeof SNAPSHOT_PRIMARY_KEYS)[number], number> = {
-    connection: avg(s.empathy, s.energy_style),
-    stability: avg(s.self_control, s.practicality),
-    growth: avg(s.stimulation, s.resilience),
-    structure: avg(s.structure, s.thinking_style, s.decision_style),
-    adaptability: avg(s.conflict_style, s.recognition),
-    autonomy: 50,
-  };
+  // Secondary→Primary associations are the shared SSOT in
+  // lib/v2/framework/primarySecondaryAxisMap.ts — keep this a pure lookup,
+  // not a place to redefine which secondary axes feed which primary axis.
+  const derived = Object.fromEntries(
+    SNAPSHOT_PRIMARY_KEYS.map((key) => {
+      const secondaryKeys = PRIMARY_TO_SECONDARY_AXIS_KEYS[key];
+      const value = secondaryKeys ? avg(...secondaryKeys.map((sk) => s[sk])) : 50;
+      return [key, value];
+    }),
+  ) as Record<(typeof SNAPSHOT_PRIMARY_KEYS)[number], number>;
   const labels = locale === "en-US" ? PRIMARY_AXIS_EN_LABELS : PRIMARY_AXIS_LABELS;
 
   return SNAPSHOT_PRIMARY_KEYS.map((key) => ({
