@@ -1,5 +1,6 @@
 import type { DeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
+import type { Part01IdentityEvidencePacket } from "@/lib/v1/slim/part01IdentityEvidence";
 
 export type SlimV1ReportResult = {
   source: "v1/slim-integrated";
@@ -17,6 +18,11 @@ export type SlimV1ReportResult = {
   structured_source: "llm" | "fallback";
   /** 레이더 차트 "현재 상태" — 설문 채점 결과, LLM을 거치지 않은 결정론적 값 */
   radar_current: PrimaryAxesScores | null;
+  /**
+   * Batch 2 — Part 01 Identity Lens 결과. 아직 어떤 prompt/UI도 소비하지
+   * 않는다(additive only). CE 배선 실패 시 null.
+   */
+  part01_identity_evidence?: Part01IdentityEvidencePacket | null;
   inputs_preview: {
     survey_chars: number;
     essence_chars: number;

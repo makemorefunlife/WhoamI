@@ -13,9 +13,23 @@ import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
 
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 
+import { calculateEssenceSelfLite } from "@/lib/v2/saju/essenceLite";
+
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 
+import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
+
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
+
+import {
+
+  buildPart01IdentityEvidencePacketFromBundle,
+
+  type Part01IdentityEvidencePacket,
+
+} from "@/lib/v1/slim/part01IdentityEvidence";
+
+import { logServerError } from "@/lib/security/safeLog";
 
 import type {
 
@@ -46,6 +60,9 @@ export type SlimIntegratedRunInput = {
   currentSelfProfile?: CurrentSelfProfile | null;
 
   locale?: Locale | string;
+
+  /** Optional — used only to build Part01IdentityEvidencePacket provenance. */
+  reportId?: string;
 
 };
 
@@ -108,6 +125,32 @@ export async function runSlimIntegratedReport(
     input.currentSelfProfile ??
 
     (input.surveyAnswers ? scoreSurveyAnswers(input.surveyAnswers) : null);
+
+
+
+  // Batch 2 — additive only: builds Part01IdentityEvidencePacket for future
+  // Identity Lens consumption. Not read by any prompt/UI yet; a failure here
+  // must never break the existing report pipeline below.
+  let part01IdentityEvidence: Part01IdentityEvidencePacket | null = null;
+  try {
+    const essenceSelf = calculateEssenceSelfLite({
+      birthDate: input.birthDate,
+      birthTime: input.birthTime,
+      birthTimeUnknown: input.birthTimeUnknown,
+    });
+    part01IdentityEvidence = buildPart01IdentityEvidencePacketFromBundle({
+      reportId: input.reportId ?? "",
+      birthDate: input.birthDate,
+      birthTime: input.birthTime ?? null,
+      birthTimeUnknown: input.birthTimeUnknown === true,
+      bundle,
+      currentPrimary: v2Profile?.primary_axes ?? fallbackAxisScores(),
+      currentSecondary: v2Profile?.secondary_axes ?? buildNeutralV2Profile().secondary_axes,
+      innatePrimary: essenceSelf.primary_axes,
+    });
+  } catch (e) {
+    logServerError("slim/part01_identity_evidence", e, "part01_evidence_failed");
+  }
 
 
 
@@ -202,6 +245,8 @@ export async function runSlimIntegratedReport(
     structured_source: structuredResult.source,
 
     radar_current: v2Profile?.primary_axes ?? null,
+
+    part01_identity_evidence: part01IdentityEvidence,
 
     inputs_preview: {
 
