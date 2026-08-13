@@ -27,7 +27,7 @@ export default function AccountProfilePage() {
   }
 
   if (!isSignedIn) {
-    return <RedirectToSignIn redirectUrl={ROUTES.accountProfile} />;
+    return <RedirectToSignIn redirectUrl={href(ROUTES.accountProfile)} />;
   }
 
   async function handleDeleteAccount() {

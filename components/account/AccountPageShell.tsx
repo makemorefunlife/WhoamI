@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { ROUTES } from "@/constants/routes";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
@@ -36,7 +36,7 @@ export default function AccountPageShell({
         </header>
 
         <nav className="mb-8 flex flex-wrap gap-2">
-          <Link
+          <LocaleLink
             href={ROUTES.accountProfile}
             className={
               activeTab === "profile"
@@ -45,8 +45,8 @@ export default function AccountPageShell({
             }
           >
             {messages.account.profileLabel}
-          </Link>
-          <Link
+          </LocaleLink>
+          <LocaleLink
             href={ROUTES.accountBilling}
             className={
               activeTab === "billing"
@@ -55,7 +55,7 @@ export default function AccountPageShell({
             }
           >
             {messages.account.billingLabel}
-          </Link>
+          </LocaleLink>
         </nav>
 
         <div className="space-y-8">{children}</div>

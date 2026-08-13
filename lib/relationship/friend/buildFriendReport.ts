@@ -59,6 +59,8 @@ import type { FriendTreasurerClientValue } from "./friendTreasurerCanonical";
 import { buildFriendShineInsight } from "@/lib/relationship/enrichment/friendShineInsight";
 import { buildCanonicalFriendStoryPlan } from "./buildCanonicalFriendStoryPlan";
 import type { CanonicalFriendStoryPlan } from "./friendStoryPlanTypes";
+import { buildFriendCanonicalEngine } from "./canonical/buildFriendCanonicalEngine";
+import { buildFriendStoryPlanEngine } from "./storyPlan/buildFriendStoryPlanEngine";
 
 export type FriendReportBody = {
   headline: string;
@@ -357,6 +359,17 @@ export function buildFriendReport(params: {
     treasurerTyped,
   );
 
+  const canonicalBundle = buildFriendCanonicalEngine({
+    ctx,
+    psychMasterA: params.psychMasterA,
+    psychMasterB: params.psychMasterB,
+    locale,
+  });
+  const canonicalStoryPlan = buildFriendStoryPlanEngine({
+    bundle: canonicalBundle,
+    locale,
+  });
+
   let reportBody: FriendReportBody = {
     headline: oneLineFriendship,
     summary_line: `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
@@ -380,6 +393,8 @@ export function buildFriendReport(params: {
           }
         : {}),
       ...(prescription_friendship ? { prescription_friendship } : {}),
+      canonical_bundle: canonicalBundle,
+      canonical_story_plan: canonicalStoryPlan,
     },
     context_output: buildFriendContextOutput(ctx, friend, {
       personCoreMeta: params.personCoreMeta,

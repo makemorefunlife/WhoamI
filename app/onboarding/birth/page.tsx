@@ -28,7 +28,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function BirthOnboardingContent() {
   const router = useRouter();
-  const { messages } = useLocale();
+  const { messages, href: localize } = useLocale();
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
   const wantReset = searchParams.get("reset") === "1";
@@ -47,7 +47,7 @@ function BirthOnboardingContent() {
     async function boot() {
       const id = reportIdParam || localStorage.getItem("reportId")?.trim() || "";
       if (!id && !reportIdParam) {
-        router.replace("/");
+        router.replace(localize("/"));
         return;
       }
 
@@ -57,13 +57,13 @@ function BirthOnboardingContent() {
       );
       const canonicalId = resolved.canonicalReportId;
       if (!canonicalId) {
-        router.replace("/");
+        router.replace(localize("/"));
         return;
       }
 
       if (!hasSurveyV2Session(canonicalId)) {
         router.replace(
-          `/survey-v2?reportId=${encodeURIComponent(canonicalId)}`,
+          localize(`/survey-v2?reportId=${encodeURIComponent(canonicalId)}`),
         );
         return;
       }
@@ -72,7 +72,7 @@ function BirthOnboardingContent() {
         const birth = await ensureBirthSession(canonicalId);
         if (hasMinimalBirth(birth)) {
           router.replace(
-            `/blueprint-preview?reportId=${encodeURIComponent(canonicalId)}`,
+            localize(`/blueprint-preview?reportId=${encodeURIComponent(canonicalId)}`),
           );
           return;
         }
@@ -88,7 +88,7 @@ function BirthOnboardingContent() {
     return () => {
       cancelled = true;
     };
-  }, [reportIdParam, router, wantReset, wantEdit]);
+  }, [reportIdParam, router, wantReset, wantEdit, localize]);
 
   const runReset = useCallback(async (id: string) => {
     setResetBusy(true);
@@ -109,9 +109,11 @@ function BirthOnboardingContent() {
     resetStarted.current = true;
     void (async () => {
       await runReset(reportId);
-      router.replace(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`);
+      router.replace(
+        localize(`/onboarding/birth?reportId=${encodeURIComponent(reportId)}`),
+      );
     })();
-  }, [ready, reportId, wantReset, runReset, router]);
+  }, [ready, reportId, wantReset, runReset, router, localize]);
 
   const handleSubmit = useCallback(
     async (payload: BirthFormSubmitPayload) => {
@@ -160,10 +162,10 @@ function BirthOnboardingContent() {
       }
 
       router.push(
-        `/blueprint-preview?reportId=${encodeURIComponent(reportId)}`,
+        localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`),
       );
     },
-    [busy, messages, reportId, router],
+    [busy, messages, reportId, router, localize],
   );
 
   const existingBirth =

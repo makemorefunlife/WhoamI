@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AccountBirthEditForm, {
@@ -11,6 +10,7 @@ import {
   formatBirthPlace,
   formatBirthTime,
 } from "@/lib/account/formatBirthDisplay";
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useClientReportId } from "@/lib/hooks/useClientReportId";
 import {
@@ -48,7 +48,7 @@ function BirthSummaryRow({
 
 export default function AccountBirthEditor() {
   const router = useRouter();
-  const { locale, messages } = useLocale();
+  const { locale, messages, href: localize } = useLocale();
   const { reportId, ready, recovering } = useClientReportId({
     logContext: "account-profile",
   });
@@ -189,9 +189,9 @@ export default function AccountBirthEditor() {
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
           {messages.account.birthNoReportSubtitle}
         </p>
-        <Link href={ROUTES.home} className="stitch-cta-primary mt-5 inline-flex">
+        <LocaleLink href={ROUTES.home} className="stitch-cta-primary mt-5 inline-flex">
           {messages.account.birthGoHome}
-        </Link>
+        </LocaleLink>
       </section>
     );
   }
@@ -205,12 +205,12 @@ export default function AccountBirthEditor() {
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
           {messages.account.birthNoDateSubtitle}
         </p>
-        <Link
+        <LocaleLink
           href={withReportId(ROUTES.onboardingBirth, reportId)}
           className="stitch-cta-primary mt-5 inline-flex"
         >
           {messages.account.birthEnterInfo}
-        </Link>
+        </LocaleLink>
       </section>
     );
   }
@@ -323,7 +323,7 @@ export default function AccountBirthEditor() {
       <button
         type="button"
         className="stitch-cta-secondary w-full"
-        onClick={() => router.push(blueprintRoute(reportId))}
+        onClick={() => router.push(localize(blueprintRoute(reportId)))}
       >
         {messages.account.birthGoToBlueprintPreview}
       </button>

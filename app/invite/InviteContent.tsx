@@ -2,12 +2,12 @@
 
 import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function InviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const messages = useMessages();
+  const { messages, href: localize } = useLocale();
 
   const token =
     searchParams.get("token") || searchParams.get("invite") || "";
@@ -25,7 +25,7 @@ export default function InviteContent() {
 
     localStorage.setItem("inviteToken", token);
     // Report is created on the home page when a nickname is entered — going straight to the survey has no reportId yet.
-    router.push(`/?token=${encodeURIComponent(token)}`);
+    router.push(localize(`/?token=${encodeURIComponent(token)}`));
   };
 
   return (

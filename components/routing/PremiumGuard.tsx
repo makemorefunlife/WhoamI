@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useAppSession } from "@/lib/routing/useAppSession";
 import { ROUTES } from "@/constants/routes";
 
@@ -37,12 +37,12 @@ export default function PremiumGuard({
           <p className="text-sm text-on-surface-variant">
             프리미엄 기능입니다. 결제 후 이용할 수 있어요.
           </p>
-          <Link
+          <LocaleLink
             href={ROUTES.pricing}
             className="stitch-cta-primary mt-4 inline-block !min-w-0 !px-6 !py-2.5 !text-sm"
           >
             요금제 보기
-          </Link>
+          </LocaleLink>
         </div>
       )
     );

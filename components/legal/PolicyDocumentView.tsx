@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import { getMessages } from "@/lib/i18n/messages";
+import { localizedPath } from "@/lib/i18n/locale";
 
 const EMAIL_SPLIT = /([\w.-]+@[\w.-]+\.\w+)/g;
 const EMAIL_ONLY = /^[\w.-]+@[\w.-]+\.\w+$/;
@@ -37,7 +38,7 @@ export default async function PolicyDocumentView({
       <div className="relative z-[1] mx-auto w-full max-w-3xl px-5 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
         <p className="mb-6">
           <Link
-            href={ROUTES.home}
+            href={localizedPath(ROUTES.home, locale)}
             className="text-sm text-on-surface-variant transition hover:text-primary"
           >
             {messages.legal.backHome}

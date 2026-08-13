@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { RedirectToSignIn, useAuth } from "@clerk/nextjs";
 import AccountPageShell from "@/components/account/AccountPageShell";
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { ROUTES } from "@/constants/routes";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function AccountBillingPage() {
   const { isLoaded, isSignedIn } = useAuth();
-  const messages = useMessages();
+  const { messages, href } = useLocale();
 
   if (!isLoaded) {
     return (
@@ -19,7 +19,7 @@ export default function AccountBillingPage() {
   }
 
   if (!isSignedIn) {
-    return <RedirectToSignIn redirectUrl={ROUTES.accountBilling} />;
+    return <RedirectToSignIn redirectUrl={href(ROUTES.accountBilling)} />;
   }
 
   return (
@@ -32,12 +32,12 @@ export default function AccountBillingPage() {
         <p className="text-sm leading-relaxed text-on-surface-variant">
           {messages.account.billingComingSoon}
         </p>
-        <Link
+        <LocaleLink
           href={ROUTES.accountProfile}
           className="stitch-cta-secondary mt-5 inline-flex"
         >
           {messages.account.backToProfile}
-        </Link>
+        </LocaleLink>
       </section>
     </AccountPageShell>
   );

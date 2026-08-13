@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/:path*",
+        has: [{ type: "host", value: "ahaitsme.com" }],
+        destination: "https://www.ahaitsme.com/:path*",
+        permanent: true,
+      },
+      {
         source: "/blueprint-preview/:reportId/innate",
         destination: "/blueprint-preview/:reportId/essence",
         permanent: true,

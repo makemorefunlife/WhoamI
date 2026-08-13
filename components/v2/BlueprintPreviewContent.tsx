@@ -20,6 +20,7 @@ import { clearSurveyV2Session } from "@/lib/v2/survey/session";
 import { clearSurveyOnServer } from "@/lib/v2/survey/surveyClient";
 import { clearLiteReports } from "@/lib/v2/lite/session";
 import { ROUTES, withReportId } from "@/constants/routes";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function BlueprintPreviewContent({
   reportId,
@@ -35,6 +36,7 @@ export default function BlueprintPreviewContent({
   birthTimeUnknown: boolean;
 }) {
   const router = useRouter();
+  const { href: localize } = useLocale();
   const gapRows = buildGapRows(current.primary_axes, essence.primary_axes);
   const hook = buildBlueprintHookCopy({
     current: current.primary_axes,
@@ -54,8 +56,8 @@ export default function BlueprintPreviewContent({
     clearSurveyV2Session(reportId);
     clearLiteReports(reportId);
     await clearSurveyOnServer(reportId);
-    router.push(`${ROUTES.surveyV2}?redo=1`);
-  }, [reportId, router]);
+    router.push(localize(`${ROUTES.surveyV2}?redo=1`));
+  }, [reportId, router, localize]);
 
   return (
     <div className="w-full max-w-lg space-y-6 pb-16">
@@ -168,7 +170,7 @@ export default function BlueprintPreviewContent({
           className="block w-full text-xs text-white/45 underline-offset-2 hover:text-white/65 hover:underline"
           onClick={() =>
             router.push(
-              `${withReportId(ROUTES.onboardingBirth, reportId)}&edit=1`,
+              localize(`${withReportId(ROUTES.onboardingBirth, reportId)}&edit=1`),
             )
           }
         >
@@ -177,7 +179,7 @@ export default function BlueprintPreviewContent({
         <button
           type="button"
           className="block w-full text-xs text-white/40 underline-offset-2 hover:text-white/60 hover:underline"
-          onClick={() => router.push(`${ROUTES.accountProfile}#birth`)}
+          onClick={() => router.push(localize(`${ROUTES.accountProfile}#birth`))}
         >
           로그인 후 계정에서도 수정 가능
         </button>
