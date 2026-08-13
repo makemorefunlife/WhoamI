@@ -54,6 +54,33 @@ function takePairs(
   return out;
 }
 
+// Batch 4 — a layer with no narrative is omitted, never fabricated (thin
+// evidence must read as conditional/absent, not padded like the fixed-length
+// strengths/watchouts/energy arrays above).
+const LAYERED_IDENTITY_KEYS = [
+  "first_impression",
+  "known_self",
+  "close_private_self",
+  "natural_self_and_deep_needs",
+] as const;
+
+function coerceLayeredIdentityLayer(
+  raw: unknown,
+): { title?: string; narrative: string; evidence_refs?: string[] } | null {
+  const row = asRecord(raw);
+  const narrative = row ? asString(row.narrative) : "";
+  if (!narrative) return null;
+  const title = row ? asString(row.title) : "";
+  const evidenceRefs = row && Array.isArray(row.evidence_refs)
+    ? row.evidence_refs.filter((v): v is string => typeof v === "string")
+    : undefined;
+  return {
+    ...(title ? { title } : {}),
+    narrative,
+    ...(evidenceRefs?.length ? { evidence_refs: evidenceRefs } : {}),
+  };
+}
+
 const TONES = new Set(["highlight", "accent", "ink"]);
 
 function coerceTone(v: unknown, fallback: "highlight" | "accent" | "ink") {
@@ -168,8 +195,25 @@ export function coerceDeepEssencePartA(
     optimal: takeStrings(energyIn.optimal, 2, 4, "A steady daily rhythm"),
   };
 
+  const layeredIdentityIn = asRecord(obj.layered_identity);
+  const layeredIdentityOut: Record<string, unknown> = {};
+  if (layeredIdentityIn) {
+    for (const key of LAYERED_IDENTITY_KEYS) {
+      const layer = coerceLayeredIdentityLayer(layeredIdentityIn[key]);
+      if (layer) layeredIdentityOut[key] = layer;
+    }
+  }
+  const hasAnyLayer = Object.keys(layeredIdentityOut).length > 0;
+
   return {
-    value: { summary, radar_potential, strengths, watchouts, energy },
+    value: {
+      summary,
+      radar_potential,
+      strengths,
+      watchouts,
+      energy,
+      ...(hasAnyLayer ? { layered_identity: layeredIdentityOut } : {}),
+    },
     notes,
   };
 }

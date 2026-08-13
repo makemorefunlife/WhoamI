@@ -188,6 +188,15 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — Batch 3 additive contrac
       part01Evidence: {
         coreModeText: "- [day_master] codes=갑,자,wood,yang",
         growthEdgeText: "- [axis:autonomy] current=70 innate=40 delta=30 direction=up magnitude=wide",
+        // Batch 4 extended this shared type with a required layeredIdentity
+        // block — empty text here is fine, this test only checks Batch 3's
+        // core_mode/growth_edge contract stays intact.
+        layeredIdentity: {
+          firstImpressionText: "",
+          knownSelfText: "",
+          closePrivateSelfText: "",
+          naturalSelfAndDeepNeedsText: "",
+        },
       },
     });
     assert.ok(grounded.includes("[Core Mode evidence]"));

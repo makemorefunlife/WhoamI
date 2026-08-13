@@ -87,17 +87,42 @@ const GROUNDING_SUMMARY_FIELDS = `,
     "growth_edge_real_life_pattern": "optional, 1-2 sentences: how this shows up in daily situations",
     "growth_edge_if_developed": "optional, 1-2 sentences: what becomes possible if this is developed"`;
 
+// ── Batch 4: additive Layered Identity grounding ──────────────────────────
+// Same additive/grounded-only contract as Batch 3. Each of the 4 layers is
+// independently optional in the schema — a layer with too-thin evidence
+// must be omitted entirely, never padded.
+
+const LAYERED_IDENTITY_SCHEMA_FIELD = `,
+  "layered_identity": {
+    "first_impression": { "title": "optional short label (1-3 words)", "narrative": "optional, 3-5 sentences: how you tend to land on people who just met you", "evidence_refs": ["exact keys from [First Impression evidence] you grounded this in — omit the whole first_impression layer if the evidence is too thin"] },
+    "known_self": { "title": "optional short label (1-3 words)", "narrative": "optional, 3-5 sentences: how you show up once someone has gotten to know you a bit", "evidence_refs": ["exact keys from [Known Self evidence] — omit the whole known_self layer if the evidence is too thin"] },
+    "close_private_self": { "title": "optional short label (1-3 words)", "narrative": "optional, 3-5 sentences: how you are with the people closest to you, in private", "evidence_refs": ["exact keys from [Close Private Self evidence] — omit the whole close_private_self layer if the evidence is too thin"] },
+    "natural_self_and_deep_needs": { "title": "optional short label (1-3 words)", "narrative": "optional, 3-5 sentences: your most natural, unguarded self and what you deeply need", "evidence_refs": ["exact keys from [Natural Self & Deep Needs evidence] — omit the whole natural_self_and_deep_needs layer if the evidence is too thin"] }
+  }`;
+
 function buildPartASchema(grounded: boolean): string {
   if (!grounded) return DEEP_ESSENCE_PART_A_SCHEMA;
-  return DEEP_ESSENCE_PART_A_SCHEMA.replace(
+  const withSummaryFields = DEEP_ESSENCE_PART_A_SCHEMA.replace(
     `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"`,
     `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"${GROUNDING_SUMMARY_FIELDS}`,
+  );
+  // Insert as a new top-level key right after the "energy" block closes,
+  // before the schema object's own closing brace.
+  return withSummaryFields.replace(
+    /\n(\}\s*)$/,
+    `${LAYERED_IDENTITY_SCHEMA_FIELD}\n$1`,
   );
 }
 
 export type Part01EvidenceForPartAPrompt = {
   coreModeText: string;
   growthEdgeText: string;
+  layeredIdentity: {
+    firstImpressionText: string;
+    knownSelfText: string;
+    closePrivateSelfText: string;
+    naturalSelfAndDeepNeedsText: string;
+  };
 };
 
 export function buildDeepEssenceStructuredPartAUserPrompt(input: {
@@ -114,19 +139,32 @@ export function buildDeepEssenceStructuredPartAUserPrompt(input: {
 
   const evidenceBlock = input.part01Evidence
     ? `
-■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge and to fill their optional evidence_refs.
+■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge / layered_identity and to fill their optional evidence_refs.
 [Core Mode evidence]
 ${input.part01Evidence.coreModeText}
 
 [Growth Edge evidence]
 ${input.part01Evidence.growthEdgeText}
+
+[First Impression evidence]
+${input.part01Evidence.layeredIdentity.firstImpressionText}
+
+[Known Self evidence]
+${input.part01Evidence.layeredIdentity.knownSelfText}
+
+[Close Private Self evidence]
+${input.part01Evidence.layeredIdentity.closePrivateSelfText}
+
+[Natural Self & Deep Needs evidence]
+${input.part01Evidence.layeredIdentity.naturalSelfAndDeepNeedsText}
 `
     : "";
 
   const groundingRules = grounded
     ? `
 - Ground core_mode in MULTIPLE signals from [Core Mode evidence] — never a single axis, element, ten-god, or dimension alone. List the exact bracketed keys you used in core_mode_evidence_refs; never invent a key that isn't in the list.
-- Ground growth_edge in MULTIPLE signals from [Growth Edge evidence]. Do not simply pick the widest current/innate gap — weigh it together with dimension confidence, mixed-state flags, and repeated friction/cost signals to judge which area has the most real-life leverage if improved now. List the exact bracketed keys you used in growth_edge_evidence_refs; never invent one. growth_edge_why/growth_edge_real_life_pattern/growth_edge_if_developed are optional — include only when genuinely grounded.`
+- Ground growth_edge in MULTIPLE signals from [Growth Edge evidence]. Do not simply pick the widest current/innate gap — weigh it together with dimension confidence, mixed-state flags, and repeated friction/cost signals to judge which area has the most real-life leverage if improved now. List the exact bracketed keys you used in growth_edge_evidence_refs; never invent one. growth_edge_why/growth_edge_real_life_pattern/growth_edge_if_developed are optional — include only when genuinely grounded.
+- layered_identity is a 4-layer synthesis: first_impression (from [First Impression evidence] only), known_self (from [Known Self evidence] only), close_private_self (from [Close Private Self evidence] only), natural_self_and_deep_needs (from [Natural Self & Deep Needs evidence] only). Each layer's evidence_refs may ONLY reference keys from that layer's own bracketed list — never borrow a key from another layer's list or from Core Mode/Growth Edge evidence. There is no single fixed formula (e.g. month pillar = first impression) — weigh the whole bucket, including confidence and mixed-state flags, and let convergence across multiple signals decide. If a layer's bucket has too little usable signal, OMIT that entire layer key rather than forcing a narrative from thin/single evidence. Never invent an evidence key.`
     : "";
 
   return `[Input data — use only this material]

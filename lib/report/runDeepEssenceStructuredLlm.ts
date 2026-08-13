@@ -141,7 +141,16 @@ export async function runDeepEssenceStructuredLlm(
       currentAxisScores: input.currentAxisScores,
       locale: input.locale,
       part01Evidence: promptEvidence
-        ? { coreModeText: promptEvidence.coreModeText, growthEdgeText: promptEvidence.growthEdgeText }
+        ? {
+            coreModeText: promptEvidence.coreModeText,
+            growthEdgeText: promptEvidence.growthEdgeText,
+            layeredIdentity: {
+              firstImpressionText: promptEvidence.layeredIdentity.firstImpression.text,
+              knownSelfText: promptEvidence.layeredIdentity.knownSelf.text,
+              closePrivateSelfText: promptEvidence.layeredIdentity.closePrivateSelf.text,
+              naturalSelfAndDeepNeedsText: promptEvidence.layeredIdentity.naturalSelfAndDeepNeeds.text,
+            },
+          }
         : null,
     });
     const partARaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
@@ -179,6 +188,28 @@ export async function runDeepEssenceStructuredLlm(
       else delete summary.core_mode_evidence_refs;
       if (filteredGrowthEdgeRefs) summary.growth_edge_evidence_refs = filteredGrowthEdgeRefs;
       else delete summary.growth_edge_evidence_refs;
+
+      // Batch 4 — same never-trust-LLM-refs rule, per layer, using only that
+      // layer's own known-key set (a layer's refs can never point at another
+      // layer's or Core Mode's/Growth Edge's evidence).
+      const layered = (partA as Record<string, unknown>).layered_identity as
+        | Record<string, Record<string, unknown>>
+        | undefined;
+      if (layered) {
+        const LAYER_KEY_MAP = {
+          first_impression: promptEvidence.layeredIdentity.firstImpression.knownKeys,
+          known_self: promptEvidence.layeredIdentity.knownSelf.knownKeys,
+          close_private_self: promptEvidence.layeredIdentity.closePrivateSelf.knownKeys,
+          natural_self_and_deep_needs: promptEvidence.layeredIdentity.naturalSelfAndDeepNeeds.knownKeys,
+        } as const;
+        for (const [key, knownKeys] of Object.entries(LAYER_KEY_MAP)) {
+          const layer = layered[key];
+          if (!layer) continue;
+          const filtered = filterKnownEvidenceRefs(layer.evidence_refs, knownKeys);
+          if (filtered) layer.evidence_refs = filtered;
+          else delete layer.evidence_refs;
+        }
+      }
     }
 
     const userB = buildDeepEssenceStructuredPartBUserPrompt({

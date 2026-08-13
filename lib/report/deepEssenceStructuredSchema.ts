@@ -15,6 +15,12 @@ import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
 
 export type DeepEssenceStrengthOrWatchout = { title: string; body: string };
+/** Batch 4 — one Layered Identity layer. Optional/omittable when evidence is too thin. */
+export type DeepEssenceLayeredIdentityLayer = {
+  title?: string;
+  narrative: string;
+  evidence_refs?: string[];
+};
 export type DeepEssenceEnergyBar = {
   label: string;
   value: number;
@@ -38,6 +44,18 @@ export type DeepEssenceStructuredReport = {
     growth_edge_why?: string;
     growth_edge_real_life_pattern?: string;
     growth_edge_if_developed?: string;
+  };
+  /**
+   * Batch 4 — additive, optional. Four-layer Layered Identity synthesis
+   * grounded in Part01 Identity Evidence. Absent when the packet was
+   * unavailable, or per-layer omitted when a layer's evidence was too thin
+   * to responsibly synthesize (never forced/fabricated).
+   */
+  layered_identity?: {
+    first_impression?: DeepEssenceLayeredIdentityLayer;
+    known_self?: DeepEssenceLayeredIdentityLayer;
+    close_private_self?: DeepEssenceLayeredIdentityLayer;
+    natural_self_and_deep_needs?: DeepEssenceLayeredIdentityLayer;
   };
   radar_potential: PrimaryAxesScores;
   strengths: DeepEssenceStrengthOrWatchout[];

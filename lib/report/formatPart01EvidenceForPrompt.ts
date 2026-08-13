@@ -9,6 +9,11 @@
  * (layeredIdentityCandidates.firstImpression/knownSelf, ceStrengthSignals,
  * growthCandidates.*) are used, matching "Lens selects, does not conclude"
  * and "prefer purpose-specific buckets over the full preservation set."
+ *
+ * Batch 4 — reuses the same candidate-bucket-to-text pattern for the 4
+ * Layered Identity buckets (firstImpression/knownSelf/closePrivateSelf/
+ * naturalSelfAndDeepNeeds), each formatted independently so a layer's
+ * evidence_refs can only ever point at that layer's own bucket.
  */
 import type {
   Part01CandidateItem,
@@ -67,11 +72,41 @@ function formatAxisLine(a: AxisComparison): string {
   return `- [${axisKey(a.axis)}] current=${a.current.score} innate=${a.innate.score} delta=${a.delta} direction=${a.direction} magnitude=${a.magnitude}`;
 }
 
+/** Formats a single candidate bucket into text + its own known-key set (no cross-bucket mixing). */
+function buildCandidateBucketEvidence(items: Part01CandidateItem[]): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+  for (const item of items) {
+    const key = item.kind === "evidence" ? evidenceKey(item) : dimensionKey(item.dimension);
+    const line = formatCandidateItemLine(item);
+    if (!line) continue; // abstained/insufficient dimension — not shown, key not claimed as known
+    knownKeys.add(key);
+    lines.push(line);
+  }
+  return { text: lines.join("\n"), knownKeys };
+}
+
+export type Part01LayerPromptEvidence = {
+  text: string;
+  knownKeys: Set<string>;
+};
+
+export type Part01LayeredIdentityPromptEvidence = {
+  firstImpression: Part01LayerPromptEvidence;
+  knownSelf: Part01LayerPromptEvidence;
+  closePrivateSelf: Part01LayerPromptEvidence;
+  naturalSelfAndDeepNeeds: Part01LayerPromptEvidence;
+};
+
 export type Part01PromptEvidence = {
   coreModeText: string;
   growthEdgeText: string;
   coreModeKnownKeys: Set<string>;
   growthEdgeKnownKeys: Set<string>;
+  layeredIdentity: Part01LayeredIdentityPromptEvidence;
 };
 
 /** Builds Core Mode grounding text + the exact key set shown for it. */
@@ -181,11 +216,19 @@ export function formatPart01EvidenceForPrompt(
   if (!packet) return null;
   const coreMode = buildCoreModeEvidence(packet);
   const growthEdge = buildGrowthEdgeEvidence(packet);
+  const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
+    packet.layeredIdentityCandidates;
   return {
     coreModeText: coreMode.text,
     growthEdgeText: growthEdge.text,
     coreModeKnownKeys: coreMode.knownKeys,
     growthEdgeKnownKeys: growthEdge.knownKeys,
+    layeredIdentity: {
+      firstImpression: buildCandidateBucketEvidence(firstImpression),
+      knownSelf: buildCandidateBucketEvidence(knownSelf),
+      closePrivateSelf: buildCandidateBucketEvidence(closePrivateSelf),
+      naturalSelfAndDeepNeeds: buildCandidateBucketEvidence(naturalSelfAndDeepNeeds),
+    },
   };
 }
 
