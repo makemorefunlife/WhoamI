@@ -10,6 +10,16 @@ import type { Locale } from "@/lib/i18n/locale";
 export type DeepEssenceUiStrings = {
   summaryLabels: { coreMode: string; energyBalance: string; growthEdge: string };
   radar: { caption: string; current: string; potential: string };
+  layeredIdentity: {
+    sectionTitle: string;
+    sectionTag: string;
+    layers: {
+      firstImpression: string;
+      knownSelf: string;
+      closePrivateSelf: string;
+      naturalSelfAndDeepNeeds: string;
+    };
+  };
   part1: {
     num: string;
     label: string;
@@ -80,6 +90,16 @@ const EN: DeepEssenceUiStrings = {
     caption: "Current state vs. essence potential",
     current: "Current state",
     potential: "Essence potential",
+  },
+  layeredIdentity: {
+    sectionTitle: "The many layers of you",
+    sectionTag: "Layers",
+    layers: {
+      firstImpression: "How you land on someone new",
+      knownSelf: "How you show up once they know you",
+      closePrivateSelf: "How you are with people closest to you",
+      naturalSelfAndDeepNeeds: "Your most natural self & deepest needs",
+    },
   },
   part1: {
     num: "Part 01",
@@ -155,6 +175,16 @@ const KO: DeepEssenceUiStrings = {
     caption: "현재 상태 vs. 본질적 잠재력",
     current: "현재 상태",
     potential: "본질적 잠재력",
+  },
+  layeredIdentity: {
+    sectionTitle: "당신의 여러 겹",
+    sectionTag: "레이어",
+    layers: {
+      firstImpression: "처음 만난 사람이 느끼는 나",
+      knownSelf: "알고 나면 보이는 나",
+      closePrivateSelf: "아주 가까운 사람이 아는 나",
+      naturalSelfAndDeepNeeds: "가장 자연스러운 나 / 깊은 욕구",
+    },
   },
   part1: {
     num: "Part 01",

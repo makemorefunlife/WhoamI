@@ -1,6 +1,7 @@
 "use client";
 
 import { DeepEssenceRadarChart } from "@/components/results/deep/DeepEssenceRadarChart";
+import { DeepEssenceLayeredIdentity } from "@/components/results/deep/DeepEssenceLayeredIdentity";
 import type { DeepEssenceStructuredReport } from "@/lib/report/runDeepEssenceStructuredLlm";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
 import type { Locale } from "@/lib/i18n/locale";
@@ -25,7 +26,7 @@ export function DeepEssencePartOne({
   locale: Locale;
   t: DeepEssenceUiStrings;
 }) {
-  const { summary, radar_potential, strengths, watchouts } = structured;
+  const { summary, radar_potential, strengths, watchouts, layered_identity } = structured;
 
   return (
     <div className="space-y-12">
@@ -65,6 +66,9 @@ export function DeepEssencePartOne({
           />
         </div>
       </div>
+
+      {/* Layered Identity — 4단계 (Batch 5, additive) */}
+      <DeepEssenceLayeredIdentity layeredIdentity={layered_identity} t={t.layeredIdentity} />
 
       {/* 강점 3가지 */}
       <div>
