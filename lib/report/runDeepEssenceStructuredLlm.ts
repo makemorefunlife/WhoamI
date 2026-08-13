@@ -150,6 +150,7 @@ export async function runDeepEssenceStructuredLlm(
               closePrivateSelfText: promptEvidence.layeredIdentity.closePrivateSelf.text,
               naturalSelfAndDeepNeedsText: promptEvidence.layeredIdentity.naturalSelfAndDeepNeeds.text,
             },
+            strengthsWatchoutsText: promptEvidence.strengthsWatchoutsText,
           }
         : null,
     });
@@ -210,6 +211,24 @@ export async function runDeepEssenceStructuredLlm(
           else delete layer.evidence_refs;
         }
       }
+
+      // Batch 6 — same rule, per strength/watchout item. Strengths and
+      // watchouts intentionally share one known-key set (not per-layer
+      // isolated like Batch 4) so a dual-natured trait's evidence can
+      // legitimately ground both an item in strengths and one in watchouts.
+      const filterItemRefs = (items: unknown) => {
+        if (!Array.isArray(items)) return;
+        for (const item of items as Record<string, unknown>[]) {
+          const filtered = filterKnownEvidenceRefs(
+            item.evidence_refs,
+            promptEvidence.strengthsWatchoutsKnownKeys,
+          );
+          if (filtered) item.evidence_refs = filtered;
+          else delete item.evidence_refs;
+        }
+      };
+      filterItemRefs(partA.strengths);
+      filterItemRefs(partA.watchouts);
     }
 
     const userB = buildDeepEssenceStructuredPartBUserPrompt({

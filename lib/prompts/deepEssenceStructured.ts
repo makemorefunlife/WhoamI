@@ -100,12 +100,27 @@ const LAYERED_IDENTITY_SCHEMA_FIELD = `,
     "natural_self_and_deep_needs": { "title": "optional short label (1-3 words)", "narrative": "optional, 3-5 sentences: your most natural, unguarded self and what you deeply need", "evidence_refs": ["exact keys from [Natural Self & Deep Needs evidence] — omit the whole natural_self_and_deep_needs layer if the evidence is too thin"] }
   }`;
 
+// ── Batch 6: additive Strengths/Watchouts grounding ───────────────────────
+// Same additive/grounded-only contract. Per-item evidence_refs, only shown
+// on the first array item in the schema example (items 2/3 stay "..." like
+// the existing title/body abbreviation) — the rule applies to every item.
+
+const STRENGTHS_EVIDENCE_FIELD = `, "evidence_refs": ["optional — exact keys from [Strengths & Watchouts evidence] this item is grounded in, only from the bracketed list, never invented — omit if this item isn't well-grounded"]`;
+
 function buildPartASchema(grounded: boolean): string {
   if (!grounded) return DEEP_ESSENCE_PART_A_SCHEMA;
   const withSummaryFields = DEEP_ESSENCE_PART_A_SCHEMA.replace(
     `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"`,
     `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"${GROUNDING_SUMMARY_FIELDS}`,
-  );
+  )
+    .replace(
+      `{ "title": "strength title (1-3 words)", "body": "5-7 sentences with concrete situations and grounds" }`,
+      `{ "title": "strength title (1-3 words)", "body": "5-7 sentences with concrete situations and grounds"${STRENGTHS_EVIDENCE_FIELD} }`,
+    )
+    .replace(
+      `{ "title": "watch-out title (1-3 words)", "body": "4-6 gentle sentences" }`,
+      `{ "title": "watch-out title (1-3 words)", "body": "4-6 gentle sentences"${STRENGTHS_EVIDENCE_FIELD} }`,
+    );
   // Insert as a new top-level key right after the "energy" block closes,
   // before the schema object's own closing brace.
   return withSummaryFields.replace(
@@ -123,6 +138,7 @@ export type Part01EvidenceForPartAPrompt = {
     closePrivateSelfText: string;
     naturalSelfAndDeepNeedsText: string;
   };
+  strengthsWatchoutsText: string;
 };
 
 export function buildDeepEssenceStructuredPartAUserPrompt(input: {
@@ -139,12 +155,15 @@ export function buildDeepEssenceStructuredPartAUserPrompt(input: {
 
   const evidenceBlock = input.part01Evidence
     ? `
-■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge / layered_identity and to fill their optional evidence_refs.
+■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge / layered_identity / strengths / watchouts and to fill their optional evidence_refs.
 [Core Mode evidence]
 ${input.part01Evidence.coreModeText}
 
 [Growth Edge evidence]
 ${input.part01Evidence.growthEdgeText}
+
+[Strengths & Watchouts evidence]
+${input.part01Evidence.strengthsWatchoutsText}
 
 [First Impression evidence]
 ${input.part01Evidence.layeredIdentity.firstImpressionText}
@@ -164,7 +183,8 @@ ${input.part01Evidence.layeredIdentity.naturalSelfAndDeepNeedsText}
     ? `
 - Ground core_mode in MULTIPLE signals from [Core Mode evidence] — never a single axis, element, ten-god, or dimension alone. List the exact bracketed keys you used in core_mode_evidence_refs; never invent a key that isn't in the list.
 - Ground growth_edge in MULTIPLE signals from [Growth Edge evidence]. Do not simply pick the widest current/innate gap — weigh it together with dimension confidence, mixed-state flags, and repeated friction/cost signals to judge which area has the most real-life leverage if improved now. List the exact bracketed keys you used in growth_edge_evidence_refs; never invent one. growth_edge_why/growth_edge_real_life_pattern/growth_edge_if_developed are optional — include only when genuinely grounded.
-- layered_identity is a 4-layer synthesis: first_impression (from [First Impression evidence] only), known_self (from [Known Self evidence] only), close_private_self (from [Close Private Self evidence] only), natural_self_and_deep_needs (from [Natural Self & Deep Needs evidence] only). Each layer's evidence_refs may ONLY reference keys from that layer's own bracketed list — never borrow a key from another layer's list or from Core Mode/Growth Edge evidence. There is no single fixed formula (e.g. month pillar = first impression) — weigh the whole bucket, including confidence and mixed-state flags, and let convergence across multiple signals decide. If a layer's bucket has too little usable signal, OMIT that entire layer key rather than forcing a narrative from thin/single evidence. Never invent an evidence key.`
+- layered_identity is a 4-layer synthesis: first_impression (from [First Impression evidence] only), known_self (from [Known Self evidence] only), close_private_self (from [Close Private Self evidence] only), natural_self_and_deep_needs (from [Natural Self & Deep Needs evidence] only). Each layer's evidence_refs may ONLY reference keys from that layer's own bracketed list — never borrow a key from another layer's list or from Core Mode/Growth Edge evidence. There is no single fixed formula (e.g. month pillar = first impression) — weigh the whole bucket, including confidence and mixed-state flags, and let convergence across multiple signals decide. If a layer's bucket has too little usable signal, OMIT that entire layer key rather than forcing a narrative from thin/single evidence. Never invent an evidence key.
+- You still freely choose the 3 strengths and 3 watchouts exactly as before (same title/body voice and structure) — [Strengths & Watchouts evidence] only informs which ones you pick and how you ground them, it does not replace your own judgment or restrict you to a fixed candidate list. Never decide a strength or watchout from a single five-element/ten-god/psych-axis signal alone — look for convergence across the evidence. Strengths and watchouts may be selected fully independently of each other, but if the same underlying trait clearly has both a positive and a shadow side, feel free to let a strength and a watchout each reference it (never force a 1:1 pairing when one doesn't genuinely exist). Each item's evidence_refs may only reference keys from the bracketed [Strengths & Watchouts evidence] list, and may be omitted per item when not well-grounded. Never invent a key.`
     : "";
 
   return `[Input data — use only this material]

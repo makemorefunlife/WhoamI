@@ -24,6 +24,13 @@ function asScore(v: unknown, fallback = 50): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+/** Batch 6 — passes through LLM-returned evidence_refs only if present; never fabricated. */
+function asOptionalStringArray(v: unknown): string[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const filtered = v.filter((x): x is string => typeof x === "string");
+  return filtered.length ? filtered : undefined;
+}
+
 function takeStrings(v: unknown, min: number, max: number, pad: string): string[] {
   const raw = Array.isArray(v) ? v : [];
   const out = raw
@@ -138,10 +145,14 @@ export function coerceDeepEssencePartA(
     obj.strengths,
     3,
     3,
-    (row, i) => ({
-      title: asString(row.title, `Strength ${i + 1}`),
-      body: asString(row.body, "This strength shows up in everyday choices."),
-    }),
+    (row, i) => {
+      const evidenceRefs = asOptionalStringArray(row.evidence_refs);
+      return {
+        title: asString(row.title, `Strength ${i + 1}`),
+        body: asString(row.body, "This strength shows up in everyday choices."),
+        ...(evidenceRefs ? { evidence_refs: evidenceRefs } : {}),
+      };
+    },
     () => ({
       title: "Strength",
       body: "This strength shows up in everyday choices.",
@@ -155,10 +166,14 @@ export function coerceDeepEssencePartA(
     obj.watchouts,
     3,
     3,
-    (row, i) => ({
-      title: asString(row.title, `Watch-out ${i + 1}`),
-      body: asString(row.body, "This pattern can drain energy when it runs hot."),
-    }),
+    (row, i) => {
+      const evidenceRefs = asOptionalStringArray(row.evidence_refs);
+      return {
+        title: asString(row.title, `Watch-out ${i + 1}`),
+        body: asString(row.body, "This pattern can drain energy when it runs hot."),
+        ...(evidenceRefs ? { evidence_refs: evidenceRefs } : {}),
+      };
+    },
     () => ({
       title: "Watch-out",
       body: "This pattern can drain energy when it runs hot.",

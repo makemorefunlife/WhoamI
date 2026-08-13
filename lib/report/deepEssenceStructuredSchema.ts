@@ -14,7 +14,11 @@
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
 
-export type DeepEssenceStrengthOrWatchout = { title: string; body: string };
+/**
+ * Batch 6 — evidence_refs is internal provenance only (never rendered),
+ * populated when Part01 evidence grounding was available for this item.
+ */
+export type DeepEssenceStrengthOrWatchout = { title: string; body: string; evidence_refs?: string[] };
 /** Batch 4 — one Layered Identity layer. Optional/omittable when evidence is too thin. */
 export type DeepEssenceLayeredIdentityLayer = {
   title?: string;

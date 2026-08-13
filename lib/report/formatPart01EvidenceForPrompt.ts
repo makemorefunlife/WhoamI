@@ -14,6 +14,12 @@
  * Layered Identity buckets (firstImpression/knownSelf/closePrivateSelf/
  * naturalSelfAndDeepNeeds), each formatted independently so a layer's
  * evidence_refs can only ever point at that layer's own bucket.
+ *
+ * Batch 6 — one shared Strengths/Watchouts evidence block (unlike the
+ * Layered Identity layers, these two are deliberately NOT isolated: the
+ * spec wants the LLM able to notice a single trait's positive/shadow
+ * duality, so strengths and watchouts draw from — and are validated
+ * against — the same known-key set).
  */
 import type {
   Part01CandidateItem,
@@ -107,6 +113,8 @@ export type Part01PromptEvidence = {
   coreModeKnownKeys: Set<string>;
   growthEdgeKnownKeys: Set<string>;
   layeredIdentity: Part01LayeredIdentityPromptEvidence;
+  strengthsWatchoutsText: string;
+  strengthsWatchoutsKnownKeys: Set<string>;
 };
 
 /** Builds Core Mode grounding text + the exact key set shown for it. */
@@ -205,6 +213,57 @@ function buildGrowthEdgeEvidence(packet: Part01IdentityEvidencePacket): {
 }
 
 /**
+ * Builds the shared Strengths/Watchouts grounding text + known-key set.
+ * Sources per Batch 6 spec: general identity facts, CE strengths/growth/
+ * cautions-group signals, all 6 Current x Innate axes (alignment AND gap
+ * both matter here — unlike Growth Edge, this is not gap-only), and
+ * Secondary-11 as context. Deliberately compact — no allDimensions dump,
+ * no CE dimension_evaluations at all (those stay Growth Edge/Core Mode's).
+ */
+function buildStrengthsWatchoutsEvidence(packet: Part01IdentityEvidencePacket): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+
+  const addEvidence = (refs: Part01EvidenceRef[]) => {
+    for (const ref of refs) {
+      knownKeys.add(evidenceKey(ref));
+      lines.push(formatEvidenceLine(ref));
+    }
+  };
+
+  lines.push("General identity facts:");
+  addEvidence(packet.innate.identityFacts);
+  addEvidence(packet.innate.elementEvidence);
+
+  lines.push("CE strengths-group signals:");
+  addEvidence(packet.innate.ceStrengthSignals);
+  lines.push("CE growth-group signals:");
+  addEvidence(packet.growthCandidates.growthEvidence);
+  lines.push("CE cautions-group signals:");
+  addEvidence(packet.growthCandidates.cautionEvidence);
+
+  lines.push(
+    "Current x Innate axis signals (all 6 — both alignment and gap can be evidence here):",
+  );
+  for (const a of packet.axisComparisons) {
+    knownKeys.add(axisKey(a.axis));
+    lines.push(formatAxisLine(a));
+  }
+
+  const secondary = packet.currentBehavior.secondaryAxes;
+  lines.push(
+    `Current Secondary-11 (context only): ${Object.entries(secondary)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(", ")}`,
+  );
+
+  return { text: lines.join("\n"), knownKeys };
+}
+
+/**
  * Builds both grounding text blocks from a Part01IdentityEvidencePacket.
  * Returns null if packet is null/undefined — callers must fall back to the
  * existing ungrounded prompt behavior in that case (Batch 3 rule: a failure
@@ -216,6 +275,7 @@ export function formatPart01EvidenceForPrompt(
   if (!packet) return null;
   const coreMode = buildCoreModeEvidence(packet);
   const growthEdge = buildGrowthEdgeEvidence(packet);
+  const strengthsWatchouts = buildStrengthsWatchoutsEvidence(packet);
   const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
     packet.layeredIdentityCandidates;
   return {
@@ -229,6 +289,8 @@ export function formatPart01EvidenceForPrompt(
       closePrivateSelf: buildCandidateBucketEvidence(closePrivateSelf),
       naturalSelfAndDeepNeeds: buildCandidateBucketEvidence(naturalSelfAndDeepNeeds),
     },
+    strengthsWatchoutsText: strengthsWatchouts.text,
+    strengthsWatchoutsKnownKeys: strengthsWatchouts.knownKeys,
   };
 }
 
