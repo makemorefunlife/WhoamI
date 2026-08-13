@@ -70,6 +70,7 @@ export function useSlimV1Integrated(
             surveyAnswers: survey?.answers ?? null,
             currentSelfProfile: survey?.profile ?? null,
             language: locale,
+            forceRegenerate: opts?.clearCaches === true,
           }),
         });
         const json = (await res.json()) as EssenceDeepPreviewResponse & {

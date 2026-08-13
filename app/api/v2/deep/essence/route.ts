@@ -29,6 +29,8 @@ type Body = {
   currentSelfProfile?: CurrentSelfProfile | null;
   language?: string;
   locale?: string;
+  /** Explicit user-initiated "Regenerate" — bypasses the stored read-before-generate reuse below. */
+  forceRegenerate?: boolean;
 };
 
 export async function POST(req: Request) {
@@ -71,7 +73,9 @@ export async function POST(req: Request) {
     // report_analyses has no locale column, so the stored copy is only reused
     // when its recorded locale matches the current request; a locale switch
     // regenerates (and overwrites the single stored row for this report).
-    const stored = await readPersistedDeepEssenceAnalysis(supabase, reportId);
+    const stored = body.forceRegenerate
+      ? null
+      : await readPersistedDeepEssenceAnalysis(supabase, reportId);
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as { locale: string; slim_v1: SlimV1ReportResult };
