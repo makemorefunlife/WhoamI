@@ -84,6 +84,12 @@ export type Part01InnateEvidence = {
   pillarEvidence: Part01EvidenceRef[];
   relationEvidence: Part01EvidenceRef[];
   optionalSignals: Part01EvidenceRef[];
+  /**
+   * Batch 3 addition: the CE's own group:"strengths" packet curation
+   * (distinct from `strengthEvidence`, which is the day-master 신강/신약
+   * strength fact). Needed for Core Mode grounding (Batch 3 spec §1).
+   */
+  ceStrengthSignals: Part01EvidenceRef[];
 };
 
 export type Part01LayeredIdentityCandidates = {
@@ -196,7 +202,10 @@ function nonNull<T>(v: T | null): v is T {
 // consumer). This is how "Full Personal Context first" is honored: nothing
 // here is pre-filtered down to a handful of pillars.
 
-function buildInnateEvidence(chart: IndividualSajuChart): Part01InnateEvidence {
+function buildInnateEvidence(
+  chart: IndividualSajuChart,
+  personalContext: PersonalContextEngineOutput,
+): Part01InnateEvidence {
   const identityFacts: Part01EvidenceRef[] = [
     evidenceRef("day_master", [
       chart.day_master.stem.code,
@@ -288,6 +297,10 @@ function buildInnateEvidence(chart: IndividualSajuChart): Part01InnateEvidence {
     ),
   ];
 
+  const ceStrengthSignals: Part01EvidenceRef[] = personalContext.groups.strengths.map(
+    packetToEvidenceRef,
+  );
+
   return {
     identityFacts,
     elementEvidence,
@@ -297,6 +310,7 @@ function buildInnateEvidence(chart: IndividualSajuChart): Part01InnateEvidence {
     pillarEvidence,
     relationEvidence,
     optionalSignals,
+    ceStrengthSignals,
   };
 }
 
@@ -460,7 +474,7 @@ export function buildPart01IdentityEvidencePacket(
       primaryAxes: currentPrimary,
       secondaryAxes: currentSecondary,
     },
-    innate: buildInnateEvidence(chart),
+    innate: buildInnateEvidence(chart, personalContext),
     dimensions: { allDimensions },
     layeredIdentityCandidates: buildLayeredIdentityCandidates(chart, dims),
     growthCandidates: buildGrowthCandidates(personalContext, dims, axisComparisons),

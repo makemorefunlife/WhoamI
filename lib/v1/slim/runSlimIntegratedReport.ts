@@ -198,6 +198,8 @@ export async function runSlimIntegratedReport(
 
     locale,
 
+    part01Evidence: part01IdentityEvidence,
+
   });
 
 

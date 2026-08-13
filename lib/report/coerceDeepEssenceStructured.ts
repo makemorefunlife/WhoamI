@@ -74,10 +74,27 @@ export function coerceDeepEssencePartA(
   const notes: string[] = [];
   const obj = asRecord(raw) ?? {};
   const summaryIn = asRecord(obj.summary) ?? {};
+  // Batch 3 — optional provenance fields, passed through only if the LLM
+  // actually returned them (never fabricated, never required).
+  const coreModeRefs = Array.isArray(summaryIn.core_mode_evidence_refs)
+    ? summaryIn.core_mode_evidence_refs.filter((v): v is string => typeof v === "string")
+    : undefined;
+  const growthEdgeRefs = Array.isArray(summaryIn.growth_edge_evidence_refs)
+    ? summaryIn.growth_edge_evidence_refs.filter((v): v is string => typeof v === "string")
+    : undefined;
+  const growthEdgeWhy = asString(summaryIn.growth_edge_why) || undefined;
+  const growthEdgeRealLifePattern = asString(summaryIn.growth_edge_real_life_pattern) || undefined;
+  const growthEdgeIfDeveloped = asString(summaryIn.growth_edge_if_developed) || undefined;
+
   const summary = {
     core_mode: asString(summaryIn.core_mode, "Core mode"),
     energy_balance: asString(summaryIn.energy_balance, "50 / 50"),
     growth_edge: asString(summaryIn.growth_edge, "Growth"),
+    ...(coreModeRefs?.length ? { core_mode_evidence_refs: coreModeRefs } : {}),
+    ...(growthEdgeRefs?.length ? { growth_edge_evidence_refs: growthEdgeRefs } : {}),
+    ...(growthEdgeWhy ? { growth_edge_why: growthEdgeWhy } : {}),
+    ...(growthEdgeRealLifePattern ? { growth_edge_real_life_pattern: growthEdgeRealLifePattern } : {}),
+    ...(growthEdgeIfDeveloped ? { growth_edge_if_developed: growthEdgeIfDeveloped } : {}),
   };
   if (!asString(summaryIn.core_mode)) notes.push("summary.core_mode_padded");
 

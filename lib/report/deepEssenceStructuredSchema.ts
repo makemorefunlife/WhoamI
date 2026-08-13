@@ -28,6 +28,16 @@ export type DeepEssenceStructuredReport = {
     core_mode: string;
     energy_balance: string;
     growth_edge: string;
+    /**
+     * Batch 3 — internal provenance only, never rendered in the UI.
+     * Populated when Part01 Identity Evidence grounding was available;
+     * absent otherwise (existing ungrounded behavior is preserved).
+     */
+    core_mode_evidence_refs?: string[];
+    growth_edge_evidence_refs?: string[];
+    growth_edge_why?: string;
+    growth_edge_real_life_pattern?: string;
+    growth_edge_if_developed?: string;
   };
   radar_potential: PrimaryAxesScores;
   strengths: DeepEssenceStrengthOrWatchout[];

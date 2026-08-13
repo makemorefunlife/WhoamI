@@ -20,6 +20,11 @@ import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 import { type Locale } from "@/lib/i18n/locale";
 import { polishDeepEssenceStructuredReport } from "@/lib/report/polishDeepEssenceStructured";
 import { logServerEvent } from "@/lib/security/safeLog";
+import {
+  formatPart01EvidenceForPrompt,
+  filterKnownEvidenceRefs,
+} from "@/lib/report/formatPart01EvidenceForPrompt";
+import type { Part01IdentityEvidencePacket } from "@/lib/v1/slim/part01IdentityEvidence";
 
 import type {
   DeepEssenceStrengthOrWatchout,
@@ -43,6 +48,13 @@ export type DeepEssenceStructuredLlmInput = {
   astrologyInterpretation: string;
   currentAxisScores: PrimaryAxesScores;
   locale?: Locale | string;
+  /**
+   * Batch 3 — optional. Grounds Core Mode / Growth Edge in Part01 Identity
+   * Evidence when available. Absent/null reproduces exact pre-Batch-3
+   * behavior (Batch 3 rule: grounding failure/absence must never break
+   * Deep Essence generation).
+   */
+  part01Evidence?: Part01IdentityEvidencePacket | null;
 };
 
 export type DeepEssenceStructuredLlmResult = {
@@ -116,12 +128,21 @@ export async function runDeepEssenceStructuredLlm(
   const systemPrompt = getDeepEssenceStructuredSystemPrompt(input.locale);
 
   try {
+    // Batch 3 — additive grounding. formatPart01EvidenceForPrompt returns
+    // null on missing/failed packet, which reproduces the exact pre-Batch-3
+    // prompt (buildDeepEssenceStructuredPartAUserPrompt treats
+    // part01Evidence: null same as omitted).
+    const promptEvidence = formatPart01EvidenceForPrompt(input.part01Evidence);
+
     const userA = buildDeepEssenceStructuredPartAUserPrompt({
       surveyAnalysis: input.surveyAnalysis,
       essenceAnalysisSummary: input.essenceAnalysisSummary,
       birthEnergyContext: input.astrologyInterpretation,
       currentAxisScores: input.currentAxisScores,
       locale: input.locale,
+      part01Evidence: promptEvidence
+        ? { coreModeText: promptEvidence.coreModeText, growthEdgeText: promptEvidence.growthEdgeText }
+        : null,
     });
     const partARaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
       () => callLlmJson(openai, systemPrompt, userA),
@@ -142,6 +163,23 @@ export async function runDeepEssenceStructuredLlm(
       return { structured: null, source: "fallback" };
     }
     const partA = coercedA.value;
+    // Batch 3 — never trust LLM-invented evidence_refs: keep only keys that
+    // actually appeared in the grounding text shown to it.
+    if (promptEvidence) {
+      const summary = partA.summary as Record<string, unknown>;
+      const filteredCoreModeRefs = filterKnownEvidenceRefs(
+        summary.core_mode_evidence_refs,
+        promptEvidence.coreModeKnownKeys,
+      );
+      const filteredGrowthEdgeRefs = filterKnownEvidenceRefs(
+        summary.growth_edge_evidence_refs,
+        promptEvidence.growthEdgeKnownKeys,
+      );
+      if (filteredCoreModeRefs) summary.core_mode_evidence_refs = filteredCoreModeRefs;
+      else delete summary.core_mode_evidence_refs;
+      if (filteredGrowthEdgeRefs) summary.growth_edge_evidence_refs = filteredGrowthEdgeRefs;
+      else delete summary.growth_edge_evidence_refs;
+    }
 
     const userB = buildDeepEssenceStructuredPartBUserPrompt({
       surveyAnalysis: input.surveyAnalysis,

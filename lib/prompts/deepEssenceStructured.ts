@@ -74,14 +74,61 @@ export const DEEP_ESSENCE_PART_A_SCHEMA = `{
   }
 }`;
 
+// ── Batch 3: additive Core Mode / Growth Edge grounding ──────────────────
+// Only appended when Part01 Identity Evidence is provided. Absent/null
+// input.part01Evidence must reproduce the exact pre-Batch-3 prompt string —
+// this is how "existing prompt behavior when packet is null" is guaranteed,
+// not just documented.
+
+const GROUNDING_SUMMARY_FIELDS = `,
+    "core_mode_evidence_refs": ["exact keys from [Core Mode evidence] you grounded core_mode in — 1-4 keys, only from the bracketed list, never invented — omit this field entirely if you cannot ground it"],
+    "growth_edge_evidence_refs": ["exact keys from [Growth Edge evidence] you grounded growth_edge in — 1-4 keys, only from the bracketed list, never invented — omit this field entirely if you cannot ground it"],
+    "growth_edge_why": "optional, 1-2 sentences: why this is the highest-leverage area right now, grounded in more than one evidence signal",
+    "growth_edge_real_life_pattern": "optional, 1-2 sentences: how this shows up in daily situations",
+    "growth_edge_if_developed": "optional, 1-2 sentences: what becomes possible if this is developed"`;
+
+function buildPartASchema(grounded: boolean): string {
+  if (!grounded) return DEEP_ESSENCE_PART_A_SCHEMA;
+  return DEEP_ESSENCE_PART_A_SCHEMA.replace(
+    `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"`,
+    `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"${GROUNDING_SUMMARY_FIELDS}`,
+  );
+}
+
+export type Part01EvidenceForPartAPrompt = {
+  coreModeText: string;
+  growthEdgeText: string;
+};
+
 export function buildDeepEssenceStructuredPartAUserPrompt(input: {
   surveyAnalysis: string;
   essenceAnalysisSummary: string;
   birthEnergyContext: string;
   currentAxisScores: Record<string, number>;
   locale?: Locale | string;
+  /** Batch 3 — optional. Omit/null to reproduce the exact pre-Batch-3 prompt. */
+  part01Evidence?: Part01EvidenceForPartAPrompt | null;
 }): string {
   const outputLocale = normalizeLocale(input.locale);
+  const grounded = Boolean(input.part01Evidence);
+
+  const evidenceBlock = input.part01Evidence
+    ? `
+■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge and to fill their optional evidence_refs.
+[Core Mode evidence]
+${input.part01Evidence.coreModeText}
+
+[Growth Edge evidence]
+${input.part01Evidence.growthEdgeText}
+`
+    : "";
+
+  const groundingRules = grounded
+    ? `
+- Ground core_mode in MULTIPLE signals from [Core Mode evidence] — never a single axis, element, ten-god, or dimension alone. List the exact bracketed keys you used in core_mode_evidence_refs; never invent a key that isn't in the list.
+- Ground growth_edge in MULTIPLE signals from [Growth Edge evidence]. Do not simply pick the widest current/innate gap — weigh it together with dimension confidence, mixed-state flags, and repeated friction/cost signals to judge which area has the most real-life leverage if improved now. List the exact bracketed keys you used in growth_edge_evidence_refs; never invent one. growth_edge_why/growth_edge_real_life_pattern/growth_edge_if_developed are optional — include only when genuinely grounded.`
+    : "";
+
   return `[Input data — use only this material]
 ■ Survey (current behavior patterns)
 ${input.surveyAnalysis}
@@ -94,15 +141,15 @@ ${input.birthEnergyContext}
 
 ■ Survey-scored "current" axis scores (0-100). radar_potential must be >= these values (it represents innate potential, so it should read equal or higher).
 ${JSON.stringify(input.currentAxisScores)}
-
+${evidenceBlock}
 [Output rules]
 - Respond with the exact same key structure as the schema below. Do not add extra keys.
 - strengths, watchouts, and energy.bars must have exactly 3 items each. energy.fuels/drains need 3-5 items, optimal needs 2-4.
 - energy.bars values are integers 0-100 (keep the order: relational spend, self return, solo time).
-- energy.balance_pct must equal bars[1].value (energy returning to you).
+- energy.balance_pct must equal bars[1].value (energy returning to you).${groundingRules}
 
 JSON schema:
-${DEEP_ESSENCE_PART_A_SCHEMA}
+${buildPartASchema(grounded)}
 
 Respond with exactly one JSON object matching the schema above.
 
