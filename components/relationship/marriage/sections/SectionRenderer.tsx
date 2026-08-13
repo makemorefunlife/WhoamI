@@ -49,6 +49,7 @@ import { MarriageChapterNav, MarriageChapterSection } from "@/components/relatio
 import type { ActionPlanItem, CoupleActionPlanSection } from "@/lib/relationship/enrichment/marriageCoupleActionPlan";
 import { VersusStrip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
+import type { MarriageCanonicalBundle } from "@/lib/relationship/marriage/marriageCanonicalTypes";
 
 const ACCENT = getTabTheme("cohabitation").accent;
 
@@ -71,14 +72,24 @@ function PersonBadge() {
   );
 }
 
-// ---- 8-chapter structure ------------------------------------------------------
-// Regroups the same 14 MarriageReportSection cards (no data change) into a
-// numbered 8-chapter read, mirroring the Romantic V4 / Family / Work chapter
-// nav+numbering pattern. `deep_read` (the optional married_saju_deep LLM
-// overlay) sits outside the numbered sequence as a bonus chapter — it isn't
-// always present, so giving it a fixed number would risk the same
-// hidden-chapter numbering gap fixed earlier on the Romantic side.
-type MarriageSectionType = MarriageReportSection["type"];
+// ---- Canonical 9-Chapter Structure (Phase 7 Final Synthesis) ------------------
+const CANONICAL_CHAPTER_DEFINITIONS: Array<{
+  id: string;
+  number: string;
+  titleKo: string;
+  titleEn: string;
+  types: Array<MarriageReportSection["type"]>;
+}> = [
+  { id: "c1_who_we_are", number: "01", titleKo: "우리는 어떤 부부인가", titleEn: "Who We Are as a Married Couple", types: ["origin_story"] },
+  { id: "c2_lifestyle_dna", number: "02", titleKo: "함께 살 때 각자의 라이프스타일과 기질", titleEn: "Life Style & Household DNA", types: ["psych_radar", "compare_table", "home_dna"] },
+  { id: "c3_household_os", number: "03", titleKo: "돈, 집안일, 보이지 않는 운영 책임", titleEn: "Household OS: Money, Chores & PM", types: ["money_chores"] },
+  { id: "c4_intimacy_bedroom", number: "04", titleKo: "사랑, 신체적 친밀감과 침실 이야기", titleEn: "Physical Intimacy & Bedroom Chemistry", types: ["bedroom"] },
+  { id: "c5_conflict_deescalation", number: "05", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
+  { id: "c6_family_parenting_career", number: "06", titleKo: "원가족 경계, 자녀 양육과 일-가정 밸런스", titleEn: "Family Boundary, Parenting & Career-Home", types: ["parenting", "family_boundary", "weather_forecast"] },
+  { id: "c7_longterm_compounding", number: "07", titleKo: "함께 살수록 쌓이는 자산과 부채", titleEn: "Long-Term Compounding: Assets & Liabilities", types: ["privacy"] },
+  { id: "c8_partnership_verdict", number: "08", titleKo: "부부 파트너십 최종 판정", titleEn: "Life Partnership Verdict", types: [] },
+  { id: "c9_next_chapter_rituals", number: "09", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: ["upset", "prescription"] },
+];
 
 const CHAPTER_GROUPS: Array<{
   id: string;
@@ -620,6 +631,293 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
   return <PairPrescriptionSection pack={pack} accentColor={ACCENT} domain="cohabitation" />;
 }
 
+// ---- Substantive UI Cards (Phase 7.5 Content Enrichment) ------------------
+
+function EconomicPartnershipCard({ bundle, names }: { bundle?: MarriageCanonicalBundle; names: [string, string] }) {
+  if (!bundle?.economicPartnership) return null;
+  const { profileA, profileB, pairSynergyTitle, pairSynergyNarrative, decisionFlow } = bundle.economicPartnership;
+
+  const strategyTitle = profileA.primaryRole === "SAVER_ACCUMULATOR" || profileB.primaryRole === "SAVER_ACCUMULATOR"
+    ? "안정적 현금 버퍼 확보 ➔ 분기별 고정 저축 시스템"
+    : "성장 자산화 탐색 ➔ 목표 기반 분할 축적 시스템";
+
+  return (
+    <RelationshipReportCard title="💸 부부 경제 파트너십 (Economic Partnership Role Map)" accentColor={ACCENT}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <p className="font-bold text-white/90">👤 {names[0]}님의 경제적 역할</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-200">{profileA.primaryRoleLabel}</span>
+            <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300/80">{profileA.secondaryRoleLabel}</span>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-white/80">{profileA.behaviorDescription}</p>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset>
+          <p className="font-bold text-white/90">👤 {names[1]}님의 경제적 역할</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="rounded bg-teal-500/20 px-2 py-0.5 text-xs font-semibold text-teal-200">{profileB.primaryRoleLabel}</span>
+            <span className="rounded bg-teal-500/10 px-2 py-0.5 text-xs text-teal-300/80">{profileB.secondaryRoleLabel}</span>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-white/80">{profileB.behaviorDescription}</p>
+        </RelationshipReportInset>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4">
+        <p className="text-sm font-bold text-emerald-200">🤝 부부 경제 파트너십 시너지: {pairSynergyTitle}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-emerald-100/90">{pairSynergyNarrative}</p>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
+        <p className="text-sm font-bold text-amber-200">💡 우리 부부에게 권장하는 돈 모으기 & 자산 운용 방식</p>
+        <p className="mt-1 text-xs font-semibold text-amber-100">{strategyTitle}</p>
+        <p className="mt-1 text-xs text-white/80">
+          두 사람의 성향에 맞춰 월 고정비와 예비비를 먼저 분리한 뒤, 대형 지출 전에는 상호 검토 수순을 거쳐 장기 자산화로 연결하는 구조가 가장 안전합니다.
+        </p>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-xs">
+        <p className="font-semibold text-amber-200/90">📊 경제 의사결정 및 관리 수순 (Economic Decision Flow)</p>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-white/80 sm:grid-cols-3">
+          <div><span className="text-white/50">1. 현금흐름 관리:</span> {decisionFlow.cashFlowTracker}님</div>
+          <div><span className="text-white/50">2. 대형지출 제안:</span> {decisionFlow.largePurchaseProposer}님</div>
+          <div><span className="text-white/50">3. 리스크 검토:</span> {decisionFlow.riskReviewer}님</div>
+          <div><span className="text-white/50">4. 최종 의사결정:</span> {decisionFlow.decider}</div>
+          <div><span className="text-white/50">5. 금융 실무집행:</span> {decisionFlow.executor}님</div>
+        </div>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+function ConflictSubstantiveCard({
+  view,
+  bundle,
+  names,
+}: {
+  view?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriageConflict4StageViewModel;
+  bundle?: MarriageCanonicalBundle;
+  names: [string, string];
+}) {
+  const personA = view?.personA;
+  const personB = view?.personB;
+  const scriptAtoB = bundle?.emergencySosCombined?.scriptAtoB;
+  const scriptBtoA = bundle?.emergencySosCombined?.scriptBtoA;
+  const crisis = bundle?.crisisRole;
+
+  if (!personA || !personB) return null;
+
+  return (
+    <RelationshipReportCard title="🔥 갈등 4단계 상태 전이 & 위기 대응 파트너십" accentColor={ACCENT} variant="warning">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <p className="font-bold text-rose-200">⚡ {names[0]}님의 갈등 감정 4단계 전이</p>
+          <ol className="mt-2 space-y-2 text-xs text-white/85">
+            {personA.stages.map((st) => (
+              <li key={st.stepNumber}>
+                <span className="font-semibold text-amber-300">Step {st.stepNumber} ({st.label}):</span>
+                <p className="mt-0.5 text-white/80 leading-relaxed">{st.narrative}</p>
+              </li>
+            ))}
+          </ol>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset>
+          <p className="font-bold text-rose-200">⚡ {names[1]}님의 갈등 감정 4단계 전이</p>
+          <ol className="mt-2 space-y-2 text-xs text-white/85">
+            {personB.stages.map((st) => (
+              <li key={st.stepNumber}>
+                <span className="font-semibold text-amber-300">Step {st.stepNumber} ({st.label}):</span>
+                <p className="mt-0.5 text-white/80 leading-relaxed">{st.narrative}</p>
+              </li>
+            ))}
+          </ol>
+        </RelationshipReportInset>
+      </div>
+
+      {crisis ? (
+        <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
+          <p className="text-sm font-bold text-amber-200">
+            🛡️ 위기 시 역할 분담: {crisis.practicalLead === "a" ? names[0] : names[1]}님(현실 문제 해결 리드) × {crisis.emotionalAnchor === "a" ? names[0] : names[1]}님(정서적 버팀목)
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-white/85">
+            {crisis.narrative || `${names[0]}님과 ${names[1]}님은 예상치 못한 문제 발생 시 현실적 해결과 정서적 안정을 유연하게 나누어 맡는 상보적 팀입니다.`}
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {scriptAtoB?.firstLine ? (
+          <div className="rounded-lg border border-rose-500/30 bg-rose-950/20 p-4">
+            <p className="text-xs font-bold text-rose-200">🆘 {names[0]} ➔ {names[1]} 긴급 SOS 회복 대본</p>
+            <p className="mt-2 text-xs font-medium text-white/90">💬 첫 마디: "{scriptAtoB.firstLine}"</p>
+            {scriptAtoB.acknowledgement ? <p className="mt-1 text-xs text-white/75">🛡️ 인정: {scriptAtoB.acknowledgement}</p> : null}
+            {scriptAtoB.tabooWord ? <p className="mt-1 text-xs text-rose-300/80">⚠️ 금지 단어: {scriptAtoB.tabooWord}</p> : null}
+          </div>
+        ) : null}
+
+        {scriptBtoA?.firstLine ? (
+          <div className="rounded-lg border border-rose-500/30 bg-rose-950/20 p-4">
+            <p className="text-xs font-bold text-rose-200">🆘 {names[1]} ➔ {names[0]} 긴급 SOS 회복 대본</p>
+            <p className="mt-2 text-xs font-medium text-white/90">💬 첫 마디: "{scriptBtoA.firstLine}"</p>
+            {scriptBtoA.acknowledgement ? <p className="mt-1 text-xs text-white/75">🛡️ 인정: {scriptBtoA.acknowledgement}</p> : null}
+            {scriptBtoA.tabooWord ? <p className="mt-1 text-xs text-rose-300/80">⚠️ 금지 단어: {scriptBtoA.tabooWord}</p> : null}
+          </div>
+        ) : null}
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+function Chapter07SubstantiveCard({ bundle, names }: { bundle?: MarriageCanonicalBundle; names: [string, string] }) {
+  if (!bundle?.coupleBurnout || !bundle?.longTermCompounding || !bundle?.expectationsAndNeeds) return null;
+  const { primaryOverloadRiskPartner, overallNarrative } = bundle.coupleBurnout;
+  const { assets, liabilities, compoundingSummary } = bundle.longTermCompounding;
+  const { expectationsAtoB, expectationsBtoA } = bundle.expectationsAndNeeds;
+
+  const expA = expectationsAtoB[0]?.whatNotToExpect || "지나치게 자발적인 집안 정리를 기대하기보다는 구체적인 업무를 요청하는 것이 안전합니다.";
+  const expB = expectationsBtoA[0]?.whatNotToExpect || "감정 표현에 매순간 완벽하게 반응해주기보다 혼자만의 복원 시간이 필요함을 인정해야 합니다.";
+
+  const primaryPartnerName = primaryOverloadRiskPartner === "a" ? names[0] : primaryOverloadRiskPartner === "b" ? names[1] : "균형";
+
+  return (
+    <RelationshipReportCard title="⚖️ 장기 부부 자산과 부채 & 번아웃 리스크" accentColor={ACCENT}>
+      <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
+        <p className="text-sm font-bold text-amber-200">🚨 번아웃 및 가사 PM 소진 주의 파트너: {primaryPartnerName}님</p>
+        <p className="mt-1 text-xs text-amber-100/90">{overallNarrative || `${primaryPartnerName}님이 집안 운영 기획과 루틴을 주로 챙기고 있어 정기적인 가사 업무 분담 재협상이 필요합니다.`}</p>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <p className="font-bold text-amber-200">⚠️ {names[0]} ➔ {names[1]} 배우자에게 기대하지 말아야 할 것</p>
+          <p className="mt-1.5 text-xs leading-relaxed text-white/80">{expA}</p>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset>
+          <p className="font-bold text-amber-200">⚠️ {names[1]} ➔ {names[0]} 배우자에게 기대하지 말아야 할 것</p>
+          <p className="mt-1.5 text-xs leading-relaxed text-white/80">{expB}</p>
+        </RelationshipReportInset>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <p className="font-bold text-emerald-300">📈 시간이 살수록 쌓이는 부부 자산 (Assets)</p>
+          <ul className="mt-2 space-y-2 text-xs text-white/85">
+            {assets.map((ast, i) => (
+              <li key={i}>
+                <p className="font-semibold text-emerald-200">{ast.title}</p>
+                {ast.body ? <p className="text-white/75">{ast.body}</p> : null}
+              </li>
+            ))}
+          </ul>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset>
+          <p className="font-bold text-rose-300">📉 관리를 안 하면 누적되는 부부 부채 (Liabilities)</p>
+          <ul className="mt-2 space-y-2 text-xs text-white/85">
+            {liabilities.map((liab, i) => (
+              <li key={i}>
+                <p className="font-semibold text-rose-200">{liab.title}</p>
+                {liab.body ? <p className="text-white/75">{liab.body}</p> : null}
+              </li>
+            ))}
+          </ul>
+        </RelationshipReportInset>
+      </div>
+
+      {compoundingSummary ? (
+        <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white/80">
+          <p className="font-bold text-white">📌 장기 복리 총평</p>
+          <p className="mt-1">{compoundingSummary}</p>
+        </div>
+      ) : null}
+    </RelationshipReportCard>
+  );
+}
+
+function LifePartnershipVerdictCard({
+  view,
+  names,
+}: {
+  view?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriagePartnershipVerdictViewModel;
+  names: [string, string];
+}) {
+  if (!view) return null;
+  const { lifeSyncPct, operatingPartnerFit, emotionalPartnerFit, longTermGrowthFit, oneLineVerdict, greatestStrength, biggestVulnerability } = view;
+
+  return (
+    <RelationshipReportCard title="🏆 부부 파트너십 최종 판정 (Life Partnership Verdict)" accentColor={ACCENT}>
+      <div className="rounded-lg border border-emerald-500/40 bg-emerald-950/30 p-5 text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">Life Partnership Sync Score</p>
+        <p className="mt-1 text-4xl font-extrabold text-white">{lifeSyncPct}<span className="text-lg font-normal text-emerald-300/80">%</span></p>
+        <p className="mt-3 text-base font-bold text-emerald-100">{oneLineVerdict}</p>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3 text-center text-xs">
+        <div className="rounded-lg bg-white/5 p-3 border border-white/10">
+          <p className="text-white/60 font-medium">가정 운영 적합성</p>
+          <p className="mt-1 text-base font-bold text-amber-200">{`${operatingPartnerFit}점`}</p>
+        </div>
+        <div className="rounded-lg bg-white/5 p-3 border border-white/10">
+          <p className="text-white/60 font-medium">정서 교감 적합성</p>
+          <p className="mt-1 text-base font-bold text-emerald-200">{`${emotionalPartnerFit}점`}</p>
+        </div>
+        <div className="rounded-lg bg-white/5 p-3 border border-white/10">
+          <p className="text-white/60 font-medium">장기 성장 적합성</p>
+          <p className="mt-1 text-base font-bold text-teal-200">{`${longTermGrowthFit}점`}</p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <p className="font-bold text-emerald-300">✨ 우리 부부의 가장 큰 결합력 (Greatest Strength)</p>
+          <p className="mt-2 text-xs leading-relaxed text-white/85">{greatestStrength}</p>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset>
+          <p className="font-bold text-rose-300">⚠️ 관계의 안정감을 흔드는 가장 큰 취약점 (Biggest Vulnerability)</p>
+          <p className="mt-2 text-xs leading-relaxed text-white/85">{biggestVulnerability}</p>
+        </RelationshipReportInset>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+function MarriageActionPlaybookCard({ names }: { names: [string, string] }) {
+  return (
+    <RelationshipReportCard title="📘 지속 가능한 부부 파트너십 실전 사용설명서 (Do & Don't)" accentColor={ACCENT}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <p className="font-bold text-emerald-200">✅ 지금 당장 해볼 것 (Do)</p>
+          <ul className="mt-2 space-y-1.5 text-xs text-white/90">
+            <li>• 주 1회 15분간 가사 및 재정 일정 스탠드업 미팅 진행하기</li>
+            <li>• 상대의 기획/정리 노고에 "고마워" 즉시 정서적 피드백 주기</li>
+            <li>• 대형 지출 전에는 24시간 생각 정리 후 상호 합의 거치기</li>
+            <li>• 싸움이 15분을 넘어가면 타임아웃 키워드 선언 후 20분 쿨링다운하기</li>
+          </ul>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset>
+          <p className="font-bold text-rose-200">🚫 절대 하지 말 것 (Don't)</p>
+          <ul className="mt-2 space-y-1.5 text-xs text-white/90">
+            <li>• 침실 문이 닫힌 뒤 그날의 갈등이나 서운함 재개하지 않기</li>
+            <li>• 상대의 원가족이나 과거 부모 습관을 갈등 도중에 끌어오지 않기</li>
+            <li>• 집안일이나 재정 주도권을 한 사람에게 무작정 전임하고 방관하기</li>
+            <li>• 상대가 혼자만의 복원 시간을 요청할 때 말을 쏘아붙이며 억지로 대화 강요하지 않기</li>
+          </ul>
+        </RelationshipReportInset>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-center">
+        <p className="text-xs font-semibold text-emerald-200">🌱 {names[0]}님과 {names[1]}님의 10년, 20년 안식을 위한 약속</p>
+        <p className="mt-1 text-xs text-white/75">
+          작은 생활의 루틴을 투명하게 나누고 서로의 복원 시간을 지켜줄 때, 두 사람의 가정은 가장 안전한 휴식처가 됩니다.
+        </p>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
 // ---- Dispatcher -------------------------------------------------------------
 
 type NonSnapshotSection = Exclude<MarriageReportSection, { type: "household_snapshot" }>;
@@ -789,26 +1087,98 @@ export function MarriageReportViewModelView({
           </div>
         );
       })() : null}
-      <MarriageChapterNav items={navItems} />
-      {chapters.map((chapter, i) => (
-        <MarriageChapterSection
-          key={chapter.id}
-          id={chapter.id}
-          number={String(i + 1).padStart(2, "0")}
-          title={isEn ? chapter.titleEn : chapter.titleKo}
-          accent={ACCENT}
-        >
-          {chapter.sections.map((section) => (
-            <MarriageReportSectionCard
-              key={section.id}
-              section={section}
-              names={vm.opening.names}
-              viewerIsReportA={viewerIsReportA}
-            />
+      {/* Canonical 01..09 Chapter Nav & Sections */}
+      {vm.canonicalStoryPlan ? (
+        <>
+          <MarriageChapterNav
+            items={CANONICAL_CHAPTER_DEFINITIONS.map((c) => ({
+              id: c.id,
+              number: c.number,
+              title: isEn ? c.titleEn : c.titleKo,
+            }))}
+          />
+          {CANONICAL_CHAPTER_DEFINITIONS.map((cDef) => {
+            const chOwnership = vm.canonicalStoryPlan?.chapters.find((ch) => ch.chapterId === cDef.id);
+            const summaryText = chOwnership?.summary?.replace(/null/g, "")?.trim();
+
+            return (
+              <MarriageChapterSection
+                key={cDef.id}
+                id={cDef.id}
+                number={cDef.number}
+                title={isEn ? cDef.titleEn : cDef.titleKo}
+                accent={ACCENT}
+              >
+                {summaryText ? (
+                  <RelationshipReportInset className="mb-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-200/90">
+                      💡 {chOwnership?.userQuestion}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-white/90">
+                      {summaryText}
+                    </p>
+                  </RelationshipReportInset>
+                ) : null}
+
+                {cDef.id === "c3_household_os" ? (
+                  <EconomicPartnershipCard bundle={vm.canonicalBundle} names={vm.opening.names} />
+                ) : null}
+
+                {cDef.id === "c5_conflict_deescalation" ? (
+                  <ConflictSubstantiveCard view={vm.conflict4StageView} bundle={vm.canonicalBundle} names={vm.opening.names} />
+                ) : null}
+
+                {cDef.id === "c7_longterm_compounding" ? (
+                  <Chapter07SubstantiveCard bundle={vm.canonicalBundle} names={vm.opening.names} />
+                ) : null}
+
+                {cDef.id === "c8_partnership_verdict" ? (
+                  <LifePartnershipVerdictCard view={vm.lifePartnershipVerdictView} names={vm.opening.names} />
+                ) : null}
+
+                {cDef.id === "c9_next_chapter_rituals" ? (
+                  <MarriageActionPlaybookCard names={vm.opening.names} />
+                ) : null}
+
+                {/* Map only this chapter's explicitly owned section cards */}
+                {otherSections
+                  .filter((sec) => cDef.types.includes(sec.type))
+                  .map((section) => (
+                    <MarriageReportSectionCard
+                      key={section.id}
+                      section={section}
+                      names={vm.opening.names}
+                      viewerIsReportA={viewerIsReportA}
+                    />
+                  ))}
+              </MarriageChapterSection>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          <MarriageChapterNav items={navItems} />
+          {chapters.map((chapter, i) => (
+            <MarriageChapterSection
+              key={chapter.id}
+              id={chapter.id}
+              number={String(i + 1).padStart(2, "0")}
+              title={isEn ? chapter.titleEn : chapter.titleKo}
+              accent={ACCENT}
+            >
+              {chapter.sections.map((section) => (
+                <MarriageReportSectionCard
+                  key={section.id}
+                  section={section}
+                  names={vm.opening.names}
+                  viewerIsReportA={viewerIsReportA}
+                />
+              ))}
+            </MarriageChapterSection>
           ))}
-        </MarriageChapterSection>
-      ))}
-      {bonusSections.length > 0 ? (
+        </>
+      )}
+      {!vm.canonicalStoryPlan && bonusSections.length > 0 ? (
         <MarriageChapterSection id="ch_deep_read" number={null} title={bonusSections[0]!.title} accent={ACCENT}>
           {bonusSections.map((section) => (
             <MarriageReportSectionCard

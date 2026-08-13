@@ -273,9 +273,12 @@ const ELEMENT_OVERCOMES: Record<string, string> = {
   metal: "wood",
 };
 
-export function resolveFriendStrengthBand(chart: ChartContext): FriendStrengthBand {
+export function resolveFriendStrengthBand(
+  chart: ChartContext,
+  canonicalElementCounts?: Record<string, number>,
+): FriendStrengthBand {
   const dayEl = STEM_ELEMENT[chart.dayStemCode] ?? "earth";
-  const counts = countElements(chart);
+  const counts = canonicalElementCounts ?? countElements(chart);
   const resourceEl = Object.entries(ELEMENT_GENERATES).find(([, v]) => v === dayEl)?.[0];
   const outputEl = ELEMENT_GENERATES[dayEl];
   const controlEl = Object.entries(ELEMENT_OVERCOMES).find(([, v]) => v === dayEl)?.[0];

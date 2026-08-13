@@ -369,6 +369,165 @@ function buildPrescriptionSection(
   };
 }
 
+function buildFriendChapterViewModels(
+  report: FriendReportBody,
+  params: BuildFriendReportViewModelParams,
+): FriendChapterViewModel[] | undefined {
+  const storyPlan = report.meta?.canonical_story_plan;
+  if (!storyPlan || !storyPlan.chapters?.length) return undefined;
+
+  const coverage = report.meta?.canonical_bundle?.coverage;
+  const deep = report.meta?.friend_saju_deep;
+  const loc = params.locale ?? "ko-KR";
+  const { viewerIsReportA, myName, partnerName } = params;
+  const names: [string, string] = [myName, partnerName];
+
+  const whyUsData = buildFriendWhyYouMeUs(report, viewerIsReportA, names, loc);
+  const f = report.friend;
+  const socialDnaA = f?.section_social_dna_a;
+  const socialDnaB = f?.section_social_dna_b;
+  const hiddenFlow = f?.section_hidden_flow;
+  const breakupGuide = f?.section_breakup_guide;
+  const deEscalation = f?.section_de_escalation;
+  const soulmate = f?.section_soulmate;
+  const prescriptions = report.meta?.prescription_friendship?.items ?? null;
+
+  return storyPlan.chapters.map((ch) => {
+    let narrativeText: string | null = null;
+    const v1Assets: FriendChapterViewModel["v1Assets"] = {};
+    const coverageCards: FriendChapterViewModel["coverageCards"] = {};
+
+    switch (ch.chapterKey) {
+      case "ch01_why_us":
+        narrativeText =
+          deep?.section_1_spark?.spark_narrative ??
+          (whyUsData?.summaryLine ??
+            "서로가 가진 고유한 에너지와 대화 스타일이 자연스럽게 맞아떨어지는 우정입니다.");
+        v1Assets.whyYouMeUs = whyUsData;
+        break;
+
+      case "ch02_who_we_are":
+        narrativeText =
+          deep?.section_2_nature?.a_nature ??
+          `${names[0]}님과 ${names[1]}님은 서로의 부족한 점을 채우고 든든하게 받쳐주는 수호군 형태의 관계입니다.`;
+        if (socialDnaA && socialDnaB) {
+          v1Assets.socialDnaMe = viewerIsReportA ? socialDnaA : socialDnaB;
+          v1Assets.socialDnaPartner = viewerIsReportA ? socialDnaB : socialDnaA;
+        }
+        break;
+
+      case "ch03_social_dna_tempo":
+        narrativeText =
+          deep?.section_3_tempo?.tempo_narrative ??
+          "연락의 빈도보다는 대화가 이어질 때 느껴지는 편안한 티키타카와 소통 템포가 핵심입니다.";
+        if (coverage?.initiativeRole) {
+          coverageCards.initiativeRole = {
+            contactInitiator: coverage.initiativeRole.contactInitiator === "A" ? names[0] : names[1],
+            planningLead: coverage.initiativeRole.planningLead === "A" ? names[0] : names[1],
+            reconnectionLead: coverage.initiativeRole.reconnectionLead === "A" ? names[0] : names[1],
+            headline: `${names[0]}님과 ${names[1]}님의 주도성 및 소통 역할`,
+          };
+        }
+        break;
+
+      case "ch04_play_travel":
+        narrativeText =
+          deep?.section_4_friend_frames?.travel_teamwork ??
+          "함께 약속을 잡거나 여행을 갈 때 서로의 역할 분담과 주도성이 조화를 이룹니다.";
+        if (hiddenFlow?.travel_style) {
+          v1Assets.travelStyle = hiddenFlow.travel_style;
+        }
+        if (coverage?.travelPlayRole) {
+          coverageCards.travelPlayRole = {
+            ideaCreator: coverage.travelPlayRole.ideaCreator === "A" ? names[0] : names[1],
+            practicalExecutor: coverage.travelPlayRole.practicalExecutor === "A" ? names[0] : names[1],
+            energyPace: coverage.travelPlayRole.energyPace,
+            headline: "놀 때 우리는 어떤 팀인가?",
+          };
+        }
+        break;
+
+      case "ch05_communication_third_person":
+        narrativeText =
+          deep?.section_4_friend_frames?.counseling_mismatch ??
+          "고민을 나눌 때 한 사람은 진심 어린 공감을, 다른 사람은 명확한 방향 제시를 해줍니다.";
+        if (hiddenFlow?.counseling_style_a) {
+          v1Assets.counseling = pickViewerFirstPair(
+            hiddenFlow.counseling_style_a,
+            hiddenFlow.counseling_style_b,
+            viewerIsReportA,
+          );
+        }
+        if (coverage?.thirdPersonExclusion) {
+          coverageCards.thirdPersonExclusion = {
+            category: coverage.thirdPersonExclusion.category,
+            allowedClaim: coverage.thirdPersonExclusion.allowedClaim,
+            forbiddenClaim: coverage.thirdPersonExclusion.forbiddenClaim,
+            headline: "제3자 다자간 모임 시 소외/비교 다이내믹",
+          };
+        }
+        break;
+
+      case "ch06_conflict_repair":
+        narrativeText =
+          deep?.section_5_action?.together ??
+          "서운함이 생기거나 오해가 쌓일 때 빠르게 마음을 풀고 회복하는 체계적인 해독제가 존재합니다.";
+        if (deEscalation) {
+          v1Assets.deEscalation = deEscalation;
+        }
+        break;
+
+      case "ch07_expectation_boundaries":
+        narrativeText =
+          "서로의 다른 기질을 인정하고, 이 관계에서 기대하지 말아야 할 경계를 정리하면 더욱 오래 편안합니다.";
+        if (breakupGuide) {
+          v1Assets.warnings = pickViewerFirstPair(
+            breakupGuide.trigger_warning_a,
+            breakupGuide.trigger_warning_b,
+            viewerIsReportA,
+          );
+        }
+        break;
+
+      case "ch08_distance_durability":
+        narrativeText =
+          deep?.section_4_friend_frames?.distance_resilience ??
+          "자주 보지 않아도 오랫동안 변함없는 신뢰를 유지할 수 있는 강한 내구성을 가진 관계입니다.";
+        if (soulmate?.verdict) {
+          v1Assets.soulmateVerdict = soulmate.verdict;
+        }
+        if (coverage?.distanceProfile) {
+          coverageCards.distanceProfile = {
+            category: coverage.distanceProfile.category,
+            label: coverage.distanceProfile.label,
+            headline: "거리감 & 장기 우정 내구성 프로필",
+          };
+        }
+        break;
+
+      case "ch09_action_playbook":
+        narrativeText =
+          "두 분의 우정을 더 가치 있고 오래도록 지켜나가기 위한 실전 맞춤 수칙입니다.";
+        if (prescriptions) {
+          v1Assets.prescriptions = prescriptions;
+        }
+        break;
+    }
+
+    return {
+      chapterKey: ch.chapterKey,
+      chapterNumber: ch.chapterNumber,
+      title: ch.title,
+      userQuestion: ch.userQuestion,
+      narrativeGoal: ch.narrativeGoal,
+      narrativeText,
+      discrepancyNote: storyPlan.llmHandoffPayload?.discrepancyNotes?.join(" / ") ?? null,
+      v1Assets,
+      coverageCards,
+    };
+  });
+}
+
 export function buildFriendReportViewModel(
   report: FriendReportBody,
   params: BuildFriendReportViewModelParams,
@@ -396,10 +555,14 @@ export function buildFriendReportViewModel(
     .map((build) => build())
     .filter((section): section is FriendReportSection => section != null);
 
+  const chapters = buildFriendChapterViewModels(report, params);
+
   return {
     kind: "friendship",
     opening: buildOpening(report, names),
     sections,
+    chapters,
+    storyPlan: report.meta?.canonical_story_plan,
     raw: { report },
   };
 }

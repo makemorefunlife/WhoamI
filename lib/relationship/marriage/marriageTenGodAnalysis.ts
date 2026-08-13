@@ -43,6 +43,7 @@ export function countTenGodsForMarriage(
 }
 
 function sumGods(counts: TenGodCounts, gods: string[]): number {
+  if (!counts) return 0;
   return gods.reduce((s, g) => s + (counts[g] ?? 0), 0);
 }
 
@@ -59,7 +60,8 @@ export type PersonTenGodProfile = {
   noWealth: boolean;
 };
 
-export function profileTenGods(counts: TenGodCounts): PersonTenGodProfile {
+export function profileTenGods(rawCounts: TenGodCounts): PersonTenGodProfile {
+  const counts = rawCounts || {};
   const wealth = sumGods(counts, WEALTH_GODS);
   const officer = sumGods(counts, OFFICER_GODS);
   const food = sumGods(counts, FOOD_GODS);

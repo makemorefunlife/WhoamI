@@ -1,4 +1,4 @@
-﻿import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
+import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 
 import { resolvePersonalityLabel } from "@/lib/relationship/romanticEverydayText";
 
@@ -196,8 +196,8 @@ export function buildFriendRuleContext(
   });
 
   
-  const canonicalPersonalA = extractCanonicalPersonalFacts(core.chartA);
-  const canonicalPersonalB = extractCanonicalPersonalFacts(core.chartB);
+  const canonicalPersonalA = extractCanonicalPersonalFacts(core.chartA, core.tenGodsA);
+  const canonicalPersonalB = extractCanonicalPersonalFacts(core.chartB, core.tenGodsB);
   const canonicalPairFacts = extractCanonicalPairFacts(core.chartA, core.chartB);
 
 

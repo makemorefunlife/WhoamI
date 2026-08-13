@@ -36,8 +36,8 @@ export function buildElementGeneratesGiftLine(
   if (!generates(dominantOther, dominantSelf)) return null;
   return pick(
     locale,
-    `On top of that, ${nameOther}'s elemental energy naturally feeds mine (${dominantOther} → ${dominantSelf}) — support that arrives without either of us having to try.`,
-    `게다가 오행상으로도 ${nameOther}의 기운이 나를 생(生)해주는 방향이라, 애쓰지 않아도 자연스럽게 채워지는 느낌을 줘요.`,
+    `On top of that, ${nameOther}'s natural energy supports mine — bringing comfort and encouragement without either side having to force it.`,
+    `게다가 타고난 기질적으로도 ${nameOther}의 에너지 흐름이 나를 자연스럽게 북돋아주는 방향이라, 애쓰지 않아도 편안하게 채워지는 느낌을 줘요.`,
   );
 }
 
@@ -205,17 +205,18 @@ export function buildUnlockedSelfLine(params: {
 export function buildDistanceResilienceLine(params: {
   yeomaA: number;
   yeomaB: number;
+  hasYeokmaCanonical?: boolean;
   psychA: PsychMasterJson | null | undefined;
   psychB: PsychMasterJson | null | undefined;
   nameA: string;
   nameB: string;
   locale?: Locale;
 }): string | null {
-  const { yeomaA, yeomaB, psychA, psychB, nameA, nameB } = params;
+  const { yeomaA, yeomaB, hasYeokmaCanonical, psychA, psychB, nameA, nameB } = params;
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
 
-  const bothYeoma = yeomaA >= 1 && yeomaB >= 1;
-  const neitherYeoma = yeomaA === 0 && yeomaB === 0;
+  const bothYeoma = typeof hasYeokmaCanonical === "boolean" ? hasYeokmaCanonical : (yeomaA >= 1 && yeomaB >= 1);
+  const neitherYeoma = typeof hasYeokmaCanonical === "boolean" ? !hasYeokmaCanonical : (yeomaA === 0 && yeomaB === 0);
 
   let base: string;
   if (bothYeoma) {

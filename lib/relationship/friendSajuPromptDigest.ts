@@ -190,6 +190,23 @@ export function buildFriendHouseholdDigest(params: {
     );
   }
 
+  const storyPlan = report.meta?.canonical_story_plan;
+  if (storyPlan) {
+    lines.push(`\n# CANONICAL STORYPLAN (SSOT MEANING OWNERSHIP)`);
+    for (const ch of storyPlan.chapters) {
+      lines.push(
+        `[Chapter ${ch.chapterNumber}: ${ch.chapterKey}] ${ch.title}\n` +
+        `  User Question: ${ch.userQuestion}\n` +
+        `  Primary Meanings: ${ch.primaryMeanings.join(", ")}\n` +
+        `  Prohibited Meanings: ${ch.prohibitedMeanings.join(", ")}\n` +
+        `  Goal: ${ch.narrativeGoal}`
+      );
+    }
+    if (storyPlan.llmHandoffPayload?.discrepancyNotes?.length) {
+      lines.push(`\nContextual Tensions & Discrepancy Notes:\n  - ` + storyPlan.llmHandoffPayload.discrepancyNotes.join("\n  - "));
+    }
+  }
+
   lines.push(
     `RULES: Never print internal keys (daily_share_tempo, battery_recharge, …) in user-facing prose.`,
     `Translate to natural Korean evidence bridges.`,

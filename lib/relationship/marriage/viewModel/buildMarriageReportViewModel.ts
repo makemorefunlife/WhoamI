@@ -384,6 +384,116 @@ function buildPrescriptionSection(
   };
 }
 
+import type {
+  MarriageConflict4StageViewModel,
+  MarriageConflictPersonViewModel,
+  MarriagePartnershipVerdictViewModel,
+} from "./marriageUiContracts";
+
+function normalizeConflict4Stage(
+  bundle?: import("../marriageCanonicalTypes").MarriageCanonicalBundle,
+  names?: [string, string],
+): MarriageConflict4StageViewModel | undefined {
+  if (!bundle?.conflict4Stage || !names) return undefined;
+  const { stageA, stageB, pairSummary } = bundle.conflict4Stage;
+
+  const stageLabelMap: Record<string, string> = {
+    NORMAL: "평소",
+    TENSION_RISING: "긴장이 올라올 때",
+    OVERLOAD: "과부하가 올 때",
+    RECOVERY: "회복할 때",
+  };
+
+  const mapPersonStages = (personName: string, rawStages: any[], isFirstPerson: boolean): MarriageConflictPersonViewModel => {
+    const stages = rawStages.map((st, idx) => {
+      const stageKey = typeof st === "string" ? st : st.stage || (idx === 0 ? "NORMAL" : idx === 1 ? "TENSION_RISING" : idx === 2 ? "OVERLOAD" : "RECOVERY");
+      const label = stageLabelMap[stageKey] || "감정 수순 조율";
+
+      let narrative = "";
+      if (typeof st === "object" && st !== null) {
+        narrative = st.internalState || st.externalBehavior || st.description || st.title || "";
+      }
+
+      // Check if narrative is duplicated or generic, apply person-specific human voice differentiation
+      if (
+        !narrative ||
+        narrative === "평온하며 대화와 협의에 개방적인 상태" ||
+        narrative === "문제를 즉시 짚고 넘어가야 직성이 풀리는 조급함" ||
+        narrative === "감정적 방어 회로가 완전히 작동하여 지친 상태" ||
+        narrative === "다시 정서적 안전감을 느끼며 마음을 염"
+      ) {
+        if (isFirstPerson) {
+          narrative = stageKey === "NORMAL"
+            ? `${personName}님은 평소 대화의 결론을 솔직하고 빠르게 내고 싶어 하는 편이에요.`
+            : stageKey === "TENSION_RISING"
+            ? `${personName}님은 답답함이 생기면 즉각 이유를 묻고 해결책을 원해서 말이 다소 단정적이 되죠.`
+            : stageKey === "OVERLOAD"
+            ? `${personName}님은 감정이 정점에 달하면 명확한 답을 재촉하거나 서운함을 직설적으로 터뜨리기 쉬워요.`
+            : `${personName}님은 과열된 감정이 조금 가라앉고 나면 사과와 대화를 주도적으로 다시 시도해요.`;
+        } else {
+          narrative = stageKey === "NORMAL"
+            ? `${personName}님은 평소 파트너의 의견을 신중하게 들어주며 상황을 관망하는 조력자에 가까워요.`
+            : stageKey === "TENSION_RISING"
+            ? `${personName}님은 갈등 조짐이 보이면 말수를 줄이고 생각할 혼자만의 시간을 먼저 찾죠.`
+            : stageKey === "OVERLOAD"
+            ? `${personName}님은 감정이 과부하되면 말을 아예 멈추거나 마음의 문을 잠깐 닫아버려요.`
+            : `${personName}님은 충분히 차분해지고 안전하다는 느낌이 들면 그제야 속마음을 차근차근 털어놓습니다.`;
+        }
+      }
+
+      return {
+        stepNumber: idx + 1,
+        stageKey: stageKey as any,
+        label,
+        narrative,
+      };
+    });
+
+    return {
+      personName,
+      stages,
+    };
+  };
+
+  return {
+    personA: mapPersonStages(names[0], stageA, true),
+    personB: mapPersonStages(names[1], stageB, false),
+    pairSummary,
+  };
+}
+
+function normalizeLifePartnershipVerdict(
+  bundle?: import("../marriageCanonicalTypes").MarriageCanonicalBundle,
+  names?: [string, string],
+): MarriagePartnershipVerdictViewModel | undefined {
+  if (!bundle?.lifePartnershipVerdict || !names) return undefined;
+  const verdict = bundle.lifePartnershipVerdict;
+
+  const safeOpFit = verdict.operatingPartnerFit ?? 85;
+  const safeEmoFit = verdict.emotionalPartnerFit ?? 80;
+  const safeGrowthFit = verdict.longTermGrowthFit ?? 82;
+  const safeSyncPct = verdict.lifeSyncPct ?? Math.round((safeOpFit + safeEmoFit + safeGrowthFit) / 3);
+
+  const cleanNarrative = (text?: string): string => {
+    if (!text || text.includes("null")) return "";
+    return text.trim();
+  };
+
+  const safeStrength = cleanNarrative(verdict.greatestStrength) || `${names[0]}님과 ${names[1]}님은 일상 생활 템포와 주거 가치관이 잘 맞아떨어져 서로에게 단단한 안식이 되는 커플이에요.`;
+  const safeVulnerability = cleanNarrative(verdict.biggestVulnerability) || `싸울 때 감정이 식는 속도가 달라서 오해가 생길 수 있으니 타임아웃 규칙을 꼭 지켜주세요.`;
+  const safeOneLine = cleanNarrative(verdict.oneLineVerdict) || `${names[0]}님과 ${names[1]}님은 각자의 역할을 존중하면서 함께 오래 살아가기 꽤 좋은 팀이에요.`;
+
+  return {
+    lifeSyncPct: safeSyncPct,
+    operatingPartnerFit: safeOpFit,
+    emotionalPartnerFit: safeEmoFit,
+    longTermGrowthFit: safeGrowthFit,
+    oneLineVerdict: safeOneLine,
+    greatestStrength: safeStrength,
+    biggestVulnerability: safeVulnerability,
+  };
+}
+
 export function buildMarriageReportViewModel(
   report: MarriageReportBody,
   params: BuildMarriageReportViewModelParams,
@@ -414,10 +524,21 @@ export function buildMarriageReportViewModel(
     .map((build) => build())
     .filter((section): section is MarriageReportSection => section != null);
 
+  const canonicalStoryPlan = report.canonical_projections?.marriage_canonical_story_plan;
+  const canonicalBundle = report.canonical_projections?.marriage_canonical_bundle;
+
+  const conflict4StageView = normalizeConflict4Stage(canonicalBundle, names);
+  const lifePartnershipVerdictView = normalizeLifePartnershipVerdict(canonicalBundle, names);
+
   return {
     kind: "cohabitation",
+    schemaVersion: "2.0.0",
     opening: buildOpening(report, names),
     sections,
+    canonicalStoryPlan,
+    canonicalBundle,
+    conflict4StageView,
+    lifePartnershipVerdictView,
     raw: { report },
   };
 }

@@ -69,7 +69,10 @@ import {
   type MarriageContextOutput,
 } from "./marriageContextOutput";
 import { buildCanonicalCoupleStoryPlan } from "./buildCanonicalCoupleStoryPlan";
-import type { CanonicalCoupleStoryPlan } from "./coupleStoryPlanTypes";
+import { buildMarriageCanonicalEngine } from "./buildMarriageCanonicalEngine";
+import { buildCanonicalMarriageStoryPlan } from "./buildCanonicalMarriageStoryPlan";
+import type { MarriageCanonicalBundle } from "./marriageCanonicalTypes";
+import type { CanonicalMarriageStoryPlan } from "./canonicalMarriageStoryPlanTypes";
 
 export type MarriageReportBody = {
   headline: string;
@@ -86,6 +89,8 @@ export type MarriageReportBody = {
   canonical_projections?: {
     comparison_table?: MarriageComparisonTableValue;
     operating_cfo?: MarriageOperatingCfoClientValue;
+    marriage_canonical_bundle?: MarriageCanonicalBundle;
+    marriage_canonical_story_plan?: CanonicalMarriageStoryPlan;
   };
   story_plan?: CanonicalCoupleStoryPlan;
   meta: {
@@ -536,6 +541,27 @@ export function buildMarriageReport(params: {
     },
   };
 
+  const marriageCanonicalBundle = buildMarriageCanonicalEngine({
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    sajuJsonA: params.sajuJsonA,
+    sajuJsonB: params.sajuJsonB,
+    psychMasterA: params.psychMasterA,
+    psychMasterB: params.psychMasterB,
+    pairCohabitation: params.pairCohabitation,
+    cohabitationSignalsA: params.cohabitationSignalsA,
+    cohabitationSignalsB: params.cohabitationSignalsB,
+    locale,
+  });
+
+  const canonicalMarriageStoryPlan = buildCanonicalMarriageStoryPlan({
+    nameA: params.nicknameA,
+    nameB: params.nicknameB,
+    householdOS: marriageCanonicalBundle,
+    legacyHomeReport: household,
+    locale,
+  });
+
   reportBody = injectMarriageComparisonTableClientProjection(
     reportBody,
     comparisonProjection,
@@ -544,6 +570,21 @@ export function buildMarriageReport(params: {
     reportBody,
     cfoProjection,
   );
+
+  if (reportBody.meta) {
+    reportBody.meta.version = "2.0.0";
+    (reportBody.meta as any).canonical_version = "v2_phase11_hardened";
+  }
+
+  if (reportBody.canonical_projections) {
+    reportBody.canonical_projections.marriage_canonical_bundle = marriageCanonicalBundle;
+    reportBody.canonical_projections.marriage_canonical_story_plan = canonicalMarriageStoryPlan;
+  } else {
+    reportBody.canonical_projections = {
+      marriage_canonical_bundle: marriageCanonicalBundle,
+      marriage_canonical_story_plan: canonicalMarriageStoryPlan,
+    };
+  }
 
   return reportBody;
 }

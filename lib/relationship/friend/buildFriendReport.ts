@@ -78,6 +78,10 @@ export type FriendReportBody = {
     person_core?: PersonCoreRelationMetaPayload;
     psych_match?: PsychMatchResult | null;
     psych_lens?: DomainPsychLens | null;
+    /** Friend V2 Phase 2B Canonical Bundle */
+    canonical_bundle?: import("./canonical/friendCanonicalTypes").FriendCanonicalBundle;
+    /** Friend V2 Phase 5 Canonical StoryPlan */
+    canonical_story_plan?: import("./storyPlan/friendStoryPlanTypes").CanonicalFriendStoryPlan;
     /** pair.friendship 교차 신호 기반 실행 처방전 */
     prescription_friendship?: FriendPrescriptionPack;
     /**
@@ -328,6 +332,8 @@ export function buildFriendReport(params: {
     dnaB: ctx.friendPairAnalysis.dnaB,
     chartA: ctx.friendPairAnalysis.chartA,
     chartB: ctx.friendPairAnalysis.chartB,
+    canonicalPersonalA: ctx.canonicalPersonalA,
+    canonicalPersonalB: ctx.canonicalPersonalB,
   });
   const comparisonProjection = buildFriendComparisonTableClientProjection(
     buildFriendComparisonTableCanonical(comparisonTyped)?.value,

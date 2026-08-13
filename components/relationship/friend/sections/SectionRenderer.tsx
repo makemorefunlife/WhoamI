@@ -44,6 +44,141 @@ const relSerif = Noto_Serif_KR({
 
 type NavItem = { id: string; label: string };
 
+function FriendV2StoryPlanView({
+  ctx,
+}: {
+  ctx: { vm: FriendReportViewModel; viewerIsReportA: boolean; locale: Locale };
+}) {
+  const { vm } = ctx;
+  const chapters = vm.chapters!;
+
+  return (
+    <div className="space-y-12 py-8">
+      {chapters.map((ch) => (
+        <section
+          key={ch.chapterKey}
+          id={ch.chapterKey}
+          data-chapter-key={ch.chapterKey}
+          className="mx-auto max-w-[820px] rounded-2xl border border-rel-line bg-white/80 p-6 shadow-sm backdrop-blur sm:p-8"
+        >
+          {/* Chapter Badge & Title */}
+          <div className="mb-5 flex items-start gap-3.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rel-deep text-xs font-bold text-white shadow-sm">
+              {String(ch.chapterNumber).padStart(2, "0")}
+            </span>
+            <div>
+              <h2 className="font-rel-serif text-xl font-semibold text-rel-ink sm:text-2xl">
+                {ch.title}
+              </h2>
+              <p className="mt-1 font-rel-sans text-xs tracking-wide text-rel-ink-soft">
+                {ch.userQuestion}
+              </p>
+            </div>
+          </div>
+
+          {/* Expert Narrative */}
+          {ch.narrativeText && (
+            <div className="mb-6 rounded-xl border border-rel-line/60 bg-rel-bg/60 p-4 font-rel-sans text-sm leading-relaxed text-rel-ink">
+              <p className="font-medium">{ch.narrativeText}</p>
+            </div>
+          )}
+
+          {/* Coverage Cards */}
+          {ch.coverageCards?.initiativeRole && (
+            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
+                {ch.coverageCards.initiativeRole.headline}
+              </h4>
+              <div className="grid grid-cols-1 gap-2 text-xs text-rel-ink-soft sm:grid-cols-3">
+                <div className="rounded-lg bg-rel-bg p-2.5">
+                  <span className="font-semibold text-rel-ink">연락 물꼬:</span>{" "}
+                  {ch.coverageCards.initiativeRole.contactInitiator}님
+                </div>
+                <div className="rounded-lg bg-rel-bg p-2.5">
+                  <span className="font-semibold text-rel-ink">약속·기획:</span>{" "}
+                  {ch.coverageCards.initiativeRole.planningLead}님
+                </div>
+                <div className="rounded-lg bg-rel-bg p-2.5">
+                  <span className="font-semibold text-rel-ink">관계 회복:</span>{" "}
+                  {ch.coverageCards.initiativeRole.reconnectionLead}님
+                </div>
+              </div>
+            </div>
+          )}
+
+          {ch.coverageCards?.thirdPersonExclusion && (
+            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
+                {ch.coverageCards.thirdPersonExclusion.headline}
+              </h4>
+              <div className="space-y-2 text-xs">
+                <div className="rounded-lg bg-rel-bg p-2.5 font-medium text-rel-ink">
+                  모임 성향: {ch.coverageCards.thirdPersonExclusion.category}
+                </div>
+                <p className="text-rel-ink-soft">
+                  <strong className="text-emerald-700">권장:</strong>{" "}
+                  {ch.coverageCards.thirdPersonExclusion.allowedClaim}
+                </p>
+                <p className="text-rel-ink-soft">
+                  <strong className="text-rose-700">주의:</strong>{" "}
+                  {ch.coverageCards.thirdPersonExclusion.forbiddenClaim}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {ch.coverageCards?.travelPlayRole && (
+            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
+                {ch.coverageCards.travelPlayRole.headline}
+              </h4>
+              <div className="grid grid-cols-1 gap-2 text-xs text-rel-ink-soft sm:grid-cols-3">
+                <div className="rounded-lg bg-rel-bg p-2.5">
+                  <span className="font-semibold text-rel-ink">아이디어 제안:</span>{" "}
+                  {ch.coverageCards.travelPlayRole.ideaCreator}님
+                </div>
+                <div className="rounded-lg bg-rel-bg p-2.5">
+                  <span className="font-semibold text-rel-ink">실전 실행:</span>{" "}
+                  {ch.coverageCards.travelPlayRole.practicalExecutor}님
+                </div>
+                <div className="rounded-lg bg-rel-bg p-2.5">
+                  <span className="font-semibold text-rel-ink">에너지 템포:</span>{" "}
+                  {ch.coverageCards.travelPlayRole.energyPace}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {ch.coverageCards?.distanceProfile && (
+            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
+                {ch.coverageCards.distanceProfile.headline}
+              </h4>
+              <div className="rounded-lg bg-rel-bg p-3 text-xs font-semibold text-rel-ink">
+                {ch.coverageCards.distanceProfile.label}
+              </div>
+            </div>
+          )}
+
+          {/* V1 Assets Remapping */}
+          {ch.chapterKey === "ch01_why_us" && <WhyYouMeUsChapter {...ctx} />}
+          {ch.chapterKey === "ch02_who_we_are" && <SocialDnaSection {...ctx} />}
+          {ch.chapterKey === "ch03_social_dna_tempo" && <DimensionsSection {...ctx} />}
+          {ch.chapterKey === "ch04_play_travel" && <HiddenFlowSection {...ctx} />}
+          {ch.chapterKey === "ch06_conflict_repair" && <ManualSection {...ctx} />}
+          {ch.chapterKey === "ch07_expectation_boundaries" && <RiskSection {...ctx} />}
+          {ch.chapterKey === "ch08_distance_durability" &&
+            ch.v1Assets?.soulmateVerdict && (
+              <div className="rounded-xl border border-rel-line bg-white p-4 text-xs font-medium text-rel-ink">
+                🏆 {ch.v1Assets.soulmateVerdict}
+              </div>
+            )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 /** ViewModel 전체를 새 에디토리얼 레이아웃으로 조립 — Friend production 진입점. */
 export function FriendReportViewModelView({
   vm,
@@ -56,26 +191,30 @@ export function FriendReportViewModelView({
   const { locale } = useLocale();
   const ctx = { vm, viewerIsReportA, locale };
 
-  const types = new Set(vm.sections.map((s) => s.type));
-  const navItems: NavItem[] = [
-    { id: "overview", label: pick(locale, "Overview", "한눈에 보기") },
-    ...(types.has("why_you_me_us")
-      ? [{ id: "why_you_me_us", label: pick(locale, "Why us", "서로를 선택한 이유") }]
-      : []),
-    ...(types.has("compare_table") || types.has("psych_radar")
-      ? [{ id: "part1", label: pick(locale, "Our differences", "우리 차이") }]
-      : []),
-    ...(types.has("social_dna") ? [{ id: "part2", label: "Social DNA" }] : []),
-    ...(types.has("hidden_flow") || types.has("soulmate")
-      ? [{ id: "part3", label: pick(locale, "Hidden flow", "숨은 흐름") }]
-      : []),
-    ...(types.has("breakup_guide") ? [{ id: "part4", label: pick(locale, "Guardrails", "방어벽") }] : []),
-    ...(types.has("de_escalation") || types.has("prescription")
-      ? [{ id: "part5", label: pick(locale, "Manual", "사용설명서") }]
-      : []),
-  ];
+  const hasV2StoryPlan = Boolean(vm.chapters && vm.chapters.length === 9);
 
-  const [active, setActive] = useState(navItems[0]?.id ?? "overview");
+  const types = new Set(vm.sections.map((s) => s.type));
+  const navItems: NavItem[] = hasV2StoryPlan
+    ? vm.chapters!.map((ch) => ({ id: ch.chapterKey, label: ch.title }))
+    : [
+        { id: "overview", label: pick(locale, "Overview", "한눈에 보기") },
+        ...(types.has("why_you_me_us")
+          ? [{ id: "why_you_me_us", label: pick(locale, "Why us", "서로를 선택한 이유") }]
+          : []),
+        ...(types.has("compare_table") || types.has("psych_radar")
+          ? [{ id: "part1", label: pick(locale, "Our differences", "우리 차이") }]
+          : []),
+        ...(types.has("social_dna") ? [{ id: "part2", label: "Social DNA" }] : []),
+        ...(types.has("hidden_flow") || types.has("soulmate")
+          ? [{ id: "part3", label: pick(locale, "Hidden flow", "숨은 흐름") }]
+          : []),
+        ...(types.has("breakup_guide") ? [{ id: "part4", label: pick(locale, "Guardrails", "방어벽") }] : []),
+        ...(types.has("de_escalation") || types.has("prescription")
+          ? [{ id: "part5", label: pick(locale, "Manual", "사용설명서") }]
+          : []),
+      ];
+
+  const [active, setActive] = useState(navItems[0]?.id ?? "ch01_why_us");
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -116,7 +255,7 @@ export function FriendReportViewModelView({
             <span className="mr-2 text-rel-deep">{String(activeIndex + 1).padStart(2, "0")}</span>
             {navItems[activeIndex]?.label}
           </span>
-          <nav className="hidden shrink-0 gap-4 sm:flex">
+          <nav className="hidden shrink-0 gap-4 sm:flex overflow-x-auto">
             {navItems.map((item) => (
               <a
                 key={item.id}
@@ -140,13 +279,19 @@ export function FriendReportViewModelView({
 
       <main>
         <FriendHero {...ctx} />
-        <SignalsSection {...ctx} />
-        <WhyYouMeUsChapter {...ctx} />
-        <DimensionsSection {...ctx} />
-        <SocialDnaSection {...ctx} />
-        <HiddenFlowSection {...ctx} />
-        <RiskSection {...ctx} />
-        <ManualSection {...ctx} />
+        {hasV2StoryPlan ? (
+          <FriendV2StoryPlanView ctx={ctx} />
+        ) : (
+          <>
+            <SignalsSection {...ctx} />
+            <WhyYouMeUsChapter {...ctx} />
+            <DimensionsSection {...ctx} />
+            <SocialDnaSection {...ctx} />
+            <HiddenFlowSection {...ctx} />
+            <RiskSection {...ctx} />
+            <ManualSection {...ctx} />
+          </>
+        )}
       </main>
 
       <footer className="border-t border-rel-line">

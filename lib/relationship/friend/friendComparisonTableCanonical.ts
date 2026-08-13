@@ -69,6 +69,8 @@ export function comparisonTableValueFromResolver(params: {
   dnaB: FriendDnaProfile;
   chartA: ChartContext;
   chartB: ChartContext;
+  canonicalPersonalA?: import("@/lib/saju/pairChartAnalysis").CanonicalPersonalSajuFacts;
+  canonicalPersonalB?: import("@/lib/saju/pairChartAnalysis").CanonicalPersonalSajuFacts;
 }): FriendComparisonTableValue {
   return resolveFriendComparisonTableTyped(params);
 }

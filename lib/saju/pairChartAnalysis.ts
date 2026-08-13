@@ -386,9 +386,14 @@ export function sajuJsonToPillars(saju: {
 export type CanonicalPersonalSajuFacts = {
   dominantElement: DominantElementKey;
   weakestElement: DominantElementKey;
+  elementCounts: Record<string, number>;
+  tenGods?: Record<string, number>;
 };
 
-export function extractCanonicalPersonalFacts(chart: ChartContext): CanonicalPersonalSajuFacts {
+export function extractCanonicalPersonalFacts(
+  chart: ChartContext,
+  tenGods?: Record<string, number>,
+): CanonicalPersonalSajuFacts {
   const counts = countElements(chart);
   const entries: Array<[DominantElementKey, number]> = DOMINANT_ELEMENT_ORDER.map(
     (k) => [k, counts[k] ?? 0],
@@ -399,7 +404,12 @@ export function extractCanonicalPersonalFacts(chart: ChartContext): CanonicalPer
   const weakEntries = [...entries].sort((a, b) => a[1] - b[1]);
   const weakest = weakEntries[0]![0];
 
-  return { dominantElement: dominant, weakestElement: weakest };
+  return {
+    dominantElement: dominant,
+    weakestElement: weakest,
+    elementCounts: counts,
+    ...(tenGods ? { tenGods } : {}),
+  };
 }
 
 export type CanonicalPairSajuFacts = {
@@ -413,6 +423,7 @@ export type CanonicalPairSajuFacts = {
   hasClash: boolean; // 충 또는 형
   hasDayBranchCombine: boolean;
   hasDayBranchChungHyung: boolean;
+  hasYeokma: boolean;
   elementSupport: {
     aToB: boolean;
     bToA: boolean;
@@ -446,6 +457,11 @@ export function extractCanonicalPairFacts(
   const hasDayBranchCombine = dayBranchCross.some((h) => h.type === "육합");
   const hasDayBranchChungHyung = dayBranchCross.some((h) => h.type === "충" || h.type === "형");
 
+  const YEOKMA_SET = new Set(["인", "신", "사", "해"]);
+  const hasYeokma =
+    Array.from(chartA.branchCodes).some((b) => YEOKMA_SET.has(b)) ||
+    Array.from(chartB.branchCodes).some((b) => YEOKMA_SET.has(b));
+
   const pA = extractCanonicalPersonalFacts(chartA);
   const pB = extractCanonicalPersonalFacts(chartB);
   const ELEMENT_GENERATES: Record<string, string> = {
@@ -469,6 +485,7 @@ export function extractCanonicalPairFacts(
     hasClash,
     hasDayBranchCombine,
     hasDayBranchChungHyung,
+    hasYeokma,
     elementSupport: { aToB, bToA },
   };
 }

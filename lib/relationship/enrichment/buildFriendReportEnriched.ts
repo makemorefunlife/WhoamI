@@ -3,6 +3,8 @@ import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendRepo
 import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
 import { buildFriendRuleContext } from "@/lib/relationship/friend/buildFriendRuleContext";
 import { buildFriendPrescriptions } from "@/lib/relationship/friend/buildFriendPrescriptions";
+import { buildFriendCanonicalEngine } from "@/lib/relationship/friend/canonical/buildFriendCanonicalEngine";
+import { buildFriendStoryPlanEngine } from "@/lib/relationship/friend/storyPlan/buildFriendStoryPlanEngine";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { PairFriendshipSignals } from "@/lib/personCore/sajuSignals/pairTypes";
@@ -666,6 +668,21 @@ export function buildFriendReportEnriched(params: {
       grade_reason: enrichedGradeReason,
       // RESTORE actionable prescriptions conforming to PairPrescriptionSection
       prescription_friendship: prescriptionPack,
+      canonical_bundle: buildFriendCanonicalEngine({
+        ctx,
+        psychMasterA: params.psychMasterA,
+        psychMasterB: params.psychMasterB,
+        locale,
+      }),
+      canonical_story_plan: buildFriendStoryPlanEngine({
+        bundle: buildFriendCanonicalEngine({
+          ctx,
+          psychMasterA: params.psychMasterA,
+          psychMasterB: params.psychMasterB,
+          locale,
+        }),
+        locale,
+      }),
     },
     // Underlying canonical projections preserved intact
     canonical_projections: base.canonical_projections,

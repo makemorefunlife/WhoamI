@@ -152,9 +152,59 @@ export type FriendReportSection =
   | DeEscalationSection
   | PrescriptionSection;
 
+export type FriendChapterViewModel = {
+  chapterKey: string;
+  chapterNumber: number;
+  title: string;
+  userQuestion: string;
+  narrativeGoal: string;
+  narrativeText?: string | null;
+  discrepancyNote?: string | null;
+  v1Assets?: {
+    whyYouMeUs?: WhyYouMeUsData | null;
+    socialDnaMe?: any;
+    socialDnaPartner?: any;
+    counseling?: any;
+    travelStyle?: any;
+    deEscalation?: any;
+    warnings?: any;
+    jealousyGuard?: any;
+    soulmateVerdict?: string | null;
+    prescriptions?: PairPrescriptionItem[] | null;
+    compareTableRows?: FriendCompareRow[] | null;
+  };
+  coverageCards?: {
+    initiativeRole?: {
+      contactInitiator: string;
+      planningLead: string;
+      reconnectionLead: string;
+      headline: string;
+    } | null;
+    thirdPersonExclusion?: {
+      category: string;
+      allowedClaim: string;
+      forbiddenClaim: string;
+      headline: string;
+    } | null;
+    travelPlayRole?: {
+      ideaCreator: string;
+      practicalExecutor: string;
+      energyPace: string;
+      headline: string;
+    } | null;
+    distanceProfile?: {
+      category: string;
+      label: string;
+      headline: string;
+    } | null;
+  };
+};
+
 export type FriendReportViewModel = {
   kind: "friendship";
   opening: OpeningBlock;
   sections: FriendReportSection[];
+  chapters?: FriendChapterViewModel[];
+  storyPlan?: import("../storyPlan/friendStoryPlanTypes").CanonicalFriendStoryPlan;
   raw: { report: FriendReportBody };
 };

@@ -183,7 +183,12 @@ export type MarriageReportSection =
 
 export type MarriageReportViewModel = {
   kind: "cohabitation";
+  schemaVersion: "2.0.0";
   opening: OpeningBlock;
   sections: MarriageReportSection[];
+  canonicalStoryPlan?: import("../canonicalMarriageStoryPlanTypes").CanonicalMarriageStoryPlan;
+  canonicalBundle?: import("../marriageCanonicalTypes").MarriageCanonicalBundle;
+  conflict4StageView?: import("./marriageUiContracts").MarriageConflict4StageViewModel;
+  lifePartnershipVerdictView?: import("./marriageUiContracts").MarriagePartnershipVerdictViewModel;
   raw: { report: MarriageReportBody };
 };
