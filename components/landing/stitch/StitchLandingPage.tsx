@@ -1,16 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import {
-  Briefcase,
-  Coffee,
-  Heart,
-  Home as HomeIcon,
-  Users,
-} from "lucide-react";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
 import StitchPersonalRadar from "@/components/landing/stitch/StitchPersonalRadar";
 import Logo from "@/components/brand/Logo";
@@ -85,31 +79,31 @@ export default function StitchLandingPage({
 
   const reportCards = [
     {
-      Icon: Heart,
+      img: "/landing/relationships/lovers.png",
       eyebrow: "Lovers",
       title: messages.landing.reportsLoverTitle,
       desc: messages.landing.reportsLoverDesc,
     },
     {
-      Icon: HomeIcon,
+      img: "/landing/relationships/couple.png",
       eyebrow: "Couples",
       title: messages.landing.reportsCoupleTitle,
       desc: messages.landing.reportsCoupleDesc,
     },
     {
-      Icon: Users,
+      img: "/landing/relationships/family.png",
       eyebrow: "Family",
       title: messages.landing.reportsFamilyTitle,
       desc: messages.landing.reportsFamilyDesc,
     },
     {
-      Icon: Briefcase,
+      img: "/landing/relationships/colleagues.png",
       eyebrow: "Colleagues",
       title: messages.landing.reportsColleagueTitle,
       desc: messages.landing.reportsColleagueDesc,
     },
     {
-      Icon: Coffee,
+      img: "/landing/relationships/friends.png",
       eyebrow: "Friends",
       title: messages.landing.reportsFriendTitle,
       desc: messages.landing.reportsFriendDesc,
@@ -293,19 +287,27 @@ export default function StitchLandingPage({
             </h3>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {reportCards.map(({ Icon, eyebrow, title, desc }) => (
+            {reportCards.map(({ img, eyebrow, title, desc }) => (
               <div
                 key={eyebrow}
-                className="flex flex-col rounded-extra-large border border-outline-variant/30 bg-surface-container-lowest p-7 shadow-sm transition-shadow hover:shadow-md"
+                className="relative flex flex-col rounded-extra-large border border-outline-variant/30 bg-surface-container-lowest p-7 shadow-sm transition-shadow hover:shadow-md"
               >
-                <span className="mb-4 inline-flex w-fit rounded-full bg-accent-emerald-soft p-3 text-accent-emerald">
-                  <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
-                </span>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-emerald">
+                <div className="pointer-events-none absolute right-4 top-4 h-20 w-20 sm:h-24 sm:w-24">
+                  <Image
+                    src={img}
+                    alt={title}
+                    fill
+                    sizes="96px"
+                    className="object-contain"
+                  />
+                </div>
+                <p className="pr-20 text-xs font-semibold uppercase tracking-[0.16em] text-accent-emerald sm:pr-24">
                   {eyebrow}
                 </p>
-                <h4 className="mt-2 text-xl font-semibold text-primary">{title}</h4>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-on-surface-variant">
+                <h4 className="mt-2 pr-20 text-xl font-semibold text-primary sm:pr-24">
+                  {title}
+                </h4>
+                <p className="mt-3 flex-1 pr-20 text-sm leading-relaxed text-on-surface-variant sm:pr-24">
                   {desc}
                 </p>
                 <LocaleLink
