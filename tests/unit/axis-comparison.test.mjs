@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { buildAxisComparisons } from "../../lib/v2/analysis/axisComparison.ts";
+import { buildAxisComparisons, selectAxisHighlights } from "../../lib/v2/analysis/axisComparison.ts";
 import { PRIMARY_AXIS_KEYS } from "../../lib/v2/survey/types.ts";
 import { gapDeltaTone } from "../../lib/v2/analysis/gap.ts";
 
@@ -156,5 +156,70 @@ describe("buildAxisComparisons", () => {
       assert.equal(typeof row.human_meaning, "string");
       assert.ok(row.human_meaning.length > 0);
     }
+  });
+});
+
+describe("selectAxisHighlights", () => {
+  it("selects up to 3 widest-gap axes sorted by |delta| descending, using the existing wide/neutral threshold", () => {
+    const current = primary({ structure: 90, connection: 80, stability: 70, growth: 55 });
+    const innate = primary({ structure: 30, connection: 35, stability: 50, growth: 50 });
+    const result = buildAxisComparisons(current, SECONDARY_ZERO, innate);
+    const { gaps } = selectAxisHighlights(result);
+    // structure |delta|=60, connection |delta|=45, stability |delta|=20 (all "wide"); growth |delta|=5 ("neutral")
+    assert.deepEqual(gaps.map((g) => g.axis), ["structure", "connection", "stability"]);
+  });
+
+  it("never forces a count — returns fewer than 3 (even 0) when fewer axes are genuinely wide", () => {
+    const current = primary({ structure: 90 });
+    const innate = primary({ structure: 30 });
+    const result = buildAxisComparisons(current, SECONDARY_ZERO, innate);
+    const { gaps } = selectAxisHighlights(result);
+    assert.equal(gaps.length, 1);
+    assert.equal(gaps[0].axis, "structure");
+  });
+
+  it("returns an empty gaps array when every axis is neutral (no gap padded in)", () => {
+    const result = buildAxisComparisons(primary(), SECONDARY_ZERO, primary());
+    const { gaps } = selectAxisHighlights(result);
+    assert.deepEqual(gaps, []);
+  });
+
+  it("selects the single closest-aligned axis as alignment, independent of the gap list", () => {
+    const current = primary({
+      structure: 90,
+      autonomy: 60,
+      connection: 40,
+      stability: 65,
+      growth: 45,
+      adaptability: 51,
+    });
+    const innate = primary({
+      structure: 30,
+      autonomy: 45,
+      connection: 60,
+      stability: 48,
+      growth: 62,
+      adaptability: 50,
+    });
+    const result = buildAxisComparisons(current, SECONDARY_ZERO, innate);
+    const { alignment } = selectAxisHighlights(result);
+    assert.equal(alignment.axis, "adaptability");
+  });
+
+  it("never lets the same axis appear in both gaps and alignment", () => {
+    const result = buildAxisComparisons(primary(), SECONDARY_ZERO, primary());
+    const { gaps, alignment } = selectAxisHighlights(result);
+    if (alignment) {
+      assert.ok(!gaps.some((g) => g.axis === alignment.axis));
+    }
+  });
+
+  it("caps gaps at 3 even if more than 3 axes are wide", () => {
+    const current = primary({ structure: 95, connection: 90, stability: 85, growth: 80, adaptability: 75 });
+    const innate = primary({ structure: 5, connection: 10, stability: 15, growth: 20, adaptability: 25 });
+    const result = buildAxisComparisons(current, SECONDARY_ZERO, innate);
+    const { gaps } = selectAxisHighlights(result);
+    assert.equal(gaps.length, 3);
+    assert.deepEqual(gaps.map((g) => g.axis), ["structure", "connection", "stability"]);
   });
 });

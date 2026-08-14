@@ -88,6 +88,22 @@ function groundedEvidenceInput(promptEvidence) {
       closePrivateSelfText: promptEvidence.layeredIdentity.closePrivateSelf.text,
       naturalSelfAndDeepNeedsText: promptEvidence.layeredIdentity.naturalSelfAndDeepNeeds.text,
     },
+    strengthsWatchoutsText: promptEvidence.strengthsWatchoutsText,
+    axisInterpretation: {
+      innateEvidenceText: promptEvidence.axisInterpretation.innateEvidenceText,
+      gaps: promptEvidence.axisInterpretation.gaps.map((g) => ({
+        axis: g.axis,
+        subjectText: g.subjectText,
+        currentText: g.currentText,
+      })),
+      alignment: promptEvidence.axisInterpretation.alignment
+        ? {
+            axis: promptEvidence.axisInterpretation.alignment.axis,
+            subjectText: promptEvidence.axisInterpretation.alignment.subjectText,
+            currentText: promptEvidence.axisInterpretation.alignment.currentText,
+          }
+        : null,
+    },
   };
 }
 

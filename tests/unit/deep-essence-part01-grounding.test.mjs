@@ -197,6 +197,14 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — Batch 3 additive contrac
           closePrivateSelfText: "",
           naturalSelfAndDeepNeedsText: "",
         },
+        // Batch 6/7/8 extended this shared type further — empty stubs are
+        // fine here too, this test only checks Batch 3's own contract.
+        strengthsWatchoutsText: "",
+        axisInterpretation: {
+          innateEvidenceText: "",
+          gaps: [],
+          alignment: null,
+        },
       },
     });
     assert.ok(grounded.includes("[Core Mode evidence]"));

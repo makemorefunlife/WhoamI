@@ -12,6 +12,7 @@
  * (en-US / ko-KR 둘 다 지원).
  */
 import { PRIMARY_AXIS_LLM_GUIDE } from "@/lib/v2/framework/primaryAxisDefinitions";
+import type { PrimaryAxisKey } from "@/lib/v2/survey/types";
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
@@ -107,8 +108,38 @@ const LAYERED_IDENTITY_SCHEMA_FIELD = `,
 
 const STRENGTHS_EVIDENCE_FIELD = `, "evidence_refs": ["optional — exact keys from [Strengths & Watchouts evidence] this item is grounded in, only from the bracketed list, never invented — omit if this item isn't well-grounded"]`;
 
-function buildPartASchema(grounded: boolean): string {
-  if (!grounded) return DEEP_ESSENCE_PART_A_SCHEMA;
+// ── Batch 8: replaces Batch 7's "all 6 axes, same depth" axis
+// interpretation. Only the deterministically-selected gap axes (top 2-3
+// widest, magnitude "wide") and the single best-aligned axis get a
+// deep-dive at all — the schema fragment below is built dynamically since
+// which axis keys appear varies per user. Static per-axis "meaning" is
+// gone from the LLM schema entirely (that's pure UI glossary copy now).
+
+type AxisHighlightForSchema = { axis: PrimaryAxisKey };
+
+const GAP_DEEP_DIVE_FIELD = `{ "natural_tendency": "1-2 sentences (3 max) — what comes more naturally / the innate tendency on this axis, grounded ONLY in [Innate Self evidence]", "current_pattern": "1-2 sentences (3 max) — how the person actually operates on this axis today, grounded ONLY in that axis's own Current Self evidence + general survey material; MUST follow the axis's Direction fact exactly, never contradict it", "gives_you": "1 sentence — a plausible, evidence-consistent benefit this current pattern gives them (e.g. it may be an adaptation, a learned/developed strength, a response to role demands, or a protective pattern) — never asserted as the one confirmed cause; use conditional language if the evidence for it is thin", "may_cost": "1 sentence — a plausible energy cost, friction, or fatigue this pattern may carry — never framed as a flaw, mistake, or problem with the person, just a cost", "may_work_better": "optional, 1 sentence — only include if you have a genuinely evidence-grounded suggestion for using this pattern more comfortably; omit the field entirely otherwise", "current_evidence_refs": ["optional — exact keys from this axis's own Current Self evidence, never invented, never another axis's key"], "innate_evidence_refs": ["optional — exact keys from the shared Innate Self evidence, never invented"] }`;
+const ALIGNMENT_HIGHLIGHT_FIELD = `{ "natural_tendency": "1-2 sentences — what comes more naturally on this axis, grounded ONLY in [Innate Self evidence]", "current_pattern": "1-2 sentences — how the person operates on this axis today, grounded ONLY in that axis's own Current Self evidence + general survey material", "why_it_feels_easy": "1-2 sentences — why current and innate line up here, and why this trait can be used with comparatively little energy; treat this as a genuine, positive insight, not a null result", "current_evidence_refs": ["optional — exact keys from this axis's own Current Self evidence, never invented"], "innate_evidence_refs": ["optional — exact keys from the shared Innate Self evidence, never invented"] }`;
+
+function buildAxisInterpretationSchemaField(
+  gaps: AxisHighlightForSchema[],
+  alignment: AxisHighlightForSchema | null,
+): string {
+  if (gaps.length === 0 && !alignment) return "";
+  const sections: string[] = [];
+  if (gaps.length) {
+    const entries = gaps.map((g) => `    "${g.axis}": ${GAP_DEEP_DIVE_FIELD}`).join(",\n");
+    sections.push(`  "gap_deep_dive": {\n${entries}\n  }`);
+  }
+  if (alignment) {
+    sections.push(
+      `  "alignment_highlight": {\n    "${alignment.axis}": ${ALIGNMENT_HIGHLIGHT_FIELD}\n  }`,
+    );
+  }
+  return `,\n  "axis_interpretations": {\n${sections.join(",\n")}\n  }`;
+}
+
+function buildPartASchema(part01Evidence: Part01EvidenceForPartAPrompt | null | undefined): string {
+  if (!part01Evidence) return DEEP_ESSENCE_PART_A_SCHEMA;
   const withSummaryFields = DEEP_ESSENCE_PART_A_SCHEMA.replace(
     `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"`,
     `"growth_edge": "a short phrase for the growth edge (1-3 words, e.g. Decisiveness)"${GROUNDING_SUMMARY_FIELDS}`,
@@ -121,11 +152,15 @@ function buildPartASchema(grounded: boolean): string {
       `{ "title": "watch-out title (1-3 words)", "body": "4-6 gentle sentences" }`,
       `{ "title": "watch-out title (1-3 words)", "body": "4-6 gentle sentences"${STRENGTHS_EVIDENCE_FIELD} }`,
     );
-  // Insert as a new top-level key right after the "energy" block closes,
+  const axisField = buildAxisInterpretationSchemaField(
+    part01Evidence.axisInterpretation.gaps,
+    part01Evidence.axisInterpretation.alignment,
+  );
+  // Insert as new top-level keys right after the "energy" block closes,
   // before the schema object's own closing brace.
   return withSummaryFields.replace(
     /\n(\}\s*)$/,
-    `${LAYERED_IDENTITY_SCHEMA_FIELD}\n$1`,
+    `${LAYERED_IDENTITY_SCHEMA_FIELD}${axisField}\n$1`,
   );
 }
 
@@ -139,6 +174,11 @@ export type Part01EvidenceForPartAPrompt = {
     naturalSelfAndDeepNeedsText: string;
   };
   strengthsWatchoutsText: string;
+  axisInterpretation: {
+    innateEvidenceText: string;
+    gaps: Array<{ axis: PrimaryAxisKey; subjectText: string; currentText: string }>;
+    alignment: { axis: PrimaryAxisKey; subjectText: string; currentText: string } | null;
+  };
 };
 
 export function buildDeepEssenceStructuredPartAUserPrompt(input: {
@@ -153,9 +193,25 @@ export function buildDeepEssenceStructuredPartAUserPrompt(input: {
   const outputLocale = normalizeLocale(input.locale);
   const grounded = Boolean(input.part01Evidence);
 
+  const axisSections = input.part01Evidence
+    ? [
+        ...input.part01Evidence.axisInterpretation.gaps.map(
+          (g) => `[Axis Gap: ${g.axis}]\n${g.subjectText}\nCurrent Self evidence:\n${g.currentText}`,
+        ),
+        ...(input.part01Evidence.axisInterpretation.alignment
+          ? [
+              (() => {
+                const a = input.part01Evidence!.axisInterpretation.alignment!;
+                return `[Axis Alignment: ${a.axis}]\n${a.subjectText}\nCurrent Self evidence:\n${a.currentText}`;
+              })(),
+            ]
+          : []),
+      ].join("\n\n")
+    : "";
+
   const evidenceBlock = input.part01Evidence
     ? `
-■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge / layered_identity / strengths / watchouts and to fill their optional evidence_refs.
+■ Part01 Identity Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide core_mode / growth_edge / layered_identity / strengths / watchouts / axis_interpretations and to fill their optional evidence_refs.
 [Core Mode evidence]
 ${input.part01Evidence.coreModeText}
 
@@ -176,6 +232,11 @@ ${input.part01Evidence.layeredIdentity.closePrivateSelfText}
 
 [Natural Self & Deep Needs evidence]
 ${input.part01Evidence.layeredIdentity.naturalSelfAndDeepNeedsText}
+
+[Innate Self evidence — shared across every axis_interpretations entry below, Personal CE / Saju only]
+${input.part01Evidence.axisInterpretation.innateEvidenceText}
+
+${axisSections}
 `
     : "";
 
@@ -184,7 +245,18 @@ ${input.part01Evidence.layeredIdentity.naturalSelfAndDeepNeedsText}
 - Ground core_mode in MULTIPLE signals from [Core Mode evidence] — never a single axis, element, ten-god, or dimension alone. List the exact bracketed keys you used in core_mode_evidence_refs; never invent a key that isn't in the list.
 - Ground growth_edge in MULTIPLE signals from [Growth Edge evidence]. Do not simply pick the widest current/innate gap — weigh it together with dimension confidence, mixed-state flags, and repeated friction/cost signals to judge which area has the most real-life leverage if improved now. List the exact bracketed keys you used in growth_edge_evidence_refs; never invent one. growth_edge_why/growth_edge_real_life_pattern/growth_edge_if_developed are optional — include only when genuinely grounded.
 - layered_identity is a 4-layer synthesis: first_impression (from [First Impression evidence] only), known_self (from [Known Self evidence] only), close_private_self (from [Close Private Self evidence] only), natural_self_and_deep_needs (from [Natural Self & Deep Needs evidence] only). Each layer's evidence_refs may ONLY reference keys from that layer's own bracketed list — never borrow a key from another layer's list or from Core Mode/Growth Edge evidence. There is no single fixed formula (e.g. month pillar = first impression) — weigh the whole bucket, including confidence and mixed-state flags, and let convergence across multiple signals decide. If a layer's bucket has too little usable signal, OMIT that entire layer key rather than forcing a narrative from thin/single evidence. Never invent an evidence key.
-- You still freely choose the 3 strengths and 3 watchouts exactly as before (same title/body voice and structure) — [Strengths & Watchouts evidence] only informs which ones you pick and how you ground them, it does not replace your own judgment or restrict you to a fixed candidate list. Never decide a strength or watchout from a single five-element/ten-god/psych-axis signal alone — look for convergence across the evidence. Strengths and watchouts may be selected fully independently of each other, but if the same underlying trait clearly has both a positive and a shadow side, feel free to let a strength and a watchout each reference it (never force a 1:1 pairing when one doesn't genuinely exist). Each item's evidence_refs may only reference keys from the bracketed [Strengths & Watchouts evidence] list, and may be omitted per item when not well-grounded. Never invent a key.`
+- You still freely choose the 3 strengths and 3 watchouts exactly as before (same title/body voice and structure) — [Strengths & Watchouts evidence] only informs which ones you pick and how you ground them, it does not replace your own judgment or restrict you to a fixed candidate list. Never decide a strength or watchout from a single five-element/ten-god/psych-axis signal alone — look for convergence across the evidence. Strengths and watchouts may be selected fully independently of each other, but if the same underlying trait clearly has both a positive and a shadow side, feel free to let a strength and a watchout each reference it (never force a 1:1 pairing when one doesn't genuinely exist). Each item's evidence_refs may only reference keys from the bracketed [Strengths & Watchouts evidence] list, and may be omitted per item when not well-grounded. Never invent a key.
+- axis_interpretations covers ONLY the axis keys shown to you under [Axis Gap: <name>] / [Axis Alignment: <name>] below — never add an axis that wasn't given to you, never omit one that was.
+- For every gap_deep_dive entry, follow this exact 4-part order and role for each field, and respect the axis's own "Direction fact" line exactly (never contradict it — if it says Current is higher, natural_tendency must describe something genuinely different from current_pattern, not a restatement of the same trait; likewise if Innate is higher):
+  1. natural_tendency — what comes more naturally / the innate tendency, grounded ONLY in [Innate Self evidence].
+  2. current_pattern — how the person actually operates on this axis today, grounded ONLY in that axis's own "Current Self evidence" plus the general survey material — never Innate/Saju facts.
+  3. gives_you — a plausible, real-life benefit the current pattern provides (e.g. it may function as an adaptation, a learned/developed strength, a response to role demands, or a protective pattern) — never assert which cause it is without evidence; use conditional language ("may", "can look like") when you're not certain.
+  4. may_cost — a plausible energy cost, friction, or fatigue this pattern may carry.
+  may_work_better is optional — include only with a genuinely evidence-grounded, comfort-improving suggestion.
+  Never frame the gap itself as a flaw, mistake, or something wrong with the person — it is one of adaptation / learned strength / role demand / protective pattern / energy cost, not a defect. current_pattern is a real, valid way this person operates today, not a lesser or "less true" version of them.
+- For alignment_highlight, use the same natural_tendency/current_pattern framing, then why_it_feels_easy explaining why the two line up and this trait can be used with comparatively little energy — treat this as a genuine, positive insight, not a throwaway line.
+- Never use fatalistic identity language. In English, avoid phrases like "True Self", "who you really are", "your real self" — prefer natural tendencies / what comes more naturally / how you operate today / where you've adapted / where the two align. In Korean, avoid "진짜 나" — prefer 본래의 경향 / 자연스러운 성향 / 지금 사용하는 방식 / 적응해온 방식.
+- Never translate raw current/innate/delta numbers into prose — describe concrete, real-life behavior and situations instead. Never let a single five-element/ten-god/psych-axis signal alone decide any field — look for convergence, and use conditional language when confidence is low or evidence is mixed. current_evidence_refs may only reference that exact axis's own bracketed Current Self keys (never another axis's); innate_evidence_refs only the shared Innate Self pool's keys. Both optional; never invent a key.`
     : "";
 
   return `[Input data — use only this material]
@@ -207,7 +279,7 @@ ${evidenceBlock}
 - energy.balance_pct must equal bars[1].value (energy returning to you).${groundingRules}
 
 JSON schema:
-${buildPartASchema(grounded)}
+${buildPartASchema(input.part01Evidence)}
 
 Respond with exactly one JSON object matching the schema above.
 

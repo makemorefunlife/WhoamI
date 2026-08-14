@@ -88,6 +88,68 @@ function coerceLayeredIdentityLayer(
   };
 }
 
+// Batch 8 — an axis missing any required text field is dropped entirely,
+// never padded (same "never fabricate" rule as Batch 4's layers). Gap
+// deep-dives need 4 fields (may_work_better stays optional); alignment
+// highlights need 3.
+function coerceAxisGapDeepDive(
+  raw: unknown,
+): {
+  natural_tendency: string;
+  current_pattern: string;
+  gives_you: string;
+  may_cost: string;
+  may_work_better?: string;
+  current_evidence_refs?: string[];
+  innate_evidence_refs?: string[];
+} | null {
+  const row = asRecord(raw);
+  if (!row) return null;
+  const natural_tendency = asString(row.natural_tendency);
+  const current_pattern = asString(row.current_pattern);
+  const gives_you = asString(row.gives_you);
+  const may_cost = asString(row.may_cost);
+  if (!natural_tendency || !current_pattern || !gives_you || !may_cost) return null;
+  const mayWorkBetter = asString(row.may_work_better) || undefined;
+  const currentRefs = asOptionalStringArray(row.current_evidence_refs);
+  const innateRefs = asOptionalStringArray(row.innate_evidence_refs);
+  return {
+    natural_tendency,
+    current_pattern,
+    gives_you,
+    may_cost,
+    ...(mayWorkBetter ? { may_work_better: mayWorkBetter } : {}),
+    ...(currentRefs ? { current_evidence_refs: currentRefs } : {}),
+    ...(innateRefs ? { innate_evidence_refs: innateRefs } : {}),
+  };
+}
+
+function coerceAxisAlignmentHighlight(
+  raw: unknown,
+): {
+  natural_tendency: string;
+  current_pattern: string;
+  why_it_feels_easy: string;
+  current_evidence_refs?: string[];
+  innate_evidence_refs?: string[];
+} | null {
+  const row = asRecord(raw);
+  if (!row) return null;
+  const natural_tendency = asString(row.natural_tendency);
+  const current_pattern = asString(row.current_pattern);
+  const why_it_feels_easy = asString(row.why_it_feels_easy);
+  if (!natural_tendency || !current_pattern || !why_it_feels_easy) return null;
+  const currentRefs = asOptionalStringArray(row.current_evidence_refs);
+  const innateRefs = asOptionalStringArray(row.innate_evidence_refs);
+  return {
+    natural_tendency,
+    current_pattern,
+    why_it_feels_easy,
+    ...(currentRefs ? { current_evidence_refs: currentRefs } : {}),
+    ...(innateRefs ? { innate_evidence_refs: innateRefs } : {}),
+  };
+}
+
 const TONES = new Set(["highlight", "accent", "ink"]);
 
 function coerceTone(v: unknown, fallback: "highlight" | "accent" | "ink") {
@@ -220,6 +282,27 @@ export function coerceDeepEssencePartA(
   }
   const hasAnyLayer = Object.keys(layeredIdentityOut).length > 0;
 
+  const axisInterpretationsIn = asRecord(obj.axis_interpretations);
+  const gapDeepDiveIn = asRecord(axisInterpretationsIn?.gap_deep_dive);
+  const gapDeepDiveOut: Record<string, unknown> = {};
+  if (gapDeepDiveIn) {
+    for (const key of PRIMARY_AXIS_KEYS) {
+      const dive = coerceAxisGapDeepDive(gapDeepDiveIn[key]);
+      if (dive) gapDeepDiveOut[key] = dive;
+    }
+  }
+  const alignmentHighlightIn = asRecord(axisInterpretationsIn?.alignment_highlight);
+  const alignmentHighlightOut: Record<string, unknown> = {};
+  if (alignmentHighlightIn) {
+    for (const key of PRIMARY_AXIS_KEYS) {
+      const highlight = coerceAxisAlignmentHighlight(alignmentHighlightIn[key]);
+      if (highlight) alignmentHighlightOut[key] = highlight;
+    }
+  }
+  const hasAnyGapDeepDive = Object.keys(gapDeepDiveOut).length > 0;
+  const hasAnyAlignmentHighlight = Object.keys(alignmentHighlightOut).length > 0;
+  const hasAnyAxisInterpretation = hasAnyGapDeepDive || hasAnyAlignmentHighlight;
+
   return {
     value: {
       summary,
@@ -228,6 +311,14 @@ export function coerceDeepEssencePartA(
       watchouts,
       energy,
       ...(hasAnyLayer ? { layered_identity: layeredIdentityOut } : {}),
+      ...(hasAnyAxisInterpretation
+        ? {
+            axis_interpretations: {
+              ...(hasAnyGapDeepDive ? { gap_deep_dive: gapDeepDiveOut } : {}),
+              ...(hasAnyAlignmentHighlight ? { alignment_highlight: alignmentHighlightOut } : {}),
+            },
+          }
+        : {}),
     },
     notes,
   };

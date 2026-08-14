@@ -1,6 +1,7 @@
 "use client";
 
 import { DeepEssenceRadarChart } from "@/components/results/deep/DeepEssenceRadarChart";
+import { DeepEssenceAxisInterpretation } from "@/components/results/deep/DeepEssenceAxisInterpretation";
 import { DeepEssenceLayeredIdentity } from "@/components/results/deep/DeepEssenceLayeredIdentity";
 import type { DeepEssenceStructuredReport } from "@/lib/report/runDeepEssenceStructuredLlm";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
@@ -26,7 +27,8 @@ export function DeepEssencePartOne({
   locale: Locale;
   t: DeepEssenceUiStrings;
 }) {
-  const { summary, radar_potential, strengths, watchouts, layered_identity } = structured;
+  const { summary, radar_potential, strengths, watchouts, layered_identity, axis_interpretations } =
+    structured;
 
   return (
     <div className="space-y-12">
@@ -66,6 +68,13 @@ export function DeepEssencePartOne({
           />
         </div>
       </div>
+
+      {/* Current x Innate 축별 해석 (Batch 7, additive) — 레이더 바로 아래 */}
+      <DeepEssenceAxisInterpretation
+        axisInterpretations={axis_interpretations}
+        locale={locale}
+        t={t.axisInterpretation}
+      />
 
       {/* Layered Identity — 4단계 (Batch 5, additive) */}
       <DeepEssenceLayeredIdentity layeredIdentity={layered_identity} t={t.layeredIdentity} />

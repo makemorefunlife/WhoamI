@@ -12,7 +12,7 @@
  * 반드시 통과시켜야 한다.
  */
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
-import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
+import type { PrimaryAxesScores, PrimaryAxisKey } from "@/lib/v2/survey/types";
 
 /**
  * Batch 6 — evidence_refs is internal provenance only (never rendered),
@@ -24,6 +24,32 @@ export type DeepEssenceLayeredIdentityLayer = {
   title?: string;
   narrative: string;
   evidence_refs?: string[];
+};
+/**
+ * Batch 8 — replaces Batch 7's flat per-axis shape. Only the
+ * deterministically-selected gap axes (top 2-3 widest, magnitude "wide")
+ * and the single most-aligned axis get a deep-dive; the other axes get
+ * only the static glossary line (never LLM text at all). Fixed 5-step
+ * order per spec: natural_tendency (innate) -> current_pattern (current)
+ * -> gives_you (benefit) -> may_cost (friction) -> may_work_better
+ * (optional). Direction must be respected — never contradicted.
+ */
+export type DeepEssenceAxisGapDeepDive = {
+  natural_tendency: string;
+  current_pattern: string;
+  gives_you: string;
+  may_cost: string;
+  may_work_better?: string;
+  current_evidence_refs?: string[];
+  innate_evidence_refs?: string[];
+};
+/** Batch 8 — the single best-aligned axis. Same natural/current framing, but as a low-cost fit rather than an adaptation. */
+export type DeepEssenceAxisAlignmentHighlight = {
+  natural_tendency: string;
+  current_pattern: string;
+  why_it_feels_easy: string;
+  current_evidence_refs?: string[];
+  innate_evidence_refs?: string[];
 };
 export type DeepEssenceEnergyBar = {
   label: string;
@@ -60,6 +86,17 @@ export type DeepEssenceStructuredReport = {
     known_self?: DeepEssenceLayeredIdentityLayer;
     close_private_self?: DeepEssenceLayeredIdentityLayer;
     natural_self_and_deep_needs?: DeepEssenceLayeredIdentityLayer;
+  };
+  /**
+   * Batch 8 — additive, optional. Deterministically-selected axis
+   * highlights only (never all 6 with equal depth): up to 3 widest-gap
+   * axes get gap_deep_dive, the single best-aligned axis gets
+   * alignment_highlight. Absent when the packet was unavailable, or a key
+   * absent as a defensive fallback if the LLM's response was malformed.
+   */
+  axis_interpretations?: {
+    gap_deep_dive?: Partial<Record<PrimaryAxisKey, DeepEssenceAxisGapDeepDive>>;
+    alignment_highlight?: Partial<Record<PrimaryAxisKey, DeepEssenceAxisAlignmentHighlight>>;
   };
   radar_potential: PrimaryAxesScores;
   strengths: DeepEssenceStrengthOrWatchout[];

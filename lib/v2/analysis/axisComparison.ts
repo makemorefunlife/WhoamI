@@ -107,3 +107,37 @@ export function buildAxisComparisons(
     magnitude: gapDeltaTone(row.absDelta),
   }));
 }
+
+export type AxisHighlightSelection = {
+  /** Top 2-3 widest-gap axes (magnitude === "wide" only), sorted by |delta| descending. May be shorter than 3, or empty — never padded. */
+  gaps: AxisComparison[];
+  /** The single closest-aligned axis (smallest |delta|). Null only when axisComparisons is empty. */
+  alignment: AxisComparison | null;
+};
+
+/**
+ * Batch 8 — deterministic selection of which axes deserve deep-dive
+ * interpretation. LLM never decides which axes are "notable"; this is pure
+ * ranking over the already-computed delta/magnitude. Reuses the existing
+ * gapDeltaTone "wide" threshold as-is — introduces no new/parallel scheme,
+ * and never forces a gap count when fewer than 3 axes genuinely qualify.
+ */
+export function selectAxisHighlights(
+  axisComparisons: AxisComparison[],
+): AxisHighlightSelection {
+  const gaps = axisComparisons
+    .filter((a) => a.magnitude === "wide")
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+    .slice(0, 3);
+
+  const sortedByCloseness = [...axisComparisons].sort(
+    (a, b) => Math.abs(a.delta) - Math.abs(b.delta),
+  );
+  const closest = sortedByCloseness[0] ?? null;
+  // Defensive only: in a degenerate all-equal-delta case, don't show the
+  // same axis as both a "gap" and "the alignment" highlight.
+  const alignment =
+    closest && gaps.some((g) => g.axis === closest.axis) ? null : closest;
+
+  return { gaps, alignment };
+}

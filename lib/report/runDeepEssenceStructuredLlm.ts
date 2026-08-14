@@ -151,6 +151,21 @@ export async function runDeepEssenceStructuredLlm(
               naturalSelfAndDeepNeedsText: promptEvidence.layeredIdentity.naturalSelfAndDeepNeeds.text,
             },
             strengthsWatchoutsText: promptEvidence.strengthsWatchoutsText,
+            axisInterpretation: {
+              innateEvidenceText: promptEvidence.axisInterpretation.innateEvidenceText,
+              gaps: promptEvidence.axisInterpretation.gaps.map((g) => ({
+                axis: g.axis,
+                subjectText: g.subjectText,
+                currentText: g.currentText,
+              })),
+              alignment: promptEvidence.axisInterpretation.alignment
+                ? {
+                    axis: promptEvidence.axisInterpretation.alignment.axis,
+                    subjectText: promptEvidence.axisInterpretation.alignment.subjectText,
+                    currentText: promptEvidence.axisInterpretation.alignment.currentText,
+                  }
+                : null,
+            },
           }
         : null,
     });
@@ -229,6 +244,50 @@ export async function runDeepEssenceStructuredLlm(
       };
       filterItemRefs(partA.strengths);
       filterItemRefs(partA.watchouts);
+
+      // Batch 8 — same rule, but only for the deterministically-selected
+      // gap/alignment axes (never all 6). current_evidence_refs validates
+      // only against that axis's own Current Self known keys (isolated,
+      // like Batch 4's layers); innate_evidence_refs validates against the
+      // one shared Innate Self pool (like Batch 6's shared set).
+      const axisInterpretations = (partA as Record<string, unknown>).axis_interpretations as
+        | { gap_deep_dive?: Record<string, Record<string, unknown>>; alignment_highlight?: Record<string, Record<string, unknown>> }
+        | undefined;
+      if (axisInterpretations) {
+        const currentKnownKeysByAxis = new Map<string, Set<string>>([
+          ...promptEvidence.axisInterpretation.gaps.map(
+            (g) => [g.axis, g.currentKnownKeys] as const,
+          ),
+          ...(promptEvidence.axisInterpretation.alignment
+            ? [
+                [
+                  promptEvidence.axisInterpretation.alignment.axis,
+                  promptEvidence.axisInterpretation.alignment.currentKnownKeys,
+                ] as const,
+              ]
+            : []),
+        ]);
+        const sanitizeAxisRefs = (bucket: Record<string, Record<string, unknown>> | undefined) => {
+          if (!bucket) return;
+          for (const [axis, interp] of Object.entries(bucket)) {
+            const currentKnownKeys = currentKnownKeysByAxis.get(axis);
+            const filteredCurrent = filterKnownEvidenceRefs(
+              interp.current_evidence_refs,
+              currentKnownKeys,
+            );
+            const filteredInnate = filterKnownEvidenceRefs(
+              interp.innate_evidence_refs,
+              promptEvidence.axisInterpretation.innateEvidenceKnownKeys,
+            );
+            if (filteredCurrent) interp.current_evidence_refs = filteredCurrent;
+            else delete interp.current_evidence_refs;
+            if (filteredInnate) interp.innate_evidence_refs = filteredInnate;
+            else delete interp.innate_evidence_refs;
+          }
+        };
+        sanitizeAxisRefs(axisInterpretations.gap_deep_dive);
+        sanitizeAxisRefs(axisInterpretations.alignment_highlight);
+      }
     }
 
     const userB = buildDeepEssenceStructuredPartBUserPrompt({

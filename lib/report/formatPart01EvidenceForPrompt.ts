@@ -20,13 +20,31 @@
  * spec wants the LLM able to notice a single trait's positive/shadow
  * duality, so strengths and watchouts draw from — and are validated
  * against — the same known-key set).
+ *
+ * Batch 7 — Axis Interpretation (Current x Innate). Current Self evidence
+ * is isolated PER AXIS (that axis's own
+ * AxisComparison.current.secondaryEvidence — already scoped by the
+ * existing Batch 1 PRIMARY_TO_SECONDARY_AXIS_KEYS map, no new mapping
+ * added). Innate Self evidence is ONE shared pool (general identity facts
+ * + CE strengths/growth/cautions groups, same source family as Batch 6,
+ * shown once rather than repeated per axis for token compactness) — per
+ * spec, Current and Innate evidence must never mix, so the shared pool
+ * deliberately excludes axis/secondary-11 lines (unlike Batch 6's pool).
+ *
+ * Batch 8 — replaces "interpret all 6 axes equally" with a deterministic
+ * subset: only the axes selectAxisHighlights() picks (top gap axes +
+ * the single most-aligned axis) get evidence built/sent to the LLM at
+ * all. The static per-axis "meaning" line is gone from here entirely —
+ * that's now pure UI copy (deepEssenceUiStrings.ts glossary), never
+ * generated or seen by the LLM.
  */
 import type {
   Part01CandidateItem,
   Part01EvidenceRef,
   Part01IdentityEvidencePacket,
 } from "@/lib/v1/slim/part01IdentityEvidence";
-import type { AxisComparison } from "@/lib/v2/analysis/axisComparison";
+import { selectAxisHighlights, type AxisComparison } from "@/lib/v2/analysis/axisComparison";
+import type { PrimaryAxisKey } from "@/lib/v2/survey/types";
 
 function evidenceKey(ref: Part01EvidenceRef): string {
   return ref.fact_path;
@@ -38,6 +56,10 @@ function dimensionKey(dimension: string): string {
 
 function axisKey(axis: string): string {
   return `axis:${axis}`;
+}
+
+function secondaryKey(key: string): string {
+  return `secondary:${key}`;
 }
 
 function isUsableDimensionConfidence(confidence: string): boolean {
@@ -115,6 +137,25 @@ export type Part01PromptEvidence = {
   layeredIdentity: Part01LayeredIdentityPromptEvidence;
   strengthsWatchoutsText: string;
   strengthsWatchoutsKnownKeys: Set<string>;
+  axisInterpretation: Part01AxisInterpretationPromptEvidence;
+};
+
+export type Part01AxisHighlightPromptEvidence = {
+  axis: PrimaryAxisKey;
+  /** Deterministic score/delta/direction/magnitude + an explicit "which side is higher" fact — never LLM-decided. */
+  subjectText: string;
+  currentText: string;
+  currentKnownKeys: Set<string>;
+};
+
+export type Part01AxisInterpretationPromptEvidence = {
+  /** Shared across every selected axis — Personal CE / Saju general evidence only, never mixed with Current/secondary-11. */
+  innateEvidenceText: string;
+  innateEvidenceKnownKeys: Set<string>;
+  /** Deterministically selected (selectAxisHighlights) — 0-3 widest-gap axes. */
+  gaps: Part01AxisHighlightPromptEvidence[];
+  /** Deterministically selected — the single closest-aligned axis, or null. */
+  alignment: Part01AxisHighlightPromptEvidence | null;
 };
 
 /** Builds Core Mode grounding text + the exact key set shown for it. */
@@ -264,6 +305,96 @@ function buildStrengthsWatchoutsEvidence(packet: Part01IdentityEvidencePacket): 
 }
 
 /**
+ * Builds the shared Innate Self evidence pool for Axis Interpretation.
+ * Deliberately narrower than Batch 6's Strengths/Watchouts pool — no axis
+ * comparison lines, no Secondary-11 context — because this batch's spec
+ * requires Current and Innate evidence to never mix, and axis/secondary
+ * data is already Current-flavored.
+ */
+function buildAxisInnateEvidence(packet: Part01IdentityEvidencePacket): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+
+  const addEvidence = (refs: Part01EvidenceRef[]) => {
+    for (const ref of refs) {
+      knownKeys.add(evidenceKey(ref));
+      lines.push(formatEvidenceLine(ref));
+    }
+  };
+
+  lines.push("General identity facts:");
+  addEvidence(packet.innate.identityFacts);
+  addEvidence(packet.innate.elementEvidence);
+  lines.push("CE strengths-group signals:");
+  addEvidence(packet.innate.ceStrengthSignals);
+  lines.push("CE growth-group signals:");
+  addEvidence(packet.growthCandidates.growthEvidence);
+  lines.push("CE cautions-group signals:");
+  addEvidence(packet.growthCandidates.cautionEvidence);
+
+  return { text: lines.join("\n"), knownKeys };
+}
+
+/**
+ * Builds one axis's subject line (deterministic score/delta/direction/
+ * magnitude, never re-derived by the LLM — plus an explicit plain-language
+ * "which side is higher" fact, since getting this backwards is exactly the
+ * bug this batch exists to fix) and that axis's own isolated Current Self
+ * evidence (its Secondary-11 subset, per the existing Batch 1
+ * PRIMARY_TO_SECONDARY_AXIS_KEYS map — autonomy has no mapping there by
+ * product decision, so its Current Self evidence is legitimately empty;
+ * the LLM falls back to the general survey material).
+ */
+function buildAxisHighlightEvidence(a: AxisComparison): Part01AxisHighlightPromptEvidence {
+  const currentKnownKeys = new Set<string>();
+  const currentLines: string[] = [];
+  if (a.current.secondaryEvidence.length === 0) {
+    currentLines.push(
+      "(no Secondary-11 evidence mapped to this axis — ground current_pattern in the general survey context only)",
+    );
+  } else {
+    for (const e of a.current.secondaryEvidence) {
+      currentKnownKeys.add(secondaryKey(e.axis));
+      currentLines.push(`- [${secondaryKey(e.axis)}] score=${e.score}`);
+    }
+  }
+  const directionFact =
+    a.direction === "current_higher"
+      ? "Current is HIGHER than Innate — the person's current behavior score exceeds their natural/innate tendency score on this axis."
+      : a.direction === "innate_higher"
+        ? "Innate is HIGHER than Current — the person's natural/innate tendency score exceeds their current behavior score on this axis."
+        : "Current and Innate are essentially aligned (near-zero delta).";
+  return {
+    axis: a.axis,
+    subjectText: `${formatAxisLine(a)}\nDirection fact (never contradict): ${directionFact}`,
+    currentText: currentLines.join("\n"),
+    currentKnownKeys,
+  };
+}
+
+/**
+ * Builds Axis Interpretation evidence for ONLY the deterministically
+ * selected axes (selectAxisHighlights) — never all 6. This is the Batch 8
+ * fix for "6 axes all explained at the same depth, burying the real gap."
+ */
+function buildAxisInterpretationEvidence(
+  packet: Part01IdentityEvidencePacket,
+): Part01AxisInterpretationPromptEvidence {
+  const innate = buildAxisInnateEvidence(packet);
+  const { gaps, alignment } = selectAxisHighlights(packet.axisComparisons);
+
+  return {
+    innateEvidenceText: innate.text,
+    innateEvidenceKnownKeys: innate.knownKeys,
+    gaps: gaps.map(buildAxisHighlightEvidence),
+    alignment: alignment ? buildAxisHighlightEvidence(alignment) : null,
+  };
+}
+
+/**
  * Builds both grounding text blocks from a Part01IdentityEvidencePacket.
  * Returns null if packet is null/undefined — callers must fall back to the
  * existing ungrounded prompt behavior in that case (Batch 3 rule: a failure
@@ -276,6 +407,7 @@ export function formatPart01EvidenceForPrompt(
   const coreMode = buildCoreModeEvidence(packet);
   const growthEdge = buildGrowthEdgeEvidence(packet);
   const strengthsWatchouts = buildStrengthsWatchoutsEvidence(packet);
+  const axisInterpretation = buildAxisInterpretationEvidence(packet);
   const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
     packet.layeredIdentityCandidates;
   return {
@@ -291,6 +423,7 @@ export function formatPart01EvidenceForPrompt(
     },
     strengthsWatchoutsText: strengthsWatchouts.text,
     strengthsWatchoutsKnownKeys: strengthsWatchouts.knownKeys,
+    axisInterpretation,
   };
 }
 

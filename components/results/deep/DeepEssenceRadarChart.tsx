@@ -13,6 +13,8 @@ const AXIS_ORDER: PrimaryAxisKey[] = [
   "adaptability",
   "autonomy",
 ];
+/** Batch 7 — reused by DeepEssenceAxisInterpretation so its reading list matches the radar's visual order. */
+export const DEEP_ESSENCE_RADAR_AXIS_ORDER = AXIS_ORDER;
 
 const SIZE = 320;
 const CENTER = SIZE / 2;
