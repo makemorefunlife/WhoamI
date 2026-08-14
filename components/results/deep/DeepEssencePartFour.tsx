@@ -22,7 +22,7 @@ export function DeepEssencePartFour({
       <div>
         <div className="text-[13px] font-medium text-primary">{t.part4.situationalTips}</div>
         <div className="mt-4 border-t border-on-surface">
-          <div className="text-on-surface-variant grid grid-cols-[1.1fr_1fr_1.3fr] gap-4 border-b border-outline-variant py-3 text-[10px] tracking-[0.14em] uppercase">
+          <div className="text-on-surface-variant grid grid-cols-1 gap-4 border-b border-outline-variant py-3 text-[10px] tracking-[0.14em] uppercase sm:grid-cols-[1.1fr_1fr_1.3fr]">
             <div>{t.part4.situation}</div>
             <div>{t.part4.oldResponse}</div>
             <div className="text-primary">{t.part4.tryInstead}</div>
@@ -30,7 +30,7 @@ export function DeepEssencePartFour({
           {playbook.rows.map((r, i) => (
             <div
               key={i}
-              className="grid grid-cols-[1.1fr_1fr_1.3fr] items-start gap-4 border-b border-outline-variant py-5 last:border-b-0"
+              className="grid grid-cols-1 items-start gap-1 gap-x-4 border-b border-outline-variant py-5 last:border-b-0 sm:grid-cols-[1.1fr_1fr_1.3fr] sm:gap-4"
             >
               <div className="text-[15px] leading-[1.4] text-on-surface" style={serifStyle}>
                 {r.situation}

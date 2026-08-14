@@ -231,7 +231,15 @@ export function dedupeAndBackfillChecklist(input: {
   return { checklist, flagged, backfilledCount };
 }
 
-/** Flattens playbook/future into the flat comparison-text list dedup checks against. */
+/**
+ * Flattens playbook/future/growth-edge into the flat comparison-text list
+ * dedup checks against. growthEdgeRealLifePattern is Part A's Growth Edge
+ * next-step field (summary.growth_edge_real_life_pattern) — Full Integration
+ * QA found checklist items near-copying it directly (e.g. "Reach out to a
+ * friend for a deeper conversation this week" vs. growth edge's own "Try
+ * reaching out to a friend for a deeper conversation..."), which the dedup
+ * pass previously never checked against since it isn't part of playbook/future.
+ */
 export function buildChecklistComparisonTexts(playbook: {
   rows: { better: string }[];
   heated: string;
@@ -239,12 +247,13 @@ export function buildChecklistComparisonTexts(playbook: {
 }, future: {
   remember: string[];
   leap: string;
-}): string[] {
+}, growthEdgeRealLifePattern?: string): string[] {
   return [
     ...playbook.rows.map((r) => r.better),
     playbook.heated,
     playbook.reset,
     ...future.remember,
     future.leap,
+    ...(growthEdgeRealLifePattern ? [growthEdgeRealLifePattern] : []),
   ];
 }

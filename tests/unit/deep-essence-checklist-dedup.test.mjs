@@ -75,6 +75,18 @@ describe("dedupeAndBackfillChecklist — must flag (real QA + user worked exampl
       comparison: "When emotions spike, take a moment to breathe and acknowledge your feelings.",
       locale: "en-US",
     },
+    {
+      label: "EN growth_edge_real_life_pattern near-copy (Full Integration QA finding, profile A_wide_gap)",
+      item: "Reach out to a friend for a deeper conversation this week.",
+      comparison: "Try reaching out to a friend for a deeper conversation or shared activity this week.",
+      locale: "en-US",
+    },
+    {
+      label: "KO growth_edge_real_life_pattern near-copy",
+      item: "이번 주에 가까운 친구와의 대화 시간을 늘려보세요.",
+      comparison: "가까운 친구와의 대화 시간을 늘려보세요. 그들과의 소통이 당신에게 긍정적인 에너지를 줄 거예요.",
+      locale: "ko-KR",
+    },
   ];
 
   for (const c of cases) {
@@ -230,14 +242,25 @@ describe("dedupeAndBackfillChecklist — backfill / count guarantees", () => {
 });
 
 describe("buildChecklistComparisonTexts", () => {
-  it("flattens rows[].better, heated, reset, remember[], and leap into one list", () => {
-    const playbook = {
-      rows: [{ better: "a" }, { better: "b" }],
-      heated: "c",
-      reset: "d",
-    };
-    const future = { remember: ["e", "f"], leap: "g" };
+  const playbook = {
+    rows: [{ better: "a" }, { better: "b" }],
+    heated: "c",
+    reset: "d",
+  };
+  const future = { remember: ["e", "f"], leap: "g" };
+
+  it("flattens rows[].better, heated, reset, remember[], and leap into one list when growthEdgeRealLifePattern is omitted (backward compatible)", () => {
     const texts = buildChecklistComparisonTexts(playbook, future);
+    assert.deepEqual(texts, ["a", "b", "c", "d", "e", "f", "g"]);
+  });
+
+  it("appends growthEdgeRealLifePattern as the last comparison text when provided", () => {
+    const texts = buildChecklistComparisonTexts(playbook, future, "h");
+    assert.deepEqual(texts, ["a", "b", "c", "d", "e", "f", "g", "h"]);
+  });
+
+  it("does not append anything when growthEdgeRealLifePattern is an empty string", () => {
+    const texts = buildChecklistComparisonTexts(playbook, future, "");
     assert.deepEqual(texts, ["a", "b", "c", "d", "e", "f", "g"]);
   });
 });

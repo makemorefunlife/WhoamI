@@ -352,7 +352,13 @@ export async function runDeepEssenceStructuredLlm(
         reset: string;
       };
       const futureForDedup = partB.future as { remember: string[]; leap: string };
-      const comparisonTexts = buildChecklistComparisonTexts(playbookForDedup, futureForDedup);
+      // Full Integration QA — also compare against Part A's Growth Edge
+      // next-step field, which checklist items were observed near-copying.
+      const comparisonTexts = buildChecklistComparisonTexts(
+        playbookForDedup,
+        futureForDedup,
+        partA.summary.growth_edge_real_life_pattern,
+      );
       const dedupResult = dedupeAndBackfillChecklist({
         checklist: partB.checklist,
         comparisonTexts,
