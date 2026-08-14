@@ -777,22 +777,77 @@ export const messagesEnUS = {
     createRelationship: "Create relationship",
   },
   landing: {
-    heroTitleLine1: "Understand yourself.",
-    heroTitleLine2Start: "Make peace with ",
-    heroTitleLine2Emphasis: "your story",
-    heroTitleLine2End: ".",
-    heroSubtitle: "Gentle insights for the moments you're searching for answers.",
-    featureBrainTitle: "Deep Behavioral Mapping",
-    featureBrainDesc:
-      "Our proprietary algorithms translate complex emotional data into actionable clarity, helping you understand the 'why' behind your reactions.",
-    featureHeartTitle: "Relationship Alignment",
-    featureHeartDesc:
-      "Sync your profile with partners or family to visualize compatibility and communication gaps.",
-    featureGrowthTitle: "Longitudinal Growth",
-    featureGrowthDesc:
-      "Track your evolution over months and years with precise data-driven journaling.",
-    sanctuaryTitle: "The Scientific Sanctuary",
-    sanctuarySubtitle: "Our three-pillar approach to lasting equilibrium.",
+    heroTitle: "Un-misunderstand yourself.",
+    heroSubtitle: "Gentle with yourself, generous with others.",
+    heroHook:
+      "Stop forcing yourself. Aha It's me! reads the unique nature of you and others, gifting you the effortless, optimal relationship.",
+    philosophyHeadline:
+      "You don't need to force yourself to change.\nEase off, and communicate at your best.",
+    philosophyPoint1:
+      "Why do the same misunderstandings and friction from my communication style keep repeating?",
+    philosophyPoint2:
+      "Have you ever avoided or given up on a relationship, worn down by frustration and being misread?",
+    philosophyPoint3:
+      "Did that cost you an opportunity or a person who truly mattered to you?",
+    philosophySolution:
+      "Stop forcing yourself to change. Once you understand your own nature and the other person's, you can watch out for each other, lean into your strengths, and build the best relationship with the least stress.",
+    personalHeadline: "Have you been at war with yourself?",
+    personalInnateTitle: "Innate Self",
+    personalInnateDesc:
+      "The baseline you, as written in your innate blueprint — natural and effortless.",
+    personalRealizedTitle: "Realized Self",
+    personalRealizedDesc:
+      "The behavior pattern you actually show now, adjusted by your relationships and roles.",
+    personalGapLabel: "Gap · Unconscious Fatigue & the Energy Divide",
+    personalGapQuote:
+      "“The gap between these two graphs is exactly the source of the fatigue you've felt from pushing yourself too hard.”",
+    personalCta: "See My Personal Analysis",
+    reportsHeadline: "A clear guide tailored to the relationship in front of you",
+    reportsCtaLabel: "View report",
+    reportsLoverTitle: "Lovers",
+    reportsLoverDesc:
+      "Understand each other's core differences and step into deeper intimacy.",
+    reportsCoupleTitle: "Couples",
+    reportsCoupleDesc:
+      "Untangle the source of everyday friction and find practical common ground.",
+    reportsFamilyTitle: "Parent & Child",
+    reportsFamilyDesc:
+      "A communication guide that respects the innate nature of both parent and child.",
+    reportsColleagueTitle: "Colleagues",
+    reportsColleagueDesc:
+      "The optimal collaboration strategy, built on an analysis of workplace behavior patterns.",
+    reportsFriendTitle: "Friends",
+    reportsFriendDesc:
+      "The right distance, and the warmth that lets you both shine.",
+    reportsStartTitle: "Get Started",
+    reportsStartDesc: "Pick a relationship, and lay both of your natures side by side.",
+    reportsStartCta: "Start Relationship Analysis",
+    frameworkHeadline:
+      "The Scientific Sanctuary: 3 principles for lasting relationship balance",
+    frameworkStep1Desc:
+      "Map your cognitive biases and take apart the stories you keep telling yourself.",
+    frameworkStep2Desc:
+      "Integrate your insights into everyday language and habits through guided journaling.",
+    frameworkStep3Desc:
+      "Feed your reactions within relationships back into the loop, tuning synergy over time.",
+    reportSampleTitle: "Innate You vs. Realized You",
+    reportSampleLegendInnate: "Innate Self",
+    reportSampleLegendRealized: "Realized Self",
+    reportSampleFootnote:
+      "The gap between your innate blueprint and your current behavioral data is exactly where relationship friction happens.",
+    reportSampleAxis1: "Emotional Expression",
+    reportSampleAxis2: "Decision Speed",
+    reportSampleAxis3: "Conflict Response",
+    reportSampleAxis4: "Openness to Intimacy",
+    reportSampleAxis5: "Structural Preference",
+    journalHeadline: "Beyond analysis, into the record of your life — [Decision Journal]",
+    journalDesc:
+      "A metacognitive space for logging and revisiting the big and small choices of everyday life, built on the insight from your report.",
+    journalSampleChoice: "Today's choice: I waited it out instead of speaking up first.",
+    journalSampleEmotion: "How I felt — cautious, a little restless",
+    journalSampleInnate: "My innate self would have — named the feeling first",
+    journalSampleRetry: "If I could redo it — just offer one sentence first",
+    journalCta: "Preview the Decision Journal",
     footerTagline:
       "Architecting psychological equilibrium through scientific discovery and empathetic design.",
     authModalTitle: "Continue your journey",
@@ -1984,19 +2039,57 @@ export type MessageCatalog = {
     createRelationship: string;
   };
   landing: {
-    heroTitleLine1: string;
-    heroTitleLine2Start: string;
-    heroTitleLine2Emphasis: string;
-    heroTitleLine2End: string;
+    heroTitle: string;
     heroSubtitle: string;
-    featureBrainTitle: string;
-    featureBrainDesc: string;
-    featureHeartTitle: string;
-    featureHeartDesc: string;
-    featureGrowthTitle: string;
-    featureGrowthDesc: string;
-    sanctuaryTitle: string;
-    sanctuarySubtitle: string;
+    heroHook: string;
+    philosophyHeadline: string;
+    philosophyPoint1: string;
+    philosophyPoint2: string;
+    philosophyPoint3: string;
+    philosophySolution: string;
+    personalHeadline: string;
+    personalInnateTitle: string;
+    personalInnateDesc: string;
+    personalRealizedTitle: string;
+    personalRealizedDesc: string;
+    personalGapLabel: string;
+    personalGapQuote: string;
+    personalCta: string;
+    reportsHeadline: string;
+    reportsCtaLabel: string;
+    reportsLoverTitle: string;
+    reportsLoverDesc: string;
+    reportsCoupleTitle: string;
+    reportsCoupleDesc: string;
+    reportsFamilyTitle: string;
+    reportsFamilyDesc: string;
+    reportsColleagueTitle: string;
+    reportsColleagueDesc: string;
+    reportsFriendTitle: string;
+    reportsFriendDesc: string;
+    reportsStartTitle: string;
+    reportsStartDesc: string;
+    reportsStartCta: string;
+    frameworkHeadline: string;
+    frameworkStep1Desc: string;
+    frameworkStep2Desc: string;
+    frameworkStep3Desc: string;
+    reportSampleTitle: string;
+    reportSampleLegendInnate: string;
+    reportSampleLegendRealized: string;
+    reportSampleFootnote: string;
+    reportSampleAxis1: string;
+    reportSampleAxis2: string;
+    reportSampleAxis3: string;
+    reportSampleAxis4: string;
+    reportSampleAxis5: string;
+    journalHeadline: string;
+    journalDesc: string;
+    journalSampleChoice: string;
+    journalSampleEmotion: string;
+    journalSampleInnate: string;
+    journalSampleRetry: string;
+    journalCta: string;
     footerTagline: string;
     authModalTitle: string;
     authModalBody: string;

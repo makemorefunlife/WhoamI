@@ -1,16 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
-  Brain,
+  Briefcase,
+  Coffee,
   Heart,
-  TrendingUp,
+  Home as HomeIcon,
+  Users,
 } from "lucide-react";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
+import StitchPersonalRadar from "@/components/landing/stitch/StitchPersonalRadar";
 import Logo from "@/components/brand/Logo";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -22,8 +24,8 @@ import {
 import { useAppSession } from "@/lib/routing/useAppSession";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 
-const HERO_IMG =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDvgf6WG4j6WmSliT9ytPyueU1yY_U7iK3rDs0KH0un2ei-7z7YtU6CWtOH0vlV1TeaTGp7MNGkGJJE_7jGSf9mVK_GZNVi0cXwUCZbLOqu4lskU70i2IZ3iPe0OhfnCoHROaachRLGnLUdZ7Y2B7Hm2210LeZsY2lijQ2Q7uJTIKNNHhy2pvKTWCMNwJv_B1Qn5xU3k3_SDhSpMjUl9uGmAFlwcpMJCvf2JXK0Od047ck6WxhSnq1RvLD2ek81OaidU9GNkxAezmTk";
+const EYEBROW_CLASS =
+  "mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-accent-emerald";
 
 type Props = {
   resumeLoading: boolean;
@@ -81,6 +83,71 @@ export default function StitchLandingPage({
     ? sessionReportId?.trim() || storedReportId
     : "";
 
+  const reportCards = [
+    {
+      Icon: Heart,
+      eyebrow: "Lovers",
+      title: messages.landing.reportsLoverTitle,
+      desc: messages.landing.reportsLoverDesc,
+    },
+    {
+      Icon: HomeIcon,
+      eyebrow: "Couples",
+      title: messages.landing.reportsCoupleTitle,
+      desc: messages.landing.reportsCoupleDesc,
+    },
+    {
+      Icon: Users,
+      eyebrow: "Family",
+      title: messages.landing.reportsFamilyTitle,
+      desc: messages.landing.reportsFamilyDesc,
+    },
+    {
+      Icon: Briefcase,
+      eyebrow: "Colleagues",
+      title: messages.landing.reportsColleagueTitle,
+      desc: messages.landing.reportsColleagueDesc,
+    },
+    {
+      Icon: Coffee,
+      eyebrow: "Friends",
+      title: messages.landing.reportsFriendTitle,
+      desc: messages.landing.reportsFriendDesc,
+    },
+  ];
+
+  const frameworkSteps = [
+    {
+      step: "01",
+      name: "Assessment",
+      title: "Cognitive Bias Mapping & Narrative Analysis",
+      desc: messages.landing.frameworkStep1Desc,
+      tag: "Clarity",
+    },
+    {
+      step: "02",
+      name: "Integration",
+      title: "Guided Metacognitive Journaling",
+      desc: messages.landing.frameworkStep2Desc,
+      tag: "Resilience",
+    },
+    {
+      step: "03",
+      name: "Evolution",
+      title: "Relational Synergy Feedback Loops",
+      desc: messages.landing.frameworkStep3Desc,
+      tag: "Alignment",
+    },
+  ];
+
+  const reportSampleAxes = [
+    { label: messages.landing.reportSampleAxis1, innate: 82, realized: 47 },
+    { label: messages.landing.reportSampleAxis2, innate: 61, realized: 88 },
+    { label: messages.landing.reportSampleAxis3, innate: 44, realized: 72 },
+    { label: messages.landing.reportSampleAxis4, innate: 90, realized: 58 },
+    { label: messages.landing.reportSampleAxis5, innate: 55, realized: 79 },
+  ];
+
   return (
     <div className="stitch-landing overflow-x-hidden">
       <main
@@ -103,14 +170,13 @@ export default function StitchLandingPage({
                   Aha It&apos;s me
                 </p>
                 <h2 className="stitch-headline mb-6 text-balance text-[2rem] leading-[1.12] sm:text-4xl md:text-[2.75rem] lg:text-5xl">
-                  {messages.landing.heroTitleLine1}
-                  <br />
-                  {messages.landing.heroTitleLine2Start}
-                  <em>{messages.landing.heroTitleLine2Emphasis}</em>
-                  {messages.landing.heroTitleLine2End}
+                  {messages.landing.heroTitle}
                 </h2>
-                <p className="mb-10 max-w-xl text-base leading-relaxed text-on-surface-variant sm:text-lg">
+                <p className="mb-6 max-w-xl text-base leading-relaxed text-on-surface-variant sm:text-lg">
                   {messages.landing.heroSubtitle}
+                </p>
+                <p className="mb-8 max-w-xl text-sm leading-relaxed text-on-surface-variant/80 sm:text-base">
+                  {messages.landing.heroHook}
                 </p>
                 <StitchHomeCta
                   resumeLoading={resumeLoading}
@@ -124,128 +190,269 @@ export default function StitchLandingPage({
 
         <section
           data-stitch-reveal
-          className="mt-stack-lg grid grid-cols-1 gap-6 md:mt-section-gap md:grid-cols-12"
+          className="mt-stack-lg md:mt-section-gap"
         >
-          <div className="group flex min-h-[400px] flex-col justify-between rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm transition-all duration-500 hover:shadow-lg md:col-span-8 md:p-12">
+          <div className="grid gap-10 rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm md:grid-cols-[0.9fr_1.1fr] md:p-14">
             <div>
-              <span className="mb-6 inline-flex rounded-full bg-accent-emerald-soft p-3 text-accent-emerald">
-                <Brain className="h-8 w-8" strokeWidth={1.75} aria-hidden />
-              </span>
-              <h3 className="mb-4 mt-6 text-3xl font-semibold text-primary">
-                {messages.landing.featureBrainTitle}
+              <span className={EYEBROW_CLASS}>Brand Philosophy</span>
+              <h3 className="stitch-headline whitespace-pre-line text-3xl leading-tight md:text-4xl">
+                {messages.landing.philosophyHeadline}
               </h3>
-              <p className="max-w-md text-base leading-relaxed text-on-surface-variant">
-                {messages.landing.featureBrainDesc}
-              </p>
             </div>
-            <div className="relative mt-8 aspect-video overflow-hidden rounded-extra-large md:aspect-[21/9]">
-              <Image
-                src={HERO_IMG}
-                alt="Abstract neural pathways visualization"
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/60 to-transparent" />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-6 md:col-span-4">
-            <div className="flex-1 rounded-extra-extra-large border border-accent-rose/25 bg-accent-rose-soft/50 p-8 shadow-sm transition-shadow hover:shadow-md">
-              <span className="inline-flex rounded-full bg-white/60 p-3 text-accent-rose">
-                <Heart className="h-7 w-7" strokeWidth={1.75} aria-hidden />
-              </span>
-              <h4 className="mb-2 mt-4 text-2xl font-medium text-primary">
-                {messages.landing.featureHeartTitle}
-              </h4>
-              <p className="text-base leading-relaxed text-on-surface-variant">
-                {messages.landing.featureHeartDesc}
-              </p>
-            </div>
-            <div className="flex-1 rounded-extra-extra-large border border-accent-emerald/20 bg-secondary-container p-8 shadow-sm transition-shadow hover:shadow-md">
-              <span className="inline-flex rounded-full bg-white/50 p-3 text-accent-emerald">
-                <TrendingUp className="h-7 w-7" strokeWidth={1.75} aria-hidden />
-              </span>
-              <h4 className="mb-2 mt-4 text-2xl font-medium text-primary">
-                {messages.landing.featureGrowthTitle}
-              </h4>
-              <p className="text-base leading-relaxed text-on-surface-variant">
-                {messages.landing.featureGrowthDesc}
-              </p>
+            <div>
+              <ul className="divide-y divide-outline-variant/30 border-y border-outline-variant/30">
+                {[
+                  messages.landing.philosophyPoint1,
+                  messages.landing.philosophyPoint2,
+                  messages.landing.philosophyPoint3,
+                ].map((line, i) => (
+                  <li key={line} className="flex gap-5 py-5">
+                    <span className="text-sm text-accent-rose">0{i + 1}</span>
+                    <p className="text-base leading-relaxed text-on-surface-variant">
+                      {line}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <blockquote className="mt-8 rounded-extra-large border-l-2 border-accent-emerald bg-secondary-container/60 p-6 text-base leading-relaxed text-primary">
+                {messages.landing.philosophySolution}
+              </blockquote>
             </div>
           </div>
         </section>
 
         <section
           data-stitch-reveal
-          className="mx-auto mt-section-gap max-w-4xl"
+          className="mt-stack-lg md:mt-section-gap"
         >
-          <div className="mb-16 text-center">
-            <h3 className="mb-4 text-3xl font-semibold text-primary">
-              {messages.landing.sanctuaryTitle}
+          <div className="mb-10">
+            <span className={EYEBROW_CLASS}>Personal Analysis</span>
+            <h3 className="stitch-headline text-3xl leading-tight md:text-4xl">
+              {messages.landing.personalHeadline}
             </h3>
-            <p className="text-lg text-on-surface-variant">
-              {messages.landing.sanctuarySubtitle}
+          </div>
+          <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm md:p-12">
+            <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr]">
+              <div className="order-2 lg:order-1">
+                <div className="grid gap-8 sm:grid-cols-2">
+                  <div className="border-t-2 border-accent-rose/70 pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-rose">
+                      Innate
+                    </p>
+                    <h4 className="mt-2 text-xl font-semibold text-primary">
+                      {messages.landing.personalInnateTitle}
+                    </h4>
+                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+                      {messages.landing.personalInnateDesc}
+                    </p>
+                  </div>
+                  <div className="border-t-2 border-accent-emerald/70 pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-emerald">
+                      Realized
+                    </p>
+                    <h4 className="mt-2 text-xl font-semibold text-primary">
+                      {messages.landing.personalRealizedTitle}
+                    </h4>
+                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+                      {messages.landing.personalRealizedDesc}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-8 rounded-extra-large border border-accent-emerald/30 bg-secondary-container/60 p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-emerald">
+                    {messages.landing.personalGapLabel}
+                  </p>
+                  <p className="mt-3 text-base leading-relaxed text-primary">
+                    {messages.landing.personalGapQuote}
+                  </p>
+                </div>
+              </div>
+              <div className="order-1 flex items-center justify-center lg:order-2">
+                <StitchPersonalRadar />
+              </div>
+            </div>
+            <div className="mt-10 flex justify-center md:justify-end">
+              <LocaleLink href={blueprintPath(reportId)} className="stitch-cta-secondary">
+                {messages.landing.personalCta}
+                <span aria-hidden className="ml-2">
+                  →
+                </span>
+              </LocaleLink>
+            </div>
+          </div>
+        </section>
+
+        <section
+          data-stitch-reveal
+          className="mt-stack-lg md:mt-section-gap"
+        >
+          <div className="mb-10">
+            <span className={EYEBROW_CLASS}>Relationship Reports</span>
+            <h3 className="stitch-headline text-3xl leading-tight md:text-4xl">
+              {messages.landing.reportsHeadline}
+            </h3>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {reportCards.map(({ Icon, eyebrow, title, desc }) => (
+              <div
+                key={eyebrow}
+                className="flex flex-col rounded-extra-large border border-outline-variant/30 bg-surface-container-lowest p-7 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <span className="mb-4 inline-flex w-fit rounded-full bg-accent-emerald-soft p-3 text-accent-emerald">
+                  <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+                </span>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-emerald">
+                  {eyebrow}
+                </p>
+                <h4 className="mt-2 text-xl font-semibold text-primary">{title}</h4>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-on-surface-variant">
+                  {desc}
+                </p>
+                <LocaleLink
+                  href={relationHubPath(reportId)}
+                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-accent-emerald/50 px-4 py-2 text-xs font-medium text-primary transition-colors hover:bg-accent-emerald hover:text-on-primary"
+                >
+                  {messages.landing.reportsCtaLabel} <span aria-hidden>→</span>
+                </LocaleLink>
+              </div>
+            ))}
+
+            <div className="flex flex-col justify-between rounded-extra-large border border-primary bg-primary p-7 text-on-primary">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-on-primary/70">
+                  Start Now
+                </p>
+                <h4 className="mt-2 text-2xl font-semibold">
+                  {messages.landing.reportsStartTitle}
+                </h4>
+                <p className="mt-3 text-sm leading-relaxed text-on-primary/80">
+                  {messages.landing.reportsStartDesc}
+                </p>
+              </div>
+              <LocaleLink
+                href={relationHubPath(reportId)}
+                className="mt-8 inline-flex w-fit items-center gap-2 rounded-full border border-on-primary/60 px-5 py-2.5 text-sm font-medium transition-colors hover:bg-on-primary hover:text-primary"
+              >
+                {messages.landing.reportsStartCta} <span aria-hidden>→</span>
+              </LocaleLink>
+            </div>
+          </div>
+        </section>
+
+        <section
+          data-stitch-reveal
+          className="mt-stack-lg md:mt-section-gap"
+        >
+          <div className="mb-10">
+            <span className={EYEBROW_CLASS}>Scientific Approach</span>
+            <h3 className="stitch-headline text-3xl leading-tight md:text-4xl">
+              {messages.landing.frameworkHeadline}
+            </h3>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {frameworkSteps.map((p) => (
+              <article
+                key={p.name}
+                className="flex flex-col rounded-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm transition-colors hover:border-accent-emerald/40"
+              >
+                <span className="text-sm text-on-surface-variant/70">{p.step}</span>
+                <h4 className="mt-4 text-xl font-semibold text-primary">{p.name}</h4>
+                <p className="mt-3 text-[0.95rem] text-primary/80">{p.title}</p>
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-on-surface-variant">
+                  {p.desc}
+                </p>
+                <span className="mt-8 inline-flex w-fit rounded-full bg-accent-emerald-soft px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.16em] text-accent-emerald">
+                  {p.tag}
+                </span>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 rounded-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm md:p-12">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <div>
+                <span className={EYEBROW_CLASS}>Report Sample</span>
+                <h4 className="text-2xl font-semibold text-primary">
+                  {messages.landing.reportSampleTitle}
+                </h4>
+              </div>
+              <ul className="flex gap-6 text-xs text-on-surface-variant">
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-2.5 w-6 rounded-full bg-accent-rose" />{" "}
+                  {messages.landing.reportSampleLegendInnate}
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-2.5 w-6 rounded-full bg-accent-emerald" />{" "}
+                  {messages.landing.reportSampleLegendRealized}
+                </li>
+              </ul>
+            </div>
+            <div className="mt-8 space-y-6">
+              {reportSampleAxes.map((a) => (
+                <div
+                  key={a.label}
+                  className="grid items-center gap-3 sm:grid-cols-[10rem_1fr]"
+                >
+                  <span className="text-sm text-on-surface-variant">{a.label}</span>
+                  <div className="space-y-1.5">
+                    <div className="h-2.5 w-full rounded-full bg-surface-container-low">
+                      <div
+                        className="h-full rounded-full bg-accent-rose"
+                        style={{ width: `${a.innate}%` }}
+                      />
+                    </div>
+                    <div className="h-2.5 w-full rounded-full bg-surface-container-low">
+                      <div
+                        className="h-full rounded-full bg-accent-emerald"
+                        style={{ width: `${a.realized}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-8 border-t border-outline-variant/30 pt-5 text-xs text-on-surface-variant">
+              {messages.landing.reportSampleFootnote}
             </p>
           </div>
-          <div className="overflow-hidden rounded-extra-large border border-outline-variant/20 bg-surface-container-lowest shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left">
-                <thead>
-                  <tr className="border-b border-outline-variant/20 bg-surface-container-low">
-                    <th className="px-6 py-5 text-xs font-semibold uppercase tracking-wider text-on-surface-variant md:px-8">
-                      Pillar
-                    </th>
-                    <th className="px-6 py-5 text-xs font-semibold uppercase tracking-wider text-on-surface-variant md:px-8">
-                      Methodology
-                    </th>
-                    <th className="px-6 py-5 text-xs font-semibold uppercase tracking-wider text-on-surface-variant md:px-8">
-                      Outcome
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/20">
-                  <tr className="transition-colors hover:bg-surface-container-low/50">
-                    <td className="px-6 py-6 font-semibold text-primary md:px-8 md:py-8">
-                      Assessment
-                    </td>
-                    <td className="px-6 py-6 text-on-surface-variant md:px-8 md:py-8">
-                      Cognitive Bias Mapping &amp; Narrative Analysis
-                    </td>
-                    <td className="px-6 py-6 md:px-8 md:py-8">
-                      <span className="rounded-full bg-accent-emerald-soft px-3 py-1 text-sm font-medium text-accent-emerald">
-                        Clarity
-                      </span>
-                    </td>
-                  </tr>
-                  <tr className="transition-colors hover:bg-surface-container-low/50">
-                    <td className="px-6 py-6 font-semibold text-primary md:px-8 md:py-8">
-                      Integration
-                    </td>
-                    <td className="px-6 py-6 text-on-surface-variant md:px-8 md:py-8">
-                      Guided Metacognitive Journaling
-                    </td>
-                    <td className="px-6 py-6 md:px-8 md:py-8">
-                      <span className="rounded-full bg-accent-rose-soft px-3 py-1 text-sm font-medium text-accent-rose">
-                        Resilience
-                      </span>
-                    </td>
-                  </tr>
-                  <tr className="transition-colors hover:bg-surface-container-low/50">
-                    <td className="px-6 py-6 font-semibold text-primary md:px-8 md:py-8">
-                      Evolution
-                    </td>
-                    <td className="px-6 py-6 text-on-surface-variant md:px-8 md:py-8">
-                      Relational Synergy Feedback Loops
-                    </td>
-                    <td className="px-6 py-6 md:px-8 md:py-8">
-                      <span className="rounded-full bg-accent-emerald-soft px-3 py-1 text-sm font-medium text-accent-emerald">
-                        Alignment
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+        </section>
+
+        <section
+          data-stitch-reveal
+          className="mt-stack-lg md:mt-section-gap"
+        >
+          <div className="grid gap-10 rounded-extra-extra-large border border-outline-variant/30 bg-secondary-container/40 p-8 shadow-sm md:grid-cols-[1fr_0.85fr] md:p-14">
+            <div>
+              <span className={EYEBROW_CLASS}>Coming Soon</span>
+              <h3 className="stitch-headline text-3xl leading-tight md:text-4xl">
+                {messages.landing.journalHeadline}
+              </h3>
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-on-surface-variant">
+                {messages.landing.journalDesc}
+              </p>
+              <LocaleLink href={DECISION_HUB_PATH} className="stitch-cta-secondary mt-8">
+                {messages.landing.journalCta}
+                <span aria-hidden className="ml-2">
+                  →
+                </span>
+              </LocaleLink>
+            </div>
+            <div className="rounded-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm">
+              <p className="text-sm text-accent-emerald">2026. 03. 14</p>
+              <p className="mt-4 text-lg font-medium text-primary">
+                {messages.landing.journalSampleChoice}
+              </p>
+              <div className="mt-6 space-y-3 text-sm text-on-surface-variant">
+                <p className="border-t border-outline-variant/30 pt-3">
+                  {messages.landing.journalSampleEmotion}
+                </p>
+                <p className="border-t border-outline-variant/30 pt-3">
+                  {messages.landing.journalSampleInnate}
+                </p>
+                <p className="border-t border-outline-variant/30 pt-3">
+                  {messages.landing.journalSampleRetry}
+                </p>
+              </div>
             </div>
           </div>
         </section>
