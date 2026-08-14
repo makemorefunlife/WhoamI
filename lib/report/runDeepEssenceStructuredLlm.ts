@@ -101,6 +101,9 @@ function buildPartAExcerpt(partA: Record<string, unknown>): string {
       strengths: (partA.strengths as { title: string }[] | undefined)?.map((s) => s.title),
       watchouts: (partA.watchouts as { title: string }[] | undefined)?.map((w) => w.title),
       energy_headline: (partA.energy as { headline?: string } | undefined)?.headline,
+      // Part 05 Batch 1 — already-generated Part A output, not new evidence;
+      // lets future.leap synthesize a long-term-fit signal without a new Lens.
+      energy_optimal: (partA.energy as { optimal?: string[] } | undefined)?.optimal,
     });
   } catch {
     return "";
@@ -310,6 +313,7 @@ export async function runDeepEssenceStructuredLlm(
         ? {
             relationshipText: promptEvidence.relationshipText,
             practiceText: promptEvidence.practiceText,
+            futureText: promptEvidence.futureText,
           }
         : null,
     });
@@ -350,6 +354,15 @@ export async function runDeepEssenceStructuredLlm(
       );
       if (filteredPlaybookRefs) playbook.evidence_refs = filteredPlaybookRefs;
       else delete playbook.evidence_refs;
+
+      // Part 05 Batch 1 — same rule, for future.evidence_refs.
+      const future = partB.future as Record<string, unknown>;
+      const filteredFutureRefs = filterKnownEvidenceRefs(
+        future.evidence_refs,
+        promptEvidence.futureKnownKeys,
+      );
+      if (filteredFutureRefs) future.evidence_refs = filteredFutureRefs;
+      else delete future.evidence_refs;
     }
 
     const merged = { ...partA, ...partB };

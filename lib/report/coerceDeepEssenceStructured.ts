@@ -389,9 +389,13 @@ export function coerceDeepEssencePartB(raw: unknown): {
   };
 
   const futIn = asRecord(obj.future) ?? {};
+  // Part 05 Batch 1 — optional provenance, passed through only if the LLM
+  // actually returned it (never fabricated, never required).
+  const futureEvidenceRefs = asOptionalStringArray(futIn.evidence_refs);
   const future = {
     remember: takeStrings(futIn.remember, 3, 3, "Protect your recovery time"),
     leap: asString(futIn.leap, "Practice one small clear boundary this week."),
+    ...(futureEvidenceRefs ? { evidence_refs: futureEvidenceRefs } : {}),
   };
 
   const checklist = takeStrings(

@@ -74,6 +74,16 @@
  * Growth Edge's action anchor (summary.growth_edge_real_life_pattern) isn't
  * packet evidence at all — it already flows into Part B via the existing
  * partAExcerpt plumbing, so no new wiring was needed for it.
+ *
+ * Part 05 Batch 1 — Future evidence Lens, grounding future.remember/leap for
+ * the first time (closing stays untouched). Deliberately the smallest Lens
+ * yet: just the already-selected best-aligned axis (reused from
+ * selectAxisHighlights(), not re-derived — no new CE dims/secondary added).
+ * Everything else this batch reuses (growth_edge_if_developed via
+ * partAExcerpt's existing summary pass-through, energy.optimal via a small
+ * partAExcerpt addition, relationships.fit/playbook.reset via same-completion
+ * continuity) is prior output, not new packet evidence, so no Lens function
+ * is needed for those — only prompt instructions to synthesize them.
  */
 import type {
   Part01CandidateItem,
@@ -181,6 +191,8 @@ export type Part01PromptEvidence = {
   relationshipKnownKeys: Set<string>;
   practiceText: string;
   practiceKnownKeys: Set<string>;
+  futureText: string;
+  futureKnownKeys: Set<string>;
 };
 
 export type Part01AxisHighlightPromptEvidence = {
@@ -610,6 +622,32 @@ function buildPracticeEvidence(packet: Part01IdentityEvidencePacket): {
 }
 
 /**
+ * Part 05 Batch 1 — Future evidence Lens. Deliberately the smallest Lens:
+ * just the already-selected best-aligned axis (same selectAxisHighlights()
+ * call every other Lens uses — reused, not re-derived, no new CE dims added).
+ */
+function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+
+  const { alignment } = selectAxisHighlights(packet.axisComparisons);
+  if (alignment) {
+    knownKeys.add(axisKey(alignment.axis));
+    lines.push(
+      "Best-aligned Current x Innate axis (natural fit — same axis selectAxisHighlights() already picked for axis_interpretations/relationships, reused not re-decided):",
+    );
+    lines.push(formatAxisLine(alignment));
+  } else {
+    lines.push("No axis is closely aligned enough to serve as a single best-fit signal this time — do not force one.");
+  }
+
+  return { text: lines.join("\n"), knownKeys };
+}
+
+/**
  * Builds both grounding text blocks from a Part01IdentityEvidencePacket.
  * Returns null if packet is null/undefined — callers must fall back to the
  * existing ungrounded prompt behavior in that case (Batch 3 rule: a failure
@@ -626,6 +664,7 @@ export function formatPart01EvidenceForPrompt(
   const energy = buildEnergyEvidence(packet);
   const relationship = buildRelationshipEvidence(packet);
   const practice = buildPracticeEvidence(packet);
+  const future = buildFutureEvidence(packet);
   const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
     packet.layeredIdentityCandidates;
   return {
@@ -648,6 +687,8 @@ export function formatPart01EvidenceForPrompt(
     relationshipKnownKeys: relationship.knownKeys,
     practiceText: practice.text,
     practiceKnownKeys: practice.knownKeys,
+    futureText: future.text,
+    futureKnownKeys: future.knownKeys,
   };
 }
 

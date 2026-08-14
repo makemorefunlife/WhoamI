@@ -137,6 +137,8 @@ export type DeepEssenceStructuredReport = {
   future: {
     remember: string[];
     leap: string;
+    /** Part 05 Batch 1 — internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
+    evidence_refs?: string[];
   };
   closing: string;
   checklist: string[];

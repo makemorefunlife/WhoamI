@@ -365,6 +365,13 @@ const RELATIONSHIP_EVIDENCE_FIELD = `,
 const PLAYBOOK_EVIDENCE_FIELD = `,
     "evidence_refs": ["optional — exact keys from [Practice evidence] this section is grounded in, only from the bracketed list, never invented — omit if not well-grounded"]`;
 
+// ── Part 05 Batch 1: additive Future/Direction grounding ──────────────────
+// Same additive/grounded-only contract, same block-level evidence_refs shape.
+// closing is deliberately untouched — no schema/prompt change to it at all.
+
+const FUTURE_EVIDENCE_FIELD = `,
+    "evidence_refs": ["optional — exact keys from [Future evidence] this section is grounded in, only from the bracketed list, never invented — omit if not well-grounded"]`;
+
 function buildPartBSchema(part01Evidence: Part01EvidenceForPartBPrompt | null | undefined): string {
   if (!part01Evidence) return DEEP_ESSENCE_PART_B_SCHEMA;
   return DEEP_ESSENCE_PART_B_SCHEMA.replace(
@@ -387,12 +394,20 @@ function buildPartBSchema(part01Evidence: Part01EvidenceForPartBPrompt | null | 
     `    "heated": "rule for when emotions spike, 3-5 sentences",
     "reset": "weekly reset routine, 3-5 sentences"${PLAYBOOK_EVIDENCE_FIELD}
   },`,
+  ).replace(
+    `    "remember": ["thing worth remembering 1 (4-7 sentences)", "2", "3"],
+    "leap": "direction for the next step, 3-5 sentences"
+  },`,
+    `    "remember": ["thing worth remembering 1 (4-7 sentences)", "2", "3"],
+    "leap": "direction for the next step, 3-5 sentences"${FUTURE_EVIDENCE_FIELD}
+  },`,
   );
 }
 
 export type Part01EvidenceForPartBPrompt = {
   relationshipText: string;
   practiceText: string;
+  futureText: string;
 };
 
 export function buildDeepEssenceStructuredPartBUserPrompt(input: {
@@ -416,6 +431,10 @@ ${input.part01Evidence.relationshipText}
 ■ Practice Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide playbook.rule/rows/heated/reset and to fill its optional evidence_refs.
 [Practice evidence]
 ${input.part01Evidence.practiceText}
+
+■ Future Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide future.remember/leap and to fill its optional evidence_refs. closing is NOT covered by this evidence and must stay exactly as it already was — a warm tonal sign-off, not an insight field.
+[Future evidence]
+${input.part01Evidence.futureText}
 `
     : "";
 
@@ -439,7 +458,17 @@ ${input.part01Evidence.practiceText}
   - rows: each row's situation must be a real, specific trigger (not a vague category); old is the automatic reaction this person tends to fall into; better is a concrete action or literal sentence they could say in that exact moment — specific enough to actually use, never generic advice. Ground old/better in [Practice evidence] (decision_style is especially relevant to how they'd naturally decide what to say/do) — do not invent a situation unconnected to the evidence.
   - heated answers "what do I actually do in the moment emotions spike" — ground it specifically in pressure_response and conflict_decompression from [Practice evidence] when their confidence is usable; this must be a concrete in-the-moment response, not a re-description of the friction/compare content already given in [Relationship evidence] above — translate the same underlying evidence into a literal action for the heated moment itself, never restate why it happens.
   - reset is a small, realistically repeatable WEEKLY practice/habit — ground it in resilience from [Practice evidence] (what recovery capacity actually looks like for this person) rather than inventing a routine. Do not restate Part02 Energy's fuels/optimal-environment content — if you reuse that same underlying evidence, translate it into a specific repeatable weekly action/habit, not another description of what restores them.
-- evidence_refs (playbook) is optional — only exact keys from [Practice evidence], never invented.`
+- evidence_refs (playbook) is optional — only exact keys from [Practice evidence], never invented.
+- future.remember and future.leap are NOT another personality summary — closing already handles warm tone, and strengths/watchouts/core_mode already handle trait description. remember/leap must convert everything already established into decision facts for the future. Never restate core_mode, a strength/watchout title, or growth_edge's own wording.
+- remember must be exactly 3 DECISION FACTS, and each of the 3 must play a genuinely different role — never let two of them make the same underlying point in different words:
+  1. a natural strength/direction worth leaning into more (grounded in [Future evidence]'s best-aligned axis, or in a strength already established — but phrased as "lean into this more," not as a restated trait description)
+  2. a repeating pattern worth reducing or staying alert to (grounded in Practice/Relationship evidence already covered — a caution to carry forward, not a re-explanation of the watchout itself)
+  3. a criterion to prioritize when choosing environments/relationships/actions going forward (synthesized from energy_optimal / relationships.fit / playbook.reset already produced — a decision criterion, e.g. "choose situations with X quality," not a listing of those items)
+  Each of the 3 must be phrased as something to keep using as a future filter, not a fact about who this person is.
+- leap must be an actual DECISION PRINCIPLE for future choices — never generic encouragement ("trust yourself", "you've got this"). Synthesize (do not list) three things into one forward-looking principle of what to choose more of and what to choose less of: (a) the best-aligned axis in [Future evidence] — a direction that already fits naturally; (b) growth_edge_if_developed from [Already written earlier], if present — the possibility that opens up; (c) the long-term-fit signal already established this response via energy_optimal / relationships.fit / playbook.reset. If [Future evidence] has no aligned axis and growth_edge_if_developed is absent, ground leap in whatever convergent Practice/Relationship signal is available rather than forcing a synthesis that isn't there — but it must still read as a usable choosing-criterion, not an uplifting sentiment.
+- Never let remember or leap simply restate energy_optimal, relationships.fit, playbook.reset, or growth_edge_if_developed in the same words — translate them into what to choose or avoid going forward. Reusing the same underlying signal across sections is fine; repeating its conclusion is not.
+- evidence_refs (future) is optional — only exact keys from [Future evidence], never invented.
+- closing is unaffected by any of this — keep it exactly as it already was, a tonal sign-off, not an evidence-grounded field.`
     : "";
 
   return `[Input data — same material]
