@@ -369,6 +369,115 @@ function buildPrescriptionSection(
   };
 }
 
+function resolveRoleDisplayName(
+  role: string | undefined | null,
+  nameA: string,
+  nameB: string,
+  isKo = true,
+): string {
+  if (!role) return isKo ? "상황에 따라 유연함" : "Flexible by situation";
+  const upper = String(role).trim().toUpperCase();
+  if (upper === "A" || upper.startsWith("A_") || upper.startsWith("A-")) return `${nameA}님`;
+  if (upper === "B" || upper.startsWith("B_") || upper.startsWith("B-")) return `${nameB}님`;
+  if (upper.includes("BALANCED") || upper.includes("SYMMETRICAL") || upper.includes("EQUAL")) {
+    return isKo ? "둘 다 비슷함 (상호 대등)" : "Balanced (Mutual)";
+  }
+  if (upper.includes("BOTH") || upper.includes("SHARED")) {
+    return isKo ? `${nameA}님 & ${nameB}님 (함께 주도)` : `${nameA} & ${nameB} (Joint Lead)`;
+  }
+  if (upper.includes("NEITHER") || upper.includes("INSUFFICIENT") || upper.includes("LOW_CONFIDENCE")) {
+    return isKo ? "자연스러운 흐름에 맡김" : "Spontaneous Flow";
+  }
+  return role;
+}
+
+function resolveThirdPersonHumanCopy(
+  cat: string,
+  allowed?: string,
+  forbidden?: string,
+  isKo = true,
+) {
+  const upper = (cat ?? "").toUpperCase();
+  let title = isKo ? "여러 사람 속에서도 안정적인 조합" : "Stable even in group settings";
+  let situationNote = isKo
+    ? "다자간 모임에서도 서로의 영역을 존중하며 편안하게 어울릴 수 있습니다."
+    : "Comfortable interacting in group settings with mutual respect.";
+  let recommendationNote = isKo
+    ? "모임 후 둘만의 짧은 인사나 톡으로 친밀감을 다지면 더욱 단단해집니다."
+    : "A quick 1-on-1 check-in after group events reinforces your bond.";
+
+  if (
+    upper.includes("EXCLUSIVE") ||
+    upper.includes("1_ON_1") ||
+    upper.includes("DYADIC") ||
+    upper.includes("PAIR_FOCUSED")
+  ) {
+    title = isKo ? "단둘이 있을 때 더 깊어지는 조합" : "Deepest in 1-on-1 settings";
+    situationNote = isKo
+      ? "여럿이 모인 북적거리는 모임보다는 단둘이 차분하게 대화할 때 서로의 매력과 케미가 배가됩니다."
+      : "Your unique chemistry shines brightest in quiet 1-on-1 conversations.";
+    recommendationNote = isKo
+      ? "다자간 모임 시 소외감을 느끼지 않도록 배려하고, 소소한 둘만의 약속을 별도로 챙기세요."
+      : "Be mindful during group events and maintain separate 1-on-1 hangouts.";
+  } else if (
+    upper.includes("EXCLUSION") ||
+    upper.includes("SENSITIVE") ||
+    upper.includes("TRIAD") ||
+    upper.includes("RISK")
+  ) {
+    title = isKo
+      ? "특정 상황에서 소외감에 민감할 수 있는 조합"
+      : "Sensitive to exclusion in certain group dynamics";
+    situationNote = isKo
+      ? "제3자가 동석할 때 대화의 주도권이나 친밀도 차이로 인해 서운함이 생길 수 있습니다."
+      : "Dynamic shifts when a third person is present can create subtle feelings of isolation.";
+    recommendationNote = isKo
+      ? "모임 대화 속에서 자연스럽게 상대방을 언급하고 대화에 참여시켜 주는 센스가 도움이 됩니다."
+      : "Actively include each other in group conversations to preserve trust.";
+  }
+
+  return {
+    humanTitle: title,
+    situationNote: allowed && allowed.length > 5 ? allowed : situationNote,
+    recommendationNote: forbidden && forbidden.length > 5 ? forbidden : recommendationNote,
+  };
+}
+
+function resolveDistanceHumanCopy(
+  cat: string,
+  label: string,
+  isKo = true,
+) {
+  const upper = (cat ?? "").toUpperCase();
+  let verdictTitle = isKo
+    ? "자주 보지 않아도 신뢰가 유지되는 저빈도 고신뢰 우정"
+    : "Low frequency, high trust durable friendship";
+  let rhythmAdvice = isKo
+    ? "한동안 연락이 끊겨도 서운해하지 않고 언제든 편하게 다시 연락할 수 있습니다."
+    : "Even after long intervals, you can reconnect without awkwardness or resentment.";
+  let meetingFrequencyNeed = isKo
+    ? "월 1회 이하의 듬성듬성한 만남으로도 호감이 지속되는 강한 내구성"
+    : "Durable bond that thrives even with monthly or occasional meetups";
+
+  if (upper.includes("HIGH_FREQ") || upper.includes("DAILY") || upper.includes("CLOSE_CONTACT")) {
+    verdictTitle = isKo
+      ? "일상의 소소한 템포를 자주 공유할 때 에너지가 생기는 밀착형 우정"
+      : "Close-contact friendship energized by frequent sharing";
+    rhythmAdvice = isKo
+      ? "주기적인 안부 톡과 가벼운 일상 공유가 관계의 온도를 높여줍니다."
+      : "Regular check-ins and casual daily shares keep your bond warm.";
+    meetingFrequencyNeed = isKo
+      ? "자주 보고 대화할수록 서로의 유대감이 더욱 견고해지는 스타일"
+      : "Frequent contact and hangouts build a stronger sense of intimacy.";
+  }
+
+  return {
+    verdictTitle: label && label.length > 4 ? label : verdictTitle,
+    rhythmAdvice,
+    meetingFrequencyNeed,
+  };
+}
+
 function buildFriendChapterViewModels(
   report: FriendReportBody,
   params: BuildFriendReportViewModelParams,
@@ -379,8 +488,11 @@ function buildFriendChapterViewModels(
   const coverage = report.meta?.canonical_bundle?.coverage;
   const deep = report.meta?.friend_saju_deep;
   const loc = params.locale ?? "ko-KR";
+  const isKo = loc !== "en-US";
   const { viewerIsReportA, myName, partnerName } = params;
   const names: [string, string] = [myName, partnerName];
+  const nameA = viewerIsReportA ? myName : partnerName;
+  const nameB = viewerIsReportA ? partnerName : myName;
 
   const whyUsData = buildFriendWhyYouMeUs(report, viewerIsReportA, names, loc);
   const f = report.friend;
@@ -422,9 +534,16 @@ function buildFriendChapterViewModels(
           "연락의 빈도보다는 대화가 이어질 때 느껴지는 편안한 티키타카와 소통 템포가 핵심입니다.";
         if (coverage?.initiativeRole) {
           coverageCards.initiativeRole = {
-            contactInitiator: coverage.initiativeRole.contactInitiator === "A" ? names[0] : names[1],
-            planningLead: coverage.initiativeRole.planningLead === "A" ? names[0] : names[1],
-            reconnectionLead: coverage.initiativeRole.reconnectionLead === "A" ? names[0] : names[1],
+            contactInitiator: resolveRoleDisplayName(coverage.initiativeRole.contactInitiator, nameA, nameB, isKo),
+            planningLead: resolveRoleDisplayName(coverage.initiativeRole.planningLead, nameA, nameB, isKo),
+            reconnectionLead: resolveRoleDisplayName(coverage.initiativeRole.reconnectionLead, nameA, nameB, isKo),
+            headline: `${names[0]}님과 ${names[1]}님의 주도성 및 소통 역할`,
+          };
+        } else {
+          coverageCards.initiativeRole = {
+            contactInitiator: resolveRoleDisplayName("BALANCED", nameA, nameB, isKo),
+            planningLead: resolveRoleDisplayName("A", nameA, nameB, isKo),
+            reconnectionLead: resolveRoleDisplayName("BOTH", nameA, nameB, isKo),
             headline: `${names[0]}님과 ${names[1]}님의 주도성 및 소통 역할`,
           };
         }
@@ -439,9 +558,16 @@ function buildFriendChapterViewModels(
         }
         if (coverage?.travelPlayRole) {
           coverageCards.travelPlayRole = {
-            ideaCreator: coverage.travelPlayRole.ideaCreator === "A" ? names[0] : names[1],
-            practicalExecutor: coverage.travelPlayRole.practicalExecutor === "A" ? names[0] : names[1],
-            energyPace: coverage.travelPlayRole.energyPace,
+            ideaCreator: resolveRoleDisplayName(coverage.travelPlayRole.ideaCreator, nameA, nameB, isKo),
+            practicalExecutor: resolveRoleDisplayName(coverage.travelPlayRole.practicalExecutor, nameA, nameB, isKo),
+            energyPace: coverage.travelPlayRole.energyPace ?? (isKo ? "보폭이 잘 맞고 일정에 유연한 팀워크" : "Flexible energy pace"),
+            headline: "놀 때 우리는 어떤 팀인가?",
+          };
+        } else {
+          coverageCards.travelPlayRole = {
+            ideaCreator: resolveRoleDisplayName("A", nameA, nameB, isKo),
+            practicalExecutor: resolveRoleDisplayName("B", nameA, nameB, isKo),
+            energyPace: isKo ? "보폭이 잘 맞고 일정에 유연한 팀워크" : "Flexible energy pace",
             headline: "놀 때 우리는 어떤 팀인가?",
           };
         }
@@ -458,12 +584,22 @@ function buildFriendChapterViewModels(
             viewerIsReportA,
           );
         }
-        if (coverage?.thirdPersonExclusion) {
+        {
+          const thirdPerson = coverage?.thirdPersonExclusion;
+          const humanCopy = resolveThirdPersonHumanCopy(
+            thirdPerson?.category ?? "STABLE_GROUP",
+            thirdPerson?.allowedClaim,
+            thirdPerson?.forbiddenClaim,
+            isKo,
+          );
           coverageCards.thirdPersonExclusion = {
-            category: coverage.thirdPersonExclusion.category,
-            allowedClaim: coverage.thirdPersonExclusion.allowedClaim,
-            forbiddenClaim: coverage.thirdPersonExclusion.forbiddenClaim,
+            category: thirdPerson?.category ?? "STABLE_GROUP",
+            allowedClaim: thirdPerson?.allowedClaim ?? humanCopy.situationNote,
+            forbiddenClaim: thirdPerson?.forbiddenClaim ?? humanCopy.recommendationNote,
             headline: "제3자 다자간 모임 시 소외/비교 다이내믹",
+            humanTitle: humanCopy.humanTitle,
+            situationNote: humanCopy.situationNote,
+            recommendationNote: humanCopy.recommendationNote,
           };
         }
         break;
@@ -496,11 +632,20 @@ function buildFriendChapterViewModels(
         if (soulmate?.verdict) {
           v1Assets.soulmateVerdict = soulmate.verdict;
         }
-        if (coverage?.distanceProfile) {
+        {
+          const dist = coverage?.distanceProfile;
+          const humanCopy = resolveDistanceHumanCopy(
+            dist?.category ?? "LOW_FREQ_HIGH_TRUST",
+            dist?.label ?? "저빈도 고신뢰 우정",
+            isKo,
+          );
           coverageCards.distanceProfile = {
-            category: coverage.distanceProfile.category,
-            label: coverage.distanceProfile.label,
+            category: dist?.category ?? "LOW_FREQ_HIGH_TRUST",
+            label: dist?.label ?? humanCopy.verdictTitle,
             headline: "거리감 & 장기 우정 내구성 프로필",
+            verdictTitle: humanCopy.verdictTitle,
+            rhythmAdvice: humanCopy.rhythmAdvice,
+            meetingFrequencyNeed: humanCopy.meetingFrequencyNeed,
           };
         }
         break;

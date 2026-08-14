@@ -267,74 +267,42 @@ export function ChapterSection({
   title,
   lead,
   tint = "plain",
-  defaultOpen = false,
   children,
 }: {
   id: string;
   /** Omit for chapters that sit outside the core numbered sequence — renders without a "Chapter N" badge. */
   n?: string;
-  label: string;
+  label?: string;
   title: string;
   lead?: string;
   tint?: "plain" | "cream" | "deep";
   defaultOpen?: boolean;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
   const bg = tint === "cream" ? "bg-rel-taupe-soft/40" : tint === "deep" ? "bg-rel-deep" : "";
 
   return (
     <section id={id} className={`scroll-mt-20 ${bg}`}>
       <div className="mx-auto w-full max-w-[880px] px-5 sm:px-8">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          className="group relative w-full border-y border-rel-deep py-6 text-left before:pointer-events-none before:absolute before:inset-x-0 before:top-[3px] before:h-px before:bg-rel-deep/40 before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-[3px] after:h-px after:bg-rel-deep/40 after:content-[''] sm:py-7"
-        >
-          <div className="flex items-start justify-between gap-5">
-            <div className="min-w-0 flex-1">
-              <div className="flex min-w-0 items-center gap-3">
-                {n && (
-                  <>
-                    <span className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.28em] text-rel-deep">
-                      Chapter {n}
-                    </span>
-                    <span className="h-px w-6 bg-rel-deep/40" />
-                  </>
-                )}
-                <span className="min-w-0 truncate font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-ink-mute">
-                  {label}
-                </span>
-              </div>
-              <h2 className="mt-3 font-rel-serif text-[24px] leading-[1.2] tracking-[-0.015em] text-rel-ink sm:text-[32px]">
-                {title}
-              </h2>
-            </div>
-            <span
-              className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rel-deep/40 text-rel-deep transition-transform duration-300 group-hover:bg-rel-deep-soft"
-              style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
-              aria-hidden
-            >
-              <ChevronDown strokeWidth={1.5} className="h-4 w-4" />
+        <header className="border-t border-rel-deep/30 pt-10 pb-4 sm:pt-12 sm:pb-6">
+          <div className="flex items-center gap-3">
+            <span className="font-rel-sans text-[10px] font-bold uppercase tracking-[0.28em] text-rel-deep">
+              {n ? `CHAPTER ${n}` : label ?? ""}
             </span>
+            <span className="h-px flex-1 bg-rel-deep/20" />
           </div>
-        </button>
+          <h2 className="mt-3.5 font-rel-serif text-[25px] leading-[1.22] tracking-[-0.015em] text-rel-ink sm:text-[33px]">
+            {title}
+          </h2>
+          {lead && (
+            <p className="mt-3 max-w-[64ch] font-rel-sans text-[14.5px] leading-[1.85] text-rel-ink-soft">
+              {lead}
+            </p>
+          )}
+        </header>
 
-        <div
-          className="grid transition-[grid-template-rows,opacity] duration-500 ease-out motion-reduce:transition-none"
-          style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}
-        >
-          <div className="overflow-hidden">
-            <div className="pb-16 pt-10 sm:pb-24 sm:pt-12">
-              {lead && (
-                <p className="mb-10 max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft">
-                  {lead}
-                </p>
-              )}
-              {children}
-            </div>
-          </div>
+        <div className="pb-16 pt-4 sm:pb-20 sm:pt-6">
+          {children}
         </div>
       </div>
     </section>

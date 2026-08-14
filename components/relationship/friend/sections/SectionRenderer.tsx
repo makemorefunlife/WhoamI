@@ -3,17 +3,8 @@
 /**
  * Friend Premium — FriendReportViewModel renderer.
  *
- * Editorial redesign ported from the Lovable "Inner Compass Reports" concept
- * project (/friend-concept route) at the user's explicit request — full
- * production-data migration onto that design, replacing the previous
- * dark card-based `RelationshipReportLayout` rendering for the Friend domain
- * only. Work/Family/Marriage domains and their SectionRenderer.tsx files are
- * untouched.
- *
- * Fonts: reuses the same Noto Sans KR / Noto Serif KR web-font substitution
- * already established for the Romantic V4 dev prototype
- * (app/dev/romantic-v4-content-prototype/page.tsx) — the `rel-*`/`v4-*`
- * design tokens these fonts hook into already live in app/globals.css.
+ * Consolidated 10-chapter IA following the Romantic report's editorial hierarchy:
+ * Renders Chapters 1 through 10 sequentially using standard ChapterSection headers.
  */
 import { useEffect, useState } from "react";
 import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
@@ -21,14 +12,17 @@ import type { FriendReportViewModel } from "@/lib/relationship/friend/viewModel/
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { pick } from "@/lib/relationship/friend/friendCopy";
 import {
-  DimensionsSection,
+  Chapter01Overview,
+  Chapter02WhyUs,
+  Chapter03Roles,
+  Chapter04Tempo,
+  Chapter05Teamwork,
+  Chapter06CounselingGroup,
+  Chapter07ConflictRepair,
+  Chapter08Boundaries,
+  Chapter09Distance,
+  Chapter10Playbook,
   FriendHero,
-  HiddenFlowSection,
-  ManualSection,
-  RiskSection,
-  SignalsSection,
-  SocialDnaSection,
-  WhyYouMeUsChapter,
 } from "@/components/relationship/friend/editorial/FriendEditorialSections";
 
 const relSans = Noto_Sans_KR({
@@ -44,142 +38,7 @@ const relSerif = Noto_Serif_KR({
 
 type NavItem = { id: string; label: string };
 
-function FriendV2StoryPlanView({
-  ctx,
-}: {
-  ctx: { vm: FriendReportViewModel; viewerIsReportA: boolean; locale: Locale };
-}) {
-  const { vm } = ctx;
-  const chapters = vm.chapters!;
-
-  return (
-    <div className="space-y-12 py-8">
-      {chapters.map((ch) => (
-        <section
-          key={ch.chapterKey}
-          id={ch.chapterKey}
-          data-chapter-key={ch.chapterKey}
-          className="mx-auto max-w-[820px] rounded-2xl border border-rel-line bg-white/80 p-6 shadow-sm backdrop-blur sm:p-8"
-        >
-          {/* Chapter Badge & Title */}
-          <div className="mb-5 flex items-start gap-3.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rel-deep text-xs font-bold text-white shadow-sm">
-              {String(ch.chapterNumber).padStart(2, "0")}
-            </span>
-            <div>
-              <h2 className="font-rel-serif text-xl font-semibold text-rel-ink sm:text-2xl">
-                {ch.title}
-              </h2>
-              <p className="mt-1 font-rel-sans text-xs tracking-wide text-rel-ink-soft">
-                {ch.userQuestion}
-              </p>
-            </div>
-          </div>
-
-          {/* Expert Narrative */}
-          {ch.narrativeText && (
-            <div className="mb-6 rounded-xl border border-rel-line/60 bg-rel-bg/60 p-4 font-rel-sans text-sm leading-relaxed text-rel-ink">
-              <p className="font-medium">{ch.narrativeText}</p>
-            </div>
-          )}
-
-          {/* Coverage Cards */}
-          {ch.coverageCards?.initiativeRole && (
-            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
-              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
-                {ch.coverageCards.initiativeRole.headline}
-              </h4>
-              <div className="grid grid-cols-1 gap-2 text-xs text-rel-ink-soft sm:grid-cols-3">
-                <div className="rounded-lg bg-rel-bg p-2.5">
-                  <span className="font-semibold text-rel-ink">연락 물꼬:</span>{" "}
-                  {ch.coverageCards.initiativeRole.contactInitiator}님
-                </div>
-                <div className="rounded-lg bg-rel-bg p-2.5">
-                  <span className="font-semibold text-rel-ink">약속·기획:</span>{" "}
-                  {ch.coverageCards.initiativeRole.planningLead}님
-                </div>
-                <div className="rounded-lg bg-rel-bg p-2.5">
-                  <span className="font-semibold text-rel-ink">관계 회복:</span>{" "}
-                  {ch.coverageCards.initiativeRole.reconnectionLead}님
-                </div>
-              </div>
-            </div>
-          )}
-
-          {ch.coverageCards?.thirdPersonExclusion && (
-            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
-              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
-                {ch.coverageCards.thirdPersonExclusion.headline}
-              </h4>
-              <div className="space-y-2 text-xs">
-                <div className="rounded-lg bg-rel-bg p-2.5 font-medium text-rel-ink">
-                  모임 성향: {ch.coverageCards.thirdPersonExclusion.category}
-                </div>
-                <p className="text-rel-ink-soft">
-                  <strong className="text-emerald-700">권장:</strong>{" "}
-                  {ch.coverageCards.thirdPersonExclusion.allowedClaim}
-                </p>
-                <p className="text-rel-ink-soft">
-                  <strong className="text-rose-700">주의:</strong>{" "}
-                  {ch.coverageCards.thirdPersonExclusion.forbiddenClaim}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {ch.coverageCards?.travelPlayRole && (
-            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
-              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
-                {ch.coverageCards.travelPlayRole.headline}
-              </h4>
-              <div className="grid grid-cols-1 gap-2 text-xs text-rel-ink-soft sm:grid-cols-3">
-                <div className="rounded-lg bg-rel-bg p-2.5">
-                  <span className="font-semibold text-rel-ink">아이디어 제안:</span>{" "}
-                  {ch.coverageCards.travelPlayRole.ideaCreator}님
-                </div>
-                <div className="rounded-lg bg-rel-bg p-2.5">
-                  <span className="font-semibold text-rel-ink">실전 실행:</span>{" "}
-                  {ch.coverageCards.travelPlayRole.practicalExecutor}님
-                </div>
-                <div className="rounded-lg bg-rel-bg p-2.5">
-                  <span className="font-semibold text-rel-ink">에너지 템포:</span>{" "}
-                  {ch.coverageCards.travelPlayRole.energyPace}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {ch.coverageCards?.distanceProfile && (
-            <div className="mb-6 rounded-xl border border-rel-line bg-white p-4">
-              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-rel-deep">
-                {ch.coverageCards.distanceProfile.headline}
-              </h4>
-              <div className="rounded-lg bg-rel-bg p-3 text-xs font-semibold text-rel-ink">
-                {ch.coverageCards.distanceProfile.label}
-              </div>
-            </div>
-          )}
-
-          {/* V1 Assets Remapping */}
-          {ch.chapterKey === "ch01_why_us" && <WhyYouMeUsChapter {...ctx} />}
-          {ch.chapterKey === "ch02_who_we_are" && <SocialDnaSection {...ctx} />}
-          {ch.chapterKey === "ch03_social_dna_tempo" && <DimensionsSection {...ctx} />}
-          {ch.chapterKey === "ch04_play_travel" && <HiddenFlowSection {...ctx} />}
-          {ch.chapterKey === "ch06_conflict_repair" && <ManualSection {...ctx} />}
-          {ch.chapterKey === "ch07_expectation_boundaries" && <RiskSection {...ctx} />}
-          {ch.chapterKey === "ch08_distance_durability" &&
-            ch.v1Assets?.soulmateVerdict && (
-              <div className="rounded-xl border border-rel-line bg-white p-4 text-xs font-medium text-rel-ink">
-                🏆 {ch.v1Assets.soulmateVerdict}
-              </div>
-            )}
-        </section>
-      ))}
-    </div>
-  );
-}
-
-/** ViewModel 전체를 새 에디토리얼 레이아웃으로 조립 — Friend production 진입점. */
+/** ViewModel 전체를 10개 챕터 에디토리얼 레이아웃으로 조립 — Friend production 진입점. */
 export function FriendReportViewModelView({
   vm,
   viewerIsReportA,
@@ -191,30 +50,20 @@ export function FriendReportViewModelView({
   const { locale } = useLocale();
   const ctx = { vm, viewerIsReportA, locale };
 
-  const hasV2StoryPlan = Boolean(vm.chapters && vm.chapters.length === 9);
+  const navItems: NavItem[] = [
+    { id: "ch01_overview", label: pick(locale, "Ch 1 · At a Glance", "Ch 1 · 한눈에 보기") },
+    { id: "ch02_why_us", label: pick(locale, "Ch 2 · Why Us", "Ch 2 · 끌리는 이유") },
+    { id: "ch03_roles", label: pick(locale, "Ch 3 · Friendship Roles", "Ch 3 · 어떤 친구인가") },
+    { id: "ch04_tempo", label: pick(locale, "Ch 4 · Daily Tempo", "Ch 4 · 소통 템포") },
+    { id: "ch05_teamwork", label: pick(locale, "Ch 5 · Play Teamwork", "Ch 5 · 함께 놀 때") },
+    { id: "ch06_counseling_group", label: pick(locale, "Ch 6 · Counseling & Group", "Ch 6 · 고민 & 다자간") },
+    { id: "ch07_conflict_repair", label: pick(locale, "Ch 7 · Conflict Repair", "Ch 7 · 갈등과 회복") },
+    { id: "ch08_boundaries", label: pick(locale, "Ch 8 · Expectations", "Ch 8 · 기대의 경계") },
+    { id: "ch09_distance_durability", label: pick(locale, "Ch 9 · Distance & Durability", "Ch 9 · 우정의 거리감") },
+    { id: "ch10_playbook", label: pick(locale, "Ch 10 · Manual & Prescriptions", "Ch 10 · 사용설명서") },
+  ];
 
-  const types = new Set(vm.sections.map((s) => s.type));
-  const navItems: NavItem[] = hasV2StoryPlan
-    ? vm.chapters!.map((ch) => ({ id: ch.chapterKey, label: ch.title }))
-    : [
-        { id: "overview", label: pick(locale, "Overview", "한눈에 보기") },
-        ...(types.has("why_you_me_us")
-          ? [{ id: "why_you_me_us", label: pick(locale, "Why us", "서로를 선택한 이유") }]
-          : []),
-        ...(types.has("compare_table") || types.has("psych_radar")
-          ? [{ id: "part1", label: pick(locale, "Our differences", "우리 차이") }]
-          : []),
-        ...(types.has("social_dna") ? [{ id: "part2", label: "Social DNA" }] : []),
-        ...(types.has("hidden_flow") || types.has("soulmate")
-          ? [{ id: "part3", label: pick(locale, "Hidden flow", "숨은 흐름") }]
-          : []),
-        ...(types.has("breakup_guide") ? [{ id: "part4", label: pick(locale, "Guardrails", "방어벽") }] : []),
-        ...(types.has("de_escalation") || types.has("prescription")
-          ? [{ id: "part5", label: pick(locale, "Manual", "사용설명서") }]
-          : []),
-      ];
-
-  const [active, setActive] = useState(navItems[0]?.id ?? "ch01_why_us");
+  const [active, setActive] = useState(navItems[0]?.id ?? "ch01_overview");
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -279,19 +128,16 @@ export function FriendReportViewModelView({
 
       <main>
         <FriendHero {...ctx} />
-        {hasV2StoryPlan ? (
-          <FriendV2StoryPlanView ctx={ctx} />
-        ) : (
-          <>
-            <SignalsSection {...ctx} />
-            <WhyYouMeUsChapter {...ctx} />
-            <DimensionsSection {...ctx} />
-            <SocialDnaSection {...ctx} />
-            <HiddenFlowSection {...ctx} />
-            <RiskSection {...ctx} />
-            <ManualSection {...ctx} />
-          </>
-        )}
+        <Chapter01Overview {...ctx} />
+        <Chapter02WhyUs {...ctx} />
+        <Chapter03Roles {...ctx} />
+        <Chapter04Tempo {...ctx} />
+        <Chapter05Teamwork {...ctx} />
+        <Chapter06CounselingGroup {...ctx} />
+        <Chapter07ConflictRepair {...ctx} />
+        <Chapter08Boundaries {...ctx} />
+        <Chapter09Distance {...ctx} />
+        <Chapter10Playbook {...ctx} />
       </main>
 
       <footer className="border-t border-rel-line">

@@ -185,17 +185,24 @@ export type FriendChapterViewModel = {
       allowedClaim: string;
       forbiddenClaim: string;
       headline: string;
+      humanTitle?: string;
+      situationNote?: string;
+      recommendationNote?: string;
     } | null;
     travelPlayRole?: {
       ideaCreator: string;
       practicalExecutor: string;
       energyPace: string;
       headline: string;
+      fieldAdjustment?: string;
     } | null;
     distanceProfile?: {
       category: string;
       label: string;
       headline: string;
+      verdictTitle?: string;
+      rhythmAdvice?: string;
+      meetingFrequencyNeed?: string;
     } | null;
   };
 };

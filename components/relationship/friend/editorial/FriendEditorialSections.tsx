@@ -1,26 +1,14 @@
 "use client";
 
 /**
- * Friend Premium — editorial report sections.
+ * Friend Premium — editorial report sections (Chapters 1 ~ 10).
  *
- * Structural + visual port of the Lovable "Inner Compass Reports" concept
- * (/friend-concept, src/components/report/friend/FriendSections.tsx), wired
- * to the real `FriendReportViewModel` (lib/relationship/friend/viewModel)
- * instead of the concept's frozen mock payload. Every field read here comes
- * from an existing ViewModel section — nothing is invented, and a section
- * degrades gracefully (omits the block) when its source field is absent,
- * matching this codebase's "no placeholder data" convention.
+ * Consolidated 10-chapter IA following the Romantic report's editorial hierarchy:
+ * Every chapter uses the `ChapterSection` visual primitive:
+ * CHAPTER NUMBER → TITLE → USER QUESTION / SHORT LEAD.
  *
- * `play_money` is intentionally not rendered — it was removed from Friend
- * `current_enriched` in an earlier cleanup pass (see
- * docs/dev/FRIEND_FINAL_CONTENT_GAP_REVIEW.md §9) and is effectively always
- * absent in production payloads.
- *
- * The `deep_read` overlay (meta.friend_saju_deep) is not rendered as its own
- * card either — it has no standalone section here. Its four pieces are woven
- * into the sections they thematically belong to instead: person voice ->
- * SocialDnaSection, gap signal -> DimensionsSection, advice/together ->
- * ManualSection. See findSection(vm, "deep_read") in each.
+ * Fixed open editorial sections with NO chapter accordions and MAX TOGGLE DEPTH = 1.
+ * 11-Axis Radar Graph is relocated from Chapter 1 to Chapter 4 ("일상 템포와 소통 케미").
  */
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "@/lib/relationship/friend/friendCopy";
@@ -39,12 +27,12 @@ import type {
   SoulmateSection as SoulmateSectionVM,
 } from "@/lib/relationship/friend/viewModel/friendReportSectionTypes";
 import {
-  Evidence,
+  ChapterSection,
+  Disclosure,
   NameChip,
   Quote,
   Reveal,
   Rule,
-  Section,
   VersusStrip,
 } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
@@ -93,22 +81,15 @@ export function FriendHero({ vm, locale }: Ctx) {
   );
 }
 
-/* -------------------------- 01 three core signals --------------------------- */
+/* -------------------------- Signal Banding Utilities -------------------------- */
 
 type SignalKey = "connection" | "banter" | "risk";
 type SignalBand = "high" | "mid" | "low";
 
-/**
- * Presentation-only banding — mirrors the exact cutoffs already documented in
- * lib/relationship/enrichment/friendScoreCardAudit.ts's connectionLevelMeaning
- * (70/40) / banterLevelMeaning (65/35) / riskLevelMeaning (30/60, inverted).
- * Do not drift these numbers from that source of truth; this function only
- * turns the same bands into a UI tone + short natural-language grade.
- */
 function signalBand(key: SignalKey, score: number): SignalBand {
   if (key === "connection") return score >= 70 ? "high" : score >= 40 ? "mid" : "low";
   if (key === "banter") return score >= 65 ? "high" : score >= 35 ? "mid" : "low";
-  return score >= 60 ? "high" : score >= 30 ? "mid" : "low"; // risk: high band = high risk
+  return score >= 60 ? "high" : score >= 30 ? "mid" : "low";
 }
 
 function signalTone(key: SignalKey, band: SignalBand): "good" | "neutral" | "warn" {
@@ -142,7 +123,9 @@ const SIGNAL_ONE_LINER_COPY: Record<SignalKey, [en: string, ko: string]> = {
   risk: ["How likely friction is to come up", "친구 사이에 마찰이 생길 가능성"],
 };
 
-export function SignalsSection({ vm, locale }: Ctx) {
+/* ------------------- CHAPTER 1: 한눈에 보는 우리 우정 (SUMMARY ONLY) ------------------- */
+
+export function Chapter01Overview({ vm, locale }: Ctx) {
   const snap = findSection(vm, "snapshot") as SnapshotSectionVM | undefined;
   const t = useMessages().relationshipDrilldown.friendship;
   if (!snap) return null;
@@ -225,134 +208,79 @@ export function SignalsSection({ vm, locale }: Ctx) {
       : null;
 
   return (
-    <OverviewSection
-      id="overview"
-      locale={locale}
-      eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
-      title={pick(locale, "What kind of friends are we?", "우리는 어떤 친구일까")}
+    <ChapterSection
+      id="ch01_overview"
+      n="1"
+      title={pick(locale, "Friendship Overview & Signals", "한눈에 보는 우리 우정")}
       lead={pick(
         locale,
-        "Three signals frame the shape of this friendship first. The numbers are just evidence — the reading is the point.",
-        "세 가지 신호로 이 우정의 성격을 먼저 봅니다. 숫자는 근거일 뿐, 해석이 본문이에요.",
+        "Three core signals frame the overall shape and strength of this friendship first.",
+        "세 가지 핵심 신호로 이 우정의 전체적인 성격과 신뢰를 먼저 봅니다.",
       )}
-      heroSummary={vm.opening.subtitle}
-      cards={cards}
-      extra={extra}
-    />
+    >
+      <OverviewSection
+        id="overview_cards"
+        locale={locale}
+        eyebrow=""
+        title=""
+        cards={cards}
+        extra={extra}
+      />
+    </ChapterSection>
   );
 }
 
-/* ------------------- 01b why you / why me / why us -------------------- */
+/* ------------------- CHAPTER 2: 서로에게 끌리는 이유 ------------------- */
 
-export function WhyYouMeUsChapter({ vm, locale }: Ctx) {
+export function Chapter02WhyUs({ vm, locale }: Ctx) {
   const section = findSection(vm, "why_you_me_us") as WhyYouMeUsSectionVM | undefined;
   if (!section) return null;
   const [nameA, nameB] = vm.opening.names;
+  const ch01Vm = vm.chapters?.find((c) => c.chapterKey === "ch01_why_us");
+
   return (
-    <SharedWhyYouMeUsSection
-      id="why_you_me_us"
-      eyebrow={pick(locale, "Why us", "서로를 선택한 이유")}
+    <ChapterSection
+      id="ch02_why_us"
+      n="2"
       title={section.title}
-      data={section.data}
-      names={{ a: nameA, b: nameB }}
-      locale={locale}
-    />
-  );
-}
-
-/* ----------------------- 02 part 1 · 입체 진단 + 11축 ----------------------- */
-
-export function DimensionsSection({ vm, viewerIsReportA, locale }: Ctx) {
-  const compare = findSection(vm, "compare_table") as CompareTableSectionVM | undefined;
-  const radar = findSection(vm, "psych_radar") as PsychRadarSectionVM | undefined;
-  const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
-  if (!compare && !radar) return null;
-  const [nameA, nameB] = vm.opening.names;
-  const gap = deepRead?.vm.gapSignal;
-
-  return (
-    <Section
-      id="part1"
-      eyebrow={pick(locale, "02 · Part 1", "02 · Part 1")}
-      title={pick(locale, "Our friendship in the round", "우리 우정 입체 진단")}
       lead={pick(
         locale,
-        "Six places where you differ, and the everyday scenes those differences create.",
-        "여섯 가지 지점에서 두 사람이 어떻게 다른지, 그 차이가 실제 생활에서 어떤 장면을 만드는지 봅니다.",
+        "Why you clicked so quickly, and what keeps you naturally drawn to each other.",
+        "왜 우리는 빠르게 친해졌고, 만날수록 서로의 무엇에 끌리는가?",
       )}
     >
-      {radar ? (
-        <div className="mb-12">
-          <PsychAxisComparisonSection
-            axisResults={radar.axisResults}
-            highlights={radar.highlights}
-            chartNote={radar.chartNote}
-            names={[nameA, nameB]}
-            locale={locale}
-          />
-        </div>
-      ) : null}
-
-      {compare ? (
-        <ul className="space-y-12">
-          {compare.rows.map((row, i) => {
-            const me = viewerIsReportA ? row.personA : row.personB;
-            const partner = viewerIsReportA ? row.personB : row.personA;
-            return (
-              <li key={row.id}>
-                <Reveal delay={i * 50}>
-                  <VersusStrip label={row.label} aName={nameA} bName={nameB} a={me.shortLabel} b={partner.shortLabel} />
-                  <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">{row.meaning}</p>
-                  {row.psych_note ? (
-                    <Evidence label={pick(locale, "11-axis corroboration", "11축 확인 문구")}>{row.psych_note}</Evidence>
-                  ) : null}
-                  <div className="mt-8 h-px w-full bg-rel-line" />
-                </Reveal>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
-      {gap && (gap.matchNote || gap.meBody || gap.partnerBody) ? (
-        <>
-          <Rule label={pick(locale, "Where instincts diverge", "결이 갈리는 지점")} />
-          <Reveal>
-            <div className="space-y-4">
-              {gap.matchNote ? (
-                <p className="font-rel-sans text-[14px] leading-[1.85] text-rel-ink">{gap.matchNote}</p>
-              ) : null}
-              {gap.meBody || gap.partnerBody ? (
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {gap.meBody ? (
-                    <div>
-                      <span className="block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] text-v4-a">
-                        {nameA}
-                      </span>
-                      <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">{gap.meBody}</p>
-                    </div>
-                  ) : null}
-                  {gap.partnerBody ? (
-                    <div>
-                      <span className="block font-rel-sans text-[10.5px] font-semibold tracking-[0.08em] text-v4-b">
-                        {nameB}
-                      </span>
-                      <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">{gap.partnerBody}</p>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          </Reveal>
-        </>
-      ) : null}
-    </Section>
+      <SharedWhyYouMeUsSection
+        id="why_you_me_us_body"
+        eyebrow={pick(locale, "Why us", "서로를 선택한 이유")}
+        title=""
+        data={section.data}
+        names={{ a: nameA, b: nameB }}
+        locale={locale}
+      />
+      {ch01Vm?.narrativeText && (
+        <Disclosure label={pick(locale, "See expert chemistry synthesis", "우정 시너지 상세 해석 보기")}>
+          <div className="rounded-xl border border-rel-line bg-white/80 p-4 font-rel-sans text-xs leading-relaxed text-rel-ink-soft">
+            <p className="font-medium text-rel-ink">{ch01Vm.narrativeText}</p>
+            {ch01Vm.v1Assets?.whyYouMeUs?.bullets && (
+              <ul className="mt-3 space-y-1.5 border-t border-rel-line/50 pt-2.5">
+                {ch01Vm.v1Assets.whyYouMeUs.bullets.map((b, i) => (
+                  <li key={i} className="flex items-start gap-1.5">
+                    <span className="font-bold text-rel-deep">•</span>
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </Disclosure>
+      )}
+    </ChapterSection>
   );
 }
 
-/* --------------------------- 03 part 2 · Social DNA -------------------------- */
+/* ------------------- CHAPTER 3: 서로에게 어떤 친구인가 ------------------- */
 
-export function SocialDnaSection({ vm, locale }: Ctx) {
+export function Chapter03Roles({ vm, locale }: Ctx) {
   const social = findSection(vm, "social_dna") as SocialDnaSectionVM | undefined;
   const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
   const t = useMessages().relationshipDrilldown.friendship;
@@ -364,16 +292,15 @@ export function SocialDnaSection({ vm, locale }: Ctx) {
   const synthesis = social.dna.me.guardian_character;
 
   return (
-    <Section
-      id="part2"
-      eyebrow={pick(locale, "03 · Part 2", "03 · Part 2")}
-      title="Social DNA"
+    <ChapterSection
+      id="ch03_roles"
+      n="3"
+      title={pick(locale, "Friendship Archetypes & Mutual Roles", "서로에게 어떤 친구인가")}
       lead={pick(
         locale,
-        "The seat each of you takes among friends, and what only exists when the two of you meet.",
-        "친구들 사이에서 각자가 맡는 자리, 그리고 이 둘이 만났을 때만 생기는 것.",
+        "What kind of guardian seat each of you takes, and what unique strength you bring into each other's life.",
+        "나는 이 친구에게 어떤 수호군이고, 이 친구는 나에게 어떤 힘을 주는가?",
       )}
-      tint="cream"
     >
       <div className="grid gap-5 sm:grid-cols-2">
         {people.map(({ key, person, voice }, i) => (
@@ -410,14 +337,6 @@ export function SocialDnaSection({ vm, locale }: Ctx) {
                     {person.battery_description}
                   </dd>
                 </div>
-                <div>
-                  <dt className="font-rel-sans text-[10px] uppercase tracking-[0.18em] text-rel-ink-mute">
-                    {t.privateSideLabel}
-                  </dt>
-                  <dd className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink">
-                    {person.private_self}
-                  </dd>
-                </div>
               </dl>
               {voice && (voice.voice || voice.description) ? (
                 <div className="mt-5 border-t border-rel-line/60 pt-4">
@@ -429,11 +348,6 @@ export function SocialDnaSection({ vm, locale }: Ctx) {
                       &ldquo;{voice.voice}&rdquo;
                     </p>
                   ) : null}
-                  {voice.description ? (
-                    <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
-                      {voice.description}
-                    </p>
-                  ) : null}
                 </div>
               ) : null}
             </article>
@@ -442,58 +356,166 @@ export function SocialDnaSection({ vm, locale }: Ctx) {
       </div>
 
       {synthesis ? (
-        <>
+        <div className="mt-8">
           <Rule label={pick(locale, "When we're together", "우리가 만나면")} />
           <Reveal>
             <figure
               data-shareable="friend-synthesis"
-              className="rounded-3xl border border-rel-deep/20 bg-rel-deep px-7 py-12 text-center sm:px-12 sm:py-16"
+              className="rounded-3xl border border-rel-deep/20 bg-rel-deep px-7 py-10 text-center sm:px-12 sm:py-12"
             >
               <figcaption className="font-rel-sans text-[10px] uppercase tracking-[0.28em] text-white/55">
                 {social.dna.me.nickname} × {social.dna.partner.nickname}
               </figcaption>
-              <p className="mt-7 font-rel-serif text-[22px] leading-[1.5] tracking-[-0.01em] text-white sm:text-[28px]">
+              <p className="mt-5 font-rel-serif text-[20px] leading-[1.5] tracking-[-0.01em] text-white sm:text-[24px]">
                 {synthesis.label}
               </p>
-              <p className="mx-auto mt-7 max-w-[46ch] font-rel-sans text-[13.5px] leading-[1.9] text-white/75">
+              <p className="mx-auto mt-4 max-w-[46ch] font-rel-sans text-[13px] leading-[1.85] text-white/75">
                 {synthesis.description}
-              </p>
-              <p className="mt-9 font-rel-sans text-[9.5px] uppercase tracking-[0.3em] text-white/40">
-                Aha! It&apos;s me!
               </p>
             </figure>
           </Reveal>
-        </>
+        </div>
       ) : null}
-    </Section>
+    </ChapterSection>
   );
 }
 
-/* --------------------- 04 part 3 · 숨겨진 흐름 + 관계 조건 -------------------- */
+/* ------------------- CHAPTER 4: 일상 템포와 소통 케미 (11-AXIS PRIMARY HOME) ------------------- */
 
-export function HiddenFlowSection({ vm, locale }: Ctx) {
-  const hf = findSection(vm, "hidden_flow") as HiddenFlowSectionVM | undefined;
-  const soulmate = findSection(vm, "soulmate") as SoulmateSectionVM | undefined;
-  const prescription = findSection(vm, "prescription") as PrescriptionSectionVM | undefined;
-  const t = useMessages().relationshipDrilldown.friendship;
-  if (!hf && !soulmate) return null;
+export function Chapter04Tempo({ vm, viewerIsReportA, locale }: Ctx) {
+  const compare = findSection(vm, "compare_table") as CompareTableSectionVM | undefined;
+  const radar = findSection(vm, "psych_radar") as PsychRadarSectionVM | undefined;
+  const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
+  if (!compare && !radar) return null;
   const [nameA, nameB] = vm.opening.names;
-
-  const releaseItems = (prescription?.items ?? []).flatMap((item) => item.dont_list);
+  const gap = deepRead?.vm.gapSignal;
+  const ch03Vm = vm.chapters?.find((c) => c.chapterKey === "ch03_social_dna_tempo");
 
   return (
-    <Section
-      id="part3"
-      eyebrow={pick(locale, "04 · Part 3", "04 · Part 3")}
-      title={pick(locale, "The hidden flow of this friendship", "우정의 숨겨진 흐름")}
+    <ChapterSection
+      id="ch04_tempo"
+      n="4"
+      title={pick(locale, "Daily Tempo & Initiative Chemistry", "일상 템포와 소통 케미")}
       lead={pick(
         locale,
-        "Patterns you rarely say out loud but that repeat every time. A light skim is enough.",
-        "말로는 잘 안 하지만 매번 반복되는 패턴들. 가볍게 훑어보세요.",
+        "How do your daily interaction rhythms, 11-axis psych profiles, and initiative roles compare?",
+        "우리는 평소 연락하고 반응하고 움직이는 방식이 어떻게 다른지 11축 그래프와 리듬 비교로 봅니다.",
       )}
     >
-      {hf?.travelStyle ? (
+      {/* Primary Visual: 11-Axis Psych Radar Chart */}
+      {radar ? (
         <div className="mb-10">
+          <PsychAxisComparisonSection
+            axisResults={radar.axisResults}
+            highlights={radar.highlights}
+            chartNote={radar.chartNote}
+            names={[nameA, nameB]}
+            locale={locale}
+          />
+        </div>
+      ) : null}
+
+      {/* NEW capability: initiativeRole */}
+      {ch03Vm?.coverageCards?.initiativeRole && (
+        <div className="mb-10 rounded-2xl border border-rel-line bg-rel-surface/90 p-5 shadow-xs sm:p-6">
+          <h4 className="mb-3.5 flex items-center gap-2 font-rel-sans text-xs font-bold uppercase tracking-wider text-rel-deep">
+            <span className="inline-block h-2 w-2 rounded-full bg-rel-deep" />
+            {pick(locale, "Who leads what in this friendship?", "이 우정에서 누가 무엇을 주도할까?")}
+          </h4>
+          <div className="grid grid-cols-1 gap-3 font-rel-sans text-xs text-rel-ink-soft sm:grid-cols-3">
+            <div className="rounded-xl border border-rel-line/60 bg-white p-3.5 shadow-2xs">
+              <span className="font-semibold text-rel-ink block mb-1">연락 물꼬</span>
+              <span className="font-bold text-rel-deep text-sm">{ch03Vm.coverageCards.initiativeRole.contactInitiator}</span>
+            </div>
+            <div className="rounded-xl border border-rel-line/60 bg-white p-3.5 shadow-2xs">
+              <span className="font-semibold text-rel-ink block mb-1">약속 · 기획</span>
+              <span className="font-bold text-rel-deep text-sm">{ch03Vm.coverageCards.initiativeRole.planningLead}</span>
+            </div>
+            <div className="rounded-xl border border-rel-line/60 bg-white p-3.5 shadow-2xs">
+              <span className="font-semibold text-rel-ink block mb-1">관계 회복</span>
+              <span className="font-bold text-rel-deep text-sm">{ch03Vm.coverageCards.initiativeRole.reconnectionLead}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Existing Compare Table */}
+      {compare ? (
+        <ul className="space-y-10">
+          {compare.rows.map((row, i) => {
+            const me = viewerIsReportA ? row.personA : row.personB;
+            const partner = viewerIsReportA ? row.personB : row.personA;
+            return (
+              <li key={row.id}>
+                <Reveal delay={i * 50}>
+                  <VersusStrip label={row.label} aName={nameA} bName={nameB} a={me.shortLabel} b={partner.shortLabel} />
+                  <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">{row.meaning}</p>
+                </Reveal>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      {gap && (gap.matchNote || gap.meBody || gap.partnerBody) ? (
+        <Disclosure label={pick(locale, "See instinct gap details", "결이 갈리는 지점 세부 분석 보기")}>
+          <div className="space-y-3 font-rel-sans text-xs text-rel-ink-soft">
+            {gap.matchNote ? <p className="font-medium text-rel-ink">{gap.matchNote}</p> : null}
+            {gap.meBody && <p>· <strong>{nameA}:</strong> {gap.meBody}</p>}
+            {gap.partnerBody && <p>· <strong>{nameB}:</strong> {gap.partnerBody}</p>}
+          </div>
+        </Disclosure>
+      ) : null}
+    </ChapterSection>
+  );
+}
+
+/* ------------------- CHAPTER 5: 같이 놀 때 우리는 어떤 팀인가 ------------------- */
+
+export function Chapter05Teamwork({ vm, locale }: Ctx) {
+  const hf = findSection(vm, "hidden_flow") as HiddenFlowSectionVM | undefined;
+  const [nameA, nameB] = vm.opening.names;
+  const ch04Vm = vm.chapters?.find((c) => c.chapterKey === "ch04_play_travel");
+  const t = useMessages().relationshipDrilldown.friendship;
+
+  return (
+    <ChapterSection
+      id="ch05_teamwork"
+      n="5"
+      title={pick(locale, "Play & Travel Teamwork Dynamic", "같이 놀 때 우리는 어떤 팀인가")}
+      lead={pick(
+        locale,
+        "When making plans or traveling together, how do your roles and energy paces divide?",
+        "함께 약속을 잡거나 여행을 갈 때 우리의 역할 분담과 팀워크는 어떠한가?",
+      )}
+    >
+      {/* NEW capability: travelPlayRole */}
+      {ch04Vm?.coverageCards?.travelPlayRole && (
+        <div className="mb-8 rounded-2xl border border-rel-line bg-white/90 p-5 shadow-xs sm:p-6">
+          <h4 className="mb-3.5 flex items-center gap-2 font-rel-sans text-xs font-bold uppercase tracking-wider text-rel-deep">
+            <span className="inline-block h-2 w-2 rounded-full bg-rel-deep" />
+            {pick(locale, "What kind of team are we when hanging out?", "놀 때 우리는 어떤 팀인가?")}
+          </h4>
+          <div className="grid grid-cols-1 gap-3 font-rel-sans text-xs text-rel-ink-soft sm:grid-cols-3">
+            <div className="rounded-xl border border-rel-line/60 bg-rel-bg/50 p-3.5">
+              <span className="font-semibold text-rel-ink block mb-1">아이디어 제안</span>
+              <span className="font-bold text-rel-deep text-sm">{ch04Vm.coverageCards.travelPlayRole.ideaCreator}</span>
+            </div>
+            <div className="rounded-xl border border-rel-line/60 bg-rel-bg/50 p-3.5">
+              <span className="font-semibold text-rel-ink block mb-1">실전 실행 · 예약</span>
+              <span className="font-bold text-rel-deep text-sm">{ch04Vm.coverageCards.travelPlayRole.practicalExecutor}</span>
+            </div>
+            <div className="rounded-xl border border-rel-line/60 bg-rel-bg/50 p-3.5">
+              <span className="font-semibold text-rel-ink block mb-1">에너지 템포</span>
+              <span className="font-medium text-rel-deep">{ch04Vm.coverageCards.travelPlayRole.energyPace}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Existing Travel Style */}
+      {hf?.travelStyle ? (
+        <div>
           <VersusStrip
             icon="🗺️"
             label={t.travelStyleLabel}
@@ -507,13 +529,34 @@ export function HiddenFlowSection({ vm, locale }: Ctx) {
           </p>
         </div>
       ) : null}
+    </ChapterSection>
+  );
+}
 
+/* ------------------- CHAPTER 6: 고민 상담과 제3자 관계 다이내믹 ------------------- */
+
+export function Chapter06CounselingGroup({ vm, locale }: Ctx) {
+  const hf = findSection(vm, "hidden_flow") as HiddenFlowSectionVM | undefined;
+  const [nameA, nameB] = vm.opening.names;
+  const ch05Vm = vm.chapters?.find((c) => c.chapterKey === "ch05_communication_third_person");
+  const t = useMessages().relationshipDrilldown.friendship;
+
+  return (
+    <ChapterSection
+      id="ch06_counseling_group"
+      n="6"
+      title={pick(locale, "Counseling & Group Dynamics", "고민 상담과 다른 친구가 끼었을 때")}
+      lead={pick(
+        locale,
+        "Why do you turn to this friend in hard times, and how does your bond shift in group settings?",
+        "힘들 때 왜 이 친구를 찾으며, 여럿이 모이는 자리에서는 어떤 가이드가 필요한가?",
+      )}
+    >
+      {/* Existing Counseling Style */}
       {hf?.counseling.me || hf?.counseling.partner ? (
-        <div className="mb-10">
+        <div className="mb-8">
           <div className="flex items-center gap-2">
-            <span aria-hidden className="text-[15px]">
-              💬
-            </span>
+            <span aria-hidden className="text-[15px]">💬</span>
             <span className="font-rel-sans text-[12px] font-semibold tracking-[0.06em] text-rel-ink">
               {t.counselingStyleLabel}
             </span>
@@ -531,51 +574,77 @@ export function HiddenFlowSection({ vm, locale }: Ctx) {
               ) : null,
             )}
           </div>
-          {hf.counselingGapNote ? (
-            <p className="mt-4 font-rel-sans text-[13px] leading-[1.75] text-rel-ink-mute">{hf.counselingGapNote}</p>
-          ) : null}
         </div>
       ) : null}
 
-      {releaseItems.length > 0 && (
-        <>
-          <Rule label={pick(locale, "Boundaries of expectation", "기대의 경계")} />
-          <Quote>
-            {pick(
-              locale,
-              "What can I still expect from this friend when things are hard?",
-              "힘들 때 이 친구에게 무엇까지 기대해도 될까?",
-            )}
-          </Quote>
-          <div className="mt-9">
-            <h3 className="font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-rel-taupe">
-              🌿 {pick(locale, "Expectations worth releasing", "조금 내려놓으면 좋은 것")}
-            </h3>
-            <ul className="mt-4 space-y-2.5">
-              {releaseItems.map((line) => (
-                <li key={line} className="font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink">
-                  {line}
-                </li>
-              ))}
-            </ul>
+      {/* NEW capability: thirdPersonExclusion */}
+      {ch05Vm?.coverageCards?.thirdPersonExclusion && (
+        <div className="rounded-2xl border border-rel-line bg-white/90 p-5 shadow-xs sm:p-6">
+          <h4 className="mb-3.5 flex items-center gap-2 font-rel-sans text-xs font-bold uppercase tracking-wider text-rel-deep">
+            <span className="inline-block h-2 w-2 rounded-full bg-rel-deep" />
+            {pick(locale, "1-on-1 vs Group & Third-Person Dynamics", "둘만 있을 때와 다른 친구가 함께 있을 때 (다자간 소외/비교 다이내믹)")}
+          </h4>
+          <div className="space-y-3 font-rel-sans text-xs">
+            <div className="inline-block rounded-lg bg-rel-deep/10 px-3 py-1.5 font-bold text-rel-deep text-sm">
+              ✨ {ch05Vm.coverageCards.thirdPersonExclusion.humanTitle}
+            </div>
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5 text-emerald-900">
+              <strong className="font-semibold text-emerald-700">추천 환경/맥락:</strong>{" "}
+              {ch05Vm.coverageCards.thirdPersonExclusion.situationNote}
+            </div>
+            <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-3.5 text-amber-900">
+              <strong className="font-semibold text-amber-700">주의사항:</strong>{" "}
+              {ch05Vm.coverageCards.thirdPersonExclusion.recommendationNote}
+            </div>
           </div>
-        </>
+        </div>
       )}
-
-      {soulmate ? (
-        <>
-          <Rule label={pick(locale, "Distance & Endurance", "거리 · 지속성")} />
-          <p className="max-w-[58ch] font-rel-sans text-[14px] leading-[1.85] text-rel-ink-soft">{soulmate.verdict}</p>
-        </>
-      ) : null}
-    </Section>
+    </ChapterSection>
   );
 }
 
-/* ---------------------------- 05 part 4 · 방어벽 ---------------------------- */
+/* ------------------- CHAPTER 7: 서운함과 관계 회복의 기술 ------------------- */
 
-export function RiskSection({ vm, locale }: Ctx) {
+export function Chapter07ConflictRepair({ vm, locale }: Ctx) {
+  const de = findSection(vm, "de_escalation") as DeEscalationSectionVM | undefined;
+  if (!de) return null;
+
+  return (
+    <ChapterSection
+      id="ch07_conflict_repair"
+      n="7"
+      title={pick(locale, "Conflict Resolution & Reconciliation", "서운함과 관계 회복의 기술")}
+      lead={pick(
+        locale,
+        "How friction arises when you clash, and the exact steps to clear up misunderstandings gracefully.",
+        "서운함이 생기거나 갈등이 일어날 때 어떻게 풀어나가야 하는가?",
+      )}
+    >
+      <div className="space-y-4">
+        <p className="font-rel-serif text-[18px] leading-[1.5] text-rel-ink">{de.hashtag}</p>
+        <p className="font-rel-sans text-[13px] leading-[1.7] text-rel-ink-mute">{de.archetypeLabel}</p>
+        <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 font-rel-sans text-[14px] italic leading-[1.8] text-rel-ink shadow-xs">
+          💬 {de.cheatScript}
+        </div>
+        {de.reconciliationScript && (
+          <p className="font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">{de.reconciliationScript}</p>
+        )}
+      </div>
+
+      {de.recoveryPaceNote && (
+        <Disclosure label={pick(locale, "See cooling-off & recovery timing tips", "추천 쿨다운 & 회복 타이밍 팁 보기")}>
+          <p className="font-rel-sans text-xs leading-[1.7] text-rel-ink-soft">{de.recoveryPaceNote}</p>
+        </Disclosure>
+      )}
+    </ChapterSection>
+  );
+}
+
+/* ------------------- CHAPTER 8: 이 우정에서 기대하지 말아야 할 것 ------------------- */
+
+export function Chapter08Boundaries({ vm, locale }: Ctx) {
   const bg = findSection(vm, "breakup_guide") as BreakupGuideSectionVM | undefined;
+  const prescription = findSection(vm, "prescription") as PrescriptionSectionVM | undefined;
   if (!bg) return null;
   const [nameA, nameB] = vm.opening.names;
 
@@ -584,213 +653,185 @@ export function RiskSection({ vm, locale }: Ctx) {
     { name: nameB, body: bg.warnings.partner, care: bg.jealousyGuard.partner },
   ].filter((r) => r.body);
 
+  const releaseItems = (prescription?.items ?? []).flatMap((item) => item.dont_list);
+
   return (
-    <Section
-      id="part4"
-      eyebrow={pick(locale, "05 · Part 4", "05 · Part 4")}
-      title={pick(locale, "Guardrails for a healthy friendship", "건강한 우정을 위한 방어벽")}
+    <ChapterSection
+      id="ch08_boundaries"
+      n="8"
+      title={pick(locale, "Expectation Boundaries & Guardrails", "이 우정에서 기대하지 말아야 할 것")}
       lead={pick(
         locale,
-        "Not warning signs — just the moments you're most likely to misread each other. Knowing them usually makes them pass right by.",
-        "위험 신호가 아니라, 우리가 서로를 오해하기 쉬운 순간들이에요. 알아두면 대부분 그냥 지나갑니다.",
+        "Boundaries to respect and expectations worth releasing for a long-lasting friendship.",
+        "서로의 기질 차이에서 오는 한계와 유의해야 할 경계는 무엇인가?",
       )}
-      tint="cream"
     >
-      <ol className="space-y-9">
+      <ol className="space-y-6">
         {risks.map((r, i) => (
-          <li key={r.name}>
-            <Reveal delay={i * 50}>
-              <div className="flex items-baseline gap-3">
-                <span className="font-rel-sans text-[10px] tracking-[0.18em] text-rel-ink-mute">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="min-w-0 font-rel-serif text-[18px] leading-[1.45] text-rel-ink sm:text-[20px]">
-                  {r.name}
-                </h3>
-              </div>
-              <p className="mt-2.5 pl-8 font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">{r.body}</p>
-              {r.care ? (
-                <p className="mt-2.5 pl-8 font-rel-sans text-[13px] leading-[1.75] text-rel-deep">→ {r.care}</p>
-              ) : null}
-            </Reveal>
+          <li key={r.name} className="rounded-xl border border-rel-line bg-white/80 p-4.5 shadow-2xs">
+            <h4 className="font-rel-serif text-[17px] font-semibold text-rel-ink">{r.name}의 경계</h4>
+            <p className="mt-2 font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">{r.body}</p>
+            {r.care ? <p className="mt-2 font-rel-sans text-[13px] text-rel-deep">→ {r.care}</p> : null}
           </li>
         ))}
       </ol>
-    </Section>
+
+      {releaseItems.length > 0 && (
+        <Disclosure label={pick(locale, "See expectations worth releasing", "조금 내려놓으면 좋은 기대 사항 보기")}>
+          <ul className="space-y-2 font-rel-sans text-xs text-rel-ink-soft">
+            {releaseItems.map((line, idx) => (
+              <li key={idx} className="flex gap-2">
+                <span>🌿</span>
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+        </Disclosure>
+      )}
+    </ChapterSection>
   );
 }
 
-/* -------------------------- 06 part 5 · 사용설명서 -------------------------- */
+/* ------------------- CHAPTER 9: 오래가는 우정의 거리감 ------------------- */
 
-export function ManualSection({ vm, locale }: Ctx) {
-  const de = findSection(vm, "de_escalation") as DeEscalationSectionVM | undefined;
+export function Chapter09Distance({ vm, locale }: Ctx) {
+  const soulmate = findSection(vm, "soulmate") as SoulmateSectionVM | undefined;
+  const ch08Vm = vm.chapters?.find((c) => c.chapterKey === "ch08_distance_durability");
+
+  return (
+    <ChapterSection
+      id="ch09_distance_durability"
+      n="9"
+      title={pick(locale, "Distance & Long-Term Durability", "오래가는 우정의 거리감")}
+      lead={pick(
+        locale,
+        "Are you friends who need frequent hangouts, or an enduring bond that thrives even with occasional catch-ups?",
+        "우리는 자주 봐야 하는 친구인가, 가끔 만나도 괜찮은 친구인가?",
+      )}
+    >
+      {/* NEW capability: distanceProfile */}
+      {ch08Vm?.coverageCards?.distanceProfile && (
+        <div className="mb-8 rounded-2xl border border-rel-line bg-white/90 p-5 shadow-xs sm:p-6">
+          <h4 className="mb-3.5 flex items-center gap-2 font-rel-sans text-xs font-bold uppercase tracking-wider text-rel-deep">
+            <span className="inline-block h-2 w-2 rounded-full bg-rel-deep" />
+            {pick(locale, "Distance & Durability Verdict", "우리는 자주 봐야 하는 친구인가, 가끔 봐도 괜찮은 친구인가?")}
+          </h4>
+          <div className="space-y-3 font-rel-sans text-xs">
+            <div className="rounded-xl bg-rel-deep/10 p-3.5 font-bold text-rel-deep text-sm">
+              🏷️ {ch08Vm.coverageCards.distanceProfile.verdictTitle}
+            </div>
+            {ch08Vm.coverageCards.distanceProfile.rhythmAdvice && (
+              <div className="rounded-xl border border-rel-line/50 bg-rel-bg/50 p-3 text-rel-ink-soft">
+                <strong className="font-semibold text-rel-ink">연락 리듬 가이드:</strong>{" "}
+                {ch08Vm.coverageCards.distanceProfile.rhythmAdvice}
+              </div>
+            )}
+            {ch08Vm.coverageCards.distanceProfile.meetingFrequencyNeed && (
+              <div className="rounded-xl border border-rel-line/50 bg-rel-bg/50 p-3 text-rel-ink-soft">
+                <strong className="font-semibold text-rel-ink">만남 지속력:</strong>{" "}
+                {ch08Vm.coverageCards.distanceProfile.meetingFrequencyNeed}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Existing Soulmate Verdict */}
+      {soulmate ? (
+        <div className="rounded-2xl border border-rel-line bg-rel-surface/80 p-5">
+          <p className="font-rel-sans text-[14px] leading-[1.85] text-rel-ink-soft">{soulmate.verdict}</p>
+        </div>
+      ) : null}
+    </ChapterSection>
+  );
+}
+
+/* ------------------- CHAPTER 10: 우리 우정 사용설명서 ------------------- */
+
+export function Chapter10Playbook({ vm, locale }: Ctx) {
   const prescription = findSection(vm, "prescription") as PrescriptionSectionVM | undefined;
   const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
   const t = useMessages().relationshipDrilldown.friendship;
   const adviceForMe = deepRead?.vm.adviceForMe ?? [];
   const adviceForPartner = deepRead?.vm.adviceForPartner ?? [];
   const together = deepRead?.vm.together;
-  if (!de && !prescription && adviceForMe.length === 0 && adviceForPartner.length === 0 && !together) return null;
 
   return (
-    <Section
-      id="part5"
-      eyebrow={pick(locale, "06 · Part 5", "06 · Part 5")}
-      title={pick(locale, "Our friendship manual", "우리 우정 사용설명서")}
+    <ChapterSection
+      id="ch10_playbook"
+      n="10"
+      title={pick(locale, "Our Friendship Manual & Action Playbook", "우리 우정 사용설명서")}
       lead={pick(
         locale,
-        "How to actually use everything above. One page.",
-        "여기까지 읽은 내용을 실제로 쓰는 방법. 한 장으로 정리했어요.",
+        "Practical habits, Do's & Don'ts, and relationship routines to keep your friendship strong for years.",
+        "이 우정을 가치 있게 가꾸기 위해 오늘 당장 실천할 지침은 무엇인가?",
       )}
     >
-      {de ? (
-        <section className="mb-10">
-          <h3 className="flex items-center gap-2 border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-v4-bad">
-            <span aria-hidden>💬</span>
-            {pick(locale, "When you fight, do this", "싸웠을 때는 이렇게")}
-          </h3>
-          <div className="mt-4 space-y-3">
-            <p className="font-rel-serif text-[17px] leading-[1.5] text-rel-ink">{de.hashtag}</p>
-            <p className="font-rel-sans text-[13px] leading-[1.7] text-rel-ink-mute">{de.archetypeLabel}</p>
-            <p className="rounded-xl border border-rel-line bg-rel-surface p-4 font-rel-sans text-[13.5px] italic leading-[1.8] text-rel-ink">
-              💬 {de.cheatScript}
-            </p>
-            {de.reconciliationScript ? (
-              <p className="font-rel-sans text-[13px] leading-[1.75] text-rel-ink-soft">{de.reconciliationScript}</p>
-            ) : null}
-            {de.recoveryPaceNote ? (
-              <p className="font-rel-sans text-[12.5px] leading-[1.7] text-rel-ink-mute">{de.recoveryPaceNote}</p>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
+      {/* Pair Prescriptions: Do's & Don'ts */}
       {prescription ? (
-        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
-          <Reveal>
-            <section>
-              <h3 className="flex items-center gap-2 border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-v4-good">
-                <span aria-hidden>✅</span>
-                {pick(locale, "Our routine for staying close", "우리에게 맞는 유지 루틴")}
-              </h3>
-              <ul className="mt-4 space-y-2.5">
-                {prescription.items.flatMap((item) => item.do_list).map((line) => (
-                  <li key={line} className="flex gap-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink">
-                    <span aria-hidden className="text-rel-ink-mute">
-                      ·
-                    </span>
-                    {line}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </Reveal>
-          <Reveal delay={60}>
-            <section>
-              <h3 className="flex items-center gap-2 border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-v4-bad">
-                <span aria-hidden>🚫</span>
-                {pick(locale, "Just avoid this", "이것만은 피하기")}
-              </h3>
-              <ul className="mt-4 space-y-2.5">
-                {prescription.items.flatMap((item) => item.dont_list).map((line) => (
-                  <li key={line} className="flex gap-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink">
-                    <span aria-hidden className="text-rel-ink-mute">
-                      ·
-                    </span>
-                    {line}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </Reveal>
+        <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
+          <section className="rounded-2xl border border-emerald-200/70 bg-emerald-50/40 p-5">
+            <h4 className="flex items-center gap-2 border-b border-emerald-200 pb-2.5 font-rel-sans text-[13px] font-bold text-emerald-900">
+              <span aria-hidden>✅</span>
+              {pick(locale, "Our routine for staying close", "우리에게 맞는 유지 루틴 (Do)")}
+            </h4>
+            <ul className="mt-3.5 space-y-2.5">
+              {prescription.items.flatMap((item) => item.do_list).map((line) => (
+                <li key={line} className="flex gap-2 font-rel-sans text-[13px] leading-[1.7] text-emerald-950">
+                  <span className="font-bold text-emerald-700">·</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-rose-200/70 bg-rose-50/40 p-5">
+            <h4 className="flex items-center gap-2 border-b border-rose-200 pb-2.5 font-rel-sans text-[13px] font-bold text-rose-900">
+              <span aria-hidden>🚫</span>
+              {pick(locale, "Just avoid this", "이것만은 피하기 (Don't)")}
+            </h4>
+            <ul className="mt-3.5 space-y-2.5">
+              {prescription.items.flatMap((item) => item.dont_list).map((line) => (
+                <li key={line} className="flex gap-2 font-rel-sans text-[13px] leading-[1.7] text-rose-950">
+                  <span className="font-bold text-rose-700">·</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       ) : null}
 
-      {adviceForMe.length > 0 || adviceForPartner.length > 0 ? (
-        <div className="mt-12">
-          <Rule label={pick(locale, "Tailored to each of you", "각자에게 맞는 제안")} />
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2">
-            {adviceForMe.length > 0 ? (
-              <Reveal>
-                <section>
-                  <h3 className="border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-rel-ink">
-                    {t.deepReadAdviceMeLabel}
-                  </h3>
-                  <div className="mt-4 space-y-3">
-                    {adviceForMe.map((tip, i) => (
-                      <div key={i} className="rounded-xl border border-rel-line bg-rel-surface p-4">
-                        {tip.actionTitle ? (
-                          <p className="font-rel-sans text-[13.5px] font-semibold leading-snug text-rel-ink">
-                            {tip.actionTitle}
-                          </p>
-                        ) : null}
-                        {tip.reason ? (
-                          <p className="mt-1.5 font-rel-sans text-[12.5px] leading-[1.7] text-rel-ink-mute">
-                            {tip.reason}
-                          </p>
-                        ) : null}
-                        {tip.speechTip ? (
-                          <p className="mt-1.5 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink">
-                            &ldquo;{tip.speechTip}&rdquo;
-                          </p>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </Reveal>
-            ) : null}
-            {adviceForPartner.length > 0 ? (
-              <Reveal delay={60}>
-                <section>
-                  <h3 className="border-b border-rel-line pb-3 font-rel-sans text-[13px] font-semibold tracking-[0.04em] text-rel-ink">
-                    {t.deepReadAdvicePartnerLabel}
-                  </h3>
-                  <div className="mt-4 space-y-3">
-                    {adviceForPartner.map((tip, i) => (
-                      <div key={i} className="rounded-xl border border-rel-line bg-rel-surface p-4">
-                        {tip.actionTitle ? (
-                          <p className="font-rel-sans text-[13.5px] font-semibold leading-snug text-rel-ink">
-                            {tip.actionTitle}
-                          </p>
-                        ) : null}
-                        {tip.reason ? (
-                          <p className="mt-1.5 font-rel-sans text-[12.5px] leading-[1.7] text-rel-ink-mute">
-                            {tip.reason}
-                          </p>
-                        ) : null}
-                        {tip.speechTip ? (
-                          <p className="mt-1.5 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink">
-                            &ldquo;{tip.speechTip}&rdquo;
-                          </p>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </Reveal>
-            ) : null}
+      {/* Tailored Advice & Maintenance Covenant */}
+      {(adviceForMe.length > 0 || adviceForPartner.length > 0 || together) && (
+        <Disclosure label={pick(locale, "See individual advice & friendship covenant", "각자에게 맞는 개별 조언 및 약속 다짐 보기")}>
+          <div className="space-y-6 pt-2">
+            {adviceForMe.length > 0 && (
+              <div>
+                <h5 className="font-bold text-xs text-rel-ink mb-2">{t.deepReadAdviceMeLabel}</h5>
+                {adviceForMe.map((tip, i) => (
+                  <p key={i} className="text-xs text-rel-ink-soft leading-relaxed">· {tip.actionTitle}</p>
+                ))}
+              </div>
+            )}
+            {adviceForPartner.length > 0 && (
+              <div>
+                <h5 className="font-bold text-xs text-rel-ink mb-2">{t.deepReadAdvicePartnerLabel}</h5>
+                {adviceForPartner.map((tip, i) => (
+                  <p key={i} className="text-xs text-rel-ink-soft leading-relaxed">· {tip.actionTitle}</p>
+                ))}
+              </div>
+            )}
+            {together && (
+              <div className="rounded-xl bg-rel-deep/5 p-4 text-center border border-rel-deep/10">
+                <p className="font-bold text-xs text-rel-deep">{together}</p>
+              </div>
+            )}
           </div>
-        </div>
-      ) : null}
+        </Disclosure>
+      )}
 
-      {together ? (
-        <Reveal>
-          <div className="mt-12 rounded-2xl border border-rel-deep/20 bg-rel-taupe-soft/35 p-6 text-center">
-            <span className="font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-ink-mute">
-              {t.deepReadTogetherLabel}
-            </span>
-            <p className="mt-3 font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink">{together}</p>
-            {deepRead?.vm.togetherStarter ? (
-              <p className="mt-3 font-rel-sans text-[13px] italic leading-[1.7] text-rel-ink-soft">
-                &ldquo;{deepRead.vm.togetherStarter}&rdquo;
-              </p>
-            ) : null}
-          </div>
-        </Reveal>
-      ) : null}
-
-      <div className="mt-16">
+      <div className="mt-12">
         <Quote>
           {pick(
             locale,
@@ -799,6 +840,6 @@ export function ManualSection({ vm, locale }: Ctx) {
           )}
         </Quote>
       </div>
-    </Section>
+    </ChapterSection>
   );
 }
