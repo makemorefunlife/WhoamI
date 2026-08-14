@@ -17,7 +17,11 @@ import {
 } from "@/lib/report/coerceDeepEssenceStructured";
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
-import { type Locale } from "@/lib/i18n/locale";
+import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
+import {
+  dedupeAndBackfillChecklist,
+  buildChecklistComparisonTexts,
+} from "@/lib/report/deepEssenceChecklistDedup";
 import { polishDeepEssenceStructuredReport } from "@/lib/report/polishDeepEssenceStructured";
 import { logServerEvent } from "@/lib/security/safeLog";
 import {
@@ -336,6 +340,39 @@ export async function runDeepEssenceStructuredLlm(
       return { structured: null, source: "fallback" };
     }
     const partB = coercedB.value;
+
+    // Checklist Dedup Batch 1 — deterministic surface-level duplicate
+    // safety net. Applied after Part B is coerced/validated (playbook,
+    // future, and checklist are all present here) and before evidence_refs
+    // sanitization below, since neither block touches the other's data.
+    {
+      const playbookForDedup = partB.playbook as {
+        rows: { better: string }[];
+        heated: string;
+        reset: string;
+      };
+      const futureForDedup = partB.future as { remember: string[]; leap: string };
+      const comparisonTexts = buildChecklistComparisonTexts(playbookForDedup, futureForDedup);
+      const dedupResult = dedupeAndBackfillChecklist({
+        checklist: partB.checklist,
+        comparisonTexts,
+        locale: normalizeLocale(input.locale),
+      });
+      partB.checklist = dedupResult.checklist;
+      if (dedupResult.flagged.length) {
+        logServerEvent("runDeepEssenceStructuredLlm", "checklist_dedup_flagged", {
+          locale: normalizeLocale(input.locale),
+          count: dedupResult.flagged.length,
+          backfilled: dedupResult.backfilledCount,
+          pairs: dedupResult.flagged.map((f) => ({
+            score: Math.round(f.score * 100) / 100,
+            item: f.item.slice(0, 24),
+            matched: f.matchedText.slice(0, 24),
+          })),
+        });
+      }
+    }
+
     // Part 03 Batch 1 — same never-trust-LLM-refs rule as Part A's sections.
     if (promptEvidence) {
       const relationships = partB.relationships as Record<string, unknown>;
