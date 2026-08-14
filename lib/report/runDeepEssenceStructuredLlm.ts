@@ -151,6 +151,7 @@ export async function runDeepEssenceStructuredLlm(
               naturalSelfAndDeepNeedsText: promptEvidence.layeredIdentity.naturalSelfAndDeepNeeds.text,
             },
             strengthsWatchoutsText: promptEvidence.strengthsWatchoutsText,
+            energyText: promptEvidence.energyText,
             axisInterpretation: {
               innateEvidenceText: promptEvidence.axisInterpretation.innateEvidenceText,
               gaps: promptEvidence.axisInterpretation.gaps.map((g) => ({
@@ -245,6 +246,15 @@ export async function runDeepEssenceStructuredLlm(
       filterItemRefs(partA.strengths);
       filterItemRefs(partA.watchouts);
 
+      // Part 02 Batch 1 — same rule, for energy.evidence_refs.
+      const energy = partA.energy as Record<string, unknown>;
+      const filteredEnergyRefs = filterKnownEvidenceRefs(
+        energy.evidence_refs,
+        promptEvidence.energyKnownKeys,
+      );
+      if (filteredEnergyRefs) energy.evidence_refs = filteredEnergyRefs;
+      else delete energy.evidence_refs;
+
       // Batch 8 — same rule, but only for the deterministically-selected
       // gap/alignment axes (never all 6). current_evidence_refs validates
       // only against that axis's own Current Self known keys (isolated,
@@ -296,6 +306,12 @@ export async function runDeepEssenceStructuredLlm(
       birthEnergyContext: input.astrologyInterpretation,
       partAExcerpt: buildPartAExcerpt(partA),
       locale: input.locale,
+      part01Evidence: promptEvidence
+        ? {
+            relationshipText: promptEvidence.relationshipText,
+            practiceText: promptEvidence.practiceText,
+          }
+        : null,
     });
     const partBRaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
       () => callLlmJson(openai, systemPrompt, userB),
@@ -316,6 +332,25 @@ export async function runDeepEssenceStructuredLlm(
       return { structured: null, source: "fallback" };
     }
     const partB = coercedB.value;
+    // Part 03 Batch 1 — same never-trust-LLM-refs rule as Part A's sections.
+    if (promptEvidence) {
+      const relationships = partB.relationships as Record<string, unknown>;
+      const filteredRelationshipRefs = filterKnownEvidenceRefs(
+        relationships.evidence_refs,
+        promptEvidence.relationshipKnownKeys,
+      );
+      if (filteredRelationshipRefs) relationships.evidence_refs = filteredRelationshipRefs;
+      else delete relationships.evidence_refs;
+
+      // Part 04 Batch 1 — same rule, for playbook.evidence_refs.
+      const playbook = partB.playbook as Record<string, unknown>;
+      const filteredPlaybookRefs = filterKnownEvidenceRefs(
+        playbook.evidence_refs,
+        promptEvidence.practiceKnownKeys,
+      );
+      if (filteredPlaybookRefs) playbook.evidence_refs = filteredPlaybookRefs;
+      else delete playbook.evidence_refs;
+    }
 
     const merged = { ...partA, ...partB };
     if (!isDeepEssenceStructuredReport(merged)) {

@@ -25,7 +25,7 @@ export function DeepEssencePartTwo({
       <div className="grid gap-6 sm:grid-cols-[220px_1fr] sm:items-center">
         <DeepEssenceEnergyGauge
           pct={energy.balance_pct}
-          relationalSpendLabel={t.part2.relationalSpend}
+          relationalSpendLabel={t.part2.selfReturn}
           selfReturnLabel={t.part2.selfReturn}
           othersLabel={t.part2.others}
         />

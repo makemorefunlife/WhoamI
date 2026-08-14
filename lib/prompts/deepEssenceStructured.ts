@@ -108,6 +108,15 @@ const LAYERED_IDENTITY_SCHEMA_FIELD = `,
 
 const STRENGTHS_EVIDENCE_FIELD = `, "evidence_refs": ["optional — exact keys from [Strengths & Watchouts evidence] this item is grounded in, only from the bracketed list, never invented — omit if this item isn't well-grounded"]`;
 
+// ── Part 02 Batch 1: additive Energy grounding ────────────────────────────
+// Same additive/grounded-only contract. balance_pct stays in the schema for
+// prompt clarity but is a pure SSOT derivation from bars[1] after coercion
+// (see coerceDeepEssenceStructured.ts) — whatever the LLM writes there is
+// overwritten, never trusted.
+
+const ENERGY_EVIDENCE_FIELD = `,
+    "evidence_refs": ["optional — exact keys from [Energy evidence] this block is grounded in, only from the bracketed list, never invented — omit if not well-grounded"]`;
+
 // ── Batch 8: replaces Batch 7's "all 6 axes, same depth" axis
 // interpretation. Only the deterministically-selected gap axes (top 2-3
 // widest, magnitude "wide") and the single best-aligned axis get a
@@ -151,6 +160,10 @@ function buildPartASchema(part01Evidence: Part01EvidenceForPartAPrompt | null | 
     .replace(
       `{ "title": "watch-out title (1-3 words)", "body": "4-6 gentle sentences" }`,
       `{ "title": "watch-out title (1-3 words)", "body": "4-6 gentle sentences"${STRENGTHS_EVIDENCE_FIELD} }`,
+    )
+    .replace(
+      `"optimal": ["fitting environment 1", "fitting environment 2"]`,
+      `"optimal": ["fitting environment 1", "fitting environment 2"]${ENERGY_EVIDENCE_FIELD}`,
     );
   const axisField = buildAxisInterpretationSchemaField(
     part01Evidence.axisInterpretation.gaps,
@@ -174,6 +187,7 @@ export type Part01EvidenceForPartAPrompt = {
     naturalSelfAndDeepNeedsText: string;
   };
   strengthsWatchoutsText: string;
+  energyText: string;
   axisInterpretation: {
     innateEvidenceText: string;
     gaps: Array<{ axis: PrimaryAxisKey; subjectText: string; currentText: string }>;
@@ -221,6 +235,9 @@ ${input.part01Evidence.growthEdgeText}
 [Strengths & Watchouts evidence]
 ${input.part01Evidence.strengthsWatchoutsText}
 
+[Energy evidence]
+${input.part01Evidence.energyText}
+
 [First Impression evidence]
 ${input.part01Evidence.layeredIdentity.firstImpressionText}
 
@@ -259,7 +276,16 @@ ${axisSections}
   Never frame the gap itself as a flaw, mistake, or something wrong with the person — it is one of adaptation / learned strength / role demand / protective pattern / energy cost, not a defect. current_pattern is a real, valid way this person operates today, not a lesser or "less true" version of them.
 - For alignment_highlight, use the same natural_tendency/current_pattern framing, then why_it_feels_easy explaining why the two line up and this trait can be used with comparatively little energy — treat this as a genuine, positive insight, not a throwaway line.
 - Never use fatalistic identity language. In English, avoid phrases like "True Self", "who you really are", "your real self" — prefer natural tendencies / what comes more naturally / how you operate today / where you've adapted / where the two align. In Korean, avoid "진짜 나" — prefer 본래의 경향 / 자연스러운 성향 / 지금 사용하는 방식 / 적응해온 방식.
-- Never translate raw current/innate/delta numbers into prose — describe concrete, real-life behavior and situations instead. Never let a single five-element/ten-god/psych-axis signal alone decide any field — look for convergence, and use conditional language when confidence is low or evidence is mixed. current_evidence_refs may only reference that exact axis's own bracketed Current Self keys (never another axis's); innate_evidence_refs only the shared Innate Self pool's keys. Both optional; never invent a key.`
+- Never translate raw current/innate/delta numbers into prose — describe concrete, real-life behavior and situations instead. Never let a single five-element/ten-god/psych-axis signal alone decide any field — look for convergence, and use conditional language when confidence is low or evidence is mixed. current_evidence_refs may only reference that exact axis's own bracketed Current Self keys (never another axis's); innate_evidence_refs only the shared Innate Self pool's keys. Both optional; never invent a key.
+- energy (headline/bars/summary/fuels/drains/optimal) must be grounded in [Energy evidence] via convergence across multiple signals — never let a single element/ten-god/dimension/axis decide a bar value or a fuels/drains/optimal item on its own, and use conditional language ("tends to", "often") when the evidence for a signal is mixed or low-confidence. Translate everything into an energy-cost/recovery/environment angle specifically — what costs you energy, what returns it, which environments or situations are cheaper or more expensive for you — never a generic personality description. You may reuse the same evidence already used elsewhere in this response (e.g. an axis gap, a strength/watchout), but you must not restate that section's conclusion here — say something new about energy cost or recovery, not a repeated trait description. evidence_refs is optional — only exact keys from [Energy evidence], never invented.
+- energy MAY surface these additional angles inside the existing summary/fuels/drains/optimal fields, but ONLY when genuinely supported by converging evidence — never force any of them into every response:
+  - Innate vs. current energy style: if the climate/elemental (innate) evidence and the energy_style/resilience (current) evidence point at a meaningfully different way of using energy, name that difference in plain, real-life terms. If they roughly agree, say nothing about a contrast — do not manufacture one.
+  - Gap-driven energy cost: if a reused Current x Innate gap axis represents real adaptation or compensation, you may explain the energy cost of sustaining that adaptation. A gap is not a problem or flaw — frame it as effort/cost, exactly like gap_deep_dive's own gives_you/may_cost framing, never as something wrong with the person.
+  - Strength overuse: an existing strength (from the CE strengths-group signals) may appear as a drains item ONLY when there is converging evidence that it's being used past a comfortable point (e.g. it recurs across strengths-group signals AND a caution/dimension signal) — never assert overuse from the strength's mere existence alone.
+  - Pressure / conflict / emotional labor: use pressure_response and conflict_style together (plus any other converging Energy evidence) to name a specific draining situation involving pressure, disagreement, or managing others' emotions — grounded in at least one of these signals, not asserted generically.
+  - Environment / rhythm / social density: make optimal more specific using only the evidence already in [Energy evidence] (solitude_autonomy, energy_style, climate, etc.) — do not invent a rhythm/pace signal that isn't there; if the evidence doesn't support a rhythm-specific claim, describe environment/social density instead.
+  Each of these is independent and optional — include only what the evidence actually supports, keep total energy content the same length/shape as before (no new fields, no longer lists), and never let any of these restate a conclusion already stated in axis_interpretations, growth_edge, strengths, or watchouts — translate it into energy terms instead.
+- Each fuels/drains/optimal item must name a concrete trigger or context, not a generic category label — and briefly imply why it costs or returns energy for this specific person, not just what the situation is. Prefer "a long meeting where you keep having to respond to people with little room to process alone" over "Large social gatherings"; prefer "carrying other people's schedules or moods while your own decisions keep getting pushed back" over "Too much responsibility". Ground each item's specificity in the convergence you already found in [Energy evidence] (e.g. solitude_autonomy + pressure_response together might point at a specific kind of low-privacy, high-responsiveness situation) — never invent a scenario unconnected to the evidence, and never let one signal alone dictate one item. The same underlying evidence may show up differently across fuels vs. drains vs. optimal — e.g. a low-stimulation environment might explain both a drains item (too much unstructured noise) and an optimal item (quiet, low-interruption settings) from two genuinely different angles; don't just restate one as the mirror of the other. Keep every item to one concise phrase or short sentence (still a scannable list item, not a paragraph). Never write a blanket claim like "you dislike people" or "you're an introvert" — describe the specific pattern or context instead. Keep fuels, drains, and optimal meaningfully distinct from each other — avoid two items across these three lists restating the same situation from interchangeable angles unless it's a genuinely separate, specific insight.`
     : "";
 
   return `[Input data — use only this material]
@@ -320,14 +346,101 @@ export const DEEP_ESSENCE_PART_B_SCHEMA = `{
   "checklist": ["today's action checklist item 1", "item 2", "... (8-12 items, one action per line)"]
 }`;
 
+// ── Part 03 Batch 1: additive Relationship grounding ──────────────────────
+// Same additive/grounded-only contract as Part A's batches. Only appended
+// when Part01 Identity Evidence is provided. Absent/null input.part01Evidence
+// must reproduce the exact pre-Batch-1 Part B prompt. Block-level
+// evidence_refs (like Part 02 Batch 1's energy.evidence_refs) rather than
+// per-item — fit/friction stay plain string[] so no UI/schema shape change
+// is needed for those two fields.
+
+const RELATIONSHIP_EVIDENCE_FIELD = `,
+    "evidence_refs": ["optional — exact keys from [Relationship evidence] this section is grounded in, only from the bracketed list, never invented — omit if not well-grounded"]`;
+
+// ── Part 04 Batch 1: additive Practice/Playbook grounding ─────────────────
+// Same additive/grounded-only contract, same block-level evidence_refs shape
+// as Part 03 Batch 1 (rows stays plain {situation,old,better}[] — no per-row
+// evidence_refs, no UI/schema shape change to rows itself).
+
+const PLAYBOOK_EVIDENCE_FIELD = `,
+    "evidence_refs": ["optional — exact keys from [Practice evidence] this section is grounded in, only from the bracketed list, never invented — omit if not well-grounded"]`;
+
+function buildPartBSchema(part01Evidence: Part01EvidenceForPartBPrompt | null | undefined): string {
+  if (!part01Evidence) return DEEP_ESSENCE_PART_B_SCHEMA;
+  return DEEP_ESSENCE_PART_B_SCHEMA.replace(
+    `    "compare": [
+      { "wound": "a phrase that tends to wound", "steady": "a phrase that steadies instead" },
+      { "wound": "...", "steady": "..." },
+      { "wound": "...", "steady": "..." }
+    ]
+  },`,
+    `    "compare": [
+      { "wound": "a phrase that tends to wound", "steady": "a phrase that steadies instead" },
+      { "wound": "...", "steady": "..." },
+      { "wound": "...", "steady": "..." }
+    ]${RELATIONSHIP_EVIDENCE_FIELD}
+  },`,
+  ).replace(
+    `    "heated": "rule for when emotions spike, 3-5 sentences",
+    "reset": "weekly reset routine, 3-5 sentences"
+  },`,
+    `    "heated": "rule for when emotions spike, 3-5 sentences",
+    "reset": "weekly reset routine, 3-5 sentences"${PLAYBOOK_EVIDENCE_FIELD}
+  },`,
+  );
+}
+
+export type Part01EvidenceForPartBPrompt = {
+  relationshipText: string;
+  practiceText: string;
+};
+
 export function buildDeepEssenceStructuredPartBUserPrompt(input: {
   surveyAnalysis: string;
   essenceAnalysisSummary: string;
   birthEnergyContext: string;
   partAExcerpt: string;
   locale?: Locale | string;
+  /** Part 03 Batch 1 — optional. Omit/null to reproduce the exact pre-Batch-1 prompt. */
+  part01Evidence?: Part01EvidenceForPartBPrompt | null;
 }): string {
   const outputLocale = normalizeLocale(input.locale);
+  const grounded = Boolean(input.part01Evidence);
+
+  const evidenceBlock = input.part01Evidence
+    ? `
+■ Relationship Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide relationships.pattern/fit/friction/compare and to fill its optional evidence_refs.
+[Relationship evidence]
+${input.part01Evidence.relationshipText}
+
+■ Practice Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide playbook.rule/rows/heated/reset and to fill its optional evidence_refs.
+[Practice evidence]
+${input.part01Evidence.practiceText}
+`
+    : "";
+
+  const groundingRules = grounded
+    ? `
+- relationships must be grounded in [Relationship evidence] via convergence across multiple signals — never let a single dimension/axis/secondary score decide pattern/fit/friction/compare alone, and use conditional language when a signal's confidence is low or mixed. Translate identity-trait evidence into its RELATIONAL meaning — never restate a trait the same way Part01/Part02 already described it; say something new about how it plays out specifically in relationships. You may reuse the same evidence already used elsewhere (e.g. an axis gap, a Part02 drains signal), but the conclusion here must be relationship-specific, not a repeated identity or energy conclusion.
+- pattern answers "how do I connect with people" — a whole-relational-style read, grounded in convergence across the evidence, not any single signal.
+- fit answers "what kind of person genuinely fits me" — ground it in real evidence-backed traits, not generic virtues ("kind", "honest") unless the evidence specifically converges on something more particular than that.
+- friction answers "what interaction pattern creates friction for me" — specifically consider conflict_decompression (how this person cools down / processes after conflict) as a strong candidate signal here when its confidence is usable; never invent a friction pattern unconnected to the evidence.
+- compare answers "a way this person tends to get hurt → a way to instead offer steadiness" (wound -> steady) — ground the wound side in real evidence (e.g. criticism_sensitivity, boundary_defense_strength, pressure_response), and make sure this is NOT a restated Part01 watchout — it must specifically be about how the person gets hurt or steadied in a relational moment, not a general character flaw.
+- intimacy_expression_style, support_giving_style, and boundary_defense_strength are especially relevant to pattern/fit; conflict_decompression is especially relevant to friction/compare — use them when they genuinely fit, never force all of them into every field.
+- evidence_refs is optional — only exact keys from [Relationship evidence], never invented.
+- pattern MAY include a short thread on the functional role this person tends to occupy in relationships (e.g. mediator, caretaker, fixer, observer, lead) — grounded in support_giving_style/boundary_defense_strength/expression_style/recognition_need. Answer ONLY "what role do I tend to end up in," never re-describe the underlying trait itself (that's Part01's job) — name the function, not the personality. Omit this thread entirely if the evidence for it is thin; do not force a role onto every response.
+- pattern MAY also include a short thread on how this person's natural relational tendency differs from how they currently behave in relationships, using the same already-provided gap/alignment axis — but ONLY when that difference actually shows up in a relational way, and ONLY as a brief translation of how it plays out in relationships (not a restatement of the axis's natural_tendency/current_pattern/gives_you/may_cost fields, which Part A already covered in full). Omit entirely when the axis doesn't meaningfully manifest in relationships or the evidence is thin.
+- compare MAY include one wound that is specifically about loneliness despite being connected to people — but ONLY when solitude_autonomy/intimacy_expression_style/recognition_need/conflict_decompression genuinely converge on a specific unmet need (e.g. wanting to be understood at a depth that isn't being met, or needing acknowledgment that isn't arriving) — never a generic "you feel isolated" statement, and never simply because solitude_autonomy or a similar signal exists. Before writing a loneliness wound, check the semantic conclusion of each Part01 watchout above (not just its wording) — if a watchout already explains this person via social withdrawal, emotional distance, isolation, or avoidance, a loneliness wound that amounts to "so you feel lonely / distant" is the SAME conclusion in different words and is forbidden, even if no sentence is copied. A valid loneliness wound must describe a genuinely separate relational experience: not the behavior/trait itself (e.g. NOT "tends to want to be alone"), but the specific unmet need felt even while WITH people (e.g. "the quiet isolation of being surrounded by people but not having the emotional depth you need actually met"). If you cannot articulate a loneliness wound that adds this new angle beyond what a watchout already covers, omit it and choose a different wound theme (criticism_sensitivity, boundary_defense_strength, pressure_response, etc.) instead. This is optional — most responses may have zero loneliness-flavored wounds among the 3 compare rows, and normally at most one of the 3 rows should be loneliness-themed even when included.
+- None of these three optional threads (role, relational gap, loneliness wound) should appear in every response — include each only when its own specific evidence genuinely supports it, and it's normal for a response to include zero, one, two, or all three.
+- playbook translates analysis into ACTION — never re-explain personality, never restate what strengths/watchouts/relationships already concluded. Ground it in [Practice evidence] via convergence across multiple signals; never let a single dimension/secondary score decide any field alone, and use conditional language when a signal's confidence is low or mixed. Avoid generic self-help phrasing ("take a deep breath", "communicate openly", "practice self-care") unless it's the specific, evidence-grounded thing genuinely called for.
+- rule is this person's single most important PRACTICE PRINCIPLE — an action principle, not a summary of who they are. It must read as something to DO or remember doing, not a restated trait description.
+- rows: each row's situation must be a real, specific trigger (not a vague category); old is the automatic reaction this person tends to fall into; better is a concrete action or literal sentence they could say in that exact moment — specific enough to actually use, never generic advice. Ground old/better in [Practice evidence] (decision_style is especially relevant to how they'd naturally decide what to say/do) — do not invent a situation unconnected to the evidence.
+- heated answers "what do I actually do in the moment emotions spike" — ground it specifically in pressure_response and conflict_decompression from [Practice evidence] when their confidence is usable; this must be a concrete in-the-moment response, not a re-description of the friction/compare content already given in [Relationship evidence] above — translate the same underlying evidence into a literal action for the heated moment itself, never restate why it happens.
+- reset is a small, realistically repeatable WEEKLY practice/habit — ground it in resilience from [Practice evidence] (what recovery capacity actually looks like for this person) rather than inventing a routine. Do not restate Part02 Energy's fuels/optimal-environment content — if you reuse that same underlying evidence, translate it into a specific repeatable weekly action/habit, not another description of what restores them.
+- Growth Edge connection: if [Already written earlier] above includes a growth_edge_real_life_pattern, treat it as the ALREADY-DECIDED action anchor — do not re-explain or restate it. Instead, when genuinely relevant, let rule/rows/heated/reset take one clear step further and answer "what do I actually do, this week, to practice that" — a concrete extension into practice, not a repeated description of the growth edge itself. This is optional; omit the connection if forcing it would not add anything genuinely new.
+- evidence_refs (playbook) is optional — only exact keys from [Practice evidence], never invented.`
+    : "";
+
   return `[Input data — same material]
 ■ Survey
 ${input.surveyAnalysis}
@@ -340,15 +453,15 @@ ${input.birthEnergyContext}
 
 [Already written earlier — keep the same tone and persona]
 ${input.partAExcerpt}
-
+${evidenceBlock}
 [Output rules]
 - Respond with the exact same key structure as the schema below. Do not add extra keys.
 - relationships.fit/friction need exactly 3 items each. relationships.compare, playbook.rows, and future.remember need exactly 3 items each.
 - checklist needs 8-12 items.
-- Continue without contradicting the earlier strengths/watchouts/energy content.
+- Continue without contradicting the earlier strengths/watchouts/energy content.${groundingRules}
 
 JSON schema:
-${DEEP_ESSENCE_PART_B_SCHEMA}
+${buildPartBSchema(input.part01Evidence)}
 
 Respond with exactly one JSON object matching the schema above.
 

@@ -259,9 +259,13 @@ export function coerceDeepEssencePartA(
   });
   if (barsRaw.length !== 3) notes.push(`energy.bars_len_${barsRaw.length}`);
 
+  // Part 02 Batch 1 — balance_pct SSOT: always derived from bars[1] ("energy
+  // returning to you"), never trusted from the LLM's own number. bars is
+  // always exactly 3 entries (defaultBars.map above), so bars[1] always exists.
+  const energyEvidenceRefs = asOptionalStringArray(energyIn.evidence_refs);
   const energy = {
     headline: asString(energyIn.headline, "Your energy follows a clear pattern."),
-    balance_pct: asScore(energyIn.balance_pct, bars[0]?.value ?? 50),
+    balance_pct: bars[1].value,
     bars,
     summary: asString(
       energyIn.summary,
@@ -270,6 +274,7 @@ export function coerceDeepEssencePartA(
     fuels: takeStrings(energyIn.fuels, 3, 5, "Quiet time that restores you"),
     drains: takeStrings(energyIn.drains, 3, 5, "Sudden social pressure"),
     optimal: takeStrings(energyIn.optimal, 2, 4, "A steady daily rhythm"),
+    ...(energyEvidenceRefs ? { evidence_refs: energyEvidenceRefs } : {}),
   };
 
   const layeredIdentityIn = asRecord(obj.layered_identity);
@@ -331,6 +336,9 @@ export function coerceDeepEssencePartB(raw: unknown): {
   const notes: string[] = [];
   const obj = asRecord(raw) ?? {};
   const relIn = asRecord(obj.relationships) ?? {};
+  // Part 03 Batch 1 — optional provenance, passed through only if the LLM
+  // actually returned it (never fabricated, never required).
+  const relationshipEvidenceRefs = asOptionalStringArray(relIn.evidence_refs);
   const relationships = {
     pattern: asString(
       relIn.pattern,
@@ -351,9 +359,13 @@ export function coerceDeepEssencePartB(raw: unknown): {
         steady: "Name the need in one sentence",
       }),
     ),
+    ...(relationshipEvidenceRefs ? { evidence_refs: relationshipEvidenceRefs } : {}),
   };
 
   const pbIn = asRecord(obj.playbook) ?? {};
+  // Part 04 Batch 1 — optional provenance, passed through only if the LLM
+  // actually returned it (never fabricated, never required).
+  const playbookEvidenceRefs = asOptionalStringArray(pbIn.evidence_refs);
   const playbook = {
     rule: asString(pbIn.rule, "Pause one beat, then speak."),
     rows: takePairs(
@@ -373,6 +385,7 @@ export function coerceDeepEssencePartB(raw: unknown): {
     ),
     heated: asString(pbIn.heated, "If voices rise, call a short pause."),
     reset: asString(pbIn.reset, "Drink water, then restart with one clear ask."),
+    ...(playbookEvidenceRefs ? { evidence_refs: playbookEvidenceRefs } : {}),
   };
 
   const futIn = asRecord(obj.future) ?? {};

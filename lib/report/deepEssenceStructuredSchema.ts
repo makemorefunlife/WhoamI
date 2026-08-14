@@ -103,24 +103,36 @@ export type DeepEssenceStructuredReport = {
   watchouts: DeepEssenceStrengthOrWatchout[];
   energy: {
     headline: string;
+    /**
+     * Part 02 Batch 1 — SSOT: always derived from bars[1].value (energy
+     * returning to you) by coerceDeepEssencePartA, never trusted from the
+     * LLM's own number. The LLM may still write one (kept for prompt
+     * clarity) but it's overwritten after coercion.
+     */
     balance_pct: number;
     bars: DeepEssenceEnergyBar[];
     summary: string;
     fuels: string[];
     drains: string[];
     optimal: string[];
+    /** Internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
+    evidence_refs?: string[];
   };
   relationships: {
     pattern: string;
     fit: string[];
     friction: string[];
     compare: DeepEssenceWoundSteadyRow[];
+    /** Part 03 Batch 1 — internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
+    evidence_refs?: string[];
   };
   playbook: {
     rule: string;
     rows: DeepEssencePlaybookRow[];
     heated: string;
     reset: string;
+    /** Part 04 Batch 1 — internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
+    evidence_refs?: string[];
   };
   future: {
     remember: string[];

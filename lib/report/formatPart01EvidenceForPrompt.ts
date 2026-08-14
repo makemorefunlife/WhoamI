@@ -37,6 +37,43 @@
  * all. The static per-axis "meaning" line is gone from here entirely —
  * that's now pure UI copy (deepEssenceUiStrings.ts glossary), never
  * generated or seen by the LLM.
+ *
+ * Part 02 Batch 1 — Energy evidence Lens. First section that isn't part of
+ * Part 01. Compact, purpose-specific selection only: 3 of the 12 CE
+ * dimensions (solitude_autonomy/pressure_response/criticism_sensitivity),
+ * 2 of the 11 Secondary axes (energy_style/resilience) — never a dump of
+ * either full set. Reuses climate (johu/seasonal_strength) + elemental
+ * balance since those are literally about energetic temperament, the same
+ * CE strengths/growth/cautions trio every other Lens already uses, and the
+ * SAME gap/alignment axes selectAxisHighlights() already picked for
+ * axis_interpretations (reused, not re-derived) so Energy can translate an
+ * already-identified gap into an energy-cost angle.
+ *
+ * Part 02 Batch 3 — widens the Secondary-11 pick to include conflict_style
+ * (already-computed Current CE output, no new mapping) so
+ * pressure/conflict/emotional-labor drains have a real signal beyond
+ * pressure_response alone. No other evidence source added — the remaining
+ * Q4-Q8 gap closure is prompt-instruction-only (see the energy grounding
+ * rule in deepEssenceStructured.ts).
+ *
+ * Part 03 Batch 1 — Relationship evidence Lens, grounding Part B's
+ * relationships.pattern/fit/friction/compare for the first time (previously
+ * fully ungrounded). Compact, purpose-specific selection: 9 of 12 CE
+ * relational dimensions, 3 of 11 Secondary axes, and the already-selected
+ * gap/alignment axes (reused from axis_interpretations/energy, not
+ * re-derived). No new mapping/calculation.
+ *
+ * Part 04 Batch 1 — Practice evidence Lens, grounding playbook.rule/rows/
+ * heated/reset for the first time (previously fully ungrounded, same gap
+ * Part03 had pre-Batch-1). Compact selection: 4 of 12 CE dimensions
+ * (conflict_decompression/pressure_response/criticism_sensitivity/
+ * expression_style), 2 of 11 Secondary axes (decision_style/resilience).
+ * Deliberately does NOT re-include the axis gap/alignment pair or a full
+ * Relationship-evidence duplicate — those are already in the same Part B
+ * prompt via [Relationship evidence] (Batch 1), referenced not repeated.
+ * Growth Edge's action anchor (summary.growth_edge_real_life_pattern) isn't
+ * packet evidence at all — it already flows into Part B via the existing
+ * partAExcerpt plumbing, so no new wiring was needed for it.
  */
 import type {
   Part01CandidateItem,
@@ -138,6 +175,12 @@ export type Part01PromptEvidence = {
   strengthsWatchoutsText: string;
   strengthsWatchoutsKnownKeys: Set<string>;
   axisInterpretation: Part01AxisInterpretationPromptEvidence;
+  energyText: string;
+  energyKnownKeys: Set<string>;
+  relationshipText: string;
+  relationshipKnownKeys: Set<string>;
+  practiceText: string;
+  practiceKnownKeys: Set<string>;
 };
 
 export type Part01AxisHighlightPromptEvidence = {
@@ -394,6 +437,178 @@ function buildAxisInterpretationEvidence(
   };
 }
 
+const ENERGY_RELEVANT_DIMENSION_KEYS: readonly string[] = [
+  "solitude_autonomy",
+  "pressure_response",
+  "criticism_sensitivity",
+];
+const ENERGY_RELEVANT_SECONDARY_KEYS = ["energy_style", "resilience", "conflict_style"] as const;
+
+/** Builds Energy grounding text + the exact key set shown for it (Part 02 Batch 1). */
+function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+
+  const addEvidence = (refs: Part01EvidenceRef[]) => {
+    for (const ref of refs) {
+      knownKeys.add(evidenceKey(ref));
+      lines.push(formatEvidenceLine(ref));
+    }
+  };
+
+  lines.push("Climate & elemental balance (innate energetic temperament):");
+  addEvidence(packet.innate.elementEvidence);
+  addEvidence(packet.innate.climateEvidence);
+
+  lines.push("CE strengths-group signals:");
+  addEvidence(packet.innate.ceStrengthSignals);
+  lines.push("CE growth-group signals:");
+  addEvidence(packet.growthCandidates.growthEvidence);
+  lines.push("CE cautions-group signals:");
+  addEvidence(packet.growthCandidates.cautionEvidence);
+
+  lines.push("Relevant CE dimensions (solitude/pressure-response/criticism-sensitivity only):");
+  for (const cand of packet.dimensions.allDimensions) {
+    if (!ENERGY_RELEVANT_DIMENSION_KEYS.includes(cand.dimension)) continue;
+    if (!isUsableDimensionConfidence(cand.evaluation.confidence)) continue;
+    const key = dimensionKey(cand.dimension);
+    knownKeys.add(key);
+    const mixed = cand.evaluation.is_mixed ? " mixed=true" : "";
+    lines.push(`- [${key}] value=${cand.evaluation.value} conf=${cand.evaluation.confidence}${mixed}`);
+  }
+
+  lines.push("Current Secondary evidence (energy_style, resilience, conflict_style only):");
+  const secondary = packet.currentBehavior.secondaryAxes;
+  for (const key of ENERGY_RELEVANT_SECONDARY_KEYS) {
+    const skey = secondaryKey(key);
+    knownKeys.add(skey);
+    lines.push(`- [${skey}] score=${secondary[key]}`);
+  }
+
+  lines.push(
+    "This person's already-identified top Current x Innate gaps/alignment (reused from axis_interpretations — translate into an energy cost/recovery angle here, do not re-decide which axis matters):",
+  );
+  const { gaps, alignment } = selectAxisHighlights(packet.axisComparisons);
+  for (const a of [...gaps, ...(alignment ? [alignment] : [])]) {
+    knownKeys.add(axisKey(a.axis));
+    lines.push(formatAxisLine(a));
+  }
+
+  return { text: lines.join("\n"), knownKeys };
+}
+
+/**
+ * Part 03 Batch 1 — Relationship evidence Lens. Compact, purpose-specific
+ * selection only: 9 of the 12 CE relational dimensions (excludes
+ * decision_pace/resource_governance/structure_spontaneity — not relational-
+ * fit/friction relevant), 3 of the 11 Secondary axes
+ * (empathy/conflict_style/recognition), and the SAME gap/alignment axes
+ * selectAxisHighlights() already picked (reused, not re-derived). No new
+ * mapping/calculation — every source here is already computed elsewhere in
+ * the packet.
+ */
+const RELATIONSHIP_RELEVANT_DIMENSION_KEYS: readonly string[] = [
+  "conflict_decompression",
+  "support_giving_style",
+  "intimacy_expression_style",
+  "boundary_defense_strength",
+  "recognition_need",
+  "solitude_autonomy",
+  "pressure_response",
+  "criticism_sensitivity",
+  "expression_style",
+];
+const RELATIONSHIP_RELEVANT_SECONDARY_KEYS = ["empathy", "conflict_style", "recognition"] as const;
+
+/** Builds Relationship grounding text + the exact key set shown for it (Part 03 Batch 1). */
+function buildRelationshipEvidence(packet: Part01IdentityEvidencePacket): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+
+  lines.push(
+    "Relevant CE dimensions (conflict decompression / support giving / intimacy expression / boundary defense / recognition need / solitude autonomy / pressure response / criticism sensitivity / expression style only):",
+  );
+  for (const cand of packet.dimensions.allDimensions) {
+    if (!RELATIONSHIP_RELEVANT_DIMENSION_KEYS.includes(cand.dimension)) continue;
+    if (!isUsableDimensionConfidence(cand.evaluation.confidence)) continue;
+    const key = dimensionKey(cand.dimension);
+    knownKeys.add(key);
+    const mixed = cand.evaluation.is_mixed ? " mixed=true" : "";
+    lines.push(`- [${key}] value=${cand.evaluation.value} conf=${cand.evaluation.confidence}${mixed}`);
+  }
+
+  lines.push("Current Secondary evidence (empathy, conflict_style, recognition only):");
+  const secondary = packet.currentBehavior.secondaryAxes;
+  for (const key of RELATIONSHIP_RELEVANT_SECONDARY_KEYS) {
+    const skey = secondaryKey(key);
+    knownKeys.add(skey);
+    lines.push(`- [${skey}] score=${secondary[key]}`);
+  }
+
+  lines.push(
+    "This person's already-identified top Current x Innate gaps/alignment (reused from axis_interpretations/energy — translate into a relational meaning here, do not re-decide which axis matters):",
+  );
+  const { gaps, alignment } = selectAxisHighlights(packet.axisComparisons);
+  for (const a of [...gaps, ...(alignment ? [alignment] : [])]) {
+    knownKeys.add(axisKey(a.axis));
+    lines.push(formatAxisLine(a));
+  }
+
+  return { text: lines.join("\n"), knownKeys };
+}
+
+/**
+ * Part 04 Batch 1 — Practice evidence Lens. Compact, purpose-specific
+ * selection only: 4 of 12 CE dimensions (conflict_decompression/
+ * pressure_response/criticism_sensitivity/expression_style), 2 of 11
+ * Secondary axes (decision_style/resilience). No new mapping/calculation —
+ * every source here is already computed elsewhere in the packet.
+ */
+const PRACTICE_RELEVANT_DIMENSION_KEYS: readonly string[] = [
+  "conflict_decompression",
+  "pressure_response",
+  "criticism_sensitivity",
+  "expression_style",
+];
+const PRACTICE_RELEVANT_SECONDARY_KEYS = ["decision_style", "resilience"] as const;
+
+/** Builds Practice grounding text + the exact key set shown for it (Part 04 Batch 1). */
+function buildPracticeEvidence(packet: Part01IdentityEvidencePacket): {
+  text: string;
+  knownKeys: Set<string>;
+} {
+  const knownKeys = new Set<string>();
+  const lines: string[] = [];
+
+  lines.push(
+    "Relevant CE dimensions (conflict decompression / pressure response / criticism sensitivity / expression style only):",
+  );
+  for (const cand of packet.dimensions.allDimensions) {
+    if (!PRACTICE_RELEVANT_DIMENSION_KEYS.includes(cand.dimension)) continue;
+    if (!isUsableDimensionConfidence(cand.evaluation.confidence)) continue;
+    const key = dimensionKey(cand.dimension);
+    knownKeys.add(key);
+    const mixed = cand.evaluation.is_mixed ? " mixed=true" : "";
+    lines.push(`- [${key}] value=${cand.evaluation.value} conf=${cand.evaluation.confidence}${mixed}`);
+  }
+
+  lines.push("Current Secondary evidence (decision_style, resilience only):");
+  const secondary = packet.currentBehavior.secondaryAxes;
+  for (const key of PRACTICE_RELEVANT_SECONDARY_KEYS) {
+    const skey = secondaryKey(key);
+    knownKeys.add(skey);
+    lines.push(`- [${skey}] score=${secondary[key]}`);
+  }
+
+  return { text: lines.join("\n"), knownKeys };
+}
+
 /**
  * Builds both grounding text blocks from a Part01IdentityEvidencePacket.
  * Returns null if packet is null/undefined — callers must fall back to the
@@ -408,6 +623,9 @@ export function formatPart01EvidenceForPrompt(
   const growthEdge = buildGrowthEdgeEvidence(packet);
   const strengthsWatchouts = buildStrengthsWatchoutsEvidence(packet);
   const axisInterpretation = buildAxisInterpretationEvidence(packet);
+  const energy = buildEnergyEvidence(packet);
+  const relationship = buildRelationshipEvidence(packet);
+  const practice = buildPracticeEvidence(packet);
   const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
     packet.layeredIdentityCandidates;
   return {
@@ -424,6 +642,12 @@ export function formatPart01EvidenceForPrompt(
     strengthsWatchoutsText: strengthsWatchouts.text,
     strengthsWatchoutsKnownKeys: strengthsWatchouts.knownKeys,
     axisInterpretation,
+    energyText: energy.text,
+    energyKnownKeys: energy.knownKeys,
+    relationshipText: relationship.text,
+    relationshipKnownKeys: relationship.knownKeys,
+    practiceText: practice.text,
+    practiceKnownKeys: practice.knownKeys,
   };
 }
 
