@@ -45,6 +45,7 @@ export async function runWorkColleagueDeepAnalysis(
     };
     sajuMasterA?: SajuMasterJson | null;
     sajuMasterB?: SajuMasterJson | null;
+    pairWork?: PairWorkSignals | null;
     locale?: Locale;
     userCustomMyName?: string;
     userCustomTargetName?: string;
@@ -59,7 +60,7 @@ export async function runWorkColleagueDeepAnalysis(
           params.sajuMasterA,
           params.sajuMasterB,
         ).work
-      : null;
+      : (params.pairWork ?? null);
 
   // work 명리 신호(월주 격국·신살 등) — PersonCore가 person별로 1회 계산해 둔
   // 값을 그대로 읽어서 캐릭터 타입 판정(SSOT) + 이상적 역할 "why" 텍스트에

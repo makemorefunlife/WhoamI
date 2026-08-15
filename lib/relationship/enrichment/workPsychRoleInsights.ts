@@ -266,3 +266,173 @@ export function buildComplaintSignalLine(params: {
 
   return `${base}${tail}`;
 }
+
+/**
+ * Candidate 1 — Decision Partnership (결정 주도권 및 검증 분담)
+ * Decision style + Practicality + Thinking style 결합.
+ */
+export function buildDecisionPartnershipLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  nameA: string;
+  nameB: string;
+  locale?: Locale;
+}): string | null {
+  const { psychA, psychB, nameA, nameB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const decA = psychA.secondary_axes.decision_style;
+  const decB = psychB.secondary_axes.decision_style;
+  const pracA = psychA.secondary_axes.practicality;
+  const pracB = psychB.secondary_axes.practicality;
+
+  const decGap = Math.abs(decA - decB);
+  if (decGap < 12) return null;
+
+  const pusher = decA >= decB ? nameA : nameB;
+  const validator = decA < decB ? nameA : nameB;
+
+  return pick(
+    locale,
+    `When making key decisions, ${pusher} sets the initial direction and momentum, while ${validator} reviews risks and validates data before final sign-off. Aligning this split prevents bottlenecking.`,
+    `주요 결정을 내릴 때 ${pusher}은(는) 큰 방향과 속도를 제안하고, ${validator}은(는) 리스크와 근거 데이터를 사전 검증하여 최종 확정하는 구조가 가장 수월하게 작동합니다.`,
+  );
+}
+
+/**
+ * Candidate 2 — Ownership & Delegation (R&R 및 업무 위임 3개 영역)
+ */
+export function buildOwnershipDelegationLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  nameA: string;
+  nameB: string;
+  locale?: Locale;
+}): { keepWithMe: string; delegateToPartner: string; sharedCheckpoint: string } | null {
+  const { psychA, psychB, nameA, nameB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const strA = psychA.secondary_axes.structure;
+  const strB = psychB.secondary_axes.structure;
+  const empA = psychA.secondary_axes.empathy;
+  const empB = psychB.secondary_axes.empathy;
+
+  const execLeader = strA >= strB ? nameA : nameB;
+  const commLeader = empA >= empB ? nameA : nameB;
+
+  return {
+    keepWithMe: pick(
+      locale,
+      `Tasks requiring high structure and process control are best led directly by ${execLeader}.`,
+      `체계적인 일관성과 프로세스 관리가 중요한 업무는 ${execLeader}이(가) 직접 주도하는 것이 효과적입니다.`,
+    ),
+    delegateToPartner: pick(
+      locale,
+      `Tasks involving stakeholder coordination and team atmosphere management run smoother when delegated to ${commLeader}.`,
+      `이해관계자 조율과 팀 분위기 케어가 필요한 업무는 ${commLeader}에게 위임할 때 실행력이 살아납니다.`,
+    ),
+    sharedCheckpoint: pick(
+      locale,
+      "Final delivery specs and risk thresholds should be reviewed together at shared checkpoints.",
+      "최종 산출물의 퀄리티 스펙과 리스크 한도는 공동 게이트에서 함께 점검하는 것이 좋습니다.",
+    ),
+  };
+}
+
+/**
+ * Candidate 3 — Crunch / Deadline Mode (마감·압박 상황에서의 pair 변화)
+ */
+export function buildCrunchDeadlineModeLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  nameA: string;
+  nameB: string;
+  locale?: Locale;
+}): string | null {
+  const { psychA, psychB, nameA, nameB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const resA = psychA.secondary_axes.resilience;
+  const resB = psychB.secondary_axes.resilience;
+  const scA = psychA.secondary_axes.self_control;
+  const scB = psychB.secondary_axes.self_control;
+
+  if (Math.abs(resA - resB) < 12 && Math.abs(scA - scB) < 12) return null;
+
+  const steadyName = resA >= resB ? nameA : nameB;
+  const sensitiveName = resA < resB ? nameA : nameB;
+
+  return pick(
+    locale,
+    `Under heavy crunch pressure, ${sensitiveName} needs quick buffer time and clear priority cuts to avoid overload, while ${steadyName} holds the operational baseline steady.`,
+    `마감 임박 압박이 높아지면 ${sensitiveName}은(는) 과부하 방지를 위한 우선순위 정리와 버퍼 시간이 필요하며, ${steadyName}이(가) 기준점을 지켜줄 때 균형이 유지됩니다.`,
+  );
+}
+
+/**
+ * Candidate 4 — Recognition, Credit & Visibility (성과 노출 및 공로 배분)
+ * Allowed claim: Acknowledgement preference, deck authorship lines.
+ * Forbidden claim: No toxic claims of "stealing credit" or inferring public speaking ability.
+ */
+export function buildRecognitionCreditVisibilityLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  nameA: string;
+  nameB: string;
+  locale?: Locale;
+}): string | null {
+  const { psychA, psychB, nameA, nameB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const recA = psychA.secondary_axes.recognition;
+  const recB = psychB.secondary_axes.recognition;
+  const recGap = Math.abs(recA - recB);
+  if (recGap < 15) return null;
+
+  const highCreditName = recA >= recB ? nameA : nameB;
+
+  return pick(
+    locale,
+    `${highCreditName} values explicit acknowledgment of contribution — clarifying deck authorship lines upfront ensures smooth credit attribution.`,
+    `${highCreditName}님은 성과에 대한 명확한 인정과 공로 표시를 중시합니다. 작성자 명의와 기여도를 사전에 명시해두면 협업 피로가 크게 줄어듭니다.`,
+  );
+}
+
+/**
+ * Candidate 5 — Office Distance & Boundary (소셜 배터리 및 집중 시간 경계)
+ * Evaluates energy_style (social battery) and self_control (focus privacy) independently (no direct averaging).
+ */
+export function buildOfficeDistanceBoundaryLine(params: {
+  psychA: PsychMasterJson | null | undefined;
+  psychB: PsychMasterJson | null | undefined;
+  nameA: string;
+  nameB: string;
+  locale?: Locale;
+}): string | null {
+  const { psychA, psychB, nameA, nameB } = params;
+  if (!psychA || !psychB) return null;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const enA = psychA.secondary_axes.energy_style;
+  const enB = psychB.secondary_axes.energy_style;
+  const scA = psychA.secondary_axes.self_control;
+  const scB = psychB.secondary_axes.self_control;
+
+  const enGap = Math.abs(enA - enB);
+  const scGap = Math.abs(scA - scB);
+
+  if (enGap < 15 && scGap < 15) return null;
+
+  const privateName = scA >= scB || enA <= enB ? nameA : nameB;
+  const socialName = privateName === nameA ? nameB : nameA;
+
+  return pick(
+    locale,
+    `${privateName} prefers clear focus time boundaries and low-friction async messages, while ${socialName} recharges through casual check-ins. Keeping break times flexible suits both best.`,
+    `${privateName}은(는) 몰입을 위한 집중 시간과 비동기 메시지 리듬을 선호하고, ${socialName}은(는) 수시 소통을 편하게 여깁니다. 쉬는 시간과 커뮤니케이션 채널에 유연한 경계를 두는 것이 좋습니다.`,
+  );
+}

@@ -324,31 +324,290 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
   );
 }
 
-// ---- 8-chapter structure ------------------------------------------------------
-// Regroups the same 8 WorkReportSection types (no data change) into a numbered
-// 8-chapter read, one existing section type per chapter — mirrors the
-// Romantic V4 / Family chapter nav+numbering pattern. `deep_read` (the
-// optional business_saju_deep LLM overlay) is the only section that can be
-// absent; numbers are computed from whichever chapters are actually present
-// each render, so a missing deep_read can never leave a gap in the sequence.
-type WorkSectionType = WorkReportSection["type"];
+// ---- Work V2 Phase 5 User Question Banner -----------------------------------
 
-const CHAPTER_ORDER: Array<{
-  type: Exclude<WorkSectionType, "snapshot">;
-  titleKo: string;
-  titleEn: string;
-}> = [
-  { type: "compare_table", titleKo: "한눈에 보는 오피스 파트너십", titleEn: "Your Office Partnership at a Glance" },
-  { type: "psych_radar", titleKo: "우리가 일하는 방식의 차이", titleEn: "How We Work Differently" },
-  { type: "comparison", titleKo: "나의 오피스 캐릭터와 강점", titleEn: "My Office Character & Strengths" },
-  { type: "role_matrix", titleKo: "가장 완벽한 업무 분담법", titleEn: "The Perfect Way to Split the Work" },
-  { type: "relationship_loop", titleKo: "회의실에서 부딪히는 순간", titleEn: "Where We Clash in the Meeting Room" },
-  { type: "deep_read", titleKo: "차이가 만든 오피스 오해 번역기", titleEn: "Translating Our Office Misunderstandings" },
-  { type: "warning", titleKo: "스트레스와 불만이 쌓였을 때", titleEn: "When Stress and Frustration Build Up" },
-  { type: "prescription", titleKo: "성공적인 협업을 위한 행동 처방전", titleEn: "The Playbook for Working Well Together" },
-];
+function UserQuestionBanner({ question }: { question: string }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium tracking-wide text-amber-200/90 sm:px-5">
+      💡 <span className="font-semibold">{question}</span>
+    </div>
+  );
+}
 
-// ---- Dispatcher -------------------------------------------------------------
+// ---- Work V2 Phase 5 Addition Cards ---------------------------------------
+
+function CanonicalRoleMapCard({
+  meta,
+  names,
+}: {
+  meta: any;
+  names: [string, string];
+}) {
+  const map = meta?.canonical_role_map;
+  if (!map) return null;
+
+  const getOwnerLabel = (owner: string) => {
+    if (owner === "A" || owner === "PERSON_A") return names[0];
+    if (owner === "B" || owner === "PERSON_B") return names[1];
+    return "공동 / 자율 분담 (Shared)";
+  };
+
+  return (
+    <RelationshipReportCard title="8차원 권한 및 역할 지도 (Canonical Role Map)" accentColor={ACCENT}>
+      <RelationshipReportParagraph className="mb-4 text-xs text-white/70">
+        사주 구조와 11축 심리 역량을 종합 검증한 권한 및 R&R 최적 분담 구조입니다.
+      </RelationshipReportParagraph>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-amber-200/90">🧭 방향 설정 & 비전 리드 (Direction)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.directionOwner)}</p>
+        </RelationshipReportInset>
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-emerald-200/90">⚡ 실제 구현 & 빠른 실행 (Execution)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.executionOwner)}</p>
+        </RelationshipReportInset>
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-sky-200/90">🔍 리스크 감지 & 품질 검수 (QA / Risk)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.qaRiskOwner)}</p>
+        </RelationshipReportInset>
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-purple-200/90">🎤 대외 발표 & 메인 스피커 (External Lead)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.externalOwner)}</p>
+        </RelationshipReportInset>
+      </div>
+      <div className="mt-3">
+        <RelationshipReportInset className="border-amber-400/20 bg-amber-950/10">
+        </RelationshipReportInset>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+function ThinkVsDiscussCard({ meta }: { meta: any }) {
+  const tvd = meta?.think_vs_discuss;
+  if (!tvd) return null;
+  return (
+    <RelationshipReportCard title="생각 정리 방식과 회의 준비 리듬 (Think vs Discuss)" accentColor={ACCENT}>
+      <RelationshipReportInset className="mb-4 border-amber-400/20 bg-amber-950/10">
+        <RelationshipReportLabel className="text-amber-300">💡 둘의 소통 패턴</RelationshipReportLabel>
+        <RelationshipReportParagraph className="mt-1 font-semibold text-white">
+          {tvd.pairPattern}
+        </RelationshipReportParagraph>
+      </RelationshipReportInset>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-sky-200/90">개인별 생각 정리 방식</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            {tvd.personAStyle}
+          </RelationshipReportParagraph>
+          <RelationshipReportParagraph className="mt-2 text-xs leading-relaxed text-white/85">
+            {tvd.personBStyle}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-emerald-200/90">📋 회의 사전 준비 가이드 (Meeting Prep Rule)</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            {tvd.meetingPrep}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+function CrunchModeCard({ meta }: { meta: any }) {
+  const cmd = meta?.crunch_deadline_mode;
+  if (!cmd) return null;
+  return (
+    <RelationshipReportCard title="마감 임박 & 위기 대응 모드 (Crunch & Deadline Shift)" accentColor={ACCENT} variant="warning">
+      <div className="space-y-3">
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-amber-300">🚨 압박 상황 속 일하는 방식의 변화</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            {cmd.normalVsDeadlineShift}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <RelationshipReportInset>
+            <RelationshipReportLabel className="text-emerald-200/90">✂️ 우선순위 자르기 리드</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              {cmd.priorityCutLead}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+          <RelationshipReportInset>
+            <RelationshipReportLabel className="text-sky-200/90">🛡️ 기준선 유지 & 완성도 사수</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              {cmd.baselineHolder}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        </div>
+        <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
+          <RelationshipReportLabel className="text-sky-300">🔋 버퍼 보호 & 과부하 방지 처방</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            {cmd.bufferSupportNeed}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+function MistakeRepairCard({
+  meta,
+  names,
+}: {
+  meta: any;
+  names: [string, string];
+}) {
+  const mr = meta?.mistake_response;
+  const ra = meta?.repair_apology;
+  if (!mr && !ra) return null;
+
+  return (
+    <RelationshipReportCard title="방향성 실수 민감도 & 신뢰 복구 프로토콜 (Directional Repair)" accentColor={ACCENT}>
+      {mr ? (
+        <div className="mb-4 space-y-3">
+          <RelationshipReportLabel className="text-amber-300">⚠️ 실수가 생겼을 때 서로 민감하게 반응하는 지점</RelationshipReportLabel>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <RelationshipReportInset>
+              <RelationshipReportLabel>{names[0]}의 실수 → {names[1]}의 반응 민감도</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+                {mr.whenAMakesMistakeBReactsTo}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+            <RelationshipReportInset>
+              <RelationshipReportLabel>{names[1]}의 실수 → {names[0]}의 반응 민감도</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+                {mr.whenBMakesMistakeAReactsTo}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+          </div>
+        </div>
+      ) : null}
+      {ra ? (
+        <div className="space-y-3">
+          <RelationshipReportLabel className="text-emerald-300">🤝 신뢰 회복 및 사과 순서 (Directional Apology Guide)</RelationshipReportLabel>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
+              <RelationshipReportLabel className="text-emerald-200">{names[0]} $\rightarrow$ {names[1]} 신뢰 회복 순서</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+                {typeof ra.repairAtoB === "object" ? ra.repairAtoB.repairGuidance : ra.repairAtoB}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+            <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
+              <RelationshipReportLabel className="text-emerald-200">{names[1]} $\rightarrow$ {names[0]} 신뢰 회복 순서</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+                {typeof ra.repairBtoA === "object" ? ra.repairBtoA.repairGuidance : ra.repairBtoA}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+          </div>
+        </div>
+      ) : null}
+    </RelationshipReportCard>
+  );
+}
+
+function MutualGrowthCard({
+  meta,
+  names,
+}: {
+  meta: any;
+  names: [string, string];
+}) {
+  const mg = meta?.mutual_growth_effect;
+  const rcv = meta?.recognition_credit_visibility;
+  if (!mg && !rcv) return null;
+
+  const getGrowthText = (val: any) => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    return val.growthSummary ?? val.summary ?? JSON.stringify(val);
+  };
+
+  return (
+    <RelationshipReportCard title="상호 성장 효과 & 성과 인정 리듬 (Mutual Growth & Credit)" accentColor={ACCENT}>
+      {mg ? (
+        <div className="mb-4 space-y-3">
+          <RelationshipReportLabel className="text-purple-300">🌱 함께 일하며 배우는 성장 경로 (Directional Growth)</RelationshipReportLabel>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <RelationshipReportInset>
+              <RelationshipReportLabel>{names[0]} $\rightarrow$ {names[1]}를 통해 발전하는 역량</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+                {getGrowthText(mg.aGrowsThroughB)}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+            <RelationshipReportInset>
+              <RelationshipReportLabel>{names[1]} $\rightarrow$ {names[0]}를 통해 발전하는 역량</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+                {getGrowthText(mg.bGrowsThroughA)}
+              </RelationshipReportParagraph>
+            </RelationshipReportInset>
+          </div>
+        </div>
+      ) : null}
+      {rcv ? (
+        <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
+          <RelationshipReportLabel className="text-sky-300">🏆 성과 인정 & 공로 명시 가이드 (Credit & Authorship)</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            {typeof rcv === "string" ? rcv : rcv.creditSharingRule ?? rcv.summary ?? JSON.stringify(rcv)}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+      ) : null}
+    </RelationshipReportCard>
+  );
+}
+
+function PlaybookSummaryCard({ meta }: { meta: any }) {
+  const bvr = meta?.best_vs_risky_config;
+  const tvd = meta?.think_vs_discuss;
+  const ra = meta?.repair_apology;
+  const cmd = meta?.crunch_deadline_mode;
+
+  const bestText =
+    typeof bvr?.bestConfiguration === "string"
+      ? bvr.bestConfiguration
+      : bvr?.bestConfiguration?.summary ?? "서로의 주역량 영역을 명확히 하고 권한을 위임합니다.";
+
+  const riskyText =
+    typeof bvr?.riskyConfiguration === "string"
+      ? bvr.riskyConfiguration
+      : bvr?.riskyConfiguration?.warningNote ??
+        bvr?.riskyConfiguration?.primaryRiskPattern ??
+        "결정 권한이 모호한 상태에서 중복 검수하는 상황을 피합니다.";
+
+  return (
+    <RelationshipReportCard title="내일부터 바로 쓰는 1:1 협업 플레이북 (Action Rules)" accentColor={ACCENT} variant="success">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
+          <RelationshipReportLabel className="text-emerald-300 font-bold">✅ DO: 꼭 지켜야 할 협업 원칙</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            {bestText}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+        <RelationshipReportInset className="border-red-400/20 bg-red-950/10">
+          <RelationshipReportLabel className="text-red-300 font-bold">❌ DON'T: 피해야 할 위험 조합</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            {riskyText}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-sky-300 font-bold">📋 MEETING RULE: 회의 전 규칙</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            {tvd?.meetingPrep ?? "회의 전 핵심 의안과 사전 생각 정리 시간을 먼저 보장합니다."}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+        <RelationshipReportInset>
+          <RelationshipReportLabel className="text-amber-300 font-bold">🚨 DEADLINE RULE: 마감 압박 규칙</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            {cmd?.priorityCutLead ?? "마감 시점에는 즉시 핵심 우선순위만 남기고 감정 소모를 차단합니다."}
+          </RelationshipReportParagraph>
+        </RelationshipReportInset>
+      </div>
+    </RelationshipReportCard>
+  );
+}
+
+// ---- Work V2 Phase 5 Dispatcher & 7-Chapter Assembly ------------------------
 
 type NonSnapshotSection = Exclude<WorkReportSection, { type: "snapshot" }>;
 
@@ -377,14 +636,13 @@ export function WorkReportSectionCard({
     case "prescription":
       return <PrescriptionCard section={section} />;
     default: {
-      // 컴파일 타임 exhaustiveness guard — 새 section.type이 추가되면 여기서 타입 에러가 난다.
       const exhaustiveCheck: never = section;
       return exhaustiveCheck;
     }
   }
 }
 
-/** ViewModel 전체를 RelationshipReportLayout에 조립 — production 진입점. */
+/** ViewModel 전체를 RelationshipReportLayout에 조립 — Work V2 Phase 5 Production 진입점. */
 export function WorkReportViewModelView({
   vm,
   kindLabel,
@@ -395,26 +653,47 @@ export function WorkReportViewModelView({
   const { locale } = useLocale();
   const t = useMessages().relationshipDrilldown.work;
   const isEn = locale === "en-US";
+  const names = vm.opening.names;
+
+  const meta = (vm.raw?.report?.meta as any) ?? {};
 
   const snapshot = vm.sections.find(
     (s): s is Extract<WorkReportSection, { type: "snapshot" }> => s.type === "snapshot",
   );
-  const otherSections = vm.sections.filter(
-    (s): s is NonSnapshotSection => s.type !== "snapshot",
+  const compareTableSection = vm.sections.find(
+    (s): s is CompareTableSection => s.type === "compare_table",
   );
-  const byType = new Map<WorkSectionType, NonSnapshotSection>();
-  for (const section of otherSections) byType.set(section.type, section);
+  const psychRadarSection = vm.sections.find(
+    (s): s is PsychRadarSection => s.type === "psych_radar",
+  );
+  const comparisonSection = vm.sections.find(
+    (s): s is ComparisonSection => s.type === "comparison",
+  );
+  const roleMatrixSection = vm.sections.find(
+    (s): s is RoleMatrixSection => s.type === "role_matrix",
+  );
+  const loopSection = vm.sections.find(
+    (s): s is RelationshipLoopSection => s.type === "relationship_loop",
+  );
+  const deepReadSection = vm.sections.find(
+    (s): s is DeepReadSection => s.type === "deep_read",
+  );
+  const warningSection = vm.sections.find(
+    (s): s is WarningSection => s.type === "warning",
+  );
+  const prescriptionSection = vm.sections.find(
+    (s): s is PrescriptionSection => s.type === "prescription",
+  );
 
-  const chapters = CHAPTER_ORDER.map((chapter) => ({
-    ...chapter,
-    section: byType.get(chapter.type),
-  })).filter((chapter): chapter is typeof chapter & { section: NonSnapshotSection } => Boolean(chapter.section));
-
-  const navItems = chapters.map((chapter, i) => ({
-    id: `ch_${chapter.type}`,
-    number: String(i + 1).padStart(2, "0"),
-    title: isEn ? chapter.titleEn : chapter.titleKo,
-  }));
+  const navItems = [
+    { id: "ch1_glance", number: "01", title: isEn ? "Partnership at a Glance" : "한눈에 보는 업무 파트너십" },
+    { id: "ch2_roles_rnr", number: "02", title: isEn ? "Roles & Decision Authority" : "업무 역할과 R&R 분담" },
+    { id: "ch3_style_comm", number: "03", title: isEn ? "Work Style & Communication" : "업무 스타일과 소통 리듬" },
+    { id: "ch4_crunch_pressure", number: "04", title: isEn ? "Pressure & Crunch Mode" : "마감 압박과 긴급 상황 대처" },
+    { id: "ch5_mistake_repair", number: "05", title: isEn ? "Mistakes & Trust Repair" : "실수, 갈등과 신뢰 회복" },
+    { id: "ch6_mutual_growth", number: "06", title: isEn ? "Mutual Growth & Synergy" : "함께 일하며 성장하는 방식" },
+    { id: "ch7_playbook", number: "07", title: isEn ? "Practical Playbook" : "실전 협업 플레이북" },
+  ];
 
   return (
     <RelationshipReportLayout
@@ -428,81 +707,178 @@ export function WorkReportViewModelView({
       }}
       scores={[]}
     >
-      {snapshot ? (() => {
-        const fit = snapshot.panel.narrative.topics.find(t => t.topic === "intimacy")!;
-        const synergy = snapshot.panel.narrative.topics.find(t => t.topic === "stability")!;
-        const risk = snapshot.panel.narrative.topics.find(t => t.topic === "conflict")!;
-        
-        const cards: OverviewCardData[] = [
-          {
-            key: "fit",
-            icon: "🔥",
-            label: t.scoreLabelFit,
-            score: snapshot.scores.fitPct,
-            tone: "good",
-            inverted: false,
-            gradeLabel: fit.title,
-            oneLiner: fit.subtitle,
-            measures: pick(locale, "How smoothly your work styles and paces align", "서로의 업무 템포와 방식이 얼마나 매끄럽게 호흡을 맞추는지"),
-            why: fit.interpretation,
-            thresholdText: fit.axisNote,
-          },
-          {
-            key: "synergy",
-            icon: "🧩",
-            label: t.scoreLabelSynergy,
-            score: snapshot.scores.synergyPct,
-            tone: "neutral",
-            inverted: false,
-            gradeLabel: synergy.title,
-            oneLiner: synergy.subtitle,
-            measures: pick(locale, "How well your different strengths complement each other for better output", "서로 다른 강점이 시너지를 내어 결과물의 퀄리티를 얼마나 높이는지"),
-            why: synergy.interpretation,
-            thresholdText: synergy.axisNote,
-          },
-          {
-            key: "risk",
-            icon: "⚡",
-            label: t.scoreLabelRisk,
-            score: snapshot.scores.riskPct,
-            tone: "warn",
-            inverted: true,
-            gradeLabel: risk.title,
-            oneLiner: risk.subtitle,
-            measures: pick(locale, "The potential for friction or misunderstanding during collaboration", "협업 과정에서 의사소통 오해나 마찰이 발생할 가능성"),
-            why: risk.interpretation,
-            thresholdText: risk.axisNote,
-          },
-        ];
-
-        return (
-          <div className="mb-12 mt-4">
-            <OverviewSection
-              locale={locale}
-              eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
-              title={pick(locale, "How You Work Together", "함께 일하는 방식과 시너지")}
-              lead={pick(
-                locale,
-                "Three signals frame the shape of this partnership.",
-                "세 가지 신호로 이 파트너십의 성격을 먼저 봅니다."
-              )}
-              cards={cards}
-            />
-          </div>
-        );
-      })() : null}
       <WorkChapterNav items={navItems} />
-      {chapters.map((chapter, i) => (
-        <WorkChapterSection
-          key={chapter.type}
-          id={`ch_${chapter.type}`}
-          number={String(i + 1).padStart(2, "0")}
-          title={isEn ? chapter.titleEn : chapter.titleKo}
-          accent={ACCENT}
-        >
-          <WorkReportSectionCard section={chapter.section} names={vm.opening.names} />
-        </WorkChapterSection>
-      ))}
+      {/* Chapter 1: 01 · Partnership at a Glance */}
+      <WorkChapterSection
+        id="ch1_glance"
+        number="01"
+        title={isEn ? "01 · Partnership at a Glance" : "01 · 한눈에 보는 업무 파트너십"}
+        accent={ACCENT}
+      >
+        <div id="ch_snapshot" />
+        <UserQuestionBanner question={isEn ? "What kind of working pair are we, and what is our core fit?" : "우리 둘은 업무적으로 어떤 파트너인가?"} />
+        {snapshot ? (() => {
+          const topics = snapshot.panel?.narrative?.topics ?? [];
+          const fit = topics.find(t => t.topic === "intimacy");
+          const synergy = topics.find(t => t.topic === "stability");
+          const risk = topics.find(t => t.topic === "conflict");
+          
+          const cards: OverviewCardData[] = [
+            {
+              key: "fit",
+              icon: "🔥",
+              label: t.scoreLabelFit,
+              score: snapshot.scores.fitPct,
+              tone: "good",
+              inverted: false,
+              gradeLabel: fit?.title ?? t.scoreLabelFit,
+              oneLiner: fit?.subtitle ?? "",
+              measures: pick(locale, "How smoothly your work styles and paces align", "서로의 업무 템포와 방식이 얼마나 매끄럽게 호흡을 맞추는지"),
+              why: fit?.interpretation ?? "",
+              thresholdText: fit?.axisNote,
+            },
+            {
+              key: "synergy",
+              icon: "🧩",
+              label: t.scoreLabelSynergy,
+              score: snapshot.scores.synergyPct,
+              tone: "neutral",
+              inverted: false,
+              gradeLabel: synergy?.title ?? t.scoreLabelSynergy,
+              oneLiner: synergy?.subtitle ?? "",
+              measures: pick(locale, "How well your different strengths complement each other for better output", "서로 다른 강점이 시너지를 내어 결과물의 퀄리티를 얼마나 높이는지"),
+              why: synergy?.interpretation ?? "",
+              thresholdText: synergy?.axisNote,
+            },
+            {
+              key: "risk",
+              icon: "⚡",
+              label: t.scoreLabelRisk,
+              score: snapshot.scores.riskPct,
+              tone: "warn",
+              inverted: true,
+              gradeLabel: risk?.title ?? t.scoreLabelRisk,
+              oneLiner: risk?.subtitle ?? "",
+              measures: pick(locale, "The potential for friction or misunderstanding during collaboration", "협업 과정에서 의사소통 오해나 마찰이 발생할 가능성"),
+              why: risk?.interpretation ?? "",
+              thresholdText: risk?.axisNote,
+            },
+          ];
+
+          return (
+            <div className="mb-6 mt-2">
+              <OverviewSection
+                locale={locale}
+                eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
+                title={pick(locale, "How You Work Together", "함께 일하는 방식과 시너지")}
+                lead={pick(
+                  locale,
+                  "Three signals frame the shape of this partnership.",
+                  "세 가지 신호로 이 파트너십의 성격을 먼저 봅니다."
+                )}
+                cards={cards}
+              />
+            </div>
+          );
+        })() : null}
+        {meta?.best_vs_risky_config?.bestConfiguration?.summary ? (
+          <RelationshipReportCard title="핵심 파트너십 결합 요약 (Best vs Risky Summary)" accentColor={ACCENT}>
+            <RelationshipReportParagraph className="text-sm font-semibold text-white/90">
+              {meta.best_vs_risky_config.bestConfiguration.summary}
+            </RelationshipReportParagraph>
+          </RelationshipReportCard>
+        ) : null}
+      </WorkChapterSection>
+
+      {/* Chapter 2: 02 · Roles, Ownership & Decision Authority */}
+      <WorkChapterSection
+        id="ch2_roles_rnr"
+        number="02"
+        title={isEn ? "02 · Roles, Ownership & Decision Authority" : "02 · 업무 역할과 R&R 분담"}
+        accent={ACCENT}
+      >
+        <div id="ch_role_matrix" />
+        <UserQuestionBanner question={isEn ? "Who leads direction, execution, risk QA, and final decisions?" : "누가 방향을 잡고, 누가 실행하고, 누가 검수하고, 누가 결정해야 가장 잘 굴러가는가?"} />
+        <CanonicalRoleMapCard meta={meta} names={names} />
+        {roleMatrixSection ? <RoleMatrixCard section={roleMatrixSection} /> : null}
+        {comparisonSection ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <DnaCard profile={comparisonSection.dna.me} accent={ACCENT} />
+            <DnaCard profile={comparisonSection.dna.partner} accent={ACCENT} />
+          </div>
+        ) : null}
+      </WorkChapterSection>
+
+      {/* Chapter 3: 03 · Work Style & Communication Rhythm */}
+      <WorkChapterSection
+        id="ch3_style_comm"
+        number="03"
+        title={isEn ? "03 · Work Style & Communication Rhythm" : "03 · 업무 스타일과 소통 리듬"}
+        accent={ACCENT}
+      >
+        <div id="ch_compare_table" />
+        <div id="ch_psych_radar" />
+        <div id="ch_comparison" />
+        <UserQuestionBanner question={isEn ? "How do we think, communicate, focus, and prep for meetings?" : "우리는 어떻게 생각하고, 소통하고, 집중하고, 결정을 준비하는가?"} />
+        {psychRadarSection ? <PsychRadarCard section={psychRadarSection} names={names} /> : null}
+        {compareTableSection ? <CompareTableCard section={compareTableSection} names={names} /> : null}
+        {comparisonSection ? <ComparisonCard section={comparisonSection} names={names} /> : null}
+        <ThinkVsDiscussCard meta={meta} />
+      </WorkChapterSection>
+
+      {/* Chapter 4: 04 · Pressure, Deadline & Crunch Mode */}
+      <WorkChapterSection
+        id="ch4_crunch_pressure"
+        number="04"
+        title={isEn ? "04 · Pressure, Deadline & Crunch Mode" : "04 · 마감 압박과 긴급 상황 대처"}
+        accent={ACCENT}
+      >
+        <div id="ch_crunch" />
+        <UserQuestionBanner question={isEn ? "What changes under tight deadlines and emergency pressure?" : "평소에는 괜찮아도 마감이나 위기 상황에서는 둘이 어떻게 달라지는가?"} />
+        <CrunchModeCard meta={meta} />
+      </WorkChapterSection>
+
+      {/* Chapter 5: 05 · Mistakes, Conflict & Trust Repair */}
+      <WorkChapterSection
+        id="ch5_mistake_repair"
+        number="05"
+        title={isEn ? "05 · Mistakes, Conflict & Trust Repair" : "05 · 실수, 갈등과 신뢰 회복"}
+        accent={ACCENT}
+      >
+        <div id="ch_warning" />
+        <UserQuestionBanner question={isEn ? "What triggers sensitivity during mistakes, and how is trust repaired?" : "실수나 충돌이 생겼을 때 무엇에 민감하고, 어떻게 해야 다시 신뢰가 회복되는가?"} />
+        <MistakeRepairCard meta={meta} names={names} />
+        {warningSection ? <WarningCard section={warningSection} /> : null}
+      </WorkChapterSection>
+
+      {/* Chapter 6: 06 · Mutual Growth & Long-Term Synergy */}
+      <WorkChapterSection
+        id="ch6_mutual_growth"
+        number="06"
+        title={isEn ? "06 · Mutual Growth & Long-Term Synergy" : "06 · 함께 일하며 성장하는 방식"}
+        accent={ACCENT}
+      >
+        <div id="ch_relationship_loop" />
+        <div id="ch_deep_read" />
+        <UserQuestionBanner question={isEn ? "How do we learn from each other and build long-term synergy?" : "이 사람과 계속 일하면 나는 무엇을 배우고 어떤 사람이 되는가?"} />
+        <MutualGrowthCard meta={meta} names={names} />
+        {loopSection ? <RelationshipLoopCard section={loopSection} /> : null}
+        {deepReadSection ? <DeepReadSectionCard section={deepReadSection} /> : null}
+      </WorkChapterSection>
+
+      {/* Chapter 7: 07 · Practical Collaboration Playbook */}
+      <WorkChapterSection
+        id="ch7_playbook"
+        number="07"
+        title={isEn ? "07 · Practical Collaboration Playbook" : "07 · 실전 협업 플레이북"}
+        accent={ACCENT}
+      >
+        <div id="ch_prescription" />
+        <div id="pair-prescription-work" />
+        <UserQuestionBanner question={isEn ? "What are our immediate 1:1 operational rules starting tomorrow?" : "그래서 내일부터 둘이 어떻게 일하면 되는가?"} />
+        <PlaybookSummaryCard meta={meta} />
+        {prescriptionSection ? <PrescriptionCard section={prescriptionSection} /> : null}
+      </WorkChapterSection>
     </RelationshipReportLayout>
   );
 }

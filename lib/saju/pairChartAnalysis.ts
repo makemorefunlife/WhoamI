@@ -383,10 +383,13 @@ export function sajuJsonToPillars(saju: {
   };
 }
 
+import { estimateStrengthBalance } from "@/lib/saju/strengthBalance";
+
 export type CanonicalPersonalSajuFacts = {
   dominantElement: DominantElementKey;
   weakestElement: DominantElementKey;
   elementCounts: Record<string, number>;
+  strength: { label: string; note: string };
   tenGods?: Record<string, number>;
 };
 
@@ -404,10 +407,13 @@ export function extractCanonicalPersonalFacts(
   const weakEntries = [...entries].sort((a, b) => a[1] - b[1]);
   const weakest = weakEntries[0]![0];
 
+  const strength = estimateStrengthBalance(chart);
+
   return {
     dominantElement: dominant,
     weakestElement: weakest,
     elementCounts: counts,
+    strength,
     ...(tenGods ? { tenGods } : {}),
   };
 }

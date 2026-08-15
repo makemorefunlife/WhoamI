@@ -455,7 +455,7 @@ export function resolveWorkCategory(
   counts: Record<string, number>,
   workSignals?: WorkSajuSignals,
 ): TenGodCategory {
-  if (workSignals) {
+  if (workSignals?.month_geokguk?.month_stem_category) {
     return GEOKGUK_TO_LOCAL_CATEGORY[workSignals.month_geokguk.month_stem_category];
   }
   return dominantCategory(counts);
@@ -485,7 +485,7 @@ export function buildOfficeDnaProfile(
   const chart = buildChartContext(pillars);
   const element = dominantElement(chart);
   const category = resolveWorkCategory(tenGodCounts, workSignals);
-  const temperatureBand = workSignals?.johu_profile.temperature_band ?? "neutral";
+  const temperatureBand = workSignals?.johu_profile?.temperature_band ?? "neutral";
 
   const stemRef = REF_HEAVENLY_STEMS.find((r) => r.code === chart.dayStemCode);
   const branchRef = REF_EARTHLY_BRANCHES.find(
@@ -910,13 +910,46 @@ export type LeadershipRoleSplit = {
  * 높은 쪽 = 대외 리더, (인성+재성)이 높은 쪽 = 실무 검수 리더. 2인 구도라
  * 한쪽을 정하면 나머지 역할은 자동으로 상대에게 배정한다(역할 안 겹치게).
  */
+import type { CanonicalPairRoleMap } from "./workCanonicalRoleModel";
+
 export function resolveLeadershipRoleSplit(
   workSignalsA: WorkSajuSignals | undefined,
   workSignalsB: WorkSajuSignals | undefined,
   nicknameA: string,
   nicknameB: string,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  canonicalRoleMap?: CanonicalPairRoleMap,
 ): LeadershipRoleSplit | null {
+  if (canonicalRoleMap) {
+    const ext = canonicalRoleMap.externalOwner;
+    const qa = canonicalRoleMap.qaRiskOwner;
+    const external_lead = ext === "A" ? "a" : ext === "B" ? "b" : "balanced";
+    const internal_qa_lead = qa === "A" ? "a" : qa === "B" ? "b" : "balanced";
+    const externalName = external_lead === "a" ? nicknameA : external_lead === "b" ? nicknameB : null;
+    const internalName = internal_qa_lead === "a" ? nicknameA : internal_qa_lead === "b" ? nicknameB : null;
+
+    let summary = "";
+    if (externalName && internalName && externalName !== internalName) {
+      summary = pick(
+        locale,
+        `${externalName} fits presenting and reporting externally, while ${internalName} is stronger at internal review and quality control — split it officially instead of both trying to do everything.`,
+        `${topicParticle(externalName)} 대외 발표·리포팅 쪽이 잘 맞고, ${topicParticle(internalName)} 실무 검수·품질 관리 쪽이 강해요. 둘 다 다 하려 하지 말고 역할을 공식적으로 나눠보세요.`,
+      );
+    } else {
+      summary = pick(
+        locale,
+        `${nicknameA} and ${nicknameB} share a balanced responsibility rhythm — align key roles per project.`,
+        `${nicknameA}님과 ${nicknameB}님은 균형 잡힌 역할 구도를 가집니다 — 프로젝트별로 핵심 과제를 나누어 진행해보세요.`,
+      );
+    }
+
+    return {
+      external_lead,
+      internal_qa_lead,
+      summary: sanitizeOfficeText(summary),
+    };
+  }
+
   if (!workSignalsA || !workSignalsB) return null;
 
   const externalScore = (s: WorkSajuSignals) =>

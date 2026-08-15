@@ -1,5 +1,4 @@
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import { resolvePersonalityLabel } from "@/lib/relationship/romanticEverydayText";
 import type { RelationshipEventScores } from "@/lib/relationship/pairEventScores";
 import {
   computeWorkCompatibilityGrade,
@@ -9,7 +8,6 @@ import { buildPairSajuBlueprint } from "@/lib/saju/sajuBlueprint";
 import { buildDomainPairLensFromCharts } from "@/lib/personCore/pairContextEngine";
 import type { DomainPairLensOutput } from "@/lib/personCore/pairContextEngine";
 import type { PairSajuAnalysis } from "@/lib/saju/pairChartAnalysis";
-import { estimateStrengthBalance } from "@/lib/saju/romanticSajuDerivations";
 import {
   analyzeWorkPairSaju,
   type WorkPairSajuAnalysis,
@@ -85,6 +83,10 @@ export function buildWorkColleagueContext(params: {
   const blueprint = buildPairSajuBlueprint(params);
   const { core, uncertainItems } = blueprint;
 
+  const canonicalPersonalA = extractCanonicalPersonalFacts(core.chartA);
+  const canonicalPersonalB = extractCanonicalPersonalFacts(core.chartB);
+  const canonicalPairFacts = extractCanonicalPairFacts(core.chartA, core.chartB);
+
   const workPairAnalysis = analyzeWorkPairSaju(
     core.pillarsA,
     core.pillarsB,
@@ -114,10 +116,10 @@ export function buildWorkColleagueContext(params: {
     eventScores,
     grade,
     gradeReason: reason,
-    strengthA: estimateStrengthBalance(core.pillarsA),
-    strengthB: estimateStrengthBalance(core.pillarsB),
-    metaphorA: resolvePersonalityLabel(params.sajuJsonA),
-    metaphorB: resolvePersonalityLabel(params.sajuJsonB),
+    strengthA: canonicalPersonalA.strength,
+    strengthB: canonicalPersonalB.strength,
+    metaphorA: "",
+    metaphorB: "",
     tenGodsA: core.tenGodsA,
     tenGodsB: core.tenGodsB,
     tenGodComplement,
@@ -135,9 +137,9 @@ export function buildWorkColleagueContext(params: {
         birthTimeUnknownB: params.birthTimeUnknownB,
       },
     ),
-    canonicalPersonalA: extractCanonicalPersonalFacts(core.chartA),
-    canonicalPersonalB: extractCanonicalPersonalFacts(core.chartB),
-    canonicalPairFacts: extractCanonicalPairFacts(core.chartA, core.chartB),
+    canonicalPersonalA,
+    canonicalPersonalB,
+    canonicalPairFacts,
     chartA: core.chartA,
     chartB: core.chartB,
   };

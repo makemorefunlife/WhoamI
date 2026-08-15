@@ -30,6 +30,7 @@ import {
   resolveFeedbackCushionScript,
   refineLeadershipRoleSplit,
 } from "./officePsychFit";
+import { resolveLeadershipRoleSplit } from "./officeLanguage";
 import {
   buildWorkLeadershipCanonical,
   buildWorkLeadershipClientProjection,
@@ -129,6 +130,8 @@ function resolveHeadline(
   };
 }
 
+import { type CanonicalPairRoleMap } from "./workCanonicalRoleModel";
+
 export function buildWorkColleagueReport(params: {
   nicknameA: string;
   nicknameB: string;
@@ -150,6 +153,7 @@ export function buildWorkColleagueReport(params: {
   /** PersonCore bake-in 명리 신호(월주 격국·신살 등) — work 캐릭터 타입 SSOT */
   workSignalsA?: WorkSajuSignals;
   workSignalsB?: WorkSajuSignals;
+  canonicalRoleMap?: CanonicalPairRoleMap;
   locale?: Locale;
 }): WorkColleagueReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
@@ -197,7 +201,14 @@ export function buildWorkColleagueReport(params: {
     locale,
   );
   // Phase 6-2a — refine once, wrap as canonical, persist .value (SSOT).
-  const leadershipBase = officeBase.section_roles.leadership_split ?? null;
+  const leadershipBase = resolveLeadershipRoleSplit(
+    ctx.workSignalsA,
+    ctx.workSignalsB,
+    ctx.nicknameA,
+    ctx.nicknameB,
+    locale,
+    params.canonicalRoleMap,
+  );
   const leadershipRefined = refineLeadershipRoleSplit({
     base: leadershipBase,
     workSignalsA: ctx.workSignalsA,

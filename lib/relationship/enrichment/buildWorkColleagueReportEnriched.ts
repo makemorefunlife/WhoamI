@@ -25,7 +25,21 @@ import {
   buildSoloVsDiscussLine,
   buildComplaintSignalLine,
   buildRiskAndRhythmLine,
+  buildDecisionPartnershipLine,
+  buildOwnershipDelegationLine,
+  buildCrunchDeadlineModeLine,
+  buildRecognitionCreditVisibilityLine,
+  buildOfficeDistanceBoundaryLine,
 } from "./workPsychRoleInsights";
+import {
+  buildMistakeResponseSynthesis,
+  buildRepairApologyStyle,
+  buildThinkVsDiscussSynthesis,
+  buildMutualGrowthEffectSynthesis,
+  buildBestVsRiskyConfigurationSynthesis,
+} from "@/lib/relationship/workColleague/workProductGapSynthesis";
+import { buildCanonicalWorkRoleMap } from "@/lib/relationship/workColleague/workCanonicalRoleModel";
+import { buildWorkStoryPlan } from "@/lib/relationship/workColleague/storyPlan/buildWorkStoryPlan";
 
 /**
  * 최종 클린업 라운드 — 상단 대표 점수(🔥🧩⚡)와 ①②③ 스냅샷 카드가 같은 3개
@@ -131,8 +145,20 @@ export function buildWorkColleagueReportEnriched(params: {
   const nameA = params.nicknameA || "Alex";
   const nameB = params.nicknameB || "Jordan";
 
+  const canonicalRoleMap = buildCanonicalWorkRoleMap({
+    nameA,
+    nameB,
+    sajuJsonA: params.sajuJsonA,
+    sajuJsonB: params.sajuJsonB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    workSignalsA: params.workSignalsA,
+    workSignalsB: params.workSignalsB,
+    locale,
+  });
+
   const ctx = buildWorkColleagueContext({ ...params, locale });
-  const base = buildWorkColleagueReport(params);
+  const base = buildWorkColleagueReport({ ...params, canonicalRoleMap });
 
   // ---- 사주 Pair CE 전용 3항목 ----
   const energyDrainLine = buildEnergyDrainLine({
@@ -203,6 +229,88 @@ export function buildWorkColleagueReportEnriched(params: {
   const riskAndRhythmLine = buildRiskAndRhythmLine({
     psychA: params.psychMasterA,
     psychB: params.psychMasterB,
+    locale,
+  });
+
+  // ---- Phase 3 Candidate Capability Evidence Lines ----
+  const decisionPartnershipLine = buildDecisionPartnershipLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+  const ownershipDelegation = buildOwnershipDelegationLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+  const crunchDeadlineModeLine = buildCrunchDeadlineModeLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+  const recognitionCreditVisibilityLine = buildRecognitionCreditVisibilityLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+  const officeDistanceBoundaryLine = buildOfficeDistanceBoundaryLine({
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    nameA,
+    nameB,
+    locale,
+  });
+
+  // ---- Phase 3 Product Gap Synthesis ----
+  const mistakeResponse = buildMistakeResponseSynthesis({
+    nameA,
+    nameB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
+
+  const repairApology = buildRepairApologyStyle({
+    nameA,
+    nameB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
+
+  const thinkVsDiscuss = buildThinkVsDiscussSynthesis({
+    nameA,
+    nameB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
+
+  const mutualGrowthEffect = buildMutualGrowthEffectSynthesis({
+    nameA,
+    nameB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    locale,
+  });
+
+  const bestVsRiskyConfig = buildBestVsRiskyConfigurationSynthesis({
+    nameA,
+    nameB,
+    sajuJsonA: params.sajuJsonA,
+    sajuJsonB: params.sajuJsonB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    workSignalsA: params.workSignalsA,
+    workSignalsB: params.workSignalsB,
     locale,
   });
 
@@ -311,68 +419,95 @@ export function buildWorkColleagueReportEnriched(params: {
       }
     : base.meta.prescription_work;
 
-  return {
-    ...base,
-    office: {
-      ...base.office,
-      // 항목 1 (지치는 부분) + 항목 2 (위기 모드) — pair 단위 문장이라 A쪽에만.
-      section_respect: {
-        ...base.office.section_respect,
-        person_a_boundary: join(base.office.section_respect.person_a_boundary, energyDrainLine),
+  const office = {
+    ...base.office,
+    // 항목 1 (지치는 부분) + 항목 2 (위기 모드) — pair 단위 문장이라 A쪽에만.
+    section_respect: {
+      ...base.office.section_respect,
+      person_a_boundary: join(
+        base.office.section_respect.person_a_boundary,
+        energyDrainLine,
+        recognitionCreditVisibilityLine,
+      ),
+    },
+    // 항목 8 (불만 신호/대처법, Chapter 7 전용) — pair 단위 문장, 새 필드로.
+    section_upset: {
+      ...base.office.section_upset,
+      person_a: {
+        ...base.office.section_upset.person_a,
+        upset_signals: join(base.office.section_upset.person_a.upset_signals, crisisModeLine),
       },
-      // 항목 8 (불만 신호/대처법, Chapter 7 전용) — pair 단위 문장, 새 필드로.
-      section_upset: {
-        ...base.office.section_upset,
-        person_a: {
-          ...base.office.section_upset.person_a,
-          upset_signals: join(base.office.section_upset.person_a.upset_signals, crisisModeLine),
-        },
-        pair_complaint_note: complaintSignalLine ?? undefined,
-      },
-      // 항목 3 (성장) — pair 단위 문장, A쪽 overall_character에만.
-      section_dna: {
-        ...base.office.section_dna,
-        person_a: {
-          ...base.office.section_dna.person_a,
-          overall_character: join(
-            base.office.section_dna.person_a.overall_character,
-            mutualGrowthLine,
-          ),
-        },
-      },
-      // 항목 4 (방향/실행) — weaponsCollide면 모순되는 base 문장·뱃지를
-      // 함께 교체, 아니면 기존처럼 문장만 append.
-      section_roles: {
-        ...base.office.section_roles,
-        person_a: { ...base.office.section_roles.person_a, weapons: weaponsA },
-        person_b: { ...base.office.section_roles.person_b, weapons: weaponsB },
-        synergy_one_liner: synergyOneLiner,
-      },
-      // 항목 5 (디테일 vs 큰그림) — 사람별로 다른 절이라 양쪽에 각각.
-      // 항목 6 (혼자 vs 같이 논의) — 이미 단일 필드(communication_fit).
-      section_mix_fit: {
-        ...base.office.section_mix_fit,
-        person_a_work_style: join(
-          base.office.section_mix_fit.person_a_work_style,
-          detailVsBigPicture?.clauseA,
+      pair_complaint_note: complaintSignalLine ?? undefined,
+    },
+    // 항목 3 (성장) — pair 단위 문장, A쪽 overall_character에만.
+    section_dna: {
+      ...base.office.section_dna,
+      person_a: {
+        ...base.office.section_dna.person_a,
+        overall_character: join(
+          base.office.section_dna.person_a.overall_character,
+          mutualGrowthLine,
         ),
-        person_b_work_style: join(
-          base.office.section_mix_fit.person_b_work_style,
-          detailVsBigPicture?.clauseB,
-        ),
-        // 항목 10 (리스크 한도/보고 리듬) — 이미 단일 필드(communication_fit)에 함께 append.
-        communication_fit: join(
-          base.office.section_mix_fit.communication_fit,
-          soloVsDiscussLine,
-          riskAndRhythmLine,
-        ),
-      },
-      // 항목 7 (피해야 할 조합) — 이미 단일 필드(conflict_trigger).
-      section_warning: {
-        ...base.office.section_warning,
-        conflict_trigger: join(base.office.section_warning.conflict_trigger, avoidCombinationLine),
       },
     },
+    // 항목 4 (방향/실행) — weaponsCollide면 모순되는 base 문장·뱃지를
+    // 함께 교체, 아니면 기존처럼 문장만 append.
+    section_roles: {
+      ...base.office.section_roles,
+      person_a: { ...base.office.section_roles.person_a, weapons: weaponsA },
+      person_b: { ...base.office.section_roles.person_b, weapons: weaponsB },
+      synergy_one_liner: join(synergyOneLiner, decisionPartnershipLine),
+    },
+    // 항목 5 (디테일 vs 큰그림) — 사람별로 다른 절이라 양쪽에 각각.
+    // 항목 6 (혼자 vs 같이 논의) — 이미 단일 필드(communication_fit).
+    section_mix_fit: {
+      ...base.office.section_mix_fit,
+      person_a_work_style: join(
+        base.office.section_mix_fit.person_a_work_style,
+        detailVsBigPicture?.clauseA,
+      ),
+      person_b_work_style: join(
+        base.office.section_mix_fit.person_b_work_style,
+        detailVsBigPicture?.clauseB,
+      ),
+      // 항목 10 (리스크 한도/보고 리듬) — 이미 단일 필드(communication_fit)에 함께 append.
+      communication_fit: join(
+        base.office.section_mix_fit.communication_fit,
+        soloVsDiscussLine,
+        riskAndRhythmLine,
+        officeDistanceBoundaryLine,
+      ),
+    },
+    // 항목 7 (피해야 할 조합) — 이미 단일 필드(conflict_trigger).
+    section_warning: {
+      ...base.office.section_warning,
+      conflict_trigger: join(
+        base.office.section_warning.conflict_trigger,
+        avoidCombinationLine,
+        crunchDeadlineModeLine,
+      ),
+    },
+  };
+
+  const storyPlan = buildWorkStoryPlan(
+    {
+      ...base,
+      meta: {
+        ...base.meta,
+        canonical_role_map: canonicalRoleMap,
+        mistake_response: mistakeResponse,
+        repair_apology: repairApology,
+        think_vs_discuss: thinkVsDiscuss,
+        mutual_growth_effect: mutualGrowthEffect,
+        best_vs_risky_config: bestVsRiskyConfig,
+      },
+    } as any,
+    locale,
+  );
+
+  return {
+    ...base,
+    office,
     snapshot_panel: {
       ...base.snapshot_panel,
       narrative: {
@@ -384,6 +519,14 @@ export function buildWorkColleagueReportEnriched(params: {
       ...base.meta,
       prescription_work: prescriptionWork,
       situational_relationship_topics: situationalRelationshipTopics,
+      canonical_role_map: canonicalRoleMap,
+      mistake_response: mistakeResponse,
+      repair_apology: repairApology,
+      think_vs_discuss: thinkVsDiscuss,
+      mutual_growth_effect: mutualGrowthEffect,
+      best_vs_risky_config: bestVsRiskyConfig,
+      story_plan: storyPlan,
     },
+    story_plan: storyPlan,
   };
 }
