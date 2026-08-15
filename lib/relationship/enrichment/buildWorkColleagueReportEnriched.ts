@@ -37,6 +37,7 @@ import {
   buildThinkVsDiscussSynthesis,
   buildMutualGrowthEffectSynthesis,
   buildBestVsRiskyConfigurationSynthesis,
+  buildCrunchDeadlineModeSynthesis,
 } from "@/lib/relationship/workColleague/workProductGapSynthesis";
 import { buildCanonicalWorkRoleMap } from "@/lib/relationship/workColleague/workCanonicalRoleModel";
 import { buildWorkStoryPlan } from "@/lib/relationship/workColleague/storyPlan/buildWorkStoryPlan";
@@ -314,6 +315,15 @@ export function buildWorkColleagueReportEnriched(params: {
     locale,
   });
 
+  const crunchDeadlineMode = buildCrunchDeadlineModeSynthesis({
+    nameA,
+    nameB,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    canonicalRoleMap,
+    locale,
+  });
+
   const join = (...parts: Array<string | null | undefined>) =>
     parts.filter((p): p is string => Boolean(p && p.trim())).join(" ");
 
@@ -500,6 +510,7 @@ export function buildWorkColleagueReportEnriched(params: {
         think_vs_discuss: thinkVsDiscuss,
         mutual_growth_effect: mutualGrowthEffect,
         best_vs_risky_config: bestVsRiskyConfig,
+        crunch_deadline_mode: crunchDeadlineMode,
       },
     } as any,
     locale,
@@ -525,6 +536,7 @@ export function buildWorkColleagueReportEnriched(params: {
       think_vs_discuss: thinkVsDiscuss,
       mutual_growth_effect: mutualGrowthEffect,
       best_vs_risky_config: bestVsRiskyConfig,
+      crunch_deadline_mode: crunchDeadlineMode,
       story_plan: storyPlan,
     },
     story_plan: storyPlan,

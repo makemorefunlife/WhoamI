@@ -415,38 +415,101 @@ function ThinkVsDiscussCard({ meta }: { meta: any }) {
   );
 }
 
-function CrunchModeCard({ meta }: { meta: any }) {
+function CrunchModeCard({
+  meta,
+  names,
+  isEn,
+}: {
+  meta: any;
+  names: [string, string];
+  isEn?: boolean;
+}) {
   const cmd = meta?.crunch_deadline_mode;
   if (!cmd) return null;
   return (
-    <RelationshipReportCard title="마감 임박 & 위기 대응 모드 (Crunch & Deadline Shift)" accentColor={ACCENT} variant="warning">
+    <RelationshipReportCard
+      title={isEn ? "Crunch & Emergency Response Mode" : "마감 임박 & 위기 대응 모드 (Crunch & Deadline Shift)"}
+      accentColor={ACCENT}
+      variant="warning"
+    >
       <div className="space-y-3">
-        <RelationshipReportInset>
-          <RelationshipReportLabel className="text-amber-300">🚨 압박 상황 속 일하는 방식의 변화</RelationshipReportLabel>
+        {/* 1. 평소 vs 마감 압박 시 변화 */}
+        <RelationshipReportInset className="border-amber-400/20 bg-amber-950/10">
+          <RelationshipReportLabel className="text-amber-300 font-bold">
+            {isEn ? "🚨 1. How Work Styles Shift Under Tight Deadlines" : "🚨 1. 평소와 다른 마감 압박 시 일하는 방식의 변화"}
+          </RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
             {cmd.normalVsDeadlineShift}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
+
+        {/* 2. 개인별 압박 반응 */}
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-emerald-200/90">✂️ 우선순위 자르기 리드</RelationshipReportLabel>
+            <RelationshipReportLabel className="text-sky-200/90 font-semibold">
+              ⚡ {isEn ? `${names[0]}'s Action Shift Under Pressure` : `${names[0]}님의 마감 속 행동 변화`}
+            </RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              {cmd.personAPressureShift}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+          <RelationshipReportInset>
+            <RelationshipReportLabel className="text-purple-200/90 font-semibold">
+              🛡️ {isEn ? `${names[1]}'s Action Shift Under Pressure` : `${names[1]}님의 마감 속 행동 변화`}
+            </RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              {cmd.personBPressureShift}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 3. 위기 시 역할 분담 & 4. 압박 속 충돌 지점 */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <RelationshipReportInset>
+            <RelationshipReportLabel className="text-emerald-200/90 font-semibold">
+              🧩 {isEn ? "3. Natural Emergency Role Split" : "3. 위기 상황에서의 자연스러운 역할 분담"}
+            </RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              {cmd.crunchRoleSplit}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+          <RelationshipReportInset className="border-red-400/20 bg-red-950/10">
+            <RelationshipReportLabel className="text-red-300 font-semibold">
+              ⚡ {isEn ? "4. Potential Friction Point Under Stress" : "4. 마감 압박 속 생길 수 있는 충돌 지점"}
+            </RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              {cmd.pressureFrictionPoint}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 5. 실전 운영 규칙 & 버퍼 보호 */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          <RelationshipReportInset>
+            <RelationshipReportLabel className="text-amber-300 font-bold">
+              ✂️ {isEn ? "Priority Cut Rule" : "우선순위 축소 규칙"}
+            </RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
               {cmd.priorityCutLead}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-sky-200/90">🛡️ 기준선 유지 & 완성도 사수</RelationshipReportLabel>
+            <RelationshipReportLabel className="text-emerald-300 font-bold">
+              🛡️ {isEn ? "Quality Baseline" : "최소 품질 기준선"}
+            </RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
               {cmd.baselineHolder}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
+          <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
+            <RelationshipReportLabel className="text-sky-300 font-bold">
+              🔋 {isEn ? "Buffer Support Rule" : "버퍼 & 과부하 방지 처방"}
+            </RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+              {cmd.bufferSupportNeed}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
         </div>
-        <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
-          <RelationshipReportLabel className="text-sky-300">🔋 버퍼 보호 & 과부하 방지 처방</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
-            {cmd.bufferSupportNeed}
-          </RelationshipReportParagraph>
-        </RelationshipReportInset>
       </div>
     </RelationshipReportCard>
   );
@@ -835,7 +898,7 @@ export function WorkReportViewModelView({
       >
         <div id="ch_crunch" />
         <UserQuestionBanner question={isEn ? "What changes under tight deadlines and emergency pressure?" : "평소에는 괜찮아도 마감이나 위기 상황에서는 둘이 어떻게 달라지는가?"} />
-        <CrunchModeCard meta={meta} />
+        <CrunchModeCard meta={meta} names={names} isEn={isEn} />
       </WorkChapterSection>
 
       {/* Chapter 5: 05 · Mistakes, Conflict & Trust Repair */}

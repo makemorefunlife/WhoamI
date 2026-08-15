@@ -51,6 +51,17 @@ export type BestVsRiskyConfigResult = {
   };
 };
 
+export type CrunchDeadlineModeResult = {
+  normalVsDeadlineShift: string;
+  personAPressureShift: string;
+  personBPressureShift: string;
+  crunchRoleSplit: string;
+  pressureFrictionPoint: string;
+  priorityCutLead: string;
+  baselineHolder: string;
+  bufferSupportNeed: string;
+};
+
 /**
  * 1. Directional Mistake Response
  * "What bothers this person about the mistake?"
@@ -343,5 +354,130 @@ export function buildBestVsRiskyConfigurationSynthesis(params: {
         "명확한 중재 규칙 없이 두 사람을 완전 동일 권한의 공동 PM으로 배치하는 구도는 피하세요.",
       ),
     },
+  };
+}
+
+/**
+ * 6. Crunch / Deadline Mode Synthesis
+ * Answers: "평소에는 괜찮아도 마감이나 위기 상황에서는 둘이 어떻게 달라지는가?"
+ * Coherent narrative flow:
+ * 평소에는 → 압박이 오면 → 둘의 차이가 커지는 지점 → 위기에서의 역할 분담 → 그래서 이렇게 운영하면 좋다
+ */
+export function buildCrunchDeadlineModeSynthesis(params: {
+  nameA: string;
+  nameB: string;
+  psychA?: PsychMasterJson | null;
+  psychB?: PsychMasterJson | null;
+  canonicalRoleMap?: CanonicalPairRoleMap;
+  locale?: Locale;
+}): CrunchDeadlineModeResult {
+  const { nameA, nameB, psychA, psychB } = params;
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+
+  const resA = psychA?.secondary_axes.resilience ?? 50;
+  const resB = psychB?.secondary_axes.resilience ?? 50;
+  const scA = psychA?.secondary_axes.self_control ?? 50;
+  const scB = psychB?.secondary_axes.self_control ?? 50;
+  const decA = psychA?.secondary_axes.decision_style ?? 50;
+  const decB = psychB?.secondary_axes.decision_style ?? 50;
+  const strA = psychA?.secondary_axes.structure ?? 50;
+  const strB = psychB?.secondary_axes.structure ?? 50;
+
+  // 1. Normal vs Deadline shift overview
+  const normalVsDeadlineShift = pick(
+    locale,
+    `In routine conditions, ${nameA} and ${nameB} maintain a balanced collaborative workflow. However, as deadline pressure peaks, their stress tolerance and task acceleration patterns diverge sharply.`,
+    `평소 안정적인 상황에서는 ${nameA}님과 ${nameB}님이 일정한 리듬으로 협업하지만, 마감 시한이 임박하고 작업 압박이 최고조에 달하면 각자의 스트레스 반응과 과제 처리 속도가 크게 달라집니다.`,
+  );
+
+  // 2. Person A pressure shift
+  const personAPressureShift =
+    scA < 60 || decA >= 60
+      ? pick(
+          locale,
+          `${nameA} accelerates execution speed under pressure, cutting non-essential discussion to push the deliverable across the finish line quickly.`,
+          `${nameA}님은 마감 임박 시 즉각적인 목표 완성을 위해 과감하게 일하는 속도를 올리며, 부수적인 회의나 검수 절차를 대폭 단축하는 공격적 추진 모드로 전환합니다.`,
+        )
+      : pick(
+          locale,
+          `${nameA} focuses on maintaining procedural integrity under pressure, verifying each critical handoff step to avoid high-risk mistakes.`,
+          `${nameA}님은 압박 상황에서도 섣부른 조급함보다는 주요 단계별 완성도와 위험 요소를 한 번 더 점검하는 신중한 모드로 들어갑니다.`,
+        );
+
+  // 3. Person B pressure shift
+  const personBPressureShift =
+    strB >= 60 || scB >= 60
+      ? pick(
+          locale,
+          `${nameB} tightens quality gates under pressure, ensuring core specifications and safety baselines remain uncompromised despite tight schedules.`,
+          `${nameB}님은 마감 압박이 커질수록 시스템 결함이나 품질 하한선이 무너지지 않도록 핵심 검수 게이트를 더욱 철저히 사수합니다.`,
+        )
+      : pick(
+          locale,
+          `${nameB} prioritizes rapid completion under pressure, adapting flexibly to scope changes to resolve bottlenecks fast.`,
+          `${nameB}님은 긴급 상황 시 유연하게 범위를 조율하며 병목 구간을 빠르게 뚫어내는 유연한 실행 모드를 발휘합니다.`,
+        );
+
+  // 4. Crunch role division
+  const speedLeadName = decA >= decB ? nameA : nameB;
+  const qualityCheckName = strA >= strB ? nameA : nameB;
+  const crunchRoleSplit =
+    speedLeadName !== qualityCheckName
+      ? pick(
+          locale,
+          `In emergency situations, ${speedLeadName} takes charge of fast priority decisions and scope trimming, while ${qualityCheckName} guards the non-negotiable operational baseline.`,
+          `위기 상황 발생 시 ${speedLeadName}님이 핵심 우선순위 결정과 과감한 스코프 조율을 이끌고, ${qualityCheckName}님이 비즈니스 위협을 막는 최소 품질 기준선을 사수합니다.`,
+        )
+      : pick(
+          locale,
+          `In emergency situations, both partners align on clear task boundaries — one taking point on external delivery while the other stabilizes internal operations.`,
+          `긴급 상황 시 두 사람은 명확한 구역 분담을 통해 한 사람이 외부 대응 및 마감 제출을 전담하고, 다른 한 사람이 내부 실무 수습을 전담하는 구도가 가장 효과적입니다.`,
+        );
+
+  // 5. Pressure friction point
+  const pressureFrictionPoint =
+    Math.abs(scA - scB) >= 12 || Math.abs(decA - decB) >= 12
+      ? pick(
+          locale,
+          `Friction occurs when one partner's urge for immediate speed clashes with the other's requirement for thorough risk verification before sign-off.`,
+          `마감 직전 한 쪽의 '빠른 마무리' 욕구와 다른 한 쪽의 '확실한 검수' 요구가 부딪힐 때 가장 큰 감정 마찰이나 소통 병목이 발생할 수 있습니다.`,
+        )
+      : pick(
+          locale,
+          `Friction occurs under ambiguous priority calls where both partners try to solve the same bottleneck simultaneously without assigned leads.`,
+          `우선순위가 불분명한 마감 상황에서 조율자 없이 두 사람이 동일한 병목 지점에 동시 개입할 때 혼선이 발생할 수 있습니다.`,
+        );
+
+  // 6. Practical operational rules
+  const steadyName = resA >= resB ? nameA : nameB;
+  const sensitiveName = resA < resB ? nameA : nameB;
+
+  const priorityCutLead = pick(
+    locale,
+    `Under crunch, ${speedLeadName} leads the priority-cut decision to drop low-impact deliverables immediately.`,
+    `마감 임박 시 ${speedLeadName}님이 불필요한 부속 과제를 즉시 쳐내는 우선순위 정리권을 리드하세요.`,
+  );
+
+  const baselineHolder = pick(
+    locale,
+    `${qualityCheckName} defines the non-negotiable minimum quality bar that cannot be compromised under schedule stress.`,
+    `${qualityCheckName}님이 마감 압박 속에서도 결코 양보할 수 없는 최소 품질 검수 기준선을 명확히 지정하세요.`,
+  );
+
+  const bufferSupportNeed = pick(
+    locale,
+    `Under heavy crunch pressure, ${sensitiveName} needs quick buffer time and clear priority boundaries to avoid overload, while ${steadyName} holds the operational baseline steady.`,
+    `마감 임박 압박이 높아지면 ${sensitiveName}님은 과부하 방지를 위한 우선순위 정리와 버퍼 시간이 필요하며, ${steadyName}님이 기준점을 지켜줄 때 최적의 수습이 가능합니다.`,
+  );
+
+  return {
+    normalVsDeadlineShift,
+    personAPressureShift,
+    personBPressureShift,
+    crunchRoleSplit,
+    pressureFrictionPoint,
+    priorityCutLead,
+    baselineHolder,
+    bufferSupportNeed,
   };
 }

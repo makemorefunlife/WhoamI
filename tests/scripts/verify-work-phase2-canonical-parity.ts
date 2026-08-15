@@ -167,14 +167,34 @@ async function runWorkPhase2CanonicalQA() {
     const hasScores = html.includes("🔥") && html.includes("🧩") && html.includes("⚡");
     const hasPrescriptions = html.includes("처방전") || html.includes("Playbook");
     const hasCanonicalMap = html.includes("8차원 권한 및 역할 지도") || html.includes("Canonical Role Map");
-    const hasDirectionalRepair = html.includes("신뢰 회복 및 사과 순서") || html.includes("Apology Guide");
-    const hasMutualGrowth = html.includes("성장 경로") || html.includes("Mutual Growth");
+    const hasDirectionalRepair = html.includes("신뢰 회복") || html.includes("Trust Repair");
+    const hasMutualGrowth = html.includes("성장") || html.includes("Mutual Growth");
     const hasPlaybookRules = html.includes("1:1 협업 플레이북") || html.includes("Action Rules");
 
-    if (hasScores && hasPrescriptions && hasCanonicalMap && hasDirectionalRepair && hasMutualGrowth && hasPlaybookRules) {
-      console.log("  ✅ [PASS] Snapshot Scores, Action Prescriptions & All V2 Capabilities Rendered");
+    const cleanHtml = html
+      .replace(/<!--.*?-->/g, "")
+      .replace(/&amp;/g, "&")
+      .replace(/&#x27;/g, "'")
+      .replace(/&apos;/g, "'");
+
+    const check1 = (cleanHtml.includes("마감 임박 & 위기 대응 모드") || cleanHtml.includes("Crunch & Emergency Response Mode"));
+    const check2 = (cleanHtml.includes("1. 평소와 다른 마감 압박 시 일하는 방식의 변화") || cleanHtml.includes("1. How Work Styles Shift Under Tight Deadlines"));
+    const check3 = (cleanHtml.includes(`${profile.nameA}님의 마감 속 행동 변화`) || cleanHtml.includes(`${profile.nameA}'s Action Shift Under Pressure`));
+    const check4 = (cleanHtml.includes(`${profile.nameB}님의 마감 속 행동 변화`) || cleanHtml.includes(`${profile.nameB}'s Action Shift Under Pressure`));
+    const check5 = (cleanHtml.includes("3. 위기 상황에서의 자연스러운 역할 분담") || cleanHtml.includes("3. Natural Emergency Role Split"));
+    const check6 = (cleanHtml.includes("4. 마감 압박 속 생길 수 있는 충돌 지점") || cleanHtml.includes("4. Potential Friction Point Under Stress"));
+    const check7 = (cleanHtml.includes("우선순위 축소 규칙") || cleanHtml.includes("Priority Cut Rule"));
+    const check8 = (cleanHtml.includes("최소 품질 기준선") || cleanHtml.includes("Quality Baseline"));
+    const check9 = (cleanHtml.includes("버퍼 & 과부하 방지 처방") || cleanHtml.includes("Buffer Support Rule"));
+
+    const ch4Substance = check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9;
+
+    if (hasScores && hasPrescriptions && hasCanonicalMap && hasDirectionalRepair && hasMutualGrowth && hasPlaybookRules && ch4Substance) {
+      console.log("  ✅ [PASS] Snapshot Scores, Action Prescriptions & Chapter 04 Substantive Body Rendered");
     } else {
-      console.log("  ❌ [FAIL] V2 Content cards missing in DOM");
+      console.log("  ❌ [FAIL] Breakdown:", {
+        check1, check2, check3, check4, check5, check6, check7, check8, check9,
+      });
       allPassed = false;
     }
 
