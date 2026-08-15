@@ -52,6 +52,8 @@ type TestProfile = {
   nameB: string;
   psychA?: PsychMasterJson | null;
   psychB?: PsychMasterJson | null;
+  workSignalsA?: WorkSajuSignals;
+  workSignalsB?: WorkSajuSignals;
   locale: "ko-KR" | "en-US";
 };
 
@@ -61,6 +63,16 @@ const testProfiles: TestProfile[] = [
   { name: "3. Direct vs Soft Comm", nameA: "태양", nameB: "바다", psychA: makePsych({ empathy: 25, conflict_style: 85 }), psychB: makePsych({ empathy: 85, conflict_style: 25 }), locale: "ko-KR" },
   { name: "4. English Locale Pair", nameA: "Alex", nameB: "Jordan", psychA: makePsych({ energy_style: 75, structure: 75 }), psychB: makePsych({ energy_style: 25, structure: 25 }), locale: "en-US" },
   { name: "5. High Conflict Pair", nameA: "철수", nameB: "영희", psychA: makePsych({ conflict_style: 80, resilience: 30 }), psychB: makePsych({ conflict_style: 80, resilience: 30 }), locale: "ko-KR" },
+  {
+    name: "6. Partial WorkSignals (Missing Johu Profile & Temperature Band)",
+    nameA: "진우",
+    nameB: "하은",
+    psychA: makePsych({ decision_style: 70 }),
+    psychB: makePsych({ structure: 70 }),
+    workSignalsA: { month_geokguk: { month_stem_category: "officer" } } as any, // johu_profile missing entirely
+    workSignalsB: { month_geokguk: { month_stem_category: "food" }, johu_profile: {} } as any, // johu_profile exists but temperature_band missing
+    locale: "ko-KR",
+  },
 ];
 
 async function runWorkPhase2CanonicalQA() {
@@ -83,6 +95,8 @@ async function runWorkPhase2CanonicalQA() {
       sajuJsonB: sajuB,
       psychMasterA: profile.psychA,
       psychMasterB: profile.psychB,
+      workSignalsA: profile.workSignalsA,
+      workSignalsB: profile.workSignalsB,
       pairWork: pairWorkBaseline,
       locale: profile.locale,
       skipBusinessNarrative: true,

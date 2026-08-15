@@ -469,7 +469,8 @@ function hipTitle(
 ): string {
   const titles = CATEGORY_TITLE[locale][category];
   const el = ELEMENT_OFFICE[locale][element] ?? "";
-  const pickedTitle = titles[temperatureBand];
+  const safeBand = temperatureBand ?? "neutral";
+  const pickedTitle = titles[safeBand] ?? titles["neutral"];
   return el ? `${pickedTitle} · ${el} DNA` : pickedTitle;
 }
 
