@@ -217,19 +217,26 @@ describe("Friend ViewModel/Renderer — locale-safe fallback (post-fix)", () => 
   });
 
   it("D) en-US + missing overlay: full production render has no raw enums and no undefined/null leaks", () => {
-    // Scoped to what this batch's fix (buildFriendReportViewModel.ts) is
-    // responsible for. NOTE: a full-page render still contains some Korean
-    // text from a separate, pre-existing, OUT-OF-SCOPE bug in
-    // FriendEditorialSections.tsx (a hardcoded "아이디어 제안" label with no
-    // isKo gate) — that file was not part of this batch's instructed scope
-    // (lib/relationship/friend/viewModel/buildFriendReportViewModel.ts and
-    // its consumers were audited, not the editorial renderer's own static
-    // labels) and is reported separately as an out-of-scope finding, not
-    // fixed here. The narrativeText/coverageCards checks above are the
-    // precise regression guards for the bug this batch actually fixes.
     const { html } = renderReport(makeReport({ overlayPresent: false }), "en-US");
     assert.ok(!html.includes(">undefined<"));
     assert.ok(!html.includes(">null<"));
+  });
+
+  it("D) en-US + missing overlay: zero Korean leakage anywhere in the full production render (follow-up fix)", () => {
+    // Follow-up to the batch above: FriendEditorialSections.tsx had 10
+    // hardcoded, unguarded Korean card labels (contactInitiator/planningLead/
+    // reconnectionLead in ch03, ideaCreator/practicalExecutor/energyPace in
+    // ch04/ch05-teamwork, situationNote/recommendationNote in
+    // thirdPersonExclusion, rhythmAdvice/meetingFrequencyNeed in
+    // distanceProfile) that were previously reported as an out-of-scope
+    // finding — now fixed via the same `pick(locale, en, ko)` helper already
+    // used throughout that file. This asserts zero Korean leakage across the
+    // ENTIRE rendered page, not just narrativeText/coverageCards headline.
+    const { html } = renderReport(makeReport({ overlayPresent: false }), "en-US");
+    assert.ok(
+      !KOREAN_RE.test(html),
+      "full en-US production render must contain zero Korean characters",
+    );
   });
 
   it("C) ko-KR + missing overlay: full production render still succeeds and contains Korean content", () => {

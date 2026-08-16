@@ -424,15 +424,15 @@ export function Chapter04Tempo({ vm, viewerIsReportA, locale }: Ctx) {
           </h4>
           <div className="grid grid-cols-1 gap-3 font-rel-sans text-xs text-rel-ink-soft sm:grid-cols-3">
             <div className="rounded-xl border border-rel-line/60 bg-white p-3.5 shadow-2xs">
-              <span className="font-semibold text-rel-ink block mb-1">연락 물꼬</span>
+              <span className="font-semibold text-rel-ink block mb-1">{pick(locale, "Who reaches out first", "연락 물꼬")}</span>
               <span className="font-bold text-rel-deep text-sm">{ch03Vm.coverageCards.initiativeRole.contactInitiator}</span>
             </div>
             <div className="rounded-xl border border-rel-line/60 bg-white p-3.5 shadow-2xs">
-              <span className="font-semibold text-rel-ink block mb-1">약속 · 기획</span>
+              <span className="font-semibold text-rel-ink block mb-1">{pick(locale, "Planning & scheduling", "약속 · 기획")}</span>
               <span className="font-bold text-rel-deep text-sm">{ch03Vm.coverageCards.initiativeRole.planningLead}</span>
             </div>
             <div className="rounded-xl border border-rel-line/60 bg-white p-3.5 shadow-2xs">
-              <span className="font-semibold text-rel-ink block mb-1">관계 회복</span>
+              <span className="font-semibold text-rel-ink block mb-1">{pick(locale, "Reconnecting after distance", "관계 회복")}</span>
               <span className="font-bold text-rel-deep text-sm">{ch03Vm.coverageCards.initiativeRole.reconnectionLead}</span>
             </div>
           </div>
@@ -498,15 +498,15 @@ export function Chapter05Teamwork({ vm, locale }: Ctx) {
           </h4>
           <div className="grid grid-cols-1 gap-3 font-rel-sans text-xs text-rel-ink-soft sm:grid-cols-3">
             <div className="rounded-xl border border-rel-line/60 bg-rel-bg/50 p-3.5">
-              <span className="font-semibold text-rel-ink block mb-1">아이디어 제안</span>
+              <span className="font-semibold text-rel-ink block mb-1">{pick(locale, "Idea generator", "아이디어 제안")}</span>
               <span className="font-bold text-rel-deep text-sm">{ch04Vm.coverageCards.travelPlayRole.ideaCreator}</span>
             </div>
             <div className="rounded-xl border border-rel-line/60 bg-rel-bg/50 p-3.5">
-              <span className="font-semibold text-rel-ink block mb-1">실전 실행 · 예약</span>
+              <span className="font-semibold text-rel-ink block mb-1">{pick(locale, "Execution & booking", "실전 실행 · 예약")}</span>
               <span className="font-bold text-rel-deep text-sm">{ch04Vm.coverageCards.travelPlayRole.practicalExecutor}</span>
             </div>
             <div className="rounded-xl border border-rel-line/60 bg-rel-bg/50 p-3.5">
-              <span className="font-semibold text-rel-ink block mb-1">에너지 템포</span>
+              <span className="font-semibold text-rel-ink block mb-1">{pick(locale, "Energy pace", "에너지 템포")}</span>
               <span className="font-medium text-rel-deep">{ch04Vm.coverageCards.travelPlayRole.energyPace}</span>
             </div>
           </div>
@@ -589,11 +589,11 @@ export function Chapter06CounselingGroup({ vm, locale }: Ctx) {
               ✨ {ch05Vm.coverageCards.thirdPersonExclusion.humanTitle}
             </div>
             <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3.5 text-emerald-900">
-              <strong className="font-semibold text-emerald-700">추천 환경/맥락:</strong>{" "}
+              <strong className="font-semibold text-emerald-700">{pick(locale, "Best context:", "추천 환경/맥락:")}</strong>{" "}
               {ch05Vm.coverageCards.thirdPersonExclusion.situationNote}
             </div>
             <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-3.5 text-amber-900">
-              <strong className="font-semibold text-amber-700">주의사항:</strong>{" "}
+              <strong className="font-semibold text-amber-700">{pick(locale, "Watch out for:", "주의사항:")}</strong>{" "}
               {ch05Vm.coverageCards.thirdPersonExclusion.recommendationNote}
             </div>
           </div>
@@ -722,13 +722,13 @@ export function Chapter09Distance({ vm, locale }: Ctx) {
             </div>
             {ch08Vm.coverageCards.distanceProfile.rhythmAdvice && (
               <div className="rounded-xl border border-rel-line/50 bg-rel-bg/50 p-3 text-rel-ink-soft">
-                <strong className="font-semibold text-rel-ink">연락 리듬 가이드:</strong>{" "}
+                <strong className="font-semibold text-rel-ink">{pick(locale, "Contact rhythm guide:", "연락 리듬 가이드:")}</strong>{" "}
                 {ch08Vm.coverageCards.distanceProfile.rhythmAdvice}
               </div>
             )}
             {ch08Vm.coverageCards.distanceProfile.meetingFrequencyNeed && (
               <div className="rounded-xl border border-rel-line/50 bg-rel-bg/50 p-3 text-rel-ink-soft">
-                <strong className="font-semibold text-rel-ink">만남 지속력:</strong>{" "}
+                <strong className="font-semibold text-rel-ink">{pick(locale, "Meeting frequency:", "만남 지속력:")}</strong>{" "}
                 {ch08Vm.coverageCards.distanceProfile.meetingFrequencyNeed}
               </div>
             )}
