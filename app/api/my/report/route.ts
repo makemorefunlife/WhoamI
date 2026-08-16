@@ -125,6 +125,7 @@ export async function GET(req: Request) {
       supabase,
       reportId,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 
@@ -348,6 +349,11 @@ export async function POST(req: Request) {
     const astrology = body.astrology?.trim();
     const astrologyLocationFingerprintValue =
       body.astrologyLocationFingerprint?.trim();
+    const locale = resolveRequestLocale({
+      bodyLanguage: null,
+      headerLanguage:
+        req.headers.get("x-aha-locale") ?? req.headers.get("accept-language"),
+    });
 
     if (!reportId || (!integrated && !detailedSurvey && !astrology)) {
       return NextResponse.json(
@@ -367,6 +373,7 @@ export async function POST(req: Request) {
       supabase,
       reportId,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 

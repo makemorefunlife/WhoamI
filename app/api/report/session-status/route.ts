@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     if (!supabase) return supabaseConfigErrorResponse();
 
     const { userId } = await auth();
-    const access = await assertOwnedReportAccess(supabase, reportId, userId);
+    const access = await assertOwnedReportAccess(supabase, reportId, userId, locale);
     if (access.error) {
       if (access.error.status === 404) {
         return NextResponse.json({

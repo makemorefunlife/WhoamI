@@ -97,6 +97,7 @@ export async function POST(req: Request) {
       viewerReportId,
       rr.report_id_a,
       rr.report_id_b,
+      locale,
     );
     if (accessGuard) return accessGuard;
 

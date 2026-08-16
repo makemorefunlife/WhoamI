@@ -4,7 +4,7 @@ import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/su
 import { NextResponse } from "next/server";
 import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
 import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
-import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
+import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
   readPersistedDeepEssenceAnalysis,
   writePersistedDeepEssenceAnalysis,
@@ -61,10 +61,11 @@ export async function POST(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
     const { userId } = await auth();
-    const access = await assertGuestOrOwnerReportAccess(
+    const access = await assertOwnedReportAccess(
       supabase,
       reportId,
       userId,
+      locale,
     );
     if (access.error) return access.error;
 

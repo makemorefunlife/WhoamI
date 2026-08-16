@@ -70,6 +70,17 @@ export async function POST(req: Request) {
       const idCheck = requireUuid(body.reportId, "reportId");
       if (!idCheck.ok) return idCheck.response;
 
+      // Single locale authority for this mode: resolved once, up front, so
+      // both the access-control errors below and the LLM prompts further
+      // down use the same value.
+      const locale = normalizeLocale(
+        typeof body.language === "string"
+          ? body.language
+          : typeof body.locale === "string"
+            ? body.locale
+            : undefined,
+      );
+
       const limited = await enforceRateLimit("llm", userId);
       if (!limited.ok) return rateLimitResponse(limited);
 
@@ -85,6 +96,7 @@ export async function POST(req: Request) {
         supabase,
         idCheck.value,
         userId,
+        locale,
       );
       if (access.error) return access.error;
 
@@ -139,13 +151,6 @@ export async function POST(req: Request) {
           ? astrologyText.trim()
           : "(없음)";
 
-      const locale = normalizeLocale(
-        typeof body.language === "string"
-          ? body.language
-          : typeof body.locale === "string"
-            ? body.locale
-            : undefined,
-      );
       const systemPrompt = getIntegratedSystemPrompt(locale);
 
       const phase1User = buildIntegratedPhase1UserPrompt(
