@@ -377,8 +377,8 @@ function resolveRoleDisplayName(
 ): string {
   if (!role) return isKo ? "상황에 따라 유연함" : "Flexible by situation";
   const upper = String(role).trim().toUpperCase();
-  if (upper === "A" || upper.startsWith("A_") || upper.startsWith("A-")) return `${nameA}님`;
-  if (upper === "B" || upper.startsWith("B_") || upper.startsWith("B-")) return `${nameB}님`;
+  if (upper === "A" || upper.startsWith("A_") || upper.startsWith("A-")) return isKo ? `${nameA}님` : nameA;
+  if (upper === "B" || upper.startsWith("B_") || upper.startsWith("B-")) return isKo ? `${nameB}님` : nameB;
   if (upper.includes("BALANCED") || upper.includes("SYMMETRICAL") || upper.includes("EQUAL")) {
     return isKo ? "둘 다 비슷함 (상호 대등)" : "Balanced (Mutual)";
   }
@@ -514,69 +514,91 @@ function buildFriendChapterViewModels(
         narrativeText =
           deep?.section_1_spark?.spark_narrative ??
           (whyUsData?.summaryLine ??
-            "서로가 가진 고유한 에너지와 대화 스타일이 자연스럽게 맞아떨어지는 우정입니다.");
+            (isKo
+              ? "서로가 가진 고유한 에너지와 대화 스타일이 자연스럽게 맞아떨어지는 우정입니다."
+              : "This is a friendship where your natural energy and conversational styles simply click."));
         v1Assets.whyYouMeUs = whyUsData;
         break;
 
       case "ch02_who_we_are":
         narrativeText =
           deep?.section_2_nature?.a_nature ??
-          `${names[0]}님과 ${names[1]}님은 서로의 부족한 점을 채우고 든든하게 받쳐주는 수호군 형태의 관계입니다.`;
+          (isKo
+            ? `${names[0]}님과 ${names[1]}님은 서로의 부족한 점을 채우고 든든하게 받쳐주는 수호군 형태의 관계입니다.`
+            : `${names[0]} and ${names[1]} have a guardian-style friendship — you fill in each other's gaps and back each other up.`);
         if (socialDnaA && socialDnaB) {
           v1Assets.socialDnaMe = viewerIsReportA ? socialDnaA : socialDnaB;
           v1Assets.socialDnaPartner = viewerIsReportA ? socialDnaB : socialDnaA;
         }
         break;
 
-      case "ch03_social_dna_tempo":
+      case "ch03_social_dna_tempo": {
         narrativeText =
           deep?.section_3_tempo?.tempo_narrative ??
-          "연락의 빈도보다는 대화가 이어질 때 느껴지는 편안한 티키타카와 소통 템포가 핵심입니다.";
+          (isKo
+            ? "연락의 빈도보다는 대화가 이어질 때 느껴지는 편안한 티키타카와 소통 템포가 핵심입니다."
+            : "What matters most isn't how often you're in touch — it's the easy back-and-forth rhythm you fall into whenever you do talk.");
+        const initiativeHeadline = isKo
+          ? `${names[0]}님과 ${names[1]}님의 주도성 및 소통 역할`
+          : `${names[0]} and ${names[1]}'s roles in initiative and communication`;
         if (coverage?.initiativeRole) {
           coverageCards.initiativeRole = {
             contactInitiator: resolveRoleDisplayName(coverage.initiativeRole.contactInitiator, nameA, nameB, isKo),
             planningLead: resolveRoleDisplayName(coverage.initiativeRole.planningLead, nameA, nameB, isKo),
             reconnectionLead: resolveRoleDisplayName(coverage.initiativeRole.reconnectionLead, nameA, nameB, isKo),
-            headline: `${names[0]}님과 ${names[1]}님의 주도성 및 소통 역할`,
+            headline: initiativeHeadline,
           };
         } else {
           coverageCards.initiativeRole = {
             contactInitiator: resolveRoleDisplayName("BALANCED", nameA, nameB, isKo),
-            planningLead: resolveRoleDisplayName("A", nameA, nameB, isKo),
+            // No real coverage data for this pair — reuse the function's own
+            // "insufficient evidence" fallback instead of fabricating which
+            // person leads planning.
+            planningLead: resolveRoleDisplayName(undefined, nameA, nameB, isKo),
             reconnectionLead: resolveRoleDisplayName("BOTH", nameA, nameB, isKo),
-            headline: `${names[0]}님과 ${names[1]}님의 주도성 및 소통 역할`,
+            headline: initiativeHeadline,
           };
         }
         break;
+      }
 
-      case "ch04_play_travel":
+      case "ch04_play_travel": {
         narrativeText =
           deep?.section_4_friend_frames?.travel_teamwork ??
-          "함께 약속을 잡거나 여행을 갈 때 서로의 역할 분담과 주도성이 조화를 이룹니다.";
+          (isKo
+            ? "함께 약속을 잡거나 여행을 갈 때 서로의 역할 분담과 주도성이 조화를 이룹니다."
+            : "When making plans or traveling together, your roles and initiative naturally balance each other out.");
         if (hiddenFlow?.travel_style) {
           v1Assets.travelStyle = hiddenFlow.travel_style;
         }
+        const travelHeadline = isKo ? "놀 때 우리는 어떤 팀인가?" : "What kind of team are we when we're having fun?";
         if (coverage?.travelPlayRole) {
           coverageCards.travelPlayRole = {
             ideaCreator: resolveRoleDisplayName(coverage.travelPlayRole.ideaCreator, nameA, nameB, isKo),
             practicalExecutor: resolveRoleDisplayName(coverage.travelPlayRole.practicalExecutor, nameA, nameB, isKo),
             energyPace: coverage.travelPlayRole.energyPace ?? (isKo ? "보폭이 잘 맞고 일정에 유연한 팀워크" : "Flexible energy pace"),
-            headline: "놀 때 우리는 어떤 팀인가?",
+            headline: travelHeadline,
           };
         } else {
           coverageCards.travelPlayRole = {
-            ideaCreator: resolveRoleDisplayName("A", nameA, nameB, isKo),
-            practicalExecutor: resolveRoleDisplayName("B", nameA, nameB, isKo),
+            // No real coverage data for this pair — reuse the function's own
+            // "insufficient evidence" fallback instead of fabricating which
+            // person leads ideas/execution.
+            ideaCreator: resolveRoleDisplayName(undefined, nameA, nameB, isKo),
+            practicalExecutor: resolveRoleDisplayName(undefined, nameA, nameB, isKo),
             energyPace: isKo ? "보폭이 잘 맞고 일정에 유연한 팀워크" : "Flexible energy pace",
-            headline: "놀 때 우리는 어떤 팀인가?",
+            headline: travelHeadline,
           };
         }
         break;
+      }
 
       case "ch05_communication_third_person":
         narrativeText =
           deep?.section_4_friend_frames?.counseling_mismatch ??
-          "고민을 나눌 때 한 사람은 진심 어린 공감을, 다른 사람은 명확한 방향 제시를 해줍니다.";
+          (isKo
+            ? "고민을 나눌 때 한 사람은 진심 어린 공감을, 다른 사람은 명확한 방향 제시를 해줍니다."
+            : "When sharing what's on your mind, one of you tends to offer heartfelt empathy while the other gives clear direction.");
         if (hiddenFlow?.counseling_style_a) {
           v1Assets.counseling = pickViewerFirstPair(
             hiddenFlow.counseling_style_a,
@@ -596,7 +618,7 @@ function buildFriendChapterViewModels(
             category: thirdPerson?.category ?? "STABLE_GROUP",
             allowedClaim: thirdPerson?.allowedClaim ?? humanCopy.situationNote,
             forbiddenClaim: thirdPerson?.forbiddenClaim ?? humanCopy.recommendationNote,
-            headline: "제3자 다자간 모임 시 소외/비교 다이내믹",
+            headline: isKo ? "제3자 다자간 모임 시 소외/비교 다이내믹" : "Group-setting dynamics: exclusion & comparison",
             humanTitle: humanCopy.humanTitle,
             situationNote: humanCopy.situationNote,
             recommendationNote: humanCopy.recommendationNote,
@@ -607,15 +629,18 @@ function buildFriendChapterViewModels(
       case "ch06_conflict_repair":
         narrativeText =
           deep?.section_5_action?.together ??
-          "서운함이 생기거나 오해가 쌓일 때 빠르게 마음을 풀고 회복하는 체계적인 해독제가 존재합니다.";
+          (isKo
+            ? "서운함이 생기거나 오해가 쌓일 때 빠르게 마음을 풀고 회복하는 체계적인 해독제가 존재합니다."
+            : "When hurt feelings or misunderstandings build up, you have a reliable way of clearing the air and bouncing back quickly.");
         if (deEscalation) {
           v1Assets.deEscalation = deEscalation;
         }
         break;
 
       case "ch07_expectation_boundaries":
-        narrativeText =
-          "서로의 다른 기질을 인정하고, 이 관계에서 기대하지 말아야 할 경계를 정리하면 더욱 오래 편안합니다.";
+        narrativeText = isKo
+          ? "서로의 다른 기질을 인정하고, 이 관계에서 기대하지 말아야 할 경계를 정리하면 더욱 오래 편안합니다."
+          : "Recognizing your different temperaments and being clear about what not to expect from each other keeps this friendship comfortable for the long run.";
         if (breakupGuide) {
           v1Assets.warnings = pickViewerFirstPair(
             breakupGuide.trigger_warning_a,
@@ -628,7 +653,9 @@ function buildFriendChapterViewModels(
       case "ch08_distance_durability":
         narrativeText =
           deep?.section_4_friend_frames?.distance_resilience ??
-          "자주 보지 않아도 오랫동안 변함없는 신뢰를 유지할 수 있는 강한 내구성을 가진 관계입니다.";
+          (isKo
+            ? "자주 보지 않아도 오랫동안 변함없는 신뢰를 유지할 수 있는 강한 내구성을 가진 관계입니다."
+            : "This friendship has real staying power — the trust holds steady even through long stretches without seeing each other.");
         if (soulmate?.verdict) {
           v1Assets.soulmateVerdict = soulmate.verdict;
         }
@@ -636,13 +663,13 @@ function buildFriendChapterViewModels(
           const dist = coverage?.distanceProfile;
           const humanCopy = resolveDistanceHumanCopy(
             dist?.category ?? "LOW_FREQ_HIGH_TRUST",
-            dist?.label ?? "저빈도 고신뢰 우정",
+            dist?.label ?? (isKo ? "저빈도 고신뢰 우정" : "Low-frequency, high-trust friendship"),
             isKo,
           );
           coverageCards.distanceProfile = {
             category: dist?.category ?? "LOW_FREQ_HIGH_TRUST",
             label: dist?.label ?? humanCopy.verdictTitle,
-            headline: "거리감 & 장기 우정 내구성 프로필",
+            headline: isKo ? "거리감 & 장기 우정 내구성 프로필" : "Distance & long-term friendship durability profile",
             verdictTitle: humanCopy.verdictTitle,
             rhythmAdvice: humanCopy.rhythmAdvice,
             meetingFrequencyNeed: humanCopy.meetingFrequencyNeed,
@@ -651,8 +678,9 @@ function buildFriendChapterViewModels(
         break;
 
       case "ch09_action_playbook":
-        narrativeText =
-          "두 분의 우정을 더 가치 있고 오래도록 지켜나가기 위한 실전 맞춤 수칙입니다.";
+        narrativeText = isKo
+          ? "두 분의 우정을 더 가치 있고 오래도록 지켜나가기 위한 실전 맞춤 수칙입니다."
+          : "Practical, tailored guidelines to help keep this friendship valuable and lasting.";
         if (prescriptions) {
           v1Assets.prescriptions = prescriptions;
         }
