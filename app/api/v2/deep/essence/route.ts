@@ -9,6 +9,7 @@ import {
   readPersistedDeepEssenceAnalysis,
   writePersistedDeepEssenceAnalysis,
 } from "@/lib/report/reportAnalyses";
+import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 import type {
   CurrentSelfProfile,
   SurveyAnswersInput,
@@ -80,7 +81,17 @@ export async function POST(req: Request) {
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as { locale: string; slim_v1: SlimV1ReportResult };
-        if (parsed.locale === locale && parsed.slim_v1) {
+        // Server must not trust a stale/partial cached row just because it
+        // parses as JSON and has a locale match — `structured` is the field
+        // the client actually renders from (see StitchDeepEssenceView.tsx's
+        // identical isDeepEssenceStructuredReport gate), so re-validate it
+        // here too before returning the cache as-is. `null` is a legitimate
+        // stored value (prose-only fallback already occurred); anything else
+        // must pass the current schema, or we fall through to regenerate.
+        const structured = parsed.slim_v1?.structured;
+        const structuredIsTrustworthy =
+          structured === null || isDeepEssenceStructuredReport(structured);
+        if (parsed.locale === locale && parsed.slim_v1 && structuredIsTrustworthy) {
           return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 });
         }
       } catch (e) {
