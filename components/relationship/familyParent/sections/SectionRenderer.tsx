@@ -725,10 +725,14 @@ export function FamilyReportViewModelView({
       scores={[]}
     >
       {snapshot ? (() => {
-        const bond = snapshot.panel.narrative.topics.find(t => t.topic === "intimacy")! || snapshot.panel.narrative.topics[0];
-        const synergy = snapshot.panel.narrative.topics.find(t => t.topic === "stability")! || snapshot.panel.narrative.topics[1];
-        const risk = snapshot.panel.narrative.topics.find(t => t.topic === "conflict")! || snapshot.panel.narrative.topics[2];
-        
+        // Defensive: a cached/DB-persisted snapshot may have a missing
+        // `narrative` object or an incomplete `topics` array (older payload
+        // shape) — never assume all three topics are present.
+        const topics = snapshot.panel?.narrative?.topics ?? [];
+        const bond = topics.find(t => t.topic === "intimacy");
+        const synergy = topics.find(t => t.topic === "stability");
+        const risk = topics.find(t => t.topic === "conflict");
+
         const cards: OverviewCardData[] = [
           {
             key: "bond",
@@ -737,11 +741,11 @@ export function FamilyReportViewModelView({
             score: snapshot.scores.bondPct,
             tone: "good",
             inverted: false,
-            gradeLabel: bond.title,
-            oneLiner: bond.subtitle,
+            gradeLabel: bond?.title ?? t.scoreLabelBond,
+            oneLiner: bond?.subtitle ?? "",
             measures: pick(locale, "How deeply you understand and support each other emotionally", "서로의 마음을 얼마나 깊이 이해하고 지지하는지"),
-            why: bond.interpretation,
-            thresholdText: bond.axisNote,
+            why: bond?.interpretation ?? "",
+            thresholdText: bond?.axisNote,
           },
           {
             key: "synergy",
@@ -750,11 +754,11 @@ export function FamilyReportViewModelView({
             score: snapshot.scores.synergyPct,
             tone: "neutral",
             inverted: false,
-            gradeLabel: synergy.title,
-            oneLiner: synergy.subtitle,
+            gradeLabel: synergy?.title ?? t.scoreLabelSynergy,
+            oneLiner: synergy?.subtitle ?? "",
             measures: pick(locale, "How well your different strengths complement each other for growth", "서로 다른 강점이 시너지를 내어 어떻게 성장을 돕는지"),
-            why: synergy.interpretation,
-            thresholdText: synergy.axisNote,
+            why: synergy?.interpretation ?? "",
+            thresholdText: synergy?.axisNote,
           },
           {
             key: "risk",
@@ -763,11 +767,11 @@ export function FamilyReportViewModelView({
             score: snapshot.scores.riskPct,
             tone: "warn",
             inverted: true,
-            gradeLabel: risk.title,
-            oneLiner: risk.subtitle,
+            gradeLabel: risk?.title ?? t.scoreLabelFriction,
+            oneLiner: risk?.subtitle ?? "",
             measures: pick(locale, "The potential for friction or misunderstanding in daily life", "훈육이나 일상에서 오해나 마찰이 생길 가능성"),
-            why: risk.interpretation,
-            thresholdText: risk.axisNote,
+            why: risk?.interpretation ?? "",
+            thresholdText: risk?.axisNote,
           },
         ];
 
