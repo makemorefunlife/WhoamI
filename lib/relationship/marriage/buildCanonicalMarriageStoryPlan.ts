@@ -79,7 +79,7 @@ export function buildCanonicalMarriageStoryPlan(
         : "싸움이 시작될 때 두 사람의 감정은 어떤 수순으로 증폭되며, 관계의 긴장을 다스리는 쿨링다운과 SOS 대본은 무엇인가?",
       primaryOwnerMeanings: ["Conflict 4-Stage State Transition", "When We Need Each Other Most", "Emergency SOS Scripts", "Crisis Role", "Home De-Escalation"],
       secondaryRefMeanings: ["De-Escalation Protocol"],
-      summary: [os.conflict4Stage.pairSummary, os.emergencySosCombined.scriptAtoB?.firstLine ? `SOS 대본: "${os.emergencySosCombined.scriptAtoB.firstLine}"` : null].filter(Boolean).join(" "),
+      summary: [os.conflict4Stage.pairSummary, os.emergencySosCombined.scriptAtoB?.firstLine ? `${isEn ? "SOS script" : "SOS 대본"}: "${os.emergencySosCombined.scriptAtoB.firstLine}"` : null].filter(Boolean).join(" "),
     },
     {
       chapterId: "c6_family_parenting_career",

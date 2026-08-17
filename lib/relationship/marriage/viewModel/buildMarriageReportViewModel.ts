@@ -36,6 +36,7 @@ import type {
 } from "./marriageReportSectionTypes";
 import type { MarriageCompareRow } from "@/lib/relationship/marriage/marriageSajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
+import type { MarriedSajuDeepReport } from "@/lib/prompts/relationshipPremium/marriedSajuDeep";
 
 export type BuildMarriageReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -393,21 +394,44 @@ import type {
 function normalizeConflict4Stage(
   bundle?: import("../marriageCanonicalTypes").MarriageCanonicalBundle,
   names?: [string, string],
+  locale?: Locale,
 ): MarriageConflict4StageViewModel | undefined {
   if (!bundle?.conflict4Stage || !names) return undefined;
   const { stageA, stageB, pairSummary } = bundle.conflict4Stage;
+  const isEn = locale === "en-US";
 
-  const stageLabelMap: Record<string, string> = {
-    NORMAL: "평소",
-    TENSION_RISING: "긴장이 올라올 때",
-    OVERLOAD: "과부하가 올 때",
-    RECOVERY: "회복할 때",
-  };
+  const stageLabelMap: Record<string, string> = isEn
+    ? {
+        NORMAL: "Normally",
+        TENSION_RISING: "When tension rises",
+        OVERLOAD: "When overloaded",
+        RECOVERY: "When recovering",
+      }
+    : {
+        NORMAL: "평소",
+        TENSION_RISING: "긴장이 올라올 때",
+        OVERLOAD: "과부하가 올 때",
+        RECOVERY: "회복할 때",
+      };
+  const genericStageLabel = isEn ? "Emotional pacing" : "감정 수순 조율";
+
+  // Sentinel values from the bundle that mean "generic/duplicated — replace
+  // with a person-specific fallback" (see below). Bundle text is already
+  // locale-correct (verified: buildMarriageEconomicPartnership/etc. thread
+  // locale through), so these Korean sentinels only ever match a ko-KR
+  // bundle; an en-US bundle's narrative never equals them and always keeps
+  // its own (English) text.
+  const genericSentinels = [
+    "평온하며 대화와 협의에 개방적인 상태",
+    "문제를 즉시 짚고 넘어가야 직성이 풀리는 조급함",
+    "감정적 방어 회로가 완전히 작동하여 지친 상태",
+    "다시 정서적 안전감을 느끼며 마음을 염",
+  ];
 
   const mapPersonStages = (personName: string, rawStages: any[], isFirstPerson: boolean): MarriageConflictPersonViewModel => {
     const stages = rawStages.map((st, idx) => {
       const stageKey = typeof st === "string" ? st : st.stage || (idx === 0 ? "NORMAL" : idx === 1 ? "TENSION_RISING" : idx === 2 ? "OVERLOAD" : "RECOVERY");
-      const label = stageLabelMap[stageKey] || "감정 수순 조율";
+      const label = stageLabelMap[stageKey] || genericStageLabel;
 
       let narrative = "";
       if (typeof st === "object" && st !== null) {
@@ -415,29 +439,43 @@ function normalizeConflict4Stage(
       }
 
       // Check if narrative is duplicated or generic, apply person-specific human voice differentiation
-      if (
-        !narrative ||
-        narrative === "평온하며 대화와 협의에 개방적인 상태" ||
-        narrative === "문제를 즉시 짚고 넘어가야 직성이 풀리는 조급함" ||
-        narrative === "감정적 방어 회로가 완전히 작동하여 지친 상태" ||
-        narrative === "다시 정서적 안전감을 느끼며 마음을 염"
-      ) {
-        if (isFirstPerson) {
-          narrative = stageKey === "NORMAL"
-            ? `${personName}님은 평소 대화의 결론을 솔직하고 빠르게 내고 싶어 하는 편이에요.`
-            : stageKey === "TENSION_RISING"
-            ? `${personName}님은 답답함이 생기면 즉각 이유를 묻고 해결책을 원해서 말이 다소 단정적이 되죠.`
-            : stageKey === "OVERLOAD"
-            ? `${personName}님은 감정이 정점에 달하면 명확한 답을 재촉하거나 서운함을 직설적으로 터뜨리기 쉬워요.`
-            : `${personName}님은 과열된 감정이 조금 가라앉고 나면 사과와 대화를 주도적으로 다시 시도해요.`;
+      if (!narrative || genericSentinels.includes(narrative)) {
+        if (isEn) {
+          if (isFirstPerson) {
+            narrative = stageKey === "NORMAL"
+              ? `${personName} likes to get to a clear, honest conclusion quickly in conversation.`
+              : stageKey === "TENSION_RISING"
+              ? `When ${personName} feels stuck, they ask for reasons and want a solution right away, which can come across as blunt.`
+              : stageKey === "OVERLOAD"
+              ? `At peak emotion, ${personName} tends to push for a clear answer or say what's bothering them very directly.`
+              : `Once the heat cools down a little, ${personName} tends to take the lead on apologizing and re-opening the conversation.`;
+          } else {
+            narrative = stageKey === "NORMAL"
+              ? `${personName} tends to listen carefully to their partner's view and hold back before reacting.`
+              : stageKey === "TENSION_RISING"
+              ? `When conflict signs appear, ${personName} tends to go quiet and look for time alone to think.`
+              : stageKey === "OVERLOAD"
+              ? `When overwhelmed, ${personName} may stop talking altogether or close off for a while.`
+              : `Once ${personName} feels calm and safe enough, they gradually open up about what's really on their mind.`;
+          }
         } else {
-          narrative = stageKey === "NORMAL"
-            ? `${personName}님은 평소 파트너의 의견을 신중하게 들어주며 상황을 관망하는 조력자에 가까워요.`
-            : stageKey === "TENSION_RISING"
-            ? `${personName}님은 갈등 조짐이 보이면 말수를 줄이고 생각할 혼자만의 시간을 먼저 찾죠.`
-            : stageKey === "OVERLOAD"
-            ? `${personName}님은 감정이 과부하되면 말을 아예 멈추거나 마음의 문을 잠깐 닫아버려요.`
-            : `${personName}님은 충분히 차분해지고 안전하다는 느낌이 들면 그제야 속마음을 차근차근 털어놓습니다.`;
+          if (isFirstPerson) {
+            narrative = stageKey === "NORMAL"
+              ? `${personName}님은 평소 대화의 결론을 솔직하고 빠르게 내고 싶어 하는 편이에요.`
+              : stageKey === "TENSION_RISING"
+              ? `${personName}님은 답답함이 생기면 즉각 이유를 묻고 해결책을 원해서 말이 다소 단정적이 되죠.`
+              : stageKey === "OVERLOAD"
+              ? `${personName}님은 감정이 정점에 달하면 명확한 답을 재촉하거나 서운함을 직설적으로 터뜨리기 쉬워요.`
+              : `${personName}님은 과열된 감정이 조금 가라앉고 나면 사과와 대화를 주도적으로 다시 시도해요.`;
+          } else {
+            narrative = stageKey === "NORMAL"
+              ? `${personName}님은 평소 파트너의 의견을 신중하게 들어주며 상황을 관망하는 조력자에 가까워요.`
+              : stageKey === "TENSION_RISING"
+              ? `${personName}님은 갈등 조짐이 보이면 말수를 줄이고 생각할 혼자만의 시간을 먼저 찾죠.`
+              : stageKey === "OVERLOAD"
+              ? `${personName}님은 감정이 과부하되면 말을 아예 멈추거나 마음의 문을 잠깐 닫아버려요.`
+              : `${personName}님은 충분히 차분해지고 안전하다는 느낌이 들면 그제야 속마음을 차근차근 털어놓습니다.`;
+          }
         }
       }
 
@@ -462,36 +500,170 @@ function normalizeConflict4Stage(
   };
 }
 
+/**
+ * Household-operating fit has no existing canonical numeric authority (see
+ * docs/dev — Ch8 score integrity audit): plannerExecutor.alignmentType is a
+ * categorical classification, not a percentage, and no other canonical
+ * signal represents this concept as a number. Map the real enum to a
+ * locale-safe human label instead of exposing the raw value or a fabricated
+ * score. Kept in sync with the enum's own semantics in
+ * buildMarriageCanonicalEngine.ts's "4.2 Planner vs Executor" section.
+ */
+function operatingStatusLabelFromAlignment(
+  alignmentType: import("../marriageCanonicalTypes").PlannerExecutorResult["alignmentType"] | undefined,
+  isEn: boolean,
+): string {
+  switch (alignmentType) {
+    case "complementary":
+      return isEn ? "Complementary roles" : "역할이 자연스럽게 맞물리는 조합";
+    case "dual_planner_tension":
+      return isEn ? "Co-planners who need clear ownership" : "둘 다 기획형, 역할 분리가 필요한 조합";
+    case "dual_executor_gap":
+      return isEn ? "Co-executors who need a clear planner" : "둘 다 실행형, 방향을 잡는 사람이 필요한 조합";
+    case "flexible":
+      return isEn ? "Flexible, situational roles" : "상황에 따라 유연하게 나누는 조합";
+    default:
+      // Old-cache safety: canonicalBundle predates plannerExecutor, or the
+      // field is otherwise absent — neutral, non-fabricated status.
+      return isEn ? "Household roles still settling" : "가정 운영 역할이 아직 정리되는 중이에요";
+  }
+}
+
 function normalizeLifePartnershipVerdict(
   bundle?: import("../marriageCanonicalTypes").MarriageCanonicalBundle,
   names?: [string, string],
+  locale?: Locale,
 ): MarriagePartnershipVerdictViewModel | undefined {
   if (!bundle?.lifePartnershipVerdict || !names) return undefined;
   const verdict = bundle.lifePartnershipVerdict;
+  const isEn = locale === "en-US";
 
-  const safeOpFit = verdict.operatingPartnerFit ?? 85;
-  const safeEmoFit = verdict.emotionalPartnerFit ?? 80;
-  const safeGrowthFit = verdict.longTermGrowthFit ?? 82;
-  const safeSyncPct = verdict.lifeSyncPct ?? Math.round((safeOpFit + safeEmoFit + safeGrowthFit) / 3);
+  // `verdict` is `LifePartnershipVerdictResult` (marriageCanonicalTypes.ts):
+  // { lifeSyncPct, operationSyncPct, emotionalSyncPct, longTermSynergyPct,
+  //   oneLineVerdict, narrative }. lifeSyncPct/emotionalSyncPct/
+  // longTermSynergyPct are now real CE-computed percentages (see the Ch8
+  // score integrity repair — buildMarriageCanonicalEngine.ts maps them to
+  // masterScores.benefit/activation/(100-risk)). operationSyncPct itself
+  // stays an internal-only legacy constant (never proven to have a numeric
+  // authority) and is intentionally NOT read here — operatingStatusLabel
+  // below replaces it with a real, non-numeric canonical status instead.
+  const safeEmoFit = verdict.emotionalSyncPct ?? 80;
+  const safeGrowthFit = verdict.longTermSynergyPct ?? 82;
+  // This fallback path is not currently reachable — lifeSyncPct is always a
+  // real number from computeMarriageMasterScores.benefit — kept only as a
+  // last-resort guard, never treated as authoritative.
+  const safeSyncPct = verdict.lifeSyncPct ?? 82;
+  const operatingStatusLabel = operatingStatusLabelFromAlignment(
+    bundle.plannerExecutor?.alignmentType,
+    isEn,
+  );
 
   const cleanNarrative = (text?: string): string => {
     if (!text || text.includes("null")) return "";
     return text.trim();
   };
 
-  const safeStrength = cleanNarrative(verdict.greatestStrength) || `${names[0]}님과 ${names[1]}님은 일상 생활 템포와 주거 가치관이 잘 맞아떨어져 서로에게 단단한 안식이 되는 커플이에요.`;
-  const safeVulnerability = cleanNarrative(verdict.biggestVulnerability) || `싸울 때 감정이 식는 속도가 달라서 오해가 생길 수 있으니 타임아웃 규칙을 꼭 지켜주세요.`;
-  const safeOneLine = cleanNarrative(verdict.oneLineVerdict) || `${names[0]}님과 ${names[1]}님은 각자의 역할을 존중하면서 함께 오래 살아가기 꽤 좋은 팀이에요.`;
+  // Unlike the 3 fit percentages above, `greatestStrength`/`biggestVulnerability`
+  // have no corresponding split fields anywhere on LifePartnershipVerdictResult
+  // (only a single combined `narrative` string exists, and it isn't reliably
+  // strength-only content — using it here risks showing vulnerability-toned
+  // text under a "Greatest Strength" heading). There is no real per-field
+  // data being masked for these two, so they stay on the locale-aware
+  // generic fallback; only the 3 percentages above had a genuine mapping bug.
+  const safeStrength = isEn
+    ? `${names[0]} and ${names[1]}'s everyday pace and sense of home line up well, making each other feel steady and at ease.`
+    : `${names[0]}님과 ${names[1]}님은 일상 생활 템포와 주거 가치관이 잘 맞아떨어져 서로에게 단단한 안식이 되는 커플이에요.`;
+  const safeVulnerability = isEn
+    ? `Your emotions cool down at different speeds after a fight, which can cause misunderstandings. Make sure to keep your timeout agreement.`
+    : `싸울 때 감정이 식는 속도가 달라서 오해가 생길 수 있으니 타임아웃 규칙을 꼭 지켜주세요.`;
+  const safeOneLine =
+    cleanNarrative(verdict.oneLineVerdict) ||
+    (isEn
+      ? `${names[0]} and ${names[1]} respect each other's roles and make a pretty good long-term team.`
+      : `${names[0]}님과 ${names[1]}님은 각자의 역할을 존중하면서 함께 오래 살아가기 꽤 좋은 팀이에요.`);
 
   return {
     lifeSyncPct: safeSyncPct,
-    operatingPartnerFit: safeOpFit,
+    operatingStatusLabel,
     emotionalPartnerFit: safeEmoFit,
     longTermGrowthFit: safeGrowthFit,
     oneLineVerdict: safeOneLine,
     greatestStrength: safeStrength,
     biggestVulnerability: safeVulnerability,
   };
+}
+
+// ---- Deep-read canonical merge (married_saju_deep explain-only overlay) ----
+// Additive expert-synthesis enrichment for the canonical 9-chapter report —
+// see docs/dev/decisions/028 (LLM must not mutate canonical_projections/CFO/
+// role/compare/scoring) and the Deep Read Content Ownership Audit. Every
+// normalizer below returns undefined (never a fabricated fallback) when the
+// overlay is missing, partial, or malformed — old cached reports without
+// married_saju_deep must render exactly like today.
+
+function normalizeChapter1ExpertVoice(
+  overlay: MarriedSajuDeepReport | undefined,
+  names: [string, string],
+): import("./marriageUiContracts").MarriageExpertVoiceViewModel | undefined {
+  const nature = overlay?.section_2_nature;
+  const voiceA = nature?.a_nature?.first_person_voice?.trim();
+  const voiceB = nature?.b_nature?.first_person_voice?.trim();
+  if (!voiceA && !voiceB) return undefined;
+  return {
+    personA: voiceA ? { personName: names[0], voice: voiceA } : undefined,
+    personB: voiceB ? { personName: names[1], voice: voiceB } : undefined,
+  };
+}
+
+function normalizeChapter3RoleFitInsight(
+  overlay: MarriedSajuDeepReport | undefined,
+): string | undefined {
+  const matchNote = overlay?.section_4_household_frames?.role_balance_signal?.match_note?.trim();
+  return matchNote || undefined;
+}
+
+function normalizeChapter8TogetherInsight(
+  overlay: MarriedSajuDeepReport | undefined,
+): import("./marriageUiContracts").MarriageTogetherInsightViewModel | undefined {
+  const text = overlay?.section_5_action?.together?.trim();
+  if (!text) return undefined;
+  const starter = overlay?.section_5_action?.together_starter?.trim();
+  return { text, starter: starter || undefined };
+}
+
+function normalizeChapter9PersonalizedAdvice(
+  overlay: MarriedSajuDeepReport | undefined,
+): import("./marriageUiContracts").MarriagePersonalizedAdviceViewModel | undefined {
+  const action = overlay?.section_5_action;
+
+  const toTip = (
+    raw: unknown,
+  ): import("./marriageUiContracts").MarriagePersonalizedAdviceTip | null => {
+    if (!raw || typeof raw !== "object") return null;
+    const o = raw as Record<string, unknown>;
+    const actionTitle = typeof o.action_title === "string" ? o.action_title.trim() : "";
+    const reason = typeof o.saju_reason === "string" ? o.saju_reason.trim() : "";
+    const speechTip = typeof o.real_speech_tip === "string" ? o.real_speech_tip.trim() : "";
+    // A tip missing any of its three core fields is unusable — drop it
+    // rather than rendering a partial/empty card.
+    if (!actionTitle || !reason || !speechTip) return null;
+    const example = typeof o.real_life_example === "string" ? o.real_life_example.trim() : "";
+    return { actionTitle, reason, speechTip, example: example || undefined };
+  };
+
+  const forPersonA = Array.isArray(action?.advice_for_a)
+    ? action.advice_for_a
+        .map(toTip)
+        .filter((t): t is import("./marriageUiContracts").MarriagePersonalizedAdviceTip => t !== null)
+    : [];
+  const forPersonB = Array.isArray(action?.advice_for_b)
+    ? action.advice_for_b
+        .map(toTip)
+        .filter((t): t is import("./marriageUiContracts").MarriagePersonalizedAdviceTip => t !== null)
+    : [];
+
+  if (forPersonA.length === 0 && forPersonB.length === 0) return undefined;
+  return { forPersonA, forPersonB };
 }
 
 export function buildMarriageReportViewModel(
@@ -527,8 +699,26 @@ export function buildMarriageReportViewModel(
   const canonicalStoryPlan = report.canonical_projections?.marriage_canonical_story_plan;
   const canonicalBundle = report.canonical_projections?.marriage_canonical_bundle;
 
-  const conflict4StageView = normalizeConflict4Stage(canonicalBundle, names);
-  const lifePartnershipVerdictView = normalizeLifePartnershipVerdict(canonicalBundle, names);
+  // `names` above is VIEWER-relative ([myName, partnerName], swapped per
+  // viewerIsReportA by the caller). canonicalStoryPlan-fed data
+  // (conflict4Stage, economicPartnership, lifePartnershipVerdict, etc. — and
+  // the deep_read merge) is keyed by CANONICAL report_id_a/report_id_b,
+  // which does not move with the viewer. `canonicalNames` is the fixed
+  // [personA, personB] pairing all canonically-keyed normalizers/cards must
+  // use so labels never mismatch when viewerIsReportA is false.
+  const canonicalNames: [string, string] = [
+    report.household?.section_dna?.person_a?.nickname ?? names[0],
+    report.household?.section_dna?.person_b?.nickname ?? names[1],
+  ];
+
+  const conflict4StageView = normalizeConflict4Stage(canonicalBundle, canonicalNames, locale);
+  const lifePartnershipVerdictView = normalizeLifePartnershipVerdict(canonicalBundle, canonicalNames, locale);
+
+  const deepReadOverlay = report.meta?.married_saju_deep;
+  const chapter1ExpertVoice = normalizeChapter1ExpertVoice(deepReadOverlay, canonicalNames);
+  const chapter3RoleFitInsight = normalizeChapter3RoleFitInsight(deepReadOverlay);
+  const chapter8TogetherInsight = normalizeChapter8TogetherInsight(deepReadOverlay);
+  const chapter9PersonalizedAdvice = normalizeChapter9PersonalizedAdvice(deepReadOverlay);
 
   return {
     kind: "cohabitation",
@@ -537,8 +727,13 @@ export function buildMarriageReportViewModel(
     sections,
     canonicalStoryPlan,
     canonicalBundle,
+    canonicalNames,
     conflict4StageView,
     lifePartnershipVerdictView,
+    chapter1ExpertVoice,
+    chapter3RoleFitInsight,
+    chapter8TogetherInsight,
+    chapter9PersonalizedAdvice,
     raw: { report },
   };
 }

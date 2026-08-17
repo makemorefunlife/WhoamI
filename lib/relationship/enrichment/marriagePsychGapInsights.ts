@@ -2,7 +2,7 @@ import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
 import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/marriage/marriageCopy";
-import { topicParticle } from "@/lib/relationship/koreanParticles";
+import { objectParticle, subjectParticle, topicParticle } from "@/lib/relationship/koreanParticles";
 
 /**
  * 부부·동거 "8개 항목" 배치 — 11축 psychMaster 전용 4개(5,6,7,8).
@@ -84,8 +84,8 @@ export function buildCareerBalanceLine(params: {
 
   return pick(
     locale,
-    ` ${driveName} tends to be the one who lights up chasing recognition at work. When that season hits hard, a temporary swap — ${otherName} picking up more of the home load for a while — isn't unfair, it's just timing. The swap works both ways once the tide turns.`,
-    ` ${topicParticle(driveName)} 일에서 인정받는 순간에 유독 크게 반응하는 편이에요. 그 시기가 몰아칠 땐 ${otherName}이(가) 잠시 집안일을 더 맡아 주는 게 불공평한 게 아니라 타이밍의 문제예요 — 흐름이 바뀌면 반대로 돌아가면 됩니다.`,
+    ` ${driveName} tends to be the one who lights up chasing recognition at work. When that season hits hard, it isn't unfair for ${otherName} to temporarily pick up more of the home load; it's just timing. The swap works both ways once the tide turns.`,
+    ` ${topicParticle(driveName)} 일에서 인정받는 순간에 유독 크게 반응하는 편이에요. 그 시기가 몰아칠 땐 ${subjectParticle(otherName)} 잠시 집안일을 더 맡아 주는 게 불공평한 게 아니라 타이밍의 문제예요 — 흐름이 바뀌면 반대로 돌아가면 됩니다.`,
   );
 }
 
@@ -115,7 +115,7 @@ export function buildHouseholdPmLine(params: {
   return pick(
     locale,
     ` For holidays, trips, and the big household occasions, ${pmName} is the natural project manager — the one who thinks three steps ahead. Officially handing over that title (instead of ${otherName} just going along) means the planning load stops falling on ${pmName} by default.`,
-    ` 명절·여행·집안 대소사 같은 큰일 앞에서는 ${topicParticle(pmName)} 세 걸음 앞서 생각하는 자연스러운 총괄 매니저예요. ${otherName}이(가) 그냥 따라가기만 하지 말고 이 역할을 공식적으로 넘겨받으면, 계획 부담이 ${pmName}에게 당연하게 쏠리지 않게 돼요.`,
+    ` 명절·여행·집안 대소사 같은 큰일 앞에서는 ${topicParticle(pmName)} 세 걸음 앞서 생각하는 자연스러운 총괄 매니저예요. ${subjectParticle(otherName)} 그냥 따라가기만 하지 말고 이 역할을 공식적으로 넘겨받으면, 계획 부담이 ${pmName}에게 당연하게 쏠리지 않게 돼요.`,
   );
 }
 
@@ -200,6 +200,6 @@ export function buildLongTermSynergyLine(params: {
   return pick(
     locale,
     ` The longer you live together, the more this pairing compounds: ${highName} brings ${quality.high}, and ${lowName} brings ${quality.low}. Neither on its own is the full picture — together, over time, it becomes one of this household's real strengths.`,
-    ` 같이 사는 시간이 쌓일수록 이 조합은 더 힘을 발휘해요 — ${highName}은(는) ${quality.high}을(를), ${lowName}은(는) ${quality.low}을(를) 가져와요. 둘 중 하나만으로는 부족했을 부분이, 시간이 지날수록 이 집만의 진짜 강점이 됩니다.`,
+    ` 같이 사는 시간이 쌓일수록 이 조합은 더 힘을 발휘해요 — ${topicParticle(highName)} ${objectParticle(quality.high)}, ${topicParticle(lowName)} ${objectParticle(quality.low)} 가져와요. 둘 중 하나만으로는 부족했을 부분이, 시간이 지날수록 이 집만의 진짜 강점이 됩니다.`,
   );
 }

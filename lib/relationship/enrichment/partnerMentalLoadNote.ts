@@ -4,6 +4,7 @@
  */
 import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import { subjectParticle, topicParticle } from "@/lib/relationship/koreanParticles";
 
 export function buildPartnerMentalLoadNote(params: {
   nicknameA: string;
@@ -40,7 +41,7 @@ export function buildPartnerMentalLoadNote(params: {
   if (heavier === cfo) {
     return en
       ? `${heavier} already carries more structure/practicality energy and money ops. Protect them from also owning every reminder — ${lighter} can own follow-ups and weekly resets.`
-      : `${heavier}은(는) 구조·실무 에너지와 돈 운영을 이미 더 많이 짚고 있어요. 알림·리마인드까지 혼자 맡지 않도록, ${lighter}이(가) 후속 확인과 주간 리셋을 맡아 주세요.`;
+      : `${topicParticle(heavier)} 구조·실무 에너지와 돈 운영을 이미 더 많이 짚고 있어요. 알림·리마인드까지 혼자 맡지 않도록, ${subjectParticle(lighter)} 후속 확인과 주간 리셋을 맡아 주세요.`;
   }
 
   return en

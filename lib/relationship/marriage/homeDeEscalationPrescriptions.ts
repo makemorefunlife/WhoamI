@@ -2,6 +2,7 @@ import type { TenGodCounts } from "./marriageTenGodAnalysis";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import type { Locale } from "@/lib/i18n/locale";
+import { subjectParticle, topicParticle, withParticle } from "@/lib/relationship/koreanParticles";
 
 export type HomeDeEscalationCard = {
   hashtag: string;
@@ -44,7 +45,7 @@ const HOME_DE_ESCALATION_PRESCRIPTIONS: PrescriptionDef[] = [
       pick(
         locale,
         `${upset} can't have a rational conversation once they feel their sense of worth or pride was hurt. The moment fault gets assigned, they read it as "being looked down on" and raise their guard.`,
-        `${upset}는 자신의 존재 가치나 자존심에 상처를 입었다고 느끼면 이성적인 대화가 불가능해집니다. 잘잘못을 따지는 순간 '날 무시한다'고 받아들여 방어벽을 높입니다.`,
+        `${topicParticle(upset)} 자신의 존재 가치나 자존심에 상처를 입었다고 느끼면 이성적인 대화가 불가능해집니다. 잘잘못을 따지는 순간 '날 무시한다'고 받아들여 방어벽을 높입니다.`,
       ),
     avoid_actions: (partner, upset, locale) =>
       pick(
@@ -68,19 +69,19 @@ const HOME_DE_ESCALATION_PRESCRIPTIONS: PrescriptionDef[] = [
       pick(
         locale,
         `${upset} vents anger right away. It doesn't linger long, but the longer a heavy, serious mood drags on, the more exhausted they get.`,
-        `${upset}는 화가 올라오면 바로 표출하는 타입입니다. 뒤끝은 길지 않지만, 무겁고 심각한 분위기가 길어질수록 더 지쳐버립니다.`,
+        `${topicParticle(upset)} 화가 올라오면 바로 표출하는 타입입니다. 뒤끝은 길지 않지만, 무겁고 심각한 분위기가 길어질수록 더 지쳐버립니다.`,
       ),
     avoid_actions: (partner, upset, locale) =>
       pick(
         locale,
         `【${partner} → ${upset}】 Days of treating them like they're invisible, sitting them down for an interrogation-style hearing, or pushing with "still mad?" the moment ${upset} tries to lighten up.`,
-        `【${partner} → ${upset}】 며칠간 투명인간 취급·냉전, 정색하고 청문회처럼 앉아 조사하기, ${upset}가 기분 풀려 하면 "아직 화났어?"라며 무겁게 몰아붙이기.`,
+        `【${partner} → ${upset}】 며칠간 투명인간 취급·냉전, 정색하고 청문회처럼 앉아 조사하기, ${subjectParticle(upset)} 기분 풀려 하면 "아직 화났어?"라며 무겁게 몰아붙이기.`,
       ),
     solution_script: (partner, upset, locale) =>
       pick(
         locale,
         `【${partner} → ${upset}】 "Want to take a quick drive, we're both feeling down?", "I ordered something good, let's eat and shake it off together." — Changing the mood comes before a serious apology. Make room for ${upset} to laugh first, then say the important part briefly.`,
-        `【${partner} → ${upset}】 "우리 둘 다 꿀꿀한데 잠깐 드라이브 갈까?", "맛있는 거 시켰는데 같이 먹으면서 풀자." — 진지한 사과보다 분위기 전환이 먼저입니다. ${upset}가 웃을 틈을 만든 뒤 핵심을 짧게 말하세요.`,
+        `【${partner} → ${upset}】 "우리 둘 다 꿀꿀한데 잠깐 드라이브 갈까?", "맛있는 거 시켰는데 같이 먹으면서 풀자." — 진지한 사과보다 분위기 전환이 먼저입니다. ${subjectParticle(upset)} 웃을 틈을 만든 뒤 핵심을 짧게 말하세요.`,
       ),
   },
   {
@@ -92,7 +93,7 @@ const HOME_DE_ESCALATION_PRESCRIPTIONS: PrescriptionDef[] = [
       pick(
         locale,
         `${upset}'s brain overloads right after conflict. Demanding a conversation immediately can make them explode or shut the door completely. They need time alone to sort things out.`,
-        `${upset}는 갈등 직후 뇌 과부하 상태가 됩니다. 즉시 대화를 요구하면 폭발하거나 완전히 문을 닫아버립니다. 혼자 정리할 시간이 필요합니다.`,
+        `${topicParticle(upset)} 갈등 직후 뇌 과부하 상태가 됩니다. 즉시 대화를 요구하면 폭발하거나 완전히 문을 닫아버립니다. 혼자 정리할 시간이 필요합니다.`,
       ),
     avoid_actions: (partner, upset, locale) =>
       pick(
@@ -116,13 +117,13 @@ const HOME_DE_ESCALATION_PRESCRIPTIONS: PrescriptionDef[] = [
       pick(
         locale,
         `${upset} finds a tearful plea or a plain "sorry" without substance insincere. Logic, facts, and a rule for future behavior are what open their heart.`,
-        `${upset}는 눈물 섞인 호소나 "그냥 미안해" 같은 감정만 있는 사과를 진정성 없다고 느낍니다. 논리·사실·앞으로의 행동 규칙이 있어야 마음이 열립니다.`,
+        `${topicParticle(upset)} 눈물 섞인 호소나 "그냥 미안해" 같은 감정만 있는 사과를 진정성 없다고 느낍니다. 논리·사실·앞으로의 행동 규칙이 있어야 마음이 열립니다.`,
       ),
     avoid_actions: (partner, upset, locale) =>
       pick(
         locale,
         `【${partner} → ${upset}】 Pleading in tears, a conditional apology like "sorry if you were upset," or repeating emotion without the concrete solution ${upset} is asking for.`,
-        `【${partner} → ${upset}】 울며 매달리기, "기분 나빴다면 미안" 같은 조건부 사과, ${upset}가 요구하는 구체 해법 없이 감정만 반복하기.`,
+        `【${partner} → ${upset}】 울며 매달리기, "기분 나빴다면 미안" 같은 조건부 사과, ${subjectParticle(upset)} 요구하는 구체 해법 없이 감정만 반복하기.`,
       ),
     solution_script: (partner, upset, locale) =>
       pick(
@@ -140,19 +141,19 @@ const HOME_DE_ESCALATION_PRESCRIPTIONS: PrescriptionDef[] = [
       pick(
         locale,
         `${upset} is disappointed by apologies that are just words. Real losses — time, money, labor — need to be made up for before their heart opens.`,
-        `${upset}는 말로만 하는 사과에는 실망합니다. 시간·돈·노동 같은 실질적 손해가 메워져야 마음이 열립니다.`,
+        `${topicParticle(upset)} 말로만 하는 사과에는 실망합니다. 시간·돈·노동 같은 실질적 손해가 메워져야 마음이 열립니다.`,
       ),
     avoid_actions: (partner, upset, locale) =>
       pick(
         locale,
         `【${partner} → ${upset}】 Repeating "sorry" in words only, brushing off the loss ${upset} took (time, money, childcare), or trying to smooth the mood without any compensation or concession.`,
-        `【${partner} → ${upset}】 말로만 "미안해" 반복하기, ${upset}가 입은 손해(시간·돈·육아)를 가볍게 넘기기, 보상·양보 없이 분위기만 풀려 하기.`,
+        `【${partner} → ${upset}】 말로만 "미안해" 반복하기, ${subjectParticle(upset)} 입은 손해(시간·돈·육아)를 가볍게 넘기기, 보상·양보 없이 분위기만 풀려 하기.`,
       ),
     solution_script: (partner, upset, locale) =>
       pick(
         locale,
         `【${partner} → ${upset}】 "I'll take care of all the childcare and chores this weekend. I booked the staycation you wanted to rest at." Or offer the real compensation ${upset} wanted, first. Action comes before words.`,
-        `【${partner} → ${upset}】 "이번 주말 육아·살림은 내가 다 맡을게. 네가 쉬고 싶던 호캉스 예약해 뒀어." 또는 ${upset}가 원하던 실질적 보상을 먼저 제시하세요. 말보다 행동이 먼저입니다.`,
+        `【${partner} → ${upset}】 "이번 주말 육아·살림은 내가 다 맡을게. 네가 쉬고 싶던 호캉스 예약해 뒀어." 또는 ${subjectParticle(upset)} 원하던 실질적 보상을 먼저 제시하세요. 말보다 행동이 먼저입니다.`,
       ),
   },
 ];
@@ -249,8 +250,8 @@ export function buildHomeDeEscalationPair(params: {
         locale,
         `${params.nicknameA} and ${params.nicknameB} share the same de-escalation type (${defA.archetype_label(locale)}). ` +
           `You're both prone to blowing up at similar points, so clashing "the same way" during a fight doubles the length of the argument. ` +
-          `Have one of you declare a timeout first — "let's rest now and pick this up in 30 minutes" — and take turns using the prescription below.`,
-        `${params.nicknameA}와 ${params.nicknameB}는 같은 화 풀림 유형(${defA.archetype_label(locale)})입니다. ` +
+          `Have one of you declare a timeout first, saying something like "let's rest now and pick this up in 30 minutes," then take turns using the prescription below.`,
+        `${withParticle(params.nicknameA)} ${topicParticle(params.nicknameB)} 같은 화 풀림 유형(${defA.archetype_label(locale)})입니다. ` +
           `둘 다 비슷한 지점에서 터지기 쉬워, 싸울 때 '서로 같은 방식'으로 맞부딪히면 대화가 두 배로 길어집니다. ` +
           `한 명이 먼저 "지금은 쉬고 30분 뒤 다시"라고 타임아웃을 선언하고, 아래 처방을 번갈아 써 보세요.`,
       )
@@ -343,15 +344,15 @@ export function resolveColdWarProtocol(params: {
       ? sanitizeHomeLifeText(
           pick(
             locale,
-            `${params.nicknameA} and ${params.nicknameB} are evenly matched in stubbornness, so a cold war can drag on for either of you. Agree in advance: max 24 hours, or 2 days in separate rooms at the very most — no silent treatment beyond that.`,
-            `${params.nicknameA}와 ${params.nicknameB} 둘 다 고집이 팽팽해서, 누구든 냉전이 길어질 수 있어요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지 — 그 이상 침묵은 안 됩니다.`,
+            `${params.nicknameA} and ${params.nicknameB} are evenly matched in stubbornness, so a cold war can drag on for either of you. Agree in advance on a cap: max 24 hours, or 2 days in separate rooms at the very most.`,
+            `${withParticle(params.nicknameA)} ${params.nicknameB} 둘 다 고집이 팽팽해서, 누구든 냉전이 길어질 수 있어요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지는 넘기지 않는 게 좋아요.`,
           ),
         )
       : sanitizeHomeLifeText(
           pick(
             locale,
-            `${selfA > selfB ? params.nicknameA : params.nicknameB} tends to hold their ground longer once upset, so a cold war can stretch out on their side. Agree in advance: max 24 hours, or 2 days in separate rooms at the very most — no silent treatment beyond that.`,
-            `${selfA > selfB ? params.nicknameA : params.nicknameB} 쪽이 한번 삐치면 더 오래 버티는 편이라 냉전이 길어지기 쉬워요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지 — 그 이상 침묵은 안 됩니다.`,
+            `${selfA > selfB ? params.nicknameA : params.nicknameB} tends to hold their ground longer once upset, so a cold war can stretch out on their side. Agree in advance on a cap: max 24 hours, or 2 days in separate rooms at the very most.`,
+            `${selfA > selfB ? params.nicknameA : params.nicknameB} 쪽이 한번 삐치면 더 오래 버티는 편이라 냉전이 길어지기 쉬워요. 미리 정해두세요 — 최대 24시간, 길어도 각방 2일까지는 넘기지 않는 게 좋아요.`,
           ),
         );
 

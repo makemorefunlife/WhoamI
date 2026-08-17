@@ -9,6 +9,7 @@ import { resolveHealingDirection } from "@/lib/saju/marriageAnalysis";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import { pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import { subjectParticle, topicParticle } from "@/lib/relationship/koreanParticles";
 
 export type OriginStorySection = {
   why_us: string;
@@ -60,7 +61,7 @@ function nurturerLine(towardName: string, locale: Locale): string {
   return pick(
     locale,
     `Being the one ${towardName} leans on shows you how much strength you actually have — your self-worth grows sturdier through giving, not just receiving.`,
-    `${towardName}이(가) 기댈 수 있는 사람이 되어 주면서, 스스로에게 이런 힘이 있었는지 새삼 확인해요 — 받을 때보다 줄 때 오히려 자존감이 단단해지는 변화예요.`,
+    `${subjectParticle(towardName)} 기댈 수 있는 사람이 되어 주면서, 스스로에게 이런 힘이 있었는지 새삼 확인해요 — 받을 때보다 줄 때 오히려 자존감이 단단해지는 변화예요.`,
   );
 }
 
@@ -68,7 +69,7 @@ function mutualStimulationLine(partnerName: string, locale: Locale): string {
   return pick(
     locale,
     `${partnerName} doesn't smooth you out quietly — you push and pull each other, and that friction is exactly what keeps you both growing instead of settling.`,
-    `${partnerName}은(는) 조용히 다듬어주는 쪽은 아니에요 — 서로를 밀고 당기며 자극하고, 그 마찰 덕분에 안주하지 않고 계속 성장하는 관계예요.`,
+    `${topicParticle(partnerName)} 조용히 다듬어주는 쪽은 아니에요 — 서로를 밀고 당기며 자극하고, 그 마찰 덕분에 안주하지 않고 계속 성장하는 관계예요.`,
   );
 }
 

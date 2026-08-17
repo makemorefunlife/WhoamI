@@ -6,6 +6,7 @@ import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import { subjectParticle, topicParticle } from "@/lib/relationship/koreanParticles";
 
 type WealthOfficerPower = CohabitationSajuSignals["wealth_officer_power"];
 
@@ -167,10 +168,10 @@ export function buildHouseholdCfoReason(
     locale,
     winnerIsHighDominance
       ? `${winnerNick} is the sole CFO leader of the household. Budget, bank accounts, and big-spending decisions should all go to this one person, or the household gets shaky. ${loserNick} should give input but leave the final call to them.`
-      : `${winnerNick} has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A "dual CFO" setup is banned — only one person should hold the reins.`,
+      : `${winnerNick} has a firmer practical sense and sense of responsibility, so they're designated the household's financial leader. A "dual CFO" setup tends to work less well — it's more stable when one person holds the reins.`,
     winnerIsHighDominance
-      ? `${winnerNick}이(가) 집안 CFO 단독 리더입니다. 예산·통장·큰 지출 결정권은 이 사람 한 명에게 몰아야 집이 안 흔들립니다. ${loserNick}은(는) 의견은 내되 최종 결정은 맡기세요.`
-      : `${winnerNick}이(가) 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 금지 — 한 명만 쥐세요.`,
+      ? `${subjectParticle(winnerNick)} 집안 CFO 단독 리더입니다. 예산·통장·큰 지출 결정권은 이 사람 한 명에게 몰아야 집이 안 흔들립니다. ${topicParticle(loserNick)} 의견은 내되 최종 결정은 맡기세요.`
+      : `${subjectParticle(winnerNick)} 현실 감각·책임감이 더 단단해 집안 재정 리더로 지정됩니다. '듀얼 CFO'는 지양하는 편이 좋아요 — 한 명이 주도권을 쥐는 편이 안정적이에요.`,
   );
 }
 
@@ -401,7 +402,7 @@ export function resolveParentingRoleNote(
     if (score >= AXIS_NOTE_HIGH) {
       return pick(
         locale,
-        "This person naturally settles into the \"Bad Cop\" role at home — setting rules and holding the line — and the 11-axis survey backs it up too: self-control runs high.",
+        "This person naturally settles into the \"Bad Cop\" role at home, setting rules and holding the line. The 11-axis survey backs it up too: self-control runs high.",
         "이 사람은 집에서 자연스럽게 'Bad Cop' 역할을 맡게 돼요 — 규칙을 세우고 원칙을 지키는 쪽. 11축 설문에서도 확인돼요 — 자기통제 축이 높은 편이에요.",
       );
     }
@@ -420,7 +421,7 @@ export function resolveParentingRoleNote(
   if (score >= AXIS_NOTE_HIGH) {
     return pick(
       locale,
-      "This person naturally settles into the \"Good Cop\" role at home — reading the child's hurt feelings and softening them — and the 11-axis survey backs it up too: relational empathy runs high.",
+      "This person naturally settles into the \"Good Cop\" role at home, reading the child's hurt feelings and softening them. The 11-axis survey backs it up too: relational empathy runs high.",
       "이 사람은 집에서 자연스럽게 'Good Cop' 역할을 맡게 돼요 — 아이의 서운한 마음을 읽고 녹여주는 쪽. 11축 설문에서도 확인돼요 — 관계공감 축이 높은 편이에요.",
     );
   }

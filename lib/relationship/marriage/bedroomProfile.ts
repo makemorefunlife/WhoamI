@@ -11,6 +11,7 @@ import type { TenGodCounts } from "./marriageTenGodAnalysis";
 import { profileTenGods } from "./marriageTenGodAnalysis";
 import { hasGuimunOnDayHourPalaces } from "@/lib/saju/workPairRiskSignals";
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
+import { topicParticle } from "@/lib/relationship/koreanParticles";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
@@ -256,7 +257,7 @@ function buildFrequencyOneLiner(
         `${marathonNick} is the marathon type who carries the rhythm all the way through, while ${sprintNick} is the sprint type who burns bright in one intense burst. ` +
           `If the marathon type doesn't say "short tonight, long tomorrow" first, the sprint type burns out — and if the sprint type rushes, the marathon type gets bored. ` +
           `Decide the pace and length out loud every time — silence is the most dangerous part.`,
-        `${marathonNick}는 끝까지 리듬을 끌고 가는 마라톤형, ${sprintNick}는 한 번에 몰입해 불태우는 단거리형입니다. ` +
+        `${topicParticle(marathonNick)} 끝까지 리듬을 끌고 가는 마라톤형, ${topicParticle(sprintNick)} 한 번에 몰입해 불태우는 단거리형입니다. ` +
           `마라톤형이 '오늘은 짧게, 내일은 길게'를 먼저 말하지 않으면 단거리형은 탈진하고, 단거리형이 서두르면 마라톤형은 지루함을 느낍니다. ` +
           `속도와 길이는 매번 입 밖으로 정하세요 — 침묵이 가장 위험합니다.`,
       ),
@@ -274,7 +275,7 @@ function buildFrequencyOneLiner(
         `${boldNick} wants fantasy and experimentation, while ${classicNick} wants a familiar mood and stability. ` +
           `Pushing novelty makes the classic type anxious, and insisting on tradition only bores the fantasy type fast. ` +
           `Unless you pin down intensity, novelty, and off-limits topics in a weekly "bedroom meeting," the temperature gap widens every night.`,
-        `${boldNick}는 판타지와 실험을 원하고, ${classicNick}는 익숙한 무드와 안정을 원합니다. ` +
+        `${topicParticle(boldNick)} 판타지와 실험을 원하고, ${topicParticle(classicNick)} 익숙한 무드와 안정을 원합니다. ` +
           `새로움을 밀어붙이면 클래식파는 불안해지고, 정석만 고집하면 판타지파는 금방 싫증을 냅니다. ` +
           `수위·새로움·금기선을 주 1회 '침실 회의'로 박아 두지 않으면 밤마다 온도차가 벌어집니다.`,
       ),
@@ -292,7 +293,7 @@ function buildFrequencyOneLiner(
         `${powerNick} leads straight-on, while ${sweetNick} reads the partner's reaction first. ` +
           `If the leader only pushes for speed, the guide starts feeling like "am I just a tool?" — and if only the guide accommodates, the leader gets frustrated. ` +
           `Deciding who leads and who checks in tonight takes just 10 seconds before things start.`,
-        `${powerNick}는 직진형 리드, ${sweetNick}는 상대 반응을 먼저 읽는 배려형입니다. ` +
+        `${topicParticle(powerNick)} 직진형 리드, ${topicParticle(sweetNick)} 상대 반응을 먼저 읽는 배려형입니다. ` +
           `리더가 속도만 밀면 가이드는 '나는 도구인가?' 싶어지고, 가이드만 맞추면 리더는 답답해집니다. ` +
           `오늘은 누가 리드하고 누가 체크인할지 — 밤 시작 전 10초면 충분합니다.`,
       ),

@@ -188,7 +188,26 @@ export type MarriageReportViewModel = {
   sections: MarriageReportSection[];
   canonicalStoryPlan?: import("../canonicalMarriageStoryPlanTypes").CanonicalMarriageStoryPlan;
   canonicalBundle?: import("../marriageCanonicalTypes").MarriageCanonicalBundle;
+  /**
+   * [personAName, personBName] in CANONICAL (report_id_a/b) order — NOT
+   * viewer-relative like `opening.names`. Canonically-keyed data
+   * (conflict4Stage, economicPartnership, and this batch's deep_read merge)
+   * should be labeled with these, not `opening.names`, or the label
+   * mislabels the data whenever the viewer is report B (see Ch1/Ch9
+   * enrichment blocks for the pattern).
+   */
+  canonicalNames: [string, string];
   conflict4StageView?: import("./marriageUiContracts").MarriageConflict4StageViewModel;
   lifePartnershipVerdictView?: import("./marriageUiContracts").MarriagePartnershipVerdictViewModel;
+  /**
+   * married_saju_deep explain-only overlay, folded into the canonical
+   * 9-chapter presentation (see docs/dev/decisions/028 — LLM must not
+   * mutate canonical_projections/CFO/role/compare/scoring; these are
+   * additive expert-synthesis enrichments only, never a second authority).
+   */
+  chapter1ExpertVoice?: import("./marriageUiContracts").MarriageExpertVoiceViewModel;
+  chapter3RoleFitInsight?: string;
+  chapter8TogetherInsight?: import("./marriageUiContracts").MarriageTogetherInsightViewModel;
+  chapter9PersonalizedAdvice?: import("./marriageUiContracts").MarriagePersonalizedAdviceViewModel;
   raw: { report: MarriageReportBody };
 };

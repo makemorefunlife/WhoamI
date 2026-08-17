@@ -9,6 +9,7 @@ import type { TenGodCounts } from "./marriageTenGodAnalysis";
 import { profileTenGods } from "./marriageTenGodAnalysis";
 import type { FamilyBoundaryProfile } from "./marriageTenGodAnalysis";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import { topicParticle } from "@/lib/relationship/koreanParticles";
 
 const SAJU_JARGON_RE =
   /일간|일지|월간|월지|년주|월주|연주|시주|일궁|지지|천간|지장간|암합|천간합|십신|십성|오행|상생|상극|육합|삼합|방합|원진|귀문|공망|형벌|순환형|신강|신약|용신|기신|정재|편재|정관|편관|식신|상관|정인|편인|비견|겁재|효신|조후|역마|사주|만세력|배우자궁|재성|관성|목\(木\)|화\(火\)|토\(土\)|금\(金\)|수\(水\)|[一-鿿]{1,2}합|[一-鿿]충|[一-鿿]형|[一-鿿]파|[一-鿿]해|\([가-힣]{2}\)/g;
@@ -417,7 +418,7 @@ export function buildPersonFamilyBoundaryNote(
       pick(
         locale,
         `${nickname} is more comfortable with some distance from the family of origin. It's best to avoid sudden visits or phone calls that pull them in.`,
-        `${nickname}은(는) 원가족과 적당한 거리가 있으면 편해요. 갑작스런 방문이나 전화 개입은 피하는 게 좋아요.`,
+        `${topicParticle(nickname)} 원가족과 적당한 거리가 있으면 편해요. 갑작스런 방문이나 전화 개입은 피하는 게 좋아요.`,
       ),
     );
   } else {
@@ -425,7 +426,7 @@ export function buildPersonFamilyBoundaryNote(
       pick(
         locale,
         `${nickname}'s relationship with their family of origin is relatively stable. Just keep the boundary so family matters don't spill into your relationship when tired.`,
-        `${nickname}은(는) 원가족 관계가 비교적 안정적이에요. 피로할 때 가족 일이 우리 관계로 번지지 않게 경계만 지키면 됩니다.`,
+        `${topicParticle(nickname)} 원가족 관계가 비교적 안정적이에요. 피로할 때 가족 일이 우리 관계로 번지지 않게 경계만 지키면 됩니다.`,
       ),
     );
   }

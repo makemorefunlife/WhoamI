@@ -19,6 +19,15 @@ const ROW_LABEL_KO: Record<MarriageCompareRowId, string> = {
   parenting_style: "육아·교육 가치",
 };
 
+const ROW_LABEL_EN: Record<MarriageCompareRowId, string> = {
+  household_stress: "household/routine stress",
+  marital_conflict: "conflict-reaction style",
+  bedroom_lead: "bedroom-lead tendency",
+  family_boundary: "family-of-origin boundary",
+  asset_management: "money-management temperament",
+  parenting_style: "parenting/education values",
+};
+
 const BAND_LABEL_KO: Record<string, string> = {
   wealth: "재성 쪽 스트레스 표출",
   officer: "관성 쪽 스트레스 표출",
@@ -39,6 +48,26 @@ const BAND_LABEL_KO: Record<string, string> = {
   structure: "원칙형",
 };
 
+const BAND_LABEL_EN: Record<string, string> = {
+  wealth: "stress shows up around money",
+  officer: "stress shows up around duty/structure",
+  food: "stress shows up around expression/output",
+  seal: "stress shows up around support/reassurance",
+  self: "stress shows up around autonomy",
+  explosive: "explosive type",
+  stonewall: "shuts down / goes silent",
+  balanced: "balanced type",
+  sweet_guide: "warm-guide type",
+  power_leader: "take-charge lead",
+  true: "needs distance",
+  false: "stays comfortable",
+  high: "high",
+  medium: "medium",
+  low: "low",
+  empathy: "empathy-led",
+  structure: "structure-led",
+};
+
 export type MarriedDigestLeanRow = {
   band_a: string;
   band_b: string;
@@ -52,6 +81,10 @@ export type MarriedDigestLeans = Partial<
 
 function bandKo(band: string): string {
   return BAND_LABEL_KO[band] ?? band;
+}
+
+function bandLabel(band: string, isEn: boolean): string {
+  return isEn ? (BAND_LABEL_EN[band] ?? band) : (BAND_LABEL_KO[band] ?? band);
 }
 
 function rowMismatch(a: string, b: string): boolean {
@@ -122,8 +155,10 @@ export function buildMarriedHouseholdDigest(params: {
     MarriageReportBody,
     "canonical_projections" | "context_output" | "meta"
   >;
+  locale?: "ko" | "en";
 }): string {
   const { nicknameA, nicknameB, report } = params;
+  const isEn = params.locale === "en";
   const table = report.canonical_projections?.comparison_table ?? null;
   const cfo = report.canonical_projections?.operating_cfo ?? null;
   const ctx = report.context_output ?? null;
@@ -149,15 +184,21 @@ export function buildMarriedHouseholdDigest(params: {
         (cfo.align ? `, align=${cfo.align}` : ""),
     );
     lines.push(
-      `  → 일상 재정 운영(예산·계좌·큰 지출) 담당이 ${sideName} 쪽으로 잡힘. asset_management 행과 혼동 금지.`,
+      isEn
+        ? `  → Day-to-day money ops (budget/accounts/big purchases) sits with ${sideName}. Do not conflate with the asset_management row.`
+        : `  → 일상 재정 운영(예산·계좌·큰 지출) 담당이 ${sideName} 쪽으로 잡힘. asset_management 행과 혼동 금지.`,
     );
   } else {
-    lines.push(`operating_cfo: (없음)`);
+    lines.push(isEn ? `operating_cfo: (none)` : `operating_cfo: (없음)`);
   }
 
   lines.push(`comparison_table:`);
   if (!table) {
-    lines.push(`  (canonical comparison_table 없음 — 추측 금지)`);
+    lines.push(
+      isEn
+        ? `  (no canonical comparison_table — do not guess)`
+        : `  (canonical comparison_table 없음 — 추측 금지)`,
+    );
   } else {
     const ids: MarriageCompareRowId[] = [
       "household_stress",
@@ -170,10 +211,11 @@ export function buildMarriedHouseholdDigest(params: {
     for (const id of ids) {
       const row = table[id];
       const same = row.band_a === row.band_b;
+      const rowLabel = isEn ? ROW_LABEL_EN[id] : ROW_LABEL_KO[id];
       lines.push(
-        `- ${id} (${ROW_LABEL_KO[id]}): ` +
-          `${nicknameA}=${row.band_a}(${bandKo(row.band_a)}), ` +
-          `${nicknameB}=${row.band_b}(${bandKo(row.band_b)})` +
+        `- ${id} (${rowLabel}): ` +
+          `${nicknameA}=${row.band_a}(${bandLabel(row.band_a, isEn)}), ` +
+          `${nicknameB}=${row.band_b}(${bandLabel(row.band_b, isEn)})` +
           ` | ${same ? "same_lean" : "different"}`,
       );
     }
@@ -181,7 +223,11 @@ export function buildMarriedHouseholdDigest(params: {
 
   const dc = ctx?.dominant_categories;
   if (dc?.cfo_confidence?.category || dc?.parenting_a_confidence?.category) {
-    lines.push(`context_hints (optional corroboration — not re-classification):`);
+    lines.push(
+      isEn
+        ? `context_hints (optional corroboration — not re-classification):`
+        : `context_hints (optional corroboration — not re-classification):`,
+    );
     if (dc.cfo_confidence?.category) {
       lines.push(
         `- cfo_confidence=${dc.cfo_confidence.category}` +
@@ -213,8 +259,12 @@ export function buildMarriedHouseholdDigest(params: {
   }
 
   lines.push(
-    `RULES: Never print internal keys (household_stress, operating_cfo, …) in user-facing prose.`,
-    `Translate to natural Korean evidence bridges. Do not invent Romantic axes (affection, dating recovery).`,
+    isEn
+      ? `RULES: Never print internal keys (household_stress, operating_cfo, …) in user-facing prose.`
+      : `RULES: Never print internal keys (household_stress, operating_cfo, …) in user-facing prose.`,
+    isEn
+      ? `Translate to natural English evidence bridges. Do not invent Romantic axes (affection, dating recovery).`
+      : `Translate to natural Korean evidence bridges. Do not invent Romantic axes (affection, dating recovery).`,
     `Do not contradict bands / CFO side / mismatch_roles.`,
   );
 

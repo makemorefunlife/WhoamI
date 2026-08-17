@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOMServer from "react-dom/server";
 import { buildMarriageReport } from "../../lib/relationship/marriage/buildMarriageReport";
 import { buildMarriageReportViewModel } from "../../lib/relationship/marriage/viewModel/buildMarriageReportViewModel";
-import { MarriageReportViewModelView } from "../../components/relationship/marriage/sections/SectionRenderer";
 import type { SajuDataForIntegrated } from "../../lib/report/formatEssenceAnalysisForIntegrated";
 import type { PsychMasterJson } from "../../lib/personCore/types/psychMaster";
 
@@ -74,89 +73,119 @@ const testCases: TestCase[] = [
   },
 ];
 
-console.log("==================================================");
-console.log(" MARRIAGE V2 PHASE 13 FINAL EDITORIAL QA AUDIT");
-console.log("==================================================");
+async function main() {
+  // next/font/google isn't resolvable outside the Next.js build pipeline —
+  // stub it before importing anything that transitively pulls it in (here,
+  // SectionRenderer.tsx), matching the existing tests/unit/marriage-
+  // snapshot-render-safety.test.mjs pattern. Static `import` of
+  // SectionRenderer would resolve before this shim could run, so the
+  // renderer import is deferred via dynamic `import()` inside this async
+  // function instead (this script's CJS output doesn't support top-level
+  // await, hence the IIFE wrapper).
+  const Module = await import("node:module");
+  const originalRequire = Module.default.prototype.require;
+  Module.default.prototype.require = function (request: string) {
+    if (request === "next/font/google") {
+      const dummyFont = () => ({ variable: "font-dummy", className: "font-dummy" });
+      return { Noto_Sans_KR: dummyFont, Noto_Serif_KR: dummyFont };
+    }
+    return originalRequire.apply(this, arguments as unknown as [string]);
+  };
 
-let allCasesPassed = true;
-const renderedDoms: string[] = [];
-
-testCases.forEach((tc, idx) => {
-  console.log(`\n--- [Test Case ${idx + 1}: ${tc.name}] ---`);
-
-  const report = buildMarriageReport({
-    nicknameA: tc.nameA,
-    nicknameB: tc.nameB,
-    sajuJsonA: sajuA,
-    sajuJsonB: sajuB,
-    psychMasterA: tc.psychA,
-    psychMasterB: tc.psychB,
-    locale: tc.locale,
-  });
-
-  const vm = buildMarriageReportViewModel(report, {
-    viewerIsReportA: true,
-    myName: tc.nameA,
-    partnerName: tc.nameB,
-    locale: tc.locale,
-  });
-
-  // Render actual DOM element to string via Server Side Renderer
-  const domHtml = ReactDOMServer.renderToString(
-    React.createElement(MarriageReportViewModelView, {
-      vm,
-      viewerIsReportA: true,
-    })
+  const { MarriageReportViewModelView } = await import(
+    "../../components/relationship/marriage/sections/SectionRenderer"
   );
 
-  renderedDoms.push(domHtml);
+  console.log("==================================================");
+  console.log(" MARRIAGE V2 PHASE 13 FINAL EDITORIAL QA AUDIT");
+  console.log("==================================================");
 
-  const rawEnumMatches = domHtml.match(/NORMAL|TENSION_RISING|OVERLOAD|RECOVERY/g) || [];
-  const nullMatches = domHtml.match(/null/g) || [];
-  const undefinedMatches = domHtml.match(/undefined/g) || [];
-  const rawAbMatches = domHtml.match(/\b(Person A|Person B)\b/g) || [];
+  let allCasesPassed = true;
+  const renderedDoms: string[] = [];
 
-  const checks = [
-    { desc: "Chapter 01..09 DOM presence in order", pass: domHtml.includes("c1_who_we_are") && domHtml.includes("c6_family_parenting_career") && domHtml.includes("c9_next_chapter_rituals") },
-    { desc: "Zero 'null' string in DOM", pass: nullMatches.length === 0 },
-    { desc: "Zero 'undefined' in DOM", pass: undefinedMatches.length === 0 },
-    { desc: "Zero raw enum in DOM", pass: rawEnumMatches.length === 0 },
-    { desc: "Zero raw A/B label in DOM", pass: rawAbMatches.length === 0 },
-    { desc: "Zero empty 'Step 1:' in DOM", pass: !domHtml.includes("Step 1:</") && !domHtml.includes("Step 1: <") },
-    { desc: "Zero empty '점' labels in DOM", pass: !/>\s*점</.test(domHtml) && !/>\s*<!-- -->점</.test(domHtml) },
-    { desc: "Actual partner names bound", pass: domHtml.includes(tc.nameA) && domHtml.includes(tc.nameB) },
-    { desc: "Ch 06 New Family Transition present", pass: domHtml.includes("가족") || domHtml.includes("Boundary") || domHtml.includes("독립") },
-    { desc: "Ch 07 Compounding Assets/Liabilities present", pass: domHtml.includes("자산") || domHtml.includes("부채") || domHtml.includes("Assets") },
-    { desc: "Ch 08 Life Partnership Verdict present", pass: domHtml.includes("Verdict") || domHtml.includes("최종 판정") },
-    { desc: "Ch 09 Action Playbook Do & Don't present", pass: domHtml.includes("Do &amp; Don&#x27;t") || domHtml.includes("Do & Don't") || domHtml.includes("Do") },
-    { desc: "No duplicate legacy dump below Ch 09", pass: !domHtml.includes('id="ch_deep_read"') },
-  ];
+  testCases.forEach((tc, idx) => {
+    console.log(`\n--- [Test Case ${idx + 1}: ${tc.name}] ---`);
 
-  let casePassed = true;
-  checks.forEach((chk) => {
-    if (!chk.pass) {
-      casePassed = false;
-      console.log(`  ❌ [FAIL] ${chk.desc}`);
-    } else {
-      console.log(`  ✅ [PASS] ${chk.desc}`);
-    }
+    const report = buildMarriageReport({
+      nicknameA: tc.nameA,
+      nicknameB: tc.nameB,
+      sajuJsonA: sajuA,
+      sajuJsonB: sajuB,
+      psychMasterA: tc.psychA,
+      psychMasterB: tc.psychB,
+      locale: tc.locale,
+    });
+
+    const vm = buildMarriageReportViewModel(report, {
+      viewerIsReportA: true,
+      myName: tc.nameA,
+      partnerName: tc.nameB,
+      locale: tc.locale,
+    });
+
+    // Render actual DOM element to string via Server Side Renderer
+    const domHtml = ReactDOMServer.renderToString(
+      React.createElement(MarriageReportViewModelView, {
+        vm,
+        viewerIsReportA: true,
+      })
+    );
+
+    renderedDoms.push(domHtml);
+
+    const rawEnumMatches = domHtml.match(/NORMAL|TENSION_RISING|OVERLOAD|RECOVERY/g) || [];
+    const nullMatches = domHtml.match(/null/g) || [];
+    const undefinedMatches = domHtml.match(/undefined/g) || [];
+    const rawAbMatches = domHtml.match(/\b(Person A|Person B)\b/g) || [];
+
+    const checks = [
+      { desc: "Chapter 01..09 DOM presence in order", pass: domHtml.includes("c1_who_we_are") && domHtml.includes("c6_family_parenting_career") && domHtml.includes("c9_next_chapter_rituals") },
+      { desc: "Zero 'null' string in DOM", pass: nullMatches.length === 0 },
+      { desc: "Zero 'undefined' in DOM", pass: undefinedMatches.length === 0 },
+      { desc: "Zero raw enum in DOM", pass: rawEnumMatches.length === 0 },
+      { desc: "Zero raw A/B label in DOM", pass: rawAbMatches.length === 0 },
+      { desc: "Zero empty 'Step 1:' in DOM", pass: !domHtml.includes("Step 1:</") && !domHtml.includes("Step 1: <") },
+      { desc: "Zero empty '점' labels in DOM", pass: !/>\s*점</.test(domHtml) && !/>\s*<!-- -->점</.test(domHtml) },
+      { desc: "Actual partner names bound", pass: domHtml.includes(tc.nameA) && domHtml.includes(tc.nameB) },
+      { desc: "Ch 06 New Family Transition present", pass: domHtml.includes("가족") || domHtml.includes("Boundary") || domHtml.includes("독립") },
+      { desc: "Ch 07 Compounding Assets/Liabilities present", pass: domHtml.includes("자산") || domHtml.includes("부채") || domHtml.includes("Assets") },
+      { desc: "Ch 08 Life Partnership Verdict present", pass: domHtml.includes("Verdict") || domHtml.includes("최종 판정") },
+      { desc: "Ch 09 Action Playbook Do & Don't present", pass: domHtml.includes("Do &amp; Don&#x27;t") || domHtml.includes("Do & Don't") || domHtml.includes("Do") },
+      { desc: "No duplicate legacy dump below Ch 09", pass: !domHtml.includes('id="ch_deep_read"') },
+    ];
+
+    let casePassed = true;
+    checks.forEach((chk) => {
+      if (!chk.pass) {
+        casePassed = false;
+        console.log(`  ❌ [FAIL] ${chk.desc}`);
+      } else {
+        console.log(`  ✅ [PASS] ${chk.desc}`);
+      }
+    });
+
+    if (!casePassed) allCasesPassed = false;
   });
 
-  if (!casePassed) allCasesPassed = false;
-});
+  // Verify pair variation
+  const isDifferent = renderedDoms[0] !== renderedDoms[1] && renderedDoms[0] !== renderedDoms[4];
+  console.log("\n--- [Cross-Pair Diversity Check] ---");
+  if (isDifferent) {
+    console.log("  ✅ [PASS] 5 pairs show genuinely distinct rendered outputs (No template cloning).");
+  } else {
+    console.log("  ❌ [FAIL] Template cloning detected across pairs.");
+    allCasesPassed = false;
+  }
 
-// Verify pair variation
-const isDifferent = renderedDoms[0] !== renderedDoms[1] && renderedDoms[0] !== renderedDoms[4];
-console.log("\n--- [Cross-Pair Diversity Check] ---");
-if (isDifferent) {
-  console.log("  ✅ [PASS] 5 pairs show genuinely distinct rendered outputs (No template cloning).");
-} else {
-  console.log("  ❌ [FAIL] Template cloning detected across pairs.");
-  allCasesPassed = false;
+  console.log("\n==================================================");
+  console.log(" FINAL MARRIAGE V2 EDITORIAL CONSOLIDATION VERDICT");
+  console.log("==================================================");
+  console.log("5-PAIR DOM EDITORIAL CONSOLIDATION QA:", allCasesPassed ? "ALL 5 PAIRS 100% PERFECT PASS" : "FAILURES DETECTED");
+  console.log("MARRIAGE V2 NARRATIVE READY:", allCasesPassed ? "YES" : "NO");
+
+  if (!allCasesPassed) {
+    process.exitCode = 1;
+  }
 }
 
-console.log("\n==================================================");
-console.log(" FINAL MARRIAGE V2 EDITORIAL CONSOLIDATION VERDICT");
-console.log("==================================================");
-console.log("5-PAIR DOM EDITORIAL CONSOLIDATION QA:", allCasesPassed ? "ALL 5 PAIRS 100% PERFECT PASS" : "FAILURES DETECTED");
-console.log("MARRIAGE V2 NARRATIVE READY:", allCasesPassed ? "YES" : "NO");
+main();

@@ -7,6 +7,7 @@ import {
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import { subjectParticle } from "@/lib/relationship/koreanParticles";
 
 const TENSION_BRANCH_TYPES = new Set(["충", "형", "해", "파"]);
 
@@ -188,7 +189,7 @@ function buildCfoPowerPrescription(
         `지출 영역을 3칸으로 나누기: ① ${nicknameA} 단독 결정 ② ${nicknameB} 단독 결정 ③ 둘 다 동의해야 하는 공동 지출 — 한도 금액을 숫자로 적어 냉장고에 붙이기.`,
         cfo.dual_cfo_war
           ? "큰 결정은 '제안 → 24시간 숙려 → 확정' 규칙 — 당일 즉답을 요구하지 않기. 둘 다 주도권이 강할수록 즉답 압박이 폭발 트리거입니다."
-          : `${leader}가 먼저 안건을 적되, 상대에게 '거부·수정 1회' 권한을 명시적으로 주기 — 일방 통보를 '협의'로 바꿉니다.`,
+          : `${subjectParticle(leader)} 먼저 안건을 적되, 상대에게 '거부·수정 1회' 권한을 명시적으로 주기 — 일방 통보를 '협의'로 바꿉니다.`,
         "싸울 때 '너 돈 때문에 그러는 거지?' 같은 프레임 대신 '우리 규칙이 뭐였지?'로 화제 전환 — 규칙이 없으면 그 자리에서 규칙을 만드는 안건으로 전환.",
       ],
     ),

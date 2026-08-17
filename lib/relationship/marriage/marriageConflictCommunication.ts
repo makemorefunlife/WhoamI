@@ -5,6 +5,7 @@ import {
   profileTenGods,
   type TenGodCounts,
 } from "./marriageTenGodAnalysis";
+import { topicParticle } from "@/lib/relationship/koreanParticles";
 
 export type ConflictCommunicationSection = {
   title: string;
@@ -26,28 +27,101 @@ export function communicationArchetype(counts: TenGodCounts): {
   };
 }
 
+/**
+ * Conflict-style gap (psych `conflict_style` axis) below which neither
+ * partner leans clearly toward "wants to resolve immediately" vs "withdraws"
+ * relative to the other — routes to the neutral/balanced case instead of
+ * forcing a pursue/withdraw split. Mirrors the >60/<45 absolute thresholds
+ * `buildMarriageConflict4Stage` uses for isDirect/isAvoidant.
+ */
+export const CONFLICT_STYLE_NEUTRAL_GAP = 10;
+
+/**
+ * Single shared classifier for "who pursues (direct/explosive) vs who
+ * withdraws (avoidant/stonewall)" from the psych `conflict_style` axis —
+ * used by both this module's Pursue-Withdraw block and the Ch2 compare-table
+ * `marital_conflict` band, so the two surfaces can never independently
+ * re-derive opposite attributions for the same couple (P0 consistency fix).
+ */
+export function classifyConflictStyleLean(
+  styleA: number,
+  styleB: number,
+): { explosiveIsA: boolean; stonewallIsA: boolean; isNeutral: boolean } {
+  const isNeutral = Math.abs(styleA - styleB) < CONFLICT_STYLE_NEUTRAL_GAP;
+  return {
+    explosiveIsA: !isNeutral && styleA > styleB,
+    stonewallIsA: !isNeutral && styleA < styleB,
+    isNeutral,
+  };
+}
+
 export function buildConflictCommunicationSection(params: {
   nicknameA: string;
   nicknameB: string;
   countsA: TenGodCounts;
   countsB: TenGodCounts;
+  /**
+   * Psych `conflict_style` axis (0-100, higher = more direct/wants to
+   * resolve immediately, lower = more avoidant/withdraws) — same signal
+   * `buildMarriageConflict4Stage` uses for each person's isDirect/isAvoidant
+   * classification. When both are provided, this block defers to them
+   * instead of independently re-deriving explosive/stonewall from saju
+   * ten-gods, so the "who pursues / who withdraws" story can never disagree
+   * with the canonical 4-stage conflict narrative for the same two people
+   * (P0 consistency fix — these previously used unrelated signals and could
+   * name opposite people). Falls back to the ten-god-only computation when
+   * psych axes are unavailable (old-cache safety).
+   */
+  conflictStyleA?: number | null;
+  conflictStyleB?: number | null;
   locale?: Locale;
 }): ConflictCommunicationSection {
   const { nicknameA, nicknameB, countsA, countsB } = params;
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const archA = communicationArchetype(countsA);
-  const archB = communicationArchetype(countsB);
 
-  const explosiveIsA = archA.explosive > archB.explosive;
-  const stonewallIsA = archA.stonewall > archB.stonewall;
+  const hasPsychStyle =
+    typeof params.conflictStyleA === "number" &&
+    typeof params.conflictStyleB === "number";
 
-  const explosiveNick = explosiveIsA ? nicknameA : nicknameB;
-  const stonewallNick = stonewallIsA ? nicknameA : nicknameB;
+  let explosiveNick: string;
+  let stonewallNick: string;
+  let samePersonExplodesAndWalls: boolean;
 
-  const samePersonExplodesAndWalls =
-    explosiveNick === stonewallNick &&
-    Math.abs(archA.explosive - archB.explosive) < 2 &&
-    Math.abs(archA.stonewall - archB.stonewall) < 2;
+  if (hasPsychStyle) {
+    const lean = classifyConflictStyleLean(
+      params.conflictStyleA as number,
+      params.conflictStyleB as number,
+    );
+    // Single bipolar axis: higher = pursuer/direct, lower = withdrawer/avoidant.
+    // A relative comparison always yields two different people (or a tie),
+    // never the same person scoring high on both ends at once.
+    explosiveNick = lean.explosiveIsA ? nicknameA : nicknameB;
+    stonewallNick = lean.stonewallIsA ? nicknameA : nicknameB;
+    samePersonExplodesAndWalls = false;
+    if (lean.isNeutral) {
+      // Neither leans clearly toward pursuing or withdrawing relative to
+      // the other — force explosiveNick === stonewallNick (with
+      // samePersonExplodesAndWalls left false) so this falls through to the
+      // neutral "Slow Harmonizers" branch below, not a forced pursue/withdraw
+      // split on a near-tie.
+      explosiveNick = nicknameA;
+      stonewallNick = nicknameA;
+    }
+  } else {
+    const archA = communicationArchetype(countsA);
+    const archB = communicationArchetype(countsB);
+
+    const explosiveIsA = archA.explosive > archB.explosive;
+    const stonewallIsA = archA.stonewall > archB.stonewall;
+
+    explosiveNick = explosiveIsA ? nicknameA : nicknameB;
+    stonewallNick = stonewallIsA ? nicknameA : nicknameB;
+
+    samePersonExplodesAndWalls =
+      explosiveNick === stonewallNick &&
+      Math.abs(archA.explosive - archB.explosive) < 2 &&
+      Math.abs(archA.stonewall - archB.stonewall) < 2;
+  }
 
   let pattern_label: string;
   let narrative: string;
@@ -60,7 +134,7 @@ export function buildConflictCommunicationSection(params: {
         locale,
         `${explosiveNick} has a strong pattern of venting in words the moment emotion rises, then shutting the door on themselves. ` +
           `The partner is left tracking "wait, what just happened?" until they're worn out.`,
-        `${explosiveNick}는 감정이 올라오면 말로 쏟아낸 뒤, 스스로 문을 닫아 버리는 패턴이 강합니다. ` +
+        `${topicParticle(explosiveNick)} 감정이 올라오면 말로 쏟아낸 뒤, 스스로 문을 닫아 버리는 패턴이 강합니다. ` +
           `상대는 '방금 전까지 뭐였지?' 하며 추적하다 지칩니다.`,
       ),
     );
@@ -79,8 +153,8 @@ export function buildConflictCommunicationSection(params: {
         `${explosiveNick} is the burst type who wants to resolve hurt feelings immediately by venting in words, while ` +
           `${stonewallNick} is the stonewalling type who shuts their mouth once emotion grows. ` +
           `The more one chases, the harder the other shuts the door — a vicious cycle.`,
-        `${explosiveNick}는 서운함을 즉시 풀고 싶어 말을 쏟아내는 폭발형이고, ` +
-          `${stonewallNick}는 감정이 커지면 입을 닫는 벽창호(Stonewalling)형입니다. ` +
+        `${topicParticle(explosiveNick)} 서운함을 즉시 풀고 싶어 말을 쏟아내는 폭발형이고, ` +
+          `${topicParticle(stonewallNick)} 감정이 커지면 입을 닫는 벽창호(Stonewalling)형입니다. ` +
           `한 명이 쫓을수록 다른 한 명은 문을 더 단단히 닫는 악순환 구조예요.`,
       ),
     );

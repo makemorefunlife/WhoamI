@@ -79,8 +79,20 @@ console.log("Decision Flow (Risk Review) :", econ?.decisionFlow.riskReviewer);
 console.log("Decision Flow (Executor)    :", econ?.decisionFlow.executor);
 
 console.log("\n--- [3. CHAPTER 05 DEPTH ACTUAL TEXT AUDIT] ---");
-console.log("Conflict 4-Stage A (Sera)   :", bundle?.conflict4Stage.stageA.join(" -> "));
-console.log("Conflict 4-Stage B (동글)   :", bundle?.conflict4Stage.stageB.join(" -> "));
+// stageA/stageB are raw canonical stage objects, not strings — extract the
+// same readable field the production normalizer uses (normalizeConflict4Stage
+// in buildMarriageReportViewModel.ts), matching what actually renders in the
+// DOM, instead of implicitly stringifying the object to "[object Object]".
+const stageText = (st: unknown) =>
+  typeof st === "string"
+    ? st
+    : ((st as Record<string, string>)?.internalState ||
+        (st as Record<string, string>)?.externalBehavior ||
+        (st as Record<string, string>)?.description ||
+        (st as Record<string, string>)?.title ||
+        "(no readable field)");
+console.log("Conflict 4-Stage A (Sera)   :", bundle?.conflict4Stage.stageA.map(stageText).join(" -> "));
+console.log("Conflict 4-Stage B (동글)   :", bundle?.conflict4Stage.stageB.map(stageText).join(" -> "));
 console.log("Crisis Role Practical Lead  :", bundle?.crisisRole.practicalLead);
 console.log("Crisis Role Narrative       :", bundle?.crisisRole.narrative);
 console.log("Emergency SOS A->B FirstLine:", bundle?.emergencySosCombined.scriptAtoB.firstLine);

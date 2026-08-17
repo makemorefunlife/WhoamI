@@ -9,6 +9,7 @@ import type {
 import type { RelationshipTopicGauge } from "@/lib/relationship/triScoreSnapshot/types";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
+import { subjectParticle } from "@/lib/relationship/koreanParticles";
 
 // Part2① 종합 관계 지수 11축 확인문구 — 로맨틱 Batch 2(관계공감/갈등직면성)와
 // 같은 non-invasive 원칙: 판정 점수(computeMarriageMasterScores)는 안 건드리고
@@ -161,7 +162,7 @@ function interpretMarriageTopic(
       interpretation: pick(
         locale,
         `${core} In your operating mix, having ${cfo} make the final call on the bank account and big spending is the more stable setup.`,
-        `${core} 현재 두 사람의 운영 조합에서는 ${cfo}가 통장·큰 지출의 최종 확인을 맡는 편이 안정적입니다.`,
+        `${core} 현재 두 사람의 운영 조합에서는 ${subjectParticle(cfo)} 통장·큰 지출의 최종 확인을 맡는 편이 안정적입니다.`,
       ),
       isWarning: false,
       axisNote: resolveLifeSynergyAxisNote(psychA, psychB, locale),

@@ -97,6 +97,7 @@ export function buildMarriedSajuDeepPromptBundle(params: {
       householdDigestBlock: digest,
       userCustomMyName: params.userCustomMyName,
       userCustomTargetName: params.userCustomTargetName,
+      locale: params.locale ?? "ko",
     }),
   };
 }
@@ -186,6 +187,7 @@ export async function runMarriedSajuDeepOverlay(
     nicknameA: params.nicknameA,
     nicknameB: params.nicknameB,
     report: params.report,
+    locale: params.locale ?? "ko",
   });
   const bundle = buildMarriedSajuDeepPromptBundle({
     nicknameA: params.nicknameA,

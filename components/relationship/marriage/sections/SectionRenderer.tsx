@@ -7,17 +7,15 @@
  * `useMessages().relationshipDrilldown.cohabitation`에서 가져온다.
  */
 import type { ReactNode } from "react";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { User, MessageCircle, Sun, Cloud, CloudLightning } from "lucide-react";
-import {
-  RelationshipReportLayout,
-  RelationshipReportCard,
+import RelationshipReportCard, {
   RelationshipReportBody,
   RelationshipReportParagraph,
   RelationshipReportLabel,
   RelationshipReportInset,
-  PsychMatchRadarChart,
-  getTabTheme,
-} from "@/components/relationship/reportLayout";
+  MarriageEditorialHero,
+} from "@/components/relationship/marriage/editorial/marriageEditorialAdapter";
 import {
   default as TriScoreSnapshotPanel,
 } from "@/components/relationship/TriScoreSnapshotPanel";
@@ -51,13 +49,25 @@ import { VersusStrip } from "@/components/relationship/shared/editorial/Editoria
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
 import type { MarriageCanonicalBundle } from "@/lib/relationship/marriage/marriageCanonicalTypes";
 
-const ACCENT = getTabTheme("cohabitation").accent;
+const relSans = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rel-sans-var",
+});
+const relSerif = Noto_Serif_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rel-serif-var",
+});
+
+/** Shared editorial accent (rel-deep) — matches Romantic V4 / Friend, not the old per-domain purple. */
+const ACCENT = "#1b3b2b";
 
 /** 하드코딩 이모지 대신 — 3년 날씨 레벨 → Lucide 아이콘 + 테마 컬러. */
 const WEATHER_ICON: Record<string, { Icon: typeof Sun; className: string }> = {
-  sunny: { Icon: Sun, className: "text-emerald-300" },
-  cloudy: { Icon: Cloud, className: "text-amber-400" },
-  storm: { Icon: CloudLightning, className: "text-rose-500" },
+  sunny: { Icon: Sun, className: "text-v4-good" },
+  cloudy: { Icon: Cloud, className: "text-rel-taupe" },
+  storm: { Icon: CloudLightning, className: "text-v4-bad" },
 };
 
 /** 사람 이름 앞에 붙는 원형 아이콘 뱃지 — 👤 대체. */
@@ -205,8 +215,8 @@ function CompareTableCard({
           return (
             <li key={row.id}>
               <VersusStrip label={row.label} aName={names[0]} bName={names[1]} a={me.shortLabel} b={partner.shortLabel} />
-              <RelationshipReportParagraph className="mt-3 text-white/72">{row.meaning}</RelationshipReportParagraph>
-              <div className="mt-8 h-px w-full bg-white/10" />
+              <RelationshipReportParagraph className="mt-3 text-rel-ink-soft">{row.meaning}</RelationshipReportParagraph>
+              <div className="mt-8 h-px w-full bg-rel-line" />
             </li>
           );
         })}
@@ -238,10 +248,10 @@ function ActionPlanList({ heading, items }: { heading: string; items: ActionPlan
       <div className="mt-2 space-y-3">
         {items.map((item) => (
           <RelationshipReportInset key={item.title}>
-            <p className="text-sm font-semibold text-white/92">{item.title}</p>
+            <p className="text-sm font-semibold text-rel-ink">{item.title}</p>
             <RelationshipReportParagraph className="mt-1.5">{item.body}</RelationshipReportParagraph>
-            <RelationshipReportParagraph className="mt-1.5 flex items-start gap-2 italic text-emerald-100/85">
-              <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" strokeWidth={1.75} aria-hidden />
+            <RelationshipReportParagraph className="mt-1.5 flex items-start gap-2 italic text-v4-good">
+              <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-v4-good" strokeWidth={1.75} aria-hidden />
               {item.quote}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -278,7 +288,7 @@ function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
               </RelationshipReportLabel>
             ) : null}
             <RelationshipReportParagraph className="mt-1.5">
-              {section.cfoNickname} — {section.cfoReason}
+              {section.cfoReason}
             </RelationshipReportParagraph>
           </div>
           <div>
@@ -341,7 +351,7 @@ function BedroomCard({ section }: { section: BedroomSection }) {
       <RelationshipReportBody className="mt-3 grid gap-4 sm:grid-cols-2">
         {people.map((person) => (
           <RelationshipReportInset key={person.nickname}>
-            <p className="flex items-center gap-1.5 text-sm font-bold text-white/92"><PersonBadge /> {person.nickname}</p>
+            <p className="flex items-center gap-1.5 text-sm font-bold text-rel-ink"><PersonBadge /> {person.nickname}</p>
             <div className="mt-3 space-y-2.5">
               <div>
                 <RelationshipReportLabel>{t.bedroomStaminaLabel}</RelationshipReportLabel>
@@ -367,7 +377,7 @@ function BedroomCard({ section }: { section: BedroomSection }) {
           </RelationshipReportInset>
         ))}
       </RelationshipReportBody>
-      <p className="mt-3 text-sm text-white/72">{matrix.frequency_one_liner}</p>
+      <p className="mt-3 text-sm text-rel-ink-soft">{matrix.frequency_one_liner}</p>
       <RelationshipReportInset className="mt-4">
         <RelationshipReportLabel>{t.attachmentStyleLabel}</RelationshipReportLabel>
         <RelationshipReportParagraph className="mt-1.5">{section.attachmentStyle}</RelationshipReportParagraph>
@@ -408,7 +418,7 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
       <RelationshipReportBody className="grid gap-4 sm:grid-cols-2">
         {people.map(({ label, person }) => (
           <RelationshipReportInset key={label}>
-            <p className="flex items-center gap-1.5 text-sm font-bold text-white/92"><PersonBadge /> {person.nickname}</p>
+            <p className="flex items-center gap-1.5 text-sm font-bold text-rel-ink"><PersonBadge /> {person.nickname}</p>
             <p className="mt-2 text-base font-semibold" style={{ color: ACCENT }}>
               {person.lifestyle_title}
             </p>
@@ -499,13 +509,13 @@ function WeatherForecastCard({ section }: { section: WeatherForecastSection }) {
           const weather = WEATHER_ICON[y.level] ?? WEATHER_ICON.cloudy!;
           const WeatherIcon = weather.Icon;
           return (
-          <li key={y.year} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-            <p className="flex items-center gap-1.5 text-sm font-semibold text-white/92">
+          <li key={y.year} className="rounded-xl border border-rel-line bg-rel-surface px-4 py-3">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-rel-ink">
               <WeatherIcon className={`h-4 w-4 ${weather.className}`} strokeWidth={1.75} aria-hidden />
               {y.year_label} — {y.weather_label}
             </p>
             {y.advisory ? (
-              <RelationshipReportParagraph className="mt-1.5 text-white/78">{y.advisory}</RelationshipReportParagraph>
+              <RelationshipReportParagraph className="mt-1.5 text-rel-ink-soft">{y.advisory}</RelationshipReportParagraph>
             ) : null}
           </li>
           );
@@ -546,7 +556,7 @@ function UpsetCard({ section }: { section: UpsetSection }) {
       <RelationshipReportBody className="grid gap-4 sm:grid-cols-2">
         {people.map(({ label, guide }) => (
           <RelationshipReportInset key={label}>
-            <p className="text-sm font-bold text-white/92">{t.upsetGuideTitle(guide.nickname)}</p>
+            <p className="text-sm font-bold text-rel-ink">{t.upsetGuideTitle(guide.nickname)}</p>
             <div className="mt-3 space-y-2.5">
               <div>
                 <RelationshipReportLabel>{t.upsetPointLabel}</RelationshipReportLabel>
@@ -554,7 +564,7 @@ function UpsetCard({ section }: { section: UpsetSection }) {
               </div>
               <div>
                 <RelationshipReportLabel>{t.resolveLabel}</RelationshipReportLabel>
-                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-white/80">
+                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-rel-ink-soft">
                   {guide.do_list.map((item, i) => (
                     <li key={i}>{item}</li>
                   ))}
@@ -562,7 +572,7 @@ function UpsetCard({ section }: { section: UpsetSection }) {
               </div>
               <div>
                 <RelationshipReportLabel>{t.avoidLabel}</RelationshipReportLabel>
-                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-white/80">
+                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-rel-ink-soft">
                   {guide.avoid_list.map((item, i) => (
                     <li key={i}>{item}</li>
                   ))}
@@ -586,20 +596,25 @@ function WarningCard({ section }: { section: WarningSection }) {
           <RelationshipReportParagraph className="mt-1.5">{section.conflictTrigger}</RelationshipReportParagraph>
         </div>
         <div>
-          <p className="text-sm font-bold text-white/92">{section.conflictCommunication.pattern_label}</p>
+          <p className="text-sm font-bold text-rel-ink">{section.conflictCommunication.pattern_label}</p>
           <RelationshipReportParagraph className="mt-1.5">
             {section.conflictCommunication.narrative}
           </RelationshipReportParagraph>
-          <RelationshipReportParagraph className="mt-1.5 text-white/72">
+          <RelationshipReportParagraph className="mt-1.5 text-rel-ink-soft">
             {section.conflictCommunication.emotional_neglect_risk}
           </RelationshipReportParagraph>
         </div>
-        <RelationshipReportInset className="mt-2 border-emerald-400/20 bg-emerald-950/10">
-          <RelationshipReportParagraph className="italic text-emerald-100/85">
-            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-emerald-300" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_a.solution_script}
+        <RelationshipReportInset className="mt-2 border-v4-good/25 bg-v4-good-soft">
+          {section.deEscalation.shared_trigger && section.deEscalation.shared_trigger_note ? (
+            <RelationshipReportParagraph className="text-rel-ink-soft">
+              {section.deEscalation.shared_trigger_note}
+            </RelationshipReportParagraph>
+          ) : null}
+          <RelationshipReportParagraph className={section.deEscalation.shared_trigger ? "mt-2 italic text-v4-good" : "italic text-v4-good"}>
+            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-v4-good" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_a.solution_script}
           </RelationshipReportParagraph>
-          <RelationshipReportParagraph className="mt-2 italic text-emerald-100/85">
-            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-emerald-300" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_b.solution_script}
+          <RelationshipReportParagraph className="mt-2 italic text-v4-good">
+            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-v4-good" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_b.solution_script}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <div>
@@ -633,58 +648,66 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
 
 // ---- Substantive UI Cards (Phase 7.5 Content Enrichment) ------------------
 
-function EconomicPartnershipCard({ bundle, names }: { bundle?: MarriageCanonicalBundle; names: [string, string] }) {
+function EconomicPartnershipCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
   if (!bundle?.economicPartnership) return null;
   const { profileA, profileB, pairSynergyTitle, pairSynergyNarrative, decisionFlow } = bundle.economicPartnership;
+  const honorific = isEn ? "" : "님";
 
   const strategyTitle = profileA.primaryRole === "SAVER_ACCUMULATOR" || profileB.primaryRole === "SAVER_ACCUMULATOR"
-    ? "안정적 현금 버퍼 확보 ➔ 분기별 고정 저축 시스템"
-    : "성장 자산화 탐색 ➔ 목표 기반 분할 축적 시스템";
+    ? (isEn ? "Secure a stable cash buffer ➔ quarterly fixed savings system" : "안정적 현금 버퍼 확보 ➔ 분기별 고정 저축 시스템")
+    : (isEn ? "Explore growth assets ➔ goal-based staged accumulation" : "성장 자산화 탐색 ➔ 목표 기반 분할 축적 시스템");
 
   return (
-    <RelationshipReportCard title="💸 부부 경제 파트너십 (Economic Partnership Role Map)" accentColor={ACCENT}>
+    <RelationshipReportCard title={isEn ? "💸 Economic Partnership Role Map" : "💸 부부 경제 파트너십 (Economic Partnership Role Map)"} accentColor={ACCENT}>
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-white/90">👤 {names[0]}님의 경제적 역할</p>
+          <p className="font-bold text-rel-ink">👤 {isEn ? `${names[0]}'s Economic Role` : `${names[0]}님의 경제적 역할`}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-200">{profileA.primaryRoleLabel}</span>
-            <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300/80">{profileA.secondaryRoleLabel}</span>
+            <span className="rounded bg-v4-a-soft px-2 py-0.5 text-xs font-semibold text-v4-a">{profileA.primaryRoleLabel}</span>
+            <span className="rounded bg-v4-a-soft px-2 py-0.5 text-xs text-v4-a/80">{profileA.secondaryRoleLabel}</span>
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-white/80">{profileA.behaviorDescription}</p>
+          <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">{profileA.behaviorDescription}</p>
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-white/90">👤 {names[1]}님의 경제적 역할</p>
+          <p className="font-bold text-rel-ink">👤 {isEn ? `${names[1]}'s Economic Role` : `${names[1]}님의 경제적 역할`}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <span className="rounded bg-teal-500/20 px-2 py-0.5 text-xs font-semibold text-teal-200">{profileB.primaryRoleLabel}</span>
-            <span className="rounded bg-teal-500/10 px-2 py-0.5 text-xs text-teal-300/80">{profileB.secondaryRoleLabel}</span>
+            <span className="rounded bg-v4-b-soft px-2 py-0.5 text-xs font-semibold text-v4-b">{profileB.primaryRoleLabel}</span>
+            <span className="rounded bg-v4-b-soft px-2 py-0.5 text-xs text-v4-b/80">{profileB.secondaryRoleLabel}</span>
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-white/80">{profileB.behaviorDescription}</p>
+          <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">{profileB.behaviorDescription}</p>
         </RelationshipReportInset>
       </div>
 
-      <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4">
-        <p className="text-sm font-bold text-emerald-200">🤝 부부 경제 파트너십 시너지: {pairSynergyTitle}</p>
-        <p className="mt-1.5 text-xs leading-relaxed text-emerald-100/90">{pairSynergyNarrative}</p>
+      <div className="mt-4 rounded-lg border border-v4-good/30 bg-v4-good-soft p-4">
+        <p className="text-sm font-bold text-v4-good">🤝 {isEn ? `Economic Partnership Synergy: ${pairSynergyTitle}` : `부부 경제 파트너십 시너지: ${pairSynergyTitle}`}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-rel-ink-soft">{pairSynergyNarrative}</p>
       </div>
 
-      <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
-        <p className="text-sm font-bold text-amber-200">💡 우리 부부에게 권장하는 돈 모으기 & 자산 운용 방식</p>
-        <p className="mt-1 text-xs font-semibold text-amber-100">{strategyTitle}</p>
-        <p className="mt-1 text-xs text-white/80">
-          두 사람의 성향에 맞춰 월 고정비와 예비비를 먼저 분리한 뒤, 대형 지출 전에는 상호 검토 수순을 거쳐 장기 자산화로 연결하는 구조가 가장 안전합니다.
+      <div className="mt-4 rounded-lg border border-rel-taupe/30 bg-rel-taupe-soft p-4">
+        <p className="text-sm font-bold text-rel-taupe">💡 {isEn ? "Recommended savings & asset-building approach for you two" : "우리 부부에게 권장하는 돈 모으기 & 자산 운용 방식"}</p>
+        <p className="mt-1 text-xs font-semibold text-rel-ink">{strategyTitle}</p>
+        <p className="mt-1 text-xs text-rel-ink-soft">
+          {isEn
+            ? "Tailored to your styles, the safest structure is to separate fixed monthly costs and an emergency buffer first, then move to joint review before big purchases, and finally channel the rest into long-term assets."
+            : "두 사람의 성향에 맞춰 월 고정비와 예비비를 먼저 분리한 뒤, 대형 지출 전에는 상호 검토 수순을 거쳐 장기 자산화로 연결하는 구조가 가장 안전합니다."}
         </p>
       </div>
 
-      <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-xs">
-        <p className="font-semibold text-amber-200/90">📊 경제 의사결정 및 관리 수순 (Economic Decision Flow)</p>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-white/80 sm:grid-cols-3">
-          <div><span className="text-white/50">1. 현금흐름 관리:</span> {decisionFlow.cashFlowTracker}님</div>
-          <div><span className="text-white/50">2. 대형지출 제안:</span> {decisionFlow.largePurchaseProposer}님</div>
-          <div><span className="text-white/50">3. 리스크 검토:</span> {decisionFlow.riskReviewer}님</div>
-          <div><span className="text-white/50">4. 최종 의사결정:</span> {decisionFlow.decider}</div>
-          <div><span className="text-white/50">5. 금융 실무집행:</span> {decisionFlow.executor}님</div>
+      <div className="mt-4 rounded-lg border border-rel-line bg-rel-surface p-4 text-xs">
+        <p className="font-semibold text-rel-taupe">📊 {isEn ? "Economic Decision Flow" : "경제 의사결정 및 관리 수순 (Economic Decision Flow)"}</p>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-rel-ink-soft sm:grid-cols-3">
+          <div><span className="text-rel-ink-mute">{isEn ? "1. Cash flow:" : "1. 현금흐름 관리:"}</span> {decisionFlow.cashFlowTracker}{honorific}</div>
+          <div><span className="text-rel-ink-mute">{isEn ? "2. Proposes big purchases:" : "2. 대형지출 제안:"}</span> {decisionFlow.largePurchaseProposer}{honorific}</div>
+          <div><span className="text-rel-ink-mute">{isEn ? "3. Risk review:" : "3. 리스크 검토:"}</span> {decisionFlow.riskReviewer}{honorific}</div>
+          <div><span className="text-rel-ink-mute">{isEn ? "4. Final decision:" : "4. 최종 의사결정:"}</span> {decisionFlow.decider}</div>
+          <div><span className="text-rel-ink-mute">{isEn ? "5. Executes:" : "5. 금융 실무집행:"}</span> {decisionFlow.executor}{honorific}</div>
         </div>
+        <p className="mt-2.5 text-rel-ink-mute">
+          {isEn
+            ? "Cash-flow tracking and execution follow the household's designated CFO. Purchase proposals and risk review are a separate check-and-balance split, and can sit with either partner."
+            : "현금흐름 관리와 금융 실무집행은 가정의 지정 CFO를 따릅니다. 대형지출 제안과 리스크 검토는 별도의 상호 점검 역할 분담으로, CFO와 다른 사람이 맡을 수 있습니다."}
+        </p>
       </div>
     </RelationshipReportCard>
   );
@@ -694,10 +717,12 @@ function ConflictSubstantiveCard({
   view,
   bundle,
   names,
+  isEn,
 }: {
   view?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriageConflict4StageViewModel;
   bundle?: MarriageCanonicalBundle;
   names: [string, string];
+  isEn: boolean;
 }) {
   const personA = view?.personA;
   const personB = view?.personB;
@@ -708,27 +733,27 @@ function ConflictSubstantiveCard({
   if (!personA || !personB) return null;
 
   return (
-    <RelationshipReportCard title="🔥 갈등 4단계 상태 전이 & 위기 대응 파트너십" accentColor={ACCENT} variant="warning">
+    <RelationshipReportCard title={isEn ? "🔥 4-Stage Conflict Transition & Crisis-Response Partnership" : "🔥 갈등 4단계 상태 전이 & 위기 대응 파트너십"} accentColor={ACCENT} variant="warning">
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-rose-200">⚡ {names[0]}님의 갈등 감정 4단계 전이</p>
-          <ol className="mt-2 space-y-2 text-xs text-white/85">
+          <p className="font-bold text-v4-bad">⚡ {isEn ? `${names[0]}'s 4-Stage Emotional Conflict Transition` : `${names[0]}님의 갈등 감정 4단계 전이`}</p>
+          <ol className="mt-2 space-y-2 text-xs text-rel-ink-soft">
             {personA.stages.map((st) => (
               <li key={st.stepNumber}>
-                <span className="font-semibold text-amber-300">Step {st.stepNumber} ({st.label}):</span>
-                <p className="mt-0.5 text-white/80 leading-relaxed">{st.narrative}</p>
+                <span className="font-semibold text-rel-taupe">Step {st.stepNumber} ({st.label}):</span>
+                <p className="mt-0.5 text-rel-ink-soft leading-relaxed">{st.narrative}</p>
               </li>
             ))}
           </ol>
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-rose-200">⚡ {names[1]}님의 갈등 감정 4단계 전이</p>
-          <ol className="mt-2 space-y-2 text-xs text-white/85">
+          <p className="font-bold text-v4-bad">⚡ {isEn ? `${names[1]}'s 4-Stage Emotional Conflict Transition` : `${names[1]}님의 갈등 감정 4단계 전이`}</p>
+          <ol className="mt-2 space-y-2 text-xs text-rel-ink-soft">
             {personB.stages.map((st) => (
               <li key={st.stepNumber}>
-                <span className="font-semibold text-amber-300">Step {st.stepNumber} ({st.label}):</span>
-                <p className="mt-0.5 text-white/80 leading-relaxed">{st.narrative}</p>
+                <span className="font-semibold text-rel-taupe">Step {st.stepNumber} ({st.label}):</span>
+                <p className="mt-0.5 text-rel-ink-soft leading-relaxed">{st.narrative}</p>
               </li>
             ))}
           </ol>
@@ -736,32 +761,37 @@ function ConflictSubstantiveCard({
       </div>
 
       {crisis ? (
-        <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
-          <p className="text-sm font-bold text-amber-200">
-            🛡️ 위기 시 역할 분담: {crisis.practicalLead === "a" ? names[0] : names[1]}님(현실 문제 해결 리드) × {crisis.emotionalAnchor === "a" ? names[0] : names[1]}님(정서적 버팀목)
+        <div className="mt-4 rounded-lg border border-rel-taupe/30 bg-rel-taupe-soft p-4">
+          <p className="text-sm font-bold text-rel-taupe">
+            {isEn
+              ? <>🛡️ Crisis role split: {crisis.practicalLead === "a" ? names[0] : names[1]} (practical lead) × {crisis.emotionalAnchor === "a" ? names[0] : names[1]} (emotional anchor)</>
+              : <>🛡️ 위기 시 역할 분담: {crisis.practicalLead === "a" ? names[0] : names[1]}님(현실 문제 해결 리드) × {crisis.emotionalAnchor === "a" ? names[0] : names[1]}님(정서적 버팀목)</>}
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-white/85">
-            {crisis.narrative || `${names[0]}님과 ${names[1]}님은 예상치 못한 문제 발생 시 현실적 해결과 정서적 안정을 유연하게 나누어 맡는 상보적 팀입니다.`}
+          <p className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
+            {crisis.narrative ||
+              (isEn
+                ? `${names[0]} and ${names[1]} flexibly split practical problem-solving and emotional reassurance when something unexpected comes up.`
+                : `${names[0]}님과 ${names[1]}님은 예상치 못한 문제 발생 시 현실적 해결과 정서적 안정을 유연하게 나누어 맡는 상보적 팀입니다.`)}
           </p>
         </div>
       ) : null}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         {scriptAtoB?.firstLine ? (
-          <div className="rounded-lg border border-rose-500/30 bg-rose-950/20 p-4">
-            <p className="text-xs font-bold text-rose-200">🆘 {names[0]} ➔ {names[1]} 긴급 SOS 회복 대본</p>
-            <p className="mt-2 text-xs font-medium text-white/90">💬 첫 마디: "{scriptAtoB.firstLine}"</p>
-            {scriptAtoB.acknowledgement ? <p className="mt-1 text-xs text-white/75">🛡️ 인정: {scriptAtoB.acknowledgement}</p> : null}
-            {scriptAtoB.tabooWord ? <p className="mt-1 text-xs text-rose-300/80">⚠️ 금지 단어: {scriptAtoB.tabooWord}</p> : null}
+          <div className="rounded-lg border border-v4-bad/30 bg-v4-bad-soft p-4">
+            <p className="text-xs font-bold text-v4-bad">🆘 {isEn ? `${names[0]} ➔ ${names[1]} Emergency SOS Recovery Script` : `${names[0]} ➔ ${names[1]} 긴급 SOS 회복 대본`}</p>
+            <p className="mt-2 text-xs font-medium text-rel-ink">💬 {isEn ? "First line:" : "첫 마디:"} "{scriptAtoB.firstLine}"</p>
+            {scriptAtoB.acknowledgement ? <p className="mt-1 text-xs text-rel-ink-soft">🛡️ {isEn ? "Acknowledge:" : "인정:"} {scriptAtoB.acknowledgement}</p> : null}
+            {scriptAtoB.tabooWord ? <p className="mt-1 text-xs text-v4-bad/80">⚠️ {isEn ? "Avoid saying:" : "금지 단어:"} {scriptAtoB.tabooWord}</p> : null}
           </div>
         ) : null}
 
         {scriptBtoA?.firstLine ? (
-          <div className="rounded-lg border border-rose-500/30 bg-rose-950/20 p-4">
-            <p className="text-xs font-bold text-rose-200">🆘 {names[1]} ➔ {names[0]} 긴급 SOS 회복 대본</p>
-            <p className="mt-2 text-xs font-medium text-white/90">💬 첫 마디: "{scriptBtoA.firstLine}"</p>
-            {scriptBtoA.acknowledgement ? <p className="mt-1 text-xs text-white/75">🛡️ 인정: {scriptBtoA.acknowledgement}</p> : null}
-            {scriptBtoA.tabooWord ? <p className="mt-1 text-xs text-rose-300/80">⚠️ 금지 단어: {scriptBtoA.tabooWord}</p> : null}
+          <div className="rounded-lg border border-v4-bad/30 bg-v4-bad-soft p-4">
+            <p className="text-xs font-bold text-v4-bad">🆘 {isEn ? `${names[1]} ➔ ${names[0]} Emergency SOS Recovery Script` : `${names[1]} ➔ ${names[0]} 긴급 SOS 회복 대본`}</p>
+            <p className="mt-2 text-xs font-medium text-rel-ink">💬 {isEn ? "First line:" : "첫 마디:"} "{scriptBtoA.firstLine}"</p>
+            {scriptBtoA.acknowledgement ? <p className="mt-1 text-xs text-rel-ink-soft">🛡️ {isEn ? "Acknowledge:" : "인정:"} {scriptBtoA.acknowledgement}</p> : null}
+            {scriptBtoA.tabooWord ? <p className="mt-1 text-xs text-v4-bad/80">⚠️ {isEn ? "Avoid saying:" : "금지 단어:"} {scriptBtoA.tabooWord}</p> : null}
           </div>
         ) : null}
       </div>
@@ -769,56 +799,86 @@ function ConflictSubstantiveCard({
   );
 }
 
-function Chapter07SubstantiveCard({ bundle, names }: { bundle?: MarriageCanonicalBundle; names: [string, string] }) {
+function Chapter07SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
   if (!bundle?.coupleBurnout || !bundle?.longTermCompounding || !bundle?.expectationsAndNeeds) return null;
   const { primaryOverloadRiskPartner, overallNarrative } = bundle.coupleBurnout;
   const { assets, liabilities, compoundingSummary } = bundle.longTermCompounding;
   const { expectationsAtoB, expectationsBtoA } = bundle.expectationsAndNeeds;
+  const honorific = isEn ? "" : "님";
 
-  const expA = expectationsAtoB[0]?.whatNotToExpect || "지나치게 자발적인 집안 정리를 기대하기보다는 구체적인 업무를 요청하는 것이 안전합니다.";
-  const expB = expectationsBtoA[0]?.whatNotToExpect || "감정 표현에 매순간 완벽하게 반응해주기보다 혼자만의 복원 시간이 필요함을 인정해야 합니다.";
+  const expA =
+    expectationsAtoB[0]?.whatNotToExpect ||
+    (isEn
+      ? "It's safer to ask for specific tasks than to expect overly proactive tidying."
+      : "지나치게 자발적인 집안 정리를 기대하기보다는 구체적인 업무를 요청하는 것이 안전합니다.");
+  const expB =
+    expectationsBtoA[0]?.whatNotToExpect ||
+    (isEn
+      ? "Recognize the need for alone time to recover, rather than expecting a perfect emotional response every time."
+      : "감정 표현에 매순간 완벽하게 반응해주기보다 혼자만의 복원 시간이 필요함을 인정해야 합니다.");
 
-  const primaryPartnerName = primaryOverloadRiskPartner === "a" ? names[0] : primaryOverloadRiskPartner === "b" ? names[1] : "균형";
+  // primaryOverloadRiskPartner === "balanced" means neither person carries
+  // the risk — there is no "partner" to name here, so the header must not
+  // format "balanced" as if it were a person's name (was rendering
+  // "균형님"/"Balanced" with the person-honorific suffix attached).
+  const burnoutRiskHeader =
+    primaryOverloadRiskPartner === "a"
+      ? (isEn ? `Burnout & household-PM depletion risk: ${names[0]}` : `번아웃 및 가사 PM 소진 주의 파트너: ${names[0]}${honorific}`)
+      : primaryOverloadRiskPartner === "b"
+      ? (isEn ? `Burnout & household-PM depletion risk: ${names[1]}` : `번아웃 및 가사 PM 소진 주의 파트너: ${names[1]}${honorific}`)
+      : (isEn ? "Burnout & household-PM depletion risk: balanced between you two" : "번아웃 및 가사 PM 소진 리스크: 두 사람 사이에 고르게 분산됨");
 
   return (
-    <RelationshipReportCard title="⚖️ 장기 부부 자산과 부채 & 번아웃 리스크" accentColor={ACCENT}>
-      <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-4">
-        <p className="text-sm font-bold text-amber-200">🚨 번아웃 및 가사 PM 소진 주의 파트너: {primaryPartnerName}님</p>
-        <p className="mt-1 text-xs text-amber-100/90">{overallNarrative || `${primaryPartnerName}님이 집안 운영 기획과 루틴을 주로 챙기고 있어 정기적인 가사 업무 분담 재협상이 필요합니다.`}</p>
+    <RelationshipReportCard title={isEn ? "⚖️ Long-Term Assets, Liabilities & Burnout Risk" : "⚖️ 장기 부부 자산과 부채 & 번아웃 리스크"} accentColor={ACCENT}>
+      <div className="rounded-lg border border-v4-bad/30 bg-v4-bad-soft p-4">
+        <p className="text-sm font-bold text-v4-bad">🚨 {burnoutRiskHeader}</p>
+        <p className="mt-1 text-xs text-rel-ink-soft">
+          {overallNarrative ||
+            (primaryOverloadRiskPartner === "balanced"
+              ? (isEn
+                  ? "Both of you carry the household planning and routines fairly evenly, keeping burnout risk low."
+                  : "두 사람 모두 집안 운영 기획과 루틴을 비교적 고르게 나눠 지고 있어 번아웃 위험이 낮습니다.")
+              : (() => {
+                  const leadName = primaryOverloadRiskPartner === "a" ? names[0] : names[1];
+                  return isEn
+                    ? `${leadName} is mainly carrying the household planning and routines, so a regular renegotiation of chore division is needed.`
+                    : `${leadName}님이 집안 운영 기획과 루틴을 주로 챙기고 있어 정기적인 가사 업무 분담 재협상이 필요합니다.`;
+                })())}
+        </p>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-amber-200">⚠️ {names[0]} ➔ {names[1]} 배우자에게 기대하지 말아야 할 것</p>
-          <p className="mt-1.5 text-xs leading-relaxed text-white/80">{expA}</p>
+          <p className="font-bold text-v4-bad">⚠️ {isEn ? `${names[0]} ➔ ${names[1]}: what not to expect from your spouse` : `${names[0]} ➔ ${names[1]} 배우자에게 기대하지 말아야 할 것`}</p>
+          <p className="mt-1.5 text-xs leading-relaxed text-rel-ink-soft">{expA}</p>
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-amber-200">⚠️ {names[1]} ➔ {names[0]} 배우자에게 기대하지 말아야 할 것</p>
-          <p className="mt-1.5 text-xs leading-relaxed text-white/80">{expB}</p>
+          <p className="font-bold text-v4-bad">⚠️ {isEn ? `${names[1]} ➔ ${names[0]}: what not to expect from your spouse` : `${names[1]} ➔ ${names[0]} 배우자에게 기대하지 말아야 할 것`}</p>
+          <p className="mt-1.5 text-xs leading-relaxed text-rel-ink-soft">{expB}</p>
         </RelationshipReportInset>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-emerald-300">📈 시간이 살수록 쌓이는 부부 자산 (Assets)</p>
-          <ul className="mt-2 space-y-2 text-xs text-white/85">
+          <p className="font-bold text-v4-good">📈 {isEn ? "Assets that compound over time" : "시간이 살수록 쌓이는 부부 자산 (Assets)"}</p>
+          <ul className="mt-2 space-y-2 text-xs text-rel-ink-soft">
             {assets.map((ast, i) => (
               <li key={i}>
-                <p className="font-semibold text-emerald-200">{ast.title}</p>
-                {ast.body ? <p className="text-white/75">{ast.body}</p> : null}
+                <p className="font-semibold text-v4-good">{ast.title}</p>
+                {ast.body ? <p className="text-rel-ink-mute">{ast.body}</p> : null}
               </li>
             ))}
           </ul>
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-rose-300">📉 관리를 안 하면 누적되는 부부 부채 (Liabilities)</p>
-          <ul className="mt-2 space-y-2 text-xs text-white/85">
+          <p className="font-bold text-v4-bad">📉 {isEn ? "Liabilities that build up if left unmanaged" : "관리를 안 하면 누적되는 부부 부채 (Liabilities)"}</p>
+          <ul className="mt-2 space-y-2 text-xs text-rel-ink-soft">
             {liabilities.map((liab, i) => (
               <li key={i}>
-                <p className="font-semibold text-rose-200">{liab.title}</p>
-                {liab.body ? <p className="text-white/75">{liab.body}</p> : null}
+                <p className="font-semibold text-v4-bad">{liab.title}</p>
+                {liab.body ? <p className="text-rel-ink-mute">{liab.body}</p> : null}
               </li>
             ))}
           </ul>
@@ -826,8 +886,8 @@ function Chapter07SubstantiveCard({ bundle, names }: { bundle?: MarriageCanonica
       </div>
 
       {compoundingSummary ? (
-        <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white/80">
-          <p className="font-bold text-white">📌 장기 복리 총평</p>
+        <div className="mt-4 rounded-lg border border-rel-line bg-rel-surface p-3 text-xs text-rel-ink-soft">
+          <p className="font-bold text-rel-ink">📌 {isEn ? "Long-Term Compounding Summary" : "장기 복리 총평"}</p>
           <p className="mt-1">{compoundingSummary}</p>
         </div>
       ) : null}
@@ -838,83 +898,241 @@ function Chapter07SubstantiveCard({ bundle, names }: { bundle?: MarriageCanonica
 function LifePartnershipVerdictCard({
   view,
   names,
+  isEn,
 }: {
   view?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriagePartnershipVerdictViewModel;
   names: [string, string];
+  isEn: boolean;
 }) {
   if (!view) return null;
-  const { lifeSyncPct, operatingPartnerFit, emotionalPartnerFit, longTermGrowthFit, oneLineVerdict, greatestStrength, biggestVulnerability } = view;
+  const { lifeSyncPct, operatingStatusLabel, emotionalPartnerFit, longTermGrowthFit, oneLineVerdict, greatestStrength, biggestVulnerability } = view;
+  const fitSuffix = isEn ? "" : "점";
 
   return (
-    <RelationshipReportCard title="🏆 부부 파트너십 최종 판정 (Life Partnership Verdict)" accentColor={ACCENT}>
-      <div className="rounded-lg border border-emerald-500/40 bg-emerald-950/30 p-5 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">Life Partnership Sync Score</p>
-        <p className="mt-1 text-4xl font-extrabold text-white">{lifeSyncPct}<span className="text-lg font-normal text-emerald-300/80">%</span></p>
-        <p className="mt-3 text-base font-bold text-emerald-100">{oneLineVerdict}</p>
+    <RelationshipReportCard title={isEn ? "🏆 Life Partnership Verdict" : "🏆 부부 파트너십 최종 판정 (Life Partnership Verdict)"} accentColor={ACCENT}>
+      <div className="rounded-lg border border-v4-good/40 bg-v4-good-soft p-5 text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-v4-good">Life Partnership Sync Score</p>
+        <p className="mt-1 text-4xl font-extrabold text-rel-ink">{lifeSyncPct}<span className="text-lg font-normal text-v4-good/80">%</span></p>
+        <p className="mt-3 text-base font-bold text-v4-good">{oneLineVerdict}</p>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3 text-center text-xs">
-        <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-          <p className="text-white/60 font-medium">가정 운영 적합성</p>
-          <p className="mt-1 text-base font-bold text-amber-200">{`${operatingPartnerFit}점`}</p>
+        <div className="rounded-lg bg-rel-surface p-3 border border-rel-line">
+          <p className="text-rel-ink-mute font-medium">{isEn ? "Household-Operating Fit" : "가정 운영 적합성"}</p>
+          <p className="mt-1.5 text-xs font-bold leading-snug text-v4-a">{operatingStatusLabel}</p>
         </div>
-        <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-          <p className="text-white/60 font-medium">정서 교감 적합성</p>
-          <p className="mt-1 text-base font-bold text-emerald-200">{`${emotionalPartnerFit}점`}</p>
+        <div className="rounded-lg bg-rel-surface p-3 border border-rel-line">
+          <p className="text-rel-ink-mute font-medium">{isEn ? "Emotional Connection Fit" : "정서 교감 적합성"}</p>
+          <p className="mt-1 text-base font-bold text-v4-good">{`${emotionalPartnerFit}${fitSuffix}`}</p>
         </div>
-        <div className="rounded-lg bg-white/5 p-3 border border-white/10">
-          <p className="text-white/60 font-medium">장기 성장 적합성</p>
-          <p className="mt-1 text-base font-bold text-teal-200">{`${longTermGrowthFit}점`}</p>
+        <div className="rounded-lg bg-rel-surface p-3 border border-rel-line">
+          <p className="text-rel-ink-mute font-medium">{isEn ? "Long-Term Growth Fit" : "장기 성장 적합성"}</p>
+          <p className="mt-1 text-base font-bold text-rel-taupe">{`${longTermGrowthFit}${fitSuffix}`}</p>
         </div>
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-emerald-300">✨ 우리 부부의 가장 큰 결합력 (Greatest Strength)</p>
-          <p className="mt-2 text-xs leading-relaxed text-white/85">{greatestStrength}</p>
+          <p className="font-bold text-v4-good">✨ {isEn ? "Your Greatest Strength" : "우리 부부의 가장 큰 결합력 (Greatest Strength)"}</p>
+          <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">{greatestStrength}</p>
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-rose-300">⚠️ 관계의 안정감을 흔드는 가장 큰 취약점 (Biggest Vulnerability)</p>
-          <p className="mt-2 text-xs leading-relaxed text-white/85">{biggestVulnerability}</p>
+          <p className="font-bold text-v4-bad">⚠️ {isEn ? "Biggest Vulnerability" : "관계의 안정감을 흔드는 가장 큰 취약점 (Biggest Vulnerability)"}</p>
+          <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">{biggestVulnerability}</p>
         </RelationshipReportInset>
       </div>
     </RelationshipReportCard>
   );
 }
 
-function MarriageActionPlaybookCard({ names }: { names: [string, string] }) {
+function MarriageActionPlaybookCard({ names, isEn }: { names: [string, string]; isEn: boolean }) {
   return (
-    <RelationshipReportCard title="📘 지속 가능한 부부 파트너십 실전 사용설명서 (Do & Don't)" accentColor={ACCENT}>
+    <RelationshipReportCard title={isEn ? "📘 The Playbook for a Lasting Partnership (Do & Don't)" : "📘 지속 가능한 부부 파트너십 실전 사용설명서 (Do & Don't)"} accentColor={ACCENT}>
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-emerald-200">✅ 지금 당장 해볼 것 (Do)</p>
-          <ul className="mt-2 space-y-1.5 text-xs text-white/90">
-            <li>• 주 1회 15분간 가사 및 재정 일정 스탠드업 미팅 진행하기</li>
-            <li>• 상대의 기획/정리 노고에 "고마워" 즉시 정서적 피드백 주기</li>
-            <li>• 대형 지출 전에는 24시간 생각 정리 후 상호 합의 거치기</li>
-            <li>• 싸움이 15분을 넘어가면 타임아웃 키워드 선언 후 20분 쿨링다운하기</li>
+          <p className="font-bold text-v4-good">✅ {isEn ? "Try this now (Do)" : "지금 당장 해볼 것 (Do)"}</p>
+          <ul className="mt-2 space-y-1.5 text-xs text-rel-ink">
+            {isEn ? (
+              <>
+                <li>• Once a month, check in on whether the chore/finance roles you agreed on are actually holding up</li>
+                <li>• Give immediate emotional feedback ("thank you") for your partner's planning/tidying effort</li>
+                <li>• Take 24 hours to think it over and reach mutual agreement before big purchases</li>
+                <li>• If a fight passes 15 minutes, declare a timeout keyword and cool down for 20 minutes</li>
+              </>
+            ) : (
+              <>
+                <li>• 한 달에 한 번, 정한 가사·재정 역할이 실제로 잘 지켜지고 있는지 서로 점검하기</li>
+                <li>• 상대의 기획/정리 노고에 "고마워" 즉시 정서적 피드백 주기</li>
+                <li>• 대형 지출 전에는 24시간 생각 정리 후 상호 합의 거치기</li>
+                <li>• 싸움이 15분을 넘어가면 타임아웃 키워드 선언 후 20분 쿨링다운하기</li>
+              </>
+            )}
           </ul>
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-rose-200">🚫 절대 하지 말 것 (Don't)</p>
-          <ul className="mt-2 space-y-1.5 text-xs text-white/90">
-            <li>• 침실 문이 닫힌 뒤 그날의 갈등이나 서운함 재개하지 않기</li>
-            <li>• 상대의 원가족이나 과거 부모 습관을 갈등 도중에 끌어오지 않기</li>
-            <li>• 집안일이나 재정 주도권을 한 사람에게 무작정 전임하고 방관하기</li>
-            <li>• 상대가 혼자만의 복원 시간을 요청할 때 말을 쏘아붙이며 억지로 대화 강요하지 않기</li>
+          <p className="font-bold text-v4-bad">🚫 {isEn ? "Never do this (Don't)" : "절대 하지 말 것 (Don't)"}</p>
+          <ul className="mt-2 space-y-1.5 text-xs text-rel-ink">
+            {isEn ? (
+              <>
+                <li>• Don't reopen the day's conflict or hurt feelings once the bedroom door is closed</li>
+                <li>• Don't bring up your partner's family of origin or old parental habits mid-conflict</li>
+                <li>• Don't dump chores or financial control on one person and check out</li>
+                <li>• Don't snap back or force a conversation when your partner asks for alone time to recover</li>
+              </>
+            ) : (
+              <>
+                <li>• 침실 문이 닫힌 뒤 그날의 갈등이나 서운함 재개하지 않기</li>
+                <li>• 상대의 원가족이나 과거 부모 습관을 갈등 도중에 끌어오지 않기</li>
+                <li>• 집안일이나 재정 주도권을 한 사람에게 무작정 전임하고 방관하기</li>
+                <li>• 상대가 혼자만의 복원 시간을 요청할 때 말을 쏘아붙이며 억지로 대화 강요하지 않기</li>
+              </>
+            )}
           </ul>
         </RelationshipReportInset>
       </div>
 
-      <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-center">
-        <p className="text-xs font-semibold text-emerald-200">🌱 {names[0]}님과 {names[1]}님의 10년, 20년 안식을 위한 약속</p>
-        <p className="mt-1 text-xs text-white/75">
-          작은 생활의 루틴을 투명하게 나누고 서로의 복원 시간을 지켜줄 때, 두 사람의 가정은 가장 안전한 휴식처가 됩니다.
+      <div className="mt-4 rounded-lg border border-rel-line bg-rel-taupe-soft/30 p-4 text-center">
+        <p className="text-xs font-semibold text-rel-taupe">
+          🌱 {isEn ? `A promise for ${names[0]} and ${names[1]}'s next 10 to 20 years together` : `${names[0]}님과 ${names[1]}님의 10년, 20년 안식을 위한 약속`}
+        </p>
+        <p className="mt-1 text-xs text-rel-ink-soft">
+          {isEn
+            ? "When you transparently share the small routines of daily life and protect each other's recovery time, your home becomes the safest place to rest."
+            : "작은 생활의 루틴을 투명하게 나누고 서로의 복원 시간을 지켜줄 때, 두 사람의 가정은 가장 안전한 휴식처가 됩니다."}
         </p>
       </div>
     </RelationshipReportCard>
+  );
+}
+
+// ---- Deep-read canonical merge blocks ---------------------------------------
+// Additive expert-synthesis subsections for Ch1/Ch3/Ch8/Ch9 — see
+// docs/dev/decisions/028 and the Deep Read Content Ownership Audit. Each
+// block renders only what the (optional) ViewModel field actually contains;
+// none fabricate a fallback, and none carry a title/verdict/score of their
+// own — canonical meaning (the cards above) stays authoritative.
+
+function ExpertVoiceBlock({
+  vm,
+  viewerIsReportA,
+}: {
+  vm?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriageExpertVoiceViewModel;
+  viewerIsReportA: boolean;
+}) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  if (!vm || (!vm.personA && !vm.personB)) return null;
+  // vm.personA/personB are CANONICAL (report_id_a/b), not viewer-relative —
+  // pick which one is "me" vs "my partner" based on who's actually viewing,
+  // matching the same convention the legacy DeepReadCard's `swap` param uses.
+  const myVoice = viewerIsReportA ? vm.personA : vm.personB;
+  const partnerVoice = viewerIsReportA ? vm.personB : vm.personA;
+  return (
+    <RelationshipReportInset className="mb-4">
+      {myVoice ? (
+        <div>
+          <RelationshipReportLabel>{t.deepReadVoiceMeLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5 italic">
+            “{myVoice.voice}” — {myVoice.personName}
+          </RelationshipReportParagraph>
+        </div>
+      ) : null}
+      {partnerVoice ? (
+        <div className={myVoice ? "mt-3" : ""}>
+          <RelationshipReportLabel>{t.deepReadVoicePartnerLabel}</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1.5 italic">
+            “{partnerVoice.voice}” — {partnerVoice.personName}
+          </RelationshipReportParagraph>
+        </div>
+      ) : null}
+    </RelationshipReportInset>
+  );
+}
+
+function RoleFitInsightBlock({ text }: { text?: string }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  if (!text) return null;
+  return (
+    <RelationshipReportInset className="mt-4">
+      <RelationshipReportLabel>{t.deepReadPatternLabel}</RelationshipReportLabel>
+      <RelationshipReportParagraph className="mt-1.5">{text}</RelationshipReportParagraph>
+    </RelationshipReportInset>
+  );
+}
+
+function TogetherInsightBlock({
+  vm,
+}: {
+  vm?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriageTogetherInsightViewModel;
+}) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  if (!vm) return null;
+  return (
+    <RelationshipReportInset className="mt-4">
+      <RelationshipReportLabel>{t.deepReadTogetherLabel}</RelationshipReportLabel>
+      <RelationshipReportParagraph className="mt-1.5">{vm.text}</RelationshipReportParagraph>
+      {vm.starter ? (
+        <RelationshipReportParagraph className="mt-1.5 italic">“{vm.starter}”</RelationshipReportParagraph>
+      ) : null}
+    </RelationshipReportInset>
+  );
+}
+
+function PersonalizedAdviceBlock({
+  vm,
+  canonicalNames,
+  viewerIsReportA,
+}: {
+  vm?: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriagePersonalizedAdviceViewModel;
+  canonicalNames: [string, string];
+  viewerIsReportA: boolean;
+}) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  if (!vm || (vm.forPersonA.length === 0 && vm.forPersonB.length === 0)) return null;
+  // vm.forPersonA/forPersonB are CANONICAL (report_id_a/b) — pick which
+  // side is "me" vs "my partner" based on who's actually viewing, same
+  // convention as ExpertVoiceBlock / the legacy DeepReadCard's `swap`.
+  const myTips = viewerIsReportA ? vm.forPersonA : vm.forPersonB;
+  const partnerTips = viewerIsReportA ? vm.forPersonB : vm.forPersonA;
+  const myName = viewerIsReportA ? canonicalNames[0] : canonicalNames[1];
+  const partnerName = viewerIsReportA ? canonicalNames[1] : canonicalNames[0];
+
+  const renderTips = (
+    tips: import("@/lib/relationship/marriage/viewModel/marriageUiContracts").MarriagePersonalizedAdviceTip[],
+    label: string,
+  ) => {
+    if (tips.length === 0) return null;
+    return (
+      <div>
+        <RelationshipReportLabel>{label}</RelationshipReportLabel>
+        <div className="mt-2 space-y-3">
+          {tips.map((tip, i) => (
+            <RelationshipReportInset key={`${tip.actionTitle}-${i}`}>
+              <p className="text-sm font-semibold text-rel-ink">{tip.actionTitle}</p>
+              <RelationshipReportParagraph className="mt-1.5" muted>
+                {tip.reason}
+              </RelationshipReportParagraph>
+              <RelationshipReportParagraph className="mt-1.5 italic">
+                “{tip.speechTip}”
+              </RelationshipReportParagraph>
+              {tip.example ? (
+                <RelationshipReportParagraph className="mt-1.5" muted>
+                  {tip.example}
+                </RelationshipReportParagraph>
+              ) : null}
+            </RelationshipReportInset>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="mt-4 space-y-4">
+      {renderTips(myTips, `${t.deepReadAdviceMeLabel} (${myName})`)}
+      {renderTips(partnerTips, `${t.deepReadAdvicePartnerLabel} (${partnerName})`)}
+    </div>
   );
 }
 
@@ -967,7 +1185,7 @@ export function MarriageReportSectionCard({
   }
 }
 
-/** ViewModel 전체를 RelationshipReportLayout에 조립 — production 진입점. */
+/** ViewModel 전체를 에디토리얼 레이아웃으로 조립 — production 진입점. */
 export function MarriageReportViewModelView({
   vm,
   kindLabel,
@@ -1013,22 +1231,23 @@ export function MarriageReportViewModelView({
   ];
 
   return (
-    <RelationshipReportLayout
-      kind="cohabitation"
-      kindLabel={kindLabel ?? t.defaultKindLabel}
-      headline={{
-        title: vm.opening.headline,
-        subtitle: vm.opening.subtitle,
-        names: vm.opening.names,
-        badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
-      }}
-      scores={[]}
+    <div
+      className={`bg-rel-bg font-rel-sans text-rel-ink antialiased ${relSans.variable} ${relSerif.variable}`}
+      lang={isEn ? "en" : "ko"}
     >
+      <MarriageEditorialHero
+        eyebrow={kindLabel ?? t.defaultKindLabel}
+        headline={vm.opening.headline}
+        subtitle={vm.opening.subtitle}
+        names={vm.opening.names}
+        gradeLabel={vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined}
+      />
       {snapshot ? (() => {
-        const intimacy = snapshot.panel.narrative!.topics.find(t => t.topic === "intimacy")!;
-        const stability = snapshot.panel.narrative!.topics.find(t => t.topic === "stability")!;
-        const conflict = snapshot.panel.narrative!.topics.find(t => t.topic === "conflict")!;
-        
+        const topics = snapshot.panel?.narrative?.topics ?? [];
+        const intimacy = topics.find(t => t.topic === "intimacy");
+        const stability = topics.find(t => t.topic === "stability");
+        const conflict = topics.find(t => t.topic === "conflict");
+
         const cards: OverviewCardData[] = [
           {
             key: "intimacy",
@@ -1037,11 +1256,11 @@ export function MarriageReportViewModelView({
             score: snapshot.scores.romanticFitPct,
             tone: "good",
             inverted: false,
-            gradeLabel: intimacy.title,
-            oneLiner: intimacy.subtitle,
+            gradeLabel: intimacy?.title ?? t.scoreLabelRomanticFit,
+            oneLiner: intimacy?.subtitle ?? "",
             measures: locale === "en-US" ? "How deeply you connect on a romantic and emotional level" : "두 사람이 정서적으로 얼마나 깊이 연결되어 있는지",
-            why: intimacy.interpretation,
-            thresholdText: intimacy.axisNote,
+            why: intimacy?.interpretation ?? "",
+            thresholdText: intimacy?.axisNote,
           },
           {
             key: "stability",
@@ -1050,11 +1269,11 @@ export function MarriageReportViewModelView({
             score: snapshot.scores.lifeSynergyPct,
             tone: "neutral",
             inverted: false,
-            gradeLabel: stability.title,
-            oneLiner: stability.subtitle,
+            gradeLabel: stability?.title ?? t.scoreLabelLifeSynergy,
+            oneLiner: stability?.subtitle ?? "",
             measures: locale === "en-US" ? "How well you navigate real-world challenges and life together" : "현실적인 문제와 삶의 방향성을 얼마나 잘 맞춰갈 수 있는지",
-            why: stability.interpretation,
-            thresholdText: stability.axisNote,
+            why: stability?.interpretation ?? "",
+            thresholdText: stability?.axisNote,
           },
           {
             key: "conflict",
@@ -1063,11 +1282,11 @@ export function MarriageReportViewModelView({
             score: snapshot.scores.homeRiskPct,
             tone: "warn",
             inverted: true,
-            gradeLabel: conflict.title,
-            oneLiner: conflict.subtitle,
+            gradeLabel: conflict?.title ?? t.scoreLabelHomeRisk,
+            oneLiner: conflict?.subtitle ?? "",
             measures: locale === "en-US" ? "The potential for friction or misunderstanding in daily life" : "결혼 생활 중 의사소통이나 가치관 차이로 마찰이 생길 가능성",
-            why: conflict.interpretation,
-            thresholdText: conflict.axisNote,
+            why: conflict?.interpretation ?? "",
+            thresholdText: conflict?.axisNote,
           },
         ];
 
@@ -1111,33 +1330,46 @@ export function MarriageReportViewModelView({
               >
                 {summaryText ? (
                   <RelationshipReportInset className="mb-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-amber-200/90">
+                    <p className="text-xs font-bold uppercase tracking-wider text-rel-taupe">
                       💡 {chOwnership?.userQuestion}
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/90">
+                    <p className="mt-2 text-sm leading-relaxed text-rel-ink">
                       {summaryText}
                     </p>
                   </RelationshipReportInset>
                 ) : null}
 
+                {cDef.id === "c1_who_we_are" ? (
+                  <ExpertVoiceBlock vm={vm.chapter1ExpertVoice} viewerIsReportA={viewerIsReportA} />
+                ) : null}
+
                 {cDef.id === "c3_household_os" ? (
-                  <EconomicPartnershipCard bundle={vm.canonicalBundle} names={vm.opening.names} />
+                  <>
+                    <EconomicPartnershipCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
+                    <RoleFitInsightBlock text={vm.chapter3RoleFitInsight} />
+                  </>
                 ) : null}
 
                 {cDef.id === "c5_conflict_deescalation" ? (
-                  <ConflictSubstantiveCard view={vm.conflict4StageView} bundle={vm.canonicalBundle} names={vm.opening.names} />
+                  <ConflictSubstantiveCard view={vm.conflict4StageView} bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
                 {cDef.id === "c7_longterm_compounding" ? (
-                  <Chapter07SubstantiveCard bundle={vm.canonicalBundle} names={vm.opening.names} />
+                  <Chapter07SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
                 {cDef.id === "c8_partnership_verdict" ? (
-                  <LifePartnershipVerdictCard view={vm.lifePartnershipVerdictView} names={vm.opening.names} />
+                  <>
+                    <LifePartnershipVerdictCard view={vm.lifePartnershipVerdictView} names={vm.opening.names} isEn={isEn} />
+                    <TogetherInsightBlock vm={vm.chapter8TogetherInsight} />
+                  </>
                 ) : null}
 
                 {cDef.id === "c9_next_chapter_rituals" ? (
-                  <MarriageActionPlaybookCard names={vm.opening.names} />
+                  <>
+                    <MarriageActionPlaybookCard names={vm.opening.names} isEn={isEn} />
+                    <PersonalizedAdviceBlock vm={vm.chapter9PersonalizedAdvice} canonicalNames={vm.canonicalNames} viewerIsReportA={viewerIsReportA} />
+                  </>
                 ) : null}
 
                 {/* Map only this chapter's explicitly owned section cards */}
@@ -1190,6 +1422,6 @@ export function MarriageReportViewModelView({
           ))}
         </MarriageChapterSection>
       ) : null}
-    </RelationshipReportLayout>
+    </div>
   );
 }

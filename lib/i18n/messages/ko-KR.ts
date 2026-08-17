@@ -1,4 +1,5 @@
 import type { MessageCatalog } from "./en-US";
+import { subjectParticle } from "@/lib/relationship/koreanParticles";
 
 /** Minimal MVP UI catalog — Korean */
 export const messagesKoKR: MessageCatalog = {
@@ -1217,7 +1218,7 @@ export const messagesKoKR: MessageCatalog = {
       upsetSectionCardTitle: "서운함에 반응하는 방식",
       originStoryCardTitle: "왜 우리였을까",
       originStoryWhyUsLabel: "서로에게 끌린 이유",
-      originStoryPositiveChangeLabel: (nickname: string) => `${nickname}이(가) 얻는 변화`,
+      originStoryPositiveChangeLabel: (nickname: string) => `${subjectParticle(nickname)} 얻는 변화`,
       deepReadCardTitle: "심층 리드 — 행간 읽기",
       deepReadVoiceMeLabel: "내 목소리로",
       deepReadVoicePartnerLabel: "상대의 목소리로",

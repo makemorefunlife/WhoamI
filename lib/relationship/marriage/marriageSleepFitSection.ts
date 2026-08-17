@@ -4,6 +4,7 @@ import { branchPairKey, isGuimun, isWonjin } from "@/lib/saju/workPairRiskSignal
 import { sanitizeHomeLifeText } from "./homeLifeLanguage";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
+import { topicParticle } from "@/lib/relationship/koreanParticles";
 
 const NEEDLE_SENSITIVE_BRANCHES = new Set(["ja", "o", "myo", "yu"]);
 
@@ -74,8 +75,8 @@ export function buildSleepFitSection(params: {
         `${sensorNickname} is the sensor type who wakes up easily even from a rustling sound, light, or a temperature difference, while ` +
           `${easyNickname} is the type who falls asleep no matter what. ` +
           `Trying to sync rhythms in one bed just builds up fatigue for both of you.`,
-        `${sensorNickname}는 바스락거리는 소리·빛·체온 차이에도 쉽게 깨는 센서형이고, ` +
-          `${easyNickname}는 무던하게 잠드는 스타일입니다. ` +
+        `${topicParticle(sensorNickname)} 바스락거리는 소리·빛·체온 차이에도 쉽게 깨는 센서형이고, ` +
+          `${topicParticle(easyNickname)} 무던하게 잠드는 스타일입니다. ` +
           `한 침대에서 리듬을 맞추려 애쓰다 보면 둘 다 피로만 쌓입니다.`,
       ),
     );

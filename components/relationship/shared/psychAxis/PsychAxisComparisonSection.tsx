@@ -34,8 +34,10 @@ export function PsychAxisComparisonSection({
   highlights,
   chartNote,
   names,
+  locale,
 }: PsychAxisComparisonSectionProps) {
   if (!axisResults.length) return null;
+  const isEn = locale === "en-US";
 
   return (
     <>
@@ -50,11 +52,13 @@ export function PsychAxisComparisonSection({
 
       {highlights.length > 0 ? (
         <div className="mt-10 space-y-5">
-          <SubHeading title="11축 심리 차이 핵심 인사이트" tag="Psych Dynamics" tone="coral" />
+          <SubHeading title={isEn ? "Key 11-Axis Psych Insights" : "11축 심리 차이 핵심 인사이트"} tag="Psych Dynamics" tone="coral" />
           <ul className="space-y-4">
             {highlights.map((h, i) => {
               const isMatch = h.match_type === "resonance";
-              const tagLabel = isMatch ? "✨ 공감 유대 (Resonance)" : h.match_type === "complement" ? "🌿 상보 보완 (Complement)" : "⚡ 성향 차이 (Tension)";
+              const tagLabel = isEn
+                ? (isMatch ? "✨ Resonance" : h.match_type === "complement" ? "🌿 Complement" : "⚡ Tension")
+                : (isMatch ? "✨ 공감 유대 (Resonance)" : h.match_type === "complement" ? "🌿 상보 보완 (Complement)" : "⚡ 성향 차이 (Tension)");
               return (
                 <li key={h.axis_key}>
                   <Reveal delay={i * 60}>

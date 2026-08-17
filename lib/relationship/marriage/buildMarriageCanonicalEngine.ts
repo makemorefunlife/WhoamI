@@ -6,7 +6,10 @@ import type { Locale } from "@/lib/i18n/locale";
 import { buildMarriageRuleContext, type MarriageRuleContext } from "./buildMarriageRuleContext";
 import { buildMarriagePsychMatchBundle } from "./buildMarriagePsychMatch";
 import { refineHouseholdCfo } from "./marriageCfoConsumption";
-import { buildMarriageOperatingCfoCanonical } from "./marriageOperatingCfoCanonical";
+import {
+  buildMarriageOperatingCfoCanonical,
+  operatingCfoSideFromNickname,
+} from "./marriageOperatingCfoCanonical";
 import { refineParentingStyle } from "./marriageTenGodAnalysis";
 import { buildPartnerMentalLoadNote } from "@/lib/relationship/enrichment/partnerMentalLoadNote";
 import { buildCrisisRoleLine } from "@/lib/relationship/enrichment/marriageSajuGapInsights";
@@ -47,6 +50,14 @@ export type BuildMarriageCanonicalParams = {
   pairCohabitation?: PairCohabitationSignals | null;
   cohabitationSignalsA?: CohabitationSajuSignals;
   cohabitationSignalsB?: CohabitationSajuSignals;
+  /**
+   * Canonical household-CFO nickname, already resolved once in
+   * buildMarriageReport.ts via refineHouseholdCfo (the true canonical pick,
+   * based on pickHouseholdCfo's base value). Passed in — not recomputed here
+   * — so economicPartnership.decisionFlow's cash-flow/executor roles can't
+   * diverge from the CFO summary the rest of the report shows.
+   */
+  cfoNickname?: string | null;
   locale?: Locale;
 };
 
@@ -319,26 +330,38 @@ export function buildMarriageCanonicalEngine(
   const branchA = ctx?.marriagePairAnalysis?.chartA?.branchCodes ?? new Set<string>();
   const branchB = ctx?.marriagePairAnalysis?.chartB?.branchCodes ?? new Set<string>();
 
-  const rawCrisisLine = buildCrisisRoleLine(
-    countsA,
-    countsB,
-    branchA,
-    branchB,
-    a,
-    b,
-  );
-  const crisisLine = rawCrisisLine || (isEn
-    ? `${a} leads practical problem solving during urgent household events, while ${b} stabilizes emotional reassurance.`
-    : `갑작스러운 위기가 찾아오면 ${a}님이 먼저 수습책부터 찾고, ${b}님이 불안해하는 파트너의 마음을 안정적으로 다독여주는 편이에요.`);
-
   const crisisRoleA: CrisisRoleType = pA.practicality > 55 || pA.thinking_style > 55 ? "PROBLEM_SOLVER" : "EMOTIONAL_ANCHOR";
   const crisisRoleB: CrisisRoleType = pB.practicality > 55 || pB.thinking_style > 55 ? "PROBLEM_SOLVER" : "EMOTIONAL_ANCHOR";
+  const practicalLead: RoleActor = crisisRoleA === "PROBLEM_SOLVER" ? "a" : "b";
+  const emotionalAnchor: RoleActor = crisisRoleA === "EMOTIONAL_ANCHOR" ? "a" : "b";
+
+  // The narrative sentence must name the same person as practicalLead/
+  // emotionalAnchor above (both render side-by-side in ConflictSubstantiveCard's
+  // crisis-role block). Previously the narrative came from buildCrisisRoleLine
+  // (saju officer/seal comparison) with a fallback that ALWAYS said "${a}
+  // leads..." regardless of what practicalLead actually computed — an
+  // independent signal that could (and, on the common no-saju-signal fallback
+  // path, structurally would) name the opposite person from the badge above
+  // it (P0 consistency fix). When real psych is present, build the narrative
+  // directly from practicalLead/emotionalAnchor instead; only fall back to
+  // the saju-only computation when psych is unavailable (old-cache safety).
+  const practicalLeadName = practicalLead === "a" ? a : b;
+  const emotionalAnchorName = emotionalAnchor === "a" ? a : b;
+  const hasCrisisPsych = Boolean(params.psychMasterA && params.psychMasterB);
+  const crisisLine = hasCrisisPsych
+    ? (isEn
+        ? `${practicalLeadName} leads practical problem solving during urgent household events, while ${emotionalAnchorName} stabilizes emotional reassurance.`
+        : `갑작스러운 위기가 찾아오면 ${practicalLeadName}님이 먼저 수습책부터 찾고, ${emotionalAnchorName}님이 불안해하는 파트너의 마음을 안정적으로 다독여주는 편이에요.`)
+    : (buildCrisisRoleLine(countsA, countsB, branchA, branchB, a, b) ||
+        (isEn
+          ? `${a} leads practical problem solving during urgent household events, while ${b} stabilizes emotional reassurance.`
+          : `갑작스러운 위기가 찾아오면 ${a}님이 먼저 수습책부터 찾고, ${b}님이 불안해하는 파트너의 마음을 안정적으로 다독여주는 편이에요.`));
 
   const crisisRole: CrisisRoleResult = {
     roleA: crisisRoleA,
     roleB: crisisRoleB,
-    practicalLead: crisisRoleA === "PROBLEM_SOLVER" ? "a" : "b",
-    emotionalAnchor: crisisRoleA === "EMOTIONAL_ANCHOR" ? "a" : "b",
+    practicalLead,
+    emotionalAnchor,
     synergyType: crisisRoleA !== crisisRoleB ? "perfect_complement" : crisisRoleA === "PROBLEM_SOLVER" ? "dual_practical" : "dual_emotional",
     narrative: crisisLine,
   };
@@ -407,11 +430,29 @@ export function buildMarriageCanonicalEngine(
     ? "Respecting individual recovery time preserves long-term intimacy."
     : "서로에게 혼자만의 충전 시간을 인정해줄 때 부부의 안식함이 오래 지속됩니다.");
 
+  // ctx.masterScores is MarriageMasterScores { activation, benefit, risk } —
+  // NOT { romanticFitPct, lifeSynergyPct, homeRiskPct } (those property
+  // names don't exist on the type; reading them silently returned undefined,
+  // so all three fields below always fell back to their hardcoded defaults).
+  // The correct mapping is already an established convention used
+  // identically in buildMarriageReport.ts/homeReportTemplate.ts:
+  //   activation -> report.meta.romantic_fit_pct
+  //   benefit    -> report.meta.life_synergy_pct
+  //   risk       -> report.meta.home_risk_pct
+  // risk (higher = worse) is inverted via `100 - risk`, the same
+  // transformation computeMarriageEventScores already uses for its
+  // "conflict" topic (and identically in the Friend/Family domains) — not a
+  // new formula invented here. The `Math.max(75, ...)` floor from the
+  // previous line is dropped since that clamp isn't part of the established
+  // pattern (clamp(100 - risk, 0, 100) is).
+  // operationSyncPct stays a hardcoded constant — no existing canonical
+  // numeric authority represents "household-operating fit" as a percentage
+  // (see docs/dev — Ch8 score integrity audit). Not fixed this batch.
   const lifePartnershipVerdict: LifePartnershipVerdictResult = {
-    lifeSyncPct: ctx.masterScores.lifeSynergyPct ?? 82,
+    lifeSyncPct: ctx.masterScores.benefit,
     operationSyncPct: 85,
-    emotionalSyncPct: ctx.masterScores.romanticFitPct ?? 80,
-    longTermSynergyPct: Math.max(75, 100 - (ctx.masterScores.homeRiskPct ?? 20)),
+    emotionalSyncPct: ctx.masterScores.activation,
+    longTermSynergyPct: Math.max(0, Math.min(100, 100 - ctx.masterScores.risk)),
     oneLineVerdict: isEn
       ? `${a} & ${b} build a resilient household partnership grounded in practical alignment.`
       : `${a}님과 ${b}님은 서로의 생활 방식과 운영 주도권을 존중하며 깊은 안정감을 만드는 부부입니다.`,
@@ -496,6 +537,11 @@ export function buildMarriageCanonicalEngine(
   const careerHomeTransition = buildMarriageCareerHomeTransition(params.psychMasterA, params.psychMasterB, a, b, locale);
 
   // Phase 5.5 Economic Partnership Expansion
+  const canonicalCfoSide = operatingCfoSideFromNickname(
+    params.cfoNickname ?? null,
+    a,
+    b,
+  );
   const economicPartnership = buildMarriageEconomicPartnership(
     params.psychMasterA,
     params.psychMasterB,
@@ -503,7 +549,8 @@ export function buildMarriageCanonicalEngine(
     params.sajuJsonB,
     a,
     b,
-    locale
+    locale,
+    canonicalCfoSide
   );
 
   return {

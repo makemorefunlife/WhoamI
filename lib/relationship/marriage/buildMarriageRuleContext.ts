@@ -32,6 +32,7 @@ import {
 import { LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 
 export type MarriageRuleContext = {
   nicknameA: string;
@@ -69,6 +70,14 @@ export function buildMarriageRuleContext(params: {
   birthTimeUnknownB?: boolean;
   cohabitationSignalsA?: CohabitationSajuSignals;
   cohabitationSignalsB?: CohabitationSajuSignals;
+  /**
+   * Optional — only used to make conflictCommunication's pursue/withdraw
+   * attribution defer to the same conflict_style signal the canonical
+   * conflict4Stage bundle uses (P0 consistency fix). Every other field in
+   * this context stays saju-only when psych is absent (old-cache safe).
+   */
+  psychMasterA?: PsychMasterJson | null;
+  psychMasterB?: PsychMasterJson | null;
   locale?: Locale;
 }): MarriageRuleContext {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
@@ -158,6 +167,8 @@ export function buildMarriageRuleContext(params: {
     nicknameB: params.nicknameB,
     countsA: tenGod.countsA,
     countsB: tenGod.countsB,
+    conflictStyleA: params.psychMasterA?.secondary_axes.conflict_style ?? null,
+    conflictStyleB: params.psychMasterB?.secondary_axes.conflict_style ?? null,
     locale,
   });
 

@@ -67,7 +67,7 @@ expectedChapters.forEach((chId, idx) => {
 
 console.log("\nChapter 08 Climax Verdict Check:");
 console.log("  ├ Life Sync Score     :", verdict?.lifeSyncPct, "%");
-console.log("  ├ Operating Fit Score :", verdict?.operatingPartnerFit);
+console.log("  ├ Operating Status    :", verdict?.operatingStatusLabel);
 console.log("  ├ Emotional Fit Score :", verdict?.emotionalPartnerFit);
 console.log("  ├ Growth Fit Score    :", verdict?.longTermGrowthFit);
 console.log("  ├ OneLine Verdict     :", verdict?.oneLineVerdict);

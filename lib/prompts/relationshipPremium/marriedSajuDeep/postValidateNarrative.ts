@@ -6,14 +6,29 @@
 
 import { polishKoTableCell, polishKoTone } from "@/lib/i18n/koToneGuards";
 import { polishEnTone } from "@/lib/i18n/enToneGuards";
+import { sanitizeHomeLifeText } from "@/lib/relationship/marriage/homeLifeLanguage";
+
+/**
+ * Raw branch/stem romanization leaking as "hae↔sin"-style notation (a pairwise
+ * relationship shorthand used internally, never meant for user-facing prose —
+ * the arrow character never appears in normal English or Korean sentences,
+ * so stripping it is safe against false positives on real names/words).
+ */
+const ROMANIZED_BRANCH_ARROW_RE = /\s*[a-z]{2,6}↔[a-z]{2,6}\s*/gi;
 
 type AnyRec = Record<string, unknown>;
 
 const SOFT_WASH_HOUSEHOLD =
   /이미\s*잘\s*맞춰\s*사는|갈등이\s*없는\s*가정|역할이\s*이미\s*완벽|서로\s*알아서\s*잘\s*돌아|문제\s*없는\s*부부|이미\s*균형이\s*잡혀\s*있는\s*가정/i;
 
+const SOFT_WASH_HOUSEHOLD_EN =
+  /already run(?:s)?\s+a?\s*smooth household|no conflict in this (?:home|household)|roles are already perfectly split|already have (?:it|things) figured out|nothing to work on here|already (?:in|a) perfect balance/i;
+
 const MISMATCH_AUDIBLE =
   /어긋|불일치|맞지\s*않|갭|다를\s*수|확인해\s*볼|조율|분담이\s*어긋|역할이\s*겹/i;
+
+const MISMATCH_AUDIBLE_EN =
+  /doesn'?t (?:line up|match)|mismatch|not aligned|gap|may differ|worth checking|work(?:ing)? (?:this|it) out|division (?:may|might|doesn'?t)|overlap/i;
 
 const TENTATIVE_MARKER =
   /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울|상황에\s*따라|다르게\s*나타날/;
@@ -22,11 +37,20 @@ const TENTATIVE_MARKER =
 const EVIDENCE_BRIDGE =
   /가사|루틴|스트레스|부부싸움|갈등\s*반응|침묵형|폭발형|재정|자산|CFO|예산|지출|원가족|경계|육아|교육|역할\s*분담|생활\s*케미|동반자|잡히기\s*때문에|잡히므로|보이기\s*때문에|어긋날\s*수\s*있어서|같은\s*결|기울기가?\s*다르|다르게\s*잡히/;
 
+const EVIDENCE_BRIDGE_EN =
+  /household|routine|chores?|stress|conflict|silent(?:ly)?|shuts? down|explosiv|money|financ|asset|budget|spending|CFO|family[- ]of[- ]origin|boundary|parenting|education|\bdivision\b|\bsplit\b|living chemistr|because (?:your|you two|role)|reads? differently|shows? up differently|lean(?:s)? differently|tend(?:s)? to|line up|align/i;
+
 const GENERIC_ONLY_ADVICE =
   /서로\s*존중하며\s*소통하세요|감정을\s*솔직히\s*표현하세요|서로의\s*차이를\s*이해하세요|설레는\s*연애|특별한\s*에너지|깊은\s*교감/;
 
+const GENERIC_ONLY_ADVICE_EN =
+  /communicate with (?:mutual )?respect|express your feelings (?:honestly|openly)|understand each other'?s? differences|the (?:thrill|excitement) of dating|special energy|deep(?:er)? connection/i;
+
 const FEWSHOT_TOGETHER_BLEED =
   /가장\s*아름다운\s*조각|따뜻한\s*차\s*한\s*잔을\s*사이에\s*두고|깊이\s*있는\s*저널을\s*써보듯|설레는\s*데이트/;
+
+const FEWSHOT_TOGETHER_BLEED_EN =
+  /most beautiful (?:moment|piece)|over a warm cup of tea|like writing in a deep journal|romantic dates?/i;
 
 const ASPECT_BRIDGE_LABEL: Record<string, string> = {
   household_stress: "가사·루틴 스트레스",
@@ -36,6 +60,16 @@ const ASPECT_BRIDGE_LABEL: Record<string, string> = {
   asset_management: "자산관리 기질",
   parenting_style: "육아·교육 가치",
   operating_cfo: "일상 재정 운영",
+};
+
+const ASPECT_BRIDGE_LABEL_EN: Record<string, string> = {
+  household_stress: "household/routine stress",
+  marital_conflict: "conflict-reaction style",
+  bedroom_lead: "bedroom-lead tendency",
+  family_boundary: "family-of-origin boundary",
+  asset_management: "money-management temperament",
+  parenting_style: "parenting/education values",
+  operating_cfo: "day-to-day money ops",
 };
 
 type LeanRow = {
@@ -208,51 +242,83 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   };
 }
 
-export function adviceHasLeadingEvidenceBridge(reason: string): boolean {
+export function adviceHasLeadingEvidenceBridge(
+  reason: string,
+  isEn = false,
+): boolean {
   const first = reason.split(/(?<=[.。])\s+/)[0] || reason;
   const head = first.length >= 12 ? first : reason.slice(0, 100);
-  return EVIDENCE_BRIDGE.test(head);
+  return isEn ? EVIDENCE_BRIDGE_EN.test(head) : EVIDENCE_BRIDGE.test(head);
 }
 
-function scrubHouseholdSoftWash(body: string): string {
+function scrubHouseholdSoftWash(body: string, isEn = false): string {
   let out = body;
-  const replacements: Array<[RegExp, string]> = [
-    [
-      /이미\s*잘\s*맞춰\s*사는\s*부부입니다?/g,
-      "역할·생활 리듬을 맞춰 가려면 확인이 필요하다",
-    ],
-    [
-      /갈등이\s*없는\s*가정입니다?/g,
-      "갈등 방식이 다를 수 있어 조율이 필요하다",
-    ],
-    [
-      /역할이\s*이미\s*완벽히\s*분담되어\s*있습니다?/g,
-      "역할 분담을 맞춰 가려면 확인해 볼 필요가 있다",
-    ],
-    [
-      /서로\s*알아서\s*잘\s*돌아갑니다?/g,
-      "생활 운영을 맞추려면 분담을 점검해 볼 필요가 있다",
-    ],
-    [
-      /문제\s*없는\s*부부입니다?/g,
-      "생활 케미의 어긋남을 확인해 볼 필요가 있다",
-    ],
-  ];
+  const replacements: Array<[RegExp, string]> = isEn
+    ? [
+        [
+          /you two already run a?\s*smooth household\.?/gi,
+          "matching your role and daily-life rhythm still needs a check-in",
+        ],
+        [
+          /there'?s no conflict in this (?:home|household)\.?/gi,
+          "conflict styles may differ enough to need coordination",
+        ],
+        [
+          /roles are already perfectly split\.?/gi,
+          "role division still needs to be checked and aligned",
+        ],
+        [
+          /you'?ve already got (?:it|things) figured out\.?/gi,
+          "household ops still need a check-in to line up",
+        ],
+        [
+          /there'?s nothing to work on here\.?/gi,
+          "it's worth checking where living chemistry doesn't line up",
+        ],
+      ]
+    : [
+        [
+          /이미\s*잘\s*맞춰\s*사는\s*부부입니다?/g,
+          "역할·생활 리듬을 맞춰 가려면 확인이 필요하다",
+        ],
+        [
+          /갈등이\s*없는\s*가정입니다?/g,
+          "갈등 방식이 다를 수 있어 조율이 필요하다",
+        ],
+        [
+          /역할이\s*이미\s*완벽히\s*분담되어\s*있습니다?/g,
+          "역할 분담을 맞춰 가려면 확인해 볼 필요가 있다",
+        ],
+        [
+          /서로\s*알아서\s*잘\s*돌아갑니다?/g,
+          "생활 운영을 맞추려면 분담을 점검해 볼 필요가 있다",
+        ],
+        [
+          /문제\s*없는\s*부부입니다?/g,
+          "생활 케미의 어긋남을 확인해 볼 필요가 있다",
+        ],
+      ];
   for (const [re, rep] of replacements) {
     out = out.replace(re, rep);
   }
   return out.replace(/\s{2,}/g, " ").trim();
 }
 
-function softWashBody(body: string): string {
+function softWashBody(body: string, isEn = false): string {
   if (!body.trim()) return body;
   let out = body.trim();
-  if (!MISMATCH_AUDIBLE.test(out.slice(0, Math.min(out.length, 140)))) {
-    out = `생활·역할에서 어긋날 수 있는 지점이 있다. ${out}`;
+  const mismatchAudible = isEn ? MISMATCH_AUDIBLE_EN : MISMATCH_AUDIBLE;
+  const softWash = isEn ? SOFT_WASH_HOUSEHOLD_EN : SOFT_WASH_HOUSEHOLD;
+  if (!mismatchAudible.test(out.slice(0, Math.min(out.length, 140)))) {
+    out = isEn
+      ? `There's a spot where daily life and roles may not line up. ${out}`
+      : `생활·역할에서 어긋날 수 있는 지점이 있다. ${out}`;
   }
-  out = scrubHouseholdSoftWash(out);
-  if (SOFT_WASH_HOUSEHOLD.test(out)) {
-    out = `${out.replace(SOFT_WASH_HOUSEHOLD, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
+  out = scrubHouseholdSoftWash(out, isEn);
+  if (softWash.test(out)) {
+    out = isEn
+      ? `${out.replace(softWash, "").trim()} There's room to work toward aligning this.`.trim()
+      : `${out.replace(softWash, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
   }
   return out;
 }
@@ -261,7 +327,9 @@ function buildAdviceBridgePool(params: {
   mismatchRoles?: boolean;
   comparisonLeans?: Partial<Record<string, LeanRow>>;
   operatingCfoSide?: string | null;
+  isEn?: boolean;
 }): string[] {
+  const isEn = params.isEn ?? false;
   const pool: string[] = [];
   const seen = new Set<string>();
   const push = (s: string) => {
@@ -271,10 +339,18 @@ function buildAdviceBridgePool(params: {
   };
 
   if (params.mismatchRoles) {
-    push("역할·생활 분담이 어긋날 수 있어서");
+    push(
+      isEn
+        ? "Because role and daily-life division may not line up"
+        : "역할·생활 분담이 어긋날 수 있어서",
+    );
   }
   if (params.operatingCfoSide) {
-    push("일상 재정 운영(CFO) 역할이 한쪽으로 잡히기 때문에");
+    push(
+      isEn
+        ? "Because day-to-day money ops (CFO) sits mostly with one of you"
+        : "일상 재정 운영(CFO) 역할이 한쪽으로 잡히기 때문에",
+    );
   }
 
   const leans = params.comparisonLeans ?? {};
@@ -292,25 +368,59 @@ function buildAdviceBridgePool(params: {
     const a = row?.band_a ?? row?.lean_a ?? null;
     const b = row?.band_b ?? row?.lean_b ?? null;
     if (!a || !b) continue;
-    const label = ASPECT_BRIDGE_LABEL[key] ?? key;
+    const label = isEn
+      ? (ASPECT_BRIDGE_LABEL_EN[key] ?? key)
+      : (ASPECT_BRIDGE_LABEL[key] ?? key);
     if (a === b) {
-      push(`두 사람 모두 ${label}에서 같은 결을 공유하는 편으로 잡히기 때문에`);
+      push(
+        isEn
+          ? `Because you both share a similar lean on ${label}`
+          : `두 사람 모두 ${label}에서 같은 결을 공유하는 편으로 잡히기 때문에`,
+      );
     } else if (key === "marital_conflict") {
-      push("부부 갈등 반응(폭발·침묵) 결이 다르게 잡히기 때문에");
+      push(
+        isEn
+          ? "Because your conflict-reaction styles (explosive vs. shuts down) read differently"
+          : "부부 갈등 반응(폭발·침묵) 결이 다르게 잡히기 때문에",
+      );
     } else if (key === "household_stress") {
-      push("가사·루틴 스트레스 드러내는 방식이 다르게 잡히므로");
+      push(
+        isEn
+          ? "Because household/routine stress shows up differently for each of you"
+          : "가사·루틴 스트레스 드러내는 방식이 다르게 잡히므로",
+      );
     } else if (key === "asset_management") {
-      push("자산관리 기질 밴드가 다르게 잡히기 때문에");
+      push(
+        isEn
+          ? "Because your money-management temperaments read differently"
+          : "자산관리 기질 밴드가 다르게 잡히기 때문에",
+      );
     } else if (key === "family_boundary") {
-      push("원가족 경계 필요가 다르게 보이기 때문에");
+      push(
+        isEn
+          ? "Because your family-of-origin boundary needs read differently"
+          : "원가족 경계 필요가 다르게 보이기 때문에",
+      );
     } else if (key === "parenting_style") {
-      push("육아·교육 가치 기울기가 다르게 잡히기 때문에");
+      push(
+        isEn
+          ? "Because your parenting/education values lean differently"
+          : "육아·교육 가치 기울기가 다르게 잡히기 때문에",
+      );
     } else {
-      push(`${label} 결이 다르게 잡히기 때문에`);
+      push(
+        isEn
+          ? `Because your ${label} reads differently`
+          : `${label} 결이 다르게 잡히기 때문에`,
+      );
     }
   }
 
-  push("가정 운영에서 잡힌 반응·역할 결이 달라 보일 수 있어서");
+  push(
+    isEn
+      ? "Because the reactions and roles this household falls into may look different"
+      : "가정 운영에서 잡힌 반응·역할 결이 달라 보일 수 있어서",
+  );
   return pool;
 }
 
@@ -318,9 +428,12 @@ function pickAdviceBridge(
   pool: string[],
   tipIndex: number,
   used: Set<string>,
+  isEn = false,
 ): string {
   if (pool.length === 0) {
-    return "가정 운영에서 잡힌 반응·역할 결이 달라 보일 수 있어서";
+    return isEn
+      ? "Because the reactions and roles this household falls into may look different"
+      : "가정 운영에서 잡힌 반응·역할 결이 달라 보일 수 있어서";
   }
   for (let i = 0; i < pool.length; i++) {
     const candidate = pool[(tipIndex + i) % pool.length]!;
@@ -337,14 +450,18 @@ function pickAdviceBridge(
 function ensureAdviceEvidenceBridge(
   reason: string,
   bridgeClause: string,
+  isEn = false,
 ): { text: string; fixed: boolean } {
   const raw = reason.trim();
   if (!raw) return { text: reason, fixed: false };
-  if (adviceHasLeadingEvidenceBridge(raw)) {
+  if (adviceHasLeadingEvidenceBridge(raw, isEn)) {
     return { text: raw, fixed: false };
   }
   const clause = bridgeClause.replace(/[,，.\s]+$/u, "");
-  return { text: `${clause}, ${raw}`, fixed: true };
+  return {
+    text: isEn ? `${clause}. ${raw}` : `${clause}, ${raw}`,
+    fixed: true,
+  };
 }
 
 function patchStringField(
@@ -460,13 +577,17 @@ export function postValidateMarriedNarrative(
           key === "match_note"
             ? (() => {
                 let note = prev;
-                if (!MISMATCH_AUDIBLE.test(note)) {
-                  note =
-                    "역할·생활 분담이 어긋날 수 있다. 상대가 편하다고 느끼는 운영 방식을 따로 확인해 볼 필요가 있다.";
+                const mismatchAudible = isEn
+                  ? MISMATCH_AUDIBLE_EN
+                  : MISMATCH_AUDIBLE;
+                if (!mismatchAudible.test(note)) {
+                  note = isEn
+                    ? "Role and daily-life division may not line up. It's worth separately checking what operating style feels comfortable to your partner."
+                    : "역할·생활 분담이 어긋날 수 있다. 상대가 편하다고 느끼는 운영 방식을 따로 확인해 볼 필요가 있다.";
                 }
-                return scrubHouseholdSoftWash(note);
+                return scrubHouseholdSoftWash(note, isEn);
               })()
-            : softWashBody(prev);
+            : softWashBody(prev, isEn);
         if (nextBody !== prev) {
           (roleSignal as AnyRec)[key] = nextBody;
           fixes.push(`mismatch_${key}`);
@@ -558,6 +679,7 @@ export function postValidateMarriedNarrative(
       mismatchRoles: mismatch,
       comparisonLeans: leans,
       operatingCfoSide: params.operatingCfoSide ?? null,
+      isEn,
     });
     for (const listKey of ["advice_for_a", "advice_for_b"] as const) {
       const list = Array.isArray(action[listKey])
@@ -576,16 +698,20 @@ export function postValidateMarriedNarrative(
           fixes.push(`strip_source_tag:${listKey}`);
         }
         let finalReason = asStr(tip.saju_reason);
-        if (finalReason && adviceHasLeadingEvidenceBridge(finalReason)) {
+        if (finalReason && adviceHasLeadingEvidenceBridge(finalReason, isEn)) {
           const head = (
             finalReason.split(/(?<=[.。])\s+/)[0] || finalReason
           ).slice(0, 48);
           usedBridges.add(head);
-        } else if (finalReason && !adviceHasLeadingEvidenceBridge(finalReason)) {
-          const bridge = pickAdviceBridge(bridgePool, tipIndex, usedBridges);
+        } else if (
+          finalReason &&
+          !adviceHasLeadingEvidenceBridge(finalReason, isEn)
+        ) {
+          const bridge = pickAdviceBridge(bridgePool, tipIndex, usedBridges, isEn);
           const { text, fixed } = ensureAdviceEvidenceBridge(
             finalReason,
             bridge,
+            isEn,
           );
           if (fixed) {
             tip.saju_reason = text;
@@ -596,9 +722,10 @@ export function postValidateMarriedNarrative(
             fixes.push(`advice_missing_evidence_bridge:${listKey}`);
           }
         }
+        const genericOnly = isEn ? GENERIC_ONLY_ADVICE_EN : GENERIC_ONLY_ADVICE;
         if (
-          GENERIC_ONLY_ADVICE.test(finalReason) ||
-          GENERIC_ONLY_ADVICE.test(asStr(tip.action_title))
+          genericOnly.test(finalReason) ||
+          genericOnly.test(asStr(tip.action_title))
         ) {
           fixes.push(`advice_generic_only:${listKey}`);
         }
@@ -607,8 +734,15 @@ export function postValidateMarriedNarrative(
     }
 
     const together = asStr(action.together);
-    if (together && FEWSHOT_TOGETHER_BLEED.test(together)) {
-      action.together = mismatch
+    const fewshotBleed = isEn
+      ? FEWSHOT_TOGETHER_BLEED_EN
+      : FEWSHOT_TOGETHER_BLEED;
+    if (together && fewshotBleed.test(together)) {
+      action.together = isEn
+        ? mismatch
+          ? "Note one real difference this household falls into this week, whether it's role split, money, or conflict reaction. Rather than erase it, agree on one operating rule together. Take 10 minutes this weekend to check in on chores and spending."
+          : "Write down one thing about this household's rhythm and role split this week. Even the same chore can stress you out in different ways. Set aside a short check-in this weekend."
+        : mismatch
         ? "역할·재정·갈등 반응처럼 이 가정에서 잡힌 차이를 이번 주 한 가지만 짧게 적어 보자. 없애려 하기보다 운영 규칙을 하나 합의하는 편이 도움이 된다. 주말에 10분만 가사·지출 온도를 점검해 보자."
         : "가정 운영에서 잡힌 생활 리듬·역할 결을 이번 주 한 가지만 짚어 기록해 보자. 같은 집안일에도 스트레스 드러내는 방식이 다를 수 있다. 주말에 짧은 점검 시간을 잡아 보자.";
       fixes.push("together_fewshot_rewrite");
@@ -629,6 +763,22 @@ export function postValidateMarriedNarrative(
         }
       }
       if (any) fixes.push("naming_polish");
+
+      // Reuse the same raw-Saju-jargon guard the deterministic household
+      // report already applies (homeLifeLanguage.ts's sanitizeHomeLifeText) —
+      // the LLM overlay had no equivalent guard, so raw technical terms
+      // (일간/십신/오행/... ) could leak into its free-generated prose
+      // unlike the rest of the report. Also strips romanized branch-pair
+      // shorthand like "hae↔sin" that only ever appears as an internal
+      // relationship notation, never in real user-facing prose.
+      const jargonStripped = sanitizeHomeLifeText(
+        s.replace(ROMANIZED_BRANCH_ARROW_RE, " "),
+      );
+      if (jargonStripped !== s) {
+        s = jargonStripped;
+        fixes.push("saju_jargon_strip");
+      }
+
       const tone = isEn ? polishEnTone(s) : polishKoTone(s);
       if (tone.fixed) {
         s = tone.text;

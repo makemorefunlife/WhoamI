@@ -551,6 +551,10 @@ export function buildMarriageReport(params: {
     pairCohabitation: params.pairCohabitation,
     cohabitationSignalsA: params.cohabitationSignalsA,
     cohabitationSignalsB: params.cohabitationSignalsB,
+    // Same canonical CFO already finalized above (cfoFinal) — passed through
+    // so economicPartnership.decisionFlow can't independently disagree with
+    // the CFO summary / Ch9 advice on who runs day-to-day household finances.
+    cfoNickname: cfoFinal.nickname,
     locale,
   });
 

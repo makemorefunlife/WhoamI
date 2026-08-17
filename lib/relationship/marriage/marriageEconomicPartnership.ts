@@ -50,6 +50,18 @@ export function buildMarriageEconomicPartnership(
   nameA: string,
   nameB: string,
   locale: Locale = "ko-KR",
+  /**
+   * Canonical household-CFO side (`refineHouseholdCfo` via
+   * marriageCfoConsumption.ts — the single authority for "who operates
+   * day-to-day shared money / household CFO", per marriageOperatingCfoCanonical.ts's
+   * own docblock: "budget, accounts, big spends — one designated operator").
+   * `cashFlowTracker`/`executor` below ask that exact same product question,
+   * so when this is known they defer to it instead of independently
+   * re-deriving an operator from psych axes (P0 consistency fix — previously
+   * this module could name a DIFFERENT person than the canonical CFO for the
+   * same "who runs day-to-day finances" question).
+   */
+  cfoSide?: "a" | "b" | null,
 ): MarriageEconomicPartnershipBundle {
   const isEn = locale === "en-US";
   const axesA = psychA?.secondary_axes ?? {};
@@ -147,14 +159,26 @@ export function buildMarriageEconomicPartnership(
       : `${nameA}님과 ${nameB}님 모두 지출의 예측 가능성과 체계적인 가계 관리를 중시하는 안정적인 경제 팀입니다.`;
   }
 
-  // Economic Decision Flow
+  // Economic Decision Flow.
+  // cashFlowTracker/executor ask the exact same product question as the
+  // canonical household CFO ("who operates day-to-day shared money") — when
+  // cfoSide is known, defer to it instead of an independently re-derived
+  // psych-axis pick, so this card can never name a different financial
+  // operator than the CFO summary / Ch9 advice (both of which already read
+  // the canonical CFO). largePurchaseProposer/riskReviewer stay on their own
+  // psych-driven pick — proposing a big purchase and reviewing it are a
+  // distinct governance question from day-to-day operation, and reviewer
+  // defaults to the non-CFO partner so the two roles read as a coherent
+  // "operator + checks-and-balance reviewer" pair rather than a contradiction.
+  const cfoName = cfoSide === "a" ? nameA : cfoSide === "b" ? nameB : null;
+  const nonCfoName = cfoSide === "a" ? nameB : cfoSide === "b" ? nameA : null;
   const decisionFlow: EconomicDecisionFlow = {
     incomeStyleRole: isEn ? `${nameA} (Stable) & ${nameB} (Growth)` : `${nameA}님(안정적 현금흐름) & ${nameB}님(성장 자산화)`,
-    cashFlowTracker: profileA.primaryRole === "CASH_FLOW_MANAGER" || profileA.primaryRole === "SAVER_ACCUMULATOR" ? nameA : nameB,
+    cashFlowTracker: cfoName ?? (profileA.primaryRole === "CASH_FLOW_MANAGER" || profileA.primaryRole === "SAVER_ACCUMULATOR" ? nameA : nameB),
     largePurchaseProposer: profileA.primaryRole === "OPPORTUNITY_EXPANDER" ? nameA : nameB,
-    riskReviewer: profileA.secondaryRole === "RISK_REVIEWER" || profileA.primaryRole === "SAVER_ACCUMULATOR" ? nameA : nameB,
+    riskReviewer: nonCfoName ?? (profileA.secondaryRole === "RISK_REVIEWER" || profileA.primaryRole === "SAVER_ACCUMULATOR" ? nameA : nameB),
     decider: isEn ? "Joint Mutual Consent" : "상호 합의 (공동 승인제)",
-    executor: profileA.secondaryRole === "PRACTICAL_EXECUTOR" ? nameA : nameB,
+    executor: cfoName ?? (profileA.secondaryRole === "PRACTICAL_EXECUTOR" ? nameA : nameB),
   };
 
   return {

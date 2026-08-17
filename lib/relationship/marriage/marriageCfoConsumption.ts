@@ -15,6 +15,7 @@ import {
   resolveCfoAffinityScore,
   type TenGodCounts,
 } from "./marriageTenGodAnalysis";
+import { topicParticle } from "@/lib/relationship/koreanParticles";
 
 type WealthOfficerPower = CohabitationSajuSignals["wealth_officer_power"];
 
@@ -69,14 +70,14 @@ export function resolveSpendingStyleNote(
     return pick(
       locale,
       `${stableName} leans toward saving and future security, while ${otherName} leans toward spending on today's experiences — split the budget into a "future" pot and a "today" pot so neither side's values get overridden.`,
-      `${stableName}은(는) 저축·미래 대비 쪽, ${otherName}은(는) 오늘의 경험·삶의 질 쪽으로 기울어요 — 예산을 "미래" 통장과 "오늘" 통장으로 나눠 두면 어느 한쪽 가치관이 눌리지 않아요.`,
+      `${topicParticle(stableName)} 저축·미래 대비 쪽, ${topicParticle(otherName)} 오늘의 경험·삶의 질 쪽으로 기울어요 — 예산을 "미래" 통장과 "오늘" 통장으로 나눠 두면 어느 한쪽 가치관이 눌리지 않아요.`,
     );
   }
 
   return pick(
     locale,
     `${stableName} leans toward saving, and ${otherName} is fairly balanced — ${stableName}'s instinct toward security can guide shared savings, with room for ${otherName}'s occasional splurges.`,
-    `${stableName}은(는) 저축 쪽으로 기울고 ${otherName}은(는) 비교적 균형 잡힌 편이에요 — ${stableName}의 안정 감각을 공동 저축 기준으로 삼되, ${otherName}의 가끔의 지출은 여유를 둬도 좋아요.`,
+    `${topicParticle(stableName)} 저축 쪽으로 기울고 ${topicParticle(otherName)} 비교적 균형 잡힌 편이에요 — ${stableName}의 안정 감각을 공동 저축 기준으로 삼되, ${otherName}의 가끔의 지출은 여유를 둬도 좋아요.`,
   );
 }
 
