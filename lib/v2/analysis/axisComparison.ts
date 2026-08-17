@@ -116,19 +116,81 @@ export type AxisHighlightSelection = {
 };
 
 /**
+ * Narrative Quality Singleton Batch 3 — coarse thematic clusters for the 6
+ * Primary axes, used only to diversify which WIDE gaps get selected below.
+ * Not a new scoring scheme (delta/magnitude/direction are untouched) — a
+ * tie-breaking preference layer on top of the existing pure-magnitude sort.
+ *
+ * Grounded in PRIMARY_AXIS_DEFINITIONS' own descriptions, not invented:
+ * autonomy/growth/adaptability all describe self-directed change (deciding,
+ * seeking, adjusting for oneself); structure/stability both describe a
+ * preference for environmental order/predictability; connection stands
+ * alone (no other axis is fundamentally about relational closeness).
+ *
+ * This is a best-effort static heuristic, not a semantic classifier — real
+ * QA showed it catches the clearest cases (e.g. autonomy+growth+adaptability
+ * all selected together, all narrated as "helps you get along with others")
+ * but real evidence-level convergence can still occur across two axes in
+ * different clusters (e.g. stability+growth sharing a "prioritizes stability
+ * over change" story even though they're in different clusters here) — the
+ * prompt-level self-drop instruction in deepEssenceStructured.ts is the
+ * adaptive second layer for cases this static map can't predict.
+ */
+const AXIS_THEME_CLUSTER: Record<PrimaryAxisKey, string> = {
+  autonomy: "self_directed_change",
+  growth: "self_directed_change",
+  adaptability: "self_directed_change",
+  structure: "order_and_predictability",
+  stability: "order_and_predictability",
+  connection: "relational",
+};
+
+/**
  * Batch 8 — deterministic selection of which axes deserve deep-dive
  * interpretation. LLM never decides which axes are "notable"; this is pure
  * ranking over the already-computed delta/magnitude. Reuses the existing
  * gapDeltaTone "wide" threshold as-is — introduces no new/parallel scheme,
  * and never forces a gap count when fewer than 3 axes genuinely qualify.
+ *
+ * Batch 3 (Narrative Quality Singleton) — added a thematic-diversity
+ * preference on top of the existing magnitude ranking: prefer the widest
+ * gap from each distinct AXIS_THEME_CLUSTER before reusing a cluster.
+ * Selection rule, in order: (1) delta magnitude ranks candidates within
+ * each cluster; (2) a cluster already represented is skipped in favor of
+ * the next distinct-cluster candidate; (3) a cluster is only reused when
+ * there simply aren't 3 distinct-cluster wide gaps available — i.e. the
+ * "overwhelming magnitude" case resolves naturally, since an axis that
+ * dominant with no comparably-wide distinct-cluster alternative is exactly
+ * when reuse becomes the only way to reach up to 3; (4) never pads past
+ * however many genuinely wide gaps exist — 0-3 is still the real range.
  */
 export function selectAxisHighlights(
   axisComparisons: AxisComparison[],
 ): AxisHighlightSelection {
-  const gaps = axisComparisons
+  const wideGapsByMagnitude = axisComparisons
     .filter((a) => a.magnitude === "wide")
-    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
-    .slice(0, 3);
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  const gaps: AxisComparison[] = [];
+  const usedClusters = new Set<string>();
+  for (const candidate of wideGapsByMagnitude) {
+    if (gaps.length >= 3) break;
+    const cluster = AXIS_THEME_CLUSTER[candidate.axis];
+    if (usedClusters.has(cluster)) continue;
+    gaps.push(candidate);
+    usedClusters.add(cluster);
+  }
+  if (gaps.length < 3) {
+    for (const candidate of wideGapsByMagnitude) {
+      if (gaps.length >= 3) break;
+      if (gaps.some((g) => g.axis === candidate.axis)) continue;
+      gaps.push(candidate);
+    }
+  }
+  // Pass 2 can append out of magnitude order (it walks the full ranked list
+  // again, independent of pass 1's insertion order) — restore the
+  // documented "sorted by |delta| descending" contract before returning.
+  gaps.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 
   const sortedByCloseness = [...axisComparisons].sort(
     (a, b) => Math.abs(a.delta) - Math.abs(b.delta),
