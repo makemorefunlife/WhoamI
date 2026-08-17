@@ -19,8 +19,17 @@ import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructure
  * those apart since the newer fields are optional. Bumping forces a
  * refetch, which now goes through route.ts's own
  * PERSONAL_V2_STRUCTURED_GENERATION_VERSION gate server-side.
+ *
+ * Bumped 4 -> 5: readSlimIntegratedCache() only re-validates shape
+ * (isDeepEssenceStructuredReport), never `personal_v2_generation_version` —
+ * and useSlimV1Integrated.fetchReport() returns straight from a cache hit
+ * without ever calling the API. That means the server-side
+ * PERSONAL_V2_STRUCTURED_GENERATION_VERSION bump (1 -> 2) is invisible to
+ * any browser that already has a v4-keyed entry cached locally; only
+ * changing the key itself (this bump) forces those browsers to refetch and
+ * actually reach the server-side guard.
  */
-export const SLIM_INTEGRATED_CACHE_VERSION = 4;
+export const SLIM_INTEGRATED_CACHE_VERSION = 5;
 
 const PREFIX = "ahaitsme_v2_slim_integrated_";
 
@@ -33,10 +42,11 @@ function legacyStorageKeys(reportId: string, locale: Locale): string[] {
   return [
     `${PREFIX}${reportId}`,
     `${PREFIX}${locale}_${reportId}`,
-    // v1/v2/v3 keys from earlier CACHE_VERSION values
+    // v1/v2/v3/v4 keys from earlier CACHE_VERSION values
     `${PREFIX}v1_${locale}_${reportId}`,
     `${PREFIX}v2_${locale}_${reportId}`,
     `${PREFIX}v3_${locale}_${reportId}`,
+    `${PREFIX}v4_${locale}_${reportId}`,
   ];
 }
 

@@ -40,13 +40,27 @@ function cleanRememberText(text: string, locale: Locale): string {
   return polished.replace(REMEMBER_PREFIX_PATTERN, "").trim();
 }
 
+// Trailing cheer/wishing sentence — anchored to end-of-string so a legitimate
+// mid-paragraph use of 응원/바라 (e.g. describing what someone values) is left
+// alone. The [^.!?]* exclusion keeps the match from crossing into a prior
+// sentence, so this can't eat real recognition prose that merely precedes it.
+// No \b here: JS regex word-boundary is defined over [A-Za-z0-9_], so it
+// never fires between two Hangul characters — using it would silently make
+// this pattern match nothing against Korean text.
+const TRAILING_CHEER_PATTERN =
+  /\s*[^.!?]*(?:응원(?:합니다|해요|할게요|하겠습니다)|바라요|바랍니다)[^.!?]*[.!]*\s*$/;
+
 function cleanClosingText(text: string, locale: Locale): string {
   const polished = polishProse(text, locale);
   if (locale !== "ko-KR") return polished;
   // Strip trailing self-help wishing sentences like "...만들어가지 바라요." / "...바랍니다."
-  const cleaned = polished
+  let cleaned = polished
     .replace(/\s*(?:[가-힣]+기|이러한\s*점들을\s*기억하며|앞으로의\s*관계를|과정에서|앞으로의\s*여정에서도)[^.\!\?]*\b(?:바라요|바랍니다|응원합니다)[\.\!]*/g, "")
     .trim();
+  // Catch remaining cheer variants (응원해요/응원할게요/응원하겠습니다, or any
+  // 바라요/바랍니다 not matched by the prefix-specific pattern above) that
+  // still sit at the very end of the closing paragraph.
+  cleaned = cleaned.replace(TRAILING_CHEER_PATTERN, "").trim();
   return cleaned.length > 0 ? cleaned : polished;
 }
 

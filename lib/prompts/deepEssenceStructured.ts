@@ -409,7 +409,10 @@ const PLAYBOOK_EVIDENCE_FIELD = `,
 
 // ── Part 05 Batch 1: additive Future/Direction grounding ──────────────────
 // Same additive/grounded-only contract, same block-level evidence_refs shape.
-// closing is deliberately untouched — no schema/prompt change to it at all.
+// closing is not grounded by this evidence block (no evidence_refs of its own),
+// but Batch 5 did add real prompt/schema rules for it — see the closing
+// (조용한 매듭 / Recognition Statement) block below and the closing description
+// in DEEP_ESSENCE_PART_B_SCHEMA.
 
 const FUTURE_EVIDENCE_FIELD = `,
     "evidence_refs": ["optional — exact keys from [Future evidence] this section is grounded in, only from the bracketed list, never invented — omit if not well-grounded"]`;
@@ -474,7 +477,7 @@ ${input.part01Evidence.relationshipText}
 [Practice evidence]
 ${input.part01Evidence.practiceText}
 
-■ Future Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide future.remember/leap and to fill its optional evidence_refs. closing is NOT covered by this evidence and must stay exactly as it already was — a warm tonal sign-off, not an insight field.
+■ Future Evidence — grounding material only (internal keys in brackets; never quote raw keys/codes to the reader). Use ONLY to decide future.remember/leap and to fill its optional evidence_refs. closing draws no evidence_refs from this block, but it is NOT an untouched free-form sign-off either — see the closing (조용한 매듭 / Recognition Statement) rules below (present-tense recognition, no advice/cheers/wishing).
 [Future evidence]
 ${input.part01Evidence.futureText}
 `
