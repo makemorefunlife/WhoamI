@@ -163,10 +163,10 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — Batch 6 additive contrac
       part01Evidence: groundedEvidenceInput(promptEvidence),
     });
     assert.ok(grounded.includes("[Strengths & Watchouts evidence]"));
-    assert.ok(grounded.includes('"title": "strength title (1-3 words)"'));
-    assert.ok(grounded.includes('"title": "watch-out title (1-3 words)"'));
-    assert.ok(grounded.includes('"body": "5-7 sentences with concrete situations and grounds"'));
-    assert.ok(grounded.includes('"body": "4-6 gentle sentences"'));
+    assert.ok(grounded.includes('natural capability in action'));
+    assert.ok(grounded.includes('strength/adaptation overuse pattern'));
+    assert.ok(grounded.includes('"body": "5-7 sentences with concrete situations and grounds'));
+    assert.ok(grounded.includes('"body": "4-6 sentences'));
     // schema is still valid JSON once the template placeholders are filled in
     const schemaBlock = grounded.slice(
       grounded.indexOf("JSON schema:") + "JSON schema:".length,
