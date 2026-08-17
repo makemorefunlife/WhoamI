@@ -112,47 +112,89 @@ function groundedEvidenceInput(promptEvidence) {
   };
 }
 
-/** Synthetic packet fragments — precise control over the gate's two conditions, independent of any real fixture's actual chart data. */
-function fakePacket({ hasWideGap, hasCeDimensionSignal }) {
+const EMPTY_LAYER_BUCKETS = {
+  firstImpression: [],
+  knownSelf: [],
+  closePrivateSelf: [],
+  naturalSelfAndDeepNeeds: [],
+};
+
+/** Synthetic packet fragments — precise control over the gate's independent-family conditions, independent of any real fixture's actual chart data. */
+function fakePacket({
+  hasWideGap,
+  hasSecondWideGap = false,
+  hasEnergyDimensionSignal = false,
+  populatedLayerBucketCount = 0,
+}) {
   return {
     axisComparisons: [
-      { axis: "autonomy", magnitude: hasWideGap ? "wide" : "neutral", delta: hasWideGap ? 30 : 2 },
-      { axis: "connection", magnitude: "neutral", delta: 1 },
-      { axis: "stability", magnitude: "neutral", delta: 1 },
-      { axis: "growth", magnitude: "neutral", delta: 1 },
-      { axis: "structure", magnitude: "neutral", delta: 1 },
-      { axis: "adaptability", magnitude: "neutral", delta: 1 },
+      { axis: "autonomy", magnitude: hasWideGap ? "wide" : "neutral", delta: hasWideGap ? 30 : 2, direction: "current_higher" },
+      { axis: "connection", magnitude: hasSecondWideGap ? "wide" : "neutral", delta: hasSecondWideGap ? 28 : 1, direction: "current_higher" },
+      { axis: "stability", magnitude: "neutral", delta: 1, direction: "aligned" },
+      { axis: "growth", magnitude: "neutral", delta: 1, direction: "aligned" },
+      { axis: "structure", magnitude: "neutral", delta: 1, direction: "aligned" },
+      { axis: "adaptability", magnitude: "neutral", delta: 1, direction: "aligned" },
     ],
     dimensions: {
       allDimensions: [
+        // Deliberately NOT one of the energy-relevant keys — proves "any CE
+        // dimension anywhere" is no longer sufficient on its own (Batch 2).
+        { dimension: "expression_style", evaluation: { value: "x", confidence: "medium", is_mixed: false } },
         {
-          dimension: "expression_style",
-          evaluation: { value: "x", confidence: hasCeDimensionSignal ? "medium" : "insufficient", is_mixed: false },
+          dimension: "pressure_response",
+          evaluation: { value: "x", confidence: hasEnergyDimensionSignal ? "medium" : "insufficient", is_mixed: false },
         },
       ],
+    },
+    layeredIdentityCandidates: {
+      firstImpression: populatedLayerBucketCount >= 1 ? [{ kind: "evidence", fact_path: "day_master", codes: ["x"], evidence: [] }] : [],
+      knownSelf: populatedLayerBucketCount >= 2 ? [{ kind: "evidence", fact_path: "day_master", codes: ["x"], evidence: [] }] : [],
+      closePrivateSelf: populatedLayerBucketCount >= 3 ? [{ kind: "evidence", fact_path: "day_master", codes: ["x"], evidence: [] }] : [],
+      naturalSelfAndDeepNeeds: populatedLayerBucketCount >= 4 ? [{ kind: "evidence", fact_path: "day_master", codes: ["x"], evidence: [] }] : [],
     },
   };
 }
 
-describe("Case A/B — hasAdaptationStoryEvidence: 2-source-convergence gate", () => {
-  it("Case A (strong): a wide gap axis + a usable CE dimension signal → eligible", () => {
+describe("hasAdaptationStoryEvidence — gap + independent-family convergence gate (Batch 2 strengthened)", () => {
+  it("a wide gap axis + a usable energy-relevant CE dimension → eligible", () => {
     assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasCeDimensionSignal: true })),
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: true })),
       true,
     );
   });
 
-  it("Case B (thin — no gap at all): every axis aligned → not eligible, even with a usable CE dimension", () => {
+  it("no gap at all → not eligible, even with a usable energy-relevant CE dimension", () => {
     assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: false, hasCeDimensionSignal: true })),
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: false, hasEnergyDimensionSignal: true })),
       false,
     );
   });
 
-  it("Case B (thin — gap exists but zero usable second-source signal): all CE dimensions insufficient → not eligible", () => {
+  it("a wide gap exists but the ONLY usable CE dimension is unrelated to energy → not eligible (the old 'any CE dimension' gate is gone)", () => {
     assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasCeDimensionSignal: false })),
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: false })),
       false,
+    );
+  });
+
+  it("a wide gap + a second wide gap axis (no energy/layer signal) → eligible via the second-gap independent family", () => {
+    assert.equal(
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasSecondWideGap: true, hasEnergyDimensionSignal: false })),
+      true,
+    );
+  });
+
+  it("a wide gap + only 1 populated layered-identity bucket (below the 2-bucket threshold) → not eligible via that family alone", () => {
+    assert.equal(
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: false, populatedLayerBucketCount: 1 })),
+      false,
+    );
+  });
+
+  it("a wide gap + 2 populated layered-identity buckets → eligible via the layered-identity independent family", () => {
+    assert.equal(
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: false, populatedLayerBucketCount: 2 })),
+      true,
     );
   });
 

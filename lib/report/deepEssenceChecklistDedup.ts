@@ -122,6 +122,26 @@ function similarityScore(a: string, b: string, locale: string): number {
  */
 export const CHECKLIST_DUPLICATE_THRESHOLD = 0.11;
 
+/**
+ * Narrative Quality Singleton Batch 2 — a separate, higher threshold for the
+ * single-item (One Next Move, min=max=1) checklist call site.
+ *
+ * CHECKLIST_DUPLICATE_THRESHOLD above was calibrated for a different failure
+ * mode entirely: an 8-12 item list where the LLM bolts a time phrase onto an
+ * action ALREADY given elsewhere, padding count with near-copies. One Next
+ * Move is a single item that is SUPPOSED to connect to the report's central
+ * tension — real, evidence-connected single items observed in live QA scored
+ * 0.13-0.34 against playbook/future content (see the Personal Premium
+ * Narrative Quality Singleton, Batch 2), squarely inside the old "duplicate"
+ * zone even though a human reader would judge them as legitimate, connected
+ * (not redundant) actions. Applying the 8-12-item threshold here punished
+ * exactly the well-connected items the product wants, and rewarded generic,
+ * evidence-blind items that happen not to overlap with anything. This
+ * threshold only catches genuinely near-verbatim duplication (the SAME
+ * action restated, not merely the same underlying theme).
+ */
+export const SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD = 0.45;
+
 export type FlaggedChecklistItem = {
   item: string;
   matchedText: string;
@@ -210,15 +230,23 @@ export function dedupeAndBackfillChecklist(input: {
   locale: string;
   min?: number;
   max?: number;
+  /**
+   * Batch 2 — override the duplicate-similarity threshold. Callers using
+   * min=max=1 (One Next Move) should pass SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD
+   * instead of the default CHECKLIST_DUPLICATE_THRESHOLD, which was
+   * calibrated for a different failure mode (see that constant's doc).
+   */
+  threshold?: number;
 }): DeepEssenceChecklistDedupResult {
   const min = input.min ?? 8;
   const max = input.max ?? 12;
+  const threshold = input.threshold ?? CHECKLIST_DUPLICATE_THRESHOLD;
   const flagged: FlaggedChecklistItem[] = [];
   const kept: string[] = [];
 
   for (const item of input.checklist) {
     const match = findBestMatch(item, input.comparisonTexts, input.locale);
-    if (match && match.score >= CHECKLIST_DUPLICATE_THRESHOLD) {
+    if (match && match.score >= threshold) {
       flagged.push({ item, matchedText: match.matchedText, score: match.score });
       continue;
     }

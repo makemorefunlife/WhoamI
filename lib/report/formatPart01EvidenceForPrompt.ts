@@ -645,9 +645,17 @@ function buildPracticeEvidence(packet: Part01IdentityEvidencePacket): {
 }
 
 /**
- * Part 05 Batch 1 — Future evidence Lens. Deliberately the smallest Lens:
- * just the already-selected best-aligned axis (same selectAxisHighlights()
- * call every other Lens uses — reused, not re-derived, no new CE dims added).
+ * Part 05 Batch 1 — Future evidence Lens. Originally just the already-
+ * selected best-aligned axis (same selectAxisHighlights() call every other
+ * Lens uses — reused, not re-derived, no new CE dims added).
+ *
+ * Narrative Quality Singleton Batch 2 — added a second, distinct axis slot
+ * for Recover (future.remember[2]). Recover's own definition is "a natural
+ * tendency currently used LESS than its innate baseline" — i.e. an
+ * innate_higher gap axis — but the alignment axis (current ≈ innate, no
+ * gap at all) was structurally the wrong evidence type for that field: it
+ * has nothing to "recover" from. Both slots are reused from
+ * selectAxisHighlights(), never re-decided.
  */
 function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
   text: string;
@@ -656,33 +664,57 @@ function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
   const knownKeys = new Set<string>();
   const lines: string[] = [];
 
-  const { alignment } = selectAxisHighlights(packet.axisComparisons);
+  const { gaps, alignment } = selectAxisHighlights(packet.axisComparisons);
+
   if (alignment) {
     knownKeys.add(axisKey(alignment.axis));
     lines.push(
-      "Best-aligned Current x Innate axis (natural fit — same axis selectAxisHighlights() already picked for axis_interpretations/relationships, reused not re-decided):",
+      "Best-aligned Current x Innate axis — ground remember[0] (Keep) here: natural fit, low cost to use (same axis selectAxisHighlights() already picked for axis_interpretations/relationships, reused not re-decided):",
     );
     lines.push(formatAxisLine(alignment));
   } else {
-    lines.push("No axis is closely aligned enough to serve as a single best-fit signal this time — do not force one.");
+    lines.push("No axis is closely aligned enough to serve as a single best-fit signal this time — do not force one for remember[0] (Keep).");
+  }
+
+  const recoverCandidate = gaps.find((g) => g.direction === "innate_higher");
+  if (recoverCandidate) {
+    knownKeys.add(axisKey(recoverCandidate.axis));
+    lines.push(
+      "Innate-higher-than-current gap axis — ground remember[2] (Recover) here specifically: a natural tendency this person has genuine capacity for but currently uses LESS than their innate baseline (reused from axis_interpretations, not re-decided):",
+    );
+    lines.push(formatAxisLine(recoverCandidate));
+  } else {
+    lines.push(
+      "No selected gap axis is innate-higher-than-current this time — do not invent an underused-tendency claim for remember[2] (Recover); ground it in [Natural Self & Deep Needs] material already used in layered_identity instead, or write a more general, still-evidence-based permission-to-return-to-self statement without naming a specific axis.",
+    );
   }
 
   return { text: lines.join("\n"), knownKeys };
 }
 
 /**
- * IA Batch 3 — deterministic minimum-evidence gate for adaptation_story.
- * Two-source-convergence rule: (1) at least one genuinely wide Current x
- * Innate gap axis (selectAxisHighlights' own "wide" threshold — reused, not
- * a new one), AND (2) a second, independent signal — a CE relational
- * dimension with usable (non-"insufficient") confidence. Chart-level facts
- * (day master, elements, strength, climate) are always present with a real
- * confidence value on any built chart, so they can't serve as a genuine
- * "was there enough signal" check the way dimension confidence can (the CE
- * explicitly marks a dimension "insufficient" when it found no real signal —
- * that's the one place in this packet honest absence is representable).
- * Thin evidence omits the field entirely; this gate runs BEFORE the LLM
- * call, and is never trusted to the model alone.
+ * Narrative Quality Singleton Batch 2 — strengthened minimum-evidence gate
+ * for adaptation_story.
+ *
+ * The original Batch 3 gate's second condition ("any CE dimension anywhere
+ * with usable confidence") was almost always true in practice — it checked
+ * for evidence EXISTENCE, not genuine INDEPENDENT CONVERGENCE, which let
+ * adaptation_story fire off a single gap axis's evidence alone and read as a
+ * recap of axis_interpretations rather than a synthesis (see the Personal
+ * Premium Narrative Quality Audit, Part04 root cause).
+ *
+ * New rule: (1) at least one genuinely wide Current x Innate gap axis
+ * (selectAxisHighlights' own "wide" threshold — reused, not a new one), AND
+ * (2) at least one of three genuinely INDEPENDENT corroborating families:
+ *   - an energy-relevant CE dimension (solitude_autonomy/pressure_response/
+ *     criticism_sensitivity — the same set Energy's own Lens already uses)
+ *     with usable confidence, or
+ *   - layered identity depth — at least 2 of the 4 candidate buckets have
+ *     real (non-abstained) content, mirroring the same >=2-populated-layers
+ *     threshold layered_identity.synthesis itself requires, or
+ *   - a second, genuinely wide gap axis beyond the primary one, so the
+ *     adaptation isn't resting on a single axis's evidence alone.
+ * "Any CE dimension anywhere" is no longer sufficient on its own.
  */
 export function hasAdaptationStoryEvidence(
   packet: Part01IdentityEvidencePacket | null | undefined,
@@ -691,9 +723,23 @@ export function hasAdaptationStoryEvidence(
   const { gaps } = selectAxisHighlights(packet.axisComparisons);
   if (gaps.length === 0) return false;
 
-  return packet.dimensions.allDimensions.some((d) =>
-    isUsableDimensionConfidence(d.evaluation.confidence),
+  const hasEnergySignal = packet.dimensions.allDimensions.some(
+    (d) =>
+      ENERGY_RELEVANT_DIMENSION_KEYS.includes(d.dimension) &&
+      isUsableDimensionConfidence(d.evaluation.confidence),
   );
+
+  const populatedLayerBucketCount = [
+    packet.layeredIdentityCandidates.firstImpression,
+    packet.layeredIdentityCandidates.knownSelf,
+    packet.layeredIdentityCandidates.closePrivateSelf,
+    packet.layeredIdentityCandidates.naturalSelfAndDeepNeeds,
+  ].filter((bucket) => buildCandidateBucketEvidence(bucket).text.length > 0).length;
+  const hasLayeredIdentitySignal = populatedLayerBucketCount >= 2;
+
+  const hasSecondGapSignal = gaps.length >= 2;
+
+  return hasEnergySignal || hasLayeredIdentitySignal || hasSecondGapSignal;
 }
 
 /**

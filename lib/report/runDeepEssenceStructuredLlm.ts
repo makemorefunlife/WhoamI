@@ -21,6 +21,7 @@ import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 import {
   dedupeAndBackfillChecklist,
   buildChecklistComparisonTexts,
+  SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD,
 } from "@/lib/report/deepEssenceChecklistDedup";
 import { polishDeepEssenceStructuredReport } from "@/lib/report/polishDeepEssenceStructured";
 import { logServerEvent } from "@/lib/security/safeLog";
@@ -405,6 +406,11 @@ export async function runDeepEssenceStructuredLlm(
         locale: normalizeLocale(input.locale),
         min: 1,
         max: 1,
+        // Batch 2 — the default CHECKLIST_DUPLICATE_THRESHOLD was calibrated
+        // for 8-12-item bolt-on duplicates, not a single evidence-connected
+        // One Next Move item, which is expected to share vocabulary with
+        // playbook/future by design. See SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD.
+        threshold: SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD,
       });
       partB.checklist = dedupResult.checklist;
       if (dedupResult.flagged.length) {
