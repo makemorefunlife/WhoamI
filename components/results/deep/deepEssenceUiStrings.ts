@@ -33,6 +33,8 @@ export type DeepEssenceUiStrings = {
   layeredIdentity: {
     sectionTitle: string;
     sectionTag: string;
+    /** IA Batch 2 — small editorial lead-in shown above the synthesis closing paragraph. Omit rendering it (not just the string) if it ever reads as over-explaining rather than framing. */
+    synthesisLabel: string;
     layers: {
       firstImpression: string;
       knownSelf: string;
@@ -157,6 +159,7 @@ const EN: DeepEssenceUiStrings = {
   layeredIdentity: {
     sectionTitle: "The many layers of you",
     sectionTag: "Layers",
+    synthesisLabel: "So people may describe you a little differently",
     layers: {
       firstImpression: "How you land on someone new",
       knownSelf: "How you show up once they know you",
@@ -280,6 +283,7 @@ const KO: DeepEssenceUiStrings = {
   layeredIdentity: {
     sectionTitle: "당신의 여러 겹",
     sectionTag: "레이어",
+    synthesisLabel: "그래서 사람마다 보는 당신이 조금 다를 수 있어요",
     layers: {
       firstImpression: "처음 만난 사람이 느끼는 나",
       knownSelf: "알고 나면 보이는 나",

@@ -233,6 +233,22 @@ export async function runDeepEssenceStructuredLlm(
           if (filtered) layer.evidence_refs = filtered;
           else delete layer.evidence_refs;
         }
+
+        // IA Batch 2 — same never-trust-LLM-refs rule for synthesis, but
+        // validated against the UNION of all four layers' known keys (not
+        // one isolated bucket) since synthesis is explicitly about
+        // connecting layers. coerceDeepEssenceStructured.ts already dropped
+        // synthesis entirely if fewer than 2 layers survived coercion, so
+        // `layered.synthesis` being present here already implies >= 2 layers.
+        const synthesis = layered.synthesis;
+        if (synthesis) {
+          const filtered = filterKnownEvidenceRefs(
+            synthesis.evidence_refs,
+            promptEvidence.layeredIdentity.synthesisKnownKeys,
+          );
+          if (filtered) synthesis.evidence_refs = filtered;
+          else delete synthesis.evidence_refs;
+        }
       }
 
       // Batch 6 — same rule, per strength/watchout item. Strengths and

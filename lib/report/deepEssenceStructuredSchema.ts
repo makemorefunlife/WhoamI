@@ -26,6 +26,18 @@ export type DeepEssenceLayeredIdentityLayer = {
   evidence_refs?: string[];
 };
 /**
+ * IA Batch 2 — layer-to-layer synthesis. NOT a fifth layer and not a
+ * re-summary of the four layers above — it answers a different question
+ * (how the person appears differently as relational distance changes).
+ * Only present when at least two of the four layers are populated; the
+ * server enforces this even if the LLM ignores the instruction (see
+ * coerceDeepEssenceStructured.ts).
+ */
+export type DeepEssenceLayeredIdentitySynthesis = {
+  narrative: string;
+  evidence_refs?: string[];
+};
+/**
  * Batch 8 — replaces Batch 7's flat per-axis shape. Only the
  * deterministically-selected gap axes (top 2-3 widest, magnitude "wide")
  * and the single most-aligned axis get a deep-dive; the other axes get
@@ -86,6 +98,8 @@ export type DeepEssenceStructuredReport = {
     known_self?: DeepEssenceLayeredIdentityLayer;
     close_private_self?: DeepEssenceLayeredIdentityLayer;
     natural_self_and_deep_needs?: DeepEssenceLayeredIdentityLayer;
+    /** IA Batch 2 — see DeepEssenceLayeredIdentitySynthesis. */
+    synthesis?: DeepEssenceLayeredIdentitySynthesis;
   };
   /**
    * Batch 8 — additive, optional. Deterministically-selected axis

@@ -88,6 +88,25 @@ function coerceLayeredIdentityLayer(
   };
 }
 
+// IA Batch 2 — same shape/rule as coerceLayeredIdentityLayer, minus `title`
+// (synthesis has no short label of its own). Whether it's actually kept
+// depends on the caller enforcing the >= 2 populated layers rule below —
+// this function only validates shape, never the minimum-evidence rule.
+function coerceLayeredIdentitySynthesis(
+  raw: unknown,
+): { narrative: string; evidence_refs?: string[] } | null {
+  const row = asRecord(raw);
+  const narrative = row ? asString(row.narrative) : "";
+  if (!narrative) return null;
+  const evidenceRefs = row && Array.isArray(row.evidence_refs)
+    ? row.evidence_refs.filter((v): v is string => typeof v === "string")
+    : undefined;
+  return {
+    narrative,
+    ...(evidenceRefs?.length ? { evidence_refs: evidenceRefs } : {}),
+  };
+}
+
 // Batch 8 — an axis missing any required text field is dropped entirely,
 // never padded (same "never fabricate" rule as Batch 4's layers). Gap
 // deep-dives need 4 fields (may_work_better stays optional); alignment
@@ -286,6 +305,17 @@ export function coerceDeepEssencePartA(
     }
   }
   const hasAnyLayer = Object.keys(layeredIdentityOut).length > 0;
+  // IA Batch 2 — server-enforced minimum-evidence rule: synthesis is a
+  // statement about the CHANGE between layers, so it needs at least two
+  // populated layers to mean anything. Enforced here regardless of whether
+  // the LLM followed the prompt instruction to omit it — never trust the
+  // model to police its own boundary (same principle as the evidence_refs
+  // filtering in runDeepEssenceStructuredLlm.ts).
+  const layeredIdentityCount = Object.keys(layeredIdentityOut).length;
+  if (layeredIdentityIn && layeredIdentityCount >= 2) {
+    const synthesis = coerceLayeredIdentitySynthesis(layeredIdentityIn.synthesis);
+    if (synthesis) layeredIdentityOut.synthesis = synthesis;
+  }
 
   const axisInterpretationsIn = asRecord(obj.axis_interpretations);
   const gapDeepDiveIn = asRecord(axisInterpretationsIn?.gap_deep_dive);

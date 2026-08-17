@@ -174,6 +174,14 @@ export type Part01LayeredIdentityPromptEvidence = {
   knownSelf: Part01LayerPromptEvidence;
   closePrivateSelf: Part01LayerPromptEvidence;
   naturalSelfAndDeepNeeds: Part01LayerPromptEvidence;
+  /**
+   * IA Batch 2 — union of all four layers' known keys. synthesis draws on
+   * whichever layers the LLM actually wrote, not one isolated bucket, so its
+   * evidence_refs are validated against this shared pool rather than any
+   * single layer's own knownKeys (unlike the four layers above, which stay
+   * mutually isolated).
+   */
+  synthesisKnownKeys: Set<string>;
 };
 
 export type Part01PromptEvidence = {
@@ -667,16 +675,26 @@ export function formatPart01EvidenceForPrompt(
   const future = buildFutureEvidence(packet);
   const { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds } =
     packet.layeredIdentityCandidates;
+  const layeredIdentityBuckets = {
+    firstImpression: buildCandidateBucketEvidence(firstImpression),
+    knownSelf: buildCandidateBucketEvidence(knownSelf),
+    closePrivateSelf: buildCandidateBucketEvidence(closePrivateSelf),
+    naturalSelfAndDeepNeeds: buildCandidateBucketEvidence(naturalSelfAndDeepNeeds),
+  };
+  const synthesisKnownKeys = new Set<string>([
+    ...layeredIdentityBuckets.firstImpression.knownKeys,
+    ...layeredIdentityBuckets.knownSelf.knownKeys,
+    ...layeredIdentityBuckets.closePrivateSelf.knownKeys,
+    ...layeredIdentityBuckets.naturalSelfAndDeepNeeds.knownKeys,
+  ]);
   return {
     coreModeText: coreMode.text,
     growthEdgeText: growthEdge.text,
     coreModeKnownKeys: coreMode.knownKeys,
     growthEdgeKnownKeys: growthEdge.knownKeys,
     layeredIdentity: {
-      firstImpression: buildCandidateBucketEvidence(firstImpression),
-      knownSelf: buildCandidateBucketEvidence(knownSelf),
-      closePrivateSelf: buildCandidateBucketEvidence(closePrivateSelf),
-      naturalSelfAndDeepNeeds: buildCandidateBucketEvidence(naturalSelfAndDeepNeeds),
+      ...layeredIdentityBuckets,
+      synthesisKnownKeys,
     },
     strengthsWatchoutsText: strengthsWatchouts.text,
     strengthsWatchoutsKnownKeys: strengthsWatchouts.knownKeys,

@@ -30,11 +30,13 @@ export function hasLayeredIdentityContent(
  * 2 → 3 → 4), since the point of this Part is the *progression* between
  * layers, not four independent facts.
  *
- * Future insertion point (NOT implemented this batch — no
- * `layered_identity.synthesis` field exists yet, so nothing is fabricated
- * here): once a schema field for a layer-to-layer synthesis sentence exists,
- * it renders directly below the sequential list, above the closing
- * separator. Do not add a synthesis paragraph before that field exists.
+ * IA Batch 2 — fills the insertion point Batch 1 left below the sequential
+ * list with `layered_identity.synthesis`: one closing paragraph naming the
+ * change between layers (not a fifth card, not a repeat of the four above).
+ * Rendered only when the LLM actually produced one — the server already
+ * enforces "only when >= 2 layers are populated" in
+ * coerceDeepEssenceStructured.ts, so this component doesn't re-check that
+ * condition, only whether the field is present.
  */
 export function DeepEssenceLayeredIdentity({
   layeredIdentity,
@@ -73,7 +75,16 @@ export function DeepEssenceLayeredIdentity({
           </p>
         </div>
       ))}
-      {/* Future insertion point: layered_identity.synthesis renders here, once that field exists (next batch). Nothing rendered this batch. */}
+      {layeredIdentity!.synthesis ? (
+        <div className="border-t border-outline-variant pt-8">
+          <p className="text-[11px] tracking-[0.06em] text-primary italic">
+            {t.synthesisLabel}
+          </p>
+          <p className="mt-3 text-[14.5px] leading-[1.75] text-on-surface" style={serifStyle}>
+            {layeredIdentity!.synthesis.narrative}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

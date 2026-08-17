@@ -6,13 +6,17 @@
  * Run: npx tsx --test tests/unit/deep-essence-layered-identity.test.mjs
  */
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { describe, it } from "node:test";
 import {
   runPersonalContextEngine,
   buildPersonalCeFixtureChart,
 } from "../../lib/personCore/personalContextEngine/index.ts";
 import { buildPart01IdentityEvidencePacket } from "../../lib/v1/slim/part01IdentityEvidence.ts";
-import { formatPart01EvidenceForPrompt } from "../../lib/report/formatPart01EvidenceForPrompt.ts";
+import {
+  formatPart01EvidenceForPrompt,
+  filterKnownEvidenceRefs,
+} from "../../lib/report/formatPart01EvidenceForPrompt.ts";
 import { buildDeepEssenceStructuredPartAUserPrompt } from "../../lib/prompts/deepEssenceStructured.ts";
 import { coerceDeepEssencePartA } from "../../lib/report/coerceDeepEssenceStructured.ts";
 import { isDeepEssencePartA } from "../../lib/report/deepEssenceStructuredSchema.ts";
@@ -250,5 +254,193 @@ describe("coerceDeepEssencePartA — Batch 4 layered_identity", () => {
       floor,
     );
     assert.equal(isDeepEssencePartA(value), true);
+  });
+});
+
+/**
+ * IA Batch 2 — layer-to-layer synthesis (layered_identity.synthesis).
+ *
+ * Root design constraint under test: synthesis is a statement about the
+ * CHANGE between layers, so it needs >= 2 populated layers to mean anything.
+ * The server enforces this in coerceDeepEssencePartA regardless of what the
+ * LLM returns — Cases A-E below are the exhaustive 4/3/2/1/0-layer matrix
+ * the task specified, proving the server-side guard (not just the prompt
+ * instruction) actually holds the line.
+ */
+function withSynthesis(layers, synthesisNarrative = "The shift narrative.") {
+  return {
+    summary: { core_mode: "X" },
+    layered_identity: {
+      ...layers,
+      synthesis: { narrative: synthesisNarrative },
+    },
+  };
+}
+
+const FOUR_LAYERS = {
+  first_impression: { narrative: "n1" },
+  known_self: { narrative: "n2" },
+  close_private_self: { narrative: "n3" },
+  natural_self_and_deep_needs: { narrative: "n4" },
+};
+
+describe("coerceDeepEssencePartA — IA Batch 2 layered_identity.synthesis", () => {
+  it("Case A (4 layers): synthesis is kept", () => {
+    const { value } = coerceDeepEssencePartA(withSynthesis(FOUR_LAYERS), floor);
+    assert.equal(value.layered_identity.synthesis.narrative, "The shift narrative.");
+  });
+
+  it("Case B (3 layers): synthesis is kept", () => {
+    const { first_impression, known_self, close_private_self } = FOUR_LAYERS;
+    const { value } = coerceDeepEssencePartA(
+      withSynthesis({ first_impression, known_self, close_private_self }),
+      floor,
+    );
+    assert.equal(value.layered_identity.synthesis.narrative, "The shift narrative.");
+  });
+
+  it("Case C (2 layers): synthesis is kept", () => {
+    const { first_impression, known_self } = FOUR_LAYERS;
+    const { value } = coerceDeepEssencePartA(
+      withSynthesis({ first_impression, known_self }),
+      floor,
+    );
+    assert.equal(value.layered_identity.synthesis.narrative, "The shift narrative.");
+  });
+
+  it("Case D (1 layer): synthesis is dropped even though the LLM returned one (server-enforced minimum, not prompt-trusted)", () => {
+    const { first_impression } = FOUR_LAYERS;
+    const { value } = coerceDeepEssencePartA(withSynthesis({ first_impression }), floor);
+    assert.ok(!("synthesis" in value.layered_identity));
+    assert.ok(value.layered_identity.first_impression);
+  });
+
+  it("Case E (0 layers): synthesis is dropped and layered_identity is absent entirely (existing Batch 1 conditional behavior preserved)", () => {
+    const { value } = coerceDeepEssencePartA(
+      { summary: { core_mode: "X" }, layered_identity: { synthesis: { narrative: "orphan" } } },
+      floor,
+    );
+    assert.ok(!("layered_identity" in value));
+    assert.equal(isDeepEssencePartA(value), true);
+  });
+
+  it("a synthesis with no narrative is dropped regardless of layer count (shape validation, same rule as a layer)", () => {
+    const { value } = coerceDeepEssencePartA(
+      {
+        summary: { core_mode: "X" },
+        layered_identity: { ...FOUR_LAYERS, synthesis: { narrative: "" } },
+      },
+      floor,
+    );
+    assert.ok(!("synthesis" in value.layered_identity));
+  });
+
+  it("passes through synthesis evidence_refs only when present, filtering non-string entries (same rule as a layer)", () => {
+    const { value } = coerceDeepEssencePartA(
+      {
+        summary: { core_mode: "X" },
+        layered_identity: {
+          ...FOUR_LAYERS,
+          synthesis: { narrative: "shift", evidence_refs: ["day_master", 7, "pillars.month.stem_ten_god"] },
+        },
+      },
+      floor,
+    );
+    assert.deepEqual(value.layered_identity.synthesis.evidence_refs, [
+      "day_master",
+      "pillars.month.stem_ten_god",
+    ]);
+  });
+
+  it("still passes full Part A schema validation with synthesis present (schema itself never required synthesis)", () => {
+    const { value } = coerceDeepEssencePartA(withSynthesis(FOUR_LAYERS), floor);
+    assert.equal(isDeepEssencePartA(value), true);
+  });
+});
+
+describe("formatPart01EvidenceForPrompt — IA Batch 2 synthesisKnownKeys", () => {
+  it("synthesisKnownKeys is the union of all four layers' own known keys", () => {
+    const packet = buildFixturePacket("known_time");
+    const result = formatPart01EvidenceForPrompt(packet);
+    const expectedUnion = new Set([
+      ...result.layeredIdentity.firstImpression.knownKeys,
+      ...result.layeredIdentity.knownSelf.knownKeys,
+      ...result.layeredIdentity.closePrivateSelf.knownKeys,
+      ...result.layeredIdentity.naturalSelfAndDeepNeeds.knownKeys,
+    ]);
+    assert.deepEqual(
+      [...result.layeredIdentity.synthesisKnownKeys].sort(),
+      [...expectedUnion].sort(),
+    );
+  });
+});
+
+describe("Case F — synthesis evidence_refs pass only through the known-key union (reused filterKnownEvidenceRefs mechanism, not reinvented)", () => {
+  it("accepts a ref that belongs to any one of the four layers (not isolated to one, unlike a normal layer)", () => {
+    const union = new Set(["pillars.month.stem_ten_god", "dimension:solitude_autonomy"]);
+    const filtered = filterKnownEvidenceRefs(
+      ["pillars.month.stem_ten_god", "dimension:solitude_autonomy"],
+      union,
+    );
+    assert.deepEqual(filtered, ["pillars.month.stem_ten_god", "dimension:solitude_autonomy"]);
+  });
+
+  it("rejects an invented key not present in any layer's evidence", () => {
+    const union = new Set(["pillars.month.stem_ten_god"]);
+    const filtered = filterKnownEvidenceRefs(["pillars.month.stem_ten_god", "made_up_fact"], union);
+    assert.deepEqual(filtered, ["pillars.month.stem_ten_god"]);
+  });
+
+  it("returns undefined (not an empty array) when nothing survives filtering", () => {
+    const union = new Set(["pillars.month.stem_ten_god"]);
+    const filtered = filterKnownEvidenceRefs(["made_up_fact"], union);
+    assert.equal(filtered, undefined);
+  });
+
+  it("runDeepEssenceStructuredLlm.ts actually wires synthesis.evidence_refs through filterKnownEvidenceRefs against synthesisKnownKeys (source wiring, no OpenAI call needed)", () => {
+    const src = fs.readFileSync("lib/report/runDeepEssenceStructuredLlm.ts", "utf8");
+    assert.match(
+      src,
+      /filterKnownEvidenceRefs\(\s*synthesis\.evidence_refs,\s*promptEvidence\.layeredIdentity\.synthesisKnownKeys,?\s*\)/,
+      "runDeepEssenceStructuredLlm.ts must filter synthesis.evidence_refs against the union known-key set",
+    );
+  });
+});
+
+describe("Case G — locale regression: synthesis schema/instructions are present in the prompt regardless of output locale", () => {
+  it("ko-KR grounded prompt still includes the synthesis schema field and grounding rule", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const grounded = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "ko-KR",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(grounded.includes('"synthesis"'));
+    assert.ok(grounded.includes("layered_identity.synthesis"));
+  });
+
+  it("en-US grounded prompt includes the same synthesis schema field and grounding rule", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const grounded = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "en-US",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(grounded.includes('"synthesis"'));
+    assert.ok(grounded.includes("layered_identity.synthesis"));
+    // schema is still valid JSON once the template placeholders are filled in
+    const schemaBlock = grounded.slice(
+      grounded.indexOf("JSON schema:") + "JSON schema:".length,
+      grounded.indexOf("Respond with exactly one JSON object"),
+    );
+    assert.doesNotThrow(() => JSON.parse(schemaBlock.trim()));
+  });
+
+  it("omitted part01Evidence still reproduces the exact pre-synthesis prompt (no synthesis field leaks into the ungrounded path)", () => {
+    const withoutField = buildDeepEssenceStructuredPartAUserPrompt(BASE_PROMPT_INPUT);
+    assert.ok(!withoutField.includes('"synthesis"'));
+    assert.ok(!withoutField.includes("layered_identity.synthesis"));
   });
 });
