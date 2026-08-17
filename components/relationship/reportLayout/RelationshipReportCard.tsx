@@ -81,6 +81,7 @@ export default function RelationshipReportCard({
   accentColor,
   className = "",
   id,
+  showMarker = false,
 }: {
   title: string;
   children: ReactNode;
@@ -88,6 +89,7 @@ export default function RelationshipReportCard({
   accentColor?: string;
   className?: string;
   id?: string;
+  showMarker?: boolean;
 }) {
   const tone = useReportTone();
   const variantClass =
@@ -113,10 +115,15 @@ export default function RelationshipReportCard({
       )}
     >
       <h3
-        className={tone.cardTitle}
+        className={["flex items-baseline gap-2 font-rel-serif", tone.cardTitle].join(" ")}
         style={accentColor ? { color: accentColor } : undefined}
       >
-        {title}
+        {showMarker && (
+          <span className="text-[12px] leading-none text-rel-deep shrink-0" aria-hidden>
+            ◤
+          </span>
+        )}
+        <span className="min-w-0 flex-1">{title}</span>
       </h3>
       {children}
     </article>

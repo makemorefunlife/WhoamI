@@ -3,10 +3,13 @@
 /**
  * Work Colleague Premium — 카드 프리미티브 (DNA/역할/이상적 역할/속상함 가이드/디에스컬레이션).
  *
- * WorkColleagueReportView.tsx(en-US 레거시 경로)에서 이 파일로 그대로 이동한 것 —
- * JSX·로직 변경 없음. 동일한 컴포넌트를 components/relationship/workColleague/
- * sections/SectionRenderer.tsx(ko-KR ViewModel 경로, Phase 2/3)도 함께 사용한다.
- * 두 렌더러가 서로 다른 사본을 갖지 않도록 여기 한 곳에서만 정의한다.
+ * WorkColleagueReportView.tsx(구형 payload 레거시 경로)와 SectionRenderer.tsx
+ * (신규 ViewModel 경로, production 기본)가 함께 쓴다 — 두 렌더러가 서로 다른
+ * 사본을 갖지 않도록 여기 한 곳에서만 정의한다. 카드 시각 스킨은 Marriage/
+ * Friend와 같은 크림-진초록 editorial 시스템(workEditorialAdapter.tsx)을
+ * 쓴다 — 레거시 경로는 여전히 reportLayout의 다크 카드로 감싸이므로, 그
+ * 폴백 화면에서는 이 인셋들이 밝게 보이는 부조화가 남는다(드문 구형 캐시
+ * payload에서만 발생, 신규 경로가 기본).
  */
 import type {
   OfficeDnaProfile,
@@ -20,12 +23,12 @@ import {
   RelationshipReportParagraph,
   RelationshipReportLabel,
   RelationshipReportInset,
-} from "@/components/relationship/reportLayout";
+} from "@/components/relationship/workColleague/editorial/workEditorialAdapter";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 function PersonLabel({ name, accent }: { name: string; accent: string }) {
   return (
-    <p className="flex items-center gap-1.5 text-sm font-bold text-white/92">
+    <p className="flex items-center gap-1.5 text-sm font-bold text-rel-ink">
       <User className="h-3.5 w-3.5 shrink-0" style={{ color: accent }} strokeWidth={1.75} aria-hidden />
       {name}
     </p>
@@ -85,7 +88,7 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <p className="text-sm font-bold text-white/92">
+      <p className="text-sm font-bold text-rel-ink">
         {t.upsetTitle(guide.nickname)}
       </p>
       <div className="mt-4 space-y-3">
@@ -96,7 +99,7 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
           </RelationshipReportParagraph>
         </div>
         <div>
-          <RelationshipReportLabel className="text-emerald-200/90">
+          <RelationshipReportLabel className="text-emerald-700">
             {t.upsetDoLabel}
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
@@ -108,7 +111,7 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
           </ul>
         </div>
         <div>
-          <RelationshipReportLabel className="text-red-200/80">
+          <RelationshipReportLabel className="text-red-700">
             {t.upsetAvoidLabel}
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
@@ -185,11 +188,11 @@ export function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent:
           {card.handoff_tasks.map((task) => (
             <div
               key={`${task.handoff_to}-${task.task_label}`}
-              className="rounded-xl border border-white/10 bg-black/15 p-4"
+              className="rounded-xl border border-rel-line bg-rel-taupe-soft/40 p-4"
             >
-              <p className="font-semibold text-white/90">
+              <p className="font-semibold text-rel-ink">
                 {task.task_label}
-                <span className="text-white/40"> → </span>
+                <span className="text-rel-ink-mute"> → </span>
                 <span style={{ color: accent }}>{task.handoff_to}</span>
               </p>
               <RelationshipReportParagraph className="mt-2" muted>
@@ -230,18 +233,18 @@ export function WorkCompareTableCard({
   if (!rows.length) return null;
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/10">
+    <div className="overflow-x-auto rounded-2xl border border-rel-line">
       <table className="w-full min-w-[520px] border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-white/10 bg-white/[0.04]">
-            <th className="px-4 py-3 font-semibold text-white/55">&nbsp;</th>
-            <th className="px-4 py-3 font-semibold text-white/80">
+          <tr className="border-b border-rel-line bg-rel-taupe-soft/30">
+            <th className="px-4 py-3 font-semibold text-rel-ink-mute">&nbsp;</th>
+            <th className="px-4 py-3 font-semibold text-rel-ink-soft">
               {myName}
             </th>
-            <th className="px-4 py-3 font-semibold text-white/80">
+            <th className="px-4 py-3 font-semibold text-rel-ink-soft">
               {partnerName}
             </th>
-            <th className="px-4 py-3 font-semibold text-white/55">
+            <th className="px-4 py-3 font-semibold text-rel-ink-mute">
               {t.compareTableColMeaning}
             </th>
           </tr>
@@ -253,21 +256,21 @@ export function WorkCompareTableCard({
             return (
               <tr
                 key={row.id}
-                className={i % 2 === 0 ? "bg-white/[0.015]" : undefined}
+                className={i % 2 === 0 ? "bg-rel-taupe-soft/10" : undefined}
               >
-                <td className="border-t border-white/8 px-4 py-3 align-top font-medium text-white/70">
+                <td className="border-t border-rel-line px-4 py-3 align-top font-medium text-rel-ink-mute">
                   {row.label}
                 </td>
                 <td
-                  className="border-t border-white/8 px-4 py-3 align-top font-semibold"
+                  className="border-t border-rel-line px-4 py-3 align-top font-semibold"
                   style={{ color: accent }}
                 >
                   {me.shortLabel}
                 </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top font-semibold text-white/85">
+                <td className="border-t border-rel-line px-4 py-3 align-top font-semibold text-rel-ink-soft">
                   {partner.shortLabel}
                 </td>
-                <td className="border-t border-white/8 px-4 py-3 align-top text-white/72">
+                <td className="border-t border-rel-line px-4 py-3 align-top text-rel-ink-mute">
                   {row.meaning}
                 </td>
               </tr>
@@ -290,9 +293,9 @@ export function DeEscalationBlock({
   };
 }) {
   return (
-    <RelationshipReportInset className="border-amber-400/20 bg-amber-950/15">
-      <p className="text-base font-bold text-white/95">{deCard.hashtag}</p>
-      <p className="mt-1 text-sm font-medium text-white/80">{deCard.title}</p>
+    <RelationshipReportInset className="border-amber-100 bg-amber-50/60">
+      <p className="text-base font-bold text-rel-ink">{deCard.hashtag}</p>
+      <p className="mt-1 text-sm font-medium text-rel-ink-soft">{deCard.title}</p>
       <RelationshipReportParagraph className="mt-2">{deCard.detail}</RelationshipReportParagraph>
     </RelationshipReportInset>
   );

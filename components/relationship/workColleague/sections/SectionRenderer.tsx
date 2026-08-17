@@ -5,25 +5,25 @@
  *
  * WorkColleagueReportView.tsx에서 en-US/ko-KR 둘 다에 대해 production 렌더링에
  * 쓰인다(구조 체크 통과 시). buildWorkColleagueReport.ts는 건드리지 않았고,
- * 여기서 재사용하는 reportLayout·TriScoreSnapshotPanel·PairPrescriptionSection·
- * PsychMatchRadarChart도 원본 그대로다(수정 없음).
+ * 여기서 재사용하는 TriScoreSnapshotPanel·PairPrescriptionSection도 원본
+ * 그대로다(수정 없음). 카드 시각 스킨은 Marriage/Friend와 같은 크림-진초록
+ * editorial 시스템(workEditorialAdapter.tsx)을 쓴다 — 옛 reportLayout의
+ * 다크 카드/blue 액센트가 아님.
  *
  * 카드 내부 라벨은 전부 `useMessages().relationshipDrilldown.work`(i18n 메시지
  * 카탈로그)에서 가져온다 — 하드코딩 금지, 새 라벨이 필요하면 en-US.ts/ko-KR.ts에
  * 같이 추가할 것.
  */
 import type { ReactNode } from "react";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { MessageCircle, Mic, AlertTriangle } from "lucide-react";
-import {
-  RelationshipReportLayout,
-  RelationshipReportCard,
+import RelationshipReportCard, {
   RelationshipReportBody,
   RelationshipReportParagraph,
   RelationshipReportLabel,
   RelationshipReportInset,
-  PsychMatchRadarChart,
-  getTabTheme,
-} from "@/components/relationship/reportLayout";
+  WorkEditorialHero,
+} from "@/components/relationship/workColleague/editorial/workEditorialAdapter";
 import { WorkChapterNav, WorkChapterSection } from "@/components/relationship/workColleague/chapters/WorkChapterShell";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
@@ -55,7 +55,19 @@ import type {
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 
-const ACCENT = getTabTheme("work").accent;
+const relSans = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rel-sans-var",
+});
+const relSerif = Noto_Serif_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rel-serif-var",
+});
+
+/** Shared editorial accent (rel-deep) — matches Romantic V4 / Friend / Marriage, not the old per-domain blue. */
+const ACCENT = "#1b3b2b";
 
 // ---- Part 1a: 한눈에 비교 표 (사주 6종) ------------------------------------
 
@@ -198,9 +210,9 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
 function LoopRow({ title, body, isFirst }: { title: string; body: string; isFirst: boolean }) {
   return (
     <div>
-      {isFirst ? null : <p className="py-1 text-center text-white/30">↓</p>}
+      {isFirst ? null : <p className="py-1 text-center text-rel-ink-mute">↓</p>}
       <RelationshipReportInset>
-        <p className="text-sm font-semibold text-white/90">{title}</p>
+        <p className="text-sm font-semibold text-rel-ink">{title}</p>
         <RelationshipReportParagraph className="mt-1.5">{body}</RelationshipReportParagraph>
       </RelationshipReportInset>
     </div>
@@ -213,7 +225,7 @@ function RelationshipLoopCard({ section }: { section: RelationshipLoopSection })
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       {section.positiveLoop.length > 0 ? (
         <div className="space-y-1">
-          <RelationshipReportLabel className="text-emerald-200/90">{t.loopStrengthLabel}</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-emerald-700">{t.loopStrengthLabel}</RelationshipReportLabel>
           {section.positiveLoop.map((item, i) => (
             <LoopRow key={`pos-${item.title}-${i}`} title={item.title} body={item.body} isFirst={i === 0} />
           ))}
@@ -221,7 +233,7 @@ function RelationshipLoopCard({ section }: { section: RelationshipLoopSection })
       ) : null}
       {section.frictionLoop.length > 0 ? (
         <div className={section.positiveLoop.length > 0 ? "mt-6 space-y-1" : "space-y-1"}>
-          <RelationshipReportLabel className="text-red-200/80">{t.loopFrictionLabel}</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-red-700">{t.loopFrictionLabel}</RelationshipReportLabel>
           {section.frictionLoop.map((item, i) => (
             <LoopRow key={`fric-${item.title}-${i}`} title={item.title} body={item.body} isFirst={i === 0} />
           ))}
@@ -265,9 +277,9 @@ function WarningCard({ section }: { section: WarningSection }) {
         </div>
         <DeEscalationBlock deCard={section.deEscalation} />
         {section.pairComplaintNote ? (
-          <RelationshipReportInset className="border-amber-400/20 bg-amber-950/10">
-            <RelationshipReportParagraph className="flex items-start gap-2 text-amber-100/85">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" strokeWidth={1.75} aria-hidden />
+          <RelationshipReportInset className="border-amber-100 bg-amber-50/60">
+            <RelationshipReportParagraph className="flex items-start gap-2 text-amber-900">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" strokeWidth={1.75} aria-hidden />
               {section.pairComplaintNote}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -328,7 +340,7 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
 
 function UserQuestionBanner({ question }: { question: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-medium tracking-wide text-amber-200/90 sm:px-5">
+    <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/25 px-4 py-3 text-xs font-medium tracking-wide text-rel-deep sm:px-5">
       💡 <span className="font-semibold">{question}</span>
     </div>
   );
@@ -353,30 +365,26 @@ function CanonicalRoleMapCard({
   };
 
   return (
-    <RelationshipReportCard title="8차원 권한 및 역할 지도 (Canonical Role Map)" accentColor={ACCENT}>
-      <RelationshipReportParagraph className="mb-4 text-xs text-white/70">
+    <RelationshipReportCard title="8차원 권한 및 역할 지도 (Canonical Role Map)" accentColor={ACCENT} showMarker={true}>
+      <RelationshipReportParagraph className="mb-4 text-xs text-rel-ink-mute">
         사주 구조와 11축 심리 역량을 종합 검증한 권한 및 R&R 최적 분담 구조입니다.
       </RelationshipReportParagraph>
       <div className="grid gap-3 sm:grid-cols-2">
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-amber-200/90">🧭 방향 설정 & 비전 리드 (Direction)</RelationshipReportLabel>
-          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.directionOwner)}</p>
+          <RelationshipReportLabel className="text-amber-700">🧭 방향 설정 & 비전 리드 (Direction)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.directionOwner)}</p>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-emerald-200/90">⚡ 실제 구현 & 빠른 실행 (Execution)</RelationshipReportLabel>
-          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.executionOwner)}</p>
+          <RelationshipReportLabel className="text-emerald-700">⚡ 실제 구현 & 빠른 실행 (Execution)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.executionOwner)}</p>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-sky-200/90">🔍 리스크 감지 & 품질 검수 (QA / Risk)</RelationshipReportLabel>
-          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.qaRiskOwner)}</p>
+          <RelationshipReportLabel className="text-sky-700">🔍 리스크 감지 & 품질 검수 (QA / Risk)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.qaRiskOwner)}</p>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-purple-200/90">🎤 대외 발표 & 메인 스피커 (External Lead)</RelationshipReportLabel>
-          <p className="mt-1 text-sm font-bold text-white">{getOwnerLabel(map.externalOwner)}</p>
-        </RelationshipReportInset>
-      </div>
-      <div className="mt-3">
-        <RelationshipReportInset className="border-amber-400/20 bg-amber-950/10">
+          <RelationshipReportLabel className="text-purple-700">🎤 대외 발표 & 메인 스피커 (External Lead)</RelationshipReportLabel>
+          <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.externalOwner)}</p>
         </RelationshipReportInset>
       </div>
     </RelationshipReportCard>
@@ -387,26 +395,26 @@ function ThinkVsDiscussCard({ meta }: { meta: any }) {
   const tvd = meta?.think_vs_discuss;
   if (!tvd) return null;
   return (
-    <RelationshipReportCard title="생각 정리 방식과 회의 준비 리듬 (Think vs Discuss)" accentColor={ACCENT}>
-      <RelationshipReportInset className="mb-4 border-amber-400/20 bg-amber-950/10">
-        <RelationshipReportLabel className="text-amber-300">💡 둘의 소통 패턴</RelationshipReportLabel>
-        <RelationshipReportParagraph className="mt-1 font-semibold text-white">
+    <RelationshipReportCard title="생각 정리 방식과 회의 준비 리듬 (Think vs Discuss)" accentColor={ACCENT} showMarker={true}>
+      <RelationshipReportInset className="mb-4 border-amber-100 bg-amber-50/60">
+        <RelationshipReportLabel className="text-amber-700">💡 둘의 소통 패턴</RelationshipReportLabel>
+        <RelationshipReportParagraph className="mt-1 font-semibold text-rel-ink">
           {tvd.pairPattern}
         </RelationshipReportParagraph>
       </RelationshipReportInset>
       <div className="grid gap-3 sm:grid-cols-2">
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-sky-200/90">개인별 생각 정리 방식</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+          <RelationshipReportLabel className="text-sky-700">개인별 생각 정리 방식</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {tvd.personAStyle}
           </RelationshipReportParagraph>
-          <RelationshipReportParagraph className="mt-2 text-xs leading-relaxed text-white/85">
+          <RelationshipReportParagraph className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
             {tvd.personBStyle}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-emerald-200/90">📋 회의 사전 준비 가이드 (Meeting Prep Rule)</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+          <RelationshipReportLabel className="text-emerald-700">📋 회의 사전 준비 가이드 (Meeting Prep Rule)</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {tvd.meetingPrep}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
@@ -434,11 +442,11 @@ function CrunchModeCard({
     >
       <div className="space-y-3">
         {/* 1. 평소 vs 마감 압박 시 변화 */}
-        <RelationshipReportInset className="border-amber-400/20 bg-amber-950/10">
-          <RelationshipReportLabel className="text-amber-300 font-bold">
+        <RelationshipReportInset className="border-amber-100 bg-amber-50/60">
+          <RelationshipReportLabel className="text-amber-700 font-bold">
             {isEn ? "🚨 1. How Work Styles Shift Under Tight Deadlines" : "🚨 1. 평소와 다른 마감 압박 시 일하는 방식의 변화"}
           </RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
             {cmd.normalVsDeadlineShift}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
@@ -446,18 +454,18 @@ function CrunchModeCard({
         {/* 2. 개인별 압박 반응 */}
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-sky-200/90 font-semibold">
+            <RelationshipReportLabel className="text-sky-700 font-semibold">
               ⚡ {isEn ? `${names[0]}'s Action Shift Under Pressure` : `${names[0]}님의 마감 속 행동 변화`}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.personAPressureShift}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-purple-200/90 font-semibold">
+            <RelationshipReportLabel className="text-purple-700 font-semibold">
               🛡️ {isEn ? `${names[1]}'s Action Shift Under Pressure` : `${names[1]}님의 마감 속 행동 변화`}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.personBPressureShift}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -466,18 +474,18 @@ function CrunchModeCard({
         {/* 3. 위기 시 역할 분담 & 4. 압박 속 충돌 지점 */}
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-emerald-200/90 font-semibold">
+            <RelationshipReportLabel className="text-emerald-700 font-semibold">
               🧩 {isEn ? "3. Natural Emergency Role Split" : "3. 위기 상황에서의 자연스러운 역할 분담"}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.crunchRoleSplit}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
-          <RelationshipReportInset className="border-red-400/20 bg-red-950/10">
-            <RelationshipReportLabel className="text-red-300 font-semibold">
+          <RelationshipReportInset className="border-red-100 bg-red-50/60">
+            <RelationshipReportLabel className="text-red-700 font-semibold">
               ⚡ {isEn ? "4. Potential Friction Point Under Stress" : "4. 마감 압박 속 생길 수 있는 충돌 지점"}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.pressureFrictionPoint}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -486,26 +494,26 @@ function CrunchModeCard({
         {/* 5. 실전 운영 규칙 & 버퍼 보호 */}
         <div className="grid gap-3 sm:grid-cols-3">
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-amber-300 font-bold">
+            <RelationshipReportLabel className="text-amber-700 font-bold">
               ✂️ {isEn ? "Priority Cut Rule" : "우선순위 축소 규칙"}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.priorityCutLead}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-emerald-300 font-bold">
+            <RelationshipReportLabel className="text-emerald-700 font-bold">
               🛡️ {isEn ? "Quality Baseline" : "최소 품질 기준선"}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.baselineHolder}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
-          <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
-            <RelationshipReportLabel className="text-sky-300 font-bold">
+          <RelationshipReportInset className="border-sky-100 bg-sky-50/60">
+            <RelationshipReportLabel className="text-sky-700 font-bold">
               🔋 {isEn ? "Buffer Support Rule" : "버퍼 & 과부하 방지 처방"}
             </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
               {cmd.bufferSupportNeed}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -527,20 +535,20 @@ function MistakeRepairCard({
   if (!mr && !ra) return null;
 
   return (
-    <RelationshipReportCard title="방향성 실수 민감도 & 신뢰 복구 프로토콜 (Directional Repair)" accentColor={ACCENT}>
+    <RelationshipReportCard title="방향성 실수 민감도 & 신뢰 복구 프로토콜 (Directional Repair)" accentColor={ACCENT} showMarker={true}>
       {mr ? (
         <div className="mb-4 space-y-3">
-          <RelationshipReportLabel className="text-amber-300">⚠️ 실수가 생겼을 때 서로 민감하게 반응하는 지점</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-amber-700">⚠️ 실수가 생겼을 때 서로 민감하게 반응하는 지점</RelationshipReportLabel>
           <div className="grid gap-3 sm:grid-cols-2">
             <RelationshipReportInset>
               <RelationshipReportLabel>{names[0]}의 실수 → {names[1]}의 반응 민감도</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
                 {mr.whenAMakesMistakeBReactsTo}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
             <RelationshipReportInset>
               <RelationshipReportLabel>{names[1]}의 실수 → {names[0]}의 반응 민감도</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
                 {mr.whenBMakesMistakeAReactsTo}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
@@ -549,17 +557,17 @@ function MistakeRepairCard({
       ) : null}
       {ra ? (
         <div className="space-y-3">
-          <RelationshipReportLabel className="text-emerald-300">🤝 신뢰 회복 및 사과 순서 (Directional Apology Guide)</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-emerald-700">🤝 신뢰 회복 및 사과 순서 (Directional Apology Guide)</RelationshipReportLabel>
           <div className="grid gap-3 sm:grid-cols-2">
-            <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-              <RelationshipReportLabel className="text-emerald-200">{names[0]} $\rightarrow$ {names[1]} 신뢰 회복 순서</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
+              <RelationshipReportLabel className="text-emerald-800">{names[0]} $\rightarrow$ {names[1]} 신뢰 회복 순서</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
                 {typeof ra.repairAtoB === "object" ? ra.repairAtoB.repairGuidance : ra.repairAtoB}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
-            <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-              <RelationshipReportLabel className="text-emerald-200">{names[1]} $\rightarrow$ {names[0]} 신뢰 회복 순서</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+            <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
+              <RelationshipReportLabel className="text-emerald-800">{names[1]} $\rightarrow$ {names[0]} 신뢰 회복 순서</RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
                 {typeof ra.repairBtoA === "object" ? ra.repairBtoA.repairGuidance : ra.repairBtoA}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
@@ -588,20 +596,20 @@ function MutualGrowthCard({
   };
 
   return (
-    <RelationshipReportCard title="상호 성장 효과 & 성과 인정 리듬 (Mutual Growth & Credit)" accentColor={ACCENT}>
+    <RelationshipReportCard title="상호 성장 효과 & 성과 인정 리듬 (Mutual Growth & Credit)" accentColor={ACCENT} showMarker={true}>
       {mg ? (
         <div className="mb-4 space-y-3">
-          <RelationshipReportLabel className="text-purple-300">🌱 함께 일하며 배우는 성장 경로 (Directional Growth)</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-purple-700">🌱 함께 일하며 배우는 성장 경로 (Directional Growth)</RelationshipReportLabel>
           <div className="grid gap-3 sm:grid-cols-2">
             <RelationshipReportInset>
               <RelationshipReportLabel>{names[0]} $\rightarrow$ {names[1]}를 통해 발전하는 역량</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
                 {getGrowthText(mg.aGrowsThroughB)}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
             <RelationshipReportInset>
               <RelationshipReportLabel>{names[1]} $\rightarrow$ {names[0]}를 통해 발전하는 역량</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+              <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
                 {getGrowthText(mg.bGrowsThroughA)}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
@@ -609,9 +617,9 @@ function MutualGrowthCard({
         </div>
       ) : null}
       {rcv ? (
-        <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
-          <RelationshipReportLabel className="text-sky-300">🏆 성과 인정 & 공로 명시 가이드 (Credit & Authorship)</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+        <RelationshipReportInset className="border-sky-100 bg-sky-50/60">
+          <RelationshipReportLabel className="text-sky-700">🏆 성과 인정 & 공로 명시 가이드 (Credit & Authorship)</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
             {typeof rcv === "string" ? rcv : rcv.creditSharingRule ?? rcv.summary ?? JSON.stringify(rcv)}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
@@ -639,29 +647,29 @@ function PlaybookSummaryCard({ meta }: { meta: any }) {
         "결정 권한이 모호한 상태에서 중복 검수하는 상황을 피합니다.";
 
   return (
-    <RelationshipReportCard title="내일부터 바로 쓰는 1:1 협업 플레이북 (Action Rules)" accentColor={ACCENT} variant="success">
+    <RelationshipReportCard title="내일부터 바로 쓰는 1:1 협업 플레이북 (Action Rules)" accentColor={ACCENT} variant="success" showMarker={true}>
       <div className="grid gap-3 sm:grid-cols-2">
-        <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-          <RelationshipReportLabel className="text-emerald-300 font-bold">✅ DO: 꼭 지켜야 할 협업 원칙</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+        <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
+          <RelationshipReportLabel className="text-emerald-700 font-bold">✅ DO: 꼭 지켜야 할 협업 원칙</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
             {bestText}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
-        <RelationshipReportInset className="border-red-400/20 bg-red-950/10">
-          <RelationshipReportLabel className="text-red-300 font-bold">❌ DON'T: 피해야 할 위험 조합</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/90">
+        <RelationshipReportInset className="border-red-100 bg-red-50/60">
+          <RelationshipReportLabel className="text-red-700 font-bold">❌ DON'T: 피해야 할 위험 조합</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
             {riskyText}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-sky-300 font-bold">📋 MEETING RULE: 회의 전 규칙</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+          <RelationshipReportLabel className="text-sky-700 font-bold">📋 MEETING RULE: 회의 전 규칙</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {tvd?.meetingPrep ?? "회의 전 핵심 의안과 사전 생각 정리 시간을 먼저 보장합니다."}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-amber-300 font-bold">🚨 DEADLINE RULE: 마감 압박 규칙</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-white/85">
+          <RelationshipReportLabel className="text-amber-700 font-bold">🚨 DEADLINE RULE: 마감 압박 규칙</RelationshipReportLabel>
+          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {cmd?.priorityCutLead ?? "마감 시점에는 즉시 핵심 우선순위만 남기고 감정 소모를 차단합니다."}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
@@ -705,7 +713,7 @@ export function WorkReportSectionCard({
   }
 }
 
-/** ViewModel 전체를 RelationshipReportLayout에 조립 — Work V2 Phase 5 Production 진입점. */
+/** ViewModel 전체를 editorial 히어로 + 챕터 구조로 조립 — Work V2 Phase 5 Production 진입점. */
 export function WorkReportViewModelView({
   vm,
   kindLabel,
@@ -759,17 +767,17 @@ export function WorkReportViewModelView({
   ];
 
   return (
-    <RelationshipReportLayout
-      kind="work"
-      kindLabel={kindLabel ?? t.defaultKindLabel}
-      headline={{
-        title: vm.opening.headline,
-        subtitle: vm.opening.subtitle,
-        names: vm.opening.names,
-        badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
-      }}
-      scores={[]}
+    <div
+      className={`bg-rel-bg font-rel-sans text-rel-ink antialiased ${relSans.variable} ${relSerif.variable}`}
+      lang={isEn ? "en" : "ko"}
     >
+      <WorkEditorialHero
+        eyebrow={kindLabel ?? t.defaultKindLabel}
+        headline={vm.opening.headline}
+        subtitle={vm.opening.subtitle}
+        names={vm.opening.names}
+        gradeLabel={vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined}
+      />
       <WorkChapterNav items={navItems} />
       {/* Chapter 1: 01 · Partnership at a Glance */}
       <WorkChapterSection
@@ -845,8 +853,8 @@ export function WorkReportViewModelView({
           );
         })() : null}
         {meta?.best_vs_risky_config?.bestConfiguration?.summary ? (
-          <RelationshipReportCard title="핵심 파트너십 결합 요약 (Best vs Risky Summary)" accentColor={ACCENT}>
-            <RelationshipReportParagraph className="text-sm font-semibold text-white/90">
+          <RelationshipReportCard title="핵심 파트너십 결합 요약 (Best vs Risky Summary)" accentColor={ACCENT} showMarker={true}>
+            <RelationshipReportParagraph className="text-sm font-semibold text-rel-ink">
               {meta.best_vs_risky_config.bestConfiguration.summary}
             </RelationshipReportParagraph>
           </RelationshipReportCard>
@@ -942,6 +950,6 @@ export function WorkReportViewModelView({
         <PlaybookSummaryCard meta={meta} />
         {prescriptionSection ? <PrescriptionCard section={prescriptionSection} /> : null}
       </WorkChapterSection>
-    </RelationshipReportLayout>
+    </div>
   );
 }

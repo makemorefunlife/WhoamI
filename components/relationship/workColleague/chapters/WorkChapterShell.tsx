@@ -6,10 +6,11 @@
  * numbered 8-chapter structure. Same shape as
  * components/relationship/familyParent/chapters/FamilyChapterShell.tsx
  * (duplicated rather than shared across domain folders — pure presentation,
- * no family-specific logic either way) — reuses Work's own dark-card visual
- * language, no new theme.
+ * no family-specific logic either way) — renders on the shared cream/dark-
+ * green editorial system (rel- and v4- design tokens), same as Marriage/Friend.
  */
 import type { ReactNode } from "react";
+import { ChapterSection } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 
 export type WorkChapterNavItem = { id: string; number: string | null; title: string };
 
@@ -17,7 +18,7 @@ export function WorkChapterNav({ items }: { items: WorkChapterNavItem[] }) {
   if (items.length === 0) return null;
   return (
     <nav
-      className="-mx-4 mb-2 overflow-x-auto border-b border-white/10 px-4 py-3 no-scrollbar sm:-mx-6 sm:px-6"
+      className="sticky top-0 z-30 -mx-4 mb-2 overflow-x-auto border-b border-rel-line bg-rel-bg/90 px-4 py-3 no-scrollbar backdrop-blur sm:-mx-6 sm:px-6"
       aria-label="Chapters"
     >
       <div className="flex items-center gap-4">
@@ -25,7 +26,7 @@ export function WorkChapterNav({ items }: { items: WorkChapterNavItem[] }) {
           <a
             key={item.id}
             href={`#${item.id}`}
-            className="shrink-0 whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.08em] text-white/55 transition-colors hover:text-white/90"
+            className="shrink-0 whitespace-nowrap font-rel-sans text-[11px] tracking-[0.08em] text-rel-ink-mute transition-colors hover:text-rel-deep"
           >
             {item.number ? `${item.number}. ` : ""}
             {item.title}
@@ -40,7 +41,7 @@ export function WorkChapterSection({
   id,
   number,
   title,
-  accent,
+  accent: _accent,
   children,
 }: {
   id: string;
@@ -51,20 +52,8 @@ export function WorkChapterSection({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-6 space-y-5 sm:space-y-6">
-      <div className="flex items-center gap-3 pt-2">
-        {number ? (
-          <span
-            className="inline-flex h-7 shrink-0 items-center rounded-full px-2.5 text-[11px] font-semibold tracking-[0.08em]"
-            style={{ backgroundColor: `${accent}22`, color: accent }}
-          >
-            Chapter {number}
-          </span>
-        ) : null}
-        <h2 className="text-base font-bold tracking-tight text-white/90 sm:text-lg">{title}</h2>
-        <div className="h-px flex-1" style={{ backgroundColor: `${accent}33` }} />
-      </div>
+    <ChapterSection id={id} n={number ?? undefined} title={title}>
       <div className="space-y-5 sm:space-y-6">{children}</div>
-    </section>
+    </ChapterSection>
   );
 }

@@ -197,7 +197,7 @@ const BONUS_CHAPTER_TYPES: FamilySectionType[] = ["deep_read"];
 function RelationshipIndexCard({ section }: { section: RelationshipIndexSection }) {
   const t = useMessages().relationshipDrilldown.family;
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+    <RelationshipReportCard title={section.title} accentColor={ACCENT} showMarker={true}>
       <RelationshipReportBody>
         <p className="text-lg font-semibold text-white/92">{section.frictionIndex}%</p>
         <div>
@@ -254,7 +254,7 @@ function CompareTableCard({
 function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
   const t = useMessages().relationshipDrilldown.family;
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+    <RelationshipReportCard title={section.title} accentColor={ACCENT} showMarker={true}>
       <RelationshipReportBody>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
@@ -803,7 +803,7 @@ export function FamilyReportViewModelView({
           accent={ACCENT}
         >
           {chapter.summary ? (
-            <p className="mb-6 font-rel-sans text-[15px] font-medium leading-[1.7] text-emerald-200/90 italic border-l-2 border-emerald-400/40 pl-3">
+            <p className="mb-6 font-rel-sans text-[15px] font-medium leading-[1.7] text-rel-ink-soft italic border-l-2 border-rel-deep/40 pl-3">
               💡 {chapter.summary}
             </p>
           ) : null}
@@ -812,11 +812,11 @@ export function FamilyReportViewModelView({
           {chapter.synthesis.length > 0 ? (
             <div className="mb-6 space-y-3">
               {chapter.synthesis.map((syn, idx) => (
-                <div key={idx} className="rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4">
-                  <p className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+                <div key={idx} className="rounded-xl border border-rel-line bg-rel-surface p-4">
+                  <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
                     ✨ Synthesis · {syn.headline}
                   </p>
-                  <p className="mt-1 text-sm text-white/88 leading-relaxed">
+                  <p className="mt-1 text-sm text-rel-ink leading-relaxed">
                     {syn.summary}
                   </p>
                 </div>
@@ -826,27 +826,27 @@ export function FamilyReportViewModelView({
 
           {/* Coverage Model: Conflict Loop */}
           {chapter.conflictLoop && (chapter.conflictLoop.parentTrigger || chapter.conflictLoop.breakPattern) ? (
-            <div className="mb-6 rounded-xl border border-rose-400/20 bg-rose-950/20 p-4">
-              <p className="text-xs font-semibold text-rose-300 uppercase tracking-wider">
+            <div className="mb-6 rounded-xl border border-v4-bad/25 bg-v4-bad-soft p-4">
+              <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
                 ⚡ 갈등 양상과 조율 포인트 · Conflict Loop
               </p>
               {chapter.conflictLoop.parentTrigger ? (
-                <p className="mt-1.5 text-sm font-medium text-white/90">
+                <p className="mt-1.5 text-sm font-medium text-rel-ink">
                   트리거: {chapter.conflictLoop.parentTrigger}
                 </p>
               ) : null}
               {chapter.conflictLoop.childReaction ? (
-                <p className="mt-1 text-sm text-white/75">
+                <p className="mt-1 text-sm text-rel-ink-soft">
                   자녀 반응: {chapter.conflictLoop.childReaction}
                 </p>
               ) : null}
               {chapter.conflictLoop.parentEscalation ? (
-                <p className="mt-1 text-sm text-white/75">
+                <p className="mt-1 text-sm text-rel-ink-soft">
                   증폭 방식: {chapter.conflictLoop.parentEscalation}
                 </p>
               ) : null}
               {chapter.conflictLoop.breakPattern ? (
-                <p className="mt-2 text-xs italic text-rose-200/70">
+                <p className="mt-2 text-xs italic text-rel-taupe">
                   💡 출구 전략: {chapter.conflictLoop.breakPattern}
                 </p>
               ) : null}
@@ -855,22 +855,22 @@ export function FamilyReportViewModelView({
 
           {/* Core Pair Meaning 1: Dependency / Protection Dynamic */}
           {chapter.dependencyProtection ? (
-            <div className="mb-6 rounded-xl border border-indigo-400/20 bg-indigo-950/20 p-4">
-              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
+            <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4">
+              <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
                 🛡️ 의존과 보호 구도 · Dependency & Protection
               </p>
-              <p className="mt-1.5 text-sm font-medium text-white/90">
+              <p className="mt-1.5 text-sm font-medium text-rel-ink">
                 부모의 보호 방식: {chapter.dependencyProtection.provider}
               </p>
-              <p className="mt-1 text-sm text-white/75">
+              <p className="mt-1 text-sm text-rel-ink-soft">
                 자녀의 의존 톤: {chapter.dependencyProtection.reliance}
               </p>
               {chapter.dependencyProtection.roleReversalRisk ? (
-                <p className="mt-2 text-xs italic text-amber-300/90">
+                <p className="mt-2 text-xs italic text-rel-taupe">
                   ⚠️ {chapter.dependencyProtection.summary}
                 </p>
               ) : (
-                <p className="mt-2 text-xs italic text-indigo-200/75">
+                <p className="mt-2 text-xs italic text-rel-taupe">
                   💡 {chapter.dependencyProtection.summary}
                 </p>
               )}
@@ -895,22 +895,22 @@ export function FamilyReportViewModelView({
             </div>
           ) : null}
 
-          {/* Coverage Model: Repair Pattern */}
+          {/* Coverage Model: Emotional Repair */}
           {chapter.repairPattern && chapter.repairPattern.effectiveRepairStyle ? (
-            <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-950/20 p-4">
-              <p className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
+            <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
                 🌱 관계 회복 단계 · Emotional Repair
               </p>
-              <p className="mt-1.5 text-sm font-medium text-white/90">
+              <p className="mt-1.5 text-sm font-medium text-rel-ink">
                 효과적인 화해 방식: {chapter.repairPattern.effectiveRepairStyle}
               </p>
               {chapter.repairPattern.ineffectiveRepairStyle ? (
-                <p className="mt-1 text-sm text-white/75">
+                <p className="mt-1 text-sm text-rel-ink-soft">
                   주의할 역효과 톤: {chapter.repairPattern.ineffectiveRepairStyle}
                 </p>
               ) : null}
               {chapter.repairPattern.reconnectionAction ? (
-                <p className="mt-2 text-xs italic text-amber-200/80">
+                <p className="mt-2 text-xs italic text-rel-taupe">
                   💡 재연결 실천 행동: {chapter.repairPattern.reconnectionAction}
                 </p>
               ) : null}
@@ -919,18 +919,18 @@ export function FamilyReportViewModelView({
 
           {/* Coverage Model: Growth Transition */}
           {chapter.growthTransition && chapter.growthTransition.currentRolePattern ? (
-            <div className="mb-6 rounded-xl border border-sky-400/20 bg-sky-950/20 p-4">
-              <p className="text-xs font-semibold text-sky-300 uppercase tracking-wider">
+            <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
                 🚀 성장 전환점 · Growth Transition
               </p>
-              <p className="mt-1.5 text-sm font-medium text-white/90">
+              <p className="mt-1.5 text-sm font-medium text-rel-ink">
                 현재 역할 패턴: {chapter.growthTransition.currentRolePattern}
               </p>
-              <p className="mt-1 text-sm text-white/75">
+              <p className="mt-1 text-sm text-rel-ink-soft">
                 추천 전환 포지션: {chapter.growthTransition.recommendedShift}
               </p>
               {chapter.growthTransition.transitionReason ? (
-                <p className="mt-2 text-xs italic text-sky-200/80">
+                <p className="mt-2 text-xs italic text-rel-taupe">
                   💡 전환 이유: {chapter.growthTransition.transitionReason}
                 </p>
               ) : null}
@@ -939,17 +939,17 @@ export function FamilyReportViewModelView({
 
           {/* Core Pair Meaning 3: Expectation vs Pressure */}
           {chapter.expectationVsPressure ? (
-            <div className="mb-6 rounded-xl border border-purple-400/20 bg-purple-950/20 p-4">
-              <p className="text-xs font-semibold text-purple-300 uppercase tracking-wider">
+            <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
                 🎯 부모의 기대와 성취 중압감 · Expectation & Pressure
               </p>
-              <p className="mt-1.5 text-sm font-medium text-white/90">
+              <p className="mt-1.5 text-sm font-medium text-rel-ink">
                 부모의 기대 톤: {chapter.expectationVsPressure.parentExpectation}
               </p>
-              <p className="mt-1 text-sm text-white/75">
+              <p className="mt-1 text-sm text-rel-ink-soft">
                 자녀의 체감 중압감: {chapter.expectationVsPressure.childPressureReception}
               </p>
-              <p className="mt-2 text-xs italic text-purple-200/80">
+              <p className="mt-2 text-xs italic text-rel-taupe">
                 ⚖️ {chapter.expectationVsPressure.summary}
               </p>
             </div>
@@ -957,25 +957,25 @@ export function FamilyReportViewModelView({
 
           {/* Core Pair Meaning 4: Child Core Needs (3-Tier Structure: Desired Style x Parent Supply x Pair Gap) */}
           {chapter.childCoreNeeds ? (
-            <div className="mb-6 rounded-xl border border-emerald-400/20 bg-emerald-950/20 p-4 space-y-4">
+            <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4 space-y-4">
               <div>
-                <p className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+                <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
                   🎁 Child's Core Needs · 자녀 핵심 양육 욕구 종합
                 </p>
-                <p className="mt-1 text-xs text-white/70 italic">
+                <p className="mt-1 text-xs text-rel-ink-soft italic">
                   {chapter.childCoreNeeds.summary}
                 </p>
               </div>
 
               {/* Tier 1: Child Desired Parenting Style (Innate Needs) */}
               {chapter.childCoreNeedsDetailed?.innateParentingNeeds?.length ? (
-                <div className="rounded-lg bg-emerald-900/30 p-3 border border-emerald-400/15">
-                  <p className="text-xs font-medium text-emerald-200 mb-1.5 flex items-center gap-1.5">
+                <div className="rounded-lg bg-rel-taupe-soft/30 p-3 border border-rel-line">
+                  <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
                     <span>🌱</span> 이 아이가 편안하게 자라는 본래 부모 태도
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {chapter.childCoreNeedsDetailed.innateParentingNeeds.map((need, idx) => (
-                      <span key={idx} className="rounded-md bg-emerald-800/40 px-2 py-0.5 text-xs text-emerald-100 font-medium">
+                      <span key={idx} className="rounded-md bg-rel-paper px-2 py-0.5 text-xs text-rel-ink font-medium border border-rel-line">
                         #{need.label}
                       </span>
                     ))}
@@ -985,13 +985,13 @@ export function FamilyReportViewModelView({
 
               {/* Tier 2: Well Supplied Needs */}
               {chapter.childCoreNeedsDetailed?.wellSuppliedNeeds?.length ? (
-                <div className="rounded-lg bg-emerald-900/30 p-3 border border-emerald-400/15">
-                  <p className="text-xs font-medium text-emerald-300 mb-1.5 flex items-center gap-1.5">
+                <div className="rounded-lg bg-v4-good-soft p-3 border border-v4-good/25">
+                  <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
                     <span>✅</span> 지금 이 부모가 잘 주고 있는 것 (충분함)
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {chapter.childCoreNeedsDetailed.wellSuppliedNeeds.map((need, idx) => (
-                      <span key={idx} className="rounded-md bg-emerald-950/60 px-2 py-0.5 text-xs text-emerald-200 border border-emerald-500/30">
+                      <span key={idx} className="rounded-md bg-rel-surface px-2 py-0.5 text-xs text-rel-ink border border-v4-good/30">
                         ✓ {need.label}
                       </span>
                     ))}
@@ -1001,8 +1001,8 @@ export function FamilyReportViewModelView({
 
               {/* Tier 3: Primary Pair Gapped Needs */}
               {chapter.childCoreNeedsDetailed?.primaryNeeds?.length ? (
-                <div className="rounded-lg bg-amber-950/30 p-3 border border-amber-400/20">
-                  <p className="text-xs font-medium text-amber-200 mb-1.5 flex items-center gap-1.5">
+                <div className="rounded-lg bg-v4-bad-soft p-3 border border-v4-bad/25">
+                  <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
                     <span>💡</span> 이 관계에서 조금 더 필요한 1~3가지 핵심 욕구
                   </p>
                   <ul className="space-y-1.5">

@@ -1,22 +1,24 @@
 "use client";
 
 /**
- * Marriage-only editorial visual skin — drop-in replacements for the shared
- * dark-card reportLayout primitives (RelationshipReportCard/Body/Paragraph/
- * Label/Inset) plus a hero, all built on the SAME rel-* / v4-* design tokens
- * and EditorialPrimitives shell already used by Romantic V4 and Friend
- * (components/relationship/shared/editorial/EditorialPrimitives.tsx).
+ * Work Colleague-only editorial visual skin — drop-in replacements for the
+ * shared dark-card reportLayout primitives (RelationshipReportCard/Body/
+ * Paragraph/Label/Inset) plus a hero, all built on the SAME rel-* / v4-*
+ * design tokens and EditorialPrimitives shell already used by Romantic V4,
+ * Friend, and Marriage (components/relationship/marriage/editorial/
+ * marriageEditorialAdapter.tsx — same pattern, duplicated per-domain rather
+ * than shared, matching that file's own convention).
  *
  * Visual skin only: prop signatures mirror the originals in
  * components/relationship/reportLayout/RelationshipReportCard.tsx exactly,
- * so every existing Marriage card component's JSX body is unchanged — only
- * the import source moves from reportLayout (dark) to this file (editorial).
+ * so every existing Work card component's JSX body is unchanged — only the
+ * import source moves from reportLayout (dark) to this file (editorial).
  * No content, copy, section order, or data binding changes here.
  */
 import type { ReactNode } from "react";
 import { NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 
-export type MarriageReportCardVariant = "default" | "accent" | "warning" | "success" | "muted";
+export type WorkReportCardVariant = "default" | "accent" | "warning" | "success" | "muted";
 
 export function RelationshipReportBody({
   children,
@@ -89,7 +91,7 @@ export default function RelationshipReportCard({
 }: {
   title: string;
   children: ReactNode;
-  variant?: MarriageReportCardVariant;
+  variant?: WorkReportCardVariant;
   accentColor?: string;
   className?: string;
   id?: string;
@@ -124,8 +126,8 @@ export default function RelationshipReportCard({
   );
 }
 
-/** Editorial hero — mirrors Friend's FriendHero / Romantic V4's HeroSection visual language. */
-export function MarriageEditorialHero({
+/** Editorial hero — mirrors Marriage's MarriageEditorialHero / Friend's FriendHero. */
+export function WorkEditorialHero({
   headline,
   subtitle,
   names,
