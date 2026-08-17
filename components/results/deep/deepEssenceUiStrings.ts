@@ -116,6 +116,12 @@ export type DeepEssenceUiStrings = {
     meta: string;
     remember: string;
     nextLeap: string;
+    keepLabel: string;
+    loosenLabel: string;
+    recoverLabel: string;
+    decisionCompassTitle: string;
+    oneNextMoveTitle: string;
+    oneNextMoveTag: string;
   };
   checklist: { appendix: string; title: string; todaySuffix: string };
 };
@@ -240,6 +246,12 @@ const EN: DeepEssenceUiStrings = {
     meta: "Direction · leap",
     remember: "Three things to remember",
     nextLeap: "The next leap",
+    keepLabel: "What to keep",
+    loosenLabel: "What to loosen",
+    recoverLabel: "What to recover",
+    decisionCompassTitle: "Decision Compass",
+    oneNextMoveTitle: "One Next Move",
+    oneNextMoveTag: "Next Step",
   },
   checklist: {
     appendix: "Appendix",
@@ -365,9 +377,15 @@ const KO: DeepEssenceUiStrings = {
     label: "선택",
     subtitle: "돌아올 수 있는 기준",
     title: "앞으로 더 나답게 선택한다는 것",
-    meta: "방향 · 도약",
-    remember: "기억해야 할 세 가지",
-    nextLeap: "다음 도약",
+    meta: "방향 · 나침반",
+    remember: "선택을 앞두고 조용히 점검할 기준",
+    nextLeap: "선택할 때 기억할 단 하나의 기준",
+    keepLabel: "01 · 계속 가져갈 것",
+    loosenLabel: "02 · 조금 덜 해도 되는 것",
+    recoverLabel: "03 · 다시 회복해도 되는 것",
+    decisionCompassTitle: "선택할 때 기억할 단 하나의 기준",
+    oneNextMoveTitle: "지금 당신에게 가장 중요한 한 가지",
+    oneNextMoveTag: "작은 실험",
   },
   checklist: {
     appendix: "부록",

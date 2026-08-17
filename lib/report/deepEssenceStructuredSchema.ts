@@ -308,7 +308,7 @@ export function isDeepEssencePartB(v: unknown): v is Pick<
   }
 
   if (!isNonEmptyString(obj.closing)) return false;
-  if (!isStringArray(obj.checklist, 8, 12)) return false;
+  if (!isStringArray(obj.checklist, 1, 12)) return false;
 
   return true;
 }

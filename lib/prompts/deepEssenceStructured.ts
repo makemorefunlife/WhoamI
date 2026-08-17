@@ -377,11 +377,15 @@ export const DEEP_ESSENCE_PART_B_SCHEMA = `{
     "reset": "weekly reset routine, 3-5 sentences"
   },
   "future": {
-    "remember": ["thing worth remembering 1 (4-7 sentences)", "2", "3"],
-    "leap": "direction for the next step, 3-5 sentences"
+    "remember": [
+      "Keep (what to keep without forcing change): 3-5 sentences — plain text directly, DO NOT include '01 Keep' or question labels in text",
+      "Loosen (what to no longer constantly prove/perform): 3-5 sentences — plain text directly, DO NOT include '02 Loosen' or question labels in text (NEVER frame as a flaw)",
+      "Recover (what to reclaim for yourself): 3-5 sentences — plain text directly, DO NOT include '03 Recover' or question labels in text"
+    ],
+    "leap": "Decision Compass for future choices: 3-5 sentences — one concrete decision criterion to verify before your next major choice, using explicit choose-more/choose-less language (NO predictive claims, NO generic advice)"
   },
-  "closing": "one warm closing paragraph (6-12 sentences)",
-  "checklist": ["today's action checklist item 1", "item 2", "... (8-12 items, one action per line)"]
+  "closing": "one warm present-tense recognition paragraph holding natural and current ways together — NO advice, NO cheers/encouragement, NO customer service tone (6-10 sentences)",
+  "checklist": ["One Next Move: exactly 1 small, concrete, grounded experiment action you can try once this week (NO generic homework or task dumps)"]
 }`;
 
 // ── Part 03 Batch 1: additive Relationship grounding ──────────────────────
@@ -497,19 +501,26 @@ ${input.part01Evidence.futureText}
   - heated answers "what do I actually do in the moment emotions spike" — ground it specifically in pressure_response and conflict_decompression from [Practice evidence] when their confidence is usable; this must be a concrete in-the-moment response, not a re-description of the friction/compare content already given in [Relationship evidence] above — translate the same underlying evidence into a literal action for the heated moment itself, never restate why it happens.
   - reset is a small, realistically repeatable WEEKLY practice/habit — ground it in resilience from [Practice evidence] (what recovery capacity actually looks like for this person) rather than inventing a routine. Do not restate Part02 Energy's fuels/optimal-environment content — if you reuse that same underlying evidence, translate it into a specific repeatable weekly action/habit, not another description of what restores them.
 - evidence_refs (playbook) is optional — only exact keys from [Practice evidence], never invented.
-- future.remember and future.leap are NOT another personality summary — closing already handles warm tone, and strengths/watchouts/core_mode already handle trait description. remember/leap must convert everything already established into decision facts for the future. Never restate core_mode, a strength/watchout title, or growth_edge's own wording.
-- remember must be exactly 3 DECISION FACTS, and each of the 3 must play a genuinely different role — never let two of them make the same underlying point in different words:
-  1. a natural strength/direction worth leaning into more — grounded in [Future evidence]'s best-aligned axis, or in a strength already established, but it must be written as a CRITERION OR ACTION for future choices, never as the trait's own name or title restated. Test: does this sentence name a strength/core_mode word directly (e.g. "your independent problem-solving", "your independence")? If so, rewrite it as what that strength lets you choose or prioritize instead. WRONG: "Lean into your independent problem-solving more." RIGHT: "Prioritize choices where you get to decide alone and own the outcome, rather than ones that need group consensus first." The strength is implied by the criterion, never named.
-  2. a repeating pattern worth reducing or staying alert to (grounded in Practice/Relationship evidence already covered — a caution to carry forward, not a re-explanation of the watchout itself)
-  3. a criterion to prioritize when choosing environments/relationships/actions going forward (synthesized from energy_optimal / relationships.fit / playbook.reset already produced — a decision criterion, e.g. "choose situations with X quality," not a listing of those items)
-  Each of the 3 must be phrased as something to keep using as a future filter, not a fact about who this person is.
-- leap must be an actual DECISION PRINCIPLE for future choices, structured around explicit choose-more/choose-less language — e.g. "choose more of ___", "choose less of ___ / avoid environments where ___", "prioritize ___ over ___". Never generic encouragement ("trust yourself", "you've got this", "believe in the journey").
-  growth_edge_if_developed (from [Already written earlier], if present) states WHAT BECOMES POSSIBLE if a capability grows — that's already said, do not paraphrase it or reuse its wording. leap's job is different: given that possibility, WHICH FUTURE CHOICES actually grow it — what to do more of, what to do less of, what environment to avoid. Test: if leap and growth_edge_if_developed could be swapped and the response would read the same, leap has collapsed into a paraphrase — rewrite it strictly as choose-more/choose-less guidance instead.
-  Synthesize (do not list) into that choose-more/choose-less principle: (a) the best-aligned axis in [Future evidence] — a direction that already fits with low friction, so it belongs on the "choose more of" side; (b) the long-term-fit signal already established this response via energy_optimal / relationships.fit / playbook.reset. If [Future evidence] has no aligned axis, ground leap in whatever convergent Practice/Relationship signal is available — but it must still be phrased as explicit choose-more/choose-less guidance, not an uplifting sentiment.
-- Alignment axis consumption (required, in at least ONE of remember or leap — not necessarily both): the best-aligned axis in [Future evidence] means natural tendency and current behavior are already close on that axis, so it can be used with comparatively little friction. Turn this into one concrete "lean into this direction more" decision criterion somewhere in remember or leap. Never name the axis or its score, and never reproduce the natural_tendency/current_pattern/why_it_feels_easy wording Part A's axis_interpretations already used for it — describe the kind of choice/situation this low-friction direction shows up as instead.
-- Never let remember or leap simply restate energy_optimal, relationships.fit, playbook.reset, or growth_edge_if_developed in the same words — translate them into what to choose or avoid going forward. Reusing the same underlying signal across sections is fine; repeating its conclusion is not.
-- evidence_refs (future) is optional — only exact keys from [Future evidence], never invented.
-- closing is unaffected by any of this — keep it exactly as it already was, a tonal sign-off, not an evidence-grounded field.`
+- FUTURE & DECISION COMPASS (Going Forward with Agency):
+  - FORBIDDEN PREDICTIVE FRAMING: NEVER use predictive, fortune-telling, or fortune-promising language anywhere in future, closing, or checklist (forbidden: "당신에게 다가올 것", "앞으로 이런 일이 생길 거예요", "당신의 미래에는", "다음 단계에서는 반드시", "성장할 것입니다", "미래에는 ~할 것입니다", "what lies ahead", "in your future", "you will grow", "will happen"). Frame everything as AGENCY — decision criteria for choices you control today and going forward.
+  - FORBIDDEN SELF-HELP/CUSTOMER SERVICE CHEERS: NEVER use customer service or self-help filler anywhere in Part 07 (forbidden: "고객님", "회원님", "귀하", "응원합니다", "성공할 것입니다", "더 나은 사람이", "성장해야", "노력하세요", "반드시", "작은 성공을 축하하세요"). Write like a quiet, dignified advisor offering one clear decision compass.
+  - remember must be EXACTLY 3 DECISION FACTS, each carrying a distinct role (write plain prose directly, DO NOT quote or echo the schema instruction or questions like '01 Keep' or '무엇을 굳이 바꾸지 않아도 되는가?' in the text):
+    1. remember[0] (계속 가져갈 것 / Keep): "무엇을 굳이 바꾸지 않아도 되는가?" — A natural strength or direction that already fits well. Write as a criterion to keep trusting without forcing change.
+    2. remember[1] (조금 덜 해도 되는 것 / Loosen): "무엇을 계속 증명하거나 수행하지 않아도 되는가?" — An adaptation or strength useful in the past but prone to overuse today. Write as what to loosen or no longer constantly perform (NEVER frame as a character flaw or bad habit).
+    3. remember[2] (다시 회복해도 되는 것 / Recover): "내가 다시 내 쪽으로 가져와도 되는 것은 무엇인가?" — A natural tendency or value comfortable for the person but currently less used. Write as permission to return to one's own inner compass (e.g. "중요한 선택에서 다른 사람의 관점을 충분히 들은 뒤에도, 마지막 판단은 자신의 내면 신호로 돌아와도 괜찮다는 점을 기억하세요").
+  - leap (선택할 때 기억할 단 하나의 기준 / Decision Compass):
+    - A single, explicit decision criterion to filter future choices regarding work, relationships, people, and environments. Answer: "Before my next major choice, what criterion should I verify?"
+    - Must be structured around explicit choose-more / choose-less language (e.g. "앞으로 중요한 선택을 앞두고, ___ 한 환경을 우선 선택하고, ___ 한 상황은 되도록 피하는 것을 하나의 판단 기준으로 삼을 수 있어요").
+    - NEVER generic encouragement ("trust yourself", "believe in the journey") or prescriptive homework.
+  - checklist (지금 당신에게 가장 중요한 한 가지 / One Next Move):
+    - EXACTLY 1 ITEM (string array with 1 item).
+    - A single, concrete, testable experiment action connected to the report's core insight, expressed in the language of experiment (e.g. "다음 중요한 결정을 앞두고 다른 사람의 의견을 묻기 전에, 먼저 '나는 지금 무엇을 원하지?'를 한 문장으로 적어보세요").
+    - FORBIDDEN: task dumps, 8-12 item homework checklists, generic self-care advice ("명상하세요", "자신감을 키우세요", "기록하세요", "친구에게 연락하세요").
+  - closing (조용한 매듭 / Recognition Statement):
+    - A present-tense statement of coexistence and self-recognition (e.g. "지금까지 살아오며 만들어온 방식과 본래 편한 방식 중 어느 하나만이 진짜 당신인 것은 아니에요. 중요한 건 앞으로 어떤 선택에서 어느 쪽을 더 사용할지 스스로 알아볼 수 있게 되었다는 점입니다").
+    - MUST end in a present-tense statement of recognition (e.g. "~게 되었다는 점입니다." or "~게 되었습니다.").
+    - NO advice, NO next steps, NO cheers, wishing, or future encouragement (STRICTLY FORBIDDEN: "~길 바라요", "~길 바랍니다", "~하길 바라요", "응원합니다", "풍요롭길 바랍니다").
+- evidence_refs (future) is optional — only exact keys from [Future evidence], never invented.`
     : "";
 
   return `[Input data — same material]

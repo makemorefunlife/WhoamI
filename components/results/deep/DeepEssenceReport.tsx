@@ -172,7 +172,14 @@ export function DeepEssenceReport({
       subtitle: t.part5.subtitle,
       meta: t.part5.meta,
       metaTone: "accent",
-      content: <DeepEssencePartFive future={structured.future} closing={structured.closing} t={t} />,
+      content: (
+        <DeepEssencePartFive
+          future={structured.future}
+          closing={structured.closing}
+          checklist={structured.checklist}
+          t={t}
+        />
+      ),
     },
   ];
 
@@ -192,10 +199,6 @@ export function DeepEssenceReport({
           {section.content}
         </DeepEssenceToggleSection>
       ))}
-
-      <div className="mt-10">
-        <DeepEssenceChecklist items={structured.checklist} t={t} />
-      </div>
     </div>
   );
 }

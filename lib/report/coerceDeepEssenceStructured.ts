@@ -456,11 +456,11 @@ export function coerceDeepEssencePartB(raw: unknown): {
 
   const checklist = takeStrings(
     obj.checklist,
-    8,
-    12,
+    1,
+    1,
     "One small action that protects your energy",
   );
-  if (!Array.isArray(obj.checklist) || (obj.checklist as unknown[]).length < 8) {
+  if (!Array.isArray(obj.checklist) || (obj.checklist as unknown[]).length < 1) {
     notes.push(
       `checklist_len_${Array.isArray(obj.checklist) ? (obj.checklist as unknown[]).length : 0}`,
     );

@@ -32,6 +32,24 @@ function mapStrList(list: string[], locale: Locale): string[] {
   return list.map((s) => polishProse(s, locale));
 }
 
+const REMEMBER_PREFIX_PATTERN =
+  /^(0[123]\s*(Keep|Loosen|Recover|\(Keep\)|\(Loosen\)|\(Recover\))?|무엇을\s*(굳이\s*)?바꾸지\s*않아도\s*되는가\??|무엇을\s*계속\s*증명하거나\s*수행하지\s*않아도\s*되는가\??|내가\s*다시\s*내\s*쪽으로\s*가져와도\s*되는\s*것은\s*무엇인가\??|\(무엇을[^\)]*\))[:\?\)]*\s*/i;
+
+function cleanRememberText(text: string, locale: Locale): string {
+  const polished = polishProse(text, locale);
+  return polished.replace(REMEMBER_PREFIX_PATTERN, "").trim();
+}
+
+function cleanClosingText(text: string, locale: Locale): string {
+  const polished = polishProse(text, locale);
+  if (locale !== "ko-KR") return polished;
+  // Strip trailing self-help wishing sentences like "...만들어가지 바라요." / "...바랍니다."
+  const cleaned = polished
+    .replace(/\s*(?:[가-힣]+기|이러한\s*점들을\s*기억하며|앞으로의\s*관계를|과정에서|앞으로의\s*여정에서도)[^.\!\?]*\b(?:바라요|바랍니다|응원합니다)[\.\!]*/g, "")
+    .trim();
+  return cleaned.length > 0 ? cleaned : polished;
+}
+
 /**
  * Apply locale tone law to prose fields only. Always returns a schema-valid
  * report (the input must already be valid).
@@ -88,10 +106,10 @@ export function polishDeepEssenceStructuredReport(
       reset: polishProse(report.playbook.reset, loc),
     },
     future: {
-      remember: mapStrList(report.future.remember, loc),
+      remember: report.future.remember.map((r) => cleanRememberText(r, loc)),
       leap: polishProse(report.future.leap, loc),
     },
-    closing: polishProse(report.closing, loc),
+    closing: cleanClosingText(report.closing, loc),
     checklist: mapStrList(report.checklist, loc),
   };
 

@@ -403,6 +403,8 @@ export async function runDeepEssenceStructuredLlm(
         checklist: partB.checklist,
         comparisonTexts,
         locale: normalizeLocale(input.locale),
+        min: 1,
+        max: 1,
       });
       partB.checklist = dedupResult.checklist;
       if (dedupResult.flagged.length) {
