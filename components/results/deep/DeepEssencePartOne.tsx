@@ -1,20 +1,48 @@
 "use client";
 
 import { DeepEssenceRadarChart } from "@/components/results/deep/DeepEssenceRadarChart";
-import { DeepEssenceAxisInterpretation } from "@/components/results/deep/DeepEssenceAxisInterpretation";
-import { DeepEssenceLayeredIdentity } from "@/components/results/deep/DeepEssenceLayeredIdentity";
+import { PRIMARY_AXIS_DEFINITIONS } from "@/lib/v2/framework/primaryAxisDefinitions";
 import type { DeepEssenceStructuredReport } from "@/lib/report/runDeepEssenceStructuredLlm";
-import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
+import type { PrimaryAxesScores, PrimaryAxisKey } from "@/lib/v2/survey/types";
 import type { Locale } from "@/lib/i18n/locale";
 import type { DeepEssenceUiStrings } from "@/components/results/deep/deepEssenceUiStrings";
 
 const serifStyle = { fontFamily: "var(--font-stitch-serif)" } as const;
 
+/** Purely deterministic — reads radarCurrent's own max/min, no LLM involved. */
+function findExtremeAxes(scores: PrimaryAxesScores): {
+  highest: PrimaryAxisKey;
+  lowest: PrimaryAxisKey;
+} {
+  const entries = Object.entries(scores) as [PrimaryAxisKey, number][];
+  let highest = entries[0]!;
+  let lowest = entries[0]!;
+  for (const entry of entries) {
+    if (entry[1] > highest[1]) highest = entry;
+    if (entry[1] < lowest[1]) lowest = entry;
+  }
+  return { highest: highest[0], lowest: lowest[0] };
+}
+
+function axisLabel(axis: PrimaryAxisKey, locale: Locale): string {
+  const def = PRIMARY_AXIS_DEFINITIONS[axis];
+  return locale === "ko-KR" ? def.koLabel : def.label;
+}
+
 /**
- * 로버블 "Inner Compass" 디자인의 Part 01(요약 · 레이더 · 강점 · 주의점) 이식.
- * 기존 stitch 디자인 토큰(--color-primary, --color-accent-rose, --color-surface 등)을
- * 그대로 재사용해 사이트 전체 톤과 어긋나지 않게 했다. 헤더는 상위(DeepEssenceReport)의
- * ToggleSection이 담당하고, 이 컴포넌트는 본문(요약 그리드·레이더·강점·주의점)만 그린다.
+ * IA Batch 1 — New Part 01 ("지금, 당신은 이렇게 살아가고 있어요" / Current Self).
+ * Narrowed from the original Part 01 (which also carried axis_interpretations,
+ * layered_identity, strengths, and watchouts — all now their own Parts, see
+ * DeepEssenceReport.tsx). This component now shows only: the summary tiles,
+ * the current-vs-potential radar, and a deterministic "most/least used axis"
+ * read straight off radarCurrent (no LLM call, no new field).
+ *
+ * summary.core_mode is intentionally NOT treated as this Part's headline —
+ * its own evidence pool leans innate (day master, elements, month/day pillar
+ * candidates; see lib/v1/slim/part01IdentityEvidence.ts's buildCoreModeEvidence),
+ * so presenting it as "who you are right now" would misrepresent its grounding.
+ * The summary tiles are kept as-is (existing data, unchanged position) without
+ * being reframed as a Current Self statement.
  */
 export function DeepEssencePartOne({
   structured,
@@ -27,8 +55,8 @@ export function DeepEssencePartOne({
   locale: Locale;
   t: DeepEssenceUiStrings;
 }) {
-  const { summary, radar_potential, strengths, watchouts, layered_identity, axis_interpretations } =
-    structured;
+  const { summary, radar_potential } = structured;
+  const { highest, lowest } = findExtremeAxes(radarCurrent);
 
   return (
     <div className="space-y-12">
@@ -69,67 +97,23 @@ export function DeepEssencePartOne({
         </div>
       </div>
 
-      {/* Current x Innate 축별 해석 (Batch 7, additive) — 레이더 바로 아래 */}
-      <DeepEssenceAxisInterpretation
-        axisInterpretations={axis_interpretations}
-        locale={locale}
-        t={t.axisInterpretation}
-      />
-
-      {/* Layered Identity — 4단계 (Batch 5, additive) */}
-      <DeepEssenceLayeredIdentity layeredIdentity={layered_identity} t={t.layeredIdentity} />
-
-      {/* 강점 3가지 */}
-      <div>
-        <div className="flex items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
-          <h3 className="text-[18px] text-on-surface" style={serifStyle}>
-            {t.part1.strengthsTitle}
-          </h3>
-          <span className="shrink-0 text-[10px] tracking-[0.2em] text-primary uppercase">
-            {t.part1.strengthsTag}
-          </span>
+      {/* 지금 가장 많이/덜 쓰는 축 — radarCurrent에서 결정론적으로 계산, LLM 미개입 */}
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div>
+          <div className="text-[10px] tracking-[0.18em] text-on-surface-variant uppercase">
+            {t.part1.mostUsedAxisLabel}
+          </div>
+          <div className="mt-2 text-[17px] text-on-surface" style={serifStyle}>
+            {axisLabel(highest, locale)}
+          </div>
         </div>
-        <div className="mt-6 grid gap-6 sm:grid-cols-3">
-          {strengths.map((s, i) => (
-            <div key={s.title} className="border-t border-primary pt-4">
-              <div className="text-[10.5px] tracking-[0.2em] text-primary tabular-nums">
-                0{i + 1}
-              </div>
-              <h4 className="mt-3 text-[18px] text-on-surface" style={serifStyle}>
-                {s.title}
-              </h4>
-              <p className="mt-2 text-[13.5px] leading-[1.65] text-on-surface-variant">
-                {s.body}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 주의점 3가지 */}
-      <div>
-        <div className="flex items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
-          <h3 className="text-[18px] text-on-surface" style={serifStyle}>
-            {t.part1.watchoutsTitle}
-          </h3>
-          <span className="text-accent-rose shrink-0 text-[10px] tracking-[0.2em] uppercase">
-            {t.part1.watchoutsTag}
-          </span>
-        </div>
-        <div className="mt-6 grid gap-6 sm:grid-cols-3">
-          {watchouts.map((w, i) => (
-            <div key={w.title} className="border-accent-rose border-t pt-4">
-              <div className="text-accent-rose text-[10.5px] tracking-[0.2em] tabular-nums">
-                0{i + 1}
-              </div>
-              <h4 className="mt-3 text-[18px] text-on-surface" style={serifStyle}>
-                {w.title}
-              </h4>
-              <p className="mt-2 text-[13.5px] leading-[1.65] text-on-surface-variant">
-                {w.body}
-              </p>
-            </div>
-          ))}
+        <div>
+          <div className="text-[10px] tracking-[0.18em] text-on-surface-variant uppercase">
+            {t.part1.leastUsedAxisLabel}
+          </div>
+          <div className="mt-2 text-[17px] text-on-surface" style={serifStyle}>
+            {axisLabel(lowest, locale)}
+          </div>
         </div>
       </div>
     </div>

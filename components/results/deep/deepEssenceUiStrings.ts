@@ -12,6 +12,9 @@ export type DeepEssenceUiStrings = {
   summaryLabels: { coreMode: string; energyBalance: string; growthEdge: string };
   radar: { caption: string; current: string; potential: string };
   axisInterpretation: {
+    /** IA Batch 1 — Part-level header (this section's own toggle-header title/tag, distinct from the sub-heading fields below). */
+    sectionTitle: string;
+    sectionTag: string;
     glossaryTitle: string;
     glossaryTag: string;
     /** Batch 8 — static, neutral, spectrum-framed per-axis meaning. Never LLM-generated. */
@@ -42,10 +45,14 @@ export type DeepEssenceUiStrings = {
     label: string;
     subtitle: string;
     title: string;
+    /** Unused since IA Batch 1 (strengths/watchouts moved to part2) — kept so no reference site needs updating if one still points here. */
     strengthsTitle: string;
     strengthsTag: string;
     watchoutsTitle: string;
     watchoutsTag: string;
+    /** IA Batch 1 — deterministic (radarCurrent max/min axis), no LLM involved. */
+    mostUsedAxisLabel: string;
+    leastUsedAxisLabel: string;
   };
   part2: {
     num: string;
@@ -55,10 +62,16 @@ export type DeepEssenceUiStrings = {
     metaPrefix: string;
     fuels: string;
     drains: string;
+    /** Unused here since IA Batch 1 (moved to part3.optimal) — kept for reference-site safety. */
     optimal: string;
     relationalSpend: string;
     selfReturn: string;
     others: string;
+    /** IA Batch 1 — strengths/watchouts moved in from part1, reframed per the new IA's "pattern, not people" tone. */
+    strengthsTitle: string;
+    strengthsTag: string;
+    watchoutsTitle: string;
+    watchoutsTag: string;
   };
   part3: {
     num: string;
@@ -71,6 +84,9 @@ export type DeepEssenceUiStrings = {
     languageRewritten: string;
     wounds: string;
     steadies: string;
+    /** IA Batch 1 — energy.optimal merged in from part2. */
+    optimal: string;
+    optimalTitle: string;
   };
   part4: {
     num: string;
@@ -109,6 +125,8 @@ const EN: DeepEssenceUiStrings = {
     potential: "Essence potential",
   },
   axisInterpretation: {
+    sectionTitle: "Where you and your essence differ",
+    sectionTag: "Gap & Alignment",
     glossaryTitle: "What the six axes mean",
     glossaryTag: "Glossary",
     glossary: {
@@ -148,19 +166,21 @@ const EN: DeepEssenceUiStrings = {
   },
   part1: {
     num: "Part 01",
-    label: "Self",
-    subtitle: "Restoring your interior baseline",
-    title: "Who you are, underneath.",
+    label: "Now",
+    subtitle: "How you're actually living right now",
+    title: "This is you, right now.",
     strengthsTitle: "Your three strengths",
     strengthsTag: "Signal",
     watchoutsTitle: "Three things to watch",
     watchoutsTag: "Friction",
+    mostUsedAxisLabel: "What you're leaning on most right now",
+    leastUsedAxisLabel: "What's getting less use right now",
   },
   part2: {
     num: "Part 02",
     label: "Energy",
-    subtitle: "Where your reserves quietly go",
-    title: "Where your energy actually goes",
+    subtitle: "Not weaker — just spending energy differently",
+    title: "Doing well, and still tired sometimes",
     metaPrefix: "Relational spend",
     fuels: "Fuels",
     drains: "Drains",
@@ -168,18 +188,24 @@ const EN: DeepEssenceUiStrings = {
     relationalSpend: "Relational spend",
     selfReturn: "Self return",
     others: "Others",
+    strengthsTitle: "The strengths you use naturally",
+    strengthsTag: "Signal",
+    watchoutsTitle: "What's strong, but tiring to keep up",
+    watchoutsTag: "Cost",
   },
   part3: {
     num: "Part 03",
-    label: "Relationships",
-    subtitle: "How closeness lands with you",
-    title: "How you connect",
+    label: "Fit",
+    subtitle: "Where you function more like yourself",
+    title: "Who and where you're more like yourself",
     meta: "Deep · watch for deference",
     peopleFit: "People who fit",
     peopleFriction: "Where friction shows up",
     languageRewritten: "Language, rewritten",
     wounds: "Wounds",
     steadies: "Steadies",
+    optimal: "Optimal",
+    optimalTitle: "Environments that fit",
   },
   part4: {
     num: "Part 04",
@@ -196,9 +222,9 @@ const EN: DeepEssenceUiStrings = {
   },
   part5: {
     num: "Part 05",
-    label: "Forward",
-    subtitle: "The direction already yours",
-    title: "What's next for you",
+    label: "Choosing",
+    subtitle: "A standard to come back to",
+    title: "Choosing more like yourself, going forward",
     meta: "Direction · leap",
     remember: "Three things to remember",
     nextLeap: "The next leap",
@@ -222,6 +248,8 @@ const KO: DeepEssenceUiStrings = {
     potential: "본질적 잠재력",
   },
   axisInterpretation: {
+    sectionTitle: "지금의 나와 본래의 나는 어디에서 달라졌을까요?",
+    sectionTag: "차이와 정렬",
     glossaryTitle: "여섯 축이 보여주는 것",
     glossaryTag: "용어",
     glossary: {
@@ -261,19 +289,21 @@ const KO: DeepEssenceUiStrings = {
   },
   part1: {
     num: "Part 01",
-    label: "나 자신",
-    subtitle: "표면 아래의 결을 다시 감각하기",
-    title: "표면 아래의 당신",
+    label: "지금",
+    subtitle: "지금, 당신은 이렇게 살아가고 있어요",
+    title: "지금의 당신",
     strengthsTitle: "당신의 세 가지 강점",
     strengthsTag: "시그널",
     watchoutsTitle: "지켜봐야 할 세 가지",
     watchoutsTag: "마찰",
+    mostUsedAxisLabel: "지금 가장 많이 쓰고 있는 축",
+    leastUsedAxisLabel: "지금 상대적으로 덜 쓰고 있는 축",
   },
   part2: {
     num: "Part 02",
     label: "에너지",
-    subtitle: "당신의 에너지가 조용히 빠져나가는 곳",
-    title: "당신의 에너지는 어디로 흐르는가",
+    subtitle: "약해서가 아니라, 이렇게 에너지를 쓰고 있었어요",
+    title: "잘하고 있는데, 왜 피곤할 때가 있을까요",
     metaPrefix: "관계 소모",
     fuels: "채워주는 것",
     drains: "빼앗는 것",
@@ -281,18 +311,24 @@ const KO: DeepEssenceUiStrings = {
     relationalSpend: "관계 소모",
     selfReturn: "나에게 돌아옴",
     others: "타인",
+    strengthsTitle: "내가 자연스럽게 잘 쓰는 힘",
+    strengthsTag: "시그널",
+    watchoutsTitle: "잘하지만 오래 쓰면 지치는 방식",
+    watchoutsTag: "비용",
   },
   part3: {
     num: "Part 03",
-    label: "관계",
-    subtitle: "가까움이 당신에게 닿는 방식",
-    title: "당신이 연결되는 방식",
+    label: "어울림",
+    subtitle: "내가 더 나답게 기능하는 곳",
+    title: "나는 어떤 사람과 환경에서 가장 나다워질까요",
     meta: "깊은 연결 · 의존 주의",
     peopleFit: "잘 맞는 사람들",
     peopleFriction: "마찰이 생기는 지점",
     languageRewritten: "다시 쓰는 말",
     wounds: "상처",
     steadies: "안정",
+    optimal: "최적의 환경",
+    optimalTitle: "나에게 잘 맞는 환경",
   },
   part4: {
     num: "Part 04",
@@ -309,9 +345,9 @@ const KO: DeepEssenceUiStrings = {
   },
   part5: {
     num: "Part 05",
-    label: "앞으로",
-    subtitle: "이미 당신의 것인 방향",
-    title: "당신에게 다가올 것",
+    label: "선택",
+    subtitle: "돌아올 수 있는 기준",
+    title: "앞으로 더 나답게 선택한다는 것",
     meta: "방향 · 도약",
     remember: "기억해야 할 세 가지",
     nextLeap: "다음 도약",

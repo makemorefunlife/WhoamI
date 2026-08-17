@@ -5,7 +5,17 @@ import type { DeepEssenceUiStrings } from "@/components/results/deep/deepEssence
 
 const serifStyle = { fontFamily: "var(--font-stitch-serif)" } as const;
 
-/** 로버블 Part 04(플레이북) 이식 — 원칙 문단 + 상황별 표 + 격해질 때/주간 리셋 두 박스 */
+/**
+ * 로버블 Part 04(플레이북) 이식 — 원칙 문단 + 상황별 표 + 격해질 때/주간 리셋 두 박스.
+ *
+ * IA Batch 1부터 DeepEssenceReport.tsx의 렌더 트리에서 제외됨 — playbook은
+ * 새 7-Part IA에서 독립 Part로 유지하지 않기로 결정됨(Part03/04/07과 결론이
+ * 반복되는 취약 지점이었음). `playbook` 데이터/스키마/prompt는 삭제하지
+ * 않았고 이 컴포넌트도 그대로 남겨둠 — 향후 adaptation story(Part04) 또는
+ * Part07 재설계에서 `playbook.rule`/`heated`/`reset` 등을 일부 재사용할 수
+ * 있어서다("DATA KEEP, UI PART REMOVE" 원칙). 현재 어떤 파일도 이 컴포넌트를
+ * import하지 않는다(dead code, 의도적으로 보존).
+ */
 export function DeepEssencePartFour({
   playbook,
   t,

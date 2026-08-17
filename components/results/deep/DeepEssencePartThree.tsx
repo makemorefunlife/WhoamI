@@ -3,12 +3,21 @@
 import type { DeepEssenceStructuredReport } from "@/lib/report/runDeepEssenceStructuredLlm";
 import type { DeepEssenceUiStrings } from "@/components/results/deep/deepEssenceUiStrings";
 
-/** 로버블 Part 03(관계) 이식 — 패턴 문단 + 궁합/마찰 두 박스 + 상처↔힘 비교표 */
+/**
+ * IA Batch 1 — New Part 06 ("나는 어떤 사람과 환경에서 가장 나다워질까요?").
+ * Same `relationships` data as the old Part 03, plus `energy.optimal` merged
+ * in from the old Part 02 — this Part is about the conditions (people AND
+ * environments) the person functions more naturally in, not a compatibility
+ * match with a specific partner (Personal Report scope boundary — no
+ * relationship-fit recommendation here).
+ */
 export function DeepEssencePartThree({
   relationships,
+  optimal,
   t,
 }: {
   relationships: DeepEssenceStructuredReport["relationships"];
+  optimal: DeepEssenceStructuredReport["energy"]["optimal"];
   t: DeepEssenceUiStrings;
 }) {
   return (
@@ -70,6 +79,20 @@ export function DeepEssencePartThree({
           ))}
         </div>
       </div>
+
+      {optimal.length > 0 ? (
+        <div>
+          <div className="text-[13px] font-medium text-on-surface">{t.part3.optimalTitle}</div>
+          <ul className="mt-4 space-y-2">
+            {optimal.map((it) => (
+              <li key={it} className="flex gap-2 text-[14px] leading-[1.55] text-on-surface-variant">
+                <span className="text-primary">—</span>
+                {it}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }
