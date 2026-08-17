@@ -102,6 +102,18 @@ const LAYERED_IDENTITY_SCHEMA_FIELD = `,
     "synthesis": { "narrative": "REQUIRED whenever at least two of the four layers above are populated — this is the normal case for most responses, not a rare one; only skip this whole field when zero or exactly one layer above is populated. 3-6 sentences in Korean, or 1-2 short paragraphs in English. Not a sixth layer and not a recap of the four above — name what CHANGES between them: what shifts from first_impression to known_self/close_private_self, what only becomes visible with closeness, and — only when natural_self_and_deep_needs is one of the populated layers and the evidence genuinely supports it — the contrast between outward presentation and the deeper need underneath. Base this only on the layer narratives you just wrote and their evidence; never introduce a fact not already reflected in one of those layers.", "evidence_refs": ["optional — exact keys from ANY of the four layers' evidence lists above (never invented, never from Core Mode/Growth Edge/Strengths evidence)"] }
   }`;
 
+// ── IA Batch 3: additive Adaptation Story (adaptation_story) ─────────────
+// Only appended when the deterministic minimum-evidence gate
+// (hasAdaptationStoryEvidence in formatPart01EvidenceForPrompt.ts) passed —
+// see Part01EvidenceForPartAPrompt.adaptationStoryEligible. Placed as the
+// LAST top-level key in the Part A schema, after layered_identity and
+// axis_interpretations, so the model writes it only after it has already
+// produced those — it synthesizes across what it just wrote, not a new
+// evidence Lens of its own.
+
+const ADAPTATION_STORY_SCHEMA_FIELD = `,
+  "adaptation_story": { "narrative": "EXACTLY 4-5 paragraphs, each ONE-TO-THREE sentences, joined with a literal blank line (\\n\\n) between every paragraph — never one dense paragraph, never two long paragraphs; each of the 5 beats below gets its own paragraph. Synthesizes everything you already wrote above in THIS SAME response (layered_identity, axis_interpretations, energy, growth_edge) into ONE integrated story — never restates a single axis by its name, and never re-explains what axis_interpretations or layered_identity already said in the same terms; translate them into plain, connected observations instead. One paragraph each, in this order (do not label them, just start each on a new paragraph): (1) the natural/innate direction that stands out most across the evidence; (2) what the person visibly relies on more today, in plain behavioral terms; (3) what that shift actually makes possible — a capability or functional gain (e.g. weighing more people/variables, handling change, sustaining relationships, carrying responsibility, managing uncertainty), never framed as a flaw, and only when the evidence supports it; (4) what sustaining that shift may cost (energy, decision effort, over-adaptation, or relational strain) — only when the evidence for a cost genuinely converges, never invented as a given; (5) a closing paragraph holding both the natural direction and the current way of living together — never declare one 'the real self' and the other fake, lost, or suppressed, and never end with advice, a next step, or where the reader should go from here (that belongs to a different part of the report — this field stops at recognition, not direction).", "evidence_refs": ["optional — exact keys already shown above in this response's Axis Gap/Alignment, Layered Identity, or Energy evidence blocks — never invented, never from Core Mode/Growth Edge/Strengths evidence"] }`;
+
 // ── Batch 6: additive Strengths/Watchouts grounding ───────────────────────
 // Same additive/grounded-only contract. Per-item evidence_refs, only shown
 // on the first array item in the schema example (items 2/3 stay "..." like
@@ -170,11 +182,16 @@ function buildPartASchema(part01Evidence: Part01EvidenceForPartAPrompt | null | 
     part01Evidence.axisInterpretation.gaps,
     part01Evidence.axisInterpretation.alignment,
   );
+  const adaptationField = part01Evidence.adaptationStoryEligible
+    ? ADAPTATION_STORY_SCHEMA_FIELD
+    : "";
   // Insert as new top-level keys right after the "energy" block closes,
-  // before the schema object's own closing brace.
+  // before the schema object's own closing brace. adaptation_story is last
+  // so the model writes it only after layered_identity/axis_interpretations
+  // already exist in the same response.
   return withSummaryFields.replace(
     /\n(\}\s*)$/,
-    `${LAYERED_IDENTITY_SCHEMA_FIELD}${axisField}\n$1`,
+    `${LAYERED_IDENTITY_SCHEMA_FIELD}${axisField}${adaptationField}\n$1`,
   );
 }
 
@@ -194,6 +211,8 @@ export type Part01EvidenceForPartAPrompt = {
     gaps: Array<{ axis: PrimaryAxisKey; subjectText: string; currentText: string }>;
     alignment: { axis: PrimaryAxisKey; subjectText: string; currentText: string } | null;
   };
+  /** IA Batch 3 — see hasAdaptationStoryEvidence in formatPart01EvidenceForPrompt.ts. */
+  adaptationStoryEligible: boolean;
 };
 
 export function buildDeepEssenceStructuredPartAUserPrompt(input: {
@@ -287,7 +306,15 @@ ${axisSections}
   - Pressure / conflict / emotional labor: use pressure_response and conflict_style together (plus any other converging Energy evidence) to name a specific draining situation involving pressure, disagreement, or managing others' emotions — grounded in at least one of these signals, not asserted generically.
   - Environment / rhythm / social density: make optimal more specific using only the evidence already in [Energy evidence] (solitude_autonomy, energy_style, climate, etc.) — do not invent a rhythm/pace signal that isn't there; if the evidence doesn't support a rhythm-specific claim, describe environment/social density instead.
   Each of these is independent and optional — include only what the evidence actually supports, keep total energy content the same length/shape as before (no new fields, no longer lists), and never let any of these restate a conclusion already stated in axis_interpretations, growth_edge, strengths, or watchouts — translate it into energy terms instead.
-- Each fuels/drains/optimal item must name a concrete trigger or context, not a generic category label — and briefly imply why it costs or returns energy for this specific person, not just what the situation is. Prefer "a long meeting where you keep having to respond to people with little room to process alone" over "Large social gatherings"; prefer "carrying other people's schedules or moods while your own decisions keep getting pushed back" over "Too much responsibility". Ground each item's specificity in the convergence you already found in [Energy evidence] (e.g. solitude_autonomy + pressure_response together might point at a specific kind of low-privacy, high-responsiveness situation) — never invent a scenario unconnected to the evidence, and never let one signal alone dictate one item. The same underlying evidence may show up differently across fuels vs. drains vs. optimal — e.g. a low-stimulation environment might explain both a drains item (too much unstructured noise) and an optimal item (quiet, low-interruption settings) from two genuinely different angles; don't just restate one as the mirror of the other. Keep every item to one concise phrase or short sentence (still a scannable list item, not a paragraph). Never write a blanket claim like "you dislike people" or "you're an introvert" — describe the specific pattern or context instead. Keep fuels, drains, and optimal meaningfully distinct from each other — avoid two items across these three lists restating the same situation from interchangeable angles unless it's a genuinely separate, specific insight.`
+- Each fuels/drains/optimal item must name a concrete trigger or context, not a generic category label — and briefly imply why it costs or returns energy for this specific person, not just what the situation is. Prefer "a long meeting where you keep having to respond to people with little room to process alone" over "Large social gatherings"; prefer "carrying other people's schedules or moods while your own decisions keep getting pushed back" over "Too much responsibility". Ground each item's specificity in the convergence you already found in [Energy evidence] (e.g. solitude_autonomy + pressure_response together might point at a specific kind of low-privacy, high-responsiveness situation) — never invent a scenario unconnected to the evidence, and never let one signal alone dictate one item. The same underlying evidence may show up differently across fuels vs. drains vs. optimal — e.g. a low-stimulation environment might explain both a drains item (too much unstructured noise) and an optimal item (quiet, low-interruption settings) from two genuinely different angles; don't just restate one as the mirror of the other. Keep every item to one concise phrase or short sentence (still a scannable list item, not a paragraph). Never write a blanket claim like "you dislike people" or "you're an introvert" — describe the specific pattern or context instead. Keep fuels, drains, and optimal meaningfully distinct from each other — avoid two items across these three lists restating the same situation from interchangeable angles unless it's a genuinely separate, specific insight.${
+      input.part01Evidence?.adaptationStoryEligible
+        ? `
+- adaptation_story is the report's central synthesis, not a sixth axis card and not a recap — write it LAST, after everything else above, and lean on what you already wrote rather than re-deriving anything. It answers "how did these differences add up into the way this person actually lives" — never repeats an axis_interpretations entry or layered_identity layer in the same words, translates them into one connected story instead. Never invent a specific past event, relationship, job, or childhood circumstance to explain the pattern — ground every sentence only in the evidence already shown/written above in this response. Never address the reader as 고객님/귀하/회원님 or any other customer-service honorific — plain 해요체 second person, no repeated subject. Scale your confidence language to how strongly the evidence actually converges — do not write with more certainty than the evidence supports, and do not hedge everything into vagueness when the evidence is genuinely strong either.
+- adaptation_story MUST be 4-5 separate paragraphs with an actual blank line (\\n\\n) between every pair of them — a single dense paragraph, or two long paragraphs, is a FAILED response even if the content itself is good; each of the five beats in the narrative instructions (natural direction / current reliance / what it enables / what it may cost / integrated closing) gets its OWN paragraph, not folded into a shared sentence with its neighbor.
+- adaptation_story has ZERO advice, ZERO next steps, and ZERO forward-looking capability-building language — this has been observed leaking in live output and is explicitly forbidden, including any close variant of: "~연습을 통해 ~을 높일 수 있어요" (practicing X can raise Y), "~하다면 더 많은 기회를 잡을 수 있어요" (if you do X you'll seize more opportunities), "더 나은 균형을 찾아가는 것이 중요해요" / "균형을 찾는 과정에서 ~ 회복할 수 있을 거예요" (finding/recovering better balance matters), "앞으로도 계속 성장해 나갈 수 있을 거예요" (you'll keep growing), "~하는 것이 중요하다는 점을 인식/기억해야 해요" (recognizing/remembering that X matters), "~은 당신의 삶을 더 풍요롭게 만들어줄 거예요" (X will enrich your life), or their English equivalents ("developing X could help", "finding balance is key", "you'll continue to grow", "it's important to remember/recognize that..."). None of these contain an imperative verb like "해보세요" but all of them are still advice — they tell the reader what to pursue, prioritize, or recognize, and promise an outcome if they do. If a sentence implies what should happen next or what a change would earn the reader — delete it or rewrite it as a plain observation of what already is, right now, with no forward pointer at all.
+  This applies MOST to the closing (5th) paragraph, where this leak has been observed repeatedly even after everything above — it is not immune just because it's "the wrap-up". FAILED closing example (observed live, do not reproduce even in paraphrase): "이런 균형을 찾는 과정에서 본래의 조직적인 성향도 다시 회복할 수 있을 거예요" / "스스로의 결정을 확고히 하고 ... 당신의 삶을 더욱 풍요롭게 만들어줄 거예요. 이러한 균형을 통해 더 나은 관계를 형성하고..." — both promise a future payoff for a future action, which is advice wearing a summary's clothes. WORKING closing example: "본래의 성향과 지금 살아가는 방식은 서로 다른 결을 갖고 있지만, 둘 다 지금 이 사람 안에 함께 있어요. 어느 한쪽만 진짜라고 말하기는 어려워요." — a present-tense statement of coexistence, nothing about pursuing, recovering, or building anything, no promised result.`
+        : ""
+    }`
     : "";
 
   return `[Input data — use only this material]

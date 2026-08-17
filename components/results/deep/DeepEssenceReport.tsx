@@ -14,6 +14,10 @@ import {
   DeepEssenceAxisInterpretation,
   hasAxisInterpretationContent,
 } from "@/components/results/deep/DeepEssenceAxisInterpretation";
+import {
+  DeepEssenceAdaptationStory,
+  hasAdaptationStoryContent,
+} from "@/components/results/deep/DeepEssenceAdaptationStory";
 import { DeepEssenceChecklist } from "@/components/results/deep/DeepEssenceChecklist";
 import { getDeepEssenceUiStrings } from "@/components/results/deep/deepEssenceUiStrings";
 import type { DeepEssenceStructuredReport } from "@/lib/report/runDeepEssenceStructuredLlm";
@@ -42,17 +46,11 @@ type Section = {
  * the displayed "Part 0N" number is then the section's INDEX IN THAT FILTERED
  * LIST, not a value baked into any one section. This is what keeps the
  * user-visible numbering gap-free (01, 02, 03... never "01 02 03 05") even
- * though layered_identity and axis_interpretations are each independently
- * optional, and even though a Part 04 ("그래서 나는 왜 이렇게 살아왔을까요?")
- * doesn't exist in the data yet.
- *
- * Part 04 insertion point (next batch, NOT implemented here): once a
- * `structured.adaptation_story` field exists, add one more conditional
- * entry to `sections` between axis-interpretation and energy-strengths,
- * following the exact same `hasX ? [...] : []` pattern already used for
- * layered-identity and axis-interpretation below. No other file needs to
- * change for the numbering to stay correct — that's the point of computing
- * the number from array position instead of a per-Part constant.
+ * though layered_identity, axis_interpretations, and adaptation_story
+ * (IA Batch 3 — Part 04, "그래서 나는 왜 이렇게 살아왔을까요?") are each
+ * independently optional. All three follow the same `hasX ? [...] : []`
+ * pattern — no per-Part number is ever hardcoded, so adding/removing any of
+ * them never requires touching how the others are numbered.
  *
  * Old Part 04 (playbook) is not part of this array — see
  * DeepEssencePartFour.tsx's own doc comment (data/schema/prompt kept,
@@ -71,6 +69,7 @@ export function DeepEssenceReport({
   const relationalSpendPct = structured.energy.bars[0]?.value ?? structured.energy.balance_pct;
   const hasLayered = hasLayeredIdentityContent(structured.layered_identity);
   const hasAxis = hasAxisInterpretationContent(structured.axis_interpretations);
+  const hasAdaptationStory = hasAdaptationStoryContent(structured.adaptation_story);
 
   const sections: Section[] = [
     {
@@ -122,9 +121,19 @@ export function DeepEssenceReport({
           },
         ]
       : []),
-    // Part 04 ("그래서 나는 왜 이렇게 살아왔을까요?") inserts here in a future
-    // batch, guarded the same way as layered-identity/axis-interpretation
-    // above — once structured.adaptation_story exists. Nothing here yet.
+    // IA Batch 3 — Part 04 ("그래서 나는 왜 이렇게 살아왔을까요?"), guarded the
+    // exact same way as layered-identity/axis-interpretation above.
+    ...(hasAdaptationStory
+      ? [
+          {
+            key: "adaptation-story",
+            label: t.adaptationStory.sectionTag,
+            title: t.adaptationStory.sectionTitle,
+            metaTone: "highlight" as const,
+            content: <DeepEssenceAdaptationStory adaptationStory={structured.adaptation_story} />,
+          },
+        ]
+      : []),
     {
       key: "energy-strengths",
       label: t.part2.label,

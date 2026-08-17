@@ -174,6 +174,7 @@ export async function runDeepEssenceStructuredLlm(
                   }
                 : null,
             },
+            adaptationStoryEligible: promptEvidence.adaptationStoryEligible,
           }
         : null,
     });
@@ -249,6 +250,29 @@ export async function runDeepEssenceStructuredLlm(
           if (filtered) synthesis.evidence_refs = filtered;
           else delete synthesis.evidence_refs;
         }
+      }
+
+      // IA Batch 3 — adaptation_story evidence_refs filtering, same
+      // never-trust-LLM-refs rule, validated against the union pool built
+      // in formatPart01EvidenceForPrompt.ts (axis interpretation + layered
+      // identity + energy known keys already shown/written above in this
+      // same response). Defensive eligibility re-check: even though the
+      // schema field is only OFFERED to the model when
+      // adaptationStoryEligible is true, a model can still add an
+      // un-requested key — never trust that omission alone, strip it here
+      // too if the deterministic gate said this generation wasn't eligible.
+      const adaptationStory = (partA as Record<string, unknown>).adaptation_story as
+        | Record<string, unknown>
+        | undefined;
+      if (adaptationStory && !promptEvidence.adaptationStoryEligible) {
+        delete (partA as Record<string, unknown>).adaptation_story;
+      } else if (adaptationStory) {
+        const filtered = filterKnownEvidenceRefs(
+          adaptationStory.evidence_refs,
+          promptEvidence.adaptationStoryKnownKeys,
+        );
+        if (filtered) adaptationStory.evidence_refs = filtered;
+        else delete adaptationStory.evidence_refs;
       }
 
       // Batch 6 — same rule, per strength/watchout item. Strengths and

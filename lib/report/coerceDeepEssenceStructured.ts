@@ -107,6 +107,26 @@ function coerceLayeredIdentitySynthesis(
   };
 }
 
+// IA Batch 3 — same shape/rule as coerceLayeredIdentitySynthesis. The
+// deterministic minimum-evidence gate (hasAdaptationStoryEvidence) and the
+// defensive eligibility re-check both live upstream of coercion (the
+// evidence packet isn't visible here) — this function only validates shape:
+// no narrative, no field, same as every other omittable Batch 3+ field.
+function coerceAdaptationStory(
+  raw: unknown,
+): { narrative: string; evidence_refs?: string[] } | null {
+  const row = asRecord(raw);
+  const narrative = row ? asString(row.narrative) : "";
+  if (!narrative) return null;
+  const evidenceRefs = row && Array.isArray(row.evidence_refs)
+    ? row.evidence_refs.filter((v): v is string => typeof v === "string")
+    : undefined;
+  return {
+    narrative,
+    ...(evidenceRefs?.length ? { evidence_refs: evidenceRefs } : {}),
+  };
+}
+
 // Batch 8 — an axis missing any required text field is dropped entirely,
 // never padded (same "never fabricate" rule as Batch 4's layers). Gap
 // deep-dives need 4 fields (may_work_better stays optional); alignment
@@ -338,6 +358,11 @@ export function coerceDeepEssencePartA(
   const hasAnyAlignmentHighlight = Object.keys(alignmentHighlightOut).length > 0;
   const hasAnyAxisInterpretation = hasAnyGapDeepDive || hasAnyAlignmentHighlight;
 
+  // IA Batch 3 — shape validation only here; the minimum-evidence gate and
+  // the defensive re-check both happen in runDeepEssenceStructuredLlm.ts,
+  // which has access to the evidence packet this function doesn't.
+  const adaptationStory = coerceAdaptationStory(obj.adaptation_story);
+
   return {
     value: {
       summary,
@@ -346,6 +371,7 @@ export function coerceDeepEssencePartA(
       watchouts,
       energy,
       ...(hasAnyLayer ? { layered_identity: layeredIdentityOut } : {}),
+      ...(adaptationStory ? { adaptation_story: adaptationStory } : {}),
       ...(hasAnyAxisInterpretation
         ? {
             axis_interpretations: {

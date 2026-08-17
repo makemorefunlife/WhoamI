@@ -70,6 +70,16 @@ export type DeepEssenceEnergyBar = {
 };
 export type DeepEssenceWoundSteadyRow = { wound: string; steady: string };
 export type DeepEssencePlaybookRow = { situation: string; old: string; better: string };
+/**
+ * IA Batch 3 — top-level (not nested under layered_identity/axis_interpretations)
+ * because it synthesizes ACROSS them, not within one. Absent when the
+ * minimum-evidence gate isn't met (see hasAdaptationStoryEvidence in
+ * formatPart01EvidenceForPrompt.ts) — never generated on thin evidence.
+ */
+export type DeepEssenceAdaptationStory = {
+  narrative: string;
+  evidence_refs?: string[];
+};
 
 export type DeepEssenceStructuredReport = {
   summary: {
@@ -156,6 +166,8 @@ export type DeepEssenceStructuredReport = {
   };
   closing: string;
   checklist: string[];
+  /** IA Batch 3 — see DeepEssenceAdaptationStory. */
+  adaptation_story?: DeepEssenceAdaptationStory;
 };
 
 // ── 검증 헬퍼 ──

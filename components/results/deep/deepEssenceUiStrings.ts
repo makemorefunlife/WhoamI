@@ -42,6 +42,11 @@ export type DeepEssenceUiStrings = {
       naturalSelfAndDeepNeeds: string;
     };
   };
+  /** IA Batch 3 — Part 04 ("그래서 나는 왜 이렇게 살아왔을까요?"). No numbered `num`/`meta` here — the display number is computed dynamically from section position in DeepEssenceReport.tsx, same as layeredIdentity/axisInterpretation. */
+  adaptationStory: {
+    sectionTitle: string;
+    sectionTag: string;
+  };
   part1: {
     num: string;
     label: string;
@@ -155,6 +160,10 @@ const EN: DeepEssenceUiStrings = {
     mayCostLabel: "What it may cost",
     mayWorkBetterLabel: "What may work better",
     whyItFeelsEasyLabel: "Why it feels easy",
+  },
+  adaptationStory: {
+    sectionTitle: "So this is how you've been living",
+    sectionTag: "The story so far",
   },
   layeredIdentity: {
     sectionTitle: "The many layers of you",
@@ -279,6 +288,10 @@ const KO: DeepEssenceUiStrings = {
     mayCostLabel: "에너지가 들 수 있는 부분",
     mayWorkBetterLabel: "더 편하게 활용하는 방법",
     whyItFeelsEasyLabel: "왜 편하게 느껴지는지",
+  },
+  adaptationStory: {
+    sectionTitle: "그래서 나는 왜 이렇게 살아왔을까요?",
+    sectionTag: "지금까지의 이야기",
   },
   layeredIdentity: {
     sectionTitle: "당신의 여러 겹",

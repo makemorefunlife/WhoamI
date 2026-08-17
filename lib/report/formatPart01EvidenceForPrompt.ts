@@ -201,6 +201,21 @@ export type Part01PromptEvidence = {
   practiceKnownKeys: Set<string>;
   futureText: string;
   futureKnownKeys: Set<string>;
+  /**
+   * IA Batch 3 — union of the known keys already shown elsewhere in this
+   * same Part A prompt (axis interpretation's innate pool + selected axes'
+   * current pools, all four layered-identity buckets + synthesis, energy).
+   * adaptation_story cites from what's already in context — it gets no
+   * dedicated evidence-text block of its own.
+   */
+  adaptationStoryKnownKeys: Set<string>;
+  /**
+   * IA Batch 3 — deterministic minimum-evidence gate (see
+   * hasAdaptationStoryEvidence below). Controls whether the adaptation_story
+   * schema field/instructions are offered to the LLM at all — never trust
+   * the model to skip an ungrounded field on its own.
+   */
+  adaptationStoryEligible: boolean;
 };
 
 export type Part01AxisHighlightPromptEvidence = {
@@ -656,6 +671,32 @@ function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
 }
 
 /**
+ * IA Batch 3 — deterministic minimum-evidence gate for adaptation_story.
+ * Two-source-convergence rule: (1) at least one genuinely wide Current x
+ * Innate gap axis (selectAxisHighlights' own "wide" threshold — reused, not
+ * a new one), AND (2) a second, independent signal — a CE relational
+ * dimension with usable (non-"insufficient") confidence. Chart-level facts
+ * (day master, elements, strength, climate) are always present with a real
+ * confidence value on any built chart, so they can't serve as a genuine
+ * "was there enough signal" check the way dimension confidence can (the CE
+ * explicitly marks a dimension "insufficient" when it found no real signal —
+ * that's the one place in this packet honest absence is representable).
+ * Thin evidence omits the field entirely; this gate runs BEFORE the LLM
+ * call, and is never trusted to the model alone.
+ */
+export function hasAdaptationStoryEvidence(
+  packet: Part01IdentityEvidencePacket | null | undefined,
+): boolean {
+  if (!packet) return false;
+  const { gaps } = selectAxisHighlights(packet.axisComparisons);
+  if (gaps.length === 0) return false;
+
+  return packet.dimensions.allDimensions.some((d) =>
+    isUsableDimensionConfidence(d.evaluation.confidence),
+  );
+}
+
+/**
  * Builds both grounding text blocks from a Part01IdentityEvidencePacket.
  * Returns null if packet is null/undefined — callers must fall back to the
  * existing ungrounded prompt behavior in that case (Batch 3 rule: a failure
@@ -687,6 +728,17 @@ export function formatPart01EvidenceForPrompt(
     ...layeredIdentityBuckets.closePrivateSelf.knownKeys,
     ...layeredIdentityBuckets.naturalSelfAndDeepNeeds.knownKeys,
   ]);
+  // IA Batch 3 — adaptation_story reuses whatever's already in context
+  // (axis interpretation + layered identity + energy, all generated earlier
+  // in this same Part A response) rather than getting its own evidence-text
+  // block, so its known-key pool is the union of those three, not a new Lens.
+  const adaptationStoryKnownKeys = new Set<string>([
+    ...axisInterpretation.innateEvidenceKnownKeys,
+    ...axisInterpretation.gaps.flatMap((g) => [...g.currentKnownKeys]),
+    ...(axisInterpretation.alignment ? [...axisInterpretation.alignment.currentKnownKeys] : []),
+    ...synthesisKnownKeys,
+    ...energy.knownKeys,
+  ]);
   return {
     coreModeText: coreMode.text,
     growthEdgeText: growthEdge.text,
@@ -707,6 +759,8 @@ export function formatPart01EvidenceForPrompt(
     practiceKnownKeys: practice.knownKeys,
     futureText: future.text,
     futureKnownKeys: future.knownKeys,
+    adaptationStoryKnownKeys,
+    adaptationStoryEligible: hasAdaptationStoryEvidence(packet),
   };
 }
 
