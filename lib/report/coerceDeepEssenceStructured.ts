@@ -395,6 +395,19 @@ export function coerceDeepEssencePartB(raw: unknown): {
   // Part 03 Batch 1 — optional provenance, passed through only if the LLM
   // actually returned it (never fabricated, never required).
   const relationshipEvidenceRefs = asOptionalStringArray(relIn.evidence_refs);
+  // Narrative Quality Singleton Batch 4 — this padding was previously
+  // completely silent (no notes.push at all here, unlike strengths/watchouts
+  // in Part A). The schema requires fit/friction to be exactly 3 items
+  // (isFixedLenList), so true omission-on-shortfall isn't schema-safe
+  // without a larger change; observability is the safe minimal fix here —
+  // measure how often generic padding actually fires before considering a
+  // schema change.
+  if (!Array.isArray(relIn.fit) || relIn.fit.length !== 3) {
+    notes.push(`relationships.fit_len_${Array.isArray(relIn.fit) ? relIn.fit.length : 0}`);
+  }
+  if (!Array.isArray(relIn.friction) || relIn.friction.length !== 3) {
+    notes.push(`relationships.friction_len_${Array.isArray(relIn.friction) ? relIn.friction.length : 0}`);
+  }
   const relationships = {
     pattern: asString(
       relIn.pattern,
