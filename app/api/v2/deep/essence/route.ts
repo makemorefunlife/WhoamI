@@ -3,7 +3,10 @@ import { logServerError } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { runSlimIntegratedReport } from "@/lib/v1/slim/runSlimIntegratedReport";
-import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
+import {
+  PERSONAL_V2_STRUCTURED_GENERATION_VERSION,
+  type SlimV1ReportResult,
+} from "@/lib/v1/slim/types";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
   readPersistedDeepEssenceAnalysis,
@@ -91,7 +94,23 @@ export async function POST(req: Request) {
         const structured = parsed.slim_v1?.structured;
         const structuredIsTrustworthy =
           structured === null || isDeepEssenceStructuredReport(structured);
-        if (parsed.locale === locale && parsed.slim_v1 && structuredIsTrustworthy) {
+        // A stored row whose structured payload predates the current Personal
+        // V2 generation pipeline (e.g. no layered_identity/axis_interpretations
+        // support yet) must not be reused just because it still happens to
+        // satisfy the base schema check above — those newer fields are all
+        // optional, so an old row passes structuredIsTrustworthy too. Only
+        // applies when structured is non-null; a stored fallback (structured:
+        // null) is left exactly as before.
+        const storedGenerationVersion = parsed.slim_v1?.personal_v2_generation_version ?? 0;
+        const generationIsCurrent =
+          structured === null ||
+          storedGenerationVersion >= PERSONAL_V2_STRUCTURED_GENERATION_VERSION;
+        if (
+          parsed.locale === locale &&
+          parsed.slim_v1 &&
+          structuredIsTrustworthy &&
+          generationIsCurrent
+        ) {
           return NextResponse.json({ ok: true, locale, slim_v1: parsed.slim_v1 });
         }
       } catch (e) {

@@ -35,6 +35,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { describe, it } from "node:test";
 import { isDeepEssenceStructuredReport } from "../../lib/report/deepEssenceStructuredSchema.ts";
+import { PERSONAL_V2_STRUCTURED_GENERATION_VERSION } from "../../lib/v1/slim/types.ts";
 
 function validStrengthOrWatchout(n) {
   return { title: `Item ${n}`, body: "A reasonably long descriptive body sentence." };
@@ -163,11 +164,11 @@ describe("app/api/v2/deep/essence/route.ts — server read path re-validates bef
     );
   });
 
-  it("the cache-hit branch now gates on locale match, slim_v1 presence, AND structured trustworthiness", () => {
+  it("the cache-hit branch now gates on locale match, slim_v1 presence, structured trustworthiness, AND generation currency", () => {
     assert.match(
       src,
-      /if \(parsed\.locale === locale && parsed\.slim_v1 && structuredIsTrustworthy\) \{/,
-      "cache-hit condition must include the new structured-shape gate, not just locale+presence",
+      /if \(\s*parsed\.locale === locale &&\s*parsed\.slim_v1 &&\s*structuredIsTrustworthy &&\s*generationIsCurrent\s*\) \{/,
+      "cache-hit condition must include both the structured-shape gate and the Personal V2 generation-version gate",
     );
   });
 
@@ -179,6 +180,14 @@ describe("app/api/v2/deep/essence/route.ts — server read path re-validates bef
     );
   });
 
+  it("does NOT gate the cache-hit on structuredIsTrustworthy alone anymore (regression guard against dropping the generation-version fix)", () => {
+    assert.doesNotMatch(
+      src,
+      /if \(parsed\.locale === locale && parsed\.slim_v1 && structuredIsTrustworthy\) \{/,
+      "the pre-generation-version-fix cache-hit condition must not reappear",
+    );
+  });
+
   it("regeneration path (runSlimIntegratedReport) remains the fallback for a failed cache-trust check — same code path used when no cache exists at all", () => {
     // The route has exactly one call to runSlimIntegratedReport, reached
     // whenever the `if (stored) { ... return ... }` block does not return —
@@ -187,5 +196,124 @@ describe("app/api/v2/deep/essence/route.ts — server read path re-validates bef
     // invented for the stale/invalid case).
     const generateCalls = src.match(/runSlimIntegratedReport\(/g) ?? [];
     assert.equal(generateCalls.length, 1, "there should be exactly one generation code path, reused for both no-cache and stale-cache");
+  });
+});
+
+/**
+ * Personal V2 Cache Guard Fix.
+ *
+ * Root cause (confirmed by re-reading the same files this test already
+ * covers): isDeepEssenceStructuredReport only checks REQUIRED fields.
+ * layered_identity / axis_interpretations (and every other Batch 3+
+ * grounding field) are optional in the schema, so a report_analyses row
+ * persisted before the Personal V2 grounding pipeline shipped still passes
+ * structuredIsTrustworthy and was reused forever via the read-before-generate
+ * path above — never regenerated, regardless of how out of date its content
+ * actually was.
+ *
+ * Fix: stamp every generation with PERSONAL_V2_STRUCTURED_GENERATION_VERSION
+ * (lib/v1/slim/types.ts) and require a stored row's stamp to be >= the
+ * current constant before reusing it. A row with no stamp at all (every
+ * pre-fix row) defaults to 0, which is always older than the current
+ * version, so it always falls through to regeneration — exactly like the
+ * "no stored row" case already does. `structured === null` (legitimate
+ * prose-only fallback) is exempt, matching the existing rule directly above.
+ *
+ * This does not touch Personal CE / canonical saju logic, layered identity
+ * interpretation, current x innate logic, prompts, or the UI — only the
+ * reuse-vs-regenerate decision in route.ts, plus the wrapper type/stamp in
+ * runSlimIntegratedReport.ts, plus the localStorage cache version in
+ * slimIntegratedCache.ts.
+ */
+describe("Personal V2 Cache Guard Fix — generation-version gate", () => {
+  // Mirrors the exact comparison route.ts performs, without needing to
+  // invoke the full Next.js route handler (same rationale as the
+  // source-wiring tests above: Clerk/Supabase aren't mocked in this suite).
+  function generationIsCurrent(structured, personalV2GenerationVersion) {
+    const storedGenerationVersion = personalV2GenerationVersion ?? 0;
+    return (
+      structured === null ||
+      storedGenerationVersion >= PERSONAL_V2_STRUCTURED_GENERATION_VERSION
+    );
+  }
+
+  it("a legacy row with no personal_v2_generation_version stamp at all is treated as stale", () => {
+    assert.equal(generationIsCurrent(validCurrentReport(), undefined), false);
+  });
+
+  it("a row explicitly stamped with an older version number is treated as stale", () => {
+    assert.equal(
+      generationIsCurrent(validCurrentReport(), PERSONAL_V2_STRUCTURED_GENERATION_VERSION - 1),
+      false,
+    );
+  });
+
+  it("a row stamped with the current version is treated as current (reusable)", () => {
+    assert.equal(
+      generationIsCurrent(validCurrentReport(), PERSONAL_V2_STRUCTURED_GENERATION_VERSION),
+      true,
+    );
+  });
+
+  it("a stored prose-only fallback (structured: null) is exempt from the version check, regardless of stamp", () => {
+    assert.equal(generationIsCurrent(null, undefined), true);
+  });
+
+  it("PERSONAL_V2_STRUCTURED_GENERATION_VERSION is a positive integer (sane constant)", () => {
+    assert.equal(Number.isInteger(PERSONAL_V2_STRUCTURED_GENERATION_VERSION), true);
+    assert.ok(PERSONAL_V2_STRUCTURED_GENERATION_VERSION >= 1);
+  });
+});
+
+describe("Personal V2 Cache Guard Fix — source wiring", () => {
+  const routeSrc = fs.readFileSync("app/api/v2/deep/essence/route.ts", "utf8");
+  const typesSrc = fs.readFileSync("lib/v1/slim/types.ts", "utf8");
+  const runnerSrc = fs.readFileSync("lib/v1/slim/runSlimIntegratedReport.ts", "utf8");
+  const clientCacheSrc = fs.readFileSync("lib/v1/slim/slimIntegratedCache.ts", "utf8");
+
+  it("route.ts imports PERSONAL_V2_STRUCTURED_GENERATION_VERSION from the wrapper types module (no second constant invented)", () => {
+    assert.match(
+      routeSrc,
+      /PERSONAL_V2_STRUCTURED_GENERATION_VERSION[\s\S]*?from\s*"@\/lib\/v1\/slim\/types"/,
+      "route.ts must import the single canonical version constant",
+    );
+  });
+
+  it("route.ts defaults a missing stamp to 0 before comparing (so unstamped legacy rows are always stale)", () => {
+    assert.match(
+      routeSrc,
+      /parsed\.slim_v1\?\.personal_v2_generation_version\s*\?\?\s*0/,
+      "route.ts must default the stored stamp to 0 when absent",
+    );
+  });
+
+  it("route.ts's generationIsCurrent computation exempts structured === null (legacy fallback untouched)", () => {
+    assert.match(
+      routeSrc,
+      /generationIsCurrent\s*=\s*\n?\s*structured === null \|\|/,
+      "the generation-currency check must short-circuit true when structured is the legitimate null fallback",
+    );
+  });
+
+  it("lib/v1/slim/types.ts exports PERSONAL_V2_STRUCTURED_GENERATION_VERSION and the optional field it stamps", () => {
+    assert.match(typesSrc, /export const PERSONAL_V2_STRUCTURED_GENERATION_VERSION = \d+;/);
+    assert.match(typesSrc, /personal_v2_generation_version\?:\s*number;/);
+  });
+
+  it("runSlimIntegratedReport.ts stamps every generation with the current version constant", () => {
+    assert.match(
+      runnerSrc,
+      /personal_v2_generation_version:\s*PERSONAL_V2_STRUCTURED_GENERATION_VERSION/,
+    );
+  });
+
+  it("client localStorage cache version was bumped past 3 (forces refetch of any pre-fix cached entry)", () => {
+    assert.match(clientCacheSrc, /export const SLIM_INTEGRATED_CACHE_VERSION = (\d+);/);
+    const [, versionStr] = clientCacheSrc.match(/export const SLIM_INTEGRATED_CACHE_VERSION = (\d+);/);
+    assert.ok(Number(versionStr) > 3, "SLIM_INTEGRATED_CACHE_VERSION must be bumped past its pre-fix value of 3");
+  });
+
+  it("client localStorage legacy-key cleanup now also removes the old v3 key (not just v1/v2)", () => {
+    assert.match(clientCacheSrc, /\$\{PREFIX\}v3_\$\{locale\}_\$\{reportId\}/);
   });
 });

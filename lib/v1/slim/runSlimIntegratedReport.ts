@@ -9,7 +9,10 @@ import { buildSurveyAnalysisForSlimV1 } from "@/lib/v1/slim/surveyAnalysis";
 
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 
-import type { SlimV1ReportResult } from "@/lib/v1/slim/types";
+import {
+  PERSONAL_V2_STRUCTURED_GENERATION_VERSION,
+  type SlimV1ReportResult,
+} from "@/lib/v1/slim/types";
 
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 
@@ -249,6 +252,8 @@ export async function runSlimIntegratedReport(
     radar_current: v2Profile?.primary_axes ?? null,
 
     part01_identity_evidence: part01IdentityEvidence,
+
+    personal_v2_generation_version: PERSONAL_V2_STRUCTURED_GENERATION_VERSION,
 
     inputs_preview: {
 

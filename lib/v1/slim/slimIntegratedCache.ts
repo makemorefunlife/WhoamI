@@ -12,8 +12,15 @@ import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructure
  * Bump when Inner Compass structured schema or cache contract changes.
  * Old keys are ignored → client refetches instead of serving a prose-only
  * shell that lost structured/radar.
+ *
+ * Bumped 3 -> 4: old localStorage entries could hold a structured payload
+ * generated before the Personal V2 grounding pipeline (layered_identity /
+ * axis_interpretations) shipped, and the schema validator alone can't tell
+ * those apart since the newer fields are optional. Bumping forces a
+ * refetch, which now goes through route.ts's own
+ * PERSONAL_V2_STRUCTURED_GENERATION_VERSION gate server-side.
  */
-export const SLIM_INTEGRATED_CACHE_VERSION = 3;
+export const SLIM_INTEGRATED_CACHE_VERSION = 4;
 
 const PREFIX = "ahaitsme_v2_slim_integrated_";
 
@@ -26,9 +33,10 @@ function legacyStorageKeys(reportId: string, locale: Locale): string[] {
   return [
     `${PREFIX}${reportId}`,
     `${PREFIX}${locale}_${reportId}`,
-    // v1/v2 keys before CACHE_VERSION was introduced as v3
+    // v1/v2/v3 keys from earlier CACHE_VERSION values
     `${PREFIX}v1_${locale}_${reportId}`,
     `${PREFIX}v2_${locale}_${reportId}`,
+    `${PREFIX}v3_${locale}_${reportId}`,
   ];
 }
 

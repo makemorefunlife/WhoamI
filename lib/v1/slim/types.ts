@@ -2,6 +2,17 @@ import type { DeepEssenceStructuredReport } from "@/lib/report/deepEssenceStruct
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
 import type { Part01IdentityEvidencePacket } from "@/lib/v1/slim/part01IdentityEvidence";
 
+/**
+ * Bump whenever a change to the Deep Essence structured generation pipeline
+ * (runDeepEssenceStructuredLlm / part01IdentityEvidence grounding) means a
+ * previously-persisted report_analyses row should no longer be treated as
+ * "current" and reused as-is — see app/api/v2/deep/essence/route.ts's
+ * read-before-generate reuse gate. A stored row with no
+ * personal_v2_generation_version (or an older one) is always treated as
+ * stale, regardless of whether it still passes isDeepEssenceStructuredReport.
+ */
+export const PERSONAL_V2_STRUCTURED_GENERATION_VERSION = 1;
+
 export type SlimV1ReportResult = {
   source: "v1/slim-integrated";
   prompt: string;
@@ -23,6 +34,8 @@ export type SlimV1ReportResult = {
    * 않는다(additive only). CE 배선 실패 시 null.
    */
   part01_identity_evidence?: Part01IdentityEvidencePacket | null;
+  /** Stamped with PERSONAL_V2_STRUCTURED_GENERATION_VERSION on every generation. */
+  personal_v2_generation_version?: number;
   inputs_preview: {
     survey_chars: number;
     essence_chars: number;
