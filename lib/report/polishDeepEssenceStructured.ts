@@ -40,27 +40,92 @@ function cleanRememberText(text: string, locale: Locale): string {
   return polished.replace(REMEMBER_PREFIX_PATTERN, "").trim();
 }
 
-// Trailing cheer/wishing sentence — anchored to end-of-string so a legitimate
-// mid-paragraph use of 응원/바라 (e.g. describing what someone values) is left
-// alone. The [^.!?]* exclusion keeps the match from crossing into a prior
-// sentence, so this can't eat real recognition prose that merely precedes it.
-// No \b here: JS regex word-boundary is defined over [A-Za-z0-9_], so it
-// never fires between two Hangul characters — using it would silently make
-// this pattern match nothing against Korean text.
-const TRAILING_CHEER_PATTERN =
-  /\s*[^.!?]*(?:응원(?:합니다|해요|할게요|하겠습니다)|바라요|바랍니다)[^.!?]*[.!]*\s*$/;
+// Narrative Quality Final Stabilization — a phrase-ban / trailing-only
+// regex net was tried and re-verified twice (Batch C, then a same-session
+// fix pass) and got WORSE, not better, each round: the model kept escaping
+// the exact banned phrases with new paraphrases of the same banned
+// function, and roughly 3 of 4 live-QA violations were in the MIDDLE of the
+// closing text, not the trailing sentence — invisible to a trailing-only
+// regex no matter which words are listed. Root cause found in the prompt
+// schema itself: closing's own schema field said "6-10 sentences" while the
+// prose rule wanted a 2-sentence Recognition+Integration shape — every
+// violation showed up in one of those extra, schema-invited sentences 3-10,
+// never in sentence 1 or 2. The prompt fix is a hard "EXACTLY 2 sentences"
+// cap; this is the matching structural defensive net: truncate to at most
+// 2 sentences FIRST (removing the sentence slot violations were living in),
+// THEN scan only the surviving 1-2 sentences for a banned function, instead
+// of trying to out-word-list an evasive model.
+const MAX_CLOSING_SENTENCES = 2;
+
+// Non-anchored (no trailing $ requirement) — applied per-sentence against
+// short, already-truncated sentences, so it doesn't need end-of-string
+// anchoring to stay safe from eating unrelated prior content.
+const CHEER_FUNCTION_PATTERN =
+  /응원(?:합니다|해요|할게요|하겠습니다)|바라요|바랍니다|하면\s*좋겠어요|해나가면\s*좋겠어요/;
+const PREDICTION_FUNCTION_PATTERN =
+  /될\s*거예요|될\s*것입니다|하게\s*될\s*거예요|펼쳐질\s*거예요|이어질\s*것입니다|여정이\s*될/;
+const EVALUATION_FUNCTION_PATTERN =
+  /참\s*의미\s*있어요|소중한\s*발견이에요|멋진\s*변화예요|잘\s*알게\s*되었어요|중요한\s*깨달음이에요/;
+const ADVICE_FUNCTION_PATTERN =
+  /기억하세요|기억해요|잊지\s*마세요|해보세요|노력하세요|귀\s*기울이세요|선택하세요/;
+
+const BANNED_CLOSING_SENTENCE_PATTERNS = [
+  CHEER_FUNCTION_PATTERN,
+  PREDICTION_FUNCTION_PATTERN,
+  EVALUATION_FUNCTION_PATTERN,
+  ADVICE_FUNCTION_PATTERN,
+];
+
+/** Splits on sentence-ending punctuation, keeping the punctuation attached to each sentence. */
+function splitIntoSentences(text: string): string[] {
+  const matches = text.match(/[^.!?]+[.!?]+/g);
+  if (matches) return matches.map((s) => s.trim()).filter((s) => s.length > 0);
+  const trimmed = text.trim();
+  return trimmed.length > 0 ? [trimmed] : [];
+}
 
 function cleanClosingText(text: string, locale: Locale): string {
   const polished = polishProse(text, locale);
   if (locale !== "ko-KR") return polished;
   // Strip trailing self-help wishing sentences like "...만들어가지 바라요." / "...바랍니다."
-  let cleaned = polished
+  // before sentence-splitting, since this pattern crosses the preceding
+  // clause rather than being its own clean sentence.
+  const prewashed = polished
     .replace(/\s*(?:[가-힣]+기|이러한\s*점들을\s*기억하며|앞으로의\s*관계를|과정에서|앞으로의\s*여정에서도)[^.\!\?]*\b(?:바라요|바랍니다|응원합니다)[\.\!]*/g, "")
     .trim();
-  // Catch remaining cheer variants (응원해요/응원할게요/응원하겠습니다, or any
-  // 바라요/바랍니다 not matched by the prefix-specific pattern above) that
-  // still sit at the very end of the closing paragraph.
-  cleaned = cleaned.replace(TRAILING_CHEER_PATTERN, "").trim();
+  const sentences = splitIntoSentences(prewashed).slice(0, MAX_CLOSING_SENTENCES);
+  const kept = sentences.filter(
+    (s) => !BANNED_CLOSING_SENTENCE_PATTERNS.some((p) => p.test(s)),
+  );
+  const cleaned = kept.join(" ").trim();
+  return cleaned.length > 0 ? cleaned : polished;
+}
+
+// Narrative Quality Final Stabilization — adaptation_story's ZERO-advice
+// contract is prompt-primary; this is the last-line defensive net, matching
+// cleanClosingText's own "prompt first, polish only for clear violations"
+// philosophy. Only strips a sentence whose ENDING matches one of these
+// explicit advice shapes — never a broad rewrite. [^.!?\n]* anchors each
+// match to its own sentence (bounded by the prior sentence-end or paragraph
+// break), so this can't eat a prior, legitimate sentence, and can't cross
+// adaptation_story's \n\n paragraph joins. No \b — JS regex word-boundary is
+// defined over [A-Za-z0-9_], so it never fires between two Hangul
+// characters; using it would silently make this pattern match nothing.
+const ADVICE_ENDING_PATTERN =
+  /[^.!?\n]*(?:해야\s*해요|할\s*필요가\s*있어요|하는\s*것이\s*중요해요|연습해\s*보세요|활용해\s*보세요|시도해\s*보세요|기억하세요)[.!]*/g;
+
+function cleanAdaptationStoryText(text: string, locale: Locale): string {
+  const polished = polishProse(text, locale);
+  if (locale !== "ko-KR") return polished;
+  const stripped = polished.replace(ADVICE_ENDING_PATTERN, "");
+  // Paragraph-safe cleanup: normalize whitespace within each paragraph and
+  // drop any paragraph that became empty (its one sentence was the removed
+  // advice line), without disturbing the surviving \n\n paragraph joins.
+  const cleaned = stripped
+    .split(/\n\n+/)
+    .map((p) => p.replace(/[ \t]+/g, " ").trim())
+    .filter((p) => p.length > 0)
+    .join("\n\n");
   return cleaned.length > 0 ? cleaned : polished;
 }
 
@@ -125,6 +190,14 @@ export function polishDeepEssenceStructuredReport(
     },
     closing: cleanClosingText(report.closing, loc),
     checklist: mapStrList(report.checklist, loc),
+    ...(report.adaptation_story
+      ? {
+          adaptation_story: {
+            ...report.adaptation_story,
+            narrative: cleanAdaptationStoryText(report.adaptation_story.narrative, loc),
+          },
+        }
+      : {}),
   };
 
   return isDeepEssenceStructuredReport(next) ? next : report;

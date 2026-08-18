@@ -18,9 +18,9 @@ export function hasAdaptationStoryContent(
  * itself is the product here (per the batch spec) — anything more would
  * compete with it.
  *
- * The LLM is instructed to separate its 4-5 paragraphs with a blank line;
- * this component just splits on that and renders each as its own <p> so a
- * long narrative doesn't read as one dense wall of text.
+ * The LLM is instructed to separate its 2-5 short paragraphs with a blank
+ * line; this component just splits on that and renders each as its own <p>
+ * so a long narrative doesn't read as one dense wall of text.
  */
 export function DeepEssenceAdaptationStory({
   adaptationStory,

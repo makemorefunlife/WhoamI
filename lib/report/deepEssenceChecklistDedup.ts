@@ -101,7 +101,15 @@ function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
  * too noisy for English — far more 2-letter collisions between unrelated
  * words).
  */
-function similarityScore(a: string, b: string, locale: string): number {
+/**
+ * Narrative Quality Final Stabilization — exported (was module-private) so
+ * other coercion passes can reuse this exact primitive instead of a second
+ * hand-rolled similarity function. Currently reused by
+ * coerceDeepEssenceStructured.ts to flag watchout-to-watchout semantic
+ * overlap for observability — same tool, different application, not a new
+ * "engine."
+ */
+export function similarityScore(a: string, b: string, locale: string): number {
   const n = isKoreanLocale(locale) ? 2 : 3;
   return jaccardSimilarity(charNgrams(a, n), charNgrams(b, n));
 }
@@ -141,6 +149,22 @@ export const CHECKLIST_DUPLICATE_THRESHOLD = 0.11;
  * action restated, not merely the same underlying theme).
  */
 export const SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD = 0.45;
+
+/**
+ * Narrative Quality Final Stabilization — Batch B (watchout diversity).
+ * Applied to watchouts[].body pairs (4-6 sentences each), not single-line
+ * checklist items, so this is a distinct threshold from both constants
+ * above rather than reusing either — those were calibrated on short,
+ * single-sentence text. This one is observability-only (see
+ * coerceDeepEssenceStructured.ts): it logs a note when 2 watchout bodies
+ * are unusually similar so the team can measure real collapse frequency in
+ * production, the same "measure before correcting further" philosophy
+ * already used for the Batch 4 fallback-padding notes. Not empirically
+ * calibrated against a large corpus of real watchout bodies (unlike the two
+ * checklist thresholds above, which were) — treat this as a reasonable
+ * starting point for observability, not a precision-tuned cutoff.
+ */
+export const WATCHOUT_SEMANTIC_OVERLAP_THRESHOLD = 0.18;
 
 export type FlaggedChecklistItem = {
   item: string;

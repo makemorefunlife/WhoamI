@@ -5,6 +5,11 @@
  */
 import { PRIMARY_AXIS_KEYS } from "@/lib/v2/survey/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
+import {
+  normalizeForComparison,
+  similarityScore,
+  WATCHOUT_SEMANTIC_OVERLAP_THRESHOLD,
+} from "@/lib/report/deepEssenceChecklistDedup";
 
 function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" && !Array.isArray(v)
@@ -29,6 +34,17 @@ function asOptionalStringArray(v: unknown): string[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const filtered = v.filter((x): x is string => typeof x === "string");
   return filtered.length ? filtered : undefined;
+}
+
+/**
+ * Final Narrative Stabilization — passes through LLM-returned cost_domain
+ * only if present (watchouts[].cost_domain). Never validated against the
+ * WATCHOUT_COST_DOMAINS enum here — a malformed or missing value must never
+ * fail the report, it just can't participate in the exact-match collision
+ * check below and the fuzzy prose signal remains the only detector for it.
+ */
+function asOptionalString(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
 
 function takeStrings(v: unknown, min: number, max: number, pad: string): string[] {
@@ -205,6 +221,7 @@ export type CoerceDeepEssenceDiagnostics = {
 export function coerceDeepEssencePartA(
   raw: unknown,
   floor: PrimaryAxesScores,
+  locale: string = "ko-KR",
 ): { value: Record<string, unknown>; notes: string[] } {
   const notes: string[] = [];
   const obj = asRecord(raw) ?? {};
@@ -269,10 +286,12 @@ export function coerceDeepEssencePartA(
     3,
     (row, i) => {
       const evidenceRefs = asOptionalStringArray(row.evidence_refs);
+      const costDomain = asOptionalString(row.cost_domain);
       return {
         title: asString(row.title, `Watch-out ${i + 1}`),
         body: asString(row.body, "This pattern can drain energy when it runs hot."),
         ...(evidenceRefs ? { evidence_refs: evidenceRefs } : {}),
+        ...(costDomain ? { cost_domain: costDomain } : {}),
       };
     },
     () => ({
@@ -280,6 +299,32 @@ export function coerceDeepEssencePartA(
       body: "This pattern can drain energy when it runs hot.",
     }),
   );
+
+  // Narrative Quality Final Stabilization — Batch B, then upgraded with an
+  // exact cost_domain signal. Both remain observability-only — no
+  // regeneration, no schema requirement, no new LLM call (correcting a
+  // detected collision would need either, both out of scope here) — but
+  // the exact-match check is a materially more reliable detector than the
+  // fuzzy one: two watchouts sharing the identical cost_domain value is a
+  // deterministic fact, not a similarity-threshold guess, so it should be
+  // trusted first when both signals are available. The fuzzy prose check
+  // stays as the fallback for whenever cost_domain is missing/malformed
+  // (older cache, or the LLM skipped the field despite the prompt).
+  const watchoutRows = watchouts as { body: string; cost_domain?: string }[];
+  const watchoutBodies = watchoutRows.map((w) => normalizeForComparison(w.body, locale));
+  for (let i = 0; i < watchoutRows.length; i++) {
+    for (let j = i + 1; j < watchoutRows.length; j++) {
+      const domainI = watchoutRows[i].cost_domain;
+      const domainJ = watchoutRows[j].cost_domain;
+      if (domainI && domainJ && domainI === domainJ) {
+        notes.push(`watchouts_cost_domain_collision_${i}_${j}_${domainI}`);
+      }
+      const score = similarityScore(watchoutBodies[i], watchoutBodies[j], locale);
+      if (score >= WATCHOUT_SEMANTIC_OVERLAP_THRESHOLD) {
+        notes.push(`watchouts_semantic_overlap_${i}_${j}_score_${score.toFixed(2)}`);
+      }
+    }
+  }
 
   const energyIn = asRecord(obj.energy) ?? {};
   const defaultBars = [

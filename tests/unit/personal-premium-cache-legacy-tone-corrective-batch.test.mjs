@@ -256,15 +256,17 @@ describe("Verification 5 — cleanClosingText removes cheer variants without dam
 
 // ── Source wiring — confirm the actual regex additions landed in the file ──
 
-describe("Verification 5 (source wiring) — TRAILING_CHEER_PATTERN is wired into cleanClosingText", () => {
+describe("Verification 5 (source wiring) — cheer/wishing detection is wired into cleanClosingText (renamed CHEER_FUNCTION_PATTERN + per-sentence scan during the Final Narrative Stabilization closing rework — same coverage, different mechanism: trailing-only .replace() -> truncate-then-filter, since most later violations found in fresh QA were mid-closing, not trailing)", () => {
   const src = fs.readFileSync("lib/report/polishDeepEssenceStructured.ts", "utf8");
 
-  it("defines a trailing-cheer regex covering 응원해요/응원할게요/응원하겠습니다", () => {
+  it("defines a cheer/wishing regex covering 응원해요/응원할게요/응원하겠습니다", () => {
     assert.match(src, /응원\(\?:합니다\|해요\|할게요\|하겠습니다\)/);
   });
 
-  it("applies the trailing-cheer pattern inside cleanClosingText", () => {
-    assert.match(src, /cleaned = cleaned\.replace\(TRAILING_CHEER_PATTERN, ""\)\.trim\(\);/);
+  it("applies the cheer/wishing pattern as one of the per-sentence banned-function filters inside cleanClosingText", () => {
+    assert.match(src, /BANNED_CLOSING_SENTENCE_PATTERNS = \[/);
+    assert.match(src, /CHEER_FUNCTION_PATTERN,/);
+    assert.match(src, /kept = sentences\.filter\(/);
   });
 
   it("the original Batch 5 prefix-anchored regex is preserved (not replaced, only supplemented)", () => {

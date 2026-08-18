@@ -183,7 +183,7 @@ export async function runDeepEssenceStructuredLlm(
       () => callLlmJson(openai, systemPrompt, userA),
       { label: "deep-essence-structured-a" },
     );
-    const coercedA = coerceDeepEssencePartA(partARaw, input.currentAxisScores);
+    const coercedA = coerceDeepEssencePartA(partARaw, input.currentAxisScores, normalizeLocale(input.locale));
     if (coercedA.notes.length) {
       logServerEvent("runDeepEssenceStructuredLlm", "part_a_coerced", {
         notes: coercedA.notes.slice(0, 8),

@@ -70,25 +70,19 @@ describe("Layered Identity synthesis — contrast requirement + FAILED\\/WORKING
   });
 });
 
-describe("Watchout semantic diversity guard", () => {
-  it("prohibits three watchouts reducing to the same causal mechanism", () => {
-    assert.match(src, /WATCHOUT DIVERSITY/);
-    assert.match(src, /do not return three watchouts that all reduce to the same underlying causal mechanism/);
-  });
-
-  it("lists candidate cost domains", () => {
-    for (const domain of ["decision load", "emotional labor", "adaptation load", "boundary maintenance", "uncertainty handling", "relationship calibration", "self-suppression"]) {
-      assert.match(src, new RegExp(domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-    }
+describe("Watchout semantic diversity guard (superseded — prompt-only diversity checking failed live QA twice; see the Final Narrative Stabilization batch's own watchout test file for the current deterministic cost_domain design)", () => {
+  it("watchouts commit to a structured cost_domain field, sequentially forced distinct across the 3 items", () => {
+    assert.match(src, /WATCHOUT_COST_DOMAINS = \[decision_load, emotional_labor, adaptation_load, boundary_maintenance, uncertainty_handling, relationship_calibration, self_suppression\]/);
+    assert.match(src, /watchouts\[1\]\.cost_domain — it MUST be a different value from watchouts\[0\]\.cost_domain/);
   });
 
   it("forbids inventing an unsupported domain just to force variety", () => {
-    assert.match(src, /never invent a domain the evidence doesn't support just to force variety/);
+    assert.match(src, /do NOT invent an unsupported third domain from nothing/);
   });
 
-  it("includes a concrete FAILED example pair (abstract-only diversity rules were observed insufficient in live QA)", () => {
-    assert.match(src, /two of these three are the SAME mechanism restated/);
-    assert.match(src, /결정 장애로 인한 우유부단함/);
+  it("prompt-only structural FAILED-pattern description no longer needs a fixed quotable pair (the sequential cost_domain commitment is now the primary lever, this is a secondary self-check)", () => {
+    assert.match(src, /SELF-CHECK \(this is the failure mode that has leaked live even under the rule above/);
+    assert.match(src, /names a BEHAVIOR.*names that same behavior's RESULT/s);
   });
 });
 
@@ -174,19 +168,16 @@ describe("Checklist (One Next Move) — exactly-1 SSOT, no 8-12 contradiction", 
   });
 });
 
-describe("Closing — evaluative-praise prohibition", () => {
-  it("forbids evaluating the insight's worth, separately from the existing cheer/wishing ban", () => {
-    assert.match(src, /NO evaluative praise of the insight itself/);
-    assert.match(src, /참 의미 있어요/);
-    assert.match(src, /의미 있는 변화예요/);
+describe("Closing — evaluative-praise prohibition (superseded twice — see the Final Narrative Stabilization batch's own closing test file for the current hard 2-sentence-cap design)", () => {
+  it("evaluative praise is still named as a drift risk, but as a compact category reference, not an exhaustively expanded phrase-ban list (whack-a-mole via longer word lists was tried and made results worse, twice)", () => {
+    assert.match(src, /EVALUATION \(praising how meaningful\/great the insight is\)/);
   });
 
-  it("includes a FAILED\\/WORKING example pair for evaluative praise, matching the adaptation_story example-pair pattern", () => {
-    assert.match(src, /이 점을 알게 되었다는 것이 참 의미 있어요/);
-    assert.match(src, /이제 중요한 선택 앞에서 어느 쪽을 더 사용하고 있는지 알아차릴 수 있습니다/);
+  it("evaluative praise is banned via a described category, not a fixed quotable example (the original FAILED/WORKING example pair was itself observed being reproduced live, since its WORKING sentence doubled as the closing rule's own opening example elsewhere)", () => {
+    assert.doesNotMatch(src, /이 점을 알게 되었다는 것이 참 의미 있어요/);
   });
 
-  it("the pre-existing cheer\\/wishing ban is still present (not replaced, only supplemented)", () => {
-    assert.match(src, /STRICTLY FORBIDDEN.*응원합니다.*풍요롭길 바랍니다/s);
+  it("closing is now hard-capped at exactly 2 sentences — the structural fix that replaced ever-longer phrase-ban lists", () => {
+    assert.match(src, /closing is EXACTLY 2 SENTENCES, NEVER MORE/);
   });
 });

@@ -17,8 +17,22 @@ import type { PrimaryAxesScores, PrimaryAxisKey } from "@/lib/v2/survey/types";
 /**
  * Batch 6 — evidence_refs is internal provenance only (never rendered),
  * populated when Part01 evidence grounding was available for this item.
+ *
+ * Final Narrative Stabilization — cost_domain is internal-only too (never
+ * rendered), populated on watchouts only (strengths leave it undefined).
+ * The LLM commits each watchout to one of a fixed 7-value domain enum
+ * (see WATCHOUT_COST_DOMAINS in the prompt) so coerceDeepEssenceStructured.ts
+ * can deterministically detect an exact-match collision between two
+ * watchouts, instead of relying solely on fuzzy prose similarity. Optional
+ * and unvalidated here by design — a malformed or missing value must never
+ * fail the whole report, it just falls back to the fuzzy-only signal.
  */
-export type DeepEssenceStrengthOrWatchout = { title: string; body: string; evidence_refs?: string[] };
+export type DeepEssenceStrengthOrWatchout = {
+  title: string;
+  body: string;
+  evidence_refs?: string[];
+  cost_domain?: string;
+};
 /** Batch 4 — one Layered Identity layer. Optional/omittable when evidence is too thin. */
 export type DeepEssenceLayeredIdentityLayer = {
   title?: string;
