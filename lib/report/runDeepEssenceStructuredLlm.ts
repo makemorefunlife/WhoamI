@@ -28,6 +28,7 @@ import { logServerEvent } from "@/lib/security/safeLog";
 import {
   formatPart01EvidenceForPrompt,
   filterKnownEvidenceRefs,
+  type Part01PromptEvidence,
 } from "@/lib/report/formatPart01EvidenceForPrompt";
 import type { Part01IdentityEvidencePacket } from "@/lib/v1/slim/part01IdentityEvidence";
 
@@ -115,9 +116,78 @@ async function callLlmJson(
   return completion.choices[0]?.message.content?.trim() ?? "";
 }
 
-function buildPartAExcerpt(partA: Record<string, unknown>): string {
+// Exported for direct testability (F1 wiring fix) — same convention as
+// similarityScore/coerceDeepEssencePartA elsewhere in this codebase.
+export function buildPartAExcerpt(
+  partA: Record<string, unknown>,
+  promptEvidence: Part01PromptEvidence | null,
+): string {
   // Part B 프롬프트에 톤·인물상을 이어가기 위한 최소 요약(전체 JSON을 다시 보내지 않음)
   try {
+    // F1 wiring fix (latency-architecture audit) — several Part B prompt
+    // rules already assumed this data would be here: checklist's anchor
+    // list ("the primary/widest axis gap (gap_deep_dive)", "the adaptation
+    // tension named in adaptation_story"), relationships.pattern's "same
+    // already-provided gap/alignment axis" thread, and closing's
+    // "natural_tendency/current_pattern material". It never was — this
+    // wires the ACTUAL generated values in, compactly, using the same
+    // deterministic "primary = widest gap" selection
+    // (promptEvidence.axisInterpretation.gaps is already sorted widest-
+    // first, see selectAxisHighlights) that decided which axes Part A
+    // itself was even asked to interpret. No new analysis: this only
+    // extracts fields Part A already wrote.
+    const axisInterpretations = partA.axis_interpretations as
+      | {
+          gap_deep_dive?: Record<
+            string,
+            { natural_tendency?: string; current_pattern?: string; may_cost?: string }
+          >;
+          alignment_highlight?: Record<
+            string,
+            { natural_tendency?: string; current_pattern?: string }
+          >;
+        }
+      | undefined;
+
+    const primaryGapAxisKey = promptEvidence?.axisInterpretation.gaps[0]?.axis;
+    const primaryGapEntry = primaryGapAxisKey
+      ? axisInterpretations?.gap_deep_dive?.[primaryGapAxisKey]
+      : undefined;
+    const primary_gap_axis = primaryGapEntry
+      ? {
+          axis: primaryGapAxisKey,
+          natural_tendency: primaryGapEntry.natural_tendency,
+          current_pattern: primaryGapEntry.current_pattern,
+          cost: primaryGapEntry.may_cost,
+        }
+      : undefined;
+
+    const alignmentAxisKey = promptEvidence?.axisInterpretation.alignment?.axis;
+    const alignmentEntry = alignmentAxisKey
+      ? axisInterpretations?.alignment_highlight?.[alignmentAxisKey]
+      : undefined;
+    const alignment_axis = alignmentEntry
+      ? {
+          axis: alignmentAxisKey,
+          natural_tendency: alignmentEntry.natural_tendency,
+          current_pattern: alignmentEntry.current_pattern,
+        }
+      : undefined;
+
+    // adaptation_story's own last beat is ALREADY defined as "a closing
+    // paragraph holding both the natural direction and the current way of
+    // living together" (see ADAPTATION_STORY_SCHEMA_FIELD) — the shortest
+    // genuine tension/recognition summary available is that last paragraph,
+    // taken as-is. No new summarization, no new LLM call.
+    const adaptationStory = partA.adaptation_story as { narrative?: string } | undefined;
+    const adaptationParagraphs = adaptationStory?.narrative
+      ?.split(/\n\n+/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+    const adaptation_recognition = adaptationParagraphs?.length
+      ? adaptationParagraphs[adaptationParagraphs.length - 1]
+      : undefined;
+
     return JSON.stringify({
       summary: partA.summary,
       strengths: (partA.strengths as { title: string }[] | undefined)?.map((s) => s.title),
@@ -126,6 +196,9 @@ function buildPartAExcerpt(partA: Record<string, unknown>): string {
       // Part 05 Batch 1 — already-generated Part A output, not new evidence;
       // lets future.leap synthesize a long-term-fit signal without a new Lens.
       energy_optimal: (partA.energy as { optimal?: string[] } | undefined)?.optimal,
+      ...(primary_gap_axis ? { primary_gap_axis } : {}),
+      ...(alignment_axis ? { alignment_axis } : {}),
+      ...(adaptation_recognition ? { adaptation_recognition } : {}),
     });
   } catch {
     return "";
@@ -369,7 +442,7 @@ export async function runDeepEssenceStructuredLlm(
       surveyAnalysis: input.surveyAnalysis,
       essenceAnalysisSummary: input.essenceAnalysisSummary,
       birthEnergyContext: input.astrologyInterpretation,
-      partAExcerpt: buildPartAExcerpt(partA),
+      partAExcerpt: buildPartAExcerpt(partA, promptEvidence),
       locale: input.locale,
       part01Evidence: promptEvidence
         ? {
