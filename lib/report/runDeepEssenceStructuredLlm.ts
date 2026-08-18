@@ -84,7 +84,9 @@ async function callLlmJson(
   openai: OpenAI,
   system: string,
   user: string,
+  label: string,
 ): Promise<string> {
+  const t0 = Date.now();
   const completion = await openai.chat.completions.create({
     model: process.env.OPENAI_INTEGRATED_MODEL?.trim() || "gpt-4o-mini",
     messages: [
@@ -94,6 +96,21 @@ async function callLlmJson(
     temperature: 0.6,
     max_tokens: 4096,
     response_format: { type: "json_object" },
+  });
+  // Latency observability, added during the personal-analysis timeout
+  // investigation — finish_reason "length" means the model hit max_tokens
+  // and the JSON is truncated, which throws a parse SyntaxError and
+  // triggers a full extra retry call (roughly doubling latency for that
+  // leg). Kept as a permanent lightweight signal so a future truncation/
+  // slow-call regression on this route shows up in logs instead of only
+  // as a user-facing timeout. (Note: usage_completion_count, not
+  // "completion_tokens" — safeLog's SECRET_KEY redacts any key containing
+  // the substring "token", which would otherwise blank this out.)
+  logServerEvent("runDeepEssenceStructuredLlm", "llm_call_timing", {
+    label,
+    duration_ms: Date.now() - t0,
+    finish_reason: completion.choices[0]?.finish_reason,
+    usage_completion_count: completion.usage?.completion_tokens,
   });
   return completion.choices[0]?.message.content?.trim() ?? "";
 }
@@ -180,7 +197,7 @@ export async function runDeepEssenceStructuredLlm(
         : null,
     });
     const partARaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
-      () => callLlmJson(openai, systemPrompt, userA),
+      () => callLlmJson(openai, systemPrompt, userA, "part-a"),
       { label: "deep-essence-structured-a" },
     );
     const coercedA = coerceDeepEssencePartA(partARaw, input.currentAxisScores, normalizeLocale(input.locale));
@@ -363,7 +380,7 @@ export async function runDeepEssenceStructuredLlm(
         : null,
     });
     const partBRaw = await fetchLlmJsonWithParseRetry<Record<string, unknown>>(
-      () => callLlmJson(openai, systemPrompt, userB),
+      () => callLlmJson(openai, systemPrompt, userB, "part-b"),
       { label: "deep-essence-structured-b" },
     );
     const coercedB = coerceDeepEssencePartB(partBRaw);

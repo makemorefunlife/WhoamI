@@ -1,12 +1,9 @@
 import { calculateChart, type Sign } from "celestine";
-import { logServerError } from "@/lib/security/safeLog";
-import OpenAI from "openai";
 import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyApiRequest";
 import { extractAstrologyTextForIntegrated } from "@/lib/report/astrologyIntegratedText";
 import type { AstrologyCoordSource } from "@/lib/report/resolveAstrologyCoordinates";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
-import { buildLlmOutputLocaleInstruction } from "@/lib/i18n/llmLocale";
 
 const zodiacIndexToKorean: Record<number, string> = {
   0: "양자리",
@@ -42,17 +39,6 @@ function signToLabel(sign: Sign | undefined, locale: Locale): string {
   if (sign === undefined) return locale === "ko-KR" ? "알 수 없음" : "Unknown";
   const map = locale === "ko-KR" ? zodiacIndexToKorean : zodiacIndexToEnglish;
   return map[sign as number] ?? (locale === "ko-KR" ? "알 수 없음" : "Unknown");
-}
-
-const ASTROLOGY_SYSTEM_RULES = `You are an astrology expert with 20 years of experience.
-Explain astrological terms in everyday language.
-Avoid words like "destiny" or "absolute."
-Your goal is to help the reader understand themselves better.`;
-
-function getAstrologySystemPrompt(locale: Locale): string {
-  return `${ASTROLOGY_SYSTEM_RULES}
-
-${buildLlmOutputLocaleInstruction(locale)}`;
 }
 
 export type BirthAstrologyResult = {
@@ -120,18 +106,8 @@ export async function fetchBirthAstrologyText(input: {
   const planets = {
     sun: signToLabel(chart.planets[0]?.sign, locale),
     moon: signToLabel(chart.planets[1]?.sign, locale),
-    mercury: signToLabel(chart.planets[2]?.sign, locale),
-    venus: signToLabel(chart.planets[3]?.sign, locale),
-    mars: signToLabel(chart.planets[4]?.sign, locale),
-    jupiter: signToLabel(chart.planets[5]?.sign, locale),
-    saturn: signToLabel(chart.planets[6]?.sign, locale),
   };
   const rising = signToLabel(chart.angles.ascendant?.sign, locale);
-  const houseCusps = chart.houses.cusps ?? [];
-  const houses = houseCusps.slice(0, 12).map((cusp) => ({
-    house: cusp.house,
-    sign: signToLabel(cusp.sign, locale),
-  }));
 
   const placeLabel =
     coords.matchedPlace ??
@@ -141,68 +117,21 @@ export async function fetchBirthAstrologyText(input: {
       ? "San Francisco, CA (default)"
       : null);
 
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
-    const fallback = extractAstrologyTextForIntegrated({
-      raw: { sun: planets.sun, moon: planets.moon, rising },
-    });
-    return {
-      text:
-        fallback ??
-        (locale === "ko-KR"
-          ? "(점성 해석 LLM 없음 — 태양·달·라이징만 계산됨)"
-          : "(No astrology LLM available — only Sun, Moon, and Rising were calculated.)"),
-      coord_source: coords.source,
-      birth_place_used: placeLabel,
-    };
-  }
-
-  const openai = new OpenAI({ apiKey });
-  const defaultPlaceLabel =
-    locale === "ko-KR"
-      ? "미입력(샌프란시스코 좌표 기본값)"
-      : "Not provided (defaulting to San Francisco coordinates)";
-  const userPrompt = `
-User info:
-- Birth date: ${body.year}-${body.month}-${body.day}
-- Birth time: ${body.hour}:${String(body.minute).padStart(2, "0")}
-- Birth place: ${placeLabel || defaultPlaceLabel}
-
-Astrology data:
-- Sun: ${planets.sun}
-- Moon: ${planets.moon}
-- Rising: ${rising}
-- Mercury: ${planets.mercury}
-- Venus: ${planets.venus}
-- Mars: ${planets.mars}
-- Jupiter: ${planets.jupiter}
-- Saturn: ${planets.saturn}
-- Houses: ${houses.map((h) => `House ${h.house}: ${h.sign}`).join(", ")}
-
-Based on the data above, write an astrology interpretation. Use everyday language and keep it to roughly 1500 characters, hitting only the key points.`;
-
-  try {
-    const llmResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: getAstrologySystemPrompt(locale) },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 2500,
-    });
-    const interpretation = llmResponse.choices[0].message.content?.trim();
-    if (interpretation) {
-      return {
-        text: interpretation,
-        coord_source: coords.source,
-        birth_place_used: placeLabel,
-      };
-    }
-  } catch (e) {
-    logServerError("fetchBirthAstrologyText LLM:", e, "internal_error");
-  }
-
+  // Personal-analysis timeout investigation — this used to make its own
+  // gpt-4o-mini call here (~15-25s) to turn the chart facts into prose,
+  // BEFORE the two-call Part A -> Part B structured chain could even start
+  // (runSlimIntegratedReport awaits buildBirthEnergyContext, which awaits
+  // this, ahead of the Promise.all). That made every generation a 3-deep
+  // sequential LLM chain, which is what pushed a fresh generation past the
+  // route's maxDuration in production. Below is exactly the fallback text
+  // this function already used whenever the LLM call was unavailable or
+  // failed (extractAstrologyTextForIntegrated + buildAstrologyContextForLlm)
+  // — a previously-proven, already-shipped code path — now used
+  // unconditionally instead of as an emergency fallback, since Part A/B and
+  // runIntegratedPremiumLlm already treat this as one evidence block among
+  // several to synthesize themselves, not a finished paragraph to reuse
+  // verbatim. Houses are intentionally left out here, matching what that
+  // existing fallback path already provided.
   const fallback = extractAstrologyTextForIntegrated({
     raw: { sun: planets.sun, moon: planets.moon, rising },
   });
