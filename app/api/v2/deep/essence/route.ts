@@ -21,7 +21,13 @@ import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+// Two sequential gpt-4o-mini calls (Part A -> Part B) run in parallel with
+// runIntegratedPremiumLlm — a fresh generation measured at 126s in
+// production just now, over the previous 120s cap, which made Vercel kill
+// the function and return its own non-JSON timeout page (breaking the
+// client's JSON.parse). 300s matches the other heavy premium-report routes
+// (/api/llm, /api/relationship/analyze/premium) already in this codebase.
+export const maxDuration = 300;
 
 type Body = {
   reportId?: string;
