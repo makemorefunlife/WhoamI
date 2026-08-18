@@ -8,8 +8,13 @@
  *
  * family는 비대칭 부모-자녀 관계라 viewer 토글이 없다 — 항상 고정된
  * parent/child 순서로 렌더링한다(기존 FamilyParentReportView.tsx와 동일).
+ *
+ * 카드 시각 스킨은 Marriage/Work/Friend와 같은 크림-진초록 editorial
+ * 시스템(familyEditorialAdapter.tsx)을 쓴다 — 옛 reportLayout의 다크
+ * 카드/mint 액센트가 아니다.
  */
 import type { ReactNode } from "react";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import {
   MessageCircle,
   ShieldCheck,
@@ -34,16 +39,14 @@ import {
   Clock,
   Heart,
 } from "lucide-react";
-import {
-  RelationshipReportLayout,
-  RelationshipReportCard,
+import RelationshipReportCard, {
   RelationshipReportBody,
   RelationshipReportParagraph,
   RelationshipReportLabel,
   RelationshipReportInset,
-  PsychMatchRadarChart,
-  getTabTheme,
-} from "@/components/relationship/reportLayout";
+  FamilyEditorialHero,
+} from "@/components/relationship/familyParent/editorial/familyEditorialAdapter";
+import { PsychMatchRadarChart } from "@/components/relationship/reportLayout";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
 import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
@@ -74,7 +77,19 @@ import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 import { FamilyChapterNav, FamilyChapterSection } from "@/components/relationship/familyParent/chapters/FamilyChapterShell";
 
-const ACCENT = getTabTheme("family").accent;
+const relSans = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rel-sans-var",
+});
+const relSerif = Noto_Serif_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rel-serif-var",
+});
+
+/** Shared editorial accent (rel-deep) — matches Romantic V4 / Friend / Marriage / Work, not the old per-domain mint. */
+const ACCENT = "#1b3b2b";
 
 /** 하드코딩 이모지 대신 — 오행 아키타입 → Lucide 아이콘. */
 const GENIUS_ICON: Record<ChildDnaSection["geniusArchetype"], typeof Sprout> = {
@@ -199,7 +214,7 @@ function RelationshipIndexCard({ section }: { section: RelationshipIndexSection 
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT} showMarker={true}>
       <RelationshipReportBody>
-        <p className="text-lg font-semibold text-white/92">{section.frictionIndex}%</p>
+        <p className="text-lg font-semibold text-rel-ink">{section.frictionIndex}%</p>
         <div>
           <RelationshipReportLabel>{t.relationshipIndexSafeDistanceLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
@@ -208,7 +223,7 @@ function RelationshipIndexCard({ section }: { section: RelationshipIndexSection 
         </div>
         {section.decisionAxisNote ? (
           <RelationshipReportInset>
-            <RelationshipReportParagraph className="text-white/78">
+            <RelationshipReportParagraph>
               {section.decisionAxisNote}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -257,21 +272,21 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT} showMarker={true}>
       <RelationshipReportBody>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/25 px-4 py-3">
             <RelationshipReportLabel>
               {t.householdRolesSelfLabel(section.selfName)}
             </RelationshipReportLabel>
-            <p className="mt-2 text-base font-semibold text-white/92">{section.selfRoleLabel}</p>
-            <RelationshipReportParagraph className="mt-2 text-white/75">
+            <p className="mt-2 text-base font-semibold text-rel-ink">{section.selfRoleLabel}</p>
+            <RelationshipReportParagraph className="mt-2">
               {section.selfRoleDetail}
             </RelationshipReportParagraph>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/25 px-4 py-3">
             <RelationshipReportLabel>
               {t.householdRolesPartnerLabel(section.partnerName)}
             </RelationshipReportLabel>
-            <p className="mt-2 text-base font-semibold text-white/92">{section.partnerRoleLabel}</p>
-            <RelationshipReportParagraph className="mt-2 text-white/75">
+            <p className="mt-2 text-base font-semibold text-rel-ink">{section.partnerRoleLabel}</p>
+            <RelationshipReportParagraph className="mt-2">
               {section.partnerRoleDetail}
             </RelationshipReportParagraph>
           </div>
@@ -317,12 +332,12 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-emerald-200/70">
+          <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">
             {t.dnaLayerLabel}
           </p>
-          <p className="mt-1 text-sm text-white/55">{t.dnaLayerHint}</p>
+          <p className="mt-1 text-sm text-rel-ink-mute">{t.dnaLayerHint}</p>
         </div>
-        <p className="flex items-center gap-2 text-lg font-semibold text-white/92">
+        <p className="flex items-center gap-2 text-lg font-semibold text-rel-ink">
           <span
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}
@@ -380,7 +395,7 @@ function TalentCard({ section }: { section: TalentSection }) {
       <RelationshipReportBody>
         <div>
           <RelationshipReportLabel>{t.talentStudyTypeLabel}</RelationshipReportLabel>
-          <p className="mt-1.5 flex items-center gap-2 text-base font-semibold text-white/92">
+          <p className="mt-1.5 flex items-center gap-2 text-base font-semibold text-rel-ink">
             <TypeIconBadge Icon={StudyIcon} />
             {section.studyTypeLabel}
           </p>
@@ -388,7 +403,7 @@ function TalentCard({ section }: { section: TalentSection }) {
         </div>
         <div>
           <RelationshipReportLabel>{t.talentWealthVesselLabel}</RelationshipReportLabel>
-          <p className="mt-1.5 flex items-center gap-2 text-base font-semibold text-white/92">
+          <p className="mt-1.5 flex items-center gap-2 text-base font-semibold text-rel-ink">
             <TypeIconBadge Icon={WealthIcon} />
             {section.wealthVesselLabel}
           </p>
@@ -396,7 +411,7 @@ function TalentCard({ section }: { section: TalentSection }) {
         </div>
         {section.inheritedNote ? (
           <RelationshipReportInset>
-            <RelationshipReportParagraph className="text-white/78">
+            <RelationshipReportParagraph>
               {section.inheritedNote}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
@@ -412,14 +427,14 @@ function GrowthTunnelCard({ section }: { section: GrowthTunnelSection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
       <RelationshipReportBody>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-amber-200/70">
+          <p className="text-xs font-medium uppercase tracking-wide text-amber-700">
             {t.growthLayerLabel}
           </p>
-          <p className="mt-1 text-sm text-white/55">{t.growthLayerHint}</p>
+          <p className="mt-1 text-sm text-rel-ink-mute">{t.growthLayerHint}</p>
         </div>
         <RelationshipReportParagraph>{section.currentChallenge}</RelationshipReportParagraph>
         {section.focusAreas.length > 0 ? (
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-rel-ink-mute">
             {t.focusAreasPrefix}
             {section.focusAreas.join(" · ")}
           </p>
@@ -435,7 +450,7 @@ function FamilyRoleCard({ section }: { section: FamilyRoleSection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
-        <p className="flex items-center gap-2 text-lg font-semibold text-white/92">
+        <p className="flex items-center gap-2 text-lg font-semibold text-rel-ink">
           <span
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: `${ACCENT}22`, color: ACCENT }}
@@ -460,7 +475,7 @@ function FilialFrequencyCard({ section }: { section: FilialFrequencySection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
-        <p className="flex items-center gap-2 text-lg font-semibold text-white/92">
+        <p className="flex items-center gap-2 text-lg font-semibold text-rel-ink">
           <TypeIconBadge Icon={FrequencyIcon} />
           {section.frequencyLabel}
         </p>
@@ -503,10 +518,10 @@ function DestinyCard({ section }: { section: DestinySection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-emerald-200/70">
+          <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">
             {t.destinyLayerLabel}
           </p>
-          <p className="mt-1 text-sm text-white/55">{t.destinyLayerHint}</p>
+          <p className="mt-1 text-sm text-rel-ink-mute">{t.destinyLayerHint}</p>
         </div>
         <div>
           <RelationshipReportLabel>{t.harmonyLabel}</RelationshipReportLabel>
@@ -517,7 +532,7 @@ function DestinyCard({ section }: { section: DestinySection }) {
           <RelationshipReportParagraph className="mt-1.5">{section.favoritismWarning}</RelationshipReportParagraph>
         </div>
         {section.parentLensSummary ? (
-          <RelationshipReportParagraph className="italic text-emerald-200/75">
+          <RelationshipReportParagraph className="italic text-emerald-700">
             {section.parentLensSummary}
           </RelationshipReportParagraph>
         ) : null}
@@ -532,10 +547,10 @@ function FilialRewardCard({ section }: { section: FilialRewardSection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-amber-200/70">
+          <p className="text-xs font-medium uppercase tracking-wide text-amber-700">
             {t.filialLayerLabel}
           </p>
-          <p className="mt-1 text-sm text-white/55">{t.filialLayerHint}</p>
+          <p className="mt-1 text-sm text-rel-ink-mute">{t.filialLayerHint}</p>
         </div>
         <RelationshipReportParagraph>{section.futureReward}</RelationshipReportParagraph>
       </RelationshipReportBody>
@@ -548,9 +563,9 @@ function SosScriptCard({ section }: { section: SosScriptSection }) {
     <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
       <RelationshipReportBody>
         <RelationshipReportLabel>{section.triggerLabel}</RelationshipReportLabel>
-        <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-          <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-100/85">
-            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" strokeWidth={1.75} aria-hidden />
+        <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
+          <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-900">
+            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" strokeWidth={1.75} aria-hidden />
             {section.sosLine}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
@@ -572,32 +587,32 @@ function DeEscalationCard({ section }: { section: DeEscalationSection }) {
     >
       <RelationshipReportBody>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-rose-200/70">
+          <p className="text-xs font-medium uppercase tracking-wide text-rose-700">
             {t.deEscalationLayerLabel}
           </p>
-          <p className="mt-1 text-sm text-white/55">{t.deEscalationLayerHint}</p>
+          <p className="mt-1 text-sm text-rel-ink-mute">{t.deEscalationLayerHint}</p>
         </div>
-        <p className="text-lg font-bold text-white/95">{card.hashtag}</p>
-        <p className="text-sm text-white/50">{card.archetype_label}</p>
+        <p className="text-lg font-bold text-rel-ink">{card.hashtag}</p>
+        <p className="text-sm text-rel-ink-mute">{card.archetype_label}</p>
         <div className="mt-4 space-y-3">
           <div>
             <RelationshipReportLabel>{t.whenAngryLabel}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{card.psych_state}</RelationshipReportParagraph>
           </div>
           <div>
-            <RelationshipReportLabel className="text-red-300/80">{t.avoidLabel}</RelationshipReportLabel>
+            <RelationshipReportLabel className="text-red-700">{t.avoidLabel}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{card.avoid_actions}</RelationshipReportParagraph>
           </div>
-          <RelationshipReportInset className="border-emerald-400/20 bg-emerald-950/10">
-            <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-100/85">
-              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" strokeWidth={1.75} aria-hidden />
+          <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
+            <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-900">
+              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" strokeWidth={1.75} aria-hidden />
               {card.solution_script}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
           {card.boundary_script ? (
-            <RelationshipReportInset className="border-sky-400/20 bg-sky-950/10">
-              <RelationshipReportParagraph className="flex items-start gap-2 italic text-sky-100/85">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" strokeWidth={1.75} aria-hidden />
+            <RelationshipReportInset className="border-sky-100 bg-sky-50/60">
+              <RelationshipReportParagraph className="flex items-start gap-2 italic text-sky-900">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" strokeWidth={1.75} aria-hidden />
                 {card.boundary_script}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
@@ -622,10 +637,10 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
   return (
     <div className="space-y-3">
       <div className="px-1">
-        <p className="text-xs font-medium uppercase tracking-wide text-violet-200/70">
+        <p className="text-xs font-medium uppercase tracking-wide text-violet-700">
           {t.prescriptionLayerLabel}
         </p>
-        <p className="mt-1 text-sm text-white/55">{t.prescriptionLayerHint}</p>
+        <p className="mt-1 text-sm text-rel-ink-mute">{t.prescriptionLayerHint}</p>
       </div>
       <PairPrescriptionSection
         pack={pack}
@@ -686,7 +701,7 @@ export function FamilyReportSectionCard({
   }
 }
 
-/** ViewModel 전체를 RelationshipReportLayout에 조립 — production 진입점. */
+/** ViewModel 전체를 editorial hero + chapter shell로 조립 — production 진입점. */
 export function FamilyReportViewModelView({
   vm,
   kindLabel,
@@ -713,17 +728,17 @@ export function FamilyReportViewModelView({
   }));
 
   return (
-    <RelationshipReportLayout
-      kind="family"
-      kindLabel={kindLabel ?? t.defaultKindLabel}
-      headline={{
-        title: vm.opening.headline,
-        subtitle: vm.opening.subtitle,
-        names: vm.opening.names,
-        badge: vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined,
-      }}
-      scores={[]}
+    <div
+      className={`bg-rel-bg font-rel-sans text-rel-ink antialiased ${relSans.variable} ${relSerif.variable}`}
+      lang={isEn ? "en" : "ko"}
     >
+      <FamilyEditorialHero
+        eyebrow={kindLabel ?? t.defaultKindLabel}
+        headline={vm.opening.headline}
+        subtitle={vm.opening.subtitle}
+        names={vm.opening.names}
+        gradeLabel={vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined}
+      />
       {snapshot ? (() => {
         // Defensive: a cached/DB-persisted snapshot may have a missing
         // `narrative` object or an incomplete `topics` array (older payload
@@ -879,17 +894,17 @@ export function FamilyReportViewModelView({
 
           {/* Core Pair Meaning 2: Love Expression vs Reception */}
           {chapter.loveExpressionVsReception ? (
-            <div className="mb-6 rounded-xl border border-pink-400/20 bg-pink-950/20 p-4">
-              <p className="text-xs font-semibold text-pink-300 uppercase tracking-wider">
+            <div className="mb-6 rounded-xl border border-pink-100 bg-pink-50/60 p-4">
+              <p className="text-xs font-semibold text-pink-700 uppercase tracking-wider">
                 ❤️ 사랑의 표현과 수용 · Love Expression & Reception
               </p>
-              <p className="mt-1.5 text-sm font-medium text-white/90">
+              <p className="mt-1.5 text-sm font-medium text-rel-ink">
                 부모의 표현 방식: {chapter.loveExpressionVsReception.parentExpresses}
               </p>
-              <p className="mt-1 text-sm text-white/75">
+              <p className="mt-1 text-sm text-rel-ink-soft">
                 자녀가 느끼는 체감 톤: {chapter.loveExpressionVsReception.childReceives}
               </p>
-              <p className="mt-2 text-xs italic text-pink-200/80">
+              <p className="mt-2 text-xs italic text-pink-700">
                 💬 {chapter.loveExpressionVsReception.summary}
               </p>
             </div>
@@ -1007,8 +1022,8 @@ export function FamilyReportViewModelView({
                   </p>
                   <ul className="space-y-1.5">
                     {chapter.childCoreNeedsDetailed.primaryNeeds.map((need, idx) => (
-                      <li key={idx} className="text-xs text-amber-100 flex items-start gap-1.5">
-                        <span className="font-semibold text-amber-300 shrink-0">[{need.gapStatus}]</span>
+                      <li key={idx} className="text-xs text-rel-ink-soft flex items-start gap-1.5">
+                        <span className="font-semibold text-amber-700 shrink-0">[{need.gapStatus}]</span>
                         <span><strong>{need.label}</strong>: {need.description}</span>
                       </li>
                     ))}
@@ -1018,7 +1033,7 @@ export function FamilyReportViewModelView({
 
               {/* Discrepancy Caution Signal if present */}
               {chapter.childCoreNeedsDetailed?.discrepancySummary ? (
-                <p className="text-xs text-rose-200/80 italic bg-rose-950/20 p-2.5 rounded-lg border border-rose-400/20">
+                <p className="text-xs text-rose-800 italic bg-rose-50/60 p-2.5 rounded-lg border border-rose-100">
                   ⚠️ 참고: {chapter.childCoreNeedsDetailed.discrepancySummary}
                 </p>
               ) : null}
@@ -1038,7 +1053,7 @@ export function FamilyReportViewModelView({
           <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
         ))
       ) : null}
-    </RelationshipReportLayout>
+    </div>
   );
 }
 
