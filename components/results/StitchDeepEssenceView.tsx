@@ -83,7 +83,7 @@ export default function StitchDeepEssenceView({
       ) : null}
 
       <div className="stitch-hero-panel rounded-extra-large p-5 sm:p-6">
-        <div className="max-h-[70vh] overflow-y-auto">
+        <div>
           {hasStructuredReport && validStructured && radarForUi ? (
             <DeepEssenceReport
               structured={validStructured}
