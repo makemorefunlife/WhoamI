@@ -777,30 +777,76 @@ export const messagesEnUS = {
     createRelationship: "Create relationship",
   },
   landing: {
-    heroTitle: "Un-misunderstand yourself.",
-    heroSubtitle: "Gentle with yourself, generous with others.",
+    heroTitle: "Don't misunderstand yourself.",
+    heroSubtitle: "Start by understanding yourself, rather than trying to change yourself",
+    heroSubtitleLine1: "When you understand where you and the other person gain energy and why you clash,",
+    heroSubtitleLine2: "you can choose the method that fits perfectly instead of forcing effort.",
     heroHook:
-      "Stop forcing yourself. Aha It's me! reads the unique nature of you and others, gifting you the effortless, optimal relationship.",
-    philosophyHeadline:
-      "You don't need to force yourself to change.\nEase off, and communicate at your best.",
+      "Aha It's me! reads unique patterns to reduce friction, amplify strengths, and help you make choices that are true to yourself at crucial moments.",
+    heroBody1:
+      "When you understand where you and the other person gain energy and why you clash,\nyou can choose the method that fits perfectly instead of forcing effort.",
+    heroBody2:
+      "Aha It's me! reads unique patterns to reduce friction, amplify strengths, and help you make choices that are true to yourself at crucial moments.",
+    heroCtaText: "Get Started",
+    philosophyEyebrow: "BRAND PHILOSOPHY",
+    philosophyHeadline: "Finding what works for you,\nrather than changing who you are.",
+    philosophySubheadline:
+      "When you know each other's strengths,\nrelationships and choices become much easier.",
     philosophyPoint1:
-      "Why do the same misunderstandings and friction from my communication style keep repeating?",
+      "Were you trying too hard on your own,\ntaking responsibility for things the other person could do well?",
+    philosophyPoint1Highlight: "trying too hard on your own",
     philosophyPoint2:
-      "Have you ever avoided or given up on a relationship, worn down by frustration and being misread?",
+      "Even after trying hard to adapt for the relationship,\nwhy wasn't your true heart communicated clearly?",
+    philosophyPoint2Highlight: "why wasn't your true heart communicated clearly?",
     philosophyPoint3:
-      "Did that cost you an opportunity or a person who truly mattered to you?",
+      "If you could express your thoughts and feelings a little more accurately,\ncould you have held onto more valuable relationships and opportunities?",
+    philosophyPoint3Highlight: "relationships and opportunities",
     philosophySolution:
-      "Stop forcing yourself to change. Once you understand your own nature and the other person's, you can watch out for each other, lean into your strengths, and build the best relationship with the least stress.",
-    personalHeadline: "Have you been at war with yourself?",
+      "The issue wasn't that you didn't try hard enough,\nbut that you didn't yet know the way that works for both of you.",
+    philosophyConclusion:
+      "The issue wasn't that you didn't try hard enough,\nbut that you didn't yet know the way that works for both of you.",
+    philosophyBridge:
+      "First, you need to know exactly who you are.\nComparing your natural way with your current habits,\nyou begin to see why some things come naturally and others feel uniquely exhausting.",
+    personalEyebrow: "PERSONAL ANALYSIS",
+    personalHeadline: "Have you been fighting with yourself?",
+    personalInnateEyebrow: "INNATE",
     personalInnateTitle: "Innate Self",
-    personalInnateDesc:
-      "The baseline you, as written in your innate blueprint — natural and effortless.",
-    personalRealizedTitle: "Realized Self",
+    personalInnateDescLine1: "Your inherent blueprint",
+    personalInnateDescLine2: "Your natural baseline",
+    personalInnateDesc: "Your inherent blueprint\nYour natural baseline",
+    personalCurrentEyebrow: "CURRENT",
+    personalCurrentTitle: "Current Self",
+    personalCurrentDescLine1: "Built through relationships & experiences",
+    personalCurrentDescLine2: "The way you actually operate right now",
+    personalRealizedTitle: "Current Self",
     personalRealizedDesc:
-      "The behavior pattern you actually show now, adjusted by your relationships and roles.",
-    personalGapLabel: "Gap · Unconscious Fatigue & the Energy Divide",
+      "Built through relationships & experiences\nThe way you actually operate right now",
+    personalGapLabel: "GAP · The Divide Between Two Selves",
     personalGapQuote:
-      "“The gap between these two graphs is exactly the source of the fatigue you've felt from pushing yourself too hard.”",
+      "“The greater the difference between your innate nature and current mode, the more exhausting it feels even when doing well.”",
+    personalGapBodyLine1:
+      "The greater the difference between your innate nature and current mode,\nthe more exhausting it feels even when doing well.",
+    personalGapBodyLine2:
+      "Aha It's me! reveals that difference—\nnot to tell you what to change,\nbut where you can ease off your energy.",
+    personalGapBodyLine2Highlight: "where you can ease off your energy.",
+    radarLabels: {
+      structure: "Structure",
+      connection: "Connection",
+      stability: "Stability",
+      growth: "Growth",
+      adaptability: "Adaptability",
+      autonomy: "Autonomy",
+    },
+    relBridgeEyebrow: "FROM ME TO US",
+    relBridgeHeadline: "Once you understand yourself,\nyou begin to see the other person differently.",
+    relBridgeSupporting: "Even in the same situation,\nyou and the other person can feel and react differently.",
+    relBridgePersonA: "My Mode (ME)",
+    relBridgePersonB: "Their Mode (YOU)",
+    relBridgeSampleBadge: "Sample Demo Data",
+    relBridgeStatement: "The more you understand the other person,\nthe more you see in your relationship.",
+    relBridgeStatementSupporting:
+      "When you know each other's strengths and friction points,\nyou don't have to force yourself to adapt—\nyou can find a better way that truly fits.",
+    relBridgeHighlight: "find a better way that truly fits",
     personalCta: "See My Personal Analysis",
     reportsHeadline: "A clear guide tailored to the relationship in front of you",
     reportsCtaLabel: "View report",
@@ -822,32 +868,28 @@ export const messagesEnUS = {
     reportsStartTitle: "Get Started",
     reportsStartDesc: "Pick a relationship, and lay both of your natures side by side.",
     reportsStartCta: "Start Relationship Analysis",
-    frameworkHeadline:
-      "The Scientific Sanctuary: 3 principles for lasting relationship balance",
-    frameworkStep1Desc:
-      "Map your cognitive biases and take apart the stories you keep telling yourself.",
-    frameworkStep2Desc:
-      "Integrate your insights into everyday language and habits through guided journaling.",
-    frameworkStep3Desc:
-      "Feed your reactions within relationships back into the loop, tuning synergy over time.",
-    reportSampleTitle: "Innate You vs. Realized You",
-    reportSampleLegendInnate: "Innate Self",
-    reportSampleLegendRealized: "Realized Self",
-    reportSampleFootnote:
-      "The gap between your innate blueprint and your current behavioral data is exactly where relationship friction happens.",
-    reportSampleAxis1: "Emotional Expression",
-    reportSampleAxis2: "Decision Speed",
-    reportSampleAxis3: "Conflict Response",
-    reportSampleAxis4: "Openness to Intimacy",
-    reportSampleAxis5: "Structural Preference",
-    journalHeadline: "Beyond analysis, into the record of your life — [Decision Journal]",
-    journalDesc:
-      "A metacognitive space for logging and revisiting the big and small choices of everyday life, built on the insight from your report.",
-    journalSampleChoice: "Today's choice: I waited it out instead of speaking up first.",
-    journalSampleEmotion: "How I felt — cautious, a little restless",
-    journalSampleInnate: "My innate self would have — named the feeling first",
-    journalSampleRetry: "If I could redo it — just offer one sentence first",
-    journalCta: "Preview the Decision Journal",
+    frameworkEyebrow: "PRINCIPLES",
+    frameworkHeadline: "Understand yourself, read your relationships,\nand make choices that are true to you",
+    frameworkStep1Title: "Discover Your Inherent Self",
+    frameworkStep1Desc: "Understand the sources of your internal comfort and friction.",
+    frameworkStep1Tag: "Self Discovery",
+    frameworkStep2Title: "Embrace Differences",
+    frameworkStep2Desc: "Understand each other's ways without forcing change.",
+    frameworkStep2Tag: "Understanding Others",
+    frameworkStep3Title: "Find the Optimal Path",
+    frameworkStep3Desc: "Choose tailored communication instead of exhausting conflicts.",
+    frameworkStep3Tag: "Optimal Choice",
+    frameworkStep4Title: "Grow Together Through Reflection",
+    frameworkStep4Desc: "Reflect on daily choices to build deeper understanding.",
+    frameworkStep4Tag: "Continuous Growth",
+    journalEyebrow: "DECISION JOURNAL",
+    journalHeadline: "As your choices accumulate,\nyou come to know yourself better.",
+    journalBody:
+      "Log your important choices and feelings in the moment, then review the outcomes.\nAha It's me! reads those records together to help you discover the decision pattern that works best for you.",
+    journalCta: "Start Decision Journal",
+    journalClosing: "Today's choice becomes the data to understand tomorrow's self.",
+    footerPhilosophy: "Don't misunderstand yourself—\nunderstand yourself.",
+    footerDesc: "Using scientific data to build a better perspective for understanding yourself and your relationships.",
     footerTagline:
       "Architecting psychological equilibrium through scientific discovery and empathetic design.",
     authModalTitle: "Continue your journey",
@@ -2041,19 +2083,59 @@ export type MessageCatalog = {
   landing: {
     heroTitle: string;
     heroSubtitle: string;
+    heroSubtitleLine1: string;
+    heroSubtitleLine2: string;
     heroHook: string;
+    heroBody1: string;
+    heroBody2: string;
+    heroCtaText: string;
+    philosophyEyebrow: string;
     philosophyHeadline: string;
+    philosophySubheadline: string;
     philosophyPoint1: string;
+    philosophyPoint1Highlight: string;
     philosophyPoint2: string;
+    philosophyPoint2Highlight: string;
     philosophyPoint3: string;
+    philosophyPoint3Highlight: string;
     philosophySolution: string;
+    philosophyConclusion: string;
+    philosophyBridge: string;
+    personalEyebrow: string;
     personalHeadline: string;
+    personalInnateEyebrow: string;
     personalInnateTitle: string;
+    personalInnateDescLine1: string;
+    personalInnateDescLine2: string;
     personalInnateDesc: string;
+    personalCurrentEyebrow: string;
+    personalCurrentTitle: string;
+    personalCurrentDescLine1: string;
+    personalCurrentDescLine2: string;
     personalRealizedTitle: string;
     personalRealizedDesc: string;
     personalGapLabel: string;
     personalGapQuote: string;
+    personalGapBodyLine1: string;
+    personalGapBodyLine2: string;
+    personalGapBodyLine2Highlight: string;
+    radarLabels: {
+      structure: string;
+      connection: string;
+      stability: string;
+      growth: string;
+      adaptability: string;
+      autonomy: string;
+    };
+    relBridgeEyebrow: string;
+    relBridgeHeadline: string;
+    relBridgeSupporting: string;
+    relBridgePersonA: string;
+    relBridgePersonB: string;
+    relBridgeSampleBadge: string;
+    relBridgeStatement: string;
+    relBridgeStatementSupporting: string;
+    relBridgeHighlight: string;
     personalCta: string;
     reportsHeadline: string;
     reportsCtaLabel: string;
@@ -2070,26 +2152,27 @@ export type MessageCatalog = {
     reportsStartTitle: string;
     reportsStartDesc: string;
     reportsStartCta: string;
+    frameworkEyebrow: string;
     frameworkHeadline: string;
+    frameworkStep1Title: string;
     frameworkStep1Desc: string;
+    frameworkStep1Tag: string;
+    frameworkStep2Title: string;
     frameworkStep2Desc: string;
+    frameworkStep2Tag: string;
+    frameworkStep3Title: string;
     frameworkStep3Desc: string;
-    reportSampleTitle: string;
-    reportSampleLegendInnate: string;
-    reportSampleLegendRealized: string;
-    reportSampleFootnote: string;
-    reportSampleAxis1: string;
-    reportSampleAxis2: string;
-    reportSampleAxis3: string;
-    reportSampleAxis4: string;
-    reportSampleAxis5: string;
+    frameworkStep3Tag: string;
+    frameworkStep4Title: string;
+    frameworkStep4Desc: string;
+    frameworkStep4Tag: string;
+    journalEyebrow: string;
     journalHeadline: string;
-    journalDesc: string;
-    journalSampleChoice: string;
-    journalSampleEmotion: string;
-    journalSampleInnate: string;
-    journalSampleRetry: string;
+    journalBody: string;
     journalCta: string;
+    journalClosing: string;
+    footerPhilosophy: string;
+    footerDesc: string;
     footerTagline: string;
     authModalTitle: string;
     authModalBody: string;

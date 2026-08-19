@@ -1,53 +1,70 @@
-const AXES = [
-  { label: "Structure", innate: 92, realized: 62 },
-  { label: "Connection", innate: 78, realized: 66 },
-  { label: "Stability", innate: 95, realized: 60 },
-  { label: "Growth", innate: 84, realized: 70 },
-  { label: "Adaptability", innate: 74, realized: 64 },
-  { label: "Autonomy", innate: 88, realized: 58 },
+export type RadarLabels = {
+  structure: string;
+  connection: string;
+  stability: string;
+  growth: string;
+  adaptability: string;
+  autonomy: string;
+};
+
+const AXES_DATA = [
+  { key: "structure", defaultLabel: "Structure", innate: 92, realized: 62 },
+  { key: "connection", defaultLabel: "Connection", innate: 78, realized: 66 },
+  { key: "stability", defaultLabel: "Stability", innate: 95, realized: 60 },
+  { key: "growth", defaultLabel: "Growth", innate: 84, realized: 70 },
+  { key: "adaptability", defaultLabel: "Adaptability", innate: 74, realized: 64 },
+  { key: "autonomy", defaultLabel: "Autonomy", innate: 88, realized: 58 },
 ] as const;
 
-const SIZE = 320;
+const SIZE = 360;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const R = 108;
 
 function point(i: number, value: number) {
-  const angle = (Math.PI * 2 * i) / AXES.length - Math.PI / 2;
+  const angle = (Math.PI * 2 * i) / AXES_DATA.length - Math.PI / 2;
   const r = (value / 100) * R;
   return [CX + r * Math.cos(angle), CY + r * Math.sin(angle)] as const;
 }
 
 function polygon(key: "innate" | "realized") {
-  return AXES.map((a, i) => point(i, a[key]).join(",")).join(" ");
+  return AXES_DATA.map((a, i) => point(i, a[key]).join(",")).join(" ");
 }
 
-/** Hero용 정적 데모 레이더 — Innate(본질의 나) vs Realized(관계 속의 나) */
-export default function StitchPersonalRadar() {
+type Props = {
+  labels?: RadarLabels;
+};
+
+/** Hero용 정적 데모 레이더 — Innate(본래의 나) vs Current(지금의 나) */
+export default function StitchPersonalRadar({ labels }: Props) {
+  const axes = AXES_DATA.map((item) => ({
+    ...item,
+    label: labels ? labels[item.key as keyof RadarLabels] : item.defaultLabel,
+  }));
+
   return (
     <figure className="w-full">
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         role="img"
-        aria-label="Innate vs Realized 6-axis comparison radar chart"
-        className="mx-auto w-full max-w-[22rem]"
+        aria-label="Innate vs Current 6-axis comparison radar chart"
+        className="mx-auto w-full max-w-[24rem]"
       >
         {[100, 75, 50, 25].map((ring) => (
           <polygon
             key={ring}
-            points={AXES.map((_, i) => point(i, ring).join(",")).join(" ")}
+            points={axes.map((_, i) => point(i, ring).join(",")).join(" ")}
             fill="none"
             stroke="currentColor"
             className="text-outline-variant"
             strokeWidth="1"
           />
         ))}
-        {AXES.map((a) => {
-          const i = AXES.indexOf(a);
+        {axes.map((a, i) => {
           const [x, y] = point(i, 100);
           return (
             <line
-              key={a.label}
+              key={a.key}
               x1={CX}
               y1={CY}
               x2={x}
@@ -69,26 +86,26 @@ export default function StitchPersonalRadar() {
           className="fill-accent-emerald/20 stroke-accent-emerald"
           strokeWidth="2"
         />
-        {AXES.map((a, i) => {
+        {axes.map((a, i) => {
           const [ix, iy] = point(i, a.innate);
           const [rx, ry] = point(i, a.realized);
           return (
-            <g key={`dots-${a.label}`}>
+            <g key={`dots-${a.key}`}>
               <circle cx={ix} cy={iy} r="3.5" className="fill-accent-rose" />
               <circle cx={rx} cy={ry} r="3.5" className="fill-accent-emerald" />
             </g>
           );
         })}
-        {AXES.map((a, i) => {
-          const [x, y] = point(i, 132);
+        {axes.map((a, i) => {
+          const [x, y] = point(i, 130);
           return (
             <text
-              key={`label-${a.label}`}
+              key={`label-${a.key}`}
               x={x}
               y={y}
-              textAnchor={x > CX + 4 ? "start" : x < CX - 4 ? "end" : "middle"}
+              textAnchor={x > CX + 6 ? "start" : x < CX - 6 ? "end" : "middle"}
               dominantBaseline="middle"
-              className="fill-on-surface-variant text-[9px]"
+              className="fill-on-surface-variant text-[11px] font-medium"
             >
               {a.label}
             </text>
