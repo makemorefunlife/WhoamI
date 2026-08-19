@@ -142,16 +142,11 @@ export default function StitchScrollDock({
 
   const evaluateVisibility = useCallback(() => {
     const y = window.scrollY;
-    const delta = y - lastScrollY.current;
-
-    if (y <= TOP_HIDE_Y) {
-      setVisible(false);
-    } else if (delta > SCROLL_DOWN_THRESHOLD) {
+    if (y > 80) {
       setVisible(true);
-    } else if (delta < -SCROLL_DOWN_THRESHOLD) {
+    } else {
       setVisible(false);
     }
-
     lastScrollY.current = y;
     ticking.current = false;
   }, []);
