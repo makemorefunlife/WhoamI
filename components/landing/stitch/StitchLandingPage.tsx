@@ -64,13 +64,13 @@ function renderFormattedText(text?: string, highlightSubstr?: string) {
   if (!text) return null;
   const lines = text.split("\n");
   return lines.map((line, lIdx) => {
-    const parts = line.split(/(Aha It's me!)/g);
+    const parts = line.split(/(Aha It['’]s me!?|AHA IT['’]S ME!?)/gi);
     return (
       <span key={lIdx} className={lIdx > 0 ? "block mt-1" : "block"}>
         {parts.map((part, pIdx) => {
-          if (part === "Aha It's me!") {
+          if (/^Aha It['’]s me!?$/i.test(part.trim())) {
             return (
-              <span key={pIdx} className="font-semibold text-primary">
+              <span key={pIdx} className="font-bold text-primary">
                 {part}
               </span>
             );
@@ -81,7 +81,7 @@ function renderFormattedText(text?: string, highlightSubstr?: string) {
               <span key={sIdx}>
                 {sp}
                 {sIdx < subParts.length - 1 ? (
-                  <span className="font-medium text-primary">
+                  <span className="font-semibold text-primary">
                     {highlightSubstr}
                   </span>
                 ) : null}
@@ -181,7 +181,7 @@ export default function StitchLandingPage({
                 <div className="mb-4 flex justify-center">
                   <Logo size={42} href={localize("/")} priority />
                 </div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent-emerald">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
                   AHA IT&apos;S ME
                 </p>
                 {/* 메인 타이틀 (H1) */}
