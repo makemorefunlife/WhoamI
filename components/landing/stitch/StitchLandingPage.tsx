@@ -229,13 +229,13 @@ export default function StitchLandingPage({
             </h2>
           </div>
 
-          <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-4 sm:p-6 shadow-sm overflow-hidden flex justify-center">
+          <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 sm:p-10 shadow-sm flex justify-center items-center">
             <Image
-              src="/landing/principles-kr.jpg"
+              src="/landing/principles-kr.png"
               alt="지속 가능한 관계 균형을 위한 4가지 단계 (자아 이해 - 타인 이해 - 더 나은 선택 - 결정 회고)"
               width={1024}
-              height={572}
-              className="w-full h-auto rounded-2xl object-contain max-w-4xl"
+              height={500}
+              className="w-full h-auto object-contain max-w-4xl"
               priority
             />
           </div>

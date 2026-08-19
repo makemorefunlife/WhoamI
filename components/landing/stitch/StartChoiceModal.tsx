@@ -39,10 +39,10 @@ export default function StartChoiceModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-end justify-center p-4 sm:items-center">
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center p-4 sm:items-center">
       <button
         type="button"
-        className="absolute inset-0 bg-primary/30 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-primary/40 backdrop-blur-sm transition-opacity"
         aria-label={messages.common.close}
         onClick={onClose}
       />
@@ -53,7 +53,7 @@ export default function StartChoiceModal({
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 16, scale: 0.98 }}
-        className="relative z-[111] w-full max-w-md rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-2xl sm:p-8"
+        className="relative z-[10000] w-full max-w-md rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-2xl sm:p-8"
       >
         <div className="flex items-center justify-between mb-3">
           <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold text-secondary uppercase tracking-wider">
