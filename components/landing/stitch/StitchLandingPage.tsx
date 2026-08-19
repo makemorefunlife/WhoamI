@@ -229,15 +229,94 @@ export default function StitchLandingPage({
             </h2>
           </div>
 
-          <div className="flex justify-center w-full">
-            <Image
-              src="/landing/principles-kr.jpg"
-              alt="지속 가능한 관계 균형을 위한 4가지 단계 (자아 이해 - 타인 이해 - 더 나은 선택 - 결정 회고)"
-              width={1024}
-              height={572}
-              className="w-full h-auto rounded-extra-extra-large border border-outline-variant/30 shadow-sm object-contain max-w-4xl"
-              priority
-            />
+          <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 sm:p-8 shadow-sm text-left">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 relative">
+              {/* Card 01 */}
+              <div className="rounded-2xl bg-[#113328] p-5 text-center text-[#fffdf8] shadow-md flex flex-col items-center justify-between min-h-[210px] border border-[#d4af37]/30">
+                <div>
+                  <span className="text-xs font-bold tracking-widest text-[#e5c158]/80 block mb-1">01</span>
+                  <h4 className="text-base sm:text-lg font-bold text-[#fffdf8]">
+                    {messages.landing.frameworkStep1Title || "자아 이해"}
+                  </h4>
+                </div>
+                <div className="my-3 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#163e30] border border-[#e5c158]/40 flex items-center justify-center shadow-inner">
+                  <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[#e5c158]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
+                    <path d="M14 13.12c0 2.38 0 3.38-.4 4.88" />
+                    <path d="M17.29 21.02c.12-.6.43-2.3.43-5.02 0-3.31-2.69-6-6-6s-6 2.69-6 6c0 .87.08 1.8.23 2.62" />
+                    <path d="M8.58 19.38c.67.67 1.8 1.62 3.42 1.62 1.48 0 2.54-.7 3.31-1.39" />
+                    <path d="M20.56 18.06A9.97 9.97 0 0 0 21 16c0-4.97-4.03-9-9-9s-9 4.03-9 9c0 1.34.29 2.61.82 3.76" />
+                    <path d="M6 10a6 6 0 0 1 12 0c0 .9-.12 1.83-.34 2.7" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium text-[#e5c158]/90 tracking-tight">
+                  {messages.landing.frameworkStep1Desc || "(천성 vs 실현)"}
+                </span>
+              </div>
+
+              {/* Card 02 */}
+              <div className="rounded-2xl bg-[#113328] p-5 text-center text-[#fffdf8] shadow-md flex flex-col items-center justify-between min-h-[210px] border border-[#d4af37]/30">
+                <div>
+                  <span className="text-xs font-bold tracking-widest text-[#e5c158]/80 block mb-1">02</span>
+                  <h4 className="text-base sm:text-lg font-bold text-[#fffdf8]">
+                    {messages.landing.frameworkStep2Title || "타인 이해"}
+                  </h4>
+                </div>
+                <div className="my-3 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#163e30] border border-[#e5c158]/40 flex items-center justify-center shadow-inner">
+                  <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[#e5c158]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium text-[#e5c158]/90 tracking-tight">
+                  {messages.landing.frameworkStep2Desc || "(관계 패턴)"}
+                </span>
+              </div>
+
+              {/* Card 03 */}
+              <div className="rounded-2xl bg-[#113328] p-5 text-center text-[#fffdf8] shadow-md flex flex-col items-center justify-between min-h-[210px] border border-[#d4af37]/30">
+                <div>
+                  <span className="text-xs font-bold tracking-widest text-[#e5c158]/80 block mb-1">03</span>
+                  <h4 className="text-base sm:text-lg font-bold text-[#fffdf8]">
+                    {messages.landing.frameworkStep3Title || "더 나은 선택"}
+                  </h4>
+                </div>
+                <div className="my-3 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#163e30] border border-[#e5c158]/40 flex items-center justify-center shadow-inner">
+                  <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[#e5c158]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                    <line x1="12" y1="2" x2="12" y2="4" />
+                    <line x1="12" y1="20" x2="12" y2="22" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium text-[#e5c158]/90 tracking-tight">
+                  {messages.landing.frameworkStep3Desc || "(시너지 & 강점)"}
+                </span>
+              </div>
+
+              {/* Card 04 */}
+              <div className="rounded-2xl bg-[#113328] p-5 text-center text-[#fffdf8] shadow-md flex flex-col items-center justify-between min-h-[210px] border border-[#d4af37]/30">
+                <div>
+                  <span className="text-xs font-bold tracking-widest text-[#e5c158]/80 block mb-1">04</span>
+                  <h4 className="text-base sm:text-lg font-bold text-[#fffdf8]">
+                    {messages.landing.frameworkStep4Title || "결정 회고"}
+                  </h4>
+                </div>
+                <div className="my-3 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#163e30] border border-[#e5c158]/40 flex items-center justify-center shadow-inner">
+                  <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[#e5c158]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    <path d="M18 12a6 6 0 1 1-6-6" />
+                    <polyline points="18 9 18 12 15 12" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium text-[#e5c158]/90 tracking-tight">
+                  {messages.landing.frameworkStep4Desc || "(성장 & 패턴)"}
+                </span>
+              </div>
+            </div>
           </div>
         </section>
 
