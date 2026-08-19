@@ -67,7 +67,7 @@ export default function StitchFixedHeader({
         <div className="relative mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-primary transition hover:bg-surface-container-low active:scale-95"
+            className="relative z-30 flex h-10 w-10 items-center justify-center rounded-xl text-primary transition hover:bg-surface-container-low active:scale-95 cursor-pointer"
             aria-label={messages.header.openMenu}
             aria-expanded={sideOpen}
             aria-controls="stitch-side-menu"
