@@ -142,7 +142,7 @@ export default function StitchScrollDock({
 
   const evaluateVisibility = useCallback(() => {
     const y = window.scrollY;
-    if (y > 80) {
+    if (y > 20) {
       setVisible(true);
     } else {
       setVisible(false);
@@ -153,7 +153,7 @@ export default function StitchScrollDock({
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
-    setVisible(false);
+    evaluateVisibility();
 
     const onScroll = () => {
       if (ticking.current) return;

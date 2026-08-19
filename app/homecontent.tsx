@@ -233,15 +233,31 @@ export default function HomeContent() {
       const reportIdHint =
         resume.reportId?.trim() || getCachedReportId() || undefined;
 
-      if (
-        isSignedIn &&
-        (intent === "relationships" || intent === "blueprint")
-      ) {
-        const href = await resolveHubHrefForIntent(intent, {
-          urlHint: reportIdHint,
-          isSignedIn: true,
-        });
-        router.push(localize(href));
+      if (intent === "blueprint") {
+        if (isSignedIn) {
+          const href = await resolveHubHrefForIntent("blueprint", {
+            urlHint: reportIdHint,
+            isSignedIn: true,
+          });
+          router.push(localize(href));
+        } else if (reportIdHint) {
+          router.push(localize(blueprintPath(reportIdHint)));
+        } else {
+          await createReportAndSurvey();
+        }
+        return;
+      }
+
+      if (intent === "relationships") {
+        if (isSignedIn) {
+          const href = await resolveHubHrefForIntent("relationships", {
+            urlHint: reportIdHint,
+            isSignedIn: true,
+          });
+          router.push(localize(href));
+        } else {
+          router.push(localize(relationHubPath(reportIdHint || "")));
+        }
         return;
       }
 
