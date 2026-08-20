@@ -354,17 +354,16 @@ export default function StitchLandingPage({
                 </li>
               ))}
             </ul>
-            <div className="mt-8 border-t border-outline-variant/30 pt-6">
+            <div className="mt-8 border-t border-outline-variant/30 pt-6 space-y-6">
               <p className="text-sm sm:text-base leading-relaxed text-primary/90 whitespace-pre-line font-medium text-left">
                 {renderFormattedText(messages.landing.philosophyConclusion)}
               </p>
+              <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 p-6 text-left">
+                <p className="text-base sm:text-lg leading-relaxed text-on-surface-variant whitespace-pre-line font-normal">
+                  {renderFormattedText(messages.landing.philosophyBridge)}
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="mt-12 mx-auto max-w-xl text-center px-4">
-            <p className="text-base sm:text-lg leading-relaxed text-on-surface-variant whitespace-pre-line">
-              {renderFormattedText(messages.landing.philosophyBridge)}
-            </p>
           </div>
         </section>
 
