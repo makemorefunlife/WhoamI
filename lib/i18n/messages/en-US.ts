@@ -572,9 +572,51 @@ export const messagesEnUS = {
   },
   faq: {
     title: "Frequently asked questions",
-    body: "FAQ content is coming soon.",
+    body: "Answers to the questions we hear most often.",
     metaTitle: "FAQ | Aha It's me!",
-    metaDescription: "Answers to common questions about Aha It's me! — coming soon.",
+    metaDescription: "Answers to common questions about Aha It's me! — pricing, privacy, refunds, and how the analysis works.",
+    items: [
+      {
+        question: "What is Aha It's me!?",
+        answer:
+          "Aha It's me! helps you understand your own patterns, your relationships, and the choices you make. It starts with a short survey and your birth details, then builds a personal Blueprint and relationship reports you can use with the people around you.",
+      },
+      {
+        question: "How does the analysis work?",
+        answer:
+          "You complete a 10-question survey and provide your birth date (and time and place, if known). We combine that with pattern analysis to build a 6-axis Blueprint — a picture of your innate tendencies versus how you actually show up day to day.",
+      },
+      {
+        question: "Do I need to know my exact birth time?",
+        answer:
+          "No. If you don't know your birth time, we calculate your analysis using noon as a default — you can still get a full Blueprint.",
+      },
+      {
+        question: "Can I change my birth date after I've entered it?",
+        answer:
+          "Yes, once. Your birth date can be corrected a single time from your account settings; after that, further changes require contacting support.",
+      },
+      {
+        question: "Is the Starter plan really free?",
+        answer:
+          "Yes. The Starter plan — the 10-question survey, a 6-axis Lite Blueprint, a basic relationship snapshot, and a Decision helper trial — is free to use right now. The Explorer and Navigator plans shown on our Pricing page are coming soon.",
+      },
+      {
+        question: "What data do you collect, and is it safe?",
+        answer:
+          "We collect your account info, the birth details you provide (for yourself and, if applicable, for people you analyze relationships with), and standard usage data like IP address and device info. Payment is handled by Paddle — we don't store your full card details. See our Privacy Policy for the complete list.",
+      },
+      {
+        question: "What's your refund policy?",
+        answer:
+          "You can get a full refund within 7 days of purchase if you haven't yet generated or viewed any AI report. Once a report has been generated, it's considered delivered and generally isn't refundable under applicable e-commerce law. See our Refund Policy for details.",
+      },
+      {
+        question: "How do I get in touch, or request something like data deletion?",
+        answer:
+          "Email us at hong@ahaitsme.com. California residents can also submit a “Do Not Sell My Personal Information” request from our Do Not Sell page.",
+      },
+    ],
   },
   contact: {
     title: "Contact us",
@@ -1904,6 +1946,7 @@ export type MessageCatalog = {
     body: string;
     metaTitle: string;
     metaDescription: string;
+    items: { question: string; answer: string }[];
   };
   contact: {
     title: string;
