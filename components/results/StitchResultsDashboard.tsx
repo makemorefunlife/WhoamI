@@ -12,7 +12,11 @@ import AxisSummaryCards from "@/components/v2/AxisSummaryCards";
 import StitchFreeSticker from "@/components/results/StitchFreeSticker";
 import StitchLiteResultPanel from "@/components/results/StitchLiteResultPanel";
 import StitchPremiumCard from "@/components/results/StitchPremiumCard";
-import { PRIMARY_AXIS_ORDER } from "@/lib/v2/framework/axisLabels";
+import {
+  PRIMARY_AXIS_EN_LABELS,
+  PRIMARY_AXIS_LABELS,
+  PRIMARY_AXIS_ORDER,
+} from "@/lib/v2/framework/axisLabels";
 import { buildOverallAxisSummary } from "@/lib/v2/framework/axisInterpretation";
 import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
@@ -78,7 +82,7 @@ export default function StitchResultsDashboard({
 }) {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const [activeTab, setActiveTab] = useState<LiteTab | null>(null);
 
   const isGuest = isLoaded && !user;
@@ -162,8 +166,10 @@ export default function StitchResultsDashboard({
           current={current.primary_axes}
           essence={essence.primary_axes}
           theme={STITCH_RADAR_THEME}
+          axisLabels={locale === "ko-KR" ? PRIMARY_AXIS_LABELS : PRIMARY_AXIS_EN_LABELS}
           currentLabel={messages.report.currentStateLabel}
           essenceLabel={messages.report.essencePotentialLabel}
+          hintText={locale === "ko-KR" ? "각 축을 눌러 의미를 확인해보세요." : "Tap an axis label to see what it means"}
         />
       </section>
 
@@ -172,13 +178,14 @@ export default function StitchResultsDashboard({
           scores={current.primary_axes}
           axisOrder={PRIMARY_AXIS_ORDER}
           title={messages.report.currentStateAxisSummaryTitle}
+          locale={locale}
         />
         <div className="rounded-2xl border border-outline-variant/35 bg-surface-container-low/40 px-4 py-3.5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant">
             {messages.report.overallSummary}
           </p>
           <p className="mt-2 text-sm leading-relaxed text-on-surface">
-            {buildOverallAxisSummary(current.primary_axes, PRIMARY_AXIS_ORDER)}
+            {buildOverallAxisSummary(current.primary_axes, PRIMARY_AXIS_ORDER, locale)}
           </p>
         </div>
       </section>

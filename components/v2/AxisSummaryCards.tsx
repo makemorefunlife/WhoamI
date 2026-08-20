@@ -13,12 +13,15 @@ import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 function AxisSummaryCard({
   axisKey,
   score,
+  locale,
 }: {
   axisKey: PrimaryAxisKey;
   score: number;
+  locale?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const label = PRIMARY_AXIS_EN_LABELS[axisKey];
+  const isKo = locale === "ko-KR";
+  const label = isKo ? primaryAxisKoLabel(axisKey) : PRIMARY_AXIS_EN_LABELS[axisKey];
 
   return (
     <button
@@ -34,20 +37,14 @@ function AxisSummaryCard({
             {score}
           </p>
         </div>
-        <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-on-surface-variant/60">
-          {expanded ? "Less" : "More"}
-        </span>
       </div>
       <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">
-        {buildAxisShortInterpretation(axisKey, score)}
+        {buildAxisShortInterpretation(axisKey, score, locale)}
       </p>
       {expanded ? (
         <div className="mt-3 border-t border-outline-variant/30 pt-3">
           <p className="text-sm leading-relaxed text-on-surface">
             {primaryAxisDescription(axisKey)}
-          </p>
-          <p className="mt-2 text-[11px] text-on-surface-variant/70">
-            {primaryAxisKoLabel(axisKey)}
           </p>
         </div>
       ) : null}
@@ -59,17 +56,24 @@ export default function AxisSummaryCards({
   scores,
   axisOrder = PRIMARY_AXIS_ORDER,
   title = "Axis summary",
+  locale,
 }: {
   scores: PrimaryAxesScores;
   axisOrder?: PrimaryAxisKey[];
   title?: string;
+  locale?: string;
 }) {
   return (
     <section className="space-y-3">
       <h3 className="text-sm font-semibold text-primary">{title}</h3>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {axisOrder.map((key) => (
-          <AxisSummaryCard key={key} axisKey={key} score={scores[key]} />
+          <AxisSummaryCard
+            key={key}
+            axisKey={key}
+            score={scores[key]}
+            locale={locale}
+          />
         ))}
       </div>
     </section>

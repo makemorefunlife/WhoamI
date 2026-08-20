@@ -132,7 +132,7 @@ export default function StitchLiteResultPanel({
               ]}
               locale={locale}
               t={t}
-              onUpsellClick={goToDeepReport}
+              showUpsell={false}
             />
           ) : null}
         </>
@@ -161,7 +161,7 @@ export default function StitchLiteResultPanel({
               sections={essenceSections}
               locale={locale}
               t={t}
-              onUpsellClick={goToDeepReport}
+              showUpsell={false}
             />
           ) : null}
         </>

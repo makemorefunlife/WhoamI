@@ -9,9 +9,9 @@ import {
 } from "@/lib/v2/framework/axisLabels";
 import type { PrimaryAxisKey, PrimaryAxesScores } from "@/lib/v2/survey/types";
 
-const SIZE = 300;
+const SIZE = 320;
 const CENTER = SIZE / 2;
-const RADIUS = 112;
+const RADIUS = 105;
 
 export const BLUEPRINT_CURRENT_STROKE = "#7B9BFF";
 export const BLUEPRINT_CURRENT_FILL = "rgba(123, 155, 255, 0.22)";
@@ -176,6 +176,7 @@ export default function DualAxisRadarChart({
   currentLabel = "Current",
   essenceLabel = "Essence",
   interactiveLabels = true,
+  hintText = "Tap an axis label to see what it means",
 }: {
   current: PrimaryAxesScores;
   essence: PrimaryAxesScores;
@@ -185,6 +186,7 @@ export default function DualAxisRadarChart({
   currentLabel?: string;
   essenceLabel?: string;
   interactiveLabels?: boolean;
+  hintText?: string;
 }) {
   const gridLevels = [20, 40, 60, 80, 100];
   const [activeAxis, setActiveAxis] = useState<PrimaryAxisKey | null>(null);
@@ -323,7 +325,7 @@ export default function DualAxisRadarChart({
         />
       ) : interactiveLabels ? (
         <p className="mt-2 text-center text-[10px] text-on-surface-variant/70">
-          Tap an axis label to see what it means
+          {hintText}
         </p>
       ) : null}
 
