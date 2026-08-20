@@ -444,3 +444,95 @@ describe("Case G — locale regression: synthesis schema/instructions are presen
     assert.ok(!withoutField.includes("layered_identity.synthesis"));
   });
 });
+
+describe("Personal Premium V3 Batch 2 — Part 02 Layered Identity Contracts", () => {
+  it("A. Four-layer structure + synthesis preserved in prompt schema and instructions", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const grounded = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "ko-KR",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(grounded.includes("first_impression"));
+    assert.ok(grounded.includes("known_self"));
+    assert.ok(grounded.includes("close_private_self"));
+    assert.ok(grounded.includes("natural_self_and_deep_needs"));
+    assert.ok(grounded.includes("synthesis"));
+  });
+
+  it("B. Enforces strict zero-advice ban in layered_identity instructions", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const promptText = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "ko-KR",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(promptText.includes("ZERO ADVICE BAN"));
+    assert.ok(promptText.includes("FORBIDDEN: ~하세요, ~해보세요"));
+  });
+
+  it("C. Guards against generic title labels and true self phrase family", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const promptText = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "ko-KR",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(promptText.includes("FORBIDDEN titles in any layer"));
+    assert.ok(promptText.includes("자유로운 영혼"));
+    assert.ok(promptText.includes("진정한 나"));
+  });
+
+  it("D. Requires 3 movements, contrast requirement, and anti-repetition across layers", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const promptText = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "ko-KR",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(promptText.includes("Structure each layer body with 3 movements"));
+    assert.ok(promptText.includes("CONTRAST REQUIREMENT"));
+    assert.ok(promptText.includes("ANTI-REPETITION"));
+  });
+
+  it("E. Synthesis requires 1 strong paragraph explaining progression across distance", () => {
+    const packet = buildFixturePacket("known_time");
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    const promptText = buildDeepEssenceStructuredPartAUserPrompt({
+      ...BASE_PROMPT_INPUT,
+      locale: "ko-KR",
+      part01Evidence: groundedEvidenceInput(promptEvidence),
+    });
+    assert.ok(promptText.includes("1 strong paragraph (4-6 sentences) answering: \"WHY can these different versions of me all be true?\""));
+    assert.ok(promptText.includes("Public surface -> Everyday operating self -> Private self -> Natural inner orientation"));
+  });
+
+  it("F. Preserves evidence_refs on all four coerced layers + synthesis", () => {
+    const rawReport = {
+      summary: { core_mode: "Core", energy_balance: "50/50", growth_edge: "Edge" },
+      radar_potential: floor,
+      strengths: [{ title: "S1", body: "B1" }, { title: "S2", body: "B2" }, { title: "S3", body: "B3" }],
+      watchouts: [{ title: "W1", body: "B1" }, { title: "W2", body: "B2" }, { title: "W3", body: "B3" }],
+      energy: { headline: "H", balance_pct: 50, bars: [], summary: "S", fuels: [], drains: [], optimal: [] },
+      layered_identity: {
+        first_impression: { title: "T1", narrative: "N1", evidence_refs: ["pillars.month.branch_ten_god"] },
+        known_self: { title: "T2", narrative: "N2", evidence_refs: ["day_master"] },
+        close_private_self: { title: "T3", narrative: "N3", evidence_refs: ["pillars.day.branch"] },
+        natural_self_and_deep_needs: { title: "T4", narrative: "N4", evidence_refs: ["strength"] },
+        synthesis: { narrative: "N_syn", evidence_refs: ["pillars.month.branch_ten_god", "day_master"] },
+      },
+    };
+    const coerced = coerceDeepEssencePartA(rawReport, floor, "ko-KR");
+    const li = coerced.value.layered_identity;
+    assert.ok(li);
+    assert.deepEqual(li.first_impression.evidence_refs, ["pillars.month.branch_ten_god"]);
+    assert.deepEqual(li.known_self.evidence_refs, ["day_master"]);
+    assert.deepEqual(li.close_private_self.evidence_refs, ["pillars.day.branch"]);
+    assert.deepEqual(li.natural_self_and_deep_needs.evidence_refs, ["strength"]);
+    assert.deepEqual(li.synthesis.evidence_refs, ["pillars.month.branch_ten_god", "day_master"]);
+  });
+});

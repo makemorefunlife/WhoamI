@@ -190,6 +190,64 @@ export function polishDeepEssenceStructuredReport(
     },
     closing: cleanClosingText(report.closing, loc),
     checklist: mapStrList(report.checklist, loc),
+    ...(report.layered_identity
+      ? {
+          layered_identity: {
+            ...(report.layered_identity.first_impression
+              ? {
+                  first_impression: {
+                    ...report.layered_identity.first_impression,
+                    ...(report.layered_identity.first_impression.title
+                      ? { title: polishProse(report.layered_identity.first_impression.title, loc) }
+                      : {}),
+                    narrative: cleanAdaptationStoryText(report.layered_identity.first_impression.narrative, loc),
+                  },
+                }
+              : {}),
+            ...(report.layered_identity.known_self
+              ? {
+                  known_self: {
+                    ...report.layered_identity.known_self,
+                    ...(report.layered_identity.known_self.title
+                      ? { title: polishProse(report.layered_identity.known_self.title, loc) }
+                      : {}),
+                    narrative: cleanAdaptationStoryText(report.layered_identity.known_self.narrative, loc),
+                  },
+                }
+              : {}),
+            ...(report.layered_identity.close_private_self
+              ? {
+                  close_private_self: {
+                    ...report.layered_identity.close_private_self,
+                    ...(report.layered_identity.close_private_self.title
+                      ? { title: polishProse(report.layered_identity.close_private_self.title, loc) }
+                      : {}),
+                    narrative: cleanAdaptationStoryText(report.layered_identity.close_private_self.narrative, loc),
+                  },
+                }
+              : {}),
+            ...(report.layered_identity.natural_self_and_deep_needs
+              ? {
+                  natural_self_and_deep_needs: {
+                    ...report.layered_identity.natural_self_and_deep_needs,
+                    ...(report.layered_identity.natural_self_and_deep_needs.title
+                      ? { title: polishProse(report.layered_identity.natural_self_and_deep_needs.title, loc) }
+                      : {}),
+                    narrative: cleanAdaptationStoryText(report.layered_identity.natural_self_and_deep_needs.narrative, loc),
+                  },
+                }
+              : {}),
+            ...(report.layered_identity.synthesis
+              ? {
+                  synthesis: {
+                    ...report.layered_identity.synthesis,
+                    narrative: cleanAdaptationStoryText(report.layered_identity.synthesis.narrative, loc),
+                  },
+                }
+              : {}),
+          },
+        }
+      : {}),
     ...(report.adaptation_story
       ? {
           adaptation_story: {

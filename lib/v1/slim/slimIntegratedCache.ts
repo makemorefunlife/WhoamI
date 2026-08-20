@@ -20,12 +20,11 @@ import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructure
  * refetch, which now goes through route.ts's own
  * PERSONAL_V2_STRUCTURED_GENERATION_VERSION gate server-side.
  *
- * Bumped 5 -> 6: Batch 1 evidence routing un-floats Saju and Secondary Psych
- * evidence into Part-specific prompt Lenses and bumps the server-side
- * PERSONAL_V2_STRUCTURED_GENERATION_VERSION to 3. Bumping client key forces
- * browsers to refetch and reach the new server-side evidence routing path.
+ * Bumped 6 -> 7: Batch 2 Part 02 Layered Identity narrative guidelines,
+ * contrast requirements, high-information title contract, and advice bans.
+ * Bumping client key forces browsers to refetch and receive the new Part 02.
  */
-export const SLIM_INTEGRATED_CACHE_VERSION = 6;
+export const SLIM_INTEGRATED_CACHE_VERSION = 7;
 
 const PREFIX = "ahaitsme_v2_slim_integrated_";
 
@@ -38,12 +37,13 @@ function legacyStorageKeys(reportId: string, locale: Locale): string[] {
   return [
     `${PREFIX}${reportId}`,
     `${PREFIX}${locale}_${reportId}`,
-    // v1/v2/v3/v4/v5 keys from earlier CACHE_VERSION values
+    // v1/v2/v3/v4/v5/v6 keys from earlier CACHE_VERSION values
     `${PREFIX}v1_${locale}_${reportId}`,
     `${PREFIX}v2_${locale}_${reportId}`,
     `${PREFIX}v3_${locale}_${reportId}`,
     `${PREFIX}v4_${locale}_${reportId}`,
     `${PREFIX}v5_${locale}_${reportId}`,
+    `${PREFIX}v6_${locale}_${reportId}`,
   ];
 }
 
