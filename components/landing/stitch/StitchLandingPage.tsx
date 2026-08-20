@@ -310,7 +310,7 @@ export default function StitchLandingPage({
                 <StitchPersonalRadar labels={messages.landing.radarLabels} />
               </div>
             </div>
-            <div className="mt-10 flex justify-start md:justify-end">
+            <div className="mt-10 flex justify-start">
               <LocaleLink href={blueprintPath(reportId)} className="stitch-cta-primary group">
                 {messages.landing.personalCta}
                 <span aria-hidden className="ml-2 transition-transform duration-200 group-hover:translate-x-1">
