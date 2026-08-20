@@ -90,6 +90,7 @@ import type {
   Part01EvidenceRef,
   Part01IdentityEvidencePacket,
 } from "@/lib/v1/slim/part01IdentityEvidence";
+import { buildPersonalPart04StoryPlan } from "./buildPersonalPart04StoryPlan";
 import { selectAxisHighlights, type AxisComparison } from "@/lib/v2/analysis/axisComparison";
 import type { PrimaryAxisKey } from "@/lib/v2/survey/types";
 
@@ -184,6 +185,13 @@ export type Part01LayeredIdentityPromptEvidence = {
   synthesisKnownKeys: Set<string>;
 };
 
+export type EvidenceFamily =
+  | "FAMILY_GAP"
+  | "FAMILY_CURRENT_PSYCH"
+  | "FAMILY_LAYER"
+  | "FAMILY_SAJU"
+  | "FAMILY_CE";
+
 export type Part01PromptEvidence = {
   coreModeText: string;
   growthEdgeText: string;
@@ -210,12 +218,22 @@ export type Part01PromptEvidence = {
    */
   adaptationStoryKnownKeys: Set<string>;
   /**
+   * Batch 4 — deterministic mapping of each key in adaptationStoryKnownKeys
+   * to its specific EvidenceFamily taxonomy. Used for strict provenance validation.
+   */
+  adaptationStoryKeyFamilies: Map<string, EvidenceFamily>;
+  /**
    * IA Batch 3 — deterministic minimum-evidence gate (see
    * hasAdaptationStoryEvidence below). Controls whether the adaptation_story
    * schema field/instructions are offered to the LLM at all — never trust
    * the model to skip an ungrounded field on its own.
    */
   adaptationStoryEligible: boolean;
+  /**
+   * Batch 4B — Deterministic Personal Part 04 Story Plan constructed BEFORE LLM call.
+   * Frame and evidence selection for adaptation_story expert synthesis.
+   */
+  storyPlan?: import("./buildPersonalPart04StoryPlan").PersonalPart04StoryPlan | null;
 };
 
 export type Part01AxisHighlightPromptEvidence = {
@@ -706,35 +724,31 @@ function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
 }
 
 /**
- * Narrative Quality Singleton Batch 2 — strengthened minimum-evidence gate
- * for adaptation_story.
+ * Batch 4 — strengthened minimum-evidence gate for adaptation_story.
  *
- * The original Batch 3 gate's second condition ("any CE dimension anywhere
- * with usable confidence") was almost always true in practice — it checked
- * for evidence EXISTENCE, not genuine INDEPENDENT CONVERGENCE, which let
- * adaptation_story fire off a single gap axis's evidence alone and read as a
- * recap of axis_interpretations rather than a synthesis (see the Personal
- * Premium Narrative Quality Audit, Part04 root cause).
+ * Required anchor:
+ *   Must include at least ONE Current/adaptation anchor: FAMILY_GAP (at least
+ *   1 wide gap axis) or FAMILY_CURRENT_PSYCH (usable secondary psych variance).
+ * PLUS at least ONE independent corroborating family:
+ *   - Layered identity depth (>=2 populated candidate buckets)
+ *   - Innate Saju signal
+ *   - Energy/relational CE dimension signal
+ *   - A second, genuinely wide gap axis.
  *
- * New rule: (1) at least one genuinely wide Current x Innate gap axis
- * (selectAxisHighlights' own "wide" threshold — reused, not a new one), AND
- * (2) at least one of three genuinely INDEPENDENT corroborating families:
- *   - an energy-relevant CE dimension (solitude_autonomy/pressure_response/
- *     criticism_sensitivity — the same set Energy's own Lens already uses)
- *     with usable confidence, or
- *   - layered identity depth — at least 2 of the 4 candidate buckets have
- *     real (non-abstained) content, mirroring the same >=2-populated-layers
- *     threshold layered_identity.synthesis itself requires, or
- *   - a second, genuinely wide gap axis beyond the primary one, so the
- *     adaptation isn't resting on a single axis's evidence alone.
- * "Any CE dimension anywhere" is no longer sufficient on its own.
+ * LAYER + SAJU by itself without an adaptation anchor is NOT ELIGIBLE.
  */
 export function hasAdaptationStoryEvidence(
   packet: Part01IdentityEvidencePacket | null | undefined,
 ): boolean {
   if (!packet) return false;
   const { gaps } = selectAxisHighlights(packet.axisComparisons);
-  if (gaps.length === 0) return false;
+
+  const hasGapAnchor = gaps.length > 0;
+  const secondaryVals = Object.values(packet.currentBehavior?.secondaryAxes ?? {});
+  const hasCurrentPsychAnchor = secondaryVals.some((v) => v >= 65 || v <= 35);
+
+  const hasAdaptationAnchor = hasGapAnchor || hasCurrentPsychAnchor;
+  if (!hasAdaptationAnchor) return false;
 
   const hasEnergySignal = packet.dimensions.allDimensions.some(
     (d) =>
@@ -750,9 +764,16 @@ export function hasAdaptationStoryEvidence(
   ].filter((bucket) => buildCandidateBucketEvidence(bucket).text.length > 0).length;
   const hasLayeredIdentitySignal = populatedLayerBucketCount >= 2;
 
+  const hasSajuSignal = packet.innate.identityFacts.length > 0 || packet.innate.tenGodEvidence.length > 0;
   const hasSecondGapSignal = gaps.length >= 2;
 
-  return hasEnergySignal || hasLayeredIdentitySignal || hasSecondGapSignal;
+  const corroboratingCount =
+    (hasLayeredIdentitySignal ? 1 : 0) +
+    (hasSajuSignal ? 1 : 0) +
+    (hasEnergySignal ? 1 : 0) +
+    (hasSecondGapSignal ? 1 : 0);
+
+  return corroboratingCount >= 1;
 }
 
 /**
@@ -798,7 +819,47 @@ export function formatPart01EvidenceForPrompt(
     ...synthesisKnownKeys,
     ...energy.knownKeys,
   ]);
-  return {
+
+  const adaptationStoryKeyFamilies = new Map<string, EvidenceFamily>();
+  for (const k of axisInterpretation.innateEvidenceKnownKeys) {
+    adaptationStoryKeyFamilies.set(k, "FAMILY_SAJU");
+  }
+  for (const k of synthesisKnownKeys) {
+    if (!adaptationStoryKeyFamilies.has(k)) {
+      adaptationStoryKeyFamilies.set(k, "FAMILY_LAYER");
+    }
+  }
+  for (const g of axisInterpretation.gaps) {
+    adaptationStoryKeyFamilies.set(`axis:${g.axis}`, "FAMILY_GAP");
+    for (const ck of g.currentKnownKeys) {
+      if (!adaptationStoryKeyFamilies.has(ck)) {
+        adaptationStoryKeyFamilies.set(ck, "FAMILY_CURRENT_PSYCH");
+      }
+    }
+  }
+  if (axisInterpretation.alignment) {
+    adaptationStoryKeyFamilies.set(`axis:${axisInterpretation.alignment.axis}`, "FAMILY_CURRENT_PSYCH");
+    for (const ck of axisInterpretation.alignment.currentKnownKeys) {
+      if (!adaptationStoryKeyFamilies.has(ck)) {
+        adaptationStoryKeyFamilies.set(ck, "FAMILY_CURRENT_PSYCH");
+      }
+    }
+  }
+  for (const k of energy.knownKeys) {
+    if (!adaptationStoryKeyFamilies.has(k)) {
+      if (k.startsWith("dimension:")) {
+        adaptationStoryKeyFamilies.set(k, "FAMILY_CE");
+      } else if (k.startsWith("secondary:")) {
+        adaptationStoryKeyFamilies.set(k, "FAMILY_CURRENT_PSYCH");
+      } else {
+        adaptationStoryKeyFamilies.set(k, "FAMILY_SAJU");
+      }
+    }
+  }
+
+  const adaptationStoryEligible = hasAdaptationStoryEvidence(packet);
+
+  const res: Part01PromptEvidence = {
     coreModeText: coreMode.text,
     growthEdgeText: growthEdge.text,
     coreModeKnownKeys: coreMode.knownKeys,
@@ -819,8 +880,12 @@ export function formatPart01EvidenceForPrompt(
     futureText: future.text,
     futureKnownKeys: future.knownKeys,
     adaptationStoryKnownKeys,
-    adaptationStoryEligible: hasAdaptationStoryEvidence(packet),
+    adaptationStoryKeyFamilies,
+    adaptationStoryEligible,
   };
+
+  res.storyPlan = buildPersonalPart04StoryPlan(packet, res);
+  return res;
 }
 
 /** Coerces + filters LLM-returned evidence refs down to only real packet keys. */

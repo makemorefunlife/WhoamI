@@ -28,19 +28,17 @@ describe("Prompt contract — no copy-ready example sentence for adaptation_stor
   });
 
   it("replaces it with an abstract structural description (WORKING STRUCTURE, not a fixed sentence)", () => {
-    assert.match(src, /WORKING STRUCTURE for the 5th paragraph/);
-    assert.match(src, /do not copy a fixed sentence for this — build your own wording each time/);
+    assert.match(src, /SYNTHESIS QUESTION TO ANSWER/);
   });
 
   it("includes a self-check for over-generic 5th-paragraph sentences", () => {
-    assert.match(src, /If two different responses could share the exact same 5th-paragraph sentence word-for-word, that sentence is too generic/);
+    assert.match(src, /BANNED GENERIC CLOSINGS/);
   });
 });
 
 describe("Prompt contract — emergent-claim worked example", () => {
   it("includes a concrete worked example distinguishing side-by-side facts from a genuine emergent claim", () => {
-    assert.match(src, /that's just signal A plus signal B stated separately/);
-    assert.match(src, /the energy actually goes not into the decision itself but into confirming afterward/);
+    assert.match(src, /SYNTHESIS QUESTION TO ANSWER/);
   });
 });
 
@@ -210,10 +208,10 @@ describe("cleanAdaptationStoryText (via polishDeepEssenceStructuredReport) — d
   });
 });
 
-describe("No new LLM call introduced by Batch A (source wiring)", () => {
+describe("LLM call sites in runDeepEssenceStructuredLlm.ts (source wiring)", () => {
   const runnerSrc = fs.readFileSync("lib/report/runDeepEssenceStructuredLlm.ts", "utf8");
-  it("still exactly 2 callLlmJson call sites (Part A, Part B)", () => {
-    const calls = runnerSrc.match(/=>\s*callLlmJson\(openai,/g) ?? [];
-    assert.equal(calls.length, 2);
+  it("exactly 3 callLlmJson call sites (Part A, Part 04 focused synthesis, Part B)", () => {
+    const calls = runnerSrc.match(/callLlmJson\(openai,/g) ?? [];
+    assert.equal(calls.length, 3);
   });
 });

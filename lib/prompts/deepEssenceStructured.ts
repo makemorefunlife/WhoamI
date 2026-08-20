@@ -114,7 +114,7 @@ const LAYERED_IDENTITY_SCHEMA_FIELD = `,
 // evidence Lens of its own.
 
 const ADAPTATION_STORY_SCHEMA_FIELD = `,
-  "adaptation_story": { "narrative": "2-5 short paragraphs, each ONE-TO-THREE sentences, joined with a literal blank line (\\n\\n) between every paragraph — never one dense wall-of-text block. All 5 beats below must be covered in content; adjacent beats MAY share a paragraph when they flow naturally together, but never split one beat's content across two paragraphs, and never fold beat (5) — the closing/integration beat — into an earlier paragraph, since it needs to land as its own distinct final paragraph. Synthesizes everything you already wrote above in THIS SAME response (layered_identity, axis_interpretations, energy, growth_edge) into ONE integrated story — never restates a single axis by its name, and never re-explains what axis_interpretations or layered_identity already said in the same terms; translate them into plain, connected observations instead. One paragraph each, in this order (do not label them, just start each on a new paragraph): (1) the natural/innate direction that stands out most across the evidence; (2) what the person visibly relies on more today, in plain behavioral terms; (3) what that shift actually makes possible — a capability or functional gain (e.g. weighing more people/variables, handling change, sustaining relationships, carrying responsibility, managing uncertainty), never framed as a flaw. This beat is REQUIRED, not optional — the evidence gate for this field already confirmed a second, independent signal beyond the primary gap axis; use it to name the smallest genuine functional gain that combination actually supports, never omit this beat for being unsure; (4) what sustaining that shift may cost (energy, decision effort, over-adaptation, or relational strain) — only when the evidence for a cost genuinely converges, never invented as a given; (5) a closing paragraph holding both the natural direction and the current way of living together — never declare one 'the real self' and the other fake, lost, or suppressed, and never end with advice, a next step, or where the reader should go from here (that belongs to a different part of the report — this field stops at recognition, not direction). CONVERGENCE REQUIREMENT: at least one sentence in beats (2)-(4) must express something that is only visible because two or more of the independent signals behind this field (the gap axis, layered identity, energy) hold true TOGETHER — not something either signal would already say alone. Never invent a new fact to manufacture this; if the evidence only supports single-signal claims, write the strongest single-signal version instead of forcing a false combination.", "evidence_refs": ["optional — exact keys already shown above in this response's Axis Gap/Alignment, Layered Identity, or Energy evidence blocks — never invented, never from Core Mode/Growth Edge/Strengths evidence"] }`;
+  "adaptation_story": { "narrative": "2-5 short paragraphs, each ONE-TO-THREE sentences, joined with a literal blank line (\\n\\n) between every paragraph — never one dense wall-of-text block. CROSS-QUESTION SYNTHESIS REQUIREMENT: Synthesizes evidence answering at least TWO DIFFERENT questions (e.g. Relational Distance from layered_identity + Current/Innate Gap from axis_interpretations, OR Lived Strategy + Saju/CE structural tendency). A Part 04 built around only one axis (such as autonomy alone) is INSUFFICIENT. DO NOT write a Fact A -> Fact B -> Strength C -> Cost D recap (that structure belongs to Part 03). Instead, derive an EMERGENT CLAIM answering: 'What common internal logic explains why these two different observations coexist?' CONCEPTUAL TEST: If you remove any one of the main evidence families, the claim MUST NOT be obvious. REQUIRED HIGHER-ORDER MOVE: At least one sentence MUST explicitly perform one of these functions (without adding label headers to text): RECONCILE AN APPARENT CONTRADICTION, EXPLAIN WHY TWO DIFFERENT SELVES COEXIST, IDENTIFY A COMPENSATION PATTERN, IDENTIFY A PROTECTIVE STRATEGY, IDENTIFY HOW ONE STRENGTH WAS BUILT TO SUPPORT ANOTHER NEED, or IDENTIFY WHY OUTSIDERS MAY MISREAD THE PERSON. Paragraph order: (1) natural/innate direction across evidence; (2) lived current behavioral strategy; (3) functional capability gained; (4) cost incurred; (5) person-specific recognition closing. BANNED GENERIC CLOSINGS: NEVER write generic closings such as '여러 모습이 모두 당신이에요', '서로 다른 모습이 아니라 연결되어 있어요', '이것도 당신의 한 부분이에요', '현재와 본래가 조화를 이룹니다', or '지금의 모습과 본래의 경향은 서로 다른 것이 아니라...'. The closing MUST refer to the ACTUAL specific pattern discovered (e.g., '사람을 중요하게 여기는 마음과 내 공간을 지키려는 태도는 서로 반대가 아니라, 관계 안에서 흔들리지 않기 위해 함께 커진 두 힘일 수 있어요'). Never declare one self fake or suppressed, and never end with advice or next steps.", "evidence_refs": ["REQUIRED — 2-4 exact keys already shown above in this response's Axis Gap/Alignment, Layered Identity, or Energy evidence blocks representing AT LEAST TWO distinct evidence families (e.g. one axis key like axis:autonomy AND one layered identity key like pillars.month.stem_ten_god or dimension:solitude_autonomy) — never omit evidence_refs"] }`;
 
 // ── Batch 6: additive Strengths/Watchouts grounding ───────────────────────
 // Same additive/grounded-only contract. Per-item evidence_refs, only shown
@@ -184,16 +184,11 @@ function buildPartASchema(part01Evidence: Part01EvidenceForPartAPrompt | null | 
     part01Evidence.axisInterpretation.gaps,
     part01Evidence.axisInterpretation.alignment,
   );
-  const adaptationField = part01Evidence.adaptationStoryEligible
-    ? ADAPTATION_STORY_SCHEMA_FIELD
-    : "";
   // Insert as new top-level keys right after the "energy" block closes,
-  // before the schema object's own closing brace. adaptation_story is last
-  // so the model writes it only after layered_identity/axis_interpretations
-  // already exist in the same response.
+  // before the schema object's own closing brace.
   return withSummaryFields.replace(
     /\n(\}\s*)$/,
-    `${LAYERED_IDENTITY_SCHEMA_FIELD}${axisField}${adaptationField}\n$1`,
+    `${LAYERED_IDENTITY_SCHEMA_FIELD}${axisField}\n$1`,
   );
 }
 
@@ -215,6 +210,7 @@ export type Part01EvidenceForPartAPrompt = {
   };
   /** IA Batch 3 — see hasAdaptationStoryEvidence in formatPart01EvidenceForPrompt.ts. */
   adaptationStoryEligible: boolean;
+  storyPlan?: import("../report/buildPersonalPart04StoryPlan").PersonalPart04StoryPlan | null;
 };
 
 export function buildDeepEssenceStructuredPartAUserPrompt(input: {
@@ -276,6 +272,23 @@ ${input.part01Evidence.layeredIdentity.naturalSelfAndDeepNeedsText}
 ${input.part01Evidence.axisInterpretation.innateEvidenceText}
 
 ${axisSections}
+
+${
+  input.part01Evidence.storyPlan
+    ? `[Part 04 Story Plan — PRE-SELECTED SYNTHESIS FRAMEWORK]
+Primary Adaptation: ${input.part01Evidence.storyPlan.primaryAdaptation.axis} (${input.part01Evidence.storyPlan.primaryAdaptation.innateBaseline} -> ${input.part01Evidence.storyPlan.primaryAdaptation.currentMode})
+Secondary Contrast: ${input.part01Evidence.storyPlan.secondaryContrast?.description || "None"}
+Required Primary Refs (MUST include at least one in evidence_refs): ${JSON.stringify(input.part01Evidence.storyPlan.requiredEvidence.primaryRefs)}
+Required Contrast Refs (MUST include at least one in evidence_refs): ${JSON.stringify(input.part01Evidence.storyPlan.requiredEvidence.contrastRefs)}
+Current Mechanism: ${input.part01Evidence.storyPlan.currentMechanism?.label || "None"}
+Supporting Structure: ${input.part01Evidence.storyPlan.supportingInnateStructure?.label || "None"}
+Gained Capability: ${input.part01Evidence.storyPlan.gainedCapabilityFocus?.concept}
+Hidden Cost: ${input.part01Evidence.storyPlan.hiddenCostFocus?.concept}
+Target Tension: ${input.part01Evidence.storyPlan.synthesisFrame.targetTension}
+SYNTHESIS QUESTION TO ANSWER: ${input.part01Evidence.storyPlan.synthesisFrame.question}
+Allowed Evidence Refs for adaptation_story: ${JSON.stringify(input.part01Evidence.storyPlan.selectedEvidenceRefs)}`
+    : ""
+}
 `
     : "";
 
@@ -347,6 +360,7 @@ ${axisSections}
   - NO TRUE-SELF / FAKE-SELF LANGUAGE: In English, avoid "True Self", "real self", "fake self". In Korean, avoid "진짜 나", "가짜 나" — prefer 본래의 경향 / 자연스러운 성향 / 현실에서 익숙해진 방식 / 적응해온 방식.
   - NO INVENTED BIOGRAPHY & NO LIFE-STORY SYNTHESIS: Save cross-axis life story for Part 04. Do NOT say "당신은 평생...", "어린 시절부터...", "이 패턴이 인생 전체를...".
   - NO CROSS-AXIS MECHANISM REPETITION: Up to 3 selected gap axes must highlight distinct semantic mechanisms grounded in their specific secondary psych signals — do not let all three collapse into a monotone loop of "caring about others' opinions" or generic "change vs safety".
+  - SELF-DROP CHECK: Compare selected gap axes before writing — if two entries would tell the same underlying story in different words, do NOT force two separate full narratives. Never solve this by inventing a new fact to manufacture a difference.
 - Never translate raw current/innate/delta numbers into prose — describe concrete, real-life behavior and situations instead. Never let a single five-element/ten-god/psych-axis signal alone decide any field — look for convergence, and use conditional language when confidence is low or evidence is mixed. current_evidence_refs may only reference that exact axis's own bracketed Current Self keys (never another axis's); innate_evidence_refs only the shared Innate Self pool's keys. Both optional; never invent a key.
 - ENERGY (headline/bars/summary/fuels/drains/optimal):
   - ENERGY SYNTHESIS ("잘하고 있는데, 왜 피곤할 때가 있을까요"): energy.summary must answer: "내가 어떤 능력을 많이 쓰고 있으며, 그 능력이 언제 힘이 되고 언제 비용이 되는가" — connecting (1) what causes energy drain + (2) why you spend so much energy in that situation + (3) what strength or adaptation is operating. NEVER simplify to "사람 = 피로" ("people make you tired, so stay alone"). Describe the situational dynamics instead (e.g. "사람들과 함께 있는 것 자체보다, 관계 속에서 상대의 반응을 계속 읽고 자신의 판단을 조정해야 하는 상황에서 더 많은 에너지를 쓰게 됩니다").
@@ -364,10 +378,10 @@ ${axisSections}
 - Each fuels/drains/optimal item must name a concrete trigger or context, not a generic category label — and briefly imply why it costs or returns energy for this specific person, not just what the situation is. Prefer "a long meeting where you keep having to respond to people with little room to process alone" over "Large social gatherings"; prefer "carrying other people's schedules or moods while your own decisions keep getting pushed back" over "Too much responsibility". Ground each item's specificity in the convergence you already found in [Energy evidence] (e.g. solitude_autonomy + pressure_response together might point at a specific kind of low-privacy, high-responsiveness situation) — never invent a scenario unconnected to the evidence, and never let one signal alone dictate one item. The same underlying evidence may show up differently across fuels vs. drains vs. optimal — e.g. a low-stimulation environment might explain both a drains item (too much unstructured noise) and an optimal item (quiet, low-interruption settings) from two genuinely different angles; don't just restate one as the mirror of the other. Keep every item to one concise phrase or short sentence (still a scannable list item, not a paragraph). Never write a blanket claim like "you dislike people" or "you're an introvert" — describe the specific pattern or context instead. Keep fuels, drains, and optimal meaningfully distinct from each other — avoid two items across these three lists restating the same situation from interchangeable angles unless it's a genuinely separate, specific insight.${
       input.part01Evidence?.adaptationStoryEligible
         ? `
-- adaptation_story is the report's central synthesis, not a sixth axis card and not a recap — write it LAST, after everything else above, but do NOT simply reorganize or paraphrase what you already wrote there. Go back to the underlying evidence (this axis's Innate/Current Self facts, the layered_identity evidence, the energy evidence) and find what emerges when you hold two or more of those signals together — a genuine synthesis produces a claim none of the individual sections above already made in other words, not a summary of them. Concretely: simply stating "본래는 자기 판단이 중요한데, 현재는 관계 신호를 많이 확인한다" side by side is NOT yet the emergent claim — that's just signal A plus signal B stated separately. The emergent claim is the higher-order pattern their combination reveals — something like naming that the energy actually goes not into the decision itself but into confirming afterward that the choice won't disturb the relationship, so the cost shows up as a confirmation ritual layered on top of an otherwise-capable decision process. Only write a claim at that level when the evidence genuinely supports it; never invent the specific mechanism if the evidence only supports the two signals stated separately. It answers "how did these differences add up into the way this person actually lives" — never repeats an axis_interpretations entry or layered_identity layer in the same words, translates them into one connected story instead. Never invent a specific past event, relationship, job, or childhood circumstance to explain the pattern — ground every sentence only in the evidence already shown/written above in this response. Never address the reader as 고객님/귀하/회원님 or any other customer-service honorific — plain 해요체 second person, no repeated subject. Scale your confidence language to how strongly the evidence actually converges — do not write with more certainty than the evidence supports, and do not hedge everything into vagueness when the evidence is genuinely strong either.
+- adaptation_story MUST follow the pre-selected [Part 04 Story Plan] above. Your single task is to answer the SYNTHESIS QUESTION TO ANSWER in plain, warm, natural Korean, explaining how the Primary Adaptation coexists with the Secondary Contrast. Do NOT re-select facts or invent a new storyline — translate the pre-selected tension, capability gained, and cost incurred into 2-5 short paragraphs with blank lines (\\n\\n) between them. Restrict your evidence_refs strictly to keys present in Allowed Evidence Refs for adaptation_story. Never write generic closings (such as "여러 모습이 모두 당신이에요" or "현재와 본래가 조화를 이룹니다") — end with a person-specific recognition of the exact target tension. Zero advice, zero next steps. Never address the reader as 고객님/귀하/회원님.
 - adaptation_story MUST be 2-5 short paragraphs with an actual blank line (\\n\\n) between every pair of them — a single dense wall-of-text block is a FAILED response even if the content itself is good. All five beats in the narrative instructions (natural direction / current reliance / what it enables / what it may cost / integrated closing) must be covered — adjacent beats may share one paragraph when they genuinely flow together, but the final beat (integrated closing) always gets its own last paragraph, never folded into an earlier one.
 - adaptation_story has ZERO advice, ZERO next steps, and ZERO forward-looking capability-building language — this has been observed leaking in live output and is explicitly forbidden, including any close variant of: "~연습을 통해 ~을 높일 수 있어요" (practicing X can raise Y), "~하다면 더 많은 기회를 잡을 수 있어요" (if you do X you'll seize more opportunities), "더 나은 균형을 찾아가는 것이 중요해요" / "균형을 찾는 과정에서 ~ 회복할 수 있을 거예요" (finding/recovering better balance matters), "앞으로도 계속 성장해 나갈 수 있을 거예요" (you'll keep growing), "~하는 것이 중요하다는 점을 인식/기억해야 해요" (recognizing/remembering that X matters), "~은 당신의 삶을 더 풍요롭게 만들어줄 거예요" (X will enrich your life), or their English equivalents ("developing X could help", "finding balance is key", "you'll continue to grow", "it's important to remember/recognize that..."). None of these contain an imperative verb like "해보세요" but all of them are still advice — they tell the reader what to pursue, prioritize, or recognize, and promise an outcome if they do. If a sentence implies what should happen next or what a change would earn the reader — delete it or rewrite it as a plain observation of what already is, right now, with no forward pointer at all. ALSO STRICTLY FORBIDDEN anywhere in this field, as sentence endings (this is a category, not just the examples above — any ending with this shape is forbidden even if the exact words differ): "~해야 해요", "~할 필요가 있어요", "~하는 것이 중요해요", "~연습해보세요"/"~연습해 보세요", "~활용해보세요"/"~활용해 보세요", "~시도해보세요"/"~시도해 보세요", "~기억하세요". This is about the sentence's ENDING specifically — a sentence that merely describes a real, already-existing cost or effort using a different verb shape, such as "~할 필요가 생길 수 있어요" (a plain description that a need CAN arise, not an instruction to act on it), is not what this bans; the difference is whether the sentence tells the reader to do something (banned) versus describes what is already true (allowed).
-  This applies MOST to the closing (5th) paragraph, where this leak has been observed repeatedly even after everything above — it is not immune just because it's "the wrap-up". FAILED PATTERN (observed live, do not reproduce even in paraphrase): a sentence that promises a future payoff for a future action — the shape "이런 균형을 찾는 과정에서 [자질]도 다시 회복할 수 있을 거예요" or "[행동]하면 삶이 더 풍요로워질 거예요" — both are advice wearing a summary's clothes, no matter which specific words fill the brackets. WORKING STRUCTURE for the 5th paragraph (do not copy a fixed sentence for this — build your own wording each time from the natural_tendency/current_pattern material you already wrote above in THIS response): a present-tense statement that (a) names the current way of living, in your own words from beat 2 above, (b) names the natural/original direction, in your own words from beat 1 above, (c) states plainly that both are part of this one person right now — coexist, not compete — without ranking one as more real or more true than the other, and (d) makes no claim about pursuing, recovering, building, or any future result. If two different responses could share the exact same 5th-paragraph sentence word-for-word, that sentence is too generic — it must be specific enough that it could only follow from what you personally wrote in beats 1-4 of THIS response.`
+  This applies MOST to the closing (5th) paragraph, where this leak has been observed repeatedly even after everything above — it is not immune just because it's "the wrap-up". FAILED PATTERN (observed live, do not reproduce even in paraphrase): a sentence that promises a future payoff for a future action — the shape "이런 균형을 찾는 과정에서 [자질]도 다시 회복할 수 있을 거예요" or "[행동]하면 삶이 더 풍요로워질 거예요" — both are advice wearing a summary's clothes, no matter which specific words fill the brackets. PERSON-SPECIFIC RECOGNITION CLOSING (5th paragraph): BANNED GENERIC PATTERNS: NEVER write generic closings such as "여러 모습이 모두 당신이에요", "서로 다른 모습이 아니라 연결되어 있어요", "이것도 당신의 한 부분이에요", "현재와 본래가 조화를 이룹니다", or "지금의 모습과 본래의 경향은 서로 다른 것이 아니라...". The closing MUST refer to the ACTUAL specific pattern discovered in THIS response (e.g. "사람을 중요하게 여기는 마음과 내 공간을 지키려는 태도는 서로 반대가 아니라, 관계 안에서 흔들리지 않기 위해 함께 커진 두 힘일 수 있어요").`
         : ""
     }`
     : "";
@@ -608,4 +622,117 @@ ${buildPartBSchema(input.part01Evidence)}
 Respond with exactly one JSON object matching the schema above.
 
 ${buildLlmOutputLocaleInstruction(outputLocale)}`;
+}
+
+export function getPart04ExpertSynthesisSystemPrompt(locale: "ko-KR" | "en-US" = "ko-KR"): string {
+  if (locale === "en-US") {
+    return `You are a world-class Personal Insight Narrative Expert.
+Your task is to write Part 04 ("Why Have I Lived This Way?") of a Personal Premium Identity Report.
+You are given a pre-selected Story Plan (Primary Adaptation, Secondary Contrast, Required Evidence Keys, and Synthesis Question).
+Your single job is to explain why these two selected observations coexist in the person's life.
+
+Output MUST be a single valid JSON object matching this schema:
+{
+  "adaptation_story": {
+    "narrative": "2-5 short paragraphs, joined with literal blank lines (\\n\\n) between paragraphs. Derived emergent claim explaining the internal logic connecting Primary Adaptation and Secondary Contrast.",
+    "evidence_refs": ["REQUIRED — array of exact evidence keys cited, MUST include at least ONE from PRIMARY REQUIRED EVIDENCE REFS and at least ONE from CONTRAST REQUIRED EVIDENCE REFS"]
+  }
+}
+
+Strict Rules:
+- ZERO advice, ZERO next steps.
+- NO raw traditional Saju terms (like 귀문, 현침). Translate all structure into grounded human psychological behavior.
+- NO invented biography, childhood trauma, health/financial predictions, or external event guesses.
+- Must fulfill the dual-side evidence consumption contract: evidence_refs MUST contain at least one ref from PRIMARY REQUIRED REFS and at least one ref from CONTRAST REQUIRED REFS.
+- NEVER write generic closings like "여러 모습이 모두 당신이에요" or "현재와 본래가 조화를 이룹니다". End with a person-specific recognition of the exact target tension.`;
+  }
+
+  return `당신은 세계 최고 수준의 개인 성향 서사 분석 전문가입니다.
+당신의 역할은 개인 프리미엄 보고서의 Part 04 ("그래서 나는 왜 이렇게 살아왔을까요?") 핵심 통합 서사를 작성하는 것입니다.
+당신에게는 이미 검증된 [Part 04 Story Plan]이 전달됩니다 (본래 성향과 현실 적응의 주 축, 대외 관계/내면 욕구의 대조 축, 필수 근거 키 set).
+
+당신의 유일한 임무는: "서로 달라 보이는 이 두 가지 관찰이 왜 한 사람의 삶 안에서 함께 공존하게 되었는지" 그 내면의 합리적 연결 논리(Emergent Claim)를 밝혀내는 것입니다.
+
+출력은 반드시 다음 JSON 구조를 따라야 합니다:
+{
+  "adaptation_story": {
+    "narrative": "2-5개의 짧은 문단 (각 문단 1~3문장). 문단 사이에는 반드시 실제 줄바꿈(\\n\\n)을 구분자로 사용합니다. 절대로 한 덩어리의 긴 글로 쓰지 마십시오. 단순 요약(Part 03 재탕)이 아니라 '왜 이 두 특징이 공존하는가'에 대한 깊이 있는 통합적 해석을 제공합니다.",
+    "evidence_refs": ["필수 — 인용한 근거 키 배열. 반드시 [PRIMARY REQUIRED EVIDENCE REFS] 중 최소 1개 이상 AND [CONTRAST REQUIRED EVIDENCE REFS] 중 최소 1개 이상을 포함해야 합니다."]
+  }
+}
+
+핵심 작성 규정:
+1. 근거 역할 준수: evidence_refs는 반드시 PRIMARY REQUIRED ref 1개 이상과 CONTRAST REQUIRED ref 1개 이상을 동시에 포함해야 합니다.
+2. 조언 및 제안 절대 금지: "~해보세요", "~할 필요가 있어요", "~하는 것이 중요해요", "~연습해 보세요" 등 어떠한 미래형 제안이나 조언도 포함하지 마십시오. 현재 작동 중인 내면 논리의 명확한 설명만 제공합니다.
+3. 사주 전문 용어 노출 금지: '십신', '귀문', '현침', '원진' 등 명리 용어를 직접 노출하지 말고, 모두 인간의 가치관, 행동 습관, 관계 보호 기제로 번역하여 설명하십시오.
+4. 신상/사생활 추측 금지: 가상의 어린 시절, 가정환경, 겪지 않은 특정 사건을 임의로 만들어내지 마십시오.
+5. 상투적 마무리 금지: "여러 모습이 모두 당신이에요", "현재와 본래가 조화를 이룹니다", "이것도 당신의 한 부분입니다" 등 상투적인 위로 문구로 끝내지 마십시오. 실제 공존하는 두 힘의 구체적 역동으로 마무리하십시오.`;
+}
+
+export type PersonalPart04ExpertSynthesisInput = {
+  storyPlan: import("@/lib/report/buildPersonalPart04StoryPlan").PersonalPart04StoryPlan;
+  partAContext?: {
+    layeredIdentitySynthesis?: string;
+    primaryGapProse?: {
+      naturalTendency?: string;
+      currentPattern?: string;
+      gainedStrength?: string;
+      hiddenCost?: string;
+    };
+  } | null;
+  locale: "ko-KR" | "en-US";
+};
+
+export function buildPart04ExpertSynthesisUserPrompt(
+  input: PersonalPart04ExpertSynthesisInput,
+): string {
+  const plan = input.storyPlan;
+  const lines: string[] = [];
+
+  lines.push("=== [Part 04 Focused Expert Synthesis Input] ===");
+  lines.push(`SYNTHESIS QUESTION TO ANSWER:\n${plan.synthesisFrame.question}`);
+  lines.push(`TARGET TENSION:\n${plan.synthesisFrame.targetTension}\n`);
+
+  lines.push("--- REQUIRED PRIMARY EVIDENCE ---");
+  lines.push(`- Primary Adaptation Axis: ${plan.primaryAdaptation.axis}`);
+  lines.push(`- Natural Baseline: ${plan.primaryAdaptation.innateBaseline}`);
+  lines.push(`- Current Adaptation: ${plan.primaryAdaptation.currentMode}`);
+  lines.push(`- PRIMARY REQUIRED EVIDENCE REFS (must cite >=1): ${JSON.stringify(plan.requiredEvidence.primaryRefs)}`);
+
+  if (plan.secondaryContrast) {
+    lines.push("\n--- REQUIRED CONTRAST EVIDENCE ---");
+    lines.push(`- Contrast Type: ${plan.secondaryContrast.kind}`);
+    lines.push(`- Contrast Description: ${plan.secondaryContrast.description}`);
+    lines.push(`- CONTRAST REQUIRED EVIDENCE REFS (must cite >=1): ${JSON.stringify(plan.requiredEvidence.contrastRefs)}`);
+  }
+
+  if (plan.currentMechanism || plan.supportingInnateStructure) {
+    lines.push("\n--- OPTIONAL SUPPORTING STRUCTURES ---");
+    if (plan.currentMechanism) {
+      lines.push(`- Mechanism: ${plan.currentMechanism.label} (Refs: ${JSON.stringify(plan.currentMechanism.evidenceRefs)})`);
+    }
+    if (plan.supportingInnateStructure) {
+      lines.push(`- Saju Support: ${plan.supportingInnateStructure.label} (Refs: ${JSON.stringify(plan.supportingInnateStructure.evidenceRefs)})`);
+    }
+  }
+
+  if (input.partAContext) {
+    lines.push("\n--- PART 02/03 CONTEXTUAL PROSE (for semantic depth only, not evidence citations) ---");
+    if (input.partAContext.layeredIdentitySynthesis) {
+      lines.push(`- Layered Identity Shift: ${input.partAContext.layeredIdentitySynthesis}`);
+    }
+    if (input.partAContext.primaryGapProse) {
+      const p = input.partAContext.primaryGapProse;
+      if (p.naturalTendency) lines.push(`- Natural Tendency: ${p.naturalTendency}`);
+      if (p.currentPattern) lines.push(`- Current Pattern: ${p.currentPattern}`);
+      if (p.gainedStrength) lines.push(`- Gained Capability: ${p.gainedStrength}`);
+      if (p.hiddenCost) lines.push(`- Hidden Cost: ${p.hiddenCost}`);
+    }
+  }
+
+  lines.push("\nALLOWED EVIDENCE REFS FOR adaptation_story:");
+  lines.push(JSON.stringify(plan.selectedEvidenceRefs));
+
+  lines.push("\nWrite the JSON response containing 'adaptation_story' with 'narrative' and 'evidence_refs'.");
+  return lines.join("\n");
 }

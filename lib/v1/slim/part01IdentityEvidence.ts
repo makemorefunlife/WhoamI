@@ -371,7 +371,7 @@ function buildLayeredIdentityCandidates(
     dimensionItem(dims, "decision_pace"),
     dimensionItem(dims, "structure_spontaneity"),
     dimensionItem(dims, "resource_governance"),
-    dimensionItem(dims, "autonomy_style"),
+    dimensionItem(dims, "solitude_autonomy"),
   ].filter(nonNull);
 
   const closePrivateSelf: Part01CandidateItem[] = [

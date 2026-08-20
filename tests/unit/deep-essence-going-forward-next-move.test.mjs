@@ -193,9 +193,9 @@ describe("Personal Premium Batch 5 — Going Forward + One Next Move", () => {
     assert.equal(isDeepEssenceStructuredReport(sampleReport), true);
   });
 
-  it("F. No new LLM call: runDeepEssenceStructuredLlm maintains 2 call sites (Part A, Part B)", () => {
+  it("F. 3 LLM call sites in runDeepEssenceStructuredLlm (Part A, Part 04 synthesis, Part B)", () => {
     const src = fs.readFileSync("lib/report/runDeepEssenceStructuredLlm.ts", "utf8");
-    const callSites = src.match(/=>\s*callLlmJson\(openai,/g) ?? [];
-    assert.equal(callSites.length, 2, `expected exactly 2 callLlmJson call sites (Part A + Part B), found ${callSites.length}`);
+    const callSites = src.match(/callLlmJson\(openai,/g) ?? [];
+    assert.equal(callSites.length, 3, `expected exactly 3 callLlmJson call sites, found ${callSites.length}`);
   });
 });

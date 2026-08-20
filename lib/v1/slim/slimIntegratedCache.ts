@@ -24,7 +24,7 @@ import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructure
  * gained strength / hidden cost contracts, advice bans, and UI labels.
  * Bumping client key forces browsers to refetch and receive the new Part 03.
  */
-export const SLIM_INTEGRATED_CACHE_VERSION = 8;
+export const SLIM_INTEGRATED_CACHE_VERSION = 9;
 
 const PREFIX = "ahaitsme_v2_slim_integrated_";
 
@@ -37,7 +37,7 @@ function legacyStorageKeys(reportId: string, locale: Locale): string[] {
   return [
     `${PREFIX}${reportId}`,
     `${PREFIX}${locale}_${reportId}`,
-    // v1/v2/v3/v4/v5/v6/v7 keys from earlier CACHE_VERSION values
+    // v1/v2/v3/v4/v5/v6/v7/v8 keys from earlier CACHE_VERSION values
     `${PREFIX}v1_${locale}_${reportId}`,
     `${PREFIX}v2_${locale}_${reportId}`,
     `${PREFIX}v3_${locale}_${reportId}`,
@@ -45,6 +45,7 @@ function legacyStorageKeys(reportId: string, locale: Locale): string[] {
     `${PREFIX}v5_${locale}_${reportId}`,
     `${PREFIX}v6_${locale}_${reportId}`,
     `${PREFIX}v7_${locale}_${reportId}`,
+    `${PREFIX}v8_${locale}_${reportId}`,
   ];
 }
 

@@ -11,7 +11,7 @@ import type { Part01IdentityEvidencePacket } from "@/lib/v1/slim/part01IdentityE
  * personal_v2_generation_version (or an older one) is always treated as
  * stale, regardless of whether it still passes isDeepEssenceStructuredReport.
  */
-export const PERSONAL_V2_STRUCTURED_GENERATION_VERSION = 5;
+export const PERSONAL_V2_STRUCTURED_GENERATION_VERSION = 6;
 
 export type SlimV1ReportResult = {
   source: "v1/slim-integrated";

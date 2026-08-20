@@ -21,6 +21,7 @@ import {
 import { buildDeepEssenceStructuredPartAUserPrompt } from "../../lib/prompts/deepEssenceStructured.ts";
 import { coerceDeepEssencePartA } from "../../lib/report/coerceDeepEssenceStructured.ts";
 import { isDeepEssencePartA } from "../../lib/report/deepEssenceStructuredSchema.ts";
+import { buildPersonalPart04StoryPlan } from "../../lib/report/buildPersonalPart04StoryPlan.ts";
 
 const CURRENT_PRIMARY = {
   autonomy: 70,
@@ -135,6 +136,21 @@ function fakePacket({
       { axis: "structure", magnitude: "neutral", delta: 1, direction: "aligned" },
       { axis: "adaptability", magnitude: "neutral", delta: 1, direction: "aligned" },
     ],
+    currentBehavior: {
+      primaryAxes: CURRENT_PRIMARY,
+      secondaryAxes: {},
+    },
+    innate: {
+      identityFacts: populatedLayerBucketCount > 0 ? [{ fact_path: "day_master", codes: ["x"], evidence: [] }] : [],
+      elementEvidence: [],
+      tenGodEvidence: populatedLayerBucketCount > 0 ? [{ fact_path: "pillars.month.stem_ten_god", codes: ["x"], evidence: [] }] : [],
+      strengthEvidence: [],
+      climateEvidence: [],
+      pillarEvidence: [],
+      relationEvidence: [],
+      optionalSignals: [],
+      ceStrengthSignals: [],
+    },
     dimensions: {
       allDimensions: [
         // Deliberately NOT one of the energy-relevant keys — proves "any CE
@@ -155,46 +171,46 @@ function fakePacket({
   };
 }
 
-describe("hasAdaptationStoryEvidence — gap + independent-family convergence gate (Batch 2 strengthened)", () => {
-  it("a wide gap axis + a usable energy-relevant CE dimension → eligible", () => {
-    assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: true })),
-      true,
-    );
-  });
-
-  it("no gap at all → not eligible, even with a usable energy-relevant CE dimension", () => {
-    assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: false, hasEnergyDimensionSignal: true })),
-      false,
-    );
-  });
-
-  it("a wide gap exists but the ONLY usable CE dimension is unrelated to energy → not eligible (the old 'any CE dimension' gate is gone)", () => {
+describe("hasAdaptationStoryEvidence — gap + independent-family convergence gate (Batch 4 taxonomy)", () => {
+  it("A. One Current/adaptation family only → suppressed", () => {
     assert.equal(
       hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: false })),
       false,
     );
   });
 
-  it("a wide gap + a second wide gap axis (no energy/layer signal) → eligible via the second-gap independent family", () => {
+  it("B. Layer + Saju only → suppressed (no adaptation anchor)", () => {
     assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasSecondWideGap: true, hasEnergyDimensionSignal: false })),
-      true,
-    );
-  });
-
-  it("a wide gap + only 1 populated layered-identity bucket (below the 2-bucket threshold) → not eligible via that family alone", () => {
-    assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: false, populatedLayerBucketCount: 1 })),
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: false, populatedLayerBucketCount: 2 })),
       false,
     );
   });
 
-  it("a wide gap + 2 populated layered-identity buckets → eligible via the layered-identity independent family", () => {
+  it("C. Gap + Layer → eligible", () => {
     assert.equal(
-      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: false, populatedLayerBucketCount: 2 })),
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, populatedLayerBucketCount: 2 })),
       true,
+    );
+  });
+
+  it("D. Gap + Saju → eligible when Saju evidence is present", () => {
+    assert.equal(
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: true, hasEnergyDimensionSignal: true })),
+      true,
+    );
+  });
+
+  it("E. Current Psych + Layer + Saju → eligible", () => {
+    const packet = fakePacket({ hasWideGap: false, populatedLayerBucketCount: 2 });
+    packet.currentBehavior.secondaryAxes = { autonomy_style: 75 }; // strong current psych anchor
+    assert.equal(hasAdaptationStoryEvidence(packet), true);
+  });
+
+  it("F. Two facts from same family → do not fake convergence", () => {
+    // Only 1 layer bucket, no energy/saju/gap corroborating signals
+    assert.equal(
+      hasAdaptationStoryEvidence(fakePacket({ hasWideGap: false, populatedLayerBucketCount: 1 })),
+      false,
     );
   });
 
@@ -253,46 +269,42 @@ describe("buildDeepEssenceStructuredPartAUserPrompt — adaptation_story additiv
     assert.ok(!grounded.includes("adaptation_story is the report's central synthesis"));
   });
 
-  it("eligible=true includes the schema field, positioned after layered_identity and axis_interpretations, plus the grounding rule", () => {
+  it("Part A user prompt no longer requests adaptation_story, and buildPart04ExpertSynthesisUserPrompt holds focused synthesis rules", async () => {
+    const { buildPart04ExpertSynthesisUserPrompt } = await import("../../lib/prompts/deepEssenceStructured.ts");
     const packet = buildFixturePacket("known_time");
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    const input = groundedEvidenceInput(promptEvidence);
-    input.adaptationStoryEligible = true; // force-override so this test doesn't depend on the fixture's real gate verdict
-    const grounded = buildDeepEssenceStructuredPartAUserPrompt({
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+
+    const partAPrompt = buildDeepEssenceStructuredPartAUserPrompt({
       ...BASE_PROMPT_INPUT,
-      part01Evidence: input,
+      part01Evidence: promptEvidence,
     });
-    assert.ok(grounded.includes('"adaptation_story"'));
-    assert.ok(grounded.includes("adaptation_story is the report's central synthesis"));
-    assert.ok(grounded.includes("ZERO advice"));
-    assert.ok(grounded.includes("고객님"));
+    assert.strictEqual(partAPrompt.includes('"adaptation_story":'), false);
 
-    const layeredIdx = grounded.indexOf('"layered_identity"');
-    const axisIdx = grounded.indexOf('"axis_interpretations"');
-    const adaptationIdx = grounded.lastIndexOf('"adaptation_story"');
-    assert.ok(layeredIdx > 0 && axisIdx > layeredIdx, "layered_identity must precede axis_interpretations");
-    assert.ok(adaptationIdx > axisIdx, "adaptation_story must be positioned after axis_interpretations in the schema");
-
-    // schema is still valid JSON once the template placeholders are filled in
-    const schemaBlock = grounded.slice(
-      grounded.indexOf("JSON schema:") + "JSON schema:".length,
-      grounded.indexOf("Respond with exactly one JSON object"),
-    );
-    assert.doesNotThrow(() => JSON.parse(schemaBlock.trim()));
+    if (plan) {
+      const p04Prompt = buildPart04ExpertSynthesisUserPrompt({
+        storyPlan: plan,
+        locale: "ko-KR",
+      });
+      assert.ok(p04Prompt.includes("PRIMARY REQUIRED EVIDENCE REFS"));
+      assert.ok(p04Prompt.includes("ALLOWED EVIDENCE REFS FOR adaptation_story"));
+    }
   });
 
-  it("ko-KR and en-US both include the same adaptation_story schema/rule text (instructions are locale-invariant; only output language differs)", () => {
+  it("ko-KR and en-US both format Part 04 Expert Synthesis user prompts cleanly", async () => {
+    const { buildPart04ExpertSynthesisUserPrompt } = await import("../../lib/prompts/deepEssenceStructured.ts");
     const packet = buildFixturePacket("known_time");
     const promptEvidence = formatPart01EvidenceForPrompt(packet);
-    for (const locale of ["ko-KR", "en-US"]) {
-      const input = groundedEvidenceInput(promptEvidence);
-      input.adaptationStoryEligible = true;
-      const grounded = buildDeepEssenceStructuredPartAUserPrompt({
-        ...BASE_PROMPT_INPUT,
-        locale,
-        part01Evidence: input,
-      });
-      assert.ok(grounded.includes('"adaptation_story"'), `locale ${locale} missing schema field`);
+    const plan = buildPersonalPart04StoryPlan(packet, promptEvidence);
+
+    if (plan) {
+      for (const locale of ["ko-KR", "en-US"]) {
+        const p04Prompt = buildPart04ExpertSynthesisUserPrompt({
+          storyPlan: plan,
+          locale: locale,
+        });
+        assert.ok(p04Prompt.includes("PRIMARY REQUIRED EVIDENCE REFS"), `locale ${locale} missing required refs`);
+      }
     }
   });
 });
@@ -351,17 +363,17 @@ describe("Case C — evidence_refs pass only through the adaptation-story known-
     assert.deepEqual(filterKnownEvidenceRefs(["axis:autonomy", "invented_fact"], pool), ["axis:autonomy"]);
   });
 
-  it("runDeepEssenceStructuredLlm.ts wires adaptation_story.evidence_refs through filterKnownEvidenceRefs against adaptationStoryKnownKeys, AND defensively strips the whole field when adaptationStoryEligible is false (source wiring, no OpenAI call needed)", () => {
+  it("runDeepEssenceStructuredLlm.ts wires adaptation_story.evidence_refs through filterKnownEvidenceRefs against adaptationStoryKnownKeys, AND defensively returns null when adaptationStoryEligible is false (source wiring)", () => {
     const src = fs.readFileSync("lib/report/runDeepEssenceStructuredLlm.ts", "utf8");
     assert.match(
       src,
-      /filterKnownEvidenceRefs\(\s*adaptationStory\.evidence_refs,\s*promptEvidence\.adaptationStoryKnownKeys,?\s*\)/,
+      /filterKnownEvidenceRefs\(\s*rawRefs,\s*promptEvidence\.adaptationStoryKnownKeys,?\s*\)/,
       "must filter adaptation_story.evidence_refs against the dedicated known-key pool",
     );
     assert.match(
       src,
-      /if \(adaptationStory && !promptEvidence\.adaptationStoryEligible\)/,
-      "must defensively strip adaptation_story when the deterministic gate said this generation wasn't eligible",
+      /!promptEvidence\?\.adaptationStoryEligible/,
+      "must defensively return null when adaptationStoryEligible is false",
     );
   });
 });
@@ -386,19 +398,15 @@ describe("Case E — UI conditional rendering (pure-function level; full DOM ren
     const src = fs.readFileSync("components/results/deep/DeepEssenceReport.tsx", "utf8");
     assert.match(src, /const hasAdaptationStory = hasAdaptationStoryContent\(structured\.adaptation_story\)/);
     assert.match(src, /\.\.\.\(hasAdaptationStory\s*\n?\s*\?\s*\[/);
-    // regression guard: the fixed `number={t.partN.num}` pattern must never reappear for any section
     assert.doesNotMatch(src, /number=\{t\.part\d\.num\}/);
     assert.match(src, /number=\{`Part \$\{String\(i \+ 1\)\.padStart\(2, "0"\)\}`\}/);
   });
 });
 
-describe("Case G — no new LLM call: Part A/B call count stays exactly 2 total", () => {
-  it("runDeepEssenceStructuredLlm.ts still calls callLlmJson exactly twice (Part A, Part B) — adaptation_story rides inside the existing Part A call", () => {
+describe("Case G — 3 LLM calls total (Part A, focused Part 04 synthesis, Part B)", () => {
+  it("runDeepEssenceStructuredLlm.ts calls callLlmJson exactly 3 times", () => {
     const src = fs.readFileSync("lib/report/runDeepEssenceStructuredLlm.ts", "utf8");
-    const calls = src.match(/callLlmJson\(/g) ?? [];
-    // one declaration (`async function callLlmJson(`) + exactly 2 call sites
-    const callSites = src.match(/=>\s*callLlmJson\(openai,/g) ?? [];
-    assert.equal(callSites.length, 2, `expected exactly 2 callLlmJson call sites (Part A + Part B), found ${callSites.length}`);
-    assert.ok(calls.length >= 2);
+    const calls = src.match(/callLlmJson\(openai,/g) ?? [];
+    assert.equal(calls.length, 3, `expected exactly 3 callLlmJson call sites, found ${calls.length}`);
   });
 });

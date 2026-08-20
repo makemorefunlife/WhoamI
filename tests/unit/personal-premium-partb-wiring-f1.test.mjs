@@ -152,18 +152,14 @@ describe("buildPartAExcerpt — missing optional Part A fields never crash and n
   });
 });
 
-describe("Sequential Part A -> Part B architecture is intact (source wiring)", () => {
-  it("still exactly 2 callLlmJson call sites (no new LLM call introduced)", () => {
-    const calls = runnerSrc.match(/=>\s*callLlmJson\(openai,/g) ?? [];
-    assert.equal(calls.length, 2, "F1 wiring fix must not add a 3rd LLM call");
+describe("Decoupled Part A -> Part 04 + Part B architecture (source wiring)", () => {
+  it("exactly 3 callLlmJson call sites (Part A, Part 04 synthesis, Part B)", () => {
+    const calls = runnerSrc.match(/callLlmJson\(openai,/g) ?? [];
+    assert.equal(calls.length, 3, "Batch 4D architecture uses exactly 3 LLM call sites");
   });
 
-  it("no Promise.all wraps the two fetchLlmJsonWithParseRetry calls (still sequential, not parallel)", () => {
-    const partAToPartB = runnerSrc.slice(
-      runnerSrc.indexOf("deep-essence-structured-a"),
-      runnerSrc.indexOf("deep-essence-structured-b"),
-    );
-    assert.doesNotMatch(partAToPartB, /Promise\.all/);
+  it("Promise.all executes Part 04 and Part B in parallel", () => {
+    assert.ok(runnerSrc.includes("Promise.all([part04Promise, partBPromise])"));
   });
 
   it("buildPartAExcerpt is called with Part A's already-coerced value, after coerceDeepEssencePartA", () => {

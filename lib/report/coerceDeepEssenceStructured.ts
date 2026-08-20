@@ -408,6 +408,28 @@ export function coerceDeepEssencePartA(
   // which has access to the evidence packet this function doesn't.
   const adaptationStory = coerceAdaptationStory(obj.adaptation_story);
 
+  // Batch 4 — Part 02 / Part 03 anti-copy observability check
+  if (adaptationStory) {
+    const storyNorm = normalizeForComparison(adaptationStory.narrative, locale);
+    const synthNorm = normalizeForComparison(
+      (layeredIdentityOut.synthesis as { narrative?: string } | undefined)?.narrative ?? "",
+      locale,
+    );
+    if (synthNorm && similarityScore(storyNorm, synthNorm, locale) >= 0.7) {
+      notes.push("adaptation_story_semantic_overlap_layered_synthesis");
+    }
+    for (const [axisKey, diveRaw] of Object.entries(gapDeepDiveOut)) {
+      const dive = diveRaw as { natural_tendency?: string; current_pattern?: string; gives_you?: string; may_cost?: string };
+      const diveText = normalizeForComparison(
+        [dive.natural_tendency, dive.current_pattern, dive.gives_you, dive.may_cost].filter(Boolean).join(" "),
+        locale,
+      );
+      if (diveText && similarityScore(storyNorm, diveText, locale) >= 0.7) {
+        notes.push(`adaptation_story_semantic_overlap_gap_${axisKey}`);
+      }
+    }
+  }
+
   return {
     value: {
       summary,
