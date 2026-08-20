@@ -252,7 +252,7 @@ export default function StitchResultsDashboard({
         <h3 className="mt-2 text-lg font-semibold text-primary">
           {messages.report.moreAnalysisTitle}
         </h3>
-        <p className="mt-2 text-sm text-on-surface-variant">
+        <p className="mt-2 text-sm leading-relaxed text-on-surface-variant whitespace-pre-line">
           {messages.report.moreAnalysisBody}
         </p>
       </section>

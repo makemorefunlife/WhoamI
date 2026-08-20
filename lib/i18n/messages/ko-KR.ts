@@ -218,7 +218,7 @@ export const messagesKoKR: MessageCatalog = {
     openAnalysisHint: "위 무료 분석 중 하나를 눌러 아래에서 리포트를 확인하세요.",
     comingSoon: "곧 만나요",
     moreAnalysisTitle: "더 다양한 나를 발견하는 분석",
-    moreAnalysisBody: "일, 관계, 감정, 선택처럼 삶의 각 영역에서 드러나는 나를 더 깊이 살펴보는 개인 분석이 차례로 추가될 예정이에요.",
+    moreAnalysisBody: "일, 관계, 감정, 선택처럼\n삶의 각 영역에서 드러나는 나를 더 깊이 살펴보는\n개인 분석이 차례로 추가될 예정이에요.",
     guestNoticeTitle: "로그인하지 않은 상태예요",
     guestNoticeP1Lead: "지금 보시는 설문·출생 정보는 ",
     guestNoticeP1Bold1: "저장되지 않아요",
