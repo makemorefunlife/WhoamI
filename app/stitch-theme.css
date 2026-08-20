@@ -105,8 +105,8 @@
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-primary);
-  border: 1.5px solid rgba(196, 154, 156, 0.45);
-  background: rgba(255, 253, 248, 0.7);
+  border: 1.5px solid rgba(26, 51, 40, 0.35);
+  background: rgba(255, 253, 248, 0.9);
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
@@ -114,8 +114,8 @@
 }
 
 .stitch-cta-secondary:hover {
-  background: var(--color-accent-rose-soft);
-  border-color: var(--color-accent-rose);
+  background: rgba(26, 51, 40, 0.08);
+  border-color: var(--color-primary);
 }
 
 .stitch-reveal {

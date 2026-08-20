@@ -311,9 +311,9 @@ export default function StitchLandingPage({
               </div>
             </div>
             <div className="mt-10 flex justify-start md:justify-end">
-              <LocaleLink href={blueprintPath(reportId)} className="stitch-cta-secondary">
+              <LocaleLink href={blueprintPath(reportId)} className="stitch-cta-primary group">
                 {messages.landing.personalCta}
-                <span aria-hidden className="ml-2">
+                <span aria-hidden className="ml-2 transition-transform duration-200 group-hover:translate-x-1">
                   →
                 </span>
               </LocaleLink>
@@ -501,9 +501,9 @@ export default function StitchLandingPage({
               <p className="text-base sm:text-lg font-medium leading-relaxed text-primary whitespace-pre-line">
                 {messages.landing.journalClosing}
               </p>
-              <LocaleLink href={DECISION_HUB_PATH} className="stitch-cta-secondary shrink-0 self-end sm:self-center">
+              <LocaleLink href={DECISION_HUB_PATH} className="stitch-cta-primary shrink-0 self-end sm:self-center group">
                 {messages.landing.journalCta}
-                <span aria-hidden className="ml-2">
+                <span aria-hidden className="ml-2 transition-transform duration-200 group-hover:translate-x-1">
                   →
                 </span>
               </LocaleLink>
