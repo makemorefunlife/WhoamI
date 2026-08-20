@@ -324,40 +324,39 @@ export default function StitchLandingPage({
         {/* BRAND PHILOSOPHY Section (Below Personal Analysis) */}
         <section
           data-stitch-reveal
-          className="mt-stack-lg md:mt-section-gap"
+          className="mt-stack-lg md:mt-section-gap text-left"
         >
-          <div className="grid gap-10 rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm md:grid-cols-[0.9fr_1.1fr] md:p-14">
-            <div>
-              <span className={EYEBROW_CLASS}>
-                {messages.landing.philosophyEyebrow || "BRAND PHILOSOPHY"}
-              </span>
-              <h3 className="stitch-headline whitespace-pre-line text-3xl leading-tight font-normal md:text-4xl">
-                {messages.landing.philosophyHeadline}
-              </h3>
-              {messages.landing.philosophySubheadline ? (
-                <p className="mt-4 whitespace-pre-line text-sm sm:text-base text-on-surface-variant/80">
-                  {messages.landing.philosophySubheadline}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex flex-col justify-between">
-              <ul className="divide-y divide-outline-variant/30 border-y border-outline-variant/30">
-                {philosophyQuestions.map(({ text, highlight }, i) => (
-                  <li key={i} className="flex gap-5 py-5">
-                    <span className="text-sm text-accent-rose font-medium">
-                      0{i + 1}
-                    </span>
-                    <div className="text-base leading-relaxed text-on-surface-variant">
-                      {renderFormattedText(text, highlight)}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8 border-t border-outline-variant/30 pt-6">
-                <p className="text-sm sm:text-base leading-relaxed text-primary/90 whitespace-pre-line font-medium text-center md:text-left">
-                  {renderFormattedText(messages.landing.philosophyConclusion)}
-                </p>
-              </div>
+          <div className="mb-6 text-left">
+            <span className={EYEBROW_CLASS}>
+              {messages.landing.philosophyEyebrow || "BRAND PHILOSOPHY"}
+            </span>
+            <h2 className="stitch-headline text-2xl font-bold leading-tight text-primary sm:text-3xl text-left whitespace-pre-line">
+              {messages.landing.philosophyHeadline}
+            </h2>
+            {messages.landing.philosophySubheadline ? (
+              <p className="mt-2 whitespace-pre-line text-sm sm:text-base text-on-surface-variant/80">
+                {messages.landing.philosophySubheadline}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 sm:p-10 shadow-sm">
+            <ul className="divide-y divide-outline-variant/30 border-y border-outline-variant/30">
+              {philosophyQuestions.map(({ text, highlight }, i) => (
+                <li key={i} className="flex gap-5 py-5">
+                  <span className="text-sm text-accent-rose font-bold">
+                    0{i + 1}
+                  </span>
+                  <div className="text-base leading-relaxed text-on-surface-variant">
+                    {renderFormattedText(text, highlight)}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 border-t border-outline-variant/30 pt-6">
+              <p className="text-sm sm:text-base leading-relaxed text-primary/90 whitespace-pre-line font-medium text-left">
+                {renderFormattedText(messages.landing.philosophyConclusion)}
+              </p>
             </div>
           </div>
 
