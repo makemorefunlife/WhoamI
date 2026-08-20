@@ -399,4 +399,36 @@ describe("coerceDeepEssencePartA — Batch 8 axis_interpretations (gap_deep_dive
     );
     assert.equal(isDeepEssencePartA(value), true);
   });
+
+  describe("Personal Premium V3 Batch 3 — Part 03 Current x Innate Contracts", () => {
+    it("A. Prompt requires frozen semantic labels in gap and alignment contracts", () => {
+      const packet = buildFixturePacket("known_time");
+      const promptEvidence = formatPart01EvidenceForPrompt(packet);
+      const userPrompt = buildDeepEssenceStructuredPartAUserPrompt({
+        ...BASE_PROMPT_INPUT,
+        part01Evidence: groundedEvidenceInput(promptEvidence),
+      });
+
+      assert.ok(userPrompt.includes('natural_tendency ("본래 더 편한 방식")'));
+      assert.ok(userPrompt.includes('current_pattern ("현실에서 익숙해진 방식")'));
+      assert.ok(userPrompt.includes('gives_you ("그 과정에서 얻은 힘")'));
+      assert.ok(userPrompt.includes('may_cost ("대신 더 많이 쓰게 된 에너지")'));
+      assert.ok(userPrompt.includes('why_it_feels_easy ("그래서 힘을 덜 들이고 잘 쓰는 부분")'));
+    });
+
+    it("B. Prompt forbids advice, traditional Saju jargon, true-self/fake-self, invented biography, and repetition", () => {
+      const packet = buildFixturePacket("known_time");
+      const promptEvidence = formatPart01EvidenceForPrompt(packet);
+      const userPrompt = buildDeepEssenceStructuredPartAUserPrompt({
+        ...BASE_PROMPT_INPUT,
+        part01Evidence: groundedEvidenceInput(promptEvidence),
+      });
+
+      assert.ok(userPrompt.includes("ZERO ADVICE BAN"));
+      assert.ok(userPrompt.includes("NO TRADITIONAL SAJU JARGON LEAKAGE"));
+      assert.ok(userPrompt.includes("NO TRUE-SELF / FAKE-SELF LANGUAGE"));
+      assert.ok(userPrompt.includes("NO INVENTED BIOGRAPHY & NO LIFE-STORY SYNTHESIS"));
+      assert.ok(userPrompt.includes("NO CROSS-AXIS MECHANISM REPETITION"));
+    });
+  });
 });

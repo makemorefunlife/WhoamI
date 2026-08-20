@@ -256,6 +256,46 @@ export function polishDeepEssenceStructuredReport(
           },
         }
       : {}),
+    ...(report.axis_interpretations
+      ? {
+          axis_interpretations: {
+            ...(report.axis_interpretations.gap_deep_dive
+              ? {
+                  gap_deep_dive: Object.fromEntries(
+                    Object.entries(report.axis_interpretations.gap_deep_dive).map(([k, v]) => [
+                      k,
+                      {
+                        ...v,
+                        natural_tendency: cleanAdaptationStoryText(v.natural_tendency, loc),
+                        current_pattern: cleanAdaptationStoryText(v.current_pattern, loc),
+                        gives_you: cleanAdaptationStoryText(v.gives_you, loc),
+                        may_cost: cleanAdaptationStoryText(v.may_cost, loc),
+                        ...(v.may_work_better
+                          ? { may_work_better: cleanAdaptationStoryText(v.may_work_better, loc) }
+                          : {}),
+                      },
+                    ]),
+                  ),
+                }
+              : {}),
+            ...(report.axis_interpretations.alignment_highlight
+              ? {
+                  alignment_highlight: Object.fromEntries(
+                    Object.entries(report.axis_interpretations.alignment_highlight).map(([k, v]) => [
+                      k,
+                      {
+                        ...v,
+                        natural_tendency: cleanAdaptationStoryText(v.natural_tendency, loc),
+                        current_pattern: cleanAdaptationStoryText(v.current_pattern, loc),
+                        why_it_feels_easy: cleanAdaptationStoryText(v.why_it_feels_easy, loc),
+                      },
+                    ]),
+                  ),
+                }
+              : {}),
+          },
+        }
+      : {}),
   };
 
   return isDeepEssenceStructuredReport(next) ? next : report;

@@ -40,18 +40,19 @@ describe("Verification 1 & 2 — generation version 1 is stale, current version 
     return stored >= PERSONAL_V2_STRUCTURED_GENERATION_VERSION;
   }
 
-  it("PERSONAL_V2_STRUCTURED_GENERATION_VERSION is now 4 (Batch 2 bump)", () => {
-    assert.equal(PERSONAL_V2_STRUCTURED_GENERATION_VERSION, 4);
+  it("PERSONAL_V2_STRUCTURED_GENERATION_VERSION is now 5 (Batch 3 bump)", () => {
+    assert.equal(PERSONAL_V2_STRUCTURED_GENERATION_VERSION, 5);
   });
 
-  it("a stored row stamped with the old version (1, 2, or 3) is treated as stale against the new gate", () => {
+  it("a stored row stamped with an old version (1..4) is treated as stale against the new gate", () => {
     assert.equal(generationIsCurrent(1), false);
     assert.equal(generationIsCurrent(2), false);
     assert.equal(generationIsCurrent(3), false);
+    assert.equal(generationIsCurrent(4), false);
   });
 
-  it("a stored row stamped with the current version (4) is treated as reusable", () => {
-    assert.equal(generationIsCurrent(4), true);
+  it("a stored row stamped with the current version (5) is treated as reusable", () => {
+    assert.equal(generationIsCurrent(5), true);
   });
 
   it("an unstamped legacy row (undefined) is treated as stale", () => {
@@ -62,11 +63,11 @@ describe("Verification 1 & 2 — generation version 1 is stale, current version 
 // ── 3. Client-side localStorage cache invalidation ─────────────────────────
 
 describe("Verification 3 — local browser cache invalidation", () => {
-  it("SLIM_INTEGRATED_CACHE_VERSION was bumped to 7 (Batch 2 bump)", () => {
-    assert.equal(SLIM_INTEGRATED_CACHE_VERSION, 7);
+  it("SLIM_INTEGRATED_CACHE_VERSION was bumped to 8 (Batch 3 bump)", () => {
+    assert.equal(SLIM_INTEGRATED_CACHE_VERSION, 8);
   });
 
-  it("the storage key embeds the new version, so a v6-keyed browser entry cannot be read as a hit", () => {
+  it("the storage key embeds the new version, so a v7-keyed browser entry cannot be read as a hit", () => {
     const cacheSrc = fs.readFileSync("lib/v1/slim/slimIntegratedCache.ts", "utf8");
     assert.match(
       cacheSrc,
@@ -75,9 +76,9 @@ describe("Verification 3 — local browser cache invalidation", () => {
     );
   });
 
-  it("legacy-key cleanup now also removes the old v6 key (not just v1..v5)", () => {
+  it("legacy-key cleanup now also removes the old v7 key (not just v1..v6)", () => {
     const cacheSrc = fs.readFileSync("lib/v1/slim/slimIntegratedCache.ts", "utf8");
-    assert.match(cacheSrc, /\$\{PREFIX\}v6_\$\{locale\}_\$\{reportId\}/);
+    assert.match(cacheSrc, /\$\{PREFIX\}v7_\$\{locale\}_\$\{reportId\}/);
   });
 
   it("useSlimV1Integrated still returns early on a cache hit (confirms WHY the client bump was necessary, not just the server one)", () => {

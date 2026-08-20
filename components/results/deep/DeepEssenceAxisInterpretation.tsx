@@ -99,9 +99,16 @@ export function DeepEssenceAxisInterpretation({
           <div className="mt-6 space-y-6">
             {gapEntries.map(([axis, dive]) => (
               <div key={axis} className="border-t border-primary pt-4">
-                <h4 className="text-[15px] text-on-surface" style={serifStyle}>
-                  {axisLabel(axis, locale)}
-                </h4>
+                <div>
+                  <h4 className="text-[15px] font-semibold text-on-surface" style={serifStyle}>
+                    {axisLabel(axis, locale)}
+                  </h4>
+                  {t.glossary[axis] ? (
+                    <p className="mt-0.5 text-[12.5px] text-on-surface-variant/90 leading-normal">
+                      {t.glossary[axis]}
+                    </p>
+                  ) : null}
+                </div>
                 <div className="mt-3 space-y-3">
                   <Sub label={t.naturalTendencyLabel} text={dive.natural_tendency} />
                   <Sub label={t.currentPatternLabel} text={dive.current_pattern} />
@@ -131,12 +138,19 @@ export function DeepEssenceAxisInterpretation({
             </span>
           </div>
           <div className="border-accent-emerald mt-5 border-t pt-4">
-            <h4 className="text-[14px] text-on-surface" style={serifStyle}>
-              {axisLabel(alignment[0], locale)}
-            </h4>
+            <div>
+              <h4 className="text-[14px] font-semibold text-on-surface" style={serifStyle}>
+                {axisLabel(alignment[0], locale)}
+              </h4>
+              {t.glossary[alignment[0]] ? (
+                <p className="mt-0.5 text-[12px] text-on-surface-variant/90 leading-normal">
+                  {t.glossary[alignment[0]]}
+                </p>
+              ) : null}
+            </div>
             <div className="mt-3 space-y-2.5">
               <Sub label={t.naturalTendencyLabel} text={alignment[1].natural_tendency} />
-              <Sub label={t.currentPatternLabel} text={alignment[1].current_pattern} />
+              <Sub label={t.currentPatternAlignedLabel ?? t.currentPatternLabel} text={alignment[1].current_pattern} />
               <Sub label={t.whyItFeelsEasyLabel} text={alignment[1].why_it_feels_easy} />
             </div>
           </div>

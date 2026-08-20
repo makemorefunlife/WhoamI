@@ -20,11 +20,11 @@ import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructure
  * refetch, which now goes through route.ts's own
  * PERSONAL_V2_STRUCTURED_GENERATION_VERSION gate server-side.
  *
- * Bumped 6 -> 7: Batch 2 Part 02 Layered Identity narrative guidelines,
- * contrast requirements, high-information title contract, and advice bans.
- * Bumping client key forces browsers to refetch and receive the new Part 02.
+ * Bumped 7 -> 8: Batch 3 Part 03 Current x Innate narrative guidelines,
+ * gained strength / hidden cost contracts, advice bans, and UI labels.
+ * Bumping client key forces browsers to refetch and receive the new Part 03.
  */
-export const SLIM_INTEGRATED_CACHE_VERSION = 7;
+export const SLIM_INTEGRATED_CACHE_VERSION = 8;
 
 const PREFIX = "ahaitsme_v2_slim_integrated_";
 
@@ -37,13 +37,14 @@ function legacyStorageKeys(reportId: string, locale: Locale): string[] {
   return [
     `${PREFIX}${reportId}`,
     `${PREFIX}${locale}_${reportId}`,
-    // v1/v2/v3/v4/v5/v6 keys from earlier CACHE_VERSION values
+    // v1/v2/v3/v4/v5/v6/v7 keys from earlier CACHE_VERSION values
     `${PREFIX}v1_${locale}_${reportId}`,
     `${PREFIX}v2_${locale}_${reportId}`,
     `${PREFIX}v3_${locale}_${reportId}`,
     `${PREFIX}v4_${locale}_${reportId}`,
     `${PREFIX}v5_${locale}_${reportId}`,
     `${PREFIX}v6_${locale}_${reportId}`,
+    `${PREFIX}v7_${locale}_${reportId}`,
   ];
 }
 

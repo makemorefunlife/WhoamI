@@ -25,6 +25,7 @@ export type DeepEssenceUiStrings = {
     alignmentSectionTag: string;
     naturalTendencyLabel: string;
     currentPatternLabel: string;
+    currentPatternAlignedLabel: string;
     givesYouLabel: string;
     mayCostLabel: string;
     mayWorkBetterLabel: string;
@@ -160,12 +161,13 @@ const EN: DeepEssenceUiStrings = {
     gapSectionTag: "Gap",
     alignmentSectionTitle: "Where it already comes easy",
     alignmentSectionTag: "Aligned",
-    naturalTendencyLabel: "What comes more naturally",
-    currentPatternLabel: "How you operate today",
-    givesYouLabel: "What this gives you",
-    mayCostLabel: "What it may cost",
+    naturalTendencyLabel: "Original natural style",
+    currentPatternLabel: "How you adapted in real life",
+    currentPatternAlignedLabel: "How you still operate naturally",
+    givesYouLabel: "The capability you gained",
+    mayCostLabel: "The hidden energy cost",
     mayWorkBetterLabel: "What may work better",
-    whyItFeelsEasyLabel: "Why it feels easy",
+    whyItFeelsEasyLabel: "Why it takes less effort",
   },
   adaptationStory: {
     sectionTitle: "So this is how you've been living",
@@ -294,12 +296,13 @@ const KO: DeepEssenceUiStrings = {
     gapSectionTag: "차이",
     alignmentSectionTitle: "이미 편하게 잘 맞는 부분",
     alignmentSectionTag: "정렬",
-    naturalTendencyLabel: "더 자연스러운 성향",
-    currentPatternLabel: "지금 사용하는 방식",
-    givesYouLabel: "이 방식이 주는 것",
-    mayCostLabel: "에너지가 들 수 있는 부분",
+    naturalTendencyLabel: "본래 더 편한 방식",
+    currentPatternLabel: "현실에서 익숙해진 방식",
+    currentPatternAlignedLabel: "지금도 자연스럽게 쓰는 방식",
+    givesYouLabel: "그 과정에서 얻은 힘",
+    mayCostLabel: "대신 더 많이 쓰게 된 에너지",
     mayWorkBetterLabel: "더 편하게 활용하는 방법",
-    whyItFeelsEasyLabel: "왜 편하게 느껴지는지",
+    whyItFeelsEasyLabel: "그래서 힘을 덜 들이고 잘 쓰는 부분",
   },
   adaptationStory: {
     sectionTitle: "그래서 나는 왜 이렇게 살아왔을까요?",
