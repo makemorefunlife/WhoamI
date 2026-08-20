@@ -1376,6 +1376,10 @@ export const messagesEnUS = {
       originStoryCardTitle: "Why You Two, of All People",
       originStoryWhyUsLabel: "Why you were drawn together",
       originStoryPositiveChangeLabel: (nickname: string) => `What ${nickname} gains from this`,
+      dailyLifeMirrorCardTitle: "A Glimpse of Your Everyday Life",
+      dailyLifeMirrorCharmLabel: (nickname: string) => `${nickname}'s natural charm`,
+      dailyLifeMirrorSpouseTraitLabel: (nickname: string) => `The spouse ${nickname} sees`,
+      dailyLifeMirrorAuthorityLabel: (nickname: string) => `${nickname}'s style after marriage`,
       deepReadCardTitle: "Deep Read — Reading Between the Lines",
       deepReadVoiceMeLabel: "From my perspective",
       deepReadVoicePartnerLabel: "From their perspective",
@@ -2644,6 +2648,10 @@ export type MessageCatalog = {
       originStoryCardTitle: string;
       originStoryWhyUsLabel: string;
       originStoryPositiveChangeLabel: (nickname: string) => string;
+      dailyLifeMirrorCardTitle: string;
+      dailyLifeMirrorCharmLabel: (nickname: string) => string;
+      dailyLifeMirrorSpouseTraitLabel: (nickname: string) => string;
+      dailyLifeMirrorAuthorityLabel: (nickname: string) => string;
       deepReadCardTitle: string;
       deepReadVoiceMeLabel: string;
       deepReadVoicePartnerLabel: string;

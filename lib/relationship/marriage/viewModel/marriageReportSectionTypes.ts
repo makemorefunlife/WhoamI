@@ -51,6 +51,13 @@ export type OriginStorySection = BaseSection & {
   positiveChangeB: string;
 };
 
+// ---- Part 1.5: 일상 모습 (일간/일지 결정론적 표) ------------------------------
+
+export type DailyLifeMirrorSection = BaseSection & {
+  type: "daily_life_mirror";
+  vm: import("../marriageDailyLifeMirror").DailyLifeMirrorSection;
+};
+
 // ---- Part 2: 스코어링 + 11축 매칭 + 비교표 + 자산관리 ------------------------
 
 export type HouseholdSnapshotSection = BaseSection & {
@@ -166,6 +173,7 @@ export type DeepReadSection = BaseSection & {
 
 export type MarriageReportSection =
   | OriginStorySection
+  | DailyLifeMirrorSection
   | HouseholdSnapshotSection
   | CompareTableSection
   | PsychRadarSection

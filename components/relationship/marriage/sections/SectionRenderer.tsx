@@ -26,6 +26,7 @@ import PairPrescriptionSection from "@/components/relationship/shared/PairPrescr
 import type {
   BedroomSection,
   CompareTableSection,
+  DailyLifeMirrorSection,
   DeepReadSection,
   FamilyBoundarySection,
   HomeDnaSection,
@@ -63,6 +64,9 @@ const relSerif = Noto_Serif_KR({
 /** Shared editorial accent (rel-deep) — matches Romantic V4 / Friend, not the old per-domain purple. */
 const ACCENT = "#1b3b2b";
 
+/** Pre-existing gap — used below (CHAPTER_GROUPS/BONUS_CHAPTER_TYPES/byType) but never declared. */
+type MarriageSectionType = MarriageReportSection["type"];
+
 /** 하드코딩 이모지 대신 — 3년 날씨 레벨 → Lucide 아이콘 + 테마 컬러. */
 const WEATHER_ICON: Record<string, { Icon: typeof Sun; className: string }> = {
   sunny: { Icon: Sun, className: "text-v4-good" },
@@ -82,7 +86,17 @@ function PersonBadge() {
   );
 }
 
-// ---- Canonical 9-Chapter Structure (Phase 7 Final Synthesis) ------------------
+// ---- Canonical 9(+1)-Chapter Structure (Phase 7 Final Synthesis) --------------
+// 순서 근거: decisions/033_marriage-report-part-reorder.md. `id`는 절대 바꾸지
+// 않는다 — buildCanonicalMarriageStoryPlan.ts가 이 정확한 chapterId 문자열로
+// 챕터별 summary/userQuestion을 채워 넣고, 아래 렌더러의 하드코딩된 특수 블록
+// (ExpertVoiceBlock/EconomicPartnershipCard/ConflictSubstantiveCard/
+// Chapter07SubstantiveCard/LifePartnershipVerdictCard/MarriageActionPlaybookCard
+// 등)도 `cDef.id === "..."`로 매칭한다. 배열 "순서"와 "number" 표시값만 바꿔서
+// 화면 순서를 재배치하고, id·types·특수 블록 매칭은 그대로 둔다.
+// c6에서 weather_forecast만 분리해 새 c10으로 뺀 것이 유일한 types 변경 —
+// c6엔 전용 하드코딩 블록이 없어 안전하다. c10은 buildCanonicalMarriageStoryPlan
+// 쪽에 대응 chapterId가 없어 💡 요약 인셋만 없고, 카드 자체는 정상 렌더된다.
 const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   id: string;
   number: string;
@@ -90,17 +104,21 @@ const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   titleEn: string;
   types: Array<MarriageReportSection["type"]>;
 }> = [
-  { id: "c1_who_we_are", number: "01", titleKo: "우리는 어떤 부부인가", titleEn: "Who We Are as a Married Couple", types: ["origin_story"] },
+  { id: "c1_who_we_are", number: "01", titleKo: "우리는 어떤 부부인가", titleEn: "Who We Are as a Married Couple", types: ["origin_story", "daily_life_mirror"] },
   { id: "c2_lifestyle_dna", number: "02", titleKo: "함께 살 때 각자의 라이프스타일과 기질", titleEn: "Life Style & Household DNA", types: ["psych_radar", "compare_table", "home_dna"] },
-  { id: "c3_household_os", number: "03", titleKo: "돈, 집안일, 보이지 않는 운영 책임", titleEn: "Household OS: Money, Chores & PM", types: ["money_chores"] },
+  { id: "c7_longterm_compounding", number: "03", titleKo: "함께 살수록 쌓이는 자산과 부채", titleEn: "Long-Term Compounding: Assets & Liabilities", types: ["privacy"] },
   { id: "c4_intimacy_bedroom", number: "04", titleKo: "사랑, 신체적 친밀감과 침실 이야기", titleEn: "Physical Intimacy & Bedroom Chemistry", types: ["bedroom"] },
-  { id: "c5_conflict_deescalation", number: "05", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
-  { id: "c6_family_parenting_career", number: "06", titleKo: "원가족 경계, 자녀 양육과 일-가정 밸런스", titleEn: "Family Boundary, Parenting & Career-Home", types: ["parenting", "family_boundary", "weather_forecast"] },
-  { id: "c7_longterm_compounding", number: "07", titleKo: "함께 살수록 쌓이는 자산과 부채", titleEn: "Long-Term Compounding: Assets & Liabilities", types: ["privacy"] },
+  { id: "c3_household_os", number: "05", titleKo: "돈, 집안일, 보이지 않는 운영 책임", titleEn: "Household OS: Money, Chores & PM", types: ["money_chores"] },
+  { id: "c6_family_parenting_career", number: "06", titleKo: "원가족 경계와 자녀 양육", titleEn: "Family Boundary & Parenting", types: ["parenting", "family_boundary"] },
+  { id: "c5_conflict_deescalation", number: "07", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
   { id: "c8_partnership_verdict", number: "08", titleKo: "부부 파트너십 최종 판정", titleEn: "Life Partnership Verdict", types: [] },
   { id: "c9_next_chapter_rituals", number: "09", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: ["upset", "prescription"] },
+  { id: "c10_weather_forecast", number: "10", titleKo: "향후 3년의 홈 리스크 기상도", titleEn: "Your 3-Year Home Risk Forecast", types: ["weather_forecast"] },
 ];
 
+// 레거시 폴백(canonicalStoryPlan 없는 옛 캐시 리포트) — 하드코딩 특수 블록
+// 결합이 없어서 canonical 배열과 달리 챕터 구성 자체를 decisions/033 순서에
+// 맞춰 자유롭게 합쳤다.
 const CHAPTER_GROUPS: Array<{
   id: string;
   types: Exclude<MarriageSectionType, "household_snapshot">[];
@@ -109,7 +127,7 @@ const CHAPTER_GROUPS: Array<{
 }> = [
   {
     id: "ch_temperature",
-    types: ["origin_story"],
+    types: ["origin_story", "daily_life_mirror"],
     titleKo: "한눈에 보는 우리 부부의 온도",
     titleEn: "Your Marriage at a Glance",
   },
@@ -120,40 +138,28 @@ const CHAPTER_GROUPS: Array<{
     titleEn: "How You Live Together",
   },
   {
-    id: "ch_money_chores",
-    types: ["money_chores"],
-    titleKo: "가사와 재정의 완벽한 분담",
-    titleEn: "Splitting Chores & Finances",
+    id: "ch_theme_playbook",
+    types: ["privacy", "bedroom", "money_chores", "parenting", "family_boundary"],
+    titleKo: "다름을 무기로 — 우리 집 실전 역할 분담",
+    titleEn: "Turning Differences into Teamwork",
   },
   {
     id: "ch_fight_pattern",
-    types: ["warning", "upset", "privacy"],
-    titleKo: "부부싸움의 패턴과 해독제",
-    titleEn: "Your Fight Pattern & the Antidote",
-  },
-  {
-    id: "ch_parenting_boundary",
-    types: ["parenting", "family_boundary"],
-    titleKo: "육아 가치관과 원가족 바운더리",
-    titleEn: "Parenting Values & In-Law Boundaries",
-  },
-  {
-    id: "ch_bedroom",
-    types: ["bedroom"],
-    titleKo: "침실 케미스트리와 정서적 애착",
-    titleEn: "Bedroom Chemistry & Attachment",
-  },
-  {
-    id: "ch_weather",
-    types: ["weather_forecast"],
-    titleKo: "향후 3년의 홈 리스크 기상도",
-    titleEn: "Your 3-Year Home Risk Forecast",
+    types: ["upset", "warning"],
+    titleKo: "부부싸움의 패턴과 오해의 번역기",
+    titleEn: "Your Fight Pattern & the Translator",
   },
   {
     id: "ch_playbook",
     types: ["prescription"],
     titleKo: "오래 단단할 우리를 위한 절대 처방전",
     titleEn: "The Playbook for the Long Run",
+  },
+  {
+    id: "ch_weather",
+    types: ["weather_forecast"],
+    titleKo: "향후 3년의 홈 리스크 기상도",
+    titleEn: "Your 3-Year Home Risk Forecast",
   },
 ];
 
@@ -189,6 +195,50 @@ function OriginStoryCard({
             {section.positiveChangeB}
           </RelationshipReportParagraph>
         </div>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
+// ---- Part 1.5: 일상 모습 (일간/일지 결정론적 표) ------------------------------
+
+function DailyLifeMirrorCard({ section }: { section: DailyLifeMirrorSection }) {
+  const t = useMessages().relationshipDrilldown.cohabitation;
+  const { vm } = section;
+  const rows = [vm.personA, vm.personB];
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <RelationshipReportParagraph>{vm.intro}</RelationshipReportParagraph>
+        {rows.map((p) => (
+          <div key={p.nickname} className="space-y-3">
+            {p.charm ? (
+              <div>
+                <RelationshipReportLabel>{t.dailyLifeMirrorCharmLabel(p.nickname)}</RelationshipReportLabel>
+                <RelationshipReportParagraph className="mt-1.5">
+                  <span className="font-semibold text-rel-ink">{p.charm.label}</span> — {p.charm.description}
+                </RelationshipReportParagraph>
+              </div>
+            ) : null}
+            {p.spouseTrait ? (
+              <div>
+                <RelationshipReportLabel>{t.dailyLifeMirrorSpouseTraitLabel(p.nickname)}</RelationshipReportLabel>
+                <RelationshipReportParagraph className="mt-1.5">
+                  <span className="font-semibold text-rel-ink">{p.spouseTrait.label}</span> — {p.spouseTrait.description}
+                </RelationshipReportParagraph>
+              </div>
+            ) : null}
+            {p.authority ? (
+              <div>
+                <RelationshipReportLabel>{t.dailyLifeMirrorAuthorityLabel(p.nickname)}</RelationshipReportLabel>
+                <RelationshipReportParagraph className="mt-1.5">
+                  <span className="font-semibold text-rel-ink">{p.authority.label}</span> — {p.authority.description}
+                </RelationshipReportParagraph>
+              </div>
+            ) : null}
+            <div className="h-px w-full bg-rel-line" />
+          </div>
+        ))}
       </RelationshipReportBody>
     </RelationshipReportCard>
   );
@@ -1152,6 +1202,8 @@ export function MarriageReportSectionCard({
   switch (section.type) {
     case "origin_story":
       return <OriginStoryCard section={section} names={names} />;
+    case "daily_life_mirror":
+      return <DailyLifeMirrorCard section={section} />;
     case "deep_read":
       return <DeepReadSectionCard section={section} />;
     case "compare_table":

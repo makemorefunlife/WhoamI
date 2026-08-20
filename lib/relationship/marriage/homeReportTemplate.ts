@@ -128,6 +128,12 @@ export type HouseholdPartnershipReport = {
    * (friend의 section_compare_table과 동일 방식).
    */
   section_compare_table?: import("./marriageSajuCompareTable").MarriageCompareRow[];
+  /**
+   * "일상 모습" — 결정론적 일간/일지 표 기반, buildMarriageReport.ts에서
+   * 별도로 채워 넣는다(section_compare_table과 동일 패턴). 없으면
+   * ViewModel 단에서 섹션 자체를 생략한다.
+   */
+  section_daily_life_mirror?: import("./marriageDailyLifeMirror").DailyLifeMirrorSection;
 };
 
 /**

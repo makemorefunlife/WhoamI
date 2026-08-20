@@ -68,6 +68,7 @@ import {
   buildMarriageContextOutput,
   type MarriageContextOutput,
 } from "./marriageContextOutput";
+import { buildMarriageDailyLifeMirrorSection } from "./marriageDailyLifeMirror";
 import { buildCanonicalCoupleStoryPlan } from "./buildCanonicalCoupleStoryPlan";
 import { buildMarriageCanonicalEngine } from "./buildMarriageCanonicalEngine";
 import { buildCanonicalMarriageStoryPlan } from "./buildCanonicalMarriageStoryPlan";
@@ -432,6 +433,19 @@ export function buildMarriageReport(params: {
         : {}),
     },
   };
+
+  const dailyLifeMirror = buildMarriageDailyLifeMirrorSection({
+    nicknameA: params.nicknameA,
+    nicknameB: params.nicknameB,
+    dayStemCodeA: ctx.marriagePairAnalysis.chartA.dayStemCode,
+    dayStemCodeB: ctx.marriagePairAnalysis.chartB.dayStemCode,
+    dayBranchCodeA: ctx.marriagePairAnalysis.chartA.dayBranchCode,
+    dayBranchCodeB: ctx.marriagePairAnalysis.chartB.dayBranchCode,
+    locale,
+  });
+  if (dailyLifeMirror) {
+    household.section_daily_life_mirror = dailyLifeMirror;
+  }
 
   const snapshot_panel = buildMarriageSnapshotPanel(
     ctx,

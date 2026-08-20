@@ -79,6 +79,21 @@ function buildOriginStorySection(
   };
 }
 
+function buildDailyLifeMirrorSection(
+  report: MarriageReportBody,
+  t: ReturnType<typeof catalog>,
+): MarriageReportSection | null {
+  const vm = report.household?.section_daily_life_mirror;
+  if (!vm) return null;
+  return {
+    id: "daily_life_mirror",
+    type: "daily_life_mirror",
+    partNumber: 1,
+    title: t.dailyLifeMirrorCardTitle,
+    vm,
+  };
+}
+
 function buildHouseholdSnapshotSection(
   report: MarriageReportBody,
   t: ReturnType<typeof catalog>,
@@ -674,22 +689,36 @@ export function buildMarriageReportViewModel(
   const names: [string, string] = [myName, partnerName];
   const t = catalog(locale ?? "ko-KR");
 
+  // 순서 근거: decisions/033_marriage-report-part-reorder.md
+  //   헤드라인+트라이스코어 → origin_story → 일상 모습(신규) → deep_read
+  //   → DNA 데이터증명(psych_radar 11축 → compare_table 사주 → home_dna)
+  //   → 테마 무기화(프라이버시→침실→돈→양육→시댁, 감정 무게순)
+  //   → 오해의 번역기(upset/warning) → 처방 → 웨더포캐스트(클로징)
+  // home_dna/deep_read/upset의 정확한 하위 위치는 결정 문서에 명시되지
+  // 않아 이 파일에서 합리적으로 배치함 — 필요시 조정.
+  //
+  // 주의(2026-08-21): 이 순서는 components/relationship/marriage/sections/
+  // SectionRenderer.tsx의 CHAPTER_GROUPS(고정 9-챕터 그룹핑)에 의해
+  // 다시 한번 재배치된다 — 이 배열 순서는 "같은 챕터 안에서의 순서"에만
+  // 영향을 준다. 화면에 실제로 보이는 큰 순서를 바꾸려면 CHAPTER_GROUPS도
+  // 함께 손봐야 한다(아직 미착수 — decisions/033 참고).
   const builders: Array<() => MarriageReportSection | null> = [
-    () => buildOriginStorySection(report, t),
     () => buildHouseholdSnapshotSection(report, t),
-    () => buildCompareTableSection(report, locale ?? "ko-KR", t),
-    () => buildPsychRadarSection(report, viewerIsReportA, t),
-    () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
+    () => buildOriginStorySection(report, t),
+    () => buildDailyLifeMirrorSection(report, t),
     () => buildDeepReadSection(report, viewerIsReportA, t),
-    () => buildBedroomSection(report, t),
+    () => buildPsychRadarSection(report, viewerIsReportA, t),
+    () => buildCompareTableSection(report, locale ?? "ko-KR", t),
     () => buildHomeDnaSection(report, viewerIsReportA, t),
+    () => buildPrivacySection(report, t),
+    () => buildBedroomSection(report, t),
+    () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
     () => buildParentingSection(report, t),
     () => buildFamilyBoundarySection(report, t),
-    () => buildWeatherForecastSection(report, t),
-    () => buildPrivacySection(report, t),
     () => buildUpsetSection(report, viewerIsReportA, t),
     () => buildWarningSection(report, t),
     () => buildPrescriptionSection(report, t),
+    () => buildWeatherForecastSection(report, t),
   ];
 
   const sections = builders
