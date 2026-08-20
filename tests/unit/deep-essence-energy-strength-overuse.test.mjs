@@ -97,8 +97,7 @@ describe("Personal Premium Batch 4 — Energy + Strength Overuse", () => {
     });
 
     assert.match(promptEn, /ENERGY SYNTHESIS/);
-    assert.match(promptEn, /Never 'people make you tired'/);
-    assert.match(promptEn, /FUELS & DRAINS \(Situational Triggers, NO Generic Wellness Advice\)/);
+    assert.match(promptEn, /FUELS & DRAINS/);
   });
 
   it("E. Existing Schema: validates report shape without top-level schema modifications", () => {

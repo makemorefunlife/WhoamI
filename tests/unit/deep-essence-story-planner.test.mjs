@@ -257,4 +257,59 @@ describe("buildPersonalPart04StoryPlan", () => {
       assert.ok(plan.selectedEvidenceRefs.every((ref) => !ref.startsWith("pillars.hour.")));
     }
   });
+
+  it("P. Part 05 energy economics prompt rules & evidence expansion are present", async () => {
+    const packet = buildMockPacket();
+    const promptEvidence = formatPart01EvidenceForPrompt(packet);
+    assert.ok(promptEvidence.energyText.includes("Day-Master strength & Ten-God distribution:"));
+    assert.ok(promptEvidence.energyText.includes("Intra-Pillar structural relations"));
+    assert.ok(promptEvidence.energyKnownKeys.size > 0);
+    assert.ok(promptEvidence.energyKnownKeys.has("secondary:energy_style"));
+
+    const { buildDeepEssenceStructuredPartAUserPrompt } = await import("../../lib/prompts/deepEssenceStructured.ts");
+    const prompt = buildDeepEssenceStructuredPartAUserPrompt({
+      surveyAnalysis: "test",
+      essenceAnalysisSummary: "test",
+      birthEnergyContext: "test",
+      currentAxisScores: { autonomy: 50, connection: 50, stability: 50, growth: 50, structure: 50, adaptability: 50 },
+      locale: "ko-KR",
+      part01Evidence: promptEvidence,
+    });
+
+    assert.ok(prompt.includes("ENERGY ECONOMICS & RECOVERY ARCHITECTURE (PART 05"));
+    assert.ok(prompt.includes("SEMANTIC OWNERSHIP BOUNDARY"));
+    assert.ok(prompt.includes("CORE MODEL (ENERGY IS NOT GOOD VS BAD)"));
+    assert.ok(prompt.includes("SAJU HUMAN TRANSLATION RULE"));
+  });
+
+  it("Q. selectEnergyMechanisms deterministically differentiates profiles", async () => {
+    const { selectEnergyMechanisms, formatPart01EvidenceForPrompt } = await import("../../lib/report/formatPart01EvidenceForPrompt.ts");
+    const chart = buildPersonalCeFixtureChart("known_time");
+    const personalContext = runPersonalContextEngine({ chart });
+
+    const packetAutonomy = buildPart01IdentityEvidencePacket({
+      chart,
+      personalContext,
+      currentPrimary: { ...CURRENT_PRIMARY, autonomy: 90, connection: 30 },
+      currentSecondary: { ...CURRENT_SECONDARY, decision_style: 85 },
+      innatePrimary: INNATE_PRIMARY,
+    });
+
+    const planAutonomy = selectEnergyMechanisms(packetAutonomy);
+    assert.strictEqual(planAutonomy.primary.key, "DECISION_LOAD");
+
+    const packetStructure = buildPart01IdentityEvidencePacket({
+      chart,
+      personalContext,
+      currentPrimary: { ...CURRENT_PRIMARY, structure: 90, stability: 85 },
+      currentSecondary: { ...CURRENT_SECONDARY, structure: 90 },
+      innatePrimary: INNATE_PRIMARY,
+    });
+
+    const planStructure = selectEnergyMechanisms(packetStructure);
+    assert.strictEqual(planStructure.primary.key, "STRUCTURE_MAINTENANCE");
+
+    const promptEv = formatPart01EvidenceForPrompt(packetAutonomy);
+    assert.ok(promptEv.energyText.includes("- [PRIMARY MECHANISM]: DECISION_LOAD"));
+  });
 });

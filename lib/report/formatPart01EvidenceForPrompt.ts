@@ -503,14 +503,176 @@ function buildAxisInterpretationEvidence(
   };
 }
 
+export type EnergyMechanismKey =
+  | "DECISION_LOAD"
+  | "CONTROL_LOAD"
+  | "STRUCTURE_MAINTENANCE"
+  | "UNCERTAINTY_MONITORING"
+  | "ADAPTATION_SWITCHING"
+  | "SOCIAL_MONITORING"
+  | "RECOVERY_ISOLATION_NEED"
+  | "RELATIONAL_REPAIR_LOAD";
+
+export type EnergyMechanismSpec = {
+  key: EnergyMechanismKey;
+  label: string;
+  description: string;
+  fuelExample: string;
+  drainExample: string;
+};
+
+export type DeterministicEnergyPlan = {
+  primary: EnergyMechanismSpec;
+  secondary: EnergyMechanismSpec;
+};
+
+const ENERGY_MECHANISM_SPECS: Record<EnergyMechanismKey, EnergyMechanismSpec> = {
+  DECISION_LOAD: {
+    key: "DECISION_LOAD",
+    label: "결정 피로 및 판단 적체 부하",
+    description: "너무 많은 변수와 타인의 관점을 사전에 고려한 뒤 결정해야 하거나, 결정 책임을 홀로 짊어질 때 발생하는 판단 적체 및 결정 피로",
+    fuelExample: "내가 범위와 우선순위를 직접 결정하고 외부 승인 없이 바로 실행할 수 있는 독립적 선택의 시간",
+    drainExample: "책임은 내게 내재되어 있으나 결정 전에 끊임없이 타인과 의견을 조율하고 승인을 얻어야 하는 상황",
+  },
+  CONTROL_LOAD: {
+    key: "CONTROL_LOAD",
+    label: "통제권 유지 및 주도권 부담",
+    description: "상황의 흐름과 책임 소재를 직접 쥐고 통제해야 마음이 놓이는 주도권 유지 부담",
+    fuelExample: "외부 개입이나 돌발 변수 없이 내 통제권과 주도권 안에서 독립적으로 집중할 수 있는 환경",
+    drainExample: "내 통제 범위를 벗어난 외압이나 타인의 비일관적인 행동으로 판과 책임이 흔들리는 상황",
+  },
+  STRUCTURE_MAINTENANCE: {
+    key: "STRUCTURE_MAINTENANCE",
+    label: "체계 및 구조 재정비 부하",
+    description: "명확한 원칙·체계·질서를 세우고 이를 반복적으로 유지하거나 수정해야 하는 구조 유지 부담",
+    fuelExample: "규칙과 역할 분담이 명확하여 매번 새로 판단하거나 판을 다시 짜지 않아도 되는 안정된 환경",
+    drainExample: "기준과 원칙이 수시로 변경되어 이미 완결된 계획과 구조를 처음부터 다시 수정해야 하는 환경",
+  },
+  UNCERTAINTY_MONITORING: {
+    key: "UNCERTAINTY_MONITORING",
+    label: "불확실성 감시 및 리스크 경계 부하",
+    description: "예측 불가능한 변수나 리스크를 사전에 감지하고 대처 방안을 계속 계산하는 리스크 경계 부담",
+    fuelExample: "예측 가능한 일정과 투명한 정보가 확보되어 미래 변수를 계속 계산하지 않아도 되는 안정된 상태",
+    drainExample: "모호한 상황이나 돌발 변수가 끊이지 않아 다음 단계 행동을 예측하기 어려운 환경",
+  },
+  ADAPTATION_SWITCHING: {
+    key: "ADAPTATION_SWITCHING",
+    label: "맥락 전환 및 유연 적응 가중",
+    description: "수시로 바뀌는 상황과 환경에 맞춰 방식·역할·관점을 빠르게 바꾸며 대처해야 하는 맥락 전환 부하",
+    fuelExample: "하나의 중요한 과제나 깊은 주제에 단절 없이 충분히 오랫동안 몰입할 수 있는 흐름",
+    drainExample: "짧은 시간 안에 전혀 다른 맥락의 여러 요구와 업무 사이를 수시로 오가야 하는 산만한 환경",
+  },
+  SOCIAL_MONITORING: {
+    key: "SOCIAL_MONITORING",
+    label: "사회적 기류 및 감정 상태 조율 부하",
+    description: "주변 사람들의 기류·감정 변화 및 반응을 지속적으로 살피고 내 행동을 맞추려는 사회적 관조 부하",
+    fuelExample: "상대방의 눈치나 반응을 신경 쓸 필요 없이 내 의도가 있는 그대로 통하는 편안한 관계",
+    drainExample: "여러 사람의 상충되는 반응과 기대를 동시에 살피며 지속적으로 눈치를 봐야 하는 모임이나 회의",
+  },
+  RECOVERY_ISOLATION_NEED: {
+    key: "RECOVERY_ISOLATION_NEED",
+    label: "자율적 고립 및 비접촉 회복 필요",
+    description: "타인과의 상호작용 후 내면의 기준을 다시 세우기 위해 완전한 고립과 독립 정리가 필요한 상태",
+    fuelExample: "아무런 응답 의무나 설명 부담 없이 완전한 혼자만의 공간에서 에너지를 재정비하는 시간",
+    drainExample: "공적·사회적 접촉이 끊이지 않고 연속되어 혼자서 생각을 정리할 여유가 차단된 환경",
+  },
+  RELATIONAL_REPAIR_LOAD: {
+    key: "RELATIONAL_REPAIR_LOAD",
+    label: "관계 갈등 수습 및 감정 조율 부담",
+    description: "갈등이나 감정적 불협화음 이후 분위기를 회복하고 관계를 수습하려는 내면적 긴장 부담",
+    fuelExample: "갈등이나 오해 없이 감정적 안정감이 보장되어 관계 수습에 에너지를 쓸 필요가 없는 관계",
+    drainExample: "상대와의 감정적 응어리나 미해결된 긴장 상태가 지속되어 계속 신경을 쏟아야 하는 상황",
+  },
+};
+
+export function selectEnergyMechanisms(packet: Part01IdentityEvidencePacket): DeterministicEnergyPlan {
+  const scores: Record<EnergyMechanismKey, number> = {
+    DECISION_LOAD: 0,
+    CONTROL_LOAD: 0,
+    STRUCTURE_MAINTENANCE: 0,
+    UNCERTAINTY_MONITORING: 0,
+    ADAPTATION_SWITCHING: 0,
+    SOCIAL_MONITORING: 0,
+    RECOVERY_ISOLATION_NEED: 0,
+    RELATIONAL_REPAIR_LOAD: 0,
+  };
+
+  const primary = packet.currentBehavior.primaryAxes;
+  const secondary = packet.currentBehavior.secondaryAxes;
+  const dimsMap = new Map(
+    packet.dimensions.allDimensions.map((d) => [d.dimension, d.evaluation.value]),
+  );
+
+  // 1. DECISION_LOAD
+  if (primary.autonomy >= 70) scores.DECISION_LOAD += (primary.autonomy - 50) * 1.2;
+  if ((secondary.decision_style ?? 50) >= 70) scores.DECISION_LOAD += (secondary.decision_style - 50) * 1.0;
+  if ((secondary.thinking_style ?? 50) >= 70) scores.DECISION_LOAD += (secondary.thinking_style - 50) * 0.8;
+  if ((dimsMap.get("decision_pace") ?? 50) >= 65) scores.DECISION_LOAD += 20;
+
+  // 2. CONTROL_LOAD
+  if (primary.autonomy >= 75) scores.CONTROL_LOAD += (primary.autonomy - 50) * 1.1;
+  if ((secondary.self_control ?? 50) >= 70) scores.CONTROL_LOAD += (secondary.self_control - 50) * 1.1;
+  if ((dimsMap.get("boundary_defense_strength") ?? 50) >= 65) scores.CONTROL_LOAD += 20;
+
+  // 3. STRUCTURE_MAINTENANCE
+  if (primary.structure >= 70) scores.STRUCTURE_MAINTENANCE += (primary.structure - 50) * 1.5;
+  if ((secondary.structure ?? 50) >= 70) scores.STRUCTURE_MAINTENANCE += (secondary.structure - 50) * 1.2;
+  if ((secondary.practical_action ?? 50) >= 70) scores.STRUCTURE_MAINTENANCE += (secondary.practical_action - 50) * 0.8;
+  if ((dimsMap.get("structure_spontaneity") ?? 50) >= 65) scores.STRUCTURE_MAINTENANCE += 20;
+
+  // 4. UNCERTAINTY_MONITORING
+  if (primary.stability >= 70) scores.UNCERTAINTY_MONITORING += (primary.stability - 50) * 1.2;
+  if ((secondary.resilience ?? 50) >= 70) scores.UNCERTAINTY_MONITORING += (secondary.resilience - 50) * 1.0;
+  if ((dimsMap.get("pressure_response") ?? 50) >= 65) scores.UNCERTAINTY_MONITORING += 20;
+
+  // 5. ADAPTATION_SWITCHING
+  if (primary.adaptability >= 75) scores.ADAPTATION_SWITCHING += (primary.adaptability - 50) * 1.4;
+  if (primary.growth >= 75) scores.ADAPTATION_SWITCHING += (primary.growth - 50) * 1.1;
+  if ((secondary.stimulation ?? 50) >= 70) scores.ADAPTATION_SWITCHING += (secondary.stimulation - 50) * 0.9;
+
+  // 6. SOCIAL_MONITORING
+  if (primary.connection >= 70) scores.SOCIAL_MONITORING += (primary.connection - 50) * 1.4;
+  if ((secondary.empathy ?? 50) >= 70) scores.SOCIAL_MONITORING += (secondary.empathy - 50) * 1.1;
+  if ((secondary.recognition ?? 50) >= 70) scores.SOCIAL_MONITORING += (secondary.recognition - 50) * 0.8;
+
+  // 7. RECOVERY_ISOLATION_NEED
+  if (primary.autonomy >= 65 && primary.connection <= 45) scores.RECOVERY_ISOLATION_NEED += 35;
+  if ((dimsMap.get("solitude_autonomy") ?? 50) >= 65) scores.RECOVERY_ISOLATION_NEED += 25;
+  if ((secondary.energy_style ?? 50) >= 70) scores.RECOVERY_ISOLATION_NEED += 15;
+
+  // 8. RELATIONAL_REPAIR_LOAD
+  if ((secondary.conflict_style ?? 50) >= 70) scores.RELATIONAL_REPAIR_LOAD += (secondary.conflict_style - 50) * 1.2;
+  if ((dimsMap.get("conflict_decompression") ?? 50) >= 65) scores.RELATIONAL_REPAIR_LOAD += 20;
+  if ((secondary.empathy ?? 50) >= 70) scores.RELATIONAL_REPAIR_LOAD += 15;
+
+  const sortedKeys = (Object.keys(scores) as EnergyMechanismKey[]).sort(
+    (a, b) => scores[b] - scores[a],
+  );
+
+  const primaryKey = sortedKeys[0] ?? "SOCIAL_MONITORING";
+  let secondaryKey = sortedKeys[1] ?? "DECISION_LOAD";
+  if (secondaryKey === primaryKey) {
+    secondaryKey = sortedKeys[2] ?? "CONTROL_LOAD";
+  }
+
+  return {
+    primary: ENERGY_MECHANISM_SPECS[primaryKey],
+    secondary: ENERGY_MECHANISM_SPECS[secondaryKey],
+  };
+}
+
 const ENERGY_RELEVANT_DIMENSION_KEYS: readonly string[] = [
   "solitude_autonomy",
   "pressure_response",
   "criticism_sensitivity",
+  "conflict_decompression",
+  "boundary_defense_strength",
+  "decision_pace",
+  "structure_spontaneity",
 ];
 const ENERGY_RELEVANT_SECONDARY_KEYS = ["energy_style", "resilience", "conflict_style", "recognition"] as const;
 
-/** Builds Energy grounding text + the exact key set shown for it (Part 02 Batch 1). */
+/** Builds Energy grounding text + the exact key set shown for it (Part 02 Batch 1 / Batch 5). */
 function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
   text: string;
   knownKeys: Set<string>;
@@ -525,9 +687,28 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
     }
   };
 
+  const plan = selectEnergyMechanisms(packet);
+  lines.push("DETERMINISTIC PRIMARY & SECONDARY ENERGY MECHANISMS FOR THIS PROFILE (MANDATORY ANCHORS):");
+  lines.push(`- [PRIMARY MECHANISM]: ${plan.primary.key} (${plan.primary.label})`);
+  lines.push(`  Burden Description: ${plan.primary.description}`);
+  lines.push(`  Restorative Fuel Direction: ${plan.primary.fuelExample}`);
+  lines.push(`  Depleting Drain Direction: ${plan.primary.drainExample}`);
+  lines.push(`- [SECONDARY MECHANISM]: ${plan.secondary.key} (${plan.secondary.label})`);
+  lines.push(`  Burden Description: ${plan.secondary.description}`);
+  lines.push(`  Restorative Fuel Direction: ${plan.secondary.fuelExample}`);
+  lines.push(`  Depleting Drain Direction: ${plan.secondary.drainExample}`);
+  lines.push("");
+
   lines.push("Climate & elemental balance (innate energetic temperament):");
   addEvidence(packet.innate.elementEvidence);
   addEvidence(packet.innate.climateEvidence);
+
+  lines.push("Day-Master strength & Ten-God distribution:");
+  addEvidence(packet.innate.strengthEvidence);
+  addEvidence(packet.innate.tenGodEvidence);
+
+  lines.push("Intra-Pillar structural relations (합/충/형/파/해):");
+  addEvidence(packet.innate.relationEvidence);
 
   lines.push("CE strengths-group signals:");
   addEvidence(packet.innate.ceStrengthSignals);
@@ -536,7 +717,7 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
   lines.push("CE cautions-group signals:");
   addEvidence(packet.growthCandidates.cautionEvidence);
 
-  lines.push("Relevant CE dimensions (solitude/pressure-response/criticism-sensitivity only):");
+  lines.push("Relevant CE dimensions:");
   for (const cand of packet.dimensions.allDimensions) {
     if (!ENERGY_RELEVANT_DIMENSION_KEYS.includes(cand.dimension)) continue;
     if (!isUsableDimensionConfidence(cand.evaluation.confidence)) continue;
@@ -546,7 +727,7 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
     lines.push(`- [${key}] value=${cand.evaluation.value} conf=${cand.evaluation.confidence}${mixed}`);
   }
 
-  lines.push("Current Secondary evidence (energy_style, resilience, conflict_style only):");
+  lines.push("Current Secondary evidence (energy_style, resilience, conflict_style, recognition only):");
   const secondary = packet.currentBehavior.secondaryAxes;
   for (const key of ENERGY_RELEVANT_SECONDARY_KEYS) {
     const skey = secondaryKey(key);
