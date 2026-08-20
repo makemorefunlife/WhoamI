@@ -1,0 +1,3 @@
+GET / -> 200 OK, 86494 bytes
+GET /robots.txt -> 404
+GET /sitemap.xml -> 404

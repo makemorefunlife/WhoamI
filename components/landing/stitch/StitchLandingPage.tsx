@@ -166,6 +166,7 @@ export default function StitchLandingPage({
   return (
     <div className="stitch-landing overflow-x-hidden">
       <main
+        id="main"
         ref={mainRef}
         className="relative mx-auto max-w-[1200px] overflow-hidden px-edge-margin-mobile pb-12 pt-6 md:px-edge-margin-desktop md:pb-20 md:pt-10"
       >
@@ -182,7 +183,7 @@ export default function StitchLandingPage({
                   <Logo size={42} href={localize("/")} priority />
                 </div>
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                  AHA IT&apos;S ME
+                  Aha It&apos;s me!
                 </p>
                 {/* 메인 타이틀 (H1) */}
                 <h1 className="stitch-headline mb-4 whitespace-pre-line text-balance text-[2rem] leading-[1.25] font-normal break-keep sm:text-3xl md:text-4xl lg:text-[2.65rem] text-primary">

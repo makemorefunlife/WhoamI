@@ -48,7 +48,7 @@ export default function Logo({
       <Link
         href={href}
         className="inline-flex shrink-0 items-center justify-center"
-        aria-label="ahaitsme 홈"
+        aria-label="Aha It's me! 홈"
       >
         {image}
       </Link>

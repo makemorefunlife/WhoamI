@@ -1,0 +1,15 @@
+=== canonical tag search (home-raw-html.html) ===
+0
+0
+=== og: tag search ===
+0
+0
+=== twitter: tag search ===
+0
+0
+=== JSON-LD search ===
+0
+0
+=== img alt coverage ===
+total img tags: 11
+with non-empty alt: 11

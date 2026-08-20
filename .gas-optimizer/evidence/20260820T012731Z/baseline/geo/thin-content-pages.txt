@@ -1,0 +1,15 @@
+573:  faq: {
+574-    title: "Frequently asked questions",
+575-    body: "FAQ content is coming soon.",
+--
+577:  contact: {
+578-    title: "Contact us",
+579-    body: "We're getting our contact channels ready.",
+--
+1892:  faq: {
+1893-    title: string;
+1894-    body: string;
+--
+1896:  contact: {
+1897-    title: string;
+1898-    body: string;

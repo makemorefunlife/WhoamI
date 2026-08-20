@@ -35,7 +35,7 @@ export default async function PolicyDocumentView({
   const messages = getMessages(locale);
   return (
     <div className="stitch-legal relative min-h-dvh text-on-surface">
-      <div className="relative z-[1] mx-auto w-full max-w-3xl px-5 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
+      <main id="main" className="relative z-[1] mx-auto w-full max-w-3xl px-5 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
         <p className="mb-6">
           <Link
             href={localizedPath(ROUTES.home, locale)}
@@ -88,7 +88,7 @@ export default async function PolicyDocumentView({
             </section>
           ))}
         </article>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,12 +1,25 @@
+import type { Metadata } from "next";
 import SpaceBackground from "@/components/space/SpaceBackground";
 import GlowButton from "@/components/space/GlowButton";
 import { CircleDot, Compass, GitBranch, Orbit, Radar, Satellite, Scale, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import { getMessages } from "@/lib/i18n/messages";
+import { buildPageMetadata } from "@/lib/seo/pageMetadata";
 
 /** Avoid SSG: root Clerk chrome can throw useContext null during /about prerender. */
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  return buildPageMetadata({
+    locale,
+    path: "/about",
+    title: messages.about.metaTitle,
+    description: messages.about.metaDescription,
+  });
+}
 
 export default async function AboutPage() {
   const locale = await getRequestLocale();
@@ -18,7 +31,7 @@ export default async function AboutPage() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_62%_12%,rgba(120,142,196,0.22),transparent_42%),radial-gradient(circle_at_20%_78%,rgba(93,119,177,0.14),transparent_48%),linear-gradient(180deg,#060b17_0%,#0b1220_42%,#0a1020_100%)]"
       />
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-14 [word-break:keep-all] [line-break:strict] sm:px-6 sm:pb-28 sm:pt-20">
+      <main id="main" className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-14 [word-break:keep-all] [line-break:strict] sm:px-6 sm:pb-28 sm:pt-20">
         <section className="grid items-center gap-10 border-b border-white/8 pb-14 sm:pb-16 md:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
             <p className="text-xs font-medium uppercase tracking-[0.26em] text-[#CBB38E]">
@@ -271,7 +284,7 @@ export default async function AboutPage() {
             </GlowButton>
           </div>
         </section>
-      </div>
+      </main>
     </SpaceBackground>
   );
 }

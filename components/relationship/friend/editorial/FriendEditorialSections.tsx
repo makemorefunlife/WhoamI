@@ -63,7 +63,7 @@ export function FriendHero({ vm, locale }: Ctx) {
       <div className="mx-auto w-full max-w-[820px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
         <Reveal>
           <p className="font-rel-sans text-[10px] uppercase tracking-[0.3em] text-rel-deep">
-            {pick(locale, "Aha! It's me! · Friend Report", "Aha! It's me! · 친구 관계 리포트")}
+            {pick(locale, "Aha It's me! · Friend Report", "Aha It's me! · 친구 관계 리포트")}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NameChip name={nameA} side="a" />

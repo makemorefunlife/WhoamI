@@ -521,7 +521,7 @@ export const messagesEnUS = {
   pricing: {
     title: "Pricing",
     shellNote: "Plans and checkout will be available soon.",
-    metaTitle: "Pricing | Ahaitsme",
+    metaTitle: "Pricing | Aha It's me!",
     metaDescription: "Me · Relationships · Decisions — Human Framework pricing",
     heroTitleLine1: "Me · Relationships · Decisions",
     heroTitleLine2: "Pick only what you need",
@@ -573,12 +573,19 @@ export const messagesEnUS = {
   faq: {
     title: "Frequently asked questions",
     body: "FAQ content is coming soon.",
+    metaTitle: "FAQ | Aha It's me!",
+    metaDescription: "Answers to common questions about Aha It's me! — coming soon.",
   },
   contact: {
     title: "Contact us",
     body: "We're getting our contact channels ready.",
+    metaTitle: "Contact | Aha It's me!",
+    metaDescription: "Get in touch with the Aha It's me! team.",
   },
   about: {
+    metaTitle: "About | Aha It's me!",
+    metaDescription:
+      "Why Aha It's me! exists — a journey to understand yourself, your relationships, and your decisions.",
     heroEyebrow: "About",
     heroTitleLine1: "Why do we",
     heroTitleLine2: "keep running into the same kinds of problems?",
@@ -750,7 +757,7 @@ export const messagesEnUS = {
     loadingFallback: "Loading...",
   },
   howItWorks: {
-    metaTitle: "How it works — ahaitsme",
+    metaTitle: "How it works — Aha It's me!",
     metaDescription: "How the analysis works (coming soon)",
     eyebrow: "How it works",
     title: "How the analysis works",
@@ -987,6 +994,9 @@ export const messagesEnUS = {
     title: "Do Not Sell My Personal Information",
     body: "Under the California Consumer Privacy Act (CCPA), you may request that we do not sell or share your personal information. Email us with the subject “Do Not Sell” and we will process your request.",
     emailLabel: "Contact",
+    metaTitle: "Do Not Sell My Personal Information | Aha It's me!",
+    metaDescription:
+      "Submit a CCPA request to opt out of the sale or sharing of your personal information.",
   },
   paymentRefund: {
     checkboxLabel:
@@ -1892,12 +1902,18 @@ export type MessageCatalog = {
   faq: {
     title: string;
     body: string;
+    metaTitle: string;
+    metaDescription: string;
   };
   contact: {
     title: string;
     body: string;
+    metaTitle: string;
+    metaDescription: string;
   };
   about: {
+    metaTitle: string;
+    metaDescription: string;
     heroEyebrow: string;
     heroTitleLine1: string;
     heroTitleLine2: string;
@@ -2264,6 +2280,8 @@ export type MessageCatalog = {
     title: string;
     body: string;
     emailLabel: string;
+    metaTitle: string;
+    metaDescription: string;
   };
   paymentRefund: {
     checkboxLabel: string;

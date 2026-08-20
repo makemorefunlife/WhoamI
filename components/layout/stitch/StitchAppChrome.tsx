@@ -14,6 +14,12 @@ export default function StitchAppChrome({
 }) {
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[999] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-primary"
+      >
+        Skip to content
+      </a>
       <StitchFixedHeader onOpenAuth={onOpenAuth} />
       <div className="flex min-h-dvh flex-col pt-16 pb-[calc(5.75rem+env(safe-area-inset-bottom))]">
         {children}

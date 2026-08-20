@@ -1,0 +1,3 @@
+5:    ignoreBuildErrors: true,
+7:  async headers() {
+23:  async redirects() {

@@ -1,0 +1,16 @@
+components/layout/stitch/StitchFixedHeader.tsx:61:      <header
+components/layout/stitch/StitchAppFooter.tsx:53:    <footer className="mt-auto border-t border-outline-variant/30 bg-surface-container-low/35 px-5 py-8 sm:px-6">
+app/blueprint-preview/page.tsx
+app/blueprint-preview/[reportId]/current/page.tsx
+app/blueprint-preview/[reportId]/essence/deep/page.tsx
+app/blueprint-preview/[reportId]/essence/page.tsx
+app/dev/cohabitation-prescription/page.tsx
+app/dev/psych-capture/page.tsx
+app/dev/relationship-enrichment-review/page.tsx
+app/dev/romantic-v2-visual/PreviewClient.tsx
+app/dev/romantic-v4-content-prototype/PrototypeClient.tsx
+app/dev/work-report-viewmodel/page.tsx
+app/invite/InviteContent.tsx
+app/onboarding/birth/page.tsx
+components/landing/stitch/StitchLandingPage.tsx
+components/relationship/friend/sections/SectionRenderer.tsx

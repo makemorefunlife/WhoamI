@@ -1,39 +1,20 @@
-"use client";
+import type { Metadata } from "next";
+import { getRequestLocale } from "@/lib/i18n/serverLocale";
+import { getMessages } from "@/lib/i18n/messages";
+import { buildPageMetadata } from "@/lib/seo/pageMetadata";
+import DoNotSellContent from "./DoNotSellContent";
 
-import LocaleLink from "@/lib/i18n/LocaleLink";
-import { useLocale } from "@/lib/i18n/LocaleProvider";
-import { ROUTES } from "@/constants/routes";
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  return buildPageMetadata({
+    locale,
+    path: "/do-not-sell",
+    title: messages.doNotSellPage.metaTitle,
+    description: messages.doNotSellPage.metaDescription,
+  });
+}
 
-/** CCPA — Do Not Sell My Personal Information 요청 안내 (글로벌) */
 export default function DoNotSellPage() {
-  const { messages } = useLocale();
-  const copy = messages.doNotSellPage;
-
-  return (
-    <div className="mx-auto w-full max-w-2xl px-5 py-14 sm:px-6">
-      <h1 className="text-2xl font-semibold tracking-tight text-on-surface">
-        {copy.title}
-      </h1>
-      <p className="mt-4 text-sm leading-relaxed text-on-surface-variant">
-        {copy.body}
-      </p>
-      <p className="mt-4 text-sm text-on-surface-variant">
-        {copy.emailLabel}:{" "}
-        <a
-          href="mailto:hong@ahaitsme.com"
-          className="font-medium text-primary underline underline-offset-2"
-        >
-          hong@ahaitsme.com
-        </a>
-      </p>
-      <p className="mt-8 text-sm">
-        <LocaleLink
-          href={ROUTES.privacy}
-          className="text-primary underline underline-offset-2"
-        >
-          {messages.footer.privacy}
-        </LocaleLink>
-      </p>
-    </div>
-  );
+  return <DoNotSellContent />;
 }

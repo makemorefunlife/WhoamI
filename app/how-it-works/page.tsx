@@ -3,21 +3,24 @@ import type { Metadata } from "next";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { localizedPath } from "@/lib/i18n/locale";
+import { buildPageMetadata } from "@/lib/seo/pageMetadata";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
   const messages = getMessages(locale);
-  return {
+  return buildPageMetadata({
+    locale,
+    path: "/how-it-works",
     title: messages.howItWorks.metaTitle,
     description: messages.howItWorks.metaDescription,
-  };
+  });
 }
 
 export default async function HowItWorksPage() {
   const locale = await getRequestLocale();
   const messages = getMessages(locale);
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-6 py-20 text-center">
+    <main id="main" className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-6 py-20 text-center">
       <p className="text-xs font-semibold uppercase tracking-widest text-primary/70">
         {messages.howItWorks.eyebrow}
       </p>
@@ -33,6 +36,6 @@ export default async function HowItWorksPage() {
       >
         {messages.howItWorks.homeCta}
       </Link>
-    </div>
+    </main>
   );
 }

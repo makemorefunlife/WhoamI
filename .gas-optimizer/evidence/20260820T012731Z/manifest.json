@@ -1,0 +1,68 @@
+{
+  "run_id": "20260820T012731Z",
+  "project": "WhoamI (ahaitsme)",
+  "report_path": "docs/gas-optimizer/analysis-plan.html",
+  "phase": "phase-1-analysis",
+  "status": "awaiting-analysis-approval",
+  "timestamps": {
+    "started_utc": "2026-08-20T01:27:31Z",
+    "baseline_captured_utc": "2026-08-20T01:45:00Z"
+  },
+  "environment": {
+    "host": "Claude Code (manual skill workflow, session-local project skill not yet auto-discovered)",
+    "measurement_mode": "static/source-code analysis + limited live fetch (dev server), per user-approved scope",
+    "capabilities_used": [
+      "file/source read",
+      "repo-wide grep",
+      "one-off curl fetch of raw SSR HTML for / (dev server, before it became unresponsive)",
+      "curl HTTP status check for /robots.txt and /sitemap.xml (dev server)"
+    ],
+    "capabilities_blocked": [
+      "Lighthouse / Core Web Vitals lab or field measurement",
+      "W3C HTML validator (network tool not invoked)",
+      "Full live crawl of all 10 in-scope pages (dev server became unresponsive after the first two fetches)",
+      "Keyboard/focus/dialog interactive accessibility testing",
+      "Color contrast measurement",
+      "Secret-scanning tool (gitleaks or equivalent) across full repo history"
+    ]
+  },
+  "scope": {
+    "site_purpose": "Personal/relationship self-understanding reports (Saju/psychometric blend) — SaaS product, ko-KR + en-US",
+    "canonical_host": "https://www.ahaitsme.com",
+    "audience": "Consumer, ko-KR primary with en-US support",
+    "rendering_mode": "Next.js 16 App Router, mixed Server Components + a Client Component homepage (SSR confirmed present, not CSR-only)",
+    "in_scope_pages": [
+      "/", "/about", "/pricing", "/how-it-works", "/faq", "/contact",
+      "/privacy", "/terms", "/refund", "/do-not-sell"
+    ],
+    "explicitly_excluded": "All authenticated/private report and account pages (/blueprint-preview/*, /relationship/*, /account/*, /survey-v2, /onboarding/*, /dev/*) — user-selected scope: public pages only",
+    "user_approved_choices": {
+      "audit_scope": "공개 페이지만 (권장)",
+      "output_locations": "기본값 사용 (권장)",
+      "measurement_method": "가능한 만큼 정적/문서 기반으로 진행 (권장)"
+    }
+  },
+  "reproduction_commands_redacted": [
+    "grep -rn <pattern> app components lib --include=\"*.tsx\"",
+    "curl -s http://localhost:3000/<path>",
+    "next build (not run this pass — analysis only, no source changes)"
+  ],
+  "artifact_paths": {
+    "seo": [
+      "baseline/seo/home-raw-html.html",
+      "baseline/seo/http-status-checks.txt",
+      "baseline/seo/meta-tag-scan.txt",
+      "baseline/seo/metadata-export-audit.txt"
+    ],
+    "geo": ["baseline/geo/thin-content-pages.txt"],
+    "aeo": ["baseline/aeo/structured-data-scan.txt"],
+    "accessibility": ["baseline/accessibility/landmark-scan.txt"],
+    "performance": ["baseline/performance/image-optimization-scan.txt"],
+    "deployment": [
+      "baseline/deployment/next-config-scan.txt",
+      "baseline/deployment/gitignore-env-scan.txt"
+    ]
+  },
+  "redaction_notes": "No secrets, tokens, PII, or authenticated-session data captured in any artifact — all evidence is public marketing-page HTML/source or non-sensitive repo config.",
+  "checksum_note": "Redacted-artifact checksums not computed this pass (no secrets were present to redact in the first place; artifacts are raw source/HTML text, safe to read as-is)."
+}

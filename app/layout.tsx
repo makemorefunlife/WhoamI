@@ -39,9 +39,33 @@ const lora = Lora({
   display: "swap",
 });
 
+const SITE_NAME = "Aha It's me!";
+const SITE_DESCRIPTION =
+  "Discover your patterns through surveys, charts, and relationships.";
+
 export const metadata: Metadata = {
-  title: "ahaitsme — Know yourself",
-  description: "Discover your patterns through surveys, charts, and relationships.",
+  metadataBase: new URL("https://www.ahaitsme.com"),
+  title: `${SITE_NAME} — Know yourself`,
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+    languages: {
+      en: "/",
+      ko: "/kr",
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Know yourself`,
+    description: SITE_DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: `${SITE_NAME} — Know yourself`,
+    description: SITE_DESCRIPTION,
+  },
   icons: {
     icon: [
       { url: "/brand/favicon-16.png", sizes: "16x16", type: "image/png" },
@@ -50,6 +74,21 @@ export const metadata: Metadata = {
     apple: "/brand/apple-touch-icon.png",
     shortcut: "/brand/favicon-32.png",
   },
+};
+
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE_NAME,
+  url: "https://www.ahaitsme.com",
+  logo: "https://www.ahaitsme.com/brand/apple-touch-icon.png",
+};
+
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: "https://www.ahaitsme.com",
 };
 
 export default async function RootLayout({
@@ -66,6 +105,14 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
+        />
         <LocaleProvider locale={locale}>
           <AppClerkProvider>
             <FirstEntryDiagnostics scope="RootLayout" />

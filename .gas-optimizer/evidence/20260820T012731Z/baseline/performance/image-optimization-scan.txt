@@ -1,0 +1,2 @@
+next/image usage file count: 4
+raw <img> tag file count: 0

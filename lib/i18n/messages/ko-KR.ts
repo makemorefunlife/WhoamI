@@ -494,7 +494,7 @@ export const messagesKoKR: MessageCatalog = {
   pricing: {
     title: "요금제",
     shellNote: "플랜과 결제는 곧 제공됩니다.",
-    metaTitle: "요금 안내 | Ahaitsme",
+    metaTitle: "요금 안내 | Aha It's me!",
     metaDescription: "나 · 관계 · 결정 — Human Framework 요금제",
     heroTitleLine1: "나 · 관계 · 결정",
     heroTitleLine2: "필요한 만큼만 골라 쓰세요",
@@ -546,12 +546,18 @@ export const messagesKoKR: MessageCatalog = {
   faq: {
     title: "자주 묻는 질문",
     body: "FAQ 내용을 준비 중이에요.",
+    metaTitle: "자주 묻는 질문 | Aha It's me!",
+    metaDescription: "Aha It's me! 관련 자주 묻는 질문 — 콘텐츠 준비 중입니다.",
   },
   contact: {
     title: "문의하기",
     body: "문의 채널을 열 준비 중이에요.",
+    metaTitle: "문의하기 | Aha It's me!",
+    metaDescription: "Aha It's me! 팀에 문의하세요.",
   },
   about: {
+    metaTitle: "소개 | Aha It's me!",
+    metaDescription: "Aha It's me!가 왜 만들어졌는지 — 나, 관계, 결정을 이해하는 여정.",
     heroEyebrow: "About",
     heroTitleLine1: "왜 우리는",
     heroTitleLine2: "비슷한 문제로 계속 부딪힐까",
@@ -712,7 +718,7 @@ export const messagesKoKR: MessageCatalog = {
     loadingFallback: "로딩중...",
   },
   howItWorks: {
-    metaTitle: "How it works — ahaitsme",
+    metaTitle: "How it works — Aha It's me!",
     metaDescription: "분석 방식 안내 (준비 중)",
     eyebrow: "How it works",
     title: "분석 방식 안내",
@@ -941,6 +947,8 @@ export const messagesKoKR: MessageCatalog = {
     title: "Do Not Sell My Personal Information",
     body: "캘리포니아 소비자 개인정보 보호법(CCPA)에 따라 개인정보 판매·공유 거부를 요청하실 수 있습니다. 제목에 “Do Not Sell”을 넣어 이메일로 요청해 주세요.",
     emailLabel: "문의",
+    metaTitle: "개인정보 판매 거부 | Aha It's me!",
+    metaDescription: "CCPA에 따라 개인정보 판매·공유 거부를 요청할 수 있습니다.",
   },
   paymentRefund: {
     checkboxLabel:
