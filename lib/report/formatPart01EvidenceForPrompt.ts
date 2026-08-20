@@ -413,6 +413,19 @@ function buildAxisInnateEvidence(packet: Part01IdentityEvidencePacket): {
   lines.push("CE cautions-group signals:");
   addEvidence(packet.growthCandidates.cautionEvidence);
 
+  lines.push("Pillar & hidden stem dynamics:");
+  addEvidence(packet.innate.pillarEvidence.slice(0, 6));
+
+  if (packet.innate.relationEvidence.length) {
+    lines.push("Intra-chart branch relations (internal tension or synergy):");
+    addEvidence(packet.innate.relationEvidence);
+  }
+
+  if (packet.innate.optionalSignals.length) {
+    lines.push("Special signals & Shinsals (supporting evidence only — require convergence, never raw jargon):");
+    addEvidence(packet.innate.optionalSignals);
+  }
+
   return { text: lines.join("\n"), knownKeys };
 }
 
@@ -477,7 +490,7 @@ const ENERGY_RELEVANT_DIMENSION_KEYS: readonly string[] = [
   "pressure_response",
   "criticism_sensitivity",
 ];
-const ENERGY_RELEVANT_SECONDARY_KEYS = ["energy_style", "resilience", "conflict_style"] as const;
+const ENERGY_RELEVANT_SECONDARY_KEYS = ["energy_style", "resilience", "conflict_style", "recognition"] as const;
 
 /** Builds Energy grounding text + the exact key set shown for it (Part 02 Batch 1). */
 function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
@@ -611,7 +624,7 @@ const PRACTICE_RELEVANT_DIMENSION_KEYS: readonly string[] = [
   "criticism_sensitivity",
   "expression_style",
 ];
-const PRACTICE_RELEVANT_SECONDARY_KEYS = ["decision_style", "resilience"] as const;
+const PRACTICE_RELEVANT_SECONDARY_KEYS = ["decision_style", "resilience", "structure"] as const;
 
 /** Builds Practice grounding text + the exact key set shown for it (Part 04 Batch 1). */
 function buildPracticeEvidence(packet: Part01IdentityEvidencePacket): {

@@ -261,12 +261,14 @@ function buildInnateEvidence(
     ),
   ];
 
-  const pillarEvidence: Part01EvidenceRef[] = chart.pillars.flatMap((p) => [
-    evidenceRef(`pillars.${p.slot}.twelve_stage`, [p.twelve_stage.code]),
-    ...(p.hidden_stems.length
-      ? [evidenceRef(`pillars.${p.slot}.hidden_stems`, p.hidden_stems.map((hs) => hs.stem.code))]
-      : []),
-  ]);
+  const pillarEvidence: Part01EvidenceRef[] = chart.pillars
+    .filter((p) => !(p.slot === "hour" && chart.birth.birth_time_unknown))
+    .flatMap((p) => [
+      evidenceRef(`pillars.${p.slot}.twelve_stage`, [p.twelve_stage.code]),
+      ...(p.hidden_stems.length
+        ? [evidenceRef(`pillars.${p.slot}.hidden_stems`, p.hidden_stems.map((hs) => hs.stem.code))]
+        : []),
+    ]);
 
   const relationEvidence: Part01EvidenceRef[] = chart.relations_intra.map((r) =>
     evidenceRef(`relations_intra.${r.type_id}`, [...r.codes, ...r.pillar_slots], undefined, r.evidence),
@@ -289,12 +291,16 @@ function buildInnateEvidence(
           ),
         ]
       : []),
-    evidenceRef(
-      "favorable_elements",
-      [...chart.favorable_elements.yongsin, ...chart.favorable_elements.huisin, ...chart.favorable_elements.gisin],
-      chart.favorable_elements.confidence,
-      chart.favorable_elements.evidence,
-    ),
+    ...(chart.favorable_elements.confidence !== "low" && chart.favorable_elements.confidence !== "heuristic"
+      ? [
+          evidenceRef(
+            "favorable_elements",
+            [...chart.favorable_elements.yongsin, ...chart.favorable_elements.huisin, ...chart.favorable_elements.gisin],
+            chart.favorable_elements.confidence,
+            chart.favorable_elements.evidence,
+          ),
+        ]
+      : []),
   ];
 
   const ceStrengthSignals: Part01EvidenceRef[] = personalContext.groups.strengths.map(
@@ -348,6 +354,9 @@ function buildLayeredIdentityCandidates(
     ...chart.relations_intra
       .filter((r) => r.pillar_slots.includes("month"))
       .map((r) => asItem(evidenceRef(`relations_intra.${r.type_id}`, [...r.codes], undefined, r.evidence))),
+    ...chart.special_signals
+      .filter((s) => s.possessed && (s.signal_id.includes("dohwa") || s.signal_id.includes("munchang") || s.signal_id.includes("hyeonchim") || s.signal_id.includes("yeokma") || s.signal_id.includes("hwagae")))
+      .map((s) => asItem(evidenceRef(`special_signals.${s.signal_id}`, [String(s.signal_id)], undefined, s.evidence))),
     dimensionItem(dims, "expression_style"),
   ].filter(nonNull);
 
@@ -362,6 +371,7 @@ function buildLayeredIdentityCandidates(
     dimensionItem(dims, "decision_pace"),
     dimensionItem(dims, "structure_spontaneity"),
     dimensionItem(dims, "resource_governance"),
+    dimensionItem(dims, "autonomy_style"),
   ].filter(nonNull);
 
   const closePrivateSelf: Part01CandidateItem[] = [
@@ -394,14 +404,18 @@ function buildLayeredIdentityCandidates(
         chart.strength.evidence,
       ),
     ),
-    asItem(
-      evidenceRef(
-        "favorable_elements",
-        [...chart.favorable_elements.yongsin, ...chart.favorable_elements.huisin],
-        chart.favorable_elements.confidence,
-        chart.favorable_elements.evidence,
-      ),
-    ),
+    ...(chart.favorable_elements.confidence !== "low" && chart.favorable_elements.confidence !== "heuristic"
+      ? [
+          asItem(
+            evidenceRef(
+              "favorable_elements",
+              [...chart.favorable_elements.yongsin, ...chart.favorable_elements.huisin],
+              chart.favorable_elements.confidence,
+              chart.favorable_elements.evidence,
+            ),
+          ),
+        ]
+      : []),
   ].filter(nonNull);
 
   return { firstImpression, knownSelf, closePrivateSelf, naturalSelfAndDeepNeeds };
