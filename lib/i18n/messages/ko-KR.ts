@@ -593,9 +593,13 @@ export const messagesKoKR: MessageCatalog = {
   },
   contact: {
     title: "문의하기",
-    body: "문의 채널을 열 준비 중이에요.",
+    body: "궁금한 점이나 피드백, 계정·데이터 관련 요청이 있으면 언제든 편하게 연락 주세요. 보내주신 메시지는 모두 확인합니다.",
     metaTitle: "문의하기 | Aha It's me!",
-    metaDescription: "Aha It's me! 팀에 문의하세요.",
+    metaDescription: "이메일 또는 인스타그램으로 Aha It's me! 팀에 문의하세요.",
+    emailLabel: "이메일",
+    instagramLabel: "인스타그램",
+    faqPrompt: "찾으시는 답이 있는지 먼저 확인해보세요.",
+    faqLinkLabel: "자주 묻는 질문 보기",
   },
   about: {
     metaTitle: "소개 | Aha It's me!",

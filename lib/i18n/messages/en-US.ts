@@ -620,9 +620,13 @@ export const messagesEnUS = {
   },
   contact: {
     title: "Contact us",
-    body: "We're getting our contact channels ready.",
+    body: "Have a question, feedback, or a request about your account or data? Reach us directly — we read every message.",
     metaTitle: "Contact | Aha It's me!",
-    metaDescription: "Get in touch with the Aha It's me! team.",
+    metaDescription: "Get in touch with the Aha It's me! team by email or Instagram.",
+    emailLabel: "Email",
+    instagramLabel: "Instagram",
+    faqPrompt: "Looking for something specific?",
+    faqLinkLabel: "Check our FAQ",
   },
   about: {
     metaTitle: "About | Aha It's me!",
@@ -1953,6 +1957,10 @@ export type MessageCatalog = {
     body: string;
     metaTitle: string;
     metaDescription: string;
+    emailLabel: string;
+    instagramLabel: string;
+    faqPrompt: string;
+    faqLinkLabel: string;
   };
   about: {
     metaTitle: string;

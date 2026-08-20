@@ -82,6 +82,14 @@ const ORGANIZATION_JSON_LD = {
   name: SITE_NAME,
   url: "https://www.ahaitsme.com",
   logo: "https://www.ahaitsme.com/brand/apple-touch-icon.png",
+  sameAs: ["https://www.instagram.com/ahaitsme"],
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      email: "hong@ahaitsme.com",
+      contactType: "customer support",
+    },
+  ],
 };
 
 const WEBSITE_JSON_LD = {
