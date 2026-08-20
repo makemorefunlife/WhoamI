@@ -212,7 +212,7 @@ export const messagesKoKR: MessageCatalog = {
     currentStateAxisSummaryTitle: "지금의 내 모습 한눈에 보기",
     overallSummary: "전체 요약",
     currentStateSubtitle: "설문 기반",
-    essenceBlueprintTitle: "본질 블루프린트",
+    essenceBlueprintTitle: "본래의 나",
     essenceBlueprintSubtitle: "사주 기반",
     guestOpenAnalysisHint: "로그인 후 무료 세부 분석을 열 수 있어요.",
     openAnalysisHint: "위 무료 분석 중 하나를 눌러 아래에서 리포트를 확인하세요.",
