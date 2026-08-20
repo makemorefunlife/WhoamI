@@ -333,14 +333,15 @@ export default function StitchLandingPage({
             <h2 className="stitch-headline text-2xl font-bold leading-tight text-primary sm:text-3xl text-left whitespace-pre-line">
               {messages.landing.philosophyHeadline}
             </h2>
-            {messages.landing.philosophySubheadline ? (
-              <p className="mt-2 whitespace-pre-line text-sm sm:text-base text-on-surface-variant/80">
-                {messages.landing.philosophySubheadline}
-              </p>
-            ) : null}
           </div>
 
           <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 sm:p-10 shadow-sm">
+            {messages.landing.philosophySubheadline ? (
+              <p className="mb-6 whitespace-pre-line text-base sm:text-lg leading-relaxed text-on-surface-variant/90 font-normal">
+                {messages.landing.philosophySubheadline}
+              </p>
+            ) : null}
+
             <ul className="divide-y divide-outline-variant/30 border-y border-outline-variant/30">
               {philosophyQuestions.map(({ text, highlight }, i) => (
                 <li key={i} className="flex gap-5 py-5">
