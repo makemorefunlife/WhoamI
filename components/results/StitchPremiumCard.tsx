@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function StitchPremiumCard({
@@ -28,8 +28,7 @@ export default function StitchPremiumCard({
     <div className="group relative w-full overflow-hidden rounded-extra-large border border-[#c49a6c]/40 bg-gradient-to-br from-[#fffdf8] via-[#fbf7f0] to-[#f4ece0] p-6 text-left shadow-[0_16px_40px_rgba(26,51,40,0.08)] transition hover:border-[#c49a6c]/60 hover:shadow-[0_20px_48px_rgba(26,51,40,0.12)] sm:p-8">
       {/* Top Header Eyebrow */}
       <div className="flex items-center justify-between gap-4">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c49a6c]/40 bg-[#c49a6c]/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
-          <Sparkles className="h-3 w-3 text-[#c49a6c]" />
+        <span className="inline-flex items-center rounded-full border border-[#c49a6c]/40 bg-[#c49a6c]/15 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
           PERSONAL PREMIUM
         </span>
       </div>
@@ -73,10 +72,10 @@ export default function StitchPremiumCard({
       <div className="mt-8 flex flex-col gap-4 border-t border-[#c49a6c]/25 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-baseline gap-2.5">
           <span className="stitch-headline text-3xl font-extrabold text-primary sm:text-4xl">
-            $12.99
+            {isKo ? "9,900원" : "$12.99"}
           </span>
           <span className="text-xs font-medium text-on-surface-variant/80">
-            {isKo ? "1회 결제 · 계속 열람" : "One-time · Lifetime access"}
+            {isKo ? "1회 결제 · 평생 소장" : "One-time · Lifetime access"}
           </span>
         </div>
 
