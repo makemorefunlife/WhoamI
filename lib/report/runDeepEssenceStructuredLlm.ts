@@ -29,6 +29,7 @@ import { polishDeepEssenceStructuredReport } from "@/lib/report/polishDeepEssenc
 import { logServerEvent } from "@/lib/security/safeLog";
 import {
   formatPart01EvidenceForPrompt,
+  selectFitPlan,
   filterKnownEvidenceRefs,
   type Part01PromptEvidence,
 } from "@/lib/report/formatPart01EvidenceForPrompt";
@@ -595,9 +596,11 @@ export async function runDeepEssenceStructuredLlm(
       ),
     };
 
+    const fitPlan = input.part01Evidence ? selectFitPlan(input.part01Evidence) : null;
     const structured = polishDeepEssenceStructuredReport(
       withClampedRadar,
       input.locale,
+      fitPlan,
     );
 
     return { structured, source: "llm" };

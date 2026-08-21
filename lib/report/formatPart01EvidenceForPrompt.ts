@@ -688,6 +688,7 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
   };
 
   const plan = selectEnergyMechanisms(packet);
+  const fitPlan = selectFitPlan(packet);
   lines.push("DETERMINISTIC PRIMARY & SECONDARY ENERGY MECHANISMS FOR THIS PROFILE (MANDATORY ANCHORS):");
   lines.push(`- [PRIMARY MECHANISM]: ${plan.primary.key} (${plan.primary.label})`);
   lines.push(`  Burden Description: ${plan.primary.description}`);
@@ -697,6 +698,9 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
   lines.push(`  Burden Description: ${plan.secondary.description}`);
   lines.push(`  Restorative Fuel Direction: ${plan.secondary.fuelExample}`);
   lines.push(`  Depleting Drain Direction: ${plan.secondary.drainExample}`);
+  lines.push("DETERMINISTIC ENVIRONMENT FIT ANCHORS FOR OPTIMAL ENVIRONMENT:");
+  lines.push(`- [PRIMARY FIT NEED]: ${fitPlan.primaryFit.key} (${fitPlan.primaryFit.label}) -> Operating Environment: ${fitPlan.primaryFit.environmentFitDirection}`);
+  lines.push(`- [SECONDARY FIT NEED]: ${fitPlan.secondaryFit.key} (${fitPlan.secondaryFit.label}) -> Operating Environment: ${fitPlan.secondaryFit.environmentFitDirection}`);
   lines.push("");
 
   lines.push("Climate & elemental balance (innate energetic temperament):");
@@ -757,6 +761,226 @@ function buildEnergyEvidence(packet: Part01IdentityEvidencePacket): {
  * mapping/calculation — every source here is already computed elsewhere in
  * the packet.
  */
+export type FitCategoryKey =
+  | "AUTONOMY"
+  | "STRUCTURE"
+  | "PREDICTABILITY"
+  | "STIMULATION"
+  | "RELATIONAL_DEPTH"
+  | "EMOTIONAL_EXPLICITNESS"
+  | "DECISION_CLARITY"
+  | "FEEDBACK_DIRECTNESS"
+  | "PROCESSING_TIME"
+  | "BOUNDARY_RESPECT"
+  | "COLLABORATION"
+  | "GROWTH_VARIETY";
+
+export type FitCategorySpec = {
+  key: FitCategoryKey;
+  label: string;
+  peopleFitDirection: string;
+  frictionDirection: string;
+  communicationTrigger: string;
+  communicationBetter: string;
+  environmentFitDirection: string;
+};
+
+export type DeterministicFitPlan = {
+  primaryFit: FitCategorySpec;
+  secondaryFit: FitCategorySpec;
+};
+
+const FIT_CATEGORY_SPECS: Record<FitCategoryKey, FitCategorySpec> = {
+  AUTONOMY: {
+    key: "AUTONOMY",
+    label: "자율권 및 독립적 판단 공간 보장",
+    peopleFitDirection: "내 결론을 대신 정해주거나 조율을 강요하기보다 스스로 판단하고 행동할 공간과 시간을 주는 사람",
+    frictionDirection: "책임은 나에게 주면서 실행 방식과 세부 의사결정에서 사사건건 승인과 동의를 요구하는 방식",
+    communicationTrigger: "왜 이것도 멋대로 정해? / 혼자서만 결정하려고 하지 마.",
+    communicationBetter: "네가 맡은 부분의 우선순위와 판단 범위를 먼저 정해서 공유해줘.",
+    environmentFitDirection: "역할과 목표는 분명하지만 실행 수단과 시간 배분에는 독립적인 자율권이 보장되는 환경",
+  },
+  STRUCTURE: {
+    key: "STRUCTURE",
+    label: "명확한 원칙 및 질서 유지",
+    peopleFitDirection: "약속과 수순을 자주 바꾸지 않고, 규칙과 역할 분담을 명확하게 지키는 사람",
+    frictionDirection: "기준을 합의해놓고 도중에 전제나 말을 번복하여 이미 세운 계획을 다시 짜게 만드는 대화",
+    communicationTrigger: "그냥 규칙 신경 쓰지 말고 대충 상황 맞춰서 해.",
+    communicationBetter: "수정된 원칙과 기준을 먼저 정리해서 공유하고 수순을 맞추자.",
+    environmentFitDirection: "업무 절차와 책임 소재가 명확하여 매번 판을 다시 해석하지 않아도 되는 안정된 환경",
+  },
+  PREDICTABILITY: {
+    key: "PREDICTABILITY",
+    label: "예측 가능성 및 변수 최소화",
+    peopleFitDirection: "감정 기복이나 행동 양식이 일관되어 다음 단계를 예측할 수 있는 안정된 태도의 사람",
+    frictionDirection: "모호한 의도나 갑작스러운 변수로 사전 대처를 방해하고 불안정성을 높이는 무책임한 방식",
+    communicationTrigger: "나중에 어떻게 될지 모르니까 일단 기다려봐.",
+    communicationBetter: "확정된 정보와 예상 변수를 미리 공유해서 준비할 수 있게 해줄게.",
+    environmentFitDirection: "갑작스러운 방향 전환이나 돌발 변수가 적어 계획대로 실행할 수 있는 안정적인 환경",
+  },
+  STIMULATION: {
+    key: "STIMULATION",
+    label: "감각적 역동성 및 새로운 시도",
+    peopleFitDirection: "새로운 관점과 아이디어를 자극하고, 상호 간의 성장을 함께 즐기는 유연한 사람",
+    frictionDirection: "기존 방식만을 고집하며 새로운 시도나 변화의 가능성을 원천 차단하는 경직된 관계",
+    communicationTrigger: "원래 하던 대로만 해, 새로운 거 하지 마.",
+    communicationBetter: "이번에는 어떤 새로운 시도나 아이디어를 실험해보고 싶은지 들려줘.",
+    environmentFitDirection: "정형화된 루틴에 갇히지 않고 새로운 문제 해결과 자극이 계속 주어지는 역동적 환경",
+  },
+  RELATIONAL_DEPTH: {
+    key: "RELATIONAL_DEPTH",
+    label: "진정성 있는 관계적 깊이",
+    peopleFitDirection: "겉치레나 사교적 형식보다 서로의 진심과 내면적 가치를 기꺼이 나누는 진솔한 사람",
+    frictionDirection: "겉으로는 친한 척하지만 정작 중요한 순간에는 책임감 없이 거리를 두는 가식적인 소통",
+    communicationTrigger: "좋은 게 좋은 거니까 대충 맞춰주고 넘어가자.",
+    communicationBetter: "네가 진짜 중요하게 생각하는 내면의 기준과 솔직한 생각을 듣고 싶어.",
+    environmentFitDirection: "수박 겉핥기식 사교 모임이 아니라 소수와 깊은 신뢰를 쌓을 수 있는 진정성 있는 관계",
+  },
+  EMOTIONAL_EXPLICITNESS: {
+    key: "EMOTIONAL_EXPLICITNESS",
+    label: "투명한 감정 표현 및 의도 명확성",
+    peopleFitDirection: "자신의 기분과 요구 사항을 돌려 말하지 않고 명확하고 투명하게 표현해주는 사람",
+    frictionDirection: "기분이 안 좋은 티를 내면서도 이유를 말하지 않고 상대가 눈치채주기만을 바라는 방식",
+    communicationTrigger: "내가 왜 화났는지 진짜 몰라서 물어보는 거야?",
+    communicationBetter: "내가 지금 어떤 부분에서 아쉬움을 느꼈는지 명확하게 말해줄게.",
+    environmentFitDirection: "비언어적 눈치나 분위기 스캐닝을 강요하지 않고 직설적이고 투명하게 의사소통하는 팀",
+  },
+  DECISION_CLARITY: {
+    key: "DECISION_CLARITY",
+    label: "결정 주도권 및 판단 책임 명확성",
+    peopleFitDirection: "결정의 범위와 책임을 분명히 하고, 필요한 순간에 든든하게 중심을 잡아주는 사람",
+    frictionDirection: "결정권은 내주지 않으면서 발생한 문제와 책임만 전가하거나 결정을 무한히 지연시키는 방식",
+    communicationTrigger: "네가 알아서 결정해, 단 책임은 네가 지는 거야.",
+    communicationBetter: "이 결정은 네 판단에 맡길 테니, 나는 네 결정을 뒤에서 지지해줄게.",
+    environmentFitDirection: "누가 최종 의사결정권자인지 명확하고 판단 적체 없이 효율적으로 안건을 닫는 환경",
+  },
+  FEEDBACK_DIRECTNESS: {
+    key: "FEEDBACK_DIRECTNESS",
+    label: "명확하고 담백한 피드백 전달",
+    peopleFitDirection: "감정적 비난이나 칭찬을 배제하고 사실과 발전 방향을 군더더기 없이 담백하게 전달하는 사람",
+    frictionDirection: "모호한 돌려말하기나 인신공격성 비유로 본질적 문제 해결을 흩트리는 소통 방식",
+    communicationTrigger: "너 원래 일 처리를 그런 식으로 하니?",
+    communicationBetter: "이번 결과물에서 구체적으로 어떤 부분이 보완되면 좋을지 사실 위주로 말할게.",
+    environmentFitDirection: "개인적 감정 싸움 없이 객관적 데이터와 구체적 피드백으로 성장하는 조직 문화",
+  },
+  PROCESSING_TIME: {
+    key: "PROCESSING_TIME",
+    label: "내면 정리 및 수용 시간 존중",
+    peopleFitDirection: "새로운 정보나 갈등 이후 즉각적인 대답을 재촉하지 않고 충분히 생각할 시간을 주는 사람",
+    frictionDirection: "상황을 즉시 해결해야 한다며 답을 재촉하거나 생각할 겨를 없이 결론을 강요하는 소통",
+    communicationTrigger: "지금 당장 대답해, 왜 말을 안 해?",
+    communicationBetter: "충분히 정리할 시간이 필요할 테니 생각나면 나중에 천천히 이야기하자.",
+    environmentFitDirection: "즉각적인 반응 압박 없이 독립적인 사고와 소화 시간을 보장해주는 업무 및 관계 공간",
+  },
+  BOUNDARY_RESPECT: {
+    key: "BOUNDARY_RESPECT",
+    label: "경계 존중 및 개인 공간 보장",
+    peopleFitDirection: "친밀함이라는 이유로 상대의 사생활이나 영역을 침범하지 않고 적절한 거리를 지키는 사람",
+    frictionDirection: "불필요한 참견이나 지나친 개입으로 개인의 경계를 무너뜨리고 일방적인 친밀함을 강요하는 방식",
+    communicationTrigger: "너랑 나 사이에 무슨 비밀이 있어? 다 말해봐.",
+    communicationBetter: "네가 나누고 싶은 만큼만 이야기해줘, 네 개인 공간을 항상 존중할게.",
+    environmentFitDirection: "서로의 독립된 개인 영역과 시간을 철저히 존중하고 지나친 침범을 금하는 문화",
+  },
+  COLLABORATION: {
+    key: "COLLABORATION",
+    label: "상호 존중 기반의 집단 시너지",
+    peopleFitDirection: "독단적으로 이끌기보다 서로의 강점을 인정하고 협력하여 더 큰 성과를 함께 만드는 사람",
+    frictionDirection: "일방적인 명령이나 한 사람의 독주로 다른 구성원의 의견과 기여를 무시하는 지배적 관계",
+    communicationTrigger: "내가 시키는 대로만 해, 토 달지 말고.",
+    communicationBetter: "우리 각자의 장점을 살려서 이번 과제를 어떻게 같이 풀면 좋을까?",
+    environmentFitDirection: "동등한 인격체로서 서로의 의견을 경청하고 시너지를 도모하는 협력적 팀 환경",
+  },
+  GROWTH_VARIETY: {
+    key: "GROWTH_VARIETY",
+    label: "성장 기회 및 다양성 수용",
+    peopleFitDirection: "실수를 성장의 계기로 삼고, 다양한 관점과 정답을 인정해주는 지적 호기심이 풍부한 사람",
+    frictionDirection: "단 하나의 정답만을 강요하며 다른 방식이나 도전을 실패로 규정짓는 답답한 태도",
+    communicationTrigger: "너는 왜 남들 다 하는 정석대로 안 하고 딴소리해?",
+    communicationBetter: "기존 방식에서 바꾸려는 이유와 예상되는 리스크를 먼저 설명해줘. 그 내용을 파악하고 어디까지 새로운 시도를 허용할지 정하자.",
+    environmentFitDirection: "시행착오를 통한 학습을 장려하고 다양한 실험이 존중받는 도전적인 성장 환경",
+  },
+};
+
+export function selectFitPlan(packet: Part01IdentityEvidencePacket): DeterministicFitPlan {
+  const scores: Record<FitCategoryKey, number> = {
+    AUTONOMY: 0,
+    STRUCTURE: 0,
+    PREDICTABILITY: 0,
+    STIMULATION: 0,
+    RELATIONAL_DEPTH: 0,
+    EMOTIONAL_EXPLICITNESS: 0,
+    DECISION_CLARITY: 0,
+    FEEDBACK_DIRECTNESS: 0,
+    PROCESSING_TIME: 0,
+    BOUNDARY_RESPECT: 0,
+    COLLABORATION: 0,
+    GROWTH_VARIETY: 0,
+  };
+
+  const primary = packet.currentBehavior.primaryAxes;
+  const secondary = packet.currentBehavior.secondaryAxes;
+  const dimsMap = new Map(
+    packet.dimensions.allDimensions.map((d) => [d.dimension, d.evaluation.value]),
+  );
+
+  if (primary.autonomy >= 70) {
+    scores.AUTONOMY += (primary.autonomy - 50) * 1.5;
+    scores.BOUNDARY_RESPECT += (primary.autonomy - 50) * 1.0;
+  }
+
+  if (primary.structure >= 70) {
+    scores.STRUCTURE += (primary.structure - 50) * 1.5;
+    scores.PREDICTABILITY += (primary.structure - 50) * 1.0;
+  }
+
+  if (primary.stability >= 70) {
+    scores.PREDICTABILITY += (primary.stability - 50) * 1.4;
+    scores.STRUCTURE += (primary.stability - 50) * 0.8;
+  }
+
+  if (primary.growth >= 75 || primary.adaptability >= 75) {
+    scores.GROWTH_VARIETY += (Math.max(primary.growth, primary.adaptability) - 50) * 1.4;
+    scores.STIMULATION += (secondary.stimulation ?? 50) >= 70 ? 25 : 15;
+  }
+
+  if (primary.connection >= 70) {
+    scores.RELATIONAL_DEPTH += (primary.connection - 50) * 1.2;
+    scores.EMOTIONAL_EXPLICITNESS += (secondary.empathy ?? 50) >= 70 ? 20 : 10;
+  }
+
+  if ((secondary.decision_style ?? 50) >= 70) {
+    scores.DECISION_CLARITY += (secondary.decision_style - 50) * 1.3;
+  }
+
+  if ((dimsMap.get("solitude_autonomy") ?? 50) >= 65) {
+    scores.PROCESSING_TIME += 25;
+    scores.BOUNDARY_RESPECT += 20;
+  }
+
+  if ((dimsMap.get("conflict_decompression") ?? 50) >= 65) {
+    scores.PROCESSING_TIME += 20;
+  }
+
+  if ((dimsMap.get("expression_style") ?? 50) >= 65 || (secondary.conflict_style ?? 50) >= 70) {
+    scores.FEEDBACK_DIRECTNESS += 20;
+  }
+
+  const sortedKeys = (Object.keys(scores) as FitCategoryKey[]).sort(
+    (a, b) => scores[b] - scores[a],
+  );
+
+  const primaryKey = sortedKeys[0] ?? "AUTONOMY";
+  let secondaryKey = sortedKeys[1] ?? "DECISION_CLARITY";
+  if (secondaryKey === primaryKey) {
+    secondaryKey = sortedKeys[2] ?? "STRUCTURE";
+  }
+
+  return {
+    primaryFit: FIT_CATEGORY_SPECS[primaryKey],
+    secondaryFit: FIT_CATEGORY_SPECS[secondaryKey],
+  };
+}
+
 const RELATIONSHIP_RELEVANT_DIMENSION_KEYS: readonly string[] = [
   "conflict_decompression",
   "support_giving_style",
@@ -770,13 +994,27 @@ const RELATIONSHIP_RELEVANT_DIMENSION_KEYS: readonly string[] = [
 ];
 const RELATIONSHIP_RELEVANT_SECONDARY_KEYS = ["empathy", "conflict_style", "recognition"] as const;
 
-/** Builds Relationship grounding text + the exact key set shown for it (Part 03 Batch 1). */
+/** Builds Relationship grounding text + the exact key set shown for it (Part 03 Batch 1 / Batch 6). */
 function buildRelationshipEvidence(packet: Part01IdentityEvidencePacket): {
   text: string;
   knownKeys: Set<string>;
 } {
   const knownKeys = new Set<string>();
   const lines: string[] = [];
+
+  const fitPlan = selectFitPlan(packet);
+  lines.push("DETERMINISTIC PRIMARY & SECONDARY FIT NEEDS FOR THIS PROFILE (MANDATORY ANCHORS):");
+  lines.push(`- [PRIMARY FIT NEED]: ${fitPlan.primaryFit.key} (${fitPlan.primaryFit.label})`);
+  lines.push(`  People Fit Direction: ${fitPlan.primaryFit.peopleFitDirection}`);
+  lines.push(`  Friction Mechanism: ${fitPlan.primaryFit.frictionDirection}`);
+  lines.push(`  Communication Reception (Wound -> Steady): "${fitPlan.primaryFit.communicationTrigger}" vs "${fitPlan.primaryFit.communicationBetter}"`);
+  lines.push(`  Environment/Team Fit Direction: ${fitPlan.primaryFit.environmentFitDirection}`);
+  lines.push(`- [SECONDARY FIT NEED]: ${fitPlan.secondaryFit.key} (${fitPlan.secondaryFit.label})`);
+  lines.push(`  People Fit Direction: ${fitPlan.secondaryFit.peopleFitDirection}`);
+  lines.push(`  Friction Mechanism: ${fitPlan.secondaryFit.frictionDirection}`);
+  lines.push(`  Communication Reception (Wound -> Steady): "${fitPlan.secondaryFit.communicationTrigger}" vs "${fitPlan.secondaryFit.communicationBetter}"`);
+  lines.push(`  Environment/Team Fit Direction: ${fitPlan.secondaryFit.environmentFitDirection}`);
+  lines.push("");
 
   lines.push(
     "Relevant CE dimensions (conflict decompression / support giving / intimacy expression / boundary defense / recognition need / solitude autonomy / pressure response / criticism sensitivity / expression style only):",

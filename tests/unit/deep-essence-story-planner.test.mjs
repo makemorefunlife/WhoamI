@@ -4,7 +4,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { buildPersonalPart04StoryPlan } from "../../lib/report/buildPersonalPart04StoryPlan.ts";
-import { formatPart01EvidenceForPrompt } from "../../lib/report/formatPart01EvidenceForPrompt.ts";
+import { formatPart01EvidenceForPrompt, selectEnergyMechanisms, selectFitPlan } from "../../lib/report/formatPart01EvidenceForPrompt.ts";
 
 import {
   runPersonalContextEngine,
@@ -311,5 +311,165 @@ describe("buildPersonalPart04StoryPlan", () => {
 
     const promptEv = formatPart01EvidenceForPrompt(packetAutonomy);
     assert.ok(promptEv.energyText.includes("- [PRIMARY MECHANISM]: DECISION_LOAD"));
+  });
+
+  it("R. selectFitPlan — deterministic primary and secondary fit plan selection", () => {
+    const chart = buildPersonalCeFixtureChart("known_time");
+    const personalContext = runPersonalContextEngine({ chart });
+
+    const packetAutonomy = buildPart01IdentityEvidencePacket({
+      chart,
+      personalContext,
+      currentPrimary: { ...CURRENT_PRIMARY, autonomy: 90, connection: 30 },
+      currentSecondary: { ...CURRENT_SECONDARY, decision_style: 85 },
+      innatePrimary: INNATE_PRIMARY,
+    });
+
+    const fitAutonomy = selectFitPlan(packetAutonomy);
+    assert.strictEqual(fitAutonomy.primaryFit.key, "AUTONOMY");
+
+    const packetStructure = buildPart01IdentityEvidencePacket({
+      chart,
+      personalContext,
+      currentPrimary: { ...CURRENT_PRIMARY, structure: 90, stability: 85 },
+      currentSecondary: { ...CURRENT_SECONDARY, structure: 90 },
+      innatePrimary: INNATE_PRIMARY,
+    });
+
+    const fitStructure = selectFitPlan(packetStructure);
+    assert.ok(["STRUCTURE", "PREDICTABILITY"].includes(fitStructure.primaryFit.key));
+
+    const promptEv = formatPart01EvidenceForPrompt(packetAutonomy);
+    assert.ok(promptEv.relationshipText.includes("- [PRIMARY FIT NEED]: AUTONOMY"));
+  });
+
+  it("S. validatePart06QualityGate — Negative Test A, B, C mechanical failures", async () => {
+    const { validatePart06QualityGate } = await import("../../lib/report/polishDeepEssenceStructured.ts");
+
+    // Negative Test A: GROWTH_VARIETY + STIMULATION with unrelated environment items MUST FAIL
+    const fakeFitPlanGrowth = {
+      primaryFit: { key: "GROWTH_VARIETY", label: "성장", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "", communicationBetter: "", environmentFitDirection: "" },
+      secondaryFit: { key: "STIMULATION", label: "자극", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "", communicationBetter: "", environmentFitDirection: "" },
+    };
+    const fakeReportA = {
+      energy: { optimal: ["자유롭게 감정을 표현할 수 있는 환경", "상대방과의 신뢰가 깊은 관계"] },
+      relationships: { compare: [] },
+    };
+    const resA = validatePart06QualityGate(fakeFitPlanGrowth, fakeReportA);
+    assert.strictEqual(resA.pass, false, "Negative Test A must fail when environment lacks growth/stimulation motifs");
+    assert.ok(resA.failures.some((f) => f.includes("ENVIRONMENT ITEM 1")));
+
+    // Negative Test B: Banned AI coaching sentence MUST FAIL
+    const fakeReportB = {
+      energy: { optimal: ["성장과 다양한 시도를 허용하는 팀", "새로운 아이디어와 자극이 주어지는 환경"] },
+      relationships: { compare: [{ wound: "너는 왜 정석대로 안 해?", steady: "네가 시도하려는 그 유연한 접근법이 어떤 배움을 줄지 기대돼." }] },
+    };
+    const resB = validatePart06QualityGate(fakeFitPlanGrowth, fakeReportB);
+    assert.strictEqual(resB.pass, false, "Negative Test B must fail when communication steady uses banned coaching string");
+    assert.ok(resB.failures.some((f) => f.includes("banned AI-coaching language")));
+
+    // Negative Test C: PREDICTABILITY + STRUCTURE lacking structure motifs MUST FAIL
+    const fakeFitPlanStructure = {
+      primaryFit: { key: "PREDICTABILITY", label: "예측 가능성", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "", communicationBetter: "", environmentFitDirection: "" },
+      secondaryFit: { key: "STRUCTURE", label: "원칙", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "", communicationBetter: "", environmentFitDirection: "" },
+    };
+    const fakeReportC = {
+      energy: { optimal: ["우선순위와 기준이 명확한 환경", "절차와 수순이 잘 정돈된 체계"] },
+      relationships: { compare: [{ wound: "왜 또 네 방식대로만 다 정하려고 해?", steady: "이 결정은 네 판단에 맡길 테니 지지해줄게." }] },
+    };
+    const resC = validatePart06QualityGate(fakeFitPlanStructure, fakeReportC);
+    assert.strictEqual(resC.pass, false, "Negative Test C must fail when structure/predictability profile has 0 structure motifs in compare");
+    assert.ok(resC.failures.some((f) => f.includes("must have at least 2/3 pairs matching profile motifs")));
+  });
+
+  it("T. Batch 6D Spoken Dialogue Negative Tests A, B, C, D", async () => {
+    const { isSpokenDialogue, validatePart06QualityGate } = await import("../../lib/report/polishDeepEssenceStructured.ts");
+
+    // Negative Test A
+    assert.strictEqual(isSpokenDialogue("상황이 자주 바뀌어 혼란스러움"), false, "Negative Test A must fail spoken dialogue check");
+
+    // Negative Test B
+    assert.strictEqual(isSpokenDialogue("기준이 자주 바뀌어 예측할 수 없는 상황"), false, "Negative Test B must fail spoken dialogue check");
+
+    // Negative Test C
+    assert.strictEqual(isSpokenDialogue("감정 기복이 심한 상황에서의 불안감"), false, "Negative Test C must fail spoken dialogue check");
+
+    // Negative Test D
+    assert.strictEqual(isSpokenDialogue("말과 행동의 차이가 커서 상대의 진짜 의도를 계속 해석해야 하는 관계."), false, "Negative Test D must fail spoken dialogue check");
+
+    const fakeFitPlan = {
+      primaryFit: { key: "PREDICTABILITY", label: "예측", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "", communicationBetter: "", environmentFitDirection: "" },
+      secondaryFit: { key: "STRUCTURE", label: "원칙", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "", communicationBetter: "", environmentFitDirection: "" },
+    };
+
+    const fakeReportNonSpoken = {
+      energy: { optimal: ["갑작스러운 변수가 적은 안정적인 환경", "명확한 원칙과 수순이 정돈된 환경"] },
+      relationships: {
+        compare: [
+          { wound: "상황이 자주 바뀌어 혼란스러움", steady: "수정된 원칙과 기준을 공유하자." },
+        ],
+      },
+    };
+
+    const res = validatePart06QualityGate(fakeFitPlan, fakeReportNonSpoken);
+    assert.strictEqual(res.pass, false, "Gate must fail when compare row wound is non-spoken narrator description");
+    assert.ok(res.failures.some((f) => f.includes("narrator description, not spoken dialogue")));
+  });
+
+  it("U. Batch 6E Communication Pair Dedup Guard Tests A, B, C, D, E", async () => {
+    const { isDuplicatePair, validatePart06QualityGate, polishDeepEssenceStructuredReport } = await import("../../lib/report/polishDeepEssenceStructured.ts");
+
+    const fakeFitPlan = {
+      primaryFit: { key: "PREDICTABILITY", label: "예측 가능성", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "나중에 어떻게 될지 모르니까 일단 기다려봐.", communicationBetter: "확정된 정보와 예상 변수를 미리 공유해서 준비할 수 있게 해줄게.", environmentFitDirection: "갑작스러운 변수가 적은 안정적인 환경" },
+      secondaryFit: { key: "STRUCTURE", label: "명확한 원칙", peopleFitDirection: "", frictionDirection: "", communicationTrigger: "그냥 규칙 신경 쓰지 말고 대충 상황 맞춰서 해.", communicationBetter: "수정된 원칙과 기준을 먼저 정리해서 공유하고 수순을 맞추자.", environmentFitDirection: "업무 절차와 책임 소재가 명확한 환경" },
+    };
+
+    // Test A: 3 unique pairs => PASS
+    const reportA = {
+      energy: { headline: "", summary: "", bars: [], fuels: [], drains: [], optimal: ["갑작스러운 변수가 적은 안정적인 환경", "업무 절차와 책임 소재가 명확한 환경"] },
+      relationships: {
+        pattern: "", fit: [], friction: [],
+        compare: [
+          { wound: "나중에 어떻게 될지 모르니까 일단 기다려봐.", steady: "확정된 정보와 예상 변수를 미리 공유해서 준비할 수 있게 해줄게." },
+          { wound: "그냥 규칙 신경 쓰지 말고 대충 상황 맞춰서 해.", steady: "수정된 원칙과 기준을 먼저 정리해서 공유하고 수순을 맞추자." },
+          { wound: "왜 또 기준을 미리 안 알려주고 갑자기 바꿔?", steady: "우선순위와 기준을 먼저 명확히 정하고, 변경이 생기면 수순과 이유를 사전에 공유해줘." },
+        ],
+      },
+      strengths: [], watchouts: [], summary: { core_mode: "" }, radar_potential: {}, playbook: { rule: "", rows: [], heated: "", reset: "" }, future: { remember: [], leap: "" }, closing: "", checklist: [],
+    };
+    const resA = validatePart06QualityGate(fakeFitPlan, reportA);
+    assert.strictEqual(resA.pass, true, "Test A must pass with 3 unique communication pairs");
+
+    // Test B: Pair 2 === Pair 3 => FAIL
+    const reportB = {
+      ...reportA,
+      relationships: {
+        ...reportA.relationships,
+        compare: [
+          reportA.relationships.compare[0],
+          reportA.relationships.compare[1],
+          reportA.relationships.compare[1], // Duplicate Pair 3
+        ],
+      },
+    };
+    const resB = validatePart06QualityGate(fakeFitPlan, reportB);
+    assert.strictEqual(resB.pass, false, "Test B must fail when Pair 2 === Pair 3");
+    assert.ok(resB.failures.some((f) => f.includes("duplicate/near-duplicate")));
+
+    // Test C: Near-identical LEFT + near-identical RIGHT => detected
+    const pairC1 = { wound: "그냥 규칙 신경 쓰지 말고 대충 상황 맞춰서 해.", steady: "수정된 원칙과 기준을 먼저 정리해서 공유하고 수순을 맞추자." };
+    const pairC2 = { wound: "그냥 규칙 신경 쓰지 말고 대충 상황 맞춰서 해!", steady: "수정된 원칙과 기준을 먼저 정리해서 공유하고 수순을 맞추자!" };
+    assert.strictEqual(isDuplicatePair(pairC1, pairC2), true, "Test C must detect near-identical pair");
+
+    // Test D: Same broad Fit motif but genuinely different conflict situations => NOT duplicate
+    const pairD1 = { wound: "나중에 어떻게 될지 모르니까 일단 기다려봐.", steady: "확정된 정보와 예상 변수를 미리 공유해서 준비할 수 있게 해줄게." };
+    const pairD2 = { wound: "그냥 규칙 신경 쓰지 말고 대충 상황 맞춰서 해.", steady: "수정된 원칙과 기준을 먼저 정리해서 공유하고 수순을 맞추자." };
+    assert.strictEqual(isDuplicatePair(pairD1, pairD2), false, "Test D must not mark distinct conflict situations as duplicates");
+
+    // Test E: P3 exact duplicated pair from fresh QA => prevented by polish
+    const polishedE = polishDeepEssenceStructuredReport(reportB, "ko-KR", fakeFitPlan);
+    const resE = validatePart06QualityGate(fakeFitPlan, polishedE);
+    assert.strictEqual(resE.pass, true, "Test E must produce 3 non-duplicate pairs after polish");
+    assert.strictEqual(isDuplicatePair(polishedE.relationships.compare[1], polishedE.relationships.compare[2]), false, "Polished pairs 2 & 3 must be distinct");
   });
 });

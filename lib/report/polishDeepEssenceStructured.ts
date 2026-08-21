@@ -17,6 +17,7 @@ import {
   isDeepEssenceStructuredReport,
   type DeepEssenceStructuredReport,
 } from "@/lib/report/deepEssenceStructuredSchema";
+import { similarityScore } from "@/lib/report/deepEssenceChecklistDedup";
 
 function polishProse(text: string, locale: Locale): string {
   const raw = text.trim();
@@ -133,11 +134,330 @@ function cleanAdaptationStoryText(text: string, locale: Locale): string {
  * Apply locale tone law to prose fields only. Always returns a schema-valid
  * report (the input must already be valid).
  */
+import type { FitCategoryKey, DeterministicFitPlan } from "@/lib/report/formatPart01EvidenceForPrompt";
+
+export const FIT_NEED_SEMANTIC_MOTIFS: Record<FitCategoryKey, { keywords: string[]; regexes: RegExp[] }> = {
+  AUTONOMY: {
+    keywords: ["자율", "독립", "스스로", "자율권", "판단 공간", "재량"],
+    regexes: [/자율/, /독립/, /스스로/, /재량/, /자율권/, /판단.*공간/],
+  },
+  STRUCTURE: {
+    keywords: ["원칙", "구조", "규칙", "수순", "절차", "체계"],
+    regexes: [/원칙/, /구조/, /규칙/, /수순/, /절차/, /체계/],
+  },
+  PREDICTABILITY: {
+    keywords: ["예측", "변수", "안정", "미리 공유", "일정", "사전"],
+    regexes: [/예측/, /변수/, /안정/, /미리.*공유/, /일정/, /사전/],
+  },
+  STIMULATION: {
+    keywords: ["새로운", "자극", "변화", "역동", "시도", "새로운 아이디어"],
+    regexes: [/새로운/, /자극/, /변화/, /역동/, /시도/, /실험/],
+  },
+  RELATIONAL_DEPTH: {
+    keywords: ["진심", "깊은", "내면", "진정성", "솔직한", "깊이"],
+    regexes: [/진심/, /깊은/, /내면/, /진정성/, /솔직/, /깊이/],
+  },
+  EMOTIONAL_EXPLICITNESS: {
+    keywords: ["감정", "명확", "투명", "의도", "직접 말", "표현"],
+    regexes: [/감정/, /명확/, /투명/, /의도/, /직접.*말/, /표현/],
+  },
+  DECISION_CLARITY: {
+    keywords: ["결정", "주도권", "책임", "범위", "우선순위", "판단"],
+    regexes: [/결정/, /주도권/, /책임/, /범위/, /우선순위/, /판단/],
+  },
+  FEEDBACK_DIRECTNESS: {
+    keywords: ["피드백", "구체적", "직설", "데이터", "객관적"],
+    regexes: [/피드백/, /구체적/, /직설/, /데이터/, /객관/],
+  },
+  PROCESSING_TIME: {
+    keywords: ["시간", "생각", "소화", "여유", "정리"],
+    regexes: [/시간/, /생각/, /소화/, /여유/, /정리/],
+  },
+  BOUNDARY_RESPECT: {
+    keywords: ["경계", "거리", "침범", "개인 공간", "영역"],
+    regexes: [/경계/, /거리/, /침범/, /개인.*공간/, /영역/],
+  },
+  COLLABORATION: {
+    keywords: ["협력", "시너지", "같이", "동등", "의견"],
+    regexes: [/협력/, /시너지/, /같이/, /동등/, /경청/],
+  },
+  GROWTH_VARIETY: {
+    keywords: ["성장", "다양", "실험", "배움", "새로운 문제", "관점"],
+    regexes: [/성장/, /다양/, /실험/, /배움/, /관점/, /시각/, /시도/],
+  },
+};
+
+export function isSpokenDialogue(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+
+  // Strips trailing sentence punctuation (. ! ?)
+  const cleanText = trimmed.replace(/[.!?\s]+$/, "");
+
+  // 1. Explicit Narrator Description Endings (must end with abstract noun)
+  if (/(?:혼란스러움|불안감|피로감|상황|관계|태도|방식|경향|느낌|대화|부담|가식|불안|마찰|어려움|소통)$/.test(cleanText)) {
+    return false;
+  }
+
+  // 2. Korean Spoken Verb/Conversational Endings (verb suffixes)
+  if (/[가-힐]*(?:다|요|해|자|줘|게|지|마|어|아|봐|까|야|네|냐|시오|오|했어|할게|했니|했습니까|입니다|입니까)$/.test(cleanText)) {
+    return true;
+  }
+
+  // If text ends with speech punctuation (?, !, "), treat as spoken
+  if (/[?!"']$/.test(trimmed)) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isDuplicatePair(
+  a: { wound: string; steady: string },
+  b: { wound: string; steady: string },
+  locale: string = "ko-KR",
+): boolean {
+  const w1 = a.wound.trim();
+  const s1 = a.steady.trim();
+  const w2 = b.wound.trim();
+  const s2 = b.steady.trim();
+
+  if (w1 === w2 || s1 === s2) {
+    return true;
+  }
+
+  const woundSim = similarityScore(w1, w2, locale);
+  const steadySim = similarityScore(s1, s2, locale);
+  return woundSim >= 0.4 && steadySim >= 0.4;
+}
+
+export type QualityGateResult = {
+  pass: boolean;
+  failures: string[];
+};
+
+export function validatePart06QualityGate(
+  fitPlan: DeterministicFitPlan | null | undefined,
+  report: DeepEssenceStructuredReport,
+): QualityGateResult {
+  const failures: string[] = [];
+  if (!fitPlan) return { pass: true, failures: [] };
+  const primaryKey = fitPlan.primaryFit.key;
+  const secondaryKey = fitPlan.secondaryFit.key;
+
+  // 1. Environment Fit motif validation
+  const optimalList = report.energy?.optimal || [];
+  const item1 = optimalList[0] || "";
+  const item2 = optimalList[1] || "";
+
+  const primaryMotifs = FIT_NEED_SEMANTIC_MOTIFS[primaryKey];
+  const secondaryMotifs = FIT_NEED_SEMANTIC_MOTIFS[secondaryKey];
+
+  const item1HasPrimary = primaryMotifs ? primaryMotifs.regexes.some((r) => r.test(item1)) : true;
+  const item2HasSecondary = secondaryMotifs ? secondaryMotifs.regexes.some((r) => r.test(item2)) : true;
+
+  if (!item1HasPrimary) {
+    failures.push(
+      `ENVIRONMENT ITEM 1 ("${item1}") does not contain required primary fit motif for ${primaryKey}`,
+    );
+  }
+  if (!item2HasSecondary) {
+    failures.push(
+      `ENVIRONMENT ITEM 2 ("${item2}") does not contain required secondary fit motif for ${secondaryKey}`,
+    );
+  }
+
+  // 2. Communication anti-coaching, anti-meta commentary, and SPOKEN DIALOGUE validation
+  const BANNED_COACHING_PATTERNS = [
+    /어떤 배움을.*기대/,
+    /성장을 응원/,
+    /다양한 가능성.*이야기/,
+    /유연한 접근법이 좋아/,
+    /새로운 시도를 해보는 건 어때/,
+    /네 생각을 존중해/,
+  ];
+
+  const BANNED_META_PATTERNS = [
+    /라는 말을 들으면/,
+    /라는 말을 듣는 게/,
+    /라고 물어보는 것이 더/,
+    /라고 제안하는 것이/,
+    /외로움을 느껴요/,
+    /불안해요/,
+  ];
+
+  const compareRows = report.relationships?.compare || [];
+  let spokenMotifMatchCount = 0;
+
+  let profileMotifRegex = /.*/;
+  if (["PREDICTABILITY", "STRUCTURE"].includes(primaryKey) || ["PREDICTABILITY", "STRUCTURE"].includes(secondaryKey)) {
+    profileMotifRegex = /원칙|기준|예측|수순|미리|일정|공유|절차|약속/;
+  } else if (["AUTONOMY", "DECISION_CLARITY"].includes(primaryKey) || ["AUTONOMY", "DECISION_CLARITY"].includes(secondaryKey)) {
+    profileMotifRegex = /자율|독립|주도|범위|책임|우선순위|판단|맡/;
+  } else if (["GROWTH_VARIETY", "STIMULATION"].includes(primaryKey) || ["GROWTH_VARIETY", "STIMULATION"].includes(secondaryKey)) {
+    profileMotifRegex = /시도|변화|다른|방식|아이디어|실험|접근|새로운/;
+  }
+
+  for (let i = 0; i < compareRows.length; i++) {
+    const wound = compareRows[i]?.wound || "";
+    const steady = compareRows[i]?.steady || "";
+
+    if (!isSpokenDialogue(wound)) {
+      failures.push(`COMMUNICATION ROW ${i + 1} LEFT ("${wound}") is a narrator description, not spoken dialogue`);
+    }
+    if (!isSpokenDialogue(steady)) {
+      failures.push(`COMMUNICATION ROW ${i + 1} RIGHT ("${steady}") is a narrator description, not spoken dialogue`);
+    }
+
+    for (const pat of BANNED_COACHING_PATTERNS) {
+      if (pat.test(wound) || pat.test(steady)) {
+        failures.push(
+          `COMMUNICATION ROW ${i + 1} contains banned AI-coaching language matching ${pat}`,
+        );
+      }
+    }
+
+    for (const pat of BANNED_META_PATTERNS) {
+      if (pat.test(wound) || pat.test(steady)) {
+        failures.push(
+          `COMMUNICATION ROW ${i + 1} contains narrator meta commentary matching ${pat}`,
+        );
+      }
+    }
+
+    if (profileMotifRegex.test(wound + " " + steady)) {
+      spokenMotifMatchCount++;
+    }
+  }
+
+  // 3. At least 2/3 pairs MUST match the assigned profile motifs
+  if (spokenMotifMatchCount < 2) {
+    failures.push(
+      `COMMUNICATION PAIRS for ${primaryKey}/${secondaryKey} must have at least 2/3 pairs matching profile motifs (actual: ${spokenMotifMatchCount}/3)`,
+    );
+  }
+
+  // 4. Communication pair within-profile DEDUP validation
+  for (let i = 0; i < compareRows.length; i++) {
+    for (let j = i + 1; j < compareRows.length; j++) {
+      if (isDuplicatePair(compareRows[i], compareRows[j])) {
+        failures.push(`COMMUNICATION ROW ${j + 1} is a duplicate/near-duplicate of ROW ${i + 1}`);
+      }
+    }
+  }
+
+  return {
+    pass: failures.length === 0,
+    failures,
+  };
+}
+
+/**
+ * Apply locale tone law to prose fields only. Always returns a schema-valid
+ * report (the input must already be valid).
+ */
 export function polishDeepEssenceStructuredReport(
   report: DeepEssenceStructuredReport,
   locale: Locale | string | undefined,
+  fitPlan?: DeterministicFitPlan | null | undefined,
 ): DeepEssenceStructuredReport {
   const loc = normalizeLocale(locale);
+  let optimalList = mapStrList(report.energy.optimal, loc);
+
+  if (fitPlan) {
+    const pKey = fitPlan.primaryFit.key;
+    const sKey = fitPlan.secondaryFit.key;
+    const pMotifs = FIT_NEED_SEMANTIC_MOTIFS[pKey];
+    const sMotifs = FIT_NEED_SEMANTIC_MOTIFS[sKey];
+
+    const hasP = pMotifs ? pMotifs.regexes.some((r) => r.test(optimalList[0] || "")) : true;
+    const hasS = sMotifs ? sMotifs.regexes.some((r) => r.test(optimalList[1] || "")) : true;
+
+    if (!hasP && optimalList.length > 0) {
+      optimalList[0] = fitPlan.primaryFit.environmentFitDirection;
+    }
+    if (!hasS && optimalList.length > 1) {
+      optimalList[1] = fitPlan.secondaryFit.environmentFitDirection;
+    }
+  }
+
+  let compareRows = report.relationships.compare.map((row) => ({
+    wound: polishProse(row.wound, loc),
+    steady: polishProse(row.steady, loc),
+  }));
+
+  if (fitPlan) {
+    const BANNED_COACHING_PATTERNS = [
+      /어떤 배움을.*기대/,
+      /성장을 응원/,
+      /다양한 가능성.*이야기/,
+      /유연한 접근법이 좋아/,
+      /새로운 시도를 해보는 건 어때/,
+      /네 생각을 존중해/,
+    ];
+    const BANNED_META_PATTERNS = [
+      /라는 말을 들으면/,
+      /라는 말을 듣는 게/,
+      /라고 물어보는 것이 더/,
+      /라고 제안하는 것이/,
+      /외로움을 느껴요/,
+      /불안해요/,
+    ];
+
+    const primaryFallback = {
+      wound: fitPlan.primaryFit.communicationTrigger,
+      steady: fitPlan.primaryFit.communicationBetter,
+    };
+    const secondaryFallback = {
+      wound: fitPlan.secondaryFit.communicationTrigger,
+      steady: fitPlan.secondaryFit.communicationBetter,
+    };
+
+    let altFallback = {
+      wound: "왜 세부적인 일까지 일일이 보고하라고 해?",
+      steady: "전체 목표와 가이드라인만 맞춰주면 세부 실행은 믿고 맡겨줘.",
+    };
+    if (["PREDICTABILITY", "STRUCTURE"].includes(fitPlan.primaryFit.key) || ["PREDICTABILITY", "STRUCTURE"].includes(fitPlan.secondaryFit.key)) {
+      altFallback = {
+        wound: "왜 또 미리 안 알려주고 갑자기 일정을 바꿔?",
+        steady: "중요한 변경 사항은 사전에 미리 알려주고 함께 소통해줘.",
+      };
+    } else if (["GROWTH_VARIETY", "STIMULATION"].includes(fitPlan.primaryFit.key) || ["GROWTH_VARIETY", "STIMULATION"].includes(fitPlan.secondaryFit.key)) {
+      altFallback = {
+        wound: "매번 같은 일만 반복하니까 답답해.",
+        steady: "새로운 프로젝트나 과제를 시도해볼 수 있는 기회를 적극적으로 만들어줘.",
+      };
+    }
+
+    const safePool = [primaryFallback, secondaryFallback, altFallback];
+
+    compareRows = compareRows.map((row, idx) => {
+      const isCoaching = BANNED_COACHING_PATTERNS.some((p) => p.test(row.wound) || p.test(row.steady));
+      const isMeta = BANNED_META_PATTERNS.some((p) => p.test(row.wound) || p.test(row.steady));
+      const isWoundSpoken = isSpokenDialogue(row.wound);
+      const isSteadySpoken = isSpokenDialogue(row.steady);
+
+      if (isCoaching || isMeta || !isWoundSpoken || !isSteadySpoken) {
+        return safePool[idx] || safePool[0];
+      }
+      return row;
+    });
+
+    const deduped: Array<{ wound: string; steady: string }> = [];
+    for (let i = 0; i < compareRows.length; i++) {
+      let candidate = compareRows[i];
+      const isDup = deduped.some((prev) => isDuplicatePair(prev, candidate));
+      if (isDup) {
+        const unusedPoolItem = safePool.find((item) => !deduped.some((prev) => isDuplicatePair(prev, item)));
+        if (unusedPoolItem) {
+          candidate = unusedPoolItem;
+        }
+      }
+      deduped.push(candidate);
+    }
+    compareRows = deduped;
+  }
+
   const next: DeepEssenceStructuredReport = {
     ...report,
     // summary chips / titles stay as-is (2–4 word labels, not sentences)
@@ -163,16 +483,13 @@ export function polishDeepEssenceStructuredReport(
       })),
       fuels: mapStrList(report.energy.fuels, loc),
       drains: mapStrList(report.energy.drains, loc),
-      optimal: mapStrList(report.energy.optimal, loc),
+      optimal: optimalList,
     },
     relationships: {
       pattern: polishProse(report.relationships.pattern, loc),
       fit: mapStrList(report.relationships.fit, loc),
       friction: mapStrList(report.relationships.friction, loc),
-      compare: report.relationships.compare.map((row) => ({
-        wound: polishProse(row.wound, loc),
-        steady: polishProse(row.steady, loc),
-      })),
+      compare: compareRows,
     },
     playbook: {
       rule: polishProse(report.playbook.rule, loc),
@@ -298,5 +615,5 @@ export function polishDeepEssenceStructuredReport(
       : {}),
   };
 
-  return isDeepEssenceStructuredReport(next) ? next : report;
+  return isDeepEssenceStructuredReport(next) ? next : (isDeepEssenceStructuredReport(report) ? report : next);
 }
