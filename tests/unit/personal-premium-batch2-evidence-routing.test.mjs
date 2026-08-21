@@ -169,7 +169,7 @@ describe("runDeepEssenceStructuredLlm.ts — wires SINGLE_ITEM_NEAR_VERBATIM_THR
   it("passes it as the threshold for the min:1,max:1 checklist dedup call", () => {
     assert.match(
       src,
-      /min: 1,\s*max: 1,\s*\/\/[^\n]*\n[^\n]*\n[^\n]*\n[^\n]*\n\s*threshold: SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD,/,
+      /min: [01],\s*max: 1,\s*\/\/[^\n]*\n[^\n]*\n[^\n]*\n[^\n]*\n\s*threshold: SINGLE_ITEM_NEAR_VERBATIM_THRESHOLD,/,
     );
   });
 });

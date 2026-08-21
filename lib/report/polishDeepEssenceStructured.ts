@@ -346,10 +346,159 @@ export function validatePart06QualityGate(
     }
   }
 
+  const pass = failures.length === 0;
+  return { pass, failures };
+}
+
+const BANNED_SAJU_TERMS = [
+  /도화살/i,
+  /현침살/i,
+  /천을귀인/i,
+  /합충형파해/i,
+  /십신/i,
+  /격국/i,
+  /용신/i,
+  /희신/i,
+  /지장간/i,
+];
+
+const BANNED_CLOSING_TEMPLATES = [
+  /할\s*수\s*있게\s*되었/,
+  /하게\s*되었/,
+  /도움이\s*(?:되|됩|될)/,
+  /앞으로도\s*계속/,
+  /존중받을\s*수\s*있는/,
+  /본질적인\s*특성/,
+  /더욱\s*자신감/,
+  /성장할\s*수\s*있/,
+  /중요한\s*의미가\s*있/,
+  /차이를\s*이해/,
+  /차이를\s*인식/,
+];
+
+export const FAMILY_CLOSING_MOTIFS: Record<string, RegExp> = {
+  DECISION: /판단|결정|선택|내\s*기준/i,
+  STRUCTURE: /체계|구조|수순|원칙|예측|변수/i,
+  GROWTH: /성장|배움|경험을\s*넓|가능성을\s*탐색|새로운\s*시도/i,
+  ADAPTABILITY: /적응|유연|전환|상황에\s*맞추/i,
+  BOUNDARY: /경계|한계|책임|감당/i,
+};
+
+const FAMILY_CLOSING_FALLBACKS: Record<string, string> = {
+  DECISION: "스스로 판단하는 내면의 기준은 이미 충분해요. 다만 타인의 무조건적인 동의까지 얻어야 좋은 결정이 되는 것은 아닙니다.",
+  STRUCTURE: "복잡함을 체계적으로 정리하는 수순과 원칙은 중요한 자원이에요. 다만 모든 예외 변수가 통제되어야만 비로소 움직일 수 있는 것은 아닙니다.",
+  GROWTH: "새로운 가능성을 탐색하고 배움의 경험을 넓히는 힘이 당신을 움직이게 해요. 다만 나를 넓히는 성장의 시도와 주변에 맞추느라 방향을 잃는 적응은 다른 일입니다.",
+  ADAPTABILITY: "상황 변화에 유연하게 대응하고 적응하는 유연함은 강점이에요. 다만 유연하게 응대하는 것과 내 중심 기준 없이 매번 흔들리는 것은 다릅니다.",
+  BOUNDARY: "자신의 한계와 감당 범위를 알아차리고 경계를 지키는 것이 필요해요. 다만 상대를 배려하는 마음과 상대가 감당해야 할 책임까지 떠안는 것은 다릅니다.",
+};
+
+export function validatePart07QualityGate(
+  report: DeepEssenceStructuredReport,
+  primaryFamily?: string,
+): QualityGateResult {
+  const failures: string[] = [];
+  const future = report.future;
+
+  if (!future) {
+    failures.push("PART 07 missing future block");
+    return { pass: false, failures };
+  }
+
+  const doItems = future.do_items || [];
+  const dontItems = future.dont_items || [];
+  const decisionRules = future.decision_rules || [];
+
+  if (doItems.length !== 3) {
+    failures.push(`PART 07 DO items count must be 3 (actual: ${doItems.length})`);
+  }
+  if (dontItems.length !== 3) {
+    failures.push(`PART 07 DON'T items count must be 3 (actual: ${dontItems.length})`);
+  }
+  if (decisionRules.length < 2 || decisionRules.length > 3) {
+    failures.push(`PART 07 Decision Rules count must be 2-3 (actual: ${decisionRules.length})`);
+  }
+
+  if (report.checklist && report.checklist.length > 0) {
+    const practiceText = report.checklist[0] || "";
+    if (practiceText.includes("기억에 남는 순간") || practiceText.includes("하루를 골라")) {
+      failures.push("PART 07 contains banned generic journaling practice");
+    }
+    const normPractice = practiceText.replace(/[\s.,!?]/g, "");
+    for (const d of doItems) {
+      const normTitle = d.title.replace(/[\s.,!?]/g, "");
+      if (normTitle.length >= 4 && (normPractice.includes(normTitle) || normTitle.includes(normPractice))) {
+        failures.push(`PART 07 practice duplicates DO title "${d.title}"`);
+      }
+    }
+  }
+
+  if (report.closing) {
+    const closing = report.closing.trim();
+    for (const tRegex of BANNED_CLOSING_TEMPLATES) {
+      if (tRegex.test(closing)) {
+        failures.push(`PART 07 closing contains banned template phrase matching ${tRegex.source}`);
+      }
+    }
+    if (primaryFamily && FAMILY_CLOSING_MOTIFS[primaryFamily]) {
+      const motifRegex = FAMILY_CLOSING_MOTIFS[primaryFamily];
+      if (!motifRegex.test(closing)) {
+        failures.push(`PART 07 closing missing mandatory primary-family motif for ${primaryFamily}`);
+      }
+    }
+  }
+
+  const allPart07Text = [
+    ...doItems.flatMap((d) => [d.title, d.body]),
+    ...dontItems.flatMap((d) => [d.title, d.body]),
+    ...decisionRules,
+    ...(report.checklist || []),
+    report.closing || "",
+  ].join(" ");
+
+  for (const termRegex of BANNED_SAJU_TERMS) {
+    if (termRegex.test(allPart07Text)) {
+      failures.push(`PART 07 contains banned technical Saju term matching ${termRegex.source}`);
+    }
+  }
+
   return {
     pass: failures.length === 0,
     failures,
   };
+}
+
+export function validateCrossProfilePart07Uniqueness(
+  reports: { id: string; report: DeepEssenceStructuredReport }[],
+): { pass: boolean; overlapRate: number; failures: string[] } {
+  const failures: string[] = [];
+  let totalPairs = 0;
+  let duplicatePairs = 0;
+
+  for (let i = 0; i < reports.length; i++) {
+    for (let j = i + 1; j < reports.length; j++) {
+      const repA = reports[i].report.future;
+      const repB = reports[j].report.future;
+      if (!repA || !repB) continue;
+
+      const titlesA = [...(repA.do_items || []).map((d) => d.title), ...(repA.dont_items || []).map((d) => d.title)];
+      const titlesB = [...(repB.do_items || []).map((d) => d.title), ...(repB.dont_items || []).map((d) => d.title)];
+
+      for (const tA of titlesA) {
+        for (const tB of titlesB) {
+          totalPairs++;
+          const score = similarityScore(tA, tB);
+          if (score > 0.45) {
+            duplicatePairs++;
+            failures.push(`Cross-profile title collision between ${reports[i].id} and ${reports[j].id}: "${tA}" vs "${tB}" (score=${Math.round(score * 100) / 100})`);
+          }
+        }
+      }
+    }
+  }
+
+  const overlapRate = totalPairs > 0 ? duplicatePairs / totalPairs : 0;
+  const pass = failures.length === 0;
+  return { pass, overlapRate, failures };
 }
 
 /**
@@ -360,9 +509,19 @@ export function polishDeepEssenceStructuredReport(
   report: DeepEssenceStructuredReport,
   locale: Locale | string | undefined,
   fitPlan?: DeterministicFitPlan | null | undefined,
+  primaryFamily?: string,
 ): DeepEssenceStructuredReport {
   const loc = normalizeLocale(locale);
   let optimalList = mapStrList(report.energy.optimal, loc);
+
+  let closingText = cleanClosingText(report.closing, loc);
+  if (primaryFamily && FAMILY_CLOSING_MOTIFS[primaryFamily]) {
+    const motifRegex = FAMILY_CLOSING_MOTIFS[primaryFamily];
+    const hasBannedTemplate = BANNED_CLOSING_TEMPLATES.some((r) => r.test(closingText));
+    if ((!motifRegex.test(closingText) || hasBannedTemplate) && FAMILY_CLOSING_FALLBACKS[primaryFamily]) {
+      closingText = FAMILY_CLOSING_FALLBACKS[primaryFamily];
+    }
+  }
 
   if (fitPlan) {
     const pKey = fitPlan.primaryFit.key;
@@ -502,10 +661,34 @@ export function polishDeepEssenceStructuredReport(
       reset: polishProse(report.playbook.reset, loc),
     },
     future: {
+      ...report.future,
       remember: report.future.remember.map((r) => cleanRememberText(r, loc)),
       leap: polishProse(report.future.leap, loc),
+      ...(report.future.do_items
+        ? {
+            do_items: report.future.do_items.map((item) => ({
+              title: polishProse(item.title, loc),
+              body: polishProse(item.body, loc),
+              ...(item.evidence_refs ? { evidence_refs: item.evidence_refs } : {}),
+            })),
+          }
+        : {}),
+      ...(report.future.dont_items
+        ? {
+            dont_items: report.future.dont_items.map((item) => ({
+              title: polishProse(item.title, loc),
+              body: polishProse(item.body, loc),
+              ...(item.evidence_refs ? { evidence_refs: item.evidence_refs } : {}),
+            })),
+          }
+        : {}),
+      ...(report.future.decision_rules
+        ? {
+            decision_rules: report.future.decision_rules.map((rule) => polishProse(rule, loc)),
+          }
+        : {}),
     },
-    closing: cleanClosingText(report.closing, loc),
+    closing: closingText,
     checklist: mapStrList(report.checklist, loc),
     ...(report.layered_identity
       ? {

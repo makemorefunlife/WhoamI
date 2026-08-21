@@ -30,6 +30,7 @@ import { logServerEvent } from "@/lib/security/safeLog";
 import {
   formatPart01EvidenceForPrompt,
   selectFitPlan,
+  selectActionPlan,
   filterKnownEvidenceRefs,
   type Part01PromptEvidence,
 } from "@/lib/report/formatPart01EvidenceForPrompt";
@@ -517,7 +518,7 @@ export async function runDeepEssenceStructuredLlm(
         checklist: partB.checklist,
         comparisonTexts,
         locale: normalizeLocale(input.locale),
-        min: 1,
+        min: 0,
         max: 1,
         // Batch 2 — the default CHECKLIST_DUPLICATE_THRESHOLD was calibrated
         // for 8-12-item bolt-on duplicates, not a single evidence-connected
@@ -597,10 +598,12 @@ export async function runDeepEssenceStructuredLlm(
     };
 
     const fitPlan = input.part01Evidence ? selectFitPlan(input.part01Evidence) : null;
+    const actionPlan = input.part01Evidence ? selectActionPlan(input.part01Evidence) : null;
     const structured = polishDeepEssenceStructuredReport(
       withClampedRadar,
       input.locale,
       fitPlan,
+      actionPlan?.primaryFamily,
     );
 
     return { structured, source: "llm" };

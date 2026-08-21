@@ -981,6 +981,307 @@ export function selectFitPlan(packet: Part01IdentityEvidencePacket): Determinist
   };
 }
 
+export type ActionCandidateFamily =
+  | "DECISION"
+  | "BOUNDARY"
+  | "STRUCTURE"
+  | "ADAPTABILITY"
+  | "GROWTH"
+  | "COMMUNICATION"
+  | "RELATIONAL"
+  | "ENERGY";
+
+export type ActionClosingFrame = {
+  primaryFamily: ActionCandidateFamily;
+  strengthTruth: string;
+  overuseTruth: string;
+  distinctionTruth: string;
+};
+
+export type DeterministicActionPlan = {
+  primaryFamily: ActionCandidateFamily;
+  secondaryFamily: ActionCandidateFamily;
+  familyScores: Record<ActionCandidateFamily, number>;
+  doDirections: string[];
+  dontDirections: string[];
+  decisionRuleDirections: string[];
+  closingFrame: ActionClosingFrame;
+  practiceEligible: boolean;
+  practiceReason: string;
+  sajuBehavioralNote?: string;
+  evidenceRefs: string[];
+};
+
+export function selectActionPlan(
+  packet: RawPart01EvidencePacket | null | undefined,
+): DeterministicActionPlan {
+  const fallbackScores: Record<ActionCandidateFamily, number> = {
+    DECISION: 50,
+    BOUNDARY: 30,
+    STRUCTURE: 10,
+    ADAPTABILITY: 10,
+    GROWTH: 10,
+    COMMUNICATION: 0,
+    RELATIONAL: 0,
+    ENERGY: 0,
+  };
+
+  if (!packet || typeof packet !== "object") {
+    return {
+      primaryFamily: "DECISION",
+      secondaryFamily: "BOUNDARY",
+      familyScores: fallbackScores,
+      doDirections: [
+        "중요한 결정을 앞두고 다른 사람의 반응을 살피기 전에 내 내면의 우선순위를 먼저 한 줄로 정하기",
+        "자신이 선택한 방향을 일정 시간 실험해보고 결과를 데이터로 복기하는 루틴 유지하기",
+        "서로의 자율권을 존중하고 독립적 판단 시간을 주는 관계에 우선순위 두기",
+      ],
+      dontDirections: [
+        "모든 사람이 완전히 만족할 때까지 결정을 지연시키거나 재확인을 반복하지 않기",
+        "상대의 기대에 맞춘다는 이유로 내 영역의 결정권까지 일방적으로 내주지 않기",
+        "한 번 내린 결정을 작은 변수가 생길 때마다 다시 개방하여 판을 흔들지 않기",
+      ],
+      decisionRuleDirections: [
+        "이 선택을 내가 진심으로 원하는가, 아니면 갈등을 피하기 위해 받아들이는가 구분하기",
+        "지금 필요한 것이 더 많은 정보인가, 이미 충분한데 확신만 기다리는 것인가 구분하기",
+        "이 방식을 오랫동안 유지해도 내 에너지가 고갈되지 않는가까지 보기",
+      ],
+      closingFrame: {
+        primaryFamily: "DECISION",
+        strengthTruth: "독립적 판단과 내면의 판단 기준을 세우는 힘",
+        overuseTruth: "타인의 과도한 동의를 기다리거나 모든 결과를 혼자 짊어지려는 부담",
+        distinctionTruth: "신중한 내면 판단과 만장일치 확인의 차이",
+      },
+      practiceEligible: false,
+      practiceReason: "No packet evidence provided for practice evaluation.",
+      evidenceRefs: [],
+    };
+  }
+
+  const energyPlan = selectEnergyMechanisms(packet);
+  const fitPlan = selectFitPlan(packet);
+  const primary = packet.currentBehavior.primaryAxes;
+
+  const familyScores: Record<ActionCandidateFamily, number> = {
+    DECISION: 0,
+    BOUNDARY: 0,
+    STRUCTURE: 0,
+    ADAPTABILITY: 0,
+    GROWTH: 0,
+    COMMUNICATION: 0,
+    RELATIONAL: 0,
+    ENERGY: 0,
+  };
+
+  familyScores.STRUCTURE += Math.max(0, (primary.structure - 45) * 2.5) + Math.max(0, (primary.stability - 45) * 1.5);
+  familyScores.GROWTH += Math.max(0, (primary.growth - 45) * 2.5);
+  familyScores.ADAPTABILITY += Math.max(0, (primary.adaptability - 45) * 2.5);
+  familyScores.DECISION += Math.max(0, (primary.autonomy - 45) * 2.5);
+  familyScores.BOUNDARY += Math.max(0, (primary.connection - 50) * 1.5);
+
+  const maxPrimaryVal = Math.max(primary.structure, primary.growth, primary.adaptability, primary.autonomy);
+  if (primary.structure === maxPrimaryVal && primary.structure > 50) {
+    familyScores.STRUCTURE += 35;
+  }
+  if (primary.growth === maxPrimaryVal && primary.growth > 50) {
+    familyScores.GROWTH += 35;
+  }
+  if (primary.adaptability === maxPrimaryVal && primary.adaptability > 50) {
+    familyScores.ADAPTABILITY += 35;
+  }
+  if (primary.autonomy === maxPrimaryVal && primary.autonomy > 50) {
+    familyScores.DECISION += 35;
+  }
+
+  if (energyPlan.primary.key === "DECISION_LOAD" || energyPlan.primary.key === "CONTROL_LOAD") {
+    familyScores.DECISION += 20;
+  }
+  if (energyPlan.primary.key === "STRUCTURE_MAINTENANCE" || energyPlan.primary.key === "UNCERTAINTY_MONITORING") {
+    familyScores.STRUCTURE += 20;
+  }
+  if (energyPlan.primary.key === "ADAPTATION_SWITCHING") {
+    familyScores.ADAPTABILITY += 20;
+  }
+  if (energyPlan.primary.key === "SOCIAL_MONITORING") {
+    familyScores.BOUNDARY += 20;
+  }
+
+  if (fitPlan.primaryFit.key === "AUTONOMY") {
+    familyScores.DECISION += 25;
+  }
+  if (fitPlan.primaryFit.key === "BOUNDARY_RESPECT") {
+    familyScores.BOUNDARY += 25;
+  }
+  if (fitPlan.primaryFit.key === "PREDICTABILITY" || fitPlan.primaryFit.key === "STRUCTURE") {
+    familyScores.STRUCTURE += 25;
+  }
+  if (fitPlan.primaryFit.key === "GROWTH_VARIETY" || fitPlan.primaryFit.key === "STIMULATION") {
+    familyScores.GROWTH += 25;
+  }
+
+  const sortedFamilies = (Object.keys(familyScores) as ActionCandidateFamily[]).sort(
+    (a, b) => familyScores[b] - familyScores[a],
+  );
+
+  const primaryFamily = sortedFamilies[0] ?? "DECISION";
+  let secondaryFamily = sortedFamilies[1] ?? "STRUCTURE";
+  if (secondaryFamily === primaryFamily) {
+    secondaryFamily = sortedFamilies[2] ?? "BOUNDARY";
+  }
+
+  const doDirections: string[] = [];
+  const dontDirections: string[] = [];
+  const decisionRuleDirections: string[] = [];
+
+  if (primaryFamily === "DECISION") {
+    doDirections.push("중요한 결정을 내릴 때 다른 사람의 입장을 듣기 전에 내 판단 기준을 먼저 한 문장으로 정리하기");
+    dontDirections.push("상대의 반응이나 타인의 동의를 확인하기 전에는 결정을 내릴 수 없다고 생각하여 판단을 지연시키지 않기");
+    decisionRuleDirections.push("이 선택이 내 기준과 내적인 주체성에 부합하는지, 타인의 기대에 부응하려는 것인지 구분하기");
+  } else if (primaryFamily === "STRUCTURE") {
+    doDirections.push("작업 수순과 핵심 규칙을 사전에 명확히 정리하여 구조적 예측 가능성을 우선 확보하기");
+    dontDirections.push("모든 예외 변수와 상황을 사전에 완벽히 통제하려다 실행 타이밍을 놓치거나 완벽주의 늪에 빠지지 않기");
+    decisionRuleDirections.push("지금 더 필요한 게 더 나은 절차/계획인가, 아니면 이미 충분한 계획을 완벽하게 다듬으려는 확신 지연인가 구분하기");
+  } else if (primaryFamily === "GROWTH") {
+    doDirections.push("새로운 시도와 배움의 기회가 있는 선택을 우선하고, 정기적인 작은 실험 루틴 유지하기");
+    dontDirections.push("잘 적응할 수 있다는 이유로 본래 내 핵심 방향을 버리고 매번 남에게 맞추며 흔들리지 않기");
+    decisionRuleDirections.push("이 변화가 나를 성장시키는 새로운 배움인지, 그저 주변 상황에 맞추느라 내 방향을 바꾸는 것인지 구분하기");
+  } else if (primaryFamily === "ADAPTABILITY") {
+    doDirections.push("다양한 변수에 유연하게 대응하되, 이번 변화에서 내가 끝까지 유지할 핵심 기준 하나를 먼저 정하기");
+    dontDirections.push("상황에 잘 맞출 수 있다는 이유로 모든 변화의 부담과 전담 조율자 역할을 항상 내가 다 떠안지 않기");
+    decisionRuleDirections.push("이 상황 수용이 내가 진심으로 원해서 받아들이는 것인가, 전담 맞춤 모드가 습관화되어 수긍하는 것인가 구분하기");
+  } else {
+    doDirections.push("독립적인 판단 공간과 자율권이 보장되는 경계를 명확히 유지하며 일하기");
+    dontDirections.push("관계의 조화를 유지한다는 이유로 자신의 우선순위를 미루고 일방적으로 맞추는 모드가 장기화되지 않기");
+    decisionRuleDirections.push("이 받아들임이 내가 진심으로 동의해서인가, 갈등과 마찰을 피하기 위해 수긍하는 것인가 구분하기");
+  }
+
+  if (secondaryFamily === "STRUCTURE" && primaryFamily !== "STRUCTURE") {
+    doDirections.push("자주 반복되는 의사결정은 프레임을 템플릿화하여 에너지 소모 줄이기");
+    dontDirections.push("완벽한 준비가 갖춰져야 시작할 수 있다고 믿으며 적정 수준(good enough)에서 멈추는 것을 두려워하지 않기");
+    decisionRuleDirections.push("이 일을 완벽하게 처리해야 하는가, 적정선에서 완료하고 다음 단계로 넘어가는 것이 유리한가 보기");
+  } else if (secondaryFamily === "GROWTH" && primaryFamily !== "GROWTH") {
+    doDirections.push("기존 방식을 유지하면서도 정기적으로 작은 실험을 병행할 수 있는 시도 공간 확보하기");
+    dontDirections.push("안정성을 지킨다는 이유로 배움과 호기심이 완전히 고갈된 루틴에 갇혀있지 않기");
+    decisionRuleDirections.push("이 선택을 오래 유지했을 때 내 역량이 확장되는가, 아니면 방어적으로 쪼그라드는가 보기");
+  } else if (secondaryFamily === "ADAPTABILITY" && primaryFamily !== "ADAPTABILITY") {
+    doDirections.push("예상치 못한 변수가 생겼을 때 내 기준을 잃지 않고 유연한 대체안 마련하기");
+    dontDirections.push("변화에 적응할 수 있다는 이유로 내 본래 계획을 아무 기준 없이 번복하지 않기");
+    decisionRuleDirections.push("이 대안 선택이 내 목표에 기여하는가, 단지 상황을 빨리 마무리짓기 위한 타협인가 구분하기");
+  } else if (secondaryFamily === "BOUNDARY" && primaryFamily !== "BOUNDARY") {
+    doDirections.push("상대의 요청이나 공감과 별개로 내가 실제로 감당할 수 있는 자원의 한계를 분명히 선언하기");
+    dontDirections.push("다른 사람의 감정이나 팀 전체의 분위기까지 내가 혼자 책임져야 한다는 부담을 지지 않기");
+    decisionRuleDirections.push("내가 도울 수 있는 영역인가, 상대가 스스로 겪어내야 할 책임의 영역인가 구분하기");
+  } else {
+    doDirections.push("판단 결과를 행동으로 옮기기 전에 내 핵심 가치와 일치하는지 점검하는 시간 갖기");
+    dontDirections.push("순간적인 조급함이나 외부 압박 때문에 이미 내려진 결정을 쉽게 번복하지 않기");
+    decisionRuleDirections.push("이 결정이 내 장기 목표에 기여하는가, 단기적인 압박을 해소하려는 임시방편인가 구분하기");
+  }
+
+  if (primaryFamily === "STRUCTURE") {
+    doDirections.push("예측 가능한 정기 휴식 수순을 루틴으로 보호하여 구조적 에너지를 회복하기");
+    dontDirections.push("일정을 지키겠다는 이유로 휴식 시간까지 빡빡하게 계획으로 채우지 않기");
+    decisionRuleDirections.push("이 방식을 오랫동안 유지해도 내 정신적·신체적 에너지가 고갈되지 않고 지속 가능한가까지 고려하기");
+  } else if (primaryFamily === "GROWTH" || primaryFamily === "ADAPTABILITY") {
+    doDirections.push("새로운 탐색과 시도 후 지친 에너지를 다듬고 정리하는 회복 루틴 확보하기");
+    dontDirections.push("호기심과 유연성이 작동한다는 이유로 지칠 때까지 멈추지 않고 과도하게 가동하지 않기");
+    decisionRuleDirections.push("이 변화와 시도가 내 장기적 성장에 도움이 되는지, 에너지 소진으로 이어지는지 구분하기");
+  } else {
+    doDirections.push("자율적인 내면 회복 공간을 확보하고 그 시간을 최우선으로 보호하기");
+    dontDirections.push("독립성과 결정권을 지킨다는 이유로 스스로를 고립시키거나 마찰을 길게 가져가지 않기");
+    decisionRuleDirections.push("이 결정을 오랫동안 유지해도 내 에너지가 고갈되지 않고 지속 가능한가까지 고려하기");
+  }
+
+  const practiceEligible = Boolean(
+    packet.growthEdgeCandidates?.primaryGapAxis ||
+    packet.axisComparisons?.some((a) => a.innate_higher && Math.abs(a.innate - a.current) >= 15)
+  );
+  const practiceReason = practiceEligible
+    ? "Specific growth edge or innate-higher gap axis justified a 1-week operational experiment."
+    : "No high-confidence operational experiment adds value beyond DO/DON'T items.";
+
+  let sajuBehavioralNote: string | undefined;
+  if (packet.astrology?.stars) {
+    const starNames = packet.astrology.stars.map((s: { name_ko: string }) => s.name_ko);
+    if (starNames.some((n: string) => n.includes("도화"))) {
+      sajuBehavioralNote = "사람과의 연결과 분위기를 이끄는 강점은 적극 쓰되, 모든 관계의 온도와 타인의 반응까지 혼자 책임지려 하지 말기";
+    } else if (starNames.some((n: string) => n.includes("현침"))) {
+      sajuBehavioralNote = "본질과 핵심을 정확히 짚어내는 정교한 시각은 계속 유지하되, 맞는 말일수록 전달 시점과 소통 강도를 한 번 더 조율하기";
+    } else if (starNames.some((n: string) => n.includes("천을귀인"))) {
+      sajuBehavioralNote = "혼자 완벽히 처리하는 것만 독립성이라 생각하지 말고, 필요한 순간 주변 사람과 자원을 적극적으로 연결해 조력을 구하기";
+    }
+  }
+
+  const FAMILY_CLOSING_FRAMES: Record<ActionCandidateFamily, ActionClosingFrame> = {
+    DECISION: {
+      primaryFamily: "DECISION",
+      strengthTruth: "스스로 판단하고 내면의 기준을 바로 세우는 독립적인 선택의 힘",
+      overuseTruth: "모든 사람의 확신을 확인하려 하거나 모든 결과를 혼자 짊어지려는 과도한 부담",
+      distinctionTruth: "신중하게 스스로 판단하는 것과 모든 사람의 동의를 얻어야 결정할 수 있다고 믿는 것의 차이",
+    },
+    STRUCTURE: {
+      primaryFamily: "STRUCTURE",
+      strengthTruth: "복잡한 상황을 체계적으로 정리하고 예측 가능한 수순과 원칙을 세우는 힘",
+      overuseTruth: "모든 예외 변수가 다 통제되어야만 비로소 움직일 수 있다고 생각하는 완벽주의 통제 모드",
+      distinctionTruth: "안정감을 주는 유용한 체계를 갖추는 것과 완벽한 확실성이 갖춰질 때까지 실행을 지연시키는 것의 차이",
+    },
+    GROWTH: {
+      primaryFamily: "GROWTH",
+      strengthTruth: "새로운 가능성을 탐색하고 경험과 배움의 범위를 넓혀 나가는 시도의 힘",
+      overuseTruth: "주변 상황이나 타인의 기대에 맞추느라 내 본래 방향을 잃고 적응에만 치우치는 경향",
+      distinctionTruth: "나를 확장하는 성장의 변화와 내 주체성을 지우며 상황에 맞추는 맞춤형 적응의 차이",
+    },
+    ADAPTABILITY: {
+      primaryFamily: "ADAPTABILITY",
+      strengthTruth: "상황 변화에 유연하게 응대하고 다양한 변수를 조율하는 유연한 대응의 힘",
+      overuseTruth: "내 중심 기준 없이 모든 요구와 변화를 혼자 다 수용하고 맞추려 하는 전담 조율 부담",
+      distinctionTruth: "상황에 유연하게 대응하는 것과 내 본래 기준이 없어 매번 흔들리는 것의 차이",
+    },
+    BOUNDARY: {
+      primaryFamily: "BOUNDARY",
+      strengthTruth: "자신의 한계와 감당 범위를 알아차리고 명확한 경계를 지키는 힘",
+      overuseTruth: "상대의 감정이나 팀 전체의 분위기까지 혼자 다 책임져야 한다는 과도한 연대 책임감",
+      distinctionTruth: "상대를 배려하고 도우려는 마음과 상대가 감당해야 할 영역까지 내가 떠안는 것의 차이",
+    },
+    COMMUNICATION: {
+      primaryFamily: "COMMUNICATION",
+      strengthTruth: "의도와 감정을 명확히 표현하고 다리를 놓는 소통의 힘",
+      overuseTruth: "모든 오해를 즉각 해명해야 한다는 조급함",
+      distinctionTruth: "솔직한 의도 전달과 과도한 해명 지연의 차이",
+    },
+    RELATIONAL: {
+      primaryFamily: "RELATIONAL",
+      strengthTruth: "깊이 있는 신뢰 관계를 형성하고 내면을 나누는 힘",
+      overuseTruth: "관계의 온도와 상대의 반응을 매번 점검하는 부담",
+      distinctionTruth: "진정성 있는 연결과 상대의 감정을 전담하려는 것의 차이",
+    },
+    ENERGY: {
+      primaryFamily: "ENERGY",
+      strengthTruth: "내 에너지 흐름을 읽고 회복 루틴을 최우선 보호하는 힘",
+      overuseTruth: "에너지가 잘 작동한다는 이유로 쉬지 않고 계속 가동하는 강점 오남용",
+      distinctionTruth: "지속 가능한 원칙을 지키는 것과 에너지를 쥐어짜내는 것의 차이",
+    },
+  };
+
+  const closingFrame = FAMILY_CLOSING_FRAMES[primaryFamily] || FAMILY_CLOSING_FRAMES.DECISION;
+
+  return {
+    primaryFamily,
+    secondaryFamily,
+    familyScores,
+    doDirections,
+    dontDirections,
+    decisionRuleDirections,
+    closingFrame,
+    practiceEligible,
+    practiceReason,
+    ...(sajuBehavioralNote ? { sajuBehavioralNote } : {}),
+    evidenceRefs: [
+      `energy_mechanism:${energyPlan.primary.key}`,
+      `fit_plan:${fitPlan.primaryFit.key}`,
+    ],
+  };
+}
+
 const RELATIONSHIP_RELEVANT_DIMENSION_KEYS: readonly string[] = [
   "conflict_decompression",
   "support_giving_style",
@@ -1137,6 +1438,37 @@ function buildFutureEvidence(packet: Part01IdentityEvidencePacket): {
     lines.push(
       "No selected gap axis is innate-higher-than-current this time — do not invent an underused-tendency claim for remember[2] (Recover); ground it in [Natural Self & Deep Needs] material already used in layered_identity instead, or write a more general, still-evidence-based permission-to-return-to-self statement without naming a specific axis.",
     );
+  }
+
+  const actionPlan = selectActionPlan(packet);
+  lines.push("");
+  lines.push("DETERMINISTIC ACTION PLAN DIRECTIONS FOR PART 07 (PERSONAL OPERATING PLAYBOOK):");
+  lines.push(`- [PRIMARY ACTION FAMILY]: ${actionPlan.primaryFamily}`);
+  lines.push(`- [SECONDARY ACTION FAMILY]: ${actionPlan.secondaryFamily}`);
+  lines.push(`- [PRACTICE ELIGIBILITY]: ${actionPlan.practiceEligible ? "YES — PROFILE-SPECIFIC PRACTICE REQUIRED" : "NO — DO NOT GENERATE A PRACTICE EXERCISE (RETURN checklist: [])"}`);
+  lines.push(`- [PRACTICE REASON]: ${actionPlan.practiceReason}`);
+  lines.push("DETERMINISTIC CLOSING FRAME FOR PART 07 CLOSING:");
+  lines.push(`  - [PRIMARY FAMILY STRENGTH TRUTH]: "${actionPlan.closingFrame.strengthTruth}"`);
+  lines.push(`  - [PRIMARY FAMILY OVERUSE TRUTH]: "${actionPlan.closingFrame.overuseTruth}"`);
+  lines.push(`- [PRIMARY FAMILY DISTINCTION TRUTH]: "${actionPlan.closingFrame.distinctionTruth}"`);
+  lines.push("  - CLOSING MANDATE: closing MUST express this EXACT semantic tension (Strength -> Overuse -> Distinction). It MUST be dominated by [PRIMARY ACTION FAMILY] (${actionPlan.primaryFamily}). NEVER replace the primary family with secondary family language or generic AI self-discovery conclusions.");
+  lines.push("CRITICAL SLOT CONSUMPTION CONTRACT FOR PART 07:");
+  lines.push("  - DO Item 1 MUST consume DO Direction 1 ([PRIMARY ACTION FAMILY]).");
+  lines.push("  - DO Item 2 MUST consume DO Direction 2 ([SECONDARY ACTION FAMILY]).");
+  lines.push("  - DO Item 3 MUST consume DO Direction 3 (Energy Recovery).");
+  lines.push("  - DON'T Item 1 MUST consume DON'T Direction 1 ([PRIMARY ACTION FAMILY] overuse).");
+  lines.push("  - DON'T Item 2 MUST consume DON'T Direction 2 ([SECONDARY ACTION FAMILY] overuse).");
+  lines.push("  - DON'T Item 3 MUST consume DON'T Direction 3 (Energy overuse).");
+  lines.push("  - DECISION RULE 1 MUST consume Decision Rule Direction 1 ([PRIMARY ACTION FAMILY] filter).");
+  lines.push("  - DECISION RULE 2 MUST consume Decision Rule Direction 2 ([SECONDARY ACTION FAMILY] filter).");
+  lines.push("SECTION A — DO DIRECTIONS (What this person should intentionally keep doing):");
+  actionPlan.doDirections.forEach((d, i) => lines.push(`  ${i + 1}. ${d}`));
+  lines.push("SECTION B — DON'T DIRECTIONS (Strengths/patterns to stop overusing / reduce):");
+  actionPlan.dontDirections.forEach((d, i) => lines.push(`  ${i + 1}. ${d}`));
+  lines.push("SECTION C — DECISION RULES DIRECTIONS (Concrete decision filters for future choices):");
+  actionPlan.decisionRuleDirections.forEach((d, i) => lines.push(`  ${i + 1}. ${d}`));
+  if (actionPlan.sajuBehavioralNote) {
+    lines.push(`BEHAVIORAL SAJU ACTION TRANSLATION: "${actionPlan.sajuBehavioralNote}"`);
   }
 
   return { text: lines.join("\n"), knownKeys };

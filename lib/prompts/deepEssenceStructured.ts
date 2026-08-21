@@ -451,15 +451,30 @@ export const DEEP_ESSENCE_PART_B_SCHEMA = `{
     "reset": "weekly reset routine, 3-5 sentences"
   },
   "future": {
-    "remember": [
-      "Keep (what to keep without forcing change): 3-5 sentences — plain text directly, DO NOT include '01 Keep' or question labels in text",
-      "Loosen (what to no longer constantly prove/perform): 3-5 sentences — plain text directly, DO NOT include '02 Loosen' or question labels in text (NEVER frame as a flaw)",
-      "Recover (what to reclaim for yourself): 3-5 sentences — plain text directly, DO NOT include '03 Recover' or question labels in text"
+    "do_items": [
+      { "title": "short action title executing DO direction 1 (PRIMARY FAMILY)", "body": "2-3 sentences: what this person should intentionally keep doing, strictly consuming DO direction 1" },
+      { "title": "short action title executing DO direction 2 (SECONDARY FAMILY)", "body": "2-3 sentences: strictly consuming DO direction 2" },
+      { "title": "short action title executing DO direction 3 (ENERGY RECOVERY)", "body": "2-3 sentences: strictly consuming DO direction 3" }
     ],
-    "leap": "Decision Compass for future choices: 3-5 sentences — one concrete decision criterion to verify before your next major choice, using explicit choose-more/choose-less language (NO predictive claims, NO generic advice)"
+    "dont_items": [
+      { "title": "short overuse warning title targeting DON'T direction 1 (PRIMARY FAMILY)", "body": "2-3 sentences: strength/adaptation overuse pattern to stop overusing, strictly consuming DON'T direction 1 (NEVER frame as a character flaw)" },
+      { "title": "short overuse warning title targeting DON'T direction 2 (SECONDARY FAMILY)", "body": "2-3 sentences: strictly consuming DON'T direction 2" },
+      { "title": "short overuse warning title targeting DON'T direction 3 (ENERGY OVERUSE)", "body": "2-3 sentences: strictly consuming DON'T direction 3" }
+    ],
+    "decision_rules": [
+      "Decision Rule 1: concrete decision filter strictly consuming Decision Rule direction 1 (PRIMARY FAMILY)",
+      "Decision Rule 2: concrete decision filter strictly consuming Decision Rule direction 2 (SECONDARY FAMILY)",
+      "Decision Rule 3: concrete decision filter strictly consuming Decision Rule direction 3 (ENERGY SUSTAINABILITY)"
+    ],
+    "remember": [
+      "Keep (what to keep without forcing change): 2-3 sentences",
+      "Loosen (what to no longer constantly prove/perform): 2-3 sentences",
+      "Recover (what to reclaim for yourself): 2-3 sentences"
+    ],
+    "leap": "Decision Compass for future choices: 2-3 sentences — one concrete decision criterion to verify before your next major choice"
   },
   "closing": "EXACTLY 2 sentences, no more — sentence 1 names the current way and the natural way both being real right now (RECOGNITION), sentence 2 names that their difference is now something the reader can see, not something to resolve, ending in a present-tense recognition shape like '~게 되었다는 점입니다.' (INTEGRATION). NO third sentence, NO advice, NO prediction, NO praise/evaluation of the insight, NO cheers/encouragement, NO customer service tone — see the closing rules below for exactly why a 3rd+ sentence is forbidden, not just discouraged.",
-  "checklist": ["One Next Move: exactly 1 small, concrete, grounded experiment action you can try once this week (NO generic homework or task dumps)"]
+  "checklist": ["One Next Move: exactly 1 small, concrete, grounded experiment action you can try once this week (NO generic homework or task dumps) — return [] if no specific practice adds value beyond DO/DON'T"]
 }`;
 
 // ── Part 03 Batch 1: additive Relationship grounding ──────────────────────
@@ -514,11 +529,9 @@ function buildPartBSchema(part01Evidence: Part01EvidenceForPartBPrompt | null | 
     "reset": "weekly reset routine, 3-5 sentences"${PLAYBOOK_EVIDENCE_FIELD}
   },`,
   ).replace(
-    `    "remember": ["thing worth remembering 1 (4-7 sentences)", "2", "3"],
-    "leap": "direction for the next step, 3-5 sentences"
+    `    "leap": "Decision Compass for future choices: 2-3 sentences — one concrete decision criterion to verify before your next major choice"
   },`,
-    `    "remember": ["thing worth remembering 1 (4-7 sentences)", "2", "3"],
-    "leap": "direction for the next step, 3-5 sentences"${FUTURE_EVIDENCE_FIELD}
+    `    "leap": "Decision Compass for future choices: 2-3 sentences — one concrete decision criterion to verify before your next major choice"${FUTURE_EVIDENCE_FIELD}
   },`,
   );
 }
@@ -599,15 +612,17 @@ ${input.part01Evidence.futureText}
     - Must be structured around explicit choose-more / choose-less language (e.g. "앞으로 중요한 선택을 앞두고, ___ 한 환경을 우선 선택하고, ___ 한 상황은 되도록 피하는 것을 하나의 판단 기준으로 삼을 수 있어요").
     - NEVER generic encouragement ("trust yourself", "believe in the journey") or prescriptive homework.
   - checklist (지금 당신에게 가장 중요한 한 가지 / One Next Move):
-    - EXACTLY 1 ITEM (string array with 1 item).
     - MUST be explicitly connected to ONE of these already-established anchors — pick whichever is most central to this person's report, and the action must clearly trace back to it, not float free of everything else written above: the growth_edge (summary.growth_edge / growth_edge_real_life_pattern in the excerpt above), the primary/widest axis gap (primary_gap_axis in the excerpt above, if present), the adaptation tension (adaptation_recognition in the excerpt above, if present), a recurring decision pattern (playbook.rule or a rows[] entry from THIS response), or the Recover signal (future.remember[2] from THIS response). A reader who has just read the rest of the report should be able to see why THIS action, for THIS person, follows from what was already said — if it could be handed to any reader of any report unchanged, it has failed.
     - A single, concrete, testable experiment action expressed in the language of experiment (e.g. "다음 중요한 결정을 앞두고 다른 사람의 의견을 묻기 전에, 먼저 '나는 지금 무엇을 원하지?'를 한 문장으로 적어보세요").
     - FORBIDDEN: task dumps, 8-12 item homework checklists, generic self-care advice ("명상하세요", "자신감을 키우세요", "기록하세요", "친구에게 연락하세요"), and any action untethered to the anchors above (e.g. "이번 주 하루를 골라 기억에 남는 순간 하나를 적어보세요" is forbidden precisely because it connects to nothing else in the report).
+    - OPTIONAL: Return an empty array "checklist": [] or omit checklist if no high-confidence operational practice adds value beyond the DO/DON'T items.
+  - BEHAVIORAL SAJU ACTION TRANSLATION: If [Future evidence] contains a BEHAVIORAL SAJU ACTION TRANSLATION line, incorporate that translated behavioral guidance into at least ONE DO item, ONE DON'T item, or ONE Decision Rule. FORBIDDEN: Raw technical Saju terms (도화살, 현침살, 천을귀인, 십신, 격국, 용신 등 사주 용어 일체 사용 금지 — 반드시 행동적 소통/선택 수순 표현으로만 녹일 것).
   - closing (조용한 매듭 / Recognition Statement): closing is NOT a new insight — Decision Compass and One Next Move already gave the reader agency earlier in this same response. closing is EXACTLY 2 SENTENCES, NEVER MORE — this is a hard structural limit, not a style preference. Root cause of every leak observed in live QA so far: every single violation (a prediction, a praise/evaluation, an instruction to the reader, a cheer) showed up in a 3rd, 4th, 5th, or 6th sentence the model added beyond the required two — never in sentence 1 or 2. There is no legitimate 3rd sentence for this field: RECOGNITION and INTEGRATION are the whole job, both fit in two sentences, and a report that reaches for a 3rd sentence is, by definition, reaching for something this field doesn't need — write two sentences and STOP, do not round out the paragraph.
-    - Sentence 1 (RECOGNITION): names that the current way and the natural way are both real, right now — built fresh from primary_gap_axis's natural_tendency/current_pattern in the excerpt above when present; otherwise build it from what you yourself already wrote in relationships/playbook/future earlier in THIS response. Either way, write your own sentence from that material — not a stock opening line, and not a copy of the excerpt's wording.
+    - Sentence 1 (RECOGNITION): names that the current way and the natural way are both real, right now — built fresh from primary_gap_axis's natural_tendency/current_pattern in the excerpt above when present; otherwise build it from what you yourself already wrote in relationships/playbook/future earlier in THIS response. MUST reflect [PRIMARY ACTION FAMILY] (e.g. for GROWTH: use motifs like 성장/변화/배움/시도/방향/경험; for STRUCTURE: use 수순/구조/계획/체계; for DECISION: use 판단/결정/기준/주체성). NEVER write an autonomy/decision closing for a GROWTH or STRUCTURE profile.
     - Sentence 2 (INTEGRATION): names that their difference is now something the reader can see, not something to resolve, and MUST end in a present-tense statement of recognition (the grammatical shape "~게 되었다는 점입니다." or "~게 되었습니다." is fine to reuse as a SENTENCE-ENDING PATTERN, but the sentence content before it must be built fresh, not copied). Nothing may follow this sentence.
     - A closing that could be pasted unchanged onto a different person's report, word-for-word, has failed this field regardless of how well-formed the sentences are.
     - Compact reference only (do not use these as a checklist to satisfy word-for-word — the two-sentence limit above is what actually prevents these, not recognizing the words): a 3rd+ sentence tends to drift into PREDICTION (promising what will happen next), EVALUATION (praising how meaningful/great the insight is), ADVICE (telling the reader what to do), or CHEERING (wishing them well) — all four are forbidden in any wording, but the real fix is that none of them have a sentence slot to occupy.
+    - FORBIDDEN TEMPLATES: NEVER use stock phrases like "차이를 인식하게 되었다는 점입니다", "차이를 이해하게 되었다는 점입니다", "더욱 자신감 있게", "성장할 수 있어요", "도움이 될 거예요".
 - evidence_refs (future) is optional — only exact keys from [Future evidence], never invented.`
     : "";
 

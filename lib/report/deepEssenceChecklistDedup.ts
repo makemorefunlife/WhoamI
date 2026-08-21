@@ -36,8 +36,8 @@ const KO_IMPERATIVE_ENDING_PATTERN = /(해\s*보세요|해보세요|하세요|�
 const KO_STOPWORDS = ["친구", "감정", "시간", "관계", "환경"];
 const EN_STOPWORDS = ["friend", "friends", "feeling", "feelings", "time", "relationship", "relationships", "environment"];
 
-function isKoreanLocale(locale: string): boolean {
-  return locale.toLowerCase().startsWith("ko");
+function isKoreanLocale(locale: string = "ko-KR"): boolean {
+  return (locale || "ko-KR").toLowerCase().startsWith("ko");
 }
 
 /**

@@ -121,6 +121,9 @@ export type DeepEssenceUiStrings = {
     loosenLabel: string;
     recoverLabel: string;
     decisionCompassTitle: string;
+    doTitle: string;
+    dontTitle: string;
+    decisionRulesTitle: string;
     oneNextMoveTitle: string;
     oneNextMoveTag: string;
   };
@@ -252,6 +255,9 @@ const EN: DeepEssenceUiStrings = {
     loosenLabel: "What to loosen",
     recoverLabel: "What to recover",
     decisionCompassTitle: "Decision Compass",
+    doTitle: "DO — Intentionally keep doing these",
+    dontTitle: "DON'T — Patterns not to overuse",
+    decisionRulesTitle: "My Decision Rules",
     oneNextMoveTitle: "One Next Move",
     oneNextMoveTag: "Next Step",
   },

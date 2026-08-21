@@ -95,43 +95,30 @@ export type DeepEssenceAdaptationStory = {
   evidence_refs?: string[];
 };
 
+export type DeepEssenceActionItem = {
+  title: string;
+  body: string;
+  evidence_refs?: string[];
+};
+
 export type DeepEssenceStructuredReport = {
   summary: {
     core_mode: string;
     energy_balance: string;
     growth_edge: string;
-    /**
-     * Batch 3 — internal provenance only, never rendered in the UI.
-     * Populated when Part01 Identity Evidence grounding was available;
-     * absent otherwise (existing ungrounded behavior is preserved).
-     */
     core_mode_evidence_refs?: string[];
     growth_edge_evidence_refs?: string[];
     growth_edge_why?: string;
     growth_edge_real_life_pattern?: string;
     growth_edge_if_developed?: string;
   };
-  /**
-   * Batch 4 — additive, optional. Four-layer Layered Identity synthesis
-   * grounded in Part01 Identity Evidence. Absent when the packet was
-   * unavailable, or per-layer omitted when a layer's evidence was too thin
-   * to responsibly synthesize (never forced/fabricated).
-   */
   layered_identity?: {
     first_impression?: DeepEssenceLayeredIdentityLayer;
     known_self?: DeepEssenceLayeredIdentityLayer;
     close_private_self?: DeepEssenceLayeredIdentityLayer;
     natural_self_and_deep_needs?: DeepEssenceLayeredIdentityLayer;
-    /** IA Batch 2 — see DeepEssenceLayeredIdentitySynthesis. */
     synthesis?: DeepEssenceLayeredIdentitySynthesis;
   };
-  /**
-   * Batch 8 — additive, optional. Deterministically-selected axis
-   * highlights only (never all 6 with equal depth): up to 3 widest-gap
-   * axes get gap_deep_dive, the single best-aligned axis gets
-   * alignment_highlight. Absent when the packet was unavailable, or a key
-   * absent as a defensive fallback if the LLM's response was malformed.
-   */
   axis_interpretations?: {
     gap_deep_dive?: Partial<Record<PrimaryAxisKey, DeepEssenceAxisGapDeepDive>>;
     alignment_highlight?: Partial<Record<PrimaryAxisKey, DeepEssenceAxisAlignmentHighlight>>;
@@ -141,19 +128,12 @@ export type DeepEssenceStructuredReport = {
   watchouts: DeepEssenceStrengthOrWatchout[];
   energy: {
     headline: string;
-    /**
-     * Part 02 Batch 1 — SSOT: always derived from bars[1].value (energy
-     * returning to you) by coerceDeepEssencePartA, never trusted from the
-     * LLM's own number. The LLM may still write one (kept for prompt
-     * clarity) but it's overwritten after coercion.
-     */
     balance_pct: number;
     bars: DeepEssenceEnergyBar[];
     summary: string;
     fuels: string[];
     drains: string[];
     optimal: string[];
-    /** Internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
     evidence_refs?: string[];
   };
   relationships: {
@@ -161,7 +141,6 @@ export type DeepEssenceStructuredReport = {
     fit: string[];
     friction: string[];
     compare: DeepEssenceWoundSteadyRow[];
-    /** Part 03 Batch 1 — internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
     evidence_refs?: string[];
   };
   playbook: {
@@ -169,18 +148,18 @@ export type DeepEssenceStructuredReport = {
     rows: DeepEssencePlaybookRow[];
     heated: string;
     reset: string;
-    /** Part 04 Batch 1 — internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
     evidence_refs?: string[];
   };
   future: {
     remember: string[];
     leap: string;
-    /** Part 05 Batch 1 — internal provenance only, never rendered in the UI. Populated when Part01 Identity Evidence grounding was available. */
+    do_items?: DeepEssenceActionItem[];
+    dont_items?: DeepEssenceActionItem[];
+    decision_rules?: string[];
     evidence_refs?: string[];
   };
   closing: string;
   checklist: string[];
-  /** IA Batch 3 — see DeepEssenceAdaptationStory. */
   adaptation_story?: DeepEssenceAdaptationStory;
 };
 
@@ -322,7 +301,7 @@ export function isDeepEssencePartB(v: unknown): v is Pick<
   }
 
   if (!isNonEmptyString(obj.closing)) return false;
-  if (!isStringArray(obj.checklist, 1, 12)) return false;
+  if (obj.checklist !== undefined && !isStringArray(obj.checklist, 0, 12)) return false;
 
   return true;
 }

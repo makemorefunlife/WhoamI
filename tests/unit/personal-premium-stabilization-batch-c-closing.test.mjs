@@ -24,7 +24,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { describe, it } from "node:test";
-import { polishDeepEssenceStructuredReport } from "../../lib/report/polishDeepEssenceStructured.ts";
+import { polishDeepEssenceStructuredReport, validatePart07QualityGate } from "../../lib/report/polishDeepEssenceStructured.ts";
 import { isDeepEssenceStructuredReport } from "../../lib/report/deepEssenceStructuredSchema.ts";
 
 const src = fs.readFileSync("lib/prompts/deepEssenceStructured.ts", "utf8");
@@ -117,6 +117,21 @@ function fixtureReport(closingText) {
       reset: "물 한 잔 마시고 다시 시작한다.",
     },
     future: {
+      do_items: [
+        { title: "내면 우선순위 정하기", body: "결정 전 내 내면의 기준을 먼저 확인합니다." },
+        { title: "실험 루틴 유지하기", body: "선택한 방향을 실험하고 복기합니다." },
+        { title: "에너지 회복 공간 지키기", body: "독립적인 판단과 회복 시간을 확보합니다." },
+      ],
+      dont_items: [
+        { title: "지연시키지 않기", body: "모든 사람의 동의를 기다리며 결정을 미루지 않습니다." },
+        { title: "결정권 내주지 않기", body: "상대 기대에 맞춰 내 주체성을 포기하지 않습니다." },
+        { title: "판을 흔들지 않기", body: "작은 변수에 이미 내린 결정을 번복하지 않습니다." },
+      ],
+      decision_rules: [
+        "이 선택을 내 의지로 진심으로 원하는가 구분하기",
+        "정보가 부족한 것인가 단지 확신을 미루는 것인가 구분하기",
+        "지속 가능한 방식인가 확인하기",
+      ],
       remember: ["속도보다 리듬", "혼자 회복은 이기심이 아니다", "작은 결단이 쌓인다"],
       leap: "거절을 한 문장으로 연습한다.",
     },
@@ -210,5 +225,58 @@ describe("cleanClosingText (defensive polish) — sentence-count truncation, the
     );
     const polished = polishDeepEssenceStructuredReport(raw, "en-US");
     assert.match(polished.closing, /A third sentence too/);
+  });
+
+  describe("Section 7 Quality Gate — negative & positive family closing tests", () => {
+    it("Test A: GROWTH primary with generic autonomy/prediction closing FAILs quality gate", () => {
+      const raw = fixtureReport(
+        "자율성과 적응력을 중시하는 당신은 의사결정에서 스스로의 판단을 중요하게 여기는 편이에요. 앞으로도 존중받을 수 있는 방향으로 나아갈 수 있어요.",
+      );
+      const gateRes = validatePart07QualityGate(raw, "GROWTH");
+      assert.equal(gateRes.pass, false);
+      assert.ok(gateRes.failures.some((f) => f.includes("missing mandatory primary-family motif for GROWTH") || f.includes("banned template phrase")));
+    });
+
+    it("Test B: STRUCTURE primary with generic AI conclusion FAILs quality gate", () => {
+      const raw = fixtureReport(
+        "이러한 특성은 더 나은 결정을 내리는 데 큰 도움이 됩니다.",
+      );
+      const gateRes = validatePart07QualityGate(raw, "STRUCTURE");
+      assert.equal(gateRes.pass, false);
+      assert.ok(gateRes.failures.some((f) => f.includes("banned template phrase")));
+    });
+
+    it("Test C: DECISION primary with generic ~할 수 있게 되었다는 점입니다 FAILs quality gate", () => {
+      const raw = fixtureReport(
+        "이제 자신의 판단을 더욱 확고히 할 수 있게 되었다는 점입니다.",
+      );
+      const gateRes = validatePart07QualityGate(raw, "DECISION");
+      assert.equal(gateRes.pass, false);
+      assert.ok(gateRes.failures.some((f) => f.includes("banned template phrase")));
+    });
+
+    it("Test D: Genuine GROWTH-specific recognition PASSes quality gate", () => {
+      const raw = fixtureReport(
+        "새로운 가능성을 탐색하고 배움의 경험을 넓히는 힘이 당신을 움직이게 해요. 다만 나를 넓히는 성장의 시도와 주변에 맞추느라 방향을 잃는 적응은 다른 일입니다.",
+      );
+      const gateRes = validatePart07QualityGate(raw, "GROWTH");
+      assert.equal(gateRes.pass, true, `Expected PASS, got failures: ${gateRes.failures.join(", ")}`);
+    });
+
+    it("Test E: Genuine STRUCTURE-specific recognition PASSes quality gate", () => {
+      const raw = fixtureReport(
+        "복잡함을 체계적으로 정리하는 수순과 원칙은 중요한 자원이에요. 다만 모든 예외 변수가 통제되어야만 비로소 움직일 수 있는 것은 아닙니다.",
+      );
+      const gateRes = validatePart07QualityGate(raw, "STRUCTURE");
+      assert.equal(gateRes.pass, true, `Expected PASS, got failures: ${gateRes.failures.join(", ")}`);
+    });
+
+    it("Test F: Genuine DECISION-specific recognition PASSes quality gate", () => {
+      const raw = fixtureReport(
+        "스스로 판단하는 내면의 기준은 이미 충분해요. 다만 타인의 무조건적인 동의까지 얻어야 좋은 결정이 되는 것은 아닙니다.",
+      );
+      const gateRes = validatePart07QualityGate(raw, "DECISION");
+      assert.equal(gateRes.pass, true, `Expected PASS, got failures: ${gateRes.failures.join(", ")}`);
+    });
   });
 });

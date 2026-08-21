@@ -4,8 +4,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { buildPersonalPart04StoryPlan } from "../../lib/report/buildPersonalPart04StoryPlan.ts";
-import { formatPart01EvidenceForPrompt, selectEnergyMechanisms, selectFitPlan } from "../../lib/report/formatPart01EvidenceForPrompt.ts";
-
+import { formatPart01EvidenceForPrompt, selectEnergyMechanisms, selectFitPlan, selectActionPlan } from "../../lib/report/formatPart01EvidenceForPrompt.ts";
+import { validatePart06QualityGate, isDuplicatePair, polishDeepEssenceStructuredReport, validatePart07QualityGate } from "../../lib/report/polishDeepEssenceStructured.ts";
 import {
   runPersonalContextEngine,
   buildPersonalCeFixtureChart,
@@ -471,5 +471,54 @@ describe("buildPersonalPart04StoryPlan", () => {
     const resE = validatePart06QualityGate(fakeFitPlan, polishedE);
     assert.strictEqual(resE.pass, true, "Test E must produce 3 non-duplicate pairs after polish");
     assert.strictEqual(isDuplicatePair(polishedE.relationships.compare[1], polishedE.relationships.compare[2]), false, "Polished pairs 2 & 3 must be distinct");
+  });
+
+  it("V. Batch 7 Action Planner & Part 07 Quality Gate Test", () => {
+    const packet = buildMockPacket();
+    const actionPlan = selectActionPlan(packet);
+
+    assert.ok(actionPlan.primaryFamily, "Action plan must have a primary family");
+    assert.strictEqual(actionPlan.doDirections.length, 3, "Action plan must have 3 DO directions");
+    assert.strictEqual(actionPlan.dontDirections.length, 3, "Action plan must have 3 DON'T directions");
+    assert.strictEqual(actionPlan.decisionRuleDirections.length, 3, "Action plan must have 3 Decision Rules directions");
+
+    const validReport = {
+      future: {
+        remember: ["A", "B", "C"],
+        leap: "Leap criterion",
+        do_items: [
+          { title: "DO 1", body: "Explanation 1" },
+          { title: "DO 2", body: "Explanation 2" },
+          { title: "DO 3", body: "Explanation 3" },
+        ],
+        dont_items: [
+          { title: "DON'T 1", body: "Overuse 1" },
+          { title: "DON'T 2", body: "Overuse 2" },
+          { title: "DON'T 3", body: "Overuse 3" },
+        ],
+        decision_rules: ["Rule 1", "Rule 2", "Rule 3"],
+      },
+      checklist: ["One Next Move"],
+      closing: "Sentence 1. Sentence 2.",
+    };
+
+    const gateResPass = validatePart07QualityGate(validReport);
+    assert.strictEqual(gateResPass.pass, true, "Valid Part 07 report must pass quality gate");
+
+    const invalidReportBannedSaju = {
+      ...validReport,
+      future: {
+        ...validReport.future,
+        do_items: [
+          { title: "도화살 활용하기", body: "사람을 끄는 도화살이 있으니 쓰세요." },
+          { title: "DO 2", body: "Explanation 2" },
+          { title: "DO 3", body: "Explanation 3" },
+        ],
+      },
+    };
+
+    const gateResFail = validatePart07QualityGate(invalidReportBannedSaju);
+    assert.strictEqual(gateResFail.pass, false, "Report with banned Saju terms must fail Part 07 quality gate");
+    assert.ok(gateResFail.failures.some((f) => f.includes("banned technical Saju term")));
   });
 });

@@ -525,25 +525,82 @@ export function coerceDeepEssencePartB(raw: unknown): {
   };
 
   const futIn = asRecord(obj.future) ?? {};
-  // Part 05 Batch 1 — optional provenance, passed through only if the LLM
-  // actually returned it (never fabricated, never required).
   const futureEvidenceRefs = asOptionalStringArray(futIn.evidence_refs);
+
+  const doItems = takePairs(
+    futIn.do_items,
+    3,
+    3,
+    (row, i) => ({
+      title: asString(row.title, `DO ${i + 1}`),
+      body: asString(row.body, "Keep doing what gives you energy."),
+    }),
+    () => ({ title: "DO", body: "Keep doing what gives you energy." }),
+  );
+
+  const dontItems = takePairs(
+    futIn.dont_items,
+    3,
+    3,
+    (row, i) => ({
+      title: asString(row.title, `DON'T ${i + 1}`),
+      body: asString(row.body, "Avoid overusing this pattern."),
+    }),
+    () => ({ title: "DON'T", body: "Avoid overusing this pattern." }),
+  );
+
+  const decisionRules = takeStrings(
+    futIn.decision_rules,
+    2,
+    3,
+    "Check your inner priority before deciding.",
+  );
+
+  const rememberFallbacks = [
+    doItems[0]?.title ? `${doItems[0].title}: ${doItems[0].body}` : "Protect your recovery time",
+    dontItems[0]?.title ? `${dontItems[0].title}: ${dontItems[0].body}` : "Loosen overused patterns",
+    doItems[1]?.title ? `${doItems[1].title}: ${doItems[1].body}` : "Reclaim your inner compass",
+  ];
+
+  const remember = takeStrings(futIn.remember, 3, 3, rememberFallbacks[0]);
+  if (!Array.isArray(futIn.remember) || futIn.remember.length !== 3) {
+    for (let i = 0; i < 3; i++) {
+      if (!remember[i] || remember[i].trim().length === 0) {
+        remember[i] = rememberFallbacks[i] ?? "Protect your recovery time";
+      }
+    }
+  }
+
+  const leapFallback = decisionRules[0] ?? "Practice one small clear boundary this week.";
+  const leap = asString(futIn.leap, leapFallback);
+
   const future = {
-    remember: takeStrings(futIn.remember, 3, 3, "Protect your recovery time"),
-    leap: asString(futIn.leap, "Practice one small clear boundary this week."),
+    remember,
+    leap,
+    do_items: doItems,
+    dont_items: dontItems,
+    decision_rules: decisionRules,
     ...(futureEvidenceRefs ? { evidence_refs: futureEvidenceRefs } : {}),
   };
 
-  const checklist = takeStrings(
-    obj.checklist,
-    1,
-    1,
-    "One small action that protects your energy",
-  );
-  if (!Array.isArray(obj.checklist) || (obj.checklist as unknown[]).length < 1) {
-    notes.push(
-      `checklist_len_${Array.isArray(obj.checklist) ? (obj.checklist as unknown[]).length : 0}`,
-    );
+  let checklist: string[] = [];
+  if (Array.isArray(obj.checklist) && obj.checklist.length > 0) {
+    const rawMove = asString(obj.checklist[0], "").trim();
+    const isGenericJournaling =
+      rawMove.includes("기억에 남는 순간") ||
+      rawMove.includes("하루를 골라") ||
+      rawMove.includes("일기를 작성") ||
+      rawMove.includes("생각을 기록");
+
+    const normPractice = rawMove.replace(/[\s.,!?]/g, "");
+    const duplicatesDo = doItems.some((doItem) => {
+      const normTitle = doItem.title.replace(/[\s.,!?]/g, "");
+      return normPractice.includes(normTitle) || normTitle.includes(normPractice);
+    });
+
+    if (rawMove && !isGenericJournaling && !duplicatesDo) {
+      checklist = [rawMove];
+    }
   }
 
   return {
