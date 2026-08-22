@@ -15,7 +15,9 @@ import OpenAI from "openai";
 import { buildCanonicalRomanticV4Report } from "../../lib/relationship/romantic/prototypeV4/buildCanonicalRomanticV4Report";
 import { buildActualFourCeContract } from "../../lib/relationship/romantic/prototypeV4/buildActualFourCeContract";
 import { buildRomanticExpertIntelligenceSafe } from "../../lib/relationship/romantic/prototypeV4/romanticExpertIntelligence";
-import { selectUserVisibleExpertBlocks } from "../../lib/relationship/romantic/prototypeV4/romanticExpertConsumptionPolicy";
+import { selectUserVisibleExpertBlocks, applyTierBEnrichment } from "../../lib/relationship/romantic/prototypeV4/romanticExpertConsumptionPolicy";
+import { composeCanonicalSectionNarratives } from "../../lib/relationship/romantic/prototypeV4/composeCanonicalSectionNarratives";
+import { auditNarrativeRepetition } from "../../lib/relationship/romantic/prototypeV4/romanticNarrativeRepetitionAudit";
 import type { RomanticV4SurveyInput } from "../../lib/relationship/romantic/prototypeV4/romanticV4SurveyEvidence";
 import type { CurrentSelfProfile } from "../../lib/v2/survey/types";
 
@@ -189,6 +191,20 @@ async function runPair(pair: Pair) {
     for (const b of blocks!) console.log(`  - [${chapterId}] ${b.title}: ${b.body.slice(0, 120)}${b.body.length > 120 ? "..." : ""}`);
   }
 
+  // Phase 5B Part 3 — Tier B target detection + enrichment.
+  const matched = selection.meta.tierBTargetMappings.filter((m) => m.targetBlockId);
+  console.log(`\n[TIER B TARGETS] ${matched.length}/${selection.meta.tierBTargetMappings.length} Tier B findings matched a safe existing-block target`);
+  for (const m of matched) console.log(`  - [${m.suggestedChapter} -> ${m.targetBlockId}] ${m.claim.slice(0, 80)}...`);
+
+  const sectionsWithTierA = composeCanonicalSectionNarratives(canonicalReport.storyPlan, canonicalReport.expertSyntheses, selection.blocksByChapter);
+  const finalSections = applyTierBEnrichment(sectionsWithTierA, selection.meta.tierBTargetMappings, "ko-KR");
+
+  // Phase 5B Part 13 — repetition audit, before (deterministic-only) vs after (+ expert consumption).
+  const beforeAudit = auditNarrativeRepetition(canonicalReport.sections);
+  const afterAudit = auditNarrativeRepetition(finalSections);
+  console.log(`\n[REPETITION] before: chars=${beforeAudit.totalCharCount} crossChapterDupes=${beforeAudit.crossChapterFindings.length} signaturePhraseHits=${beforeAudit.signaturePhraseHits.length}`);
+  console.log(`[REPETITION] after:  chars=${afterAudit.totalCharCount} crossChapterDupes=${afterAudit.crossChapterFindings.length} signaturePhraseHits=${afterAudit.signaturePhraseHits.length}`);
+
   return {
     pair: pair.label,
     csiCount: csi.length,
@@ -197,6 +213,12 @@ async function runPair(pair: Pair) {
     rejectedCount: rejected.length,
     userVisibleCount: selection.meta.selectedCount,
     userVisibleChapters: Object.keys(selection.blocksByChapter),
+    tierBMatchedCount: matched.length,
+    tierBTotalCount: selection.meta.tierBTargetMappings.length,
+    charsBefore: beforeAudit.totalCharCount,
+    charsAfter: afterAudit.totalCharCount,
+    dupesBefore: beforeAudit.crossChapterFindings.length,
+    dupesAfter: afterAudit.crossChapterFindings.length,
   };
 }
 
@@ -208,7 +230,7 @@ async function main() {
   console.log(`\n${"=".repeat(70)}\nSUMMARY\n${"=".repeat(70)}`);
   for (const s of summaries) {
     console.log(
-      `${s.pair}: deterministic=${s.csiCount}, supported_synthesis=${s.supportedCount}, expert_derived=${s.derivedCount}, rejected=${s.rejectedCount}, user_visible=${s.userVisibleCount} [${s.userVisibleChapters.join(", ")}]`,
+      `${s.pair}: deterministic=${s.csiCount}, supported_synthesis=${s.supportedCount}, expert_derived=${s.derivedCount}, rejected=${s.rejectedCount}, user_visible=${s.userVisibleCount} [${s.userVisibleChapters.join(", ")}], tierB_matched=${s.tierBMatchedCount}/${s.tierBTotalCount}, chars=${s.charsBefore}->${s.charsAfter}, cross_chapter_dupes=${s.dupesBefore}->${s.dupesAfter}`,
     );
   }
 }

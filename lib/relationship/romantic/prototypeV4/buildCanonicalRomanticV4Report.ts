@@ -193,10 +193,17 @@ export async function buildCanonicalRomanticV4ReportWithExpertIntelligence(
   // If the LLM step failed above, result.findings is already [] (guaranteed
   // by buildRomanticExpertIntelligenceSafe's non-throwing contract), so
   // selection is empty and finalSections is byte-identical to base.sections.
-  const { selectUserVisibleExpertBlocks } = await import("./romanticExpertConsumptionPolicy");
+  const { selectUserVisibleExpertBlocks, applyTierBEnrichment } = await import("./romanticExpertConsumptionPolicy");
   const selection = selectUserVisibleExpertBlocks(result.findings, base.storyPlan, base.sections, locale);
 
-  const finalSections = composeCanonicalSectionNarratives(base.storyPlan, base.expertSyntheses, selection.blocksByChapter);
+  const sectionsWithTierA = composeCanonicalSectionNarratives(base.storyPlan, base.expertSyntheses, selection.blocksByChapter);
+  // Phase 5B Part 3 — Tier B enrichment is a separate post-processing pass
+  // over the already-composed sections (it needs real block bodies/evidenceIds
+  // to match against, which only exist after composition), not another
+  // composeCanonicalSectionNarratives param. Matched findings' claims are
+  // appended to their target block's body; unmatched ones are already
+  // correctly excluded (targetBlockId===null) and this is a no-op for them.
+  const finalSections = applyTierBEnrichment(sectionsWithTierA, selection.meta.tierBTargetMappings, locale);
   const finalValidation = validateCanonicalRomanticReport({ plan: base.storyPlan, sections: finalSections });
   const finalHiddenChapters = finalSections
     .filter((s) => !s.visible)

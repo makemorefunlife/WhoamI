@@ -49,8 +49,8 @@ function minimalStoryPlan(overrides = {}) {
 
 function minimalSections(overrides = []) {
   return [
-    { chapterId: "c4_conflict", blocks: [{ body: "이런 장면에서 나타날 가능성이 있어요: 계획이 갑자기 틀어질 때." }] },
-    { chapterId: "c8_strength_vulnerability", blocks: [{ body: "둘이 함께 만들어내는 가장 큰 강점입니다." }] },
+    { chapterId: "c4_conflict", blocks: [{ blockId: "loop.trigger", body: "이런 장면에서 나타날 가능성이 있어요: 계획이 갑자기 틀어질 때.", evidenceIds: [] }] },
+    { chapterId: "c8_strength_vulnerability", blocks: [{ blockId: "shared.strength", body: "둘이 함께 만들어내는 가장 큰 강점입니다.", evidenceIds: [] }] },
     ...overrides,
   ];
 }

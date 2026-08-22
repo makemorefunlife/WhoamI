@@ -83,7 +83,7 @@ function bigrams(text: string): Set<string> {
   return out;
 }
 
-function similarity(a: string, b: string): number {
+export function similarity(a: string, b: string): number {
   if (!a || !b) return 0;
   const A = bigrams(a);
   const B = bigrams(b);

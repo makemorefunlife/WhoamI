@@ -123,12 +123,24 @@ export function translateFindingToUserCopy(
   return { title, body: f.claim };
 }
 
+/** Phase 5B Part 3 — a Tier B finding that was matched to (or explicitly
+ * failed to match) an existing block it could enrich. `targetBlockId: null`
+ * means no safe target was found and the finding stays internal-only — this
+ * is the expected, common case, not an error. */
+export type TierBTargetMapping = {
+  findingId: string;
+  suggestedChapter: string;
+  targetBlockId: string | null;
+  claim: string;
+};
+
 export type ExpertConsumptionMeta = {
   schemaVersion: "romantic_expert_consumption_v1";
   totalFindings: number;
   tierACount: number;
   tierBCount: number;
   tierCCount: number;
+  tierBTargetMappings: TierBTargetMapping[];
   rejectedNeverCount: number;
   rejectedDuplicateAgainstReportCount: number;
   rejectedChapterCapCount: number;
@@ -181,6 +193,7 @@ export function selectUserVisibleExpertBlocks(
   let rejectedDup = 0;
 
   const candidatesByChapter = new Map<CanonicalChapterId, RomanticExpertFinding[]>();
+  const tierBTargetMappings: TierBTargetMapping[] = [];
 
   for (const f of findings) {
     const tier = classifyConsumptionTier(f);
@@ -194,7 +207,22 @@ export function selectUserVisibleExpertBlocks(
     }
     if (tier === "B_secondary") {
       tierBCount++;
-      continue; // internal-only in Phase 4B — see design note above
+      // Phase 5B Part 3 — safe target detection: only a block whose own
+      // evidenceIds overlap this finding's evidenceRefs counts as a match.
+      // Mode A findings are required (validateExpertFindings) to cite real
+      // evidenceRefs, so this is a real provenance link, not a guess. No
+      // fallback to "first block in chapter" — an unmatched finding stays
+      // internal (targetBlockId: null), per spec: "If there is no clear
+      // target: keep it internal. Do not force consumption."
+      const chapterBlocks = existingSections.filter((s) => s.chapterId === f.suggestedChapter).flatMap((s) => s.blocks);
+      const matchingBlock = chapterBlocks.find((b) => (b.evidenceIds ?? []).some((evId) => f.evidenceRefs.includes(evId)));
+      tierBTargetMappings.push({
+        findingId: f.id,
+        suggestedChapter: f.suggestedChapter,
+        targetBlockId: matchingBlock ? matchingBlock.blockId : null,
+        claim: f.claim,
+      });
+      continue; // consumed via applyTierBEnrichment, not blocksByChapter — see design note above
     }
     // tier === "A_primary"
     if (!EXPERT_ELIGIBLE_CHAPTERS.has(f.suggestedChapter as CanonicalChapterId)) {
@@ -219,57 +247,6 @@ export function selectUserVisibleExpertBlocks(
   const selectedByChapter: Record<string, number> = {};
   let selectedCount = 0;
   let rejectedCap = 0;
-  const tierBTargetMappings: Array<{
-    findingId: string;
-    suggestedChapter: string;
-    targetBlockId: string | null;
-    claim: string;
-  }> = [];
-
-  for (const f of findings) {
-    const tier = classifyConsumptionTier(f);
-    if (tier === "D_never") {
-      rejectedNever++;
-      continue;
-    }
-    if (tier === "C_internal") {
-      tierCCount++;
-      continue;
-    }
-    if (tier === "B_secondary") {
-      tierBCount++;
-      const chapterSections = existingSections.filter((s) => s.chapterId === f.suggestedChapter);
-      const allBlocks = chapterSections.flatMap((s) => s.blocks);
-      const matchingBlock = allBlocks.find((b) =>
-        b.evidenceIds.some((evId) => f.evidenceRefs.includes(evId))
-      );
-      const targetBlockId = matchingBlock ? matchingBlock.blockId : (allBlocks[0]?.blockId ?? null);
-      tierBTargetMappings.push({
-        findingId: f.id,
-        suggestedChapter: f.suggestedChapter,
-        targetBlockId,
-        claim: f.claim,
-      });
-      continue; // internal-only in Phase 4B — see design note above
-    }
-    // tier === "A_primary"
-    if (!EXPERT_ELIGIBLE_CHAPTERS.has(f.suggestedChapter as CanonicalChapterId)) {
-      // Defensive: validateExpertFindings already constrains suggestedChapter
-      // to this same set, so this should be unreachable in practice.
-      rejectedNever++;
-      continue;
-    }
-    tierACount++;
-    if (isTextuallyDuplicate(f.claim, runningCorpus)) {
-      rejectedDup++;
-      continue;
-    }
-    const chapterId = f.suggestedChapter as CanonicalChapterId;
-    const list = candidatesByChapter.get(chapterId) ?? [];
-    list.push(f);
-    candidatesByChapter.set(chapterId, list);
-    runningCorpus.push(f.claim); // a near-duplicate can't land in a second chapter either
-  }
 
   for (const [chapterId, candidates] of candidatesByChapter) {
     const winner = candidates
@@ -311,4 +288,42 @@ export function selectUserVisibleExpertBlocks(
       selectedByChapter,
     },
   };
+}
+
+/**
+ * Phase 5B Part 3 — applies matched Tier B mappings (from
+ * selectUserVisibleExpertBlocks's meta.tierBTargetMappings) by appending each
+ * finding's claim to its matched block's body. Immutable: returns a new
+ * sections array; never mutates the input. Unmatched mappings (targetBlockId
+ * === null) are silently skipped — they were already correctly kept
+ * internal-only by the caller, this function just applies the ones that DO
+ * have a safe target. Evidence provenance is preserved: evidenceIds on the
+ * enriched block are untouched (the append is additive prose only).
+ */
+export function applyTierBEnrichment(
+  sections: CanonicalSection[],
+  tierBTargetMappings: TierBTargetMapping[],
+  locale: NarrativeLocale,
+): CanonicalSection[] {
+  const byBlockId = new Map<string, string[]>();
+  for (const m of tierBTargetMappings) {
+    if (!m.targetBlockId) continue;
+    const list = byBlockId.get(m.targetBlockId) ?? [];
+    list.push(m.claim);
+    byBlockId.set(m.targetBlockId, list);
+  }
+  if (byBlockId.size === 0) return sections;
+
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+  return sections.map((section) => ({
+    ...section,
+    blocks: section.blocks.map((block) => {
+      const additions = byBlockId.get(block.blockId);
+      if (!additions || additions.length === 0) return block;
+      return {
+        ...block,
+        body: [block.body, ...additions.map((a) => `${L("더 깊이 보면: ", "Looking deeper: ")}${a}`)].join("\n\n"),
+      };
+    }),
+  }));
 }
