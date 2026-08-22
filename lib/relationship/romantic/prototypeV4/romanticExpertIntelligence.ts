@@ -95,7 +95,7 @@ function similarity(a: string, b: string): number {
 
 const DUPLICATE_SIMILARITY_THRESHOLD = 0.6;
 
-function isTextuallyDuplicate(claim: string, existingTexts: string[]): boolean {
+export function isTextuallyDuplicate(claim: string, existingTexts: string[]): boolean {
   return existingTexts.some((t) => similarity(claim, t) >= DUPLICATE_SIMILARITY_THRESHOLD);
 }
 

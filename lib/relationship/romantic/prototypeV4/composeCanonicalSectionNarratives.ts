@@ -202,11 +202,18 @@ function crossSignalBlocksFor(
 export function composeCanonicalSectionNarratives(
   plan: CanonicalRelationshipStoryPlan,
   expertSyntheses?: Record<string, ExpertSynthesisResult>,
+  /** Phase 4B — user-visible Expert Intelligence blocks, pre-selected and
+   * pre-translated by romanticExpertConsumptionPolicy.ts. Omitted by every
+   * existing caller (the deterministic sync path), so passing nothing here
+   * changes nothing about existing output. */
+  expertBlocksByChapter?: Partial<Record<CanonicalChapterId, CanonicalSectionBlock[]>>,
 ): CanonicalSection[] {
   const { a, b } = plan.names;
   const locale = plan.locale;
   const TITLES = titlesFor(locale);
   const L = (ko: string, en: string) => pick(locale, ko, en);
+  const expertBlocksFor = (chapterId: CanonicalChapterId): CanonicalSectionBlock[] =>
+    expertBlocksByChapter?.[chapterId] ?? [];
   const unitA = plan.attraction.units?.aToB;
   const unitB = plan.attraction.units?.bToA;
   const unitMutual = plan.attraction.units?.mutual;
@@ -345,6 +352,7 @@ export function composeCanonicalSectionNarratives(
           ),
         },
         ...crossSignalBlocksFor(plan, "c2_attraction", locale),
+        ...expertBlocksFor("c2_attraction"),
       ],
     },
     {
@@ -394,6 +402,7 @@ export function composeCanonicalSectionNarratives(
           };
         }),
         ...crossSignalBlocksFor(plan, "c3_dynamics", locale),
+        ...expertBlocksFor("c3_dynamics"),
       ],
     },
     {
@@ -416,7 +425,8 @@ export function composeCanonicalSectionNarratives(
           title: L("반복 흐름", "The Repeating Pattern"),
           body: plan.recurringLoop.steps.map((s, i) => `${i + 1}. ${s}`).join("\n"),
           evidenceIds: plan.recurringLoop.provenance.map((p) => p.evidenceId),
-        }
+        },
+        ...expertBlocksFor("c4_conflict"),
       ],
     },
     {
@@ -449,6 +459,7 @@ export function composeCanonicalSectionNarratives(
           };
         }),
         ...crossSignalBlocksFor(plan, "c5_misunderstanding", locale),
+        ...expertBlocksFor("c5_misunderstanding"),
       ],
     },
     {
@@ -487,6 +498,7 @@ export function composeCanonicalSectionNarratives(
           };
         }),
         ...crossSignalBlocksFor(plan, "c6_hidden_hearts", locale),
+        ...expertBlocksFor("c6_hidden_hearts"),
       ],
     },
     {
@@ -514,6 +526,7 @@ export function composeCanonicalSectionNarratives(
           evidenceIds: plan.repair?.provenance?.map((p) => p.evidenceId) ?? [],
         },
         ...crossSignalBlocksFor(plan, "c7_repair", locale),
+        ...expertBlocksFor("c7_repair"),
       ],
     },
     {
@@ -582,6 +595,7 @@ export function composeCanonicalSectionNarratives(
             ]),
           ),
         },
+        ...expertBlocksFor("c8_strength_vulnerability"),
       ],
     },
     {

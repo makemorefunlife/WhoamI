@@ -23,6 +23,7 @@ import type { ExpertSynthesisResult } from "./expertSynthesisTypes";
 import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 import type { RomanticV4SurveyInput } from "./romanticV4SurveyEvidence";
 import type { RomanticExpertFinding, RomanticExpertIntelligenceMeta } from "./romanticExpertIntelligenceTypes";
+import type { ExpertConsumptionMeta } from "./romanticExpertConsumptionPolicy";
 
 export type CanonicalRomanticV4Report = {
   schemaVersion: "romantic_canonical_report_v1";
@@ -37,6 +38,9 @@ export type CanonicalRomanticV4Report = {
    * gets attached. Absent entirely unless that async wrapper was used. */
   expertFindings?: RomanticExpertFinding[];
   expertIntelligenceMeta?: RomanticExpertIntelligenceMeta;
+  /** Phase 4B — audit trail for which findings became user-visible and why.
+   * Present only when the async wrapper's consumption step ran. */
+  expertConsumptionMeta?: ExpertConsumptionMeta;
   validation: { ok: boolean; issues: CanonicalValidationIssue[] };
   axisOverview: ReturnType<
     typeof buildRomanticExperienceViewModel
@@ -184,9 +188,30 @@ export async function buildCanonicalRomanticV4ReportWithExpertIntelligence(
     abortSignal: options.expertAbortSignal,
   });
 
+  // Phase 4B — decide which (if any) findings are safe/valuable enough to
+  // become user-visible, and re-compose sections with them spliced in.
+  // If the LLM step failed above, result.findings is already [] (guaranteed
+  // by buildRomanticExpertIntelligenceSafe's non-throwing contract), so
+  // selection is empty and finalSections is byte-identical to base.sections.
+  const { selectUserVisibleExpertBlocks } = await import("./romanticExpertConsumptionPolicy");
+  const selection = selectUserVisibleExpertBlocks(result.findings, base.storyPlan, base.sections, locale);
+
+  const finalSections = composeCanonicalSectionNarratives(base.storyPlan, base.expertSyntheses, selection.blocksByChapter);
+  const finalValidation = validateCanonicalRomanticReport({ plan: base.storyPlan, sections: finalSections });
+  const finalHiddenChapters = finalSections
+    .filter((s) => !s.visible)
+    .map((s) => ({
+      chapterId: s.chapterId,
+      reason: s.hideReason ?? "evidence insufficient",
+    }));
+
   return {
     ...base,
+    sections: finalSections,
+    validation: finalValidation,
+    hiddenChapters: finalHiddenChapters,
     expertFindings: result.findings,
     expertIntelligenceMeta: result.meta,
+    expertConsumptionMeta: selection.meta,
   };
 }

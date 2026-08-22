@@ -5,7 +5,7 @@
  *
  *   npx tsx tests/scripts/verify-romantic-expert-intelligence-live.ts
  *
- * Requires OPENAI_API_KEY in .env.local. Makes 3 pairs x 2 modes = 6 real
+ * Requires OPENAI_API_KEY in .env.local. Makes 5 pairs x 2 modes = 10 real
  * API calls on gpt-4o-mini. Costs a fraction of a cent total.
  */
 import dotenv from "dotenv";
@@ -15,6 +15,7 @@ import OpenAI from "openai";
 import { buildCanonicalRomanticV4Report } from "../../lib/relationship/romantic/prototypeV4/buildCanonicalRomanticV4Report";
 import { buildActualFourCeContract } from "../../lib/relationship/romantic/prototypeV4/buildActualFourCeContract";
 import { buildRomanticExpertIntelligenceSafe } from "../../lib/relationship/romantic/prototypeV4/romanticExpertIntelligence";
+import { selectUserVisibleExpertBlocks } from "../../lib/relationship/romantic/prototypeV4/romanticExpertConsumptionPolicy";
 import type { RomanticV4SurveyInput } from "../../lib/relationship/romantic/prototypeV4/romanticV4SurveyEvidence";
 import type { PsychMasterJson } from "../../lib/personCore/types/psychMaster";
 
@@ -82,6 +83,22 @@ const PAIRS: Pair[] = [
     psychA: makePsych({ decision_style: 55, thinking_style: 60 }),
     psychB: makePsych({ decision_style: 45, thinking_style: 40 }),
   },
+  {
+    label: "Pair 4 — avoidant/avoidant (both low conflict engagement, testing collision depth)",
+    nameA: "다은", nameB: "시우",
+    birthA: { birthDate: "1998-03-03", birthTime: "05:15" },
+    birthB: { birthDate: "1997-12-19", birthTime: "20:40" },
+    psychA: makePsych({ conflict_style: 20, self_control: 70, empathy: 60 }),
+    psychB: makePsych({ conflict_style: 22, self_control: 65, empathy: 55 }),
+  },
+  {
+    label: "Pair 5 — structure vs stimulation extreme split",
+    nameA: "예린", nameB: "도현",
+    birthA: { birthDate: "1988-08-08", birthTime: "12:00" },
+    birthB: { birthDate: "1994-05-30", birthTime: "01:30" },
+    psychA: makePsych({ structure: 85, stimulation: 20, practicality: 75 }),
+    psychB: makePsych({ structure: 20, stimulation: 85, practicality: 30 }),
+  },
 ];
 
 async function runPair(pair: Pair) {
@@ -136,7 +153,23 @@ async function runPair(pair: Pair) {
   console.log(`\n[REJECTED (renderEligible=false) — ${rejected.length}]`);
   for (const f of rejected) console.log(`  - [${f.classification}/${f.novelty}] ${f.claim.slice(0, 60)}... — ${f.rejectionReason ?? "n/a"}`);
 
-  return { pair: pair.label, csiCount: csi.length, supportedCount: supported.length, derivedCount: derived.length, rejectedCount: rejected.length };
+  // Phase 4B — post-policy: what actually becomes user-visible, and where.
+  const selection = selectUserVisibleExpertBlocks(result.findings, canonicalReport.storyPlan, canonicalReport.sections, "ko-KR");
+  console.log(`\n[CONSUMPTION POLICY] tierA=${selection.meta.tierACount} tierB(internal)=${selection.meta.tierBCount} tierC(internal)=${selection.meta.tierCCount} rejected_never=${selection.meta.rejectedNeverCount} rejected_dup=${selection.meta.rejectedDuplicateAgainstReportCount} rejected_cap=${selection.meta.rejectedChapterCapCount}`);
+  console.log(`[USER-VISIBLE — ${selection.meta.selectedCount}]`);
+  for (const [chapterId, blocks] of Object.entries(selection.blocksByChapter)) {
+    for (const b of blocks!) console.log(`  - [${chapterId}] ${b.title}: ${b.body.slice(0, 120)}${b.body.length > 120 ? "..." : ""}`);
+  }
+
+  return {
+    pair: pair.label,
+    csiCount: csi.length,
+    supportedCount: supported.length,
+    derivedCount: derived.length,
+    rejectedCount: rejected.length,
+    userVisibleCount: selection.meta.selectedCount,
+    userVisibleChapters: Object.keys(selection.blocksByChapter),
+  };
 }
 
 async function main() {
@@ -146,7 +179,9 @@ async function main() {
   }
   console.log(`\n${"=".repeat(70)}\nSUMMARY\n${"=".repeat(70)}`);
   for (const s of summaries) {
-    console.log(`${s.pair}: deterministic=${s.csiCount}, supported_synthesis=${s.supportedCount}, expert_derived=${s.derivedCount}, rejected=${s.rejectedCount}`);
+    console.log(
+      `${s.pair}: deterministic=${s.csiCount}, supported_synthesis=${s.supportedCount}, expert_derived=${s.derivedCount}, rejected=${s.rejectedCount}, user_visible=${s.userVisibleCount} [${s.userVisibleChapters.join(", ")}]`,
+    );
   }
 }
 
