@@ -152,11 +152,15 @@ export function computeRomanticV4GapBatchEngine(params: {
   const structA = psychA?.secondary_axes?.structure ?? 50;
   const stimA = psychA?.secondary_axes?.stimulation ?? 50;
   const recA = psychA?.secondary_axes?.recognition ?? 50;
+  const selfControlA = psychA?.secondary_axes?.self_control ?? 50;
+  const conflictStyleA = psychA?.secondary_axes?.conflict_style ?? 50;
 
   const empB = psychB?.secondary_axes?.empathy ?? 50;
   const structB = psychB?.secondary_axes?.structure ?? 50;
   const stimB = psychB?.secondary_axes?.stimulation ?? 50;
   const recB = psychB?.secondary_axes?.recognition ?? 50;
+  const selfControlB = psychB?.secondary_axes?.self_control ?? 50;
+  const conflictStyleB = psychB?.secondary_axes?.conflict_style ?? 50;
 
   // 1. Role Matrix Determination
   let roleAType: RomanticRoleType = "emotional_anchor";
@@ -210,28 +214,92 @@ export function computeRomanticV4GapBatchEngine(params: {
     summary: `${josaIGa(nameA)} 정서적 수용과 다정한 확답 위주의 사랑을, ${josaIGa(nameB)} 신뢰와 구체적 헌신 위주의 사랑을 주고받는 커플입니다.`,
   };
 
-  // 3. What Not to Expect From Each Other
-  const whatNotToExpect: WhatNotToExpect = {
-    notToExpectAFromB: [
-      {
+  // 3. What Not to Expect From Each Other (Evidence-Grounded, Strict Abstention, Fully Symmetric)
+  const notToExpectAFromB: { title: string; reason: string }[] = [];
+  const hasPsychB = Boolean(psychB && psychB.secondary_axes);
+  if (hasPsychB) {
+    if (structB >= 60 || empB <= 40) {
+      notToExpectAFromB.push({
         title: "즉각적인 감정 공감과 무조건적인 맞장구",
         reason: `${nameB}님은 감정을 흡수하기 전 사건의 맥락과 이유를 먼저 정리해야 납득하는 타입입니다.`,
-      },
-      {
+      });
+    }
+    if (structB >= 60 || recB <= 40) {
+      notToExpectAFromB.push({
         title: "말하지 않아도 내 기분을 알아서 알아차려 주기",
         reason: `${nameB}님은 모호한 신호보다 구체적인 대사로 요청할 때 훨씬 잘 반응합니다.`,
-      },
-    ],
-    notToExpectBFromA: [
-      {
+      });
+    }
+    if (selfControlB >= 60) {
+      notToExpectAFromB.push({
+        title: "갈등 직후 자리에 붙들어 매고 끝장 대화하기",
+        reason: `${nameB}님은 감정이 과부하되면 혼자 차분히 정리할 쿨링다운 시간이 필요합니다.`,
+      });
+    }
+    if (empB >= 60 && structB < 60) {
+      notToExpectAFromB.push({
+        title: "갈등 직후 칼같이 냉정하게 잘잘못을 가려내기",
+        reason: `${nameB}님은 서운함이 가라앉기 전 훈계나 논리적 지적을 받으면 마음을 닫기 쉽습니다.`,
+      });
+    }
+    if (recB >= 60) {
+      notToExpectAFromB.push({
+        title: "서운한 감정을 드러내지 않고 무조건 쿨하게 넘어가기",
+        reason: `${nameB}님은 서운함을 미루지 않고 다정한 확답과 사과를 통해 안도감을 확인받고 싶어 합니다.`,
+      });
+    }
+    if (stimB >= 60) {
+      notToExpectAFromB.push({
+        title: "변화 없는 고정된 데이트 루틴에 매번 만족하기",
+        reason: `${nameB}님은 관계 속에서 새로운 자극과 다채로운 경험을 함께 나눌 때 활력을 느낍니다.`,
+      });
+    }
+  }
+
+  const notToExpectBFromA: { title: string; reason: string }[] = [];
+  const hasPsychA = Boolean(psychA && psychA.secondary_axes);
+  if (hasPsychA) {
+    if (structA >= 60 || empA <= 40) {
+      notToExpectBFromA.push({
+        title: "즉각적인 감정 공감과 무조건적인 맞장구",
+        reason: `${nameA}님은 감정을 흡수하기 전 사건의 맥락과 이유를 먼저 정리해야 납득하는 타입입니다.`,
+      });
+    }
+    if (structA >= 60 || recA <= 40) {
+      notToExpectBFromA.push({
+        title: "말하지 않아도 내 기분을 알아서 알아차려 주기",
+        reason: `${nameA}님은 모호한 신호보다 구체적인 대사로 요청할 때 훨씬 잘 반응합니다.`,
+      });
+    }
+    if (selfControlA >= 60) {
+      notToExpectBFromA.push({
+        title: "갈등 직후 자리에 붙들어 매고 끝장 대화하기",
+        reason: `${nameA}님은 감정이 과부하되면 혼자 차분히 정리할 쿨링다운 시간이 필요합니다.`,
+      });
+    }
+    if (empA >= 60 && structA < 60) {
+      notToExpectBFromA.push({
         title: "갈등 직후 칼같이 냉정하게 잘잘못을 가려내기",
         reason: `${nameA}님은 서운함이 가라앉기 전 훈계나 논리적 지적을 받으면 마음을 닫기 쉽습니다.`,
-      },
-      {
-        title: "항상 흐트러짐 없이 완벽한 규칙을 지켜주기",
-        reason: `${nameA}님은 규율보다 그 순간의 친밀한 감정선이 훨씬 더 중요한 사람입니다.`,
-      },
-    ],
+      });
+    }
+    if (recA >= 60) {
+      notToExpectBFromA.push({
+        title: "서운한 감정을 드러내지 않고 무조건 쿨하게 넘어가기",
+        reason: `${nameA}님은 서운함을 미루지 않고 다정한 확답과 사과를 통해 안도감을 확인받고 싶어 합니다.`,
+      });
+    }
+    if (stimA >= 60) {
+      notToExpectBFromA.push({
+        title: "변화 없는 고정된 데이트 루틴에 매번 만족하기",
+        reason: `${nameA}님은 관계 속에서 새로운 자극과 다채로운 경험을 함께 나눌 때 활력을 느낍니다.`,
+      });
+    }
+  }
+
+  const whatNotToExpect: WhatNotToExpect = {
+    notToExpectAFromB: notToExpectAFromB.slice(0, 2),
+    notToExpectBFromA: notToExpectBFromA.slice(0, 2),
   };
 
   // 4. When We Need Each Other Most
@@ -250,25 +318,59 @@ export function computeRomanticV4GapBatchEngine(params: {
     ],
   };
 
-  // 5. Emergency Romantic SOS Scripts
+  // 5. Emergency Romantic SOS Scripts (Evidence-Grounded)
+  const sosAtoBTrigger = (structB >= 60 || selfControlB >= 60)
+    ? `${nameB}님이 논리적 잘잘못을 따지거나 차갑게 동굴로 물러설 때`
+    : (conflictStyleB >= 60 || stimB >= 60)
+      ? `${nameB}님이 직설적으로 팩트를 짚으며 강한 해명을 요구할 때`
+      : `${nameB}님이 대화를 피하거나 차가운 어조로 일관할 때`;
+
+  const sosAtoBDoNot = (selfControlB >= 60)
+    ? `${nameB}님의 방이나 동굴로 따라 들어가 즉각 사과를 다그치며 언쟁 확대하기`
+    : `누가 옳은지 시시비비를 가리며 서둘러 내 입장만 해명하려 재촉하기`;
+
+  const sosAtoBFirst = (empA >= 60 || recA >= 60)
+    ? `"아까 당신 말이 서운해서 당황했어. 나 지금 불안해서 그래, 내 마음 좀 안아줘."`
+    : `"아까 당신 말이 많이 서운했어. 우리 감정 가라앉히고 대화할 시각을 정하자."`;
+
+  const sosAtoBBridge = (structB >= 60)
+    ? `"잘잘못을 가리자는 게 아니라, 내 불안을 당신에게 다정하게 확인받고 싶었어."`
+    : `"이 자존심 싸움보다 당신과의 평화로운 신뢰가 내게 훨씬 더 중요해."`;
+
+  const sosBtoATrigger = (empA >= 60 || recA >= 60)
+    ? `${nameA}님의 서운함이 극에 달해 감정적인 확인을 강하게 다그칠 때`
+    : (conflictStyleA >= 60)
+      ? `${nameA}님이 직설적인 화법으로 문제를 즉각 짚으려 할 때`
+      : `${nameA}님의 감정이 과부하되어 대화의 결이 어긋날 때`;
+
+  const sosBtoADoNot = (empA >= 60 || recA >= 60)
+    ? `${nameA}님의 감정을 '예민하다'며 무시하거나 논리적 지적으로 훈계하기`
+    : `${nameA}님의 말을 중간에 자르거나 성급히 자리를 비켜서 버리기`;
+
+  const sosBtoAFirst = (structB >= 60)
+    ? `"내가 이성적으로만 해명하려 해서 당신 마음을 아프게 했나 봐. 미안해."`
+    : `"내가 표현이 딱딱해서 당신 마음을 서운하게 한 것 같아 미안해."`;
+
+  const sosBtoABridge = `"내 의도는 당신을 지적하려던 게 아니라, 우리 관계를 잘 지켜내고 싶어서였어."`;
+
   const emergencySos: EmergencyRomanticSosScripts = {
     sosAtoB: {
       seekerName: nameA,
       providerName: nameB,
-      trigger: `${nameB}님이 지적하거나 차갑게 침묵할 때`,
-      doNot: "누가 옳은지 옳고 그름을 따지며 서둘러 해명하려 재촉하기",
-      firstLine: `"아까 당신 말이 서운해서 당황했어. 나랑 대화할 준비되면 알려줘."`,
-      bridgeLine: `"잘잘못을 가리자는 게 아니라, 내 마음을 좀 이해받고 싶었어."`,
-      reconnectionLine: `"우리 손잡고 맛있는 거 먹으면서 천천히 다시 얘기하자."`,
+      trigger: sosAtoBTrigger,
+      doNot: sosAtoBDoNot,
+      firstLine: sosAtoBFirst,
+      bridgeLine: sosAtoBBridge,
+      reconnectionLine: `"잠깐 20분만 각자 숨 돌리고, 따뜻한 음료 마시면서 다시 이야기하자."`,
     },
     sosBtoA: {
       seekerName: nameB,
       providerName: nameA,
-      trigger: `${nameA}님의 감정이 격해져서 대화의 결이 엇갈릴 때`,
-      doNot: `${nameA}님의 감정을 '예민하다'며 무시하거나 자리를 확 떠나버리기`,
-      firstLine: `"내가 표현이 딱딱해서 당신 마음을 아프게 한 것 같아 미안해."`,
-      bridgeLine: `"내 의도는 당신을 지적하려던 게 아니라 우리 관계를 잘 지키고 싶어서였어."`,
-      reconnectionLine: `"잠깐 30분만 쿨링다운하고 당신 이야기 다 들어줄게."`,
+      trigger: sosBtoATrigger,
+      doNot: sosBtoADoNot,
+      firstLine: sosBtoAFirst,
+      bridgeLine: sosBtoABridge,
+      reconnectionLine: `"잠깐 30분만 쿨링다운하고 당신 이야기를 끝까지 들어줄게."`,
     },
   };
 

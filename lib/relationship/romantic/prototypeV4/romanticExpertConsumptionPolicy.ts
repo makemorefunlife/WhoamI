@@ -219,6 +219,57 @@ export function selectUserVisibleExpertBlocks(
   const selectedByChapter: Record<string, number> = {};
   let selectedCount = 0;
   let rejectedCap = 0;
+  const tierBTargetMappings: Array<{
+    findingId: string;
+    suggestedChapter: string;
+    targetBlockId: string | null;
+    claim: string;
+  }> = [];
+
+  for (const f of findings) {
+    const tier = classifyConsumptionTier(f);
+    if (tier === "D_never") {
+      rejectedNever++;
+      continue;
+    }
+    if (tier === "C_internal") {
+      tierCCount++;
+      continue;
+    }
+    if (tier === "B_secondary") {
+      tierBCount++;
+      const chapterSections = existingSections.filter((s) => s.chapterId === f.suggestedChapter);
+      const allBlocks = chapterSections.flatMap((s) => s.blocks);
+      const matchingBlock = allBlocks.find((b) =>
+        b.evidenceIds.some((evId) => f.evidenceRefs.includes(evId))
+      );
+      const targetBlockId = matchingBlock ? matchingBlock.blockId : (allBlocks[0]?.blockId ?? null);
+      tierBTargetMappings.push({
+        findingId: f.id,
+        suggestedChapter: f.suggestedChapter,
+        targetBlockId,
+        claim: f.claim,
+      });
+      continue; // internal-only in Phase 4B — see design note above
+    }
+    // tier === "A_primary"
+    if (!EXPERT_ELIGIBLE_CHAPTERS.has(f.suggestedChapter as CanonicalChapterId)) {
+      // Defensive: validateExpertFindings already constrains suggestedChapter
+      // to this same set, so this should be unreachable in practice.
+      rejectedNever++;
+      continue;
+    }
+    tierACount++;
+    if (isTextuallyDuplicate(f.claim, runningCorpus)) {
+      rejectedDup++;
+      continue;
+    }
+    const chapterId = f.suggestedChapter as CanonicalChapterId;
+    const list = candidatesByChapter.get(chapterId) ?? [];
+    list.push(f);
+    candidatesByChapter.set(chapterId, list);
+    runningCorpus.push(f.claim); // a near-duplicate can't land in a second chapter either
+  }
 
   for (const [chapterId, candidates] of candidatesByChapter) {
     const winner = candidates
@@ -252,6 +303,7 @@ export function selectUserVisibleExpertBlocks(
       tierACount,
       tierBCount,
       tierCCount,
+      tierBTargetMappings,
       rejectedNeverCount: rejectedNever,
       rejectedDuplicateAgainstReportCount: rejectedDup,
       rejectedChapterCapCount: rejectedCap,

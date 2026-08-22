@@ -17,21 +17,7 @@ import { buildActualFourCeContract } from "../../lib/relationship/romantic/proto
 import { buildRomanticExpertIntelligenceSafe } from "../../lib/relationship/romantic/prototypeV4/romanticExpertIntelligence";
 import { selectUserVisibleExpertBlocks } from "../../lib/relationship/romantic/prototypeV4/romanticExpertConsumptionPolicy";
 import type { RomanticV4SurveyInput } from "../../lib/relationship/romantic/prototypeV4/romanticV4SurveyEvidence";
-import type { PsychMasterJson } from "../../lib/personCore/types/psychMaster";
-
-/**
- * RomanticV4SurveyInput's declared type (mode/profileA/profileB) is already
- * stale relative to what buildActualFourCeContract.ts actually reads at
- * runtime (surveyInput?.psychA / surveyInput?.psychB — see its line ~319,
- * a pre-existing TS2339 present on baseline main). verify-sera-donggle-e2e.ts
- * relies on this same undeclared shape. This script follows that same
- * established runtime contract; this local type just names it so the cast
- * below is precise instead of `any`, without touching the production type.
- */
-type LegacySurveyInputWithPsych = RomanticV4SurveyInput & {
-  psychA?: PsychMasterJson;
-  psychB?: PsychMasterJson;
-};
+import type { CurrentSelfProfile } from "../../lib/v2/survey/types";
 
 if (!process.env.OPENAI_API_KEY) {
   console.error("OPENAI_API_KEY not set in .env.local — aborting live test.");
@@ -39,13 +25,33 @@ if (!process.env.OPENAI_API_KEY) {
 }
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function makePsych(overrides: Record<string, number>): PsychMasterJson {
-  const base = {
+/**
+ * Phase 5B §Part 1 — mirrors the REAL production shape: app/api/relationship/analyze/premium/route.ts
+ * loads a real CurrentSelfProfile per person via getCurrentSelfProfileForReport
+ * (lib/relationship/surveyPatterns.ts, backed by the survey_responses table) and
+ * passes it as surveyInput.profileA/profileB into buildRomanticV4ProductionInput
+ * (lib/relationship/romantic/prototypeV4/productionAdapter/buildRomanticV4ProductionInput.ts:86-90).
+ * That is what buildActualFourCeContract.ts actually reads to compute
+ * axisOverview/psychMatch (lines 256-270) — NOT a psychA/psychB field, which
+ * doesn't exist in production and was only ever an artifact of an older test
+ * script precedent (verify-sera-donggle-e2e.ts) that this file previously
+ * copied. Confirmed via code trace: production is correct, this fixture was
+ * the only thing that was wrong.
+ */
+function makeProfile(secondaryOverrides: Record<string, number>): CurrentSelfProfile {
+  const secondaryBase = {
     stimulation: 50, self_control: 50, practicality: 50, structure: 50, empathy: 50,
     conflict_style: 50, resilience: 50, recognition: 50, energy_style: 50,
     thinking_style: 50, decision_style: 50,
   };
-  return { survey_source: "v2_10q", secondary_axes: { ...base, ...overrides } } as unknown as PsychMasterJson;
+  const primary = { autonomy: 50, connection: 50, stability: 50, growth: 50, structure: 50, adaptability: 50 };
+  return {
+    profile_type: "current_self",
+    primary_axes: primary,
+    secondary_axes: { ...secondaryBase, ...secondaryOverrides },
+    personalization: { primary_concern: null },
+    meta: { survey_version: "v2", completed_at: new Date().toISOString(), completion_time_seconds: null },
+  } as CurrentSelfProfile;
 }
 
 type Pair = {
@@ -54,8 +60,8 @@ type Pair = {
   nameB: string;
   birthA: { birthDate: string; birthTime: string };
   birthB: { birthDate: string; birthTime: string };
-  psychA: PsychMasterJson;
-  psychB: PsychMasterJson;
+  profileA: CurrentSelfProfile;
+  profileB: CurrentSelfProfile;
 };
 
 const PAIRS: Pair[] = [
@@ -64,76 +70,74 @@ const PAIRS: Pair[] = [
     nameA: "지민", nameB: "정우",
     birthA: { birthDate: "1993-04-12", birthTime: "07:30" },
     birthB: { birthDate: "1991-11-02", birthTime: "23:10" },
-    psychA: makePsych({ empathy: 75, recognition: 70, conflict_style: 35, structure: 40 }),
-    psychB: makePsych({ empathy: 35, structure: 75, conflict_style: 70, self_control: 65 }),
+    profileA: makeProfile({ empathy: 75, recognition: 70, conflict_style: 35, structure: 40 }),
+    profileB: makeProfile({ empathy: 35, structure: 75, conflict_style: 70, self_control: 65 }),
   },
   {
     label: "Pair 2 — high similarity (similar psych, testing Hidden Collision)",
     nameA: "하나", nameB: "두리",
     birthA: { birthDate: "1996-06-20", birthTime: "14:00" },
     birthB: { birthDate: "1995-02-15", birthTime: "09:45" },
-    psychA: makePsych({ conflict_style: 30, recognition: 65 }),
-    psychB: makePsych({ conflict_style: 32, recognition: 68 }),
+    profileA: makeProfile({ conflict_style: 30, recognition: 65 }),
+    profileB: makeProfile({ conflict_style: 32, recognition: 68 }),
   },
   {
     label: "Pair 3 — moderate/mixed (middling gaps, no extreme signal)",
     nameA: "세영", nameB: "준호",
     birthA: { birthDate: "1990-01-08", birthTime: "18:20" },
     birthB: { birthDate: "1989-09-27", birthTime: "03:00" },
-    psychA: makePsych({ decision_style: 55, thinking_style: 60 }),
-    psychB: makePsych({ decision_style: 45, thinking_style: 40 }),
+    profileA: makeProfile({ decision_style: 55, thinking_style: 60 }),
+    profileB: makeProfile({ decision_style: 45, thinking_style: 40 }),
   },
   {
     label: "Pair 4 — avoidant/avoidant (both low conflict engagement, testing collision depth)",
     nameA: "다은", nameB: "시우",
     birthA: { birthDate: "1998-03-03", birthTime: "05:15" },
     birthB: { birthDate: "1997-12-19", birthTime: "20:40" },
-    psychA: makePsych({ conflict_style: 20, self_control: 70, empathy: 60 }),
-    psychB: makePsych({ conflict_style: 22, self_control: 65, empathy: 55 }),
+    profileA: makeProfile({ conflict_style: 20, self_control: 70, empathy: 60 }),
+    profileB: makeProfile({ conflict_style: 22, self_control: 65, empathy: 55 }),
   },
   {
     label: "Pair 5 — structure vs stimulation extreme split",
     nameA: "예린", nameB: "도현",
     birthA: { birthDate: "1988-08-08", birthTime: "12:00" },
     birthB: { birthDate: "1994-05-30", birthTime: "01:30" },
-    psychA: makePsych({ structure: 85, stimulation: 20, practicality: 75 }),
-    psychB: makePsych({ structure: 20, stimulation: 85, practicality: 30 }),
+    profileA: makeProfile({ structure: 85, stimulation: 20, practicality: 75 }),
+    profileB: makeProfile({ structure: 20, stimulation: 85, practicality: 30 }),
   },
   {
     label: "Pair 6 — same-day-stem echo (weak expected cross-chart contrast)",
     nameA: "소민", nameB: "재현",
     birthA: { birthDate: "1992-01-15", birthTime: "10:00" },
     birthB: { birthDate: "1992-01-16", birthTime: "10:30" },
-    psychA: makePsych({ empathy: 55, structure: 50 }),
-    psychB: makePsych({ empathy: 52, structure: 48 }),
+    profileA: makeProfile({ empathy: 55, structure: 50 }),
+    profileB: makeProfile({ empathy: 52, structure: 48 }),
   },
   {
     label: "Pair 7 — deliberately dense interaction (close birthdates, strong overlap expected)",
     nameA: "유나", nameB: "태오",
     birthA: { birthDate: "2000-07-04", birthTime: "16:00" },
     birthB: { birthDate: "2000-01-04", birthTime: "04:00" },
-    psychA: makePsych({ conflict_style: 80, recognition: 25 }),
-    psychB: makePsych({ conflict_style: 25, recognition: 80 }),
+    profileA: makeProfile({ conflict_style: 80, recognition: 25 }),
+    profileB: makeProfile({ conflict_style: 25, recognition: 80 }),
   },
   {
     label: "Pair 8 — psych-extreme gap on a single axis (testing psychCrossCheck linkage)",
     nameA: "라온", nameB: "은서",
     birthA: { birthDate: "1985-10-10", birthTime: "22:00" },
     birthB: { birthDate: "1999-06-01", birthTime: "06:00" },
-    psychA: makePsych({ conflict_style: 90, self_control: 85 }),
-    psychB: makePsych({ conflict_style: 10, self_control: 20 }),
+    profileA: makeProfile({ conflict_style: 90, self_control: 85 }),
+    profileB: makeProfile({ conflict_style: 10, self_control: 20 }),
   },
 ];
 
 async function runPair(pair: Pair) {
   console.log(`\n${"=".repeat(70)}\n${pair.label}\n${"=".repeat(70)}`);
 
-  const surveyInput: LegacySurveyInputWithPsych = {
+  const surveyInput: RomanticV4SurveyInput = {
     mode: "real",
-    profileA: null,
-    profileB: null,
-    psychA: pair.psychA,
-    psychB: pair.psychB,
+    profileA: pair.profileA,
+    profileB: pair.profileB,
   };
 
   const canonicalReport = buildCanonicalRomanticV4Report("ko-KR", 2026, {
