@@ -22,6 +22,7 @@ import {
 import type { ExpertSynthesisResult } from "./expertSynthesisTypes";
 import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 import type { RomanticV4SurveyInput } from "./romanticV4SurveyEvidence";
+import type { RomanticExpertFinding, RomanticExpertIntelligenceMeta } from "./romanticExpertIntelligenceTypes";
 
 export type CanonicalRomanticV4Report = {
   schemaVersion: "romantic_canonical_report_v1";
@@ -30,6 +31,12 @@ export type CanonicalRomanticV4Report = {
   storyPlan: CanonicalRelationshipStoryPlan;
   sections: CanonicalSection[];
   expertSyntheses?: Record<string, ExpertSynthesisResult>;
+  /** Phase 4A — LLM-derived, structurally separate trust tier from everything
+   * else on this type. Not consumed by composeCanonicalSectionNarratives.ts —
+   * see buildCanonicalRomanticV4ReportWithExpertIntelligence for how this
+   * gets attached. Absent entirely unless that async wrapper was used. */
+  expertFindings?: RomanticExpertFinding[];
+  expertIntelligenceMeta?: RomanticExpertIntelligenceMeta;
   validation: { ok: boolean; issues: CanonicalValidationIssue[] };
   axisOverview: ReturnType<
     typeof buildRomanticExperienceViewModel
@@ -125,5 +132,61 @@ export function buildCanonicalRomanticV4Report(
     overviewCards,
     connectedFromExistingEngine: storyPlan.connectedEvidenceIds,
     hiddenChapters,
+  };
+}
+
+/**
+ * Phase 4A — additive async wrapper. Builds the exact same deterministic
+ * report as buildCanonicalRomanticV4Report (unchanged, still synchronous,
+ * still the function every existing caller keeps using), then — only if
+ * `openai` + `enableExpertIntelligence` are supplied — separately awaits the
+ * Expert Intelligence layer and attaches its output.
+ *
+ * Deliberately NOT wired into composeCanonicalSectionNarratives.ts or any
+ * chapter render path in this phase (spec §13) — expertFindings/
+ * expertIntelligenceMeta exist on the returned object for inspection/testing
+ * only. If the expert call fails for any reason, buildRomanticExpertIntelligenceSafe
+ * already guarantees a non-throwing empty result, so this function's own
+ * return value is always the same shape whether or not the expert step
+ * succeeded — see romanticExpertIntelligence.ts's failure-mode contract.
+ */
+export async function buildCanonicalRomanticV4ReportWithExpertIntelligence(
+  locale: "ko-KR" | "en-US" = "ko-KR",
+  reportYear?: number,
+  options?: Parameters<typeof buildCanonicalRomanticV4Report>[2] & {
+    openai?: import("openai").default;
+    enableExpertIntelligence?: boolean;
+    expertAbortSignal?: AbortSignal;
+  },
+): Promise<CanonicalRomanticV4Report> {
+  const base = buildCanonicalRomanticV4Report(locale, reportYear, options);
+
+  if (!options?.enableExpertIntelligence || !options?.openai) {
+    return base;
+  }
+
+  const actual = buildActualFourCeContract(
+    locale,
+    options?.pairSajuInput,
+    options?.surveyInput,
+    options?.precomputed,
+  );
+
+  const { buildRomanticExpertIntelligenceSafe } = await import("./romanticExpertIntelligence");
+  const result = await buildRomanticExpertIntelligenceSafe({
+    openai: options.openai,
+    storyPlan: base.storyPlan,
+    chartA: actual.individualCeA,
+    chartB: actual.individualCeB,
+    axisResults: base.axisOverview,
+    names: base.names,
+    locale,
+    abortSignal: options.expertAbortSignal,
+  });
+
+  return {
+    ...base,
+    expertFindings: result.findings,
+    expertIntelligenceMeta: result.meta,
   };
 }
