@@ -1061,14 +1061,53 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     ],
   };
 
+  // Dynamic weekend planning difference derived from energy_style evidence
+  const energyScoreA = axisResults.find((a) => a.axis_key === "energy_style")?.score_a ?? params.surveyInput?.psychA?.secondary_axes?.energy_style;
+  const energyScoreB = axisResults.find((a) => a.axis_key === "energy_style")?.score_b ?? params.surveyInput?.psychB?.secondary_axes?.energy_style;
+  let weekendDiffText = "";
+  if (typeof energyScoreA === "number" && typeof energyScoreB === "number") {
+    const gap = Math.abs(energyScoreA - energyScoreB);
+    if (gap >= 15) {
+      const highEnergyPerson = energyScoreA > energyScoreB ? names.a : names.b;
+      const lowEnergyPerson = energyScoreA > energyScoreB ? names.b : names.a;
+      weekendDiffText = fill(copy.tpl.weekendDiff, {
+        topicA: topicP(highEnergyPerson, locale),
+        topicB: topicP(lowEnergyPerson, locale),
+      }, locale);
+    } else {
+      weekendDiffText = L(
+        `${names.a}님과 ${names.b}님 모두 에너지를 쓰는 주말 휴식 리듬이 비슷하여, 함께 활동적인 일정을 보내거나 함께 차분히 쉬는 기류를 공유합니다.`,
+        `${names.a} and ${names.b} share a similar energy and weekend rest rhythm, alternating together between active plans and quiet downtime.`,
+      );
+    }
+  } else {
+    weekendDiffText = L(
+      `주말 일정을 계획할 때 두 사람의 피로도와 에너지 상태에 맞춰 사전 조율이 필요합니다.`,
+      `When planning weekend schedules, advance coordination is needed based on both partners' energy levels and fatigue.`,
+    );
+  }
+
+  // Dynamic reply delay difference derived from expression_style / expression_speed evidence
+  const exprScoreA = axisResults.find((a) => a.axis_key === "expression_style")?.score_a ?? params.surveyInput?.psychA?.secondary_axes?.expression_style;
+  const exprScoreB = axisResults.find((a) => a.axis_key === "expression_style")?.score_b ?? params.surveyInput?.psychB?.secondary_axes?.expression_style;
+  let replyDiffText = copy.replyDiff;
+  if (typeof exprScoreA === "number" && typeof exprScoreB === "number") {
+    const gap = Math.abs(exprScoreA - exprScoreB);
+    if (gap >= 15) {
+      const fastPerson = exprScoreA > exprScoreB ? names.a : names.b;
+      const slowPerson = exprScoreA > exprScoreB ? names.b : names.a;
+      replyDiffText = L(
+        `${subjectP(fastPerson, locale)} 메시지를 확인하는 대로 빠른 답장과 조율을 선호하는 반면, ${subjectP(slowPerson, locale)} 생각을 정리하거나 자기 일에 몰입한 후 천천히 답하는 템포를 지니고 있습니다.`,
+        `${subjectP(fastPerson, locale)} prefers quick replies upon reading messages, while ${subjectP(slowPerson, locale)} takes time to organize thoughts or focus before responding slowly.`,
+      );
+    }
+  }
+
   const realLifeDomains = [
     {
       domainId: "weekend",
       title: copy.weekendTitle,
-      difference: fill(copy.tpl.weekendDiff, {
-        topicA: topicP(names.a, locale),
-        topicB: topicP(names.b, locale),
-      }, locale),
+      difference: weekendDiffText,
       riskCondition: copy.weekendRisk,
       agreement: copy.weekendAgree,
       usableLine: copy.weekendLine,
@@ -1087,7 +1126,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     {
       domainId: "reply_delay",
       title: copy.replyTitle,
-      difference: copy.replyDiff,
+      difference: replyDiffText,
       riskCondition: copy.replyRisk,
       agreement: copy.replyAgree,
       usableLine: copy.replyLine,

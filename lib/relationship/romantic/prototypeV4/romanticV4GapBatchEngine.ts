@@ -314,7 +314,7 @@ function computeConflictStateTransition(
   const hasPsych = Boolean(psych && psych.secondary_axes);
 
   // Pattern 1: Expressive Anxious (Sera type: High self-control/empathy + high recognition need)
-  if ((hasPsych && (rec >= 60 || emp >= 60) && struct < 70) || (!hasPsych && isPersonA)) {
+  if (hasPsych && (rec >= 60 || emp >= 60) && struct < 70) {
     return {
       personName: name,
       normalState: `평소에는 다정하고 상대의 기분을 세심하게 살피며 수용적인 태도`,
@@ -326,7 +326,7 @@ function computeConflictStateTransition(
   }
 
   // Pattern 2: Logical Withdrawing (Donggle type: High structure / self-control -> Logical analysis then silence/withdrawal)
-  if ((hasPsych && (struct >= 60 || (selfControl >= 60 && emp < 60))) || (!hasPsych && !isPersonA)) {
+  if (hasPsych && (struct >= 60 || (selfControl >= 60 && emp < 60))) {
     return {
       personName: name,
       normalState: `평소에는 든든하고 이성적이며 관계의 객관적인 밸런스를 지키는 안정적인 태도`,

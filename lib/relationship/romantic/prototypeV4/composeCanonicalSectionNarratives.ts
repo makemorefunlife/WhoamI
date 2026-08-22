@@ -557,10 +557,10 @@ export function composeCanonicalSectionNarratives(
       blocks: [
         {
           blockId: "timing.theme",
-          title: L("2026년 관계 흐름 테마", "2026 Relationship Theme"),
+          title: L(`${plan.timing?.reportYear ?? new Date().getFullYear()}년 관계 흐름 테마`, `${plan.timing?.reportYear ?? new Date().getFullYear()} Relationship Theme`),
           body: plan.timing?.theme || L(
-            "2026년은 두 사람이 깊은 신뢰를 바탕으로 서로의 템포와 자율성을 존중하며 정서적 안정감을 공고히 다져가는 주도적 조율의 해입니다.",
-            "2026 is a year of proactive alignment, solidifying emotional stability while respecting each other's pace and autonomy based on deep trust.",
+            `${plan.timing?.reportYear ?? new Date().getFullYear()}년은 두 사람이 깊은 신뢰를 바탕으로 서로의 템포와 자율성을 존중하며 정서적 안정감을 공고히 다져가는 주도적 조율의 해입니다.`,
+            `${plan.timing?.reportYear ?? new Date().getFullYear()} is a year of proactive alignment, solidifying emotional stability while respecting each other's pace and autonomy based on deep trust.`,
           ),
           evidenceIds: plan.timing?.provenance?.map((p) => p.evidenceId) || [],
         },

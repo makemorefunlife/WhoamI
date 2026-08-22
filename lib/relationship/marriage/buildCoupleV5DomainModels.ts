@@ -26,6 +26,16 @@ export function buildCoupleLifePartnerRoleP1(params: {
   homeReport: HouseholdPartnershipReport;
 }): CoupleLifePartnerRole {
   const { nameA, nameB, homeReport } = params;
+  const leaderSide = homeReport?.cfo?.leader_side;
+  if (leaderSide === "b") {
+    return {
+      selfRole: `${nameA}는 일상 가사의 세밀한 운영과 가정 내 따뜻한 정서적 안도감을 채워주는 앵커 역할을 맡습니다.`,
+      partnerRole: `${nameB}는 가정의 장기적 방향성을 수립하고 현실적 기준을 잡아주는 든든한 가이드 역할을 맡습니다.`,
+      coupleSynergy: "서로의 명확한 시야와 포용력이 결합하여 어떤 어려움 앞에서도 쉽게 흔들리지 않는 집안 기틀을 형성합니다.",
+      evidenceIds: ["couple.life_partner_role", "couple.home_fit"],
+      confidence: "high",
+    };
+  }
   return {
     selfRole: `${nameA}는 가정의 장기적 방향성을 수립하고 현실적 기준을 잡아주는 든든한 가이드 역할을 맡습니다.`,
     partnerRole: `${nameB}는 일상 가사의 세밀한 운영과 가정 내 따뜻한 정서적 안도감을 채워주는 앵커 역할을 맡습니다.`,
