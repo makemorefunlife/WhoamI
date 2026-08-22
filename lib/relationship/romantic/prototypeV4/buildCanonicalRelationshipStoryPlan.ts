@@ -65,6 +65,107 @@ import {
 type Report = RomanticSajuDeepReport["report"];
 type CopyTable = typeof copyKo;
 
+/**
+ * Phase 5C (continued) — evidence-based conflict-trigger selection.
+ *
+ * Root cause of the byte-identical trigger sentence across every pair
+ * (confirmed via code trace, not guessed): canonicalStoryPlanCopy.ko.json's
+ * "loopTrigger" was a single hardcoded string, used unconditionally
+ * regardless of any evidence — even though this recurringLoop's own
+ * provenance array already (incorrectly) claimed expression_speed/
+ * recovery_speed/comparison_table.stress as its basis. This function makes
+ * that claim true: it actually branches on those real fields.
+ *
+ * Real value shapes (verified by reading the computing code, not the local
+ * type casts, which had a stale field name — recovery_speed's real boolean
+ * is `recovery_mismatch`, not `mismatch`):
+ *   expression_speed.direction: "A" | "B" | "balanced"
+ *   comparison_table.decision.lean_a/lean_b: "independent"|"balanced"|"consultative"
+ *   comparison_table.stress.lean_a/lean_b: "explosive"|"steady"|"withdrawn"
+ *   recovery_speed.recovery_mismatch: boolean
+ *   axisResults gap for structure/conflict_style/decision_style/recognition
+ *
+ * Priority order (most trigger-specific first): a real decision-style
+ * mismatch (money/plans) > a real stress-reaction-band mismatch (plans
+ * suddenly disrupted) > a real expression-speed mismatch (reply delay) >
+ * a large structure-axis gap (spontaneity vs plans) > abstain to a general,
+ * non-overclaiming scene when nothing distinctive is supported.
+ */
+function selectConflictTriggerScene(params: {
+  table: Record<string, { lean_a?: string; lean_b?: string } | undefined> | undefined;
+  expr: { direction?: string } | undefined;
+  recovery: { recovery_mismatch?: boolean } | undefined;
+  axisResults: RomanticPsychMatchAxisResult[];
+  locale: NarrativeLocale;
+}): { scene: string; evidenceIds: string[] } {
+  const { table, expr, recovery, axisResults, locale } = params;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+  const axisGap = (key: string) => axisResults.find((a) => a.axis_key === key)?.gap ?? 0;
+
+  const decision = table?.decision;
+  if (decision?.lean_a && decision?.lean_b && decision.lean_a !== decision.lean_b) {
+    return {
+      scene: L(
+        "돈이 들어가는 계획이나 중요한 결정을 함께 조율해야 할 때",
+        "When you have to coordinate an important decision or a plan that involves real money",
+      ),
+      evidenceIds: ["canonical_projections.comparison_table.decision"],
+    };
+  }
+
+  const stress = table?.stress;
+  if (stress?.lean_a && stress?.lean_b && stress.lean_a !== stress.lean_b) {
+    return {
+      scene: L(
+        "세워둔 계획이나 일정이 갑자기 틀어질 때",
+        "When a plan or a schedule you'd already set suddenly falls apart",
+      ),
+      evidenceIds: ["canonical_projections.comparison_table.stress"],
+    };
+  }
+
+  if (expr?.direction === "A" || expr?.direction === "B") {
+    return {
+      scene: L(
+        "연락이나 답장이 지연될 때",
+        "When a reply or a response is delayed",
+      ),
+      evidenceIds: ["canonical_projections.expression_speed"],
+    };
+  }
+
+  if (axisGap("structure") >= 25) {
+    return {
+      scene: L(
+        "미리 정해둔 방식과 즉흥적인 상황이 서로 부딪힐 때",
+        "When a planned-out approach collides with something that comes up spontaneously",
+      ),
+      evidenceIds: ["axisResults.structure"],
+    };
+  }
+
+  if (recovery?.recovery_mismatch) {
+    return {
+      scene: L(
+        "다툰 뒤 회복하는 속도가 서로 다르게 느껴질 때",
+        "When how quickly each of you bounces back after friction feels mismatched",
+      ),
+      evidenceIds: ["canonical_projections.recovery_speed"],
+    };
+  }
+
+  // Abstention — no single distinctive trigger class is supported by real
+  // evidence for this pair. General, non-overclaiming phrasing rather than
+  // forcing one of the specific scenes above onto a pair it doesn't fit.
+  return {
+    scene: L(
+      "예상치 못한 상황에서 서로의 반응 속도나 방식이 어긋날 때",
+      "When, in an unexpected moment, your pace or way of responding doesn't quite line up",
+    ),
+    evidenceIds: [],
+  };
+}
+
 function fill(tpl: string, vars: Record<string, string>, locale: NarrativeLocale): string {
   return sanitizeParticles(
     tpl.replace(/\{(\w+)\}/g, (_, key: string) => vars[key] ?? ""),
@@ -214,7 +315,12 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     | Record<string, { lean_a?: string; lean_b?: string; a?: string; b?: string } | undefined>
     | undefined;
   const expr = projections.expression_speed as { direction?: string } | undefined;
-  const recovery = projections.recovery_speed as { mismatch?: boolean } | undefined;
+  // Stale cast fixed (Phase 5C): the real field computed by
+  // romanticRecoverySpeedCanonical.ts is `recovery_mismatch`, not `mismatch`
+  // — this variable was previously unused anywhere in this file, so the
+  // wrong field name never caused a bug elsewhere, just meant `recovery`
+  // was silently dead. Now consumed by selectConflictTriggerScene.
+  const recovery = projections.recovery_speed as { recovery_mismatch?: boolean } | undefined;
   const reassurance = projections.reassurance_signal as { need_a?: string } | undefined;
   const balance = projections.balance_of_power as
     | { balance_a?: string; balance_b?: string }
@@ -748,8 +854,10 @@ export function buildCanonicalRelationshipStoryPlan(params: {
         ],
   };
 
+  const selectedTrigger = selectConflictTriggerScene({ table, expr, recovery, axisResults, locale });
+
   const recurringLoop = {
-    triggerScene: copy.loopTrigger,
+    triggerScene: selectedTrigger.scene,
     steps: [
       fill(copy.tpl.loop1, { subjA: subjectP(names.a, locale) }, locale),
       fill(copy.tpl.loop2, { subjB: subjectP(names.b, locale) }, locale),
@@ -757,32 +865,24 @@ export function buildCanonicalRelationshipStoryPlan(params: {
       fill(copy.tpl.loop4, { topicB: topicP(names.b, locale) }, locale),
     ],
     residue: copy.loopResidue,
-    provenance: [
-      prov(
-        "canonical_projections.expression_speed",
-        "romantic_ce",
-        "canonical_projections.expression_speed",
-        "pair",
-        "high",
-        "likely_behavior",
-      ),
-      prov(
-        "canonical_projections.recovery_speed",
-        "romantic_ce",
-        "canonical_projections.recovery_speed",
-        "pair",
-        "high",
-        "likely_behavior",
-      ),
-      prov(
-        "canonical_projections.comparison_table.stress",
-        "romantic_ce",
-        "canonical_projections.comparison_table.stress",
-        "pair",
-        "medium",
-        "likely_behavior",
-      ),
-    ],
+    provenance:
+      // Reflects the evidence actually used to pick triggerScene above,
+      // instead of a fixed 3-item list that used to be claimed regardless
+      // of which (if any) real signal was used.
+      selectedTrigger.evidenceIds.length > 0
+        ? selectedTrigger.evidenceIds.map((id) =>
+            prov(id, "romantic_ce", id, "pair", "high", "likely_behavior"),
+          )
+        : [
+            prov(
+              "canonical_projections.expression_speed",
+              "romantic_ce",
+              "canonical_projections.expression_speed",
+              "pair",
+              "low",
+              "combination_judgment",
+            ),
+          ],
   };
 
   const strengthVuln =

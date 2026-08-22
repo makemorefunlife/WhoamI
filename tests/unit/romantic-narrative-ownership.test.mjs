@@ -55,3 +55,30 @@ describe("Narrative ownership — c6_hidden_hearts no longer restates c3_dynamic
     assert.ok(typeof hiddenA.structuredData.visibleReaction === "string" && hiddenA.structuredData.visibleReaction.length > 0);
   });
 });
+
+describe("Narrative ownership — c5_misunderstanding misread blocks skip restating c3_dynamics's stress face when it's a near-duplicate", () => {
+  it("misread block bodies do not contain the 'What happens on the outside' line when observedBehavior duplicates the stress face", () => {
+    const report = buildCanonicalRomanticV4Report("ko-KR", 2026, {
+      pairSajuInput: { nameA: "Sera", nameB: "동글" },
+      surveyInput: { psychA: makePsych({ self_control: 70 }), psychB: makePsych({ structure: 75 }) },
+    });
+    const misunderstandingSection = report.sections.find((s) => s.chapterId === "c5_misunderstanding");
+    const misreadBlocks = misunderstandingSection.blocks.filter((b) => b.blockId.startsWith("misread."));
+    assert.ok(misreadBlocks.length > 0);
+    for (const block of misreadBlocks) {
+      assert.ok(!block.body.includes("겉에서 일어난 일"), `${block.blockId} must not restate the stress face's opening line when it duplicates it`);
+      assert.ok(block.body.includes("내리기 쉬운 해석"), `${block.blockId} must keep its own unique misread-interpretation layer`);
+      assert.ok(block.body.includes("의미의 차이"), `${block.blockId} must keep its own unique meaning-gap layer`);
+    }
+  });
+
+  it("the raw observedBehavior fact is still available internally via structuredData for provenance", () => {
+    const report = buildCanonicalRomanticV4Report("ko-KR", 2026, {
+      pairSajuInput: { nameA: "Sera", nameB: "동글" },
+      surveyInput: { psychA: makePsych({ self_control: 70 }), psychB: makePsych({ structure: 75 }) },
+    });
+    const misunderstandingSection = report.sections.find((s) => s.chapterId === "c5_misunderstanding");
+    const misreadBlock = misunderstandingSection.blocks.find((b) => b.blockId.startsWith("misread."));
+    assert.ok(typeof misreadBlock.structuredData.observedBehavior === "string" && misreadBlock.structuredData.observedBehavior.length > 0);
+  });
+});

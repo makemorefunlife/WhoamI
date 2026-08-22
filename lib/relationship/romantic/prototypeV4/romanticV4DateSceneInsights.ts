@@ -449,8 +449,8 @@ export function buildLongTermGrowthScene(params: {
       hasComplement
         ? pick(
             locale,
-            `${nameA}와 ${nameB}는 서로 부족한 부분을 자연스럽게 채워주는 조합이에요 — 초반의 설렘이 가라앉은 뒤에도 이 보완 관계 덕분에 관계가 더 단단해질 가능성이 높아요.`,
-            `${nameA} and ${nameB} naturally fill in each other's gaps — even once the early spark settles, that complementary fit tends to make the relationship sturdier over time.`,
+            `${nameA}와 ${nameB}의 사주에는 서로 맞물리는 결합 지점이 실제로 있어요 — 그래서 초반의 설렘이 가라앉은 뒤에도, 한쪽이 놓치는 지점을 다른 쪽이 구조적으로 받쳐주는 결이 이어질 가능성이 높아요.`,
+            `${nameA} and ${nameB}'s charts show real interlocking points — so even once the early spark settles, one of you tends to structurally cover what the other misses, not just by good will but by the shape of the match itself.`,
           )
         : pick(
             locale,

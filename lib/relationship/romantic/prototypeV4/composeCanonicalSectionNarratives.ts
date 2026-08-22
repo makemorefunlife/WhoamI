@@ -10,6 +10,7 @@ import {
   pick,
   type NarrativeLocale,
 } from "./narrativeLocale";
+import { similarity } from "./romanticExpertIntelligence";
 
 export type CanonicalChapterId =
   | "c1_hero"
@@ -447,14 +448,27 @@ export function composeCanonicalSectionNarratives(
             m.direction === "a_observes_b"
               ? L(`${a}이/가 겪은 ${b}의 행동`, `${b}'s Behavior, as ${a} Experiences It`)
               : L(`${b}이/가 겪은 ${a}의 행동`, `${a}'s Behavior, as ${b} Experiences It`);
+          // Phase 5C (continued) — c3_dynamics's stress face (which renders
+          // earlier, Chapter 01) already states each person's stress
+          // behavior in one combined paragraph. When observedBehavior is a
+          // near-duplicate of that already-shown text, skip restating it
+          // here and let this block's own unique value (the misread gap)
+          // stand on its own — same pattern already applied to
+          // c6_hidden_hearts above. A genuinely different observedBehavior
+          // (not stress-sourced) still renders normally.
+          const stressFace = plan.faces.find((f) => f.situation === "stress");
+          const isStressDuplicate = stressFace ? similarity(m.observedBehavior, stressFace.appearance) >= 0.5 : false;
           return {
             blockId: `misread.${m.direction}`,
             title: label,
             body: [
-              L(`겉에서 일어난 일: ${m.observedBehavior}`, `What happens on the outside: ${m.observedBehavior}`),
+              isStressDuplicate ? "" : L(`겉에서 일어난 일: ${m.observedBehavior}`, `What happens on the outside: ${m.observedBehavior}`),
               L(`내리기 쉬운 해석: ${m.commonNegativeReading}`, `The easy misreading: ${m.commonNegativeReading}`),
               L(`의미의 차이: ${m.meaningGap}`, `What it actually means: ${m.meaningGap}`),
-            ].join("\n"),
+            ]
+              .filter(Boolean)
+              .join("\n"),
+            structuredData: m,
             evidenceIds: m.provenance.map((p) => p.evidenceId),
           };
         }),
