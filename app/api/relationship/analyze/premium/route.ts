@@ -53,8 +53,10 @@ import type {
   RomanticSajuDeepRunParams,
 } from "@/lib/prompts/relationshipPremium/romanticSajuDeep";
 import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
+import { isRomanticV4NarrativeLlmEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4NarrativeLlmFlag";
 import { buildRomanticV4ProductionInput } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/buildRomanticV4ProductionInput";
 import { buildRomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
+import { applyRomanticV4FinalNarrativeArchitecture } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/applyRomanticV4FinalNarrativeArchitecture";
 import {
   attachRomanticV4Block,
   type RomanticV4PersistedBlock,
@@ -413,8 +415,26 @@ export async function POST(req: Request) {
             pairSajuInput: v4Input.pairSajuInput,
             precomputed: v4Input.precomputed,
           });
+
+          // Final Narrative Architecture: additive, best-effort, same
+          // failure discipline as the deterministic V4 block above — a
+          // failure here (or the flag being off) leaves v4PayloadRaw's
+          // fully deterministic canonicalReport.sections untouched.
+          // Exactly 2 LLM calls when it runs: Narrative Editor + Expert
+          // Saju Discovery. See romanticFinalNarrativeArchitecture.ts.
+          const v4PayloadNarrated = isRomanticV4NarrativeLlmEnabled()
+            ? await applyRomanticV4FinalNarrativeArchitecture(v4PayloadRaw, {
+                openai,
+                locale,
+                pairSajuInput: v4Input.pairSajuInput,
+                surveyInput: v4Input.surveyInput,
+                precomputed: v4Input.precomputed,
+                abortSignal: req.signal,
+              })
+            : v4PayloadRaw;
+
           const v4Payload = applyHourEvidenceCapToComparisonTable(
-            v4PayloadRaw,
+            v4PayloadNarrated,
             v4Input.birthHourEvidence,
           );
 

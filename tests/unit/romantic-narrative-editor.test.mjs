@@ -143,6 +143,40 @@ describe("Narrative Editor — validateNarrativeEdits", () => {
     assert.match(out[0].rejectionReason, /forbidden content/);
   });
 
+  it("GOOD: keeps a recognitionLine with a real A->B/B->A consequence chain", () => {
+    const out = validateNarrativeEdits(
+      [
+        baseValidEdit({
+          recognitionLine: "지민이 말수가 줄어들수록 정우는 그걸 거리감으로 받아들여서 먼저 다가가기를 망설이게 돼요.",
+        }),
+      ],
+      { packets: PACKETS, names: NAMES },
+    );
+    assert.equal(out[0].rejected, false);
+    assert.equal(out[0].recognitionLine, "지민이 말수가 줄어들수록 정우는 그걸 거리감으로 받아들여서 먼저 다가가기를 망설이게 돼요.");
+  });
+
+  it("BAD: drops a recognitionLine that is parallel description with no consequence chain", () => {
+    const out = validateNarrativeEdits(
+      [baseValidEdit({ recognitionLine: "지민과 정우는 각자의 방식으로 관계를 발전시킵니다." })],
+      { packets: PACKETS, names: NAMES },
+    );
+    assert.equal(out[0].rejected, false);
+    assert.equal(out[0].recognitionLine, null);
+    assert.match(out[0].rejectionReason, /parallel description/);
+  });
+
+  it("BAD: drops a recognitionLine that merely restates editedText (no meaning added)", () => {
+    const edit = baseValidEdit();
+    const out = validateNarrativeEdits(
+      [{ ...edit, recognitionLine: `${edit.editedText} 그래서 정우는 그렇게 받아들이면 돼요.` }],
+      { packets: PACKETS, names: NAMES },
+    );
+    assert.equal(out[0].rejected, false);
+    assert.equal(out[0].recognitionLine, null);
+    assert.match(out[0].rejectionReason, /restates editedText/);
+  });
+
   it("drops a generic recognitionLine that doesn't name both people, but keeps the edit itself", () => {
     const out = validateNarrativeEdits(
       [baseValidEdit({ recognitionLine: "두 사람은 서로를 이해하려고 노력합니다." })],

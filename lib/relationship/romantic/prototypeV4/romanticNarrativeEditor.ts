@@ -10,7 +10,7 @@
  */
 import type OpenAI from "openai";
 import { fetchLlmJsonWithParseRetry } from "../../parseLlmJson";
-import { callExpertLlmJson, expertLlmModel } from "./romanticExpertIntelligence";
+import { callExpertLlmJson, expertLlmModel, similarity } from "./romanticExpertIntelligence";
 import { buildNarrativeEditorPrompt } from "./romanticExpertIntelligencePrompt";
 import type { CanonicalSection } from "./composeCanonicalSectionNarratives";
 import type { RomanticCrossSignalChapterId } from "./canonicalStoryPlanTypes";
@@ -112,6 +112,30 @@ function findForbiddenContent(text: string, originalText?: string): string | nul
 
 const MAX_LENGTH_RATIO = 1.3;
 
+// ── Recognition Line quality gate (deterministic only — no extra LLM call) ─
+// Spec: a recognition line must describe an interaction, not parallel
+// traits; must carry an A->B or B->A consequence; must add meaning beyond
+// editedText; must fail if it's essentially a generic summary; null is
+// always a valid, unpenalized outcome and no chapter is required to have
+// one. Implemented as two independent deterministic proxies rather than a
+// second LLM classification call (explicitly out of scope):
+//   1. shape check — a causal/conditional connective co-occurring with a
+//      reaction/consequence verb, proxying "A does X -> B reacts with Y".
+//      A pure parallel-description sentence ("A와 B는 각자의 방식으로...")
+//      has neither and fails this check.
+//   2. novelty check — bigram similarity() (already used elsewhere in this
+//      codebase as a dedup backstop) against editedText; a line that mostly
+//      restates editedText adds no new meaning and is dropped.
+const CAUSAL_CONNECTIVES = ["하면", "수록", "하자", "때는", "때,", "때 ", "하면서", "받아들이면", "느끼면", "여기면", "그러면", "라면"];
+const CONSEQUENCE_VERBS = ["받아들", "느끼", "여기", "생기", "만들어", "된다", "돼요", "반응", "망설이", "커진다", "줄어든다", "깊어진다", "벌어진다", "힘들어진다", "멀어진다", "가까워진다", "쌓인다", "풀린다", "다가가", "물러서", "읽", "해석", "오해", "받는다", "받아요"];
+const RECOGNITION_NOVELTY_MAX_SIMILARITY = 0.55;
+
+function hasInteractionConsequenceShape(line: string): boolean {
+  const hasConnective = CAUSAL_CONNECTIVES.some((c) => line.includes(c));
+  const hasConsequenceVerb = CONSEQUENCE_VERBS.some((v) => line.includes(v));
+  return hasConnective && hasConsequenceVerb;
+}
+
 export function validateNarrativeEdits(
   raw: RomanticNarrativeEditRaw[],
   context: {
@@ -188,6 +212,8 @@ export function validateNarrativeEdits(
       const line = item.recognitionLine.trim();
       const forbiddenInLine = findForbiddenContent(line, packet?.currentText);
       const mentionsBothNames = line.includes(context.names.a) && line.includes(context.names.b);
+      const hasConsequenceShape = hasInteractionConsequenceShape(line);
+      const noveltyVsEditedText = similarity(line, item.editedText);
       if (forbiddenInLine) {
         rejectionReason = rejectionReason ?? `recognitionLine contains forbidden content: ${forbiddenInLine}`;
       } else if (!mentionsBothNames) {
@@ -195,6 +221,16 @@ export function validateNarrativeEdits(
         // that never names both people can't be showing THEIR interaction —
         // it's description, not recognition. Dropped, not fabricated-generic.
         rejectionReason = rejectionReason ?? "recognitionLine does not name both people — fails the name-swap-test proxy, dropped";
+      } else if (!hasConsequenceShape) {
+        // Parallel-description proxy: no causal connective + consequence verb
+        // co-occurring means this reads as "A와 B는 각자..." (two people
+        // described side by side) rather than "A가 X하면 B는 Y로..." (an
+        // actual A->B or B->A consequence chain) — dropped, not fabricated.
+        rejectionReason = rejectionReason ?? "recognitionLine reads as parallel description, not an A->B/B->A consequence chain — dropped";
+      } else if (noveltyVsEditedText >= RECOGNITION_NOVELTY_MAX_SIMILARITY) {
+        // Generic-summary proxy: a line that mostly restates editedText adds
+        // no meaning beyond it — dropped, not fabricated.
+        rejectionReason = rejectionReason ?? `recognitionLine mostly restates editedText (similarity=${noveltyVsEditedText.toFixed(2)}) — adds no new meaning, dropped`;
       } else {
         recognitionLine = line;
       }
