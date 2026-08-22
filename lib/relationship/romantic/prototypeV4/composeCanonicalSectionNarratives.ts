@@ -11,6 +11,7 @@ import {
   type NarrativeLocale,
 } from "./narrativeLocale";
 import { similarity } from "./romanticExpertIntelligence";
+import { buildPairRelationshipModel } from "./romanticPairRelationshipModel";
 
 export type CanonicalChapterId =
   | "c1_hero"
@@ -166,8 +167,16 @@ function crossSignalBlocksFor(
   plan: CanonicalRelationshipStoryPlan,
   chapterId: string,
   locale: NarrativeLocale,
+  /** Insight ids already promoted to a chapter's PRIMARY thesis by the Pair
+   * Relationship Model (see buildPairRelationshipModel/composeCanonicalSectionNarratives) —
+   * excluded here so the same Cross-Signal insight never renders twice
+   * (once as the chapter's lead sentence, once again as a bonus block
+   * underneath itself). */
+  consumedIds?: Set<string>,
 ): CanonicalSectionBlock[] {
-  const insights = (plan.crossSignalInsightsV1 ?? []).filter((i) => i.suggestedChapter === chapterId);
+  const insights = (plan.crossSignalInsightsV1 ?? []).filter(
+    (i) => i.suggestedChapter === chapterId && !consumedIds?.has(i.id),
+  );
   return insights.map((insight) => {
     const label = pick(
       locale,
@@ -219,6 +228,17 @@ export function composeCanonicalSectionNarratives(
   const unitB = plan.attraction.units?.bToA;
   const unitMutual = plan.attraction.units?.mutual;
 
+  // Pair-first fix — see romanticPairRelationshipModel.ts. Cross-Signal-sourced
+  // fields become each chapter's PRIMARY thesis (not a bonus block appended
+  // after a generic one); consumedCrossSignalIds tracks which insight ids
+  // got promoted so crossSignalBlocksFor doesn't also render them as extras.
+  const pairModel = buildPairRelationshipModel(plan);
+  const consumedCrossSignalIds = new Set(
+    Object.values(pairModel)
+      .map((f) => f?.consumedCrossSignalId)
+      .filter((id): id is string => Boolean(id)),
+  );
+
   // Expert synthesis lookups
   const synthAttrA = expertSyntheses?.["c2_attraction.a_to_b"];
   const synthAttrB = expertSyntheses?.["c2_attraction.b_to_a"];
@@ -246,6 +266,12 @@ export function composeCanonicalSectionNarratives(
         {
           blockId: "def.core",
           title: L("관계의 핵심 정의", "The Core of This Relationship"),
+          // Note: deliberately NOT leading with pairModel.superpower here —
+          // that insight already leads c8_strength_vulnerability's
+          // shared.strength block, and using it twice would just be a
+          // different kind of repetition. plan.relationshipDefinition
+          // itself is what got fixed (no longer asserts the banned
+          // "완성해가는 관계" universal claim) — see buildCanonicalRelationshipStoryPlan.ts.
           body: plan.relationshipDefinition,
           evidenceIds: ["section_1_summary"],
         },
@@ -333,26 +359,35 @@ export function composeCanonicalSectionNarratives(
         {
           blockId: "attr.unique",
           title: L("둘 사이에서만 나타나는 특별한 시너지", "The Special Synergy Only the Two of You Have"),
-          body: unitMutual
-            ? [
-                `${unitMutual.recognition}\n${unitMutual.emotionalMeaning}`,
-                unitMutual.partnerEvidence.length ? unitMutual.partnerEvidence.join(" ") : "",
-                unitMutual.scene ? L(`대표적인 순간: ${unitMutual.scene}`, `A telling moment: ${unitMutual.scene}`) : "",
-                unitMutual.tensionBridge ? L(`가장 강했던 끌림이 긴장으로 바뀔 때: ${unitMutual.tensionBridge}`, `When your strongest pull turns into tension: ${unitMutual.tensionBridge}`) : "",
-              ]
-                .filter(Boolean)
-                .join("\n\n")
-            : `${plan.attraction.uniqueCombination}\n\n${plan.attraction.flipsToConflictWhen}`,
+          // Pair-first fix: the old fallback here (unitMutual.emotionalMeaning/
+          // scene/tensionBridge) was 3 unconditional hardcoded sentences —
+          // identical for every couple, confirmed via audit. When Cross-Signal
+          // found a genuine paradox insight for this pair, that becomes the
+          // primary thesis instead (it's excluded from the trailing extras
+          // below via consumedCrossSignalIds so it never renders twice).
+          // unitMutual.recognition/partnerEvidence stay as supporting detail
+          // when present — they DO vary per pair (hitNotes-derived).
+          body: [
+            pairModel.primaryAttractionMutual?.text ?? "",
+            unitMutual
+              ? [unitMutual.recognition, unitMutual.partnerEvidence.join(" ")].filter(Boolean).join("\n")
+              : pairModel.primaryAttractionMutual
+                ? "" // paradox already covers it; don't also print the generic uniqueCombination/flipsToConflictWhen constants underneath
+                : `${plan.attraction.uniqueCombination}\n\n${plan.attraction.flipsToConflictWhen}`,
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
           structuredData: unitMutual,
           expertSynthesis: synthAttrMutual,
           evidenceIds: Array.from(
             new Set([
               ...plan.attraction.provenance.map((p) => p.evidenceId),
+              ...(pairModel.primaryAttractionMutual?.evidenceRefs ?? []),
               ...(synthAttrMutual?.usedEvidenceIds ?? []),
             ]),
           ),
         },
-        ...crossSignalBlocksFor(plan, "c2_attraction", locale),
+        ...crossSignalBlocksFor(plan, "c2_attraction", locale, consumedCrossSignalIds),
         ...expertBlocksFor("c2_attraction"),
       ],
     },
@@ -402,7 +437,7 @@ export function composeCanonicalSectionNarratives(
             ),
           };
         }),
-        ...crossSignalBlocksFor(plan, "c3_dynamics", locale),
+        ...crossSignalBlocksFor(plan, "c3_dynamics", locale, consumedCrossSignalIds),
         ...expertBlocksFor("c3_dynamics"),
       ],
     },
@@ -472,7 +507,7 @@ export function composeCanonicalSectionNarratives(
             evidenceIds: m.provenance.map((p) => p.evidenceId),
           };
         }),
-        ...crossSignalBlocksFor(plan, "c5_misunderstanding", locale),
+        ...crossSignalBlocksFor(plan, "c5_misunderstanding", locale, consumedCrossSignalIds),
         ...expertBlocksFor("c5_misunderstanding"),
       ],
     },
@@ -517,7 +552,7 @@ export function composeCanonicalSectionNarratives(
             ),
           };
         }),
-        ...crossSignalBlocksFor(plan, "c6_hidden_hearts", locale),
+        ...crossSignalBlocksFor(plan, "c6_hidden_hearts", locale, consumedCrossSignalIds),
         ...expertBlocksFor("c6_hidden_hearts"),
       ],
     },
@@ -545,7 +580,7 @@ export function composeCanonicalSectionNarratives(
           body: (plan.repair?.helpsB ?? []).map((s) => `• ${s}`).join("\n"),
           evidenceIds: plan.repair?.provenance?.map((p) => p.evidenceId) ?? [],
         },
-        ...crossSignalBlocksFor(plan, "c7_repair", locale),
+        ...crossSignalBlocksFor(plan, "c7_repair", locale, consumedCrossSignalIds),
         ...expertBlocksFor("c7_repair"),
       ],
     },
@@ -592,12 +627,18 @@ export function composeCanonicalSectionNarratives(
         {
           blockId: "shared.strength",
           title: L("둘이 함께 만들어내는 가장 큰 강점", "Your Greatest Strength Together"),
-          body: plan.sharedStrength,
+          // Pair-first fix: pairModel.superpower (Cross-Signal, "A x B creates
+          // C — an emergent capability neither has alone") leads when present
+          // — a genuinely pair-crossed claim, not just each person's own
+          // strength listed side by side. plan.sharedStrength (already
+          // evidence-driven per-person data) stays as supporting detail.
+          body: [pairModel.superpower?.text ?? "", plan.sharedStrength].filter(Boolean).join("\n\n"),
           expertSynthesis: synthShared,
           evidenceIds: Array.from(
             new Set([
               "ce.pair.common",
               "canonical_projections.pair_ce_bonding",
+              ...(pairModel.superpower?.evidenceRefs ?? []),
               ...(synthShared?.usedEvidenceIds ?? []),
             ]),
           ),

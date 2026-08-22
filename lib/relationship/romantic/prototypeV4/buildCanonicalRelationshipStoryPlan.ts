@@ -167,6 +167,182 @@ function selectConflictTriggerScene(params: {
   };
 }
 
+/**
+ * Pair-first fix: `repair.sequence`/`avoid` used to be `copy.repairSeq`/
+ * `copy.repairAvoid` — flat constants, unconditional, for every couple
+ * (confirmed via audit: buildCanonicalRelationshipStoryPlan.ts's old repair
+ * object). This branches on the same real evidence
+ * selectConflictTriggerScene already uses (recovery_speed mismatch,
+ * expression_speed direction) so a couple whose actual friction point is
+ * "we recover from fights at different speeds" gets sequence/avoid text
+ * about THAT, not generic conflict-resolution advice that fits everyone.
+ * Falls back to the general 3-step sequence only when nothing distinctive
+ * is supported — same abstention discipline as the trigger-scene selector.
+ */
+function selectRepairSequence(params: {
+  recovery: { recovery_mismatch?: boolean } | undefined;
+  expr: { direction?: string } | undefined;
+  names: { a: string; b: string };
+  locale: NarrativeLocale;
+}): { sequence: string[]; avoid: string[]; evidenceIds: string[] } {
+  const { recovery, expr, names, locale } = params;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+
+  if (recovery?.recovery_mismatch) {
+    return {
+      sequence: [
+        L("한 사람이 먼저 가라앉는다고 해서 다 풀린 게 아니에요 — 아직 정리 중인 사람에게 재촉하지 마세요.", "One of you cooling down first doesn't mean it's over — don't rush the one who's still processing."),
+        L("먼저 괜찮아진 사람이 '난 이제 얘기해도 될 것 같은데, 넌 어때?'라고 확인부터 하세요.", "Whoever feels okay first should check in — \"I think I'm ready to talk, are you?\" — instead of assuming."),
+        L("둘 다 준비됐을 때 다시 만나기로 한 시점을 구체적으로 정하세요.", "Once you're both actually ready, set a specific time to come back and talk."),
+      ],
+      avoid: [
+        L("회복이 느린 쪽을 '왜 아직도 화났어'라고 다그치는 것", "Pushing the slower-to-recover one with \"why are you still upset\""),
+        L("회복이 빠른 쪽을 '너무 쉽게 넘어간다'고 진심을 의심하는 것", "Doubting the faster-to-recover one's sincerity with \"you're moving on too easily\""),
+      ],
+      evidenceIds: ["canonical_projections.recovery_speed"],
+    };
+  }
+
+  if (expr?.direction === "A" || expr?.direction === "B") {
+    const slower = expr.direction === "A" ? names.a : names.b;
+    const faster = expr.direction === "A" ? names.b : names.a;
+    return {
+      sequence: [
+        L(`${faster}이/가 바로 답을 원해도, ${slower}에게는 생각을 정리할 시간이 먼저 필요해요.`, `Even when ${faster} wants an answer right away, ${slower} needs time to sort out their thoughts first.`),
+        L(`${slower}이/가 "지금은 정리가 안 됐어, 이따 얘기하자"처럼 자기 상태를 먼저 말해주세요.`, `${slower} should say where they're at first — "I'm not ready yet, let's talk later" — instead of just going quiet.`),
+        L("대화를 멈추더라도 다시 만날 시점은 구체적으로 정하세요.", "Even when you pause, set a specific time to come back to it."),
+      ],
+      avoid: [
+        L(`${slower}의 침묵을 무관심으로 해석해서 몰아붙이는 것`, `Reading ${slower}'s silence as indifference and pressing harder`),
+        L(`${faster}의 빠른 반응을 성급함으로 몰아붙이는 것`, `Reading ${faster}'s quick reaction as impatience and holding it against them`),
+      ],
+      evidenceIds: ["canonical_projections.expression_speed"],
+    };
+  }
+
+  return {
+    sequence: [
+      L("감정이 격해졌을 때 당장 결판을 내지 말고, 짧게 서로 떨어져 열을 식히기로 약속하세요.", "When things get heated, don't try to settle it on the spot — agree to step apart briefly and cool down."),
+      L("상대를 비난하기보다 '나는 지금 확실한 대답이 필요해'처럼 내 필요만 말하세요.", "Instead of blaming, just say what you need — \"I need a clear answer right now,\" not an attack."),
+      L("대화를 멈추더라도 다시 만날 시점을 구체적으로 정하세요.", "Even when you pause, set a specific time to come back to it."),
+    ],
+    avoid: [
+      L("상대가 대답하지 못하는 상황을 이용해 침묵을 처벌처럼 쓰는 것", "Using the other person's silence as a kind of punishment"),
+      L("'너는 원래 그래'처럼 상대의 성격 전체를 규정지어 버리는 것", "Writing off their whole personality with \"that's just how you are\""),
+    ],
+    evidenceIds: [],
+  };
+}
+
+/**
+ * Pair-first fix: misreads[].commonNegativeReading/meaningGap/
+ * betterExpression/helpfulResponse used to be 2 fixed variants (one per
+ * direction) regardless of who the actor actually is — every "a_observes_b"
+ * misread assumed B withdraws into silence and A feels shut out, every
+ * "b_observes_a" misread assumed A pushes urgently and B feels attacked.
+ * Confirmed via audit as a position-based story assumption (spec item 4):
+ * only observedBehavior consulted real per-person data (relCeA/relCeB's
+ * stressResponse text); the "what it means"/"better script" text did not.
+ * This branches on the actor's real stressTempBand (already computed
+ * elsewhere in this file for c8's shared-vulnerability text) so a "hot"
+ * (escalates/pushes) actor and a "cold" (withdraws/goes quiet) actor get
+ * genuinely different interpretations, regardless of which direction
+ * they're being observed from.
+ */
+function misreadInterpretationFor(params: {
+  band: "hot" | "cold" | "neutral" | undefined;
+  actorName: string;
+  observerName: string;
+  locale: NarrativeLocale;
+}): { commonNegativeReading: string; meaningGap: string; betterExpression: string; helpfulResponse: string } {
+  const { band, actorName, observerName, locale } = params;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+
+  if (band === "hot") {
+    return {
+      commonNegativeReading: L("나를 몰아붙이거나 화를 낸다고 오해하기 쉽습니다.", "It's easy to misread this as being pushed or yelled at."),
+      meaningGap: L("공격하려는 게 아니라, 지금 당장 문제를 풀고 싶은 다급함이 앞선 것뿐이에요.", "It's not an attack — it's just urgency to fix things right now, nothing more."),
+      betterExpression: L(
+        `${actorName}: "화난 게 아니라, 이게 빨리 풀렸으면 해서 급해졌어."`,
+        `${actorName}: "I'm not angry — I just got ahead of myself wanting this resolved quickly."`,
+      ),
+      helpfulResponse: L(
+        `${observerName}: 다급한 말투 이면의 불안을 먼저 알아채고, 짧게라도 먼저 반응해주기.`,
+        `${observerName}: Noticing the anxiety behind the urgent tone first, and offering even a brief response before anything else.`,
+      ),
+    };
+  }
+
+  if (band === "cold") {
+    return {
+      commonNegativeReading: L("대화를 회피하거나 관계에 무성의하다고 오해하기 쉽습니다.", "It's easy to misread this as avoiding the conversation or not taking the relationship seriously."),
+      meaningGap: L("표현의 속도와 생각 정리 방식의 차이일 뿐, 무관심이 아니에요.", "It's only a difference in pace and how thoughts get sorted out — not indifference."),
+      betterExpression: L(
+        `${actorName}: "화난 게 아니라, 정리할 시간이 좀 필요해. 조금만 기다려줘."`,
+        `${actorName}: "I'm not upset — I just need a little time to think. Give me a bit."`,
+      ),
+      helpfulResponse: L(
+        `${observerName}: 침묵을 거절로 받아들이지 않고, ${actorName}이/가 정리할 여유를 존중해주기.`,
+        `${observerName}: Not reading the silence as rejection, and respecting ${actorName}'s need for room to think.`,
+      ),
+    };
+  }
+
+  return {
+    commonNegativeReading: L("평소와 다르다고 느껴서 무슨 일인지 넘겨짚기 쉽습니다.", "It's easy to assume something's wrong just because it feels different from usual."),
+    meaningGap: L("특별한 의미보다는, 그 순간의 컨디션 차이일 가능성이 커요.", "More often than not, it's just a difference in how they're doing that moment — not a deeper signal."),
+    betterExpression: L(
+      `${actorName}: "별일 아니야, 그냥 오늘 좀 그래."`,
+      `${actorName}: "It's nothing — I'm just having one of those moments today."`,
+    ),
+    helpfulResponse: L(
+      `${observerName}: 바로 의미를 해석하려 하지 않고, 편하게 물어보기.`,
+      `${observerName}: Not jumping to an interpretation, and just asking casually instead.`,
+    ),
+  };
+}
+
+/**
+ * Pair-first fix: recurringLoop.steps (loop1-4) used to unconditionally
+ * assume A always reaches out first and B always withdraws into silence —
+ * a fixed position-based story assumption regardless of who actually does
+ * which (spec item 4's named example, same underlying bug already found
+ * and fixed in misreadInterpretationFor above). Branches on real
+ * stressTempBand data instead: whoever runs "hot" is the one who presses
+ * for resolution, whoever runs "cold" is the one who needs space — in
+ * whichever direction the real data says, not a fixed assumption. Falls
+ * back to the original A-presses/B-withdraws framing only when neither
+ * person's band is known (spec's abstention discipline: don't invent a
+ * direction with zero supporting signal).
+ */
+function selectConflictLoopSteps(params: {
+  bandA: "hot" | "cold" | "neutral" | undefined;
+  bandB: "hot" | "cold" | "neutral" | undefined;
+  names: { a: string; b: string };
+  locale: NarrativeLocale;
+  /** The original A-presses/B-withdraws template steps, pre-filled by the
+   * caller (which has `copy` in scope) — used only when neither person's
+   * stressTempBand is known, i.e. there's no real signal for direction. */
+  fallbackSteps: string[];
+}): string[] {
+  const { bandA, bandB, names, locale, fallbackSteps } = params;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+
+  const presser = bandA === "hot" && bandB !== "hot" ? names.a : bandB === "hot" && bandA !== "hot" ? names.b : null;
+  const withdrawer = presser === names.a ? names.b : presser === names.b ? names.a : null;
+
+  if (presser && withdrawer) {
+    return [
+      L(`문제가 생기면 ${presser}이/가 빨리 풀고 싶어서 먼저 대화를 시도해요.`, `When a problem comes up, ${presser} wants to resolve it fast and reaches out first.`),
+      L(`그 순간 ${withdrawer}은/는 머리가 복잡해져서 생각할 시간이 필요해 반응이 느려지거나 조용해져요.`, `In that moment, ${withdrawer}'s head gets crowded and needs time to think, so the response slows down or goes quiet.`),
+      L(`그러면 ${presser}이/가 그 침묵을 무관심으로 오해해서 점점 서운해져요.`, `Then ${presser} can misread that silence as indifference and starts feeling more hurt.`),
+      L(`${withdrawer}은/는 분위기가 무거워질수록 더 입을 닫게 되어, 결국 악순환이 돼요.`, `The heavier the mood gets, the more ${withdrawer} closes off — and the cycle repeats.`),
+    ];
+  }
+
+  return fallbackSteps;
+}
+
 function fill(tpl: string, vars: Record<string, string>, locale: NarrativeLocale): string {
   return sanitizeParticles(
     tpl.replace(/\{(\w+)\}/g, (_, key: string) => vars[key] ?? ""),
@@ -481,9 +657,19 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     (typeof summary === "object" && summary?.relationship_name) ||
     (typeof summary === "string" ? summary : null) ||
     (relCeA && relCeB
-      ? L(
-          `${names.a}의 ${josaGwaWa(relCeA.coreRelationshipNature.text)} ${names.b}의 ${josaIGa(relCeB.coreRelationshipNature.text)} 서로의 부족한 점을 채우며 완성해가는 관계`,
-          `A relationship where ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} and ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)} complete each other by filling in what the other lacks`,
+      ? // Pair-first fix: this used to always conclude "서로의 부족한 점을
+        // 채우며 완성해가는 관계" ("you complete each other by filling in
+        // what the other lacks") regardless of what coreRelationshipNature
+        // actually said — a universal claim tacked onto real per-person
+        // facts (spec item 5 names this exact phrase as a banned default).
+        // Now it just states the two real facts side by side and lets them
+        // stand on their own, without asserting an unproven "completion"
+        // narrative. composeCanonicalSectionNarratives.ts's c1_hero block
+        // leads with a genuine Cross-Signal superpower claim when one
+        // exists — this is the fallback for when it doesn't.
+        L(
+          `${names.a}의 ${josaGwaWa(relCeA.coreRelationshipNature.text)} ${names.b}의 ${josaIGa(relCeB.coreRelationshipNature.text)} 만나 만들어가는 관계`,
+          `A relationship shaped by ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} meeting ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)}`,
         )
       : plan.pairSynthesis.selectedMeaning || copy.defFallback);
   mark("section_1_summary");
@@ -859,12 +1045,18 @@ export function buildCanonicalRelationshipStoryPlan(params: {
 
   const recurringLoop = {
     triggerScene: selectedTrigger.scene,
-    steps: [
-      fill(copy.tpl.loop1, { subjA: subjectP(names.a, locale) }, locale),
-      fill(copy.tpl.loop2, { subjB: subjectP(names.b, locale) }, locale),
-      fill(copy.tpl.loop3, { topicA: topicP(names.a, locale) }, locale),
-      fill(copy.tpl.loop4, { topicB: topicP(names.b, locale) }, locale),
-    ],
+    steps: selectConflictLoopSteps({
+      bandA: relCeA?.stressTempBand,
+      bandB: relCeB?.stressTempBand,
+      names,
+      locale,
+      fallbackSteps: [
+        fill(copy.tpl.loop1, { subjA: subjectP(names.a, locale) }, locale),
+        fill(copy.tpl.loop2, { subjB: subjectP(names.b, locale) }, locale),
+        fill(copy.tpl.loop3, { topicA: topicP(names.a, locale) }, locale),
+        fill(copy.tpl.loop4, { topicB: topicP(names.b, locale) }, locale),
+      ],
+    }),
     residue: copy.loopResidue,
     provenance:
       // Reflects the evidence actually used to pick triggerScene above,
@@ -945,23 +1137,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           )
         : fill(copy.tpl.misreadAObs, { subjB: subjectP(names.b, locale) }, locale),
       observerFelt: fill(copy.tpl.misreadAFelt, { topicA: topicP(names.a, locale) }, locale),
-      commonNegativeReading: L(
-        "대화를 회피하거나 관계에 무성의하다고 오해하기 쉽습니다.",
-        "It's easy to misread this as avoiding the conversation or not taking the relationship seriously.",
-      ),
+      ...misreadInterpretationFor({ band: relCeB?.stressTempBand, actorName: names.b, observerName: names.a, locale }),
       actorPossibleNeed: relCeB?.relationshipNeeds[0]?.text ?? copy.misreadANeed,
-      meaningGap: L(
-        "표현의 속도와 생각 정리의 방식 차이일 뿐, 무관심이 아닙니다.",
-        "It's only a difference in the pace of expressing and how you each sort out your thoughts — not indifference.",
-      ),
-      betterExpression: L(
-        `${names.b}: "지금 화가 난 게 아니라, 차분하게 생각할 시간이 필요해. 조금만 기다려주면 정리해서 말할게."`,
-        `${names.b}: "I'm not angry right now — I just need some calm time to think. Give me a bit and I'll come back with my thoughts sorted out."`,
-      ),
-      helpfulResponse: L(
-        `${names.a}: 침묵을 거절로 받아들이지 않고, ${names.b}가 생각을 정리할 여유를 존중해주기.`,
-        `${names.a}: Not reading the silence as rejection, and respecting ${names.b}'s need for room to sort out their thoughts.`,
-      ),
       confidence: "medium",
       provenance: [
         prov(
@@ -995,23 +1172,8 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           )
         : fill(copy.tpl.misreadBObs, { subjA: subjectP(names.a, locale) }, locale),
       observerFelt: fill(copy.tpl.misreadBFelt, { topicB: topicP(names.b, locale) }, locale),
-      commonNegativeReading: L(
-        "자신을 탓하거나 성급하게 몰아붙인다고 오해하기 쉽습니다.",
-        "It's easy to misread this as blaming you or pushing you too hard, too fast.",
-      ),
+      ...misreadInterpretationFor({ band: relCeA?.stressTempBand, actorName: names.a, observerName: names.b, locale }),
       actorPossibleNeed: relCeA?.relationshipNeeds[0]?.text ?? copy.misreadBNeed,
-      meaningGap: L(
-        "공격하려는 것이 아니라, 관계를 빠르게 바로잡고 안심하고 싶은 다급함입니다.",
-        "It's not an attack — it's an urgency to fix things quickly and feel reassured again.",
-      ),
-      betterExpression: L(
-        `${names.a}: "너를 탓하려는 게 아니라, 우리 문제가 빨리 풀렸으면 해서 다급한 마음이 앞섰어."`,
-        `${names.a}: "I'm not trying to blame you — I just got ahead of myself wanting our problem resolved quickly."`,
-      ),
-      helpfulResponse: L(
-        `${names.b}: ${names.a}의 다급한 표현 이면에 있는 안심 욕구를 먼저 알아채고 짧게라도 따뜻한 반응을 보여주기.`,
-        `${names.b}: Noticing the need for reassurance behind ${names.a}'s urgency, and offering even a brief, warm response first.`,
-      ),
       confidence: "medium",
       provenance: [
         prov(
@@ -1109,8 +1271,9 @@ export function buildCanonicalRelationshipStoryPlan(params: {
           },
         ];
 
+  const selectedRepair = selectRepairSequence({ recovery, expr, names, locale });
   const repair = {
-    sequence: copy.repairSeq,
+    sequence: selectedRepair.sequence,
     helpsA: [
       L(
         `${names.a}에게는 ${relCeA?.recoveryPattern.text ?? '불안을 덜어주는 즉각적인 정서적 안심'}이 가장 필요합니다.`,
@@ -1139,7 +1302,7 @@ export function buildCanonicalRelationshipStoryPlan(params: {
         `Approach them slowly, with a calm, level tone instead of emotional pressure.`,
       ),
     ],
-    avoid: copy.repairAvoid,
+    avoid: selectedRepair.avoid,
     sharedCommitments: copy.repairCommit,
     observationSignals: copy.repairObserve,
     warningIfRepeats: copy.repairWarn,
@@ -1333,12 +1496,19 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     personalRelationshipCeA: relCeA ?? null,
     personalRelationshipCeB: relCeB ?? null,
     relationshipDefinition,
-    bondMode: balance
-      ? fill(copy.tpl.bondWithBalance, {
-          topicA: topicP(names.a, locale),
-          topicB: topicP(names.b, locale),
-        }, locale)
-      : fill(copy.tpl.bondWithout, { topicA: topicP(names.a, locale), b: names.b }, locale),
+    // Pair-first fix: the old version ignored balance_a/balance_b's actual
+    // values and always wrote "A opens up emotionally, B stabilizes with
+    // action" — a fixed position-based assumption regardless of which
+    // person the real signal said was actually the leader (confirmed via
+    // audit, matches spec item 4's named example exactly). Now the
+    // direction comes from the real band, and a "both balanced"/missing
+    // pair gets a direction-free sentence instead of a guessed one.
+    bondMode:
+      balance?.balance_a === "leader" && balance?.balance_b === "receiver"
+        ? L(`${names.a}이/가 먼저 방향을 잡으면 ${names.b}이/가 그걸 받아서 함께 움직이는 쪽에 가까워요.`, `${names.a} tends to set the direction first, and ${names.b} picks it up and moves with it.`)
+        : balance?.balance_a === "receiver" && balance?.balance_b === "leader"
+          ? L(`${names.b}이/가 먼저 방향을 잡으면 ${names.a}이/가 그걸 받아서 함께 움직이는 쪽에 가까워요.`, `${names.b} tends to set the direction first, and ${names.a} picks it up and moves with it.`)
+          : L("두 사람 다 상황에 따라 주도권을 주고받는 편이에요 — 한쪽이 고정으로 이끄는 관계는 아니에요.", "You two trade off leading depending on the situation — it's not a relationship where one person always drives."),
     growthOrStability: specialBond?.why_special ?? copy.growthFallback,
     primaryTension,
     specialCodePreview:
@@ -1399,14 +1569,31 @@ export function buildCanonicalRelationshipStoryPlan(params: {
             ]
           : [],
       },
+    // Pair-first fix: presentPossibility/improvingSignals/decisionQuestions
+    // used to be pure constants (copy.closePossibility/copy.improveSignal/
+    // copy.q1-3) — identical for every couple regardless of any evidence,
+    // confirmed via audit as the worst offenders in this closing block
+    // (Ch10, the report's final chapter). Now they reuse primaryTension
+    // (already hitNotes-derived, varies per pair) and relCeA/relCeB's real
+    // coreRelationshipNature text instead of a fixed sentence.
     closing: {
-      presentPossibility: copy.closePossibility,
+      presentPossibility:
+        relCeA && relCeB
+          ? L(
+              `${names.a}의 ${relCeA.coreRelationshipNature.text}과 ${names.b}의 ${relCeB.coreRelationshipNature.text}이 어떻게 맞물리느냐에 따라, 지금과는 다른 관계로도 자랄 수 있어요.`,
+              `Depending on how ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} and ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)} play off each other, this relationship can still grow into something different from where it is now.`,
+            )
+          : copy.closePossibility,
       rememberA: fill(copy.tpl.rememberA, { topicA: topicP(names.a, locale) }, locale),
       rememberB: fill(copy.tpl.rememberB, { topicB: topicP(names.b, locale) }, locale),
       watchSignals: repair.observationSignals,
       improvingSignals: [copy.improveSignal],
       cautionSignals: repair.warningIfRepeats,
-      decisionQuestions: [copy.q1, copy.q2, copy.q3],
+      decisionQuestions: [
+        L(`우리 둘 사이의 "${primaryTension}"은/는 요즘도 여전히 반복되고 있나요?`, `Is "${primaryTension}" between the two of us still showing up these days?`),
+        copy.q2,
+        copy.q3,
+      ],
       provenance: [
         prov(
           "story_plan.repair",

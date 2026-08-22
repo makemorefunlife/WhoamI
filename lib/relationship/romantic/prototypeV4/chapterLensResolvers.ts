@@ -762,6 +762,21 @@ export function resolveStrengthVulnerabilityLens(params: {
       `이 기여를 지키는 핵심 합의: 감정이 격해졌을 때는 잠시 대화를 멈추고 각자 10분간 호흡을 가다듬은 뒤 차분하게 다시 마주하는 것입니다.`,
       `The key agreement that protects this: when emotions run high, pause the conversation, each take 10 minutes to catch your breath, and come back to face each other calmly.`,
     );
+  } else if ((isFastA && isSlowB) || (isSlowA && isFastB)) {
+    // Pair-first fix: the mixed hot/cold combo — the most common real case —
+    // used to fall through to the generic default text above (audit: only
+    // same-speed pairs had their own branch). Now it names which person is
+    // which, since that's exactly what the vulnerability actually is.
+    const fastName = isFastA ? a : b;
+    const slowName = isFastA ? b : a;
+    sharedVulnText = L(
+      `두 사람의 가장 큰 취약점은 갈등 시 ${fastName}이/가 빠르게 확인받고 싶어 할 때 ${slowName}이/가 아직 정리 중이라는 걸 서로 못 기다려줄 때 생겨요.`,
+      `Your biggest shared vulnerability shows up when ${fastName} wants to check in quickly, but ${slowName} is still processing — and neither of you can wait out the gap.`,
+    );
+    balancedProtText = L(
+      `이 기여를 지키는 핵심 합의: ${slowName}이/가 "지금은 아니고 이따 얘기하자"처럼 자기 상태를 먼저 말해주고, ${fastName}이/가 그 말을 재촉 없이 받아주는 것입니다.`,
+      `The key agreement that protects this: ${slowName} says where they're at first — "not right now, let's talk later" — and ${fastName} takes that without pushing.`,
+    );
   }
 
   // Final Evidence-to-Voice pass, item 2 — was quoting coreRelationshipNature

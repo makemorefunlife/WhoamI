@@ -240,7 +240,14 @@ test("Section Narrative Composition for Attraction Chapter", () => {
   assert.ok(blockA.body.includes("주의할 지점:"));
   assert.ok(blockB.body.includes("대표적인 순간:"));
   assert.ok(blockB.body.includes("주의할 지점:"));
-  assert.ok(blockUnique.body.includes("가장 강했던 끌림이 긴장으로 바뀔 때:"));
+  // Pair-first fix (Romantic VNext full rebuild): attr.unique's fallback no
+  // longer prints unitMutual.emotionalMeaning/scene/tensionBridge — those
+  // were confirmed hardcoded constants in production (identical for every
+  // couple regardless of chart/psych data), so the fallback path was
+  // narrowed to only unitMutual.recognition/partnerEvidence, which do vary.
+  // When Cross-Signal finds a genuine "paradox" insight for the pair, THAT
+  // becomes the primary thesis instead (see romanticPairRelationshipModel.ts).
+  assert.ok(blockUnique.body.includes(dummyPlan.attraction.units.mutual.recognition));
 });
 
 test("Canonical Meaning Survival & Non-Destructive Provenance Trace", () => {

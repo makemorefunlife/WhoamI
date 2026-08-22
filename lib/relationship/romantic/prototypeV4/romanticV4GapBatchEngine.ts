@@ -169,6 +169,95 @@ const ROLE_TITLES: Record<RomanticRoleType, { title: string; desc: string }> = {
   },
 };
 
+/**
+ * Pair-first fix: chapter06's greatestVulnerability/depletionPattern/
+ * roleMatrix.complement/collision/overFunctionRisk/underFunctionRisk/
+ * growth.aLearnsFromB/bLearnsFromA used to be 1 fixed sentence each for
+ * every couple (confirmed via audit — roleAType/roleBType were computed
+ * right above but never consulted for these 6 fields, even though
+ * greatestStrength right next to them already does). This gives each
+ * RomanticRoleType a short vocabulary of "what depletes this role" and
+ * "what a partner learns from this role," then composes them per-pair —
+ * so the 5x4=20 real roleAType x roleBType combinations produce genuinely
+ * different text, without hand-writing 20 separate paragraphs. Uses
+ * .desc, never .title, to avoid ROLE_TITLES' English-parenthetical labels
+ * (spec item 9 — tone rebuild explicitly disallows those).
+ */
+const ROLE_DEPLETES_WHEN: Record<RomanticRoleType, string> = {
+  emotional_anchor: "혼자만 계속 감정을 받아주고 정작 자기 마음은 못 챙길 때",
+  initiator: "먼저 제안해도 매번 밍밍한 반응만 돌아올 때",
+  practical_stabilizer: "감정보다 대책부터 말한다고 자꾸 지적받을 때",
+  affection_initiator: "표현해도 상대가 늘 무덤덤하게 받을 때",
+  repair_initiator: "매번 먼저 손 내밀어도 상대는 그대로일 때",
+  autonomy_keeper: "혼자만의 공간이 계속 침범당한다고 느낄 때",
+  relationship_regulator: "속도를 맞추려 해도 상대가 자꾸 앞서갈 때",
+};
+
+// Pair-first fix: wantedVsGivenLove's wantedLove/givenLove used to be 1
+// fixed pair of sentences for every couple regardless of loveA/loveB
+// (audit: only partnerReception/matchStatus varied). Same
+// per-role-vocabulary composition pattern as chapter06 above.
+const ROLE_WANTS: Record<RomanticRoleType, string> = {
+  emotional_anchor: "말 한마디로도 확실하게 전해지는 다정한 지지",
+  initiator: "함께 새로운 걸 시도해줄 때 느껴지는 활력",
+  practical_stabilizer: "말보다 행동으로 보여주는 확실한 헌신",
+  affection_initiator: "표현한 만큼 돌아오는 애정 표현",
+  repair_initiator: "먼저 다가갔을 때 따뜻하게 받아주는 반응",
+  autonomy_keeper: "간섭 없이도 느껴지는 편안한 신뢰",
+  relationship_regulator: "서두르지 않고 맞춰주는 배려",
+};
+
+const ROLE_GIVES: Record<RomanticRoleType, string> = {
+  emotional_anchor: "상대의 감정을 있는 그대로 받아주고 곁을 지키는 것",
+  initiator: "새로운 경험과 자극으로 관계에 활력을 불어넣는 것",
+  practical_stabilizer: "일상을 구체적으로 챙기고 현실적으로 도와주는 것",
+  affection_initiator: "먼저 다정하게 표현하고 다가가는 것",
+  repair_initiator: "마찰이 생기면 자존심보다 관계를 먼저 챙기는 것",
+  autonomy_keeper: "서로의 공간을 존중하며 부담 주지 않는 것",
+  relationship_regulator: "속도를 맞추고 서두르지 않는 것",
+};
+
+const ROLE_TEACHES_PARTNER: Record<RomanticRoleType, string> = {
+  emotional_anchor: "감정을 있는 그대로 받아들이고 서두르지 않는 법",
+  initiator: "가만히 있지 않고 먼저 움직여보는 용기",
+  practical_stabilizer: "감정에 휘둘리지 않고 현실적으로 정리하는 법",
+  affection_initiator: "마음을 말이나 행동으로 직접 표현하는 법",
+  repair_initiator: "자존심보다 관계를 먼저 챙기는 법",
+  autonomy_keeper: "서로의 공간을 존중하며 과밀착을 줄이는 법",
+  relationship_regulator: "속도를 맞추고 서두르지 않는 법",
+};
+
+function composeChapter06(params: {
+  nameA: string;
+  nameB: string;
+  roleAType: RomanticRoleType;
+  roleBType: RomanticRoleType;
+  conflictStyleGap: number;
+}): Pick<Chapter06RolePowerVulnerability, "greatestVulnerability" | "depletionPattern"> & {
+  complement: string;
+  collision: string;
+  overFunctionRisk: string;
+  underFunctionRisk: string;
+  aLearnsFromB: string;
+  bLearnsFromA: string;
+} {
+  const { nameA, nameB, roleAType, roleBType, conflictStyleGap } = params;
+
+  return {
+    greatestVulnerability:
+      conflictStyleGap >= 25
+        ? `갈등을 대하는 방식 자체가 달라서, ${josaEunNeun(nameA)} 빨리 풀고 싶어 하고 ${josaEunNeun(nameB)} 시간을 두고 싶어 할 때 서로 엇갈리는 지점`
+        : `${josaEunNeun(nameA)} ${ROLE_DEPLETES_WHEN[roleAType]}, ${josaEunNeun(nameB)} ${ROLE_DEPLETES_WHEN[roleBType]} — 이 두 순간이 겹치면 서운함이 쌓이기 쉬운 지점`,
+    depletionPattern: `${josaEunNeun(nameA)} ${ROLE_DEPLETES_WHEN[roleAType]}, ${josaEunNeun(nameB)} ${ROLE_DEPLETES_WHEN[roleBType]} — 둘 중 하나만 계속돼도 조용히 지칠 수 있어요.`,
+    complement: `${josaIGa(nameA)} ${ROLE_TITLES[roleAType].desc.split(" ").slice(0, 4).join(" ")}을/를 가져오면, ${josaIGa(nameB)} ${ROLE_TITLES[roleBType].desc.split(" ").slice(0, 4).join(" ")}으로 그걸 받쳐주는 조합이에요.`,
+    collision: `${josaEunNeun(nameA)} ${ROLE_DEPLETES_WHEN[roleAType]}, ${josaEunNeun(nameB)} ${ROLE_DEPLETES_WHEN[roleBType]} — 이 두 지점이 부딪히기 쉬워요.`,
+    overFunctionRisk: `${josaIGa(nameA)} 혼자 다 떠안거나, ${josaIGa(nameB)} 필요 이상으로 개입해서 서로에게 부담을 줄 위험이에요.`,
+    underFunctionRisk: `마찰이 생기면 둘 다 상대가 먼저 나서주길 기다리며 조용히 시간만 흐를 수 있어요.`,
+    aLearnsFromB: `${nameB}에게서 ${ROLE_TEACHES_PARTNER[roleBType]}을 배우게 돼요.`,
+    bLearnsFromA: `${nameA}에게서 ${ROLE_TEACHES_PARTNER[roleAType]}을 배우게 돼요.`,
+  };
+}
+
 export function computeRomanticV4GapBatchEngine(params: {
   nameA: string;
   nameB: string;
@@ -205,21 +294,28 @@ export function computeRomanticV4GapBatchEngine(params: {
   else if (stimB >= 65) roleBType = "initiator";
   else roleBType = "relationship_regulator";
 
+  const composed06 = composeChapter06({
+    nameA,
+    nameB,
+    roleAType,
+    roleBType,
+    conflictStyleGap: Math.abs(conflictStyleA - conflictStyleB),
+  });
   const chapter06: Chapter06RolePowerVulnerability = {
-    greatestStrength: `${nameA}님의 ${ROLE_TITLES[roleAType].title} 역할과 ${nameB}님의 ${ROLE_TITLES[roleBType].title} 역할이 맞물려 만들어내는 수용과 체계의 시너지`,
-    greatestVulnerability: `갈등 상황에서 ${nameA}님의 감정 처리 속도와 ${nameB}님의 논리적 납득 욕구가 충돌할 때 발생하는 서운함의 누적`,
-    depletionPattern: `한쪽이 지속적으로 감정을 정돈하거나 규칙을 강요할 때 일어나는 조용한 에너지 소진`,
+    greatestStrength: `${josaIGa(nameA)} 가진 ${ROLE_TITLES[roleAType].desc.split(" ").slice(0, 4).join(" ")}과 ${josaIGa(nameB)} 가진 ${ROLE_TITLES[roleBType].desc.split(" ").slice(0, 4).join(" ")}이 맞물리는 지점`,
+    greatestVulnerability: composed06.greatestVulnerability,
+    depletionPattern: composed06.depletionPattern,
     roleMatrix: {
       roleA: { type: roleAType, title: ROLE_TITLES[roleAType].title, description: ROLE_TITLES[roleAType].desc },
       roleB: { type: roleBType, title: ROLE_TITLES[roleBType].title, description: ROLE_TITLES[roleBType].desc },
-      complement: `${nameA}님이 관계의 정서적 온도를 지피면 ${nameB}님이 현실적인 리듬으로 안정시키는 시너지`,
-      collision: `${nameA}님의 직관적 기대와 ${nameB}님의 구체적 설명 요구가 부딪히는 지점`,
-      overFunctionRisk: `${nameA}님이 상대의 기분을 지나치게 살펴 혼자 지치거나, ${nameB}님이 과도한 조언으로 부담을 줄 위험`,
-      underFunctionRisk: `마찰 발생 시 서로 상대가 먼저 손 내밀기를 바라며 침묵이 길어질 수 있음`,
+      complement: composed06.complement,
+      collision: composed06.collision,
+      overFunctionRisk: composed06.overFunctionRisk,
+      underFunctionRisk: composed06.underFunctionRisk,
     },
     growth: {
-      aLearnsFromB: `${nameB}님을 만나면서 감정에 휘둘리지 않고 현실적인 경계와 체계적인 안정감을 배우게 됩니다.`,
-      bLearnsFromA: `${nameA}님을 만나면서 자신의 내면 감정을 솔직히 표현하고 따뜻하게 품어주는 부드러움을 배우게 됩니다.`,
+      aLearnsFromB: composed06.aLearnsFromB,
+      bLearnsFromA: composed06.bLearnsFromA,
     },
   };
 
@@ -228,19 +324,19 @@ export function computeRomanticV4GapBatchEngine(params: {
     loveA: {
       personName: nameA,
       partnerName: nameB,
-      wantedLove: "무조건적인 수용과 다정한 말 한마디로 전달되는 확실한 서포트",
-      givenLove: "상대의 일상을 구체적으로 챙기고 함께하는 모든 순간에 온전히 몰입하기",
+      wantedLove: ROLE_WANTS[roleAType],
+      givenLove: ROLE_GIVES[roleAType],
       partnerReception: structB >= 60 ? `${josaEunNeun(nameB)} 이를 든든함으로 받지만 가끔 압박으로 느낄 수 있음` : `${josaIGa(nameB)} 무조건적인 따뜻함으로 긍정 수용함`,
     },
     loveB: {
       personName: nameB,
       partnerName: nameA,
-      wantedLove: "서로의 자율성을 존중하면서 필요할 때 명확한 헌신을 보여주는 신뢰",
-      givenLove: "문제 해결책을 함께 고민해주고 실질적인 도움을 제공하는 헌신",
+      wantedLove: ROLE_WANTS[roleBType],
+      givenLove: ROLE_GIVES[roleBType],
       partnerReception: empA >= 60 ? `${josaEunNeun(nameA)} 해결책보다 먼저 공감해주길 바랄 수 있음` : `${josaIGa(nameA)} 실질적 도움으로 잘 받아들임`,
     },
     matchStatus: Math.abs(empA - structB) > 25 ? "PARTIALLY_MATCHED" : "MATCHED",
-    summary: `${josaIGa(nameA)} 정서적 수용과 다정한 확답 위주의 사랑을, ${josaIGa(nameB)} 신뢰와 구체적 헌신 위주의 사랑을 주고받는 커플입니다.`,
+    summary: `${josaIGa(nameA)} ${ROLE_GIVES[roleAType]}으로, ${josaIGa(nameB)} ${ROLE_GIVES[roleBType]}으로 사랑을 표현하는 커플이에요.`,
   };
 
   // 3. What Not to Expect From Each Other (Evidence-Grounded, Strict Abstention, Fully Symmetric)
