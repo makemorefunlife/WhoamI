@@ -154,6 +154,51 @@ function ids(plan: CanonicalRelationshipStoryPlan, paths: string[]): string[] {
   return paths.filter((p) => plan.connectedEvidenceIds.includes(p) || p.includes("story_plan"));
 }
 
+/**
+ * Phase 3 — Cross-Signal Intelligence V1 minimal render wiring.
+ * Deliberately plain: one block per insight, derivedMeaning as the body,
+ * no narrative-sharpening pass (that's Phase 5). Filters plan.crossSignalInsightsV1
+ * by suggestedChapter so each insight renders in exactly one chapter — see
+ * romanticCrossSignalIntelligence.ts for the deterministic selection logic.
+ */
+function crossSignalBlocksFor(
+  plan: CanonicalRelationshipStoryPlan,
+  chapterId: string,
+  locale: NarrativeLocale,
+): CanonicalSectionBlock[] {
+  const insights = (plan.crossSignalInsightsV1 ?? []).filter((i) => i.suggestedChapter === chapterId);
+  return insights.map((insight) => {
+    const label = pick(
+      locale,
+      {
+        innate_current: "타고난 성향 × 지금 행동",
+        hidden_collision: "닮아서 오히려 부딪히는 지점",
+        strength_shadow: "강점이 그림자가 될 때",
+        paradox: "끌림과 마찰의 같은 뿌리",
+        difference_rescue: "평소엔 마찰, 위기엔 자산",
+        blind_spot: "서로 확인시켜주는 오해",
+        superpower: "이 둘이라서 생기는 능력",
+      }[insight.insightType],
+      {
+        innate_current: "Innate Tendency × Current Behavior",
+        hidden_collision: "Where Alike Becomes a Collision",
+        strength_shadow: "When a Strength Becomes a Shadow",
+        paradox: "Attraction and Friction, Same Root",
+        difference_rescue: "Friction Day-to-Day, Asset in a Crisis",
+        blind_spot: "The Misread That Confirms the Misread",
+        superpower: "The Capability Only This Pair Has",
+      }[insight.insightType],
+    );
+    return {
+      blockId: insight.id,
+      title: label,
+      body: insight.derivedMeaning,
+      evidenceIds: insight.evidenceRefs,
+      structuredData: insight,
+    };
+  });
+}
+
 export function composeCanonicalSectionNarratives(
   plan: CanonicalRelationshipStoryPlan,
   expertSyntheses?: Record<string, ExpertSynthesisResult>,
@@ -299,6 +344,7 @@ export function composeCanonicalSectionNarratives(
             ]),
           ),
         },
+        ...crossSignalBlocksFor(plan, "c2_attraction", locale),
       ],
     },
     {
@@ -313,39 +359,42 @@ export function composeCanonicalSectionNarratives(
           ...(synthDynStress?.usedEvidenceIds ?? []),
         ]),
       ),
-      blocks: plan.faces.map((f) => {
-        const synth =
-          f.situation === "private"
-            ? synthDynPrivate
-            : f.situation === "responsibility"
-              ? synthDynResp
-              : synthDynStress;
-        return {
-          blockId: `face.${f.situation}`,
-          title:
+      blocks: [
+        ...plan.faces.map((f) => {
+          const synth =
             f.situation === "private"
-              ? L("둘만 있을 때 드러나는 본래의 결", "Who You Are When It's Just the Two of You")
+              ? synthDynPrivate
               : f.situation === "responsibility"
-                ? L("현실과 책임을 다룰 때 마주하는 기준", "How You Handle Reality and Responsibility")
-                : L("스트레스나 긴장이 생겼을 때의 자동 반응", "Your Automatic Reactions Under Stress or Tension"),
-          body: [
-            f.appearance,
-            f.mechanism ? L(`상호작용의 원리: ${f.mechanism}`, `How this plays out between you: ${f.mechanism}`) : "",
-            f.benefit ? L(`관계에서 얻는 긍정적 효과: ${f.benefit}`, `The upside for your relationship: ${f.benefit}`) : "",
-            f.riskWhenExcess ? L(`주의할 균형점: ${f.riskWhenExcess}`, `A balance point to watch: ${f.riskWhenExcess}`) : "",
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-          structuredData: f,
-          expertSynthesis: synth,
-          evidenceIds: Array.from(
-            new Set([
-              ...f.provenance.map((p) => p.evidenceId),
-              ...(synth?.usedEvidenceIds ?? []),
-            ]),
-          ),
-        };
-      }),
+                ? synthDynResp
+                : synthDynStress;
+          return {
+            blockId: `face.${f.situation}`,
+            title:
+              f.situation === "private"
+                ? L("둘만 있을 때 드러나는 본래의 결", "Who You Are When It's Just the Two of You")
+                : f.situation === "responsibility"
+                  ? L("현실과 책임을 다룰 때 마주하는 기준", "How You Handle Reality and Responsibility")
+                  : L("스트레스나 긴장이 생겼을 때의 자동 반응", "Your Automatic Reactions Under Stress or Tension"),
+            body: [
+              f.appearance,
+              f.mechanism ? L(`상호작용의 원리: ${f.mechanism}`, `How this plays out between you: ${f.mechanism}`) : "",
+              f.benefit ? L(`관계에서 얻는 긍정적 효과: ${f.benefit}`, `The upside for your relationship: ${f.benefit}`) : "",
+              f.riskWhenExcess ? L(`주의할 균형점: ${f.riskWhenExcess}`, `A balance point to watch: ${f.riskWhenExcess}`) : "",
+            ]
+              .filter(Boolean)
+              .join("\n\n"),
+            structuredData: f,
+            expertSynthesis: synth,
+            evidenceIds: Array.from(
+              new Set([
+                ...f.provenance.map((p) => p.evidenceId),
+                ...(synth?.usedEvidenceIds ?? []),
+              ]),
+            ),
+          };
+        }),
+        ...crossSignalBlocksFor(plan, "c3_dynamics", locale),
+      ],
     },
     {
       chapterId: "c4_conflict",
@@ -398,7 +447,8 @@ export function composeCanonicalSectionNarratives(
             ].join("\n"),
             evidenceIds: m.provenance.map((p) => p.evidenceId),
           };
-        })
+        }),
+        ...crossSignalBlocksFor(plan, "c5_misunderstanding", locale),
       ],
     },
     {
@@ -412,29 +462,32 @@ export function composeCanonicalSectionNarratives(
           ...(synthHiddenB?.usedEvidenceIds ?? []),
         ]),
       ),
-      blocks: plan.hiddenHearts.map((h) => {
-        const personName = h.person === "a" ? a : b;
-        const synth = h.person === "a" ? synthHiddenA : synthHiddenB;
-        return {
-          blockId: `hidden.${h.person}`,
-          title: L(`${personName}의 숨은 마음`, `${personName}'s Hidden Heart`),
-          body: [
-            L(`겉으로 드러나는 모습: ${h.visibleReaction}`, `What shows on the surface: ${h.visibleReaction}`),
-            L(`마음 깊은 곳의 실제 감정: ${h.innerFeeling}`, `What they actually feel deep down: ${h.innerFeeling}`),
-            L(`가장 조심스러운 두려움: ${h.fear}`, `Their most guarded fear: ${h.fear}`),
-            L(`상대가 알아주었으면 하는 온전한 바람: ${h.unspokenNeed}`, `What they most wish their partner understood: ${h.unspokenNeed}`),
-            L(`상대에게 진정으로 도움이 되는 태도: ${h.whatHelps}`, `What genuinely helps, from their partner: ${h.whatHelps}`),
-          ].join("\n\n"),
-          structuredData: h,
-          expertSynthesis: synth,
-          evidenceIds: Array.from(
-            new Set([
-              ...h.provenance.map((p) => p.evidenceId),
-              ...(synth?.usedEvidenceIds ?? []),
-            ]),
-          ),
-        };
-      }),
+      blocks: [
+        ...plan.hiddenHearts.map((h) => {
+          const personName = h.person === "a" ? a : b;
+          const synth = h.person === "a" ? synthHiddenA : synthHiddenB;
+          return {
+            blockId: `hidden.${h.person}`,
+            title: L(`${personName}의 숨은 마음`, `${personName}'s Hidden Heart`),
+            body: [
+              L(`겉으로 드러나는 모습: ${h.visibleReaction}`, `What shows on the surface: ${h.visibleReaction}`),
+              L(`마음 깊은 곳의 실제 감정: ${h.innerFeeling}`, `What they actually feel deep down: ${h.innerFeeling}`),
+              L(`가장 조심스러운 두려움: ${h.fear}`, `Their most guarded fear: ${h.fear}`),
+              L(`상대가 알아주었으면 하는 온전한 바람: ${h.unspokenNeed}`, `What they most wish their partner understood: ${h.unspokenNeed}`),
+              L(`상대에게 진정으로 도움이 되는 태도: ${h.whatHelps}`, `What genuinely helps, from their partner: ${h.whatHelps}`),
+            ].join("\n\n"),
+            structuredData: h,
+            expertSynthesis: synth,
+            evidenceIds: Array.from(
+              new Set([
+                ...h.provenance.map((p) => p.evidenceId),
+                ...(synth?.usedEvidenceIds ?? []),
+              ]),
+            ),
+          };
+        }),
+        ...crossSignalBlocksFor(plan, "c6_hidden_hearts", locale),
+      ],
     },
     {
       chapterId: "c7_repair",
@@ -459,7 +512,8 @@ export function composeCanonicalSectionNarratives(
           title: L(`${b}에게 도움이 되는 것`, `What Helps ${b}`),
           body: (plan.repair?.helpsB ?? []).map((s) => `• ${s}`).join("\n"),
           evidenceIds: plan.repair?.provenance?.map((p) => p.evidenceId) ?? [],
-        }
+        },
+        ...crossSignalBlocksFor(plan, "c7_repair", locale),
       ],
     },
     {

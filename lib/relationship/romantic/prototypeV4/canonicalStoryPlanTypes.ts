@@ -302,6 +302,9 @@ export type CanonicalRelationshipStoryPlan = {
   insightCandidatesP1?: RomanticInsightCandidate[];
   normalizedActionCandidatesP1?: RomanticActionCandidate[];
   growthTransitionP1?: RomanticGrowthTransition;
+  /** Phase 3 — Cross-Signal Intelligence V1. Deterministic only; see
+   * romanticCrossSignalIntelligence.ts. */
+  crossSignalInsightsV1?: RomanticCrossSignalInsight[];
 };
 
 export type RomanticGrowthTransition = {
@@ -378,3 +381,133 @@ export type RomanticActionCandidate = {
   copy: string;
   confidence: "high" | "medium";
 };
+
+// ── Phase 3 — Cross-Signal Intelligence V1 ──────────────────────────────────
+// Deterministic-only. Each insight crosses 2+ already-validated signals into a
+// pair-level meaning that neither signal alone states. Structured for a later
+// (Phase 4) Expert LLM layer to know exactly what it may/may not say — never
+// consumed by an LLM in Phase 3 itself. claimBoundary.notSupported exists so a
+// future prompt has an explicit "do not say this" list, not just a
+// "supported" claim to embellish from.
+
+export type RomanticCrossSignalConfidence = "high" | "medium" | "low";
+
+/** Chapters this phase is actually allowed to route into — the engine's own
+ * chapterId vocabulary (composeCanonicalSectionNarratives.ts's
+ * CanonicalChapterId), NOT the user-facing 01-10 numbering (those don't map
+ * 1:1: c1_hero is an unnumbered cover, c9_daily_life/c11_reflection aren't
+ * their own numbered chapters). */
+export type RomanticCrossSignalChapterId =
+  | "c2_attraction"
+  | "c3_dynamics"
+  | "c4_conflict"
+  | "c5_misunderstanding"
+  | "c6_hidden_hearts"
+  | "c7_repair"
+  | "c8_strength_vulnerability";
+
+export type RomanticCrossSignalClaimBoundary = {
+  /** What this insight IS grounded enough to state. */
+  supported: string;
+  /** What it must NOT extend to — the guardrail for Phase 4's LLM layer. */
+  notSupported: string;
+};
+
+type RomanticCrossSignalBase = {
+  id: string;
+  /** Concrete evidenceId strings, same provenance vocabulary as the rest of
+   * the story plan (e.g. "canonical_projections.pair_ce_bonding"). */
+  evidenceRefs: string[];
+  /** Human-readable names of the 2+ signals this insight crossed — for
+   * debugging/audit, not rendered. */
+  sourceSignals: string[];
+  /** The new pair-level meaning — must not be a restatement of either input
+   * signal alone. */
+  derivedMeaning: string;
+  confidence: RomanticCrossSignalConfidence;
+  claimBoundary: RomanticCrossSignalClaimBoundary;
+  suggestedChapter: RomanticCrossSignalChapterId;
+};
+
+/** §3.1 — Saju-derived innate tendency vs current behavioral psychology,
+ * for one person, one domain. Reads PersonalRelationshipCe.personalCeAlignment
+ * (already computed, never previously consumed by any chapter). */
+export type RomanticInnateCurrentInsight = RomanticCrossSignalBase & {
+  insightType: "innate_current";
+  subject: "a" | "b";
+  domain: "stress_response" | "care_expression";
+  innateSignal: string;
+  currentSignal: string;
+  category: RomanticInnateVsCurrentCategory;
+};
+
+/** §3.2 — A psych axis where both people match on "similarity/resonance",
+ * for an axis whose semantics make sameness itself collision-prone. */
+export type RomanticHiddenCollisionInsight = RomanticCrossSignalBase & {
+  insightType: "hidden_collision";
+  axisKey: string;
+  axisLabel: string;
+  similarityEvidence: string;
+  collisionMechanism: string;
+  likelyRelationshipEffect: string;
+};
+
+/** §3.3 — Formalizes the existing bilateralChanges structure; does not
+ * recompute it. partnerEffect is null (never invented) when the source
+ * BilateralChange doesn't itself state an effect on the partner. */
+export type RomanticStrengthShadowInsight = RomanticCrossSignalBase & {
+  insightType: "strength_shadow";
+  from: "a" | "b";
+  to: "a" | "b";
+  strength: string;
+  overuseCondition: string;
+  shadow: string;
+  partnerEffect: string | null;
+};
+
+/** §3.4 — Links the attraction mechanism to the friction mechanism it can
+ * flip into. Pair-level, not "your strength is also your weakness." */
+export type RomanticParadoxInsight = RomanticCrossSignalBase & {
+  insightType: "paradox";
+  whyItWorks: string;
+  contextShift: string;
+  whyItBecomesFriction: string;
+};
+
+/** §3.5 — A specific complementary/tension difference that also functions as
+ * a resource under a named recovery/decision context. */
+export type RomanticDifferenceRescueInsight = RomanticCrossSignalBase & {
+  insightType: "difference_rescue";
+  difference: string;
+  normalFriction: string;
+  rescueContext: string;
+  whyItHelps: string;
+};
+
+/** §3.6 — Crosses BOTH directions of misread evidence into one pair-level
+ * conclusion. Requires both a_observes_b and b_observes_a to exist. */
+export type RomanticBlindSpotInsight = RomanticCrossSignalBase & {
+  insightType: "blind_spot";
+  aDoes: string;
+  bReadsAsA: string;
+  bDoes: string;
+  aReadsAsB: string;
+  crossSignalResult: string;
+};
+
+/** §4 — "A × B creates C", never "A does X, B does Y." Requires 2+
+ * independent pair-level (not per-person) evidence points. */
+export type RomanticSuperpowerInsight = RomanticCrossSignalBase & {
+  insightType: "superpower";
+  emergentCapability: string;
+  supportingSignalCount: number;
+};
+
+export type RomanticCrossSignalInsight =
+  | RomanticInnateCurrentInsight
+  | RomanticHiddenCollisionInsight
+  | RomanticStrengthShadowInsight
+  | RomanticParadoxInsight
+  | RomanticDifferenceRescueInsight
+  | RomanticBlindSpotInsight
+  | RomanticSuperpowerInsight;

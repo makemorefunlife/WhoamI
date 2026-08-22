@@ -47,6 +47,7 @@ import {
   buildRomanticP0ActionCandidates,
 } from "./buildRomanticP0CoverageModels";
 import { buildRomanticMultiSignalSynthesis } from "./buildRomanticMultiSignalSynthesis";
+import { buildRomanticCrossSignalIntelligence } from "./romanticCrossSignalIntelligence";
 import { buildRomanticCandidateEngine } from "./buildRomanticCandidateEngine";
 import { computeRomanticRelationshipNeedsEngine } from "./romanticRelationshipNeedsEngine";
 import { computeRomanticV4GapBatchEngine } from "./romanticV4GapBatchEngine";
@@ -1325,6 +1326,18 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   const actionCandidatesP0 = buildRomanticP0ActionCandidates(finalStoryPlan);
   const synthesisResultsP1 = buildRomanticMultiSignalSynthesis(finalStoryPlan);
 
+  const crossSignalInsightsV1 = buildRomanticCrossSignalIntelligence({
+    storyPlan: finalStoryPlan,
+    relCeA,
+    relCeB,
+    axisResults,
+    bonding,
+    stemCombineHitCount: stemCombine?.hitCount ?? 0,
+    sixCombineHitCount: sixCombine?.hitCount ?? 0,
+    names,
+    locale,
+  });
+
   const candidateEngine = buildRomanticCandidateEngine({
     ...finalStoryPlan,
     conflictLoopP0,
@@ -1390,5 +1403,6 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     insightCandidatesP1: candidateEngine.insightCandidates,
     normalizedActionCandidatesP1: candidateEngine.normalizedActions,
     growthTransitionP1,
+    crossSignalInsightsV1,
   };
 }
