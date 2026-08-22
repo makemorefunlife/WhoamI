@@ -387,7 +387,9 @@ export function adaptRadarHighlights(
   }
 
   return insights.slice(0, 4).map((row) => {
-    const axis = payload.axisOverview?.find((a) => a.axis_key === row.axisKey);
+    const key = row.axisKey || (row as any).axis_key;
+    const axis = payload.axisOverview?.find((a) => a.axis_key === key);
+    const axisLabel = row.axisLabel || (row as any).axis_label || labelOfAxis(payload.locale, key);
     const scoreA = axis?.score_a ?? 50;
     const scoreB = axis?.score_b ?? 50;
     const gap = Math.abs(scoreA - scoreB);
@@ -397,7 +399,7 @@ export function adaptRadarHighlights(
     }
 
     const hook = buildAxisAttributionSentence({
-      axisLabel: row.axisLabel,
+      axisLabel,
       matchType: row.matchType,
       lean,
       nameA: personA,
@@ -406,8 +408,8 @@ export function adaptRadarHighlights(
     });
 
     return {
-      axis_key: row.axisKey as DomainPsychHighlight["axis_key"],
-      axis_label: row.axisLabel,
+      axis_key: key as DomainPsychHighlight["axis_key"],
+      axis_label: axisLabel,
       gap: row.gap,
       match_type: row.matchType,
       topic: "",

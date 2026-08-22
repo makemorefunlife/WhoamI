@@ -13,6 +13,7 @@ import {
 import {
   HiddenHeartsSection,
   RepairSection,
+  ExpectationsSection,
   StrengthVulnerabilitySection,
   FutureTimingSection,
   ChoiceSection,
@@ -27,103 +28,94 @@ type Props = {
 };
 
 /**
- * The canonical engine's chapter order is c1_hero, c2_attraction, c3_dynamics, ...
- * The display order matches product direction, not the engine's list:
- *  - Dynamics renders right after Hero, ahead of Attraction.
- *  - Strength & Vulnerability renders right before Repair (not after).
- * This reorders the DISPLAY sequence only — chapter ownership, content, and
- * the engine's own section list (report.sections) are untouched.
- */
-function moveBefore(
-  sections: CanonicalSection[],
-  moveId: string,
-  beforeId: string,
-): CanonicalSection[] {
-  const moveIndex = sections.findIndex((s) => s.chapterId === moveId);
-  if (moveIndex === -1) return sections;
-  const without = sections.filter((s) => s.chapterId !== moveId);
-  const targetIndex = without.findIndex((s) => s.chapterId === beforeId);
-  const insertAt = targetIndex === -1 ? without.length : targetIndex;
-  const reordered = [...without];
-  reordered.splice(insertAt, 0, sections[moveIndex]);
-  return reordered;
-}
-
-/**
  * Presentation-only chapter title overrides — applied once here so the nav
- * and the in-page chapter header never disagree. The engine's own
- * section.title (used elsewhere, e.g. evidence trace / debug views) is
- * untouched; this only affects what this view renders.
- *
- * Wellness-tone copy for a sophisticated, self-aware audience — chosen to
- * read as insight rather than diagnosis. Keyed by the SAME 8 chapterIds that
- * make up CORE_CHAPTER_ORDER below (c10_future_timing intentionally has no
- * entry — it renders as an unnumbered bonus chapter, see reorderForDisplay)
+ * and the in-page chapter header never disagree.
  */
-const TITLE_OVERRIDES_KO: Partial<Record<CanonicalSection["chapterId"], string>> = {
+const TITLE_OVERRIDES_KO: Partial<Record<CanonicalSection["chapterId"] | "c8_3_expectations", string>> = {
   c3_dynamics: "우리가 연결되는 방식",
   c2_attraction: "서로를 선택한 이유",
   c4_conflict: "마찰이 생기는 지점",
   c5_misunderstanding: "다름을 번역하는 법",
   c6_hidden_hearts: "오해 너머의 진심",
   c7_repair: "관계를 위한 액션 플랜",
-  c10_future_timing: "올해 우리 관계의 흐름",
+  c8_3_expectations: "서로에게 내려놓아야 할 기대",
   c8_strength_vulnerability: "시너지와 취약점",
+  c10_future_timing: "올해 우리 관계의 흐름",
   c12_choice: "우리의 넥스트 챕터",
 };
 
-const TITLE_OVERRIDES_EN: Partial<Record<CanonicalSection["chapterId"], string>> = {
+const TITLE_OVERRIDES_EN: Partial<Record<CanonicalSection["chapterId"] | "c8_3_expectations", string>> = {
   c3_dynamics: "How We Connect",
   c2_attraction: "Why We Chose Each Other",
   c4_conflict: "Friction Points",
   c5_misunderstanding: "Translating Differences",
   c6_hidden_hearts: "Beneath the Surface",
   c7_repair: "Action Plan",
-  c10_future_timing: "Timing & Flow This Year",
+  c8_3_expectations: "What Not to Expect",
   c8_strength_vulnerability: "Synergy & Vulnerability",
+  c10_future_timing: "Timing & Flow This Year",
   c12_choice: "Our Next Chapter",
 };
 
 /**
- * Display order of all core numbered chapters ("Chapter 01".."Chapter 09").
+ * Display order of all core numbered chapters ("Chapter 01".."Chapter 10").
  * c1_hero sits outside as the cover page.
  */
-const CORE_CHAPTER_ORDER: CanonicalSection["chapterId"][] = [
+const CORE_CHAPTER_ORDER: (CanonicalSection["chapterId"] | "c8_3_expectations")[] = [
   "c3_dynamics",
   "c2_attraction",
   "c4_conflict",
   "c5_misunderstanding",
   "c6_hidden_hearts",
   "c7_repair",
-  "c10_future_timing",
+  "c8_3_expectations",
   "c8_strength_vulnerability",
+  "c10_future_timing",
   "c12_choice",
 ];
 
-/**
- * Repair and Daily Life render as one merged chapter ("관계를 위한 액션
- * 플랜"/"Action Plan"), and Reflection has been dropped from the flow
- * entirely — both are presentation-only decisions; the engine's own section
- * list is untouched.
- */
 function reorderForDisplay(
   sections: CanonicalSection[],
-  locale: "ko-KR" | "en-US",
+  payload: RomanticV4PrototypePayload,
 ): CanonicalSection[] {
+  const locale = payload.locale;
   const titleOverrides = locale === "en-US" ? TITLE_OVERRIDES_EN : TITLE_OVERRIDES_KO;
-  let result = sections;
-  result = moveBefore(result, "c3_dynamics", "c2_attraction");
-  result = moveBefore(result, "c10_future_timing", "c8_strength_vulnerability");
-  result = result.filter(
+
+  const hasExpectations = Boolean(payload.storyPlan?.romanticGapBatch?.whatNotToExpect);
+  const expectationsSection: CanonicalSection = {
+    chapterId: "c8_3_expectations" as any,
+    title: locale === "en-US" ? "What Not to Expect" : "서로에게 내려놓아야 할 기대",
+    userQuestion: locale === "en-US" ? "What expectations should be set aside?" : "서로를 위해 비워두어야 할 영역",
+    visible: hasExpectations,
+    blocks: [],
+    primaryEvidenceIds: [],
+  };
+
+  let list = sections.filter(
     (s) => s.chapterId !== "c9_daily_life" && s.chapterId !== "c11_reflection",
   );
+  if (!list.some((s) => s.chapterId === ("c8_3_expectations" as any))) {
+    list = [...list, expectationsSection];
+  }
+
+  const orderMap = new Map(CORE_CHAPTER_ORDER.map((id, index) => [id, index]));
+  const c1 = list.find((s) => s.chapterId === "c1_hero");
+  const core = list.filter((s) => s.chapterId !== "c1_hero");
+  core.sort((a, b) => {
+    const ia = orderMap.get(a.chapterId) ?? 99;
+    const ib = orderMap.get(b.chapterId) ?? 99;
+    return ia - ib;
+  });
+
+  const result = c1 ? [c1, ...core] : core;
+
   return result.map((s) =>
     titleOverrides[s.chapterId] ? { ...s, title: titleOverrides[s.chapterId]! } : s,
   );
 }
 
 /**
- * Sequential "01".."09" computed directly from actual visible display order.
+ * Sequential "01".."10" computed directly from actual visible display order.
  * Ensures 1:1 exact match between rendered DOM order and Chapter Number badges.
  */
 function computeChapterNumbers(
@@ -160,7 +152,7 @@ export function CanonicalReportView({ report, payload: rawPayload, debug = false
     comparisonTable,
   };
 
-  const visible = reorderForDisplay(report.sections.filter((s) => s.visible), payload.locale);
+  const visible = reorderForDisplay(report.sections.filter((s) => s.visible), payload);
   const chapterNumbers = computeChapterNumbers(visible);
   const dailyLifeSection = report.sections.find((s) => s.chapterId === "c9_daily_life");
   const { a, b } = report.names;
@@ -223,6 +215,8 @@ export function CanonicalReportView({ report, payload: rawPayload, debug = false
             return <HiddenHeartsSection key={section.chapterId} {...sectionProps(section)} />;
           case "c7_repair":
             return <RepairSection key={section.chapterId} {...sectionProps(section)} />;
+          case "c8_3_expectations" as any:
+            return <ExpectationsSection key={section.chapterId} {...sectionProps(section)} />;
           case "c8_strength_vulnerability":
             return <StrengthVulnerabilitySection key={section.chapterId} {...sectionProps(section)} />;
           case "c10_future_timing":

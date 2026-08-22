@@ -166,7 +166,7 @@ export function buildAxisAttributionSentence(params: {
       ? `On ${axisLabel}, ${nameA} and ${nameB} tend to handle it differently, which is where friction tends to show up.`
       : `${axisLabel}에서는 ${nameA}와(과) ${nameB}가(이) 서로 다른 방식을 쓰는 편이라 부딪히기 쉬워요.`;
   }
-  if (matchType === "similarity") {
+  if (matchType === "similarity" || matchType === "resonance") {
     return isEn
       ? `On ${axisLabel}, ${nameA} and ${nameB} tend to handle it the same way, which makes this an easy fit.`
       : `${axisLabel}에서는 ${nameA}와(과) ${nameB} 모두 비슷한 방식이라 잘 맞는 편이에요.`;

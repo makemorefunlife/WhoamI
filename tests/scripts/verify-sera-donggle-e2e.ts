@@ -78,7 +78,7 @@ console.log("==================================================");
 
 const chapterIds = [
   "c3_dynamics", "c2_attraction", "c4_conflict", "c5_misunderstanding",
-  "c6_hidden_hearts", "c7_repair", "c10_future_timing", "c8_strength_vulnerability", "c12_choice"
+  "c6_hidden_hearts", "c7_repair", "c8_3_expectations", "c8_strength_vulnerability", "c10_future_timing", "c12_choice"
 ];
 
 let allNumbered = true;
@@ -93,8 +93,8 @@ const cleanHtml = htmlOutput.replace(/<!--.*?-->/g, "");
 const posFuture = cleanHtml.indexOf('id="c10_future_timing"');
 const futureSnippet = cleanHtml.substring(posFuture, posFuture + 1500);
 console.log("FutureTiming Snippet Text:\n", futureSnippet);
-const hasFutureTimingNumbered = futureSnippet.includes("Chapter 07");
-console.log("c10_future_timing (올해 우리 관계의 흐름) Has 'Chapter 07'?:", hasFutureTimingNumbered ? "YES (CONSISTENT)" : "NO");
+const hasFutureTimingNumbered = futureSnippet.includes("Chapter 09");
+console.log("c10_future_timing (올해 우리 관계의 흐름) Has 'Chapter 09'?:", hasFutureTimingNumbered ? "YES (CONSISTENT)" : "NO");
 
 console.log("\n==================================================");
 console.log(" 3. FINAL VERDICT");

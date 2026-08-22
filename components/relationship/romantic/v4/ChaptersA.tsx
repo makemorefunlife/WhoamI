@@ -51,33 +51,34 @@ export const HeroSection = ({ section, personA, personB, debug }: SectionProps) 
         aria-hidden
         className="pointer-events-none absolute -left-40 bottom-[-14rem] h-[30rem] w-[30rem] rounded-full bg-rel-deep-soft blur-3xl"
       />
-      <div className="relative mx-auto w-full max-w-[880px] px-5 pb-20 pt-14 sm:px-8 sm:pb-28 sm:pt-20">
+      <div className="relative mx-auto w-full max-w-[880px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20">
         <Reveal>
-          <h1 className="mt-4 font-rel-serif text-[46px] leading-[1.02] tracking-[-0.025em] text-rel-ink sm:text-[68px]">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-rel-line bg-rel-surface px-3.5 py-1 font-rel-sans text-[11.5px] font-semibold tracking-wide text-rel-ink">
+              연애 · 파트너십
+            </span>
+            <div className="flex items-center gap-2 font-rel-sans text-[13px] font-medium text-rel-ink-soft">
+              <span className="rounded-full bg-v4-a-soft px-3 py-0.5 font-semibold text-v4-a">{personA}</span>
+              <span className="text-rel-ink-mute">×</span>
+              <span className="rounded-full bg-v4-b-soft px-3 py-0.5 font-semibold text-v4-b">{personB}</span>
+            </div>
+          </div>
+          <h1 className="mt-6 font-rel-serif text-[42px] leading-[1.05] tracking-[-0.025em] text-rel-ink sm:text-[62px]">
             {personA} <span className="text-rel-taupe">&</span> {personB}
           </h1>
         </Reveal>
 
-        <div className="mt-12 grid gap-10 md:grid-cols-[1fr_240px] md:items-center">
+        <div className="mt-10 max-w-[68ch]">
           <Reveal delay={80}>
             <div className="border-l-2 border-rel-deep pl-5 sm:pl-7">
-              <p className="font-rel-serif text-[20px] leading-[1.6] tracking-[-0.01em] text-rel-ink sm:text-[25px]">
+              <p className="font-rel-serif text-[20px] leading-[1.65] tracking-[-0.01em] text-rel-ink sm:text-[25px]">
                 {hero.essence}
               </p>
             </div>
-            <p className="mt-8 max-w-[58ch] font-rel-sans text-[15px] leading-[1.9] text-rel-ink-soft">
+            <p className="mt-7 font-rel-sans text-[15px] leading-[1.9] text-rel-ink-soft">
               {hero.definition}
             </p>
           </Reveal>
-
-          <Reveal delay={160} className="order-first md:order-none">
-            <RelationshipGlyph aName={personA} bName={personB} />
-          </Reveal>
-        </div>
-
-        <div className="mt-14 flex items-center gap-3 font-rel-sans text-[10px] uppercase tracking-[0.24em] text-rel-ink-mute">
-          <ArrowDown className="h-3.5 w-3.5 animate-bounce motion-reduce:animate-none" strokeWidth={1.5} />
-          {personA}와 {personB}의 관계 심층 리포트
         </div>
 
         {debug && <DebugPanel evidenceIds={section.primaryEvidenceIds} />}
@@ -86,45 +87,10 @@ export const HeroSection = ({ section, personA, personB, debug }: SectionProps) 
   );
 };
 
-function RelationshipGlyph({ aName, bName }: { aName: string; bName: string }) {
-  return (
-    <svg
-      viewBox="0 0 240 240"
-      className="mx-auto h-auto w-[200px] sm:w-[240px]"
-      role="img"
-      aria-label={`${aName}와 ${bName}의 관계를 표현한 추상 이미지`}
-    >
-      <circle cx="120" cy="120" r="96" fill="none" stroke="var(--rel-line)" strokeWidth="1" />
-      <circle cx="120" cy="120" r="66" fill="none" stroke="var(--rel-line)" strokeWidth="1" />
-      <path
-        d="M40 150 C 80 90, 120 190, 160 110 S 210 70, 214 96"
-        fill="none"
-        stroke="var(--rel-deep)"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity="0.85"
-      />
-      <path
-        d="M26 118 C 70 140, 110 60, 150 132 S 196 168, 208 140"
-        fill="none"
-        stroke="var(--rel-taupe)"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        opacity="0.9"
-      />
-      <circle cx="98" cy="120" r="44" fill="var(--rel-deep-soft)" />
-      <circle cx="142" cy="120" r="44" fill="var(--rel-taupe-soft)" />
-      <circle cx="120" cy="120" r="5" fill="var(--rel-deep)" />
-    </svg>
-  );
-}
-
 /* ── Chapter 2 · Attraction ─────────────────────────────────── */
 export const AttractionSection = ({ payload, section, personA, personB, n, debug }: SectionProps) => {
   const data = adaptAttraction(section, payload);
   const names = { a: personA, b: personB };
-
-  const physicalIntimacyCard = payload.storyPlan?.realLifeDomains?.find(d => d.domainId === "item_2" || d.title.includes("스킨십") || d.title.includes("친밀감"));
 
   return (
     <WhyYouMeUsSection
@@ -132,18 +98,27 @@ export const AttractionSection = ({ payload, section, personA, personB, n, debug
       n={n}
       eyebrow={section.userQuestion}
       title={section.title}
-      data={data}
+      data={{ ...data, moment: undefined }}
       names={names}
       locale={payload.locale}
     >
-      {payload.storyPlan?.romanticGapBatch?.physicalIntimacy ? (
+      {/* Former 8.4 moved into Chapter 02: Long-Term Bond (KEEP DOING & RITUAL only) */}
+      {payload.storyPlan?.romanticGapBatch?.longTermBond ? (
         <div className="mt-10 pt-8 border-t border-rel-line space-y-4">
-          <SubHeading title="피지컬 친밀감 & 스킨십 템포 조율 (Physical Intimacy & Tempo)" tag="Physical Intimacy" tone="coral" />
-          <div className="rounded-xl bg-rel-taupe-soft p-5 border border-rel-line space-y-2 text-xs">
-            <p className="font-semibold text-rel-ink text-sm">💋 {payload.storyPlan.romanticGapBatch.physicalIntimacy.summary}</p>
-            <p className="text-rel-ink-soft">· {personA}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessA}</p>
-            <p className="text-rel-ink-soft">· {personB}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessB}</p>
-            <p className="text-rel-deep italic mt-2">· 공간/경계 필요성: {payload.storyPlan.romanticGapBatch.physicalIntimacy.spaceNeed}</p>
+          <SubHeading title="오래 단단한 관계를 유지하는 약속" tag="Long-Term Bond" tone="deep" />
+          <div className="grid gap-4 sm:grid-cols-2 text-xs">
+            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+              <p className="font-semibold text-v4-good mb-1">✅ KEEP DOING</p>
+              {payload.storyPlan.romanticGapBatch.longTermBond.keepDoing.map((k, i) => (
+                <p key={i} className="text-rel-ink-soft mt-1">• {k}</p>
+              ))}
+            </div>
+            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+              <p className="font-semibold text-rel-deep mb-1">🕯️ RELATIONSHIP RITUAL</p>
+              {payload.storyPlan.romanticGapBatch.longTermBond.relationshipRitual.map((r, i) => (
+                <p key={i} className="text-rel-ink-soft mt-1">• {r}</p>
+              ))}
+            </div>
           </div>
         </div>
       ) : null}
@@ -267,26 +242,25 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
         </div>
       </Reveal>
 
-      {/* Gap Batch: Conflict Narrative State Transitions */}
+      {/* Conflict Normal State Cards (Refined per User Requests #1 & #2) */}
       {payload.storyPlan?.romanticGapBatch?.conflictTransitions ? (
-        <div className="mt-6 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
-          <SubHeading title="갈등 시 각자의 감정 상태 변화 모델 (Normal → Overload → Recovery)" tag="State Transition" tone="coral" />
-          <div className="grid gap-4 sm:grid-cols-2 text-xs">
-            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line space-y-1.5">
-              <PersonTag name={personA} side="a" />
-              <p className="mt-1 font-semibold text-rel-ink">{payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.canonicalSummary}</p>
-              <p className="text-rel-ink-soft">1. 평소 (Normal): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.normalState}</p>
-              <p className="text-v4-bad font-medium">2. 텐션 고조 (Tension): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.tensionRising}</p>
-              <p className="text-rel-deep font-semibold">3. 과부하 (Overload): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.overloadState}</p>
-              <p className="text-v4-good font-semibold">4. 회복 단계 (Recovery): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.recoveryState}</p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+            <PersonTag name={personA} side="a" />
+            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+              <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">1. 평소의 모습</span>
+              <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
+                {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.normalState}
+              </p>
             </div>
-            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line space-y-1.5">
-              <PersonTag name={personB} side="b" />
-              <p className="mt-1 font-semibold text-rel-ink">{payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.canonicalSummary}</p>
-              <p className="text-rel-ink-soft">1. 평소 (Normal): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.normalState}</p>
-              <p className="text-v4-bad font-medium">2. 텐션 고조 (Tension): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.tensionRising}</p>
-              <p className="text-rel-deep font-semibold">3. 과부하 (Overload): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.overloadState}</p>
-              <p className="text-v4-good font-semibold">4. 회복 단계 (Recovery): {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.recoveryState}</p>
+          </div>
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+            <PersonTag name={personB} side="b" />
+            <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
+              <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">1. 평소의 모습</span>
+              <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
+                {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.normalState}
+              </p>
             </div>
           </div>
         </div>
@@ -383,10 +357,10 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
         </div>
       )}
 
-      {/* 4. Pair Comparison Table (나란히 놓고 보기) */}
+      {/* 4. Pair Comparison Table */}
       {compare && compare.length > 0 && (
         <div>
-          <SubHeading title="나란히 놓고 보기 (Pair Comparison Table)" tag="Comparison" />
+          <SubHeading title="나란히 놓고 보기" tag="성향 비교" />
           <ul className="mt-8 space-y-12">
             {compare.map((row, i) => (
               <li key={row.rowId}>
@@ -407,6 +381,41 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
           </ul>
         </div>
       )}
+
+      {/* 4. Wanted Love vs Given Love */}
+      {payload.storyPlan?.romanticGapBatch?.wantedVsGivenLove ? (
+        <div className="mt-12 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+          <SubHeading title="서로가 원하는 사랑 vs 표현하는 사랑" tag="Love Language" tone="coral" />
+          <p className="text-xs text-rel-ink-mute">{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.summary}</p>
+          <div className="grid gap-4 sm:grid-cols-2 text-xs">
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
+              <PersonTag name={personA} side="a" />
+              <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>
+              <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.givenLove}</p>
+              <p className="text-rel-deep italic">· 파트너 수용 체감: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
+            </div>
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
+              <PersonTag name={personB} side="b" />
+              <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.wantedLove}</p>
+              <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.givenLove}</p>
+              <p className="text-rel-deep italic">· 파트너 수용 체감: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* 5. Physical Intimacy & Tempo */}
+      {payload.storyPlan?.romanticGapBatch?.physicalIntimacy ? (
+        <div className="mt-12 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
+          <SubHeading title="피지컬 친밀감 & 스킨십 템포 조율" tag="스킨십 템포" tone="coral" />
+          <div className="rounded-xl bg-rel-taupe-soft p-5 border border-rel-line space-y-2 text-xs">
+            <p className="font-semibold text-rel-ink text-sm">💋 {payload.storyPlan.romanticGapBatch.physicalIntimacy.summary}</p>
+            <p className="text-rel-ink-soft">· {personA}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessA}</p>
+            <p className="text-rel-ink-soft">· {personB}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessB}</p>
+            <p className="text-rel-deep italic mt-2">· 공간/경계 필요성: {payload.storyPlan.romanticGapBatch.physicalIntimacy.spaceNeed}</p>
+          </div>
+        </div>
+      ) : null}
 
       {debug && <DebugPanel evidenceIds={section.primaryEvidenceIds} />}
     </ChapterSection>

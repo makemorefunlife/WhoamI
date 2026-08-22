@@ -52,15 +52,15 @@ const htmlOutput = ReactDOMServer.renderToString(
 );
 
 console.log("=== USER-VISIBLE RENDERING ASSERTION (HTML STRING SEARCH) ===");
-console.log("1. Role Matrix Visible?:", htmlOutput.includes("연애 관계 역학 포지션") ? "YES (PASS)" : "NO (FAIL)");
-console.log("2. Bidirectional Growth Visible?:", htmlOutput.includes("양방향 성장") ? "YES (PASS)" : "NO (FAIL)");
-console.log("3. Wanted vs Given Love Visible?:", htmlOutput.includes("Wanted Love vs Given Love") ? "YES (PASS)" : "NO (FAIL)");
-console.log("4. What Not to Expect Visible?:", htmlOutput.includes("What Not to Expect") ? "YES (PASS)" : "NO (FAIL)");
-console.log("5. When Needed Most Visible?:", htmlOutput.includes("When Needed Most") ? "YES (PASS)" : "NO (FAIL)");
-console.log("6. Emergency SOS Scripts Visible?:", htmlOutput.includes("Emergency SOS") ? "YES (PASS)" : "NO (FAIL)");
-console.log("7. Long-Term Bond Visible?:", htmlOutput.includes("Long-Term Bond") ? "YES (PASS)" : "NO (FAIL)");
+console.log("1. Role Matrix Hidden?:", !htmlOutput.includes("연애 관계 역학 포지션") ? "YES (HIDDEN AS INSTRUCTED)" : "NO (STILL VISIBLE)");
+console.log("2. Bidirectional Growth Visible?:", (htmlOutput.includes("배우는 점") || htmlOutput.includes("양방향 성장")) ? "YES (PASS)" : "NO (FAIL)");
+console.log("3. Wanted vs Given Love Visible?:", (htmlOutput.includes("Wanted Love vs Given Love") || htmlOutput.includes("서로가 원하는 사랑")) ? "YES (PASS)" : "NO (FAIL)");
+console.log("4. What Not to Expect Visible?:", (htmlOutput.includes("What Not to Expect") || htmlOutput.includes("내려놓아야 할 기대")) ? "YES (PASS)" : "NO (FAIL)");
+console.log("5. When Needed Most Visible?:", (htmlOutput.includes("When Needed Most") || htmlOutput.includes("필요로 할 때")) ? "YES (PASS)" : "NO (FAIL)");
+console.log("6. Emergency SOS Scripts Visible?:", (htmlOutput.includes("Emergency SOS") || htmlOutput.includes("SOS")) ? "YES (PASS)" : "NO (FAIL)");
+console.log("7. Long-Term Bond Visible?:", (htmlOutput.includes("Long-Term Bond") || htmlOutput.includes("오래 단단한 관계를 유지하는 약속")) ? "YES (PASS)" : "NO (FAIL)");
 console.log("8. Physical Intimacy Visible?:", (htmlOutput.includes("피지컬 친밀감") || htmlOutput.includes("Physical Intimacy")) ? "YES (PASS)" : "NO (FAIL)");
-console.log("9. Conflict State Transition Visible?:", htmlOutput.includes("State Transition") ? "YES (PASS)" : "NO (FAIL)");
+console.log("9. Conflict State Transition Hidden?:", !htmlOutput.includes("State Transition") ? "YES (HIDDEN AS INSTRUCTED)" : "NO (STILL VISIBLE)");
 
 console.log("\n=== REGRESSION: EXISTING STRONG CONTENT ASSERTION ===");
 console.log("Attraction Section Visible?:", (htmlOutput.includes("c2_attraction") || htmlOutput.includes("끌렸는가")) ? "YES (PASS)" : "NO (FAIL)");
