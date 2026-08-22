@@ -73,6 +73,14 @@ function confidenceRank(c: RomanticExpertFinding["confidence"]): number {
   return c === "high" ? 2 : c === "medium" ? 1 : 0;
 }
 
+/** Phase 5A §6/§14 — multi-evidence findings are preferred as a tie-break,
+ * secondary to confidence. Does not gate anything on its own (a single-evidence
+ * finding can still win on confidence alone, per spec: "single-evidence findings
+ * may still pass if the evidence is unusually direct"). */
+function evidenceStrengthRank(f: RomanticExpertFinding): number {
+  return f.discoveryQuality?.evidenceStrength === "multi" ? 1 : 0;
+}
+
 /** Spec §5/§6 — translate a validated finding into readable relationship
  * copy. Never renders sajuEvidence/evidenceRefs (raw diagnostic strings) —
  * `claim` is already natural-language by construction (see
@@ -213,7 +221,9 @@ export function selectUserVisibleExpertBlocks(
   let rejectedCap = 0;
 
   for (const [chapterId, candidates] of candidatesByChapter) {
-    const winner = candidates.slice().sort((x, y) => confidenceRank(y.confidence) - confidenceRank(x.confidence))[0];
+    const winner = candidates
+      .slice()
+      .sort((x, y) => confidenceRank(y.confidence) - confidenceRank(x.confidence) || evidenceStrengthRank(y) - evidenceStrengthRank(x))[0];
     rejectedCap += candidates.length - 1;
     const copy = translateFindingToUserCopy(winner, locale);
     blocksByChapter[chapterId] = [

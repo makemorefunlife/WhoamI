@@ -117,21 +117,23 @@ describe("Expert Intelligence V1 — validateExpertFindings", () => {
     assert.equal(out[0].renderEligible, false);
   });
 
-  it("accepts EXPERT_DERIVED with real sajuEvidence citations", () => {
+  it("accepts EXPERT_DERIVED with real cross-chart sajuEvidence citations and a pairDependency", () => {
     const out = validateExpertFindings(
       [
         {
           id: "test-4", mode: "saju_discovery", classification: "EXPERT_DERIVED",
           claim: "일지 원진 관계가 친밀감과 자율성 사이 긴장을 만듭니다.",
-          evidenceRefs: [], sajuEvidence: ["day_branch:ja x day_branch:mi wonjin"], deterministicEvidence: [],
+          evidenceRefs: [], sajuEvidence: ["AB: day_branch:ja x day_branch:mi wonjin"], deterministicEvidence: [],
           reasoning: "두 원국의 일지 조합이 이 긴장을 뒷받침합니다.", confidence: "medium", novelty: "genuinely_additive",
           claimBoundary: { supported: "X", notSupported: "Y" }, suggestedChapter: "c4_conflict",
+          pairDependency: "이 원진 관계는 두 사람의 일지가 서로 마주칠 때만 발생하며, 한쪽 원국만으로는 존재하지 않습니다.",
         },
       ],
       { mode: "saju_discovery", existingTexts: [], axisKeys: new Set() },
     );
     assert.equal(out[0].classification, "EXPERT_DERIVED");
     assert.equal(out[0].renderEligible, true);
+    assert.equal(out[0].discoveryQuality.crossChart, true);
   });
 
   it("forces novelty=duplicate and renderEligible=false when claim text overlaps an existing finding, regardless of model's own novelty label", () => {

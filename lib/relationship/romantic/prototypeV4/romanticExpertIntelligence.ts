@@ -99,9 +99,55 @@ export function isTextuallyDuplicate(claim: string, existingTexts: string[]): bo
   return existingTexts.some((t) => similarity(claim, t) >= DUPLICATE_SIMILARITY_THRESHOLD);
 }
 
+// ── Phase 5A — discovery quality signals (spec §8/§9) ────────────────────
+// Deterministic, server-computed proxies. Never trust the model's own claim
+// that something is "specific" or "pair-level" — the same discipline every
+// other field on this finding already follows (renderEligible, novelty,
+// psychCrossCheck grounding).
+
+const GENERIC_PHRASE_BANK = [
+  "서로의 차이를 통해 성장할 수 있습니다",
+  "상호 보완적인 관계입니다",
+  "갈등을 통해 더 깊어질 수 있습니다",
+  "서로 다른 오행의 균형을 통해 상호 보완적인 관계를 형성합니다",
+  "관계의 동적 요소로 작용할 수 있습니다",
+  "서로에게 강점을 주지만 과할 경우 취약점으로 전환될 수 있습니다",
+];
+
+const GENERICNESS_SIMILARITY_THRESHOLD = 0.55;
+
+/** Spec §9 "swap the names, still true?" test — a bigram-similarity heuristic
+ * against known-generic relationship phrases. Not a semantic judgment: a
+ * claim can dodge this and still be generic, or trip it and still be fine
+ * (e.g. a genuinely specific claim that happens to share vocabulary with the
+ * bank). Disclosed limitation — see Phase 5A final report §I. */
+function isGenericClaim(claim: string): boolean {
+  return GENERIC_PHRASE_BANK.some((g) => similarity(claim, g) >= GENERICNESS_SIMILARITY_THRESHOLD);
+}
+
+/** Spec §5's "A structure × B structure -> interaction meaning" operationalized:
+ * sajuEvidence items are asked (in the Mode B prompt) to be tagged "A:"/"B:"/"AB:".
+ * Cross-chart means either an explicit "AB:" item, or at least one "A:" and one
+ * "B:" item together. A finding citing only "A:" (or only "B:") items is a fact
+ * about one person's chart, not a pair-level interaction. */
+function evidenceSpan(sajuEvidence: string[]): { crossChart: boolean; evidenceStrength: "single" | "multi" } {
+  const hasA = sajuEvidence.some((s) => /^A:/i.test(s.trim()));
+  const hasB = sajuEvidence.some((s) => /^B:/i.test(s.trim()));
+  const hasAB = sajuEvidence.some((s) => /^AB:/i.test(s.trim()));
+  return {
+    crossChart: hasAB || (hasA && hasB),
+    evidenceStrength: sajuEvidence.length >= 2 ? "multi" : "single",
+  };
+}
+
 // ── Validation / classification enforcement ──────────────────────────────
 
 const VALID_MODES: RomanticExpertMode[] = ["evidence_synthesis", "saju_discovery"];
+// Note: INDIVIDUAL_ONLY is intentionally absent here — it is never a value
+// the model is allowed to self-report (the model only ever emits EXPERT_DERIVED
+// or SPECULATIVE for Mode B). It is assigned exclusively by validateExpertFindings
+// below, the same "never let the model self-judge its own trust tier" pattern
+// used for renderEligible/novelty/psychCrossCheck grounding.
 const VALID_CLASSIFICATIONS: RomanticExpertClassification[] = ["SUPPORTED_SYNTHESIS", "EXPERT_DERIVED", "SPECULATIVE"];
 const VALID_NOVELTY: RomanticExpertNovelty[] = ["reinforces_existing", "deepens_existing", "genuinely_additive", "duplicate"];
 const VALID_CONFIDENCE = ["high", "medium", "low"] as const;
@@ -175,6 +221,35 @@ export function validateExpertFindings(
       rejectionReason = rejectionReason ?? "SUPPORTED_SYNTHESIS with no evidenceRefs/deterministicEvidence — downgraded to SPECULATIVE";
     }
 
+    // Phase 5A §4/§5 — a chart fact is not automatically a pair-level finding.
+    // Mode B only: require a non-empty pairDependency, AND require the cited
+    // evidence to actually span both charts (not just one person's chart).
+    // Failing either downgrades to INDIVIDUAL_ONLY, not SPECULATIVE — this is
+    // a real chart fact, just not a pair-level Romantic Expert Discovery one
+    // (spec's own distinction in §4).
+    const pairDependency = typeof item.pairDependency === "string" ? item.pairDependency.trim() : "";
+    let discoveryQuality: RomanticExpertFinding["discoveryQuality"];
+    if (context.mode === "saju_discovery" && classification === "EXPERT_DERIVED") {
+      const span = evidenceSpan(sajuEvidence);
+      discoveryQuality = {
+        evidenceStrength: span.evidenceStrength,
+        crossChart: span.crossChart,
+        genericnessRisk: isGenericClaim(item.claim) ? "high" : "low",
+      };
+      if (!pairDependency) {
+        classification = "INDIVIDUAL_ONLY";
+        rejectionReason = rejectionReason ?? "missing pairDependency — cannot confirm this depends on the pair rather than one person's chart alone";
+      } else if (!span.crossChart) {
+        classification = "INDIVIDUAL_ONLY";
+        rejectionReason = rejectionReason ?? "sajuEvidence cites only one chart (no A+B / AB-tagged interaction) — individual fact, not a pair-level finding";
+      } else if (discoveryQuality.genericnessRisk === "high") {
+        // Spec §9: a generic conclusion is insufficient even when chart-grounded.
+        // Hard gate, not a soft downgrade — matches SPECULATIVE's render-ineligibility.
+        classification = "SPECULATIVE";
+        rejectionReason = rejectionReason ?? "claim matches known-generic relationship phrasing (fails the 'swap the names' test)";
+      }
+    }
+
     // Deterministic dedup backstop — never trust the model's own novelty
     // label as the sole gate.
     if (novelty !== "duplicate" && isTextuallyDuplicate(item.claim, context.existingTexts)) {
@@ -184,7 +259,8 @@ export function validateExpertFindings(
 
     // renderEligible is ALWAYS re-derived here — the model's own renderEligible
     // value (if any) is discarded, per spec §4/§16.E ("validation strategy").
-    const renderEligible = classification !== "SPECULATIVE" && novelty !== "duplicate";
+    const renderEligible =
+      classification !== "SPECULATIVE" && classification !== "INDIVIDUAL_ONLY" && novelty !== "duplicate";
 
     // psychCrossCheck: only trust CONFIRMED/CONTRADICTED when grounded in a
     // real axis key actually present in this report's axisResults.
@@ -223,6 +299,8 @@ export function validateExpertFindings(
       renderEligible,
       psychCrossCheck,
       rejectionReason,
+      pairDependency,
+      discoveryQuality,
     });
   }
 

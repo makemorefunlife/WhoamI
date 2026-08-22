@@ -5,7 +5,7 @@
  *
  *   npx tsx tests/scripts/verify-romantic-expert-intelligence-live.ts
  *
- * Requires OPENAI_API_KEY in .env.local. Makes 5 pairs x 2 modes = 10 real
+ * Requires OPENAI_API_KEY in .env.local. Makes 8 pairs x 2 modes = 16 real
  * API calls on gpt-4o-mini. Costs a fraction of a cent total.
  */
 import dotenv from "dotenv";
@@ -98,6 +98,30 @@ const PAIRS: Pair[] = [
     birthB: { birthDate: "1994-05-30", birthTime: "01:30" },
     psychA: makePsych({ structure: 85, stimulation: 20, practicality: 75 }),
     psychB: makePsych({ structure: 20, stimulation: 85, practicality: 30 }),
+  },
+  {
+    label: "Pair 6 — same-day-stem echo (weak expected cross-chart contrast)",
+    nameA: "소민", nameB: "재현",
+    birthA: { birthDate: "1992-01-15", birthTime: "10:00" },
+    birthB: { birthDate: "1992-01-16", birthTime: "10:30" },
+    psychA: makePsych({ empathy: 55, structure: 50 }),
+    psychB: makePsych({ empathy: 52, structure: 48 }),
+  },
+  {
+    label: "Pair 7 — deliberately dense interaction (close birthdates, strong overlap expected)",
+    nameA: "유나", nameB: "태오",
+    birthA: { birthDate: "2000-07-04", birthTime: "16:00" },
+    birthB: { birthDate: "2000-01-04", birthTime: "04:00" },
+    psychA: makePsych({ conflict_style: 80, recognition: 25 }),
+    psychB: makePsych({ conflict_style: 25, recognition: 80 }),
+  },
+  {
+    label: "Pair 8 — psych-extreme gap on a single axis (testing psychCrossCheck linkage)",
+    nameA: "라온", nameB: "은서",
+    birthA: { birthDate: "1985-10-10", birthTime: "22:00" },
+    birthB: { birthDate: "1999-06-01", birthTime: "06:00" },
+    psychA: makePsych({ conflict_style: 90, self_control: 85 }),
+    psychB: makePsych({ conflict_style: 10, self_control: 20 }),
   },
 ];
 
