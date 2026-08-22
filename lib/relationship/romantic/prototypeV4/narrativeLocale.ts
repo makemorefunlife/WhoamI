@@ -17,6 +17,7 @@ import {
   subjectParticle,
   objectParticle,
   withParticle,
+  roParticle,
   sanitizeKoreanParticles,
 } from "../../koreanParticles";
 
@@ -40,6 +41,13 @@ export function objectP(name: string, locale: NarrativeLocale): string {
 
 export function withP(name: string, locale: NarrativeLocale): string {
   return isEnLocale(locale) ? name : withParticle(name);
+}
+
+/** 로/으로 (instrumental/directional "as X") — batchim-aware, unlike a
+ * hardcoded "으로" literal which breaks on vowel-ending nouns (e.g.
+ * "쉼터으로" instead of "쉼터로"). */
+export function roP(name: string, locale: NarrativeLocale): string {
+  return isEnLocale(locale) ? name : roParticle(name);
 }
 
 export function sanitizeParticles(

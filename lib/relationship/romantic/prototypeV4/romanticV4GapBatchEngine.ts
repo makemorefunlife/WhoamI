@@ -87,6 +87,38 @@ export type ConflictStateTransition = {
   canonicalSummary: string;
 };
 
+/**
+ * Final Evidence-to-Voice pass, item 1 — computeConflictStateTransition's
+ * Pattern 4 (Harmony Adapter) is an unconditional fallback: anyone who
+ * doesn't clear Patterns 1-3 lands here with the SAME fixed text, regardless
+ * of how similar or different their actual psych scores are. When both
+ * people in a pair land in Pattern 4, that previously produced two
+ * byte-identical person cards with no evidence check at all.
+ *
+ * sharedBaseline is non-null only when both people are confirmed Pattern-4
+ * AND a secondary check (self_control / thinking_style / decision_style —
+ * axes Patterns 1-3 don't already gate on) finds no meaningful gap between
+ * them: in that case the shared line is the honest, evidence-checked
+ * output, not an unexamined accident. When a secondary gap IS found, the
+ * two people get differentiated tension/overload/recovery text instead
+ * (see computeConflictStateTransitionPair) and sharedBaseline stays null.
+ */
+export type ConflictStateTransitionPair = {
+  /** Non-null only when both people are Pattern-4 AND no secondary gap was
+   * found — the deliberate, evidence-checked "we're genuinely alike here"
+   * case, not a silently-collapsed fallback. */
+  sharedBaseline: string | null;
+  transitionA: ConflictStateTransition;
+  transitionB: ConflictStateTransition;
+  /** True only when both people are confirmed Pattern-4 AND a real
+   * secondary-axis gap differentiated their tension/overload/recovery text
+   * (the middle case, distinct from both sharedBaseline-set and from either
+   * person clearing Pattern 1-3 on their own). Exposed so callers (e.g. the
+   * recognition synthesis layer) can build a "shared goal, different
+   * strategy" insight without re-deriving this threshold check themselves. */
+  wasHarmonyDifferentiated: boolean;
+};
+
 export type PhysicalIntimacyDetail = {
   desiredClosenessA: string;
   desiredClosenessB: string;
@@ -103,10 +135,7 @@ export type RomanticGapBatchOutput = {
   emergencySos: EmergencyRomanticSosScripts;
   longTermBond: LongTermRelationshipBondPrescription;
   physicalIntimacy: PhysicalIntimacyDetail;
-  conflictTransitions: {
-    transitionA: ConflictStateTransition;
-    transitionB: ConflictStateTransition;
-  };
+  conflictTransitions: ConflictStateTransitionPair;
 };
 
 const ROLE_TITLES: Record<RomanticRoleType, { title: string; desc: string }> = {
@@ -462,11 +491,118 @@ function computeConflictStateTransition(
   };
 }
 
-  // 7. Conflict State Transitions (Narrative Canonicalization)
-  const conflictTransitions = {
-    transitionA: computeConflictStateTransition(nameA, psychA, true),
-    transitionB: computeConflictStateTransition(nameB, psychB, false),
+/** True when this person does NOT clear Patterns 1-3's conditions and would
+ * therefore land in the Pattern 4 (Harmony Adapter) fallback. Mirrors
+ * computeConflictStateTransition's own condition order exactly. */
+function isHarmonyAdapterPattern(psych: PsychMasterJson | null): boolean {
+  const emp = extractAxis(psych, "empathy");
+  const struct = extractAxis(psych, "structure");
+  const selfControl = extractAxis(psych, "self_control");
+  const conflictStyle = extractAxis(psych, "conflict_style");
+  const rec = extractAxis(psych, "recognition");
+  const stim = extractAxis(psych, "stimulation");
+  const hasPsych = Boolean(psych && psych.secondary_axes);
+
+  if (hasPsych && (rec >= 60 || emp >= 60) && struct < 70) return false; // Pattern 1
+  if (hasPsych && (struct >= 60 || (selfControl >= 60 && emp < 60))) return false; // Pattern 2
+  if (conflictStyle >= 65 || stim >= 65) return false; // Pattern 3
+  return true;
+}
+
+const HARMONY_SHARED_BASELINE = "둘 다 관계의 평화와 조화를 중요하게 여기는 편입니다.";
+/** Axes Patterns 1-3 don't already gate on for THIS pair once both are
+ * confirmed Pattern-4 — used only to check whether a real secondary
+ * difference exists, never to force one. */
+const HARMONY_SECONDARY_AXES = ["self_control", "thinking_style", "decision_style"] as const;
+const HARMONY_SECONDARY_GAP_THRESHOLD = 20;
+
+/**
+ * Final Evidence-to-Voice pass, item 1. computeConflictStateTransition alone
+ * cannot see the OTHER person, so it can't tell "both genuinely converge"
+ * apart from "both happened to fall into the same unconditional fallback."
+ * This wrapper makes that distinction explicit:
+ *   - either person clears Pattern 1-3 -> unchanged, per-person text as before.
+ *   - both are Pattern-4 AND a real secondary-axis gap exists -> deterministically
+ *     differentiate tensionRising/overloadState/recoveryState from that gap
+ *     (never fabricated — grounded in the actual score difference).
+ *   - both are Pattern-4 AND no secondary gap exists -> sharedBaseline is set;
+ *     this is the deliberate, evidence-checked "genuinely alike" case, not
+ *     an unexamined duplicate.
+ */
+function computeConflictStateTransitionPair(
+  nameA: string,
+  psychA: PsychMasterJson | null,
+  nameB: string,
+  psychB: PsychMasterJson | null,
+): ConflictStateTransitionPair {
+  const rawA = computeConflictStateTransition(nameA, psychA, true);
+  const rawB = computeConflictStateTransition(nameB, psychB, false);
+
+  if (!isHarmonyAdapterPattern(psychA) || !isHarmonyAdapterPattern(psychB)) {
+    return { sharedBaseline: null, transitionA: rawA, transitionB: rawB, wasHarmonyDifferentiated: false };
+  }
+
+  const gaps = HARMONY_SECONDARY_AXES.map((key) => ({
+    key,
+    gap: Math.abs(extractAxis(psychA, key) - extractAxis(psychB, key)),
+  }));
+  const largestGap = gaps.reduce((max, g) => (g.gap > max.gap ? g : max), gaps[0]);
+
+  if (largestGap.gap < HARMONY_SECONDARY_GAP_THRESHOLD) {
+    // Confirmed genuinely similar, not just a fallback accident. One shared
+    // baseline; per-person text stays (honestly) close since the evidence
+    // really doesn't distinguish them further, but is no longer presented
+    // as two independently-derived identical cards.
+    return {
+      sharedBaseline: HARMONY_SHARED_BASELINE,
+      transitionA: { ...rawA, normalState: HARMONY_SHARED_BASELINE },
+      transitionB: { ...rawB, normalState: HARMONY_SHARED_BASELINE },
+      wasHarmonyDifferentiated: false,
+    };
+  }
+
+  // A real secondary gap exists even within the shared harmony-seeking
+  // baseline — differentiate how tension actually plays out, grounded in
+  // that specific axis, not invented.
+  const aHigher = extractAxis(psychA, largestGap.key) >= extractAxis(psychB, largestGap.key);
+
+  const differentiatedText: Record<"higher" | "lower", Pick<ConflictStateTransition, "tensionRising" | "overloadState" | "recoveryState">> =
+    largestGap.key === "self_control"
+      ? {
+          higher: {
+            tensionRising: `평화를 지키고 싶은 마음은 같지만, 갈등 조짐이 보이면 감정을 안으로 누르며 스스로 정리할 시간부터 가지려 함`,
+            overloadState: `누르고 있던 감정이 쌓이면 티 내지 않고 조용히 거리를 두는 방식으로 지침을 표현함`,
+            recoveryState: `혼자 정리할 시간을 가진 뒤, 상대가 다정하게 다가오면 자연스럽게 다시 가까워짐`,
+          },
+          lower: {
+            tensionRising: `평화를 지키고 싶은 마음은 같지만, 갈등 조짐이 보이면 참기보다 먼저 말을 걸어 확인받고 싶어함`,
+            overloadState: `확인받지 못한 채 시간이 길어지면 서운함이 쌓여 먼저 다가가거나 재차 물어봄`,
+            recoveryState: `상대의 다정한 반응을 바로 받으면 빠르게 안정을 찾음`,
+          },
+        }
+      : {
+          higher: {
+            tensionRising: `평화를 지키고 싶은 마음은 같지만, 상황을 논리적으로 정리해 본 뒤에야 반응함`,
+            overloadState: `정리가 안 된 채 압박이 들어오면 판단을 미루고 조용해짐`,
+            recoveryState: `납득할 수 있는 설명이나 흐름이 정리되면 다시 편안해짐`,
+          },
+          lower: {
+            tensionRising: `평화를 지키고 싶은 마음은 같지만, 분석보다 지금 이 순간의 감정과 분위기에 먼저 반응함`,
+            overloadState: `분위기가 계속 무거우면 이유를 따지기보다 감정적으로 지쳐버림`,
+            recoveryState: `분위기 자체가 다시 편안해지면 별다른 설명 없이도 회복함`,
+          },
+        };
+
+  return {
+    sharedBaseline: null,
+    transitionA: { ...rawA, ...(aHigher ? differentiatedText.higher : differentiatedText.lower) },
+    transitionB: { ...rawB, ...(aHigher ? differentiatedText.lower : differentiatedText.higher) },
+    wasHarmonyDifferentiated: true,
   };
+}
+
+  // 7. Conflict State Transitions (Narrative Canonicalization)
+  const conflictTransitions = computeConflictStateTransitionPair(nameA, psychA, nameB, psychB);
   const physicalIntimacy: PhysicalIntimacyDetail = {
     desiredClosenessA: empA >= 60 ? "정서적 신뢰와 다정한 대화가 선행된 후의 자연스러운 스킨십" : "적당한 거리감과 서로의 개인 공간을 존중하는 다정한 스킨십",
     desiredClosenessB: empB >= 60 ? "마음이 완전히 열렸을 때 표현하는 순수한 온기의 친밀감" : "서두르지 않고 템포를 맞춰가는 은은한 스킨십",

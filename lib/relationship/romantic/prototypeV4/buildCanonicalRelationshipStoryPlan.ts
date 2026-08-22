@@ -51,6 +51,7 @@ import { buildRomanticCrossSignalIntelligence } from "./romanticCrossSignalIntel
 import { buildRomanticCandidateEngine } from "./buildRomanticCandidateEngine";
 import { computeRomanticRelationshipNeedsEngine } from "./romanticRelationshipNeedsEngine";
 import { computeRomanticV4GapBatchEngine } from "./romanticV4GapBatchEngine";
+import { buildRomanticRecognitionSynthesis } from "./romanticRecognitionSynthesis";
 
 import {
   topicP,
@@ -1492,6 +1493,14 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     psychB: contract.meta?.psych_master_b ?? (contract as any).surveyInput?.psychB ?? (params as any).surveyInput?.psychB ?? null,
   });
 
+  const recognitionSynthesis = buildRomanticRecognitionSynthesis({
+    names,
+    relCeA,
+    relCeB,
+    conflictTransitions: romanticGapBatch.conflictTransitions,
+    locale,
+  });
+
   return {
     ...finalStoryPlan,
     pairMeanings,
@@ -1504,5 +1513,6 @@ export function buildCanonicalRelationshipStoryPlan(params: {
     normalizedActionCandidatesP1: candidateEngine.normalizedActions,
     growthTransitionP1,
     crossSignalInsightsV1,
+    recognitionSynthesis,
   };
 }

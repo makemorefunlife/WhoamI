@@ -15,6 +15,7 @@ import {
   topicP,
   subjectP,
   withP,
+  roP,
   sanitizeParticles,
   pick,
   type NarrativeLocale,
@@ -330,10 +331,15 @@ export function resolveDynamicsLens(params: {
       [a, b],
       locale,
     ),
+    // Final Evidence-to-Voice pass, item 2 — this mechanism line used to
+    // re-quote coreRelationshipNature.text (the identity label already
+    // stated once in Hero). Uses familiarRelationshipRole here instead —
+    // real, distinct evidence from the same day-stem table, framed as what
+    // each person DOES in this context rather than restating who they ARE.
     mechanism: sanitizeParticles(
       L(
-        `${topicP(a, locale)} ${relCeA?.coreRelationshipNature?.text ?? "자신만의 온기"}를 나누고, ${topicP(b, locale)} ${relCeB?.coreRelationshipNature?.text ?? "묵묵한 균형"}을 잡아주어 자연스럽게 정서적 안정을 이룹니다.`,
-        `${topicP(a, locale)} shares ${(relCeA?.coreRelationshipNature?.text ?? "their own warmth").charAt(0).toLowerCase()}${(relCeA?.coreRelationshipNature?.text ?? "their own warmth").slice(1)}, and ${topicP(b, locale)} holds ${(relCeB?.coreRelationshipNature?.text ?? "a quiet balance").charAt(0).toLowerCase()}${(relCeB?.coreRelationshipNature?.text ?? "a quiet balance").slice(1)}, naturally reaching emotional steadiness together.`,
+        `${topicP(a, locale)} ${roP(relCeA?.familiarRelationshipRole?.text ?? "자신만의 온기", locale)} 곁을 지키고, ${topicP(b, locale)} ${roP(relCeB?.familiarRelationshipRole?.text ?? "묵묵한 균형", locale)} 안정을 잡아주어 둘만의 공간이 편안해집니다.`,
+        `${topicP(a, locale)} stays close as ${(relCeA?.familiarRelationshipRole?.text ?? "their own warmth").charAt(0).toLowerCase()}${(relCeA?.familiarRelationshipRole?.text ?? "their own warmth").slice(1)}, and ${topicP(b, locale)} steadies things as ${(relCeB?.familiarRelationshipRole?.text ?? "a quiet balance").charAt(0).toLowerCase()}${(relCeB?.familiarRelationshipRole?.text ?? "a quiet balance").slice(1)}, making your private space feel comfortable.`,
       ),
       [a, b],
       locale,
@@ -420,10 +426,11 @@ export function resolveDynamicsLens(params: {
       [a, b],
       locale,
     ),
+    // Final Evidence-to-Voice pass, item 2 — same dedup as face.private above.
     mechanism: sanitizeParticles(
       L(
-        `${a}의 ${relCeA?.coreRelationshipNature?.text ?? "명확한 원칙과 결단력"}과 ${b}의 ${relCeB?.coreRelationshipNature?.text ?? "묵묵한 현실 관리력"}이 결합하여 관계의 실질적 토대를 튼튼하게 세웁니다.`,
-        `${a}'s ${(relCeA?.coreRelationshipNature?.text ?? "clear principle and decisiveness").charAt(0).toLowerCase()}${(relCeA?.coreRelationshipNature?.text ?? "clear principle and decisiveness").slice(1)} combines with ${b}'s ${(relCeB?.coreRelationshipNature?.text ?? "quiet real-world management").charAt(0).toLowerCase()}${(relCeB?.coreRelationshipNature?.text ?? "quiet real-world management").slice(1)} to build a solid, practical foundation for the relationship.`,
+        `${a}가 ${roP(relCeA?.familiarRelationshipRole?.text ?? "명확한 원칙과 결단력", locale)} 방향을 잡으면, ${b}는 ${roP(relCeB?.familiarRelationshipRole?.text ?? "묵묵한 현실 관리력", locale)} 그 방향을 실제로 굴러가게 만듭니다.`,
+        `When ${a} sets the direction as ${(relCeA?.familiarRelationshipRole?.text ?? "clear principle and decisiveness").charAt(0).toLowerCase()}${(relCeA?.familiarRelationshipRole?.text ?? "clear principle and decisiveness").slice(1)}, ${b} is the one who actually makes it work as ${(relCeB?.familiarRelationshipRole?.text ?? "quiet real-world management").charAt(0).toLowerCase()}${(relCeB?.familiarRelationshipRole?.text ?? "quiet real-world management").slice(1)}.`,
       ),
       [a, b],
       locale,
@@ -757,10 +764,16 @@ export function resolveStrengthVulnerabilityLens(params: {
     );
   }
 
+  // Final Evidence-to-Voice pass, item 2 — was quoting coreRelationshipNature
+  // (Hero's identity label) a 5th time. strengthsGivenToPartner is the
+  // thematically correct field for a "greatest strength" line, and is
+  // already the source for gift.a_to_b/gift.b_to_a just above in this same
+  // chapter — reusing it here is intra-chapter synthesis, not cross-chapter
+  // repetition.
   const sharedStrength = sanitizeParticles(
     L(
-      `두 사람이 함께할 때 가장 강력해지는 지점은 '${a}의 ${relCeA?.coreRelationshipNature?.text ?? "결단력"}과 ${b}의 ${relCeB?.coreRelationshipNature?.text ?? "묵묵한 안정감"}'의 결합입니다. 혼자일 때는 놓치기 쉬운 시야와 세밀함을 서로가 빈틈없이 채워주어, 어떤 도전 앞에서도 흔들리지 않는 단단한 팀워크를 발휘합니다.`,
-      `Where you two become strongest together is the combination of ${a}'s ${(relCeA?.coreRelationshipNature?.text ?? "decisiveness").charAt(0).toLowerCase()}${(relCeA?.coreRelationshipNature?.text ?? "decisiveness").slice(1)} and ${b}'s ${(relCeB?.coreRelationshipNature?.text ?? "quiet steadiness").charAt(0).toLowerCase()}${(relCeB?.coreRelationshipNature?.text ?? "quiet steadiness").slice(1)}. You fill in each other's blind spots and details without a gap, showing a teamwork that stays firm in the face of any challenge.`,
+      `두 사람이 함께할 때 가장 강력해지는 지점은 '${a}가 주는 ${relCeA?.strengthsGivenToPartner?.[0]?.text ?? "결단력"}과 ${b}가 주는 ${relCeB?.strengthsGivenToPartner?.[0]?.text ?? "묵묵한 안정감"}'이 만나는 순간입니다. 혼자일 때는 놓치기 쉬운 시야와 세밀함을 서로가 빈틈없이 채워주어, 어떤 도전 앞에서도 흔들리지 않는 단단한 팀워크를 발휘합니다.`,
+      `Where you two become strongest together is the moment ${a}'s ${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").charAt(0).toLowerCase()}${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").slice(1)} meets ${b}'s ${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").charAt(0).toLowerCase()}${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").slice(1)}. You fill in each other's blind spots and details without a gap, showing a teamwork that stays firm in the face of any challenge.`,
     ),
     [a, b],
     locale,

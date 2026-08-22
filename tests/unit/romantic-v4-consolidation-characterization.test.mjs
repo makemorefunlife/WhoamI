@@ -114,8 +114,11 @@ assert.ok(
     "(previously would have been the static '깊어지는 계절' fixture string)",
 );
 assert.ok(
-  plan.sharedStrength.includes("지민의 명확한 기준"),
-  "sharedStrength text unchanged in content (it was already CE-sourced with fixture only as a further fallback)",
+  plan.sharedStrength.includes("지민이 주는") && plan.sharedStrength.includes("정우가 주는"),
+  "sharedStrength is CE-sourced from strengthsGivenToPartner (Final Evidence-to-Voice pass, item 2 switched " +
+    "this from re-quoting coreRelationshipNature — Hero's identity label, already stated once there — to the " +
+    "chapter's own strengthsGivenToPartner field, to stop the 5x cross-chapter identity-phrase repeat); " +
+    "still definitely not the static fixture fallback string.",
 );
 
 assert.equal(

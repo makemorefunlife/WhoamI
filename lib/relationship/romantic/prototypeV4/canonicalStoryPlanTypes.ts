@@ -305,6 +305,10 @@ export type CanonicalRelationshipStoryPlan = {
   /** Phase 3 — Cross-Signal Intelligence V1. Deterministic only; see
    * romanticCrossSignalIntelligence.ts. */
   crossSignalInsightsV1?: RomanticCrossSignalInsight[];
+  /** Final Evidence-to-Voice pass, items 3-4 — small evidence-gated
+   * synthesis layer (shared-goal/different-strategy, persona/hidden-need).
+   * Computed-only in this pass, not yet consumed by any chapter renderer. */
+  recognitionSynthesis?: RomanticRecognitionInsight[];
 };
 
 export type RomanticGrowthTransition = {
@@ -511,3 +515,20 @@ export type RomanticCrossSignalInsight =
   | RomanticDifferenceRescueInsight
   | RomanticBlindSpotInsight
   | RomanticSuperpowerInsight;
+
+/** Final Evidence-to-Voice pass, items 3-4 — see romanticRecognitionSynthesis.ts. */
+export type RomanticRecognitionInsightType =
+  | "shared_goal_different_strategy"
+  | "persona_hidden_need_contradiction";
+
+export type RomanticRecognitionInsight = {
+  id: string;
+  insightType: RomanticRecognitionInsightType;
+  subject: "a" | "b" | "pair";
+  evidenceRefs: string[];
+  sourceSignals: string[];
+  derivedMeaning: string;
+  confidence: RomanticCrossSignalConfidence;
+  claimBoundary: RomanticCrossSignalClaimBoundary;
+  suggestedChapter: RomanticCrossSignalChapterId;
+};

@@ -604,11 +604,15 @@ export function buildPersonalRelationshipCe(params: {
     ? `${translation.decision} When conflict arises, they aim for ${spousePalaceProfile.profile.repairNeed}, working through the problem step by step.`
     : `${translation.decision} 갈등이 발생했을 때는 ${spousePalaceProfile.profile.repairNeed}의 태도를 지향하며 차근차근 문제를 풀어가고자 합니다.`;
 
-  // Hidden Vulnerability: dynamically composed from Day Master nature/need and Spouse Palace excess risk
+  // Hidden Vulnerability: dynamically composed from Spouse Palace need/excess
+  // risk. Final Evidence-to-Voice pass, item 2 — this used to open with
+  // "${translation.nature} 때문에" (Hero's identity label), the 5th
+  // cross-chapter repeat of that phrase. Goes straight to the hidden-need
+  // reveal instead, which is this chapter's own unique layer.
   const vulnText = isEn
-    ? `Because of ${translation.nature.charAt(0).toLowerCase()}${translation.nature.slice(1)}, they can look composed and unbothered on the surface, but deep inside they're quietly longing for ${translation.need.charAt(0).toLowerCase()}${translation.need.slice(1)}. They also carry a quiet tension, worried that when the relationship feels shaky, ${spousePalaceProfile.profile.excessRisk.charAt(0).toLowerCase()}${spousePalaceProfile.profile.excessRisk.slice(1)}.`
+    ? `On the surface they can look composed and unbothered, but deep inside they're quietly longing for ${translation.need.charAt(0).toLowerCase()}${translation.need.slice(1)}. They also carry a quiet tension, worried that when the relationship feels shaky, ${spousePalaceProfile.profile.excessRisk.charAt(0).toLowerCase()}${spousePalaceProfile.profile.excessRisk.slice(1)}.`
     : sanitizeParticles(
-        `${translation.nature} 때문에 겉으로는 의연하고 덤덤해 보이지만, 내면 깊은 곳에서는 ${objectP(translation.need, locale)} 간절히 바라고 있습니다. 또한 관계가 흔들릴 때 ${spousePalaceProfile.profile.excessRisk}에 대한 조심스러운 긴장을 품고 있습니다.`,
+        `겉으로는 의연하고 덤덤해 보이지만, 내면 깊은 곳에서는 ${objectP(translation.need, locale)} 간절히 바라고 있습니다. 또한 관계가 흔들릴 때 ${spousePalaceProfile.profile.excessRisk}에 대한 조심스러운 긴장을 품고 있습니다.`,
         [],
         locale,
       );
