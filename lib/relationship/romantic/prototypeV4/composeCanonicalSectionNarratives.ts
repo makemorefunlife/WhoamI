@@ -481,7 +481,13 @@ export function composeCanonicalSectionNarratives(
             blockId: `hidden.${h.person}`,
             title: L(`${personName}의 숨은 마음`, `${personName}'s Hidden Heart`),
             body: [
-              L(`겉으로 드러나는 모습: ${h.visibleReaction}`, `What shows on the surface: ${h.visibleReaction}`),
+              // Phase 5C Part 2/9 — h.visibleReaction is the same underlying
+              // behavior sentence already stated verbatim in c3_dynamics's
+              // face.stress block and c5_misunderstanding's misread blocks
+              // (both render earlier than this chapter). Chapter 05's job is
+              // WHY IT FEELS THAT WAY, not re-stating WHAT HAPPENS a third
+              // time — dropped here; visibleReaction stays on structuredData
+              // for provenance/internal use.
               L(`마음 깊은 곳의 실제 감정: ${h.innerFeeling}`, `What they actually feel deep down: ${h.innerFeeling}`),
               L(`가장 조심스러운 두려움: ${h.fear}`, `Their most guarded fear: ${h.fear}`),
               L(`상대가 알아주었으면 하는 온전한 바람: ${h.unspokenNeed}`, `What they most wish their partner understood: ${h.unspokenNeed}`),

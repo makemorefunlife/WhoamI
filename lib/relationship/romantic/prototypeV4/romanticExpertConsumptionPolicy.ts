@@ -132,6 +132,7 @@ export type TierBTargetMapping = {
   suggestedChapter: string;
   targetBlockId: string | null;
   claim: string;
+  confidence: RomanticExpertFinding["confidence"];
 };
 
 export type ExpertConsumptionMeta = {
@@ -221,6 +222,7 @@ export function selectUserVisibleExpertBlocks(
         suggestedChapter: f.suggestedChapter,
         targetBlockId: matchingBlock ? matchingBlock.blockId : null,
         claim: f.claim,
+        confidence: f.confidence,
       });
       continue; // consumed via applyTierBEnrichment, not blocksByChapter — see design note above
     }
@@ -291,25 +293,41 @@ export function selectUserVisibleExpertBlocks(
 }
 
 /**
- * Phase 5B Part 3 — applies matched Tier B mappings (from
- * selectUserVisibleExpertBlocks's meta.tierBTargetMappings) by appending each
- * finding's claim to its matched block's body. Immutable: returns a new
- * sections array; never mutates the input. Unmatched mappings (targetBlockId
- * === null) are silently skipped — they were already correctly kept
- * internal-only by the caller, this function just applies the ones that DO
- * have a safe target. Evidence provenance is preserved: evidenceIds on the
- * enriched block are untouched (the append is additive prose only).
+ * Phase 5C Part 3 — corrects Phase 5B's append-only behavior per this
+ * phase's explicit instruction: "Do NOT append Tier B as a new card...
+ * original weaker prose removed/replaced." A matched Tier B finding's claim
+ * now REPLACES its target block's body (the point of Tier B is that it
+ * `deepens_existing` — its claim is a strengthened synthesis of what's
+ * already there, not a footnote to it).
+ *
+ * Safety floor: replacement only happens when the claim is at least
+ * REPLACE_LENGTH_FLOOR of the original body's length. A one-sentence Tier B
+ * claim replacing a multi-paragraph block (attraction scenes, hidden-heart
+ * detail, etc.) would make that block LESS specific, which is exactly what
+ * this phase is trying to eliminate — so a claim that's too short to safely
+ * stand alone falls back to appending instead, same as Phase 5B. This is a
+ * disclosed judgment call, not a literal reading of "replaced" in every case.
+ *
+ * If two+ findings map to the same block, only the strongest (highest
+ * confidence, ties broken by evidence strength) is used for replacement;
+ * any others append, so a single block is never replaced twice.
+ *
+ * Immutable: returns a new sections array, never mutates the input.
+ * Unmatched mappings (targetBlockId === null) are silently skipped — they
+ * were already correctly kept internal-only by the caller.
  */
+const REPLACE_LENGTH_FLOOR = 0.4;
+
 export function applyTierBEnrichment(
   sections: CanonicalSection[],
   tierBTargetMappings: TierBTargetMapping[],
   locale: NarrativeLocale,
 ): CanonicalSection[] {
-  const byBlockId = new Map<string, string[]>();
+  const byBlockId = new Map<string, TierBTargetMapping[]>();
   for (const m of tierBTargetMappings) {
     if (!m.targetBlockId) continue;
     const list = byBlockId.get(m.targetBlockId) ?? [];
-    list.push(m.claim);
+    list.push(m);
     byBlockId.set(m.targetBlockId, list);
   }
   if (byBlockId.size === 0) return sections;
@@ -318,11 +336,20 @@ export function applyTierBEnrichment(
   return sections.map((section) => ({
     ...section,
     blocks: section.blocks.map((block) => {
-      const additions = byBlockId.get(block.blockId);
-      if (!additions || additions.length === 0) return block;
+      const mappings = byBlockId.get(block.blockId);
+      if (!mappings || mappings.length === 0) return block;
+
+      const [primary, ...rest] = mappings
+        .slice()
+        .sort((x, y) => confidenceRank(y.confidence) - confidenceRank(x.confidence));
+
+      const canReplace = primary.claim.length >= block.body.length * REPLACE_LENGTH_FLOOR;
+      const newBody = canReplace ? primary.claim : [block.body, `${L("더 깊이 보면: ", "Looking deeper: ")}${primary.claim}`].join("\n\n");
+      const appended = rest.map((m) => `${L("더 깊이 보면: ", "Looking deeper: ")}${m.claim}`);
+
       return {
         ...block,
-        body: [block.body, ...additions.map((a) => `${L("더 깊이 보면: ", "Looking deeper: ")}${a}`)].join("\n\n"),
+        body: [newBody, ...appended].join("\n\n"),
       };
     }),
   }));
