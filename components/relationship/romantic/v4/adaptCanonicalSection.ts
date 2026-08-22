@@ -372,12 +372,13 @@ export function adaptRadarHighlights(
     insights = sorted.slice(0, 4).map((a) => {
       const gap = Math.abs(a.score_a - a.score_b);
       const matchType = gap < 12 ? "resonance" : gap > 25 ? "tension" : "complement";
+      const axisLabel = labelOfAxis(payload.locale, a.axis_key);
       return {
         axisKey: a.axis_key,
-        axisLabel: a.axis_label,
+        axisLabel,
         gap,
         matchType,
-        whyItMatters: `${personA}님과 ${personB}님의 ${a.axis_label} 차이가 정서적 소통 템포에 반영됩니다.`,
+        whyItMatters: `${personA}님과 ${personB}님의 ${axisLabel} 차이가 정서적 소통 템포에 반영됩니다.`,
         relationshipEffect:
           matchType === "resonance"
             ? "비슷한 성향으로 의사결정 시 높은 직관적 공감대를 형성합니다."
