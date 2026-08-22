@@ -31,11 +31,11 @@ import type {
 /** Env-overridable, defaults to the same model romanticSajuDeep already uses
  * in production — do not introduce a pricier model without a configured
  * override (spec §10). */
-function expertLlmModel(): string {
+export function expertLlmModel(): string {
   return process.env.RELATIONSHIP_ROMANTIC_EXPERT_MODEL ?? process.env.RELATIONSHIP_ROMANTIC_MODEL ?? "gpt-4o-mini";
 }
 
-function expertLlmMaxTokens(): number {
+export function expertLlmMaxTokens(): number {
   const raw = process.env.RELATIONSHIP_ROMANTIC_EXPERT_MAX_TOKENS?.trim();
   if (raw) {
     const n = Number.parseInt(raw, 10);
@@ -44,7 +44,7 @@ function expertLlmMaxTokens(): number {
   return 3000;
 }
 
-async function callExpertLlmJson(
+export async function callExpertLlmJson(
   openai: OpenAI,
   system: string,
   user: string,

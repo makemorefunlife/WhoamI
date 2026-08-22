@@ -24,6 +24,7 @@ import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 import type { RomanticV4SurveyInput } from "./romanticV4SurveyEvidence";
 import type { RomanticExpertFinding, RomanticExpertIntelligenceMeta } from "./romanticExpertIntelligenceTypes";
 import type { ExpertConsumptionMeta } from "./romanticExpertConsumptionPolicy";
+import type { RomanticNarrativeEditorResult } from "./romanticNarrativeEditorTypes";
 
 export type CanonicalRomanticV4Report = {
   schemaVersion: "romantic_canonical_report_v1";
@@ -41,6 +42,10 @@ export type CanonicalRomanticV4Report = {
   /** Phase 4B — audit trail for which findings became user-visible and why.
    * Present only when the async wrapper's consumption step ran. */
   expertConsumptionMeta?: ExpertConsumptionMeta;
+  /** Evidence-Grounded Narrative Editor — audit trail (edits + meta), present
+   * only when buildCanonicalRomanticV4ReportWithNarrativeEditor ran. sections
+   * already reflects any applied edits by the time this is populated. */
+  narrativeEditorResult?: RomanticNarrativeEditorResult;
   validation: { ok: boolean; issues: CanonicalValidationIssue[] };
   axisOverview: ReturnType<
     typeof buildRomanticExperienceViewModel
@@ -220,5 +225,62 @@ export async function buildCanonicalRomanticV4ReportWithExpertIntelligence(
     expertFindings: result.findings,
     expertIntelligenceMeta: result.meta,
     expertConsumptionMeta: selection.meta,
+  };
+}
+
+/**
+ * Evidence-Grounded Narrative Editor — additive async wrapper, same shape
+ * as buildCanonicalRomanticV4ReportWithExpertIntelligence above: builds the
+ * exact same deterministic report first, then — only if `openai` +
+ * `enableNarrativeEditor` are supplied — separately awaits the editor and
+ * splices in only the edits that survive validateNarrativeEdits. Independent
+ * of the Expert Intelligence wrapper (does not call Mode A/B) — see the
+ * architecture-decision note in romanticNarrativeEditorTypes.ts for why this
+ * is a separate optional call rather than a literal in-place repurposing of
+ * Mode A's slot inside buildRomanticExpertIntelligence.
+ */
+export async function buildCanonicalRomanticV4ReportWithNarrativeEditor(
+  locale: "ko-KR" | "en-US" = "ko-KR",
+  reportYear?: number,
+  options?: Parameters<typeof buildCanonicalRomanticV4Report>[2] & {
+    openai?: import("openai").default;
+    enableNarrativeEditor?: boolean;
+    narrativeEditorAbortSignal?: AbortSignal;
+  },
+): Promise<CanonicalRomanticV4Report> {
+  const base = buildCanonicalRomanticV4Report(locale, reportYear, options);
+
+  if (!options?.enableNarrativeEditor || !options?.openai) {
+    return base;
+  }
+
+  const { extractNarrativeEditablePackets, buildRomanticNarrativeEditorSafe, applyNarrativeEdits } = await import(
+    "./romanticNarrativeEditor"
+  );
+
+  const packets = extractNarrativeEditablePackets(base.sections);
+  const result = await buildRomanticNarrativeEditorSafe({
+    openai: options.openai,
+    packets,
+    names: base.names,
+    locale,
+    abortSignal: options.narrativeEditorAbortSignal,
+  });
+
+  const finalSections = applyNarrativeEdits(base.sections, result.edits);
+  const finalValidation = validateCanonicalRomanticReport({ plan: base.storyPlan, sections: finalSections });
+  const finalHiddenChapters = finalSections
+    .filter((s) => !s.visible)
+    .map((s) => ({
+      chapterId: s.chapterId,
+      reason: s.hideReason ?? "evidence insufficient",
+    }));
+
+  return {
+    ...base,
+    sections: finalSections,
+    validation: finalValidation,
+    hiddenChapters: finalHiddenChapters,
+    narrativeEditorResult: result,
   };
 }
