@@ -390,7 +390,10 @@ export function computeRomanticV4GapBatchEngine(params: {
       doNot: sosAtoBDoNot,
       firstLine: sosAtoBFirst,
       bridgeLine: sosAtoBBridge,
-      reconnectionLine: `"잠깐 20분만 각자 숨 돌리고, 따뜻한 음료 마시면서 다시 이야기하자."`,
+      // Final Cleanup pass, item 3 — dropped the fixed "20분" (no evidence
+      // this specific duration applies to this pair); the underlying advice
+      // (take a short break, then come back) is unchanged.
+      reconnectionLine: `"잠깐 각자 숨 돌리고, 따뜻한 음료 마시면서 다시 이야기하자."`,
     },
     sosBtoA: {
       seekerName: nameB,
@@ -399,7 +402,7 @@ export function computeRomanticV4GapBatchEngine(params: {
       doNot: sosBtoADoNot,
       firstLine: sosBtoAFirst,
       bridgeLine: sosBtoABridge,
-      reconnectionLine: `"잠깐 30분만 쿨링다운하고 당신 이야기를 끝까지 들어줄게."`,
+      reconnectionLine: `"잠깐 쿨링다운하고 당신 이야기를 끝까지 들어줄게."`,
     },
   };
 
@@ -415,7 +418,7 @@ export function computeRomanticV4GapBatchEngine(params: {
     ],
     relationshipRitual: [
       "주말 한 번은 아무 일도 하지 않고 오롯이 둘만의 다정한 시간 보내기",
-      "갈등 후 30분간의 쿨링다운 포즈 루틴 지키기",
+      "갈등 후 짧은 쿨링다운 포즈 루틴 지키기",
     ],
   };
 

@@ -371,12 +371,17 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
   const data = payload.storyPlan?.romanticGapBatch?.whatNotToExpect;
   const isEn = payload.locale === "en-US";
 
-  const listA = data?.notToExpectAFromB ?? [
-    { title: isEn ? "Instant Pacing Match" : "즉각적인 반응 속도 동기화", reason: isEn ? "Each person processes feelings at their own pace." : "각자의 감정 처리 템포를 인정하고 기다려주는 시간이 필요합니다." }
-  ];
-  const listB = data?.notToExpectBFromA ?? [
-    { title: isEn ? "Perfect Emotional Symmetry" : "완벽한 감정적 대칭성", reason: isEn ? "Different communication styles require space for differences." : "서로 다른 표현 방식의 차이를 인정할 때 관계가 원만해집니다." }
-  ];
+  // Final Cleanup pass, item 4 — strict abstention (empty array) is correct
+  // and must render as nothing, not a labeled-but-empty shell. The old `?? [...]`
+  // fallback here only ever fired when `data` itself was missing entirely
+  // (never for the real, evidence-gated empty-array case, since `??` doesn't
+  // trigger on `[]`) — but when it DID fire, it injected generic advice that
+  // was never grounded in this pair's evidence at all. Removed outright:
+  // missing data is treated the same as "both sides empty" below.
+  const listA = data?.notToExpectAFromB ?? [];
+  const listB = data?.notToExpectBFromA ?? [];
+
+  if (listA.length === 0 && listB.length === 0) return null;
 
   return (
     <ChapterSection
@@ -388,25 +393,29 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
     >
       <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
         <SubHeading title={isEn ? "Overextending expectations can strain the relationship" : "서로에게 이것까지 요구하면 관계가 힘들어집니다"} tag="What Not to Expect" tone="coral" />
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
-            <PersonTag name={personA} side="a" />
-            <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personA)} {josaEge(personB)} 내려놓아야 할 기대:</p>
-            <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
-              {listA.map((item, i) => (
-                <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
-            <PersonTag name={personB} side="b" />
-            <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personB)} {josaEge(personA)} 내려놓아야 할 기대:</p>
-            <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
-              {listB.map((item, i) => (
-                <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
-              ))}
-            </ul>
-          </div>
+        <div className={listA.length > 0 && listB.length > 0 ? "grid gap-6 md:grid-cols-2" : "grid gap-6"}>
+          {listA.length > 0 ? (
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+              <PersonTag name={personA} side="a" />
+              <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personA)} {josaEge(personB)} 내려놓아야 할 기대:</p>
+              <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
+                {listA.map((item, i) => (
+                  <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {listB.length > 0 ? (
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
+              <PersonTag name={personB} side="b" />
+              <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personB)} {josaEge(personA)} 내려놓아야 할 기대:</p>
+              <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
+                {listB.map((item, i) => (
+                  <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
       {debug && <DebugPanel evidenceIds={section.primaryEvidenceIds} />}

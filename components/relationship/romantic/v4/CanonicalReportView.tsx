@@ -81,7 +81,14 @@ function reorderForDisplay(
   const locale = payload.locale;
   const titleOverrides = locale === "en-US" ? TITLE_OVERRIDES_EN : TITLE_OVERRIDES_KO;
 
-  const hasExpectations = Boolean(payload.storyPlan?.romanticGapBatch?.whatNotToExpect);
+  // Final Cleanup pass, item 4 — whatNotToExpect is always an object (even
+  // when both directions abstained to []), so a bare truthiness check here
+  // always evaluated true regardless of real content, leaving a nav link
+  // pointing at a chapter that renders nothing. Check actual list lengths.
+  const wnte = payload.storyPlan?.romanticGapBatch?.whatNotToExpect;
+  const hasExpectations = Boolean(
+    (wnte?.notToExpectAFromB?.length ?? 0) > 0 || (wnte?.notToExpectBFromA?.length ?? 0) > 0,
+  );
   const expectationsSection: CanonicalSection = {
     chapterId: "c8_3_expectations" as any,
     title: locale === "en-US" ? "What Not to Expect" : "서로에게 내려놓아야 할 기대",
@@ -94,7 +101,7 @@ function reorderForDisplay(
   let list = sections.filter(
     (s) => s.chapterId !== "c9_daily_life" && s.chapterId !== "c11_reflection",
   );
-  if (!list.some((s) => s.chapterId === ("c8_3_expectations" as any))) {
+  if (hasExpectations && !list.some((s) => s.chapterId === ("c8_3_expectations" as any))) {
     list = [...list, expectationsSection];
   }
 

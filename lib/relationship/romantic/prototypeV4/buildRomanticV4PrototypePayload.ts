@@ -178,7 +178,7 @@ const V4_COMPARISON_ROW_CONFIDENCE: Record<RomanticV4ComparisonRow["confidence"]
  * only: assembles labels/facts the resolver already computed, invents no new
  * claim beyond what leanA/leanB/align/confidence/source already say.
  */
-function localizeComparisonRowProse(params: {
+export function localizeComparisonRowProse(params: {
   row: RomanticV4ComparisonRow;
   locale: PrototypeLocale;
   nameA: string;
@@ -209,9 +209,25 @@ function localizeComparisonRowProse(params: {
       ? " This matches each person's own chart tendency."
       : " 이 성향은 각자의 원래 기질과도 잘 맞아요.";
   } else if (row.align === "caution") {
-    manifestation += isEn
-      ? " Their survey answers actually run counter to their chart tendency here, so this may look different moment to moment."
-      : " 다만 설문 응답이 기질과는 다르게 나타나, 상황에 따라 다르게 보일 수 있어요.";
+    // Final Cleanup pass, item 2 — this used to be one fixed sentence
+    // ("설문 응답이 기질과는 다르게 나타나...") reused verbatim across every
+    // axis it fired on, and read as directly contradicting a preceding
+    // "비슷해요" sentence since it never said WHOSE data or WHAT it was
+    // comparing. Now names the specific person(s) whose current survey
+    // answer actually diverges from their own chart baseline for THIS row,
+    // and is explicit that the comparison is chart-vs-current-behavior for
+    // that one person, not a walkback of the A-vs-B similarity/difference
+    // statement just made above.
+    const baseALabel = formatRomanticCompareLeanLabel(row.baseA, locale, row.rowKey);
+    const baseBLabel = formatRomanticCompareLeanLabel(row.baseB, locale, row.rowKey);
+    const flippedNames: string[] = [];
+    if (row.flippedA) flippedNames.push(isEn ? `${nameA} (chart: ${baseALabel} → currently ${leanALabel})` : `${nameA}(원래 기질: ${baseALabel} → 지금은 ${leanALabel})`);
+    if (row.flippedB) flippedNames.push(isEn ? `${nameB} (chart: ${baseBLabel} → currently ${leanBLabel})` : `${nameB}(원래 기질: ${baseBLabel} → 지금은 ${leanBLabel})`);
+    if (flippedNames.length > 0) {
+      manifestation += isEn
+        ? ` One thing to note: ${flippedNames.join(" and ")} — their current behavior here doesn't match their chart baseline, separate from how they compare to each other.`
+        : ` 참고로 ${flippedNames.join(", ")} — 이 항목에서는 원래 기질과 지금의 행동이 다르게 나타나요. 서로 비교한 결과와는 별개의 이야기예요.`;
+    }
   }
 
   let understanding = prose.understanding;

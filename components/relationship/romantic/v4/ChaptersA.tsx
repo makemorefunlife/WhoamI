@@ -228,8 +228,26 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
       title={section.title}
       tint="cream"
     >
+      {/* Final Cleanup pass, item 1 — when the engine has confirmed both
+          people share one genuine baseline (romanticGapBatch.conflictTransitions.sharedBaseline),
+          render it ONCE ahead of Trigger instead of duplicating the same
+          line under two separate person cards. When there's no shared
+          baseline (either a real per-person difference, or the two people
+          simply cleared different underlying patterns), the two-card layout
+          below still applies — nothing here forces an artificial split. */}
+      {payload.storyPlan?.romanticGapBatch?.conflictTransitions?.sharedBaseline ? (
+        <Reveal>
+          <div className="rounded-2xl border border-rel-line bg-rel-taupe-soft p-6 shadow-sm sm:p-7">
+            <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">공통 평소 상태</span>
+            <p className="mt-2 font-rel-sans text-[14px] leading-[1.75] text-rel-ink-soft">
+              {payload.storyPlan.romanticGapBatch.conflictTransitions.sharedBaseline}
+            </p>
+          </div>
+        </Reveal>
+      ) : null}
+
       <Reveal>
-        <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm sm:p-7">
+        <div className="mt-8 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm sm:p-7">
           <div className="font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-taupe">
             Trigger
           </div>
@@ -242,8 +260,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
         </div>
       </Reveal>
 
-      {/* Conflict Normal State Cards (Refined per User Requests #1 & #2) */}
-      {payload.storyPlan?.romanticGapBatch?.conflictTransitions ? (
+      {payload.storyPlan?.romanticGapBatch?.conflictTransitions && !payload.storyPlan.romanticGapBatch.conflictTransitions.sharedBaseline ? (
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
             <PersonTag name={personA} side="a" />
@@ -370,7 +387,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
                     {row.relationshipManifestation}
                   </p>
                   {row.understandingPoint ? (
-                    <Evidence label={payload.locale === "en-US" ? "Note" : "확인 문구"}>
+                    <Evidence label={payload.locale === "en-US" ? "Note" : "짚어볼 점"}>
                       {row.understandingPoint}
                     </Evidence>
                   ) : null}
