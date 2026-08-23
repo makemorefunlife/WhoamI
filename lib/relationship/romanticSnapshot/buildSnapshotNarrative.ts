@@ -20,6 +20,10 @@ export type SnapshotTopicNarrative = {
   benefit: number;
   risk: number;
   interpretation: string;
+  detailedWhy?: string;
+  strength?: string;
+  caution?: string;
+  scene?: string;
   isWarning: boolean;
   /** Part1① 11축(관계공감/갈등직면성) 확인 문구 — intimacy/conflict만, profile 없으면 없음 */
   axisNote?: string | null;

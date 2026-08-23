@@ -51,7 +51,7 @@ import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPan
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
 import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
-import { VersusStrip, Reveal } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { VersusStrip, Reveal, ec } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { pick } from "@/lib/relationship/friend/friendCopy";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import type {
@@ -76,6 +76,7 @@ import type {
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 import { FamilyChapterNav, FamilyChapterSection } from "@/components/relationship/familyParent/chapters/FamilyChapterShell";
+import { josaIGa, josaEunNeun, josaGwaWa } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 
 const relSans = Noto_Sans_KR({
   subsets: ["latin"],
@@ -735,9 +736,7 @@ export function FamilyReportViewModelView({
       <FamilyEditorialHero
         eyebrow={kindLabel ?? t.defaultKindLabel}
         headline={vm.opening.headline}
-        subtitle={vm.opening.subtitle}
         names={vm.opening.names}
-        gradeLabel={vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined}
       />
       {snapshot ? (() => {
         // Defensive: a cached/DB-persisted snapshot may have a missing
@@ -809,19 +808,201 @@ export function FamilyReportViewModelView({
 
       {navItems.length > 0 ? <FamilyChapterNav items={navItems} /> : null}
 
-      {editorialChapters.map((chapter) => (
-        <FamilyChapterSection
-          key={chapter.id}
-          id={chapter.id}
-          number={chapter.number}
-          title={chapter.title}
-          accent={ACCENT}
-        >
-          {chapter.summary ? (
-            <p className="mb-6 font-rel-sans text-[15px] font-medium leading-[1.7] text-rel-ink-soft italic border-l-2 border-rel-deep/40 pl-3">
-              💡 {chapter.summary}
-            </p>
-          ) : null}
+      {editorialChapters.map((chapter) => {
+        const resolveDetailedWhy = (
+          topic: "intimacy" | "stability" | "conflict",
+          rawInterpretation: string | undefined,
+          score: number,
+        ) => {
+          const isShortSummary =
+            !rawInterpretation ||
+            rawInterpretation.length < 70 ||
+            rawInterpretation.includes("명확한 선과 쿨한 마무리") ||
+            rawInterpretation.includes("중간 수준") ||
+            rawInterpretation.includes("(이)") ||
+            rawInterpretation.includes("(은)") ||
+            rawInterpretation.includes("(을)") ||
+            rawInterpretation.includes("점)");
+
+          if (!isShortSummary && rawInterpretation) {
+            return rawInterpretation;
+          }
+
+          const parentName = vm.opening.names[1] || "부모";
+          const childName = vm.opening.names[0] || "자녀";
+          const cIGa = josaIGa(childName);
+          const cEunNeun = josaEunNeun(childName);
+          const pIGa = josaIGa(parentName);
+          const pEunNeun = josaEunNeun(parentName);
+          const pGwaWa = josaGwaWa(parentName);
+
+          if (topic === "intimacy") {
+            if (score >= 70) {
+              return pick(
+                locale,
+                `When ${childName} experiences emotional stress, they feel safe approaching ${parentName} without hesitation. ${parentName}'s supportive reception and ${childName}'s openness align naturally, creating an effortless reservoir of mutual trust where feelings flow freely.`,
+                `${cIGa} 밖에서 억울하거나 힘든 일을 겪고 돌아온 날, 망설임 없이 ${pGwaWa} 마음을 털어놓는 모습을 보입니다. ${pEunNeun} 아이의 이야기를 따뜻하게 들어주고 ${cEunNeun} 그 품 안에서 깊은 안도감을 얻어요. 소통 템포가 자연스럽게 맞아떨어져 “이 사람은 언제나 내 편”이라는 단단한 신뢰가 일상에 흐릅니다.`,
+              );
+            }
+            if (score >= 50) {
+              return pick(
+                locale,
+                `When ${childName} returns home with heavy feelings, they need time to process internally before opening up. Meanwhile, ${parentName} naturally reaches out to check in right away. While mutual affection is deep, this timing gap means closeness feels close in heart but needs gentle pacing in daily rhythm.`,
+                `${cIGa} 힘든 일을 겪고 돌아오면 바로 털어놓기보다 혼자 마음을 정리할 시간이 먼저 필요해요. 반면 ${pEunNeun} 괜찮은지 빨리 확인하고 싶어 가까이 다가가는 편이에요. 마음의 크기보다 다가가는 타이밍이 달라, 서로 아끼면서도 순간적으로는 “왜 내 마음을 몰라주지?”라는 조급함이 생길 수 있어요. 성급히 질문을 건네기보다 따뜻하게 기다려주는 한 박자의 쉼표가 들어갈 때 비로소 마음이 온전히 통합니다.`,
+              );
+            }
+            return pick(
+              locale,
+              `When ${childName} seeks acceptance, ${parentName}'s direct advice can inadvertently feel like emotional pressure. Overcoming this misread intention requires replacing rapid problem-solving with calm, non-judgmental reception.`,
+              `${cIGa} 마음을 털어놓으려 할 때 ${pGwaWa}의 조언이나 지적이 정서적 부담으로 작용하곤 합니다. 관심과 위로의 의도와 달리 전달되는 순간에 오해가 생겨 아이가 “말해봤자 지적만 받는다”며 방어적으로 입을 닫는 흐름이 반복되기 쉬워요. 성급한 대안 제시 대신 판단 없이 들어주는 공감의 첫마디를 건넬 때 비로소 굳은 다리가 풀어집니다.`,
+            );
+          }
+
+          if (topic === "stability") {
+            if (score >= 75) {
+              return pick(
+                locale,
+                `Growth flourishes when ${parentName} sets clear boundaries while granting ${childName} full autonomy in execution. Supported by parent's structural safety, ${childName} explores without fear of failure, turning guidance into bold momentum.`,
+                `이 관계의 강점은 ${pEunNeun} 방향의 든든한 기준을 잡아주고, ${cEunNeun} 자기 방식으로 시도할 자율 공간을 확보할 때 가장 빛이 납니다. ${cIGa} 새로운 과제나 진로에 도전할 때 ${pEunNeun} 세부 실행을 믿고 맡겨주어. 아이는 실패 부담 없이 잠재력을 마음껏 발휘하고, 부모의 조용한 지지는 성장의 강력한 엔진이 됩니다. “방향은 부모가 가이드하고 방법은 아이가 선택할 때” 최고의 성장이 촉진됩니다.`,
+              );
+            }
+            if (score >= 55) {
+              return pick(
+                locale,
+                `A gentle pace gap exists between ${parentName}'s structured advice and ${childName}'s desire for independent trial. While parent's experience offers a vital safety rail, allowing ${childName} space to learn through personal trial maximizes steady progress.`,
+                `${pEunNeun}가 제시하는 체계적인 가이드와 ${cEunNeun}가 원하는 자율적 탐색 사이에 소폭의 호흡 차이가 존재해요. ${pEunNeun} 안전펜스 역할을 든든히 해주지만, ${cIGa} 스스로 시행착오를 겪고 깨달을 수 있는 탐색 시간을 허용할 때 협력 가치가 제대로 발휘돼요. 조급하게 정답을 내려주기보다 아이의 시도 과정을 지켜봐 줄 때 단단한 시너지가 이어집니다.`,
+              );
+            }
+            return pick(
+              locale,
+              `${parentName}'s eagerness to help can manifest as premature solutions, which ${childName} may interpret as control. Synergy strengthens as parent shifts from directing to supporting independent choices.`,
+              `성장을 바라는 마음은 같으나 가이드 방식에서 템포 마찰이 생기기 쉬운 조합이에요. ${pEunNeun} 시행착오를 줄여주려 미리 답을 주려 하지만, ${cEunNeun} 이를 “내 능력을 안 믿어주나?”라는 간섭으로 받아들여 방어적인 태도를 취하곤 합니다. 결과보다는 아이의 주도적 시도 자체를 정서적으로 인정해 줄 때 비로소 시너지가 활짝 피어납니다.`,
+            );
+          }
+
+          // topic === "conflict"
+          if (score >= 65) {
+            return pick(
+              locale,
+              `When discipline issues arise, ${parentName}'s immediate demand for answers triggers ${childName}'s defensive withdrawal. As parent interprets silence as reluctance and raises voice tone, an escalation loop develops rapidly. The key is separating the issue from ego and establishing a cool-down buffer before demanding responses.`,
+              `생활 규칙이나 약속 미준수를 두고 지적이 나오는 순간, ${pEunNeun}의 즉각적인 확인 요구와 ${cEunNeun}의 방어적 반응이 빠르게 부딪혀요. 부모가 잘못을 정면으로 언급하면 ${cIGa} 자존심이 상해 입을 닫고, ${pEunNeun} 그 침묵을 “내 말을 무시하나?”라 느껴 톤이 높아지는 악순환이 생기기 십상입니다. 지적의 내용보다 답을 요구하는 속도와 아이가 감정적으로 닫히는 속도가 부딪히는 지점을 정돈하는 것이 핵심입니다.`,
+            );
+          }
+          if (score >= 45) {
+            return pick(
+              locale,
+              `Discipline scenarios trigger a pacing gap: ${parentName} seeks rapid resolution while ${childName} needs time to absorb feedback. Allowing a brief pause prevents minor friction from becoming tension.`,
+              `훈육 상황이 생기면 지적이 전달되는 속도와 ${cEunNeun}가 이를 받아들이는 수용 속도 사이에 약간의 시차가 발생해요. ${pEunNeun}가 규칙 미준수를 언급했을 때 ${cIGa} 즉각 반응하기보다 생각할 시간이 필요합니다. 감정이 과열되기 전 한 박자 쉬었다가 사안에만 집중해 대화하면 큰 대립 없이 원만하게 조율되는 관계예요.`,
+            );
+          }
+          return pick(
+            locale,
+            `When correcting ${childName}, ${parentName} focuses strictly on the behavior without attacking dignity, and ${childName} receives guidance without feeling hostile. A healthy buffer protects the bond from escalating friction.`,
+            `의견 충돌이나 지적이 오가더라도 감정 싸움으로 번지지 않는 안전한 완충 구역이 존재해요. ${pEunNeun}는 자녀(${childName})의 자존심을 건드리지 않고 사안 자체만 정돈해 지적하며, ${cEunNeun} 역시 부모의 안내를 공격으로 오해하지 않습니다. 서로를 존중하는 정돈된 톤이 유지되어 일상 속 규칙들이 원만하고 평화롭게 조율됩니다.`,
+          );
+        };
+
+        return (
+          <FamilyChapterSection
+            key={chapter.id}
+            id={chapter.id}
+            number={chapter.number}
+            title={chapter.title}
+            accent={ACCENT}
+          >
+            {chapter.summary ? (
+              <p className="mb-6 font-rel-sans text-[15px] font-medium leading-[1.7] text-rel-ink-soft italic border-l-2 border-rel-deep/40 pl-3">
+                💡 {chapter.summary}
+              </p>
+            ) : null}
+
+            {/* Chapter 01 (우리가 함께 있을 때의 모습) — Romantic V4 Design Ported Cards */}
+            {chapter.id === "ch_together" && snapshot ? (() => {
+              const topics = snapshot.panel?.narrative?.topics ?? [];
+              const bond = topics.find(t => t.topic === "intimacy");
+              const synergy = topics.find(t => t.topic === "stability");
+              const risk = topics.find(t => t.topic === "conflict");
+
+              return (
+                <div className="my-8 space-y-6">
+                  {[
+                    {
+                      num: "01",
+                      label: ec(locale, "When sharing feelings and seeking comfort", "마음을 나누고 위로가 필요할 때"),
+                      scene: bond?.scene,
+                      why: resolveDetailedWhy("intimacy", bond?.detailedWhy || bond?.interpretation, snapshot.scores.bondPct),
+                      strength: bond?.strength,
+                      caution: bond?.caution,
+                    },
+                    {
+                      num: "02",
+                      label: ec(locale, "When learning, trying new things, and finding their path", "배우고 도전하고 자기 길을 찾을 때"),
+                      scene: synergy?.scene,
+                      why: resolveDetailedWhy("stability", synergy?.detailedWhy || synergy?.interpretation, snapshot.scores.synergyPct),
+                      strength: synergy?.strength,
+                      caution: synergy?.caution,
+                    },
+                    {
+                      num: "03",
+                      label: ec(locale, "When setting boundaries or correcting mistakes", "기준을 세우거나 잘못을 바로잡을 때"),
+                      scene: risk?.scene,
+                      why: resolveDetailedWhy("conflict", risk?.detailedWhy || risk?.interpretation, snapshot.scores.riskPct),
+                      strength: risk?.strength,
+                      caution: risk?.caution,
+                    },
+                  ].map((card) => (
+                  <article key={card.num} className="overflow-hidden rounded-2xl border border-rel-line bg-rel-surface shadow-sm">
+                    <div className="p-6 sm:p-7">
+                      <div className="min-w-0">
+                        <div className="font-rel-sans text-[10.5px] font-semibold tracking-[0.24em] text-rel-ink-mute">
+                          {card.num}
+                        </div>
+                        <h3 className="mt-2 font-rel-serif text-[20px] leading-[1.3] tracking-[-0.01em] text-rel-ink sm:text-[23px]">
+                          {card.label}
+                        </h3>
+                        {card.scene && (
+                          <p className="mt-3 max-w-[64ch] font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink-mute">
+                            {card.scene}
+                          </p>
+                        )}
+                      </div>
+
+                      {card.why && (
+                        <p className="mt-5 max-w-[64ch] font-rel-sans text-[14.5px] leading-[1.9] text-rel-ink-soft">
+                          {card.why}
+                        </p>
+                      )}
+
+                      {card.strength || card.caution ? (
+                        <dl className="mt-7 grid gap-4 sm:grid-cols-2">
+                          {card.strength && (
+                            <div className="rounded-xl bg-v4-good-soft p-5 border border-v4-good/20">
+                              <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-good">
+                                {ec(locale, "Strength", "강점")}
+                              </dt>
+                              <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
+                                {card.strength}
+                              </dd>
+                            </div>
+                          )}
+                          {card.caution && (
+                            <div className="rounded-xl bg-v4-bad-soft p-5 border border-v4-bad/20">
+                              <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-bad">
+                                {ec(locale, "Caution", "주의")}
+                              </dt>
+                              <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
+                                {card.caution}
+                              </dd>
+                            </div>
+                          )}
+                        </dl>
+                      ) : null}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            );
+          })() : null}
 
           {/* StoryPlan Synthesis or Claim Highlight */}
           {chapter.synthesis.length > 0 ? (
@@ -1045,7 +1226,8 @@ export function FamilyReportViewModelView({
             <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
           ))}
         </FamilyChapterSection>
-      ))}
+      );
+    })}
 
       {/* Legacy flat fallback when no editorial chapters */}
       {editorialChapters.length === 0 ? (

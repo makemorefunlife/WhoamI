@@ -48,7 +48,7 @@ export function OverviewSection({
   if (!cards.length) return null;
 
   return (
-    <Section id={id} eyebrow={eyebrow} title={title} lead={lead} tint="cream">
+    <Section id={id} eyebrow={eyebrow} title={title} lead={lead} tint="plain">
       {heroSummary ? (
         <div className="mb-10">
           <Quote>{heroSummary}</Quote>

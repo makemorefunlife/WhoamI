@@ -157,14 +157,6 @@ export function FamilyEditorialHero({
         <h1 className="mt-6 max-w-[24ch] font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
           {headline}
         </h1>
-        {subtitle ? (
-          <p className="mt-5 max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft">{subtitle}</p>
-        ) : null}
-        {gradeLabel ? (
-          <span className="mt-6 inline-flex rounded-full border border-rel-deep/30 bg-rel-deep-soft px-3.5 py-1 font-rel-sans text-xs font-semibold tracking-wide text-rel-deep">
-            {gradeLabel}
-          </span>
-        ) : null}
       </div>
     </header>
   );

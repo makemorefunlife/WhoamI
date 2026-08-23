@@ -188,7 +188,7 @@ export function ChapterSection({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const bg = tint === "cream" ? "bg-rel-taupe-soft/40" : tint === "deep" ? "bg-rel-deep" : "";
+  const bg = tint === "deep" ? "bg-rel-deep" : "bg-rel-bg";
 
   return (
     <section id={id} className={`scroll-mt-20 ${bg}`}>

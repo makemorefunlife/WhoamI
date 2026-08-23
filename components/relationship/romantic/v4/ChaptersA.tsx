@@ -42,15 +42,7 @@ const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
 export const HeroSection = ({ section, personA, personB, debug }: SectionProps) => {
   const hero = adaptHero(section);
   return (
-    <section id={section.chapterId} className="relative overflow-hidden scroll-mt-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-32 -top-40 h-[26rem] w-[26rem] rounded-full bg-rel-taupe-soft blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-40 bottom-[-14rem] h-[30rem] w-[30rem] rounded-full bg-rel-deep-soft blur-3xl"
-      />
+    <section id={section.chapterId} className="relative overflow-hidden scroll-mt-20 bg-rel-bg">
       <div className="relative mx-auto w-full max-w-[880px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20">
         <Reveal>
           <div className="flex flex-wrap items-center gap-3">
