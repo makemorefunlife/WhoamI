@@ -379,8 +379,8 @@ export function selectClosingFocus(params: {
   // STRENGTH structure: "이 둘의 다음 챕터는 ~이에요." (spec example)
   if (winner?.type === "strength") {
     return L(
-      `이 둘의 다음 챕터는, 지금 가진 강점 — ${secondClauseOrFirst(sharedStrength ?? "")} — 을 의식적으로 더 자주 꺼내 쓰는 쪽에 가까워요.`,
-      `The next chapter for these two is about consciously reaching for the strength you already have more often: ${secondClauseOrFirst(sharedStrength ?? "")}`,
+      `이 둘의 다음 챕터는, 지금 가진 강점 — ${secondClauseOrFirst(sharedStrength ?? "")} — 을 더 자주 써먹는 쪽에 가까워요.`,
+      `The next chapter for these two is about reaching for the strength you already have more often: ${secondClauseOrFirst(sharedStrength ?? "")}`,
     );
   }
 
@@ -623,10 +623,10 @@ function selectConflictLoopSteps(params: {
     const presserRole = isHotA ? roleA : roleB;
     const withdrawerRole = isHotA ? roleB : roleA;
     return [
-      L(`문제가 생기면 ${presserName}이/가 답답해서 먼저 말을 걸어요.`, `When a problem comes up, ${presserName} gets restless and reaches out first.`),
-      L(`그 순간 ${withdrawerName}은/는 생각할 시간이 필요해서 조용해져요.`, `In that moment, ${withdrawerName} needs time to think, so they go quiet.`),
-      L(`그러면 ${presserName}은/는 그 침묵을 거절로 받아들여서 서운함과 조급함이 같이 커져요.`, `Then ${presserName} reads that silence as rejection, and both the hurt and the urgency grow.`),
-      L(`${withdrawerName}은/는 더 다그쳐질수록 오히려 입을 닫게 되고, 같은 패턴이 반복돼요.`, `The more ${withdrawerName} gets pressed, the more they close off — and the same pattern repeats.`),
+      L(`문제가 생기면 ${subjectP(presserName, locale)} 답답해서 먼저 말을 걸어요.`, `When a problem comes up, ${presserName} gets restless and reaches out first.`),
+      L(`그 순간 ${topicP(withdrawerName, locale)} 생각할 시간이 필요해서 조용해져요.`, `In that moment, ${withdrawerName} needs time to think, so they go quiet.`),
+      L(`그러면 ${topicP(presserName, locale)} 그 침묵을 거절로 받아들여서 서운함과 조급함이 같이 커져요.`, `Then ${presserName} reads that silence as rejection, and both the hurt and the urgency grow.`),
+      L(`${topicP(withdrawerName, locale)} 더 다그쳐질수록 오히려 입을 닫게 되고, 같은 패턴이 반복돼요.`, `The more ${withdrawerName} gets pressed, the more they close off — and the same pattern repeats.`),
     ];
   }
 
@@ -2020,8 +2020,8 @@ function computeHeroPairThesis(params: {
       strengthVuln?.sharedStrength ||
       (relCeA && relCeB
         ? L(
-            `두 사람이 함께할 때 새로 생기는 결합 능력: 상황이 흔들릴 때 ${names.a}의 ${relCeA.strengthsGivenToPartner[0]?.text ?? "다정한 활력"}이 정서적 온기를 지켜내고 ${names.b}의 ${relCeB.strengthsGivenToPartner[0]?.text ?? "흔들림 없는 신중함"}이 든든한 중심을 잡아주어, 불확실한 순간에도 감정적 고립 없이 현실적인 해결을 함께 이루어내는 시너지입니다.`,
-            `The emergent capability born between you: when uncertainty rises, ${names.a}'s ${relCeA.strengthsGivenToPartner[0]?.text ?? "warm vitality"} keeps emotional warmth alive while ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "steady prudence"} holds the ground, allowing you to achieve practical resolution without emotional isolation.`,
+            `이건 둘이 같이 있을 때만 생기는 힘이에요. 상황이 흔들릴 때 ${names.a}의 ${relCeA.strengthsGivenToPartner[0]?.text ?? "다정한 활력"}이 분위기를 다독이고 ${names.b}의 ${relCeB.strengthsGivenToPartner[0]?.text ?? "흔들림 없는 신중함"}이 중심을 잡아줘서, 불안한 순간에도 혼자 남겨진 느낌 없이 같이 답을 찾아가요.`,
+            `This is something the two of you make happen together, not something either of you has alone. When things get shaky, ${names.a}'s ${relCeA.strengthsGivenToPartner[0]?.text ?? "warm vitality"} keeps the mood warm and ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "steady prudence"} holds things steady, so even in an uncertain moment you're working it out together instead of feeling stuck alone.`,
           )
         : bonding?.summary || plan.pairSynthesis.selectedMeaning || copy.sharedStrengthFallback),
     sharedVulnerability:

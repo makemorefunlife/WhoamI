@@ -131,7 +131,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   gyeong: {
     nature: "명확한 기준과 우직한 책임감으로 관계의 중심을 잡는 성향",
     behavior: "신뢰와 원칙을 중시하며, 겉은 단단하고 담백해 보여도 마음을 연 상대에게는 흔들림 없는 든든한 버팀목이 되어줍니다.",
-    role: "관계의 흔들림 없는 중심추이자 결단력 있는 수호자",
+    role: "웬만해선 흔들리지 않고 확실하게 결정을 내려주는 사람",
     decision: "감정에 치우치지 않고 사실과 원칙, 장기적 안정성을 기준으로 명확하게 결단을 내립니다.",
     stress: "통제할 수 없는 혼란이나 불투명한 상황에서 내면의 긴장이 높아지며 더욱 단호하고 엄격해집니다.",
     strength: "위기 상황에서도 감정에 휩쓸리지 않고 명확한 방향을 제시하는 결단력과 묵직한 든든함",
@@ -141,7 +141,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   sin: {
     nature: "섬세한 감각과 정교한 배려로 완성도 높은 관계를 가꾸는 성향",
     behavior: "서로에 대한 예의와 품격을 소중히 여기며, 사소한 약속이나 디테일한 배려도 깊이 기억하고 챙깁니다.",
-    role: "정서적 품격과 섬세한 균형을 유지해 주는 조율자",
+    role: "작은 디테일까지 챙기면서 균형을 맞춰주는 사람",
     decision: "사소한 디테일과 관계의 심미적·정서적 완성도를 신중하게 따져가며 세밀하게 결정합니다.",
     stress: "거칠거나 무신경한 태도에 깊은 상처를 입으며, 냉정하게 선을 긋고 침묵으로 거리를 둡니다.",
     strength: "상대의 작은 불편이나 감정선도 미리 알아채고 정돈해 주는 정교하고 섬세한 케어",
@@ -151,7 +151,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   gap: {
     nature: "솔직하고 진취적으로 함께 성장하는 동반자적 관계를 지향하는 성향",
     behavior: "관계의 비전과 성장을 주도하며, 연인에게 힘이 되어주고 앞장서서 문제를 해결해 주고자 합니다.",
-    role: "더 나은 미래로 이끄는 진취적인 리더이자 든든한 보호자",
+    role: "앞장서서 방향을 잡고 밀어붙여 주는 사람",
     decision: "큰 그림과 미래의 성장 가능성을 우선시하며, 주도적이고 시원시원하게 결정을 추진합니다.",
     stress: "자신의 방향성이 막히거나 지지받지 못한다고 느끼면 조급해지며 답답함을 강하게 토로합니다.",
     strength: "어려운 상황에서도 희망을 잃지 않고 앞장서서 길을 여는 씩씩한 추진력과 든든함",
@@ -161,7 +161,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   eul: {
     nature: "다정하고 유연하게 상대에게 스며들며 일상의 온기를 나누는 성향",
     behavior: "적응력이 뛰어나고 주변 분위기를 편안하게 만들며, 부드러운 공감과 친밀한 소통으로 유대감을 쌓습니다.",
-    role: "언제나 곁에서 온기를 채워주는 다정하고 유연한 안식처",
+    role: "분위기를 편하게 만들고 곁을 잘 맞춰주는 사람",
     decision: "상대의 기분과 상황을 배려하며 부드러운 타협과 조화를 통해 유연하게 결정을 조율합니다.",
     stress: "강한 압박이나 억압적인 환경에 직면하면 불안해하며 유연하게 비껴서거나 숨을 곳을 찾습니다.",
     strength: "상대의 감정에 부드럽게 맞추고 관계의 팽팽한 긴장을 사르르 녹여주는 놀라운 유연성",
@@ -171,7 +171,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   byeong: {
     nature: "숨김없이 밝은 열정과 솔직함으로 사랑을 아낌없이 표현하는 성향",
     behavior: "감정을 투명하게 꺼내 보이며, 연인에게 기쁨과 긍정적인 활력을 전하는 즉각적인 감정 교류를 중시합니다.",
-    role: "관계에 생기와 온기를 불어넣는 솔직하고 따뜻한 활력소",
+    role: "감정을 솔직하게 드러내서 관계에 생기를 불어넣는 사람",
     decision: "직관적이고 즉각적인 영감을 따르며, 긍정적인 에너지와 확신을 바탕으로 빠르게 결정합니다.",
     stress: "관계의 온도가 차갑게 식거나 상대의 반응이 냉담할 때 큰 불안과 답답함을 느끼며 즉각적인 확인을 요구합니다.",
     strength: "어떤 순간에도 가식 없이 솔직하게 마음을 열고 온기를 전하는 아낌없는 진정성",
@@ -181,17 +181,17 @@ export const DAY_STEM_TRANSLATIONS: Record<
   jeong: {
     nature: "은은하고 섬세한 온기로 상대를 깊이 헤아리는 헌신적 성향",
     behavior: "겉으로는 차분하지만 내면에 깊은 온기를 품고 있으며, 상대의 미세한 심리 변화를 섬세하게 헤아립니다.",
-    role: "조용히 곁을 지키며 마음을 밝혀주는 따뜻한 등대",
+    role: "말은 없어도 곁에서 마음을 알아채 주는 사람",
     decision: "상대방의 마음 상태와 감정적 여파를 깊이 헤아린 뒤 조용하고 신중하게 결정을 내립니다.",
     stress: "서운함이나 상처를 겉으로 크게 폭발시키지 못하고 가슴속에 은은히 삭이며 스스로를 태웁니다.",
     strength: "상대의 깊은 상처나 외로움을 묵묵히 보듬어주는 깊은 정서적 수용력과 헌신",
     need: "자신의 조용한 헌신을 당연하게 여기지 않고 알아주는 다정한 눈빛과 따뜻한 인정",
-    depletionRisk: "상대를 위해 끊임없이 내면의 불꽃을 태우며 헌신하다 소리 없이 번아웃을 겪을 위험",
+    depletionRisk: "상대를 위해 쉬지 않고 애쓰다가 정작 자신은 소리 없이 지쳐버릴 위험",
   },
   mu: {
     nature: "변함없는 묵묵함과 넓은 품으로 상대를 포용하는 안정적 성향",
     behavior: "감정의 기복에 쉽게 흔들리지 않고 듬직하게 자리를 지키며, 언제든 돌아와 쉴 수 있는 쉼터가 되어줍니다.",
-    role: "어떤 풍파에도 흔들리지 않는 든든한 대지이자 쉼터",
+    role: "웬만한 일엔 동요하지 않고 묵묵히 곁을 지켜주는 사람",
     decision: "조급하게 서두르지 않고 상황이 무르익기를 기다리며 가장 묵직하고 안정적인 길을 선택합니다.",
     stress: "감정이 복잡해지면 말문을 닫고 침묵 속으로 침잠하여 홀로 무게를 견디려 합니다.",
     strength: "갈등이나 위기 속에서도 조급해하지 않고 묵묵히 버텨주는 탁월한 인내심과 든든한 안정감",
@@ -201,7 +201,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   gi: {
     nature: "세심하고 다정하게 상대의 현실과 일상을 품어주는 성향",
     behavior: "상대의 사소한 일상과 실질적 필요를 미리 세심하게 챙겨주며, 현실적이면서도 편안한 안도감을 제공합니다.",
-    role: "일상의 소소한 행복과 안정을 가꿔주는 살뜰한 조력자",
+    role: "일상을 세심하게 챙겨주는 사람",
     decision: "현실적인 실행 가능성과 주변의 편안함을 꼼꼼히 살피며 실용적이고 조화로운 결정을 내립니다.",
     stress: "생각이 너무 많아지면 속으로 불안을 키우며 사소한 걱정에 얽매여 마음을 졸입니다.",
     strength: "현실적인 생활 감각과 상대를 편안하게 무장해제시키는 살뜰하고 따뜻한 포용력",
@@ -211,7 +211,7 @@ export const DAY_STEM_TRANSLATIONS: Record<
   im: {
     nature: "넓은 시야와 유연한 포용력으로 깊은 정서적 교감을 나누는 성향",
     behavior: "틀에 얽매이지 않고 상대의 다름을 넓게 수용하며, 깊이 있는 대화와 자유로운 흐름 속에서 친밀해집니다.",
-    role: "넓은 바다처럼 상대를 품어주는 지혜로운 동반자",
+    role: "다름을 있는 그대로 받아들이고 넓게 이해해 주는 사람",
     decision: "고정관념에 갇히지 않고 전체적인 흐름과 본질을 꿰뚫어 보며 유연하고 거시적인 결정을 내립니다.",
     stress: "구속받거나 생각이 얽히면 감정을 수면 아래로 감추고 속을 알 수 없는 깊은 침묵으로 돌아섭니다.",
     strength: "어떤 상황에서도 유연하게 흐름을 타며 상대의 다양한 모습을 넓게 품어주는 지혜와 여유",
@@ -221,8 +221,8 @@ export const DAY_STEM_TRANSLATIONS: Record<
   gye: {
     nature: "섬세한 감수성과 다정한 촉촉함으로 마음에 부드럽게 스며드는 성향",
     behavior: "상대의 작은 감정선까지 섬세하게 포착하여 맞춤형 배려를 전하며, 조용하지만 깊은 애착을 형성합니다.",
-    role: "가뭄에 단비처럼 메마른 감성을 적셔주는 다정한 치유자",
-    decision: "직관적인 육감과 정서적인 공명을 중시하며, 상대방의 마음이 다치지 않는 방향으로 조심스럽게 결정합니다.",
+    role: "말하지 않은 마음까지 알아채고 다정하게 채워주는 사람",
+    decision: "직관적인 육감과 상대의 감정선을 세심하게 헤아리며, 상대방의 마음이 다치지 않는 방향으로 조심스럽게 결정합니다.",
     stress: "주변의 부정적인 기운이나 차가운 분위기를 스펀지처럼 흡수하여 마음이 쉽게 불안해지고 위축됩니다.",
     strength: "상대의 말 못 할 고충을 직관적으로 알아채고 마음 깊이 공감해 주는 다정한 감수성",
     need: "자신의 연약한 감정선을 거칠게 대하지 않고 따뜻하고 안전하게 감싸주는 온기",
@@ -235,7 +235,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   gyeong: {
     nature: "A nature that holds the relationship's center with clear standards and steady responsibility",
     behavior: "Values trust and principle — may look firm and plain on the surface, but becomes an unshakeable pillar for anyone who's earned their trust.",
-    role: "The relationship's unshakeable anchor and decisive guardian",
+    role: "Someone who stays steady and decides clearly even when things get shaky",
     decision: "Makes clear decisions based on fact, principle, and long-term stability, without being swayed by emotion.",
     stress: "In uncontrollable chaos or an unclear situation, inner tension rises and they become more firm and strict.",
     strength: "A decisiveness and steady dependability that stays clear-headed and points the way even in a crisis",
@@ -245,7 +245,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   sin: {
     nature: "A nature that cultivates a polished, high-quality relationship through delicate sensitivity and precise care",
     behavior: "Values mutual courtesy and refinement, remembering and attending to even small promises or details.",
-    role: "A mediator who maintains emotional dignity and a delicate balance",
+    role: "Someone who notices the small details and keeps things balanced",
     decision: "Decides carefully, weighing small details along with the relationship's aesthetic and emotional completeness.",
     stress: "Deeply hurt by a rough or careless attitude, draws a cool line and creates distance through silence.",
     strength: "A precise, delicate care that notices and smooths over even the other's smallest discomfort or emotional shift",
@@ -255,7 +255,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   gap: {
     nature: "A nature aimed at an honest, forward-driving, growth-oriented partnership",
     behavior: "Leads the relationship's vision and growth, wanting to be their partner's strength and step forward to solve problems.",
-    role: "A forward-driving leader and dependable protector who leads toward a better future",
+    role: "Someone who steps out front and pushes things in the right direction",
     decision: "Prioritizes the big picture and future growth potential, pushing decisions forward decisively and confidently.",
     stress: "Grows impatient and voices frustration strongly when they feel their direction is blocked or unsupported.",
     strength: "A spirited drive that doesn't lose hope and leads the way forward even in a hard situation",
@@ -265,7 +265,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   eul: {
     nature: "A warm, flexible nature that gently blends into the other and shares everyday warmth",
     behavior: "Highly adaptable and puts the mood at ease, building connection through gentle empathy and close communication.",
-    role: "A warm, flexible refuge that always fills the space beside them with warmth",
+    role: "Someone who keeps the mood easy and adjusts to whoever they're with",
     decision: "Considers the other's mood and situation, coordinating decisions flexibly through gentle compromise and harmony.",
     stress: "Grows anxious in the face of strong pressure or a controlling environment, flexibly sidestepping or looking for somewhere to hide.",
     strength: "A remarkable flexibility that gently matches the other's emotions and melts away tension in the relationship",
@@ -275,7 +275,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   byeong: {
     nature: "A nature that expresses love generously with unhidden, bright passion and honesty",
     behavior: "Shows feelings transparently, valuing immediate emotional exchange that brings joy and positive energy to their partner.",
-    role: "An honest, warm source of energy that brings life and warmth to the relationship",
+    role: "Someone who says how they feel out loud and brings energy into the room",
     decision: "Follows intuitive, immediate inspiration, deciding quickly on positive energy and confidence.",
     stress: "Feels strong anxiety and frustration when the relationship's warmth cools or the other's response feels distant, and demands immediate reassurance.",
     strength: "An unreserved authenticity that opens their heart honestly and shares warmth without pretense in any moment",
@@ -285,17 +285,17 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   jeong: {
     nature: "A devoted nature that reads the other deeply with a quiet, delicate warmth",
     behavior: "Calm on the surface but carries deep warmth within, sensitively noticing the other's subtle psychological shifts.",
-    role: "A warm lighthouse that quietly stays close and lights the way",
+    role: "Someone who doesn't say much but always notices how you're really doing",
     decision: "Deeply considers the other's emotional state and its ripple effects before deciding quietly and carefully.",
     stress: "Doesn't let hurt or disappointment erupt outwardly, and instead quietly smolders, burning it away inside.",
     strength: "A deep emotional capacity and devotion that quietly holds the other's deep hurt or loneliness",
     need: "A warm gaze and sincere recognition that doesn't take their quiet devotion for granted",
-    depletionRisk: "Risk of a silent burnout from endlessly burning their inner flame in devotion to the other",
+    depletionRisk: "Risk of quietly wearing themselves out from never letting up on caring for the other",
   },
   mu: {
     nature: "A steady nature that embraces the other with unwavering calm and a broad embrace",
     behavior: "Doesn't get easily shaken by emotional ups and downs, holding steady ground as a place to always come back and rest.",
-    role: "An unshakeable ground and refuge through any storm",
+    role: "Someone who doesn't rattle easily and just quietly stays put",
     decision: "Doesn't rush, waiting for the moment to ripen and choosing the steadiest, most stable path.",
     stress: "When feelings get complicated, shuts down and sinks into silence, trying to bear the weight alone.",
     strength: "An outstanding patience and steady reassurance that holds firm without rushing, even through conflict or crisis",
@@ -305,7 +305,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   gi: {
     nature: "A nature that warmly and attentively holds the other's everyday reality and life",
     behavior: "Attentively looks after the other's small daily needs in advance, offering a grounded, comfortable reassurance.",
-    role: "A caring helper who tends to life's small happiness and stability",
+    role: "Someone who handles the small, everyday stuff without being asked",
     decision: "Makes practical, harmonious decisions after carefully weighing real feasibility and everyone's comfort.",
     stress: "When overthinking builds up, quietly grows anxious and gets caught up worrying over small things.",
     strength: "A grounded, warm generosity that offers practical life sense and puts the other comfortably at ease",
@@ -315,7 +315,7 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   im: {
     nature: "A nature that shares deep emotional connection through a broad view and flexible acceptance",
     behavior: "Isn't bound by convention, broadly accepting the other's differences and growing close through deep conversation and free-flowing exchange.",
-    role: "A wise companion who holds the other like a wide sea",
+    role: "Someone who takes people's differences in stride instead of judging them",
     decision: "Sees through the overall flow and essence rather than getting stuck on fixed ideas, deciding flexibly and with a big-picture view.",
     stress: "When constrained or caught up in tangled thoughts, hides their feelings below the surface and turns to a deep, unreadable silence.",
     strength: "A wisdom and ease that flows flexibly with any situation and broadly embraces the other's many sides",
@@ -325,8 +325,8 @@ export const DAY_STEM_TRANSLATIONS_EN: typeof DAY_STEM_TRANSLATIONS = {
   gye: {
     nature: "A nature that seeps gently into the heart with delicate sensitivity and a warm, tender touch",
     behavior: "Delicately picks up on even the other's smallest emotional shifts and offers tailored care, forming a quiet but deep attachment.",
-    role: "A warm healer who moistens a parched heart like rain after a drought",
-    decision: "Values intuitive gut feeling and emotional resonance, deciding carefully in the direction that won't hurt the other's heart.",
+    role: "Someone who picks up on what you haven't said and quietly meets it",
+    decision: "Values intuitive gut feeling and a close read of the other's emotions, deciding carefully in the direction that won't hurt the other's heart.",
     stress: "Absorbs negative energy or a cold mood around them like a sponge, easily growing anxious and withdrawn.",
     strength: "A warm sensitivity that intuitively notices the other's unspoken struggles and empathizes deeply",
     need: "Warmth that wraps their delicate feelings gently and safely, rather than treating them roughly",

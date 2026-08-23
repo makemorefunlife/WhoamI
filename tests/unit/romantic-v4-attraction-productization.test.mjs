@@ -239,7 +239,7 @@ test("Section Narrative Composition for Attraction Chapter", () => {
 
   assert.equal(blockA.title, "지민이 끌리는 지점");
   assert.equal(blockB.title, "정우가 끌리는 지점");
-  assert.equal(blockUnique.title, "둘 사이에서만 나타나는 특별한 시너지");
+  assert.equal(blockUnique.title, "이 둘만의 특별한 케미");
 
   assert.ok(blockA.body.includes("대표적인 순간:"));
   assert.ok(blockA.body.includes("주의할 지점:"));

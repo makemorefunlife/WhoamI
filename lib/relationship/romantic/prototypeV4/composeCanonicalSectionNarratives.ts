@@ -359,7 +359,7 @@ export function composeCanonicalSectionNarratives(
         ...(pairModel.primaryAttractionMutual || (unitMutual && unitMutual.usedClaims && unitMutual.usedClaims.length > 0)
           ? [{
               blockId: "attr.unique",
-              title: L("둘 사이에서만 나타나는 특별한 시너지", "The Special Synergy Only the Two of You Have"),
+              title: L("이 둘만의 특별한 케미", "The Chemistry Only You Two Have"),
               body: [
                 pairModel.primaryAttractionMutual?.text ?? "",
                 unitMutual && unitMutual.usedClaims && unitMutual.usedClaims.length > 0
