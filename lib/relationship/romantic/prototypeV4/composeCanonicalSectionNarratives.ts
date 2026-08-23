@@ -46,97 +46,117 @@ export type CanonicalSection = {
   primaryEvidenceIds: string[];
 };
 
-const TITLES_KO: Record<CanonicalChapterId, { title: string; userQuestion: string }> = {
+const TITLES_KO: Record<CanonicalChapterId, { title: string; subtitle: string; userQuestion: string }> = {
   c1_hero: {
     title: "우리는 어떤 커플인가",
+    subtitle: "두 사람이 이루는 결합의 핵심 정의와 조화",
     userQuestion: "What is the core definition and bond of this relationship?",
   },
   c2_attraction: {
     title: "왜 서로에게 끌렸는가",
+    subtitle: "서로를 끌어당긴 인연과 매력의 원동력",
     userQuestion: "Why are we drawn to each other?",
   },
   c3_dynamics: {
     title: "우리가 관계를 맺는 방식",
+    subtitle: "일상, 책임, 스트레스 상황에서의 성향과 반응",
     userQuestion: "How do we show up in private, under responsibility, and under stress?",
   },
   c4_conflict: {
     title: "실제로 자주 부딪히는 순간",
+    subtitle: "갈등이 시작되고 반복되는 상호작용 패턴",
     userQuestion: "What is our recurring loop and how does it start?",
   },
   c5_misunderstanding: {
     title: "마음이 잘못 번역되는 순간",
+    subtitle: "서로의 행동을 오해하게 되는 핵심 성향 차이",
     userQuestion: "Why do we misread each other and what do we actually need?",
   },
   c6_hidden_hearts: {
     title: "가장 깊은 곳, 숨은 마음",
+    subtitle: "겉으로 표현하지 못한 두려움과 진심 어린 바람",
     userQuestion: "What are the hidden fears and unspoken needs beneath the surface?",
   },
   c7_repair: {
     title: "다시 가까워지는 방법",
+    subtitle: "갈등을 가라앉히고 오해를 푸는 단계별 솔루션",
     userQuestion: "How can we safely de-escalate and repair after a fight?",
   },
   c8_strength_vulnerability: {
     title: "함께라서 강해지는 것과 취약해지는 것",
+    subtitle: "이 조합이기에 생기는 특별한 시너지와 주의점",
     userQuestion: "What is our greatest power and vulnerability as a couple?",
   },
   c9_daily_life: {
     title: "현실에서 마주하는 장면들",
+    subtitle: "주말, 연락, 지출 등 구체적 일상의 합의점",
     userQuestion: "Where do our differences show up in everyday habits and decisions?",
   },
   c10_future_timing: {
     title: "올해 우리 관계의 흐름",
+    subtitle: "올해와 앞으로의 시기별 조율 포인트",
     userQuestion: "What cycles and transitions should we watch for?",
   },
   c11_reflection: {
     title: "관계를 통해 배우는 것",
+    subtitle: "서로의 모습을 통해 내면을 돌아보는 질문들",
     userQuestion: "What is this relationship teaching me about myself?",
   },
   c12_choice: {
     title: "이해한 뒤 우리가 선택할 것",
+    subtitle: "더 깊은 연결을 위해 함께 걸어갈 다음 챕터",
     userQuestion: "What will I do with this understanding?",
   },
 };
 
-const TITLES_EN: Record<CanonicalChapterId, { title: string; userQuestion: string }> = {
+const TITLES_EN: Record<CanonicalChapterId, { title: string; subtitle: string; userQuestion: string }> = {
   c1_hero: {
     title: "Who We Are as a Couple",
+    subtitle: "Core definition and bond of this relationship",
     userQuestion: "What is the core definition and bond of this relationship?",
   },
   c2_attraction: {
     title: "Why We Were Drawn to Each Other",
+    subtitle: "The driving forces behind your attraction",
     userQuestion: "Why are we drawn to each other?",
   },
   c3_dynamics: {
     title: "How We Show Up With Each Other",
+    subtitle: "Private, responsible, and stress dynamics",
     userQuestion: "How do we show up in private, under responsibility, and under stress?",
   },
   c4_conflict: {
     title: "Where We Actually Keep Clashing",
+    subtitle: "Your recurring conflict loop and trigger scenes",
     userQuestion: "What is our recurring loop and how does it start?",
   },
   c5_misunderstanding: {
     title: "Where Our Hearts Get Lost in Translation",
+    subtitle: "Key personality gaps and mutual misreadings",
     userQuestion: "Why do we misread each other and what do we actually need?",
   },
   c6_hidden_hearts: {
     title: "The Deepest Place, Our Hidden Hearts",
+    subtitle: "Unspoken fears and innermost needs",
     userQuestion: "What are the hidden fears and unspoken needs beneath the surface?",
   },
   c7_repair: {
     title: "How We Find Our Way Back to Each Other",
+    subtitle: "Step-by-step de-escalation and repair guide",
     userQuestion: "How can we safely de-escalate and repair after a fight?",
   },
   c8_strength_vulnerability: {
     title: "What Makes Us Strong Together, and Where We're Vulnerable",
+    subtitle: "Shared superpowers and joint vulnerabilities",
     userQuestion: "What is our greatest power and vulnerability as a couple?",
   },
   c9_daily_life: {
     title: "Where This Shows Up in Real Life",
+    subtitle: "Everyday agreement guidelines for common scenarios",
     userQuestion: "Where do our differences show up in everyday habits and decisions?",
   },
   c10_future_timing: {
     title: "How Our Relationship Flows This Year",
-    userQuestion: "What cycles and transitions should we watch for?",
   },
   c11_reflection: {
     title: "What This Relationship Is Teaching Us",

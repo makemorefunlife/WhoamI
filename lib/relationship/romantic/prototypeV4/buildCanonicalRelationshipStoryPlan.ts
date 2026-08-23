@@ -378,9 +378,16 @@ export function selectClosingFocus(params: {
 
   // STRENGTH structure: "이 둘의 다음 챕터는 ~이에요." (spec example)
   if (winner?.type === "strength") {
+    const raw = secondClauseOrFirst(sharedStrength ?? "");
+    const cleanNoun = raw
+      .replace(/\s*조화가 생깁니다\.?$/, " 조화")
+      .replace(/\s*힘이 생깁니다\.?$/, " 힘")
+      .replace(/\s*생깁니다\.?$/, "")
+      .replace(/\s*만듭니다\.?$/, "")
+      .replace(/\s*이어집니다\.?$/, "");
     return L(
-      `이 둘의 다음 챕터는, 지금 가진 강점 — ${secondClauseOrFirst(sharedStrength ?? "")} — 을 더 자주 써먹는 쪽에 가까워요.`,
-      `The next chapter for these two is about reaching for the strength you already have more often: ${secondClauseOrFirst(sharedStrength ?? "")}`,
+      `이 둘의 다음 챕터는, 지금 가진 강점 — ${cleanNoun} — 를 더 자주 써먹는 쪽에 가까워요.`,
+      `The next chapter for these two is about reaching for the strength you already have more often: ${cleanNoun}`,
     );
   }
 
@@ -2154,7 +2161,20 @@ function computeHeroPairThesis(params: {
       improvingSignals: [copy.improveSignal],
       cautionSignals: repair.warningIfRepeats,
       decisionQuestions: [
-        L(`우리 둘 사이의 "${primaryTension}"은/는 요즘도 여전히 반복되고 있나요?`, `Is "${primaryTension}" between the two of us still showing up these days?`),
+        (() => {
+          const raw = primaryTension;
+          const label =
+            raw.includes("부딪히는 자극") || raw.includes("마찰")
+              ? (locale === "en-US" ? "the friction between our viewpoints" : "서로의 관점이 부딪히는 자극")
+              : raw.includes("속도") || raw.includes("템포")
+                ? (locale === "en-US" ? "the difference in our pace" : "서로의 속도 차이")
+                : raw.length > 25
+                  ? (locale === "en-US" ? "this recurring friction" : "관계의 사소한 마찰")
+                  : raw;
+          return locale === "en-US"
+            ? `Is ${label} still showing up between the two of us these days?`
+            : `우리 둘 사이의 ${topicP(label, locale)} 요즘도 여전히 반복되고 있나요?`;
+        })(),
         copy.q2,
         copy.q3,
       ],

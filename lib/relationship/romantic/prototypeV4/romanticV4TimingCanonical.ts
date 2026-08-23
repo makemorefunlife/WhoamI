@@ -43,19 +43,27 @@ const THEME_BY_INTERACTION: Record<NarrativeLocale, Record<"supportive" | "neutr
   },
 };
 
-function favorableLine(locale: NarrativeLocale, year: number): string {
+function favorableLine(locale: NarrativeLocale, year: number, currentYear: number): string {
+  const isDistant = year > currentYear + 1;
+  const yearLabel = isDistant
+    ? pick(locale, `${year}년(장기 전망)`, `${year} (Long-term outlook)`)
+    : `${year}년`;
   return pick(
     locale,
-    `${year}년: 결이 잘 맞아떨어지는 시기예요 — 여행, 동거, 청혼처럼 큰 걸음을 함께 내딛기에 무난해요.`,
-    `${year}: things tend to click into place — a solid window for a big step together, like a trip, moving in, or a proposal.`,
+    `${yearLabel}: 결이 잘 맞아떨어지는 시기예요 — 여행, 동거, 청혼처럼 큰 걸음을 함께 내딛기에 무난해요.`,
+    `${yearLabel}: things tend to click into place — a solid window for a big step together, like a trip, moving in, or a proposal.`,
   );
 }
 
-function cautionLine(locale: NarrativeLocale, year: number): string {
+function cautionLine(locale: NarrativeLocale, year: number, currentYear: number): string {
+  const isDistant = year > currentYear + 1;
+  const yearLabel = isDistant
+    ? pick(locale, `${year}년(장기 전망)`, `${year} (Long-term outlook)`)
+    : `${year}년`;
   return pick(
     locale,
-    `${year}년: 평소보다 마찰이 도드라질 수 있는 시기예요 — 큰 결정은 서두르지 말고 한 번 더 확인하고 가세요.`,
-    `${year}: friction tends to surface a bit more than usual — for big decisions, slow down and double-check with each other first.`,
+    `${yearLabel}: 평소보다 마찰이 도드라질 수 있는 시기예요 — 큰 결정은 서두르지 말고 한 번 더 확인하고 가세요.`,
+    `${yearLabel}: friction tends to surface a bit more than usual — for big decisions, slow down and double-check with each other first.`,
   );
 }
 
@@ -83,12 +91,13 @@ export function buildRomanticV4TimingFromFortuneFlow(
 
   const langKey = locale === "en-US" ? "en-US" : "ko-KR";
   const theme = THEME_BY_INTERACTION[langKey][fortuneFlow.daewoon.relationship_interaction] || THEME_BY_INTERACTION["ko-KR"].supportive;
+  const currentYr = fortuneFlow.sewoon.current_year;
   const favorableWindows = fortuneFlow.sewoon.years
     .filter((y) => y.branch_relation === "combine")
-    .map((y) => favorableLine(locale, y.year));
+    .map((y) => favorableLine(locale, y.year, currentYr));
   const cautionWindows = fortuneFlow.sewoon.years
     .filter((y) => y.branch_relation === "clash")
-    .map((y) => cautionLine(locale, y.year));
+    .map((y) => cautionLine(locale, y.year, currentYr));
 
   return {
     available: true,

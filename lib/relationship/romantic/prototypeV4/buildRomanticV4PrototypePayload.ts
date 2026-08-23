@@ -232,9 +232,19 @@ export function localizeComparisonRowProse(params: {
 
   let understanding = prose.understanding;
   if (row.confidence === "low") {
-    understanding += isEn
-      ? " One side's survey answers are missing, so this is only a partial reference."
-      : " 한쪽의 설문 응답이 없어 아직은 참고 수준으로만 봐 주세요.";
+    if (
+      row.source === "saju_plus_partial_survey" ||
+      row.personASource === "synthetic_neutral" ||
+      row.personBSource === "synthetic_neutral"
+    ) {
+      understanding += isEn
+        ? " One side's survey answers are missing, so this is only a partial reference."
+        : " 한쪽의 설문 응답이 없어 아직은 참고 수준으로만 봐 주세요.";
+    } else {
+      understanding += isEn
+        ? " Treat this as a tentative signal rather than a fixed read."
+        : " 아직은 확정적이라기보다 잠정적인 신호로 봐 주세요.";
+    }
   } else if (row.confidence === "insufficient") {
     understanding += isEn
       ? " Treat this as a tentative signal rather than a fixed read."
