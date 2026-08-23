@@ -210,11 +210,9 @@ export function buildPairRelationshipModel(plan: CanonicalRelationshipStoryPlan)
     // "strength becomes shadow" insight — closest genuine equivalent. Falls
     // back to bilateralChanges' excessVulnerability (already per-pair) when
     // Cross-Signal has nothing.
-    sharedVulnerability: strengthShadow
-      ? fromCrossSignal(strengthShadow, strengthShadow.from === "a" ? "a_to_b" : "b_to_a")
-      : (plan.bilateralChanges ?? [])[0]
-        ? fromProvenance((plan.bilateralChanges ?? [])[0].excessVulnerability, (plan.bilateralChanges ?? [])[0].provenance, "pair")
-        : null,
+    sharedVulnerability: plan.sharedVulnerability
+      ? fromProvenance(plan.sharedVulnerability, [], "pair")
+      : null,
 
     repairStrategy: plan.repair?.sequence?.length
       ? fromProvenance(plan.repair.sequence.join(" -> "), plan.repair.provenance ?? [], "mutual")

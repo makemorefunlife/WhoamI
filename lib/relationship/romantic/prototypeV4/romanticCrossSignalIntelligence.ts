@@ -269,8 +269,8 @@ function buildStrengthShadowInsights(
     partnerEffect: null,
     derivedMeaning: L(
       locale,
-      `${bc.from === "a" ? "A" : "B"}가 ${bc.to === "a" ? "A" : "B"}에게 주는 이 강점은, 같은 메커니즘이 과할 때 그대로 취약점으로 뒤집힙니다.`,
-      `The strength ${bc.from === "a" ? "A" : "B"} brings to ${bc.to === "a" ? "A" : "B"} flips into a vulnerability through the exact same mechanism when it's overused.`,
+      `${bc.from === "a" ? "A" : "B"}의 ${bc.change}의 면모는 과해질 때 ${bc.excessVulnerability}의 그늘로 뒤집힐 수 있습니다.`,
+      `The strength of ${bc.change} from ${bc.from === "a" ? "A" : "B"} can flip into ${bc.excessVulnerability} when overused.`,
     ),
     evidenceRefs: bc.provenance.map((p) => p.evidenceId),
     sourceSignals: [`bilateralChanges[${bc.from}_to_${bc.to}].change`, `bilateralChanges[${bc.from}_to_${bc.to}].excessVulnerability`],

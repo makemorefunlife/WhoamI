@@ -638,7 +638,7 @@ export function composeCanonicalSectionNarratives(
         {
           blockId: "shared.vulnerability",
           title: L("함께 경계해야 할 공동의 취약점", "The Shared Vulnerability to Watch For"),
-          body: plan.sharedVulnerability,
+          body: pairModel.sharedVulnerability?.text ?? plan.sharedVulnerability,
           expertSynthesis: synthShared,
           evidenceIds: Array.from(
             new Set([

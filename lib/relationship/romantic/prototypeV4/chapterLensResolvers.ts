@@ -746,12 +746,28 @@ export function resolveStrengthVulnerabilityLens(params: {
   const isFastA = relCeA?.stressTempBand === "hot";
   const isFastB = relCeB?.stressTempBand === "hot";
 
-  let sharedVulnText = L(
-    `두 사람의 가장 큰 취약점은 갈등 시 '서로의 스트레스 처리 속도 차이를 기다려주지 못할 때' 발생합니다. 한쪽의 확인 요구와 다른 쪽의 동굴 후퇴가 엇갈리면 강점이던 균형이 일시적으로 단절로 바뀔 수 있습니다.`,
-    `Your biggest shared vulnerability shows up in conflict, when you can't wait out each other's different pace for processing stress. When one side's need to check in collides with the other's retreat, the balance that's usually your strength can briefly turn into disconnection.`,
-  );
+  let sharedVulnText = ((isFastA && isSlowB) || (isFastB && isSlowA))
+    ? L(
+        `두 사람의 주요 취약점은 갈등 발생 시 ${isFastA ? a : b}님의 빠른 확인 욕구와 ${isSlowA ? a : b}님의 동굴 후퇴 템포가 엇갈리며 서운함이 축적되는 순간에 나타납니다.`,
+        `Your primary vulnerability arises during conflict when ${isFastA ? a : b}'s need for quick reassurance collides with ${isSlowA ? a : b}'s cave retreat pace, accumulating hurt.`,
+      )
+    : (isSlowA && isSlowB)
+      ? L(
+          `두 사람의 주요 취약점은 갈등 발생 시 ${a}님과 ${b}님이 동시에 침묵으로 물러서서 대화 재개 타이밍을 조용히 지연시킬 때 나타납니다.`,
+          `Your primary vulnerability arises during conflict when both ${a} and ${b} retreat into silence, quietly delaying the timing to reopen conversation.`,
+        )
+      : (isFastA && isFastB)
+        ? L(
+            `두 사람의 주요 취약점은 갈등 발생 시 ${a}님과 ${b}님의 감정이 동시에 고조되어 직설적인 표현이 맞부딪히며 감정의 온도가 과열될 때 나타납니다.`,
+            `Your primary vulnerability arises during conflict when emotions flare simultaneously and direct expressions clash, overheating the temperature.`,
+          )
+        : L(
+            `두 사람의 주요 취약점은 평소 서로에게 조심스럽게 맞추느라 서운한 점이 생겼을 때 제때 털어놓지 않고 속에 묵혀두다가 오해가 깊어지는 순간입니다.`,
+            `Your primary vulnerability arises when you hold back small hurts rather than bringing them up in time, letting misunderstandings deepen.`,
+          );
+
   let balancedProtText = L(
-    `이 기여를 지키는 핵심 합의: ${a}은/는 ${b}에게 생각할 시간을 보장하고, ${b}은/는 침묵 대신 '언제까지 정리해서 말하겠다'는 확실한 신호를 전달하는 것입니다.`,
+    `이 기여를 지키는 핵심 합의: ${a}님은 ${b}님에게 생각할 시간을 보장하고, ${b}님은 침묵 대신 '언제까지 정리해서 말하겠다'는 확실한 신호를 전달하는 것입니다.`,
     `The key agreement that protects this: ${a} guarantees ${b} the time to think, and ${b}, instead of just going silent, gives a clear signal of "I'll have my thoughts sorted out and talk to you by ___."`,
   );
 
@@ -796,10 +812,13 @@ export function resolveStrengthVulnerabilityLens(params: {
   // already the source for gift.a_to_b/gift.b_to_a just above in this same
   // chapter — reusing it here is intra-chapter synthesis, not cross-chapter
   // repetition.
+  const strengthAText = relCeA?.strengthsGivenToPartner?.[0]?.text ?? relCeA?.careExpression?.text ?? relCeA?.familiarRelationshipRole?.text ?? L("다정한 활력", "warm vitality");
+  const strengthBText = relCeB?.strengthsGivenToPartner?.[0]?.text ?? relCeB?.careExpression?.text ?? relCeB?.familiarRelationshipRole?.text ?? L("흔들림 없는 신중함", "steady prudence");
+
   const sharedStrength = sanitizeParticles(
     L(
-      `두 사람이 함께할 때 가장 강력해지는 지점은 ${a}의 ${relCeA?.strengthsGivenToPartner?.[0]?.text ?? "결단력"}과 ${b}의 ${relCeB?.strengthsGivenToPartner?.[0]?.text ?? "묵묵한 안정감"}이 시너지를 발휘하는 순간입니다.`,
-      `Where you two become strongest together is the moment ${a}'s ${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").charAt(0).toLowerCase()}${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").slice(1)} and ${b}'s ${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").charAt(0).toLowerCase()}${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").slice(1)} create synergy together.`,
+      `두 사람이 함께할 때 가장 강력해지는 지점은 ${a}의 ${strengthAText}과 ${b}의 ${strengthBText}이 시너지를 발휘하는 순간입니다.`,
+      `Where you two become strongest together is the moment ${a}'s ${strengthAText.charAt(0).toLowerCase()}${strengthAText.slice(1)} and ${b}'s ${strengthBText.charAt(0).toLowerCase()}${strengthBText.slice(1)} create synergy together.`,
     ),
     [a, b],
     locale,
