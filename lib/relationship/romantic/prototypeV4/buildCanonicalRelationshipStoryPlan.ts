@@ -22,6 +22,7 @@ import type {
   HiddenHeartBits,
   ProvenanceRef,
   RomanticCrossSignalInsight,
+  RomanticGrowthTransition,
   StoryFace,
 } from "./canonicalStoryPlanTypes";
 import type { PersonalRelationshipCe } from "./personalRelationshipCe";
@@ -189,6 +190,230 @@ function selectConflictTriggerScene(params: {
 function firstClause(text: string): string {
   const match = /^[\s\S]*?[.!?다요][)"'』」]*(?=\s|$)/.exec(text);
   return (match ? match[0] : text).trim();
+}
+
+/** Splits text into clauses and returns the SECOND one when there is one,
+ * else the first. Some multi-branch fields (e.g. chapterLensResolvers.ts's
+ * sharedStrength "default" bucket) lead with a generic connector sentence
+ * before the actually-personalized content — grabbing clause 1 there would
+ * silently pick the one sentence shared across every pair in that bucket.
+ * Grabbing "second if present" reliably lands on real content across all
+ * of that field's branches, since only the generic-first-sentence branch
+ * has more than one clause to skip past. */
+function secondClauseOrFirst(text: string): string {
+  const clauseRe = /[\s\S]*?[.!?다요][)"'』」]*(?=\s|$)/g;
+  const clauses = text.match(clauseRe)?.map((s) => s.trim()) ?? [text.trim()];
+  return (clauses[1] ?? clauses[0] ?? text).trim();
+}
+
+export type ClosingFocusType = "growth" | "repair" | "strength" | "vulnerability_individual" | "vulnerability_shared" | "timing" | "none";
+
+export type ClosingFocusCandidate = {
+  type: ClosingFocusType;
+  /** Sum of the 4 scored axes below — highest wins. */
+  score: number;
+  relevance: number;
+  confidence: number;
+  novelty: number;
+  forwardLooking: number;
+  /** Raw evidence text this candidate would render from, for inspection —
+   * not itself the final sentence (each type owns its own structure,
+   * built separately once the winner is picked). */
+  evidenceText: string;
+};
+
+/**
+ * Scores every real closing-evidence candidate for this pair on 4 axes and
+ * returns them ranked, highest first. Exported (not just used internally)
+ * so live verification can show which candidate won and why, per the
+ * spec's requirement — never invented after the fact, this IS the real
+ * selection logic.
+ *
+ * Novelty is scored low for individual/shared vulnerability because those
+ * exact fields are already the primary evidence for earlier chapters
+ * (hiddenVulnerability drives c6_hidden_hearts; sharedVulnerability drives
+ * c8's own shared.vulnerability block) — reusing them again in the closing
+ * without a real signal elsewhere would just be summarizing, which the
+ * spec explicitly disallows. Timing's confidence is scored low not because
+ * the underlying computation is wrong, but because live-testing (previous
+ * pass) caught horizon.title colliding across multiple different real
+ * pairs — an empirically low-differentiation source, discounted rather
+ * than trusted at face value.
+ */
+export function rankClosingFocusCandidates(params: {
+  relCeA?: PersonalRelationshipCe | null;
+  relCeB?: PersonalRelationshipCe | null;
+  growthTransitionP1: RomanticGrowthTransition;
+  selectedRepairEvidenceIds: string[];
+  sharedStrength?: string;
+  sharedVulnerability?: string;
+  timingTheme?: string | null;
+}): ClosingFocusCandidate[] {
+  const { relCeA, relCeB, growthTransitionP1, selectedRepairEvidenceIds, sharedStrength, sharedVulnerability, timingTheme } = params;
+  const candidates: ClosingFocusCandidate[] = [];
+
+  if (growthTransitionP1.recommendedShift) {
+    candidates.push({
+      type: "growth",
+      relevance: 3, // the core active friction pattern for this pair
+      confidence: growthTransitionP1.confidence === "high" ? 3 : 2,
+      novelty: 3, // recommendedShift/longTermGoal are not stated anywhere else
+      forwardLooking: 3, // literally a shift + a long-term goal
+      score: 0,
+      evidenceText: growthTransitionP1.recommendedShift,
+    });
+  }
+
+  const repairSignalReal = selectedRepairEvidenceIds.length > 0;
+  if (repairSignalReal) {
+    candidates.push({
+      type: "repair",
+      relevance: 2,
+      confidence: 3,
+      novelty: 2, // the mechanism is shown in Ch06; a "progress indicator" framing is new
+      forwardLooking: 3,
+      score: 0,
+      evidenceText: selectedRepairEvidenceIds.join(","),
+    });
+  }
+
+  if (sharedStrength) {
+    candidates.push({
+      type: "strength",
+      relevance: 2,
+      confidence: 2,
+      novelty: 1, // Ch08 already states this fairly directly
+      forwardLooking: 3,
+      score: 0,
+      evidenceText: sharedStrength,
+    });
+  }
+
+  const individualVuln = relCeA?.hiddenVulnerability?.text || relCeB?.hiddenVulnerability?.text;
+  if (individualVuln) {
+    candidates.push({
+      type: "vulnerability_individual",
+      relevance: 2,
+      confidence: 3,
+      novelty: 1, // Ch05/Ch06 already lean heavily on this exact field
+      forwardLooking: 2,
+      score: 0,
+      evidenceText: individualVuln,
+    });
+  }
+
+  if (sharedVulnerability) {
+    candidates.push({
+      type: "vulnerability_shared",
+      relevance: 2,
+      confidence: 2,
+      novelty: 1, // Ch08's own shared.vulnerability block already states this
+      forwardLooking: 2,
+      score: 0,
+      evidenceText: sharedVulnerability,
+    });
+  }
+
+  if (timingTheme) {
+    candidates.push({
+      type: "timing",
+      relevance: 2,
+      confidence: 1, // discounted — confirmed low differentiation across pairs
+      novelty: 2,
+      forwardLooking: 3,
+      score: 0,
+      evidenceText: timingTheme,
+    });
+  }
+
+  for (const c of candidates) c.score = c.relevance + c.confidence + c.novelty + c.forwardLooking;
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates;
+}
+
+/** Exported alongside rankClosingFocusCandidates so live verification can
+ * call the exact production selection+rendering logic directly with
+ * crafted inputs, rather than needing a full report build to exercise a
+ * specific branch. */
+export function selectClosingFocus(params: {
+  names: { a: string; b: string };
+  relCeA?: PersonalRelationshipCe | null;
+  relCeB?: PersonalRelationshipCe | null;
+  growthTransitionP1: RomanticGrowthTransition;
+  selectedRepairEvidenceIds: string[];
+  sharedStrength?: string;
+  sharedVulnerability?: string;
+  timingTheme?: string | null;
+  locale: NarrativeLocale;
+}): string {
+  const { names, relCeA, relCeB, growthTransitionP1, selectedRepairEvidenceIds, sharedStrength, sharedVulnerability, timingTheme, locale } = params;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+  const a = names.a;
+  const b = names.b;
+
+  const ranked = rankClosingFocusCandidates({ relCeA, relCeB, growthTransitionP1, selectedRepairEvidenceIds, sharedStrength, sharedVulnerability, timingTheme });
+  const winner = ranked[0];
+
+  // GROWTH structure: "이 관계는 ~로 바꿀 때 더 편해질 거예요." (spec example)
+  if (winner?.type === "growth") {
+    return L(
+      `이 관계는 ${growthTransitionP1.recommendedShift}, 이런 식으로 바뀔 때 더 편해질 거예요.`,
+      `This relationship gets easier when you shift toward this: ${growthTransitionP1.recommendedShift}`,
+    );
+  }
+
+  // REPAIR structure: "관계가 나아지고 있다는 가장 분명한 신호는 ~예요." (spec example)
+  if (winner?.type === "repair") {
+    const isRecoverySignal = selectedRepairEvidenceIds.includes("canonical_projections.recovery_speed");
+    return isRecoverySignal
+      ? L(
+          `관계가 나아지고 있다는 가장 분명한 신호는, 회복 속도가 다르다는 사실 자체가 더 이상 서운함으로 번지지 않는 거예요.`,
+          `The clearest sign things are improving will be that the gap in how fast you each recover stops turning into hurt on its own.`,
+        )
+      : L(
+          `관계가 나아지고 있다는 가장 분명한 신호는, 침묵의 시간이 불안이 아니라 익숙한 신호로 받아들여지는 거예요.`,
+          `The clearest sign things are improving will be that the quiet stretches start reading as a familiar signal, not as anxiety.`,
+        );
+  }
+
+  // STRENGTH structure: "이 둘의 다음 챕터는 ~이에요." (spec example)
+  if (winner?.type === "strength") {
+    return L(
+      `이 둘의 다음 챕터는, 지금 가진 강점 — ${secondClauseOrFirst(sharedStrength ?? "")} — 을 의식적으로 더 자주 꺼내 쓰는 쪽에 가까워요.`,
+      `The next chapter for these two is about consciously reaching for the strength you already have more often: ${secondClauseOrFirst(sharedStrength ?? "")}`,
+    );
+  }
+
+  // VULNERABILITY structures: "지금 중요한 건 X가 아니라, Y예요." (spec example)
+  if (winner?.type === "vulnerability_individual") {
+    const owner = relCeA?.hiddenVulnerability?.text ? a : b;
+    const text = relCeA?.hiddenVulnerability?.text ?? relCeB?.hiddenVulnerability?.text ?? "";
+    return L(
+      `지금 중요한 건 ${owner}이/가 겉으로 어떻게 보이느냐가 아니라, ${firstClause(text)}`,
+      `What matters now is not how ${owner} looks from the outside, but this: ${firstClause(text)}`,
+    );
+  }
+  if (winner?.type === "vulnerability_shared") {
+    return L(
+      `지금 중요한 건 누가 옳았느냐가 아니라, ${firstClause(sharedVulnerability ?? "")}`,
+      `What matters now is not who was right, but this: ${firstClause(sharedVulnerability ?? "")}`,
+    );
+  }
+
+  // TIMING structure: "이 시기는 ~에 쓰는 게 더 나아요." (spec example) — note
+  // timingTheme is already a complete sentence, used as the "how" clause.
+  if (winner?.type === "timing" && timingTheme) {
+    return L(
+      `이 시기는 서로를 다그치기보다 지켜보는 데 쓰는 게 더 나아요. ${timingTheme}`,
+      `This period is better used watching and waiting than pushing. ${timingTheme}`,
+    );
+  }
+
+  // No candidate had real evidence — deliberately short and non-predictive.
+  return L(
+    "지금 이대로도 관계는 계속 만들어지고 있어요.",
+    "This relationship keeps taking shape, even just as it is right now.",
+  );
 }
 
 function selectRepairSequence(params: {
@@ -1717,6 +1942,43 @@ function computeHeroPairThesis(params: {
   const primaryTension =
     hitNotes.find((n) => n.includes("\uB9C8\uCC30")) || copy.primaryTensionFallback;
 
+  // Ch10-closing fix: this was 100% hardcoded (3 fixed constants, zero
+  // branching) \u2014 confirmed via audit. Now branches on the same real
+  // recovery_mismatch/expression_speed signals that already drive
+  // recurringLoop/repair, but reframed forward (a SHIFT and a GOAL, not a
+  // restatement of the loop itself) so it's usable as genuinely novel
+  // closing evidence rather than just repeating Ch03/Ch06. Declared here
+  // (before finalStoryPlan) because closing.presentPossibility below needs
+  // it during finalStoryPlan's own construction.
+  const growthTransitionP1 = ((): RomanticGrowthTransition => {
+    if (recovery?.recovery_mismatch) {
+      return {
+        currentPattern: L("\uC11C\uB85C \uD68C\uBCF5\uD558\uB294 \uC18D\uB3C4\uAC00 \uB2EC\uB77C\uC11C \uD55C\uCABD\uC740 \uC774\uBBF8 \uAD1C\uCC2E\uC740\uB370 \uB2E4\uB978 \uCABD\uC740 \uC544\uC9C1 \uC815\uB9AC \uC911\uC778 \uC0C1\uD0DC\uB85C \uC5B4\uAE0B\uB098\uB294 \uD328\uD134", "A pattern where you recover at different speeds \u2014 one of you is already fine while the other is still processing."),
+        recommendedShift: L("\uD68C\uBCF5 \uC18D\uB3C4\uAC00 \uB2E4\uB974\uB2E4\uB294 \uAC83 \uC790\uCCB4\uB97C \uBB38\uC81C\uB85C \uBCF4\uC9C0 \uC54A\uACE0, \uC11C\uB85C\uC758 \uC18D\uB3C4\uB97C \uBBF8\uB9AC \uC54C\uB824\uC8FC\uB294 \uC2E0\uD638\uB85C \uBC14\uAFB8\uB294 \uC804\uD658", "Shifting from treating the pace gap itself as a problem to using it as a signal you each announce ahead of time."),
+        longTermGoal: L("\uC11C\uB85C \uB2E4\uB978 \uC18D\uB3C4\uB97C \uC874\uC911\uD558\uBA74\uC11C\uB3C4 \uC815\uC11C\uC801\uC73C\uB85C \uACC4\uC18D \uC5F0\uACB0\uB418\uC5B4 \uC788\uB294 \uAD00\uACC4", "A relationship that stays emotionally connected even while moving at two different paces."),
+        evidenceIds: ["canonical_projections.recovery_speed"],
+        confidence: "high" as const,
+      };
+    }
+    if (expr?.direction === "A" || expr?.direction === "B") {
+      const slower = expr.direction === "A" ? names.a : names.b;
+      return {
+        currentPattern: L(`${slower}\uC774/\uAC00 \uB2F5\uC744 \uC815\uB9AC\uD558\uB294 \uB370 \uC2DC\uAC04\uC774 \uAC78\uB9AC\uB294 \uAC78 \uC0C1\uB300\uAC00 \uC870\uAE09\uD558\uAC8C \uBC1B\uC544\uB4E4\uC774\uB294 \uD328\uD134`, `A pattern where ${slower} needs time to form a response, and the other reads that as urgency.`),
+        recommendedShift: L(`${slower}\uC758 \uCE68\uBB35\uC744 \uB2F5\uC774 \uC5C6\uB294 \uAC83\uC73C\uB85C \uB118\uACA8\uC9DA\uC9C0 \uC54A\uACE0, \uC815\uB9AC\uD560 \uC2DC\uAC04\uC774\uB77C\uB294 \uC2E0\uD638\uB85C \uBC1B\uC544\uB4E4\uC774\uB294 \uC804\uD658`, `Shifting from reading ${slower}'s silence as no answer, to reading it as a signal that they're still forming one.`),
+        longTermGoal: L("\uAC01\uC790\uC758 \uC18D\uB3C4\uB97C \uC778\uC815\uD558\uBA74\uC11C\uB3C4 \uB300\uD654\uAC00 \uB04A\uAE30\uC9C0 \uC54A\uB294 \uAD00\uACC4", "A relationship where the conversation never fully breaks, even as each person keeps their own pace."),
+        evidenceIds: ["canonical_projections.expression_speed"],
+        confidence: "high" as const,
+      };
+    }
+    return {
+      currentPattern: "",
+      recommendedShift: "",
+      longTermGoal: "",
+      evidenceIds: [],
+      confidence: "medium" as const,
+    };
+  })();
+
   const finalStoryPlan: CanonicalRelationshipStoryPlan = {
     schemaVersion: "romantic_story_plan_v1",
     locale,
@@ -1830,60 +2092,28 @@ function computeHeroPairThesis(params: {
     // (already hitNotes-derived, varies per pair) and relCeA/relCeB's real
     // coreRelationshipNature text instead of a fixed sentence.
     closing: {
-      // Semantic-leak fix: this used to be one fixed sentence skeleton
-      // ("${A}의 X과 ${B}의 Y이 어떻게 맞물리느냐에 따라...") for every
-      // couple — different data plugged into the same frame, still the
-      // "Madlibs" pattern. Now picks ONE forward-looking focus from
-      // whichever real evidence is actually strongest for this pair, and
-      // falls back to a short, deliberately non-predictive line when none
-      // of it is available — never forcing a specific claim ungrounded in
-      // anything.
-      //
-      // Priority is individual vulnerability > shared vulnerability >
-      // timing, NOT the order those signals are introduced in the spec —
-      // deliberately reordered after live-testing: relCeA/relCeB's
-      // hiddenVulnerability is real per-person free text (confirmed
-      // reliably distinct across every test person in this session's
-      // 5-pair proof), whereas both the shared-vulnerability bucket
-      // (chapterLensResolvers.ts's 3-4 hot/cold buckets) and the timing
-      // theme (horizon.title, an engine not audited in this pass) were
-      // caught colliding across multiple different real test pairs when
-      // this fix was verified. Using the most reliably distinct evidence
-      // first was judged better than a fixed priority order that would
-      // silently reproduce the exact collision this fix exists to remove.
-      presentPossibility: (() => {
-        const individualVuln = relCeA?.hiddenVulnerability?.text || relCeB?.hiddenVulnerability?.text;
-        if (individualVuln) {
-          const owner = relCeA?.hiddenVulnerability?.text ? names.a : names.b;
-          return L(
-            `${owner}이/가 마음속에 품고 있는 건 ${firstClause(individualVuln)} 이 부분을 서로 알아가는 것부터, 관계가 다음 단계로 넘어갈 여지가 열려요.`,
-            `What ${owner} quietly carries is this: ${firstClause(individualVuln)} Getting to know that is where the room for this relationship to move into its next stage opens up.`,
-          );
-        }
-        const sharedVuln = strengthVuln?.sharedVulnerability;
-        if (sharedVuln) {
-          return L(
-            `지금 두 사람 사이에 있는 약한 지점은 이거예요: ${firstClause(sharedVuln)} 이걸 함께 알아차리고 다뤄볼 수 있다면, 관계는 지금보다 한층 단단해질 여지가 있어요.`,
-            `The fragile point currently between you is this: ${firstClause(sharedVuln)} If you can notice and work through it together, there's real room for this relationship to grow sturdier than it is now.`,
-          );
-        }
-        // Note: timingTheme is already a complete sentence (not a short
-        // label) — used directly rather than quoted/wrapped as one.
-        const timingTheme = fortuneFlowTiming?.theme ?? (hasTiming ? horizon.title : null);
-        if (timingTheme) {
-          return L(
-            `${timingTheme} 이 시기를 어떻게 함께 통과하느냐가 관계의 다음 모습을 만들 거예요.`,
-            `${timingTheme} How you move through this stretch together will shape what comes next.`,
-          );
-        }
-        // Deliberately short and non-predictive — no strong evidence to
-        // build a specific forward-looking claim on, so this doesn't
-        // manufacture one.
-        return L(
-          "지금 이대로도 관계는 계속 만들어지고 있어요.",
-          "This relationship keeps taking shape, even just as it is right now.",
-        );
-      })(),
+      // Semantic-leak fix, round 2: the first fix picked from real evidence
+      // but always poured it into the SAME sentence frame ("[owner]가
+      // 마음속에 품고 있는 건 X..."), which is still template-shaped
+      // personalization once you strip the quoted content. This version
+      // scores every candidate evidence source on 4 axes (relevance,
+      // confidence, novelty vs. what earlier chapters already showed,
+      // forward-looking usefulness) and gives the WINNING type its OWN
+      // sentence structure — different evidence literally can't render
+      // through the same frame anymore, because each type owns its own
+      // template. See selectClosingFocus below for the scoring and the
+      // per-type structures.
+      presentPossibility: selectClosingFocus({
+        names,
+        relCeA,
+        relCeB,
+        growthTransitionP1,
+        selectedRepairEvidenceIds: selectedRepair.evidenceIds,
+        sharedStrength: strengthVuln?.sharedStrength,
+        sharedVulnerability: strengthVuln?.sharedVulnerability,
+        timingTheme: fortuneFlowTiming?.theme ?? (hasTiming ? horizon.title : null),
+        locale,
+      }),
       rememberA:
         relCeA?.stressTempBand === "hot"
           ? L(`${names.a}님: 서운함이 올라올 때 즉각 결론을 다그치기보다 "당신과 잘 지나고 싶어서 그래"라는 본래의 다정한 마음을 먼저 전달해 보세요.`, `${names.a}: When hurt arises, instead of pushing for an immediate conclusion, try sharing your underlying warmth: "I'm saying this because I want us to be good."`)
@@ -1943,14 +2173,6 @@ function computeHeroPairThesis(params: {
     actionCandidatesP0,
     synthesisResultsP1,
   });
-
-  const growthTransitionP1 = {
-    currentPattern: "갈등 시 직면과 침묵의 템포 차이로 서운함이 누적되는 패턴",
-    recommendedShift: "감정이 격해질 때 서둘러 해명하기보다 30분간 쿨링다운 후 내 필요만 말하는 전환",
-    longTermGoal: "서로의 자율 공간을 존중하며 깊은 안정감 속에서 지속되는 성숙한 동반자 관계",
-    evidenceIds: ["story_plan.recurringLoop", "story_plan.repair"],
-    confidence: "high" as const,
-  };
 
   const pairNeedsDetailed = computeRomanticRelationshipNeedsEngine({
     nicknameA: names.a,
