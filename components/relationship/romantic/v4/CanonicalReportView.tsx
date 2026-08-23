@@ -176,22 +176,6 @@ export function CanonicalReportView({ report, payload: rawPayload, debug = false
 
   return (
     <div data-canonical-report className="bg-rel-bg font-rel-sans text-rel-ink antialiased">
-      <nav
-        className="sticky top-0 z-50 w-full border-b border-rel-line bg-rel-bg/90 backdrop-blur-md px-4 py-3"
-        aria-label="Chapters"
-      >
-        <div className="mx-auto flex max-w-5xl items-center gap-4 overflow-x-auto no-scrollbar">
-          {visible.map((s, i) => (
-            <a
-              key={s.chapterId}
-              href={`#${s.chapterId}`}
-              className="shrink-0 whitespace-nowrap px-2 font-rel-sans text-[10.5px] tracking-[0.1em] text-rel-ink-mute transition-colors hover:text-rel-deep"
-            >
-              {i + 1}. {s.title}
-            </a>
-          ))}
-        </div>
-      </nav>
 
       {visible.map((section) => {
         switch (section.chapterId) {

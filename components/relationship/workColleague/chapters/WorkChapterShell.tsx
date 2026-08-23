@@ -14,27 +14,8 @@ import { ChapterSection } from "@/components/relationship/shared/editorial/Edito
 
 export type WorkChapterNavItem = { id: string; number: string | null; title: string };
 
-export function WorkChapterNav({ items }: { items: WorkChapterNavItem[] }) {
-  if (items.length === 0) return null;
-  return (
-    <nav
-      className="sticky top-0 z-30 -mx-4 mb-2 overflow-x-auto border-b border-rel-line bg-rel-bg/90 px-4 py-3 no-scrollbar backdrop-blur sm:-mx-6 sm:px-6"
-      aria-label="Chapters"
-    >
-      <div className="flex items-center gap-4">
-        {items.map((item) => (
-          <a
-            key={item.id}
-            href={`#${item.id}`}
-            className="shrink-0 whitespace-nowrap font-rel-sans text-[11px] tracking-[0.08em] text-rel-ink-mute transition-colors hover:text-rel-deep"
-          >
-            {item.number ? `${item.number}. ` : ""}
-            {item.title}
-          </a>
-        ))}
-      </div>
-    </nav>
-  );
+export function WorkChapterNav({ items: _items }: { items: WorkChapterNavItem[] }) {
+  return null;
 }
 
 export function WorkChapterSection({

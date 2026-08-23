@@ -98,33 +98,6 @@ export function FriendReportViewModelView({
       className={`min-h-screen bg-rel-bg font-rel-sans text-rel-ink antialiased ${relSans.variable} ${relSerif.variable}`}
       lang={locale === "en-US" ? "en" : "ko"}
     >
-      <div className="sticky top-0 z-30 border-b border-rel-line bg-rel-bg/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[820px] items-center justify-between gap-4 px-5 py-2.5 sm:px-8">
-          <span className="min-w-0 truncate font-rel-sans text-[11.5px] tracking-[0.06em] text-rel-ink-soft">
-            <span className="mr-2 text-rel-deep">{String(activeIndex + 1).padStart(2, "0")}</span>
-            {navItems[activeIndex]?.label}
-          </span>
-          <nav className="hidden shrink-0 gap-4 sm:flex overflow-x-auto">
-            {navItems.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className={`font-rel-sans text-[11px] tracking-[0.06em] transition-colors ${
-                  item.id === active ? "text-rel-deep" : "text-rel-ink-mute hover:text-rel-ink-soft"
-                }`}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-        </div>
-        <div className="h-[2px] w-full bg-rel-line">
-          <div
-            className="h-full bg-rel-deep transition-[width] duration-150 ease-out"
-            style={{ width: `${progress * 100}%` }}
-          />
-        </div>
-      </div>
 
       <main>
         <FriendHero {...ctx} />
