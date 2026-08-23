@@ -430,12 +430,14 @@ function selectRepairSequence(params: {
   const bandA = relCeA?.stressTempBand;
   const bandB = relCeB?.stressTempBand;
 
+  // Class 1: Asymmetric Hot A / Cold B (Pursuer / Withdrawer)
   if (bandA === "hot" && bandB === "cold") {
     return {
       sequence: [
-        L(`${names.a}님은 즉각적인 확답을 원해도 ${names.b}님에게는 먼저 감정을 정리할 침묵의 여유가 필요합니다.`, `Even when ${names.a} wants immediate reassurance, ${names.b} needs time alone to sort out feelings first.`),
-        L(`${names.b}님이 "지금은 생각이 정리 중이니 20분 뒤에 얘기하자"고 구체적인 대화 재개 시간을 약속하세요.`, `${names.b} should set a concrete time to reopen conversation — "I'm sorting my thoughts, let's talk in 20 minutes."`),
-        L(`${names.a}님은 약속된 시간을 믿고 다그치지 않으며 기다려줄 때 감정의 평화가 회복됩니다.`, `${names.a} restores emotional peace by trusting the agreed time without pressing.`),
+        L(`[갈등 진단] ${names.a}님의 즉각적인 확인 욕구와 ${names.b}님의 감정 정돈을 위한 침묵 템포가 충돌하여 긴장이 커집니다.`, `[Diagnosis] Tension flares when ${names.a}'s need for immediate check-in collides with ${names.b}'s quiet timing.`),
+        L(`[신호 차단] 대화 톤이 급해지면 팩트 공방을 멈추고 잠시 생각을 가다듬을 여유를 가진 뒤 다시 마주하세요.`, `[Interruption] When tone accelerates, stop factual debate, pause to catch your breath, and come back.`),
+        L(`[${names.a}님의 역할] 상대가 마음을 정리할 시간을 다그치지 않고 진득하게 기다려줍니다.`, `[${names.a}'s Responsibility] Give your partner space to process without pressing for immediate answers.`),
+        L(`[${names.b}님의 역할] 말없이 침묵으로 물러서지 않고 "생각을 조금 정리한 뒤 다시 이야기하자"고 마음의 상태를 전합니다.`, `[${names.b}'s Responsibility] State where you're at — "let me process my thoughts and talk soon" — instead of silent retreat.`),
       ],
       avoid: [
         L(`${names.b}님의 동굴 시간을 '나에게 관심 없다'고 지레짐작하며 압박하는 것`, `Assuming ${names.b}'s cave time means lack of interest and pressing them`),
@@ -445,12 +447,14 @@ function selectRepairSequence(params: {
     };
   }
 
+  // Class 2: Asymmetric Cold A / Hot B (Withdrawer / Pursuer)
   if (bandA === "cold" && bandB === "hot") {
     return {
       sequence: [
-        L(`${names.b}님이 빠른 안심을 원하더라도 ${names.a}님에게는 마음을 정리할 여유가 먼저 필요합니다.`, `Even when ${names.b} wants quick reassurance, ${names.a} needs space to sort thoughts first.`),
-        L(`${names.a}님이 "지금 말하면 감정이 격해지니 잠시 후 얘기하자"고 명확히 전해주세요.`, `${names.a} should communicate clearly — "If I speak now it'll get heated, let me pause a moment."`),
-        L(`${names.b}님이 대화의 톤을 낮추고 들어줄 수 있는 정서적 장을 열어주세요.`, `${names.b} opens an emotional space by lowering their tone and listening.`),
+        L(`[갈등 진단] ${names.b}님의 빠른 확인 욕구와 ${names.a}님의 감정 정돈을 위한 침묵 템포가 충돌하여 긴장이 커집니다.`, `[Diagnosis] Tension flares when ${names.b}'s need for immediate check-in collides with ${names.a}'s quiet timing.`),
+        L(`[신호 차단] 대화 톤이 급해지면 팩트 공방을 멈추고 잠시 생각을 가다듬을 여유를 가진 뒤 다시 마주하세요.`, `[Interruption] When tone accelerates, stop factual debate, pause to catch your breath, and come back.`),
+        L(`[${names.a}님의 역할] 말없이 침묵으로 물러서지 않고 "생각을 조금 정리한 뒤 다시 이야기하자"고 마음의 상태를 전합니다.`, `[${names.a}'s Responsibility] State where you're at — "let me process my thoughts and talk soon" — instead of silent retreat.`),
+        L(`[${names.b}님의 역할] 상대가 마음을 정리할 시간을 다그치지 않고 진득하게 기다려줍니다.`, `[${names.b}'s Responsibility] Give your partner space to process without pressing for immediate answers.`),
       ],
       avoid: [
         L(`${names.a}님의 침묵을 따지며 즉각적인 해명을 강요하는 것`, `Demanding immediate explanation while questioning ${names.a}'s silence`),
@@ -460,12 +464,14 @@ function selectRepairSequence(params: {
     };
   }
 
+  // Class 3: Both Cold (Double Retreat / Silent Resentment)
   if (bandA === "cold" && bandB === "cold") {
     return {
       sequence: [
-        L("두 사람 모두 침묵으로 가라앉기 쉬우므로, 서운함이 생겼을 때 반나절 이상 침묵을 길게 끌지 마세요.", "Since both retreat into silence, avoid letting hurt feelings linger past half a day."),
-        L("먼저 감정이 가라앉은 쪽에서 다정한 어조로 '맛있는 거 먹으면서 얘기할까?'처럼 가볍게 물꼬를 트세요.", "Whoever cools down first should open the door lightly with a gentle invitation."),
-        L("이야기를 꺼낼 때 과거의 일까지 끌어들이지 않고 지금의 기분만 솔직히 공유하세요.", "Focus on present feelings when opening up rather than digging up past issues."),
+        L(`[갈등 진단] 두 사람 모두 침묵으로 가라앉아, 서운함이 생겼을 때 대화 없이 냉기만 조용히 길어지는 패턴입니다.`, `[Diagnosis] Both retreat into quiet silence, allowing hurts to linger unsaid.`),
+        L(`[신호 차단] 서운함이 생겨도 침묵을 너무 오래 끌지 말고, 마음이 가라앉았을 때 가벼운 안부로 먼저 다가가세요.`, `[Interruption] Do not let silence linger too long; reach out with a light signal once emotions settle.`),
+        L(`[${names.a}님의 역할] 상대가 먼저 다가오길 기다리지 않고 내 감정 상태만 솔직하게 먼저 꺼내놓습니다.`, `[${names.a}'s Responsibility] Share present feelings honestly without waiting for the partner to reach out first.`),
+        L(`[${names.b}님의 역할] 상대가 신호를 건네올 때 방어막을 거두고 다정한 어조로 가볍게 응답해 줍니다.`, `[${names.b}'s Responsibility] Drop defensive walls and respond with a gentle tone when a check-in signal arrives.`),
       ],
       avoid: [
         L("서로가 먼저 사과하거나 다가오기를 기다리며 침묵으로 겨루는 것", "Competing in silence while waiting for the other to apologize or reach out first"),
@@ -475,12 +481,14 @@ function selectRepairSequence(params: {
     };
   }
 
+  // Class 4: Both Hot (Double Escalation / Harsh Phrasing)
   if (bandA === "hot" && bandB === "hot") {
     return {
       sequence: [
-        L("감정이 고조됐을 때는 즉시 맞부딪히지 말고, 10분간 타임아웃을 선언하고 분리되세요.", "When tempers flare, don't clash on the spot — declare a 10-minute timeout and step apart."),
-        L("대화를 다시 시작할 때는 팩트의 잘잘못을 가리기 전에 서로의 서운했던 기분을 먼저 읽어주세요.", "When resuming, validate each other's hurt feelings before arguing over facts."),
-        L("말의 내용보다 어조의 세기를 가볍고 다정하게 낮추어 소통하세요.", "Keep your tone gentle and light rather than focusing on harsh phrasing."),
+        L(`[갈등 진단] 두 사람 모두 솔직하고 에너지가 강해, 갈등 시 직설적 표현이 맞부딪히며 감정 온도가 급격히 과열됩니다.`, `[Diagnosis] Both flare with direct phrasing, rapidly overheating emotional temperature.`),
+        L(`[신호 차단] 어조가 날카로워지는 순간 잠시 대화를 멈추고 각자 마음을 가라앉히는 시간을 가지세요.`, `[Interruption] The moment phrasing sharpens, pause the conversation and take space to catch your breath.`),
+        L(`[${names.a}님의 역할] 잘잘못을 규정짓지 않고 '내가 지금 느낀 서운함'만 1인칭 언어로 담담히 말합니다.`, `[${names.a}'s Responsibility] State feelings in first-person language rather than debating who was right.`),
+        L(`[${names.b}님의 역할] 상대의 강한 톤에 맞불을 놓지 않고 의도적으로 어조의 톤과 수위를 낮추어 경청합니다.`, `[${names.b}'s Responsibility] Intentionally lower vocal volume and listen without firing back.`),
       ],
       avoid: [
         L("상대의 말 한마디에 즉각 더 강한 어조로 응수하며 맞불을 놓는 것", "Immediately firing back with harsher tones at every word"),
@@ -490,12 +498,14 @@ function selectRepairSequence(params: {
     };
   }
 
+  // Class 5: Recovery Mismatch / Speed Gap
   if (recovery?.recovery_mismatch) {
     return {
       sequence: [
-        L("한 사람이 먼저 가라앉는다고 해서 다 풀린 게 아니에요 — 아직 정리 중인 사람에게 재촉하지 마세요.", "One of you cooling down first doesn't mean it's over — don't rush the one who's still processing."),
-        L("먼저 괜찮아진 사람이 '난 이제 얘기해도 될 것 같은데, 넌 어때?'라고 확인부터 하세요.", "Whoever feels okay first should check in — \"I think I'm ready to talk, are you?\" — instead of assuming."),
-        L("둘 다 준비됐을 때 다시 만나기로 한 시점을 구체적으로 정하세요.", "Once you're both actually ready, set a specific time to come back and talk."),
+        L(`[갈등 진단] 한쪽이 먼저 가라앉더라도 상대는 아직 정리 중이어서 소통의 회복 템포 차이가 발생합니다.`, `[Diagnosis] Recovery speed gap creates tension when one partner is ready to talk while the other is still processing.`),
+        L(`[신호 차단] 가라앉은 쪽이 먼저 "난 이제 준비된 것 같은데, 넌 어때?"라고 의사를 확인하는 절차를 거칩니다.`, `[Interruption] The cooled-down partner checks in — "I'm ready, how about you?" — before diving into resolution.`),
+        L(`[${names.a}님의 역할] 자신의 회복 속도에 맞춰 상대에게 조급하게 대화를 밀어붙이지 않습니다.`, `[${names.a}'s Responsibility] Avoid pushing for resolution just because your own emotions have settled.`),
+        L(`[${names.b}님의 역할] 아직 준비가 안 되었을 때는 "생각을 정돈한 뒤 조금 이따 이야기하자"고 마음의 상태를 전합니다.`, `[${names.b}'s Responsibility] State clearly — "Let me process my thoughts first" — when not yet ready to talk.`),
       ],
       avoid: [
         L("회복이 느린 쪽을 '왜 아직도 화났어'라고 다그치는 것", "Pushing the slower-to-recover one with \"why are you still upset\""),
@@ -505,11 +515,20 @@ function selectRepairSequence(params: {
     };
   }
 
+  // Class 6: Moderate / General Harmony
+  const styleA = firstClause(relCeA?.partnerPreferences[0]?.text ?? relCeA?.careExpression?.text ?? L("확인 방식", "check-in style"));
+  const styleB = firstClause(relCeB?.strengthsGivenToPartner[0]?.text ?? relCeB?.careExpression?.text ?? L("정돈 템포", "processing pace"));
+
   return {
     sequence: [
-      L(`${names.a}님과 ${names.b}님이 서운함이 생겼을 때 가볍고 다정한 대화로 바로 오해를 터는 템포가 도움이 됩니다.`, `${names.a} and ${names.b} benefit from clearing misunderstandings right away with light, warm check-ins.`),
-      L("상대를 비난하기보다 '나는 지금 다정한 안심이 필요해'처럼 내 필요만 솔직히 표현하세요.", "Instead of blaming, express your need honestly — \"I just need warm reassurance right now.\""),
-      L("이야기가 길어질 때는 템포를 잠시 쉬어가며 서로의 이야기를 경청하세요.", "When conversations stretch long, take pauses and listen to each other."),
+      sanitizeParticles(
+        L(`[갈등 진단] ${names.a}님의 ${styleA}과 ${names.b}님의 ${styleB}이 어우러지지만, 사소한 서운함을 제때 말하지 않고 참고 넘어가다 마음에 누적되는 패턴입니다.`, `[Diagnosis] ${names.a}'s ${styleA} and ${names.b}'s ${styleB} align, but swallowing minor hurts can let silent misunderstandings accumulate.`),
+        [names.a, names.b],
+        locale,
+      ),
+      L(`[신호 차단] 서운함이 생긴 당일 저녁 가볍고 다정한 분위기에서 짧게 감정을 나누고 앙금을 털어냅니다.`, `[Interruption] Clear minor hurts on the same day in a light, comfortable setting before they build up.`),
+      L(`[${names.a}님의 역할] 상대방을 비난하지 않고 "나는 지금 다정한 안심이 필요해"처럼 내 소망만 솔직히 말합니다.`, `[${names.a}'s Responsibility] Express true needs directly — "I need warm reassurance" — without blaming.`),
+      L(`[${names.b}님의 역할] 상대의 진심에 방어적 태도를 취하지 않고 온전히 받아주며 다정하게 털어냅니다.`, `[${names.b}'s Responsibility] Listen receptively without becoming defensive and offer warm reassurance.`),
     ],
     avoid: [
       L("상대가 대답하지 못하는 상황을 이용해 침묵을 처벌처럼 쓰는 것", "Using the other person's silence as a kind of punishment"),
@@ -1223,10 +1242,15 @@ function computeHeroPairThesis(params: {
   const mutualUnit: AttractionNarrativeUnit = {
     subject: "mutual",
     recognition: sanitizeParticles(
-      hitNotes[0] ?? L(
-        `${withP(names.a, locale)} ${names.b}가 마주 앉으면 둘만 아는 편안함이 생겨요.`,
-        `When ${withP(names.a, locale)} ${names.b} sit down together, there's an ease that belongs only to the two of them.`,
-      ),
+      (relCeA && relCeB)
+        ? L(
+            `${names.a}님이 바라는 ${relCeA.partnerPreferences[0]?.text ?? relCeA.careExpression?.text ?? "바람"}과 ${names.b}님이 보여주는 ${relCeB.strengthsGivenToPartner[0]?.text ?? relCeB.careExpression?.text ?? "강점"}이 어우러져 둘만의 유대를 만들어냅니다.`,
+            `When ${names.a}'s need for ${relCeA.partnerPreferences[0]?.text ?? "care"} meets ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "strength"}, it creates a bond unique to you two.`,
+          )
+        : hitNotes[0] ?? L(
+            `${withP(names.a, locale)} ${names.b}가 마주 앉으면 둘만 아는 편안함이 생겨요.`,
+            `When ${withP(names.a, locale)} ${names.b} sit down together, there's an ease that belongs only to the two of them.`,
+          ),
       [names.a, names.b],
       locale,
     ),
