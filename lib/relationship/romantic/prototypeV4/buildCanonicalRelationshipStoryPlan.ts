@@ -1726,30 +1726,30 @@ function computeHeroPairThesis(params: {
       strengthVuln?.sharedStrength ||
       (relCeA && relCeB
         ? L(
-            `${names.a}의 ${relCeA.strengthsGivenToPartner[0]?.text ?? "다정한 활력"}과 ${names.b}의 ${relCeB.strengthsGivenToPartner[0]?.text ?? "흔들림 없는 신중함"}이 결합하여 일상의 안정과 관계의 활력을 함께 키워나가는 시너지입니다.`,
-            `A synergy where ${names.a}'s ${relCeA.strengthsGivenToPartner[0]?.text ?? "warm vitality"} and ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "steady prudence"} build both daily stability and relationship vitality.`,
+            `두 사람이 함께할 때 새로 생기는 결합 능력: 상황이 흔들릴 때 ${names.a}의 ${relCeA.strengthsGivenToPartner[0]?.text ?? "다정한 활력"}이 정서적 온기를 지켜내고 ${names.b}의 ${relCeB.strengthsGivenToPartner[0]?.text ?? "흔들림 없는 신중함"}이 든든한 중심을 잡아주어, 불확실한 순간에도 감정적 고립 없이 현실적인 해결을 함께 이루어내는 시너지입니다.`,
+            `The emergent capability born between you: when uncertainty rises, ${names.a}'s ${relCeA.strengthsGivenToPartner[0]?.text ?? "warm vitality"} keeps emotional warmth alive while ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "steady prudence"} holds the ground, allowing you to achieve practical resolution without emotional isolation.`,
           )
         : bonding?.summary || plan.pairSynthesis.selectedMeaning || copy.sharedStrengthFallback),
     sharedVulnerability:
       strengthVuln?.sharedVulnerability ||
       ((relCeA?.stressTempBand === "hot" && relCeB?.stressTempBand === "cold") || (relCeB?.stressTempBand === "hot" && relCeA?.stressTempBand === "cold")
         ? L(
-            `갈등 시 한쪽의 즉각적인 확인 욕구와 다른 쪽의 동굴 침묵이 엇갈리며, 소통의 템포 차이가 서운함으로 쌓이는 상태`,
-            `Under conflict, one person's need for immediate reassurance clashes with the other's cave silence, building hurt over pace gap`,
+            `두 강점이 맞물릴 때 발생하는 blind spot: 한쪽의 해결 의지와 다른 쪽의 신중함이 평소엔 완벽하게 어우러지지만, 예민한 이슈 앞에서는 '잘 풀어야 한다'는 서로의 부담감이 커져 작은 대화도 큰 무게로 다가오는 점입니다.`,
+            `The blind spot created when your strengths combine: one's drive for resolution and the other's prudence work well, but on sensitive issues, mutual pressure to solve it perfectly makes even small check-ins feel heavy.`,
           )
         : relCeA?.stressTempBand === "cold" && relCeB?.stressTempBand === "cold"
           ? L(
-              `갈등 직후 두 사람 모두 침묵으로 물러서며 먼저 다가가기를 망설이다가 서운함이 조용히 길어지는 상태`,
-              `After conflict, both retreat into silence and hesitate to reach out first, allowing hurt to quietly linger`,
+              `두 강점이 맞물릴 때 발생하는 blind spot: 두 사람 모두 상대를 깊이 배려하고 신중하기 때문에, 서운함이 생겼을 때 '내가 조금 참지'라며 상대방을 보호하려다 진짜 마음의 소리를 주고받을 타이밍을 놓치는 점입니다.`,
+              `The blind spot created when your strengths combine: because both of you are so considerate and prudent, when hurt arises, you protect each other by staying quiet, missing the timing to share your true voice.`,
             )
           : relCeA?.stressTempBand === "hot" && relCeB?.stressTempBand === "hot"
             ? L(
-                `감정이 동시에 고조될 때 직설적인 어조가 맞부딪히며 감정의 온도가 순식간에 과열되는 상태`,
-                `When emotions flare simultaneously, direct phrasing clashes and rapidly overheats the emotional temperature`,
+                `두 강점이 맞물릴 때 발생하는 blind spot: 둘 다 솔직하고 에너지가 강해 빠른 성장을 이끌어내지만, 동시에 과부하가 걸렸을 때 상대의 템포를 지켜보지 못하고 과속하다 정서적 방전이 동시에 올 수 있다는 점입니다.`,
+                `The blind spot created when your strengths combine: both of you are so honest and driven that you build fast progress, but under overload, failing to wait out each other's pace can lead to simultaneous burnout.`,
               )
             : L(
-                `작은 서운함이 생겼을 때 제때 털어놓지 않고 스스로 마음속에 묵혀두다가 오해가 깊어지는 상태`,
-                `Leaving small hurt unsaid and letting it linger inside until misunderstandings deepen`,
+                `두 강점이 맞물릴 때 발생하는 blind spot: 평소 원만하게 서로를 맞추는 유연함이 크다 보니, 관계의 중요한 경계선이나 서운함을 제때 구체적으로 밝히지 않고 넘어가 마음에 작은 앙금이 축적되는 점입니다.`,
+                `The blind spot created when your strengths combine: because your mutual adaptability keeps things smooth, you tend to pass over defining clear boundaries in time, allowing small hurts to quietly accumulate.`,
               )),
     pairChemistry: {
       available: chemistryAvailable,

@@ -746,79 +746,53 @@ export function resolveStrengthVulnerabilityLens(params: {
   const isFastA = relCeA?.stressTempBand === "hot";
   const isFastB = relCeB?.stressTempBand === "hot";
 
-  let sharedVulnText = ((isFastA && isSlowB) || (isFastB && isSlowA))
+  // Shared Vulnerability: Describes the EMERGENT BLIND SPOT created when strengths combine
+  // (not a paraphrase of how the fight escalates in Chapter 3).
+  const sharedVulnText = ((isFastA && isSlowB) || (isFastB && isSlowA))
     ? L(
-        `두 사람의 주요 취약점은 갈등 발생 시 ${isFastA ? a : b}님의 빠른 확인 욕구와 ${isSlowA ? a : b}님의 동굴 후퇴 템포가 엇갈리며 서운함이 축적되는 순간에 나타납니다.`,
-        `Your primary vulnerability arises during conflict when ${isFastA ? a : b}'s need for quick reassurance collides with ${isSlowA ? a : b}'s cave retreat pace, accumulating hurt.`,
+        `두 강점이 맞물릴 때 발생하는 blind spot: ${isFastA ? a : b}님의 해결 의지와 ${isSlowA ? a : b}님의 신중함이 결합될 때, 평소엔 완벽한 조화를 이루지만 예민한 이슈 앞에서는 '잘 풀어야 한다'는 서로의 부담감이 커져 작은 대화도 큰 무게로 다가오는 점입니다.`,
+        `The blind spot created when your strengths combine: ${isFastA ? a : b}'s drive for resolution and ${isSlowA ? a : b}'s prudence work well, but on sensitive issues, mutual pressure to solve it perfectly makes even small check-ins feel heavy.`,
       )
     : (isSlowA && isSlowB)
       ? L(
-          `두 사람의 주요 취약점은 갈등 발생 시 ${a}님과 ${b}님이 동시에 침묵으로 물러서서 대화 재개 타이밍을 조용히 지연시킬 때 나타납니다.`,
-          `Your primary vulnerability arises during conflict when both ${a} and ${b} retreat into silence, quietly delaying the timing to reopen conversation.`,
+          `두 강점이 맞물릴 때 발생하는 blind spot: 두 사람 모두 상대를 깊이 배려하고 신중하기 때문에, 서운함이 생겼을 때 '내가 조금 참지'라며 상대방을 보호하려다 진짜 마음의 소리를 주고받을 타이밍을 놓치는 점입니다.`,
+          `The blind spot created when your strengths combine: because both of you are so considerate and prudent, when hurt arises, you protect each other by staying quiet, missing the timing to share your true voice.`,
         )
       : (isFastA && isFastB)
         ? L(
-            `두 사람의 주요 취약점은 갈등 발생 시 ${a}님과 ${b}님의 감정이 동시에 고조되어 직설적인 표현이 맞부딪히며 감정의 온도가 과열될 때 나타납니다.`,
-            `Your primary vulnerability arises during conflict when emotions flare simultaneously and direct expressions clash, overheating the temperature.`,
+            `두 강점이 맞물릴 때 발생하는 blind spot: 둘 다 솔직하고 에너지가 강해 빠른 성장을 이끌어내지만, 동시에 과부하가 걸렸을 때 상대의 템포를 지켜보지 못하고 과속하다 정서적 방전이 동시에 올 수 있다는 점입니다.`,
+            `The blind spot created when your strengths combine: both of you are so honest and driven that you build fast progress, but under overload, failing to wait out each other's pace can lead to simultaneous burnout.`,
           )
         : L(
-            `두 사람의 주요 취약점은 평소 서로에게 조심스럽게 맞추느라 서운한 점이 생겼을 때 제때 털어놓지 않고 속에 묵혀두다가 오해가 깊어지는 순간입니다.`,
-            `Your primary vulnerability arises when you hold back small hurts rather than bringing them up in time, letting misunderstandings deepen.`,
+            `두 강점이 맞물릴 때 발생하는 blind spot: 평소 원만하게 서로를 맞추는 유연함이 크다 보니, 관계의 중요한 경계선이나 서운함을 제때 구체적으로 밝히지 않고 넘어가 마음에 작은 앙금이 축적되는 점입니다.`,
+            `The blind spot created when your strengths combine: because your mutual adaptability keeps things smooth, you tend to pass over defining clear boundaries in time, allowing small hurts to quietly accumulate.`,
           );
 
-  let balancedProtText = L(
-    `이 기여를 지키는 핵심 합의: ${a}님은 ${b}님에게 생각할 시간을 보장하고, ${b}님은 침묵 대신 '언제까지 정리해서 말하겠다'는 확실한 신호를 전달하는 것입니다.`,
-    `The key agreement that protects this: ${a} guarantees ${b} the time to think, and ${b}, instead of just going silent, gives a clear signal of "I'll have my thoughts sorted out and talk to you by ___."`,
-  );
+  const slowName = isFastA ? b : a;
+  const fastName = isFastA ? a : b;
+  const balancedProtText = ((isFastA && isSlowB) || (isSlowA && isFastB))
+    ? L(
+        `이 기여를 지키는 핵심 합의: ${slowName}님이 "지금은 아니고 이따 얘기하자"처럼 자기 상태를 먼저 말해주고, ${fastName}님이 그 말을 재촉 없이 받아주는 것입니다.`,
+        `The key agreement that protects this: ${slowName} says where they're at first — "not right now, let's talk later" — and ${fastName} takes that without pushing.`,
+      )
+    : (isSlowA && isSlowB)
+      ? L(
+          `이 기여를 지키는 핵심 합의: 혼자 삭이지 않고, '생각을 정리한 뒤 몇 시에 다시 이야기하자'는 대화 재개의 신호를 확실히 공유하는 것입니다.`,
+          `The key agreement that protects this: instead of sitting with it alone, clearly share a signal for reopening the conversation — "let's talk again at ___ once I've sorted my thoughts."`,
+        )
+      : L(
+          `이 기여를 지키는 핵심 합의: 감정이 격해졌을 때는 잠시 대화를 멈추고 각자 10분간 호흡을 가다듬은 뒤 차분하게 다시 마주하는 것입니다.`,
+          `The key agreement that protects this: when emotions run high, pause the conversation, each take 10 minutes to catch your breath, and come back calmly.`,
+        );
 
-  if (isSlowA && isSlowB) {
-    sharedVulnText = L(
-      `두 사람의 가장 큰 취약점은 갈등 시 '동시에 침묵의 동굴로 물러나 대화의 타이밍을 놓칠 때' 발생합니다. 서로가 먼저 손 내밀기를 기다리다 보면 감정의 거리가 벌어질 수 있습니다.`,
-      `Your biggest shared vulnerability shows up when, in conflict, you both retreat into silence at the same time and miss the moment to talk. If you both wait for the other to reach out first, emotional distance can grow.`,
-    );
-    balancedProtText = L(
-      `이 기여를 지키는 핵심 합의: 혼자 삭이지 않고, '생각을 정리한 뒤 몇 시(또는 며칠 뒤)에 다시 이야기하자'는 대화 재개의 신호를 확실히 공유하는 것입니다.`,
-      `The key agreement that protects this: instead of quietly sitting with it alone, clearly share a signal for reopening the conversation — "let's talk again at ___ (or in a few days) once I've sorted out my thoughts."`,
-    );
-  } else if (isFastA && isFastB) {
-    sharedVulnText = L(
-      `두 사람의 가장 큰 취약점은 갈등 시 '감정이 고조된 상태에서 즉각적인 결론을 밀어붙일 때' 발생합니다.`,
-      `Your biggest shared vulnerability shows up when, in conflict, you both push for an immediate conclusion while emotions are still running high.`,
-    );
-    balancedProtText = L(
-      `이 기여를 지키는 핵심 합의: 감정이 격해졌을 때는 잠시 대화를 멈추고 각자 10분간 호흡을 가다듬은 뒤 차분하게 다시 마주하는 것입니다.`,
-      `The key agreement that protects this: when emotions run high, pause the conversation, each take 10 minutes to catch your breath, and come back to face each other calmly.`,
-    );
-  } else if ((isFastA && isSlowB) || (isSlowA && isFastB)) {
-    // Pair-first fix: the mixed hot/cold combo — the most common real case —
-    // used to fall through to the generic default text above (audit: only
-    // same-speed pairs had their own branch). Now it names which person is
-    // which, since that's exactly what the vulnerability actually is.
-    const fastName = isFastA ? a : b;
-    const slowName = isFastA ? b : a;
-    sharedVulnText = L(
-      `두 사람의 가장 큰 취약점은 갈등 시 ${fastName}이/가 빠르게 확인받고 싶어 할 때 ${slowName}이/가 아직 정리 중이라는 걸 서로 못 기다려줄 때 생겨요.`,
-      `Your biggest shared vulnerability shows up when ${fastName} wants to check in quickly, but ${slowName} is still processing — and neither of you can wait out the gap.`,
-    );
-    balancedProtText = L(
-      `이 기여를 지키는 핵심 합의: ${slowName}이/가 "지금은 아니고 이따 얘기하자"처럼 자기 상태를 먼저 말해주고, ${fastName}이/가 그 말을 재촉 없이 받아주는 것입니다.`,
-      `The key agreement that protects this: ${slowName} says where they're at first — "not right now, let's talk later" — and ${fastName} takes that without pushing.`,
-    );
-  }
-
-  // Final Evidence-to-Voice pass, item 2 — was quoting coreRelationshipNature
-  // (Hero's identity label) a 5th time. strengthsGivenToPartner is the
-  // thematically correct field for a "greatest strength" line, and is
-  // already the source for gift.a_to_b/gift.b_to_a just above in this same
-  // chapter — reusing it here is intra-chapter synthesis, not cross-chapter
-  // repetition.
+  // Shared Strength: Describes an EMERGENT CAPABILITY (what these two accomplish together that neither does alone)
   const strengthAText = relCeA?.strengthsGivenToPartner?.[0]?.text ?? relCeA?.careExpression?.text ?? relCeA?.familiarRelationshipRole?.text ?? L("다정한 활력", "warm vitality");
   const strengthBText = relCeB?.strengthsGivenToPartner?.[0]?.text ?? relCeB?.careExpression?.text ?? relCeB?.familiarRelationshipRole?.text ?? L("흔들림 없는 신중함", "steady prudence");
 
   const sharedStrength = sanitizeParticles(
     L(
-      `두 사람이 함께할 때 가장 강력해지는 지점은 ${a}의 ${strengthAText}과 ${b}의 ${strengthBText}이 시너지를 발휘하는 순간입니다.`,
-      `Where you two become strongest together is the moment ${a}'s ${strengthAText.charAt(0).toLowerCase()}${strengthAText.slice(1)} and ${b}'s ${strengthBText.charAt(0).toLowerCase()}${strengthBText.slice(1)} create synergy together.`,
+      `${a}의 ${strengthAText}과 ${b}의 ${strengthBText}이 결합하여, 불확실한 순간에도 정서적 연결과 중심을 잃지 않는 유대감`,
+      `A synergy where ${a}'s ${strengthAText} and ${b}'s ${strengthBText} combine to hold emotional warmth and stability during uncertainty`,
     ),
     [a, b],
     locale,
