@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, MoreHorizontal } from "lucide-react";
 import { friendInitials } from "@/lib/relationship/hubDisplayName";
 
 /** 링·즐겨찾기 배지가 잘리지 않도록 바깥 래퍼에 여유 공간 */
@@ -70,10 +70,10 @@ export function FriendMoreCircle() {
       <span
         className={[
           AVATAR_INNER_CLASS,
-          "border-2 border-dashed border-outline-variant/55 bg-surface-container-low/60 text-lg font-bold text-on-surface-variant",
+          "border-2 border-dashed border-outline-variant/55 bg-surface-container-low/60 text-on-surface-variant",
         ].join(" ")}
       >
-        ···
+        <MoreHorizontal className="h-5 w-5 shrink-0" aria-hidden />
       </span>
     </span>
   );
