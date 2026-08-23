@@ -427,18 +427,32 @@ export function computeRomanticV4GapBatchEngine(params: {
     notToExpectBFromA: notToExpectBFromA.slice(0, 2),
   };
 
-  // 4. When We Need Each Other Most
+  // 4. When We Need Each Other Most (Evidence-Grounded)
+  const whenANeedsBContext =
+    structB >= 60
+      ? `${nameB}님이 현실적인 조언과 안정적인 기준을 잡아줄 때 가장 든든함을 느낍니다.`
+      : empB >= 60
+        ? `${nameB}님이 잘잘못을 묻지 않고 따뜻한 체온으로 다독여 줄 때 안도합니다.`
+        : `${nameB}님이 곁에서 부담 주지 않고 템포를 조용히 맞춰줄 때 편안해집니다.`;
+
+  const whenBNeedsAContext =
+    empA >= 60
+      ? `${nameA}님이 다정한 관심과 공감으로 마음을 안아줄 때 비로소 긴장이 풀어집니다.`
+      : structA >= 60
+        ? `${nameA}님이 차분한 해결책과 명확한 방향을 제시해 줄 때 힘을 얻습니다.`
+        : `${nameA}님이 신선한 자극과 새로운 경험을 제안하며 활력을 불어넣어 줄 때 기분이 환기됩니다.`;
+
   const whenWeNeedEachOtherMost: WhenWeNeedEachOtherMost = {
     whenANeedsB: [
       {
-        sceneTitle: "외부 일로 마음이 복잡해져 혼자 중심 잡기 힘들 때",
-        concreteContext: `${nameB}님이 옆에서 흔들리지 않고 차분한 해결책과 기준을 제시해 줄 때 가장 든든함을 느낍니다.`,
+        sceneTitle: structB >= 60 ? "일이나 일상의 복잡함으로 지침을 느낄 때" : "마음의 안식처와 따뜻한 지지가 필요할 때",
+        concreteContext: whenANeedsBContext,
       },
     ],
     whenBNeedsA: [
       {
-        sceneTitle: "지친 하루 끝에 묵묵히 내 편이 되어주는 안식처가 필요할 때",
-        concreteContext: `${nameA}님이 잘잘못을 묻지 않고 따뜻한 체온으로 다독여 줄 때 비로소 긴장이 풀어집니다.`,
+        sceneTitle: empA >= 60 ? "지친 하루 끝에 묵묵히 내 편이 되어주는 체온이 필요할 때" : "명확한 방향과 새로운 시각이 필요할 때",
+        concreteContext: whenBNeedsAContext,
       },
     ],
   };
@@ -486,9 +500,6 @@ export function computeRomanticV4GapBatchEngine(params: {
       doNot: sosAtoBDoNot,
       firstLine: sosAtoBFirst,
       bridgeLine: sosAtoBBridge,
-      // Final Cleanup pass, item 3 — dropped the fixed "20분" (no evidence
-      // this specific duration applies to this pair); the underlying advice
-      // (take a short break, then come back) is unchanged.
       reconnectionLine: `"잠깐 각자 숨 돌리고, 따뜻한 음료 마시면서 다시 이야기하자."`,
     },
     sosBtoA: {
@@ -502,19 +513,23 @@ export function computeRomanticV4GapBatchEngine(params: {
     },
   };
 
-  // 6. Long-Term Relationship Bond Prescription
+  // 6. Long-Term Relationship Bond Prescription (Evidence-Grounded)
   const longTermBond: LongTermRelationshipBondPrescription = {
     keepDoing: [
-      "서로의 다른 표현 방식을 '틀림'이 아닌 '다름'으로 존중하는 태도 유지",
-      "고마운 순간을 미루지 않고 즉시 구체적인 대사로 칭찬하기",
+      `${nameA}님과 ${nameB}님이 서로의 표현 방식을 존중하고 구체적인 대사로 고마움 전달하기`,
+      `${ROLE_TITLES[roleAType].title.split(" ")[0]} 역할과 ${ROLE_TITLES[roleBType].title.split(" ")[0]} 역할의 긍정적인 신뢰 구도 지키기`,
     ],
     watchOut: [
-      "서운함이 생겼을 때 제때 말하지 않고 침묵으로 쌓아두는 습관",
-      "상대의 선의를 '지적'이나 '통제'로 오해하는 조급함",
+      Math.abs(conflictStyleA - conflictStyleB) >= 25
+        ? `갈등 시 ${nameA}님의 빠른 확인 욕구와 ${nameB}님의 동굴 시간이 부딪혀 서운함이 누적되는 패턴`
+        : `서운한 감정이 생겼을 때 즉시 꺼내지 않고 침묵으로 쌓아두는 피로감`,
+      `상대의 선의나 조언을 감정적 '지적'이나 '통제'로 오해하는 조급함`,
     ],
     relationshipRitual: [
-      "주말 한 번은 아무 일도 하지 않고 오롯이 둘만의 다정한 시간 보내기",
-      "갈등 후 짧은 쿨링다운 포즈 루틴 지키기",
+      stimA >= 60 || stimB >= 60
+        ? "한 달에 한 번 새로운 데이트 코스나 활동을 함께 시도하며 활력 불어넣기"
+        : "주간 일정이나 마음 상태를 편안하게 나누는 차분한 대화 루틴 지키기",
+      "갈등 발생 후 각자의 쿨링다운 시간을 인내심 있게 기다려주는 약속",
     ],
   };
 

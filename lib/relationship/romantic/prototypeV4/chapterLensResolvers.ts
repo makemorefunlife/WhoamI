@@ -72,9 +72,12 @@ export function resolveHiddenHeartsLens(params: {
       "감정 충돌을 피하며 차분히 생각을 정리하려 합니다.",
       "avoids emotional confrontation and tries to calmly sort out their thoughts.",
     );
-    const innerFeel = relCeA.hiddenVulnerability?.text ?? L(
-      "겉으로는 의연해 보이지만 내면 깊은 곳에서는 따뜻한 인정과 확신을 간절히 바라고 있습니다.",
-      "They look composed on the surface, but deep inside they're quietly longing for warm recognition and reassurance.",
+    const innerFeel = relCeA.hiddenVulnerability?.text ?? (
+      relCeA.stressTempBand === "cold"
+        ? L("겉으로 말을 아끼는 것은 서운함을 숨기기 위함이 아니라 스스로 마음을 차분히 묶어두려는 노력입니다.", "Going quiet on the outside is not to hide hurt, but an effort to hold their thoughts together calmly.")
+        : relCeA.stressTempBand === "hot"
+          ? L("직설적 표현 너머에는 상대로부터 다정한 확답과 관계의 안전함을 빨리 확인받고 싶은 소망이 있습니다.", "Behind the direct words is a wish to quickly receive warm reassurance and safety from their partner.")
+          : L("소원함을 느끼더라도 자존심보다 관계의 평화를 우선하여 조용히 감내하려는 마음입니다.", "Even when feeling distant, they quietly endure to prioritize the relationship's peace over pride.")
     );
 
     const reason = spA?.profile.core
@@ -91,9 +94,12 @@ export function resolveHiddenHeartsLens(params: {
           `${topicP(a, locale)} 자신의 진심이 곡해되거나, ${spA.profile.shadow}`,
           `${topicP(a, locale)} fears their sincerity being misread, or that ${spA.profile.shadow.charAt(0).toLowerCase()}${spA.profile.shadow.slice(1)}`,
         )
-      : L(
-          `${topicP(a, locale)} 자신의 진심이 곡해되거나 상대에게 부담과 거절로 돌아올지 모른다는 두려움`,
-          `${topicP(a, locale)} fears their sincerity being misread, or coming back to them as a burden or rejection`,
+      : (
+          relCeA.stressTempBand === "cold"
+            ? L(`${topicP(a, locale)} 감정이 정리되지 않은 상태에서 억지로 자리에 매여 마음이 지쳐버릴까 봐 느끼는 우려`, `${topicP(a, locale)} fears getting worn out by being forced to talk before sorting out their thoughts`)
+            : relCeA.stressTempBand === "hot"
+              ? L(`${topicP(a, locale)} 자신의 솔직한 표현이 상대에게 부담이나 무관심으로 반사될까 봐 느껴지는 불안`, `${topicP(a, locale)} fears their honest expression being returned as a burden or indifference`)
+              : L(`${topicP(a, locale)} 자신의 노력이 당연하게 여겨지며 소원해질지 모른다는 은은한 서운함`, `${topicP(a, locale)} quietly fears their effort being taken for granted`)
         );
 
     const provenance: ProvenanceRef[] = [
@@ -170,9 +176,12 @@ export function resolveHiddenHeartsLens(params: {
       "감정 충돌을 피하며 차분히 생각을 정리하려 합니다.",
       "avoids emotional confrontation and tries to calmly sort out their thoughts.",
     );
-    const innerFeel = relCeB.hiddenVulnerability?.text ?? L(
-      "겉으로는 의연해 보이지만 내면 깊은 곳에서는 따뜻한 인정과 확신을 간절히 바라고 있습니다.",
-      "They look composed on the surface, but deep inside they're quietly longing for warm recognition and reassurance.",
+    const innerFeel = relCeB.hiddenVulnerability?.text ?? (
+      relCeB.stressTempBand === "cold"
+        ? L("겉으로 침묵하는 것은 무관심해서가 아니라 서로 상처받지 않게 말을 골라내는 정돈 과정입니다.", "Being silent on the outside is not from indifference, but sorting out words so neither gets hurt.")
+        : relCeB.stressTempBand === "hot"
+          ? L("직설적 화법 뒤에는 솔직한 공감을 통해 정서적 거리를 좁히고 싶은 소망이 있습니다.", "Behind direct speech is a wish to narrow emotional distance through honest empathy.")
+          : L("서운함이 생기더라도 상대를 탓하기 전에 스스로 상황을 먼저 납득해 보려는 마음입니다.", "Even when hurt, they try to understand the situation first before pointing fingers.")
     );
 
     const reason = spB?.profile.core
@@ -189,9 +198,12 @@ export function resolveHiddenHeartsLens(params: {
           `${topicP(b, locale)} 자신의 진심이 곡해되거나, ${spB.profile.shadow}`,
           `${topicP(b, locale)} fears their sincerity being misread, or that ${spB.profile.shadow.charAt(0).toLowerCase()}${spB.profile.shadow.slice(1)}`,
         )
-      : L(
-          `${topicP(b, locale)} 자신의 진심이 곡해되거나 상대에게 부담과 거절로 돌아올지 모른다는 두려움`,
-          `${topicP(b, locale)} fears their sincerity being misread, or coming back to them as a burden or rejection`,
+      : (
+          relCeB.stressTempBand === "cold"
+            ? L(`${topicP(b, locale)} 자신의 동굴 시간을 상대가 무관심이나 냉대로 오해할까 봐 느껴지는 부담`, `${topicP(b, locale)} fears their cave time being misread as indifference or coldness`)
+            : relCeB.stressTempBand === "hot"
+              ? L(`${topicP(b, locale)} 자신의 솔직함이 상대에게 부담이나 다툼의 소지로 남을까 봐 느끼는 불안`, `${topicP(b, locale)} fears their honesty remaining as a burden or source of argument`)
+              : L(`${topicP(b, locale)} 자신의 묵묵한 노력이 상대에게 조용히 잊힐까 봐 느끼는 씁쓸함`, `${topicP(b, locale)} quietly fears their steady effort being forgotten`)
         );
 
     const provenance: ProvenanceRef[] = [
@@ -346,24 +358,24 @@ export function resolveDynamicsLens(params: {
     ),
     benefit: sanitizeParticles(
       L(
-        `외부의 간섭 없이 둘만의 친밀한 교감과 온전한 휴식을 누릴 수 있는 편안한 안정감`,
-        `A comfortable sense of stability, free of outside interference, where you can enjoy intimate connection and full rest together`,
+        `${a}의 정서적 결수와 ${b}의 안정적 템포가 만나 둘만의 공간에서 깊은 휴식을 이루는 상태`,
+        `A state where ${a}'s emotional rhythm meets ${b}'s steady pace to bring deep rest in your private space`,
       ),
       [a, b],
       locale,
     ),
     riskWhenExcess: sanitizeParticles(
       L(
-        `한쪽이 표현을 당연하게 여기거나 상대방의 침묵을 무관심으로 오해할 때 감정의 온도가 어긋날 수 있습니다.`,
-        `If one of you takes the other's expression for granted, or misreads the other's silence as indifference, your emotional temperatures can fall out of sync.`,
+        `${a}와 ${b}의 표현 강도 차이로 인해 한쪽의 침묵이나 미묘한 템포 차이를 서운함으로 잘못 읽을 위험`,
+        `The risk that a difference in emotional intensity between ${a} and ${b} leads to misreading the other's silence or pace as hurt`,
       ),
       [a, b],
       locale,
     ),
     observableSignal: sanitizeParticles(
       L(
-        `지친 하루 끝에 만났을 때, ${subjectP(a, locale)} 먼저 하루의 기분을 털어놓고 ${subjectP(b, locale)} 이를 조용히 경청하며 편안한 쉼터를 내어주는 모습`,
-        `At the end of a tiring day, ${subjectP(a, locale)} shares how the day went first, and ${subjectP(b, locale)} quietly listens and offers a comfortable place to rest`,
+        `단둘이 만났을 때 ${subjectP(a, locale)} ${relCeA?.careExpression?.text ?? "마음을 편안히 털어놓고"} ${subjectP(b, locale)} ${relCeB?.careExpression?.text ?? "묵묵히 경청하며"} 마음의 온도를 맞추는 순간`,
+        `When alone together, ${subjectP(a, locale)} ${(relCeA?.careExpression?.text ?? "opens up comfortably").charAt(0).toLowerCase()}${(relCeA?.careExpression?.text ?? "opens up comfortably").slice(1)} and ${subjectP(b, locale)} ${(relCeB?.careExpression?.text ?? "listens quietly").charAt(0).toLowerCase()}${(relCeB?.careExpression?.text ?? "listens quietly").slice(1)}, matching your emotional warmth`,
       ),
       [a, b],
       locale,
@@ -426,7 +438,6 @@ export function resolveDynamicsLens(params: {
       [a, b],
       locale,
     ),
-    // Final Evidence-to-Voice pass, item 2 — same dedup as face.private above.
     mechanism: sanitizeParticles(
       L(
         `${a}가 ${roP(relCeA?.familiarRelationshipRole?.text ?? "명확한 원칙과 결단력", locale)} 방향을 잡으면, ${b}는 ${roP(relCeB?.familiarRelationshipRole?.text ?? "묵묵한 현실 관리력", locale)} 그 방향을 실제로 굴러가게 만듭니다.`,
@@ -437,24 +448,24 @@ export function resolveDynamicsLens(params: {
     ),
     benefit: sanitizeParticles(
       L(
-        `어려운 문제나 중요한 결정 앞에서도 우왕좌왕하지 않고 빠르고 견고하게 해결책을 찾아내는 실행력`,
-        `The ability to find a solution quickly and solidly even for a hard problem or big decision, without floundering`,
+        `${a}의 결단 방식과 ${b}의 신중함이 만나 중요한 결정 앞에서도 우왕좌왕하지 않고 빠르고 견고하게 해결책을 찾는 실행력`,
+        `The combined execution of ${a}'s decisive style and ${b}'s caution, finding solid solutions without floundering on big choices`,
       ),
       [a, b],
       locale,
     ),
     riskWhenExcess: sanitizeParticles(
       L(
-        `역할 분담이 고착화되어 한 사람에게 결정이나 현실 관리의 보이지 않는 노동이 집중될 경우 피로감이 쌓일 수 있습니다.`,
-        `If the division of roles hardens and the invisible labor of deciding or managing real life keeps landing on just one of you, fatigue can build up.`,
+        `판단 기준의 차이로 인해 한쪽에 의사결정의 무게가 쏠리거나 가치관 조율에 조급함이 생길 위험`,
+        `The risk that a gap in criteria leaves the weight of decisions on one person or creates impatience when aligning values`,
       ),
       [a, b],
       locale,
     ),
     observableSignal: sanitizeParticles(
       L(
-        `여행이나 공동의 계획을 세울 때 ${subjectP(a, locale)} 큰 그림과 테마를 제안하고, ${subjectP(b, locale)} 구체적인 동선과 예산을 꼼꼼히 정리하는 호흡`,
-        `When planning a trip or a shared plan, ${subjectP(a, locale)} proposes the big picture and theme, and ${subjectP(b, locale)} carefully sorts out the concrete route and budget`,
+        `공동의 계획이나 현실 과제를 다룰 때 ${subjectP(a, locale)} 방향과 기준을 짚고 ${subjectP(b, locale)} 세부 조율을 더하며 맞춰가는 순간`,
+        `When managing shared plans or tasks, ${subjectP(a, locale)} sets the direction while ${subjectP(b, locale)} adds the detailed alignment`,
       ),
       [a, b],
       locale,
@@ -787,8 +798,8 @@ export function resolveStrengthVulnerabilityLens(params: {
   // repetition.
   const sharedStrength = sanitizeParticles(
     L(
-      `두 사람이 함께할 때 가장 강력해지는 지점은 '${a}가 주는 ${relCeA?.strengthsGivenToPartner?.[0]?.text ?? "결단력"}과 ${b}가 주는 ${relCeB?.strengthsGivenToPartner?.[0]?.text ?? "묵묵한 안정감"}'이 만나는 순간입니다. 혼자일 때는 놓치기 쉬운 시야와 세밀함을 서로가 빈틈없이 채워주어, 어떤 도전 앞에서도 흔들리지 않는 단단한 팀워크를 발휘합니다.`,
-      `Where you two become strongest together is the moment ${a}'s ${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").charAt(0).toLowerCase()}${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").slice(1)} meets ${b}'s ${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").charAt(0).toLowerCase()}${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").slice(1)}. You fill in each other's blind spots and details without a gap, showing a teamwork that stays firm in the face of any challenge.`,
+      `두 사람이 함께할 때 가장 강력해지는 지점은 ${a}의 ${relCeA?.strengthsGivenToPartner?.[0]?.text ?? "결단력"}과 ${b}의 ${relCeB?.strengthsGivenToPartner?.[0]?.text ?? "묵묵한 안정감"}이 시너지를 발휘하는 순간입니다.`,
+      `Where you two become strongest together is the moment ${a}'s ${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").charAt(0).toLowerCase()}${(relCeA?.strengthsGivenToPartner?.[0]?.text ?? "decisiveness").slice(1)} and ${b}'s ${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").charAt(0).toLowerCase()}${(relCeB?.strengthsGivenToPartner?.[0]?.text ?? "quiet steadiness").slice(1)} create synergy together.`,
     ),
     [a, b],
     locale,

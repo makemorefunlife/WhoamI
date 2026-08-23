@@ -320,18 +320,20 @@ function selectConflictLoopSteps(params: {
   bandB: "hot" | "cold" | "neutral" | undefined;
   names: { a: string; b: string };
   locale: NarrativeLocale;
-  /** The original A-presses/B-withdraws template steps, pre-filled by the
-   * caller (which has `copy` in scope) — used only when neither person's
-   * stressTempBand is known, i.e. there's no real signal for direction. */
   fallbackSteps: string[];
 }): string[] {
   const { bandA, bandB, names, locale, fallbackSteps } = params;
   const L = (ko: string, en: string) => pick(locale, ko, en);
 
-  const presser = bandA === "hot" && bandB !== "hot" ? names.a : bandB === "hot" && bandA !== "hot" ? names.b : null;
-  const withdrawer = presser === names.a ? names.b : presser === names.b ? names.a : null;
+  const isColdA = bandA === "cold";
+  const isColdB = bandB === "cold";
+  const isHotA = bandA === "hot";
+  const isHotB = bandB === "hot";
 
-  if (presser && withdrawer) {
+  // Mode 1: Asymmetric Hot-Cold (Pursuer-Withdrawer)
+  if ((isHotA && !isHotB) || (isHotB && !isHotA)) {
+    const presser = isHotA ? names.a : names.b;
+    const withdrawer = isHotA ? names.b : names.a;
     return [
       L(`문제가 생기면 ${presser}이/가 빨리 풀고 싶어서 먼저 대화를 시도해요.`, `When a problem comes up, ${presser} wants to resolve it fast and reaches out first.`),
       L(`그 순간 ${withdrawer}은/는 머리가 복잡해져서 생각할 시간이 필요해 반응이 느려지거나 조용해져요.`, `In that moment, ${withdrawer}'s head gets crowded and needs time to think, so the response slows down or goes quiet.`),
@@ -340,7 +342,57 @@ function selectConflictLoopSteps(params: {
     ];
   }
 
-  return fallbackSteps;
+  // Mode 2: Both Cold (Double-Retreat / Frozen Distance)
+  if (isColdA && isColdB) {
+    return [
+      L(`갈등 조짐이 보이면 ${names.a}님과 ${names.b}님 모두 감정을 즉각 꺼내기보다 각자의 동굴로 물러섭니다.`, `When friction arises, both ${names.a} and ${names.b} retreat into their own caves rather than opening up immediately.`),
+      L(`상대방이 먼저 다가와주기를 기대하며 침묵의 시간이 길어집니다.`, `Silence stretches as each expects the other to reach out first.`),
+      L(`시간이 흐를수록 '상대가 마음을 닫았다'고 생각하여 정서적 거리가 점점 멀어집니다.`, `As time passes, each assumes the other has closed off, widening the emotional distance.`),
+      L(`진짜 서운함의 원인을 다루지 못한 채 조용한 앙금이 가만히 남아있게 되는 패턴입니다.`, `Without addressing the root cause, quiet resentment remains lingering between you.`),
+    ];
+  }
+
+  // Mode 3: Both Hot (Double-Escalation / Emotional Clash)
+  if (isHotA && isHotB) {
+    return [
+      L(`갈등이 발생하면 ${names.a}님과 ${names.b}님 모두 자기 입장과 서운함을 즉각적으로 세게 표현합니다.`, `When conflict strikes, both ${names.a} and ${names.b} express their feelings and hurt strongly and immediately.`),
+      L(`상대의 템포를 기다리지 않고 각자의 팩트와 주장을 동시에 밀어붙입니다.`, `Neither waits for the other's pace, pushing their own facts and points at the same time.`),
+      L(`감정이 고조되면서 본래의 문제보다 표현 방식이나 어조에 더 상처받기 쉽습니다.`, `As tempers rise, it becomes easier to get hurt by tone and delivery than the core issue itself.`),
+      L(`서로 강하게 마주친 후 감정 에너지가 방전되며 피로감이 크게 남는 루프입니다.`, `After a strong head-on clash, emotional energy drains out, leaving heavy fatigue.`),
+    ];
+  }
+
+  // Mode 4: Neutral x Cold
+  if ((isColdA && !isHotB) || (isColdB && !isHotA)) {
+    const cold = isColdA ? names.a : names.b;
+    const neutral = isColdA ? names.b : names.a;
+    return [
+      L(`갈등 시 ${cold}님이 혼자 정리할 동굴 시간을 필요로 하여 말문이 적어집니다.`, `In conflict, ${cold} needs time alone to process, becoming quiet.`),
+      L(`${neutral}님은 지켜보며 기다리려 하지만, 생각보다 긴 조용함에 답답함을 느낍니다.`, `${neutral} tries to be patient, but feels frustrated as the silence lasts longer than expected.`),
+      L(`${cold}님이 언제 다시 대화할지 전달하지 않으면 불확실성이 커집니다.`, `If ${cold} doesn't signal when to talk again, uncertainty builds.`),
+      L(`적절한 대화 재개 타이밍을 공유할 때 정서적 안전지대가 회복되는 구도입니다.`, `Sharing a clear time to reconnect is what restores your emotional safe zone.`),
+    ];
+  }
+
+  // Mode 5: Neutral x Hot
+  if ((isHotA && !isColdB) || (isHotB && !isColdA)) {
+    const hot = isHotA ? names.a : names.b;
+    const neutral = isHotA ? names.b : names.a;
+    return [
+      L(`갈등이 생기면 ${hot}님이 솔직하고 직설적인 어조로 빠른 해명을 요구합니다.`, `When friction occurs, ${hot} seeks a quick explanation with direct delivery.`),
+      L(`${neutral}님은 직설적인 어조에 가볍게 당황하여 우선 온도를 낮추려 조율합니다.`, `${neutral} feels slightly startled by the direct tone and tries to cool down the temperature.`),
+      L(`${hot}님은 상대의 신중함을 지연으로 여겨 더 강하게 확인하려 할 수 있습니다.`, `${hot} may view the other's caution as delay and press harder for reassurance.`),
+      L(`표현의 강도를 누르고 서로의 본래 선의를 먼저 인정해줄 때 해결되는 패턴입니다.`, `Resolving it comes down to easing the pressure and acknowledging each other's good intentions first.`),
+    ];
+  }
+
+  // Mode 6: Genuinely Similar Moderate Pairs
+  return [
+    L(`평소 두 사람은 원만하게 맞춰가지만, 마찰이 생기면 서로의 기분을 조심스럽게 살피며 조용해집니다.`, `You usually adapt smoothly, but when friction hits, you both quiet down and carefully observe each other's mood.`),
+    L(`서운함이 생겨도 곧바로 부딪치기보다 스스로 참으며 넘어가는 편입니다.`, `Even when hurt, you tend to hold it in rather than confront it head-on.`),
+    L(`직접 다루지 않은 서운함이 마음에 작게 축적될 위험이 있습니다.`, `There's a risk that unaddressed hurt quietly accumulates inside.`),
+    L(`정기적으로 솔직한 마음을 편안하게 털어놓는 대화 자리를 만들어주는 것이 좋습니다.`, `Creating regular, relaxed check-ins to share feelings openly protects your harmony.`),
+  ];
 }
 
 function fill(tpl: string, vars: Record<string, string>, locale: NarrativeLocale): string {
@@ -418,7 +470,28 @@ function axisRow(
   const aPattern = aHigh ? interp.highBehavior : interp.lowBehavior;
   const bPattern = !aHigh ? interp.highBehavior : interp.lowBehavior;
   const isSimilar = axis.match_type === "similarity";
-  const isHighLow = aHigh; // A is high, B is low.
+  const gap = axis.gap;
+
+  let dynamicText = "";
+  if (isSimilar || gap < 20) {
+    dynamicText = pick(
+      locale,
+      `비슷한 ${label} 성향(${axis.score_a}점 vs ${axis.score_b}점, ${gap}점 차이)으로 상대의 반응을 직관적으로 이해하기 쉬운 상태입니다.`,
+      `With similar ${label} scores (${axis.score_a} vs ${axis.score_b}, gap of ${gap}), you intuitively understand each other's responses.`,
+    );
+  } else if (gap >= 50) {
+    dynamicText = pick(
+      locale,
+      `상당한 ${label} 차이(${axis.score_a}점 vs ${axis.score_b}점, ${gap}점 차이)로 선명한 성향 대비가 드러나는 핵심 구도입니다.`,
+      `A major difference in ${label} (${axis.score_a} vs ${axis.score_b}, gap of ${gap}) creates a high-contrast core dynamic.`,
+    );
+  } else {
+    dynamicText = pick(
+      locale,
+      `완만한 ${label} 차이(${axis.score_a}점 vs ${axis.score_b}점, ${gap}점 차이)로 일상에서 느긋하게 조율할 수 있는 범위입니다.`,
+      `A moderate difference in ${label} (${axis.score_a} vs ${axis.score_b}, gap of ${gap}) leaves plenty of room for relaxed adjustment.`,
+    );
+  }
 
   return {
     id: `axis.${axis.axis_key}`,
@@ -430,16 +503,14 @@ function axisRow(
       `What effect does our difference in ${label} have on us?`,
     ),
     plainLanguageDefinition: interp.plainLanguageDefinition,
-    personATendency: aPattern,
-    personBTendency: bPattern,
-    pairDynamic: isSimilar
-      ? pick(locale, "비슷한 성향으로 인해 행동의 이유를 쉽게 이해할 수 있어요.", "Because you're similar here, it's easy to understand why the other acts the way they do.")
-      : interp.tensionClash,
+    personATendency: `${aPattern} (${axis.score_a}점)`,
+    personBTendency: `${bPattern} (${axis.score_b}점)`,
+    pairDynamic: `${dynamicText} ${isSimilar ? "" : interp.tensionClash}`,
     observableScene: interp.sceneHint,
-    likelyMisreadingA: isSimilar ? null : (isHighLow ? interp.misreadHighObservingLow : interp.misreadLowObservingHigh),
-    likelyMisreadingB: isSimilar ? null : (isHighLow ? interp.misreadLowObservingHigh : interp.misreadHighObservingLow),
+    likelyMisreadingA: isSimilar ? null : (aHigh ? interp.misreadHighObservingLow : interp.misreadLowObservingHigh),
+    likelyMisreadingB: isSimilar ? null : (aHigh ? interp.misreadLowObservingHigh : interp.misreadHighObservingLow),
     relationshipStrength: isSimilar ? pick(locale, copyKo.calmSim, copyEn.calmSim) : interp.tensionBenefit,
-    relationshipRisk: isSimilar ? pick(locale, copyKo.stressLow, copyEn.stressLow) : interp.tensionClash,
+    relationshipRisk: isSimilar ? pick(locale, copyKo.stressLow, copyEn.stressLow) : `${gap >= 50 ? "큰 성향 차이로 인해 " : ""}${interp.tensionClash}`,
     practicalTranslation: isSimilar ? pick(locale, "지금의 긍정적인 균형을 유지하세요.", "Keep up the positive balance you already have.") : interp.practicalTranslation,
     evidenceRefs: [
       prov(
@@ -656,20 +727,15 @@ export function buildCanonicalRelationshipStoryPlan(params: {
   const relationshipDefinition =
     (typeof summary === "object" && summary?.relationship_name) ||
     (typeof summary === "string" ? summary : null) ||
-    (relCeA && relCeB
-      ? // Pair-first fix: this used to always conclude "서로의 부족한 점을
-        // 채우며 완성해가는 관계" ("you complete each other by filling in
-        // what the other lacks") regardless of what coreRelationshipNature
-        // actually said — a universal claim tacked onto real per-person
-        // facts (spec item 5 names this exact phrase as a banned default).
-        // Now it just states the two real facts side by side and lets them
-        // stand on their own, without asserting an unproven "completion"
-        // narrative. composeCanonicalSectionNarratives.ts's c1_hero block
-        // leads with a genuine Cross-Signal superpower claim when one
-        // exists — this is the fallback for when it doesn't.
-        L(
-          `${names.a}의 ${josaGwaWa(relCeA.coreRelationshipNature.text)} ${names.b}의 ${josaIGa(relCeB.coreRelationshipNature.text)} 만나 만들어가는 관계`,
-          `A relationship shaped by ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} meeting ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)}`,
+    (topDifferences.length > 0 && topDifferences[0].gap >= 20
+      ? L(
+          `${names.a}님(${topDifferences[0].scoreA}점)과 ${names.b}님(${topDifferences[0].scoreB}점)의 ${topDifferences[0].axisLabel} 차이(${topDifferences[0].gap}점 gap)를 바탕으로 맞춰가는 관계`,
+          `A relationship shaped by the gap in ${topDifferences[0].axisLabel} between ${names.a} (${topDifferences[0].scoreA}) and ${names.b} (${topDifferences[0].scoreB}) (${topDifferences[0].gap}-pt gap)`,
+        )
+      : relCeA && relCeB
+      ? L(
+          `${names.a}의 ${relCeA.familiarRelationshipRole?.text ?? relCeA.coreRelationshipNature.text}와 ${names.b}의 ${relCeB.familiarRelationshipRole?.text ?? relCeB.coreRelationshipNature.text}이 만나 조율하는 관계`,
+          `A relationship shaped by ${names.a}'s ${relCeA.familiarRelationshipRole?.text ?? relCeA.coreRelationshipNature.text} meeting ${names.b}'s ${relCeB.familiarRelationshipRole?.text ?? relCeB.coreRelationshipNature.text}`,
         )
       : plan.pairSynthesis.selectedMeaning || copy.defFallback);
   mark("section_1_summary");
@@ -1283,10 +1349,11 @@ export function buildCanonicalRelationshipStoryPlan(params: {
         `${relCeA?.supportNeededFromPartner[0]?.text ?? '자신의 솔직한 헌신을 인정해주는 따뜻한 피드백'}을 전해주세요.`,
         `Offer them ${(relCeA?.supportNeededFromPartner[0]?.text ?? "warm feedback that recognizes their honest devotion").charAt(0).toLowerCase()}${(relCeA?.supportNeededFromPartner[0]?.text ?? "warm feedback that recognizes their honest devotion").slice(1)}.`,
       ),
-      L(
-        `대화를 미루지 않고 언제 다시 이야기할지 구체적인 시점을 약속해주세요.`,
-        `Don't put off the conversation — promise a concrete time for when you'll talk again.`,
-      ),
+      relCeA?.stressTempBand === "hot"
+        ? L("감정이 격해졌을 때는 10분간 호흡을 가다듬고 온도를 낮춘 뒤 대화를 재개해 주세요.", "When emotions run high, take 10 minutes to catch your breath and lower the temperature before continuing.")
+        : relCeA?.stressTempBand === "cold"
+          ? L("혼자 정리할 동굴 시간이 끝난 뒤 먼저 다정하게 대화를 열어주는 신호를 보내주세요.", "After your cave time to sort thoughts, send a warm signal first to reopen the conversation.")
+          : L("상대의 작은 성의와 노력을 당연히 여기지 않고 즉시 고마움을 표현해 주세요.", "Express immediate appreciation for your partner's small efforts rather than taking them for granted."),
     ],
     helpsB: [
       L(
@@ -1297,15 +1364,22 @@ export function buildCanonicalRelationshipStoryPlan(params: {
         `${relCeB?.supportNeededFromPartner[0]?.text ?? '자신의 침묵과 생각을 다그치지 않고 기다려주는 신뢰'}를 보여주세요.`,
         `Show them ${(relCeB?.supportNeededFromPartner[0]?.text ?? "the trust of waiting instead of pressing their silence and thoughts").charAt(0).toLowerCase()}${(relCeB?.supportNeededFromPartner[0]?.text ?? "the trust of waiting instead of pressing their silence and thoughts").slice(1)}.`,
       ),
-      L(
-        `감정적인 압박 대신 차분하고 논리적인 톤으로 천천히 다가가세요.`,
-        `Approach them slowly, with a calm, level tone instead of emotional pressure.`,
-      ),
+      relCeB?.stressTempBand === "hot"
+        ? L("감정이 격해졌을 때는 10분간 호흡을 가다듬고 온도를 낮춘 뒤 대화를 재개해 주세요.", "When emotions run high, take 10 minutes to catch your breath and lower the temperature before continuing.")
+        : relCeB?.stressTempBand === "cold"
+          ? L("혼자 정리할 동굴 시간이 끝난 뒤 먼저 다정하게 대화를 열어주는 신호를 보내주세요.", "After your cave time to sort thoughts, send a warm signal first to reopen the conversation.")
+          : L("상대의 작은 성의와 노력을 당연히 여기지 않고 즉시 고마움을 표현해 주세요.", "Express immediate appreciation for your partner's small efforts rather than taking them for granted."),
     ],
     avoid: selectedRepair.avoid,
     sharedCommitments: copy.repairCommit,
-    observationSignals: copy.repairObserve,
-    warningIfRepeats: copy.repairWarn,
+    observationSignals: [
+      L(`${names.a}님과 ${names.b}님이 서로의 표현 템포 차이를 받아들이며 차분히 들어주는 모습`, `${names.a} and ${names.b} accepting each other's pace gap and listening calmly`),
+      L(`${names.a}의 ${relCeA?.familiarRelationshipRole?.text ?? "성향"}과 ${names.b}의 ${relCeB?.familiarRelationshipRole?.text ?? "성향"}이 신뢰를 높여주는 장면`, `A scene where ${names.a}'s ${relCeA?.familiarRelationshipRole?.text ?? "style"} and ${names.b}'s ${relCeB?.familiarRelationshipRole?.text ?? "style"} build trust`),
+    ],
+    warningIfRepeats: [
+      L(`갈등 발생 시 ${names.a}님과 ${names.b}님이 서로의 조용함이나 해명을 지연으로 지레짐작하는 패턴`, `A pattern where ${names.a} and ${names.b} misread each other's quietness or explanation as delay`),
+      L(`서운함이 생겼을 때 제때 말하지 않고 마음속에 묵혀두는 상태`, `A state where hurt feelings are not brought up in time and are left lingering`),
+    ],
     provenance: [
       prov(
         "canonical_projections.recovery_speed",
@@ -1508,7 +1582,9 @@ export function buildCanonicalRelationshipStoryPlan(params: {
         ? L(`${names.a}이/가 먼저 방향을 잡으면 ${names.b}이/가 그걸 받아서 함께 움직이는 쪽에 가까워요.`, `${names.a} tends to set the direction first, and ${names.b} picks it up and moves with it.`)
         : balance?.balance_a === "receiver" && balance?.balance_b === "leader"
           ? L(`${names.b}이/가 먼저 방향을 잡으면 ${names.a}이/가 그걸 받아서 함께 움직이는 쪽에 가까워요.`, `${names.b} tends to set the direction first, and ${names.a} picks it up and moves with it.`)
-          : L("두 사람 다 상황에 따라 주도권을 주고받는 편이에요 — 한쪽이 고정으로 이끄는 관계는 아니에요.", "You two trade off leading depending on the situation — it's not a relationship where one person always drives."),
+          : relCeA && relCeB
+            ? L(`${names.a}의 ${relCeA.familiarRelationshipRole?.text ?? "성향"}과 ${names.b}의 ${relCeB.familiarRelationshipRole?.text ?? "성향"}이 주도권을 고정하지 않고 상황에 따라 유연하게 조율되는 구도예요.`, `${names.a}'s ${relCeA.familiarRelationshipRole?.text ?? "style"} and ${names.b}'s ${relCeB.familiarRelationshipRole?.text ?? "style"} adapt flexibly based on the situation rather than fixing one leader.`)
+            : L("두 사람 다 상황에 따라 주도권을 주고받는 편이에요 — 한쪽이 고정으로 이끄는 관계는 아니에요.", "You two trade off leading depending on the situation — it's not a relationship where one person always drives."),
     growthOrStability: specialBond?.why_special ?? copy.growthFallback,
     primaryTension,
     specialCodePreview:
@@ -1584,8 +1660,18 @@ export function buildCanonicalRelationshipStoryPlan(params: {
               `Depending on how ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} and ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)} play off each other, this relationship can still grow into something different from where it is now.`,
             )
           : copy.closePossibility,
-      rememberA: fill(copy.tpl.rememberA, { topicA: topicP(names.a, locale) }, locale),
-      rememberB: fill(copy.tpl.rememberB, { topicB: topicP(names.b, locale) }, locale),
+      rememberA:
+        relCeA?.stressTempBand === "hot"
+          ? L(`${names.a}님: 서운함이 올라올 때 즉각 결론을 다그치기보다 "당신과 잘 지나고 싶어서 그래"라는 본래의 다정한 마음을 먼저 전달해 보세요.`, `${names.a}: When hurt arises, instead of pushing for an immediate conclusion, try sharing your underlying warmth: "I'm saying this because I want us to be good."`)
+          : relCeA?.stressTempBand === "cold"
+            ? L(`${names.a}님: 감정이 고조되어 동굴 시간이 필요할 때 "생각을 정리하고 이따 얘기하자"는 명확한 대화 재개 신호를 알려주세요.`, `${names.a}: When you need time alone, give a clear signal for reopening the conversation: "Let's talk again later once I sort out my thoughts."`)
+            : L(`${names.a}님: 상대방의 조용함이나 템포 차이를 내 마음에 대한 무심함으로 지레짐작하지 않는 여유를 가져보세요.`, `${names.a}: Give room without assuming the partner's quietness or different pace means indifference.`),
+      rememberB:
+        relCeB?.stressTempBand === "hot"
+          ? L(`${names.b}님: 서운함이 올라올 때 즉각 결론을 다그치기보다 "당신과 잘 지내고 싶어서 그래"라는 본래의 다정한 마음을 먼저 전달해 보세요.`, `${names.b}: When hurt arises, instead of pushing for an immediate conclusion, try sharing your underlying warmth: "I'm saying this because I want us to be good."`)
+          : relCeB?.stressTempBand === "cold"
+            ? L(`${names.b}님: 감정이 고조되어 동굴 시간이 필요할 때 "생각을 정리하고 이따 얘기하자"는 명확한 대화 재개 신호를 알려주세요.`, `${names.b}: When you need time alone, give a clear signal for reopening the conversation: "Let's talk again later once I sort out my thoughts."`)
+            : L(`${names.b}님: 이성적인 대책부터 제시하기보다 상대방의 정서적 서운함을 먼저 있는 그대로 들어주세요.`, `${names.b}: Instead of leading with logical solutions, try listening to your partner's emotional hurt as it is first.`),
       watchSignals: repair.observationSignals,
       improvingSignals: [copy.improveSignal],
       cautionSignals: repair.warningIfRepeats,

@@ -356,37 +356,29 @@ export function composeCanonicalSectionNarratives(
             ]),
           ),
         },
-        {
-          blockId: "attr.unique",
-          title: L("둘 사이에서만 나타나는 특별한 시너지", "The Special Synergy Only the Two of You Have"),
-          // Pair-first fix: the old fallback here (unitMutual.emotionalMeaning/
-          // scene/tensionBridge) was 3 unconditional hardcoded sentences —
-          // identical for every couple, confirmed via audit. When Cross-Signal
-          // found a genuine paradox insight for this pair, that becomes the
-          // primary thesis instead (it's excluded from the trailing extras
-          // below via consumedCrossSignalIds so it never renders twice).
-          // unitMutual.recognition/partnerEvidence stay as supporting detail
-          // when present — they DO vary per pair (hitNotes-derived).
-          body: [
-            pairModel.primaryAttractionMutual?.text ?? "",
-            unitMutual
-              ? [unitMutual.recognition, unitMutual.partnerEvidence.join(" ")].filter(Boolean).join("\n")
-              : pairModel.primaryAttractionMutual
-                ? "" // paradox already covers it; don't also print the generic uniqueCombination/flipsToConflictWhen constants underneath
-                : `${plan.attraction.uniqueCombination}\n\n${plan.attraction.flipsToConflictWhen}`,
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-          structuredData: unitMutual,
-          expertSynthesis: synthAttrMutual,
-          evidenceIds: Array.from(
-            new Set([
-              ...plan.attraction.provenance.map((p) => p.evidenceId),
-              ...(pairModel.primaryAttractionMutual?.evidenceRefs ?? []),
-              ...(synthAttrMutual?.usedEvidenceIds ?? []),
-            ]),
-          ),
-        },
+        ...(pairModel.primaryAttractionMutual || (unitMutual && unitMutual.usedClaims && unitMutual.usedClaims.length > 0)
+          ? [{
+              blockId: "attr.unique",
+              title: L("둘 사이에서만 나타나는 특별한 시너지", "The Special Synergy Only the Two of You Have"),
+              body: [
+                pairModel.primaryAttractionMutual?.text ?? "",
+                unitMutual && unitMutual.usedClaims && unitMutual.usedClaims.length > 0
+                  ? [unitMutual.recognition, unitMutual.partnerEvidence.join(" ")].filter(Boolean).join("\n")
+                  : "",
+              ]
+                .filter(Boolean)
+                .join("\n\n"),
+              structuredData: unitMutual,
+              expertSynthesis: synthAttrMutual,
+              evidenceIds: Array.from(
+                new Set([
+                  ...plan.attraction.provenance.map((p) => p.evidenceId),
+                  ...(pairModel.primaryAttractionMutual?.evidenceRefs ?? []),
+                  ...(synthAttrMutual?.usedEvidenceIds ?? []),
+                ]),
+              ),
+            }]
+          : []),
         ...crossSignalBlocksFor(plan, "c2_attraction", locale, consumedCrossSignalIds),
         ...expertBlocksFor("c2_attraction"),
       ],
@@ -698,15 +690,7 @@ export function composeCanonicalSectionNarratives(
           title: L("유리한 시기", "Favorable Windows"),
           body: plan.timing!.favorableWindows.join("\n"),
           evidenceIds: plan.timing!.provenance.map((p) => p.evidenceId),
-        }] : [{
-          blockId: "timing.favorable",
-          title: L("유리한 시기 & 상반기 하반기 조율점", "Favorable Windows & Key Alignment Points"),
-          body: L(
-            "상반기에는 소통의 어조와 표현 템포를 맞춰가는 것이 유리하며, 하반기에는 서로의 개인 공간과 자율성을 충분히 확보해줄 때 관계 케미스트리가 극대화됩니다.",
-            "In the first half of the year, aligning tone and emotional pacing is key; in the second half, respecting personal space and autonomy maximizes closeness.",
-          ),
-          evidenceIds: [],
-        }]),
+        }] : []),
         ...((plan.timing?.cautionWindows ?? []).length > 0 ? [{
           blockId: "timing.caution",
           title: L("주의가 필요한 시기", "Windows to Watch"),
