@@ -56,6 +56,8 @@ import { pick } from "@/lib/relationship/friend/friendCopy";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import type {
   ChildDnaSection,
+  ParentDnaSectionView,
+  ParentChildBridgeSectionView,
   CompareTableSection,
   DeEscalationSection,
   DeepReadSection,
@@ -268,41 +270,147 @@ function CompareTableCard({
 }
 
 function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
-  const t = useMessages().relationshipDrilldown.family;
+  const locale = useLocale();
+
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT} showMarker={true}>
+    <RelationshipReportCard title={ec(locale, "Family Roles & Positions", "가족 안에서 우리는 어떤 자리를 맡게 될까요")} accentColor={ACCENT}>
       <RelationshipReportBody>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/25 px-4 py-3">
-            <RelationshipReportLabel>
-              {t.householdRolesSelfLabel(section.selfName)}
-            </RelationshipReportLabel>
-            <p className="mt-2 text-base font-semibold text-rel-ink">{section.selfRoleLabel}</p>
-            <RelationshipReportParagraph className="mt-2">
-              {section.selfRoleDetail}
-            </RelationshipReportParagraph>
+        <div className="space-y-6">
+          {/* 1. 우리 가족의 기본 구도 */}
+          {section.pairStructureOverview && (
+            <div className="rounded-xl border border-rel-line bg-rel-surface p-4">
+              <p className="text-xs font-semibold text-rel-ink-mute uppercase tracking-wider">
+                🏠 {ec(locale, "Family Structural Dynamics", "우리 가족의 기본 구도")}
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed text-rel-ink font-medium">
+                {section.pairStructureOverview}
+              </p>
+            </div>
+          )}
+
+          {/* 2 & 3. 부모 / 자녀 역할 기둥 카드 Grid */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* 부모 역할 */}
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/20 p-4 space-y-3">
+              <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+                👑 {ec(locale, "Parent Role Position", "부모가 맡기 쉬운 자리")}
+              </p>
+              <div>
+                <p className="text-base font-bold text-rel-ink">
+                  {section.parentNormalLabel}
+                </p>
+                <p className="mt-1 text-xs text-rel-ink-soft leading-relaxed">
+                  {section.parentNormalDesc}
+                </p>
+              </div>
+              {section.parentMeaning && (
+                <p className="text-xs text-rel-ink-mute italic border-t border-rel-line/40 pt-2">
+                  {section.parentMeaning}
+                </p>
+              )}
+              {section.parentStressLabel && (
+                <div className="pt-2 border-t border-rel-line/50">
+                  <p className="text-[11px] font-semibold text-amber-700">
+                    ⚡ {ec(locale, "Under Tension", "긴장/불안할 때의 역할")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-rel-ink-soft">
+                    <span className="font-medium text-rel-ink">{section.parentStressLabel}</span> — {section.parentStressDesc}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 자녀 역할 */}
+            <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/20 p-4 space-y-3">
+              <p className="text-xs font-semibold text-sky-800 uppercase tracking-wider">
+                🌱 {ec(locale, "Child Role Position", "아이가 맡기 쉬운 자리")}
+              </p>
+              <div>
+                <p className="text-base font-bold text-rel-ink">
+                  {section.childNormalLabel}
+                </p>
+                <p className="mt-1 text-xs text-rel-ink-soft leading-relaxed">
+                  {section.childNormalDesc}
+                </p>
+              </div>
+              {section.childMeaning && (
+                <p className="text-xs text-rel-ink-mute italic border-t border-rel-line/40 pt-2">
+                  {section.childMeaning}
+                </p>
+              )}
+              {section.childStressLabel && (
+                <div className="pt-2 border-t border-rel-line/50">
+                  <p className="text-[11px] font-semibold text-amber-700">
+                    ⚡ {ec(locale, "Under Tension", "긴장/불안할 때의 역할")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-rel-ink-soft">
+                    <span className="font-medium text-rel-ink">{section.childStressLabel}</span> — {section.childStressDesc}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/25 px-4 py-3">
-            <RelationshipReportLabel>
-              {t.householdRolesPartnerLabel(section.partnerName)}
-            </RelationshipReportLabel>
-            <p className="mt-2 text-base font-semibold text-rel-ink">{section.partnerRoleLabel}</p>
-            <RelationshipReportParagraph className="mt-2">
-              {section.partnerRoleDetail}
-            </RelationshipReportParagraph>
-          </div>
-        </div>
-        <div>
-          <RelationshipReportLabel>{t.householdRolesComplementLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">
-            {section.complement}
-          </RelationshipReportParagraph>
-        </div>
-        <div>
-          <RelationshipReportLabel>{t.householdRolesTensionLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">
-            {section.tension}
-          </RelationshipReportParagraph>
+
+          {/* 4. 의외로 드러나는 역할 (OPTIONAL - threshold 통과 시만) */}
+          {section.unexpectedRole && (
+            <div className="rounded-xl border border-purple-200 bg-purple-50/60 p-4">
+              <div className="flex items-center gap-2">
+                <span className="inline-block rounded-full bg-purple-200 px-2 py-0.5 text-[11px] font-bold text-purple-800">
+                  {section.unexpectedRole.roleLabel}
+                </span>
+                <p className="text-xs font-semibold text-purple-900">
+                  🔍 {ec(locale, "Unexpected Role Surface", "의외로 드러나는 역할")}
+                </p>
+              </div>
+              <p className="mt-2 text-sm font-semibold text-purple-950">
+                {section.unexpectedRole.roleTitle}
+              </p>
+              <p className="mt-1 text-xs text-purple-800 leading-relaxed">
+                {section.unexpectedRole.roleDescription}
+              </p>
+            </div>
+          )}
+
+          {/* 5. 둘이 있을 때 역할이 맞물리는 방식 */}
+          {section.pairCausalMechanism && (
+            <div>
+              <RelationshipReportLabel>
+                ⚙️ {ec(locale, "How Roles Interlock", "둘이 있을 때 역할이 맞물리는 방식")}
+              </RelationshipReportLabel>
+              <RelationshipReportParagraph className="mt-1.5">
+                {section.pairCausalMechanism}
+              </RelationshipReportParagraph>
+            </div>
+          )}
+
+          {/* 6. 둘이 자연스럽게 잘 굴러갈 때 */}
+          {section.pairSynergyWhenSmooth && (
+            <div className="rounded-xl border border-v4-good/25 bg-v4-good-soft p-4">
+              <p className="text-xs font-semibold text-v4-good uppercase tracking-wider">
+                ✨ {ec(locale, "When Running Smoothly", "둘이 자연스럽게 잘 굴러갈 때")}
+              </p>
+              <p className="mt-1.5 text-sm text-rel-ink leading-relaxed">
+                {section.pairSynergyWhenSmooth}
+              </p>
+            </div>
+          )}
+
+          {/* 7. 부담이 몰리는 순간 */}
+          {section.roleBurden && section.roleBurden.burdenType !== "none" && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+              <p className="text-xs font-semibold text-amber-900 uppercase tracking-wider">
+                ⚖️ {ec(locale, "Invisible Role Burden", "부담이 몰리는 순간")} — {section.roleBurden.burdenTitle}
+              </p>
+              <p className="mt-1.5 text-sm text-amber-950 leading-relaxed">
+                {section.roleBurden.burdenDescription}
+              </p>
+              {section.roleBurden.guidanceImplication && (
+                <p className="mt-2 text-xs font-medium text-amber-800 bg-amber-100/60 p-2.5 rounded-lg border border-amber-200/60">
+                  💡 {section.roleBurden.guidanceImplication}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </RelationshipReportBody>
     </RelationshipReportCard>
@@ -370,6 +478,86 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
               <RelationshipReportParagraph className="mt-1.5">{section.praiseTriggerNote}</RelationshipReportParagraph>
             </div>
           ) : null}
+        </div>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
+function ParentDnaCard({ section }: { section: ParentDnaSectionView }) {
+  const locale = useLocale();
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <div className="space-y-4">
+          <div>
+            <RelationshipReportLabel>{ec(locale, "When protecting the child", "🛡️ 보호할 때")}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.protectionStyle}</RelationshipReportParagraph>
+          </div>
+          <div>
+            <RelationshipReportLabel>{ec(locale, "When anxiety rises", "⚡ 걱정될 때")}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.anxietyTriggerBehavior}</RelationshipReportParagraph>
+          </div>
+          <div>
+            <RelationshipReportLabel>{ec(locale, "How trust and autonomy are given", "🌱 아이를 믿는 방식")}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.trustAutonomyStyle}</RelationshipReportParagraph>
+          </div>
+          <div>
+            <RelationshipReportLabel>{ec(locale, "When setting boundaries or rules", "🎯 기준을 세울 때")}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.disciplineStyle}</RelationshipReportParagraph>
+          </div>
+          <div>
+            <RelationshipReportLabel>{ec(locale, "How growth is encouraged", "🚀 성장을 밀어주는 방식")}</RelationshipReportLabel>
+            <RelationshipReportParagraph className="mt-1.5">{section.growthSupportStyle}</RelationshipReportParagraph>
+          </div>
+          {section.shadowSideWarning ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+              <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
+                ⚠️ {ec(locale, "Caution — Shadow Side of Strength", "조심할 점 (강점의 그림자)")}
+              </p>
+              <p className="mt-1.5 text-sm text-rel-ink-soft leading-relaxed">
+                {section.shadowSideWarning}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
+  );
+}
+
+function ParentChildBridgeCard({ section }: { section: ParentChildBridgeSectionView }) {
+  const locale = useLocale();
+  return (
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody>
+        <div className="space-y-4">
+          <div className="rounded-xl border border-v4-good/25 bg-v4-good-soft p-4">
+            <p className="text-xs font-semibold text-v4-good uppercase tracking-wider">
+              ✨ {ec(locale, "Best Harmony Point", "특히 잘 맞는 부분")}
+            </p>
+            <p className="mt-1.5 text-sm text-rel-ink leading-relaxed">
+              {section.bestHarmonyPoint}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-v4-bad/25 bg-v4-bad-soft p-4">
+            <p className="text-xs font-semibold text-v4-bad uppercase tracking-wider">
+              ⚡ {ec(locale, "Friction Risk Moment", "엇갈리기 쉬운 순간")}
+            </p>
+            <p className="mt-1.5 text-sm text-rel-ink leading-relaxed">
+              {section.frictionRiskMoment}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-rel-line bg-rel-surface p-4">
+            <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
+              💡 {ec(locale, "Optimal Parent Position", "가장 좋은 부모 포지션")}
+            </p>
+            <p className="mt-1.5 text-sm font-medium text-rel-ink leading-relaxed">
+              {section.optimalParentPosition}
+            </p>
+          </div>
         </div>
       </RelationshipReportBody>
     </RelationshipReportCard>
@@ -675,6 +863,10 @@ export function FamilyReportSectionCard({
       return <PsychRadarCard section={section} names={names} />;
     case "child_dna":
       return <ChildDnaCard section={section} />;
+    case "parent_dna":
+      return <ParentDnaCard section={section} />;
+    case "parent_child_bridge":
+      return <ParentChildBridgeCard section={section} />;
     case "talent":
       return <TalentCard section={section} />;
     case "growth_tunnel":

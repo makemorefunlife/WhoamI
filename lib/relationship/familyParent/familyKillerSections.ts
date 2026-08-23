@@ -96,8 +96,25 @@ export type FamilySnapshotSection = {
   one_line_family: string;
 };
 
+export type ParentDnaSection = {
+  protection_style: string;
+  anxiety_trigger_behavior: string;
+  trust_autonomy_style: string;
+  discipline_style: string;
+  growth_support_style: string;
+  shadow_side_warning: string;
+};
+
+export type ParentChildBridgeSection = {
+  best_harmony_point: string;
+  friction_risk_moment: string;
+  optimal_parent_position: string;
+};
+
 export type FamilyKillerSections = {
   section_child_dna: ChildDnaSection;
+  section_parent_dna?: ParentDnaSection;
+  section_parent_child_bridge?: ParentChildBridgeSection;
   section_snapshot: FamilySnapshotSection;
   section_destiny: DestinyScoreSection;
   section_growth_tunnel: GrowthTunnelSection;

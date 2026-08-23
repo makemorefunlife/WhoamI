@@ -8,8 +8,8 @@ import {
 } from "@/lib/relationship/psychMatch";
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
 import type { CurrentSelfProfile, SecondaryAxisKey } from "@/lib/v2/survey/types";
-import type { DomainNarrativeCopy, DomainPsychHighlight, DomainPsychLens } from "./types";
 import type { Locale } from "@/lib/i18n/locale";
+import { josaGwaWa, josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 
 export type DomainAxisMeta = {
   topic: string;
@@ -160,31 +160,30 @@ export function buildAxisAttributionSentence(params: {
   const { axisLabel, matchType, lean, nameA, nameB } = params;
   const locale = params.locale ?? "ko-KR";
   const isEn = locale === "en-US";
-
   if (matchType === "tension") {
     return isEn
       ? `On ${axisLabel}, ${nameA} and ${nameB} tend to handle it differently, which is where friction tends to show up.`
-      : `${axisLabel}에서는 ${nameA}와(과) ${nameB}가(이) 서로 다른 방식을 쓰는 편이라 부딪히기 쉬워요.`;
+      : `${axisLabel}에서는 ${josaGwaWa(nameA)} ${josaIGa(nameB)} 서로 다른 방식을 쓰는 편이라 부딪히기 쉬워요.`;
   }
   if (matchType === "similarity" || matchType === "resonance") {
     return isEn
       ? `On ${axisLabel}, ${nameA} and ${nameB} tend to handle it the same way, which makes this an easy fit.`
-      : `${axisLabel}에서는 ${nameA}와(과) ${nameB} 모두 비슷한 방식이라 잘 맞는 편이에요.`;
+      : `${axisLabel}에서는 ${josaGwaWa(nameA)} ${nameB} 모두 비슷한 방식이라 잘 맞는 편이에요.`;
   }
   // complementary
   if (lean === "a_high") {
     return isEn
       ? `On ${axisLabel}, ${nameA} tends to lead more, while ${nameB} tends to hang back.`
-      : `${axisLabel}에서는 ${nameA}이(가) 더 뚜렷하게 나서는 편이고, ${nameB}는(은) 상대적으로 힘을 빼는 편이에요.`;
+      : `${axisLabel}에서는 ${josaIGa(nameA)} 더 뚜렷하게 나서는 편이고, ${josaEunNeun(nameB)} 상대적으로 힘을 빼는 편이에요.`;
   }
   if (lean === "b_high") {
     return isEn
       ? `On ${axisLabel}, ${nameB} tends to lead more, while ${nameA} tends to hang back.`
-      : `${axisLabel}에서는 ${nameB}이(가) 더 뚜렷하게 나서는 편이고, ${nameA}는(은) 상대적으로 힘을 빼는 편이에요.`;
+      : `${axisLabel}에서는 ${josaIGa(nameB)} 더 뚜렷하게 나서는 편이고, ${josaEunNeun(nameA)} 상대적으로 힘을 빼는 편이에요.`;
   }
   return isEn
     ? `On ${axisLabel}, ${nameA} and ${nameB} tend to take on different roles rather than one leading.`
-    : `${axisLabel}에서는 ${nameA}와(과) ${nameB}가(이) 서로 다른 역할을 맡는 편이에요.`;
+    : `${axisLabel}에서는 ${josaGwaWa(nameA)} ${josaIGa(nameB)} 서로 다른 역할을 맡는 편이에요.`;
 }
 
 /**

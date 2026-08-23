@@ -10,6 +10,7 @@
  * 카드 타이틀은 en-US/ko-KR 메시지 카탈로그를 직접 재사용한다 — ko-KR 전용
  * 하드코딩 금지 원칙 유지.
  */
+import { buildFamilyRuleContext } from "../buildFamilyRuleContext";
 import {
   resolveReportPsychDisplay,
   swapPsychAxisForViewer,
@@ -33,6 +34,7 @@ import type {
 } from "./familyReportSectionTypes";
 import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
+import { josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -147,9 +149,77 @@ function buildCompareTableSection(
 function buildHouseholdRolesSection(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
+  locale: Locale = "ko-KR",
 ): FamilyReportSection | null {
   const roles = report.family?.section_household_roles;
   if (!roles) return null;
+
+  let parentNormalLabel = roles.parent_normal_label;
+  let parentNormalDesc = roles.parent_normal_desc;
+  let parentStressLabel = roles.parent_stress_label;
+  let parentStressDesc = roles.parent_stress_desc;
+  let parentMeaning = roles.parent_meaning;
+  let childNormalLabel = roles.child_normal_label;
+  let childNormalDesc = roles.child_normal_desc;
+  let childStressLabel = roles.child_stress_label;
+  let childStressDesc = roles.child_stress_desc;
+  let childMeaning = roles.child_meaning;
+  let pairStructureOverview = roles.pair_structure_overview;
+  let pairCausalMechanism = roles.pair_causal_mechanism;
+  let pairSynergyWhenSmooth = roles.pair_synergy_when_smooth;
+  let unexpectedRole = roles.unexpected_role;
+  let roleReversal = roles.role_reversal;
+  let roleBurden = roles.role_burden;
+
+  if (!parentNormalLabel) {
+    const parentName = roles.partner_name || report.meta?.nickname_b || "부모";
+    const childName = roles.self_name || report.meta?.nickname_a || "자녀";
+    const mockPillar = { heavenlyStem: "갑", earthlyBranch: "자" };
+    const mockSaju: any = {
+      yearPillar: mockPillar,
+      monthPillar: mockPillar,
+      dayPillar: mockPillar,
+      hourPillar: mockPillar,
+      saju: {
+        yearPillar: mockPillar,
+        monthPillar: mockPillar,
+        dayPillar: mockPillar,
+        hourPillar: mockPillar,
+      },
+      tenGods: [],
+      stemTenGods: [],
+      branchTenGods: [],
+      dayStem: "갑",
+    };
+    const ctxFallback = buildFamilyRuleContext({
+      nicknameA: childName,
+      nicknameB: parentName,
+      roles: { roleA: "child", roleB: "mother" },
+      sajuJsonA: mockSaju,
+      sajuJsonB: mockSaju,
+      locale,
+    });
+    const intel = buildFamilyRoleIntelligence(ctxFallback);
+    parentNormalLabel = intel.parentRoleProfile.normalRoleLabel;
+    parentNormalDesc = intel.parentRoleProfile.normalRoleDesc;
+    parentStressLabel = intel.parentRoleProfile.stressRoleLabel;
+    parentStressDesc = intel.parentRoleProfile.stressRoleDesc;
+    parentMeaning = intel.parentRoleProfile.behavioralMeaning;
+
+    childNormalLabel = intel.childRoleProfile.normalRoleLabel;
+    childNormalDesc = intel.childRoleProfile.normalRoleDesc;
+    childStressLabel = intel.childRoleProfile.stressRoleLabel;
+    childStressDesc = intel.childRoleProfile.stressRoleDesc;
+    childMeaning = intel.childRoleProfile.behavioralMeaning;
+
+    pairStructureOverview = intel.pairStructureOverview;
+    pairCausalMechanism = intel.pairCausalMechanism;
+    pairSynergyWhenSmooth = intel.pairSynergyWhenSmooth;
+    unexpectedRole = intel.unexpectedRole;
+    roleReversal = intel.roleReversal;
+    roleBurden = intel.roleBurden;
+  }
+
   return {
     id: "household_roles",
     type: "household_roles",
@@ -163,6 +233,22 @@ function buildHouseholdRolesSection(
     partnerRoleDetail: roles.partner_role_detail,
     complement: roles.complement,
     tension: roles.tension,
+    pairStructureOverview,
+    parentNormalLabel,
+    parentNormalDesc,
+    parentStressLabel,
+    parentStressDesc,
+    parentMeaning,
+    childNormalLabel,
+    childNormalDesc,
+    childStressLabel,
+    childStressDesc,
+    childMeaning,
+    unexpectedRole,
+    roleReversal,
+    pairCausalMechanism,
+    pairSynergyWhenSmooth,
+    roleBurden,
   };
 }
 
@@ -212,6 +298,52 @@ function buildChildDnaSection(
   };
 }
 
+function buildParentDnaSection(
+  report: FamilyParentReportBody,
+): FamilyReportSection {
+  const dna = report.family?.section_parent_dna;
+  const parentName = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
+  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+
+  const pEunNeun = josaEunNeun(parentName);
+  const cIGa = josaIGa(childName);
+
+  return {
+    id: "parent_dna",
+    type: "parent_dna",
+    partNumber: 3,
+    title: "Parent DNA 프로필",
+    protectionStyle: dna?.protection_style ?? `${cIGa} 고민에 빠지면 ${pEunNeun} 성급히 개입하지 않고 한 박자 떨어져 조용히 지켜봐 줍니다. 아이가 스스로 마음을 정돈할 때까지 변함없이 곁을 지키며 든든한 버팀목이 되어줍니다.`,
+    anxietyTriggerBehavior: dna?.anxiety_trigger_behavior ?? `불안이 오르면 ${pEunNeun} 괜찮은지 즉시 확인하고 싶어 다가가지만, 아이의 정리 템포와 엇갈려 서운함이나 조급함이 겉으로 표출되는 양상을 보입니다.`,
+    trustAutonomyStyle: dna?.trust_autonomy_style ?? `${pEunNeun} 큰 틀의 안전선과 원칙만 분명히 잡아준 뒤, 그 울타리 안에서의 세부 시도와 선택은 아이의 자율에 완전히 믿고 맡기는 탁월한 자율 부여 방식을 보여줍니다.`,
+    disciplineStyle: dna?.discipline_style ?? `기준을 바로잡을 때 ${pEunNeun} 대화를 통해 현실적인 이유를 충분히 설명하고, 부모와 아이가 납득할 수 있는 합리적인 타협안을 조율하여 정돈합니다.`,
+    growthSupportStyle: dna?.growth_support_style ?? `아이의 성장을 도울 때 ${pEunNeun} 다양한 경험의 기회와 필요 자원을 적극적으로 연결해주며, 아이가 실패를 두려워하지 않고 새로운 도전을 마음껏 즐기도록 원동력을 실어줍니다.`,
+    shadowSideWarning: dna?.shadow_side_warning ?? `따뜻하게 감싸주려는 깊은 애정 본능이 불안할 때 '성급한 확인과 조급함'으로 이어지면, 혼자 마음을 정돈하고 싶은 아이가 입을 닫아버리는 역효과를 낼 수 있습니다.`,
+  };
+}
+
+function buildParentChildBridgeSection(
+  report: FamilyParentReportBody,
+): FamilyReportSection {
+  const bridge = report.family?.section_parent_child_bridge;
+  const parentName = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
+  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+
+  const pEunNeun = josaEunNeun(parentName);
+  const cIGa = josaIGa(childName);
+  const cEunNeun = josaEunNeun(childName);
+
+  return {
+    id: "parent_child_bridge",
+    type: "parent_child_bridge",
+    partNumber: 3,
+    title: "이 부모와 이 아이가 만났을 때",
+    bestHarmonyPoint: bridge?.best_harmony_point ?? `${pEunNeun} 방향의 든든한 기준을 잡아주고 ${cEunNeun} 자기 방식으로 주도적으로 시도할 때 최고의 성장 시너지가 만들어집니다.`,
+    frictionRiskMoment: bridge?.friction_risk_moment ?? `${cIGa} 힘든 일 후 혼자 마음을 정돈하려 할 때, ${pEunNeun} 괜찮은지 빨리 확인하려고 바짝 다가설 때 소통 템포의 시차가 발생합니다.`,
+    optimalParentPosition: bridge?.optimal_parent_position ?? `“방향과 울타리는 부모가 분명하게 잡아주되, 그 안에서의 실행 방법은 아이에게 믿고 맡기기”`,
+  };
+}
+
 function buildTalentSection(
   report: FamilyParentReportBody,
 ): FamilyReportSection | null {
@@ -253,15 +385,17 @@ function buildFamilyRoleSectionView(
   t: ReturnType<typeof catalog>,
 ): FamilyReportSection | null {
   const r = report.family?.section_family_role;
-  if (!r) return null;
+  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "아이";
+  const cEunNeun = josaEunNeun(childName);
+
   return {
     id: "family_role",
     type: "family_role",
     partNumber: 3,
-    title: t.familyRoleCardTitle,
-    childRole: r.child_role,
-    roleLabel: r.role_label,
-    roleDescription: r.role_description,
+    title: t.familyRoleCardTitle || "우리 아이의 마음속 역할",
+    childRole: r?.child_role ?? "mediator",
+    roleLabel: r?.role_label ?? "중재자",
+    roleDescription: r?.role_description ?? `${cEunNeun} 가족 사이에서 분위기를 살피고 갈등을 조율하는 역할을 자연스럽게 맡아요. 그 노력을 직접 고맙다고 말해주세요 — 안 그러면 티 안 나게 지나가기 쉬워요.`,
   };
 }
 
@@ -411,6 +545,8 @@ export function buildFamilyReportViewModel(
   const householdRolesSec = buildHouseholdRolesSection(report, t);
   const psychRadarSec = buildPsychRadarSection(report, t, locale);
   const childDnaSec = buildChildDnaSection(report, t);
+  const parentDnaSec = buildParentDnaSection(report);
+  const parentChildBridgeSec = buildParentChildBridgeSection(report);
   const talentSec = buildTalentSection(report);
   const growthTunnelSec = buildGrowthTunnelSection(report, t);
   const familyRoleSec = buildFamilyRoleSectionView(report, t);
@@ -429,6 +565,8 @@ export function buildFamilyReportViewModel(
     householdRolesSec,
     psychRadarSec,
     childDnaSec,
+    parentDnaSec,
+    parentChildBridgeSec,
     talentSec,
     growthTunnelSec,
     familyRoleSec,
@@ -452,6 +590,15 @@ export function buildFamilyReportViewModel(
   const filterClaims = (topics: string[]) =>
     selectedClaims.filter((c) => topics.includes(c.topic) || topics.some(tp => c.topic.startsWith(tp)));
 
+  const PSYCH_ROLE_LABEL_MAP: Record<string, string> = {
+    fixer: "해결사",
+    mediator: "중재자",
+    martyr: "돌봄 담당",
+    independent: "자립형",
+    emotional_dump: "감정 수용자",
+    puppy: "분위기 메이커",
+  };
+
   const editorialChapters: FamilyEditorialChapterViewModel[] = [
     {
       id: "ch_together",
@@ -468,28 +615,26 @@ export function buildFamilyReportViewModel(
     {
       id: "ch_core",
       number: "02",
-      title: isEn ? "02. Essential Temperament" : "02. 본질과 기질 — 아이의 타고난 결",
-      subtitle: isEn ? "Natural Identity & Emotional Core" : "아이 본래의 에너지와 감수성 밴드",
+      title: isEn ? "02. Essential Temperament" : "02. 본질과 기질 — 부모와 아이의 타고난 결",
+      subtitle: isEn ? "Natural Identity & Emotional Core" : "부모와 아이 본래의 에너지와 양육 기질 결",
       summary: undefined,
       claims: filterClaims(["childProfile"]),
       insights: insightCandidates.filter(i => i.topic === "childProfile"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "childProfile"),
-      legacySections: [childDnaSec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [childDnaSec, parentDnaSec, parentChildBridgeSec].filter((s): s is FamilyReportSection => s != null),
     },
     {
       id: "ch_roles",
       number: "03",
-      title: isEn ? "03. Family Roles & Dynamics" : "03. 역할과 구조 — 가정 내 기운과 포지션",
-      subtitle: isEn ? "Interpersonal Dynamics & Balance" : "부모와 자녀가 주고받는 역할의 궤적",
-      summary: storyPlan?.familyRoles?.psychologicalChildRole
-        ? `가정 내 심리적 포지션: ${storyPlan.familyRoles.psychologicalChildRole}`
-        : undefined,
+      title: isEn ? "03. Family Roles & Dynamics" : "03. 역할과 구조 — 가족 안에서 우리는 어떤 자리를 맡게 될까요",
+      subtitle: isEn ? "Interpersonal Dynamics & Roles" : "가족 시스템 안에서 각자가 맡게 되는 실제 역할과 관계 구도",
+      summary: undefined,
       claims: filterClaims(["familyRoles"]),
       insights: insightCandidates.filter(i => i.topic === "familyRoles"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "familyRoles"),
-      dependencyProtection: storyPlan?.pairMeanings?.dependencyProtection,
+      dependencyProtection: undefined,
       legacySections: [householdRolesSec, familyRoleSec].filter((s): s is FamilyReportSection => s != null),
     },
     {

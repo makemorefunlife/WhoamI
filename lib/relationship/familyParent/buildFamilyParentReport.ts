@@ -102,6 +102,8 @@ export type FamilyParentReportBody = {
   };
 };
 
+import { buildFamilyParentDna } from "./familyParentDna";
+
 export function buildFamilyParentReport(params: {
   nicknameA: string;
   nicknameB: string;
@@ -143,8 +145,15 @@ export function buildFamilyParentReport(params: {
     ctx.roles.roleA !== "child"
       ? (params.psychMasterA ?? null)
       : (params.psychMasterB ?? null);
+  const { parentDna, parentChildBridge } = buildFamilyParentDna(ctx, {
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+  });
+
   const family: FamilyParentChildReport = {
     ...buildFamilyParentChildReport(ctx),
+    section_parent_dna: parentDna,
+    section_parent_child_bridge: parentChildBridge,
     section_compare_table: buildFamilySajuCompareTable({
       parentNickname: ctx.parentNickname,
       childNickname: ctx.childNickname,
@@ -170,6 +179,11 @@ export function buildFamilyParentReport(params: {
       pairFamily: params.pairFamily,
       viewerIsChild: ctx.childIsViewer,
       locale,
+      ctx,
+      personCorePsych: {
+        psychA: params.psychMasterA,
+        psychB: params.psychMasterB,
+      },
     }),
     section_family_role: buildFamilyRoleSection(
       psychChild,

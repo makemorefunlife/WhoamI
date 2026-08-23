@@ -6,7 +6,6 @@ import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
 import RelationshipAnalysisHistory from "@/components/relationship/RelationshipAnalysisHistory";
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
-import RelationshipFamilyRolePanel from "@/components/relationship/detail/RelationshipFamilyRolePanel";
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
@@ -76,10 +75,7 @@ export default function RelationshipView({
   const viewingBasicSurface = analysisSurface === "basic";
   const generating = busy || autostartActive;
   const usedBirthFallback =
-    viewerBirthTimeUnknown ||
-    partnerBirthTimeUnknown ||
-    viewerBirthPlaceUnknown ||
-    partnerBirthPlaceUnknown;
+    viewerBirthTimeUnknown || partnerBirthTimeUnknown;
   /** 실제로 생성 요청 중일 때만 — autostart 쿼리만으로 영원히 잠기지 않음 */
   const showGeneratingPanel = generating;
   const showLoadingPanel = loading && !err;
@@ -242,19 +238,7 @@ export default function RelationshipView({
             disabled={generating}
           />
 
-          {!viewingBasicSurface && analysisSurface === "family" ? (
-            <RelationshipFamilyRolePanel
-              familyParentType={familyParentType}
-              onFamilyParentTypeChange={setFamilyParentType}
-              familyChildIsViewer={familyChildIsViewer}
-              onFamilyChildIsViewerChange={setFamilyChildIsViewer}
-              busy={generating}
-              viewerName={viewerName}
-              partnerName={partnerName}
-              reportIdA={reportIdA}
-              reportIdB={reportIdB}
-            />
-          ) : null}
+
 
           {viewingBasicSurface && !showGeneratingPanel ? (
             <RelationshipBasicCards

@@ -71,6 +71,23 @@ export type HouseholdRolesSection = BaseSection & {
   partnerRoleDetail: string;
   complement: string;
   tension: string;
+  // Role Intelligence fields
+  pairStructureOverview?: string;
+  parentNormalLabel?: string;
+  parentNormalDesc?: string;
+  parentStressLabel?: string;
+  parentStressDesc?: string;
+  parentMeaning?: string;
+  childNormalLabel?: string;
+  childNormalDesc?: string;
+  childStressLabel?: string;
+  childStressDesc?: string;
+  childMeaning?: string;
+  unexpectedRole?: import("../familyRoleIntelligence").UnexpectedRoleResult;
+  roleReversal?: import("../familyRoleIntelligence").RoleReversalResult;
+  pairCausalMechanism?: string;
+  pairSynergyWhenSmooth?: string;
+  roleBurden?: import("../familyRoleIntelligence").RoleBurdenResult;
 };
 
 export type PsychRadarSection = BaseSection & {
@@ -169,6 +186,23 @@ export type PrescriptionSection = BaseSection & {
   items: PairPrescriptionItem[];
 };
 
+export type ParentDnaSectionView = BaseSection & {
+  type: "parent_dna";
+  protectionStyle: string;
+  anxietyTriggerBehavior: string;
+  trustAutonomyStyle: string;
+  disciplineStyle: string;
+  growthSupportStyle: string;
+  shadowSideWarning: string;
+};
+
+export type ParentChildBridgeSectionView = BaseSection & {
+  type: "parent_child_bridge";
+  bestHarmonyPoint: string;
+  frictionRiskMoment: string;
+  optimalParentPosition: string;
+};
+
 export type FamilyReportSection =
   | SnapshotSection
   | RelationshipIndexSection
@@ -176,6 +210,8 @@ export type FamilyReportSection =
   | HouseholdRolesSection
   | PsychRadarSection
   | ChildDnaSection
+  | ParentDnaSectionView
+  | ParentChildBridgeSectionView
   | TalentSection
   | GrowthTunnelSection
   | FamilyRoleSection

@@ -23,6 +23,14 @@ import {
   resolveGuidanceBalanceBucket,
 } from "./familySajuCompareTable";
 
+import type {
+  FamilyRoleIntelligenceOutput,
+  UnexpectedRoleResult,
+  RoleReversalResult,
+  RoleBurdenResult,
+} from "./familyRoleIntelligence";
+import type { FamilyRuleContext } from "./buildFamilyRuleContext";
+
 export type FamilyHouseholdRolesSection = {
   self_name: string;
   partner_name: string;
@@ -32,6 +40,24 @@ export type FamilyHouseholdRolesSection = {
   partner_role_detail: string;
   complement: string;
   tension: string;
+  // Role Intelligence additions
+  role_intelligence?: FamilyRoleIntelligenceOutput;
+  pair_structure_overview?: string;
+  parent_normal_label?: string;
+  parent_normal_desc?: string;
+  parent_stress_label?: string;
+  parent_stress_desc?: string;
+  parent_meaning?: string;
+  child_normal_label?: string;
+  child_normal_desc?: string;
+  child_stress_label?: string;
+  child_stress_desc?: string;
+  child_meaning?: string;
+  unexpected_role?: UnexpectedRoleResult;
+  role_reversal?: RoleReversalResult;
+  pair_causal_mechanism?: string;
+  pair_synergy_when_smooth?: string;
+  role_burden?: RoleBurdenResult;
 };
 
 type TenGodCategory = "wealth" | "officer" | "food" | "seal" | "self";
@@ -402,6 +428,10 @@ function buildTension(
   return sanitizeFamilyParentText(parts.join(" "));
 }
 
+import { buildFamilyRoleIntelligence } from "./familyRoleIntelligence";
+import { buildFamilyRuleContext } from "./buildFamilyRuleContext";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+
 export function buildFamilyHouseholdRoles(params: {
   parentNickname: string;
   childNickname: string;
@@ -413,6 +443,11 @@ export function buildFamilyHouseholdRoles(params: {
   /** true면 시청자=자녀 → 나=자녀, 상대=부모 */
   viewerIsChild?: boolean;
   locale?: Locale;
+  ctx?: FamilyRuleContext;
+  personCorePsych?: {
+    psychA?: PsychMasterJson | null;
+    psychB?: PsychMasterJson | null;
+  };
 }): FamilyHouseholdRolesSection {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const viewerIsChild = params.viewerIsChild === true;
@@ -463,6 +498,17 @@ export function buildFamilyHouseholdRoles(params: {
   const self = viewerIsChild ? childPerson : parentPerson;
   const partner = viewerIsChild ? parentPerson : childPerson;
 
+  const contextForIntel: FamilyRuleContext = params.ctx ?? buildFamilyRuleContext({
+    nicknameA: params.childNickname,
+    nicknameB: params.parentNickname,
+    roles: { roleA: "child", roleB: "mother" },
+    sajuJsonA: {} as any,
+    sajuJsonB: {} as any,
+    locale,
+  });
+
+  const roleIntel = buildFamilyRoleIntelligence(contextForIntel, params.personCorePsych);
+
   return {
     self_name: self.name,
     partner_name: partner.name,
@@ -472,5 +518,22 @@ export function buildFamilyHouseholdRoles(params: {
     partner_role_detail: roleDetailFor(locale, partner, self, "partner"),
     complement: buildComplement(locale, fit, self, partner, umbilical, nagging),
     tension: buildTension(locale, fit, self, partner, umbilical, nagging),
+    role_intelligence: roleIntel,
+    pair_structure_overview: roleIntel.pairStructureOverview,
+    parent_normal_label: roleIntel.parentRoleProfile.normalRoleLabel,
+    parent_normal_desc: roleIntel.parentRoleProfile.normalRoleDesc,
+    parent_stress_label: roleIntel.parentRoleProfile.stressRoleLabel,
+    parent_stress_desc: roleIntel.parentRoleProfile.stressRoleDesc,
+    parent_meaning: roleIntel.parentRoleProfile.behavioralMeaning,
+    child_normal_label: roleIntel.childRoleProfile.normalRoleLabel,
+    child_normal_desc: roleIntel.childRoleProfile.normalRoleDesc,
+    child_stress_label: roleIntel.childRoleProfile.stressRoleLabel,
+    child_stress_desc: roleIntel.childRoleProfile.stressRoleDesc,
+    child_meaning: roleIntel.childRoleProfile.behavioralMeaning,
+    unexpected_role: roleIntel.unexpectedRole,
+    role_reversal: roleIntel.roleReversal,
+    pair_causal_mechanism: roleIntel.pairCausalMechanism,
+    pair_synergy_when_smooth: roleIntel.pairSynergyWhenSmooth,
+    role_burden: roleIntel.roleBurden,
   };
 }

@@ -65,15 +65,6 @@ export function PsychAxisComparisonSection({
                     <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="font-rel-serif text-[17px] font-semibold text-rel-ink">🎯 {h.axis_label}</span>
-                        <span
-                          className={`text-[11px] font-semibold tracking-wider px-2.5 py-0.5 rounded-full border ${
-                            isMatch
-                              ? "border-v4-good/30 bg-v4-good-soft text-v4-good"
-                              : "border-v4-bad/30 bg-v4-bad-soft text-v4-bad"
-                          }`}
-                        >
-                          {tagLabel}
-                        </span>
                       </div>
                       <p className="font-rel-sans text-[13.5px] font-medium leading-relaxed text-rel-deep bg-rel-taupe-soft/60 p-3 rounded-xl border border-rel-line">
                         {h.hook}
