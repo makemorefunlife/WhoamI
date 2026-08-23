@@ -576,9 +576,9 @@ function computeConflictStateTransition(
       personName: name,
       normalState: `평소에는 든든하고 이성적이며 관계의 객관적인 밸런스를 지키는 안정적인 태도`,
       tensionRising: `갈등 분위기가 형성되면 감정적 조급함보다는 인과관계를 논리적으로 파악하고 이유를 분석하려 함`,
-      overloadState: `상대의 일방적인 감정 재촉이나 시급한 해명 요구가 고조되면 감정 과부하를 느끼며 서둘러 입을 닫고 차갑게 침묵으로 자신을 방어함`,
-      recoveryState: `충분한 혼자만의 쿨링다운 시간을 가진 후 이성적인 대화 구도가 준비되면 차분하게 소통에 재접속함`,
-      canonicalSummary: `${josaIGa(name)} 초기에는 논리적인 상황 분석을 시도하다가, 감정 과부하 시 침묵과 거리두기로 자신을 방어하는 흐름을 보입니다.`,
+      overloadState: `상대가 일방적으로 감정을 몰아붙이거나 당장 해명을 요구하면 벅차서 입을 닫고 차갑게 거리를 둠`,
+      recoveryState: `충분히 혼자 정리할 시간을 가진 뒤 이성적으로 대화할 준비가 되면 차분하게 다시 다가옴`,
+      canonicalSummary: `${josaIGa(name)} 처음엔 상황을 논리적으로 분석하려다가, 벅차지면 침묵과 거리두기로 스스로를 지키는 흐름을 보입니다.`,
     };
   }
 

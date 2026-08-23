@@ -503,8 +503,8 @@ export function resolveBilateralPartnerPreferenceMatchFromCe(params: {
         `${topicP(seekerName, locale)} finds their guard melting under ${partnerName}'s warm gaze and the ease with which they embrace everything.`,
       );
       emotionalMeaning = L(
-        `나의 연약함과 부족한 모습까지도 있는 그대로 수용받는 따뜻한 품에서 가장 깊은 정서적 안식을 찾기 때문입니다.`,
-        `They find their deepest emotional rest in a warm embrace that accepts even their vulnerable, imperfect sides just as they are.`,
+        `약한 모습까지 그냥 받아주는 사람이라, 같이 있으면 마음이 제일 편해지기 때문이에요.`,
+        `Because this is someone who accepts even their weaker moments as they are — being together is where they feel most at ease.`,
       );
       scene = L(
         `밖에서 지치고 혼란스러운 하루를 보내고 돌아왔을 때, 잘잘못을 묻지 않고 조용히 곁을 지켜주며 따뜻한 온기를 건네받는 순간`,

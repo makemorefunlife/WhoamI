@@ -92,9 +92,13 @@ section("3) resolveStrengthVulnerabilityLens: cold+cold shared-vulnerability bra
 
 const svKo = resolveStrengthVulnerabilityLens({ relCeA: relCeAcoldKo, relCeB: relCeBcoldKo, names: { a: "지민", b: "정우" }, locale: "ko-KR" });
 const svEn = resolveStrengthVulnerabilityLens({ relCeA: relCeAcoldEn, relCeB: relCeBcoldEn, names: { a: "Priya", b: "Jonas" }, locale: "en-US" });
-assert.ok(svKo.sharedVulnerability.includes("동굴"), "ko-KR cold+cold shared-vulnerability branch selected");
+// Markers updated for the Romantic VNext editorial pass's tone rewrite
+// (chapterLensResolvers.ts's cold+cold sharedVulnText branch no longer says
+// "동굴"/"retreat into silence" — it was rewritten in plainer language) —
+// this still checks the same thing: the cold+cold branch, not another one.
+assert.ok(svKo.sharedVulnerability.includes("참는"), "ko-KR cold+cold shared-vulnerability branch selected");
 assert.ok(
-  /retreat into silence at the same time/i.test(svEn.sharedVulnerability),
+  /let it go/i.test(svEn.sharedVulnerability),
   "en-US cold+cold shared-vulnerability branch selected — same branch as ko-KR",
 );
 ok("resolveStrengthVulnerabilityLens selects the identical cold+cold vulnerability branch regardless of locale");

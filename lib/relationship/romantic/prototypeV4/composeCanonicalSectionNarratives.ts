@@ -680,8 +680,8 @@ export function composeCanonicalSectionNarratives(
           blockId: "timing.theme",
           title: L(`${plan.timing?.reportYear ?? new Date().getFullYear()}년 관계 흐름 테마`, `${plan.timing?.reportYear ?? new Date().getFullYear()} Relationship Theme`),
           body: plan.timing?.theme || L(
-            `${plan.timing?.reportYear ?? new Date().getFullYear()}년은 두 사람이 깊은 신뢰를 바탕으로 서로의 템포와 자율성을 존중하며 정서적 안정감을 공고히 다져가는 주도적 조율의 해입니다.`,
-            `${plan.timing?.reportYear ?? new Date().getFullYear()} is a year of proactive alignment, solidifying emotional stability while respecting each other's pace and autonomy based on deep trust.`,
+            `${plan.timing?.reportYear ?? new Date().getFullYear()}년은 서로의 속도와 공간을 존중하면서 신뢰를 다져가는 해가 될 수 있어요.`,
+            `${plan.timing?.reportYear ?? new Date().getFullYear()} can be a year of building trust while respecting each other's pace and space.`,
           ),
           evidenceIds: plan.timing?.provenance?.map((p) => p.evidenceId) || [],
         },

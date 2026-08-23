@@ -21,8 +21,10 @@ import type {
   DirectionalMisread,
   HiddenHeartBits,
   ProvenanceRef,
+  RomanticCrossSignalInsight,
   StoryFace,
 } from "./canonicalStoryPlanTypes";
+import type { PersonalRelationshipCe } from "./personalRelationshipCe";
 import {
   resolveDynamicsLens,
   resolveHiddenHeartsLens,
@@ -322,16 +324,25 @@ function misreadInterpretationFor(params: {
   }
 
   if (band === "cold") {
+    // Phase-0 consistency fix: this used to assert PURE silence ("침묵을
+    // 대화 회피로 오해") regardless of what observerFelt (a few lines above
+    // this function's call site) already said about the actor — for a
+    // person whose real stress response is "gets firm/direct, then pulls
+    // back" (not purely quiet), that created a within-block contradiction:
+    // observerFelt would describe reacting to their directness, while this
+    // field insisted the misread was about silence. Broadened to "pulls
+    // back or goes quiet" so it holds whether the actor's real pattern is
+    // pure withdrawal or a firm-then-withdraw combination.
     return {
-      commonNegativeReading: L(`${observerName}님은 ${actorName}님의 침묵을 대화 회피나 무관심으로 오해하기 쉽습니다.`, `${observerName} easily misreads ${actorName}'s silence as avoiding conversation or indifference.`),
-      meaningGap: L(`${actorName}님에게 그 침묵은 거절이 아니라, 감정 과부하를 막기 위해 자기 생각을 다잡는 정돈 과정입니다.`, `For ${actorName}, that silence is not rejection, but sorting through thoughts to avoid emotional overload.`),
+      commonNegativeReading: L(`${observerName}님은 ${actorName}님이 말수를 줄이거나 한발 물러서는 걸 대화 회피나 무관심으로 오해하기 쉽습니다.`, `${observerName} can easily misread ${actorName} pulling back or going quieter as avoiding the conversation or not caring.`),
+      meaningGap: L(`${actorName}에게 그건 거절이 아니라, 생각이 많아졌을 때 나오는 자기만의 방식이에요.`, `For ${actorName}, that's not rejection — it's just how they handle it when there's a lot going on in their head.`),
       betterExpression: L(
         `${actorName}: "화난 게 아니라, 정리할 시간이 좀 필요해. 조금만 기다려줘."`,
         `${actorName}: "I'm not upset — I just need a little time to think. Give me a bit."`,
       ),
       helpfulResponse: L(
-        `${observerName}: 침묵을 거절로 받아들이지 않고, ${actorName}이/가 정리할 여유를 존중해주기.`,
-        `${observerName}: Not reading the silence as rejection, and respecting ${actorName}'s need for room to think.`,
+        `${observerName}: 조용해진 걸 거절로 받아들이지 않고, ${actorName}이/가 정리할 여유를 존중해주기.`,
+        `${observerName}: Not reading the quiet as rejection, and giving ${actorName} the room to think it through.`,
       ),
     };
   }
@@ -377,10 +388,10 @@ function selectConflictLoopSteps(params: {
     const presserRole = isHotA ? roleA : roleB;
     const withdrawerRole = isHotA ? roleB : roleA;
     return [
-      L(`문제가 생기면 ${presserRole}인 ${presserName}님이 확답을 얻고자 먼저 대화를 시도합니다.`, `When a problem comes up, ${presserName} (${presserRole}) reaches out first to seek clear answers.`),
-      L(`그 순간 ${withdrawerRole}인 ${withdrawerName}님은 생각을 가다듬고자 침묵의 동굴로 물러섭니다.`, `In that moment, ${withdrawerName} (${withdrawerRole}) retreats into a cave of silence to sort thoughts.`),
-      L(`이에 ${presserName}님은 침묵을 거절로 해독하며 서운함과 조급함이 빠르게 커집니다.`, `At this, ${presserName} decodes the silence as rejection, rapidly growing hurt and anxious.`),
-      L(`${withdrawerName}님은 감정 과부하를 막고자 입을 더 굳게 닫으며 긴장의 고리가 반복됩니다.`, `${withdrawerName} closes off further to prevent emotional overload, repeating the loop.`),
+      L(`문제가 생기면 ${presserName}이/가 답답해서 먼저 말을 걸어요.`, `When a problem comes up, ${presserName} gets restless and reaches out first.`),
+      L(`그 순간 ${withdrawerName}은/는 생각할 시간이 필요해서 조용해져요.`, `In that moment, ${withdrawerName} needs time to think, so they go quiet.`),
+      L(`그러면 ${presserName}은/는 그 침묵을 거절로 받아들여서 서운함과 조급함이 같이 커져요.`, `Then ${presserName} reads that silence as rejection, and both the hurt and the urgency grow.`),
+      L(`${withdrawerName}은/는 더 다그쳐질수록 오히려 입을 닫게 되고, 같은 패턴이 반복돼요.`, `The more ${withdrawerName} gets pressed, the more they close off — and the same pattern repeats.`),
     ];
   }
 
@@ -397,9 +408,10 @@ function selectConflictLoopSteps(params: {
   // Mode 3: Both Hot (Double-Escalation / Emotional Clash)
   if (isHotA && isHotB) {
     return [
-      L(`갈등이 발생하면 ${names.a}님(${roleA})과 ${names.b}님(${roleB}) 모두 자기 입장과 서운함을 즉각적으로 세게 표현�}��다.`, `${neutralName} (${neutralRole}) tries to be patient, but feels anxious as the silence lasts.`),
-      L(`${coldName}님이 언제 다시 대화할지 전달하지 않으면 정서적 불확실성이 커집니다.`, `If ${coldName} doesn't signal when to talk again, emotional uncertainty builds.`),
-      L(`대화 재개 타이밍을 구체적으로 공유할 때 평온이 회복되는 흐름입니다.`, `Sharing a clear time to reconnect is what restores your emotional safe zone.`),
+      L(`갈등이 생기면 ${names.a}과 ${names.b} 모두 참지 않고 바로 자기 입장을 세게 말해요.`, `When conflict comes up, both ${names.a} and ${names.b} say their piece right away, without holding back.`),
+      L(`서로 지지 않으려다 보니 목소리가 점점 커지고 감정이 빠르게 격해져요.`, `Neither wants to back down, so voices rise and emotions escalate fast.`),
+      L(`한쪽이 먼저 숨을 고르지 않으면 사소한 일도 금방 큰 싸움으로 번져요.`, `If neither of you pauses first, even something small can turn into a big fight quickly.`),
+      L(`감정이 다 쏟아진 뒤에야 진정되지만, 그 사이 서로에게 상처가 남을 수 있어요.`, `Things calm down only after everything's been said — but by then, there can be real hurt left behind.`),
     ];
   }
 
@@ -541,7 +553,9 @@ function axisRow(
     likelyMisreadingA: isSimilar ? null : (aHigh ? interp.misreadHighObservingLow : interp.misreadLowObservingHigh),
     likelyMisreadingB: isSimilar ? null : (aHigh ? interp.misreadLowObservingHigh : interp.misreadHighObservingLow),
     relationshipStrength: isSimilar ? pick(locale, copyKo.calmSim, copyEn.calmSim) : interp.tensionBenefit,
-    relationshipRisk: isSimilar ? pick(locale, copyKo.stressLow, copyEn.stressLow) : `${gap >= 50 ? "선명한 성향 차이로 인해 " : ""}${interp.tensionClash}`,
+    relationshipRisk: isSimilar
+      ? pick(locale, copyKo.stressLow, copyEn.stressLow)
+      : `${gap >= 50 ? pick(locale, "선명한 성향 차이로 인해 ", "") : ""}${interp.tensionClash}`,
     practicalTranslation: isSimilar ? pick(locale, "지금의 긍정적인 균형을 유지하세요.", "Keep up the positive balance you already have.") : interp.practicalTranslation,
     evidenceRefs: [
       prov(
@@ -788,16 +802,16 @@ function computeHeroPairThesis(params: {
   // Pattern 2: Both Cold (Double-Retreat / Frozen Distance)
   if (bandA === "cold" && bandB === "cold") {
     return L(
-      `두 사람 모두 무모하게 부딪히기보다 침묵으로 가라앉히는 편이지만, 서로가 먼저 다가오기를 기다리다 보면 서운함의 거리가 조용히 벌어질 수 있는 관계.`,
-      `Both of you tend to retreat into quietness rather than clash head-on, but if you wait for the other to step forward first, emotional distance can quietly grow.`,
+      `${a}과 ${b} 둘 다 무모하게 부딪히기보다 조용히 가라앉히는 편이지만, 서로 먼저 다가오기를 기다리다 보면 서운함의 거리가 조용히 벌어질 수 있는 관계.`,
+      `Both ${a} and ${b} tend to go quiet rather than clash head-on, but if you each wait for the other to step forward first, emotional distance can quietly grow.`,
     );
   }
 
   // Pattern 3: Both Hot (Double-Escalation / Emotional Clash)
   if (bandA === "hot" && bandB === "hot") {
     return L(
-      `두 사람 모두 순간의 서운함을 직설적으로 표현하여 해답을 찾는 편이지만, 감정이 동시에 고조될 때 잠시 쉬어가는 템포 조율이 핵심이 되는 관계.`,
-      `Both of you seek answers by directly expressing hurt, but when emotions run high at the same time, pausing to catch your breath becomes the key.`,
+      `${a}과 ${b} 둘 다 서운한 순간 바로 직설적으로 표현해서 풀어내는 편이지만, 감정이 동시에 고조될 때는 잠깐 쉬어가는 타이밍이 관계의 핵심이 되는 관계.`,
+      `Both ${a} and ${b} tend to say what's bothering them right away and work it out directly, but when emotions run high at the same time, knowing when to pause becomes the key.`,
     );
   }
 
@@ -832,8 +846,8 @@ function computeHeroPairThesis(params: {
 
   // Pattern 5: Moderate / Similar Pair
   return L(
-    `평소 서로의 기분을 조심스럽게 살피며 원만하게 일상을 공유하지만, 서운한 점이 생겼을 때 혼자 삭이기보다 다정하게 털어놓는 대화가 유대감을 지켜주는 관계.`,
-    `You naturally harmonize by observing each other's moods, but when hurt arises, regular warm check-ins rather than holding it in protect your bond.`,
+    `${a}과 ${b}은 평소 서로의 기분을 조심스럽게 살피며 원만하게 지내는 편이지만, 서운한 점이 생겼을 때 혼자 삭이기보다 다정하게 털어놓는 대화가 둘 사이를 지켜주는 관계.`,
+    `${a} and ${b} tend to naturally read each other's moods and get along smoothly, but when something stings, talking it through warmly rather than holding it in is what protects the bond between you.`,
   );
 }
 
@@ -849,8 +863,16 @@ function computeHeroPairThesis(params: {
       relCeA,
       relCeB,
       topDiff: axisResults.filter((a) => a.axis_key !== "conflict_style").sort((a, b) => b.gap - a.gap)[0],
-      superpower: (plan.crossSignalInsightsV1 ?? []).find((i) => i.insightType === "superpower"),
-      paradox: (plan.crossSignalInsightsV1 ?? []).find((i) => i.insightType === "paradox"),
+      // Cross-Signal V1 (crossSignalInsightsV1) is computed AFTER this
+      // story plan is fully built (buildRomanticCrossSignalIntelligence
+      // takes the finished plan as its own input, further down this
+      // function) — it genuinely isn't available yet here, not a bug to
+      // work around. computeHeroPairThesis already falls through to its
+      // 5 real evidence-driven patterns (hot/cold, cold/cold, hot/hot,
+      // top-axis-gap, moderate/similar) when superpower/paradox are
+      // undefined, so this is correct, not a degraded path.
+      superpower: undefined,
+      paradox: undefined,
       locale,
     });
   mark("section_1_summary");
@@ -967,8 +989,8 @@ function computeHeroPairThesis(params: {
     subject: "mutual",
     recognition: sanitizeParticles(
       hitNotes[0] ?? L(
-        `${withP(names.a, locale)} ${names.b}가 마주할 때 비로소 만들어지는 특별한 정서적 공명과 몰입감이 존재합니다.`,
-        `There's a special emotional resonance and immersion that only comes into being when ${withP(names.a, locale)} ${names.b} face each other.`,
+        `${withP(names.a, locale)} ${names.b}가 마주 앉으면 둘만 아는 편안함이 생겨요.`,
+        `When ${withP(names.a, locale)} ${names.b} sit down together, there's an ease that belongs only to the two of them.`,
       ),
       [names.a, names.b],
       locale,
@@ -1734,22 +1756,22 @@ function computeHeroPairThesis(params: {
       strengthVuln?.sharedVulnerability ||
       ((relCeA?.stressTempBand === "hot" && relCeB?.stressTempBand === "cold") || (relCeB?.stressTempBand === "hot" && relCeA?.stressTempBand === "cold")
         ? L(
-            `두 강점이 맞물릴 때 발생하는 blind spot: 한쪽의 해결 의지와 다른 쪽의 신중함이 평소엔 완벽하게 어우러지지만, 예민한 이슈 앞에서는 '잘 풀어야 한다'는 서로의 부담감이 커져 작은 대화도 큰 무게로 다가오는 점입니다.`,
-            `The blind spot created when your strengths combine: one's drive for resolution and the other's prudence work well, but on sensitive issues, mutual pressure to solve it perfectly makes even small check-ins feel heavy.`,
+            `이 조합의 약점은 여기서 나와요 — 평소엔 한쪽의 해결 의지와 다른 쪽의 신중함이 잘 맞물리는데, 예민한 얘기 앞에서는 '이번엔 진짜 잘 풀어야 해'라는 부담이 서로 커지면서 오히려 작은 대화도 무겁게 느껴질 수 있어요.`,
+            `Here's where this combination gets tricky — normally one's drive to solve things and the other's carefulness work well together, but on a sensitive topic, that same pressure to "get it right this time" can make even a small conversation feel heavy.`,
           )
         : relCeA?.stressTempBand === "cold" && relCeB?.stressTempBand === "cold"
           ? L(
-              `두 강점이 맞물릴 때 발생하는 blind spot: 두 사람 모두 상대를 깊이 배려하고 신중하기 때문에, 서운함이 생겼을 때 '내가 조금 참지'라며 상대방을 보호하려다 진짜 마음의 소리를 주고받을 타이밍을 놓치는 점입니다.`,
-              `The blind spot created when your strengths combine: because both of you are so considerate and prudent, when hurt arises, you protect each other by staying quiet, missing the timing to share your true voice.`,
+              `둘 다 상대를 워낙 배려하고 조심스러워서, 서운한 일이 생겨도 '내가 그냥 넘어가지'하며 참는 쪽을 택하기 쉬워요. 그러다 보면 정작 진짜 마음을 나눌 타이밍을 놓치게 돼요.`,
+              `You're both so considerate of each other that when something stings, you tend to just let it go rather than say it. The catch is you can end up missing the moment to actually talk about it.`,
             )
           : relCeA?.stressTempBand === "hot" && relCeB?.stressTempBand === "hot"
             ? L(
-                `두 강점이 맞물릴 때 발생하는 blind spot: 둘 다 솔직하고 에너지가 강해 빠른 성장을 이끌어내지만, 동시에 과부하가 걸렸을 때 상대의 템포를 지켜보지 못하고 과속하다 정서적 방전이 동시에 올 수 있다는 점입니다.`,
-                `The blind spot created when your strengths combine: both of you are so honest and driven that you build fast progress, but under overload, failing to wait out each other's pace can lead to simultaneous burnout.`,
+                `둘 다 솔직하고 에너지가 넘쳐서 뭐든 빠르게 밀어붙이는 편인데, 그러다 보니 지칠 때도 같이 지치기 쉬워요. 서로 속도를 늦춰줄 사람이 없다 보니 둘 다 한꺼번에 방전될 수 있어요.`,
+                `You're both direct and full of energy, so you tend to push things forward fast — but that also means you can burn out together, since neither of you is the one slowing things down.`,
               )
             : L(
-                `두 강점이 맞물릴 때 발생하는 blind spot: 평소 원만하게 서로를 맞추는 유연함이 크다 보니, 관계의 중요한 경계선이나 서운함을 제때 구체적으로 밝히지 않고 넘어가 마음에 작은 앙금이 축적되는 점입니다.`,
-                `The blind spot created when your strengths combine: because your mutual adaptability keeps things smooth, you tend to pass over defining clear boundaries in time, allowing small hurts to quietly accumulate.`,
+                `서로 잘 맞춰주는 편이라 평소엔 부드럽게 넘어가는데, 그러다 보니 중요한 선이나 서운함을 제때 구체적으로 짚고 넘어가지 않는 편이에요. 그게 작은 앙금으로 쌓일 수 있어요.`,
+                `You adapt to each other so easily that things usually go smoothly — but that can mean important boundaries or small hurts don't get named in the moment, and they quietly build up.`,
               )),
     pairChemistry: {
       available: chemistryAvailable,

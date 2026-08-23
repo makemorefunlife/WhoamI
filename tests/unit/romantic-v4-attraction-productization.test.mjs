@@ -179,7 +179,12 @@ test("Section Narrative Composition for Attraction Chapter", () => {
           tensionBridge: "처음의 편안함이 익숙해질수록 사소한 생활 습관의 차이가 서운함으로 번질 수 있습니다.",
           evidenceIds: ["ev_mutual"],
           confidence: "high",
-          usedClaims: [],
+          // Non-empty on purpose: composeCanonicalSectionNarratives.ts now
+          // abstains from rendering attr.unique entirely when neither a
+          // Cross-Signal paradox insight nor real usedClaims exist (see
+          // the pairModel.primaryAttractionMutual check) — this fixture
+          // exercises the real-content path, not the abstention path.
+          usedClaims: ["ev_mutual"],
         },
       },
       provenance: [{ evidenceId: "ev_attr", source: "saju", sourcePath: "pair", target: "pair", confidence: "high", reasonType: "direct_evidence" }],

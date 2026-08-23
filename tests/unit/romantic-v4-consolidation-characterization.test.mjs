@@ -113,8 +113,15 @@ assert.ok(
   "relationshipDefinition is now built from personalRelationshipCeA/B's coreRelationshipNature " +
     "(previously would have been the static '깊어지는 계절' fixture string)",
 );
+// Marker updated for the Romantic VNext editorial pass (Phase 6 — expression
+// diversity): sharedStrength's sentence skeleton now varies by hot/cold
+// signal instead of always being "${a}가 주는 X과 ${b}가 주는 Y이 만나는
+// 순간" — this pair (both cold) now reads "${a}의 X과 ${b}의 Y이 서로를
+// 침착하게 받쳐줘요." Checking both names still appear preserves the
+// original intent (CE-sourced, not the static fixture fallback) without
+// pinning to one specific skeleton's wording.
 assert.ok(
-  plan.sharedStrength.includes("지민이 주는") && plan.sharedStrength.includes("정우가 주는"),
+  plan.sharedStrength.includes("지민") && plan.sharedStrength.includes("정우"),
   "sharedStrength is CE-sourced from strengthsGivenToPartner (Final Evidence-to-Voice pass, item 2 switched " +
     "this from re-quoting coreRelationshipNature — Hero's identity label, already stated once there — to the " +
     "chapter's own strengthsGivenToPartner field, to stop the 5x cross-chapter identity-phrase repeat); " +

@@ -178,7 +178,7 @@ export function resolveHiddenHeartsLens(params: {
     );
     const innerFeel = relCeB.hiddenVulnerability?.text ?? (
       relCeB.stressTempBand === "cold"
-        ? L("겉으로 침묵하는 것은 무관심해서가 아니라 서로 상처받지 않게 말을 골라내는 정돈 과정입니다.", "Being silent on the outside is not from indifference, but sorting out words so neither gets hurt.")
+        ? L("겉으로 조용해 보여도 무관심해서가 아니에요 — 서로 상처 주지 않게 할 말을 고르는 중인 거예요.", "The quiet on the outside isn't indifference — they're just choosing their words carefully so neither of you gets hurt.")
         : relCeB.stressTempBand === "hot"
           ? L("직설적 화법 뒤에는 솔직한 공감을 통해 정서적 거리를 좁히고 싶은 소망이 있습니다.", "Behind direct speech is a wish to narrow emotional distance through honest empathy.")
           : L("서운함이 생기더라도 상대를 탓하기 전에 스스로 상황을 먼저 납득해 보려는 마음입니다.", "Even when hurt, they try to understand the situation first before pointing fingers.")
@@ -750,22 +750,22 @@ export function resolveStrengthVulnerabilityLens(params: {
   // (not a paraphrase of how the fight escalates in Chapter 3).
   const sharedVulnText = ((isFastA && isSlowB) || (isFastB && isSlowA))
     ? L(
-        `두 강점이 맞물릴 때 발생하는 blind spot: ${isFastA ? a : b}님의 해결 의지와 ${isSlowA ? a : b}님의 신중함이 결합될 때, 평소엔 완벽한 조화를 이루지만 예민한 이슈 앞에서는 '잘 풀어야 한다'는 서로의 부담감이 커져 작은 대화도 큰 무게로 다가오는 점입니다.`,
-        `The blind spot created when your strengths combine: ${isFastA ? a : b}'s drive for resolution and ${isSlowA ? a : b}'s prudence work well, but on sensitive issues, mutual pressure to solve it perfectly makes even small check-ins feel heavy.`,
+        `이 조합의 약점은 여기서 나와요 — 평소엔 ${isFastA ? a : b}의 해결 의지랑 ${isSlowA ? a : b}의 신중함이 잘 맞물리는데, 예민한 얘기 앞에서는 '이번엔 진짜 잘 풀어야 해'라는 부담이 서로 커지면서 오히려 작은 대화도 무겁게 느껴질 수 있어요.`,
+        `Here's where this combination gets tricky — normally ${isFastA ? a : b}'s drive to solve things and ${isSlowA ? a : b}'s carefulness work well together, but on a sensitive topic, that same pressure to "get it right this time" can make even a small conversation feel heavy.`,
       )
     : (isSlowA && isSlowB)
       ? L(
-          `두 강점이 맞물릴 때 발생하는 blind spot: 두 사람 모두 상대를 깊이 배려하고 신중하기 때문에, 서운함이 생겼을 때 '내가 조금 참지'라며 상대방을 보호하려다 진짜 마음의 소리를 주고받을 타이밍을 놓치는 점입니다.`,
-          `The blind spot created when your strengths combine: because both of you are so considerate and prudent, when hurt arises, you protect each other by staying quiet, missing the timing to share your true voice.`,
+          `둘 다 상대를 워낙 배려하고 조심스러워서, 서운한 일이 생겨도 '내가 그냥 넘어가지'하며 참는 쪽을 택하기 쉬워요. 그러다 보면 정작 진짜 마음을 나눌 타이밍을 놓치게 돼요.`,
+          `You're both so considerate of each other that when something stings, you tend to just let it go rather than say it. The catch is you can end up missing the moment to actually talk about it.`,
         )
       : (isFastA && isFastB)
         ? L(
-            `두 강점이 맞물릴 때 발생하는 blind spot: 둘 다 솔직하고 에너지가 강해 빠른 성장을 이끌어내지만, 동시에 과부하가 걸렸을 때 상대의 템포를 지켜보지 못하고 과속하다 정서적 방전이 동시에 올 수 있다는 점입니다.`,
-            `The blind spot created when your strengths combine: both of you are so honest and driven that you build fast progress, but under overload, failing to wait out each other's pace can lead to simultaneous burnout.`,
+            `둘 다 솔직하고 에너지가 넘쳐서 뭐든 빠르게 밀어붙이는 편인데, 그러다 보니 지칠 때도 같이 지치기 쉬워요. 서로 속도를 늦춰줄 사람이 없다 보니 둘 다 한꺼번에 방전될 수 있어요.`,
+            `You're both direct and full of energy, so you tend to push things forward fast — but that also means you can burn out together, since neither of you is the one slowing things down.`,
           )
         : L(
-            `두 강점이 맞물릴 때 발생하는 blind spot: 평소 원만하게 서로를 맞추는 유연함이 크다 보니, 관계의 중요한 경계선이나 서운함을 제때 구체적으로 밝히지 않고 넘어가 마음에 작은 앙금이 축적되는 점입니다.`,
-            `The blind spot created when your strengths combine: because your mutual adaptability keeps things smooth, you tend to pass over defining clear boundaries in time, allowing small hurts to quietly accumulate.`,
+            `서로 잘 맞춰주는 편이라 평소엔 부드럽게 넘어가는데, 그러다 보니 중요한 선이나 서운함을 제때 구체적으로 짚고 넘어가지 않는 편이에요. 그게 작은 앙금으로 쌓일 수 있어요.`,
+            `You adapt to each other so easily that things usually go smoothly — but that can mean important boundaries or small hurts don't get named in the moment, and they quietly build up.`,
           );
 
   const slowName = isFastA ? b : a;
@@ -785,15 +785,37 @@ export function resolveStrengthVulnerabilityLens(params: {
           `The key agreement that protects this: when emotions run high, pause the conversation, each take 10 minutes to catch your breath, and come back calmly.`,
         );
 
-  // Shared Strength: Describes an EMERGENT CAPABILITY (what these two accomplish together that neither does alone)
+  // Shared Strength: Describes an EMERGENT CAPABILITY (what these two accomplish together that neither does alone).
+  // Phase 6 fix: this used to be one fixed sentence skeleton ("A의 X과 B의 Y이
+  // 결합하여, 불확실한 순간에도...") with only the two strength phrases
+  // swapped in — real data plugged into unchanging structure, still template
+  // leakage even though the words varied. The frame itself now changes with
+  // the same hot/cold signal already used for sharedVulnText just above, so
+  // different mechanisms actually read as different sentences, not the same
+  // sentence with different nouns.
   const strengthAText = relCeA?.strengthsGivenToPartner?.[0]?.text ?? relCeA?.careExpression?.text ?? relCeA?.familiarRelationshipRole?.text ?? L("다정한 활력", "warm vitality");
   const strengthBText = relCeB?.strengthsGivenToPartner?.[0]?.text ?? relCeB?.careExpression?.text ?? relCeB?.familiarRelationshipRole?.text ?? L("흔들림 없는 신중함", "steady prudence");
 
   const sharedStrength = sanitizeParticles(
-    L(
-      `${a}의 ${strengthAText}과 ${b}의 ${strengthBText}이 결합하여, 불확실한 순간에도 정서적 연결과 중심을 잃지 않는 유대감`,
-      `A synergy where ${a}'s ${strengthAText} and ${b}'s ${strengthBText} combine to hold emotional warmth and stability during uncertainty`,
-    ),
+    ((isFastA && isSlowB) || (isFastB && isSlowA))
+      ? L(
+          `이 조합은 부딪힌 뒤에도 관계 자체를 쉽게 놓지 않는 힘이 있어요. ${a}의 ${strengthAText}이 상황을 앞장서 정리하고, ${b}의 ${strengthBText}이 그 뒤를 흔들림 없이 받쳐줘요.`,
+          `What this combination gives you is the strength to not give up on the relationship even after a clash. ${a}'s ${strengthAText} pushes to sort things out, and ${b}'s ${strengthBText} steadies things right behind them.`,
+        )
+      : (isSlowA && isSlowB)
+        ? L(
+            `복잡한 일이 생겼을 때 감정과 현실을 같이 짚어낼 수 있는 조합이에요. ${a}의 ${strengthAText}과 ${b}의 ${strengthBText}이 서로를 침착하게 받쳐줘요.`,
+            `When things get complicated, this is a pairing that can hold both the feelings and the practical side at once — ${a}'s ${strengthAText} and ${b}'s ${strengthBText} steady each other.`,
+          )
+        : (isFastA && isFastB)
+          ? L(
+              `같은 목표를 잡으면 생각보다 훨씬 빨리 움직이는 커플이에요. ${a}의 ${strengthAText}과 ${b}의 ${strengthBText}이 만나면 속도가 붙어요.`,
+              `Once you two agree on a goal, you move faster than you'd expect — ${a}'s ${strengthAText} meeting ${b}'s ${strengthBText} picks up real speed.`,
+            )
+          : L(
+              `서로 다른 강점이 자연스럽게 맞물려요. ${a}의 ${strengthAText}이 놓치는 부분을 ${b}의 ${strengthBText}이 채워줘요.`,
+              `Your different strengths interlock naturally — where ${a}'s ${strengthAText} misses something, ${b}'s ${strengthBText} tends to catch it.`,
+            ),
     [a, b],
     locale,
   );
