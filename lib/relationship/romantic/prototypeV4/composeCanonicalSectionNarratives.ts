@@ -493,8 +493,8 @@ export function composeCanonicalSectionNarratives(
         ...plan.misreads.map((m) => {
           const label =
             m.direction === "a_observes_b"
-              ? L(`${a}이/가 겪은 ${b}의 행동`, `${b}'s Behavior, as ${a} Experiences It`)
-              : L(`${b}이/가 겪은 ${a}의 행동`, `${a}'s Behavior, as ${b} Experiences It`);
+              ? L(`${subjectP(a, locale)} 겪은 ${b}의 행동`, `${b}'s Behavior, as ${a} Experiences It`)
+              : L(`${subjectP(b, locale)} 겪은 ${a}의 행동`, `${a}'s Behavior, as ${b} Experiences It`);
           // Phase 5C (continued) — c3_dynamics's stress face (which renders
           // earlier, Chapter 01) already states each person's stress
           // behavior in one combined paragraph. When observedBehavior is a

@@ -160,7 +160,7 @@ export function buildActualFourCeContract(
     name: nameA,
     chart: individualCeA,
     signals: romanticSignalsA,
-    relationalProfile: personalCeA.aggregates.relational_profile,
+    relationalProfile: surveyInput?.profileA?.relational_profile ?? personalCeA.aggregates.relational_profile,
     locale,
   });
   const personalRelationshipCeB = buildPersonalRelationshipCe({
@@ -168,7 +168,7 @@ export function buildActualFourCeContract(
     name: nameB,
     chart: individualCeB,
     signals: romanticSignalsB,
-    relationalProfile: personalCeB.aggregates.relational_profile,
+    relationalProfile: surveyInput?.profileB?.relational_profile ?? personalCeB.aggregates.relational_profile,
     locale,
   });
 

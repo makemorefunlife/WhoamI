@@ -390,10 +390,14 @@ export function buildPossessivenessScene(params: {
     domainId: "possessiveness_boundary",
     title: pick(locale, "질투가 훅 올라오는 순간", "The Moment Jealousy Suddenly Spikes"),
     difference: clean(
-      pick(
+      sanitizeParticles(
+        pick(
+          locale,
+          `${nameA}와 ${nameB}는 서로에게 유독 감정선이 예민해지는 지점이 있어요 — 사소한 행동이나 표현 차이에도 상대의 마음을 깊이 신경 쓰며 민감하게 반응하기 쉽습니다.`,
+          `${nameA} and ${nameB} have a real sensitivity spot with each other — small actions or subtle changes in expression can trigger a heightened emotional reaction.`,
+        ),
+        [nameA, nameB],
         locale,
-        `${nameA}와 ${nameB}는 서로에게 유독 예민해지는 지점이 있어요 — 별일 아닌데도 상대의 친구 관계나 연락 하나에 마음이 훅 올라올 때가 있어요.`,
-        `${nameA} and ${nameB} have a real sensitivity spot with each other — a small thing, like a friendship or a text, can spike a jealous reaction out of nowhere.`,
       ),
       [nameA, nameB],
       locale,
@@ -446,17 +450,21 @@ export function buildLongTermGrowthScene(params: {
     domainId: "long_term_growth",
     title: pick(locale, "시간이 지날수록 이 관계가 성장하는 방식", "How This Relationship Grows Over Time"),
     difference: clean(
-      hasComplement
-        ? pick(
-            locale,
-            `${nameA}와 ${nameB}의 사주에는 서로 맞물리는 결합 지점이 실제로 있어요 — 그래서 초반의 설렘이 가라앉은 뒤에도, 한쪽이 놓치는 지점을 다른 쪽이 구조적으로 받쳐주는 결이 이어질 가능성이 높아요.`,
-            `${nameA} and ${nameB}'s charts show real interlocking points — so even once the early spark settles, one of you tends to structurally cover what the other misses, not just by good will but by the shape of the match itself.`,
-          )
-        : pick(
-            locale,
-            `${nameA}와 ${nameB}는 서로 다른 속도로 가더라도 결국 같은 방향으로 향하는 구조를 가진 관계예요 — 급하게 서두르지 않아도 꾸준히 쌓이는 안정감이 있어요.`,
-            `${nameA} and ${nameB} may move at different speeds, but the underlying shape of this relationship points the same direction — a steadiness that builds without needing to rush.`,
-          ),
+      sanitizeParticles(
+        hasComplement
+          ? pick(
+              locale,
+              `${nameA}와 ${nameB}의 사주에는 서로 맞물리는 결합 지점이 실제로 있어요 — 그래서 초반의 설렘이 가라앉은 뒤에도, 한쪽이 놓치는 지점을 다른 쪽이 구조적으로 받쳐주는 결이 이어질 가능성이 높아요.`,
+              `${nameA} and ${nameB}'s charts show real interlocking points — so even once the early spark settles, one of you tends to structurally cover what the other misses, not just by good will but by the shape of the match itself.`,
+            )
+          : pick(
+              locale,
+              `${nameA}와 ${nameB}는 서로 다른 속도로 가더라도 결국 같은 방향으로 향하는 구조를 가진 관계예요 — 급하게 서두르지 않아도 꾸준히 쌓이는 안정감이 있어요.`,
+              `${nameA} and ${nameB} may move at different speeds, but the underlying shape of this relationship points the same direction — a steadiness that builds without needing to rush.`,
+            ),
+        [nameA, nameB],
+        locale,
+      ),
       [nameA, nameB],
       locale,
     ),
@@ -467,8 +475,8 @@ export function buildLongTermGrowthScene(params: {
     ),
     agreement: pick(
       locale,
-      "1년, 3년 뒤를 함께 그려보는 대화를 가끔 나누며, 지금의 속도가 여전히 괜찮은지 확인해요.",
-      "Every so often, talk through where you picture this in a year or three, and check that the current pace still feels right.",
+      "앞으로 함께할 먼 미래를 나누는 대화를 가끔 나누며, 지금의 속도가 여전히 괜찮은지 확인해요.",
+      "Every so often, talk through where you picture this in the future, and check that the current pace still feels right.",
     ),
     usableLine: clean(
       pick(

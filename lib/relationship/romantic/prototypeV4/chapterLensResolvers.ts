@@ -541,7 +541,7 @@ export function resolveDynamicsLens(params: {
   const isFastB = relCeB?.stressTempBand === "hot";
 
   let mechanismStress = L(
-    `${a}와 ${b}은/는 각자의 방식으로 감정의 파도를 가라앉히고 차분하게 문제의 본질에 접근합니다.`,
+    `${withP(a, locale)} ${topicP(b, locale)} 각자의 방식으로 감정의 파도를 가라앉히고 차분하게 문제의 본질에 접근합니다.`,
     `${a} and ${b} each settle the wave of emotion in their own way and calmly approach the heart of the problem.`,
   );
   let riskStress = L(
@@ -581,7 +581,7 @@ export function resolveDynamicsLens(params: {
     );
   } else if (isFastA && isSlowB) {
     mechanismStress = L(
-      `${a}은/는 빠른 확인을 통해 불안을 해소하려 하고, ${b}은/는 감정의 정돈을 통해 이성적인 대화로 진입하려 합니다.`,
+      `${topicP(a, locale)} 빠른 확인을 통해 불안을 해소하려 하고, ${topicP(b, locale)} 감정의 정돈을 통해 이성적인 대화로 진입하려 합니다.`,
       `${a} tries to ease their anxiety through a quick check-in, while ${b} tries to sort out their emotions first before entering a level-headed conversation.`,
     );
     riskStress = L(
@@ -594,7 +594,7 @@ export function resolveDynamicsLens(params: {
     );
   } else if (isSlowA && isFastB) {
     mechanismStress = L(
-      `${b}은/는 빠른 확인을 통해 불안을 해소하려 하고, ${a}은/는 감정의 정돈을 통해 이성적인 대화로 진입하려 합니다.`,
+      `${topicP(b, locale)} 빠른 확인을 통해 불안을 해소하려 하고, ${topicP(a, locale)} 감정의 정돈을 통해 이성적인 대화로 진입하려 합니다.`,
       `${b} tries to ease their anxiety through a quick check-in, while ${a} tries to sort out their emotions first before entering a level-headed conversation.`,
     );
     riskStress = L(
@@ -797,8 +797,21 @@ export function resolveStrengthVulnerabilityLens(params: {
 
   // Shared Vulnerability: Describes the EMERGENT BLIND SPOT created when strengths combine
   // (not a paraphrase of how the fight escalates in Chapter 3).
-  const strengthAText = relCeA?.strengthsGivenToPartner?.[0]?.text ?? relCeA?.careExpression?.text ?? relCeA?.familiarRelationshipRole?.text ?? L("다정한 활력", "warm vitality");
-  const strengthBText = relCeB?.strengthsGivenToPartner?.[0]?.text ?? relCeB?.careExpression?.text ?? relCeB?.familiarRelationshipRole?.text ?? L("흔들림 없는 신중함", "steady prudence");
+  function toConciseNounPhrase(raw: string, fallback: string): string {
+    if (!raw) return fallback;
+    if (raw.includes("정서적 수용력") || raw.includes("수용력")) return "깊은 정서적 수용력과 헌신";
+    if (raw.includes("인내심") || raw.includes("안정감")) return "탁월한 인내심과 든든한 안정감";
+    if (raw.includes("신중") || raw.includes("원칙")) return "명확한 기준과 신중함";
+    if (raw.includes("활력") || raw.includes("열정")) return "다정한 활력과 온기";
+    const match = /(?:깊은|탁월한|자연스러운|듬직한|차분한|반듯한)?\s*([가-힣\s]{2,15}(?:수용력|헌신|인내심|안정감|활력|신중함|추진력|결단력|배려|공감|마음|기준|성향|태도|안정성|유대))/;
+    const found = match.exec(raw);
+    return found && found[0] ? found[0].trim() : fallback;
+  }
+
+  const rawA = relCeA?.strengthsGivenToPartner?.[0]?.text ?? relCeA?.careExpression?.text ?? relCeA?.familiarRelationshipRole?.text ?? L("다정한 활력", "warm vitality");
+  const rawB = relCeB?.strengthsGivenToPartner?.[0]?.text ?? relCeB?.careExpression?.text ?? relCeB?.familiarRelationshipRole?.text ?? L("흔들림 없는 신중함", "steady prudence");
+  const strengthAText = toConciseNounPhrase(rawA, L("다정한 활력", "warm vitality"));
+  const strengthBText = toConciseNounPhrase(rawB, L("흔들림 없는 신중함", "steady prudence"));
 
   // Shared Vulnerability: Derived directly from the PAIR STRENGTH'S SHADOW
   // (PAIR CAPABILITY -> what happens when overused -> unique blind spot).
@@ -835,8 +848,8 @@ export function resolveStrengthVulnerabilityLens(params: {
           `The key agreement that protects this: instead of sitting with it alone, clearly share a signal for reopening the conversation — "let's talk again at ___ once I've sorted my thoughts."`,
         )
       : L(
-          `이 기여를 지키는 핵심 합의: 감정이 격해졌을 때는 잠시 대화를 멈추고 각자 10분간 호흡을 가다듬은 뒤 차분하게 다시 마주하는 것입니다.`,
-          `The key agreement that protects this: when emotions run high, pause the conversation, each take 10 minutes to catch your breath, and come back calmly.`,
+          `이 기여를 지키는 핵심 합의: 감정이 격해졌을 때는 잠시 대화를 멈추고 각자 호흡을 가다듬은 뒤 차분하게 다시 마주하는 것입니다.`,
+          `The key agreement that protects this: when emotions run high, pause the conversation, each take time to catch your breath, and come back calmly.`,
         );
 
   // Shared Strength: Describes an EMERGENT CAPABILITY directly (no generic openers like "서로 다른 강점이 자연스럽게 맞물려요").

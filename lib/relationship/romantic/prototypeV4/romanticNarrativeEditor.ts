@@ -34,7 +34,6 @@ const TARGET_BLOCKS: Array<{ chapterOwner: RomanticCrossSignalChapterId; blockId
   { chapterOwner: "c4_conflict", blockIds: ["loop.trigger"] },
   { chapterOwner: "c5_misunderstanding", blockIds: ["misread.a_observes_b", "misread.b_observes_a"] },
   { chapterOwner: "c6_hidden_hearts", blockIds: ["hidden.a"] },
-  { chapterOwner: "c7_repair", blockIds: ["repair.helpsA"] },
   { chapterOwner: "c8_strength_vulnerability", blockIds: ["gift.a_to_b", "gift.b_to_a"] },
 ];
 

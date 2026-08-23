@@ -32,12 +32,12 @@ function prov(evidenceId: string): ProvenanceRef {
 
 const THEME_BY_INTERACTION: Record<NarrativeLocale, Record<"supportive" | "neutral" | "tension", string>> = {
   "ko-KR": {
-    supportive: "지금 이 시기는 전반적으로 관계를 순하게 받쳐주는 흐름이에요 — 큰 결정을 함께 밀어붙이기에 나쁘지 않은 때입니다.",
+    supportive: "지금 이 시기는 전반적으로 관계를 순하게 받쳐주는 흐름이에요 — 서두르지 않고 둘만의 안정적인 일상과 유대를 차분하게 다지기에 좋은 때입니다.",
     neutral: "지금 이 시기는 특별히 순풍도 역풍도 아닌, 두 사람이 만들어가는 만큼 흘러가는 흐름이에요.",
     tension: "지금 이 시기는 평소보다 크고 작은 마찰이 조금 더 잘 일어날 수 있는 흐름이에요 — 급한 결정보다는 서로 확인하며 가는 편이 안전해요.",
   },
   "en-US": {
-    supportive: "Right now the overall current is gently on your side — not a bad stretch to push a big decision through together.",
+    supportive: "Right now the overall current is gently on your side — a good stretch to comfortably deepen your everyday bond without rushing big changes.",
     neutral: "Right now the current isn't pushing you either way in particular — it moves as much as the two of you put into it.",
     tension: "Right now the current runs a little rougher than usual — small and big frictions surface more easily, so checking in with each other beats rushing a decision.",
   },
@@ -92,12 +92,25 @@ export function buildRomanticV4TimingFromFortuneFlow(
   const langKey = locale === "en-US" ? "en-US" : "ko-KR";
   const theme = THEME_BY_INTERACTION[langKey][fortuneFlow.daewoon.relationship_interaction] || THEME_BY_INTERACTION["ko-KR"].supportive;
   const currentYr = fortuneFlow.sewoon.current_year;
-  const favorableWindows = fortuneFlow.sewoon.years
-    .filter((y) => y.branch_relation === "combine")
-    .map((y) => favorableLine(locale, y.year, currentYr));
-  const cautionWindows = fortuneFlow.sewoon.years
-    .filter((y) => y.branch_relation === "clash")
-    .map((y) => cautionLine(locale, y.year, currentYr));
+  const combines = fortuneFlow.sewoon.years.filter((y) => y.branch_relation === "combine");
+  const clashes = fortuneFlow.sewoon.years.filter((y) => y.branch_relation === "clash");
+
+  const hasCurrentYrCombine = combines.some((y) => y.year <= currentYr + 1);
+  const hasCurrentYrClash = clashes.some((y) => y.year <= currentYr + 1);
+
+  const favorableWindows = combines.map((y) => favorableLine(locale, y.year, currentYr));
+  const cautionWindows = clashes.map((y) => cautionLine(locale, y.year, currentYr));
+
+  // If current year (2026) has no explicit clash or combine, prepend current-year baseline guidance
+  if (!hasCurrentYrCombine && !hasCurrentYrClash) {
+    favorableWindows.unshift(
+      pick(
+        locale,
+        `${currentYr}년(올해): 특별한 갈등이나 충돌 없이 차분하고 안정적으로 흐르는 기류예요 — 성급한 변화보다 일상의 편안함과 유대를 다지기에 좋습니다.`,
+        `${currentYr} (This year): A steady, comfortable flow with no major clashes — a great window to ground your everyday rhythm.`,
+      ),
+    );
+  }
 
   return {
     available: true,

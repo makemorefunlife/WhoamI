@@ -729,11 +729,15 @@ export function buildPersonalRelationshipCe(params: {
     },
     recoveryPattern: {
       text:
-        tempBand === "cold" ||
-        signals?.conflict_response?.conflict_band === "withdrawing" ||
-        relationalProfile?.conflict_decompression === "solitude_cooling_needed"
-          ? pick(locale, "충분히 혼자만의 시간을 가지며 감정의 온도가 차분하게 내려가는 회복 과정", "A recovery process of taking real time alone, letting emotions settle and cool down")
-          : pick(locale, "문제에 대한 명확한 사과나 확답이 오가며 뒤끝 없이 빠르게 평온을 되찾는 소통", "Reaching calm quickly and cleanly through a clear apology or clear answers about the issue"),
+        (signals?.conflict_response?.conflict_band === "expressive" ||
+          signals?.conflict_response?.conflict_band === "direct" ||
+          relationalProfile?.conflict_decompression === "immediate_clarifier")
+          ? pick(locale, "문제에 대한 명확한 사과나 확답이 오가며 뒤끝 없이 빠르게 평온을 되찾는 소통", "Reaching calm quickly and cleanly through a clear apology or clear answers about the issue")
+          : (tempBand === "cold" ||
+              signals?.conflict_response?.conflict_band === "withdrawing" ||
+              relationalProfile?.conflict_decompression === "solitude_cooling_needed")
+            ? pick(locale, "충분히 혼자만의 시간을 가지며 감정의 온도가 차분하게 내려가는 회복 과정", "A recovery process of taking real time alone, letting emotions settle and cool down")
+            : pick(locale, "서로의 안부를 묻고 다정한 인정을 나누며 편안한 평온을 되찾는 소통", "Reaching calm through warm recognition and gentle conversation"),
       evidenceId: `chart.${personId}.recovery_pattern`,
       source: "personal_saju_chart",
       sourcePath: "johu.recovery",
