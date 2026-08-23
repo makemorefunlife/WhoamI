@@ -181,6 +181,16 @@ function selectConflictTriggerScene(params: {
  * Falls back to the general 3-step sequence only when nothing distinctive
  * is supported — same abstention discipline as the trigger-scene selector.
  */
+/** Same helper as chapterLensResolvers.ts's firstClause — first complete
+ * clause/sentence of a longer EvidenceBackedMeaning.text, so a supporting
+ * line can reference real evidence without re-quoting a multi-sentence
+ * field in full. The source text is already in the build's own locale, so
+ * one implementation covers both ko-KR and en-US call sites. */
+function firstClause(text: string): string {
+  const match = /^[\s\S]*?[.!?다요][)"'』」]*(?=\s|$)/.exec(text);
+  return (match ? match[0] : text).trim();
+}
+
 function selectRepairSequence(params: {
   recovery: { recovery_mismatch?: boolean } | undefined;
   expr: { direction?: string } | undefined;
@@ -1820,13 +1830,60 @@ function computeHeroPairThesis(params: {
     // (already hitNotes-derived, varies per pair) and relCeA/relCeB's real
     // coreRelationshipNature text instead of a fixed sentence.
     closing: {
-      presentPossibility:
-        relCeA && relCeB
-          ? L(
-              `${names.a}의 ${relCeA.coreRelationshipNature.text}과 ${names.b}의 ${relCeB.coreRelationshipNature.text}이 어떻게 맞물리느냐에 따라, 지금과는 다른 관계로도 자랄 수 있어요.`,
-              `Depending on how ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)} and ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)} play off each other, this relationship can still grow into something different from where it is now.`,
-            )
-          : copy.closePossibility,
+      // Semantic-leak fix: this used to be one fixed sentence skeleton
+      // ("${A}의 X과 ${B}의 Y이 어떻게 맞물리느냐에 따라...") for every
+      // couple — different data plugged into the same frame, still the
+      // "Madlibs" pattern. Now picks ONE forward-looking focus from
+      // whichever real evidence is actually strongest for this pair, and
+      // falls back to a short, deliberately non-predictive line when none
+      // of it is available — never forcing a specific claim ungrounded in
+      // anything.
+      //
+      // Priority is individual vulnerability > shared vulnerability >
+      // timing, NOT the order those signals are introduced in the spec —
+      // deliberately reordered after live-testing: relCeA/relCeB's
+      // hiddenVulnerability is real per-person free text (confirmed
+      // reliably distinct across every test person in this session's
+      // 5-pair proof), whereas both the shared-vulnerability bucket
+      // (chapterLensResolvers.ts's 3-4 hot/cold buckets) and the timing
+      // theme (horizon.title, an engine not audited in this pass) were
+      // caught colliding across multiple different real test pairs when
+      // this fix was verified. Using the most reliably distinct evidence
+      // first was judged better than a fixed priority order that would
+      // silently reproduce the exact collision this fix exists to remove.
+      presentPossibility: (() => {
+        const individualVuln = relCeA?.hiddenVulnerability?.text || relCeB?.hiddenVulnerability?.text;
+        if (individualVuln) {
+          const owner = relCeA?.hiddenVulnerability?.text ? names.a : names.b;
+          return L(
+            `${owner}이/가 마음속에 품고 있는 건 ${firstClause(individualVuln)} 이 부분을 서로 알아가는 것부터, 관계가 다음 단계로 넘어갈 여지가 열려요.`,
+            `What ${owner} quietly carries is this: ${firstClause(individualVuln)} Getting to know that is where the room for this relationship to move into its next stage opens up.`,
+          );
+        }
+        const sharedVuln = strengthVuln?.sharedVulnerability;
+        if (sharedVuln) {
+          return L(
+            `지금 두 사람 사이에 있는 약한 지점은 이거예요: ${firstClause(sharedVuln)} 이걸 함께 알아차리고 다뤄볼 수 있다면, 관계는 지금보다 한층 단단해질 여지가 있어요.`,
+            `The fragile point currently between you is this: ${firstClause(sharedVuln)} If you can notice and work through it together, there's real room for this relationship to grow sturdier than it is now.`,
+          );
+        }
+        // Note: timingTheme is already a complete sentence (not a short
+        // label) — used directly rather than quoted/wrapped as one.
+        const timingTheme = fortuneFlowTiming?.theme ?? (hasTiming ? horizon.title : null);
+        if (timingTheme) {
+          return L(
+            `${timingTheme} 이 시기를 어떻게 함께 통과하느냐가 관계의 다음 모습을 만들 거예요.`,
+            `${timingTheme} How you move through this stretch together will shape what comes next.`,
+          );
+        }
+        // Deliberately short and non-predictive — no strong evidence to
+        // build a specific forward-looking claim on, so this doesn't
+        // manufacture one.
+        return L(
+          "지금 이대로도 관계는 계속 만들어지고 있어요.",
+          "This relationship keeps taking shape, even just as it is right now.",
+        );
+      })(),
       rememberA:
         relCeA?.stressTempBand === "hot"
           ? L(`${names.a}님: 서운함이 올라올 때 즉각 결론을 다그치기보다 "당신과 잘 지나고 싶어서 그래"라는 본래의 다정한 마음을 먼저 전달해 보세요.`, `${names.a}: When hurt arises, instead of pushing for an immediate conclusion, try sharing your underlying warmth: "I'm saying this because I want us to be good."`)

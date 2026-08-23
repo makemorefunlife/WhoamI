@@ -40,6 +40,21 @@ function createProv(
   };
 }
 
+/**
+ * First clause/sentence of a longer EvidenceBackedMeaning.text — used
+ * whenever a supporting line needs to reference real per-person evidence
+ * without either (a) fully re-quoting a multi-sentence field already
+ * quoted in full elsewhere in the same chapter (repetition), or (b) trying
+ * to grammatically continue a field that is already a complete, period-
+ * terminated sentence (produces a dangling fragment like "...습니다. 쪽으로
+ * 흐를 수 있어요.").
+ */
+function firstClause(text: string | undefined): string | undefined {
+  if (!text) return undefined;
+  const match = /^[\s\S]*?[.!?다요][)"'』」]*(?=\s|$)/.exec(text);
+  return (match ? match[0] : text).trim();
+}
+
 // -----------------------------------------------------------------------------------------
 // 1. Chapter 6: Hidden Hearts Lens Resolver (가장 깊은 곳, 숨은 마음)
 // -----------------------------------------------------------------------------------------
@@ -335,10 +350,16 @@ export function resolveDynamicsLens(params: {
 
   faces.push({
     situation: "private",
+    // Semantic-leak fix: dropped the fixed closing sentence ("이로써 두
+    // 사람은 서로에게 온전한 안식처가 되어줍니다.") — a generic default
+    // (spec explicitly bans "안식처") that was identical for every couple
+    // regardless of careA/careB. The "why this works" synthesis now lives
+    // in `benefit` below, built from the same two variables instead of a
+    // disconnected fixed line tacked onto the primary paragraph.
     appearance: sanitizeParticles(
       L(
-        `둘만의 편안한 공간에서 ${topicP(a, locale)} ${careA} 한편, ${topicP(b, locale)} ${careB} 이로써 두 사람은 서로에게 온전한 안식처가 되어줍니다.`,
-        `In the comfort of private space, ${topicP(a, locale)} ${careA.charAt(0).toLowerCase()}${careA.slice(1)} Meanwhile, ${topicP(b, locale)} ${careB.charAt(0).toLowerCase()}${careB.slice(1)} Together, you become a full refuge for each other.`,
+        `둘만의 편안한 공간에서 ${topicP(a, locale)} ${careA} 한편, ${topicP(b, locale)} ${careB}`,
+        `In the comfort of private space, ${topicP(a, locale)} ${careA.charAt(0).toLowerCase()}${careA.slice(1)} Meanwhile, ${topicP(b, locale)} ${careB.charAt(0).toLowerCase()}${careB.slice(1)}`,
       ),
       [a, b],
       locale,
@@ -356,22 +377,39 @@ export function resolveDynamicsLens(params: {
       [a, b],
       locale,
     ),
+    // Semantic-leak fix: was a fixed sentence ("정서적 결수와... 안정적
+    // 템포가 만나...") — identical for every couple, and "정서적 결수" was
+    // also a corrupted/malformed compound (not a real Korean word). Now
+    // built directly from careA/careB (same evidence as the primary line
+    // above) — genuinely differs per pair because the quoted care style
+    // differs, not just the names.
     benefit: sanitizeParticles(
       L(
-        `${a}의 정서적 결수와 ${b}의 안정적 템포가 만나 둘만의 공간에서 깊은 휴식을 이루는 상태`,
-        `A state where ${a}'s emotional rhythm meets ${b}'s steady pace to bring deep rest in your private space`,
+        `이게 잘 맞는 이유는 단순해요 — ${a}는 ${firstClause(careA)}, ${b}는 ${firstClause(careB)} 방식은 달라도 둘 다 상대를 편하게 해주려는 쪽으로 움직이다 보니 자연스럽게 맞물려요.`,
+        `The reason this works is simple — ${a} ${firstClause(careA)?.charAt(0).toLowerCase()}${firstClause(careA)?.slice(1)} and ${b} ${firstClause(careB)?.charAt(0).toLowerCase()}${firstClause(careB)?.slice(1)} Different methods, but both aimed at putting the other at ease, so they naturally mesh.`,
       ),
       [a, b],
       locale,
     ),
-    riskWhenExcess: sanitizeParticles(
-      L(
-        `${a}와 ${b}의 표현 강도 차이로 인해 한쪽의 침묵이나 미묘한 템포 차이를 서운함으로 잘못 읽을 위험`,
-        `The risk that a difference in emotional intensity between ${a} and ${b} leads to misreading the other's silence or pace as hurt`,
-      ),
-      [a, b],
-      locale,
-    ),
+    // Semantic-leak fix: was a fixed sentence ("표현 강도 차이로 인해...")
+    // regardless of pair. Now sourced from hiddenVulnerability (real,
+    // per-person evidence not otherwise used in this chapter) framed as
+    // what happens when this specific private-space comfort is leaned on
+    // too hard — omitted entirely when that evidence isn't available.
+    // Presented as its own sentence (not a mid-sentence continuation) since
+    // hiddenVulnerability.text is itself a complete, period-terminated
+    // sentence — appending a continuation after it produced a dangling
+    // fragment in an earlier version of this fix.
+    riskWhenExcess: (relCeA?.hiddenVulnerability?.text || relCeB?.hiddenVulnerability?.text)
+      ? sanitizeParticles(
+          L(
+            `다만 이 편안함에 기대는 게 당연해지면 위험해질 수 있어요. ${relCeA?.hiddenVulnerability?.text ? `${a}는 ${relCeA.hiddenVulnerability.text}` : `${b}는 ${relCeB?.hiddenVulnerability?.text}`}`,
+            `But this comfort can turn risky once it's taken for granted. ${relCeA?.hiddenVulnerability?.text ? `${a} ${relCeA.hiddenVulnerability.text.charAt(0).toLowerCase()}${relCeA.hiddenVulnerability.text.slice(1)}` : `${b} ${relCeB?.hiddenVulnerability?.text?.charAt(0).toLowerCase()}${relCeB?.hiddenVulnerability?.text?.slice(1)}`}`,
+          ),
+          [a, b],
+          locale,
+        )
+      : "",
     observableSignal: sanitizeParticles(
       L(
         `단둘이 만났을 때 ${subjectP(a, locale)} ${relCeA?.careExpression?.text ?? "마음을 편안히 털어놓고"} ${subjectP(b, locale)} ${relCeB?.careExpression?.text ?? "묵묵히 경청하며"} 마음의 온도를 맞추는 순간`,
@@ -430,10 +468,14 @@ export function resolveDynamicsLens(params: {
 
   faces.push({
     situation: "responsibility",
+    // Semantic-leak fix: dropped the fixed closing sentence ("이처럼 두
+    // 사람은... 상호 보완적인 역할 분담을 형성합니다.") — "상호보완" is an
+    // explicitly banned generic default, identical for every couple. The
+    // "why this works" synthesis now lives in `benefit` below.
     appearance: sanitizeParticles(
       L(
-        `현실적인 과제나 일정을 조율할 때 ${topicP(a, locale)} ${decA} ${topicP(b, locale)} ${decB} 이처럼 두 사람은 각자의 강점을 발휘하여 상호 보완적인 역할 분담을 형성합니다.`,
-        `When coordinating a real-world task or schedule, ${topicP(a, locale)} ${decA.charAt(0).toLowerCase()}${decA.slice(1)} ${topicP(b, locale)} ${decB.charAt(0).toLowerCase()}${decB.slice(1)} In this way, you each play to your strengths and form a complementary division of roles.`,
+        `현실적인 과제나 일정을 조율할 때 ${topicP(a, locale)} ${decA} ${topicP(b, locale)} ${decB}`,
+        `When coordinating a real-world task or schedule, ${topicP(a, locale)} ${decA.charAt(0).toLowerCase()}${decA.slice(1)} ${topicP(b, locale)} ${decB.charAt(0).toLowerCase()}${decB.slice(1)}`,
       ),
       [a, b],
       locale,
@@ -446,22 +488,29 @@ export function resolveDynamicsLens(params: {
       [a, b],
       locale,
     ),
+    // Semantic-leak fix: was a fixed sentence regardless of pair. Now
+    // built directly from decA/decB (same evidence as the primary line).
     benefit: sanitizeParticles(
       L(
-        `${a}의 결단 방식과 ${b}의 신중함이 만나 중요한 결정 앞에서도 우왕좌왕하지 않고 빠르고 견고하게 해결책을 찾는 실행력`,
-        `The combined execution of ${a}'s decisive style and ${b}'s caution, finding solid solutions without floundering on big choices`,
+        `이게 도움이 되는 이유는, ${a}는 ${firstClause(decA)}, ${b}는 ${firstClause(decB)} 두 방식이 겹치니까 결정 앞에서 한쪽으로 쏠리지 않아요.`,
+        `This helps because ${a} ${firstClause(decA)?.charAt(0).toLowerCase()}${firstClause(decA)?.slice(1)} and ${b} ${firstClause(decB)?.charAt(0).toLowerCase()}${firstClause(decB)?.slice(1)} With both approaches in play, decisions don't tip too far to one side.`,
       ),
       [a, b],
       locale,
     ),
-    riskWhenExcess: sanitizeParticles(
-      L(
-        `판단 기준의 차이로 인해 한쪽에 의사결정의 무게가 쏠리거나 가치관 조율에 조급함이 생길 위험`,
-        `The risk that a gap in criteria leaves the weight of decisions on one person or creates impatience when aligning values`,
-      ),
-      [a, b],
-      locale,
-    ),
+    // Semantic-leak fix: was a fixed sentence regardless of pair. Now
+    // sourced from hiddenVulnerability, presented as its own sentence
+    // (see the identical fix and its comment in face.private above).
+    riskWhenExcess: (relCeA?.hiddenVulnerability?.text || relCeB?.hiddenVulnerability?.text)
+      ? sanitizeParticles(
+          L(
+            `다만 이 역할 분담이 굳어지면 위험해질 수 있어요. ${relCeB?.hiddenVulnerability?.text ? `${b}는 ${relCeB.hiddenVulnerability.text}` : `${a}는 ${relCeA?.hiddenVulnerability?.text}`}`,
+            `But this division of roles can turn risky once it hardens into habit. ${relCeB?.hiddenVulnerability?.text ? `${b} ${relCeB.hiddenVulnerability.text.charAt(0).toLowerCase()}${relCeB.hiddenVulnerability.text.slice(1)}` : `${a} ${relCeA?.hiddenVulnerability?.text?.charAt(0).toLowerCase()}${relCeA?.hiddenVulnerability?.text?.slice(1)}`}`,
+          ),
+          [a, b],
+          locale,
+        )
+      : "",
     observableSignal: sanitizeParticles(
       L(
         `공동의 계획이나 현실 과제를 다룰 때 ${subjectP(a, locale)} 방향과 기준을 짚고 ${subjectP(b, locale)} 세부 조율을 더하며 맞춰가는 순간`,

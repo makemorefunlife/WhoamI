@@ -12,6 +12,76 @@ import {
   getTenGodRomanticProfile,
 } from "../tenGodRomanticProfiles";
 import { topicP, subjectP, withP, sanitizeParticles, pick, type NarrativeLocale } from "./narrativeLocale";
+
+/**
+ * Semantic-leak fix: resolveBilateralPartnerPreferenceMatchFromCe's main
+ * switch is keyed ONLY on the seeker's spouse-palace Ten God (10 possible
+ * values) — confirmed via the 5-couple proof to produce byte-identical
+ * attraction paragraphs for different real pairs sharing a Ten God. The
+ * existing element-flow section below only covers a handful of specific
+ * seeker/partner stem-element combinations, leaving gaps. This small,
+ * bounded (5 entries — every real dominantElement value) flavor map is the
+ * guaranteed fallback: combined with the partner's own real
+ * familiarRelationshipRole/careExpression text in
+ * synthesizePartnerSpecificReason below, it ensures every pair gets at
+ * least one genuinely partner-specific sentence in the attraction
+ * paragraph, regardless of which Ten God bucket the seeker falls into.
+ */
+const PARTNER_ELEMENT_FLAVOR_KO: Record<string, string> = {
+  wood: "생기 있고 앞으로 나아가려는",
+  fire: "표현이 확실하고 열정적인",
+  earth: "묵직하고 믿음이 가는",
+  metal: "원칙 있고 정돈된",
+  water: "유연하고 사려 깊은",
+};
+const PARTNER_ELEMENT_FLAVOR_EN: Record<string, string> = {
+  wood: "lively and forward-moving",
+  fire: "expressive and passionate",
+  earth: "grounded and dependable",
+  metal: "principled and composed",
+  water: "flexible and thoughtful",
+};
+
+function synthesizePartnerSpecificReason(params: {
+  partnerName: string;
+  partnerDominantElement: string;
+  /** A full predicate sentence, e.g. careExpression.text ("행동과 배려로
+   * 마음을 전합니다") — safe to continue mid-sentence after "실제로". */
+  partnerTraitPredicate?: string;
+  /** A bare noun-phrase identity label, e.g. familiarRelationshipRole.text
+   * ("어떤 풍파에도 흔들리지 않는 든든한 대지이자 쉼터") — needs its own
+   * copula ending, not a mid-sentence continuation. */
+  partnerTraitLabel?: string;
+  locale: NarrativeLocale;
+}): { text: string; evidenceId: string; source: string; sourcePath: string; confidence: "high" } | null {
+  const { partnerName, partnerDominantElement, partnerTraitPredicate, partnerTraitLabel, locale } = params;
+  const L = (ko: string, en: string) => pick(locale, ko, en);
+  const flavor = locale === "en-US" ? PARTNER_ELEMENT_FLAVOR_EN[partnerDominantElement] : PARTNER_ELEMENT_FLAVOR_KO[partnerDominantElement];
+  if (!flavor) return null;
+
+  const text = partnerTraitPredicate
+    ? L(
+        `구체적으로는, ${flavor} ${partnerName}이/가 실제로 ${partnerTraitPredicate}`,
+        `Specifically, ${partnerName} — ${flavor} — actually ${partnerTraitPredicate.charAt(0).toLowerCase()}${partnerTraitPredicate.slice(1)}`,
+      )
+    : partnerTraitLabel
+      ? L(
+          `구체적으로는, ${flavor} ${partnerName}은/는 실제로 ${partnerTraitLabel}에 가까운 사람이에요.`,
+          `Specifically, ${partnerName} — ${flavor} — is, in practice, closer to being ${partnerTraitLabel}.`,
+        )
+      : L(
+          `구체적으로는, ${flavor} ${partnerName}의 결이 여기서 특히 잘 느껴집니다.`,
+          `Specifically, ${partnerName}'s ${flavor} nature comes through especially clearly here.`,
+        );
+
+  return {
+    text,
+    evidenceId: `chart.partner.five_elements.dominant.${partnerDominantElement}`,
+    source: "personal_saju_chart",
+    sourcePath: `five_elements.dominant.${partnerDominantElement}`,
+    confidence: "high",
+  };
+}
 import type {
   AttractionNarrativeUnit,
   CanonicalMeaningEvidence,
@@ -134,6 +204,13 @@ export function resolveBilateralPartnerPreferenceMatchFromCe(params: {
     dayMaster: { stemCode: string; stemElement: string; dayBranchCode: string };
     fiveElementStructure: { dominantElement: string };
     spousePalaceProfile?: SpousePalaceProfile;
+    /** Optional — when the caller has the full PersonalRelationshipCe (it
+     * always does; buildCanonicalRelationshipStoryPlan.ts passes relCeA/
+     * relCeB directly), these carry real partner-specific evidence used to
+     * keep the attraction paragraph from being controlled entirely by the
+     * seeker's Ten-God code (see synthesizePartnerSpecificReason below). */
+    familiarRelationshipRole?: { text: string };
+    careExpression?: { text: string };
   };
   seekerId: "a" | "b";
   partnerId: "a" | "b";
@@ -749,6 +826,33 @@ export function resolveBilateralPartnerPreferenceMatchFromCe(params: {
       source: "pair_saju_facts",
       sourcePath: "branch_trio.half_combine",
       confidence: "deterministic",
+    });
+  }
+
+  // Guaranteed partner-specific reason (see synthesizePartnerSpecificReason
+  // above) — appended regardless of Ten God bucket or whether the
+  // element-flow section above happened to fire for this specific
+  // seeker/partner stem-element combo, so the attraction paragraph is
+  // never controlled entirely by the seeker's Ten God alone.
+  // Only the first clause of careExpression — that full field is already
+  // quoted in full elsewhere (c3_dynamics face.private's primary line);
+  // repeating all of it here would just create new cross-chapter overlap
+  // while fixing the cross-couple one.
+  const careFirstClause = partnerCe.careExpression?.text?.split(/(?<=[.!?다요])\s+/)[0];
+  const partnerSpecificReason = synthesizePartnerSpecificReason({
+    partnerName,
+    partnerDominantElement,
+    partnerTraitPredicate: careFirstClause,
+    partnerTraitLabel: careFirstClause ? undefined : partnerCe.familiarRelationshipRole?.text,
+    locale,
+  });
+  if (partnerSpecificReason) {
+    supportingReasons.push(partnerSpecificReason);
+    matchedPartnerEvidence.push({
+      evidenceId: partnerSpecificReason.evidenceId,
+      source: partnerSpecificReason.source,
+      sourcePath: partnerSpecificReason.sourcePath,
+      confidence: partnerSpecificReason.confidence,
     });
   }
 
