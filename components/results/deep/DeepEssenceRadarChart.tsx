@@ -62,8 +62,8 @@ export function DeepEssenceRadarChart({
   return (
     <div className="flex flex-col items-center">
       <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="h-auto w-full max-w-[320px]"
+        viewBox="-38 -16 396 352"
+        className="h-auto w-full max-w-[340px]"
         role="img"
         aria-label={isKo ? "현재 상태 대비 본질적 잠재력 레이더 차트" : "Current state versus essence potential radar chart"}
       >

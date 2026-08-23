@@ -28,7 +28,7 @@ type MetaTone = "accent" | "highlight" | "gold";
 
 type Section = {
   key: string;
-  label: string;
+  label?: string;
   title: string;
   subtitle?: string;
   meta?: string;
@@ -74,9 +74,7 @@ export function DeepEssenceReport({
   const sections: Section[] = [
     {
       key: "current-self",
-      label: t.part1.label,
       title: t.part1.title,
-      subtitle: t.part1.subtitle,
       metaTone: "gold",
       defaultOpen: true,
       content: (
@@ -88,27 +86,10 @@ export function DeepEssenceReport({
         />
       ),
     },
-    ...(hasLayered
-      ? [
-          {
-            key: "layered-identity",
-            label: t.layeredIdentity.sectionTag,
-            title: t.layeredIdentity.sectionTitle,
-            metaTone: "highlight" as const,
-            content: (
-              <DeepEssenceLayeredIdentity
-                layeredIdentity={structured.layered_identity}
-                t={t.layeredIdentity}
-              />
-            ),
-          },
-        ]
-      : []),
     ...(hasAxis
       ? [
           {
             key: "axis-interpretation",
-            label: t.axisInterpretation.sectionTag,
             title: t.axisInterpretation.sectionTitle,
             metaTone: "gold" as const,
             content: (
@@ -121,13 +102,27 @@ export function DeepEssenceReport({
           },
         ]
       : []),
+    ...(hasLayered
+      ? [
+          {
+            key: "layered-identity",
+            title: t.layeredIdentity.sectionTitle,
+            metaTone: "highlight" as const,
+            content: (
+              <DeepEssenceLayeredIdentity
+                layeredIdentity={structured.layered_identity}
+                t={t.layeredIdentity}
+              />
+            ),
+          },
+        ]
+      : []),
     // IA Batch 3 — Part 04 ("그래서 나는 왜 이렇게 살아왔을까요?"), guarded the
     // exact same way as layered-identity/axis-interpretation above.
     ...(hasAdaptationStory
       ? [
           {
             key: "adaptation-story",
-            label: t.adaptationStory.sectionTag,
             title: t.adaptationStory.sectionTitle,
             metaTone: "highlight" as const,
             content: <DeepEssenceAdaptationStory adaptationStory={structured.adaptation_story} />,
@@ -136,10 +131,7 @@ export function DeepEssenceReport({
       : []),
     {
       key: "energy-strengths",
-      label: t.part2.label,
       title: t.part2.title,
-      subtitle: t.part2.subtitle,
-      meta: `${t.part2.metaPrefix} ${relationalSpendPct}%`,
       metaTone: "highlight",
       content: (
         <DeepEssencePartTwo
@@ -152,10 +144,7 @@ export function DeepEssenceReport({
     },
     {
       key: "relationships-environment",
-      label: t.part3.label,
       title: t.part3.title,
-      subtitle: t.part3.subtitle,
-      meta: t.part3.meta,
       metaTone: "accent",
       content: (
         <DeepEssencePartThree
@@ -167,10 +156,7 @@ export function DeepEssenceReport({
     },
     {
       key: "future-choices",
-      label: t.part5.label,
       title: t.part5.title,
-      subtitle: t.part5.subtitle,
-      meta: t.part5.meta,
       metaTone: "accent",
       content: (
         <DeepEssencePartFive

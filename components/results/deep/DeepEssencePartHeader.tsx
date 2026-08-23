@@ -9,7 +9,7 @@ type Tone = "highlight" | "accent" | "gold";
 
 type Props = {
   number: string;
-  label: string;
+  label?: string;
   title: string;
   subtitle?: string;
   meta?: string;
@@ -26,7 +26,7 @@ const TONE_COLOR: Record<Tone, string> = {
 
 /**
  * 로버블 PartHeader 이식 — 챕터 구분용 헤더. 위아래 얇은 라인 사이에
- * 파트 번호·라벨·세리프 타이틀·이탤릭 서브타이틀·메타 배지·펼침 화살표.
+ * 파트 번호·세리프 타이틀·메타 배지·펼침 화살표.
  */
 export function DeepEssencePartHeader({
   number,
@@ -48,25 +48,21 @@ export function DeepEssencePartHeader({
           <span className="text-primary text-[10px] font-semibold tracking-[0.24em] uppercase">
             {number}
           </span>
-          <span className="bg-primary/50 h-px w-6" />
-          <span className="truncate text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">
-            {label}
-          </span>
+          {label ? (
+            <>
+              <span className="bg-primary/50 h-px w-6" />
+              <span className="truncate text-[10px] tracking-[0.2em] text-on-surface-variant uppercase">
+                {label}
+              </span>
+            </>
+          ) : null}
         </div>
         <h2
-          className="mt-3 text-[26px] leading-[1.05] font-light tracking-[-0.01em] text-on-surface sm:text-[30px]"
+          className="mt-2 text-[24px] leading-[1.1] font-light tracking-[-0.01em] text-on-surface sm:text-[28px]"
           style={serifStyle}
         >
           {title}
         </h2>
-        {subtitle ? (
-          <p
-            className="mt-2 text-[13px] tracking-[-0.005em] italic"
-            style={{ color: GOLD }}
-          >
-            {subtitle}
-          </p>
-        ) : null}
       </div>
 
       <div className="flex shrink-0 items-center gap-3 pt-1">

@@ -368,6 +368,11 @@ function buildLayeredIdentityCandidates(
         chart.day_master.yin_yang,
       ]),
     ),
+    ...chart.relations_intra
+      .map((r) => asItem(evidenceRef(`relations_intra.${r.type_id}`, [...r.codes], undefined, r.evidence))),
+    ...chart.special_signals
+      .filter((s) => s.possessed)
+      .map((s) => asItem(evidenceRef(`special_signals.${s.signal_id}`, [String(s.signal_id)], undefined, s.evidence))),
     dimensionItem(dims, "decision_pace"),
     dimensionItem(dims, "structure_spontaneity"),
     dimensionItem(dims, "resource_governance"),
@@ -386,6 +391,9 @@ function buildLayeredIdentityCandidates(
     ...chart.relations_intra
       .filter((r) => r.pillar_slots.includes("day"))
       .map((r) => asItem(evidenceRef(`relations_intra.${r.type_id}`, [...r.codes], undefined, r.evidence))),
+    ...chart.special_signals
+      .filter((s) => s.possessed && (s.signal_id.includes("hyeonchim") || s.signal_id.includes("dohwa") || s.signal_id.includes("hwagae") || s.signal_id.includes("gongmang")))
+      .map((s) => asItem(evidenceRef(`special_signals.${s.signal_id}`, [String(s.signal_id)], undefined, s.evidence))),
     dimensionItem(dims, "intimacy_expression_style"),
     dimensionItem(dims, "solitude_autonomy"),
     dimensionItem(dims, "support_giving_style"),
@@ -396,6 +404,12 @@ function buildLayeredIdentityCandidates(
     dimensionItem(dims, "recognition_need"),
     dimensionItem(dims, "pressure_response"),
     dimensionItem(dims, "criticism_sensitivity"),
+    ...(chart.nobles.noble_hits.length
+      ? [asItem(evidenceRef("nobles", [...chart.nobles.noble_hits]))]
+      : []),
+    ...chart.special_signals
+      .filter((s) => s.possessed)
+      .map((s) => asItem(evidenceRef(`special_signals.${s.signal_id}`, [String(s.signal_id)], undefined, s.evidence))),
     asItem(
       evidenceRef(
         "strength",

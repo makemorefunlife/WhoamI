@@ -29,11 +29,12 @@ export function hasAxisInterpretationContent(
 
 function Sub({ label, text }: { label: string; text: string }) {
   return (
-    <div>
-      <div className="text-[12.5px] text-on-surface" style={serifStyle}>
-        {label}
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5 text-[13px] font-medium text-on-surface" style={serifStyle}>
+        <span className="text-[10px] text-primary/60">▫</span>
+        <span>{label}</span>
       </div>
-      <p className="mt-1 text-[13.5px] leading-[1.65] text-on-surface-variant">{text}</p>
+      <p className="pl-4 text-[13.5px] leading-[1.65] text-on-surface-variant">{text}</p>
     </div>
   );
 }
@@ -88,32 +89,33 @@ export function DeepEssenceAxisInterpretation({
       {/* Gap deep-dive — deterministically selected top 2-3 widest-gap axes */}
       {gapEntries.length > 0 ? (
         <div>
-          <div className="flex items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
-            <h3 className="text-[18px] text-on-surface" style={serifStyle}>
+          <div className="border-b border-outline-variant pb-3">
+            <h3 className="text-[18px] font-bold text-on-surface" style={serifStyle}>
               {t.gapSectionTitle}
             </h3>
-            <span className="shrink-0 text-[10px] tracking-[0.2em] text-primary uppercase">
-              {t.gapSectionTag}
-            </span>
+            <p className="mt-1 text-[13px] leading-relaxed text-on-surface-variant">
+              {locale === "ko-KR"
+                ? "현재 살아가는 방식과 본래 성향의 차이가 가장 크게 드러난 영역이에요."
+                : "These are the areas where your current way of living and underlying tendency differ most."}
+            </p>
           </div>
-          <div className="mt-6 space-y-6">
+          <div className="mt-6 space-y-8">
             {gapEntries.map(([axis, dive]) => (
-              <div key={axis} className="border-t border-primary pt-4">
+              <div key={axis} className="border-t border-primary/30 pt-5">
                 <div>
-                  <h4 className="text-[15px] font-semibold text-on-surface" style={serifStyle}>
-                    {axisLabel(axis, locale)}
+                  <h4 className="flex items-center gap-2 text-[17px] font-semibold text-primary sm:text-[18px]" style={serifStyle}>
+                    <span className="text-[13px] text-primary/70">◤</span>
+                    <span>{axisLabel(axis, locale)}</span>
                   </h4>
                   {t.glossary[axis] ? (
-                    <p className="mt-0.5 text-[12.5px] text-on-surface-variant/90 leading-normal">
+                    <p className="mt-1 text-[13px] text-on-surface-variant/90 leading-relaxed">
                       {t.glossary[axis]}
                     </p>
                   ) : null}
                 </div>
-                <div className="mt-3 space-y-3">
+                <div className="mt-4 space-y-4">
                   <Sub label={t.naturalTendencyLabel} text={dive.natural_tendency} />
                   <Sub label={t.currentPatternLabel} text={dive.current_pattern} />
-                </div>
-                <div className="mt-4 space-y-3 border-t border-outline-variant/60 pt-4">
                   <Sub label={t.givesYouLabel} text={dive.gives_you} />
                   <Sub label={t.mayCostLabel} text={dive.may_cost} />
                   {dive.may_work_better ? (
@@ -129,26 +131,29 @@ export function DeepEssenceAxisInterpretation({
       {/* Alignment highlight — the single best-aligned axis, deliberately lighter than the gap cards */}
       {alignment ? (
         <div>
-          <div className="flex items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
-            <h3 className="text-[16px] text-on-surface" style={serifStyle}>
+          <div className="border-b border-outline-variant pb-3">
+            <h3 className="text-[18px] font-bold text-on-surface" style={serifStyle}>
               {t.alignmentSectionTitle}
             </h3>
-            <span className="text-accent-emerald shrink-0 text-[10px] tracking-[0.2em] uppercase">
-              {t.alignmentSectionTag}
-            </span>
+            <p className="mt-1 text-[13px] leading-relaxed text-on-surface-variant">
+              {locale === "ko-KR"
+                ? "따로 애쓰지 않아도 본래 성향대로 자연스럽게 합이 맞는 영역이에요."
+                : "These are the areas where your natural tendency operates effortlessly without extra friction."}
+            </p>
           </div>
-          <div className="border-accent-emerald mt-5 border-t pt-4">
+          <div className="border-accent-emerald mt-5 border-t pt-5">
             <div>
-              <h4 className="text-[14px] font-semibold text-on-surface" style={serifStyle}>
-                {axisLabel(alignment[0], locale)}
+              <h4 className="flex items-center gap-2 text-[16px] font-semibold text-accent-emerald" style={serifStyle}>
+                <span className="text-[12px] text-accent-emerald/70">◤</span>
+                <span>{axisLabel(alignment[0], locale)}</span>
               </h4>
               {t.glossary[alignment[0]] ? (
-                <p className="mt-0.5 text-[12px] text-on-surface-variant/90 leading-normal">
+                <p className="mt-1 text-[12.5px] text-on-surface-variant/90 leading-relaxed">
                   {t.glossary[alignment[0]]}
                 </p>
               ) : null}
             </div>
-            <div className="mt-3 space-y-2.5">
+            <div className="mt-4 space-y-3.5">
               <Sub label={t.naturalTendencyLabel} text={alignment[1].natural_tendency} />
               <Sub label={t.currentPatternAlignedLabel ?? t.currentPatternLabel} text={alignment[1].current_pattern} />
               <Sub label={t.whyItFeelsEasyLabel} text={alignment[1].why_it_feels_easy} />
@@ -156,32 +161,6 @@ export function DeepEssenceAxisInterpretation({
           </div>
         </div>
       ) : null}
-
-      {/* Compact glossary — static, all 6 axes, never LLM-generated. Collapsed
-          by default so it stays reference material, not competing with the
-          gap/alignment narrative above for the reader's attention. */}
-      <details className="group">
-        <summary className="flex cursor-pointer list-none items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
-          <h3 className="text-[14px] text-on-surface-variant" style={serifStyle}>
-            {t.glossaryTitle}
-          </h3>
-          <span className="shrink-0 text-[10px] tracking-[0.2em] text-primary uppercase">
-            {t.glossaryTag}
-          </span>
-        </summary>
-        <div className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-          {DEEP_ESSENCE_RADAR_AXIS_ORDER.map((axis) => (
-            <div key={axis}>
-              <div className="text-[12.5px] text-on-surface" style={serifStyle}>
-                {axisLabel(axis, locale)}
-              </div>
-              <p className="mt-0.5 text-[11.5px] leading-[1.5] text-on-surface-variant">
-                {t.glossary[axis]}
-              </p>
-            </div>
-          ))}
-        </div>
-      </details>
     </div>
   );
 }

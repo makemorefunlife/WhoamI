@@ -65,32 +65,42 @@ export function DeepEssencePartTwo({
       <p className="text-[14px] leading-[1.75] text-on-surface-variant">{energy.summary}</p>
 
       <div className="grid gap-8 sm:grid-cols-2">
-        {[
-          { title: t.part2.fuels, items: energy.fuels, accent: "text-primary" },
-          { title: t.part2.drains, items: energy.drains, accent: "text-accent-rose" },
-        ].map((col) => (
-          <div key={col.title}>
-            <div className={`text-[13px] font-medium ${col.accent}`}>{col.title}</div>
-            <ul className="mt-4 space-y-2">
-              {col.items.map((it) => (
-                <li key={it} className="text-[13.5px] leading-[1.55] text-on-surface-variant">
-                  {it}
-                </li>
-              ))}
-            </ul>
+        <div>
+          <div className="flex items-center gap-2 text-[16px] font-semibold text-primary" style={serifStyle}>
+            <span className="text-[12px] text-primary/70">◤</span>
+            <span>{t.part2.fuels}</span>
           </div>
-        ))}
+          <ul className="mt-4 space-y-2.5">
+            {energy.fuels.map((it) => (
+              <li key={it} className="flex items-start gap-2 text-[13.5px] leading-[1.65] text-on-surface-variant">
+                <span className="mt-0.5 text-[10px] text-primary/60 shrink-0">▫</span>
+                <span>{it}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <div className="flex items-center gap-2 text-[16px] font-semibold text-accent-rose" style={serifStyle}>
+            <span className="text-[12px] text-accent-rose/70">◤</span>
+            <span>{t.part2.drains}</span>
+          </div>
+          <ul className="mt-4 space-y-2.5">
+            {energy.drains.map((it) => (
+              <li key={it} className="flex items-start gap-2 text-[13.5px] leading-[1.65] text-on-surface-variant">
+                <span className="mt-0.5 text-[10px] text-accent-rose/60 shrink-0">▫</span>
+                <span>{it}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* 내가 자연스럽게 잘 쓰는 힘 (구 Part01의 strengths, 위치만 이동) */}
       <div>
-        <div className="flex items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
+        <div className="border-b border-outline-variant pb-3">
           <h3 className="text-[18px] text-on-surface" style={serifStyle}>
             {t.part2.strengthsTitle}
           </h3>
-          <span className="shrink-0 text-[10px] tracking-[0.2em] text-primary uppercase">
-            {t.part2.strengthsTag}
-          </span>
         </div>
         <div className="mt-6 grid gap-6 sm:grid-cols-3">
           {strengths.map((s, i) => (
@@ -111,13 +121,10 @@ export function DeepEssencePartTwo({
 
       {/* 잘하지만 오래 쓰면 지치는 방식 (구 Part01의 watchouts, 위치만 이동) */}
       <div>
-        <div className="flex items-baseline justify-between gap-4 border-b border-outline-variant pb-3">
+        <div className="border-b border-outline-variant pb-3">
           <h3 className="text-[18px] text-on-surface" style={serifStyle}>
             {t.part2.watchoutsTitle}
           </h3>
-          <span className="text-accent-rose shrink-0 text-[10px] tracking-[0.2em] uppercase">
-            {t.part2.watchoutsTag}
-          </span>
         </div>
         <div className="mt-6 grid gap-6 sm:grid-cols-3">
           {watchouts.map((w, i) => (

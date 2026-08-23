@@ -31,6 +31,8 @@ export type DeepEssenceUiStrings = {
     mayWorkBetterLabel: string;
     whyItFeelsEasyLabel: string;
   };
+  /** Dynamic behavioral translation based on actual scoring direction */
+  axisBehaviorSentences: Record<PrimaryAxisKey, { high: string; low: string }>;
   layeredIdentity: {
     sectionTitle: string;
     sectionTag: string;
@@ -61,6 +63,8 @@ export type DeepEssenceUiStrings = {
     /** IA Batch 1 — deterministic (radarCurrent max/min axis), no LLM involved. */
     mostUsedAxisLabel: string;
     leastUsedAxisLabel: string;
+    highestTag: string;
+    lowestTag: string;
   };
   part2: {
     num: string;
@@ -132,9 +136,9 @@ export type DeepEssenceUiStrings = {
 
 const EN: DeepEssenceUiStrings = {
   summaryLabels: {
-    coreMode: "Core mode",
-    energyBalance: "Energy balance",
-    growthEdge: "Growth edge",
+    coreMode: "Core Operating Mode",
+    energyBalance: "Relational Spend / Recovery Ratio",
+    growthEdge: "Growth Opportunity",
   },
   radar: {
     caption: "Current state vs. essence potential",
@@ -142,23 +146,17 @@ const EN: DeepEssenceUiStrings = {
     potential: "Essence potential",
   },
   axisInterpretation: {
-    sectionTitle: "Where you and your essence differ",
+    sectionTitle: "How have I changed over time?",
     sectionTag: "Gap & Alignment",
-    glossaryTitle: "What the six axes mean",
+    glossaryTitle: "What do the six criteria mean?",
     glossaryTag: "Glossary",
     glossary: {
-      autonomy:
-        "Where you tend to put more weight when making decisions — your own judgment, or other people's input.",
-      connection:
-        "Where you land between closeness with others and time on your own — whichever feels more comfortable.",
-      stability:
-        "Whether familiar, predictable situations or new changes tend to feel more steadying to you.",
-      growth:
-        "Whether sticking with what already works or trying and learning something new pulls at you more.",
-      structure:
-        "How much planning and structure feels comfortable to you — a set way of doing things, or adjusting as you go, whichever comes more naturally.",
-      adaptability:
-        "When things change, whether holding your existing approach or shifting with the moment feels more natural.",
+      structure: "How much planning and set criteria you need when doing things",
+      connection: "How much energy you gain from connecting with people",
+      stability: "How much you value familiarity and predictability",
+      growth: "How actively you pursue new challenges and growth",
+      adaptability: "How easily you shift your approach when conditions change",
+      autonomy: "How much weight you place on your own judgment when choosing",
     },
     gapSectionTitle: "Where you've adapted the most",
     gapSectionTag: "Gap",
@@ -167,10 +165,36 @@ const EN: DeepEssenceUiStrings = {
     naturalTendencyLabel: "Original natural style",
     currentPatternLabel: "How you adapted in real life",
     currentPatternAlignedLabel: "How you still operate naturally",
-    givesYouLabel: "The capability you gained",
-    mayCostLabel: "The hidden energy cost",
+    givesYouLabel: "Strengths built over time",
+    mayCostLabel: "Energy spent to maintain",
     mayWorkBetterLabel: "What may work better",
     whyItFeelsEasyLabel: "Why it takes less effort",
+  },
+  axisBehaviorSentences: {
+    structure: {
+      high: "Places high weight on clear plans and set criteria when doing things",
+      low: "Adjusts with the moment rather than relying heavily on set plans or criteria",
+    },
+    connection: {
+      high: "Gains significant energy from connecting and spending time with people",
+      low: "Gains more energy from quiet personal time than from social connection",
+    },
+    stability: {
+      high: "Places high weight on familiarity, routine, and predictability",
+      low: "Values new changes and fresh attempts over familiar predictability",
+    },
+    growth: {
+      high: "Actively pursues new challenges, learning, and growth",
+      low: "Values preserving existing stability over pursuing new challenges",
+    },
+    adaptability: {
+      high: "Pivots and adapts approach easily when circumstances change",
+      low: "Holds firmly to existing ways and principles even when circumstances change",
+    },
+    autonomy: {
+      high: "Places primary weight on personal judgment when making choices",
+      low: "Places more weight on others' input and advice than on personal judgment when making choices",
+    },
   },
   adaptationStory: {
     sectionTitle: "So this is how you've been living",
@@ -198,6 +222,8 @@ const EN: DeepEssenceUiStrings = {
     watchoutsTag: "Friction",
     mostUsedAxisLabel: "What you're leaning on most right now",
     leastUsedAxisLabel: "What's getting less use right now",
+    highestTag: "Primary operating trait",
+    lowestTag: "Complementary flexible trait",
   },
   part2: {
     num: "Part 02",
@@ -270,9 +296,9 @@ const EN: DeepEssenceUiStrings = {
 
 const KO: DeepEssenceUiStrings = {
   summaryLabels: {
-    coreMode: "핵심 모드",
-    energyBalance: "에너지 균형",
-    growthEdge: "성장의 지점",
+    coreMode: "지금 나를 움직이는 방식",
+    energyBalance: "관계 소모 / 자기 회복 비율",
+    growthEdge: "지금 더 키워갈 힘",
   },
   radar: {
     caption: "현재 상태 vs. 본질적 잠재력",
@@ -280,23 +306,17 @@ const KO: DeepEssenceUiStrings = {
     potential: "본질적 잠재력",
   },
   axisInterpretation: {
-    sectionTitle: "지금의 나와 본래의 나는 어디에서 달라졌을까요?",
+    sectionTitle: "살아오면서, 나는 어떻게 달라졌을까요?",
     sectionTag: "차이와 정렬",
-    glossaryTitle: "여섯 축이 보여주는 것",
+    glossaryTitle: "여섯 가지 기준은 무엇을 의미하나요?",
     glossaryTag: "용어",
     glossary: {
-      autonomy:
-        "결정을 내릴 때 자신의 판단과 다른 사람의 의견 사이에서 어디에 더 무게를 두는지를 보여줘요.",
-      connection:
-        "사람들과 가깝게 연결되어 있는 것과 혼자만의 시간 사이에서 어느 쪽이 더 편안한지를 보여줘요.",
-      stability:
-        "익숙하고 예측 가능한 상황과 새로운 변화 사이에서 어느 쪽에 더 안정감을 느끼는지를 보여줘요.",
-      growth:
-        "지금의 방식을 유지하는 것과 새로운 걸 시도하고 배우는 것 사이에서 어디에 더 끌리는지를 보여줘요.",
-      structure:
-        "계획과 구조가 어느 정도 있어야 편한지를 보여줘요. 미리 정해진 방식과 상황에 따라 유연하게 바꾸는 방식 중 어느 쪽이 더 자연스러운지도 함께 봐요.",
-      adaptability:
-        "상황이 바뀔 때 기존 방식을 지키는 것과 그때그때 맞춰 바꾸는 것 중 어느 쪽이 더 자연스러운지를 보여줘요.",
+      structure: "일을 할 때 계획과 기준이 얼마나 필요한가",
+      connection: "사람과의 연결에서 얼마나 에너지를 얻는가",
+      stability: "익숙함과 예측 가능성을 얼마나 중요하게 여기는가",
+      growth: "새로운 도전과 발전을 얼마나 적극적으로 추구하는가",
+      adaptability: "상황이 바뀌었을 때 얼마나 쉽게 방식을 바꾸는가",
+      autonomy: "선택할 때 내 판단을 얼마나 중요하게 두는가",
     },
     gapSectionTitle: "가장 많이 적응해온 부분",
     gapSectionTag: "차이",
@@ -305,10 +325,36 @@ const KO: DeepEssenceUiStrings = {
     naturalTendencyLabel: "본래 더 편한 방식",
     currentPatternLabel: "현실에서 익숙해진 방식",
     currentPatternAlignedLabel: "지금도 자연스럽게 쓰는 방식",
-    givesYouLabel: "그 과정에서 얻은 힘",
-    mayCostLabel: "대신 더 많이 쓰게 된 에너지",
+    givesYouLabel: "살아오며 생긴 힘",
+    mayCostLabel: "그만큼 드는 에너지",
     mayWorkBetterLabel: "더 편하게 활용하는 방법",
     whyItFeelsEasyLabel: "그래서 힘을 덜 들이고 잘 쓰는 부분",
+  },
+  axisBehaviorSentences: {
+    structure: {
+      high: "일을 할 때 계획과 기준을 중요하게 둬요",
+      low: "일을 할 때 계획이나 기준보다 상황에 맞춰 움직여요",
+    },
+    connection: {
+      high: "사람과의 연결에서 에너지를 많이 얻어요",
+      low: "사람과의 연결보다 혼자만의 시간에서 에너지를 얻어요",
+    },
+    stability: {
+      high: "익숙함과 예측 가능성을 중요하게 여겨요",
+      low: "익숙함보다 새로운 변화나 시도를 더 중요하게 여겨요",
+    },
+    growth: {
+      high: "새로운 도전과 발전을 적극적으로 추구해요",
+      low: "새로운 도전보다 현재 갖춰진 안정을 소중히 여겨요",
+    },
+    adaptability: {
+      high: "상황이 바뀌었을 때 방식을 쉽게 잘 바꿔요",
+      low: "상황이 바뀌어도 기존 방식이나 소신을 쉽게 바꾸지 않아요",
+    },
+    autonomy: {
+      high: "선택할 때 내 판단을 가장 중요하게 둬요",
+      low: "선택할 때 내 판단보다 주변의 의견을 더 중요하게 둬요",
+    },
   },
   adaptationStory: {
     sectionTitle: "그래서 나는 왜 이렇게 살아왔을까요?",
@@ -336,6 +382,8 @@ const KO: DeepEssenceUiStrings = {
     watchoutsTag: "마찰",
     mostUsedAxisLabel: "지금 가장 많이 쓰고 있는 축",
     leastUsedAxisLabel: "지금 상대적으로 덜 쓰고 있는 축",
+    highestTag: "이게 있어야 편한 성향",
+    lowestTag: "억지로 하지 않아도 편한 성향",
   },
   part2: {
     num: "Part 02",

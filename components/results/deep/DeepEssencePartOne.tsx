@@ -1,6 +1,6 @@
 "use client";
 
-import { DeepEssenceRadarChart } from "@/components/results/deep/DeepEssenceRadarChart";
+import { DeepEssenceRadarChart, DEEP_ESSENCE_RADAR_AXIS_ORDER } from "@/components/results/deep/DeepEssenceRadarChart";
 import { PRIMARY_AXIS_DEFINITIONS } from "@/lib/v2/framework/primaryAxisDefinitions";
 import type { DeepEssenceStructuredReport } from "@/lib/report/runDeepEssenceStructuredLlm";
 import type { PrimaryAxesScores, PrimaryAxisKey } from "@/lib/v2/survey/types";
@@ -29,21 +29,6 @@ function axisLabel(axis: PrimaryAxisKey, locale: Locale): string {
   return locale === "ko-KR" ? def.koLabel : def.label;
 }
 
-/**
- * IA Batch 1 — New Part 01 ("지금, 당신은 이렇게 살아가고 있어요" / Current Self).
- * Narrowed from the original Part 01 (which also carried axis_interpretations,
- * layered_identity, strengths, and watchouts — all now their own Parts, see
- * DeepEssenceReport.tsx). This component now shows only: the summary tiles,
- * the current-vs-potential radar, and a deterministic "most/least used axis"
- * read straight off radarCurrent (no LLM call, no new field).
- *
- * summary.core_mode is intentionally NOT treated as this Part's headline —
- * its own evidence pool leans innate (day master, elements, month/day pillar
- * candidates; see lib/v1/slim/part01IdentityEvidence.ts's buildCoreModeEvidence),
- * so presenting it as "who you are right now" would misrepresent its grounding.
- * The summary tiles are kept as-is (existing data, unchanged position) without
- * being reframed as a Current Self statement.
- */
 export function DeepEssencePartOne({
   structured,
   radarCurrent,
@@ -97,25 +82,62 @@ export function DeepEssencePartOne({
         </div>
       </div>
 
-      {/* 지금 가장 많이/덜 쓰는 축 — radarCurrent에서 결정론적으로 계산, LLM 미개입 */}
+      {/* 주요 성향 경향성 — 결정론적 최고/최저 점수 축의 실제 행동 문장 번역 */}
       <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <div className="text-[10px] tracking-[0.18em] text-on-surface-variant uppercase">
-            {t.part1.mostUsedAxisLabel}
+        <div className="rounded-xl border border-outline-variant/60 bg-surface/50 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">
+              {axisLabel(highest, locale)}
+            </span>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+              {t.part1.highestTag}
+            </span>
           </div>
-          <div className="mt-2 text-[17px] text-on-surface" style={serifStyle}>
-            {axisLabel(highest, locale)}
-          </div>
+          <p className="mt-2 text-[14.5px] font-medium leading-snug text-on-surface" style={serifStyle}>
+            {t.axisBehaviorSentences[highest]?.high}
+          </p>
         </div>
-        <div>
-          <div className="text-[10px] tracking-[0.18em] text-on-surface-variant uppercase">
-            {t.part1.leastUsedAxisLabel}
+        <div className="rounded-xl border border-outline-variant/60 bg-surface/50 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+              {axisLabel(lowest, locale)}
+            </span>
+            <span className="rounded-full bg-outline-variant/40 px-2 py-0.5 text-[10px] font-medium text-on-surface-variant">
+              {t.part1.lowestTag}
+            </span>
           </div>
-          <div className="mt-2 text-[17px] text-on-surface" style={serifStyle}>
-            {axisLabel(lowest, locale)}
-          </div>
+          <p className="mt-2 text-[14.5px] font-medium leading-snug text-on-surface-variant" style={serifStyle}>
+            {t.axisBehaviorSentences[lowest]?.low}
+          </p>
         </div>
       </div>
+
+      {/* 여섯 가지 기준은 무엇을 의미하나요? 설명 아코디언 */}
+      <details className="group rounded-xl border border-outline-variant/60 bg-surface/50 p-4 transition-colors">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-on-surface">
+          <h3 className="text-[14.5px] text-on-surface" style={serifStyle}>
+            {t.axisInterpretation.glossaryTitle}
+          </h3>
+          <span className="shrink-0 text-[11.5px] font-medium text-primary group-open:hidden">
+            {locale === "ko-KR" ? "열어보기 ↓" : "Expand ↓"}
+          </span>
+          <span className="hidden shrink-0 text-[11.5px] font-medium text-primary group-open:inline">
+            {locale === "ko-KR" ? "접기 ↑" : "Collapse ↑"}
+          </span>
+        </summary>
+        <div className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          {DEEP_ESSENCE_RADAR_AXIS_ORDER.map((axis) => (
+            <div key={axis}>
+              <div className="text-[12.5px] font-medium text-on-surface" style={serifStyle}>
+                {axisLabel(axis, locale)}
+              </div>
+              <p className="mt-0.5 text-[11.5px] leading-[1.5] text-on-surface-variant">
+                {t.axisInterpretation.glossary[axis]}
+              </p>
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 }

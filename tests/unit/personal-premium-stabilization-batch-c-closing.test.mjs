@@ -257,7 +257,7 @@ describe("cleanClosingText (defensive polish) — sentence-count truncation, the
 
     it("Test D: Genuine GROWTH-specific recognition PASSes quality gate", () => {
       const raw = fixtureReport(
-        "새로운 가능성을 탐색하고 배움의 경험을 넓히는 힘이 당신을 움직이게 해요. 다만 나를 넓히는 성장의 시도와 주변에 맞추느라 방향을 잃는 적응은 다른 일입니다.",
+        "새로운 가능성을 탐색하고 배움을 넓히는 힘이 나를 움직입니다. 타인의 기준이 아닌 나의 속도로 성장을 시도하세요.",
       );
       const gateRes = validatePart07QualityGate(raw, "GROWTH");
       assert.equal(gateRes.pass, true, `Expected PASS, got failures: ${gateRes.failures.join(", ")}`);
@@ -265,7 +265,7 @@ describe("cleanClosingText (defensive polish) — sentence-count truncation, the
 
     it("Test E: Genuine STRUCTURE-specific recognition PASSes quality gate", () => {
       const raw = fixtureReport(
-        "복잡함을 체계적으로 정리하는 수순과 원칙은 중요한 자원이에요. 다만 모든 예외 변수가 통제되어야만 비로소 움직일 수 있는 것은 아닙니다.",
+        "상황을 체계적으로 정리하는 원칙은 유용한 힘이 됩니다. 완벽한 기준을 기다리기보다 가볍게 첫발을 내딛어 보세요.",
       );
       const gateRes = validatePart07QualityGate(raw, "STRUCTURE");
       assert.equal(gateRes.pass, true, `Expected PASS, got failures: ${gateRes.failures.join(", ")}`);
@@ -273,7 +273,7 @@ describe("cleanClosingText (defensive polish) — sentence-count truncation, the
 
     it("Test F: Genuine DECISION-specific recognition PASSes quality gate", () => {
       const raw = fixtureReport(
-        "스스로 판단하는 내면의 기준은 이미 충분해요. 다만 타인의 무조건적인 동의까지 얻어야 좋은 결정이 되는 것은 아닙니다.",
+        "스스로 판단하고 선택하는 기준은 이미 충분해요. 내 결정을 믿고 나아갈 때 진정한 나다움이 살아납니다.",
       );
       const gateRes = validatePart07QualityGate(raw, "DECISION");
       assert.equal(gateRes.pass, true, `Expected PASS, got failures: ${gateRes.failures.join(", ")}`);

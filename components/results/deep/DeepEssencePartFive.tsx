@@ -27,8 +27,11 @@ export function DeepEssencePartFive({
     <div className="space-y-10">
       {/* SECTION A: DO */}
       <div>
-        <div className="text-[13px] font-medium tracking-wide text-primary">
-          {t.part5.doTitle}
+        <div className="flex items-center gap-2.5 text-[16px] font-bold text-primary" style={serifStyle}>
+          <span className="rounded-md bg-primary/10 px-2.5 py-1 text-[12px] font-extrabold text-primary tracking-wider uppercase">
+            ✓ DO
+          </span>
+          <span>{t.part5.doTitle}</span>
         </div>
         <div className="mt-4 space-y-4">
           {doItems
@@ -37,9 +40,9 @@ export function DeepEssencePartFive({
                   key={i}
                   className="rounded-xl border border-primary/20 bg-primary/5 p-5"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-                      ✓ DO 0{i + 1}
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[12px] font-bold tracking-wider text-primary tabular-nums">
+                      0{i + 1}
                     </span>
                     <h4 className="text-[15px] font-semibold text-on-surface">
                       {item.title}
@@ -58,7 +61,7 @@ export function DeepEssencePartFive({
                   key={i}
                   className="rounded-xl border border-primary/20 bg-primary/5 p-5"
                 >
-                  <div className="text-[12px] font-semibold uppercase tracking-wider text-primary">
+                  <div className="text-[12px] font-semibold tracking-wider text-primary uppercase">
                     {rememberLabels[i] ?? `0${i + 1}`}
                   </div>
                   <div
@@ -74,8 +77,11 @@ export function DeepEssencePartFive({
 
       {/* SECTION B: DON'T */}
       <div>
-        <div className="text-[13px] font-medium tracking-wide text-accent-rose">
-          {t.part5.dontTitle}
+        <div className="flex items-center gap-2.5 text-[16px] font-bold text-accent-rose" style={serifStyle}>
+          <span className="rounded-md bg-accent-rose/10 px-2.5 py-1 text-[12px] font-extrabold text-accent-rose tracking-wider uppercase">
+            ✕ DON'T
+          </span>
+          <span>{t.part5.dontTitle}</span>
         </div>
         <div className="mt-4 space-y-4">
           {dontItems
@@ -84,9 +90,9 @@ export function DeepEssencePartFive({
                   key={i}
                   className="rounded-xl border border-accent-rose/20 bg-accent-rose/5 p-5"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="rounded bg-accent-rose/10 px-2 py-0.5 text-[11px] font-bold text-accent-rose">
-                      ✕ DON'T 0{i + 1}
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-[12px] font-bold tracking-wider text-accent-rose tabular-nums">
+                      0{i + 1}
                     </span>
                     <h4 className="text-[15px] font-semibold text-on-surface">
                       {item.title}
@@ -105,7 +111,7 @@ export function DeepEssencePartFive({
                   key={i}
                   className="rounded-xl border border-accent-rose/20 bg-accent-rose/5 p-5"
                 >
-                  <div className="text-[12px] font-semibold uppercase tracking-wider text-accent-rose">
+                  <div className="text-[12px] font-semibold tracking-wider text-accent-rose uppercase">
                     {rememberLabels[i + 1] ?? `0${i + 2}`}
                   </div>
                   <div
@@ -161,16 +167,13 @@ export function DeepEssencePartFive({
       {/* OPTIONAL PRACTICE: One Next Move */}
       {oneNextMove && (
         <div className="rounded-xl border border-accent-rose/20 bg-accent-rose/5 p-6">
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-accent-rose/10 px-2 py-0.5 text-[11px] font-semibold text-accent-rose">
-              {t.part5.oneNextMoveTag}
-            </span>
-            <span className="text-[13px] font-medium text-on-surface">
-              {t.part5.oneNextMoveTitle}
-            </span>
+          <div className="flex items-center gap-2 text-[16px] font-semibold text-accent-rose" style={serifStyle}>
+            <span className="text-[12px] text-accent-rose/70">◤</span>
+            <span>{t.part5.oneNextMoveTitle}</span>
           </div>
-          <p className="mt-3 text-[15px] leading-[1.65] text-on-surface">
-            {oneNextMove}
+          <p className="mt-3 flex items-start gap-2 text-[14.5px] leading-[1.65] text-on-surface">
+            <span className="mt-0.5 text-[10px] text-accent-rose/60 shrink-0">▫</span>
+            <span>{oneNextMove}</span>
           </p>
         </div>
       )}
