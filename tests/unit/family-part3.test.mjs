@@ -169,7 +169,11 @@ section("Growth Tunnel — en-US year + no Hangul; ko-KR has Hangul");
   for (const [key, value] of Object.entries(en.family.section_child_dna)) {
     assert.ok(!HANGUL_RE.test(value), `en DNA.${key} leaked Hangul`);
   }
+  // genius_archetype is a structural category key ("wood"|"fire"|"earth"|
+  // "metal"|"water" — GeniusArchetype in familyKillerSections.ts), not
+  // localized display prose, so it's exempt from the Hangul/emoji check.
   for (const [key, value] of Object.entries(ko.family.section_child_dna)) {
+    if (key === "genius_archetype") continue;
     assert.ok(HANGUL_RE.test(value) || /[🌿🔥🧸💎🌊]/.test(value), `ko DNA.${key}`);
   }
   ok("locale isolation for Part3 bodies");

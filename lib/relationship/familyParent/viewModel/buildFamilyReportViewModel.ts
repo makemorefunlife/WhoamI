@@ -35,7 +35,12 @@ import type {
 } from "./familyReportSectionTypes";
 import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
-import { josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
+// Fixed: this used to import from Romantic's particle helper, which
+// disagrees with familyParentLanguage.ts's own josaEunNeun (bare "은/는"
+// vs. an extra "이"-suffixed form) on the same input — every other file in
+// this domain already uses familyParentLanguage.ts, so this was producing
+// inconsistent Korean grammar depending on which builder happened to run.
+import { josaIGa, josaEunNeun } from "@/lib/relationship/familyParent/familyParentLanguage";
 import { buildFamilyConflictChapterBundle } from "../familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "../familyGrowthChapterEngine";
 import { buildFamilyRepairChapterBundle } from "../familyRepairChapterEngine";
@@ -656,7 +661,7 @@ export function buildFamilyReportViewModel(
       locale,
       psychChild: report.meta?.psych_a ?? null,
       psychParent: report.meta?.psych_b ?? null,
-      conflictLoop: storyPlan?.conflictLoop ?? null,
+      conflictLoop: storyPlan?.conflictChapterBundle?.conflictLoop ?? null,
     });
     storyPlan = {
       ...storyPlan,
@@ -692,14 +697,6 @@ export function buildFamilyReportViewModel(
   const filterClaims = (topics: string[]) =>
     selectedClaims.filter((c) => topics.includes(c.topic) || topics.some(tp => c.topic.startsWith(tp)));
 
-  const PSYCH_ROLE_LABEL_MAP: Record<string, string> = {
-    fixer: "해결사",
-    mediator: "중재자",
-    martyr: "돌봄 담당",
-    independent: "자립형",
-    emotional_dump: "감정 수용자",
-    puppy: "분위기 메이커",
-  };
 
   const editorialChapters: FamilyEditorialChapterViewModel[] = [
     {
@@ -736,7 +733,6 @@ export function buildFamilyReportViewModel(
       insights: insightCandidates.filter(i => i.topic === "familyRoles"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "familyRoles"),
-      dependencyProtection: undefined,
       legacySections: [householdRolesSec, familyRoleSec].filter((s): s is FamilyReportSection => s != null),
     },
     {
@@ -761,8 +757,6 @@ export function buildFamilyReportViewModel(
       insights: insightCandidates.filter(i => i.topic === "conflict"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "conflict"),
-      conflictLoop: storyPlan?.conflictLoop ?? null,
-      loveExpressionVsReception: storyPlan?.pairMeanings?.loveExpressionVsReception,
       legacySections: [],
     },
     {
@@ -775,8 +769,6 @@ export function buildFamilyReportViewModel(
       insights: insightCandidates.filter(i => i.topic === "growth"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "growth"),
-      growthTransition: storyPlan?.growthTransition ?? null,
-      expectationVsPressure: storyPlan?.pairMeanings?.expectationVsPressure,
       legacySections: [sosScriptSec].filter((s): s is FamilyReportSection => s != null),
     },
     {
@@ -789,7 +781,6 @@ export function buildFamilyReportViewModel(
       insights: insightCandidates.filter(i => i.topic === "actions" || i.topic === "repair"),
       actions: actionCandidates.filter(a => a.type === "de_escalation"),
       synthesis: synthesisResults.filter(s => s.topic === "actions" || s.topic === "repair"),
-      repairPattern: storyPlan?.repairPattern ?? null,
       legacySections: [],
     },
     {

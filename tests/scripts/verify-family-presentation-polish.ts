@@ -43,9 +43,9 @@ const hasPsychRadar = ch3?.legacySections.some(s => s.type === "psych_radar");
 console.log("Chapter 03 has psych_radar section:", hasPsychRadar ? "YES (PASS)" : "NO (FAIL)");
 
 console.log("\n=== 2. Coverage Block 필드 바인딩 검증 ===");
-console.log("ConflictLoop parentTrigger:", storyPlanText(reportSeraDonggeul.canonical_projections?.story_plan?.conflictLoop?.parentTrigger));
-console.log("RepairPattern effectiveRepairStyle:", storyPlanText(reportSeraDonggeul.canonical_projections?.story_plan?.repairPattern?.effectiveRepairStyle));
-console.log("GrowthTransition currentRolePattern:", storyPlanText(reportSeraDonggeul.canonical_projections?.story_plan?.growthTransition?.currentRolePattern));
+console.log("ConflictLoop step1ParentTrigger:", storyPlanText(reportSeraDonggeul.canonical_projections?.story_plan?.conflictChapterBundle?.conflictLoop?.step1ParentTrigger));
+console.log("RepairChapterBundle effectiveTitle:", storyPlanText(reportSeraDonggeul.canonical_projections?.story_plan?.repairChapterBundle?.doAndDontRepair?.effectiveTitle));
+console.log("GrowthChapterBundle driveTitle:", storyPlanText(reportSeraDonggeul.canonical_projections?.story_plan?.growthChapterBundle?.motivation?.driveTitle));
 
 console.log("\n=== 3. Child Core Needs 3단 구조 검증 ===");
 const needs = reportSeraDonggeul.canonical_projections?.story_plan?.pairMeanings?.childCoreNeedsDetailed;

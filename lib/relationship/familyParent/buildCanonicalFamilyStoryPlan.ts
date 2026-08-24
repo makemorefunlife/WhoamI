@@ -8,11 +8,6 @@ import {
 } from "./buildFamilyCandidateEngine";
 import { buildFamilyMultiSignalSynthesis } from "./buildFamilyMultiSignalSynthesis";
 import { formatJosa } from "./familyParentLanguage";
-import {
-  buildFamilyConflictLoop,
-  buildFamilyRepairPattern,
-  buildFamilyGrowthTransition,
-} from "./buildFamilyCoverageModels";
 import { computeChildParentingNeedsEngine } from "./familyChildParentingNeedsEngine";
 import { buildFamilyConflictChapterBundle } from "./familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "./familyGrowthChapterEngine";
@@ -234,9 +229,10 @@ export function buildCanonicalFamilyStoryPlan(
   }
 
   // 9. 11-axis Projections
+  // Computed once here and reused below (buildFamilyMultiSignalSynthesis etc.) —
+  // was previously called a second time with identical inputs.
+  const psychProjections = psychParent && psychChild ? buildFamilyPsychDynamicsProjections(ctx, psychParent, psychChild) : [];
   if (psychParent && psychChild) {
-    const psychProjections = buildFamilyPsychDynamicsProjections(ctx, psychParent, psychChild);
-    
     for (const proj of psychProjections) {
       if (proj.category === "CONTEXT_ONLY") continue;
       
@@ -257,15 +253,11 @@ export function buildCanonicalFamilyStoryPlan(
 
   const insightCandidates = buildFamilyInsightCandidates(ctx, report);
   const actionCandidates = buildFamilyActionCandidates(ctx, report);
-  const psychProjections = psychParent && psychChild ? buildFamilyPsychDynamicsProjections(ctx, psychParent, psychChild) : [];
   const synthesisResults = buildFamilyMultiSignalSynthesis(
     ctx,
     selectedClaims,
     psychProjections
   );
-  const conflictLoop = buildFamilyConflictLoop(ctx, psychProjections);
-  const repairPattern = buildFamilyRepairPattern(ctx, psychProjections);
-  const growthTransition = buildFamilyGrowthTransition(ctx);
   const conflictChapterBundle = buildFamilyConflictChapterBundle({
     ctx,
     report,
@@ -336,7 +328,7 @@ export function buildCanonicalFamilyStoryPlan(
     childNickname: ctx.childNickname,
     parentNickname: ctx.parentNickname,
     childIsViewer: ctx.childIsViewer,
-    locale,
+    locale: ctx.locale,
     psychChild,
     psychParent,
     countsChild: ctx.tenGod.countsChild,
@@ -356,7 +348,13 @@ export function buildCanonicalFamilyStoryPlan(
     psychParent,
     countsChild: ctx.tenGod.countsChild,
     countsParent: ctx.tenGod.countsParent,
-    conflictLoop,
+    // Chapter continuity fix: this used to be the old, near-static
+    // buildFamilyConflictLoop() output (same two sentences regardless of
+    // which conflict theme Ch05 actually found), so Ch07's repair copy could
+    // reference a conflict dynamic that didn't match what Ch05 told the user.
+    // conflictChapterBundle.conflictLoop is Ch05's own real, evidence-branched
+    // finding — using it here is what actually gives Ch05 -> Ch07 continuity.
+    conflictLoop: conflictChapterBundle.conflictLoop,
   });
 
   const actionChapterBundle = buildFamilyActionChapterBundle({
@@ -420,9 +418,6 @@ export function buildCanonicalFamilyStoryPlan(
     insightCandidates,
     actionCandidates,
     synthesisResults,
-    conflictLoop,
-    repairPattern,
-    growthTransition,
     evidenceMap,
   };
 }

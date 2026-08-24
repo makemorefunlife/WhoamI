@@ -76,9 +76,9 @@ console.log("=== INTEGRATION QA: StoryPlan & Models Presence ===");
     insightsCount: sp?.insightCandidates?.length,
     actionsCount: sp?.actionCandidates?.length,
     synthesisCount: sp?.synthesisResults?.length,
-    conflictLoop: !!sp?.conflictLoop,
-    repairPattern: !!sp?.repairPattern,
-    growthTransition: !!sp?.growthTransition,
+    conflictLoop: !!sp?.conflictChapterBundle?.conflictLoop,
+    repairChapterBundle: !!sp?.repairChapterBundle,
+    growthChapterBundle: !!sp?.growthChapterBundle,
     vmSectionsCount: vm.sections.length,
   });
 });

@@ -498,12 +498,20 @@ export function buildFamilyHouseholdRoles(params: {
   const self = viewerIsChild ? childPerson : parentPerson;
   const partner = viewerIsChild ? parentPerson : childPerson;
 
+  // Fallback for callers (e.g. isolated unit tests) that exercise this
+  // builder without a full FamilyRuleContext. `{}` used to be passed as
+  // sajuJsonA/B here, which crashed sajuJsonToPillars (reading .yearPillar
+  // off undefined) the moment buildFamilyRuleContext tried to build pillars
+  // from it. This placeholder pillar set is only used to make
+  // buildFamilyRoleIntelligence's supplementary pair-fact lookups
+  // non-crashing when no real chart is available — it never reaches a real
+  // report, since buildFamilyParentReport always passes params.ctx.
   const contextForIntel: FamilyRuleContext = params.ctx ?? buildFamilyRuleContext({
     nicknameA: params.childNickname,
     nicknameB: params.parentNickname,
     roles: { roleA: "child", roleB: "mother" },
-    sajuJsonA: {} as any,
-    sajuJsonB: {} as any,
+    sajuJsonA: { saju: { yearPillar: "갑자", monthPillar: "병인", dayPillar: "을묘", hourPillar: "무신" } } as any,
+    sajuJsonB: { saju: { yearPillar: "을축", monthPillar: "정묘", dayPillar: "경오", hourPillar: "기사" } } as any,
     locale,
   });
 

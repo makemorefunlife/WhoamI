@@ -137,6 +137,46 @@ export type WorkInsightCandidate = {
   confidence: "high" | "medium" | "low";
 };
 
+export type WorkOverviewCardBundle = {
+  score: number;
+  qualitativeLabel: string;
+  measuresWhat: string;
+  whyThisScore: string;
+  realWorkScene: string;
+};
+
+export type WorkProjectLifecycleNarrative = {
+  kickoff: {
+    title: string;
+    body: string;
+  };
+  inFlight: {
+    title: string;
+    body: string;
+  };
+  synergyMoment: {
+    title: string;
+    body: string;
+  };
+  frictionMoment: {
+    title: string;
+    body: string;
+  };
+};
+
+export type WorkTeamPortrait = {
+  headline: string;
+  body: string;
+};
+
+export type WorkOverviewChapterBundle = {
+  workFitCard: WorkOverviewCardBundle;
+  synergyCard: WorkOverviewCardBundle;
+  officeRiskCard: WorkOverviewCardBundle;
+  lifecycleNarrative: WorkProjectLifecycleNarrative;
+  teamPortrait: WorkTeamPortrait;
+};
+
 export type CanonicalWorkStoryPlan = {
   schemaVersion: "work_story_plan_v1";
   locale: "ko-KR" | "en-US";
@@ -146,6 +186,7 @@ export type CanonicalWorkStoryPlan = {
     fitScore: string;
     riskScore: string;
   };
+  overviewChapterBundle?: WorkOverviewChapterBundle;
   workRoles: {
     selfRole?: string;
     colleagueRole?: string;

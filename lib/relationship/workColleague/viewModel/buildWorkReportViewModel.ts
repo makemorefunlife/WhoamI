@@ -34,6 +34,7 @@ import type {
 } from "./workReportSectionTypes";
 import type { WorkCompareRow } from "@/lib/relationship/workColleague/sajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
+import { buildWorkOverviewChapterBundle } from "../workOverviewChapterEngine";
 
 export type BuildWorkReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -86,21 +87,14 @@ const SECTION_TITLES: Record<Locale, SectionTitleSet> = {
 function buildOpening(
   report: WorkColleagueReportBody,
   names: [string, string],
+  locale: Locale = "ko-KR",
 ): OpeningBlock {
-  const snapshot = report.office?.section_snapshot;
-  const headline = report.headline || snapshot?.one_line_definition || report.one_line_definition;
-  const oneLine = snapshot?.one_line_definition ?? report.one_line_definition ?? "";
-  // 헤드라인과 완전히 같은 문장을 subtitle로 그대로 반복 노출하던 "Hero 문장
-  // 중복" 버그 — one_line_definition이 headline과 동일할 때는 그 자리에
-  // grade_reason(등급이 인용하는 실제 fit/synergy/risk 수치)을 보여줘 등급
-  // 배지 바로 아래에서 근거가 보이게 한다. 새 계산 없이 이미 존재하는
-  // meta.grade_reason을 재배치만 한다.
-  const gradeReason = report.meta?.grade_reason ?? "";
+  const isEn = locale === "en-US";
   return {
-    headline,
-    subtitle: oneLine === headline ? gradeReason : oneLine,
-    grade: report.meta?.grade ?? "",
-    gradeReason,
+    headline: isEn ? `${names[0]} × ${names[1]} Work Partnership Analysis` : `${names[0]} × ${names[1]} 업무 파트너십 분석`,
+    subtitle: "",
+    grade: "",
+    gradeReason: "",
     names,
   };
 }
@@ -481,9 +475,34 @@ export function buildWorkReportViewModel(
     .map((build) => build())
     .filter((section): section is WorkReportSection => section != null);
 
+  let storyPlan = (report as any).storyPlan ?? (report as any).story_plan ?? null;
+  if (!storyPlan || !storyPlan.overviewChapterBundle) {
+    const snap = report.office?.section_snapshot;
+    const fitPct = snap?.fit_pct ?? (report.meta?.fit_pct ?? 80);
+    const synergyPct = snap?.synergy_pct ?? (report.meta?.synergy_pct ?? 75);
+    const riskPct = snap?.risk_pct ?? (report.meta?.risk_pct ?? 20);
+
+    const overviewChapterBundle = buildWorkOverviewChapterBundle({
+      nameA: myName,
+      nameB: partnerName,
+      locale,
+      fitPct,
+      synergyPct,
+      riskPct,
+      psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+      psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    });
+
+    storyPlan = {
+      ...storyPlan,
+      overviewChapterBundle,
+    } as any;
+  }
+
   return {
     kind: "work",
-    opening: buildOpening(report, names),
+    opening: buildOpening(report, names, locale ?? "ko-KR"),
+    storyPlan,
     sections,
     raw: { report },
   };

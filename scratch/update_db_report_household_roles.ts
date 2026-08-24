@@ -4,6 +4,7 @@ dotenv.config({ path: ".env.local" });
 
 import { buildFamilyRuleContext } from "../lib/relationship/familyParent/buildFamilyRuleContext";
 import { buildFamilyHouseholdRoles } from "../lib/relationship/familyParent/buildFamilyHouseholdRoles";
+import { buildFamilySajuCompareTable } from "../lib/relationship/familyParent/familySajuCompareTable";
 import { calculateSajuBundle } from "../lib/v2/saju/calculateSajuBundle";
 import { toV1SajuApiPayload } from "../lib/saju/toApiPayload";
 
@@ -55,19 +56,39 @@ async function updateDbCache() {
       ctx,
     });
 
+    const newCompareTable = buildFamilySajuCompareTable({
+      parentNickname: ctx.parentNickname,
+      childNickname: ctx.childNickname,
+      countsParent: ctx.tenGod.countsParent,
+      countsChild: ctx.tenGod.countsChild,
+      chartParent: ctx.chartParent,
+      chartChild: ctx.chartChild,
+      friendshipSignalsParent: ctx.friendshipSignalsParent,
+      friendshipSignalsChild: ctx.friendshipSignalsChild,
+      familySignalsParent: ctx.familySignalsParent,
+      familySignalsChild: ctx.familySignalsChild,
+      pairFamily: null,
+      parentRole: ctx.parentRole,
+      locale: "ko-KR",
+    });
+
     const byKind = data.result_premium_by_kind || {};
-    let updated = false;
+
+    const updatePayloadFamily = (familyObj: any) => {
+      if (!familyObj) return;
+      familyObj.section_household_roles = newRoles;
+      familyObj.section_compare_table = newCompareTable;
+      if (familyObj.section_psych_match) {
+        familyObj.section_psych_match.chart_note = "두 분의 현재 모습을 11축으로 비교했어요.";
+      }
+    };
 
     if (byKind.byLocale?.["ko-KR"]?.report?.family) {
-      byKind.byLocale["ko-KR"].report.family.section_household_roles = newRoles;
-      updated = true;
+      updatePayloadFamily(byKind.byLocale["ko-KR"].report.family);
     }
     if (byKind.family?.byLocale?.["ko-KR"]?.report?.family) {
-      byKind.family.byLocale["ko-KR"].report.family.section_household_roles = newRoles;
-      updated = true;
+      updatePayloadFamily(byKind.family.byLocale["ko-KR"].report.family);
     }
-
-    console.log("Updated in object?", updated);
 
     const { error: updateError } = await supabase
       .from("relationship_reports")
@@ -77,7 +98,7 @@ async function updateDbCache() {
     if (updateError) {
       console.error("Error updating DB report:", updateError);
     } else {
-      console.log("Successfully updated Supabase DB cache for report 2e96c631-791b-4f89-bfd6-5a44f7b344cb!");
+      console.log("Successfully updated DB payload for 2e96c631-791b-4f89-bfd6-5a44f7b344cb!");
     }
   } catch (e) {
     console.error("Caught exception:", e);

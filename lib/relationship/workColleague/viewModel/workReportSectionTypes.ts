@@ -164,9 +164,12 @@ export type WorkReportSection =
   | WarningSection
   | PrescriptionSection;
 
+import type { CanonicalWorkStoryPlan } from "@/lib/relationship/workColleague/workStoryPlanTypes";
+
 export type WorkReportViewModel = {
   kind: "work";
   opening: OpeningBlock;
+  storyPlan?: CanonicalWorkStoryPlan;
   sections: WorkReportSection[];
   /** 하위호환: 과도기에 기존 컴포넌트가 원본 report를 그대로 필요로 할 수 있음 */
   raw: { report: WorkColleagueReportBody };

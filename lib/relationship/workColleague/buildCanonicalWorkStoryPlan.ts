@@ -19,6 +19,7 @@ import {
   buildWorkNormalizedActionsP1,
   buildWorkGrowthTransitionP1,
 } from "./buildWorkV5DomainModels";
+import { buildWorkOverviewChapterBundle } from "./workOverviewChapterEngine";
 
 export function buildCanonicalWorkStoryPlan(params: {
   nameA: string;
@@ -136,15 +137,31 @@ export function buildCanonicalWorkStoryPlan(params: {
   const normalizedActionCandidatesP1 = buildWorkNormalizedActionsP1({ nameA, nameB, prescriptions });
   const growthTransitionP1 = buildWorkGrowthTransitionP1();
 
+  const fitPct = officeReport.snapshot?.fit_pct ?? (officeReport.metrics?.activation ?? 80);
+  const synergyPct = officeReport.snapshot?.synergy_pct ?? (officeReport.metrics?.benefit ?? 75);
+  const riskPct = officeReport.snapshot?.risk_pct ?? (officeReport.metrics?.risk_pct ?? 20);
+
+  const overviewChapterBundle = buildWorkOverviewChapterBundle({
+    nameA,
+    nameB,
+    locale,
+    fitPct,
+    synergyPct,
+    riskPct,
+    psychA: (officeReport as any).personCore?.psych_a ?? null,
+    psychB: (officeReport as any).personCore?.psych_b ?? null,
+  });
+
   return {
     schemaVersion: "work_story_plan_v1",
     locale,
     names: { a: nameA, b: nameB },
     partnershipCore: {
       identityLine: oneLineDefinition,
-      fitScore: `${officeReport.snapshot?.fit_pct ?? 85}%`,
-      riskScore: `${officeReport.snapshot?.risk_pct ?? 15}%`,
+      fitScore: `${fitPct}%`,
+      riskScore: `${riskPct}%`,
     },
+    overviewChapterBundle,
     workRoles: {
       selfRole: officeReport.overview?.gift_from_a,
       colleagueRole: officeReport.overview?.gift_from_b,

@@ -236,7 +236,7 @@ export function buildFamilyActionChapterBundle(
 
   // 1. 피곤한 야간 훈계
   finalDonts.push({
-    title: "피곤한 늦은 밤(11시 이후) 긴 장문 카톡으로 잔소리·훈계하기",
+    title: "피곤이 쌓인 늦은 밤 시간대에 긴 장문 카톡으로 잔소리·훈계하기",
     dontExample: `“너 아까 엄마한테 했던 행동이 얼마나 버릇없었는지 밤새 깊이 생각해보렴...”`,
     whyHarmful: `야간의 긴 텍스트 메시지는 감정적·분석적 과부하를 일으켜 ${cName}에게 커다란 정서적 압박을 안겨주며, 마음의 문을 완전히 잠그게 만듭니다.`,
   });
@@ -273,13 +273,13 @@ export function buildFamilyActionChapterBundle(
   // -------------------------------------------------------------------
   const relationshipRoutines: FamilyActionChapterBundle["relationshipRoutines"] = [
     {
-      title: "중요한 결정 전 5분 생각 공유 루틴",
+      title: "중요한 결정 전 짧은 생각 공유 루틴",
       desc: "학업이나 일상 선택을 내리기 전, 부모의 답을 먼저 내지 않고 아이의 의향을 먼저 듣는 짧은 대화 시간을 가집니다.",
       frequencyTip: "새로운 학기나 중요한 선택을 해야 할 때 정기적으로 활용하세요.",
     },
     {
       title: "갈등 직후 쿨링 신호 루틴",
-      desc: "서로 화가 났을 때 즉각 다그치지 않고 '우리 1시간 뒤에 얘기하자'라는 쿨링 표현을 나눕니다.",
+      desc: "서로 화가 났을 때 즉각 다그치지 않고 '우리 마음 좀 가라앉으면 다시 얘기하자'라는 쿨링 표현을 나눕니다.",
       frequencyTip: "의견 대립으로 목소리가 높아지는 날 필요할 때 활용하세요.",
     },
   ];

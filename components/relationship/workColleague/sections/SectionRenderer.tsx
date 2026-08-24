@@ -53,6 +53,7 @@ import type {
   WorkReportViewModel,
 } from "@/lib/relationship/workColleague/viewModel/workReportSectionTypes";
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
+import { buildWorkOverviewChapterBundle } from "@/lib/relationship/workColleague/workOverviewChapterEngine";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 
 const relSans = Noto_Sans_KR({
@@ -757,7 +758,7 @@ export function WorkReportViewModelView({
   );
 
   const navItems = [
-    { id: "ch1_glance", number: "01", title: isEn ? "Partnership at a Glance" : "한눈에 보는 업무 파트너십" },
+    { id: "ch1_glance", number: "01", title: isEn ? "What Kind of Team Are We?" : "우리가 함께 일하면 어떤 팀일까요?" },
     { id: "ch2_roles_rnr", number: "02", title: isEn ? "Roles & Decision Authority" : "업무 역할과 R&R 분담" },
     { id: "ch3_style_comm", number: "03", title: isEn ? "Work Style & Communication" : "업무 스타일과 소통 리듬" },
     { id: "ch4_crunch_pressure", number: "04", title: isEn ? "Pressure & Crunch Mode" : "마감 압박과 긴급 상황 대처" },
@@ -774,91 +775,173 @@ export function WorkReportViewModelView({
       <WorkEditorialHero
         eyebrow={kindLabel ?? t.defaultKindLabel}
         headline={vm.opening.headline}
-        subtitle={vm.opening.subtitle}
+        subtitle={undefined}
         names={vm.opening.names}
-        gradeLabel={vm.opening.grade ? t.gradeBadge(vm.opening.grade) : undefined}
+        gradeLabel={undefined}
       />
+      {/* Top Overview Section: 3 Score Cards with Circular Gauge (Image Reference) */}
+      {(() => {
+        const overviewBundle = vm.storyPlan?.overviewChapterBundle || buildWorkOverviewChapterBundle({
+          nameA: names[0],
+          nameB: names[1],
+          locale: isEn ? "en-US" : "ko-KR",
+          fitPct: snapshot?.scores.fitPct ?? 80,
+          synergyPct: snapshot?.scores.synergyPct ?? 75,
+          riskPct: snapshot?.scores.riskPct ?? 20,
+        });
+
+        if (!overviewBundle) return null;
+
+        const overviewCards: OverviewCardData[] = [
+          {
+            key: "fit",
+            icon: "🔥",
+            label: isEn ? "Work Fit" : "업무적 핏",
+            score: overviewBundle.workFitCard.score,
+            tone: "good",
+            inverted: false,
+            gradeLabel: overviewBundle.workFitCard.qualitativeLabel,
+            oneLiner: isEn ? "Work style & tempo alignment" : "일하는 템포와 기본 호흡",
+            measures: overviewBundle.workFitCard.measuresWhat,
+            why: overviewBundle.workFitCard.whyThisScore,
+          },
+          {
+            key: "synergy",
+            icon: "🧩",
+            label: isEn ? "Collaboration Synergy" : "협업 시너지",
+            score: overviewBundle.synergyCard.score,
+            tone: "neutral",
+            inverted: false,
+            gradeLabel: overviewBundle.synergyCard.qualitativeLabel,
+            oneLiner: isEn ? "Complementary strengths & output quality" : "역량 결합과 시너지",
+            measures: overviewBundle.synergyCard.measuresWhat,
+            why: overviewBundle.synergyCard.whyThisScore,
+          },
+          {
+            key: "risk",
+            icon: "⚡",
+            label: isEn ? "Office Risk" : "오피스 리스크",
+            score: overviewBundle.officeRiskCard.score,
+            tone: "warn",
+            inverted: true,
+            gradeLabel: overviewBundle.officeRiskCard.qualitativeLabel,
+            oneLiner: isEn ? "Potential for collaboration friction" : "마찰과 병목 가능성",
+            measures: overviewBundle.officeRiskCard.measuresWhat,
+            why: overviewBundle.officeRiskCard.whyThisScore,
+          },
+        ];
+
+        return (
+          <div className="mx-auto w-full max-w-[820px] px-5 pt-4">
+            <OverviewSection
+              locale={locale}
+              eyebrow={pick(locale, "00 · Overview", "00 · 파트너십 한눈에 보기")}
+              title={pick(locale, "At a Glance", "업무 파트너십 개요")}
+              lead={pick(
+                locale,
+                "Three signals frame the shape of this partnership.",
+                "세 가지 핵심 신호로 두 사람의 협업 핏을 한눈에 확인합니다."
+              )}
+              cards={overviewCards}
+            />
+          </div>
+        );
+      })()}
+
       <WorkChapterNav items={navItems} />
-      {/* Chapter 1: 01 · Partnership at a Glance */}
+
+      {/* Chapter 1: 01 · 우리가 함께 일하면 어떤 팀일까요? */}
       <WorkChapterSection
         id="ch1_glance"
         number="01"
-        title={isEn ? "01 · Partnership at a Glance" : "01 · 한눈에 보는 업무 파트너십"}
+        title={isEn ? "01 · What Kind of Team Are We?" : "01 · 우리가 함께 일하면 어떤 팀일까요?"}
         accent={ACCENT}
       >
         <div id="ch_snapshot" />
-        <UserQuestionBanner question={isEn ? "What kind of working pair are we, and what is our core fit?" : "우리 둘은 업무적으로 어떤 파트너인가?"} />
-        {snapshot ? (() => {
-          const topics = snapshot.panel?.narrative?.topics ?? [];
-          const fit = topics.find(t => t.topic === "intimacy");
-          const synergy = topics.find(t => t.topic === "stability");
-          const risk = topics.find(t => t.topic === "conflict");
-          
-          const cards: OverviewCardData[] = [
+        <UserQuestionBanner question={isEn ? "How this pair actually collaborates when assigned to the same project" : "두 사람을 한 프로젝트에 넣었을 때 실제로 나타나는 협업의 모습"} />
+        {(() => {
+          const overviewBundle = vm.storyPlan?.overviewChapterBundle || buildWorkOverviewChapterBundle({
+            nameA: names[0],
+            nameB: names[1],
+            locale: isEn ? "en-US" : "ko-KR",
+            fitPct: snapshot?.scores.fitPct ?? 80,
+            synergyPct: snapshot?.scores.synergyPct ?? 75,
+            riskPct: snapshot?.scores.riskPct ?? 20,
+          });
+
+          if (!overviewBundle) return null;
+
+          const lifecycle = overviewBundle.lifecycleNarrative;
+          const portrait = overviewBundle.teamPortrait;
+
+          const lifecycleItems = [
             {
-              key: "fit",
-              icon: "🔥",
-              label: t.scoreLabelFit,
-              score: snapshot.scores.fitPct,
-              tone: "good",
-              inverted: false,
-              gradeLabel: fit?.title ?? t.scoreLabelFit,
-              oneLiner: fit?.subtitle ?? "",
-              measures: pick(locale, "How smoothly your work styles and paces align", "서로의 업무 템포와 방식이 얼마나 매끄럽게 호흡을 맞추는지"),
-              why: fit?.interpretation ?? "",
-              thresholdText: fit?.axisNote,
+              num: "01",
+              title: isEn ? "01. When a New Project Starts" : lifecycle.kickoff.title,
+              body: lifecycle.kickoff.body,
+              icon: "🚀",
             },
             {
-              key: "synergy",
-              icon: "🧩",
-              label: t.scoreLabelSynergy,
-              score: snapshot.scores.synergyPct,
-              tone: "neutral",
-              inverted: false,
-              gradeLabel: synergy?.title ?? t.scoreLabelSynergy,
-              oneLiner: synergy?.subtitle ?? "",
-              measures: pick(locale, "How well your different strengths complement each other for better output", "서로 다른 강점이 시너지를 내어 결과물의 퀄리티를 얼마나 높이는지"),
-              why: synergy?.interpretation ?? "",
-              thresholdText: synergy?.axisNote,
+              num: "02",
+              title: isEn ? "02. When Work Gets In-Flight" : lifecycle.inFlight.title,
+              body: lifecycle.inFlight.body,
+              icon: "🔄",
             },
             {
-              key: "risk",
+              num: "03",
+              title: isEn ? "03. When Strengths Click" : lifecycle.synergyMoment.title,
+              body: lifecycle.synergyMoment.body,
               icon: "⚡",
-              label: t.scoreLabelRisk,
-              score: snapshot.scores.riskPct,
-              tone: "warn",
-              inverted: true,
-              gradeLabel: risk?.title ?? t.scoreLabelRisk,
-              oneLiner: risk?.subtitle ?? "",
-              measures: pick(locale, "The potential for friction or misunderstanding during collaboration", "협업 과정에서 의사소통 오해나 마찰이 발생할 가능성"),
-              why: risk?.interpretation ?? "",
-              thresholdText: risk?.axisNote,
+            },
+            {
+              num: "04",
+              title: isEn ? "04. When Friction Triggers Appear" : lifecycle.frictionMoment.title,
+              body: lifecycle.frictionMoment.body,
+              icon: "⚠️",
             },
           ];
 
           return (
-            <div className="mb-6 mt-2">
-              <OverviewSection
-                locale={locale}
-                eyebrow={pick(locale, "01 · At a Glance", "01 · 한눈에 보기")}
-                title={pick(locale, "How You Work Together", "함께 일하는 방식과 시너지")}
-                lead={pick(
-                  locale,
-                  "Three signals frame the shape of this partnership.",
-                  "세 가지 신호로 이 파트너십의 성격을 먼저 봅니다."
-                )}
-                cards={cards}
-              />
+            <div className="space-y-8 mt-4 mb-8">
+              {/* Section 1: ◤ 실제로 한 프로젝트에 들어가면 (01 -> 02 -> 03 -> 04) */}
+              <div className="space-y-4">
+                <h3 className="font-rel-sans text-base font-bold text-rel-ink flex items-center gap-2 border-b border-rel-line pb-2">
+                  <span>◤</span>
+                  <span>{isEn ? "When Assigned to a Real Project" : "실제로 한 프로젝트에 들어가면"}</span>
+                </h3>
+                <div className="space-y-4">
+                  {lifecycleItems.map((item, idx) => (
+                    <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 shadow-sm space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{item.icon}</span>
+                        <h4 className="font-rel-sans text-sm font-bold text-rel-ink">{item.title}</h4>
+                      </div>
+                      <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                        {item.body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 2: ◤ 그래서 이 둘은 어떤 팀인가 (Team Portrait) */}
+              <div className="space-y-3">
+                <h3 className="font-rel-sans text-base font-bold text-rel-ink flex items-center gap-2 border-b border-rel-line pb-2">
+                  <span>◤</span>
+                  <span>{isEn ? "What Kind of Team Are They?" : "그래서 이 둘은 어떤 팀인가"}</span>
+                </h3>
+                <div className="rounded-2xl bg-rel-deep-soft/60 p-5 sm:p-6 border border-rel-deep/20 space-y-2.5 shadow-sm">
+                  <p className="font-rel-serif text-base sm:text-lg font-bold text-rel-deep leading-snug">
+                    “{portrait.headline}”
+                  </p>
+                  <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                    {portrait.body}
+                  </p>
+                </div>
+              </div>
             </div>
           );
-        })() : null}
-        {meta?.best_vs_risky_config?.bestConfiguration?.summary ? (
-          <RelationshipReportCard title="핵심 파트너십 결합 요약 (Best vs Risky Summary)" accentColor={ACCENT} showMarker={true}>
-            <RelationshipReportParagraph className="text-sm font-semibold text-rel-ink">
-              {meta.best_vs_risky_config.bestConfiguration.summary}
-            </RelationshipReportParagraph>
-          </RelationshipReportCard>
-        ) : null}
+        })()}
       </WorkChapterSection>
 
       {/* Chapter 2: 02 · Roles, Ownership & Decision Authority */}

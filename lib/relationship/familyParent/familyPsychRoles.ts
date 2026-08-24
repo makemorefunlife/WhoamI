@@ -10,7 +10,7 @@
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SecondaryAxesScores } from "@/lib/v2/survey/types";
 import { LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
-import { sanitizeFamilyParentText } from "./familyParentLanguage";
+import { sanitizeFamilyParentText, josaEunNeun } from "./familyParentLanguage";
 import type { Locale } from "@/lib/i18n/locale";
 
 export type FamilyPsychRole =

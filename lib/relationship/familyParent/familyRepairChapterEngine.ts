@@ -15,7 +15,7 @@
  */
 
 import type { Locale } from "@/lib/i18n/locale";
-import type { FamilyRepairChapterBundle, FamilyConflictLoop } from "./familyStoryPlanTypes";
+import type { FamilyRepairChapterBundle, FamilyConflictLoopV2 } from "./familyStoryPlanTypes";
 import { josaEunNeun, josaIGa, josaGwaWa, josaEulReul, josaE } from "./familyParentLanguage";
 import { pick } from "./familyParentCopy";
 
@@ -56,8 +56,8 @@ export type BuildFamilyRepairChapterParams = {
     self?: number;
   } | null;
 
-  /** Part 05 Conflict Loop Evidence */
-  conflictLoop?: FamilyConflictLoop | null;
+  /** Part 05 Conflict Loop Evidence (the same conflictChapterBundle.conflictLoop Ch05 renders) */
+  conflictLoop?: FamilyConflictLoopV2 | null;
 };
 
 export function buildFamilyRepairChapterBundle(
@@ -215,8 +215,8 @@ export function buildFamilyRepairChapterBundle(
     harmfulReason = `아이에게 심각한 중압감과 조급함을 유발해 Part 05의 갈등 증폭 루프가 그대로 재발합니다.`;
   }
 
-  if (conflictLoop?.parentTrigger && conflictLoop?.childReaction) {
-    harmfulReason += ` [${conflictLoop.parentTrigger} → ${conflictLoop.childReaction} 갈등 증폭 루프]`;
+  if (conflictLoop?.step1ParentTrigger && conflictLoop?.step2ChildReaction) {
+    harmfulReason += ` [${conflictLoop.step1ParentTrigger} → ${conflictLoop.step2ChildReaction} 갈등 증폭 루프]`;
   }
 
   // -------------------------------------------------------------------

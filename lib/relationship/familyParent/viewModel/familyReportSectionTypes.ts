@@ -230,9 +230,6 @@ import type {
   FamilyInsightCandidate,
   FamilyActionCandidate,
   FamilySynthesisResult,
-  FamilyConflictLoopModel,
-  FamilyRepairPatternModel,
-  FamilyGrowthTransitionModel,
 } from "@/lib/relationship/familyParent/familyStoryPlanTypes";
 
 export type FamilyEditorialChapterId =
@@ -255,14 +252,7 @@ export type FamilyEditorialChapterViewModel = {
   insights: FamilyInsightCandidate[];
   actions: FamilyActionCandidate[];
   synthesis: FamilySynthesisResult[];
-  conflictLoop?: FamilyConflictLoopModel | null;
-  repairPattern?: FamilyRepairPatternModel | null;
-  growthTransition?: FamilyGrowthTransitionModel | null;
-  
   /** 4 Core Pair Meanings UI Bindings */
-  dependencyProtection?: CanonicalFamilyPairMeanings["dependencyProtection"];
-  loveExpressionVsReception?: CanonicalFamilyPairMeanings["loveExpressionVsReception"];
-  expectationVsPressure?: CanonicalFamilyPairMeanings["expectationVsPressure"];
   childCoreNeeds?: CanonicalFamilyPairMeanings["childCoreNeeds"];
 
   /** Reusable legacy section contents attached to this chapter ownership */

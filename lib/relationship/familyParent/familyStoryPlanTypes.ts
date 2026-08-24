@@ -85,32 +85,6 @@ export type FamilySynthesisResult = {
   innateVsCurrentCategory?: FamilyInnateVsCurrentCategory;
 };
 
-export type FamilyConflictLoop = {
-  triggerEvidenceIds: string[];
-  parentTrigger?: string;
-  childReaction?: string;
-  parentEscalation?: string;
-  breakPattern?: string;
-  confidence: "high" | "medium";
-};
-
-export type FamilyRepairPattern = {
-  coolingNeed: "none" | "short" | "moderate" | "extended";
-  initiatorRole: "parent" | "child" | "either";
-  effectiveRepairStyle: string;
-  ineffectiveRepairStyle: string;
-  reconnectionAction: string;
-};
-
-export type FamilyGrowthTransition = {
-  currentRolePattern: string;
-  recommendedShift: string;
-  evidenceIds: string[];
-  transitionReason: string;
-  boundaryRule?: string;
-  confidence: "high" | "medium" | "low";
-};
-
 import type { ChildParentingNeedsOutput } from "./familyChildParentingNeedsEngine";
 
 export type CanonicalFamilyPairMeanings = {
@@ -446,8 +420,5 @@ export type CanonicalFamilyStoryPlan = {
   insightCandidates?: FamilyInsightCandidate[];
   actionCandidates?: FamilyActionCandidate[];
   synthesisResults?: FamilySynthesisResult[];
-  conflictLoop?: FamilyConflictLoop;
-  repairPattern?: FamilyRepairPattern;
-  growthTransition?: FamilyGrowthTransition;
   evidenceMap: Record<string, any>;
 };
