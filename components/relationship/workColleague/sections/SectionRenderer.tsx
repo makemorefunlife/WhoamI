@@ -804,19 +804,28 @@ function ConflictSensitivityCard({
   boundary?: { me: string; partner: string };
   names: [string, string];
 }) {
-  if (!boundary) return null;
+  const meTrigger = boundary?.me || `${names[0]}님에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요받을 때 감정적 민감도가 극대화됩니다.`;
+  const partnerTrigger = boundary?.partner || `${names[1]}님에게 존중 없이 속도만 강요되거나, 기준이 무너지는 순간 날카롭게 반응하게 됩니다.`;
 
   return (
-    <div className="mt-6 mb-6 space-y-3">
-      <SubHeading title="갈등 유발 민감 요인 (Conflict Sensitivity)" tag="SENSITIVITY" tone="coral" />
-      <div className="rounded-xl bg-amber-50/50 p-4 border border-amber-200/60 space-y-2 text-xs">
+    <div className="mt-6 mb-6 space-y-3 text-xs">
+      <SubHeading title="갈등 유발 민감 요인 (Conflict Triggers)" tag="CONFLICT TRIGGER" tone="coral" />
+      <div className="rounded-xl bg-red-50/50 p-4 border border-red-200/60 space-y-3">
         <div>
-          <p className="font-bold text-amber-900">⚠️ {names[0]}이 민감하게 느끼는 상황</p>
-          <p className="text-amber-800/90 leading-relaxed mt-0.5">{boundary.me}</p>
+          <p className="font-bold text-red-900 flex items-center gap-1">
+            <span>⚡</span>
+            <span>{names[0]}의 갈등 민감 트리거</span>
+          </p>
+          <p className="text-red-800/90 leading-relaxed text-[11px] mt-1">• 공개적으로 책임을 떠넘기거나 존중 없는 속도 강요 시 민감도 상승</p>
+          <p className="text-rel-ink-soft text-[10.5px] mt-0.5">{meTrigger}</p>
         </div>
-        <div className="pt-2 border-t border-amber-200/50">
-          <p className="font-bold text-amber-900">⚠️ {names[1]}이 민감하게 느끼는 상황</p>
-          <p className="text-amber-800/90 leading-relaxed mt-0.5">{boundary.partner}</p>
+        <div className="pt-2.5 border-t border-red-200/60">
+          <p className="font-bold text-red-900 flex items-center gap-1">
+            <span>⚡</span>
+            <span>{names[1]}의 갈등 민감 트리거</span>
+          </p>
+          <p className="text-red-800/90 leading-relaxed text-[11px] mt-1">• 기준이 무너지거나 존중 없는 속도 강요 시 날카롭게 지적 및 반응</p>
+          <p className="text-rel-ink-soft text-[10.5px] mt-0.5">{partnerTrigger}</p>
         </div>
       </div>
     </div>
@@ -849,7 +858,7 @@ function OperatingRulesCard({
           <p className="font-bold text-rel-deep">{names[0]}님과 일할 때의 수칙</p>
           <ul className="space-y-1 text-rel-ink-soft">
             <li>✅ <strong>DO:</strong> 판단 권한 범위와 핵심 목표를 명확히 정하고 시작하기</li>
-            <li>❌ <strong>DON'T:</strong> 충분한 공유 없이 속도나 가이드라인 갑작스럽게 변경하기</li>
+            <li>❌ <strong>DON'T:</strong> 충분한 공유 없이 속도나 가이드라인 갑작스럽게 변경하지 않기</li>
           </ul>
         </div>
 
@@ -859,6 +868,58 @@ function OperatingRulesCard({
             <li>✅ <strong>DO:</strong> 안건의 배경 맥락과 검토 시간을 충분히 확보해주기</li>
             <li>❌ <strong>DON'T:</strong> 준비 시간이 부족한 상태에서 즉흥적인 확답 요구하지 않기</li>
           </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmergencyTriageRulesCard({
+  meta,
+  names,
+}: {
+  meta: any;
+  names: [string, string];
+}) {
+  const cmd = meta?.crunch_deadline_mode;
+  const canonicalRoles = meta?.canonical_role_map;
+
+  const scopeCutOwner = canonicalRoles?.executionOwner === "B" ? names[1] : names[0];
+  const qualityGateOwner = canonicalRoles?.qaRiskOwner === "B" ? names[1] : names[0];
+
+  const priorityCut = cmd?.priorityCutLead || `${scopeCutOwner}님이 과부하 시 일정이 밀리는 부수 과제를 먼저 정단하고 핵심 과제에 집중합니다.`;
+  const baseline = cmd?.baselineHolder || `${qualityGateOwner}님이 속도를 올리더라도 무너뜨리지 않을 최소 품질 마지노선을 최종 승인합니다.`;
+  const buffer = cmd?.bufferSupportNeed || `마감 24시간 전 검토 버퍼를 확보하고, 긴급 변경 사항은 사전 오프라인 상의 후 반영합니다.`;
+
+  return (
+    <div className="mt-6 mb-6 space-y-3 text-xs">
+      <SubHeading title="위기 대응 & 비상 처방 수칙 (Emergency Triage Playbook)" tag="TRIAGE RULES" tone="coral" />
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1.5 shadow-sm">
+          <p className="font-bold text-amber-900 flex items-center gap-1">
+            <span>✂️</span>
+            <span>우선순위 축소 규칙</span>
+          </p>
+          <p className="text-[10.5px] font-semibold text-amber-800">스코프 조정 Owner: {scopeCutOwner}</p>
+          <p className="text-amber-800/90 leading-relaxed text-[11px]">{priorityCut}</p>
+        </div>
+
+        <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1.5 shadow-sm">
+          <p className="font-bold text-emerald-900 flex items-center gap-1">
+            <span>🛡️</span>
+            <span>최소 품질 기준선</span>
+          </p>
+          <p className="text-[10.5px] font-semibold text-emerald-800">품질 Gate Owner: {qualityGateOwner}</p>
+          <p className="text-emerald-800/90 leading-relaxed text-[11px]">{baseline}</p>
+        </div>
+
+        <div className="rounded-xl bg-sky-50/60 p-4 border border-sky-200/60 space-y-1.5 shadow-sm">
+          <p className="font-bold text-sky-900 flex items-center gap-1">
+            <span>🔋</span>
+            <span>버퍼 확보 & 과부하 방지 처방</span>
+          </p>
+          <p className="text-[10.5px] font-semibold text-sky-800">마감 24시간 전 검토 버퍼</p>
+          <p className="text-sky-800/90 leading-relaxed text-[11px]">{buffer}</p>
         </div>
       </div>
     </div>
@@ -929,34 +990,6 @@ function CrunchModeCard({
             </RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.pressureFrictionPoint}
-            </RelationshipReportParagraph>
-          </RelationshipReportInset>
-        </div>
-
-        {/* 5. 실전 운영 규칙 & 버퍼 보호 */}
-        <div className="grid gap-3 sm:grid-cols-3">
-          <RelationshipReportInset>
-            <RelationshipReportLabel className="text-amber-700 font-bold">
-              ✂️ {isEn ? "Priority Cut Rule" : "우선순위 축소 규칙"}
-            </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
-              {cmd.priorityCutLead}
-            </RelationshipReportParagraph>
-          </RelationshipReportInset>
-          <RelationshipReportInset>
-            <RelationshipReportLabel className="text-emerald-700 font-bold">
-              🛡️ {isEn ? "Quality Baseline" : "최소 품질 기준선"}
-            </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
-              {cmd.baselineHolder}
-            </RelationshipReportParagraph>
-          </RelationshipReportInset>
-          <RelationshipReportInset className="border-sky-100 bg-sky-50/60">
-            <RelationshipReportLabel className="text-sky-700 font-bold">
-              🔋 {isEn ? "Buffer Support Rule" : "버퍼 & 과부하 방지 처방"}
-            </RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
-              {cmd.bufferSupportNeed}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
         </div>
@@ -1789,9 +1822,6 @@ export function WorkReportViewModelView({
         <div id="ch_crunch" />
         <UserQuestionBanner question={isEn ? "What changes under tight deadlines and emergency pressure?" : "평소에는 괜찮아도 마감이나 위기 상황에서는 둘이 어떻게 달라지는가?"} />
         <CrunchModeCard meta={meta} names={names} isEn={isEn} />
-        {comparisonSection?.boundary ? (
-          <StressStateShiftCard boundary={comparisonSection.boundary} names={names} />
-        ) : null}
       </WorkChapterSection>
 
       {/* Chapter 6: 06 · Conflict Triggers & Trust Repair */}
@@ -1805,9 +1835,7 @@ export function WorkReportViewModelView({
         <div id="ch_relationship_loop" />
         <div id="ch_deep_read" />
         <UserQuestionBanner question={isEn ? "What triggers sensitivity during mistakes, and how is trust repaired?" : "실수나 충돌이 생겼을 때 무엇에 민감하고, 어떻게 해야 다시 신뢰가 회복되는가?"} />
-        {comparisonSection?.boundary ? (
-          <ConflictSensitivityCard boundary={comparisonSection.boundary} names={names} />
-        ) : null}
+        <ConflictSensitivityCard boundary={comparisonSection?.boundary} names={names} />
         <MistakeRepairCard meta={meta} names={names} />
         {warningSection ? <WarningCard section={warningSection} /> : null}
         <MutualGrowthCard meta={meta} names={names} />
@@ -1826,6 +1854,7 @@ export function WorkReportViewModelView({
         <div id="pair-prescription-work" />
         <UserQuestionBanner question={isEn ? "What are our immediate 1:1 operational rules starting tomorrow?" : "그래서 내일부터 둘이 어떻게 일하면 되는가?"} />
         <OperatingRulesCard thinkVsDiscuss={meta?.think_vs_discuss} names={names} />
+        <EmergencyTriageRulesCard meta={meta} names={names} />
         <PlaybookSummaryCard meta={meta} />
         {prescriptionSection ? <PrescriptionCard section={prescriptionSection} /> : null}
 
