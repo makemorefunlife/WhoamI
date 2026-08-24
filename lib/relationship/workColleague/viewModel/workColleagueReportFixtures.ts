@@ -24,8 +24,8 @@ export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
       { topic: "stability", label: "프로젝트 시너지", activation: 65, benefit: 75, risk: 25 },
       { topic: "conflict", label: "업무 마찰·갈등", activation: 40, benefit: 30, risk: 20 },
     ],
-    personA: { nickname: "Alex", metaphor: "", axes: [] },
-    personB: { nickname: "Jordan", metaphor: "", axes: [] },
+    personA: { nickname: "Sera", metaphor: "", axes: [] },
+    personB: { nickname: "동글", metaphor: "", axes: [] },
     personAxesSource: "hidden",
     narrative: {
       topics: [
@@ -65,14 +65,14 @@ export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
   office: {
     section_dna: {
       person_a: {
-        nickname: "Alex",
+        nickname: "Sera",
         character_title: "실속 폭주 CFO",
         work_style: "큰 그림을 먼저 그려요.",
         inner_standard: "위기 때 기준이 분명해져요.",
         overall_character: "오피스에서 안정 에너지가 두드러져요.",
       },
       person_b: {
-        nickname: "Jordan",
+        nickname: "동글",
         character_title: "아이디어 뱅크",
         work_style: "섬세하게 조율해요.",
         inner_standard: "혼자 정리하는 편이에요.",
@@ -86,28 +86,28 @@ export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
       one_line_definition: "톱니바퀴가 맞물리는 조합",
     },
     section_mix_fit: {
-      person_a_work_style: "Alex 업무 스타일",
-      person_b_work_style: "Jordan 업무 스타일",
+      person_a_work_style: "Sera 업무 스타일",
+      person_b_work_style: "동글 업무 스타일",
       communication_fit: "회의실에서 방향이 잘 맞아요.",
     },
     section_respect: {
-      person_a_boundary: "Alex 경계",
-      person_b_boundary: "Jordan 경계",
+      person_a_boundary: "Sera 경계",
+      person_b_boundary: "동글 경계",
     },
     section_roles: {
       person_a: {
-        nickname: "Alex",
+        nickname: "Sera",
         weapons: ["예산 관리"],
         handoff_tasks: [
-          { task_label: "브레인스토밍", handoff_to: "Jordan", reason: "Jordan이 기획에 강해요." },
+          { task_label: "브레인스토밍", handoff_to: "동글", reason: "동글이 기획에 강해요." },
         ],
       },
-      person_b: { nickname: "Jordan", weapons: ["기획"], handoff_tasks: [] },
+      person_b: { nickname: "동글", weapons: ["기획"], handoff_tasks: [] },
       synergy_one_liner: "역할만 나누면 톱니바퀴가 돌아갑니다.",
       leadership_split: {
         external_lead: "a",
         internal_qa_lead: "b",
-        summary: "Alex는 대외 발표 쪽이 잘 맞고, Jordan은 실무 검수 쪽이 강해요.",
+        summary: "Sera는 대외 발표 쪽이 잘 맞고, 동글은 실무 검수 쪽이 강해요.",
       },
     },
     section_upset: {

@@ -37,6 +37,7 @@ import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewMo
 import { buildWorkOverviewChapterBundle } from "../workOverviewChapterEngine";
 import { buildIndividualWorkChapterBundle } from "../individualWorkChapterEngine";
 import { buildWorkCommunicationChapterBundle } from "../workCommunicationChapterEngine";
+import { buildWorkPressureChapterBundle } from "../workPressureChapterEngine";
 
 export type BuildWorkReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -484,54 +485,66 @@ export function buildWorkReportViewModel(
     .filter((section): section is WorkReportSection => section != null);
 
   let storyPlan = (report as any).storyPlan ?? (report as any).story_plan ?? null;
-  if (!storyPlan || !storyPlan.overviewChapterBundle) {
-    const snap = report.office?.section_snapshot;
-    const fitPct = snap?.fit_pct ?? (report.meta?.fit_pct ?? 80);
-    const synergyPct = snap?.synergy_pct ?? (report.meta?.synergy_pct ?? 75);
-    const riskPct = snap?.risk_pct ?? (report.meta?.risk_pct ?? 20);
+  const snap = report.office?.section_snapshot;
+  const fitPct = snap?.fit_pct ?? (report.meta?.fit_pct ?? 80);
+  const synergyPct = snap?.synergy_pct ?? (report.meta?.synergy_pct ?? 75);
+  const riskPct = snap?.risk_pct ?? (report.meta?.risk_pct ?? 20);
 
-    const overviewChapterBundle = buildWorkOverviewChapterBundle({
-      nameA: myName,
-      nameB: partnerName,
-      locale,
-      fitPct,
-      synergyPct,
-      riskPct,
-      psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-      psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-    });
+  const overviewChapterBundle = buildWorkOverviewChapterBundle({
+    nameA: myName,
+    nameB: partnerName,
+    locale,
+    fitPct,
+    synergyPct,
+    riskPct,
+    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+  });
 
-    const individualWorkBundle = buildIndividualWorkChapterBundle({
-      nameA: myName,
-      nameB: partnerName,
-      locale,
-      psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-      psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-      sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-      sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
-      officeReport: report as any,
-    });
+  const individualWorkBundle = buildIndividualWorkChapterBundle({
+    nameA: myName,
+    nameB: partnerName,
+    locale,
+    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
+    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+    officeReport: report as any,
+  });
 
-    const communicationChapterBundle = buildWorkCommunicationChapterBundle({
-      nameA: myName,
-      nameB: partnerName,
-      locale,
-      psychA: (report.meta?.person_core as any)?.psych_a ?? null,
-      psychB: (report.meta?.person_core as any)?.psych_b ?? null,
-      sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
-      sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
-      workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
-      workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
-      officeReport: report as any,
-    });
+  const communicationChapterBundle = buildWorkCommunicationChapterBundle({
+    nameA: myName,
+    nameB: partnerName,
+    locale,
+    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
+    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
+    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+    officeReport: report as any,
+  });
 
-    storyPlan = {
-      ...storyPlan,
-      overviewChapterBundle,
-      individualWorkBundle,
-      communicationChapterBundle,
-    } as any;
-  }
+  const pressureChapterBundle = buildWorkPressureChapterBundle({
+    nameA: myName,
+    nameB: partnerName,
+    locale,
+    individualWorkBundle,
+    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
+    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
+    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+  });
+
+  storyPlan = {
+    ...storyPlan,
+    overviewChapterBundle,
+    individualWorkBundle,
+    communicationChapterBundle,
+    pressureChapterBundle,
+  } as any;
 
   return {
     kind: "work",

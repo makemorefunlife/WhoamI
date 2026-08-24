@@ -240,6 +240,7 @@ export type WorkOverviewChapterBundle = {
 };
 
 import type { WorkCommunicationChapterBundle } from "./workCommunicationChapterEngine";
+import type { WorkPressureChapterBundle } from "./workPressureChapterEngine";
 
 export type CanonicalWorkStoryPlan = {
   schemaVersion: "work_story_plan_v1";
@@ -253,6 +254,7 @@ export type CanonicalWorkStoryPlan = {
   overviewChapterBundle?: WorkOverviewChapterBundle;
   individualWorkBundle?: IndividualWorkChapterBundle;
   communicationChapterBundle?: WorkCommunicationChapterBundle;
+  pressureChapterBundle?: WorkPressureChapterBundle;
   workRoles: {
     selfRole?: string;
     colleagueRole?: string;

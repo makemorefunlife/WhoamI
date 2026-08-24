@@ -12,13 +12,13 @@ import { WorkReportViewModelView } from "@/components/relationship/workColleague
 export default function WorkReportViewModelDevPage() {
   const vmFull = buildWorkReportViewModel(fullWorkColleagueReportFixture, {
     viewerIsReportA: true,
-    myName: "Alex",
-    partnerName: "Jordan",
+    myName: "Sera",
+    partnerName: "동글",
   });
   const vmMinimal = buildWorkReportViewModel(minimalWorkColleagueReportFixture, {
     viewerIsReportA: true,
-    myName: "Alex",
-    partnerName: "Jordan",
+    myName: "Sera",
+    partnerName: "동글",
   });
 
   return (

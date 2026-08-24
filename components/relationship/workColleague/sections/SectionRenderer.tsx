@@ -32,6 +32,10 @@ import {
   buildWorkCommunicationChapterBundle,
   type WorkCommunicationChapterBundle,
 } from "@/lib/relationship/workColleague/workCommunicationChapterEngine";
+import {
+  buildWorkPressureChapterBundle,
+  type WorkPressureChapterBundle,
+} from "@/lib/relationship/workColleague/workPressureChapterEngine";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
 import { VersusStrip, Evidence, Reveal, SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { pick } from "@/lib/relationship/friend/friendCopy";
@@ -706,6 +710,251 @@ function CanonicalChapter04CommunicationView({
               </span>
               <p className="font-bold text-rel-deep text-xs pt-1">{step.phaseTitle}</p>
               <p className="text-rel-ink-soft text-[10.5px] leading-tight mt-1">{step.actionText}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CanonicalChapter05PressureView({
+  bundle,
+  names,
+}: {
+  bundle: WorkPressureChapterBundle;
+  names: [string, string];
+}) {
+  const pA = bundle.personA;
+  const pB = bundle.personB;
+
+  return (
+    <div className="space-y-10 my-4 text-xs">
+      <div className="rounded-xl bg-rel-taupe-soft/40 p-4 border border-rel-line/40 text-rel-ink-soft leading-relaxed">
+        <p className="font-semibold text-rel-deep text-xs mb-1">
+          💡 {bundle.subtitle}
+        </p>
+        <p className="text-[11.5px]">{bundle.introSummary}</p>
+      </div>
+
+      {/* 1. ◤ 압박이 오면 각자는 어떻게 달라질까 */}
+      <div className="space-y-3">
+        <SubHeading title="압박이 오면 각자는 어떻게 달라질까" tone="coral" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}</span>
+            <p className="text-[11px] text-rel-ink-mute">{pA.normalVsPressureShift.normalBehavior}</p>
+            <p className="font-bold text-amber-900 text-[11.5px]">↓ {pA.normalVsPressureShift.pressureBehavior}</p>
+            <p className="text-[10.5px] text-rel-ink-soft leading-relaxed pt-1">{pA.normalVsPressureShift.deltaExplanation}</p>
+            {pA.normalVsPressureShift.discrepancyNote ? (
+              <p className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded border border-emerald-200/50 leading-tight">
+                💡 {pA.normalVsPressureShift.discrepancyNote}
+              </p>
+            ) : null}
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}</span>
+            <p className="text-[11px] text-rel-ink-mute">{pB.normalVsPressureShift.normalBehavior}</p>
+            <p className="font-bold text-amber-900 text-[11.5px]">↓ {pB.normalVsPressureShift.pressureBehavior}</p>
+            <p className="text-[10.5px] text-rel-ink-soft leading-relaxed pt-1">{pB.normalVsPressureShift.deltaExplanation}</p>
+            {pB.normalVsPressureShift.discrepancyNote ? (
+              <p className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded border border-emerald-200/50 leading-tight">
+                💡 {pB.normalVsPressureShift.discrepancyNote}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* 2. ◤ 어떤 압박에 특히 민감할까 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="어떤 압박에 특히 민감할까" tone="coral" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}이 민감하게 느끼는 상황</span>
+            {pA.pressureTriggers.map((t, i) => (
+              <div key={i} className="space-y-0.5">
+                <p className="font-bold text-amber-900 text-[11.5px]">⚡ [{t.title}]</p>
+                <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{t.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}이 민감하게 느끼는 상황</span>
+            {pB.pressureTriggers.map((t, i) => (
+              <div key={i} className="space-y-0.5">
+                <p className="font-bold text-amber-900 text-[11.5px]">⚡ [{t.title}]</p>
+                <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{t.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. ◤ 마감이 가까워지면 무엇을 줄이고 무엇을 지킬까 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="마감이 가까워지면 무엇을 줄이고 무엇을 지킬까" tone="deep" />
+        {bundle.sharedTradeOffs?.isShared ? (
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm mb-2">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">
+              {bundle.sharedTradeOffs.title}
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-rel-deep block">둘 다 먼저 줄이는 것</span>
+                <div className="flex flex-wrap gap-1">
+                  {bundle.sharedTradeOffs.reducedItems.map((r, i) => (
+                    <span key={i} className="rounded bg-rel-taupe-soft text-rel-ink text-[10px] font-semibold px-2 py-0.5">{r}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-emerald-800 block">둘 다 끝까지 지키는 것</span>
+                <div className="flex flex-wrap gap-1">
+                  {bundle.sharedTradeOffs.protectedItems.map((p, i) => (
+                    <span key={i} className="rounded bg-emerald-100/60 text-emerald-800 text-[10px] font-bold px-2 py-0.5">{p}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <p className="text-[10.5px] text-rel-ink-soft pt-1">{bundle.sharedTradeOffs.explanation}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 트레이드오프</span>
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-rel-deep block">먼저 줄이는 것</span>
+                <div className="flex flex-wrap gap-1">
+                  {pA.tradeOffs.reducedItems.map((r, i) => (
+                    <span key={i} className="rounded bg-rel-taupe-soft text-rel-ink text-[10px] font-semibold px-2 py-0.5">{r}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1 pt-1">
+                <span className="text-[10px] font-bold text-emerald-800 block">끝까지 지키는 것</span>
+                <div className="flex flex-wrap gap-1">
+                  {pA.tradeOffs.protectedItems.map((p, i) => (
+                    <span key={i} className="rounded bg-emerald-100/60 text-emerald-800 text-[10px] font-bold px-2 py-0.5">{p}</span>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10.5px] text-rel-ink-soft pt-1">{pA.tradeOffs.explanation}</p>
+            </div>
+            <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 트레이드오프</span>
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-rel-deep block">먼저 줄이는 것</span>
+                <div className="flex flex-wrap gap-1">
+                  {pB.tradeOffs.reducedItems.map((r, i) => (
+                    <span key={i} className="rounded bg-rel-taupe-soft text-rel-ink text-[10px] font-semibold px-2 py-0.5">{r}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1 pt-1">
+                <span className="text-[10px] font-bold text-emerald-800 block">끝까지 지키는 것</span>
+                <div className="flex flex-wrap gap-1">
+                  {pB.tradeOffs.protectedItems.map((p, i) => (
+                    <span key={i} className="rounded bg-emerald-100/60 text-emerald-800 text-[10px] font-bold px-2 py-0.5">{p}</span>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10.5px] text-rel-ink-soft pt-1">{pB.tradeOffs.explanation}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. ◤ 문제가 터졌을 때 첫 반응 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="문제가 터졌을 때 첫 반응" tone="deep" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 첫 반응</span>
+            <p className="font-bold text-rel-deep text-[11.5px]">🚨 `{pA.emergencyFirstMove.sequenceLabel}`</p>
+            <p className="text-[10.5px] text-rel-ink-soft leading-relaxed">{pA.emergencyFirstMove.explanation}</p>
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 첫 반응</span>
+            <p className="font-bold text-rel-deep text-[11.5px]">🚨 `{pB.emergencyFirstMove.sequenceLabel}`</p>
+            <p className="text-[10.5px] text-rel-ink-soft leading-relaxed">{pB.emergencyFirstMove.explanation}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. ◤ 둘 다 압박받으면 어떤 팀이 될까 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="둘 다 압박받으면 어떤 팀이 될까" tone="coral" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1 shadow-sm">
+            <p className="font-bold text-emerald-900 text-xs">💪 {bundle.pairStressInteraction.strengthTitle}</p>
+            <p className="text-[11px] text-emerald-800/90 leading-relaxed">{bundle.pairStressInteraction.strengthSummary}</p>
+          </div>
+          <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1 shadow-sm">
+            <p className="font-bold text-amber-900 text-xs">⚠️ {bundle.pairStressInteraction.bottleneckTitle}</p>
+            <p className="text-[11px] text-amber-800/90 leading-relaxed">{bundle.pairStressInteraction.bottleneckSummary}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. ◤ 위기에서 오히려 강해지는 부분 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="위기에서 오히려 강해지는 부분" tone="deep" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 위기 속 역량</span>
+            <div className="flex flex-wrap gap-1">
+              {pA.crisisStrengths.keywords.map((kw, i) => (
+                <span key={i} className="rounded bg-rel-deep/10 text-rel-deep text-[10px] font-bold px-2 py-0.5">{kw}</span>
+              ))}
+            </div>
+            <p className="text-[10.5px] text-rel-ink-soft leading-relaxed pt-1">{pA.crisisStrengths.explanation}</p>
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 위기 속 역량</span>
+            <div className="flex flex-wrap gap-1">
+              {pB.crisisStrengths.keywords.map((kw, i) => (
+                <span key={i} className="rounded bg-rel-deep/10 text-rel-deep text-[10px] font-bold px-2 py-0.5">{kw}</span>
+              ))}
+            </div>
+            <p className="text-[10.5px] text-rel-ink-soft leading-relaxed pt-1">{pB.crisisStrengths.explanation}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 7. ◤ 압박이 오래 이어지면 나타나는 신호 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="압박이 오래 이어지면 나타나는 신호" tone="coral" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 과부하 행동 신호</span>
+            <ul className="space-y-1 text-[11px] text-rel-ink-soft">
+              {pA.overloadSignals.signals.map((sig, i) => (
+                <li key={i}>• {sig}</li>
+              ))}
+            </ul>
+            <p className="text-[10.5px] text-rel-ink-soft pt-1">{pA.overloadSignals.explanation}</p>
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 과부하 행동 신호</span>
+            <ul className="space-y-1 text-[11px] text-rel-ink-soft">
+              {pB.overloadSignals.signals.map((sig, i) => (
+                <li key={i}>• {sig}</li>
+              ))}
+            </ul>
+            <p className="text-[10.5px] text-rel-ink-soft pt-1">{pB.overloadSignals.explanation}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 8. ◤ 압박 속에서 가장 조심해야 할 리스크 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="압박 속에서 가장 조심해야 할 리스크" tone="coral" />
+        <div className="space-y-2.5">
+          {bundle.topPressureRisks.map((r, idx) => (
+            <div key={idx} className="rounded-xl bg-amber-50/60 p-3.5 border border-amber-200/60 space-y-1 shadow-sm">
+              <p className="font-bold text-amber-900 text-xs">⚠️ [{r.title}]</p>
+              <p className="text-[11px] text-amber-800/90 leading-relaxed">{r.explanation}</p>
             </div>
           ))}
         </div>
@@ -1821,7 +2070,22 @@ export function WorkReportViewModelView({
       >
         <div id="ch_crunch" />
         <UserQuestionBanner question={isEn ? "What changes under tight deadlines and emergency pressure?" : "평소에는 괜찮아도 마감이나 위기 상황에서는 둘이 어떻게 달라지는가?"} />
-        <CrunchModeCard meta={meta} names={names} isEn={isEn} />
+        {(() => {
+          const pressureBundle = vm.storyPlan?.pressureChapterBundle || buildWorkPressureChapterBundle({
+            nameA: names[0],
+            nameB: names[1],
+            locale: isEn ? "en-US" : "ko-KR",
+            individualWorkBundle: vm.storyPlan?.individualWorkBundle,
+            psychA: (rawReport.meta?.person_core as any)?.psych_a ?? null,
+            psychB: (rawReport.meta?.person_core as any)?.psych_b ?? null,
+            sajuChartA: (rawReport.meta?.person_core as any)?.saju_chart_a ?? null,
+            sajuChartB: (rawReport.meta?.person_core as any)?.saju_chart_b ?? null,
+            workSignalsA: (rawReport.meta?.person_core as any)?.work_signals_a ?? null,
+            workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
+          });
+
+          return <CanonicalChapter05PressureView bundle={pressureBundle} names={names} />;
+        })()}
       </WorkChapterSection>
 
       {/* Chapter 6: 06 · Conflict Triggers & Trust Repair */}
