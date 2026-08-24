@@ -127,6 +127,8 @@ function resolveRoleLensKey(parentRole: FamilyParentRole | undefined): FamilyRol
   return "neutral";
 }
 
+import { josaGwaWa } from "./familyParentLanguage";
+
 /**
  * meaning이 pair 밴드만 쓰면 person shortLabel 차이가 최종 문장에 안 남음.
  * 이미 계산된 A/B 라벨을 앞에 붙여, 같으면 “같음”·다르면 “차이”가 문장에 나타나게 한다.
@@ -139,10 +141,11 @@ function personAxisLead(
   labelChild: string,
 ): string {
   if (labelParent === labelChild) {
+    const parentWithJosa = josaGwaWa(nameParent);
     return pick(
       locale,
-      `${nameParent} and ${nameChild} share the same person signal (“${labelParent}”). `,
-      `${nameParent}와 ${nameChild} 모두 ‘${labelParent}’이에요. `,
+      `${nameParent} and ${nameChild} share the same signal (“${labelParent}”). `,
+      `${parentWithJosa} ${nameChild} 모두 ‘${labelParent}’이에요. `,
     );
   }
   return pick(
@@ -388,36 +391,36 @@ const CORRECTION_FRICTION_DIFF: Record<
 > = {
   "ko-KR": {
     neutral: {
-      low: "반응 유형이 달라도 지금 마찰 신호는 낮은 편이에요 — 쉽게 쌓이지 않아요.",
-      medium: "반응 유형이 달라 중간 마찰이 생길 수 있어요 — 차이를 먼저 말해 두면 도움이 돼요.",
-      high: "반응 유형이 달라 마찰이 커지기 쉬운 조합이에요 — 한 번에 한 가지 요청만 쓰는 편이 안전해요.",
+      low: "집 안에서 훈육이나 서운함으로 지적이나 교정이 들어오는 순간, 한쪽은 감정이나 서운함이 먼저 터져 나오고 다른 쪽은 논리적인 이유부터 정리해 반응하기 쉽습니다. 서운함을 '무시당했다'고 느끼기보다, 10분 정도 쿨다운 시간을 가진 뒤 '한 줄 사실 + 한 줄 요청'으로만 대화하면 불필요한 마찰로 번지지 않습니다.",
+      medium: "집 안에서 실수나 생활 습관 문제로 의견이 갈릴 때, 감정을 다독이는 쪽과 직설적으로 원인을 짚는 방식이 부딪히기 쉽습니다. 대화 시작 전 10초간 숨을 고르고 감정과 요청을 나누어 전달하면 훨씬 매끄러워집니다.",
+      high: "지적이나 지시가 들어오는 순간 한쪽은 정서적 거부감을, 다른 쪽은 논리적 정당성을 내세워 감정 대립으로 격화되기 쉽습니다. 길게 설득하려 하기보다 핵심 요청 사항만 짧고 명확하게 전달해야 마찰을 피할 수 있습니다.",
     },
     mother: {
-      low: "반응 타입이 달라도 지금 마찰은 낮은 편이에요 — 쉽게 상처로 번지지 않아요.",
-      medium: "반응 타입이 달라 중간 마찰이 생길 수 있어요 — ‘한 줄 사실 + 한 줄 요청’이 도움이 돼요.",
-      high: "반응 타입이 달라 마찰이 커지기 쉬워요 — 평가는 줄이고 요청만 짧게 말해 보세요.",
+      low: "집 안에서 학업이나 생활 습관으로 지적이나 교정이 들어오는 순간, 한쪽은 서운함이나 감정이 먼저 터져 나오고 다른 쪽은 그 자리에서 즉시 직설적인 원인부터 정리하려는 경향이 있습니다. 서로 반응 속도가 달라도 서운함이 오래 굳어지지 않도록, 감정이 가라앉은 뒤 짧은 대화로 마치는 것이 좋습니다.",
+      medium: "아이의 생활 태도를 교정할 때 감정적 반응과 이성적 설명이 엇갈려 중간 마찰이 날 수 있습니다. 서운함을 탓하기보다 '어떤 행동이 필요했는지' 한 줄 사실과 한 줄 요청으로 단순화해 보세요.",
+      high: "훈육 순간 감정 반응과 직설적 교정이 상충하여 마찰이 빠르게 커질 수 있습니다. 상대의 반응에 조급해지지 말고 길게 평가하지 않는 것이 마음 상하지 않는 지혜입니다.",
     },
     father: {
-      low: "설명·반응 방식이 달라도 지금 마찰은 낮은 편이에요 — 크게 쌓이지 않아요.",
-      medium: "방식이 달라 중간 마찰이 생길 수 있어요 — 이유와 요청을 한 번에 하나씩만 말하세요.",
-      high: "방식이 달라 마찰이 커지기 쉬워요 — 긴 설교보다 한 가지 기준만 분명히 하세요.",
+      low: "집 안에서 행동이나 규칙 관련 지적이 들어오는 순간, 한쪽은 행동의 이유부터 짚으려 하고 다른 쪽은 감정적 반발이나 즉각적인 피드백을 보입니다. 대화 방식이 다를 뿐 본심은 닿아 있으므로, 핵심 이유 하나만 명확히 건네면 오해가 방지됩니다.",
+      medium: "지도 과정에서 이유 설명 방식의 템포가 달라 답답함을 느낄 수 있습니다. 한 번에 여러 지적을 쏟아내기보다 한 번에 하나씩만 짚고 넘어가면 부드럽게 해결됩니다.",
+      high: "규칙 지적 시 논리적 설명과 감정 반응이 강하게 부딪힐 수 있습니다. 긴 설교나 훈계보다는 한 가지 원칙만 분명히 남기고 스스로 생각할 여지를 주는 것이 효과적입니다.",
     },
   },
   "en-US": {
     neutral: {
-      low: "Even with different reaction styles, friction stays low right now.",
-      medium: "Different reaction styles can create moderate friction — name the difference first.",
-      high: "Different reaction styles tend to escalate — one fact + one request is safer.",
+      low: "When chores or rules trigger feedback at home, one leads with emotion while the other processes facts first. Taking a 10-minute pause before delivering one clear ask prevents unnecessary friction.",
+      medium: "Different reaction styles can trigger friction over daily tasks — pause first and split feelings from the ask.",
+      high: "Feedback moments escalate when emotional defensiveness meets direct evaluation — keep the ask brief and specific.",
     },
     mother: {
-      low: "Different reaction styles, but friction stays low — less likely to turn into lasting hurt.",
-      medium: "Different styles can create moderate friction — one fact + one request helps.",
-      high: "Different styles can escalate quickly — shorten evaluation and keep the ask brief.",
+      low: "During routine discipline, one reacts emotionally while the other directly dissects causes. Letting emotions cool before a quick follow-up prevents lasting hurt.",
+      medium: "Discipline styles differ — focus on one short fact and one clear ask rather than evaluating intentions.",
+      high: "Discipline moments can escalate — shorten evaluation and stick strictly to a single request.",
     },
     father: {
-      low: "Different explanation styles, but friction stays low for now.",
-      medium: "Different styles can create moderate friction — one reason and one request at a time.",
-      high: "Different styles tend to escalate — one clear standard beats a long lecture.",
+      low: "When addressing rules, one explains reasons while the other responds directly. Keeping the core point clear prevents misunderstanding.",
+      medium: "Guidance styles differ — address one point at a time instead of stacking issues.",
+      high: "Rule discussions can escalate — state one firm principle and leave room rather than giving a long lecture.",
     },
   },
 };
@@ -429,11 +432,6 @@ const CORRECTION_FRICTION_SAME: Record<
 > = {
   "ko-KR": {
     neutral: {
-      low: "같은 반응 타입이라 속도 충돌은 적고, 지금 마찰 신호도 낮은 편이에요.",
-      medium: "같은 반응 타입끼리라 감정이 겹칠 때 중간 마찰이 날 수 있어요 — 한 줄 요청만 쓰세요.",
-      high: "같은 반응 타입끼리 감정 온도가 겹치며 마찰이 커지기 쉬워요 — 한 번에 한 가지만 요청하세요.",
-    },
-    mother: {
       low: "같은 반응 타입이라 속도 싸움은 적고, 지금 마찰도 낮은 편이에요.",
       medium: "같은 반응 타입끼리 감정이 겹치면 중간 마찰이 날 수 있어요 — ‘한 줄 사실 + 한 줄 요청’이 도움이 돼요.",
       high: "같은 반응 타입끼리라 감정 온도가 겹치며 마찰이 커지기 쉬워요 — 평가는 줄이고 요청만 짧게.",
@@ -537,36 +535,36 @@ const UMBILICAL_SAME: Record<
 > = {
   "ko-KR": {
     neutral: {
-      low: "같은 거리 감각이라 밀착·분리 과제가 낮은 편이에요.",
-      medium: "같은 거리 감각끼리라 ‘공간이 필요해’는 통하지만, 챙김이 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요.",
-      high: "같은 거리 감각끼리도 밀착이 과해지면 숨이 막힐 수 있어요 — 각자의 편안한 거리를 주기적으로 말해 보세요.",
+      low: "일상생활에서 외출 후 안부를 묻거나 각자의 개인 공간에서 시간을 보낼 때, 둘 다 서로의 영역을 존중하면서도 자연스러운 거리를 유지합니다. 지나치게 간섭하거나 갑자기 멀어지는 불안 없이 쾌적한 일상 리듬이 지속됩니다.",
+      medium: "서로의 공간이 필요하다는 점은 잘 통하지만, 일상적인 안부나 챙김이 자칫 소홀해지지 않도록 가볍게 마음을 건네는 관심 조율이 도움이 됩니다.",
+      high: "둘 다 독립성을 중시하더라도 너무 멀어지면 서운함이 축적될 수 있습니다. 각자 편안하다고 느끼는 관심의 정도를 주기적으로 대화로 나눠 보세요.",
     },
     mother: {
-      low: "같은 거리 감각이라 보호·독립 리듬이 크게 충돌하지 않아요.",
-      medium: "같은 거리 감각끼리라 통하지만, 챙김·독립이 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요.",
-      high: "같은 거리 감각끼리도 붙어 있으면 숨이 막힐 수 있어요 — 공간이 필요한 속도를 서로 존중해 주세요.",
+      low: "일상생활에서 외출 후 안부를 묻거나 각자의 공간에서 개인 시간을 보낼 때, 둘 다 적당히 서로의 일상을 챙기면서도 지나치게 간섭하지 않는 쾌적한 거리를 유지합니다. 일방적으로 밀착하거나 갑자기 멀어지는 불안 없이 안락한 일상 리듬이 지속됩니다.",
+      medium: "서로 개인 영역을 존중하는 템포는 잘 맞지만, 일상적인 케어가 부족하다고 느끼지 않도록 안부를 챙기는 조율이 도움이 됩니다.",
+      high: "독립성과 공간을 바라는 성향이 같아도 지나치게 방치된다고 느끼지 않도록 적절한 수용과 안부 표현이 필요합니다.",
     },
     father: {
-      low: "같은 거리 감각이라 관여·자율 리듬이 크게 충돌하지 않아요.",
-      medium: "같은 거리 감각끼리라 통하지만, 관여가 부족한지 헷갈리기 쉬워요 — 중간 강도 조율이 필요해요.",
-      high: "같은 거리 감각끼리도 관여가 과하면 부담이 돼요 — 방향만 남기고 자율 여지를 주세요.",
+      low: "일상생활에서 관여와 자율의 리듬이 서로 일치합니다. 적당한 거리를 두고 각자의 역할을 존중하므로 자율권 충돌이나 과도한 간섭 없이 편안한 관계가 유지됩니다.",
+      medium: "자율성을 중시하는 속도는 통하지만, 가끔은 구체적인 방향 설정이나 케어가 필요할 때를 놓치지 않도록 조율하세요.",
+      high: "독립된 방식이 비슷해 서로 닿지 않는 느낌을 줄 수 있으므로, 핵심 방향은 공유하는 대화가 필요합니다.",
     },
   },
   "en-US": {
     neutral: {
-      low: "Same closeness band — the separation task stays low.",
-      medium: "Same closeness band means you both want similar space, but care can still feel missing — moderate tuning helps.",
-      high: "Same closeness band can still feel smothering when you stay too near — name comfortable distance often.",
+      low: "When checking in after returning home or using personal space, you both maintain a comfortable distance while respecting each other's boundaries. Daily rhythms stay peaceful without smothering or sudden coldness.",
+      medium: "You both respect personal space, but balance it with light check-ins so care isn't missed.",
+      high: "Even with shared independence, staying too distant can feel quiet — share your comfortable distance regularly.",
     },
     mother: {
-      low: "Same closeness band — protection/independence rhythms don't clash much.",
-      medium: "Same closeness band — you understand space, but care vs independence can still feel confusing — moderate tuning helps.",
-      high: "Same closeness band can still feel tight — respect the pace of needing room.",
+      low: "During daily check-ins and personal time, you both maintain a healthy distance without micro-managing. Rhythms stay peaceful without feeling smothered or abandoned.",
+      medium: "You understand each other's space, but make sure daily care stays clear and present.",
+      high: "Respecting space is shared, but ensure independent boundaries don't translate to feeling ignored.",
     },
     father: {
-      low: "Same closeness band — involvement/autonomy rhythms don't clash much.",
-      medium: "Same closeness band — involvement can still feel missing — moderate tuning helps.",
-      high: "Same closeness band can still feel heavy — leave room to decide after giving direction.",
+      low: "Involvement and autonomy rhythms match well in daily life. Respecting each other's space keeps the bond free of over-involvement.",
+      medium: "Autonomy needs align, but ensure direction and support are given when needed.",
+      high: "Independence matches, but make sure shared direction remains connected.",
     },
   },
 };
@@ -635,19 +633,19 @@ const GUIDANCE_FIT_MEANING: Record<
 > = {
   "ko-KR": {
     neutral: {
-      aligned: "돌봄·지도 방식이 잘 맞아요 — 같은 채널로 주고받기 쉬워요.",
-      partial: "한쪽이 혼합형이라, 장면마다 조율할 여지가 있어요.",
-      mismatch: "한쪽은 수용·설명, 다른 쪽은 기준 제시에 치우쳐 엇갈리기 쉬워요 — ‘지금 필요한 채널’을 먼저 말해 보세요.",
+      aligned: "가정 내에서 조언이나 훈육이 필요한 순간에 서로 선호하는 소통 채널이 잘 맞물립니다. 부모가 전달하려는 핵심과 아이가 수용하는 방식이 같은 언어로 소통되어 오해 없이 뜻이 잘 전달됩니다.",
+      partial: "돌봄과 지도 순간에 한쪽이 상황에 따라 수용과 기준을 번갈아 쓰는 유연한 타입이라, 일상적인 대화 톤이나 개입 강도를 상황별로 자유롭게 조율할 수 있는 구조입니다.",
+      mismatch: "훈육이나 조언 시 한쪽은 따뜻한 정서적 수용을 먼저 바라는 반면, 다른 쪽은 구체적인 기준과 규칙 제시를 우선시하여 엇갈리기 쉽습니다. 대화 시작 전 '지금은 마음을 들을 타이밍인지, 기준을 잡을 타이밍인지' 한 줄로 선을 맞추면 훨씬 편안해집니다.",
     },
     mother: {
-      aligned: "돌봄 장면에서 방식이 잘 맞아요 — 걱정과 챙김이 같은 언어로 전달되기 쉬워요.",
-      partial: "돌봄 장면에서 한쪽이 혼합형이라, 일상 개입 강도를 장면마다 조율할 여지가 있어요.",
-      mismatch: "돌봄 장면에서 수용과 기준이 엇갈리기 쉬워요 — 먼저 감정을 받을지, 기준을 할지 한 줄로 맞춰 보세요.",
+      aligned: "돌봄 장면에서 걱정과 챙김이 같은 언어로 전달되는 이상적인 구도입니다. 아이의 마음 상태를 살피고 보듬어주는 템포가 조화로워 억압이나 단절 없이 정서적 안정이 유지됩니다.",
+      partial: "돌봄 장면에서 한쪽이 혼합형이라, 일상적인 관심과 개인 공간의 균형을 상황에 맞춰 부드럽게 조율할 수 있는 여지가 많은 구조입니다.",
+      mismatch: "아이의 서운함을 보듬어주는 수용과 잘못을 바로잡는 기준 제시가 엇갈리기 쉬운 구도입니다. 먼저 감정을 받아줄지, 기준을 제시할지 사전에 가볍게 맞춰두는 노력이 필요합니다.",
     },
     father: {
-      aligned: "지도·조언 장면에서 방식이 잘 맞아요 — 기대와 설명이 같은 리듬으로 전달되기 쉬워요.",
-      partial: "지도 장면에서 한쪽이 혼합형이라, 책임 대화의 톤을 장면마다 조율할 여지가 있어요.",
-      mismatch: "지도 장면에서 설명과 기준이 엇갈리기 쉬워요 — 이유부터인지, 기준부터인지 먼저 맞춰 보세요.",
+      aligned: "지도와 조언이 오가는 대화에서 기대와 이유 설명의 리듬이 잘 맞물립니다. 책임과 자율의 기준이 명확하게 전달되어 서로 오해 없이 소통하기 편안합니다.",
+      partial: "지도 장면에서 한쪽이 융통성 있게 수용과 기준을 취하는 타입이라, 책임 대화의 톤을 아이의 성장 단계에 따라 부드럽게 맞춰갈 수 있습니다.",
+      mismatch: "조언 시 훈육의 이유부터 듣고 싶어 하는 방식과 명확한 원칙을 먼저 제시하려는 방식이 부딪히기 쉽습니다. 이유 설명부터 할지, 기준부터 짚을지 순서를 먼저 맞추는 대화 기술이 도움이 됩니다.",
     },
   },
   "en-US": {
@@ -742,7 +740,7 @@ const HOME_CLIMATE_MEANING: Record<
     },
     mother: {
       "high|high": "걱정과 집 안 긴장이 둘 다 누적되기 쉬운 구조예요 — 분위기가 무거워지기 전에 짧은 안부로 풀면 도움이 돼요.",
-      "low|low": "걱정이 집 전체 분위기로 오래 남기 어려운 조합이에요.",
+      "low|low": "집안에서 오해나 마찰이 생기더라도 한쪽이 마음에 담아두고 분위기를 어둡게 끌고 가기보다, 상황을 담담하게 넘기거나 빠르게 풀어내는 성향입니다. 앙금이 정서적 상처로 오래 남아 집 전체를 누르지 않고 쾌적하게 회복되는 좋은 조합입니다.",
       "medium|medium": "걱정과 압력이 중간 강도로 감지되는 구조예요 — 쌓이기 전에 한 줄로 말해 보세요.",
       "high|low": "한쪽은 집 안 걱정·긴장을 오래 품고, 다른 쪽은 덜 붙잡는 편이에요 — 민감한 쪽의 신호를 먼저 받아 주세요.",
       "high|medium": "걱정이 분위기로 번지기 쉬운 쪽과 중간 쪽의 조합이에요 — 변화가 느껴질 때 짧게 확인해 주세요.",
@@ -750,7 +748,7 @@ const HOME_CLIMATE_MEANING: Record<
     },
     father: {
       "high|high": "기준·대화·침묵이 집 안 분위기로 오래 남기 쉬운 구조예요 — 한 가지 기준만 짧게 남기고 분위기를 비워 주세요.",
-      "low|low": "기준 대화가 집 전체 긴장으로 오래 남기 어려운 조합이에요.",
+      "low|low": "기준이나 대화에서 긴장이 발생해도 이를 집안 분위기로 오래 품지 않고 담담하게 털어내는 조합입니다. 불필요한 서운함이나 침묵이 길어지지 않고 빠르게 가벼운 일상으로 회복되는 특징을 보입니다.",
       "medium|medium": "기준과 침묵이 중간 강도로 분위기에 남는 구조예요 — 쌓이기 전에 한 줄로 맞춰 보세요.",
       "high|low": "한쪽은 분위기 긴장을 오래 감지하고, 다른 쪽은 덜 붙잡는 편이에요 — 민감한 쪽의 침묵을 무시하지 마세요.",
       "high|medium": "긴장이 분위기로 남기 쉬운 쪽과 중간 쪽의 조합이에요 — 변화가 느껴질 때 짧게 확인해 주세요.",
@@ -862,6 +860,59 @@ export function formatFamilyCompareBandLabel(
     default:
       return band;
   }
+}
+
+export function formatFamilyCompareCanonicalMeaning(params: {
+  rowId: FamilyCompareRowId;
+  bandParent: string;
+  bandChild: string;
+  parentNickname: string;
+  childNickname: string;
+  parentRole?: FamilyParentRole;
+  locale?: Locale;
+}): string {
+  const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
+  const roleLensKey = resolveRoleLensKey(params.parentRole);
+  const { rowId, bandParent, bandChild, parentNickname, childNickname } = params;
+
+  const labelP = formatFamilyCompareBandLabel(rowId, bandParent, locale);
+  const labelC = formatFamilyCompareBandLabel(rowId, bandChild, locale);
+  const lead = personAxisLead(locale, parentNickname, labelP, childNickname, labelC);
+
+  if (rowId === "home_climate") {
+    const key = comboKey(bandParent as HomeClimateBand, bandChild as HomeClimateBand);
+    const text = HOME_CLIMATE_MEANING[locale][roleLensKey][key] || HOME_CLIMATE_MEANING[locale]["neutral"][key] || "";
+    return lead + text;
+  }
+  if (rowId === "correction_style") {
+    const text = bandParent === bandChild
+      ? (CORRECTION_FRICTION_SAME[locale][roleLensKey]["low"] || "")
+      : (CORRECTION_FRICTION_DIFF[locale][roleLensKey]["low"] || "");
+    return lead + text;
+  }
+  if (rowId === "bond_distance") {
+    const text = bandParent === bandChild
+      ? (UMBILICAL_SAME[locale][roleLensKey]["low"] || "")
+      : (UMBILICAL_DIFF[locale][roleLensKey]["low"] || "");
+    return lead + text;
+  }
+  if (rowId === "guidance_balance") {
+    const fitKey: GuidanceFit = bandParent === bandChild ? "aligned" : (bandParent === "mixed" || bandChild === "mixed" ? "partial" : "mismatch");
+    const text = GUIDANCE_FIT_MEANING[locale][roleLensKey][fitKey] || "";
+    return lead + text;
+  }
+  if (rowId === "affection_expression") {
+    const text = bandParent === bandChild
+      ? AFFECTION_EXPRESSION_MEANING[locale].same
+      : AFFECTION_EXPRESSION_MEANING[locale].diff;
+    return text;
+  }
+  if (rowId === "gathering_recovery") {
+    const key = `${bandParent}|${bandChild}`;
+    const text = GATHERING_RECOVERY_MEANING[locale][key] || "";
+    return text;
+  }
+  return lead;
 }
 
 // ---------------------------------------------------------------------------

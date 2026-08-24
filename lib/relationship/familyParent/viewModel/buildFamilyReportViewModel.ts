@@ -26,6 +26,7 @@ import {
   formatFamilyCompareCanonicalLabel,
   readFamilyComparisonTableCanonicalProjection,
 } from "@/lib/relationship/familyParent/familyComparisonTableCanonical";
+import { formatFamilyCompareCanonicalMeaning } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import type {
   OpeningBlock,
   FamilyReportSection,
@@ -35,6 +36,9 @@ import type {
 import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 import { josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
+import { buildFamilyConflictChapterBundle } from "../familyConflictChapterEngine";
+import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
+import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -110,26 +114,43 @@ function buildCompareTableSection(
   const authorityAll: FamilyCompareRow[] = allRows.map((row) => {
     const typedRow = typed?.[row.id];
     if (!typedRow) return row;
+    const parentLabel = formatFamilyCompareCanonicalLabel(
+      row.id,
+      typedRow.band_parent,
+      locale,
+    );
+    const childLabel = formatFamilyCompareCanonicalLabel(
+      row.id,
+      typedRow.band_child,
+      locale,
+    );
+    const parentNickname = report.family?.section_household_roles?.partner_name || row.personParent?.nickname || report.meta?.nickname_b || "부모";
+    const childNickname = report.family?.section_household_roles?.self_name || row.personChild?.nickname || report.meta?.nickname_a || "자녀";
+    const freshMeaning = formatFamilyCompareCanonicalMeaning({
+      rowId: row.id,
+      bandParent: typedRow.band_parent,
+      bandChild: typedRow.band_child,
+      parentNickname,
+      childNickname,
+      parentRole: report.family?.parent_role,
+      locale,
+    });
+
     return {
       ...row,
       personParent: {
         ...row.personParent,
+        nickname: parentNickname,
         band: typedRow.band_parent,
-        shortLabel: formatFamilyCompareCanonicalLabel(
-          row.id,
-          typedRow.band_parent,
-          locale,
-        ),
+        shortLabel: parentLabel,
       },
       personChild: {
         ...row.personChild,
+        nickname: childNickname,
         band: typedRow.band_child,
-        shortLabel: formatFamilyCompareCanonicalLabel(
-          row.id,
-          typedRow.band_child,
-          locale,
-        ),
+        shortLabel: childLabel,
       },
+      meaning: freshMeaning || row.meaning,
     };
   });
   const byId = new Map(authorityAll.map((row) => [row.id, row]));
@@ -579,7 +600,34 @@ export function buildFamilyReportViewModel(
     prescriptionSec,
   ].filter((s): s is FamilyReportSection => s != null);
 
-  const storyPlan = report.canonical_projections?.story_plan ?? null;
+  let storyPlan = report.canonical_projections?.story_plan ?? null;
+
+  if (storyPlan && !storyPlan.conflictChapterBundle) {
+    const parentNickname = report.family?.section_roles?.parent_nickname || report.family?.section_household_roles?.partner_name || report.meta?.nickname_b || "부모";
+    const childNickname = report.family?.section_roles?.child_nickname || report.family?.section_household_roles?.self_name || report.meta?.nickname_a || "자녀";
+    const defaultSajuA = toV1SajuApiPayload(calculateSajuBundle({ birthDate: "2020-08-20", birthTime: "10:00" }));
+    const defaultSajuB = toV1SajuApiPayload(calculateSajuBundle({ birthDate: "1993-05-15", birthTime: "14:00" }));
+
+    const ruleCtx = buildFamilyRuleContext({
+      nicknameA: childNickname,
+      nicknameB: parentNickname,
+      roles: { roleA: "child", roleB: report.family?.parent_role || "mother" },
+      sajuJsonA: (report.raw?.saju_child || report.meta?.saju_a || defaultSajuA) as any,
+      sajuJsonB: (report.raw?.saju_parent || report.meta?.saju_b || defaultSajuB) as any,
+      locale,
+    });
+    const conflictChapterBundle = buildFamilyConflictChapterBundle({
+      ctx: ruleCtx,
+      report: report as any,
+      psychParent: report.meta?.psych_b ?? null,
+      psychChild: report.meta?.psych_a ?? null,
+      psychProjections: [],
+    });
+    storyPlan = {
+      ...storyPlan,
+      conflictChapterBundle,
+    };
+  }
 
   // Build Editorial 8 Chapters mapping StoryPlan SSOT + Legacy Reusable Content
   const selectedClaims = storyPlan?.selectedClaims ?? [];
@@ -641,27 +689,27 @@ export function buildFamilyReportViewModel(
       id: "ch_comm",
       number: "04",
       title: isEn ? "04. Communication & Temperature" : "04. 소통과 반응 — 차이가 만드는 대화 온도",
-      subtitle: isEn ? "Differences in Thinking & Expression" : "표현과 수용의 밴드 차이로 발생하는 시널",
+      subtitle: isEn ? "Differences in Thinking & Expression" : "표현과 수용의 밴드 차이로 발생하는 시그널",
       summary: storyPlan?.childProfile?.guidanceMode || undefined,
       claims: filterClaims(["communication", "psych."]),
       insights: insightCandidates.filter(i => i.topic === "communication"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "communication"),
-      loveExpressionVsReception: storyPlan?.pairMeanings?.loveExpressionVsReception,
       legacySections: [psychRadarSec, compareTableSec].filter((s): s is FamilyReportSection => s != null),
     },
     {
       id: "ch_conflict",
       number: "05",
-      title: isEn ? "05. Conflict & De-escalation" : "05. 마찰과 경계 — 갈등 루프와 감정 안전거리",
-      subtitle: isEn ? "Understanding Friction Triggers" : "부딪히는 순환 고리와 안전한 거리두기",
-      summary: storyPlan?.conflict?.safeDistance || undefined,
+      title: isEn ? "05. Why We Clash" : "05. 우리가 부딪히는 이유",
+      subtitle: isEn ? "From Differences in Love Styles to Core Values" : "사랑의 방식부터 가치관의 차이까지",
+      summary: storyPlan?.conflictChapterBundle?.conflictSynthesisLine || undefined,
       claims: filterClaims(["conflict"]),
       insights: insightCandidates.filter(i => i.topic === "conflict"),
-      actions: actionCandidates.filter(a => a.type === "de_escalation"),
+      actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "conflict"),
       conflictLoop: storyPlan?.conflictLoop ?? null,
-      legacySections: [deEscalationSec].filter((s): s is FamilyReportSection => s != null),
+      loveExpressionVsReception: storyPlan?.pairMeanings?.loveExpressionVsReception,
+      legacySections: [],
     },
     {
       id: "ch_growth",
@@ -685,10 +733,10 @@ export function buildFamilyReportViewModel(
       summary: undefined,
       claims: filterClaims(["actions", "repair"]),
       insights: insightCandidates.filter(i => i.topic === "actions" || i.topic === "repair"),
-      actions: actionCandidates.filter(a => a.type === "sos_script"),
+      actions: actionCandidates.filter(a => a.type === "sos_script" || a.type === "de_escalation"),
       synthesis: synthesisResults.filter(s => s.topic === "actions" || s.topic === "repair"),
       repairPattern: storyPlan?.repairPattern ?? null,
-      legacySections: [filialFrequencySec, sosScriptSec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [filialFrequencySec, sosScriptSec, deEscalationSec].filter((s): s is FamilyReportSection => s != null),
     },
     {
       id: "ch_deep",

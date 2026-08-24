@@ -26,6 +26,10 @@ export function formatJosa(name: string, type: "은는" | "이가" | "을를" | 
   return trimmed;
 }
 
+export function josaGwaWa(name: string): string {
+  return formatJosa(name, "과의");
+}
+
 /** 엄마-자녀 전용 서술 렌즈 */
 export function buildMotherParentLens(params: {
   childNickname: string;

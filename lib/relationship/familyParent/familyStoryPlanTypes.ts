@@ -141,6 +141,56 @@ export type CanonicalFamilyPairMeanings = {
   childCoreNeedsDetailed?: ChildParentingNeedsOutput;
 };
 
+export type FamilyLoveExpressionAnalysis = {
+  parentExpressionTitle: string;
+  parentExpressionDesc: string;
+  childReceptionTitle: string;
+  childReceptionDesc: string;
+  pairSynthesisTitle: string;
+  pairSynthesisDesc: string;
+  keyInsightLine: string;
+};
+
+export type FamilyConflictCategoryKey =
+  | "rules_standards"
+  | "autonomy_control"
+  | "emotional_speed"
+  | "expectations_pressure"
+  | "expression_style"
+  | "authority_justification";
+
+export type FamilyConflictCardItem = {
+  id: string;
+  category: FamilyConflictCategoryKey;
+  numLabel: string;
+  title: string;
+  subhead: string;
+  parentLogic: string;
+  childLogic: string;
+  realSituationScene: string;
+  contrastBar: {
+    left: string;
+    right: string;
+  };
+  evidenceScore: number;
+};
+
+export type FamilyConflictLoopV2 = {
+  step1ParentTrigger: string;
+  step2ChildReaction: string;
+  step3ParentEscalation: string;
+  step4ChildNextReaction: string;
+  parentResidualFeeling: string;
+  childResidualFeeling: string;
+};
+
+export type FamilyConflictChapterBundle = {
+  loveAnalysis: FamilyLoveExpressionAnalysis;
+  conflictCards: FamilyConflictCardItem[];
+  conflictLoop: FamilyConflictLoopV2;
+  conflictSynthesisLine: string;
+};
+
 export type CanonicalFamilyStoryPlan = {
   relationshipCore: {
     bondLevel: "high" | "medium" | "low";
@@ -180,6 +230,9 @@ export type CanonicalFamilyStoryPlan = {
 
   /** 4 Pair-Level Core Meanings */
   pairMeanings?: CanonicalFamilyPairMeanings;
+
+  /** Part 05 Canonical Conflict Analysis Bundle */
+  conflictChapterBundle?: FamilyConflictChapterBundle;
 
   selectedClaims: FamilyClaim[];
   suppressedClaims: FamilyClaim[];

@@ -236,6 +236,28 @@ function RelationshipIndexCard({ section }: { section: RelationshipIndexSection 
   );
 }
 
+export function SectionHeader({ title, tag }: { title: string; tag?: string }) {
+  const cleanTitle = title.replace(/^[◤▼▶]\s*/, "");
+  return (
+    <div className="mb-6">
+      <div className="flex items-baseline justify-between gap-4">
+        <h3 className="flex min-w-0 items-baseline gap-3 font-rel-serif text-[20px] font-normal tracking-[-0.01em] text-rel-ink sm:text-[23px]">
+          <span className="text-[14px] text-[#8c7c72] shrink-0" aria-hidden>
+            ◤
+          </span>
+          <span className="min-w-0">{cleanTitle}</span>
+        </h3>
+        {tag && (
+          <span className="shrink-0 font-rel-sans text-[11px] uppercase tracking-[0.2em] text-rel-ink-mute">
+            {tag}
+          </span>
+        )}
+      </div>
+      <div className="mt-3 h-px w-full bg-rel-line" />
+    </div>
+  );
+}
+
 function CompareTableCard({
   section,
   names,
@@ -244,27 +266,35 @@ function CompareTableCard({
   names: [string, string];
 }) {
   const t = useMessages().relationshipDrilldown.family;
+  const { locale } = useLocale();
+  const sectionTitle = ec(locale, "◤ Comparing with Innate Tendencies", "◤ 본래의 성향과 비교");
+
   return (
-    <div className="mt-8">
-      <ul className="space-y-12">
-        {section.rows.map((row, i) => (
-          <li key={row.id}>
-            <Reveal delay={i * 50}>
-              <VersusStrip
-                label={row.label}
-                aName={`${t.compareTableColParent} · ${names[1]}`}
-                bName={`${t.compareTableColChild} · ${names[0]}`}
-                a={row.personParent.shortLabel}
-                b={row.personChild.shortLabel}
-              />
-              <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
-                {row.meaning}
-              </p>
-              <div className="mt-10 h-px w-full bg-rel-line" />
-            </Reveal>
-          </li>
-        ))}
-      </ul>
+    <div className="mt-10">
+      <SectionHeader title={sectionTitle} tag="COMPARE" />
+      <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm">
+        <ul className="space-y-12">
+          {section.rows.map((row, i) => (
+            <li key={row.id}>
+              <Reveal delay={i * 50}>
+                <VersusStrip
+                  label={row.label}
+                  aName={`${t.compareTableColParent} · ${names[1]}`}
+                  bName={`${t.compareTableColChild} · ${names[0]}`}
+                  a={row.personParent.shortLabel}
+                  b={row.personChild.shortLabel}
+                />
+                <p className="mt-3 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
+                  {row.meaning}
+                </p>
+                {i < section.rows.length - 1 && (
+                  <div className="mt-10 h-px w-full bg-rel-line" />
+                )}
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -419,12 +449,16 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
 
 function PsychRadarCard({ section, names }: { section: PsychRadarSection; names: [string, string] }) {
   const { locale } = useLocale();
+  const sectionTitle = ec(locale, "◤ Psych Axis Matching", "◤ 심리 축 매칭");
+  const chartNote = ec(locale, "We compared how you both show up right now across the 11 axes.", "두 분의 현재 모습을 11축으로 비교했어요.");
+
   return (
-    <div className="mt-6">
+    <div className="mt-10">
+      <SectionHeader title={sectionTitle} tag="11 AXES" />
       <PsychAxisComparisonSection
         axisResults={section.axisResults}
         highlights={section.highlights}
-        chartNote={section.chartNote}
+        chartNote={chartNote}
         names={names}
         locale={locale}
       />
@@ -1143,77 +1177,193 @@ export function FamilyReportViewModelView({
                       caution: risk?.caution,
                     },
                   ].map((card) => (
-                  <article key={card.num} className="overflow-hidden rounded-2xl border border-rel-line bg-rel-surface shadow-sm">
-                    <div className="p-6 sm:p-7">
-                      <div className="min-w-0">
-                        <div className="font-rel-sans text-[10.5px] font-semibold tracking-[0.24em] text-rel-ink-mute">
-                          {card.num}
+                    <article key={card.num} className="overflow-hidden rounded-2xl border border-rel-line bg-rel-surface shadow-sm">
+                      <div className="p-6 sm:p-7">
+                        <div className="min-w-0">
+                          <div className="font-rel-sans text-[10.5px] font-semibold tracking-[0.24em] text-rel-ink-mute">
+                            {card.num}
+                          </div>
+                          <h3 className="mt-2 font-rel-serif text-[20px] leading-[1.3] tracking-[-0.01em] text-rel-ink sm:text-[23px]">
+                            {card.label}
+                          </h3>
+                          {card.scene && (
+                            <p className="mt-3 max-w-[64ch] font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink-mute">
+                              {card.scene}
+                            </p>
+                          )}
                         </div>
-                        <h3 className="mt-2 font-rel-serif text-[20px] leading-[1.3] tracking-[-0.01em] text-rel-ink sm:text-[23px]">
-                          {card.label}
-                        </h3>
-                        {card.scene && (
-                          <p className="mt-3 max-w-[64ch] font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink-mute">
-                            {card.scene}
+
+                        {card.why && (
+                          <p className="mt-5 max-w-[64ch] font-rel-sans text-[14.5px] leading-[1.9] text-rel-ink-soft">
+                            {card.why}
                           </p>
                         )}
+
+                        {card.strength || card.caution ? (
+                          <dl className="mt-7 grid gap-4 sm:grid-cols-2">
+                            {card.strength && (
+                              <div className="rounded-xl bg-v4-good-soft p-5 border border-v4-good/20">
+                                <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-good">
+                                  {ec(locale, "Strength", "강점")}
+                                </dt>
+                                <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
+                                  {card.strength}
+                                </dd>
+                              </div>
+                            )}
+                            {card.caution && (
+                              <div className="rounded-xl bg-v4-bad-soft p-5 border border-v4-bad/20">
+                                <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-bad">
+                                  {ec(locale, "Caution", "주의")}
+                                </dt>
+                                <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
+                                  {card.caution}
+                                </dd>
+                              </div>
+                            )}
+                          </dl>
+                        ) : null}
                       </div>
+                    </article>
+                  ))}
+                </div>
+              );
+            })() : null}
 
-                      {card.why && (
-                        <p className="mt-5 max-w-[64ch] font-rel-sans text-[14.5px] leading-[1.9] text-rel-ink-soft">
-                          {card.why}
-                        </p>
-                      )}
-
-                      {card.strength || card.caution ? (
-                        <dl className="mt-7 grid gap-4 sm:grid-cols-2">
-                          {card.strength && (
-                            <div className="rounded-xl bg-v4-good-soft p-5 border border-v4-good/20">
-                              <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-good">
-                                {ec(locale, "Strength", "강점")}
-                              </dt>
-                              <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
-                                {card.strength}
-                              </dd>
-                            </div>
-                          )}
-                          {card.caution && (
-                            <div className="rounded-xl bg-v4-bad-soft p-5 border border-v4-bad/20">
-                              <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-bad">
-                                {ec(locale, "Caution", "주의")}
-                              </dt>
-                              <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
-                                {card.caution}
-                              </dd>
-                            </div>
-                          )}
-                        </dl>
-                      ) : null}
-                    </div>
-                  </article>
+            {/* StoryPlan Synthesis or Claim Highlight */}
+            {chapter.synthesis.length > 0 ? (
+              <div className="mb-6 space-y-3">
+                {chapter.synthesis.map((syn, idx) => (
+                  <div key={idx} className="rounded-xl border border-rel-line bg-rel-surface p-4">
+                    <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
+                      ✨ Synthesis · {syn.headline}
+                    </p>
+                    <p className="mt-1 text-sm text-rel-ink leading-relaxed">
+                      {syn.summary}
+                    </p>
+                  </div>
                 ))}
+              </div>
+            ) : null}
+
+            {/* Chapter 05: 우리가 부딪히는 이유 (Canonical Conflict Chapter) */}
+          {chapter.id === "ch_conflict" ? (() => {
+            const parentName = vm.opening.names[1] || "부모";
+            const childName = vm.opening.names[0] || "자녀";
+            const bundle = vm.storyPlan?.conflictChapterBundle;
+            const cards = bundle?.conflictCards ?? [];
+            const loop = bundle?.conflictLoop;
+
+            return (
+              <div className="my-8 space-y-10">
+                {/* ◤ 우리가 실제로 부딪히는 지점 (No 02. prefix) */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Where We Actually Clash", "◤ 우리가 실제로 부딪히는 지점")} tag="CONFLICT THEMES" />
+                  <div className="space-y-6">
+                    {cards.map((card) => (
+                      <article key={card.id} className="overflow-hidden rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                        <div className="flex items-baseline gap-3">
+                          <span className="font-rel-sans text-[11px] font-bold tracking-[0.2em] text-rel-deep">
+                            {card.numLabel}
+                          </span>
+                          <h4 className="font-rel-serif text-[18px] sm:text-[20px] font-bold text-rel-ink">
+                            {card.title}
+                          </h4>
+                        </div>
+                        <p className="text-sm font-semibold italic text-rel-deep/90">
+                          {card.subhead}
+                        </p>
+
+                        <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-rel-line/60">
+                          <div className="rounded-xl bg-rel-taupe-soft/25 p-4 border border-rel-line/60">
+                            <p className="text-xs font-bold text-rel-ink mb-1">
+                              👑 {parentName}{ec(locale, " to parent", "에게는")}
+                            </p>
+                            <p className="text-xs text-rel-ink-soft leading-relaxed">
+                              {card.parentLogic}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-rel-taupe-soft/25 p-4 border border-rel-line/60">
+                            <p className="text-xs font-bold text-rel-ink mb-1">
+                              🌱 {childName}{ec(locale, " to child", "에게는")}
+                            </p>
+                            <p className="text-xs text-rel-ink-soft leading-relaxed">
+                              {card.childLogic}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-2">
+                          <p className="text-xs font-semibold text-rel-ink-mute uppercase tracking-wider">
+                            🏠 {ec(locale, "In real life", "그래서 현실에서는")}
+                          </p>
+                          <p className="mt-1 text-xs sm:text-sm text-rel-ink leading-relaxed">
+                            {card.realSituationScene}
+                          </p>
+                        </div>
+
+                        <div className="rounded-xl bg-rel-paper p-3 border border-rel-line flex items-center justify-between text-xs font-medium text-rel-ink">
+                          <span>{card.contrastBar.left}</span>
+                          <span className="text-rel-deep font-bold">↔</span>
+                          <span>{card.contrastBar.right}</span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ◤ 한번 부딪히면 이렇게 커질 수 있어요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ How Fights Escalate", "◤ 한번 부딪히면 이렇게 커질 수 있어요")} tag="CONFLICT LOOP" />
+                  <div className="rounded-2xl border border-v4-bad/25 bg-v4-bad-soft/40 p-5 sm:p-6 shadow-sm space-y-4">
+                    <div className="space-y-3 font-rel-sans text-xs sm:text-sm text-rel-ink">
+                      <div className="flex gap-3 items-start">
+                        <span className="shrink-0 font-bold text-v4-bad">1. 시작</span>
+                        <p>{loop?.step1ParentTrigger}</p>
+                      </div>
+                      <div className="text-center text-rel-ink-mute text-xs">↓</div>
+                      <div className="flex gap-3 items-start">
+                        <span className="shrink-0 font-bold text-v4-bad">2. 아이의 자동 반응</span>
+                        <p>{loop?.step2ChildReaction}</p>
+                      </div>
+                      <div className="text-center text-rel-ink-mute text-xs">↓</div>
+                      <div className="flex gap-3 items-start">
+                        <span className="shrink-0 font-bold text-v4-bad">3. 부모의 해석과 재반응</span>
+                        <p>{loop?.step3ParentEscalation}</p>
+                      </div>
+                      <div className="text-center text-rel-ink-mute text-xs">↓</div>
+                      <div className="flex gap-3 items-start">
+                        <span className="shrink-0 font-bold text-v4-bad">4. 아이의 다음 반응</span>
+                        <p>{loop?.step4ChildNextReaction}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-v4-bad/20 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line">
+                        <p className="text-[11px] font-bold text-rel-deep uppercase tracking-wider">
+                          👑 {parentName}{ec(locale, " residual feeling", "에게 남는 느낌")}
+                        </p>
+                        <p className="mt-1 text-xs text-rel-ink-soft italic leading-relaxed">
+                          {loop?.parentResidualFeeling}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line">
+                        <p className="text-[11px] font-bold text-rel-deep uppercase tracking-wider">
+                          🌱 {childName}{ec(locale, " residual feeling", "에게 남는 느낌")}
+                        </p>
+                        <p className="mt-1 text-xs text-rel-ink-soft italic leading-relaxed">
+                          {loop?.childResidualFeeling}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })() : null}
 
-          {/* StoryPlan Synthesis or Claim Highlight */}
-          {chapter.synthesis.length > 0 ? (
-            <div className="mb-6 space-y-3">
-              {chapter.synthesis.map((syn, idx) => (
-                <div key={idx} className="rounded-xl border border-rel-line bg-rel-surface p-4">
-                  <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
-                    ✨ Synthesis · {syn.headline}
-                  </p>
-                  <p className="mt-1 text-sm text-rel-ink leading-relaxed">
-                    {syn.summary}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {/* Coverage Model: Conflict Loop */}
-          {chapter.conflictLoop && (chapter.conflictLoop.parentTrigger || chapter.conflictLoop.breakPattern) ? (
+          {/* Coverage Model: Conflict Loop (Only if not in ch_conflict) */}
+          {chapter.id !== "ch_conflict" && chapter.conflictLoop && (chapter.conflictLoop.parentTrigger || chapter.conflictLoop.breakPattern) ? (
             <div className="mb-6 rounded-xl border border-v4-bad/25 bg-v4-bad-soft p-4">
               <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
                 ⚡ 갈등 양상과 조율 포인트 · Conflict Loop
@@ -1262,24 +1412,6 @@ export function FamilyReportViewModelView({
                   💡 {chapter.dependencyProtection.summary}
                 </p>
               )}
-            </div>
-          ) : null}
-
-          {/* Core Pair Meaning 2: Love Expression vs Reception */}
-          {chapter.loveExpressionVsReception ? (
-            <div className="mb-6 rounded-xl border border-pink-100 bg-pink-50/60 p-4">
-              <p className="text-xs font-semibold text-pink-700 uppercase tracking-wider">
-                ❤️ 사랑의 표현과 수용 · Love Expression & Reception
-              </p>
-              <p className="mt-1.5 text-sm font-medium text-rel-ink">
-                부모의 표현 방식: {chapter.loveExpressionVsReception.parentExpresses}
-              </p>
-              <p className="mt-1 text-sm text-rel-ink-soft">
-                자녀가 느끼는 체감 톤: {chapter.loveExpressionVsReception.childReceives}
-              </p>
-              <p className="mt-2 text-xs italic text-pink-700">
-                💬 {chapter.loveExpressionVsReception.summary}
-              </p>
             </div>
           ) : null}
 
@@ -1417,6 +1549,64 @@ export function FamilyReportViewModelView({
           {chapter.legacySections.map((section) => (
             <FamilyReportSectionCard key={section.id} section={section} names={vm.opening.names} />
           ))}
+
+          {/* Chapter 04 Bottom: ◤ 사랑을 주고받는 방식 (Rendered AFTER legacy sections: 심리 축 매칭, 인사이트, 본래 성향 비교) */}
+          {chapter.id === "ch_comm" ? (() => {
+            const parentName = vm.opening.names[1] || "부모";
+            const childName = vm.opening.names[0] || "자녀";
+            const bundle = vm.storyPlan?.conflictChapterBundle;
+            const love = bundle?.loveAnalysis;
+
+            return (
+              <div className="mt-8 mb-6">
+                <SectionHeader title={ec(locale, "◤ How We Express & Experience Love", "◤ 사랑을 주고받는 방식")} tag="LOVE STYLES" />
+                <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-6">
+                  {/* 부모가 사랑을 표현하는 방식 */}
+                  <div>
+                    <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
+                      {ec(locale, "How parent expresses love", "부모가 사랑을 표현하는 방식")}
+                    </p>
+                    <p className="mt-1 text-base font-bold text-rel-ink">
+                      {love?.parentExpressionTitle ?? `${parentName}의 사랑은 '챙기고 방향을 잡아주는 것'에 가까워요.`}
+                    </p>
+                    <p className="mt-1.5 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
+                      {love?.parentExpressionDesc}
+                    </p>
+                  </div>
+
+                  <div className="h-px w-full bg-rel-line/60" />
+
+                  {/* 아이가 사랑을 느끼는 방식 */}
+                  <div>
+                    <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
+                      {ec(locale, "How child experiences love", "아이가 사랑을 느끼는 방식")}
+                    </p>
+                    <p className="mt-1 text-base font-bold text-rel-ink">
+                      {love?.childReceptionTitle ?? `${childName}은 '나를 믿고 기다려주는 것'에서 사랑을 크게 느껴요.`}
+                    </p>
+                    <p className="mt-1.5 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
+                      {love?.childReceptionDesc}
+                    </p>
+                  </div>
+
+                  <div className="h-px w-full bg-rel-line/60" />
+
+                  {/* 그래서 이 둘 사이에서는 */}
+                  <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line/80 space-y-2">
+                    <p className="font-rel-sans text-[12px] font-bold text-rel-ink">
+                      💡 {ec(locale, "Between the two of you", "그래서 이 둘 사이에서는")} — {love?.pairSynthesisTitle}
+                    </p>
+                    <p className="font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">
+                      {love?.pairSynthesisDesc}
+                    </p>
+                    <p className="mt-2 text-xs font-semibold text-rel-deep italic border-t border-rel-line/50 pt-2">
+                      ✨ {love?.keyInsightLine}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })() : null}
         </FamilyChapterSection>
       );
     })}

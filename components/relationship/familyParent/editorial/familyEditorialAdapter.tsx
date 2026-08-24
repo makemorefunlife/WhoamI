@@ -82,6 +82,7 @@ export function RelationshipReportInset({
 
 export default function RelationshipReportCard({
   title,
+  tag,
   children,
   variant = "default",
   accentColor,
@@ -89,7 +90,8 @@ export default function RelationshipReportCard({
   id,
   showMarker = true,
 }: {
-  title: string;
+  title?: string;
+  tag?: string;
   children: ReactNode;
   variant?: FamilyReportCardVariant;
   accentColor?: string;
@@ -108,21 +110,37 @@ export default function RelationshipReportCard({
             ? "border-rel-line bg-rel-taupe-soft/25"
             : "border-rel-line bg-rel-surface";
 
+  const cleanTitle = title ? title.replace(/^[◤▼▶]\s*/, "") : "";
+
   return (
-    <article id={id} className={`rounded-2xl border p-5 sm:p-6 ${variantBox} ${className}`}>
-      <h3
-        className="mb-4 flex items-baseline gap-2 font-rel-serif text-[17px] leading-snug tracking-[-0.01em] text-rel-ink sm:text-[19px]"
-        style={accentColor ? { color: accentColor } : undefined}
-      >
-        {showMarker && (
-          <span className="text-[12px] leading-none text-rel-deep shrink-0" aria-hidden>
-            ◤
-          </span>
-        )}
-        <span className="min-w-0 flex-1">{title}</span>
-      </h3>
-      {children}
-    </article>
+    <div id={id} className="mt-10">
+      {title ? (
+        <div className="mb-6">
+          <div className="flex items-baseline justify-between gap-4">
+            <h3
+              className="flex min-w-0 items-baseline gap-3 font-rel-serif text-[20px] font-normal tracking-[-0.01em] text-rel-ink sm:text-[23px]"
+              style={accentColor ? { color: accentColor } : undefined}
+            >
+              {showMarker !== false && (
+                <span className="text-[14px] text-[#8c7c72] shrink-0" aria-hidden>
+                  ◤
+                </span>
+              )}
+              <span className="min-w-0 flex-1">{cleanTitle}</span>
+            </h3>
+            {tag && (
+              <span className="shrink-0 font-rel-sans text-[11px] uppercase tracking-[0.2em] text-rel-ink-mute">
+                {tag}
+              </span>
+            )}
+          </div>
+          <div className="mt-3 h-px w-full bg-rel-line" />
+        </div>
+      ) : null}
+      <article className={`rounded-2xl border p-5 sm:p-6 shadow-sm ${variantBox} ${className}`}>
+        {children}
+      </article>
+    </div>
   );
 }
 

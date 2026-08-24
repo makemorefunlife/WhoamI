@@ -17,8 +17,8 @@ function buildFamilyLens(psychMatch: PsychMatchResult, locale: Locale) {
     lensTitle: pick(locale, "👨‍👩‍👧 Axes that stand out most in the family relationship", "👨‍👩‍👧 가족 관계에서 특히 눈에 띄는 축"),
     chartNote: pick(
       locale,
-      "We compared how parent and child show up right now across the 11-axis survey. (Same standard as the romantic/cohabitation deep-dive.)",
-      "부모와 자녀의 현재 모습을 11축 설문으로 비교했어요. (연인·동거와 같은 기준이에요.)",
+      "We compared how you both show up right now across the 11 axes.",
+      "두 분의 현재 모습을 11축으로 비교했어요.",
     ),
     introTension: pick(
       locale,

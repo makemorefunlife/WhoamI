@@ -14,6 +14,7 @@ import {
   buildFamilyGrowthTransition,
 } from "./buildFamilyCoverageModels";
 import { computeChildParentingNeedsEngine } from "./familyChildParentingNeedsEngine";
+import { buildFamilyConflictChapterBundle } from "./familyConflictChapterEngine";
 import type {
   CanonicalFamilyStoryPlan,
   FamilyClaim,
@@ -262,6 +263,13 @@ export function buildCanonicalFamilyStoryPlan(
   const conflictLoop = buildFamilyConflictLoop(ctx, psychProjections);
   const repairPattern = buildFamilyRepairPattern(ctx, psychProjections);
   const growthTransition = buildFamilyGrowthTransition(ctx);
+  const conflictChapterBundle = buildFamilyConflictChapterBundle({
+    ctx,
+    report,
+    psychParent,
+    psychChild,
+    psychProjections,
+  });
 
   // 4 Core Pair Meanings Computation (Deterministic & Evidence-based)
   const childRole = report.section_family_role?.child_role ?? "independent";
@@ -358,6 +366,7 @@ export function buildCanonicalFamilyStoryPlan(
       maintenanceRoutine: report.section_destiny?.harmony_one_liner ?? "",
     },
     pairMeanings,
+    conflictChapterBundle,
     selectedClaims,
     suppressedClaims,
     insightCandidates,
