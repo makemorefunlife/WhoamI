@@ -191,6 +191,79 @@ export type FamilyConflictChapterBundle = {
   conflictSynthesisLine: string;
 };
 
+export type FamilyChildGrowthChapterBundle = {
+  /** ◤ 01. 이 아이를 움직이게 하는 힘 */
+  motivation: {
+    driveTitle: string;
+    driveDesc: string;
+    primaryMotivator: string;
+  };
+
+  /** ◤ 02. 배우고 몰입하는 방식 */
+  learning: {
+    oneLineStudyType: string;
+    focusEnvironment: string;
+    understandingStyle: string;
+    planningStyle: string;
+    socialMode: string;
+  };
+
+  /** ◤ 03. 칭찬과 기대가 동기가 되는 방식 */
+  motivationAndExpectation: {
+    praiseGuidanceTitle: string;
+    praiseGuidanceDesc: string;
+    expectationTitle: string;
+    expectationDesc: string;
+  };
+
+  /** ◤ 04. 새로운 도전과 실패를 다루는 방식 */
+  challenge: {
+    challengeTitle: string;
+    challengeDesc: string;
+    resiliencePattern: string;
+  };
+
+  /** ◤ 05. 밖에 나가면 어떤 모습이 될까요 */
+  socialOperating: {
+    socialOperatingTitle: string;
+    socialOperatingDesc: string;
+    recommendedActivities: string[];
+  };
+
+  /** ◤ 06. 능력이 잘 살아나는 환경 */
+  environmentFit: {
+    envConditions: Array<{
+      label: string;
+      value: string;
+      left: string;
+      right: string;
+      positionPct: number;
+    }>;
+    envSummary: string;
+  };
+
+  /** ◤ 07. 잠재력이 자라는 방식 */
+  potentialPace?: {
+    potentialTitle: string;
+    potentialDesc: string;
+  } | null;
+
+  /** ◤ 08. 올해 특히 키우게 될 힘 */
+  yearlyGrowth?: {
+    yearlyTheme: string;
+    yearlyBehavior: string;
+    parentSupportRole: string;
+    reassuranceNote: string;
+  } | null;
+
+  /** ◤ 09. 이 아이를 키울 때 기억하면 좋은 것 */
+  parentGuidance: {
+    pushForward: string;
+    scaffold: string;
+    lessOf: string;
+  };
+};
+
 export type CanonicalFamilyStoryPlan = {
   relationshipCore: {
     bondLevel: "high" | "medium" | "low";
@@ -233,6 +306,9 @@ export type CanonicalFamilyStoryPlan = {
 
   /** Part 05 Canonical Conflict Analysis Bundle */
   conflictChapterBundle?: FamilyConflictChapterBundle;
+
+  /** Part 06 Canonical Child Growth Intelligence Bundle */
+  growthChapterBundle?: FamilyChildGrowthChapterBundle;
 
   selectedClaims: FamilyClaim[];
   suppressedClaims: FamilyClaim[];

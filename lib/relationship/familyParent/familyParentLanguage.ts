@@ -30,6 +30,29 @@ export function josaGwaWa(name: string): string {
   return formatJosa(name, "과의");
 }
 
+export function josaEunNeun(name: string): string {
+  return formatJosa(name, "은는");
+}
+
+export function josaIGa(name: string): string {
+  return formatJosa(name, "이가");
+}
+
+export function josaEulReul(name: string): string {
+  return formatJosa(name, "을를");
+}
+
+export function josaE(name: string): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+  const lastChar = trimmed.charCodeAt(trimmed.length - 1);
+  if (lastChar >= 0xac00 && lastChar <= 0xd7a3) {
+    const hasJongsung = (lastChar - 0xac00) % 28 !== 0;
+    if (hasJongsung) return `${trimmed}에게`;
+  }
+  return `${trimmed}에게`;
+}
+
 /** 엄마-자녀 전용 서술 렌즈 */
 export function buildMotherParentLens(params: {
   childNickname: string;

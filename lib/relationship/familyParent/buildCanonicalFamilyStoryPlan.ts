@@ -15,6 +15,7 @@ import {
 } from "./buildFamilyCoverageModels";
 import { computeChildParentingNeedsEngine } from "./familyChildParentingNeedsEngine";
 import { buildFamilyConflictChapterBundle } from "./familyConflictChapterEngine";
+import { buildFamilyGrowthChapterBundle } from "./familyGrowthChapterEngine";
 import type {
   CanonicalFamilyStoryPlan,
   FamilyClaim,
@@ -329,6 +330,21 @@ export function buildCanonicalFamilyStoryPlan(
     childCoreNeedsDetailed: needsEngineOutput,
   };
 
+  const growthChapterBundle = buildFamilyGrowthChapterBundle({
+    childNickname: ctx.childNickname,
+    parentNickname: ctx.parentNickname,
+    childIsViewer: ctx.childIsViewer,
+    locale,
+    psychChild,
+    psychParent,
+    countsChild: ctx.tenGod.countsChild,
+    growthTunnelSec: (report.section_growth_tunnel ?? report.family?.section_growth_tunnel) as any,
+    talentSec: (report.section_talent ?? report.family?.section_talent) as any,
+    pairMeanings: {
+      expectationVsPressure,
+    },
+  });
+
   return {
     relationshipCore: {
       bondLevel,
@@ -367,6 +383,7 @@ export function buildCanonicalFamilyStoryPlan(
     },
     pairMeanings,
     conflictChapterBundle,
+    growthChapterBundle,
     selectedClaims,
     suppressedClaims,
     insightCandidates,

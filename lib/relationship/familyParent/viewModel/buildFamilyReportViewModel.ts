@@ -37,6 +37,7 @@ import type { FamilyCompareRow } from "@/lib/relationship/familyParent/familySaj
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 import { josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 import { buildFamilyConflictChapterBundle } from "../familyConflictChapterEngine";
+import { buildFamilyGrowthChapterBundle } from "../familyGrowthChapterEngine";
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 
@@ -629,6 +630,21 @@ export function buildFamilyReportViewModel(
     };
   }
 
+  if (storyPlan && !storyPlan.growthChapterBundle) {
+    const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+    const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
+    const growthChapterBundle = buildFamilyGrowthChapterBundle({
+      childNickname,
+      parentNickname,
+      growthTunnelSec: (report.section_growth_tunnel ?? report.family?.section_growth_tunnel) as any,
+      talentSec: (report.section_talent ?? report.family?.section_talent) as any,
+    });
+    storyPlan = {
+      ...storyPlan,
+      growthChapterBundle,
+    };
+  }
+
   // Build Editorial 8 Chapters mapping StoryPlan SSOT + Legacy Reusable Content
   const selectedClaims = storyPlan?.selectedClaims ?? [];
   const insightCandidates = storyPlan?.insightCandidates ?? [];
@@ -714,16 +730,16 @@ export function buildFamilyReportViewModel(
     {
       id: "ch_growth",
       number: "06",
-      title: isEn ? "06. Autonomy & Growth Path" : "06. 자율과 성장 — 적성과 성원의 방향",
-      subtitle: isEn ? "Talent Direction & Growth Edge" : "학업·재물 그릇과 올해의 성장 도전",
-      summary: storyPlan?.growth?.synergy || undefined,
+      title: isEn ? "06. Child Growth & Learning Intelligence" : "06. 이 아이는 어떻게 배우고, 무엇으로 성장할까요",
+      subtitle: isEn ? "From Talent Unlocking to Parent Support Direction" : "재능이 살아나는 방식부터 부모가 밀어줄 방향까지",
+      summary: storyPlan?.growthChapterBundle?.motivation?.driveTitle || storyPlan?.growth?.synergy || undefined,
       claims: filterClaims(["growth"]),
       insights: insightCandidates.filter(i => i.topic === "growth"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "growth"),
       growthTransition: storyPlan?.growthTransition ?? null,
       expectationVsPressure: storyPlan?.pairMeanings?.expectationVsPressure,
-      legacySections: [talentSec, growthTunnelSec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [],
     },
     {
       id: "ch_repair",

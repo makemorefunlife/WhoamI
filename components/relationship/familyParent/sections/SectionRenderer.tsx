@@ -1362,6 +1362,253 @@ export function FamilyReportViewModelView({
             );
           })() : null}
 
+          {/* Chapter 06: 이 아이는 어떻게 배우고, 무엇으로 성장할까요 (Canonical Growth Chapter) */}
+          {chapter.id === "ch_growth" ? (() => {
+            const parentName = vm.opening.names[1] || "부모";
+            const childName = vm.opening.names[0] || "자녀";
+            const bundle = vm.storyPlan?.growthChapterBundle;
+            if (!bundle) return null;
+
+            return (
+              <div className="my-8 space-y-10">
+                {/* ◤ 01. 이 아이를 움직이게 하는 힘 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Core Growth Motivators", "◤ 이 아이를 움직이게 하는 힘")} tag="MOTIVATION" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <p className="font-rel-serif text-lg font-bold text-rel-ink">
+                      {bundle.motivation.driveTitle}
+                    </p>
+                    <p className="font-rel-sans text-sm text-rel-ink-soft leading-relaxed">
+                      {bundle.motivation.driveDesc}
+                    </p>
+                    <div className="pt-2">
+                      <span className="inline-block rounded-lg bg-rel-taupe-soft/40 px-3 py-1 text-xs font-semibold text-rel-deep">
+                        💡 핵심 동기 엔진: {bundle.motivation.primaryMotivator}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ◤ 02. 배우고 몰입하는 방식 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Learning & Focus Style", "◤ 배우고 몰입하는 방식")} tag="LEARNING STYLE" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-5">
+                    <p className="font-rel-sans text-xs font-bold text-rel-deep uppercase tracking-wider">
+                      {bundle.learning.oneLineStudyType}
+                    </p>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
+                        <p className="text-xs font-bold text-rel-ink mb-1">
+                          🎧 집중이 켜지는 환경
+                        </p>
+                        <p className="text-xs text-rel-ink-soft leading-relaxed">
+                          {bundle.learning.focusEnvironment}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
+                        <p className="text-xs font-bold text-rel-ink mb-1">
+                          💡 이해가 되는 방식
+                        </p>
+                        <p className="text-xs text-rel-ink-soft leading-relaxed">
+                          {bundle.learning.understandingStyle}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
+                        <p className="text-xs font-bold text-rel-ink mb-1">
+                          📋 계획을 세우는 방식
+                        </p>
+                        <p className="text-xs text-rel-ink-soft leading-relaxed">
+                          {bundle.learning.planningStyle}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
+                        <p className="text-xs font-bold text-rel-ink mb-1">
+                          👥 혼자 vs 함께
+                        </p>
+                        <p className="text-xs text-rel-ink-soft leading-relaxed">
+                          {bundle.learning.socialMode}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ◤ 03. 칭찬과 기대가 동기가 되는 방식 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Praise & Expectation Dynamics", "◤ 칭찬과 기대가 동기가 되는 방식")} tag="RECOGNITION" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                    <div>
+                      <p className="font-rel-sans text-base font-bold text-rel-ink mb-1">
+                        {bundle.motivationAndExpectation.praiseGuidanceTitle}
+                      </p>
+                      <p className="font-rel-sans text-sm text-rel-ink-soft leading-relaxed">
+                        {bundle.motivationAndExpectation.praiseGuidanceDesc}
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-rel-line/60">
+                      <p className="font-rel-sans text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
+                        {bundle.motivationAndExpectation.expectationTitle}
+                      </p>
+                      <p className="font-rel-sans text-xs text-rel-ink-soft leading-relaxed">
+                        {bundle.motivationAndExpectation.expectationDesc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ◤ 04. 새로운 도전과 실패를 다루는 방식 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Handling Challenge & Failure", "◤ 새로운 도전과 실패를 다루는 방식")} tag="RESILIENCE" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <p className="font-rel-serif text-base font-bold text-rel-ink">
+                      {bundle.challenge.challengeTitle}
+                    </p>
+                    <p className="font-rel-sans text-sm text-rel-ink-soft leading-relaxed">
+                      {bundle.challenge.challengeDesc}
+                    </p>
+                    <div className="pt-1">
+                      <span className="inline-block rounded-lg bg-rel-paper px-3 py-1 text-xs text-rel-ink border border-rel-line">
+                        🌱 복원력 태도: {bundle.challenge.resiliencePattern}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ◤ 05. 밖에 나가면 어떤 모습이 될까요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Social Operating Mode", "◤ 밖에 나가면 어떤 모습이 될까요")} tag="OUTSIDE HOME" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                    <div>
+                      <p className="font-rel-serif text-base font-bold text-rel-ink mb-1">
+                        {bundle.socialOperating.socialOperatingTitle}
+                      </p>
+                      <p className="font-rel-sans text-sm text-rel-ink-soft leading-relaxed">
+                        {bundle.socialOperating.socialOperatingDesc}
+                      </p>
+                    </div>
+                    {bundle.socialOperating.recommendedActivities?.length > 0 && (
+                      <div className="pt-3 border-t border-rel-line/60">
+                        <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-2">
+                          🎯 잘 맞는 활동 방향
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {bundle.socialOperating.recommendedActivities.map((act, idx) => (
+                            <span key={idx} className="rounded-md bg-rel-taupe-soft/40 px-2.5 py-1 text-xs text-rel-ink font-medium">
+                              ✓ {act}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ◤ 06. 능력이 잘 살아나는 환경 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Optimal Growth Environment", "◤ 능력이 잘 살아나는 환경")} tag="ENVIRONMENT FIT" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-5">
+                    <div className="space-y-3">
+                      {bundle.environmentFit.envConditions.map((cond, idx) => (
+                        <div key={idx} className="rounded-xl bg-rel-paper p-3 border border-rel-line space-y-1.5">
+                          <div className="flex justify-between text-xs font-semibold text-rel-ink">
+                            <span>{cond.label}</span>
+                            <span className="text-rel-deep">{cond.value}</span>
+                          </div>
+                          <div className="flex justify-between text-[11px] text-rel-ink-mute">
+                            <span>{cond.left}</span>
+                            <span>{cond.right}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-rel-ink-soft italic border-t border-rel-line/50 pt-2">
+                      💡 {bundle.environmentFit.envSummary}
+                    </p>
+                  </div>
+                </div>
+
+                {/* ◤ 07. 잠재력이 자라는 방식 */}
+                {bundle.potentialPace && (
+                  <div>
+                    <SectionHeader title={ec(locale, "◤ Growth Pace & Unlocking", "◤ 잠재력이 자라는 방식")} tag="POTENTIAL PACE" />
+                    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                      <p className="font-rel-serif text-base font-bold text-rel-ink">
+                        {bundle.potentialPace.potentialTitle}
+                      </p>
+                      <p className="font-rel-sans text-sm text-rel-ink-soft leading-relaxed">
+                        {bundle.potentialPace.potentialDesc}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ◤ 08. 올해 특히 키우게 될 힘 */}
+                {bundle.yearlyGrowth && (
+                  <div>
+                    <SectionHeader title={ec(locale, "◤ Yearly Temporal Focus", "◤ 올해 특히 키우게 될 힘")} tag="YEARLY FOCUS" />
+                    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                      <div>
+                        <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
+                          🌟 올해의 성취 테마
+                        </p>
+                        <p className="font-rel-sans text-sm font-bold text-rel-ink">
+                          {bundle.yearlyGrowth.yearlyTheme}
+                        </p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                        <div className="rounded-xl bg-rel-taupe-soft/20 p-3.5 border border-rel-line">
+                          <p className="font-bold text-rel-ink mb-1">🌱 나타날 수 있는 모습</p>
+                          <p className="text-rel-ink-soft leading-relaxed">{bundle.yearlyGrowth.yearlyBehavior}</p>
+                        </div>
+                        <div className="rounded-xl bg-rel-taupe-soft/20 p-3.5 border border-rel-line">
+                          <p className="font-bold text-rel-ink mb-1">👑 {parentName}의 조력 역할</p>
+                          <p className="text-rel-ink-soft leading-relaxed">{bundle.yearlyGrowth.parentSupportRole}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-rel-ink-mute italic border-t border-rel-line/50 pt-2">
+                        💡 {bundle.yearlyGrowth.reassuranceNote}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* ◤ 09. 이 아이를 키울 때 기억하면 좋은 것 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ Parenting Support Direction", "◤ 이 아이를 키울 때 기억하면 좋은 것")} tag="PARENTING GUIDANCE" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                    <div className="rounded-xl bg-v4-good-soft p-4 border border-v4-good/25">
+                      <p className="text-xs font-bold text-v4-good uppercase tracking-wider mb-1">
+                        🚀 밀어줘야 할 것 (성장 엔진)
+                      </p>
+                      <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
+                        {bundle.parentGuidance.pushForward}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line">
+                      <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
+                        🤝 도와줘야 할 것 (안전 울타리)
+                      </p>
+                      <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
+                        {bundle.parentGuidance.scaffold}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-v4-bad-soft p-4 border border-v4-bad/25">
+                      <p className="text-xs font-bold text-v4-bad uppercase tracking-wider mb-1">
+                        ✋ 너무 많이 하지 않아도 되는 것 (덜 건드릴 것)
+                      </p>
+                      <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
+                        {bundle.parentGuidance.lessOf}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })() : null}
+
           {/* Coverage Model: Conflict Loop (Only if not in ch_conflict) */}
           {chapter.id !== "ch_conflict" && chapter.conflictLoop && (chapter.conflictLoop.parentTrigger || chapter.conflictLoop.breakPattern) ? (
             <div className="mb-6 rounded-xl border border-v4-bad/25 bg-v4-bad-soft p-4">
@@ -1438,7 +1685,7 @@ export function FamilyReportViewModelView({
           ) : null}
 
           {/* Coverage Model: Growth Transition */}
-          {chapter.growthTransition && chapter.growthTransition.currentRolePattern ? (
+          {chapter.id !== "ch_growth" && chapter.growthTransition && chapter.growthTransition.currentRolePattern ? (
             <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
                 🚀 성장 전환점 · Growth Transition
@@ -1458,7 +1705,7 @@ export function FamilyReportViewModelView({
           ) : null}
 
           {/* Core Pair Meaning 3: Expectation vs Pressure */}
-          {chapter.expectationVsPressure ? (
+          {chapter.id !== "ch_growth" && chapter.expectationVsPressure ? (
             <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
                 🎯 부모의 기대와 성취 중압감 · Expectation & Pressure
