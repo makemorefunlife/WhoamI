@@ -134,11 +134,17 @@ function buildPsychRadarSection(
   titles: SectionTitleSet,
   locale: Locale,
 ): WorkReportSection | null {
+  const partnerName = viewerIsReportA ? names[1] : names[0];
   const psychDisplay = resolveReportPsychDisplay(
     report.meta,
-    buildWorkPsychMatchBundle,
+    (pA, pB, loc) => buildWorkPsychMatchBundle(pA, pB, loc, partnerName),
   );
   if (!psychDisplay) return null;
+
+  const isEn = locale === "en-US";
+  const chartNote = isEn
+    ? `We compared how you and ${partnerName} show up right now across the 11-axis survey.`
+    : `나와 ${partnerName} 둘의 현재 모습을 11축으로 비교했어요.`;
 
   return {
     id: "psych_radar",
@@ -149,7 +155,7 @@ function buildPsychRadarSection(
       psychDisplay.psych_match.axis_results,
       viewerIsReportA,
     ),
-    chartNote: psychDisplay.psych_lens.chart_note,
+    chartNote,
     highlights: nameExplicitHighlights(
       psychDisplay.psych_lens.highlights,
       psychDisplay.psych_match.axis_results,
