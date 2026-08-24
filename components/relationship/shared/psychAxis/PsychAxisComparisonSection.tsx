@@ -41,6 +41,9 @@ export function PsychAxisComparisonSection({
 
   return (
     <>
+      <div className="mb-4">
+        <SubHeading title={isEn ? "Psych Axis Matching" : "심리 축 매칭"} tag="11 AXES" tone="deep" />
+      </div>
       {chartNote ? (
         <p className="mb-3 font-rel-sans text-[13px] leading-[1.7] text-rel-ink-mute">{chartNote}</p>
       ) : null}

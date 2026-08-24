@@ -29,7 +29,7 @@ import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPan
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
 import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
-import { VersusStrip, Evidence, Reveal } from "@/components/relationship/shared/editorial/EditorialPrimitives";
+import { VersusStrip, Evidence, Reveal, SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { pick } from "@/lib/relationship/friend/friendCopy";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import {
@@ -1322,7 +1322,14 @@ export function WorkReportViewModelView({
         <div id="ch_comparison" />
         <UserQuestionBanner question={isEn ? "How do we think, communicate, focus, and prep for meetings?" : "우리는 어떻게 생각하고, 소통하고, 집중하고, 결정을 준비하는가?"} />
         {psychRadarSection ? <PsychRadarCard section={psychRadarSection} names={names} /> : null}
-        {compareTableSection ? <CompareTableCard section={compareTableSection} names={names} /> : null}
+        {compareTableSection ? (
+          <div className="mt-10">
+            <div className="mb-4">
+              <SubHeading title={isEn ? "Side-by-Side Comparison" : "나란히 놓고 보기"} tag="COMPARE" tone="deep" />
+            </div>
+            <CompareTableCard section={compareTableSection} names={names} />
+          </div>
+        ) : null}
         {comparisonSection ? <ComparisonCard section={comparisonSection} names={names} /> : null}
         <ThinkVsDiscussCard meta={meta} />
       </WorkChapterSection>
