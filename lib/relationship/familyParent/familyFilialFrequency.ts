@@ -11,7 +11,7 @@
 import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import { resolveCorrectionStyleBucket } from "./familySajuCompareTable";
 import { LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
-import { sanitizeFamilyParentText } from "./familyParentLanguage";
+import { sanitizeFamilyParentText, josaEunNeun } from "./familyParentLanguage";
 import type { Locale } from "@/lib/i18n/locale";
 
 export type FilialFrequencyType = "cash_gift" | "quality_time" | "emotional_recognition";
@@ -47,11 +47,11 @@ const FREQUENCY_NOTE: Record<Locale, Record<FilialFrequencyType, (parent: string
   },
   "ko-KR": {
     cash_gift: (p) =>
-      `${p}는 실질적이고 손에 잡히는 표현에서 사랑받는다고 느껴요 — 정성 담긴 선물이나 직접 건네는 용돈이 말보다 더 크게 다가와요.`,
+      `${josaEunNeun(p)} 실질적이고 손에 잡히는 표현에서 사랑받는다고 느껴요 — 정성 담긴 선물이나 직접 건네는 용돈이 말보다 더 크게 다가와요.`,
     quality_time: (p) =>
-      `${p}는 함께 보내는 시간 자체에서 사랑받는다고 느껴요 — 같이 밥 한 끼, 나들이 한 번이 어떤 선물보다 크게 다가와요.`,
+      `${josaEunNeun(p)} 함께 보내는 시간 자체에서 사랑받는다고 느껴요 — 같이 밥 한 끼, 나들이 한 번이 어떤 선물보다 크게 다가와요.`,
     emotional_recognition: (p) =>
-      `${p}는 인정과 감사의 말에서 사랑받는다고 느껴요 — 진심 담긴 "고마워요" 한마디, 안부 전화 한 통이 어떤 선물보다 깊게 다가와요.`,
+      `${josaEunNeun(p)} 인정과 감사의 말에서 사랑받는다고 느껴요 — 진심 담긴 "고마워요" 한마디, 안부 전화 한 통이 어떤 선물보다 깊게 다가와요.`,
   },
 };
 

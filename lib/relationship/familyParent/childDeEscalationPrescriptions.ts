@@ -3,6 +3,7 @@ import { pick, LEGACY_FALLBACK_LOCALE } from "./familyParentCopy";
 import type { Locale } from "@/lib/i18n/locale";
 import type { FamilyParentRole } from "./types";
 import { resolveCorrectionStyleBucket } from "./familySajuCompareTable";
+import { josaEunNeun, josaIGa, josaEulReul, josaGwaWa } from "./familyParentLanguage";
 
 export type ChildDeEscalationCategory =
   | "self"
@@ -47,13 +48,13 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
       pick(
         locale,
         `${child} can't have a rational conversation once they feel "looked down on." The moment you start assigning blame, they raise their defenses.`,
-        `${child}는 "날 무시한다"는 느낌이 들면 이성적인 대화가 불가능해져요. 잘잘못을 따지는 순간 방어벽을 높입니다.`,
+        `${josaEunNeun(child)} "날 무시한다"는 느낌이 들면 이성적인 대화가 불가능해져요. 잘잘못을 따지는 순간 방어벽을 높입니다.`,
       ),
     avoid_actions: (child, parent, locale) =>
       pick(
         locale,
         `【${parent} → ${child}】 Blaming with "because of you...", comparing to siblings, or brushing off ${child}'s effort.`,
-        `【${parent} → ${child}】 "너 때문에…"라며 책임 전가, 형제와 비교, ${child}의 노력을 가볍게 치부하기.`,
+        `【${parent} → ${child}】 "너 때문에…"라며 책임 전가, 형제와 비교, ${josaEulReul(child)}의 노력을 가볍게 치부하기.`,
       ),
     solution_script: (child, parent, role, locale) =>
       pick(
@@ -72,20 +73,20 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
       pick(
         locale,
         `${child} vents anger right away. It doesn't linger long, but the longer a heavy mood drags on, the more exhausted they get.`,
-        `${child}는 화가 올라오면 바로 표출하는 타입이에요. 뒤끝은 길지 않지만, 무거운 분위기가 길어질수록 더 지쳐요.`,
+        `${josaEunNeun(child)} 화가 올라오면 바로 표출하는 타입이에요. 뒤끝은 길지 않지만, 무거운 분위기가 길어질수록 더 지쳐요.`,
       ),
     avoid_actions: (child, parent, locale) =>
       pick(
         locale,
         `【${parent} → ${child}】 Days of cold war, stern long lectures, or pushing with "still mad?" the moment ${child} tries to lighten up.`,
-        `【${parent} → ${child}】 며칠간 냉전, 정색하고 긴 설교, ${child}가 기분 풀려 하면 "아직 화났어?"라며 몰아붙이기.`,
+        `【${parent} → ${child}】 며칠간 냉전, 정색하고 긴 설교, ${josaIGa(child)} 기분 풀려 하면 "아직 화났어?"라며 몰아붙이기.`,
       ),
     solution_script: (child, parent, role, locale) =>
       pick(
         locale,
         `【${parent}(${role}) → ${child}】 "Want to take a short walk, we're both feeling down?", "Let's grab your favorite snack and shake it off." — Changing the mood comes before a serious apology.`,
         `【${parent}(${role}) → ${child}】 "우리 둘 다 꿀꿀한데 잠깐 산책 갈까?", "좋아하는 간식 먹으면서 풀자." — 진지한 사과보다 분위기 전환이 먼저예요.`,
-      ),
+        ),
   },
   {
     hashtag: (locale) => pick(locale, "#MyOwnCaveTime", "#혼자만의_동굴시간"),
@@ -97,7 +98,7 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
       pick(
         locale,
         `${child}'s brain overloads right after conflict. Demanding a conversation immediately can make them explode or shut the door completely.`,
-        `${child}는 갈등 직후 뇌 과부하 상태가 돼요. 즉시 대화를 요구하면 폭발하거나 완전히 문을 닫아버립니다.`,
+        `${josaEunNeun(child)} 갈등 직후 뇌 과부하 상태가 돼요. 즉시 대화를 요구하면 폭발하거나 완전히 문을 닫아버립니다.`,
       ),
     avoid_actions: (child, parent, locale) =>
       pick(
@@ -122,13 +123,13 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
       pick(
         locale,
         `A simple "sorry" isn't enough for ${child}. They need to hear specifically what went wrong and what happens next before their heart opens.`,
-        `${child}는 "그냥 미안해"만으로는 풀리지 않아요. 무엇이 문제였는지, 앞으로 어떻게 할지 구체적으로 들어야 마음이 열립니다.`,
+        `${josaEunNeun(child)} "그냥 미안해"만으로는 풀리지 않아요. 무엇이 문제였는지, 앞으로 어떻게 할지 구체적으로 들어야 마음이 열립니다.`,
       ),
     avoid_actions: (child, parent, locale) =>
       pick(
         locale,
         `【${parent} → ${child}】 Pleading in tears, conditional apologies, or repeating emotion without the concrete solution ${child} needs.`,
-        `【${parent} → ${child}】 울며 매달리기, 조건부 사과, ${child}가 원하는 구체 해법 없이 감정만 반복하기.`,
+        `【${parent} → ${child}】 울며 매달리기, 조건부 사과, ${josaIGa(child)} 원하는 구체 해법 없이 감정만 반복하기.`,
       ),
     solution_script: (child, parent, role, locale) =>
       pick(
@@ -147,13 +148,13 @@ const CHILD_DE_ESCALATION: PrescriptionDef[] = [
       pick(
         locale,
         `${child} is disappointed by apologies that are just words. They need a "real repair" — a promise kept, time given, or a small reward — before their heart opens.`,
-        `${child}는 말로만 하는 사과에는 실망해요. 약속·시간·작은 보상 같은 '실질적 회복'이 있어야 마음이 열립니다.`,
+        `${josaEunNeun(child)} 말로만 하는 사과에는 실망해요. 약속·시간·작은 보상 같은 '실질적 회복'이 있어야 마음이 열립니다.`,
       ),
     avoid_actions: (child, parent, locale) =>
       pick(
         locale,
         `【${parent} → ${child}】 Repeating "sorry" in words only, or brushing off the loss ${child} took (a broken promise, wasted time).`,
-        `【${parent} → ${child}】 말로만 "미안해" 반복, ${child}가 입은 손해(약속 깨짐·시간 낭비)를 가볍게 넘기기.`,
+        `【${parent} → ${child}】 말로만 "미안해" 반복, ${josaIGa(child)} 입은 손해(약속 깨짐·시간 낭비)를 가볍게 넘기기.`,
       ),
     solution_script: (child, parent, role, locale) =>
       pick(

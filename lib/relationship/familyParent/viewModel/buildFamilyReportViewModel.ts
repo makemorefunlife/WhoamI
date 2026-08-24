@@ -38,6 +38,7 @@ import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewMo
 import { josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 import { buildFamilyConflictChapterBundle } from "../familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "../familyGrowthChapterEngine";
+import { buildFamilyRepairChapterBundle } from "../familyRepairChapterEngine";
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 
@@ -630,7 +631,7 @@ export function buildFamilyReportViewModel(
     };
   }
 
-  if (storyPlan && !storyPlan.growthChapterBundle) {
+  if (!storyPlan || !(storyPlan as any).growthChapterBundle) {
     const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
     const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
     const growthChapterBundle = buildFamilyGrowthChapterBundle({
@@ -642,7 +643,24 @@ export function buildFamilyReportViewModel(
     storyPlan = {
       ...storyPlan,
       growthChapterBundle,
-    };
+    } as any;
+  }
+
+  if (!storyPlan || !(storyPlan as any).repairChapterBundle) {
+    const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+    const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
+    const repairChapterBundle = buildFamilyRepairChapterBundle({
+      childNickname,
+      parentNickname,
+      locale,
+      psychChild: report.meta?.psych_a ?? null,
+      psychParent: report.meta?.psych_b ?? null,
+      conflictLoop: storyPlan?.conflictLoop ?? null,
+    });
+    storyPlan = {
+      ...storyPlan,
+      repairChapterBundle,
+    } as any;
   }
 
   // Build Editorial 8 Chapters mapping StoryPlan SSOT + Legacy Reusable Content
@@ -739,20 +757,20 @@ export function buildFamilyReportViewModel(
       synthesis: synthesisResults.filter(s => s.topic === "growth"),
       growthTransition: storyPlan?.growthTransition ?? null,
       expectationVsPressure: storyPlan?.pairMeanings?.expectationVsPressure,
-      legacySections: [],
+      legacySections: [sosScriptSec].filter((s): s is FamilyReportSection => s != null),
     },
     {
       id: "ch_repair",
       number: "07",
-      title: isEn ? "07. Emotional Repair & Connection" : "07. 화해와 표현 — 감정 복원과 마음 주파수",
-      subtitle: isEn ? "Restoring Trust & Frequency" : "마음이 풀리는 지점과 관계 회복의 순서",
-      summary: undefined,
+      title: isEn ? "07. Emotional Repair & Connection" : "07. 싸운 뒤, 우리는 어떻게 다시 가까워질까요?",
+      subtitle: isEn ? "Restoring Trust & Frequency" : "감정을 가라앉히는 방식부터 다시 마음을 여는 순간까지",
+      summary: storyPlan?.repairChapterBundle?.synthesisPrinciple?.corePrinciple || storyPlan?.repairChapterBundle?.timingAnalysis?.timingHeadline || undefined,
       claims: filterClaims(["actions", "repair"]),
       insights: insightCandidates.filter(i => i.topic === "actions" || i.topic === "repair"),
-      actions: actionCandidates.filter(a => a.type === "sos_script" || a.type === "de_escalation"),
+      actions: actionCandidates.filter(a => a.type === "de_escalation"),
       synthesis: synthesisResults.filter(s => s.topic === "actions" || s.topic === "repair"),
       repairPattern: storyPlan?.repairPattern ?? null,
-      legacySections: [filialFrequencySec, sosScriptSec, deEscalationSec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [],
     },
     {
       id: "ch_deep",
@@ -764,7 +782,7 @@ export function buildFamilyReportViewModel(
       insights: insightCandidates.filter(i => i.topic === "deepRead"),
       actions: [],
       synthesis: synthesisResults.filter(s => s.topic === "deepRead"),
-      legacySections: [deepReadSec, destinySec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [destinySec].filter((s): s is FamilyReportSection => s != null),
     },
     {
       id: "ch_action",
@@ -777,7 +795,7 @@ export function buildFamilyReportViewModel(
       actions: actionCandidates.filter(a => a.type === "routine"),
       synthesis: [],
       childCoreNeeds: storyPlan?.pairMeanings?.childCoreNeeds,
-      legacySections: [filialRewardSec, prescriptionSec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [deepReadSec, filialRewardSec, prescriptionSec].filter((s): s is FamilyReportSection => s != null),
     },
   ];
 

@@ -264,6 +264,57 @@ export type FamilyChildGrowthChapterBundle = {
   };
 };
 
+export type FamilyRepairChapterBundle = {
+  /** 01. 감정이 올라온 뒤 각자는 어떻게 풀릴까요 */
+  recoveryRhythms: {
+    parentHeadline: string;
+    parentDesc: string;
+    childHeadline: string;
+    childDesc: string;
+  };
+
+  /** 02. 언제 다시 말을 거는 게 좋을까요 */
+  timingAnalysis: {
+    timingHeadline: string;
+    timingDesc: string;
+    sequencingRule: string;
+  };
+
+  /** 03. 다시 마음이 열리려면 무엇이 먼저 필요할까요 */
+  prerequisites: {
+    parentNeed: string;
+    childNeed: string;
+    repairSequence: string[];
+  };
+
+  /** 04. 잘 풀리는 화해 / 다시 꼬이는 화해 */
+  doAndDontRepair: {
+    effectiveTitle: string;
+    effectiveReason: string;
+    harmfulTitle: string;
+    harmfulReason: string;
+  };
+
+  /** 05. 이 관계에 잘 맞는 회복 스위치 */
+  recoverySwitches: Array<{
+    title: string;
+    desc: string;
+    speechTip?: string;
+  }>;
+
+  /** 06. 이럴 때는 오히려 역효과예요 */
+  antiPatterns: Array<{
+    title: string;
+    whyItFails: string;
+  }>;
+
+  /** 07. 다음번에는 조금 덜 오래 끌기 위해 */
+  synthesisPrinciple: {
+    corePrinciple: string;
+    summaryDesc: string;
+  };
+};
+
 export type CanonicalFamilyStoryPlan = {
   relationshipCore: {
     bondLevel: "high" | "medium" | "low";
@@ -309,6 +360,9 @@ export type CanonicalFamilyStoryPlan = {
 
   /** Part 06 Canonical Child Growth Intelligence Bundle */
   growthChapterBundle?: FamilyChildGrowthChapterBundle;
+
+  /** Part 07 Canonical Emotional Repair Bundle */
+  repairChapterBundle?: FamilyRepairChapterBundle;
 
   selectedClaims: FamilyClaim[];
   suppressedClaims: FamilyClaim[];

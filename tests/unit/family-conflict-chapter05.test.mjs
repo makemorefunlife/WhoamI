@@ -100,7 +100,7 @@ test("Part 05 Canonical Conflict Analysis Suite (21 Audit Points)", async (t) =>
 
     assert.equal(ch5.legacySections.length, 0, "Chapter 05 must not contain legacy recovery sections");
     assert.equal(ch5.actions.length, 0, "Chapter 05 must not contain recovery actions");
-    assert.ok(ch7.legacySections.some((s) => s.id === "de_escalation"), "Chapter 07 must stage de_escalation recovery section");
+    assert.ok(ch7 && ch7.id === "ch_repair", "Chapter 07 must stage canonical recovery chapter");
   });
 
   await t.test("6. No raw Saju terminology or broken particles leak", () => {

@@ -77,8 +77,9 @@ import type {
 } from "@/lib/relationship/familyParent/viewModel/familyReportSectionTypes";
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
+import { buildFamilyRepairChapterBundle } from "@/lib/relationship/familyParent/familyRepairChapterEngine";
 import { FamilyChapterNav, FamilyChapterSection } from "@/components/relationship/familyParent/chapters/FamilyChapterShell";
-import { josaIGa, josaEunNeun, josaGwaWa } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
+import { josaIGa, josaEunNeun, josaGwaWa, josaEulReul } from "@/lib/relationship/familyParent/familyParentLanguage";
 
 const relSans = Noto_Sans_KR({
   subsets: ["latin"],
@@ -714,22 +715,51 @@ function FilialFrequencyCard({ section }: { section: FilialFrequencySection }) {
 
 // ---- Part 4a: 심층 리드 (family_saju_deep 오버레이) ---------------------------
 
-function DeepReadSectionCard({ section }: { section: DeepReadSection }) {
+function DeepReadSectionCard({
+  section,
+  names,
+}: {
+  section: DeepReadSection;
+  names?: [string, string] | readonly [string, string];
+}) {
+  const { locale } = useLocale();
   const t = useMessages().relationshipDrilldown.family;
+  const isEn = locale === "en-US";
+  const headerTitle = isEn
+    ? "◤ Custom Action Suggestions for Parent & Child"
+    : "◤ 부모와 자녀를 위한 맞춤 실천 제안";
+
+  const childName = names?.[0] || "자녀";
+  const parentName = names?.[1] || "부모";
+
+  const adviceParentLabel = isEn
+    ? `Advice for ${parentName}`
+    : `${josaEulReul(parentName)} 위한 조언`;
+  const adviceChildLabel = isEn
+    ? `Advice for ${childName}`
+    : `${josaEulReul(childName)} 위한 조언`;
+
   return (
-    <DeepReadCard
-      vm={section.vm}
-      accentColor={ACCENT}
-      labels={{
-        cardTitle: section.title,
-        voiceMe: t.deepReadVoiceParentLabel,
-        voicePartner: t.deepReadVoiceChildLabel,
-        pattern: t.deepReadPatternLabel,
-        adviceMe: t.deepReadAdviceParentLabel,
-        advicePartner: t.deepReadAdviceChildLabel,
-        together: t.deepReadTogetherLabel,
-      }}
-    />
+    <div className="mt-8 mb-6">
+      <SectionHeader title={headerTitle} tag="ACTION PLAN" />
+      <DeepReadCard
+        vm={section.vm}
+        accentColor={ACCENT}
+        labels={{
+          cardTitle: "",
+          voiceMe: t.deepReadVoiceParentLabel,
+          voicePartner: t.deepReadVoiceChildLabel,
+          pattern: t.deepReadPatternLabel,
+          adviceMe: adviceParentLabel,
+          advicePartner: adviceChildLabel,
+          together: t.deepReadTogetherLabel,
+        }}
+        personNames={{
+          me: parentName,
+          partner: childName,
+        }}
+      />
+    </div>
   );
 }
 
@@ -782,18 +812,27 @@ function FilialRewardCard({ section }: { section: FilialRewardSection }) {
 }
 
 function SosScriptCard({ section }: { section: SosScriptSection }) {
+  const { locale } = useLocale();
+  const isEn = locale === "en-US";
+  const headerTitle = isEn
+    ? "◤ Crisis SOS Rule (Career & Finance Support)"
+    : "◤ 위기의 순간, 부모의 SOS 룰 (취업·재정 지원)";
+
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
-      <RelationshipReportBody>
-        <RelationshipReportLabel>{section.triggerLabel}</RelationshipReportLabel>
-        <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
-          <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-900">
-            <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" strokeWidth={1.75} aria-hidden />
-            {section.sosLine}
-          </RelationshipReportParagraph>
-        </RelationshipReportInset>
-      </RelationshipReportBody>
-    </RelationshipReportCard>
+    <div className="mt-8 mb-6">
+      <SectionHeader title={headerTitle} tag="CRISIS SUPPORT" />
+      <RelationshipReportCard title="" accentColor={ACCENT} variant="warning">
+        <RelationshipReportBody>
+          <RelationshipReportLabel>{section.triggerLabel}</RelationshipReportLabel>
+          <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
+            <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-900">
+              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" strokeWidth={1.75} aria-hidden />
+              {section.sosLine}
+            </RelationshipReportParagraph>
+          </RelationshipReportInset>
+        </RelationshipReportBody>
+      </RelationshipReportCard>
+    </div>
   );
 }
 
@@ -1848,6 +1887,181 @@ export function FamilyReportViewModelView({
                     </p>
                     <p className="mt-2 text-xs font-semibold text-rel-deep italic border-t border-rel-line/50 pt-2">
                       ✨ {love?.keyInsightLine}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })() : null}
+
+          {/* Chapter 07: 07. 싸운 뒤, 우리는 어떻게 다시 가까워질까요? */}
+          {chapter.id === "ch_repair" ? (() => {
+            const parentName = vm.opening.names[1] || "부모";
+            const childName = vm.opening.names[0] || "자녀";
+            const repairBundle = vm.storyPlan?.repairChapterBundle || buildFamilyRepairChapterBundle({
+              childNickname: childName,
+              parentNickname: parentName,
+              locale: isEn ? "en-US" : "ko-KR",
+            });
+
+            return (
+              <div className="space-y-8 mt-6 mb-8">
+                {/* 01. 감정이 올라온 뒤 각자는 어떻게 풀릴까요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 01. How Each Person Cools Down", "◤ 01. 감정이 올라온 뒤 각자는 어떻게 풀릴까요")} tag="RECOVERY RHYTHM" />
+                  <div className="space-y-4">
+                    {/* 부모의 회복 리듬 */}
+                    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                      <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
+                        {parentName}의 회복 리듬
+                      </span>
+                      <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
+                        {repairBundle.recoveryRhythms.parentHeadline}
+                      </p>
+                      <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                        {repairBundle.recoveryRhythms.parentDesc}
+                      </p>
+                    </div>
+
+                    {/* 아이의 회복 리듬 */}
+                    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                      <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
+                        {childName}의 회복 리듬
+                      </span>
+                      <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
+                        {repairBundle.recoveryRhythms.childHeadline}
+                      </p>
+                      <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                        {repairBundle.recoveryRhythms.childDesc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 02. 언제 다시 말을 거는 게 좋을까요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 02. When to Reconnect", "◤ 02. 언제 다시 말을 거는 게 좋을까요")} tag="TIMING" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
+                      {repairBundle.timingAnalysis.timingHeadline}
+                    </p>
+                    <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                      {repairBundle.timingAnalysis.timingDesc}
+                    </p>
+                    <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/80">
+                      <p className="font-rel-sans text-xs font-bold text-rel-ink">
+                        💡 {ec(locale, "Recommended Sequencing Rule", "이 둘에게 맞는 순서")}
+                      </p>
+                      <p className="font-rel-sans text-xs text-rel-ink-soft mt-1 leading-relaxed">
+                        {repairBundle.timingAnalysis.sequencingRule}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 03. 다시 마음이 열리려면 무엇이 먼저 필요할까요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 03. What Needs to Happen First", "◤ 03. 다시 마음이 열리려면 무엇이 먼저 필요할까요")} tag="PREREQUISITE" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-rel-deep">부모에게 먼저 필요한 것</p>
+                      <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink leading-relaxed">
+                        {repairBundle.prerequisites.parentNeed}
+                      </p>
+                    </div>
+                    <div className="h-px w-full bg-rel-line/60" />
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-rel-deep">아이에게 먼저 필요한 것</p>
+                      <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink leading-relaxed">
+                        {repairBundle.prerequisites.childNeed}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line/80 space-y-2">
+                      <p className="font-rel-sans text-xs font-bold text-rel-ink">
+                        🔄 {ec(locale, "Repair Sequence for This Pair", "이 둘에게 맞는 회복 순서")}
+                      </p>
+                      <ul className="space-y-1.5 pl-1">
+                        {repairBundle.prerequisites.repairSequence.map((step, idx) => (
+                          <li key={idx} className="font-rel-sans text-xs text-rel-ink-soft flex items-center gap-2">
+                            <span className="text-rel-deep font-bold">•</span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 04. 잘 풀리는 화해 / 다시 꼬이는 화해 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 04. Effective vs Harmful Repair", "◤ 04. 잘 풀리는 화해 / 다시 꼬이는 화해")} tag="PATTERNS" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="rounded-2xl border border-emerald-900/20 bg-emerald-50/40 p-5 shadow-sm space-y-2">
+                      <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">🟢 잘 풀리는 화해</p>
+                      <p className="font-rel-sans text-sm font-bold text-emerald-950">{repairBundle.doAndDontRepair.effectiveTitle}</p>
+                      <p className="font-rel-sans text-xs text-emerald-900/80 leading-relaxed">{repairBundle.doAndDontRepair.effectiveReason}</p>
+                    </div>
+                    <div className="rounded-2xl border border-rose-900/20 bg-rose-50/40 p-5 shadow-sm space-y-2">
+                      <p className="text-xs font-bold text-rose-900 uppercase tracking-wider">🔴 다시 꼬이는 화해</p>
+                      <p className="font-rel-sans text-sm font-bold text-rose-950">{repairBundle.doAndDontRepair.harmfulTitle}</p>
+                      <p className="font-rel-sans text-xs text-rose-900/80 leading-relaxed">{repairBundle.doAndDontRepair.harmfulReason}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 05. 이 관계에 잘 맞는 회복 스위치 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 05. High-Value Recovery Switches", "◤ 05. 이 관계에 잘 맞는 회복 스위치")} tag="RECOVERY SWITCHES" />
+                  <div className="space-y-3.5">
+                    {repairBundle.recoverySwitches.map((item, idx) => (
+                      <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-rel-deep text-sm font-bold">•</span>
+                          <p className="font-rel-sans text-sm font-bold text-rel-ink">{item.title}</p>
+                        </div>
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">
+                          {item.desc}
+                        </p>
+                        {item.speechTip ? (
+                          <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
+                            <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
+                              <span className="not-italic shrink-0">💬</span>
+                              <span>“{item.speechTip}”</span>
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 06. 이럴 때는 오히려 역효과예요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 06. Anti-Patterns to Avoid", "◤ 06. 이럴 때는 오히려 역효과예요")} tag="ANTI-PATTERNS" />
+                  <div className="space-y-3.5">
+                    {repairBundle.antiPatterns.map((item, idx) => (
+                      <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                        <p className="font-rel-sans text-sm font-bold text-rose-950 flex items-center gap-2">
+                          <span className="text-rose-700">🚫</span>
+                          <span>{item.title}</span>
+                        </p>
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-6">
+                          {item.whyItFails}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 07. 다음번에는 조금 덜 오래 끌기 위해 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 07. Pair Recovery Principle", "◤ 07. 다음번에는 조금 덜 오래 끌기 위해")} tag="SYNTHESIS" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <p className="font-rel-sans text-base font-bold text-rel-ink">
+                      ✨ “{repairBundle.synthesisPrinciple.corePrinciple}”
+                    </p>
+                    <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                      {repairBundle.synthesisPrinciple.summaryDesc}
                     </p>
                   </div>
                 </div>

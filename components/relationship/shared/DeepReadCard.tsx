@@ -37,18 +37,21 @@ function VoiceBlock({
   voice: DeepReadViewModel["meNature"];
 }) {
   if (!voice) return null;
+  const cleanLabel = label.replace(/^▫\s*/, "");
   return (
-    <div>
-      <RelationshipReportLabel>{label}</RelationshipReportLabel>
+    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
+        {cleanLabel}
+      </p>
       {voice.voice ? (
-        <RelationshipReportParagraph className="mt-1.5 italic">
+        <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
           “{voice.voice}”
-        </RelationshipReportParagraph>
+        </p>
       ) : null}
       {voice.description ? (
-        <RelationshipReportParagraph className="mt-1.5">
+        <p className="font-rel-sans text-xs text-rel-ink-soft leading-relaxed">
           {voice.description}
-        </RelationshipReportParagraph>
+        </p>
       ) : null}
     </div>
   );
@@ -57,35 +60,57 @@ function VoiceBlock({
 function AdviceBlock({
   label,
   tips,
+  personName,
 }: {
   label: string;
   tips: DeepReadViewModel["adviceForMe"];
+  personName?: string;
 }) {
   if (!tips.length) return null;
+  const cleanLabel = label.replace(/^▫\s*/, "");
   return (
-    <div>
-      <RelationshipReportLabel>{label}</RelationshipReportLabel>
-      <div className="mt-2 space-y-3">
+    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+      {personName ? (
+        <div>
+          <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
+            {personName}
+          </span>
+        </div>
+      ) : (
+        <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
+          {cleanLabel}
+        </p>
+      )}
+
+      <ul className="space-y-3.5">
         {tips.map((tip, i) => (
-          <RelationshipReportInset key={`${tip.actionTitle}-${i}`}>
-            {tip.actionTitle ? (
-              <p className="text-sm font-semibold leading-snug">
-                {tip.actionTitle}
-              </p>
-            ) : null}
-            {tip.reason ? (
-              <RelationshipReportParagraph className="mt-1.5" muted>
-                {tip.reason}
-              </RelationshipReportParagraph>
-            ) : null}
+          <li key={`${tip.actionTitle}-${i}`} className="space-y-1.5">
+            <div className="flex items-start gap-2.5">
+              <span className="text-rel-deep text-sm font-bold shrink-0 mt-0.5">•</span>
+              <div className="space-y-1">
+                {tip.actionTitle ? (
+                  <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
+                    {tip.actionTitle}
+                  </p>
+                ) : null}
+                {tip.reason ? (
+                  <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
+                    {tip.reason}
+                  </p>
+                ) : null}
+              </div>
+            </div>
             {tip.speechTip ? (
-              <RelationshipReportParagraph className="mt-1.5 italic">
-                “{tip.speechTip}”
-              </RelationshipReportParagraph>
+              <div className="ml-5 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
+                <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
+                  <span className="not-italic shrink-0">💬</span>
+                  <span>“{tip.speechTip}”</span>
+                </p>
+              </div>
             ) : null}
-          </RelationshipReportInset>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -94,52 +119,73 @@ export default function DeepReadCard({
   vm,
   labels,
   accentColor,
+  personNames,
 }: {
   vm: DeepReadViewModel;
   labels: DeepReadLabels;
   accentColor?: string;
+  personNames?: {
+    me?: string;
+    partner?: string;
+  };
 }) {
+  const cleanPattern = labels.pattern.replace(/^▫\s*/, "");
+  const cleanTogether = labels.together.replace(/^▫\s*/, "");
+
   return (
-    <RelationshipReportCard title={labels.cardTitle} accentColor={accentColor}>
-      <RelationshipReportBody>
-        <VoiceBlock label={labels.voiceMe} voice={vm.meNature} />
-        <VoiceBlock label={labels.voicePartner} voice={vm.partnerNature} />
-        {vm.gapSignal ? (
-          <RelationshipReportInset>
-            <RelationshipReportLabel>{labels.pattern}</RelationshipReportLabel>
-            {vm.gapSignal.matchNote ? (
-              <RelationshipReportParagraph className="mt-1.5">
-                {vm.gapSignal.matchNote}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.gapSignal.meBody ? (
-              <RelationshipReportParagraph className="mt-1.5">
-                {vm.gapSignal.meBody}
-              </RelationshipReportParagraph>
-            ) : null}
-            {vm.gapSignal.partnerBody ? (
-              <RelationshipReportParagraph className="mt-1.5">
-                {vm.gapSignal.partnerBody}
-              </RelationshipReportParagraph>
-            ) : null}
-          </RelationshipReportInset>
-        ) : null}
-        <AdviceBlock label={labels.adviceMe} tips={vm.adviceForMe} />
-        <AdviceBlock label={labels.advicePartner} tips={vm.adviceForPartner} />
-        {vm.together ? (
-          <RelationshipReportInset>
-            <RelationshipReportLabel>{labels.together}</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">
-              {vm.together}
-            </RelationshipReportParagraph>
-            {vm.togetherStarter ? (
-              <RelationshipReportParagraph className="mt-1.5 italic">
-                “{vm.togetherStarter}”
-              </RelationshipReportParagraph>
-            ) : null}
-          </RelationshipReportInset>
-        ) : null}
-      </RelationshipReportBody>
-    </RelationshipReportCard>
+    <div className="space-y-6">
+      <VoiceBlock label={labels.voiceMe} voice={vm.meNature} />
+      <VoiceBlock label={labels.voicePartner} voice={vm.partnerNature} />
+      {vm.gapSignal ? (
+        <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
+            {cleanPattern}
+          </p>
+          {vm.gapSignal.matchNote ? (
+            <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
+              {vm.gapSignal.matchNote}
+            </p>
+          ) : null}
+          {vm.gapSignal.meBody ? (
+            <p className="font-rel-sans text-xs text-rel-ink-soft leading-relaxed">
+              {vm.gapSignal.meBody}
+            </p>
+          ) : null}
+          {vm.gapSignal.partnerBody ? (
+            <p className="font-rel-sans text-xs text-rel-ink-soft leading-relaxed">
+              {vm.gapSignal.partnerBody}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      <AdviceBlock
+        label={labels.adviceMe}
+        tips={vm.adviceForMe}
+        personName={personNames?.me}
+      />
+      <AdviceBlock
+        label={labels.advicePartner}
+        tips={vm.adviceForPartner}
+        personName={personNames?.partner}
+      />
+      {vm.together ? (
+        <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
+            {cleanTogether}
+          </p>
+          <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink leading-relaxed font-medium">
+            {vm.together}
+          </p>
+          {vm.togetherStarter ? (
+            <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
+              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
+                <span className="not-italic shrink-0">💬</span>
+                <span>“{vm.togetherStarter}”</span>
+              </p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
