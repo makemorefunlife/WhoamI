@@ -36,6 +36,14 @@ import {
   buildWorkPressureChapterBundle,
   type WorkPressureChapterBundle,
 } from "@/lib/relationship/workColleague/workPressureChapterEngine";
+import {
+  buildWorkConflictChapterBundle,
+  type WorkConflictChapterBundle,
+} from "@/lib/relationship/workColleague/workConflictChapterEngine";
+import {
+  buildWorkPlaybookChapterBundle,
+  type WorkPlaybookChapterBundle,
+} from "@/lib/relationship/workColleague/workPlaybookChapterEngine";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
 import { VersusStrip, Evidence, Reveal, SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { pick } from "@/lib/relationship/friend/friendCopy";
@@ -959,6 +967,580 @@ function CanonicalChapter05PressureView({
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function CanonicalChapter06ConflictView({
+  bundle,
+  names,
+}: {
+  bundle: WorkConflictChapterBundle;
+  names: [string, string];
+}) {
+  const pA = bundle.sensitivityAtoB;
+  const pB = bundle.sensitivityBtoA;
+  const currencyA = bundle.trustCurrencyA;
+  const currencyB = bundle.trustCurrencyB;
+  const seqAtoB = bundle.repairSequenceAtoB;
+  const seqBtoA = bundle.repairSequenceBtoA;
+  const langA = bundle.repairLanguageA;
+  const langB = bundle.repairLanguageB;
+  const synth = bundle.pairRepairSynthesis;
+
+  return (
+    <div className="space-y-8">
+      {/* 1. ◤ 우리는 어디에서 가장 부딪힐까 */}
+      <div className="space-y-4">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>우리는 어디에서 가장 부딪힐까</span>
+        </h3>
+        <div className="space-y-3">
+          {bundle.conflictThemes.map((theme, i) => (
+            <div key={i} className="rounded-2xl border border-red-200/60 bg-red-50/40 p-4 sm:p-5 shadow-sm space-y-3">
+              <h4 className="font-rel-sans text-xs font-bold text-red-900 flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>{theme.themeTitle}</span>
+              </h4>
+              <div className="grid gap-2 sm:grid-cols-2 text-xs">
+                <div className="rounded-xl bg-white/70 p-3 border border-red-100/80">
+                  <p className="font-bold text-rel-deep">{theme.personAStandard}</p>
+                </div>
+                <div className="rounded-xl bg-white/70 p-3 border border-red-100/80">
+                  <p className="font-bold text-rel-deep">{theme.personBStandard}</p>
+                </div>
+              </div>
+              <div className="text-xs space-y-1 pt-1 border-t border-red-200/50">
+                <p className="text-red-900/90 font-semibold">📍 실제 충돌 장면: {theme.realFrictionScene}</p>
+                <p className="text-rel-ink-soft text-[11.5px]">💡 서로의 오해 구조: {theme.mutualMisinterpretation}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 2. ◤ 한번 꼬이면 어떻게 더 커질까 (Conflict Loop) */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>한번 꼬이면 어떻게 더 커질까</span>
+        </h3>
+        <div className="rounded-2xl border border-amber-200/60 bg-amber-50/40 p-4 sm:p-5 shadow-sm space-y-3 text-xs">
+          <div className="font-semibold text-amber-900 flex items-center gap-1.5">
+            <span>🔄</span>
+            <span>갈등 에스컬레이션 루프 (Conflict Loop)</span>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
+              <p className="font-bold text-amber-900 text-[11px]">1. 트리거 발생</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.trigger}</p>
+            </div>
+            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
+              <p className="font-bold text-amber-900 text-[11px]">2. {names[0]}의 행동</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personAAction}</p>
+            </div>
+            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
+              <p className="font-bold text-amber-900 text-[11px]">3. {names[1]}의 해석</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personBInterpretation}</p>
+            </div>
+            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
+              <p className="font-bold text-amber-900 text-[11px]">4. {names[1]}의 방어</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personBDefense}</p>
+            </div>
+            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
+              <p className="font-bold text-amber-900 text-[11px]">5. {names[0]}의 재해석</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personAReinterpretation}</p>
+            </div>
+            <div className="rounded-xl bg-amber-100/70 p-3 border border-amber-200">
+              <p className="font-bold text-amber-950 text-[11px]">6. 최종 결과</p>
+              <p className="text-amber-950 font-semibold text-[11.5px] mt-1">{bundle.conflictLoop.operationalConsequence}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. ◤ 서로의 어떤 실수에 특히 민감할까 (Directional Sensitivity) */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>서로의 어떤 실수에 특히 민감할까</span>
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{pA.personName}</span>
+            <div>
+              <p className="font-bold text-red-900">⚡ 민감하게 반응하는 지점</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{pA.sensitiveMistakeTrigger}</p>
+            </div>
+            <div className="pt-2 border-t border-rel-line/40">
+              <p className="font-semibold text-rel-deep">반응 패턴: {pA.reactionPattern}</p>
+              <p className="text-rel-ink-soft text-[11px] mt-0.5">핵심 요구: {pA.underlyingNeed}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{pB.personName}</span>
+            <div>
+              <p className="font-bold text-red-900">⚡ 민감하게 반응하는 지점</p>
+              <p className="text-rel-ink text-[11.5px] mt-1">{pB.sensitiveMistakeTrigger}</p>
+            </div>
+            <div className="pt-2 border-t border-rel-line/40">
+              <p className="font-semibold text-rel-deep">반응 패턴: {pB.reactionPattern}</p>
+              <p className="text-rel-ink-soft text-[11px] mt-0.5">핵심 요구: {pB.underlyingNeed}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. ◤ 신뢰가 흔들리는 진짜 이유 (Trust Currency) */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>신뢰가 흔들리는 진짜 이유 (Trust Currency)</span>
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{currencyA.personName}의 신뢰 통화</span>
+            <div className="space-y-2">
+              {currencyA.topCurrencies.map((tc, i) => (
+                <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30">
+                  <span className="rounded bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5 mr-1.5">{tc.keyword}</span>
+                  <span className="text-rel-ink text-[11px]">{tc.explanation}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{currencyB.personName}의 신뢰 통화</span>
+            <div className="space-y-2">
+              {currencyB.topCurrencies.map((tc, i) => (
+                <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30">
+                  <span className="rounded bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5 mr-1.5">{tc.keyword}</span>
+                  <span className="text-rel-ink text-[11px]">{tc.explanation}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. ◤ 다시 신뢰하려면 무엇이 먼저 필요할까 (Directional Repair Sequence) */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>다시 신뢰하려면 무엇이 먼저 필요할까</span>
+        </h3>
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-4 sm:p-5 shadow-sm space-y-2">
+            <p className="font-bold text-emerald-900">🤝 {seqAtoB.fromName} $\rightarrow$ {seqAtoB.toName} 복구 순서</p>
+            <ul className="space-y-1.5 text-rel-ink text-[11px]">
+              {seqAtoB.steps.map((step, i) => (
+                <li key={i} className="leading-relaxed">{step}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-4 sm:p-5 shadow-sm space-y-2">
+            <p className="font-bold text-emerald-900">🤝 {seqBtoA.fromName} $\rightarrow$ {seqBtoA.toName} 복구 순서</p>
+            <ul className="space-y-1.5 text-rel-ink text-[11px]">
+              {seqBtoA.steps.map((step, i) => (
+                <li key={i} className="leading-relaxed">{step}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. ◤ 같은 사과도 이렇게 해야 잘 들어온다 (Person-Specific Repair Language) */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>같은 사과도 이렇게 해야 잘 들어온다</span>
+        </h3>
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{langA.personName}에게 효과적인 사과</span>
+            <p className="text-rel-ink-soft text-[11px]">선호 스타일: {langA.preferredStyle}</p>
+            <div className="space-y-1 pt-1 border-t border-rel-line/40">
+              <p className="font-bold text-emerald-800">✅ 효과적인 문구:</p>
+              {langA.effectivePhrases.map((phrase, i) => (
+                <p key={i} className="text-rel-ink text-[11px]">{phrase}</p>
+              ))}
+            </div>
+            <div className="space-y-1 pt-1 border-t border-rel-line/40">
+              <p className="font-bold text-red-800">❌ 피해야 할 문구:</p>
+              {langA.ineffectivePhrases.map((phrase, i) => (
+                <p key={i} className="text-rel-ink-soft text-[11px]">{phrase}</p>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{langB.personName}에게 효과적인 사과</span>
+            <p className="text-rel-ink-soft text-[11px]">선호 스타일: {langB.preferredStyle}</p>
+            <div className="space-y-1 pt-1 border-t border-rel-line/40">
+              <p className="font-bold text-emerald-800">✅ 효과적인 문구:</p>
+              {langB.effectivePhrases.map((phrase, i) => (
+                <p key={i} className="text-rel-ink text-[11px]">{phrase}</p>
+              ))}
+            </div>
+            <div className="space-y-1 pt-1 border-t border-rel-line/40">
+              <p className="font-bold text-red-800">❌ 피해야 할 문구:</p>
+              {langB.ineffectivePhrases.map((phrase, i) => (
+                <p key={i} className="text-rel-ink-soft text-[11px]">{phrase}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 7. ◤ 이 팀은 갈등 뒤 어떻게 돌아오는 팀일까 (Pair Repair Synthesis) */}
+      <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 sm:p-5 shadow-sm space-y-2 text-xs">
+        <h4 className="font-rel-sans text-xs font-bold text-purple-900 flex items-center gap-1.5">
+          <span>💜</span>
+          <span>{synth.synthesisTitle}</span>
+        </h4>
+        <p className="text-purple-950 font-semibold leading-relaxed">{synth.resilienceSummary}</p>
+        <p className="text-rel-ink-soft text-[11px] pt-1">{synth.bridgeToPlaybook}</p>
+      </div>
+
+      {/* 8. ◤ 서로 마음이 상했을 때(삐졌을 때) 1:1 대화 해독 수칙 */}
+      {bundle.upsetReconciliationA ? (
+        <div className="space-y-4 pt-4 border-t border-rel-line/40 text-xs">
+          <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+            <span>◤</span>
+            <span>서로 마음이 상했을 때(삐졌을 때) 1:1 대화 해독 수칙</span>
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+              <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
+                {bundle.upsetReconciliationA.personName}의 감정 신호 & 풀리는 대화법
+              </span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                {bundle.upsetReconciliationA.upsetSignal}
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
+                <p className="font-bold text-emerald-800 text-xs">✅ 이렇게 이야기를 건네보세요:</p>
+                <ul className="space-y-1 text-rel-ink text-[11px]">
+                  {bundle.upsetReconciliationA.doList.map((item, idx) => (
+                    <li key={idx} className="leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
+                <p className="font-bold text-red-800 text-xs">❌ 이때 이것만은 피하세요:</p>
+                <ul className="space-y-1 text-rel-ink-soft text-[11px]">
+                  {bundle.upsetReconciliationA.avoidList.map((item, idx) => (
+                    <li key={idx} className="leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+              <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
+                {bundle.upsetReconciliationB.personName}의 감정 신호 & 풀리는 대화법
+              </span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                {bundle.upsetReconciliationB.upsetSignal}
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
+                <p className="font-bold text-emerald-800 text-xs">✅ 이렇게 이야기를 건네보세요:</p>
+                <ul className="space-y-1 text-rel-ink text-[11px]">
+                  {bundle.upsetReconciliationB.doList.map((item, idx) => (
+                    <li key={idx} className="leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
+                <p className="font-bold text-red-800 text-xs">❌ 이때 이것만은 피하세요:</p>
+                <ul className="space-y-1 text-rel-ink-soft text-[11px]">
+                  {bundle.upsetReconciliationB.avoidList.map((item, idx) => (
+                    <li key={idx} className="leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {bundle.deEscalationCushion ? (
+            <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-4 sm:p-5 shadow-sm space-y-1.5">
+              <p className="text-[10.5px] font-bold text-emerald-800">{bundle.deEscalationCushion.hashtag}</p>
+              <h4 className="font-bold text-emerald-950 text-xs">{bundle.deEscalationCushion.title}</h4>
+              <p className="text-emerald-900/90 text-[11px] leading-relaxed">{bundle.deEscalationCushion.detail}</p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CanonicalChapter07PlaybookView({
+  bundle,
+  names,
+}: {
+  bundle: WorkPlaybookChapterBundle;
+  names: [string, string];
+}) {
+  const opt = bundle.optimalConfiguration;
+  const doA = bundle.doDontA;
+  const doB = bundle.doDontB;
+  const rules = bundle.teamRules;
+  const triage = bundle.emergencyPlaybook;
+  const growth = bundle.mutualGrowth;
+  const routines = bundle.operatingRoutines;
+  const principle = bundle.singleOperatingPrinciple;
+
+  return (
+    <div className="space-y-8 text-xs">
+      {/* Subtitle / Intro */}
+      <div className="rounded-xl bg-rel-taupe-soft/40 p-4 border border-rel-line/40 text-rel-ink-soft leading-relaxed">
+        <p className="font-semibold text-rel-deep text-xs mb-1">
+          💡 {bundle.subtitle}
+        </p>
+        <p className="text-[11.5px]">{bundle.introSummary}</p>
+      </div>
+
+      {/* 1. ◤ 이 조합의 최적 운영 방식 */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>이 조합의 최적 운영 방식</span>
+        </h3>
+        <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1">{doA.personName}의 핵심 소유 영역</span>
+              <ul className="space-y-1 text-[11px] text-rel-ink-soft">
+                {opt.personAOwnership.map((item, idx) => (
+                  <li key={idx}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="space-y-1.5">
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1">{doB.personName}의 핵심 소유 영역</span>
+              <ul className="space-y-1 text-[11px] text-rel-ink-soft">
+                {opt.personBOwnership.map((item, idx) => (
+                  <li key={idx}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 pt-3 border-t border-rel-line/40 text-[11.5px]">
+            <div className="rounded-xl bg-emerald-50/60 p-3 border border-emerald-200/60 space-y-0.5">
+              <p className="font-bold text-emerald-900">✅ 가장 잘 맞는 구조</p>
+              <p className="text-emerald-800/90 leading-relaxed text-[11px]">{opt.bestStructure}</p>
+            </div>
+            <div className="rounded-xl bg-red-50/60 p-3 border border-red-200/60 space-y-0.5">
+              <p className="font-bold text-red-900">❌ 피해야 할 구조</p>
+              <p className="text-red-800/90 leading-relaxed text-[11px]">{opt.avoidStructure}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. ◤ 서로와 일할 때 DO / DON'T */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>서로와 일할 때 DO / DON'T</span>
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {/* Person A DO/DON'T */}
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{doA.personName}와 일할 때</span>
+            <div className="space-y-2">
+              <p className="font-bold text-emerald-800 text-xs">DO</p>
+              {doA.doItems.map((item, i) => (
+                <div key={i} className="rounded-xl bg-emerald-50/50 p-2.5 border border-emerald-200/50 space-y-0.5">
+                  <p className="font-bold text-emerald-950 text-[11px]">✓ {item.title}</p>
+                  <p className="text-rel-ink-soft text-[10.5px]">{item.explanation}</p>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2 pt-2 border-t border-rel-line/30">
+              <p className="font-bold text-red-800 text-xs">DON'T</p>
+              {doA.dontItems.map((item, i) => (
+                <div key={i} className="rounded-xl bg-red-50/50 p-2.5 border border-red-200/50 space-y-0.5">
+                  <p className="font-bold text-red-950 text-[11px]">✕ {item.title}</p>
+                  <p className="text-rel-ink-soft text-[10.5px]">{item.explanation}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Person B DO/DON'T */}
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{doB.personName}와 일할 때</span>
+            <div className="space-y-2">
+              <p className="font-bold text-emerald-800 text-xs">DO</p>
+              {doB.doItems.map((item, i) => (
+                <div key={i} className="rounded-xl bg-emerald-50/50 p-2.5 border border-emerald-200/50 space-y-0.5">
+                  <p className="font-bold text-emerald-950 text-[11px]">✓ {item.title}</p>
+                  <p className="text-rel-ink-soft text-[10.5px]">{item.explanation}</p>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2 pt-2 border-t border-rel-line/30">
+              <p className="font-bold text-red-800 text-xs">DON'T</p>
+              {doB.dontItems.map((item, i) => (
+                <div key={i} className="rounded-xl bg-red-50/50 p-2.5 border border-red-200/50 space-y-0.5">
+                  <p className="font-bold text-red-950 text-[11px]">✕ {item.title}</p>
+                  <p className="text-rel-ink-soft text-[10.5px]">{item.explanation}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. ◤ 같이 일할 때 꼭 맞춰둘 규칙 */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>같이 일할 때 꼭 맞춰둘 규칙</span>
+        </h3>
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {rules.map((rule, idx) => (
+            <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-4 shadow-sm space-y-1.5">
+              <span className="rounded-md bg-rel-deep/10 text-rel-deep font-bold text-[10px] px-2 py-0.5 inline-block">{rule.ruleType} RULE</span>
+              <p className="font-bold text-rel-deep text-xs">{rule.title}</p>
+              <p className="text-rel-ink text-[11px] leading-relaxed">• {rule.instruction}</p>
+              {rule.whyLine ? <p className="text-rel-ink-soft text-[10.5px]">💡 {rule.whyLine}</p> : null}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. ◤ 일이 꼬였을 때 비상 운영법 */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>일이 꼬였을 때 비상 운영법</span>
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {triage.map((item, idx) => (
+            <div key={idx} className="rounded-2xl border border-amber-200/60 bg-amber-50/40 p-4 shadow-sm space-y-1.5">
+              <p className="font-bold text-amber-900 text-xs">🚨 {item.functionName}</p>
+              <p className="text-[10.5px] font-semibold text-amber-800">Owner: {item.ownerName}</p>
+              <p className="text-amber-900/90 text-[11px] leading-relaxed">{item.responsibility}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5. ◤ 서로에게서 얻게 되는 것 */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>서로에게서 얻게 되는 것</span>
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 sm:p-5 shadow-sm space-y-1.5">
+            <span className="font-bold text-purple-900 text-xs">{growth.aFromB.personName} $\leftarrow$ {growth.aFromB.fromName}</span>
+            <p className="font-bold text-purple-950 text-[11.5px]">🌱 {growth.aFromB.capabilityToLearn}</p>
+            <p className="text-purple-900/90 text-[11px] leading-relaxed">{growth.aFromB.explanation}</p>
+          </div>
+          <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 sm:p-5 shadow-sm space-y-1.5">
+            <span className="font-bold text-purple-900 text-xs">{growth.bFromA.personName} $\leftarrow$ {growth.bFromA.fromName}</span>
+            <p className="font-bold text-purple-950 text-[11.5px]">🌱 {growth.bFromA.capabilityToLearn}</p>
+            <p className="text-purple-900/90 text-[11px] leading-relaxed">{growth.bFromA.explanation}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. ◤ 이 팀이 오래 잘 가기 위한 운영 습관 */}
+      <div className="space-y-3">
+        <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+          <span>◤</span>
+          <span>이 팀이 오래 잘 가기 위한 운영 습관</span>
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {routines.map((rt, idx) => (
+            <div key={idx} className="rounded-2xl border border-sky-200/60 bg-sky-50/40 p-4 shadow-sm space-y-1.5">
+              <p className="font-bold text-sky-900 text-xs">🗓️ {rt.routineName}</p>
+              <p className="text-[10.5px] font-semibold text-sky-800">포맷: {rt.format}</p>
+              <p className="text-sky-900/90 text-[11px] leading-relaxed">목적: {rt.purpose}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 7. ◤ 이 팀의 한 가지 원칙 */}
+      <div className="rounded-2xl border border-rel-deep bg-rel-deep/5 p-5 shadow-sm space-y-2">
+        <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
+          <span>💡</span>
+          <span>이 팀의 한 가지 원칙</span>
+        </h4>
+        <p className="font-bold text-rel-deep text-sm leading-relaxed">{principle.principleTitle}</p>
+        <p className="text-rel-ink-soft text-[11.5px] leading-relaxed pt-1">{principle.explanation}</p>
+      </div>
+
+      {/* 8. ◤ 이 팀을 위한 협업 안전 장치 (Safety Matrix) */}
+      {bundle.collaborationSafetyMatrix ? (
+        <div className="space-y-4 pt-6 border-t border-rel-line/40 text-xs">
+          <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+            <span>◤</span>
+            <span>이 팀을 위한 협업 안전 장치 (Safety Matrix)</span>
+          </h3>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Person A Safety Table */}
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+              <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
+                🛡️ {bundle.collaborationSafetyMatrix.personAName}의 협업 안전 장치
+              </span>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[11px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-rel-line/40 text-rel-deep font-bold">
+                      <th className="py-1.5 px-2 w-1/4">구분</th>
+                      <th className="py-1.5 px-2 text-emerald-800">✅ 이렇게 해보세요</th>
+                      <th className="py-1.5 px-2 text-red-800">❌ 피하면 좋아요</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-rel-line/20">
+                    {bundle.collaborationSafetyMatrix.personARows.map((row, idx) => (
+                      <tr key={idx}>
+                        <td className="py-2 px-2 font-semibold text-rel-deep text-[10.5px] align-top">{row.categoryLabel}</td>
+                        <td className="py-2 px-2 text-rel-ink leading-relaxed align-top">{row.doRecommendation}</td>
+                        <td className="py-2 px-2 text-rel-ink-soft leading-relaxed align-top">{row.avoidRecommendation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Person B Safety Table */}
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
+              <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
+                🛡️ {bundle.collaborationSafetyMatrix.personBName}의 협업 안전 장치
+              </span>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[11px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-rel-line/40 text-rel-deep font-bold">
+                      <th className="py-1.5 px-2 w-1/4">구분</th>
+                      <th className="py-1.5 px-2 text-emerald-800">✅ 이렇게 해보세요</th>
+                      <th className="py-1.5 px-2 text-red-800">❌ 피하면 좋아요</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-rel-line/20">
+                    {bundle.collaborationSafetyMatrix.personBRows.map((row, idx) => (
+                      <tr key={idx}>
+                        <td className="py-2 px-2 font-semibold text-rel-deep text-[10.5px] align-top">{row.categoryLabel}</td>
+                        <td className="py-2 px-2 text-rel-ink leading-relaxed align-top">{row.doRecommendation}</td>
+                        <td className="py-2 px-2 text-rel-ink-soft leading-relaxed align-top">{row.avoidRecommendation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2099,12 +2681,24 @@ export function WorkReportViewModelView({
         <div id="ch_relationship_loop" />
         <div id="ch_deep_read" />
         <UserQuestionBanner question={isEn ? "What triggers sensitivity during mistakes, and how is trust repaired?" : "실수나 충돌이 생겼을 때 무엇에 민감하고, 어떻게 해야 다시 신뢰가 회복되는가?"} />
-        <ConflictSensitivityCard boundary={comparisonSection?.boundary} names={names} />
-        <MistakeRepairCard meta={meta} names={names} />
-        {warningSection ? <WarningCard section={warningSection} /> : null}
-        <MutualGrowthCard meta={meta} names={names} />
-        {loopSection ? <RelationshipLoopCard section={loopSection} /> : null}
-        {deepReadSection ? <DeepReadSectionCard section={deepReadSection} /> : null}
+        {(() => {
+          const conflictBundle = vm.storyPlan?.conflictChapterBundle || buildWorkConflictChapterBundle({
+            nameA: names[0],
+            nameB: names[1],
+            locale: isEn ? "en-US" : "ko-KR",
+            individualWorkBundle: vm.storyPlan?.individualWorkBundle,
+            communicationChapterBundle: vm.storyPlan?.communicationChapterBundle,
+            pressureChapterBundle: vm.storyPlan?.pressureChapterBundle,
+            psychA: (rawReport.meta?.person_core as any)?.psych_a ?? null,
+            psychB: (rawReport.meta?.person_core as any)?.psych_b ?? null,
+            sajuChartA: (rawReport.meta?.person_core as any)?.saju_chart_a ?? null,
+            sajuChartB: (rawReport.meta?.person_core as any)?.saju_chart_b ?? null,
+            workSignalsA: (rawReport.meta?.person_core as any)?.work_signals_a ?? null,
+            workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
+          });
+
+          return <CanonicalChapter06ConflictView bundle={conflictBundle} names={names} />;
+        })()}
       </WorkChapterSection>
 
       {/* Chapter 7: 07 · Practical Operating Playbook */}
@@ -2117,15 +2711,25 @@ export function WorkReportViewModelView({
         <div id="ch_prescription" />
         <div id="pair-prescription-work" />
         <UserQuestionBanner question={isEn ? "What are our immediate 1:1 operational rules starting tomorrow?" : "그래서 내일부터 둘이 어떻게 일하면 되는가?"} />
-        <OperatingRulesCard thinkVsDiscuss={meta?.think_vs_discuss} names={names} />
-        <EmergencyTriageRulesCard meta={meta} names={names} />
-        <PlaybookSummaryCard meta={meta} />
-        {prescriptionSection ? <PrescriptionCard section={prescriptionSection} /> : null}
+        {(() => {
+          const playbookBundle = vm.storyPlan?.playbookChapterBundle || buildWorkPlaybookChapterBundle({
+            nameA: names[0],
+            nameB: names[1],
+            locale: isEn ? "en-US" : "ko-KR",
+            individualWorkBundle: vm.storyPlan?.individualWorkBundle,
+            communicationChapterBundle: vm.storyPlan?.communicationChapterBundle,
+            pressureChapterBundle: vm.storyPlan?.pressureChapterBundle,
+            conflictChapterBundle: vm.storyPlan?.conflictChapterBundle,
+            psychA: (rawReport.meta?.person_core as any)?.psych_a ?? null,
+            psychB: (rawReport.meta?.person_core as any)?.psych_b ?? null,
+            sajuChartA: (rawReport.meta?.person_core as any)?.saju_chart_a ?? null,
+            sajuChartB: (rawReport.meta?.person_core as any)?.saju_chart_b ?? null,
+            workSignalsA: (rawReport.meta?.person_core as any)?.work_signals_a ?? null,
+            workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
+          });
 
-        {/* [Sera의 영역] & [동글의 영역] (Directive 4: Chapter 07 맨 마지막 하단 배치) */}
-        {comparisonSection?.boundary ? (
-          <FinalBoundaryCard boundary={comparisonSection.boundary} names={names} />
-        ) : null}
+          return <CanonicalChapter07PlaybookView bundle={playbookBundle} names={names} />;
+        })()}
       </WorkChapterSection>
     </div>
   );

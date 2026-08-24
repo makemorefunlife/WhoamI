@@ -38,6 +38,8 @@ import { buildWorkOverviewChapterBundle } from "../workOverviewChapterEngine";
 import { buildIndividualWorkChapterBundle } from "../individualWorkChapterEngine";
 import { buildWorkCommunicationChapterBundle } from "../workCommunicationChapterEngine";
 import { buildWorkPressureChapterBundle } from "../workPressureChapterEngine";
+import { buildWorkConflictChapterBundle } from "../workConflictChapterEngine";
+import { buildWorkPlaybookChapterBundle } from "../workPlaybookChapterEngine";
 
 export type BuildWorkReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -538,12 +540,45 @@ export function buildWorkReportViewModel(
     workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
   });
 
+  const conflictChapterBundle = buildWorkConflictChapterBundle({
+    nameA: myName,
+    nameB: partnerName,
+    locale,
+    individualWorkBundle,
+    communicationChapterBundle,
+    pressureChapterBundle,
+    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
+    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
+    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+  });
+
+  const playbookChapterBundle = buildWorkPlaybookChapterBundle({
+    nameA: myName,
+    nameB: partnerName,
+    locale,
+    individualWorkBundle,
+    communicationChapterBundle,
+    pressureChapterBundle,
+    conflictChapterBundle,
+    psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+    psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+    sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
+    sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+    workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
+    workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+  });
+
   storyPlan = {
     ...storyPlan,
     overviewChapterBundle,
     individualWorkBundle,
     communicationChapterBundle,
     pressureChapterBundle,
+    conflictChapterBundle,
+    playbookChapterBundle,
   } as any;
 
   return {

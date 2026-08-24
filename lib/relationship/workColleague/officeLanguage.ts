@@ -769,6 +769,17 @@ export function buildUpsetResponseGuide(
   locale: Locale = LEGACY_FALLBACK_LOCALE,
   workSignals?: WorkSajuSignals,
 ): OfficeUpsetGuide {
+  if (!sajuJson || !sajuJson.saju || !(sajuJson.saju as any).yearPillar) {
+    const category = resolveWorkCategory(tenGodCounts, workSignals);
+    const base = UPSET_RESPONSE_BY_CATEGORY[locale][category] || UPSET_RESPONSE_BY_CATEGORY[locale]["비겁"];
+    return {
+      nickname,
+      upset_signals: `${topicParticle(nickname)} 감정이 올라오면 회피하거나 침묵하며 속으로 정리하려 해요. ${base.signals}`,
+      do_list: base.doList.map((item) => sanitizeOfficeText(item)),
+      avoid_list: base.avoidList.map((item) => sanitizeOfficeText(item)),
+    };
+  }
+
   const pillars = sajuJsonToPillars(
     sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
   );

@@ -241,6 +241,8 @@ export type WorkOverviewChapterBundle = {
 
 import type { WorkCommunicationChapterBundle } from "./workCommunicationChapterEngine";
 import type { WorkPressureChapterBundle } from "./workPressureChapterEngine";
+import type { WorkConflictChapterBundle } from "./workConflictChapterEngine";
+import type { WorkPlaybookChapterBundle } from "./workPlaybookChapterEngine";
 
 export type CanonicalWorkStoryPlan = {
   schemaVersion: "work_story_plan_v1";
@@ -255,6 +257,8 @@ export type CanonicalWorkStoryPlan = {
   individualWorkBundle?: IndividualWorkChapterBundle;
   communicationChapterBundle?: WorkCommunicationChapterBundle;
   pressureChapterBundle?: WorkPressureChapterBundle;
+  conflictChapterBundle?: WorkConflictChapterBundle;
+  playbookChapterBundle?: WorkPlaybookChapterBundle;
   workRoles: {
     selfRole?: string;
     colleagueRole?: string;
