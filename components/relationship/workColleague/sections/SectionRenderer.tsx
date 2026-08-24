@@ -944,23 +944,370 @@ export function WorkReportViewModelView({
         })()}
       </WorkChapterSection>
 
-      {/* Chapter 2: 02 · Roles, Ownership & Decision Authority */}
+      {/* Chapter 2: 02 · 이 사람은 일할 때 어떤 사람일까요? */}
       <WorkChapterSection
         id="ch2_roles_rnr"
         number="02"
-        title={isEn ? "02 · Roles, Ownership & Decision Authority" : "02 · 업무 역할과 R&R 분담"}
+        title={isEn ? "02 · What Kind of Worker Is Each Person?" : "02 · 이 사람은 일할 때 어떤 사람일까요?"}
         accent={ACCENT}
       >
         <div id="ch_role_matrix" />
-        <UserQuestionBanner question={isEn ? "Who leads direction, execution, risk QA, and final decisions?" : "누가 방향을 잡고, 누가 실행하고, 누가 검수하고, 누가 결정해야 가장 잘 굴러가는가?"} />
-        <CanonicalRoleMapCard meta={meta} names={names} />
-        {roleMatrixSection ? <RoleMatrixCard section={roleMatrixSection} /> : null}
-        {comparisonSection ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <DnaCard profile={comparisonSection.dna.me} accent={ACCENT} />
-            <DnaCard profile={comparisonSection.dna.partner} accent={ACCENT} />
-          </div>
-        ) : null}
+        <UserQuestionBanner question={isEn ? "Innate work temperament to current behavioral execution style" : "타고난 업무 기질부터 지금 실제로 일하는 방식까지"} />
+        {(() => {
+          const individualBundle = vm.storyPlan?.individualWorkBundle || buildIndividualWorkChapterBundle({
+            nameA: names[0],
+            nameB: names[1],
+            locale: isEn ? "en-US" : "ko-KR",
+          });
+
+          if (!individualBundle) return null;
+
+          const pA = individualBundle.personA;
+          const pB = individualBundle.personB;
+
+          return (
+            <div className="space-y-8 mt-4 mb-8">
+              {/* ================================================================ */}
+              {/* GROUP A. 나는 어떻게 일하는 사람인가 */}
+              {/* ================================================================ */}
+              <div className="space-y-3">
+                <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+                  <span>◤</span>
+                  <span>나는 어떻게 일하는 사람인가</span>
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Person A Card */}
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-5">
+                    <div className="border-b border-rel-line/40 pb-3 space-y-1.5">
+                      <div>
+                        <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep text-xs font-bold px-3 py-0.5 inline-block">
+                          {pA.name}
+                        </span>
+                      </div>
+                      <p className="font-rel-sans text-xs font-bold text-rel-deep leading-snug">{pA.identityLabel}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {pA.keyTraits.map((t, i) => (
+                          <span key={i} className="rounded bg-rel-deep/10 text-rel-deep text-[10px] font-semibold px-1.5 py-0.5">#{t}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 일하는 기본 스타일 */}
+                    <div className="space-y-2 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>일하는 기본 스타일</span>
+                      </h4>
+                      <div className="space-y-2.5">
+                        {pA.workStyleBehaviors.map((b, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <p className="text-[11px] font-bold text-rel-deep flex items-center gap-1">
+                              <span>-</span>
+                              <span>{b.situationLabel}</span>
+                            </p>
+                            <div className="rounded-xl bg-rel-taupe-soft/40 p-2.5 space-y-0.5 border border-rel-line/30">
+                              <p className="font-bold text-rel-ink">{b.behaviorSummary}</p>
+                              {b.microcopy ? <p className="text-[11px] text-rel-ink-soft">{b.microcopy}</p> : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 일에 기여하는 방식 */}
+                    <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>일에 기여하는 방식</span>
+                      </h4>
+                      <div className="space-y-1.5">
+                        {pA.topContributions.map((c, i) => (
+                          <div key={i} className="rounded-xl bg-rel-taupe-soft/30 p-2.5 border border-rel-line/30 space-y-0.5">
+                            <span className="font-bold text-rel-deep text-[11px]">- {c.title}</span>
+                            <p className="text-[11px] text-rel-ink-soft">{c.microcopy}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 일을 잘한다고 느끼는 기준 */}
+                    <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>일을 잘한다고 느끼는 기준</span>
+                      </h4>
+                      <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
+                        <div className="flex flex-wrap gap-1">
+                          {pA.valueKeywords.map((vk, i) => (
+                            <span key={i} className="font-semibold text-rel-deep text-[10px]">#{vk}</span>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-rel-ink-soft leading-relaxed">{pA.internalStandardSentence}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Person B Card */}
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-5">
+                    <div className="border-b border-rel-line/40 pb-3 space-y-1.5">
+                      <div>
+                        <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep text-xs font-bold px-3 py-0.5 inline-block">
+                          {pB.name}
+                        </span>
+                      </div>
+                      <p className="font-rel-sans text-xs font-bold text-rel-deep leading-snug">{pB.identityLabel}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {pB.keyTraits.map((t, i) => (
+                          <span key={i} className="rounded bg-rel-taupe-soft text-rel-deep text-[10px] font-semibold px-1.5 py-0.5 border border-rel-line/30">#{t}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 일하는 기본 스타일 */}
+                    <div className="space-y-2 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>일하는 기본 스타일</span>
+                      </h4>
+                      <div className="space-y-2.5">
+                        {pB.workStyleBehaviors.map((b, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <p className="text-[11px] font-bold text-rel-deep flex items-center gap-1">
+                              <span>-</span>
+                              <span>{b.situationLabel}</span>
+                            </p>
+                            <div className="rounded-xl bg-rel-taupe-soft/40 p-2.5 space-y-0.5 border border-rel-line/30">
+                              <p className="font-bold text-rel-ink">{b.behaviorSummary}</p>
+                              {b.microcopy ? <p className="text-[11px] text-rel-ink-soft">{b.microcopy}</p> : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 일에 기여하는 방식 */}
+                    <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>일에 기여하는 방식</span>
+                      </h4>
+                      <div className="space-y-1.5">
+                        {pB.topContributions.map((c, i) => (
+                          <div key={i} className="rounded-xl bg-rel-taupe-soft/30 p-2.5 border border-rel-line/30 space-y-0.5">
+                            <span className="font-bold text-rel-deep text-[11px]">- {c.title}</span>
+                            <p className="text-[11px] text-rel-ink-soft">{c.microcopy}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 일을 잘한다고 느끼는 기준 */}
+                    <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>일을 잘한다고 느끼는 기준</span>
+                      </h4>
+                      <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
+                        <div className="flex flex-wrap gap-1">
+                          {pB.valueKeywords.map((vk, i) => (
+                            <span key={i} className="font-semibold text-rel-deep text-[10px]">#{vk}</span>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-rel-ink-soft leading-relaxed">{pB.internalStandardSentence}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================================================================ */}
+              {/* GROUP B. 나는 어디에서 강한가 */}
+              {/* ================================================================ */}
+              <div className="space-y-3">
+                <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+                  <span>◤</span>
+                  <span>나는 어디에서 강한가</span>
+                </h3>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Person A Card */}
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-5">
+                    <div className="border-b border-rel-line/40 pb-2">
+                      <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep text-xs font-bold px-3 py-0.5 inline-block">
+                        {pA.name}
+                      </span>
+                    </div>
+
+                    {/* ▫ 잘 맞는 업무 */}
+                    <div className="space-y-1.5 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>잘 맞는 업무</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {pA.suitableWorkTypes.map((wt, i) => (
+                          <span key={i} className="rounded-md bg-rel-taupe-soft text-rel-ink font-medium text-[11px] px-2 py-0.5 border border-rel-line/30">{wt}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 잘 맞는 역할 · 직무 · 기능 */}
+                    <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>잘 맞는 역할 · 직무 · 기능</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {pA.suitableRoles.map((r, i) => (
+                          <span key={i} className="rounded-md bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5">{r}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 잘 맞는 팀 · 업무 환경 */}
+                    <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>잘 맞는 팀 · 업무 환경</span>
+                      </h4>
+                      <ul className="space-y-1 text-[11px] text-rel-ink-soft">
+                        {pA.thrivingEnvironments.map((env, i) => (
+                          <li key={i}>✓ {env}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Person B Card */}
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-5">
+                    <div className="border-b border-rel-line/40 pb-2">
+                      <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep text-xs font-bold px-3 py-0.5 inline-block">
+                        {pB.name}
+                      </span>
+                    </div>
+
+                    {/* ▫ 잘 맞는 업무 */}
+                    <div className="space-y-1.5 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>잘 맞는 업무</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {pB.suitableWorkTypes.map((wt, i) => (
+                          <span key={i} className="rounded-md bg-rel-taupe-soft text-rel-ink font-medium text-[11px] px-2 py-0.5 border border-rel-line/30">{wt}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 잘 맞는 역할 · 직무 · 기능 */}
+                    <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>잘 맞는 역할 · 직무 · 기능</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {pB.suitableRoles.map((r, i) => (
+                          <span key={i} className="rounded-md bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5">{r}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ▫ 잘 맞는 팀 · 업무 환경 */}
+                    <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
+                      <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                        <span>▫</span>
+                        <span>잘 맞는 팀 · 업무 환경</span>
+                      </h4>
+                      <ul className="space-y-1 text-[11px] text-rel-ink-soft">
+                        {pB.thrivingEnvironments.map((env, i) => (
+                          <li key={i}>✓ {env}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================================================================ */}
+              {/* GROUP C. 둘이 함께 일할 때 알아두면 좋은 것 */}
+              {/* ================================================================ */}
+              <div className="space-y-3">
+                <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
+                  <span>◤</span>
+                  <span>둘이 함께 일할 때 알아두면 좋은 것</span>
+                </h3>
+
+                <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-6">
+                  {/* ▫ 맡기면 좋은 일 */}
+                  <div className="space-y-2">
+                    <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                      <span>▫</span>
+                      <span>맡기면 좋은 일</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2.5 text-xs">
+                      <div className="space-y-1.5">
+                        {pA.delegationItems.map((item, i) => (
+                          <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30 space-y-0.5">
+                            <p className="font-bold text-rel-ink text-[11px]">{item.workTitle} → <span className="text-rel-deep font-extrabold">{item.partnerName}</span></p>
+                            <p className="text-[10.5px] text-rel-ink-soft">{item.reason}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="space-y-1.5">
+                        {pB.delegationItems.map((item, i) => (
+                          <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30 space-y-0.5">
+                            <p className="font-bold text-rel-ink text-[11px]">{item.workTitle} → <span className="text-rel-deep font-extrabold">{item.partnerName}</span></p>
+                            <p className="text-[10.5px] text-rel-ink-soft">{item.reason}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ▫ 본래의 업무 기질 vs 지금 일하는 방식 */}
+                  <div className="space-y-2 pt-4 border-t border-rel-line/40">
+                    <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
+                      <span>▫</span>
+                      <span>본래의 업무 기질 vs 지금 일하는 방식</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2.5 text-xs">
+                      <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
+                        <span className={`rounded-full px-2 py-0.5 text-[9.5px] font-bold ${pA.innateVsCurrent.status === "adapted" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+                          {pA.innateVsCurrent.status === "adapted" ? "적응형 습관" : "기질 일치"}
+                        </span>
+                        <p className="text-[11px] text-rel-ink-soft leading-relaxed">{pA.innateVsCurrent.synthesisSentence}</p>
+                      </div>
+                      <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
+                        <span className={`rounded-full px-2 py-0.5 text-[9.5px] font-bold ${pB.innateVsCurrent.status === "adapted" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+                          {pB.innateVsCurrent.status === "adapted" ? "적응형 습관" : "기질 일치"}
+                        </span>
+                        <p className="text-[11px] text-rel-ink-soft leading-relaxed">{pB.innateVsCurrent.synthesisSentence}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ▫ 가장 닮은 점 / 가장 다른 점 */}
+                  <div className="space-y-1.5 pt-4 border-t border-rel-line/40 text-xs">
+                    <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1 mb-1">
+                      <span>▫</span>
+                      <span>가장 닮은 점 / 가장 다른 점</span>
+                    </h4>
+                    <p className="text-rel-ink">🔹 <strong>가장 비슷한 부분:</strong> {individualBundle.mostSimilarInsight}</p>
+                    <p className="text-rel-ink">🔸 <strong>가장 다른 부분:</strong> {individualBundle.mostDifferentInsight}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 레거시 '역할 및 기여 방식' 카드 (Chapter 02 하단 배치) */}
+              {roleMatrixSection ? (
+                <div className="mt-6">
+                  <RoleMatrixCard section={roleMatrixSection} />
+                </div>
+              ) : null}
+            </div>
+          );
+        })()}
       </WorkChapterSection>
 
       {/* Chapter 3: 03 · Work Style & Communication Rhythm */}

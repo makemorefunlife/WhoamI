@@ -169,6 +169,68 @@ export type WorkTeamPortrait = {
   body: string;
 };
 
+export type IndividualWorkStyleItem = {
+  situationLabel: string;
+  behaviorSummary: string;
+  microcopy?: string;
+};
+
+export type WorkContributionItem = {
+  title: string;
+  microcopy: string;
+};
+
+export type ConcreteDelegationItem = {
+  workTitle: string;
+  partnerName: string;
+  reason: string;
+};
+
+export type IndividualWorkProfile = {
+  name: string;
+  // Header
+  identityLabel: string;
+  keyTraits: string[];
+
+  // 01. 일하는 기본 스타일
+  workStyleBehaviors: IndividualWorkStyleItem[];
+
+  // 02. 일에 기여하는 방식
+  topContributions: WorkContributionItem[];
+
+  // 03. 잘 맞는 업무
+  suitableWorkTypes: string[];
+
+  // 04. 잘 맞는 역할 · 직무 · 기능
+  suitableRoles: string[];
+
+  // 05. 잘 맞는 팀 · 업무 환경
+  thrivingEnvironments: string[];
+
+  // 06. 일을 잘한다고 느끼는 기준
+  valueKeywords: string[];
+  internalStandardSentence: string;
+
+  // 07. 맡기면 좋은 일
+  delegationItems: ConcreteDelegationItem[];
+
+  // 08. 본래의 업무 기질 vs 지금 일하는 방식
+  innateVsCurrent: {
+    status: "aligned" | "adapted" | "low_confidence";
+    innateTraits: string[];
+    currentTraits: string[];
+    synthesisSentence: string;
+  };
+};
+
+export type IndividualWorkChapterBundle = {
+  personA: IndividualWorkProfile;
+  personB: IndividualWorkProfile;
+  // 09. 가장 닮은 점 / 가장 다른 점
+  mostSimilarInsight: string;
+  mostDifferentInsight: string;
+};
+
 export type WorkOverviewChapterBundle = {
   workFitCard: WorkOverviewCardBundle;
   synergyCard: WorkOverviewCardBundle;
@@ -187,6 +249,7 @@ export type CanonicalWorkStoryPlan = {
     riskScore: string;
   };
   overviewChapterBundle?: WorkOverviewChapterBundle;
+  individualWorkBundle?: IndividualWorkChapterBundle;
   workRoles: {
     selfRole?: string;
     colleagueRole?: string;

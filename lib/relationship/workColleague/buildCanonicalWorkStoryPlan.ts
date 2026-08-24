@@ -141,6 +141,11 @@ export function buildCanonicalWorkStoryPlan(params: {
   const synergyPct = officeReport.snapshot?.synergy_pct ?? (officeReport.metrics?.benefit ?? 75);
   const riskPct = officeReport.snapshot?.risk_pct ?? (officeReport.metrics?.risk_pct ?? 20);
 
+  const psychA = (officeReport as any).personCore?.psych_a ?? null;
+  const psychB = (officeReport as any).personCore?.psych_b ?? null;
+  const sajuChartA = (officeReport as any).personCore?.saju_chart_a ?? null;
+  const sajuChartB = (officeReport as any).personCore?.saju_chart_b ?? null;
+
   const overviewChapterBundle = buildWorkOverviewChapterBundle({
     nameA,
     nameB,
@@ -148,8 +153,19 @@ export function buildCanonicalWorkStoryPlan(params: {
     fitPct,
     synergyPct,
     riskPct,
-    psychA: (officeReport as any).personCore?.psych_a ?? null,
-    psychB: (officeReport as any).personCore?.psych_b ?? null,
+    psychA,
+    psychB,
+  });
+
+  const individualWorkBundle = buildIndividualWorkChapterBundle({
+    nameA,
+    nameB,
+    locale,
+    psychA,
+    psychB,
+    sajuChartA,
+    sajuChartB,
+    officeReport,
   });
 
   return {
@@ -162,6 +178,7 @@ export function buildCanonicalWorkStoryPlan(params: {
       riskScore: `${riskPct}%`,
     },
     overviewChapterBundle,
+    individualWorkBundle,
     workRoles: {
       selfRole: officeReport.overview?.gift_from_a,
       colleagueRole: officeReport.overview?.gift_from_b,
