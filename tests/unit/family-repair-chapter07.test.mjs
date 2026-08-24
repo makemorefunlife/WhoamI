@@ -146,8 +146,8 @@ test("Part 07 Canonical Family Recovery Intelligence Suite", async (t) => {
     assert.equal(ch7.subtitle, "감정을 가라앉히는 방식부터 다시 마음을 여는 순간까지");
     assert.equal(ch7.legacySections.length, 0, "Chapter 07 legacySections must be cleared to prevent old cards");
 
-    const ch8 = vm.editorialChapters.find(c => c.id === "ch_deep");
-    assert.ok(ch8, "Chapter 08 (ch_deep) must exist");
-    assert.equal(ch8.legacySections.length, 0, "Chapter 08 legacySections must be cleared (moved to Action Plan)");
+    const ch8 = vm.editorialChapters.find(c => c.id === "ch_action");
+    assert.ok(ch8, "Chapter 08 (ch_action) must exist");
+    assert.equal(ch8.legacySections.length, 0, "Chapter 08 legacySections must be cleared");
   });
 });

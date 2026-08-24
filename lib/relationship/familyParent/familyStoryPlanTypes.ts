@@ -315,6 +315,80 @@ export type FamilyRepairChapterBundle = {
   };
 };
 
+export type FamilyActionChapterBundle = {
+  /** 01. 이 관계에서 가장 기억해야 할 것 */
+  finalTakeaway: {
+    childNeedTitle: string;
+    childNeedDesc: string;
+    parentStrengthTitle: string;
+    parentStrengthDesc: string;
+    cautionPointTitle: string;
+    cautionPointDesc: string;
+  };
+
+  /** 02. 부모와 자녀를 위한 맞춤 실천 제안 */
+  customActions: {
+    parentActions: Array<{
+      title: string;
+      whyItMatters: string;
+      practicalExample: string;
+    }>;
+    childActions: Array<{
+      title: string;
+      whyItMatters: string;
+      practicalExample: string;
+    }>;
+    togetherActions: Array<{
+      title: string;
+      whyItMatters: string;
+      practicalExample: string;
+    }>;
+  };
+
+  /** 03. 이 관계에서는 이것만은 줄여보세요 */
+  finalDonts: Array<{
+    title: string;
+    whyHarmful: string;
+    dontExample?: string;
+  }>;
+  doAndDontPairs?: Array<{
+    doTitle: string;
+    doExample: string;
+    dontTitle: string;
+    dontExample: string;
+    whyHarmful: string;
+  }>;
+
+  /** 04. 관계를 오래 지켜주는 작은 루틴 */
+  relationshipRoutines: Array<{
+    title: string;
+    desc: string;
+    frequencyTip: string;
+  }>;
+
+  /** 05. 부모의 마음이 유독 더 움직이기 쉬운 지점 */
+  affinitySignal: {
+    title: string;
+    desc: string;
+    disclaimer: string;
+  };
+
+  /** 06. 미래의 패밀리 리워드 */
+  futureReward: {
+    subtitle: string;
+    themes: Array<{
+      title: string;
+      desc: string;
+    }>;
+  };
+
+  /** 07. 이 관계가 잘 자라면 */
+  futurePortrait: {
+    title: string;
+    narrative: string;
+  };
+};
+
 export type CanonicalFamilyStoryPlan = {
   relationshipCore: {
     bondLevel: "high" | "medium" | "low";
@@ -363,6 +437,9 @@ export type CanonicalFamilyStoryPlan = {
 
   /** Part 07 Canonical Emotional Repair Bundle */
   repairChapterBundle?: FamilyRepairChapterBundle;
+
+  /** Part 08 Canonical Action & Synthesis Bundle */
+  actionChapterBundle?: FamilyActionChapterBundle;
 
   selectedClaims: FamilyClaim[];
   suppressedClaims: FamilyClaim[];

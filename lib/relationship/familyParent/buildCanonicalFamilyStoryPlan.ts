@@ -17,6 +17,7 @@ import { computeChildParentingNeedsEngine } from "./familyChildParentingNeedsEng
 import { buildFamilyConflictChapterBundle } from "./familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "./familyGrowthChapterEngine";
 import { buildFamilyRepairChapterBundle } from "./familyRepairChapterEngine";
+import { buildFamilyActionChapterBundle } from "./familyActionChapterEngine";
 import type {
   CanonicalFamilyStoryPlan,
   FamilyClaim,
@@ -358,6 +359,21 @@ export function buildCanonicalFamilyStoryPlan(
     conflictLoop,
   });
 
+  const actionChapterBundle = buildFamilyActionChapterBundle({
+    childNickname: ctx.childNickname,
+    parentNickname: ctx.parentNickname,
+    childIsViewer: ctx.childIsViewer,
+    locale: ctx.locale,
+    psychChild,
+    psychParent,
+    countsChild: ctx.tenGod.countsChild,
+    countsParent: ctx.tenGod.countsParent,
+    childCoreNeeds: pairMeanings.childCoreNeeds,
+    conflictChapterBundle,
+    growthChapterBundle,
+    repairChapterBundle,
+  });
+
   return {
     relationshipCore: {
       bondLevel,
@@ -398,6 +414,7 @@ export function buildCanonicalFamilyStoryPlan(
     conflictChapterBundle,
     growthChapterBundle,
     repairChapterBundle,
+    actionChapterBundle,
     selectedClaims,
     suppressedClaims,
     insightCandidates,

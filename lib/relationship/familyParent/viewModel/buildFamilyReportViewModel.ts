@@ -39,6 +39,7 @@ import { josaIGa, josaEunNeun } from "@/lib/relationship/romantic/prototypeV4/ro
 import { buildFamilyConflictChapterBundle } from "../familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "../familyGrowthChapterEngine";
 import { buildFamilyRepairChapterBundle } from "../familyRepairChapterEngine";
+import { buildFamilyActionChapterBundle } from "../familyActionChapterEngine";
 import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 
@@ -663,6 +664,25 @@ export function buildFamilyReportViewModel(
     } as any;
   }
 
+  if (!storyPlan || !(storyPlan as any).actionChapterBundle) {
+    const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+    const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
+    const actionChapterBundle = buildFamilyActionChapterBundle({
+      childNickname,
+      parentNickname,
+      locale,
+      psychChild: report.meta?.psych_a ?? null,
+      psychParent: report.meta?.psych_b ?? null,
+      conflictChapterBundle: storyPlan?.conflictChapterBundle ?? null,
+      growthChapterBundle: storyPlan?.growthChapterBundle ?? null,
+      repairChapterBundle: storyPlan?.repairChapterBundle ?? null,
+    });
+    storyPlan = {
+      ...storyPlan,
+      actionChapterBundle,
+    } as any;
+  }
+
   // Build Editorial 8 Chapters mapping StoryPlan SSOT + Legacy Reusable Content
   const selectedClaims = storyPlan?.selectedClaims ?? [];
   const insightCandidates = storyPlan?.insightCandidates ?? [];
@@ -773,29 +793,17 @@ export function buildFamilyReportViewModel(
       legacySections: [],
     },
     {
-      id: "ch_deep",
-      number: "08",
-      title: isEn ? "08. Deep Perspectives" : "08. 깊은 이해 — 부모와 자녀 각각의 시선",
-      subtitle: isEn ? "Deep Read & Shared Wisdom" : "서로 다른 입장에서 바라보는 관계의 조화",
-      summary: storyPlan?.deepRead?.parentAdvice || undefined,
-      claims: filterClaims(["deepRead"]),
-      insights: insightCandidates.filter(i => i.topic === "deepRead"),
-      actions: [],
-      synthesis: synthesisResults.filter(s => s.topic === "deepRead"),
-      legacySections: [destinySec].filter((s): s is FamilyReportSection => s != null),
-    },
-    {
       id: "ch_action",
-      number: "09",
-      title: isEn ? "09. Actionable Playbook" : "09. 실천과 단단한 관계 유지 — 오래 이어질 행복 행동 처방전",
-      subtitle: isEn ? "Daily Routines & Long-term Bond" : "일상의 스크립트와 앞으로 다가올 보답",
-      summary: storyPlan?.actions?.maintenanceRoutine || undefined,
+      number: "08",
+      title: isEn ? "08. Action Plan & Future" : "08. 앞으로, 우리는 이렇게 지내면 좋아요",
+      subtitle: isEn ? "Practical Steps & Long-term Bond" : "서로를 더 잘 이해한 다음, 실제 관계에서 바꿔볼 것들",
+      summary: storyPlan?.actionChapterBundle?.finalTakeaway?.childNeedTitle || storyPlan?.actions?.maintenanceRoutine || undefined,
       claims: filterClaims(["action"]),
       insights: [],
       actions: actionCandidates.filter(a => a.type === "routine"),
       synthesis: [],
       childCoreNeeds: storyPlan?.pairMeanings?.childCoreNeeds,
-      legacySections: [deepReadSec, filialRewardSec, prescriptionSec].filter((s): s is FamilyReportSection => s != null),
+      legacySections: [],
     },
   ];
 

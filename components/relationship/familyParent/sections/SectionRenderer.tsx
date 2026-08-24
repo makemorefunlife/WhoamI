@@ -78,6 +78,7 @@ import type {
 import DeepReadCard from "@/components/relationship/shared/DeepReadCard";
 import { useMessages, useLocale } from "@/lib/i18n/LocaleProvider";
 import { buildFamilyRepairChapterBundle } from "@/lib/relationship/familyParent/familyRepairChapterEngine";
+import { buildFamilyActionChapterBundle } from "@/lib/relationship/familyParent/familyActionChapterEngine";
 import { FamilyChapterNav, FamilyChapterSection } from "@/components/relationship/familyParent/chapters/FamilyChapterShell";
 import { josaIGa, josaEunNeun, josaGwaWa, josaEulReul } from "@/lib/relationship/familyParent/familyParentLanguage";
 
@@ -2063,6 +2064,224 @@ export function FamilyReportViewModelView({
                     <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
                       {repairBundle.synthesisPrinciple.summaryDesc}
                     </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })() : null}
+
+          {/* Chapter 08: 08. 앞으로, 우리는 이렇게 지내면 좋아요 */}
+          {chapter.id === "ch_action" ? (() => {
+            const parentName = vm.opening.names[1] || "부모";
+            const childName = vm.opening.names[0] || "자녀";
+            const actionBundle = vm.storyPlan?.actionChapterBundle || buildFamilyActionChapterBundle({
+              childNickname: childName,
+              parentNickname: parentName,
+              locale: isEn ? "en-US" : "ko-KR",
+            });
+
+            if (!actionBundle) return null;
+
+            return (
+              <div className="space-y-8 mt-6 mb-8">
+                {/* 01. 이 관계에서 가장 기억해야 할 것 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 01. Essential Relationship Takeaway", "◤ 01. 이 관계에서 가장 기억해야 할 것")} tag="TAKEAWAY" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
+                    {/* 아이에게 가장 필요한 것 */}
+                    <div>
+                      <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
+                        {childName}에게 가장 필요한 것
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-rel-ink">
+                        {actionBundle.finalTakeaway.childNeedTitle}
+                      </p>
+                      <p className="mt-1 font-rel-sans text-xs sm:text-[13.5px] leading-relaxed text-rel-ink-soft">
+                        {actionBundle.finalTakeaway.childNeedDesc}
+                      </p>
+                    </div>
+
+                    <div className="h-px w-full bg-rel-line/60" />
+
+                    {/* 부모가 이미 잘해주고 있는 것 */}
+                    <div>
+                      <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
+                        {parentName}가 이미 잘해주고 있는 것
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-rel-ink">
+                        {actionBundle.finalTakeaway.parentStrengthTitle}
+                      </p>
+                      <p className="mt-1 font-rel-sans text-xs sm:text-[13.5px] leading-relaxed text-rel-ink-soft">
+                        {actionBundle.finalTakeaway.parentStrengthDesc}
+                      </p>
+                    </div>
+
+                    <div className="h-px w-full bg-rel-line/60" />
+
+                    {/* 이 관계에서 가장 조심할 것 */}
+                    <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/80 space-y-1">
+                      <p className="font-rel-sans text-xs font-bold text-rel-ink">
+                        ⚠️ {ec(locale, "Key Caution Point", "이 관계에서 가장 조심할 것")} — {actionBundle.finalTakeaway.cautionPointTitle}
+                      </p>
+                      <p className="font-rel-sans text-xs leading-relaxed text-rel-ink-soft">
+                        {actionBundle.finalTakeaway.cautionPointDesc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 02. 부모와 자녀를 위한 맞춤 실천 제안 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 02. Action Plan for Parent & Child", "◤ 02. 부모와 자녀를 위한 맞춤 실천 제안")} tag="ACTION PLAN" />
+                  <div className="space-y-6">
+                    {/* 부모가 해볼 것 */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
+                          {parentName}가 해볼 것
+                        </span>
+                      </div>
+                      {actionBundle.customActions.parentActions.map((act, idx) => (
+                        <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 shadow-sm space-y-2">
+                          <p className="font-rel-sans text-sm font-bold text-rel-ink">• {act.title}</p>
+                          <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">{act.whyItMatters}</p>
+                          {act.practicalExample ? (
+                            <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
+                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
+                                <span className="shrink-0">💬</span>
+                                <span>{act.practicalExample}</span>
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 자녀가 해볼 것 */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
+                          {childName}가 해볼 것
+                        </span>
+                      </div>
+                      {actionBundle.customActions.childActions.map((act, idx) => (
+                        <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 shadow-sm space-y-2">
+                          <p className="font-rel-sans text-sm font-bold text-rel-ink">• {act.title}</p>
+                          <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">{act.whyItMatters}</p>
+                          {act.practicalExample ? (
+                            <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
+                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
+                                <span className="shrink-0">💬</span>
+                                <span>{act.practicalExample}</span>
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 함께 해볼 것 */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
+                          함께 해볼 것
+                        </span>
+                      </div>
+                      {actionBundle.customActions.togetherActions.map((act, idx) => (
+                        <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 shadow-sm space-y-2">
+                          <p className="font-rel-sans text-sm font-bold text-rel-ink">• {act.title}</p>
+                          <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">{act.whyItMatters}</p>
+                          {act.practicalExample ? (
+                            <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
+                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
+                                <span className="shrink-0">💡</span>
+                                <span>{act.practicalExample}</span>
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 03. 이 관계에서는 이것만은 줄여보세요 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 03. Relationship Habits to Reduce", "◤ 03. 이 관계에서는 이것만은 줄여보세요")} tag="DON'TS" />
+                  <div className="space-y-3.5">
+                    {actionBundle.finalDonts.map((item, idx) => (
+                      <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                        <p className="font-rel-sans text-sm font-bold text-rose-950 flex items-center gap-2">
+                          <span className="text-rose-700">🚫</span>
+                          <span>{item.title}</span>
+                        </p>
+                        {item.dontExample ? (
+                          <div className="ml-6 mt-1.5 rounded-xl bg-rose-50/60 p-3 border border-rose-100/80">
+                            <p className="font-rel-sans text-xs text-rose-900 font-medium leading-relaxed flex items-start gap-1.5">
+                              <span className="shrink-0">💬</span>
+                              <span>{item.dontExample}</span>
+                            </p>
+                          </div>
+                        ) : null}
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-6 pt-1">
+                          {item.whyHarmful}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 04. 관계를 오래 지켜주는 작은 루틴 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 04. Pair Relationship Routines", "◤ 04. 관계를 오래 지켜주는 작은 루틴")} tag="ROUTINES" />
+                  <div className="space-y-3.5">
+                    {actionBundle.relationshipRoutines.map((rt, idx) => (
+                      <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-rel-deep font-bold">•</span>
+                          <p className="font-rel-sans text-sm font-bold text-rel-ink">{rt.title}</p>
+                        </div>
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">
+                          {rt.desc}
+                        </p>
+                        <p className="font-rel-sans text-xs font-semibold text-rel-deep pl-4 pt-1">
+                          ⏱ {rt.frequencyTip}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 05. 부모의 마음이 유독 더 움직이기 쉬운 지점 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 05. Differential Affinity Signal", "◤ 05. 부모의 마음이 유독 더 움직이기 쉬운 지점")} tag="AFFINITY SIGNAL" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <p className="font-rel-sans text-sm font-bold text-rel-ink">{actionBundle.affinitySignal.title}</p>
+                    <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">{actionBundle.affinitySignal.desc}</p>
+                    <p className="font-rel-sans text-[11.5px] text-rel-ink-mute italic border-t border-rel-line/50 pt-2">{actionBundle.affinitySignal.disclaimer}</p>
+                  </div>
+                </div>
+
+                {/* 06. 미래의 패밀리 리워드 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 06. Future Family Reward", "◤ 06. 미래의 패밀리 리워드")} tag="FUTURE REWARD" />
+                  <div className="space-y-3.5">
+                    <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">{actionBundle.futureReward.subtitle}</p>
+                    {actionBundle.futureReward.themes.map((th, idx) => (
+                      <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
+                        <p className="font-rel-sans text-sm font-bold text-rel-ink">✨ {th.title}</p>
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">{th.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 07. 이 관계가 잘 자라면 */}
+                <div>
+                  <SectionHeader title={ec(locale, "◤ 07. Future Relationship Portrait", "◤ 07. 이 관계가 잘 자라면")} tag="FUTURE PORTRAIT" />
+                  <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <p className="font-rel-sans text-base font-bold text-rel-ink">{actionBundle.futurePortrait.title}</p>
+                    <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">{actionBundle.futurePortrait.narrative}</p>
                   </div>
                 </div>
               </div>
