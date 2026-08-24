@@ -36,6 +36,7 @@ import type { WorkCompareRow } from "@/lib/relationship/workColleague/sajuCompar
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 import { buildWorkOverviewChapterBundle } from "../workOverviewChapterEngine";
 import { buildIndividualWorkChapterBundle } from "../individualWorkChapterEngine";
+import { buildWorkCommunicationChapterBundle } from "../workCommunicationChapterEngine";
 
 export type BuildWorkReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -511,10 +512,24 @@ export function buildWorkReportViewModel(
       officeReport: report as any,
     });
 
+    const communicationChapterBundle = buildWorkCommunicationChapterBundle({
+      nameA: myName,
+      nameB: partnerName,
+      locale,
+      psychA: (report.meta?.person_core as any)?.psych_a ?? null,
+      psychB: (report.meta?.person_core as any)?.psych_b ?? null,
+      sajuChartA: (report.meta?.person_core as any)?.saju_chart_a ?? null,
+      sajuChartB: (report.meta?.person_core as any)?.saju_chart_b ?? null,
+      workSignalsA: (report.meta?.person_core as any)?.work_signals_a ?? null,
+      workSignalsB: (report.meta?.person_core as any)?.work_signals_b ?? null,
+      officeReport: report as any,
+    });
+
     storyPlan = {
       ...storyPlan,
       overviewChapterBundle,
       individualWorkBundle,
+      communicationChapterBundle,
     } as any;
   }
 

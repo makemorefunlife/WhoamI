@@ -28,6 +28,10 @@ import { WorkChapterNav, WorkChapterSection } from "@/components/relationship/wo
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
 import type { OverviewCardData } from "@/lib/relationship/shared/overview/overviewTypes";
+import {
+  buildWorkCommunicationChapterBundle,
+  type WorkCommunicationChapterBundle,
+} from "@/lib/relationship/workColleague/workCommunicationChapterEngine";
 import { PsychAxisComparisonSection } from "@/components/relationship/shared/psychAxis/PsychAxisComparisonSection";
 import { VersusStrip, Evidence, Reveal, SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { pick } from "@/lib/relationship/friend/friendCopy";
@@ -392,35 +396,472 @@ function CanonicalRoleMapCard({
   );
 }
 
-function ThinkVsDiscussCard({ meta }: { meta: any }) {
+function IndividualWorkStyleCards({
+  workStyle,
+  individualBundle,
+  names,
+}: {
+  workStyle?: { me: string; partner: string };
+  individualBundle?: any;
+  names: [string, string];
+}) {
+  const meText =
+    workStyle?.me ||
+    (individualBundle?.personA
+      ? `${names[0]} — ${individualBundle.personA.identityLabel}. ${individualBundle.personA.workStyleBehaviors[0]?.behaviorSummary || ""}`
+      : `${names[0]} — 동료 기분을 세심히 챙기고, 신뢰를 쌓으며 꾸준히 밀어붙이는 케어형. 프로젝트 매니저 쪽 업무에서 강점이 잘 드러나요.`);
+
+  const partnerText =
+    workStyle?.partner ||
+    (individualBundle?.personB
+      ? `${names[1]} — ${individualBundle.personB.identityLabel}. ${individualBundle.personB.workStyleBehaviors[0]?.behaviorSummary || ""}`
+      : `${names[1]} — 흔들리는 상황에서도 기준을 지키며, 팀의 중심을 잡는 안정형. 서비스·제품 기획 쪽 업무에서 강점이 잘 드러나요.`);
+
+  return (
+    <div className="space-y-2.5 text-xs my-4 p-4 rounded-2xl bg-rel-taupe-soft/30 border border-rel-line/40">
+      <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
+        <span>◤</span>
+        <span>개인별 일 스타일</span>
+      </h4>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
+          <p className="font-bold text-rel-deep text-xs flex items-center gap-1">
+            <span>▫</span>
+            <span>{names[0]}의 일 스타일</span>
+          </p>
+          <p className="text-rel-ink-soft leading-relaxed text-[11.5px] mt-1">{meText}</p>
+        </div>
+        <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
+          <p className="font-bold text-rel-deep text-xs flex items-center gap-1">
+            <span>▫</span>
+            <span>{names[1]}의 일 스타일</span>
+          </p>
+          <p className="text-rel-ink-soft leading-relaxed text-[11.5px] mt-1">{partnerText}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Chapter4CommunicationCard({
+  section,
+  names,
+}: {
+  section?: ComparisonSection;
+  names: [string, string];
+}) {
+  const commFit =
+    section?.communicationFit ||
+    "회의실에서 방향이 잘 맞는 편이에요. 회의에서 한쪽은 빠른 결론, 다른 쪽은 꼼꼼한 검토를 원해 부딪히기 쉬워요. 안건을 나누거나 '오늘은 방향만 / 내일은 디테일'처럼 순서를 정하면 편해요.";
+
+  const reportingFit =
+    section?.reportingStyleFit?.summary ||
+    `${names[0]}는 결론부터 두괄식으로 말하는 편이고, ${names[1]}는 상황에 따라 유연하게 대응하는 편이에요 — 직급보다 듣는 쪽에 맞춰 포맷을 바꿔보세요.`;
+
+  const breakFit =
+    section?.breakBoundaryFit?.summary ||
+    `${names[0]}는 그때그때 상황에 맞춰 충전하는 편이고, ${names[1]}는 그때그때 상황에 맞춰 충전하는 편이에요. 신호가 잘 맞는 편이라, 같이 쉬는 시간이 부담보다는 편안함에 가까워요.`;
+
+  return (
+    <div className="space-y-4 text-xs">
+      <SubHeading title="둘의 커뮤니케이션 & 보고 소통 핏" tag="COMMUNICATION" tone="deep" />
+      
+      <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/30 space-y-1">
+        <p className="font-bold text-rel-deep flex items-center gap-1.5">
+          <span>💬</span>
+          <span>둘의 커뮤니케이션 핏</span>
+        </p>
+        <p className="text-rel-ink-soft leading-relaxed">{commFit}</p>
+      </div>
+
+      <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/30 space-y-1">
+        <p className="font-bold text-rel-deep flex items-center gap-1.5">
+          <span>📊</span>
+          <span>보고 · 피드백 소통 핏</span>
+        </p>
+        <p className="text-rel-ink-soft leading-relaxed">{reportingFit}</p>
+      </div>
+
+      <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/30 space-y-1">
+        <p className="font-bold text-rel-deep flex items-center gap-1.5">
+          <span>☕</span>
+          <span>점심시간 · 탕비실 경계선</span>
+        </p>
+        <p className="text-rel-ink-soft leading-relaxed">{breakFit}</p>
+      </div>
+    </div>
+  );
+}
+
+function FinalBoundaryCard({
+  boundary,
+  names,
+}: {
+  boundary?: { me: string; partner: string };
+  names: [string, string];
+}) {
+  const meBoundary =
+    boundary?.me ||
+    `${names[0]}에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요. 감정이 깊어지면 회피하거나, 뒤늦게 한꺼번에 터뜨릴 수 있어요. 같이 일하다 보면 ${names[0]}의 기운이 ${names[1]} 쪽으로 흘러 들어가는 구조예요 — 협업이 끝나면 티는 안 나도 ${names[0]}이(가) 먼저 방전되는 편이에요. 게다가 미묘하게 부딪히는 지점도 있어서, 긴 협업 뒤에는 짧게라도 각자 정리할 시간을 의식적으로 넣어주는 게 좋아요.`;
+
+  const partnerBoundary =
+    boundary?.partner ||
+    `${names[1]}에게 공개적으로 책임을 떠넘기거나, 존중 없이 속도만 강요하지 마세요. 날카롭게 반응하며, 기준이 무너지면 바로 지적합니다.`;
+
+  return (
+    <div className="mt-8 pt-6 border-t border-rel-line/50 space-y-4 text-xs">
+      <SubHeading title="상대방 경계선 및 존중 가이드 (영역 수칙)" tag="RESPECT" tone="coral" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1.5">
+          <p className="font-bold text-amber-900">🛡️ {names[0]}의 영역</p>
+          <p className="text-amber-800/90 leading-relaxed text-[11px]">{meBoundary}</p>
+        </div>
+        <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1.5">
+          <p className="font-bold text-amber-900">🛡️ {names[1]}의 영역</p>
+          <p className="text-amber-800/90 leading-relaxed text-[11px]">{partnerBoundary}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CanonicalChapter04CommunicationView({
+  bundle,
+  names,
+}: {
+  bundle: WorkCommunicationChapterBundle;
+  names: [string, string];
+}) {
+  const pA = bundle.personA;
+  const pB = bundle.personB;
+
+  return (
+    <div className="space-y-10 my-4 text-xs">
+      <div className="rounded-xl bg-rel-taupe-soft/40 p-4 border border-rel-line/40 text-rel-ink-soft leading-relaxed">
+        <p className="font-semibold text-rel-deep text-xs mb-1">
+          💡 {bundle.subtitle}
+        </p>
+        <p className="text-[11.5px]">{bundle.introSummary}</p>
+      </div>
+
+      {/* 1. ◤ 생각을 정리하는 방식 */}
+      <div className="space-y-3">
+        <SubHeading title="생각을 정리하는 방식" tag="THINKING" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">"혼자 생각을 정리한 뒤 말하는가, 대화를 하면서 생각을 구체화하는가?"</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1.5">{pA.name}</span>
+            <p className="font-bold text-rel-deep text-xs">"{pA.thinkMode.shortLabel}"</p>
+            <p className="text-rel-ink-soft text-[11px] leading-relaxed mt-1">{pA.thinkMode.meaning}</p>
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1.5">{pB.name}</span>
+            <p className="font-bold text-rel-deep text-xs">"{pB.thinkMode.shortLabel}"</p>
+            <p className="text-rel-ink-soft text-[11px] leading-relaxed mt-1">{pB.thinkMode.meaning}</p>
+          </div>
+        </div>
+        <div className="rounded-xl bg-amber-50/60 p-3.5 border border-amber-200/60 space-y-1">
+          <p className="font-bold text-amber-900 text-xs">🤝 {bundle.thinkModePairSynthesis.title}</p>
+          <p className="text-amber-800/90 text-[11.5px] leading-relaxed">{bundle.thinkModePairSynthesis.summary}</p>
+        </div>
+      </div>
+
+      {/* 2. ◤ 회의에서 의견을 내는 방식 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="회의에서 의견을 내는 방식" tag="MEETING" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">"회의에서 누가 논의를 끌어가고, 누가 빠진 조건을 확인하는가?"</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1.5">{pA.name}</span>
+            <p className="font-bold text-rel-deep text-xs">"{pA.meetingStyle.shortLabel}"</p>
+            <p className="text-rel-ink-soft text-[11px] leading-relaxed mt-1">{pA.meetingStyle.description}</p>
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1.5">{pB.name}</span>
+            <p className="font-bold text-rel-deep text-xs">"{pB.meetingStyle.shortLabel}"</p>
+            <p className="text-rel-ink-soft text-[11px] leading-relaxed mt-1">{pB.meetingStyle.description}</p>
+          </div>
+        </div>
+        <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line/40 space-y-1">
+          <p className="font-bold text-rel-deep text-xs">💬 {bundle.meetingStylePairManifestation.title}</p>
+          <p className="text-rel-ink-soft text-[11.5px] leading-relaxed">{bundle.meetingStylePairManifestation.summary}</p>
+        </div>
+      </div>
+
+      {/* 3. ◤ 보고하고 공유하는 방식 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="보고하고 공유하는 방식" tag="REPORTING" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">"어떤 순서와 깊이로 정보를 공유하는가?"</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}</span>
+            {pA.reportingStyle.dimensions.map((d, i) => (
+              <div key={i} className="space-y-0.5">
+                <span className="text-[10px] text-rel-deep font-bold">{d.label}</span>
+                <p className="font-bold text-rel-ink text-[11px]">{d.pattern}</p>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}</span>
+            {pB.reportingStyle.dimensions.map((d, i) => (
+              <div key={i} className="space-y-0.5">
+                <span className="text-[10px] text-rel-deep font-bold">{d.label}</span>
+                <p className="font-bold text-rel-ink text-[11px]">{d.pattern}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl bg-amber-50/60 p-3.5 border border-amber-200/60 space-y-1">
+          <p className="font-bold text-amber-900 text-xs">⚠️ {bundle.reportingMismatchNote.title}</p>
+          <p className="text-amber-800/90 text-[11.5px] leading-relaxed">{bundle.reportingMismatchNote.summary}</p>
+        </div>
+      </div>
+
+      {/* 4. ◤ 피드백을 주고받는 방식 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="피드백을 주고받는 방식" tag="FEEDBACK" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">"어떤 조건에서 피드백이 잘 수용되고, 무엇을 어려워하는가?"</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}에게 피드백이 잘 들어오는 조건</span>
+            <p className="font-bold text-emerald-800 text-[11.5px]">✅ {pA.feedbackStyle.easyConditionTitle}</p>
+            <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pA.feedbackStyle.easyConditionExplanation}</p>
+            <p className="font-bold text-amber-900 text-[11.5px] pt-1">❌ {pA.feedbackStyle.hardConditionTitle}</p>
+            <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pA.feedbackStyle.hardConditionExplanation}</p>
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}에게 피드백이 잘 들어오는 조건</span>
+            <p className="font-bold text-emerald-800 text-[11.5px]">✅ {pB.feedbackStyle.easyConditionTitle}</p>
+            <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pB.feedbackStyle.easyConditionExplanation}</p>
+            <p className="font-bold text-amber-900 text-[11.5px] pt-1">❌ {pB.feedbackStyle.hardConditionTitle}</p>
+            <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pB.feedbackStyle.hardConditionExplanation}</p>
+          </div>
+        </div>
+        <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line/40 space-y-1">
+          <p className="font-bold text-rel-deep text-xs">💡 {bundle.feedbackPairInsight.title}</p>
+          <p className="text-rel-ink-soft text-[11.5px] leading-relaxed">{bundle.feedbackPairInsight.summary}</p>
+        </div>
+      </div>
+
+      {/* 5. ◤ 의견이 다를 때 무엇을 보고 결정할까 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="의견이 다를 때 무엇을 보고 결정할까" tag="DECISION CRITERIA" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">"의사결정 전에 각자 무엇을 확인해야 안심하는가?"</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 안심 판단 기준</span>
+            {pA.decisionCriteria.map((c, i) => (
+              <div key={i} className="space-y-0.5">
+                <p className="font-bold text-rel-deep text-[11.5px]">🎯 {c.title}</p>
+                <p className="text-rel-ink-soft text-[10.5px]">{c.question}</p>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 안심 판단 기준</span>
+            {pB.decisionCriteria.map((c, i) => (
+              <div key={i} className="space-y-0.5">
+                <p className="font-bold text-rel-deep text-[11.5px]">🎯 {c.title}</p>
+                <p className="text-rel-ink-soft text-[10.5px]">{c.question}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl bg-amber-50/60 p-3.5 border border-amber-200/60 space-y-1">
+          <p className="font-bold text-amber-900 text-xs">⚖️ {bundle.decisionTension.title}</p>
+          <p className="text-amber-800/90 text-[11.5px] leading-relaxed">{bundle.decisionTension.summary}</p>
+        </div>
+      </div>
+
+      {/* 6. ◤ 누가 언제 결정을 확정하는 게 좋을까 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="누가 언제 결정을 확정하는 게 좋을까" tag="DECISION FLOW" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">"주체적인 owner가 상대의 input을 어떻게 수용하고 결정을 닫는가?"</p>
+        <div className="space-y-2.5">
+          {bundle.decisionFlowItems.map((item, idx) => (
+            <div key={idx} className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-rel-deep text-xs">{item.decisionTypeTitle}</span>
+                <span className="rounded-full bg-rel-deep/10 text-rel-deep text-[10px] font-bold px-2 py-0.5">
+                  Owner: {item.primaryOwner}
+                </span>
+              </div>
+              <p className="text-[11px] text-rel-ink-soft leading-relaxed pt-0.5">
+                • <strong>권한 및 인풋:</strong> {item.inputRole}의 점검 수용 → {item.closureGuide}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 7. ◤ 이 둘에게 잘 맞는 소통 리듬 */}
+      <div className="space-y-3 pt-4 border-t border-rel-line/40">
+        <SubHeading title="이 둘에게 잘 맞는 소통 리듬" tag="RHYTHM SEQUENCE" tone="deep" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+          {bundle.communicationRhythmSteps.map((step, idx) => (
+            <div key={idx} className="rounded-xl bg-rel-taupe-soft/40 p-3 border border-rel-line/30 space-y-1">
+              <span className="text-[9.5px] font-extrabold text-rel-deep uppercase tracking-wider bg-rel-line/30 px-1.5 py-0.5 rounded">
+                STEP {idx + 1}. {step.phase}
+              </span>
+              <p className="font-bold text-rel-deep text-xs pt-1">{step.phaseTitle}</p>
+              <p className="text-rel-ink-soft text-[10.5px] leading-tight mt-1">{step.actionText}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatThinkVsDiscussPattern(pattern: string, isEn?: boolean): string {
+  if (pattern === "MIXED_CONTEXTUAL") {
+    return isEn
+      ? "Flexible communication pattern adjusting between solo reflection and interactive discussion based on context"
+      : "상황에 따라 개별 구상과 즉흥 토론을 유연하게 오가는 소통 패턴";
+  }
+  if (pattern === "THINK_THEN_DISCUSS") {
+    return isEn
+      ? "Pre-reflection pattern where each person organizes thoughts before meeting"
+      : "각자 먼저 생각을 충분히 정리한 후 미팅에서 핵심을 논의하는 소통 패턴";
+  }
+  if (pattern === "DISCUSS_THEN_THINK") {
+    return isEn
+      ? "Brainstorming pattern where ideas are expanded together first and detailed later"
+      : "먼저 대화로 아이디어를 함께 펼친 뒤 세부 내용을 수록·정리하는 소통 패턴";
+  }
+  return pattern;
+}
+
+function ThinkVsDiscussAnalysisCard({ meta, isEn }: { meta: any; isEn?: boolean }) {
   const tvd = meta?.think_vs_discuss;
   if (!tvd) return null;
+
+  const patternLabel = formatThinkVsDiscussPattern(tvd.pairPattern, isEn);
+
   return (
-    <RelationshipReportCard title="생각 정리 방식과 회의 준비 리듬 (Think vs Discuss)" accentColor={ACCENT} showMarker={true}>
-      <RelationshipReportInset className="mb-4 border-amber-100 bg-amber-50/60">
-        <RelationshipReportLabel className="text-amber-700">💡 둘의 소통 패턴</RelationshipReportLabel>
-        <RelationshipReportParagraph className="mt-1 font-semibold text-rel-ink">
-          {tvd.pairPattern}
-        </RelationshipReportParagraph>
-      </RelationshipReportInset>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <RelationshipReportInset>
-          <RelationshipReportLabel className="text-sky-700">개인별 생각 정리 방식</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
-            {tvd.personAStyle}
-          </RelationshipReportParagraph>
-          <RelationshipReportParagraph className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
-            {tvd.personBStyle}
+    <div className="mt-8 space-y-4">
+      <SubHeading title={isEn ? "Thinking Style & Rhythm (Think vs Discuss)" : "생각 정리 방식과 소통 리듬 (Think vs Discuss)"} tag="RHYTHM" tone="deep" />
+      
+      {tvd.pairPattern ? (
+        <RelationshipReportInset className="border-amber-100 bg-amber-50/60 p-4 space-y-1">
+          <RelationshipReportLabel className="text-amber-800 font-bold">💡 둘의 소통 준비 패턴</RelationshipReportLabel>
+          <RelationshipReportParagraph className="font-semibold text-rel-ink text-xs">
+            {patternLabel}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
-        <RelationshipReportInset>
-          <RelationshipReportLabel className="text-emerald-700">📋 회의 사전 준비 가이드 (Meeting Prep Rule)</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
-            {tvd.meetingPrep}
-          </RelationshipReportParagraph>
-        </RelationshipReportInset>
+      ) : null}
+
+      <div className="grid gap-3 sm:grid-cols-2 text-xs">
+        {tvd.personAStyle ? (
+          <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 space-y-1 border border-rel-line/30">
+            <p className="font-bold text-rel-deep">개인별 생각 정리 방식</p>
+            <p className="text-rel-ink-soft leading-relaxed">{tvd.personAStyle}</p>
+          </div>
+        ) : null}
+
+        {tvd.personBStyle ? (
+          <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 space-y-1 border border-rel-line/30">
+            <p className="font-bold text-rel-deep">상대별 생각 정리 방식</p>
+            <p className="text-rel-ink-soft leading-relaxed">{tvd.personBStyle}</p>
+          </div>
+        ) : null}
       </div>
-    </RelationshipReportCard>
+    </div>
+  );
+}
+
+function StressStateShiftCard({
+  boundary,
+  names,
+}: {
+  boundary?: { me: string; partner: string };
+  names: [string, string];
+}) {
+  if (!boundary) return null;
+
+  return (
+    <div className="mt-8 space-y-3">
+      <SubHeading title="업무 과부하 및 압박 시 기질 변화" tag="STRESS SHIFT" tone="coral" />
+      <div className="grid gap-3 sm:grid-cols-2 text-xs">
+        <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 space-y-1 border border-rel-line/30">
+          <p className="font-bold text-rel-deep">{names[0]}의 압박 상황 반응</p>
+          <p className="text-rel-ink-soft leading-relaxed">{boundary.me}</p>
+        </div>
+        <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 space-y-1 border border-rel-line/30">
+          <p className="font-bold text-rel-deep">{names[1]}의 압박 상황 반응</p>
+          <p className="text-rel-ink-soft leading-relaxed">{boundary.partner}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConflictSensitivityCard({
+  boundary,
+  names,
+}: {
+  boundary?: { me: string; partner: string };
+  names: [string, string];
+}) {
+  if (!boundary) return null;
+
+  return (
+    <div className="mt-6 mb-6 space-y-3">
+      <SubHeading title="갈등 유발 민감 요인 (Conflict Sensitivity)" tag="SENSITIVITY" tone="coral" />
+      <div className="rounded-xl bg-amber-50/50 p-4 border border-amber-200/60 space-y-2 text-xs">
+        <div>
+          <p className="font-bold text-amber-900">⚠️ {names[0]}이 민감하게 느끼는 상황</p>
+          <p className="text-amber-800/90 leading-relaxed mt-0.5">{boundary.me}</p>
+        </div>
+        <div className="pt-2 border-t border-amber-200/50">
+          <p className="font-bold text-amber-900">⚠️ {names[1]}이 민감하게 느끼는 상황</p>
+          <p className="text-amber-800/90 leading-relaxed mt-0.5">{boundary.partner}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OperatingRulesCard({
+  thinkVsDiscuss,
+  names,
+}: {
+  thinkVsDiscuss?: any;
+  names: [string, string];
+}) {
+  return (
+    <div className="mt-6 mb-6 space-y-4 text-xs">
+      <SubHeading title="실전 1:1 협업 행동 규칙 (Operating Rules)" tag="RULES" tone="deep" />
+      
+      {thinkVsDiscuss?.meetingPrep ? (
+        <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1">
+          <p className="font-bold text-emerald-900 flex items-center gap-1.5">
+            <span>📋</span>
+            <span>회의 준비 및 의사결정 수칙 (Meeting Prep Rule)</span>
+          </p>
+          <p className="text-emerald-800/90 leading-relaxed">{thinkVsDiscuss.meetingPrep}</p>
+        </div>
+      ) : null}
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 space-y-2 border border-rel-line/30">
+          <p className="font-bold text-rel-deep">{names[0]}님과 일할 때의 수칙</p>
+          <ul className="space-y-1 text-rel-ink-soft">
+            <li>✅ <strong>DO:</strong> 판단 권한 범위와 핵심 목표를 명확히 정하고 시작하기</li>
+            <li>❌ <strong>DON'T:</strong> 충분한 공유 없이 속도나 가이드라인 갑작스럽게 변경하기</li>
+          </ul>
+        </div>
+
+        <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 space-y-2 border border-rel-line/30">
+          <p className="font-bold text-rel-deep">{names[1]}님과 일할 때의 수칙</p>
+          <ul className="space-y-1 text-rel-ink-soft">
+            <li>✅ <strong>DO:</strong> 안건의 배경 맥락과 검토 시간을 충분히 확보해주기</li>
+            <li>❌ <strong>DON'T:</strong> 준비 시간이 부족한 상태에서 즉흥적인 확답 요구하지 않기</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -759,12 +1200,12 @@ export function WorkReportViewModelView({
 
   const navItems = [
     { id: "ch1_glance", number: "01", title: isEn ? "What Kind of Team Are We?" : "우리가 함께 일하면 어떤 팀일까요?" },
-    { id: "ch2_roles_rnr", number: "02", title: isEn ? "Roles & Decision Authority" : "업무 역할과 R&R 분담" },
-    { id: "ch3_style_comm", number: "03", title: isEn ? "Work Style & Communication" : "업무 스타일과 소통 리듬" },
-    { id: "ch4_crunch_pressure", number: "04", title: isEn ? "Pressure & Crunch Mode" : "마감 압박과 긴급 상황 대처" },
-    { id: "ch5_mistake_repair", number: "05", title: isEn ? "Mistakes & Trust Repair" : "실수, 갈등과 신뢰 회복" },
-    { id: "ch6_mutual_growth", number: "06", title: isEn ? "Mutual Growth & Synergy" : "함께 일하며 성장하는 방식" },
-    { id: "ch7_playbook", number: "07", title: isEn ? "Practical Playbook" : "실전 협업 플레이북" },
+    { id: "ch2_individual", number: "02", title: isEn ? "Individual Work Identity" : "이 사람은 일할 때 어떤 사람일까요?" },
+    { id: "ch3_roles_rnr", number: "03", title: isEn ? "Pair Role Allocation & R&R" : "둘이 함께 일하면 역할은 어떻게 나뉠까요?" },
+    { id: "ch4_comm_decision", number: "04", title: isEn ? "Communication & Decision Rhythm" : "어떻게 소통하고 결정하는가" },
+    { id: "ch5_pressure_stress", number: "05", title: isEn ? "Pressure & Overload Shift" : "압박이 걸리면 어떻게 변하는가" },
+    { id: "ch6_conflict_repair", number: "06", title: isEn ? "Conflict Triggers & Trust Repair" : "왜 부딪히고 어떻게 다시 맞추는가" },
+    { id: "ch7_playbook", number: "07", title: isEn ? "Practical Operating Playbook" : "그래서 이 조합을 어떻게 운영하면 좋은가" },
   ];
 
   return (
@@ -1121,6 +1562,13 @@ export function WorkReportViewModelView({
                 </div>
               </div>
 
+              {/* ◤ 개인별 일 스타일 ([Sera의 일 스타일] & [동글의 일 스타일]) */}
+              <IndividualWorkStyleCards
+                workStyle={comparisonSection?.workStyle}
+                individualBundle={individualBundle}
+                names={names}
+              />
+
               {/* ================================================================ */}
               {/* GROUP B. 나는 어디에서 강한가 */}
               {/* ================================================================ */}
@@ -1229,88 +1677,61 @@ export function WorkReportViewModelView({
                 </div>
               </div>
 
-              {/* ================================================================ */}
-              {/* GROUP C. 둘이 함께 일할 때 알아두면 좋은 것 */}
-              {/* ================================================================ */}
-              <div className="space-y-3">
-                <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-                  <span>◤</span>
-                  <span>둘이 함께 일할 때 알아두면 좋은 것</span>
-                </h3>
+              {/* ◤ 역할 및 기여 방식 (Directive 2: Chapter 02 하단 배치) */}
+              <div className="mt-8 pt-6 border-t border-rel-line/50">
+                {(() => {
+                  const effectiveRoleSection: RoleMatrixSection = roleMatrixSection ?? {
+                    id: "role_matrix",
+                    type: "role_matrix",
+                    partNumber: 2,
+                    title: isEn ? "Roles & Contribution Model" : "역할 및 기여 방식",
+                    roles: {
+                      me: {
+                        nickname: names[0],
+                        weapons: individualBundle.personA.suitableRoles ?? ["프로젝트 리드", "기획·실행"],
+                        handoff_tasks: individualBundle.personA.delegationItems.map(d => ({
+                          task_label: d.workTitle,
+                          handoff_to: d.partnerName,
+                          reason: d.reason,
+                        })) ?? [],
+                      },
+                      partner: {
+                        nickname: names[1],
+                        weapons: individualBundle.personB.suitableRoles ?? ["품질 검토", "체계화"],
+                        handoff_tasks: individualBundle.personB.delegationItems.map(d => ({
+                          task_label: d.workTitle,
+                          handoff_to: d.partnerName,
+                          reason: d.reason,
+                        })) ?? [],
+                      },
+                    },
+                    synergyOneLiner: individualBundle.mostSimilarInsight ?? "역할과 책임을 명확히 나눌 때 가장 높은 협업 효율을 발휘합니다.",
+                    idealFit: {
+                      me: {
+                        nickname: names[0],
+                        why: individualBundle.personA.identityLabel ?? "핵심 과제를 추진하고 행동으로 연결하는 역할",
+                        ideal_roles: individualBundle.personA.suitableRoles ?? ["PM", "실무 리드"],
+                        ideal_departments: individualBundle.personA.suitableWorkTypes ?? ["신규 사업", "프로젝트 관리"],
+                      },
+                      partner: {
+                        nickname: names[1],
+                        why: individualBundle.personB.identityLabel ?? "세부 조건과 리스크를 검토하고 완성도를 높이는 역할",
+                        ideal_roles: individualBundle.personB.suitableRoles ?? ["QA", "전략 기획"],
+                        ideal_departments: individualBundle.personB.suitableWorkTypes ?? ["품질 검토", "운영 리스크 관리"],
+                      },
+                    },
+                    togetherCombo: individualBundle.mostDifferentInsight,
+                  };
 
-                <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-6">
-                  {/* ▫ 맡기면 좋은 일 */}
-                  <div className="space-y-2">
-                    <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
-                      <span>▫</span>
-                      <span>맡기면 좋은 일</span>
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2.5 text-xs">
-                      <div className="space-y-1.5">
-                        {pA.delegationItems.map((item, i) => (
-                          <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30 space-y-0.5">
-                            <p className="font-bold text-rel-ink text-[11px]">{item.workTitle} → <span className="text-rel-deep font-extrabold">{item.partnerName}</span></p>
-                            <p className="text-[10.5px] text-rel-ink-soft">{item.reason}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="space-y-1.5">
-                        {pB.delegationItems.map((item, i) => (
-                          <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30 space-y-0.5">
-                            <p className="font-bold text-rel-ink text-[11px]">{item.workTitle} → <span className="text-rel-deep font-extrabold">{item.partnerName}</span></p>
-                            <p className="text-[10.5px] text-rel-ink-soft">{item.reason}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ▫ 본래의 업무 기질 vs 지금 일하는 방식 */}
-                  <div className="space-y-2 pt-4 border-t border-rel-line/40">
-                    <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
-                      <span>▫</span>
-                      <span>본래의 업무 기질 vs 지금 일하는 방식</span>
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2.5 text-xs">
-                      <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
-                        <span className={`rounded-full px-2 py-0.5 text-[9.5px] font-bold ${pA.innateVsCurrent.status === "adapted" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
-                          {pA.innateVsCurrent.status === "adapted" ? "적응형 습관" : "기질 일치"}
-                        </span>
-                        <p className="text-[11px] text-rel-ink-soft leading-relaxed">{pA.innateVsCurrent.synthesisSentence}</p>
-                      </div>
-                      <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
-                        <span className={`rounded-full px-2 py-0.5 text-[9.5px] font-bold ${pB.innateVsCurrent.status === "adapted" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
-                          {pB.innateVsCurrent.status === "adapted" ? "적응형 습관" : "기질 일치"}
-                        </span>
-                        <p className="text-[11px] text-rel-ink-soft leading-relaxed">{pB.innateVsCurrent.synthesisSentence}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ▫ 가장 닮은 점 / 가장 다른 점 */}
-                  <div className="space-y-1.5 pt-4 border-t border-rel-line/40 text-xs">
-                    <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1 mb-1">
-                      <span>▫</span>
-                      <span>가장 닮은 점 / 가장 다른 점</span>
-                    </h4>
-                    <p className="text-rel-ink">🔹 <strong>가장 비슷한 부분:</strong> {individualBundle.mostSimilarInsight}</p>
-                    <p className="text-rel-ink">🔸 <strong>가장 다른 부분:</strong> {individualBundle.mostDifferentInsight}</p>
-                  </div>
-                </div>
+                  return <RoleMatrixCard section={effectiveRoleSection} />;
+                })()}
               </div>
-
-              {/* 레거시 '역할 및 기여 방식' 카드 (Chapter 02 하단 배치) */}
-              {roleMatrixSection ? (
-                <div className="mt-6">
-                  <RoleMatrixCard section={roleMatrixSection} />
-                </div>
-              ) : null}
             </div>
           );
         })()}
       </WorkChapterSection>
 
-      {/* Chapter 3: 03 · Work Style & Communication Rhythm */}
+      {/* Chapter 3: 03 · 업무 스타일과 소통 리듬 (Directive 5: 04 챕터 내용 -> 03 챕터로 이동) */}
       <WorkChapterSection
         id="ch3_style_comm"
         number="03"
@@ -1319,8 +1740,7 @@ export function WorkReportViewModelView({
       >
         <div id="ch_compare_table" />
         <div id="ch_psych_radar" />
-        <div id="ch_comparison" />
-        <UserQuestionBanner question={isEn ? "How do we think, communicate, focus, and prep for meetings?" : "우리는 어떻게 생각하고, 소통하고, 집중하고, 결정을 준비하는가?"} />
+        <UserQuestionBanner question={isEn ? "11-Axis Psych Radar & Side-by-Side Comparison" : "두 사람의 11축 심리 그래프 및 성향 나란히 비교"} />
         {psychRadarSection ? <PsychRadarCard section={psychRadarSection} names={names} /> : null}
         {compareTableSection ? (
           <div className="mt-10">
@@ -1330,62 +1750,89 @@ export function WorkReportViewModelView({
             <CompareTableCard section={compareTableSection} names={names} />
           </div>
         ) : null}
-        {comparisonSection ? <ComparisonCard section={comparisonSection} names={names} /> : null}
-        <ThinkVsDiscussCard meta={meta} />
       </WorkChapterSection>
 
-      {/* Chapter 4: 04 · Pressure, Deadline & Crunch Mode */}
+      {/* Chapter 4: 04 · 어떻게 소통하고 결정하는가 */}
       <WorkChapterSection
-        id="ch4_crunch_pressure"
+        id="ch4_comm_decision"
         number="04"
-        title={isEn ? "04 · Pressure, Deadline & Crunch Mode" : "04 · 마감 압박과 긴급 상황 대처"}
+        title={isEn ? "04 · Communication & Decision Rhythm" : "04 · 어떻게 소통하고 결정하는가"}
+        accent={ACCENT}
+      >
+        <div id="ch_comparison" />
+        <UserQuestionBanner question={isEn ? "How do we think, communicate, focus, and prep for meetings?" : "우리는 어떻게 생각하고, 소통하고, 보고하고, 회의하며 결정을 내리는가?"} />
+        {(() => {
+          const commBundle = vm.storyPlan?.communicationChapterBundle || buildWorkCommunicationChapterBundle({
+            nameA: names[0],
+            nameB: names[1],
+            locale: isEn ? "en-US" : "ko-KR",
+            psychA: (rawReport.meta?.person_core as any)?.psych_a ?? null,
+            psychB: (rawReport.meta?.person_core as any)?.psych_b ?? null,
+            sajuChartA: (rawReport.meta?.person_core as any)?.saju_chart_a ?? null,
+            sajuChartB: (rawReport.meta?.person_core as any)?.saju_chart_b ?? null,
+            workSignalsA: (rawReport.meta?.person_core as any)?.work_signals_a ?? null,
+            workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
+            officeReport: rawReport as any,
+          });
+
+          return <CanonicalChapter04CommunicationView bundle={commBundle} names={names} />;
+        })()}
+      </WorkChapterSection>
+
+      {/* Chapter 5: 05 · Pressure & Overload Shift */}
+      <WorkChapterSection
+        id="ch5_pressure_stress"
+        number="05"
+        title={isEn ? "05 · Pressure & Overload Shift" : "05 · 압박이 걸리면 어떻게 변하는가"}
         accent={ACCENT}
       >
         <div id="ch_crunch" />
         <UserQuestionBanner question={isEn ? "What changes under tight deadlines and emergency pressure?" : "평소에는 괜찮아도 마감이나 위기 상황에서는 둘이 어떻게 달라지는가?"} />
         <CrunchModeCard meta={meta} names={names} isEn={isEn} />
+        {comparisonSection?.boundary ? (
+          <StressStateShiftCard boundary={comparisonSection.boundary} names={names} />
+        ) : null}
       </WorkChapterSection>
 
-      {/* Chapter 5: 05 · Mistakes, Conflict & Trust Repair */}
+      {/* Chapter 6: 06 · Conflict Triggers & Trust Repair */}
       <WorkChapterSection
-        id="ch5_mistake_repair"
-        number="05"
-        title={isEn ? "05 · Mistakes, Conflict & Trust Repair" : "05 · 실수, 갈등과 신뢰 회복"}
+        id="ch6_conflict_repair"
+        number="06"
+        title={isEn ? "06 · Conflict Triggers & Trust Repair" : "06 · 왜 부딪히고 어떻게 다시 맞추는가"}
         accent={ACCENT}
       >
         <div id="ch_warning" />
-        <UserQuestionBanner question={isEn ? "What triggers sensitivity during mistakes, and how is trust repaired?" : "실수나 충돌이 생겼을 때 무엇에 민감하고, 어떻게 해야 다시 신뢰가 회복되는가?"} />
-        <MistakeRepairCard meta={meta} names={names} />
-        {warningSection ? <WarningCard section={warningSection} /> : null}
-      </WorkChapterSection>
-
-      {/* Chapter 6: 06 · Mutual Growth & Long-Term Synergy */}
-      <WorkChapterSection
-        id="ch6_mutual_growth"
-        number="06"
-        title={isEn ? "06 · Mutual Growth & Long-Term Synergy" : "06 · 함께 일하며 성장하는 방식"}
-        accent={ACCENT}
-      >
         <div id="ch_relationship_loop" />
         <div id="ch_deep_read" />
-        <UserQuestionBanner question={isEn ? "How do we learn from each other and build long-term synergy?" : "이 사람과 계속 일하면 나는 무엇을 배우고 어떤 사람이 되는가?"} />
+        <UserQuestionBanner question={isEn ? "What triggers sensitivity during mistakes, and how is trust repaired?" : "실수나 충돌이 생겼을 때 무엇에 민감하고, 어떻게 해야 다시 신뢰가 회복되는가?"} />
+        {comparisonSection?.boundary ? (
+          <ConflictSensitivityCard boundary={comparisonSection.boundary} names={names} />
+        ) : null}
+        <MistakeRepairCard meta={meta} names={names} />
+        {warningSection ? <WarningCard section={warningSection} /> : null}
         <MutualGrowthCard meta={meta} names={names} />
         {loopSection ? <RelationshipLoopCard section={loopSection} /> : null}
         {deepReadSection ? <DeepReadSectionCard section={deepReadSection} /> : null}
       </WorkChapterSection>
 
-      {/* Chapter 7: 07 · Practical Collaboration Playbook */}
+      {/* Chapter 7: 07 · Practical Operating Playbook */}
       <WorkChapterSection
         id="ch7_playbook"
         number="07"
-        title={isEn ? "07 · Practical Collaboration Playbook" : "07 · 실전 협업 플레이북"}
+        title={isEn ? "07 · Practical Operating Playbook" : "07 · 그래서 이 조합을 어떻게 운영하면 좋은가"}
         accent={ACCENT}
       >
         <div id="ch_prescription" />
         <div id="pair-prescription-work" />
         <UserQuestionBanner question={isEn ? "What are our immediate 1:1 operational rules starting tomorrow?" : "그래서 내일부터 둘이 어떻게 일하면 되는가?"} />
+        <OperatingRulesCard thinkVsDiscuss={meta?.think_vs_discuss} names={names} />
         <PlaybookSummaryCard meta={meta} />
         {prescriptionSection ? <PrescriptionCard section={prescriptionSection} /> : null}
+
+        {/* [Sera의 영역] & [동글의 영역] (Directive 4: Chapter 07 맨 마지막 하단 배치) */}
+        {comparisonSection?.boundary ? (
+          <FinalBoundaryCard boundary={comparisonSection.boundary} names={names} />
+        ) : null}
       </WorkChapterSection>
     </div>
   );

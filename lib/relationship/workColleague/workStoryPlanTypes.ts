@@ -239,6 +239,8 @@ export type WorkOverviewChapterBundle = {
   teamPortrait: WorkTeamPortrait;
 };
 
+import type { WorkCommunicationChapterBundle } from "./workCommunicationChapterEngine";
+
 export type CanonicalWorkStoryPlan = {
   schemaVersion: "work_story_plan_v1";
   locale: "ko-KR" | "en-US";
@@ -250,6 +252,7 @@ export type CanonicalWorkStoryPlan = {
   };
   overviewChapterBundle?: WorkOverviewChapterBundle;
   individualWorkBundle?: IndividualWorkChapterBundle;
+  communicationChapterBundle?: WorkCommunicationChapterBundle;
   workRoles: {
     selfRole?: string;
     colleagueRole?: string;
