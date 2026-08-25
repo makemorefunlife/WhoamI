@@ -2,7 +2,8 @@ import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import { resolveSpousePalaceProfile } from "@/lib/relationship/romantic/prototypeV4/spousePalaceMatcher";
-import { calculateTenGod, getHiddenStemsData } from "@/lib/saju/repository";
+import { calculateTenGod, getHiddenStemsData, calculateTwelveStage } from "@/lib/saju/repository";
+import { hasGuimunOnDayHourPalaces } from "@/lib/saju/workPairRiskSignals";
 
 export type LoveTransmissionMatch =
   | "DIRECT_MATCH"
@@ -160,6 +161,8 @@ const STEM_ELEMENT_MAP: Record<string, string> = {
 const BRANCH_ELEMENT_MAP: Record<string, string> = {
   in: "wood", myo: "wood", sa: "fire", o: "fire", oh: "fire", jin: "earth", chuk: "earth", chook: "earth", mi: "earth", sul: "earth", sin: "metal", yu: "metal", hae: "water", ja: "water",
 };
+
+const NAKED_FIRE_BRANCHES = new Set(["ja", "o", "myo", "yu"]);
 
 function chartToIndividualSajuAdapter(chart: any): any {
   if (!chart) {
@@ -334,6 +337,25 @@ function getChannelLabel(ch: LoveExpressionChannel, isEn: boolean = false): stri
 }
 
 // ---------------------------------------------------------------------------
+// HELPER: Legacy Saju Signal Evaluators (12-stage, naked fire, guimun)
+// ---------------------------------------------------------------------------
+
+function evaluateSajuPaceAndNoveltySignals(ctx: MarriageRuleContext, person: "a" | "b") {
+  const chartRaw = person === "a" ? ctx.marriagePairAnalysis?.chartA : ctx.marriagePairAnalysis?.chartB;
+  if (!chartRaw) return { stage: "normal", hasNakedFire: false, hasGuimun: false };
+
+  const dayStem = chartRaw.dayStemCode ?? "gap";
+  const dayBranch = chartRaw.dayBranchCode ?? "ja";
+
+  const stage = calculateTwelveStage(dayStem, dayBranch);
+
+  const hasNakedFire = [chartRaw.dayBranchCode, chartRaw.hourBranchCode].some((br: string) => NAKED_FIRE_BRANCHES.has(br));
+  const hasGuimun = hasGuimunOnDayHourPalaces(chartRaw);
+
+  return { stage, hasNakedFire, hasGuimun };
+}
+
+// ---------------------------------------------------------------------------
 // MAIN BUILDER: Marriage Chapter 04 Intelligence Engine
 // ---------------------------------------------------------------------------
 
@@ -350,6 +372,9 @@ export function buildMarriageChapter04Intelligence(params: {
 
   const chA = evaluateLoveChannels(ctx, "a", psychA);
   const chB = evaluateLoveChannels(ctx, "b", psychB);
+
+  const sigA = evaluateSajuPaceAndNoveltySignals(ctx, "a");
+  const sigB = evaluateSajuPaceAndNoveltySignals(ctx, "b");
 
   const channels: LoveExpressionChannel[] = [
     "verbal_affirmation",
@@ -435,6 +460,15 @@ export function buildMarriageChapter04Intelligence(params: {
     },
   ];
 
+  // Evaluate Novelty vs Stability from Saju (nakedFire/guimun) + Psych
+  const isNoveltyA = sigA.hasNakedFire || sigA.hasGuimun || (psychA?.secondary_axes?.stimulation ?? 50) > 60;
+  const isNoveltyB = sigB.hasNakedFire || sigB.hasGuimun || (psychB?.secondary_axes?.stimulation ?? 50) > 60;
+
+  let stabilityNoveltyClass: StabilityNoveltyClass = "STABILITY_MATCH";
+  if (isNoveltyA && isNoveltyB) stabilityNoveltyClass = "NOVELTY_MATCH";
+  else if (isNoveltyA && !isNoveltyB) stabilityNoveltyClass = "NOVELTY_GAP_A";
+  else if (!isNoveltyA && isNoveltyB) stabilityNoveltyClass = "NOVELTY_GAP_B";
+
   // Section 2: Saju Intimacy Pair
   const sajuIntimacyPair: SajuIntimacyPair = {
     attractionInsight: {
@@ -449,14 +483,22 @@ export function buildMarriageChapter04Intelligence(params: {
     rhythmFit: {
       title: isEn ? "Intimacy Pace & Warming Speed" : "가까워지는 리듬과 무드 형성 템포",
       classification: "MATCHED_RHYTHM",
-      description: isEn
+      description: (sigA.stage === "jewang" || sigA.stage === "geollok")
+        ? `${nameA}님의 타고난 에너지가 단단하게 받쳐주어 친밀한 무드로 들어갈 때 차분하고 꾸준한 템포를 지켜줍니다.`
+        : isEn
         ? "Both partners share a compatible tempo in entering close emotional/physical presence."
         : "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
     },
     stabilityVsNovelty: {
       title: isEn ? "Stability vs. Novelty Balance" : "익숙한 편안함 vs 새로운 분위기의 자극",
-      classification: "STABILITY_MATCH",
-      description: isEn
+      classification: stabilityNoveltyClass,
+      description: stabilityNoveltyClass === "NOVELTY_MATCH"
+        ? "두 사람 모두 정체된 루틴보다 가끔은 장소나 분위기에 일상의 작은 변주를 줄 때 관계의 온도가 깨어납니다."
+        : stabilityNoveltyClass === "NOVELTY_GAP_A"
+        ? `${nameA}님은 가끔 색다른 분위기와 자극에서 설렘을 얻는 반면, ${nameB}님은 아늑하고 예견 가능한 안정감에서 마음이 더 열리는 편입니다.`
+        : stabilityNoveltyClass === "NOVELTY_GAP_B"
+        ? `${nameB}님은 새로운 분위기의 스파크를 반기는 편이며, ${nameA}님은 익숙하고 안전한 분위기에서 가장 깊은 편안함을 느낍니다.`
+        : isEn
         ? "Mutual preference leans toward steady trust and cozy environment."
         : "두 사람은 과감하거나 불안정한 변화보다는, 익숙하고 안전한 환경에서 마음을 열고 친밀감을 깊게 만드는 스타일에 더 끌립니다.",
     },
@@ -483,7 +525,7 @@ export function buildMarriageChapter04Intelligence(params: {
       description: isEn
         ? `${nameA} needs emotional attunement and mutual presence to fully step into intimacy.`
         : `${nameA}님은 마음의 앙금이 풀리고 정서적으로 따뜻하게 연결되었다고 느낄 때 신체적 친밀감으로 자연스럽게 넘어가는 타입입니다.`,
-      psychDiscrepancyNote: (psychA?.ocean_traits?.energy_style ?? 50) > 65
+      psychDiscrepancyNote: (psychA?.ocean_traits?.energy_style ?? psychA?.secondary_axes?.energy_style ?? 50) > 65
         ? `${nameA}님은 기질적으로 다가가는 에너지가 발달해 있어, 정서적 교감이 충전되면 매우 다정하게 분위기를 이끌어갑니다.`
         : undefined,
     },
@@ -493,7 +535,7 @@ export function buildMarriageChapter04Intelligence(params: {
       description: isEn
         ? `${nameB} opens up smoothly when the environment is cozy and the partner initiates with warmth.`
         : `${nameB}님은 사전에 무거운 압박이 없고 집안 분위기가 편안하며 상대가 다정하게 신호를 줄 때 마음과 몸이 서서히 열리는 타입입니다.`,
-      psychDiscrepancyNote: (psychB?.ocean_traits?.adaptability ?? 50) > 65
+      psychDiscrepancyNote: (psychB?.ocean_traits?.adaptability ?? psychB?.secondary_axes?.adaptability ?? 50) > 65
         ? `${nameB}님은 유연한 적응력을 가지고 있어, 분위기가 조성되면 파트너의 템포에 맞춰서 자연스럽게 호응합니다.`
         : undefined,
     },
