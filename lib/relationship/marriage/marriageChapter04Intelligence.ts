@@ -3,7 +3,11 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import { resolveSpousePalaceProfile } from "@/lib/relationship/romantic/prototypeV4/spousePalaceMatcher";
 import { calculateTenGod, getHiddenStemsData, calculateTwelveStage } from "@/lib/saju/repository";
-import { hasGuimunOnDayHourPalaces } from "@/lib/saju/workPairRiskSignals";
+import { hasGuimunOnDayHourPalaces, isGuimun, isWonjin } from "@/lib/saju/workPairRiskSignals";
+
+// ---------------------------------------------------------------------------
+// TYPES
+// ---------------------------------------------------------------------------
 
 export type LoveTransmissionMatch =
   | "DIRECT_MATCH"
@@ -33,11 +37,24 @@ export type LoveTransmissionChannel = {
   transmissionInsight: string;
 };
 
+export type AttractionLevel = "HIGH_PULL" | "STEADY_BOND" | "MODERATE_PULL" | "SLOW_WARMING";
+export type SafetyLevel = "HIGH_SAFETY" | "MODERATE_SAFETY" | "BUILDING_TRUST";
+
+export type PairIntimacyChemistry = {
+  heroIdentity: string;
+  attractionLevel: AttractionLevel;
+  safetyLevel: SafetyLevel;
+  attractionTitle: string;
+  attractionDescription: string;
+  dynamicsNarrative: string;
+};
+
 export type IntimacyRhythmClass =
   | "MATCHED_RHYTHM"
   | "A_FAST_B_SLOW"
   | "B_FAST_A_SLOW"
-  | "CONTEXT_DEPENDENT";
+  | "CONTEXT_DEPENDENT"
+  | "UNCERTAIN";
 
 export type StabilityNoveltyClass =
   | "STABILITY_MATCH"
@@ -46,38 +63,32 @@ export type StabilityNoveltyClass =
   | "NOVELTY_GAP_B"
   | "BALANCED";
 
+export type StabilityVsNoveltySection = {
+  title: string;
+  classification: StabilityNoveltyClass;
+  headline: string;
+  description: string;
+  personAInnate: string;
+  personACurrent: string;
+  personBInnate: string;
+  personBCurrent: string;
+};
+
 export type LeadResponseClass =
   | "A_INITIATES_B_RESPONDS"
   | "B_INITIATES_A_RESPONDS"
   | "MUTUAL_INITIATION"
   | "MUTUAL_WAITING"
-  | "CONTEXT_SWITCHING";
+  | "CONTEXT_SWITCHING"
+  | "UNCERTAIN";
 
-export type SajuIntimacyPair = {
-  attractionInsight: {
-    title: string;
-    description: string;
-    dynamics: string;
-  };
-  rhythmFit: {
-    title: string;
-    classification: IntimacyRhythmClass;
-    description: string;
-  };
-  stabilityVsNovelty: {
-    title: string;
-    classification: StabilityNoveltyClass;
-    description: string;
-  };
-  leadAndResponse: {
-    title: string;
-    classification: LeadResponseClass;
-    description: string;
-  };
-  comfortVsActivation: {
-    title: string;
-    description: string;
-  };
+export type InitiationLeadResponseSection = {
+  title: string;
+  classification: LeadResponseClass;
+  headline: string;
+  description: string;
+  personAAgency: string;
+  personBAgency: string;
 };
 
 export type ActivationMode =
@@ -94,10 +105,38 @@ export type IntimacyPersonMode = {
   psychDiscrepancyNote?: string;
 };
 
-export type BedroomTemperature = {
+export type ActivationAndRhythmSection = {
   personAMode: IntimacyPersonMode;
   personBMode: IntimacyPersonMode;
-  temperatureRhythmNarrative: string;
+  rhythmFitClassification: IntimacyRhythmClass;
+  headline: string;
+  rhythmDescription: string;
+  activationNarrative: string;
+};
+
+export type AttunementStyle =
+  | "clear_expression"
+  | "reaction_reading"
+  | "verbal_checking"
+  | "pacing_adjustment"
+  | "emotional_reassurance"
+  | "autonomy_respect";
+
+export type IntimateAttunementSection = {
+  title: string;
+  personAAttunement: {
+    personName: string;
+    styleKey: AttunementStyle;
+    styleTitle: string;
+    description: string;
+  };
+  personBAttunement: {
+    personName: string;
+    styleKey: AttunementStyle;
+    styleTitle: string;
+    description: string;
+  };
+  attunementInsight: string;
 };
 
 export type PersonRejectionProfile = {
@@ -115,44 +154,49 @@ export type DesireMismatchAndRejection = {
   mismatchAdvice: string;
 };
 
-export type EmotionalIntimacyCondition = {
-  personName: string;
-  openingCondition: string;
-  description: string;
+export type IntimacyParadoxType =
+  | "SAFETY_VS_NOVELTY"
+  | "INITIATION_WAITING"
+  | "EMOTIONAL_VS_PHYSICAL_ORDER"
+  | "OVER_ATTUNEMENT"
+  | "ATTRACTION_VS_RHYTHM"
+  | "NONE";
+
+export type PairIntimacyParadoxSection = {
+  paradoxType: IntimacyParadoxType;
+  headline: string;
+  explanation: string;
+  whenThriving: string;
+  whenFriction: string;
 };
 
-export type IntimacyActivationConditions = {
-  sharedConditions: string[];
-  personAConditions: string[];
-  personBConditions: string[];
-  pairActivationInsight: string;
-};
+export type SleepSensitivityLevel = "high" | "moderate" | "low";
 
-export type InitiationBalance = {
-  initiatorName: string;
-  responderName: string;
-  asymmetryReason: string;
-  longTermRisk: string;
-  calibrationGuide: string;
+export type SleepCompatibilitySection = {
+  title: string;
+  personASensitivity: SleepSensitivityLevel;
+  personBSensitivity: SleepSensitivityLevel;
+  headline: string;
+  narrative: string;
+  gentleGuide: string;
 };
 
 export type MarriageChapter04Intelligence = {
   introQuestion: string;
   loveTransmission: LoveTransmissionChannel[];
-  sajuIntimacyPair: SajuIntimacyPair;
-  bedroomTemperature: BedroomTemperature;
+  pairChemistry: PairIntimacyChemistry;
+  stabilityVsNovelty: StabilityVsNoveltySection;
+  activationAndRhythm: ActivationAndRhythmSection;
+  initiationLeadResponse: InitiationLeadResponseSection;
+  intimateAttunement: IntimateAttunementSection;
   desireMismatchAndRejection: DesireMismatchAndRejection;
-
-  // Conditional Sections:
-  emotionalIntimacy?: EmotionalIntimacyCondition[];
-  activationConditions?: IntimacyActivationConditions;
-  initiationBalance?: InitiationBalance;
-
-  intimacyParadox?: {
-    title: string;
-    description: string;
-  };
+  pairIntimacyParadox: PairIntimacyParadoxSection;
+  sleepCompatibility: SleepCompatibilitySection;
 };
+
+// ---------------------------------------------------------------------------
+// CONSTANTS & HELPERS
+// ---------------------------------------------------------------------------
 
 const STEM_ELEMENT_MAP: Record<string, string> = {
   gap: "wood", eul: "wood", byeong: "fire", jeong: "fire", mu: "earth", gi: "earth", gyeong: "metal", sin: "metal", im: "water", gye: "water",
@@ -163,6 +207,7 @@ const BRANCH_ELEMENT_MAP: Record<string, string> = {
 };
 
 const NAKED_FIRE_BRANCHES = new Set(["ja", "o", "myo", "yu"]);
+const STRONG_DAY_STAGES = new Set(["jewang", "geollok", "jangsaeng", "gwandae"]);
 
 function chartToIndividualSajuAdapter(chart: any): any {
   if (!chart) {
@@ -185,36 +230,14 @@ function chartToIndividualSajuAdapter(chart: any): any {
       stem: { code: dayStemCode, element: STEM_ELEMENT_MAP[dayStemCode] ?? "wood" },
       day_branch: { code: dayBranchCode, element: BRANCH_ELEMENT_MAP[dayBranchCode] ?? "water" },
     },
-    five_elements: {
-      dominant: STEM_ELEMENT_MAP[dayStemCode] ?? "wood",
-      weakest: "metal",
-    },
+    five_elements: { dominant: STEM_ELEMENT_MAP[dayStemCode] ?? "wood", weakest: "metal" },
     pillars: [
-      {
-        slot: "year",
-        stem: { code: chart.yearStemCode ?? "gap", element: STEM_ELEMENT_MAP[chart.yearStemCode] ?? "wood" },
-        branch: { code: chart.yearBranchCode ?? "ja", element: BRANCH_ELEMENT_MAP[chart.yearBranchCode] ?? "water" },
-        branch_ten_god: { code: "bigyeon" },
-      },
-      {
-        slot: "month",
-        stem: { code: chart.monthStemCode ?? "gap", element: STEM_ELEMENT_MAP[chart.monthStemCode] ?? "wood" },
-        branch: { code: chart.monthBranchCode ?? "ja", element: BRANCH_ELEMENT_MAP[chart.monthBranchCode] ?? "water" },
-        branch_ten_god: { code: "bigyeon" },
-      },
-      {
-        slot: "day",
-        stem: { code: dayStemCode, element: STEM_ELEMENT_MAP[dayStemCode] ?? "wood" },
-        branch: { code: dayBranchCode, element: BRANCH_ELEMENT_MAP[dayBranchCode] ?? "water" },
-        branch_ten_god: { code: tenGodCode },
-      },
+      { slot: "year", stem: { code: chart.yearStemCode ?? "gap", element: STEM_ELEMENT_MAP[chart.yearStemCode] ?? "wood" }, branch: { code: chart.yearBranchCode ?? "ja", element: BRANCH_ELEMENT_MAP[chart.yearBranchCode] ?? "water" }, branch_ten_god: { code: "bigyeon" } },
+      { slot: "month", stem: { code: chart.monthStemCode ?? "gap", element: STEM_ELEMENT_MAP[chart.monthStemCode] ?? "wood" }, branch: { code: chart.monthBranchCode ?? "ja", element: BRANCH_ELEMENT_MAP[chart.monthBranchCode] ?? "water" }, branch_ten_god: { code: "bigyeon" } },
+      { slot: "day", stem: { code: dayStemCode, element: STEM_ELEMENT_MAP[dayStemCode] ?? "wood" }, branch: { code: dayBranchCode, element: BRANCH_ELEMENT_MAP[dayBranchCode] ?? "water" }, branch_ten_god: { code: tenGodCode } },
     ],
   };
 }
-
-// ---------------------------------------------------------------------------
-// HELPER: Evaluate Love Expression & Reception Channels
-// ---------------------------------------------------------------------------
 
 function evaluateLoveChannels(ctx: MarriageRuleContext, person: "a" | "b", psych?: PsychMasterJson) {
   const tenGodCounts = person === "a" ? ctx.tenGod.countsA : ctx.tenGod.countsB;
@@ -241,7 +264,6 @@ function evaluateLoveChannels(ctx: MarriageRuleContext, person: "a" | "b", psych
 
   const receptionNeeds: Record<LoveExpressionChannel, number> = { ...expressions };
 
-  // Ten Gods Saju influence on Natural Love Expression
   const sikSang = (tenGodCounts.siksin || 0) + (tenGodCounts.sanggwan || 0);
   const inSeong = (tenGodCounts.pyeonin || 0) + (tenGodCounts.jeongin || 0);
   const jaeSeong = (tenGodCounts.pyeonjae || 0) + (tenGodCounts.jeongjae || 0);
@@ -270,7 +292,6 @@ function evaluateLoveChannels(ctx: MarriageRuleContext, person: "a" | "b", psych
     expressions.shared_presence += 0.2;
   }
 
-  // Spouse Palace influence on Reception Needs
   const spCode = spousePalace.tenGodCode;
   if (spCode === "pyeongwan" || spCode === "jeonggwan") {
     receptionNeeds.consistency_reliability += 0.3;
@@ -289,7 +310,6 @@ function evaluateLoveChannels(ctx: MarriageRuleContext, person: "a" | "b", psych
     receptionNeeds.shared_presence += 0.2;
   }
 
-  // Psych 11-Axis modifications
   if (psych) {
     const traits = psych.ocean_traits ?? psych.traits ?? psych.secondary_axes ?? {};
     if ((traits.empathy ?? 50) > 65) {
@@ -337,26 +357,84 @@ function getChannelLabel(ch: LoveExpressionChannel, isEn: boolean = false): stri
 }
 
 // ---------------------------------------------------------------------------
-// HELPER: Legacy Saju Signal Evaluators (12-stage, naked fire, guimun)
+// FORENSIC SIGNAL EVALUATORS (MULTI-EVIDENCE, NO HARDCODED DEFAULTS)
 // ---------------------------------------------------------------------------
 
-function evaluateSajuPaceAndNoveltySignals(ctx: MarriageRuleContext, person: "a" | "b") {
+function evaluatePaceAndNoveltySignals(ctx: MarriageRuleContext, person: "a" | "b", psych?: PsychMasterJson) {
   const chartRaw = person === "a" ? ctx.marriagePairAnalysis?.chartA : ctx.marriagePairAnalysis?.chartB;
-  if (!chartRaw) return { stage: "normal", hasNakedFire: false, hasGuimun: false };
+  const tenGodCounts = person === "a" ? ctx.tenGod.countsA : ctx.tenGod.countsB;
+
+  if (!chartRaw) {
+    return {
+      stage: "normal",
+      hasNakedFire: false,
+      hasGuimun: false,
+      sanggwanCount: 0,
+      isRooted: false,
+      speedScore: 0,
+      noveltyScore: 0,
+      initiationScore: 0,
+    };
+  }
 
   const dayStem = chartRaw.dayStemCode ?? "gap";
   const dayBranch = chartRaw.dayBranchCode ?? "ja";
 
   const stage = calculateTwelveStage(dayStem, dayBranch);
+  const isRooted = STRONG_DAY_STAGES.has(stage);
 
-  const hasNakedFire = [chartRaw.dayBranchCode, chartRaw.hourBranchCode].some((br: string) => NAKED_FIRE_BRANCHES.has(br));
+  // Check ALL pillars for Naked Fire (ja, o, myo, yu)
+  const hasNakedFire = [chartRaw.yearBranchCode, chartRaw.monthBranchCode, chartRaw.dayBranchCode, chartRaw.hourBranchCode]
+    .some((br: string) => NAKED_FIRE_BRANCHES.has(br));
   const hasGuimun = hasGuimunOnDayHourPalaces(chartRaw);
 
-  return { stage, hasNakedFire, hasGuimun };
+  const sanggwanCount = tenGodCounts.sanggwan || 0;
+  const sikSangCount = (tenGodCounts.siksin || 0) + sanggwanCount;
+  const biGyeonCount = (tenGodCounts.bigyeon || 0) + (tenGodCounts.geobjae || 0);
+  const pyeongwanCount = tenGodCounts.pyeongwan || 0;
+
+  const stim = psych?.ocean_traits?.stimulation ?? psych?.secondary_axes?.stimulation ?? 50;
+  const energy = psych?.ocean_traits?.energy_style ?? psych?.secondary_axes?.energy_style ?? 50;
+  const decision = psych?.ocean_traits?.decision_style ?? psych?.secondary_axes?.decision_style ?? 50;
+
+  // Speed Score Calculation
+  let speedScore = 0;
+  if (isRooted) speedScore += 1.5;
+  if (stage === "jewang" || stage === "geollok") speedScore += 1.0;
+  if (stage === "jeol" || stage === "myo" || stage === "sa") speedScore -= 1.5;
+  if (energy > 60) speedScore += 1.0;
+  if (stim > 60) speedScore += 1.0;
+
+  // Novelty Score Calculation
+  let noveltyScore = 0;
+  if (sanggwanCount >= 1) noveltyScore += 1.5;
+  if (hasNakedFire) noveltyScore += 1.0;
+  if (hasGuimun) noveltyScore += 0.8;
+  if (stim > 60) noveltyScore += 1.5;
+  if (stim < 40) noveltyScore -= 1.5;
+
+  // Initiation Score Calculation
+  let initiationScore = 0;
+  if (sikSangCount >= 2) initiationScore += 1.5;
+  if (biGyeonCount >= 2) initiationScore += 1.5;
+  if (pyeongwanCount >= 1) initiationScore += 1.0;
+  if (decision > 60) initiationScore += 1.0;
+  if (energy > 60) initiationScore += 1.0;
+
+  return {
+    stage,
+    hasNakedFire,
+    hasGuimun,
+    sanggwanCount,
+    isRooted,
+    speedScore,
+    noveltyScore,
+    initiationScore,
+  };
 }
 
 // ---------------------------------------------------------------------------
-// MAIN BUILDER: Marriage Chapter 04 Intelligence Engine
+// MAIN BUILDER: Marriage Chapter 04 Intelligence Engine V3
 // ---------------------------------------------------------------------------
 
 export function buildMarriageChapter04Intelligence(params: {
@@ -370,57 +448,38 @@ export function buildMarriageChapter04Intelligence(params: {
   const nameA = ctx.nicknameA;
   const nameB = ctx.nicknameB;
 
+  // SECTION 01: Love Transmission
   const chA = evaluateLoveChannels(ctx, "a", psychA);
   const chB = evaluateLoveChannels(ctx, "b", psychB);
 
-  const sigA = evaluateSajuPaceAndNoveltySignals(ctx, "a");
-  const sigB = evaluateSajuPaceAndNoveltySignals(ctx, "b");
+  const sigA = evaluatePaceAndNoveltySignals(ctx, "a", psychA);
+  const sigB = evaluatePaceAndNoveltySignals(ctx, "b", psychB);
 
   const channels: LoveExpressionChannel[] = [
-    "verbal_affirmation",
-    "emotional_attunement",
-    "practical_care",
-    "protective_support",
-    "shared_presence",
-    "physical_affection",
-    "respect_for_autonomy",
-    "consistency_reliability",
+    "verbal_affirmation", "emotional_attunement", "practical_care", "protective_support",
+    "shared_presence", "physical_affection", "respect_for_autonomy", "consistency_reliability",
   ];
 
-  // Rank Top Expressions and Receptions
   const sortedExpA = [...channels].sort((x, y) => chA.expressions[y] - chA.expressions[x]);
   const sortedRecB = [...channels].sort((x, y) => chB.receptionNeeds[y] - chB.receptionNeeds[x]);
-
   const sortedExpB = [...channels].sort((x, y) => chB.expressions[y] - chB.expressions[x]);
   const sortedRecA = [...channels].sort((x, y) => chA.receptionNeeds[y] - chA.receptionNeeds[x]);
 
   const topExpA = sortedExpA[0];
   const topRecB = sortedRecB[0];
-
   const topExpB = sortedExpB[0];
   const topRecA = sortedRecA[0];
 
-  // Love Transmission A -> B Classifier
   let matchAtoB: LoveTransmissionMatch = "PARTIAL_MATCH";
-  if (topExpA === topRecB) {
-    matchAtoB = "DIRECT_MATCH";
-  } else if (chA.expressions[topRecB] >= 0.7 && chA.expressions[topExpA] < 0.7) {
-    matchAtoB = "ADAPTIVE_EXPRESSION";
-  } else if (chB.receptionNeeds[topExpA] < 0.4) {
-    matchAtoB = "MISSED_SIGNAL";
-  }
+  if (topExpA === topRecB) matchAtoB = "DIRECT_MATCH";
+  else if (chA.expressions[topRecB] >= 0.7 && chA.expressions[topExpA] < 0.7) matchAtoB = "ADAPTIVE_EXPRESSION";
+  else if (chB.receptionNeeds[topExpA] < 0.4) matchAtoB = "MISSED_SIGNAL";
 
-  // Love Transmission B -> A Classifier
   let matchBtoA: LoveTransmissionMatch = "PARTIAL_MATCH";
-  if (topExpB === topRecA) {
-    matchBtoA = "DIRECT_MATCH";
-  } else if (chB.expressions[topRecA] >= 0.7 && chB.expressions[topExpB] < 0.7) {
-    matchBtoA = "ADAPTIVE_EXPRESSION";
-  } else if (chA.receptionNeeds[topExpB] < 0.4) {
-    matchBtoA = "MISSED_SIGNAL";
-  }
+  if (topExpB === topRecA) matchBtoA = "DIRECT_MATCH";
+  else if (chB.expressions[topRecA] >= 0.7 && chB.expressions[topExpB] < 0.7) matchBtoA = "ADAPTIVE_EXPRESSION";
+  else if (chA.receptionNeeds[topExpB] < 0.4) matchBtoA = "MISSED_SIGNAL";
 
-  // Section 1: Love Transmission
   const loveTransmission: LoveTransmissionChannel[] = [
     {
       senderName: nameA,
@@ -460,91 +519,188 @@ export function buildMarriageChapter04Intelligence(params: {
     },
   ];
 
-  // Evaluate Novelty vs Stability from Saju (nakedFire/guimun) + Psych
-  const isNoveltyA = sigA.hasNakedFire || sigA.hasGuimun || (psychA?.secondary_axes?.stimulation ?? 50) > 60;
-  const isNoveltyB = sigB.hasNakedFire || sigB.hasGuimun || (psychB?.secondary_axes?.stimulation ?? 50) > 60;
+  // SECTION 02: Pair Intimacy Chemistry (HERO)
+  const attractionLevel: AttractionLevel = (sigA.hasNakedFire || sigB.hasNakedFire || matchAtoB === "DIRECT_MATCH" || matchBtoA === "DIRECT_MATCH") ? "HIGH_PULL" : "STEADY_BOND";
+  const safetyLevel: SafetyLevel = (sigA.isRooted && sigB.isRooted) ? "HIGH_SAFETY" : "MODERATE_SAFETY";
 
-  let stabilityNoveltyClass: StabilityNoveltyClass = "STABILITY_MATCH";
-  if (isNoveltyA && isNoveltyB) stabilityNoveltyClass = "NOVELTY_MATCH";
-  else if (isNoveltyA && !isNoveltyB) stabilityNoveltyClass = "NOVELTY_GAP_A";
-  else if (!isNoveltyA && isNoveltyB) stabilityNoveltyClass = "NOVELTY_GAP_B";
-
-  // Section 2: Saju Intimacy Pair
-  const sajuIntimacyPair: SajuIntimacyPair = {
-    attractionInsight: {
-      title: isEn ? "Mutual Attraction & Relational Pull" : "서로를 당기는 정서적·신체적 은은한 인력",
-      description: isEn
-        ? "Pair Saju day branch and Five Element compatibility create a natural interlock."
-        : "두 사람의 명식은 서로의 부족한 기운을 오행과 일지 결합으로 보완해주어, 둘만 있을 때 편안하면서도 은근히 서로를 당기는 인력이 형성됩니다.",
-      dynamics: isEn
-        ? "Comfort and activation balance out smoothly when togetherness is preserved."
-        : "안정적인 편안함과 설렘의 스파크가 과하지 않게 조화를 이루어, 오랫동안 함께해도 질리지 않는 무드를 만듭니다.",
-    },
-    rhythmFit: {
-      title: isEn ? "Intimacy Pace & Warming Speed" : "가까워지는 리듬과 무드 형성 템포",
-      classification: "MATCHED_RHYTHM",
-      description: (sigA.stage === "jewang" || sigA.stage === "geollok")
-        ? `${nameA}님의 타고난 에너지가 단단하게 받쳐주어 친밀한 무드로 들어갈 때 차분하고 꾸준한 템포를 지켜줍니다.`
-        : isEn
-        ? "Both partners share a compatible tempo in entering close emotional/physical presence."
-        : "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
-    },
-    stabilityVsNovelty: {
-      title: isEn ? "Stability vs. Novelty Balance" : "익숙한 편안함 vs 새로운 분위기의 자극",
-      classification: stabilityNoveltyClass,
-      description: stabilityNoveltyClass === "NOVELTY_MATCH"
-        ? "두 사람 모두 정체된 루틴보다 가끔은 장소나 분위기에 일상의 작은 변주를 줄 때 관계의 온도가 깨어납니다."
-        : stabilityNoveltyClass === "NOVELTY_GAP_A"
-        ? `${nameA}님은 가끔 색다른 분위기와 자극에서 설렘을 얻는 반면, ${nameB}님은 아늑하고 예견 가능한 안정감에서 마음이 더 열리는 편입니다.`
-        : stabilityNoveltyClass === "NOVELTY_GAP_B"
-        ? `${nameB}님은 새로운 분위기의 스파크를 반기는 편이며, ${nameA}님은 익숙하고 안전한 분위기에서 가장 깊은 편안함을 느낍니다.`
-        : isEn
-        ? "Mutual preference leans toward steady trust and cozy environment."
-        : "두 사람은 과감하거나 불안정한 변화보다는, 익숙하고 안전한 환경에서 마음을 열고 친밀감을 깊게 만드는 스타일에 더 끌립니다.",
-    },
-    leadAndResponse: {
-      title: isEn ? "Initiation & Receptive Engagement" : "신호를 보내는 역할과 마음이 열리는 수용자",
-      classification: "A_INITIATES_B_RESPONDS",
-      description: isEn
-        ? `${nameA} naturally signals approach while ${nameB} opens up smoothly upon invitation.`
-        : `${nameA}님이 분위기나 다가가는 신호를 자연스럽게 이끌고, ${nameB}님이 그 신호를 편안히 받아들이며 마음을 여는 조화로운 흐름입니다.`,
-    },
-    comfortVsActivation: {
-      title: isEn ? "Comfort & Activation Synergy" : "안도감과 설렘의 선순환",
-      description: isEn
-        ? "Mutual trust forms a protective shell where intimacy unfolds with ease."
-        : "서로에 대한 정서적 안정감이 확보될수록 신체적 친밀감도 더욱 다정하고 자연스럽게 풀려나가는 관계입니다.",
-    },
+  const pairChemistry: PairIntimacyChemistry = {
+    heroIdentity: (attractionLevel === "HIGH_PULL" && safetyLevel === "HIGH_SAFETY")
+      ? "은은한 끌림과 편안한 안도감이 둘만의 깊은 보금자리를 만드는 조화로운 속궁합"
+      : (attractionLevel === "HIGH_PULL")
+      ? "끌림의 불꽃은 분명하지만, 서로 마음이 완전히 풀어지는 속도에 미세한 결의 차이가 있는 조합"
+      : "과감한 자극보다는 아늑하고 잔잔한 신뢰 속에서 오랫동안 온기가 깊어지는 따뜻한 속궁합",
+    attractionLevel,
+    safetyLevel,
+    attractionTitle: isEn ? "Mutual Attraction & Relational Pull" : "서로를 당기는 정서적·신체적 은은한 인력",
+    attractionDescription: isEn
+      ? "Pair Saju day branch and Five Element compatibility create a natural interlock."
+      : "두 사람의 명식은 서로의 부족한 기운을 오행과 일지 결합으로 보완해주어, 둘만 있을 때 편안하면서도 은근히 서로를 당기는 인력이 형성됩니다.",
+    dynamicsNarrative: isEn
+      ? "Comfort and activation balance out smoothly when togetherness is preserved."
+      : "안정적인 편안함과 설렘의 스파크가 과하지 않게 조화를 이루어, 오랫동안 함께해도 질리지 않는 무드를 만듭니다.",
   };
 
-  // Section 3: Bedroom Temperature (Intimacy Activation Modes)
-  const bedroomTemperature: BedroomTemperature = {
+  // SECTION 03: Stability vs Novelty (Dynamic Multi-Evidence Classification)
+  const isNoveltyA = sigA.noveltyScore >= 1.5;
+  const isNoveltyB = sigB.noveltyScore >= 1.5;
+
+  let novClass: StabilityNoveltyClass = "BALANCED";
+  if (isNoveltyA && isNoveltyB) novClass = "NOVELTY_MATCH";
+  else if (!isNoveltyA && !isNoveltyB) novClass = "STABILITY_MATCH";
+  else if (isNoveltyA && !isNoveltyB) novClass = "NOVELTY_GAP_A";
+  else if (!isNoveltyA && isNoveltyB) novClass = "NOVELTY_GAP_B";
+
+  const stabilityVsNovelty: StabilityVsNoveltySection = {
+    title: isEn ? "Stability vs. Novelty Balance" : "익숙한 밤 vs 새로운 공기",
+    classification: novClass,
+    headline: novClass === "NOVELTY_MATCH"
+      ? "익숙한 루틴보다는 주 1회 작은 분위기 변화에서 설렘이 깨어나는 타입"
+      : novClass === "NOVELTY_GAP_A"
+      ? `${nameA}님은 소소한 분위기 변화에서 설렘을 얻고, ${nameB}님은 아늑한 안정을 최우선으로 하는 타입`
+      : novClass === "NOVELTY_GAP_B"
+      ? `${nameB}님은 새로운 분위기의 스파크를 즐기고, ${nameA}님은 익숙한 편안함에서 마음이 열리는 타입`
+      : novClass === "STABILITY_MATCH"
+      ? "과감한 변화보다 안전하고 아늑한 둘만의 베이스캠프에서 가장 편안히 마음이 열리는 타입"
+      : "안정적인 편안함과 가끔의 소소한 변주가 균형 있게 조화를 이루는 타입",
+    description: novClass === "NOVELTY_GAP_A"
+      ? `${nameA}님은 일상의 틀을 깨는 작은 변주나 장소의 변화에서 친밀감의 불꽃이 다시 피어나는 반면, ${nameB}님은 예견 가능하고 안전한 둘만의 공간에서 가장 편안함을 느낍니다.`
+      : novClass === "NOVELTY_GAP_B"
+      ? `${nameB}님은 색다른 분위기의 자극에 민감하게 반응하는 반면, ${nameA}님은 익숙하고 아늑한 둘만의 환경에서 깊은 친밀감이 형성됩니다.`
+      : novClass === "NOVELTY_MATCH"
+      ? "두 사람 모두 늘 반복되는 루틴보다 가끔은 조도, 음악, 장소 등의 작은 분위기 변화를 줄 때 친밀감의 온도가 배로 올라옵니다."
+      : "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다.",
+    personAInnate: sigA.sanggwanCount >= 1 || sigA.hasNakedFire ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결",
+    personACurrent: (psychA?.ocean_traits?.stimulation ?? 50) > 60 ? "현재 새로운 자극과 경험에 열려 있는 상태" : "현재 아늑한 안정과 예측 가능성을 바라는 상태",
+    personBInnate: sigB.sanggwanCount >= 1 || sigB.hasNakedFire ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결",
+    personBCurrent: (psychB?.ocean_traits?.stimulation ?? 50) > 60 ? "현재 새로운 자극과 경험에 열려 있는 상태" : "현재 아늑한 안정과 예측 가능성을 바라는 상태",
+  };
+
+  // SECTION 04: Activation & Rhythm (Dynamic Multi-Evidence Classification)
+  const modeA: ActivationMode = (chA.receptionNeeds.emotional_attunement >= 0.7) ? "EMOTIONAL_FIRST"
+    : (psychA?.secondary_axes?.adaptability ?? 50) > 60 ? "RESPONSIVE"
+    : (sigA.speedScore >= 2.0) ? "DESIRE_FIRST"
+    : "CONTEXT_SENSITIVE";
+
+  const modeB: ActivationMode = (chB.receptionNeeds.emotional_attunement >= 0.7) ? "EMOTIONAL_FIRST"
+    : (psychB?.secondary_axes?.adaptability ?? 50) > 60 ? "RESPONSIVE"
+    : (sigB.speedScore >= 2.0) ? "DESIRE_FIRST"
+    : "CONTEXT_SENSITIVE";
+
+  const modeTitles: Record<ActivationMode, string> = {
+    EMOTIONAL_FIRST: "정서적 연결 우선형",
+    RESPONSIVE: "반응적 수용 & 환경 편안함 우선형",
+    DESIRE_FIRST: "직관적 몰입 우선형",
+    CONTEXT_SENSITIVE: "일상 스트레스 해소 우선형",
+    FLEXIBLE: "유연한 템포 맞춤형",
+  };
+
+  let rhythmClass: IntimacyRhythmClass = "MATCHED_RHYTHM";
+  const speedDiff = sigA.speedScore - sigB.speedScore;
+  if (speedDiff >= 2.0) rhythmClass = "A_FAST_B_SLOW";
+  else if (speedDiff <= -2.0) rhythmClass = "B_FAST_A_SLOW";
+  else if (Math.abs(speedDiff) <= 1.0) rhythmClass = "MATCHED_RHYTHM";
+  else rhythmClass = "CONTEXT_DEPENDENT";
+
+  const activationAndRhythm: ActivationAndRhythmSection = {
     personAMode: {
       personName: nameA,
-      modeTitle: isEn ? "Emotional-First & Direct Engagement" : "정서적 연결 우선형",
-      description: isEn
-        ? `${nameA} needs emotional attunement and mutual presence to fully step into intimacy.`
-        : `${nameA}님은 마음의 앙금이 풀리고 정서적으로 따뜻하게 연결되었다고 느낄 때 신체적 친밀감으로 자연스럽게 넘어가는 타입입니다.`,
-      psychDiscrepancyNote: (psychA?.ocean_traits?.energy_style ?? psychA?.secondary_axes?.energy_style ?? 50) > 65
-        ? `${nameA}님은 기질적으로 다가가는 에너지가 발달해 있어, 정서적 교감이 충전되면 매우 다정하게 분위기를 이끌어갑니다.`
-        : undefined,
+      modeTitle: modeTitles[modeA],
+      description: modeA === "EMOTIONAL_FIRST"
+        ? `${nameA}님은 마음의 앙금이 풀리고 정서적으로 따뜻하게 연결되었다고 느낄 때 신체적 친밀감으로 자연스럽게 넘어가는 타입입니다.`
+        : `${nameA}님은 무거운 압박이 없고 둘만의 분위기가 편안하게 형성될 때 서서히 친밀감이 고조되는 타입입니다.`,
     },
     personBMode: {
       personName: nameB,
-      modeTitle: isEn ? "Responsive & Comfort-Grounded" : "반응적 수용 & 환경 편안함 우선형",
-      description: isEn
-        ? `${nameB} opens up smoothly when the environment is cozy and the partner initiates with warmth.`
-        : `${nameB}님은 사전에 무거운 압박이 없고 집안 분위기가 편안하며 상대가 다정하게 신호를 줄 때 마음과 몸이 서서히 열리는 타입입니다.`,
-      psychDiscrepancyNote: (psychB?.ocean_traits?.adaptability ?? psychB?.secondary_axes?.adaptability ?? 50) > 65
-        ? `${nameB}님은 유연한 적응력을 가지고 있어, 분위기가 조성되면 파트너의 템포에 맞춰서 자연스럽게 호응합니다.`
-        : undefined,
+      modeTitle: modeTitles[modeB],
+      description: modeB === "RESPONSIVE"
+        ? `${nameB}님은 사전에 무거운 압박이 없고 집안 분위기가 편안하며 상대가 다정하게 신호를 줄 때 마음과 몸이 서서히 열리는 타입입니다.`
+        : `${nameB}님은 정서적인 대화와 안도감이 충분히 충전될 때 신체적 온도가 따라오는 타입입니다.`,
     },
-    temperatureRhythmNarrative: isEn
-      ? "Understanding activation modes prevents misinterpreting timing differences as lack of desire."
-      : "두 사람의 침실 온도는 속도의 차이일 뿐 애정의 크기 차이가 아닙니다. 서로가 마음을 여는 사전 조건이 다름을 인정할 때 친밀감이 단단해집니다.",
+    rhythmFitClassification: rhythmClass,
+    headline: rhythmClass === "A_FAST_B_SLOW"
+      ? `${nameA}님이 무드로 진입하는 속도가 빠른 편이며, ${nameB}님은 마음의 조도가 서서히 올라오는 리듬`
+      : rhythmClass === "B_FAST_A_SLOW"
+      ? `${nameB}님의 반응과 입전 속도가 빠른 편이며, ${nameA}님은 정서적 안도감이 충전되어야 서서히 열리는 리듬`
+      : "친밀한 무드로 들어가는 템포와 속도가 비교적 자연스럽게 맞아떨어지는 커플",
+    rhythmDescription: rhythmClass === "A_FAST_B_SLOW"
+      ? `${nameA}님이 다가오는 신호에 대해 ${nameB}님이 서두르지 않고 차분히 호응해줄 때 두 사람의 친밀감이 탈진 없이 안정적으로 유지됩니다.`
+      : rhythmClass === "B_FAST_A_SLOW"
+      ? `${nameB}님이 다가오는 속도에 ${nameA}님이 부담을 느끼지 않도록 다정한 정서적 징검다리를 놓아주는 것이 좋습니다.`
+      : "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
+    activationNarrative: "두 사람의 침실 온도는 속도의 차이일 뿐 애정의 크기 차이가 아닙니다. 서로가 마음을 여는 사전 조건이 다름을 인정할 때 친밀감이 단단해집니다.",
   };
 
-  // Section 4: Desire Mismatch & Rejection
+  // SECTION 05: Initiation, Lead & Response (Dynamic Multi-Evidence Classification)
+  let leadClass: LeadResponseClass = "CONTEXT_SWITCHING";
+  const initDiff = sigA.initiationScore - sigB.initiationScore;
+  if (sigA.initiationScore >= 3.0 && sigB.initiationScore >= 3.0) leadClass = "MUTUAL_INITIATION";
+  else if (sigA.initiationScore <= 1.0 && sigB.initiationScore <= 1.0) leadClass = "MUTUAL_WAITING";
+  else if (initDiff >= 1.5) leadClass = "A_INITIATES_B_RESPONDS";
+  else if (initDiff <= -1.5) leadClass = "B_INITIATES_A_RESPONDS";
+  else leadClass = "CONTEXT_SWITCHING";
+
+  const initiationLeadResponse: InitiationLeadResponseSection = {
+    title: isEn ? "Initiation & Receptive Engagement" : "누가 먼저 불을 켤까?",
+    classification: leadClass,
+    headline: leadClass === "A_INITIATES_B_RESPONDS"
+      ? `${nameA}님이 다정한 신호를 자연스럽게 이끌고, ${nameB}님이 이를 편안히 받아들이는 리듬`
+      : leadClass === "B_INITIATES_A_RESPONDS"
+      ? `${nameB}님이 다가가는 계기를 만들고, ${nameA}님이 이에 다정하게 응하는 리듬`
+      : leadClass === "MUTUAL_WAITING"
+      ? "둘 다 먼저 조심스레 다가가기보다 상대의 확신 있는 신호를 은근히 기다리는 커플"
+      : leadClass === "MUTUAL_INITIATION"
+      ? "두 사람 모두 어색함 없이 자연스럽게 애정을 먼저 표현하고 다가가는 쌍방 직진형"
+      : "그날의 분위기와 피로도에 따라 주도하는 사람이 자연스럽게 교대되는 스위치형",
+    description: leadClass === "A_INITIATES_B_RESPONDS"
+      ? `${nameA}님이 다정한 분위기나 스킨십 신호를 먼저 건네면, ${nameB}님이 그 신호를 부담 없이 다정히 받아들이며 마음을 여는 조화로운 흐름입니다.`
+      : leadClass === "MUTUAL_WAITING"
+      ? "두 사람 모두 상대를 배려하느라 먼저 다가가는 신호를 아끼다가 조용한 침묵이 길어질 수 있으므로, 가벼운 말 한마디나 작은 스킨십으로 물꼬를 터주는 것이 좋습니다."
+      : "상황과 컨디션에 따라 한 사람이 다정하게 이끌고 다른 사람이 편안하게 맞추어주는 유연한 조율이 잘 이루어집니다.",
+    personAAgency: sigA.initiationScore >= 2.0 ? `${nameA}님은 마음이 서면 애정 신호를 주저 없이 다정하게 꺼내놓는 타입입니다.` : `${nameA}님은 상대가 마음 편히 올 수 있도록 자리를 터주는 은은한 수용력이 좋습니다.`,
+    personBAgency: sigB.initiationScore >= 2.0 ? `${nameB}님은 기회가 생기면 확신 있게 끌어안아 주는 든든함이 있습니다.` : `${nameB}님은 사전에 무거운 부담이 없을 때 상대의 신호에 가장 유연하게 호응합니다.`,
+  };
+
+  // SECTION 06: Intimate Attunement
+  const getAttunementStyle = (person: "a" | "b", psych?: PsychMasterJson): AttunementStyle => {
+    const emp = psych?.ocean_traits?.empathy ?? psych?.secondary_axes?.empathy ?? 50;
+    const rec = psych?.ocean_traits?.recognition ?? psych?.secondary_axes?.recognition ?? 50;
+    const ctrl = psych?.ocean_traits?.self_control ?? psych?.secondary_axes?.self_control ?? 50;
+    if (emp > 60) return "reaction_reading";
+    if (rec > 60) return "verbal_checking";
+    if (ctrl > 60) return "pacing_adjustment";
+    return "emotional_reassurance";
+  };
+
+  const attA = getAttunementStyle("a", psychA);
+  const attB = getAttunementStyle("b", psychB);
+
+  const styleTitles: Record<AttunementStyle, string> = {
+    clear_expression: "확신을 보여주는 직진형 배려",
+    reaction_reading: "상대 반응을 먼저 읽는 리액션형 배려",
+    verbal_checking: "말로 확인해야 마음 놓이는 체크인형 배려",
+    pacing_adjustment: "상대 템포에 맞춰 천천히 기다려주는 페이스메이커형 배려",
+    emotional_reassurance: "정서적 안심을 최우선으로 건네는 보듬음형 배려",
+    autonomy_respect: "상대의 개인 영역과 템포를 지켜주는 존중형 배려",
+  };
+
+  const intimateAttunement: IntimateAttunementSection = {
+    title: isEn ? "Intimate Attunement & Mutual Care" : "침실에서 우리는 상대를 어떻게 살필까?",
+    personAAttunement: {
+      personName: nameA,
+      styleKey: attA,
+      styleTitle: styleTitles[attA],
+      description: `${nameA}님은 친밀한 순간에도 상대의 표정과 반응을 미세하게 살피며 서운함이 없도록 다정하게 조율하는 성향입니다.`,
+    },
+    personBAttunement: {
+      personName: nameB,
+      styleKey: attB,
+      styleTitle: styleTitles[attB],
+      description: `${nameB}님은 상대가 무리하지 않도록 편안한 환경을 만들어주고, 내 요구보다 상대의 안도감을 먼저 챙기려 노력합니다.`,
+    },
+    attunementInsight: "두 사람 모두 상대를 해치거나 서운하게 하지 않으려는 선의의 배려가 깊어, 침실에서의 대화가 부드럽고 다정하게 이어집니다.",
+  };
+
+  // SECTION 07: Desire Mismatch & Rejection Handling
   const empA = psychA?.ocean_traits?.empathy ?? psychA?.secondary_axes?.empathy ?? psychA?.traits?.empathy ?? psychA?.scores?.connection ?? 50;
   const empB = psychB?.ocean_traits?.empathy ?? psychB?.secondary_axes?.empathy ?? psychB?.traits?.empathy ?? psychB?.scores?.connection ?? 50;
   const isRejectionShared = empA > 60 && empB > 60;
@@ -571,35 +727,52 @@ export function buildMarriageChapter04Intelligence(params: {
       : "원치 않는 날에는 거절 그 자체보다 '당신을 사랑하지만 오늘은 피곤하다'는 확신의 신호를 먼저 건네는 것이 가장 좋은 처방법입니다.",
   };
 
-  // Conditional Section: Emotional Intimacy (둘만 있을 때 마음이 열리는 조건)
-  const emotionalIntimacy: EmotionalIntimacyCondition[] = [
-    {
-      personName: nameA,
-      openingCondition: "외부의 평가나 판단 걱정 없이 온전히 내 편이 되어 들어줄 때",
-      description: `${nameA}님은 세상의 중압감을 내려놓고 오롯이 내 편이 되어 마음을 보듬어주는 안식처를 느낄 때 깊은 속마음을 털어놓습니다.`,
-    },
-    {
-      personName: nameB,
-      openingCondition: "지적이나 조언 없이 있는 그대로의 템포를 인정받을 때",
-      description: `${nameB}님은 잘잘못을 가리는 대화보다 내 입장과 피로를 아무 조건 없이 안아주는 분위기에서 경계심이 완전히 해제됩니다.`,
-    },
-  ];
+  // SECTION 08: Pair Intimacy Paradox (Upstream Evidence Reuse)
+  let paradoxType: IntimacyParadoxType = "NONE";
+  if (novClass === "NOVELTY_GAP_A" || novClass === "NOVELTY_GAP_B") paradoxType = "SAFETY_VS_NOVELTY";
+  else if (leadClass === "MUTUAL_WAITING") paradoxType = "INITIATION_WAITING";
+  else if (modeA === "EMOTIONAL_FIRST" && (modeB === "DESIRE_FIRST" || modeB === "RESPONSIVE")) paradoxType = "EMOTIONAL_VS_PHYSICAL_ORDER";
+  else if (attA === "reaction_reading" && attB === "reaction_reading") paradoxType = "OVER_ATTUNEMENT";
+  else if (rhythmClass === "A_FAST_B_SLOW" || rhythmClass === "B_FAST_A_SLOW") paradoxType = "ATTRACTION_VS_RHYTHM";
 
-  // Conditional Section: Intimacy Activation Conditions (설렘이 살아나는 조건)
-  const activationConditions: IntimacyActivationConditions = {
-    sharedConditions: ["아늑하고 프라이빗한 둘만의 공간", "일상의 가사 판단에서 벗어난 정서적 여유"],
-    personAConditions: ["다정한 칭찬과 애정의 언어", "함께 새로운 경험이나 데이트를 나눌 때"],
-    personBConditions: ["몸의 피로가 충분히 해소된 상태", "자연스럽고 부드러운 스킨십"],
-    pairActivationInsight: "일상의 가사 노동이나 멘탈로드에서 벗어나 서로에게 오롯이 집중할 수 있는 차단된 시간과 공간이 두 사람의 설렘을 깨우는 가장 강력한 스위치입니다.",
+  const pairIntimacyParadox: PairIntimacyParadoxSection = {
+    paradoxType,
+    headline: paradoxType === "SAFETY_VS_NOVELTY"
+      ? "편안함이 너무 깊어져 설렘의 스파크가 잠드는 역설"
+      : paradoxType === "INITIATION_WAITING"
+      ? "서로를 깊이 원하면서도 조심스레 상대의 먼저 다가옴을 기다리는 역설"
+      : paradoxType === "EMOTIONAL_VS_PHYSICAL_ORDER"
+      ? "마음이 먼저 열려야 몸이 따르는 사람과, 몸의 다정함에서 마음이 풀어지는 사람의 역설"
+      : paradoxType === "OVER_ATTUNEMENT"
+      ? "서로를 너무 배려하느라 정작 솔직한 내 욕구를 먼저 말하지 못하는 역설"
+      : "서로에게 끌리는 인력은 강한데 마음의 무드가 완벽히 맞춰지는 템포의 역설",
+    explanation: paradoxType === "SAFETY_VS_NOVELTY"
+      ? "둘만의 공간이 너무나 안전하고 편안하다 보니, 역설적으로 관계를 처음 불태우던 소소한 변주나 설렘의 노력을 생략하게 될 수 있습니다."
+      : "상대를 거부하거나 서운하게 만들까 봐 둘 다 다정한 신호를 아끼다가, 마음속 끌림에 비해 침실의 온도가 조용해질 위험이 있습니다.",
+    whenThriving: "이 역설을 이해하고 작은 이벤트나 다정한 말 한마디로 먼저 신호를 줄 때, 두 사람의 친밀감은 그 어느 때보다 깊고 단단해집니다.",
+    whenFriction: "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
   };
 
-  // Conditional Section: Initiation Balance (먼저 다가가는 사람만 지치지 않도록)
-  const initiationBalance: InitiationBalance = {
-    initiatorName: nameA,
-    responderName: nameB,
-    asymmetryReason: `${nameA}님이 다가가는 신호를 더 자주 보내고 ${nameB}님이 이에 호응하는 구조가 자연스럽게 형성되기 때문입니다.`,
-    longTermRisk: `${nameA}님이 '나만 이 관계를 원하는 것 아닐까'라는 외로움을 느끼거나, ${nameB}님이 수동적으로 변할 수 있습니다.`,
-    calibrationGuide: `${nameB}님이 신호를 받을 때 반갑고 다정하게 호응해주고, 가끔은 가벼운 스킨십이나 데이트 제안으로 먼저 신호를 보내는 표현이 큰 힘이 됩니다.`,
+  // BONUS SECTION 09: Sleep Compatibility (Ambient Sensitivity Focus, NO Medical Claims)
+  const sensAScore = (sigA.hasNakedFire ? 1 : 0) + (sigA.hasGuimun ? 2 : 0);
+  const sensBScore = (sigB.hasNakedFire ? 1 : 0) + (sigB.hasGuimun ? 2 : 0);
+
+  const sensA: SleepSensitivityLevel = sensAScore >= 2 ? "high" : sensAScore === 1 ? "moderate" : "low";
+  const sensB: SleepSensitivityLevel = sensBScore >= 2 ? "high" : sensBScore === 1 ? "moderate" : "low";
+
+  const sleepCompatibility: SleepCompatibilitySection = {
+    title: isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?",
+    personASensitivity: sensA,
+    personBSensitivity: sensB,
+    headline: sensA === "high" || sensB === "high"
+      ? "바스락거리는 소리나 침실 조도에 민감한 체질이 있어 다정한 조율이 필요한 밤"
+      : "두 사람 모두 수면 환경에 비교적 무던하여 함께 잠드는 밤이 편안한 궁합",
+    narrative: sensA === "high"
+      ? `${nameA}님은 조도, 작은 소음, 온도의 변화에 몸이 sensitive하게 반응하는 편이라, 취침 전 정돈된 조도와 조용한 환경이 수면 품질에 큰 영향을 줍니다.`
+      : sensB === "high"
+      ? `${nameB}님은 빛이나 작은 소리에 예민하게 깰 수 있어, 취침 전 암막 커튼이나 잔잔한 조도 배려가 도움이 됩니다.`
+      : "두 사람은 서로의 취침 템포가 잘 맞아 함께 잠드는 공간에서 피로를 잘 풀어냅니다.",
+    gentleGuide: "수면 환경은 더 예민하게 느끼는 사람의 편안한 기준에 맞추어 침실 조도를 낮추고 온도를 조율하는 것이 두 사람 모두의 활력을 지키는 다정한 지름길입니다.",
   };
 
   return {
@@ -607,12 +780,14 @@ export function buildMarriageChapter04Intelligence(params: {
       ? "💡 How do we express love and build genuine emotional & physical intimacy together?"
       : "💡 우리는 서로의 사랑을 제대로 알아보고 있을까? 그리고 둘만 있을 때 마음과 몸의 거리는 어떤 방식으로 가까워질까요?",
     loveTransmission,
-    sajuIntimacyPair,
-    bedroomTemperature,
+    pairChemistry,
+    stabilityVsNovelty,
+    activationAndRhythm,
+    initiationLeadResponse,
+    intimateAttunement,
     desireMismatchAndRejection,
-    emotionalIntimacy,
-    activationConditions,
-    initiationBalance,
+    pairIntimacyParadox,
+    sleepCompatibility,
   };
 }
 
@@ -653,62 +828,67 @@ export function createDefaultMarriageChapter04Intelligence(
           : `${nameB}님은 실질적 챙김으로 사랑을 표현하고, ${nameA}님은 다정한 체온과 반응에서 큰 애정을 느낍니다.`,
       },
     ],
-    sajuIntimacyPair: {
-      attractionInsight: {
-        title: isEn ? "Mutual Attraction & Relational Pull" : "서로를 당기는 정서적·신체적 은은한 인력",
-        description: isEn
-          ? "Pair Saju synergy creates a natural, comforting bond."
-          : "두 사람의 명식은 서로의 부족함을 차분히 채워주어, 둘만 있을 때 마음이 편안해지는 끌림을 만듭니다.",
-        dynamics: isEn
-          ? "Balances steady comfort with lasting warmth."
-          : "자극적인 충격보다는 은은하고 오랫동안 유지되는 따뜻함이 관계의 중심이 됩니다.",
-      },
-      rhythmFit: {
-        title: isEn ? "Intimacy Pace & Warming Speed" : "가까워지는 리듬과 무드 형성 템포",
-        classification: "MATCHED_RHYTHM",
-        description: isEn
-          ? "Compatible pace in warming up to emotional and physical closeness."
-          : "친밀한 무드로 들어가는 속도가 서서히 함께 올라오는 안정적인 리듬입니다.",
-      },
-      stabilityVsNovelty: {
-        title: isEn ? "Stability vs. Novelty Balance" : "익숙한 편안함 vs 새로운 분위기의 자극",
-        classification: "STABILITY_MATCH",
-        description: isEn
-          ? "Leans toward cozy trust and safe environment."
-          : "두 사람은 안전하고 아늑한 둘만의 공간에서 가장 편안히 마음과 몸을 엽니다.",
-      },
-      leadAndResponse: {
-        title: isEn ? "Initiation & Receptive Engagement" : "신호를 보내는 역할과 마음이 열리는 수용자",
-        classification: "A_INITIATES_B_RESPONDS",
-        description: isEn
-          ? `${nameA} naturally initiates while ${nameB} responds warmly.`
-          : `${nameA}님이 다정한 분위기를 이끌고 ${nameB}님이 이에 유연하게 호응하는 형태입니다.`,
-      },
-      comfortVsActivation: {
-        title: isEn ? "Comfort & Activation Synergy" : "안도감과 친밀감의 선순환",
-        description: isEn
-          ? "Comfortable presence deepens overall closeness."
-          : "서로에 대한 신뢰가 깊을수록 신체적 친밀감도 더욱 자연스럽게 풀어집니다.",
-      },
+    pairChemistry: {
+      heroIdentity: "은은한 끌림과 편안한 안도감이 둘만의 깊은 보금자리를 만드는 조화로운 속궁합",
+      attractionLevel: "HIGH_PULL",
+      safetyLevel: "HIGH_SAFETY",
+      attractionTitle: isEn ? "Mutual Attraction & Relational Pull" : "서로를 당기는 정서적·신체적 은은한 인력",
+      attractionDescription: isEn
+        ? "Pair Saju synergy creates a natural, comforting bond."
+        : "두 사람의 명식은 서로의 부족함을 차분히 채워주어, 둘만 있을 때 마음이 편안해지는 끌림을 만듭니다.",
+      dynamicsNarrative: isEn
+        ? "Balances steady comfort with lasting warmth."
+        : "자극적인 충격보다는 은은하고 오랫동안 유지되는 따뜻함이 관계의 중심이 됩니다.",
     },
-    bedroomTemperature: {
+    stabilityVsNovelty: {
+      title: isEn ? "Stability vs. Novelty Balance" : "익숙한 밤 vs 새로운 공기",
+      classification: "STABILITY_MATCH",
+      headline: "과감한 변화보다 안전하고 아늑한 둘만의 베이스캠프에서 가장 편안히 마음이 열리는 타입",
+      description: "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다.",
+      personAInnate: "차분하고 안정적인 환경을 선호하는 결",
+      personACurrent: "아늑한 안정과 예측 가능성을 바라는 상태",
+      personBInnate: "차분하고 안정적인 환경을 선호하는 결",
+      personBCurrent: "아늑한 안정과 예측 가능성을 바라는 상태",
+    },
+    activationAndRhythm: {
       personAMode: {
         personName: nameA,
-        modeTitle: isEn ? "Emotional-First & Direct Engagement" : "정서적 연결 우선형",
-        description: isEn
-          ? `${nameA} values emotional closeness as the gateway to physical intimacy.`
-          : `${nameA}님은 대화와 정서적 교감이 충분히 채워질 때 마음과 몸이 깊이 열리는 편입니다.`,
+        modeTitle: "정서적 연결 우선형",
+        description: `${nameA}님은 대화와 정서적 교감이 충분히 채워질 때 마음과 몸이 깊이 열리는 편입니다.`,
       },
       personBMode: {
         personName: nameB,
-        modeTitle: isEn ? "Responsive & Comfort-Grounded" : "반응적 수용 & 환경 편안함 우선형",
-        description: isEn
-          ? `${nameB} opens up smoothly when the environment is peaceful and stress is low.`
-          : `${nameB}님은 일상의 스트레스가 줄어들고 분위기가 아늑할 때 서서히 친밀감이 고조됩니다.`,
+        modeTitle: "반응적 수용 & 환경 편안함 우선형",
+        description: `${nameB}님은 일상의 스트레스가 줄어들고 분위기가 아늑할 때 서서히 친밀감이 고조됩니다.`,
       },
-      temperatureRhythmNarrative: isEn
-        ? "Different warming speeds are a matter of rhythm, not love."
-        : "온도가 올라오는 속도의 차이는 애정의 크기가 아니라 일상 피로와 마음을 여는 스위치의 차이입니다.",
+      rhythmFitClassification: "MATCHED_RHYTHM",
+      headline: "친밀한 무드로 들어가는 템포와 속도가 비교적 자연스럽게 맞아떨어지는 커플",
+      rhythmDescription: "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
+      activationNarrative: "온도가 올라오는 속도의 차이는 애정의 크기가 아니라 일상 피로와 마음을 여는 스위치의 차이입니다.",
+    },
+    initiationLeadResponse: {
+      title: isEn ? "Initiation & Receptive Engagement" : "누가 먼저 불을 켤까?",
+      classification: "A_INITIATES_B_RESPONDS",
+      headline: `${nameA}님이 다정한 신호를 자연스럽게 이끌고, ${nameB}님이 이를 편안히 받아들이는 리듬`,
+      description: `${nameA}님이 다정한 분위기나 스킨십 신호를 먼저 건네면, ${nameB}님이 그 신호를 부담 없이 다정히 받아들이며 마음을 여는 조화로운 흐름입니다.`,
+      personAAgency: `${nameA}님은 마음이 서면 애정 신호를 주저 없이 다정하게 꺼내놓는 타입입니다.`,
+      personBAgency: `${nameB}님은 사전에 무거운 부담이 없을 때 상대의 신호에 가장 유연하게 호응합니다.`,
+    },
+    intimateAttunement: {
+      title: isEn ? "Intimate Attunement & Mutual Care" : "침실에서 우리는 상대를 어떻게 살필까?",
+      personAAttunement: {
+        personName: nameA,
+        styleKey: "reaction_reading",
+        styleTitle: "상대 반응을 먼저 읽는 리액션형 배려",
+        description: `${nameA}님은 친밀한 순간에도 상대의 표정과 반응을 미세하게 살피며 서운함이 없도록 다정하게 조율하는 성향입니다.`,
+      },
+      personBAttunement: {
+        personName: nameB,
+        styleKey: "pacing_adjustment",
+        styleTitle: "상대 템포에 맞춰 천천히 기다려주는 페이스메이커형 배려",
+        description: `${nameB}님은 상대가 무리하지 않도록 편안한 환경을 만들어주고, 내 요구보다 상대의 안도감을 먼저 챙기려 노력합니다.`,
+      },
+      attunementInsight: "두 사람 모두 상대를 해치거나 서운하게 하지 않으려는 선의의 배려가 깊어, 침실에서의 대화가 부드럽고 다정하게 이어집니다.",
     },
     desireMismatchAndRejection: {
       personARejection: {
@@ -725,6 +905,21 @@ export function createDefaultMarriageChapter04Intelligence(
       },
       isSharedPattern: false,
       mismatchAdvice: "원치 않는 날에는 거절보다 '사랑하지만 오늘은 몸이 피곤하다'는 다정한 안심을 건네는 것이 제일 중요합니다.",
+    },
+    pairIntimacyParadox: {
+      paradoxType: "SAFETY_VS_NOVELTY",
+      headline: "편안함이 너무 깊어져 설렘의 스파크가 잠드는 역설",
+      explanation: "둘만의 공간이 너무나 안전하고 편안하다 보니, 역설적으로 관계를 처음 불태우던 소소한 변주나 설렘의 노력을 생략하게 될 수 있습니다.",
+      whenThriving: "이 역설을 이해하고 작은 이벤트나 다정한 말 한마디로 먼저 신호를 줄 때, 두 사람의 친밀감은 그 어느 때보다 깊고 단단해집니다.",
+      whenFriction: "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
+    },
+    sleepCompatibility: {
+      title: isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?",
+      personASensitivity: "moderate",
+      personBSensitivity: "low",
+      headline: "두 사람 모두 수면 환경에 비교적 무던하여 함께 잠드는 밤이 편안한 궁합",
+      narrative: "두 사람은 서로의 취침 템포가 잘 맞아 함께 잠드는 공간에서 피로를 잘 풀어냅니다.",
+      gentleGuide: "수면 환경은 더 예민하게 느끼는 사람의 편안한 기준에 맞추어 침실 조도를 낮추고 온도를 조율하는 것이 두 사람 모두의 활력을 지키는 다정한 지름길입니다.",
     },
   };
 }

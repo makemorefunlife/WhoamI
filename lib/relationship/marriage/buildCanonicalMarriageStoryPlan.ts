@@ -62,10 +62,10 @@ export function buildCanonicalMarriageStoryPlan(
     {
       chapterId: "c4_intimacy_bedroom",
       chapterNumber: "04",
-      title: isEn ? "How We Love & Build Intimacy" : "우리는 어떻게 사랑하고 가까워지는가",
+      title: isEn ? "Love, Physical Intimacy & Bedroom Story" : "사랑, 신체적 친밀감과 침실 이야기",
       userQuestion: isEn
-        ? "Do we recognize each other's love, and how do we draw close in emotional & physical intimacy?"
-        : "우리는 서로의 사랑을 제대로 알아보고 있을까? 그리고 둘만 있을 때 마음과 몸의 거리는 어떤 방식으로 가까워질까?",
+        ? "How do we send and receive love, and how do our hearts and bodies draw close when we are alone?"
+        : "우리는 사랑을 어떻게 주고받고, 둘만 있을 때 마음과 몸은 어떤 방식으로 가까워질까?",
       primaryOwnerMeanings: ["Love Transmission Channel", "Saju Pair Intimacy", "Bedroom Temperature"],
       secondaryRefMeanings: ["Desire Mismatch & Rejection"],
       summary: os.chapter04Intelligence

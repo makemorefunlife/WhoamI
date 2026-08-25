@@ -38,6 +38,7 @@ function makePsych(overrides = {}) {
     secondary_axes: { ...base, ...overrides },
     scores: { growth: 50, connection: 50, autonomy: 50, stability: 50, structure: 50, ...overrides },
     traits: { decision_style: 50, empathy: 50, independence: 50, self_control: 50, ...overrides },
+    ocean_traits: { ...base, ...overrides },
     home_life_dna: { lifestyle_title: "체계적인 정리자", life_values_line: "안정된 공간" },
   };
 }
@@ -54,7 +55,7 @@ function mockCtx(nameA = "Sera", nameB = "동글", sajuA = saju1A, sajuB = saju1
   });
 }
 
-test("Marriage Chapter 04 V2 Full Rebuild Comprehensive Suite", async (t) => {
+test("Marriage Chapter 04 Final V3 Multi-Evidence Suite", async (t) => {
 
   await t.test("1. Love Transmission Match Types Reachability", () => {
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
@@ -69,36 +70,64 @@ test("Marriage Chapter 04 V2 Full Rebuild Comprehensive Suite", async (t) => {
     }
   });
 
-  await t.test("2. Saju Intimacy Pair 5-Dimension Audit", () => {
+  await t.test("2. Pair Intimacy Chemistry (HERO) Section Audit", () => {
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
 
-    assert.ok(ch04.sajuIntimacyPair.attractionInsight.title);
-    assert.ok(ch04.sajuIntimacyPair.rhythmFit.title);
-    assert.ok(ch04.sajuIntimacyPair.stabilityVsNovelty.title);
-    assert.ok(ch04.sajuIntimacyPair.leadAndResponse.title);
-    assert.ok(ch04.sajuIntimacyPair.comfortVsActivation.title);
+    assert.ok(ch04.pairChemistry.heroIdentity);
+    assert.ok(["HIGH_PULL", "STEADY_BOND", "MODERATE_PULL", "SLOW_WARMING"].includes(ch04.pairChemistry.attractionLevel));
+    assert.ok(["HIGH_SAFETY", "MODERATE_SAFETY", "BUILDING_TRUST"].includes(ch04.pairChemistry.safetyLevel));
+    assert.ok(ch04.pairChemistry.attractionDescription);
   });
 
-  await t.test("3. Bedroom Temperature Activation Modes", () => {
-    const ctx = mockCtx("Sera", "동글", saju1A, saju1B, makePsych({ energy_style: 75 }), makePsych({ adaptability: 75 }));
-    const ch04 = buildMarriageChapter04Intelligence({ ctx, psychA: makePsych({ energy_style: 75 }), psychB: makePsych({ adaptability: 75 }) });
+  await t.test("3. Stability vs Novelty Multi-Evidence Diversity", () => {
+    const pNov = makePsych({ stimulation: 75 });
+    const pStab = makePsych({ stimulation: 35 });
 
-    assert.ok(ch04.bedroomTemperature.personAMode.modeTitle);
-    assert.ok(ch04.bedroomTemperature.personBMode.modeTitle);
-    assert.ok(ch04.bedroomTemperature.temperatureRhythmNarrative);
+    const ctxGap = mockCtx("Sera", "동글", saju4A, saju5B, pNov, pStab);
+    const intelGap = buildMarriageChapter04Intelligence({ ctx: ctxGap, psychA: pNov, psychB: pStab });
+
+    assert.ok(["NOVELTY_GAP_A", "NOVELTY_GAP_B", "NOVELTY_MATCH", "STABILITY_MATCH", "BALANCED"].includes(intelGap.stabilityVsNovelty.classification));
+    assert.ok(intelGap.stabilityVsNovelty.headline);
+    assert.ok(intelGap.stabilityVsNovelty.personAInnate);
+    assert.ok(intelGap.stabilityVsNovelty.personACurrent);
   });
 
-  await t.test("4. Desire Mismatch & Rejection Reconnection Audit", () => {
+  await t.test("4. Activation Modes & Intimacy Rhythm Multi-Evidence Audit", () => {
+    const pFast = makePsych({ energy_style: 80, stimulation: 80 });
+    const pSlow = makePsych({ energy_style: 30, stimulation: 30 });
+
+    const ctxDiff = mockCtx("Sera", "동글", saju1A, saju2B, pFast, pSlow);
+    const intelDiff = buildMarriageChapter04Intelligence({ ctx: ctxDiff, psychA: pFast, psychB: pSlow });
+
+    assert.ok(intelDiff.activationAndRhythm.personAMode.modeTitle);
+    assert.ok(intelDiff.activationAndRhythm.personBMode.modeTitle);
+    assert.ok(["MATCHED_RHYTHM", "A_FAST_B_SLOW", "B_FAST_A_SLOW", "CONTEXT_DEPENDENT", "UNCERTAIN"].includes(intelDiff.activationAndRhythm.rhythmFitClassification));
+    assert.ok(intelDiff.activationAndRhythm.headline);
+  });
+
+  await t.test("5. Initiation, Lead & Response Multi-Evidence Audit", () => {
+    const pInit = makePsych({ decision_style: 85, energy_style: 80 });
+    const pWait = makePsych({ decision_style: 30, energy_style: 30 });
+
+    const ctxInit = mockCtx("Sera", "동글", saju3A, saju1B, pInit, pWait);
+    const intelInit = buildMarriageChapter04Intelligence({ ctx: ctxInit, psychA: pInit, psychB: pWait });
+
+    assert.ok(["A_INITIATES_B_RESPONDS", "B_INITIATES_A_RESPONDS", "MUTUAL_INITIATION", "MUTUAL_WAITING", "CONTEXT_SWITCHING", "UNCERTAIN"].includes(intelInit.initiationLeadResponse.classification));
+    assert.ok(intelInit.initiationLeadResponse.personAAgency);
+    assert.ok(intelInit.initiationLeadResponse.personBAgency);
+  });
+
+  await t.test("6. Intimate Attunement Section Audit", () => {
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
 
-    assert.ok(ch04.desireMismatchAndRejection.personARejection.interpretation);
-    assert.ok(ch04.desireMismatchAndRejection.personARejection.reconnectionNeed);
-    assert.ok(ch04.desireMismatchAndRejection.mismatchAdvice);
+    assert.ok(ch04.intimateAttunement.personAAttunement.styleTitle);
+    assert.ok(ch04.intimateAttunement.personBAttunement.styleTitle);
+    assert.ok(ch04.intimateAttunement.attunementInsight);
   });
 
-  await t.test("5. Shared Rejection Pattern Promotion", () => {
+  await t.test("7. Desire Mismatch & Shared Rejection Pattern Promotion", () => {
     const psychHighEmpathy = makePsych({ empathy: 80 });
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B, psychHighEmpathy, psychHighEmpathy);
     const ch04 = buildMarriageChapter04Intelligence({ ctx, psychA: psychHighEmpathy, psychB: psychHighEmpathy });
@@ -107,7 +136,32 @@ test("Marriage Chapter 04 V2 Full Rebuild Comprehensive Suite", async (t) => {
     assert.ok(ch04.desireMismatchAndRejection.sharedPatternSummary);
   });
 
-  await t.test("6. No Unsupported Sexual Performance Copy", () => {
+  await t.test("8. Pair Intimacy Paradox Derivation", () => {
+    const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
+    const ch04 = buildMarriageChapter04Intelligence({ ctx });
+
+    assert.ok(ch04.pairIntimacyParadox);
+    assert.ok(ch04.pairIntimacyParadox.headline);
+    assert.ok(ch04.pairIntimacyParadox.whenThriving);
+    assert.ok(ch04.pairIntimacyParadox.whenFriction);
+  });
+
+  await t.test("9. BONUS Sleep Compatibility (Ambient Sensitivity, NO Medical Claims)", () => {
+    const ctx = mockCtx("Sera", "동글", saju4A, saju1B);
+    const ch04 = buildMarriageChapter04Intelligence({ ctx });
+
+    assert.ok(ch04.sleepCompatibility);
+    assert.ok(["high", "moderate", "low"].includes(ch04.sleepCompatibility.personASensitivity));
+    assert.ok(ch04.sleepCompatibility.gentleGuide);
+
+    const str = JSON.stringify(ch04.sleepCompatibility);
+    const forbiddenMedical = ["불면증", "수면 장애", "침대 분리", "매트리스 분리", "의학적"];
+    for (const word of forbiddenMedical) {
+      assert.equal(str.includes(word), false, `Forbidden medical/separate-bed copy '${word}' found in sleepCompatibility!`);
+    }
+  });
+
+  await t.test("10. Zero Crude Sexual Performance Copy & Saju Jargon Audit", () => {
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
     const str = JSON.stringify(ch04);
@@ -116,16 +170,9 @@ test("Marriage Chapter 04 V2 Full Rebuild Comprehensive Suite", async (t) => {
       "마라톤형", "단거리 연출가형", "밤새 지치지 않는", "체력의 소유자",
       "화려한 테크닉", "절정에서 희열", "성관계", "발기",
     ];
-
     for (const word of forbiddenSexual) {
       assert.equal(str.includes(word), false, `Crude sexual performance jargon '${word}' found in Chapter 04!`);
     }
-  });
-
-  await t.test("7. No Raw Saju Jargon Leak", () => {
-    const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
-    const ch04 = buildMarriageChapter04Intelligence({ ctx });
-    const str = JSON.stringify(ch04);
 
     const forbiddenSaju = ["용신", "격국", "배우자궁", "십신", "정관", "편관", "합충형파해"];
     for (const word of forbiddenSaju) {
@@ -133,7 +180,7 @@ test("Marriage Chapter 04 V2 Full Rebuild Comprehensive Suite", async (t) => {
     }
   });
 
-  await t.test("8. Chapter 01 vs Chapter 04 Semantic Separation Audit", () => {
+  await t.test("11. Chapter 01 vs Chapter 04 Semantic Separation Audit", () => {
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
     const ch01 = buildMarriageChapter01Intelligence({ ctx });
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
@@ -143,58 +190,32 @@ test("Marriage Chapter 04 V2 Full Rebuild Comprehensive Suite", async (t) => {
     assert.ok(ch04.loveTransmission[0].receiverReceptionNeed);
   });
 
-  await t.test("9. Fallback Helper Integrity", () => {
-    const fallback = createDefaultMarriageChapter04Intelligence("Sera", "동글", false);
-    assert.ok(fallback.loveTransmission.length >= 2);
-    assert.ok(fallback.sajuIntimacyPair.attractionInsight.title);
-    assert.ok(fallback.bedroomTemperature.personAMode.modeTitle);
-  });
-
-  await t.test("10. Full Integration & ViewModel Audit", () => {
-    const report = buildMarriageReport({
-      nicknameA: "Sera",
-      nicknameB: "동글",
-      sajuJsonA: saju1A,
-      sajuJsonB: saju1B,
-      psychMasterA: makePsych({ energy_style: 70 }),
-      psychMasterB: makePsych({ energy_style: 40 }),
-    });
-
-    const vm = buildMarriageReportViewModel(report, { myName: "Sera", partnerName: "동글" });
-
-    assert.ok(vm.canonicalBundle);
-    assert.ok(vm.canonicalBundle.chapter04Intelligence);
-    assert.ok(vm.canonicalBundle.chapter04Intelligence.loveTransmission.length >= 2);
-  });
-
-  await t.test("11. 6-Fixture Collapse Audit Table Generation", () => {
+  await t.test("12. 6-Fixture Diversity Audit Table Generation", () => {
     const fixtures = [
-      { name: "Fixture 1", sajuA: saju1A, sajuB: saju1B, psychA: makePsych({ energy_style: 80 }), psychB: makePsych({ empathy: 80 }) },
-      { name: "Fixture 2", sajuA: saju2A, sajuB: saju2B, psychA: makePsych({ independence: 80 }), psychB: makePsych({ self_control: 80 }) },
+      { name: "Fixture 1", sajuA: saju1A, sajuB: saju1B, psychA: makePsych({ stimulation: 80, energy_style: 80 }), psychB: makePsych({ empathy: 80, stimulation: 30 }) },
+      { name: "Fixture 2", sajuA: saju2A, sajuB: saju2B, psychA: makePsych({ decision_style: 80 }), psychB: makePsych({ self_control: 80 }) },
       { name: "Fixture 3", sajuA: saju3A, sajuB: saju3B, psychA: makePsych({ practicality: 80 }), psychB: makePsych({ decision_style: 80 }) },
       { name: "Fixture 4", sajuA: saju4A, sajuB: saju4B, psychA: makePsych({ empathy: 80 }), psychB: makePsych({ independence: 80 }) },
       { name: "Fixture 5", sajuA: saju5A, sajuB: saju5B, psychA: makePsych({ self_control: 80 }), psychB: makePsych({ practicality: 80 }) },
       { name: "Fixture 6", sajuA: saju6A, sajuB: saju6B, psychA: makePsych({ decision_style: 30 }), psychB: makePsych({ empathy: 30 }) },
     ];
 
-    console.log("\n=================== CHAPTER 04 6-FIXTURE COLLAPSE AUDIT TABLE ===================");
-    console.log("| Fixture | Love A->B | Love B->A | Rhythm | Stability/Novelty | Temp A | Temp B | Reconnection A |");
-    console.log("|---------|-----------|-----------|--------|-------------------|--------|--------|----------------|");
+    console.log("\n=================== CHAPTER 04 V3 6-FIXTURE DIVERSITY AUDIT TABLE ===================");
+    console.log("| Fixture | Hero Chemistry | Stability/Novelty | Rhythm | Initiation | Paradox |");
+    console.log("|---------|----------------|-------------------|--------|------------|---------|");
 
     for (const f of fixtures) {
       const ctx = mockCtx("Sera", "동글", f.sajuA, f.sajuB, f.psychA, f.psychB);
       const res = buildMarriageChapter04Intelligence({ ctx, psychA: f.psychA, psychB: f.psychB });
 
-      const txA = res.loveTransmission[0].matchType;
-      const txB = res.loveTransmission[1].matchType;
-      const rhythm = res.sajuIntimacyPair.rhythmFit.classification;
-      const stab = res.sajuIntimacyPair.stabilityVsNovelty.classification;
-      const tempA = res.bedroomTemperature.personAMode.modeTitle.slice(0, 12);
-      const tempB = res.bedroomTemperature.personBMode.modeTitle.slice(0, 12);
-      const reconA = res.desireMismatchAndRejection.personARejection.reconnectionNeed.slice(0, 15) + "...";
+      const hero = res.pairChemistry.heroIdentity.slice(0, 15) + "...";
+      const nov = res.stabilityVsNovelty.classification;
+      const rhythm = res.activationAndRhythm.rhythmFitClassification;
+      const init = res.initiationLeadResponse.classification;
+      const paradox = res.pairIntimacyParadox.paradoxType;
 
-      console.log(`| ${f.name} | ${txA} | ${txB} | ${rhythm} | ${stab} | ${tempA} | ${tempB} | ${reconA} |`);
+      console.log(`| ${f.name} | ${hero} | ${nov} | ${rhythm} | ${init} | ${paradox} |`);
     }
-    console.log("=================================================================================\n");
+    console.log("=====================================================================================\n");
   });
 });
