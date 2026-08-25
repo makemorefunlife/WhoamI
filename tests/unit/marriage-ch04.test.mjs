@@ -146,18 +146,18 @@ test("Marriage Chapter 04 Final V3 Multi-Evidence Suite", async (t) => {
     assert.ok(ch04.pairIntimacyParadox.whenFriction);
   });
 
-  await t.test("9. BONUS Sleep Compatibility (Ambient Sensitivity, NO Medical Claims)", () => {
+  await t.test("9. BONUS Sleep Compatibility (Pair Experience Overlay, NO Generic Advice)", () => {
     const ctx = mockCtx("Sera", "동글", saju4A, saju1B);
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
 
     assert.ok(ch04.sleepCompatibility);
     assert.ok(["high", "moderate", "low"].includes(ch04.sleepCompatibility.personASensitivity));
-    assert.ok(ch04.sleepCompatibility.gentleGuide);
+    assert.ok(ch04.sleepCompatibility.pairInterpretation);
 
     const str = JSON.stringify(ch04.sleepCompatibility);
-    const forbiddenMedical = ["불면증", "수면 장애", "침대 분리", "매트리스 분리", "의학적"];
-    for (const word of forbiddenMedical) {
-      assert.equal(str.includes(word), false, `Forbidden medical/separate-bed copy '${word}' found in sleepCompatibility!`);
+    const forbiddenMedicalOrAdvice = ["불면증", "수면 장애", "침대 분리", "매트리스 분리", "의학적", "수면 가이드", "수면 처방", "맞추세요"];
+    for (const word of forbiddenMedicalOrAdvice) {
+      assert.equal(str.includes(word), false, `Forbidden medical/advice copy '${word}' found in sleepCompatibility!`);
     }
   });
 

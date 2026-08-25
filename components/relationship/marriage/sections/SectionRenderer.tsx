@@ -1466,7 +1466,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
         <RelationshipReportInset className="space-y-2 border border-rel-line bg-rel-surface">
           <p className="text-xs font-bold text-rel-deep">{ch04.sleepCompatibility.headline}</p>
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.sleepCompatibility.narrative}</p>
-          <p className="text-xs font-medium text-v4-good border-t border-rel-line/60 pt-2">🌿 같이 잘 때 맞춰야 하는 포인트: {ch04.sleepCompatibility.gentleGuide}</p>
+          <p className="text-xs font-medium text-rel-ink border-t border-rel-line/60 pt-2">{ch04.sleepCompatibility.pairInterpretation}</p>
         </RelationshipReportInset>
       </div>
     </div>
