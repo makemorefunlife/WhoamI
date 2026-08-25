@@ -112,7 +112,7 @@ const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   { id: "c2_lifestyle_dna", number: "02", titleKo: "함께 살 때 각자의 라이프스타일과 기질", titleEn: "Life Style & Household DNA", types: ["psych_radar", "compare_table", "home_dna"] },
   { id: "c7_longterm_compounding", number: "03", titleKo: "함께 살수록 쌓이는 자산과 부채", titleEn: "Long-Term Compounding: Assets & Liabilities", types: [] },
   { id: "c4_intimacy_bedroom", number: "04", titleKo: "사랑, 신체적 친밀감과 침실 이야기", titleEn: "Physical Intimacy & Bedroom Chemistry", types: ["bedroom"] },
-  { id: "c3_household_os", number: "05", titleKo: "돈, 집안일, 보이지 않는 운영 책임", titleEn: "Household OS: Money, Chores & PM", types: ["money_chores"] },
+  { id: "c3_household_os", number: "05", titleKo: "돈, 생활력, 그리고 우리 집을 굴리는 방식", titleEn: "Household OS: Money, Life Competence & Mental Load", types: ["money_chores"] },
   { id: "c6_family_parenting_career", number: "06", titleKo: "원가족 경계와 자녀 양육", titleEn: "Family Boundary & Parenting", types: ["parenting", "family_boundary"] },
   { id: "c5_conflict_deescalation", number: "07", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
   { id: "c8_partnership_verdict", number: "08", titleKo: "부부 파트너십 최종 판정", titleEn: "Life Partnership Verdict", types: [] },
@@ -2097,7 +2097,7 @@ export function MarriageReportViewModelView({
                 title={isEn ? cDef.titleEn : cDef.titleKo}
                 accent={ACCENT}
               >
-                {summaryText && cDef.id !== "c2_lifestyle_dna" && cDef.id !== "c7_longterm_compounding" ? (
+                {summaryText && cDef.id !== "c2_lifestyle_dna" && cDef.id !== "c7_longterm_compounding" && cDef.id !== "c3_household_os" ? (
                   <RelationshipReportInset className="mb-4">
                     <p className="text-xs font-bold uppercase tracking-wider text-rel-taupe">
                       💡 {chOwnership?.userQuestion}
@@ -2110,13 +2110,6 @@ export function MarriageReportViewModelView({
 
                 {cDef.id === "c1_who_we_are" ? (
                   <ExpertVoiceBlock vm={vm.chapter1ExpertVoice} viewerIsReportA={viewerIsReportA} />
-                ) : null}
-
-                {cDef.id === "c3_household_os" ? (
-                  <>
-                    <EconomicPartnershipCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
-                    <RoleFitInsightBlock text={vm.chapter3RoleFitInsight} />
-                  </>
                 ) : null}
 
                 {cDef.id === "c4_intimacy_bedroom" ? (
