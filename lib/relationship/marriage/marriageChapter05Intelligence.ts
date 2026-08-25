@@ -44,6 +44,28 @@ export type WealthBuildingStyleSection = {
   pairSynergyInsight: string;
 };
 
+export type CrisisResilienceRoleKey = "REALITY_ORGANIZER" | "INCOME_EXPLORER" | "RISK_TAKER" | "ENDURANCE_HOLDER";
+
+export type PairCrisisResilienceRole = {
+  roleKey: CrisisResilienceRoleKey;
+  roleLabel: string;
+  personName: string;
+};
+
+export type IndividualLivelihoodProfile = {
+  personName: string;
+  editorialLabel: string;
+  narrative: string;
+};
+
+export type EconomicCrisisResilienceSection = {
+  title: string;
+  pairRoles: PairCrisisResilienceRole[];
+  oneLineSynthesis: string;
+  profileA: IndividualLivelihoodProfile;
+  profileB: IndividualLivelihoodProfile;
+};
+
 export type MoneyDecisionStepKey = "FIND" | "TRACK" | "CHECK" | "ACT" | "REVIEW";
 
 export type MoneyDecisionStep = {
@@ -69,21 +91,6 @@ export type FinancialOperationSection = {
   boundaryInsight?: string;
 };
 
-export type LifeCompetenceProfile = {
-  notice: string;
-  plan: string;
-  do: string;
-  maintain: string;
-  recover: string;
-};
-
-export type PracticalLifeCompetenceSection = {
-  title: string;
-  profileA: LifeCompetenceProfile;
-  profileB: LifeCompetenceProfile;
-  pairSynergyInsight: string;
-};
-
 export type HouseholdMapEnding = {
   title: string;
   moneyBehaviorSummary: string;
@@ -99,7 +106,7 @@ export type MarriageChapter05Intelligence = {
   wealthBuildingStyle: WealthBuildingStyleSection; // 03
   majorMoneyDecisions: MajorMoneyDecisionsSection; // 04
   financialOperation: FinancialOperationSection; // 05
-  practicalLifeCompetence: PracticalLifeCompetenceSection; // 06
+  economicCrisisResilience: EconomicCrisisResilienceSection; // 06
   householdMapEnding: HouseholdMapEnding; // ENDING
 };
 
@@ -375,29 +382,86 @@ export function buildMarriageChapter05Intelligence(params: {
   };
 
   // ---------------------------------------------------------------------------
-  // 06. PRACTICAL_LIFE_COMPETENCE
+  // 06. ECONOMIC_CRISIS_RESILIENCE (경제적 위기가 오면?)
   // ---------------------------------------------------------------------------
-  const profA: LifeCompetenceProfile = {
-    notice: (axesA.structure ?? 50) > 60 ? "집안의 필요한 일이나 정리가 필요한 부분을 즉각 포착" : "일상의 소소한 불편함을 부담 없이 편안하게 지켜봄",
-    plan: (axesA.structure ?? 50) > 60 ? "구체적인 일정과 동선을 머릿속에 미리 정리" : "상황에 맞춰 유연하고 자유롭게 움직이는 편",
-    do: (axesA.energy_style ?? 50) > 60 ? "해야 할 일이 생기면 미루지 않고 빠르게 집행" : "마음의 여유를 두고 차분히 하나씩 해결",
-    maintain: (axesA.self_control ?? 50) > 60 ? "정해진 가사 루틴과 생활 질서를 꾸준히 유지" : "상황에 따라 유연하게 원칙을 조율함",
-    recover: (axesA.adaptability ?? 50) > 60 ? "예상치 못한 가전 고장이나 변수 발생 시 즉각 수습" : "상대와 상의하며 차분하게 대안을 탐색",
+  const realA = (countsA["관성"] ?? 0) * 1.5 + (countsA["재성"] ?? 0) + (countsA["인성"] ?? 0) + ((axesA.practicality ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
+  const realB = (countsB["관성"] ?? 0) * 1.5 + (countsB["재성"] ?? 0) + (countsB["인성"] ?? 0) + ((axesB.practicality ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
+
+  const expA_res = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + (countsA["편재"] ?? 0) + ((axesA.adaptability ?? 50) > 55 ? 2 : 0) + ((axesA.growth ?? 50) > 55 ? 1.5 : 0);
+  const expB_res = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + (countsB["편재"] ?? 0) + ((axesB.adaptability ?? 50) > 55 ? 2 : 0) + ((axesB.growth ?? 50) > 55 ? 1.5 : 0);
+
+  const rskA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["편재"] ?? 0) + ((axesA.stimulation ?? 50) > 55 ? 2 : 0) + ((axesA.autonomy ?? 50) > 55 ? 1.5 : 0);
+  const rskB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["편재"] ?? 0) + ((axesB.stimulation ?? 50) > 55 ? 2 : 0) + ((axesB.autonomy ?? 50) > 55 ? 1.5 : 0);
+
+  const endA = (countsA["관성"] ?? 0) * 1.5 + (countsA["인성"] ?? 0) + ((axesA.resilience ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
+  const endB = (countsB["관성"] ?? 0) * 1.5 + (countsB["인성"] ?? 0) + ((axesB.resilience ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
+
+  const resolvePairPerson = (scoreA: number, scoreB: number): string => {
+    const diff = scoreA - scoreB;
+    if (diff >= 1.5) return nameA;
+    if (diff <= -1.5) return nameB;
+    if (Math.abs(diff) < 0.5) return "둘 다";
+    return "뚜렷한 우위 없음";
   };
 
-  const profB: LifeCompetenceProfile = {
-    notice: (axesB.structure ?? 50) > 60 ? "집안의 필요한 일이나 정리가 필요한 부분을 즉각 포착" : "일상의 소소한 불편함을 부담 없이 편안하게 지켜봄",
-    plan: (axesB.structure ?? 50) > 60 ? "구체적인 일정과 동선을 머릿속에 미리 정리" : "상황에 맞춰 유연하고 자유롭게 움직이는 편",
-    do: (axesB.energy_style ?? 50) > 60 ? "해야 할 일이 생기면 미루지 않고 빠르게 집행" : "마음의 여유를 두고 차분히 하나씩 해결",
-    maintain: (axesB.self_control ?? 50) > 60 ? "정해진 가사 루틴과 생활 질서를 꾸준히 유지" : "상황에 따라 유연하게 원칙을 조율함",
-    recover: (axesB.adaptability ?? 50) > 60 ? "예상치 못한 가전 고장이나 변수 발생 시 즉각 수습" : "상대와 상의하며 차분하게 대안을 탐색",
+  const pairRoles: PairCrisisResilienceRole[] = [
+    { roleKey: "REALITY_ORGANIZER", roleLabel: "먼저 현실을 정리하는 사람", personName: resolvePairPerson(realA, realB) },
+    { roleKey: "INCOME_EXPLORER", roleLabel: "새 수입원을 찾는 사람", personName: resolvePairPerson(expA_res, expB_res) },
+    { roleKey: "RISK_TAKER", roleLabel: "위험을 감수할 수 있는 사람", personName: resolvePairPerson(rskA, rskB) },
+    { roleKey: "ENDURANCE_HOLDER", roleLabel: "끝까지 버티는 사람", personName: resolvePairPerson(endA, endB) },
+  ];
+
+  const organizerPerson = pairRoles[0].personName;
+  const explorerPerson = pairRoles[1].personName;
+
+  let crisisOneLine = "";
+  if (organizerPerson !== explorerPerson && organizerPerson !== "둘 다" && explorerPerson !== "둘 다" && organizerPerson !== "뚜렷한 우위 없음" && explorerPerson !== "뚜렷한 우위 없음") {
+    crisisOneLine = "한 사람은 무너지지 않게 지키고, 다른 사람은 다시 올라갈 방법을 찾는 조합입니다.";
+  } else if (organizerPerson === "둘 다" || explorerPerson === "둘 다") {
+    crisisOneLine = "두 사람 모두 위기 시 현실 감각과 대처 의지가 강하여 경제적 압박을 함께 돌파해 나가는 파트너십입니다.";
+  } else {
+    crisisOneLine = "상황에 따라 두 사람이 기지개와 안정화 역할을 번갈아 나누며 경제적 기반을 수호하는 조화를 이룹니다.";
+  }
+
+  const buildIndividualProfile = (name: string, counts: Record<string, number>, axes: Record<string, number>): IndividualLivelihoodProfile => {
+    const resScore = (axes.resilience ?? 50) + (counts["관성"] ?? 0) * 10;
+    const adaptScore = (axes.adaptability ?? 50) + (counts["식상"] ?? 0) * 10;
+    const stimScore = (axes.stimulation ?? 50) + (counts["비겁"] ?? 0) * 10;
+    const pracScore = (axes.practicality ?? 50) + (counts["재성"] ?? 0) * 10;
+
+    if (resScore >= adaptScore && resScore >= stimScore && resScore >= pracScore) {
+      return {
+        personName: name,
+        editorialLabel: "책임지면 끝까지 버티는 생활력",
+        narrative: `${name}님은 경제적으로 압박이 생기면 현실을 먼저 정돈하고, 필요하다면 자신의 편안함을 미루면서까지 가정의 기반을 끝까지 지키려는 편입니다.`,
+      };
+    } else if (adaptScore >= stimScore && adaptScore >= pracScore) {
+      return {
+        personName: name,
+        editorialLabel: "방법을 바꿔 돌파하는 생활력",
+        narrative: `${name}님은 상황이 막혔을 때 한 가지 방식에 메이지 않고, 새로운 기회와 대안을 찾아 발 빠르게 경제적 수입 행동으로 전환하는 편입니다.`,
+      };
+    } else if (stimScore >= pracScore) {
+      return {
+        personName: name,
+        editorialLabel: "기회가 보이면 먼저 움직이는 생활력",
+        narrative: `${name}님은 위기 속에서도 주저앉지 않고 과감하게 새로운 시도를 통해 판을 바꾸려 움직이는 독립적인 추진력을 보입니다.`,
+      };
+    } else {
+      return {
+        personName: name,
+        editorialLabel: "위험부터 줄이고 기반을 지키는 생활력",
+        narrative: `${name}님은 지출을 타이트하게 조절하고 안정적인 자원 관리를 최우선으로 두어 경제적 충격을 최소화하는 정돈된 대응력을 가집니다.`,
+      };
+    }
   };
 
-  const practicalLifeCompetence: PracticalLifeCompetenceSection = {
-    title: isEn ? "06. Practical Life Competence" : "06. 같이 살아보면 드러나는 생활력",
-    profileA: profA,
-    profileB: profB,
-    pairSynergyInsight: `${nameA}님과 ${nameB}님은 각자 더 민감하게 반응하는 영역에서 생활력을 발휘하며, 서로의 부족한 실행력을 자연스럽게 메워주는 팀워크를 보여줍니다.`,
+  const economicCrisisResilience: EconomicCrisisResilienceSection = {
+    title: isEn ? "06. Economic Resilience Under Crisis" : "06. 경제적 위기가 오면?",
+    pairRoles,
+    oneLineSynthesis: crisisOneLine,
+    profileA: buildIndividualProfile(nameA, countsA, axesA),
+    profileB: buildIndividualProfile(nameB, countsB, axesB),
   };
 
   // ---------------------------------------------------------------------------
@@ -408,7 +472,7 @@ export function buildMarriageChapter05Intelligence(params: {
     moneyBehaviorSummary: `돈의 지출과 저축 기준: ${moneyBehavior.togetherInsight}`,
     wealthStyleSummary: `자산 형성 방향: ${wealthBuildingStyle.pairSynergyInsight}`,
     bigMoneyDecisionSummary: `대형 지출 결정: ${majorMoneyDecisions.oneLineSynthesis}`,
-    lifeCompetenceSummary: `일상 생활력 시너지: ${practicalLifeCompetence.pairSynergyInsight}`,
+    lifeCompetenceSummary: `위기 대응 생활력: ${economicCrisisResilience.oneLineSynthesis}`,
   };
 
   return {
@@ -420,7 +484,7 @@ export function buildMarriageChapter05Intelligence(params: {
     wealthBuildingStyle,
     majorMoneyDecisions,
     financialOperation,
-    practicalLifeCompetence,
+    economicCrisisResilience,
     householdMapEnding,
   };
 }
@@ -473,12 +537,15 @@ export function createDefaultMarriageChapter05Intelligence(params: {
       pairSynergyInsight: `${nameA}님과 ${nameB}님은 한 사람의 확장 욕구와 다른 한 사람의 리스크 제어 감각이 조화를 이루어 밸런스 있는 자산 형성이 가능합니다.`,
     },
     majorMoneyDecisions: {
-      title: isEn ? "04. Major Money Decisions" : "04. 큰돈 앞에서는 누가 액셀을 밟고, 누가 브레이크를 밟을까?",
-      optionProposer: `${nameB} (가능성 탐색)`,
-      numberChecker: `${nameA} (숫자 검토)`,
-      riskBrake: `${nameA} (안전판 역할)`,
-      commitPusher: `${nameB} (최종 결정)`,
-      decisionPatternSummary: "큰 돈을 지출할 때 한 쪽이 아이디어를 가져오면 다른 한 쪽이 현실적 예산과 리스크를 상호 검토한 뒤 실행에 옮기는 건강한 워크플로우를 가집니다.",
+      title: isEn ? "04. Major Money & Investment Decisions" : "04. 큰돈과 투자 기회 앞에서 우리는 어떻게 움직일까?",
+      steps: [
+        { stepKey: "FIND", stepLabel: "기회 찾기", actorName: nameB, confidence: "HIGH" },
+        { stepKey: "TRACK", stepLabel: "계속 지켜보기", actorName: nameA, confidence: "HIGH" },
+        { stepKey: "CHECK", stepLabel: "숫자·위험 확인", actorName: nameA, confidence: "HIGH" },
+        { stepKey: "ACT", stepLabel: "실제 실행", actorName: nameB, confidence: "HIGH" },
+        { stepKey: "REVIEW", stepLabel: "마지막 점검", actorName: nameA, confidence: "HIGH" },
+      ],
+      oneLineSynthesis: `${nameB}님이 기회를 열고 실제 행동으로 옮기면, ${nameA}님이 그 기회를 계속 추적하며 숫자와 위험을 확인하는 흐름에 가깝습니다.`,
     },
     financialOperation: {
       title: isEn ? "05. Financial Operation" : "05. 평소 돈 관리는 누가 더 자연스러울까?",
@@ -488,30 +555,32 @@ export function createDefaultMarriageChapter05Intelligence(params: {
       operationStyle: "역할 분담 및 공동 관리",
       operationInsight: "매월 고정 지출과 통장 흐름은 담당자를 명확히 두고, 정기적인 자산 현황 브리핑을 통해 투명성을 유지할 때 가장 잡음이 없습니다.",
     },
-    practicalLifeCompetence: {
-      title: isEn ? "06. Practical Life Competence" : "06. 같이 살아보면 드러나는 생활력",
+    economicCrisisResilience: {
+      title: isEn ? "06. Economic Resilience Under Crisis" : "06. 경제적 위기가 오면?",
+      pairRoles: [
+        { roleKey: "REALITY_ORGANIZER", roleLabel: "먼저 현실을 정리하는 사람", personName: nameA },
+        { roleKey: "INCOME_EXPLORER", roleLabel: "새 수입원을 찾는 사람", personName: nameB },
+        { roleKey: "RISK_TAKER", roleLabel: "위험을 감수할 수 있는 사람", personName: nameB },
+        { roleKey: "ENDURANCE_HOLDER", roleLabel: "끝까지 버티는 사람", personName: nameA },
+      ],
+      oneLineSynthesis: "한 사람은 무너지지 않게 지키고, 다른 사람은 다시 올라갈 방법을 찾는 조합입니다.",
       profileA: {
-        notice: "집안의 필요한 일이나 정리가 필요한 부분을 즉각 포착",
-        plan: "구체적인 일정과 동선을 머릿속에 미리 정리",
-        do: "차분하게 하나씩 순서대로 해결",
-        maintain: "정해진 가사 루틴과 생활 질서를 꾸준히 유지",
-        recover: "상대와 상의하며 차분하게 대안을 탐색",
+        personName: nameA,
+        editorialLabel: "책임지면 끝까지 버티는 생활력",
+        narrative: `${nameA}님은 경제적으로 압박이 생기면 현실을 먼저 정돈하고, 필요하다면 자신의 편안함을 미루면서까지 가정의 기반을 끝까지 지키려는 편입니다.`,
       },
       profileB: {
-        notice: "일상의 소소한 불편함을 부담 없이 편안하게 지켜봄",
-        plan: "상황에 맞춰 유연하고 자유롭게 움직이는 편",
-        do: "해야 할 일이 생기면 미루지 않고 빠르게 집행",
-        maintain: "상황에 따라 유연하게 원칙을 조율함",
-        recover: "예상치 못한 가전 고장이나 변수 발생 시 즉각 수습",
+        personName: nameB,
+        editorialLabel: "방법을 바꿔 돌파하는 생활력",
+        narrative: `${nameB}님은 상황이 막혔을 때 한 가지 방식에 메이지 않고, 새로운 기회와 대안을 찾아 발 빠르게 경제적 수입 행동으로 전환하는 편입니다.`,
       },
-      pairSynergyInsight: `${nameA}님과 ${nameB}님은 각자 더 민감하게 반응하는 영역에서 생활력을 발휘하며, 서로의 부족한 실행력을 자연스럽게 메워주는 팀워크를 보여줍니다.`,
     },
     householdMapEnding: {
       title: isEn ? "Ending. Household Summary Map" : "우리 집 운영 한눈에 보기",
       moneyBehaviorSummary: "돈의 지출과 저축 기준: 예산을 '미래 자산'과 '오늘의 즐거움'으로 분리하여 운용",
       wealthStyleSummary: `자산 형성 방향: ${nameA}님의 리스크 제어와 ${nameB}님의 자산 확장이 조화를 이룸`,
       bigMoneyDecisionSummary: `대형 지출 결정: ${nameB}님이 기회를 열고 ${nameA}님이 점검하며 조화를 이루는 워크플로우`,
-      lifeCompetenceSummary: "일상 생활력 시너지: 각자 강점이 있는 집안일 영역에서 주도성 발휘",
+      lifeCompetenceSummary: "위기 대응 생활력: 한 사람은 무너지지 않게 지키고, 다른 사람은 다시 올라갈 방법을 찾는 조합",
     },
   };
 }

@@ -669,33 +669,74 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
         </RelationshipReportInset>
       </div>
 
-      {/* 06. PRACTICAL_LIFE_COMPETENCE */}
-      <div className="space-y-3 pt-1">
-        <SubHeading title={ch05.practicalLifeCompetence.title} tone="coral" />
-        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
-          <div className="grid gap-3 text-xs sm:grid-cols-2">
-            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">{nameA} 생활력 체감</span>
-              <p className="text-rel-ink-soft text-[11px]"><b>알아차림:</b> {ch05.practicalLifeCompetence.profileA.notice}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>계획:</b> {ch05.practicalLifeCompetence.profileA.plan}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>실행:</b> {ch05.practicalLifeCompetence.profileA.do}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>유지:</b> {ch05.practicalLifeCompetence.profileA.maintain}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>수습:</b> {ch05.practicalLifeCompetence.profileA.recover}</p>
-            </div>
-            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">{nameB} 생활력 체감</span>
-              <p className="text-rel-ink-soft text-[11px]"><b>알아차림:</b> {ch05.practicalLifeCompetence.profileB.notice}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>계획:</b> {ch05.practicalLifeCompetence.profileB.plan}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>실행:</b> {ch05.practicalLifeCompetence.profileB.do}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>유지:</b> {ch05.practicalLifeCompetence.profileB.maintain}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>수습:</b> {ch05.practicalLifeCompetence.profileB.recover}</p>
-            </div>
+      {/* 06. ECONOMIC_CRISIS_RESILIENCE */}
+      {(() => {
+        const crisis = ch05.economicCrisisResilience ?? {
+          title: "06. 경제적 위기가 오면?",
+          pairRoles: [
+            { roleKey: "REALITY_ORGANIZER", roleLabel: "먼저 현실을 정리하는 사람", personName: nameA },
+            { roleKey: "INCOME_EXPLORER", roleLabel: "새 수입원을 찾는 사람", personName: nameB },
+            { roleKey: "RISK_TAKER", roleLabel: "위험을 감수할 수 있는 사람", personName: nameB },
+            { roleKey: "ENDURANCE_HOLDER", roleLabel: "끝까지 버티는 사람", personName: nameA },
+          ],
+          oneLineSynthesis: "한 사람은 무너지지 않게 지키고, 다른 사람은 다시 올라갈 방법을 찾는 조합입니다.",
+          profileA: {
+            personName: nameA,
+            editorialLabel: "책임지면 끝까지 버티는 생활력",
+            narrative: `${nameA}님은 경제적으로 압박이 생기면 현실을 먼저 정돈하고, 필요하다면 자신의 편안함을 미루면서까지 가정의 기반을 끝까지 지키려는 편입니다.`,
+          },
+          profileB: {
+            personName: nameB,
+            editorialLabel: "방법을 바꿔 돌파하는 생활력",
+            narrative: `${nameB}님은 상황이 막혔을 때 한 가지 방식에 메이지 않고, 새로운 기회와 대안을 찾아 발 빠르게 경제적 수입 행동으로 전환하는 편입니다.`,
+          },
+        };
+
+        return (
+          <div className="space-y-3 pt-1">
+            <SubHeading title={crisis.title} tone="coral" />
+            <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-4 p-4 rounded-xl">
+              <div className="space-y-2 text-xs">
+                {crisis.pairRoles.map((role) => (
+                  <div key={role.roleKey} className="flex justify-between items-center bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                    <span className="font-bold text-rel-ink">{role.roleLabel}</span>
+                    <span className="font-bold text-rel-deep">{role.personName}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-rel-line/60 pt-3 space-y-1">
+                <span className="text-xs font-bold text-v4-good block">한 줄 해석</span>
+                <p className="text-xs leading-relaxed text-rel-ink font-medium">
+                  {crisis.oneLineSynthesis}
+                </p>
+              </div>
+
+              <div className="border-t border-rel-line/60 pt-3 space-y-3">
+                <span className="text-xs font-bold text-rel-taupe block">각자의 생활력</span>
+                <div className="grid gap-3 sm:grid-cols-2 text-xs">
+                  <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+                    <span className="font-bold text-rel-deep block">
+                      {crisis.profileA.personName} | <span className="text-v4-good">{crisis.profileA.editorialLabel}</span>
+                    </span>
+                    <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                      {crisis.profileA.narrative}
+                    </p>
+                  </div>
+                  <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+                    <span className="font-bold text-rel-deep block">
+                      {crisis.profileB.personName} | <span className="text-v4-good">{crisis.profileB.editorialLabel}</span>
+                    </span>
+                    <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                      {crisis.profileB.narrative}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </RelationshipReportInset>
           </div>
-          <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
-            {ch05.practicalLifeCompetence.pairSynergyInsight}
-          </p>
-        </RelationshipReportInset>
-      </div>
+        );
+      })()}
 
       {/* ENDING. HOUSEHOLD_MAP */}
       <div className="space-y-3 pt-2">
