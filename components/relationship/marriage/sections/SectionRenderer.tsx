@@ -115,9 +115,7 @@ const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   { id: "c3_household_os", number: "05", titleKo: "돈, 생활력, 그리고 우리 집을 굴리는 방식", titleEn: "Household OS: Money, Life Competence & Mental Load", types: ["money_chores"] },
   { id: "c6_family_parenting_career", number: "06", titleKo: "둘을 넘어 가족이 되면 어떤 시스템이 되는가?", titleEn: "Family System & Parenting", types: ["parenting", "family_boundary"] },
   { id: "c5_conflict_deescalation", number: "07", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
-  { id: "c8_partnership_verdict", number: "08", titleKo: "부부 파트너십 최종 판정", titleEn: "Life Partnership Verdict", types: [] },
-  { id: "c9_next_chapter_rituals", number: "09", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: ["upset", "prescription", "privacy"] },
-  { id: "c10_weather_forecast", number: "10", titleKo: "향후 3년의 홈 리스크 기상도", titleEn: "Your 3-Year Home Risk Forecast", types: ["weather_forecast"] },
+  { id: "c9_next_chapter_rituals", number: "08", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: ["upset", "privacy", "prescription"] },
 ];
 
 // 레거시 폴백(canonicalStoryPlan 없는 옛 캐시 리포트) — 하드코딩 특수 블록
@@ -1076,28 +1074,7 @@ function FamilyBoundaryCard({ section }: { section: FamilyBoundarySection }) {
 }
 
 function WeatherForecastCard({ section }: { section: WeatherForecastSection }) {
-  return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportParagraph>{section.forecast.summary_line}</RelationshipReportParagraph>
-      <ul className="mt-4 space-y-3">
-        {section.forecast.years.map((y) => {
-          const weather = WEATHER_ICON[y.level] ?? WEATHER_ICON.cloudy!;
-          const WeatherIcon = weather.Icon;
-          return (
-          <li key={y.year} className="rounded-xl border border-rel-line bg-rel-surface px-4 py-3">
-            <p className="flex items-center gap-1.5 text-sm font-semibold text-rel-ink">
-              <WeatherIcon className={`h-4 w-4 ${weather.className}`} strokeWidth={1.75} aria-hidden />
-              {y.year_label} — {y.weather_label}
-            </p>
-            {y.advisory ? (
-              <RelationshipReportParagraph className="mt-1.5 text-rel-ink-soft">{y.advisory}</RelationshipReportParagraph>
-            ) : null}
-          </li>
-          );
-        })}
-      </ul>
-    </RelationshipReportCard>
-  );
+  return null;
 }
 
 // ---- Part 5: 부부싸움 해독제 + 실전 처방 -------------------------------------
@@ -1191,6 +1168,16 @@ function WarningCard({ section }: { section: WarningSection }) {
           <RelationshipReportParagraph className="mt-2 italic text-v4-good">
             <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-v4-good" strokeWidth={1.75} aria-hidden /> {section.deEscalation.person_b.solution_script}
           </RelationshipReportParagraph>
+        </RelationshipReportInset>
+
+        <RelationshipReportInset className="mt-3 border border-v4-good/30 bg-v4-good-soft/30 space-y-1.5">
+          <p className="text-xs font-bold text-v4-good">🤝 함께 해볼 것</p>
+          <p className="text-xs text-rel-ink leading-relaxed">
+            우리의 가사와 재정 운영에서 서로의 역할과 기대가 다르게 잡히고 있어요. 매주 점검하는 습관을 만들면 서로의 부담을 줄일 수 있을 것 같아요. 각자의 강점을 살려 나가면 더 나은 운영이 가능할 거예요.
+          </p>
+          <p className="text-xs font-medium text-v4-good italic pt-1">
+            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-v4-good" strokeWidth={1.75} aria-hidden /> “이번 주 가사·지출 온도를 묻는 대화를 해보자.”
+          </p>
         </RelationshipReportInset>
         <div>
           <RelationshipReportLabel>{t.coldWarGoldenTimeLabel}</RelationshipReportLabel>
@@ -1401,145 +1388,7 @@ function getMatchBadge(matchType: string, isEn: boolean) {
 }
 
 function Chapter07SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
-  const ch03 = bundle?.chapter03Intelligence ?? createDefaultMarriageChapter03Intelligence(names[0], names[1], isEn);
-
-  return (
-    <div className="space-y-8">
-      {/* Intro Question Inset */}
-      <RelationshipReportInset className="bg-rel-taupe-soft/40 border border-rel-line">
-        <p className="text-xs font-semibold leading-relaxed text-rel-ink">
-          {ch03.introQuestion}
-        </p>
-      </RelationshipReportInset>
-
-      {/* SECTION 1: Relationship Assets */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Long-Term Relationship Assets" : "시간이 갈수록 더 좋아지는 것"} tag="Assets" tone="coral" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {ch03.assets.map((asset, i) => (
-            <RelationshipReportInset key={i} className="border border-v4-good/30 bg-v4-good-soft/30 space-y-2">
-              <p className="font-bold text-sm text-v4-good">{asset.title}</p>
-              <p className="text-xs leading-relaxed text-rel-ink-soft">{asset.mechanism}</p>
-              <p className="text-xs font-medium leading-relaxed text-rel-ink border-t border-v4-good/20 pt-2">{asset.longTermValue}</p>
-            </RelationshipReportInset>
-          ))}
-        </div>
-      </div>
-
-      {/* SECTION 2: Hidden Partner Expectations */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Hidden Partner Expectations" : "왜 나는 자꾸 이걸 바라게 될까"} tag="Expectations" tone="deep" />
-        <div className="space-y-3">
-          {ch03.hiddenExpectations.map((exp, i) => {
-            const badge = getMatchBadge(exp.matchType, isEn);
-            return (
-              <RelationshipReportInset key={i} className="space-y-2">
-                <div className="flex items-center justify-between border-b border-rel-line pb-2 mb-1">
-                  <span className="text-xs font-bold text-rel-deep">{exp.seekerName} ➔ {exp.partnerName}</span>
-                  <span className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${badge.className}`}>{badge.label}</span>
-                </div>
-                <p className="text-xs font-bold text-rel-ink">{exp.functionLabel}</p>
-                <p className="text-xs leading-relaxed text-rel-ink-soft">{exp.whyItMatters}</p>
-                <p className="text-xs font-medium leading-relaxed text-rel-ink bg-rel-surface p-2.5 rounded-lg border border-rel-line">{exp.matchStatusNarrative}</p>
-                {exp.expectationInsight ? (
-                  <p className="text-[11px] leading-relaxed text-rel-taupe pt-1">💡 {exp.expectationInsight}</p>
-                ) : null}
-              </RelationshipReportInset>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* SECTION 3: Asset -> Debt Causal Chains */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Asset to Debt Causal Chain" : "처음에는 장점인데, 오래되면 힘들 수 있는 것"} tag="Flip Chain" tone="coral" />
-        <div className="space-y-3">
-          {ch03.assetToDebtChains.map((chain, i) => (
-            <RelationshipReportInset key={i} className="space-y-2">
-              <p className="text-xs font-bold text-rel-ink">{chain.title}</p>
-              <div className="grid gap-2 text-xs text-rel-ink-soft sm:grid-cols-3 pt-1">
-                <div className="bg-v4-good-soft/40 p-2.5 rounded-lg border border-v4-good/20">
-                  <span className="font-semibold text-v4-good block mb-1">처음에는</span>
-                  {chain.initialBenefit}
-                </div>
-                <div className="bg-rel-taupe-soft/40 p-2.5 rounded-lg border border-rel-line">
-                  <span className="font-semibold text-rel-taupe block mb-1">반복되면</span>
-                  {chain.repeatedReinforcement}
-                </div>
-                <div className="bg-v4-bad-soft/40 p-2.5 rounded-lg border border-v4-bad/20">
-                  <span className="font-semibold text-v4-bad block mb-1">부담이 되는 순간</span>
-                  {chain.flipCondition}
-                </div>
-              </div>
-            </RelationshipReportInset>
-          ))}
-        </div>
-      </div>
-
-      {/* SECTION 4: Role Lock-In */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Role Lock-In" : "우리도 모르게 굳어지는 역할"} tag="Roles" tone="deep" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <RelationshipReportInset className="space-y-2">
-            <p className="text-xs font-bold text-v4-a">{ch03.roleLockIn.personARole.personName}: {ch03.roleLockIn.personARole.roleTitle}</p>
-            <p className="text-xs leading-relaxed text-rel-ink-soft">{ch03.roleLockIn.personARole.whyFormed}</p>
-            <p className="text-xs text-v4-good">도움이 될 때: {ch03.roleLockIn.personARole.helpfulWhen}</p>
-            <p className="text-xs text-v4-bad">너무 굳어졌을 때: {ch03.roleLockIn.personARole.riskWhenLocked}</p>
-          </RelationshipReportInset>
-          <RelationshipReportInset className="space-y-2">
-            <p className="text-xs font-bold text-v4-b">{ch03.roleLockIn.personBRole.personName}: {ch03.roleLockIn.personBRole.roleTitle}</p>
-            <p className="text-xs leading-relaxed text-rel-ink-soft">{ch03.roleLockIn.personBRole.whyFormed}</p>
-            <p className="text-xs text-v4-good">도움이 될 때: {ch03.roleLockIn.personBRole.helpfulWhen}</p>
-            <p className="text-xs text-v4-bad">너무 굳어졌을 때: {ch03.roleLockIn.personBRole.riskWhenLocked}</p>
-          </RelationshipReportInset>
-        </div>
-      </div>
-
-      {/* SECTION 5: Accumulated Relational Load */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Accumulated Relational Load" : "누가 언제 먼저 지칠까"} tag="Load Balance" tone="coral" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <RelationshipReportInset className="space-y-2 border border-v4-bad/30 bg-v4-bad-soft/20">
-            <p className="text-xs font-bold text-v4-bad">{ch03.accumulatedLoad.personALoad.personName}님이 느끼기 쉬운 부담</p>
-            <p className="text-xs font-medium text-rel-ink">{ch03.accumulatedLoad.personALoad.laborType}</p>
-            <p className="text-xs leading-relaxed text-rel-ink-soft">{ch03.accumulatedLoad.personALoad.whyCostly}</p>
-            <p className="text-xs text-v4-bad/80">신호: {ch03.accumulatedLoad.personALoad.earlyWarningSign}</p>
-          </RelationshipReportInset>
-          <RelationshipReportInset className="space-y-2 border border-v4-bad/30 bg-v4-bad-soft/20">
-            <p className="text-xs font-bold text-v4-bad">{ch03.accumulatedLoad.personBLoad.personName}님이 느끼기 쉬운 부담</p>
-            <p className="text-xs font-medium text-rel-ink">{ch03.accumulatedLoad.personBLoad.laborType}</p>
-            <p className="text-xs leading-relaxed text-rel-ink-soft">{ch03.accumulatedLoad.personBLoad.whyCostly}</p>
-            <p className="text-xs text-v4-bad/80">신호: {ch03.accumulatedLoad.personBLoad.earlyWarningSign}</p>
-          </RelationshipReportInset>
-        </div>
-      </div>
-
-      {/* SECTION 6: Asset/Debt Flip Table */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Asset / Debt Flip Points" : "우리의 자산이 부채로 바뀌는 순간"} tag="Flip Matrix" tone="coral" />
-        <div className="overflow-x-auto rounded-xl border border-rel-line bg-rel-surface p-3 text-xs">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-rel-line text-rel-ink-mute">
-                <th className="py-2.5 px-3 font-semibold">우리의 특징</th>
-                <th className="py-2.5 px-3 font-semibold text-v4-good">자산으로 작동할 때</th>
-                <th className="py-2.5 px-3 font-semibold text-v4-bad">부채로 바뀌는 순간</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-rel-line text-rel-ink-soft">
-              {ch03.flipTableRows.map((row, i) => (
-                <tr key={i}>
-                  <td className="py-2.5 px-3 font-medium text-rel-ink">{row.feature}</td>
-                  <td className="py-2.5 px-3 text-v4-good">{row.whenAsset}</td>
-                  <td className="py-2.5 px-3 text-v4-bad">{row.whenDebt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 function MarriageChapter09SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
@@ -1566,10 +1415,10 @@ function MarriageChapter09SubstantiveCard({ bundle, names, isEn }: { bundle?: Ma
       {/* Long-Term Protection Rules */}
       <div className="space-y-3">
         <SubHeading title={isEn ? "Long-Term Protection Rules" : "오래 함께할수록 지켜야 할 것"} tag="Protection" tone="deep" />
-        <RelationshipReportInset className="space-y-2 border border-v4-good/40 bg-v4-good-soft/30">
-          <p className="text-xs leading-relaxed text-rel-ink"><span className="font-bold text-v4-good">지켜야 할 자산:</span> {ch03.protection.assetToProtect}</p>
-          <p className="text-xs leading-relaxed text-rel-ink"><span className="font-bold text-rel-taupe">재협상할 역할:</span> {ch03.protection.roleToRenegotiate}</p>
-          <p className="text-xs leading-relaxed text-rel-ink"><span className="font-bold text-v4-good">알아줘야 할 노력:</span> {ch03.protection.effortToAppreciate}</p>
+        <RelationshipReportInset className="space-y-2.5 border border-v4-good/40 bg-v4-good-soft/30 p-4 rounded-xl text-xs">
+          <p className="leading-relaxed text-rel-ink"><span className="font-bold text-v4-good">우리가 꼭 지켜야 할 가치:</span> {ch03.protection.assetToProtect}</p>
+          <p className="leading-relaxed text-rel-ink"><span className="font-bold text-rel-taupe">서로 유연하게 맞춰갈 부분:</span> {ch03.protection.roleToRenegotiate}</p>
+          <p className="leading-relaxed text-rel-ink"><span className="font-bold text-v4-good">잊지 않고 고마워할 노력:</span> {ch03.protection.effortToAppreciate}</p>
         </RelationshipReportInset>
       </div>
     </div>
@@ -1809,46 +1658,7 @@ function LifePartnershipVerdictCard({
   names: [string, string];
   isEn: boolean;
 }) {
-  if (!view) return null;
-  const { lifeSyncPct, operatingStatusLabel, emotionalPartnerFit, longTermGrowthFit, oneLineVerdict, greatestStrength, biggestVulnerability } = view;
-  const fitSuffix = isEn ? "" : "점";
-
-  return (
-    <RelationshipReportCard title={isEn ? "🏆 Life Partnership Verdict" : "🏆 부부 파트너십 최종 판정"} accentColor={ACCENT}>
-      <div className="rounded-lg border border-v4-good/40 bg-v4-good-soft p-5 text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-v4-good">Life Partnership Sync Score</p>
-        <p className="mt-1 text-4xl font-extrabold text-rel-ink">{lifeSyncPct}<span className="text-lg font-normal text-v4-good/80">%</span></p>
-        <p className="mt-3 text-base font-bold text-v4-good">{oneLineVerdict}</p>
-      </div>
-
-      <div className="mt-5 grid gap-3 sm:grid-cols-3 text-center text-xs">
-        <div className="rounded-lg bg-rel-surface p-3 border border-rel-line">
-          <p className="text-rel-ink-mute font-medium">{isEn ? "Household-Operating Fit" : "가정 운영 적합성"}</p>
-          <p className="mt-1.5 text-xs font-bold leading-snug text-v4-a">{operatingStatusLabel}</p>
-        </div>
-        <div className="rounded-lg bg-rel-surface p-3 border border-rel-line">
-          <p className="text-rel-ink-mute font-medium">{isEn ? "Emotional Connection Fit" : "정서 교감 적합성"}</p>
-          <p className="mt-1 text-base font-bold text-v4-good">{`${emotionalPartnerFit}${fitSuffix}`}</p>
-        </div>
-        <div className="rounded-lg bg-rel-surface p-3 border border-rel-line">
-          <p className="text-rel-ink-mute font-medium">{isEn ? "Long-Term Growth Fit" : "장기 성장 적합성"}</p>
-          <p className="mt-1 text-base font-bold text-rel-taupe">{`${longTermGrowthFit}${fitSuffix}`}</p>
-        </div>
-      </div>
-
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <RelationshipReportInset>
-          <p className="font-bold text-v4-good">✨ {isEn ? "Your Greatest Strength" : "우리 부부의 가장 큰 결합력"}</p>
-          <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">{greatestStrength}</p>
-        </RelationshipReportInset>
-
-        <RelationshipReportInset>
-          <p className="font-bold text-v4-bad">⚠️ {isEn ? "Biggest Vulnerability" : "관계의 안정감을 흔드는 가장 큰 취약점"}</p>
-          <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">{biggestVulnerability}</p>
-        </RelationshipReportInset>
-      </div>
-    </RelationshipReportCard>
-  );
+  return null;
 }
 
 function MarriageActionPlaybookCard({ names, isEn }: { names: [string, string]; isEn: boolean }) {
@@ -1857,27 +1667,6 @@ function MarriageActionPlaybookCard({ names, isEn }: { names: [string, string]; 
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
           <p className="font-bold text-v4-good">✅ {isEn ? "Try this now (Do)" : "지금 당장 해볼 것"}</p>
-          <ul className="mt-2 space-y-1.5 text-xs text-rel-ink">
-            {isEn ? (
-              <>
-                <li>• Once a month, check in on whether the chore/finance roles you agreed on are actually holding up</li>
-                <li>• Give immediate emotional feedback ("thank you") for your partner's planning/tidying effort</li>
-                <li>• Take 24 hours to think it over and reach mutual agreement before big purchases</li>
-                <li>• If a fight passes 15 minutes, declare a timeout keyword and cool down for 20 minutes</li>
-              </>
-            ) : (
-              <>
-                <li>• 한 달에 한 번, 정한 가사·재정 역할이 실제로 잘 지켜지고 있는지 서로 점검하기</li>
-                <li>• 상대의 기획/정리 노고에 "고마워" 즉시 정서적 피드백 주기</li>
-                <li>• 대형 지출 전에는 24시간 생각 정리 후 상호 합의 거치기</li>
-                <li>• 싸움이 15분을 넘어가면 타임아웃 키워드 선언 후 20분 쿨링다운하기</li>
-              </>
-            )}
-          </ul>
-        </RelationshipReportInset>
-
-        <RelationshipReportInset>
-          <p className="font-bold text-v4-bad">🚫 {isEn ? "Never do this (Don't)" : "절대 하지 말 것"}</p>
           <ul className="mt-2 space-y-1.5 text-xs text-rel-ink">
             {isEn ? (
               <>
@@ -2273,22 +2062,10 @@ export function MarriageReportViewModelView({
                   <ConflictSubstantiveCard view={vm.conflict4StageView} bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
-                {cDef.id === "c7_longterm_compounding" ? (
-                  <Chapter07SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
-                ) : null}
-
-                {cDef.id === "c8_partnership_verdict" ? (
-                  <>
-                    <LifePartnershipVerdictCard view={vm.lifePartnershipVerdictView} names={vm.opening.names} isEn={isEn} />
-                    <TogetherInsightBlock vm={vm.chapter8TogetherInsight} />
-                  </>
-                ) : null}
-
                 {cDef.id === "c9_next_chapter_rituals" ? (
                   <>
                     <MarriageChapter09SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
                     <MarriageActionPlaybookCard names={vm.opening.names} isEn={isEn} />
-                    <PersonalizedAdviceBlock vm={vm.chapter9PersonalizedAdvice} canonicalNames={vm.canonicalNames} viewerIsReportA={viewerIsReportA} />
                   </>
                 ) : null}
 
