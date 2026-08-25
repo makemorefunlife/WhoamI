@@ -738,18 +738,6 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
         );
       })()}
 
-      {/* ENDING. HOUSEHOLD_MAP */}
-      <div className="space-y-3 pt-2">
-        <SubHeading title={ch05.householdMapEnding.title} tone="deep" />
-        <RelationshipReportInset className="border border-v4-good/40 bg-v4-good-soft/30 space-y-2 p-4 rounded-xl">
-          <ul className="text-xs space-y-1.5 text-rel-ink font-medium">
-            <li>• {ch05.householdMapEnding.moneyBehaviorSummary}</li>
-            <li>• {ch05.householdMapEnding.wealthStyleSummary}</li>
-            <li>• {ch05.householdMapEnding.bigMoneyDecisionSummary}</li>
-            <li>• {ch05.householdMapEnding.lifeCompetenceSummary}</li>
-          </ul>
-        </RelationshipReportInset>
-      </div>
     </div>
   );
 }
