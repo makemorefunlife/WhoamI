@@ -175,11 +175,11 @@ export type SleepSensitivityLevel = "high" | "moderate" | "low";
 
 export type SleepCompatibilitySection = {
   title: string;
+  pairInterpretation: string;
   personASensitivity: SleepSensitivityLevel;
   personBSensitivity: SleepSensitivityLevel;
-  headline: string;
-  narrative: string;
-  pairInterpretation: string;
+  confidence: "HIGH" | "MODERATE" | "LOW";
+  isSupported: boolean;
 };
 
 export type MarriageChapter04Intelligence = {
@@ -769,38 +769,45 @@ export function buildMarriageChapter04Intelligence(params: {
     whenFriction: "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
   };
 
-  // BONUS SECTION 09: Sleep Compatibility (Pure Pair Experience Overlay, NO Generic Advice)
-  const sensAScore = (sigA.hasNakedFire ? 1 : 0) + (sigA.hasGuimun ? 2 : 0);
-  const sensBScore = (sigB.hasNakedFire ? 1 : 0) + (sigB.hasGuimun ? 2 : 0);
+  // BONUS SECTION 09: Sleep Compatibility (Single Sentence Pair Interpretation, CONFIDENCE GATE OMIT)
+  const hasAEvid = sigA.hasNakedFire || sigA.hasGuimun || (psychA?.secondary_axes?.stimulation !== undefined);
+  const hasBEvid = sigB.hasNakedFire || sigB.hasGuimun || (psychB?.secondary_axes?.stimulation !== undefined);
+
+  const sensAScore = (sigA.hasNakedFire ? 1 : 0) + (sigA.hasGuimun ? 2 : 0) + ((psychA?.secondary_axes?.stimulation ?? 50) > 60 ? 1 : 0);
+  const sensBScore = (sigB.hasNakedFire ? 1 : 0) + (sigB.hasGuimun ? 2 : 0) + ((psychB?.secondary_axes?.stimulation ?? 50) > 60 ? 1 : 0);
 
   const sensA: SleepSensitivityLevel = sensAScore >= 2 ? "high" : sensAScore === 1 ? "moderate" : "low";
   const sensB: SleepSensitivityLevel = sensBScore >= 2 ? "high" : sensBScore === 1 ? "moderate" : "low";
 
-  let sleepHeadline = "두 사람 모두 수면 환경에 비교적 무던하여 함께 잠드는 공간이 편안하게 맞물리는 밤";
-  let sleepWhy = `${nameA}님과 ${nameB}님 모두 조도나 작은 환경 변화에 크게 예민해지지 않아, 함께 잠드는 공간을 공유할 때 느끼는 부담이 적습니다.`;
-  let sleepPairInterp = "서로의 수면 리듬에 별다른 자극이나 부딪힘이 없어, 같은 방에서 잠드는 것만으로도 자연스럽게 긴장이 풀어지고 피로를 회복하는 안정된 밤이 형성됩니다.";
+  const isSupported = hasAEvid && hasBEvid;
 
-  if (sensA === "high" && sensB !== "high") {
-    sleepHeadline = `${nameA}님은 환경 변화를 섬세히 느끼고, ${nameB}님은 무던하게 공간을 지키는 수면 체감`;
-    sleepWhy = `${nameA}님은 잠들기 전 조도나 작은 소음 자극을 더 미세하게 인지하는 편인 반면, ${nameB}님은 수면 공간의 작은 변화에 크게 영향을 받지 않고 무던하게 잠에 듭니다.`;
-    sleepPairInterp = `한 사람의 섬세한 기운 감지와 다른 한 사람의 든든한 무던함이 만나, 취침 전 공간의 분위기에 조화로운 결이 형성되며 둘만의 아늑한 침실 체감이 완성됩니다.`;
-  } else if (sensB === "high" && sensA !== "high") {
-    sleepHeadline = `${nameB}님은 취침 환경에 예민하고, ${nameA}님은 무던하게 아늑함을 보태주는 수면 체감`;
-    sleepWhy = `${nameB}님은 조명 수위나 소리 자극에 민감하게 반응하는 반면, ${nameA}님은 환경 변화에 둔감하여 묵직하게 취침 공간에 안착합니다.`;
-    sleepPairInterp = `${nameB}님이 느끼는 섬세한 환경 감각과 ${nameA}님이 가진 편안한 무던함이 겹쳐지며, 함께 누웠을 때 섬세함과 든든함이 아늑하게 공존하는 경험을 하게 됩니다.`;
+  let singleSentenceInterpretation = "";
+
+  if (sensA === "high" && sensB === "low") {
+    singleSentenceInterpretation = `${nameA}님은 잠자리 환경을 조금 더 타는 편이고 ${nameB}님은 비교적 무던한 편이라, 같은 공간에서도 두 사람이 불편함을 느끼는 정도에는 차이가 있을 수 있습니다.`;
+  } else if (sensB === "high" && sensA === "low") {
+    singleSentenceInterpretation = `${nameB}님은 잠자리 환경의 자극을 조금 더 민감하게 느끼는 반면 ${nameA}님은 무던한 편이라, 같은 침실에서도 한쪽만 불편함을 더 크게 체감하는 순간이 생기기 쉬운 조합입니다.`;
   } else if (sensA === "high" && sensB === "high") {
-    sleepHeadline = "두 사람 모두 취침 공간의 정서와 환경을 깊게 인지하는 섬세한 수면 체감";
-    sleepWhy = `${nameA}님과 ${nameB}님 모두 조도, 소음, 온도의 미세한 결에 섬세하게 반응하는 수면 감각을 지니고 있습니다.`;
-    sleepPairInterp = "두 사람 모두 아늑하고 조용한 취침 무드를 깊이 공유하므로, 잔잔한 조명 아래 둘만의 정적이 형성될 때 깊은 정서적 안식과 평온함을 나누게 됩니다.";
+    if (sigA.hasGuimun && sigB.hasGuimun) {
+      singleSentenceInterpretation = "둘 다 잠자리 환경을 섬세하게 느끼는 편이라, 취침 공간의 정서와 환경을 비슷하게 체감하는 조합입니다.";
+    } else {
+      singleSentenceInterpretation = "둘 다 잠자리 환경의 결을 섬세하게 느끼는 편이지만 편안함을 느끼는 조건이 달라, 같은 침실에서도 서로 불편함을 느끼는 포인트가 다를 수 있는 조합입니다.";
+    }
+  } else if (sensA === "moderate" && sensB === "high") {
+    singleSentenceInterpretation = `${nameB}님이 취침 공간의 자극을 조금 더 섬세하게 느끼는 편이며, ${nameA}님은 비교적 무던히 맞춰주는 흐름을 보입니다.`;
+  } else if (sensA === "high" && sensB === "moderate") {
+    singleSentenceInterpretation = `${nameA}님이 잠자리 환경을 조금 더 민감하게 느끼는 편이고, ${nameB}님은 수용하는 무던함이 있는 조합입니다.`;
+  } else {
+    singleSentenceInterpretation = "둘 다 잠자리 환경을 크게 타지 않는 편이라, 함께 잘 때 서로의 수면을 방해할 만한 차이가 크지 않은 조합입니다.";
   }
 
   const sleepCompatibility: SleepCompatibilitySection = {
     title: isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?",
+    pairInterpretation: singleSentenceInterpretation,
     personASensitivity: sensA,
     personBSensitivity: sensB,
-    headline: sleepHeadline,
-    narrative: sleepWhy,
-    pairInterpretation: sleepPairInterp,
+    confidence: isSupported ? "HIGH" : "LOW",
+    isSupported,
   };
 
   return {
@@ -940,11 +947,11 @@ export function createDefaultMarriageChapter04Intelligence(
     },
     sleepCompatibility: {
       title: isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?",
+      pairInterpretation: "둘 다 잠자리 환경을 크게 타지 않는 편이라, 함께 잘 때 서로의 수면을 방해할 만한 차이가 크지 않은 조합입니다.",
       personASensitivity: "moderate",
       personBSensitivity: "low",
-      headline: "두 사람 모두 수면 환경에 비교적 무던하여 함께 잠드는 공간이 편안하게 맞물리는 밤",
-      narrative: "두 사람은 서로의 취침 템포가 잘 맞아 함께 잠드는 공간에서 피로를 자연스럽게 풀어냅니다.",
-      pairInterpretation: "서로의 수면 리듬에 별다른 자극이나 부딪힘이 없어, 같은 방에서 잠드는 것만으로도 자연스럽게 긴장이 풀어지고 피로를 회복하는 안정된 밤이 형성됩니다.",
+      confidence: "HIGH",
+      isSupported: true,
     },
   };
 }

@@ -148,18 +148,26 @@ test("Marriage Chapter 04 Final V3 Multi-Evidence Suite", async (t) => {
     assert.ok(ch04.pairIntimacyParadox.whenFriction);
   });
 
-  await t.test("9. BONUS Sleep Compatibility (Pair Experience Overlay, NO Generic Advice)", () => {
+  await t.test("9. BONUS Sleep Compatibility (Single Sentence Interpretation & Confidence Gate OMIT)", () => {
     const ctx = mockCtx("Sera", "동글", saju4A, saju1B);
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
 
     assert.ok(ch04.sleepCompatibility);
-    assert.ok(["high", "moderate", "low"].includes(ch04.sleepCompatibility.personASensitivity));
-    assert.ok(ch04.sleepCompatibility.pairInterpretation);
+    assert.equal(typeof ch04.sleepCompatibility.pairInterpretation, "string");
+    assert.ok(ch04.sleepCompatibility.pairInterpretation.length > 10);
+    assert.ok(ch04.sleepCompatibility.isSupported);
+
+    // Verify it is a single sentence (at most 1 period/sentence structure)
+    const sentenceCount = ch04.sleepCompatibility.pairInterpretation.split(".").filter(s => s.trim().length > 0).length;
+    assert.ok(sentenceCount <= 1, `Expected single sentence interpretation, got ${sentenceCount} sentences!`);
 
     const str = JSON.stringify(ch04.sleepCompatibility);
-    const forbiddenMedicalOrAdvice = ["불면증", "수면 장애", "침대 분리", "매트리스 분리", "의학적", "수면 가이드", "수면 처방", "맞추세요"];
+    const forbiddenMedicalOrAdvice = [
+      "불면증", "수면 장애", "침대 분리", "매트리스 분리", "의학적",
+      "수면 가이드", "수면 처방", "맞추세요", "취침 템포가 잘 맞는다", "소리에 잘 깬다", "피로를 잘 회복한다"
+    ];
     for (const word of forbiddenMedicalOrAdvice) {
-      assert.equal(str.includes(word), false, `Forbidden medical/advice copy '${word}' found in sleepCompatibility!`);
+      assert.equal(str.includes(word), false, `Forbidden medical/advice/overclaiming copy '${word}' found in sleepCompatibility!`);
     }
   });
 

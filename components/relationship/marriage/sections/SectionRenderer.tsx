@@ -1458,15 +1458,15 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
         </div>
       ) : null}
 
-      {/* BONUS SECTION 09: Sleep Compatibility */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?"} tag="수면 궁합" tone="deep" />
-        <RelationshipReportInset className="space-y-2 border border-rel-line bg-rel-surface">
-          <p className="text-xs font-bold text-rel-deep">{ch04.sleepCompatibility.headline}</p>
-          <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.sleepCompatibility.narrative}</p>
-          <p className="text-xs font-medium text-rel-ink border-t border-rel-line/60 pt-2">{ch04.sleepCompatibility.pairInterpretation}</p>
-        </RelationshipReportInset>
-      </div>
+      {/* BONUS SECTION 09: Sleep Compatibility (CONFIDENCE GATE OMIT) */}
+      {ch04.sleepCompatibility && ch04.sleepCompatibility.isSupported && ch04.sleepCompatibility.confidence !== "LOW" ? (
+        <div className="space-y-2">
+          <SubHeading title={isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?"} tone="deep" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface p-4 rounded-xl">
+            <p className="text-xs font-semibold leading-relaxed text-rel-ink">{ch04.sleepCompatibility.pairInterpretation}</p>
+          </RelationshipReportInset>
+        </div>
+      ) : null}
     </div>
   );
 }
