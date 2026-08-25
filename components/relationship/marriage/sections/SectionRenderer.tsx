@@ -606,25 +606,39 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
       </div>
 
       {/* 04. MAJOR_MONEY_DECISIONS */}
-      <div className="space-y-3 pt-1">
-        <SubHeading title={ch05.majorMoneyDecisions.title} tone="coral" />
-        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
-          <div className="space-y-2">
-            {ch05.majorMoneyDecisions.steps.map((step) => (
-              <div key={step.stepKey} className="flex justify-between items-center bg-rel-surface p-2.5 rounded-lg border border-rel-line text-xs">
-                <span className="font-bold text-rel-ink">{step.stepLabel}</span>
-                <span className="font-bold text-rel-deep">{step.actorName}</span>
+      {(() => {
+        const legacyMajor = ch05.majorMoneyDecisions as any;
+        const steps: MoneyDecisionStep[] = ch05.majorMoneyDecisions?.steps ?? [
+          { stepKey: "FIND", stepLabel: "기회 찾기", actorName: legacyMajor?.optionProposer?.replace(/\s*\(.*?\)/, "") ?? nameB, confidence: "HIGH" },
+          { stepKey: "TRACK", stepLabel: "계속 지켜보기", actorName: legacyMajor?.numberChecker?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
+          { stepKey: "CHECK", stepLabel: "숫자·위험 확인", actorName: legacyMajor?.riskBrake?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
+          { stepKey: "ACT", stepLabel: "실제 실행", actorName: legacyMajor?.commitPusher?.replace(/\s*\(.*?\)/, "") ?? nameB, confidence: "HIGH" },
+          { stepKey: "REVIEW", stepLabel: "마지막 점검", actorName: legacyMajor?.numberChecker?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
+        ];
+        const oneLineSynthesis = ch05.majorMoneyDecisions?.oneLineSynthesis ?? legacyMajor?.decisionPatternSummary ?? "";
+
+        return (
+          <div className="space-y-3 pt-1">
+            <SubHeading title={ch05.majorMoneyDecisions?.title ?? "04. 큰돈과 투자 기회 앞에서 우리는 어떻게 움직일까?"} tone="coral" />
+            <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+              <div className="space-y-2">
+                {steps.map((step) => (
+                  <div key={step.stepKey} className="flex justify-between items-center bg-rel-surface p-2.5 rounded-lg border border-rel-line text-xs">
+                    <span className="font-bold text-rel-ink">{step.stepLabel}</span>
+                    <span className="font-bold text-rel-deep">{step.actorName}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="border-t border-rel-line/60 pt-3 mt-2 space-y-1">
+                <span className="text-xs font-bold text-v4-good block">한 줄 정리</span>
+                <p className="text-xs leading-relaxed text-rel-ink font-medium">
+                  {oneLineSynthesis}
+                </p>
+              </div>
+            </RelationshipReportInset>
           </div>
-          <div className="border-t border-rel-line/60 pt-3 mt-2 space-y-1">
-            <span className="text-xs font-bold text-v4-good block">한 줄 정리</span>
-            <p className="text-xs leading-relaxed text-rel-ink font-medium">
-              {ch05.majorMoneyDecisions.oneLineSynthesis}
-            </p>
-          </div>
-        </RelationshipReportInset>
-      </div>
+        );
+      })()}
 
       {/* 05. FINANCIAL_OPERATION */}
       <div className="space-y-3 pt-1">
