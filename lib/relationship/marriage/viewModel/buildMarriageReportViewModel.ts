@@ -842,7 +842,7 @@ export function buildMarriageReportViewModel(
     () => buildPrivacySection(report, t),
     () => buildBedroomSection(report, t),
     () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
-    () => buildParentingSection(report, t, nameA, nameB, locale ?? "ko-KR"),
+    () => buildParentingSection(report, t, names[0], names[1], locale ?? "ko-KR"),
     () => buildFamilyBoundarySection(report, t),
     () => buildUpsetSection(report, viewerIsReportA, t),
     () => buildWarningSection(report, t),
