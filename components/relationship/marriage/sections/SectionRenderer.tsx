@@ -521,46 +521,222 @@ function CoupleActionPlanBlock({ plan }: { plan: CoupleActionPlanSection }) {
 }
 
 function MoneyChoresCard({ section }: { section: MoneyChoresSection }) {
-  const t = useMessages().relationshipDrilldown.cohabitation;
+  const ch05 = section.ch05Intelligence;
+
+  if (!ch05) return null;
+
   return (
-    <>
-      <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-        <RelationshipReportBody>
-          <div>
-            <RelationshipReportLabel>{t.cfoQuestionLabel}</RelationshipReportLabel>
-            {section.cfoCanonicalLabel ? (
-              <RelationshipReportLabel className="mt-1.5">
-                {section.cfoCanonicalLabel}
-              </RelationshipReportLabel>
+    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
+      <RelationshipReportBody className="space-y-6">
+        <p className="text-sm font-semibold text-v4-good bg-v4-good-soft/30 p-3.5 rounded-xl border border-v4-good/20 leading-relaxed">
+          {ch05.introQuestion}
+        </p>
+
+        {/* 01. COUPLE_OPERATING_SYSTEM */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.coupleOperatingSystem.title} tone="deep" />
+          <RelationshipReportInset className="border border-v4-good/30 bg-v4-good-soft/20 space-y-3 p-4 rounded-xl">
+            <h4 className="text-sm font-extrabold text-rel-deep">{ch05.coupleOperatingSystem.teamTypeTitle}</h4>
+            <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1">
+              {ch05.coupleOperatingSystem.capabilities.map((cap) => (
+                <div key={cap.capabilityKey} className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-rel-deep">{cap.capabilityLabel}</span>
+                    <span className="text-[11px] font-bold text-v4-good bg-v4-good-soft/40 px-2 py-0.5 rounded">{cap.leadName}</span>
+                  </div>
+                  <p className="text-rel-ink-soft leading-relaxed text-[11px] mt-1">{cap.narrative}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs leading-relaxed text-rel-ink border-t border-v4-good/20 pt-2 font-medium">
+              {ch05.coupleOperatingSystem.pairInsight}
+            </p>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 02. MONEY_BEHAVIOR */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.moneyBehavior.title} tone="coral" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+            <div className="grid gap-3 text-xs sm:grid-cols-2">
+              <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+                <span className="font-bold text-rel-deep block">배우자 A 지출 성향</span>
+                <p className="text-rel-ink text-xs"><b>중요 가치:</b> {ch05.moneyBehavior.importantValueA}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>쓸 때:</b> {ch05.moneyBehavior.spendingStyleA}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>모을 때:</b> {ch05.moneyBehavior.savingStyleA}</p>
+              </div>
+              <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+                <span className="font-bold text-rel-deep block">배우자 B 지출 성향</span>
+                <p className="text-rel-ink text-xs"><b>중요 가치:</b> {ch05.moneyBehavior.importantValueB}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>쓸 때:</b> {ch05.moneyBehavior.spendingStyleB}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>모을 때:</b> {ch05.moneyBehavior.savingStyleB}</p>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
+              {ch05.moneyBehavior.togetherInsight}
+            </p>
+            {ch05.moneyBehavior.underPressureInsight ? (
+              <p className="text-xs leading-relaxed text-rel-ink-soft bg-v4-good-soft/20 p-2.5 rounded-lg border border-v4-good/20 mt-2">
+                💡 <b>돈이 빠듯해지면:</b> {ch05.moneyBehavior.underPressureInsight}
+              </p>
             ) : null}
-            <RelationshipReportParagraph className="mt-1.5">
-              {section.cfoReason}
-            </RelationshipReportParagraph>
-          </div>
-          <div>
-            <RelationshipReportLabel>{t.choresLabel}</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">{section.choresGuideline}</RelationshipReportParagraph>
-          </div>
-          <div>
-            <RelationshipReportLabel>{t.spendingStyleLabel}</RelationshipReportLabel>
-            <RelationshipReportParagraph className="mt-1.5">{section.spendingStyleNote}</RelationshipReportParagraph>
-          </div>
-          {section.cfoAxisNote ? (
-            <RelationshipReportInset>
-              <RelationshipReportLabel>{t.cfoAxisNoteLabel}</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1.5">{section.cfoAxisNote}</RelationshipReportParagraph>
-            </RelationshipReportInset>
-          ) : null}
-          {section.mentalLoadNote ? (
-            <RelationshipReportInset>
-              <RelationshipReportLabel>Mental load</RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1.5">{section.mentalLoadNote}</RelationshipReportParagraph>
-            </RelationshipReportInset>
-          ) : null}
-        </RelationshipReportBody>
-      </RelationshipReportCard>
-      {section.coupleActionPlan ? <CoupleActionPlanBlock plan={section.coupleActionPlan} /> : null}
-    </>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 03. WEALTH_BUILDING_STYLE */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.wealthBuildingStyle.title} tone="deep" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+            <div className="grid gap-3 text-xs sm:grid-cols-2">
+              <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
+                <span className="font-bold text-rel-deep block">A 자산 운용 결</span>
+                <p className="text-rel-ink text-[11px]"><b>기본 성향:</b> {ch05.wealthBuildingStyle.baseStyleA}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>기회를 볼 때:</b> {ch05.wealthBuildingStyle.opportunityStyleA}</p>
+                <p className="text-v4-good text-[11px]"><b>잘 맞기 쉬운 방향:</b> {ch05.wealthBuildingStyle.naturalDirectionA}</p>
+              </div>
+              <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
+                <span className="font-bold text-rel-deep block">B 자산 운용 결</span>
+                <p className="text-rel-ink text-[11px]"><b>기본 성향:</b> {ch05.wealthBuildingStyle.baseStyleB}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>기회를 볼 때:</b> {ch05.wealthBuildingStyle.opportunityStyleB}</p>
+                <p className="text-v4-good text-[11px]"><b>잘 맞기 쉬운 방향:</b> {ch05.wealthBuildingStyle.naturalDirectionB}</p>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
+              {ch05.wealthBuildingStyle.pairSynergyInsight}
+            </p>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 04. MAJOR_MONEY_DECISIONS */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.majorMoneyDecisions.title} tone="coral" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+            <div className="grid gap-2 text-xs sm:grid-cols-2">
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">먼저 가능성을 보는 쪽</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.majorMoneyDecisions.optionProposer}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">숫자를 다시 보는 쪽</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.majorMoneyDecisions.numberChecker}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">위험을 확인하는 쪽</span>
+                <p className="font-bold text-v4-good mt-0.5">{ch05.majorMoneyDecisions.riskBrake}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">결정을 미는 쪽</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.majorMoneyDecisions.commitPusher}</p>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
+              {ch05.majorMoneyDecisions.decisionPatternSummary}
+            </p>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 05. FINANCIAL_OPERATION */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.financialOperation.title} tone="deep" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+            <div className="grid gap-2 text-xs sm:grid-cols-3">
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">돈 흐름 확인</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.financialOperation.flowTracker}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">납부·서류</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.financialOperation.billsAndDocs}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">관리 방식</span>
+                <p className="font-bold text-v4-good mt-0.5">{ch05.financialOperation.operationStyle}</p>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
+              {ch05.financialOperation.operationInsight}
+            </p>
+            {ch05.financialOperation.boundaryInsight ? (
+              <p className="text-xs leading-relaxed text-rel-ink-soft bg-v4-good-soft/20 p-2.5 rounded-lg border border-v4-good/20 mt-2">
+                💳 {ch05.financialOperation.boundaryInsight}
+              </p>
+            ) : null}
+          </RelationshipReportInset>
+        </div>
+
+        {/* 06. PRACTICAL_LIFE_COMPETENCE */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.practicalLifeCompetence.title} tone="coral" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+            <div className="grid gap-3 text-xs sm:grid-cols-2">
+              <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
+                <span className="font-bold text-rel-deep block">A 생활력 체감</span>
+                <p className="text-rel-ink-soft text-[11px]"><b>알아차림:</b> {ch05.practicalLifeCompetence.profileA.notice}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>계획:</b> {ch05.practicalLifeCompetence.profileA.plan}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>실행:</b> {ch05.practicalLifeCompetence.profileA.do}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>유지:</b> {ch05.practicalLifeCompetence.profileA.maintain}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>수습:</b> {ch05.practicalLifeCompetence.profileA.recover}</p>
+              </div>
+              <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
+                <span className="font-bold text-rel-deep block">B 생활력 체감</span>
+                <p className="text-rel-ink-soft text-[11px]"><b>알아차림:</b> {ch05.practicalLifeCompetence.profileB.notice}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>계획:</b> {ch05.practicalLifeCompetence.profileB.plan}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>실행:</b> {ch05.practicalLifeCompetence.profileB.do}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>유지:</b> {ch05.practicalLifeCompetence.profileB.maintain}</p>
+                <p className="text-rel-ink-soft text-[11px]"><b>수습:</b> {ch05.practicalLifeCompetence.profileB.recover}</p>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
+              {ch05.practicalLifeCompetence.pairSynergyInsight}
+            </p>
+          </RelationshipReportInset>
+        </div>
+
+        {/* 07. MENTAL_LOAD */}
+        <div className="space-y-3 pt-1">
+          <SubHeading title={ch05.mentalLoad.title} tone="deep" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+            <div className="grid gap-2 text-xs sm:grid-cols-2">
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">먼저 알아차리는 쪽</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.mentalLoad.noticer}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">계속 기억하는 쪽</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.mentalLoad.rememberer}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">실제로 처리하는 쪽</span>
+                <p className="font-bold text-v4-good mt-0.5">{ch05.mentalLoad.doer}</p>
+              </div>
+              <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="text-[11px] text-rel-taupe font-medium block">끝까지 확인하는 쪽</span>
+                <p className="font-bold text-rel-deep mt-0.5">{ch05.mentalLoad.closer}</p>
+              </div>
+            </div>
+            {ch05.mentalLoad.frictionPointNote ? (
+              <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
+                💡 <b>우리 집에서 일이 꼬이기 쉬운 순간:</b> {ch05.mentalLoad.frictionPointNote}
+              </p>
+            ) : null}
+          </RelationshipReportInset>
+        </div>
+
+        {/* ENDING. HOUSEHOLD_MAP */}
+        <div className="space-y-3 pt-2">
+          <SubHeading title={ch05.householdMapEnding.title} tone="deep" />
+          <RelationshipReportInset className="border border-v4-good/40 bg-v4-good-soft/30 space-y-2 p-4 rounded-xl">
+            <ul className="text-xs space-y-1.5 text-rel-ink font-medium">
+              <li>• {ch05.householdMapEnding.moneyBehaviorSummary}</li>
+              <li>• {ch05.householdMapEnding.wealthStyleSummary}</li>
+              <li>• {ch05.householdMapEnding.bigMoneyDecisionSummary}</li>
+              <li>• {ch05.householdMapEnding.lifeCompetenceSummary}</li>
+              <li>• {ch05.householdMapEnding.mentalLoadSummary}</li>
+            </ul>
+          </RelationshipReportInset>
+        </div>
+      </RelationshipReportBody>
+    </RelationshipReportCard>
   );
 }
 

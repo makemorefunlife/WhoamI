@@ -29,6 +29,7 @@ import {
   formatMarriageOperatingCfoCanonicalLabel,
   readMarriageOperatingCfoCanonicalProjection,
 } from "@/lib/relationship/marriage/marriageOperatingCfoCanonical";
+import { createDefaultMarriageChapter05Intelligence } from "@/lib/relationship/marriage/marriageChapter05Intelligence";
 import type {
   OpeningBlock,
   MarriageReportSection,
@@ -328,6 +329,10 @@ function buildMoneyChoresSection(
         locale,
       })
     : null;
+  const ch05Intelligence =
+    (report as any)?.canonical_projections?.chapter05Intelligence ??
+    import("@/lib/relationship/marriage/marriageChapter05Intelligence").then ? undefined : undefined;
+
   return {
     id: "money_chores",
     type: "money_chores",
@@ -340,6 +345,7 @@ function buildMoneyChoresSection(
     cfoAxisNote: m.cfo_axis_note,
     cfoCanonicalLabel,
     mentalLoadNote: m.mental_load_note ?? null,
+    ch05Intelligence: (report as any)?.canonical_projections?.chapter05Intelligence ?? createDefaultMarriageChapter05Intelligence({ nameA, nameB, locale }),
     coupleActionPlan: m.couple_action_plan,
   };
 }

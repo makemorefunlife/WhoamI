@@ -50,14 +50,16 @@ export function buildCanonicalMarriageStoryPlan(
     },
     {
       chapterId: "c3_household_os",
-      chapterNumber: "03",
-      title: isEn ? "Household OS: Money, Chores & PM" : "어떻게 함께 살아가는가: 돈, 집안일, 보이지 않는 가정 운영 책임",
+      chapterNumber: "05",
+      title: isEn ? "Household OS: Money, Life Competence & Mental Load" : "돈, 생활력, 그리고 우리 집을 굴리는 방식",
       userQuestion: isEn
-        ? "Who earns, manages, saves, and reviews risk in our household economic partnership?"
-        : "누가 벌고, 누가 관리하고, 누가 모으고, 큰돈 결정은 어떤 순서로 해야 우리 부부에게 가장 유리한가?",
+        ? "How do we manage money, daily life execution, and invisible mental load together?"
+        : "돈을 쓰고 모으는 것부터 집안의 보이지 않는 일까지, 우리는 현실의 삶을 어떻게 함께 굴려가는 부부일까?",
       primaryOwnerMeanings: ["Household PM / Mental Load", "Planner vs Executor", "Decision Power Map", "Operating CFO", "Economic Partnership"],
       secondaryRefMeanings: ["Chores Allocation"],
-      summary: [os.economicPartnership.pairSynergy, os.plannerExecutor.shiftNote].filter(Boolean).join(" "),
+      summary: os.chapter05Intelligence
+        ? os.chapter05Intelligence.introQuestion
+        : [os.economicPartnership.pairSynergy, os.plannerExecutor.shiftNote].filter(Boolean).join(" "),
     },
     {
       chapterId: "c4_intimacy_bedroom",
