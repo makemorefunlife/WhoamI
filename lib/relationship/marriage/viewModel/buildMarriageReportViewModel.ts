@@ -379,20 +379,8 @@ function buildBedroomSection(
   report: MarriageReportBody,
   t: ReturnType<typeof catalog>,
 ): MarriageReportSection | null {
-  const b = report.household?.section_bedroom;
-  if (!b) return null;
-  return {
-    id: "bedroom",
-    type: "bedroom",
-    partNumber: 3,
-    title: t.bedroomCardTitle,
-    matrix: b.matrix,
-    attachmentStyle: b.attachment_style,
-    sleepFit: b.sleep_fit,
-    rejectionScriptA: b.rejection_script_a,
-    rejectionScriptB: b.rejection_script_b,
-    rejectionAxisNote: b.rejection_axis_note,
-  };
+  // Purged in Chapter 04 V3 Rebuild — Chapter 04 now serves as canonical intimacy chapter
+  return null;
 }
 
 function buildHomeDnaSection(

@@ -1287,7 +1287,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 01: Love Transmission */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Love Transmission Channels" : "01. 내 사랑은 상대에게 잘 도착하고 있을까"} tag="Transmission" tone="coral" />
+        <SubHeading title={isEn ? "Love Transmission Channels" : "01. 내 사랑은 상대에게 잘 도착하고 있을까"} tag="사랑의 언어" tone="coral" />
         <div className="space-y-3">
           {ch04.loveTransmission.map((channel, i) => {
             const badge = getLoveTransmissionBadge(channel.matchType, isEn);
@@ -1299,15 +1299,17 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
                 </div>
                 <div className="grid gap-2 text-xs sm:grid-cols-2">
                   <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-                    <span className="font-semibold text-rel-taupe block mb-1">보내는 애정 언어</span>
+                    <span className="font-semibold text-rel-taupe block mb-1">{channel.senderName}님이 보내는 사랑</span>
                     <p className="text-rel-ink">{channel.senderNaturalExpression}</p>
                   </div>
                   <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-                    <span className="font-semibold text-rel-taupe block mb-1">받아들이는 수신 언어</span>
+                    <span className="font-semibold text-rel-taupe block mb-1">{channel.receiverName}님이 사랑받는다고 느끼는 방식</span>
                     <p className="text-rel-ink">{channel.receiverReceptionNeed}</p>
                   </div>
                 </div>
-                <p className="text-xs font-medium leading-relaxed text-rel-ink bg-v4-good-soft/30 p-2.5 rounded-lg border border-v4-good/20">{channel.matchNarrative}</p>
+                <p className="text-xs font-medium leading-relaxed text-rel-ink bg-v4-good-soft/30 p-2.5 rounded-lg border border-v4-good/20">
+                  <span className="font-bold text-v4-good">전달 결과: </span>{channel.matchNarrative}
+                </p>
                 <p className="text-[11px] leading-relaxed text-rel-taupe pt-1">💡 {channel.transmissionInsight}</p>
               </RelationshipReportInset>
             );
@@ -1317,20 +1319,20 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 02: Pair Intimacy Chemistry (HERO) */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Pair Intimacy Chemistry" : "02. 그래서, 우리 둘의 속궁합은?"} tag="Hero Chemistry" tone="deep" />
+        <SubHeading title={isEn ? "Pair Intimacy Chemistry" : "02. 그래서, 우리 둘의 속궁합은?"} tag="속궁합 조율" tone="deep" />
         <RelationshipReportInset className="border border-v4-good/40 bg-v4-good-soft/30 space-y-3 p-4 rounded-xl">
           <div className="border-b border-v4-good/20 pb-2">
-            <span className="text-[11px] font-bold text-v4-good uppercase tracking-wider block mb-1">Couples Intimacy Identity</span>
+            <span className="text-[11px] font-bold text-v4-good uppercase tracking-wider block mb-1">우리 둘의 한 줄 속궁합</span>
             <p className="text-sm font-extrabold text-rel-ink leading-snug">{ch04.pairChemistry.heroIdentity}</p>
           </div>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-semibold block">신체적·정서적 인력 (Attraction)</span>
-              <p className="font-bold text-rel-deep mt-0.5">{ch04.pairChemistry.attractionLevel}</p>
+              <span className="text-[11px] text-rel-taupe font-semibold block">서로에게 끌리는 힘</span>
+              <p className="font-bold text-rel-deep mt-0.5">{ch04.pairChemistry.attractionLevel === "HIGH_PULL" ? "매우 강함" : "은은하고 굳건함"}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-semibold block">안도감과 경계 해제 (Safety)</span>
-              <p className="font-bold text-v4-good mt-0.5">{ch04.pairChemistry.safetyLevel}</p>
+              <span className="text-[11px] text-rel-taupe font-semibold block">함께 있을 때 느끼는 편안함</span>
+              <p className="font-bold text-v4-good mt-0.5">{ch04.pairChemistry.safetyLevel === "HIGH_SAFETY" ? "매우 높음" : "안온함"}</p>
             </div>
           </div>
           <p className="text-xs leading-relaxed text-rel-ink-soft border-t border-v4-good/20 pt-2">{ch04.pairChemistry.attractionDescription}</p>
@@ -1340,20 +1342,20 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 03: Stability vs Novelty */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Stability vs Novelty Balance" : "03. 익숙한 밤 vs 새로운 공기"} tag="Stability / Novelty" tone="coral" />
+        <SubHeading title={isEn ? "Stability vs Novelty Balance" : "03. 익숙한 밤 vs 새로운 공기"} tag="익숙함과 변화" tone="coral" />
         <RelationshipReportInset className="space-y-3 border border-rel-line">
           <p className="text-xs font-bold text-rel-deep">{ch04.stabilityVsNovelty.headline}</p>
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.stabilityVsNovelty.description}</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1 border-t border-rel-line/60">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
               <span className="font-bold text-v4-a block">{names[0]}님</span>
-              <p className="text-[11px] text-rel-taupe">타고난 결: {ch04.stabilityVsNovelty.personAInnate}</p>
-              <p className="text-[11px] text-rel-ink">현재 상태: {ch04.stabilityVsNovelty.personACurrent}</p>
+              <p className="text-[11px] text-rel-taupe">본래 편한 방식: {ch04.stabilityVsNovelty.personAInnate}</p>
+              <p className="text-[11px] text-rel-ink">현재 바라는 분위기: {ch04.stabilityVsNovelty.personACurrent}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
               <span className="font-bold text-v4-b block">{names[1]}님</span>
-              <p className="text-[11px] text-rel-taupe">타고난 결: {ch04.stabilityVsNovelty.personBInnate}</p>
-              <p className="text-[11px] text-rel-ink">현재 상태: {ch04.stabilityVsNovelty.personBCurrent}</p>
+              <p className="text-[11px] text-rel-taupe">본래 편한 방식: {ch04.stabilityVsNovelty.personBInnate}</p>
+              <p className="text-[11px] text-rel-ink">현재 바라는 분위기: {ch04.stabilityVsNovelty.personBCurrent}</p>
             </div>
           </div>
         </RelationshipReportInset>
@@ -1361,7 +1363,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 04: Activation & Rhythm */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Bedroom Temperature & Activation" : "04. 우리 침실의 온도는 같은 속도로 올라올까"} tag="Activation & Rhythm" tone="coral" />
+        <SubHeading title={isEn ? "Bedroom Temperature & Activation" : "04. 우리 침실의 온도는 같은 속도로 올라올까"} tag="온도와 속도" tone="coral" />
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset className="space-y-2 border border-rel-line">
             <p className="text-xs font-bold text-v4-a">{ch04.activationAndRhythm.personAMode.personName}: {ch04.activationAndRhythm.personAMode.modeTitle}</p>
@@ -1381,17 +1383,17 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 05: Initiation, Lead & Response */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Initiation & Receptive Engagement" : "05. 누가 먼저 불을 켤까?"} tag="Initiation" tone="deep" />
+        <SubHeading title={isEn ? "Initiation & Receptive Engagement" : "05. 누가 먼저 불을 켤까?"} tag="먼저 다가가기" tone="deep" />
         <RelationshipReportInset className="space-y-3 border border-rel-line">
           <p className="text-xs font-bold text-rel-deep">{ch04.initiationLeadResponse.headline}</p>
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.initiationLeadResponse.description}</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1 border-t border-rel-line/60">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-v4-a block mb-1">{names[0]}님의 다가감 결</span>
+              <span className="font-bold text-v4-a block mb-1">{names[0]}님이 먼저 다가가는 방식</span>
               <p className="text-rel-ink">{ch04.initiationLeadResponse.personAAgency}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-v4-b block mb-1">{names[1]}님의 다가감 결</span>
+              <span className="font-bold text-v4-b block mb-1">{names[1]}님이 먼저 다가가는 방식</span>
               <p className="text-rel-ink">{ch04.initiationLeadResponse.personBAgency}</p>
             </div>
           </div>
@@ -1400,7 +1402,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 06: Intimate Attunement */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Intimate Attunement & Care" : "06. 침실에서 우리는 상대를 어떻게 살필까?"} tag="Attunement" tone="coral" />
+        <SubHeading title={isEn ? "Intimate Attunement & Care" : "06. 침실에서 우리는 상대를 어떻게 살필까?"} tag="침실에서의 배려" tone="coral" />
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset className="space-y-1.5 border border-rel-line">
             <span className="text-[11px] font-bold text-v4-a block">{ch04.intimateAttunement.personAAttunement.personName}: {ch04.intimateAttunement.personAAttunement.styleTitle}</span>
@@ -1418,7 +1420,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 07: Desire Mismatch & Rejection */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Desire Mismatch & Rejection Handling" : "07. 오늘은 한 사람만 원할 때"} tag="Rejection & Reconnection" tone="deep" />
+        <SubHeading title={isEn ? "Desire Mismatch & Rejection Handling" : "07. 오늘은 한 사람만 원할 때"} tag="거절과 재연결" tone="deep" />
         {ch04.desireMismatchAndRejection.isSharedPattern && ch04.desireMismatchAndRejection.sharedPatternSummary ? (
           <RelationshipReportInset className="border border-v4-good/30 bg-v4-good-soft/20 space-y-2">
             <p className="text-xs font-bold text-v4-good">두 사람이 공유하는 공통 정서적 반응</p>
@@ -1448,23 +1450,23 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
       {/* SECTION 08: Pair Intimacy Paradox */}
       {ch04.pairIntimacyParadox && ch04.pairIntimacyParadox.paradoxType !== "NONE" ? (
         <div className="space-y-3">
-          <SubHeading title={isEn ? "Pair Intimacy Paradox" : "08. 우리 둘만의 Intimacy Paradox"} tag="Intimacy Paradox" tone="coral" />
+          <SubHeading title={isEn ? "Pair Intimacy Paradox" : "08. 우리 둘만의 Intimacy Paradox"} tag="친밀감 역설" tone="coral" />
           <RelationshipReportInset className="space-y-2 border border-amber-500/30 bg-amber-500/10">
             <p className="text-xs font-bold text-amber-900">{ch04.pairIntimacyParadox.headline}</p>
             <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.pairIntimacyParadox.explanation}</p>
-            <p className="text-xs text-v4-good font-medium border-t border-amber-500/20 pt-2">✨ 활성화될 때: {ch04.pairIntimacyParadox.whenThriving}</p>
-            <p className="text-xs text-amber-900/90 font-medium">⚠️ 엇갈릴 때: {ch04.pairIntimacyParadox.whenFriction}</p>
+            <p className="text-xs text-v4-good font-medium border-t border-amber-500/20 pt-2">✨ 이 장점이 잘 맞을 때: {ch04.pairIntimacyParadox.whenThriving}</p>
+            <p className="text-xs text-amber-900/90 font-medium">⚠️ 오해가 생기기 쉬울 때: {ch04.pairIntimacyParadox.whenFriction}</p>
           </RelationshipReportInset>
         </div>
       ) : null}
 
       {/* BONUS SECTION 09: Sleep Compatibility */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?"} tag="Sleep Fit" tone="deep" />
+        <SubHeading title={isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?"} tag="수면 궁합" tone="deep" />
         <RelationshipReportInset className="space-y-2 border border-rel-line bg-rel-surface">
           <p className="text-xs font-bold text-rel-deep">{ch04.sleepCompatibility.headline}</p>
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.sleepCompatibility.narrative}</p>
-          <p className="text-xs font-medium text-v4-good border-t border-rel-line/60 pt-2">🌿 수면 가이드: {ch04.sleepCompatibility.gentleGuide}</p>
+          <p className="text-xs font-medium text-v4-good border-t border-rel-line/60 pt-2">🌿 같이 잘 때 맞춰야 하는 포인트: {ch04.sleepCompatibility.gentleGuide}</p>
         </RelationshipReportInset>
       </div>
     </div>
@@ -1760,7 +1762,7 @@ export function MarriageReportSectionCard({
     case "money_chores":
       return <MoneyChoresCard section={section} />;
     case "bedroom":
-      return <BedroomCard section={section} />;
+      return null;
     case "home_dna":
       return <HomeDnaCard section={section} />;
     case "parenting":
