@@ -146,14 +146,12 @@ export function resolveHouseholdArchetype(ctx: MarriageRuleContext): string | nu
   const { hasHeavenlyStemCombine, hasDayBranchCombine } =
     ctx.marriagePairAnalysis.scoringSignals;
   const locale = ctx.locale;
-  const titleA = ctx.householdDnaA.lifestyle_title.split(" ")[0] ?? "Warm";
-  const titleB = ctx.householdDnaB.lifestyle_title.split(" ")[0] ?? "Steady";
 
   if (hasHeavenlyStemCombine || hasDayBranchCombine) {
     return pick(
       locale,
-      `${titleA} & ${titleB} — a fated-pull family, drawn together by a chemistry neither of you can quite explain`,
-      `${titleA} & ${titleB} — 운명적 정서 끌림형 패밀리, 설명하기 힘든 케미로 서로를 끌어당긴 하우스`,
+      `A natural partnership drawn by deep emotional warmth and mutual trust`,
+      `서로의 공간을 깊이 존중하고 다정한 신뢰로 이어지는 부부`,
     );
   }
 
@@ -162,8 +160,8 @@ export function resolveHouseholdArchetype(ctx: MarriageRuleContext): string | nu
   if (wealthOfficerA + wealthOfficerB >= 4) {
     return pick(
       locale,
-      `${titleA} & ${titleB} — a systematic-management family, running the household on clear roles and responsibility`,
-      `${titleA} & ${titleB} — 체계적 패밀리 경영형, 뚜렷한 역할과 책임감으로 살림을 꾸려가는 하우스`,
+      `A grounded partnership running the household with clear roles and shared responsibility`,
+      `뚜렷한 역할과 실질적인 조력으로 단단한 터전을 꾸려가는 부부`,
     );
   }
 
@@ -183,34 +181,34 @@ function resolveHouseholdOneLiner(ctx: MarriageRuleContext): string {
     return pick(
       locale,
       `${titleA} & ${titleB} — a spark-flying romantic house built on financial security`,
-      `${titleA} & ${titleB} — 재정적 든든함 위에 세워진, 불꽃 튀는 로맨틱 하우스`,
+      `재정적 든든함 위에 세워진, 불꽃 튀는 로맨틱 하우스`,
     );
   }
   if (activation >= 65 && risk >= 55) {
     return pick(
       locale,
       `${titleA} & ${titleB} — passion overflows, but this house lasts once you set the household rules`,
-      `${titleA} & ${titleB} — 열정은 넘치지만, 집 안 규칙만 정하면 오래 가는 하우스`,
+      `열정은 넘치지만, 집 안 규칙만 정하면 오래 가는 하우스`,
     );
   }
   if (risk >= 60) {
     return pick(
       locale,
       `${titleA} & ${titleB} — split the roles and it's peace, mix them and it's war — boundaries are everything`,
-      `${titleA} & ${titleB} — 역할만 나누면 평화, 섞으면 전쟁 — 경계가 생명`,
+      `역할만 나누면 평화, 섞으면 전쟁 — 경계가 생명`,
     );
   }
   if (activation >= 75) {
     return pick(
       locale,
       `${titleA} & ${titleB} — the bedroom runs hot, the living room needs some negotiating`,
-      `${titleA} & ${titleB} — 침실은 뜨겁고, 거실은 협상이 필요한 하우스`,
+      `침실은 뜨겁고, 거실은 협상이 필요한 하우스`,
     );
   }
   return pick(
     locale,
     `${titleA} & ${titleB} — you fill the house with different strengths, but without honest conversation only misunderstanding builds up`,
-    `${titleA} & ${titleB} — 서로 다른 강점으로 집을 채우되, 솔직한 대화 없으면 오해만 쌓이는 하우스`,
+    `서로 다른 강점으로 집을 채우되, 솔직한 대화 없으면 오해만 쌓이는 하우스`,
   );
 }
 

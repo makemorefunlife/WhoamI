@@ -97,17 +97,19 @@ export default function RelationshipReportCard({
 }) {
   const variantBox =
     variant === "warning"
-      ? "border-v4-bad/25 bg-v4-bad-soft"
+      ? "rounded-2xl border border-v4-bad/25 bg-v4-bad-soft p-5 sm:p-6"
       : variant === "success"
-        ? "border-v4-good/25 bg-v4-good-soft"
+        ? "rounded-2xl border border-v4-good/25 bg-v4-good-soft p-5 sm:p-6"
         : variant === "accent"
-          ? "border-rel-deep/25 bg-rel-deep-soft"
+          ? "rounded-2xl border border-rel-deep/25 bg-rel-deep-soft p-5 sm:p-6"
           : variant === "muted"
-            ? "border-rel-line bg-rel-taupe-soft/25"
-            : "border-rel-line bg-rel-surface";
+            ? "rounded-2xl border border-rel-line bg-rel-taupe-soft/25 p-5 sm:p-6"
+            : "";
+
+  const cleanTitle = title ? title.replace(/^[◤▼▶]\s*/, "") : "";
 
   return (
-    <article id={id} className={`rounded-2xl border p-5 sm:p-6 ${variantBox} ${className}`}>
+    <article id={id} className={`${variantBox} ${className}`}>
       <h3
         className="mb-4 flex items-baseline gap-2 font-rel-serif text-[17px] leading-snug tracking-[-0.01em] text-rel-ink sm:text-[19px]"
         style={accentColor ? { color: accentColor } : undefined}
@@ -117,7 +119,7 @@ export default function RelationshipReportCard({
             ◤
           </span>
         )}
-        <span className="min-w-0 flex-1">{title}</span>
+        <span className="min-w-0 flex-1">{cleanTitle}</span>
       </h3>
       {children}
     </article>

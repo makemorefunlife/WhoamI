@@ -24,6 +24,9 @@ import { buildMarriageLifeStageTransition } from "./marriageLifeStageTransition"
 import { buildMarriageCoupleBurnout } from "./marriageCoupleBurnout";
 import { buildMarriageCareerHomeTransition } from "./marriageCareerHomeTransition";
 import { buildMarriageEconomicPartnership } from "./marriageEconomicPartnership";
+import { buildMarriageChapter01Intelligence } from "./marriageChapter01Intelligence";
+import { buildMarriageChapter03Intelligence } from "./marriageChapter03Intelligence";
+import { buildMarriageChapter04Intelligence } from "./marriageChapter04Intelligence";
 import type {
   MarriageCanonicalBundle,
   HouseholdPmResult,
@@ -524,6 +527,9 @@ export function buildMarriageCanonicalEngine(
   ];
 
   // Phase 4 Ported Capabilities
+  const chapter01Intelligence = buildMarriageChapter01Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
+  const chapter03Intelligence = buildMarriageChapter03Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
+  const chapter04Intelligence = buildMarriageChapter04Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
   const marriage11Axis = buildMarriage11AxisInsights(params.psychMasterA, params.psychMasterB, a, b, locale);
   const conflict4Stage = buildMarriageConflict4Stage(params.psychMasterA, params.psychMasterB, a, b, locale);
   const loveDeliveryMatch = buildMarriageLoveDeliveryMatch(params.psychMasterA, params.psychMasterB, a, b, locale);
@@ -554,6 +560,9 @@ export function buildMarriageCanonicalEngine(
   );
 
   return {
+    chapter01Intelligence,
+    chapter03Intelligence,
+    chapter04Intelligence,
     householdPm,
     plannerExecutor,
     decisionPowerMap,

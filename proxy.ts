@@ -42,6 +42,13 @@ function applyLocaleHeaders(
 export const proxy = clerkMiddleware(async (auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
+  // Redirect /kr/api/... or /en/api/... requests to canonical /api/...
+  if (pathname.startsWith("/kr/api/") || pathname.startsWith("/en/api/")) {
+    const url = req.nextUrl.clone();
+    url.pathname = pathname.replace(/^\/(kr|en)\/api\//, "/api/");
+    return NextResponse.redirect(url, 308);
+  }
+
   // Never locale-rewrite API / static internals
   if (
     pathname.startsWith("/api/") ||

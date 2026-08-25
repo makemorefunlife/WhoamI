@@ -49,6 +49,7 @@ export type OriginStorySection = BaseSection & {
   whyUs: string;
   positiveChangeA: string;
   positiveChangeB: string;
+  ch01Bundle?: import("../marriageChapter01Intelligence").MarriageChapter01Bundle;
 };
 
 // ---- Part 1.5: 일상 모습 (일간/일지 결정론적 표) ------------------------------

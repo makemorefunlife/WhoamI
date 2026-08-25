@@ -392,12 +392,10 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
 
 function PsychRadarCard({ section, names }: { section: PsychRadarSection; names: [string, string] }) {
   const { locale } = useLocale();
-  const sectionTitle = ec(locale, "◤ Psych Axis Matching", "◤ 심리 축 매칭");
   const chartNote = ec(locale, "We compared how you both show up right now across the 11 axes.", "두 분의 현재 모습을 11축으로 비교했어요.");
 
   return (
     <div className="mt-10">
-      <SectionHeader title={sectionTitle} tag="11 AXES" />
       <PsychAxisComparisonSection
         axisResults={section.axisResults}
         highlights={section.highlights}

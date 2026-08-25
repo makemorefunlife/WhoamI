@@ -62,13 +62,15 @@ export function buildCanonicalMarriageStoryPlan(
     {
       chapterId: "c4_intimacy_bedroom",
       chapterNumber: "04",
-      title: isEn ? "Physical Intimacy & Love Language" : "어떻게 사랑하는가: 사랑의 표현과 신체적 친밀감",
+      title: isEn ? "How We Love & Build Intimacy" : "우리는 어떻게 사랑하고 가까워지는가",
       userQuestion: isEn
-        ? "How do we express affection, align wanted vs given love, and sustain intimacy?"
-        : "나는 어떤 사랑을 받고 싶고 배우자는 나에게 실제로 어떻게 사랑을 제공하며, 사랑함에도 미스매치가 생기는 이유는 무엇인가?",
-      primaryOwnerMeanings: ["Wanted vs Given Love", "Bedroom Intimacy Profile", "Physical Affinity"],
-      secondaryRefMeanings: ["Rejection Axis Language"],
-      summary: [os.loveDeliveryMatch.matchAtoB.narrative, os.loveDeliveryMatch.overallSummary].filter(Boolean).join(" "),
+        ? "Do we recognize each other's love, and how do we draw close in emotional & physical intimacy?"
+        : "우리는 서로의 사랑을 제대로 알아보고 있을까? 그리고 둘만 있을 때 마음과 몸의 거리는 어떤 방식으로 가까워질까?",
+      primaryOwnerMeanings: ["Love Transmission Channel", "Saju Pair Intimacy", "Bedroom Temperature"],
+      secondaryRefMeanings: ["Desire Mismatch & Rejection"],
+      summary: os.chapter04Intelligence
+        ? os.chapter04Intelligence.introQuestion
+        : [os.loveDeliveryMatch.matchAtoB.narrative, os.loveDeliveryMatch.overallSummary].filter(Boolean).join(" "),
     },
     {
       chapterId: "c5_conflict_deescalation",
@@ -101,7 +103,7 @@ export function buildCanonicalMarriageStoryPlan(
         : "현재의 생활과 역할 분담이 5년, 10년 반복되면 어떤 것은 부부 자산이 되고 어떤 것은 결함 부채로 누적되는가?",
       primaryOwnerMeanings: ["Couple Burnout / Household Overload", "What Not to Expect", "Need x Actual Delivery x Gap", "Long-Term Compounding"],
       secondaryRefMeanings: ["Future Risk Forecast"],
-      summary: [os.coupleBurnout.overallNarrative, os.longTermCompounding.compoundingSummary].filter(Boolean).join(" "),
+      summary: os.chapter03Intelligence?.assets?.[0]?.mechanism || "",
     },
     {
       chapterId: "c8_partnership_verdict",

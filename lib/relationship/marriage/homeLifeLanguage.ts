@@ -89,13 +89,23 @@ const CATEGORY_FAMILY_IDENTITY: Record<Locale, Record<string, string>> = {
   },
 };
 
-const LIFESTYLE_TITLES: Record<string, string[]> = {
-  wealth: ["Practical Nest Builder", "Home CFO Energy", "Steady Hearth Keeper"],
-  officer: ["Structured Home Captain", "Calm Household Anchor", "Rule-of-Love Leader"],
-  food: ["Creative Hearth Artist", "Warm Conversation Curator", "Joy-First Partner"],
-  seal: ["Nurturing Sanctuary Guide", "Gentle Home Therapist", "Quiet Support Pillar"],
-  self: ["Independent Duo Spirit", "Pride & Partnership Type", "Loyal Co-Captain"],
-  balanced: ["Balanced Life Partner", "Harmony-First Homemaker", "Flexible Family Weaver"],
+const LIFESTYLE_TITLES: Record<Locale, Record<string, string[]>> = {
+  "en-US": {
+    wealth: ["Practical Nest Builder", "Home CFO Energy", "Steady Hearth Keeper"],
+    officer: ["Structured Home Captain", "Calm Household Anchor", "Rule-of-Love Leader"],
+    food: ["Creative Hearth Artist", "Warm Conversation Curator", "Joy-First Partner"],
+    seal: ["Nurturing Sanctuary Guide", "Gentle Home Therapist", "Quiet Support Pillar"],
+    self: ["Independent Duo Spirit", "Pride & Partnership Type", "Loyal Co-Captain"],
+    balanced: ["Balanced Life Partner", "Harmony-First Homemaker", "Flexible Family Weaver"],
+  },
+  "ko-KR": {
+    wealth: ["실속형 보금자리 설계가", "가계 CFO 타입", "안정적 생활 수호자"],
+    officer: ["체계적인 홈 캡틴", "차분한 가정의 중심점", "원칙 중심의 리더"],
+    food: ["창의적인 아지트 아티스트", "따뜻한 대화 큐레이터", "즐거움 우선 파트너"],
+    seal: ["돌봄의 안식처 가이드", "다정한 가정 테라피스트", "조용한 지원 버팀목"],
+    self: ["독립적인 듀오 스피릿", "자존심 & 동반자 타입", "든든한 코캡틴"],
+    balanced: ["균형 잡힌 라이프 파트너", "조화 우선 홈메이커", "유연한 패밀리 조율가"],
+  },
 };
 
 export function sanitizeHomeLifeText(text: string): string {
@@ -120,8 +130,9 @@ function dominantFamilyCategory(counts: TenGodCounts): string {
   return top.key;
 }
 
-function lifestyleTitle(category: string, nickname: string): string {
-  const pool = LIFESTYLE_TITLES[category] ?? LIFESTYLE_TITLES.balanced!;
+function lifestyleTitle(category: string, nickname: string, locale: Locale = LEGACY_FALLBACK_LOCALE): string {
+  const map = LIFESTYLE_TITLES[locale] ?? LIFESTYLE_TITLES["ko-KR"];
+  const pool = map[category] ?? map.balanced!;
   const pick = pool[Math.abs(nickname.length + category.length) % pool.length]!;
   return pick;
 }
@@ -196,7 +207,7 @@ export function buildHomeLifeDnaProfile(
 
   return {
     nickname,
-    lifestyle_title: lifestyleTitle(category, nickname),
+    lifestyle_title: lifestyleTitle(category, nickname, locale),
     life_values: sanitizeHomeLifeText(lifeValues),
     private_home_self: sanitizeHomeLifeText(privateHome),
     energy_battery: sanitizeHomeLifeText(energyBattery),

@@ -81,7 +81,7 @@ export function buildMarriageCoupleBurnout(
     ? (isEn ? `${nameA} carries a high invisible Mental Load (planning & remembering). Unburdening this load prevents sudden burnout.` : `${nameA}님이 집안 운영을 기획하고 기억하는 보이지 않는 멘탈로드를 더 많이 짊어지고 있어, 이를 명시적으로 나눠 지는 것이 번아웃 방지의 핵심입니다.`)
     : primaryOverloadRiskPartner === "b"
     ? (isEn ? `${nameB} carries a high invisible Mental Load (planning & remembering). Unburdening this load prevents sudden burnout.` : `${nameB}님이 집안 운영을 기획하고 기억하는 보이지 않는 멘탈로드를 더 많이 짊어지고 있어, 이를 명시적으로 나눠 지는 것이 번아웃 방지의 핵심입니다.`)
-    : (isEn ? `Both ${nameA} and ${nameB} balance household load evenly, with low overall burnout risk.` : `${nameA}님과 ${nameB}님은 가사 노동과 멘탈로드를 비교적 균형 있게 나눠 지고 있어 번아웃 위험이 낮습니다.`);
+    : (isEn ? `Both ${nameA} and ${nameB} balance household roles evenly, keeping emotional burnout risk low.` : `${nameA}님과 ${nameB}님은 일상의 결정과 역할을 균형 있게 나누어 정서적 소진 위험이 낮습니다.`);
 
   return {
     personA,

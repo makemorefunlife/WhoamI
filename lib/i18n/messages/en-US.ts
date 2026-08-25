@@ -1366,7 +1366,7 @@ export const messagesEnUS = {
         `What ${partnerNickname} shouldn't do`,
       deEscalationScriptLabel: (partnerNickname: string, nickname: string) =>
         `${partnerNickname} → ${nickname} script`,
-      compareTableCardTitle: "At a Glance — 6 Ways You Run a Household",
+      compareTableCardTitle: "Side-by-Side Comparison",
       compareTableColMe: "Me",
       compareTableColPartner: "Partner",
       compareTableColMeaning: "What it means for your household",

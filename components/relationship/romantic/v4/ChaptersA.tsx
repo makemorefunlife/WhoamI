@@ -353,16 +353,13 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
     >
       {axes.length > 0 && (
         <div className="mb-14">
-          <SubHeading title="심리 축 매칭" tone="coral" tag={`${axes.length} axes`} />
-          <div className="mt-6">
-            <PsychAxisComparisonSection
-              axisResults={axes}
-              highlights={highlights}
-              chartNote=""
-              names={[personA, personB]}
-              locale={payload.locale}
-            />
-          </div>
+          <PsychAxisComparisonSection
+            axisResults={axes}
+            highlights={highlights}
+            chartNote=""
+            names={[personA, personB]}
+            locale={payload.locale}
+          />
         </div>
       )}
 

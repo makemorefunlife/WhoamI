@@ -42,7 +42,7 @@ export function PsychAxisComparisonSection({
   return (
     <>
       <div className="mb-4">
-        <SubHeading title={isEn ? "Psych Axis Matching" : "심리 축 매칭"} tag="11 AXES" tone="deep" />
+        <SubHeading title={isEn ? "Psych Axis Matching" : "심리 축 매칭"} tag={isEn ? "11 AXES" : "11축 비교"} tone="deep" />
       </div>
       {chartNote ? (
         <p className="mb-3 font-rel-sans text-[13px] leading-[1.7] text-rel-ink-mute">{chartNote}</p>
@@ -55,7 +55,7 @@ export function PsychAxisComparisonSection({
 
       {highlights.length > 0 ? (
         <div className="mt-10 space-y-5">
-          <SubHeading title={isEn ? "Key 11-Axis Psych Insights" : "11축 심리 차이 핵심 인사이트"} tag="Psych Dynamics" tone="coral" />
+          <SubHeading title={isEn ? "Key 11-Axis Psych Insights" : "11축 심리 차이 핵심 인사이트"} tag={isEn ? "Psych Dynamics" : "심리 역학"} tone="coral" />
           <ul className="space-y-4">
             {highlights.map((h, i) => {
               const isMatch = h.match_type === "resonance";

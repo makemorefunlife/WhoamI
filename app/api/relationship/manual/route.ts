@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         birth_place: birthPlace,
         report_type: "partner_manual",
         entitlement: "free",
-        clerk_user_id: userId,
+        clerk_user_id: userId || `guest_${reportIdA.slice(0, 8)}`,
       },
       birthPlace,
     );

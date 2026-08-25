@@ -49,6 +49,9 @@ export function useClientReportId({
           forceRefresh: Boolean(hint),
         });
         if (!cancelled) {
+          if (session.reportId && typeof window !== "undefined") {
+            try { localStorage.setItem("reportId", session.reportId); } catch {}
+          }
           setReportId(session.reportId);
           setRecovering(false);
           setReady(true);
@@ -58,6 +61,9 @@ export function useClientReportId({
 
       if (hint) {
         if (!cancelled) {
+          if (typeof window !== "undefined") {
+            try { localStorage.setItem("reportId", hint); } catch {}
+          }
           setReportId(hint);
           setReady(true);
         }

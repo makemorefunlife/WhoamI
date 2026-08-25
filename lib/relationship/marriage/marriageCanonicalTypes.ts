@@ -140,9 +140,15 @@ import type { MarriageLifeStageBundle } from "./marriageLifeStageTransition";
 import type { MarriageBurnoutBundle } from "./marriageCoupleBurnout";
 import type { MarriageCareerHomeBundle } from "./marriageCareerHomeTransition";
 import type { MarriageEconomicPartnershipBundle } from "./marriageEconomicPartnership";
+import type { MarriageChapter01Bundle } from "./marriageChapter01Intelligence";
+import type { MarriageChapter03Intelligence } from "./marriageChapter03Intelligence";
+import type { MarriageChapter04Intelligence } from "./marriageChapter04Intelligence";
 
 /** Comprehensive Marriage Canonical Bundle */
 export type MarriageCanonicalBundle = {
+  chapter01Intelligence: MarriageChapter01Bundle;
+  chapter03Intelligence: MarriageChapter03Intelligence;
+  chapter04Intelligence?: MarriageChapter04Intelligence;
   householdPm: HouseholdPmResult;
   plannerExecutor: PlannerExecutorResult;
   decisionPowerMap: DecisionPowerMapResult;

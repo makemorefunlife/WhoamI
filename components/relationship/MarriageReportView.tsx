@@ -391,9 +391,8 @@ export default function MarriageReportView({
       kindLabel={t.eyebrow}
       headline={{
         title: report.headline || snap.one_line_household,
-        subtitle: snap.one_line_household,
         names: [myName, partnerName],
-        badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
+        badge: undefined,
       }}
       scores={[
         {

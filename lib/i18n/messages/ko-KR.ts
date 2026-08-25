@@ -1316,7 +1316,7 @@ export const messagesKoKR: MessageCatalog = {
         `${partnerNickname}가 하면 안 되는 것`,
       deEscalationScriptLabel: (partnerNickname: string, nickname: string) =>
         `${partnerNickname} → ${nickname} Script`,
-      compareTableCardTitle: "한눈에 비교 — 6가지 살림 축",
+      compareTableCardTitle: "나란히 놓고 보기",
       compareTableColMe: "나",
       compareTableColPartner: "상대",
       compareTableColMeaning: "가정 생활에서의 의미",

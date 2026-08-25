@@ -276,7 +276,7 @@ export const COHABITATION_DOMAIN_AXES_EN: Partial<
 };
 
 export const COHABITATION_CHART_NOTE =
-  "둘의 현재 모습에서 어디가 비슷하고 어디가 다른지 한눈에 볼 수 있게 정리했어요. (연인 심화 분석과 같은 11축 설문 기준이에요.)";
+  "둘의 현재 모습을 11축으로 비교했어요.";
 
 export const COHABITATION_CHART_NOTE_EN =
   "We laid out where you two are similar and where you differ right now, at a glance. (Same 11-axis survey standard as the romantic deep-dive.)";

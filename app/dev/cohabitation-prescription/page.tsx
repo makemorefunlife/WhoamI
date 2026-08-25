@@ -36,6 +36,8 @@ export default function CohabitationPrescriptionDevPage() {
     nicknameB: "지연",
     sajuJsonA: a.sajuJson,
     sajuJsonB: b.sajuJson,
+    psychMasterA: m1,
+    psychMasterB: m2,
     pairCohabitation,
   });
 
