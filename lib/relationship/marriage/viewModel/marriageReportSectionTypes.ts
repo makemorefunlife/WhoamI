@@ -123,6 +123,8 @@ export type ParentingSection = BaseSection & {
   harmonyTip: string;
   personARoleNote?: string | null;
   personBRoleNote?: string | null;
+  /** Chapter 06 Full Rebuild Family System Intelligence */
+  ch06Intelligence?: import("../marriageChapter06Intelligence").MarriageChapter06Intelligence;
 };
 
 export type FamilyBoundarySection = BaseSection & {

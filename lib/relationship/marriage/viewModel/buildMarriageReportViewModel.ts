@@ -30,6 +30,7 @@ import {
   readMarriageOperatingCfoCanonicalProjection,
 } from "@/lib/relationship/marriage/marriageOperatingCfoCanonical";
 import { createDefaultMarriageChapter05Intelligence } from "@/lib/relationship/marriage/marriageChapter05Intelligence";
+import { createDefaultMarriageChapter06Intelligence } from "@/lib/relationship/marriage/marriageChapter06Intelligence";
 import type {
   OpeningBlock,
   MarriageReportSection,
@@ -409,20 +410,23 @@ function buildHomeDnaSection(
 function buildParentingSection(
   report: MarriageReportBody,
   t: ReturnType<typeof catalog>,
+  nameA: string,
+  nameB: string,
+  locale: Locale,
 ): MarriageReportSection | null {
   const p = report.household?.section_parenting;
-  if (!p) return null;
   return {
     id: "parenting",
     type: "parenting",
     partNumber: 4,
-    title: t.parentingCardTitle,
-    combinedAttitude: p.combined_attitude,
-    personAStyle: p.person_a_style,
-    personBStyle: p.person_b_style,
-    harmonyTip: p.harmony_tip,
-    personARoleNote: p.person_a_role_note,
-    personBRoleNote: p.person_b_role_note,
+    title: "06. 둘을 넘어 가족이 되면 어떤 시스템이 되는가?",
+    combinedAttitude: p?.combined_attitude ?? "",
+    personAStyle: p?.person_a_style ?? "",
+    personBStyle: p?.person_b_style ?? "",
+    harmonyTip: p?.harmony_tip ?? "",
+    personARoleNote: p?.person_a_role_note,
+    personBRoleNote: p?.person_b_role_note,
+    ch06Intelligence: (report as any)?.canonical_projections?.chapter06Intelligence ?? createDefaultMarriageChapter06Intelligence({ nameA, nameB, locale }),
   };
 }
 
@@ -838,7 +842,7 @@ export function buildMarriageReportViewModel(
     () => buildPrivacySection(report, t),
     () => buildBedroomSection(report, t),
     () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
-    () => buildParentingSection(report, t),
+    () => buildParentingSection(report, t, nameA, nameB, locale ?? "ko-KR"),
     () => buildFamilyBoundarySection(report, t),
     () => buildUpsetSection(report, viewerIsReportA, t),
     () => buildWarningSection(report, t),

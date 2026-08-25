@@ -113,7 +113,7 @@ const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   { id: "c7_longterm_compounding", number: "03", titleKo: "함께 살수록 쌓이는 자산과 부채", titleEn: "Long-Term Compounding: Assets & Liabilities", types: [] },
   { id: "c4_intimacy_bedroom", number: "04", titleKo: "사랑, 신체적 친밀감과 침실 이야기", titleEn: "Physical Intimacy & Bedroom Chemistry", types: ["bedroom"] },
   { id: "c3_household_os", number: "05", titleKo: "돈, 생활력, 그리고 우리 집을 굴리는 방식", titleEn: "Household OS: Money, Life Competence & Mental Load", types: ["money_chores"] },
-  { id: "c6_family_parenting_career", number: "06", titleKo: "원가족 경계와 자녀 양육", titleEn: "Family Boundary & Parenting", types: ["parenting", "family_boundary"] },
+  { id: "c6_family_parenting_career", number: "06", titleKo: "둘을 넘어 가족이 되면 어떤 시스템이 되는가?", titleEn: "Family System & Parenting", types: ["parenting", "family_boundary"] },
   { id: "c5_conflict_deescalation", number: "07", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
   { id: "c8_partnership_verdict", number: "08", titleKo: "부부 파트너십 최종 판정", titleEn: "Life Partnership Verdict", types: [] },
   { id: "c9_next_chapter_rituals", number: "09", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: ["upset", "prescription", "privacy"] },
@@ -879,49 +879,200 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
   );
 }
 
-function ParentingCard({ section }: { section: ParentingSection }) {
-  const t = useMessages().relationshipDrilldown.cohabitation;
-  const roleNotes = [section.personARoleNote, section.personBRoleNote].filter(
-    (note): note is string => Boolean(note),
-  );
+function ParentingCard({ section, names }: { section: ParentingSection; names?: [string, string] }) {
+  const ch06 = section.ch06Intelligence;
+
+  if (!ch06) return null;
+
+  const nameA = names ? names[0] : "Person A";
+  const nameB = names ? names[1] : "Person B";
+
   return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportBody>
-        <RelationshipReportParagraph>{section.combinedAttitude}</RelationshipReportParagraph>
-        <RelationshipReportParagraph>{section.personAStyle}</RelationshipReportParagraph>
-        <RelationshipReportParagraph>{section.personBStyle}</RelationshipReportParagraph>
-        <RelationshipReportInset>
-          <RelationshipReportParagraph>{section.harmonyTip}</RelationshipReportParagraph>
+    <div className="space-y-6">
+      {/* 01. COUPLE_BOUNDARY */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.coupleBoundary.title} tone="coral" />
+        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
+          <div className="grid gap-3 text-xs sm:grid-cols-2">
+            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+              <span className="font-bold text-rel-deep block">
+                {ch06.coupleBoundary.profileA.personName} | <span className="text-v4-good">{ch06.coupleBoundary.profileA.editorialLabel}</span>
+              </span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                {ch06.coupleBoundary.profileA.narrative}
+              </p>
+            </div>
+            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+              <span className="font-bold text-rel-deep block">
+                {ch06.coupleBoundary.profileB.personName} | <span className="text-v4-good">{ch06.coupleBoundary.profileB.editorialLabel}</span>
+              </span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                {ch06.coupleBoundary.profileB.narrative}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-rel-line/60 pt-2.5">
+            <span className="text-xs font-bold text-v4-good block">우리의 경계</span>
+            <p className="text-xs leading-relaxed text-rel-ink font-medium mt-0.5">
+              {ch06.coupleBoundary.boundarySynthesis}
+            </p>
+          </div>
         </RelationshipReportInset>
-        {roleNotes.length > 0 ? (
-          <RelationshipReportInset>
-            <RelationshipReportLabel>{t.parentingRoleNoteLabel}</RelationshipReportLabel>
-            {roleNotes.map((note) => (
-              <RelationshipReportParagraph key={note} className="mt-1.5">
-                {note}
-              </RelationshipReportParagraph>
+      </div>
+
+      {/* 02. ORIGIN_FAMILY_DYNAMICS */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.originFamilyDynamics.title} tone="deep" />
+        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl text-xs">
+          <div className="space-y-2">
+            {ch06.originFamilyDynamics.pairRoles.map((role) => (
+              <div key={role.roleKey} className="flex justify-between items-center bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="font-bold text-rel-ink">{role.roleLabel}</span>
+                <span className="font-bold text-rel-deep">{role.personName}</span>
+              </div>
             ))}
-          </RelationshipReportInset>
-        ) : null}
-      </RelationshipReportBody>
-    </RelationshipReportCard>
+          </div>
+          <div className="border-t border-rel-line/60 pt-2.5">
+            <span className="text-xs font-bold text-v4-good block">우리 부부가 조심할 순간</span>
+            <p className="text-xs leading-relaxed text-rel-ink font-medium mt-0.5">
+              {ch06.originFamilyDynamics.cautionMoment}
+            </p>
+          </div>
+        </RelationshipReportInset>
+      </div>
+
+      {/* 03. PARENTING_DNA */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.parentingDna.title} tone="coral" />
+        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-4 p-4 rounded-xl text-xs">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-2">
+              <span className="font-bold text-rel-deep block text-sm">
+                {ch06.parentingDna.profileA.personName} | <span className="text-v4-good">{ch06.parentingDna.profileA.editorialIdentity}</span>
+              </span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                {ch06.parentingDna.profileA.narrative}
+              </p>
+              <div className="border-t border-rel-line/40 pt-2 space-y-1">
+                <span className="text-[11px] font-bold text-rel-taupe block">먼저 보는 것</span>
+                <p className="text-[11px] font-semibold text-rel-ink">{ch06.parentingDna.profileA.firstFocusKeywords.join(" · ")}</p>
+              </div>
+              <div className="pt-1">
+                <span className="text-[11px] font-bold text-rel-taupe block">놓치기 쉬운 것</span>
+                <p className="text-[11px] text-rel-ink-soft">{ch06.parentingDna.profileA.easyToMissNote}</p>
+              </div>
+            </div>
+            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-2">
+              <span className="font-bold text-rel-deep block text-sm">
+                {ch06.parentingDna.profileB.personName} | <span className="text-v4-good">{ch06.parentingDna.profileB.editorialIdentity}</span>
+              </span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">
+                {ch06.parentingDna.profileB.narrative}
+              </p>
+              <div className="border-t border-rel-line/40 pt-2 space-y-1">
+                <span className="text-[11px] font-bold text-rel-taupe block">먼저 보는 것</span>
+                <p className="text-[11px] font-semibold text-rel-ink">{ch06.parentingDna.profileB.firstFocusKeywords.join(" · ")}</p>
+              </div>
+              <div className="pt-1">
+                <span className="text-[11px] font-bold text-rel-taupe block">놓치기 쉬운 것</span>
+                <p className="text-[11px] text-rel-ink-soft">{ch06.parentingDna.profileB.easyToMissNote}</p>
+              </div>
+            </div>
+          </div>
+        </RelationshipReportInset>
+      </div>
+
+      {/* 04. PARENTING_DIFFERENCE */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.parentingDifference.title} tone="deep" />
+        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl text-xs">
+          {ch06.parentingDifference.situations.map((sit, idx) => (
+            <div key={idx} className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
+              <span className="font-extrabold text-rel-deep block">{sit.situationTitle}</span>
+              <div className="grid gap-1 sm:grid-cols-2 text-[11px]">
+                <p className="text-rel-ink font-medium"><b className="text-v4-good">{nameA}:</b> {sit.reactionA}</p>
+                <p className="text-rel-ink font-medium"><b className="text-v4-good">{nameB}:</b> {sit.reactionB}</p>
+              </div>
+            </div>
+          ))}
+        </RelationshipReportInset>
+      </div>
+
+      {/* 05. PAIR_PARENTING_SYSTEM */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.pairParentingSystem.title} tone="coral" />
+        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl text-xs">
+          <h4 className="font-extrabold text-sm text-rel-deep">{ch06.pairParentingSystem.headline}</h4>
+          <div className="space-y-2 pt-1">
+            <div className="bg-v4-good-soft/20 p-2.5 rounded-lg border border-v4-good/20">
+              <span className="font-bold text-v4-good block">우리의 강점</span>
+              <p className="text-rel-ink text-[11px] leading-relaxed mt-0.5">{ch06.pairParentingSystem.ourStrengths}</p>
+            </div>
+            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+              <span className="font-bold text-rel-taupe block">조심할 것</span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed mt-0.5">{ch06.pairParentingSystem.whatToWatchOut}</p>
+            </div>
+          </div>
+          <div className="border-t border-rel-line/60 pt-2">
+            <p className="text-xs font-medium leading-relaxed text-rel-ink">
+              {ch06.pairParentingSystem.oneLineSynthesis}
+            </p>
+          </div>
+        </RelationshipReportInset>
+      </div>
+
+      {/* 06. FAMILY_LOAD_REDISTRIBUTION */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.familyLoadRedistribution.title} tone="deep" />
+        <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl text-xs">
+          <div className="space-y-2">
+            {ch06.familyLoadRedistribution.pairRoles.map((role) => (
+              <div key={role.roleKey} className="flex justify-between items-center bg-rel-surface p-2.5 rounded-lg border border-rel-line">
+                <span className="font-bold text-rel-ink">{role.roleLabel}</span>
+                <span className="font-bold text-rel-deep">{role.personName}</span>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-rel-line/60 pt-2.5">
+            <span className="text-xs font-bold text-v4-good block">한 줄 해석</span>
+            <p className="text-xs leading-relaxed text-rel-ink font-medium mt-0.5">
+              {ch06.familyLoadRedistribution.oneLineSynthesis}
+            </p>
+          </div>
+        </RelationshipReportInset>
+      </div>
+
+      {/* 07. FAMILY_IDENTITY */}
+      <div className="space-y-3 pt-1">
+        <SubHeading title={ch06.familyIdentity.title} tone="coral" />
+        <RelationshipReportInset className="border border-v4-good/30 bg-v4-good-soft/20 space-y-3 p-4 rounded-xl text-xs">
+          <h4 className="font-extrabold text-sm text-rel-deep">{ch06.familyIdentity.familyIdentityHeadline}</h4>
+          <div className="grid gap-2 sm:grid-cols-2 pt-1">
+            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
+              <span className="font-bold text-rel-deep block">부부의 경계</span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.coupleBoundarySummary}</p>
+            </div>
+            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
+              <span className="font-bold text-rel-deep block">아이에게 주는 것</span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.giftToChildSummary}</p>
+            </div>
+            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
+              <span className="font-bold text-rel-deep block">조심할 것</span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.cautionSummary}</p>
+            </div>
+            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
+              <span className="font-bold text-rel-deep block">우리 가족의 힘</span>
+              <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.familyStrengthSummary}</p>
+            </div>
+          </div>
+        </RelationshipReportInset>
+      </div>
+    </div>
   );
 }
 
 function FamilyBoundaryCard({ section }: { section: FamilyBoundarySection }) {
-  const t = useMessages().relationshipDrilldown.cohabitation;
-  return (
-    <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <RelationshipReportBody>
-        <div>
-          <RelationshipReportLabel>{t.inlawStressLabel}</RelationshipReportLabel>
-          <RelationshipReportParagraph className="mt-1.5">{section.inlawStressSummary}</RelationshipReportParagraph>
-        </div>
-        <RelationshipReportParagraph>{section.personABoundaryNote}</RelationshipReportParagraph>
-        <RelationshipReportParagraph>{section.personBBoundaryNote}</RelationshipReportParagraph>
-      </RelationshipReportBody>
-    </RelationshipReportCard>
-  );
+  return null;
 }
 
 function WeatherForecastCard({ section }: { section: WeatherForecastSection }) {
@@ -1942,7 +2093,7 @@ export function MarriageReportSectionCard({
     case "home_dna":
       return <HomeDnaCard section={section} />;
     case "parenting":
-      return <ParentingCard section={section} />;
+      return <ParentingCard section={section} names={names} />;
     case "family_boundary":
       return <FamilyBoundaryCard section={section} />;
     case "weather_forecast":
