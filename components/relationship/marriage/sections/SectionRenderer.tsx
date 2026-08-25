@@ -1319,24 +1319,22 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
       {/* SECTION 02: Pair Intimacy Chemistry (HERO) */}
       <div className="space-y-3">
-        <SubHeading title={isEn ? "Pair Intimacy Chemistry" : "02. 그래서, 우리 둘의 속궁합은?"} tag="속궁합 조율" tone="deep" />
-        <RelationshipReportInset className="border border-v4-good/40 bg-v4-good-soft/30 space-y-3 p-4 rounded-xl">
-          <div className="border-b border-v4-good/20 pb-2">
-            <span className="text-[11px] font-bold text-v4-good uppercase tracking-wider block mb-1">우리 둘의 한 줄 속궁합</span>
-            <p className="text-sm font-extrabold text-rel-ink leading-snug">{ch04.pairChemistry.heroIdentity}</p>
+        <SubHeading title={isEn ? "Pair Intimacy Chemistry" : "02. 그래서, 우리 둘의 속궁합은?"} tone="deep" />
+        <RelationshipReportInset className="border border-v4-good/30 bg-v4-good-soft/20 space-y-4 p-4 rounded-xl">
+          <div>
+            <h4 className="text-base font-extrabold text-rel-deep leading-snug">{ch04.pairChemistry.heroIdentity}</h4>
+            <p className="text-xs leading-relaxed text-rel-ink mt-2 border-b border-v4-good/20 pb-3">{ch04.pairChemistry.synthesisNarrative}</p>
           </div>
-          <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1">
-            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-semibold block">서로에게 끌리는 힘</span>
-              <p className="font-bold text-rel-deep mt-0.5">{ch04.pairChemistry.attractionLevel === "HIGH_PULL" ? "매우 강함" : "은은하고 굳건함"}</p>
+          <div className="grid gap-3 sm:grid-cols-2 pt-0.5 text-xs">
+            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
+              <span className="font-bold text-rel-deep block">끌림</span>
+              <p className="text-rel-ink-soft leading-relaxed">{ch04.pairChemistry.attractionNarrative}</p>
             </div>
-            <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-semibold block">함께 있을 때 느끼는 편안함</span>
-              <p className="font-bold text-v4-good mt-0.5">{ch04.pairChemistry.safetyLevel === "HIGH_SAFETY" ? "매우 높음" : "안온함"}</p>
+            <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
+              <span className="font-bold text-v4-good block">편안함</span>
+              <p className="text-rel-ink-soft leading-relaxed">{ch04.pairChemistry.comfortNarrative}</p>
             </div>
           </div>
-          <p className="text-xs leading-relaxed text-rel-ink-soft border-t border-v4-good/20 pt-2">{ch04.pairChemistry.attractionDescription}</p>
-          <p className="text-xs font-medium leading-relaxed text-rel-ink bg-rel-surface p-2.5 rounded-lg border border-rel-line">{ch04.pairChemistry.dynamicsNarrative}</p>
         </RelationshipReportInset>
       </div>
 

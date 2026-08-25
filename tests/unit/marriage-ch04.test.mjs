@@ -75,9 +75,11 @@ test("Marriage Chapter 04 Final V3 Multi-Evidence Suite", async (t) => {
     const ch04 = buildMarriageChapter04Intelligence({ ctx });
 
     assert.ok(ch04.pairChemistry.heroIdentity);
+    assert.ok(ch04.pairChemistry.synthesisNarrative);
+    assert.ok(ch04.pairChemistry.attractionNarrative);
+    assert.ok(ch04.pairChemistry.comfortNarrative);
     assert.ok(["HIGH_PULL", "STEADY_BOND", "MODERATE_PULL", "SLOW_WARMING"].includes(ch04.pairChemistry.attractionLevel));
     assert.ok(["HIGH_SAFETY", "MODERATE_SAFETY", "BUILDING_TRUST"].includes(ch04.pairChemistry.safetyLevel));
-    assert.ok(ch04.pairChemistry.attractionDescription);
   });
 
   await t.test("3. Stability vs Novelty Multi-Evidence Diversity", () => {

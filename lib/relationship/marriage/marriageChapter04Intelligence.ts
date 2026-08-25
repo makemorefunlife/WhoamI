@@ -42,11 +42,12 @@ export type SafetyLevel = "HIGH_SAFETY" | "MODERATE_SAFETY" | "BUILDING_TRUST";
 
 export type PairIntimacyChemistry = {
   heroIdentity: string;
+  synthesisNarrative: string;
+  attractionNarrative: string;
+  comfortNarrative: string;
   attractionLevel: AttractionLevel;
   safetyLevel: SafetyLevel;
-  attractionTitle: string;
-  attractionDescription: string;
-  dynamicsNarrative: string;
+  confidence: "HIGH" | "MODERATE" | "LOW";
 };
 
 export type IntimacyRhythmClass =
@@ -520,24 +521,39 @@ export function buildMarriageChapter04Intelligence(params: {
   ];
 
   // SECTION 02: Pair Intimacy Chemistry (HERO)
-  const attractionLevel: AttractionLevel = (sigA.hasNakedFire || sigB.hasNakedFire || matchAtoB === "DIRECT_MATCH" || matchBtoA === "DIRECT_MATCH") ? "HIGH_PULL" : "STEADY_BOND";
+  const attractionLevel: AttractionLevel = (sigA.hasNakedFire || sigB.hasNakedFire || matchAtoB === "DIRECT_MATCH" || matchBtoA === "DIRECT_MATCH" || sigA.noveltyScore >= 1.5 || sigB.noveltyScore >= 1.5) ? "HIGH_PULL" : "STEADY_BOND";
   const safetyLevel: SafetyLevel = (sigA.isRooted && sigB.isRooted) ? "HIGH_SAFETY" : "MODERATE_SAFETY";
 
+  let heroHeadline = "편안해질수록 더 깊게 끌리는 두 사람";
+  let pairSynthesis = `${nameA}님과 ${nameB}님은 서두르거나 강한 자극으로 서로를 밀어붙이기보다, 서로에게 마음을 놓을수록 자연스럽게 가까워지는 조합입니다. 둘 사이에 쌓이는 안도감과 신뢰가 친밀감을 한층 더 깊고 단단하게 만드는 힘이 됩니다.`;
+  let attractionNarrative = "불꽃처럼 확 탔다가 식기보다, 함께하는 시간이 누적될수록 서로의 온기가 은근하게 깊어지는 끌림이 강점입니다.";
+  let comfortNarrative = "둘만 있을 때 긴장과 경계를 편안히 내려놓을 수 있어, 마음의 안도가 몸과 마음의 거리를 다정하게 좁혀줍니다.";
+
+  if (attractionLevel === "HIGH_PULL" && safetyLevel !== "HIGH_SAFETY") {
+    heroHeadline = "끌림의 불꽃은 분명하지만 마음을 놓는 속도에는 조율이 필요한 두 사람";
+    pairSynthesis = `${nameA}님과 ${nameB}님 사이에는 서로를 당기는 호기심과 스파크가 분명하지만, 둘만 있을 때 정서적 안도감을 완성하고 마음을 풀기까지는 서두르지 않는 조율이 도움이 됩니다.`;
+    attractionNarrative = "서로의 기운과 분위기가 매력적인 자극으로 작용하여, 둘이 있을 때 친밀한 온도를 단숨에 올라오게 만드는 인력이 뚜렷합니다.";
+    comfortNarrative = "끌림의 속도에 맞춰 완벽한 안도감이 형성되도록, 서로의 마음 상태와 템포를 다정하게 살피는 조율이 피곤함을 줄여줍니다.";
+  } else if (attractionLevel !== "HIGH_PULL" && safetyLevel === "HIGH_SAFETY") {
+    heroHeadline = "화려한 자극보다 깊은 안도감에서 사랑이 자라는 두 사람";
+    pairSynthesis = `${nameA}님과 ${nameB}님은 과도한 서두름이나 격정적 자극 없이도, 서로의 곁에서 마음이 가장 편안해질 때 비로소 깊은 친밀감이 싹트는 아늑하고 따뜻한 조합입니다.`;
+    attractionNarrative = "갑작스럽게 타오르는 자극보다는, 서로를 다정하게 챙기는 일상 속에서 오랫동안 식지 않는 은은한 인력이 중심을 잡습니다.";
+    comfortNarrative = "둘만 있는 공간에 들어서는 순간 마음의 안도가 형성되어, 깊은 정서적 교감과 친밀한 스킨십을 편안하게 나눕니다.";
+  } else if (attractionLevel !== "HIGH_PULL" && safetyLevel !== "HIGH_SAFETY") {
+    heroHeadline = "천천히 온도를 높여가며 오랫동안 온기를 나누는 두 사람";
+    pairSynthesis = `${nameA}님과 ${nameB}님은 조급해하지 않고 서로의 영역과 분위기에 서서히 적응하며 친밀감의 템포를 차분히 조율해나가는 신중한 속궁합입니다.`;
+    attractionNarrative = "일상의 소소한 배려와 다정함이 누적될수록 서로의 존재감이 커지며, 은근하게 친밀감의 깊이가 더해집니다.";
+    comfortNarrative = "서로에게 속도를 강요하지 않고, 각자가 편안함을 느끼는 취침 환경과 마음의 여백을 존중해줄 때 부드럽게 마음이 열립니다.";
+  }
+
   const pairChemistry: PairIntimacyChemistry = {
-    heroIdentity: (attractionLevel === "HIGH_PULL" && safetyLevel === "HIGH_SAFETY")
-      ? "은은한 끌림과 편안한 안도감이 둘만의 깊은 보금자리를 만드는 조화로운 속궁합"
-      : (attractionLevel === "HIGH_PULL")
-      ? "끌림의 불꽃은 분명하지만, 서로 마음이 완전히 풀어지는 속도에 미세한 결의 차이가 있는 조합"
-      : "과감한 자극보다는 아늑하고 잔잔한 신뢰 속에서 오랫동안 온기가 깊어지는 따뜻한 속궁합",
+    heroIdentity: heroHeadline,
+    synthesisNarrative: pairSynthesis,
+    attractionNarrative,
+    comfortNarrative,
     attractionLevel,
     safetyLevel,
-    attractionTitle: isEn ? "Mutual Attraction & Relational Pull" : "서로를 당기는 정서적·신체적 은은한 인력",
-    attractionDescription: isEn
-      ? "Pair Saju day branch and Five Element compatibility create a natural interlock."
-      : "두 사람의 명식은 서로의 부족한 기운을 오행과 일지 결합으로 보완해주어, 둘만 있을 때 편안하면서도 은근히 서로를 당기는 인력이 형성됩니다.",
-    dynamicsNarrative: isEn
-      ? "Comfort and activation balance out smoothly when togetherness is preserved."
-      : "안정적인 편안함과 설렘의 스파크가 과하지 않게 조화를 이루어, 오랫동안 함께해도 질리지 않는 무드를 만듭니다.",
+    confidence: "HIGH",
   };
 
   // SECTION 03: Stability vs Novelty (Dynamic Multi-Evidence Classification)
@@ -841,16 +857,13 @@ export function createDefaultMarriageChapter04Intelligence(
       },
     ],
     pairChemistry: {
-      heroIdentity: "은은한 끌림과 편안한 안도감이 둘만의 깊은 보금자리를 만드는 조화로운 속궁합",
+      heroIdentity: "편안해질수록 더 깊게 끌리는 두 사람",
+      synthesisNarrative: `${nameA}님과 ${nameB}님은 서두르거나 강한 자극으로 서로를 밀어붙이기보다, 서로에게 마음을 놓을수록 자연스럽게 가까워지는 조합입니다. 둘 사이에 쌓이는 안도감과 신뢰가 친밀감을 한층 더 깊고 단단하게 만드는 힘이 됩니다.`,
+      attractionNarrative: "불꽃처럼 확 탔다가 식기보다, 함께하는 시간이 누적될수록 서로의 온기가 은근하게 깊어지는 끌림이 강점입니다.",
+      comfortNarrative: "둘만 있을 때 긴장과 경계를 편안히 내려놓을 수 있어, 마음의 안도가 몸과 마음의 거리를 다정하게 좁혀줍니다.",
       attractionLevel: "HIGH_PULL",
       safetyLevel: "HIGH_SAFETY",
-      attractionTitle: isEn ? "Mutual Attraction & Relational Pull" : "서로를 당기는 정서적·신체적 은은한 인력",
-      attractionDescription: isEn
-        ? "Pair Saju synergy creates a natural, comforting bond."
-        : "두 사람의 명식은 서로의 부족함을 차분히 채워주어, 둘만 있을 때 마음이 편안해지는 끌림을 만듭니다.",
-      dynamicsNarrative: isEn
-        ? "Balances steady comfort with lasting warmth."
-        : "자극적인 충격보다는 은은하고 오랫동안 유지되는 따뜻함이 관계의 중심이 됩니다.",
+      confidence: "HIGH",
     },
     stabilityVsNovelty: {
       title: isEn ? "Stability vs. Novelty Balance" : "익숙한 밤 vs 새로운 공기",
