@@ -48,7 +48,7 @@ function mockCtx(nameA = "Sera", nameB = "동글", sajuA = saju1A, sajuB = saju1
 
 test("Marriage Chapter 05 Household Operating System Full Rebuild Suite", async (t) => {
 
-  await t.test("1. All 7 Sections + ENDING Structure Reachability & Non-Empty Fields", () => {
+  await t.test("1. Structure Reachability & Non-Empty Fields", () => {
     const ctx = mockCtx("Sera", "동글", saju1A, saju1B);
     const ch05 = buildMarriageChapter05Intelligence({ ctx });
 
@@ -56,7 +56,6 @@ test("Marriage Chapter 05 Household Operating System Full Rebuild Suite", async 
     // 01. Operating System
     assert.ok(ch05.coupleOperatingSystem.title);
     assert.equal(ch05.coupleOperatingSystem.capabilities.length, 6);
-    assert.ok(ch05.coupleOperatingSystem.pairInsight);
 
     // 02. Money Behavior
     assert.ok(ch05.moneyBehavior.importantValueA);
@@ -64,27 +63,22 @@ test("Marriage Chapter 05 Household Operating System Full Rebuild Suite", async 
 
     // 03. Wealth Building Style
     assert.ok(ch05.wealthBuildingStyle.naturalDirectionA);
-    assert.ok(ch05.wealthBuildingStyle.pairSynergyInsight);
 
-    // 04. Major Money Decisions
-    assert.ok(ch05.majorMoneyDecisions.optionProposer);
-    assert.ok(ch05.majorMoneyDecisions.decisionPatternSummary);
+    // 04. Major Money & Investment Decision Lifecycle
+    assert.equal(ch05.majorMoneyDecisions.steps.length, 5);
+    assert.ok(ch05.majorMoneyDecisions.steps[0].stepLabel);
+    assert.ok(ch05.majorMoneyDecisions.steps[0].actorName);
+    assert.ok(ch05.majorMoneyDecisions.oneLineSynthesis);
 
     // 05. Financial Operation
     assert.ok(ch05.financialOperation.operationStyle);
-    assert.ok(ch05.financialOperation.operationInsight);
 
     // 06. Practical Life Competence
     assert.ok(ch05.practicalLifeCompetence.profileA.notice);
-    assert.ok(ch05.practicalLifeCompetence.pairSynergyInsight);
-
-    // 07. Mental Load
-    assert.ok(ch05.mentalLoad.noticer);
-    assert.ok(ch05.mentalLoad.closer);
 
     // ENDING
     assert.ok(ch05.householdMapEnding.moneyBehaviorSummary);
-    assert.ok(ch05.householdMapEnding.wealthStyleSummary);
+    assert.ok(ch05.householdMapEnding.bigMoneyDecisionSummary);
   });
 
   await t.test("2. Zero Crude Jargon, Zero Specific Stock Advice & Zero Chore % Claims Audit", () => {
@@ -94,7 +88,7 @@ test("Marriage Chapter 05 Household Operating System Full Rebuild Suite", async 
 
     const forbiddenStrings = [
       "주식 매수", "부동산 투자 추천", "401k 가입", "가사 70%", "집안일 80%",
-      "CFO 지정", "CFO 권한", "가정 CFO", "주간 가사 회의 15분", "이렇게 말해보세요"
+      "CFO 지정", "CFO 권한", "가정 CFO", "주간 가사 회의 15분", "보이지 않는 집안일"
     ];
 
     for (const word of forbiddenStrings) {
@@ -113,9 +107,9 @@ test("Marriage Chapter 05 Household Operating System Full Rebuild Suite", async 
     assert.equal(ch05Swapped.coupleOperatingSystem.capabilities[0].actor, "B_DOMINANT");
   });
 
-  await t.test("4. 6-Fixture Diversity Audit Table Generation", () => {
+  await t.test("4. 6-Fixture Diversity Audit Table Generation for Money Decision Lifecycle", () => {
     const fixtures = [
-      { name: "Fixture 1", sajuA: saju1A, sajuB: saju1B, psychA: makePsych({ growth: 80, structure: 80 }), psychB: makePsych({ stability: 80, self_control: 80 }) },
+      { name: "Fixture 1", sajuA: saju1A, sajuB: saju1B, psychA: makePsych({ growth: 80, stimulation: 80 }), psychB: makePsych({ stability: 80, self_control: 80 }) },
       { name: "Fixture 2", sajuA: saju2A, sajuB: saju2B, psychA: makePsych({ decision_style: 80 }), psychB: makePsych({ energy_style: 80 }) },
       { name: "Fixture 3", sajuA: saju3A, sajuB: saju3B, psychA: makePsych({ practicality: 80 }), psychB: makePsych({ adaptability: 80 }) },
       { name: "Fixture 4", sajuA: saju4A, sajuB: saju4B, psychA: makePsych({ stimulation: 80 }), psychB: makePsych({ stability: 80 }) },
@@ -123,23 +117,25 @@ test("Marriage Chapter 05 Household Operating System Full Rebuild Suite", async 
       { name: "Fixture 6", sajuA: saju6A, sajuB: saju6B, psychA: makePsych({ decision_style: 30 }), psychB: makePsych({ empathy: 30 }) },
     ];
 
-    console.log("\n=================== CHAPTER 05 V3 6-FIXTURE DIVERSITY AUDIT TABLE ===================");
-    console.log("| Fixture | Team Type | Money Value (A/B) | Wealth Synergies | Major Decisions | Operation Style |");
-    console.log("|---------|-----------|-------------------|------------------|-----------------|-----------------|");
+    console.log("\n=================== CHAPTER 05 V3 6-FIXTURE MONEY DECISION LIFECYCLE TABLE ===================");
+    console.log("| Fixture | FIND | TRACK | CHECK | ACT | REVIEW | 1-Line Synthesis |");
+    console.log("|---------|------|-------|-------|-----|--------|------------------|");
 
     for (const f of fixtures) {
       const ctx = mockCtx("Sera", "동글", f.sajuA, f.sajuB, f.psychA, f.psychB);
       const res = buildMarriageChapter05Intelligence({ ctx, psychA: f.psychA, psychB: f.psychB });
 
-      const team = res.coupleOperatingSystem.teamTypeTitle;
-      const moneyVal = `${res.moneyBehavior.importantValueA.slice(0, 5)} / ${res.moneyBehavior.importantValueB.slice(0, 5)}`;
-      const wealthSyn = res.wealthBuildingStyle.pairSynergyInsight.slice(0, 15) + "...";
-      const major = res.majorMoneyDecisions.optionProposer.slice(0, 12);
-      const opStyle = res.financialOperation.operationStyle;
+      const steps = res.majorMoneyDecisions.steps;
+      const find = steps.find(s => s.stepKey === "FIND")?.actorName ?? "-";
+      const track = steps.find(s => s.stepKey === "TRACK")?.actorName ?? "-";
+      const check = steps.find(s => s.stepKey === "CHECK")?.actorName ?? "-";
+      const act = steps.find(s => s.stepKey === "ACT")?.actorName ?? "-";
+      const review = steps.find(s => s.stepKey === "REVIEW")?.actorName ?? "-";
+      const syn = res.majorMoneyDecisions.oneLineSynthesis.slice(0, 20) + "...";
 
-      console.log(`| ${f.name} | ${team} | ${moneyVal} | ${wealthSyn} | ${major} | ${opStyle} |`);
+      console.log(`| ${f.name} | ${find} | ${track} | ${check} | ${act} | ${review} | ${syn} |`);
     }
-    console.log("=====================================================================================\n");
+    console.log("============================================================================================\n");
   });
 
 });
