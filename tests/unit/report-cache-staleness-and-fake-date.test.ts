@@ -1,68 +1,68 @@
-import { describe, it, expect } from "vitest";
+import assert from "node:assert";
 import {
   isStaleWorkReportBlock,
   isStaleCohabitationReportBlock,
 } from "@/lib/relationship/reportStalenessGuard";
 
-describe("Batch A Correctness & Staleness Negative Regression Tests", () => {
-  it("rejects legacy Work report lacking canonical role & mix fit sections", () => {
-    const legacyWorkPayload = {
-      format: "work_colleague_deep_v1",
-      report: {
-        office: {
-          my_work_style: { headline: "Old Style" },
-          // Missing section_roles, section_mix_fit, section_respect
-        },
-      },
-    };
+console.log("==========================================");
+console.log("Report Cache Staleness Guard Unit Tests");
+console.log("==========================================");
 
-    expect(isStaleWorkReportBlock(legacyWorkPayload)).toBe(true);
-  });
+// Test 1
+const legacyWorkPayload = {
+  format: "work_colleague_deep_v1",
+  report: {
+    office: {
+      my_work_style: { headline: "Old Style" },
+    },
+  },
+};
+assert.strictEqual(isStaleWorkReportBlock(legacyWorkPayload), true);
+console.log("✓ Reject legacy Work report lacking canonical sections verified");
 
-  it("accepts modern VNext Work report containing canonical role & mix fit sections", () => {
-    const modernWorkPayload = {
-      format: "work_colleague_deep_v1",
-      report: {
-        office: {
-          section_roles: { person_a: {}, person_b: {} },
-          section_mix_fit: { fit_pct: 85 },
-          section_respect: { headline: "Valid" },
-        },
-      },
-    };
+// Test 2
+const modernWorkPayload = {
+  format: "work_colleague_deep_v1",
+  report: {
+    office: {
+      section_roles: { person_a: {}, person_b: {} },
+      section_mix_fit: { fit_pct: 85 },
+      section_respect: { headline: "Valid" },
+    },
+  },
+};
+assert.strictEqual(isStaleWorkReportBlock(modernWorkPayload), false);
+console.log("✓ Accept modern VNext Work report containing canonical sections verified");
 
-    expect(isStaleWorkReportBlock(modernWorkPayload)).toBe(false);
-  });
+// Test 3
+const legacyMarriagePayload = {
+  format: "cohabitation_deep_v1",
+  report: {
+    household: {
+      summary_line: "Old Summary",
+    },
+  },
+};
+assert.strictEqual(isStaleCohabitationReportBlock(legacyMarriagePayload), true);
+console.log("✓ Reject legacy Cohabitation report lacking canonical plan/chapter intelligences verified");
 
-  it("rejects legacy Cohabitation report lacking canonical story plan or chapter intelligences", () => {
-    const legacyMarriagePayload = {
-      format: "cohabitation_deep_v1",
-      report: {
-        household: {
-          summary_line: "Old Summary",
-        },
-        // Missing canonicalStoryPlan, chapter07Intelligence, chapter08Intelligence
-      },
-    };
+// Test 4
+const modernMarriagePayload = {
+  format: "cohabitation_deep_v1",
+  report: {
+    canonicalStoryPlan: {
+      chapters: [{ chapterId: "c1_who_we_are" }],
+    },
+    chapter07Intelligence: { introNarrative: "Valid" },
+    chapter08Intelligence: { introSentence: "Valid" },
+    household: {
+      section_dna: { person_a: {}, person_b: {} },
+    },
+  },
+};
+assert.strictEqual(isStaleCohabitationReportBlock(modernMarriagePayload), false);
+console.log("✓ Accept modern VNext Cohabitation report containing canonical plan verified");
 
-    expect(isStaleCohabitationReportBlock(legacyMarriagePayload)).toBe(true);
-  });
-
-  it("accepts modern VNext Cohabitation report containing canonical story plan", () => {
-    const modernMarriagePayload = {
-      format: "cohabitation_deep_v1",
-      report: {
-        canonicalStoryPlan: {
-          chapters: [{ chapterId: "c1_who_we_are" }],
-        },
-        chapter07Intelligence: { introNarrative: "Valid" },
-        chapter08Intelligence: { introSentence: "Valid" },
-        household: {
-          section_dna: { person_a: {}, person_b: {} },
-        },
-      },
-    };
-
-    expect(isStaleCohabitationReportBlock(modernMarriagePayload)).toBe(false);
-  });
-});
+console.log("==========================================");
+console.log("ALL STALENESS GUARD UNIT TESTS PASSED!");
+console.log("==========================================");

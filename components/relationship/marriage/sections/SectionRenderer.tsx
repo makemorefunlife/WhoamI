@@ -1690,67 +1690,6 @@ function LifePartnershipVerdictCard({
   return null;
 }
 
-function MarriageActionPlaybookCard({ names, isEn }: { names: [string, string]; isEn: boolean }) {
-  return (
-    <RelationshipReportCard title={isEn ? "The Playbook for a Lasting Partnership (Do & Don't)" : "지속 가능한 부부 파트너십 실전 사용설명서"} accentColor={ACCENT}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <RelationshipReportInset>
-          <p className="font-bold text-v4-good">✅ {isEn ? "Try this now (Do)" : "지금 당장 해볼 것"}</p>
-          <ul className="mt-2 space-y-1.5 text-xs text-rel-ink">
-            {isEn ? (
-              <>
-                <li>• Once a month, check in on whether the chore/finance roles you agreed on are actually holding up</li>
-                <li>• Give immediate emotional feedback ("thank you") for your partner's planning/tidying effort</li>
-                <li>• Take 24 hours to think it over and reach mutual agreement before big purchases</li>
-                <li>• If a fight passes 15 minutes, declare a timeout keyword and cool down for 20 minutes</li>
-              </>
-            ) : (
-              <>
-                <li>• 한 달에 한 번, 정한 가사·재정 역할이 실제로 잘 지켜지고 있는지 서로 점검하기</li>
-                <li>• 상대의 기획/정리 노고에 "고마워" 즉시 정서적 피드백 주기</li>
-                <li>• 대형 지출 전에는 24시간 생각 정리 후 상호 합의 거치기</li>
-                <li>• 싸움이 15분을 넘어가면 타임아웃 키워드 선언 후 20분 쿨링다운하기</li>
-              </>
-            )}
-          </ul>
-        </RelationshipReportInset>
-
-        <RelationshipReportInset>
-          <p className="font-bold text-v4-bad">🚫 {isEn ? "Never do this (Don't)" : "절대 하지 말 것 (Don't)"}</p>
-          <ul className="mt-2 space-y-1.5 text-xs text-rel-ink">
-            {isEn ? (
-              <>
-                <li>• Don't reopen the day's conflict or hurt feelings once the bedroom door is closed</li>
-                <li>• Don't bring up your partner's family of origin or old parental habits mid-conflict</li>
-                <li>• Don't dump chores or financial control on one person and check out</li>
-                <li>• Don't snap back or force a conversation when your partner asks for alone time to recover</li>
-              </>
-            ) : (
-              <>
-                <li>• 침실 문이 닫힌 뒤 그날의 갈등이나 서운함 재개하지 않기</li>
-                <li>• 상대의 원가족이나 과거 부모 습관을 갈등 도중에 끌어오지 않기</li>
-                <li>• 집안일이나 재정 주도권을 한 사람에게 무작정 전임하고 방관하기</li>
-                <li>• 상대가 혼자만의 복원 시간을 요청할 때 말을 쏘아붙이며 억지로 대화 강요하지 않기</li>
-              </>
-            )}
-          </ul>
-        </RelationshipReportInset>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-rel-line bg-rel-taupe-soft/30 p-4 text-center">
-        <p className="text-xs font-semibold text-rel-taupe">
-          🌱 {isEn ? `A promise for ${names[0]} and ${names[1]}'s next 10 to 20 years together` : `${names[0]}님과 ${names[1]}님의 10년, 20년 안식을 위한 약속`}
-        </p>
-        <p className="mt-1 text-xs text-rel-ink-soft">
-          {isEn
-            ? "When you transparently share the small routines of daily life and protect each other's recovery time, your home becomes the safest place to rest."
-            : "작은 생활의 루틴을 투명하게 나누고 서로의 복원 시간을 지켜줄 때, 두 사람의 가정은 가장 안전한 휴식처가 됩니다."}
-        </p>
-      </div>
-    </RelationshipReportCard>
-  );
-}
-
 // ---- Deep-read canonical merge blocks ---------------------------------------
 // Additive expert-synthesis subsections for Ch1/Ch3/Ch8/Ch9 — see
 // docs/dev/decisions/028 and the Deep Read Content Ownership Audit. Each
