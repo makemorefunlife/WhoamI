@@ -1208,10 +1208,10 @@ function EconomicPartnershipCard({ bundle, names, isEn }: { bundle?: MarriageCan
     : (isEn ? "Explore growth assets ➔ goal-based staged accumulation" : "성장 자산화 탐색 ➔ 목표 기반 분할 축적 시스템");
 
   return (
-    <RelationshipReportCard title={isEn ? "💸 Economic Partnership Role Map" : "💸 부부 경제 파트너십"} accentColor={ACCENT}>
+    <RelationshipReportCard title={isEn ? "Economic Partnership Role Map" : "부부 경제 파트너십"} accentColor={ACCENT}>
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-rel-ink">👤 {isEn ? `${names[0]}'s Economic Role` : `${names[0]}님의 경제적 역할`}</p>
+          <p className="font-bold text-rel-ink">{isEn ? `${names[0]}'s Economic Role` : `${names[0]}님의 경제적 역할`}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="rounded bg-v4-a-soft px-2 py-0.5 text-xs font-semibold text-v4-a">{profileA.primaryRoleLabel}</span>
             <span className="rounded bg-v4-a-soft px-2 py-0.5 text-xs text-v4-a/80">{profileA.secondaryRoleLabel}</span>
@@ -1220,7 +1220,7 @@ function EconomicPartnershipCard({ bundle, names, isEn }: { bundle?: MarriageCan
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-rel-ink">👤 {isEn ? `${names[1]}'s Economic Role` : `${names[1]}님의 경제적 역할`}</p>
+          <p className="font-bold text-rel-ink">{isEn ? `${names[1]}'s Economic Role` : `${names[1]}님의 경제적 역할`}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="rounded bg-v4-b-soft px-2 py-0.5 text-xs font-semibold text-v4-b">{profileB.primaryRoleLabel}</span>
             <span className="rounded bg-v4-b-soft px-2 py-0.5 text-xs text-v4-b/80">{profileB.secondaryRoleLabel}</span>
@@ -1230,12 +1230,12 @@ function EconomicPartnershipCard({ bundle, names, isEn }: { bundle?: MarriageCan
       </div>
 
       <div className="mt-4 rounded-lg border border-v4-good/30 bg-v4-good-soft p-4">
-        <p className="text-sm font-bold text-v4-good">🤝 {isEn ? `Economic Partnership Synergy: ${pairSynergyTitle}` : `부부 경제 파트너십 시너지: ${pairSynergyTitle}`}</p>
+        <p className="text-sm font-bold text-v4-good">{isEn ? `Economic Partnership Synergy: ${pairSynergyTitle}` : `부부 경제 파트너십 시너지: ${pairSynergyTitle}`}</p>
         <p className="mt-1.5 text-xs leading-relaxed text-rel-ink-soft">{pairSynergyNarrative}</p>
       </div>
 
       <div className="mt-4 rounded-lg border border-rel-taupe/30 bg-rel-taupe-soft p-4">
-        <p className="text-sm font-bold text-rel-taupe">💡 {isEn ? "Recommended savings & asset-building approach for you two" : "우리 부부에게 권장하는 돈 모으기 & 자산 운용 방식"}</p>
+        <p className="text-sm font-bold text-rel-taupe">{isEn ? "Recommended savings & asset-building approach for you two" : "우리 부부에게 권장하는 돈 모으기 & 자산 운용 방식"}</p>
         <p className="mt-1 text-xs font-semibold text-rel-ink">{strategyTitle}</p>
         <p className="mt-1 text-xs text-rel-ink-soft">
           {isEn
@@ -1245,11 +1245,11 @@ function EconomicPartnershipCard({ bundle, names, isEn }: { bundle?: MarriageCan
       </div>
 
       <div className="mt-4 rounded-lg border border-rel-line bg-rel-surface p-4 text-xs">
-        <p className="font-semibold text-rel-taupe">📊 {isEn ? "Economic Decision Flow" : "경제 의사결정 및 관리 수순"}</p>
+        <p className="font-semibold text-rel-taupe">{isEn ? "Economic Decision Flow" : "경제 의사결정 및 관리 수순"}</p>
         <div className="mt-2 grid grid-cols-2 gap-2 text-rel-ink-soft sm:grid-cols-3">
           <div><span className="text-rel-ink-mute">{isEn ? "1. Cash flow:" : "1. 현금흐름 관리:"}</span> {decisionFlow.cashFlowTracker}{honorific}</div>
           <div><span className="text-rel-ink-mute">{isEn ? "2. Proposes big purchases:" : "2. 대형지출 제안:"}</span> {decisionFlow.largePurchaseProposer}{honorific}</div>
-          <div><span className="text-rel-ink-mute">{isEn ? "3. Risk review:" : "3. 리스크 검토:"}</span> {decisionFlow.riskReviewer}{honorific}</div>
+          <div><span className="text-rel-[#1b3b2b]">{isEn ? "3. Risk review:" : "3. 리스크 검토:"}</span> {decisionFlow.riskReviewer}{honorific}</div>
           <div><span className="text-rel-ink-mute">{isEn ? "4. Final decision:" : "4. 최종 의사결정:"}</span> {decisionFlow.decider}</div>
           <div><span className="text-rel-ink-mute">{isEn ? "5. Executes:" : "5. 금융 실무집행:"}</span> {decisionFlow.executor}{honorific}</div>
         </div>
@@ -1283,10 +1283,10 @@ function ConflictSubstantiveCard({
   if (!personA || !personB) return null;
 
   return (
-    <RelationshipReportCard title={isEn ? "🔥 4-Stage Conflict Transition & Crisis-Response Partnership" : "🔥 갈등 4단계 상태 전이 & 위기 대응 파트너십"} accentColor={ACCENT} variant="warning">
+    <RelationshipReportCard title={isEn ? "4-Stage Conflict Transition & Crisis-Response Partnership" : "갈등 4단계 상태 전이 & 위기 대응 파트너십"} accentColor={ACCENT} variant="warning">
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
-          <p className="font-bold text-v4-bad">⚡ {isEn ? `${names[0]}'s 4-Stage Emotional Conflict Transition` : `${names[0]}님의 갈등 감정 4단계 전이`}</p>
+          <p className="font-bold text-v4-bad">{isEn ? `${names[0]}'s 4-Stage Emotional Conflict Transition` : `${names[0]}님의 갈등 감정 4단계 전이`}</p>
           <ol className="mt-2 space-y-2 text-xs text-rel-ink-soft">
             {personA.stages.map((st) => (
               <li key={st.stepNumber}>
@@ -1298,7 +1298,7 @@ function ConflictSubstantiveCard({
         </RelationshipReportInset>
 
         <RelationshipReportInset>
-          <p className="font-bold text-v4-bad">⚡ {isEn ? `${names[1]}'s 4-Stage Emotional Conflict Transition` : `${names[1]}님의 갈등 감정 4단계 전이`}</p>
+          <p className="font-bold text-v4-bad">{isEn ? `${names[1]}'s 4-Stage Emotional Conflict Transition` : `${names[1]}님의 갈등 감정 4단계 전이`}</p>
           <ol className="mt-2 space-y-2 text-xs text-rel-ink-soft">
             {personB.stages.map((st) => (
               <li key={st.stepNumber}>
@@ -1692,7 +1692,7 @@ function LifePartnershipVerdictCard({
 
 function MarriageActionPlaybookCard({ names, isEn }: { names: [string, string]; isEn: boolean }) {
   return (
-    <RelationshipReportCard title={isEn ? "📘 The Playbook for a Lasting Partnership (Do & Don't)" : "📘 지속 가능한 부부 파트너십 실전 사용설명서"} accentColor={ACCENT}>
+    <RelationshipReportCard title={isEn ? "The Playbook for a Lasting Partnership (Do & Don't)" : "지속 가능한 부부 파트너십 실전 사용설명서"} accentColor={ACCENT}>
       <div className="grid gap-4 sm:grid-cols-2">
         <RelationshipReportInset>
           <p className="font-bold text-v4-good">✅ {isEn ? "Try this now (Do)" : "지금 당장 해볼 것"}</p>
