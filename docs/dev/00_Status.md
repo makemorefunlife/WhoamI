@@ -6,6 +6,7 @@
 
 ## ✅ 최근 완료 (이번 주)
 
+- [x] Marriage Premium Report Chapter 08 Full Implementation: Shared Saju Timing Core + Psych 11 Response + Couple Timing Model + 5-Section Timing & 3-Year Relationship Forecast
 - [x] Marriage Premium Report Chapter 05 Full Rebuild: Household Operating System (Money, Economic Crisis Resilience, Investment Workflow)
 - [x] Marriage Premium Report Chapter 06 Full Rebuild: Family System (Couple Boundary, Origin Family Dynamics, Parenting DNA, Parenting Difference, Pair Parenting System, Family Load Redistribution, Family Identity)
 - [x] 부부(Marriage) 리포트 "일상 모습" 섹션 + 순서 재배치 완료 — 빌더 배열 + CANONICAL_CHAPTER_DEFINITIONS + CHAPTER_GROUPS 3개 레이어 모두 (`decisions/033`)
