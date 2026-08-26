@@ -1,18 +1,5 @@
 "use client";
 
-/**
- * Marriage-only editorial visual skin — drop-in replacements for the shared
- * dark-card reportLayout primitives (RelationshipReportCard/Body/Paragraph/
- * Label/Inset) plus a hero, all built on the SAME rel-* / v4-* design tokens
- * and EditorialPrimitives shell already used by Romantic V4 and Friend
- * (components/relationship/shared/editorial/EditorialPrimitives.tsx).
- *
- * Visual skin only: prop signatures mirror the originals in
- * components/relationship/reportLayout/RelationshipReportCard.tsx exactly,
- * so every existing Marriage card component's JSX body is unchanged — only
- * the import source moves from reportLayout (dark) to this file (editorial).
- * No content, copy, section order, or data binding changes here.
- */
 import type { ReactNode } from "react";
 import { NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 
@@ -26,7 +13,7 @@ export function RelationshipReportBody({
   className?: string;
 }) {
   return (
-    <div className={`space-y-4 font-rel-sans text-[14.5px] leading-[1.75] text-rel-ink-soft ${className}`}>
+    <div className={`space-y-4 font-rel-sans text-[14.5px] leading-[1.75] text-[#5e5b56] ${className}`}>
       {children}
     </div>
   );
@@ -44,7 +31,7 @@ export function RelationshipReportParagraph({
   return (
     <p
       className={`whitespace-pre-wrap font-rel-sans leading-[1.75] ${
-        muted ? "text-rel-ink-mute" : "text-rel-ink-soft"
+        muted ? "text-[#8c827a]" : "text-[#5e5b56]"
       } ${className}`}
     >
       {children}
@@ -60,7 +47,7 @@ export function RelationshipReportLabel({
   className?: string;
 }) {
   return (
-    <p className={`font-rel-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-rel-ink-mute ${className}`}>
+    <p className={`font-rel-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8c827a] ${className}`}>
       {children}
     </p>
   );
@@ -78,6 +65,12 @@ export function RelationshipReportInset({
   );
 }
 
+/**
+ * Marriage Report Card with Subtitle OUTSIDE and ABOVE the block.
+ * Ensures consistent design across all sections:
+ * 1. Title renders above the card block.
+ * 2. Content block renders separately underneath.
+ */
 export default function RelationshipReportCard({
   title,
   children,
@@ -87,7 +80,7 @@ export default function RelationshipReportCard({
   id,
   showMarker = true,
 }: {
-  title: string;
+  title?: string;
   children: ReactNode;
   variant?: MarriageReportCardVariant;
   accentColor?: string;
@@ -106,23 +99,29 @@ export default function RelationshipReportCard({
             ? "rounded-2xl border border-[#e6e2dc] bg-[#f9f8f6] p-5 sm:p-6 shadow-2xs"
             : "rounded-2xl border border-[#e6e2dc] bg-white p-5 sm:p-6 shadow-2xs";
 
-  const cleanTitle = title ? title.replace(/^[◤▼▶]\s*/, "") : "";
+  const cleanTitle = title ? title.replace(/^[◤▼▶]\s*/, "").trim() : "";
 
   return (
-    <article id={id} className={`${variantBox} ${className}`}>
-      <h3
-        className="mb-4 flex items-baseline gap-2 font-rel-serif text-[17px] leading-snug tracking-[-0.01em] text-rel-ink sm:text-[19px]"
-        style={accentColor ? { color: accentColor } : undefined}
-      >
-        {showMarker && (
-          <span className="text-[12px] leading-none text-rel-deep shrink-0" aria-hidden>
-            ◤
-          </span>
-        )}
-        <span className="min-w-0 flex-1">{cleanTitle}</span>
-      </h3>
-      {children}
-    </article>
+    <div id={id} className="space-y-3">
+      {cleanTitle ? (
+        <div className="flex items-center gap-2 pt-1">
+          {showMarker && (
+            <span className="text-[13px] leading-none text-[#1b3b2b] shrink-0" aria-hidden>
+              ◤
+            </span>
+          )}
+          <h3
+            className="font-rel-serif text-[17px] font-bold leading-snug tracking-[-0.01em] text-[#2c2b29] sm:text-[19px]"
+            style={accentColor ? { color: accentColor } : undefined}
+          >
+            {cleanTitle}
+          </h3>
+        </div>
+      ) : null}
+      <article className={`${variantBox} ${className}`}>
+        {children}
+      </article>
+    </div>
   );
 }
 
@@ -143,25 +142,25 @@ export function MarriageEditorialHero({
   const [nameA, nameB] = names;
   return (
     <header className="relative overflow-hidden">
-      <div className="mx-auto w-full max-w-[820px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
+      <div className="mx-auto w-full max-w-[820px] px-5 pb-10 pt-12 sm:px-8 sm:pb-16 sm:pt-16">
         {eyebrow ? (
-          <p className="font-rel-sans text-[10px] uppercase tracking-[0.3em] text-rel-deep">{eyebrow}</p>
+          <p className="font-rel-sans text-[10px] font-bold uppercase tracking-[0.3em] text-[#1b3b2b]">{eyebrow}</p>
         ) : null}
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <div className="mt-4 flex flex-wrap items-center gap-2.5">
           <NameChip name={nameA} side="a" />
-          <span aria-hidden className="font-rel-serif text-[15px] text-rel-ink-mute">
+          <span aria-hidden className="font-rel-serif text-[15px] text-[#8c827a]">
             ×
           </span>
           <NameChip name={nameB} side="b" />
         </div>
-        <h1 className="mt-6 max-w-[24ch] font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
+        <h1 className="mt-5 max-w-[24ch] font-rel-serif text-[28px] font-bold leading-[1.25] tracking-[-0.02em] text-[#2c2b29] sm:text-[40px]">
           {headline}
         </h1>
         {subtitle ? (
-          <p className="mt-5 max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft">{subtitle}</p>
+          <p className="mt-4 max-w-[62ch] font-rel-sans text-[14.5px] leading-[1.85] text-[#5e5b56]">{subtitle}</p>
         ) : null}
         {gradeLabel ? (
-          <span className="mt-6 inline-flex rounded-full border border-rel-deep/30 bg-rel-deep-soft px-3.5 py-1 font-rel-sans text-xs font-semibold tracking-wide text-rel-deep">
+          <span className="mt-5 inline-flex rounded-full border border-[#1b3b2b]/30 bg-[#1b3b2b]/10 px-3.5 py-1 font-rel-sans text-xs font-semibold tracking-wide text-[#1b3b2b]">
             {gradeLabel}
           </span>
         ) : null}

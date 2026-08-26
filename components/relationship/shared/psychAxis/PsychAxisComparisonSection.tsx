@@ -58,21 +58,17 @@ export function PsychAxisComparisonSection({
           <SubHeading title={isEn ? "Key 11-Axis Psych Insights" : "11축 심리 차이 핵심 인사이트"} tag={isEn ? "Psych Dynamics" : "심리 역학"} tone="coral" />
           <ul className="space-y-4">
             {highlights.map((h, i) => {
-              const isMatch = h.match_type === "resonance";
-              const tagLabel = isEn
-                ? (isMatch ? "✨ Resonance" : h.match_type === "complement" ? "🌿 Complement" : "⚡ Tension")
-                : (isMatch ? "✨ 공감 유대 (Resonance)" : h.match_type === "complement" ? "🌿 상보 보완 (Complement)" : "⚡ 성향 차이 (Tension)");
               return (
                 <li key={h.axis_key}>
                   <Reveal delay={i * 60}>
-                    <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
+                    <div className="rounded-2xl border border-[#e6e2dc] bg-white p-5 sm:p-6 shadow-2xs space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-rel-serif text-[17px] font-semibold text-rel-ink">🎯 {h.axis_label}</span>
+                        <span className="font-rel-serif text-[17px] font-bold text-[#2c2b29]">{h.axis_label}</span>
                       </div>
-                      <p className="font-rel-sans text-[13.5px] font-medium leading-relaxed text-rel-deep bg-rel-taupe-soft/60 p-3 rounded-xl border border-rel-line">
+                      <p className="font-rel-sans text-[13.5px] font-medium leading-relaxed text-[#1b3b2b] bg-[#f9f8f6] p-3 rounded-xl border border-[#e6e2dc]">
                         {h.hook}
                       </p>
-                      <p className="font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">
+                      <p className="font-rel-sans text-[13.5px] leading-[1.8] text-[#5e5b56]">
                         {h.narrative}
                       </p>
                     </div>
