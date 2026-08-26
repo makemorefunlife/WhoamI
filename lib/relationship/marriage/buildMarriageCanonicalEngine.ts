@@ -28,6 +28,7 @@ import { buildMarriageChapter01Intelligence } from "./marriageChapter01Intellige
 import { buildMarriageChapter03Intelligence } from "./marriageChapter03Intelligence";
 import { buildMarriageChapter04Intelligence } from "./marriageChapter04Intelligence";
 import { buildMarriageChapter05Intelligence } from "./marriageChapter05Intelligence";
+import { buildMarriageChapter07Intelligence } from "./marriageChapter07Intelligence";
 import type {
   MarriageCanonicalBundle,
   HouseholdPmResult,
@@ -532,6 +533,15 @@ export function buildMarriageCanonicalEngine(
   const chapter03Intelligence = buildMarriageChapter03Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
   const chapter04Intelligence = buildMarriageChapter04Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
   const chapter05Intelligence = buildMarriageChapter05Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
+  const chapter07Intelligence = buildMarriageChapter07Intelligence({
+    nameA: a,
+    nameB: b,
+    psychA: params.psychMasterA,
+    psychB: params.psychMasterB,
+    countsA: ctx.tenGod.countsA,
+    countsB: ctx.tenGod.countsB,
+    locale,
+  });
   const marriage11Axis = buildMarriage11AxisInsights(params.psychMasterA, params.psychMasterB, a, b, locale);
   const conflict4Stage = buildMarriageConflict4Stage(params.psychMasterA, params.psychMasterB, a, b, locale);
   const loveDeliveryMatch = buildMarriageLoveDeliveryMatch(params.psychMasterA, params.psychMasterB, a, b, locale);
@@ -566,6 +576,7 @@ export function buildMarriageCanonicalEngine(
     chapter03Intelligence,
     chapter04Intelligence,
     chapter05Intelligence,
+    chapter07Intelligence,
     householdPm,
     plannerExecutor,
     decisionPowerMap,

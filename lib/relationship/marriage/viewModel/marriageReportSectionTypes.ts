@@ -211,6 +211,7 @@ export type MarriageReportViewModel = {
    */
   canonicalNames: [string, string];
   conflict4StageView?: import("./marriageUiContracts").MarriageConflict4StageViewModel;
+  chapter07Intelligence?: import("../marriageChapter07Intelligence").MarriageChapter07Intelligence;
   lifePartnershipVerdictView?: import("./marriageUiContracts").MarriagePartnershipVerdictViewModel;
   /**
    * married_saju_deep explain-only overlay, folded into the canonical

@@ -27,6 +27,7 @@ import { createDefaultMarriageChapter03Intelligence } from "@/lib/relationship/m
 import { createDefaultMarriageChapter04Intelligence } from "@/lib/relationship/marriage/marriageChapter04Intelligence";
 import { SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
+import { MarriageChapter07View } from "./MarriageChapter07View";
 import type {
   BedroomSection,
   CompareTableSection,
@@ -114,13 +115,11 @@ const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   { id: "c4_intimacy_bedroom", number: "04", titleKo: "사랑, 신체적 친밀감과 침실 이야기", titleEn: "Physical Intimacy & Bedroom Chemistry", types: ["bedroom"] },
   { id: "c3_household_os", number: "05", titleKo: "돈, 생활력, 그리고 우리 집을 굴리는 방식", titleEn: "Household OS: Money, Life Competence & Mental Load", types: ["money_chores"] },
   { id: "c6_family_parenting_career", number: "06", titleKo: "둘을 넘어 가족이 되면 어떤 시스템이 되는가?", titleEn: "Family System & Parenting", types: ["parenting", "family_boundary"] },
-  { id: "c5_conflict_deescalation", number: "07", titleKo: "부딪히는 순간과 다시 가까워지는 법", titleEn: "Conflict, De-Escalation & SOS Script", types: ["warning"] },
-  { id: "c9_next_chapter_rituals", number: "08", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: ["upset", "privacy", "prescription"] },
+  { id: "c5_conflict_deescalation", number: "07", titleKo: "왜 싸우고, 어떻게 다시 가까워지는가?", titleEn: "Conflict, De-Escalation & SOS Script", types: [] },
+  { id: "c9_next_chapter_rituals", number: "08", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: [] },
 ];
 
-// 레거시 폴백(canonicalStoryPlan 없는 옛 캐시 리포트) — 하드코딩 특수 블록
-// 결합이 없어서 canonical 배열과 달리 챕터 구성 자체를 decisions/033 순서에
-// 맞춰 자유롭게 합쳤다.
+// 레거시 폴백(canonicalStoryPlan 없는 옛 캐시 리포트)
 const CHAPTER_GROUPS: Array<{
   id: string;
   types: Exclude<MarriageSectionType, "household_snapshot">[];
@@ -144,18 +143,6 @@ const CHAPTER_GROUPS: Array<{
     types: ["bedroom", "money_chores", "parenting", "family_boundary"],
     titleKo: "다름을 무기로 — 우리 집 실전 역할 분담",
     titleEn: "Turning Differences into Teamwork",
-  },
-  {
-    id: "ch_fight_pattern",
-    types: ["upset", "warning"],
-    titleKo: "부부싸움의 패턴과 오해의 번역기",
-    titleEn: "Your Fight Pattern & the Translator",
-  },
-  {
-    id: "ch_playbook",
-    types: ["prescription"],
-    titleKo: "오래 단단할 우리를 위한 절대 처방전",
-    titleEn: "The Playbook for the Long Run",
   },
   {
     id: "ch_weather",
@@ -1387,42 +1374,83 @@ function getMatchBadge(matchType: string, isEn: boolean) {
   }
 }
 
+function Chapter03SubstantiveCard({
+  bundle,
+  names,
+  isEn,
+}: {
+  bundle?: MarriageCanonicalBundle;
+  names: [string, string];
+  isEn: boolean;
+}) {
+  const ch03 = bundle?.chapter03Intelligence ?? createDefaultMarriageChapter03Intelligence(names[0], names[1], isEn);
+
+  return (
+    <div className="space-y-6 mb-6">
+      {/* 01. 관계적 자산 (Relational Assets) */}
+      {ch03.assets && ch03.assets.length > 0 ? (
+        <div className="space-y-3">
+          <SubHeading title={isEn ? "Compounding Relational Assets" : "01. 시간이 살수록 쌓이는 우리의 관계적 자산"} tag="자산" tone="deep" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {ch03.assets.map((asset, i) => (
+              <RelationshipReportInset key={i} className="border border-v4-good/30 bg-v4-good-soft/20 p-4 rounded-xl space-y-1.5">
+                <p className="text-xs font-bold text-v4-good">💎 {asset.title}</p>
+                <p className="text-xs leading-relaxed text-rel-ink">{asset.mechanism}</p>
+                <p className="text-[11px] text-rel-taupe pt-1 border-t border-v4-good/20">🌱 {asset.longTermValue}</p>
+              </RelationshipReportInset>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* 02. 장점의 반전 위험 (Asset-to-Debt Chain) */}
+      {ch03.assetToDebtChains && ch03.assetToDebtChains.length > 0 ? (
+        <div className="space-y-3">
+          <SubHeading title={isEn ? "Asset to Debt Dynamics" : "02. 처음엔 장점이었지만 과부하가 될 수 있는 것"} tag="주의" tone="coral" />
+          <div className="space-y-3">
+            {ch03.assetToDebtChains.map((chain, i) => (
+              <RelationshipReportInset key={i} className="border border-amber-500/30 bg-amber-950/10 p-4 rounded-xl space-y-2">
+                <p className="text-xs font-bold text-amber-200">⚡ {chain.title}</p>
+                <p className="text-xs leading-relaxed text-rel-ink-soft"><span className="font-semibold text-v4-good">초기 이점:</span> {chain.initialBenefit}</p>
+                <p className="text-xs leading-relaxed text-rel-ink-soft"><span className="font-semibold text-v4-bad">반전 조건:</span> {chain.flipCondition}</p>
+                <p className="text-xs leading-relaxed text-rel-ink-soft"><span className="font-semibold text-amber-300">장기 비용:</span> {chain.longTermCost}</p>
+              </RelationshipReportInset>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* 03. 역할 고착화 위험 (Role Lock-in) */}
+      {ch03.roleLockIn ? (
+        <div className="space-y-3">
+          <SubHeading title={isEn ? "Relational Role Lock-in" : "03. 한 사람에게 역할이 굳어질 위험"} tag="역할 분담" tone="deep" />
+          <RelationshipReportInset className="border border-rel-line bg-rel-surface p-4 rounded-xl space-y-3">
+            <p className="text-xs leading-relaxed text-rel-ink font-medium">{ch03.roleLockIn.pairSummary}</p>
+            <div className="grid gap-3 sm:grid-cols-2 pt-2 border-t border-rel-line/60">
+              <div className="space-y-1 bg-rel-taupe-soft/30 p-3 rounded-lg border border-rel-line">
+                <span className="text-xs font-bold text-v4-a">{ch03.roleLockIn.personARole.personName}: {ch03.roleLockIn.personARole.roleTitle}</span>
+                <p className="text-[11px] text-rel-ink-soft">{ch03.roleLockIn.personARole.whyFormed}</p>
+                <p className="text-[11px] text-v4-bad">⚠️ {ch03.roleLockIn.personARole.riskWhenLocked}</p>
+              </div>
+              <div className="space-y-1 bg-rel-taupe-soft/30 p-3 rounded-lg border border-rel-line">
+                <span className="text-xs font-bold text-v4-b">{ch03.roleLockIn.personBRole.personName}: {ch03.roleLockIn.personBRole.roleTitle}</span>
+                <p className="text-[11px] text-rel-ink-soft">{ch03.roleLockIn.personBRole.whyFormed}</p>
+                <p className="text-[11px] text-v4-bad">⚠️ {ch03.roleLockIn.personBRole.riskWhenLocked}</p>
+              </div>
+            </div>
+          </RelationshipReportInset>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function Chapter07SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
   return null;
 }
 
 function MarriageChapter09SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCanonicalBundle; names: [string, string]; isEn: boolean }) {
-  const ch03 = bundle?.chapter03Intelligence ?? createDefaultMarriageChapter03Intelligence(names[0], names[1], isEn);
-
-  return (
-    <div className="space-y-6 mb-6">
-      {/* Expectation Limits */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Expectation Limits" : "서로에게 기대하지 않는 게 좋은 것"} tag="Limits" tone="deep" />
-        <div className="space-y-2">
-          {ch03.expectationLimits.map((limit, i) => (
-            <RelationshipReportInset key={i} className="space-y-1.5 border border-rel-taupe/30 bg-rel-taupe-soft/20">
-              <p className="text-xs font-bold text-rel-deep">{limit.targetName} ➔ {limit.partnerName}: {limit.limitedFunction}</p>
-              <p className="text-xs leading-relaxed text-rel-ink-soft">{limit.whyCostlyToDemand}</p>
-              {limit.adaptiveSupplyNote ? (
-                <p className="text-xs font-medium text-v4-good">🌿 {limit.adaptiveSupplyNote}</p>
-              ) : null}
-            </RelationshipReportInset>
-          ))}
-        </div>
-      </div>
-
-      {/* Long-Term Protection Rules */}
-      <div className="space-y-3">
-        <SubHeading title={isEn ? "Long-Term Protection Rules" : "오래 함께할수록 지켜야 할 것"} tag="Protection" tone="deep" />
-        <RelationshipReportInset className="space-y-2.5 border border-v4-good/40 bg-v4-good-soft/30 p-4 rounded-xl text-xs">
-          <p className="leading-relaxed text-rel-ink"><span className="font-bold text-v4-good">우리가 꼭 지켜야 할 가치:</span> {ch03.protection.assetToProtect}</p>
-          <p className="leading-relaxed text-rel-ink"><span className="font-bold text-rel-taupe">서로 유연하게 맞춰갈 부분:</span> {ch03.protection.roleToRenegotiate}</p>
-          <p className="leading-relaxed text-rel-ink"><span className="font-bold text-v4-good">잊지 않고 고마워할 노력:</span> {ch03.protection.effortToAppreciate}</p>
-        </RelationshipReportInset>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 function getLoveTransmissionBadge(matchType: string, isEn: boolean) {
@@ -2054,19 +2082,20 @@ export function MarriageReportViewModelView({
                   <ExpertVoiceBlock vm={vm.chapter1ExpertVoice} viewerIsReportA={viewerIsReportA} />
                 ) : null}
 
+                {cDef.id === "c7_longterm_compounding" ? (
+                  <Chapter03SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
+                ) : null}
+
                 {cDef.id === "c4_intimacy_bedroom" ? (
                   <Chapter04SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
                 {cDef.id === "c5_conflict_deescalation" ? (
-                  <ConflictSubstantiveCard view={vm.conflict4StageView} bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
+                  <MarriageChapter07View ch07={vm.chapter07Intelligence} canonicalNames={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
                 {cDef.id === "c9_next_chapter_rituals" ? (
-                  <>
-                    <MarriageChapter09SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
-                    <MarriageActionPlaybookCard names={vm.opening.names} isEn={isEn} />
-                  </>
+                  <MarriageChapter09SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
                 {/* Map only this chapter's explicitly owned section cards */}

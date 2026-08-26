@@ -17,6 +17,7 @@ import {
   swapPsychAxisForViewer,
 } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildMarriagePsychMatchBundle } from "@/lib/relationship/marriage/buildMarriagePsychMatch";
+import { buildMarriageChapter07Intelligence } from "@/lib/relationship/marriage/marriageChapter07Intelligence";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
@@ -839,14 +840,10 @@ export function buildMarriageReportViewModel(
     () => buildPsychRadarSection(report, viewerIsReportA, t),
     () => buildCompareTableSection(report, locale ?? "ko-KR", t),
     () => buildHomeDnaSection(report, viewerIsReportA, t),
-    () => buildPrivacySection(report, t),
     () => buildBedroomSection(report, t),
     () => buildMoneyChoresSection(report, locale ?? "ko-KR", t),
     () => buildParentingSection(report, t, names[0], names[1], locale ?? "ko-KR"),
     () => buildFamilyBoundarySection(report, t),
-    () => buildUpsetSection(report, viewerIsReportA, t),
-    () => buildWarningSection(report, t),
-    () => buildPrescriptionSection(report, t),
     () => buildWeatherForecastSection(report, t),
   ];
 
@@ -872,6 +869,18 @@ export function buildMarriageReportViewModel(
   const conflict4StageView = normalizeConflict4Stage(canonicalBundle, canonicalNames, locale);
   const lifePartnershipVerdictView = normalizeLifePartnershipVerdict(canonicalBundle, canonicalNames, locale);
 
+  const chapter07Intelligence =
+    canonicalBundle?.chapter07Intelligence ??
+    buildMarriageChapter07Intelligence({
+      nameA: canonicalNames[0],
+      nameB: canonicalNames[1],
+      psychA: (report.meta as any)?.psych_master_a ?? null,
+      psychB: (report.meta as any)?.psych_master_b ?? null,
+      countsA: (report.household?.section_dna?.person_a?.ten_gods as any) ?? {},
+      countsB: (report.household?.section_dna?.person_b?.ten_gods as any) ?? {},
+      locale,
+    });
+
   const deepReadOverlay = report.meta?.married_saju_deep;
   const chapter1ExpertVoice = normalizeChapter1ExpertVoice(deepReadOverlay, canonicalNames);
   const chapter3RoleFitInsight = normalizeChapter3RoleFitInsight(deepReadOverlay);
@@ -887,6 +896,7 @@ export function buildMarriageReportViewModel(
     canonicalBundle,
     canonicalNames,
     conflict4StageView,
+    chapter07Intelligence,
     lifePartnershipVerdictView,
     chapter1ExpertVoice,
     chapter3RoleFitInsight,

@@ -304,21 +304,19 @@ export default function MarriageReportView({
   // 아래 레거시 JSX로 안전하게 폴백한다. 모든 hook(useMemo 등) 호출 이후에 배치해
   // React Hooks 규칙(조건부 early return 이전에 hook을 다 호출)을 지킨다.
   let partRendererViewModel: ReturnType<typeof buildMarriageReportViewModel> | null = null;
-  if (hh?.section_dna?.person_a && hh?.section_dna?.person_b) {
-    try {
-      partRendererViewModel = buildMarriageReportViewModel(report, {
-        viewerIsReportA,
-        myName,
-        partnerName,
-        locale,
-      });
-    } catch (err) {
-      if (process.env.NODE_ENV !== "production") {
-        console.error(
-          "[MarriageReportView] buildMarriageReportViewModel failed, falling back to legacy view",
-          err,
-        );
-      }
+  try {
+    partRendererViewModel = buildMarriageReportViewModel(report, {
+      viewerIsReportA,
+      myName,
+      partnerName,
+      locale,
+    });
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error(
+        "[MarriageReportView] buildMarriageReportViewModel failed, falling back to legacy view",
+        err,
+      );
     }
   }
   if (partRendererViewModel) {
@@ -590,115 +588,6 @@ export default function MarriageReportView({
             </RelationshipReportParagraph>
           </RelationshipReportBody>
         </RelationshipReportCard>
-      ) : null}
-
-      {hh?.section_privacy ? (
-        <RelationshipReportCard
-          title={t.privacyCardTitle}
-          accentColor={theme.accent}
-        >
-          <RelationshipReportBody>
-            <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">
-                {t.myPrivacyLineLabel}
-              </span>
-              {privacyPair?.me}
-            </RelationshipReportParagraph>
-            <RelationshipReportParagraph>
-              <span className="font-medium text-white/90">
-                {t.partnerPrivacyLineLabel}
-              </span>
-              {privacyPair?.partner}
-            </RelationshipReportParagraph>
-          </RelationshipReportBody>
-        </RelationshipReportCard>
-      ) : null}
-
-      {hh?.section_warning || hh?.section_upset ? (
-        <RelationshipReportCard
-          title={t.warningCardTitle}
-          accentColor={theme.accent}
-          variant="warning"
-        >
-          {hh?.section_warning ? (
-            <RelationshipReportBody>
-              <div>
-                <RelationshipReportLabel>{t.conflictTriggerLabel}</RelationshipReportLabel>
-                <RelationshipReportParagraph className="mt-1.5">
-                  {hh.section_warning.conflict_trigger}
-                </RelationshipReportParagraph>
-              </div>
-            </RelationshipReportBody>
-          ) : null}
-          {upsetPair ? (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <UpsetGuideCard guide={upsetPair.me} />
-              <UpsetGuideCard guide={upsetPair.partner} />
-            </div>
-          ) : null}
-          {hh?.section_warning?.conflict_communication ? (
-            <RelationshipReportInset className="mt-4">
-              <p className="font-medium text-white/90">
-                {hh.section_warning.conflict_communication.title}
-              </p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/55">
-                {hh.section_warning.conflict_communication.pattern_label}
-              </p>
-              <RelationshipReportParagraph className="mt-2">
-                {hh.section_warning.conflict_communication.narrative}
-              </RelationshipReportParagraph>
-              <RelationshipReportLabel className="mt-3 text-amber-200/90">
-                {t.neglectRiskLabel}
-              </RelationshipReportLabel>
-              <RelationshipReportParagraph className="mt-1.5">
-                {
-                  hh.section_warning.conflict_communication
-                    .emotional_neglect_risk
-                }
-              </RelationshipReportParagraph>
-            </RelationshipReportInset>
-          ) : null}
-          {deCards.length > 0 ? (
-            <div className="mt-5 space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-white/92">
-                  {t.dePrescriptionHeading}
-                </p>
-                <RelationshipReportParagraph className="mt-2" muted>
-                  {t.deIntro(myName, partnerName)}
-                  {deSameType ? t.deSameTypeSuffix : t.deDifferentTypeSuffix}
-                </RelationshipReportParagraph>
-                {deSharedNote || deSameType ? (
-                  <p className="mt-3 rounded-lg border border-violet-400/25 bg-violet-950/20 p-3 text-sm text-violet-100/90">
-                    🔁{" "}
-                    {deSharedNote ?? t.deSharedNoteFallback(myName, partnerName)}
-                  </p>
-                ) : null}
-                {deLegacySingle ? (
-                  <p className="mt-3 rounded-lg border border-amber-400/25 bg-amber-950/20 p-3 text-sm text-amber-100/90">
-                    {t.deLegacyNotice(myName, partnerName)}
-                  </p>
-                ) : null}
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {deCards.map((card) => (
-                  <DeEscalationPrescriptionCard
-                    key={`${card.upset_nickname}-${card.partner_nickname}`}
-                    card={card}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </RelationshipReportCard>
-      ) : null}
-
-      {report.meta?.prescription_cohabitation ? (
-        <PairPrescriptionSection
-          pack={report.meta.prescription_cohabitation}
-          accentColor={theme.accent}
-          domain="cohabitation"
-        />
       ) : null}
     </RelationshipReportLayout>
   );
