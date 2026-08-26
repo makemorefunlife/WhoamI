@@ -151,6 +151,7 @@ export type MarriageCanonicalBundle = {
   chapter04Intelligence?: MarriageChapter04Intelligence;
   chapter05Intelligence?: import("./marriageChapter05Intelligence").MarriageChapter05Intelligence;
   chapter07Intelligence?: import("./marriageChapter07Intelligence").MarriageChapter07Intelligence;
+  chapter08Intelligence?: import("./marriageChapter08Intelligence").MarriageChapter08Intelligence;
   householdPm: HouseholdPmResult;
   plannerExecutor: PlannerExecutorResult;
   decisionPowerMap: DecisionPowerMapResult;

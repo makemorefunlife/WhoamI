@@ -120,16 +120,16 @@ export function buildCanonicalMarriageStoryPlan(
     },
     {
       chapterId: "c9_next_chapter_rituals",
-      chapterNumber: "09",
-      title: isEn ? "Our Next Chapter: Action Playbook & Rituals" : "어떻게 살아야 하는가: 우리 부부의 실전 사용설명서",
+      chapterNumber: "08",
+      title: isEn ? "What Time Lies Ahead for Us" : "앞으로 우리에게 어떤 시간이 찾아올까?",
       userQuestion: isEn
-        ? "What specific Do's & Don'ts and weekly rituals will sustain our marriage?"
-        : "오래 지속되는 안식을 위해 오늘부터 당장 실천해야 할 것(Do)과 절대 하지 말아야 할 것(Don't)은 무엇인가?",
-      primaryOwnerMeanings: ["Action Prescriptions & Long-Term Rituals"],
-      secondaryRefMeanings: ["Daily Action Items"],
+        ? "What timing and change flow lies ahead for us over the coming years?"
+        : "올해부터 앞으로 몇 년 동안 각자에게 어떤 변화의 흐름이 들어오고, 그 변화가 두 사람의 관계에는 어떤 의미가 있을까?",
+      primaryOwnerMeanings: ["Couple Timing & 3-Year Relationship Forecast"],
+      secondaryRefMeanings: ["Timing Activation & Response"],
       summary: isEn
-        ? "Establishing clear daily cooling-down routines, weekly financial reviews, and mutual appreciation rituals."
-        : "매일의 쿨링다운 시간 확보, 주간 재정 점검, 상호 감사 표현을 고정 주거 리추얼로 정착시킵니다.",
+        ? "Examining the flow of change entering each partner over the coming years and what it means for the marriage."
+        : "올해부터 앞으로 몇 년 동안 각자에게 어떤 변화의 흐름이 들어오고, 그 변화가 두 사람의 관계에는 어떤 의미가 있을지 살펴봅니다.",
     },
   ];
 

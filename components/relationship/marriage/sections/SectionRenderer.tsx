@@ -28,6 +28,7 @@ import { createDefaultMarriageChapter04Intelligence } from "@/lib/relationship/m
 import { SubHeading } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import PairPrescriptionSection from "@/components/relationship/shared/PairPrescriptionSection";
 import { MarriageChapter07View } from "./MarriageChapter07View";
+import { MarriageChapter08View } from "./MarriageChapter08View";
 import type {
   BedroomSection,
   CompareTableSection,
@@ -116,7 +117,7 @@ const CANONICAL_CHAPTER_DEFINITIONS: Array<{
   { id: "c3_household_os", number: "05", titleKo: "돈, 생활력, 그리고 우리 집을 굴리는 방식", titleEn: "Household OS: Money, Life Competence & Mental Load", types: ["money_chores"] },
   { id: "c6_family_parenting_career", number: "06", titleKo: "둘을 넘어 가족이 되면 어떤 시스템이 되는가?", titleEn: "Family System & Parenting", types: ["parenting", "family_boundary"] },
   { id: "c5_conflict_deescalation", number: "07", titleKo: "왜 싸우고, 어떻게 다시 가까워지는가?", titleEn: "Conflict, De-Escalation & SOS Script", types: [] },
-  { id: "c9_next_chapter_rituals", number: "08", titleKo: "오래 함께 살기 위한 우리의 넥스트 챕터", titleEn: "Our Next Chapter & Household Rituals", types: [] },
+  { id: "c9_next_chapter_rituals", number: "08", titleKo: "앞으로 우리에게 어떤 시간이 찾아올까?", titleEn: "What Time Lies Ahead for Us", types: [] },
 ];
 
 // 레거시 폴백(canonicalStoryPlan 없는 옛 캐시 리포트)
@@ -2067,7 +2068,7 @@ export function MarriageReportViewModelView({
                 title={isEn ? cDef.titleEn : cDef.titleKo}
                 accent={ACCENT}
               >
-                {summaryText && cDef.id !== "c2_lifestyle_dna" && cDef.id !== "c7_longterm_compounding" && cDef.id !== "c3_household_os" ? (
+                {summaryText && cDef.id !== "c2_lifestyle_dna" && cDef.id !== "c7_longterm_compounding" && cDef.id !== "c3_household_os" && cDef.id !== "c9_next_chapter_rituals" ? (
                   <RelationshipReportInset className="mb-4">
                     <p className="text-xs font-bold uppercase tracking-wider text-rel-taupe">
                       💡 {chOwnership?.userQuestion}
@@ -2095,7 +2096,7 @@ export function MarriageReportViewModelView({
                 ) : null}
 
                 {cDef.id === "c9_next_chapter_rituals" ? (
-                  <MarriageChapter09SubstantiveCard bundle={vm.canonicalBundle} names={vm.canonicalNames} isEn={isEn} />
+                  <MarriageChapter08View ch08={vm.chapter08Intelligence} canonicalNames={vm.canonicalNames} isEn={isEn} />
                 ) : null}
 
                 {/* Map only this chapter's explicitly owned section cards */}

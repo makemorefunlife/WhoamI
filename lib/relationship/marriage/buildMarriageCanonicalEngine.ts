@@ -29,6 +29,7 @@ import { buildMarriageChapter03Intelligence } from "./marriageChapter03Intellige
 import { buildMarriageChapter04Intelligence } from "./marriageChapter04Intelligence";
 import { buildMarriageChapter05Intelligence } from "./marriageChapter05Intelligence";
 import { buildMarriageChapter07Intelligence } from "./marriageChapter07Intelligence";
+import { buildMarriageChapter08Intelligence } from "./marriageChapter08Intelligence";
 import type {
   MarriageCanonicalBundle,
   HouseholdPmResult,
@@ -542,6 +543,23 @@ export function buildMarriageCanonicalEngine(
     countsB: ctx.tenGod.countsB,
     locale,
   });
+  const chapter08Intelligence = buildMarriageChapter08Intelligence({
+    personAOptions: {
+      personId: a,
+      birthDate: "1990-05-15",
+      birthTime: "14:30",
+      gender: "F",
+    },
+    personBOptions: {
+      personId: b,
+      birthDate: "1992-08-20",
+      birthTime: "09:00",
+      gender: "M",
+    },
+    psychInputA: params.psychMasterA?.secondary_axes ? { primary: params.psychMasterA.secondary_axes, secondary: params.psychMasterA.secondary_axes } : undefined,
+    psychInputB: params.psychMasterB?.secondary_axes ? { primary: params.psychMasterB.secondary_axes, secondary: params.psychMasterB.secondary_axes } : undefined,
+    names: [a, b],
+  });
   const marriage11Axis = buildMarriage11AxisInsights(params.psychMasterA, params.psychMasterB, a, b, locale);
   const conflict4Stage = buildMarriageConflict4Stage(params.psychMasterA, params.psychMasterB, a, b, locale);
   const loveDeliveryMatch = buildMarriageLoveDeliveryMatch(params.psychMasterA, params.psychMasterB, a, b, locale);
@@ -577,6 +595,7 @@ export function buildMarriageCanonicalEngine(
     chapter04Intelligence,
     chapter05Intelligence,
     chapter07Intelligence,
+    chapter08Intelligence,
     householdPm,
     plannerExecutor,
     decisionPowerMap,

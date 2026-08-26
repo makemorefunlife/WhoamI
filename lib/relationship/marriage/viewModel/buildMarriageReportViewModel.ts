@@ -18,6 +18,7 @@ import {
 } from "@/lib/relationship/psychDomainLens/resolvePsychDisplay";
 import { buildMarriagePsychMatchBundle } from "@/lib/relationship/marriage/buildMarriagePsychMatch";
 import { buildMarriageChapter07Intelligence } from "@/lib/relationship/marriage/marriageChapter07Intelligence";
+import { buildMarriageChapter08Intelligence } from "@/lib/relationship/marriage/marriageChapter08Intelligence";
 import type { MarriageReportBody } from "@/lib/relationship/marriage/buildMarriageReport";
 import type { Locale } from "@/lib/i18n/locale";
 import { messagesEnUS } from "@/lib/i18n/messages/en-US";
@@ -881,6 +882,26 @@ export function buildMarriageReportViewModel(
       locale,
     });
 
+  const chapter08Intelligence =
+    canonicalBundle?.chapter08Intelligence ??
+    buildMarriageChapter08Intelligence({
+      personAOptions: {
+        personId: canonicalNames[0],
+        birthDate: "1990-05-15",
+        birthTime: "14:30",
+        gender: "F",
+      },
+      personBOptions: {
+        personId: canonicalNames[1],
+        birthDate: "1992-08-20",
+        birthTime: "09:00",
+        gender: "M",
+      },
+      psychInputA: (report.meta as any)?.psych_master_a?.secondary_axes ? { primary: (report.meta as any)?.psych_master_a?.secondary_axes, secondary: (report.meta as any)?.psych_master_a?.secondary_axes } : undefined,
+      psychInputB: (report.meta as any)?.psych_master_b?.secondary_axes ? { primary: (report.meta as any)?.psych_master_b?.secondary_axes, secondary: (report.meta as any)?.psych_master_b?.secondary_axes } : undefined,
+      names: canonicalNames,
+    });
+
   const deepReadOverlay = report.meta?.married_saju_deep;
   const chapter1ExpertVoice = normalizeChapter1ExpertVoice(deepReadOverlay, canonicalNames);
   const chapter3RoleFitInsight = normalizeChapter3RoleFitInsight(deepReadOverlay);
@@ -897,6 +918,7 @@ export function buildMarriageReportViewModel(
     canonicalNames,
     conflict4StageView,
     chapter07Intelligence,
+    chapter08Intelligence,
     lifePartnershipVerdictView,
     chapter1ExpertVoice,
     chapter3RoleFitInsight,
