@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Production Cache Staleness Guards for Relationship Reports.
  * Ensures that cached DB JSON payloads lacking current VNext canonical structures
