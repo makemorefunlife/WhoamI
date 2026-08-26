@@ -472,16 +472,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    "Inner Compass Reports" -> romantic-v4-concept design source.
    Used only under app/dev/romantic-v4-content-prototype/. */
 :root {
-  --rel-bg: #f9f8f3;
+  --rel-bg: #faf7f0;
   --rel-surface: #ffffff;
-  --rel-ink: #222222;
-  --rel-ink-soft: rgba(34, 34, 34, 0.72);
-  --rel-ink-mute: rgba(34, 34, 34, 0.5);
-  --rel-line: rgba(34, 34, 34, 0.12);
+  --rel-ink: #2c2b29;
+  --rel-ink-soft: rgba(44, 43, 41, 0.75);
+  --rel-ink-mute: rgba(44, 43, 41, 0.5);
+  --rel-line: #e6e2dc;
   --rel-deep: #1b3b2b;
-  --rel-deep-soft: rgba(27, 59, 43, 0.1);
-  --rel-taupe: #8c827a;
-  --rel-taupe-soft: rgba(140, 130, 122, 0.12);
+  --rel-deep-soft: rgba(27, 59, 43, 0.08);
+  --rel-taupe: #5e5b56;
+  --rel-taupe-soft: #f9f8f6;
   --v4-a: #3b6c93;
   --v4-a-soft: rgba(59, 108, 147, 0.12);
   --v4-b: #8e7561;

@@ -74,7 +74,7 @@ export function RelationshipReportInset({
   className?: string;
 }) {
   return (
-    <div className={`rounded-xl border border-rel-line bg-rel-taupe-soft/30 p-4 ${className}`}>{children}</div>
+    <div className={`rounded-xl border border-[#e6e2dc] bg-[#f9f8f6] p-4 ${className}`}>{children}</div>
   );
 }
 
@@ -97,14 +97,14 @@ export default function RelationshipReportCard({
 }) {
   const variantBox =
     variant === "warning"
-      ? "rounded-2xl border border-v4-bad/25 bg-v4-bad-soft p-5 sm:p-6"
+      ? "rounded-2xl border border-[#f5d0cc] bg-[#fdf6f5] p-5 sm:p-6 shadow-2xs"
       : variant === "success"
-        ? "rounded-2xl border border-v4-good/25 bg-v4-good-soft p-5 sm:p-6"
+        ? "rounded-2xl border border-[#d6e2d8] bg-[#f4f7f4] p-5 sm:p-6 shadow-2xs"
         : variant === "accent"
-          ? "rounded-2xl border border-rel-deep/25 bg-rel-deep-soft p-5 sm:p-6"
+          ? "rounded-2xl border border-[#1b3b2b]/20 bg-[#f4f7f4] p-5 sm:p-6 shadow-2xs"
           : variant === "muted"
-            ? "rounded-2xl border border-rel-line bg-rel-taupe-soft/25 p-5 sm:p-6"
-            : "";
+            ? "rounded-2xl border border-[#e6e2dc] bg-[#f9f8f6] p-5 sm:p-6 shadow-2xs"
+            : "rounded-2xl border border-[#e6e2dc] bg-white p-5 sm:p-6 shadow-2xs";
 
   const cleanTitle = title ? title.replace(/^[◤▼▶]\s*/, "") : "";
 
