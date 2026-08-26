@@ -249,6 +249,19 @@ export async function GET(req: Request) {
     const personAName = repA?.name?.trim() || "";
     const personBName = repB?.name?.trim() || "";
 
+    const activeKindReportReady =
+      activeKind === "cohabitation"
+        ? Boolean(cohabitationDeepReport)
+        : activeKind === "work"
+          ? Boolean(workColleagueDeepReport)
+          : activeKind === "family"
+            ? Boolean(familyDeepReport)
+            : activeKind === "friendship"
+              ? Boolean(friendshipDeepReport)
+              : activeKind === "romantic"
+                ? Boolean(romanticDeepReportV4 || romanticDeepReport)
+                : false;
+
     const responseBody: Record<string, unknown> = {
       relationship_report_id: rr.id,
       report_id_a: rr.report_id_a,
@@ -278,12 +291,8 @@ export async function GET(req: Request) {
       cohabitation_deep_report: cohabitationDeepReport,
       family_deep_report: familyDeepReport,
       friendship_deep_report: friendshipDeepReport,
-      /** Same completion rule as analyze cache / hub — kind-scoped by_kind. */
-      premium_ready: hasPremiumCacheForKindLocale(
-        byKind,
-        activeKind,
-        locale,
-      ),
+      /** Same completion rule as analyze cache / hub — non-stale report ready. */
+      premium_ready: activeKindReportReady,
       premium_kinds_ready: RELATIONSHIP_KINDS.filter((k) =>
         hasPremiumCacheForKind(byKind, k),
       ),
