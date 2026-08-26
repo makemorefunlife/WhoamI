@@ -26,6 +26,7 @@ import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import {
   isStaleWorkReportBlock,
   isStaleCohabitationReportBlock,
+  isStaleFamilyReportBlock,
 } from "@/lib/relationship/reportStalenessGuard";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
@@ -161,22 +162,30 @@ export async function GET(req: Request) {
       if (persistedV4Block?.payload) {
         // If we have an existing payload structure, upgrade its storyPlan with the fresh gap batch
         try {
-          const freshPlan = buildCanonicalRelationshipStoryPlan({
-            contract: persistedV4Block.payload.storyPlan.connectedEvidenceIds ? (persistedV4Block.payload as any).contract : undefined as any,
-            report: (persistedV4Block.payload as any).report,
-            axisResults: (persistedV4Block.payload as any).axisOverview || [],
-            locale: locale as any,
-            reportYear: new Date().getFullYear(),
-            fortuneFlow: (persistedV4Block.payload as any).fortuneFlow,
-          });
-          if (freshPlan && freshPlan.romanticGapBatch) {
-            romanticDeepReportV4 = {
-              ...persistedV4Block.payload,
-              storyPlan: {
-                ...persistedV4Block.payload.storyPlan,
-                romanticGapBatch: freshPlan.romanticGapBatch,
-              },
-            };
+          const contract =
+            persistedV4Block.payload.preNarrativeContract ??
+            (persistedV4Block.payload as any).contract;
+          const canonicalReport =
+            persistedV4Block.payload.canonicalReport ??
+            (persistedV4Block.payload as any).report;
+          if (contract && canonicalReport) {
+            const freshPlan = buildCanonicalRelationshipStoryPlan({
+              contract,
+              report: canonicalReport,
+              axisResults: (persistedV4Block.payload as any).axisOverview || [],
+              locale: locale as any,
+              reportYear: new Date().getFullYear(),
+              fortuneFlow: (persistedV4Block.payload as any).fortuneFlow,
+            });
+            if (freshPlan && freshPlan.romanticGapBatch) {
+              romanticDeepReportV4 = {
+                ...persistedV4Block.payload,
+                storyPlan: {
+                  ...persistedV4Block.payload.storyPlan,
+                  romanticGapBatch: freshPlan.romanticGapBatch,
+                },
+              };
+            }
           }
         } catch {
           // If partial upgrade fails, preserve existing payload safely
@@ -206,9 +215,10 @@ export async function GET(req: Request) {
       activeKind === "family"
         ? getFamilyParentDeepReport(byKind, locale)
         : null;
-    const familyDeepReport = familyDeepRaw
-      ? omitFamilyContextOutputFromReport(familyDeepRaw)
-      : null;
+    const familyDeepReport =
+      familyDeepRaw && !isStaleFamilyReportBlock(familyDeepRaw)
+        ? omitFamilyContextOutputFromReport(familyDeepRaw)
+        : null;
 
     const friendshipDeepRaw =
       activeKind === "friendship"

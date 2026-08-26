@@ -38,3 +38,21 @@ export function isStaleCohabitationReportBlock(payload: unknown): boolean {
 
   return !(hasCanonicalPlan || (hasChapter08 && hasChapter07 && hasHouseholdDna));
 }
+
+export function isStaleFamilyReportBlock(payload: unknown): boolean {
+  if (!payload || typeof payload !== "object") return true;
+  const report = (payload as { report?: Record<string, unknown> }).report ?? payload;
+  if (typeof report !== "object" || !report) return true;
+
+  const r = report as Record<string, unknown>;
+  const family = r.family as Record<string, unknown> | undefined;
+  const canonicalProjections = r.canonical_projections as Record<string, unknown> | undefined;
+
+  // Modern VNext Family report requires canonical story plan or household roles
+  const hasStoryPlan = Boolean(canonicalProjections?.story_plan || r.canonicalStoryPlan);
+  const hasHouseholdRoles = Boolean(family?.section_household_roles);
+  const hasFamilySnapshot = Boolean(family?.section_snapshot);
+
+  return !(hasStoryPlan || (hasHouseholdRoles && hasFamilySnapshot));
+}
+

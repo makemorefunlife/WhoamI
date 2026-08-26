@@ -40,6 +40,7 @@ import {
 import {
   isStaleWorkReportBlock,
   isStaleCohabitationReportBlock,
+  isStaleFamilyReportBlock,
 } from "@/lib/relationship/reportStalenessGuard";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
@@ -63,6 +64,8 @@ import { buildRomanticV4PrototypePayload } from "@/lib/relationship/romantic/pro
 import { applyRomanticV4FinalNarrativeArchitecture } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/applyRomanticV4FinalNarrativeArchitecture";
 import {
   attachRomanticV4Block,
+  readRomanticV4Block,
+  isStaleRomanticV4Block,
   type RomanticV4PersistedBlock,
 } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 import { applyHourEvidenceCapToComparisonTable } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4HourEvidence";
@@ -238,7 +241,11 @@ export async function POST(req: Request) {
           ? isStaleWorkReportBlock(cached)
           : kind === "cohabitation"
             ? isStaleCohabitationReportBlock(cached)
-            : false;
+            : kind === "family"
+              ? isStaleFamilyReportBlock(cached)
+              : kind === "romantic"
+                ? (isRomanticV4ReportEnabled() && isStaleRomanticV4Block(readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale)))
+                : false;
 
       if (!isStale) {
         const forClient =

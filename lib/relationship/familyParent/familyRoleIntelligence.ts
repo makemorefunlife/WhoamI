@@ -77,17 +77,21 @@ export function evaluateRoleDimensions(
   const tenGod = ctx.tenGod;
   const counts = personType === "parent" ? tenGod.countsParent : tenGod.countsChild;
 
-  const bigeob = counts?.bigeob ?? 0;
-  const siksang = counts?.siksang ?? 0;
-  const jaeseong = counts?.재성 ?? 0;
-  const gwanseong = counts?.gwanseong ?? 0;
-  const insoeng = counts?.insoeng ?? 0;
+  const bigeob = (counts?.["비견"] ?? 0) + (counts?.["겁재"] ?? 0) + (counts?.bigeob ?? 0);
+  const siksang = (counts?.["식신"] ?? 0) + (counts?.["상관"] ?? 0) + (counts?.siksang ?? 0);
+  const jaeseong =
+    (counts?.["정재"] ?? 0) +
+    (counts?.["편재"] ?? 0) +
+    (counts?.jaeseong ?? 0) +
+    (counts?.["재성"] ?? 0);
+  const gwanseong = (counts?.["정관"] ?? 0) + (counts?.["편관"] ?? 0) + (counts?.gwanseong ?? 0);
+  const insoeng = (counts?.["정인"] ?? 0) + (counts?.["편인"] ?? 0) + (counts?.insoeng ?? 0);
 
   const sec = psych?.secondary_axes;
-  const conn = sec?.connection ?? 50;
+  const conn = sec?.empathy ?? (sec as any)?.connection ?? 50;
   const struct = sec?.structure ?? 50;
-  const flex = sec?.flexibility ?? 50;
-  const express = sec?.expressiveness ?? 50;
+  const flex = sec?.resilience ?? (sec as any)?.flexibility ?? 50;
+  const express = sec?.energy_style ?? (sec as any)?.expressiveness ?? 50;
 
   return {
     stabilizing: Math.min(100, gwanseong * 25 + struct * 0.4 + (personType === "parent" ? 15 : 0)),
