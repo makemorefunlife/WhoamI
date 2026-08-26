@@ -96,7 +96,15 @@ export default function RelationshipPremiumSection({
 
   return (
     <ReportSurfaceProvider
-      surface={premiumKind === "romantic" ? "stitch" : "dark"}
+      surface={
+        premiumKind === "romantic" ||
+        premiumKind === "cohabitation" ||
+        premiumKind === "friendship" ||
+        premiumKind === "family" ||
+        premiumKind === "work"
+          ? "stitch"
+          : "dark"
+      }
     >
       <div
         id="relationship-report-anchor"
@@ -153,7 +161,7 @@ export default function RelationshipPremiumSection({
           </p>
         </div>
       ) : premiumKind === "work" && displayWorkDeep ? (
-        <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
+        <div className="w-full">
           <WorkColleagueReportView
             report={displayWorkDeep}
             myName={viewerName}
@@ -170,7 +178,7 @@ export default function RelationshipPremiumSection({
           </p>
         </div>
       ) : premiumKind === "cohabitation" && displayCohabitationDeep ? (
-        <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
+        <div className="w-full">
           <MarriageReportView
             report={displayCohabitationDeep}
             myName={viewerName}
@@ -187,7 +195,7 @@ export default function RelationshipPremiumSection({
           </p>
         </div>
       ) : premiumKind === "family" && displayFamilyDeep ? (
-        <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
+        <div className="w-full">
           <FamilyParentReportView report={displayFamilyDeep} />
         </div>
       ) : premiumKind === "family" ? (
@@ -199,7 +207,7 @@ export default function RelationshipPremiumSection({
           </p>
         </div>
       ) : premiumKind === "friendship" && displayFriendshipDeep ? (
-        <div className="rounded-2xl border border-white/8 bg-[#0a0f1a]/50 p-2 sm:p-3">
+        <div className="w-full">
           <FriendReportView
             report={displayFriendshipDeep}
             myName={viewerName}
