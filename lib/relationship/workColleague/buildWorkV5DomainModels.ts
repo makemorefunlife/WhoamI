@@ -162,7 +162,7 @@ export function buildWorkConflictLoopP0(params: {
 }): WorkConflictLoop {
   const { officeReport } = params;
   return {
-    trigger: officeReport.overview?.risk_point || "의사결정이 지연되거나 사전 상의 없이 R&R을 넘어설 때",
+    trigger: officeReport.overview?.risk_point ?? "",
     selfResponse: "속도와 현실적 성과를 강조하며 빠른 결정 촉구",
     colleagueResponse: "리스크와 품질 문제를 들어 신중한 검토 요구",
     escalationMechanism: "상대의 지적을 비협조로 오해하거나 조급함으로 다그쳐 갈등 격화",
@@ -176,7 +176,7 @@ export function buildWorkRepairPatternP0(params: {
 }): WorkRepairPattern {
   const { prescriptions } = params;
   return {
-    deEscalateSos: prescriptions?.sos_script?.[0] || "지금 감정이 격해졌으니 회의를 잠시 정지하고 30분 뒤 팩트 지표로 재논의합시다.",
+    deEscalateSos: prescriptions?.sos_script?.[0] ?? "",
     repairSequence: [
       "1. 감정적 언쟁을 즉시 멈추고 회의를 15분간 정지합니다.",
       "2. 팩트 데이터와 결정권자(DRI)를 서면으로 재확인합니다.",
@@ -202,7 +202,7 @@ export function buildWorkNormalizedActionsP1(params: {
     perspective: "team",
     actionType: "DE_ESCALATE",
     title: "업무 교착 시 15분 회의 일시 정지 수칙",
-    description: prescriptions?.sos_script?.[0] || "감정이 솟구치거나 논의가 도돌이표일 때는 즉시 회의를 멈추고 서면 지표로 전환하세요.",
+    description: prescriptions?.sos_script?.[0] ?? "",
     evidenceIds: ["work.sos_script"],
     primarySemanticOwner: "user_manual",
   });
@@ -224,7 +224,7 @@ export function buildWorkNormalizedActionsP1(params: {
     perspective: "self",
     actionType: "DECISION",
     title: `${nameA}를 위한 조언: 최종 결단 전 검수 의견 경청하기`,
-    description: prescriptions?.prescriptions_a?.[0] || "빠른 추진도 중요하지만 파트너의 리스크 체크 항목을 정밀하게 반영해보세요.",
+    description: prescriptions?.prescriptions_a?.[0] ?? "",
     evidenceIds: ["work.prescriptions_a"],
     primarySemanticOwner: "user_manual",
   });
@@ -235,7 +235,7 @@ export function buildWorkNormalizedActionsP1(params: {
     perspective: "colleague",
     actionType: "FEEDBACK",
     title: `${nameB}를 위한 조언: 피드백 쿠션과 개선안 동시 제시`,
-    description: prescriptions?.prescriptions_b?.[0] || "문제점만 지적하기보다 대안과 개선 방향을 함께 제시하면 소통이 훨씬 매끄러워집니다.",
+    description: prescriptions?.prescriptions_b?.[0] ?? "",
     evidenceIds: ["work.prescriptions_b"],
     primarySemanticOwner: "user_manual",
   });

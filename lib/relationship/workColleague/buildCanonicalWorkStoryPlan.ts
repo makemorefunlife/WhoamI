@@ -20,6 +20,7 @@ import {
   buildWorkGrowthTransitionP1,
 } from "./buildWorkV5DomainModels";
 import { buildWorkOverviewChapterBundle } from "./workOverviewChapterEngine";
+import { buildIndividualWorkChapterBundle } from "./individualWorkChapterEngine";
 
 export function buildCanonicalWorkStoryPlan(params: {
   nameA: string;
@@ -200,7 +201,7 @@ export function buildCanonicalWorkStoryPlan(params: {
       meetingConflictTrigger: officeReport.overview?.risk_point,
     },
     repair: {
-      operatingReset: prescriptions?.sos_script?.[0] || "15분 회의 일시 정지 후 서면 데이터 중심 재논의",
+      operatingReset: prescriptions?.sos_script?.[0] ?? "",
     },
     actions: {
       selfAdvice: prescriptions?.prescriptions_a || [],

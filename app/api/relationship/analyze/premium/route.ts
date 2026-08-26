@@ -37,6 +37,10 @@ import {
   fetchRelationshipReportByIdSafe,
   mergeRelationshipPremiumByKind,
 } from "@/lib/relationship/relationshipReportQuery";
+import {
+  isStaleWorkReportBlock,
+  isStaleCohabitationReportBlock,
+} from "@/lib/relationship/reportStalenessGuard";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
   UNKNOWN_BIRTH_FALLBACK,
@@ -229,33 +233,42 @@ export async function POST(req: Request) {
 
     if (!forceRegenerate && hasPremiumCacheForKindLocale(byKind, kind, locale)) {
       const cached = getPremiumPayloadForKindLocale(byKind, kind, locale);
-      const forClient =
-        kind === "family"
-          ? stripFamilyContextOutputForClient(
-              cached as { report?: Record<string, unknown> },
-            )
-          : kind === "work"
-            ? stripWorkContextOutputForClient(
+      const isStale =
+        kind === "work"
+          ? isStaleWorkReportBlock(cached)
+          : kind === "cohabitation"
+            ? isStaleCohabitationReportBlock(cached)
+            : false;
+
+      if (!isStale) {
+        const forClient =
+          kind === "family"
+            ? stripFamilyContextOutputForClient(
                 cached as { report?: Record<string, unknown> },
               )
-            : kind === "friendship"
-              ? stripFriendContextOutputForClient(
+            : kind === "work"
+              ? stripWorkContextOutputForClient(
                   cached as { report?: Record<string, unknown> },
                 )
-              : kind === "cohabitation"
-                ? stripMarriageContextOutputForClient(
+              : kind === "friendship"
+                ? stripFriendContextOutputForClient(
                     cached as { report?: Record<string, unknown> },
                   )
-                : kind === "romantic"
-                  ? stripRomanticContextInputForClient(
+                : kind === "cohabitation"
+                  ? stripMarriageContextOutputForClient(
                       cached as { report?: Record<string, unknown> },
                     )
-                  : cached;
-      return NextResponse.json({
-        relationship_kind: kind,
-        locale,
-        result_premium: forClient,
-      });
+                  : kind === "romantic"
+                    ? stripRomanticContextInputForClient(
+                        cached as { report?: Record<string, unknown> },
+                      )
+                    : cached;
+        return NextResponse.json({
+          relationship_kind: kind,
+          locale,
+          result_premium: forClient,
+        });
+      }
     }
 
     const [fetchA, fetchB, clerkUser] = await Promise.all([

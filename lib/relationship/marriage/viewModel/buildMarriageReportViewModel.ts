@@ -884,23 +884,8 @@ export function buildMarriageReportViewModel(
 
   const chapter08Intelligence =
     canonicalBundle?.chapter08Intelligence ??
-    buildMarriageChapter08Intelligence({
-      personAOptions: {
-        personId: canonicalNames[0],
-        birthDate: "1990-05-15",
-        birthTime: "14:30",
-        gender: "F",
-      },
-      personBOptions: {
-        personId: canonicalNames[1],
-        birthDate: "1992-08-20",
-        birthTime: "09:00",
-        gender: "M",
-      },
-      psychInputA: (report.meta as any)?.psych_master_a?.secondary_axes ? { primary: (report.meta as any)?.psych_master_a?.secondary_axes, secondary: (report.meta as any)?.psych_master_a?.secondary_axes } : undefined,
-      psychInputB: (report.meta as any)?.psych_master_b?.secondary_axes ? { primary: (report.meta as any)?.psych_master_b?.secondary_axes, secondary: (report.meta as any)?.psych_master_b?.secondary_axes } : undefined,
-      names: canonicalNames,
-    });
+    report.chapter08Intelligence ??
+    undefined;
 
   const deepReadOverlay = report.meta?.married_saju_deep;
   const chapter1ExpertVoice = normalizeChapter1ExpertVoice(deepReadOverlay, canonicalNames);

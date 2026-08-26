@@ -23,6 +23,10 @@ import { getResultBasicLocale } from "@/lib/relationship/resultBasicLocale";
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import {
+  isStaleWorkReportBlock,
+  isStaleCohabitationReportBlock,
+} from "@/lib/relationship/reportStalenessGuard";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
@@ -184,17 +188,19 @@ export async function GET(req: Request) {
       activeKind === "work"
         ? getWorkColleagueDeepReport(byKind, locale)
         : null;
-    const workColleagueDeepReport = workColleagueDeepRaw
-      ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
-      : null;
+    const workColleagueDeepReport =
+      workColleagueDeepRaw && !isStaleWorkReportBlock(workColleagueDeepRaw)
+        ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
+        : null;
 
     const cohabitationDeepRaw =
       activeKind === "cohabitation"
         ? getCohabitationDeepReport(byKind, locale)
         : null;
-    const cohabitationDeepReport = cohabitationDeepRaw
-      ? omitMarriageContextOutputFromReport(cohabitationDeepRaw)
-      : null;
+    const cohabitationDeepReport =
+      cohabitationDeepRaw && !isStaleCohabitationReportBlock(cohabitationDeepRaw)
+        ? omitMarriageContextOutputFromReport(cohabitationDeepRaw)
+        : null;
 
     const familyDeepRaw =
       activeKind === "family"
