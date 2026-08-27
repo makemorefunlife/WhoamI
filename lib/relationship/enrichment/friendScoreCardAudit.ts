@@ -5,35 +5,14 @@ import type {
   FriendScoreCardAudit,
   FriendScoreCardAuditItem,
 } from "@/lib/relationship/friend/friendKillerSections";
+import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/friend/friendCopy";
-
-/**
- * current_enriched 전용 — 3대 스코어(🔥 우정 케미 · 🧩 티키타카 · ⚡ 소셜 리스크,
- * `computeFriendMasterScores` in friendEventScores.ts)를 실제 계산 코드까지
- * 추적해 감사하고, 각 카드에 "무엇을 측정하는지 / 이 커플이 왜 이 점수인지 /
- * 높음·중간·낮음 의미"를 붙인다.
- *
- * 계산 근거(friendEventScores.ts computeFriendMasterScores):
- * - connection(우정 케미) = 50 시작. +30 일지합(hasDayBranchCombine) · +20
- *   비겁 상호공명(hasBijiepMutualResonance) · −20 일지 충형(hasDayBranchChungHyung).
- *   → "본능적으로 편안하게 끌리는 정도". 높을수록 좋음.
- * - banter(티키타카) = 50 시작. +25 식상-인성 조화(hasFoodSealHarmony) · +25
- *   조후 보완(hasJohuComplement) · −20 식상 충돌(hasFoodClashFriction).
- *   → "대화·유머가 잘 맞는 정도". 높을수록 좋음.
- * - risk(소셜 리스크) = 10 시작. +35 일지 충형해파(hasDayBranchFullTension) ·
- *   +25 원진/귀문(hasWonjinOrGuimun) · +15 재관 충돌(hasWealthOfficerClash).
- *   → "마찰·갈등 가능성". 다른 두 점수와 반대로 **낮을수록 좋음**(방향 혼동 방지
- *   문구를 measures에 명시).
- *
- * 라벨(우정 케미/티키타카/소셜 리스크) 자체는 실제 계산과 잘 맞아 이름 변경은
- * 하지 않는다 — 설명만 보강한다.
- */
 
 function connectionMeasures(locale: Locale): string {
   return pick(
     locale,
-    "How instinctively comfortable and drawn to each other you are — calculated from the kind of 'click' that doesn't need an explanation.",
-    "두 사람이 만났을 때 얼마나 본능적으로 편안하게 끌리는지를 보는 점수예요. '이유 없이 통하는' 사주 궁합 신호를 기준으로 계산해요.",
+    "How instinctively comfortable and drawn to each other you are — calculated from an effortless natural affinity.",
+    "두 사람이 만났을 때 얼마나 본능적으로 편안하게 끌리는지를 보는 점수예요. 애써 노력하지 않아도 통하는 본능적인 친화력을 기준으로 계산해요.",
   );
 }
 
@@ -50,53 +29,79 @@ function connectionWhy(
   nameA: string,
   nameB: string,
   score: number,
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
   locale: Locale,
 ): string {
-  const parts: string[] = [];
-  if (sig.hasDayBranchCombine) {
-    parts.push(
-      pick(
-        locale,
-        `${nameA} and ${nameB}'s charts line up in a way that pushed this score up — an instinctive, low-effort closeness.`,
-        `${nameA}·${nameB}의 사주 궁합이 잘 맞아서 점수가 올라갔어요 — 애쓰지 않아도 본능적으로 편안하게 통하는 지점이에요.`,
-      ),
+  const isKo = locale !== "en-US";
+  const sentences: string[] = [];
+
+  // Positive drivers
+  if (sig.hasDayBranchCombine && sig.hasBijiepMutualResonance) {
+    sentences.push(
+      isKo
+        ? `${nameA}·${nameB} 두 사람은 서로 끌어당기는 마음의 이끎과 기본 기질의 공명이 함께 작용해, 애쓰지 않아도 깊이 통하는 강력한 친화력을 형성합니다.`
+        : `${nameA} and ${nameB} share both a natural mutual attraction and a deep temperament resonance, creating a close bond that forms effortlessly.`,
+    );
+  } else if (sig.hasDayBranchCombine) {
+    sentences.push(
+      isKo
+        ? `${nameA}·${nameB} 두 사람 사이에 자연스럽게 마음이 풀리는 친화적 계기가 있어, 처음 만날 때나 관계가 가까워질 때 편안하게 통합니다.`
+        : `${nameA} and ${nameB} share a natural mutual attraction, allowing you to click comfortably without forced effort.`,
+    );
+  } else if (sig.hasBijiepMutualResonance) {
+    sentences.push(
+      isKo
+        ? `두 사람의 기본 기질적 주파수가 비슷하게 맞물려, 긴 설명 없이도 '서로 결이 잘 통한다'는 안정된 유대감을 형성합니다.`
+        : `Your core temperaments resonate closely with each other, building a steady sense that you share the same foundational wavelength.`,
     );
   }
-  if (sig.hasBijiepMutualResonance) {
-    parts.push(
-      pick(
-        locale,
-        "Your core temperaments resonate with each other, adding to the sense of 'we're the same kind of person.'",
-        "둘의 기본 기질이 서로 공명해서 '우리 결이 비슷하다'는 느낌을 더해줘요.",
-      ),
-    );
-  }
+
+  // Limiting / negative driver
   if (sig.hasDayBranchChungHyung) {
-    parts.push(
-      pick(
-        locale,
-        "There's also a clash signal between you, which pulled the score down a bit — a sharper edge you can bump into occasionally.",
-        "다만 서로 부딪히는 신호도 있어서 점수를 깎아 먹었어요 — 가끔 뾰족하게 부딪힐 수 있는 지점이에요.",
-      ),
+    sentences.push(
+      isKo
+        ? `다만 시각이나 감정선이 뾰족하게 대립할 수 있는 마찰 지점이 존재해, 순간적인 팽팽함이 케미 점수를 일부 상쇄합니다.`
+        : `However, there are occasional friction points where emotional perspectives clash, slightly moderating overall chemistry.`,
+    );
+  } else if (score >= 60 && !sig.hasDayBranchCombine) {
+    sentences.push(
+      isKo
+        ? `첫눈에 극적으로 끌어당기는 자극은 아니지만, 억지 노력 없이도 편안함을 느끼는 무난하고 건강한 친화력을 유지합니다.`
+        : `While it doesn't spark an instant dramatic bond, it maintains a comfortable, healthy closeness without forced effort.`,
     );
   }
-  if (parts.length === 0) {
-    parts.push(
-      pick(
-        locale,
-        `No strong pull or clash signal fired for either of you, so this sits near the neutral baseline (${score}%) — comfortable, without a dramatic instant spark.`,
-        `특별히 강하게 당기거나 부딪히는 신호가 없어서 중간 기본값(${score}%)에 머물러요 — 극적인 첫 스파크는 아니지만 무난하게 편안한 편이에요.`,
-      ),
+
+  // Baseline if no signals fired
+  if (sentences.length === 0) {
+    sentences.push(
+      isKo
+        ? `특별히 강하게 이끌거나 부딪히는 자극이 없어 ${score}% 중간 기본값에 머무릅니다. 억지 노력 없이 차분하게 시간을 쌓아갈 때 더 편안해지는 사이입니다.`
+        : `Without strong pulling or clashing signals, this score sits near the neutral baseline (${score}%). It is an easygoing dynamic that deepens smoothly over time.`,
     );
   }
-  return parts.join(" ");
+
+  // Psych 11 response modifier
+  const empathyA = psychA?.secondary_axes?.empathy;
+  const empathyB = psychB?.secondary_axes?.empathy;
+  if (typeof empathyA === "number" && typeof empathyB === "number") {
+    if (empathyA >= 60 && empathyB >= 60) {
+      sentences.push(
+        isKo
+          ? `여기에 두 사람 모두 높은 공감 성향을 보유하고 있어, 기질적인 친화력이 일상 대화와 서운함 케어에서도 더욱 따뜻하게 체감됩니다.`
+          : `Furthermore, both of you share high empathy scores, allowing your innate connection to feel warm and supportive in everyday interactions.`,
+      );
+    }
+  }
+
+  return sentences.join(" ");
 }
 
 function banterMeasures(locale: Locale): string {
   return pick(
     locale,
-    "How well the back-and-forth banter and sense of humor click — calculated from how well your expression and reactions harmonize, and how well your temperaments complement each other.",
-    "대화가 핑퐁처럼 잘 오가고 유머 코드가 맞아떨어지는 정도예요. 표현과 리액션의 조화, 그리고 성향의 온도차를 서로 상쇄하는지를 사주 신호로 계산해요.",
+    "How well the back-and-forth banter flows — calculated from how well your self-expression, reactions, and temperaments balance out.",
+    "대화가 핑퐁처럼 잘 오가고 유머 코드가 맞아떨어지는 정도예요. 표현과 리액션의 조화, 그리고 성향의 온도차를 자연스럽게 상쇄하는지를 기준으로 계산해요.",
   );
 }
 
@@ -111,53 +116,71 @@ function banterLevelMeaning(locale: Locale): string {
 function banterWhy(
   sig: FriendScoringSignals,
   score: number,
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
   locale: Locale,
 ): string {
-  const parts: string[] = [];
-  if (sig.hasFoodSealHarmony) {
-    parts.push(
-      pick(
-        locale,
-        "Your expression and reaction signals are in harmony, which is what keeps the conversational rhythm flowing.",
-        "표현과 리액션 신호가 조화를 이뤄서 대화의 핑퐁 리듬을 만들어줘요.",
-      ),
+  const isKo = locale !== "en-US";
+  const sentences: string[] = [];
+
+  if (sig.hasFoodSealHarmony && sig.hasJohuComplement) {
+    sentences.push(
+      isKo
+        ? `한 쪽의 표현과 다른 쪽의 리액션이 잘 맞아떨어지는 데다 성향 온도까지 서로를 보완해 주어, 오랫동안 이야기해도 대화 텐션이 쉽게 마르지 않습니다.`
+        : `Your expression and reaction styles harmonize perfectly, while complementary chart temperatures keep your conversational energy flowing effortlessly.`,
+    );
+  } else if (sig.hasFoodSealHarmony) {
+    sentences.push(
+      isKo
+        ? `한 쪽이 말을 건네면 다른 쪽이 찰떡같이 받아주는 리액션 호흡이 좋아, 대화 핑퐁이 매끄럽게 이어집니다.`
+        : `One person's self-expression matches smoothly with the other's receptive reaction style, keeping the conversational back-and-forth fluid.`,
+    );
+  } else if (sig.hasJohuComplement) {
+    sentences.push(
+      isKo
+        ? `두 사람의 성향 온도가 서로의 텐션을 자연스럽게 보완해 주어, 대화할 때 피로감이 적고 안정적입니다.`
+        : `Your contrasting temperaments balance each other's energy, making back-and-forth conversations comfortable and low-fatigue.`,
     );
   }
-  if (sig.hasJohuComplement) {
-    parts.push(
-      pick(
-        locale,
-        "Your temperaments complement each other, smoothing out any energy mismatch when you're chatting.",
-        "두 사람의 성향 온도가 서로 보완돼서, 대화할 때 텐션 차이가 자연스럽게 상쇄돼요.",
-      ),
-    );
-  }
+
   if (sig.hasFoodClashFriction) {
-    parts.push(
-      pick(
-        locale,
-        "There's also a friction signal in how you each express yourselves, which pulled the score down — humor or communication timing can occasionally miss each other.",
-        "다만 표현이 부딪히는 신호도 있어서 점수를 깎아 먹었어요 — 유머나 대화 타이밍이 가끔 어긋날 수 있어요.",
-      ),
+    sentences.push(
+      isKo
+        ? `다만 표현 방식이 동시에 강하게 부딪히는 경향이 있어, 유머 코드나 이야기하는 타이밍이 가끔 어긋날 수 있습니다.`
+        : `However, a friction signal in self-expression means your humor timing or conversation rhythm may occasionally miss each other.`,
     );
   }
-  if (parts.length === 0) {
-    parts.push(
-      pick(
-        locale,
-        `No strong harmony or clash signal fired, so this sits near the neutral baseline (${score}%) — a steady conversational fit without extremes.`,
-        `특별히 강하게 맞거나 부딪히는 신호가 없어서 중간 기본값(${score}%)에 머물러요 — 극단적이진 않지만 무난하게 대화가 통하는 편이에요.`,
-      ),
+
+  if (sentences.length === 0) {
+    sentences.push(
+      isKo
+        ? `대화를 특별히 자극하거나 가로막는 요소가 없는 평온한 기본 템포입니다(${score}%). 유머나 이야기 주제에 따라 대화 흐름이 유연하게 달라집니다.`
+        : `Without strong amplifying or blocking signals, your conversation relies on a steady baseline (${score}%). The rhythm adjusts naturally depending on topic and context.`,
     );
   }
-  return parts.join(" ");
+
+  // Psych 11 experience modifier
+  const energyA = psychA?.secondary_axes?.energy_style;
+  const energyB = psychB?.secondary_axes?.energy_style;
+  if (typeof energyA === "number" && typeof energyB === "number") {
+    const diff = Math.abs(energyA - energyB);
+    if (diff >= 25) {
+      sentences.push(
+        isKo
+          ? `현재 두 사람이 선호하는 반응 속도나 일상 텐션(energy_style)에 차이가 있어, 실제 체감되는 대화 리듬은 상황에 따라 조율이 필요합니다.`
+          : `Because you have different baseline energy styles, your actual conversational pacing in daily life will fluctuate depending on individual energy levels.`,
+      );
+    }
+  }
+
+  return sentences.join(" ");
 }
 
 function riskMeasures(locale: Locale): string {
   return pick(
     locale,
-    "How likely friction or conflict is between you. Unlike the other two scores, LOWER is better here — it's calculated from clash-prone signals in your charts.",
-    "친구 사이에 마찰·갈등이 생길 가능성을 보는 점수예요. 우정 케미·티키타카와 반대로 이 점수는 낮을수록 좋아요 — 부딪히기 쉬운 사주 신호를 기준으로 계산해요.",
+    "How likely friction or conflict is between you. Unlike the other two scores, LOWER is better here — it's calculated from friction-prone relationship signals.",
+    "친구 사이에 마찰·갈등이 생길 가능성을 보는 점수예요. 우정 케미·티키타카와 반대로 이 점수는 낮을수록 좋아요 — 부딪히기 쉬운 긴장 요소를 기준으로 계산해요.",
   );
 }
 
@@ -172,46 +195,68 @@ function riskLevelMeaning(locale: Locale): string {
 function riskWhy(
   sig: FriendScoringSignals,
   score: number,
+  psychA: PsychMasterJson | null | undefined,
+  psychB: PsychMasterJson | null | undefined,
   locale: Locale,
 ): string {
-  const parts: string[] = [];
+  const isKo = locale !== "en-US";
+  const sentences: string[] = [];
+
+  // Risk drivers
   if (sig.hasDayBranchFullTension) {
-    parts.push(
-      pick(
-        locale,
-        "There's a strong tension signal between your charts, which is the main driver pushing this score up.",
-        "두 사람 사이에 강한 긴장 신호가 있어서, 이게 점수를 끌어올리는 주된 이유예요.",
-      ),
+    sentences.push(
+      isKo
+        ? `자존심이나 시각이 팽팽하게 직면하는 강한 긴장 지점이 존재하여, 의견이 부딪힐 때 순간적인 갈등 텐션이 커질 수 있습니다.`
+        : `A strong tension point means friction can flare up quickly when personal pride or opinions clash.`,
     );
   }
   if (sig.hasWonjinOrGuimun) {
-    parts.push(
-      pick(
-        locale,
-        "There's also a signal for the kind of friction that flares up over things that are hard to explain logically.",
-        "논리적으로 설명하기 어려운 지점에서 갑자기 예민해질 수 있는 신호도 있어요.",
-      ),
+    sentences.push(
+      isKo
+        ? `논리적 설명보다 서운함이나 예민함이 먼저 올라오기 쉬운 지점이 있어, 감정이 꼬였을 때 직후의 쿨다운 시간이 필요합니다.`
+        : `An emotional sensitivity signal is also present, where misunderstandings can trigger unspoken resentment before logical discussion happens.`,
     );
   }
   if (sig.hasWealthOfficerClash) {
-    parts.push(
-      pick(
-        locale,
-        "There's also a signal meaning money or fairness/rules disputes are a likely friction point.",
-        "돈이나 공정함·규칙 문제로 부딪힐 가능성을 보이는 신호도 있어요.",
-      ),
+    sentences.push(
+      isKo
+        ? `현실적인 역할 분담이나 공정함·규칙 시각 차이로 인해 충돌이 일어날 가능성이 있습니다.`
+        : `A clash in practical boundary and fairness perspectives indicates potential friction around responsibilities or commitments.`,
     );
   }
-  if (parts.length === 0) {
-    parts.push(
-      pick(
-        locale,
-        `None of the clash-prone signals fired, so this sits at the low baseline (${score}%) — a low-friction pair by default.`,
-        `부딪히기 쉬운 신호가 하나도 뜨지 않아서 낮은 기본값(${score}%)에 머물러요 — 기본적으로 마찰이 적은 조합이에요.`,
-      ),
+
+  // Moderating factors if risk is moderate/low despite tension
+  if (sig.hasDayBranchFullTension && !sig.hasWonjinOrGuimun && !sig.hasWealthOfficerClash) {
+    sentences.push(
+      isKo
+        ? `다만 논리 밖으로 감정이 꼬이거나 현실적인 문제로 크게 확산되는 부작용은 없으므로, 마찰 직후 잠시 쿨다운 시간을 가진 뒤 차분하게 대화하면 쉽게 수습됩니다.`
+        : `However, because secondary emotional corruption signals are absent, friction remains manageable through a brief cooldown period followed by direct communication.`,
     );
   }
-  return parts.join(" ");
+
+  // Baseline if no risk signals fired
+  if (sentences.length === 0) {
+    sentences.push(
+      isKo
+        ? `갈등을 자극하는 마찰 요소가 나타나지 않아 최소 리스크(${score}%) 수준을 유지합니다. 서로에게 유의미한 상처를 남길 가능성이 낮은 편안한 사이입니다.`
+        : `With no major clash signals present in your charts, this score sits at a low risk baseline (${score}%), representing a low-maintenance bond.`,
+    );
+  }
+
+  // Psych 11 modifier
+  const resA = psychA?.secondary_axes?.resilience;
+  const resB = psychB?.secondary_axes?.resilience;
+  if (typeof resA === "number" && typeof resB === "number") {
+    if (resA >= 65 || resB >= 65) {
+      sentences.push(
+        isKo
+          ? `또한 높은 회복탄력성(resilience) 성향이 뒷받침되어, 일상에서 부딪힘이 발생하더라도 앙금이 길게 남지 않도록 완충해 줍니다.`
+          : `Additionally, strong psychological resilience helps cushion conflicts so small misunderstandings don't turn into long-term resentment.`,
+      );
+    }
+  }
+
+  return sentences.join(" ");
 }
 
 function buildItem(
@@ -227,25 +272,27 @@ export function buildFriendScoreCardAudit(params: {
   scores: FriendMasterScores;
   nameA: string;
   nameB: string;
+  psychMasterA?: PsychMasterJson | null;
+  psychMasterB?: PsychMasterJson | null;
   locale?: Locale;
 }): FriendScoreCardAudit {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const { sig, scores, nameA, nameB } = params;
+  const { sig, scores, nameA, nameB, psychMasterA, psychMasterB } = params;
 
   return {
     connection: buildItem(
       connectionMeasures(locale),
-      connectionWhy(sig, nameA, nameB, scores.connection, locale),
+      connectionWhy(sig, nameA, nameB, scores.connection, psychMasterA, psychMasterB, locale),
       connectionLevelMeaning(locale),
     ),
     banter: buildItem(
       banterMeasures(locale),
-      banterWhy(sig, scores.banter, locale),
+      banterWhy(sig, scores.banter, psychMasterA, psychMasterB, locale),
       banterLevelMeaning(locale),
     ),
     risk: buildItem(
       riskMeasures(locale),
-      riskWhy(sig, scores.risk, locale),
+      riskWhy(sig, scores.risk, psychMasterA, psychMasterB, locale),
       riskLevelMeaning(locale),
     ),
   };

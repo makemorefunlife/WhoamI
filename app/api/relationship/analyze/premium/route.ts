@@ -41,6 +41,7 @@ import {
   isStaleWorkReportBlock,
   isStaleCohabitationReportBlock,
   isStaleFamilyReportBlock,
+  isStaleFriendReportBlock,
 } from "@/lib/relationship/reportStalenessGuard";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
@@ -245,7 +246,9 @@ export async function POST(req: Request) {
               ? isStaleFamilyReportBlock(cached)
               : kind === "romantic"
                 ? (isRomanticV4ReportEnabled() && isStaleRomanticV4Block(readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale)))
-                : false;
+                : kind === "friendship"
+                  ? isStaleFriendReportBlock(cached)
+                  : false;
 
       if (!isStale) {
         const forClient =

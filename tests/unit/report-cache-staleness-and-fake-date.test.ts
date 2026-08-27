@@ -50,11 +50,15 @@ console.log("✓ Reject legacy Cohabitation report lacking canonical plan/chapte
 const modernMarriagePayload = {
   format: "cohabitation_deep_v1",
   report: {
-    canonicalStoryPlan: {
-      chapters: [{ chapterId: "c1_who_we_are" }],
+    canonical_projections: {
+      marriage_canonical_bundle: {
+        chapter07Intelligence: { introNarrative: "Valid" },
+        chapter08Intelligence: { introSentence: "Valid" },
+      },
+      marriage_canonical_story_plan: {
+        chapters: [{ chapterId: "c1_who_we_are" }],
+      },
     },
-    chapter07Intelligence: { introNarrative: "Valid" },
-    chapter08Intelligence: { introSentence: "Valid" },
     household: {
       section_dna: { person_a: {}, person_b: {} },
     },
@@ -157,7 +161,84 @@ assert.ok(childDims.tensionReleasing > 50, "Child tensionReleasing score should 
 assert.notDeepStrictEqual(parentDims, childDims, "Parent and Child role dimensions must be meaningfully different");
 console.log("✓ Family role intelligence non-zero and profile-differentiated calculations verified");
 
+// Test 8: Friend Staleness Guard
+import { isStaleFriendReportBlock } from "@/lib/relationship/reportStalenessGuard";
+
+const legacyFriendPayload = {
+  format: "friend_social_deep_v1",
+  report: {
+    friend: {
+      summary_line: "Old Friend Report",
+    },
+  },
+};
+assert.strictEqual(isStaleFriendReportBlock(legacyFriendPayload), true);
+console.log("✓ Reject legacy Friend report lacking canonical bundle / social DNA verified");
+
+const modernFriendPayload = {
+  format: "friend_social_deep_v1",
+  report: {
+    friend: {
+      section_social_dna_a: { social_title: "온기 있는 촛불 조언자", guardian_character: { label: "Valid" }, pair_synthesis: { label: "Valid", description: "Valid synthesis" } },
+      section_social_dna_b: { social_title: "대나무숲 수호목", guardian_character: { label: "Valid" } },
+    },
+    meta: {
+      friend_engine_version: "friend_vnext_ch1_ch8_v3_canonical",
+      canonical_bundle: { chapter01: {}, responseIntelligence: { personA: {}, personB: {} } },
+    },
+    canonical_projections: {
+      treasurer: { nickname: "A" },
+      comparison_table: { rows: [] },
+    },
+  },
+};
+assert.strictEqual(isStaleFriendReportBlock(modernFriendPayload), false);
+console.log("✓ Accept modern VNext Friend report containing canonical bundle verified");
+
+// Test 9: Missing pairFriendship Evidence-Safe Behavior (No Dummy Fallbacks)
+import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFriendReportEnriched";
+import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
+import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
+
+function sajuFromBirth(birthDate: string) {
+  const bundle = calculateSajuBundle({ birthDate, birthTime: "12:00" });
+  const payload = toV1SajuApiPayload(bundle);
+  return {
+    saju: payload.saju,
+    dayStemData: payload.dayStemData,
+    dayBranchData: payload.dayBranchData,
+    hiddenStemsData: payload.hiddenStemsData,
+    tenGods: payload.tenGods,
+    twelveStageData: payload.twelveStageData,
+    relations: payload.relations,
+    shinsals: payload.shinsals,
+  } as any;
+}
+
+const mockSajuA = sajuFromBirth("1990-05-15");
+const mockSajuB = sajuFromBirth("1992-08-20");
+
+const safeReportNoPairFriendship = buildFriendReportEnriched({
+  nicknameA: "Alex",
+  nicknameB: "Jordan",
+  sajuJsonA: mockSajuA,
+  sajuJsonB: mockSajuB,
+  pairFriendship: null, // NO FAKE FALLBACK INJECTED
+});
+
+assert.strictEqual(
+  safeReportNoPairFriendship.meta.prescription_friendship,
+  undefined,
+  "prescription_friendship must be undefined when pairFriendship evidence is missing"
+);
+
+const stringified = JSON.stringify(safeReportNoPairFriendship);
+assert.strictEqual(stringified.includes("NaN"), false, "Report JSON must not contain NaN");
+assert.strictEqual(stringified.includes("undefined"), false, "Report JSON must not contain 'undefined' strings");
+console.log("✓ Missing pairFriendship degrades gracefully without fake dummy evidence or NaN/undefined");
+
 console.log("==========================================");
 console.log("ALL STALENESS GUARD AND P1 FIX UNIT TESTS PASSED!");
 console.log("==========================================");
+
 

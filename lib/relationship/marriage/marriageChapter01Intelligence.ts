@@ -336,10 +336,13 @@ export function buildMarriageChapter01Intelligence(params: {
   }
 
   const finalDrivers = drivers.slice(0, 3);
+  const heroDriver = finalDrivers[0];
   const pairAttractionSynthesis = sanitizeCopy(
-    isEn
-      ? `For ${a}, ${b}'s gentle acceptance offers relaxed comfort; for ${b}, ${a}'s clear direction builds dependable trust.`
-      : `${a}님에게는 ${b}님의 다정한 포용력이 긴장을 덜어주는 매력으로, ${b}님에게는 ${a}님의 명확한 주도성이 믿고 함께 움직일 수 있는 이끌림으로 다가오는 조합입니다.`
+    heroDriver?.whatDrawsA && heroDriver?.whatDrawsB
+      ? `${heroDriver.whatDrawsA} ${heroDriver.whatDrawsB}`
+      : isEn
+        ? `For ${a}, ${b}'s gentle acceptance offers relaxed comfort; for ${b}, ${a}'s clear direction builds dependable trust.`
+        : `${a}님에게는 ${b}님의 다정한 포용력이 긴장을 덜어주는 매력으로, ${b}님에게는 ${a}님의 명확한 주도성이 믿고 함께 움직일 수 있는 이끌림으로 다가오는 조합입니다.`
   );
 
   // --------------------------------------------------------------------------
@@ -636,7 +639,7 @@ export function buildMarriageChapter01Intelligence(params: {
   }
 
   const identityNarrative = sanitizeCopy(
-    `${aEunNeun} 명확한 결단력으로 관계의 중심을 잡고, ${bEunNeun} 다정한 포용력으로 마음의 안식을 보태줍니다. 그 결과 ${aEunNeun} 일상의 부담을 혼자 짊어지지 않아도 되고, ${bEunNeun} ${a}님의 명확한 가이드 덕분에 주저함 없이 실행에 나서는 함께 살아가는 힘을 갖추게 됩니다.`
+    `${meaningAtoB.description} ${meaningBtoA.description}`
   );
 
   const coupleIdentity: CoupleIdentitySynthesis = {
@@ -648,11 +651,7 @@ export function buildMarriageChapter01Intelligence(params: {
   // --------------------------------------------------------------------------
   // 6. HERO SYNTHESIS ( DERIVED LAST )
   // --------------------------------------------------------------------------
-  const heroSynthesis = sanitizeCopy(
-    isEn
-      ? `${a} brings clear direction while ${b} offers gentle sanctuary — allowing both to drop daily burdens and build a grounded life together.`
-      : `${aEunNeun} 명확한 결단력으로 삶의 중심을 잡고, ${bEunNeun} 다정한 포용력으로 마음의 안식을 보태어, 밖에서의 부담을 내려놓고 함께 성장하는 부부 동력을 완성합니다.`
-  );
+  const heroSynthesis = identityNarrative;
 
   const provenance: Chapter01Provenance = {
     sourceInsightIds,

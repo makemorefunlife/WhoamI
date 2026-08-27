@@ -1,3 +1,4 @@
+/** Enriched Friend Report Builder - Cleaned Foundation Baseline */
 import type { Locale } from "@/lib/i18n/locale";
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import { buildFriendReport } from "@/lib/relationship/friend/buildFriendReport";
@@ -39,6 +40,11 @@ import {
   buildExpectationResetLine,
   buildFriendshipStruggleLine,
 } from "./friendExpectationAndStruggle";
+import {
+  deriveIndividualFriendCharacter,
+  deriveDirectionalFriendValue,
+  derivePairFriendshipIdentity,
+} from "@/lib/relationship/friend/friendCharacterEngine";
 
 /**
  * Derives dynamic directional gift (A→B or B→A) based on 10-god profile, element, and psych axes.
@@ -119,37 +125,45 @@ function derivePairEmergence(
 
 /**
  * Derives Q19: Group vs 1:1 social energy dynamics and battery replenishment.
+ *
+ * Written from `selfName`'s point of view so the two per-person cards
+ * (section_social_dna_a / _b) never render byte-identical text — even when
+ * both people share the same batteryMode, each card leads with its own
+ * owner and mirrors off the other, instead of a name-free shared paragraph.
  */
 function deriveGroupVs1on1Insight(
-  nameA: string,
-  nameB: string,
-  modeA: "outdoor" | "homebody",
-  modeB: "outdoor" | "homebody",
-  psychA: PsychMasterJson | null | undefined,
-  psychB: PsychMasterJson | null | undefined,
+  selfName: string,
+  otherName: string,
+  selfMode: "outdoor" | "homebody",
+  otherMode: "outdoor" | "homebody",
+  psychSelf: PsychMasterJson | null | undefined,
+  psychOther: PsychMasterJson | null | undefined,
   locale: Locale,
 ) {
   const isKo = locale !== "en-US";
 
-  if (modeA === "homebody" && modeB === "homebody") {
+  if (selfMode === "homebody" && otherMode === "homebody") {
     return isKo
-      ? `단둘이 조용하고 아늑한 아지트나 카페에서 만날 때 에너지가 가장 깊게 충전됩니다. 다수가 모이는 시끄러운 모임에서는 둘 다 배터리가 빠르게 방전될 수 있으니, 둘만의 1:1 만남을 기본값으로 두는 것이 관계를 오래 편안하게 유지해 줍니다.`
-      : `You recharge most deeply in cozy, low-stimulus one-on-one settings. Large group hangouts drain your social battery quickly, so keeping private 1:1 time as your default rhythm preserves effortless closeness.`;
+      ? `${selfName}은(는) 단둘이 조용하고 아늑한 아지트나 카페에서 만날 때 에너지가 가장 깊게 충전돼요. ${otherName}도 마찬가지라, 다수가 모이는 시끄러운 모임에서는 둘 다 배터리가 빠르게 방전될 수 있으니, 둘만의 1:1 만남을 기본값으로 두는 것이 관계를 오래 편안하게 유지해 줍니다.`
+      : `${selfName} recharges most deeply in cozy, low-stimulus one-on-one settings — and so does ${otherName}. Large group hangouts drain both your social batteries quickly, so keeping private 1:1 time as your default rhythm preserves effortless closeness.`;
   }
 
-  if (modeA === "outdoor" && modeB === "outdoor") {
+  if (selfMode === "outdoor" && otherMode === "outdoor") {
     return isKo
-      ? `단둘이 있을 때도, 여러 친구들과 어울리는 모임에서도 둘 다 에너지를 내는 편이에요. 다만 텐션을 스스로 못 낮추는 편이라, 만나고 난 뒤에 오히려 한꺼번에 기 빨림이 올 수 있어요. 텐션이 오를 때일수록 의식적으로 쉬는 타이밍을 넣어주는 게 관계를 오래 편하게 만들어요.`
-      : `High-energy both one-on-one and in large social circles. But since neither of you naturally dials it down, you can both crash hard right after hanging out. Building in quiet downtime while the energy is still high is what keeps this comfortable long-term.`;
+      ? `${selfName}은(는) 단둘이 있을 때도, 여러 친구들과 어울리는 모임에서도 에너지를 내는 편이에요. ${otherName}도 비슷한 편이라, 둘 다 텐션을 스스로 못 낮추는 편이다 보니 만나고 난 뒤에 오히려 한꺼번에 기 빨림이 올 수 있어요. 텐션이 오를 때일수록 의식적으로 쉬는 타이밍을 넣어주는 게 관계를 오래 편하게 만들어요.`
+      : `${selfName} runs high-energy both one-on-one and in large social circles — and so does ${otherName}. But since neither of you naturally dials it down, you can both crash hard right after hanging out. Building in quiet downtime while the energy is still high is what keeps this comfortable long-term.`;
   }
 
-  // Asymmetric
-  const outdoorName = modeA === "outdoor" ? nameA : nameB;
-  const homebodyName = modeA === "outdoor" ? nameB : nameA;
+  // Asymmetric — frame from selfName's own role (outdoor lead vs homebody observer).
+  if (selfMode === "outdoor") {
+    return isKo
+      ? `단둘이 있을 때는 깊고 편안한 대화가 자연스럽게 흐르지만, 다수 모임에서는 ${selfName}이(가) 분위기를 주도하며 에너지를 발산하는 반면, ${otherName}은(는) 관찰자 모드로 전환되어 쉽게 피로해질 수 있습니다. 단체 모임 중간에 조용한 휴식 공간을 배려하거나 둘만의 1:1 시간을 적절히 섞어주는 것이 피로를 줄이는 핵심입니다.`
+      : `One-on-one time creates deep emotional resonance, but in group settings ${selfName} naturally takes the floor while ${otherName} shifts into observation mode and burns battery faster. Blending 1:1 hangouts with group activities prevents social fatigue.`;
+  }
 
   return isKo
-    ? `단둘이 있을 때는 깊고 편안한 대화가 자연스럽게 흐르지만, 다수 모임에서는 ${outdoorName}이(가) 분위기를 주도하며 에너지를 발산하는 반면, ${homebodyName}은(는) 관찰자 모드로 전환되어 쉽게 피로해질 수 있습니다. 단체 모임 중간에 조용한 휴식 공간을 배려하거나 둘만의 1:1 시간을 적절히 섞어주는 것이 피로를 줄이는 핵심입니다.`
-    : `One-on-one time creates deep emotional resonance, but in group settings ${outdoorName} naturally takes the floor while ${homebodyName} shifts into observation mode and burns battery faster. Blending 1:1 hangouts with group activities prevents social fatigue.`;
+    ? `다수 모임에서는 ${otherName}이(가) 분위기를 주도하며 에너지를 발산하는 반면, ${selfName}은(는) 관찰자 모드로 전환되어 쉽게 피로해질 수 있어요. 대신 단둘이 있을 때는 깊고 편안한 대화가 자연스럽게 흘러요. 단체 모임 중간에 조용한 휴식 공간을 배려하거나 둘만의 1:1 시간을 적절히 섞어주는 것이 피로를 줄이는 핵심입니다.`
+    : `In group settings ${otherName} naturally takes the floor while ${selfName} shifts into observation mode and burns battery faster — but one-on-one time creates deep emotional resonance for you both. Blending 1:1 hangouts with group activities prevents social fatigue.`;
 }
 
 /**
@@ -243,59 +257,50 @@ export function buildFriendReportEnriched(params: {
   const ctx = buildFriendRuleContext({ ...params, locale });
   const base = buildFriendReport(params);
 
-  // 2. Ensure pair friendship signals are present for prescription engine
-  const pairFriendship: PairFriendshipSignals = params.pairFriendship ?? {
-    johu_gap: {
-      heat_gap: 15,
-      moisture_gap: 10,
-      temperature_mismatch: false,
-      band_a: "neutral",
-      band_b: "neutral",
-    },
-    energy_drain_index: 30,
-    energy_drain_band: "low",
-  };
+  // 2. Pair friendship signals (optional evidence)
+  const pairFriendship = params.pairFriendship ?? null;
 
-  // 3. Directional Gifts (Q2, Q5) & Friendship Growth / Emergence (Q17)
-  const giftA = deriveDirectionalGift(
-    nameA,
-    nameB,
-    ctx.tenGodsA,
-    ctx.friendPairAnalysis.dnaA.dominantElement,
-    params.psychMasterA,
+  // 3. 10 Day Master Friend Character & Directional Value Engine
+  const indA = deriveIndividualFriendCharacter({
+    chart: ctx.friendPairAnalysis.chartA,
+    tenGods: ctx.tenGodsA,
+    psych: params.psychMasterA,
     locale,
-  );
-  const giftB = deriveDirectionalGift(
-    nameB,
-    nameA,
-    ctx.tenGodsB,
-    ctx.friendPairAnalysis.dnaB.dominantElement,
-    params.psychMasterB,
+  });
+  const indB = deriveIndividualFriendCharacter({
+    chart: ctx.friendPairAnalysis.chartB,
+    tenGods: ctx.tenGodsB,
+    psych: params.psychMasterB,
     locale,
-  );
-  // Q2/Q5 enhancement — oheng 생(生) direction confirms the ten-god-based
-  // directional gift when the two dominant elements line up that way.
-  const giftLineExtraA = buildElementGeneratesGiftLine(
-    ctx.friendPairAnalysis.dnaB.dominantElement,
-    ctx.friendPairAnalysis.dnaA.dominantElement,
-    nameB,
-    locale,
-  );
-  const giftLineExtraB = buildElementGeneratesGiftLine(
-    ctx.friendPairAnalysis.dnaA.dominantElement,
-    ctx.friendPairAnalysis.dnaB.dominantElement,
-    nameA,
-    locale,
-  );
+  });
 
-  // Q4 (서로 성장시키는 부분) — 의사결정방식(신중형 vs 즉각형) × 자극추구 대각
-  // 비교가 뚜렷하면 그 다이내믹으로, 아니면 기존 일반 emergence 문구로 폴백.
-  const emergenceLine = buildGrowthDynamicLine({
-    psychA: params.psychMasterA,
-    psychB: params.psychMasterB,
+  const valAtoB = deriveDirectionalFriendValue({
+    giverName: nameA,
+    receiverName: nameB,
+    giverCharacter: indA,
+    receiverChart: ctx.friendPairAnalysis.chartB,
+    receiverTenGods: ctx.tenGodsB,
+    receiverPsych: params.psychMasterB,
+    signals: ctx.friendPairAnalysis.scoringSignals,
+    locale,
+  });
+
+  const valBtoA = deriveDirectionalFriendValue({
+    giverName: nameB,
+    receiverName: nameA,
+    giverCharacter: indB,
+    receiverChart: ctx.friendPairAnalysis.chartA,
+    receiverTenGods: ctx.tenGodsA,
+    receiverPsych: params.psychMasterA,
+    signals: ctx.friendPairAnalysis.scoringSignals,
+    locale,
+  });
+
+  const pairIdentity = derivePairFriendshipIdentity({
     nameA,
     nameB,
-    fallbackLine: derivePairEmergence(nameA, nameB, giftA, giftB, locale),
+    valAtoB,
+    valBtoA,
     locale,
   });
 
@@ -436,6 +441,53 @@ export function buildFriendReportEnriched(params: {
       }
     : counselingBaseB;
 
+  // 9. Restore Actionable Prescriptions (PairPrescriptionSection format)
+  // Generates 3 core topics:
+  // 1) friendship_baseline (우정 유지 기본 루틴 (공통))
+  // 2) communication_climate / energy_drain_prevention (지금 당장 해볼 것 - Do List & Q21 연락 주도권)
+  // 3) conflict_timeout_protocol (절대 하지 말 것 - Don't List & Q23 내려놓아야 할 기대)
+  const prescriptionPack = pairFriendship
+    ? buildFriendPrescriptions({
+        pair: pairFriendship,
+        nicknameA: nameA,
+        nicknameB: nameB,
+        locale,
+      })
+    : undefined;
+
+  if (prescriptionPack) {
+    // 근거 없는 고정 숫자(30분/10분/24시간/분기 1회/2주 등) 제거 — production
+    // 파일은 그대로 두고 current_enriched에서만 문구를 순화한다.
+    prescriptionPack.items = prescriptionPack.items.map((item) => ({
+      ...item,
+      do_list: item.do_list.map(stripUnsupportedFixedNumbers),
+      dont_list: item.dont_list.map(stripUnsupportedFixedNumbers),
+    }));
+
+    // 성장과 기대 Q3 (무엇을 기대하면 실망하기 쉬운가) — Prescription Don't List에 배치.
+    // Hidden Flow counseling_gap_note와 같은 신호(사고방식 vs 관계공감)를 재사용하되
+    // "왜 어긋나는가"가 아니라 "무엇을 내려놓을지"로 프레이밍만 바꾼다(Law 9).
+    const expectationResetForA = counselingBaseA
+      ? buildExpectationResetLine(counselingBaseA.type, nameA, locale)
+      : null;
+    const expectationResetForB = counselingBaseB
+      ? buildExpectationResetLine(counselingBaseB.type, nameB, locale)
+      : null;
+    const expectationResetLines = [expectationResetForA, expectationResetForB].filter(
+      (l): l is string => Boolean(l),
+    );
+    if (expectationResetLines.length > 0 && prescriptionPack.items.length > 0) {
+      const targetIndex = prescriptionPack.items.findIndex(
+        (item) => item.topic === "friendship_baseline",
+      );
+      const idx = targetIndex >= 0 ? targetIndex : 0;
+      prescriptionPack.items[idx] = {
+        ...prescriptionPack.items[idx]!,
+        dont_list: [...prescriptionPack.items[idx]!.dont_list, ...expectationResetLines],
+      };
+    }
+  }
+
   // 8. Breakup Guide & De-escalation
   const jealousyGuardBaseA =
     resolveJealousyGuardNote(ctx.tenGodsA, params.psychMasterA, nameA, locale) ??
@@ -480,47 +532,7 @@ export function buildFriendReportEnriched(params: {
     ? `${base.friend?.section_soulmate?.soulmate_verdict ?? ""} ${distanceResilienceLine}`.trim()
     : (base.friend?.section_soulmate?.soulmate_verdict ?? "");
 
-  // 9. Restore Actionable Prescriptions (PairPrescriptionSection format)
-  // Generates 3 core topics:
-  // 1) friendship_baseline (우정 유지 기본 루틴 (공통))
-  // 2) communication_climate / energy_drain_prevention (지금 당장 해볼 것 - Do List & Q21 연락 주도권)
-  // 3) conflict_timeout_protocol (절대 하지 말 것 - Don't List & Q23 내려놓아야 할 기대)
-  const prescriptionPack = buildFriendPrescriptions({
-    pair: pairFriendship,
-    nicknameA: nameA,
-    nicknameB: nameB,
-    locale,
-  });
-  // 근거 없는 고정 숫자(30분/10분/24시간/분기 1회/2주 등) 제거 — production
-  // 파일은 그대로 두고 current_enriched에서만 문구를 순화한다.
-  prescriptionPack.items = prescriptionPack.items.map((item) => ({
-    ...item,
-    do_list: item.do_list.map(stripUnsupportedFixedNumbers),
-    dont_list: item.dont_list.map(stripUnsupportedFixedNumbers),
-  }));
 
-  // 성장과 기대 Q3 (무엇을 기대하면 실망하기 쉬운가) — Prescription Don't List에 배치.
-  // Hidden Flow counseling_gap_note와 같은 신호(사고방식 vs 관계공감)를 재사용하되
-  // "왜 어긋나는가"가 아니라 "무엇을 내려놓을지"로 프레이밍만 바꾼다(Law 9).
-  const expectationResetForA = counselingBaseA
-    ? buildExpectationResetLine(counselingBaseA.type, nameA, locale)
-    : null;
-  const expectationResetForB = counselingBaseB
-    ? buildExpectationResetLine(counselingBaseB.type, nameB, locale)
-    : null;
-  const expectationResetLines = [expectationResetForA, expectationResetForB].filter(
-    (l): l is string => Boolean(l),
-  );
-  if (expectationResetLines.length > 0 && prescriptionPack.items.length > 0) {
-    const targetIndex = prescriptionPack.items.findIndex(
-      (item) => item.topic === "friendship_baseline",
-    );
-    const idx = targetIndex >= 0 ? targetIndex : 0;
-    prescriptionPack.items[idx] = {
-      ...prescriptionPack.items[idx]!,
-      dont_list: [...prescriptionPack.items[idx]!.dont_list, ...expectationResetLines],
-    };
-  }
 
   // 10. 11-Axis Reality Insights — real-life scenes for contact/reply cadence,
   // empathy vs solutions, planning vs spontaneity, duo vs group energy,
@@ -576,6 +588,8 @@ export function buildFriendReportEnriched(params: {
     scores: ctx.masterScores,
     nameA,
     nameB,
+    psychMasterA: params.psychMasterA,
+    psychMasterB: params.psychMasterB,
     locale,
   });
 
@@ -593,25 +607,36 @@ export function buildFriendReportEnriched(params: {
         shine_when_low: shineWhenLow,
         score_card_audit: scoreCardAudit,
       },
-      // 2. Social DNA A & B: Update with Q2/Q5 Directional Gifts & Q19 Social Energy Battery
+      // 2. Social DNA A & B: Update with 10 Day Master Individual Character & Directional Roles
       section_social_dna_a: {
         ...base.friend?.section_social_dna_a,
+        social_title: indA.characterTitle,
+        friend_position: indA.individualExplanation,
+        situation_snapshots: indA.situationSnapshots,
+        four_slot_profile: indA.fourSlotProfile,
         guardian_character: {
-          key: giftA.key,
-          label: giftA.label,
-          // emergenceLine(성장/시너지, pair 단위 결론)은 A 카드에만 싣는다.
-          description: [giftA.description, giftLineExtraA, emergenceLine].filter(Boolean).join(" "),
+          key: indA.expressionVariant,
+          label: valAtoB.roleTitle,
+          description: valAtoB.roleDescription,
+        },
+        pair_synthesis: {
+          label: pairIdentity.pairTitle,
+          lineAtoB: pairIdentity.lineAtoB,
+          lineBtoA: pairIdentity.lineBtoA,
+          description: pairIdentity.pairSynthesisDescription,
         },
         battery_description: groupVs1on1A,
       },
       section_social_dna_b: {
         ...base.friend?.section_social_dna_b,
+        social_title: indB.characterTitle,
+        friend_position: indB.individualExplanation,
+        situation_snapshots: indB.situationSnapshots,
+        four_slot_profile: indB.fourSlotProfile,
         guardian_character: {
-          key: giftB.key,
-          label: giftB.label,
-          // emergenceLine은 pair 단위 결론이라 A 카드에만 한 번 싣는다(양쪽에
-          // 동일 문장을 반복하면 "중복된 mutual-growth 문단" 문제가 생김).
-          description: [giftB.description, giftLineExtraB].filter(Boolean).join(" "),
+          key: indB.expressionVariant,
+          label: valBtoA.roleTitle,
+          description: valBtoA.roleDescription,
         },
         battery_description: groupVs1on1B,
       },
@@ -665,9 +690,10 @@ export function buildFriendReportEnriched(params: {
     },
     meta: {
       ...base.meta,
+      friend_engine_version: "friend_vnext_ch1_ch8_v3_canonical",
       grade_reason: enrichedGradeReason,
       // RESTORE actionable prescriptions conforming to PairPrescriptionSection
-      prescription_friendship: prescriptionPack,
+      ...(prescriptionPack ? { prescription_friendship: prescriptionPack } : {}),
       canonical_bundle: buildFriendCanonicalEngine({
         ctx,
         psychMasterA: params.psychMasterA,

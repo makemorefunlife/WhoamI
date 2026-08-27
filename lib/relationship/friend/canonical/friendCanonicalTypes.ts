@@ -181,4 +181,6 @@ export type FriendCanonicalBundle = {
   };
   syntheses?: FriendSyntheses;
   coverage?: FriendCoverageProfiles;
+  /** Friend VNext Ch4-8 — shared support/conflict/boundary/distance response core. */
+  responseIntelligence?: import("@/lib/relationship/friend/response/friendResponseIntelligenceTypes").FriendResponseIntelligence;
 };

@@ -106,6 +106,16 @@ export function sanitizeKoreanParticles(text: string, knownNames: string[] = [])
     }
   }
 
+  // "word은(는)"/"word이(가)"/"word을(를)"/"word과(와)"/"word와(과)" — the
+  // particle already applied, followed by a parenthetical alternate (as
+  // opposed to the "word(은)는" ordering below). Word may be Hangul or a
+  // romanized/English name (e.g. "Sera").
+  result = result.replace(/([가-힣A-Za-z0-9]+)은\(는\)/g, (_, w) => `${w}${hasBatchim(w) ? "은" : "는"}`);
+  result = result.replace(/([가-힣A-Za-z0-9]+)이\(가\)/g, (_, w) => `${w}${hasBatchim(w) ? "이" : "가"}`);
+  result = result.replace(/([가-힣A-Za-z0-9]+)을\(를\)/g, (_, w) => `${w}${hasBatchim(w) ? "을" : "를"}`);
+  result = result.replace(/([가-힣A-Za-z0-9]+)과\(와\)/g, (_, w) => `${w}${hasBatchim(w) ? "과" : "와"}`);
+  result = result.replace(/([가-힣A-Za-z0-9]+)와\(과\)/g, (_, w) => `${w}${hasBatchim(w) ? "과" : "와"}`);
+
   // General regex replacements for dual particle forms like (이)가, 을(를), 이/가, 은/는, 을/를, 과/와, 와/과
   result = result.replace(/([가-힣])\(이\)가/g, (_, ch) => hasBatchim(ch) ? `${ch}이` : `${ch}가`);
   result = result.replace(/([가-힣])\(을\)를/g, (_, ch) => hasBatchim(ch) ? `${ch}을` : `${ch}를`);

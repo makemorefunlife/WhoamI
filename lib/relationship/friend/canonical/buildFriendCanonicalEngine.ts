@@ -18,6 +18,7 @@ import {
 import { buildFriendAxisRealityInsights } from "@/lib/relationship/enrichment/friendAxisRealityInsights";
 import { buildFriendSyntheses } from "./friendCanonicalSyntheses";
 import { buildFriendCoverageProfiles } from "./friendPsychCoverageEngine";
+import { buildFriendResponseIntelligence } from "@/lib/relationship/friend/response/buildFriendResponseIntelligence";
 import type {
   FriendCanonicalBundle,
   FriendGuardianRoleMeaning,
@@ -212,6 +213,11 @@ export function buildFriendCanonicalEngine(
       psychA: psychMasterA,
       psychB: psychMasterB,
       locale,
+    }),
+    responseIntelligence: buildFriendResponseIntelligence({
+      ctx,
+      psychA: psychMasterA,
+      psychB: psychMasterB,
     }),
   };
 }

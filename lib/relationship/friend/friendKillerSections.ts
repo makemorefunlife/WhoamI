@@ -37,6 +37,14 @@ export type SocialDnaPersonSection = {
   tikitaka_description: string;
   battery_description: string;
   private_self: string;
+  situation_snapshots?: import("./friendCharacterEngine").FriendSituationSnapshot[];
+  four_slot_profile?: import("./friendCharacterEngine").FourSlotFriendProfile;
+  pair_synthesis?: {
+    label: string;
+    lineAtoB?: string;
+    lineBtoA?: string;
+    description: string;
+  };
   /** Part2① 십성+11축 기반 귀인캐릭터 — psychMaster 없으면(레거시 캐시·설문 미완료) null */
   guardian_character?: import("./friendPsychFit").FriendGuardianCharacter | null;
 };

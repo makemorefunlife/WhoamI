@@ -35,11 +35,21 @@ export type WhyYouMeUsSectionProps = {
   children?: React.ReactNode;
 };
 
-export function WhyYouMeUsSection({ id, n, eyebrow, title, data, names, locale, children }: WhyYouMeUsSectionProps) {
+export function WhyYouMeUsSection({
+  id,
+  n,
+  eyebrow,
+  title,
+  data,
+  names,
+  locale,
+  children,
+}: WhyYouMeUsSectionProps) {
   const dirs = [data.whyYou, data.whyMe];
+  const hasHeader = Boolean(n || (eyebrow && eyebrow.trim() !== "") || (title && title.trim() !== ""));
 
-  return (
-    <ChapterSection id={id} n={n} label={eyebrow} title={title}>
+  const content = (
+    <>
       <div className="mt-2 grid gap-6 md:grid-cols-2">
         {dirs.map((d, i) => (
           <Reveal key={`${d.from}-${d.to}`} delay={i * 80}>
@@ -129,6 +139,16 @@ export function WhyYouMeUsSection({ id, n, eyebrow, title, data, names, locale, 
 
       {data.bridge && <Bridge text={data.bridge} label={ec(locale, "Meanwhile", "그런데")} />}
       {children}
+    </>
+  );
+
+  if (!hasHeader) {
+    return <div id={id}>{content}</div>;
+  }
+
+  return (
+    <ChapterSection id={id} n={n} label={eyebrow} title={title}>
+      {content}
     </ChapterSection>
   );
 }

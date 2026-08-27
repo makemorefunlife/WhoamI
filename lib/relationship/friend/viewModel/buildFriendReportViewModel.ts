@@ -32,14 +32,33 @@ import {
   formatFriendTravelPlannerCanonicalLabel,
   readFriendTravelPlannerCanonicalProjection,
 } from "@/lib/relationship/friend/friendTravelPlannerCanonical";
+import { buildFriendScoreCardAudit } from "@/lib/relationship/enrichment/friendScoreCardAudit";
+import type { FriendScoringSignals } from "@/lib/saju/friendAnalysis";
 import type {
   OpeningBlock,
   FriendReportSection,
   FriendReportViewModel,
+  FriendChapterViewModel,
 } from "./friendReportSectionTypes";
 import type { FriendCompareRow } from "@/lib/relationship/friend/friendSajuCompareTable";
 import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewModel";
 import { buildFriendWhyYouMeUs } from "@/lib/relationship/friend/buildFriendWhyYouMeUs";
+import {
+  deriveIndividualFriendCharacter,
+  deriveDirectionalFriendValue,
+  derivePairFriendshipIdentity,
+} from "@/lib/relationship/friend/friendCharacterEngine";
+import { sajuJsonToPillars } from "@/lib/saju/pairChartAnalysis";
+import { buildChartContext } from "@/lib/saju/chartContext";
+import { countTenGodsForMarriage } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
+import { resolveTravelPlayEnergyPaceCopy } from "@/lib/relationship/friend/chapters/friendChapter04TeamPlay";
+import {
+  buildFriendChapter04Blocks,
+  buildFriendChapter05Blocks,
+  buildFriendChapter06Blocks,
+  buildFriendChapter07Blocks,
+  buildFriendChapter08Blocks,
+} from "@/lib/relationship/friend/chapters/friendChapterVNextBlocksAdapter";
 
 export type BuildFriendReportViewModelParams = {
   viewerIsReportA: boolean;
@@ -68,6 +87,7 @@ function buildOpening(
 function buildSnapshotSection(
   report: FriendReportBody,
   t: ReturnType<typeof catalog>,
+  locale: Locale = "ko-KR",
 ): FriendReportSection | null {
   const f = report.friend;
   if (!f?.section_snapshot) return null;
@@ -92,7 +112,45 @@ function buildSnapshotSection(
       : undefined,
     shineWhenBest: f.section_snapshot.shine_when_best ?? null,
     shineWhenLow: f.section_snapshot.shine_when_low ?? null,
-    scoreCardAudit: f.section_snapshot.score_card_audit ?? null,
+    scoreCardAudit: (() => {
+      const rawAudit = f.section_snapshot.score_card_audit;
+      const isLegacyAudit = Boolean(
+        !rawAudit ||
+          rawAudit.connection?.why?.includes("사주") ||
+          rawAudit.connection?.why?.includes("결이 비슷하다") ||
+          rawAudit.banter?.why?.includes("중간 기본값(50%)") ||
+          rawAudit.risk?.why?.includes("주된 이유")
+      );
+
+      if (!isLegacyAudit) return rawAudit ?? null;
+
+      const conn = f.section_snapshot.connection_pct ?? 50;
+      const bant = f.section_snapshot.banter_pct ?? 50;
+      const rsk = f.section_snapshot.risk_pct ?? 10;
+
+      const sig: FriendScoringSignals = {
+        hasDayBranchCombine: conn === 100 || conn === 80 || conn === 60,
+        hasBijiepMutualResonance: conn === 100 || conn === 70,
+        hasDayBranchChungHyung: conn === 60 || conn === 30,
+        hasFoodSealHarmony: bant === 100 || bant === 75 || bant === 55,
+        hasJohuComplement: bant === 100,
+        hasFoodClashFriction: bant === 55 || bant === 30,
+        hasDayBranchFullTension: rsk === 85 || rsk === 70 || rsk === 60 || rsk === 45,
+        hasWonjinOrGuimun: rsk === 85 || rsk === 70 || rsk === 50 || rsk === 35,
+        hasWealthOfficerClash: rsk === 85 || rsk === 60 || rsk === 50 || rsk === 25,
+        hasDayStemMutualSupport: false,
+      };
+
+      return buildFriendScoreCardAudit({
+        sig,
+        scores: { connection: conn, banter: bant, risk: rsk },
+        nameA: report.friend?.section_social_dna_a?.nickname ?? "A",
+        nameB: report.friend?.section_social_dna_b?.nickname ?? "B",
+        psychMasterA: report.meta?.psych_master_a,
+        psychMasterB: report.meta?.psych_master_b,
+        locale,
+      });
+    })(),
   };
 }
 
@@ -164,14 +222,127 @@ function buildSocialDnaSection(
   report: FriendReportBody,
   viewerIsReportA: boolean,
   t: ReturnType<typeof catalog>,
+  locale: Locale = "ko-KR",
 ): FriendReportSection | null {
   const f = report.friend;
   if (!f?.section_social_dna_a || !f?.section_social_dna_b) return null;
-  const dna = pickViewerFirstPair(
-    f.section_social_dna_a,
-    f.section_social_dna_b,
-    viewerIsReportA,
-  );
+
+  let dnaA = f.section_social_dna_a;
+  let dnaB = f.section_social_dna_b;
+
+  const isLegacyA =
+    !dnaA.four_slot_profile ||
+    !dnaA.situation_snapshots ||
+    !dnaA.pair_synthesis ||
+    dnaA.social_title.includes("파티 히어로") ||
+    dnaA.social_title.includes("아지트 수호자") ||
+    dnaA.social_title.includes("버팀목 친구") ||
+    dnaA.social_title.includes("현실 해결사") ||
+    dnaA.social_title.includes("침묵 아지트파");
+
+  if (isLegacyA) {
+    const canonicalA = report.meta?.canonical_bundle?.personalA;
+    const canonicalB = report.meta?.canonical_bundle?.personalB;
+
+    const chartA =
+      canonicalA?.chart ??
+      (report.context_output?.chart_a ? buildChartContext(sajuJsonToPillars(report.context_output.chart_a)) : null) ??
+      buildChartContext({
+        yearPillar: { stem: "갑", branch: "자" },
+        monthPillar: { stem: "갑", branch: "자" },
+        dayPillar: { stem: "정", branch: "해" },
+        hourPillar: { stem: "갑", branch: "자" },
+      });
+    const chartB =
+      canonicalB?.chart ??
+      (report.context_output?.chart_b ? buildChartContext(sajuJsonToPillars(report.context_output.chart_b)) : null) ??
+      buildChartContext({
+        yearPillar: { stem: "갑", branch: "자" },
+        monthPillar: { stem: "갑", branch: "자" },
+        dayPillar: { stem: "무", branch: "진" },
+        hourPillar: { stem: "갑", branch: "자" },
+      });
+    const tenGodsA =
+      canonicalA?.tenGods ??
+      (report.context_output?.saju_json_a ? countTenGodsForMarriage(report.context_output.saju_json_a) : {});
+    const tenGodsB =
+      canonicalB?.tenGods ??
+      (report.context_output?.saju_json_b ? countTenGodsForMarriage(report.context_output.saju_json_b) : {});
+
+    if (chartA && chartB) {
+      const indA = deriveIndividualFriendCharacter({
+        chart: chartA,
+        tenGods: tenGodsA,
+        psych: report.meta?.psych_master_a,
+        locale,
+      });
+      const indB = deriveIndividualFriendCharacter({
+        chart: chartB,
+        tenGods: tenGodsB,
+        psych: report.meta?.psych_master_b,
+        locale,
+      });
+      const valAtoB = deriveDirectionalFriendValue({
+        giverName: report.meta?.nickname_a || "A",
+        receiverName: report.meta?.nickname_b || "B",
+        giverCharacter: indA,
+        receiverChart: chartB,
+        receiverTenGods: tenGodsB,
+        receiverPsych: report.meta?.psych_master_b,
+        locale,
+      });
+      const valBtoA = deriveDirectionalFriendValue({
+        giverName: report.meta?.nickname_b || "B",
+        receiverName: report.meta?.nickname_a || "A",
+        giverCharacter: indB,
+        receiverChart: chartA,
+        receiverTenGods: tenGodsA,
+        receiverPsych: report.meta?.psych_master_a,
+        locale,
+      });
+      const pairIdentity = derivePairFriendshipIdentity({
+        nameA: report.meta?.nickname_a || "A",
+        nameB: report.meta?.nickname_b || "B",
+        valAtoB,
+        valBtoA,
+        locale,
+      });
+
+      dnaA = {
+        ...dnaA,
+        social_title: indA.characterTitle,
+        friend_position: indA.individualExplanation,
+        situation_snapshots: indA.situationSnapshots,
+        four_slot_profile: indA.fourSlotProfile,
+        guardian_character: {
+          key: indA.expressionVariant,
+          label: valAtoB.roleTitle,
+          description: valAtoB.roleDescription,
+        },
+        pair_synthesis: {
+          label: pairIdentity.pairTitle,
+          lineAtoB: pairIdentity.lineAtoB,
+          lineBtoA: pairIdentity.lineBtoA,
+          description: pairIdentity.pairSynthesisDescription,
+        },
+      };
+
+      dnaB = {
+        ...dnaB,
+        social_title: indB.characterTitle,
+        friend_position: indB.individualExplanation,
+        situation_snapshots: indB.situationSnapshots,
+        four_slot_profile: indB.fourSlotProfile,
+        guardian_character: {
+          key: indB.expressionVariant,
+          label: valBtoA.roleTitle,
+          description: valBtoA.roleDescription,
+        },
+      };
+    }
+  }
+
+  const dna = pickViewerFirstPair(dnaA, dnaB, viewerIsReportA);
   return {
     id: "social_dna",
     type: "social_dna",
@@ -486,6 +657,7 @@ function buildFriendChapterViewModels(
   if (!storyPlan || !storyPlan.chapters?.length) return undefined;
 
   const coverage = report.meta?.canonical_bundle?.coverage;
+  const responseIntelligence = report.meta?.canonical_bundle?.responseIntelligence;
   const deep = report.meta?.friend_saju_deep;
   const loc = params.locale ?? "ko-KR";
   const isKo = loc !== "en-US";
@@ -508,6 +680,7 @@ function buildFriendChapterViewModels(
     let narrativeText: string | null = null;
     const v1Assets: FriendChapterViewModel["v1Assets"] = {};
     const coverageCards: FriendChapterViewModel["coverageCards"] = {};
+    let vNextBlocks: FriendChapterViewModel["vNextBlocks"] = undefined;
 
     switch (ch.chapterKey) {
       case "ch01_why_us":
@@ -573,10 +746,13 @@ function buildFriendChapterViewModels(
         }
         const travelHeadline = isKo ? "놀 때 우리는 어떤 팀인가?" : "What kind of team are we when we're having fun?";
         if (coverage?.travelPlayRole) {
+          const energyPaceCopy = resolveTravelPlayEnergyPaceCopy(coverage.travelPlayRole.energyPace, loc);
           coverageCards.travelPlayRole = {
             ideaCreator: resolveRoleDisplayName(coverage.travelPlayRole.ideaCreator, nameA, nameB, isKo),
             practicalExecutor: resolveRoleDisplayName(coverage.travelPlayRole.practicalExecutor, nameA, nameB, isKo),
-            energyPace: coverage.travelPlayRole.energyPace ?? (isKo ? "보폭이 잘 맞고 일정에 유연한 팀워크" : "Flexible energy pace"),
+            // Never pass the raw enum (e.g. "balanced_exploration") through —
+            // always translate to human copy first.
+            energyPace: `${energyPaceCopy.headline} — ${energyPaceCopy.description}`,
             headline: travelHeadline,
           };
         } else {
@@ -589,6 +765,13 @@ function buildFriendChapterViewModels(
             energyPace: isKo ? "보폭이 잘 맞고 일정에 유연한 팀워크" : "Flexible energy pace",
             headline: travelHeadline,
           };
+        }
+        if (coverage?.initiativeRole && coverage?.travelPlayRole) {
+          vNextBlocks = buildFriendChapter04Blocks({
+            initiative: coverage.initiativeRole,
+            travelPlay: coverage.travelPlayRole,
+            nameA, nameB, locale: loc,
+          });
         }
         break;
       }
@@ -624,6 +807,11 @@ function buildFriendChapterViewModels(
             recommendationNote: humanCopy.recommendationNote,
           };
         }
+        if (responseIntelligence) {
+          vNextBlocks = buildFriendChapter05Blocks({
+            intel: responseIntelligence, nameA, nameB, locale: loc,
+          });
+        }
         break;
 
       case "ch06_conflict_repair":
@@ -634,6 +822,9 @@ function buildFriendChapterViewModels(
             : "When hurt feelings or misunderstandings build up, you have a reliable way of clearing the air and bouncing back quickly.");
         if (deEscalation) {
           v1Assets.deEscalation = deEscalation;
+        }
+        if (responseIntelligence) {
+          vNextBlocks = buildFriendChapter06Blocks({ intel: responseIntelligence, nameA, nameB, locale: loc });
         }
         break;
 
@@ -647,6 +838,9 @@ function buildFriendChapterViewModels(
             breakupGuide.trigger_warning_b,
             viewerIsReportA,
           );
+        }
+        if (responseIntelligence) {
+          vNextBlocks = buildFriendChapter07Blocks({ intel: responseIntelligence, nameA, nameB, locale: loc });
         }
         break;
 
@@ -675,6 +869,9 @@ function buildFriendChapterViewModels(
             meetingFrequencyNeed: humanCopy.meetingFrequencyNeed,
           };
         }
+        if (responseIntelligence) {
+          vNextBlocks = buildFriendChapter08Blocks({ intel: responseIntelligence, nameA, nameB, locale: loc });
+        }
         break;
 
       case "ch09_action_playbook":
@@ -697,6 +894,7 @@ function buildFriendChapterViewModels(
       discrepancyNote: storyPlan.llmHandoffPayload?.discrepancyNotes?.join(" / ") ?? null,
       v1Assets,
       coverageCards,
+      vNextBlocks,
     };
   });
 }
@@ -710,11 +908,11 @@ export function buildFriendReportViewModel(
   const t = catalog(locale ?? "ko-KR");
 
   const builders: Array<() => FriendReportSection | null> = [
-    () => buildSnapshotSection(report, t),
+    () => buildSnapshotSection(report, t, locale ?? "ko-KR"),
     () => buildWhyYouMeUsSection(report, viewerIsReportA, names, locale ?? "ko-KR"),
     () => buildCompareTableSection(report, locale ?? "ko-KR", t),
     () => buildPsychRadarSection(report, viewerIsReportA, t, names, locale ?? "ko-KR"),
-    () => buildSocialDnaSection(report, viewerIsReportA, t),
+    () => buildSocialDnaSection(report, viewerIsReportA, t, locale ?? "ko-KR"),
     () => buildSoulmateSection(report, t),
     () => buildPlayMoneySection(report, locale ?? "ko-KR", t),
     () => buildHiddenFlowSection(report, viewerIsReportA, locale ?? "ko-KR", t),

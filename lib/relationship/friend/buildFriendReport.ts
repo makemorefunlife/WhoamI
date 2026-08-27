@@ -69,6 +69,7 @@ export type FriendReportBody = {
   snapshot_panel: TriScoreSnapshotPanel;
   friend: ReturnType<typeof buildFriendSocialReport>;
   meta: {
+    friend_engine_version?: string;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];

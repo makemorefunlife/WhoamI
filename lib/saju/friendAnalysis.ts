@@ -21,6 +21,7 @@ import type { TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAna
 import { detectFriendWonjinGuimun } from "@/lib/saju/workPairRiskSignals";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/friend/friendCopy";
+import { deriveIndividualFriendCharacter } from "@/lib/relationship/friend/friendCharacterEngine";
 
 const stemElement = new Map(
   REF_HEAVENLY_STEMS.map((r) => [r.code, r.element as string]),
@@ -321,6 +322,7 @@ const FRIEND_POSITION: Record<Locale, Record<string, string>> = {
   },
 };
 
+/** @deprecated Legacy stem element friend position — superceded by 10 Day Master friendCharacterEngine */
 function friendPosition(stemEl: string, locale: Locale): string {
   const map = FRIEND_POSITION[locale];
   return map[stemEl] ?? map.earth!;
@@ -359,12 +361,18 @@ function buildDnaProfile(
   ).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "earth";
   const tikitaka = resolveTikitaka(counts, locale);
   const battery = resolveBattery(chart, locale);
-  const stemEl = getStemEl(chart.dayStemCode);
   const branchEl = getBranchEl(chart.dayBranchCode);
 
+  const ind = deriveIndividualFriendCharacter({
+    chart,
+    tenGods: counts,
+    psych: null,
+    locale,
+  });
+
   return {
-    socialTitle: SOCIAL_TITLES[locale][dominant] ?? SOCIAL_TITLES[locale].earth!,
-    friendPosition: friendPosition(stemEl, locale),
+    socialTitle: ind.characterTitle,
+    friendPosition: ind.individualExplanation,
     privateSelf: privateSelf(branchEl, locale),
     tikitakaMode: tikitaka.mode,
     tikitakaLabel: tikitaka.label,

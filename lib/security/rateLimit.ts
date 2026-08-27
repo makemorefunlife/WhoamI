@@ -33,7 +33,7 @@ const LIMITS: Record<RateLimitBucket, { max: number; windowMs: number }> = {
   llm: { max: 5, windowMs: 60 * 60 * 1000 },
   // Successful free basic generations only (consume after validation; refund on fail).
   relationship_basic: { max: 30, windowMs: 60 * 60 * 1000 },
-  relationship_premium: { max: 3, windowMs: 60 * 60 * 1000 },
+  relationship_premium: { max: 10, windowMs: 60 * 60 * 1000 },
   astrology: { max: 10, windowMs: 60 * 60 * 1000 },
   saju: { max: 10, windowMs: 60 * 60 * 1000 },
   upgrade: { max: 10, windowMs: 60 * 60 * 1000 },
@@ -83,6 +83,7 @@ export function getRateLimitWindowMsForTests(bucket: RateLimitBucket): number {
 /** Buckets that an authenticated operator may reset for themselves only. */
 export const SELF_RESETABLE_RATE_LIMIT_BUCKETS = [
   "relationship_basic",
+  "relationship_premium",
   "survey_write",
   "survey_read",
   "survey_delete",

@@ -3,8 +3,9 @@
 /**
  * Friend Premium — FriendReportViewModel renderer.
  *
- * Consolidated 10-chapter IA following the Romantic report's editorial hierarchy:
- * Renders Chapters 1 through 10 sequentially using standard ChapterSection headers.
+ * 9-chapter IA following the Romantic report's editorial hierarchy:
+ * - Unnumbered Top Overview ("◤ 한눈에 보는 우리 우정") with 3 score cards
+ * - Renders Chapters 1 through 9 sequentially using standard ChapterSection headers.
  */
 import { useEffect, useState } from "react";
 import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
@@ -12,7 +13,7 @@ import type { FriendReportViewModel } from "@/lib/relationship/friend/viewModel/
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { pick } from "@/lib/relationship/friend/friendCopy";
 import {
-  Chapter01Overview,
+  FriendshipOverviewSection,
   Chapter02WhyUs,
   Chapter03Roles,
   Chapter04Tempo,
@@ -38,7 +39,7 @@ const relSerif = Noto_Serif_KR({
 
 type NavItem = { id: string; label: string };
 
-/** ViewModel 전체를 10개 챕터 에디토리얼 레이아웃으로 조립 — Friend production 진입점. */
+/** ViewModel 전체를 9개 챕터 + 탑 한눈에 보기 에디토리얼 레이아웃으로 조립 — Friend production 진입점. */
 export function FriendReportViewModelView({
   vm,
   viewerIsReportA,
@@ -51,19 +52,19 @@ export function FriendReportViewModelView({
   const ctx = { vm, viewerIsReportA, locale };
 
   const navItems: NavItem[] = [
-    { id: "ch01_overview", label: pick(locale, "Ch 1 · At a Glance", "Ch 1 · 한눈에 보기") },
-    { id: "ch02_why_us", label: pick(locale, "Ch 2 · Why Us", "Ch 2 · 끌리는 이유") },
-    { id: "ch03_roles", label: pick(locale, "Ch 3 · Friendship Roles", "Ch 3 · 어떤 친구인가") },
-    { id: "ch04_tempo", label: pick(locale, "Ch 4 · Daily Tempo", "Ch 4 · 소통 템포") },
-    { id: "ch05_teamwork", label: pick(locale, "Ch 5 · Play Teamwork", "Ch 5 · 함께 놀 때") },
-    { id: "ch06_counseling_group", label: pick(locale, "Ch 6 · Counseling & Group", "Ch 6 · 고민 & 다자간") },
-    { id: "ch07_conflict_repair", label: pick(locale, "Ch 7 · Conflict Repair", "Ch 7 · 갈등과 회복") },
-    { id: "ch08_boundaries", label: pick(locale, "Ch 8 · Expectations", "Ch 8 · 기대의 경계") },
-    { id: "ch09_distance_durability", label: pick(locale, "Ch 9 · Distance & Durability", "Ch 9 · 우정의 거리감") },
-    { id: "ch10_playbook", label: pick(locale, "Ch 10 · Manual & Prescriptions", "Ch 10 · 사용설명서") },
+    { id: "overview_cards", label: pick(locale, "Overview", "한눈에 보기") },
+    { id: "ch02_why_us", label: pick(locale, "Ch 1 · Why Us", "Ch 1 · 끌리는 이유") },
+    { id: "ch03_roles", label: pick(locale, "Ch 2 · Friendship Roles", "Ch 2 · 어떤 친구인가") },
+    { id: "ch04_tempo", label: pick(locale, "Ch 3 · Daily Tempo", "Ch 3 · 소통 템포") },
+    { id: "ch05_teamwork", label: pick(locale, "Ch 4 · Play Teamwork", "Ch 4 · 함께 놀 때") },
+    { id: "ch06_counseling_group", label: pick(locale, "Ch 5 · Counseling & Group", "Ch 5 · 고민 & 다자간") },
+    { id: "ch07_conflict_repair", label: pick(locale, "Ch 6 · Conflict Repair", "Ch 6 · 갈등과 회복") },
+    { id: "ch08_boundaries", label: pick(locale, "Ch 7 · Expectations", "Ch 7 · 기대의 경계") },
+    { id: "ch09_distance_durability", label: pick(locale, "Ch 8 · Distance & Durability", "Ch 8 · 우정의 거리감") },
+    { id: "ch10_playbook", label: pick(locale, "Ch 9 · Manual & Prescriptions", "Ch 9 · 사용설명서") },
   ];
 
-  const [active, setActive] = useState(navItems[0]?.id ?? "ch01_overview");
+  const [active, setActive] = useState(navItems[0]?.id ?? "overview_cards");
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -101,7 +102,7 @@ export function FriendReportViewModelView({
 
       <main>
         <FriendHero {...ctx} />
-        <Chapter01Overview {...ctx} />
+        <FriendshipOverviewSection {...ctx} />
         <Chapter02WhyUs {...ctx} />
         <Chapter03Roles {...ctx} />
         <Chapter04Tempo {...ctx} />

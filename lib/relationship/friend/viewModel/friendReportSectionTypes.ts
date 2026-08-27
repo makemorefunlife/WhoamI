@@ -160,6 +160,19 @@ export type FriendChapterViewModel = {
   narrativeGoal: string;
   narrativeText?: string | null;
   discrepancyNote?: string | null;
+  /**
+   * Friend VNext Ch4-8 — evidence-backed sub-blocks, each with its own ◤
+   * subtitle. Additive: existing narrativeText/v1Assets/coverageCards are
+   * untouched, this is a new rendering surface layered on top.
+   */
+  vNextBlocks?: {
+    title: string;
+    headline: string;
+    description: string;
+    /** Present only for blocks with genuine per-person/per-direction content —
+     * rendered as side-by-side columns instead of a single joined paragraph. */
+    compare?: { name: string; label?: string; body: string }[];
+  }[];
   v1Assets?: {
     whyYouMeUs?: WhyYouMeUsData | null;
     socialDnaMe?: any;

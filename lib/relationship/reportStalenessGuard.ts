@@ -27,11 +27,17 @@ export function isStaleCohabitationReportBlock(payload: unknown): boolean {
 
   const r = report as Record<string, unknown>;
   const household = r.household as Record<string, unknown> | undefined;
+  const canonicalProjections = r.canonical_projections as Record<string, unknown> | undefined;
+  const marriageCanonicalBundle = canonicalProjections?.marriage_canonical_bundle as
+    | Record<string, unknown>
+    | undefined;
 
   // Modern VNext Marriage report requires canonical story plan or chapter intelligences
-  const hasCanonicalPlan = Boolean(r.canonicalStoryPlan || r.canonicalBundle);
-  const hasChapter08 = Boolean(r.chapter08Intelligence);
-  const hasChapter07 = Boolean(r.chapter07Intelligence);
+  const hasCanonicalPlan = Boolean(
+    canonicalProjections?.marriage_canonical_story_plan || marriageCanonicalBundle
+  );
+  const hasChapter08 = Boolean(marriageCanonicalBundle?.chapter08Intelligence);
+  const hasChapter07 = Boolean(marriageCanonicalBundle?.chapter07Intelligence);
   const hasHouseholdDna = Boolean(household?.section_dna);
 
   return !(hasCanonicalPlan || (hasChapter08 && hasChapter07 && hasHouseholdDna));
@@ -53,4 +59,33 @@ export function isStaleFamilyReportBlock(payload: unknown): boolean {
 
   return !(hasStoryPlan || (hasHouseholdRoles && hasFamilySnapshot));
 }
+
+export function isStaleFriendReportBlock(payload: unknown): boolean {
+  if (!payload || typeof payload !== "object") return true;
+  const report = (payload as { report?: Record<string, unknown> }).report ?? payload;
+  if (typeof report !== "object" || !report) return true;
+
+  const r = report as Record<string, unknown>;
+  const meta = r.meta as Record<string, unknown> | undefined;
+
+  // Structural version guard — bumped for the Ch4-8 VNext rollout (Friend
+  // Response Intelligence). Any report generated before this version lacks
+  // canonical_bundle.responseIntelligence and must be treated as stale so it
+  // gets regenerated rather than silently keep showing legacy Ch5-8 content.
+  if (meta?.friend_engine_version !== "friend_vnext_ch1_ch8_v3_canonical") {
+    return true;
+  }
+
+  const friend = (r.friend as Record<string, unknown> | undefined) ?? r;
+  const dnaA = friend?.section_social_dna_a as Record<string, unknown> | undefined;
+  const dnaB = friend?.section_social_dna_b as Record<string, unknown> | undefined;
+
+  if (!dnaA || !dnaB) return true;
+
+  const canonicalBundle = meta?.canonical_bundle as Record<string, unknown> | undefined;
+  if (!canonicalBundle?.responseIntelligence) return true;
+
+  return false;
+}
+
 

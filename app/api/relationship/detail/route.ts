@@ -27,6 +27,7 @@ import {
   isStaleWorkReportBlock,
   isStaleCohabitationReportBlock,
   isStaleFamilyReportBlock,
+  isStaleFriendReportBlock,
 } from "@/lib/relationship/reportStalenessGuard";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
@@ -224,9 +225,10 @@ export async function GET(req: Request) {
       activeKind === "friendship"
         ? getFriendSocialDeepReport(byKind, locale)
         : null;
-    const friendshipDeepReport = friendshipDeepRaw
-      ? omitFriendContextOutputFromReport(friendshipDeepRaw)
-      : null;
+    const friendshipDeepReport =
+      friendshipDeepRaw && !isStaleFriendReportBlock(friendshipDeepRaw)
+        ? omitFriendContextOutputFromReport(friendshipDeepRaw)
+        : null;
 
     const favorited = await isRelationshipFavorite(
       supabase,
