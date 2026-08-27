@@ -347,7 +347,6 @@ export function ChapterSection({
 export function SubHeading({
   title,
   tone = "deep",
-  tag,
   invert = false,
 }: {
   title: string;
@@ -359,7 +358,7 @@ export function SubHeading({
     tone === "coral" ? "text-rel-taupe" : tone === "taupe" ? "text-rel-taupe" : "text-rel-deep";
   return (
     <div
-      className={`flex items-baseline justify-between gap-4 border-b pb-3 ${
+      className={`border-b pb-3 ${
         invert ? "border-white/15" : "border-rel-line"
       }`}
     >
@@ -373,15 +372,6 @@ export function SubHeading({
         </span>
         <span className="min-w-0">{title}</span>
       </h3>
-      {tag && (
-        <span
-          className={`shrink-0 font-rel-sans text-[10px] uppercase tracking-[0.2em] ${
-            invert ? "text-white/50" : "text-rel-ink-mute"
-          }`}
-        >
-          {tag}
-        </span>
-      )}
     </div>
   );
 }

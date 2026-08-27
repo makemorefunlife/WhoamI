@@ -276,7 +276,7 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <PersonTag name={personA} side="a" />
-                <span className="text-xs text-rel-ink-mute">→ {personB}에게 말할 때</span>
+                <span className="text-xs text-rel-ink-mute">→ {personB}</span>
               </div>
               <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.trigger}</p>
               <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.doNot}</p>
@@ -289,7 +289,7 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
               <div className="flex items-center gap-2">
                 <PersonTag name={personB} side="b" />
-                <span className="text-xs text-rel-ink-mute">→ {personA}에게 말할 때</span>
+                <span className="text-xs text-rel-ink-mute">→ {personA}</span>
               </div>
               <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.trigger}</p>
               <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.doNot}</p>
