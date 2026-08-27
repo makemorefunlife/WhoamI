@@ -79,6 +79,15 @@ export function buildMarriageRuleContext(params: {
   psychMasterA?: PsychMasterJson | null;
   psychMasterB?: PsychMasterJson | null;
   locale?: Locale;
+  /**
+   * TIME-DEPENDENT DETERMINISTIC — Phase 3B: explicit evaluation year for the
+   * 3-year home-risk forecast (display-only; no longer feeds the static
+   * master score, see computeMarriageMasterScores). Declared here instead of
+   * defaulting deep inside buildThreeYearHomeRiskForecast so it is a visible,
+   * testable input rather than a hidden new Date().getFullYear() call.
+   * Omit to use the current year (unchanged default behavior).
+   */
+  evaluationYear?: number;
 }): MarriageRuleContext {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
   const blueprint = buildPairSajuBlueprint(params);
@@ -147,10 +156,11 @@ export function buildMarriageRuleContext(params: {
     locale,
   });
 
+  const evaluationYear = params.evaluationYear ?? new Date().getFullYear();
   const threeYearForecast = buildThreeYearHomeRiskForecast(
     marriagePairAnalysis.chartA,
     marriagePairAnalysis.chartB,
-    new Date().getFullYear(),
+    evaluationYear,
     locale,
   );
 
@@ -172,8 +182,10 @@ export function buildMarriageRuleContext(params: {
     locale,
   });
 
+  // threeYearForecast is intentionally NOT passed here — Phase 3B: static
+  // grade/scores must not depend on wall-clock evaluation year.
   const { grade, reason, eventScores, masterScores } =
-    computeMarriageCompatibilityGrade(marriagePairAnalysis, threeYearForecast, locale);
+    computeMarriageCompatibilityGrade(marriagePairAnalysis, locale);
 
   const householdDnaA = buildHomeLifeDnaProfile(
     params.nicknameA,

@@ -68,6 +68,7 @@ import {
   readRomanticV4Block,
   isStaleRomanticV4Block,
   ROMANTIC_REPORT_SCHEMA_VERSION,
+  ROMANTIC_ANALYSIS_ENGINE_VERSION,
   type RomanticV4PersistedBlock,
 } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 import { applyHourEvidenceCapToComparisonTable } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4HourEvidence";
@@ -465,6 +466,7 @@ export async function POST(req: Request) {
           const v4Block: RomanticV4PersistedBlock = {
             schemaVersion: "romantic_canonical_report_v1",
             reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION,
+            analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION,
             payload: v4Payload,
             birthHourDisclosure: v4Input.birthHourEvidence.disclosureCode,
             generatedAt: new Date().toISOString(),

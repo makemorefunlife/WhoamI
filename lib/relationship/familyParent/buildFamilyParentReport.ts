@@ -63,6 +63,21 @@ import type { CanonicalFamilyStoryPlan } from "./familyStoryPlanTypes";
  */
 export const FAMILY_REPORT_SCHEMA_VERSION = 1;
 
+/**
+ * Family analysis-engine SSOT (Phase 3B). Distinct from FAMILY_REPORT_SCHEMA_VERSION
+ * (persisted structure): this gates the deterministic ANALYTICAL LOGIC — role
+ * resolution (F1), chapter-bundle reconstruction inputs (F2), and the
+ * analysisYear contract (F3). Bumped to 2 (from an implicit, never-persisted
+ * "1") because this phase changed real analytical behavior: the view-model
+ * reconstruction fallback that could misattribute parent/child psych data or
+ * silently substitute neutral defaults was removed, and isStaleFamilyReportBlock
+ * now requires complete chapter bundles. A report persisted before this fix
+ * has no analysis_engine_version field at all and is correctly stale under
+ * this contract, regardless of the exact number chosen — see
+ * isStaleFamilyReportBlock in reportStalenessGuard.ts (the read side).
+ */
+export const FAMILY_ANALYSIS_ENGINE_VERSION = 2;
+
 export type FamilyParentReportBody = {
   headline: string;
   summary_line: string;
@@ -72,6 +87,8 @@ export type FamilyParentReportBody = {
   meta: {
     /** Report-schema SSOT — see FAMILY_REPORT_SCHEMA_VERSION. */
     report_schema_version: number;
+    /** Analysis-engine SSOT — see FAMILY_ANALYSIS_ENGINE_VERSION. */
+    analysis_engine_version: number;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];
@@ -395,6 +412,7 @@ export function buildFamilyParentReport(params: {
     family,
     meta: {
       report_schema_version: FAMILY_REPORT_SCHEMA_VERSION,
+      analysis_engine_version: FAMILY_ANALYSIS_ENGINE_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

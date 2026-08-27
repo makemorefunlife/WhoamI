@@ -79,14 +79,21 @@ export function buildMarriageEconomicPartnership(
     }
   };
 
-  const resolveIndividualEconomicProfile = (name: string, axes: any, isPersonA: boolean): IndividualEconomicProfile => {
+  // Phase 3B (M4 fix): primaryRole/secondaryRole used to branch on the
+  // isPersonA slot flag directly, so two people with IDENTICAL psych axes
+  // could get different economic-role labels purely because one happened to
+  // be "A". Every branch below now derives its choice from the person's own
+  // axes only (using `ctrl`, the same self_control/structure axis this
+  // module already reads, as the deciding evidence in the two branches that
+  // used to key off isPersonA) — symmetric across slots by construction.
+  const resolveIndividualEconomicProfile = (name: string, axes: any): IndividualEconomicProfile => {
     const prac = axes.practicality ?? 50;
     const ctrl = axes.self_control ?? 50;
     const rec = axes.recognition ?? 50;
     const dec = axes.decision_style ?? 50;
 
-    let primaryRole: EconomicRoleType = isPersonA ? "SAVER_ACCUMULATOR" : "CASH_FLOW_MANAGER";
-    let secondaryRole: EconomicRoleType = isPersonA ? "RISK_REVIEWER" : "PRACTICAL_EXECUTOR";
+    let primaryRole: EconomicRoleType;
+    let secondaryRole: EconomicRoleType;
 
     if (ctrl > 65 && prac > 60) {
       primaryRole = "SAVER_ACCUMULATOR";
@@ -95,11 +102,11 @@ export function buildMarriageEconomicPartnership(
       primaryRole = "OPPORTUNITY_EXPANDER";
       secondaryRole = "ASSET_BUILDER";
     } else if (prac > 60) {
-      primaryRole = isPersonA ? "CASH_FLOW_MANAGER" : "PRACTICAL_EXECUTOR";
-      secondaryRole = isPersonA ? "SAVER_ACCUMULATOR" : "CASH_FLOW_MANAGER";
+      primaryRole = ctrl >= dec ? "CASH_FLOW_MANAGER" : "PRACTICAL_EXECUTOR";
+      secondaryRole = ctrl >= dec ? "SAVER_ACCUMULATOR" : "CASH_FLOW_MANAGER";
     } else {
       primaryRole = "STABLE_EARNER";
-      secondaryRole = isPersonA ? "RISK_REVIEWER" : "PRACTICAL_EXECUTOR";
+      secondaryRole = ctrl >= 50 ? "RISK_REVIEWER" : "PRACTICAL_EXECUTOR";
     }
 
     const behaviorDescription = primaryRole === "SAVER_ACCUMULATOR"
@@ -120,8 +127,8 @@ export function buildMarriageEconomicPartnership(
     };
   };
 
-  const profileA = resolveIndividualEconomicProfile(nameA, axesA, true);
-  const profileB = resolveIndividualEconomicProfile(nameB, axesB, false);
+  const profileA = resolveIndividualEconomicProfile(nameA, axesA);
+  const profileB = resolveIndividualEconomicProfile(nameB, axesB);
 
   // Pair Economic Synergy Synthesis (A + B -> C)
   let pairSynergyType: MarriageEconomicPartnershipBundle["pairSynergyType"] = "STABLE_BALANCED";
@@ -172,10 +179,27 @@ export function buildMarriageEconomicPartnership(
   // "operator + checks-and-balance reviewer" pair rather than a contradiction.
   const cfoName = cfoSide === "a" ? nameA : cfoSide === "b" ? nameB : null;
   const nonCfoName = cfoSide === "a" ? nameB : cfoSide === "b" ? nameA : null;
+  // Phase 3B (M5 fix): used to check only profileA and default to nameB
+  // otherwise — so when NEITHER person was an opportunity expander, or when
+  // BOTH were (dual-expander pairing), B was named by default regardless of
+  // B's actual profile. Compare both people's own primaryRole explicitly;
+  // on a genuine tie (both or neither expander), break it with `recognition`
+  // — the same axis that drives the OPPORTUNITY_EXPANDER classification
+  // itself above, so the tie-break stays evidence-based rather than slot-based.
+  const aIsExpander = profileA.primaryRole === "OPPORTUNITY_EXPANDER";
+  const bIsExpander = profileB.primaryRole === "OPPORTUNITY_EXPANDER";
+  const largePurchaseProposer =
+    aIsExpander && !bIsExpander
+      ? nameA
+      : bIsExpander && !aIsExpander
+        ? nameB
+        : (axesA.recognition ?? 50) >= (axesB.recognition ?? 50)
+          ? nameA
+          : nameB;
   const decisionFlow: EconomicDecisionFlow = {
     incomeStyleRole: isEn ? `${nameA} (Stable) & ${nameB} (Growth)` : `${nameA}님(안정적 현금흐름) & ${nameB}님(성장 자산화)`,
     cashFlowTracker: cfoName ?? (profileA.primaryRole === "CASH_FLOW_MANAGER" || profileA.primaryRole === "SAVER_ACCUMULATOR" ? nameA : nameB),
-    largePurchaseProposer: profileA.primaryRole === "OPPORTUNITY_EXPANDER" ? nameA : nameB,
+    largePurchaseProposer,
     riskReviewer: nonCfoName ?? (profileA.secondaryRole === "RISK_REVIEWER" || profileA.primaryRole === "SAVER_ACCUMULATOR" ? nameA : nameB),
     decider: isEn ? "Joint Mutual Consent" : "상호 합의 (공동 승인제)",
     executor: cfoName ?? (profileA.secondaryRole === "PRACTICAL_EXECUTOR" ? nameA : nameB),

@@ -15,11 +15,21 @@
  * claiming the current version must still have the mandatory current
  * fields, protecting against partial writes, corrupted payloads, or a
  * failed generation that still updated the version field.
+ *
+ * Phase 3B adds a second, independent version check: meta.analysis_engine_version
+ * must exactly match that vertical's current *_ANALYSIS_ENGINE_VERSION
+ * constant, same exact-equality/no-grandfathering rule as report_schema_version.
+ * report_schema_version gates persisted STRUCTURE; analysis_engine_version
+ * gates the deterministic ANALYTICAL LOGIC that produced it — a report can
+ * have the current shape while having been generated under an old/buggy
+ * scoring or classification algorithm (exactly what this phase fixed for
+ * Marriage and Family), so both must independently agree before a report is
+ * treated as current.
  */
-import { WORK_REPORT_SCHEMA_VERSION } from "./workColleague/buildWorkColleagueReport";
-import { MARRIAGE_REPORT_SCHEMA_VERSION } from "./marriage/buildMarriageReport";
-import { FAMILY_REPORT_SCHEMA_VERSION } from "./familyParent/buildFamilyParentReport";
-import { FRIEND_REPORT_SCHEMA_VERSION } from "./friend/buildFriendReport";
+import { WORK_REPORT_SCHEMA_VERSION, WORK_ANALYSIS_ENGINE_VERSION } from "./workColleague/buildWorkColleagueReport";
+import { MARRIAGE_REPORT_SCHEMA_VERSION, MARRIAGE_ANALYSIS_ENGINE_VERSION } from "./marriage/buildMarriageReport";
+import { FAMILY_REPORT_SCHEMA_VERSION, FAMILY_ANALYSIS_ENGINE_VERSION } from "./familyParent/buildFamilyParentReport";
+import { FRIEND_REPORT_SCHEMA_VERSION, FRIEND_ANALYSIS_ENGINE_VERSION } from "./friend/buildFriendReport";
 
 export function isStaleWorkReportBlock(payload: unknown): boolean {
   if (!payload || typeof payload !== "object") return true;
@@ -29,6 +39,7 @@ export function isStaleWorkReportBlock(payload: unknown): boolean {
   const r = report as Record<string, unknown>;
   const meta = r.meta as Record<string, unknown> | undefined;
   if (meta?.report_schema_version !== WORK_REPORT_SCHEMA_VERSION) return true;
+  if (meta?.analysis_engine_version !== WORK_ANALYSIS_ENGINE_VERSION) return true;
 
   const office = r.office as Record<string, unknown> | undefined;
   if (!office || typeof office !== "object") return true;
@@ -49,6 +60,7 @@ export function isStaleCohabitationReportBlock(payload: unknown): boolean {
   const r = report as Record<string, unknown>;
   const meta = r.meta as Record<string, unknown> | undefined;
   if (meta?.report_schema_version !== MARRIAGE_REPORT_SCHEMA_VERSION) return true;
+  if (meta?.analysis_engine_version !== MARRIAGE_ANALYSIS_ENGINE_VERSION) return true;
 
   const household = r.household as Record<string, unknown> | undefined;
   const canonicalProjections = r.canonical_projections as Record<string, unknown> | undefined;
@@ -77,16 +89,36 @@ export function isStaleFamilyReportBlock(payload: unknown): boolean {
   const r = report as Record<string, unknown>;
   const meta = r.meta as Record<string, unknown> | undefined;
   if (meta?.report_schema_version !== FAMILY_REPORT_SCHEMA_VERSION) return true;
+  if (meta?.analysis_engine_version !== FAMILY_ANALYSIS_ENGINE_VERSION) return true;
 
   const family = r.family as Record<string, unknown> | undefined;
   const canonicalProjections = r.canonical_projections as Record<string, unknown> | undefined;
+  const storyPlan = (canonicalProjections?.story_plan ?? r.canonicalStoryPlan) as
+    | Record<string, unknown>
+    | undefined;
 
   // Modern VNext Family report requires canonical story plan or household roles
-  const hasStoryPlan = Boolean(canonicalProjections?.story_plan || r.canonicalStoryPlan);
+  const hasStoryPlan = Boolean(storyPlan);
   const hasHouseholdRoles = Boolean(family?.section_household_roles);
   const hasFamilySnapshot = Boolean(family?.section_snapshot);
 
-  return !(hasStoryPlan || (hasHouseholdRoles && hasFamilySnapshot));
+  // Phase 3B (F4 fix): a story_plan merely existing is not sufficient — the
+  // client view model (buildFamilyReportViewModel) used to silently
+  // reconstruct growthChapterBundle/repairChapterBundle/actionChapterBundle
+  // from incomplete, misattributed data whenever any of the three was
+  // missing (see the F1/F2 fix there). That reconstruction path has been
+  // removed; a story_plan lacking any of these three bundles must now be
+  // treated as stale so the report regenerates with buildCanonicalFamilyStoryPlan's
+  // real, role-correct evidence instead of silently rendering thinner or
+  // misattributed content.
+  const hasCompleteChapterBundles = Boolean(
+    storyPlan?.growthChapterBundle &&
+      storyPlan?.repairChapterBundle &&
+      storyPlan?.actionChapterBundle,
+  );
+
+  if (hasStoryPlan) return !hasCompleteChapterBundles;
+  return !(hasHouseholdRoles && hasFamilySnapshot);
 }
 
 export function isStaleFriendReportBlock(payload: unknown): boolean {
@@ -97,6 +129,7 @@ export function isStaleFriendReportBlock(payload: unknown): boolean {
   const r = report as Record<string, unknown>;
   const meta = r.meta as Record<string, unknown> | undefined;
   if (meta?.report_schema_version !== FRIEND_REPORT_SCHEMA_VERSION) return true;
+  if (meta?.analysis_engine_version !== FRIEND_ANALYSIS_ENGINE_VERSION) return true;
 
   // friend_engine_version remains a secondary subsystem signal (names the
   // narrative/character engine, not the full persisted structural

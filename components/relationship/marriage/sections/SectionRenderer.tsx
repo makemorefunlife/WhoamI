@@ -1313,9 +1313,13 @@ function ConflictSubstantiveCard({
       {crisis ? (
         <div className="mt-4 rounded-lg border border-rel-taupe/30 bg-rel-taupe-soft p-4">
           <p className="text-sm font-bold text-rel-taupe">
-            {isEn
-              ? <>🛡️ Crisis role split: {crisis.practicalLead === "a" ? names[0] : names[1]} (practical lead) × {crisis.emotionalAnchor === "a" ? names[0] : names[1]} (emotional anchor)</>
-              : <>🛡️ 위기 시 역할 분담: {crisis.practicalLead === "a" ? names[0] : names[1]}님(현실 문제 해결 리드) × {crisis.emotionalAnchor === "a" ? names[0] : names[1]}님(정서적 버팀목)</>}
+            {(() => {
+              const leadName = crisis.practicalLead === "a" ? names[0] : crisis.practicalLead === "b" ? names[1] : `${names[0]} & ${names[1]}`;
+              const anchorName = crisis.emotionalAnchor === "a" ? names[0] : crisis.emotionalAnchor === "b" ? names[1] : `${names[0]} & ${names[1]}`;
+              return isEn
+                ? <>🛡️ Crisis role split: {leadName} (practical lead) × {anchorName} (emotional anchor)</>
+                : <>🛡️ 위기 시 역할 분담: {leadName}님(현실 문제 해결 리드) × {anchorName}님(정서적 버팀목)</>;
+            })()}
           </p>
           <p className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {crisis.narrative ||

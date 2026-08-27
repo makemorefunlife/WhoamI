@@ -1,7 +1,6 @@
 import type { RelationshipEventScores, TopicTriScore } from "@/lib/relationship/pairEventScores";
 import { triScoreToGrade } from "@/lib/relationship/pairEventScores";
 import type { MarriagePairSajuAnalysis } from "@/lib/saju/marriageAnalysis";
-import type { ThreeYearHomeRiskForecast } from "@/lib/relationship/marriage/marriageKillerSections";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/marriage/marriageCopy";
 
@@ -22,10 +21,19 @@ export type MarriageMasterScores = {
 /**
  * 기획 정량 가중치 — MarriageScoringSignals 불리언 누적
  * 궁위 가중(일·시·월·년)은 marriageAnalysis.ts 신호 추출 단계에서 반영
+ *
+ * STATIC DETERMINISTIC — Phase 3B: this must depend only on the couple's
+ * fixed saju signals, never on wall-clock time. It used to also fold in
+ * threeYearForecast.storm_year_count/max_severity, which is a function of
+ * new Date().getFullYear() (see buildThreeYearHomeRiskForecast) — so the
+ * same couple's home_risk_pct/grade could silently drift depending on which
+ * calendar year the report happened to be generated in. The 3-year forecast
+ * remains a real, separately-displayed TIME-DEPENDENT signal (see
+ * MarriageRuleContext.threeYearForecast) — it is just no longer allowed to
+ * feed the static master score.
  */
 export function computeMarriageMasterScores(
   marriage: MarriagePairSajuAnalysis,
-  threeYearForecast?: ThreeYearHomeRiskForecast | null,
 ): MarriageMasterScores {
   const sig = marriage.scoringSignals;
 
@@ -45,12 +53,6 @@ export function computeMarriageMasterScores(
   if (sig.hasWonjinOrGuimun) homeRisk += 25;
   if (sig.hasGongmangOverlap) homeRisk += 15;
 
-  if (threeYearForecast) {
-    if (threeYearForecast.storm_year_count >= 2) homeRisk += 12;
-    else if (threeYearForecast.storm_year_count === 1) homeRisk += 6;
-    else if (threeYearForecast.max_severity >= 2) homeRisk += 3;
-  }
-
   return {
     activation: clamp(romanticFit),
     benefit: clamp(lifeSynergy),
@@ -61,9 +63,8 @@ export function computeMarriageMasterScores(
 /** 스냅샷 3카드 — 주제당 대표 점수 1개만 사용 (중복 표기 방지) */
 export function computeMarriageEventScores(
   marriage: MarriagePairSajuAnalysis,
-  threeYearForecast?: ThreeYearHomeRiskForecast | null,
 ): RelationshipEventScores {
-  const master = computeMarriageMasterScores(marriage, threeYearForecast);
+  const master = computeMarriageMasterScores(marriage);
 
   const intimacy: TopicTriScore = {
     activation: master.activation,
@@ -91,7 +92,6 @@ export function computeMarriageEventScores(
 
 export function computeMarriageCompatibilityGrade(
   marriage: MarriagePairSajuAnalysis,
-  threeYearForecast?: ThreeYearHomeRiskForecast | null,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
 ): {
   grade: "A" | "B" | "C" | "D";
@@ -99,8 +99,8 @@ export function computeMarriageCompatibilityGrade(
   eventScores: RelationshipEventScores;
   masterScores: MarriageMasterScores;
 } {
-  const masterScores = computeMarriageMasterScores(marriage, threeYearForecast);
-  const eventScores = computeMarriageEventScores(marriage, threeYearForecast);
+  const masterScores = computeMarriageMasterScores(marriage);
+  const eventScores = computeMarriageEventScores(marriage);
   const grade = triScoreToGrade(eventScores.overall);
 
   const reason = pick(

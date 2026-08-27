@@ -1,5 +1,5 @@
 {
-  "maxErrorCount": 514,
-  "measuredAt": "2026-08-27",
-  "note": "Set from the actual tsc --noEmit error count under app/api/relationship, app/relationship, components/relationship, and lib/relationship as of the Fallback Remediation Phase 2 commit. See tests/scripts/check-relationship-typecheck-baseline.mjs."
+  "maxErrorCount": 511,
+  "measuredAt": "2026-08-28",
+  "note": "Set from the actual tsc --noEmit error count under app/api/relationship, app/relationship, components/relationship, and lib/relationship as of the Determinism Remediation Phase 3B commit (511, down from 514 — Phase 3B's fixes incidentally cleared 3 pre-existing errors; lowered to lock in the improvement per the ratchet's own suggestion). See tests/scripts/check-relationship-typecheck-baseline.mjs."
 }

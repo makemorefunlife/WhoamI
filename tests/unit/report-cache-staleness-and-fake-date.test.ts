@@ -7,12 +7,13 @@ import {
 // file's tsx/CJS interop executes scattered mid-file imports in source
 // order, not true ESM hoisting order; several fixtures below (Tests 2/4/6/8,
 // predating Phase 3A) need these before their own textual position.
-import { WORK_REPORT_SCHEMA_VERSION } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
-import { MARRIAGE_REPORT_SCHEMA_VERSION } from "@/lib/relationship/marriage/buildMarriageReport";
-import { FAMILY_REPORT_SCHEMA_VERSION } from "@/lib/relationship/familyParent/buildFamilyParentReport";
-import { FRIEND_REPORT_SCHEMA_VERSION } from "@/lib/relationship/friend/buildFriendReport";
+import { WORK_REPORT_SCHEMA_VERSION, WORK_ANALYSIS_ENGINE_VERSION } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import { MARRIAGE_REPORT_SCHEMA_VERSION, MARRIAGE_ANALYSIS_ENGINE_VERSION } from "@/lib/relationship/marriage/buildMarriageReport";
+import { FAMILY_REPORT_SCHEMA_VERSION, FAMILY_ANALYSIS_ENGINE_VERSION } from "@/lib/relationship/familyParent/buildFamilyParentReport";
+import { FRIEND_REPORT_SCHEMA_VERSION, FRIEND_ANALYSIS_ENGINE_VERSION } from "@/lib/relationship/friend/buildFriendReport";
 import {
   ROMANTIC_REPORT_SCHEMA_VERSION,
+  ROMANTIC_ANALYSIS_ENGINE_VERSION,
   isStaleRomanticV4Block,
 } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 
@@ -36,7 +37,7 @@ console.log("✓ Reject legacy Work report lacking canonical sections verified")
 const modernWorkPayload = {
   format: "work_colleague_deep_v1",
   report: {
-    meta: { report_schema_version: WORK_REPORT_SCHEMA_VERSION },
+    meta: { report_schema_version: WORK_REPORT_SCHEMA_VERSION, analysis_engine_version: WORK_ANALYSIS_ENGINE_VERSION },
     office: {
       section_roles: { person_a: {}, person_b: {} },
       section_mix_fit: { fit_pct: 85 },
@@ -63,7 +64,7 @@ console.log("✓ Reject legacy Cohabitation report lacking canonical plan/chapte
 const modernMarriagePayload = {
   format: "cohabitation_deep_v1",
   report: {
-    meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION },
+    meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION, analysis_engine_version: MARRIAGE_ANALYSIS_ENGINE_VERSION },
     canonical_projections: {
       marriage_canonical_bundle: {
         chapter07Intelligence: { introNarrative: "Valid" },
@@ -98,13 +99,20 @@ console.log("✓ Reject legacy Family report lacking canonical story plan / hous
 const modernFamilyPayload = {
   format: "family_parent_child_deep_v1",
   report: {
-    meta: { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION },
+    meta: { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION, analysis_engine_version: FAMILY_ANALYSIS_ENGINE_VERSION },
     family: {
       section_household_roles: { parent_roles: {}, child_roles: {} },
       section_snapshot: { one_line_family: "Modern Family" },
     },
     canonical_projections: {
-      story_plan: { chapters: [] },
+      story_plan: {
+        chapters: [],
+        // Phase 3B: isStaleFamilyReportBlock now requires all three chapter
+        // bundles inside a present story_plan — see F4 fix.
+        growthChapterBundle: { motivation: {} },
+        repairChapterBundle: { synthesisPrinciple: {} },
+        actionChapterBundle: { finalTakeaway: {} },
+      },
     },
   },
 };
@@ -199,6 +207,7 @@ const modernFriendPayload = {
     },
     meta: {
       report_schema_version: FRIEND_REPORT_SCHEMA_VERSION,
+      analysis_engine_version: FRIEND_ANALYSIS_ENGINE_VERSION,
       friend_engine_version: "friend_vnext_ch1_ch8_v3_canonical",
       canonical_bundle: { chapter01: {}, responseIntelligence: { personA: {}, personB: {} } },
     },
@@ -266,11 +275,12 @@ console.log("✓ Missing pairFriendship degrades gracefully without fake dummy e
 const marriageBundlePresentButNoChapters = {
   format: "cohabitation_deep_v1",
   report: {
-    // Phase 3A: report_schema_version included deliberately so this test
-    // still isolates and proves the Phase 1 structural fix specifically,
-    // rather than passing merely because a missing version already short-
-    // circuits to stale for an unrelated reason.
-    meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION },
+    // Phase 3A/3B: report_schema_version + analysis_engine_version included
+    // deliberately so this test still isolates and proves the Phase 1
+    // structural fix specifically, rather than passing merely because a
+    // missing version already short-circuits to stale for an unrelated
+    // reason.
+    meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION, analysis_engine_version: MARRIAGE_ANALYSIS_ENGINE_VERSION },
     canonical_projections: {
       marriage_canonical_bundle: {
         // chapter07Intelligence / chapter08Intelligence intentionally absent
@@ -298,7 +308,7 @@ console.log("✓ Marriage staleness gap window (bundle without ch07/08) now corr
 const marriageStoryPlanOnlyNoBundle = {
   format: "cohabitation_deep_v1",
   report: {
-    meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION },
+    meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION, analysis_engine_version: MARRIAGE_ANALYSIS_ENGINE_VERSION },
     canonical_projections: {
       marriage_canonical_story_plan: { chapters: [{ chapterId: "c1_who_we_are" }] },
     },
@@ -342,7 +352,9 @@ function buildStaleByKind(payload: any, opts: { includeVersion?: boolean } = {})
         "ko-KR": {
           v4: {
             schemaVersion: "romantic_canonical_report_v1",
-            ...(opts.includeVersion === false ? {} : { reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION }),
+            ...(opts.includeVersion === false
+              ? {}
+              : { reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION, analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION }),
             payload: stalePayload,
             birthHourDisclosure: "disclosed",
             generatedAt: new Date().toISOString(),
@@ -538,9 +550,10 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
       section_respect: { headline: "Valid" },
     },
   };
+  const currentMeta = { report_schema_version: WORK_REPORT_SCHEMA_VERSION, analysis_engine_version: WORK_ANALYSIS_ENGINE_VERSION };
   // A: current version + valid structure -> NOT stale
   assert.strictEqual(
-    isStaleWorkReportBlock({ report: { meta: { report_schema_version: WORK_REPORT_SCHEMA_VERSION }, ...currentStructure } }),
+    isStaleWorkReportBlock({ report: { meta: currentMeta, ...currentStructure } }),
     false,
     "Work: current version + valid structure must NOT be stale",
   );
@@ -552,17 +565,28 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
   );
   // C: older version -> stale
   assert.strictEqual(
-    isStaleWorkReportBlock({ report: { meta: { report_schema_version: WORK_REPORT_SCHEMA_VERSION - 1 }, ...currentStructure } }),
+    isStaleWorkReportBlock({ report: { meta: { ...currentMeta, report_schema_version: WORK_REPORT_SCHEMA_VERSION - 1 }, ...currentStructure } }),
     true,
     "Work: older report_schema_version must be stale",
   );
   // D: current version + missing mandatory structure -> stale
   assert.strictEqual(
-    isStaleWorkReportBlock({ report: { meta: { report_schema_version: WORK_REPORT_SCHEMA_VERSION }, office: { section_roles: { person_a: {}, person_b: {} } } } }),
+    isStaleWorkReportBlock({ report: { meta: currentMeta, office: { section_roles: { person_a: {}, person_b: {} } } } }),
     true,
     "Work: current version but missing section_mix_fit/section_respect must still be stale",
   );
-  console.log("✓ Work isStaleWorkReportBlock A/B/C/D (version-first, structure-second) verified");
+  // E: current schema version but missing/old analysis_engine_version -> stale
+  assert.strictEqual(
+    isStaleWorkReportBlock({ report: { meta: { report_schema_version: WORK_REPORT_SCHEMA_VERSION }, ...currentStructure } }),
+    true,
+    "Work: current schema version but missing analysis_engine_version must be stale",
+  );
+  assert.strictEqual(
+    isStaleWorkReportBlock({ report: { meta: { ...currentMeta, analysis_engine_version: WORK_ANALYSIS_ENGINE_VERSION - 1 }, ...currentStructure } }),
+    true,
+    "Work: current schema version but old analysis_engine_version must be stale",
+  );
+  console.log("✓ Work isStaleWorkReportBlock A/B/C/D/E (version-first, structure-second, engine-version-independent) verified");
 }
 
 // ---- Marriage: A/B/C/D on isStaleCohabitationReportBlock ----
@@ -576,8 +600,9 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
     },
     household: { section_dna: { person_a: {}, person_b: {} } },
   };
+  const currentMeta = { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION, analysis_engine_version: MARRIAGE_ANALYSIS_ENGINE_VERSION };
   assert.strictEqual(
-    isStaleCohabitationReportBlock({ report: { meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION }, ...currentStructure } }),
+    isStaleCohabitationReportBlock({ report: { meta: currentMeta, ...currentStructure } }),
     false,
     "Marriage: current version + valid structure must NOT be stale",
   );
@@ -587,14 +612,14 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
     "Marriage: missing report_schema_version must be stale",
   );
   assert.strictEqual(
-    isStaleCohabitationReportBlock({ report: { meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION - 1 }, ...currentStructure } }),
+    isStaleCohabitationReportBlock({ report: { meta: { ...currentMeta, report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION - 1 }, ...currentStructure } }),
     true,
     "Marriage: older report_schema_version must be stale",
   );
   assert.strictEqual(
     isStaleCohabitationReportBlock({
       report: {
-        meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION },
+        meta: currentMeta,
         canonical_projections: { marriage_canonical_bundle: { chapter07Intelligence: { introNarrative: "Valid" } } },
         household: { section_dna: { person_a: {}, person_b: {} } },
       },
@@ -602,14 +627,39 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
     true,
     "Marriage: current version but missing chapter08Intelligence must still be stale (Phase 1 regression guard, preserved)",
   );
-  console.log("✓ Marriage isStaleCohabitationReportBlock A/B/C/D (version-first, structure-second) verified");
+  // E: current schema version but missing/old analysis_engine_version -> stale.
+  // This is the exact mechanism that makes pre-Phase-3B records (fabricated
+  // Chapter 08, wall-clock-dependent home_risk_pct) stop masquerading as
+  // current even though their persisted SHAPE never changed (see M1/M2).
+  assert.strictEqual(
+    isStaleCohabitationReportBlock({ report: { meta: { report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION }, ...currentStructure } }),
+    true,
+    "Marriage: current schema version but missing analysis_engine_version must be stale",
+  );
+  assert.strictEqual(
+    isStaleCohabitationReportBlock({ report: { meta: { ...currentMeta, analysis_engine_version: MARRIAGE_ANALYSIS_ENGINE_VERSION - 1 }, ...currentStructure } }),
+    true,
+    "Marriage: current schema version but old analysis_engine_version must be stale",
+  );
+  console.log("✓ Marriage isStaleCohabitationReportBlock A/B/C/D/E (version-first, structure-second, engine-version-independent) verified");
 }
 
 // ---- Family: A/B/C/D on isStaleFamilyReportBlock ----
 {
-  const currentStructure = { canonical_projections: { story_plan: { chapters: [] } } };
+  const currentStructure = {
+    canonical_projections: {
+      story_plan: {
+        chapters: [],
+        // Phase 3B: complete chapter bundles are now mandatory — see F4 fix.
+        growthChapterBundle: { motivation: {} },
+        repairChapterBundle: { synthesisPrinciple: {} },
+        actionChapterBundle: { finalTakeaway: {} },
+      },
+    },
+  };
+  const currentMeta = { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION, analysis_engine_version: FAMILY_ANALYSIS_ENGINE_VERSION };
   assert.strictEqual(
-    isStaleFamilyReportBlock({ report: { meta: { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION }, ...currentStructure } }),
+    isStaleFamilyReportBlock({ report: { meta: currentMeta, ...currentStructure } }),
     false,
     "Family: current version + valid structure must NOT be stale",
   );
@@ -619,16 +669,27 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
     "Family: missing report_schema_version must be stale",
   );
   assert.strictEqual(
-    isStaleFamilyReportBlock({ report: { meta: { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION - 1 }, ...currentStructure } }),
+    isStaleFamilyReportBlock({ report: { meta: { ...currentMeta, report_schema_version: FAMILY_REPORT_SCHEMA_VERSION - 1 }, ...currentStructure } }),
     true,
     "Family: older report_schema_version must be stale",
   );
   assert.strictEqual(
-    isStaleFamilyReportBlock({ report: { meta: { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION }, family: {} } }),
+    isStaleFamilyReportBlock({ report: { meta: currentMeta, family: {} } }),
     true,
     "Family: current version but no story_plan and no household_roles/snapshot must still be stale",
   );
-  console.log("✓ Family isStaleFamilyReportBlock A/B/C/D (version-first, structure-second) verified");
+  // E: current schema version but missing/old analysis_engine_version -> stale
+  assert.strictEqual(
+    isStaleFamilyReportBlock({ report: { meta: { report_schema_version: FAMILY_REPORT_SCHEMA_VERSION }, ...currentStructure } }),
+    true,
+    "Family: current schema version but missing analysis_engine_version must be stale",
+  );
+  assert.strictEqual(
+    isStaleFamilyReportBlock({ report: { meta: { ...currentMeta, analysis_engine_version: FAMILY_ANALYSIS_ENGINE_VERSION - 1 }, ...currentStructure } }),
+    true,
+    "Family: current schema version but old analysis_engine_version must be stale",
+  );
+  console.log("✓ Family isStaleFamilyReportBlock A/B/C/D/E (version-first, structure-second, engine-version-independent) verified");
 }
 
 // ---- Friend: A/B/C/D on isStaleFriendReportBlock ----
@@ -641,6 +702,7 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
   };
   const currentMeta = {
     report_schema_version: FRIEND_REPORT_SCHEMA_VERSION,
+    analysis_engine_version: FRIEND_ANALYSIS_ENGINE_VERSION,
     friend_engine_version: "friend_vnext_ch1_ch8_v3_canonical",
     canonical_bundle: { responseIntelligence: { personA: {}, personB: {} } },
   };
@@ -664,7 +726,18 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
     true,
     "Friend: current version but missing section_social_dna_b must still be stale",
   );
-  console.log("✓ Friend isStaleFriendReportBlock A/B/C/D (version-first, structure-second) verified");
+  // E: current schema version but missing/old analysis_engine_version -> stale
+  assert.strictEqual(
+    isStaleFriendReportBlock({ report: { meta: { ...currentMeta, analysis_engine_version: undefined }, ...currentStructure } }),
+    true,
+    "Friend: current schema version but missing analysis_engine_version must be stale",
+  );
+  assert.strictEqual(
+    isStaleFriendReportBlock({ report: { meta: { ...currentMeta, analysis_engine_version: FRIEND_ANALYSIS_ENGINE_VERSION - 1 }, ...currentStructure } }),
+    true,
+    "Friend: current schema version but old analysis_engine_version must be stale",
+  );
+  console.log("✓ Friend isStaleFriendReportBlock A/B/C/D/E (version-first, structure-second, engine-version-independent) verified");
 }
 
 // ---- Romantic: A/B/C/D on isStaleRomanticV4Block ----
@@ -677,6 +750,7 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
   assert.strictEqual(
     isStaleRomanticV4Block({
       reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION,
+      analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION,
       payload: currentStoryPlan,
     } as any),
     false,
@@ -690,6 +764,7 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
   assert.strictEqual(
     isStaleRomanticV4Block({
       reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION - 1,
+      analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION,
       payload: currentStoryPlan,
     } as any),
     true,
@@ -698,12 +773,31 @@ console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never
   assert.strictEqual(
     isStaleRomanticV4Block({
       reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION,
+      analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION,
       payload: { storyPlan: { romanticGapBatch: null } },
     } as any),
     true,
     "Romantic: current version but missing romanticGapBatch must still be stale",
   );
-  console.log("✓ Romantic isStaleRomanticV4Block A/B/C/D (version-first, structure-second) verified");
+  // E: current reportSchemaVersion but missing/old analysisEngineVersion -> stale
+  assert.strictEqual(
+    isStaleRomanticV4Block({
+      reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION,
+      payload: currentStoryPlan,
+    } as any),
+    true,
+    "Romantic: current reportSchemaVersion but missing analysisEngineVersion must be stale",
+  );
+  assert.strictEqual(
+    isStaleRomanticV4Block({
+      reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION,
+      analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION - 1,
+      payload: currentStoryPlan,
+    } as any),
+    true,
+    "Romantic: current reportSchemaVersion but old analysisEngineVersion must be stale",
+  );
+  console.log("✓ Romantic isStaleRomanticV4Block A/B/C/D/E (version-first, structure-second, engine-version-independent) verified");
 }
 
 // ---- Version-mismatch must never trigger Romantic's in-place upgrade ----
@@ -799,6 +893,15 @@ const contractSajuB = sajuFromBirthForContractTests("1992-08-20");
     nicknameB: "Jordan",
     sajuJsonA: contractSajuA,
     sajuJsonB: contractSajuB,
+    // Phase 3B (M1 fix): Chapter 08 now requires real birth date/time —
+    // without them chapter08Intelligence is correctly omitted (fail closed),
+    // which would make isStaleCohabitationReportBlock's ch08 check fail this
+    // generation/read contract. Real test birth dates (not the old
+    // hardcoded-fake-input values M1 removed from production code).
+    birthDateA: "1990-05-15",
+    birthDateB: "1992-08-20",
+    birthTimeA: "14:30",
+    birthTimeB: "09:00",
     psychMasterA: {
       survey_source: "v2_10q",
       secondary_axes: { stimulation: 50, self_control: 50, practicality: 50, structure: 50, empathy: 50, conflict_style: 50, resilience: 50, recognition: 50, energy_style: 50, thinking_style: 50, decision_style: 50 },
@@ -858,6 +961,7 @@ const contractSajuB = sajuFromBirthForContractTests("1992-08-20");
   const freshBlock = {
     schemaVersion: "romantic_canonical_report_v1" as const,
     reportSchemaVersion: ROMANTIC_REPORT_SCHEMA_VERSION,
+    analysisEngineVersion: ROMANTIC_ANALYSIS_ENGINE_VERSION,
     payload: upgraded,
     birthHourDisclosure: "disclosed" as any,
     generatedAt: new Date().toISOString(),

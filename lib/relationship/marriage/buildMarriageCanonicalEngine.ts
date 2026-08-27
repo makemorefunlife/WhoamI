@@ -65,7 +65,39 @@ export type BuildMarriageCanonicalParams = {
    */
   cfoNickname?: string | null;
   locale?: Locale;
+  /**
+   * Real birth date/time for both people — Phase 3B. Chapter 08 timing
+   * intelligence requires these to compute this specific couple's actual
+   * luck-cycle/yearly evidence; without them Chapter 08 is omitted rather
+   * than built from placeholder data (see chapter08Intelligence below).
+   */
+  birthDateA?: string | null;
+  birthDateB?: string | null;
+  birthTimeA?: string | null;
+  birthTimeB?: string | null;
+  birthTimeUnknownA?: boolean;
+  birthTimeUnknownB?: boolean;
+  /**
+   * TIME-DEPENDENT DETERMINISTIC — explicit evaluation year for Chapter 08's
+   * 3-year timing window and the home-risk forecast threaded through
+   * buildMarriageRuleContext. Omit to use the current year.
+   */
+  evaluationYear?: number;
 };
+
+/**
+ * Real per-user gender is not collected anywhere in this application today
+ * (no survey question, no profile field, no DB column — confirmed against
+ * the full intake pipeline as of Phase 3B). Daewoon-cycle direction requires
+ * a gender input, so this fixed constant is used uniformly for BOTH people
+ * when generating Chapter 08, in place of the two different fake, literal
+ * per-person birthdates the code previously hardcoded. This is a documented
+ * neutral default for a genuinely-unavailable signal (the same pattern this
+ * file already uses for missing psych axes, `?? 50`), not a fabricated
+ * per-person identity — real birthDate/birthTime are used for everything
+ * else. Revisit if/when gender is ever collected as real user input.
+ */
+const UNKNOWN_GENDER_DAEWOON_DEFAULT = "F" as const;
 
 export function buildMarriageCanonicalEngine(
   params: BuildMarriageCanonicalParams,
@@ -338,8 +370,26 @@ export function buildMarriageCanonicalEngine(
 
   const crisisRoleA: CrisisRoleType = pA.practicality > 55 || pA.thinking_style > 55 ? "PROBLEM_SOLVER" : "EMOTIONAL_ANCHOR";
   const crisisRoleB: CrisisRoleType = pB.practicality > 55 || pB.thinking_style > 55 ? "PROBLEM_SOLVER" : "EMOTIONAL_ANCHOR";
-  const practicalLead: RoleActor = crisisRoleA === "PROBLEM_SOLVER" ? "a" : "b";
-  const emotionalAnchor: RoleActor = crisisRoleA === "EMOTIONAL_ANCHOR" ? "a" : "b";
+  // Phase 3B (M3 fix): practicalLead/emotionalAnchor used to be derived from
+  // crisisRoleA alone (B was implicitly assigned "whatever A isn't"), so two
+  // people who BOTH landed on the same crisis role (dual_practical /
+  // dual_emotional — see synergyType below) got an arbitrary, A-favoring
+  // split instead of reflecting that they share the role. Compare both
+  // people explicitly; only assign a sole lead when their roles actually
+  // differ, and fall back to a shared/no-single-lead RoleActor on a genuine
+  // tie rather than fabricating a distinction that isn't in the data.
+  const practicalLead: RoleActor =
+    crisisRoleA === "PROBLEM_SOLVER" && crisisRoleB !== "PROBLEM_SOLVER"
+      ? "a"
+      : crisisRoleB === "PROBLEM_SOLVER" && crisisRoleA !== "PROBLEM_SOLVER"
+        ? "b"
+        : "shared";
+  const emotionalAnchor: RoleActor =
+    crisisRoleA === "EMOTIONAL_ANCHOR" && crisisRoleB !== "EMOTIONAL_ANCHOR"
+      ? "a"
+      : crisisRoleB === "EMOTIONAL_ANCHOR" && crisisRoleA !== "EMOTIONAL_ANCHOR"
+        ? "b"
+        : "shared";
 
   // The narrative sentence must name the same person as practicalLead/
   // emotionalAnchor above (both render side-by-side in ConflictSubstantiveCard's
@@ -351,13 +401,23 @@ export function buildMarriageCanonicalEngine(
   // it (P0 consistency fix). When real psych is present, build the narrative
   // directly from practicalLead/emotionalAnchor instead; only fall back to
   // the saju-only computation when psych is unavailable (old-cache safety).
-  const practicalLeadName = practicalLead === "a" ? a : b;
-  const emotionalAnchorName = emotionalAnchor === "a" ? a : b;
   const hasCrisisPsych = Boolean(params.psychMasterA && params.psychMasterB);
+  // Phase 3B: practicalLead/emotionalAnchor can now be "shared" (both people
+  // landed on the same crisis role — see the M3 fix above), which the old
+  // binary a/b name lookup couldn't represent. Give dual_practical/
+  // dual_emotional their own narrative instead of forcing an arbitrary name.
   const crisisLine = hasCrisisPsych
-    ? (isEn
-        ? `${practicalLeadName} leads practical problem solving during urgent household events, while ${emotionalAnchorName} stabilizes emotional reassurance.`
-        : `갑작스러운 위기가 찾아오면 ${practicalLeadName}님이 먼저 수습책부터 찾고, ${emotionalAnchorName}님이 불안해하는 파트너의 마음을 안정적으로 다독여주는 편이에요.`)
+    ? (practicalLead === "shared"
+        ? (isEn
+            ? `${a} and ${b} both tend to steady themselves emotionally first during urgent household events, so it helps to explicitly assign who takes the lead on practical next steps.`
+            : `갑작스러운 위기가 찾아오면 ${a}님과 ${b}님 모두 먼저 서로의 마음을 다독이려는 편이에요. 현실적인 다음 조치는 누가 먼저 챙길지 명확히 정해두면 도움이 됩니다.`)
+        : emotionalAnchor === "shared"
+          ? (isEn
+              ? `${a} and ${b} both tend to move straight into practical problem solving during urgent household events, so it helps to explicitly check in on each other's feelings too.`
+              : `갑작스러운 위기가 찾아오면 ${a}님과 ${b}님 모두 현실적인 해결책부터 찾는 편이에요. 서로의 감정도 따로 챙겨보는 시간이 도움이 됩니다.`)
+          : (isEn
+              ? `${practicalLead === "a" ? a : b} leads practical problem solving during urgent household events, while ${emotionalAnchor === "a" ? a : b} stabilizes emotional reassurance.`
+              : `갑작스러운 위기가 찾아오면 ${practicalLead === "a" ? a : b}님이 먼저 수습책부터 찾고, ${emotionalAnchor === "a" ? a : b}님이 불안해하는 파트너의 마음을 안정적으로 다독여주는 편이에요.`))
     : (buildCrisisRoleLine(countsA, countsB, branchA, branchB, a, b) ||
         (isEn
           ? `${a} leads practical problem solving during urgent household events, while ${b} stabilizes emotional reassurance.`
@@ -543,23 +603,38 @@ export function buildMarriageCanonicalEngine(
     countsB: ctx.tenGod.countsB,
     locale,
   });
-  const chapter08Intelligence = buildMarriageChapter08Intelligence({
-    personAOptions: {
-      personId: a,
-      birthDate: "1990-05-15",
-      birthTime: "14:30",
-      gender: "F",
-    },
-    personBOptions: {
-      personId: b,
-      birthDate: "1992-08-20",
-      birthTime: "09:00",
-      gender: "M",
-    },
-    psychInputA: params.psychMasterA?.secondary_axes ? { primary: params.psychMasterA.secondary_axes, secondary: params.psychMasterA.secondary_axes } : undefined,
-    psychInputB: params.psychMasterB?.secondary_axes ? { primary: params.psychMasterB.secondary_axes, secondary: params.psychMasterB.secondary_axes } : undefined,
-    names: [a, b],
-  });
+  // Phase 3B (M1 fix): Chapter 08 previously used identical hardcoded fake
+  // birth data/gender for every couple, so different real couples received
+  // byte-identical timing content. Real birthDate/birthTime are required
+  // (threaded from the API route's actual saved birth data) — when they are
+  // genuinely unavailable, Chapter 08 is omitted (fail closed) rather than
+  // computed from fabricated evidence. Gender still falls back to
+  // UNKNOWN_GENDER_DAEWOON_DEFAULT (see its docblock) since no real gender
+  // signal exists anywhere in this application yet.
+  const hasRealBirthDataForChapter08 = Boolean(params.birthDateA?.trim() && params.birthDateB?.trim());
+  const chapter08EvaluationYear = params.evaluationYear ?? new Date().getFullYear();
+  const chapter08Intelligence = hasRealBirthDataForChapter08
+    ? buildMarriageChapter08Intelligence({
+        personAOptions: {
+          personId: a,
+          birthDate: params.birthDateA!,
+          birthTime: params.birthTimeUnknownA ? null : params.birthTimeA,
+          birthTimeUnknown: params.birthTimeUnknownA,
+          gender: UNKNOWN_GENDER_DAEWOON_DEFAULT,
+        },
+        personBOptions: {
+          personId: b,
+          birthDate: params.birthDateB!,
+          birthTime: params.birthTimeUnknownB ? null : params.birthTimeB,
+          birthTimeUnknown: params.birthTimeUnknownB,
+          gender: UNKNOWN_GENDER_DAEWOON_DEFAULT,
+        },
+        psychInputA: params.psychMasterA?.secondary_axes ? { primary: params.psychMasterA.secondary_axes, secondary: params.psychMasterA.secondary_axes } : undefined,
+        psychInputB: params.psychMasterB?.secondary_axes ? { primary: params.psychMasterB.secondary_axes, secondary: params.psychMasterB.secondary_axes } : undefined,
+        names: [a, b],
+        targetYears: [chapter08EvaluationYear, chapter08EvaluationYear + 1, chapter08EvaluationYear + 2],
+      })
+    : undefined;
   const marriage11Axis = buildMarriage11AxisInsights(params.psychMasterA, params.psychMasterB, a, b, locale);
   const conflict4Stage = buildMarriageConflict4Stage(params.psychMasterA, params.psychMasterB, a, b, locale);
   const loveDeliveryMatch = buildMarriageLoveDeliveryMatch(params.psychMasterA, params.psychMasterB, a, b, locale);

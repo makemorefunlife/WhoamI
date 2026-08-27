@@ -87,6 +87,21 @@ import type { CanonicalMarriageStoryPlan } from "./canonicalMarriageStoryPlanTyp
  */
 export const MARRIAGE_REPORT_SCHEMA_VERSION = 1;
 
+/**
+ * Marriage analysis-engine SSOT (Phase 3B). Distinct from
+ * MARRIAGE_REPORT_SCHEMA_VERSION (persisted structure): this gates the
+ * deterministic ANALYTICAL LOGIC. Bumped to 2 (from an implicit,
+ * never-persisted "1") because this phase fixed real analytical-truth bugs:
+ * Chapter 08 no longer uses fabricated identical birth data for every couple
+ * (M1), home_risk_pct/grade no longer drift with wall-clock evaluation year
+ * (M2), and crisis/economic/large-purchase role resolution no longer
+ * arbitrarily favors person A on a tie (M3-M5). A report persisted before
+ * this fix has no analysis_engine_version field at all and is correctly
+ * stale under this contract, regardless of the exact number chosen — see
+ * isStaleCohabitationReportBlock in reportStalenessGuard.ts (the read side).
+ */
+export const MARRIAGE_ANALYSIS_ENGINE_VERSION = 2;
+
 export type MarriageReportBody = {
   headline: string;
   summary_line: string;
@@ -109,6 +124,8 @@ export type MarriageReportBody = {
   meta: {
     /** Report-schema SSOT — see MARRIAGE_REPORT_SCHEMA_VERSION. */
     report_schema_version: number;
+    /** Analysis-engine SSOT — see MARRIAGE_ANALYSIS_ENGINE_VERSION. */
+    analysis_engine_version: number;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];
@@ -167,9 +184,17 @@ export function buildMarriageReport(params: {
   cohabitationSignalsA?: CohabitationSajuSignals;
   cohabitationSignalsB?: CohabitationSajuSignals;
   locale?: Locale;
+  /** Real birth date/time for both people — required for Chapter 08 timing intelligence to use real evidence instead of placeholder fallback. */
+  birthDateA?: string | null;
+  birthDateB?: string | null;
+  birthTimeA?: string | null;
+  birthTimeB?: string | null;
+  /** TIME-DEPENDENT DETERMINISTIC — explicit evaluation year for timing/forecast content. Omit to use the current year. */
+  evaluationYear?: number;
 }): MarriageReportBody {
   const locale = params.locale ?? LEGACY_FALLBACK_LOCALE;
-  const ctx = buildMarriageRuleContext({ ...params, locale });
+  const evaluationYear = params.evaluationYear ?? new Date().getFullYear();
+  const ctx = buildMarriageRuleContext({ ...params, locale, evaluationYear });
 
   // psych_match를 여기서 미리 한 번만 계산해 두면(section_money_chores의 CFO
   // 11축 확인문구용) 아래 killer_questions 등 다른 소비처와 중복 계산하지
@@ -549,6 +574,7 @@ export function buildMarriageReport(params: {
     }),
     meta: {
       report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION,
+      analysis_engine_version: MARRIAGE_ANALYSIS_ENGINE_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,
@@ -585,6 +611,13 @@ export function buildMarriageReport(params: {
     // the CFO summary / Ch9 advice on who runs day-to-day household finances.
     cfoNickname: cfoFinal.nickname,
     locale,
+    birthDateA: params.birthDateA,
+    birthDateB: params.birthDateB,
+    birthTimeA: params.birthTimeA,
+    birthTimeB: params.birthTimeB,
+    birthTimeUnknownA: params.birthTimeUnknownA,
+    birthTimeUnknownB: params.birthTimeUnknownB,
+    evaluationYear,
   });
 
   const canonicalMarriageStoryPlan = buildCanonicalMarriageStoryPlan({

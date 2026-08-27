@@ -37,10 +37,23 @@ import { buildCanonicalRelationshipStoryPlan } from "../buildCanonicalRelationsh
  */
 export const ROMANTIC_REPORT_SCHEMA_VERSION = 1;
 
+/**
+ * Romantic analysis-engine SSOT (Phase 3B). Distinct from
+ * ROMANTIC_REPORT_SCHEMA_VERSION (persisted structure): this gates the
+ * deterministic SCORING/CLASSIFICATION LOGIC (computeRelationshipEventScores
+ * et al). The determinism audit found no analytical-truth bug in Romantic,
+ * so this establishes the baseline current version — bump it whenever a
+ * scoring formula or classification algorithm changes materially.
+ * isStaleRomanticV4Block is the read side of this contract.
+ */
+export const ROMANTIC_ANALYSIS_ENGINE_VERSION = 1;
+
 export type RomanticV4PersistedBlock = {
   schemaVersion: "romantic_canonical_report_v1";
   /** Report-schema SSOT — see ROMANTIC_REPORT_SCHEMA_VERSION. */
   reportSchemaVersion: number;
+  /** Analysis-engine SSOT — see ROMANTIC_ANALYSIS_ENGINE_VERSION. */
+  analysisEngineVersion: number;
   payload: RomanticV4PrototypePayload;
   birthHourDisclosure: BirthHourDisclosureCode;
   generatedAt: string;
@@ -92,6 +105,7 @@ export function readRomanticV4Block(
 export function isStaleRomanticV4Block(v4: RomanticV4PersistedBlock | null): boolean {
   if (!v4 || !v4.payload) return true;
   if (v4.reportSchemaVersion !== ROMANTIC_REPORT_SCHEMA_VERSION) return true;
+  if (v4.analysisEngineVersion !== ROMANTIC_ANALYSIS_ENGINE_VERSION) return true;
   if (!v4.payload.storyPlan) return true;
   const plan = v4.payload.storyPlan as any;
   if (!plan.romanticGapBatch) return true;
@@ -129,7 +143,14 @@ export function resolveRomanticV4ForResponse(
   const persistedV4Block = readRomanticV4Block(byKind, locale);
   if (!persistedV4Block) return null;
   if (!isStaleRomanticV4Block(persistedV4Block)) return persistedV4Block.payload;
+  // Phase 3B: the narrow in-place upgrade below only patches
+  // romanticGapBatch — it must never be reached for a block whose
+  // reportSchemaVersion OR analysisEngineVersion doesn't match today's code,
+  // no matter how complete its structure otherwise looks (same
+  // "never grandfather a versionless/mismatched block" rule Phase 3A
+  // established for reportSchemaVersion alone).
   if (persistedV4Block.reportSchemaVersion !== ROMANTIC_REPORT_SCHEMA_VERSION) return null;
+  if (persistedV4Block.analysisEngineVersion !== ROMANTIC_ANALYSIS_ENGINE_VERSION) return null;
 
   try {
     const contract =

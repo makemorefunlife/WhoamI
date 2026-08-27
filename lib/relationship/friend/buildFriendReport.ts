@@ -73,6 +73,19 @@ import { buildFriendStoryPlanEngine } from "./storyPlan/buildFriendStoryPlanEngi
  */
 export const FRIEND_REPORT_SCHEMA_VERSION = 1;
 
+/**
+ * Friend analysis-engine SSOT (Phase 3B). Distinct from BOTH
+ * FRIEND_REPORT_SCHEMA_VERSION (persisted structure) and friend_engine_version
+ * below (names the narrative/character engine specifically, documented above
+ * as "not the currentness SSOT") — this gates the deterministic SCORING/
+ * CLASSIFICATION LOGIC (computeFriendMasterScores et al). The determinism
+ * audit found no analytical-truth bug in Friend, so this establishes the
+ * baseline current version — bump it whenever a scoring formula or
+ * classification algorithm changes materially. isStaleFriendReportBlock is
+ * the read side of this contract.
+ */
+export const FRIEND_ANALYSIS_ENGINE_VERSION = 1;
+
 export type FriendReportBody = {
   headline: string;
   summary_line: string;
@@ -82,6 +95,8 @@ export type FriendReportBody = {
   meta: {
     /** Report-schema SSOT — see FRIEND_REPORT_SCHEMA_VERSION. */
     report_schema_version: number;
+    /** Analysis-engine SSOT — see FRIEND_ANALYSIS_ENGINE_VERSION. */
+    analysis_engine_version: number;
     friend_engine_version?: string;
     grade: string;
     grade_reason: string;
@@ -392,6 +407,7 @@ export function buildFriendReport(params: {
     friend,
     meta: {
       report_schema_version: FRIEND_REPORT_SCHEMA_VERSION,
+      analysis_engine_version: FRIEND_ANALYSIS_ENGINE_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

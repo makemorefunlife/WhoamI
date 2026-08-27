@@ -64,6 +64,17 @@ import type { CanonicalWorkStoryPlan } from "./workStoryPlanTypes";
  */
 export const WORK_REPORT_SCHEMA_VERSION = 1;
 
+/**
+ * Work analysis-engine SSOT (Phase 3B). Distinct from WORK_REPORT_SCHEMA_VERSION:
+ * that gates persisted STRUCTURE, this gates the deterministic SCORING/
+ * CLASSIFICATION LOGIC (computeWorkMasterScores et al). The determinism audit
+ * found no analytical-truth bug in Work, so this simply establishes the
+ * baseline current version — bump it whenever a scoring formula or
+ * classification algorithm changes materially, even if the persisted shape
+ * doesn't. isStaleWorkReportBlock is the read side of this contract.
+ */
+export const WORK_ANALYSIS_ENGINE_VERSION = 1;
+
 export type WorkColleagueReportBody = {
   headline: string;
   summary_line: string;
@@ -73,6 +84,8 @@ export type WorkColleagueReportBody = {
   meta: {
     /** Report-schema SSOT — see WORK_REPORT_SCHEMA_VERSION. */
     report_schema_version: number;
+    /** Analysis-engine SSOT — see WORK_ANALYSIS_ENGINE_VERSION. */
+    analysis_engine_version: number;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];
@@ -321,6 +334,7 @@ export function buildWorkColleagueReport(params: {
     office,
     meta: {
       report_schema_version: WORK_REPORT_SCHEMA_VERSION,
+      analysis_engine_version: WORK_ANALYSIS_ENGINE_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

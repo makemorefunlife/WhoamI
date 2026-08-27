@@ -58,6 +58,15 @@ export async function runFamilyParentChildDeepAnalysis(
     userCustomChildName?: string;
     /** Skip LLM overlay even if env enabled (tests). */
     skipFamilyNarrative?: boolean;
+    /**
+     * TIME-DEPENDENT DETERMINISTIC — explicit evaluation year for Part3's
+     * Growth Tunnel (the only year-sensitive Family content; static
+     * bond/synergy/risk/grade never depend on this). Omit to use the
+     * current year — same effective behavior as before Phase 3B, but now an
+     * explicit, declared input instead of a hidden new Date().getFullYear()
+     * inside familyKillerSections.ts.
+     */
+    analysisYear?: number;
   },
   options?: { abortSignal?: AbortSignal },
 ): Promise<FamilyParentChildDeepPayload> {
@@ -96,6 +105,7 @@ export async function runFamilyParentChildDeepAnalysis(
     friendshipSignalsB,
     locale: params.locale,
     childIsViewer: params.childIsViewer,
+    analysisYear: params.analysisYear ?? new Date().getFullYear(),
   });
 
   if (!params.skipFamilyNarrative) {

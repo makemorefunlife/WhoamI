@@ -40,9 +40,6 @@ import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewMo
 // this domain already uses familyParentLanguage.ts, so this was producing
 // inconsistent Korean grammar depending on which builder happened to run.
 import { josaIGa, josaEunNeun } from "@/lib/relationship/familyParent/familyParentLanguage";
-import { buildFamilyGrowthChapterBundle } from "../familyGrowthChapterEngine";
-import { buildFamilyRepairChapterBundle } from "../familyRepairChapterEngine";
-import { buildFamilyActionChapterBundle } from "../familyActionChapterEngine";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -578,57 +575,27 @@ export function buildFamilyReportViewModel(
   // absent rather than reconstruct it from fake data. Chapters/cards reading
   // storyPlan?.conflictChapterBundle already treat its absence as "no data"
   // (e.g. `storyPlan?.conflictChapterBundle?.conflictLoop ?? null` below).
-
-  if (!storyPlan || !(storyPlan as any).growthChapterBundle) {
-    const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
-    const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
-    const growthChapterBundle = buildFamilyGrowthChapterBundle({
-      childNickname,
-      parentNickname,
-      growthTunnelSec: (report.section_growth_tunnel ?? report.family?.section_growth_tunnel) as any,
-      talentSec: (report.section_talent ?? report.family?.section_talent) as any,
-    });
-    storyPlan = {
-      ...storyPlan,
-      growthChapterBundle,
-    } as any;
-  }
-
-  if (!storyPlan || !(storyPlan as any).repairChapterBundle) {
-    const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
-    const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
-    const repairChapterBundle = buildFamilyRepairChapterBundle({
-      childNickname,
-      parentNickname,
-      locale,
-      psychChild: report.meta?.psych_master_a ?? null,
-      psychParent: report.meta?.psych_master_b ?? null,
-      conflictLoop: storyPlan?.conflictChapterBundle?.conflictLoop ?? null,
-    });
-    storyPlan = {
-      ...storyPlan,
-      repairChapterBundle,
-    } as any;
-  }
-
-  if (!storyPlan || !(storyPlan as any).actionChapterBundle) {
-    const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
-    const parentNickname = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
-    const actionChapterBundle = buildFamilyActionChapterBundle({
-      childNickname,
-      parentNickname,
-      locale,
-      psychChild: report.meta?.psych_master_a ?? null,
-      psychParent: report.meta?.psych_master_b ?? null,
-      conflictChapterBundle: storyPlan?.conflictChapterBundle ?? null,
-      growthChapterBundle: storyPlan?.growthChapterBundle ?? null,
-      repairChapterBundle: storyPlan?.repairChapterBundle ?? null,
-    });
-    storyPlan = {
-      ...storyPlan,
-      actionChapterBundle,
-    } as any;
-  }
+  //
+  // Phase 3B (F1/F2 fix): growthChapterBundle/repairChapterBundle/
+  // actionChapterBundle used to be reconstructed here the same unsafe way
+  // conflictChapterBundle used to be — with two confirmed bugs: (1)
+  // psychChild/psychParent were hardcoded to meta.psych_master_a/psych_master_b
+  // respectively, but those are raw, UNRESOLVED A/B slots (buildFamilyParentReport.ts
+  // resolves psychChild/psychParent from ctx.roles.roleA, which can put the
+  // parent in either slot) — so a report where the parent occupies slot A
+  // would silently get the parent's psych data labeled as the child's; (2)
+  // the reconstruction never passed countsChild/countsParent at all, so
+  // buildFamilyGrowthChapterBundle/etc. always fell through to their neutral
+  // 50/0 defaults instead of this child's real ten-god counts — a
+  // reconstructed report could visibly diverge from the same report freshly
+  // generated. isStaleFamilyReportBlock now requires all three bundles to
+  // already be present in canonical_projections.story_plan for a report to
+  // pass as current (see reportStalenessGuard.ts), so any report reaching
+  // this view model should already have them from fresh generation
+  // (buildCanonicalFamilyStoryPlan always supplies real, role-correct
+  // psychChild/psychParent/countsChild/countsParent). Consistent with the
+  // conflictChapterBundle precedent above: leave a genuinely missing bundle
+  // absent rather than reconstruct it from incomplete/misattributed data.
 
   // Build Editorial 8 Chapters mapping StoryPlan SSOT + Legacy Reusable Content
   const selectedClaims = storyPlan?.selectedClaims ?? [];
