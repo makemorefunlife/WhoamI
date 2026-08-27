@@ -415,7 +415,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
         <div className="mt-12 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
           <SubHeading title="피지컬 친밀감 & 스킨십 템포 조율" tag="스킨십 템포" tone="coral" />
           <div className="rounded-xl bg-rel-taupe-soft p-5 border border-rel-line space-y-2 text-xs">
-            <p className="font-semibold text-rel-ink text-sm">💋 {payload.storyPlan.romanticGapBatch.physicalIntimacy.summary}</p>
+            <p className="font-semibold text-rel-ink text-sm">{payload.storyPlan.romanticGapBatch.physicalIntimacy.summary}</p>
             <p className="text-rel-ink-soft">· {personA}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessA}</p>
             <p className="text-rel-ink-soft">· {personB}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessB}</p>
             <p className="text-rel-deep italic mt-2">· 공간/경계 필요성: {payload.storyPlan.romanticGapBatch.physicalIntimacy.spaceNeed}</p>

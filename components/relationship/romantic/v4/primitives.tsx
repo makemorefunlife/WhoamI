@@ -114,7 +114,6 @@ export function ChapterHeader({
 export function SubHeading({
   title,
   tone = "deep",
-  tag,
   invert = false,
 }: {
   title: string;
@@ -140,15 +139,6 @@ export function SubHeading({
         </span>
         <span className="min-w-0">{title}</span>
       </h3>
-      {tag && (
-        <span
-          className={`shrink-0 font-rel-sans text-[10px] uppercase tracking-[0.2em] ${
-            invert ? "text-white/50" : "text-rel-ink-mute"
-          }`}
-        >
-          {tag}
-        </span>
-      )}
     </div>
   );
 }

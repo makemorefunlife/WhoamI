@@ -137,7 +137,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
           const other = h.person === "a" ? "b" : "a";
           return (
             <Reveal key={h.person}>
-              <article className="grid gap-8 md:grid-cols-[minmax(0,180px)_minmax(0,1fr)] md:items-start">
+              <article className="space-y-5">
                 <div>
                   <PersonTag name={names[h.person]} side={h.person} />
                 </div>
@@ -281,9 +281,9 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
               <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.trigger}</p>
               <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.doNot}</p>
               <div className="space-y-1.5 pt-2 text-xs border-t border-rel-line">
-                <p className="font-semibold text-rel-deep">1단계 (첫 문장): {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.firstLine}</p>
-                <p className="font-semibold text-rel-ink">2단계 (징검다리): {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.bridgeLine}</p>
-                <p className="font-semibold text-v4-good">3단계 (재접속): {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.reconnectionLine}</p>
+                <p className="font-semibold text-rel-deep">말문 열기: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.firstLine}</p>
+                <p className="font-semibold text-rel-ink">속마음 전하기: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.bridgeLine}</p>
+                <p className="font-semibold text-v4-good">다시 연결하기: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.reconnectionLine}</p>
               </div>
             </div>
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-3">
@@ -294,9 +294,9 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
               <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.trigger}</p>
               <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.doNot}</p>
               <div className="space-y-1.5 pt-2 text-xs border-t border-rel-line">
-                <p className="font-semibold text-rel-deep">1단계 (첫 문장): {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.firstLine}</p>
-                <p className="font-semibold text-rel-ink">2단계 (징검다리): {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.bridgeLine}</p>
-                <p className="font-semibold text-v4-good">3단계 (재접속): {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.reconnectionLine}</p>
+                <p className="font-semibold text-rel-deep">말문 열기: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.firstLine}</p>
+                <p className="font-semibold text-rel-ink">속마음 전하기: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.bridgeLine}</p>
+                <p className="font-semibold text-v4-good">다시 연결하기: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.reconnectionLine}</p>
               </div>
             </div>
           </div>
@@ -442,13 +442,13 @@ export const StrengthVulnerabilitySection = ({ section, payload, personA, person
           <SubHeading title="서로에게서 배우는 점 및 관계 시너지" tag="Synergy & Learning" tone="deep" />
           <div className="rounded-xl bg-rel-taupe-soft/50 p-5 border border-rel-line text-xs text-rel-ink-soft space-y-2.5">
             {payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.complement ? (
-              <p><span className="font-semibold text-rel-deep">✨ 시너지 · </span>{payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.complement}</p>
+              <p><span className="font-semibold text-rel-deep">시너지 · </span>{payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.complement}</p>
             ) : null}
             {payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB ? (
-              <p><span className="font-semibold text-amber-600">🌱 배우는 점 ({personA}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB}</p>
+              <p><span className="font-semibold text-amber-600">배우는 점 ({personA}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB}</p>
             ) : null}
             {payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA ? (
-              <p><span className="font-semibold text-amber-600">🌱 배우는 점 ({personB}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA}</p>
+              <p><span className="font-semibold text-amber-600">배우는 점 ({personB}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA}</p>
             ) : null}
           </div>
         </div>
