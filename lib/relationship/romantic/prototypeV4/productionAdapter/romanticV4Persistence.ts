@@ -24,8 +24,23 @@ import { buildCanonicalRelationshipStoryPlan } from "../buildCanonicalRelationsh
  * actually needs. Same object buildRomanticV4PrototypePayload already
  * produces for the dev route — nothing new is computed to shape this.
  */
+/**
+ * Romantic report-schema SSOT (Phase 3A). Increment whenever the persisted
+ * V4 report shape or required canonical content changes such that
+ * previously generated V4 blocks must regenerate. isStaleRomanticV4Block
+ * below is the read side of this contract.
+ *
+ * Not the same as the `schemaVersion` string field on
+ * RomanticV4PersistedBlock — that identifies the *wrapper shape* of the
+ * persisted block itself (payload/birthHourDisclosure/generatedAt), not
+ * the report content's currentness; it stays for that purpose only.
+ */
+export const ROMANTIC_REPORT_SCHEMA_VERSION = 1;
+
 export type RomanticV4PersistedBlock = {
   schemaVersion: "romantic_canonical_report_v1";
+  /** Report-schema SSOT — see ROMANTIC_REPORT_SCHEMA_VERSION. */
+  reportSchemaVersion: number;
   payload: RomanticV4PrototypePayload;
   birthHourDisclosure: BirthHourDisclosureCode;
   generatedAt: string;
@@ -62,10 +77,22 @@ export function readRomanticV4Block(
 }
 
 /**
- * Check if a persisted Romantic V4 block is stale (e.g. missing new gap batch engine capabilities).
+ * Check if a persisted Romantic V4 block is stale. Version-first (Phase 3A):
+ * a block whose reportSchemaVersion doesn't exactly match
+ * ROMANTIC_REPORT_SCHEMA_VERSION is stale outright — including blocks
+ * persisted before this field existed (reportSchemaVersion undefined),
+ * which must not be silently treated as current just because they happen
+ * to satisfy today's structural shape. Exact equality, not >=: a block
+ * claiming a *newer* version than this running code understands is just as
+ * unsafe to render as an older one (see ROMANTIC_REPORT_SCHEMA_VERSION doc).
+ * The structural check below remains as a secondary layer — a same-version
+ * block can still be stale if a partial write or corrupted payload left it
+ * missing required content.
  */
 export function isStaleRomanticV4Block(v4: RomanticV4PersistedBlock | null): boolean {
-  if (!v4 || !v4.payload || !v4.payload.storyPlan) return true;
+  if (!v4 || !v4.payload) return true;
+  if (v4.reportSchemaVersion !== ROMANTIC_REPORT_SCHEMA_VERSION) return true;
+  if (!v4.payload.storyPlan) return true;
   const plan = v4.payload.storyPlan as any;
   if (!plan.romanticGapBatch) return true;
   if (!plan.romanticGapBatch.physicalIntimacy) return true;
@@ -76,19 +103,24 @@ export function isStaleRomanticV4Block(v4: RomanticV4PersistedBlock | null): boo
 /**
  * Resolve what the client should receive for Romantic V4 this request.
  *
- * A stale persisted block (missing the newer gap-batch narrative — see
- * isStaleRomanticV4Block) gets exactly one best-effort in-place upgrade
- * attempt, re-deriving just the gap-batch narrative from the block's own
- * stored contract/canonicalReport. If that attempt cannot even run (missing
- * inputs) or throws, the block MUST be treated as unavailable — returning
- * the untouched stale payload here would let the caller serve it to the
- * client under the "current V4" field with no way for the client to tell a
- * successfully-patched block from an unpatched-stale one. Contrast with the
- * old inline version of this logic, which on catch preserved and returned
- * the stale payload as-is; this function returns null instead, so the
- * caller's response omits the field entirely and the client falls through
- * to its existing V2/legacy renderer — the same honest "unavailable" path
- * already used everywhere the block is simply absent.
+ * Phase 3A: a block whose reportSchemaVersion doesn't match today's
+ * ROMANTIC_REPORT_SCHEMA_VERSION (including pre-Phase-3A blocks that
+ * predate the field entirely) is NEVER eligible for the in-place upgrade
+ * below, no matter how complete its structure looks — see the "versionless
+ * existing report" policy on isStaleRomanticV4Block. It resolves straight
+ * to null (current-unavailable / regenerate), the same as a fully absent
+ * block. The upgrade attempt exists only for the narrower, same-version
+ * case: a current-schema block that's merely missing the newer gap-batch
+ * narrative sub-field, re-derivable from that same block's own stored
+ * contract/canonicalReport. If even that narrower attempt cannot run
+ * (missing inputs) or throws, the block MUST be treated as unavailable —
+ * returning the untouched stale payload here would let the caller serve it
+ * to the client under the "current V4" field with no way for the client to
+ * tell a successfully-patched block from an unpatched-stale one. This
+ * function returns null in every failure case, so the caller's response
+ * omits the field entirely and the client falls to its existing
+ * current-unavailable/regenerate state (see resolveRomanticRenderMode) —
+ * never silently to V2/legacy in normal production.
  */
 export function resolveRomanticV4ForResponse(
   byKind: RawByKind,
@@ -97,6 +129,7 @@ export function resolveRomanticV4ForResponse(
   const persistedV4Block = readRomanticV4Block(byKind, locale);
   if (!persistedV4Block) return null;
   if (!isStaleRomanticV4Block(persistedV4Block)) return persistedV4Block.payload;
+  if (persistedV4Block.reportSchemaVersion !== ROMANTIC_REPORT_SCHEMA_VERSION) return null;
 
   try {
     const contract =

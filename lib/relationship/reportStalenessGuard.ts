@@ -2,14 +2,35 @@
  * Production Cache Staleness Guards for Relationship Reports.
  * Ensures that cached DB JSON payloads lacking current VNext canonical structures
  * are identified as stale, prompting dynamic regeneration or rejection.
+ *
+ * Phase 3A: each guard is now version-first — meta.report_schema_version
+ * must exactly match that vertical's current *_REPORT_SCHEMA_VERSION
+ * constant (exact equality, not >=: a payload claiming a newer version than
+ * this running code understands is just as unsafe to render as an older
+ * one). A missing/older/newer version is stale outright, including records
+ * persisted before this field existed — their structure is never inspected
+ * to "grandfather" them in, since that's exactly the bug class (a
+ * structural check silently falling behind schema growth) this closes. The
+ * structural checks below remain as a secondary layer: even a report
+ * claiming the current version must still have the mandatory current
+ * fields, protecting against partial writes, corrupted payloads, or a
+ * failed generation that still updated the version field.
  */
+import { WORK_REPORT_SCHEMA_VERSION } from "./workColleague/buildWorkColleagueReport";
+import { MARRIAGE_REPORT_SCHEMA_VERSION } from "./marriage/buildMarriageReport";
+import { FAMILY_REPORT_SCHEMA_VERSION } from "./familyParent/buildFamilyParentReport";
+import { FRIEND_REPORT_SCHEMA_VERSION } from "./friend/buildFriendReport";
 
 export function isStaleWorkReportBlock(payload: unknown): boolean {
   if (!payload || typeof payload !== "object") return true;
   const report = (payload as { report?: Record<string, unknown> }).report ?? payload;
   if (typeof report !== "object" || !report) return true;
 
-  const office = (report as { office?: Record<string, unknown> }).office;
+  const r = report as Record<string, unknown>;
+  const meta = r.meta as Record<string, unknown> | undefined;
+  if (meta?.report_schema_version !== WORK_REPORT_SCHEMA_VERSION) return true;
+
+  const office = r.office as Record<string, unknown> | undefined;
   if (!office || typeof office !== "object") return true;
 
   // Modern VNext Work report requires canonical role, mix fit, and respect sections
@@ -26,22 +47,21 @@ export function isStaleCohabitationReportBlock(payload: unknown): boolean {
   if (typeof report !== "object" || !report) return true;
 
   const r = report as Record<string, unknown>;
+  const meta = r.meta as Record<string, unknown> | undefined;
+  if (meta?.report_schema_version !== MARRIAGE_REPORT_SCHEMA_VERSION) return true;
+
   const household = r.household as Record<string, unknown> | undefined;
   const canonicalProjections = r.canonical_projections as Record<string, unknown> | undefined;
   const marriageCanonicalBundle = canonicalProjections?.marriage_canonical_bundle as
     | Record<string, unknown>
     | undefined;
 
-  // Modern VNext Marriage report requires Chapter 07 AND Chapter 08
-  // intelligence to actually be present inside the bundle — a bundle (or a
-  // story plan) merely existing is NOT sufficient. buildMarriageCanonicalEngine
-  // has generated chapter07Intelligence/chapter08Intelligence unconditionally
-  // alongside the rest of the bundle since 2026-08-26; any report generated
-  // before that date can have a truthy bundle while lacking both, which the
-  // old (bundle-existence-only) check accepted as current. That let such
-  // reports silently render a blank Chapter 08 and a degraded, null-psych
-  // Chapter 07 as if they were up to date. Structural requirement, not a
-  // date check — this stays correct as the schema grows further.
+  // Phase 1 fix, unchanged: modern VNext Marriage report requires Chapter 07
+  // AND Chapter 08 intelligence to actually be present inside the bundle —
+  // a bundle (or a story plan) merely existing is NOT sufficient. See the
+  // Fallback Remediation Phase 1 report for the 2026-08-13→08-25 incident
+  // this closed. Kept as the secondary structural layer under the new
+  // version-first check above.
   const hasChapter08 = Boolean(marriageCanonicalBundle?.chapter08Intelligence);
   const hasChapter07 = Boolean(marriageCanonicalBundle?.chapter07Intelligence);
   const hasHouseholdDna = Boolean(household?.section_dna);
@@ -55,6 +75,9 @@ export function isStaleFamilyReportBlock(payload: unknown): boolean {
   if (typeof report !== "object" || !report) return true;
 
   const r = report as Record<string, unknown>;
+  const meta = r.meta as Record<string, unknown> | undefined;
+  if (meta?.report_schema_version !== FAMILY_REPORT_SCHEMA_VERSION) return true;
+
   const family = r.family as Record<string, unknown> | undefined;
   const canonicalProjections = r.canonical_projections as Record<string, unknown> | undefined;
 
@@ -73,11 +96,12 @@ export function isStaleFriendReportBlock(payload: unknown): boolean {
 
   const r = report as Record<string, unknown>;
   const meta = r.meta as Record<string, unknown> | undefined;
+  if (meta?.report_schema_version !== FRIEND_REPORT_SCHEMA_VERSION) return true;
 
-  // Structural version guard — bumped for the Ch4-8 VNext rollout (Friend
-  // Response Intelligence). Any report generated before this version lacks
-  // canonical_bundle.responseIntelligence and must be treated as stale so it
-  // gets regenerated rather than silently keep showing legacy Ch5-8 content.
+  // friend_engine_version remains a secondary subsystem signal (names the
+  // narrative/character engine, not the full persisted structural
+  // contract) — kept because other logic/tests still depend on it, per
+  // Phase 3A's instruction not to remove it.
   if (meta?.friend_engine_version !== "friend_vnext_ch1_ch8_v3_canonical") {
     return true;
   }
@@ -93,5 +117,3 @@ export function isStaleFriendReportBlock(payload: unknown): boolean {
 
   return false;
 }
-
-

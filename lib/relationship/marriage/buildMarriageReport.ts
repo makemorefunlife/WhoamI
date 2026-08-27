@@ -75,6 +75,18 @@ import { buildCanonicalMarriageStoryPlan } from "./buildCanonicalMarriageStoryPl
 import type { MarriageCanonicalBundle } from "./marriageCanonicalTypes";
 import type { CanonicalMarriageStoryPlan } from "./canonicalMarriageStoryPlanTypes";
 
+/**
+ * Marriage report-schema SSOT (Phase 3A). Increment whenever the persisted
+ * report shape or required canonical content changes such that previously
+ * generated reports must regenerate. isStaleCohabitationReportBlock in
+ * reportStalenessGuard.ts is the read side of this contract. Not reusing
+ * meta.version/meta.canonical_version below — those are written every
+ * generation but never read anywhere (confirmed in the Phase 1 audit), and
+ * their original intent is unclear enough that silently repurposing them
+ * as the currentness gate would be unsafe.
+ */
+export const MARRIAGE_REPORT_SCHEMA_VERSION = 1;
+
 export type MarriageReportBody = {
   headline: string;
   summary_line: string;
@@ -95,6 +107,8 @@ export type MarriageReportBody = {
   };
   story_plan?: CanonicalCoupleStoryPlan;
   meta: {
+    /** Report-schema SSOT — see MARRIAGE_REPORT_SCHEMA_VERSION. */
+    report_schema_version: number;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];
@@ -534,6 +548,7 @@ export function buildMarriageReport(params: {
       locale: params.locale ?? "ko-KR",
     }),
     meta: {
+      report_schema_version: MARRIAGE_REPORT_SCHEMA_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

@@ -53,6 +53,17 @@ import type { SnapshotTopicNarrative } from "@/lib/relationship/romanticSnapshot
 import { buildCanonicalWorkStoryPlan } from "./buildCanonicalWorkStoryPlan";
 import type { CanonicalWorkStoryPlan } from "./workStoryPlanTypes";
 
+/**
+ * Work report-schema SSOT (Phase 3A). Increment whenever the persisted
+ * report shape or required canonical content changes such that previously
+ * generated reports must regenerate. isStaleWorkReportBlock in
+ * reportStalenessGuard.ts is the read side of this contract. Not the same
+ * as WORK_COLLEAGUE_DEEP_FORMAT (outputSchema.ts), a cache-hit format tag
+ * that has never been bumped despite the schema growing since — it stays
+ * as a secondary structural probe, not the currentness SSOT.
+ */
+export const WORK_REPORT_SCHEMA_VERSION = 1;
+
 export type WorkColleagueReportBody = {
   headline: string;
   summary_line: string;
@@ -60,6 +71,8 @@ export type WorkColleagueReportBody = {
   snapshot_panel: TriScoreSnapshotPanel;
   office: OfficePartnershipReport;
   meta: {
+    /** Report-schema SSOT — see WORK_REPORT_SCHEMA_VERSION. */
+    report_schema_version: number;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];
@@ -307,6 +320,7 @@ export function buildWorkColleagueReport(params: {
     snapshot_panel,
     office,
     meta: {
+      report_schema_version: WORK_REPORT_SCHEMA_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

@@ -62,6 +62,17 @@ import type { CanonicalFriendStoryPlan } from "./friendStoryPlanTypes";
 import { buildFriendCanonicalEngine } from "./canonical/buildFriendCanonicalEngine";
 import { buildFriendStoryPlanEngine } from "./storyPlan/buildFriendStoryPlanEngine";
 
+/**
+ * Friend report-schema SSOT (Phase 3A). Increment whenever the persisted
+ * report shape or required canonical content changes such that previously
+ * generated reports must regenerate. isStaleFriendReportBlock in
+ * reportStalenessGuard.ts is the read side of this contract. Not the same
+ * as friend_engine_version below, which names the narrative/character
+ * engine, not the full persisted structural contract — it remains a
+ * secondary subsystem signal, not the currentness SSOT.
+ */
+export const FRIEND_REPORT_SCHEMA_VERSION = 1;
+
 export type FriendReportBody = {
   headline: string;
   summary_line: string;
@@ -69,6 +80,8 @@ export type FriendReportBody = {
   snapshot_panel: TriScoreSnapshotPanel;
   friend: ReturnType<typeof buildFriendSocialReport>;
   meta: {
+    /** Report-schema SSOT — see FRIEND_REPORT_SCHEMA_VERSION. */
+    report_schema_version: number;
     friend_engine_version?: string;
     grade: string;
     grade_reason: string;
@@ -378,6 +391,7 @@ export function buildFriendReport(params: {
     snapshot_panel,
     friend,
     meta: {
+      report_schema_version: FRIEND_REPORT_SCHEMA_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

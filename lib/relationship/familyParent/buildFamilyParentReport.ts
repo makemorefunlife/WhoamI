@@ -55,6 +55,14 @@ import {
 import { buildCanonicalFamilyStoryPlan } from "./buildCanonicalFamilyStoryPlan";
 import type { CanonicalFamilyStoryPlan } from "./familyStoryPlanTypes";
 
+/**
+ * Family report-schema SSOT (Phase 3A). Increment whenever the persisted
+ * report shape or required canonical content changes such that previously
+ * generated reports must regenerate. isStaleFamilyReportBlock in
+ * reportStalenessGuard.ts is the read side of this contract.
+ */
+export const FAMILY_REPORT_SCHEMA_VERSION = 1;
+
 export type FamilyParentReportBody = {
   headline: string;
   summary_line: string;
@@ -62,6 +70,8 @@ export type FamilyParentReportBody = {
   snapshot_panel: TriScoreSnapshotPanel;
   family: FamilyParentChildReport;
   meta: {
+    /** Report-schema SSOT — see FAMILY_REPORT_SCHEMA_VERSION. */
+    report_schema_version: number;
     grade: string;
     grade_reason: string;
     uncertain_items: string[];
@@ -384,6 +394,7 @@ export function buildFamilyParentReport(params: {
     snapshot_panel,
     family,
     meta: {
+      report_schema_version: FAMILY_REPORT_SCHEMA_VERSION,
       grade: ctx.grade,
       grade_reason: ctx.gradeReason,
       uncertain_items: ctx.uncertainItems,

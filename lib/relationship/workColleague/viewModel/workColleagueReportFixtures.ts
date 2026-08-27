@@ -8,6 +8,7 @@
  * need to satisfy the WorkColleagueReportBody shape.
  */
 import type { WorkColleagueReportBody } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import { WORK_REPORT_SCHEMA_VERSION } from "@/lib/relationship/workColleague/buildWorkColleagueReport";
 
 /** Full payload — every optional field populated. */
 export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
@@ -150,6 +151,7 @@ export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
     },
   },
   meta: {
+    report_schema_version: WORK_REPORT_SCHEMA_VERSION,
     grade: "A",
     grade_reason: "파트너십 등급 A — 업무적 핏 80% · 협업 시너지 75% · 오피스 리스크 20%",
     uncertain_items: [],
@@ -270,6 +272,7 @@ const minimalWorkColleagueReportFixtureRaw = {
     },
   },
   meta: {
+    report_schema_version: WORK_REPORT_SCHEMA_VERSION,
     grade: "B",
     grade_reason: "파트너십 등급 B",
     uncertain_items: [],
