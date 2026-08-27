@@ -1,5 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { logServerError } from "@/lib/security/safeLog";
+import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { NextResponse } from "next/server";
@@ -470,6 +470,17 @@ export async function POST(req: Request) {
           attachRomanticV4Block(romanticPayload, v4Block);
         } catch (err) {
           logServerError("romantic_v4_production_compute_failed", err);
+          // Structured diagnostic context so an operator can tell which
+          // reports are silently falling back to V2/legacy without needing
+          // to reproduce the failure — no v4 block gets attached below
+          // (romanticPayload persists unchanged), so this is purely
+          // observability, not a control-flow change.
+          logServerEvent("romantic_v4_production_compute_failed", "v4_unavailable_this_generation", {
+            relationshipReportId,
+            locale,
+            narrativeLlmEnabled: isRomanticV4NarrativeLlmEnabled(),
+            errorName: err instanceof Error ? err.name : typeof err,
+          });
         }
       }
 

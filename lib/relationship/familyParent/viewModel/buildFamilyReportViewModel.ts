@@ -10,7 +10,6 @@
  * 카드 타이틀은 en-US/ko-KR 메시지 카탈로그를 직접 재사용한다 — ko-KR 전용
  * 하드코딩 금지 원칙 유지.
  */
-import { buildFamilyRuleContext } from "../buildFamilyRuleContext";
 import {
   resolveReportPsychDisplay,
   swapPsychAxisForViewer,
@@ -41,12 +40,9 @@ import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewMo
 // this domain already uses familyParentLanguage.ts, so this was producing
 // inconsistent Korean grammar depending on which builder happened to run.
 import { josaIGa, josaEunNeun } from "@/lib/relationship/familyParent/familyParentLanguage";
-import { buildFamilyConflictChapterBundle } from "../familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "../familyGrowthChapterEngine";
 import { buildFamilyRepairChapterBundle } from "../familyRepairChapterEngine";
 import { buildFamilyActionChapterBundle } from "../familyActionChapterEngine";
-import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
-import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -200,54 +196,16 @@ function buildHouseholdRolesSection(
   let roleReversal = roles.role_reversal;
   let roleBurden = roles.role_burden;
 
-  if (!parentNormalLabel) {
-    const parentName = roles.partner_name || report.meta?.nickname_b || "부모";
-    const childName = roles.self_name || report.meta?.nickname_a || "자녀";
-    const mockPillar = { heavenlyStem: "갑", earthlyBranch: "자" };
-    const mockSaju: any = {
-      yearPillar: mockPillar,
-      monthPillar: mockPillar,
-      dayPillar: mockPillar,
-      hourPillar: mockPillar,
-      saju: {
-        yearPillar: mockPillar,
-        monthPillar: mockPillar,
-        dayPillar: mockPillar,
-        hourPillar: mockPillar,
-      },
-      tenGods: [],
-      stemTenGods: [],
-      branchTenGods: [],
-      dayStem: "갑",
-    };
-    const ctxFallback = buildFamilyRuleContext({
-      nicknameA: childName,
-      nicknameB: parentName,
-      roles: { roleA: "child", roleB: "mother" },
-      sajuJsonA: mockSaju,
-      sajuJsonB: mockSaju,
-      locale,
-    });
-    const intel = buildFamilyRoleIntelligence(ctxFallback);
-    parentNormalLabel = intel.parentRoleProfile.normalRoleLabel;
-    parentNormalDesc = intel.parentRoleProfile.normalRoleDesc;
-    parentStressLabel = intel.parentRoleProfile.stressRoleLabel;
-    parentStressDesc = intel.parentRoleProfile.stressRoleDesc;
-    parentMeaning = intel.parentRoleProfile.behavioralMeaning;
-
-    childNormalLabel = intel.childRoleProfile.normalRoleLabel;
-    childNormalDesc = intel.childRoleProfile.normalRoleDesc;
-    childStressLabel = intel.childRoleProfile.stressRoleLabel;
-    childStressDesc = intel.childRoleProfile.stressRoleDesc;
-    childMeaning = intel.childRoleProfile.behavioralMeaning;
-
-    pairStructureOverview = intel.pairStructureOverview;
-    pairCausalMechanism = intel.pairCausalMechanism;
-    pairSynergyWhenSmooth = intel.pairSynergyWhenSmooth;
-    unexpectedRole = intel.unexpectedRole;
-    roleReversal = intel.roleReversal;
-    roleBurden = intel.roleBurden;
-  }
+  // No-fake-data invariant: when a persisted record predates
+  // section_household_roles' current fields (parentNormalLabel absent),
+  // this used to rebuild the whole block from a hardcoded fake saju pillar
+  // (dayStem "갑" for both people) fed into buildFamilyRoleIntelligence — a
+  // function that also was not imported in this file, so reaching this
+  // branch threw a ReferenceError at runtime. There is no real saju source
+  // available at this view-model layer to reconstruct from (the report body
+  // never persists raw pillars), so the correct behavior is to leave these
+  // fields absent — the household-roles card below renders only the fields
+  // it actually has real data for, same as any other optional section.
 
   return {
     id: "household_roles",
@@ -610,32 +568,16 @@ export function buildFamilyReportViewModel(
 
   let storyPlan = report.canonical_projections?.story_plan ?? null;
 
-  if (storyPlan && !storyPlan.conflictChapterBundle) {
-    const parentNickname = report.family?.section_roles?.parent_nickname || report.family?.section_household_roles?.partner_name || report.meta?.nickname_b || "부모";
-    const childNickname = report.family?.section_roles?.child_nickname || report.family?.section_household_roles?.self_name || report.meta?.nickname_a || "자녀";
-    const defaultSajuA = toV1SajuApiPayload(calculateSajuBundle({ birthDate: "2020-08-20", birthTime: "10:00" }));
-    const defaultSajuB = toV1SajuApiPayload(calculateSajuBundle({ birthDate: "1993-05-15", birthTime: "14:00" }));
-
-    const ruleCtx = buildFamilyRuleContext({
-      nicknameA: childNickname,
-      nicknameB: parentNickname,
-      roles: { roleA: "child", roleB: report.family?.parent_role || "mother" },
-      sajuJsonA: (report.raw?.saju_child || report.meta?.saju_a || defaultSajuA) as any,
-      sajuJsonB: (report.raw?.saju_parent || report.meta?.saju_b || defaultSajuB) as any,
-      locale,
-    });
-    const conflictChapterBundle = buildFamilyConflictChapterBundle({
-      ctx: ruleCtx,
-      report: report as any,
-      psychParent: report.meta?.psych_b ?? null,
-      psychChild: report.meta?.psych_a ?? null,
-      psychProjections: [],
-    });
-    storyPlan = {
-      ...storyPlan,
-      conflictChapterBundle,
-    };
-  }
+  // No-fake-data invariant: this used to rebuild a missing conflictChapterBundle
+  // by feeding buildFamilyRuleContext a hardcoded birth date (2020-08-20 /
+  // 1993-05-15) whenever report.raw?.saju_child / report.meta?.saju_a were
+  // absent — which they always are (FamilyParentReportBody never persists raw
+  // saju pillars), so this fabricated a chart every single time it ran, for
+  // any record whose story_plan predates conflictChapterBundle. There is no
+  // real saju source recoverable at this layer; leave conflictChapterBundle
+  // absent rather than reconstruct it from fake data. Chapters/cards reading
+  // storyPlan?.conflictChapterBundle already treat its absence as "no data"
+  // (e.g. `storyPlan?.conflictChapterBundle?.conflictLoop ?? null` below).
 
   if (!storyPlan || !(storyPlan as any).growthChapterBundle) {
     const childNickname = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
@@ -659,8 +601,8 @@ export function buildFamilyReportViewModel(
       childNickname,
       parentNickname,
       locale,
-      psychChild: report.meta?.psych_a ?? null,
-      psychParent: report.meta?.psych_b ?? null,
+      psychChild: report.meta?.psych_master_a ?? null,
+      psychParent: report.meta?.psych_master_b ?? null,
       conflictLoop: storyPlan?.conflictChapterBundle?.conflictLoop ?? null,
     });
     storyPlan = {
@@ -676,8 +618,8 @@ export function buildFamilyReportViewModel(
       childNickname,
       parentNickname,
       locale,
-      psychChild: report.meta?.psych_a ?? null,
-      psychParent: report.meta?.psych_b ?? null,
+      psychChild: report.meta?.psych_master_a ?? null,
+      psychParent: report.meta?.psych_master_b ?? null,
       conflictChapterBundle: storyPlan?.conflictChapterBundle ?? null,
       growthChapterBundle: storyPlan?.growthChapterBundle ?? null,
       repairChapterBundle: storyPlan?.repairChapterBundle ?? null,

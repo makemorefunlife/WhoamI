@@ -32,15 +32,21 @@ export function isStaleCohabitationReportBlock(payload: unknown): boolean {
     | Record<string, unknown>
     | undefined;
 
-  // Modern VNext Marriage report requires canonical story plan or chapter intelligences
-  const hasCanonicalPlan = Boolean(
-    canonicalProjections?.marriage_canonical_story_plan || marriageCanonicalBundle
-  );
+  // Modern VNext Marriage report requires Chapter 07 AND Chapter 08
+  // intelligence to actually be present inside the bundle — a bundle (or a
+  // story plan) merely existing is NOT sufficient. buildMarriageCanonicalEngine
+  // has generated chapter07Intelligence/chapter08Intelligence unconditionally
+  // alongside the rest of the bundle since 2026-08-26; any report generated
+  // before that date can have a truthy bundle while lacking both, which the
+  // old (bundle-existence-only) check accepted as current. That let such
+  // reports silently render a blank Chapter 08 and a degraded, null-psych
+  // Chapter 07 as if they were up to date. Structural requirement, not a
+  // date check — this stays correct as the schema grows further.
   const hasChapter08 = Boolean(marriageCanonicalBundle?.chapter08Intelligence);
   const hasChapter07 = Boolean(marriageCanonicalBundle?.chapter07Intelligence);
   const hasHouseholdDna = Boolean(household?.section_dna);
 
-  return !(hasCanonicalPlan || (hasChapter08 && hasChapter07 && hasHouseholdDna));
+  return !(hasChapter07 && hasChapter08 && hasHouseholdDna);
 }
 
 export function isStaleFamilyReportBlock(payload: unknown): boolean {

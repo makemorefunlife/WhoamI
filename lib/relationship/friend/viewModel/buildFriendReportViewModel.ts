@@ -244,24 +244,19 @@ function buildSocialDnaSection(
     const canonicalA = report.meta?.canonical_bundle?.personalA;
     const canonicalB = report.meta?.canonical_bundle?.personalB;
 
+    // No-fake-data invariant: this used to fall back to a hardcoded dummy
+    // chart (fixed stems/branches, not derived from either person's real
+    // birth data) whenever both the canonical projection and context_output
+    // chart sources were absent. Removed — if no real chart is recoverable,
+    // chartA/chartB stay null, the `if (chartA && chartB)` guard below skips
+    // the DNA regeneration, and dnaA/dnaB simply keep whatever real (if
+    // old-shaped) content report.friend.section_social_dna_a/b already had.
     const chartA =
       canonicalA?.chart ??
-      (report.context_output?.chart_a ? buildChartContext(sajuJsonToPillars(report.context_output.chart_a)) : null) ??
-      buildChartContext({
-        yearPillar: { stem: "갑", branch: "자" },
-        monthPillar: { stem: "갑", branch: "자" },
-        dayPillar: { stem: "정", branch: "해" },
-        hourPillar: { stem: "갑", branch: "자" },
-      });
+      (report.context_output?.chart_a ? buildChartContext(sajuJsonToPillars(report.context_output.chart_a)) : null);
     const chartB =
       canonicalB?.chart ??
-      (report.context_output?.chart_b ? buildChartContext(sajuJsonToPillars(report.context_output.chart_b)) : null) ??
-      buildChartContext({
-        yearPillar: { stem: "갑", branch: "자" },
-        monthPillar: { stem: "갑", branch: "자" },
-        dayPillar: { stem: "무", branch: "진" },
-        hourPillar: { stem: "갑", branch: "자" },
-      });
+      (report.context_output?.chart_b ? buildChartContext(sajuJsonToPillars(report.context_output.chart_b)) : null);
     const tenGodsA =
       canonicalA?.tenGods ??
       (report.context_output?.saju_json_a ? countTenGodsForMarriage(report.context_output.saju_json_a) : {});

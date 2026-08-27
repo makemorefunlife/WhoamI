@@ -77,6 +77,8 @@ export type FamilyParentReportBody = {
     person_core?: PersonCoreRelationMetaPayload;
     psych_match?: PsychMatchResult | null;
     psych_lens?: DomainPsychLens | null;
+    psych_master_a?: PsychMasterJson | null;
+    psych_master_b?: PsychMasterJson | null;
     /** pair.family 교차 신호 기반 실행 처방전 */
     prescription_family?: FamilyPrescriptionPack;
     /**

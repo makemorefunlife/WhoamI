@@ -212,19 +212,21 @@ export default function WorkColleagueReportView({
   // that slipped past the structural check above. A crash inside the
   // renderer's own JSX tree is not covered by this net.
   let koRendererViewModel: ReturnType<typeof buildWorkReportViewModel> | null = null;
-  try {
-    koRendererViewModel = buildWorkReportViewModel(report, {
-      viewerIsReportA,
-      myName,
-      partnerName,
-      locale,
-    });
-  } catch (err) {
-    if (process.env.NODE_ENV !== "production") {
-      console.error(
-        "[WorkColleagueReportView] buildWorkReportViewModel failed, falling back to legacy view",
-        err,
-      );
+  if (workReportSupportsNewRenderer(report)) {
+    try {
+      koRendererViewModel = buildWorkReportViewModel(report, {
+        viewerIsReportA,
+        myName,
+        partnerName,
+        locale,
+      });
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error(
+          "[WorkColleagueReportView] buildWorkReportViewModel failed, falling back to legacy view",
+          err,
+        );
+      }
     }
   }
   if (koRendererViewModel) {

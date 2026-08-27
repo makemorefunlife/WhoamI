@@ -14,6 +14,7 @@
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 import type { RomanticV4PrototypePayload } from "../types";
 import type { BirthHourDisclosureCode } from "./romanticV4HourEvidence";
+import { buildCanonicalRelationshipStoryPlan } from "../buildCanonicalRelationshipStoryPlan";
 
 /**
  * Stores the full RomanticV4PrototypePayload, not just CanonicalRomanticV4Report —
@@ -70,6 +71,62 @@ export function isStaleRomanticV4Block(v4: RomanticV4PersistedBlock | null): boo
   if (!plan.romanticGapBatch.physicalIntimacy) return true;
   if (!plan.romanticGapBatch.conflictTransitions) return true;
   return false;
+}
+
+/**
+ * Resolve what the client should receive for Romantic V4 this request.
+ *
+ * A stale persisted block (missing the newer gap-batch narrative — see
+ * isStaleRomanticV4Block) gets exactly one best-effort in-place upgrade
+ * attempt, re-deriving just the gap-batch narrative from the block's own
+ * stored contract/canonicalReport. If that attempt cannot even run (missing
+ * inputs) or throws, the block MUST be treated as unavailable — returning
+ * the untouched stale payload here would let the caller serve it to the
+ * client under the "current V4" field with no way for the client to tell a
+ * successfully-patched block from an unpatched-stale one. Contrast with the
+ * old inline version of this logic, which on catch preserved and returned
+ * the stale payload as-is; this function returns null instead, so the
+ * caller's response omits the field entirely and the client falls through
+ * to its existing V2/legacy renderer — the same honest "unavailable" path
+ * already used everywhere the block is simply absent.
+ */
+export function resolveRomanticV4ForResponse(
+  byKind: RawByKind,
+  locale: Locale | string,
+): RomanticV4PrototypePayload | null {
+  const persistedV4Block = readRomanticV4Block(byKind, locale);
+  if (!persistedV4Block) return null;
+  if (!isStaleRomanticV4Block(persistedV4Block)) return persistedV4Block.payload;
+
+  try {
+    const contract =
+      persistedV4Block.payload.preNarrativeContract ??
+      (persistedV4Block.payload as any).contract;
+    const canonicalReport =
+      persistedV4Block.payload.canonicalReport ??
+      (persistedV4Block.payload as any).report;
+    if (!contract || !canonicalReport) return null;
+
+    const freshPlan = buildCanonicalRelationshipStoryPlan({
+      contract,
+      report: canonicalReport,
+      axisResults: (persistedV4Block.payload as any).axisOverview || [],
+      locale: locale as any,
+      reportYear: new Date().getFullYear(),
+      fortuneFlow: (persistedV4Block.payload as any).fortuneFlow,
+    });
+    if (!freshPlan || !freshPlan.romanticGapBatch) return null;
+
+    return {
+      ...persistedV4Block.payload,
+      storyPlan: {
+        ...persistedV4Block.payload.storyPlan,
+        romanticGapBatch: freshPlan.romanticGapBatch,
+      },
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**

@@ -875,17 +875,31 @@ export function buildMarriageReportViewModel(
     buildMarriageChapter07Intelligence({
       nameA: canonicalNames[0],
       nameB: canonicalNames[1],
-      psychA: (report.meta as any)?.psych_master_a ?? null,
-      psychB: (report.meta as any)?.psych_master_b ?? null,
+      // report.meta.psych_master_a/b was never a real field (see
+      // buildMarriageReport.ts's meta object) — that always read as null,
+      // so this rebuild silently used no psych input even when real psych
+      // data existed. The real per-person psych source is meta.person_core,
+      // written from the same params.psychMasterA/B this report was
+      // generated with (buildMarriageReport.ts:463-475).
+      psychA: report.meta?.person_core?.psych_a ?? null,
+      psychB: report.meta?.person_core?.psych_b ?? null,
       countsA: (report.household?.section_dna?.person_a?.ten_gods as any) ?? {},
       countsB: (report.household?.section_dna?.person_b?.ten_gods as any) ?? {},
       locale,
     });
 
-  const chapter08Intelligence =
-    canonicalBundle?.chapter08Intelligence ??
-    report.chapter08Intelligence ??
-    undefined;
+  // report.chapter08Intelligence is not a field on MarriageReportBody — it
+  // was always undefined and never functioned as a real fallback. Chapter 08
+  // has no client-side rebuild (unlike Chapter 07): the staleness guard
+  // (isStaleCohabitationReportBlock) now requires chapter08Intelligence to
+  // be present in the persisted bundle before a report is ever considered
+  // current, so a report reaching this view model through the normal read
+  // path already has it. If it's still absent here (e.g. a record reached
+  // through a path that bypasses that guard), the chapter renders as
+  // genuinely absent (MarriageChapter08View returns null) rather than
+  // fabricating content — that is the correct behavior for missing data,
+  // not a gap to fill.
+  const chapter08Intelligence = canonicalBundle?.chapter08Intelligence ?? undefined;
 
   const deepReadOverlay = report.meta?.married_saju_deep;
   const chapter1ExpertVoice = normalizeChapter1ExpertVoice(deepReadOverlay, canonicalNames);

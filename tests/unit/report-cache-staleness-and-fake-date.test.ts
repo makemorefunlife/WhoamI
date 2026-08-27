@@ -237,6 +237,223 @@ assert.strictEqual(stringified.includes("NaN"), false, "Report JSON must not con
 assert.strictEqual(stringified.includes("undefined"), false, "Report JSON must not contain 'undefined' strings");
 console.log("✓ Missing pairFriendship degrades gracefully without fake dummy evidence or NaN/undefined");
 
+// ==========================================
+// Fallback Remediation Phase 1 regression tests
+// ==========================================
+
+// Test 10: Marriage staleness — bundle present but missing Chapter 07/08
+// must be STALE. Before the Phase 1 fix, isStaleCohabitationReportBlock
+// accepted any truthy marriage_canonical_bundle as sufficient on its own
+// (the `hasCanonicalPlan` OR-branch), regardless of whether chapter07/08
+// were inside it — this is the exact shape a report generated between
+// 2026-08-13 and 2026-08-25 would have had.
+const marriageBundlePresentButNoChapters = {
+  format: "cohabitation_deep_v1",
+  report: {
+    canonical_projections: {
+      marriage_canonical_bundle: {
+        // chapter07Intelligence / chapter08Intelligence intentionally absent
+        someOtherField: true,
+      },
+      marriage_canonical_story_plan: {
+        chapters: [{ chapterId: "c1_who_we_are" }],
+      },
+    },
+    household: {
+      section_dna: { person_a: {}, person_b: {} },
+    },
+  },
+};
+assert.strictEqual(
+  isStaleCohabitationReportBlock(marriageBundlePresentButNoChapters),
+  true,
+  "A marriage report whose bundle exists but lacks chapter07/08 must be stale — this is the confirmed 2026-08-13→08-25 gap window",
+);
+console.log("✓ Marriage staleness gap window (bundle without ch07/08) now correctly rejected");
+
+// Test 11: Marriage staleness — story_plan alone (no bundle at all) must also
+// be stale now. Before the fix, story_plan presence alone satisfied
+// hasCanonicalPlan too.
+const marriageStoryPlanOnlyNoBundle = {
+  format: "cohabitation_deep_v1",
+  report: {
+    canonical_projections: {
+      marriage_canonical_story_plan: { chapters: [{ chapterId: "c1_who_we_are" }] },
+    },
+    household: { section_dna: { person_a: {}, person_b: {} } },
+  },
+};
+assert.strictEqual(
+  isStaleCohabitationReportBlock(marriageStoryPlanOnlyNoBundle),
+  true,
+  "story_plan alone (no bundle, no chapter07/08) must be stale",
+);
+console.log("✓ Marriage story-plan-only (no chapter intelligence) correctly rejected");
+
+// Re-verify Test 4's fully-modern fixture is still accepted after tightening
+// (regression guard — the fix must not make current-shaped reports stale).
+assert.strictEqual(
+  isStaleCohabitationReportBlock(modernMarriagePayload),
+  false,
+  "A fully modern Marriage payload (ch07+ch08+householdDna) must still pass after tightening",
+);
+console.log("✓ Fully modern Marriage payload still accepted (no regression)");
+
+// Test 12 & 13: Romantic resolveRomanticV4ForResponse
+import { resolveRomanticV4ForResponse } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
+
+function buildStaleByKind(payload: any) {
+  // isStaleRomanticV4Block flags a block stale when storyPlan.romanticGapBatch
+  // (or its physicalIntimacy/conflictTransitions sub-fields) is absent.
+  const stalePayload = {
+    ...payload,
+    storyPlan: payload.storyPlan ? { ...payload.storyPlan, romanticGapBatch: undefined } : undefined,
+  };
+  return {
+    romantic: {
+      byLocale: {
+        "ko-KR": {
+          v4: {
+            schemaVersion: "romantic_canonical_report_v1",
+            payload: stalePayload,
+            birthHourDisclosure: "disclosed",
+            generatedAt: new Date().toISOString(),
+          },
+        },
+      },
+    },
+  };
+}
+
+// Test 12: stale block, but preNarrativeContract + canonicalReport ARE present
+// (the block realV4Payload already has both, per Test 6 above) — the upgrade
+// attempt should succeed and return a payload with romanticGapBatch populated.
+const byKindUpgradeable = buildStaleByKind(realV4Payload);
+const upgraded = resolveRomanticV4ForResponse(byKindUpgradeable as any, "ko-KR");
+assert.ok(upgraded, "A stale-but-upgradeable V4 block must resolve to a non-null payload");
+assert.ok(
+  (upgraded as any)?.storyPlan?.romanticGapBatch,
+  "A successfully upgraded payload must have romanticGapBatch populated",
+);
+console.log("✓ Romantic stale V4 + successful upgrade returns upgraded payload");
+
+// Test 13: stale block where the upgrade CANNOT run at all — both
+// preNarrativeContract and canonicalReport are stripped, so
+// resolveRomanticV4ForResponse must return null rather than the stale
+// payload. This is the confirmed unsafe behavior from the audit: the old
+// inline code's catch block preserved and returned the stale payload as if
+// it were current.
+const unupgradeablePayload = {
+  ...realV4Payload,
+  preNarrativeContract: undefined,
+  canonicalReport: undefined,
+};
+const byKindUnupgradeable = buildStaleByKind(unupgradeablePayload);
+const failedUpgradeResult = resolveRomanticV4ForResponse(byKindUnupgradeable as any, "ko-KR");
+assert.strictEqual(
+  failedUpgradeResult,
+  null,
+  "A stale V4 block that cannot be safely upgraded must resolve to null, never the stale payload itself",
+);
+console.log("✓ Romantic stale V4 + failed upgrade returns null, NOT the stale payload — no more silent stale-serving");
+
+// Test 14: Family — missing canonical fields must not fabricate saju/psych,
+// and must not crash (the old buildFamilyRoleIntelligence call was never
+// imported in buildFamilyReportViewModel.ts, which threw a ReferenceError
+// whenever that branch was reached).
+import { buildFamilyReportViewModel } from "@/lib/relationship/familyParent/viewModel/buildFamilyReportViewModel";
+
+const familyFixtureMissingCanonicalFields: any = {
+  headline: "Test family",
+  summary_line: "test",
+  one_line_family: "test",
+  snapshot_panel: { gauges: [] },
+  family: {
+    section_snapshot: { one_line_family: "test" },
+    section_household_roles: {
+      self_name: "Kid",
+      partner_name: "Mom",
+      self_role_label: "helper",
+      partner_role_label: "anchor",
+      // parent_normal_label intentionally absent — this used to trigger the
+      // fake-mock-pillar + unimported-function branch
+    },
+  },
+  meta: {
+    nickname_a: "Kid",
+    nickname_b: "Mom",
+    // psych_master_a / psych_master_b intentionally absent too
+  },
+};
+
+let familyViewModel: ReturnType<typeof buildFamilyReportViewModel> | null = null;
+let familyThrew: unknown = null;
+try {
+  familyViewModel = buildFamilyReportViewModel(familyFixtureMissingCanonicalFields, { locale: "ko-KR" });
+} catch (err) {
+  familyThrew = err;
+}
+assert.strictEqual(
+  familyThrew,
+  null,
+  `buildFamilyReportViewModel must not throw when canonical fields are missing (was a live ReferenceError before the fix): ${familyThrew}`,
+);
+const familyJson = JSON.stringify(familyViewModel);
+assert.strictEqual(
+  familyJson.includes("2020-08-20") || familyJson.includes("1993-05-15"),
+  false,
+  "Family view model output must never contain the old hardcoded fake birth dates",
+);
+console.log("✓ Family view model handles missing canonical fields without crashing or fabricating fake saju data");
+
+// Test 15: Friend — missing canonical/context chart sources must not fall
+// back to the hardcoded dummy chart (갑자/갑자/정해/갑자 and 갑자/갑자/무진/갑자).
+import { buildFriendReportViewModel } from "@/lib/relationship/friend/viewModel/buildFriendReportViewModel";
+
+const friendFixtureLegacyDnaNoChart: any = {
+  friend: {
+    section_social_dna_a: {
+      // Old-shaped: missing four_slot_profile/situation_snapshots/pair_synthesis,
+      // and using a literal old title string — both trigger isLegacyA.
+      social_title: "파티 히어로",
+    },
+    section_social_dna_b: {
+      social_title: "아지트 수호자",
+    },
+  },
+  meta: {
+    nickname_a: "A",
+    nickname_b: "B",
+    // canonical_bundle absent, and no context_output below — no real chart
+    // source is recoverable, so no fabricated chart must be used either.
+  },
+};
+
+let friendThrew: unknown = null;
+let friendViewModel: ReturnType<typeof buildFriendReportViewModel> | null = null;
+try {
+  friendViewModel = buildFriendReportViewModel(friendFixtureLegacyDnaNoChart, {
+    viewerIsReportA: true,
+    myName: "A",
+    partnerName: "B",
+    locale: "ko-KR",
+  });
+} catch (err) {
+  friendThrew = err;
+}
+assert.strictEqual(friendThrew, null, `buildFriendReportViewModel must not throw: ${friendThrew}`);
+const friendJson = JSON.stringify(friendViewModel);
+// The dummy chart's day-pillar stem/branch combos are distinctive enough
+// (정해 / 무진 day pillars only ever appeared from the removed fallback) to
+// use as a fabrication signal, but the real assertion that matters is that
+// the old legacy title strings are left untouched rather than silently
+// replaced by output derived from a fabricated chart.
+assert.ok(
+  friendJson.includes("파티 히어로") || !friendJson.includes("social_title"),
+  "Without a real chart source, the legacy social_title must be left as-is, not regenerated from a fabricated chart",
+);
+console.log("✓ Friend view model does not fabricate a dummy chart when no real chart source is recoverable");
+
 console.log("==========================================");
 console.log("ALL STALENESS GUARD AND P1 FIX UNIT TESTS PASSED!");
 console.log("==========================================");
