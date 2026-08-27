@@ -15,7 +15,7 @@ export default function HomeAuthSignInPanel() {
       fallbackRedirectUrl={href(ROUTES.home)}
       appearance={{
         variables: {
-          colorPrimary: "#4a90e2",
+          colorPrimary: "#1a3328",
           borderRadius: "0.75rem",
           fontSize: "0.9375rem",
         },
@@ -25,12 +25,12 @@ export default function HomeAuthSignInPanel() {
           headerTitle: "hidden",
           headerSubtitle: "hidden",
           socialButtonsBlockButton:
-            "border-slate-200 bg-white hover:bg-slate-50 text-slate-800",
+            "border-outline-variant/40 bg-white hover:bg-surface-container-low text-on-surface",
           formButtonPrimary:
-            "bg-gradient-to-r from-[#6bb5ff] to-[#4a90e2] hover:opacity-95",
-          footerAction: "text-[#4a90e2]",
-          identityPreviewText: "text-slate-700",
-          formFieldInput: "border-slate-200 bg-white text-slate-900",
+            "bg-gradient-to-r from-secondary to-primary hover:opacity-95",
+          footerAction: "text-primary",
+          identityPreviewText: "text-on-surface",
+          formFieldInput: "border-outline-variant/40 bg-white text-on-surface",
         },
       }}
     />

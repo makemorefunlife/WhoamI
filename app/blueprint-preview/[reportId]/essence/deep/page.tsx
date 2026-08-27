@@ -129,17 +129,17 @@ function EssenceDeepContent() {
           <button
             type="button"
             className="stitch-cta-primary w-full disabled:opacity-60"
+            onClick={() => router.push(localize(resultsDashboardPath(reportId)))}
+          >
+            {messages.blueprint.backToDashboard}
+          </button>
+          <button
+            type="button"
+            className="stitch-cta-secondary w-full disabled:opacity-60"
             onClick={() => regenerateFresh()}
             disabled={loading}
           >
             {loading ? messages.blueprint.regenerating : messages.blueprint.regenerate}
-          </button>
-          <button
-            type="button"
-            className="stitch-cta-secondary w-full"
-            onClick={() => router.push(localize(resultsDashboardPath(reportId)))}
-          >
-            {messages.blueprint.backToDashboard}
           </button>
           {error ? (
             <button

@@ -900,7 +900,7 @@ export const messagesKoKR: MessageCatalog = {
     footerPhilosophy: "나를 오해하지 말고,\n이해하세요.",
     footerDesc: "과학적 데이터를 활용해\n나와 관계를 이해하는 더 나은 관점을 만듭니다.",
     footerTagline: "과학적 데이터를 활용해 나와 관계를 이해하는 더 나은 관점을 만듭니다.",
-    authModalTitle: "탐사를 이어가려면",
+    authModalTitle: "분석을 이어가려면",
     authModalBody: "Google 계정으로 빠르게 시작하거나, 이메일로 로그인할 수 있어요.",
   },
   dock: {

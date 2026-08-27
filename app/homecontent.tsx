@@ -20,7 +20,11 @@ import { hasSurveyV2Session } from "@/lib/v2/survey/session";
 import { setStitchAuthHandler } from "@/lib/stitch/authBridge";
 import { resolveEntryDestination } from "@/lib/routing/resolveEntryDestination";
 import type { EntryIntent } from "@/lib/routing/resolveEntryDestination";
-import { resolveHubHrefForIntent } from "@/lib/stitch/hubPaths";
+import {
+  resolveHubHrefForIntent,
+  blueprintPath,
+  relationHubPath,
+} from "@/lib/stitch/hubPaths";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -355,7 +359,7 @@ export default function HomeContent() {
           >
             <button
               type="button"
-              className="absolute inset-0 bg-white/88 backdrop-blur-xl"
+              className="absolute inset-0 bg-primary/40 backdrop-blur-sm"
               aria-label={messages.common.close}
               onClick={() => setAuthModalOpen(false)}
             />
@@ -367,25 +371,25 @@ export default function HomeContent() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 12, scale: 0.99 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-[101] w-full max-w-[420px] rounded-2xl border border-slate-200/90 bg-white/95 p-5 shadow-[0_24px_64px_rgba(15,23,42,0.12)] backdrop-blur-sm sm:p-6"
+              className="relative z-[101] w-full max-w-[420px] rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-5 shadow-2xl sm:p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="text-left">
                   <h2
                     id="auth-modal-title"
-                    className="text-lg font-semibold tracking-tight text-slate-800"
+                    className="stitch-headline text-lg font-bold tracking-tight text-primary"
                   >
                     {messages.landing.authModalTitle}
                   </h2>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                  <p className="mt-1 text-sm leading-relaxed text-on-surface-variant/80">
                     {messages.landing.authModalBody}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAuthModalOpen(false)}
-                  className="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  className="shrink-0 rounded-full p-2 text-on-surface-variant/60 transition hover:bg-secondary/10 hover:text-on-surface"
                   aria-label={messages.common.close}
                 >
                   <span className="block text-xl leading-none">×</span>
