@@ -490,8 +490,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   --v4-good-soft: rgba(47, 107, 79, 0.12);
   --v4-bad: #c1443a;
   --v4-bad-soft: rgba(193, 68, 58, 0.1);
-  --font-rel-serif-stack: "Noto Serif KR", Georgia, serif;
-  --font-rel-sans-stack: "Noto Sans KR", ui-sans-serif, system-ui, sans-serif;
+  --font-rel-serif-stack: var(--font-noto-serif-kr), "Noto Serif KR", Georgia, serif;
+  --font-rel-sans-stack: var(--font-noto-sans-kr), "Noto Sans KR", ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {

@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, IBM_Plex_Mono, Lora, Manrope } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  IBM_Plex_Mono,
+  Lora,
+  Manrope,
+  Noto_Sans_KR,
+  Noto_Serif_KR,
+} from "next/font/google";
 import AppClerkProvider from "@/components/clerk/AppClerkProvider";
 import FirstEntryDiagnostics from "@/components/debug/FirstEntryDiagnostics";
 import ConditionalAppChrome from "@/components/layout/ConditionalAppChrome";
@@ -35,6 +43,25 @@ const manrope = Manrope({
 
 const lora = Lora({
   variable: "--font-lora-var",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/**
+ * Relationship report typography (app/globals.css --font-rel-sans-stack /
+ * --font-rel-serif-stack) named these fonts but never actually loaded them —
+ * every Korean glyph in the Friend/Marriage/Romantic reports was silently
+ * falling back to whatever Korean font the OS/browser substituted, which
+ * varied by weight and looked inconsistent within the same page.
+ */
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-sans-kr",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
   subsets: ["latin"],
   display: "swap",
 });
@@ -110,7 +137,7 @@ export default async function RootLayout({
   return (
     <html
       lang={htmlLang}
-      className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} ${manrope.variable} ${lora.variable} ${notoSansKr.variable} ${notoSerifKr.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <script
