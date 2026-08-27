@@ -16,7 +16,8 @@
     "test:pre-payment-qa": "node tests/scripts/pre-payment-qa-check.mjs",
     "test:verify-attraction": "npx tsx tests/scripts/verify-attraction-vertical-slice.ts",
     "test:verify-three-chapters": "npx tsx tests/scripts/verify-three-chapters-vertical-slice.ts",
-    "test:verify-ce": "npx tsx tests/scripts/verify-romantic-v4-rendered-ce.ts"
+    "test:verify-ce": "npx tsx tests/scripts/verify-romantic-v4-rendered-ce.ts",
+    "typecheck:relationship": "node tests/scripts/check-relationship-typecheck-baseline.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.0",

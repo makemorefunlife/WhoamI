@@ -56,6 +56,7 @@ export default function RelationshipView({
     displayPremium,
     displayRomanticDeep,
     displayRomanticDeepV4,
+    romanticV4Enabled,
     displayWorkDeep,
     displayCohabitationDeep,
     displayFamilyDeep,
@@ -280,6 +281,7 @@ export default function RelationshipView({
               displayPremium={displayPremium}
               displayRomanticDeep={displayRomanticDeep}
               displayRomanticDeepV4={displayRomanticDeepV4}
+              romanticV4Enabled={romanticV4Enabled}
               displayWorkDeep={displayWorkDeep}
               displayCohabitationDeep={displayCohabitationDeep}
               displayFamilyDeep={displayFamilyDeep}

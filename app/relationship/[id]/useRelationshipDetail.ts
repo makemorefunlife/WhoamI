@@ -93,6 +93,7 @@ export type UseRelationshipDetailReturn = {
   displayRomanticDeep: RomanticDeepViewModel | null;
   displayRomanticMeta: RomanticDeepMetaViewModel | null;
   displayRomanticDeepV4: RomanticV4PrototypePayload | null;
+  romanticV4Enabled: boolean;
   displayWorkDeep: WorkColleagueReportBody | null;
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
@@ -166,6 +167,8 @@ export function useRelationshipDetail({
   );
   const [romanticDeepV4, setRomanticDeepV4] =
     useState<RomanticV4PrototypePayload | null>(null);
+  /** See app/api/relationship/detail/route.ts's romantic_v4_enabled comment. */
+  const [romanticV4Enabled, setRomanticV4Enabled] = useState(false);
   const [workDeep, setWorkDeep] = useState<WorkColleagueReportBody | null>(
     null,
   );
@@ -346,6 +349,7 @@ export function useRelationshipDetail({
         setRomanticDeepV4(
           (data.romantic_deep_report_v4 ?? null) as RomanticV4PrototypePayload | null,
         );
+        setRomanticV4Enabled(data.romantic_v4_enabled === true);
         setWorkDeep(
           (data.work_colleague_deep_report ?? null) as WorkColleagueReportBody | null,
         );
@@ -879,6 +883,7 @@ export function useRelationshipDetail({
     displayRomanticDeep,
     displayRomanticMeta,
     displayRomanticDeepV4,
+    romanticV4Enabled,
     displayWorkDeep,
     displayCohabitationDeep,
     displayFamilyDeep,

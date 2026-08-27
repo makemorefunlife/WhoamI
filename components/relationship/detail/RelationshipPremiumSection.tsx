@@ -18,6 +18,7 @@ import type { FamilyParentReportBody } from "@/lib/relationship/familyParent/bui
 import type { FriendReportBody } from "@/lib/relationship/friend/buildFriendReport";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
 import { shouldRenderRomanticExperienceV2 } from "@/lib/relationship/romantic/experience/romanticExperienceFlag";
+import { resolveRomanticRenderMode } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 
@@ -35,6 +36,8 @@ type RelationshipPremiumSectionProps = {
   displayPremium: RelationshipPerspective | null;
   displayRomanticDeep: RomanticSajuDeepReport["report"] | null;
   displayRomanticDeepV4?: RomanticV4PrototypePayload | null;
+  /** See app/api/relationship/detail/route.ts's romantic_v4_enabled comment. */
+  romanticV4Enabled?: boolean;
   displayWorkDeep: WorkColleagueReportBody | null;
   displayCohabitationDeep: MarriageReportBody | null;
   displayFamilyDeep: FamilyParentReportBody | null;
@@ -59,6 +62,7 @@ export default function RelationshipPremiumSection({
   displayPremium,
   displayRomanticDeep,
   displayRomanticDeepV4 = null,
+  romanticV4Enabled = false,
   displayWorkDeep,
   displayCohabitationDeep,
   displayFamilyDeep,
@@ -78,6 +82,12 @@ export default function RelationshipPremiumSection({
   const kindLabel = messages.report.relationshipKindNames[premiumKind];
   /** Romantic-only; other kinds never read this path. Default = legacy. */
   const useRomanticExperienceV2 = shouldRenderRomanticExperienceV2(premiumKind);
+  /** Phase 2 current-version lock — see resolveRomanticRenderMode's own doc comment. */
+  const romanticRenderMode = resolveRomanticRenderMode({
+    hasV4: Boolean(displayRomanticDeepV4),
+    v4Enabled: romanticV4Enabled,
+    hasLegacyPayload: Boolean(displayRomanticDeep),
+  });
 
   async function handleGenerateClick() {
     if (submitting) return;
@@ -126,11 +136,11 @@ export default function RelationshipPremiumSection({
           {localError}
         </p>
       ) : null}
-      {premiumKind === "romantic" && displayRomanticDeepV4 ? (
+      {premiumKind === "romantic" && romanticRenderMode === "v4" && displayRomanticDeepV4 ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
           <RomanticV4ReportView payload={displayRomanticDeepV4} />
         </div>
-      ) : premiumKind === "romantic" && displayRomanticDeep ? (
+      ) : premiumKind === "romantic" && romanticRenderMode === "legacy" && displayRomanticDeep ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
           {useRomanticExperienceV2 ? (
             <RomanticExperienceView

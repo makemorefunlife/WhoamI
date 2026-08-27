@@ -152,11 +152,18 @@ export async function GET(req: Request) {
     // flag is on AND a persisted V4 block exists AND is either current or
     // was successfully upgraded in place. A stale block that cannot be
     // safely upgraded resolves to null here (see resolveRomanticV4ForResponse's
-    // own doc comment) — it is never served to the client under this field,
-    // so the client's existing "V4 absent" path (fall through to V2/legacy)
-    // is what a failed upgrade produces, not a stale report masquerading as current.
+    // own doc comment) — it is never served to the client under this field.
+    //
+    // romanticV4Enabled (separate from field-presence) tells the client
+    // *why* the field might be absent: if the flag is on, an absent V4
+    // block means this specific report needs a current-version regenerate
+    // (see RelationshipPremiumSection.tsx's Romantic branch — Phase 2
+    // current-version lock), not "fall through to V2/legacy". Only when the
+    // flag itself is off (an intentional per-environment rollback) does
+    // falling through to V2/legacy remain the correct, expected behavior.
+    const romanticV4Enabled = isRomanticV4ReportEnabled();
     const romanticDeepReportV4 =
-      activeKind === "romantic" && isRomanticV4ReportEnabled()
+      activeKind === "romantic" && romanticV4Enabled
         ? resolveRomanticV4ForResponse(byKind as unknown as Record<string, unknown>, locale)
         : null;
 
@@ -227,7 +234,15 @@ export async function GET(req: Request) {
             : activeKind === "friendship"
               ? Boolean(friendshipDeepReport)
               : activeKind === "romantic"
-                ? Boolean(romanticDeepReportV4 || romanticDeepReport)
+                ? // When V4 is enabled for this environment, "ready" means a
+                  // current V4 report specifically — a V1-only report no
+                  // longer counts as ready, so the client shows its existing
+                  // generate/regenerate affordance instead of silently
+                  // rendering V2/legacy. When V4 is off (intentional
+                  // environment-level rollback), V1 readiness is unchanged.
+                  romanticV4Enabled
+                  ? Boolean(romanticDeepReportV4)
+                  : Boolean(romanticDeepReport)
                 : false;
 
     const responseBody: Record<string, unknown> = {
@@ -255,6 +270,8 @@ export async function GET(req: Request) {
       perspective_premium: perspectivePremium,
       romantic_deep_report: romanticDeepReport,
       romantic_deep_report_v4: romanticDeepReportV4,
+      /** See romanticV4Enabled comment above — lets the client distinguish "V4 off in this environment" from "V4 on but unavailable for this report". */
+      romantic_v4_enabled: romanticV4Enabled,
       work_colleague_deep_report: workColleagueDeepReport,
       cohabitation_deep_report: cohabitationDeepReport,
       family_deep_report: familyDeepReport,

@@ -454,6 +454,48 @@ assert.ok(
 );
 console.log("✓ Friend view model does not fabricate a dummy chart when no real chart source is recoverable");
 
+// ==========================================
+// Phase 2 — current-version lock regression tests
+// ==========================================
+
+// Test 16: Romantic renderer-selection semantics (resolveRomanticRenderMode).
+// This is the actual function RelationshipPremiumSection.tsx calls to decide
+// what to render — not a parallel copy of the logic — so this test protects
+// production behavior directly, not just an approximation of it.
+import { resolveRomanticRenderMode } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
+
+// 16a: valid V4 present -> always "v4", regardless of flag or legacy payload.
+assert.strictEqual(
+  resolveRomanticRenderMode({ hasV4: true, v4Enabled: true, hasLegacyPayload: true }),
+  "v4",
+  "A present V4 block must always render as v4",
+);
+
+// 16b: V4 unavailable but V4 IS this environment's current version -> "empty",
+// never "legacy" — this is the core Phase 2 invariant: an unavailable current
+// version must not silently fall through to an old renderer.
+assert.strictEqual(
+  resolveRomanticRenderMode({ hasV4: false, v4Enabled: true, hasLegacyPayload: true }),
+  "empty",
+  "V4 enabled but unavailable for this report must resolve to empty (explicit regenerate state), NOT legacy — even when an old V1 payload exists",
+);
+
+// 16c: V4 disabled for this environment (intentional rollback) + legacy
+// payload present -> "legacy" remains correct, unchanged behavior.
+assert.strictEqual(
+  resolveRomanticRenderMode({ hasV4: false, v4Enabled: false, hasLegacyPayload: true }),
+  "legacy",
+  "V4 disabled at the environment level must still allow legacy rendering — this is an intentional rollback, not a per-report gap",
+);
+
+// 16d: V4 disabled + no legacy payload either -> "empty".
+assert.strictEqual(
+  resolveRomanticRenderMode({ hasV4: false, v4Enabled: false, hasLegacyPayload: false }),
+  "empty",
+  "No V4 and no legacy payload must resolve to empty regardless of the flag",
+);
+console.log("✓ Romantic current-version lock (resolveRomanticRenderMode) never silently selects legacy when V4 is the intended current version");
+
 console.log("==========================================");
 console.log("ALL STALENESS GUARD AND P1 FIX UNIT TESTS PASSED!");
 console.log("==========================================");

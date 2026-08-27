@@ -1,0 +1,5 @@
+{
+  "maxErrorCount": 514,
+  "measuredAt": "2026-08-27",
+  "note": "Set from the actual tsc --noEmit error count under app/api/relationship, app/relationship, components/relationship, and lib/relationship as of the Fallback Remediation Phase 2 commit. See tests/scripts/check-relationship-typecheck-baseline.mjs."
+}

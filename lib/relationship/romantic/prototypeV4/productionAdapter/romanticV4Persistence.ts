@@ -129,6 +129,36 @@ export function resolveRomanticV4ForResponse(
   }
 }
 
+export type RomanticRenderMode = "v4" | "legacy" | "empty";
+
+/**
+ * Phase 2 current-version lock — the single source of truth for which
+ * Romantic renderer a report should show, given only the three signals the
+ * client actually has: whether a current V4 block is present, whether V4 is
+ * the intended current version for this environment, and whether an older
+ * V1 payload exists.
+ *
+ * - V4 present -> always "v4", regardless of the flag (a persisted current
+ *   block is always safe to show).
+ * - V4 absent AND V4 enabled -> "empty", never "legacy". An absent V4 block
+ *   while V4 is this environment's intended current version means this
+ *   report needs a current-version (re)generate, not a silent drop to an
+ *   older report shape.
+ * - V4 absent AND V4 disabled (an intentional per-environment rollback) ->
+ *   "legacy" when a V1 payload exists, else "empty". This is the only case
+ *   where showing V2/legacy remains correct — the environment has
+ *   explicitly opted out of V4 entirely, not "this one report's V4 failed".
+ */
+export function resolveRomanticRenderMode(params: {
+  hasV4: boolean;
+  v4Enabled: boolean;
+  hasLegacyPayload: boolean;
+}): RomanticRenderMode {
+  if (params.hasV4) return "v4";
+  if (params.v4Enabled) return "empty";
+  return params.hasLegacyPayload ? "legacy" : "empty";
+}
+
 /**
  * Attach a V4 block onto an already-built V1 romantic payload object, in
  * place, right before it's persisted through the existing
