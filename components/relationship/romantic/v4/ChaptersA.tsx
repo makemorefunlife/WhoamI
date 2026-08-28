@@ -8,7 +8,6 @@
 import { ArrowDown, ArrowRight, RefreshCw, Sparkles } from "lucide-react";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import type { CanonicalSection } from "@/lib/relationship/romantic/prototypeV4/composeCanonicalSectionNarratives";
-import { ChapterSection, PersonTag, Pull, Reveal, SubHeading, Bridge } from "./primitives";
 import { PsychAxisComparisonSection } from "../../shared/psychAxis/PsychAxisComparisonSection";
 import { WhyYouMeUsSection } from "../../shared/whyYouMeUs/WhyYouMeUsSection";
 import {
@@ -19,7 +18,16 @@ import {
   adaptRadarAxes,
   adaptRadarHighlights,
 } from "./adaptCanonicalSection";
-import { VersusStrip, Evidence } from "../../shared/editorial/EditorialPrimitives";
+import {
+  ChapterSection,
+  PersonTag,
+  Pull,
+  Reveal,
+  SubHeading,
+  Bridge,
+  VersusStrip,
+  Evidence,
+} from "../../shared/editorial/EditorialPrimitives";
 
 export type SectionProps = {
   payload: RomanticV4PrototypePayload;
@@ -135,6 +143,7 @@ export const DynamicsSection = ({ section, n, debug }: SectionProps) => {
       title={section.title}
       tint="cream"
       defaultOpen
+      spacing="spacious"
     >
       <div className="space-y-5">
         {states.map((s, i) => (
@@ -219,6 +228,8 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
       label={section.userQuestion}
       title={section.title}
       tint="cream"
+      defaultOpen={false}
+      spacing="spacious"
     >
       {/* Final Cleanup pass, item 1 — when the engine has confirmed both
           people share one genuine baseline (romanticGapBatch.conflictTransitions.sharedBaseline),
@@ -253,7 +264,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
       </Reveal>
 
       {payload.storyPlan?.romanticGapBatch?.conflictTransitions && !payload.storyPlan.romanticGapBatch.conflictTransitions.sharedBaseline ? (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
             <PersonTag name={personA} side="a" />
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
@@ -278,7 +289,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
       {data.pairs.length > 0 && (
         <>
           <FlowArrow />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             {data.pairs.map((p, i) => (
               <Reveal key={p.person} delay={i * 80}>
                 <div className="h-full rounded-2xl border border-rel-line bg-rel-surface p-5 shadow-sm">
@@ -350,6 +361,8 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
       n={n}
       label={section.userQuestion}
       title={section.title}
+      defaultOpen={false}
+      spacing="spacious"
     >
       {axes.length > 0 && (
         <div className="mb-14">
@@ -393,7 +406,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
         <div className="mt-12 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
           <SubHeading title="서로가 원하는 사랑 vs 표현하는 사랑" tag="Love Language" tone="coral" />
           <p className="text-xs text-rel-ink-mute">{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.summary}</p>
-          <div className="grid gap-4 sm:grid-cols-2 text-xs">
+          <div className="grid gap-6 md:grid-cols-2 text-xs">
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
               <PersonTag name={personA} side="a" />
               <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>

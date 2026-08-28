@@ -218,7 +218,11 @@ export function Section({
   const invert = tint === "deep";
   return (
     <section id={id} className={`scroll-mt-24 ${bg}`}>
-      <div className="mx-auto w-full max-w-[820px] px-5 py-14 sm:px-8 sm:py-20">
+      {/* Visual Contract §2 Layout — canonical content width max-w-[880px];
+          this container previously drifted to 820px against ChapterSection's
+          880px, the exact 820/880 drift the contract's Approved Normalization
+          #2 calls out. No chart/functional constraint requires 820px here. */}
+      <div className="mx-auto w-full max-w-[880px] px-5 py-14 sm:px-8 sm:py-20">
         <Reveal>
           <header className="mb-9">
             <div className="flex items-center gap-3">
@@ -268,6 +272,16 @@ export function ChapterSection({
   lead,
   tint = "plain",
   defaultOpen = true,
+  /**
+   * Body vertical-rhythm scale. "cozy" (default) is the value Work/Marriage/
+   * Family/Friend already render with. "spacious" matches Romantic V4's
+   * generous chapter rhythm (Visual Contract §4 Spacing — "preserve the
+   * generous existing Romantic chapter rhythm... do not mechanically convert
+   * every margin to a single value"). Kept as an explicit opt-in rather than
+   * changing the shared default, so consolidating this primitive doesn't
+   * silently change any other vertical's spacing.
+   */
+  spacing = "cozy",
   children,
 }: {
   id: string;
@@ -278,10 +292,14 @@ export function ChapterSection({
   lead?: string;
   tint?: "plain" | "cream" | "deep";
   defaultOpen?: boolean;
+  spacing?: "cozy" | "spacious";
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const bg = tint === "deep" ? "bg-rel-deep" : "bg-rel-bg";
+  const bodyPadding =
+    spacing === "spacious" ? "pb-16 pt-10 sm:pb-24 sm:pt-12" : "pb-16 pt-8 sm:pb-20 sm:pt-10";
+  const leadMargin = spacing === "spacious" ? "mb-10" : "mb-8";
 
   return (
     <section id={id} className={`scroll-mt-20 ${bg}`}>
@@ -328,9 +346,9 @@ export function ChapterSection({
           style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}
         >
           <div className="overflow-hidden">
-            <div className="pb-16 pt-8 sm:pb-20 sm:pt-10">
+            <div className={bodyPadding}>
               {lead && (
-                <p className="mb-8 max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft">
+                <p className={`${leadMargin} max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft`}>
                   {lead}
                 </p>
               )}

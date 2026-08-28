@@ -14,13 +14,22 @@ const GAP_HIGHLIGHT_MIN = 12;
 
 const SECONDARY_AXIS_KEY_SET = new Set<string>(SECONDARY_AXIS_KEYS);
 
-/** 사람 폴리곤 — 나=#c49a6c, 상대=#587A8E(연하게) */
-const PERSON_A_FILL = "rgba(196, 154, 108, 0.24)";
-const PERSON_A_STROKE = "rgba(196, 154, 108, 0.95)";
-const PERSON_A_DOT = "rgba(196, 154, 108, 1)";
-const PERSON_B_FILL = "rgba(88, 122, 142, 0.18)";
-const PERSON_B_STROKE = "rgba(88, 122, 142, 0.65)";
-const PERSON_B_DOT = "rgba(88, 122, 142, 0.85)";
+/**
+ * Person A/B polygon colors — Visual Contract §2 Color System / Approved
+ * Normalization #1: Person A is ALWAYS blue (--v4-a), Person B is ALWAYS
+ * warm brown (--v4-b). This previously hardcoded a literal, INVERTED
+ * mapping (A=brown #c49a6c, B=blue #587A8E) that contradicted the rest of
+ * the Relationship system (e.g. Romantic's own MatchRadar.tsx, which
+ * already used var(--v4-a)/var(--v4-b) correctly). Using the same design
+ * tokens both charts already share, rather than a second set of literal
+ * RGB values, so the two radar implementations can't drift again.
+ */
+const PERSON_A_FILL = "var(--v4-a-soft)";
+const PERSON_A_STROKE = "var(--v4-a)";
+const PERSON_A_DOT = "var(--v4-a)";
+const PERSON_B_FILL = "var(--v4-b-soft)";
+const PERSON_B_STROKE = "var(--v4-b)";
+const PERSON_B_DOT = "var(--v4-b)";
 
 const GRID_STROKE = "rgba(34, 31, 43, 0.06)";
 const GRID_STROKE_WIDTH = 0.75;

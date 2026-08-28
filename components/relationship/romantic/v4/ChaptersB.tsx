@@ -11,7 +11,7 @@
 import { ArrowRight, Heart, ShieldCheck } from "lucide-react";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import type { CanonicalSection } from "@/lib/relationship/romantic/prototypeV4/composeCanonicalSectionNarratives";
-import { ChapterSection, PersonTag, Reveal, SubHeading } from "./primitives";
+import { ChapterSection, PersonTag, Reveal, SubHeading } from "../../shared/editorial/EditorialPrimitives";
 import { josa, josaIGa, josaEunNeun, josaGwaWa, josaEulReul, josaEge } from "@/lib/relationship/romantic/prototypeV4/romanticLanguage";
 import {
   adaptHiddenHearts,
@@ -37,7 +37,7 @@ function Panel({
   const t = tone === "deep" ? "text-rel-deep" : "text-rel-taupe";
   return (
     <div className={`px-5 py-5 ${className}`}>
-      <div className={`font-rel-sans text-[10px] uppercase tracking-[0.18em] ${t}`}>{step}</div>
+      <div className={`font-rel-sans text-[10px] uppercase tracking-[0.16em] ${t}`}>{step}</div>
       <p className="mt-2 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">{body}</p>
     </div>
   );
@@ -75,6 +75,8 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
       n={n}
       label={section.userQuestion}
       title={section.title}
+      defaultOpen={false}
+      spacing="spacious"
     >
       {panels.length > 0 && (
         <div className="mb-16">
@@ -106,7 +108,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                   </div>
                   {p.betterExpression && (
                     <div className="border-t border-rel-line bg-rel-deep-soft px-5 py-4">
-                      <div className="font-rel-sans text-[10px] uppercase tracking-[0.18em] text-rel-deep">
+                      <div className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-rel-deep">
                         이렇게 말해보면 좋아요
                       </div>
                       <p className="mt-1.5 font-rel-serif text-[14.5px] leading-[1.75] text-rel-ink">
@@ -144,7 +146,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
 
                 <div className="min-w-0 space-y-7">
                   <div>
-                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.2em] text-rel-taupe">
+                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-taupe">
                       바라는 것
                     </div>
                     <p className="mt-2 font-rel-serif text-[23px] leading-[1.45] tracking-[-0.01em] text-rel-ink sm:text-[27px]">
@@ -153,7 +155,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                   </div>
 
                   <div className="border-l border-rel-taupe/50 pl-5">
-                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.2em] text-rel-taupe">
+                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.22em] text-rel-taupe">
                       두려운 것
                     </div>
                     <p className="mt-2 font-rel-serif text-[18px] leading-[1.6] text-rel-ink sm:text-[19px]">
@@ -162,7 +164,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                   </div>
 
                   <div>
-                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.18em] text-rel-ink-mute">
+                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-rel-ink-mute">
                       그래서 하는 행동
                     </div>
                     <p className="mt-2 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
@@ -171,7 +173,7 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                   </div>
 
                   <div className="rounded-2xl bg-rel-deep-soft px-6 py-5">
-                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.18em] text-rel-deep">
+                    <div className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-rel-deep">
                       알아봐 주면 좋은 것
                     </div>
                     <p className="mt-2 flex items-start gap-2.5 font-rel-serif text-[17px] leading-[1.65] text-rel-ink">
@@ -236,6 +238,8 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
       label={section.userQuestion}
       title={section.title}
       tint="cream"
+      defaultOpen={false}
+      spacing="spacious"
     >
       {/* 1. 각자에게 도움이 되는 것 (What Helps) */}
       {helps.length > 0 && (
@@ -390,6 +394,8 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
       label={section.userQuestion || (isEn ? "Areas to leave open" : "서로를 위해 비워두어야 할 영역")}
       title={section.title || (isEn ? "What Not to Expect" : "서로에게 내려놓아야 할 기대")}
       tint="cream"
+      defaultOpen={false}
+      spacing="spacious"
     >
       <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
         <SubHeading title={isEn ? "Overextending expectations can strain the relationship" : "서로에게 이것까지 요구하면 관계가 힘들어집니다"} tag="What Not to Expect" tone="coral" />
@@ -435,6 +441,8 @@ export const StrengthVulnerabilitySection = ({ section, payload, personA, person
       label={section.userQuestion}
       title={section.title}
       tint="cream"
+      defaultOpen={false}
+      spacing="spacious"
     >
       {/* Mutual Growth & Synergy (Moved from Chapter 05 into Chapter 08 per User Request #4) */}
       {payload.storyPlan?.romanticGapBatch?.chapter06 ? (
@@ -532,6 +540,8 @@ export const FutureTimingSection = ({ section, n, debug }: SectionProps) => {
       n={n}
       label={section.userQuestion}
       title={section.title}
+      defaultOpen={false}
+      spacing="spacious"
     >
       <div className="relative">
         <span
@@ -586,6 +596,8 @@ export const ChoiceSection = ({ section, payload, personA, personB, n, debug }: 
       label={section.userQuestion}
       title={section.title}
       tint="cream"
+      defaultOpen={false}
+      spacing="spacious"
     >
       {possibility && (
         <Reveal>
