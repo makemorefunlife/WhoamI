@@ -1151,19 +1151,29 @@ function CanonicalChapter06ConflictView({
           <span>다시 신뢰하려면 무엇이 먼저 필요할까</span>
         </h3>
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-4 sm:p-5 shadow-sm space-y-2">
-            <p className="font-bold text-emerald-900">🤝 {seqAtoB.fromName} $\rightarrow$ {seqAtoB.toName} 복구 순서</p>
-            <ul className="space-y-1.5 text-rel-ink text-[11px]">
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <NameChip name={seqAtoB.fromName} side="a" />
+              <span className="text-rel-deep font-bold text-xs">→</span>
+              <NameChip name={seqAtoB.toName} side="b" />
+              <span className="font-bold text-rel-deep text-xs">복구 순서</span>
+            </div>
+            <ul className="space-y-1.5 text-rel-ink text-[11px] pt-1">
               {seqAtoB.steps.map((step, i) => (
-                <li key={i} className="leading-relaxed">{step}</li>
+                <li key={i} className="leading-relaxed">• {step}</li>
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-4 sm:p-5 shadow-sm space-y-2">
-            <p className="font-bold text-emerald-900">🤝 {seqBtoA.fromName} $\rightarrow$ {seqBtoA.toName} 복구 순서</p>
-            <ul className="space-y-1.5 text-rel-ink text-[11px]">
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <NameChip name={seqBtoA.fromName} side="b" />
+              <span className="text-rel-deep font-bold text-xs">→</span>
+              <NameChip name={seqBtoA.toName} side="a" />
+              <span className="font-bold text-rel-deep text-xs">복구 순서</span>
+            </div>
+            <ul className="space-y-1.5 text-rel-ink text-[11px] pt-1">
               {seqBtoA.steps.map((step, i) => (
-                <li key={i} className="leading-relaxed">{step}</li>
+                <li key={i} className="leading-relaxed">• {step}</li>
               ))}
             </ul>
           </div>
@@ -1178,37 +1188,44 @@ function CanonicalChapter06ConflictView({
         </h3>
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
-            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{langA.personName}에게 효과적인 사과</span>
+            <div className="flex items-center gap-1.5">
+              <NameChip name={langA.personName} side="a" />
+              <span className="font-bold text-rel-deep text-xs">에게 효과적인 사과</span>
+            </div>
             <p className="text-rel-ink-soft text-[11px]">선호 스타일: {langA.preferredStyle}</p>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-emerald-800">✅ 효과적인 문구:</p>
+              <p className="font-bold text-emerald-800">▫ 효과적인 문구:</p>
               {langA.effectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink text-[11px]">{phrase}</p>
               ))}
             </div>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-red-800">❌ 피해야 할 문구:</p>
+              <p className="font-bold text-red-800">▫ 피해야 할 문구:</p>
               {langA.ineffectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink-soft text-[11px]">{phrase}</p>
               ))}
             </div>
           </div>
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
-            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{langB.personName}에게 효과적인 사과</span>
+            <div className="flex items-center gap-1.5">
+              <NameChip name={langB.personName} side="b" />
+              <span className="font-bold text-rel-deep text-xs">에게 효과적인 사과</span>
+            </div>
             <p className="text-rel-ink-soft text-[11px]">선호 스타일: {langB.preferredStyle}</p>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-emerald-800">✅ 효과적인 문구:</p>
+              <p className="font-bold text-emerald-800">▫ 효과적인 문구:</p>
               {langB.effectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink text-[11px]">{phrase}</p>
               ))}
             </div>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-red-800">❌ 피해야 할 문구:</p>
+              <p className="font-bold text-red-800">▫ 피해야 할 문구:</p>
               {langB.ineffectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink-soft text-[11px]">{phrase}</p>
               ))}
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -1906,16 +1923,26 @@ function MistakeRepairCard({
       ) : null}
       {ra ? (
         <div className="space-y-3">
-          <RelationshipReportLabel className="text-emerald-700">🤝 신뢰 회복 및 사과 순서 (Directional Apology Guide)</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-emerald-700">▫ 신뢰 회복 및 사과 순서 (Directional Apology Guide)</RelationshipReportLabel>
           <div className="grid gap-3 sm:grid-cols-2">
             <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
-              <RelationshipReportLabel className="text-emerald-800">{names[0]} $\rightarrow$ {names[1]} 신뢰 회복 순서</RelationshipReportLabel>
+              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                <NameChip name={names[0]} side="a" />
+                <span className="text-emerald-900 font-bold text-xs">→</span>
+                <NameChip name={names[1]} side="b" />
+                <span className="text-emerald-800 text-xs font-semibold">신뢰 회복 순서</span>
+              </div>
               <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
                 {typeof ra.repairAtoB === "object" ? ra.repairAtoB.repairGuidance : ra.repairAtoB}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
             <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
-              <RelationshipReportLabel className="text-emerald-800">{names[1]} $\rightarrow$ {names[0]} 신뢰 회복 순서</RelationshipReportLabel>
+              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                <NameChip name={names[1]} side="b" />
+                <span className="text-emerald-900 font-bold text-xs">→</span>
+                <NameChip name={names[0]} side="a" />
+                <span className="text-emerald-800 text-xs font-semibold">신뢰 회복 순서</span>
+              </div>
               <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
                 {typeof ra.repairBtoA === "object" ? ra.repairBtoA.repairGuidance : ra.repairBtoA}
               </RelationshipReportParagraph>
