@@ -1226,7 +1226,6 @@ function CanonicalChapter06ConflictView({
             </div>
           </div>
         </div>
-        </div>
       </div>
 
       {/* 7. ◤ 이 팀은 갈등 뒤 어떻게 돌아오는 팀일까 (Pair Repair Synthesis) */}
