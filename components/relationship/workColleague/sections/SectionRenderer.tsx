@@ -132,7 +132,7 @@ function ComparisonCard({ section, names }: { section: ComparisonSection; names:
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <DnaCard profile={section.dna.me} accent={ACCENT} />
         <DnaCard profile={section.dna.partner} accent={ACCENT} />
       </div>
@@ -183,7 +183,7 @@ function ComparisonCard({ section, names }: { section: ComparisonSection; names:
 function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <RoleCard card={section.roles.me} accent={ACCENT} />
         <RoleCard card={section.roles.partner} accent={ACCENT} />
       </div>
@@ -194,7 +194,7 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
         </RelationshipReportParagraph>
       ) : null}
       {section.idealFit ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
           <IdealRoleCard fit={section.idealFit.me} accent={ACCENT} />
           <IdealRoleCard fit={section.idealFit.partner} accent={ACCENT} />
         </div>
@@ -2137,7 +2137,7 @@ export function WorkReportViewModelView({
         ];
 
         return (
-          <div className="mx-auto w-full max-w-[820px] px-5 pt-4">
+          <div className="mx-auto w-full max-w-[880px] px-5 pt-4">
             <OverviewSection
               locale={locale}
               eyebrow={pick(locale, "00 · Overview", "00 · 파트너십 한눈에 보기")}

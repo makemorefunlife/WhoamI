@@ -262,7 +262,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
           )}
 
           {/* 2 & 3. 부모 / 자녀 역할 기둥 카드 Grid */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             {/* 부모 역할 */}
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/20 p-4 space-y-3">
               <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">

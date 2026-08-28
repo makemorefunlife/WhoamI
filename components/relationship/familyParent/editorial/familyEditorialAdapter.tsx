@@ -28,7 +28,7 @@ export function RelationshipReportBody({
   className?: string;
 }) {
   return (
-    <div className={`space-y-4 font-rel-sans text-[14.5px] leading-[1.75] text-rel-ink-soft ${className}`}>
+    <div className={`space-y-4 font-rel-sans text-[14.5px] leading-[1.85] text-rel-ink-soft ${className}`}>
       {children}
     </div>
   );
@@ -45,7 +45,7 @@ export function RelationshipReportParagraph({
 }) {
   return (
     <p
-      className={`whitespace-pre-wrap font-rel-sans leading-[1.75] ${
+      className={`whitespace-pre-wrap font-rel-sans leading-[1.85] ${
         muted ? "text-rel-ink-mute" : "text-rel-ink-soft"
       } ${className}`}
     >
@@ -161,7 +161,7 @@ export function FamilyEditorialHero({
   const [nameA, nameB] = names;
   return (
     <header className="relative overflow-hidden">
-      <div className="mx-auto w-full max-w-[820px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
+      <div className="mx-auto w-full max-w-[880px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
         {eyebrow ? (
           <p className="font-rel-sans text-[10px] uppercase tracking-[0.3em] text-rel-deep">{eyebrow}</p>
         ) : null}
