@@ -24,6 +24,7 @@ import RelationshipReportCard, {
   RelationshipReportInset,
   WorkEditorialHero,
 } from "@/components/relationship/workColleague/editorial/workEditorialAdapter";
+import { NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { WorkChapterNav, WorkChapterSection } from "@/components/relationship/workColleague/chapters/WorkChapterShell";
 import TriScoreSnapshotPanel from "@/components/relationship/TriScoreSnapshotPanel";
 import { OverviewSection } from "@/components/relationship/shared/overview/OverviewSection";
@@ -133,8 +134,8 @@ function ComparisonCard({ section, names }: { section: ComparisonSection; names:
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <div className="grid gap-6 md:grid-cols-2">
-        <DnaCard profile={section.dna.me} accent={ACCENT} />
-        <DnaCard profile={section.dna.partner} accent={ACCENT} />
+        <DnaCard profile={section.dna.me} accent={ACCENT} side="a" />
+        <DnaCard profile={section.dna.partner} accent={ACCENT} side="b" />
       </div>
       <RelationshipReportBody className="mt-4">
         <div>
@@ -184,8 +185,8 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <div className="grid gap-6 md:grid-cols-2">
-        <RoleCard card={section.roles.me} accent={ACCENT} />
-        <RoleCard card={section.roles.partner} accent={ACCENT} />
+        <RoleCard card={section.roles.me} accent={ACCENT} side="a" />
+        <RoleCard card={section.roles.partner} accent={ACCENT} side="b" />
       </div>
       {section.synergyOneLiner ? (
         <RelationshipReportParagraph className="mt-4 flex items-start gap-2 italic">
@@ -195,8 +196,8 @@ function RoleMatrixCard({ section }: { section: RoleMatrixSection }) {
       ) : null}
       {section.idealFit ? (
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <IdealRoleCard fit={section.idealFit.me} accent={ACCENT} />
-          <IdealRoleCard fit={section.idealFit.partner} accent={ACCENT} />
+          <IdealRoleCard fit={section.idealFit.me} accent={ACCENT} side="a" />
+          <IdealRoleCard fit={section.idealFit.partner} accent={ACCENT} side="b" />
         </div>
       ) : null}
       {section.togetherCombo ? (
@@ -304,8 +305,8 @@ function WarningCard({ section }: { section: WarningSection }) {
       </RelationshipReportBody>
       {section.upset ? (
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <UpsetGuideCard guide={section.upset.me} />
-          <UpsetGuideCard guide={section.upset.partner} />
+          <UpsetGuideCard guide={section.upset.me} side="a" />
+          <UpsetGuideCard guide={section.upset.partner} side="b" />
         </div>
       ) : null}
       {section.feedbackCushion ? (
@@ -341,8 +342,8 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
           <RelationshipReportParagraph>{section.weeklyCheckIn.evidence.summary}</RelationshipReportParagraph>
           <ul className="mt-3 list-inside list-disc space-y-1">
             {section.weeklyCheckIn.do_list.map((item) => (
-              <li key={item}>
-                <RelationshipReportParagraph>{item}</RelationshipReportParagraph>
+              <li key={item} className="font-rel-sans text-[13px] sm:text-[14px] leading-relaxed text-rel-ink">
+                {item}
               </li>
             ))}
           </ul>
@@ -357,8 +358,10 @@ function PrescriptionCard({ section }: { section: PrescriptionSection }) {
 
 function UserQuestionBanner({ question }: { question: string }) {
   return (
-    <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/25 px-4 py-3 text-xs font-medium tracking-wide text-rel-deep sm:px-5">
-      💡 <span className="font-semibold">{question}</span>
+    <div className="my-5 border-l-[3px] border-[#1b3b2b]/80 pl-3.5 py-0.5">
+      <p className="font-rel-sans text-[13.5px] font-medium leading-relaxed text-rel-ink">
+        {question}
+      </p>
     </div>
   );
 }
@@ -392,7 +395,7 @@ function CanonicalRoleMapCard({
           <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.directionOwner)}</p>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-emerald-700">⚡ 실제 구현 & 빠른 실행 (Execution)</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-emerald-700">▫ 실제 구현 & 빠른 실행 (Execution)</RelationshipReportLabel>
           <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.executionOwner)}</p>
         </RelationshipReportInset>
         <RelationshipReportInset>
@@ -400,7 +403,7 @@ function CanonicalRoleMapCard({
           <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.qaRiskOwner)}</p>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-purple-700">🎤 대외 발표 & 메인 스피커 (External Lead)</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-amber-800">▫ 대외 발표 & 메인 스피커 (External Lead)</RelationshipReportLabel>
           <p className="mt-1 text-sm font-bold text-rel-ink">{getOwnerLabel(map.externalOwner)}</p>
         </RelationshipReportInset>
       </div>
@@ -432,22 +435,16 @@ function IndividualWorkStyleCards({
   return (
     <div className="space-y-2.5 text-xs my-4 p-4 rounded-2xl bg-rel-taupe-soft/30 border border-rel-line/40">
       <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
-        <span>◤</span>
+        <span className="text-[#8c7c72]">◤</span>
         <span>개인별 일 스타일</span>
       </h4>
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
-          <p className="font-bold text-rel-deep text-xs flex items-center gap-1">
-            <span>▫</span>
-            <span>{names[0]}의 일 스타일</span>
-          </p>
+        <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-2 shadow-sm">
+          <NameChip name={names[0]} side="a" />
           <p className="text-rel-ink-soft leading-relaxed text-[11.5px] mt-1">{meText}</p>
         </div>
-        <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
-          <p className="font-bold text-rel-deep text-xs flex items-center gap-1">
-            <span>▫</span>
-            <span>{names[1]}의 일 스타일</span>
-          </p>
+        <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-2 shadow-sm">
+          <NameChip name={names[1]} side="b" />
           <p className="text-rel-ink-soft leading-relaxed text-[11.5px] mt-1">{partnerText}</p>
         </div>
       </div>
@@ -525,11 +522,11 @@ function FinalBoundaryCard({
       <SubHeading title="상대방 경계선 및 존중 가이드 (영역 수칙)" tag="RESPECT" tone="coral" />
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1.5">
-          <p className="font-bold text-amber-900">🛡️ {names[0]}의 영역</p>
+          <p className="font-bold text-amber-900">▫ {names[0]}의 영역</p>
           <p className="text-amber-800/90 leading-relaxed text-[11px]">{meBoundary}</p>
         </div>
         <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1.5">
-          <p className="font-bold text-amber-900">🛡️ {names[1]}의 영역</p>
+          <p className="font-bold text-amber-900">▫ {names[1]}의 영역</p>
           <p className="text-amber-800/90 leading-relaxed text-[11px]">{partnerBoundary}</p>
         </div>
       </div>
@@ -636,22 +633,28 @@ function CanonicalChapter04CommunicationView({
         <p className="text-rel-ink-soft text-[11px] italic">"어떤 조건에서 피드백이 잘 수용되고, 무엇을 어려워하는가?"</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}에게 피드백이 잘 들어오는 조건</span>
-            <p className="font-bold text-emerald-800 text-[11.5px]">✅ {pA.feedbackStyle.easyConditionTitle}</p>
+            <div className="border-b border-rel-line/30 pb-1 mb-1">
+              <NameChip name={pA.name} side="a" />
+              <span className="font-bold text-rel-deep text-xs ml-1.5">에게 피드백이 잘 들어오는 조건</span>
+            </div>
+            <p className="font-bold text-emerald-800 text-[11.5px]">▫ {pA.feedbackStyle.easyConditionTitle}</p>
             <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pA.feedbackStyle.easyConditionExplanation}</p>
-            <p className="font-bold text-amber-900 text-[11.5px] pt-1">❌ {pA.feedbackStyle.hardConditionTitle}</p>
+            <p className="font-bold text-amber-900 text-[11.5px] pt-1">▫ {pA.feedbackStyle.hardConditionTitle}</p>
             <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pA.feedbackStyle.hardConditionExplanation}</p>
           </div>
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}에게 피드백이 잘 들어오는 조건</span>
-            <p className="font-bold text-emerald-800 text-[11.5px]">✅ {pB.feedbackStyle.easyConditionTitle}</p>
+            <div className="border-b border-rel-line/30 pb-1 mb-1">
+              <NameChip name={pB.name} side="b" />
+              <span className="font-bold text-rel-deep text-xs ml-1.5">에게 피드백이 잘 들어오는 조건</span>
+            </div>
+            <p className="font-bold text-emerald-800 text-[11.5px]">▫ {pB.feedbackStyle.easyConditionTitle}</p>
             <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pB.feedbackStyle.easyConditionExplanation}</p>
-            <p className="font-bold text-amber-900 text-[11.5px] pt-1">❌ {pB.feedbackStyle.hardConditionTitle}</p>
+            <p className="font-bold text-amber-900 text-[11.5px] pt-1">▫ {pB.feedbackStyle.hardConditionTitle}</p>
             <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pB.feedbackStyle.hardConditionExplanation}</p>
           </div>
         </div>
         <div className="rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line/40 space-y-1">
-          <p className="font-bold text-rel-deep text-xs">💡 {bundle.feedbackPairInsight.title}</p>
+          <p className="font-bold text-rel-deep text-xs">▫ {bundle.feedbackPairInsight.title}</p>
           <p className="text-rel-ink-soft text-[11.5px] leading-relaxed">{bundle.feedbackPairInsight.summary}</p>
         </div>
       </div>
@@ -662,26 +665,32 @@ function CanonicalChapter04CommunicationView({
         <p className="text-rel-ink-soft text-[11px] italic">"의사결정 전에 각자 무엇을 확인해야 안심하는가?"</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 안심 판단 기준</span>
+            <div className="border-b border-rel-line/30 pb-1 mb-1">
+              <NameChip name={pA.name} side="a" />
+              <span className="font-bold text-rel-deep text-xs ml-1.5">의 안심 판단 기준</span>
+            </div>
             {pA.decisionCriteria.map((c, i) => (
               <div key={i} className="space-y-0.5">
-                <p className="font-bold text-rel-deep text-[11.5px]">🎯 {c.title}</p>
+                <p className="font-bold text-rel-deep text-[11.5px]">▫ {c.title}</p>
                 <p className="text-rel-ink-soft text-[10.5px]">{c.question}</p>
               </div>
             ))}
           </div>
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 안심 판단 기준</span>
+            <div className="border-b border-rel-line/30 pb-1 mb-1">
+              <NameChip name={pB.name} side="b" />
+              <span className="font-bold text-rel-deep text-xs ml-1.5">의 안심 판단 기준</span>
+            </div>
             {pB.decisionCriteria.map((c, i) => (
               <div key={i} className="space-y-0.5">
-                <p className="font-bold text-rel-deep text-[11.5px]">🎯 {c.title}</p>
+                <p className="font-bold text-rel-deep text-[11.5px]">▫ {c.title}</p>
                 <p className="text-rel-ink-soft text-[10.5px]">{c.question}</p>
               </div>
             ))}
           </div>
         </div>
         <div className="rounded-xl bg-amber-50/60 p-3.5 border border-amber-200/60 space-y-1">
-          <p className="font-bold text-amber-900 text-xs">⚖️ {bundle.decisionTension.title}</p>
+          <p className="font-bold text-amber-900 text-xs">▫ {bundle.decisionTension.title}</p>
           <p className="text-amber-800/90 text-[11.5px] leading-relaxed">{bundle.decisionTension.summary}</p>
         </div>
       </div>
@@ -691,19 +700,24 @@ function CanonicalChapter04CommunicationView({
         <SubHeading title="누가 언제 결정을 확정하는 게 좋을까" tag="DECISION FLOW" tone="deep" />
         <p className="text-rel-ink-soft text-[11px] italic">"주체적인 owner가 상대의 input을 어떻게 수용하고 결정을 닫는가?"</p>
         <div className="space-y-2.5">
-          {bundle.decisionFlowItems.map((item, idx) => (
-            <div key={idx} className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-rel-deep text-xs">{item.decisionTypeTitle}</span>
-                <span className="rounded-full bg-rel-deep/10 text-rel-deep text-[10px] font-bold px-2 py-0.5">
-                  Owner: {item.primaryOwner}
-                </span>
+          {bundle.decisionFlowItems.map((item, idx) => {
+            const isPersonA = item.primaryOwner === pA.name || item.primaryOwner.includes(pA.name);
+            const side = isPersonA ? "a" : "b";
+            return (
+              <div key={idx} className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-1 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-rel-deep text-xs">{item.decisionTypeTitle}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10.5px] font-bold text-rel-deep/80">Owner:</span>
+                    <NameChip name={item.primaryOwner} side={side} />
+                  </div>
+                </div>
+                <p className="text-[11px] text-rel-ink-soft leading-relaxed pt-0.5">
+                  • <strong>권한 및 인풋:</strong> {item.inputRole}의 점검 수용 → {item.closureGuide}
+                </p>
               </div>
-              <p className="text-[11px] text-rel-ink-soft leading-relaxed pt-0.5">
-                • <strong>권한 및 인풋:</strong> {item.inputRole}의 점검 수용 → {item.closureGuide}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -878,13 +892,19 @@ function CanonicalChapter05PressureView({
         <SubHeading title="문제가 터졌을 때 첫 반응" tone="deep" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 첫 반응</span>
-            <p className="font-bold text-rel-deep text-[11.5px]">🚨 `{pA.emergencyFirstMove.sequenceLabel}`</p>
+            <div className="border-b border-rel-line/30 pb-1 mb-1">
+              <NameChip name={pA.name} side="a" />
+              <span className="font-bold text-rel-deep text-xs ml-1.5">의 첫 반응</span>
+            </div>
+            <p className="font-bold text-rel-deep text-[11.5px]">▫ {pA.emergencyFirstMove.sequenceLabel}</p>
             <p className="text-[10.5px] text-rel-ink-soft leading-relaxed">{pA.emergencyFirstMove.explanation}</p>
           </div>
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 첫 반응</span>
-            <p className="font-bold text-rel-deep text-[11.5px]">🚨 `{pB.emergencyFirstMove.sequenceLabel}`</p>
+            <div className="border-b border-rel-line/30 pb-1 mb-1">
+              <NameChip name={pB.name} side="b" />
+              <span className="font-bold text-rel-deep text-xs ml-1.5">의 첫 반응</span>
+            </div>
+            <p className="font-bold text-rel-deep text-[11.5px]">▫ {pB.emergencyFirstMove.sequenceLabel}</p>
             <p className="text-[10.5px] text-rel-ink-soft leading-relaxed">{pB.emergencyFirstMove.explanation}</p>
           </div>
         </div>
@@ -894,13 +914,13 @@ function CanonicalChapter05PressureView({
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
         <SubHeading title="둘 다 압박받으면 어떤 팀이 될까" tone="coral" />
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1 shadow-sm">
-            <p className="font-bold text-emerald-900 text-xs">💪 {bundle.pairStressInteraction.strengthTitle}</p>
+          <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1.5 shadow-sm">
+            <p className="font-bold text-emerald-900 text-xs">▫ {bundle.pairStressInteraction.strengthTitle}</p>
             <p className="text-[11px] text-emerald-800/90 leading-relaxed">{bundle.pairStressInteraction.strengthSummary}</p>
           </div>
-          <div className="rounded-xl bg-amber-50/60 p-4 border border-amber-200/60 space-y-1 shadow-sm">
-            <p className="font-bold text-amber-900 text-xs">⚠️ {bundle.pairStressInteraction.bottleneckTitle}</p>
-            <p className="text-[11px] text-amber-800/90 leading-relaxed">{bundle.pairStressInteraction.bottleneckSummary}</p>
+          <div className="rounded-xl bg-red-50/60 p-4 border border-red-200/60 space-y-1.5 shadow-sm">
+            <p className="font-bold text-red-900 text-xs">▫ {bundle.pairStressInteraction.bottleneckTitle}</p>
+            <p className="text-[11px] text-red-800/90 leading-relaxed">{bundle.pairStressInteraction.bottleneckSummary}</p>
           </div>
         </div>
       </div>
@@ -993,7 +1013,7 @@ function CanonicalChapter06ConflictView({
       {/* 1. ◤ 우리는 어디에서 가장 부딪힐까 */}
       <div className="space-y-4">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>우리는 어디에서 가장 부딪힐까</span>
         </h3>
         <div className="space-y-3">
@@ -1023,38 +1043,38 @@ function CanonicalChapter06ConflictView({
       {/* 2. ◤ 한번 꼬이면 어떻게 더 커질까 (Conflict Loop) */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>한번 꼬이면 어떻게 더 커질까</span>
         </h3>
-        <div className="rounded-2xl border border-amber-200/60 bg-amber-50/40 p-4 sm:p-5 shadow-sm space-y-3 text-xs">
-          <div className="font-semibold text-amber-900 flex items-center gap-1.5">
-            <span>🔄</span>
+        <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
+          <div className="font-semibold text-rel-deep flex items-center gap-1.5">
+            <span className="text-[#8c7c72]">▫</span>
             <span>갈등 에스컬레이션 루프 (Conflict Loop)</span>
           </div>
           <div className="grid gap-2 sm:grid-cols-3">
-            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
-              <p className="font-bold text-amber-900 text-[11px]">1. 트리거 발생</p>
+            <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
+              <p className="font-bold text-rel-deep text-[11px]">1. 트리거 발생</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.trigger}</p>
             </div>
-            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
-              <p className="font-bold text-amber-900 text-[11px]">2. {names[0]}의 행동</p>
+            <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
+              <p className="font-bold text-rel-deep text-[11px]">2. {names[0]}의 행동</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personAAction}</p>
             </div>
-            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
-              <p className="font-bold text-amber-900 text-[11px]">3. {names[1]}의 해석</p>
+            <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
+              <p className="font-bold text-rel-deep text-[11px]">3. {names[1]}의 해석</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personBInterpretation}</p>
             </div>
-            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
-              <p className="font-bold text-amber-900 text-[11px]">4. {names[1]}의 방어</p>
+            <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
+              <p className="font-bold text-rel-deep text-[11px]">4. {names[1]}의 방어</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personBDefense}</p>
             </div>
-            <div className="rounded-xl bg-white/70 p-3 border border-amber-100/80">
-              <p className="font-bold text-amber-900 text-[11px]">5. {names[0]}의 재해석</p>
+            <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
+              <p className="font-bold text-rel-deep text-[11px]">5. {names[0]}의 재해석</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personAReinterpretation}</p>
             </div>
-            <div className="rounded-xl bg-amber-100/70 p-3 border border-amber-200">
-              <p className="font-bold text-amber-950 text-[11px]">6. 최종 결과</p>
-              <p className="text-amber-950 font-semibold text-[11.5px] mt-1">{bundle.conflictLoop.operationalConsequence}</p>
+            <div className="rounded-xl bg-rel-deep-soft/60 p-3 border border-rel-deep/20">
+              <p className="font-bold text-rel-deep text-[11px]">6. 최종 결과</p>
+              <p className="text-rel-ink font-semibold text-[11.5px] mt-1">{bundle.conflictLoop.operationalConsequence}</p>
             </div>
           </div>
         </div>
@@ -1063,7 +1083,7 @@ function CanonicalChapter06ConflictView({
       {/* 3. ◤ 서로의 어떤 실수에 특히 민감할까 (Directional Sensitivity) */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>서로의 어떤 실수에 특히 민감할까</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
@@ -1095,7 +1115,7 @@ function CanonicalChapter06ConflictView({
       {/* 4. ◤ 신뢰가 흔들리는 진짜 이유 (Trust Currency) */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>신뢰가 흔들리는 진짜 이유 (Trust Currency)</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
@@ -1127,7 +1147,7 @@ function CanonicalChapter06ConflictView({
       {/* 5. ◤ 다시 신뢰하려면 무엇이 먼저 필요할까 (Directional Repair Sequence) */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>다시 신뢰하려면 무엇이 먼저 필요할까</span>
         </h3>
         <div className="grid grid-cols-2 gap-3 text-xs">
@@ -1153,7 +1173,7 @@ function CanonicalChapter06ConflictView({
       {/* 6. ◤ 같은 사과도 이렇게 해야 잘 들어온다 (Person-Specific Repair Language) */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>같은 사과도 이렇게 해야 잘 들어온다</span>
         </h3>
         <div className="grid grid-cols-2 gap-3 text-xs">
@@ -1193,12 +1213,12 @@ function CanonicalChapter06ConflictView({
       </div>
 
       {/* 7. ◤ 이 팀은 갈등 뒤 어떻게 돌아오는 팀일까 (Pair Repair Synthesis) */}
-      <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 sm:p-5 shadow-sm space-y-2 text-xs">
-        <h4 className="font-rel-sans text-xs font-bold text-purple-900 flex items-center gap-1.5">
-          <span>💜</span>
+      <div className="rounded-2xl border border-rel-deep/20 bg-rel-deep-soft/60 p-4 sm:p-5 shadow-sm space-y-2 text-xs">
+        <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
+          <span className="text-[#8c7c72]">▫</span>
           <span>{synth.synthesisTitle}</span>
         </h4>
-        <p className="text-purple-950 font-semibold leading-relaxed">{synth.resilienceSummary}</p>
+        <p className="text-rel-ink font-semibold leading-relaxed">{synth.resilienceSummary}</p>
         <p className="text-rel-ink-soft text-[11px] pt-1">{synth.bridgeToPlaybook}</p>
       </div>
 
@@ -1206,7 +1226,7 @@ function CanonicalChapter06ConflictView({
       {bundle.upsetReconciliationA ? (
         <div className="space-y-4 pt-4 border-t border-rel-line/40 text-xs">
           <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-            <span>◤</span>
+            <span className="text-[#8c7c72]">◤</span>
             <span>서로 마음이 상했을 때(삐졌을 때) 1:1 대화 해독 수칙</span>
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -1303,7 +1323,7 @@ function CanonicalChapter07PlaybookView({
       {/* 1. ◤ 이 조합의 최적 운영 방식 */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>이 조합의 최적 운영 방식</span>
         </h3>
         <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-4">
@@ -1342,7 +1362,7 @@ function CanonicalChapter07PlaybookView({
       {/* 2. ◤ 서로와 일할 때 DO / DON'T */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>서로와 일할 때 DO / DON'T</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
@@ -1397,7 +1417,7 @@ function CanonicalChapter07PlaybookView({
       {/* 3. ◤ 같이 일할 때 꼭 맞춰둘 규칙 */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>같이 일할 때 꼭 맞춰둘 규칙</span>
         </h3>
         <div className="grid gap-2.5 sm:grid-cols-2">
@@ -1406,7 +1426,7 @@ function CanonicalChapter07PlaybookView({
               <span className="rounded-md bg-rel-deep/10 text-rel-deep font-bold text-[10px] px-2 py-0.5 inline-block">{rule.ruleType} RULE</span>
               <p className="font-bold text-rel-deep text-xs">{rule.title}</p>
               <p className="text-rel-ink text-[11px] leading-relaxed">• {rule.instruction}</p>
-              {rule.whyLine ? <p className="text-rel-ink-soft text-[10.5px]">💡 {rule.whyLine}</p> : null}
+              {rule.whyLine ? <p className="text-rel-ink-soft text-[10.5px]">▫ {rule.whyLine}</p> : null}
             </div>
           ))}
         </div>
@@ -1415,36 +1435,51 @@ function CanonicalChapter07PlaybookView({
       {/* 4. ◤ 일이 꼬였을 때 비상 운영법 */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>일이 꼬였을 때 비상 운영법</span>
         </h3>
         <div className="grid gap-3 sm:grid-cols-3">
-          {triage.map((item, idx) => (
-            <div key={idx} className="rounded-2xl border border-amber-200/60 bg-amber-50/40 p-4 shadow-sm space-y-1.5">
-              <p className="font-bold text-amber-900 text-xs">🚨 {item.functionName}</p>
-              <p className="text-[10.5px] font-semibold text-amber-800">Owner: {item.ownerName}</p>
-              <p className="text-amber-900/90 text-[11px] leading-relaxed">{item.responsibility}</p>
-            </div>
-          ))}
+          {triage.map((item, idx) => {
+            const isPersonA = item.ownerName === names[0] || item.ownerName.includes(names[0]);
+            const side = isPersonA ? "a" : "b";
+            return (
+              <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-4 shadow-sm space-y-1.5">
+                <p className="font-bold text-rel-deep text-xs">▫ {item.functionName}</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10.5px] font-bold text-rel-deep/80">Owner:</span>
+                  <NameChip name={item.ownerName} side={side} />
+                </div>
+                <p className="text-rel-ink text-[11px] leading-relaxed">{item.responsibility}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* 5. ◤ 서로에게서 얻게 되는 것 */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>서로에게서 얻게 되는 것</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 sm:p-5 shadow-sm space-y-1.5">
-            <span className="font-bold text-purple-900 text-xs">{growth.aFromB.personName} $\leftarrow$ {growth.aFromB.fromName}</span>
-            <p className="font-bold text-purple-950 text-[11.5px]">🌱 {growth.aFromB.capabilityToLearn}</p>
-            <p className="text-purple-900/90 text-[11px] leading-relaxed">{growth.aFromB.explanation}</p>
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <NameChip name={growth.aFromB.personName} side="a" />
+              <span className="text-rel-deep font-bold text-xs">←</span>
+              <NameChip name={growth.aFromB.fromName} side="b" />
+            </div>
+            <p className="font-bold text-rel-deep text-[11.5px]">▫ {growth.aFromB.capabilityToLearn}</p>
+            <p className="text-rel-ink-soft text-[11px] leading-relaxed">{growth.aFromB.explanation}</p>
           </div>
-          <div className="rounded-2xl border border-purple-200/60 bg-purple-50/40 p-4 sm:p-5 shadow-sm space-y-1.5">
-            <span className="font-bold text-purple-900 text-xs">{growth.bFromA.personName} $\leftarrow$ {growth.bFromA.fromName}</span>
-            <p className="font-bold text-purple-950 text-[11.5px]">🌱 {growth.bFromA.capabilityToLearn}</p>
-            <p className="text-purple-900/90 text-[11px] leading-relaxed">{growth.bFromA.explanation}</p>
+          <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <NameChip name={growth.bFromA.personName} side="b" />
+              <span className="text-rel-deep font-bold text-xs">←</span>
+              <NameChip name={growth.bFromA.fromName} side="a" />
+            </div>
+            <p className="font-bold text-rel-deep text-[11.5px]">▫ {growth.bFromA.capabilityToLearn}</p>
+            <p className="text-rel-ink-soft text-[11px] leading-relaxed">{growth.bFromA.explanation}</p>
           </div>
         </div>
       </div>
@@ -1452,24 +1487,24 @@ function CanonicalChapter07PlaybookView({
       {/* 6. ◤ 이 팀이 오래 잘 가기 위한 운영 습관 */}
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-          <span>◤</span>
+          <span className="text-[#8c7c72]">◤</span>
           <span>이 팀이 오래 잘 가기 위한 운영 습관</span>
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
           {routines.map((rt, idx) => (
-            <div key={idx} className="rounded-2xl border border-sky-200/60 bg-sky-50/40 p-4 shadow-sm space-y-1.5">
-              <p className="font-bold text-sky-900 text-xs">🗓️ {rt.routineName}</p>
-              <p className="text-[10.5px] font-semibold text-sky-800">포맷: {rt.format}</p>
-              <p className="text-sky-900/90 text-[11px] leading-relaxed">목적: {rt.purpose}</p>
+            <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-4 shadow-sm space-y-1.5">
+              <p className="font-bold text-rel-deep text-xs">▫ {rt.routineName}</p>
+              <p className="text-[10.5px] font-semibold text-rel-deep/80">포맷: {rt.format}</p>
+              <p className="text-rel-ink text-[11px] leading-relaxed">목적: {rt.purpose}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* 7. ◤ 이 팀의 한 가지 원칙 */}
-      <div className="rounded-2xl border border-rel-deep bg-rel-deep/5 p-5 shadow-sm space-y-2">
+      <div className="rounded-2xl border border-rel-deep/20 bg-rel-deep-soft/60 p-5 shadow-sm space-y-2">
         <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
-          <span>💡</span>
+          <span className="text-[#8c7c72]">▫</span>
           <span>이 팀의 한 가지 원칙</span>
         </h4>
         <p className="font-bold text-rel-deep text-sm leading-relaxed">{principle.principleTitle}</p>
@@ -1480,16 +1515,17 @@ function CanonicalChapter07PlaybookView({
       {bundle.collaborationSafetyMatrix ? (
         <div className="space-y-4 pt-6 border-t border-rel-line/40 text-xs">
           <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-            <span>◤</span>
-            <span>이 팀을 위한 협업 안전 장치 (Safety Matrix)</span>
+            <span className="text-[#8c7c72]">◤</span>
+            <span>이 팀을 위한 협업 안전 장치</span>
           </h3>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-4">
             {/* Person A Safety Table */}
             <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
-              <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
-                🛡️ {bundle.collaborationSafetyMatrix.personAName}의 협업 안전 장치
-              </span>
+              <div className="flex items-center gap-2">
+                <NameChip name={bundle.collaborationSafetyMatrix.personAName} side="a" />
+                <span className="text-rel-deep font-bold text-xs">의 협업 안전 장치</span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11px] border-collapse">
                   <thead>
@@ -1514,9 +1550,10 @@ function CanonicalChapter07PlaybookView({
 
             {/* Person B Safety Table */}
             <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
-              <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
-                🛡️ {bundle.collaborationSafetyMatrix.personBName}의 협업 안전 장치
-              </span>
+              <div className="flex items-center gap-2">
+                <NameChip name={bundle.collaborationSafetyMatrix.personBName} side="b" />
+                <span className="text-rel-deep font-bold text-xs">의 협업 안전 장치</span>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11px] border-collapse">
                   <thead>
@@ -1737,7 +1774,7 @@ function EmergencyTriageRulesCard({
 
         <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1.5 shadow-sm">
           <p className="font-bold text-emerald-900 flex items-center gap-1">
-            <span>🛡️</span>
+            <span>▫</span>
             <span>최소 품질 기준선</span>
           </p>
           <p className="text-[10.5px] font-semibold text-emerald-800">품질 Gate Owner: {qualityGateOwner}</p>
@@ -1746,7 +1783,7 @@ function EmergencyTriageRulesCard({
 
         <div className="rounded-xl bg-sky-50/60 p-4 border border-sky-200/60 space-y-1.5 shadow-sm">
           <p className="font-bold text-sky-900 flex items-center gap-1">
-            <span>🔋</span>
+            <span>▫</span>
             <span>버퍼 확보 & 과부하 방지 처방</span>
           </p>
           <p className="text-[10.5px] font-semibold text-sky-800">마감 24시간 전 검토 버퍼</p>
@@ -1778,7 +1815,7 @@ function CrunchModeCard({
         {/* 1. 평소 vs 마감 압박 시 변화 */}
         <RelationshipReportInset className="border-amber-100 bg-amber-50/60">
           <RelationshipReportLabel className="text-amber-700 font-bold">
-            {isEn ? "🚨 1. How Work Styles Shift Under Tight Deadlines" : "🚨 1. 평소와 다른 마감 압박 시 일하는 방식의 변화"}
+            {isEn ? "1. How Work Styles Shift Under Tight Deadlines" : "1. 평소와 다른 마감 압박 시 일하는 방식의 변화"}
           </RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
             {cmd.normalVsDeadlineShift}
@@ -1788,17 +1825,23 @@ function CrunchModeCard({
         {/* 2. 개인별 압박 반응 */}
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-sky-700 font-semibold">
-              ⚡ {isEn ? `${names[0]}'s Action Shift Under Pressure` : `${names[0]}님의 마감 속 행동 변화`}
-            </RelationshipReportLabel>
+            <div className="flex items-center gap-2 mb-1">
+              <NameChip name={names[0]} side="a" />
+              <span className="text-xs font-semibold text-sky-700">
+                {isEn ? "Action Shift Under Pressure" : "마감 속 행동 변화"}
+              </span>
+            </div>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.personAPressureShift}
             </RelationshipReportParagraph>
           </RelationshipReportInset>
           <RelationshipReportInset>
-            <RelationshipReportLabel className="text-purple-700 font-semibold">
-              🛡️ {isEn ? `${names[1]}'s Action Shift Under Pressure` : `${names[1]}님의 마감 속 행동 변화`}
-            </RelationshipReportLabel>
+            <div className="flex items-center gap-2 mb-1">
+              <NameChip name={names[1]} side="b" />
+              <span className="text-xs font-semibold text-rel-deep">
+                {isEn ? "Action Shift Under Pressure" : "마감 속 행동 변화"}
+              </span>
+            </div>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.personBPressureShift}
             </RelationshipReportParagraph>
@@ -1809,7 +1852,7 @@ function CrunchModeCard({
         <div className="grid gap-3 sm:grid-cols-2">
           <RelationshipReportInset>
             <RelationshipReportLabel className="text-emerald-700 font-semibold">
-              🧩 {isEn ? "3. Natural Emergency Role Split" : "3. 위기 상황에서의 자연스러운 역할 분담"}
+              {isEn ? "3. Natural Emergency Role Split" : "3. 위기 상황에서의 자연스러운 역할 분담"}
             </RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.crunchRoleSplit}
@@ -1817,7 +1860,7 @@ function CrunchModeCard({
           </RelationshipReportInset>
           <RelationshipReportInset className="border-red-100 bg-red-50/60">
             <RelationshipReportLabel className="text-red-700 font-semibold">
-              ⚡ {isEn ? "4. Potential Friction Point Under Stress" : "4. 마감 압박 속 생길 수 있는 충돌 지점"}
+              {isEn ? "4. Potential Friction Point Under Stress" : "4. 마감 압박 속 생길 수 있는 충돌 지점"}
             </RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
               {cmd.pressureFrictionPoint}
@@ -1905,16 +1948,16 @@ function MutualGrowthCard({
     <RelationshipReportCard title="상호 성장 효과 & 성과 인정 리듬 (Mutual Growth & Credit)" accentColor={ACCENT} showMarker={true}>
       {mg ? (
         <div className="mb-4 space-y-3">
-          <RelationshipReportLabel className="text-purple-700">🌱 함께 일하며 배우는 성장 경로 (Directional Growth)</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-emerald-800">▫ 함께 일하며 배우는 성장 경로 (Directional Growth)</RelationshipReportLabel>
           <div className="grid gap-3 sm:grid-cols-2">
             <RelationshipReportInset>
-              <RelationshipReportLabel>{names[0]} $\rightarrow$ {names[1]}를 통해 발전하는 역량</RelationshipReportLabel>
+              <RelationshipReportLabel>{names[0]} → {names[1]}를 통해 발전하는 역량</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
                 {getGrowthText(mg.aGrowsThroughB)}
               </RelationshipReportParagraph>
             </RelationshipReportInset>
             <RelationshipReportInset>
-              <RelationshipReportLabel>{names[1]} $\rightarrow$ {names[0]}를 통해 발전하는 역량</RelationshipReportLabel>
+              <RelationshipReportLabel>{names[1]} → {names[0]}를 통해 발전하는 역량</RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
                 {getGrowthText(mg.bGrowsThroughA)}
               </RelationshipReportParagraph>
@@ -1962,19 +2005,19 @@ function PlaybookSummaryCard({ meta }: { meta: any }) {
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <RelationshipReportInset className="border-red-100 bg-red-50/60">
-          <RelationshipReportLabel className="text-red-700 font-bold">❌ DON'T: 피해야 할 위험 조합</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-red-700 font-bold">▫ DON'T: 피해야 할 위험 조합</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink">
             {riskyText}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-sky-700 font-bold">📋 MEETING RULE: 회의 전 규칙</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-sky-700 font-bold">▫ MEETING RULE: 회의 전 규칙</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {tvd?.meetingPrep ?? "회의 전 핵심 의안과 사전 생각 정리 시간을 먼저 보장합니다."}
           </RelationshipReportParagraph>
         </RelationshipReportInset>
         <RelationshipReportInset>
-          <RelationshipReportLabel className="text-amber-700 font-bold">🚨 DEADLINE RULE: 마감 압박 규칙</RelationshipReportLabel>
+          <RelationshipReportLabel className="text-amber-700 font-bold">▫ DEADLINE RULE: 마감 압박 규칙</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1 text-xs leading-relaxed text-rel-ink-soft">
             {cmd?.priorityCutLead ?? "마감 시점에는 즉시 핵심 우선순위만 남기고 감정 소모를 차단합니다."}
           </RelationshipReportParagraph>
@@ -2100,7 +2143,7 @@ export function WorkReportViewModelView({
         const overviewCards: OverviewCardData[] = [
           {
             key: "fit",
-            icon: "🔥",
+            icon: "▫",
             label: isEn ? "Work Fit" : "업무적 핏",
             score: overviewBundle.workFitCard.score,
             tone: "good",
@@ -2112,7 +2155,7 @@ export function WorkReportViewModelView({
           },
           {
             key: "synergy",
-            icon: "🧩",
+            icon: "▫",
             label: isEn ? "Collaboration Synergy" : "협업 시너지",
             score: overviewBundle.synergyCard.score,
             tone: "neutral",
@@ -2124,7 +2167,7 @@ export function WorkReportViewModelView({
           },
           {
             key: "risk",
-            icon: "⚡",
+            icon: "▫",
             label: isEn ? "Office Risk" : "오피스 리스크",
             score: overviewBundle.officeRiskCard.score,
             tone: "warn",
@@ -2184,25 +2227,25 @@ export function WorkReportViewModelView({
               num: "01",
               title: isEn ? "01. When a New Project Starts" : lifecycle.kickoff.title,
               body: lifecycle.kickoff.body,
-              icon: "🚀",
+              icon: "▫",
             },
             {
               num: "02",
               title: isEn ? "02. When Work Gets In-Flight" : lifecycle.inFlight.title,
               body: lifecycle.inFlight.body,
-              icon: "🔄",
+              icon: "▫",
             },
             {
               num: "03",
               title: isEn ? "03. When Strengths Click" : lifecycle.synergyMoment.title,
               body: lifecycle.synergyMoment.body,
-              icon: "⚡",
+              icon: "▫",
             },
             {
               num: "04",
               title: isEn ? "04. When Friction Triggers Appear" : lifecycle.frictionMoment.title,
               body: lifecycle.frictionMoment.body,
-              icon: "⚠️",
+              icon: "▫",
             },
           ];
 
@@ -2211,7 +2254,7 @@ export function WorkReportViewModelView({
               {/* Section 1: ◤ 실제로 한 프로젝트에 들어가면 (01 -> 02 -> 03 -> 04) */}
               <div className="space-y-4">
                 <h3 className="font-rel-sans text-base font-bold text-rel-ink flex items-center gap-2 border-b border-rel-line pb-2">
-                  <span>◤</span>
+                  <span className="text-[#8c7c72]">◤</span>
                   <span>{isEn ? "When Assigned to a Real Project" : "실제로 한 프로젝트에 들어가면"}</span>
                 </h3>
                 <div className="space-y-4">
@@ -2232,7 +2275,7 @@ export function WorkReportViewModelView({
               {/* Section 2: ◤ 그래서 이 둘은 어떤 팀인가 (Team Portrait) */}
               <div className="space-y-3">
                 <h3 className="font-rel-sans text-base font-bold text-rel-ink flex items-center gap-2 border-b border-rel-line pb-2">
-                  <span>◤</span>
+                  <span className="text-[#8c7c72]">◤</span>
                   <span>{isEn ? "What Kind of Team Are They?" : "그래서 이 둘은 어떤 팀인가"}</span>
                 </h3>
                 <div className="rounded-2xl bg-rel-deep-soft/60 p-5 sm:p-6 border border-rel-deep/20 space-y-2.5 shadow-sm">
@@ -2277,7 +2320,7 @@ export function WorkReportViewModelView({
               {/* ================================================================ */}
               <div className="space-y-3">
                 <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-                  <span>◤</span>
+                  <span className="text-[#8c7c72]">◤</span>
                   <span>나는 어떻게 일하는 사람인가</span>
                 </h3>
 
@@ -2438,7 +2481,7 @@ export function WorkReportViewModelView({
               {/* ================================================================ */}
               <div className="space-y-3">
                 <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
-                  <span>◤</span>
+                  <span className="text-[#8c7c72]">◤</span>
                   <span>나는 어디에서 강한가</span>
                 </h3>
 

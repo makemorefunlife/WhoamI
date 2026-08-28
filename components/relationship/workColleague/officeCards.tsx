@@ -24,31 +24,33 @@ import {
   RelationshipReportLabel,
   RelationshipReportInset,
 } from "@/components/relationship/workColleague/editorial/workEditorialAdapter";
+import { NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
-function PersonLabel({ name, accent }: { name: string; accent: string }) {
+function PersonLabel({ name, side = "a" }: { name: string; accent?: string; side?: "a" | "b" }) {
   return (
-    <p className="flex items-center gap-1.5 text-sm font-bold text-rel-ink">
-      <User className="h-3.5 w-3.5 shrink-0" style={{ color: accent }} strokeWidth={1.75} aria-hidden />
-      {name}
-    </p>
+    <div className="mb-2">
+      <NameChip name={name} side={side} />
+    </div>
   );
 }
 
 export function DnaCard({
   profile,
   accent,
+  side = "a",
 }: {
   profile: OfficeDnaProfile & {
     nickname: string;
     contribution_style_label?: string | null;
   };
   accent: string;
+  side?: "a" | "b";
 }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <PersonLabel name={profile.nickname} accent={accent} />
+      <PersonLabel name={profile.nickname} side={side} />
       <p className="mt-2 text-base font-semibold" style={{ color: accent }}>
         {profile.character_title}
       </p>
@@ -84,13 +86,11 @@ export function DnaCard({
   );
 }
 
-export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
+export function UpsetGuideCard({ guide, side = "a" }: { guide: OfficeUpsetGuide; side?: "a" | "b" }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <p className="text-sm font-bold text-rel-ink">
-        {t.upsetTitle(guide.nickname)}
-      </p>
+      <PersonLabel name={guide.nickname} side={side} />
       <div className="mt-4 space-y-3">
         <div>
           <RelationshipReportLabel>{t.upsetSignalLabel}</RelationshipReportLabel>
@@ -104,8 +104,8 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {guide.do_list.map((item) => (
-              <li key={item}>
-                <RelationshipReportParagraph>{item}</RelationshipReportParagraph>
+              <li key={item} className="font-rel-sans text-[13px] sm:text-[14px] leading-relaxed text-rel-ink">
+                {item}
               </li>
             ))}
           </ul>
@@ -116,8 +116,8 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
           </RelationshipReportLabel>
           <ul className="mt-2 list-inside list-disc space-y-1">
             {guide.avoid_list.map((item) => (
-              <li key={item}>
-                <RelationshipReportParagraph>{item}</RelationshipReportParagraph>
+              <li key={item} className="font-rel-sans text-[13px] sm:text-[14px] leading-relaxed text-rel-ink">
+                {item}
               </li>
             ))}
           </ul>
@@ -130,14 +130,16 @@ export function UpsetGuideCard({ guide }: { guide: OfficeUpsetGuide }) {
 export function IdealRoleCard({
   fit,
   accent,
+  side = "a",
 }: {
   fit: OfficeIdealRoleFit;
   accent: string;
+  side?: "a" | "b";
 }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <PersonLabel name={fit.nickname} accent={accent} />
+      <PersonLabel name={fit.nickname} side={side} />
       <RelationshipReportParagraph className="mt-3">{fit.why}</RelationshipReportParagraph>
       <div className="mt-4">
         <RelationshipReportLabel>{t.idealRolesLabel}</RelationshipReportLabel>
@@ -153,8 +155,8 @@ export function IdealRoleCard({
         <RelationshipReportLabel>{t.idealDeptsLabel}</RelationshipReportLabel>
         <ul className="mt-2 list-inside list-disc space-y-1">
           {fit.ideal_departments.map((dept) => (
-            <li key={dept}>
-              <RelationshipReportParagraph>{dept}</RelationshipReportParagraph>
+            <li key={dept} className="font-rel-sans text-[13px] sm:text-[14px] leading-relaxed text-rel-ink">
+              {dept}
             </li>
           ))}
         </ul>
@@ -163,11 +165,11 @@ export function IdealRoleCard({
   );
 }
 
-export function RoleCard({ card, accent }: { card: OfficePersonRoleCard; accent: string }) {
+export function RoleCard({ card, accent, side = "a" }: { card: OfficePersonRoleCard; accent: string; side?: "a" | "b" }) {
   const t = useMessages().relationshipDrilldown.work;
   return (
     <RelationshipReportInset>
-      <PersonLabel name={card.nickname} accent={accent} />
+      <PersonLabel name={card.nickname} side={side} />
       <div className="mt-4">
         <RelationshipReportLabel>
           {t.roleWeaponsLabel(card.nickname)}
