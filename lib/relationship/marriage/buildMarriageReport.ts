@@ -556,7 +556,7 @@ export function buildMarriageReport(params: {
 
   let reportBody: MarriageReportBody = {
     headline: household.section_snapshot.one_line_household,
-    summary_line: `🔥 ${ctx.masterScores.activation}% · 🧩 ${ctx.masterScores.benefit}% · ⚡ ${ctx.masterScores.risk}%`,
+    summary_line: `▫ ${ctx.masterScores.activation}% · ▫ ${ctx.masterScores.benefit}% · ▫ ${ctx.masterScores.risk}%`,
     one_line_household: household.section_snapshot.one_line_household,
     snapshot_panel,
     household,

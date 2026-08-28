@@ -401,7 +401,7 @@ export function buildFriendReport(params: {
 
   let reportBody: FriendReportBody = {
     headline: oneLineFriendship,
-    summary_line: `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
+    summary_line: `▫ ${ctx.masterScores.connection}% · ▫ ${ctx.masterScores.banter}% · ▫ ${ctx.masterScores.risk}%`,
     one_line_friendship: oneLineFriendship,
     snapshot_panel,
     friend,

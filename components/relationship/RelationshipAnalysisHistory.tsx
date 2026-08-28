@@ -113,7 +113,7 @@ export default function RelationshipAnalysisHistory({
               <p className={`mt-1 ${styles.title}`}>{log.summary_title}</p>
               {log.summary_subtitle ? (
                 <p className={`mt-0.5 ${styles.subtitle}`}>
-                  {log.summary_subtitle}
+                  {log.summary_subtitle.replace(/🔥/g, "▫").replace(/🧩/g, "▫").replace(/⚡/g, "▫")}
                 </p>
               ) : null}
               {clickable ? (

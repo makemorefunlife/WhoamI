@@ -8,6 +8,7 @@
  * - Chapters 1 through 9 sequentially using standard ChapterSection headers:
  *   CHAPTER NUMBER → TITLE → USER QUESTION / SHORT LEAD.
  */
+import { MessageCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "@/lib/relationship/friend/friendCopy";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
@@ -327,7 +328,7 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
                 <div className="space-y-5">
                   <div>
                     <dt className="font-rel-sans text-[11px] font-semibold tracking-wide text-rel-ink-mute">
-                      {isKo ? "친구들 사이에서는" : "In Friendship Groups"}
+                      {isKo ? "▫ 친구들 사이에서는" : "In Friendship Groups"}
                     </dt>
                     <dd className="mt-1 font-rel-sans text-[14px] font-bold leading-[1.4] text-rel-ink">
                       {group?.label ?? (isKo ? "부담 없이 편안하게 어울리는 쪽" : "Comfortably blends into groups")}
@@ -339,7 +340,7 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
 
                   <div>
                     <dt className="font-rel-sans text-[11px] font-semibold tracking-wide text-rel-ink-mute">
-                      {isKo ? "둘이 있을 때는" : "One-on-One"}
+                      {isKo ? "▫ 둘이 있을 때는" : "One-on-One"}
                     </dt>
                     <dd className="mt-1 font-rel-sans text-[14px] font-bold leading-[1.4] text-rel-ink">
                       {oneOnOne?.label ?? (isKo ? "소소한 일상을 편하게 나누는 친구" : "Easygoing 1-on-1 companion")}
@@ -351,7 +352,7 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
 
                   <div>
                     <dt className="font-rel-sans text-[11px] font-semibold tracking-wide text-rel-ink-mute">
-                      {isKo ? "친구가 힘들 때는" : "When a Friend Needs Support"}
+                      {isKo ? "▫ 내가 바라보는 너는" : "When a Friend Needs Support"}
                     </dt>
                     <dd className="mt-1 font-rel-sans text-[14px] font-bold leading-[1.4] text-rel-ink">
                       {support?.label ?? (isKo ? "말보다 꾸준히 곁을 지키는 친구" : "Steadily stands by your side")}
@@ -364,7 +365,7 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
                   {directional ? (
                     <div className="rounded-xl border border-rel-line/70 bg-rel-bg/50 p-3.5">
                       <dt className="font-rel-sans text-[11px] font-semibold tracking-wide text-rel-accent">
-                        {isKo ? `${partnerName}에게 나는` : `For ${partnerName}`}
+                        {isKo ? `▫ ${partnerName}에게 나는` : `For ${partnerName}`}
                       </dt>
                       <dd className="mt-1 font-rel-serif text-[14.5px] font-semibold leading-[1.4] text-rel-ink">
                         {directional.label}
@@ -527,35 +528,55 @@ function VNextBlocksSection({
 }) {
   if (!blocks || blocks.length === 0) return null;
   return (
-    <div className="mt-8 space-y-4">
-      {blocks.map((b, i) => (
-        <div key={i} className="rounded-2xl border border-rel-line bg-rel-surface p-6">
-          <dt className="font-rel-sans text-[11px] font-semibold tracking-wide text-rel-ink-mute">
-            {b.title}
-          </dt>
-          {b.compare && b.compare.length > 1 ? (
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {b.compare.map((c, ci) => (
-                <div
-                  key={ci}
-                  className="rounded-xl border border-rel-line/70 bg-rel-bg/50 p-4"
-                >
-                  <NameChip name={c.name} side={ci === 0 ? "a" : "b"} />
-                  {c.label ? (
-                    <dd className="mt-2 font-rel-sans text-[13px] font-bold leading-[1.4] text-rel-ink">{c.label}</dd>
-                  ) : null}
-                  <dd className="mt-1 font-rel-sans text-[12.5px] leading-[1.65] text-rel-ink-mute">{c.body}</dd>
+    <div className="mt-8 space-y-6">
+      {blocks.map((b, i) => {
+        const isTriangleTitle = b.title.startsWith("◤");
+        const cleanTitle = b.title.replace(/^[◤▫]\s*/, "");
+
+        return (
+          <div key={i} className="space-y-3">
+            {isTriangleTitle ? (
+              <div>
+                <h4 className="flex min-w-0 items-baseline gap-2.5 font-rel-serif text-[18px] font-normal tracking-[-0.01em] text-rel-ink sm:text-[20px]">
+                  <span className="text-[13px] text-[#8c7c72] shrink-0" aria-hidden>
+                    ◤
+                  </span>
+                  <span className="min-w-0">{cleanTitle}</span>
+                </h4>
+              </div>
+            ) : null}
+
+            <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm">
+              {!isTriangleTitle && (
+                <dt className="font-rel-sans text-[12px] font-bold tracking-wide text-rel-ink mb-2">
+                  {b.title}
+                </dt>
+              )}
+              {b.compare && b.compare.length > 1 ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {b.compare.map((c, ci) => (
+                    <div
+                      key={ci}
+                      className="rounded-xl border border-rel-line/70 bg-rel-bg/50 p-4"
+                    >
+                      <NameChip name={c.name} side={ci === 0 ? "a" : "b"} />
+                      {c.label ? (
+                        <dd className="mt-2 font-rel-sans text-[13px] font-bold leading-[1.4] text-rel-ink">{c.label}</dd>
+                      ) : null}
+                      <dd className="mt-1 font-rel-sans text-[12.5px] leading-[1.65] text-rel-ink-mute">{c.body}</dd>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <>
+                  <dd className="font-rel-sans text-[14px] sm:text-[15px] font-bold leading-[1.45] text-rel-ink">{b.headline}</dd>
+                  <dd className="mt-1.5 font-rel-sans text-[13px] sm:text-[13.5px] leading-[1.75] text-rel-ink-soft">{b.description}</dd>
+                </>
+              )}
             </div>
-          ) : (
-            <>
-              <dd className="mt-1 font-rel-sans text-[14px] font-bold leading-[1.4] text-rel-ink">{b.headline}</dd>
-              <dd className="mt-1 font-rel-sans text-[12.5px] leading-[1.65] text-rel-ink-mute">{b.description}</dd>
-            </>
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -679,7 +700,7 @@ function AdviceItem({ item }: { item: unknown }) {
           {reason && <span className="mt-0.5 block text-rel-ink-soft">{reason}</span>}
           {speechTip && (
             <span className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-rel-bg/70 px-2.5 py-1.5 text-[12px] leading-[1.5] text-rel-ink-mute">
-              <span aria-hidden className="shrink-0">💬</span>
+              <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-rel-ink-mute" strokeWidth={1.75} aria-hidden />
               <span>&ldquo;{speechTip}&rdquo;</span>
             </span>
           )}

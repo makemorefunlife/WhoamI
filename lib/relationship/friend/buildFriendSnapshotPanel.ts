@@ -75,7 +75,7 @@ export function buildFriendSnapshotPanel(
       pick(ctx.locale, "Social DNA · Friendship Snapshot", "Social DNA · 우정 스냅샷"),
     representativeLine:
       options?.representativeLine ??
-      `🔥 ${ctx.masterScores.connection}% · 🧩 ${ctx.masterScores.banter}% · ⚡ ${ctx.masterScores.risk}%`,
+      `▫ ${ctx.masterScores.connection}% · ▫ ${ctx.masterScores.banter}% · ▫ ${ctx.masterScores.risk}%`,
     keywords: pick(ctx.locale, ["Friends", "Social DNA", "Friendship"], ["친구", "Social DNA", "우정"]),
     relationshipGauges,
     personA,

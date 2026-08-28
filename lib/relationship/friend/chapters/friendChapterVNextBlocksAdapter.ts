@@ -72,10 +72,10 @@ export function buildFriendChapter04Blocks(params: {
   const names = [params.nameA, params.nameB];
   const l = params.locale;
   return [
-    block(names, pick(l, "◤ How Plans Start", "◤ 약속의 시작"), ch04.initiation.headline, ch04.initiation.description),
-    block(names, pick(l, "◤ Who Makes It Real", "◤ 현실화 담당"), ch04.realization.headline, ch04.realization.description),
-    block(names, pick(l, "◤ Our Play Tempo", "◤ 우리의 놀이 템포"), ch04.tempo.headline, ch04.tempo.description),
-    block(names, pick(l, "◤ How We Work Best Together", "◤ 둘이 가장 잘 움직이는 방식"), ch04.pairSynthesis.headline, ch04.pairSynthesis.description),
+    block(names, pick(l, "▫ How Plans Start", "▫ 약속의 시작"), ch04.initiation.headline, ch04.initiation.description),
+    block(names, pick(l, "▫ Who Makes It Real", "▫ 현실화 담당"), ch04.realization.headline, ch04.realization.description),
+    block(names, pick(l, "▫ Our Play Tempo", "▫ 우리의 놀이 템포"), ch04.tempo.headline, ch04.tempo.description),
+    block(names, pick(l, "▫ How We Work Best Together", "▫ 둘이 가장 잘 움직이는 방식"), ch04.pairSynthesis.headline, ch04.pairSynthesis.description),
   ];
 }
 

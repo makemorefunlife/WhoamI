@@ -394,19 +394,19 @@ export default function MarriageReportView({
       }}
       scores={[
         {
-          emoji: "🔥",
+          emoji: "▫",
           label: t.scoreLabelRomanticFit,
           value: snap.romantic_fit_pct,
           tone: "warm",
         },
         {
-          emoji: "🧩",
+          emoji: "▫",
           label: t.scoreLabelLifeSynergy,
           value: snap.life_synergy_pct,
           tone: "cool",
         },
         {
-          emoji: "⚡",
+          emoji: "▫",
           label: t.scoreLabelHomeRisk,
           value: snap.home_risk_pct,
           tone: "alert",

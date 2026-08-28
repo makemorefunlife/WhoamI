@@ -375,19 +375,19 @@ function extractRomanticScores(
   const { activation, benefit, risk } = scores.overall;
   return [
     {
-      emoji: "🔥",
+      emoji: "▫",
       label: t.scoreLabelAffinity,
       value: activation,
       polarity: "higher_better",
     },
     {
-      emoji: "🧩",
+      emoji: "▫",
       label: t.scoreLabelChemistry,
       value: benefit,
       polarity: "higher_better",
     },
     {
-      emoji: "⚡",
+      emoji: "▫",
       label: t.scoreLabelSensitivity,
       value: risk,
       polarity: "higher_worse",

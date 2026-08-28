@@ -858,8 +858,11 @@ function finalizeRomanticSajuDeepReport(
       }
     : reportWithPairCeBondingProjection;
 
+  const summaryLine = `▫ ${eventScores.overall.activation}% · ▫ ${eventScores.overall.benefit}% · ▫ ${eventScores.overall.risk}%`;
+
   return {
     ...reportWithProjections,
+    summary_line: summaryLine,
     section_1_summary: {
       relationship_name: opening.relationship_name,
       one_line_summary: opening.one_line_summary,

@@ -93,25 +93,25 @@ export default function FamilyParentReportView({
         subtitle: snap.one_line_family,
         names: roles ? [childName, parentName] : undefined,
         meta: roles
-          ? `👶 ${childName} · ${roles.parent_role_label} ${parentName}`
+          ? `${childName} · ${roles.parent_role_label} ${parentName}`
           : undefined,
         badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
       }}
       scores={[
         {
-          emoji: "🔥",
+          emoji: "▫",
           label: t.scoreLabelBond,
           value: snap.bond_pct,
           tone: "warm",
         },
         {
-          emoji: "🧩",
+          emoji: "▫",
           label: t.scoreLabelSynergy,
           value: snap.synergy_pct,
           tone: "cool",
         },
         {
-          emoji: "⚡",
+          emoji: "▫",
           label: t.scoreLabelFriction,
           value: snap.risk_pct,
           tone: "alert",

@@ -38,17 +38,27 @@ function buildLogSummary(
   snapshot: Record<string, unknown>,
 ): { title: string; subtitle: string } {
   if (resultFormat === ROMANTIC_SAJU_DEEP_FORMAT) {
-    const report = snapshot.report as {
-      section_1_summary?: {
-        relationship_name?: string;
-        one_line_summary?: string;
-      };
-    } | undefined;
-    const s1 = report?.section_1_summary;
-    return {
-      title: s1?.relationship_name?.trim() || "연인 사주 심화",
-      subtitle: s1?.one_line_summary?.trim() || "",
-    };
+    const report = snapshot.report as Record<string, unknown> | undefined;
+    const s1 = (report?.section_1_summary as { relationship_name?: string; one_line_summary?: string }) ?? {};
+    
+    let summaryLine = typeof report?.summary_line === "string" ? report.summary_line : undefined;
+
+    if (!summaryLine) {
+      const overall =
+        (report?.scores as { overall?: { activation?: number; benefit?: number; risk?: number } })?.overall ??
+        (report?.meta as { event_scores?: { overall?: { activation?: number; benefit?: number; risk?: number } } })?.event_scores?.overall ??
+        (report?.event_scores as { overall?: { activation?: number; benefit?: number; risk?: number } })?.overall ??
+        (snapshot.scores as { overall?: { activation?: number; benefit?: number; risk?: number } })?.overall;
+
+      if (overall && typeof overall.activation === "number") {
+        summaryLine = `▫ ${overall.activation}% · ▫ ${overall.benefit}% · ▫ ${overall.risk}%`;
+      }
+    }
+
+    const title = s1.relationship_name?.trim() || (report?.headline as string)?.trim() || "연인 사주 심화";
+    const subtitle = summaryLine?.trim() || s1.one_line_summary?.trim() || "";
+
+    return { title, subtitle };
   }
   if (resultFormat === WORK_COLLEAGUE_DEEP_FORMAT) {
     const report = snapshot.report as {

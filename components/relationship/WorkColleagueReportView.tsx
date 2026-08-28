@@ -244,15 +244,15 @@ export default function WorkColleagueReportView({
         badge: report.meta?.grade ? t.gradeBadge(report.meta.grade) : undefined,
       }}
       scores={[
-        { emoji: "🔥", label: t.scoreLabelFit, value: snap.fit_pct, tone: "warm" },
+        { emoji: "▫", label: t.scoreLabelFit, value: snap.fit_pct, tone: "warm" },
         {
-          emoji: "🧩",
+          emoji: "▫",
           label: t.scoreLabelSynergy,
           value: snap.synergy_pct,
           tone: "cool",
         },
         {
-          emoji: "⚡",
+          emoji: "▫",
           label: t.scoreLabelRisk,
           value: snap.risk_pct,
           tone: "alert",

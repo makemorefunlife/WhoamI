@@ -252,19 +252,19 @@ export default function FriendReportView({
       }}
       scores={[
         {
-          emoji: "🔥",
+          emoji: "▫",
           label: t.scoreLabelChemistry,
           value: snap.connection_pct,
           tone: "warm",
         },
         {
-          emoji: "🧩",
+          emoji: "▫",
           label: t.scoreLabelBanter,
           value: snap.banter_pct,
           tone: "cool",
         },
         {
-          emoji: "⚡",
+          emoji: "▫",
           label: t.scoreLabelRisk,
           value: snap.risk_pct,
           tone: "alert",
