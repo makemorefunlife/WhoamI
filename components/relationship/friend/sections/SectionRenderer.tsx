@@ -115,7 +115,7 @@ export function FriendReportViewModelView({
       </main>
 
       <footer className="border-t border-rel-line">
-        <div className="mx-auto max-w-[820px] px-5 py-12 sm:px-8">
+        <div className="mx-auto max-w-[880px] px-5 py-12 sm:px-8">
           <p className="font-rel-sans text-[11.5px] leading-[1.9] text-rel-ink-mute">
             {pick(
               locale,

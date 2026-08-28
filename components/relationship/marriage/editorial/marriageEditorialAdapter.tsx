@@ -142,7 +142,7 @@ export function MarriageEditorialHero({
   const [nameA, nameB] = names;
   return (
     <header className="relative overflow-hidden">
-      <div className="mx-auto w-full max-w-[820px] px-5 pb-10 pt-12 sm:px-8 sm:pb-16 sm:pt-16">
+      <div className="mx-auto w-full max-w-[880px] px-5 pb-10 pt-12 sm:px-8 sm:pb-16 sm:pt-16">
         {eyebrow ? (
           <p className="font-rel-sans text-[10px] font-bold uppercase tracking-[0.3em] text-[#1b3b2b]">{eyebrow}</p>
         ) : null}
