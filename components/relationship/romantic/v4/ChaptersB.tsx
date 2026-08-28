@@ -88,13 +88,13 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                   <div className="flex flex-wrap items-center gap-2 border-b border-rel-line bg-rel-taupe-soft/50 px-5 py-3">
                     <PersonTag name={names[p.observer]} side={p.observer} />
                     <span className="font-rel-sans text-[11.5px] tracking-[0.08em] text-rel-ink-mute">
-                      가 겪은 행동
+                      가 마주하는 행동
                     </span>
                   </div>
                   <div className="grid gap-0 sm:grid-cols-3">
                     <Panel step="장면" body={p.what} />
                     <Panel
-                      step="이렇게 읽힙니다"
+                      step="이렇게 보일 수 있어요"
                       body={p.easyReading}
                       tone="coral"
                       className="border-t border-rel-line sm:border-l sm:border-t-0"
@@ -106,22 +106,15 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                       className="border-t border-rel-line sm:border-l sm:border-t-0"
                     />
                   </div>
-                  {p.betterExpression && (
-                    <div className="border-t border-rel-line bg-rel-deep-soft px-5 py-4">
-                      <div className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-rel-deep">
-                        이렇게 말해보면 좋아요
-                      </div>
-                      <p className="mt-1.5 font-rel-serif text-[14.5px] leading-[1.75] text-rel-ink">
-                        {p.betterExpression}
-                      </p>
-                    </div>
-                  )}
                   {p.helpfulResponse && (
-                    <div className="flex flex-wrap items-start gap-2 border-t border-rel-line px-5 py-3.5">
-                      <PersonTag name={names[p.other]} side={p.other} />
-                      <span className="min-w-0 font-rel-sans text-[13px] leading-[1.6] text-rel-ink-soft">
+                    <div className="border-t border-rel-line bg-rel-deep-soft/40 px-5 py-4">
+                      <div className="flex items-center gap-2 font-rel-sans text-[11px] font-semibold tracking-wide text-rel-deep">
+                        <span aria-hidden>👉</span>
+                        <span>이렇게 해보세요</span>
+                      </div>
+                      <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink">
                         {p.helpfulResponse}
-                      </span>
+                      </p>
                     </div>
                   )}
                 </div>
@@ -179,9 +172,6 @@ export const HiddenHeartsSection = ({ section, payload, personA, personB, n, deb
                     <p className="mt-2 flex items-start gap-2.5 font-rel-serif text-[17px] leading-[1.65] text-rel-ink">
                       <Heart className="mt-1 h-4 w-4 shrink-0 text-rel-taupe" strokeWidth={1.5} />
                       <span className="min-w-0">{h.recognition}</span>
-                    </p>
-                    <p className="mt-3 font-rel-sans text-[11.5px] tracking-[0.06em] text-rel-ink-mute">
-                      — {names[other]}가 알아봐 줄 수 있는 것
                     </p>
                   </div>
                 </div>
@@ -282,8 +272,8 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
                 <PersonTag name={personA} side="a" />
                 <span className="text-xs text-rel-ink-mute">→ {personB}</span>
               </div>
-              <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.trigger}</p>
-              <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.doNot}</p>
+              <p className="text-xs text-v4-bad font-medium">트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.trigger}</p>
+              <p className="text-xs text-rel-ink-soft">하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.doNot}</p>
               <div className="space-y-1.5 pt-2 text-xs border-t border-rel-line">
                 <p className="font-semibold text-rel-deep">말문 열기: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.firstLine}</p>
                 <p className="font-semibold text-rel-ink">속마음 전하기: {payload.storyPlan.romanticGapBatch.emergencySos.sosAtoB.bridgeLine}</p>
@@ -295,8 +285,8 @@ export const RepairSection = ({ section, payload, personA, personB, n, dailyLife
                 <PersonTag name={personB} side="b" />
                 <span className="text-xs text-rel-ink-mute">→ {personA}</span>
               </div>
-              <p className="text-xs text-v4-bad font-medium">⚠️ 트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.trigger}</p>
-              <p className="text-xs text-rel-ink-soft">❌ 하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.doNot}</p>
+              <p className="text-xs text-v4-bad font-medium">트리거: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.trigger}</p>
+              <p className="text-xs text-rel-ink-soft">하지 말 것: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.doNot}</p>
               <div className="space-y-1.5 pt-2 text-xs border-t border-rel-line">
                 <p className="font-semibold text-rel-deep">말문 열기: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.firstLine}</p>
                 <p className="font-semibold text-rel-ink">속마음 전하기: {payload.storyPlan.romanticGapBatch.emergencySos.sosBtoA.bridgeLine}</p>
@@ -403,7 +393,7 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
           {listA.length > 0 ? (
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
               <PersonTag name={personA} side="a" />
-              <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personA)} {josaEge(personB)} 내려놓아야 할 기대:</p>
+              <p className="text-xs font-semibold text-rel-ink mt-1">{josaIGa(personA)} {josaEge(personB)} 내려놓아야 할 기대:</p>
               <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
                 {listA.map((item, i) => (
                   <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
@@ -414,7 +404,7 @@ export const ExpectationsSection = ({ section, payload, personA, personB, n, deb
           {listB.length > 0 ? (
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-5 space-y-2">
               <PersonTag name={personB} side="b" />
-              <p className="text-xs font-semibold text-rel-ink mt-1">❌ {josaIGa(personB)} {josaEge(personA)} 내려놓아야 할 기대:</p>
+              <p className="text-xs font-semibold text-rel-ink mt-1">{josaIGa(personB)} {josaEge(personA)} 내려놓아야 할 기대:</p>
               <ul className="list-disc pl-4 text-xs text-rel-ink-soft space-y-1">
                 {listB.map((item, i) => (
                   <li key={i}><strong>{item.title}</strong>: {item.reason}</li>
@@ -453,10 +443,10 @@ export const StrengthVulnerabilitySection = ({ section, payload, personA, person
               <p><span className="font-semibold text-rel-deep">시너지 · </span>{payload.storyPlan.romanticGapBatch.chapter06.roleMatrix.complement}</p>
             ) : null}
             {payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB ? (
-              <p><span className="font-semibold text-amber-600">배우는 점 ({personA}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB}</p>
+              <p><span className="font-semibold text-rel-accent">배우는 점 ({personA}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.aLearnsFromB}</p>
             ) : null}
             {payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA ? (
-              <p><span className="font-semibold text-amber-600">배우는 점 ({personB}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA}</p>
+              <p><span className="font-semibold text-rel-accent">배우는 점 ({personB}) · </span>{payload.storyPlan.romanticGapBatch.chapter06.growth.bLearnsFromA}</p>
             ) : null}
           </div>
         </div>

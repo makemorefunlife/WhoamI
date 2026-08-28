@@ -167,7 +167,7 @@ export function resolveHiddenHeartsLens(params: {
       ),
       unspokenNeed: sanitizeParticles(
         L(
-          `말하지 않아도 가장 바라는 것은 ${needText}`,
+          `${needText}`,
           `What they want most, even unspoken, is ${needText.charAt(0).toLowerCase()}${needText.slice(1)}`,
         ),
         [a, b],
@@ -271,7 +271,7 @@ export function resolveHiddenHeartsLens(params: {
       ),
       unspokenNeed: sanitizeParticles(
         L(
-          `말하지 않아도 가장 바라는 것은 ${needText}`,
+          `${needText}`,
           `What they want most, even unspoken, is ${needText.charAt(0).toLowerCase()}${needText.slice(1)}`,
         ),
         [a, b],

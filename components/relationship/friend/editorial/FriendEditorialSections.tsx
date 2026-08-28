@@ -178,7 +178,7 @@ export function FriendshipOverviewSection({ vm, locale }: Ctx) {
   return (
     <section id="overview_cards" className="mb-14 scroll-mt-24 border-b border-rel-line pb-10">
       <div className="mb-6 flex items-center gap-2 font-rel-sans text-[12px] font-bold uppercase tracking-[0.2em] text-rel-ink-mute">
-        <span className="text-rel-deep font-black">◤</span>
+        <span className="text-[#8c7c72] font-black">◤</span>
         <span>{pick(locale, "Friendship Overview", "한눈에 보는 우리 우정")}</span>
       </div>
       <OverviewSection
@@ -716,7 +716,6 @@ export function Chapter10Playbook({ vm, locale }: Ctx) {
         <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
           <section className="rounded-2xl border border-emerald-200/70 bg-emerald-50/40 p-5">
             <h4 className="flex items-center gap-2 border-b border-emerald-200 pb-2.5 font-rel-sans text-[13px] font-bold text-emerald-900">
-              <span aria-hidden>✅</span>
               {pick(locale, "Our routine for staying close", "우리에게 맞는 유지 루틴 (Do)")}
             </h4>
             <ul className="mt-3.5 space-y-2.5">
@@ -731,7 +730,6 @@ export function Chapter10Playbook({ vm, locale }: Ctx) {
 
           <section className="rounded-2xl border border-rose-200/70 bg-rose-50/40 p-5">
             <h4 className="flex items-center gap-2 border-b border-rose-200 pb-2.5 font-rel-sans text-[13px] font-bold text-rose-900">
-              <span aria-hidden>🚫</span>
               {pick(locale, "Things to avoid doing to each other", "이 우정에서 주의해야 할 행동 (Don't)")}
             </h4>
             <ul className="mt-3.5 space-y-2.5">

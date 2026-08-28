@@ -108,7 +108,7 @@ export const AttractionSection = ({ payload, section, personA, personB, n, debug
           <SubHeading title="오래 단단한 관계를 유지하는 약속" tag="Long-Term Bond" tone="deep" />
           <div className="grid gap-4 sm:grid-cols-2 text-xs">
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
-              <p className="font-semibold text-v4-good mb-1">✅ KEEP DOING</p>
+              <p className="font-semibold text-v4-good mb-1">KEEP DOING</p>
               {payload.storyPlan.romanticGapBatch.longTermBond.keepDoing.map((k, i) => (
                 <p key={i} className="text-rel-ink-soft mt-1">• {k}</p>
               ))}
@@ -411,13 +411,13 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
               <PersonTag name={personA} side="a" />
               <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>
               <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.givenLove}</p>
-              <p className="text-rel-deep italic">· 파트너 수용 체감: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
+              <p className="text-rel-deep italic">· 상대가 받아들이는 방식: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
             </div>
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
               <PersonTag name={personB} side="b" />
               <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.wantedLove}</p>
               <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.givenLove}</p>
-              <p className="text-rel-deep italic">· 파트너 수용 체감: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
+              <p className="text-rel-deep italic">· 상대가 받아들이는 방식: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
             </div>
           </div>
         </div>

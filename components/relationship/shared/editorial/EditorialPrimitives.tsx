@@ -385,7 +385,7 @@ export function SubHeading({
           invert ? "text-white" : "text-rel-ink"
         }`}
       >
-        <span className={`text-[13px] leading-none ${invert ? "text-rel-taupe" : toneClass}`} aria-hidden>
+        <span className={`text-[13px] leading-none ${invert ? "text-white/70" : "text-[#8c7c72]"}`} aria-hidden>
           ◤
         </span>
         <span className="min-w-0">{title}</span>

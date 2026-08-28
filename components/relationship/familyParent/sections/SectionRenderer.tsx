@@ -179,7 +179,7 @@ function RelationshipIndexCard({ section }: { section: RelationshipIndexSection 
   );
 }
 
-export function SectionHeader({ title, tag }: { title: string; tag?: string }) {
+export function SectionHeader({ title }: { title: string; tag?: string }) {
   const cleanTitle = title.replace(/^[◤▼▶]\s*/, "");
   return (
     <div className="mb-6">
@@ -190,11 +190,6 @@ export function SectionHeader({ title, tag }: { title: string; tag?: string }) {
           </span>
           <span className="min-w-0">{cleanTitle}</span>
         </h3>
-        {tag && (
-          <span className="shrink-0 font-rel-sans text-[11px] uppercase tracking-[0.2em] text-rel-ink-mute">
-            {tag}
-          </span>
-        )}
       </div>
       <div className="mt-3 h-px w-full bg-rel-line" />
     </div>
@@ -253,7 +248,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
           {section.pairStructureOverview && (
             <div className="rounded-xl border border-rel-line bg-rel-surface p-4">
               <p className="text-xs font-semibold text-rel-ink-mute uppercase tracking-wider">
-                🏠 {ec(locale, "Family Structural Dynamics", "우리 가족의 기본 구도")}
+                ▫ {ec(locale, "Family Structural Dynamics", "우리 가족의 기본 구도")}
               </p>
               <p className="mt-1.5 text-sm leading-relaxed text-rel-ink font-medium">
                 {section.pairStructureOverview}
@@ -266,7 +261,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
             {/* 부모 역할 */}
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/20 p-4 space-y-3">
               <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-                👑 {ec(locale, "Parent Role Position", "부모가 맡기 쉬운 자리")}
+                ▫ {ec(locale, "Parent Role Position", "부모가 맡기 쉬운 자리")}
               </p>
               <div>
                 <p className="text-base font-bold text-rel-ink">
@@ -284,7 +279,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
               {section.parentStressLabel && (
                 <div className="pt-2 border-t border-rel-line/50">
                   <p className="text-[11px] font-semibold text-amber-700">
-                    ⚡ {ec(locale, "Under Tension", "긴장/불안할 때의 역할")}
+                    ▫ {ec(locale, "Under Tension", "긴장/불안할 때의 역할")}
                   </p>
                   <p className="mt-0.5 text-xs text-rel-ink-soft">
                     <span className="font-medium text-rel-ink">{section.parentStressLabel}</span> — {section.parentStressDesc}
@@ -296,7 +291,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
             {/* 자녀 역할 */}
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft/20 p-4 space-y-3">
               <p className="text-xs font-semibold text-sky-800 uppercase tracking-wider">
-                🌱 {ec(locale, "Child Role Position", "아이가 맡기 쉬운 자리")}
+                ▫ {ec(locale, "Child Role Position", "아이가 맡기 쉬운 자리")}
               </p>
               <div>
                 <p className="text-base font-bold text-rel-ink">
@@ -314,7 +309,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
               {section.childStressLabel && (
                 <div className="pt-2 border-t border-rel-line/50">
                   <p className="text-[11px] font-semibold text-amber-700">
-                    ⚡ {ec(locale, "Under Tension", "긴장/불안할 때의 역할")}
+                    {ec(locale, "Under Tension", "긴장/불안할 때의 역할")}
                   </p>
                   <p className="mt-0.5 text-xs text-rel-ink-soft">
                     <span className="font-medium text-rel-ink">{section.childStressLabel}</span> — {section.childStressDesc}
@@ -332,7 +327,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
                   {section.unexpectedRole.roleLabel}
                 </span>
                 <p className="text-xs font-semibold text-purple-900">
-                  🔍 {ec(locale, "Unexpected Role Surface", "의외로 드러나는 역할")}
+                  {ec(locale, "Unexpected Role Surface", "의외로 드러나는 역할")}
                 </p>
               </div>
               <p className="mt-2 text-sm font-semibold text-purple-950">
@@ -348,7 +343,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
           {section.pairCausalMechanism && (
             <div>
               <RelationshipReportLabel>
-                ⚙️ {ec(locale, "How Roles Interlock", "둘이 있을 때 역할이 맞물리는 방식")}
+                {ec(locale, "How Roles Interlock", "둘이 있을 때 역할이 맞물리는 방식")}
               </RelationshipReportLabel>
               <RelationshipReportParagraph className="mt-1.5">
                 {section.pairCausalMechanism}
@@ -360,7 +355,7 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
           {section.pairSynergyWhenSmooth && (
             <div className="rounded-xl border border-v4-good/25 bg-v4-good-soft p-4">
               <p className="text-xs font-semibold text-v4-good uppercase tracking-wider">
-                ✨ {ec(locale, "When Running Smoothly", "둘이 자연스럽게 잘 굴러갈 때")}
+                {ec(locale, "When Running Smoothly", "둘이 자연스럽게 잘 굴러갈 때")}
               </p>
               <p className="mt-1.5 text-sm text-rel-ink leading-relaxed">
                 {section.pairSynergyWhenSmooth}
@@ -372,14 +367,14 @@ function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
           {section.roleBurden && section.roleBurden.burdenType !== "none" && (
             <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
               <p className="text-xs font-semibold text-amber-900 uppercase tracking-wider">
-                ⚖️ {ec(locale, "Invisible Role Burden", "부담이 몰리는 순간")} — {section.roleBurden.burdenTitle}
+                {ec(locale, "Invisible Role Burden", "부담이 몰리는 순간")} — {section.roleBurden.burdenTitle}
               </p>
               <p className="mt-1.5 text-sm text-amber-950 leading-relaxed">
                 {section.roleBurden.burdenDescription}
               </p>
               {section.roleBurden.guidanceImplication && (
                 <p className="mt-2 text-xs font-medium text-amber-800 bg-amber-100/60 p-2.5 rounded-lg border border-amber-200/60">
-                  💡 {section.roleBurden.guidanceImplication}
+                  {section.roleBurden.guidanceImplication}
                 </p>
               )}
             </div>
@@ -466,29 +461,29 @@ function ParentDnaCard({ section }: { section: ParentDnaSectionView }) {
       <RelationshipReportBody>
         <div className="space-y-4">
           <div>
-            <RelationshipReportLabel>{ec(locale, "When protecting the child", "🛡️ 보호할 때")}</RelationshipReportLabel>
+            <RelationshipReportLabel>▫ {ec(locale, "When protecting the child", "보호할 때")}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{section.protectionStyle}</RelationshipReportParagraph>
           </div>
           <div>
-            <RelationshipReportLabel>{ec(locale, "When anxiety rises", "⚡ 걱정될 때")}</RelationshipReportLabel>
+            <RelationshipReportLabel>▫ {ec(locale, "When anxiety rises", "걱정될 때")}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{section.anxietyTriggerBehavior}</RelationshipReportParagraph>
           </div>
           <div>
-            <RelationshipReportLabel>{ec(locale, "How trust and autonomy are given", "🌱 아이를 믿는 방식")}</RelationshipReportLabel>
+            <RelationshipReportLabel>▫ {ec(locale, "How trust and autonomy are given", "아이를 믿는 방식")}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{section.trustAutonomyStyle}</RelationshipReportParagraph>
           </div>
           <div>
-            <RelationshipReportLabel>{ec(locale, "When setting boundaries or rules", "🎯 기준을 세울 때")}</RelationshipReportLabel>
+            <RelationshipReportLabel>▫ {ec(locale, "When setting boundaries or rules", "기준을 세울 때")}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{section.disciplineStyle}</RelationshipReportParagraph>
           </div>
           <div>
-            <RelationshipReportLabel>{ec(locale, "How growth is encouraged", "🚀 성장을 밀어주는 방식")}</RelationshipReportLabel>
+            <RelationshipReportLabel>▫ {ec(locale, "How growth is encouraged", "성장을 밀어주는 방식")}</RelationshipReportLabel>
             <RelationshipReportParagraph className="mt-1.5">{section.growthSupportStyle}</RelationshipReportParagraph>
           </div>
           {section.shadowSideWarning ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
               <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-                ⚠️ {ec(locale, "Caution — Shadow Side of Strength", "조심할 점 (강점의 그림자)")}
+                ▫ {ec(locale, "Caution — Shadow Side of Strength", "조심할 점 (강점의 그림자)")}
               </p>
               <p className="mt-1.5 text-sm text-rel-ink-soft leading-relaxed">
                 {section.shadowSideWarning}
@@ -509,7 +504,7 @@ function ParentChildBridgeCard({ section }: { section: ParentChildBridgeSectionV
         <div className="space-y-4">
           <div className="rounded-xl border border-v4-good/25 bg-v4-good-soft p-4">
             <p className="text-xs font-semibold text-v4-good uppercase tracking-wider">
-              ✨ {ec(locale, "Best Harmony Point", "특히 잘 맞는 부분")}
+              {ec(locale, "Best Harmony Point", "특히 잘 맞는 부분")}
             </p>
             <p className="mt-1.5 text-sm text-rel-ink leading-relaxed">
               {section.bestHarmonyPoint}
@@ -518,7 +513,7 @@ function ParentChildBridgeCard({ section }: { section: ParentChildBridgeSectionV
 
           <div className="rounded-xl border border-v4-bad/25 bg-v4-bad-soft p-4">
             <p className="text-xs font-semibold text-v4-bad uppercase tracking-wider">
-              ⚡ {ec(locale, "Friction Risk Moment", "엇갈리기 쉬운 순간")}
+              {ec(locale, "Friction Risk Moment", "엇갈리기 쉬운 순간")}
             </p>
             <p className="mt-1.5 text-sm text-rel-ink leading-relaxed">
               {section.frictionRiskMoment}
@@ -527,7 +522,7 @@ function ParentChildBridgeCard({ section }: { section: ParentChildBridgeSectionV
 
           <div className="rounded-xl border border-rel-line bg-rel-surface p-4">
             <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
-              💡 {ec(locale, "Optimal Parent Position", "가장 좋은 부모 포지션")}
+              {ec(locale, "Optimal Parent Position", "가장 좋은 부모 포지션")}
             </p>
             <p className="mt-1.5 text-sm font-medium text-rel-ink leading-relaxed">
               {section.optimalParentPosition}
@@ -755,23 +750,18 @@ function SosScriptCard({ section }: { section: SosScriptSection }) {
   const { locale } = useLocale();
   const isEn = locale === "en-US";
   const headerTitle = isEn
-    ? "◤ Crisis SOS Rule (Career & Finance Support)"
-    : "◤ 위기의 순간, 부모의 SOS 룰 (취업·재정 지원)";
+    ? "◤ Crisis SOS Rule"
+    : "◤ 위기의 순간, 부모의 SOS 룰";
 
   return (
     <div className="mt-8 mb-6">
-      <SectionHeader title={headerTitle} tag="CRISIS SUPPORT" />
-      <RelationshipReportCard title="" accentColor={ACCENT} variant="warning">
-        <RelationshipReportBody>
-          <RelationshipReportLabel>{section.triggerLabel}</RelationshipReportLabel>
-          <RelationshipReportInset className="border-emerald-100 bg-emerald-50/60">
-            <RelationshipReportParagraph className="flex items-start gap-2 italic text-emerald-900">
-              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" strokeWidth={1.75} aria-hidden />
-              {section.sosLine}
-            </RelationshipReportParagraph>
-          </RelationshipReportInset>
-        </RelationshipReportBody>
-      </RelationshipReportCard>
+      <SectionHeader title={headerTitle} />
+      <div className="rounded-2xl border border-emerald-900/15 bg-emerald-50/40 p-5 sm:p-6 shadow-sm">
+        <p className="flex items-start gap-2.5 font-rel-sans text-sm sm:text-[14.5px] font-medium leading-[1.85] text-emerald-950">
+          <MessageCircle className="mt-1 h-4 w-4 shrink-0 text-emerald-700" strokeWidth={1.75} aria-hidden />
+          <span>{section.sosLine}</span>
+        </p>
+      </div>
     </div>
   );
 }
@@ -955,7 +945,7 @@ export function FamilyReportViewModelView({
         const cards: OverviewCardData[] = [
           {
             key: "bond",
-            icon: "🔥",
+            icon: "▫",
             label: t.scoreLabelBond,
             score: snapshot.scores.bondPct,
             tone: "good",
@@ -968,7 +958,7 @@ export function FamilyReportViewModelView({
           },
           {
             key: "synergy",
-            icon: "🧩",
+            icon: "▫",
             label: t.scoreLabelSynergy,
             score: snapshot.scores.synergyPct,
             tone: "neutral",
@@ -981,7 +971,7 @@ export function FamilyReportViewModelView({
           },
           {
             key: "risk",
-            icon: "⚡",
+            icon: "▫",
             label: t.scoreLabelFriction,
             score: snapshot.scores.riskPct,
             tone: "warn",
@@ -1117,7 +1107,7 @@ export function FamilyReportViewModelView({
           >
             {chapter.summary ? (
               <p className="mb-6 font-rel-sans text-[15px] font-medium leading-[1.7] text-rel-ink-soft italic border-l-2 border-rel-deep/40 pl-3">
-                💡 {chapter.summary}
+                {chapter.summary}
               </p>
             ) : null}
 
@@ -1215,7 +1205,7 @@ export function FamilyReportViewModelView({
                 {chapter.synthesis.map((syn, idx) => (
                   <div key={idx} className="rounded-xl border border-rel-line bg-rel-surface p-4">
                     <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">
-                      ✨ Synthesis · {syn.headline}
+                      Synthesis · {syn.headline}
                     </p>
                     <p className="mt-1 text-sm text-rel-ink leading-relaxed">
                       {syn.summary}
@@ -1256,7 +1246,7 @@ export function FamilyReportViewModelView({
                         <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-rel-line/60">
                           <div className="rounded-xl bg-rel-taupe-soft/25 p-4 border border-rel-line/60">
                             <p className="text-xs font-bold text-rel-ink mb-1">
-                              👑 {parentName}{ec(locale, " to parent", "에게는")}
+                              ▫ {parentName}{ec(locale, " to parent", "에게는")}
                             </p>
                             <p className="text-xs text-rel-ink-soft leading-relaxed">
                               {card.parentLogic}
@@ -1264,7 +1254,7 @@ export function FamilyReportViewModelView({
                           </div>
                           <div className="rounded-xl bg-rel-taupe-soft/25 p-4 border border-rel-line/60">
                             <p className="text-xs font-bold text-rel-ink mb-1">
-                              🌱 {childName}{ec(locale, " to child", "에게는")}
+                              {childName}{ec(locale, " to child", "에게는")}
                             </p>
                             <p className="text-xs text-rel-ink-soft leading-relaxed">
                               {card.childLogic}
@@ -1274,7 +1264,7 @@ export function FamilyReportViewModelView({
 
                         <div className="pt-2">
                           <p className="text-xs font-semibold text-rel-ink-mute uppercase tracking-wider">
-                            🏠 {ec(locale, "In real life", "그래서 현실에서는")}
+                            {ec(locale, "In real life", "그래서 현실에서는")}
                           </p>
                           <p className="mt-1 text-xs sm:text-sm text-rel-ink leading-relaxed">
                             {card.realSituationScene}
@@ -1320,7 +1310,7 @@ export function FamilyReportViewModelView({
                     <div className="mt-4 pt-4 border-t border-v4-bad/20 grid gap-3 sm:grid-cols-2">
                       <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line">
                         <p className="text-[11px] font-bold text-rel-deep uppercase tracking-wider">
-                          👑 {parentName}{ec(locale, " residual feeling", "에게 남는 느낌")}
+                          {parentName}{ec(locale, " residual feeling", "에게 남는 느낌")}
                         </p>
                         <p className="mt-1 text-xs text-rel-ink-soft italic leading-relaxed">
                           {loop?.parentResidualFeeling}
@@ -1328,7 +1318,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line">
                         <p className="text-[11px] font-bold text-rel-deep uppercase tracking-wider">
-                          🌱 {childName}{ec(locale, " residual feeling", "에게 남는 느낌")}
+                          {childName}{ec(locale, " residual feeling", "에게 남는 느낌")}
                         </p>
                         <p className="mt-1 text-xs text-rel-ink-soft italic leading-relaxed">
                           {loop?.childResidualFeeling}
@@ -1362,7 +1352,7 @@ export function FamilyReportViewModelView({
                     </p>
                     <div className="pt-2">
                       <span className="inline-block rounded-lg bg-rel-taupe-soft/40 px-3 py-1 text-xs font-semibold text-rel-deep">
-                        💡 핵심 동기 엔진: {bundle.motivation.primaryMotivator}
+                        핵심 동기 엔진: {bundle.motivation.primaryMotivator}
                       </span>
                     </div>
                   </div>
@@ -1379,7 +1369,7 @@ export function FamilyReportViewModelView({
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          🎧 집중이 켜지는 환경
+                          집중이 켜지는 환경
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.focusEnvironment}
@@ -1387,7 +1377,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          💡 이해가 되는 방식
+                          이해가 되는 방식
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.understandingStyle}
@@ -1403,7 +1393,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          👥 혼자 vs 함께
+                          혼자 vs 함께
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.socialMode}
@@ -1448,7 +1438,7 @@ export function FamilyReportViewModelView({
                     </p>
                     <div className="pt-1">
                       <span className="inline-block rounded-lg bg-rel-paper px-3 py-1 text-xs text-rel-ink border border-rel-line">
-                        🌱 복원력 태도: {bundle.challenge.resiliencePattern}
+                        복원력 태도: {bundle.challenge.resiliencePattern}
                       </span>
                     </div>
                   </div>
@@ -1469,12 +1459,12 @@ export function FamilyReportViewModelView({
                     {bundle.socialOperating.recommendedActivities?.length > 0 && (
                       <div className="pt-3 border-t border-rel-line/60">
                         <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-2">
-                          🎯 잘 맞는 활동 방향
+                          잘 맞는 활동 방향
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {bundle.socialOperating.recommendedActivities.map((act, idx) => (
                             <span key={idx} className="rounded-md bg-rel-taupe-soft/40 px-2.5 py-1 text-xs text-rel-ink font-medium">
-                              ✓ {act}
+                              {act}
                             </span>
                           ))}
                         </div>
@@ -1502,7 +1492,7 @@ export function FamilyReportViewModelView({
                       ))}
                     </div>
                     <p className="text-xs text-rel-ink-soft italic border-t border-rel-line/50 pt-2">
-                      💡 {bundle.environmentFit.envSummary}
+                      {bundle.environmentFit.envSummary}
                     </p>
                   </div>
                 </div>
@@ -1529,7 +1519,7 @@ export function FamilyReportViewModelView({
                     <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
                       <div>
                         <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
-                          🌟 올해의 성취 테마
+                          올해의 성취 테마
                         </p>
                         <p className="font-rel-sans text-sm font-bold text-rel-ink">
                           {bundle.yearlyGrowth.yearlyTheme}
@@ -1537,16 +1527,16 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2 text-xs">
                         <div className="rounded-xl bg-rel-taupe-soft/20 p-3.5 border border-rel-line">
-                          <p className="font-bold text-rel-ink mb-1">🌱 나타날 수 있는 모습</p>
+                          <p className="font-bold text-rel-ink mb-1">나타날 수 있는 모습</p>
                           <p className="text-rel-ink-soft leading-relaxed">{bundle.yearlyGrowth.yearlyBehavior}</p>
                         </div>
                         <div className="rounded-xl bg-rel-taupe-soft/20 p-3.5 border border-rel-line">
-                          <p className="font-bold text-rel-ink mb-1">👑 {parentName}의 조력 역할</p>
+                          <p className="font-bold text-rel-ink mb-1">{parentName}의 조력 역할</p>
                           <p className="text-rel-ink-soft leading-relaxed">{bundle.yearlyGrowth.parentSupportRole}</p>
                         </div>
                       </div>
                       <p className="text-xs text-rel-ink-mute italic border-t border-rel-line/50 pt-2">
-                        💡 {bundle.yearlyGrowth.reassuranceNote}
+                        {bundle.yearlyGrowth.reassuranceNote}
                       </p>
                     </div>
                   </div>
@@ -1558,7 +1548,7 @@ export function FamilyReportViewModelView({
                   <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
                     <div className="rounded-xl bg-v4-good-soft p-4 border border-v4-good/25">
                       <p className="text-xs font-bold text-v4-good uppercase tracking-wider mb-1">
-                        🚀 밀어줘야 할 것 (성장 엔진)
+                        밀어줘야 할 것 (성장 엔진)
                       </p>
                       <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
                         {bundle.parentGuidance.pushForward}
@@ -1567,7 +1557,7 @@ export function FamilyReportViewModelView({
 
                     <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line">
                       <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
-                        🤝 도와줘야 할 것 (안전 울타리)
+                        도와줘야 할 것 (안전 울타리)
                       </p>
                       <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
                         {bundle.parentGuidance.scaffold}
@@ -1576,7 +1566,7 @@ export function FamilyReportViewModelView({
 
                     <div className="rounded-xl bg-v4-bad-soft p-4 border border-v4-bad/25">
                       <p className="text-xs font-bold text-v4-bad uppercase tracking-wider mb-1">
-                        ✋ 너무 많이 하지 않아도 되는 것 (덜 건드릴 것)
+                        너무 많이 하지 않아도 되는 것 (덜 건드릴 것)
                       </p>
                       <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
                         {bundle.parentGuidance.lessOf}
@@ -1593,7 +1583,7 @@ export function FamilyReportViewModelView({
             <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4 space-y-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
-                  🎁 Child's Core Needs · 자녀 핵심 양육 욕구 종합
+                  Child's Core Needs · 자녀 핵심 양육 욕구 종합
                 </p>
                 <p className="mt-1 text-xs text-rel-ink-soft italic">
                   {chapter.childCoreNeeds.summary}
@@ -1604,7 +1594,7 @@ export function FamilyReportViewModelView({
               {chapter.childCoreNeedsDetailed?.innateParentingNeeds?.length ? (
                 <div className="rounded-lg bg-rel-taupe-soft/30 p-3 border border-rel-line">
                   <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
-                    <span>🌱</span> 이 아이가 편안하게 자라는 본래 부모 태도
+                    이 아이가 편안하게 자라는 본래 부모 태도
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {chapter.childCoreNeedsDetailed.innateParentingNeeds.map((need, idx) => (
@@ -1620,12 +1610,12 @@ export function FamilyReportViewModelView({
               {chapter.childCoreNeedsDetailed?.wellSuppliedNeeds?.length ? (
                 <div className="rounded-lg bg-v4-good-soft p-3 border border-v4-good/25">
                   <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
-                    <span>✅</span> 지금 이 부모가 잘 주고 있는 것 (충분함)
+                    지금 이 부모가 잘 주고 있는 것 (충분함)
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {chapter.childCoreNeedsDetailed.wellSuppliedNeeds.map((need, idx) => (
                       <span key={idx} className="rounded-md bg-rel-surface px-2 py-0.5 text-xs text-rel-ink border border-v4-good/30">
-                        ✓ {need.label}
+                        {need.label}
                       </span>
                     ))}
                   </div>
@@ -1636,7 +1626,7 @@ export function FamilyReportViewModelView({
               {chapter.childCoreNeedsDetailed?.primaryNeeds?.length ? (
                 <div className="rounded-lg bg-v4-bad-soft p-3 border border-v4-bad/25">
                   <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
-                    <span>💡</span> 이 관계에서 조금 더 필요한 1~3가지 핵심 욕구
+                    이 관계에서 조금 더 필요한 1~3가지 핵심 욕구
                   </p>
                   <ul className="space-y-1.5">
                     {chapter.childCoreNeedsDetailed.primaryNeeds.map((need, idx) => (
@@ -1677,7 +1667,7 @@ export function FamilyReportViewModelView({
                   {/* 부모가 사랑을 표현하는 방식 */}
                   <div>
                     <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
-                      {ec(locale, "How parent expresses love", "부모가 사랑을 표현하는 방식")}
+                      ▫ {ec(locale, "How parent expresses love", "부모가 사랑을 표현하는 방식")}
                     </p>
                     <p className="mt-1 text-base font-bold text-rel-ink">
                       {love?.parentExpressionTitle ?? `${parentName}의 사랑은 '챙기고 방향을 잡아주는 것'에 가까워요.`}
@@ -1692,7 +1682,7 @@ export function FamilyReportViewModelView({
                   {/* 아이가 사랑을 느끼는 방식 */}
                   <div>
                     <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
-                      {ec(locale, "How child experiences love", "아이가 사랑을 느끼는 방식")}
+                      ▫ {ec(locale, "How child experiences love", "아이가 사랑을 느끼는 방식")}
                     </p>
                     <p className="mt-1 text-base font-bold text-rel-ink">
                       {love?.childReceptionTitle ?? `${childName}은 '나를 믿고 기다려주는 것'에서 사랑을 크게 느껴요.`}
@@ -1707,13 +1697,13 @@ export function FamilyReportViewModelView({
                   {/* 그래서 이 둘 사이에서는 */}
                   <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line/80 space-y-2">
                     <p className="font-rel-sans text-[12px] font-bold text-rel-ink">
-                      💡 {ec(locale, "Between the two of you", "그래서 이 둘 사이에서는")} — {love?.pairSynthesisTitle}
+                      ▫ {ec(locale, "Between the two of you", "그래서 이 둘 사이에서는")} — {love?.pairSynthesisTitle}
                     </p>
                     <p className="font-rel-sans text-[13.5px] leading-[1.8] text-rel-ink-soft">
                       {love?.pairSynthesisDesc}
                     </p>
                     <p className="mt-2 text-xs font-semibold text-rel-deep italic border-t border-rel-line/50 pt-2">
-                      ✨ {love?.keyInsightLine}
+                      {love?.keyInsightLine}
                     </p>
                   </div>
                 </div>
@@ -1777,7 +1767,7 @@ export function FamilyReportViewModelView({
                     </p>
                     <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/80">
                       <p className="font-rel-sans text-xs font-bold text-rel-ink">
-                        💡 {ec(locale, "Recommended Sequencing Rule", "이 둘에게 맞는 순서")}
+                        {ec(locale, "Recommended Sequencing Rule", "이 둘에게 맞는 순서")}
                       </p>
                       <p className="font-rel-sans text-xs text-rel-ink-soft mt-1 leading-relaxed">
                         {repairBundle.timingAnalysis.sequencingRule}
@@ -1805,7 +1795,7 @@ export function FamilyReportViewModelView({
                     </div>
                     <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line/80 space-y-2">
                       <p className="font-rel-sans text-xs font-bold text-rel-ink">
-                        🔄 {ec(locale, "Repair Sequence for This Pair", "이 둘에게 맞는 회복 순서")}
+                        {ec(locale, "Repair Sequence for This Pair", "이 둘에게 맞는 회복 순서")}
                       </p>
                       <ul className="space-y-1.5 pl-1">
                         {repairBundle.prerequisites.repairSequence.map((step, idx) => (
@@ -1824,12 +1814,12 @@ export function FamilyReportViewModelView({
                   <SectionHeader title={ec(locale, "◤ 04. Effective vs Harmful Repair", "◤ 04. 잘 풀리는 화해 / 다시 꼬이는 화해")} tag="PATTERNS" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="rounded-2xl border border-emerald-900/20 bg-emerald-50/40 p-5 shadow-sm space-y-2">
-                      <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">🟢 잘 풀리는 화해</p>
+                      <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">잘 풀리는 화해</p>
                       <p className="font-rel-sans text-sm font-bold text-emerald-950">{repairBundle.doAndDontRepair.effectiveTitle}</p>
                       <p className="font-rel-sans text-xs text-emerald-900/80 leading-relaxed">{repairBundle.doAndDontRepair.effectiveReason}</p>
                     </div>
                     <div className="rounded-2xl border border-rose-900/20 bg-rose-50/40 p-5 shadow-sm space-y-2">
-                      <p className="text-xs font-bold text-rose-900 uppercase tracking-wider">🔴 다시 꼬이는 화해</p>
+                      <p className="text-xs font-bold text-rose-900 uppercase tracking-wider">다시 꼬이는 화해</p>
                       <p className="font-rel-sans text-sm font-bold text-rose-950">{repairBundle.doAndDontRepair.harmfulTitle}</p>
                       <p className="font-rel-sans text-xs text-rose-900/80 leading-relaxed">{repairBundle.doAndDontRepair.harmfulReason}</p>
                     </div>
@@ -1851,9 +1841,8 @@ export function FamilyReportViewModelView({
                         </p>
                         {item.speechTip ? (
                           <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
-                            <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
-                              <span className="not-italic shrink-0">💬</span>
-                              <span>“{item.speechTip}”</span>
+                            <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed">
+                              “{item.speechTip}”
                             </p>
                           </div>
                         ) : null}
@@ -1868,11 +1857,10 @@ export function FamilyReportViewModelView({
                   <div className="space-y-3.5">
                     {repairBundle.antiPatterns.map((item, idx) => (
                       <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
-                        <p className="font-rel-sans text-sm font-bold text-rose-950 flex items-center gap-2">
-                          <span className="text-rose-700">🚫</span>
-                          <span>{item.title}</span>
+                        <p className="font-rel-sans text-sm font-bold text-rose-950">
+                          {item.title}
                         </p>
-                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-6">
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">
                           {item.whyItFails}
                         </p>
                       </div>
@@ -1885,7 +1873,7 @@ export function FamilyReportViewModelView({
                   <SectionHeader title={ec(locale, "◤ 07. Pair Recovery Principle", "◤ 07. 다음번에는 조금 덜 오래 끌기 위해")} tag="SYNTHESIS" />
                   <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-3">
                     <p className="font-rel-sans text-base font-bold text-rel-ink">
-                      ✨ “{repairBundle.synthesisPrinciple.corePrinciple}”
+                      “{repairBundle.synthesisPrinciple.corePrinciple}”
                     </p>
                     <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">
                       {repairBundle.synthesisPrinciple.summaryDesc}
@@ -1947,7 +1935,7 @@ export function FamilyReportViewModelView({
                     {/* 이 관계에서 가장 조심할 것 */}
                     <div className="rounded-xl bg-rel-taupe-soft/30 p-3.5 border border-rel-line/80 space-y-1">
                       <p className="font-rel-sans text-xs font-bold text-rel-ink">
-                        ⚠️ {ec(locale, "Key Caution Point", "이 관계에서 가장 조심할 것")} — {actionBundle.finalTakeaway.cautionPointTitle}
+                        {ec(locale, "Key Caution Point", "이 관계에서 가장 조심할 것")} — {actionBundle.finalTakeaway.cautionPointTitle}
                       </p>
                       <p className="font-rel-sans text-xs leading-relaxed text-rel-ink-soft">
                         {actionBundle.finalTakeaway.cautionPointDesc}
@@ -1973,9 +1961,8 @@ export function FamilyReportViewModelView({
                           <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">{act.whyItMatters}</p>
                           {act.practicalExample ? (
                             <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
-                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
-                                <span className="shrink-0">💬</span>
-                                <span>{act.practicalExample}</span>
+                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed">
+                                {act.practicalExample}
                               </p>
                             </div>
                           ) : null}
@@ -1996,9 +1983,8 @@ export function FamilyReportViewModelView({
                           <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">{act.whyItMatters}</p>
                           {act.practicalExample ? (
                             <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
-                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
-                                <span className="shrink-0">💬</span>
-                                <span>{act.practicalExample}</span>
+                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed">
+                                {act.practicalExample}
                               </p>
                             </div>
                           ) : null}
@@ -2019,9 +2005,8 @@ export function FamilyReportViewModelView({
                           <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4">{act.whyItMatters}</p>
                           {act.practicalExample ? (
                             <div className="ml-4 mt-2 rounded-xl bg-rel-taupe-soft/40 p-3.5 border border-rel-line">
-                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed flex items-start gap-1.5">
-                                <span className="shrink-0">💡</span>
-                                <span>{act.practicalExample}</span>
+                              <p className="font-rel-sans text-xs text-rel-ink font-medium leading-relaxed">
+                                {act.practicalExample}
                               </p>
                             </div>
                           ) : null}
@@ -2037,19 +2022,17 @@ export function FamilyReportViewModelView({
                   <div className="space-y-3.5">
                     {actionBundle.finalDonts.map((item, idx) => (
                       <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
-                        <p className="font-rel-sans text-sm font-bold text-rose-950 flex items-center gap-2">
-                          <span className="text-rose-700">🚫</span>
-                          <span>{item.title}</span>
+                        <p className="font-rel-sans text-sm font-bold text-rose-950">
+                          {item.title}
                         </p>
                         {item.dontExample ? (
-                          <div className="ml-6 mt-1.5 rounded-xl bg-rose-50/60 p-3 border border-rose-100/80">
-                            <p className="font-rel-sans text-xs text-rose-900 font-medium leading-relaxed flex items-start gap-1.5">
-                              <span className="shrink-0">💬</span>
-                              <span>{item.dontExample}</span>
+                          <div className="ml-4 mt-1.5 rounded-xl bg-rose-50/60 p-3 border border-rose-100/80">
+                            <p className="font-rel-sans text-xs text-rose-900 font-medium leading-relaxed">
+                              {item.dontExample}
                             </p>
                           </div>
                         ) : null}
-                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-6 pt-1">
+                        <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed pl-4 pt-1">
                           {item.whyHarmful}
                         </p>
                       </div>
@@ -2095,7 +2078,7 @@ export function FamilyReportViewModelView({
                     <p className="text-xs font-semibold text-rel-deep uppercase tracking-wider">{actionBundle.futureReward.subtitle}</p>
                     {actionBundle.futureReward.themes.map((th, idx) => (
                       <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
-                        <p className="font-rel-sans text-sm font-bold text-rel-ink">✨ {th.title}</p>
+                        <p className="font-rel-sans text-sm font-bold text-rel-ink">{th.title}</p>
                         <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink-soft leading-relaxed">{th.desc}</p>
                       </div>
                     ))}

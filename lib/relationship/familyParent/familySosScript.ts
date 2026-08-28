@@ -9,7 +9,7 @@
 import { profileTenGods, type TenGodCounts } from "@/lib/relationship/marriage/marriageTenGodAnalysis";
 import type { FamilyScoringSignals } from "@/lib/saju/familyAnalysis";
 import { LEGACY_FALLBACK_LOCALE, pick } from "./familyParentCopy";
-import { sanitizeFamilyParentText } from "./familyParentLanguage";
+import { sanitizeFamilyParentText, josaIGa, josaEunNeun } from "./familyParentLanguage";
 import type { Locale } from "@/lib/i18n/locale";
 
 export type FamilySosSection = {
@@ -42,19 +42,19 @@ export function buildFamilySosSection(params: {
       sos_line = pick(
         locale,
         `${child} was born with real financial instinct. Even through a rough patch, they have the strength to get back up — a simple "I believe in you" beats any lecture.`,
-        `${child}는 재물운을 타고났어요. 힘든 시기가 와도 스스로 다시 일어설 힘이 있으니, 잔소리 대신 "난 너를 믿어" 한마디면 충분해요.`,
+        `${josaEunNeun(child)} 재물운을 타고났어요. 힘든 시기가 와도 스스로 다시 일어설 힘이 있으니, 잔소리 대신 "난 너를 믿어" 한마디면 충분해요.`,
       );
     } else if (params.scoringSignals.childSealStrong) {
       sos_line = pick(
         locale,
         `${child} has good resilience. Not rushing them — just waiting — is already a big help: "Take your time, I believe in you."`,
-        `${child}는 회복탄력성이 좋은 편이에요. 재촉하지 말고 기다려 주는 것만으로도 큰 힘이 됩니다 — "천천히 해도 괜찮아, 난 너를 믿어."`,
+        `${josaEunNeun(child)} 회복탄력성이 좋은 편이에요. 재촉하지 말고 기다려 주는 것만으로도 큰 힘이 됩니다 — "천천히 해도 괜찮아, 난 너를 믿어."`,
       );
     } else {
       sos_line = pick(
         locale,
         `When ${child} is going through a hard time, skip the lecture and offer just one line — "I believe in you." That lands harder than a hundred pieces of advice.`,
-        `${child}가 힘든 시기를 지날 때는 잔소리 대신 딱 한마디만 건네 주세요 — "난 너를 믿어." 그 말이 백 마디 조언보다 힘이 셉니다.`,
+        `${josaIGa(child)} 힘든 시기를 지날 때는 잔소리 대신 딱 한마디만 건네 주세요 — "난 너를 믿어." 그 말이 백 마디 조언보다 힘이 셉니다.`,
       );
     }
 

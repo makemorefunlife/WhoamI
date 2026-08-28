@@ -1,5 +1,5 @@
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
-import { josa, josaIGa, josaEunNeun, josaGwaWa, josaEulReul } from "./romanticLanguage";
+import { josa, josaIGa, josaEunNeun, josaGwaWa, josaEulReul, josaRo } from "./romanticLanguage";
 
 export type RomanticRoleType =
   | "emotional_anchor"
@@ -227,6 +227,25 @@ const ROLE_TEACHES_PARTNER: Record<RomanticRoleType, string> = {
   relationship_regulator: "속도를 맞추고 서두르지 않는 법",
 };
 
+const ROLE_COMPLEMENT_KEYWORD: Record<RomanticRoleType, { bring: string; support: string }> = {
+  emotional_anchor: { bring: "변함없는 포용과 정서적 온기", support: "따뜻한 버팀목" },
+  initiator: { bring: "새로운 경험과 활력 있는 제안", support: "추동력" },
+  practical_stabilizer: { bring: "현실적인 조언과 안정적인 기준", support: "든든한 체계" },
+  affection_initiator: { bring: "다정한 표현과 솔직한 온도", support: "다정한 솔직함" },
+  repair_initiator: { bring: "먼저 다가가는 화해의 손길", support: "평화적인 대화" },
+  autonomy_keeper: { bring: "서로의 건강한 경계와 개인적 공간", support: "독립적인 신뢰" },
+  relationship_regulator: { bring: "소통의 주파수와 갈등의 템포", support: "여유 있는 리듬" },
+};
+
+function josaEulReulWord(word: string): string {
+  if (!word) return word;
+  const trimmed = word.trim();
+  const lastChar = trimmed.charCodeAt(trimmed.length - 1);
+  if (lastChar < 0xac00 || lastChar > 0xd7a3) return `${trimmed}를`;
+  const hasJongsung = (lastChar - 0xac00) % 28 !== 0;
+  return hasJongsung ? `${trimmed}을` : `${trimmed}를`;
+}
+
 function composeChapter06(params: {
   nameA: string;
   nameB: string;
@@ -249,7 +268,7 @@ function composeChapter06(params: {
         ? `갈등을 대하는 방식 자체가 달라서, ${josaEunNeun(nameA)} 빨리 풀고 싶어 하고 ${josaEunNeun(nameB)} 시간을 두고 싶어 할 때 서로 엇갈리는 지점`
         : `${josaEunNeun(nameA)} ${ROLE_DEPLETES_WHEN[roleAType]}, ${josaEunNeun(nameB)} ${ROLE_DEPLETES_WHEN[roleBType]} — 이 두 순간이 겹치면 서운함이 쌓이기 쉬운 지점`,
     depletionPattern: `${josaEunNeun(nameA)} ${ROLE_DEPLETES_WHEN[roleAType]}, ${josaEunNeun(nameB)} ${ROLE_DEPLETES_WHEN[roleBType]} — 둘 중 하나만 계속돼도 조용히 지칠 수 있어요.`,
-    complement: `${josaIGa(nameA)} ${ROLE_TITLES[roleAType].desc.split(" ").slice(0, 4).join(" ")}을/를 가져오면, ${josaIGa(nameB)} ${ROLE_TITLES[roleBType].desc.split(" ").slice(0, 4).join(" ")}으로 그걸 받쳐주는 조합이에요.`,
+    complement: `${josaIGa(nameA)} ${josaEulReulWord(ROLE_COMPLEMENT_KEYWORD[roleAType].bring)} 가져오면, ${josaIGa(nameB)} ${josaRo(ROLE_COMPLEMENT_KEYWORD[roleBType].support)} 그걸 받쳐주는 조합이에요.`,
     collision: `${josaEunNeun(nameA)} ${ROLE_DEPLETES_WHEN[roleAType]}, ${josaEunNeun(nameB)} ${ROLE_DEPLETES_WHEN[roleBType]} — 이 두 지점이 부딪히기 쉬워요.`,
     overFunctionRisk: `${josaIGa(nameA)} 혼자 다 떠안거나, ${josaIGa(nameB)} 필요 이상으로 개입해서 서로에게 부담을 줄 위험이에요.`,
     underFunctionRisk: `마찰이 생기면 둘 다 상대가 먼저 나서주길 기다리며 조용히 시간만 흐를 수 있어요.`,
@@ -326,14 +345,14 @@ export function computeRomanticV4GapBatchEngine(params: {
       partnerName: nameB,
       wantedLove: ROLE_WANTS[roleAType],
       givenLove: ROLE_GIVES[roleAType],
-      partnerReception: structB >= 60 ? `${josaEunNeun(nameB)} 이를 든든함으로 받지만 가끔 압박으로 느낄 수 있음` : `${josaIGa(nameB)} 무조건적인 따뜻함으로 긍정 수용함`,
+      partnerReception: structB >= 60 ? `${nameB}님은 이를 든든함으로 느끼지만 가끔은 부담으로 받아들일 수 있어요` : `${nameB}님은 이를 있는 그대로 따뜻하게 받아주는 편이에요`,
     },
     loveB: {
       personName: nameB,
       partnerName: nameA,
       wantedLove: ROLE_WANTS[roleBType],
       givenLove: ROLE_GIVES[roleBType],
-      partnerReception: empA >= 60 ? `${josaEunNeun(nameA)} 해결책보다 먼저 공감해주길 바랄 수 있음` : `${josaIGa(nameA)} 실질적 도움으로 잘 받아들임`,
+      partnerReception: empA >= 60 ? `${nameA}님은 해결책보다 먼저 공감해주길 바랄 수 있어요` : `${nameA}님은 이를 실질적인 도움으로 잘 받아들이는 편이에요`,
     },
     matchStatus: Math.abs(empA - structB) > 25 ? "PARTIALLY_MATCHED" : "MATCHED",
     summary: `${josaIGa(nameA)} ${ROLE_GIVES[roleAType]}으로, ${josaIGa(nameB)} ${ROLE_GIVES[roleBType]}으로 사랑을 표현하는 커플이에요.`,

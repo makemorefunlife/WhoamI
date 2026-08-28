@@ -77,7 +77,7 @@ export function buildFamilyParentSnapshotPanel(
       pick(ctx.locale, "Child DNA Playbook · Family Snapshot", "Child DNA Playbook · 패밀리 스냅샷"),
     representativeLine:
       options?.representativeLine ??
-      `🔥 ${ctx.masterScores.bond}% · 🧩 ${ctx.masterScores.synergy}% · ⚡ ${ctx.masterScores.risk}%`,
+      `▫ 유대 ${ctx.masterScores.bond}% · ▫ 시너지 ${ctx.masterScores.synergy}% · ▫ 마찰 ${ctx.masterScores.risk}%`,
     keywords: [roleLabel, pick(ctx.locale, "Child", "자녀"), "Child DNA"],
     relationshipGauges,
     personA,
