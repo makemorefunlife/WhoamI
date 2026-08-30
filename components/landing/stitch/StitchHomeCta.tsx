@@ -14,7 +14,7 @@ function HeroHookCaption() {
   const text = messages.landing.heroBody2 || messages.landing.heroHook;
   if (!text) return null;
   return (
-    <p className="w-fit max-w-md whitespace-pre-line text-center text-xs sm:text-sm leading-relaxed text-on-surface-variant/70">
+    <p className="w-full max-w-md self-start whitespace-pre-line text-left text-xs leading-relaxed text-on-surface-variant/70">
       {text}
     </p>
   );

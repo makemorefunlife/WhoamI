@@ -791,10 +791,8 @@ export const messagesKoKR: MessageCatalog = {
     createRelationship: "관계 만들기",
   },
   landing: {
-    // Hero h1 removed from the page (kept here only so the shared Messages
-    // type/other locales don't need a special-cased optional field).
     heroTitle: "나를 오해하지 마세요.",
-    heroSubtitle: "나와 상대를 바꾸기보다 제대로 이해하는 것부터 시작하세요",
+    heroSubtitle: "바꾸지 말고, 이해하세요.",
     heroSubtitleLine1: "나와 상대가 어디서 힘을 얻고 왜 엇갈리는지 알면,",
     heroSubtitleLine2: "억지로 애쓰는 대신 서로에게 딱 맞는 방법을 선택할 수 있습니다.",
     heroHook:

@@ -185,10 +185,15 @@ export default function StitchLandingPage({
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
                   Aha It&apos;s me!
                 </p>
-                {/* 메인 타이틀 (H1) — heroSubtitle이 유일한 헤드라인이라 시맨틱 h1으로 승격 */}
-                <h1 className="stitch-headline mb-5 whitespace-pre-line text-balance text-center text-lg font-bold text-primary break-keep sm:text-xl md:text-2xl max-w-xl">
-                  {messages.landing.heroSubtitle}
+                {/* 메인 타이틀 (H1): heroTitle을 굵고 크게, heroSubtitle을 보조 카피로 아래에 배치 */}
+                <h1 className="stitch-headline mb-2 whitespace-pre-line text-balance text-center text-2xl font-extrabold text-primary break-keep sm:text-3xl md:text-4xl max-w-xl">
+                  {messages.landing.heroTitle}
                 </h1>
+                {messages.landing.heroSubtitle ? (
+                  <p className="mb-5 whitespace-pre-line text-balance text-center text-base font-semibold text-primary/80 break-keep sm:text-lg md:text-xl max-w-xl">
+                    {messages.landing.heroSubtitle}
+                  </p>
+                ) : null}
 
                 {/* 본문 카피 (있을 때만 — ko-KR은 비워둠) */}
                 {messages.landing.heroBody1 ? (
