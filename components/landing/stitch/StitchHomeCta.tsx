@@ -1,6 +1,5 @@
 "use client";
 
-import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
@@ -9,15 +8,15 @@ type Props = {
   onOpenStartChoice: () => void;
 };
 
-function HowItWorksLink() {
+/** Small caption under the CTA — replaces the old "이용 방법" link with the hero hook line. */
+function HeroHookCaption() {
   const { messages } = useLocale();
+  const text = messages.landing.heroBody2 || messages.landing.heroHook;
+  if (!text) return null;
   return (
-    <LocaleLink
-      href="/how-it-works"
-      className="w-fit text-sm text-on-surface-variant/80 underline-offset-4 transition hover:text-primary hover:underline font-medium"
-    >
-      {messages.nav.howItWorks}
-    </LocaleLink>
+    <p className="w-fit max-w-md whitespace-pre-line text-center text-xs sm:text-sm leading-relaxed text-on-surface-variant/70">
+      {text}
+    </p>
   );
 }
 
@@ -50,7 +49,7 @@ export default function StitchHomeCta({
           </span>
         ) : null}
       </button>
-      <HowItWorksLink />
+      <HeroHookCaption />
     </div>
   );
 }

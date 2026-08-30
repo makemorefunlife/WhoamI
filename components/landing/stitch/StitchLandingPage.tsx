@@ -185,25 +185,17 @@ export default function StitchLandingPage({
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
                   Aha It&apos;s me!
                 </p>
-                {/* 메인 타이틀 (H1) */}
-                <h1 className="stitch-headline mb-4 whitespace-pre-line text-balance text-[2rem] leading-[1.25] font-normal break-keep sm:text-3xl md:text-4xl lg:text-[2.65rem] text-primary">
-                  {messages.landing.heroTitle}
+                {/* 메인 타이틀 (H1) — heroSubtitle이 유일한 헤드라인이라 시맨틱 h1으로 승격 */}
+                <h1 className="stitch-headline mb-5 whitespace-pre-line text-balance text-center text-lg font-bold text-primary break-keep sm:text-xl md:text-2xl max-w-xl">
+                  {messages.landing.heroSubtitle}
                 </h1>
 
-                {/* 서브 타이틀 (H2) */}
-                <h2 className="mb-5 whitespace-pre-line text-center text-lg font-semibold text-primary/95 break-keep sm:text-xl md:text-2xl max-w-xl">
-                  {messages.landing.heroSubtitle}
-                </h2>
-
-                {/* 본문 카피 1 (간결하게 압축) */}
-                <p className="mb-4 whitespace-pre-line text-center text-base sm:text-lg leading-relaxed text-on-surface-variant/90 break-keep max-w-xl font-normal">
-                  {messages.landing.heroBody1 || messages.landing.heroSubtitleLine1}
-                </p>
-
-                {/* 본문 카피 2 (캡션 스타일, 작은 폰트와 부드러운 톤, margin-top: 20px) */}
-                <div className="mt-5 mb-8 whitespace-pre-line text-center text-xs sm:text-sm leading-relaxed text-on-surface-variant/70 break-keep max-w-xl">
-                  {renderFormattedText(messages.landing.heroBody2 || messages.landing.heroHook)}
-                </div>
+                {/* 본문 카피 (있을 때만 — ko-KR은 비워둠) */}
+                {messages.landing.heroBody1 ? (
+                  <p className="mb-4 whitespace-pre-line text-center text-base sm:text-lg leading-relaxed text-on-surface-variant/90 break-keep max-w-xl font-normal">
+                    {messages.landing.heroBody1}
+                  </p>
+                ) : null}
 
                 {/* CTA 버튼 (시작하기 →) */}
                 <StitchHomeCta

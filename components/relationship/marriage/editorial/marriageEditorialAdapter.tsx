@@ -142,25 +142,25 @@ export function MarriageEditorialHero({
   const [nameA, nameB] = names;
   return (
     <header className="relative overflow-hidden">
-      <div className="mx-auto w-full max-w-[880px] px-5 pb-10 pt-12 sm:px-8 sm:pb-16 sm:pt-16">
+      <div className="mx-auto w-full max-w-[880px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
         {eyebrow ? (
-          <p className="font-rel-sans text-[10px] font-bold uppercase tracking-[0.3em] text-[#1b3b2b]">{eyebrow}</p>
+          <p className="font-rel-sans text-[10px] uppercase tracking-[0.3em] text-rel-deep">{eyebrow}</p>
         ) : null}
-        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
           <NameChip name={nameA} side="a" />
-          <span aria-hidden className="font-rel-serif text-[15px] text-[#8c827a]">
+          <span aria-hidden className="font-rel-serif text-[15px] text-rel-ink-mute">
             ×
           </span>
           <NameChip name={nameB} side="b" />
         </div>
-        <h1 className="mt-5 max-w-[24ch] font-rel-serif text-[28px] font-bold leading-[1.25] tracking-[-0.02em] text-[#2c2b29] sm:text-[40px]">
+        <h1 className="mt-6 max-w-[24ch] font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
           {headline}
         </h1>
         {subtitle ? (
-          <p className="mt-4 max-w-[62ch] font-rel-sans text-[14.5px] leading-[1.85] text-[#5e5b56]">{subtitle}</p>
+          <p className="mt-5 max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft">{subtitle}</p>
         ) : null}
         {gradeLabel ? (
-          <span className="mt-5 inline-flex rounded-full border border-[#1b3b2b]/30 bg-[#1b3b2b]/10 px-3.5 py-1 font-rel-sans text-xs font-semibold tracking-wide text-[#1b3b2b]">
+          <span className="mt-6 inline-flex rounded-full border border-rel-deep/30 bg-rel-deep-soft px-3.5 py-1 font-rel-sans text-xs font-semibold tracking-wide text-rel-deep">
             {gradeLabel}
           </span>
         ) : null}
