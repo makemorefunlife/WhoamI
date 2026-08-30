@@ -91,10 +91,10 @@ const CATEGORY_FAMILY_IDENTITY: Record<Locale, Record<string, string>> = {
 
 const LIFESTYLE_TITLES: Record<Locale, Record<string, string[]>> = {
   "en-US": {
-    wealth: ["Practical Nest Builder", "Home CFO Energy", "Steady Hearth Keeper"],
+    wealth: ["Practical Nest Builder", "Money-Smart Homebuilder", "Steady Hearth Keeper"],
     officer: ["Structured Home Captain", "Calm Household Anchor", "Rule-of-Love Leader"],
     food: ["Creative Hearth Artist", "Warm Conversation Curator", "Joy-First Partner"],
-    seal: ["Nurturing Sanctuary Guide", "Gentle Home Therapist", "Quiet Support Pillar"],
+    seal: ["Nurturing Sanctuary Guide", "The Household's Gentle Heart", "Quiet Support Pillar"],
     self: ["Independent Duo Spirit", "Pride & Partnership Type", "Loyal Co-Captain"],
     balanced: ["Balanced Life Partner", "Harmony-First Homemaker", "Flexible Family Weaver"],
   },

@@ -40,7 +40,7 @@ function buildEnergyDrainPrescription(
   const tempLabel = TEMP_LABEL[locale];
   const summary = pick(
     locale,
-    `A gap in temperature/humidity balance (johu) makes it easy for one side to get tired first when you hang out. ` +
+    `A gap in your natural energy temperature makes it easy for one side to get tired first when you hang out. ` +
       `Heat gap ${johu_gap.heat_gap} · moisture gap ${johu_gap.moisture_gap} · ` +
       `energy-drain index ${pair.energy_drain_index} (${pair.energy_drain_band}). ` +
       `This is a ${nicknameA} (${tempLabel[johu_gap.band_a]}) ↔ ${nicknameB} (${tempLabel[johu_gap.band_b]}) pairing.`,
@@ -94,7 +94,7 @@ function buildEnergyDrainPrescription(
     dont_list: pick(
       locale,
       [
-        "Don't push 'it's been a while, let's make it a long one today' on a tired day — the bigger the johu gap between you, the more poisonous a forced long hangout becomes.",
+        "Don't push 'it's been a while, let's make it a long one today' on a tired day — the bigger the energy-temperature gap between you, the more poisonous a forced long hangout becomes.",
         "Don't unload a full life review — dating, work, family, all of it — in one sitting.",
         "Don't send long emotional texts after 11pm — it pre-drains the energy you'll need for your next hangout.",
         "Don't just stare at your phones the whole time and split — that's the classic pattern behind 'why am I more tired even though we hung out?'",
@@ -136,7 +136,7 @@ function buildCommunicationPrescription(
   const summary = johu_gap.temperature_mismatch
     ? pick(
         locale,
-        `${coldSide ?? "One of you"} runs cool and ${hotSide ?? "the other"} runs warm on the johu band, so contact frequency, conversation depth, and emotional pacing tend to drift out of sync.`,
+        `${coldSide ?? "One of you"} runs cool and ${hotSide ?? "the other"} runs warm in social energy, so contact frequency, conversation depth, and emotional pacing tend to drift out of sync.`,
         `${coldSide ?? "한쪽"}은 차갑고 ${hotSide ?? "한쪽"}은 열정적인 조후 밴드라, 연락 빈도·대화 깊이·감정 표현 속도가 어긋나기 쉽습니다.`,
       )
     : pick(
@@ -206,7 +206,7 @@ function buildCommunicationPrescription(
     dont_list: pick(
       locale,
       [
-        "Don't run affection tests like 'don't you even like me?' — a johu temperature gap isn't the same as a lack of affection.",
+        "Don't run affection tests like 'don't you even like me?' — a difference in social temperature isn't the same as a lack of affection.",
         "Don't tease their reply speed in group chats or in front of others.",
         "Don't repeatedly hit the cool-side friend with sudden 'meet me right now' emergency summons.",
         "Don't just call the warm-side friend's messages 'too much' and cut them off with no alternative offered.",
@@ -335,7 +335,7 @@ function resolveIntroLine(items: FriendPrescriptionItem[], locale: Locale): stri
   if (topics.has("communication_climate")) {
     return pick(
       locale,
-      "A gap in your johu (hot/cold) bands makes contact and emotional tempo easy to mismatch. Use the rules below to cut down on misunderstandings.",
+      "A gap in your natural hot/cold energy makes contact and emotional tempo easy to mismatch. Use the rules below to cut down on misunderstandings.",
       "조후(한열) 밴드 격차로 연락·감정 템포가 어긋나기 쉽습니다. 아래 규칙으로 오해를 줄이세요.",
     );
   }

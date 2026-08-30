@@ -791,14 +791,17 @@ export const messagesKoKR: MessageCatalog = {
     createRelationship: "관계 만들기",
   },
   landing: {
+    // Hero h1 removed from the page (kept here only so the shared Messages
+    // type/other locales don't need a special-cased optional field).
     heroTitle: "나를 오해하지 마세요.",
-    heroSubtitle: "나를 바꾸기보다 제대로 이해하는 것부터 시작하세요",
+    heroSubtitle: "나와 상대를 바꾸기보다 제대로 이해하는 것부터 시작하세요",
     heroSubtitleLine1: "나와 상대가 어디서 힘을 얻고 왜 엇갈리는지 알면,",
     heroSubtitleLine2: "억지로 애쓰는 대신 서로에게 딱 맞는 방법을 선택할 수 있습니다.",
     heroHook:
       "Aha It's me!는 고유한 패턴을 읽어 마찰은 줄이고 강점은 살리며, 중요한 순간 가장 나다운 결정을 내리도록 돕습니다.",
-    heroBody1:
-      "나와 상대가 어디서 힘을 얻고 왜 엇갈리는지 알면,\n억지로 애쓰는 대신 서로에게 딱 맞는 방법을 선택할 수 있습니다.",
+    // Removed from the hero — the slot below the headline is now empty for
+    // ko-KR (StitchLandingPage only renders it when non-empty).
+    heroBody1: "",
     heroBody2:
       "Aha It's me!는 고유한 패턴을 읽어 마찰은 줄이고 강점은 살리며, 중요한 순간 가장 나다운 결정을 내리도록 돕습니다.",
     heroCtaText: "시작하기",

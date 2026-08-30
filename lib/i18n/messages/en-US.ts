@@ -830,14 +830,16 @@ export const messagesEnUS = {
     createRelationship: "Create relationship",
   },
   landing: {
+    // Hero h1 removed from the page (kept here only so the shared Messages
+    // type/other locales don't need a special-cased optional field).
     heroTitle: "Don't misunderstand yourself.",
-    heroSubtitle: "Start by understanding yourself, rather than trying to change yourself",
+    heroSubtitle: "The more you understand, the more your relationships can change.",
     heroSubtitleLine1: "When you understand where you and the other person gain energy and why you clash,",
     heroSubtitleLine2: "you can choose the method that fits perfectly instead of forcing effort.",
     heroHook:
       "Aha It's me! reads unique patterns to reduce friction, amplify strengths, and help you make choices that are true to yourself at crucial moments.",
     heroBody1:
-      "When you understand where you and the other person gain energy and why you clash,\nyou can choose the method that fits perfectly instead of forcing effort.",
+      "When you see yourself and others more clearly, you can respond in ways that work better for both of you.",
     heroBody2:
       "Aha It's me! reads unique patterns to reduce friction, amplify strengths, and help you make choices that are true to yourself at crucial moments.",
     heroCtaText: "Get Started",

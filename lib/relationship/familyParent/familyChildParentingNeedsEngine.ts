@@ -1,6 +1,7 @@
 import type { FamilyRuleContext } from "./buildFamilyRuleContext";
 import type { FamilyParentChildReport } from "./familyReportTemplate";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
+import { pick } from "./familyParentCopy";
 
 export type NeedsDimension =
   | "emotional_acceptance"
@@ -55,6 +56,7 @@ export function computeChildParentingNeedsEngine(params: {
   psychChild: PsychMasterJson | null;
 }): ChildParentingNeedsOutput {
   const { ctx, report, psychParent, psychChild } = params;
+  const locale = ctx.locale;
 
   // 1. Child Saju Structure & Canonical Facts
   const countsChild = ctx.tenGod.countsChild;
@@ -109,15 +111,15 @@ export function computeChildParentingNeedsEngine(params: {
     desiredScores.warm_expression.score += 20;
     desiredScores.emotional_acceptance.evidence.push(
       isChildWeak
-        ? "신약한 명식 내 인성 지원: 부모의 정서적 포용과 따뜻한 든든한 서포트가 꼭 필요함"
-        : "명식 내 적정 인성: 부모의 따뜻한 보호와 정서적 안전지대 필요"
+        ? pick(locale, "Support in a naturally weaker chart: real emotional acceptance and warm, steady support from a parent matters a lot here", "신약한 명식 내 인성 지원: 부모의 정서적 포용과 따뜻한 든든한 서포트가 꼭 필요함")
+        : pick(locale, "A balanced support element in the chart: needs a parent's warm protection and an emotional safe haven", "명식 내 적정 인성: 부모의 따뜻한 보호와 정서적 안전지대 필요")
     );
   } else if (sealChild >= 2 && !isChildWeak) {
     // 신강 + 인성 과다 -> 밀착 과보호 시 답답함 유발, 자율성과 거리두기 선호
     desiredScores.autonomy.score += 25;
     desiredScores.patience.score += 25;
     desiredScores.emotional_acceptance.score -= 10;
-    desiredScores.autonomy.evidence.push("명식 내 인성 과다: 밀착 과보호 시 답답함 유발, 적절한 거리와 기다림 필요");
+    desiredScores.autonomy.evidence.push(pick(locale, "An excess of support element in the chart: too much hovering causes real frustration — needs the right amount of distance and patience", "명식 내 인성 과다: 밀착 과보호 시 답답함 유발, 적절한 거리와 기다림 필요"));
   }
 
   // B. Output / 식상
@@ -125,59 +127,63 @@ export function computeChildParentingNeedsEngine(params: {
     desiredScores.autonomy.score += 25;
     desiredScores.explanation.score += 20;
     desiredScores.challenge.score += 15;
-    desiredScores.autonomy.evidence.push("명식 내 식상 기운: 지시 통제보다 스스로 해보는 자율성과 선택권 필요");
+    desiredScores.autonomy.evidence.push(pick(locale, "Expressive/output energy in the chart: needs the autonomy to try it themselves and real choice, more than being told what to do", "명식 내 식상 기운: 지시 통제보다 스스로 해보는 자율성과 선택권 필요"));
   }
 
   // C. Officer / 관성
   if (officerChild >= 1 && foodChild === 0) {
     desiredScores.structure.score += 25;
     desiredScores.consistent_boundaries.score += 20;
-    desiredScores.structure.evidence.push("명식 내 관성 유용: 명확한 기준과 일관된 규칙이 안정감을 줌");
+    desiredScores.structure.evidence.push(pick(locale, "A useful authority element in the chart: clear standards and consistent rules bring real stability", "명식 내 관성 유용: 명확한 기준과 일관된 규칙이 안정감을 줌"));
   } else if (officerChild >= 1 && foodChild >= 1) {
     desiredScores.explanation.score += 25;
     desiredScores.patience.score += 20;
-    desiredScores.explanation.evidence.push("명식 내 식상-관성 공존: 일방적 지시 시 저항, 이유 있는 설명과 설득 필수");
+    desiredScores.explanation.evidence.push(pick(locale, "Both expressive and authority elements present: resists one-sided orders — a real reason and genuine persuasion are essential", "명식 내 식상-관성 공존: 일방적 지시 시 저항, 이유 있는 설명과 설득 필수"));
   }
 
   // D. 比劫 / 비겁
   if (selfChild >= 2) {
     desiredScores.autonomy.score += 20;
     desiredScores.recognition.score += 20;
-    desiredScores.autonomy.evidence.push("명식 내 비겁 강세: 자기주도성과 동등한 대등 존중 필요");
+    desiredScores.autonomy.evidence.push(pick(locale, "A strong peer/self element in the chart: needs self-direction and to be respected as an equal", "명식 내 비겁 강세: 자기주도성과 동등한 대등 존중 필요"));
   }
 
   // E. 재성
   if (wealthChild >= 2) {
     desiredScores.practical_support.score += 25;
     desiredScores.recognition.score += 15;
-    desiredScores.practical_support.evidence.push("명식 내 재성 발달: 구체적 피드백과 실질적 성취 보상 선호");
+    desiredScores.practical_support.evidence.push(pick(locale, "A developed wealth element in the chart: prefers concrete feedback and real, tangible rewards for achievement", "명식 내 재성 발달: 구체적 피드백과 실질적 성취 보상 선호"));
   }
 
   // Combine with Psych 11-Axis & Discrepancy
   if (pChildRecognition >= 65) {
     desiredScores.recognition.score += 20;
     desiredScores.recognition.confidence = "high";
-    desiredScores.recognition.evidence.push("심리 11축 인정 욕구(recognition) 밴드 높음");
+    desiredScores.recognition.evidence.push(pick(locale, "High band on the 11-axis recognition-need score", "심리 11축 인정 욕구(recognition) 밴드 높음"));
   }
   if (pChildEmpathy >= 65) {
     desiredScores.emotional_acceptance.score += 20;
     desiredScores.emotional_acceptance.confidence = "high";
-    desiredScores.emotional_acceptance.evidence.push("심리 11축 공감(empathy) 밴드 높음");
+    desiredScores.emotional_acceptance.evidence.push(pick(locale, "High band on the 11-axis empathy score", "심리 11축 공감(empathy) 밴드 높음"));
   }
   if (pChildStructure >= 65) {
     desiredScores.structure.score += 20;
     desiredScores.structure.confidence = "high";
-    desiredScores.structure.evidence.push("심리 11축 구조(structure) 밴드 높음");
+    desiredScores.structure.evidence.push(pick(locale, "High band on the 11-axis structure score", "심리 11축 구조(structure) 밴드 높음"));
   }
   if (pChildStimulation >= 65) {
     desiredScores.autonomy.score += 20;
     desiredScores.challenge.score += 15;
     desiredScores.autonomy.confidence = "high";
-    desiredScores.autonomy.evidence.push("심리 11축 자극/탐색(stimulation) 밴드 높음");
+    desiredScores.autonomy.evidence.push(pick(locale, "High band on the 11-axis stimulation/exploration score", "심리 11축 자극/탐색(stimulation) 밴드 높음"));
   }
 
   if (foodChild >= 1 && pChildStructure >= 65) {
-    desiredScores.autonomy.discrepancy = "본래는 자율성(식상) 욕구가 강하나, 현재는 부모의 규칙(structure)에 익숙해져 수동적으로 맞춰주는 경향이 있음";
+    desiredScores.autonomy.discrepancy = pick(
+      locale,
+      "Naturally has a strong need for autonomy, but has grown used to a parent's structure and now tends to passively fall in line",
+      "본래는 자율성(식상) 욕구가 강하나, 현재는 부모의 규칙(structure)에 익숙해져 수동적으로 맞춰주는 경향이 있음",
+    );
   }
 
   // 2. Parent Actual Supply (Pair-Level Delivery Evidence Integration)
@@ -259,7 +265,7 @@ export function computeChildParentingNeedsEngine(params: {
 
     return {
       dimension: dim,
-      label: DIMENSION_LABELS[dim].ko,
+      label: pick(locale, DIMENSION_LABELS[dim].en, DIMENSION_LABELS[dim].ko),
       desiredScore: Math.round(desired),
       suppliedScore: Math.round(supplied),
       gap: Math.round(gap),
@@ -274,7 +280,7 @@ export function computeChildParentingNeedsEngine(params: {
   const innateParentingNeeds = sortedByDesired.slice(0, 3).map((d) => ({
     dimension: d.dimension,
     label: d.label,
-    description: d.evidence[0] || `아이의 명식과 심리 성향상 ${d.label} 성향이 강함`,
+    description: d.evidence[0] || pick(locale, `Based on the child's chart and psychological profile, ${d.label} stands out as a strong need`, `아이의 명식과 심리 성향상 ${d.label} 성향이 강함`),
   }));
 
   const wellSuppliedNeeds = dimensionDetails
@@ -283,7 +289,7 @@ export function computeChildParentingNeedsEngine(params: {
     .map((d) => ({
       dimension: d.dimension,
       label: d.label,
-      description: `부모가 이미 충분히 제공하고 있어 아이가 안정감을 느끼는 부분입니다.`,
+      description: pick(locale, `Something the parent already provides well, which gives the kid a real sense of stability.`, `부모가 이미 충분히 제공하고 있어 아이가 안정감을 느끼는 부분입니다.`),
     }));
 
   const primaryNeedsList = dimensionDetails
@@ -293,16 +299,26 @@ export function computeChildParentingNeedsEngine(params: {
     .map((d) => ({
       dimension: d.dimension,
       label: d.label,
-      description: d.discrepancyNote || `${d.label} 욕구(선호도 ${d.desiredScore}점) 대비 부모의 현 공급(${d.suppliedScore}점) 사이에 갭이 존재합니다.`,
-      gapStatus: d.status === "NEEDS_ATTENTION" ? "시급한 조율 필요" : "부분 보충 추천",
+      description:
+        d.discrepancyNote ||
+        pick(
+          locale,
+          `There's a gap between the need for ${d.label} (a preference score of ${d.desiredScore}) and how much the parent currently provides (${d.suppliedScore}).`,
+          `${d.label} 욕구(선호도 ${d.desiredScore}점) 대비 부모의 현 공급(${d.suppliedScore}점) 사이에 갭이 존재합니다.`,
+        ),
+      gapStatus: d.status === "NEEDS_ATTENTION" ? pick(locale, "Needs attention soon", "시급한 조율 필요") : pick(locale, "Worth topping up", "부분 보충 추천"),
     }));
 
   if (primaryNeedsList.length === 0) {
     primaryNeedsList.push({
       dimension: sortedByDesired[0]!.dimension,
       label: sortedByDesired[0]!.label,
-      description: "현재 부모님이 아이의 핵심 욕구를 훌륭히 채워주고 계시며, 현 기조를 유지해 주시면 충분합니다.",
-      gapStatus: "현재 훌륭함",
+      description: pick(
+        locale,
+        "Right now the parent is doing a great job meeting the kid's core needs — keeping up the current approach is enough.",
+        "현재 부모님이 아이의 핵심 욕구를 훌륭히 채워주고 계시며, 현 기조를 유지해 주시면 충분합니다.",
+      ),
+      gapStatus: pick(locale, "Doing great right now", "현재 훌륭함"),
     });
   }
 
@@ -312,7 +328,11 @@ export function computeChildParentingNeedsEngine(params: {
     innateParentingNeeds,
     wellSuppliedNeeds,
     primaryNeeds: primaryNeedsList,
-    summary: `${ctx.childNickname}에게 본래 필요한 parenting 태도는 '${innateParentingNeeds[0]?.label}'이며, 현재 이 관계에서 특히 채워주어야 할 핵심 욕구는 '${primaryNeedsList[0]?.label}'입니다.`,
+    summary: pick(
+      locale,
+      `${ctx.childNickname}'s core natural parenting need is "${innateParentingNeeds[0]?.label}", and the need that most deserves attention in this relationship right now is "${primaryNeedsList[0]?.label}".`,
+      `${ctx.childNickname}에게 본래 필요한 parenting 태도는 '${innateParentingNeeds[0]?.label}'이며, 현재 이 관계에서 특히 채워주어야 할 핵심 욕구는 '${primaryNeedsList[0]?.label}'입니다.`,
+    ),
     discrepancySummary: discrepancySignal,
     dimensionDetails,
   };

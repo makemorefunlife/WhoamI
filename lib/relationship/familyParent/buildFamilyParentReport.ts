@@ -406,7 +406,11 @@ export function buildFamilyParentReport(params: {
 
   let reportBody: FamilyParentReportBody = {
     headline: family.section_snapshot.one_line_family,
-    summary_line: `▫ 유대 ${ctx.masterScores.bond}% · ▫ 시너지 ${ctx.masterScores.synergy}% · ▫ 마찰 ${ctx.masterScores.risk}%`,
+    summary_line: pick(
+      ctx.locale,
+      `▫ Bond ${ctx.masterScores.bond}% · ▫ Synergy ${ctx.masterScores.synergy}% · ▫ Friction ${ctx.masterScores.risk}%`,
+      `▫ 유대 ${ctx.masterScores.bond}% · ▫ 시너지 ${ctx.masterScores.synergy}% · ▫ 마찰 ${ctx.masterScores.risk}%`,
+    ),
     one_line_family: family.section_snapshot.one_line_family,
     snapshot_panel,
     family,

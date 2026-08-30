@@ -118,12 +118,14 @@ export function adaptAttraction(
   // vice versa) — not the observer's.
   const datingVibeB = plan?.personalRelationshipCeB?.dominantTenGodProfile?.datingVibe ?? null;
   const datingVibeA = plan?.personalRelationshipCeA?.dominantTenGodProfile?.datingVibe ?? null;
+  const isEn = payload.locale === "en-US";
+  const fallbackAttractionTitle = isEn ? "Point of attraction" : "끌리는 지점";
 
   return {
-    whyYou: unitToCard("a", "b", aBlock?.title ?? "끌리는 지점", unitA, datingVibeB),
-    whyMe: unitToCard("b", "a", bBlock?.title ?? "끌리는 지점", unitB, datingVibeA),
+    whyYou: unitToCard("a", "b", aBlock?.title ?? fallbackAttractionTitle, unitA, datingVibeB),
+    whyMe: unitToCard("b", "a", bBlock?.title ?? fallbackAttractionTitle, unitB, datingVibeA),
     whyUs: {
-      title: uniqueBlock?.title ?? "둘 사이에서만 나타나는 시너지",
+      title: uniqueBlock?.title ?? (isEn ? "The synergy only the two of you create" : "둘 사이에서만 나타나는 시너지"),
       body: unitMutual
         ? [unitMutual.recognition, unitMutual.emotionalMeaning].filter(Boolean).join(" ")
         : (uniqueBlock?.body ?? ""),
@@ -212,7 +214,7 @@ export function adaptConflict(
   }
 
   return {
-    triggerTitle: trigger?.title ?? "시작 상황",
+    triggerTitle: trigger?.title ?? (payload.locale === "en-US" ? "How it starts" : "시작 상황"),
     triggerBody: trigger?.body ?? "",
     pairs,
     escalation:
@@ -369,6 +371,7 @@ export function adaptRadarHighlights(
     const sorted = [...payload.axisOverview].sort(
       (a, b) => Math.abs(b.score_a - b.score_b) - Math.abs(a.score_a - a.score_b),
     );
+    const isEn = payload.locale === "en-US";
     insights = sorted.slice(0, 4).map((a) => {
       const gap = Math.abs(a.score_a - a.score_b);
       const matchType = gap < 12 ? "resonance" : gap > 25 ? "tension" : "complement";
@@ -378,11 +381,16 @@ export function adaptRadarHighlights(
         axisLabel,
         gap,
         matchType,
-        whyItMatters: `${personA}님과 ${personB}님의 ${axisLabel} 차이가 정서적 소통 템포에 반영됩니다.`,
-        relationshipEffect:
-          matchType === "resonance"
-            ? "비슷한 성향으로 의사결정 시 높은 직관적 공감대를 형성합니다."
-            : "상대와의 템포 차이로 인해 오해가 발생할 수 있어 서로의 필요를 명확히 말해주는 전환이 유용합니다.",
+        whyItMatters: isEn
+          ? `The gap between ${personA} and ${personB} in ${axisLabel} shows up in your emotional communication tempo.`
+          : `${personA}님과 ${personB}님의 ${axisLabel} 차이가 정서적 소통 템포에 반영됩니다.`,
+        relationshipEffect: isEn
+          ? (matchType === "resonance"
+              ? "You share a similar tendency here, which builds strong intuitive rapport when making decisions."
+              : "The difference in tempo can lead to misunderstandings, so it helps to shift toward stating what each of you needs clearly.")
+          : (matchType === "resonance"
+              ? "비슷한 성향으로 의사결정 시 높은 직관적 공감대를 형성합니다."
+              : "상대와의 템포 차이로 인해 오해가 발생할 수 있어 서로의 필요를 명확히 말해주는 전환이 유용합니다."),
       } as any;
     });
   }

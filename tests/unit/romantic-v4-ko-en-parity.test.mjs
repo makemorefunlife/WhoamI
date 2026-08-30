@@ -194,4 +194,55 @@ for (const [name, value] of Object.entries(adaptedOutputs)) {
 }
 ok(`zero Hangul across all ${Object.keys(adaptedOutputs).length} chapter adapters' en-US output`);
 
+// ---------------------------------------------------------------------------
+section("10) adaptRadarHighlights (Phase 3 fix) — zero Hangul, both the primary path and the legacy fallback path");
+
+const radarHighlights = adapters.adaptRadarHighlights(en, "Priya", "Jonas");
+assert.equal(
+  hangulPattern.test(JSON.stringify(radarHighlights)),
+  false,
+  "adaptRadarHighlights en-US output must contain zero Hangul",
+);
+ok("adaptRadarHighlights en-US output contains zero Hangul (primary selectedAxisInsights path)");
+
+// Force the legacy fallback branch (no selectedAxisInsights, only axisOverview)
+// by building a payload shape with selectedAxisInsights stripped — this is
+// exactly the "old cached record" case the Phase 3 forensic trace flagged as
+// a real, previously-Korean-only leak in the fallback synthesis.
+const enForFallback = { ...en, selectedAxisInsights: [] };
+const fallbackHighlights = adapters.adaptRadarHighlights(enForFallback, "Priya", "Jonas");
+assert.ok(fallbackHighlights.length > 0, "the fallback path must still synthesize highlights from axisOverview");
+assert.equal(
+  hangulPattern.test(JSON.stringify(fallbackHighlights)),
+  false,
+  "adaptRadarHighlights en-US fallback-branch output must contain zero Hangul",
+);
+ok("adaptRadarHighlights en-US fallback branch (legacy cached record shape) contains zero Hangul");
+
+// ---------------------------------------------------------------------------
+section("11) romanticGapBatch (Phase 3 fix — computeRomanticV4GapBatchEngine) — zero Hangul, rendered directly by ChaptersA/B");
+
+assert.ok(en.storyPlan?.romanticGapBatch, "en-US payload must include storyPlan.romanticGapBatch");
+assert.ok(ko.storyPlan?.romanticGapBatch, "ko-KR payload must include storyPlan.romanticGapBatch");
+const gapBatchText = JSON.stringify(en.storyPlan.romanticGapBatch);
+assert.equal(hangulPattern.test(gapBatchText), false, "en-US storyPlan.romanticGapBatch must contain zero Hangul — this is rendered directly by ChaptersA.tsx/ChaptersB.tsx");
+ok("en-US storyPlan.romanticGapBatch (longTermBond, wantedVsGivenLove, emergencySos, conflictTransitions, etc.) contains zero Hangul");
+
+const koGapBatchText = JSON.stringify(ko.storyPlan.romanticGapBatch);
+assert.equal(latinSentencePattern.test(koGapBatchText), false, "ko-KR storyPlan.romanticGapBatch must not contain stray English sentence fragments");
+ok("ko-KR storyPlan.romanticGapBatch unaffected by the en-US locale threading");
+
+// Role/ownership safety: chapter06's roleMatrix.roleA must always describe
+// nameA (Priya) and roleMatrix.roleB must always describe nameB (Jonas) —
+// i.e. the wantedVsGivenLove/emergencySos/etc. person-name fields must match
+// the same person the role/scores were derived from, not get scrambled.
+const gb = en.storyPlan.romanticGapBatch;
+assert.equal(gb.wantedVsGivenLove.loveA.personName, "Priya", "wantedVsGivenLove.loveA must be attributed to nameA (Priya)");
+assert.equal(gb.wantedVsGivenLove.loveB.personName, "Jonas", "wantedVsGivenLove.loveB must be attributed to nameB (Jonas)");
+assert.equal(gb.emergencySos.sosAtoB.seekerName, "Priya", "emergencySos.sosAtoB seeker must be nameA (Priya)");
+assert.equal(gb.emergencySos.sosAtoB.providerName, "Jonas", "emergencySos.sosAtoB provider must be nameB (Jonas)");
+assert.equal(gb.conflictTransitions.transitionA.personName, "Priya", "conflictTransitions.transitionA must be attributed to nameA (Priya)");
+assert.equal(gb.conflictTransitions.transitionB.personName, "Jonas", "conflictTransitions.transitionB must be attributed to nameB (Jonas)");
+ok("romanticGapBatch fields stay correctly attributed to nameA/nameB (Priya/Jonas), not scrambled across the A/B split");
+
 console.log("\nOK: romantic-v4-ko-en-parity tests passed");

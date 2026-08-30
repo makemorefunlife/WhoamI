@@ -15,6 +15,19 @@ const SOFT_WASH_FRIEND =
 const GAP_AUDIBLE =
   /어긋|불일치|맞지\s*않|갭|다를\s*수|확인해\s*볼|조율|거리|템포|리듬|서운|연락|티키타카|배터리|만남|약속/;
 
+/**
+ * Phase 1 English remediation: English equivalent of GAP_AUDIBLE's concept
+ * coverage (contact/distance/tempo/hurt-feelings/plans language), so the
+ * "already gap-audible" check doesn't always fail on English text and
+ * force the Korean fallback sentence below into EN output.
+ */
+const GAP_AUDIBLE_EN =
+  /mismatch|misalign|out of sync|not (?:quite )?align|\bgap\b|tempo|rhythm|distance|check[- ]?in|hurt feelings?|reach(?:ing)? out|hangout|meet[- ]?up|texting|communication style/i;
+
+function isGapAudible(text: string, isEn: boolean): boolean {
+  return isEn ? GAP_AUDIBLE_EN.test(text) : GAP_AUDIBLE.test(text);
+}
+
 const TENTATIVE_MARKER =
   /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울|상황에\s*따라|다르게\s*나타날/;
 
@@ -250,16 +263,20 @@ function scrubFriendSoftWash(body: string): string {
   return out.replace(/\s{2,}/g, " ").trim();
 }
 
-function softWashBody(body: string): string {
+function softWashBody(body: string, isEn: boolean): string {
   if (!body.trim()) return body;
   let out = body.trim();
-  if (!GAP_AUDIBLE.test(out.slice(0, Math.min(out.length, 140)))) {
-    out = `연락·거리·서운함에서 어긋날 수 있는 지점이 있다. ${out}`;
+  if (!isGapAudible(out.slice(0, Math.min(out.length, 140)), isEn)) {
+    out = isEn
+      ? `There may be a gap in how you two handle contact, distance, or hurt feelings. ${out}`
+      : `연락·거리·서운함에서 어긋날 수 있는 지점이 있다. ${out}`;
   }
-  out = scrubFriendSoftWash(out);
-  if (SOFT_WASH_FRIEND.test(out)) {
-    out =
-      `${out.replace(SOFT_WASH_FRIEND, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
+  if (!isEn) {
+    out = scrubFriendSoftWash(out);
+    if (SOFT_WASH_FRIEND.test(out)) {
+      out =
+        `${out.replace(SOFT_WASH_FRIEND, "").trim()} 맞춰 갈 여지는 확인해 볼 수 있다.`.trim();
+    }
   }
   return out;
 }
@@ -448,13 +465,14 @@ export function postValidateFriendNarrative(
           key === "match_note"
             ? (() => {
                 let note = prev;
-                if (!GAP_AUDIBLE.test(note)) {
-                  note =
-                    "연락·거리·서운함에서 어긋날 수 있다. 상대가 편하다고 느끼는 템포를 따로 확인해 볼 필요가 있다.";
+                if (!isGapAudible(note, isEn)) {
+                  note = isEn
+                    ? "There may be a gap in contact, distance, or hurt feelings. It's worth checking in on the tempo the other person is actually comfortable with."
+                    : "연락·거리·서운함에서 어긋날 수 있다. 상대가 편하다고 느끼는 템포를 따로 확인해 볼 필요가 있다.";
                 }
-                return scrubFriendSoftWash(note);
+                return isEn ? note : scrubFriendSoftWash(note);
               })()
-            : softWashBody(prev);
+            : softWashBody(prev, isEn);
         if (nextBody !== prev) {
           (gapSignal as AnyRec)[key] = nextBody;
           fixes.push(`mismatch_${key}`);

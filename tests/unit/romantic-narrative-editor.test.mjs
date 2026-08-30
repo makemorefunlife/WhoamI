@@ -235,6 +235,74 @@ describe("Narrative Editor — validateNarrativeEdits", () => {
   });
 });
 
+// Phase 1 English remediation parity: hasInteractionConsequenceShape() used
+// to be Korean-word-list-only, so every valid English Recognition Line
+// failed the shape check and was silently dropped. These mirror the KR
+// GOOD/BAD consequence-shape cases above with locale: "en-US" passed.
+const NAMES_EN = { a: "Mia", b: "Jordan" };
+const PACKETS_EN = [
+  {
+    chapterOwner: "c3_dynamics",
+    blockId: "face.stress",
+    currentText: "When Mia gets quiet under stress, Jordan tends to read that silence as distance.",
+    evidenceIds: ["axisResults.conflict_style", "faces.stress.provenance"],
+  },
+];
+
+function baseValidEditEn(overrides = {}) {
+  return {
+    chapterOwner: "c3_dynamics",
+    targetBlockId: "face.stress",
+    editedText: "When Mia goes quiet, Jordan feels the distance, but Mia just needs time to process.",
+    evidenceRefs: ["axisResults.conflict_style"],
+    supportedMeaning: "Mia's silence means she needs processing time, not that she is shutting Jordan out.",
+    claimBoundary: { supported: "what the silence means", notSupported: "exactly how long the silence lasts" },
+    recognitionLine: null,
+    ...overrides,
+  };
+}
+
+describe("Narrative Editor — validateNarrativeEdits (English locale parity)", () => {
+  it("GOOD: keeps an English recognitionLine with a real A->B/B->A consequence chain", () => {
+    const out = validateNarrativeEdits(
+      [
+        baseValidEditEn({
+          recognitionLine: "When Mia gets quieter, Jordan reads it as distance and holds back from reaching out first.",
+        }),
+      ],
+      { packets: PACKETS_EN, names: NAMES_EN, locale: "en-US" },
+    );
+    assert.equal(out[0].rejected, false);
+    assert.equal(
+      out[0].recognitionLine,
+      "When Mia gets quieter, Jordan reads it as distance and holds back from reaching out first.",
+    );
+  });
+
+  it("BAD: drops an English recognitionLine that is parallel description with no consequence chain", () => {
+    const out = validateNarrativeEdits(
+      [baseValidEditEn({ recognitionLine: "Mia and Jordan each handle stress in their own way." })],
+      { packets: PACKETS_EN, names: NAMES_EN, locale: "en-US" },
+    );
+    assert.equal(out[0].rejected, false);
+    assert.equal(out[0].recognitionLine, null);
+    assert.match(out[0].rejectionReason, /parallel description/);
+  });
+
+  it("does not leak the English shape-check into Korean validation when locale is omitted (default stays ko-KR)", () => {
+    const out = validateNarrativeEdits(
+      [
+        baseValidEdit({
+          recognitionLine: "지민이 말수가 줄어들수록 정우는 그걸 거리감으로 받아들여서 먼저 다가가기를 망설이게 돼요.",
+        }),
+      ],
+      { packets: PACKETS, names: NAMES },
+    );
+    assert.equal(out[0].rejected, false);
+    assert.equal(out[0].recognitionLine, "지민이 말수가 줄어들수록 정우는 그걸 거리감으로 받아들여서 먼저 다가가기를 망설이게 돼요.");
+  });
+});
+
 describe("Narrative Editor — orchestrator", () => {
   it("returns validated edits from a well-formed LLM response", async () => {
     const openai = makeOpenAiMock([{ edits: [baseValidEdit()] }]);

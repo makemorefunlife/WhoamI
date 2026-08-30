@@ -31,15 +31,21 @@ export function buildRomanticOverviewSnapshot(params: {
     params.locale
   );
 
+  // Phase 1 English remediation: this was the one field in the file that
+  // never checked params.locale — every sibling field above (label/measures)
+  // already branches correctly, so this was a genuine oversight, not a
+  // deliberate Korean-only design. Confirmed leaking live: EN reports showed
+  // "매우 좋음"/"좋은 편"/"주의 필요" directly under English overview cards.
+  const isEn = params.locale === "en";
   const resolveGrade = (score: number, inverted: boolean) => {
     if (inverted) {
-      if (score < 40) return "안전한 편";
-      if (score < 70) return "보통 수준";
-      return "주의 필요";
+      if (score < 40) return isEn ? "Stable" : "안전한 편";
+      if (score < 70) return isEn ? "Average" : "보통 수준";
+      return isEn ? "Needs attention" : "주의 필요";
     } else {
-      if (score >= 70) return "매우 좋음";
-      if (score >= 40) return "좋은 편";
-      return "보통 수준";
+      if (score >= 70) return isEn ? "Great" : "매우 좋음";
+      if (score >= 40) return isEn ? "Good" : "좋은 편";
+      return isEn ? "Average" : "보통 수준";
     }
   };
 

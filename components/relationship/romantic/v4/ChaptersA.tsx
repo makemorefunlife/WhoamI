@@ -47,15 +47,16 @@ const DebugPanel = ({ evidenceIds = [] }: { evidenceIds?: string[] }) => (
 );
 
 /* ── Chapter 1 · Hero / Essence ─────────────────────────────── */
-export const HeroSection = ({ section, personA, personB, debug }: SectionProps) => {
+export const HeroSection = ({ section, payload, personA, personB, debug }: SectionProps) => {
   const hero = adaptHero(section);
+  const isEn = payload.locale === "en-US";
   return (
     <section id={section.chapterId} className="relative overflow-hidden scroll-mt-20 bg-rel-bg">
       <div className="relative mx-auto w-full max-w-[880px] px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20">
         <Reveal>
           <div className="flex flex-wrap items-center gap-3">
             <span className="rounded-full border border-rel-line bg-rel-surface px-3.5 py-1 font-rel-sans text-[11.5px] font-semibold tracking-wide text-rel-ink">
-              연애 · 파트너십
+              {isEn ? "Romance · Partnership" : "연애 · 파트너십"}
             </span>
             <div className="flex items-center gap-2 font-rel-sans text-[13px] font-medium text-rel-ink-soft">
               <span className="rounded-full bg-v4-a-soft px-3 py-0.5 font-semibold text-v4-a">{personA}</span>
@@ -91,6 +92,7 @@ export const HeroSection = ({ section, personA, personB, debug }: SectionProps) 
 export const AttractionSection = ({ payload, section, personA, personB, n, debug }: SectionProps) => {
   const data = adaptAttraction(section, payload);
   const names = { a: personA, b: personB };
+  const isEn = payload.locale === "en-US";
 
   return (
     <WhyYouMeUsSection
@@ -105,16 +107,16 @@ export const AttractionSection = ({ payload, section, personA, personB, n, debug
       {/* Former 8.4 moved into Chapter 02: Long-Term Bond (KEEP DOING & RITUAL only) */}
       {payload.storyPlan?.romanticGapBatch?.longTermBond ? (
         <div className="mt-10 pt-8 border-t border-rel-line space-y-4">
-          <SubHeading title="오래 단단한 관계를 유지하는 약속" tag="Long-Term Bond" tone="deep" />
+          <SubHeading title={isEn ? "Promises that keep the relationship solid, long-term" : "오래 단단한 관계를 유지하는 약속"} tag="Long-Term Bond" tone="deep" />
           <div className="grid gap-4 sm:grid-cols-2 text-xs">
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
-              <p className="font-semibold text-v4-good mb-1">KEEP DOING</p>
+              <p className="font-semibold text-v4-good mb-1">{isEn ? "KEEP DOING" : "계속 지켜갈 것"}</p>
               {payload.storyPlan.romanticGapBatch.longTermBond.keepDoing.map((k, i) => (
                 <p key={i} className="text-rel-ink-soft mt-1">• {k}</p>
               ))}
             </div>
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
-              <p className="font-semibold text-rel-deep mb-1">🕯️ RELATIONSHIP RITUAL</p>
+              <p className="font-semibold text-rel-deep mb-1">{isEn ? "🕯️ RELATIONSHIP RITUAL" : "🕯️ 우리만의 리추얼"}</p>
               {payload.storyPlan.romanticGapBatch.longTermBond.relationshipRitual.map((r, i) => (
                 <p key={i} className="text-rel-ink-soft mt-1">• {r}</p>
               ))}
@@ -133,8 +135,9 @@ const statusTone: Record<string, string> = {
   "주의가 필요한 지점": "border-v4-bad/50 bg-v4-bad-soft text-v4-bad",
 };
 
-export const DynamicsSection = ({ section, n, debug }: SectionProps) => {
+export const DynamicsSection = ({ section, payload, n, debug }: SectionProps) => {
   const states = adaptDynamics(section);
+  const isEn = payload.locale === "en-US";
   return (
     <ChapterSection
       id={section.chapterId}
@@ -170,7 +173,7 @@ export const DynamicsSection = ({ section, n, debug }: SectionProps) => {
                 <dl className="mt-7 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-xl bg-v4-good-soft p-5">
                     <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-good">
-                      강점
+                      {isEn ? "Strength" : "강점"}
                     </dt>
                     <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
                       {s.strength}
@@ -178,7 +181,7 @@ export const DynamicsSection = ({ section, n, debug }: SectionProps) => {
                   </div>
                   <div className="rounded-xl bg-v4-bad-soft p-5">
                     <dt className="font-rel-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-v4-bad">
-                      주의
+                      {isEn ? "Watch for" : "주의"}
                     </dt>
                     <dd className="mt-2.5 font-rel-sans text-[13.5px] leading-[1.75] text-rel-ink-soft">
                       {s.caution}
@@ -220,6 +223,7 @@ function FlowArrow({ loop = false }: { loop?: boolean }) {
 export const ConflictSection = ({ section, payload, personA, personB, n, debug }: SectionProps) => {
   const data = adaptConflict(section, payload);
   const names = { a: personA, b: personB };
+  const isEn = payload.locale === "en-US";
 
   return (
     <ChapterSection
@@ -241,7 +245,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
       {payload.storyPlan?.romanticGapBatch?.conflictTransitions?.sharedBaseline ? (
         <Reveal>
           <div className="rounded-2xl border border-rel-line bg-rel-taupe-soft p-6 shadow-sm sm:p-7">
-            <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">공통 평소 상태</span>
+            <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">{isEn ? "Shared baseline" : "공통 평소 상태"}</span>
             <p className="mt-2 font-rel-sans text-[14px] leading-[1.75] text-rel-ink-soft">
               {payload.storyPlan.romanticGapBatch.conflictTransitions.sharedBaseline}
             </p>
@@ -268,7 +272,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
             <PersonTag name={personA} side="a" />
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
-              <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">1. 평소의 모습</span>
+              <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">{isEn ? "1. Day to day" : "1. 평소의 모습"}</span>
               <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
                 {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionA.normalState}
               </p>
@@ -277,7 +281,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
             <PersonTag name={personB} side="b" />
             <div className="rounded-xl bg-rel-taupe-soft p-4 border border-rel-line">
-              <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">1. 평소의 모습</span>
+              <span className="font-rel-sans text-[11px] font-semibold text-rel-deep tracking-wider">{isEn ? "1. Day to day" : "1. 평소의 모습"}</span>
               <p className="mt-2 text-xs leading-relaxed text-rel-ink-soft">
                 {payload.storyPlan.romanticGapBatch.conflictTransitions.transitionB.normalState}
               </p>
@@ -299,7 +303,7 @@ export const ConflictSection = ({ section, payload, personA, personB, n, debug }
                   </p>
                   <div className="mt-4 rounded-xl bg-rel-taupe-soft px-4 py-3">
                     <div className="font-rel-sans text-[10px] uppercase tracking-[0.16em] text-rel-taupe">
-                      상대에게 도착하는 방식
+                      {isEn ? "How it lands for them" : "상대에게 도착하는 방식"}
                     </div>
                     <p className="mt-1.5 font-rel-sans text-[13.5px] leading-[1.7] text-rel-ink-soft">
                       {p.readAs}
@@ -354,6 +358,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
   const axes = adaptRadarAxes(payload) as any[]; // Cast to bypass TS excess property checking if strict
   const highlights = adaptRadarHighlights(payload, personA, personB);
   const compare = payload.comparisonTable;
+  const isEn = payload.locale === "en-US";
 
   return (
     <ChapterSection
@@ -379,7 +384,7 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
       {/* 4. Pair Comparison Table */}
       {compare && compare.length > 0 && (
         <div>
-          <SubHeading title="나란히 놓고 보기" tag="성향 비교" />
+          <SubHeading title={isEn ? "Side by side" : "나란히 놓고 보기"} tag={isEn ? "Comparison" : "성향 비교"} />
           <ul className="mt-8 space-y-12">
             {compare.map((row, i) => (
               <li key={row.rowId}>
@@ -404,20 +409,20 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
       {/* 4. Wanted Love vs Given Love */}
       {payload.storyPlan?.romanticGapBatch?.wantedVsGivenLove ? (
         <div className="mt-12 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
-          <SubHeading title="서로가 원하는 사랑 vs 표현하는 사랑" tag="Love Language" tone="coral" />
+          <SubHeading title={isEn ? "The love you want vs. the love you show" : "서로가 원하는 사랑 vs 표현하는 사랑"} tag="Love Language" tone="coral" />
           <p className="text-xs text-rel-ink-mute">{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.summary}</p>
           <div className="grid gap-6 md:grid-cols-2 text-xs">
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
               <PersonTag name={personA} side="a" />
-              <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>
-              <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.givenLove}</p>
-              <p className="text-rel-deep italic">· 상대가 받아들이는 방식: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
+              <p className="text-rel-ink font-medium mt-1">{isEn ? "Wants to receive: " : "받고 싶은 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.wantedLove}</p>
+              <p className="text-rel-ink-soft">{isEn ? "Actually gives: " : "실제 주는 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.givenLove}</p>
+              <p className="text-rel-deep italic">· {isEn ? "How their partner receives it: " : "상대가 받아들이는 방식: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveA.partnerReception}</p>
             </div>
             <div className="rounded-xl border border-rel-line bg-rel-taupe-soft p-4 space-y-2">
               <PersonTag name={personB} side="b" />
-              <p className="text-rel-ink font-medium mt-1">받고 싶은 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.wantedLove}</p>
-              <p className="text-rel-ink-soft">실제 주는 사랑: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.givenLove}</p>
-              <p className="text-rel-deep italic">· 상대가 받아들이는 방식: {payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
+              <p className="text-rel-ink font-medium mt-1">{isEn ? "Wants to receive: " : "받고 싶은 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.wantedLove}</p>
+              <p className="text-rel-ink-soft">{isEn ? "Actually gives: " : "실제 주는 사랑: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.givenLove}</p>
+              <p className="text-rel-deep italic">· {isEn ? "How their partner receives it: " : "상대가 받아들이는 방식: "}{payload.storyPlan.romanticGapBatch.wantedVsGivenLove.loveB.partnerReception}</p>
             </div>
           </div>
         </div>
@@ -426,12 +431,12 @@ export const MisunderstandingSection = ({ section, payload, personA, personB, n,
       {/* 5. Physical Intimacy & Tempo */}
       {payload.storyPlan?.romanticGapBatch?.physicalIntimacy ? (
         <div className="mt-12 rounded-2xl border border-rel-line bg-rel-surface p-6 shadow-sm space-y-4">
-          <SubHeading title="피지컬 친밀감 & 스킨십 템포 조율" tag="스킨십 템포" tone="coral" />
+          <SubHeading title={isEn ? "Physical Intimacy & Tempo" : "피지컬 친밀감 & 스킨십 템포 조율"} tag={isEn ? "Tempo" : "스킨십 템포"} tone="coral" />
           <div className="rounded-xl bg-rel-taupe-soft p-5 border border-rel-line space-y-2 text-xs">
             <p className="font-semibold text-rel-ink text-sm">{payload.storyPlan.romanticGapBatch.physicalIntimacy.summary}</p>
-            <p className="text-rel-ink-soft">· {personA}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessA}</p>
-            <p className="text-rel-ink-soft">· {personB}님 템포: {payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessB}</p>
-            <p className="text-rel-deep italic mt-2">· 공간/경계 필요성: {payload.storyPlan.romanticGapBatch.physicalIntimacy.spaceNeed}</p>
+            <p className="text-rel-ink-soft">· {isEn ? `${personA}'s tempo: ` : `${personA}님 템포: `}{payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessA}</p>
+            <p className="text-rel-ink-soft">· {isEn ? `${personB}'s tempo: ` : `${personB}님 템포: `}{payload.storyPlan.romanticGapBatch.physicalIntimacy.desiredClosenessB}</p>
+            <p className="text-rel-deep italic mt-2">· {isEn ? "Space & boundary needs: " : "공간/경계 필요성: "}{payload.storyPlan.romanticGapBatch.physicalIntimacy.spaceNeed}</p>
           </div>
         </div>
       ) : null}

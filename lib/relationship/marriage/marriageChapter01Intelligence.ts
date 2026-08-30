@@ -272,8 +272,12 @@ export function buildMarriageChapter01Intelligence(params: {
       category: "stimulating_magnetic",
       categoryLabel: getAttractionCategoryLabel("stimulating_magnetic", isEn),
       headline: isEn ? "Attraction that feels natural from the start" : "처음 대화를 시작할 때부터 느껴진 특별한 기류",
-      whatDrawsA: `${aEunNeun} ${b}님의 차분하고 다정한 태도가 마음의 긴장을 풀어줄 것이라는 안도감에 자연스럽게 이끌렸습니다.`,
-      whatDrawsB: `${bEunNeun} ${a}님이 보여주는 분명한 소신과 결단력이 세상을 함께 헤쳐갈 든든함으로 다가와 끌렸습니다.`,
+      whatDrawsA: isEn
+        ? `${a} was naturally drawn in by the reassuring sense that ${b}'s calm, warm manner would ease the tension in their mind.`
+        : `${aEunNeun} ${b}님의 차분하고 다정한 태도가 마음의 긴장을 풀어줄 것이라는 안도감에 자연스럽게 이끌렸습니다.`,
+      whatDrawsB: isEn
+        ? `${b} was drawn to the dependable feeling that ${a}'s clear convictions and decisiveness would be a strength to face the world together with.`
+        : `${bEunNeun} ${a}님이 보여주는 분명한 소신과 결단력이 세상을 함께 헤쳐갈 든든함으로 다가와 끌렸습니다.`,
       description: isEn
         ? `When ${a} and ${b} first met, there was an unspoken magnetic ease — a feeling that you didn't need to explain yourselves at length to understand each other.`
         : `${aEunNeun} ${bGwaWa} 처음 만났을 때, 긴 설명 없이도 서로의 분위기가 마음 편하게 통하는 느낌을 받았습니다.`,
@@ -286,8 +290,12 @@ export function buildMarriageChapter01Intelligence(params: {
       category: "comfortable_familiar",
       categoryLabel: getAttractionCategoryLabel("comfortable_familiar", isEn),
       headline: isEn ? "Deep comfort like being in your own home" : "오래 알고 지낸 것 같은 안식처 같은 편안함",
-      whatDrawsA: `${aEunNeun} ${b}님과 함께 있을 때 무언가를 억지로 잘 보이려 애쓰지 않아도 되는 편안함에 끌렸습니다.`,
-      whatDrawsB: `${bEunNeun} ${a}님이 세워주는 안정된 기준과 흔들림 없는 모습에서 안도감을 느꼈습니다.`,
+      whatDrawsA: isEn
+        ? `${a} was drawn to the comfort of not having to try hard to look good when together with ${b}.`
+        : `${aEunNeun} ${b}님과 함께 있을 때 무언가를 억지로 잘 보이려 애쓰지 않아도 되는 편안함에 끌렸습니다.`,
+      whatDrawsB: isEn
+        ? `${b} felt reassured by the stable standards and unshakable steadiness ${a} brought.`
+        : `${bEunNeun} ${a}님이 세워주는 안정된 기준과 흔들림 없는 모습에서 안도감을 느꼈습니다.`,
       description: isEn
         ? `Shared domestic energy creates an immediate sense of safety — being together feels as relaxed as resting in a familiar sanctuary.`
         : `${aEunNeun} ${b}님과 한 공간에 있을 때 마음이 안돈되며 낯선 긴장보다는 익숙함이 두 사람을 이어주었습니다.`,
@@ -300,8 +308,12 @@ export function buildMarriageChapter01Intelligence(params: {
       category: "tense_curious",
       categoryLabel: getAttractionCategoryLabel("tense_curious", isEn),
       headline: isEn ? "A spark of curiosity born from different rhythms" : "서로의 다름에서 오는 선명한 호기심과 긴장감",
-      whatDrawsA: `${aEunNeun} ${b}님의 예상치 못한 반응과 나와는 다른 생활 템포에 신선한 흥미를 느꼈습니다.`,
-      whatDrawsB: `${bEunNeun} ${a}님이 보여주는 거침없는 추진력과 강렬한 속도감에서 신선한 자극을 받았습니다.`,
+      whatDrawsA: isEn
+        ? `${a} found ${b}'s unexpected reactions and different life tempo fresh and intriguing.`
+        : `${aEunNeun} ${b}님의 예상치 못한 반응과 나와는 다른 생활 템포에 신선한 흥미를 느꼈습니다.`,
+      whatDrawsB: isEn
+        ? `${b} felt a fresh spark from ${a}'s bold drive and intense pace.`
+        : `${bEunNeun} ${a}님이 보여주는 거침없는 추진력과 강렬한 속도감에서 신선한 자극을 받았습니다.`,
       description: isEn
         ? `Discrepancies in living tempo and inner expression create a sharp, fascinating spark — making each other impossible to ignore.`
         : `${aEunNeun} ${bGwaWa} 생활 템포나 반응 방식이 달라 쉽게 예측할 수 없는 신선함이 서로를 호기심 있게 바라보게 만들었습니다.`,
@@ -314,8 +326,12 @@ export function buildMarriageChapter01Intelligence(params: {
       category: "peer_camaraderie",
       categoryLabel: getAttractionCategoryLabel("peer_camaraderie", isEn),
       headline: isEn ? "Equal partnership walking at eye level" : "대등한 눈높이에서 나란히 걷는 동료적 친밀감",
-      whatDrawsA: `${aEunNeun} ${b}님이 삶을 주도해 나가는 자율적이고 독립적인 태도에서 깊은 동질감을 느꼈습니다.`,
-      whatDrawsB: `${bEunNeun} ${a}님이 나란한 눈높이에서 서로의 영역을 존중해주는 대등함에 마음이 끌렸습니다.`,
+      whatDrawsA: isEn
+        ? `${a} felt a deep sense of kinship in the way ${b} took an autonomous, independent lead on their own life.`
+        : `${aEunNeun} ${b}님이 삶을 주도해 나가는 자율적이고 독립적인 태도에서 깊은 동질감을 느꼈습니다.`,
+      whatDrawsB: isEn
+        ? `${b} was drawn to the equal footing on which ${a} respected each other's space.`
+        : `${bEunNeun} ${a}님이 나란한 눈높이에서 서로의 영역을 존중해주는 대등함에 마음이 끌렸습니다.`,
       description: isEn
         ? `${a} and ${b} view life from a similar horizon, forming an equal partnership where mutual independence is respected.`
         : `${aEunNeun} ${bGwaWa} 세상을 바라보는 눈높이가 닮아 있어 대등한 동료 파트너로서 친밀감을 느꼈습니다.`,
@@ -326,8 +342,12 @@ export function buildMarriageChapter01Intelligence(params: {
       category: "respect_trust",
       categoryLabel: getAttractionCategoryLabel("respect_trust", isEn),
       headline: isEn ? "Mutual respect grounded in contrasting strengths" : "서로 다른 장점이 주는 존경과 든든함",
-      whatDrawsA: `${aEunNeun} ${b}님이 지닌 차분함과 다정한 수용력이 자신에게 없는 편안함을 더해줄 것이라는 신뢰에 끌렸습니다.`,
-      whatDrawsB: `${bEunNeun} ${a}님이 지닌 분명한 소신과 결단력이 삶의 든든한 기준이 되어줄 것이라는 존경을 느꼈습니다.`,
+      whatDrawsA: isEn
+        ? `${a} was drawn in by the trust that ${b}'s calm, warm acceptance would add a comfort they lacked on their own.`
+        : `${aEunNeun} ${b}님이 지닌 차분함과 다정한 수용력이 자신에게 없는 편안함을 더해줄 것이라는 신뢰에 끌렸습니다.`,
+      whatDrawsB: isEn
+        ? `${b} felt respect for how ${a}'s clear convictions and decisiveness would become a dependable standard for life.`
+        : `${bEunNeun} ${a}님이 지닌 분명한 소신과 결단력이 삶의 든든한 기준이 되어줄 것이라는 존경을 느꼈습니다.`,
       description: isEn
         ? `Each partner holds clear strengths the other values, building an attraction rooted in genuine respect and practical security.`
         : `${aEunNeun} ${b}님이 가진 장점이 본인과 달라, 서로를 실질적으로 받쳐줄 수 있다는 깊은 신뢰가 끌림의 바탕이 되었습니다.`,
@@ -371,34 +391,64 @@ export function buildMarriageChapter01Intelligence(params: {
 
     if (family.includes("비겁") || (seekerAxes.structure ?? 50) >= 60) {
       semanticDimension = "AUTONOMY_AND_SANCTUARY";
-      innateNeedLabel = "독립된 자율성과 안식";
-      whySeekerHasNeed = `${sEunNeun} 내가 다 결정하고 챙기려다 보니 마음의 긴장이 쌓일 때가 많아요. 그래서 가까운 사람 앞에서는 내가 다 주도하지 않아도 마음 편히 쉴 수 있는 여유가 꼭 필요해요.`;
-      partnerTraitMeetingIt = `${pEunNeun} 내 방식을 억지로 바꾸려 하지 않고, 내 기분과 상황을 다정하게 받아주는 넉넉한 마음이 있어요.`;
-      howItFeelsInMarriage = `그래서 ${partner}님과 함께 있을 때는 잘해야 한다는 부담을 내려놓고 가장 나다운 모습으로 편하게 머물 수 있어요.`;
+      innateNeedLabel = isEn ? "Independent autonomy and rest" : "독립된 자율성과 안식";
+      whySeekerHasNeed = isEn
+        ? `${seeker} tends to decide and handle everything alone, so tension often builds up. That's why it matters to have someone close by where they don't have to lead everything — just room to rest easy.`
+        : `${sEunNeun} 내가 다 결정하고 챙기려다 보니 마음의 긴장이 쌓일 때가 많아요. 그래서 가까운 사람 앞에서는 내가 다 주도하지 않아도 마음 편히 쉴 수 있는 여유가 꼭 필요해요.`;
+      partnerTraitMeetingIt = isEn
+        ? `${partner} doesn't try to force change on their ways, and has the generosity to warmly accept their mood and situation.`
+        : `${pEunNeun} 내 방식을 억지로 바꾸려 하지 않고, 내 기분과 상황을 다정하게 받아주는 넉넉한 마음이 있어요.`;
+      howItFeelsInMarriage = isEn
+        ? `So when they're with ${partner}, they can set down the pressure to perform and just comfortably be themselves.`
+        : `그래서 ${partner}님과 함께 있을 때는 잘해야 한다는 부담을 내려놓고 가장 나다운 모습으로 편하게 머물 수 있어요.`;
     } else if (family.includes("관성") || (seekerAxes.practicality ?? 50) >= 60) {
       semanticDimension = "DECISION_AND_STRUCTURE";
-      innateNeedLabel = "명확한 기준과 판단력";
-      whySeekerHasNeed = `${sEunNeun} 생각과 고민이 많아 중요한 순간에 선뜻 결정하기 어려울 때가 있어요. 그래서 불안할 때 딱 기준을 잡아주고 방향을 정해줄 사람을 필요로 해요.`;
-      partnerTraitMeetingIt = `${pEunNeun} 고민이 길어질 때 흔들리지 않고 확실하게 방향을 정해주는 단단한 결단력이 있어요.`;
-      howItFeelsInMarriage = `그래서 중요한 갈림길에 섰을 때 ${partner}님이 곁에 있으면 막연한 불안을 덜고 안심하며 함께 움직일 수 있어요.`;
+      innateNeedLabel = isEn ? "Clear standards and judgment" : "명확한 기준과 판단력";
+      whySeekerHasNeed = isEn
+        ? `${seeker} thinks things over so much that it's hard to decide readily at key moments. So when anxious, they need someone who can set a clear standard and point the direction.`
+        : `${sEunNeun} 생각과 고민이 많아 중요한 순간에 선뜻 결정하기 어려울 때가 있어요. 그래서 불안할 때 딱 기준을 잡아주고 방향을 정해줄 사람을 필요로 해요.`;
+      partnerTraitMeetingIt = isEn
+        ? `${partner} has the firm decisiveness to set a clear direction without wavering when things drag on.`
+        : `${pEunNeun} 고민이 길어질 때 흔들리지 않고 확실하게 방향을 정해주는 단단한 결단력이 있어요.`;
+      howItFeelsInMarriage = isEn
+        ? `So at an important fork in the road, having ${partner} nearby eases the vague anxiety and lets them move forward with confidence.`
+        : `그래서 중요한 갈림길에 섰을 때 ${partner}님이 곁에 있으면 막연한 불안을 덜고 안심하며 함께 움직일 수 있어요.`;
     } else if (family.includes("식상") || (seekerAxes.energy_style ?? 50) >= 60) {
       semanticDimension = "EMOTIONAL_EXPRESSION";
-      innateNeedLabel = "솔직한 감정 수용과 경청";
-      whySeekerHasNeed = `${sEunNeun} 내면의 생각과 솔직한 감정을 자주 표현하는 편이라, 내 이야기를 말을 끊지 않고 끝까지 들어줄 따뜻한 경청을 원해요.`;
-      partnerTraitMeetingIt = `${pEunNeun} 상대의 이야기를 귀 기울여 들어주고 마음을 품어주는 다정한 경청의 자세가 있어요.`;
-      howItFeelsInMarriage = `그래서 답답하거나 속상한 일이 생겨도 ${partner}님에게 솔직하게 털어놓는 것만으로 마음이 풀리고 안정을 찾게 돼요.`;
+      innateNeedLabel = isEn ? "Honest emotional acceptance and listening" : "솔직한 감정 수용과 경청";
+      whySeekerHasNeed = isEn
+        ? `${seeker} tends to express their inner thoughts and honest feelings often, so they want someone who listens all the way through without cutting them off.`
+        : `${sEunNeun} 내면의 생각과 솔직한 감정을 자주 표현하는 편이라, 내 이야기를 말을 끊지 않고 끝까지 들어줄 따뜻한 경청을 원해요.`;
+      partnerTraitMeetingIt = isEn
+        ? `${partner} has a warm, attentive way of listening and holding what the other person shares.`
+        : `${pEunNeun} 상대의 이야기를 귀 기울여 들어주고 마음을 품어주는 다정한 경청의 자세가 있어요.`;
+      howItFeelsInMarriage = isEn
+        ? `So even when something frustrating or upsetting happens, just being able to speak honestly to ${partner} eases their mind and brings them back to steady ground.`
+        : `그래서 답답하거나 속상한 일이 생겨도 ${partner}님에게 솔직하게 털어놓는 것만으로 마음이 풀리고 안정을 찾게 돼요.`;
     } else if (family.includes("인성") || (seekerAxes.empathy ?? 50) >= 60) {
       semanticDimension = "UNCONDITIONAL_RESIDENCY";
-      innateNeedLabel = "무조건적인 내 편의 신뢰";
-      whySeekerHasNeed = `${sEunNeun} 어떤 상황에서도 나를 믿어주고 감싸주는 든든한 내 편이 되어주길 바라는 마음이 커요.`;
-      partnerTraitMeetingIt = `${pEunNeun} 주변 상황에 흔들리지 않고 항상 한결같은 태도로 곁을 지키는 묵직한 신뢰를 보여줘요.`;
-      howItFeelsInMarriage = `그래서 밖에서 힘들고 지쳐도 ${partner}님이 지키고 있는 곁으로 돌아오는 것만으로 마음이 든든해져요.`;
+      innateNeedLabel = isEn ? "Unconditional trust that someone's on their side" : "무조건적인 내 편의 신뢰";
+      whySeekerHasNeed = isEn
+        ? `${seeker} deeply wants someone who believes in and shelters them, no matter the situation.`
+        : `${sEunNeun} 어떤 상황에서도 나를 믿어주고 감싸주는 든든한 내 편이 되어주길 바라는 마음이 커요.`;
+      partnerTraitMeetingIt = isEn
+        ? `${partner} shows a steady, unwavering trust, staying by their side no matter what's going on around them.`
+        : `${pEunNeun} 주변 상황에 흔들리지 않고 항상 한결같은 태도로 곁을 지키는 묵직한 신뢰를 보여줘요.`;
+      howItFeelsInMarriage = isEn
+        ? `So even after a hard, tiring day outside, just coming back to where ${partner} is holding steady is deeply reassuring.`
+        : `그래서 밖에서 힘들고 지쳐도 ${partner}님이 지키고 있는 곁으로 돌아오는 것만으로 마음이 든든해져요.`;
     } else {
       semanticDimension = "PRACTICAL_PARTNERSHIP";
-      innateNeedLabel = "실질적 실행 파트너십";
-      whySeekerHasNeed = `${sEunNeun} 말로만 하는 위로보다는 실제로 생활의 짐을 함께 나누어 짊어질 든든한 실행 파트너를 필요로 해요.`;
-      partnerTraitMeetingIt = `${pEunNeun} 필요할 때 묵묵히 곁에서 할 일을 해내고 의지가 되어주는 행동력이 있어요.`;
-      howItFeelsInMarriage = `그래서 생활의 무게를 혼자 감당하지 않고 ${partner}님과 나누어 짊어짐으로써 깊은 안도감을 느껴요.`;
+      innateNeedLabel = isEn ? "A real, hands-on partnership" : "실질적 실행 파트너십";
+      whySeekerHasNeed = isEn
+        ? `${seeker} needs a dependable partner who actually shares the load of everyday life, more than someone who just offers comforting words.`
+        : `${sEunNeun} 말로만 하는 위로보다는 실제로 생활의 짐을 함께 나누어 짊어질 든든한 실행 파트너를 필요로 해요.`;
+      partnerTraitMeetingIt = isEn
+        ? `${partner} has the quiet follow-through to get things done and be someone to lean on when needed.`
+        : `${pEunNeun} 필요할 때 묵묵히 곁에서 할 일을 해내고 의지가 되어주는 행동력이 있어요.`;
+      howItFeelsInMarriage = isEn
+        ? `So instead of carrying the weight of everyday life alone, sharing it with ${partner} brings a deep sense of relief.`
+        : `그래서 생활의 무게를 혼자 감당하지 않고 ${partner}님과 나누어 짊어짐으로써 깊은 안도감을 느껴요.`;
     }
 
     const whyPartnerIsNeeded = sanitizeCopy(
@@ -470,7 +520,9 @@ export function buildMarriageChapter01Intelligence(params: {
         partnerOriginalState: "",
         giverStateChangeEffect: "",
         description: sanitizeCopy(
-          `${a}님이 보여주는 단단한 소신과 결단력은 ${b}님이 이것저것 재느라 주저할 때 고민을 덜고 안심하며 앞으로 나아가도록 이끌어줍니다.`
+          isEn
+            ? `${a}'s firm convictions and decisiveness ease ${b}'s hesitation when weighing every option, helping them move forward with confidence.`
+            : `${a}님이 보여주는 단단한 소신과 결단력은 ${b}님이 이것저것 재느라 주저할 때 고민을 덜고 안심하며 앞으로 나아가도록 이끌어줍니다.`
         ),
         semanticDimension: "DECISION_AND_STRUCTURE",
         confidence: "HIGH",
@@ -486,7 +538,9 @@ export function buildMarriageChapter01Intelligence(params: {
         partnerOriginalState: "",
         giverStateChangeEffect: "",
         description: sanitizeCopy(
-          `${a}님이 가진 특유의 추진력은 ${b}님의 내면 구상이 머릿속에만 머물지 않고 실제로 실행되도록 만드는 기분 좋은 동력이 되어줍니다.`
+          isEn
+            ? `${a}'s distinctive drive is a welcome force that pulls ${b}'s ideas out of their head and into real action.`
+            : `${a}님이 가진 특유의 추진력은 ${b}님의 내면 구상이 머릿속에만 머물지 않고 실제로 실행되도록 만드는 기분 좋은 동력이 되어줍니다.`
         ),
         semanticDimension: "CATALYST",
         confidence: "HIGH",
@@ -501,7 +555,9 @@ export function buildMarriageChapter01Intelligence(params: {
       partnerOriginalState: "",
       giverStateChangeEffect: "",
       description: sanitizeCopy(
-        `${a}님이 건네는 따뜻한 이해와 포용은 ${b}님이 밖에서의 긴장과 부담을 내려놓고 있는 그대로 숨 쉴 수 있는 편안한 안식처가 되어줍니다.`
+        isEn
+          ? `${a}'s warm understanding and acceptance become a comforting refuge where ${b} can set down outside tension and pressure and just breathe as themselves.`
+          : `${a}님이 건네는 따뜻한 이해와 포용은 ${b}님이 밖에서의 긴장과 부담을 내려놓고 있는 그대로 숨 쉴 수 있는 편안한 안식처가 되어줍니다.`
       ),
       semanticDimension: "SANCTUARY",
       confidence: "HIGH",
@@ -520,7 +576,9 @@ export function buildMarriageChapter01Intelligence(params: {
         partnerOriginalState: "",
         giverStateChangeEffect: "",
         description: sanitizeCopy(
-          `${b}님이 보여주는 강요 없는 존중은 ${a}님이 매번 신경을 곤두세우지 않고도 내 방식대로 편안하게 머무를 수 있는 마음의 여유를 지켜줍니다.`
+          isEn
+            ? `${b}'s unforced respect protects ${a}'s peace of mind — able to stay comfortable in their own way without always being on edge.`
+            : `${b}님이 보여주는 강요 없는 존중은 ${a}님이 매번 신경을 곤두세우지 않고도 내 방식대로 편안하게 머무를 수 있는 마음의 여유를 지켜줍니다.`
         ),
         semanticDimension: "AUTONOMY_GUARD",
         confidence: "HIGH",
@@ -536,7 +594,9 @@ export function buildMarriageChapter01Intelligence(params: {
         partnerOriginalState: "",
         giverStateChangeEffect: "",
         description: sanitizeCopy(
-          `${b}님이 유지하는 차분한 평정심은 ${a}님이 일상의 중압감으로 에너지가 과부하될 때 흔들리지 않고 다시 내면의 안정감을 되찾도록 돕습니다.`
+          isEn
+            ? `${b}'s calm composure helps ${a} stay grounded and find inner stability again when everyday pressure becomes overwhelming.`
+            : `${b}님이 유지하는 차분한 평정심은 ${a}님이 일상의 중압감으로 에너지가 과부하될 때 흔들리지 않고 다시 내면의 안정감을 되찾도록 돕습니다.`
         ),
         semanticDimension: "GROUNDED_STABILITY",
         confidence: "HIGH",
@@ -551,7 +611,9 @@ export function buildMarriageChapter01Intelligence(params: {
       partnerOriginalState: "",
       giverStateChangeEffect: "",
       description: sanitizeCopy(
-        `${b}님 특유의 편안하고 솔직한 분위기는 ${a}님이 혼자 끌어안고 있던 감정과 진심을 자연스럽게 입 밖으로 내어 나누도록 도와줍니다.`
+        isEn
+          ? `${b}'s distinctively easygoing, honest air helps ${a} naturally voice and share feelings and truths they'd been holding alone.`
+          : `${b}님 특유의 편안하고 솔직한 분위기는 ${a}님이 혼자 끌어안고 있던 감정과 진심을 자연스럽게 입 밖으로 내어 나누도록 도와줍니다.`
       ),
       semanticDimension: "CATALYST",
       confidence: "HIGH",
@@ -565,32 +627,56 @@ export function buildMarriageChapter01Intelligence(params: {
   // 4. MUTUAL TRANSFORMATION ( 이 사람과 함께하며 나는 어떻게 달라질까 )
   //    Behavior-bound trait baselines in Plain Korean
   // --------------------------------------------------------------------------
-  const beforeA = (axesA.structure ?? 50) >= 60
-    ? `${aEunNeun} 내가 다 챙기고 결정하느라 마음의 긴장을 잘 놓지 못하던 성향`
-    : `${aEunNeun} 혼자서 문제를 해결하려 애쓰며 남에게 잘 기대지 않던 성향`;
+  const beforeA = isEn
+    ? (axesA.structure ?? 50) >= 60
+      ? `${a} tended to hold onto tension, taking care of and deciding everything alone`
+      : `${a} tended to work through problems alone, without leaning on others much`
+    : (axesA.structure ?? 50) >= 60
+      ? `${aEunNeun} 내가 다 챙기고 결정하느라 마음의 긴장을 잘 놓지 못하던 성향`
+      : `${aEunNeun} 혼자서 문제를 해결하려 애쓰며 남에게 잘 기대지 않던 성향`;
 
-  const influenceA = `${b}님이 보여주는 다정하고 여유 있게 받아주는 태도를 접하면서`;
+  const influenceA = isEn
+    ? `through ${b}'s warm, easygoing way of accepting things`
+    : `${b}님이 보여주는 다정하고 여유 있게 받아주는 태도를 접하면서`;
 
-  const emergingA = `혼자서 다 짊어지지 않아도 괜찮다는 안도감 속에, 필요할 때 기꺼이 상대에게 편하게 기대는 여유를 갖게 돼요.`;
+  const emergingA = isEn
+    ? `they've come to feel it's okay not to carry everything alone, and can comfortably lean on their partner when needed.`
+    : `혼자서 다 짊어지지 않아도 괜찮다는 안도감 속에, 필요할 때 기꺼이 상대에게 편하게 기대는 여유를 갖게 돼요.`;
 
-  const primaryTransA = sanitizeCopy(`${beforeA}에서, ${influenceA} ${emergingA}`);
+  const primaryTransA = sanitizeCopy(
+    isEn ? `${beforeA}, but ${influenceA}, ${emergingA}` : `${beforeA}에서, ${influenceA} ${emergingA}`,
+  );
 
   const shadowA = (axesA.structure ?? 50) >= 65
-    ? `${b}님의 유연함에 익숙해진 나머지, 중요한 의사결정에서 지시적인 톤이 되지 않도록 주의할 필요가 있어요.`
+    ? isEn
+      ? `Having gotten used to ${b}'s flexibility, it helps to watch that important decisions don't come out sounding directive.`
+      : `${b}님의 유연함에 익숙해진 나머지, 중요한 의사결정에서 지시적인 톤이 되지 않도록 주의할 필요가 있어요.`
     : undefined;
 
-  const beforeB = (axesB.practicality ?? 50) <= 50
-    ? `${bEunNeun} 고민이 깊어 선뜻 결정하지 못하고 신중하게 살펴보기만 하던 성향`
-    : `${bEunNeun} 자신의 서운함이나 욕구를 적극적으로 표현하지 않고 속으로 참던 성향`;
+  const beforeB = isEn
+    ? (axesB.practicality ?? 50) <= 50
+      ? `${b} used to overthink and only look things over carefully instead of deciding readily`
+      : `${b} used to hold in hurt feelings or wants rather than expressing them actively`
+    : (axesB.practicality ?? 50) <= 50
+      ? `${bEunNeun} 고민이 깊어 선뜻 결정하지 못하고 신중하게 살펴보기만 하던 성향`
+      : `${bEunNeun} 자신의 서운함이나 욕구를 적극적으로 표현하지 않고 속으로 참던 성향`;
 
-  const influenceB = `${a}님이 보여주는 확실한 방향 잡기와 빠른 실행 리듬을 곁에서 배우면서`;
+  const influenceB = isEn
+    ? `by learning from ${a}'s clear direction-setting and quick follow-through`
+    : `${a}님이 보여주는 확실한 방향 잡기와 빠른 실행 리듬을 곁에서 배우면서`;
 
-  const emergingB = `고민만 하다가 시간을 보내지 않고, 생각한 바를 빠르게 행동으로 옮기는 추진력을 얻게 돼요.`;
+  const emergingB = isEn
+    ? `they've gained the drive to turn thoughts into action quickly, instead of spending time just deliberating.`
+    : `고민만 하다가 시간을 보내지 않고, 생각한 바를 빠르게 행동으로 옮기는 추진력을 얻게 돼요.`;
 
-  const primaryTransB = sanitizeCopy(`${beforeB}에서, ${influenceB} ${emergingB}`);
+  const primaryTransB = sanitizeCopy(
+    isEn ? `${beforeB}, but ${influenceB}, ${emergingB}` : `${beforeB}에서, ${influenceB} ${emergingB}`,
+  );
 
   const shadowB = (axesB.empathy ?? 50) >= 65
-    ? `상대에게 맞춰주느라 서운함을 속으로 참지 말고, 원하는 바를 솔직하게 말하는 연습이 도움이 돼요.`
+    ? isEn
+      ? `Instead of quietly holding in hurt feelings while adjusting to their partner, it helps to practice saying what they actually want.`
+      : `상대에게 맞춰주느라 서운함을 속으로 참지 말고, 원하는 바를 솔직하게 말하는 연습이 도움이 돼요.`
     : undefined;
 
   const transformationA: DirectionalTransformation = {
@@ -625,17 +711,17 @@ export function buildMarriageChapter01Intelligence(params: {
   let identityTitle = "";
 
   if (dimA === "AUTONOMY_AND_SANCTUARY" && dimB === "DECISION_AND_STRUCTURE") {
-    identityTitle = `한 사람은 길을 열고, 한 사람은 마음 놓을 자리를 만드는 부부`;
+    identityTitle = isEn ? "A couple where one opens the path and the other makes room to rest" : `한 사람은 길을 열고, 한 사람은 마음 놓을 자리를 만드는 부부`;
   } else if (dimA === "AUTONOMY_AND_SANCTUARY" && dimB === "AUTONOMY_AND_SANCTUARY") {
-    identityTitle = `나란한 눈높이에서 서로의 독립된 자율성을 온전히 지켜주는 부부`;
+    identityTitle = isEn ? "A couple standing eye to eye, each fully guarding the other's independence" : `나란한 눈높이에서 서로의 독립된 자율성을 온전히 지켜주는 부부`;
   } else if (primaryCat === "tense_curious" || sig.hasDayBranchClash) {
-    identityTitle = `서로의 다른 템포가 불꽃이 되어 일상을 깨우는 부부`;
+    identityTitle = isEn ? "A couple whose differing rhythms spark and keep everyday life awake" : `서로의 다른 템포가 불꽃이 되어 일상을 깨우는 부부`;
   } else if (primaryCat === "peer_camaraderie" || chartA.dayStemCode === chartB.dayStemCode) {
-    identityTitle = `대등한 동료로서 세상을 함께 개척해 나가는 부부`;
+    identityTitle = isEn ? "A couple charting the world together as equal partners" : `대등한 동료로서 세상을 함께 개척해 나가는 부부`;
   } else if (dimA === "PRACTICAL_PARTNERSHIP" || dimB === "PRACTICAL_PARTNERSHIP") {
-    identityTitle = `생각을 현실의 선택으로 옮기고 일상의 터전을 함께 다지는 부부`;
+    identityTitle = isEn ? "A couple that turns thoughts into real choices and builds everyday life together" : `생각을 현실의 선택으로 옮기고 일상의 터전을 함께 다지는 부부`;
   } else {
-    identityTitle = `닮은 눈높이로 편안하고, 서로 다른 장점으로 앞으로 나아가는 부부`;
+    identityTitle = isEn ? "A couple comfortable in their shared outlook, moving forward on each other's different strengths" : `닮은 눈높이로 편안하고, 서로 다른 장점으로 앞으로 나아가는 부부`;
   }
 
   const identityNarrative = sanitizeCopy(

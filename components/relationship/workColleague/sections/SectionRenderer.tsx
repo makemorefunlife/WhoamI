@@ -415,28 +415,34 @@ function IndividualWorkStyleCards({
   workStyle,
   individualBundle,
   names,
+  isEn,
 }: {
   workStyle?: { me: string; partner: string };
   individualBundle?: any;
   names: [string, string];
+  isEn?: boolean;
 }) {
   const meText =
     workStyle?.me ||
     (individualBundle?.personA
       ? `${names[0]} — ${individualBundle.personA.identityLabel}. ${individualBundle.personA.workStyleBehaviors[0]?.behaviorSummary || ""}`
-      : `${names[0]} — 동료 기분을 세심히 챙기고, 신뢰를 쌓으며 꾸준히 밀어붙이는 케어형. 프로젝트 매니저 쪽 업무에서 강점이 잘 드러나요.`);
+      : isEn
+        ? `${names[0]} — Attentive to how teammates are doing, builds trust, and keeps steady pressure toward the goal. This shows up most as strength in project-management-type work.`
+        : `${names[0]} — 동료 기분을 세심히 챙기고, 신뢰를 쌓으며 꾸준히 밀어붙이는 케어형. 프로젝트 매니저 쪽 업무에서 강점이 잘 드러나요.`);
 
   const partnerText =
     workStyle?.partner ||
     (individualBundle?.personB
       ? `${names[1]} — ${individualBundle.personB.identityLabel}. ${individualBundle.personB.workStyleBehaviors[0]?.behaviorSummary || ""}`
-      : `${names[1]} — 흔들리는 상황에서도 기준을 지키며, 팀의 중심을 잡는 안정형. 서비스·제품 기획 쪽 업무에서 강점이 잘 드러나요.`);
+      : isEn
+        ? `${names[1]} — Holds the standard even when things get shaky, and keeps the team grounded. This shows up most as strength in service/product-planning-type work.`
+        : `${names[1]} — 흔들리는 상황에서도 기준을 지키며, 팀의 중심을 잡는 안정형. 서비스·제품 기획 쪽 업무에서 강점이 잘 드러나요.`);
 
   return (
     <div className="space-y-2.5 text-xs my-4 p-4 rounded-2xl bg-rel-taupe-soft/30 border border-rel-line/40">
       <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
         <span className="text-[#8c7c72]">◤</span>
-        <span>개인별 일 스타일</span>
+        <span>{isEn ? "Individual Work Style" : "개인별 일 스타일"}</span>
       </h4>
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-rel-surface p-3.5 border border-rel-line/40 space-y-2 shadow-sm">
@@ -537,9 +543,11 @@ function FinalBoundaryCard({
 function CanonicalChapter04CommunicationView({
   bundle,
   names,
+  isEn,
 }: {
   bundle: WorkCommunicationChapterBundle;
   names: [string, string];
+  isEn?: boolean;
 }) {
   const pA = bundle.personA;
   const pB = bundle.personB;
@@ -555,8 +563,12 @@ function CanonicalChapter04CommunicationView({
 
       {/* 1. ◤ 생각을 정리하는 방식 */}
       <div className="space-y-3">
-        <SubHeading title="생각을 정리하는 방식" tag="THINKING" tone="deep" />
-        <p className="text-rel-ink-soft text-[11px] italic">"혼자 생각을 정리한 뒤 말하는가, 대화를 하면서 생각을 구체화하는가?"</p>
+        <SubHeading title={isEn ? "How They Think Things Through" : "생각을 정리하는 방식"} tag="THINKING" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">
+          {isEn
+            ? `"Do they sort things out alone before speaking, or think out loud through conversation?"`
+            : `"혼자 생각을 정리한 뒤 말하는가, 대화를 하면서 생각을 구체화하는가?"`}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1 shadow-sm">
             <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1.5">{pA.name}</span>
@@ -577,8 +589,10 @@ function CanonicalChapter04CommunicationView({
 
       {/* 2. ◤ 회의에서 의견을 내는 방식 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="회의에서 의견을 내는 방식" tag="MEETING" tone="deep" />
-        <p className="text-rel-ink-soft text-[11px] italic">"회의에서 누가 논의를 끌어가고, 누가 빠진 조건을 확인하는가?"</p>
+        <SubHeading title={isEn ? "How They Speak Up in Meetings" : "회의에서 의견을 내는 방식"} tag="MEETING" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">
+          {isEn ? `"Who drives the discussion in a meeting, and who catches what's missing?"` : `"회의에서 누가 논의를 끌어가고, 누가 빠진 조건을 확인하는가?"`}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1 shadow-sm">
             <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1.5">{pA.name}</span>
@@ -599,8 +613,10 @@ function CanonicalChapter04CommunicationView({
 
       {/* 3. ◤ 보고하고 공유하는 방식 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="보고하고 공유하는 방식" tag="REPORTING" tone="deep" />
-        <p className="text-rel-ink-soft text-[11px] italic">"어떤 순서와 깊이로 정보를 공유하는가?"</p>
+        <SubHeading title={isEn ? "How They Report and Share" : "보고하고 공유하는 방식"} tag="REPORTING" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">
+          {isEn ? `"What order, and how much detail, do they share information in?"` : `"어떤 순서와 깊이로 정보를 공유하는가?"`}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
             <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}</span>
@@ -629,13 +645,15 @@ function CanonicalChapter04CommunicationView({
 
       {/* 4. ◤ 피드백을 주고받는 방식 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="피드백을 주고받는 방식" tag="FEEDBACK" tone="deep" />
-        <p className="text-rel-ink-soft text-[11px] italic">"어떤 조건에서 피드백이 잘 수용되고, 무엇을 어려워하는가?"</p>
+        <SubHeading title={isEn ? "How They Give and Take Feedback" : "피드백을 주고받는 방식"} tag="FEEDBACK" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">
+          {isEn ? `"What makes feedback land well for them, and what's hard to hear?"` : `"어떤 조건에서 피드백이 잘 수용되고, 무엇을 어려워하는가?"`}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
             <div className="border-b border-rel-line/30 pb-1 mb-1">
               <NameChip name={pA.name} side="a" />
-              <span className="font-bold text-rel-deep text-xs ml-1.5">에게 피드백이 잘 들어오는 조건</span>
+              <span className="font-bold text-rel-deep text-xs ml-1.5">{isEn ? "— what makes feedback land" : "에게 피드백이 잘 들어오는 조건"}</span>
             </div>
             <p className="font-bold text-emerald-800 text-[11.5px]">▫ {pA.feedbackStyle.easyConditionTitle}</p>
             <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pA.feedbackStyle.easyConditionExplanation}</p>
@@ -645,7 +663,7 @@ function CanonicalChapter04CommunicationView({
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
             <div className="border-b border-rel-line/30 pb-1 mb-1">
               <NameChip name={pB.name} side="b" />
-              <span className="font-bold text-rel-deep text-xs ml-1.5">에게 피드백이 잘 들어오는 조건</span>
+              <span className="font-bold text-rel-deep text-xs ml-1.5">{isEn ? "— what makes feedback land" : "에게 피드백이 잘 들어오는 조건"}</span>
             </div>
             <p className="font-bold text-emerald-800 text-[11.5px]">▫ {pB.feedbackStyle.easyConditionTitle}</p>
             <p className="text-rel-ink-soft text-[10.5px] leading-relaxed">{pB.feedbackStyle.easyConditionExplanation}</p>
@@ -661,13 +679,15 @@ function CanonicalChapter04CommunicationView({
 
       {/* 5. ◤ 의견이 다를 때 무엇을 보고 결정할까 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="의견이 다를 때 무엇을 보고 결정할까" tag="DECISION CRITERIA" tone="deep" />
-        <p className="text-rel-ink-soft text-[11px] italic">"의사결정 전에 각자 무엇을 확인해야 안심하는가?"</p>
+        <SubHeading title={isEn ? "What They Look At When Opinions Differ" : "의견이 다를 때 무엇을 보고 결정할까"} tag="DECISION CRITERIA" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">
+          {isEn ? `"What does each of them need to check before they feel good about a decision?"` : `"의사결정 전에 각자 무엇을 확인해야 안심하는가?"`}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
             <div className="border-b border-rel-line/30 pb-1 mb-1">
               <NameChip name={pA.name} side="a" />
-              <span className="font-bold text-rel-deep text-xs ml-1.5">의 안심 판단 기준</span>
+              <span className="font-bold text-rel-deep text-xs ml-1.5">{isEn ? "— what they need to feel sure" : "의 안심 판단 기준"}</span>
             </div>
             {pA.decisionCriteria.map((c, i) => (
               <div key={i} className="space-y-0.5">
@@ -679,7 +699,7 @@ function CanonicalChapter04CommunicationView({
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
             <div className="border-b border-rel-line/30 pb-1 mb-1">
               <NameChip name={pB.name} side="b" />
-              <span className="font-bold text-rel-deep text-xs ml-1.5">의 안심 판단 기준</span>
+              <span className="font-bold text-rel-deep text-xs ml-1.5">{isEn ? "— what they need to feel sure" : "의 안심 판단 기준"}</span>
             </div>
             {pB.decisionCriteria.map((c, i) => (
               <div key={i} className="space-y-0.5">
@@ -697,8 +717,12 @@ function CanonicalChapter04CommunicationView({
 
       {/* 6. ◤ 누가 언제 결정을 확정하는 게 좋을까 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="누가 언제 결정을 확정하는 게 좋을까" tag="DECISION FLOW" tone="deep" />
-        <p className="text-rel-ink-soft text-[11px] italic">"주체적인 owner가 상대의 input을 어떻게 수용하고 결정을 닫는가?"</p>
+        <SubHeading title={isEn ? "Who Should Lock In the Decision, and When" : "누가 언제 결정을 확정하는 게 좋을까"} tag="DECISION FLOW" tone="deep" />
+        <p className="text-rel-ink-soft text-[11px] italic">
+          {isEn
+            ? `"How does the owner take in the other person's input, and actually close the decision?"`
+            : `"주체적인 owner가 상대의 input을 어떻게 수용하고 결정을 닫는가?"`}
+        </p>
         <div className="space-y-2.5">
           {bundle.decisionFlowItems.map((item, idx) => {
             const isPersonA = item.primaryOwner === pA.name || item.primaryOwner.includes(pA.name);
@@ -713,7 +737,15 @@ function CanonicalChapter04CommunicationView({
                   </div>
                 </div>
                 <p className="text-[11px] text-rel-ink-soft leading-relaxed pt-0.5">
-                  • <strong>권한 및 인풋:</strong> {item.inputRole}의 점검 수용 → {item.closureGuide}
+                  {isEn ? (
+                    <>
+                      • <strong>Authority &amp; input:</strong> factors in {item.inputRole} → {item.closureGuide}
+                    </>
+                  ) : (
+                    <>
+                      • <strong>권한 및 인풋:</strong> {item.inputRole}의 점검 수용 → {item.closureGuide}
+                    </>
+                  )}
                 </p>
               </div>
             );
@@ -723,7 +755,7 @@ function CanonicalChapter04CommunicationView({
 
       {/* 7. ◤ 이 둘에게 잘 맞는 소통 리듬 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="이 둘에게 잘 맞는 소통 리듬" tag="RHYTHM SEQUENCE" tone="deep" />
+        <SubHeading title={isEn ? "A Communication Rhythm That Fits You Two" : "이 둘에게 잘 맞는 소통 리듬"} tag="RHYTHM SEQUENCE" tone="deep" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
           {bundle.communicationRhythmSteps.map((step, idx) => (
             <div key={idx} className="rounded-xl bg-rel-taupe-soft/40 p-3 border border-rel-line/30 space-y-1">
@@ -743,9 +775,11 @@ function CanonicalChapter04CommunicationView({
 function CanonicalChapter05PressureView({
   bundle,
   names,
+  isEn,
 }: {
   bundle: WorkPressureChapterBundle;
   names: [string, string];
+  isEn?: boolean;
 }) {
   const pA = bundle.personA;
   const pB = bundle.personB;
@@ -761,7 +795,7 @@ function CanonicalChapter05PressureView({
 
       {/* 1. ◤ 압박이 오면 각자는 어떻게 달라질까 */}
       <div className="space-y-3">
-        <SubHeading title="압박이 오면 각자는 어떻게 달라질까" tone="coral" />
+        <SubHeading title={isEn ? "How Each of You Changes Under Pressure" : "압박이 오면 각자는 어떻게 달라질까"} tone="coral" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
             <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}</span>
@@ -790,10 +824,10 @@ function CanonicalChapter05PressureView({
 
       {/* 2. ◤ 어떤 압박에 특히 민감할까 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="어떤 압박에 특히 민감할까" tone="coral" />
+        <SubHeading title={isEn ? "What Kind of Pressure Gets to Each of You" : "어떤 압박에 특히 민감할까"} tone="coral" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}이 민감하게 느끼는 상황</span>
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pA.name} — What Sets Them Off` : `${pA.name}이 민감하게 느끼는 상황`}</span>
             {pA.pressureTriggers.map((t, i) => (
               <div key={i} className="space-y-0.5">
                 <p className="font-bold text-amber-900 text-[11.5px]">⚡ [{t.title}]</p>
@@ -802,7 +836,7 @@ function CanonicalChapter05PressureView({
             ))}
           </div>
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}이 민감하게 느끼는 상황</span>
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pB.name} — What Sets Them Off` : `${pB.name}이 민감하게 느끼는 상황`}</span>
             {pB.pressureTriggers.map((t, i) => (
               <div key={i} className="space-y-0.5">
                 <p className="font-bold text-amber-900 text-[11.5px]">⚡ [{t.title}]</p>
@@ -815,7 +849,7 @@ function CanonicalChapter05PressureView({
 
       {/* 3. ◤ 마감이 가까워지면 무엇을 줄이고 무엇을 지킬까 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="마감이 가까워지면 무엇을 줄이고 무엇을 지킬까" tone="deep" />
+        <SubHeading title={isEn ? "As the Deadline Gets Close, What Gets Cut and What Gets Protected" : "마감이 가까워지면 무엇을 줄이고 무엇을 지킬까"} tone="deep" />
         {bundle.sharedTradeOffs?.isShared ? (
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm mb-2">
             <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">
@@ -823,7 +857,7 @@ function CanonicalChapter05PressureView({
             </span>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-rel-deep block">둘 다 먼저 줄이는 것</span>
+                <span className="text-[10px] font-bold text-rel-deep block">{isEn ? "What you both cut first" : "둘 다 먼저 줄이는 것"}</span>
                 <div className="flex flex-wrap gap-1">
                   {bundle.sharedTradeOffs.reducedItems.map((r, i) => (
                     <span key={i} className="rounded bg-rel-taupe-soft text-rel-ink text-[10px] font-semibold px-2 py-0.5">{r}</span>
@@ -831,7 +865,7 @@ function CanonicalChapter05PressureView({
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-emerald-800 block">둘 다 끝까지 지키는 것</span>
+                <span className="text-[10px] font-bold text-emerald-800 block">{isEn ? "What you both protect no matter what" : "둘 다 끝까지 지키는 것"}</span>
                 <div className="flex flex-wrap gap-1">
                   {bundle.sharedTradeOffs.protectedItems.map((p, i) => (
                     <span key={i} className="rounded bg-emerald-100/60 text-emerald-800 text-[10px] font-bold px-2 py-0.5">{p}</span>
@@ -844,9 +878,9 @@ function CanonicalChapter05PressureView({
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 트레이드오프</span>
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pA.name}'s trade-offs` : `${pA.name}의 트레이드오프`}</span>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-rel-deep block">먼저 줄이는 것</span>
+                <span className="text-[10px] font-bold text-rel-deep block">{isEn ? "Cuts first" : "먼저 줄이는 것"}</span>
                 <div className="flex flex-wrap gap-1">
                   {pA.tradeOffs.reducedItems.map((r, i) => (
                     <span key={i} className="rounded bg-rel-taupe-soft text-rel-ink text-[10px] font-semibold px-2 py-0.5">{r}</span>
@@ -854,7 +888,7 @@ function CanonicalChapter05PressureView({
                 </div>
               </div>
               <div className="space-y-1 pt-1">
-                <span className="text-[10px] font-bold text-emerald-800 block">끝까지 지키는 것</span>
+                <span className="text-[10px] font-bold text-emerald-800 block">{isEn ? "Protects no matter what" : "끝까지 지키는 것"}</span>
                 <div className="flex flex-wrap gap-1">
                   {pA.tradeOffs.protectedItems.map((p, i) => (
                     <span key={i} className="rounded bg-emerald-100/60 text-emerald-800 text-[10px] font-bold px-2 py-0.5">{p}</span>
@@ -864,9 +898,9 @@ function CanonicalChapter05PressureView({
               <p className="text-[10.5px] text-rel-ink-soft pt-1">{pA.tradeOffs.explanation}</p>
             </div>
             <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 트레이드오프</span>
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pB.name}'s trade-offs` : `${pB.name}의 트레이드오프`}</span>
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-rel-deep block">먼저 줄이는 것</span>
+                <span className="text-[10px] font-bold text-rel-deep block">{isEn ? "Cuts first" : "먼저 줄이는 것"}</span>
                 <div className="flex flex-wrap gap-1">
                   {pB.tradeOffs.reducedItems.map((r, i) => (
                     <span key={i} className="rounded bg-rel-taupe-soft text-rel-ink text-[10px] font-semibold px-2 py-0.5">{r}</span>
@@ -874,7 +908,7 @@ function CanonicalChapter05PressureView({
                 </div>
               </div>
               <div className="space-y-1 pt-1">
-                <span className="text-[10px] font-bold text-emerald-800 block">끝까지 지키는 것</span>
+                <span className="text-[10px] font-bold text-emerald-800 block">{isEn ? "Protects no matter what" : "끝까지 지키는 것"}</span>
                 <div className="flex flex-wrap gap-1">
                   {pB.tradeOffs.protectedItems.map((p, i) => (
                     <span key={i} className="rounded bg-emerald-100/60 text-emerald-800 text-[10px] font-bold px-2 py-0.5">{p}</span>
@@ -889,12 +923,12 @@ function CanonicalChapter05PressureView({
 
       {/* 4. ◤ 문제가 터졌을 때 첫 반응 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="문제가 터졌을 때 첫 반응" tone="deep" />
+        <SubHeading title={isEn ? "The First Move When Something Breaks" : "문제가 터졌을 때 첫 반응"} tone="deep" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
             <div className="border-b border-rel-line/30 pb-1 mb-1">
               <NameChip name={pA.name} side="a" />
-              <span className="font-bold text-rel-deep text-xs ml-1.5">의 첫 반응</span>
+              <span className="font-bold text-rel-deep text-xs ml-1.5">{isEn ? "— their first move" : "의 첫 반응"}</span>
             </div>
             <p className="font-bold text-rel-deep text-[11.5px]">▫ {pA.emergencyFirstMove.sequenceLabel}</p>
             <p className="text-[10.5px] text-rel-ink-soft leading-relaxed">{pA.emergencyFirstMove.explanation}</p>
@@ -902,7 +936,7 @@ function CanonicalChapter05PressureView({
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
             <div className="border-b border-rel-line/30 pb-1 mb-1">
               <NameChip name={pB.name} side="b" />
-              <span className="font-bold text-rel-deep text-xs ml-1.5">의 첫 반응</span>
+              <span className="font-bold text-rel-deep text-xs ml-1.5">{isEn ? "— their first move" : "의 첫 반응"}</span>
             </div>
             <p className="font-bold text-rel-deep text-[11.5px]">▫ {pB.emergencyFirstMove.sequenceLabel}</p>
             <p className="text-[10.5px] text-rel-ink-soft leading-relaxed">{pB.emergencyFirstMove.explanation}</p>
@@ -912,7 +946,7 @@ function CanonicalChapter05PressureView({
 
       {/* 5. ◤ 둘 다 압박받으면 어떤 팀이 될까 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="둘 다 압박받으면 어떤 팀이 될까" tone="coral" />
+        <SubHeading title={isEn ? "What Kind of Team You Become Under Shared Pressure" : "둘 다 압박받으면 어떤 팀이 될까"} tone="coral" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-emerald-50/60 p-4 border border-emerald-200/60 space-y-1.5 shadow-sm">
             <p className="font-bold text-emerald-900 text-xs">▫ {bundle.pairStressInteraction.strengthTitle}</p>
@@ -927,10 +961,10 @@ function CanonicalChapter05PressureView({
 
       {/* 6. ◤ 위기에서 오히려 강해지는 부분 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="위기에서 오히려 강해지는 부분" tone="deep" />
+        <SubHeading title={isEn ? "Where You Actually Get Stronger in a Crisis" : "위기에서 오히려 강해지는 부분"} tone="deep" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 위기 속 역량</span>
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pA.name}'s strength in a crisis` : `${pA.name}의 위기 속 역량`}</span>
             <div className="flex flex-wrap gap-1">
               {pA.crisisStrengths.keywords.map((kw, i) => (
                 <span key={i} className="rounded bg-rel-deep/10 text-rel-deep text-[10px] font-bold px-2 py-0.5">{kw}</span>
@@ -939,7 +973,7 @@ function CanonicalChapter05PressureView({
             <p className="text-[10.5px] text-rel-ink-soft leading-relaxed pt-1">{pA.crisisStrengths.explanation}</p>
           </div>
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-1.5 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 위기 속 역량</span>
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pB.name}'s strength in a crisis` : `${pB.name}의 위기 속 역량`}</span>
             <div className="flex flex-wrap gap-1">
               {pB.crisisStrengths.keywords.map((kw, i) => (
                 <span key={i} className="rounded bg-rel-deep/10 text-rel-deep text-[10px] font-bold px-2 py-0.5">{kw}</span>
@@ -952,10 +986,10 @@ function CanonicalChapter05PressureView({
 
       {/* 7. ◤ 압박이 오래 이어지면 나타나는 신호 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="압박이 오래 이어지면 나타나는 신호" tone="coral" />
+        <SubHeading title={isEn ? "Signs That Show Up Under Sustained Pressure" : "압박이 오래 이어지면 나타나는 신호"} tone="coral" />
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pA.name}의 과부하 행동 신호</span>
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pA.name}'s signs of overload` : `${pA.name}의 과부하 행동 신호`}</span>
             <ul className="space-y-1 text-[11px] text-rel-ink-soft">
               {pA.overloadSignals.signals.map((sig, i) => (
                 <li key={i}>• {sig}</li>
@@ -964,7 +998,7 @@ function CanonicalChapter05PressureView({
             <p className="text-[10.5px] text-rel-ink-soft pt-1">{pA.overloadSignals.explanation}</p>
           </div>
           <div className="rounded-xl bg-rel-surface p-4 border border-rel-line/40 space-y-2 shadow-sm">
-            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{pB.name}의 과부하 행동 신호</span>
+            <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1 mb-1">{isEn ? `${pB.name}'s signs of overload` : `${pB.name}의 과부하 행동 신호`}</span>
             <ul className="space-y-1 text-[11px] text-rel-ink-soft">
               {pB.overloadSignals.signals.map((sig, i) => (
                 <li key={i}>• {sig}</li>
@@ -977,7 +1011,7 @@ function CanonicalChapter05PressureView({
 
       {/* 8. ◤ 압박 속에서 가장 조심해야 할 리스크 */}
       <div className="space-y-3 pt-4 border-t border-rel-line/40">
-        <SubHeading title="압박 속에서 가장 조심해야 할 리스크" tone="coral" />
+        <SubHeading title={isEn ? "The Biggest Risk to Watch For Under Pressure" : "압박 속에서 가장 조심해야 할 리스크"} tone="coral" />
         <div className="space-y-2.5">
           {bundle.topPressureRisks.map((r, idx) => (
             <div key={idx} className="rounded-xl bg-amber-50/60 p-3.5 border border-amber-200/60 space-y-1 shadow-sm">
@@ -991,12 +1025,34 @@ function CanonicalChapter05PressureView({
   );
 }
 
+/**
+ * Display-only English labels for TrustCurrencyKeyword — the underlying
+ * Korean identifier (workConflictChapterEngine.ts's `keyword` field) is
+ * intentionally left as-is since it's a closed type; only how it renders
+ * changes with locale.
+ */
+const TRUST_CURRENCY_LABEL_EN: Record<string, string> = {
+  "책임": "Accountability",
+  "결과": "Results",
+  "투명성": "Transparency",
+  "전문성": "Expertise",
+  "판단력": "Judgment",
+  "약속": "Follow-through",
+  "일관성": "Consistency",
+  "존중": "Respect",
+  "속도": "Speed",
+  "준비": "Preparation",
+  "정확성": "Accuracy",
+};
+
 function CanonicalChapter06ConflictView({
   bundle,
   names,
+  isEn,
 }: {
   bundle: WorkConflictChapterBundle;
   names: [string, string];
+  isEn?: boolean;
 }) {
   const pA = bundle.sensitivityAtoB;
   const pB = bundle.sensitivityBtoA;
@@ -1014,7 +1070,7 @@ function CanonicalChapter06ConflictView({
       <div className="space-y-4">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>우리는 어디에서 가장 부딪힐까</span>
+          <span>{isEn ? "Where You Clash the Most" : "우리는 어디에서 가장 부딪힐까"}</span>
         </h3>
         <div className="space-y-3">
           {bundle.conflictThemes.map((theme, i) => (
@@ -1032,8 +1088,8 @@ function CanonicalChapter06ConflictView({
                 </div>
               </div>
               <div className="text-xs space-y-1 pt-1 border-t border-red-200/50">
-                <p className="text-red-900/90 font-semibold">📍 실제 충돌 장면: {theme.realFrictionScene}</p>
-                <p className="text-rel-ink-soft text-[11.5px]">💡 서로의 오해 구조: {theme.mutualMisinterpretation}</p>
+                <p className="text-red-900/90 font-semibold">📍 {isEn ? "What it actually looks like: " : "실제 충돌 장면: "}{theme.realFrictionScene}</p>
+                <p className="text-rel-ink-soft text-[11.5px]">💡 {isEn ? "How you misread each other: " : "서로의 오해 구조: "}{theme.mutualMisinterpretation}</p>
               </div>
             </div>
           ))}
@@ -1044,36 +1100,36 @@ function CanonicalChapter06ConflictView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>한번 꼬이면 어떻게 더 커질까</span>
+          <span>{isEn ? "How It Spirals Once It Starts" : "한번 꼬이면 어떻게 더 커질까"}</span>
         </h3>
         <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
           <div className="font-semibold text-rel-deep flex items-center gap-1.5">
             <span className="text-[#8c7c72]">▫</span>
-            <span>갈등 에스컬레이션 루프 (Conflict Loop)</span>
+            <span>{isEn ? "How the Loop Builds" : "갈등 에스컬레이션 루프 (Conflict Loop)"}</span>
           </div>
           <div className="grid gap-2 sm:grid-cols-3">
             <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
-              <p className="font-bold text-rel-deep text-[11px]">1. 트리거 발생</p>
+              <p className="font-bold text-rel-deep text-[11px]">{isEn ? "1. The trigger" : "1. 트리거 발생"}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.trigger}</p>
             </div>
             <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
-              <p className="font-bold text-rel-deep text-[11px]">2. {names[0]}의 행동</p>
+              <p className="font-bold text-rel-deep text-[11px]">{isEn ? `2. ${names[0]}'s move` : `2. ${names[0]}의 행동`}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personAAction}</p>
             </div>
             <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
-              <p className="font-bold text-rel-deep text-[11px]">3. {names[1]}의 해석</p>
+              <p className="font-bold text-rel-deep text-[11px]">{isEn ? `3. ${names[1]}'s read on it` : `3. ${names[1]}의 해석`}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personBInterpretation}</p>
             </div>
             <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
-              <p className="font-bold text-rel-deep text-[11px]">4. {names[1]}의 방어</p>
+              <p className="font-bold text-rel-deep text-[11px]">{isEn ? `4. ${names[1]}'s defense` : `4. ${names[1]}의 방어`}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personBDefense}</p>
             </div>
             <div className="rounded-xl bg-rel-taupe-soft/30 p-3 border border-rel-line/40">
-              <p className="font-bold text-rel-deep text-[11px]">5. {names[0]}의 재해석</p>
+              <p className="font-bold text-rel-deep text-[11px]">{isEn ? `5. ${names[0]}'s re-read` : `5. ${names[0]}의 재해석`}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{bundle.conflictLoop.personAReinterpretation}</p>
             </div>
             <div className="rounded-xl bg-rel-deep-soft/60 p-3 border border-rel-deep/20">
-              <p className="font-bold text-rel-deep text-[11px]">6. 최종 결과</p>
+              <p className="font-bold text-rel-deep text-[11px]">{isEn ? "6. Where it ends up" : "6. 최종 결과"}</p>
               <p className="text-rel-ink font-semibold text-[11.5px] mt-1">{bundle.conflictLoop.operationalConsequence}</p>
             </div>
           </div>
@@ -1084,29 +1140,29 @@ function CanonicalChapter06ConflictView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>서로의 어떤 실수에 특히 민감할까</span>
+          <span>{isEn ? "What Mistakes Set Each of You Off" : "서로의 어떤 실수에 특히 민감할까"}</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
             <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{pA.personName}</span>
             <div>
-              <p className="font-bold text-red-900">⚡ 민감하게 반응하는 지점</p>
+              <p className="font-bold text-red-900">⚡ {isEn ? "What sets them off" : "민감하게 반응하는 지점"}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{pA.sensitiveMistakeTrigger}</p>
             </div>
             <div className="pt-2 border-t border-rel-line/40">
-              <p className="font-semibold text-rel-deep">반응 패턴: {pA.reactionPattern}</p>
-              <p className="text-rel-ink-soft text-[11px] mt-0.5">핵심 요구: {pA.underlyingNeed}</p>
+              <p className="font-semibold text-rel-deep">{isEn ? "Reaction pattern: " : "반응 패턴: "}{pA.reactionPattern}</p>
+              <p className="text-rel-ink-soft text-[11px] mt-0.5">{isEn ? "What they actually need: " : "핵심 요구: "}{pA.underlyingNeed}</p>
             </div>
           </div>
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
             <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{pB.personName}</span>
             <div>
-              <p className="font-bold text-red-900">⚡ 민감하게 반응하는 지점</p>
+              <p className="font-bold text-red-900">⚡ {isEn ? "What sets them off" : "민감하게 반응하는 지점"}</p>
               <p className="text-rel-ink text-[11.5px] mt-1">{pB.sensitiveMistakeTrigger}</p>
             </div>
             <div className="pt-2 border-t border-rel-line/40">
-              <p className="font-semibold text-rel-deep">반응 패턴: {pB.reactionPattern}</p>
-              <p className="text-rel-ink-soft text-[11px] mt-0.5">핵심 요구: {pB.underlyingNeed}</p>
+              <p className="font-semibold text-rel-deep">{isEn ? "Reaction pattern: " : "반응 패턴: "}{pB.reactionPattern}</p>
+              <p className="text-rel-ink-soft text-[11px] mt-0.5">{isEn ? "What they actually need: " : "핵심 요구: "}{pB.underlyingNeed}</p>
             </div>
           </div>
         </div>
@@ -1116,26 +1172,26 @@ function CanonicalChapter06ConflictView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>신뢰가 흔들리는 진짜 이유 (Trust Currency)</span>
+          <span>{isEn ? "What Actually Shakes Your Trust (Trust Currency)" : "신뢰가 흔들리는 진짜 이유 (Trust Currency)"}</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
-            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{currencyA.personName}의 신뢰 통화</span>
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{isEn ? `${currencyA.personName}'s trust currency` : `${currencyA.personName}의 신뢰 통화`}</span>
             <div className="space-y-2">
               {currencyA.topCurrencies.map((tc, i) => (
                 <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30">
-                  <span className="rounded bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5 mr-1.5">{tc.keyword}</span>
+                  <span className="rounded bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5 mr-1.5">{isEn ? TRUST_CURRENCY_LABEL_EN[tc.keyword] ?? tc.keyword : tc.keyword}</span>
                   <span className="text-rel-ink text-[11px]">{tc.explanation}</span>
                 </div>
               ))}
             </div>
           </div>
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3 text-xs">
-            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{currencyB.personName}의 신뢰 통화</span>
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{isEn ? `${currencyB.personName}'s trust currency` : `${currencyB.personName}의 신뢰 통화`}</span>
             <div className="space-y-2">
               {currencyB.topCurrencies.map((tc, i) => (
                 <div key={i} className="rounded-xl bg-rel-taupe-soft/40 p-2.5 border border-rel-line/30">
-                  <span className="rounded bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5 mr-1.5">{tc.keyword}</span>
+                  <span className="rounded bg-rel-deep/10 text-rel-deep font-bold text-[11px] px-2 py-0.5 mr-1.5">{isEn ? TRUST_CURRENCY_LABEL_EN[tc.keyword] ?? tc.keyword : tc.keyword}</span>
                   <span className="text-rel-ink text-[11px]">{tc.explanation}</span>
                 </div>
               ))}
@@ -1148,7 +1204,7 @@ function CanonicalChapter06ConflictView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>다시 신뢰하려면 무엇이 먼저 필요할까</span>
+          <span>{isEn ? "What It Takes to Rebuild Trust, First" : "다시 신뢰하려면 무엇이 먼저 필요할까"}</span>
         </h3>
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-2">
@@ -1156,7 +1212,7 @@ function CanonicalChapter06ConflictView({
               <NameChip name={seqAtoB.fromName} side="a" />
               <span className="text-rel-deep font-bold text-xs">→</span>
               <NameChip name={seqAtoB.toName} side="b" />
-              <span className="font-bold text-rel-deep text-xs">복구 순서</span>
+              <span className="font-bold text-rel-deep text-xs">{isEn ? "repair sequence" : "복구 순서"}</span>
             </div>
             <ul className="space-y-1.5 text-rel-ink text-[11px] pt-1">
               {seqAtoB.steps.map((step, i) => (
@@ -1169,7 +1225,7 @@ function CanonicalChapter06ConflictView({
               <NameChip name={seqBtoA.fromName} side="b" />
               <span className="text-rel-deep font-bold text-xs">→</span>
               <NameChip name={seqBtoA.toName} side="a" />
-              <span className="font-bold text-rel-deep text-xs">복구 순서</span>
+              <span className="font-bold text-rel-deep text-xs">{isEn ? "repair sequence" : "복구 순서"}</span>
             </div>
             <ul className="space-y-1.5 text-rel-ink text-[11px] pt-1">
               {seqBtoA.steps.map((step, i) => (
@@ -1184,23 +1240,23 @@ function CanonicalChapter06ConflictView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>같은 사과도 이렇게 해야 잘 들어온다</span>
+          <span>{isEn ? "The Same Apology Lands Differently, Depending How You Say It" : "같은 사과도 이렇게 해야 잘 들어온다"}</span>
         </h3>
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
             <div className="flex items-center gap-1.5">
               <NameChip name={langA.personName} side="a" />
-              <span className="font-bold text-rel-deep text-xs">에게 효과적인 사과</span>
+              <span className="font-bold text-rel-deep text-xs">{isEn ? "— what makes an apology land" : "에게 효과적인 사과"}</span>
             </div>
-            <p className="text-rel-ink-soft text-[11px]">선호 스타일: {langA.preferredStyle}</p>
+            <p className="text-rel-ink-soft text-[11px]">{isEn ? "Preferred style: " : "선호 스타일: "}{langA.preferredStyle}</p>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-emerald-800">▫ 효과적인 문구:</p>
+              <p className="font-bold text-emerald-800">▫ {isEn ? "What actually works:" : "효과적인 문구:"}</p>
               {langA.effectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink text-[11px]">{phrase}</p>
               ))}
             </div>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-red-800">▫ 피해야 할 문구:</p>
+              <p className="font-bold text-red-800">▫ {isEn ? "What to avoid:" : "피해야 할 문구:"}</p>
               {langA.ineffectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink-soft text-[11px]">{phrase}</p>
               ))}
@@ -1209,17 +1265,17 @@ function CanonicalChapter06ConflictView({
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
             <div className="flex items-center gap-1.5">
               <NameChip name={langB.personName} side="b" />
-              <span className="font-bold text-rel-deep text-xs">에게 효과적인 사과</span>
+              <span className="font-bold text-rel-deep text-xs">{isEn ? "— what makes an apology land" : "에게 효과적인 사과"}</span>
             </div>
-            <p className="text-rel-ink-soft text-[11px]">선호 스타일: {langB.preferredStyle}</p>
+            <p className="text-rel-ink-soft text-[11px]">{isEn ? "Preferred style: " : "선호 스타일: "}{langB.preferredStyle}</p>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-emerald-800">▫ 효과적인 문구:</p>
+              <p className="font-bold text-emerald-800">▫ {isEn ? "What actually works:" : "효과적인 문구:"}</p>
               {langB.effectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink text-[11px]">{phrase}</p>
               ))}
             </div>
             <div className="space-y-1 pt-1 border-t border-rel-line/40">
-              <p className="font-bold text-red-800">▫ 피해야 할 문구:</p>
+              <p className="font-bold text-red-800">▫ {isEn ? "What to avoid:" : "피해야 할 문구:"}</p>
               {langB.ineffectivePhrases.map((phrase, i) => (
                 <p key={i} className="text-rel-ink-soft text-[11px]">{phrase}</p>
               ))}
@@ -1243,18 +1299,18 @@ function CanonicalChapter06ConflictView({
         <div className="space-y-4 pt-4 border-t border-rel-line/40 text-xs">
           <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
             <span className="text-[#8c7c72]">◤</span>
-            <span>서로 마음이 상했을 때(삐졌을 때) 1:1 대화 해독 수칙</span>
+            <span>{isEn ? "How to Talk It Out When Feelings Are Hurt" : "서로 마음이 상했을 때(삐졌을 때) 1:1 대화 해독 수칙"}</span>
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
               <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
-                {bundle.upsetReconciliationA.personName}의 감정 신호 & 풀리는 대화법
+                {isEn ? `${bundle.upsetReconciliationA.personName}'s signals & what actually helps` : `${bundle.upsetReconciliationA.personName}의 감정 신호 & 풀리는 대화법`}
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {bundle.upsetReconciliationA.upsetSignal}
               </p>
               <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
-                <p className="font-bold text-emerald-800 text-xs">✅ 이렇게 이야기를 건네보세요:</p>
+                <p className="font-bold text-emerald-800 text-xs">✅ {isEn ? "Try saying it like this:" : "이렇게 이야기를 건네보세요:"}</p>
                 <ul className="space-y-1 text-rel-ink text-[11px]">
                   {bundle.upsetReconciliationA.doList.map((item, idx) => (
                     <li key={idx} className="leading-relaxed">• {item}</li>
@@ -1262,7 +1318,7 @@ function CanonicalChapter06ConflictView({
                 </ul>
               </div>
               <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
-                <p className="font-bold text-red-800 text-xs">❌ 이때 이것만은 피하세요:</p>
+                <p className="font-bold text-red-800 text-xs">❌ {isEn ? "Avoid this:" : "이때 이것만은 피하세요:"}</p>
                 <ul className="space-y-1 text-rel-ink-soft text-[11px]">
                   {bundle.upsetReconciliationA.avoidList.map((item, idx) => (
                     <li key={idx} className="leading-relaxed">• {item}</li>
@@ -1273,13 +1329,13 @@ function CanonicalChapter06ConflictView({
 
             <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
               <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">
-                {bundle.upsetReconciliationB.personName}의 감정 신호 & 풀리는 대화법
+                {isEn ? `${bundle.upsetReconciliationB.personName}'s signals & what actually helps` : `${bundle.upsetReconciliationB.personName}의 감정 신호 & 풀리는 대화법`}
               </span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">
                 {bundle.upsetReconciliationB.upsetSignal}
               </p>
               <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
-                <p className="font-bold text-emerald-800 text-xs">✅ 이렇게 이야기를 건네보세요:</p>
+                <p className="font-bold text-emerald-800 text-xs">✅ {isEn ? "Try saying it like this:" : "이렇게 이야기를 건네보세요:"}</p>
                 <ul className="space-y-1 text-rel-ink text-[11px]">
                   {bundle.upsetReconciliationB.doList.map((item, idx) => (
                     <li key={idx} className="leading-relaxed">• {item}</li>
@@ -1287,7 +1343,7 @@ function CanonicalChapter06ConflictView({
                 </ul>
               </div>
               <div className="space-y-1.5 pt-2 border-t border-rel-line/40">
-                <p className="font-bold text-red-800 text-xs">❌ 이때 이것만은 피하세요:</p>
+                <p className="font-bold text-red-800 text-xs">❌ {isEn ? "Avoid this:" : "이때 이것만은 피하세요:"}</p>
                 <ul className="space-y-1 text-rel-ink-soft text-[11px]">
                   {bundle.upsetReconciliationB.avoidList.map((item, idx) => (
                     <li key={idx} className="leading-relaxed">• {item}</li>
@@ -1313,9 +1369,11 @@ function CanonicalChapter06ConflictView({
 function CanonicalChapter07PlaybookView({
   bundle,
   names,
+  isEn,
 }: {
   bundle: WorkPlaybookChapterBundle;
   names: [string, string];
+  isEn?: boolean;
 }) {
   const opt = bundle.optimalConfiguration;
   const doA = bundle.doDontA;
@@ -1340,12 +1398,12 @@ function CanonicalChapter07PlaybookView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>이 조합의 최적 운영 방식</span>
+          <span>{isEn ? "The Best Way to Run This Pairing" : "이 조합의 최적 운영 방식"}</span>
         </h3>
         <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1">{doA.personName}의 핵심 소유 영역</span>
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1">{isEn ? `${doA.personName}'s core ownership` : `${doA.personName}의 핵심 소유 영역`}</span>
               <ul className="space-y-1 text-[11px] text-rel-ink-soft">
                 {opt.personAOwnership.map((item, idx) => (
                   <li key={idx}>• {item}</li>
@@ -1353,7 +1411,7 @@ function CanonicalChapter07PlaybookView({
               </ul>
             </div>
             <div className="space-y-1.5">
-              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1">{doB.personName}의 핵심 소유 영역</span>
+              <span className="font-bold text-rel-deep text-xs block border-b border-rel-line/30 pb-1">{isEn ? `${doB.personName}'s core ownership` : `${doB.personName}의 핵심 소유 영역`}</span>
               <ul className="space-y-1 text-[11px] text-rel-ink-soft">
                 {opt.personBOwnership.map((item, idx) => (
                   <li key={idx}>• {item}</li>
@@ -1364,11 +1422,11 @@ function CanonicalChapter07PlaybookView({
 
           <div className="grid gap-2 sm:grid-cols-2 pt-3 border-t border-rel-line/40 text-[11.5px]">
             <div className="rounded-xl bg-emerald-50/60 p-3 border border-emerald-200/60 space-y-0.5">
-              <p className="font-bold text-emerald-900">✅ 가장 잘 맞는 구조</p>
+              <p className="font-bold text-emerald-900">✅ {isEn ? "What works best" : "가장 잘 맞는 구조"}</p>
               <p className="text-emerald-800/90 leading-relaxed text-[11px]">{opt.bestStructure}</p>
             </div>
             <div className="rounded-xl bg-red-50/60 p-3 border border-red-200/60 space-y-0.5">
-              <p className="font-bold text-red-900">❌ 피해야 할 구조</p>
+              <p className="font-bold text-red-900">❌ {isEn ? "What to avoid" : "피해야 할 구조"}</p>
               <p className="text-red-800/90 leading-relaxed text-[11px]">{opt.avoidStructure}</p>
             </div>
           </div>
@@ -1379,12 +1437,12 @@ function CanonicalChapter07PlaybookView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>서로와 일할 때 DO / DON'T</span>
+          <span>{isEn ? "DO / DON'T When Working With Each Other" : "서로와 일할 때 DO / DON'T"}</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
           {/* Person A DO/DON'T */}
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
-            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{doA.personName}와 일할 때</span>
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{isEn ? `Working with ${doA.personName}` : `${doA.personName}와 일할 때`}</span>
             <div className="space-y-2">
               <p className="font-bold text-emerald-800 text-xs">DO</p>
               {doA.doItems.map((item, i) => (
@@ -1407,7 +1465,7 @@ function CanonicalChapter07PlaybookView({
 
           {/* Person B DO/DON'T */}
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
-            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{doB.personName}와 일할 때</span>
+            <span className="rounded-full border border-rel-line bg-rel-taupe-soft/60 text-rel-deep font-bold text-xs px-3 py-0.5 inline-block">{isEn ? `Working with ${doB.personName}` : `${doB.personName}와 일할 때`}</span>
             <div className="space-y-2">
               <p className="font-bold text-emerald-800 text-xs">DO</p>
               {doB.doItems.map((item, i) => (
@@ -1434,7 +1492,7 @@ function CanonicalChapter07PlaybookView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>같이 일할 때 꼭 맞춰둘 규칙</span>
+          <span>{isEn ? "Ground Rules Worth Setting Together" : "같이 일할 때 꼭 맞춰둘 규칙"}</span>
         </h3>
         <div className="grid gap-2.5 sm:grid-cols-2">
           {rules.map((rule, idx) => (
@@ -1452,7 +1510,7 @@ function CanonicalChapter07PlaybookView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>일이 꼬였을 때 비상 운영법</span>
+          <span>{isEn ? "The Emergency Playbook When Things Go Sideways" : "일이 꼬였을 때 비상 운영법"}</span>
         </h3>
         <div className="grid gap-3 sm:grid-cols-3">
           {triage.map((item, idx) => {
@@ -1476,7 +1534,7 @@ function CanonicalChapter07PlaybookView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>서로에게서 얻게 되는 것</span>
+          <span>{isEn ? "What You Each Get From the Other" : "서로에게서 얻게 되는 것"}</span>
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-2">
@@ -1504,14 +1562,14 @@ function CanonicalChapter07PlaybookView({
       <div className="space-y-3">
         <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
           <span className="text-[#8c7c72]">◤</span>
-          <span>이 팀이 오래 잘 가기 위한 운영 습관</span>
+          <span>{isEn ? "Habits That Keep This Team Going Long-Term" : "이 팀이 오래 잘 가기 위한 운영 습관"}</span>
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
           {routines.map((rt, idx) => (
             <div key={idx} className="rounded-2xl border border-rel-line bg-rel-surface p-4 shadow-sm space-y-1.5">
               <p className="font-bold text-rel-deep text-xs">▫ {rt.routineName}</p>
-              <p className="text-[10.5px] font-semibold text-rel-deep/80">포맷: {rt.format}</p>
-              <p className="text-rel-ink text-[11px] leading-relaxed">목적: {rt.purpose}</p>
+              <p className="text-[10.5px] font-semibold text-rel-deep/80">{isEn ? "Format: " : "포맷: "}{rt.format}</p>
+              <p className="text-rel-ink text-[11px] leading-relaxed">{isEn ? "Purpose: " : "목적: "}{rt.purpose}</p>
             </div>
           ))}
         </div>
@@ -1521,7 +1579,7 @@ function CanonicalChapter07PlaybookView({
       <div className="rounded-2xl border border-rel-deep/20 bg-rel-deep-soft/60 p-5 shadow-sm space-y-2">
         <h4 className="font-rel-sans text-xs font-bold text-rel-deep flex items-center gap-1.5">
           <span className="text-[#8c7c72]">▫</span>
-          <span>이 팀의 한 가지 원칙</span>
+          <span>{isEn ? "This Team's One Rule" : "이 팀의 한 가지 원칙"}</span>
         </h4>
         <p className="font-bold text-rel-deep text-sm leading-relaxed">{principle.principleTitle}</p>
         <p className="text-rel-ink-soft text-[11.5px] leading-relaxed pt-1">{principle.explanation}</p>
@@ -1532,7 +1590,7 @@ function CanonicalChapter07PlaybookView({
         <div className="space-y-4 pt-6 border-t border-rel-line/40 text-xs">
           <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
             <span className="text-[#8c7c72]">◤</span>
-            <span>이 팀을 위한 협업 안전 장치</span>
+            <span>{isEn ? "A Safety Net Built for This Team" : "이 팀을 위한 협업 안전 장치"}</span>
           </h3>
 
           <div className="space-y-4">
@@ -1540,15 +1598,15 @@ function CanonicalChapter07PlaybookView({
             <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <NameChip name={bundle.collaborationSafetyMatrix.personAName} side="a" />
-                <span className="text-rel-deep font-bold text-xs">의 협업 안전 장치</span>
+                <span className="text-rel-deep font-bold text-xs">{isEn ? "— their collaboration safety net" : "의 협업 안전 장치"}</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11px] border-collapse">
                   <thead>
                     <tr className="border-b border-rel-line/40 text-rel-deep font-bold">
-                      <th className="py-1.5 px-2 w-1/4">구분</th>
-                      <th className="py-1.5 px-2 text-emerald-800">✅ 이렇게 해보세요</th>
-                      <th className="py-1.5 px-2 text-red-800">❌ 피하면 좋아요</th>
+                      <th className="py-1.5 px-2 w-1/4">{isEn ? "Category" : "구분"}</th>
+                      <th className="py-1.5 px-2 text-emerald-800">✅ {isEn ? "Try this" : "이렇게 해보세요"}</th>
+                      <th className="py-1.5 px-2 text-red-800">❌ {isEn ? "Better to avoid" : "피하면 좋아요"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-rel-line/20">
@@ -1568,15 +1626,15 @@ function CanonicalChapter07PlaybookView({
             <div className="rounded-2xl border border-rel-line bg-rel-surface p-4 sm:p-5 shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <NameChip name={bundle.collaborationSafetyMatrix.personBName} side="b" />
-                <span className="text-rel-deep font-bold text-xs">의 협업 안전 장치</span>
+                <span className="text-rel-deep font-bold text-xs">{isEn ? "— their collaboration safety net" : "의 협업 안전 장치"}</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11px] border-collapse">
                   <thead>
                     <tr className="border-b border-rel-line/40 text-rel-deep font-bold">
-                      <th className="py-1.5 px-2 w-1/4">구분</th>
-                      <th className="py-1.5 px-2 text-emerald-800">✅ 이렇게 해보세요</th>
-                      <th className="py-1.5 px-2 text-red-800">❌ 피하면 좋아요</th>
+                      <th className="py-1.5 px-2 w-1/4">{isEn ? "Category" : "구분"}</th>
+                      <th className="py-1.5 px-2 text-emerald-800">✅ {isEn ? "Try this" : "이렇게 해보세요"}</th>
+                      <th className="py-1.5 px-2 text-red-800">❌ {isEn ? "Better to avoid" : "피하면 좋아요"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-rel-line/20">
@@ -2347,7 +2405,7 @@ export function WorkReportViewModelView({
               <div className="space-y-3">
                 <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
                   <span className="text-[#8c7c72]">◤</span>
-                  <span>나는 어떻게 일하는 사람인가</span>
+                  <span>{isEn ? "How I Work" : "나는 어떻게 일하는 사람인가"}</span>
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -2371,7 +2429,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-2 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>일하는 기본 스타일</span>
+                        <span>{isEn ? "How They Work" : "일하는 기본 스타일"}</span>
                       </h4>
                       <div className="space-y-2.5">
                         {pA.workStyleBehaviors.map((b, idx) => (
@@ -2393,7 +2451,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>일에 기여하는 방식</span>
+                        <span>{isEn ? "How They Contribute" : "일에 기여하는 방식"}</span>
                       </h4>
                       <div className="space-y-1.5">
                         {pA.topContributions.map((c, i) => (
@@ -2409,7 +2467,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>일을 잘한다고 느끼는 기준</span>
+                        <span>{isEn ? "What Feeling Successful Looks Like" : "일을 잘한다고 느끼는 기준"}</span>
                       </h4>
                       <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
                         <div className="flex flex-wrap gap-1">
@@ -2442,7 +2500,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-2 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>일하는 기본 스타일</span>
+                        <span>{isEn ? "How They Work" : "일하는 기본 스타일"}</span>
                       </h4>
                       <div className="space-y-2.5">
                         {pB.workStyleBehaviors.map((b, idx) => (
@@ -2464,7 +2522,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>일에 기여하는 방식</span>
+                        <span>{isEn ? "How They Contribute" : "일에 기여하는 방식"}</span>
                       </h4>
                       <div className="space-y-1.5">
                         {pB.topContributions.map((c, i) => (
@@ -2480,7 +2538,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-2 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>일을 잘한다고 느끼는 기준</span>
+                        <span>{isEn ? "What Feeling Successful Looks Like" : "일을 잘한다고 느끼는 기준"}</span>
                       </h4>
                       <div className="rounded-xl bg-rel-taupe-soft/30 p-2.5 space-y-1 border border-rel-line/30">
                         <div className="flex flex-wrap gap-1">
@@ -2500,6 +2558,7 @@ export function WorkReportViewModelView({
                 workStyle={comparisonSection?.workStyle}
                 individualBundle={individualBundle}
                 names={names}
+                isEn={isEn}
               />
 
               {/* ================================================================ */}
@@ -2508,7 +2567,7 @@ export function WorkReportViewModelView({
               <div className="space-y-3">
                 <h3 className="font-rel-sans text-sm font-bold text-rel-deep tracking-wider flex items-center gap-1.5">
                   <span className="text-[#8c7c72]">◤</span>
-                  <span>나는 어디에서 강한가</span>
+                  <span>{isEn ? "Where I'm Strong" : "나는 어디에서 강한가"}</span>
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -2524,7 +2583,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-1.5 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>잘 맞는 업무</span>
+                        <span>{isEn ? "Work That Fits" : "잘 맞는 업무"}</span>
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {pA.suitableWorkTypes.map((wt, i) => (
@@ -2537,7 +2596,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>잘 맞는 역할 · 직무 · 기능</span>
+                        <span>{isEn ? "Roles & Functions That Fit" : "잘 맞는 역할 · 직무 · 기능"}</span>
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {pA.suitableRoles.map((r, i) => (
@@ -2550,7 +2609,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>잘 맞는 팀 · 업무 환경</span>
+                        <span>{isEn ? "Teams & Environments That Fit" : "잘 맞는 팀 · 업무 환경"}</span>
                       </h4>
                       <ul className="space-y-1 text-[11px] text-rel-ink-soft">
                         {pA.thrivingEnvironments.map((env, i) => (
@@ -2572,7 +2631,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-1.5 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>잘 맞는 업무</span>
+                        <span>{isEn ? "Work That Fits" : "잘 맞는 업무"}</span>
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {pB.suitableWorkTypes.map((wt, i) => (
@@ -2585,7 +2644,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>잘 맞는 역할 · 직무 · 기능</span>
+                        <span>{isEn ? "Roles & Functions That Fit" : "잘 맞는 역할 · 직무 · 기능"}</span>
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {pB.suitableRoles.map((r, i) => (
@@ -2598,7 +2657,7 @@ export function WorkReportViewModelView({
                     <div className="space-y-1.5 pt-3 border-t border-rel-line/40 text-xs">
                       <h4 className="font-rel-sans text-xs font-bold text-rel-ink flex items-center gap-1">
                         <span>▫</span>
-                        <span>잘 맞는 팀 · 업무 환경</span>
+                        <span>{isEn ? "Teams & Environments That Fit" : "잘 맞는 팀 · 업무 환경"}</span>
                       </h4>
                       <ul className="space-y-1 text-[11px] text-rel-ink-soft">
                         {pB.thrivingEnvironments.map((env, i) => (
@@ -2621,7 +2680,7 @@ export function WorkReportViewModelView({
                     roles: {
                       me: {
                         nickname: names[0],
-                        weapons: individualBundle.personA.suitableRoles ?? ["프로젝트 리드", "기획·실행"],
+                        weapons: individualBundle.personA.suitableRoles ?? (isEn ? ["Project lead", "Planning & execution"] : ["프로젝트 리드", "기획·실행"]),
                         handoff_tasks: individualBundle.personA.delegationItems.map(d => ({
                           task_label: d.workTitle,
                           handoff_to: d.partnerName,
@@ -2630,7 +2689,7 @@ export function WorkReportViewModelView({
                       },
                       partner: {
                         nickname: names[1],
-                        weapons: individualBundle.personB.suitableRoles ?? ["품질 검토", "체계화"],
+                        weapons: individualBundle.personB.suitableRoles ?? (isEn ? ["Quality review", "Systematizing"] : ["품질 검토", "체계화"]),
                         handoff_tasks: individualBundle.personB.delegationItems.map(d => ({
                           task_label: d.workTitle,
                           handoff_to: d.partnerName,
@@ -2638,19 +2697,19 @@ export function WorkReportViewModelView({
                         })) ?? [],
                       },
                     },
-                    synergyOneLiner: individualBundle.mostSimilarInsight ?? "역할과 책임을 명확히 나눌 때 가장 높은 협업 효율을 발휘합니다.",
+                    synergyOneLiner: individualBundle.mostSimilarInsight ?? (isEn ? "You collaborate best when roles and responsibilities are clearly split." : "역할과 책임을 명확히 나눌 때 가장 높은 협업 효율을 발휘합니다."),
                     idealFit: {
                       me: {
                         nickname: names[0],
-                        why: individualBundle.personA.identityLabel ?? "핵심 과제를 추진하고 행동으로 연결하는 역할",
-                        ideal_roles: individualBundle.personA.suitableRoles ?? ["PM", "실무 리드"],
-                        ideal_departments: individualBundle.personA.suitableWorkTypes ?? ["신규 사업", "프로젝트 관리"],
+                        why: individualBundle.personA.identityLabel ?? (isEn ? "Drives the core work forward and turns it into action" : "핵심 과제를 추진하고 행동으로 연결하는 역할"),
+                        ideal_roles: individualBundle.personA.suitableRoles ?? (isEn ? ["PM", "Execution lead"] : ["PM", "실무 리드"]),
+                        ideal_departments: individualBundle.personA.suitableWorkTypes ?? (isEn ? ["New business", "Project management"] : ["신규 사업", "프로젝트 관리"]),
                       },
                       partner: {
                         nickname: names[1],
-                        why: individualBundle.personB.identityLabel ?? "세부 조건과 리스크를 검토하고 완성도를 높이는 역할",
-                        ideal_roles: individualBundle.personB.suitableRoles ?? ["QA", "전략 기획"],
-                        ideal_departments: individualBundle.personB.suitableWorkTypes ?? ["품질 검토", "운영 리스크 관리"],
+                        why: individualBundle.personB.identityLabel ?? (isEn ? "Reviews the details and risk, and raises the overall polish" : "세부 조건과 리스크를 검토하고 완성도를 높이는 역할"),
+                        ideal_roles: individualBundle.personB.suitableRoles ?? (isEn ? ["QA", "Strategy & planning"] : ["QA", "전략 기획"]),
+                        ideal_departments: individualBundle.personB.suitableWorkTypes ?? (isEn ? ["Quality review", "Operational risk management"] : ["품질 검토", "운영 리스크 관리"]),
                       },
                     },
                     togetherCombo: individualBundle.mostDifferentInsight,
@@ -2708,7 +2767,7 @@ export function WorkReportViewModelView({
             officeReport: rawReport as any,
           });
 
-          return <CanonicalChapter04CommunicationView bundle={commBundle} names={names} />;
+          return <CanonicalChapter04CommunicationView bundle={commBundle} names={names} isEn={isEn} />;
         })()}
       </WorkChapterSection>
 
@@ -2735,7 +2794,7 @@ export function WorkReportViewModelView({
             workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
           });
 
-          return <CanonicalChapter05PressureView bundle={pressureBundle} names={names} />;
+          return <CanonicalChapter05PressureView bundle={pressureBundle} names={names} isEn={isEn} />;
         })()}
       </WorkChapterSection>
 
@@ -2766,7 +2825,7 @@ export function WorkReportViewModelView({
             workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
           });
 
-          return <CanonicalChapter06ConflictView bundle={conflictBundle} names={names} />;
+          return <CanonicalChapter06ConflictView bundle={conflictBundle} names={names} isEn={isEn} />;
         })()}
       </WorkChapterSection>
 
@@ -2797,7 +2856,7 @@ export function WorkReportViewModelView({
             workSignalsB: (rawReport.meta?.person_core as any)?.work_signals_b ?? null,
           });
 
-          return <CanonicalChapter07PlaybookView bundle={playbookBundle} names={names} />;
+          return <CanonicalChapter07PlaybookView bundle={playbookBundle} names={names} isEn={isEn} />;
         })()}
       </WorkChapterSection>
     </div>

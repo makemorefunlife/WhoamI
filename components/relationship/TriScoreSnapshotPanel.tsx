@@ -62,9 +62,10 @@ function MiniScoreBar({
   polarity?: "higher_better" | "higher_worse";
 }) {
   const reportTone = useReportTone();
+  const { locale } = useLocale();
   const stitch = reportTone.surface === "stitch";
   const pct = Math.max(0, Math.min(100, value));
-  const appearance = resolveScoreBarAppearance(pct, polarity);
+  const appearance = resolveScoreBarAppearance(pct, polarity, locale);
   const labelClass = stitch ? "text-on-surface-variant" : "text-[var(--space-text)]";
   const valueClass = stitch ? "text-primary" : "text-[var(--space-text)]";
   const trackClass = stitch ? "bg-outline-variant/25" : "bg-white/8";

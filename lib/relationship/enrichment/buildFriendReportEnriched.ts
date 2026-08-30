@@ -562,7 +562,7 @@ export function buildFriendReportEnriched(params: {
   const duoVsGroupPointer = axisInsights?.duo_vs_group
     ? pick(
         locale,
-        "Your stimulation-seeking scores back this up too — see the Social DNA battery description above for the full picture.",
+        "How much novelty and activity you each want backs this up too — see the Social DNA battery description above for the full picture.",
         "11축 자극추구 점수로도 이 차이가 뒷받침돼요 — 자세한 설명은 위 Social DNA 배터리 항목을 참고하세요.",
       )
     : undefined;

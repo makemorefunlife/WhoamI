@@ -166,6 +166,8 @@ function OriginStoryCard({
   names: [string, string];
 }) {
   const t = useMessages().relationshipDrilldown.cohabitation;
+  const { locale } = useLocale();
+  const isEn = locale === "en-US";
   const b = section.ch01Bundle;
 
   if (!b) {
@@ -199,7 +201,7 @@ function OriginStoryCard({
   return (
     <div className="space-y-6">
       {/* 1. 왜 처음 서로에게 끌렸을까 */}
-      <RelationshipReportCard title="왜 처음 서로에게 끌렸을까" accentColor={ACCENT}>
+      <RelationshipReportCard title={isEn ? "Why we were drawn to each other at first" : "왜 처음 서로에게 끌렸을까"} accentColor={ACCENT}>
         <RelationshipReportBody>
           <div className="space-y-4">
             {b.attraction.drivers.map((d, i) => (
@@ -233,11 +235,11 @@ function OriginStoryCard({
       </RelationshipReportCard>
 
       {/* 2. 좋아하는 것을 넘어, 왜 서로가 필요했을까 */}
-      <RelationshipReportCard title="좋아하는 것을 넘어, 왜 서로가 필요했을까" accentColor={ACCENT}>
+      <RelationshipReportCard title={isEn ? "Beyond just liking each other — why you needed each other" : "좋아하는 것을 넘어, 왜 서로가 필요했을까"} accentColor={ACCENT}>
         <RelationshipReportBody>
           <div className="space-y-5">
             <div className="rounded-xl border border-rel-line bg-rel-surface p-4 space-y-2">
-              <RelationshipReportLabel>{`${names[0]}에게 ${name1IGa} 필요한 이유`}</RelationshipReportLabel>
+              <RelationshipReportLabel>{isEn ? `Why ${names[1]} is needed for ${names[0]}` : `${names[0]}에게 ${name1IGa} 필요한 이유`}</RelationshipReportLabel>
               <p className="text-sm text-rel-ink-soft leading-relaxed">
                 {b.mutualNeed.needAtoB.whyPartnerIsNeeded}
               </p>
@@ -247,7 +249,7 @@ function OriginStoryCard({
             </div>
 
             <div className="rounded-xl border border-rel-line bg-rel-surface p-4 space-y-2">
-              <RelationshipReportLabel>{`${names[1]}에게 ${name0IGa} 필요한 이유`}</RelationshipReportLabel>
+              <RelationshipReportLabel>{isEn ? `Why ${names[0]} is needed for ${names[1]}` : `${names[1]}에게 ${name0IGa} 필요한 이유`}</RelationshipReportLabel>
               <p className="text-sm text-rel-ink-soft leading-relaxed">
                 {b.mutualNeed.needBtoA.whyPartnerIsNeeded}
               </p>
@@ -260,7 +262,7 @@ function OriginStoryCard({
       </RelationshipReportCard>
 
       {/* 3. 나는 이 사람에게 어떤 존재일까 */}
-      <RelationshipReportCard title="나는 이 사람에게 어떤 존재일까" accentColor={ACCENT}>
+      <RelationshipReportCard title={isEn ? "What I am to this person" : "나는 이 사람에게 어떤 존재일까"} accentColor={ACCENT}>
         <RelationshipReportBody>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-xl border border-rel-line bg-rel-surface p-4 space-y-2">
@@ -291,20 +293,20 @@ function OriginStoryCard({
       </RelationshipReportCard>
 
       {/* 4. 이 사람과 함께하며 나는 어떻게 달라질까 */}
-      <RelationshipReportCard title="이 사람과 함께하며 나는 어떻게 달라질까" accentColor={ACCENT}>
+      <RelationshipReportCard title={isEn ? "How I change by being with this person" : "이 사람과 함께하며 나는 어떻게 달라질까"} accentColor={ACCENT}>
         <RelationshipReportBody>
           <div className="space-y-5">
             {[
               {
                 personName: names[0],
                 partnerName: names[1],
-                titleLabel: `${names[0]}님이 ${names[1]}님과 함께하며`,
+                titleLabel: isEn ? `How ${names[0]} changes with ${names[1]}` : `${names[0]}님이 ${names[1]}님과 함께하며`,
                 data: b.mutualTransformation.transformationA,
               },
               {
                 personName: names[1],
                 partnerName: names[0],
-                titleLabel: `${names[1]}님이 ${names[0]}님과 함께하며`,
+                titleLabel: isEn ? `How ${names[1]} changes with ${names[0]}` : `${names[1]}님이 ${names[0]}님과 함께하며`,
                 data: b.mutualTransformation.transformationB,
               },
             ].map(({ personName, partnerName, titleLabel, data }, idx) => (
@@ -322,7 +324,7 @@ function OriginStoryCard({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-1">
                     <div className="rounded-lg bg-rel-surface-soft p-3 space-y-1 border border-rel-line/50">
                       <div className="text-[11px] font-semibold text-rel-ink-soft/70">
-                        본래 많이 쓰는 방식
+                        {isEn ? "The way they've always leaned on" : "본래 많이 쓰는 방식"}
                       </div>
                       <p className="text-xs text-rel-ink leading-relaxed">
                         {data.beforeState}
@@ -331,7 +333,7 @@ function OriginStoryCard({
 
                     <div className="rounded-lg bg-rel-surface-soft p-3 space-y-1 border border-rel-line/50">
                       <div className="text-[11px] font-semibold text-rel-accent">
-                        {`${partnerName}님이 더해주는 자극`}
+                        {isEn ? `What ${partnerName} adds to the mix` : `${partnerName}님이 더해주는 자극`}
                       </div>
                       <p className="text-xs text-rel-ink leading-relaxed">
                         {data.partnerInfluence}
@@ -340,7 +342,7 @@ function OriginStoryCard({
 
                     <div className="rounded-lg bg-amber-500/10 dark:bg-amber-500/20 p-3 space-y-1 border border-amber-500/30">
                       <div className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
-                        관계 안에서 넓어지는 힘
+                        {isEn ? "The strength growing in this relationship" : "관계 안에서 넓어지는 힘"}
                       </div>
                       <p className="text-xs font-medium text-rel-ink leading-relaxed">
                         {data.emergingSelf}
@@ -355,7 +357,7 @@ function OriginStoryCard({
 
                 {data.shadowTransformation ? (
                   <div className="mt-2 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-300 border border-amber-500/30 flex items-start gap-1.5">
-                    <span className="shrink-0 font-bold">⚠️ 주의:</span>
+                    <span className="shrink-0 font-bold">{isEn ? "⚠️ Watch for:" : "⚠️ 주의:"}</span>
                     <span>{data.shadowTransformation}</span>
                   </div>
                 ) : null}
@@ -366,7 +368,7 @@ function OriginStoryCard({
       </RelationshipReportCard>
 
       {/* 5. 그래서 우리는 어떤 부부일까 */}
-      <RelationshipReportCard title="그래서 우리는 어떤 부부일까" accentColor={ACCENT}>
+      <RelationshipReportCard title={isEn ? "So what kind of couple are we?" : "그래서 우리는 어떤 부부일까"} accentColor={ACCENT}>
         <RelationshipReportBody>
           <div className="rounded-xl border border-rel-accent/30 bg-rel-accent/5 p-5 space-y-2">
             <div className="text-lg font-bold text-rel-ink">
@@ -508,6 +510,8 @@ function CoupleActionPlanBlock({ plan }: { plan: CoupleActionPlanSection }) {
 
 function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; names?: [string, string] }) {
   const ch05 = section.ch05Intelligence;
+  const { locale } = useLocale();
+  const isEn = locale === "en-US";
 
   if (!ch05) return null;
 
@@ -544,16 +548,16 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
         <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
           <div className="grid gap-3 text-xs sm:grid-cols-2">
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
-              <span className="font-bold text-rel-deep block">{nameA} 지출 성향</span>
-              <p className="text-rel-ink text-xs"><b>중요 가치:</b> {ch05.moneyBehavior.importantValueA}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>쓸 때:</b> {ch05.moneyBehavior.spendingStyleA}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>모을 때:</b> {ch05.moneyBehavior.savingStyleA}</p>
+              <span className="font-bold text-rel-deep block">{isEn ? `${nameA}'s spending style` : `${nameA} 지출 성향`}</span>
+              <p className="text-rel-ink text-xs"><b>{isEn ? "What matters:" : "중요 가치:"}</b> {ch05.moneyBehavior.importantValueA}</p>
+              <p className="text-rel-ink-soft text-[11px]"><b>{isEn ? "When spending:" : "쓸 때:"}</b> {ch05.moneyBehavior.spendingStyleA}</p>
+              <p className="text-rel-ink-soft text-[11px]"><b>{isEn ? "When saving:" : "모을 때:"}</b> {ch05.moneyBehavior.savingStyleA}</p>
             </div>
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
-              <span className="font-bold text-rel-deep block">{nameB} 지출 성향</span>
-              <p className="text-rel-ink text-xs"><b>중요 가치:</b> {ch05.moneyBehavior.importantValueB}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>쓸 때:</b> {ch05.moneyBehavior.spendingStyleB}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>모을 때:</b> {ch05.moneyBehavior.savingStyleB}</p>
+              <span className="font-bold text-rel-deep block">{isEn ? `${nameB}'s spending style` : `${nameB} 지출 성향`}</span>
+              <p className="text-rel-ink text-xs"><b>{isEn ? "What matters:" : "중요 가치:"}</b> {ch05.moneyBehavior.importantValueB}</p>
+              <p className="text-rel-ink-soft text-[11px]"><b>{isEn ? "When spending:" : "쓸 때:"}</b> {ch05.moneyBehavior.spendingStyleB}</p>
+              <p className="text-rel-ink-soft text-[11px]"><b>{isEn ? "When saving:" : "모을 때:"}</b> {ch05.moneyBehavior.savingStyleB}</p>
             </div>
           </div>
           <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
@@ -561,7 +565,7 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
           </p>
           {ch05.moneyBehavior.underPressureInsight ? (
             <p className="text-xs leading-relaxed text-rel-ink-soft bg-v4-good-soft/20 p-2.5 rounded-lg border border-v4-good/20 mt-2">
-              💡 <b>돈이 빠듯해지면:</b> {ch05.moneyBehavior.underPressureInsight}
+              💡 <b>{isEn ? "When money gets tight:" : "돈이 빠듯해지면:"}</b> {ch05.moneyBehavior.underPressureInsight}
             </p>
           ) : null}
         </RelationshipReportInset>
@@ -573,16 +577,16 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
         <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
           <div className="grid gap-3 text-xs sm:grid-cols-2">
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">{nameA} 자산 운용 결</span>
-              <p className="text-rel-ink text-[11px]"><b>기본 성향:</b> {ch05.wealthBuildingStyle.baseStyleA}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>기회를 볼 때:</b> {ch05.wealthBuildingStyle.opportunityStyleA}</p>
-              <p className="text-v4-good text-[11px]"><b>잘 맞기 쉬운 방향:</b> {ch05.wealthBuildingStyle.naturalDirectionA}</p>
+              <span className="font-bold text-rel-deep block">{isEn ? `${nameA}'s approach to growing assets` : `${nameA} 자산 운용 결`}</span>
+              <p className="text-rel-ink text-[11px]"><b>{isEn ? "Base tendency:" : "기본 성향:"}</b> {ch05.wealthBuildingStyle.baseStyleA}</p>
+              <p className="text-rel-ink-soft text-[11px]"><b>{isEn ? "When they spot an opportunity:" : "기회를 볼 때:"}</b> {ch05.wealthBuildingStyle.opportunityStyleA}</p>
+              <p className="text-v4-good text-[11px]"><b>{isEn ? "What tends to fit well:" : "잘 맞기 쉬운 방향:"}</b> {ch05.wealthBuildingStyle.naturalDirectionA}</p>
             </div>
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">{nameB} 자산 운용 결</span>
-              <p className="text-rel-ink text-[11px]"><b>기본 성향:</b> {ch05.wealthBuildingStyle.baseStyleB}</p>
-              <p className="text-rel-ink-soft text-[11px]"><b>기회를 볼 때:</b> {ch05.wealthBuildingStyle.opportunityStyleB}</p>
-              <p className="text-v4-good text-[11px]"><b>잘 맞기 쉬운 방향:</b> {ch05.wealthBuildingStyle.naturalDirectionB}</p>
+              <span className="font-bold text-rel-deep block">{isEn ? `${nameB}'s approach to growing assets` : `${nameB} 자산 운용 결`}</span>
+              <p className="text-rel-ink text-[11px]"><b>{isEn ? "Base tendency:" : "기본 성향:"}</b> {ch05.wealthBuildingStyle.baseStyleB}</p>
+              <p className="text-rel-ink-soft text-[11px]"><b>{isEn ? "When they spot an opportunity:" : "기회를 볼 때:"}</b> {ch05.wealthBuildingStyle.opportunityStyleB}</p>
+              <p className="text-v4-good text-[11px]"><b>{isEn ? "What tends to fit well:" : "잘 맞기 쉬운 방향:"}</b> {ch05.wealthBuildingStyle.naturalDirectionB}</p>
             </div>
           </div>
           <p className="text-xs leading-relaxed text-rel-ink border-t border-rel-line/60 pt-2 font-medium">
@@ -595,17 +599,17 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
       {(() => {
         const legacyMajor = ch05.majorMoneyDecisions as any;
         const steps: MoneyDecisionStep[] = ch05.majorMoneyDecisions?.steps ?? [
-          { stepKey: "FIND", stepLabel: "기회 찾기", actorName: legacyMajor?.optionProposer?.replace(/\s*\(.*?\)/, "") ?? nameB, confidence: "HIGH" },
-          { stepKey: "TRACK", stepLabel: "계속 지켜보기", actorName: legacyMajor?.numberChecker?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
-          { stepKey: "CHECK", stepLabel: "숫자·위험 확인", actorName: legacyMajor?.riskBrake?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
-          { stepKey: "ACT", stepLabel: "실제 실행", actorName: legacyMajor?.commitPusher?.replace(/\s*\(.*?\)/, "") ?? nameB, confidence: "HIGH" },
-          { stepKey: "REVIEW", stepLabel: "마지막 점검", actorName: legacyMajor?.numberChecker?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
+          { stepKey: "FIND", stepLabel: isEn ? "Spotting the opportunity" : "기회 찾기", actorName: legacyMajor?.optionProposer?.replace(/\s*\(.*?\)/, "") ?? nameB, confidence: "HIGH" },
+          { stepKey: "TRACK", stepLabel: isEn ? "Keeping an eye on it" : "계속 지켜보기", actorName: legacyMajor?.numberChecker?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
+          { stepKey: "CHECK", stepLabel: isEn ? "Checking the numbers and risk" : "숫자·위험 확인", actorName: legacyMajor?.riskBrake?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
+          { stepKey: "ACT", stepLabel: isEn ? "Actually acting on it" : "실제 실행", actorName: legacyMajor?.commitPusher?.replace(/\s*\(.*?\)/, "") ?? nameB, confidence: "HIGH" },
+          { stepKey: "REVIEW", stepLabel: isEn ? "One last check" : "마지막 점검", actorName: legacyMajor?.numberChecker?.replace(/\s*\(.*?\)/, "") ?? nameA, confidence: "HIGH" },
         ];
         const oneLineSynthesis = ch05.majorMoneyDecisions?.oneLineSynthesis ?? legacyMajor?.decisionPatternSummary ?? "";
 
         return (
           <div className="space-y-3 pt-1">
-            <SubHeading title={ch05.majorMoneyDecisions?.title ?? "04. 큰돈과 투자 기회 앞에서 우리는 어떻게 움직일까?"} tone="coral" />
+            <SubHeading title={ch05.majorMoneyDecisions?.title ?? (isEn ? "04. Major Money & Investment Decisions" : "04. 큰돈과 투자 기회 앞에서 우리는 어떻게 움직일까?")} tone="coral" />
             <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
               <div className="space-y-2">
                 {steps.map((step) => (
@@ -616,7 +620,7 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
                 ))}
               </div>
               <div className="border-t border-rel-line/60 pt-3 mt-2 space-y-1">
-                <span className="text-xs font-bold text-v4-good block">한 줄 정리</span>
+                <span className="text-xs font-bold text-v4-good block">{isEn ? "One-line summary" : "한 줄 정리"}</span>
                 <p className="text-xs leading-relaxed text-rel-ink font-medium">
                   {oneLineSynthesis}
                 </p>
@@ -632,15 +636,15 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
         <RelationshipReportInset className="border border-rel-line bg-rel-surface space-y-3 p-4 rounded-xl">
           <div className="grid gap-2 text-xs sm:grid-cols-3">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-medium block">돈 흐름 확인</span>
+              <span className="text-[11px] text-rel-taupe font-medium block">{isEn ? "Cash flow" : "돈 흐름 확인"}</span>
               <p className="font-bold text-rel-deep mt-0.5">{ch05.financialOperation.flowTracker}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-medium block">납부·서류</span>
+              <span className="text-[11px] text-rel-taupe font-medium block">{isEn ? "Bills & paperwork" : "납부·서류"}</span>
               <p className="font-bold text-rel-deep mt-0.5">{ch05.financialOperation.billsAndDocs}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="text-[11px] text-rel-taupe font-medium block">관리 방식</span>
+              <span className="text-[11px] text-rel-taupe font-medium block">{isEn ? "Management style" : "관리 방식"}</span>
               <p className="font-bold text-v4-good mt-0.5">{ch05.financialOperation.operationStyle}</p>
             </div>
           </div>
@@ -658,23 +662,29 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
       {/* 06. ECONOMIC_CRISIS_RESILIENCE */}
       {(() => {
         const crisis = ch05.economicCrisisResilience ?? {
-          title: "06. 경제적 위기가 오면?",
+          title: isEn ? "06. Economic Resilience Under Crisis" : "06. 경제적 위기가 오면?",
           pairRoles: [
-            { roleKey: "REALITY_ORGANIZER", roleLabel: "먼저 현실을 정리하는 사람", personName: nameA },
-            { roleKey: "INCOME_EXPLORER", roleLabel: "새 수입원을 찾는 사람", personName: nameB },
-            { roleKey: "RISK_TAKER", roleLabel: "위험을 감수할 수 있는 사람", personName: nameB },
-            { roleKey: "ENDURANCE_HOLDER", roleLabel: "끝까지 버티는 사람", personName: nameA },
+            { roleKey: "REALITY_ORGANIZER", roleLabel: isEn ? "The one who gets real first" : "먼저 현실을 정리하는 사람", personName: nameA },
+            { roleKey: "INCOME_EXPLORER", roleLabel: isEn ? "The one who finds new income" : "새 수입원을 찾는 사람", personName: nameB },
+            { roleKey: "RISK_TAKER", roleLabel: isEn ? "The one who can take the risk" : "위험을 감수할 수 있는 사람", personName: nameB },
+            { roleKey: "ENDURANCE_HOLDER", roleLabel: isEn ? "The one who holds on to the end" : "끝까지 버티는 사람", personName: nameA },
           ],
-          oneLineSynthesis: "한 사람은 무너지지 않게 지키고, 다른 사람은 다시 올라갈 방법을 찾는 조합입니다.",
+          oneLineSynthesis: isEn
+            ? "One of you holds the line so things don't collapse, while the other looks for the way back up."
+            : "한 사람은 무너지지 않게 지키고, 다른 사람은 다시 올라갈 방법을 찾는 조합입니다.",
           profileA: {
             personName: nameA,
-            editorialLabel: "책임지면 끝까지 버티는 생활력",
-            narrative: `${nameA}님은 경제적으로 압박이 생기면 현실을 먼저 정돈하고, 필요하다면 자신의 편안함을 미루면서까지 가정의 기반을 끝까지 지키려는 편입니다.`,
+            editorialLabel: isEn ? "Holds the line to the end once responsible for it" : "책임지면 끝까지 버티는 생활력",
+            narrative: isEn
+              ? `When financial pressure hits, ${nameA} tends to get realistic first, and will put off their own comfort if needed to protect the household's foundation to the end.`
+              : `${nameA}님은 경제적으로 압박이 생기면 현실을 먼저 정돈하고, 필요하다면 자신의 편안함을 미루면서까지 가정의 기반을 끝까지 지키려는 편입니다.`,
           },
           profileB: {
             personName: nameB,
-            editorialLabel: "방법을 바꿔 돌파하는 생활력",
-            narrative: `${nameB}님은 상황이 막혔을 때 한 가지 방식에 메이지 않고, 새로운 기회와 대안을 찾아 발 빠르게 경제적 수입 행동으로 전환하는 편입니다.`,
+            editorialLabel: isEn ? "Breaks through by changing approach" : "방법을 바꿔 돌파하는 생활력",
+            narrative: isEn
+              ? `When things get stuck, ${nameB} doesn't stay tied to one approach — they quickly pivot toward new opportunities and alternative sources of income.`
+              : `${nameB}님은 상황이 막혔을 때 한 가지 방식에 메이지 않고, 새로운 기회와 대안을 찾아 발 빠르게 경제적 수입 행동으로 전환하는 편입니다.`,
           },
         };
 
@@ -692,14 +702,14 @@ function MoneyChoresCard({ section, names }: { section: MoneyChoresSection; name
               </div>
 
               <div className="border-t border-rel-line/60 pt-3 space-y-1">
-                <span className="text-xs font-bold text-v4-good block">한 줄 해석</span>
+                <span className="text-xs font-bold text-v4-good block">{isEn ? "One-line read" : "한 줄 해석"}</span>
                 <p className="text-xs leading-relaxed text-rel-ink font-medium">
                   {crisis.oneLineSynthesis}
                 </p>
               </div>
 
               <div className="border-t border-rel-line/60 pt-3 space-y-3">
-                <span className="text-xs font-bold text-rel-taupe block">각자의 생활력</span>
+                <span className="text-xs font-bold text-rel-taupe block">{isEn ? "How each of you copes" : "각자의 생활력"}</span>
                 <div className="grid gap-3 sm:grid-cols-2 text-xs">
                   <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1.5">
                     <span className="font-bold text-rel-deep block">
@@ -867,6 +877,8 @@ function HomeDnaCard({ section }: { section: HomeDnaSection }) {
 
 function ParentingCard({ section, names }: { section: ParentingSection; names?: [string, string] }) {
   const ch06 = section.ch06Intelligence;
+  const { locale } = useLocale();
+  const isEn = locale === "en-US";
 
   if (!ch06) return null;
 
@@ -898,7 +910,7 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
             </div>
           </div>
           <div className="border-t border-rel-line/60 pt-2.5">
-            <span className="text-xs font-bold text-v4-good block">우리의 경계</span>
+            <span className="text-xs font-bold text-v4-good block">{isEn ? "Your boundary" : "우리의 경계"}</span>
             <p className="text-xs leading-relaxed text-rel-ink font-medium mt-0.5">
               {ch06.coupleBoundary.boundarySynthesis}
             </p>
@@ -919,7 +931,7 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
             ))}
           </div>
           <div className="border-t border-rel-line/60 pt-2.5">
-            <span className="text-xs font-bold text-v4-good block">우리 부부가 조심할 순간</span>
+            <span className="text-xs font-bold text-v4-good block">{isEn ? "Moments to watch for" : "우리 부부가 조심할 순간"}</span>
             <p className="text-xs leading-relaxed text-rel-ink font-medium mt-0.5">
               {ch06.originFamilyDynamics.cautionMoment}
             </p>
@@ -940,11 +952,11 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
                 {ch06.parentingDna.profileA.narrative}
               </p>
               <div className="border-t border-rel-line/40 pt-2 space-y-1">
-                <span className="text-[11px] font-bold text-rel-taupe block">먼저 보는 것</span>
+                <span className="text-[11px] font-bold text-rel-taupe block">{isEn ? "What they notice first" : "먼저 보는 것"}</span>
                 <p className="text-[11px] font-semibold text-rel-ink">{ch06.parentingDna.profileA.firstFocusKeywords.join(" · ")}</p>
               </div>
               <div className="pt-1">
-                <span className="text-[11px] font-bold text-rel-taupe block">놓치기 쉬운 것</span>
+                <span className="text-[11px] font-bold text-rel-taupe block">{isEn ? "Easy to miss" : "놓치기 쉬운 것"}</span>
                 <p className="text-[11px] text-rel-ink-soft">{ch06.parentingDna.profileA.easyToMissNote}</p>
               </div>
             </div>
@@ -956,11 +968,11 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
                 {ch06.parentingDna.profileB.narrative}
               </p>
               <div className="border-t border-rel-line/40 pt-2 space-y-1">
-                <span className="text-[11px] font-bold text-rel-taupe block">먼저 보는 것</span>
+                <span className="text-[11px] font-bold text-rel-taupe block">{isEn ? "What they notice first" : "먼저 보는 것"}</span>
                 <p className="text-[11px] font-semibold text-rel-ink">{ch06.parentingDna.profileB.firstFocusKeywords.join(" · ")}</p>
               </div>
               <div className="pt-1">
-                <span className="text-[11px] font-bold text-rel-taupe block">놓치기 쉬운 것</span>
+                <span className="text-[11px] font-bold text-rel-taupe block">{isEn ? "Easy to miss" : "놓치기 쉬운 것"}</span>
                 <p className="text-[11px] text-rel-ink-soft">{ch06.parentingDna.profileB.easyToMissNote}</p>
               </div>
             </div>
@@ -991,11 +1003,11 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
           <h4 className="font-extrabold text-sm text-rel-deep">{ch06.pairParentingSystem.headline}</h4>
           <div className="space-y-2 pt-1">
             <div className="bg-v4-good-soft/20 p-2.5 rounded-lg border border-v4-good/20">
-              <span className="font-bold text-v4-good block">우리의 강점</span>
+              <span className="font-bold text-v4-good block">{isEn ? "Our strength" : "우리의 강점"}</span>
               <p className="text-rel-ink text-[11px] leading-relaxed mt-0.5">{ch06.pairParentingSystem.ourStrengths}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-rel-taupe block">조심할 것</span>
+              <span className="font-bold text-rel-taupe block">{isEn ? "Watch for" : "조심할 것"}</span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed mt-0.5">{ch06.pairParentingSystem.whatToWatchOut}</p>
             </div>
           </div>
@@ -1020,7 +1032,7 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
             ))}
           </div>
           <div className="border-t border-rel-line/60 pt-2.5">
-            <span className="text-xs font-bold text-v4-good block">한 줄 해석</span>
+            <span className="text-xs font-bold text-v4-good block">{isEn ? "One-line read" : "한 줄 해석"}</span>
             <p className="text-xs leading-relaxed text-rel-ink font-medium mt-0.5">
               {ch06.familyLoadRedistribution.oneLineSynthesis}
             </p>
@@ -1035,19 +1047,19 @@ function ParentingCard({ section, names }: { section: ParentingSection; names?: 
           <h4 className="font-extrabold text-sm text-rel-deep">{ch06.familyIdentity.familyIdentityHeadline}</h4>
           <div className="grid gap-2 sm:grid-cols-2 pt-1">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">부부의 경계</span>
+              <span className="font-bold text-rel-deep block">{isEn ? "The couple's boundary" : "부부의 경계"}</span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.coupleBoundarySummary}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">아이에게 주는 것</span>
+              <span className="font-bold text-rel-deep block">{isEn ? "What you give the child" : "아이에게 주는 것"}</span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.giftToChildSummary}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">조심할 것</span>
+              <span className="font-bold text-rel-deep block">{isEn ? "Watch for" : "조심할 것"}</span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.cautionSummary}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">우리 가족의 힘</span>
+              <span className="font-bold text-rel-deep block">{isEn ? "Your family's strength" : "우리 가족의 힘"}</span>
               <p className="text-rel-ink-soft text-[11px] leading-relaxed">{ch06.familyIdentity.familyStrengthSummary}</p>
             </div>
           </div>
@@ -1128,6 +1140,8 @@ function UpsetCard({ section }: { section: UpsetSection }) {
 
 function WarningCard({ section }: { section: WarningSection }) {
   const t = useMessages().relationshipDrilldown.cohabitation;
+  const { locale } = useLocale();
+  const isEn = locale === "en-US";
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT} variant="warning">
       <RelationshipReportBody>
@@ -1159,12 +1173,14 @@ function WarningCard({ section }: { section: WarningSection }) {
         </RelationshipReportInset>
 
         <RelationshipReportInset className="mt-3 border border-v4-good/30 bg-v4-good-soft/30 space-y-1.5">
-          <p className="text-xs font-bold text-v4-good">🤝 함께 해볼 것</p>
+          <p className="text-xs font-bold text-v4-good">{isEn ? "🤝 Something to try together" : "🤝 함께 해볼 것"}</p>
           <p className="text-xs text-rel-ink leading-relaxed">
-            우리의 가사와 재정 운영에서 서로의 역할과 기대가 다르게 잡히고 있어요. 매주 점검하는 습관을 만들면 서로의 부담을 줄일 수 있을 것 같아요. 각자의 강점을 살려 나가면 더 나은 운영이 가능할 거예요.
+            {isEn
+              ? "Your roles and expectations around household chores and finances are landing a bit differently for each of you. Building a weekly check-in habit could ease the load on both sides, and leaning into each of your strengths can make things run even better."
+              : "우리의 가사와 재정 운영에서 서로의 역할과 기대가 다르게 잡히고 있어요. 매주 점검하는 습관을 만들면 서로의 부담을 줄일 수 있을 것 같아요. 각자의 강점을 살려 나가면 더 나은 운영이 가능할 거예요."}
           </p>
           <p className="text-xs font-medium text-v4-good italic pt-1">
-            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-v4-good" strokeWidth={1.75} aria-hidden /> “이번 주 가사·지출 온도를 묻는 대화를 해보자.”
+            <MessageCircle className="mr-1.5 inline h-3.5 w-3.5 text-v4-good" strokeWidth={1.75} aria-hidden /> {isEn ? "“Let's check in this week on how chores and spending are feeling.”" : "“이번 주 가사·지출 온도를 묻는 대화를 해보자.”"}
           </p>
         </RelationshipReportInset>
         <div>
@@ -1399,9 +1415,9 @@ function Chapter03SubstantiveCard({
           <div className="grid gap-3 sm:grid-cols-2">
             {ch03.assets.map((asset, i) => (
               <RelationshipReportInset key={i} className="border border-v4-good/30 bg-v4-good-soft/20 p-4 rounded-xl space-y-1.5">
-                <p className="text-xs font-bold text-v4-good">💎 {asset.title}</p>
+                <p className="text-xs font-bold text-v4-good">▫ {asset.title}</p>
                 <p className="text-xs leading-relaxed text-rel-ink">{asset.mechanism}</p>
-                <p className="text-[11px] text-rel-taupe pt-1 border-t border-v4-good/20">🌱 {asset.longTermValue}</p>
+                <p className="text-[11px] text-rel-taupe pt-1 border-t border-v4-good/20">▫ {asset.longTermValue}</p>
               </RelationshipReportInset>
             ))}
           </div>
@@ -1414,11 +1430,11 @@ function Chapter03SubstantiveCard({
           <SubHeading title={isEn ? "Asset to Debt Dynamics" : "02. 처음엔 장점이었지만 과부하가 될 수 있는 것"} tag="주의" tone="coral" />
           <div className="space-y-3">
             {ch03.assetToDebtChains.map((chain, i) => (
-              <RelationshipReportInset key={i} className="border border-amber-500/30 bg-amber-950/10 p-4 rounded-xl space-y-2">
-                <p className="text-xs font-bold text-amber-200">⚡ {chain.title}</p>
-                <p className="text-xs leading-relaxed text-rel-ink-soft"><span className="font-semibold text-v4-good">초기 이점:</span> {chain.initialBenefit}</p>
-                <p className="text-xs leading-relaxed text-rel-ink-soft"><span className="font-semibold text-v4-bad">반전 조건:</span> {chain.flipCondition}</p>
-                <p className="text-xs leading-relaxed text-rel-ink-soft"><span className="font-semibold text-amber-300">장기 비용:</span> {chain.longTermCost}</p>
+              <RelationshipReportInset key={i} className="border border-rel-line bg-rel-surface p-4 rounded-xl space-y-2">
+                <p className="text-xs font-bold text-rel-deep">▫ {chain.title}</p>
+                <p className="text-xs leading-relaxed text-rel-ink"><span className="font-semibold text-emerald-800">{isEn ? "Initial benefit:" : "초기 이점:"}</span> {chain.initialBenefit}</p>
+                <p className="text-xs leading-relaxed text-rel-ink"><span className="font-semibold text-red-800">{isEn ? "When it flips:" : "반전 조건:"}</span> {chain.flipCondition}</p>
+                <p className="text-xs leading-relaxed text-rel-ink"><span className="font-semibold text-rel-deep">{isEn ? "Long-term cost:" : "장기 비용:"}</span> {chain.longTermCost}</p>
               </RelationshipReportInset>
             ))}
           </div>
@@ -1435,12 +1451,12 @@ function Chapter03SubstantiveCard({
               <div className="space-y-1 bg-rel-taupe-soft/30 p-3 rounded-lg border border-rel-line">
                 <span className="text-xs font-bold text-v4-a">{ch03.roleLockIn.personARole.personName}: {ch03.roleLockIn.personARole.roleTitle}</span>
                 <p className="text-[11px] text-rel-ink-soft">{ch03.roleLockIn.personARole.whyFormed}</p>
-                <p className="text-[11px] text-v4-bad">⚠️ {ch03.roleLockIn.personARole.riskWhenLocked}</p>
+                <p className="text-[11px] text-v4-bad">▫ {ch03.roleLockIn.personARole.riskWhenLocked}</p>
               </div>
               <div className="space-y-1 bg-rel-taupe-soft/30 p-3 rounded-lg border border-rel-line">
                 <span className="text-xs font-bold text-v4-b">{ch03.roleLockIn.personBRole.personName}: {ch03.roleLockIn.personBRole.roleTitle}</span>
                 <p className="text-[11px] text-rel-ink-soft">{ch03.roleLockIn.personBRole.whyFormed}</p>
-                <p className="text-[11px] text-v4-bad">⚠️ {ch03.roleLockIn.personBRole.riskWhenLocked}</p>
+                <p className="text-[11px] text-v4-bad">▫ {ch03.roleLockIn.personBRole.riskWhenLocked}</p>
               </div>
             </div>
           </RelationshipReportInset>
@@ -1489,12 +1505,10 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
 
   return (
     <div className="space-y-8">
-      {/* Intro Question Inset */}
-      <RelationshipReportInset className="bg-rel-taupe-soft/40 border border-rel-line">
-        <p className="text-xs font-semibold leading-relaxed text-rel-ink">
-          {ch04.introQuestion}
-        </p>
-      </RelationshipReportInset>
+      {/* Intro Question Banner */}
+      <div className="border-l-[3px] border-[#1b3b2b]/80 pl-3.5 py-0.5 text-rel-ink font-medium text-xs sm:text-sm">
+        {ch04.introQuestion.replace(/^💡\s*/, "")}
+      </div>
 
       {/* SECTION 01: Love Transmission */}
       <div className="space-y-3">
@@ -1510,18 +1524,18 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
                 </div>
                 <div className="grid gap-2 text-xs sm:grid-cols-2">
                   <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-                    <span className="font-semibold text-rel-taupe block mb-1">{channel.senderName}님이 보내는 사랑</span>
+                    <span className="font-semibold text-rel-taupe block mb-1">{isEn ? `How ${channel.senderName} sends love` : `${channel.senderName}님이 보내는 사랑`}</span>
                     <p className="text-rel-ink">{channel.senderNaturalExpression}</p>
                   </div>
                   <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-                    <span className="font-semibold text-rel-taupe block mb-1">{channel.receiverName}님이 사랑받는다고 느끼는 방식</span>
+                    <span className="font-semibold text-rel-taupe block mb-1">{isEn ? `How ${channel.receiverName} feels loved` : `${channel.receiverName}님이 사랑받는다고 느끼는 방식`}</span>
                     <p className="text-rel-ink">{channel.receiverReceptionNeed}</p>
                   </div>
                 </div>
                 <p className="text-xs font-medium leading-relaxed text-rel-ink bg-v4-good-soft/30 p-2.5 rounded-lg border border-v4-good/20">
-                  <span className="font-bold text-v4-good">전달 결과: </span>{channel.matchNarrative}
+                  <span className="font-bold text-v4-good">{isEn ? "How it lands: " : "전달 결과: "}</span>{channel.matchNarrative}
                 </p>
-                <p className="text-[11px] leading-relaxed text-rel-taupe pt-1">💡 {channel.transmissionInsight}</p>
+                <p className="text-[11px] leading-relaxed text-rel-taupe pt-1">▫ {channel.transmissionInsight}</p>
               </RelationshipReportInset>
             );
           })}
@@ -1538,11 +1552,11 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
           </div>
           <div className="grid gap-3 sm:grid-cols-2 pt-0.5 text-xs">
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-rel-deep block">끌림</span>
+              <span className="font-bold text-rel-deep block">{isEn ? "Attraction" : "끌림"}</span>
               <p className="text-rel-ink-soft leading-relaxed">{ch04.pairChemistry.attractionNarrative}</p>
             </div>
             <div className="bg-rel-surface p-3 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-v4-good block">편안함</span>
+              <span className="font-bold text-v4-good block">{isEn ? "Comfort" : "편안함"}</span>
               <p className="text-rel-ink-soft leading-relaxed">{ch04.pairChemistry.comfortNarrative}</p>
             </div>
           </div>
@@ -1557,14 +1571,14 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.stabilityVsNovelty.description}</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1 border-t border-rel-line/60">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-v4-a block">{names[0]}님</span>
-              <p className="text-[11px] text-rel-taupe">본래 편한 방식: {ch04.stabilityVsNovelty.personAInnate}</p>
-              <p className="text-[11px] text-rel-ink">현재 바라는 분위기: {ch04.stabilityVsNovelty.personACurrent}</p>
+              <span className="font-bold text-v4-a block">{isEn ? names[0] : `${names[0]}님`}</span>
+              <p className="text-[11px] text-rel-taupe">{isEn ? "Naturally comfortable with: " : "본래 편한 방식: "}{ch04.stabilityVsNovelty.personAInnate}</p>
+              <p className="text-[11px] text-rel-ink">{isEn ? "Currently wants: " : "현재 바라는 분위기: "}{ch04.stabilityVsNovelty.personACurrent}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line space-y-1">
-              <span className="font-bold text-v4-b block">{names[1]}님</span>
-              <p className="text-[11px] text-rel-taupe">본래 편한 방식: {ch04.stabilityVsNovelty.personBInnate}</p>
-              <p className="text-[11px] text-rel-ink">현재 바라는 분위기: {ch04.stabilityVsNovelty.personBCurrent}</p>
+              <span className="font-bold text-v4-b block">{isEn ? names[1] : `${names[1]}님`}</span>
+              <p className="text-[11px] text-rel-taupe">{isEn ? "Naturally comfortable with: " : "본래 편한 방식: "}{ch04.stabilityVsNovelty.personBInnate}</p>
+              <p className="text-[11px] text-rel-ink">{isEn ? "Currently wants: " : "현재 바라는 분위기: "}{ch04.stabilityVsNovelty.personBCurrent}</p>
             </div>
           </div>
         </RelationshipReportInset>
@@ -1586,7 +1600,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
         <RelationshipReportInset className="bg-rel-surface border border-rel-line space-y-1.5">
           <p className="text-xs font-bold text-rel-deep">{ch04.activationAndRhythm.headline}</p>
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.activationAndRhythm.rhythmDescription}</p>
-          <p className="text-[11px] text-rel-taupe pt-1 border-t border-rel-line/40">💡 {ch04.activationAndRhythm.activationNarrative}</p>
+          <p className="text-[11px] text-rel-taupe pt-1 border-t border-rel-line/40">▫ {ch04.activationAndRhythm.activationNarrative}</p>
         </RelationshipReportInset>
       </div>
 
@@ -1598,11 +1612,11 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
           <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.initiationLeadResponse.description}</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2 pt-1 border-t border-rel-line/60">
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-v4-a block mb-1">{names[0]}님이 먼저 다가가는 방식</span>
+              <span className="font-bold text-v4-a block mb-1">{isEn ? `How ${names[0]} takes the first step` : `${names[0]}님이 먼저 다가가는 방식`}</span>
               <p className="text-rel-ink">{ch04.initiationLeadResponse.personAAgency}</p>
             </div>
             <div className="bg-rel-surface p-2.5 rounded-lg border border-rel-line">
-              <span className="font-bold text-v4-b block mb-1">{names[1]}님이 먼저 다가가는 방식</span>
+              <span className="font-bold text-v4-b block mb-1">{isEn ? `How ${names[1]} takes the first step` : `${names[1]}님이 먼저 다가가는 방식`}</span>
               <p className="text-rel-ink">{ch04.initiationLeadResponse.personBAgency}</p>
             </div>
           </div>
@@ -1623,7 +1637,7 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
           </RelationshipReportInset>
         </div>
         <RelationshipReportInset className="bg-v4-good-soft/20 border border-v4-good/30">
-          <p className="text-xs font-medium leading-relaxed text-rel-ink">💡 {ch04.intimateAttunement.attunementInsight}</p>
+          <p className="text-xs font-medium leading-relaxed text-rel-ink">▫ {ch04.intimateAttunement.attunementInsight}</p>
         </RelationshipReportInset>
       </div>
 
@@ -1632,27 +1646,27 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
         <SubHeading title={isEn ? "Desire Mismatch & Rejection Handling" : "07. 오늘은 한 사람만 원할 때"} tag="거절과 재연결" tone="deep" />
         {ch04.desireMismatchAndRejection.isSharedPattern && ch04.desireMismatchAndRejection.sharedPatternSummary ? (
           <RelationshipReportInset className="border border-v4-good/30 bg-v4-good-soft/20 space-y-2">
-            <p className="text-xs font-bold text-v4-good">두 사람이 공유하는 공통 정서적 반응</p>
+            <p className="text-xs font-bold text-v4-good">{isEn ? "A shared emotional response you both have" : "두 사람이 공유하는 공통 정서적 반응"}</p>
             <p className="text-xs leading-relaxed text-rel-ink">{ch04.desireMismatchAndRejection.sharedPatternSummary}</p>
           </RelationshipReportInset>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             <RelationshipReportInset className="space-y-2">
-              <p className="text-xs font-bold text-rel-deep">{ch04.desireMismatchAndRejection.personARejection.personName}님의 반응</p>
-              <p className="text-xs text-rel-ink-soft">거절의 의미: {ch04.desireMismatchAndRejection.personARejection.interpretation}</p>
-              <p className="text-xs text-rel-ink-soft">거절 표현 방식: {ch04.desireMismatchAndRejection.personARejection.expressionStyle}</p>
-              <p className="text-xs text-v4-good font-medium">재연결 신호: {ch04.desireMismatchAndRejection.personARejection.reconnectionNeed}</p>
+              <p className="text-xs font-bold text-rel-deep">{isEn ? `${ch04.desireMismatchAndRejection.personARejection.personName}'s response` : `${ch04.desireMismatchAndRejection.personARejection.personName}님의 반응`}</p>
+              <p className="text-xs text-rel-ink-soft">{isEn ? "What the rejection means: " : "거절의 의미: "}{ch04.desireMismatchAndRejection.personARejection.interpretation}</p>
+              <p className="text-xs text-rel-ink-soft">{isEn ? "How they express it: " : "거절 표현 방식: "}{ch04.desireMismatchAndRejection.personARejection.expressionStyle}</p>
+              <p className="text-xs text-v4-good font-medium">{isEn ? "Reconnection cue: " : "재연결 신호: "}{ch04.desireMismatchAndRejection.personARejection.reconnectionNeed}</p>
             </RelationshipReportInset>
             <RelationshipReportInset className="space-y-2">
-              <p className="text-xs font-bold text-rel-deep">{ch04.desireMismatchAndRejection.personBRejection.personName}님의 반응</p>
-              <p className="text-xs text-rel-ink-soft">거절의 의미: {ch04.desireMismatchAndRejection.personBRejection.interpretation}</p>
-              <p className="text-xs text-rel-ink-soft">거절 표현 방식: {ch04.desireMismatchAndRejection.personBRejection.expressionStyle}</p>
-              <p className="text-xs text-v4-good font-medium">재연결 신호: {ch04.desireMismatchAndRejection.personBRejection.reconnectionNeed}</p>
+              <p className="text-xs font-bold text-rel-deep">{isEn ? `${ch04.desireMismatchAndRejection.personBRejection.personName}'s response` : `${ch04.desireMismatchAndRejection.personBRejection.personName}님의 반응`}</p>
+              <p className="text-xs text-rel-ink-soft">{isEn ? "What the rejection means: " : "거절의 의미: "}{ch04.desireMismatchAndRejection.personBRejection.interpretation}</p>
+              <p className="text-xs text-rel-ink-soft">{isEn ? "How they express it: " : "거절 표현 방식: "}{ch04.desireMismatchAndRejection.personBRejection.expressionStyle}</p>
+              <p className="text-xs text-v4-good font-medium">{isEn ? "Reconnection cue: " : "재연결 신호: "}{ch04.desireMismatchAndRejection.personBRejection.reconnectionNeed}</p>
             </RelationshipReportInset>
           </div>
         )}
         <RelationshipReportInset className="bg-rel-taupe-soft/30 border border-rel-line">
-          <p className="text-xs font-medium text-rel-ink">💡 {ch04.desireMismatchAndRejection.mismatchAdvice}</p>
+          <p className="text-xs font-medium text-rel-ink">▫ {ch04.desireMismatchAndRejection.mismatchAdvice}</p>
         </RelationshipReportInset>
       </div>
 
@@ -1660,11 +1674,11 @@ function Chapter04SubstantiveCard({ bundle, names, isEn }: { bundle?: MarriageCa
       {ch04.pairIntimacyParadox && ch04.pairIntimacyParadox.paradoxType !== "NONE" ? (
         <div className="space-y-3">
           <SubHeading title={isEn ? "Pair Intimacy Paradox" : "08. 우리 둘만의 Intimacy Paradox"} tag="친밀감 역설" tone="coral" />
-          <RelationshipReportInset className="space-y-2 border border-amber-500/30 bg-amber-500/10">
-            <p className="text-xs font-bold text-amber-900">{ch04.pairIntimacyParadox.headline}</p>
+          <RelationshipReportInset className="space-y-2 border border-rel-line bg-rel-surface">
+            <p className="text-xs font-bold text-rel-deep">▫ {ch04.pairIntimacyParadox.headline}</p>
             <p className="text-xs leading-relaxed text-rel-ink-soft">{ch04.pairIntimacyParadox.explanation}</p>
-            <p className="text-xs text-v4-good font-medium border-t border-amber-500/20 pt-2">✨ 이 장점이 잘 맞을 때: {ch04.pairIntimacyParadox.whenThriving}</p>
-            <p className="text-xs text-amber-900/90 font-medium">⚠️ 오해가 생기기 쉬울 때: {ch04.pairIntimacyParadox.whenFriction}</p>
+            <p className="text-xs text-emerald-800 font-medium border-t border-rel-line/40 pt-2">▫ {isEn ? "When this strength clicks: " : "이 장점이 잘 맞을 때: "}{ch04.pairIntimacyParadox.whenThriving}</p>
+            <p className="text-xs text-red-800 font-medium">▫ {isEn ? "When it's easy to misread: " : "오해가 생기기 쉬울 때: "}{ch04.pairIntimacyParadox.whenFriction}</p>
           </RelationshipReportInset>
         </div>
       ) : null}
@@ -2011,10 +2025,10 @@ export function MarriageReportViewModelView({
                 title={isEn ? cDef.titleEn : cDef.titleKo}
                 accent={ACCENT}
               >
-                {summaryText && cDef.id !== "c2_lifestyle_dna" && cDef.id !== "c7_longterm_compounding" && cDef.id !== "c3_household_os" && cDef.id !== "c9_next_chapter_rituals" ? (
+                {summaryText && cDef.id !== "c2_lifestyle_dna" && cDef.id !== "c7_longterm_compounding" && cDef.id !== "c3_household_os" && cDef.id !== "c9_next_chapter_rituals" && cDef.id !== "c4_intimacy_bedroom" ? (
                   <RelationshipReportInset className="mb-4">
                     <p className="text-xs font-bold uppercase tracking-wider text-rel-taupe">
-                      💡 {chOwnership?.userQuestion}
+                      ▫ {chOwnership?.userQuestion}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-rel-ink">
                       {summaryText}

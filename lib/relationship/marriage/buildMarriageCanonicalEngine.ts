@@ -633,6 +633,7 @@ export function buildMarriageCanonicalEngine(
         psychInputB: params.psychMasterB?.secondary_axes ? { primary: params.psychMasterB.secondary_axes, secondary: params.psychMasterB.secondary_axes } : undefined,
         names: [a, b],
         targetYears: [chapter08EvaluationYear, chapter08EvaluationYear + 1, chapter08EvaluationYear + 2],
+        locale,
       })
     : undefined;
   const marriage11Axis = buildMarriage11AxisInsights(params.psychMasterA, params.psychMasterB, a, b, locale);

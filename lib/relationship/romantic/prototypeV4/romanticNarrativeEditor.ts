@@ -127,11 +127,67 @@ const MAX_LENGTH_RATIO = 1.3;
 //      restates editedText adds no new meaning and is dropped.
 const CAUSAL_CONNECTIVES = ["하면", "수록", "하자", "때는", "때,", "때 ", "하면서", "받아들이면", "느끼면", "여기면", "그러면", "라면"];
 const CONSEQUENCE_VERBS = ["받아들", "느끼", "여기", "생기", "만들어", "된다", "돼요", "반응", "망설이", "커진다", "줄어든다", "깊어진다", "벌어진다", "힘들어진다", "멀어진다", "가까워진다", "쌓인다", "풀린다", "다가가", "물러서", "읽", "해석", "오해", "받는다", "받아요"];
+
+/**
+ * Phase 1 English remediation: hasInteractionConsequenceShape() used to be
+ * Korean-word-list-only, so every valid English Recognition Line failed this
+ * shape check and was silently dropped (never fabricated — just nulled out).
+ * These are the English equivalents of the same two proxies: a causal/
+ * conditional connective co-occurring with a reaction/consequence verb.
+ */
+const CAUSAL_CONNECTIVES_EN = [
+  "when",
+  "if",
+  "once",
+  "after",
+  "because",
+  "since",
+  "so that",
+  "which makes",
+  "which means",
+  "leads to",
+  "results in",
+  "in response",
+  "in turn",
+  "the more",
+];
+const CONSEQUENCE_VERBS_EN = [
+  "reacts",
+  "responds",
+  "feels",
+  "pulls back",
+  "pulls away",
+  "leans in",
+  "opens up",
+  "shuts down",
+  "closes off",
+  "softens",
+  "grows distant",
+  "grows closer",
+  "gets defensive",
+  "misreads",
+  "misunderstands",
+  "interprets",
+  "takes it as",
+  "reads it as",
+  "reads this as",
+  "withdraws",
+  "retreats",
+  "pushes back",
+  "backs off",
+  "reaches out",
+  "tenses up",
+  "relaxes",
+  "holds back",
+];
 const RECOGNITION_NOVELTY_MAX_SIMILARITY = 0.55;
 
-function hasInteractionConsequenceShape(line: string): boolean {
-  const hasConnective = CAUSAL_CONNECTIVES.some((c) => line.includes(c));
-  const hasConsequenceVerb = CONSEQUENCE_VERBS.some((v) => line.includes(v));
+function hasInteractionConsequenceShape(line: string, isEn: boolean): boolean {
+  const lower = isEn ? line.toLowerCase() : line;
+  const connectives = isEn ? CAUSAL_CONNECTIVES_EN : CAUSAL_CONNECTIVES;
+  const verbs = isEn ? CONSEQUENCE_VERBS_EN : CONSEQUENCE_VERBS;
+  const hasConnective = connectives.some((c) => lower.includes(c));
+  const hasConsequenceVerb = verbs.some((v) => lower.includes(v));
   return hasConnective && hasConsequenceVerb;
 }
 
@@ -140,8 +196,10 @@ export function validateNarrativeEdits(
   context: {
     packets: NarrativeEditablePacket[];
     names: { a: string; b: string };
+    locale?: "ko-KR" | "en-US";
   },
 ): RomanticNarrativeEdit[] {
+  const isEn = context.locale === "en-US";
   const packetByBlockId = new Map(context.packets.map((p) => [p.blockId, p]));
   const knownEvidenceIds = new Set(context.packets.flatMap((p) => p.evidenceIds));
 
@@ -211,7 +269,7 @@ export function validateNarrativeEdits(
       const line = item.recognitionLine.trim();
       const forbiddenInLine = findForbiddenContent(line, packet?.currentText);
       const mentionsBothNames = line.includes(context.names.a) && line.includes(context.names.b);
-      const hasConsequenceShape = hasInteractionConsequenceShape(line);
+      const hasConsequenceShape = hasInteractionConsequenceShape(line, isEn);
       const noveltyVsEditedText = similarity(line, item.editedText);
       if (forbiddenInLine) {
         rejectionReason = rejectionReason ?? `recognitionLine contains forbidden content: ${forbiddenInLine}`;
@@ -274,7 +332,7 @@ export async function buildRomanticNarrativeEditor(params: {
       () => callExpertLlmJson(openai, system, user, abortSignal),
       { label: "romantic-narrative-editor" },
     );
-    const edits = validateNarrativeEdits(Array.isArray(raw.edits) ? raw.edits : [], { packets, names });
+    const edits = validateNarrativeEdits(Array.isArray(raw.edits) ? raw.edits : [], { packets, names, locale });
     const applied = edits.filter((e) => !e.rejected);
     return {
       edits,

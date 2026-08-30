@@ -610,7 +610,7 @@ export function buildPersonalRelationshipCe(params: {
   // cross-chapter repeat of that phrase. Goes straight to the hidden-need
   // reveal instead, which is this chapter's own unique layer.
   const vulnText = isEn
-    ? `On the surface they can look composed and unbothered, but deep inside they're quietly longing for ${translation.need.charAt(0).toLowerCase()}${translation.need.slice(1)}. They also carry a quiet tension, worried that when the relationship feels shaky, ${spousePalaceProfile.profile.excessRisk.charAt(0).toLowerCase()}${spousePalaceProfile.profile.excessRisk.slice(1)}.`
+    ? `${name} can look composed and unbothered on the surface, but deep inside is quietly longing for ${translation.need.charAt(0).toLowerCase()}${translation.need.slice(1)}. ${name} also carries a quiet tension, worried that when the relationship feels shaky, they ${spousePalaceProfile.profile.excessRisk.charAt(0).toLowerCase()}${spousePalaceProfile.profile.excessRisk.slice(1)}.`
     : sanitizeParticles(
         `겉으로는 의연하고 덤덤해 보이지만, 내면 깊은 곳에서는 ${objectP(translation.need, locale)} 간절히 바라고 있습니다. 또한 관계가 흔들릴 때 ${spousePalaceProfile.profile.excessRisk}에 대한 조심스러운 긴장을 품고 있습니다.`,
         [],

@@ -8,6 +8,7 @@ import {
 } from "./buildFamilyCandidateEngine";
 import { buildFamilyMultiSignalSynthesis } from "./buildFamilyMultiSignalSynthesis";
 import { formatJosa } from "./familyParentLanguage";
+import { pick } from "./familyParentCopy";
 import { computeChildParentingNeedsEngine } from "./familyChildParentingNeedsEngine";
 import { buildFamilyConflictChapterBundle } from "./familyConflictChapterEngine";
 import { buildFamilyGrowthChapterBundle } from "./familyGrowthChapterEngine";
@@ -276,31 +277,55 @@ export function buildCanonicalFamilyStoryPlan(
   const childStimulation = psychChild?.secondary_axes?.stimulation ?? 50;
 
   const dependencyProtection = {
-    provider: parentStructure >= 60 ? "구조화된 울타리와 규칙 제공" : "자유로운 자율성과 포용적 수용",
-    reliance: childRole === "puppy" ? "정서적 밀착과 열린 의존" : "독립적 공간 확보 후 필요한 때만 도움 요청",
+    provider: pick(ctx.locale, parentStructure >= 60 ? "Provides structure and rules" : "Offers open freedom and acceptance", parentStructure >= 60 ? "구조화된 울타리와 규칙 제공" : "자유로운 자율성과 포용적 수용"),
+    reliance: pick(ctx.locale, childRole === "puppy" ? "Close emotional attachment, open reliance" : "Keeps independent space, asks for help only when needed", childRole === "puppy" ? "정서적 밀착과 열린 의존" : "독립적 공간 확보 후 필요한 때만 도움 요청"),
     roleReversalRisk: hasRoleReversal,
     summary: hasRoleReversal
-      ? `${formatJosa(ctx.childNickname, "이가")} 오히려 가정 내 기운이나 부모의 감정을 돌보는 역할 역전 가능성 주의`
-      : `${ctx.parentNickname} 부모의 안정적인 보호 속에서 ${formatJosa(ctx.childNickname, "이가")} 자신의 결대로 자라나는 구도`,
+      ? pick(
+          ctx.locale,
+          `Watch for a possible role reversal — ${ctx.childNickname} ending up the one managing the household mood or the parent's feelings.`,
+          `${formatJosa(ctx.childNickname, "이가")} 오히려 가정 내 기운이나 부모의 감정을 돌보는 역할 역전 가능성 주의`,
+        )
+      : pick(
+          ctx.locale,
+          `${ctx.childNickname} grows in their own direction, under ${ctx.parentNickname}'s steady protection.`,
+          `${ctx.parentNickname} 부모의 안정적인 보호 속에서 ${formatJosa(ctx.childNickname, "이가")} 자신의 결대로 자라나는 구도`,
+        ),
   };
 
   const loveExpressionVsReception = {
-    parentExpresses: parentStructure >= 60 ? "올바른 습관과 성취 지도" : "자유와 친밀한 정서 표현",
-    childReceives: childRecognition >= 60 ? "무조건적인 인정과 세심한 칭찬" : "독립된 존중과 조용한 신뢰",
+    parentExpresses: pick(ctx.locale, parentStructure >= 60 ? "Guidance toward good habits and achievement" : "Freedom and close emotional expression", parentStructure >= 60 ? "올바른 습관과 성취 지도" : "자유와 친밀한 정서 표현"),
+    childReceives: pick(ctx.locale, childRecognition >= 60 ? "Unconditional recognition and careful praise" : "Independent respect and quiet trust", childRecognition >= 60 ? "무조건적인 인정과 세심한 칭찬" : "독립된 존중과 조용한 신뢰"),
     alignment: (parentStructure >= 60 && childRecognition >= 60) ? ("misaligned" as const) : ("matched" as const),
     summary: (parentStructure >= 60 && childRecognition >= 60)
-      ? `${ctx.parentNickname} 부모의 지도 조언이 ${formatJosa(ctx.childNickname, "에게는")} 단순 지적으로 해석될 수 있는 사랑 표현 엇갈림`
-      : `${ctx.parentNickname} 부모의 마음이 ${formatJosa(ctx.childNickname, "에게")} 왜곡 없이 잘 전달되는 매칭 상태`,
+      ? pick(
+          ctx.locale,
+          `${ctx.parentNickname}'s guidance can read to ${ctx.childNickname} as plain criticism — a mismatch in how love gets expressed.`,
+          `${ctx.parentNickname} 부모의 지도 조언이 ${formatJosa(ctx.childNickname, "에게는")} 단순 지적으로 해석될 수 있는 사랑 표현 엇갈림`,
+        )
+      : pick(
+          ctx.locale,
+          `${ctx.parentNickname}'s intentions come through to ${ctx.childNickname} clearly, without much getting lost — a real match.`,
+          `${ctx.parentNickname} 부모의 마음이 ${formatJosa(ctx.childNickname, "에게")} 왜곡 없이 잘 전달되는 매칭 상태`,
+        ),
   };
 
   const expectationGap = Math.abs(parentStructure - childResilience);
   const expectationVsPressure = {
-    parentExpectation: parentStructure >= 70 ? "높은 목표와 완벽주의적 기준" : "수용적이고 유연한 성장 기대",
-    childPressureReception: childResilience < 40 ? "작은 마찰에도 부담과 중압감을 크게 느낌" : "자극과 도전 과제로 긍정 흡수",
+    parentExpectation: pick(ctx.locale, parentStructure >= 70 ? "High goals and a perfectionist standard" : "An accepting, flexible expectation for growth", parentStructure >= 70 ? "높은 목표와 완벽주의적 기준" : "수용적이고 유연한 성장 기대"),
+    childPressureReception: pick(ctx.locale, childResilience < 40 ? "Feels real pressure even from small friction" : "Takes it in positively, as stimulation and a challenge", childResilience < 40 ? "작은 마찰에도 부담과 중압감을 크게 느낌" : "자극과 도전 과제로 긍정 흡수"),
     gapLevel: expectationGap >= 30 ? ("high" as const) : expectationGap >= 15 ? ("moderate" as const) : ("low" as const),
     summary: expectationGap >= 30
-      ? `${ctx.parentNickname} 부모의 기대 수준과 ${formatJosa(ctx.childNickname, "이")} 느끼는 중압감 사이의 갭이 커 속도 조절 필요`
-      : `${ctx.parentNickname} 부모의 기대가 ${formatJosa(ctx.childNickname, "에게")} 성장의 좋은 동기부여로 작용함`,
+      ? pick(
+          ctx.locale,
+          `There's a real gap between ${ctx.parentNickname}'s expectations and the pressure ${ctx.childNickname} actually feels — worth easing the pace.`,
+          `${ctx.parentNickname} 부모의 기대 수준과 ${formatJosa(ctx.childNickname, "이")} 느끼는 중압감 사이의 갭이 커 속도 조절 필요`,
+        )
+      : pick(
+          ctx.locale,
+          `${ctx.parentNickname}'s expectations work as good motivation for ${ctx.childNickname}'s growth.`,
+          `${ctx.parentNickname} 부모의 기대가 ${formatJosa(ctx.childNickname, "에게")} 성장의 좋은 동기부여로 작용함`,
+        ),
   };
 
   const needsEngineOutput = computeChildParentingNeedsEngine({
@@ -312,7 +337,7 @@ export function buildCanonicalFamilyStoryPlan(
 
   const childCoreNeeds = {
     primaryNeeds: needsEngineOutput.primaryNeeds.map((n) => n.label),
-    currentSupplyStatus: needsEngineOutput.primaryNeeds[0]?.gapStatus || "정상 수용 중",
+    currentSupplyStatus: needsEngineOutput.primaryNeeds[0]?.gapStatus || pick(ctx.locale, "Being met normally", "정상 수용 중"),
     summary: needsEngineOutput.summary,
   };
 

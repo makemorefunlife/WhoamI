@@ -104,7 +104,7 @@ export async function buildRomanticFinalNarrativeArchitecture(params: {
         () => callExpertLlmJson(openai, system, user, abortSignal),
         { label: "romantic-final-narrative-editor" },
       );
-      narrativeEdits = validateNarrativeEdits(Array.isArray(raw.edits) ? raw.edits : [], { packets, names });
+      narrativeEdits = validateNarrativeEdits(Array.isArray(raw.edits) ? raw.edits : [], { packets, names, locale });
     } catch (err) {
       neFailed = true;
       neFailureReason = err instanceof Error ? err.message : String(err);

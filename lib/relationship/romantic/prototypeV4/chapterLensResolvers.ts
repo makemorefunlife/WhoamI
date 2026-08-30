@@ -21,6 +21,13 @@ import {
   type NarrativeLocale,
 } from "./narrativeLocale";
 
+/** Lowercases only the first character — for embedding an EvidenceBackedMeaning
+ * EN sentence (authored capitalized, to stand on its own) mid-sentence. */
+function lowerFirst(text: string): string {
+  if (!text) return text;
+  return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
 function createProv(
   evidenceId: string,
   source: string,
@@ -386,7 +393,7 @@ export function resolveDynamicsLens(params: {
     benefit: sanitizeParticles(
       L(
         `이게 잘 맞는 이유는 단순해요 — ${a}는 ${firstClause(careA)}, ${b}는 ${firstClause(careB)} 방식은 달라도 둘 다 상대를 편하게 해주려는 쪽으로 움직이다 보니 자연스럽게 맞물려요.`,
-        `The reason this works is simple — ${a} ${firstClause(careA)?.charAt(0).toLowerCase()}${firstClause(careA)?.slice(1)} and ${b} ${firstClause(careB)?.charAt(0).toLowerCase()}${firstClause(careB)?.slice(1)} Different methods, but both aimed at putting the other at ease, so they naturally mesh.`,
+        `The reason this works is simple: ${a} ${lowerFirst(firstClause(careA) ?? "")} And ${b} ${lowerFirst(firstClause(careB) ?? "")} Different methods, but both aimed at putting the other at ease, so they naturally mesh.`,
       ),
       [a, b],
       locale,
@@ -404,16 +411,22 @@ export function resolveDynamicsLens(params: {
       ? sanitizeParticles(
           L(
             `다만 이 편안함에 기대는 게 당연해지면 위험해질 수 있어요. ${relCeA?.hiddenVulnerability?.text ? `${a}는 ${relCeA.hiddenVulnerability.text}` : `${b}는 ${relCeB?.hiddenVulnerability?.text}`}`,
-            `But this comfort can turn risky once it's taken for granted. ${relCeA?.hiddenVulnerability?.text ? `${a} ${relCeA.hiddenVulnerability.text.charAt(0).toLowerCase()}${relCeA.hiddenVulnerability.text.slice(1)}` : `${b} ${relCeB?.hiddenVulnerability?.text?.charAt(0).toLowerCase()}${relCeB?.hiddenVulnerability?.text?.slice(1)}`}`,
+            `But this comfort can turn risky once it's taken for granted. ${relCeA?.hiddenVulnerability?.text ?? relCeB?.hiddenVulnerability?.text}`,
           ),
           [a, b],
           locale,
         )
       : "",
+    // careExpression.text (EN) is itself a full multi-sentence paragraph
+    // (behavior sentence + a second "Takes care of daily life..." sentence),
+    // not a short clause — cramming two people's full versions into one
+    // "{a} clause and {b} clause, matching..." sentence produced a run-on
+    // with a stray lowercase "and" after a period and a dangling comma
+    // fragment at the end. Each person's text now gets its own sentence.
     observableSignal: sanitizeParticles(
       L(
         `단둘이 만났을 때 ${subjectP(a, locale)} ${relCeA?.careExpression?.text ?? "마음을 편안히 털어놓고"} ${subjectP(b, locale)} ${relCeB?.careExpression?.text ?? "묵묵히 경청하며"} 마음의 온도를 맞추는 순간`,
-        `When alone together, ${subjectP(a, locale)} ${(relCeA?.careExpression?.text ?? "opens up comfortably").charAt(0).toLowerCase()}${(relCeA?.careExpression?.text ?? "opens up comfortably").slice(1)} and ${subjectP(b, locale)} ${(relCeB?.careExpression?.text ?? "listens quietly").charAt(0).toLowerCase()}${(relCeB?.careExpression?.text ?? "listens quietly").slice(1)}, matching your emotional warmth`,
+        `When you're alone together, ${subjectP(a, locale)} ${lowerFirst(relCeA?.careExpression?.text ?? "opens up comfortably.")} And ${subjectP(b, locale)} ${lowerFirst(relCeB?.careExpression?.text ?? "listens quietly.")} That's how your emotional warmth finds its match.`,
       ),
       [a, b],
       locale,
@@ -493,7 +506,7 @@ export function resolveDynamicsLens(params: {
     benefit: sanitizeParticles(
       L(
         `이게 도움이 되는 이유는, ${a}는 ${firstClause(decA)}, ${b}는 ${firstClause(decB)} 두 방식이 겹치니까 결정 앞에서 한쪽으로 쏠리지 않아요.`,
-        `This helps because ${a} ${firstClause(decA)?.charAt(0).toLowerCase()}${firstClause(decA)?.slice(1)} and ${b} ${firstClause(decB)?.charAt(0).toLowerCase()}${firstClause(decB)?.slice(1)} With both approaches in play, decisions don't tip too far to one side.`,
+        `This helps because ${a} ${lowerFirst(firstClause(decA) ?? "")} And ${b} ${lowerFirst(firstClause(decB) ?? "")} With both approaches in play, decisions don't tip too far to one side.`,
       ),
       [a, b],
       locale,
@@ -505,7 +518,7 @@ export function resolveDynamicsLens(params: {
       ? sanitizeParticles(
           L(
             `다만 이 역할 분담이 굳어지면 위험해질 수 있어요. ${relCeB?.hiddenVulnerability?.text ? `${b}는 ${relCeB.hiddenVulnerability.text}` : `${a}는 ${relCeA?.hiddenVulnerability?.text}`}`,
-            `But this division of roles can turn risky once it hardens into habit. ${relCeB?.hiddenVulnerability?.text ? `${b} ${relCeB.hiddenVulnerability.text.charAt(0).toLowerCase()}${relCeB.hiddenVulnerability.text.slice(1)}` : `${a} ${relCeA?.hiddenVulnerability?.text?.charAt(0).toLowerCase()}${relCeA?.hiddenVulnerability?.text?.slice(1)}`}`,
+            `But this division of roles can turn risky once it hardens into habit. ${relCeB?.hiddenVulnerability?.text ?? relCeA?.hiddenVulnerability?.text}`,
           ),
           [a, b],
           locale,

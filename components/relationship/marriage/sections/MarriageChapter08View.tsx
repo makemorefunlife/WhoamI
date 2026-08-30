@@ -52,7 +52,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
         <div className="flex items-center gap-2 pt-1">
           <span className="text-base font-bold text-[#1b3b2b]">◤ 01.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
-            지금 우리는 어떤 시기를 지나고 있을까?
+            {isEn ? "What season are we in right now?" : "지금 우리는 어떤 시기를 지나고 있을까?"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
@@ -61,7 +61,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/40 pb-2">
                 <PersonBadge />
-                <span className="text-xs font-bold text-[#2c2b29]">{nameA}님</span>
+                <span className="text-xs font-bold text-[#2c2b29]">{isEn ? nameA : `${nameA}님`}</span>
               </div>
               <p className="text-xs sm:text-sm font-bold text-[#1b3b2b]">
                 {section01CurrentPeriod.personA.headline}
@@ -75,7 +75,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/40 pb-2">
                 <PersonBadge />
-                <span className="text-xs font-bold text-[#2c2b29]">{nameB}님</span>
+                <span className="text-xs font-bold text-[#2c2b29]">{isEn ? nameB : `${nameB}님`}</span>
               </div>
               <p className="text-xs sm:text-sm font-bold text-[#1b3b2b]">
                 {section01CurrentPeriod.personB.headline}
@@ -89,7 +89,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
           {/* Pair Context */}
           <div className="rounded-lg border border-[#d6e2d8] bg-[#f4f7f4] p-3.5 space-y-1">
             <span className="text-xs font-bold text-[#1b3b2b]">
-              [우리 둘의 흐름] {section01CurrentPeriod.pair.headline}
+              {isEn ? `[Your shared flow] ${section01CurrentPeriod.pair.headline}` : `[우리 둘의 흐름] ${section01CurrentPeriod.pair.headline}`}
             </span>
             <p className="text-xs leading-relaxed text-[#5e5b56]">
               {section01CurrentPeriod.pair.description}
@@ -103,7 +103,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
         <div className="flex items-center gap-2 pt-1">
           <span className="text-base font-bold text-[#1b3b2b]">◤ 02.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
-            올해 우리 관계에서 무엇이 중요해질까?
+            {isEn ? "What will matter most in your relationship this year?" : "올해 우리 관계에서 무엇이 중요해질까?"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-3 shadow-2xs">
@@ -128,7 +128,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
         <div className="flex items-center gap-2 pt-1">
           <span className="text-base font-bold text-[#1b3b2b]">◤ 03.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
-            앞으로 3년, 우리 관계의 흐름
+            {isEn ? "The next 3 years: how your relationship flows" : "앞으로 3년, 우리 관계의 흐름"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
@@ -141,7 +141,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between border-b border-[#e6e2dc]/50 pb-2">
                     <span className="font-serif text-sm font-bold text-[#1b3b2b]">
-                      {fc.year}년
+                      {isEn ? fc.year : `${fc.year}년`}
                     </span>
                     {fc.badge && (
                       <span className="rounded-full bg-[#1b3b2b]/10 px-2 py-0.5 text-[10px] font-semibold text-[#1b3b2b]">
@@ -155,18 +155,18 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
 
                   <div className="space-y-2 pt-1 text-[11px]">
                     <div>
-                      <span className="font-semibold text-[#1b3b2b]">{nameA}님: </span>
+                      <span className="font-semibold text-[#1b3b2b]">{isEn ? `${nameA}: ` : `${nameA}님: `}</span>
                       <span className="text-[#5e5b56]">{fc.personA.summary}</span>
                     </div>
                     <div>
-                      <span className="font-semibold text-[#1b3b2b]">{nameB}님: </span>
+                      <span className="font-semibold text-[#1b3b2b]">{isEn ? `${nameB}: ` : `${nameB}님: `}</span>
                       <span className="text-[#5e5b56]">{fc.personB.summary}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="rounded bg-white p-2.5 border border-[#e6e2dc]/60 text-[11px] mt-2">
-                  <span className="font-semibold text-[#2f6b4f]">우리 둘의 호흡: </span>
+                  <span className="font-semibold text-[#2f6b4f]">{isEn ? "Your shared rhythm: " : "우리 둘의 호흡: "}</span>
                   <span className="text-[#5e5b56]">{fc.pair.summary}</span>
                 </div>
               </div>
@@ -181,7 +181,9 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
           <div className="flex items-center gap-2 pt-1">
             <span className="text-base font-bold text-[#1b3b2b]">◤ 04.</span>
             <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
-              우리에게 찾아오는 가장 중요한 변곡점 ({section04TurningPoint.year}년)
+              {isEn
+                ? `The most important turning point ahead (${section04TurningPoint.year})`
+                : `우리에게 찾아오는 가장 중요한 변곡점 (${section04TurningPoint.year}년)`}
             </h3>
           </div>
           <div className="rounded-xl border border-[#f5d0cc] bg-[#fdf6f5] p-5 space-y-4 shadow-2xs">
@@ -196,19 +198,19 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
 
             <div className="grid gap-3 text-xs md:grid-cols-3">
               <div className="rounded-lg bg-white p-3 border border-[#f5d0cc]/80 space-y-1">
-                <span className="font-semibold text-[#c1443a]">{nameA}님에게</span>
+                <span className="font-semibold text-[#c1443a]">{isEn ? `For ${nameA}` : `${nameA}님에게`}</span>
                 <p className="text-[#5e5b56] leading-relaxed">
                   {section04TurningPoint.forPersonA}
                 </p>
               </div>
               <div className="rounded-lg bg-white p-3 border border-[#f5d0cc]/80 space-y-1">
-                <span className="font-semibold text-[#c1443a]">{nameB}님에게</span>
+                <span className="font-semibold text-[#c1443a]">{isEn ? `For ${nameB}` : `${nameB}님에게`}</span>
                 <p className="text-[#5e5b56] leading-relaxed">
                   {section04TurningPoint.forPersonB}
                 </p>
               </div>
               <div className="rounded-lg bg-white p-3 border border-[#f5d0cc]/80 space-y-1">
-                <span className="font-semibold text-[#1b3b2b]">우리 부부에게</span>
+                <span className="font-semibold text-[#1b3b2b]">{isEn ? "For you as a couple" : "우리 부부에게"}</span>
                 <p className="text-[#5e5b56] leading-relaxed">
                   {section04TurningPoint.forPair}
                 </p>
@@ -223,14 +225,14 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
         <div className="flex items-center gap-2 pt-1">
           <span className="text-base font-bold text-[#1b3b2b]">◤ 05.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
-            이 흐름을 우리 편으로 만드는 법
+            {isEn ? "How to make this flow work for you" : "이 흐름을 우리 편으로 만드는 법"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
           <div className="grid gap-3 text-xs md:grid-cols-2">
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-3.5 space-y-1">
               <span className="font-bold text-[#1b3b2b]">
-                {section05ActionGuide.forPersonA.name}님이 기억하면 좋은 것
+                {isEn ? `Worth remembering for ${section05ActionGuide.forPersonA.name}` : `${section05ActionGuide.forPersonA.name}님이 기억하면 좋은 것`}
               </span>
               <p className="text-[#5e5b56] leading-relaxed">
                 {section05ActionGuide.forPersonA.advice}
@@ -239,7 +241,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
 
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-3.5 space-y-1">
               <span className="font-bold text-[#1b3b2b]">
-                {section05ActionGuide.forPersonB.name}님이 기억하면 좋은 것
+                {isEn ? `Worth remembering for ${section05ActionGuide.forPersonB.name}` : `${section05ActionGuide.forPersonB.name}님이 기억하면 좋은 것`}
               </span>
               <p className="text-[#5e5b56] leading-relaxed">
                 {section05ActionGuide.forPersonB.advice}
@@ -249,7 +251,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
 
           <div className="rounded-lg border border-[#d6e2d8] bg-[#f4f7f4] p-4 text-xs space-y-1">
             <span className="font-bold text-[#2f6b4f]">
-              우리 둘이 함께 기억할 것
+              {isEn ? "Worth remembering together" : "우리 둘이 함께 기억할 것"}
             </span>
             <p className="text-[#5e5b56] leading-relaxed">
               {section05ActionGuide.forPair.advice}

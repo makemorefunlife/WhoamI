@@ -1,4 +1,5 @@
 /** 관계 지수 막대 — 점수 + 높을수록 좋은지/나쁜지에 따라 색 (초록만 선명) */
+import type { Locale } from "@/lib/i18n/locale";
 
 export type ScorePolarity = "higher_better" | "higher_worse";
 
@@ -46,20 +47,33 @@ function withHint(
   return { ...tier, hint };
 }
 
+/**
+ * Phase 1 English remediation: hint text used to be hardcoded Korean
+ * regardless of locale (confirmed leaking into EN canonical reports via
+ * TriScoreSnapshotPanel/RelationshipScoreBoard). Locale now selects the
+ * label; tiers/thresholds/scores/colors are unchanged.
+ */
+const HINT_TEXT: Record<Locale, Record<"good" | "mid" | "low" | "warn" | "stable", string>> = {
+  "ko-KR": { good: "좋은 편", mid: "보통", low: "낮은 편", warn: "주의 필요", stable: "안정적" },
+  "en-US": { good: "Good", mid: "Average", low: "Low", warn: "Needs attention", stable: "Stable" },
+};
+
 /** 호감·케미: 높을수록 좋음 / 예민: 높을수록 주의 */
 export function resolveScoreBarAppearance(
   value: number,
   polarity: ScorePolarity,
+  locale: Locale,
 ): ScoreBarAppearance {
   const v = clampScore(value);
+  const t = HINT_TEXT[locale] ?? HINT_TEXT["ko-KR"];
 
   if (polarity === "higher_better") {
-    if (v >= 70) return withHint(TIER_GOOD, "좋은 편");
-    if (v > 40) return withHint(TIER_MID, "보통");
-    return withHint(TIER_WARN, "낮은 편");
+    if (v >= 70) return withHint(TIER_GOOD, t.good);
+    if (v > 40) return withHint(TIER_MID, t.mid);
+    return withHint(TIER_WARN, t.low);
   }
 
-  if (v >= 70) return withHint(TIER_WARN, "주의 필요");
-  if (v > 50) return withHint(TIER_MID, "보통");
-  return withHint(TIER_GOOD, "안정적");
+  if (v >= 70) return withHint(TIER_WARN, t.warn);
+  if (v > 50) return withHint(TIER_MID, t.mid);
+  return withHint(TIER_GOOD, t.stable);
 }

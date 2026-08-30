@@ -238,7 +238,7 @@ function CompareTableCard({
 }
 
 function HouseholdRolesCard({ section }: { section: HouseholdRolesSection }) {
-  const locale = useLocale();
+  const { locale } = useLocale();
 
   return (
     <RelationshipReportCard title={ec(locale, "Family Roles & Positions", "가족 안에서 우리는 어떤 자리를 맡게 될까요")} accentColor={ACCENT}>
@@ -455,7 +455,7 @@ function ChildDnaCard({ section }: { section: ChildDnaSection }) {
 }
 
 function ParentDnaCard({ section }: { section: ParentDnaSectionView }) {
-  const locale = useLocale();
+  const { locale } = useLocale();
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
@@ -497,7 +497,7 @@ function ParentDnaCard({ section }: { section: ParentDnaSectionView }) {
 }
 
 function ParentChildBridgeCard({ section }: { section: ParentChildBridgeSectionView }) {
-  const locale = useLocale();
+  const { locale } = useLocale();
   return (
     <RelationshipReportCard title={section.title} accentColor={ACCENT}>
       <RelationshipReportBody>
@@ -664,8 +664,8 @@ function DeepReadSectionCard({
     ? "◤ Custom Action Suggestions for Parent & Child"
     : "◤ 부모와 자녀를 위한 맞춤 실천 제안";
 
-  const childName = names?.[0] || "자녀";
-  const parentName = names?.[1] || "부모";
+  const childName = names?.[0] || (isEn ? "the child" : "자녀");
+  const parentName = names?.[1] || (isEn ? "the parent" : "부모");
 
   const adviceParentLabel = isEn
     ? `Advice for ${parentName}`
@@ -1023,8 +1023,8 @@ export function FamilyReportViewModelView({
             return rawInterpretation;
           }
 
-          const parentName = vm.opening.names[1] || "부모";
-          const childName = vm.opening.names[0] || "자녀";
+          const parentName = vm.opening.names[1] || pick(locale, "the parent", "부모");
+          const childName = vm.opening.names[0] || pick(locale, "the child", "자녀");
           const cIGa = josaIGa(childName);
           const cEunNeun = josaEunNeun(childName);
           const pIGa = josaIGa(parentName);
@@ -1217,8 +1217,8 @@ export function FamilyReportViewModelView({
 
             {/* Chapter 05: 우리가 부딪히는 이유 (Canonical Conflict Chapter) */}
           {chapter.id === "ch_conflict" ? (() => {
-            const parentName = vm.opening.names[1] || "부모";
-            const childName = vm.opening.names[0] || "자녀";
+            const parentName = vm.opening.names[1] || pick(locale, "the parent", "부모");
+            const childName = vm.opening.names[0] || pick(locale, "the child", "자녀");
             const bundle = vm.storyPlan?.conflictChapterBundle;
             const cards = bundle?.conflictCards ?? [];
             const loop = bundle?.conflictLoop;
@@ -1287,22 +1287,22 @@ export function FamilyReportViewModelView({
                   <div className="rounded-2xl border border-v4-bad/25 bg-v4-bad-soft/40 p-5 sm:p-6 shadow-sm space-y-4">
                     <div className="space-y-3 font-rel-sans text-xs sm:text-sm text-rel-ink">
                       <div className="flex gap-3 items-start">
-                        <span className="shrink-0 font-bold text-v4-bad">1. 시작</span>
+                        <span className="shrink-0 font-bold text-v4-bad">{ec(locale, "1. It starts", "1. 시작")}</span>
                         <p>{loop?.step1ParentTrigger}</p>
                       </div>
                       <div className="text-center text-rel-ink-mute text-xs">↓</div>
                       <div className="flex gap-3 items-start">
-                        <span className="shrink-0 font-bold text-v4-bad">2. 아이의 자동 반응</span>
+                        <span className="shrink-0 font-bold text-v4-bad">{ec(locale, "2. The kid's automatic reaction", "2. 아이의 자동 반응")}</span>
                         <p>{loop?.step2ChildReaction}</p>
                       </div>
                       <div className="text-center text-rel-ink-mute text-xs">↓</div>
                       <div className="flex gap-3 items-start">
-                        <span className="shrink-0 font-bold text-v4-bad">3. 부모의 해석과 재반응</span>
+                        <span className="shrink-0 font-bold text-v4-bad">{ec(locale, "3. The parent reads it and reacts again", "3. 부모의 해석과 재반응")}</span>
                         <p>{loop?.step3ParentEscalation}</p>
                       </div>
                       <div className="text-center text-rel-ink-mute text-xs">↓</div>
                       <div className="flex gap-3 items-start">
-                        <span className="shrink-0 font-bold text-v4-bad">4. 아이의 다음 반응</span>
+                        <span className="shrink-0 font-bold text-v4-bad">{ec(locale, "4. The kid's next reaction", "4. 아이의 다음 반응")}</span>
                         <p>{loop?.step4ChildNextReaction}</p>
                       </div>
                     </div>
@@ -1333,8 +1333,8 @@ export function FamilyReportViewModelView({
 
           {/* Chapter 06: 이 아이는 어떻게 배우고, 무엇으로 성장할까요 (Canonical Growth Chapter) */}
           {chapter.id === "ch_growth" ? (() => {
-            const parentName = vm.opening.names[1] || "부모";
-            const childName = vm.opening.names[0] || "자녀";
+            const parentName = vm.opening.names[1] || pick(locale, "the parent", "부모");
+            const childName = vm.opening.names[0] || pick(locale, "the child", "자녀");
             const bundle = vm.storyPlan?.growthChapterBundle;
             if (!bundle) return null;
 
@@ -1352,7 +1352,7 @@ export function FamilyReportViewModelView({
                     </p>
                     <div className="pt-2">
                       <span className="inline-block rounded-lg bg-rel-taupe-soft/40 px-3 py-1 text-xs font-semibold text-rel-deep">
-                        핵심 동기 엔진: {bundle.motivation.primaryMotivator}
+                        {ec(locale, "Core motivation engine: ", "핵심 동기 엔진: ")}{bundle.motivation.primaryMotivator}
                       </span>
                     </div>
                   </div>
@@ -1369,7 +1369,7 @@ export function FamilyReportViewModelView({
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          집중이 켜지는 환경
+                          {ec(locale, "Where focus switches on", "집중이 켜지는 환경")}
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.focusEnvironment}
@@ -1377,7 +1377,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          이해가 되는 방식
+                          {ec(locale, "How things click", "이해가 되는 방식")}
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.understandingStyle}
@@ -1385,7 +1385,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          📋 계획을 세우는 방식
+                          📋 {ec(locale, "How they plan", "계획을 세우는 방식")}
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.planningStyle}
@@ -1393,7 +1393,7 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="rounded-xl bg-rel-taupe-soft/20 p-4 border border-rel-line/60">
                         <p className="text-xs font-bold text-rel-ink mb-1">
-                          혼자 vs 함께
+                          {ec(locale, "Alone vs. together", "혼자 vs 함께")}
                         </p>
                         <p className="text-xs text-rel-ink-soft leading-relaxed">
                           {bundle.learning.socialMode}
@@ -1438,7 +1438,7 @@ export function FamilyReportViewModelView({
                     </p>
                     <div className="pt-1">
                       <span className="inline-block rounded-lg bg-rel-paper px-3 py-1 text-xs text-rel-ink border border-rel-line">
-                        복원력 태도: {bundle.challenge.resiliencePattern}
+                        {ec(locale, "Resilience pattern: ", "복원력 태도: ")}{bundle.challenge.resiliencePattern}
                       </span>
                     </div>
                   </div>
@@ -1459,7 +1459,7 @@ export function FamilyReportViewModelView({
                     {bundle.socialOperating.recommendedActivities?.length > 0 && (
                       <div className="pt-3 border-t border-rel-line/60">
                         <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-2">
-                          잘 맞는 활동 방향
+                          {ec(locale, "Activities that fit well", "잘 맞는 활동 방향")}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {bundle.socialOperating.recommendedActivities.map((act, idx) => (
@@ -1519,7 +1519,7 @@ export function FamilyReportViewModelView({
                     <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
                       <div>
                         <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
-                          올해의 성취 테마
+                          {ec(locale, "This year's growth theme", "올해의 성취 테마")}
                         </p>
                         <p className="font-rel-sans text-sm font-bold text-rel-ink">
                           {bundle.yearlyGrowth.yearlyTheme}
@@ -1527,11 +1527,11 @@ export function FamilyReportViewModelView({
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2 text-xs">
                         <div className="rounded-xl bg-rel-taupe-soft/20 p-3.5 border border-rel-line">
-                          <p className="font-bold text-rel-ink mb-1">나타날 수 있는 모습</p>
+                          <p className="font-bold text-rel-ink mb-1">{ec(locale, "What it may look like", "나타날 수 있는 모습")}</p>
                           <p className="text-rel-ink-soft leading-relaxed">{bundle.yearlyGrowth.yearlyBehavior}</p>
                         </div>
                         <div className="rounded-xl bg-rel-taupe-soft/20 p-3.5 border border-rel-line">
-                          <p className="font-bold text-rel-ink mb-1">{parentName}의 조력 역할</p>
+                          <p className="font-bold text-rel-ink mb-1">{parentName}{ec(locale, "'s supporting role", "의 조력 역할")}</p>
                           <p className="text-rel-ink-soft leading-relaxed">{bundle.yearlyGrowth.parentSupportRole}</p>
                         </div>
                       </div>
@@ -1548,7 +1548,7 @@ export function FamilyReportViewModelView({
                   <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
                     <div className="rounded-xl bg-v4-good-soft p-4 border border-v4-good/25">
                       <p className="text-xs font-bold text-v4-good uppercase tracking-wider mb-1">
-                        밀어줘야 할 것 (성장 엔진)
+                        {ec(locale, "Push them toward this (growth engine)", "밀어줘야 할 것 (성장 엔진)")}
                       </p>
                       <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
                         {bundle.parentGuidance.pushForward}
@@ -1557,7 +1557,7 @@ export function FamilyReportViewModelView({
 
                     <div className="rounded-xl bg-rel-taupe-soft/30 p-4 border border-rel-line">
                       <p className="text-xs font-bold text-rel-deep uppercase tracking-wider mb-1">
-                        도와줘야 할 것 (안전 울타리)
+                        {ec(locale, "Help them with this (safety net)", "도와줘야 할 것 (안전 울타리)")}
                       </p>
                       <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
                         {bundle.parentGuidance.scaffold}
@@ -1566,7 +1566,7 @@ export function FamilyReportViewModelView({
 
                     <div className="rounded-xl bg-v4-bad-soft p-4 border border-v4-bad/25">
                       <p className="text-xs font-bold text-v4-bad uppercase tracking-wider mb-1">
-                        너무 많이 하지 않아도 되는 것 (덜 건드릴 것)
+                        {ec(locale, "Ease off on this (touch it less)", "너무 많이 하지 않아도 되는 것 (덜 건드릴 것)")}
                       </p>
                       <p className="text-xs sm:text-sm text-rel-ink leading-relaxed">
                         {bundle.parentGuidance.lessOf}
@@ -1583,7 +1583,7 @@ export function FamilyReportViewModelView({
             <div className="mb-6 rounded-xl border border-rel-line bg-rel-surface p-4 space-y-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-rel-deep">
-                  Child's Core Needs · 자녀 핵심 양육 욕구 종합
+                  {ec(locale, "Child's Core Needs", "자녀 핵심 양육 욕구 종합")}
                 </p>
                 <p className="mt-1 text-xs text-rel-ink-soft italic">
                   {chapter.childCoreNeeds.summary}
@@ -1594,7 +1594,7 @@ export function FamilyReportViewModelView({
               {chapter.childCoreNeedsDetailed?.innateParentingNeeds?.length ? (
                 <div className="rounded-lg bg-rel-taupe-soft/30 p-3 border border-rel-line">
                   <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
-                    이 아이가 편안하게 자라는 본래 부모 태도
+                    {ec(locale, "The natural parenting style this child grows best under", "이 아이가 편안하게 자라는 본래 부모 태도")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {chapter.childCoreNeedsDetailed.innateParentingNeeds.map((need, idx) => (
@@ -1610,7 +1610,7 @@ export function FamilyReportViewModelView({
               {chapter.childCoreNeedsDetailed?.wellSuppliedNeeds?.length ? (
                 <div className="rounded-lg bg-v4-good-soft p-3 border border-v4-good/25">
                   <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
-                    지금 이 부모가 잘 주고 있는 것 (충분함)
+                    {ec(locale, "What this parent is already providing well (enough)", "지금 이 부모가 잘 주고 있는 것 (충분함)")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {chapter.childCoreNeedsDetailed.wellSuppliedNeeds.map((need, idx) => (
@@ -1626,7 +1626,7 @@ export function FamilyReportViewModelView({
               {chapter.childCoreNeedsDetailed?.primaryNeeds?.length ? (
                 <div className="rounded-lg bg-v4-bad-soft p-3 border border-v4-bad/25">
                   <p className="text-xs font-medium text-rel-ink mb-1.5 flex items-center gap-1.5">
-                    이 관계에서 조금 더 필요한 1~3가지 핵심 욕구
+                    {ec(locale, "1-3 core needs this relationship could use a bit more of", "이 관계에서 조금 더 필요한 1~3가지 핵심 욕구")}
                   </p>
                   <ul className="space-y-1.5">
                     {chapter.childCoreNeedsDetailed.primaryNeeds.map((need, idx) => (
@@ -1642,7 +1642,7 @@ export function FamilyReportViewModelView({
               {/* Discrepancy Caution Signal if present */}
               {chapter.childCoreNeedsDetailed?.discrepancySummary ? (
                 <p className="text-xs text-rose-800 italic bg-rose-50/60 p-2.5 rounded-lg border border-rose-100">
-                  ⚠️ 참고: {chapter.childCoreNeedsDetailed.discrepancySummary}
+                  ⚠️ {ec(locale, "Note: ", "참고: ")}{chapter.childCoreNeedsDetailed.discrepancySummary}
                 </p>
               ) : null}
             </div>
@@ -1655,8 +1655,8 @@ export function FamilyReportViewModelView({
 
           {/* Chapter 04 Bottom: ◤ 사랑을 주고받는 방식 (Rendered AFTER legacy sections: 심리 축 매칭, 인사이트, 본래 성향 비교) */}
           {chapter.id === "ch_comm" ? (() => {
-            const parentName = vm.opening.names[1] || "부모";
-            const childName = vm.opening.names[0] || "자녀";
+            const parentName = vm.opening.names[1] || pick(locale, "the parent", "부모");
+            const childName = vm.opening.names[0] || pick(locale, "the child", "자녀");
             const bundle = vm.storyPlan?.conflictChapterBundle;
             const love = bundle?.loveAnalysis;
 
@@ -1670,7 +1670,7 @@ export function FamilyReportViewModelView({
                       ▫ {ec(locale, "How parent expresses love", "부모가 사랑을 표현하는 방식")}
                     </p>
                     <p className="mt-1 text-base font-bold text-rel-ink">
-                      {love?.parentExpressionTitle ?? `${parentName}의 사랑은 '챙기고 방향을 잡아주는 것'에 가까워요.`}
+                      {love?.parentExpressionTitle ?? ec(locale, `${parentName}'s love looks like taking care of things and pointing the way.`, `${parentName}의 사랑은 '챙기고 방향을 잡아주는 것'에 가까워요.`)}
                     </p>
                     <p className="mt-1.5 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
                       {love?.parentExpressionDesc}
@@ -1685,7 +1685,7 @@ export function FamilyReportViewModelView({
                       ▫ {ec(locale, "How child experiences love", "아이가 사랑을 느끼는 방식")}
                     </p>
                     <p className="mt-1 text-base font-bold text-rel-ink">
-                      {love?.childReceptionTitle ?? `${childName}은 '나를 믿고 기다려주는 것'에서 사랑을 크게 느껴요.`}
+                      {love?.childReceptionTitle ?? ec(locale, `${childName} feels loved most when they're trusted and given room to work things out.`, `${childName}은 '나를 믿고 기다려주는 것'에서 사랑을 크게 느껴요.`)}
                     </p>
                     <p className="mt-1.5 font-rel-sans text-[14px] leading-[1.8] text-rel-ink-soft">
                       {love?.childReceptionDesc}
@@ -1713,8 +1713,8 @@ export function FamilyReportViewModelView({
 
           {/* Chapter 07: 07. 싸운 뒤, 우리는 어떻게 다시 가까워질까요? */}
           {chapter.id === "ch_repair" ? (() => {
-            const parentName = vm.opening.names[1] || "부모";
-            const childName = vm.opening.names[0] || "자녀";
+            const parentName = vm.opening.names[1] || pick(locale, "the parent", "부모");
+            const childName = vm.opening.names[0] || pick(locale, "the child", "자녀");
             const repairBundle = vm.storyPlan?.repairChapterBundle || buildFamilyRepairChapterBundle({
               childNickname: childName,
               parentNickname: parentName,
@@ -1730,7 +1730,7 @@ export function FamilyReportViewModelView({
                     {/* 부모의 회복 리듬 */}
                     <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
                       <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
-                        {parentName}의 회복 리듬
+                        {parentName}{ec(locale, "'s recovery rhythm", "의 회복 리듬")}
                       </span>
                       <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
                         {repairBundle.recoveryRhythms.parentHeadline}
@@ -1743,7 +1743,7 @@ export function FamilyReportViewModelView({
                     {/* 아이의 회복 리듬 */}
                     <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-2">
                       <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
-                        {childName}의 회복 리듬
+                        {childName}{ec(locale, "'s recovery rhythm", "의 회복 리듬")}
                       </span>
                       <p className="font-rel-sans text-sm font-bold text-rel-ink leading-relaxed">
                         {repairBundle.recoveryRhythms.childHeadline}
@@ -1781,14 +1781,14 @@ export function FamilyReportViewModelView({
                   <SectionHeader title={ec(locale, "◤ 03. What Needs to Happen First", "◤ 03. 다시 마음이 열리려면 무엇이 먼저 필요할까요")} tag="PREREQUISITE" />
                   <div className="rounded-2xl border border-rel-line bg-rel-surface p-5 sm:p-6 shadow-sm space-y-4">
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-rel-deep">부모에게 먼저 필요한 것</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-rel-deep">{ec(locale, "What the parent needs first", "부모에게 먼저 필요한 것")}</p>
                       <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink leading-relaxed">
                         {repairBundle.prerequisites.parentNeed}
                       </p>
                     </div>
                     <div className="h-px w-full bg-rel-line/60" />
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-rel-deep">아이에게 먼저 필요한 것</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-rel-deep">{ec(locale, "What the kid needs first", "아이에게 먼저 필요한 것")}</p>
                       <p className="font-rel-sans text-xs sm:text-[13.5px] text-rel-ink leading-relaxed">
                         {repairBundle.prerequisites.childNeed}
                       </p>
@@ -1814,12 +1814,12 @@ export function FamilyReportViewModelView({
                   <SectionHeader title={ec(locale, "◤ 04. Effective vs Harmful Repair", "◤ 04. 잘 풀리는 화해 / 다시 꼬이는 화해")} tag="PATTERNS" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="rounded-2xl border border-emerald-900/20 bg-emerald-50/40 p-5 shadow-sm space-y-2">
-                      <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">잘 풀리는 화해</p>
+                      <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider">{ec(locale, "Repair that works", "잘 풀리는 화해")}</p>
                       <p className="font-rel-sans text-sm font-bold text-emerald-950">{repairBundle.doAndDontRepair.effectiveTitle}</p>
                       <p className="font-rel-sans text-xs text-emerald-900/80 leading-relaxed">{repairBundle.doAndDontRepair.effectiveReason}</p>
                     </div>
                     <div className="rounded-2xl border border-rose-900/20 bg-rose-50/40 p-5 shadow-sm space-y-2">
-                      <p className="text-xs font-bold text-rose-900 uppercase tracking-wider">다시 꼬이는 화해</p>
+                      <p className="text-xs font-bold text-rose-900 uppercase tracking-wider">{ec(locale, "Repair that backfires", "다시 꼬이는 화해")}</p>
                       <p className="font-rel-sans text-sm font-bold text-rose-950">{repairBundle.doAndDontRepair.harmfulTitle}</p>
                       <p className="font-rel-sans text-xs text-rose-900/80 leading-relaxed">{repairBundle.doAndDontRepair.harmfulReason}</p>
                     </div>
@@ -1886,8 +1886,8 @@ export function FamilyReportViewModelView({
 
           {/* Chapter 08: 08. 앞으로, 우리는 이렇게 지내면 좋아요 */}
           {chapter.id === "ch_action" ? (() => {
-            const parentName = vm.opening.names[1] || "부모";
-            const childName = vm.opening.names[0] || "자녀";
+            const parentName = vm.opening.names[1] || pick(locale, "the parent", "부모");
+            const childName = vm.opening.names[0] || pick(locale, "the child", "자녀");
             const actionBundle = vm.storyPlan?.actionChapterBundle || buildFamilyActionChapterBundle({
               childNickname: childName,
               parentNickname: parentName,
@@ -1905,7 +1905,7 @@ export function FamilyReportViewModelView({
                     {/* 아이에게 가장 필요한 것 */}
                     <div>
                       <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
-                        {childName}에게 가장 필요한 것
+                        {childName}{ec(locale, "'s biggest need", "에게 가장 필요한 것")}
                       </p>
                       <p className="mt-1 text-sm font-bold text-rel-ink">
                         {actionBundle.finalTakeaway.childNeedTitle}
@@ -1920,7 +1920,7 @@ export function FamilyReportViewModelView({
                     {/* 부모가 이미 잘해주고 있는 것 */}
                     <div>
                       <p className="font-rel-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-rel-deep">
-                        {parentName}가 이미 잘해주고 있는 것
+                        {parentName}{ec(locale, " is already doing this well", "가 이미 잘해주고 있는 것")}
                       </p>
                       <p className="mt-1 text-sm font-bold text-rel-ink">
                         {actionBundle.finalTakeaway.parentStrengthTitle}
@@ -1952,7 +1952,7 @@ export function FamilyReportViewModelView({
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
-                          {parentName}가 해볼 것
+                          {parentName}{ec(locale, " could try", "가 해볼 것")}
                         </span>
                       </div>
                       {actionBundle.customActions.parentActions.map((act, idx) => (
@@ -1974,7 +1974,7 @@ export function FamilyReportViewModelView({
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
-                          {childName}가 해볼 것
+                          {childName}{ec(locale, " could try", "가 해볼 것")}
                         </span>
                       </div>
                       {actionBundle.customActions.childActions.map((act, idx) => (
@@ -1996,7 +1996,7 @@ export function FamilyReportViewModelView({
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <span className="inline-block rounded-full bg-rel-taupe-soft/60 px-3.5 py-1 text-xs font-semibold text-rel-ink border border-rel-line/40">
-                          함께 해볼 것
+                          {ec(locale, "Try together", "함께 해볼 것")}
                         </span>
                       </div>
                       {actionBundle.customActions.togetherActions.map((act, idx) => (

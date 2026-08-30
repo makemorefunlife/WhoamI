@@ -33,6 +33,16 @@ const MISMATCH_AUDIBLE_EN =
 const TENTATIVE_MARKER =
   /보일\s*수\s*있|가능성이\s*있|확인해\s*볼|경향이\s*있|편으로|듯하|수\s*있습니다|가까울|상황에\s*따라|다르게\s*나타날/;
 
+/**
+ * Phase 1 English remediation: this low-confidence hedge used to be gated by
+ * `!isEn`, so only Korean cells got uncertainty-softening language — English
+ * low-confidence cells stated the same lean with full confidence. English
+ * equivalent of TENTATIVE_MARKER's coverage (already-hedged phrasing, so the
+ * fallback sentence below isn't double-appended).
+ */
+const TENTATIVE_MARKER_EN =
+  /may show|may look|may feel|may vary|possibility|worth checking|tends? to|leans? toward|seems? to|can (?:vary|differ|show up)|closer to|depending on (?:the )?situation|show up differently|differ(?:s)? (?:by|depending)/i;
+
 /** Leading evidence-bridge patterns — household / money / conflict / roles. */
 const EVIDENCE_BRIDGE =
   /가사|루틴|스트레스|부부싸움|갈등\s*반응|침묵형|폭발형|재정|자산|CFO|예산|지출|원가족|경계|육아|교육|역할\s*분담|생활\s*케미|동반자|잡히기\s*때문에|잡히므로|보이기\s*때문에|어긋날\s*수\s*있어서|같은\s*결|기울기가?\s*다르|다르게\s*잡히/;
@@ -231,13 +241,19 @@ function polishInventedNameForms(
   return { text: out, fixed };
 }
 
-function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } {
+function ensureLowConfTentative(
+  cell: string,
+  isEn = false,
+): { text: string; fixed: boolean } {
   const raw = cell.trim();
   if (!raw) return { text: cell, fixed: false };
-  if (TENTATIVE_MARKER.test(raw)) return { text: raw, fixed: false };
+  const marker = isEn ? TENTATIVE_MARKER_EN : TENTATIVE_MARKER;
+  if (marker.test(raw)) return { text: raw, fixed: false };
   const base = raw.replace(/[.。]\s*$/, "");
   return {
-    text: `${base}. 다만 실제 생활에서는 상황에 따라 다르게 나타날 수 있어요.`,
+    text: isEn
+      ? `${base}. This may show up differently depending on the situation.`
+      : `${base}. 다만 실제 생활에서는 상황에 따라 다르게 나타날 수 있어요.`,
     fixed: true,
   };
 }
@@ -619,6 +635,32 @@ export function postValidateMarriedNarrative(
     "육아 스타일": "parenting_style",
     "침실 리드": "bedroom_lead",
   };
+  /**
+   * Phase 1 English remediation: aspectToKey was Korean-label-only, so even
+   * with the !isEn gate removed above, an English comparison_table's aspect
+   * text could never resolve to a key — the hedge fix would be unreachable
+   * dead code for real English reports. Mirrors this file's own
+   * ASPECT_BRIDGE_LABEL_EN vocabulary (the canonical EN label source already
+   * used elsewhere in this validator) rather than inventing new phrasing.
+   * Best-effort exact/substring match, same character of imprecision as the
+   * pre-existing Korean lookup (which also isn't guaranteed to match every
+   * possible model phrasing).
+   */
+  const aspectToKeyEn: Record<string, string> = {
+    "household/routine stress": "household_stress",
+    "household stress": "household_stress",
+    "conflict-reaction style": "marital_conflict",
+    "conflict reaction": "marital_conflict",
+    "marital conflict": "marital_conflict",
+    "money-management temperament": "asset_management",
+    "asset management": "asset_management",
+    "family-of-origin boundary": "family_boundary",
+    "family boundary": "family_boundary",
+    "parenting/education values": "parenting_style",
+    "parenting style": "parenting_style",
+    "bedroom-lead tendency": "bedroom_lead",
+    "bedroom lead": "bedroom_lead",
+  };
   const lowConfAspects = new Set([
     "household_stress",
     "marital_conflict",
@@ -634,16 +676,15 @@ export function postValidateMarriedNarrative(
       const row = asObj(table[i]);
       if (!row) continue;
       const aspect = asStr(row.aspect);
-      const key = aspectToKey[aspect];
+      const key = isEn ? aspectToKeyEn[aspect.toLowerCase().trim()] : aspectToKey[aspect];
       const leanRow = key ? leans[key] : undefined;
       if (
-        !isEn &&
         key &&
         lowConfAspects.has(key) &&
         (leanRow?.confidence === "low" || leanRow?.align === "caution")
       ) {
         for (const cell of ["a", "b"] as const) {
-          const { text, fixed } = ensureLowConfTentative(asStr(row[cell]));
+          const { text, fixed } = ensureLowConfTentative(asStr(row[cell]), isEn);
           if (fixed) {
             row[cell] = text;
             changed = true;

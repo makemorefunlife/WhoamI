@@ -95,6 +95,33 @@ type CopyTable = typeof copyKo;
  * a large structure-axis gap (spontaneity vs plans) > abstain to a general,
  * non-overclaiming scene when nothing distinctive is supported.
  */
+/**
+ * `familiarRelationshipRole.text` (and similar EvidenceBackedMeaning fields)
+ * are authored to stand alone as a sentence-opening predicate (e.g. "Someone
+ * who stays steady..."). Embedding that capitalized text mid-sentence (e.g.
+ * "tends to be Someone who...") reads as broken English — this lowercases
+ * the first character only, matching the pattern already used at the other
+ * familiarRelationshipRole call sites in chapterLensResolvers.ts.
+ */
+function lowerFirst(text: string): string {
+  if (!text) return text;
+  return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+/**
+ * Some EvidenceBackedMeaning EN fields (e.g. strengthsGivenToPartner) are
+ * authored as standalone noun phrases with their own leading article ("A
+ * decisiveness and steady dependability..."). Appended directly after a
+ * possessive ("Jonas's A decisiveness...") that reads as broken English —
+ * the leading article has to be dropped entirely, not just lowercased,
+ * since a possessive noun can't take its own indefinite article.
+ */
+function dropLeadingArticle(text: string): string {
+  if (!text) return text;
+  const stripped = text.replace(/^(a|an)\s+/i, "");
+  return lowerFirst(stripped);
+}
+
 function selectConflictTriggerScene(params: {
   table: Record<string, { lean_a?: string; lean_b?: string } | undefined> | undefined;
   expr: { direction?: string } | undefined;
@@ -1267,7 +1294,7 @@ function computeHeroPairThesis(params: {
       (relCeA && relCeB)
         ? L(
             `${names.a}님이 바라는 ${relCeA.partnerPreferences[0]?.text ?? relCeA.careExpression?.text ?? "바람"}과 ${names.b}님이 보여주는 ${relCeB.strengthsGivenToPartner[0]?.text ?? relCeB.careExpression?.text ?? "강점"}이 어우러져 둘만의 유대를 만들어냅니다.`,
-            `When ${names.a}'s need for ${relCeA.partnerPreferences[0]?.text ?? "care"} meets ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "strength"}, it creates a bond unique to you two.`,
+            `When ${names.a}'s need for ${lowerFirst(relCeA.partnerPreferences[0]?.text ?? "care")} meets ${names.b}'s ${dropLeadingArticle(relCeB.strengthsGivenToPartner[0]?.text ?? "strength")}, it creates a bond unique to you two.`,
           )
         : hitNotes[0] ?? L(
             `${withP(names.a, locale)} ${names.b}가 마주 앉으면 둘만 아는 편안함이 생겨요.`,
@@ -1319,7 +1346,7 @@ function computeHeroPairThesis(params: {
         : relCeA && relCeB
         ? L(
             `${topicP(names.a, locale)} ${relCeA.partnerPreferences[0]?.text ?? affLeanB}를 자연스럽게 바라며, ${names.b}의 ${relCeB.coreRelationshipNature.text}에 깊은 매력을 느낍니다.`,
-            `${topicP(names.a, locale)} naturally wants ${(relCeA.partnerPreferences[0]?.text ?? affLeanB).charAt(0).toLowerCase()}${(relCeA.partnerPreferences[0]?.text ?? affLeanB).slice(1)}, and feels deeply drawn to ${names.b}'s ${relCeB.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeB.coreRelationshipNature.text.slice(1)}`,
+            `${topicP(names.a, locale)} naturally wants ${lowerFirst(relCeA.partnerPreferences[0]?.text ?? affLeanB)}, and feels deeply drawn to ${names.b}'s ${dropLeadingArticle(relCeB.coreRelationshipNature.text)}`,
           )
         : fill(copy.tpl.attrASeeks, {
             topicA: topicP(names.a, locale),
@@ -1331,7 +1358,7 @@ function computeHeroPairThesis(params: {
         : relCeB
         ? L(
             `${subjectP(names.b, locale)} 보여주는 ${relCeB.strengthsGivenToPartner[0]?.text ?? "안정감"}이 ${names.a}의 마음을 든든하게 받쳐줍니다.`,
-            `The ${(relCeB.strengthsGivenToPartner[0]?.text ?? "sense of stability").charAt(0).toLowerCase()}${(relCeB.strengthsGivenToPartner[0]?.text ?? "sense of stability").slice(1)} that ${subjectP(names.b, locale)} shows gives ${names.a}'s heart something dependable to lean on.`,
+            `The ${dropLeadingArticle(relCeB.strengthsGivenToPartner[0]?.text ?? "sense of stability")} that ${subjectP(names.b, locale)} shows gives ${names.a}'s heart something dependable to lean on.`,
           )
         : fill(copy.tpl.attrAMatch, { subjB: subjectP(names.b, locale) }, locale),
       supportingReasons: bilateralMatchAToB?.supportingReasons.map((r) => r.text),
@@ -1382,7 +1409,7 @@ function computeHeroPairThesis(params: {
         : relCeA && relCeB
         ? L(
             `${topicP(names.b, locale)} ${relCeB.partnerPreferences[0]?.text ?? affLeanA}를 원하며, ${names.a}의 ${relCeA.coreRelationshipNature.text}에서 신선한 활력과 이끌림을 경험합니다.`,
-            `${topicP(names.b, locale)} wants ${(relCeB.partnerPreferences[0]?.text ?? affLeanA).charAt(0).toLowerCase()}${(relCeB.partnerPreferences[0]?.text ?? affLeanA).slice(1)}, and finds a fresh energy and pull in ${names.a}'s ${relCeA.coreRelationshipNature.text.charAt(0).toLowerCase()}${relCeA.coreRelationshipNature.text.slice(1)}`,
+            `${topicP(names.b, locale)} wants ${lowerFirst(relCeB.partnerPreferences[0]?.text ?? affLeanA)}, and finds a fresh energy and pull in ${names.a}'s ${dropLeadingArticle(relCeA.coreRelationshipNature.text)}`,
           )
         : fill(copy.tpl.attrBSeeks, {
             topicB: topicP(names.b, locale),
@@ -1394,7 +1421,7 @@ function computeHeroPairThesis(params: {
         : relCeA
         ? L(
             `${subjectP(names.a, locale)} 보여주는 ${relCeA.strengthsGivenToPartner[0]?.text ?? "명확한 결단력"}이 ${names.b}에게 큰 확신이 됩니다.`,
-            `The ${(relCeA.strengthsGivenToPartner[0]?.text ?? "clear decisiveness").charAt(0).toLowerCase()}${(relCeA.strengthsGivenToPartner[0]?.text ?? "clear decisiveness").slice(1)} that ${subjectP(names.a, locale)} shows becomes a real source of confidence for ${names.b}.`,
+            `The ${dropLeadingArticle(relCeA.strengthsGivenToPartner[0]?.text ?? "clear decisiveness")} that ${subjectP(names.a, locale)} shows becomes a real source of confidence for ${names.b}.`,
           )
         : fill(copy.tpl.attrBMatch, { subjA: subjectP(names.a, locale) }, locale),
       supportingReasons: bilateralMatchBToA?.supportingReasons.map((r) => r.text),
@@ -1809,7 +1836,10 @@ function computeHeroPairThesis(params: {
     sharedCommitments: copy.repairCommit,
     observationSignals: [
       L(`${names.a}님과 ${names.b}님이 서로의 표현 템포 차이를 받아들이며 차분히 들어주는 모습`, `${names.a} and ${names.b} accepting each other's pace gap and listening calmly`),
-      L(`${names.a}의 ${relCeA?.familiarRelationshipRole?.text ?? "성향"}과 ${names.b}의 ${relCeB?.familiarRelationshipRole?.text ?? "성향"}이 신뢰를 높여주는 장면`, `A scene where ${names.a}'s ${relCeA?.familiarRelationshipRole?.text ?? "style"} and ${names.b}'s ${relCeB?.familiarRelationshipRole?.text ?? "style"} build trust`),
+      L(
+        `${names.a}의 ${relCeA?.familiarRelationshipRole?.text ?? "성향"}과 ${names.b}의 ${relCeB?.familiarRelationshipRole?.text ?? "성향"}이 신뢰를 높여주는 장면`,
+        `A moment that builds trust: ${names.a} shows up as ${lowerFirst(relCeA?.familiarRelationshipRole?.text ?? "themselves")}, and ${names.b} shows up as ${lowerFirst(relCeB?.familiarRelationshipRole?.text ?? "themselves")}`,
+      ),
     ],
     warningIfRepeats: [
       L(`갈등 발생 시 ${names.a}님과 ${names.b}님이 서로의 조용함이나 해명을 지연으로 지레짐작하는 패턴`, `A pattern where ${names.a} and ${names.b} misread each other's quietness or explanation as delay`),
@@ -2055,7 +2085,10 @@ function computeHeroPairThesis(params: {
         : balance?.balance_a === "receiver" && balance?.balance_b === "leader"
           ? L(`${names.b}이/가 먼저 방향을 잡으면 ${names.a}이/가 그걸 받아서 함께 움직이는 쪽에 가까워요.`, `${names.b} tends to set the direction first, and ${names.a} picks it up and moves with it.`)
           : relCeA && relCeB
-            ? L(`${names.a}의 ${relCeA.familiarRelationshipRole?.text ?? "성향"}과 ${names.b}의 ${relCeB.familiarRelationshipRole?.text ?? "성향"}이 주도권을 고정하지 않고 상황에 따라 유연하게 조율되는 구도예요.`, `${names.a}'s ${relCeA.familiarRelationshipRole?.text ?? "style"} and ${names.b}'s ${relCeB.familiarRelationshipRole?.text ?? "style"} adapt flexibly based on the situation rather than fixing one leader.`)
+            ? L(
+                `${names.a}의 ${relCeA.familiarRelationshipRole?.text ?? "성향"}과 ${names.b}의 ${relCeB.familiarRelationshipRole?.text ?? "성향"}이 주도권을 고정하지 않고 상황에 따라 유연하게 조율되는 구도예요.`,
+                `${names.a} tends to be ${lowerFirst(relCeA.familiarRelationshipRole?.text ?? "steady and direct")}, and ${names.b} tends to be ${lowerFirst(relCeB.familiarRelationshipRole?.text ?? "calm and grounded")} — neither of you holds the lead all the time, and it shifts naturally depending on the moment.`,
+              )
             : L("두 사람 다 상황에 따라 주도권을 주고받는 편이에요 — 한쪽이 고정으로 이끄는 관계는 아니에요.", "You two trade off leading depending on the situation — it's not a relationship where one person always drives."),
     growthOrStability: specialBond?.why_special ?? copy.growthFallback,
     primaryTension,
@@ -2076,7 +2109,7 @@ function computeHeroPairThesis(params: {
       (relCeA && relCeB
         ? L(
             `이건 둘이 같이 있을 때만 생기는 힘이에요. 상황이 흔들릴 때 ${names.a}의 ${relCeA.strengthsGivenToPartner[0]?.text ?? "다정한 활력"}이 분위기를 다독이고 ${names.b}의 ${relCeB.strengthsGivenToPartner[0]?.text ?? "흔들림 없는 신중함"}이 중심을 잡아줘서, 불안한 순간에도 혼자 남겨진 느낌 없이 같이 답을 찾아가요.`,
-            `This is something the two of you make happen together, not something either of you has alone. When things get shaky, ${names.a}'s ${relCeA.strengthsGivenToPartner[0]?.text ?? "warm vitality"} keeps the mood warm and ${names.b}'s ${relCeB.strengthsGivenToPartner[0]?.text ?? "steady prudence"} holds things steady, so even in an uncertain moment you're working it out together instead of feeling stuck alone.`,
+            `This is something the two of you make happen together, not something either of you has alone. When things get shaky, ${names.a}'s ${dropLeadingArticle(relCeA.strengthsGivenToPartner[0]?.text ?? "warm vitality")} keeps the mood warm and ${names.b}'s ${dropLeadingArticle(relCeB.strengthsGivenToPartner[0]?.text ?? "steady prudence")} holds things steady, so even in an uncertain moment you're working it out together instead of feeling stuck alone.`,
           )
         : bonding?.summary || plan.pairSynthesis.selectedMeaning || copy.sharedStrengthFallback),
     sharedVulnerability:
@@ -2278,6 +2311,7 @@ function computeHeroPairThesis(params: {
     nameB: names.b,
     psychA: contract.meta?.psych_master_a ?? (contract as any).surveyInput?.psychA ?? (params as any).surveyInput?.psychA ?? null,
     psychB: contract.meta?.psych_master_b ?? (contract as any).surveyInput?.psychB ?? (params as any).surveyInput?.psychB ?? null,
+    locale,
   });
 
   const recognitionSynthesis = buildRomanticRecognitionSynthesis({

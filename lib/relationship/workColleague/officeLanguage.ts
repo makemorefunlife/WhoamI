@@ -774,7 +774,11 @@ export function buildUpsetResponseGuide(
     const base = UPSET_RESPONSE_BY_CATEGORY[locale][category] || UPSET_RESPONSE_BY_CATEGORY[locale]["비겁"];
     return {
       nickname,
-      upset_signals: `${topicParticle(nickname)} 감정이 올라오면 회피하거나 침묵하며 속으로 정리하려 해요. ${base.signals}`,
+      upset_signals: pick(
+        locale,
+        `When emotions run high, ${nickname} tends to avoid it or go quiet and sort it out internally. ${base.signals}`,
+        `${topicParticle(nickname)} 감정이 올라오면 회피하거나 침묵하며 속으로 정리하려 해요. ${base.signals}`,
+      ),
       do_list: base.doList.map((item) => sanitizeOfficeText(item)),
       avoid_list: base.avoidList.map((item) => sanitizeOfficeText(item)),
     };

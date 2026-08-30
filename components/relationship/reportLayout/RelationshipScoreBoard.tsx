@@ -9,15 +9,16 @@ import { pickRelationshipIndexInsight } from "@/lib/relationship/relationshipInd
 import { useReportTone } from "./ReportSurface";
 import type { ScoreMetric } from "./types";
 import type { RelationshipTabTheme } from "./theme";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
 
 function ScoreGauge({ metric }: { metric: ScoreMetric }) {
   const tone = useReportTone();
+  const { locale } = useLocale();
   const polarity: ScorePolarity =
     metric.polarity ??
     (metric.tone === "alert" ? "higher_worse" : "higher_better");
   const pct = Math.max(0, Math.min(100, Math.round(metric.value)));
-  const appearance = resolveScoreBarAppearance(pct, polarity);
+  const appearance = resolveScoreBarAppearance(pct, polarity, locale);
   const circumference = 2 * Math.PI * 36;
   const offset = circumference - (pct / 100) * circumference;
   const trackStroke =

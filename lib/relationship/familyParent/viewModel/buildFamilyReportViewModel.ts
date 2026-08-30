@@ -40,6 +40,7 @@ import { buildDeepReadViewModel } from "@/lib/relationship/shared/deepReadViewMo
 // this domain already uses familyParentLanguage.ts, so this was producing
 // inconsistent Korean grammar depending on which builder happened to run.
 import { josaIGa, josaEunNeun } from "@/lib/relationship/familyParent/familyParentLanguage";
+import { pick } from "@/lib/relationship/familyParent/familyParentCopy";
 
 export type BuildFamilyReportViewModelParams = {
   locale?: Locale;
@@ -173,6 +174,13 @@ function buildHouseholdRolesSection(
   t: ReturnType<typeof catalog>,
   locale: Locale = "ko-KR",
 ): FamilyReportSection | null {
+  // Phase 2 English remediation: `locale` was already declared here but
+  // never referenced — this function is pure pass-through of `roles.*`
+  // (already generated per-locale upstream by familyRoleIntelligence.ts),
+  // with no hardcoded fallback prose of its own, so there's nothing to
+  // branch on. Kept as a no-op reference so this doesn't regress to a
+  // silent dead param if a fallback is ever added here.
+  void locale;
   const roles = report.family?.section_household_roles;
   if (!roles) return null;
 
@@ -284,10 +292,11 @@ function buildChildDnaSection(
 
 function buildParentDnaSection(
   report: FamilyParentReportBody,
+  locale: Locale = "ko-KR",
 ): FamilyReportSection {
   const dna = report.family?.section_parent_dna;
-  const parentName = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
-  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+  const parentName = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? pick(locale, "the parent", "부모");
+  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? pick(locale, "the child", "자녀");
 
   const pEunNeun = josaEunNeun(parentName);
   const cIGa = josaIGa(childName);
@@ -296,22 +305,59 @@ function buildParentDnaSection(
     id: "parent_dna",
     type: "parent_dna",
     partNumber: 3,
-    title: "Parent DNA 프로필",
-    protectionStyle: dna?.protection_style ?? `${cIGa} 고민에 빠지면 ${pEunNeun} 성급히 개입하지 않고 한 박자 떨어져 조용히 지켜봐 줍니다. 아이가 스스로 마음을 정돈할 때까지 변함없이 곁을 지키며 든든한 버팀목이 되어줍니다.`,
-    anxietyTriggerBehavior: dna?.anxiety_trigger_behavior ?? `불안이 오르면 ${pEunNeun} 괜찮은지 즉시 확인하고 싶어 다가가지만, 아이의 정리 템포와 엇갈려 서운함이나 조급함이 겉으로 표출되는 양상을 보입니다.`,
-    trustAutonomyStyle: dna?.trust_autonomy_style ?? `${pEunNeun} 큰 틀의 안전선과 원칙만 분명히 잡아준 뒤, 그 울타리 안에서의 세부 시도와 선택은 아이의 자율에 완전히 믿고 맡기는 탁월한 자율 부여 방식을 보여줍니다.`,
-    disciplineStyle: dna?.discipline_style ?? `기준을 바로잡을 때 ${pEunNeun} 대화를 통해 현실적인 이유를 충분히 설명하고, 부모와 아이가 납득할 수 있는 합리적인 타협안을 조율하여 정돈합니다.`,
-    growthSupportStyle: dna?.growth_support_style ?? `아이의 성장을 도울 때 ${pEunNeun} 다양한 경험의 기회와 필요 자원을 적극적으로 연결해주며, 아이가 실패를 두려워하지 않고 새로운 도전을 마음껏 즐기도록 원동력을 실어줍니다.`,
-    shadowSideWarning: dna?.shadow_side_warning ?? `따뜻하게 감싸주려는 깊은 애정 본능이 불안할 때 '성급한 확인과 조급함'으로 이어지면, 혼자 마음을 정돈하고 싶은 아이가 입을 닫아버리는 역효과를 낼 수 있습니다.`,
+    title: pick(locale, "Parent DNA Profile", "Parent DNA 프로필"),
+    protectionStyle:
+      dna?.protection_style ??
+      pick(
+        locale,
+        `When ${childName} is caught up in something, ${parentName} doesn't step in too quickly — they hang back a beat and watch quietly. They stay by ${childName}'s side, steady, until they've worked it out themselves.`,
+        `${cIGa} 고민에 빠지면 ${pEunNeun} 성급히 개입하지 않고 한 박자 떨어져 조용히 지켜봐 줍니다. 아이가 스스로 마음을 정돈할 때까지 변함없이 곁을 지키며 든든한 버팀목이 되어줍니다.`,
+      ),
+    anxietyTriggerBehavior:
+      dna?.anxiety_trigger_behavior ??
+      pick(
+        locale,
+        `When anxiety rises, ${parentName} wants to check in right away — but that can clash with ${childName}'s own pace for working through things, and hurt feelings or urgency can show on the surface.`,
+        `불안이 오르면 ${pEunNeun} 괜찮은지 즉시 확인하고 싶어 다가가지만, 아이의 정리 템포와 엇갈려 서운함이나 조급함이 겉으로 표출되는 양상을 보입니다.`,
+      ),
+    trustAutonomyStyle:
+      dna?.trust_autonomy_style ??
+      pick(
+        locale,
+        `${parentName} sets a clear safety line and a few core principles, then genuinely trusts ${childName} with the details and choices within that boundary — a real gift for autonomy.`,
+        `${pEunNeun} 큰 틀의 안전선과 원칙만 분명히 잡아준 뒤, 그 울타리 안에서의 세부 시도와 선택은 아이의 자율에 완전히 믿고 맡기는 탁월한 자율 부여 방식을 보여줍니다.`,
+      ),
+    disciplineStyle:
+      dna?.discipline_style ??
+      pick(
+        locale,
+        `When it's time to correct course, ${parentName} explains the real reasoning through conversation, and works out a compromise both of them can actually accept.`,
+        `기준을 바로잡을 때 ${pEunNeun} 대화를 통해 현실적인 이유를 충분히 설명하고, 부모와 아이가 납득할 수 있는 합리적인 타협안을 조율하여 정돈합니다.`,
+      ),
+    growthSupportStyle:
+      dna?.growth_support_style ??
+      pick(
+        locale,
+        `To support ${childName}'s growth, ${parentName} actively connects them with new experiences and resources, giving them the momentum to enjoy a new challenge without fearing failure.`,
+        `아이의 성장을 도울 때 ${pEunNeun} 다양한 경험의 기회와 필요 자원을 적극적으로 연결해주며, 아이가 실패를 두려워하지 않고 새로운 도전을 마음껏 즐기도록 원동력을 실어줍니다.`,
+      ),
+    shadowSideWarning:
+      dna?.shadow_side_warning ??
+      pick(
+        locale,
+        `When the deep instinct to warmly protect turns anxious and tips into "checking in too fast, too often," it can backfire — a kid who wants to work through things alone just shuts the door.`,
+        `따뜻하게 감싸주려는 깊은 애정 본능이 불안할 때 '성급한 확인과 조급함'으로 이어지면, 혼자 마음을 정돈하고 싶은 아이가 입을 닫아버리는 역효과를 낼 수 있습니다.`,
+      ),
   };
 }
 
 function buildParentChildBridgeSection(
   report: FamilyParentReportBody,
+  locale: Locale = "ko-KR",
 ): FamilyReportSection {
   const bridge = report.family?.section_parent_child_bridge;
-  const parentName = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? "부모";
-  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "자녀";
+  const parentName = report.family?.section_roles?.parent_nickname ?? report.meta?.nickname_b ?? pick(locale, "the parent", "부모");
+  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? pick(locale, "the child", "자녀");
 
   const pEunNeun = josaEunNeun(parentName);
   const cIGa = josaIGa(childName);
@@ -321,10 +367,28 @@ function buildParentChildBridgeSection(
     id: "parent_child_bridge",
     type: "parent_child_bridge",
     partNumber: 3,
-    title: "이 부모와 이 아이가 만났을 때",
-    bestHarmonyPoint: bridge?.best_harmony_point ?? `${pEunNeun} 방향의 든든한 기준을 잡아주고 ${cEunNeun} 자기 방식으로 주도적으로 시도할 때 최고의 성장 시너지가 만들어집니다.`,
-    frictionRiskMoment: bridge?.friction_risk_moment ?? `${cIGa} 힘든 일 후 혼자 마음을 정돈하려 할 때, ${pEunNeun} 괜찮은지 빨리 확인하려고 바짝 다가설 때 소통 템포의 시차가 발생합니다.`,
-    optimalParentPosition: bridge?.optimal_parent_position ?? `“방향과 울타리는 부모가 분명하게 잡아주되, 그 안에서의 실행 방법은 아이에게 믿고 맡기기”`,
+    title: pick(locale, "When This Parent and This Kid Meet", "이 부모와 이 아이가 만났을 때"),
+    bestHarmonyPoint:
+      bridge?.best_harmony_point ??
+      pick(
+        locale,
+        `The best growth synergy shows up when ${parentName} sets a solid sense of direction, and ${childName} gets to try things their own way, in the lead.`,
+        `${pEunNeun} 방향의 든든한 기준을 잡아주고 ${cEunNeun} 자기 방식으로 주도적으로 시도할 때 최고의 성장 시너지가 만들어집니다.`,
+      ),
+    frictionRiskMoment:
+      bridge?.friction_risk_moment ??
+      pick(
+        locale,
+        `The timing gets out of sync when ${childName} wants to work through something hard alone, right as ${parentName} moves in close to check they're okay.`,
+        `${cIGa} 힘든 일 후 혼자 마음을 정돈하려 할 때, ${pEunNeun} 괜찮은지 빨리 확인하려고 바짝 다가설 때 소통 템포의 시차가 발생합니다.`,
+      ),
+    optimalParentPosition:
+      bridge?.optimal_parent_position ??
+      pick(
+        locale,
+        `"Set the direction and the boundary clearly, then trust the kid with how they actually go about it."`,
+        `"방향과 울타리는 부모가 분명하게 잡아주되, 그 안에서의 실행 방법은 아이에게 믿고 맡기기"`,
+      ),
   };
 }
 
@@ -367,19 +431,26 @@ function buildGrowthTunnelSection(
 function buildFamilyRoleSectionView(
   report: FamilyParentReportBody,
   t: ReturnType<typeof catalog>,
+  locale: Locale = "ko-KR",
 ): FamilyReportSection | null {
   const r = report.family?.section_family_role;
-  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? "아이";
+  const childName = report.family?.section_roles?.child_nickname ?? report.meta?.nickname_a ?? pick(locale, "the child", "아이");
   const cEunNeun = josaEunNeun(childName);
 
   return {
     id: "family_role",
     type: "family_role",
     partNumber: 3,
-    title: t.familyRoleCardTitle || "우리 아이의 마음속 역할",
+    title: t.familyRoleCardTitle || pick(locale, "The Role Your Child Plays Inside the Family", "우리 아이의 마음속 역할"),
     childRole: r?.child_role ?? "mediator",
-    roleLabel: r?.role_label ?? "중재자",
-    roleDescription: r?.role_description ?? `${cEunNeun} 가족 사이에서 분위기를 살피고 갈등을 조율하는 역할을 자연스럽게 맡아요. 그 노력을 직접 고맙다고 말해주세요 — 안 그러면 티 안 나게 지나가기 쉬워요.`,
+    roleLabel: r?.role_label ?? pick(locale, "Mediator", "중재자"),
+    roleDescription:
+      r?.role_description ??
+      pick(
+        locale,
+        `${childName} naturally ends up reading the room and smoothing over conflict within the family. Actually say thank you for that effort — otherwise it's easy for it to go unnoticed.`,
+        `${cEunNeun} 가족 사이에서 분위기를 살피고 갈등을 조율하는 역할을 자연스럽게 맡아요. 그 노력을 직접 고맙다고 말해주세요 — 안 그러면 티 안 나게 지나가기 쉬워요.`,
+      ),
   };
 }
 
@@ -526,14 +597,14 @@ export function buildFamilyReportViewModel(
   const snapshotSec = buildSnapshotSection(report);
   const relationshipIndexSec = buildRelationshipIndexSection(report, t);
   const compareTableSec = buildCompareTableSection(report, locale, t);
-  const householdRolesSec = buildHouseholdRolesSection(report, t);
+  const householdRolesSec = buildHouseholdRolesSection(report, t, locale);
   const psychRadarSec = buildPsychRadarSection(report, t, locale);
   const childDnaSec = buildChildDnaSection(report, t);
-  const parentDnaSec = buildParentDnaSection(report);
-  const parentChildBridgeSec = buildParentChildBridgeSection(report);
+  const parentDnaSec = buildParentDnaSection(report, locale);
+  const parentChildBridgeSec = buildParentChildBridgeSection(report, locale);
   const talentSec = buildTalentSection(report);
   const growthTunnelSec = buildGrowthTunnelSection(report, t);
-  const familyRoleSec = buildFamilyRoleSectionView(report, t);
+  const familyRoleSec = buildFamilyRoleSectionView(report, t, locale);
   const filialFrequencySec = buildFilialFrequencySection(report, t);
   const deepReadSec = buildDeepReadSection(report, t);
   const destinySec = buildDestinySection(report, t);

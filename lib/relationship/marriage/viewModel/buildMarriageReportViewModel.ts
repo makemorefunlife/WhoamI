@@ -12,6 +12,7 @@
  * 겪은 "Part 렌더러가 ko-KR에만 하드코딩" 문제를 처음부터 피한다.
  */
 import { pickViewerFirstPair } from "@/lib/relationship/viewerFirstDisplay";
+import { pick } from "@/lib/relationship/marriage/marriageCopy";
 import {
   resolveReportPsychDisplay,
   swapPsychAxisForViewer,
@@ -71,15 +72,18 @@ function cleanTaxonomyTitle(title: string | undefined, defaultTitle: string): st
 function buildOpening(
   report: MarriageReportBody,
   names: [string, string],
+  locale: Locale,
 ): OpeningBlock {
+  const isEn = locale === "en-US";
+  const defaultHeadline = isEn ? `${names[0]} and ${names[1]}'s marriage story` : `${names[0]}님과 ${names[1]}님의 부부 이야기`;
   const ch01Bundle = report.canonical_projections?.marriage_canonical_bundle?.chapter01Intelligence;
   const rawHeadline = ch01Bundle?.coupleIdentity?.title
     || ch01Bundle?.heroSynthesis
     || report.headline
     || report.one_line_household
-    || `${names[0]}님과 ${names[1]}님의 부부 이야기`;
+    || defaultHeadline;
 
-  const cleanedHeadline = cleanTaxonomyTitle(rawHeadline, `${names[0]}님과 ${names[1]}님의 부부 이야기`);
+  const cleanedHeadline = cleanTaxonomyTitle(rawHeadline, defaultHeadline);
 
   return {
     headline: cleanedHeadline,
@@ -93,6 +97,7 @@ function buildOpening(
 function buildOriginStorySection(
   report: MarriageReportBody,
   t: ReturnType<typeof catalog>,
+  locale: Locale,
 ): MarriageReportSection | null {
   const s = report.household?.section_origin_story;
   let ch01Bundle = report.canonical_projections?.marriage_canonical_bundle?.chapter01Intelligence;
@@ -100,8 +105,12 @@ function buildOriginStorySection(
   if (!ch01Bundle && (s || report.household?.section_dna)) {
     const nameA = report.household?.section_dna?.person_a?.nickname ?? "A";
     const nameB = report.household?.section_dna?.person_b?.nickname ?? "B";
-    const defaultTitle = "밖에서는 각자 버티고, 서로에게 돌아와 힘을 내려놓는 부부";
-    const heroSynthesis = `${nameA}님은 명확한 방향성과 결단력으로 삶의 중심을 잡고, ${nameB}님은 다정한 포용력으로 마음의 안식을 보태어, 밖에서의 중압감을 내려놓고 함께 성장하는 부부 동력을 완성합니다.`;
+    const defaultTitle = pick(locale, "A couple who each hold their own out in the world, and set that weight down when they come back to each other", "밖에서는 각자 버티고, 서로에게 돌아와 힘을 내려놓는 부부");
+    const heroSynthesis = pick(
+      locale,
+      `${nameA} keeps life centered with clear direction and decisiveness, and ${nameB} adds a warm, accepting comfort — together completing a marriage dynamic where you set down outside pressure and grow together.`,
+      `${nameA}님은 명확한 방향성과 결단력으로 삶의 중심을 잡고, ${nameB}님은 다정한 포용력으로 마음의 안식을 보태어, 밖에서의 중압감을 내려놓고 함께 성장하는 부부 동력을 완성합니다.`,
+    );
 
     ch01Bundle = {
       heroSynthesis,
@@ -109,41 +118,93 @@ function buildOriginStorySection(
         drivers: [
           {
             category: "stimulating_magnetic",
-            categoryLabel: "선명하고 강렬하게 이끄는 자극",
-            headline: "처음 만날 때부터 느껴진 특별한 기류",
-            whatDrawsA: `${nameA}님은 ${nameB}님의 차분한 수용력과 다정함이 자신의 무거운 긴장을 풀어줄 것이라는 안도감에 이끌리기 쉬웠습니다.`,
-            whatDrawsB: `${nameB}님은 ${nameA}님이 지닌 묵직한 원칙과 주도적 결단력이 세상을 함께 헤쳐갈 힘이 될 것이라는 신뢰에 끌리기 쉬웠습니다.`,
-            description: s?.why_us || `${nameA}님과 ${nameB}님이 처음 만났을 때 느껴진 정서적 이끌림입니다.`,
+            categoryLabel: pick(locale, "Passionate & Magnetic Attraction", "선명하고 강렬하게 이끄는 자극"),
+            headline: pick(locale, "Attraction that feels natural from the start", "처음 만날 때부터 느껴진 특별한 기류"),
+            whatDrawsA: pick(
+              locale,
+              `${nameA} was easily drawn in by the reassuring sense that ${nameB}'s calm acceptance and warmth would ease their heavy tension.`,
+              `${nameA}님은 ${nameB}님의 차분한 수용력과 다정함이 자신의 무거운 긴장을 풀어줄 것이라는 안도감에 이끌리기 쉬웠습니다.`,
+            ),
+            whatDrawsB: pick(
+              locale,
+              `${nameB} was easily drawn in by the trust that ${nameA}'s solid principles and decisive leadership would become a strength to face the world together with.`,
+              `${nameB}님은 ${nameA}님이 지닌 묵직한 원칙과 주도적 결단력이 세상을 함께 헤쳐갈 힘이 될 것이라는 신뢰에 끌리기 쉬웠습니다.`,
+            ),
+            description: s?.why_us || pick(locale, `The emotional pull ${nameA} and ${nameB} felt when they first met.`, `${nameA}님과 ${nameB}님이 처음 만났을 때 느껴진 정서적 이끌림입니다.`),
             confidence: "HIGH",
           },
         ],
-        pairSynthesis: `${nameA}님에게는 ${nameB}님의 부부적 다정함이 긴장을 덜어주는 매력으로, ${nameB}님에게는 ${nameA}님의 명확한 주도성이 믿고 함께 움직일 수 있는 이끌림으로 다가오는 조합입니다.`,
+        pairSynthesis: pick(
+          locale,
+          `For ${nameA}, ${nameB}'s warmth is a comfort that eases tension; for ${nameB}, ${nameA}'s clear leadership is an attraction they can trust and move forward with together.`,
+          `${nameA}님에게는 ${nameB}님의 부부적 다정함이 긴장을 덜어주는 매력으로, ${nameB}님에게는 ${nameA}님의 명확한 주도성이 믿고 함께 움직일 수 있는 이끌림으로 다가오는 조합입니다.`,
+        ),
         confidence: "HIGH",
       },
       mutualNeed: {
         needAtoB: {
           seekerName: nameA,
           partnerName: nameB,
-          innateNeedLabel: "독립된 자율성과 안식",
-          partnerExpectationLabel: "자립적이고 든든한 파트너",
-          whySeekerHasNeed: `${nameA}님은 내가 다 결정하고 챙기려다 보니 마음의 긴장이 쌓일 때가 많아요. 그래서 가까운 사람 앞에서는 내가 다 주도하지 않아도 마음 편히 쉴 수 있는 여유가 꼭 필요해요.`,
-          partnerTraitMeetingIt: `${nameB}님은 내 방식을 억지로 바꾸려 하지 않고, 내 기분과 상황을 다정하게 받아주는 넉넉한 마음이 있어요.`,
-          howItFeelsInMarriage: `그래서 ${nameB}님과 함께 있을 때는 잘해야 한다는 부담을 내려놓고 가장 나다운 모습으로 편하게 머물 수 있어요.`,
-          whyPartnerIsNeeded: `${nameA}님은 내가 다 결정하고 챙기려다 보니 마음의 긴장이 쌓일 때가 많아요. 그래서 가까운 사람 앞에서는 내가 다 주도하지 않아도 마음 편히 쉴 수 있는 여유가 꼭 필요해요. ${nameB}님은 내 방식을 억지로 바꾸려 하지 않고, 내 기분과 상황을 다정하게 받아주는 넉넉한 마음이 있어요. 그래서 ${nameB}님과 함께 있을 때는 잘해야 한다는 부담을 내려놓고 가장 나다운 모습으로 편하게 머물 수 있어요.`,
-          deliveryStatusNarrative: `${nameB}님 특유의 다정한 응답력으로 ${nameA}님이 필요로 하는 내면의 안정감을 든든하게 채워주고 있습니다.`,
+          innateNeedLabel: pick(locale, "Independent autonomy and rest", "독립된 자율성과 안식"),
+          partnerExpectationLabel: pick(locale, "An independent, dependable partner", "자립적이고 든든한 파트너"),
+          whySeekerHasNeed: pick(
+            locale,
+            `${nameA} tends to decide and handle everything alone, so tension often builds up. That's why it matters to have someone close by where they don't have to lead everything — just room to rest easy.`,
+            `${nameA}님은 내가 다 결정하고 챙기려다 보니 마음의 긴장이 쌓일 때가 많아요. 그래서 가까운 사람 앞에서는 내가 다 주도하지 않아도 마음 편히 쉴 수 있는 여유가 꼭 필요해요.`,
+          ),
+          partnerTraitMeetingIt: pick(
+            locale,
+            `${nameB} doesn't try to force change on their ways, and has the generosity to warmly accept their mood and situation.`,
+            `${nameB}님은 내 방식을 억지로 바꾸려 하지 않고, 내 기분과 상황을 다정하게 받아주는 넉넉한 마음이 있어요.`,
+          ),
+          howItFeelsInMarriage: pick(
+            locale,
+            `So when they're with ${nameB}, they can set down the pressure to perform and just comfortably be themselves.`,
+            `그래서 ${nameB}님과 함께 있을 때는 잘해야 한다는 부담을 내려놓고 가장 나다운 모습으로 편하게 머물 수 있어요.`,
+          ),
+          whyPartnerIsNeeded: pick(
+            locale,
+            `${nameA} tends to decide and handle everything alone, so tension often builds up. That's why it matters to have someone close by where they don't have to lead everything — just room to rest easy. ${nameB} doesn't try to force change on their ways, and has the generosity to warmly accept their mood and situation. So when they're with ${nameB}, they can set down the pressure to perform and just comfortably be themselves.`,
+            `${nameA}님은 내가 다 결정하고 챙기려다 보니 마음의 긴장이 쌓일 때가 많아요. 그래서 가까운 사람 앞에서는 내가 다 주도하지 않아도 마음 편히 쉴 수 있는 여유가 꼭 필요해요. ${nameB}님은 내 방식을 억지로 바꾸려 하지 않고, 내 기분과 상황을 다정하게 받아주는 넉넉한 마음이 있어요. 그래서 ${nameB}님과 함께 있을 때는 잘해야 한다는 부담을 내려놓고 가장 나다운 모습으로 편하게 머물 수 있어요.`,
+          ),
+          deliveryStatusNarrative: pick(
+            locale,
+            `${nameB}'s distinctively warm responsiveness reliably fills the inner sense of stability ${nameA} needs.`,
+            `${nameB}님 특유의 다정한 응답력으로 ${nameA}님이 필요로 하는 내면의 안정감을 든든하게 채워주고 있습니다.`,
+          ),
           semanticDimension: "AUTONOMY_AND_SANCTUARY",
           confidence: "HIGH",
         },
         needBtoA: {
           seekerName: nameB,
           partnerName: nameA,
-          innateNeedLabel: "체계적인 원칙과 안심",
-          partnerExpectationLabel: "중심을 잡아주는 리더",
-          whySeekerHasNeed: `${nameB}님은 생각과 고민이 많아 중요한 순간에 선뜻 결정하기 어려울 때가 있어요. 그래서 불안할 때 딱 기준을 잡아주고 방향을 정해줄 사람을 필요로 해요.`,
-          partnerTraitMeetingIt: `${nameA}님은 고민이 길어질 때 흔들리지 않고 확실하게 방향을 정해주는 단단한 결단력이 있어요.`,
-          howItFeelsInMarriage: `그래서 중요한 갈림길에 섰을 때 ${nameA}님이 곁에 있으면 막연한 불안을 덜고 안심하며 함께 움직일 수 있어요.`,
-          whyPartnerIsNeeded: `${nameB}님은 생각과 고민이 많아 중요한 순간에 선뜻 결정하기 어려울 때가 있어요. 그래서 불안할 때 딱 기준을 잡아주고 방향을 정해줄 사람을 필요로 해요. ${nameA}님은 고민이 길어질 때 흔들리지 않고 확실하게 방향을 정해주는 단단한 결단력이 있어요. 그래서 중요한 갈림길에 섰을 때 ${nameA}님이 곁에 있으면 막연한 불안을 덜고 안심하며 함께 움직일 수 있어요.`,
-          deliveryStatusNarrative: `${nameA}님이 보여주는 분명한 소신과 결단력이 ${nameB}님에게 든든한 가이드가 되어줍니다.`,
+          innateNeedLabel: pick(locale, "Systematic principles and reassurance", "체계적인 원칙과 안심"),
+          partnerExpectationLabel: pick(locale, "A leader who holds the center", "중심을 잡아주는 리더"),
+          whySeekerHasNeed: pick(
+            locale,
+            `${nameB} thinks things over so much that it's hard to decide readily at key moments. So when anxious, they need someone who can set a clear standard and point the direction.`,
+            `${nameB}님은 생각과 고민이 많아 중요한 순간에 선뜻 결정하기 어려울 때가 있어요. 그래서 불안할 때 딱 기준을 잡아주고 방향을 정해줄 사람을 필요로 해요.`,
+          ),
+          partnerTraitMeetingIt: pick(
+            locale,
+            `${nameA} has the firm decisiveness to set a clear direction without wavering when things drag on.`,
+            `${nameA}님은 고민이 길어질 때 흔들리지 않고 확실하게 방향을 정해주는 단단한 결단력이 있어요.`,
+          ),
+          howItFeelsInMarriage: pick(
+            locale,
+            `So at an important fork in the road, having ${nameA} nearby eases the vague anxiety and lets them move forward with confidence.`,
+            `그래서 중요한 갈림길에 섰을 때 ${nameA}님이 곁에 있으면 막연한 불안을 덜고 안심하며 함께 움직일 수 있어요.`,
+          ),
+          whyPartnerIsNeeded: pick(
+            locale,
+            `${nameB} thinks things over so much that it's hard to decide readily at key moments. So when anxious, they need someone who can set a clear standard and point the direction. ${nameA} has the firm decisiveness to set a clear direction without wavering when things drag on. So at an important fork in the road, having ${nameA} nearby eases the vague anxiety and lets them move forward with confidence.`,
+            `${nameB}님은 생각과 고민이 많아 중요한 순간에 선뜻 결정하기 어려울 때가 있어요. 그래서 불안할 때 딱 기준을 잡아주고 방향을 정해줄 사람을 필요로 해요. ${nameA}님은 고민이 길어질 때 흔들리지 않고 확실하게 방향을 정해주는 단단한 결단력이 있어요. 그래서 중요한 갈림길에 섰을 때 ${nameA}님이 곁에 있으면 막연한 불안을 덜고 안심하며 함께 움직일 수 있어요.`,
+          ),
+          deliveryStatusNarrative: pick(
+            locale,
+            `${nameA}'s clear convictions and decisiveness become a dependable guide for ${nameB}.`,
+            `${nameA}님이 보여주는 분명한 소신과 결단력이 ${nameB}님에게 든든한 가이드가 되어줍니다.`,
+          ),
           semanticDimension: "DECISION_AND_STRUCTURE",
           confidence: "HIGH",
         },
@@ -153,20 +214,28 @@ function buildOriginStorySection(
         meaningAtoB: {
           giverName: nameA,
           receiverName: nameB,
-          roleTitle: "고민이 길어질 때 결정을 도와주는 사람",
+          roleTitle: pick(locale, "The Anchor Who Clarifies Direction When Confused", "고민이 길어질 때 결정을 도와주는 사람"),
           partnerOriginalState: "",
           giverStateChangeEffect: "",
-          description: `${nameA}님이 보여주는 단단한 소신과 결단력은 ${nameB}님이 이것저것 재느라 주저할 때 고민을 덜고 안심하며 앞으로 나아가도록 이끌어줍니다.`,
+          description: pick(
+            locale,
+            `${nameA}'s firm convictions and decisiveness ease ${nameB}'s hesitation when weighing every option, helping them move forward with confidence.`,
+            `${nameA}님이 보여주는 단단한 소신과 결단력은 ${nameB}님이 이것저것 재느라 주저할 때 고민을 덜고 안심하며 앞으로 나아가도록 이끌어줍니다.`,
+          ),
           semanticDimension: "DECISION_AND_STRUCTURE",
           confidence: "HIGH",
         },
         meaningBtoA: {
           giverName: nameB,
           receiverName: nameA,
-          roleTitle: "내 영역과 방식을 존중해주는 사람",
+          roleTitle: pick(locale, "The Respectful Partner Guarding My Personal Space", "내 영역과 방식을 존중해주는 사람"),
           partnerOriginalState: "",
           giverStateChangeEffect: "",
-          description: `${nameB}님이 보여주는 강요 없는 존중은 ${nameA}님이 매번 신경을 곤두세우지 않고도 내 방식대로 편안하게 머무를 수 있는 마음의 여유를 지켜줍니다.`,
+          description: pick(
+            locale,
+            `${nameB}'s unforced respect protects ${nameA}'s peace of mind — able to stay comfortable in their own way without always being on edge.`,
+            `${nameB}님이 보여주는 강요 없는 존중은 ${nameA}님이 매번 신경을 곤두세우지 않고도 내 방식대로 편안하게 머무를 수 있는 마음의 여유를 지켜줍니다.`,
+          ),
           semanticDimension: "AUTONOMY_GUARD",
           confidence: "HIGH",
         },
@@ -176,26 +245,30 @@ function buildOriginStorySection(
         transformationA: {
           targetName: nameA,
           partnerName: nameB,
-          beforeState: `${nameA}님은 내가 다 챙기고 결정하느라 마음의 긴장을 잘 놓지 못하던 성향`,
-          partnerInfluence: `${nameB}님이 보여주는 다정하고 여유 있게 받아주는 태도를 접하면서`,
-          emergingSelf: `혼자서 다 짊어지지 않아도 괜찮다는 안도감 속에, 필요할 때 기꺼이 상대에게 편하게 기대는 여유를 갖게 돼요.`,
-          primaryTransformation: s?.positive_change_a || `${nameB}님과 함께 지내며 ${nameA}님은 유연함과 정서적 여유를 배우게 됩니다.`,
+          beforeState: pick(locale, `${nameA} tended to hold onto tension, taking care of and deciding everything alone`, `${nameA}님은 내가 다 챙기고 결정하느라 마음의 긴장을 잘 놓지 못하던 성향`),
+          partnerInfluence: pick(locale, `through ${nameB}'s warm, easygoing way of accepting things`, `${nameB}님이 보여주는 다정하고 여유 있게 받아주는 태도를 접하면서`),
+          emergingSelf: pick(locale, "they've come to feel it's okay not to carry everything alone, and can comfortably lean on their partner when needed.", `혼자서 다 짊어지지 않아도 괜찮다는 안도감 속에, 필요할 때 기꺼이 상대에게 편하게 기대는 여유를 갖게 돼요.`),
+          primaryTransformation: s?.positive_change_a || pick(locale, `Being with ${nameB}, ${nameA} learns flexibility and emotional ease.`, `${nameB}님과 함께 지내며 ${nameA}님은 유연함과 정서적 여유를 배우게 됩니다.`),
           confidence: "HIGH",
         },
         transformationB: {
           targetName: nameB,
           partnerName: nameA,
-          beforeState: `${nameB}님은 고민이 깊어 선뜻 결정하지 못하고 신중하게 살펴보기만 하던 성향`,
-          partnerInfluence: `${nameA}님이 보여주는 확실한 방향 잡기와 빠른 실행 리듬을 곁에서 배우면서`,
-          emergingSelf: `고민만 하다가 시간을 보내지 않고, 생각한 바를 빠르게 행동으로 옮기는 추진력을 얻게 돼요.`,
-          primaryTransformation: s?.positive_change_b || `${nameA}님과 함께 지내며 ${nameB}님은 결단력과 추진력을 얻게 됩니다.`,
+          beforeState: pick(locale, `${nameB} used to overthink and only look things over carefully instead of deciding readily`, `${nameB}님은 고민이 깊어 선뜻 결정하지 못하고 신중하게 살펴보기만 하던 성향`),
+          partnerInfluence: pick(locale, `by learning from ${nameA}'s clear direction-setting and quick follow-through`, `${nameA}님이 보여주는 확실한 방향 잡기와 빠른 실행 리듬을 곁에서 배우면서`),
+          emergingSelf: pick(locale, "they've gained the drive to turn thoughts into action quickly, instead of spending time just deliberating.", `고민만 하다가 시간을 보내지 않고, 생각한 바를 빠르게 행동으로 옮기는 추진력을 얻게 돼요.`),
+          primaryTransformation: s?.positive_change_b || pick(locale, `Being with ${nameA}, ${nameB} gains decisiveness and drive.`, `${nameA}님과 함께 지내며 ${nameB}님은 결단력과 추진력을 얻게 됩니다.`),
           confidence: "HIGH",
         },
         confidence: "HIGH",
       },
       coupleIdentity: {
         title: cleanTaxonomyTitle(report.one_line_household, defaultTitle),
-        synthesisNarrative: `${nameA}님은 명확한 방향성과 결단력으로 관계의 중심을 잡고, ${nameB}님은 다정한 포용력과 평정심으로 마음의 안식을 보태줍니다. 그 결과 ${nameA}님은 일상의 중압감을 혼자 짊어지지 않아도 되고, ${nameB}님은 ${nameA}님의 명확한 가이드 덕분에 주저함 없이 실행에 나서는 부부 동력을 갖추게 됩니다.`,
+        synthesisNarrative: pick(
+          locale,
+          `${nameA} keeps the relationship centered with clear direction and decisiveness, and ${nameB} adds warmth, acceptance, and composure. As a result, ${nameA} doesn't have to carry everyday pressure alone, and ${nameB} moves into action without hesitation thanks to ${nameA}'s clear guidance — together building real momentum as a couple.`,
+          `${nameA}님은 명확한 방향성과 결단력으로 관계의 중심을 잡고, ${nameB}님은 다정한 포용력과 평정심으로 마음의 안식을 보태줍니다. 그 결과 ${nameA}님은 일상의 중압감을 혼자 짊어지지 않아도 되고, ${nameB}님은 ${nameA}님의 명확한 가이드 덕분에 주저함 없이 실행에 나서는 부부 동력을 갖추게 됩니다.`,
+        ),
         confidence: "HIGH",
       },
     };
@@ -835,7 +908,7 @@ export function buildMarriageReportViewModel(
   // 함께 손봐야 한다(아직 미착수 — decisions/033 참고).
   const builders: Array<() => MarriageReportSection | null> = [
     () => buildHouseholdSnapshotSection(report, t),
-    () => buildOriginStorySection(report, t),
+    () => buildOriginStorySection(report, t, locale ?? "ko-KR"),
     () => buildDailyLifeMirrorSection(report, t),
     () => buildDeepReadSection(report, viewerIsReportA, t),
     () => buildPsychRadarSection(report, viewerIsReportA, t),
@@ -910,7 +983,7 @@ export function buildMarriageReportViewModel(
   return {
     kind: "cohabitation",
     schemaVersion: "2.0.0",
-    opening: buildOpening(report, names),
+    opening: buildOpening(report, names, locale),
     sections,
     canonicalStoryPlan,
     canonicalBundle,
