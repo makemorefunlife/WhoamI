@@ -1,7 +1,7 @@
 // app/homecontent.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
@@ -152,6 +152,8 @@ export default function HomeContent() {
     };
   }, [isLoaded, isSignedIn]);
 
+  const inviteAutoRanRef = useRef(false);
+
   const goToSurvey = useCallback(
     (reportId: string) => {
       const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
@@ -161,6 +163,27 @@ export default function HomeContent() {
       router.push(localize(`${ROUTES.surveyV2}?${params.toString()}`));
     },
     [router, localize],
+  );
+
+  /** 초대 링크 수락: 초대자와 내 리포트를 연결. 성공/이미완료 시 로컬 토큰 제거. */
+  const completeInvite = useCallback(
+    async (reportId: string, inviteToken: string) => {
+      try {
+        const res = await fetch("/api/invite/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inviteToken, reportId }),
+        });
+        if (res.ok || res.status === 404) {
+          localStorage.removeItem("inviteToken");
+        }
+        return res.ok;
+      } catch (e) {
+        console.error("[home] invite_complete_error");
+        return false;
+      }
+    },
+    [],
   );
 
   const createReportAndSurvey = useCallback(async () => {
@@ -208,11 +231,59 @@ export default function HomeContent() {
       surveyCompleted: false,
       birthDate: null,
     });
-    if (inviteToken) localStorage.setItem("inviteToken", inviteToken);
+    if (inviteToken) {
+      localStorage.setItem("inviteToken", inviteToken);
+      await completeInvite(data.id, inviteToken);
+    }
 
     setCreatingReport(false);
     goToSurvey(data.id);
-  }, [goToSurvey, userId, messages]);
+  }, [goToSurvey, userId, messages, completeInvite]);
+
+  /**
+   * 초대 링크로 진입 시 랜딩 히어로를 보여주지 않고 바로 이어서 진행.
+   * - 로그인 안 됨 → 로그인 모달 자동 오픈
+   * - 완료된 리포트 있음 → 즉시 연결 후 관계 허브로
+   * - 진행 중/미완료 리포트 있음 → 그 리포트로 연결 후 설문 이어하기
+   * - 리포트 없음 → 새로 생성 후 설문 (완료 후 자동 연결)
+   */
+  useEffect(() => {
+    if (!isLoaded || resume.loading || inviteAutoRanRef.current) return;
+    const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
+    if (!inviteToken) return;
+
+    if (!isSignedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    inviteAutoRanRef.current = true;
+
+    if (resume.surveyCompleted && resume.reportId) {
+      void completeInvite(resume.reportId, inviteToken).then(() => {
+        router.push(localize(relationHubPath(resume.reportId ?? undefined)));
+      });
+      return;
+    }
+
+    if (resume.hasReport && resume.reportId) {
+      void completeInvite(resume.reportId, inviteToken).then(() => {
+        goToSurvey(resume.reportId as string);
+      });
+      return;
+    }
+
+    void createReportAndSurvey();
+  }, [
+    isLoaded,
+    isSignedIn,
+    resume,
+    completeInvite,
+    createReportAndSurvey,
+    goToSurvey,
+    router,
+    localize,
+  ]);
 
   const startFreeSurvey = useCallback(async () => {
     if (creatingReport) return;
