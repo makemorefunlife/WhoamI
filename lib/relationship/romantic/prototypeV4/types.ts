@@ -75,11 +75,16 @@ export type AxisInsightRow = {
   axisKey: string;
   axisLabel: string;
   matchType: RomanticPsychMatchAxisResult["match_type"];
+  /** both_high | both_low | both_mid | asymmetric_extreme | moderate_diff — see axisRelationshipInsights.ts */
+  state: string;
   gap: number;
   personAPattern: string;
   personBPattern: string;
+  /** Axis+state+direction-aware opening line — never a mechanical "differ -> friction" template. */
+  hook: string;
   whyItMatters: string;
   dailyManifestation: string;
+  /** Internal classification tag (tension/complement/resonance) — data only, not rendered in user-facing copy. */
   relationshipEffect: string;
   confidence: ConfidenceLevel;
   evidenceIds: string[];

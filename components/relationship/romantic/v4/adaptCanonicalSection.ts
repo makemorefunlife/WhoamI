@@ -21,7 +21,7 @@ import type {
 } from "@/lib/relationship/romantic/prototypeV4/canonicalStoryPlanTypes";
 import type { RomanticV4PrototypePayload } from "@/lib/relationship/romantic/prototypeV4/types";
 import { labelOfAxis } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
-import { buildAxisAttributionSentence } from "@/lib/relationship/psychDomainLens/shared";
+import { selectAxisRelationshipInsights } from "@/lib/relationship/romantic/prototypeV4/axisRelationshipInsights";
 import type { DomainPsychHighlight } from "@/lib/relationship/psychDomainLens/types";
 
 /**
@@ -366,55 +366,21 @@ export function adaptRadarHighlights(
   let insights = payload?.selectedAxisInsights ?? [];
 
   // Fallback: If selectedAxisInsights is missing/empty (e.g. legacy DB cache or payload without pre-sliced insights),
-  // derive top 4 high-gap axes dynamically from axisOverview so Dark Cards ALWAYS render!
+  // derive real insights straight from axisOverview using the same significance
+  // ranking and state-specific copy as the server-side selector — never a
+  // single reused generic sentence — so Dark Cards render only when there's
+  // something genuine to say.
   if ((!insights || insights.length === 0) && payload?.axisOverview && payload.axisOverview.length > 0) {
-    const sorted = [...payload.axisOverview].sort(
-      (a, b) => Math.abs(b.score_a - b.score_b) - Math.abs(a.score_a - a.score_b),
-    );
-    const isEn = payload.locale === "en-US";
-    insights = sorted.slice(0, 4).map((a) => {
-      const gap = Math.abs(a.score_a - a.score_b);
-      const matchType = gap < 12 ? "resonance" : gap > 25 ? "tension" : "complement";
-      const axisLabel = labelOfAxis(payload.locale, a.axis_key);
-      return {
-        axisKey: a.axis_key,
-        axisLabel,
-        gap,
-        matchType,
-        whyItMatters: isEn
-          ? `The gap between ${personA} and ${personB} in ${axisLabel} shows up in your emotional communication tempo.`
-          : `${personA}님과 ${personB}님의 ${axisLabel} 차이가 정서적 소통 템포에 반영됩니다.`,
-        relationshipEffect: isEn
-          ? (matchType === "resonance"
-              ? "You share a similar tendency here, which builds strong intuitive rapport when making decisions."
-              : "The difference in tempo can lead to misunderstandings, so it helps to shift toward stating what each of you needs clearly.")
-          : (matchType === "resonance"
-              ? "비슷한 성향으로 의사결정 시 높은 직관적 공감대를 형성합니다."
-              : "상대와의 템포 차이로 인해 오해가 발생할 수 있어 서로의 필요를 명확히 말해주는 전환이 유용합니다."),
-      } as any;
-    });
+    insights = selectAxisRelationshipInsights({
+      locale: payload.locale,
+      axisResults: payload.axisOverview,
+      names: { nameA: personA, nameB: personB },
+    }).selected;
   }
 
   return insights.slice(0, 4).map((row) => {
     const key = row.axisKey || (row as any).axis_key;
-    const axis = payload.axisOverview?.find((a) => a.axis_key === key);
     const axisLabel = row.axisLabel || (row as any).axis_label || labelOfAxis(payload.locale, key);
-    const scoreA = axis?.score_a ?? 50;
-    const scoreB = axis?.score_b ?? 50;
-    const gap = Math.abs(scoreA - scoreB);
-    let lean: "even" | "a_high" | "b_high" = "even";
-    if (gap >= 10) {
-      lean = scoreA > scoreB ? "a_high" : "b_high";
-    }
-
-    const hook = buildAxisAttributionSentence({
-      axisLabel,
-      matchType: row.matchType,
-      lean,
-      nameA: personA,
-      nameB: personB,
-      locale: payload.locale,
-    });
 
     return {
       axis_key: key as DomainPsychHighlight["axis_key"],
@@ -423,8 +389,14 @@ export function adaptRadarHighlights(
       match_type: row.matchType,
       topic: "",
       section_hint: "",
-      hook,
-      narrative: [row.whyItMatters, row.relationshipEffect].filter(Boolean).join(" "),
+      // row.hook is axis+state+direction-aware (built by selectAxisRelationshipInsights)
+      // — never the old mechanical "differ -> friction" template shared across axes.
+      // Falls back to the bare axis label only for a pre-this-change cached
+      // row shape that predates the hook field.
+      hook: row.hook || axisLabel,
+      // relationshipEffect (tension/complement/resonance) is data-only now —
+      // it stays off the rendered narrative per the copy-quality QA finding.
+      narrative: row.whyItMatters,
     };
   });
 }

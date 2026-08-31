@@ -37,8 +37,6 @@ import { getRomanticV4CompareProse } from "./romanticV4CompareInsights";
 import type { RomanticSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { RomanticV4PairSajuInput } from "./romanticV4SajuInput";
 import type {
-  AxisInsightRow,
-  AxisSelectionRejected,
   ChapterId,
   ConfidenceLevel,
   EvidenceTraceRow,
@@ -49,18 +47,7 @@ import type {
   SajuComparisonRow,
   SourceKind,
 } from "./types";
-
-const AXIS_TO_COMPARE_ROW: Partial<Record<string, RomanticCompareRowKey>> = {
-  conflict_style: "conflict",
-  stimulation: "stress",
-  self_control: "stress",
-  empathy: "communication",
-  thinking_style: "communication",
-  decision_style: "decision",
-  practicality: "decision",
-  structure: "decision",
-  energy_style: "affection",
-};
+import { selectAxisRelationshipInsights } from "./axisRelationshipInsights";
 
 const COMPARE_QUESTION: Record<RomanticCompareRowKey, string> = {
   conflict: "서로 부딪힐 때 우리는 무엇을 먼저 하나요?",
@@ -80,13 +67,6 @@ function fixtureOf(variant: PrototypeVariant) {
 /** Thin wrapper over the canonical production psych-match label authority. */
 export function labelOfAxis(locale: PrototypeLocale, axisKey: string) {
   return psychMatchAxisLabel(axisKey, locale);
-}
-
-function confidenceFromGap(gap: number): ConfidenceLevel {
-  if (gap >= 28) return "high";
-  if (gap >= 16) return "medium";
-  if (gap >= 10) return "low";
-  return "tentative";
 }
 
 function buildComparisonTable(params: {
@@ -423,118 +403,22 @@ function selectAxisInsights(params: {
   locale: PrototypeLocale;
   axisResults: RomanticPsychMatchAxisResult[];
   usedRows: RomanticCompareRowKey[];
+  nameA: string;
+  nameB: string;
   /** When set to "partial_inference", selected-axis confidence is capped at "low" — one side is synthetic. */
   evidenceStatus?: SurveyPairEvidenceStatus;
 }) {
-  const rejected: AxisSelectionRejected[] = [];
-  const scored = params.axisResults
-    .filter((axis) => axis.axis_key !== "conflict_style")
-    .map((axis) => {
-      const mapped = AXIS_TO_COMPARE_ROW[axis.axis_key];
-      const ownershipCollision = Boolean(mapped && params.usedRows.includes(mapped));
-      const overlapPenalty = ownershipCollision ? 16 : 0;
-      const salience =
-        (axis.score_a >= 70 && axis.score_b >= 70) || (axis.score_a <= 35 && axis.score_b <= 35)
-          ? 10
-          : 0;
-      const typeBonus = axis.match_type === "tension" ? 9 : axis.match_type === "complementary" ? 5 : 3;
-      const score = axis.gap + salience + typeBonus - overlapPenalty;
-      return { axis, score, mapped, ownershipCollision };
-    });
-
-  const candidates = scored
-    .filter((row) => {
-      if (row.ownershipCollision && row.score < 24) {
-        rejected.push({
-          axisKey: row.axis.axis_key,
-          reason: "ownership_collision",
-          detail: `mapped row ${row.mapped ?? "unknown"} already owned by Saju comparison and axis score ${row.score} is not strong enough.`,
-          evidenceIds: [`meta.psych_match.axis_results.${row.axis.axis_key}`],
-        });
-        return false;
-      }
-      if (row.score < 20) {
-        rejected.push({
-          axisKey: row.axis.axis_key,
-          reason: "insufficient_evidence",
-          detail: `selection score ${row.score} < threshold 20.`,
-          evidenceIds: [`meta.psych_match.axis_results.${row.axis.axis_key}`],
-        });
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => b.score - a.score);
-
-  const chosen: Array<typeof candidates[number]> = [];
-  const usedBuckets = new Set<string>();
-  for (const c of candidates) {
-    if (chosen.length >= 4) break;
-    const bucket = c.axis.match_type;
-    if (usedBuckets.has(bucket) && c.axis.gap < 24) {
-      rejected.push({
-        axisKey: c.axis.axis_key,
-        reason: "low_distinctiveness",
-        detail: `same match bucket ${bucket} already selected and gap ${c.axis.gap} < 24.`,
-        evidenceIds: [`meta.psych_match.axis_results.${c.axis.axis_key}`],
-      });
-      continue;
-    }
-    chosen.push(c);
-    usedBuckets.add(bucket);
-  }
-
-  const isEn = params.locale === "en-US";
-  const selected = chosen.map<AxisInsightRow>((c) => {
-    const axisLabel = labelOfAxis(params.locale, c.axis.axis_key);
-    const relationshipEffect = isEn
-      ? (c.axis.match_type === "tension" ? "tension" : c.axis.match_type === "complementary" ? "complement" : "resonance")
-      : (c.axis.match_type === "tension" ? "긴장" : c.axis.match_type === "complementary" ? "보완" : "공명");
-    const whyItMatters = isEn
-      ? (c.axis.axis_key === "structure"
-          ? "This is where you're most likely to clash when settling schedules, money, and priorities together, so agreeing on ground rules ahead of time makes the relationship much smoother."
-          : c.axis.axis_key === "energy_style"
-            ? "You recharge in different ways when you're together, so how satisfied you each feel after a weekend or a group hangout can swing noticeably."
-            : c.axis.axis_key === "stimulation"
-              ? "You want new stimulation at different speeds, which affects how densely you pack in dates and the fatigue that comes with it."
-              : "This connects directly to how you each read intent and set expectations in everyday conversation, offering a clue to a pattern that keeps repeating.")
-      : (c.axis.axis_key === "structure"
-          ? "일정과 돈, 우선순위를 함께 정할 때 가장 자주 부딪히는 부분이라, 미리 규칙을 맞춰두면 관계가 한결 수월해집니다."
-          : c.axis.axis_key === "energy_style"
-            ? "함께 있을 때 에너지를 회복하는 방식이 서로 달라서, 주말이나 모임에서 느끼는 만족도가 유독 크게 갈리는 부분입니다."
-            : c.axis.axis_key === "stimulation"
-              ? "새로운 자극을 원하는 속도가 서로 달라서, 데이트를 얼마나 촘촘히 잡을지와 그로 인한 피로감이 함께 흔들리기 때문입니다."
-              : "일상 대화에서 서로의 의도를 해석하고 기대를 갖는 방식과 바로 이어지는 부분이라, 반복되는 패턴을 이해하는 실마리가 됩니다.");
-    const dailyManifestation = isEn
-      ? (c.axis.axis_key === "structure"
-          ? "When packing for a trip, one of you wants to finish a full checklist while the other prefers to improvise as things come up — and it turns into an argument right before you leave."
-          : c.axis.axis_key === "energy_style"
-            ? "One of you recharges in a crowd, while the other needs quiet time alone together before the next conversation flows smoothly."
-            : c.axis.axis_key === "stimulation"
-              ? "The one who wants to keep trying new places and the one who wants to stick to a familiar routine often clash over the intensity of a date, more than how often you go out."
-              : "When sending an important message, one of you writes out the full context while the other sticks to the point, and the reading of it ends up mismatched.")
-      : (c.axis.axis_key === "structure"
-          ? "여행 준비에서 한 사람은 체크리스트를 완성하려 하고, 다른 사람은 상황에 맞춰 즉흥 수정하려다 출발 직전에 다툼이 납니다."
-          : c.axis.axis_key === "energy_style"
-            ? "한쪽은 사람 많은 자리에서 충전되고, 다른 쪽은 둘만의 정리 시간이 있어야 다음 대화가 부드럽게 이어집니다."
-            : c.axis.axis_key === "stimulation"
-              ? "새로운 장소를 계속 가보고 싶은 쪽과 익숙한 루틴을 지키고 싶은 쪽이, 데이트 횟수보다 강도를 두고 자주 엇갈립니다."
-              : "중요한 메시지를 보낼 때 한 사람은 맥락을 길게, 다른 사람은 요점 위주로 보내 해석이 엇갈립니다.");
-    return {
-      axisKey: c.axis.axis_key,
-      axisLabel,
-      matchType: c.axis.match_type,
-      gap: c.axis.gap,
-      personAPattern: isEn ? `score of ${c.axis.score_a}` : `${c.axis.score_a}점 경향`,
-      personBPattern: isEn ? `score of ${c.axis.score_b}` : `${c.axis.score_b}점 경향`,
-      whyItMatters,
-      dailyManifestation,
-      relationshipEffect,
-      confidence: params.evidenceStatus === "partial_inference" ? "low" : confidenceFromGap(c.axis.gap),
-      evidenceIds: [`meta.psych_match.axis_results.${c.axis.axis_key}`],
-    };
+  const { selected, rejected } = selectAxisRelationshipInsights({
+    locale: params.locale,
+    axisResults: params.axisResults,
+    usedRows: params.usedRows,
+    names: { nameA: params.nameA, nameB: params.nameB },
   });
-  return { selected, rejected };
+  const capped =
+    params.evidenceStatus === "partial_inference"
+      ? selected.map((row) => ({ ...row, confidence: "low" as ConfidenceLevel }))
+      : selected;
+  return { selected: capped, rejected };
 }
 
 function createCompletePayload(
@@ -606,6 +490,8 @@ function createCompletePayload(
     locale,
     axisResults: axisOverview,
     usedRows,
+    nameA,
+    nameB,
     evidenceStatus: axisData.evidenceStatus,
   });
   const selectedAxisInsights = axisSelection.selected;
@@ -1674,6 +1560,8 @@ function createVariantSelectionCheck(
     locale,
     axisResults: axisOverview,
     usedRows,
+    nameA,
+    nameB,
     evidenceStatus: axisData.evidenceStatus,
   });
   const axis = axisSelection.selected;

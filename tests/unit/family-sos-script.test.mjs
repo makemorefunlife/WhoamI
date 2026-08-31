@@ -53,8 +53,8 @@ const sealStrong = buildFamilySosSection({
   childIsViewer: false,
   locale: "ko-KR",
 });
-assert.ok(sealStrong.sos_line.includes("회복탄력성"));
-ok("childSealStrong(단독) → 회복탄력성 톤");
+assert.ok(sealStrong.sos_line.includes("관계 회복력"));
+ok("childSealStrong(단독) → 관계 회복력 톤");
 
 const both = buildFamilySosSection({
   scoringSignals: sig({ childWealthStrong: true, childSealStrong: true }),

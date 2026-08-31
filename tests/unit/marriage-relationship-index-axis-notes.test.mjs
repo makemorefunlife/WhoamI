@@ -1,13 +1,13 @@
 /**
  * Marriage Batch 2 — Part2① 종합 관계 지수(로맨틱 핏/라이프 시너지/홈 리스크)에
- * 11축(관계공감/계획구조화) 확인 문구(axisNote)를 추가한 것에 대한 회귀 테스트.
+ * 11축(관계공감/계획성) 확인 문구(axisNote)를 추가한 것에 대한 회귀 테스트.
  * 로맨틱의 `tests/unit/romantic-relationship-index-axis-notes.test.mjs`와 동일한
  * 컨벤션(fixture, 고정 스냅샷, 알려진 갭을 능동적으로 고정)을 따른다.
  *
  * 핵심 불변식:
  *   1. computeMarriageMasterScores의 원점수/grade는 이 기능과 무관 — 이 테스트는
  *      점수 계산 자체를 검증하지 않는다(marriage-compare-table 등에서 별도 검증됨).
- *   2. axisNote는 intimacy(관계공감)/stability(계획구조화)에만 붙는다. conflict(홈
+ *   2. axisNote는 intimacy(관계공감)/stability(계획성)에만 붙는다. conflict(홈
  *      리스크)는 스펙이 축을 지정하지 않아 대상이 아니다.
  *   3. psych(11축)가 없으면 axisNote는 undefined/null이고, 그 외 필드
  *      (title/subtitle/interpretation/isWarning)는 axisNote 유무와 무관하게 항상 동일해야
@@ -136,7 +136,7 @@ assert.equal(intimacyMid.axisNote, null);
 ok("중간대(40<평균<60) → null(억지로 문구 안 붙임)");
 
 // ---------------------------------------------------------------------------
-section("3) stability — 계획구조화(structure) 평균 高/低로 다른 axisNote");
+section("3) stability — 계획성(structure) 평균 高/低로 다른 axisNote");
 
 const stabilityHigh = topicsFrom(
   buildMarriageSnapshotNarrative({
@@ -148,9 +148,9 @@ const stabilityHigh = topicsFrom(
 ).stability;
 assert.equal(
   stabilityHigh.axisNote,
-  "계획구조화 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.",
+  "계획성 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.",
 );
-ok("계획구조화 高(평균≥60) → 확인 문구");
+ok("계획성 高(평균≥60) → 확인 문구");
 
 const stabilityLow = topicsFrom(
   buildMarriageSnapshotNarrative({
@@ -162,9 +162,9 @@ const stabilityLow = topicsFrom(
 ).stability;
 assert.equal(
   stabilityLow.axisNote,
-  "계획구조화 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.",
+  "계획성 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.",
 );
-ok("계획구조화 低(평균≤40) → 유보 문구");
+ok("계획성 低(평균≤40) → 유보 문구");
 assert.notEqual(stabilityHigh.axisNote, stabilityLow.axisNote);
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /**
  * Romantic Phase 4-6 Batch 6 — Part4① 표현 속도 차이 교정 대사(Before/After)에
- * 갈등직면성+자기통제 기반 방향 신호를 추가한 것에 대한 회귀 테스트.
+ * 갈등대처+자기통제 기반 방향 신호를 추가한 것에 대한 회귀 테스트.
  *
  * 핵심 불변식:
  *   1. resolveExpressionSpeedDirection — A 우세/B 우세/균형(격차<15)/profile 없음
@@ -53,14 +53,14 @@ const aFaster = resolveExpressionSpeedDirection(
   profile({ conflict_style: 40, self_control: 60 }),
 );
 assert.equal(aFaster, "A");
-ok("A의 (갈등직면성-자기통제)가 B보다 15 이상 높으면 'A'");
+ok("A의 (갈등대처-자기통제)가 B보다 15 이상 높으면 'A'");
 
 const bFaster = resolveExpressionSpeedDirection(
   profile({ conflict_style: 40, self_control: 60 }),
   profile({ conflict_style: 85, self_control: 30 }),
 );
 assert.equal(bFaster, "B");
-ok("B의 (갈등직면성-자기통제)가 A보다 15 이상 높으면 'B'");
+ok("B의 (갈등대처-자기통제)가 A보다 15 이상 높으면 'B'");
 
 const balanced = resolveExpressionSpeedDirection(profile(), profile());
 assert.equal(balanced, "balanced");
@@ -78,7 +78,7 @@ const withFaster = buildConflictSituationFewShotExample({
 });
 assert.ok(
   withFaster.includes(
-    "⚠️ 서버 신호: 이 리포트는 **Alex**가 갈등직면성↑·자기통제↓ 쪽으로 신호가 갈립니다 — 빠른 표현 슬롯에 Alex를 우선 배치하세요.",
+    "⚠️ 서버 신호: 이 리포트는 **Alex**가 갈등대처↑·자기통제↓ 쪽으로 신호가 갈립니다 — 빠른 표현 슬롯에 Alex를 우선 배치하세요.",
   ),
 );
 ok("fasterName이 있으면 서버 신호 확인 줄이 정확한 문구로 삽입됨");

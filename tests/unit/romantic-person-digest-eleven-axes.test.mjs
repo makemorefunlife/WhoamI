@@ -123,12 +123,12 @@ const withProfile = buildRomanticPersonSignalsDigest({
 });
 
 const expectedLines = [
-  "· 감정 표현 참고: 외향에너지 71",
-  "· 갈등 반응 참고: 갈등직면성 62",
+  "· 감정 표현 참고: 외향성 71",
+  "· 갈등 반응 참고: 갈등대처 62",
   "· 애정 언어 참고: 관계공감 53",
   "· 스트레스 패턴 참고: 자기통제 44",
-  "· 의사결정 참고: 신중결정 35",
-  "· 소통 방식 참고: 계획구조화 26",
+  "· 의사결정 참고: 신중함 35",
+  "· 소통 방식 참고: 계획성 26",
 ];
 for (const line of expectedLines) {
   assert.ok(withProfile.includes(line), `digest에 "${line}" 라인이 포함되어야 함`);
@@ -210,7 +210,7 @@ assert.ok(
 );
 assert.doesNotMatch(withLeanAndProfile, /결합해서|두 소스를 결합|결합하되/);
 assert.ok(withLeanAndProfile.includes("서버 lean=expressive"));
-assert.ok(withLeanAndProfile.includes("감정 표현 참고: 외향에너지 71"));
+assert.ok(withLeanAndProfile.includes("감정 표현 참고: 외향성 71"));
 assert.ok(
   withLeanAndProfile.includes("corroboration/background"),
   "lean 경로 eleven_axes 헤더가 corroboration/background",

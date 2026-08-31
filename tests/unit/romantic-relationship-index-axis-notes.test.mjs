@@ -1,6 +1,6 @@
 /**
  * Romantic Phase 4-2 Batch 2 — Part1① 종합 관계 지수(친밀·끌림/갈등·긴장)에
- * 11축(관계공감/갈등직면성) 확인 문구(axisNote)를 추가한 것에 대한 회귀 테스트.
+ * 11축(관계공감/갈등대처) 확인 문구(axisNote)를 추가한 것에 대한 회귀 테스트.
  *
  * 핵심 불변식:
  *   1. computeRelationshipEventScores의 원점수/grade는 이 기능과 무관 — 이 테스트는
@@ -43,7 +43,7 @@ const INTIMACY_HIGH_NOTE =
 const INTIMACY_LOW_NOTE =
   "관계공감 축은 낮은 편이라, 끌림이 있어도 표현으로 이어지려면 조금 더 의식적인 노력이 필요할 수 있어요.";
 const CONFLICT_GAP_NOTE =
-  "갈등을 대하는 방식(갈등직면성) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.";
+  "갈등을 대하는 방식(갈등대처) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.";
 
 function profile(overrides = {}) {
   const base = {
