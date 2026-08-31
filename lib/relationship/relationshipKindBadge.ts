@@ -8,7 +8,7 @@ import {
 export const RELATIONSHIP_KIND_BADGE_LABELS: Record<RelationshipKind, string> =
   {
     cohabitation: "부부",
-    romantic: "인연",
+    romantic: "연인",
     family: "가족",
     friendship: "친구",
     work: "동료",

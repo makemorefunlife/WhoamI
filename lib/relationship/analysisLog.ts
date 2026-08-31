@@ -107,7 +107,7 @@ function buildLogSummary(
     };
   }
   return {
-    title: "관계 기본 분석",
+    title: "무료 관계분석",
     subtitle: "네 가지 관점으로 정리한 결과",
   };
 }

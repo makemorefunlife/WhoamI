@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { MarriageChapter07Intelligence } from "@/lib/relationship/marriage/marriageChapter07Intelligence";
+import { NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 interface Props {
@@ -42,18 +43,23 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 01. 싸우고 서운할 때, 나는 어떻게 변할까? */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 01.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 01.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "How do we each change when we fight or feel hurt?" : "싸우고 서운할 때, 나는 어떻게 변할까?"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[section01_journey.personA, section01_journey.personB].map((journey, idx) => (
-              <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
-                <div className="text-xs font-bold text-[#2c2b29] border-b border-[#e6e2dc]/50 pb-2">
-                  {isEn ? `${journey.personName}'s conflict response and inner signals` : `${journey.personName}님의 갈등 반응 및 내면 신호`}
-                </div>
+            {[section01_journey.personA, section01_journey.personB].map((journey, idx) => {
+              const side = journey.personName === canonicalNames[0] ? "a" : "b";
+              return (
+                <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
+                  <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/50 pb-2">
+                    <NameChip name={journey.personName} side={side} />
+                    <span className="text-xs font-bold text-[#2c2b29]">
+                      {isEn ? "'s conflict response & inner signals" : "님의 갈등 반응 및 내면 신호"}
+                    </span>
+                  </div>
                 <div className="space-y-2.5 text-xs">
                   <div>
                     <span className="font-bold text-[#2d5a44] block mb-0.5">{isEn ? "Normally" : "평소"}</span>
@@ -87,7 +93,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 02. 그래서 우리는 왜 같은 싸움을 반복할까? */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 02.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 02.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "So why do we keep having the same fight?" : "그래서 우리는 왜 같은 싸움을 반복할까?"}
           </h3>
@@ -100,12 +106,12 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
               <div className="rounded bg-white p-3 border border-[#e6e2dc]/60 space-y-1">
-                <span className="font-bold text-[#2c2b29]">{section02_conflictLoop.personAStep.name}</span>
-                <p className="text-[#5e5b56] leading-relaxed">{section02_conflictLoop.personAStep.flow}</p>
+                <NameChip name={section02_conflictLoop.personAStep.name} side={section02_conflictLoop.personAStep.name === canonicalNames[0] ? "a" : "b"} />
+                <p className="text-[#5e5b56] leading-relaxed pt-1">{section02_conflictLoop.personAStep.flow}</p>
               </div>
               <div className="rounded bg-white p-3 border border-[#e6e2dc]/60 space-y-1">
-                <span className="font-bold text-[#2c2b29]">{section02_conflictLoop.personBStep.name}</span>
-                <p className="text-[#5e5b56] leading-relaxed">{section02_conflictLoop.personBStep.flow}</p>
+                <NameChip name={section02_conflictLoop.personBStep.name} side={section02_conflictLoop.personBStep.name === canonicalNames[0] ? "a" : "b"} />
+                <p className="text-[#5e5b56] leading-relaxed pt-1">{section02_conflictLoop.personBStep.flow}</p>
               </div>
             </div>
           </div>
@@ -122,20 +128,28 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 03. 사실 싸움보다 더 아픈 건 이것 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 03.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 03.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "What actually hurts more than the fight itself" : "사실 싸움보다 더 아픈 건 이것"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[section03_hurtPoint.personA, section03_hurtPoint.personB].map((hurt, idx) => (
-              <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
-                <span className="text-xs font-bold text-[#c1443a]">{isEn ? `${hurt.personName}'s main pain point` : `${hurt.personName}님의 주요 상처 지점`}</span>
-                <h4 className="text-xs sm:text-sm font-bold text-[#2c2b29]">{hurt.headline}</h4>
-                <p className="text-xs text-[#5e5b56] leading-relaxed pt-1">{hurt.description}</p>
-              </div>
-            ))}
+            {[section03_hurtPoint.personA, section03_hurtPoint.personB].map((hurt, idx) => {
+              const side = hurt.personName === canonicalNames[0] ? "a" : "b";
+              return (
+                <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <NameChip name={hurt.personName} side={side} />
+                    <span className="text-xs font-bold text-[#c1443a]">
+                      {isEn ? "'s main pain point" : "님의 주요 상처 지점"}
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-[#2c2b29]">{hurt.headline}</h4>
+                  <p className="text-xs text-[#5e5b56] leading-relaxed pt-1">{hurt.description}</p>
+                </div>
+              );
+            })}
           </div>
 
           {section03_hurtPoint.summary ? (
@@ -150,25 +164,33 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 04. 싸운 뒤, 어떻게 다시 가까워질까? */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#2f6b4f]">◤ 04.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 04.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "After a fight, how do we get close again?" : "싸운 뒤, 어떻게 다시 가까워질까?"}
           </h3>
         </div>
         <div className="rounded-xl border border-[#e6e2dc] bg-white p-5 space-y-4 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[section04_repair.personA, section04_repair.personB].map((repair, idx) => (
-              <div key={idx} className="rounded-lg border border-[#d6e2d8] bg-[#f4f7f4] p-4 space-y-2">
-                <span className="text-xs font-bold text-[#2f6b4f]">{isEn ? `${repair.personName}'s repair guide` : `${repair.personName}님 맞춤 회복 가이드`}</span>
-                <div className="text-xs space-y-1 pt-1">
-                  <p><span className="font-bold text-[#2c2b29]">{isEn ? "1. Needed first:" : "1. 먼저 필요한 것:"}</span> <span className="text-[#5e5b56]">{repair.firstNeed}</span></p>
-                  <p><span className="font-bold text-[#2c2b29]">{isEn ? "2. Needed next:" : "2. 그다음 필요한 것:"}</span> <span className="text-[#5e5b56]">{repair.nextNeed}</span></p>
+            {[section04_repair.personA, section04_repair.personB].map((repair, idx) => {
+              const side = repair.personName === canonicalNames[0] ? "a" : "b";
+              return (
+                <div key={idx} className="rounded-lg border border-[#d6e2d8] bg-[#f4f7f4] p-4 space-y-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <NameChip name={repair.personName} side={side} />
+                    <span className="text-xs font-bold text-[#2f6b4f]">
+                      {isEn ? "'s repair guide" : "님 맞춤 회복 가이드"}
+                    </span>
+                  </div>
+                  <div className="text-xs space-y-1 pt-1">
+                    <p><span className="font-bold text-[#2c2b29]">{isEn ? "1. Needed first:" : "1. 먼저 필요한 것:"}</span> <span className="text-[#5e5b56]">{repair.firstNeed}</span></p>
+                    <p><span className="font-bold text-[#2c2b29]">{isEn ? "2. Needed next:" : "2. 그다음 필요한 것:"}</span> <span className="text-[#5e5b56]">{repair.nextNeed}</span></p>
+                  </div>
+                  <p className="text-xs text-[#2c2b29] leading-relaxed pt-2 border-t border-[#d6e2d8]">
+                    {repair.howToApproach}
+                  </p>
                 </div>
-                <p className="text-xs text-[#2c2b29] leading-relaxed pt-2 border-t border-[#d6e2d8]">
-                  {repair.howToApproach}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {section04_repair.summary ? (
@@ -183,7 +205,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 05. 서로에게 기대하지 않는 게 좋은 것 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 05.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 05.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "Expectations best let go of" : "서로에게 기대하지 않는 게 좋은 것"}
           </h3>
@@ -193,15 +215,24 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
             {[
               section05_expectationsToRelease.expectationAtoB,
               section05_expectationsToRelease.expectationBtoA,
-            ].map((exp, idx) => (
-              <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
-                <span className="text-xs font-bold text-[#1b3b2b]">
-                  {isEn ? `${exp.fromName} → for ${exp.toName}` : `${exp.fromName} ➔ ${exp.toName}에게`}
-                </span>
-                <h4 className="text-xs sm:text-sm font-bold text-[#2c2b29]">{exp.headline}</h4>
-                <p className="text-xs text-[#5e5b56] leading-relaxed pt-1">{exp.description}</p>
-              </div>
-            ))}
+            ].map((exp, idx) => {
+              const sideFrom = exp.fromName === canonicalNames[0] ? "a" : "b";
+              const sideTo = exp.toName === canonicalNames[0] ? "a" : "b";
+              return (
+                <div key={idx} className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <NameChip name={exp.fromName} side={sideFrom} />
+                    <span className="text-xs font-bold text-[#2c2b29]">→</span>
+                    <NameChip name={exp.toName} side={sideTo} />
+                    <span className="text-xs font-bold text-[#1b3b2b]">
+                      {isEn ? " expectation to release" : "에게 내려놓을 기대"}
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-[#2c2b29]">{exp.headline}</h4>
+                  <p className="text-xs text-[#5e5b56] leading-relaxed pt-1">{exp.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -209,7 +240,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 06. 오래 함께할수록 지켜야 할 것 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 06.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 06.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "What to protect the longer you're together" : "오래 함께할수록 지켜야 할 것"}
           </h3>
@@ -252,7 +283,7 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
       {/* 07. 우리 부부 실전 사용설명서 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 07.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 07.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "Your practical instruction manual" : "우리 부부 실전 사용설명서"}
           </h3>
@@ -261,10 +292,13 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Action A -> B */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
-              <div className="text-xs font-bold text-[#2c2b29] border-b border-[#e6e2dc]/50 pb-2">
-                {isEn
-                  ? `${section07_directionalActions.actionAtoB.actorName} → for ${section07_directionalActions.actionAtoB.targetName}`
-                  : `${section07_directionalActions.actionAtoB.actorName} ➔ ${section07_directionalActions.actionAtoB.targetName}에게`}
+              <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/50 pb-2 flex-wrap">
+                <NameChip name={section07_directionalActions.actionAtoB.actorName} side={section07_directionalActions.actionAtoB.actorName === canonicalNames[0] ? "a" : "b"} />
+                <span className="text-xs font-bold text-[#2c2b29]">→</span>
+                <NameChip name={section07_directionalActions.actionAtoB.targetName} side={section07_directionalActions.actionAtoB.targetName === canonicalNames[0] ? "a" : "b"} />
+                <span className="text-xs font-bold text-[#2c2b29]">
+                  {isEn ? " action guide" : "에게 지켜줘야 할 행동"}
+                </span>
               </div>
               {section07_directionalActions.actionAtoB.dos.length > 0 ? (
                 <div className="space-y-1.5">
@@ -301,10 +335,13 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
 
             {/* Action B -> A */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-3">
-              <div className="text-xs font-bold text-[#2c2b29] border-b border-[#e6e2dc]/50 pb-2">
-                {isEn
-                  ? `${section07_directionalActions.actionBtoA.actorName} → for ${section07_directionalActions.actionBtoA.targetName}`
-                  : `${section07_directionalActions.actionBtoA.actorName} ➔ ${section07_directionalActions.actionBtoA.targetName}에게`}
+              <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/50 pb-2 flex-wrap">
+                <NameChip name={section07_directionalActions.actionBtoA.actorName} side={section07_directionalActions.actionBtoA.actorName === canonicalNames[0] ? "a" : "b"} />
+                <span className="text-xs font-bold text-[#2c2b29]">→</span>
+                <NameChip name={section07_directionalActions.actionBtoA.targetName} side={section07_directionalActions.actionBtoA.targetName === canonicalNames[0] ? "a" : "b"} />
+                <span className="text-xs font-bold text-[#2c2b29]">
+                  {isEn ? " action guide" : "에게 지켜줘야 할 행동"}
+                </span>
               </div>
               {section07_directionalActions.actionBtoA.dos.length > 0 ? (
                 <div className="space-y-1.5">

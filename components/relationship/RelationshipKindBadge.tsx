@@ -86,6 +86,13 @@ export function RelationshipAnalysisBadgeGroup({
   level,
   className = "",
 }: RelationshipAnalysisBadgeGroupProps) {
+  if (level === "basic") {
+    return (
+      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 ${className}`.trim()}>
+        무료 관계분석
+      </span>
+    );
+  }
   return (
     <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`.trim()}>
       <RelationshipKindBadge kind={kind} />

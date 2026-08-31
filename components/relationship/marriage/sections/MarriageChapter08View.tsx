@@ -1,5 +1,6 @@
 import React from "react";
 import type { MarriageChapter08Intelligence } from "@/lib/relationship/marriage/marriageChapter08Intelligence";
+import { NameChip } from "@/components/relationship/shared/editorial/EditorialPrimitives";
 import { User } from "lucide-react";
 
 type Props = {
@@ -50,7 +51,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
       {/* 01. 지금 우리는 어떤 시기를 지나고 있을까? */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 01.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 01.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "What season are we in right now?" : "지금 우리는 어떤 시기를 지나고 있을까?"}
           </h3>
@@ -60,8 +61,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
             {/* Person A */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/40 pb-2">
-                <PersonBadge />
-                <span className="text-xs font-bold text-[#2c2b29]">{isEn ? nameA : `${nameA}님`}</span>
+                <NameChip name={nameA} side="a" />
               </div>
               <p className="text-xs sm:text-sm font-bold text-[#1b3b2b]">
                 {section01CurrentPeriod.personA.headline}
@@ -74,8 +74,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
             {/* Person B */}
             <div className="rounded-lg border border-[#e6e2dc]/80 bg-[#f9f8f6] p-4 space-y-2">
               <div className="flex items-center gap-1.5 border-b border-[#e6e2dc]/40 pb-2">
-                <PersonBadge />
-                <span className="text-xs font-bold text-[#2c2b29]">{isEn ? nameB : `${nameB}님`}</span>
+                <NameChip name={nameB} side="b" />
               </div>
               <p className="text-xs sm:text-sm font-bold text-[#1b3b2b]">
                 {section01CurrentPeriod.personB.headline}

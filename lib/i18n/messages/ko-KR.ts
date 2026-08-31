@@ -177,7 +177,7 @@ export const messagesKoKR: MessageCatalog = {
     shareToggleCta: "공유하기",
     shareViaSms: "메시지",
     shareViaOtherApp: "다른 앱으로…",
-    kindBadgeRomantic: "인연",
+    kindBadgeRomantic: "연인",
     kindBadgeWork: "동료",
     kindBadgeCohabitation: "부부",
     kindBadgeFriendship: "친구",
