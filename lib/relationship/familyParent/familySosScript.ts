@@ -48,7 +48,7 @@ export function buildFamilySosSection(params: {
       sos_line = pick(
         locale,
         `${child} has good resilience. Not rushing them — just waiting — is already a big help: "Take your time, I believe in you."`,
-        `${josaEunNeun(child)} 회복탄력성이 좋은 편이에요. 재촉하지 말고 기다려 주는 것만으로도 큰 힘이 됩니다 — "천천히 해도 괜찮아, 난 너를 믿어."`,
+        `${josaEunNeun(child)} 관계 회복력이 좋은 편이에요. 재촉하지 말고 기다려 주는 것만으로도 큰 힘이 됩니다 — "천천히 해도 괜찮아, 난 너를 믿어."`,
       );
     } else {
       sos_line = pick(

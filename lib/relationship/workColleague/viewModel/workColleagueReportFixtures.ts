@@ -170,7 +170,7 @@ export const fullWorkColleagueReportFixture: WorkColleagueReportBody = {
       highlights: [
         {
           axis_key: "structure",
-          axis_label: "계획구조화",
+          axis_label: "계획성",
           gap: 30,
           match_type: "tension",
           topic: "일정 관리",

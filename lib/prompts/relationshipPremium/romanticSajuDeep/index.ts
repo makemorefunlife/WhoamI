@@ -361,7 +361,7 @@ export function prepareRomanticSajuDeepRun(
   const anchorIsA =
     sajuFrameDirection === "A" ? true : sajuFrameDirection === "B" ? false : null;
 
-  // Part4① Before/After 표현속도 신호 — 11축 전용(갈등직면성+자기통제)이라
+  // Part4① Before/After 표현속도 신호 — 11축 전용(갈등대처+자기통제)이라
   // romantic_signals(사주) 유무와 무관하게 surveyProfileA/B만 있으면 계산된다.
   const expressionSpeedDirection = resolveExpressionSpeedDirection(
     params.surveyProfileA,

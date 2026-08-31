@@ -219,7 +219,7 @@ const AXIS_NOTE_ENERGY_HIGH = 60;
 const AXIS_NOTE_ENERGY_LOW = 40;
 
 /**
- * Part2② 배터리 스위치 — 11축[외향에너지] 확인문구. `chartEnergyProfile`의
+ * Part2② 배터리 스위치 — 11축[외향성] 확인문구. `chartEnergyProfile`의
  * 밖순이/집돌이 판정(`energy_battery` 문구)은 완전히 안 건드리고, psych
  * 점수가 그 판정을 뒷받침하는지 확인/유보 문구만 별도로 얹는다(Batch 2·3과
  * 동일한 non-invasive 원칙). 하이브리드(챠트 판정이 뚜렷하지 않음)는 대상 아님.
@@ -239,14 +239,14 @@ export function resolveEnergyStyleAxisNote(
       return pick(
         locale,
         "The 11-axis survey backs this up too — the outgoing-energy score runs high, so the 'recharge outside' type fits the psychological data as well.",
-        "11축 설문에서도 확인돼요 — 외향에너지 점수가 높게 나와서, '밖에서 충전하는 타입'이 심리 데이터로도 뒷받침돼요.",
+        "11축 설문에서도 확인돼요 — 외향성 점수가 높게 나와서, '밖에서 충전하는 타입'이 심리 데이터로도 뒷받침돼요.",
       );
     }
     if (score <= AXIS_NOTE_ENERGY_LOW) {
       return pick(
         locale,
         "Survey scores actually lean the other way — the outgoing-energy score runs low, so this person may recharge at home more than the chart suggests.",
-        "설문 점수는 오히려 반대로 나와요 — 외향에너지 점수가 낮게 나와서, 실제로는 집에서도 충전이 잘 되는 편일 수 있어요.",
+        "설문 점수는 오히려 반대로 나와요 — 외향성 점수가 낮게 나와서, 실제로는 집에서도 충전이 잘 되는 편일 수 있어요.",
       );
     }
     return null;
@@ -257,14 +257,14 @@ export function resolveEnergyStyleAxisNote(
       return pick(
         locale,
         "The 11-axis survey backs this up too — the outgoing-energy score runs low, so the 'recharge at home' type fits the psychological data as well.",
-        "11축 설문에서도 확인돼요 — 외향에너지 점수가 낮게 나와서, '집에서 충전하는 타입'이 심리 데이터로도 뒷받침돼요.",
+        "11축 설문에서도 확인돼요 — 외향성 점수가 낮게 나와서, '집에서 충전하는 타입'이 심리 데이터로도 뒷받침돼요.",
       );
     }
     if (score >= AXIS_NOTE_ENERGY_HIGH) {
       return pick(
         locale,
         "Survey scores actually lean the other way — the outgoing-energy score runs high, so this person may need more outside time than the chart suggests.",
-        "설문 점수는 오히려 반대로 나와요 — 외향에너지 점수가 높게 나와서, 실제로는 밖에서 에너지를 얻는 면도 있을 수 있어요.",
+        "설문 점수는 오히려 반대로 나와요 — 외향성 점수가 높게 나와서, 실제로는 밖에서 에너지를 얻는 면도 있을 수 있어요.",
       );
     }
     return null;

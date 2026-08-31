@@ -119,7 +119,7 @@ export function buildWhyTurnToFriendLine(
     return `${base} ${pick(
       locale,
       "They also bounce back fast themselves, so being around them makes it easier to shake things off too.",
-      "회복탄력성도 빠른 편이라, 곁에 있으면 덩달아 툭툭 털고 일어나게 돼요.",
+      "관계 회복력도 빠른 편이라, 곁에 있으면 덩달아 툭툭 털고 일어나게 돼요.",
     )}`;
   }
   return base;
@@ -201,7 +201,7 @@ export function buildUnlockedSelfLine(params: {
   return stimClause ? `${core}${stimClause}` : core;
 }
 
-/** 항목 18 — 멀리 떨어져도 유지되는가 (역마 + 인정욕구/회복탄력성) */
+/** 항목 18 — 멀리 떨어져도 유지되는가 (역마 + 인정욕구/관계 회복력) */
 export function buildDistanceResilienceLine(params: {
   yeomaA: number;
   yeomaB: number;
@@ -259,7 +259,7 @@ export function buildDistanceResilienceLine(params: {
       pick(
         locale,
         "Your resilience runs high too, so reunions skip the awkward re-warming and land right back at your usual rhythm.",
-        "회복탄력성도 높은 편이라, 오랜만에 만나도 어색한 워밍업 없이 바로 예전 텐션으로 돌아와요.",
+        "관계 회복력도 높은 편이라, 오랜만에 만나도 어색한 워밍업 없이 바로 예전 텐션으로 돌아와요.",
       ),
     );
   }
@@ -270,7 +270,7 @@ export function buildDistanceResilienceLine(params: {
  * 항목 15 — 질투·비교·소외 (구체적 트리거 장면).
  * 인정욕구가 높은 쪽(nameSelf) 기준으로, 같이 가려던 자리에 자신만 빠졌을 때
  * 느끼는 소외감을 구체적 장면으로 서술한다. resolveJealousyGuardNote(겁재+
- * 인정욕구/현실실리)와 같은 축을 쓰되, 그 문구 뒤에 붙일 구체적 장면 한 줄만
+ * 인정욕구/실용성)와 같은 축을 쓰되, 그 문구 뒤에 붙일 구체적 장면 한 줄만
  * 추가한다 — 겹치는 일반 서술은 다시 만들지 않는다.
  */
 export function buildJealousyTriggerSceneLine(

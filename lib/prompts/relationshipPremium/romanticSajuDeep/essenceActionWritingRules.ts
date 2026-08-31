@@ -110,7 +110,7 @@ Shared bottom section:
 
 /**
  * 100점 Few-Shot — 구조·톤·길이 뼈대 (문장 복사 금지).
- * fasterName — Batch 6의 resolveExpressionSpeedDirection(갈등직면성+자기통제)
+ * fasterName — Batch 6의 resolveExpressionSpeedDirection(갈등대처+자기통제)
  * 신호를 재사용. 아래 예시의 "01. 정서적 타이밍 존중하기"(myName용)/"01. 침묵을
  * 깨고 내면의 지도 보여주기"(targetName용) 구도가 "빠른 표현 쪽 vs 신중 처리
  * 쪽" 개념과 그대로 겹쳐서 새 신호를 안 만들고 재사용한다. balanced/신호
@@ -125,7 +125,7 @@ export function buildEssenceActionFewShotExample(params: {
 }): string {
   const { nicknameA, nicknameB, myName, targetName, fasterName } = params;
   const serverSignalLine = fasterName
-    ? `\n⚠️ 서버 신호: 이 리포트는 **${fasterName}**가 갈등직면성↑·자기통제↓ 쪽으로 신호가 갈립니다 — ${fasterName}에게는 "상대 타이밍 존중" 계열 팁을, 반대쪽에게는 "침묵 깨고 내면 보여주기" 계열 팁을 01번에 우선 배치하세요.`
+    ? `\n⚠️ 서버 신호: 이 리포트는 **${fasterName}**가 갈등대처↑·자기통제↓ 쪽으로 신호가 갈립니다 — ${fasterName}에게는 "상대 타이밍 존중" 계열 팁을, 반대쪽에게는 "침묵 깨고 내면 보여주기" 계열 팁을 01번에 우선 배치하세요.`
     : "";
 
   return `

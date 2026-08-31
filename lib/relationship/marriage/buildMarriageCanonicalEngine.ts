@@ -532,7 +532,7 @@ export function buildMarriageCanonicalEngine(
     {
       domain: "Operating Responsibility",
       innateTendency: isEn ? `${a} innate responsibility is strong in birth-chart.` : `${a}님의 사주 기질상 관리 및 책임성이 높습니다.`,
-      currentBehavior: isEn ? `Current psych structure score is ${pA.structure}.` : `현재 설문 상 계획구조화 점수는 ${pA.structure}점입니다.`,
+      currentBehavior: isEn ? `Current psych structure score is ${pA.structure}.` : `현재 설문 상 계획성 점수는 ${pA.structure}점입니다.`,
       pairDynamicShift: isEn ? `When paired with ${b}, responsibility settles into ${primaryManager}.` : `${b}님과 함께 있을 때 실제 집안 운영 책임은 ${primaryManager === "a" ? a : b}님 쪽으로 수렴합니다.`,
       summaryDiscrepancy: isEn
         ? "Innate sense of duty remains high, but day-to-day execution depends on established household routines."

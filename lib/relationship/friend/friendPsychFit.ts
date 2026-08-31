@@ -23,7 +23,7 @@ function axisAvg(psych: PsychMasterJson, a: keyof PsychMasterJson["secondary_axe
   return b ? (s[a] + s[b]) / 2 : s[a];
 }
 
-/** 시작점 시그니처 — 외향에너지 격차 기반 짧은 절 */
+/** 시작점 시그니처 — 외향성 격차 기반 짧은 절 */
 export function resolveFriendSignatureClause(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
@@ -153,7 +153,7 @@ export function resolveGuardianCharacterForPerson(
   return { key, ...GUARDIAN_LABEL[locale][key] };
 }
 
-/** Part2② 대화 핑퐁·메신저 템포 — 자극추구+외향에너지 기반 확인 문구 */
+/** Part2② 대화 핑퐁·메신저 템포 — 자극추구+외향성 기반 확인 문구 */
 export function resolveCommunicationRhythmNote(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
@@ -227,7 +227,7 @@ function buildTravelStyleSplitResult(
   };
 }
 
-/** Part3① 여행 & 액티비티 동선 마찰 — 계획구조화(structure) 격차 기반 역할 분리 */
+/** Part3① 여행 & 액티비티 동선 마찰 — 계획성(structure) 격차 기반 역할 분리 */
 export function resolveTravelStyleSplit(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
@@ -408,7 +408,7 @@ export type FriendCounselingStyle = {
   description: string;
 };
 
-/** Part3③ 비밀 공유 & 고민 상담의 깊이(F형 vs T형) — 인성/관계공감 vs 관성/분석사고 */
+/** Part3③ 비밀 공유 & 고민 상담의 깊이(F형 vs T형) — 인성/관계공감 vs 관성/사고분석 */
 export function resolveCounselingStyleForPerson(
   counts: TenGodCounts,
   psych: PsychMasterJson | null | undefined,
@@ -485,7 +485,7 @@ export function resolveTreasurerConfidence(
   return null;
 }
 
-/** Part3② 더치페이·총무 — 재성 기반 지정 결과에 대한 11축(현실실리+계획구조화) 확인/유보 문구 */
+/** Part3② 더치페이·총무 — 재성 기반 지정 결과에 대한 11축(실용성+계획성) 확인/유보 문구 */
 export function resolveTreasurerConfirmNote(
   psych: PsychMasterJson | null | undefined,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
@@ -495,7 +495,7 @@ export function resolveTreasurerConfirmNote(
     return pick(
       locale,
       "The 11-axis scores back this up too — high reality-sense and planning-structure make them a natural fit for the job.",
-      "현실실리·계획구조화 축도 이 판정을 뒷받침해요 — 이 역할이 잘 맞는 타입이에요.",
+      "실용성·계획성 축도 이 판정을 뒷받침해요 — 이 역할이 잘 맞는 타입이에요.",
     );
   }
   if (align === "caution") {
@@ -648,7 +648,7 @@ export function refineFriendTreasurer(
   };
 }
 
-/** Part4① 제3자(연애·다른 친구) 질투 방지 — 겁재(비겁) + 11축(인정욕구/현실실리) */
+/** Part4① 제3자(연애·다른 친구) 질투 방지 — 겁재(비겁) + 11축(인정욕구/실용성) */
 export function resolveJealousyGuardNote(
   counts: TenGodCounts,
   psych: PsychMasterJson | null | undefined,
@@ -668,7 +668,7 @@ export function resolveJealousyGuardNote(
   );
 }
 
-/** Part5① 관계 회복 스위치(화해 트리거) — 11축(관계공감/인정욕구 vs 현실실리) */
+/** Part5① 관계 회복 스위치(화해 트리거) — 11축(관계공감/인정욕구 vs 실용성) */
 export function resolveReconciliationScript(
   psych: PsychMasterJson | null | undefined,
   nickname: string,

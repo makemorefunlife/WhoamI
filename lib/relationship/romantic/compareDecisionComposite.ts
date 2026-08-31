@@ -60,9 +60,9 @@ export type RefinedCompareDecisionPair = {
 };
 
 const SAJU_LOCK_MARGIN = 2;
-/** 신중결정 상단 — consultative lean */
+/** 신중함 상단 — consultative lean */
 const PSYCH_CONSULTATIVE = 60;
-/** 신중결정 하단 — independent lean */
+/** 신중함 하단 — independent lean */
 const PSYCH_INDEPENDENT = 40;
 
 function resolveMargin(

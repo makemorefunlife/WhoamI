@@ -45,12 +45,12 @@ const COMPARISON_TABLE_AXIS_MAP: Array<{
   axisKey: keyof CurrentSelfProfile["secondary_axes"];
   axisLabel: string;
 }> = [
-  { rowLabel: "감정 표현", axisKey: "energy_style", axisLabel: "외향에너지" },
-  { rowLabel: "갈등 반응", axisKey: "conflict_style", axisLabel: "갈등직면성" },
+  { rowLabel: "감정 표현", axisKey: "energy_style", axisLabel: "외향성" },
+  { rowLabel: "갈등 반응", axisKey: "conflict_style", axisLabel: "갈등대처" },
   { rowLabel: "애정 언어", axisKey: "empathy", axisLabel: "관계공감" },
   { rowLabel: "스트레스 패턴", axisKey: "self_control", axisLabel: "자기통제" },
-  { rowLabel: "의사결정", axisKey: "decision_style", axisLabel: "신중결정" },
-  { rowLabel: "소통 방식", axisKey: "structure", axisLabel: "계획구조화" },
+  { rowLabel: "의사결정", axisKey: "decision_style", axisLabel: "신중함" },
+  { rowLabel: "소통 방식", axisKey: "structure", axisLabel: "계획성" },
 ];
 
 /** PersonCore v2 domain_signals + stem_focus 엑기스 — LLM 입력 토큰 압축용 */

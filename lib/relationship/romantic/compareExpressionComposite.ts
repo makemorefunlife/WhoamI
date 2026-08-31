@@ -55,9 +55,9 @@ export type RefinedCompareExpressionPair = {
 };
 
 const SAJU_LOCK_FOOD = 2;
-/** 외향에너지 상단 — expressive lean */
+/** 외향성 상단 — expressive lean */
 const PSYCH_EXPRESSIVE = 60;
-/** 외향에너지 하단 — reserved lean */
+/** 외향성 하단 — reserved lean */
 const PSYCH_RESERVED = 40;
 
 function sajuMargin(foodCount: number): number {

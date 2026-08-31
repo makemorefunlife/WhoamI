@@ -2,7 +2,7 @@
  * Part1 "관계 입체 진단" — 훈육 마찰 지수(Track A) / 소통 엇박자 진단(Track B).
  * 신규 계산은 최소화: `PairFamilySignals`(이미 계산됨, `pairFamilySignals.ts`)의
  * `nagging_trigger_index`/`umbilical_band`를 그대로 재사용하고, 없으면
- * `masterScores.risk`(이미 계산됨)로 폴백한다. 11축 `decision_style`(신중결정)은
+ * `masterScores.risk`(이미 계산됨)로 폴백한다. 11축 `decision_style`(신중함)은
  * 가족 도메인에서 이번에 처음 사용 — 극단값(≥70/≤30)일 때만 확인문구, 중간대는
  * null(억지로 안 만듦, 다른 도메인의 axisNote 컨벤션과 동일).
  */

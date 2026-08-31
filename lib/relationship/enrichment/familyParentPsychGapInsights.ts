@@ -10,14 +10,14 @@ import { objectParticle, subjectParticle, topicParticle } from "@/lib/relationsh
  *   4 → family.section_relationship_index.safe_distance_note
  *   5 → family.section_sos_script.sos_line
  *   6 → family.section_household_roles.complement
- * 축 이름(계획구조화·자극추구 등) 자체는 화면 문장에 노출하지 않는다.
+ * 축 이름(계획성·자극추구 등) 자체는 화면 문장에 노출하지 않는다.
  */
 
 const GAP_GATE = 15;
 
 /**
  * 항목 4 — 간섭으로 느껴지는 지점.
- * 부모의 계획구조화(structure) vs 자녀의 자극추구(stimulation, "새로운 걸
+ * 부모의 계획성(structure) vs 자녀의 자극추구(stimulation, "새로운 걸
  * 스스로 해보고 싶은 마음"으로 번역)만 비교한다.
  */
 export function buildInterferenceTriggerLine(params: {
@@ -44,7 +44,7 @@ export function buildInterferenceTriggerLine(params: {
 
 /**
  * 항목 5 — 누가 보호하고 누가 기대는가(역할 역전).
- * 회복탄력성(resilience) + 관계공감(empathy)만 비교한다. 물리적으로는
+ * 관계 회복력(resilience) + 관계공감(empathy)만 비교한다. 물리적으로는
  * 부모가 보호자이지만, 정서적으로는 공감 능력이 높은 자녀에게 부모가
  * 기대고 있을 수 있다는 가능성만 짚는다 — 단정하지 않는다.
  */

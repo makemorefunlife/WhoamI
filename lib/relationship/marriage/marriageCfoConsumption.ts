@@ -1,6 +1,6 @@
 /**
  * Part2③ 자산 관리 주도권(CFO) & 소비 스위치 — 사양서의 "정재/관성(미래 안정)
- * vs 편재/식상(현재 삶의 질)" 소비가치관 분리 + 11축[현실실리/자기통제] 확인문구.
+ * vs 편재/식상(현재 삶의 질)" 소비가치관 분리 + 11축[실용성/자기통제] 확인문구.
  * Phase 5-2: refineHouseholdCfo가 base pick + psych/spending 신호를 조합한다.
  * pickHouseholdCfo 자체는 재호출하지 않는다.
  */
@@ -85,7 +85,7 @@ const AXIS_NOTE_GAP_HIGH = 20;
 const AXIS_NOTE_GAP_LOW = 8;
 
 /**
- * CFO로 뽑힌 사람의 현실실리(practicality)/자기통제(self_control) 평균이
+ * CFO로 뽑힌 사람의 실용성(practicality)/자기통제(self_control) 평균이
  * 파트너보다 뚜렷이 높으면 확인, 오히려 낮으면 유보 문구. 격차가 작으면 null
  * (억지로 안 붙임). `pickHouseholdCfo`의 기존 판정 자체는 안 건드림.
  */
@@ -117,14 +117,14 @@ export function resolveCfoAxisNote(
     return pick(
       locale,
       "The 11-axis survey backs this up too — this person's practicality and self-control scores run clearly higher, so the CFO role fits the psychological data as well.",
-      "11축 설문에서도 확인돼요 — 이 사람의 현실실리·자기통제 점수가 뚜렷하게 높아서, CFO 역할이 심리 데이터로도 뒷받침돼요.",
+      "11축 설문에서도 확인돼요 — 이 사람의 실용성·자기통제 점수가 뚜렷하게 높아서, CFO 역할이 심리 데이터로도 뒷받침돼요.",
     );
   }
   if (diff <= AXIS_NOTE_GAP_LOW * -1) {
     return pick(
       locale,
       "Survey scores actually lean the other way on practicality/self-control — the saju-based pick may need a second look together before locking it in.",
-      "설문 점수는 오히려 반대로 나와요(현실실리·자기통제) — 사주 기반 CFO 지정을 그대로 확정하기 전에 둘이 한 번 더 확인해 보세요.",
+      "설문 점수는 오히려 반대로 나와요(실용성·자기통제) — 사주 기반 CFO 지정을 그대로 확정하기 전에 둘이 한 번 더 확인해 보세요.",
     );
   }
   return null;

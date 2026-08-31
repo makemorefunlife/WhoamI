@@ -25,7 +25,7 @@ export type SnapshotTopicNarrative = {
   caution?: string;
   scene?: string;
   isWarning: boolean;
-  /** Part1① 11축(관계공감/갈등직면성) 확인 문구 — intimacy/conflict만, profile 없으면 없음 */
+  /** Part1① 11축(관계공감/갈등대처) 확인 문구 — intimacy/conflict만, profile 없으면 없음 */
   axisNote?: string | null;
 };
 

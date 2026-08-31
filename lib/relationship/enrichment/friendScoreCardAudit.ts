@@ -250,7 +250,7 @@ function riskWhy(
     if (resA >= 65 || resB >= 65) {
       sentences.push(
         isKo
-          ? `또한 높은 회복탄력성(resilience) 성향이 뒷받침되어, 일상에서 부딪힘이 발생하더라도 앙금이 길게 남지 않도록 완충해 줍니다.`
+          ? `또한 높은 관계 회복력(resilience) 성향이 뒷받침되어, 일상에서 부딪힘이 발생하더라도 앙금이 길게 남지 않도록 완충해 줍니다.`
           : `Additionally, strong psychological resilience helps cushion conflicts so small misunderstandings don't turn into long-term resentment.`,
       );
     }

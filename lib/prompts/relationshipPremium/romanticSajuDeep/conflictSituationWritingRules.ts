@@ -71,7 +71,7 @@ export function buildConflictSituationSystemPromptBlock(): string {
 
 /**
  * 100점 Few-Shot — 구조·깊이·톤 (문장 복사 금지).
- * fasterName — resolveExpressionSpeedDirection(갈등직면성+자기통제)이 A/B로
+ * fasterName — resolveExpressionSpeedDirection(갈등대처+자기통제)이 A/B로
  * 갈렸을 때만 채워서 서버 신호 확인 줄을 추가한다. balanced/신호 없음(profile
  * 없는 레거시 등)이면 undefined로 두어 이 함수의 반환 문자열이 기존과
  * byte-identical하게 유지된다.
@@ -85,7 +85,7 @@ export function buildConflictSituationFewShotExample(params: {
 }): string {
   const { nicknameA, nicknameB, myName, targetName, fasterName } = params;
   const serverSignalLine = fasterName
-    ? `\n⚠️ 서버 신호: 이 리포트는 **${fasterName}**가 갈등직면성↑·자기통제↓ 쪽으로 신호가 갈립니다 — 빠른 표현 슬롯에 ${fasterName}를 우선 배치하세요.`
+    ? `\n⚠️ 서버 신호: 이 리포트는 **${fasterName}**가 갈등대처↑·자기통제↓ 쪽으로 신호가 갈립니다 — 빠른 표현 슬롯에 ${fasterName}를 우선 배치하세요.`
     : "";
 
   return `

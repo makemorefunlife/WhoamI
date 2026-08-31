@@ -103,7 +103,7 @@ function axisScore(
 // computeRelationshipEventScores(pairEventScores.ts)의 intimacy/conflict 원점수는
 // grade(triScoreToGrade)에도 쓰이는 넓은 영향 범위라 손대지 않는다. 대신
 // buildSnapshotNarrative.ts::interpretTopic이 이미 만드는 해석 문장에, 관계공감/
-// 갈등직면성 11축으로 확인/유보하는 문구만 별도로 덧붙인다(친구 Batch 1과 동일한
+// 갈등대처 11축으로 확인/유보하는 문구만 별도로 덧붙인다(친구 Batch 1과 동일한
 // non-invasive 원칙). 안정·균형(stability)은 스펙이 특정 11축을 지정하지 않아 대상 아님.
 
 /** Part1① 친밀·끌림 — 관계공감(empathy) 평균으로 확인/유보 */
@@ -133,7 +133,7 @@ export function resolveIntimacyAxisNote(
   return null;
 }
 
-/** Part1① 갈등·긴장 — 갈등직면성(conflict_style) 격차로 확인 */
+/** Part1① 갈등·긴장 — 갈등대처(conflict_style) 격차로 확인 */
 export function resolveConflictAxisNote(
   profileA: CurrentSelfProfile | null | undefined,
   profileB: CurrentSelfProfile | null | undefined,
@@ -147,7 +147,7 @@ export function resolveConflictAxisNote(
     return pick(
       locale,
       "The gap in how you each face conflict (conflict-facing axis) is also fairly wide, so the tension you feel when you clash may run higher than what your charts alone suggest.",
-      "갈등을 대하는 방식(갈등직면성) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.",
+      "갈등을 대하는 방식(갈등대처) 격차도 큰 편이라, 부딪힐 때 체감 긴장이 사주 신호보다 더 크게 느껴질 수 있어요.",
     );
   }
   return null;

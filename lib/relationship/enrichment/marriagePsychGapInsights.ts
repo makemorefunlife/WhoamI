@@ -22,7 +22,7 @@ const GAP_GATE = 15;
 
 /**
  * 항목 5 — 개인 공간 vs 함께하는 시간.
- * 외향에너지(energy_style) 격차만 사용. 사람별로 다른 절이라 A/B 각각 반환.
+ * 외향성(energy_style) 격차만 사용. 사람별로 다른 절이라 A/B 각각 반환.
  */
 export function buildSpaceVsTogetherClauses(params: {
   psychA: PsychMasterJson | null | undefined;
@@ -91,7 +91,7 @@ export function buildCareerBalanceLine(params: {
 
 /**
  * 항목 7 — 누가 계획하고 누가 실행하는가(가정의 PM).
- * 계획구조화(structure) 격차만 사용.
+ * 계획성(structure) 격차만 사용.
  */
 export function buildHouseholdPmLine(params: {
   psychA: PsychMasterJson | null | undefined;

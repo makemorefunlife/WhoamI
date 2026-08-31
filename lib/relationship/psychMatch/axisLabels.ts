@@ -4,15 +4,15 @@ import type { Locale } from "@/lib/i18n/locale";
 export const PSYCH_MATCH_AXIS_KO_LABELS: Record<SecondaryAxisKey, string> = {
   stimulation: "자극추구",
   self_control: "자기통제",
-  practicality: "현실실리",
-  structure: "계획구조화",
+  practicality: "실용성",
+  structure: "계획성",
   empathy: "관계공감",
-  conflict_style: "갈등직면성",
-  resilience: "회복탄력성",
+  conflict_style: "갈등대처",
+  resilience: "관계 회복력",
   recognition: "인정욕구",
-  energy_style: "외향에너지",
-  thinking_style: "분석사고",
-  decision_style: "신중결정",
+  energy_style: "외향성",
+  thinking_style: "사고분석",
+  decision_style: "신중함",
 };
 
 /** English variant, opt-in via psychMatchAxisLabel(key, "en-US"). */
@@ -20,14 +20,14 @@ export const PSYCH_MATCH_AXIS_EN_LABELS: Record<SecondaryAxisKey, string> = {
   stimulation: "Stimulation-Seeking",
   self_control: "Self-Control",
   practicality: "Practicality",
-  structure: "Structure & Planning",
+  structure: "Planning",
   empathy: "Empathy",
-  conflict_style: "Conflict Directness",
-  resilience: "Resilience",
+  conflict_style: "Conflict Coping",
+  resilience: "Relationship Resilience",
   recognition: "Need for Recognition",
-  energy_style: "Outward Energy",
+  energy_style: "Extraversion",
   thinking_style: "Analytical Thinking",
-  decision_style: "Careful Decision-Making",
+  decision_style: "Prudence",
 };
 
 export function psychMatchAxisKoLabel(axisKey: string): string {

@@ -10,9 +10,9 @@ import { pick, LEGACY_FALLBACK_LOCALE } from "@/lib/relationship/workColleague/w
 
 /**
  * 항목 2 — 스트레스·마감·위기에서 어떤 사람이 되는가
- * (회복탄력성 resilience vs 자기통제 self_control만 사용).
+ * (관계 회복력 resilience vs 자기통제 self_control만 사용).
  * 자기통제가 높은 쪽 = 입 닫고 혼자 파고드는 모드.
- * 회복탄력성이 낮은 쪽 = 예민해져서 날카로워지는 모드.
+ * 관계 회복력이 낮은 쪽 = 예민해져서 날카로워지는 모드.
  */
 export function buildCrisisModeLine(params: {
   psychA: PsychMasterJson | null | undefined;
@@ -91,7 +91,7 @@ export function buildMutualGrowthLine(params: {
 }
 
 /**
- * 항목 5 — 디테일 vs 큰 그림 (분석사고 thinking_style 격차만 사용).
+ * 항목 5 — 디테일 vs 큰 그림 (사고분석 thinking_style 격차만 사용).
  * person_a_work_style / person_b_work_style 각각에 붙일 절을 따로 반환한다.
  */
 export function buildDetailVsBigPictureClauses(params: {
@@ -131,7 +131,7 @@ export function buildDetailVsBigPictureClauses(params: {
 
 /**
  * 항목 6 — 혼자 생각 vs 같이 논의
- * (에너지방식 energy_style + 갈등직면성 conflict_style만 사용).
+ * (에너지방식 energy_style + 갈등대처 conflict_style만 사용).
  */
 export function buildSoloVsDiscussLine(params: {
   psychA: PsychMasterJson | null | undefined;
@@ -180,7 +180,7 @@ export function buildSoloVsDiscussLine(params: {
 
 /**
  * 항목 10 (Chapter 3 보강 — 사용자 요청상 "회의실" 맥락, 리포트 구조상
- * 보고·소통 핏 카드에 안착) — 신중결정 격차는 리스크 한도 숫자화, 계획구조화
+ * 보고·소통 핏 카드에 안착) — 신중함 격차는 리스크 한도 숫자화, 계획성
  * 격차는 보고 리듬 고정 일정화로 각각 분리해 조언한다. 둘 다 psych 전용.
  */
 export function buildRiskAndRhythmLine(params: {
@@ -219,7 +219,7 @@ export function buildRiskAndRhythmLine(params: {
 }
 
 /**
- * 항목 7 — 불만이 쌓였을 때(갈등직면성 conflict_style 격차로 신호 분리,
+ * 항목 7 — 불만이 쌓였을 때(갈등대처 conflict_style 격차로 신호 분리,
  * 자기통제 self_control 격차로 대처법 톤 분리). 두 축 다 psych 전용.
  */
 export function buildComplaintSignalLine(params: {

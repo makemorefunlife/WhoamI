@@ -92,7 +92,7 @@ export type MoneyChoresSection = BaseSection & {
   mentalLoadNote?: string | null;
   /** Chapter 05 V3 Full Household Operating System Intelligence */
   ch05Intelligence?: import("../marriageChapter05Intelligence").MarriageChapter05Intelligence;
-  /** "우리를 위한 맞춤 제안" — CFO/갈등직면성/계획구조화 신호 게이트, 없으면 undefined */
+  /** "우리를 위한 맞춤 제안" — CFO/갈등대처/계획성 신호 게이트, 없으면 undefined */
   coupleActionPlan?: import("@/lib/relationship/enrichment/marriageCoupleActionPlan").CoupleActionPlanSection;
 };
 

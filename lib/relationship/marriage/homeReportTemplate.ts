@@ -66,7 +66,7 @@ export type MoneyChoresSection = {
   cfo_dual?: boolean;
   /** Incremental enrichment — invisible mental load (research gap) */
   mental_load_note?: string | null;
-  /** "우리를 위한 맞춤 제안" — CFO/갈등직면성/계획구조화 신호 게이트, 없으면 undefined */
+  /** "우리를 위한 맞춤 제안" — CFO/갈등대처/계획성 신호 게이트, 없으면 undefined */
   couple_action_plan?: import("@/lib/relationship/enrichment/marriageCoupleActionPlan").CoupleActionPlanSection;
 };
 

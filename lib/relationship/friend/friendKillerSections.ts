@@ -100,7 +100,7 @@ export type PlayMoneySection = {
   treasurer_nickname: string;
   treasurer_reason: string;
   optimal_hangout: string;
-  /** Part3② 더치페이·총무 — 11축(현실실리+계획구조화) 확인/유보 문구. psychMaster 없으면 null */
+  /** Part3② 더치페이·총무 — 11축(실용성+계획성) 확인/유보 문구. psychMaster 없으면 null */
   psych_confirm_note?: string | null;
   /** Phase 5-2 composite — Context Output treasurer_align */
   treasurer_align?: "confirms" | "caution";
@@ -111,7 +111,7 @@ export type PlayMoneySection = {
 export type BreakupGuideSection = {
   trigger_warning_a: string;
   trigger_warning_b: string;
-  /** Part4① 제3자 질투 방지 — 겁재+11축(인정욕구/현실실리) 확인 문구. psychMaster 없으면 null */
+  /** Part4① 제3자 질투 방지 — 겁재+11축(인정욕구/실용성) 확인 문구. psychMaster 없으면 null */
   jealousy_guard_a?: string | null;
   jealousy_guard_b?: string | null;
 };

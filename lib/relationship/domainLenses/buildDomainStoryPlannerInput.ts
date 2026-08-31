@@ -74,7 +74,7 @@ export function buildDomainStoryPlannerInput(params: {
       id: "ch3_conflict_safeguards",
       title_ko: "갈등 안전장치와 장기적 시너지",
       title_en: "Conflict Safeguards & Longterm Synergy",
-      summary_ko: "충·원진 등 긴장 뇌관을 해독하고 위기 시 회복탄력성을 확보하는 안전장치",
+      summary_ko: "충·원진 등 긴장 뇌관을 해독하고 위기 시 관계 회복력을 확보하는 안전장치",
       summary_en: "Conflict resolution buffers and long-term relational resilience",
       synthesis_guide_ko: "긴장 요인을 객관적으로 짚고 실천 가능한 대화법과 안전장치를 제시합니다.",
       synthesis_guide_en: "Objectively identify friction points and provide actionable communication safeguards.",

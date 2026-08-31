@@ -52,7 +52,7 @@ function clean(text: string, names: string[], locale: NarrativeLocale): string {
 
 /**
  * Item 1 — 공감 vs 해결.
- * 관계공감(empathy) - 분석사고(thinking_style) 격차만으로 사람별 "위로 우선 vs 해결 우선" 성향을 판단.
+ * 관계공감(empathy) - 사고분석(thinking_style) 격차만으로 사람별 "위로 우선 vs 해결 우선" 성향을 판단.
  */
 export function buildEmpathyVsSolvingScene(params: {
   axisResults: RomanticPsychMatchAxisResult[];
@@ -126,7 +126,7 @@ export function buildEmpathyVsSolvingScene(params: {
 
 /**
  * Item 2 — 성적·신체적 친밀감(스킨십).
- * 자극추구(stimulation) + 외향에너지(energy_style) 합산 점수만 비교.
+ * 자극추구(stimulation) + 외향성(energy_style) 합산 점수만 비교.
  */
 export function buildPhysicalIntimacyScene(params: {
   axisResults: RomanticPsychMatchAxisResult[];

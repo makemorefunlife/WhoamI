@@ -59,7 +59,7 @@ function axisScore(
   return typeof v === "number" ? v : null;
 }
 
-// ---- ① 관계의 균형추 (외향에너지 + 인정욕구) ------------------------------------
+// ---- ① 관계의 균형추 (외향성 + 인정욕구) ------------------------------------
 
 export type BalanceOfPowerResult = {
   scoreA: number | null;
@@ -128,7 +128,7 @@ export function resolveSubLeads(
   };
 }
 
-// ---- ② 감정 회복 속도 차이 (회복탄력성 + 자기통제) ------------------------------
+// ---- ② 감정 회복 속도 차이 (관계 회복력 + 자기통제) ------------------------------
 
 export type RecoverySpeedResult = {
   scoreA: number | null;
@@ -169,10 +169,10 @@ export function resolveRecoverySpeedGap(
   };
 }
 
-// ---- Part4① 표현 속도 차이 교정 대사 (갈등직면성 + 자기통제) ---------------------
+// ---- Part4① 표현 속도 차이 교정 대사 (갈등대처 + 자기통제) ---------------------
 //
-// Part1③(감정 회복 속도, 위 resolveRecoverySpeedGap)은 회복탄력성+자기통제를 쓰지만,
-// 스펙은 Part4①에 갈등직면성+자기통제를 지정해서 축이 다르다 — resolveRecoverySpeedGap을
+// Part1③(감정 회복 속도, 위 resolveRecoverySpeedGap)은 관계 회복력+자기통제를 쓰지만,
+// 스펙은 Part4①에 갈등대처+자기통제를 지정해서 축이 다르다 — resolveRecoverySpeedGap을
 // 재사용하지 않고 별도 함수로 둔다.
 
 export type ExpressionSpeedDirection = "A" | "B" | "balanced";
@@ -184,7 +184,7 @@ function expressionSpeedScore(profile: CurrentSelfProfile | null | undefined): n
   return conflict - selfControl;
 }
 
-/** 갈등직면성↑ + 자기통제↓ = 빠른 표현 쪽(급하게 감정을 터뜨리는 쪽). 격차 작으면 balanced. */
+/** 갈등대처↑ + 자기통제↓ = 빠른 표현 쪽(급하게 감정을 터뜨리는 쪽). 격차 작으면 balanced. */
 export function resolveExpressionSpeedDirection(
   profileA: CurrentSelfProfile | null | undefined,
   profileB: CurrentSelfProfile | null | undefined,

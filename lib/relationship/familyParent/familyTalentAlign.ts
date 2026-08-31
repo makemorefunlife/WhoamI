@@ -118,7 +118,7 @@ export function buildFamilyTalentPsychAuxNote(
       pick(
         loc,
         "Practical focus and self-control tendencies can also be noted as secondary context.",
-        "현실실리와 자기통제 성향도 별도의 보조 맥락으로 함께 참고할 수 있습니다.",
+        "실용성과 자기통제 성향도 별도의 보조 맥락으로 함께 참고할 수 있습니다.",
       ),
     );
   }
@@ -126,7 +126,7 @@ export function buildFamilyTalentPsychAuxNote(
     pick(
       loc,
       "Practical focus and self-control appear milder as secondary context only.",
-      "현실실리·자기통제 성향은 보조 맥락으로만 가볍게 참고할 수 있습니다.",
+      "실용성·자기통제 성향은 보조 맥락으로만 가볍게 참고할 수 있습니다.",
     ),
   );
 }

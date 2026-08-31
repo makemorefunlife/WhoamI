@@ -54,9 +54,9 @@ export type RefinedCompareCommunicationPair = {
 };
 
 const SAJU_LOCK_MARGIN = 2;
-/** 계획구조화 상단 — considerate lean */
+/** 계획성 상단 — considerate lean */
 const PSYCH_CONSIDERATE = 60;
-/** 계획구조화 하단 — direct lean */
+/** 계획성 하단 — direct lean */
 const PSYCH_DIRECT = 40;
 
 function sajuMargin(selfCount: number, sealCount: number): number {

@@ -11,7 +11,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { SecondaryAxisKey } from "@/lib/v2/survey/types";
 import { subjectParticle } from "@/lib/relationship/koreanParticles";
 
-// Part2① 종합 관계 지수 11축 확인문구 — 로맨틱 Batch 2(관계공감/갈등직면성)와
+// Part2① 종합 관계 지수 11축 확인문구 — 로맨틱 Batch 2(관계공감/갈등대처)와
 // 같은 non-invasive 원칙: 판정 점수(computeMarriageMasterScores)는 안 건드리고
 // intimacy/stability 토픽에만 확인/유보 문구를 별도로 얹는다. conflict(홈
 // 리스크)는 스펙이 축을 지정하지 않아 대상 아님.
@@ -53,7 +53,7 @@ function resolveRomanticFitAxisNote(
   return null;
 }
 
-/** stability(라이프 시너지) — 계획구조화(structure) 평균으로 확인/유보 */
+/** stability(라이프 시너지) — 계획성(structure) 평균으로 확인/유보 */
 function resolveLifeSynergyAxisNote(
   psychA: PsychMasterJson | null | undefined,
   psychB: PsychMasterJson | null | undefined,
@@ -67,14 +67,14 @@ function resolveLifeSynergyAxisNote(
     return pick(
       locale,
       "Your planning-structure axis scores are both on the high side, a good combination for turning chores, finances, and childcare into a working system together.",
-      "계획구조화 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.",
+      "계획성 축도 둘 다 높은 편이라, 가사·재정·육아를 시스템으로 맞춰 가기 유리한 조합이에요.",
     );
   }
   if (avg <= AXIS_NOTE_LOW) {
     return pick(
       locale,
       "Your planning-structure axis is on the low side, so without putting your role agreements into writing or routine, the synergy can fizzle out.",
-      "계획구조화 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.",
+      "계획성 축은 낮은 편이라, 역할 합의를 문서·루틴으로 명시해 두지 않으면 시너지가 흐지부지될 수 있어요.",
     );
   }
   return null;

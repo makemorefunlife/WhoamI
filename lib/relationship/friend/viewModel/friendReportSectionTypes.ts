@@ -109,7 +109,7 @@ export type DeEscalationSection = BaseSection & {
   archetypeLabel: string;
   cheatScript: string;
   reconciliationScript?: string | null;
-  /** current_enriched 전용 — 회복탄력성 11축 격차 현실 해석 문구(화해 속도) */
+  /** current_enriched 전용 — 관계 회복력 11축 격차 현실 해석 문구(화해 속도) */
   recoveryPaceNote?: string | null;
 };
 

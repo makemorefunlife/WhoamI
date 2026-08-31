@@ -518,7 +518,7 @@ export function buildFriendReportEnriched(params: {
       ? "서운함이 생겼을 때의 짧은 침묵은 단절이 아닌 배려의 냉각기입니다. 거창한 사과 대신 '내 느낌'을 담백하게 전하고 맛있는 식사나 소소한 기프티콘으로 쿨하게 대화의 물꼬를 트세요."
       : "A brief pause after friction is protective cooling time. Express feelings calmly and reopen dialogue with a casual meal or coffee.");
 
-  // Item 18 (멀리 떨어져도 유지되는가) — 역마 기운 + 인정욕구/회복탄력성.
+  // Item 18 (멀리 떨어져도 유지되는가) — 역마 기운 + 인정욕구/관계 회복력.
   const distanceResilienceLine = buildDistanceResilienceLine({
     yeomaA: ctx.friendPairAnalysis.dnaA.yeomaCount,
     yeomaB: ctx.friendPairAnalysis.dnaB.yeomaCount,

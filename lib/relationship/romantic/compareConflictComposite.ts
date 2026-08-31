@@ -55,9 +55,9 @@ export type RefinedCompareConflictPair = {
 
 /** 관성−식상 절대차 — treasurer SAJU_LOCK=2와 동일 스케일 */
 const SAJU_LOCK_MARGIN = 2;
-/** 갈등직면성 상단 — direct lean */
+/** 갈등대처 상단 — direct lean */
 const PSYCH_DIRECT = 60;
-/** 갈등직면성 하단 — principled lean */
+/** 갈등대처 하단 — principled lean */
 const PSYCH_PRINCIPLED = 40;
 
 function sajuMargin(officer: number, food: number): number {

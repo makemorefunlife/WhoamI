@@ -84,7 +84,7 @@ export function buildContactClosenessFitSynthesis(params: {
     category = "low_frequency_durable";
     title = isKo ? "저빈도 고신뢰 우정 체질" : "Low-Frequency High-Trust Friendship";
     summary = isKo
-      ? "자주 만나지 않아도 다시 만났을 때 어제 본 것처럼 편안한 회복탄력성을 가집니다."
+      ? "자주 만나지 않아도 다시 만났을 때 어제 본 것처럼 편안한 관계 회복력을 가집니다."
       : "Even without frequent meetings, reuniting instantly feels like no time has passed.";
     dynamicDescription = isKo
       ? "각자의 삶을 바쁘게 살아가다가 생각날 때 툭 연락해도 부담이 없는 관계입니다."
