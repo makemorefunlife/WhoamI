@@ -85,7 +85,8 @@ export function MarriageChapter07View({ ch07, canonicalNames, isEn }: Props) {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
