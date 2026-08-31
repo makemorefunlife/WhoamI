@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ReactDOM from "react-dom";
 import Script from "next/script";
 import {
   Geist,
@@ -129,6 +130,19 @@ const WEBSITE_JSON_LD = {
   url: "https://www.ahaitsme.com",
 };
 
+/** Clerk publishable key encodes its Frontend API host as base64: pk_(test|live)_<host>$ */
+function getClerkFrontendApiOrigin(): string | null {
+  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const encoded = key?.split("_")[2];
+  if (!encoded) return null;
+  try {
+    const host = Buffer.from(encoded, "base64").toString("utf-8").replace(/\$+$/, "");
+    return host ? `https://${host}` : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: {
@@ -136,6 +150,13 @@ export default async function RootLayout({
 }) {
   const locale = await getRequestLocale();
   const htmlLang = localeToHtmlLang(locale);
+
+  const clerkFapiOrigin = getClerkFrontendApiOrigin();
+  if (clerkFapiOrigin) {
+    // Warm the connection to Clerk's API before the user's first sign-in click.
+    ReactDOM.preconnect(clerkFapiOrigin, { crossOrigin: "anonymous" });
+    ReactDOM.prefetchDNS(clerkFapiOrigin);
+  }
 
   return (
     <html
