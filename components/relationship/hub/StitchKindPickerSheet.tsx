@@ -72,20 +72,20 @@ export default function StitchKindPickerSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[260] flex items-end justify-center bg-primary/25 p-4 backdrop-blur-[2px] sm:items-center"
+      className="fixed inset-0 z-[260] flex items-center justify-center bg-primary/25 p-4 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="kind-picker-title"
       onClick={onClose}
     >
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 16 }}
-        className={`${hubSheetClass()} max-h-[85dvh] overflow-y-auto p-5 sm:p-6`}
+        initial={{ opacity: 0, y: 12, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 8, scale: 0.98 }}
+        className={`${hubSheetClass()} flex max-h-[85dvh] flex-col overflow-hidden p-0`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex shrink-0 items-start justify-between gap-3 p-5 pb-4 sm:p-6 sm:pb-4">
           <div>
             <h2
               id="kind-picker-title"
@@ -107,7 +107,7 @@ export default function StitchKindPickerSheet({
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto p-5 pt-0 sm:p-6 sm:pt-0">
           <section>
             <p className="mb-2 px-0.5 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
               {messages.hub.kindPickerSectionBasic}
