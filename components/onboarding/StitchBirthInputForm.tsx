@@ -17,6 +17,8 @@ import {
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { convertLunarToSolarDate } from "@/lib/v2/onboarding/lunarCalendar";
+import type { CalendarType } from "@/components/onboarding/StitchBirthDateTimeFields";
 
 export type StitchBirthFormState = {
   birthDate: string;
@@ -48,7 +50,7 @@ export default function StitchBirthInputForm({
   busy?: boolean;
   onChange: (state: StitchBirthFormState) => void;
 }) {
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const parsed = parseBirthDateParts(initialBirthDate ?? null);
   const parsedTime =
     !initialBirthTimeUnknown && initialBirthTime
@@ -64,15 +66,31 @@ export default function StitchBirthInputForm({
   const [birthTimeUnknown, setBirthTimeUnknown] = useState(
     initialBirthTimeUnknown === true,
   );
+  const [calendarType, setCalendarType] = useState<CalendarType>("solar");
   const [birthPlace, setBirthPlace] = useState(initialBirthPlace?.trim() ?? "");
   const [birthPlaceUnknown, setBirthPlaceUnknown] = useState(
     initialBirthPlaceUnknown === true,
   );
+  const showCalendarToggle = locale === "ko-KR";
 
-  const birthDate = useMemo(
-    () => buildISODateFromParts(year, month, day),
-    [year, month, day],
-  );
+  const birthDate = useMemo(() => {
+    if (calendarType !== "lunar") {
+      return buildISODateFromParts(year, month, day);
+    }
+    const y = Number.parseInt(year, 10);
+    const mo = Number.parseInt(month, 10);
+    const d = Number.parseInt(day, 10);
+    if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
+      return "";
+    }
+    const solar = convertLunarToSolarDate(y, mo, d);
+    if (!solar) return "";
+    return buildISODateFromParts(
+      String(solar.year),
+      String(solar.month).padStart(2, "0"),
+      String(solar.day).padStart(2, "0"),
+    );
+  }, [year, month, day, calendarType]);
 
   const birthTime = useMemo(() => {
     if (birthTimeUnknown) return null;
@@ -182,9 +200,41 @@ export default function StitchBirthInputForm({
         className="stitch-hero-panel space-y-6 rounded-extra-large p-6 sm:p-8"
       >
         <section className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            Date of birth
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              Date of birth
+            </p>
+            {showCalendarToggle ? (
+              <div
+                className="flex gap-1 rounded-full bg-surface-container-low/80 p-0.5"
+                role="radiogroup"
+                aria-label={messages.relationshipForm.calendarTypeLabel}
+              >
+                {(
+                  [
+                    { v: "solar" as const, label: messages.relationshipForm.calendarTypeSolar },
+                    { v: "lunar" as const, label: messages.relationshipForm.calendarTypeLunar },
+                  ] as const
+                ).map(({ v, label }) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="radio"
+                    aria-checked={calendarType === v}
+                    disabled={busy}
+                    onClick={() => setCalendarType(v)}
+                    className={`min-h-[28px] rounded-full px-3 text-[11px] font-semibold transition disabled:opacity-40 ${
+                      calendarType === v
+                        ? "bg-primary text-on-primary"
+                        : "text-on-surface-variant"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <div className="grid grid-cols-3 gap-2.5">
             <label className="space-y-1.5">
               <span className="block text-center text-[10px] text-on-surface-variant">

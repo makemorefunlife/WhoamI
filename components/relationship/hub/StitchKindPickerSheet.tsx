@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
@@ -70,7 +71,11 @@ export default function StitchKindPickerSheet({
 
   if (!open) return null;
 
-  return (
+  // Portal straight to <body> — see AddFriendSheet.tsx for why: a fixed
+  // full-screen overlay left inside the page's own DOM tree inherits any
+  // ancestor's lingering CSS transform as its containing block instead of
+  // the real viewport, which can silently push it off-screen.
+  return createPortal(
     <div
       className="fixed inset-0 z-[260] flex items-center justify-center bg-primary/25 p-4 backdrop-blur-[2px]"
       role="dialog"
@@ -79,9 +84,12 @@ export default function StitchKindPickerSheet({
       onClick={onClose}
     >
       <motion.div
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
+        // initial={false} — see AddFriendSheet.tsx: an enter transition
+        // that never fires would otherwise strand this modal at its
+        // initial (offset/transparent) transform with no way to reach it,
+        // and there's no AnimatePresence here for `exit` to ever run either.
+        initial={false}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 8, scale: 0.98 }}
         className={`${hubSheetClass()} flex max-h-[85dvh] flex-col overflow-hidden p-0`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -221,6 +229,7 @@ export default function StitchKindPickerSheet({
           </section>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 }

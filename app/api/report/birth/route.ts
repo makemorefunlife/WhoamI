@@ -16,7 +16,7 @@ import { deleteReportAnalysis } from "@/lib/report/reportAnalyses";
 import { fetchReportWithBirthCoords } from "@/lib/report/fetchReportWithBirthCoords";
 import { invalidatePersonCoreBlueprint } from "@/lib/personCore";
 import { invalidateRelationshipPremiumsForReport } from "@/lib/relationship/invalidateRelationshipPremiums";
-import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 
@@ -184,6 +184,11 @@ export async function POST(req: Request) {
       );
     }
 
+    // Locale-aware default (ko-KR -> Seoul, else New York) — server is the
+    // single source of truth here so a stale/other-locale place string sent
+    // by an older client can never override it.
+    const unknownFallback = getUnknownBirthFallback(locale);
+
     const basePatch = {
       birth_date: requestedBirthDate,
       birth_time:
@@ -192,9 +197,7 @@ export async function POST(req: Request) {
           : typeof body.birthTime === "string" && body.birthTime.trim()
             ? body.birthTime.trim()
             : null,
-      birth_place: birthPlaceUnknown
-        ? birthPlace || UNKNOWN_BIRTH_FALLBACK.place
-        : birthPlace,
+      birth_place: birthPlaceUnknown ? unknownFallback.place : birthPlace,
       ...(birthDateChanging
         ? { [BIRTH_DATE_CORRECTION_COLUMN]: new Date().toISOString() }
         : {}),
@@ -214,9 +217,9 @@ export async function POST(req: Request) {
     const patch = birthPlaceUnknown
       ? {
           ...basePatch,
-          birth_latitude: UNKNOWN_BIRTH_FALLBACK.latitude,
-          birth_longitude: UNKNOWN_BIRTH_FALLBACK.longitude,
-          birth_timezone: UNKNOWN_BIRTH_FALLBACK.timezone,
+          birth_latitude: unknownFallback.latitude,
+          birth_longitude: unknownFallback.longitude,
+          birth_timezone: unknownFallback.timezone,
         }
       : hasClientCoords
       ? {

@@ -8,10 +8,14 @@ import {
   convert12hTo24h,
   type AmPm,
 } from "@/lib/v2/onboarding/birthTime";
+import { convertLunarToSolarDate } from "@/lib/v2/onboarding/lunarCalendar";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function digitsOnly(value: string, max: number) {
   return value.replace(/\D/g, "").slice(0, max);
 }
+
+export type CalendarType = "solar" | "lunar";
 
 type Props = {
   year: string;
@@ -28,6 +32,9 @@ type Props = {
   onMinuteChange: (v: string) => void;
   birthTimeUnknown: boolean;
   onBirthTimeUnknownChange: (v: boolean) => void;
+  /** ko-KR only — defaults to "solar" when omitted, and the toggle itself only renders for ko-KR. */
+  calendarType?: CalendarType;
+  onCalendarTypeChange?: (v: CalendarType) => void;
   busy?: boolean;
   theme?: "space" | "stitch";
 };
@@ -41,11 +48,38 @@ export function useStitchBirthDateTimeState() {
     hour: "",
     minute: "",
     birthTimeUnknown: false,
+    calendarType: "solar" as CalendarType,
   };
 }
 
-export function stitchBirthIsoDate(year: string, month: string, day: string) {
-  return buildISODateFromParts(year, month, day);
+/**
+ * Builds the ISO birth date, converting from 음력(lunar) to 양력(solar)
+ * first when `calendarType === "lunar"` — everything downstream (session,
+ * DB, Saju/astrology calculation) only ever sees a solar date. Regular
+ * lunar dates only (no leap-month option), per product spec.
+ */
+export function stitchBirthIsoDate(
+  year: string,
+  month: string,
+  day: string,
+  calendarType: CalendarType = "solar",
+) {
+  if (calendarType !== "lunar") {
+    return buildISODateFromParts(year, month, day);
+  }
+  const y = Number.parseInt(year, 10);
+  const mo = Number.parseInt(month, 10);
+  const d = Number.parseInt(day, 10);
+  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
+    return "";
+  }
+  const solar = convertLunarToSolarDate(y, mo, d);
+  if (!solar) return "";
+  return buildISODateFromParts(
+    String(solar.year),
+    String(solar.month).padStart(2, "0"),
+    String(solar.day).padStart(2, "0"),
+  );
 }
 
 export function stitchBirthTime24h(
@@ -77,13 +111,17 @@ export default function StitchBirthDateTimeFields({
   onMinuteChange,
   birthTimeUnknown,
   onBirthTimeUnknownChange,
+  calendarType = "solar",
+  onCalendarTypeChange,
   busy,
   theme = "stitch",
 }: Props) {
   const isStitch = theme === "stitch";
+  const { locale, messages } = useLocale();
+  const showCalendarToggle = locale === "ko-KR" && Boolean(onCalendarTypeChange);
   const birthDate = useMemo(
-    () => buildISODateFromParts(year, month, day),
-    [year, month, day],
+    () => stitchBirthIsoDate(year, month, day, calendarType),
+    [year, month, day, calendarType],
   );
   const dateComplete = birthDate.length === 10;
   const timeComplete = Boolean(
@@ -105,7 +143,39 @@ export default function StitchBirthDateTimeFields({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <p className={sectionTitle}>생년월일 (YYYY-MM-DD)</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className={sectionTitle}>생년월일 (YYYY-MM-DD)</p>
+          {showCalendarToggle ? (
+            <div
+              className="flex gap-1 rounded-full bg-surface-container-low/80 p-0.5"
+              role="radiogroup"
+              aria-label={messages.relationshipForm.calendarTypeLabel}
+            >
+              {(
+                [
+                  { v: "solar" as const, label: messages.relationshipForm.calendarTypeSolar },
+                  { v: "lunar" as const, label: messages.relationshipForm.calendarTypeLunar },
+                ] as const
+              ).map(({ v, label }) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={calendarType === v}
+                  disabled={busy}
+                  onClick={() => onCalendarTypeChange?.(v)}
+                  className={`min-h-[28px] rounded-full px-3 text-[11px] font-semibold transition disabled:opacity-40 ${
+                    calendarType === v
+                      ? "bg-secondary text-on-primary"
+                      : "text-on-surface-variant"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <div className="grid grid-cols-3 gap-2">
           <label className="space-y-1">
             <span className={labelClass}>연도</span>

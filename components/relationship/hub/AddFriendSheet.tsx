@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import InviteShareButtons from "@/components/relationship/InviteShareButtons";
@@ -69,7 +70,15 @@ export default function AddFriendSheet({
 
   if (!open) return null;
 
-  return (
+  // Rendered via a portal straight to <body> — this is a fixed-position
+  // full-screen overlay, and staying inside the page's own DOM tree means
+  // any ancestor with even a tiny lingering CSS transform (framer-motion
+  // page/card animations routinely leave one, e.g. a settled `y: 6`) would
+  // silently become this overlay's containing block instead of the real
+  // viewport, pushing it (and its footer) off-screen. Confirmed live on
+  // production: the sheet rendered ~150px below the actual viewport bottom
+  // because of exactly this.
+  return createPortal(
     <div
       className="fixed inset-0 z-[260] flex items-end justify-center bg-primary/25 backdrop-blur-[2px]"
       role="dialog"
@@ -77,9 +86,15 @@ export default function AddFriendSheet({
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: "100%" }}
+        // initial={false}: on production this enter transition was
+        // observed getting stuck at its `initial` transform (translateY
+        // 100%) and never animating to `animate` — pushing the entire
+        // sheet, footer included, off-screen with no way to reach it.
+        // There's no AnimatePresence/exit-on-unmount here (the component
+        // just returns null when closed), so skipping the enter animation
+        // costs only a slide-up flourish, never correctness.
+        initial={false}
         animate={{ y: 0 }}
-        exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 320 }}
         className={`${hubSheetClass()} flex max-h-[min(92dvh,100%)] w-full flex-col overflow-hidden rounded-b-none p-0 sm:max-w-lg sm:rounded-extra-large`}
         onClick={(e) => e.stopPropagation()}
@@ -165,6 +180,7 @@ export default function AddFriendSheet({
           </div>
         ) : null}
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 }

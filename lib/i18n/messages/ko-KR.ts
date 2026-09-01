@@ -197,7 +197,7 @@ export const messagesKoKR: MessageCatalog = {
     analyzing: "분석 중이에요…",
     analyzingHint: "잠시만 기다려 주세요",
     unknownBirthNotice:
-      "정확한 출생 시간과 장소가 입력되지 않아, 임의로 낮 12시 및 샌프란시스코(CA)를 기준으로 계산했습니다. 실제 결과와 약간의 오차가 있을 수 있습니다.",
+      "태어난 시간과 장소를 입력하지 않으시면 낮 12시(한국, 서울)를 기준으로 기본 분석됩니다.",
     dashboardEyebrow: "나의 대시보드",
     dashboardGreetingLead: "",
     dashboardGreetingTrail: "님, 안녕하세요.",
@@ -782,8 +782,13 @@ export const messagesKoKR: MessageCatalog = {
     responses: (answered: number, total: number) => `${answered}/${total} 응답`,
     nameLabel: "이름 (또는 별명)",
     namePlaceholder: "예: 민수",
-    birthPlacePlaceholder: "예: 서울, 부산",
+    birthPlacePlaceholder: "예: 서울, 부산, 대구 등",
     birthPlaceSkip: "입력 건너뛰기 · 태어난 장소 모름",
+    birthDefaultNotice:
+      "태어난 시간과 장소를 입력하지 않으시면 낮 12시(한국, 서울)를 기준으로 기본 분석됩니다.",
+    calendarTypeLabel: "양력 / 음력",
+    calendarTypeSolar: "양력",
+    calendarTypeLunar: "음력",
     surveyTitle: "친구 설문 (10문항)",
     surveyModeAnswer: "설문하기",
     surveyModeSkip: "입력 건너뛰기",
@@ -1015,11 +1020,11 @@ export const messagesKoKR: MessageCatalog = {
     skipTime: "시간 모름 / 입력 안 함",
     placeUnknownNoticeLabel: "안내:",
     placeUnknownNoticeBody:
-      "장소를 모르면 해석 정확도가 떨어질 수 있어요. 가능하면 현재 위치를 중심으로 대략 계산합니다.",
+      "태어난 시간과 장소를 입력하지 않으시면 낮 12시(한국, 서울)를 기준으로 기본 분석됩니다.",
     placeNeededHint: "점성 차트에 필요해요. 사주(본질)은 지역과 무관해요.",
     enterPlaceManually: "장소 직접 입력하기",
     skipPlace: "장소 입력 안 함",
-    placePlaceholder: "예: 서울, 부산, Tokyo",
+    placePlaceholder: "예: 서울, 부산, 대구 등",
   },
   relationshipDrilldown: {
     romantic: {

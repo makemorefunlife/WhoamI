@@ -7,7 +7,7 @@ import { detectsOwnBirthDateCollision } from "@/lib/report/detectOwnBirthDateCol
 import { assertGuestOrOwnerReportAccess } from "@/lib/report/assertGuestOrOwnerReportAccess";
 import { ensureRelationshipReport } from "@/lib/relationship/createRelationshipReport";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
-import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { buildNeutralV2Profile } from "@/lib/v2/survey/neutralProfile";
 import { scoreSurveyAnswers } from "@/lib/v2/survey/scorer";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
@@ -41,9 +41,10 @@ export async function POST(req: Request) {
     const reportIdA = body.reportIdA?.trim();
     const partnerName = body.partnerName?.trim();
     const birthDate = body.birthDate?.trim();
+    const unknownFallback = getUnknownBirthFallback(locale);
     const birthPlaceUnknown = body.birthPlaceUnknown === true;
     const birthPlace = birthPlaceUnknown
-      ? UNKNOWN_BIRTH_FALLBACK.place
+      ? unknownFallback.place
       : (body.birthPlace?.trim() || null);
     const surveySkipped = body.surveySkipped === true;
 

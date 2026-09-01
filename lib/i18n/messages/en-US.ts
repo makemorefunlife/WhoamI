@@ -206,7 +206,7 @@ export const messagesEnUS = {
     analyzing: "Analyzing…",
     analyzingHint: "Please wait a moment",
     unknownBirthNotice:
-      "Exact birth time and place weren't provided, so we used noon and San Francisco, CA as defaults. Actual results may differ slightly.",
+      "If birth time and location are unknown, your chart is calculated using 12:00 PM (Eastern Time / New York, NY) as the default reference.",
     dashboardEyebrow: "Your dashboard",
     dashboardGreetingLead: "Hello, ",
     dashboardGreetingTrail: ".",
@@ -821,8 +821,13 @@ export const messagesEnUS = {
     responses: (answered: number, total: number) => `${answered}/${total} answered`,
     nameLabel: "Name (or nickname)",
     namePlaceholder: "e.g., Alex",
-    birthPlacePlaceholder: "e.g., Seoul, Busan",
+    birthPlacePlaceholder: "e.g., Los Angeles, CA or New York, NY",
     birthPlaceSkip: "Skip · Unknown birth place",
+    birthDefaultNotice:
+      "If birth time and location are unknown, your chart is calculated using 12:00 PM (Eastern Time / New York, NY) as the default reference.",
+    calendarTypeLabel: "Solar / Lunar",
+    calendarTypeSolar: "Solar",
+    calendarTypeLunar: "Lunar",
     surveyTitle: "Friend survey (10 questions)",
     surveyModeAnswer: "Take survey",
     surveyModeSkip: "Skip",
@@ -1065,12 +1070,12 @@ export const messagesEnUS = {
     skipTime: "Unknown / skip time",
     placeUnknownNoticeLabel: "Note:",
     placeUnknownNoticeBody:
-      "If we don't know the place, interpretation accuracy may drop. We'll estimate roughly around your current location if possible.",
+      "If birth time and location are unknown, your chart is calculated using 12:00 PM (Eastern Time / New York, NY) as the default reference.",
     placeNeededHint:
       "Needed for the astrology chart. Saju (essence) doesn't depend on location.",
     enterPlaceManually: "Enter place manually",
     skipPlace: "Skip place",
-    placePlaceholder: "e.g., Seoul, Busan, Tokyo",
+    placePlaceholder: "e.g., Los Angeles, CA or New York, NY",
   },
   relationshipDrilldown: {
     romantic: {
@@ -2147,6 +2152,10 @@ export type MessageCatalog = {
     namePlaceholder: string;
     birthPlacePlaceholder: string;
     birthPlaceSkip: string;
+    birthDefaultNotice: string;
+    calendarTypeLabel: string;
+    calendarTypeSolar: string;
+    calendarTypeLunar: string;
     surveyTitle: string;
     surveyModeAnswer: string;
     surveyModeSkip: string;

@@ -5,6 +5,7 @@ import GlowButton from "@/components/space/GlowButton";
 import StitchBirthDateTimeFields, {
   stitchBirthIsoDate,
   stitchBirthTime24h,
+  type CalendarType,
 } from "@/components/onboarding/StitchBirthDateTimeFields";
 import { getSurveyQuestions } from "@/lib/v2/survey/getSurveyQuestions";
 import type { SurveyAnswersInput } from "@/lib/v2/survey/types";
@@ -77,6 +78,7 @@ function useManualRelationshipFormState({
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
   const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
+  const [calendarType, setCalendarType] = useState<CalendarType>("solar");
   const [birthPlace, setBirthPlace] = useState("");
   const [birthPlaceUnknown, setBirthPlaceUnknown] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -95,8 +97,8 @@ function useManualRelationshipFormState({
   const surveyQuestions = useMemo(() => getSurveyQuestions(locale), [locale]);
 
   const birthDate = useMemo(
-    () => stitchBirthIsoDate(year, month, day),
-    [year, month, day],
+    () => stitchBirthIsoDate(year, month, day, calendarType),
+    [year, month, day, calendarType],
   );
   const birthTime = useMemo(
     () => stitchBirthTime24h(period, hour, minute, birthTimeUnknown),
@@ -217,6 +219,7 @@ function useManualRelationshipFormState({
     year, setYear, month, setMonth, day, setDay,
     period, setPeriod, hour, setHour, minute, setMinute,
     birthTimeUnknown, setBirthTimeUnknown,
+    calendarType, setCalendarType,
     birthPlace, setBirthPlace, birthPlaceUnknown, setBirthPlaceUnknown,
     answers, currentQuestionIndex, advancing, hintPulse, attemptedSubmit,
     nameRef, birthBlockRef, placeRef, surveyRef,
@@ -271,6 +274,8 @@ export function ManualRelationshipFormFields({
           onMinuteChange={form.setMinute}
           birthTimeUnknown={form.birthTimeUnknown}
           onBirthTimeUnknownChange={form.setBirthTimeUnknown}
+          calendarType={form.calendarType}
+          onCalendarTypeChange={form.setCalendarType}
           busy={busy}
           theme={theme}
         />
@@ -298,6 +303,9 @@ export function ManualRelationshipFormFields({
         />
         {messages.relationshipForm.birthPlaceSkip}
       </label>
+      <p className={theme === "stitch" ? "text-xs leading-relaxed text-on-surface-variant" : "text-[10px] leading-relaxed text-white/45"}>
+        {messages.relationshipForm.birthDefaultNotice}
+      </p>
 
       <div ref={form.surveyRef} className={s.surveyBox}>
         <div className="flex items-baseline justify-between gap-2">

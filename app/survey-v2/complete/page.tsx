@@ -21,7 +21,7 @@ import StitchBirthInputForm, {
 
 } from "@/components/onboarding/StitchBirthInputForm";
 
-import { UNKNOWN_BIRTH_FALLBACK } from "@/lib/v2/onboarding/birthFallbackPolicy";
+import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 import {
 
@@ -56,7 +56,7 @@ function SurveyCompleteContent() {
 
   const router = useRouter();
 
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
 
   const searchParams = useSearchParams();
 
@@ -176,8 +176,10 @@ function SurveyCompleteContent() {
 
 
 
+    const unknownFallback = getUnknownBirthFallback(locale);
+
     const birthPlace = birthForm.birthPlaceUnknown
-      ? UNKNOWN_BIRTH_FALLBACK.place
+      ? unknownFallback.place
       : birthForm.birthPlace;
 
 
@@ -221,11 +223,11 @@ function SurveyCompleteContent() {
           birthPlaceUnknown: birthForm.birthPlaceUnknown,
 
           birthLatitude: birthForm.birthPlaceUnknown
-            ? UNKNOWN_BIRTH_FALLBACK.latitude
+            ? unknownFallback.latitude
             : undefined,
 
           birthLongitude: birthForm.birthPlaceUnknown
-            ? UNKNOWN_BIRTH_FALLBACK.longitude
+            ? unknownFallback.longitude
             : undefined,
 
         }),
@@ -270,7 +272,7 @@ function SurveyCompleteContent() {
 
     router.push(localize(`/blueprint-preview?reportId=${encodeURIComponent(reportId)}`));
 
-  }, [birthForm, busy, canViewResults, reportId, router, messages, localize]);
+  }, [birthForm, busy, canViewResults, reportId, router, messages, localize, locale]);
 
 
 
