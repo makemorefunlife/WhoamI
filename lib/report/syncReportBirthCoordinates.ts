@@ -18,6 +18,7 @@ export async function syncReportBirthCoordinates(
   supabase: SupabaseClient,
   reportId: string,
   birthPlace: string | null | undefined,
+  locale?: string,
 ): Promise<SyncReportBirthCoordinatesResult> {
   const place =
     typeof birthPlace === "string" && birthPlace.trim()
@@ -46,7 +47,7 @@ export async function syncReportBirthCoordinates(
     return "skipped_already_set";
   }
 
-  const patch = birthCoordinatesPatchFromPlace(place);
+  const patch = birthCoordinatesPatchFromPlace(place, locale);
   const { error: upErr } = await supabase
     .from("reports")
     .update(patch)

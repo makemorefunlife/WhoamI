@@ -104,6 +104,7 @@ export async function POST(req: Request) {
         clerk_user_id: userId || `guest_${reportIdA.slice(0, 8)}`,
       },
       birthPlace,
+      locale,
     );
 
     const { data: partnerReport, error: repErr } = await insertReportPatchSafely(

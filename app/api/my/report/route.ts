@@ -181,6 +181,7 @@ export async function GET(req: Request) {
           supabase,
           reportId,
           report.birth_place,
+          locale,
         );
         if (syncResult === "synced") {
           const { data: refreshed } = await supabase

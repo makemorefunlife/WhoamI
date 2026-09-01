@@ -3,6 +3,7 @@ import { buildAstrologyApiRequestFromReport } from "@/lib/report/buildAstrologyA
 import { extractAstrologyTextForIntegrated } from "@/lib/report/astrologyIntegratedText";
 import type { AstrologyCoordSource } from "@/lib/report/resolveAstrologyCoordinates";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
+import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { normalizeLocale, type Locale } from "@/lib/i18n/locale";
 
 const zodiacIndexToKorean: Record<number, string> = {
@@ -77,7 +78,7 @@ export async function fetchBirthAstrologyText(input: {
   let body;
   let coords;
   try {
-    const built = buildAstrologyApiRequestFromReport(reportLike);
+    const built = buildAstrologyApiRequestFromReport(reportLike, { locale });
     body = built.body;
     coords = built.coords;
   } catch {
@@ -114,7 +115,7 @@ export async function fetchBirthAstrologyText(input: {
     coords.birthPlaceNormalized ??
     body.birthPlace ??
     (coords.source === "default_san_francisco"
-      ? "San Francisco, CA (default)"
+      ? `${getUnknownBirthFallback(locale).place} (default)`
       : null);
 
   // Personal-analysis timeout investigation — this used to make its own

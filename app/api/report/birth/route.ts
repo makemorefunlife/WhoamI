@@ -231,7 +231,7 @@ export async function POST(req: Request) {
                 birth_latitude: body.birthLatitude,
                 birth_longitude: body.birthLongitude,
               },
-              { reportId, logDefaultSeoul: false },
+              { reportId, logDefaultSeoul: false, locale },
             );
             return {
               birth_latitude: resolved.latitude,
@@ -240,7 +240,7 @@ export async function POST(req: Request) {
             };
           })(),
         }
-      : mergeBirthCoordinateFields(basePatch, basePatch.birth_place);
+      : mergeBirthCoordinateFields(basePatch, basePatch.birth_place, locale);
 
     // 저장 직전 — 로그인 계정의 본인(self) report와 생년월일시가 완전히
     // 같아지는 저장인지 확인(경고용, 차단하지 않음). 본인이 본인 report를

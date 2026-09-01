@@ -1,8 +1,13 @@
 import { logServerError } from "@/lib/security/safeLog";
+import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 
 export type AstrologyCoordSource =
   | "explicit"
   | "place_lookup"
+  // Historical tag name from when the only fallback was San Francisco —
+  // kept as-is (not renamed) since it's compared against as a literal in
+  // several other files; what it actually resolves to is now locale-aware
+  // (see getUnknownBirthFallback), not always San Francisco.
   | "default_san_francisco";
 
 export type ResolvedAstrologyCoordinates = {
@@ -13,13 +18,6 @@ export type ResolvedAstrologyCoordinates = {
   matchedPlace: string | null;
   birthPlaceNormalized: string | null;
 };
-
-const DEFAULT_SAN_FRANCISCO = {
-  latitude: 37.7749,
-  longitude: -122.4194,
-  timezone: -8,
-  label: "San Francisco, CA (default)",
-} as const;
 
 type PlaceEntry = {
   keys: string[];
@@ -140,7 +138,7 @@ export type AstrologyCoordinateInput = {
 
 export function resolveAstrologyCoordinates(
   input: AstrologyCoordinateInput,
-  logContext?: { reportId?: string; logDefaultSeoul?: boolean },
+  logContext?: { reportId?: string; logDefaultSeoul?: boolean; locale?: string },
 ): ResolvedAstrologyCoordinates {
   const birthPlaceRaw =
     typeof input.birth_place === "string" ? input.birth_place.trim() : "";
@@ -151,6 +149,10 @@ export function resolveAstrologyCoordinates(
   const lat = parseFiniteCoord(input.birth_latitude);
   const lon = parseFiniteCoord(input.birth_longitude);
   const tzStored = parseFiniteCoord(input.birth_timezone);
+  // Only reached when lat/lon are explicit but timezone alone is missing,
+  // or when place text matched nothing in the table below — ko-KR (/kr)
+  // falls back to Seoul, everything else to New York.
+  const fallback = getUnknownBirthFallback(logContext?.locale ?? "en-US");
 
   if (
     lat != null &&
@@ -161,7 +163,7 @@ export function resolveAstrologyCoordinates(
     return {
       latitude: lat,
       longitude: lon,
-      timezone: tzStored ?? DEFAULT_SAN_FRANCISCO.timezone,
+      timezone: tzStored ?? fallback.timezone,
       source: "explicit",
       matchedPlace: birthPlaceRaw || null,
       birthPlaceNormalized,
@@ -187,11 +189,11 @@ export function resolveAstrologyCoordinates(
   }
 
   return {
-    latitude: DEFAULT_SAN_FRANCISCO.latitude,
-    longitude: DEFAULT_SAN_FRANCISCO.longitude,
-    timezone: DEFAULT_SAN_FRANCISCO.timezone,
+    latitude: fallback.latitude,
+    longitude: fallback.longitude,
+    timezone: fallback.timezone,
     source: "default_san_francisco",
-    matchedPlace: DEFAULT_SAN_FRANCISCO.label,
+    matchedPlace: `${fallback.place} (default)`,
     birthPlaceNormalized,
   };
 }
@@ -199,9 +201,11 @@ export function resolveAstrologyCoordinates(
 /** persisted astrology 재사용·무효화 비교용 */
 export function astrologyLocationFingerprint(
   input: AstrologyCoordinateInput,
+  locale?: string,
 ): string {
   const resolved = resolveAstrologyCoordinates(input, {
     logDefaultSeoul: false,
+    locale,
   });
   const place =
     typeof input.birth_place === "string"
@@ -218,12 +222,13 @@ export function astrologyLocationFingerprint(
 
 export function birthCoordinatesPatchFromPlace(
   birthPlace: string | null | undefined,
+  locale?: string,
 ): {
   birth_latitude: number;
   birth_longitude: number;
   birth_timezone: number;
 } {
-  const resolved = resolveAstrologyCoordinates({ birth_place: birthPlace });
+  const resolved = resolveAstrologyCoordinates({ birth_place: birthPlace }, { locale });
   return {
     birth_latitude: resolved.latitude,
     birth_longitude: resolved.longitude,

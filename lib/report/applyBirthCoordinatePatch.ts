@@ -6,6 +6,7 @@ import { birthCoordinatesPatchFromPlace } from "@/lib/report/resolveAstrologyCoo
 export function mergeBirthCoordinateFields<T extends Record<string, unknown>>(
   patch: T,
   birthPlace: string | null | undefined,
+  locale?: string,
 ): T & {
   birth_latitude?: number;
   birth_longitude?: number;
@@ -16,7 +17,7 @@ export function mergeBirthCoordinateFields<T extends Record<string, unknown>>(
       ? birthPlace.trim()
       : null;
   if (!place) return patch;
-  return { ...patch, ...birthCoordinatesPatchFromPlace(place) };
+  return { ...patch, ...birthCoordinatesPatchFromPlace(place, locale) };
 }
 
 /**

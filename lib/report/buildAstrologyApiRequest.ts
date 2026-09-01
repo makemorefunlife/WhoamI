@@ -19,7 +19,7 @@ export type AstrologyApiRequestBody = {
 
 export function buildAstrologyApiRequestFromReport(
   report: Record<string, unknown>,
-  options?: { reportId?: string },
+  options?: { reportId?: string; locale?: string },
 ): {
   body: AstrologyApiRequestBody;
   coords: ResolvedAstrologyCoordinates;
@@ -39,7 +39,7 @@ export function buildAstrologyApiRequestFromReport(
       birth_longitude: report.birth_longitude,
       birth_timezone: report.birth_timezone,
     },
-    { reportId: options?.reportId, logDefaultSeoul: true },
+    { reportId: options?.reportId, logDefaultSeoul: true, locale: options?.locale },
   );
 
   if (options?.reportId) {
@@ -77,11 +77,14 @@ export function buildAstrologyApiRequestFromReport(
   return {
     body,
     coords,
-    locationFingerprint: astrologyLocationFingerprint({
-      birth_place: birthPlace || null,
-      birth_latitude: coords.latitude,
-      birth_longitude: coords.longitude,
-      birth_timezone: coords.timezone,
-    }),
+    locationFingerprint: astrologyLocationFingerprint(
+      {
+        birth_place: birthPlace || null,
+        birth_latitude: coords.latitude,
+        birth_longitude: coords.longitude,
+        birth_timezone: coords.timezone,
+      },
+      options?.locale,
+    ),
   };
 }
