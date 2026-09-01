@@ -11,6 +11,7 @@ import RelationHubBanner, {
   readBannerDismissed,
 } from "@/components/relationship/hub/RelationHubBanner";
 import FriendStoryRow from "@/components/relationship/hub/FriendStoryRow";
+import RelationshipMapSection from "@/components/relationship/map/RelationshipMapSection";
 import RelationHubActionButtons from "@/components/relationship/hub/RelationHubActionButtons";
 import HubAnalysisSection from "@/components/relationship/hub/HubAnalysisSection";
 import RenameFriendDialog from "@/components/relationship/hub/RenameFriendDialog";
@@ -605,6 +606,29 @@ export default function RelationHubDashboard() {
             {messages.hub.title}
           </h1>
         </header>
+
+        {hubReportId ? (
+          <div className="mb-8">
+            <RelationshipMapSection
+              viewerReportId={hubReportId}
+              onInvite={() => {
+                setAddFriendOpen(true);
+                setAddFriendTab("invite");
+              }}
+              onExploreRelationship={(relationshipReportId, partnerName) =>
+                setKindPickerTarget({
+                  relationship_report_id: relationshipReportId,
+                  partner_name: partnerName,
+                  partner_report_id: null,
+                  analysis_type: null,
+                  status: "pending",
+                  last_viewed: null,
+                  invite_token: null,
+                })
+              }
+            />
+          </div>
+        ) : null}
 
         <RelationHubBanner
           visible={bannerVisible && reportIdReady && !hubIsEmpty}

@@ -1428,4 +1428,43 @@ export const messagesKoKR: MessageCatalog = {
     structuredDesignFallbackBody:
       "산문 버전으로 보여 드리는 중이에요. 다시 생성하면 Part 01~05 디자인이 복구됩니다.",
   },
+  relationshipMap: {
+    title: "나의 관계 지도",
+    subtitle:
+      "내가 중심이 되어, 나에게 어떤 의미로 다가오는 사람들인지 한눈에 확인해보세요.",
+    meLabel: "나",
+    emptyTitle: "사람을 초대하면 나의 관계 지도가 하나씩 채워져요.",
+    emptyCta: "사람 초대하기",
+    inviteCtaTitle: "새로운 사람 초대하기",
+    inviteCtaSubtitle: "초대 링크 만들기",
+    dayMasterDisclaimer: "일간 기준",
+    forMeLabel: "나에게는",
+    exploreRelationshipCta: "이 사람과 관계 분석하기",
+    peopleMoreCount: (n: number) => `+${n} 더 보기`,
+    ariaRolePlanet: (roleLabel: string, countLabel: string) =>
+      `${roleLabel}, ${countLabel}`,
+    personCount: (n: number) => `${n}명`,
+    reportShare: {
+      sectionTitle: "이 분석을 함께 볼까요?",
+      prompt: (name: string) => `${name}님과 이 관계 분석을 공유할까요?`,
+      explain: (name: string) => `공유하면 ${name}님도 이 보고서를 열어볼 수 있어요.`,
+      shareButton: (name: string) => `${name}님에게 공유하기`,
+      reassurance:
+        "공유하기를 누르기 전까지 이 분석은 나에게만 보여요. 혼자 보고 있어도 상대에게 알림이 가지 않습니다.",
+      linkReadyTitle: "공유 링크가 준비됐어요.",
+      stopSharingCta: "공유 중지",
+      stopSharingConfirm: "공유를 중지할까요? 상대는 더 이상 이 보고서를 열어볼 수 없어요.",
+      stopSharingDone: "공유가 중지됐어요. 이전 링크는 더 이상 열리지 않아요.",
+      accessDeniedTitle: "공유받지 않은 보고서예요",
+      accessDeniedBody: "이 보고서는 공유받은 사람만 열어볼 수 있어요.",
+      authRequiredBody: "공유된 보고서를 열려면 먼저 로그인해주세요.",
+      createFailed: "공유 링크를 만들지 못했어요. 잠시 후 다시 시도해주세요.",
+    },
+    mapShare: {
+      cta: "관계 지도 공유하기",
+      previewNote: "이름은 포함되지 않아요 — 역할 이름, 인원수, 비율만 담겨요.",
+      copied: "클립보드에 복사됐어요.",
+      copyFailed: "복사하지 못했어요. 잠시 후 다시 시도해주세요.",
+    },
+  },
 };

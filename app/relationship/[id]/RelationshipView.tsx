@@ -8,6 +8,7 @@ import RelationshipAnalysisHistory from "@/components/relationship/RelationshipA
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
+import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -295,9 +296,19 @@ export default function RelationshipView({
           ) : null}
 
           {!viewingBasicSurface && premiumReady && !showGeneratingPanel ? (
-            <p className="mt-4 text-center text-sm font-medium text-secondary">
-              {messages.report.reportReadyNotice}
-            </p>
+            <>
+              <p className="mt-4 text-center text-sm font-medium text-secondary">
+                {messages.report.reportReadyNotice}
+              </p>
+              {resolvedRelationshipId && viewerReportId ? (
+                <ReportShareSection
+                  relationshipReportId={resolvedRelationshipId}
+                  viewerReportId={viewerReportId}
+                  kind={premiumKind}
+                  recipientName={partnerName}
+                />
+              ) : null}
+            </>
           ) : null}
 
           {viewingBasicSurface && analysisType === "basic" && !urlAutostart ? (

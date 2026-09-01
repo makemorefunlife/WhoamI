@@ -1481,6 +1481,48 @@ export const messagesEnUS = {
     structuredDesignFallbackBody:
       "Showing the plain-text version for now. Regenerate to restore the Part 01–05 layout.",
   },
+  relationshipMap: {
+    title: "My Relationship Map",
+    subtitle:
+      "See the kinds of roles the people around you naturally play in your life.",
+    meLabel: "Me",
+    emptyTitle: "Invite people and watch your Relationship Map come to life.",
+    emptyCta: "Invite someone",
+    inviteCtaTitle: "Invite someone",
+    inviteCtaSubtitle: "Create invite link",
+    dayMasterDisclaimer: "Based on Day Masters",
+    forMeLabel: "For me:",
+    exploreRelationshipCta: "Explore this relationship",
+    peopleMoreCount: (n: number) => `+${n} more`,
+    ariaRolePlanet: (roleLabel: string, countLabel: string) =>
+      `${roleLabel}, ${countLabel}`,
+    personCount: (n: number) => (n === 1 ? "1 person" : `${n} people`),
+    reportShare: {
+      sectionTitle: "Want to share this with them?",
+      prompt: (name: string) =>
+        `Would you like ${name} to see this relationship report too?`,
+      explain: (name: string) =>
+        `If you share it, ${name} will be able to open and read the report.`,
+      shareButton: (name: string) => `Share with ${name}`,
+      reassurance:
+        "This report stays private unless you choose to share it. If you keep it to yourself, they won't be notified.",
+      linkReadyTitle: "Your share link is ready.",
+      stopSharingCta: "Stop sharing",
+      stopSharingConfirm:
+        "Stop sharing this report? They will no longer be able to open it.",
+      stopSharingDone: "Sharing stopped. The link no longer works.",
+      accessDeniedTitle: "This report isn't shared with you",
+      accessDeniedBody: "Only the person this report was shared with can open it.",
+      authRequiredBody: "Please sign in to open this shared report.",
+      createFailed: "We couldn't create a share link. Please try again.",
+    },
+    mapShare: {
+      cta: "Share my Relationship Map",
+      previewNote: "No names are included — just role names, counts, and percentages.",
+      copied: "Copied to your clipboard.",
+      copyFailed: "We couldn't copy that. Please try again.",
+    },
+  },
 };
 
 /** Shape-only catalog (values are free strings per locale). */
@@ -2753,5 +2795,41 @@ export type MessageCatalog = {
     regeneratingOverlay: string;
     structuredDesignFallbackTitle: string;
     structuredDesignFallbackBody: string;
+  };
+  relationshipMap: {
+    title: string;
+    subtitle: string;
+    meLabel: string;
+    emptyTitle: string;
+    emptyCta: string;
+    inviteCtaTitle: string;
+    inviteCtaSubtitle: string;
+    dayMasterDisclaimer: string;
+    forMeLabel: string;
+    exploreRelationshipCta: string;
+    peopleMoreCount: (n: number) => string;
+    ariaRolePlanet: (roleLabel: string, countLabel: string) => string;
+    personCount: (n: number) => string;
+    reportShare: {
+      sectionTitle: string;
+      prompt: (name: string) => string;
+      explain: (name: string) => string;
+      shareButton: (name: string) => string;
+      reassurance: string;
+      linkReadyTitle: string;
+      stopSharingCta: string;
+      stopSharingConfirm: string;
+      stopSharingDone: string;
+      accessDeniedTitle: string;
+      accessDeniedBody: string;
+      authRequiredBody: string;
+      createFailed: string;
+    };
+    mapShare: {
+      cta: string;
+      previewNote: string;
+      copied: string;
+      copyFailed: string;
+    };
   };
 };

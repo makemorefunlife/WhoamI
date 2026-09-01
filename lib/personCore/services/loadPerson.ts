@@ -79,3 +79,39 @@ export async function loadPerson(
 
   return parseBlueprintRow(data as Record<string, unknown>);
 }
+
+/**
+ * Batch variant of loadPerson — one `.in()` SELECT for many reportIds
+ * instead of N single-row SELECTs. Used where callers need many people's
+ * existing snapshots at once (e.g. the relationship map) and can tolerate
+ * a report with no snapshot yet simply being absent from the result
+ * (callers fall back to loadPerson/getOrBuildPersonCore for those). Does
+ * NOT check input-fingerprint staleness the way getOrBuildPersonCore does —
+ * only use this where an occasionally-stale snapshot is acceptable.
+ */
+export async function loadPersonsBatch(
+  reportIds: readonly string[],
+): Promise<Map<string, PersonCoreBlueprint>> {
+  const ids = [...new Set(reportIds.map((id) => id.trim()).filter(Boolean))];
+  const result = new Map<string, PersonCoreBlueprint>();
+  if (ids.length === 0) return result;
+
+  const supabase = getPersonCoreSupabase();
+  const { data, error } = await supabase
+    .from("person_core_blueprints")
+    .select(
+      "report_id, schema_version, input_fingerprint, built_at, updated_at, user_meta, saju_master_json, psych_master_json",
+    )
+    .in("report_id", ids);
+
+  if (error) {
+    logServerError("personCore.loadPersonsBatch", error, "db_select_failed");
+    return result;
+  }
+
+  for (const row of data ?? []) {
+    const parsed = parseBlueprintRow(row as Record<string, unknown>);
+    if (parsed) result.set(parsed.report_id, parsed);
+  }
+  return result;
+}
