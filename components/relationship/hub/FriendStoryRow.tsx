@@ -155,6 +155,12 @@ export default function FriendStoryRow({
         </div>
       )}
 
+      {!selected && !isEmpty ? (
+        <p className="px-1 text-sm text-on-surface-variant">
+          {messages.hub.selectFriendBelowListHint}
+        </p>
+      ) : null}
+
       {selected ? (
         <motion.div
           key={itemKey(selected)}

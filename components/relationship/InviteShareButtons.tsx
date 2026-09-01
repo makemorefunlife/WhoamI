@@ -11,11 +11,14 @@ import {
 } from "@/lib/relationship/inviteShare";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 
+// Both current callers (AddFriendSheet, SentRequestsSheet) render this inside
+// the light "stitch" theme sheet — these were still the dark "space" theme's
+// near-white-on-white-ish tokens, which read as invisible text there.
 const primaryBtn =
-  "flex-1 rounded-xl border border-white/18 bg-white/[0.05] px-3 py-2.5 text-xs font-medium text-[var(--space-text)] transition hover:border-white/30 hover:bg-white/[0.08]";
+  "flex-1 rounded-xl border border-outline-variant/45 bg-surface px-3 py-2.5 text-xs font-medium text-on-surface transition hover:border-secondary/40 hover:bg-surface-container-low";
 
 const shareOptionBtn =
-  "rounded-xl border border-white/12 bg-white/[0.03] px-3 py-2 text-xs text-[var(--space-text-muted)] transition hover:border-white/25 hover:bg-white/[0.06] hover:text-[var(--space-text)]";
+  "rounded-xl border border-outline-variant/35 bg-surface px-3 py-2 text-xs text-on-surface-variant transition hover:border-secondary/35 hover:bg-surface-container-low hover:text-on-surface";
 
 export default function InviteShareButtons({
   inviteToken,
@@ -47,7 +50,7 @@ export default function InviteShareButtons({
   return (
     <div className={compact ? "space-y-2" : "space-y-3"}>
       {!compact ? (
-        <p className="break-all text-[10px] text-white/45">{url}</p>
+        <p className="break-all text-[10px] text-on-surface-variant">{url}</p>
       ) : null}
 
       <div className="flex gap-2">
@@ -58,7 +61,7 @@ export default function InviteShareButtons({
           type="button"
           className={[
             primaryBtn,
-            shareOpen ? "border-[#67B7FF]/40 bg-[#67B7FF]/10" : "",
+            shareOpen ? "border-secondary/45 bg-secondary/10" : "",
           ].join(" ")}
           onClick={toggleShare}
           aria-expanded={shareOpen}
@@ -68,7 +71,7 @@ export default function InviteShareButtons({
       </div>
 
       {shareOpen ? (
-        <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-black/20 p-2.5">
+        <div className="grid grid-cols-2 gap-2 rounded-xl border border-outline-variant/25 bg-surface-container-low/60 p-2.5">
           <button
             type="button"
             className={shareOptionBtn}

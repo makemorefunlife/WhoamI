@@ -131,6 +131,7 @@ export const messagesKoKR: MessageCatalog = {
     addFriendShort: "친구 추가",
     friendListTitle: "친구 목록",
     friendListLoading: "친구 목록 불러오는 중…",
+    selectFriendBelowListHint: "관계를 분석할 친구를 선택하세요.",
     noFavoriteFriends: "즐겨찾기한 친구가 없어요.",
     viewAllFriendsAria: "전체 친구 보기",
     more: "More",

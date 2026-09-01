@@ -136,6 +136,7 @@ export const messagesEnUS = {
     addFriendShort: "Add",
     friendListTitle: "Friends",
     friendListLoading: "Loading your friends…",
+    selectFriendBelowListHint: "Select a friend to analyze your relationship with.",
     noFavoriteFriends: "You don't have any favorite friends yet.",
     viewAllFriendsAria: "View all friends",
     more: "More",
@@ -1603,6 +1604,7 @@ export type MessageCatalog = {
     addFriendShort: string;
     friendListTitle: string;
     friendListLoading: string;
+    selectFriendBelowListHint: string;
     noFavoriteFriends: string;
     viewAllFriendsAria: string;
     more: string;
