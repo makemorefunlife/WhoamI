@@ -4,7 +4,11 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import InviteShareButtons from "@/components/relationship/InviteShareButtons";
-import ManualRelationshipForm from "@/components/relationship/ManualRelationshipForm";
+import {
+  ManualRelationshipFormFields,
+  ManualRelationshipFormFooter,
+  useManualRelationshipFormState,
+} from "@/components/relationship/ManualRelationshipForm";
 import { hubSheetClass } from "@/components/relationship/hub/relationHubStyles";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -49,6 +53,10 @@ export default function AddFriendSheet({
   onManualSubmit,
 }: Props) {
   const { messages } = useLocale();
+  const manualForm = useManualRelationshipFormState({
+    busy: manualBusy,
+    onSubmit: onManualSubmit,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -114,9 +122,9 @@ export default function AddFriendSheet({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-5 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-5 sm:px-6">
           {tab === "invite" ? (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-[env(safe-area-inset-bottom)]">
               <p className="text-sm leading-relaxed text-on-surface-variant">
                 {messages.addFriend.inviteHint}
               </p>
@@ -143,16 +151,19 @@ export default function AddFriendSheet({
             </div>
           ) : (
             <div className="stitch-manual-form rounded-2xl border border-outline-variant/25 bg-surface-container-low/30 p-4">
-              <ManualRelationshipForm
-                myReportId={myReportId}
-                busy={manualBusy}
-                theme="stitch"
-                onCancel={onClose}
-                onSubmit={onManualSubmit}
-              />
+              <ManualRelationshipFormFields form={manualForm} busy={manualBusy} theme="stitch" />
             </div>
           )}
         </div>
+
+        {/* Fixed footer — outside the scrolling area, so it never overlaps
+            or reflows scrolled content the way a sticky-in-scroll-container
+            footer with a mismatched reserved-height guess can. */}
+        {tab === "manual" ? (
+          <div className="shrink-0 border-t border-outline-variant/25 bg-surface-container-low/95 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md sm:px-6">
+            <ManualRelationshipFormFooter form={manualForm} busy={manualBusy} onCancel={onClose} theme="stitch" />
+          </div>
+        ) : null}
       </motion.div>
     </div>
   );

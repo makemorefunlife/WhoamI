@@ -333,7 +333,7 @@ export default function SurveyV2Page() {
             transition={{ duration: 0.18 }}
             className="flex flex-1 flex-col"
           >
-            <h1 className="mb-8 text-balance text-[1.35rem] font-semibold leading-snug text-on-surface">
+            <h1 className="mb-8 whitespace-pre-line text-balance text-[1.35rem] font-semibold leading-snug text-on-surface break-keep">
               {currentQuestion.prompt}
             </h1>
             <div className="flex flex-col gap-3">
@@ -345,7 +345,7 @@ export default function SurveyV2Page() {
                     type="button"
                     disabled={busy || advancing}
                     onClick={() => pickAnswer(opt.value)}
-                    className={`rounded-2xl border px-4 py-3.5 text-left text-[0.95rem] transition ${
+                    className={`rounded-2xl border px-4 py-3.5 text-left text-[0.95rem] transition break-keep ${
                       selected
                         ? "border-primary bg-primary/10 text-on-surface"
                         : "border-outline-variant/60 bg-surface-container-lowest text-on-surface hover:border-primary/40"

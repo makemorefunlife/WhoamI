@@ -28,13 +28,13 @@ function useFormStyles(theme: "space" | "stitch") {
     optionBtn: (selected: boolean) =>
       isStitch
         ? [
-            "w-full rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition disabled:opacity-40",
+            "w-full rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition disabled:opacity-40 break-keep",
             selected
               ? "border-secondary bg-secondary/10 text-on-surface"
               : "border-outline-variant/50 bg-white text-on-surface hover:border-secondary/40",
           ].join(" ")
         : [
-            "w-full rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition disabled:opacity-40",
+            "w-full rounded-xl border px-3 py-2.5 text-left text-[13px] leading-snug transition disabled:opacity-40 break-keep",
             selected
               ? "border-[#67B7FF] bg-[#67B7FF]/15 text-[var(--space-text)]"
               : "border-white/12 bg-black/20 text-white/75 hover:border-white/25",
@@ -46,26 +46,28 @@ function useFormStyles(theme: "space" | "stitch") {
   };
 }
 
-export default function ManualRelationshipForm({
+export type ManualRelationshipSubmitPayload = {
+  partnerName: string;
+  birthDate: string;
+  birthTime: string | null;
+  birthTimeUnknown: boolean;
+  birthPlace: string | null;
+  birthPlaceUnknown: boolean;
+  surveySkipped: boolean;
+  surveyAnswers: SurveyAnswersInput | null;
+};
+
+/**
+ * All form state + validation, shared by the split Fields/Footer pair (so a
+ * fixed footer can live outside the scrollable fields area while reading the
+ * same state) and by the single-piece ManualRelationshipForm below.
+ */
+function useManualRelationshipFormState({
   busy,
   onSubmit,
-  onCancel,
-  theme = "space",
 }: {
-  myReportId: string;
   busy?: boolean;
-  theme?: "space" | "stitch";
-  onSubmit: (payload: {
-    partnerName: string;
-    birthDate: string;
-    birthTime: string | null;
-    birthTimeUnknown: boolean;
-    birthPlace: string | null;
-    birthPlaceUnknown: boolean;
-    surveySkipped: boolean;
-    surveyAnswers: SurveyAnswersInput | null;
-  }) => Promise<void>;
-  onCancel?: () => void;
+  onSubmit: (payload: ManualRelationshipSubmitPayload) => Promise<void>;
 }) {
   const [partnerName, setPartnerName] = useState("");
   const [year, setYear] = useState("");
@@ -81,11 +83,14 @@ export default function ManualRelationshipForm({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [hintPulse, setHintPulse] = useState(0);
+  // Validation hints stay hidden until the user actually tries to submit
+  // once — showing "이름을 입력해 주세요" before anyone has typed anything
+  // just reads as a pre-tripped error, not a real one.
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const birthBlockRef = useRef<HTMLDivElement>(null);
   const placeRef = useRef<HTMLInputElement>(null);
   const surveyRef = useRef<HTMLDivElement>(null);
-  const s = useFormStyles(theme);
   const { locale, messages } = useLocale();
   const surveyQuestions = useMemo(() => getSurveyQuestions(locale), [locale]);
 
@@ -173,6 +178,7 @@ export default function ManualRelationshipForm({
   function handleCreateClick() {
     if (busy) return;
     if (!canSubmit) {
+      setAttemptedSubmit(true);
       focusFirstIncomplete();
       return;
     }
@@ -206,36 +212,65 @@ export default function ManualRelationshipForm({
     setCurrentQuestionIndex((i) => i - 1);
   }
 
+  return {
+    partnerName, setPartnerName,
+    year, setYear, month, setMonth, day, setDay,
+    period, setPeriod, hour, setHour, minute, setMinute,
+    birthTimeUnknown, setBirthTimeUnknown,
+    birthPlace, setBirthPlace, birthPlaceUnknown, setBirthPlaceUnknown,
+    answers, currentQuestionIndex, advancing, hintPulse, attemptedSubmit,
+    nameRef, birthBlockRef, placeRef, surveyRef,
+    surveyQuestions, currentQuestion, answeredCount,
+    canSubmit, submitBlockers, submitHint,
+    pickAnswer, goPrevQuestion, handleCreateClick,
+  };
+}
+
+type ManualRelationshipFormState = ReturnType<typeof useManualRelationshipFormState>;
+
+/** Name/birth/place/survey fields — meant to live in a scrollable region above a fixed ManualRelationshipFormFooter. */
+export function ManualRelationshipFormFields({
+  form,
+  busy,
+  theme = "space",
+}: {
+  form: ManualRelationshipFormState;
+  busy?: boolean;
+  theme?: "space" | "stitch";
+}) {
+  const s = useFormStyles(theme);
+  const { messages } = useLocale();
+
   return (
     <div className="space-y-4">
       <label className="block space-y-1">
         <span className={s.label}>{messages.relationshipForm.nameLabel}</span>
         <input
-          ref={nameRef}
-          value={partnerName}
-          onChange={(e) => setPartnerName(e.target.value)}
+          ref={form.nameRef}
+          value={form.partnerName}
+          onChange={(e) => form.setPartnerName(e.target.value)}
           className={s.input}
           placeholder={messages.relationshipForm.namePlaceholder}
           disabled={busy}
         />
       </label>
 
-      <div ref={birthBlockRef}>
+      <div ref={form.birthBlockRef}>
         <StitchBirthDateTimeFields
-          year={year}
-          month={month}
-          day={day}
-          onYearChange={setYear}
-          onMonthChange={setMonth}
-          onDayChange={setDay}
-          period={period}
-          onPeriodChange={setPeriod}
-          hour={hour}
-          minute={minute}
-          onHourChange={setHour}
-          onMinuteChange={setMinute}
-          birthTimeUnknown={birthTimeUnknown}
-          onBirthTimeUnknownChange={setBirthTimeUnknown}
+          year={form.year}
+          month={form.month}
+          day={form.day}
+          onYearChange={form.setYear}
+          onMonthChange={form.setMonth}
+          onDayChange={form.setDay}
+          period={form.period}
+          onPeriodChange={form.setPeriod}
+          hour={form.hour}
+          minute={form.minute}
+          onHourChange={form.setHour}
+          onMinuteChange={form.setMinute}
+          birthTimeUnknown={form.birthTimeUnknown}
+          onBirthTimeUnknownChange={form.setBirthTimeUnknown}
           busy={busy}
           theme={theme}
         />
@@ -244,50 +279,50 @@ export default function ManualRelationshipForm({
       <label className="block space-y-1">
         <span className={s.label}>{messages.onboarding.birthPlace}</span>
         <input
-          ref={placeRef}
-          value={birthPlace}
-          onChange={(e) => setBirthPlace(e.target.value)}
-          disabled={busy || birthPlaceUnknown}
+          ref={form.placeRef}
+          value={form.birthPlace}
+          onChange={(e) => form.setBirthPlace(e.target.value)}
+          disabled={busy || form.birthPlaceUnknown}
           className={s.input}
           placeholder={messages.relationshipForm.birthPlacePlaceholder}
-          aria-invalid={!placeOk}
+          aria-invalid={form.attemptedSubmit && !form.birthPlaceUnknown && form.birthPlace.trim().length < 1}
         />
       </label>
 
       <label className={`flex items-center gap-2 ${s.check}`}>
         <input
           type="checkbox"
-          checked={birthPlaceUnknown}
-          onChange={(e) => setBirthPlaceUnknown(e.target.checked)}
+          checked={form.birthPlaceUnknown}
+          onChange={(e) => form.setBirthPlaceUnknown(e.target.checked)}
           disabled={busy}
         />
         {messages.relationshipForm.birthPlaceSkip}
       </label>
 
-      <div ref={surveyRef} className={s.surveyBox}>
+      <div ref={form.surveyRef} className={s.surveyBox}>
         <div className="flex items-baseline justify-between gap-2">
           <p className={s.surveyTitle}>{messages.relationshipForm.surveyTitle}</p>
           <span className={s.hint}>
             {messages.relationshipForm.responses(
-              answeredCount,
-              surveyQuestions.length,
+              form.answeredCount,
+              form.surveyQuestions.length,
             )}
           </span>
         </div>
 
-        {currentQuestion ? (
-          <fieldset key={currentQuestion.id} className="space-y-2.5">
-            <legend className={`text-[13px] leading-relaxed ${theme === "stitch" ? "text-on-surface" : "text-white/75"}`}>
-              {currentQuestion.prompt.split("\n")[0]}
+        {form.currentQuestion ? (
+          <fieldset key={form.currentQuestion.id} className="space-y-2.5">
+            <legend className={`text-[13px] leading-relaxed break-keep ${theme === "stitch" ? "text-on-surface" : "text-white/75"}`}>
+              {form.currentQuestion.prompt.split("\n")[0]}
             </legend>
             <div className="space-y-2">
-              {currentQuestion.options.map((opt: { value: string; label: string }) => (
+              {form.currentQuestion.options.map((opt: { value: string; label: string }) => (
                 <button
                   key={opt.value}
                   type="button"
-                  disabled={busy || advancing}
-                  onClick={() => pickAnswer(opt.value)}
-                  className={s.optionBtn(answers[currentQuestion.id] === opt.value)}
+                  disabled={busy || form.advancing}
+                  onClick={() => form.pickAnswer(opt.value)}
+                  className={s.optionBtn(form.answers[form.currentQuestion.id] === opt.value)}
                 >
                   {opt.label}
                 </button>
@@ -296,8 +331,8 @@ export default function ManualRelationshipForm({
             <div className="flex justify-start pt-1">
               <button
                 type="button"
-                onClick={goPrevQuestion}
-                disabled={busy || advancing || currentQuestionIndex <= 0}
+                onClick={form.goPrevQuestion}
+                disabled={busy || form.advancing || form.currentQuestionIndex <= 0}
                 className={`text-xs disabled:opacity-40 ${theme === "stitch" ? "text-on-surface-variant" : "text-white/55"}`}
               >
                 {messages.cta.back}
@@ -306,69 +341,106 @@ export default function ManualRelationshipForm({
           </fieldset>
         ) : null}
       </div>
+    </div>
+  );
+}
 
-      <div
-        className={
-          theme === "stitch"
-            ? "sticky bottom-0 z-10 -mx-4 mt-2 space-y-2 border-t border-outline-variant/25 bg-surface-container-low/95 px-4 pb-[max(3.75rem,calc(2.75rem+env(safe-area-inset-bottom)))] pt-3 backdrop-blur-md"
-            : "space-y-2"
-        }
-      >
-        {!canSubmit && submitHint && !busy ? (
-          <p
-            key={hintPulse}
-            role="status"
-            className={
-              theme === "stitch"
-                ? "rounded-lg bg-accent-rose-soft/80 px-3 py-2 text-center text-xs font-medium text-primary"
-                : "text-center text-[10px] text-[#ffb4a2]"
-            }
+/** Hint + cancel/submit buttons — a plain (non-sticky) block meant to be a `shrink-0` flex sibling of the scrollable fields, so it stays genuinely fixed at the bottom of the sheet instead of overlaying scrolled content. */
+export function ManualRelationshipFormFooter({
+  form,
+  busy,
+  onCancel,
+  theme = "space",
+}: {
+  form: ManualRelationshipFormState;
+  busy?: boolean;
+  onCancel?: () => void;
+  theme?: "space" | "stitch";
+}) {
+  const s = useFormStyles(theme);
+  const { messages } = useLocale();
+  const showHint = form.attemptedSubmit && !form.canSubmit && form.submitHint && !busy;
+
+  return (
+    <div className="space-y-2">
+      {showHint ? (
+        <p
+          key={form.hintPulse}
+          role="status"
+          className={
+            theme === "stitch"
+              ? "rounded-lg bg-accent-rose-soft/80 px-3 py-2 text-center text-xs font-medium text-primary"
+              : "text-center text-[10px] text-[#ffb4a2]"
+          }
+        >
+          {form.submitHint}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        {onCancel ? (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className={s.cancelBtn}
           >
-            {submitHint}
-          </p>
+            {messages.cta.cancel}
+          </button>
         ) : null}
-        <div className="flex gap-2">
-          {onCancel ? (
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={busy}
-              className={s.cancelBtn}
-            >
-              {messages.cta.cancel}
-            </button>
-          ) : null}
-          {theme === "stitch" ? (
-            <button
-              type="button"
-              className={`stitch-cta-primary flex-1 !min-h-[48px] !min-w-0 !text-sm ${
-                busy || !canSubmit ? "opacity-45" : ""
-              }`}
-              disabled={busy}
-              aria-disabled={!canSubmit}
-              data-submit-blockers={submitBlockers.join(",") || undefined}
-              data-can-submit={canSubmit ? "true" : "false"}
-              onClick={handleCreateClick}
-            >
-              {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
-            </button>
-          ) : (
-            <GlowButton
-              type="button"
-              className={`flex-1 !min-h-[44px] text-sm ${
-                !canSubmit ? "!opacity-45" : ""
-              }`}
-              disabled={busy}
-              aria-disabled={!canSubmit}
-              data-submit-blockers={submitBlockers.join(",") || undefined}
-              data-can-submit={canSubmit ? "true" : "false"}
-              onClick={handleCreateClick}
-            >
-              {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
-            </GlowButton>
-          )}
-        </div>
+        {theme === "stitch" ? (
+          <button
+            type="button"
+            className={`stitch-cta-primary flex-1 !min-h-[48px] !min-w-0 !text-sm ${
+              busy || !form.canSubmit ? "opacity-45" : ""
+            }`}
+            disabled={busy}
+            aria-disabled={!form.canSubmit}
+            data-submit-blockers={form.submitBlockers.join(",") || undefined}
+            data-can-submit={form.canSubmit ? "true" : "false"}
+            onClick={form.handleCreateClick}
+          >
+            {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
+          </button>
+        ) : (
+          <GlowButton
+            type="button"
+            className={`flex-1 !min-h-[44px] text-sm ${
+              !form.canSubmit ? "!opacity-45" : ""
+            }`}
+            disabled={busy}
+            aria-disabled={!form.canSubmit}
+            data-submit-blockers={form.submitBlockers.join(",") || undefined}
+            data-can-submit={form.canSubmit ? "true" : "false"}
+            onClick={form.handleCreateClick}
+          >
+            {busy ? messages.common.creating : messages.relationshipForm.createRelationship}
+          </GlowButton>
+        )}
       </div>
+    </div>
+  );
+}
+
+export { useManualRelationshipFormState };
+
+/** Single-piece convenience wrapper (fields + footer together, in normal document flow) for callers that don't need a fixed footer split out. */
+export default function ManualRelationshipForm({
+  busy,
+  onSubmit,
+  onCancel,
+  theme = "space",
+}: {
+  myReportId: string;
+  busy?: boolean;
+  theme?: "space" | "stitch";
+  onSubmit: (payload: ManualRelationshipSubmitPayload) => Promise<void>;
+  onCancel?: () => void;
+}) {
+  const form = useManualRelationshipFormState({ busy, onSubmit });
+  return (
+    <div className="space-y-4">
+      <ManualRelationshipFormFields form={form} busy={busy} theme={theme} />
+      <ManualRelationshipFormFooter form={form} busy={busy} onCancel={onCancel} theme={theme} />
     </div>
   );
 }
