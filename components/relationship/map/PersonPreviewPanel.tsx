@@ -12,9 +12,11 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 /**
  * First look at one connected person — spec section 25-26. Explicitly not
- * the full paid analysis: it only states the free Day-Master role plus a
- * "based on Day Masters" disclaimer, with a button into the existing
- * analysis chooser for anything deeper.
+ * the full paid analysis: it only states the free role + description, with
+ * a button into the existing analysis chooser for anything deeper. The
+ * underlying computation is Day-Master-based, but that's internal — the
+ * user-facing copy never names the technical method (final UX pass
+ * section 12).
  */
 export default function PersonPreviewPanel({
   personName,
@@ -61,10 +63,6 @@ export default function PersonPreviewPanel({
 
       <p className="text-sm leading-relaxed text-on-surface-variant">
         {roleDescription(role, locale)}
-      </p>
-
-      <p className="text-[11px] uppercase tracking-wide text-on-surface-variant/70">
-        {messages.relationshipMap.dayMasterDisclaimer}
       </p>
 
       <button type="button" onClick={onExplore} className={hubTouchBtn(true)}>

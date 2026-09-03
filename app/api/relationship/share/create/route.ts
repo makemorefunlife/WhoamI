@@ -64,6 +64,25 @@ export async function POST(req: Request) {
     });
 
     if (error) {
+      // 23505 = unique_violation on the (relationship_report_id, kind)
+      // WHERE status='active' partial index — a second concurrent/double
+      // -click request lost the race after both requests revoked the old
+      // row and both tried to insert a fresh active one. That's not a real
+      // failure: the other request's row IS the current active share, so
+      // reuse it instead of surfacing a 500 for what the user experiences
+      // as one click.
+      if (error.code === "23505") {
+        const { data: existing, error: reselectErr } = await supabase
+          .from("relationship_report_shares")
+          .select("share_token")
+          .eq("relationship_report_id", relationshipReportId)
+          .eq("kind", kind)
+          .eq("status", "active")
+          .maybeSingle();
+        if (!reselectErr && existing?.share_token) {
+          return NextResponse.json({ shareToken: existing.share_token });
+        }
+      }
       logServerError("relationship/share/create", error, "db_insert_failed");
       return NextResponse.json(
         { error: messages.relationshipMap.reportShare.createFailed },

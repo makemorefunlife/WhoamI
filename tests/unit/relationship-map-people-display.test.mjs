@@ -98,4 +98,22 @@ section("scatter positions: different roles/keys never collide identically");
   ok("distinct keys map to distinct deterministic positions");
 }
 
+section("z-index: scattered people must be clickable above the enlarged selected planet");
+{
+  const { MAP_Z } = await import("../../lib/relationship/map/mapZIndex.ts");
+  assert.ok(
+    MAP_Z.scatteredPerson > MAP_Z.planetSelected,
+    "a scattered person chip near the selected planet's enlarged glow must stack above it, or clicks land on the planet instead (a real bug this session)",
+  );
+  assert.ok(
+    MAP_Z.planetSelected > MAP_Z.planetDefault,
+    "the selected planet should still stack above unselected ones",
+  );
+  assert.ok(
+    MAP_Z.addPersonButton > MAP_Z.scatteredPerson,
+    "the invite + button must stay reachable above scattered people too",
+  );
+  ok("stacking order is planetDefault < planetSelected < scatteredPerson < addPersonButton");
+}
+
 console.log("\nAll relationship-map people-display tests passed.");

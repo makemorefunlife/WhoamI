@@ -6,6 +6,7 @@ import {
 } from "@/lib/supabase/serverClient";
 import { NextResponse } from "next/server";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
+import { invalidateRelationshipMapCache } from "@/lib/relationship/map/computeRelationshipMap";
 
 export const runtime = "nodejs";
 
@@ -71,16 +72,46 @@ export async function POST(req: Request) {
     );
 
     if (rpcErr) {
-      const mapped = mapRpcError(rpcErr.message);
-      if (mapped.status >= 500) {
-        logServerError("relationship/remove:", rpcErr, "rpc_failed");
+      logServerError("relationship/remove rpc_failed:", rpcErr, "rpc_fallback");
+
+      // Direct fallback deletion for partner_manual relationships owned by the viewer
+      const { data: rr } = await supabase
+        .from("relationship_reports")
+        .select("report_id_a, report_id_b")
+        .eq("id", relationshipReportId)
+        .maybeSingle();
+
+      if (!rr || (rr.report_id_a !== viewerReportId && rr.report_id_b !== viewerReportId)) {
+        const mapped = mapRpcError(rpcErr.message);
+        return NextResponse.json({ error: mapped.error }, { status: mapped.status });
       }
-      return NextResponse.json(
-        { error: mapped.error },
-        { status: mapped.status },
-      );
+
+      const partnerId = rr.report_id_a === viewerReportId ? rr.report_id_b : rr.report_id_a;
+      const { data: partner } = await supabase
+        .from("reports")
+        .select("report_type, clerk_user_id")
+        .eq("id", partnerId)
+        .maybeSingle();
+
+      if (partner && partner.report_type === "partner_manual") {
+        // Cascading deletion of dependent references
+        await supabase.from("relationship_report_shares").delete().or(`relationship_report_id.eq.${relationshipReportId},owner_report_id.eq.${partnerId},recipient_report_id.eq.${partnerId}`);
+        await supabase.from("relationship_logs").delete().or(`relationship_report_id.eq.${relationshipReportId},viewer_report_id.eq.${partnerId}`);
+        await supabase.from("relationship_log_favorites").delete().or(`relationship_report_id.eq.${relationshipReportId},viewer_report_id.eq.${partnerId}`);
+        await supabase.from("relationship_map_edges").delete().or(`relationship_report_id.eq.${relationshipReportId},viewer_report_id.eq.${partnerId},other_report_id.eq.${partnerId}`);
+
+        await supabase.from("relationship_reports").delete().eq("id", relationshipReportId);
+        await supabase.from("reports").delete().eq("id", partnerId).eq("report_type", "partner_manual");
+
+        invalidateRelationshipMapCache(viewerReportId);
+        return NextResponse.json({ ok: true });
+      }
+
+      const mapped = mapRpcError(rpcErr.message);
+      return NextResponse.json({ error: mapped.error }, { status: mapped.status });
     }
 
+    invalidateRelationshipMapCache(viewerReportId);
     return NextResponse.json({ ok: true });
   } catch (e) {
     logServerError("relationship/remove:", e, "internal_error");

@@ -20,7 +20,7 @@ import { useMessages } from "@/lib/i18n/LocaleProvider";
 
 
 
-const PREVIEW_LIMIT = 5;
+const PREVIEW_LIMIT = 3;
 
 
 
@@ -67,8 +67,6 @@ export default function HubAnalysisSection({
   return (
 
     <section className="space-y-4">
-
-      <h2 className="stitch-headline text-lg text-primary">{messages.hub.recentAnalysisTitle}</h2>
 
       <div className={`${hubPanelClass()} divide-y divide-outline-variant/15`}>
 

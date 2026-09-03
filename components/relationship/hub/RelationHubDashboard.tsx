@@ -11,6 +11,7 @@ import RelationHubBanner, {
   readBannerDismissed,
 } from "@/components/relationship/hub/RelationHubBanner";
 import FriendStoryRow from "@/components/relationship/hub/FriendStoryRow";
+import HubSectionHeading from "@/components/relationship/hub/HubSectionHeading";
 import RelationshipMapSection from "@/components/relationship/map/RelationshipMapSection";
 import RelationHubActionButtons from "@/components/relationship/hub/RelationHubActionButtons";
 import HubAnalysisSection from "@/components/relationship/hub/HubAnalysisSection";
@@ -18,6 +19,7 @@ import RenameFriendDialog from "@/components/relationship/hub/RenameFriendDialog
 import RemoveFriendDialog from "@/components/relationship/hub/RemoveFriendDialog";
 import StitchKindPickerSheet from "@/components/relationship/hub/StitchKindPickerSheet";
 import AddFriendSheet from "@/components/relationship/hub/AddFriendSheet";
+import ConnectionRequestsPanel from "@/components/relationship/hub/ConnectionRequestsPanel";
 import SentRequestsSheet from "@/components/relationship/hub/SentRequestsSheet";
 import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
@@ -78,6 +80,7 @@ export default function RelationHubDashboard() {
   const [manualBusy, setManualBusy] = useState(false);
   const [deleteBusyId, setDeleteBusyId] = useState<string | null>(null);
   const [freshInviteToken, setFreshInviteToken] = useState<string | null>(null);
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [favoriteBusyId, setFavoriteBusyId] = useState<string | null>(null);
   const [bannerVisible, setBannerVisible] = useState(false);
@@ -608,9 +611,14 @@ export default function RelationHubDashboard() {
         </header>
 
         {hubReportId ? (
-          <div className="mb-8">
+          <div className="mb-8 space-y-4">
+            <HubSectionHeading
+              title={messages.relationshipMap.title}
+              subtitle={messages.relationshipMap.subtitle}
+            />
             <RelationshipMapSection
               viewerReportId={hubReportId}
+              refreshKey={mapRefreshKey}
               onInvite={() => {
                 setAddFriendOpen(true);
                 setAddFriendTab("invite");
@@ -683,54 +691,72 @@ export default function RelationHubDashboard() {
                 />
               ) : (
                 <>
-                  <FriendStoryRow
-                    friends={relationshipItems}
-                    loading={false}
-                    isSignedIn={isSignedIn ?? false}
-                    selectedId={selectedKey}
-                    favoritesOnly={favoritesOnly}
-                    onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}
-                    onSelect={handleSelectFriend}
-                    onAddFriend={() => {
-                      setAddFriendOpen(true);
-                      setAddFriendTab("invite");
-                    }}
-                    onShowAll={() => setFriendsListOpen(true)}
-                    onRename={(item) => setRenameTarget(item)}
-                    onRemove={(item) => {
-                      if (item.row_kind !== "relationship_manual") return;
-                      setRemoveError(null);
-                      setRemoveTarget(item);
-                    }}
-                    onToggleFavorite={(item) =>
-                      void toggleFavorite(item, !item.is_favorite)
-                    }
-                  />
+                  <div className="space-y-4">
+                    <HubSectionHeading
+                      title={messages.hub.friendListTitle}
+                      subtitle={messages.hub.friendListSubtitle}
+                    />
+                    {hubReportId ? (
+                      <ConnectionRequestsPanel
+                        reportId={hubReportId}
+                        onResponded={() => setMapRefreshKey((k) => k + 1)}
+                      />
+                    ) : null}
+                    <FriendStoryRow
+                      friends={relationshipItems}
+                      loading={false}
+                      isSignedIn={isSignedIn ?? false}
+                      selectedId={selectedKey}
+                      favoritesOnly={favoritesOnly}
+                      onToggleFavoritesOnly={() => setFavoritesOnly((v) => !v)}
+                      onSelect={handleSelectFriend}
+                      onAddFriend={() => {
+                        setAddFriendOpen(true);
+                        setAddFriendTab("invite");
+                      }}
+                      onShowAll={() => setFriendsListOpen(true)}
+                      onRename={(item) => setRenameTarget(item)}
+                      onRemove={(item) => {
+                        if (item.row_kind !== "relationship_manual") return;
+                        setRemoveError(null);
+                        setRemoveTarget(item);
+                      }}
+                      onToggleFavorite={(item) =>
+                        void toggleFavorite(item, !item.is_favorite)
+                      }
+                    />
 
-                  <RelationHubActionButtons
-                    canAnalyze={canAnalyze}
-                    analyzeLabel={
-                      selectedFriend
-                        ? messages.hub.analyzeWithName(selectedFriend.partner_name)
-                        : messages.hub.analyzeCta
-                    }
-                    onAnalyze={() => {
-                      if (selectedFriend) openKindPicker(selectedFriend);
-                      else alert(messages.hub.selectFriendFirst);
-                    }}
-                    onAddFriend={() => {
-                      setAddFriendOpen(true);
-                      setAddFriendTab("invite");
-                    }}
-                  />
+                    <RelationHubActionButtons
+                      canAnalyze={canAnalyze}
+                      analyzeLabel={
+                        selectedFriend
+                          ? messages.hub.analyzeWithName(selectedFriend.partner_name)
+                          : messages.hub.analyzeCta
+                      }
+                      onAnalyze={() => {
+                        if (selectedFriend) openKindPicker(selectedFriend);
+                        else alert(messages.hub.selectFriendFirst);
+                      }}
+                      onAddFriend={() => {
+                        setAddFriendOpen(true);
+                        setAddFriendTab("invite");
+                      }}
+                    />
+                  </div>
 
-                  <HubAnalysisSection
-                    items={analysisPreview}
-                    loading={analysisLoading}
-                    totalCount={analysisPreview.length}
-                    onOpenLog={openAnalysisLog}
-                    onShowMore={() => setAllAnalysisOpen(true)}
-                  />
+                  <div className="space-y-4">
+                    <HubSectionHeading
+                      title={messages.hub.recentAnalysisTitle}
+                      subtitle={messages.hub.recentAnalysisSubtitle}
+                    />
+                    <HubAnalysisSection
+                      items={analysisPreview}
+                      loading={analysisLoading}
+                      totalCount={analysisPreview.length}
+                      onOpenLog={openAnalysisLog}
+                      onShowMore={() => setAllAnalysisOpen(true)}
+                    />
+                  </div>
                 </>
               )}
             </div>
@@ -784,9 +810,6 @@ export default function RelationHubDashboard() {
             tab={addFriendTab}
             onTabChange={setAddFriendTab}
             onClose={() => setAddFriendOpen(false)}
-            inviteToken={freshInviteToken}
-            inviteBusy={inviteBusy}
-            onCreateInvite={() => void startNewInvite()}
             onShowSentRequests={() => {
               setSentRequestsOpen(true);
               void loadWaiting();

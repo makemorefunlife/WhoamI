@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +18,8 @@ import {
   PRIMARY_AXIS_ORDER,
 } from "@/lib/v2/framework/axisLabels";
 import { buildOverallAxisSummary } from "@/lib/v2/framework/axisInterpretation";
-import { resolveClerkDisplayName } from "@/lib/clerk/displayName";
+import { getPublicDisplayName } from "@/lib/clerk/displayName";
+import { seedDisplayNameFromClerkFallback } from "@/lib/clerk/displayNameSync";
 import type { BirthV2Session } from "@/lib/v2/onboarding/birthSession";
 import type { CurrentSelfProfile } from "@/lib/v2/survey/types";
 import type { EssenceSelfLiteProfile } from "@/lib/v2/saju/essenceLite";
@@ -84,10 +85,31 @@ export default function StitchResultsDashboard({
   const { openSignIn } = useClerk();
   const { locale, messages } = useLocale();
   const [activeTab, setActiveTab] = useState<LiteTab | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
 
   const isGuest = isLoaded && !user;
-  const displayName =
-    isLoaded && user ? resolveClerkDisplayName(user) : null;
+
+  // Canonical source: user.publicMetadata.displayName — independent of
+  // reportId/reports entirely (see lib/clerk/displayName.ts). Already
+  // hydrated on the Clerk user object, no fetch needed for the common
+  // case; only pre-existing users with nothing set yet get a one-time
+  // fallback seeded back via the shared helper.
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    const existing = getPublicDisplayName(user);
+    if (existing) {
+      setDisplayName(existing);
+      return;
+    }
+    let cancelled = false;
+    void seedDisplayNameFromClerkFallback(user).then((seeded) => {
+      if (!cancelled && seeded) setDisplayName(seeded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, user]);
+
   const showGreeting = Boolean(displayName && displayName !== "나");
   const usedBirthFallback =
     birthTimeUnknown || birth.birthPlaceUnknown === true;

@@ -114,7 +114,7 @@ export default function ReportShareSection({
           <button type="button" onClick={() => void handleShare()} disabled={busy} className={hubTouchBtn(true)}>
             {copy.shareButton(recipientName)}
           </button>
-          <p className="text-xs text-on-surface-variant">{copy.reassurance}</p>
+          <p className="whitespace-pre-line text-xs text-on-surface-variant">{copy.reassurance}</p>
         </>
       ) : (
         <>

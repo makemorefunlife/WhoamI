@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import { Plus } from "lucide-react";
 import RelationshipSunCenter from "./RelationshipSunCenter";
 import RolePlanetButton from "./RolePlanetButton";
 import RoleDetailPanel from "./RoleDetailPanel";
 import ScatteredPeopleField from "./ScatteredPeopleField";
 import PersonPreviewPanel from "./PersonPreviewPanel";
-import MapShareButton from "./MapShareButton";
 import type { RoleDetailPerson } from "@/lib/relationship/map/roleDetailPerson";
 import { PLANET_VISUALS } from "@/lib/relationship/map/planetVisuals";
 import {
@@ -16,6 +16,7 @@ import {
   type RelationshipRoleId,
 } from "@/lib/relationship/map/relationshipRoleSsot";
 import { roleLabel } from "@/lib/relationship/map/roleLocale";
+import { MAP_Z } from "@/lib/relationship/map/mapZIndex";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type RoleSummary = { roleId: RelationshipRoleId; tenGod: string; count: number };
@@ -24,8 +25,8 @@ function orbitPosition(angleDeg: number, radiusFraction: number) {
   const rad = (angleDeg * Math.PI) / 180;
   const spread = 38; // % — keeps every planet's own box inside the square container
   return {
-    left: `${50 + radiusFraction * spread * Math.sin(rad)}%`,
-    top: `${50 - radiusFraction * spread * Math.cos(rad)}%`,
+    xPct: 50 + radiusFraction * spread * Math.sin(rad),
+    yPct: 50 - radiusFraction * spread * Math.cos(rad),
   };
 }
 
@@ -33,15 +34,22 @@ function orbitPosition(angleDeg: number, radiusFraction: number) {
  * "My Relationship Map" — sits at the top of the Relationship Lab, above the
  * existing friend list. Default view never shows names (spec section 2, 7);
  * a role is only revealed as people once the map owner clicks its planet.
+ *
+ * Map-share (anonymous export) infra stays implemented but is not surfaced
+ * here — the primary surface prioritizes exploration, not sharing (final UX
+ * pass section 4). See MapShareButton.tsx, still fully wired and tested.
  */
 export default function RelationshipMapSection({
   viewerReportId,
   onInvite,
   onExploreRelationship,
+  refreshKey = 0,
 }: {
   viewerReportId: string;
   onInvite: () => void;
   onExploreRelationship: (relationshipReportId: string, partnerName: string) => void;
+  /** Bump to force a refetch (e.g. after accepting a reciprocal connection request). */
+  refreshKey?: number;
 }) {
   const { locale, messages } = useLocale();
   const [roles, setRoles] = useState<RoleSummary[] | null>(null);
@@ -49,7 +57,10 @@ export default function RelationshipMapSection({
   const [selectedRoleId, setSelectedRoleId] = useState<RelationshipRoleId | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<RoleDetailPerson | null>(null);
   const [rolePeople, setRolePeople] = useState<RoleDetailPerson[] | null>(null);
+  const [rolePeopleTotal, setRolePeopleTotal] = useState(0);
   const roleEpochRef = useRef(0);
+
+  const mapLoading = roles === null;
 
   useEffect(() => {
     const epoch = ++roleEpochRef.current;
@@ -64,6 +75,7 @@ export default function RelationshipMapSection({
         if (epoch !== roleEpochRef.current) return; // a newer role selection superseded this one
         if (!res.ok || !data?.rolePeople) return;
         setRolePeople(data.rolePeople.people ?? []);
+        setRolePeopleTotal(data.rolePeople.total ?? (data.rolePeople.people ?? []).length);
       } catch {
         if (epoch === roleEpochRef.current) setRolePeople([]);
       }
@@ -89,7 +101,7 @@ export default function RelationshipMapSection({
     return () => {
       cancelled = true;
     };
-  }, [viewerReportId]);
+  }, [viewerReportId, refreshKey]);
 
   const countByRole = new Map<RelationshipRoleId, number>(
     (roles ?? RELATIONSHIP_ROLES.map((r) => ({ roleId: r.roleId, tenGod: r.tenGod, count: 0 }))).map(
@@ -98,6 +110,10 @@ export default function RelationshipMapSection({
   );
 
   const selectedRole = selectedRoleId ? getRelationshipRoleById(selectedRoleId) : undefined;
+  const selectedVisual = selectedRole ? PLANET_VISUALS[selectedRole.roleId] : undefined;
+  const selectedCenter = selectedVisual
+    ? orbitPosition(selectedVisual.angleDeg, selectedVisual.radiusFraction)
+    : undefined;
   const isEmpty = roles != null && totalPeople === 0;
 
   function selectRole(roleId: RelationshipRoleId) {
@@ -107,13 +123,6 @@ export default function RelationshipMapSection({
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="stitch-headline text-xl text-primary">{messages.relationshipMap.title}</h2>
-        <p className="mt-1 text-sm text-on-surface-variant">{messages.relationshipMap.subtitle}</p>
-      </div>
-
-      {!isEmpty && roles ? <MapShareButton summary={{ totalPeople, roles }} /> : null}
-
       <div className="relative mx-auto aspect-square w-full max-w-[26rem]">
         <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
           <circle cx="50%" cy="50%" r="30%" fill="none" stroke="#d8cba0" strokeWidth={1} strokeDasharray="2 6" opacity={0.5} />
@@ -132,7 +141,9 @@ export default function RelationshipMapSection({
           const count = countByRole.get(role.roleId) ?? 0;
           const label = roleLabel(role, locale);
           const countLabel = messages.relationshipMap.personCount(count);
-          const isOtherRoleSelected = selectedRoleId != null && selectedRoleId !== role.roleId;
+          const isSelected = selectedRoleId === role.roleId;
+          const isOtherRoleSelected = selectedRoleId != null && !isSelected;
+          const pos = orbitPosition(visual.angleDeg, visual.radiusFraction);
           return (
             <RolePlanetButton
               key={role.roleId}
@@ -142,19 +153,37 @@ export default function RelationshipMapSection({
               label={label}
               countLabel={countLabel}
               ariaLabel={messages.relationshipMap.ariaRolePlanet(label, countLabel)}
-              selected={selectedRoleId === role.roleId}
+              selected={isSelected}
+              loading={mapLoading}
               onSelect={() => selectRole(role.roleId)}
               style={{
-                ...orbitPosition(visual.angleDeg, visual.radiusFraction),
-                opacity: isOtherRoleSelected ? 0.25 : 1,
+                left: `${pos.xPct}%`,
+                top: `${pos.yPct}%`,
+                opacity: isOtherRoleSelected ? 0.22 : 1,
+                zIndex: isSelected ? MAP_Z.planetSelected : MAP_Z.planetDefault,
               }}
             />
           );
         })}
 
-        {selectedRoleId && rolePeople && !selectedPerson ? (
-          <ScatteredPeopleField people={rolePeople} onSelectPerson={setSelectedPerson} />
+        {selectedRoleId && rolePeople && !selectedPerson && selectedCenter ? (
+          <ScatteredPeopleField
+            people={rolePeople}
+            overflowCount={Math.max(0, rolePeopleTotal - rolePeople.length)}
+            center={selectedCenter}
+            onSelectPerson={setSelectedPerson}
+          />
         ) : null}
+
+        <button
+          type="button"
+          onClick={onInvite}
+          className="absolute bottom-2 right-2 flex min-h-[40px] items-center gap-1 rounded-full bg-primary pl-2.5 pr-3 text-xs font-semibold text-on-primary shadow-md transition hover:scale-105 active:scale-95"
+          style={{ zIndex: MAP_Z.addPersonButton }}
+        >
+          <Plus className="h-4 w-4 shrink-0" />
+          {messages.relationshipMap.addFriendMapCta}
+        </button>
       </div>
 
       {isEmpty ? (
@@ -174,10 +203,12 @@ export default function RelationshipMapSection({
         {selectedRole && !selectedPerson ? (
           <RoleDetailPanel
             key={`role-${selectedRole.roleId}`}
+            viewerReportId={viewerReportId}
             role={selectedRole}
             visual={PLANET_VISUALS[selectedRole.roleId]}
             count={countByRole.get(selectedRole.roleId) ?? 0}
             onBack={() => setSelectedRoleId(null)}
+            onSelectPerson={setSelectedPerson}
           />
         ) : null}
 

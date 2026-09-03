@@ -6,6 +6,13 @@ export function buildInviteUrl(token: string, origin?: string): string {
   return `${base}/invite?token=${encodeURIComponent(token)}`;
 }
 
+/** Personal connect link (separate, persistent, reusable system) -> /connect. */
+export function buildConnectUrl(token: string, origin?: string): string {
+  const base =
+    origin ?? (typeof window !== "undefined" ? window.location.origin : "");
+  return `${base}/connect?token=${encodeURIComponent(token)}`;
+}
+
 export function inviteShareText(url: string): string {
   return `${DEFAULT_MESSAGE}\n${url}`;
 }

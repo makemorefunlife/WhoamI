@@ -9,6 +9,7 @@ import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
+import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -21,6 +22,7 @@ export default function RelationshipView({
 }) {
   const searchParams = useSearchParams();
   const urlAutostart = searchParams.get("autostart") === "1";
+  const viaShare = searchParams.get("via") === "share";
   const reportAnchorRef = useRef<HTMLDivElement>(null);
   const { messages, href: localize } = useLocale();
 
@@ -300,12 +302,20 @@ export default function RelationshipView({
               <p className="mt-4 text-center text-sm font-medium text-secondary">
                 {messages.report.reportReadyNotice}
               </p>
-              {resolvedRelationshipId && viewerReportId ? (
+              {resolvedRelationshipId && viewerReportId && !viaShare ? (
                 <ReportShareSection
                   relationshipReportId={resolvedRelationshipId}
                   viewerReportId={viewerReportId}
                   kind={premiumKind}
                   recipientName={partnerName}
+                />
+              ) : null}
+              {resolvedRelationshipId && viewerReportId ? (
+                <ReportContinuationCtas
+                  relationshipReportId={resolvedRelationshipId}
+                  viewerReportId={viewerReportId}
+                  currentKind={premiumKind}
+                  variant={viaShare ? "recipient" : "owner"}
                 />
               ) : null}
             </>

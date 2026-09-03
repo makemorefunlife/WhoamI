@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import InviteShareButtons from "@/components/relationship/InviteShareButtons";
+import { buildConnectUrl } from "@/lib/relationship/inviteShare";
 import {
   ManualRelationshipFormFields,
   ManualRelationshipFormFooter,
@@ -31,23 +32,73 @@ type Props = {
   tab: Tab;
   onTabChange: (tab: Tab) => void;
   onClose: () => void;
-  inviteToken: string | null;
-  inviteBusy: boolean;
-  onCreateInvite: () => void;
   onShowSentRequests: () => void;
   manualBusy: boolean;
   myReportId: string;
   onManualSubmit: (payload: ManualPayload) => Promise<void>;
 };
 
+/**
+ * Personal connect link — a persistent, reusable token tied to `reportId`
+ * (spec: "FINAL MAP + CONNECTION UX"). Fetched once per sheet-open, never
+ * regenerated just by opening this sheet; only an explicit Reset rotates it.
+ */
+function usePersonalConnectLink(reportId: string, active: boolean) {
+  const [token, setToken] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const loadedForRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!active || !reportId) return;
+    if (loadedForRef.current === reportId) return;
+    loadedForRef.current = reportId;
+    setStatus("loading");
+    void (async () => {
+      try {
+        const res = await fetch(`/api/connect/link?reportId=${encodeURIComponent(reportId)}`);
+        const data = (await res.json().catch(() => ({}))) as { token?: string };
+        if (!res.ok || !data.token) {
+          setStatus("error");
+          return;
+        }
+        setToken(data.token);
+        setStatus("ready");
+      } catch {
+        setStatus("error");
+      }
+    })();
+  }, [active, reportId]);
+
+  async function reset() {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/connect/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportId }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { token?: string };
+      if (!res.ok || !data.token) {
+        setStatus("error");
+        return false;
+      }
+      setToken(data.token);
+      setStatus("ready");
+      return true;
+    } catch {
+      setStatus("error");
+      return false;
+    }
+  }
+
+  return { token, status, reset };
+}
+
 export default function AddFriendSheet({
   open,
   tab,
   onTabChange,
   onClose,
-  inviteToken,
-  inviteBusy,
-  onCreateInvite,
   onShowSentRequests,
   manualBusy,
   myReportId,
@@ -58,6 +109,8 @@ export default function AddFriendSheet({
     busy: manualBusy,
     onSubmit: onManualSubmit,
   });
+  const personalLink = usePersonalConnectLink(myReportId, open && tab === "invite");
+  const [resetBusy, setResetBusy] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -69,6 +122,17 @@ export default function AddFriendSheet({
   }, [open, onClose]);
 
   if (!open) return null;
+
+  async function handleReset() {
+    if (resetBusy || !window.confirm(messages.addFriend.resetLinkConfirm)) return;
+    setResetBusy(true);
+    try {
+      const ok = await personalLink.reset();
+      alert(ok ? messages.addFriend.resetLinkDone : messages.addFriend.resetLinkFailed);
+    } finally {
+      setResetBusy(false);
+    }
+  }
 
   // Rendered via a portal straight to <body> — this is a fixed-position
   // full-screen overlay, and staying inside the page's own DOM tree means
@@ -140,22 +204,32 @@ export default function AddFriendSheet({
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-5 sm:px-6">
           {tab === "invite" ? (
             <div className="space-y-4 pb-[env(safe-area-inset-bottom)]">
-              <p className="text-sm leading-relaxed text-on-surface-variant">
-                {messages.addFriend.inviteHint}
+              <p className="text-sm font-semibold text-on-surface">
+                {messages.addFriend.personalLinkHeading}
               </p>
-              <button
-                type="button"
-                disabled={inviteBusy}
-                onClick={onCreateInvite}
-                className="stitch-cta-primary w-full !min-w-0 !py-4 !text-base disabled:opacity-50"
-              >
-                {inviteBusy ? messages.common.creating : messages.addFriend.createInvite}
-              </button>
-              {inviteToken ? (
+              {personalLink.status === "loading" && !personalLink.token ? (
+                <p className="text-sm text-on-surface-variant">
+                  {messages.addFriend.personalLinkLoading}
+                </p>
+              ) : personalLink.status === "error" && !personalLink.token ? (
+                <p className="text-sm text-red-800">{messages.addFriend.personalLinkLoadFailed}</p>
+              ) : personalLink.token ? (
                 <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 p-4">
-                  <InviteShareButtons inviteToken={inviteToken} compact />
+                  <InviteShareButtons
+                    inviteToken={personalLink.token}
+                    url={buildConnectUrl(personalLink.token)}
+                    compact
+                  />
                 </div>
               ) : null}
+              <button
+                type="button"
+                onClick={() => void handleReset()}
+                disabled={resetBusy || !personalLink.token}
+                className="w-full min-h-[40px] text-center text-xs font-medium text-on-surface-variant underline-offset-2 transition hover:text-on-surface hover:underline disabled:opacity-50"
+              >
+                {messages.addFriend.resetLink}
+              </button>
               <button
                 type="button"
                 onClick={onShowSentRequests}

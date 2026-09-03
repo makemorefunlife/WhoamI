@@ -64,7 +64,14 @@ async function computeRelationshipMapUncached(
   supabase: SupabaseClient,
   viewerReportId: string,
 ): Promise<RelationshipMapResult> {
-  const connections = await fetchRelationshipMapConnections(supabase, viewerReportId);
+  // The viewer's own Day Master and favorites don't depend on the
+  // connections list at all — start them alongside it instead of after it,
+  // shaving one full round-trip off the cold-start path.
+  const connectionsPromise = fetchRelationshipMapConnections(supabase, viewerReportId);
+  const viewerCorePromise = getOrBuildPersonCore(viewerReportId);
+  const favoritesPromise = fetchFavoriteRelationshipIds(supabase, viewerReportId);
+
+  const connections = await connectionsPromise;
 
   const roleCounts = emptyRoleCounts();
   const peopleByRole = emptyPeopleByRole();
@@ -76,8 +83,8 @@ async function computeRelationshipMapUncached(
   const uniquePartnerIds = [...new Set(connections.map((c) => c.partnerReportId))];
 
   const [viewerCore, favoriteIds, batchedPartnerCores] = await Promise.all([
-    getOrBuildPersonCore(viewerReportId),
-    fetchFavoriteRelationshipIds(supabase, viewerReportId),
+    viewerCorePromise,
+    favoritesPromise,
     loadPersonsBatch(uniquePartnerIds),
   ]);
   const viewerDayMaster = viewerCore.saju_master_json.stem_focus.day_stem_code;
@@ -156,4 +163,13 @@ export function computeRelationshipMap(
   resultCache.set(viewerReportId, { expiresAt: now + RESULT_CACHE_TTL_MS, promise });
   promise.catch(() => resultCache.delete(viewerReportId));
   return promise;
+}
+
+/**
+ * Call after any mutation that changes `viewerReportId`'s connections (a
+ * new connection accepted/created, one removed) so the next map load
+ * reflects it immediately instead of waiting out the TTL.
+ */
+export function invalidateRelationshipMapCache(viewerReportId: string): void {
+  resultCache.delete(viewerReportId);
 }

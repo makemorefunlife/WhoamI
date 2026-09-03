@@ -34,11 +34,15 @@ export default function ShareRedirectView({ token }: { token: string }) {
           return;
         }
         const kind = isAnalysisSurface(data.kind) ? data.kind : "basic";
-        router.replace(
-          localize(
-            buildRelationshipAnalyzeUrl(data.relationshipReportId, data.viewerReportId, kind),
-          ),
+        const analyzeUrl = buildRelationshipAnalyzeUrl(
+          data.relationshipReportId,
+          data.viewerReportId,
+          kind,
         );
+        // Marks this as a shared-report visit so the report end shows the
+        // recipient's continuation CTAs instead of the owner's.
+        const separator = analyzeUrl.includes("?") ? "&" : "?";
+        router.replace(localize(`${analyzeUrl}${separator}via=share`));
       } catch {
         if (!cancelled) setState("error");
       }

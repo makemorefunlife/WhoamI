@@ -23,13 +23,16 @@ const shareOptionBtn =
 export default function InviteShareButtons({
   inviteToken,
   compact = false,
+  url: urlOverride,
 }: {
   inviteToken: string;
   compact?: boolean;
+  /** Share a different link than /invite?token=... (e.g. the personal connect link). */
+  url?: string;
 }) {
   const messages = useMessages();
   const [shareOpen, setShareOpen] = useState(false);
-  const url = buildInviteUrl(inviteToken);
+  const url = urlOverride ?? buildInviteUrl(inviteToken);
 
   async function onCopy() {
     const ok = await copyInviteLink(url);

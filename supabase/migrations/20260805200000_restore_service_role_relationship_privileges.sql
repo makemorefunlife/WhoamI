@@ -114,9 +114,48 @@ begin
       using errcode = '22023';
   end if;
 
-  if v_partner_clerk is distinct from p_clerk_user_id then
+  -- Allow partner_manual reports owned by the viewer, guest-created (guest_...), or unassigned (null)
+  if v_partner_clerk is not null
+     and v_partner_clerk not like 'guest_%'
+     and v_partner_clerk is distinct from p_clerk_user_id then
     raise exception 'partner_forbidden'
       using errcode = '42501';
+  end if;
+
+  -- Delete dependent share links if table exists
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'relationship_report_shares'
+  ) then
+    execute 'delete from public.relationship_report_shares where relationship_report_id = $1 or owner_report_id = $2 or recipient_report_id = $2'
+      using p_relationship_report_id, v_partner_id;
+  end if;
+
+  -- Delete dependent relationship logs if table exists
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'relationship_logs'
+  ) then
+    execute 'delete from public.relationship_logs where relationship_report_id = $1 or viewer_report_id = $2'
+      using p_relationship_report_id, v_partner_id;
+  end if;
+
+  -- Delete dependent relationship log favorites if table exists
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'relationship_log_favorites'
+  ) then
+    execute 'delete from public.relationship_log_favorites where relationship_report_id = $1 or viewer_report_id = $2'
+      using p_relationship_report_id, v_partner_id;
+  end if;
+
+  -- Delete dependent map edges if table exists
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'relationship_map_edges'
+  ) then
+    execute 'delete from public.relationship_map_edges where relationship_report_id = $1 or viewer_report_id = $2 or other_report_id = $2'
+      using p_relationship_report_id, v_partner_id;
   end if;
 
   delete from public.relationship_reports

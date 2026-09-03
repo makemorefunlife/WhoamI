@@ -504,6 +504,15 @@ export const messagesEnUS = {
       "Saving will refresh your Blueprint and relationship report calculations with the new info.",
     birthCancel: "Cancel",
     birthGoToBlueprintPreview: "Go to Blueprint preview",
+    displayNameTitle: "Display name",
+    displayNameSubtitle: "This is the name shown in your reports and throughout the app.",
+    displayNamePlaceholder: "e.g. Sera",
+    displayNameSave: "Save",
+    displayNameSaving: "Saving…",
+    displayNameSaved: "Display name saved.",
+    displayNameSaveFailed: "Couldn't save your display name. Please try again.",
+    displayNameRequired: "Please enter a name.",
+    displayNameLoading: "Loading…",
     birthFormSaveWithDate: "Save (with 1-time date correction)",
     birthFormSaveBirthInfo: "Save birth info",
     birthFormSaveTimeAndPlace: "Save time & place",
@@ -1549,6 +1558,13 @@ export const messagesEnUS = {
     acceptCta: "Accept",
     declineCta: "Decline",
   },
+  signupName: {
+    title: "Your name",
+    body: "Tell us what to call you in the app. It doesn't need to be your real name — just something that helps you recognize yourself here.",
+    placeholder: "e.g. Sera",
+    submitCta: "Continue",
+    required: "Please enter a name.",
+  },
 };
 
 /** Shape-only catalog (values are free strings per locale). */
@@ -1978,6 +1994,15 @@ export type MessageCatalog = {
     birthEditHint: string;
     birthCancel: string;
     birthGoToBlueprintPreview: string;
+    displayNameTitle: string;
+    displayNameSubtitle: string;
+    displayNamePlaceholder: string;
+    displayNameSave: string;
+    displayNameSaving: string;
+    displayNameSaved: string;
+    displayNameSaveFailed: string;
+    displayNameRequired: string;
+    displayNameLoading: string;
     birthFormSaveWithDate: string;
     birthFormSaveBirthInfo: string;
     birthFormSaveTimeAndPlace: string;
@@ -2886,5 +2911,12 @@ export type MessageCatalog = {
     pendingSectionTitle: string;
     acceptCta: string;
     declineCta: string;
+  };
+  signupName: {
+    title: string;
+    body: string;
+    placeholder: string;
+    submitCta: string;
+    required: string;
   };
 };

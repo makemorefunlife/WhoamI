@@ -4,7 +4,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
+import { getPublicDisplayName, hasOAuthAccount } from "@/lib/clerk/displayName";
+import {
+  seedDisplayNameFromClerkFallback,
+  shouldPromptForDisplayName,
+} from "@/lib/clerk/displayNameSync";
+import DisplayNameSetupModal from "@/components/home/DisplayNameSetupModal";
 import { AnimatePresence, motion } from "framer-motion";
 import type { RelCounts, ResumeState } from "@/lib/home/homeEntryTypes";
 import {
@@ -58,7 +65,9 @@ export default function HomeContent() {
   const { messages, href: localize } = useLocale();
   const searchParams = useSearchParams();
   const { isLoaded, isSignedIn, userId } = useClerkReady();
+  const { user } = useUser();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [nameSetupOpen, setNameSetupOpen] = useState(false);
   const [startChoiceOpen, setStartChoiceOpen] = useState(false);
   const [creatingReport, setCreatingReport] = useState(false);
   const [resume, setResume] = useState<ResumeState>({
@@ -78,6 +87,8 @@ export default function HomeContent() {
   useEffect(() => {
     const token = searchParams.get("token");
     if (token) localStorage.setItem("inviteToken", token);
+    const connectToken = searchParams.get("connectToken");
+    if (connectToken) localStorage.setItem("connectToken", connectToken);
   }, [searchParams]);
 
   useEffect(() => {
@@ -153,12 +164,15 @@ export default function HomeContent() {
   }, [isLoaded, isSignedIn]);
 
   const inviteAutoRanRef = useRef(false);
+  const connectAutoRanRef = useRef(false);
 
   const goToSurvey = useCallback(
     (reportId: string) => {
       const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
+      const connectToken = localStorage.getItem("connectToken")?.trim() ?? "";
       const params = new URLSearchParams();
       if (inviteToken) params.set("token", inviteToken);
+      else if (connectToken) params.set("connectToken", connectToken);
       else params.set("reportId", reportId);
       router.push(localize(`${ROUTES.surveyV2}?${params.toString()}`));
     },
@@ -186,11 +200,37 @@ export default function HomeContent() {
     [],
   );
 
-  const createReportAndSurvey = useCallback(async () => {
-    if (!userId) {
-      setAuthModalOpen(true);
-      return;
-    }
+  /**
+   * 개인 연결 링크 수락 — completeInvite와 동일한 모양(별도 시스템, 별도
+   * localStorage 키)의 병렬 경로. 성공/이미완료(404) 시 로컬 토큰 제거.
+   */
+  const completeConnect = useCallback(
+    async (reportId: string, connectToken: string) => {
+      try {
+        const res = await fetch("/api/connect/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: connectToken, reportId }),
+        });
+        if (res.ok || res.status === 404) {
+          localStorage.removeItem("connectToken");
+        }
+        return res.ok;
+      } catch (e) {
+        console.error("[home] connect_complete_error");
+        return false;
+      }
+    },
+    [],
+  );
+
+  /**
+   * The actual report-creation body — no display-name concerns here at
+   * all. Display name is a separate, account-level attribute (Clerk
+   * publicMetadata, see lib/clerk/displayNameSync.ts), fully decoupled
+   * from report creation/lifecycle.
+   */
+  const proceedToReportCreation = useCallback(async () => {
     const inviteToken = localStorage.getItem("inviteToken") || "";
     setCreatingReport(true);
     invalidateReportSession();
@@ -235,10 +275,68 @@ export default function HomeContent() {
       localStorage.setItem("inviteToken", inviteToken);
       await completeInvite(data.id, inviteToken);
     }
+    const connectToken = localStorage.getItem("connectToken") || "";
+    if (connectToken) {
+      await completeConnect(data.id, connectToken);
+    }
 
     setCreatingReport(false);
     goToSurvey(data.id);
-  }, [goToSurvey, userId, messages, completeInvite]);
+  }, [goToSurvey, messages, completeInvite, completeConnect]);
+
+  /**
+   * Explicit save from DisplayNameSetupModal (email/password signup) —
+   * saves the name first, then proceeds. Display-name save and report
+   * creation stay two separate calls, never coupled into one request.
+   */
+  const handleNameSetupSubmit = useCallback(
+    async (name: string) => {
+      setCreatingReport(true);
+      try {
+        const res = await fetch("/api/account/display-name", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ displayName: name }),
+        });
+        if (!res.ok) {
+          console.error("[home] display_name_save_failed", res.status);
+          alert(messages.errors.generic);
+          return;
+        }
+        await user?.reload?.();
+        setNameSetupOpen(false);
+        await proceedToReportCreation();
+      } catch (e) {
+        console.error("[home] display_name_save_error");
+        alert(messages.errors.network);
+      } finally {
+        setCreatingReport(false);
+      }
+    },
+    [user, messages, proceedToReportCreation],
+  );
+
+  const createReportAndSurvey = useCallback(async () => {
+    if (!userId) {
+      setAuthModalOpen(true);
+      return;
+    }
+    // Google/OAuth signup: seed publicMetadata.displayName from the
+    // provider's own name, silently, only if nothing is set yet — no
+    // extra prompt. Email/password signup has no name to seed from, so
+    // DisplayNameSetupModal collects one (see handleNameSetupSubmit)
+    // before report creation proceeds. Already has a name -> skip both.
+    const existingDisplayName = getPublicDisplayName(user);
+    if (shouldPromptForDisplayName(existingDisplayName, hasOAuthAccount(user))) {
+      setNameSetupOpen(true);
+      return;
+    }
+    if (!existingDisplayName) {
+      await seedDisplayNameFromClerkFallback(user ?? null);
+    }
+    setNameSetupOpen(false);
+    await proceedToReportCreation();
+  }, [userId, user, proceedToReportCreation]);
 
   /**
    * 초대 링크로 진입 시 랜딩 히어로를 보여주지 않고 바로 이어서 진행.
@@ -279,6 +377,50 @@ export default function HomeContent() {
     isSignedIn,
     resume,
     completeInvite,
+    createReportAndSurvey,
+    goToSurvey,
+    router,
+    localize,
+  ]);
+
+  /**
+   * 개인 연결 링크로 진입 시 이어서 진행 — 위 초대 링크 이펙트와 동일한
+   * 구조의 병렬 경로(별도 ref, 별도 localStorage 키). 두 토큰은 서로 다른
+   * 시스템이라 동시에 존재할 일이 없지만, 혹시 있어도 서로의 ref/키를
+   * 건드리지 않는다.
+   */
+  useEffect(() => {
+    if (!isLoaded || resume.loading || connectAutoRanRef.current) return;
+    const connectToken = localStorage.getItem("connectToken")?.trim() ?? "";
+    if (!connectToken) return;
+
+    if (!isSignedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    connectAutoRanRef.current = true;
+
+    if (resume.surveyCompleted && resume.reportId) {
+      void completeConnect(resume.reportId, connectToken).then(() => {
+        router.push(localize(relationHubPath(resume.reportId ?? undefined)));
+      });
+      return;
+    }
+
+    if (resume.hasReport && resume.reportId) {
+      void completeConnect(resume.reportId, connectToken).then(() => {
+        goToSurvey(resume.reportId as string);
+      });
+      return;
+    }
+
+    void createReportAndSurvey();
+  }, [
+    isLoaded,
+    isSignedIn,
+    resume,
+    completeConnect,
     createReportAndSurvey,
     goToSurvey,
     router,
@@ -417,6 +559,12 @@ export default function HomeContent() {
         onGoBlueprint={() => void safeNavigate("blueprint")}
         onGoRelationships={() => void safeNavigate("relationships")}
         onGoDecision={() => void safeNavigate("decision")}
+      />
+
+      <DisplayNameSetupModal
+        open={nameSetupOpen}
+        busy={creatingReport}
+        onSubmit={(name) => void handleNameSetupSubmit(name)}
       />
 
       <AnimatePresence>

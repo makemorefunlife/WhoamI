@@ -10,6 +10,10 @@ import {
   sortByIsoTimestampDesc,
 } from "@/lib/relationship/sortByIsoTimestampDesc";
 import { dedupeConnectionsByPartner } from "@/lib/relationship/map/dedupeConnectionsByPartner";
+import {
+  isVisibleInMapBatch,
+  type MembershipStatus,
+} from "@/lib/relationship/map/directionalMembership";
 
 export type RelationshipMapConnection = {
   relationshipReportId: string;
@@ -49,22 +53,49 @@ export async function fetchRelationshipMapConnections(
   const uniquePartners = [...new Set(partnerIds)];
   const rrIds = rows.map((r) => r.id);
 
-  // These two only depend on `rows`, not on each other — run them together
-  // instead of one-after-another (this pair alone was costing a full extra
-  // network round-trip on every map load and every role click).
-  const [{ data: names }, { data: logRows }] = await Promise.all([
-    uniquePartners.length > 0
-      ? supabase.from("reports").select("id, name, report_type").in("id", uniquePartners)
-      : Promise.resolve({ data: [] as { id: string; name: string | null; report_type: string | null }[] }),
-    rrIds.length > 0
-      ? supabase
-          .from("relationship_analysis_logs")
-          .select("relationship_report_id, result_snapshot, created_at")
-          .eq("viewer_report_id", viewerReportId)
-          .in("relationship_report_id", rrIds)
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] as { relationship_report_id: string; result_snapshot: unknown; created_at: string }[] }),
-  ]);
+  // None of these four depend on each other, only on `rows` — batched
+  // instead of sequential (see git history for why that mattered). The
+  // last two are the directional map-membership read path (spec section
+  // 15): one row per (relationship_report, viewer) for this viewer, and
+  // which relationship_reports have ANY personal-link use at all (that's
+  // what tells "legacy, no row yet -> visible" apart from "new-flow
+  // connection whose row is unexpectedly missing -> fail closed").
+  const [{ data: names }, { data: logRows }, { data: membershipRows }, { data: linkUseRows }] =
+    await Promise.all([
+      uniquePartners.length > 0
+        ? supabase.from("reports").select("id, name, report_type").in("id", uniquePartners)
+        : Promise.resolve({ data: [] as { id: string; name: string | null; report_type: string | null }[] }),
+      rrIds.length > 0
+        ? supabase
+            .from("relationship_analysis_logs")
+            .select("relationship_report_id, result_snapshot, created_at")
+            .eq("viewer_report_id", viewerReportId)
+            .in("relationship_report_id", rrIds)
+            .order("created_at", { ascending: false })
+        : Promise.resolve({ data: [] as { relationship_report_id: string; result_snapshot: unknown; created_at: string }[] }),
+      rrIds.length > 0
+        ? supabase
+            .from("relationship_map_memberships")
+            .select("relationship_report_id, status")
+            .eq("viewer_report_id", viewerReportId)
+            .in("relationship_report_id", rrIds)
+        : Promise.resolve({ data: [] as { relationship_report_id: string; status: string }[] }),
+      rrIds.length > 0
+        ? supabase
+            .from("personal_connect_link_uses")
+            .select("relationship_report_id")
+            .in("relationship_report_id", rrIds)
+        : Promise.resolve({ data: [] as { relationship_report_id: string | null }[] }),
+    ]);
+
+  const membershipByRR = new Map<string, MembershipStatus>(
+    (membershipRows ?? []).map((m) => [m.relationship_report_id, m.status as MembershipStatus]),
+  );
+  const newFlowRRIds = new Set<string>(
+    (linkUseRows ?? [])
+      .map((u) => u.relationship_report_id)
+      .filter((id): id is string => Boolean(id)),
+  );
 
   const nameById = Object.fromEntries(
     (names ?? []).map((n) => [n.id, n.name?.trim() ?? ""]),
@@ -83,8 +114,13 @@ export async function fetchRelationshipMapConnections(
     if (fromLog) logNameByRrId.set(rrId, fromLog);
   }
 
+  // Directional visibility filter — legacy connections (no membership row,
+  // never touched the new personal-link flow) pass through exactly as
+  // before; new-flow connections require an accepted row for THIS viewer.
+  const visibleRows = rows.filter((r) => isVisibleInMapBatch(r.id, membershipByRR, newFlowRRIds));
+
   type Candidate = RelationshipMapConnection & { isManual: boolean };
-  const candidates: Candidate[] = rows.map((r) => {
+  const candidates: Candidate[] = visibleRows.map((r) => {
     const partnerId = r.report_id_a === viewerReportId ? r.report_id_b : r.report_id_a;
     const partnerName = resolvePartnerDisplayName(
       nameById[partnerId],

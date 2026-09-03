@@ -6,6 +6,7 @@ import { useState } from "react";
 import AccountBirthEditor from "@/components/account/AccountBirthEditor";
 import AccountPageShell from "@/components/account/AccountPageShell";
 import AccountSurveySection from "@/components/account/AccountSurveySection";
+import DisplayNameEditor from "@/components/account/DisplayNameEditor";
 import { ROUTES } from "@/constants/routes";
 import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
 
@@ -63,6 +64,7 @@ export default function AccountProfilePage() {
       title={messages.account.profileLabel}
       subtitle={messages.account.profileSubtitle}
     >
+      <DisplayNameEditor />
       <AccountBirthEditor />
       <AccountSurveySection />
 

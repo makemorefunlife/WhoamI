@@ -77,6 +77,8 @@ export default function SurveyV2Page() {
       const wantRedo = params.get("redo") === "1";
       const urlReportId = params.get("reportId")?.trim() ?? "";
       if (token) localStorage.setItem("inviteToken", token);
+      const connectToken = params.get("connectToken");
+      if (connectToken) localStorage.setItem("connectToken", connectToken);
 
       const pending = readPendingSurveyDraft();
       let reportId = "";

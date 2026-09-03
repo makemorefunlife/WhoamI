@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sortReportPair } from "./sortReportPair";
+import { invalidateRelationshipMapCache } from "./map/computeRelationshipMap";
 
 /**
  * relationship_reports 행이 없으면 basic 으로 생성.
@@ -37,6 +38,11 @@ export async function ensureRelationshipReport(
   if (!inserted?.id) {
     throw new Error("relationship_reports insert returned no id");
   }
+
+  // A brand-new connection changes both sides' Relationship Map — bust the
+  // short-TTL cache for both instead of leaving them to see stale counts.
+  invalidateRelationshipMapCache(report_id_a);
+  invalidateRelationshipMapCache(report_id_b);
 
   return { relationshipReportId: inserted.id, created: true };
 }
