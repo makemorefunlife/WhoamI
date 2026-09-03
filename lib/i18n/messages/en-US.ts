@@ -73,8 +73,7 @@ export const messagesEnUS = {
     signInRequiredForFriend: "Sign in (or sign up) to add friends.",
     inviteCreateFailed: "We couldn't create the invite link.",
     inviteInfoUnavailable: "We couldn't confirm the invite details.",
-    inviteCancelConfirm:
-      "Cancel this invite? (The analysis credit may be reclaimed.)",
+    inviteCancelConfirm: "Cancel this invite? They won't be able to use this link anymore.",
     inviteCancelFailed: "We couldn't cancel that.",
     inviteLinkCopied: "Invite link copied.",
     inviteLinkCopyFailed: "Couldn't copy the link.",
@@ -134,7 +133,8 @@ export const messagesEnUS = {
     loadMore: "Load more",
     addFriendAria: "Add a friend",
     addFriendShort: "Add",
-    friendListTitle: "Friends",
+    friendListTitle: "My People",
+    friendListSubtitle: "Who are you curious about?",
     friendListLoading: "Loading your friends…",
     selectFriendBelowListHint: "Select a friend to analyze your relationship with.",
     noFavoriteFriends: "You don't have any favorite friends yet.",
@@ -149,7 +149,8 @@ export const messagesEnUS = {
     addFriendCta: "Add a friend",
     selectOrAddFriendHint:
       "Select or add a friend to start an analysis.",
-    recentAnalysisTitle: "Recent analysis",
+    recentAnalysisTitle: "Recent Relationship Analyses",
+    recentAnalysisSubtitle: "Pick up where you left off.",
     noAnalysisYetHint: "No analysis yet. Tap Analyze relationship to get started.",
     reportRowPartnerLabel: (name: string) => `with ${name}`,
     reportRowAria: (name: string) => `View ${name}'s report`,
@@ -259,6 +260,12 @@ export const messagesEnUS = {
     viewLatestResult: "View latest",
     createBasicAnalysis: "Create basic analysis",
     reportReadyNotice: "Your report is ready. Check it out below.",
+    continuationTitle: "What's next?",
+    exploreAnotherLensCta: "Explore another side of this relationship",
+    exploreAnotherPersonCta: "Explore another relationship",
+    addSomeoneNewCta: "Add someone new",
+    recipientContinuationTitle: "Curious about your own relationships?",
+    viewMyMapCta: "View my Relationship Map",
     chooseKindHint:
       "Use the tabs above to pick a relationship type for deep analysis.",
     analysisHistoryTitle: "Analysis history",
@@ -985,10 +992,14 @@ export const messagesEnUS = {
     title: "Add a friend",
     tabInvite: "Invite link",
     tabManual: "Enter manually",
-    inviteHint:
-      "The link is valid for 48 hours; accepting it uses one analysis credit.",
-    createInvite: "Create invite link",
     viewSentRequests: "View sent requests",
+    personalLinkHeading: "My friend invite link",
+    personalLinkLoading: "Loading your link…",
+    resetLink: "Reset my link",
+    resetLinkConfirm: "Reset your link? The old link will stop working.",
+    resetLinkDone: "Your new link is ready.",
+    resetLinkFailed: "We couldn't reset your link. Please try again.",
+    personalLinkLoadFailed: "We couldn't load your link. Please try again.",
   },
   footer: {
     support: "Support",
@@ -1483,13 +1494,13 @@ export const messagesEnUS = {
   },
   relationshipMap: {
     title: "My Relationship Map",
-    subtitle:
-      "See the kinds of roles the people around you naturally play in your life.",
+    subtitle: "What kinds of people show up most around me?",
     meLabel: "Me",
     emptyTitle: "Invite people and watch your Relationship Map come to life.",
     emptyCta: "Invite someone",
     inviteCtaTitle: "Invite someone",
     inviteCtaSubtitle: "Create invite link",
+    addFriendMapCta: "Add friend",
     dayMasterDisclaimer: "Based on Day Masters",
     forMeLabel: "For me:",
     exploreRelationshipCta: "Explore this relationship",
@@ -1497,15 +1508,16 @@ export const messagesEnUS = {
     ariaRolePlanet: (roleLabel: string, countLabel: string) =>
       `${roleLabel}, ${countLabel}`,
     personCount: (n: number) => (n === 1 ? "1 person" : `${n} people`),
+    roleDirectoryLabel: (roleLabel: string) => `People in ${roleLabel}`,
+    showMoreCta: (n: number) => (n === 1 ? "Show 1 more" : `Show ${n} more`),
     reportShare: {
-      sectionTitle: "Want to share this with them?",
-      prompt: (name: string) =>
-        `Would you like ${name} to see this relationship report too?`,
+      sectionTitle: "Want to share this analysis?",
+      prompt: (name: string) => `You can share this relationship report with ${name}.`,
       explain: (name: string) =>
         `If you share it, ${name} will be able to open and read the report.`,
       shareButton: (name: string) => `Share with ${name}`,
       reassurance:
-        "This report stays private unless you choose to share it. If you keep it to yourself, they won't be notified.",
+        "This report stays private unless you choose to share it.\nThey won't be notified unless you share it.",
       linkReadyTitle: "Your share link is ready.",
       stopSharingCta: "Stop sharing",
       stopSharingConfirm:
@@ -1522,6 +1534,20 @@ export const messagesEnUS = {
       copied: "Copied to your clipboard.",
       copyFailed: "We couldn't copy that. Please try again.",
     },
+  },
+  connect: {
+    invitedByTitle: (name: string) => `${name} invited you to their Relationship Map.`,
+    invitedByBody:
+      "Answer a few quick questions and add your birth information to explore your connection.",
+    startCta: "Get started",
+    invalidTitle: "This link isn't valid",
+    invalidBody: "This link may have expired or is incorrect. Ask them for a new one.",
+    selfLinkError: "You can't connect using your own invite link.",
+    someoneFallbackName: "a friend",
+    pendingRequestTitle: (name: string) => `${name} would like to be added to your Relationship Map.`,
+    pendingSectionTitle: "Connection requests",
+    acceptCta: "Accept",
+    declineCta: "Decline",
   },
 };
 
@@ -1645,6 +1671,7 @@ export type MessageCatalog = {
     addFriendAria: string;
     addFriendShort: string;
     friendListTitle: string;
+    friendListSubtitle: string;
     friendListLoading: string;
     selectFriendBelowListHint: string;
     noFavoriteFriends: string;
@@ -1659,6 +1686,7 @@ export type MessageCatalog = {
     addFriendCta: string;
     selectOrAddFriendHint: string;
     recentAnalysisTitle: string;
+    recentAnalysisSubtitle: string;
     noAnalysisYetHint: string;
     reportRowPartnerLabel: (name: string) => string;
     reportRowAria: (name: string) => string;
@@ -1761,6 +1789,12 @@ export type MessageCatalog = {
     viewLatestResult: string;
     createBasicAnalysis: string;
     reportReadyNotice: string;
+    continuationTitle: string;
+    exploreAnotherLensCta: string;
+    exploreAnotherPersonCta: string;
+    addSomeoneNewCta: string;
+    recipientContinuationTitle: string;
+    viewMyMapCta: string;
     chooseKindHint: string;
     analysisHistoryTitle: string;
     loadingReportTitle: string;
@@ -2330,9 +2364,14 @@ export type MessageCatalog = {
     title: string;
     tabInvite: string;
     tabManual: string;
-    inviteHint: string;
-    createInvite: string;
     viewSentRequests: string;
+    personalLinkHeading: string;
+    personalLinkLoading: string;
+    resetLink: string;
+    resetLinkConfirm: string;
+    resetLinkDone: string;
+    resetLinkFailed: string;
+    personalLinkLoadFailed: string;
   };
   footer: {
     support: string;
@@ -2804,12 +2843,15 @@ export type MessageCatalog = {
     emptyCta: string;
     inviteCtaTitle: string;
     inviteCtaSubtitle: string;
+    addFriendMapCta: string;
     dayMasterDisclaimer: string;
     forMeLabel: string;
     exploreRelationshipCta: string;
     peopleMoreCount: (n: number) => string;
     ariaRolePlanet: (roleLabel: string, countLabel: string) => string;
     personCount: (n: number) => string;
+    roleDirectoryLabel: (roleLabel: string) => string;
+    showMoreCta: (n: number) => string;
     reportShare: {
       sectionTitle: string;
       prompt: (name: string) => string;
@@ -2831,5 +2873,18 @@ export type MessageCatalog = {
       copied: string;
       copyFailed: string;
     };
+  };
+  connect: {
+    invitedByTitle: (name: string) => string;
+    invitedByBody: string;
+    startCta: string;
+    invalidTitle: string;
+    invalidBody: string;
+    selfLinkError: string;
+    someoneFallbackName: string;
+    pendingRequestTitle: (name: string) => string;
+    pendingSectionTitle: string;
+    acceptCta: string;
+    declineCta: string;
   };
 };
