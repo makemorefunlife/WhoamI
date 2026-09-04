@@ -11,7 +11,6 @@ import DecisionCategoryTabs from "@/components/decision/DecisionCategoryTabs";
 import DecisionReviewCard from "@/components/decision/DecisionReviewCard";
 import DecisionReviewSheet from "@/components/decision/DecisionReviewSheet";
 import { decisionPanelClass } from "@/components/decision/decisionPanelClass";
-import { stitchPillClass } from "@/components/decision/stitchPillClass";
 import FadeInContent from "@/components/ui/stitch/FadeInContent";
 import { StitchSkeleton } from "@/components/ui/stitch/StitchSkeleton";
 import {
@@ -25,11 +24,8 @@ import { DECISION_CATEGORIES, decisionCategorySelectLabel } from "@/lib/decision
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 import type { MessageCatalog } from "@/lib/i18n/messages";
 import {
-  DECISION_DATE_RANGES,
-  decisionDateRangeLabel,
   type DecisionCategory,
   type DecisionCategoryFilter,
-  type DecisionDateRangeId,
   type DecisionEntry,
 } from "@/lib/decision/types";
 
@@ -45,6 +41,14 @@ function onboardingSteps(messages: MessageCatalog) {
 
 function fieldClass() {
   return "w-full rounded-xl border-0 bg-surface-container-lowest/90 px-4 py-3 text-sm text-on-surface outline-none ring-1 ring-outline-variant/40 transition focus:ring-2 focus:ring-secondary/25";
+}
+
+function textareaClass() {
+  return `${fieldClass()} resize-none leading-relaxed`;
+}
+
+function optionalTagClass() {
+  return "ml-1.5 normal-case tracking-normal text-on-surface-variant/50";
 }
 
 function OnboardingBanner() {
@@ -82,14 +86,13 @@ function OnboardingBanner() {
   );
 }
 
-function filterByRange(
-  entries: DecisionEntry[],
-  rangeId: DecisionDateRangeId,
-): DecisionEntry[] {
-  const range = DECISION_DATE_RANGES.find((r) => r.id === rangeId);
-  if (!range || range.days == null) return entries;
-  const cutoff = Date.now() - range.days * 24 * 60 * 60 * 1000;
-  return entries.filter((e) => new Date(e.createdAt).getTime() >= cutoff);
+/** Today in local time, YYYY-MM-DD — min bound for the review-date picker. */
+function todayIsoDate(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export default function DecisionJournalContent() {
@@ -101,15 +104,13 @@ export default function DecisionJournalContent() {
   const [reportId, setReportId] = useState("");
   const [entries, setEntries] = useState<DecisionEntry[]>([]);
   const [journalReady, setJournalReady] = useState(false);
-  const [context, setContext] = useState("");
   const [category, setCategory] = useState<DecisionCategory>("relationship");
-  const [analyzeRange, setAnalyzeRange] =
-    useState<DecisionDateRangeId>("30d");
-  const [analyzeCategory, setAnalyzeCategory] =
-    useState<DecisionCategoryFilter>("all");
+  const [situation, setSituation] = useState("");
+  const [decisionText, setDecisionText] = useState("");
+  const [feeling, setFeeling] = useState("");
+  const [reviewDate, setReviewDate] = useState("");
   const [reviewCategoryFilter, setReviewCategoryFilter] =
     useState<DecisionCategoryFilter>("all");
-  const [analyzeMessage, setAnalyzeMessage] = useState<string | null>(null);
   const [reviewEntry, setReviewEntry] = useState<DecisionEntry | null>(null);
 
   const persist = useCallback((next: DecisionEntry[]) => {
@@ -130,17 +131,26 @@ export default function DecisionJournalContent() {
     });
   }, [openSignIn]);
 
+  const canSave = situation.trim().length > 0 && decisionText.trim().length > 0;
+
   const handleSave = () => {
     if (isGuest) {
       requireAuth();
       return;
     }
-    const text = context.trim();
-    if (!text || !reportId) return;
-    const next = addDecisionEntry(reportId, { context: text, category });
+    if (!canSave || !reportId) return;
+    const next = addDecisionEntry(reportId, {
+      category,
+      situation,
+      decision: decisionText,
+      feeling: feeling.trim() || undefined,
+      reviewDate: reviewDate || null,
+    });
     persist(next);
-    setContext("");
-    setAnalyzeMessage(null);
+    setSituation("");
+    setDecisionText("");
+    setFeeling("");
+    setReviewDate("");
   };
 
   const openReview = (entry: DecisionEntry) => {
@@ -168,28 +178,6 @@ export default function DecisionJournalContent() {
   const previewEntries = filteredReviewEntries.slice(0, REVIEW_PREVIEW_LIMIT);
   const hasMoreReviewEntries =
     filteredReviewEntries.length > REVIEW_PREVIEW_LIMIT;
-
-  const filteredForAnalyze = useMemo(() => {
-    let list = filterByRange(entries, analyzeRange);
-    if (analyzeCategory !== "all") {
-      list = list.filter((e) => e.category === analyzeCategory);
-    }
-    return list;
-  }, [analyzeCategory, analyzeRange, entries]);
-
-  const handleAnalyze = () => {
-    if (isGuest) {
-      requireAuth();
-      return;
-    }
-    if (filteredForAnalyze.length === 0) {
-      setAnalyzeMessage(messages.decision.analyzeNoResults);
-      return;
-    }
-    setAnalyzeMessage(
-      messages.decision.analyzePlaceholderResult(filteredForAnalyze.length),
-    );
-  };
 
   const panelClass = decisionPanelClass();
 
@@ -228,55 +216,110 @@ export default function DecisionJournalContent() {
               {messages.decision.archiveSubtitle}
             </p>
           </div>
-          <div className={`${panelClass} p-5 sm:p-6`}>
-            <div className="grid gap-4 sm:grid-cols-[11rem_1fr]">
-              <div>
-                <label
-                  htmlFor="decision-category"
-                  className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
-                >
-                  {messages.decision.categoryLabel}
-                </label>
-                <select
-                  id="decision-category"
-                  value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value as DecisionCategory)
-                  }
-                  className={fieldClass()}
-                >
-                  {DECISION_CATEGORIES.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {decisionCategorySelectLabel(c, messages)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="decision-context"
-                  className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
-                >
-                  {messages.decision.contextLabel}
-                </label>
-                <input
-                  id="decision-context"
-                  type="text"
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  placeholder={messages.decision.contextPlaceholder}
-                  className={fieldClass()}
-                />
-                <p className="mt-1.5 text-xs text-on-surface-variant/70">
-                  {messages.decision.contextHelper}
-                </p>
-              </div>
+          <div className={`${panelClass} space-y-5 p-5 sm:p-6`}>
+            <div className="sm:max-w-xs">
+              <label
+                htmlFor="decision-category"
+                className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+              >
+                {messages.decision.categoryLabel}
+              </label>
+              <select
+                id="decision-category"
+                value={category}
+                onChange={(e) =>
+                  setCategory(e.target.value as DecisionCategory)
+                }
+                className={fieldClass()}
+              >
+                {DECISION_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {decisionCategorySelectLabel(c, messages)}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="mt-5 flex justify-end sm:mt-6">
+
+            <div>
+              <label
+                htmlFor="decision-situation"
+                className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+              >
+                {messages.decision.situationLabel}
+              </label>
+              <textarea
+                id="decision-situation"
+                value={situation}
+                onChange={(e) => setSituation(e.target.value)}
+                placeholder={messages.decision.situationPlaceholder}
+                rows={3}
+                className={textareaClass()}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="decision-field"
+                className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+              >
+                {messages.decision.decisionFieldLabel}
+              </label>
+              <textarea
+                id="decision-field"
+                value={decisionText}
+                onChange={(e) => setDecisionText(e.target.value)}
+                placeholder={messages.decision.decisionFieldPlaceholder}
+                rows={3}
+                className={textareaClass()}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="decision-feeling"
+                className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+              >
+                {messages.decision.feelingLabel}
+                <span className={optionalTagClass()}>({messages.decision.optionalTag})</span>
+              </label>
+              <textarea
+                id="decision-feeling"
+                value={feeling}
+                onChange={(e) => setFeeling(e.target.value)}
+                placeholder={messages.decision.feelingPlaceholder}
+                rows={2}
+                className={textareaClass()}
+              />
+              <p className="mt-1.5 text-xs text-on-surface-variant/70">
+                {messages.decision.feelingHelper}
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="decision-review-date"
+                className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant"
+              >
+                <Calendar className="h-3 w-3" aria-hidden />
+                {messages.decision.reviewDateLabel}
+                <span className={optionalTagClass()}>({messages.decision.optionalTag})</span>
+              </label>
+              <input
+                id="decision-review-date"
+                type="date"
+                value={reviewDate}
+                min={todayIsoDate()}
+                onChange={(e) => setReviewDate(e.target.value)}
+                className={`${fieldClass()} sm:max-w-xs`}
+              />
+            </div>
+
+            <div className="flex justify-end pt-1">
               <button
                 type="button"
                 onClick={handleSave}
-                className="stitch-cta-primary !min-w-[10rem] !rounded-xl !py-3.5 !text-sm"
+                disabled={!canSave}
+                className="stitch-cta-primary !min-w-[10rem] !rounded-xl !py-3.5 !text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {messages.cta.save}
               </button>
@@ -367,56 +410,19 @@ export default function DecisionJournalContent() {
               {messages.decision.smartInsightsSubtitle}
             </p>
           </div>
-          <div className={`${panelClass} p-5 sm:p-6`}>
-            <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="mr-0.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">
-                  <Calendar className="h-3.5 w-3.5" aria-hidden />
-                  {messages.decision.dateRangeLabel}
-                </span>
-                {DECISION_DATE_RANGES.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setAnalyzeRange(r.id)}
-                    className={stitchPillClass(analyzeRange === r.id)}
-                  >
-                    {decisionDateRangeLabel(r.id, messages)}
-                  </button>
-                ))}
-              </div>
-              <span
-                className="hidden h-4 w-px bg-outline-variant/50 sm:block"
-                aria-hidden
-              />
-              <DecisionCategoryTabs
-                value={analyzeCategory}
-                onChange={setAnalyzeCategory}
-              />
+          <div className={`${panelClass} p-6 text-center sm:p-8`}>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-container/60">
+              <Sparkles className="h-6 w-6 text-secondary" aria-hidden />
             </div>
-
-            <button
-              type="button"
-              onClick={handleAnalyze}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#2a5542] to-primary py-3.5 text-sm font-semibold text-on-primary shadow-[0_8px_24px_rgba(26,51,40,0.2)] transition hover:opacity-95"
-            >
-              <Sparkles className="h-4 w-4" aria-hidden />
-              {messages.decision.analyzeWithAiCta}
-            </button>
-
-            {analyzeMessage ? (
-              <div className="mt-5 rounded-xl border border-secondary/20 bg-secondary-container/40 p-5 sm:p-6">
-                <div className="mb-2 flex items-center gap-2 text-secondary">
-                  <Sparkles className="h-4 w-4" aria-hidden />
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.16em]">
-                    {messages.decision.aiInsightsTitle}
-                  </h3>
-                </div>
-                <p className="text-sm leading-relaxed text-on-surface-variant">
-                  {analyzeMessage}
-                </p>
-              </div>
-            ) : null}
+            <h3 className="stitch-headline mt-4 text-lg text-primary">
+              {messages.decision.aiAnalysisTitle}
+            </h3>
+            <p className="mt-1 text-sm font-semibold text-secondary">
+              {messages.decision.aiAnalysisComingSoon}
+            </p>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-on-surface-variant/80">
+              {messages.decision.aiAnalysisComingSoonBody}
+            </p>
           </div>
         </section>
 

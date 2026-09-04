@@ -26,6 +26,14 @@ function normalizeRating(raw: unknown): number | null {
   return Math.round(raw);
 }
 
+function normalizeOptionalText(raw: unknown): string | undefined {
+  return typeof raw === "string" && raw.trim() ? raw : undefined;
+}
+
+function normalizeReviewDate(raw: unknown): string | null {
+  return typeof raw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
+}
+
 function normalizeEntry(raw: DecisionEntry): DecisionEntry {
   const legacyStatus = (raw as { status?: string }).status;
   const rawStatus =
@@ -48,6 +56,12 @@ function normalizeEntry(raw: DecisionEntry): DecisionEntry {
     rating: status === "reviewed" ? rating : null,
     reviewedAt,
     note: raw.note ?? "",
+    // Pre-LOG-redesign entries have none of these — must never crash, just
+    // fall back to "not recorded" (undefined/null), never a placeholder string.
+    situation: normalizeOptionalText(raw.situation),
+    decision: normalizeOptionalText(raw.decision),
+    feeling: normalizeOptionalText(raw.feeling),
+    reviewDate: normalizeReviewDate(raw.reviewDate),
   };
 }
 
@@ -82,12 +96,21 @@ export function clearDecisionJournal(reportId: string) {
 
 export function addDecisionEntry(
   reportId: string,
-  input: Pick<DecisionEntry, "context" | "category">,
+  input: {
+    category: DecisionEntry["category"];
+    situation: string;
+    decision: string;
+    feeling?: string;
+    reviewDate?: string | null;
+  },
 ): DecisionEntry[] {
   const now = new Date().toISOString();
+  const decision = input.decision.trim();
   const entry: DecisionEntry = {
     id: crypto.randomUUID(),
-    context: input.context.trim(),
+    // `context` mirrors `decision` — it's the single-line headline every
+    // existing card/history/review-sheet-title reads, unchanged.
+    context: decision,
     category: input.category,
     status: "pending",
     note: "",
@@ -95,6 +118,10 @@ export function addDecisionEntry(
     createdAt: now,
     updatedAt: now,
     reviewedAt: null,
+    situation: input.situation.trim() || undefined,
+    decision,
+    feeling: input.feeling?.trim() || undefined,
+    reviewDate: input.reviewDate || null,
   };
   const next = [entry, ...readDecisionJournal(reportId)];
   writeDecisionJournal(reportId, next);

@@ -752,13 +752,20 @@ export const messagesEnUS = {
     journalSubtitle:
       "Capture choices, review outcomes, and uncover patterns over time.",
     archiveTitle: "Archive a Decision",
-    archiveSubtitle: "Log the choice you're facing before the outcome unfolds.",
+    archiveSubtitle: "Record the situation, the choice you made, and how you felt at the time.",
     categoryLabel: "Category",
-    contextLabel: "What decision are you considering?",
-    contextPlaceholder:
-      "e.g. Should I accept the job offer I received?",
-    contextHelper:
-      "Write down the choice or decision you're currently thinking through.",
+    situationLabel: "What was the situation?",
+    situationPlaceholder:
+      "e.g. I was offered a new position at work — better pay, but a longer commute.",
+    decisionFieldLabel: "What decision did you make?",
+    decisionFieldPlaceholder: "e.g. I decided to accept the new position.",
+    feelingLabel: "How did you feel at the time?",
+    feelingPlaceholder:
+      "e.g. Excited, but a little anxious about adjusting to the new environment.",
+    feelingHelper: "Jot down what you were thinking or feeling when you made the decision.",
+    reviewDateLabel: "When would you like to revisit this decision?",
+    reviewDateHelper: "Pick a date to look back on this decision.",
+    optionalTag: "optional",
     reviewOutcomesTitle: "Review Outcomes",
     reviewOutcomesSubtitle: "Revisit past choices and rate how they turned out.",
     noReviewsYet: "📋 No decisions to review yet.",
@@ -768,13 +775,14 @@ export const messagesEnUS = {
     smartInsightsTitle: "Smart Insights",
     smartInsightsSubtitle:
       "Filter your archive and surface recurring decision patterns.",
-    dateRangeLabel: "Date range",
-    analyzeWithAiCta: "Analyze with AI",
-    aiInsightsTitle: "AI insights",
-    analyzeNoResults:
-      "There are no decisions matching that period and category. Try saving a decision first.",
-    analyzePlaceholderResult: (count: number) =>
-      `AI analysis is coming soon. ${count} record${count === 1 ? "" : "s"} selected. Pattern insights will show up here soon.`,
+    aiAnalysisTitle: "AI Analysis",
+    aiAnalysisComingSoon: "Coming soon",
+    aiAnalysisComingSoonBody:
+      "As your log grows, we're building a way to help you spot patterns in your choices.",
+    reviewSummarySituationLabel: "The situation then",
+    reviewSummaryDecisionLabel: "The decision I made",
+    reviewSummaryFeelingLabel: "How I felt then",
+    reviewSummaryReviewDateLabel: "Review date",
     backToJournal: "← Decision Journal",
     historyTitle: "Decision History",
     filterCta: "Filter",
@@ -2175,9 +2183,16 @@ export type MessageCatalog = {
     archiveTitle: string;
     archiveSubtitle: string;
     categoryLabel: string;
-    contextLabel: string;
-    contextPlaceholder: string;
-    contextHelper: string;
+    situationLabel: string;
+    situationPlaceholder: string;
+    decisionFieldLabel: string;
+    decisionFieldPlaceholder: string;
+    feelingLabel: string;
+    feelingPlaceholder: string;
+    feelingHelper: string;
+    reviewDateLabel: string;
+    reviewDateHelper: string;
+    optionalTag: string;
     reviewOutcomesTitle: string;
     reviewOutcomesSubtitle: string;
     noReviewsYet: string;
@@ -2186,11 +2201,13 @@ export type MessageCatalog = {
     viewAllCount: (count: number) => string;
     smartInsightsTitle: string;
     smartInsightsSubtitle: string;
-    dateRangeLabel: string;
-    analyzeWithAiCta: string;
-    aiInsightsTitle: string;
-    analyzeNoResults: string;
-    analyzePlaceholderResult: (count: number) => string;
+    aiAnalysisTitle: string;
+    aiAnalysisComingSoon: string;
+    aiAnalysisComingSoonBody: string;
+    reviewSummarySituationLabel: string;
+    reviewSummaryDecisionLabel: string;
+    reviewSummaryFeelingLabel: string;
+    reviewSummaryReviewDateLabel: string;
     backToJournal: string;
     historyTitle: string;
     filterCta: string;

@@ -28,6 +28,11 @@ export default function DecisionReviewCard({ entry, onReview }: Props) {
             <p className="text-sm font-medium leading-snug text-on-surface">
               {entry.context}
             </p>
+            {entry.situation ? (
+              <p className="mt-0.5 truncate text-xs text-on-surface-variant/70">
+                {entry.situation}
+              </p>
+            ) : null}
             <p className="mt-0.5 text-xs text-on-surface-variant/80">
               {decisionCategoryLabel(entry.category, messages)}
             </p>

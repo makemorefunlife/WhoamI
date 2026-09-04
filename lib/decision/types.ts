@@ -15,6 +15,9 @@ export type DecisionStatus = "pending" | "reviewed";
 
 export type DecisionEntry = {
   id: string;
+  /** Legacy single-line summary — kept for backward compat with pre-LOG-redesign
+   * entries and as the display headline everywhere (cards, review sheet title).
+   * For new entries this mirrors `decision`. */
   context: string;
   category: DecisionCategory;
   status: DecisionStatus;
@@ -24,6 +27,14 @@ export type DecisionEntry = {
   createdAt: string;
   updatedAt: string;
   reviewedAt: string | null;
+  /** What was going on — the background/circumstances behind the decision. */
+  situation?: string;
+  /** What was actually decided. */
+  decision?: string;
+  /** How it felt at the time of deciding — optional, free text. */
+  feeling?: string;
+  /** ISO date (YYYY-MM-DD) the user wants to revisit this decision — optional. */
+  reviewDate?: string | null;
 };
 
 export const DECISION_DATE_RANGES = [

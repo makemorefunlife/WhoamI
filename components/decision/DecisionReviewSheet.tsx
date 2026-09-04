@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import type { DecisionEntry } from "@/lib/decision/types";
 import { decisionCategoryLabel } from "@/lib/decision/categories";
+import { formatDecisionDate } from "@/lib/decision/format";
 import { StarRatingInput } from "@/components/decision/StarRating";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   entry: DecisionEntry | null;
@@ -20,7 +21,7 @@ export default function DecisionReviewSheet({
   onClose,
   onSave,
 }: Props) {
-  const messages = useMessages();
+  const { locale, messages } = useLocale();
   const [rating, setRating] = useState(0);
   const [note, setNote] = useState("");
 
@@ -80,6 +81,51 @@ export default function DecisionReviewSheet({
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {entry.situation || entry.decision || entry.feeling || entry.reviewDate ? (
+          <div className="mb-5 space-y-3 rounded-xl border border-outline-variant/25 bg-surface-container-lowest/80 p-4">
+            {entry.situation ? (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">
+                  {messages.decision.reviewSummarySituationLabel}
+                </p>
+                <p className="mt-1 whitespace-pre-line break-keep text-sm leading-relaxed text-on-surface">
+                  {entry.situation}
+                </p>
+              </div>
+            ) : null}
+            {entry.decision ? (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">
+                  {messages.decision.reviewSummaryDecisionLabel}
+                </p>
+                <p className="mt-1 whitespace-pre-line break-keep text-sm leading-relaxed text-on-surface">
+                  {entry.decision}
+                </p>
+              </div>
+            ) : null}
+            {entry.feeling ? (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">
+                  {messages.decision.reviewSummaryFeelingLabel}
+                </p>
+                <p className="mt-1 whitespace-pre-line break-keep text-sm leading-relaxed text-on-surface">
+                  {entry.feeling}
+                </p>
+              </div>
+            ) : null}
+            {entry.reviewDate ? (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant/70">
+                  {messages.decision.reviewSummaryReviewDateLabel}
+                </p>
+                <p className="mt-1 text-sm text-on-surface">
+                  {formatDecisionDate(`${entry.reviewDate}T00:00:00`, locale)}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="mb-2 flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
