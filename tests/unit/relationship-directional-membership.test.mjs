@@ -1,9 +1,10 @@
 /**
  * Directional connection model (spec sections 9-11, 31) — pure logic only.
- * DESIGN STATUS: this module is written and fully tested, but NOT yet
- * wired into /api/invite/create or /api/invite/complete — see the final
- * report's forensic section for why. These tests prove the intended
- * semantics are correct in isolation, ready to wire in.
+ * Wired into app/api/connect/complete/route.ts and
+ * app/api/connect/respond/route.ts; see
+ * tests/scripts/e2e-relationship-map-dev-proof.ts for the live DEV proof
+ * that acceptance actually creates/updates relationship_map_memberships
+ * end-to-end. These tests cover the pure semantics in isolation.
  *
  * Run: npx tsx tests/unit/relationship-directional-membership.test.mjs
  */

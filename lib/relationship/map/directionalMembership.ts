@@ -1,9 +1,7 @@
 /**
- * Directional map-membership rules (spec section 9) — DESIGNED AND TESTED
- * THIS PASS, NOT YET WIRED into the live invite flow. See the
- * accompanying migration (relationship_map_memberships) and the final
- * report's forensic/design sections for why this stayed additive-only
- * rather than being wired into /api/invite/create /complete directly.
+ * Directional map-membership rules (spec section 9) — wired into
+ * app/api/connect/complete/route.ts (link join) and
+ * app/api/connect/respond/route.ts (reciprocal accept/decline).
  *
  * The map answers "who is in MY map", and that need not be symmetric:
  * when B joins through A's personal link, B explicitly consented to
