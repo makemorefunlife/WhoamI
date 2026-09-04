@@ -14,6 +14,8 @@ export type CareerScenarioDetail = {
   whatMustBeRenegotiated: string;
   whatCreatesResentment: string;
   whatMakesSupportFeelFair: string;
+  /** Whether this specific scenario is the one real recognition-axis evidence points to for this pair, vs. a generic possibility. */
+  relevance: "EVIDENCE_BACKED" | "GENERIC_POSSIBILITY";
 };
 
 export type MarriageCareerHomeBundle = {
@@ -34,6 +36,19 @@ export function buildMarriageCareerHomeTransition(
 
   const recA = axesA.recognition ?? 50;
   const recB = axesB.recognition ?? 50;
+  const RELEVANCE_GATE = 15;
+  // Which scenario real recognition-axis evidence actually points toward for
+  // THIS pair — previously recA/recB were computed but never used, so all
+  // three hypothetical scenarios were presented with equal, unstated weight
+  // regardless of either person's real evidence.
+  const evidenceBackedScenario: CareerScenarioKey =
+    recA - recB >= RELEVANCE_GATE
+      ? "A_OPPORTUNITY"
+      : recB - recA >= RELEVANCE_GATE
+        ? "B_OPPORTUNITY"
+        : "DUAL_HIGH_DEMAND";
+  const relevanceFor = (key: CareerScenarioKey): "EVIDENCE_BACKED" | "GENERIC_POSSIBILITY" =>
+    key === evidenceBackedScenario ? "EVIDENCE_BACKED" : "GENERIC_POSSIBILITY";
 
   const scenarios: CareerScenarioDetail[] = [
     {
@@ -51,6 +66,7 @@ export function buildMarriageCareerHomeTransition(
       whatMakesSupportFeelFair: isEn
         ? `Explicitly acknowledging ${nameB}'s sacrifice and setting a clear duration for the high-demand period.`
         : `${nameB}님의 지원 노고에 대한 명확한 고마움 표현과 고수요 기간의 시한(End Date) 명시.`,
+      relevance: relevanceFor("A_OPPORTUNITY"),
     },
     {
       scenarioKey: "B_OPPORTUNITY",
@@ -67,6 +83,7 @@ export function buildMarriageCareerHomeTransition(
       whatMakesSupportFeelFair: isEn
         ? `Active partner support and sharing career milestone wins together.`
         : `커리어 성취의 결실을 부부 공동의 경사로 함께 축하하고 나눌 때.`,
+      relevance: relevanceFor("B_OPPORTUNITY"),
     },
     {
       scenarioKey: "DUAL_HIGH_DEMAND",
@@ -83,6 +100,7 @@ export function buildMarriageCareerHomeTransition(
       whatMakesSupportFeelFair: isEn
         ? "Investing in time-saving home appliances or services and taking joint recovery breaks."
         : "가사 대체 서비스에 지출을 아끼지 않고 주말 반나절 완전 휴식 시간을 함께 갖는 것.",
+      relevance: relevanceFor("DUAL_HIGH_DEMAND"),
     },
   ];
 

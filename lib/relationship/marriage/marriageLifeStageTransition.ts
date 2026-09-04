@@ -22,7 +22,16 @@ export type StageTransitionDetail = {
 };
 
 export type MarriageLifeStageBundle = {
-  currentStage: LifeStageKey;
+  /**
+   * No production data source (relationship start date, marriage date,
+   * explicit user-selected stage, or any other canonical stage signal)
+   * exists anywhere in this product today — confirmed by search, not
+   * assumed. `currentStage` is therefore always `null` rather than a
+   * fabricated guess; `transitions` below lists all stages generically
+   * and is not filtered/highlighted by a "current" stage. Do not infer a
+   * stage from age or psych axes — neither is a valid stage signal.
+   */
+  currentStage: LifeStageKey | null;
   transitions: StageTransitionDetail[];
   overallSummary: string;
 };
@@ -35,8 +44,10 @@ export function buildMarriageLifeStageTransition(
   locale: Locale = "ko-KR",
 ): MarriageLifeStageBundle {
   const isEn = locale === "en-US";
-  const axesA = psychA?.secondary_axes ?? {};
-  const axesB = psychB?.secondary_axes ?? {};
+  // Reserved for a future stage-aware refinement once a real stage signal
+  // exists in the product; not read yet — see currentStage's docblock.
+  void psychA;
+  void psychB;
 
   const transitions: StageTransitionDetail[] = [
     {
@@ -86,7 +97,7 @@ export function buildMarriageLifeStageTransition(
     : `${nameA}님과 ${nameB}님의 부부 관계는 시간이 지나면서 발전하므로, 시기마다 운영 규칙과 자율 영역을 재정돈하는 것이 관계를 단단히 지켜줍니다.`;
 
   return {
-    currentStage: "EARLY_MARRIAGE",
+    currentStage: null,
     transitions,
     overallSummary,
   };

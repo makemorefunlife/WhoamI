@@ -28,6 +28,7 @@ import { buildMarriageChapter01Intelligence } from "./marriageChapter01Intellige
 import { buildMarriageChapter03Intelligence } from "./marriageChapter03Intelligence";
 import { buildMarriageChapter04Intelligence } from "./marriageChapter04Intelligence";
 import { buildMarriageChapter05Intelligence } from "./marriageChapter05Intelligence";
+import { buildMarriageChapter06Intelligence } from "./marriageChapter06Intelligence";
 import { buildMarriageChapter07Intelligence } from "./marriageChapter07Intelligence";
 import { buildMarriageChapter08Intelligence } from "./marriageChapter08Intelligence";
 import type {
@@ -528,17 +529,31 @@ export function buildMarriageCanonicalEngine(
   // ----------------------------------------------------
   // 5. CE vs 11-Axis Discrepancy Trace
   // ----------------------------------------------------
-  const discrepancies: DiscrepancyTrace[] = [
-    {
-      domain: "Operating Responsibility",
-      innateTendency: isEn ? `${a} innate responsibility is strong in birth-chart.` : `${a}님의 사주 기질상 관리 및 책임성이 높습니다.`,
-      currentBehavior: isEn ? `Current psych structure score is ${pA.structure}.` : `현재 설문 상 계획성 점수는 ${pA.structure}점입니다.`,
-      pairDynamicShift: isEn ? `When paired with ${b}, responsibility settles into ${primaryManager}.` : `${b}님과 함께 있을 때 실제 집안 운영 책임은 ${primaryManager === "a" ? a : b}님 쪽으로 수렴합니다.`,
-      summaryDiscrepancy: isEn
-        ? "Innate sense of duty remains high, but day-to-day execution depends on established household routines."
-        : "원래의 책임감은 높으나, 일상 속 실제 실행은 두 사람이 약속한 고정 루틴에 의해 좌우됩니다.",
-    },
-  ];
+  // `primaryManager` (computed above from the real structGap/controlGap
+  // comparison) is already the evidence-backed answer to "whose responsibility
+  // this settles into" — this section must describe THAT person, not always A.
+  // When neither person's structure/self_control clearly leads, this
+  // discrepancy entry is omitted rather than crediting someone by default.
+  const managerName = primaryManager === "a" ? a : primaryManager === "b" ? b : null;
+  const discrepancies: DiscrepancyTrace[] = managerName
+    ? [
+        {
+          domain: "Operating Responsibility",
+          innateTendency: isEn
+            ? `${managerName}'s own structure/self-control evidence is the stronger one in this pair.`
+            : `${managerName}님 쪽의 계획성/자기통제 근거가 이 부부 안에서 상대적으로 더 강합니다.`,
+          currentBehavior: isEn
+            ? `Current psych structure scores: ${a}=${pA.structure}, ${b}=${pB.structure}.`
+            : `현재 설문 상 계획성 점수: ${a}님 ${pA.structure}점, ${b}님 ${pB.structure}점.`,
+          pairDynamicShift: isEn
+            ? `Household operating responsibility settles toward ${managerName}.`
+            : `실제 집안 운영 책임은 ${managerName}님 쪽으로 수렴합니다.`,
+          summaryDiscrepancy: isEn
+            ? "Whichever of you shows stronger structure/self-control evidence tends to carry more of the day-to-day operating load — worth naming explicitly rather than assuming."
+            : "계획성/자기통제 근거가 더 강한 쪽이 일상 운영 부담을 더 많이 짊어지는 경향이 있어, 짐작하지 말고 명확히 짚어보는 것이 좋습니다.",
+        },
+      ]
+    : [];
 
   // ----------------------------------------------------
   // 6 & 7. Candidate Engine & Multi-Signal Synthesis
@@ -594,6 +609,7 @@ export function buildMarriageCanonicalEngine(
   const chapter03Intelligence = buildMarriageChapter03Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
   const chapter04Intelligence = buildMarriageChapter04Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
   const chapter05Intelligence = buildMarriageChapter05Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
+  const chapter06Intelligence = buildMarriageChapter06Intelligence({ ctx, psychA: params.psychMasterA, psychB: params.psychMasterB, locale });
   const chapter07Intelligence = buildMarriageChapter07Intelligence({
     nameA: a,
     nameB: b,
@@ -670,6 +686,7 @@ export function buildMarriageCanonicalEngine(
     chapter03Intelligence,
     chapter04Intelligence,
     chapter05Intelligence,
+    chapter06Intelligence,
     chapter07Intelligence,
     chapter08Intelligence,
     householdPm,

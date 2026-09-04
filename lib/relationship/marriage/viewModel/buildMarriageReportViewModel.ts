@@ -421,7 +421,11 @@ function buildMoneyChoresSection(
     cfoAxisNote: m.cfo_axis_note,
     cfoCanonicalLabel,
     mentalLoadNote: m.mental_load_note ?? null,
-    ch05Intelligence: (report as any)?.canonical_projections?.chapter05Intelligence ?? createDefaultMarriageChapter05Intelligence({ nameA, nameB, locale }),
+    // The real chapter05Intelligence is generated inside marriage_canonical_bundle
+    // (buildMarriageReport.ts assigns the whole canonical engine output there),
+    // not as a flat sibling of canonical_projections — this used to always miss
+    // and silently fall back to the generic default for every report.
+    ch05Intelligence: report.canonical_projections?.marriage_canonical_bundle?.chapter05Intelligence ?? createDefaultMarriageChapter05Intelligence({ nameA, nameB, locale }),
     coupleActionPlan: m.couple_action_plan,
   };
 }
@@ -501,7 +505,10 @@ function buildParentingSection(
     harmonyTip: p?.harmony_tip ?? "",
     personARoleNote: p?.person_a_role_note,
     personBRoleNote: p?.person_b_role_note,
-    ch06Intelligence: (report as any)?.canonical_projections?.chapter06Intelligence ?? createDefaultMarriageChapter06Intelligence({ nameA, nameB, locale }),
+    // Same nested-path fix as ch05Intelligence above — the real CH06 now
+    // lives inside marriage_canonical_bundle, since it's wired into
+    // buildMarriageCanonicalEngine.ts.
+    ch06Intelligence: report.canonical_projections?.marriage_canonical_bundle?.chapter06Intelligence ?? createDefaultMarriageChapter06Intelligence({ nameA, nameB, locale }),
   };
 }
 

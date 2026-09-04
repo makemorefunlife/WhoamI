@@ -599,6 +599,10 @@ export async function POST(req: Request) {
       });
     }
 
+    // Product domain "Marriage" — persisted/API kind is "cohabitation"
+    // (see MARRIAGE_PRODUCT_KIND in lib/relationship/relationshipKind.ts).
+    // There is no kind === "marriage" anywhere; do not add one without a
+    // deliberate migration decision.
     if (kind === "cohabitation") {
       const personCoreLoad = await loadPersonCorePairForPremium(
         rr.report_id_a,

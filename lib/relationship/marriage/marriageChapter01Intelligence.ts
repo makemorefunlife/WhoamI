@@ -3,6 +3,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import { resolveSpousePalaceProfile } from "@/lib/relationship/romantic/prototypeV4/spousePalaceMatcher";
 import { calculateTenGod, getHiddenStemsData } from "@/lib/saju/repository";
+import type { MarriageEvidenceSource } from "./marriageEvidenceResolution";
 
 export type ConfidenceLevel = "HIGH" | "MODERATE" | "LOW";
 
@@ -23,6 +24,8 @@ export type AttractionDriver = {
   whatDrawsB: string;
   description: string;
   confidence: ConfidenceLevel;
+  /** Where whatDrawsA's/whatDrawsB's person-specific quality actually came from — never invented. */
+  provenance?: { whatDrawsASource: MarriageEvidenceSource; whatDrawsBSource: MarriageEvidenceSource };
 };
 
 export type DirectionalNeed = {
@@ -165,6 +168,63 @@ function sanitizeCopy(text: string): string {
   return cleaned;
 }
 
+export type PersonQualityDescriptor = {
+  text: string;
+  source: MarriageEvidenceSource;
+};
+
+/**
+ * A real, person-specific quality to attribute to ONE person, derived from
+ * their own spouse-palace Ten God family (day-branch evidence, real Saju)
+ * and — when it agrees or the Saju signal is absent — their own Psych axes.
+ * Uses the SAME family thresholds as buildDeepNeedChain below (인성/관성/
+ * 식상/비겁), so a person described this way and a person whose "innate
+ * need" is derived the same family reads as one coherent evidence trail,
+ * not two unrelated guesses.
+ *
+ * This replaces fixed slot-based text ("A is decisive", "B is receptive")
+ * that used to run regardless of either person's actual chart — the value
+ * returned here is a function of the SUBJECT's own data, so it stays
+ * attached to that person even if they move between the A/B argument slots
+ * (sortReportPair.ts assigns those purely by UUID sort order and they carry
+ * no personality meaning).
+ */
+function describePersonAttractionQuality(
+  spousePalace: ReturnType<typeof resolveSpousePalaceProfile>,
+  axes: Record<string, number>,
+  isEn: boolean,
+): PersonQualityDescriptor {
+  const family = spousePalace.tenGodFamily;
+  if (family.includes("인성") || (axes.empathy ?? 50) >= 60) {
+    return {
+      text: isEn ? "a warm, accepting way of taking things in" : "다정하게 받아주는 수용력",
+      source: family.includes("인성") ? "BOTH" : "PSYCH",
+    };
+  }
+  if (family.includes("관성") || (axes.structure ?? 50) >= 60) {
+    return {
+      text: isEn ? "clear convictions and an unshaken sense of standards" : "분명한 소신과 흔들림 없는 기준",
+      source: family.includes("관성") ? "BOTH" : "PSYCH",
+    };
+  }
+  if (family.includes("식상") || (axes.energy_style ?? 50) >= 60) {
+    return {
+      text: isEn ? "an unguarded, expressive energy" : "거침없이 표현하는 활력",
+      source: family.includes("식상") ? "BOTH" : "PSYCH",
+    };
+  }
+  if (family.includes("비겁") || (axes.practicality ?? 50) >= 60) {
+    return {
+      text: isEn ? "a clear, independent sense of self" : "자기 색이 분명한 독립성",
+      source: family.includes("비겁") ? "BOTH" : "PSYCH",
+    };
+  }
+  return {
+    text: isEn ? "practical judgment and a grounded steadiness" : "현실적인 판단력과 묵직한 안정감",
+    source: "SAJU",
+  };
+}
+
 function getAttractionCategoryLabel(cat: AttractionCategory, isEn: boolean): string {
   switch (cat) {
     case "comfortable_familiar": return isEn ? "Comfortable & Familiar Pull" : "편안하고 말 없이 통하는 끌림";
@@ -267,21 +327,32 @@ export function buildMarriageChapter01Intelligence(params: {
   // --------------------------------------------------------------------------
   const drivers: AttractionDriver[] = [];
 
+  // Real, person-specific qualities — each derived from its OWN subject's
+  // spouse-palace family + axes (see describePersonAttractionQuality), never
+  // from which argument slot (A/B) that subject happens to occupy. Computed
+  // once and reused across every driver category below so "what A finds
+  // attractive about B" and "what B finds attractive about A" both trace to
+  // real evidence regardless of which structural condition triggered.
+  const qualityOfA = describePersonAttractionQuality(spousePalaceA, axesA, isEn);
+  const qualityOfB = describePersonAttractionQuality(spousePalaceB, axesB, isEn);
+  const attractionProvenance = { whatDrawsASource: qualityOfB.source, whatDrawsBSource: qualityOfA.source };
+
   if (sig.hasHeavenlyStemCombine) {
     drivers.push({
       category: "stimulating_magnetic",
       categoryLabel: getAttractionCategoryLabel("stimulating_magnetic", isEn),
       headline: isEn ? "Attraction that feels natural from the start" : "처음 대화를 시작할 때부터 느껴진 특별한 기류",
       whatDrawsA: isEn
-        ? `${a} was naturally drawn in by the reassuring sense that ${b}'s calm, warm manner would ease the tension in their mind.`
-        : `${aEunNeun} ${b}님의 차분하고 다정한 태도가 마음의 긴장을 풀어줄 것이라는 안도감에 자연스럽게 이끌렸습니다.`,
+        ? `${a} was naturally drawn in by the reassuring sense that ${b}'s ${qualityOfB.text} would ease the tension in their mind.`
+        : `${aEunNeun} ${b}님의 ${qualityOfB.text}이 마음의 긴장을 풀어줄 것이라는 안도감에 자연스럽게 이끌렸습니다.`,
       whatDrawsB: isEn
-        ? `${b} was drawn to the dependable feeling that ${a}'s clear convictions and decisiveness would be a strength to face the world together with.`
-        : `${bEunNeun} ${a}님이 보여주는 분명한 소신과 결단력이 세상을 함께 헤쳐갈 든든함으로 다가와 끌렸습니다.`,
+        ? `${b} was drawn to the dependable feeling that ${a}'s ${qualityOfA.text} would be a strength to face the world together with.`
+        : `${bEunNeun} ${a}님이 지닌 ${qualityOfA.text}이 세상을 함께 헤쳐갈 든든함으로 다가와 끌렸습니다.`,
       description: isEn
         ? `When ${a} and ${b} first met, there was an unspoken magnetic ease — a feeling that you didn't need to explain yourselves at length to understand each other.`
         : `${aEunNeun} ${bGwaWa} 처음 만났을 때, 긴 설명 없이도 서로의 분위기가 마음 편하게 통하는 느낌을 받았습니다.`,
       confidence: "HIGH",
+      provenance: attractionProvenance,
     });
   }
 
@@ -291,15 +362,16 @@ export function buildMarriageChapter01Intelligence(params: {
       categoryLabel: getAttractionCategoryLabel("comfortable_familiar", isEn),
       headline: isEn ? "Deep comfort like being in your own home" : "오래 알고 지낸 것 같은 안식처 같은 편안함",
       whatDrawsA: isEn
-        ? `${a} was drawn to the comfort of not having to try hard to look good when together with ${b}.`
-        : `${aEunNeun} ${b}님과 함께 있을 때 무언가를 억지로 잘 보이려 애쓰지 않아도 되는 편안함에 끌렸습니다.`,
+        ? `${a} was drawn to the comfort of ${b}'s ${qualityOfB.text}, a feeling of not having to try hard when together.`
+        : `${aEunNeun} ${b}님의 ${qualityOfB.text}에서 오는, 애써 잘 보이려 하지 않아도 되는 편안함에 끌렸습니다.`,
       whatDrawsB: isEn
-        ? `${b} felt reassured by the stable standards and unshakable steadiness ${a} brought.`
-        : `${bEunNeun} ${a}님이 세워주는 안정된 기준과 흔들림 없는 모습에서 안도감을 느꼈습니다.`,
+        ? `${b} felt reassured by ${a}'s ${qualityOfA.text}.`
+        : `${bEunNeun} ${a}님이 지닌 ${qualityOfA.text}에서 안도감을 느꼈습니다.`,
       description: isEn
         ? `Shared domestic energy creates an immediate sense of safety — being together feels as relaxed as resting in a familiar sanctuary.`
         : `${aEunNeun} ${b}님과 한 공간에 있을 때 마음이 안돈되며 낯선 긴장보다는 익숙함이 두 사람을 이어주었습니다.`,
       confidence: "HIGH",
+      provenance: attractionProvenance,
     });
   }
 
@@ -309,15 +381,16 @@ export function buildMarriageChapter01Intelligence(params: {
       categoryLabel: getAttractionCategoryLabel("tense_curious", isEn),
       headline: isEn ? "A spark of curiosity born from different rhythms" : "서로의 다름에서 오는 선명한 호기심과 긴장감",
       whatDrawsA: isEn
-        ? `${a} found ${b}'s unexpected reactions and different life tempo fresh and intriguing.`
-        : `${aEunNeun} ${b}님의 예상치 못한 반응과 나와는 다른 생활 템포에 신선한 흥미를 느꼈습니다.`,
+        ? `${a} found the contrast between their own rhythm and ${b}'s ${qualityOfB.text} fresh and intriguing.`
+        : `${aEunNeun} 자신과는 다른, ${b}님의 ${qualityOfB.text}이 만드는 생활 템포 차이에 신선한 흥미를 느꼈습니다.`,
       whatDrawsB: isEn
-        ? `${b} felt a fresh spark from ${a}'s bold drive and intense pace.`
-        : `${bEunNeun} ${a}님이 보여주는 거침없는 추진력과 강렬한 속도감에서 신선한 자극을 받았습니다.`,
+        ? `${b} felt a fresh spark from how differently ${a}'s ${qualityOfA.text} showed up in daily life.`
+        : `${bEunNeun} ${a}님이 지닌 ${qualityOfA.text}이 일상에서 드러나는 방식이 자신과 달라 신선한 자극을 받았습니다.`,
       description: isEn
         ? `Discrepancies in living tempo and inner expression create a sharp, fascinating spark — making each other impossible to ignore.`
         : `${aEunNeun} ${bGwaWa} 생활 템포나 반응 방식이 달라 쉽게 예측할 수 없는 신선함이 서로를 호기심 있게 바라보게 만들었습니다.`,
       confidence: "HIGH",
+      provenance: attractionProvenance,
     });
   }
 
@@ -327,15 +400,16 @@ export function buildMarriageChapter01Intelligence(params: {
       categoryLabel: getAttractionCategoryLabel("peer_camaraderie", isEn),
       headline: isEn ? "Equal partnership walking at eye level" : "대등한 눈높이에서 나란히 걷는 동료적 친밀감",
       whatDrawsA: isEn
-        ? `${a} felt a deep sense of kinship in the way ${b} took an autonomous, independent lead on their own life.`
-        : `${aEunNeun} ${b}님이 삶을 주도해 나가는 자율적이고 독립적인 태도에서 깊은 동질감을 느꼈습니다.`,
+        ? `${a} felt a deep sense of kinship in ${b}'s ${qualityOfB.text}.`
+        : `${aEunNeun} ${b}님이 보여주는 ${qualityOfB.text}에서 깊은 동질감을 느꼈습니다.`,
       whatDrawsB: isEn
-        ? `${b} was drawn to the equal footing on which ${a} respected each other's space.`
-        : `${bEunNeun} ${a}님이 나란한 눈높이에서 서로의 영역을 존중해주는 대등함에 마음이 끌렸습니다.`,
+        ? `${b} was drawn to the equal footing created by ${a}'s ${qualityOfA.text}.`
+        : `${bEunNeun} ${a}님이 지닌 ${qualityOfA.text}이 만들어내는 대등함에 마음이 끌렸습니다.`,
       description: isEn
         ? `${a} and ${b} view life from a similar horizon, forming an equal partnership where mutual independence is respected.`
         : `${aEunNeun} ${bGwaWa} 세상을 바라보는 눈높이가 닮아 있어 대등한 동료 파트너로서 친밀감을 느꼈습니다.`,
       confidence: "MODERATE",
+      provenance: attractionProvenance,
     });
   } else {
     drivers.push({
@@ -343,15 +417,16 @@ export function buildMarriageChapter01Intelligence(params: {
       categoryLabel: getAttractionCategoryLabel("respect_trust", isEn),
       headline: isEn ? "Mutual respect grounded in contrasting strengths" : "서로 다른 장점이 주는 존경과 든든함",
       whatDrawsA: isEn
-        ? `${a} was drawn in by the trust that ${b}'s calm, warm acceptance would add a comfort they lacked on their own.`
-        : `${aEunNeun} ${b}님이 지닌 차분함과 다정한 수용력이 자신에게 없는 편안함을 더해줄 것이라는 신뢰에 끌렸습니다.`,
+        ? `${a} was drawn in by the trust that ${b}'s ${qualityOfB.text} would add something they lacked on their own.`
+        : `${aEunNeun} ${b}님이 지닌 ${qualityOfB.text}이 자신에게 없는 편안함을 더해줄 것이라는 신뢰에 끌렸습니다.`,
       whatDrawsB: isEn
-        ? `${b} felt respect for how ${a}'s clear convictions and decisiveness would become a dependable standard for life.`
-        : `${bEunNeun} ${a}님이 지닌 분명한 소신과 결단력이 삶의 든든한 기준이 되어줄 것이라는 존경을 느꼈습니다.`,
+        ? `${b} felt respect for how ${a}'s ${qualityOfA.text} would become a dependable standard for life.`
+        : `${bEunNeun} ${a}님이 지닌 ${qualityOfA.text}이 삶의 든든한 기준이 되어줄 것이라는 존경을 느꼈습니다.`,
       description: isEn
         ? `Each partner holds clear strengths the other values, building an attraction rooted in genuine respect and practical security.`
         : `${aEunNeun} ${b}님이 가진 장점이 본인과 달라, 서로를 실질적으로 받쳐줄 수 있다는 깊은 신뢰가 끌림의 바탕이 되었습니다.`,
       confidence: "MODERATE",
+      provenance: attractionProvenance,
     });
   }
 
@@ -636,8 +711,8 @@ export function buildMarriageChapter01Intelligence(params: {
       : `${aEunNeun} 혼자서 문제를 해결하려 애쓰며 남에게 잘 기대지 않던 성향`;
 
   const influenceA = isEn
-    ? `through ${b}'s warm, easygoing way of accepting things`
-    : `${b}님이 보여주는 다정하고 여유 있게 받아주는 태도를 접하면서`;
+    ? `through ${b}'s ${qualityOfB.text}`
+    : `${b}님이 보여주는 ${qualityOfB.text}을 접하면서`;
 
   const emergingA = isEn
     ? `they've come to feel it's okay not to carry everything alone, and can comfortably lean on their partner when needed.`
@@ -649,8 +724,8 @@ export function buildMarriageChapter01Intelligence(params: {
 
   const shadowA = (axesA.structure ?? 50) >= 65
     ? isEn
-      ? `Having gotten used to ${b}'s flexibility, it helps to watch that important decisions don't come out sounding directive.`
-      : `${b}님의 유연함에 익숙해진 나머지, 중요한 의사결정에서 지시적인 톤이 되지 않도록 주의할 필요가 있어요.`
+      ? `Having gotten used to ${b}'s ${qualityOfB.text}, it helps to watch that important decisions don't come out sounding directive.`
+      : `${b}님의 ${qualityOfB.text}에 익숙해진 나머지, 중요한 의사결정에서 지시적인 톤이 되지 않도록 주의할 필요가 있어요.`
     : undefined;
 
   const beforeB = isEn
@@ -662,8 +737,8 @@ export function buildMarriageChapter01Intelligence(params: {
       : `${bEunNeun} 자신의 서운함이나 욕구를 적극적으로 표현하지 않고 속으로 참던 성향`;
 
   const influenceB = isEn
-    ? `by learning from ${a}'s clear direction-setting and quick follow-through`
-    : `${a}님이 보여주는 확실한 방향 잡기와 빠른 실행 리듬을 곁에서 배우면서`;
+    ? `by learning from ${a}'s ${qualityOfA.text}`
+    : `${a}님이 보여주는 ${qualityOfA.text}을 곁에서 배우면서`;
 
   const emergingB = isEn
     ? `they've gained the drive to turn thoughts into action quickly, instead of spending time just deliberating.`

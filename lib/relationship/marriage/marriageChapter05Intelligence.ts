@@ -2,6 +2,7 @@ import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "./marriageCopy";
+import { resolvePrimaryAxisValue } from "./marriageEvidenceResolution";
 
 export type CapabilityActor = "A_DOMINANT" | "B_DOMINANT" | "SHARED_STRENGTH" | "SHARED_GAP" | "ROLE_VACUUM" | "COMPLEMENTARY";
 
@@ -127,6 +128,21 @@ export function buildMarriageChapter05Intelligence(params: {
   const axesA = psychA?.secondary_axes ?? {};
   const axesB = psychB?.secondary_axes ?? {};
 
+  // `adaptability`, `stability`, and `growth` are PRIMARY-axis names, not
+  // SecondaryAxisKey values — psych.secondary_axes.adaptability etc. was
+  // always undefined and silently defaulted through `?? 50`, so the Psych
+  // half of these specific sub-scores never actually fired for anyone.
+  // resolvePrimaryAxisValue derives the real approximated primary-axis
+  // value from the actual secondary-axis SSOT instead (or null when no
+  // psych profile exists at all, same as the other axes' `?? 50` fallback
+  // below, applied explicitly rather than through a wrong key name).
+  const adaptabilityA = resolvePrimaryAxisValue(psychA, "adaptability");
+  const adaptabilityB = resolvePrimaryAxisValue(psychB, "adaptability");
+  const stabilityA = resolvePrimaryAxisValue(psychA, "stability");
+  const stabilityB = resolvePrimaryAxisValue(psychB, "stability");
+  const growthA = resolvePrimaryAxisValue(psychA, "growth");
+  const growthB = resolvePrimaryAxisValue(psychB, "growth");
+
   // ---------------------------------------------------------------------------
   // 01. COUPLE_OPERATING_SYSTEM
   // ---------------------------------------------------------------------------
@@ -145,8 +161,8 @@ export function buildMarriageChapter05Intelligence(params: {
   const checkA = (countsA["인성"] ?? 0) + (countsA["재성"] ?? 0) + ((axesA.practicality ?? 50) > 60 ? 2 : 0);
   const checkB = (countsB["인성"] ?? 0) + (countsB["재성"] ?? 0) + ((axesB.practicality ?? 50) > 60 ? 2 : 0);
 
-  const adaptA = (countsA["식상"] ?? 0) + ((axesA.adaptability ?? 50) > 60 ? 2 : 0);
-  const adaptB = (countsB["식상"] ?? 0) + ((axesB.adaptability ?? 50) > 60 ? 2 : 0);
+  const adaptA = (countsA["식상"] ?? 0) + ((adaptabilityA ?? 50) > 60 ? 2 : 0);
+  const adaptB = (countsB["식상"] ?? 0) + ((adaptabilityB ?? 50) > 60 ? 2 : 0);
 
   const resolveActor = (scoreA: number, scoreB: number): { leadName: string; actor: CapabilityActor } => {
     const diff = scoreA - scoreB;
@@ -256,9 +272,9 @@ export function buildMarriageChapter05Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 02. MONEY_BEHAVIOR
   // ---------------------------------------------------------------------------
-  const secA = (countsA["정재"] ?? 0) > 0 || (axesA.stability ?? 50) > 60;
+  const secA = (countsA["정재"] ?? 0) > 0 || (stabilityA ?? 50) > 60;
   const expA = (countsA["편재"] ?? 0) > 0 || (axesA.stimulation ?? 50) > 60;
-  const secB = (countsB["정재"] ?? 0) > 0 || (axesB.stability ?? 50) > 60;
+  const secB = (countsB["정재"] ?? 0) > 0 || (stabilityB ?? 50) > 60;
   const expB = (countsB["편재"] ?? 0) > 0 || (axesB.stimulation ?? 50) > 60;
 
   const moneyBehavior: MoneyBehaviorSection = {
@@ -280,8 +296,8 @@ export function buildMarriageChapter05Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 03. WEALTH_BUILDING_STYLE
   // ---------------------------------------------------------------------------
-  const riskA = (axesA.growth ?? 50) > 60 || (countsA["편재"] ?? 0) > 0;
-  const riskB = (axesB.growth ?? 50) > 60 || (countsB["편재"] ?? 0) > 0;
+  const riskA = (growthA ?? 50) > 60 || (countsA["편재"] ?? 0) > 0;
+  const riskB = (growthB ?? 50) > 60 || (countsB["편재"] ?? 0) > 0;
 
   const wealthBuildingStyle: WealthBuildingStyleSection = {
     title: isEn ? "03. Wealth Building Style" : "03. 우리 돈은 어떤 방식으로 키우는 게 잘 맞을까?",
@@ -301,8 +317,8 @@ export function buildMarriageChapter05Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 04. MAJOR_MONEY_DECISIONS (Money & Investment Decision Lifecycle)
   // ---------------------------------------------------------------------------
-  const findA = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + ((axesA.growth ?? 50) > 55 ? 1.5 : 0) + ((axesA.stimulation ?? 50) > 55 ? 1 : 0);
-  const findB = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + ((axesB.growth ?? 50) > 55 ? 1.5 : 0) + ((axesB.stimulation ?? 50) > 55 ? 1 : 0);
+  const findA = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + ((growthA ?? 50) > 55 ? 1.5 : 0) + ((axesA.stimulation ?? 50) > 55 ? 1 : 0);
+  const findB = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + ((growthB ?? 50) > 55 ? 1.5 : 0) + ((axesB.stimulation ?? 50) > 55 ? 1 : 0);
 
   const trackA = (countsA["관성"] ?? 0) + (countsA["인성"] ?? 0) + (countsA["재성"] ?? 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0) + ((axesA.structure ?? 50) > 55 ? 1.5 : 0);
   const trackB = (countsB["관성"] ?? 0) + (countsB["인성"] ?? 0) + (countsB["재성"] ?? 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0) + ((axesB.structure ?? 50) > 55 ? 1.5 : 0);
@@ -402,7 +418,10 @@ export function buildMarriageChapter05Intelligence(params: {
       "It runs smoothest when there's a clear owner for monthly fixed expenses and account flow, paired with a regular check-in on where things stand.",
       "매월 고정 지출과 통장 흐름은 담당자를 명확히 두고, 정기적인 자산 현황 브리핑을 통해 투명성을 유지할 때 가장 잡음이 없습니다.",
     ),
-    boundaryInsight: (axesA.autonomy !== undefined && axesB.autonomy !== undefined)
+    // `autonomy` has no secondary-axis derivation anywhere in the product
+    // (see marriageEvidenceResolution.ts's note) — this only needs to know
+    // whether real psych data exists at all, not read a nonexistent axis.
+    boundaryInsight: (psychA != null && psychB != null)
       ? pick(
           locale,
           "Keeping a shared household account separate from each person's own spending money protects both emotional autonomy and household stability at the same time.",
@@ -417,11 +436,15 @@ export function buildMarriageChapter05Intelligence(params: {
   const realA = (countsA["관성"] ?? 0) * 1.5 + (countsA["재성"] ?? 0) + (countsA["인성"] ?? 0) + ((axesA.practicality ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
   const realB = (countsB["관성"] ?? 0) * 1.5 + (countsB["재성"] ?? 0) + (countsB["인성"] ?? 0) + ((axesB.practicality ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
 
-  const expA_res = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + (countsA["편재"] ?? 0) + ((axesA.adaptability ?? 50) > 55 ? 2 : 0) + ((axesA.growth ?? 50) > 55 ? 1.5 : 0);
-  const expB_res = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + (countsB["편재"] ?? 0) + ((axesB.adaptability ?? 50) > 55 ? 2 : 0) + ((axesB.growth ?? 50) > 55 ? 1.5 : 0);
+  const expA_res = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + (countsA["편재"] ?? 0) + ((adaptabilityA ?? 50) > 55 ? 2 : 0) + ((growthA ?? 50) > 55 ? 1.5 : 0);
+  const expB_res = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + (countsB["편재"] ?? 0) + ((adaptabilityB ?? 50) > 55 ? 2 : 0) + ((growthB ?? 50) > 55 ? 1.5 : 0);
 
-  const rskA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["편재"] ?? 0) + ((axesA.stimulation ?? 50) > 55 ? 2 : 0) + ((axesA.autonomy ?? 50) > 55 ? 1.5 : 0);
-  const rskB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["편재"] ?? 0) + ((axesB.stimulation ?? 50) > 55 ? 2 : 0) + ((axesB.autonomy ?? 50) > 55 ? 1.5 : 0);
+  // `autonomy` has no secondary-axis derivation anywhere in the product
+  // (see marriageEvidenceResolution.ts's note) — no Psych term is added for
+  // it here rather than reading a key that doesn't exist and always
+  // silently resolving to the same neutral default for everyone.
+  const rskA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["편재"] ?? 0) + ((axesA.stimulation ?? 50) > 55 ? 2 : 0);
+  const rskB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["편재"] ?? 0) + ((axesB.stimulation ?? 50) > 55 ? 2 : 0);
 
   const endA = (countsA["관성"] ?? 0) * 1.5 + (countsA["인성"] ?? 0) + ((axesA.resilience ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
   const endB = (countsB["관성"] ?? 0) * 1.5 + (countsB["인성"] ?? 0) + ((axesB.resilience ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
