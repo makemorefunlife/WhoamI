@@ -267,6 +267,9 @@ export default function DecisionJournalContent() {
                   placeholder={messages.decision.contextPlaceholder}
                   className={fieldClass()}
                 />
+                <p className="mt-1.5 text-xs text-on-surface-variant/70">
+                  {messages.decision.contextHelper}
+                </p>
               </div>
             </div>
             <div className="mt-5 flex justify-end sm:mt-6">

@@ -49,14 +49,14 @@ export default function DecisionReviewSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-primary/25 p-4 backdrop-blur-[2px] sm:items-center"
+      className="fixed inset-0 z-[260] flex items-end justify-center bg-primary/25 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:items-center sm:pb-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="decision-review-title"
       onClick={onClose}
     >
       <div
-        className="stitch-hero-panel w-full max-w-md rounded-extra-large border border-outline-variant/35 p-5 shadow-[0_24px_48px_rgba(26,51,40,0.18)] sm:p-6"
+        className="stitch-hero-panel max-h-[85vh] w-full max-w-md overflow-y-auto rounded-extra-large border border-outline-variant/35 p-5 shadow-[0_24px_48px_rgba(26,51,40,0.18)] sm:max-h-none sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -81,9 +81,14 @@ export default function DecisionReviewSheet({
           </button>
         </div>
 
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-          {messages.decision.ratingSectionLabel}
-        </p>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            {messages.decision.ratingSectionLabel}
+          </p>
+          <span className="text-[11px] font-medium text-on-surface-variant/60">
+            {messages.decision.ratingScaleHelper}
+          </span>
+        </div>
         <StarRatingInput value={rating} onChange={setRating} />
 
         <label className="mb-2 mt-5 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">

@@ -17,19 +17,29 @@ export default function DecisionReviewCard({ entry, onReview }: Props) {
   const reviewed = isDecisionReviewed(entry);
   const showStars = reviewed && entry.rating != null;
   const showDate = reviewed && entry.reviewedAt;
+  const noteText = reviewed ? entry.note?.trim() : "";
 
   return (
     <div className="rounded-xl p-4 transition hover:bg-surface-container-low/40">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <DecisionStatusDot entry={entry} className="mt-1.5" />
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-on-surface">{entry.context}</p>
-            <p className="mt-0.5 text-xs text-on-surface-variant">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium leading-snug text-on-surface">
+              {entry.context}
+            </p>
+            <p className="mt-0.5 text-xs text-on-surface-variant/80">
               {decisionCategoryLabel(entry.category, messages)}
             </p>
             {showStars ? (
               <StarRatingDisplay rating={entry.rating!} className="mt-2" />
+            ) : null}
+            {noteText ? (
+              <div className="mt-2.5 rounded-lg border border-outline-variant/25 bg-surface-container-lowest/80 px-3 py-2">
+                <p className="break-keep whitespace-pre-line text-xs leading-relaxed text-on-surface-variant">
+                  &quot;{noteText}&quot;
+                </p>
+              </div>
             ) : null}
           </div>
         </div>

@@ -739,7 +739,7 @@ export const messagesEnUS = {
       all: "All",
     },
     allCategoriesLabel: "All",
-    ratingLabel: "Rating",
+    ratingLabel: "Outcome satisfaction",
     stepLabel: (n: number) => `Step ${n}`,
     onboardingLogLabel: "LOG",
     onboardingLogDesc: "Record choice",
@@ -754,9 +754,11 @@ export const messagesEnUS = {
     archiveTitle: "Archive a Decision",
     archiveSubtitle: "Log the choice you're facing before the outcome unfolds.",
     categoryLabel: "Category",
-    contextLabel: "Context",
+    contextLabel: "What decision are you considering?",
     contextPlaceholder:
-      "What choice are you making today? (e.g., Career pivot, Marketing budget)",
+      "e.g. Should I accept the job offer I received?",
+    contextHelper:
+      "Write down the choice or decision you're currently thinking through.",
     reviewOutcomesTitle: "Review Outcomes",
     reviewOutcomesSubtitle: "Revisit past choices and rate how they turned out.",
     noReviewsYet: "📋 No decisions to review yet.",
@@ -789,9 +791,11 @@ export const messagesEnUS = {
     logFirstDecision: "Log your first decision",
     noDecisionsMatchFilters: "No decisions match these filters.",
     loadMoreCount: "Load more (+10)",
-    ratingSectionLabel: "Rating",
-    reviewNoteLabel: "Review notes",
-    reviewNotePlaceholder: "How did you feel about this decision?",
+    ratingSectionLabel: "Outcome satisfaction",
+    ratingScaleHelper: "1 Low · 5 High",
+    reviewNoteLabel: "How do you feel about the outcome?",
+    reviewNotePlaceholder:
+      "Write what happened and how you feel about the decision now.",
     reviewedOn: (date: string) => `Reviewed ${date}`,
     reviewCta: "Review",
     statusPending: "Needs review",
@@ -946,19 +950,14 @@ export const messagesEnUS = {
     reportsStartDesc: "Pick a relationship, and lay both of your natures side by side.",
     reportsStartCta: "Start Relationship Analysis",
     frameworkEyebrow: "PRINCIPLES",
-    frameworkHeadline: "Understand yourself, read your relationships,\nand make choices that are true to you",
-    frameworkStep1Title: "Discover Your Inherent Self",
-    frameworkStep1Desc: "Understand the sources of your internal comfort and friction.",
-    frameworkStep1Tag: "Self Discovery",
-    frameworkStep2Title: "Embrace Differences",
-    frameworkStep2Desc: "Understand each other's ways without forcing change.",
-    frameworkStep2Tag: "Understanding Others",
-    frameworkStep3Title: "Find the Optimal Path",
-    frameworkStep3Desc: "Choose tailored communication instead of exhausting conflicts.",
-    frameworkStep3Tag: "Optimal Choice",
-    frameworkStep4Title: "Grow Together Through Reflection",
-    frameworkStep4Desc: "Reflect on daily choices to build deeper understanding.",
-    frameworkStep4Tag: "Continuous Growth",
+    journeyTitle: "Your Journey to Better Choices",
+    frameworkStep1Text: "Understand yourself first",
+    frameworkStep1Cta: "Personal Analysis",
+    frameworkStep2Text: "Understand how you communicate with others",
+    frameworkStep2Cta: "Relationship Analysis",
+    frameworkStep3Text: "Use what you understand to make better choices",
+    frameworkStep4Text: "Reflect on your choices and become a better you",
+    frameworkStep4Cta: "Decision Diary",
     journalEyebrow: "DECISION JOURNAL",
     journalHeadline: "As your choices accumulate,\nyou come to know yourself better.",
     journalBody:
@@ -2178,6 +2177,7 @@ export type MessageCatalog = {
     categoryLabel: string;
     contextLabel: string;
     contextPlaceholder: string;
+    contextHelper: string;
     reviewOutcomesTitle: string;
     reviewOutcomesSubtitle: string;
     noReviewsYet: string;
@@ -2208,6 +2208,7 @@ export type MessageCatalog = {
     noDecisionsMatchFilters: string;
     loadMoreCount: string;
     ratingSectionLabel: string;
+    ratingScaleHelper: string;
     reviewNoteLabel: string;
     reviewNotePlaceholder: string;
     reviewedOn: (date: string) => string;
@@ -2338,19 +2339,14 @@ export type MessageCatalog = {
     reportsStartDesc: string;
     reportsStartCta: string;
     frameworkEyebrow: string;
-    frameworkHeadline: string;
-    frameworkStep1Title: string;
-    frameworkStep1Desc: string;
-    frameworkStep1Tag: string;
-    frameworkStep2Title: string;
-    frameworkStep2Desc: string;
-    frameworkStep2Tag: string;
-    frameworkStep3Title: string;
-    frameworkStep3Desc: string;
-    frameworkStep3Tag: string;
-    frameworkStep4Title: string;
-    frameworkStep4Desc: string;
-    frameworkStep4Tag: string;
+    journeyTitle: string;
+    frameworkStep1Text: string;
+    frameworkStep1Cta: string;
+    frameworkStep2Text: string;
+    frameworkStep2Cta: string;
+    frameworkStep3Text: string;
+    frameworkStep4Text: string;
+    frameworkStep4Cta: string;
     journalEyebrow: string;
     journalHeadline: string;
     journalBody: string;

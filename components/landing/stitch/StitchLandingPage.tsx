@@ -20,6 +20,7 @@ import { useHydrated } from "@/lib/hooks/useHydrated";
 
 import StitchRelationshipRadar from "@/components/landing/stitch/StitchRelationshipRadar";
 import StitchDecisionJournalPreview from "@/components/landing/stitch/StitchDecisionJournalPreview";
+import StitchJourneySection from "@/components/landing/stitch/StitchJourneySection";
 
 const EYEBROW_CLASS =
   "mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-accent-emerald";
@@ -222,21 +223,12 @@ export default function StitchLandingPage({
             <span className={EYEBROW_CLASS}>
               {messages.landing.frameworkEyebrow || "PRINCIPLES"}
             </span>
-            <h2 className="stitch-headline text-2xl font-bold leading-tight text-primary sm:text-3xl text-left">
-              {messages.landing.frameworkHeadline}
+            <h2 className="stitch-headline text-3xl font-bold leading-tight text-primary md:text-4xl text-left">
+              {messages.landing.journeyTitle}
             </h2>
           </div>
 
-          <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 sm:p-10 shadow-sm flex justify-center items-center">
-            <Image
-              src="/landing/principles-kr.png"
-              alt="더 나은 선택을 위한 여정 (나를 이해 - 상대를 이해 - 더 나은 선택 - 결정 회고)"
-              width={1024}
-              height={650}
-              className="w-full h-auto object-contain max-w-4xl"
-              priority
-            />
-          </div>
+          <StitchJourneySection reportId={reportId} />
         </section>
 
         {/* 퍼스널 분석 섹션 (Below Principles) */}
@@ -328,7 +320,7 @@ export default function StitchLandingPage({
             <span className={EYEBROW_CLASS}>
               {messages.landing.philosophyEyebrow || "BRAND PHILOSOPHY"}
             </span>
-            <h2 className="stitch-headline text-2xl font-bold leading-tight text-primary sm:text-3xl text-left whitespace-pre-line">
+            <h2 className="stitch-headline text-3xl font-bold leading-tight text-primary md:text-4xl text-left whitespace-pre-line">
               {messages.landing.philosophyHeadline}
             </h2>
           </div>
