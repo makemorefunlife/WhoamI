@@ -15,7 +15,7 @@ import {
   buildInviteUrl,
   copyInviteLink,
 } from "@/lib/relationship/inviteShare";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import type { MessageCatalog } from "@/lib/i18n/messages";
 
 export type HubRowKind =
@@ -91,7 +91,7 @@ export default function RelationshipCard({
   favoriteBusy,
 }: Props) {
   const router = useRouter();
-  const messages = useMessages();
+  const { messages, locale } = useLocale();
   const [pickerOpen, setPickerOpen] = useState(false);
   const kind = (item.row_kind ?? "relationship_other") as HubRowKind;
   const kindBadge = kindBadgeMap(messages);
@@ -182,7 +182,7 @@ export default function RelationshipCard({
     "flex-1 rounded-xl border border-white/18 bg-white/[0.05] py-2.5 text-xs font-medium text-[var(--space-text)] transition hover:border-white/30 hover:bg-white/[0.08]";
 
   async function copyInvite(token: string) {
-    const url = buildInviteUrl(token);
+    const url = buildInviteUrl(token, locale);
     const ok = await copyInviteLink(url);
     alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
   }

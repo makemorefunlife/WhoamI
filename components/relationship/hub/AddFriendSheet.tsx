@@ -104,7 +104,7 @@ export default function AddFriendSheet({
   myReportId,
   onManualSubmit,
 }: Props) {
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const manualForm = useManualRelationshipFormState({
     busy: manualBusy,
     onSubmit: onManualSubmit,
@@ -217,7 +217,7 @@ export default function AddFriendSheet({
                 <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low/50 p-4">
                   <InviteShareButtons
                     inviteToken={personalLink.token}
-                    url={buildConnectUrl(personalLink.token)}
+                    url={buildConnectUrl(personalLink.token, locale)}
                     compact
                   />
                 </div>

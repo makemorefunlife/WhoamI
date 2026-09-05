@@ -401,15 +401,23 @@ export default function HomeContent() {
 
     connectAutoRanRef.current = true;
 
+    // completeConnect resolves `res.ok` — a 404 here means the token itself
+    // didn't resolve (invalid/expired/reset), not "already connected" (the
+    // link is a persistent, reusable token, never consumed on success). The
+    // caller used to ignore this and always navigate on, so a real failure
+    // looked identical to success: the user reached the dashboard with
+    // nothing actually connected and no indication anything went wrong.
     if (resume.surveyCompleted && resume.reportId) {
-      void completeConnect(resume.reportId, connectToken).then(() => {
+      void completeConnect(resume.reportId, connectToken).then((ok) => {
+        if (!ok) alert(messages.connect.invalidBody);
         router.push(localize(relationHubPath(resume.reportId ?? undefined)));
       });
       return;
     }
 
     if (resume.hasReport && resume.reportId) {
-      void completeConnect(resume.reportId, connectToken).then(() => {
+      void completeConnect(resume.reportId, connectToken).then((ok) => {
+        if (!ok) alert(messages.connect.invalidBody);
         goToSurvey(resume.reportId as string);
       });
       return;
@@ -425,6 +433,7 @@ export default function HomeContent() {
     goToSurvey,
     router,
     localize,
+    messages,
   ]);
 
   const startFreeSurvey = useCallback(async () => {

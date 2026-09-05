@@ -9,7 +9,7 @@ import {
   openSmsShare,
   openWhatsAppShare,
 } from "@/lib/relationship/inviteShare";
-import { useMessages } from "@/lib/i18n/LocaleProvider";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 // Both current callers (AddFriendSheet, SentRequestsSheet) render this inside
 // the light "stitch" theme sheet — these were still the dark "space" theme's
@@ -30,9 +30,9 @@ export default function InviteShareButtons({
   /** Share a different link than /invite?token=... (e.g. the personal connect link). */
   url?: string;
 }) {
-  const messages = useMessages();
+  const { messages, locale } = useLocale();
   const [shareOpen, setShareOpen] = useState(false);
-  const url = urlOverride ?? buildInviteUrl(inviteToken);
+  const url = urlOverride ?? buildInviteUrl(inviteToken, locale);
 
   async function onCopy() {
     const ok = await copyInviteLink(url);

@@ -54,7 +54,7 @@ const ANALYSIS_MAX_TARGETS = 20;
 
 export default function RelationHubDashboard() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
   const { openSignIn } = useClerk();
   const { isSignedIn } = useClerkReady();
   const searchParams = useSearchParams();
@@ -421,7 +421,7 @@ export default function RelationHubDashboard() {
   async function resendRequest(item: RelationshipListItem) {
     const token = item.invite_token;
     if (token) {
-      const ok = await copyInviteLink(buildInviteUrl(token));
+      const ok = await copyInviteLink(buildInviteUrl(token, locale));
       alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
       return;
     }

@@ -1,16 +1,25 @@
+import { localeToPathPrefix, type Locale } from "@/lib/i18n/locale";
+
 const DEFAULT_MESSAGE = "함께 관계 분석을 받아보자.";
 
-export function buildInviteUrl(token: string, origin?: string): string {
+/**
+ * `locale` must be the SHARER's own current locale — the link should open
+ * on whichever site (en-US or ko-KR) the person sharing it is using, not
+ * whatever the recipient's browser happens to default to. Without a path
+ * prefix, every invite/connect link silently opened on the en-US default
+ * regardless of which site it was generated from.
+ */
+export function buildInviteUrl(token: string, locale: Locale, origin?: string): string {
   const base =
     origin ?? (typeof window !== "undefined" ? window.location.origin : "");
-  return `${base}/invite?token=${encodeURIComponent(token)}`;
+  return `${base}${localeToPathPrefix(locale)}/invite?token=${encodeURIComponent(token)}`;
 }
 
 /** Personal connect link (separate, persistent, reusable system) -> /connect. */
-export function buildConnectUrl(token: string, origin?: string): string {
+export function buildConnectUrl(token: string, locale: Locale, origin?: string): string {
   const base =
     origin ?? (typeof window !== "undefined" ? window.location.origin : "");
-  return `${base}/connect?token=${encodeURIComponent(token)}`;
+  return `${base}${localeToPathPrefix(locale)}/connect?token=${encodeURIComponent(token)}`;
 }
 
 export function inviteShareText(url: string): string {
