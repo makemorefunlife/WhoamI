@@ -10,10 +10,17 @@ const GENERIC_PARTNER_NAMES = new Set([
 
 const DEV_PLACEHOLDER_NAME = /^(첫|두)\s*번째(\s*사람)?$/;
 
+/** No real display name is ever this long — a report headline/synthesis
+ * sentence mistakenly read as a "name" (see partnerNameFromLogSnapshot's
+ * removed `report.headline` fallback) would fail here even if some future
+ * field makes the same mistake. */
+const MAX_PLAUSIBLE_NAME_LENGTH = 30;
+
 export function isGenericPartnerName(name: string | null | undefined): boolean {
   const t = name?.trim() ?? "";
   if (!t || GENERIC_PARTNER_NAMES.has(t)) return true;
   if (DEV_PLACEHOLDER_NAME.test(t)) return true;
+  if (t.length > MAX_PLAUSIBLE_NAME_LENGTH) return true;
   return false;
 }
 
@@ -39,10 +46,12 @@ export function partnerNameFromLogSnapshot(
     if (typeof fromRomantic === "string" && !isGenericPartnerName(fromRomantic)) {
       return fromRomantic.trim();
     }
-    const headline = report.headline;
-    if (typeof headline === "string" && !isGenericPartnerName(headline)) {
-      return headline.trim();
-    }
+    // `report.headline` used to be tried here too, but a report's headline
+    // is always a narrative sentence/synthesis line (e.g. "Speed-First Risk
+    // Manager and The Data-Driven Realist — a complementary combo..."),
+    // never a person's name, for every relationship kind's report shape.
+    // The length guard in isGenericPartnerName now also catches this class
+    // of mistake generically, but the fallback itself was never correct.
   }
 
   const perspective = snapshot.perspective as Record<string, unknown> | undefined;
