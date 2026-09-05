@@ -1518,4 +1518,15 @@ export const messagesKoKR: MessageCatalog = {
     submitCta: "계속하기",
     required: "이름을 입력해 주세요.",
   },
+  installApp: {
+    title: "앱처럼 사용하기",
+    subtitle: "홈 화면에 추가하면 앱처럼 바로 열 수 있어요.",
+    installCta: "홈 화면에 추가",
+    installedLabel: "이미 홈 화면에 추가됨",
+    unsupportedLabel: "이 브라우저에서는 지원하지 않아요",
+    iosInstructionsTitle: "홈 화면에 추가하는 방법",
+    iosInstructionsBody:
+      "Safari 하단의 공유 버튼을 누른 뒤 '홈 화면에 추가'를 선택해 주세요.",
+    iosInstructionsClose: "확인",
+  },
 };

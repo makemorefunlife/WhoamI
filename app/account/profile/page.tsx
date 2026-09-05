@@ -7,6 +7,7 @@ import AccountBirthEditor from "@/components/account/AccountBirthEditor";
 import AccountPageShell from "@/components/account/AccountPageShell";
 import AccountSurveySection from "@/components/account/AccountSurveySection";
 import DisplayNameEditor from "@/components/account/DisplayNameEditor";
+import InstallAppButton from "@/components/account/InstallAppButton";
 import { ROUTES } from "@/constants/routes";
 import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
 
@@ -67,6 +68,7 @@ export default function AccountProfilePage() {
       <DisplayNameEditor />
       <AccountBirthEditor />
       <AccountSurveySection />
+      <InstallAppButton />
 
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
         <h2 className="stitch-headline text-xl text-primary">

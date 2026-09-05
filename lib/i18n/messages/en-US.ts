@@ -1572,6 +1572,17 @@ export const messagesEnUS = {
     submitCta: "Continue",
     required: "Please enter a name.",
   },
+  installApp: {
+    title: "Use it like an app",
+    subtitle: "Add it to your home screen to open it instantly, like an app.",
+    installCta: "Add to Home Screen",
+    installedLabel: "Already added to your home screen",
+    unsupportedLabel: "Not supported in this browser",
+    iosInstructionsTitle: "How to add it to your Home Screen",
+    iosInstructionsBody:
+      "Tap the Share button at the bottom of Safari, then choose \"Add to Home Screen.\"",
+    iosInstructionsClose: "Got it",
+  },
 };
 
 /** Shape-only catalog (values are free strings per locale). */
@@ -2931,5 +2942,15 @@ export type MessageCatalog = {
     placeholder: string;
     submitCta: string;
     required: string;
+  };
+  installApp: {
+    title: string;
+    subtitle: string;
+    installCta: string;
+    installedLabel: string;
+    unsupportedLabel: string;
+    iosInstructionsTitle: string;
+    iosInstructionsBody: string;
+    iosInstructionsClose: string;
   };
 };
