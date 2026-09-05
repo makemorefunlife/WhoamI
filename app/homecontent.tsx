@@ -332,7 +332,19 @@ export default function HomeContent() {
       return;
     }
     if (!existingDisplayName) {
-      await seedDisplayNameFromClerkFallback(user ?? null);
+      const seeded = await seedDisplayNameFromClerkFallback(user ?? null);
+      // shouldPromptForDisplayName never re-checks an OAuth account, on the
+      // assumption the provider always has a name to seed from — but some
+      // Google/Workspace accounts expose no usable name (privacy settings,
+      // enterprise policy), so the seed silently returns null and this
+      // person would otherwise proceed straight into report creation
+      // permanently nameless ("탐사자"/"상대" everywhere downstream), with
+      // no path to ever be asked. Fall back to the same explicit prompt
+      // email signup always gets.
+      if (!seeded) {
+        setNameSetupOpen(true);
+        return;
+      }
     }
     setNameSetupOpen(false);
     await proceedToReportCreation();
