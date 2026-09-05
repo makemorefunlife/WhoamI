@@ -35,6 +35,27 @@ export type CanonicalPairRoleMap = {
 };
 
 /**
+ * Resolves an "A" | "B" | "SHARED" owner into a display name — the ONE
+ * place every chapter engine should do this, instead of each repeating its
+ * own `owner === "B" ? nameB : nameA` ternary. That pattern silently
+ * collapsed "SHARED" (a real, deliberate result whenever the two people's
+ * scores are within 15 points — not rare) into nameA every time, making a
+ * genuine tie look like slot A solely owning it. `officeLanguage.ts`'s
+ * leadership-split helper already did this correctly (falling to a
+ * "balanced" branch); this is that same pattern, factored out.
+ */
+export function resolveWorkRoleOwnerName(
+  owner: "A" | "B" | "SHARED",
+  nameA: string,
+  nameB: string,
+  sharedLabel: string,
+): string {
+  if (owner === "A") return nameA;
+  if (owner === "B") return nameB;
+  return sharedLabel;
+}
+
+/**
  * Canonical Work Role Model SSOT.
  * Guarantees zero role contradictions across Office DNA, Role Matrix, Leadership Split,
  * Best Role, Delegation, and Project Fit.

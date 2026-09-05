@@ -12,7 +12,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
 import type { WorkColleagueReportBody } from "./viewModel/workReportSectionTypes";
-import { buildCanonicalWorkRoleMap } from "./workCanonicalRoleModel";
+import { buildCanonicalWorkRoleMap, resolveWorkRoleOwnerName } from "./workCanonicalRoleModel";
 import { analyzeWorkInnateVsCurrentDiscrepancy } from "./workPsychSajuDiscrepancy";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
 
@@ -475,9 +475,12 @@ export function buildWorkCommunicationChapterBundle(params: {
     psychB: psychB ?? undefined,
   });
 
-  const executionLeadName = canonicalRoles.executionOwner === "B" ? nameB : nameA;
-  const qualityLeadName = canonicalRoles.qaRiskOwner === "B" ? nameB : nameA;
-  const directionLeadName = canonicalRoles.directionOwner === "B" ? nameB : nameA;
+  // canonicalRoles.*Owner can be "SHARED" (scores within 15 points — not
+  // rare); `=== "B" ? nameB : nameA` silently folded that into nameA.
+  const communicationSharedLabel = pick(locale, "Both of you", "두 사람");
+  const executionLeadName = resolveWorkRoleOwnerName(canonicalRoles.executionOwner, nameA, nameB, communicationSharedLabel);
+  const qualityLeadName = resolveWorkRoleOwnerName(canonicalRoles.qaRiskOwner, nameA, nameB, communicationSharedLabel);
+  const directionLeadName = resolveWorkRoleOwnerName(canonicalRoles.directionOwner, nameA, nameB, communicationSharedLabel);
 
   const decisionFlowItems: PairDecisionFlowItem[] = [
     {

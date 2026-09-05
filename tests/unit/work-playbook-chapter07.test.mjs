@@ -48,9 +48,14 @@ test("▶ Chapter 07 Work Playbook Consistency & QA Suite", async (t) => {
     });
 
     bundle.emergencyPlaybook.forEach((item) => {
+      // "두 사람" (shared) is a legitimate, real outcome — canonicalRoles'
+      // *Owner fields resolve to "SHARED" whenever the two people's scores
+      // are within 15 points, which is common. Requiring the owner to
+      // always be a single nickname was enforcing the exact bug this fix
+      // closes: a genuine tie silently collapsing onto nameA every time.
       assert.ok(
-        item.ownerName === "Sera" || item.ownerName === "동글",
-        `Emergency owner ${item.ownerName} must be one of actual nicknames`
+        item.ownerName === "Sera" || item.ownerName === "동글" || item.ownerName === "두 사람",
+        `Emergency owner ${item.ownerName} must be one of the actual nicknames or the shared label`
       );
       assert.ok(
         item.responsibility.includes(item.ownerName),

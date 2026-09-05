@@ -11,7 +11,7 @@ import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import { buildCanonicalWorkRoleMap } from "./workCanonicalRoleModel";
+import { buildCanonicalWorkRoleMap, resolveWorkRoleOwnerName } from "./workCanonicalRoleModel";
 import type { IndividualWorkChapterBundle } from "./workStoryPlanTypes";
 import type { WorkCommunicationChapterBundle } from "./workCommunicationChapterEngine";
 import type { WorkPressureChapterBundle } from "./workPressureChapterEngine";
@@ -160,9 +160,14 @@ export function buildWorkPlaybookChapterBundle(params: {
     psychB: psychB ?? undefined,
   });
 
-  const directionLead = canonicalRoles.directionOwner === "B" ? nameB : nameA;
-  const execLead = canonicalRoles.executionOwner === "B" ? nameB : nameA;
-  const qualityLead = canonicalRoles.qaRiskOwner === "B" ? nameB : nameA;
+  // canonicalRoles.*Owner can be "SHARED" (the two people's scores are
+  // within 15 points — not a rare edge case). The old `=== "B" ? nameB :
+  // nameA` ternary silently folded that into nameA, making a genuine tie
+  // look like slot A solely owns it every time.
+  const SHARED_OWNER_LABEL = pick(locale, "Both of you", "두 사람");
+  const directionLead = resolveWorkRoleOwnerName(canonicalRoles.directionOwner, nameA, nameB, SHARED_OWNER_LABEL);
+  const execLead = resolveWorkRoleOwnerName(canonicalRoles.executionOwner, nameA, nameB, SHARED_OWNER_LABEL);
+  const qualityLead = resolveWorkRoleOwnerName(canonicalRoles.qaRiskOwner, nameA, nameB, SHARED_OWNER_LABEL);
 
   // 1. ◤ 이 조합의 최적 운영 방식 (Optimal Operating Configuration)
   const personAOwnership = pick(

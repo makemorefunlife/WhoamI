@@ -91,18 +91,31 @@ test("Chapter 04 Work Communication & Decision Suite", async (t) => {
   });
 
   await t.test("5. Different pair fixtures produce meaningfully different Chapter 04 results with zero hardcoding", () => {
+    // decisionFlowItems[0].primaryOwner traces to canonicalRoles.executionOwner,
+    // which is itself derived from decision_style (the REAL secondary-axis
+    // key — "external_energy"/"deliberate_decision" below don't exist on
+    // PsychSecondaryAxesScores and used to silently no-op to the 50/50
+    // default, making both fixtures land on "SHARED" regardless of the
+    // values written here; a prior version of this test passed only
+    // because "SHARED" was buggily collapsed to nameA, so two DIFFERENT
+    // nameA strings looked like "meaningfully different" even though the
+    // underlying signal was dead). Using the real key here actually
+    // exercises the A/B split this test claims to verify.
+    // thinkMode.shortLabel is driven by thinking_style (real) — also set
+    // here so personA's label genuinely differs between the two fixtures,
+    // not just decisionFlowItems[0].primaryOwner.
     const bundle1 = buildWorkCommunicationChapterBundle({
       nameA: "PairA1",
       nameB: "PairA2",
-      psychA: { secondary_axes: { external_energy: 85, deliberate_decision: 20 } },
-      psychB: { secondary_axes: { external_energy: 15, deliberate_decision: 90 } },
+      psychA: { secondary_axes: { decision_style: 85, thinking_style: 85 } },
+      psychB: { secondary_axes: { decision_style: 15, thinking_style: 15 } },
     });
 
     const bundle2 = buildWorkCommunicationChapterBundle({
       nameA: "PairB1",
       nameB: "PairB2",
-      psychA: { secondary_axes: { external_energy: 20, deliberate_decision: 85 } },
-      psychB: { secondary_axes: { external_energy: 90, deliberate_decision: 15 } },
+      psychA: { secondary_axes: { decision_style: 15, thinking_style: 30, structure: 30 } },
+      psychB: { secondary_axes: { decision_style: 85, thinking_style: 85 } },
     });
 
     assert.notEqual(bundle1.personA.thinkMode.shortLabel, bundle2.personA.thinkMode.shortLabel);

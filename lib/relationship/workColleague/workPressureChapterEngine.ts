@@ -13,7 +13,7 @@ import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import { buildCanonicalWorkRoleMap } from "./workCanonicalRoleModel";
+import { buildCanonicalWorkRoleMap, resolveWorkRoleOwnerName } from "./workCanonicalRoleModel";
 import type { IndividualWorkChapterBundle } from "./workStoryPlanTypes";
 import { analyzeWorkInnateVsCurrentDiscrepancy } from "./workPsychSajuDiscrepancy";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
@@ -430,8 +430,11 @@ export function buildWorkPressureChapterBundle(params: {
     psychB: psychB ?? undefined,
   });
 
-  const execLead = canonicalRoles.executionOwner === "B" ? nameB : nameA;
-  const qualityLead = canonicalRoles.qaRiskOwner === "B" ? nameB : nameA;
+  // canonicalRoles.*Owner can be "SHARED" (scores within 15 points — not
+  // rare); `=== "B" ? nameB : nameA` silently folded that into nameA.
+  const pressureSharedLabel = pick(locale, "Both of you", "두 사람");
+  const execLead = resolveWorkRoleOwnerName(canonicalRoles.executionOwner, nameA, nameB, pressureSharedLabel);
+  const qualityLead = resolveWorkRoleOwnerName(canonicalRoles.qaRiskOwner, nameA, nameB, pressureSharedLabel);
 
   let strengthSummary = "";
   let bottleneckSummary = "";
