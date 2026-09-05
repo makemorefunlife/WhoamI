@@ -163,7 +163,20 @@ export function buildHouseholdCfoReason(
   loserNick: string,
   winnerIsHighDominance: boolean,
   locale: Locale = LEGACY_FALLBACK_LOCALE,
+  isGenuineTie = false,
 ): string {
+  if (isGenuineTie) {
+    // Every tie-break signal (affinity score AND 정재+정관 count) came out
+    // completely identical for both people — there is no real evidence to
+    // declare either one THE household CFO. `winnerNick` is still one of
+    // the two names (some field has to be filled), but the reason must not
+    // claim a confident finding it doesn't have.
+    return pick(
+      locale,
+      `${winnerNick} and ${loserNick} show an equally strong sense of financial responsibility, so this is better run as a shared setup than a single-leader one — agree on how you'll split or rotate the CFO role together.`,
+      `${winnerNick}님과 ${loserNick}님 모두 현실 감각·책임감이 동등하게 강하게 나타나, 한 사람에게 몰아주기보다 CFO 역할을 어떻게 나누거나 번갈아 맡을지 함께 정하는 편이 더 잘 맞습니다.`,
+    );
+  }
   return pick(
     locale,
     winnerIsHighDominance
@@ -217,6 +230,7 @@ export function pickHouseholdCfo(
 
   let winnerNick = scoreA >= scoreB ? nicknameA : nicknameB;
   let winnerIsHighDominance = isHighDominance(scoreA >= scoreB ? "A" : "B");
+  let isGenuineTie = false;
 
   if (scoreA === scoreB) {
     const jungjaeA = (countsA["정재"] ?? 0) + (countsA["정관"] ?? 0);
@@ -224,9 +238,23 @@ export function pickHouseholdCfo(
     if (jungjaeB > jungjaeA) {
       winnerNick = nicknameB;
       winnerIsHighDominance = isHighDominance("B");
-    } else {
+    } else if (jungjaeA > jungjaeB) {
       winnerNick = nicknameA;
       winnerIsHighDominance = isHighDominance("A");
+    } else {
+      // Double tie: the affinity score AND the 정재+정관 tie-break are both
+      // exactly equal — there is no remaining evidence to prefer one person
+      // over the other. `nickname` still has to hold one of the two names
+      // (every downstream consumer expects a real name here), so pick by
+      // comparing the NAMES themselves rather than defaulting to nicknameA
+      // — a property of the two people, not of which argument slot either
+      // was passed in as, so an A/B swap can't flip the outcome. The
+      // `reason` text (below) is what actually carries the "this is a tie,
+      // treat it as shared" framing.
+      const aWinsOnName = nicknameA <= nicknameB;
+      winnerNick = aWinsOnName ? nicknameA : nicknameB;
+      winnerIsHighDominance = isHighDominance(aWinsOnName ? "A" : "B");
+      isGenuineTie = true;
     }
   }
 
@@ -239,6 +267,7 @@ export function pickHouseholdCfo(
       loserNick,
       winnerIsHighDominance,
       locale,
+      isGenuineTie,
     ),
   };
 }

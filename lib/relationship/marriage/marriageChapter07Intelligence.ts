@@ -1,8 +1,12 @@
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { TenGodCounts } from "./marriageTenGodAnalysis";
-import { profileTenGods } from "./marriageTenGodAnalysis";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
+import {
+  type PersonConflictProfile,
+  buildPersonConflictProfile,
+  resolveConflictDirectness,
+} from "./marriageConflictProfile";
 
 /**
  * Marriage VNext Chapter 07 Canonical Intelligence Engine
@@ -93,70 +97,6 @@ export type MarriageChapter07Intelligence = {
   };
 };
 
-/** Internal evidence profile derived per person */
-type PersonConflictProfile = {
-  name: string;
-  conflictStyle: number; // Psych conflict_style (0-100)
-  selfControl: number; // Psych self_control (0-100)
-  resilience: number; // Psych resilience (0-100)
-  thinkingStyle: number; // Psych thinking_style (0-100)
-  empathy: number; // Psych empathy (0-100)
-  tenGods: {
-    self: number; // 비겁
-    food: number; // 식상
-    wealth: number; // 재성
-    officer: number; // 관성
-    seal: number; // 인성
-  };
-  isDirectExpressed: boolean;
-  isAvoidantExpressed: boolean;
-  hasInnateExpressionDrive: boolean; // 식상 >= 2
-  hasInnateInwardDrive: boolean; // 인성 >= 2
-  hasInnateStructureDrive: boolean; // 관성 >= 2
-  hasInnatePrideDrive: boolean; // 비겁 >= 2
-};
-
-function buildPersonProfile(
-  name: string,
-  psych: PsychMasterJson | null | undefined,
-  counts: TenGodCounts,
-): PersonConflictProfile {
-  const axes = psych?.secondary_axes ?? {};
-  const conflictStyle = axes.conflict_style ?? 50;
-  const selfControl = axes.self_control ?? 50;
-  const resilience = axes.resilience ?? 50;
-  const thinkingStyle = axes.thinking_style ?? 50;
-  const empathy = axes.empathy ?? 50;
-
-  const p = profileTenGods(counts);
-  const tenGods = {
-    self: p.self,
-    food: p.food,
-    wealth: p.wealth,
-    officer: p.officer,
-    seal: p.seal,
-  };
-
-  const isDirectExpressed = conflictStyle >= 55;
-  const isAvoidantExpressed = conflictStyle < 45;
-
-  return {
-    name,
-    conflictStyle,
-    selfControl,
-    resilience,
-    thinkingStyle,
-    empathy,
-    tenGods,
-    isDirectExpressed,
-    isAvoidantExpressed,
-    hasInnateExpressionDrive: p.food >= 2,
-    hasInnateInwardDrive: p.seal >= 2,
-    hasInnateStructureDrive: p.officer >= 2,
-    hasInnatePrideDrive: p.self >= 2,
-  };
-}
-
 export function buildMarriageChapter07Intelligence(params: {
   nameA: string;
   nameB: string;
@@ -168,30 +108,19 @@ export function buildMarriageChapter07Intelligence(params: {
 }): MarriageChapter07Intelligence {
   const { nameA, nameB, psychA, psychB, countsA, countsB, locale = LEGACY_FALLBACK_LOCALE } = params;
 
-  const profA = buildPersonProfile(nameA, psychA, countsA);
-  const profB = buildPersonProfile(nameB, psychB, countsB);
+  const profA = buildPersonConflictProfile(nameA, psychA, countsA);
+  const profB = buildPersonConflictProfile(nameB, psychB, countsB);
+
+  // Resolved ONCE and shared by the journey builder below, the conflict
+  // loop, AND (via marriageConflictProfile.ts) marriageConflict4Stage — see
+  // that file's header comment for why this used to diverge across modules.
+  const { isADirect, isBDirect, scoreA, scoreB } = resolveConflictDirectness(profA, profB);
 
   // --- 01. Person Conflict Journey Builder ---
   const buildPersonConflictJourney = (
+    isDirect: boolean,
     prof: PersonConflictProfile,
-    otherProf: PersonConflictProfile,
-    isPersonA: boolean,
   ): PersonConflictJourney => {
-    const scoreSelf =
-      prof.conflictStyle * 0.4 +
-      prof.thinkingStyle * 0.3 +
-      prof.tenGods.officer * 15 +
-      prof.tenGods.food * 10;
-    const scoreOther =
-      otherProf.conflictStyle * 0.4 +
-      otherProf.thinkingStyle * 0.3 +
-      otherProf.tenGods.officer * 15 +
-      otherProf.tenGods.food * 10;
-
-    const isDirect =
-      scoreSelf > scoreOther ||
-      (scoreSelf === scoreOther && isPersonA);
-
     // 1. 평소 (Baseline)
     const baseline = isDirect
       ? pick(locale, "Day to day, tends to set clear standards and talk things through directly", "일상에서는 기준과 역할을 분명히 하며 대화하려는 편")
@@ -229,22 +158,25 @@ export function buildMarriageChapter07Intelligence(params: {
     };
   };
 
-  const journeyA = buildPersonConflictJourney(profA, profB, true);
-  const journeyB = buildPersonConflictJourney(profB, profA, false);
-
-  const scoreA = profA.conflictStyle * 0.4 + profA.thinkingStyle * 0.3 + profA.tenGods.officer * 15 + profA.tenGods.food * 10;
-  const scoreB = profB.conflictStyle * 0.4 + profB.thinkingStyle * 0.3 + profB.tenGods.officer * 15 + profB.tenGods.food * 10;
-
-  const isADirect = scoreA >= scoreB;
-  const isBAvoidant = scoreB < scoreA;
+  const journeyA = buildPersonConflictJourney(isADirect, profA);
+  const journeyB = buildPersonConflictJourney(isBDirect, profB);
 
   // --- 02. Conflict Loop ---
+  // A real, meaningful gap (not just any nonzero difference) is required
+  // before calling one person the pursuer and the other the withdrawer —
+  // when the two scores are close, the honest read is that neither
+  // clearly leads this loop, not a coin-flip-thin "winner".
+  const CONFLICT_LOOP_GAP = 3;
+  const loopGap = scoreA - scoreB;
+  const isADirectLoop = loopGap >= CONFLICT_LOOP_GAP;
+  const isBDirectLoop = loopGap <= -CONFLICT_LOOP_GAP;
+
   let loopHeadline: string;
   let flowA: string;
   let flowB: string;
   let loopSummary: string;
 
-  if (isADirect && isBAvoidant) {
+  if (isADirectLoop) {
     loopHeadline = pick(locale, "Needing a quick answer × needing time to think", "빠른 확인 요구 × 생각할 시간의 필요");
     flowA = pick(locale, "Discomfort comes up → tries to get a clear answer → pushes harder if there's no response", "불편함 발생 ➔ 답변 확인 시도 ➔ 답이 없으면 대화 재촉");
     flowB = pick(locale, "Feels the pressure → goes quiet to sort out their thoughts → cave-mode silence", "부담 감지 ➔ 생각 정리를 위해 입을 닫음 ➔ 동굴 침묵");
@@ -253,7 +185,7 @@ export function buildMarriageChapter07Intelligence(params: {
       `The more ${nameA} rushes to get an answer, the less time ${nameB} has to think it through and goes quiet — and that silence makes ${nameA} more anxious in turn.`,
       `${nameA}님이 확인을 서두를수록 ${nameB}님은 생각할 시간이 부족해 침묵하고, 그 침묵이 다시 ${nameA}님을 불안하게 만드는 흐름입니다.`,
     );
-  } else if (!isADirect && !isBAvoidant) {
+  } else if (isBDirectLoop) {
     loopHeadline = pick(locale, "Needing a quick answer × needing time to think", "빠른 확인 요구 × 생각할 시간의 필요");
     flowA = pick(locale, "Feels the pressure → goes quiet to sort out their thoughts → cave-mode silence", "부담 감지 ➔ 생각 정리를 위해 입을 닫음 ➔ 동굴 침묵");
     flowB = pick(locale, "Discomfort comes up → tries to get a clear answer → pushes harder if there's no response", "불편함 발생 ➔ 답변 확인 시도 ➔ 답이 없으면 대화 재촉");
@@ -447,7 +379,7 @@ export function buildMarriageChapter07Intelligence(params: {
   );
 
   // --- 05. Expectations to Release ---
-  const expAtoB: ExpectationReleaseItem = isBAvoidant
+  const expAtoB: ExpectationReleaseItem = !isBDirect
     ? {
         fromName: nameA,
         toName: nameB,
@@ -510,7 +442,15 @@ export function buildMarriageChapter07Intelligence(params: {
     ),
   };
 
-  const privacyBoundary: RelationshipProtectionItem = isBAvoidant || !isADirect
+  // Original condition (`isBAvoidant || !isADirect`) relied on isADirect/
+  // isBAvoidant NOT being strict complements (an exact-tie case fell through
+  // both), which is how the "both similarly direct, tied" else-branch was
+  // ever reached. With isADirect/isBDirect now a clean binary complement,
+  // reuse the same real-gap check as the conflict loop instead: a
+  // meaningful gap in EITHER direction means one partner genuinely is the
+  // more avoidant one; a close/tied score means neither is.
+  const hasMeaningfullyAvoidantPartner = isADirectLoop || isBDirectLoop;
+  const privacyBoundary: RelationshipProtectionItem = hasMeaningfullyAvoidantPartner
     ? {
         headline: pick(locale, "Don't reopen the hurt once the bedroom door is closed or someone's taken their own time", "침실 문이 닫힌 후와 개인 동굴 시간에 감정 재개 않기"),
         description: pick(

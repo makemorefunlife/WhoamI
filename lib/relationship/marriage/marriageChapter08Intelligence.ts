@@ -8,6 +8,7 @@ import {
   type PsychScoresInput,
   type IndividualTimingResponse,
 } from "@/lib/saju/timing/response/buildIndividualTimingResponse";
+import type { StructuralActivationKind } from "@/lib/saju/timing/response/types";
 import {
   buildCoupleTimingModel,
   type CoupleTimingModel,
@@ -82,6 +83,15 @@ export type BuildMarriageChapter08Input = {
   names: [string, string]; // [Person A Name, Person B Name]
   targetYears?: number[];
   locale?: Locale;
+  /**
+   * Natal Ten God counts (specific-label-keyed, e.g. ctx.tenGod.countsA) —
+   * lets buildIndividualTimingResponse tell a newly-Daewoon/Seun-activated
+   * Ten God family apart from one already prominent natally, instead of
+   * selecting narrative flavor from Psych axes alone. Optional: timing
+   * responses still build without it, just without that distinction.
+   */
+  natalCountsA?: Record<string, number>;
+  natalCountsB?: Record<string, number>;
 };
 
 /**
@@ -104,6 +114,8 @@ export function buildMarriageChapter08Intelligence(
     names,
     targetYears = [new Date().getFullYear(), new Date().getFullYear() + 1, new Date().getFullYear() + 2],
     locale = LEGACY_FALLBACK_LOCALE,
+    natalCountsA,
+    natalCountsB,
   } = input;
 
   const [nameA, nameB] = names;
@@ -130,6 +142,7 @@ export function buildMarriageChapter08Intelligence(
       evidencePackage: evidenceA,
       psychInput: psychInputA,
       targetYear: yr,
+      natalTenGodCounts: natalCountsA,
     }),
   );
 
@@ -139,6 +152,7 @@ export function buildMarriageChapter08Intelligence(
       evidencePackage: evidenceB,
       psychInput: psychInputB,
       targetYear: yr,
+      natalTenGodCounts: natalCountsB,
     }),
   );
 
@@ -152,6 +166,21 @@ export function buildMarriageChapter08Intelligence(
   });
 
   const provenanceList: MajorFindingProvenance[] = [];
+
+  // Both provenance entries below used to hardcode confidence: "HIGH"
+  // regardless of what actually backed the claim — including the turning-
+  // point entry, whose psychEvidence was hardcoded to an empty array, i.e.
+  // it always had zero recorded corroborating evidence yet still claimed
+  // HIGH. "HIGH" should mean genuine multi-source agreement (real timing
+  // signal AND real psych corroboration), "MEDIUM" a single source, "LOW"
+  // no real timing signal behind the claim at all.
+  const resolveTimingProvenanceConfidence = (
+    timingEvidenceCount: number,
+    psychEvidenceCount: number,
+  ): "HIGH" | "MEDIUM" | "LOW" => {
+    if (timingEvidenceCount === 0) return "LOW";
+    return psychEvidenceCount > 0 ? "HIGH" : "MEDIUM";
+  };
 
   // --- Intro Sentence ---
   const introSentence = pick(
@@ -204,18 +233,22 @@ export function buildMarriageChapter08Intelligence(
     pair: { headline: pairHeadline, description: pairDesc },
   };
 
-  provenanceList.push({
-    sectionId: "section01CurrentPeriod",
-    userConclusion: pairHeadline,
-    personATimingEvidence: currentRespA.evidenceRefs,
-    personBTimingEvidence: currentRespB.evidenceRefs,
-    psychEvidence: [
+  {
+    const section01PsychEvidence = [
       ...(currentRespA.responseProfile.pressureResponse?.contributingPsychAxes ?? []),
       ...(currentRespB.responseProfile.actionResponse?.contributingPsychAxes ?? []),
-    ],
-    pairState: currentPairState.pairState,
-    confidence: "HIGH",
-  });
+    ];
+    const section01TimingEvidenceCount = currentRespA.evidenceRefs.length + currentRespB.evidenceRefs.length;
+    provenanceList.push({
+      sectionId: "section01CurrentPeriod",
+      userConclusion: pairHeadline,
+      personATimingEvidence: currentRespA.evidenceRefs,
+      personBTimingEvidence: currentRespB.evidenceRefs,
+      psychEvidence: section01PsychEvidence,
+      pairState: currentPairState.pairState,
+      confidence: resolveTimingProvenanceConfidence(section01TimingEvidenceCount, section01PsychEvidence.length),
+    });
+  }
 
   // --- 02. Section 02: 올해 우리 관계에서 무엇이 중요해질까? ---
   // OWNERSHIP: Relationship Operation Implication for current year (Max 2 based on evidence).
@@ -377,20 +410,61 @@ export function buildMarriageChapter08Intelligence(
       `${tpYr}년에는 삶의 전환점이 다가오면서, 두 사람이 앞으로 중요하게 둘 방향과 우선순위를 함께 다시 맞춰볼 필요가 커지는 시기입니다.`,
     );
 
+    // Was previously the same static "calmly reviews conditions" sentence
+    // for every couple, regardless of what actually changed structurally —
+    // it never looked at whether the year's activated Ten God family was
+    // reinforcing this person's existing tendency, waking up a previously
+    // quiet one, or landing in tension with an already-important natal
+    // domain. Read that classification (already computed by
+    // buildIndividualTimingResponse) before picking the closing clause.
+    // Read from structuralActivations (set whenever the signal fires),
+    // not responseProfile.*Response?.structuralActivation (only set when a
+    // specific psych-axis branch ALSO matched — a real signal can fire with
+    // a real structural classification even when no style branch matched).
+    const structuralFlavorOf = (r: IndividualTimingResponse): StructuralActivationKind | undefined =>
+      r.structuralActivations?.pressure ?? r.structuralActivations?.action;
+
+    const describeStructuralFlavor = (name: string, flavor: StructuralActivationKind | undefined): string | null => {
+      if (flavor === "STRUCTURAL_TENSION") {
+        return pick(
+          locale,
+          `this shift touches a side of ${name} that hasn't been active before, and it can sit in real tension with the order ${name} already relies on — worth treating as a genuine renegotiation, not just a quiet pause.`,
+          `${name}님에게는 명식상 원래 없던 흐름이 새로 들어오는 시기라, 지금까지 의지해온 질서와 실제로 부딪힐 수 있어 단순히 잠잠해지는 시기로만 보기보다 진지하게 재조율할 부분으로 다루는 것이 좋습니다.`,
+        );
+      }
+      if (flavor === "NEWLY_ACTIVATED") {
+        return pick(
+          locale,
+          `a side of ${name} that has stayed mostly quiet until now is waking up for the first time, so ${name} may want more room to explore than the past pattern would suggest.`,
+          `${name}님에게는 그동안 잠재해 있던 성향이 이 시기 처음 뚜렷하게 깨어나는 흐름이라, 기존 패턴보다 더 넓은 탐색의 여지를 스스로에게 허락해도 좋습니다.`,
+        );
+      }
+      return null;
+    };
+
+    const changingResponse = turningPointYearState.primaryChangingSide === "PERSON_A" ? rA : rB;
+    const structuralFlavorClause = describeStructuralFlavor(changingName, structuralFlavorOf(changingResponse));
+
+    const baseForChangingPerson = pick(
+      locale,
+      `${changingName} lets go of urgency while moving into a new phase and matches their partner's pace for working things out together.`,
+      `${changingName}님은 새로운 흐름으로 넘어가는 과정에서 조급함을 내려놓고 상대와의 협의 템포를 맞춥니다.`,
+    );
+    const forChangingPerson = structuralFlavorClause
+      ? `${baseForChangingPerson} ${structuralFlavorClause}`
+      : baseForChangingPerson;
+    const forSteadyPartner = pick(
+      locale,
+      `${changingName === nameA ? nameB : nameA} becomes a steady support by calmly looking over the conditions and sequence with their partner, rather than pushing for a hasty answer.`,
+      `${changingName === nameA ? nameB : nameA}님은 변화를 겪는 상대에게 조급한 확답을 요구하기보다, 차분하게 조건과 순서를 살펴주는 버팀목이 됩니다.`,
+    );
+
     section04TurningPoint = {
       year: tpYr,
       headline,
       reason,
-      forPersonA: pick(
-        locale,
-        `${nameA} becomes a steady support by calmly looking over the conditions and sequence with their partner, rather than pushing for a hasty answer.`,
-        `${nameA}님은 변화를 겪는 상대에게 조급한 확답을 요구하기보다, 차분하게 조건과 순서를 살펴주는 버팀목이 됩니다.`,
-      ),
-      forPersonB: pick(
-        locale,
-        `${nameB} lets go of urgency while moving into a new phase and matches their partner's pace for working things out together.`,
-        `${nameB}님은 새로운 흐름으로 넘어가는 과정에서 조급함을 내려놓고 상대와의 협의 템포를 맞춥니다.`,
-      ),
+      forPersonA: changingName === nameA ? forChangingPerson : forSteadyPartner,
+      forPersonB: changingName === nameB ? forChangingPerson : forSteadyPartner,
       forPair: pick(
         locale,
         "This is a defining moment to work out the standards you'll move forward on together as a couple, rather than letting one person's judgment alone drive it.",
@@ -398,14 +472,19 @@ export function buildMarriageChapter08Intelligence(
       ),
     };
 
+    const section04PsychEvidence = [
+      ...(rA.responseProfile.pressureResponse?.contributingPsychAxes ?? rA.responseProfile.actionResponse?.contributingPsychAxes ?? []),
+      ...(rB.responseProfile.pressureResponse?.contributingPsychAxes ?? rB.responseProfile.actionResponse?.contributingPsychAxes ?? []),
+    ];
+    const section04TimingEvidenceCount = rA.evidenceRefs.length + rB.evidenceRefs.length;
     provenanceList.push({
       sectionId: "section04TurningPoint",
       userConclusion: headline,
       personATimingEvidence: rA.evidenceRefs,
       personBTimingEvidence: rB.evidenceRefs,
-      psychEvidence: [],
+      psychEvidence: section04PsychEvidence,
       pairState: turningPointYearState.pairState,
-      confidence: "HIGH",
+      confidence: resolveTimingProvenanceConfidence(section04TimingEvidenceCount, section04PsychEvidence.length),
     });
   }
 

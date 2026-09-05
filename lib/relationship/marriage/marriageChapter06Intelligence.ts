@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import { pick } from "./marriageCopy";
 import { resolvePrimaryAxisValue } from "./marriageEvidenceResolution";
+import { profileTenGods, type PersonTenGodProfile } from "./marriageTenGodAnalysis";
 
 // -----------------------------------------------------------------------------
 // TYPES FOR CHAPTER 06: FAMILY SYSTEM INTELLIGENCE
@@ -139,6 +140,14 @@ export function buildMarriageChapter06Intelligence(params: {
   const countsA = ctx.tenGod?.countsA ?? {};
   const countsB = ctx.tenGod?.countsB ?? {};
 
+  // Family-level Ten God aggregates (재성/관성/식상/인성/비겁). `countsA`/`countsB`
+  // are only ever keyed by SPECIFIC Ten God labels — every formula in this
+  // file that needs a family total must read it from here (see the same fix
+  // in marriageChapter05Intelligence.ts; `counts["관성"]`-style family-name
+  // lookups against a specific-label-only map always silently resolve to 0).
+  const tenGodProfileA: PersonTenGodProfile = profileTenGods(countsA);
+  const tenGodProfileB: PersonTenGodProfile = profileTenGods(countsB);
+
   // `psychA?.traits` never existed on PsychMasterJson — the only real
   // source is secondary_axes. `connection`/`growth`/`adaptability` below
   // are PRIMARY-axis names, not secondary keys, so they're read via
@@ -161,8 +170,12 @@ export function buildMarriageChapter06Intelligence(params: {
   const bothLabel = pick(locale, "Both of you", "둘 다");
   const noEdgeLabel = pick(locale, "No clear lead", "뚜렷한 우위 없음");
 
-  // Helper for abstention resolution
-  const resolvePairPerson = (scoreA: number, scoreB: number, threshold = 1.5): string => {
+  // Helper for abstention resolution. Default threshold raised from 1.5 to 2:
+  // family counts are integers 0-3 (one entry per non-day pillar) and a
+  // single un-weighted family count alone can contribute 1-1.5 points, so a
+  // 1.5 gap used to be reachable from one weak Saju signal alone with no
+  // psych support at all. 2.0 requires more than that single weak signal.
+  const resolvePairPerson = (scoreA: number, scoreB: number, threshold = 2): string => {
     const diff = scoreA - scoreB;
     if (diff >= threshold) return nameA;
     if (diff <= -threshold) return nameB;
@@ -173,11 +186,11 @@ export function buildMarriageChapter06Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 01. COUPLE_BOUNDARY (결혼하면 우리는 얼마나 독립된 팀이 될까?)
   // ---------------------------------------------------------------------------
-  const boundScoreA = (countsA["관성"] ?? 0) + (countsA["비겁"] ?? 0) * 1.5;
-  const boundScoreB = (countsB["관성"] ?? 0) + (countsB["비겁"] ?? 0) * 1.5;
+  const boundScoreA = tenGodProfileA.officer + tenGodProfileA.self * 1.5;
+  const boundScoreB = tenGodProfileB.officer + tenGodProfileB.self * 1.5;
 
-  const connScoreA = (countsA["인성"] ?? 0) * 1.5 + ((connectionA ?? 50) > 55 ? 2 : 0);
-  const connScoreB = (countsB["인성"] ?? 0) * 1.5 + ((connectionB ?? 50) > 55 ? 2 : 0);
+  const connScoreA = tenGodProfileA.seal * 1.5 + ((connectionA ?? 50) > 55 ? 2 : 0);
+  const connScoreB = tenGodProfileB.seal * 1.5 + ((connectionB ?? 50) > 55 ? 2 : 0);
 
   const getBoundaryProfile = (name: string, bScore: number, cScore: number) => {
     if (bScore >= cScore + 1.0) {
@@ -228,20 +241,20 @@ export function buildMarriageChapter06Intelligence(params: {
   // 02. ORIGIN_FAMILY_DYNAMICS (시댁·처가 문제에서 누가 더 흔들릴까?)
   // ---------------------------------------------------------------------------
   // 1. HARD_TO_REFUSE_PARENTS: Saju 印/官 + Psych connection/empathy
-  const refuseA = (countsA["인성"] ?? 0) * 1.5 + (countsA["관성"] ?? 0) + ((connectionA ?? 50) > 55 ? 2 : 0) + ((psychAxesA.empathy ?? 50) > 55 ? 1 : 0);
-  const refuseB = (countsB["인성"] ?? 0) * 1.5 + (countsB["관성"] ?? 0) + ((connectionB ?? 50) > 55 ? 2 : 0) + ((psychAxesB.empathy ?? 50) > 55 ? 1 : 0);
+  const refuseA = tenGodProfileA.seal * 1.5 + tenGodProfileA.officer + ((connectionA ?? 50) > 55 ? 2 : 0) + ((psychAxesA.empathy ?? 50) > 55 ? 1 : 0);
+  const refuseB = tenGodProfileB.seal * 1.5 + tenGodProfileB.officer + ((connectionB ?? 50) > 55 ? 2 : 0) + ((psychAxesB.empathy ?? 50) > 55 ? 1 : 0);
 
   // 2. SPOUSE_FIRST_PROTECTOR: Saju 比劫/官 + Psych decision_style (autonomy has no real derivation — see above)
-  const protA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["관성"] ?? 0) + ((psychAxesA.decision_style ?? 50) > 55 ? 1 : 0);
-  const protB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["관성"] ?? 0) + ((psychAxesB.decision_style ?? 50) > 55 ? 1 : 0);
+  const protA = tenGodProfileA.self * 1.5 + tenGodProfileA.officer + ((psychAxesA.decision_style ?? 50) > 55 ? 1 : 0);
+  const protB = tenGodProfileB.self * 1.5 + tenGodProfileB.officer + ((psychAxesB.decision_style ?? 50) > 55 ? 1 : 0);
 
   // 3. EARLY_BOUNDARY_SPEAKER: Saju 比劫/食傷 + Psych conflict_style (autonomy has no real derivation — see above)
-  const spkA = (countsA["비겁"] ?? 0) + (countsA["식상"] ?? 0) * 1.5 + ((psychAxesA.conflict_style ?? 50) > 55 ? 1.5 : 0);
-  const spkB = (countsB["비겁"] ?? 0) + (countsB["식상"] ?? 0) * 1.5 + ((psychAxesB.conflict_style ?? 50) > 55 ? 1.5 : 0);
+  const spkA = tenGodProfileA.self + tenGodProfileA.food * 1.5 + ((psychAxesA.conflict_style ?? 50) > 55 ? 1.5 : 0);
+  const spkB = tenGodProfileB.self + tenGodProfileB.food * 1.5 + ((psychAxesB.conflict_style ?? 50) > 55 ? 1.5 : 0);
 
   // 4. LONG_FAMILY_CONFLICT_CARRIER: Saju 印 + Psych empathy/resilience(low)
-  const carA = (countsA["인성"] ?? 0) * 1.5 + ((psychAxesA.empathy ?? 50) > 55 ? 2 : 0) + ((psychAxesA.resilience ?? 50) < 45 ? 1.5 : 0);
-  const carB = (countsB["인성"] ?? 0) * 1.5 + ((psychAxesB.empathy ?? 50) > 55 ? 2 : 0) + ((psychAxesB.resilience ?? 50) < 45 ? 1.5 : 0);
+  const carA = tenGodProfileA.seal * 1.5 + ((psychAxesA.empathy ?? 50) > 55 ? 2 : 0) + ((psychAxesA.resilience ?? 50) < 45 ? 1.5 : 0);
+  const carB = tenGodProfileB.seal * 1.5 + ((psychAxesB.empathy ?? 50) > 55 ? 2 : 0) + ((psychAxesB.resilience ?? 50) < 45 ? 1.5 : 0);
 
   const pairRoles02: OriginFamilyPairRole[] = [
     { roleKey: "HARD_TO_REFUSE_PARENTS", roleLabel: pick(locale, "The one who finds it hard to say no to their parents", "부모의 부탁을 거절하기 어려운 쪽"), personName: resolvePairPerson(refuseA, refuseB) },
@@ -263,18 +276,18 @@ export function buildMarriageChapter06Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 03. PARENTING_DNA (아이가 생기면 나는 어떤 부모가 될까?)
   // ---------------------------------------------------------------------------
-  const warmthA = (countsA["인성"] ?? 0) * 1.5 + (countsA["식상"] ?? 0) + ((psychAxesA.empathy ?? 50) > 55 ? 2 : 0) + ((connectionA ?? 50) > 55 ? 1.5 : 0);
-  const warmthB = (countsB["인성"] ?? 0) * 1.5 + (countsB["식상"] ?? 0) + ((psychAxesB.empathy ?? 50) > 55 ? 2 : 0) + ((connectionB ?? 50) > 55 ? 1.5 : 0);
+  const warmthA = tenGodProfileA.seal * 1.5 + tenGodProfileA.food + ((psychAxesA.empathy ?? 50) > 55 ? 2 : 0) + ((connectionA ?? 50) > 55 ? 1.5 : 0);
+  const warmthB = tenGodProfileB.seal * 1.5 + tenGodProfileB.food + ((psychAxesB.empathy ?? 50) > 55 ? 2 : 0) + ((connectionB ?? 50) > 55 ? 1.5 : 0);
 
-  const structA = (countsA["관성"] ?? 0) * 1.5 + (countsA["인성"] ?? 0) + ((psychAxesA.structure ?? 50) > 55 ? 2 : 0) + ((psychAxesA.self_control ?? 50) > 55 ? 1.5 : 0);
-  const structB = (countsB["관성"] ?? 0) * 1.5 + (countsB["인성"] ?? 0) + ((psychAxesB.structure ?? 50) > 55 ? 2 : 0) + ((psychAxesB.self_control ?? 50) > 55 ? 1.5 : 0);
+  const structA = tenGodProfileA.officer * 1.5 + tenGodProfileA.seal + ((psychAxesA.structure ?? 50) > 55 ? 2 : 0) + ((psychAxesA.self_control ?? 50) > 55 ? 1.5 : 0);
+  const structB = tenGodProfileB.officer * 1.5 + tenGodProfileB.seal + ((psychAxesB.structure ?? 50) > 55 ? 2 : 0) + ((psychAxesB.self_control ?? 50) > 55 ? 1.5 : 0);
 
   // autonomy has no real derivation (see above) — dropped rather than substituted.
-  const autoA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["식상"] ?? 0) + ((adaptabilityA ?? 50) > 55 ? 1.5 : 0);
-  const autoB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["식상"] ?? 0) + ((adaptabilityB ?? 50) > 55 ? 1.5 : 0);
+  const autoA = tenGodProfileA.self * 1.5 + tenGodProfileA.food + ((adaptabilityA ?? 50) > 55 ? 1.5 : 0);
+  const autoB = tenGodProfileB.self * 1.5 + tenGodProfileB.food + ((adaptabilityB ?? 50) > 55 ? 1.5 : 0);
 
-  const parentingGrowthA = (countsA["관성"] ?? 0) + (countsA["식상"] ?? 0) * 1.5 + ((growthPrimaryA ?? 50) > 55 ? 2 : 0) + ((psychAxesA.decision_style ?? 50) > 55 ? 1.5 : 0);
-  const parentingGrowthB = (countsB["관성"] ?? 0) + (countsB["식상"] ?? 0) * 1.5 + ((growthPrimaryB ?? 50) > 55 ? 2 : 0) + ((psychAxesB.decision_style ?? 50) > 55 ? 1.5 : 0);
+  const parentingGrowthA = tenGodProfileA.officer + tenGodProfileA.food * 1.5 + ((growthPrimaryA ?? 50) > 55 ? 2 : 0) + ((psychAxesA.decision_style ?? 50) > 55 ? 1.5 : 0);
+  const parentingGrowthB = tenGodProfileB.officer + tenGodProfileB.food * 1.5 + ((growthPrimaryB ?? 50) > 55 ? 2 : 0) + ((psychAxesB.decision_style ?? 50) > 55 ? 1.5 : 0);
 
   const buildParentingProfile = (name: string, wScore: number, sScore: number, aScore: number, gScore: number): ParentingDnaProfile => {
     const maxVal = Math.max(wScore, sScore, aScore, gScore);
@@ -342,9 +355,15 @@ export function buildMarriageChapter06Intelligence(params: {
   const structGap = Math.abs(structA - structB);
   const warmthGap = Math.abs(warmthA - warmthB);
 
+  // Family counts are integers 0-3 and a single un-weighted family count
+  // alone can contribute 1-1.5 points, so 1.5 used to be reachable from one
+  // weak Saju signal with zero psych support. Requiring 2 keeps a single
+  // weak signal from deciding a directional split on its own.
+  const PARENTING_GAP_THRESHOLD = 2;
+
   const situations: SituationReaction[] = [];
 
-  if (structGap >= 1.5) {
+  if (structGap >= PARENTING_GAP_THRESHOLD) {
     situations.push({
       situationTitle: pick(locale, "When the child breaks a promise or a household rule", "아이가 약속이나 생활 규칙을 어겼을 때"),
       reactionA: structA > structB
@@ -355,14 +374,25 @@ export function buildMarriageChapter06Intelligence(params: {
         : pick(locale, `${nameB} tends to work it out by considering the child's circumstances and feelings`, `${nameB}님은 아이의 사정과 감정을 짚어주며 조율하려는 편`),
     });
   } else {
+    // structGap is small: the evidence does not distinguish them on this
+    // axis, so this must not invent a directional split (the previous
+    // version hardcoded nameA=gives-space / nameB=talks-it-through
+    // regardless of either person's actual score — a fixed slot pattern,
+    // not a finding). Describe the SHARED tendency instead, derived from
+    // their (similar) average level, per Global Rule D: two people may
+    // legitimately receive the same role.
+    const avgStruct = (structA + structB) / 2;
+    const sharedReaction = avgStruct > 3
+      ? pick(locale, "tends to hold a calm, consistent line rather than negotiate in the moment", "그 자리에서 타협하기보다 차분하고 일관된 기준을 지키려는 편")
+      : pick(locale, "tends to give the child room to settle their own feelings first", "먼저 아이 스스로 감정을 가라앉힐 여유를 주는 편");
     situations.push({
       situationTitle: pick(locale, "When the child throws a tantrum or won't budge", "아이가 떼를 쓰거나 고집을 부릴 때"),
-      reactionA: pick(locale, `${nameA} tends to give the child time to settle their own emotions`, `${nameA}님은 스스로 감정을 다스릴 시간을 주는 편`),
-      reactionB: pick(locale, `${nameB} tends to work through it with conversation and comforting`, `${nameB}님은 대화와 달램으로 상황을 풀어가는 편`),
+      reactionA: isEn ? `${nameA} ${sharedReaction}` : `${nameA}님은 ${sharedReaction}`,
+      reactionB: isEn ? `${nameB} ${sharedReaction}` : `${nameB}님은 ${sharedReaction}`,
     });
   }
 
-  if (warmthGap >= 1.5) {
+  if (warmthGap >= PARENTING_GAP_THRESHOLD) {
     situations.push({
       situationTitle: pick(locale, "When the child fails at something or feels emotionally unsteady", "아이가 실패하거나 정서적으로 불안해할 때"),
       reactionA: warmthA > warmthB
@@ -373,10 +403,23 @@ export function buildMarriageChapter06Intelligence(params: {
         : pick(locale, `${nameB} tends to offer a solution and know-how for the next step`, `${nameB}님은 해결책 제시와 다음 행동 노하우를 건네는 편`),
     });
   } else {
+    // warmthGap is small: same reasoning as above — parentingDna (the
+    // evidence-based section) is the one place allowed to assert a
+    // structure/boundary vs autonomy-support CONTRAST between the two
+    // people. This section must not manufacture a second, unconditional
+    // "nameA supports autonomy" half just to look balanced when the actual
+    // warmth evidence doesn't distinguish them — that was the exact source
+    // of the parentingDna-vs-parentingDifference contradiction (an
+    // evidence-based "Sera = rules" claim sitting next to an unconditional,
+    // non-evidential "Sera = supports autonomy" claim elsewhere).
+    const avgWarmth = (warmthA + warmthB) / 2;
+    const sharedReaction = avgWarmth > 3
+      ? pick(locale, "tends to lead with encouragement and emotional reassurance before anything else", "무엇보다 먼저 격려와 정서적 안심을 앞세우는 편")
+      : pick(locale, "tends to walk through the practical next step together rather than only reassuring", "안심시키는 것에 그치지 않고 실질적인 다음 단계를 함께 짚어보는 편");
     situations.push({
       situationTitle: pick(locale, "When the child faces a new challenge or an independent choice", "새로운 도전이나 독립적인 선택을 해야 할 때"),
-      reactionA: pick(locale, `${nameA} tends to support the child's own independent decision`, `${nameA}님은 아이의 자율적 결정을 지지하는 편`),
-      reactionB: pick(locale, `${nameB} tends to advise checking things over first and building a safety net`, `${nameB}님은 사전 점검과 안전망 구축을 조언하는 편`),
+      reactionA: isEn ? `${nameA} ${sharedReaction}` : `${nameA}님은 ${sharedReaction}`,
+      reactionB: isEn ? `${nameB} ${sharedReaction}` : `${nameB}님은 ${sharedReaction}`,
     });
   }
 
@@ -441,20 +484,20 @@ export function buildMarriageChapter06Intelligence(params: {
   // 06. FAMILY_LOAD_REDISTRIBUTION (가족을 위해 누가 더 많이 자기 삶을 조정할까?)
   // ---------------------------------------------------------------------------
   // 1. SCHEDULE_FIRST_ADJUSTER: Saju 印/官 + Psych empathy/self_control
-  const schA = (countsA["인성"] ?? 0) + (countsA["관성"] ?? 0) + ((psychAxesA.empathy ?? 50) > 55 ? 2 : 0);
-  const schB = (countsB["인성"] ?? 0) + (countsB["관성"] ?? 0) + ((psychAxesB.empathy ?? 50) > 55 ? 2 : 0);
+  const schA = tenGodProfileA.seal + tenGodProfileA.officer + ((psychAxesA.empathy ?? 50) > 55 ? 2 : 0);
+  const schB = tenGodProfileB.seal + tenGodProfileB.officer + ((psychAxesB.empathy ?? 50) > 55 ? 2 : 0);
 
   // 2. FAMILY_PROBLEM_ABSORBER: Saju 官/印 + Psych self_control/stability
-  const absA = (countsA["관성"] ?? 0) * 1.5 + (countsA["인성"] ?? 0) + ((psychAxesA.self_control ?? 50) > 55 ? 2 : 0);
-  const absB = (countsB["관성"] ?? 0) * 1.5 + (countsB["인성"] ?? 0) + ((psychAxesB.self_control ?? 50) > 55 ? 2 : 0);
+  const absA = tenGodProfileA.officer * 1.5 + tenGodProfileA.seal + ((psychAxesA.self_control ?? 50) > 55 ? 2 : 0);
+  const absB = tenGodProfileB.officer * 1.5 + tenGodProfileB.seal + ((psychAxesB.self_control ?? 50) > 55 ? 2 : 0);
 
   // 3. PERSONAL_GOAL_PROTECTOR: Saju 比劫/食傷 + Psych growth (autonomy has no real derivation — see above)
-  const pgoA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["식상"] ?? 0) + ((growthPrimaryA ?? 50) > 55 ? 2 : 0);
-  const pgoB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["식상"] ?? 0) + ((growthPrimaryB ?? 50) > 55 ? 2 : 0);
+  const pgoA = tenGodProfileA.self * 1.5 + tenGodProfileA.food + ((growthPrimaryA ?? 50) > 55 ? 2 : 0);
+  const pgoB = tenGodProfileB.self * 1.5 + tenGodProfileB.food + ((growthPrimaryB ?? 50) > 55 ? 2 : 0);
 
   // 4. LATE_BURNOUT_RISK: Saju 印 + Psych self_control / resilience(low)
-  const bntA = (countsA["인성"] ?? 0) * 1.5 + ((psychAxesA.self_control ?? 50) > 55 ? 1.5 : 0) + ((psychAxesA.resilience ?? 50) < 45 ? 1.5 : 0);
-  const bntB = (countsB["인성"] ?? 0) * 1.5 + ((psychAxesB.self_control ?? 50) > 55 ? 1.5 : 0) + ((psychAxesB.resilience ?? 50) < 45 ? 1.5 : 0);
+  const bntA = tenGodProfileA.seal * 1.5 + ((psychAxesA.self_control ?? 50) > 55 ? 1.5 : 0) + ((psychAxesA.resilience ?? 50) < 45 ? 1.5 : 0);
+  const bntB = tenGodProfileB.seal * 1.5 + ((psychAxesB.self_control ?? 50) > 55 ? 1.5 : 0) + ((psychAxesB.resilience ?? 50) < 45 ? 1.5 : 0);
 
   const pairRoles06: FamilyLoadPairRole[] = [
     { roleKey: "SCHEDULE_FIRST_ADJUSTER", roleLabel: pick(locale, "The one more likely to adjust their schedule first", "일정을 먼저 조정하기 쉬운 쪽"), personName: resolvePairPerson(schA, schB) },

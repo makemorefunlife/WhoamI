@@ -430,7 +430,29 @@ export function buildMarriageChapter01Intelligence(params: {
     });
   }
 
-  const finalDrivers = drivers.slice(0, 3);
+  // `qualityOfA`/`qualityOfB` are each computed ONCE and every pushed driver's
+  // whatDrawsA/whatDrawsB is built from that same pair of strings — the
+  // MECHANISM per driver is real and pair-specific (each only appears when
+  // its own distinct Saju condition is true: stem combine, day-branch
+  // combine, clash/wonjin, matching day stems), but the SUPPORTING EVIDENCE
+  // behind "why" is the identical one signal every time. Left as-is, up to
+  // 3 rendered drivers each read as if they independently discovered that
+  // trait — false corroboration of one signal as three. Every driver past
+  // the first now says so explicitly instead of restating it as new.
+  const withReuseDisclosure = (drivers: AttractionDriver[]): AttractionDriver[] =>
+    drivers.map((driver, index) => {
+      if (index === 0) return driver;
+      const reuseNote = isEn
+        ? " (the same quality already noted above, showing up in a different way here)"
+        : " (앞서 언급한 것과 같은 특징이 여기서는 다른 방식으로 드러난 것입니다)";
+      return {
+        ...driver,
+        whatDrawsA: `${driver.whatDrawsA}${reuseNote}`,
+        whatDrawsB: `${driver.whatDrawsB}${reuseNote}`,
+      };
+    });
+
+  const finalDrivers = withReuseDisclosure(drivers.slice(0, 3));
   const heroDriver = finalDrivers[0];
   const pairAttractionSynthesis = sanitizeCopy(
     heroDriver?.whatDrawsA && heroDriver?.whatDrawsB

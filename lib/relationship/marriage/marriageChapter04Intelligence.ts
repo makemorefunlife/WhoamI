@@ -4,6 +4,7 @@ import type { MarriageRuleContext } from "./buildMarriageRuleContext";
 import { resolveSpousePalaceProfile } from "@/lib/relationship/romantic/prototypeV4/spousePalaceMatcher";
 import { calculateTenGod, getHiddenStemsData, calculateTwelveStage } from "@/lib/saju/repository";
 import { hasGuimunOnDayHourPalaces, isGuimun, isWonjin } from "@/lib/saju/workPairRiskSignals";
+import { resolvePrimaryAxisValue } from "./marriageEvidenceResolution";
 
 // ---------------------------------------------------------------------------
 // TYPES
@@ -566,6 +567,33 @@ export function buildMarriageChapter04Intelligence(params: {
   else if (isNoveltyA && !isNoveltyB) novClass = "NOVELTY_GAP_A";
   else if (!isNoveltyA && isNoveltyB) novClass = "NOVELTY_GAP_B";
 
+  // The headline/classification above is driven by `noveltyScore`, a
+  // weighted sum of THREE Saju terms (sanggwanCount, hasNakedFire, hasGuimun)
+  // and ONE Psych term (secondary_axes.stimulation, +1.5 if >60 / -1.5 if
+  // <40). The "innate"/"current" evidence shown under the headline must
+  // actually be that same evidence, split cleanly along the Saju/Psych
+  // seam — not a different, disconnected pair of checks. Two prior bugs
+  // made that impossible: (1) personACurrent read `psychA?.ocean_traits`,
+  // a field that does not exist anywhere on PsychMasterJson, so it always
+  // fell to the same default text for every person on the platform; (2)
+  // even fixed, "does any one factor exist" is a lower bar than "does the
+  // Saju side alone cross the classification threshold" — a person with
+  // only hasGuimun (0.8) would show "innate: novelty-sensitive" wording
+  // despite that alone never being enough to move noveltyScore past 1.5.
+  const sajuNoveltyA = (sigA.sanggwanCount >= 1 ? 1.5 : 0) + (sigA.hasNakedFire ? 1.0 : 0) + (sigA.hasGuimun ? 0.8 : 0);
+  const sajuNoveltyB = (sigB.sanggwanCount >= 1 ? 1.5 : 0) + (sigB.hasNakedFire ? 1.0 : 0) + (sigB.hasGuimun ? 0.8 : 0);
+  const stimA = psychA?.secondary_axes?.stimulation ?? 50;
+  const stimB = psychB?.secondary_axes?.stimulation ?? 50;
+
+  const describeInnateNovelty = (sajuNovelty: number) =>
+    sajuNovelty >= 1.5 ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결";
+  const describeCurrentNovelty = (stim: number) =>
+    stim > 60
+      ? "현재 새로운 자극과 경험에 열려 있는 상태"
+      : stim < 40
+      ? "현재 낯선 자극보다 예측 가능한 흐름을 뚜렷하게 선호하는 상태"
+      : "현재 특별히 자극을 좇거나 피하지 않는 무난한 상태";
+
   const stabilityVsNovelty: StabilityVsNoveltySection = {
     title: isEn ? "Stability vs. Novelty Balance" : "익숙한 밤 vs 새로운 공기",
     classification: novClass,
@@ -585,20 +613,27 @@ export function buildMarriageChapter04Intelligence(params: {
       : novClass === "NOVELTY_MATCH"
       ? "두 사람 모두 늘 반복되는 루틴보다 가끔은 조도, 음악, 장소 등의 작은 분위기 변화를 줄 때 친밀감의 온도가 배로 올라옵니다."
       : "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다.",
-    personAInnate: sigA.sanggwanCount >= 1 || sigA.hasNakedFire ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결",
-    personACurrent: (psychA?.ocean_traits?.stimulation ?? 50) > 60 ? "현재 새로운 자극과 경험에 열려 있는 상태" : "현재 아늑한 안정과 예측 가능성을 바라는 상태",
-    personBInnate: sigB.sanggwanCount >= 1 || sigB.hasNakedFire ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결",
-    personBCurrent: (psychB?.ocean_traits?.stimulation ?? 50) > 60 ? "현재 새로운 자극과 경험에 열려 있는 상태" : "현재 아늑한 안정과 예측 가능성을 바라는 상태",
+    personAInnate: describeInnateNovelty(sajuNoveltyA),
+    personACurrent: describeCurrentNovelty(stimA),
+    personBInnate: describeInnateNovelty(sajuNoveltyB),
+    personBCurrent: describeCurrentNovelty(stimB),
   };
 
   // SECTION 04: Activation & Rhythm (Dynamic Multi-Evidence Classification)
+  // `adaptability` is a PRIMARY axis, not a key on secondary_axes — the same
+  // dead-field bug already fixed in CH05/CH06 (see marriageEvidenceResolution.ts)
+  // was still live here, so this branch's Psych term always fell to the same
+  // `?? 50` default for every person and RESPONSIVE never legitimately fired.
+  const adaptPrimaryA = resolvePrimaryAxisValue(psychA, "adaptability");
+  const adaptPrimaryB = resolvePrimaryAxisValue(psychB, "adaptability");
+
   const modeA: ActivationMode = (chA.receptionNeeds.emotional_attunement >= 0.7) ? "EMOTIONAL_FIRST"
-    : (psychA?.secondary_axes?.adaptability ?? 50) > 60 ? "RESPONSIVE"
+    : (adaptPrimaryA ?? 50) > 60 ? "RESPONSIVE"
     : (sigA.speedScore >= 2.0) ? "DESIRE_FIRST"
     : "CONTEXT_SENSITIVE";
 
   const modeB: ActivationMode = (chB.receptionNeeds.emotional_attunement >= 0.7) ? "EMOTIONAL_FIRST"
-    : (psychB?.secondary_axes?.adaptability ?? 50) > 60 ? "RESPONSIVE"
+    : (adaptPrimaryB ?? 50) > 60 ? "RESPONSIVE"
     : (sigB.speedScore >= 2.0) ? "DESIRE_FIRST"
     : "CONTEXT_SENSITIVE";
 

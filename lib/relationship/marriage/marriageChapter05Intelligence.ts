@@ -3,6 +3,7 @@ import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "./marriageCopy";
 import { resolvePrimaryAxisValue } from "./marriageEvidenceResolution";
+import { profileTenGods, type PersonTenGodProfile } from "./marriageTenGodAnalysis";
 
 export type CapabilityActor = "A_DOMINANT" | "B_DOMINANT" | "SHARED_STRENGTH" | "SHARED_GAP" | "ROLE_VACUUM" | "COMPLEMENTARY";
 
@@ -128,6 +129,14 @@ export function buildMarriageChapter05Intelligence(params: {
   const axesA = psychA?.secondary_axes ?? {};
   const axesB = psychB?.secondary_axes ?? {};
 
+  // Family-level Ten God aggregates (재성/관성/식상/인성/비겁). `countsA`/`countsB`
+  // are only ever keyed by SPECIFIC Ten God labels (정재, 편재, 정관, 편관, 식신,
+  // 상관, 정인, 편인, 비견, 겁재) — every formula below that needs a family total
+  // (e.g. "관성" = 정관+편관) must read it from here, never index `counts[]` by
+  // the family name directly (that key can never exist and always resolves to 0).
+  const profileA: PersonTenGodProfile = profileTenGods(countsA);
+  const profileB: PersonTenGodProfile = profileTenGods(countsB);
+
   // `adaptability`, `stability`, and `growth` are PRIMARY-axis names, not
   // SecondaryAxisKey values — psych.secondary_axes.adaptability etc. was
   // always undefined and silently defaulted through `?? 50`, so the Psych
@@ -145,32 +154,73 @@ export function buildMarriageChapter05Intelligence(params: {
 
   // ---------------------------------------------------------------------------
   // 01. COUPLE_OPERATING_SYSTEM
+  //
+  // Each score = (relevant Ten God family count(s), weighted) + (a psych axis
+  // clearing a threshold ? bonus : 0). Family counts are integers 0-3 and the
+  // five families always sum to 3 per person (one entry per non-day pillar),
+  // so a single un-weighted family count of 1 contributes only 1 point — that
+  // alone should never be enough to call someone "dominant" at a capability.
+  // Thresholds below are sized against the RESTORED (live) range, not the old
+  // range where the Saju term was always 0 and the psych bonus (0 or 2) was
+  // the only thing that could ever move the score.
   // ---------------------------------------------------------------------------
-  const planA = (countsA["인성"] ?? 0) * 1.5 + (countsA["관성"] ?? 0) + ((axesA.structure ?? 50) > 60 ? 2 : 0);
-  const planB = (countsB["인성"] ?? 0) * 1.5 + (countsB["관성"] ?? 0) + ((axesB.structure ?? 50) > 60 ? 2 : 0);
+  const planA = profileA.seal * 1.5 + profileA.officer + ((axesA.structure ?? 50) > 60 ? 2 : 0);
+  const planB = profileB.seal * 1.5 + profileB.officer + ((axesB.structure ?? 50) > 60 ? 2 : 0);
 
-  const decA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["식상"] ?? 0) + ((axesA.decision_style ?? 50) > 60 ? 2 : 0);
-  const decB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["식상"] ?? 0) + ((axesB.decision_style ?? 50) > 60 ? 2 : 0);
+  const decA = profileA.self * 1.5 + profileA.food + ((axesA.decision_style ?? 50) > 60 ? 2 : 0);
+  const decB = profileB.self * 1.5 + profileB.food + ((axesB.decision_style ?? 50) > 60 ? 2 : 0);
 
-  const execA = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + ((axesA.energy_style ?? 50) > 60 ? 2 : 0);
-  const execB = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + ((axesB.energy_style ?? 50) > 60 ? 2 : 0);
+  const execA = profileA.food * 1.5 + profileA.self + ((axesA.energy_style ?? 50) > 60 ? 2 : 0);
+  const execB = profileB.food * 1.5 + profileB.self + ((axesB.energy_style ?? 50) > 60 ? 2 : 0);
 
-  const maintA = (countsA["관성"] ?? 0) * 1.5 + (countsA["재성"] ?? 0) + ((axesA.self_control ?? 50) > 60 ? 2 : 0);
-  const maintB = (countsB["관성"] ?? 0) * 1.5 + (countsB["재성"] ?? 0) + ((axesB.self_control ?? 50) > 60 ? 2 : 0);
+  const maintA = profileA.officer * 1.5 + profileA.wealth + ((axesA.self_control ?? 50) > 60 ? 2 : 0);
+  const maintB = profileB.officer * 1.5 + profileB.wealth + ((axesB.self_control ?? 50) > 60 ? 2 : 0);
 
-  const checkA = (countsA["인성"] ?? 0) + (countsA["재성"] ?? 0) + ((axesA.practicality ?? 50) > 60 ? 2 : 0);
-  const checkB = (countsB["인성"] ?? 0) + (countsB["재성"] ?? 0) + ((axesB.practicality ?? 50) > 60 ? 2 : 0);
+  const checkA = profileA.seal + profileA.wealth + ((axesA.practicality ?? 50) > 60 ? 2 : 0);
+  const checkB = profileB.seal + profileB.wealth + ((axesB.practicality ?? 50) > 60 ? 2 : 0);
 
-  const adaptA = (countsA["식상"] ?? 0) + ((adaptabilityA ?? 50) > 60 ? 2 : 0);
-  const adaptB = (countsB["식상"] ?? 0) + ((adaptabilityB ?? 50) > 60 ? 2 : 0);
+  const adaptA = profileA.food + ((adaptabilityA ?? 50) > 60 ? 2 : 0);
+  const adaptB = profileB.food + ((adaptabilityB ?? 50) > 60 ? 2 : 0);
+
+  // Minimum gap to call a capability directional: bigger than the smallest
+  // possible single-family signal (1 point) so one weak Saju term alone can't
+  // decide it — needs either a real psych flip (2) or a combined Saju+psych
+  // edge. "Shared strength" (>=3) requires a genuinely non-trivial combined
+  // score on BOTH sides, not just "didn't lose." "Role vacuum" now means what
+  // its label says — literally no family signal AND no psych flip on EITHER
+  // side (score === 0) — not merely "psych didn't flip" as before.
+  const DOMINANCE_GAP = 2;
+  const SHARED_STRENGTH_FLOOR = 3;
+  const VACUUM_CEILING = 1;
 
   const resolveActor = (scoreA: number, scoreB: number): { leadName: string; actor: CapabilityActor } => {
     const diff = scoreA - scoreB;
-    if (diff >= 1.5) return { leadName: pick(locale, `${nameA}-led`, `${nameA} 중심`), actor: "A_DOMINANT" };
-    if (diff <= -1.5) return { leadName: pick(locale, `${nameB}-led`, `${nameB} 중심`), actor: "B_DOMINANT" };
-    if (scoreA >= 3 && scoreB >= 3) return { leadName: pick(locale, "Both are strong here", "둘 다 강점"), actor: "SHARED_STRENGTH" };
-    if (scoreA < 2 && scoreB < 2) return { leadName: pick(locale, "Easy for both to put off", "서로 미루기 쉬움"), actor: "ROLE_VACUUM" };
+    if (diff >= DOMINANCE_GAP) return { leadName: pick(locale, `${nameA}-led`, `${nameA} 중심`), actor: "A_DOMINANT" };
+    if (diff <= -DOMINANCE_GAP) return { leadName: pick(locale, `${nameB}-led`, `${nameB} 중심`), actor: "B_DOMINANT" };
+    if (scoreA >= SHARED_STRENGTH_FLOOR && scoreB >= SHARED_STRENGTH_FLOOR) return { leadName: pick(locale, "Both are strong here", "둘 다 강점"), actor: "SHARED_STRENGTH" };
+    if (scoreA < VACUUM_CEILING && scoreB < VACUUM_CEILING) return { leadName: pick(locale, "No natural owner yet", "아직 정해진 담당이 없음"), actor: "ROLE_VACUUM" };
     return { leadName: pick(locale, "Natural collaboration", "자연스러운 협력"), actor: "COMPLEMENTARY" };
+  };
+
+  // Label and prose MUST read the same resolved state — the earlier bug had
+  // ROLE_VACUUM's label ("prone to mutual procrastination") paired with a
+  // narrative borrowed from the COMPLEMENTARY/SHARED_STRENGTH branch that
+  // described active, positive collaboration for the same fact. Each state
+  // now gets its own narrative rather than collapsing 3 non-dominant states
+  // into one shared sentence.
+  const describeCapability = (
+    actor: CapabilityActor,
+    aText: string,
+    bText: string,
+    sharedText: string,
+    complementaryText: string,
+    vacuumText: string,
+  ): string => {
+    if (actor === "A_DOMINANT") return aText;
+    if (actor === "B_DOMINANT") return bText;
+    if (actor === "SHARED_STRENGTH") return sharedText;
+    if (actor === "ROLE_VACUUM") return vacuumText;
+    return complementaryText;
   };
 
   const planActor = resolveActor(planA, planB);
@@ -186,66 +236,84 @@ export function buildMarriageChapter05Intelligence(params: {
       capabilityLabel: pick(locale, "Setting direction", "방향 잡기"),
       leadName: planActor.leadName,
       actor: planActor.actor,
-      narrative: planActor.actor === "A_DOMINANT"
-        ? pick(locale, `${nameA} tends to shape the goal and the overall framework first.`, `${nameA}님이 목표와 전체 틀을 먼저 구상하는 편입니다.`)
-        : planActor.actor === "B_DOMINANT"
-        ? pick(locale, `${nameB} tends to refine the overall direction and priorities first.`, `${nameB}님이 전체 방향과 우선순위를 먼저 가다듬는 편입니다.`)
-        : pick(locale, "Both of you think through the overall goal together and set the direction as a team.", "두 사람 모두 전체적인 목표를 함께 고민하고 방향을 잡는 흐름을 보입니다."),
+      narrative: describeCapability(
+        planActor.actor,
+        pick(locale, `${nameA} tends to shape the goal and the overall framework first.`, `${nameA}님이 목표와 전체 틀을 먼저 구상하는 편입니다.`),
+        pick(locale, `${nameB} tends to refine the overall direction and priorities first.`, `${nameB}님이 전체 방향과 우선순위를 먼저 가다듬는 편입니다.`),
+        pick(locale, "Both of you have a real, independent instinct for direction-setting.", "두 사람 모두 방향을 잡는 감각이 뚜렷한 편입니다."),
+        pick(locale, "Both of you think through the overall goal together and set the direction as a team.", "두 사람 모두 전체적인 목표를 함께 고민하고 방향을 잡는 흐름을 보입니다."),
+        pick(locale, "Neither of you has a clear natural edge on setting direction yet — it helps to name an owner in advance rather than assume the other will start.", "아직 방향을 잡는 데 뚜렷한 우위가 있는 쪽이 없어, 상대가 먼저 나설 거라 기대하기보다 담당자를 미리 정해두는 편이 안전합니다."),
+      ),
     },
     {
       capabilityKey: "DECIDE",
       capabilityLabel: pick(locale, "Making decisions", "결정 내리기"),
       leadName: decActor.leadName,
       actor: decActor.actor,
-      narrative: decActor.actor === "A_DOMINANT"
-        ? pick(locale, `${nameA} takes the lead in drawing a conclusion at the moment of choice.`, `${nameA}님이 선택의 순간에 주도적으로 결론을 이끌어냅니다.`)
-        : decActor.actor === "B_DOMINANT"
-        ? pick(locale, `${nameB} stays centered and makes the call at the moment of choice.`, `${nameB}님이 선택의 순간에 중심을 잡고 판단을 내립니다.`)
-        : pick(locale, "At important decision points, the two of you actively trade ideas and land on a conclusion together.", "중요한 판단 순간에 두 사람이 활발히 의견을 주고받으며 결론을 냅니다."),
+      narrative: describeCapability(
+        decActor.actor,
+        pick(locale, `${nameA} takes the lead in drawing a conclusion at the moment of choice.`, `${nameA}님이 선택의 순간에 주도적으로 결론을 이끌어냅니다.`),
+        pick(locale, `${nameB} stays centered and makes the call at the moment of choice.`, `${nameB}님이 선택의 순간에 중심을 잡고 판단을 내립니다.`),
+        pick(locale, "Both of you decide confidently and independently when it counts.", "두 사람 모두 결정적인 순간에 확신을 갖고 판단하는 편입니다."),
+        pick(locale, "At important decision points, the two of you actively trade ideas and land on a conclusion together.", "중요한 판단 순간에 두 사람이 활발히 의견을 주고받으며 결론을 냅니다."),
+        pick(locale, "Neither of you shows a strong instinct to close out a decision — agree ahead of time on who makes the final call so it doesn't stall.", "결정을 매듭짓는 감각이 어느 쪽도 뚜렷하지 않아, 미리 최종 결정권자를 합의해두지 않으면 판단이 미뤄지기 쉽습니다."),
+      ),
     },
     {
       capabilityKey: "EXECUTE",
       capabilityLabel: pick(locale, "Getting it done", "실행하기"),
       leadName: execActor.leadName,
       actor: execActor.actor,
-      narrative: execActor.actor === "A_DOMINANT"
-        ? pick(locale, `${nameA} has strong drive to move decisions into real action quickly.`, `${nameA}님이 결정을 실제 행동으로 빠르게 옮기는 추진력이 강합니다.`)
-        : execActor.actor === "B_DOMINANT"
-        ? pick(locale, `${nameB} handles the necessary legwork and action without delay.`, `${nameB}님이 필요한 실무와 행동을 지체 없이 기함해냅니다.`)
-        : pick(locale, "When something needs doing, the two of you move together at a good pace.", "필요한 일 앞에서 두 사람이 속도감 있게 같이 움직이는 조화를 이룹니다."),
+      narrative: describeCapability(
+        execActor.actor,
+        pick(locale, `${nameA} has strong drive to move decisions into real action quickly.`, `${nameA}님이 결정을 실제 행동으로 빠르게 옮기는 추진력이 강합니다.`),
+        pick(locale, `${nameB} handles the necessary legwork and action without delay.`, `${nameB}님이 필요한 실무와 행동을 지체 없이 실행해냅니다.`),
+        pick(locale, "Both of you move things into action quickly once a decision is made.", "두 사람 모두 결정이 서면 빠르게 행동으로 옮기는 편입니다."),
+        pick(locale, "When something needs doing, the two of you move together at a good pace.", "필요한 일 앞에서 두 사람이 속도감 있게 같이 움직이는 조화를 이룹니다."),
+        pick(locale, "Neither of you shows a strong drive to move first here — set a default starter so tasks don't sit unclaimed.", "먼저 움직이는 추진력이 어느 쪽도 뚜렷하지 않아, 기본 담당자를 정해두지 않으면 할 일이 방치되기 쉽습니다."),
+      ),
     },
     {
       capabilityKey: "MAINTAIN",
       capabilityLabel: pick(locale, "Keeping it up", "꾸준히 챙기기"),
       leadName: maintActor.leadName,
       actor: maintActor.actor,
-      narrative: maintActor.actor === "A_DOMINANT"
-        ? pick(locale, `${nameA} has real strength in keeping set routines and rules consistent.`, `${nameA}님이 정해진 루틴과 규칙을 변함없이 지켜내는 힘이 큽니다.`)
-        : maintActor.actor === "B_DOMINANT"
-        ? pick(locale, `${nameB} is the steady anchor for regular expenses and everyday household upkeep.`, `${nameB}님이 정기적인 지출과 집안의 일상을 꾸준히 챙기는 중심축입니다.`)
-        : pick(locale, "You share the recurring routines and daily upkeep between you without either feeling burdened.", "반복적인 일상과 루틴을 서로 부담 없이 이어서 관리하는 조합입니다."),
+      narrative: describeCapability(
+        maintActor.actor,
+        pick(locale, `${nameA} has real strength in keeping set routines and rules consistent.`, `${nameA}님이 정해진 루틴과 규칙을 변함없이 지켜내는 힘이 큽니다.`),
+        pick(locale, `${nameB} is the steady anchor for regular expenses and everyday household upkeep.`, `${nameB}님이 정기적인 지출과 집안의 일상을 꾸준히 챙기는 중심축입니다.`),
+        pick(locale, "Both of you are genuinely reliable about keeping routines going.", "두 사람 모두 루틴을 꾸준히 이어가는 데 실제로 강한 편입니다."),
+        pick(locale, "You share the recurring routines and daily upkeep between you without either feeling burdened.", "반복적인 일상과 루틴을 서로 부담 없이 이어서 관리하는 조합입니다."),
+        pick(locale, "Neither of you has a natural pull toward upkeep tasks — without an explicit rotation, recurring chores can quietly go unowned.", "챙기는 일에 자연스럽게 끌리는 쪽이 어느 쪽도 뚜렷하지 않아, 명시적으로 분담을 정하지 않으면 반복 업무가 방치되기 쉽습니다."),
+      ),
     },
     {
       capabilityKey: "CHECK",
       capabilityLabel: pick(locale, "Double-checking", "다시 점검하기"),
       leadName: checkActor.leadName,
       actor: checkActor.actor,
-      narrative: checkActor.actor === "A_DOMINANT"
-        ? pick(locale, `${nameA} catches real-world risks or missing numbers with a second pass.`, `${nameA}님이 현실적인 리스크나 빠진 숫자를 한 번 더 짚어냅니다.`)
-        : checkActor.actor === "B_DOMINANT"
-        ? pick(locale, `${nameB} carefully re-checks the fine details and precise spending numbers.`, `${nameB}님이 세부 내역과 꼼꼼한 지출 숫자를 꼼꼼히 재확인합니다.`)
-        : pick(locale, "Both of you have a good eye for detail, catching unexpected expenses before they happen.", "두 사람 모두 꼼꼼히 짚어보는 감각이 있어 돌발 지출을 사전에 예방합니다."),
+      narrative: describeCapability(
+        checkActor.actor,
+        pick(locale, `${nameA} catches real-world risks or missing numbers with a second pass.`, `${nameA}님이 현실적인 리스크나 빠진 숫자를 한 번 더 짚어냅니다.`),
+        pick(locale, `${nameB} carefully re-checks the fine details and precise spending numbers.`, `${nameB}님이 세부 내역과 꼼꼼한 지출 숫자를 꼼꼼히 재확인합니다.`),
+        pick(locale, "Both of you genuinely have a sharp eye for double-checking details.", "두 사람 모두 세부 사항을 다시 점검하는 눈이 실제로 밝은 편입니다."),
+        pick(locale, "Both of you have a good eye for detail, catching unexpected expenses before they happen.", "두 사람 모두 꼼꼼히 짚어보는 감각이 있어 돌발 지출을 사전에 예방합니다."),
+        pick(locale, "Neither of you naturally gravitates toward re-checking the numbers — build in a scheduled review instead of assuming one of you will catch it.", "숫자를 다시 점검하는 데 자연스럽게 끌리는 쪽이 어느 쪽도 뚜렷하지 않으니, 누군가 알아서 짚어줄 거라 기대하기보다 정기 점검 일정을 따로 두는 편이 좋습니다."),
+      ),
     },
     {
       capabilityKey: "ADAPT",
       capabilityLabel: pick(locale, "Handling surprises", "돌발 상황 수습"),
       leadName: adaptActor.leadName,
       actor: adaptActor.actor,
-      narrative: adaptActor.actor === "A_DOMINANT"
-        ? pick(locale, `${nameA} thinks on their feet and finds alternatives when something unexpected happens.`, `${nameA}님이 예기치 못한 상황에서 순발력 있게 대안을 찾습니다.`)
-        : adaptActor.actor === "B_DOMINANT"
-        ? pick(locale, `${nameB} stays calm and gets the recovery moving when a variable comes up.`, `${nameB}님이 변수가 생겼을 때 당황하지 않고 수습의 물꼬를 틉니다.`)
-        : pick(locale, "Even when an unexpected variable hits, the two of you adapt flexibly and get back on the same page.", "예상치 못한 변수가 터져도 두 사람이 유연하게 대처하며 기준을 맞춰갑니다."),
+      narrative: describeCapability(
+        adaptActor.actor,
+        pick(locale, `${nameA} thinks on their feet and finds alternatives when something unexpected happens.`, `${nameA}님이 예기치 못한 상황에서 순발력 있게 대안을 찾습니다.`),
+        pick(locale, `${nameB} stays calm and gets the recovery moving when a variable comes up.`, `${nameB}님이 변수가 생겼을 때 당황하지 않고 수습의 물꼬를 틉니다.`),
+        pick(locale, "Both of you genuinely adapt well when something unexpected comes up.", "두 사람 모두 돌발 상황에 실제로 유연하게 대처하는 편입니다."),
+        pick(locale, "Even when an unexpected variable hits, the two of you adapt flexibly and get back on the same page.", "예상치 못한 변수가 터져도 두 사람이 유연하게 대처하며 기준을 맞춰갑니다."),
+        pick(locale, "Neither of you shows a strong natural instinct for handling surprises — agreeing on a simple first-response habit in advance helps more here than for most other tasks.", "돌발 상황에 대한 순발력이 어느 쪽도 뚜렷하지 않아, 다른 영역보다 미리 간단한 대응 습관을 정해두는 것이 특히 도움이 됩니다."),
+      ),
     },
   ];
 
@@ -317,34 +385,75 @@ export function buildMarriageChapter05Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 04. MAJOR_MONEY_DECISIONS (Money & Investment Decision Lifecycle)
   // ---------------------------------------------------------------------------
-  const findA = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + ((growthA ?? 50) > 55 ? 1.5 : 0) + ((axesA.stimulation ?? 50) > 55 ? 1 : 0);
-  const findB = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + ((growthB ?? 50) > 55 ? 1.5 : 0) + ((axesB.stimulation ?? 50) > 55 ? 1 : 0);
+  const findA = profileA.food * 1.5 + profileA.self + ((growthA ?? 50) > 55 ? 1.5 : 0) + ((axesA.stimulation ?? 50) > 55 ? 1 : 0);
+  const findB = profileB.food * 1.5 + profileB.self + ((growthB ?? 50) > 55 ? 1.5 : 0) + ((axesB.stimulation ?? 50) > 55 ? 1 : 0);
 
-  const trackA = (countsA["관성"] ?? 0) + (countsA["인성"] ?? 0) + (countsA["재성"] ?? 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0) + ((axesA.structure ?? 50) > 55 ? 1.5 : 0);
-  const trackB = (countsB["관성"] ?? 0) + (countsB["인성"] ?? 0) + (countsB["재성"] ?? 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0) + ((axesB.structure ?? 50) > 55 ? 1.5 : 0);
+  const trackA = profileA.officer + profileA.seal + profileA.wealth + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0) + ((axesA.structure ?? 50) > 55 ? 1.5 : 0);
+  const trackB = profileB.officer + profileB.seal + profileB.wealth + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0) + ((axesB.structure ?? 50) > 55 ? 1.5 : 0);
 
-  const chkA = (countsA["인성"] ?? 0) * 1.5 + (countsA["관성"] ?? 0) + (countsA["재성"] ?? 0) + ((axesA.practicality ?? 50) > 55 ? 2 : 0) + ((axesA.thinking_style ?? 50) > 55 ? 1 : 0);
-  const chkB = (countsB["인성"] ?? 0) * 1.5 + (countsB["관성"] ?? 0) + (countsB["재성"] ?? 0) + ((axesB.practicality ?? 50) > 55 ? 2 : 0) + ((axesB.thinking_style ?? 50) > 55 ? 1 : 0);
+  const chkA = profileA.seal * 1.5 + profileA.officer + profileA.wealth + ((axesA.practicality ?? 50) > 55 ? 2 : 0) + ((axesA.thinking_style ?? 50) > 55 ? 1 : 0);
+  const chkB = profileB.seal * 1.5 + profileB.officer + profileB.wealth + ((axesB.practicality ?? 50) > 55 ? 2 : 0) + ((axesB.thinking_style ?? 50) > 55 ? 1 : 0);
 
-  const actA = (countsA["식상"] ?? 0) + (countsA["비겁"] ?? 0) * 1.5 + (countsA["재성"] ?? 0) + ((axesA.decision_style ?? 50) > 55 ? 1.5 : 0) + ((axesA.energy_style ?? 50) > 55 ? 1.5 : 0);
-  const actB = (countsB["식상"] ?? 0) + (countsB["비겁"] ?? 0) * 1.5 + (countsB["재성"] ?? 0) + ((axesB.decision_style ?? 50) > 55 ? 1.5 : 0) + ((axesB.energy_style ?? 50) > 55 ? 1.5 : 0);
+  const actA = profileA.food + profileA.self * 1.5 + profileA.wealth + ((axesA.decision_style ?? 50) > 55 ? 1.5 : 0) + ((axesA.energy_style ?? 50) > 55 ? 1.5 : 0);
+  const actB = profileB.food + profileB.self * 1.5 + profileB.wealth + ((axesB.decision_style ?? 50) > 55 ? 1.5 : 0) + ((axesB.energy_style ?? 50) > 55 ? 1.5 : 0);
 
-  const reviewA = (countsA["인성"] ?? 0) + (countsA["관성"] ?? 0) * 1.5 + ((axesA.structure ?? 50) > 55 ? 1.5 : 0) + ((axesA.resilience ?? 50) > 55 ? 1 : 0);
-  const reviewB = (countsB["인성"] ?? 0) + (countsB["관성"] ?? 0) * 1.5 + ((axesB.structure ?? 50) > 55 ? 1.5 : 0) + ((axesB.resilience ?? 50) > 55 ? 1 : 0);
+  const reviewA = profileA.seal + profileA.officer * 1.5 + ((axesA.structure ?? 50) > 55 ? 1.5 : 0) + ((axesA.resilience ?? 50) > 55 ? 1 : 0);
+  const reviewB = profileB.seal + profileB.officer * 1.5 + ((axesB.structure ?? 50) > 55 ? 1.5 : 0) + ((axesB.resilience ?? 50) > 55 ? 1 : 0);
 
+  // Same reasoning as DOMINANCE_GAP above: with the Saju terms restored, a
+  // gap of ~1 point can come from a single un-weighted family count alone.
+  // Require a gap that reflects more than one weak signal before naming an
+  // individual actor instead of "both of you".
+  const STEP_DOMINANCE_GAP = 1.8;
   const resolveStepActor = (scoreA: number, scoreB: number): string => {
     const diff = scoreA - scoreB;
-    if (diff >= 1.2) return nameA;
-    if (diff <= -1.2) return nameB;
+    if (diff >= STEP_DOMINANCE_GAP) return nameA;
+    if (diff <= -STEP_DOMINANCE_GAP) return nameB;
     return pick(locale, "Both of you", "둘 다");
   };
 
+  // Each step's combined score mixes a real Saju family term with a Psych
+  // term. "HIGH" confidence should mean both sources actually agree on the
+  // named actor — not be a flat default regardless of whether the result
+  // came from real Saju+Psych convergence, Psych alone, or no clear
+  // direction at all ("both of you"). Saju-only sub-scores mirror each
+  // step's own formula above, computed separately purely to check
+  // agreement — they do not change resolveStepActor's existing behavior.
+  const findSajuA = profileA.food * 1.5 + profileA.self;
+  const findSajuB = profileB.food * 1.5 + profileB.self;
+  const trackSajuA = profileA.officer + profileA.seal + profileA.wealth;
+  const trackSajuB = profileB.officer + profileB.seal + profileB.wealth;
+  const chkSajuA = profileA.seal * 1.5 + profileA.officer + profileA.wealth;
+  const chkSajuB = profileB.seal * 1.5 + profileB.officer + profileB.wealth;
+  const actSajuA = profileA.food + profileA.self * 1.5 + profileA.wealth;
+  const actSajuB = profileB.food + profileB.self * 1.5 + profileB.wealth;
+  const reviewSajuA = profileA.seal + profileA.officer * 1.5;
+  const reviewSajuB = profileB.seal + profileB.officer * 1.5;
+
+  const bothStepLabel = pick(locale, "Both of you", "둘 다");
+  const resolveStepConfidence = (
+    actorName: string,
+    sajuPartA: number,
+    sajuPartB: number,
+  ): "HIGH" | "MODERATE" | "LOW" => {
+    if (actorName === bothStepLabel) return "MODERATE"; // no clear direction — not a confident individual finding
+    const sajuDiff = sajuPartA - sajuPartB;
+    const sajuAgreesWithActor = (actorName === nameA && sajuDiff > 0) || (actorName === nameB && sajuDiff < 0);
+    return sajuAgreesWithActor ? "HIGH" : "MODERATE"; // Psych-only differentiation is real but single-source
+  };
+
+  const findActor = resolveStepActor(findA, findB);
+  const trackActor = resolveStepActor(trackA, trackB);
+  const chkActor = resolveStepActor(chkA, chkB);
+  const actActor = resolveStepActor(actA, actB);
+  const reviewActor = resolveStepActor(reviewA, reviewB);
+
   const steps: MoneyDecisionStep[] = [
-    { stepKey: "FIND", stepLabel: pick(locale, "Spotting the opportunity", "기회 찾기"), actorName: resolveStepActor(findA, findB), confidence: "HIGH" },
-    { stepKey: "TRACK", stepLabel: pick(locale, "Keeping an eye on it", "계속 지켜보기"), actorName: resolveStepActor(trackA, trackB), confidence: "HIGH" },
-    { stepKey: "CHECK", stepLabel: pick(locale, "Checking the numbers and risk", "숫자·위험 확인"), actorName: resolveStepActor(chkA, chkB), confidence: "HIGH" },
-    { stepKey: "ACT", stepLabel: pick(locale, "Actually acting on it", "실제 실행"), actorName: resolveStepActor(actA, actB), confidence: "HIGH" },
-    { stepKey: "REVIEW", stepLabel: pick(locale, "One last check", "마지막 점검"), actorName: resolveStepActor(reviewA, reviewB), confidence: "HIGH" },
+    { stepKey: "FIND", stepLabel: pick(locale, "Spotting the opportunity", "기회 찾기"), actorName: findActor, confidence: resolveStepConfidence(findActor, findSajuA, findSajuB) },
+    { stepKey: "TRACK", stepLabel: pick(locale, "Keeping an eye on it", "계속 지켜보기"), actorName: trackActor, confidence: resolveStepConfidence(trackActor, trackSajuA, trackSajuB) },
+    { stepKey: "CHECK", stepLabel: pick(locale, "Checking the numbers and risk", "숫자·위험 확인"), actorName: chkActor, confidence: resolveStepConfidence(chkActor, chkSajuA, chkSajuB) },
+    { stepKey: "ACT", stepLabel: pick(locale, "Actually acting on it", "실제 실행"), actorName: actActor, confidence: resolveStepConfidence(actActor, actSajuA, actSajuB) },
+    { stepKey: "REVIEW", stepLabel: pick(locale, "One last check", "마지막 점검"), actorName: reviewActor, confidence: resolveStepConfidence(reviewActor, reviewSajuA, reviewSajuB) },
   ];
 
   const finder = steps[0].actorName;
@@ -390,18 +499,24 @@ export function buildMarriageChapter05Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 05. FINANCIAL_OPERATION
   // ---------------------------------------------------------------------------
-  const opScoreA = (countsA["재성"] ?? 0) + (countsA["관성"] ?? 0) + ((axesA.structure ?? 50) > 55 ? 2 : 0);
-  const opScoreB = (countsB["재성"] ?? 0) + (countsB["관성"] ?? 0) + ((axesB.structure ?? 50) > 55 ? 2 : 0);
+  const opScoreA = profileA.wealth + profileA.officer + ((axesA.structure ?? 50) > 55 ? 2 : 0);
+  const opScoreB = profileB.wealth + profileB.officer + ((axesB.structure ?? 50) > 55 ? 2 : 0);
 
+  // No slot-based default. When the evidence gap doesn't clear a real
+  // directional threshold, the honest answer is a shared/neutral pattern —
+  // NOT "A tracks cash flow, B handles paperwork" by construction of which
+  // slot each person happens to occupy (the previous fallback did exactly
+  // that for every pair whose opScore gap fell under 2.5).
+  const OP_DOMINANCE_GAP = 2.5;
   let opStyle = pick(locale, "Shared roles, jointly managed", "역할 분담 및 공동 관리");
-  let opLeadA = pick(locale, `${nameA} (cash flow)`, `${nameA} (현금 흐름)`);
-  let opLeadB = pick(locale, `${nameB} (fixed costs & paperwork)`, `${nameB} (고정비·서류)`);
+  let opLeadA = pick(locale, "Checked together, no single owner", "함께 확인, 단독 담당자 없음");
+  let opLeadB = pick(locale, "Organized together, no single owner", "함께 정리, 단독 담당자 없음");
 
-  if (opScoreA - opScoreB >= 2.5) {
+  if (opScoreA - opScoreB >= OP_DOMINANCE_GAP) {
     opStyle = pick(locale, `${nameA} leads overall management`, `${nameA} 주도 총괄 관리`);
     opLeadA = pick(locale, `${nameA} (overall execution)`, `${nameA} (전반적 집행)`);
     opLeadB = pick(locale, `${nameB} (kept in the loop)`, `${nameB} (상호 공유)`);
-  } else if (opScoreB - opScoreA >= 2.5) {
+  } else if (opScoreB - opScoreA >= OP_DOMINANCE_GAP) {
     opStyle = pick(locale, `${nameB} leads overall management`, `${nameB} 주도 총괄 관리`);
     opLeadA = pick(locale, `${nameA} (kept in the loop)`, `${nameA} (상호 공유)`);
     opLeadB = pick(locale, `${nameB} (overall execution)`, `${nameB} (전반적 집행)`);
@@ -433,27 +548,36 @@ export function buildMarriageChapter05Intelligence(params: {
   // ---------------------------------------------------------------------------
   // 06. ECONOMIC_CRISIS_RESILIENCE (경제적 위기가 오면?)
   // ---------------------------------------------------------------------------
-  const realA = (countsA["관성"] ?? 0) * 1.5 + (countsA["재성"] ?? 0) + (countsA["인성"] ?? 0) + ((axesA.practicality ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
-  const realB = (countsB["관성"] ?? 0) * 1.5 + (countsB["재성"] ?? 0) + (countsB["인성"] ?? 0) + ((axesB.practicality ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
+  const realA = profileA.officer * 1.5 + profileA.wealth + profileA.seal + ((axesA.practicality ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
+  const realB = profileB.officer * 1.5 + profileB.wealth + profileB.seal + ((axesB.practicality ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
 
-  const expA_res = (countsA["식상"] ?? 0) * 1.5 + (countsA["비겁"] ?? 0) + (countsA["편재"] ?? 0) + ((adaptabilityA ?? 50) > 55 ? 2 : 0) + ((growthA ?? 50) > 55 ? 1.5 : 0);
-  const expB_res = (countsB["식상"] ?? 0) * 1.5 + (countsB["비겁"] ?? 0) + (countsB["편재"] ?? 0) + ((adaptabilityB ?? 50) > 55 ? 2 : 0) + ((growthB ?? 50) > 55 ? 1.5 : 0);
+  // `countsA["편재"]` here is a SPECIFIC label (already correctly keyed) added
+  // on top of the 식상/비겁 FAMILY terms — 편재 is deliberately weighted as
+  // its own extra signal for "explores new income," not folded into `wealth`
+  // family here, so it is left as a direct counts[] read rather than routed
+  // through profileTenGods().
+  const expA_res = profileA.food * 1.5 + profileA.self + (countsA["편재"] ?? 0) + ((adaptabilityA ?? 50) > 55 ? 2 : 0) + ((growthA ?? 50) > 55 ? 1.5 : 0);
+  const expB_res = profileB.food * 1.5 + profileB.self + (countsB["편재"] ?? 0) + ((adaptabilityB ?? 50) > 55 ? 2 : 0) + ((growthB ?? 50) > 55 ? 1.5 : 0);
 
   // `autonomy` has no secondary-axis derivation anywhere in the product
   // (see marriageEvidenceResolution.ts's note) — no Psych term is added for
   // it here rather than reading a key that doesn't exist and always
   // silently resolving to the same neutral default for everyone.
-  const rskA = (countsA["비겁"] ?? 0) * 1.5 + (countsA["편재"] ?? 0) + ((axesA.stimulation ?? 50) > 55 ? 2 : 0);
-  const rskB = (countsB["비겁"] ?? 0) * 1.5 + (countsB["편재"] ?? 0) + ((axesB.stimulation ?? 50) > 55 ? 2 : 0);
+  const rskA = profileA.self * 1.5 + (countsA["편재"] ?? 0) + ((axesA.stimulation ?? 50) > 55 ? 2 : 0);
+  const rskB = profileB.self * 1.5 + (countsB["편재"] ?? 0) + ((axesB.stimulation ?? 50) > 55 ? 2 : 0);
 
-  const endA = (countsA["관성"] ?? 0) * 1.5 + (countsA["인성"] ?? 0) + ((axesA.resilience ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
-  const endB = (countsB["관성"] ?? 0) * 1.5 + (countsB["인성"] ?? 0) + ((axesB.resilience ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
+  const endA = profileA.officer * 1.5 + profileA.seal + ((axesA.resilience ?? 50) > 55 ? 2 : 0) + ((axesA.self_control ?? 50) > 55 ? 1.5 : 0);
+  const endB = profileB.officer * 1.5 + profileB.seal + ((axesB.resilience ?? 50) > 55 ? 2 : 0) + ((axesB.self_control ?? 50) > 55 ? 1.5 : 0);
 
   const noEdgeLabel = pick(locale, "No clear lead", "뚜렷한 우위 없음");
+  // Same restored-range reasoning as above: a gap of 1.5 used to require a
+  // full psych flip; now a single un-weighted family count can produce it
+  // alone. Widen the directional bar accordingly.
+  const CRISIS_DOMINANCE_GAP = 2;
   const resolvePairPerson = (scoreA: number, scoreB: number): string => {
     const diff = scoreA - scoreB;
-    if (diff >= 1.5) return nameA;
-    if (diff <= -1.5) return nameB;
+    if (diff >= CRISIS_DOMINANCE_GAP) return nameA;
+    if (diff <= -CRISIS_DOMINANCE_GAP) return nameB;
     if (Math.abs(diff) < 0.5) return bothLabel;
     return noEdgeLabel;
   };
@@ -477,11 +601,19 @@ export function buildMarriageChapter05Intelligence(params: {
     crisisOneLine = pick(locale, "Depending on the situation, the two of you trade off between steadying things and getting back on your feet, protecting your financial footing together.", "상황에 따라 두 사람이 기지개와 안정화 역할을 번갈아 나누며 경제적 기반을 수호하는 조화를 이룹니다.");
   }
 
-  const buildIndividualProfile = (name: string, counts: Record<string, number>, axes: Record<string, number>): IndividualLivelihoodProfile => {
-    const resScore = (axes.resilience ?? 50) + (counts["관성"] ?? 0) * 10;
-    const adaptScore = (axes.adaptability ?? 50) + (counts["식상"] ?? 0) * 10;
-    const stimScore = (axes.stimulation ?? 50) + (counts["비겁"] ?? 0) * 10;
-    const pracScore = (axes.practicality ?? 50) + (counts["재성"] ?? 0) * 10;
+  const buildIndividualProfile = (
+    name: string,
+    profile: PersonTenGodProfile,
+    axes: Record<string, number>,
+    adaptabilityPrimary: number | null,
+  ): IndividualLivelihoodProfile => {
+    const resScore = (axes.resilience ?? 50) + profile.officer * 10;
+    // `adaptability` is a PRIMARY axis, not a secondary-axis key — reading
+    // axes.adaptability was always undefined and silently defaulted to 50
+    // for everyone, exactly like the same bug already fixed in CH04/CH06.
+    const adaptScore = (adaptabilityPrimary ?? 50) + profile.food * 10;
+    const stimScore = (axes.stimulation ?? 50) + profile.self * 10;
+    const pracScore = (axes.practicality ?? 50) + profile.wealth * 10;
 
     if (resScore >= adaptScore && resScore >= stimScore && resScore >= pracScore) {
       return {
@@ -530,8 +662,8 @@ export function buildMarriageChapter05Intelligence(params: {
     title: isEn ? "06. Economic Resilience Under Crisis" : "06. 경제적 위기가 오면?",
     pairRoles,
     oneLineSynthesis: crisisOneLine,
-    profileA: buildIndividualProfile(nameA, countsA, axesA),
-    profileB: buildIndividualProfile(nameB, countsB, axesB),
+    profileA: buildIndividualProfile(nameA, profileA, axesA, adaptabilityA),
+    profileB: buildIndividualProfile(nameB, profileB, axesB, adaptabilityB),
   };
 
   // ---------------------------------------------------------------------------

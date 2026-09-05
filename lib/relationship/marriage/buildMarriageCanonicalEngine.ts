@@ -5,7 +5,6 @@ import type { CohabitationSajuSignals } from "@/lib/personCore/sajuSignals/types
 import type { Locale } from "@/lib/i18n/locale";
 import { buildMarriageRuleContext, type MarriageRuleContext } from "./buildMarriageRuleContext";
 import { buildMarriagePsychMatchBundle } from "./buildMarriagePsychMatch";
-import { refineHouseholdCfo } from "./marriageCfoConsumption";
 import {
   buildMarriageOperatingCfoCanonical,
   operatingCfoSideFromNickname,
@@ -267,24 +266,17 @@ export function buildMarriageCanonicalEngine(
   // ----------------------------------------------------
   // 4.3 Decision Power Map
   // ----------------------------------------------------
-  const refinedCfo = refineHouseholdCfo({
-    baseNickname: a,
-    baseReason: "",
-    nicknameA: a,
-    nicknameB: b,
-    countsA: ctx.tenGod.countsA,
-    countsB: ctx.tenGod.countsB,
-    branchCodesA: ctx.marriagePairAnalysis.chartA.branchCodes,
-    branchCodesB: ctx.marriagePairAnalysis.chartB.branchCodes,
-    wealthOfficerPowerA: params.cohabitationSignalsA?.wealth_officer_power ?? null,
-    wealthOfficerPowerB: params.cohabitationSignalsB?.wealth_officer_power ?? null,
-    psychA: params.psychMasterA,
-    psychB: params.psychMasterB,
-    dualCfoWar: params.pairCohabitation?.cfo_power_struggle?.dual_cfo_war,
-    locale,
-  });
-
-  const cfoLeaderName = refinedCfo?.nickname ?? "";
+  // CFO leadership for decisionPowerMap must come from the canonical pick
+  // already resolved once in buildMarriageReport.ts (params.cfoNickname —
+  // itself refineHouseholdCfo seeded from the real pickHouseholdCfo base,
+  // not a slot letter). Previously this block re-ran refineHouseholdCfo with
+  // `baseNickname: a` — i.e. slot A's name, not the real base pick — so
+  // whenever the evidence gap didn't clear refineHouseholdCfo's own
+  // "clearFlip" threshold, the function fell back to whatever base it was
+  // handed and silently returned slot A regardless of who the real evidence
+  // favored. Re-deriving from params.cfoNickname removes that second,
+  // incorrectly-seeded computation instead of duplicating it.
+  const cfoLeaderName = params.cfoNickname ?? "";
   const cfoLeader: RoleActor = cfoLeaderName.includes(a) ? "a" : cfoLeaderName.includes(b) ? "b" : "shared";
 
   const domains: DomainPowerStage[] = [
@@ -306,6 +298,17 @@ export function buildMarriageCanonicalEngine(
       executor: primaryManager === "a" ? "b" : "a",
       meaning: isEn ? "Daily home logistics and environmental standards." : "주거 스타일과 집안 가전/가구 배치의 결정권.",
     },
+    // career/family/parenting stay explicitly shared rather than deriving a
+    // decider/executor split: career choices are ordinarily individual
+    // autonomy, not something a partner "decides" for the other, so shared
+    // is the honest answer, not a placeholder. Family/in-law boundary DOES
+    // have real per-role evidence elsewhere (chapter06Intelligence's
+    // originFamilyDynamics — EARLY_BOUNDARY_SPEAKER etc.), but wiring that
+    // in here would require reordering chapter builds this batch is not
+    // scoped to touch; left shared rather than duplicating that logic or
+    // inventing a new signal. The copy below is deliberately phrased as
+    // general partnership guidance, not as a personalized finding, so it
+    // does not overclaim what was actually resolved.
     {
       domain: "career",
       domainLabel: isEn ? "Career & External Growth" : "커리어 & 일적 선택",
@@ -578,7 +581,13 @@ export function buildMarriageCanonicalEngine(
       id: "cand.cfo",
       kind: "INSIGHT_CANDIDATE",
       title: isEn ? "Operating CFO Assignment" : "부부 운영 CFO 지정",
-      body: refinedCfo,
+      // Was `body: refinedCfo` (an object, not the `string` this field is
+      // typed as) — a leftover from the removed local refineHouseholdCfo
+      // re-computation. Rebuilt from the canonical cfoLeaderName instead of
+      // reintroducing that duplicate, incorrectly-seeded call.
+      body: cfoLeaderName
+        ? (isEn ? `${cfoLeaderName} leads household financial management.` : `${cfoLeaderName}님이 가계 재정 관리를 주도합니다.`)
+        : (isEn ? "Financial management is shared." : "가계 재정 관리를 공동으로 맡습니다."),
       evidenceIds: ["cfo_canonical"],
     },
     {
@@ -650,10 +659,12 @@ export function buildMarriageCanonicalEngine(
         names: [a, b],
         targetYears: [chapter08EvaluationYear, chapter08EvaluationYear + 1, chapter08EvaluationYear + 2],
         locale,
+        natalCountsA: ctx.tenGod.countsA,
+        natalCountsB: ctx.tenGod.countsB,
       })
     : undefined;
   const marriage11Axis = buildMarriage11AxisInsights(params.psychMasterA, params.psychMasterB, a, b, locale);
-  const conflict4Stage = buildMarriageConflict4Stage(params.psychMasterA, params.psychMasterB, a, b, locale);
+  const conflict4Stage = buildMarriageConflict4Stage(params.psychMasterA, params.psychMasterB, a, b, locale, ctx.tenGod.countsA, ctx.tenGod.countsB);
   const loveDeliveryMatch = buildMarriageLoveDeliveryMatch(params.psychMasterA, params.psychMasterB, a, b, locale);
   const expectationsAndNeeds = buildMarriageExpectationsAndNeeds(params.psychMasterA, params.psychMasterB, a, b, locale);
   const emergencySosCombined = buildMarriageEmergencySosCombined(ctx.deEscalation, a, b, locale);
