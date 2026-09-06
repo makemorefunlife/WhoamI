@@ -1,5 +1,6 @@
 "use client";
 
+import { notFound } from "next/navigation";
 import PsychMatchRadarChart from "@/components/relationship/reportLayout/PsychMatchRadarChart";
 import ChemistryBreakdown from "@/components/relationship/reportLayout/ChemistryBreakdown";
 import RelationshipScoreBoard from "@/components/relationship/reportLayout/RelationshipScoreBoard";
@@ -66,6 +67,8 @@ const INSIGHT_SAMPLES: Array<{
 ];
 
 export default function PsychCapturePage() {
+  if (process.env.NODE_ENV !== "development") notFound();
+
   return (
     <ReportSurfaceProvider surface="stitch">
       <main className="mx-auto max-w-lg space-y-10 bg-surface p-6 text-on-surface">

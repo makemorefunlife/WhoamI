@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { buildWorkReportViewModel } from "@/lib/relationship/workColleague/viewModel/buildWorkReportViewModel";
 import {
   fullWorkColleagueReportFixture,
@@ -10,6 +11,8 @@ import { WorkReportViewModelView } from "@/components/relationship/workColleague
  * production relationship 라우트에는 연결되어 있지 않다(Phase 3 대상).
  */
 export default function WorkReportViewModelDevPage() {
+  if (process.env.NODE_ENV !== "development") notFound();
+
   const vmFull = buildWorkReportViewModel(fullWorkColleagueReportFixture, {
     viewerIsReportA: true,
     myName: "Sera",

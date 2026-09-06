@@ -1,4 +1,19 @@
 /**
+ * ⚠️ READ BEFORE TOUCHING ANYTHING UNDER lib/relationship/romantic/prototypeV4/ ⚠️
+ *
+ * Despite the folder name, prototypeV4 is CURRENT PRODUCTION Romantic
+ * analysis code, not a prototype or an abandoned experiment. It is imported
+ * directly by app/api/relationship/analyze/premium/route.ts and runs on
+ * every romantic premium report generated today, because the flag below
+ * defaults to ON in every environment including production.
+ *
+ * "prototypeV4"/"content-prototype" are historical names left over from
+ * this feature's design-review phase (pre 2026-08-07) — they describe how
+ * the code was named when it was built, not its current status. Do NOT
+ * treat this directory as legacy, dead, or safe to delete/archive in a
+ * future cleanup pass just because of its name. A future rename is fine;
+ * a future deletion based on the name alone is not.
+ *
  * Romantic V4 report review flag.
  *
  * Default: ON everywhere, including production — the review gate has been

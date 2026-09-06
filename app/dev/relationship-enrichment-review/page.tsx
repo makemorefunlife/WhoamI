@@ -38,7 +38,10 @@ export default async function RelationshipEnrichmentReviewPage({
 }: {
   searchParams: Promise<Search> | Search;
 }) {
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_ENRICHMENT_DEV !== "1") {
+  // Blocked in production by default; ALLOW_ENRICHMENT_DEV=1 is a deliberate
+  // staging/preview escape hatch (content review on a deployed environment),
+  // not a general production exposure — only this page gets it.
+  if (process.env.NODE_ENV !== "development" && process.env.ALLOW_ENRICHMENT_DEV !== "1") {
     notFound();
   }
 

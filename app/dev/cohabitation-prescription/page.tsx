@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import MarriageReportView from "@/components/relationship/MarriageReportView";
 import { legacySajuInputsFromPersonCore } from "@/lib/personCore/adapters/rehydrateSajuFromPersonCore";
 import { mapSajuBundleToMasterJson } from "@/lib/personCore/mappers/mapSajuMasterJson";
@@ -7,6 +8,8 @@ import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 
 /** 로컬 UI 검증 — prescription_cohabitation 카드 프리뷰 */
 export default function CohabitationPrescriptionDevPage() {
+  if (process.env.NODE_ENV !== "development") notFound();
+
   const b1 = calculateSajuBundle({
     birthDate: "1992-08-20",
     birthTime: "09:15",

@@ -21,14 +21,6 @@ export function getSupabaseUrl(): string | undefined {
   );
 }
 
-/** 브라우저·공개 클라이언트용 anon key */
-export function getSupabaseAnonKey(): string | undefined {
-  return pickNonEmpty(
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    typeof window === "undefined" ? process.env.SUPABASE_ANON_KEY : undefined,
-  );
-}
-
 /** 서버 API 전용 service role key */
 export function getSupabaseServiceRoleKey(): string | undefined {
   return pickNonEmpty(process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -57,13 +49,3 @@ export function getMissingServerSupabaseEnvKeys(): string[] {
   return missing;
 }
 
-export function getMissingBrowserSupabaseEnvKeys(): string[] {
-  const missing: string[] = [];
-  if (!getSupabaseUrl()) {
-    missing.push("NEXT_PUBLIC_SUPABASE_URL");
-  }
-  if (!getSupabaseAnonKey()) {
-    missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  }
-  return missing;
-}

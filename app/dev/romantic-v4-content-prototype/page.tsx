@@ -1,3 +1,10 @@
+/**
+ * This dev-only preview page renders fixtures through the SAME engine that
+ * generates real users' romantic reports in production (see the warning at
+ * the top of lib/relationship/romantic/prototypeV4/romanticV4ReportFlag.ts).
+ * "prototype" in this page's name/route refers only to when it was built —
+ * the engine itself is current production code, not legacy.
+ */
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
@@ -6,7 +13,6 @@ import { ReportSurfaceProvider } from "@/components/relationship/reportLayout";
 import {
   buildRomanticV4PrototypePayload,
 } from "@/lib/relationship/romantic/prototypeV4/buildRomanticV4PrototypePayload";
-import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
 import PrototypeClient from "./PrototypeClient";
 
 const relSans = Noto_Sans_KR({
@@ -24,15 +30,16 @@ type PageProps = {
   searchParams?: Promise<{ variant?: string; locale?: string; debug?: string }>;
 };
 
-// Defense-in-depth: even if ROMANTIC_V4_REPORT is ever enabled in a deployed
-// environment for design review, keep this fixture-driven route out of
-// search results.
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
 export default async function RomanticV4ContentPrototypePage({ searchParams }: PageProps) {
-  if (process.env.NODE_ENV !== "development" && !isRomanticV4ReportEnabled()) notFound();
+  // Dev-only, unconditionally. The romanticV4 feature flag controls whether
+  // real users get the V4 report on the production analyze route — it must
+  // never also control whether this fixture-driven prototype preview is
+  // reachable outside development.
+  if (process.env.NODE_ENV !== "development") notFound();
 
   const params = await searchParams;
   const variant =
