@@ -152,6 +152,10 @@ export const messagesEnUS = {
     recentAnalysisTitle: "Recent Relationship Analyses",
     recentAnalysisSubtitle: "Pick up where you left off.",
     noAnalysisYetHint: "No analysis yet. Tap Analyze relationship to get started.",
+    sharedWithMeTitle: "Shared with you",
+    sharedWithMeSubtitle: "Open these right away — no link needed.",
+    sharedAnalysisTitle: (kindLabel: string) => `${kindLabel} deep analysis`,
+    sharedAnalysisSubtitle: (partnerName: string) => `Shared by ${partnerName}`,
     reportRowPartnerLabel: (name: string) => `with ${name}`,
     reportRowAria: (name: string) => `View ${name}'s report`,
     viewReportCta: "View Report +",
@@ -1534,7 +1538,8 @@ export const messagesEnUS = {
       shareButton: (name: string) => `Share with ${name}`,
       reassurance:
         "This report stays private unless you choose to share it.\nThey won't be notified unless you share it.",
-      linkReadyTitle: "Your share link is ready.",
+      linkReadyTitle: "Shared. It'll show up right on their home screen.",
+      copyLinkFallbackHint: "Want to send a link directly instead?",
       stopSharingCta: "Stop sharing",
       stopSharingConfirm:
         "Stop sharing this report? They will no longer be able to open it.",
@@ -1722,6 +1727,10 @@ export type MessageCatalog = {
     recentAnalysisTitle: string;
     recentAnalysisSubtitle: string;
     noAnalysisYetHint: string;
+    sharedWithMeTitle: string;
+    sharedWithMeSubtitle: string;
+    sharedAnalysisTitle: (kindLabel: string) => string;
+    sharedAnalysisSubtitle: (partnerName: string) => string;
     reportRowPartnerLabel: (name: string) => string;
     reportRowAria: (name: string) => string;
     viewReportCta: string;
@@ -2908,6 +2917,7 @@ export type MessageCatalog = {
       shareButton: (name: string) => string;
       reassurance: string;
       linkReadyTitle: string;
+      copyLinkFallbackHint: string;
       stopSharingCta: string;
       stopSharingConfirm: string;
       stopSharingDone: string;

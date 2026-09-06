@@ -119,6 +119,7 @@ export default function ReportShareSection({
       ) : (
         <>
           <p className="text-sm font-semibold text-primary">{copy.linkReadyTitle}</p>
+          <p className="text-xs text-on-surface-variant">{copy.copyLinkFallbackHint}</p>
           <div className="flex gap-2">
             <button type="button" onClick={() => void handleCopy()} className={hubTouchBtn(false)}>
               {messages.hub.copyLink}

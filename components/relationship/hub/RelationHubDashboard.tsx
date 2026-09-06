@@ -111,6 +111,7 @@ export default function RelationHubDashboard() {
   const [analysisLoadingMore, setAnalysisLoadingMore] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [waitingItems, setWaitingItems] = useState<RelationshipListItem[]>([]);
+  const [sharedWithMe, setSharedWithMe] = useState<HubAnalysisFeedItem[]>([]);
   const [navOverlayPartner, setNavOverlayPartner] = useState<string | null>(
     null,
   );
@@ -143,6 +144,30 @@ export default function RelationHubDashboard() {
     clearLegacyHubDisplayNames();
     setBannerVisible(!readBannerDismissed());
   }, []);
+
+  const loadSharedWithMe = useCallback(async () => {
+    if (!hubReportId) {
+      setSharedWithMe([]);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/relationship/share/inbox?viewerReportId=${encodeURIComponent(hubReportId)}`,
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSharedWithMe([]);
+        return;
+      }
+      setSharedWithMe((data.items ?? []) as HubAnalysisFeedItem[]);
+    } catch {
+      setSharedWithMe([]);
+    }
+  }, [hubReportId]);
+
+  useEffect(() => {
+    void loadSharedWithMe();
+  }, [loadSharedWithMe]);
 
   const load = useCallback(
     async (mode: "full" | "silent" = "full", reportIdOverride?: string) => {
@@ -526,6 +551,15 @@ export default function RelationHubDashboard() {
     );
   }
 
+  function openSharedLog(log: HubAnalysisFeedItem) {
+    if (!hubReportId) return;
+    router.push(
+      localize(
+        `/relationship/${log.relationship_report_id}?viewer=${encodeURIComponent(hubReportId)}&kind=${encodeURIComponent(log.relationship_kind === "unspecified" ? "friendship" : log.relationship_kind)}&via=share`,
+      ),
+    );
+  }
+
   function handleRenameSave(name: string) {
     const item = renameTarget;
     if (!item?.relationship_report_id || !item.partner_report_id) return;
@@ -743,6 +777,22 @@ export default function RelationHubDashboard() {
                       }}
                     />
                   </div>
+
+                  {sharedWithMe.length > 0 ? (
+                    <div className="space-y-4">
+                      <HubSectionHeading
+                        title={messages.hub.sharedWithMeTitle}
+                        subtitle={messages.hub.sharedWithMeSubtitle}
+                      />
+                      <HubAnalysisSection
+                        items={sharedWithMe}
+                        loading={false}
+                        totalCount={sharedWithMe.length}
+                        onOpenLog={openSharedLog}
+                        onShowMore={() => {}}
+                      />
+                    </div>
+                  ) : null}
 
                   <div className="space-y-4">
                     <HubSectionHeading
