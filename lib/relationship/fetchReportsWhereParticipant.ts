@@ -15,6 +15,8 @@ export type RelationshipReportRow = {
   result_basic: unknown;
   result_premium_by_kind?: unknown;
   relationship_kind?: string | null;
+  /** CAS version for mergeRelationshipPremiumByKind's optimistic-concurrency retry. */
+  premium_merge_version?: number;
   /** 친구 추가(=관계 행 생성) 시각 — 허브 목록 정렬용 */
   created_at?: string | null;
 };

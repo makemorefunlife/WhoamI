@@ -11,7 +11,7 @@ import {
 
 /** Dev SSOT — no result_premium column */
 export const RR_SELECT =
-  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium_by_kind, relationship_kind, created_at";
+  "id, report_id_a, report_id_b, analysis_type, result_basic, result_premium_by_kind, relationship_kind, created_at, premium_merge_version";
 
 /** @deprecated Use RR_SELECT */
 export const RR_SELECT_FULL = RR_SELECT;
@@ -52,6 +52,10 @@ function normalizeRow(row: Record<string, unknown>): RelationshipReportRow {
       typeof row.created_at === "string" && row.created_at.trim()
         ? row.created_at
         : null,
+    premium_merge_version:
+      typeof row.premium_merge_version === "number"
+        ? row.premium_merge_version
+        : Number(row.premium_merge_version) || 0,
   };
 }
 
@@ -191,6 +195,50 @@ function isMissingRpcError(error: PostgrestError | null | undefined): boolean {
  * (read–merge–write; RPC whole-kind replace is skipped so peer locales stay intact).
  * Without locale, keeps legacy RPC / flat-kind merge.
  */
+/**
+ * mergeRelationshipPremiumByKind's locale-path CAS retry budget + backoff.
+ *
+ * Live-tested against a real DB with 5 simultaneous writers to the same row
+ * (all 5 relationship kinds generating at once): with no backoff, every
+ * retry fires back-to-back in lockstep, so several writers keep colliding
+ * with each other on each attempt — 3 retries was not enough headroom and
+ * one writer exhausted its budget. A small random jitter between attempts
+ * fixes this by spreading retries out in time instead of them all racing
+ * again immediately; 6 attempts gives comfortable headroom even for this
+ * unrealistic worst case (real usage is at most 2-3 concurrent kinds).
+ */
+const MAX_PREMIUM_MERGE_ATTEMPTS = 6;
+const PREMIUM_MERGE_RETRY_BASE_DELAY_MS = 25;
+
+function premiumMergeRetryDelayMs(attempt: number): number {
+  const jitter = Math.random() * PREMIUM_MERGE_RETRY_BASE_DELAY_MS;
+  return attempt * PREMIUM_MERGE_RETRY_BASE_DELAY_MS + jitter;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function notFoundError(): PostgrestError {
+  return {
+    message: "relationship report not found",
+    details: "",
+    hint: "",
+    code: "PGRST116",
+    name: "PostgrestError",
+  } as PostgrestError;
+}
+
+function casConflictError(): PostgrestError {
+  return {
+    message: "premium merge conflict — max retries exceeded",
+    details: "",
+    hint: "",
+    code: "PGRST_CAS_CONFLICT",
+    name: "PostgrestError",
+  } as PostgrestError;
+}
+
 export async function mergeRelationshipPremiumByKind(
   supabase: SupabaseClient,
   relationshipReportId: string,
@@ -202,46 +250,84 @@ export async function mergeRelationshipPremiumByKind(
   const locale = options?.locale?.trim();
 
   if (locale) {
-    const { row, error: fetchErr } = await fetchRelationshipReportByIdSafe(
-      supabase,
-      relationshipReportId,
-    );
-    if (fetchErr) return { error: fetchErr };
-    if (!row) {
-      return {
-        error: {
-          message: "relationship report not found",
-          details: "",
-          hint: "",
-          code: "PGRST116",
-          name: "PostgrestError",
-        } as PostgrestError,
-      };
+    // Optimistic-concurrency CAS: read result_premium_by_kind + its version,
+    // merge in JS (unchanged mergePremiumKindLocale — no shape-behavior
+    // change), then write conditionally on that exact version. A 0-row
+    // result means another request's write landed first (this row shares
+    // one JSONB column across all 5 kinds x 2 locales, so two different
+    // kinds/locales can legitimately race on it) — re-fetch and retry
+    // rather than silently discarding either write.
+    for (let attempt = 0; attempt < MAX_PREMIUM_MERGE_ATTEMPTS; attempt++) {
+      const { row, error: fetchErr } = await fetchRelationshipReportByIdSafe(
+        supabase,
+        relationshipReportId,
+      );
+      if (fetchErr) return { error: fetchErr };
+      if (!row) return { error: notFoundError() };
+
+      const prev =
+        row.result_premium_by_kind &&
+        typeof row.result_premium_by_kind === "object" &&
+        !Array.isArray(row.result_premium_by_kind)
+          ? (row.result_premium_by_kind as ResultPremiumByKind)
+          : {};
+
+      const nextByKind = mergePremiumKindLocale(
+        prev,
+        kind as RelationshipKind,
+        locale,
+        payload as PremiumKindPayload,
+      );
+      const expectedVersion = row.premium_merge_version ?? 0;
+      const updatedAt = new Date().toISOString();
+
+      const { data, error: upErr } = await supabase
+        .from("relationship_reports")
+        .update({
+          result_premium_by_kind: nextByKind,
+          relationship_kind: relationshipKind,
+          updated_at: updatedAt,
+          premium_merge_version: expectedVersion + 1,
+        })
+        .eq("id", relationshipReportId)
+        .eq("premium_merge_version", expectedVersion)
+        .select("id")
+        .maybeSingle();
+
+      if (upErr) {
+        // Same legacy check-constraint fallback updateRelationshipReportSafe
+        // uses elsewhere: some older DBs reject relationship_kind values —
+        // drop it and retry the same CAS write once.
+        if (isRelationshipKindCheckError(upErr)) {
+          const { data: retryData, error: retryErr } = await supabase
+            .from("relationship_reports")
+            .update({
+              result_premium_by_kind: nextByKind,
+              updated_at: updatedAt,
+              premium_merge_version: expectedVersion + 1,
+            })
+            .eq("id", relationshipReportId)
+            .eq("premium_merge_version", expectedVersion)
+            .select("id")
+            .maybeSingle();
+          if (retryErr) return { error: retryErr };
+          if (retryData?.id) return { error: null };
+          // else: version conflict under the fallback shape too — fall through to retry.
+        } else {
+          return { error: upErr };
+        }
+      } else if (data?.id) {
+        return { error: null };
+      }
+      // data is null, no error: 0 rows matched premium_merge_version — CAS
+      // conflict, another write landed between our fetch and update. Back
+      // off with jitter before retrying so concurrent writers spread out
+      // instead of colliding again on the very next attempt in lockstep.
+      if (attempt < MAX_PREMIUM_MERGE_ATTEMPTS - 1) {
+        await sleep(premiumMergeRetryDelayMs(attempt));
+      }
     }
-
-    const prev =
-      row.result_premium_by_kind &&
-      typeof row.result_premium_by_kind === "object" &&
-      !Array.isArray(row.result_premium_by_kind)
-        ? (row.result_premium_by_kind as ResultPremiumByKind)
-        : {};
-
-    const nextByKind = mergePremiumKindLocale(
-      prev,
-      kind as RelationshipKind,
-      locale,
-      payload as PremiumKindPayload,
-    );
-
-    const { error: upErr } = await updateRelationshipReportSafe(
-      supabase,
-      relationshipReportId,
-      {
-        result_premium_by_kind: nextByKind,
-        relationship_kind: relationshipKind,
-      },
-    );
-    return { error: upErr };
+    return { error: casConflictError() };
   }
 
   const { error: rpcError } = await supabase.rpc(

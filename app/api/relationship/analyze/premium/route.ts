@@ -81,7 +81,12 @@ import { ensureRelationshipPremiumSlot } from "@/lib/relationship/ensureRelation
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
+  acquireRelationshipPremiumGenerationLock,
+  releaseRelationshipPremiumGenerationLock,
+} from "@/lib/relationship/relationshipPremiumGenerationLock";
+import {
   enforceRateLimit,
+  releaseRateLimitSlot,
 } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
@@ -181,19 +186,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: getMessages(locale).errors.relationshipIdsRequired },
         { status: 400 },
-      );
-    }
-
-    const limited = await enforceRateLimit("relationship_premium", userId);
-    if (!limited.ok) {
-      return NextResponse.json(
-        { error: limited.error },
-        {
-          status: limited.status,
-          headers: limited.retryAfterSec
-            ? { "Retry-After": String(limited.retryAfterSec) }
-            : undefined,
-        },
       );
     }
 
@@ -354,6 +346,47 @@ export async function POST(req: Request) {
     );
     if (llmAccessGuard) return llmAccessGuard;
 
+    // Single in-flight slot per (relationship, kind, locale) — acquired
+    // once here, before the kind dispatch below, so a duplicate concurrent
+    // request (double-click, two tabs, two participants) never reaches
+    // OpenAI at all, and never consumes a rate-limit slot for an attempt
+    // that was rejected before it started. A different kind or locale for
+    // the same relationship acquires its own independent lock.
+    const lockAcquire = await acquireRelationshipPremiumGenerationLock(supabase, {
+      relationshipReportId,
+      kind,
+      locale,
+      requestedByReportId: viewerReportId,
+    });
+    if (!lockAcquire.ok) {
+      return NextResponse.json(
+        { error: getMessages(locale).errors.generationInProgress },
+        { status: lockAcquire.reason === "in_progress" ? 409 : 503 },
+      );
+    }
+    const generationLockId = lockAcquire.lockId;
+
+    // Consumed only once we're actually about to call the model — mirrors
+    // analyze/basic/route.ts's "consume only when about to call the model"
+    // placement, so validation/ownership/paywall failures above never cost
+    // a slot.
+    const limited = await enforceRateLimit("relationship_premium", userId);
+    if (!limited.ok) {
+      await releaseRelationshipPremiumGenerationLock(supabase, generationLockId);
+      return NextResponse.json(
+        { error: limited.error },
+        {
+          status: limited.status,
+          headers: limited.retryAfterSec
+            ? { "Retry-After": String(limited.retryAfterSec) }
+            : undefined,
+        },
+      );
+    }
+
+    let generationSucceeded = false;
+    try {
+
     if (kind === "romantic") {
       const [personCoreLoad, surveyProfileA, surveyProfileB] = await Promise.all([
         loadPersonCorePairForPremium(rr.report_id_a, rr.report_id_b, {
@@ -499,6 +532,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: persist.userMessage }, { status: 500 });
       }
 
+      generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
         locale,
@@ -590,6 +624,7 @@ export async function POST(req: Request) {
         });
       }
 
+      generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
         locale,
@@ -687,6 +722,7 @@ export async function POST(req: Request) {
         });
       }
 
+      generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
         locale,
@@ -798,6 +834,7 @@ export async function POST(req: Request) {
         });
       }
 
+      generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
         locale,
@@ -889,6 +926,7 @@ export async function POST(req: Request) {
         });
       }
 
+      generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
         locale,
@@ -901,6 +939,17 @@ export async function POST(req: Request) {
       { error: `지원하지 않는 관계 유형: ${kind}` },
       { status: 400 },
     );
+    } finally {
+      // Refund the rate-limit slot for any exit that isn't a genuine
+      // success (thrown exception, or an explicit failure return above) —
+      // mirrors analyze/basic/route.ts's refund-on-failure discipline.
+      // Lock release always runs, success or failure, so the next request
+      // for this (relationship, kind, locale) is never blocked by this one.
+      if (!generationSucceeded) {
+        await releaseRateLimitSlot("relationship_premium", userId);
+      }
+      await releaseRelationshipPremiumGenerationLock(supabase, generationLockId);
+    }
   } catch (e) {
     logServerError("relationship/analyze/premium:", e, "internal_error");
     return NextResponse.json(
