@@ -396,6 +396,7 @@ export const messagesKoKR: MessageCatalog = {
     relationshipSaveFailed: "분석 결과를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.",
     relationshipAnalysisFailed: "관계 심화 분석에 실패했어요. 잠시 후 다시 시도해 주세요.",
     generationInProgress: "이미 이 분석을 생성하고 있어요. 잠시 후 다시 시도해 주세요.",
+    insufficientCredit: "크레딧이 부족해요. 충전 후 다시 시도해 주세요.",
     relationshipIdsRequired: "relationship_report_id와 viewer_report_id가 필요합니다.",
     personCoreLoadFailed: "PersonCore 로드에 실패했습니다.",
     relationshipDataMissing: "양쪽 리포트 정보를 불러오지 못했습니다.",

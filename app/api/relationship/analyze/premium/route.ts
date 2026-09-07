@@ -83,7 +83,13 @@ import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedRepo
 import {
   acquireRelationshipPremiumGenerationLock,
   releaseRelationshipPremiumGenerationLock,
+  stillOwnsRelationshipPremiumGenerationLock,
 } from "@/lib/relationship/relationshipPremiumGenerationLock";
+import {
+  reserveRelationshipCredit,
+  consumeRelationshipCredit,
+  releaseRelationshipCredit,
+} from "@/lib/credits/creditEngine";
 import {
   enforceRateLimit,
   releaseRateLimitSlot,
@@ -346,6 +352,12 @@ export async function POST(req: Request) {
     );
     if (llmAccessGuard) return llmAccessGuard;
 
+    // Fresh per-attempt id — NOT the lock row's own id, which a stale-lock
+    // steal reuses for a new owner (see relationshipPremiumGenerationLock.ts).
+    // This is the sole idempotency key for the credit reservation below, and
+    // the fencing token checked again right before persisting the result.
+    const generationRequestId = crypto.randomUUID();
+
     // Single in-flight slot per (relationship, kind, locale) — acquired
     // once here, before the kind dispatch below, so a duplicate concurrent
     // request (double-click, two tabs, two participants) never reaches
@@ -357,6 +369,7 @@ export async function POST(req: Request) {
       kind,
       locale,
       requestedByReportId: viewerReportId,
+      generationRequestId,
     });
     if (!lockAcquire.ok) {
       return NextResponse.json(
@@ -366,13 +379,45 @@ export async function POST(req: Request) {
     }
     const generationLockId = lockAcquire.lockId;
 
+    // One relationship credit per new-generation attempt (initial generation
+    // or an explicit user-confirmed "regenerate"), charged to the Clerk user
+    // who actually made this request — never the other participant.
+    // Always writes to credit_ledger; only actually touches the real
+    // balance / rejects on insufficient funds when credit enforcement is on
+    // (see creditEnforcementPolicy.ts) — during beta this always succeeds
+    // and simply records what would have been charged.
+    const creditReserve = await reserveRelationshipCredit(supabase, {
+      clerkUserId: userId,
+      relationshipReportId,
+      kind,
+      locale,
+      generationLockId,
+      generationRequestId,
+    });
+    if (!creditReserve.ok) {
+      await releaseRelationshipPremiumGenerationLock(
+        supabase,
+        generationLockId,
+        generationRequestId,
+      );
+      return NextResponse.json(
+        { error: getMessages(locale).errors.insufficientCredit },
+        { status: 402 },
+      );
+    }
+
     // Consumed only once we're actually about to call the model — mirrors
     // analyze/basic/route.ts's "consume only when about to call the model"
     // placement, so validation/ownership/paywall failures above never cost
     // a slot.
     const limited = await enforceRateLimit("relationship_premium", userId);
     if (!limited.ok) {
-      await releaseRelationshipPremiumGenerationLock(supabase, generationLockId);
+      await releaseRelationshipCredit(supabase, generationRequestId);
+      await releaseRelationshipPremiumGenerationLock(
+        supabase,
+        generationLockId,
+        generationRequestId,
+      );
       return NextResponse.json(
         { error: limited.error },
         {
@@ -381,6 +426,23 @@ export async function POST(req: Request) {
             ? { "Retry-After": String(limited.retryAfterSec) }
             : undefined,
         },
+      );
+    }
+
+    /**
+     * Fencing check — call right after the (possibly long) LLM call
+     * completes, before persisting its result. If this lock has since been
+     * stolen (this request ran past the stale cutoff), some other request
+     * now owns it and this result must be discarded, not saved — the
+     * stealer already released this request's credit reservation as part
+     * of its own steal (see acquireRelationshipPremiumGenerationLock), so
+     * this only needs to stop the write, not clean up credit again.
+     */
+    async function stillOwnsLock(): Promise<boolean> {
+      return stillOwnsRelationshipPremiumGenerationLock(
+        supabase!,
+        generationLockId,
+        generationRequestId,
       );
     }
 
@@ -521,6 +583,13 @@ export async function POST(req: Request) {
         }
       }
 
+      if (!(await stillOwnsLock())) {
+        return NextResponse.json(
+          { error: getMessages(locale).errors.generationInProgress },
+          { status: 409 },
+        );
+      }
+
       const persist = await persistRomanticPremiumResult(supabase, {
         relationshipReportId,
         viewerReportId,
@@ -532,6 +601,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: persist.userMessage }, { status: 500 });
       }
 
+      await consumeRelationshipCredit(supabase, generationRequestId);
       generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
@@ -597,6 +667,13 @@ export async function POST(req: Request) {
           },
         },
       };
+      if (!(await stillOwnsLock())) {
+        return NextResponse.json(
+          { error: getMessages(locale).errors.generationInProgress },
+          { status: 409 },
+        );
+      }
+
       const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
@@ -624,6 +701,7 @@ export async function POST(req: Request) {
         });
       }
 
+      await consumeRelationshipCredit(supabase, generationRequestId);
       generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
@@ -695,6 +773,13 @@ export async function POST(req: Request) {
         },
       };
 
+      if (!(await stillOwnsLock())) {
+        return NextResponse.json(
+          { error: getMessages(locale).errors.generationInProgress },
+          { status: 409 },
+        );
+      }
+
       const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
@@ -722,6 +807,7 @@ export async function POST(req: Request) {
         });
       }
 
+      await consumeRelationshipCredit(supabase, generationRequestId);
       generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
@@ -797,6 +883,13 @@ export async function POST(req: Request) {
         locale,
       });
 
+      if (!(await stillOwnsLock())) {
+        return NextResponse.json(
+          { error: getMessages(locale).errors.generationInProgress },
+          { status: 409 },
+        );
+      }
+
       const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
@@ -834,6 +927,7 @@ export async function POST(req: Request) {
         });
       }
 
+      await consumeRelationshipCredit(supabase, generationRequestId);
       generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
@@ -889,6 +983,13 @@ export async function POST(req: Request) {
         locale,
       });
 
+      if (!(await stillOwnsLock())) {
+        return NextResponse.json(
+          { error: getMessages(locale).errors.generationInProgress },
+          { status: 409 },
+        );
+      }
+
       const { error: upErr } = await mergeRelationshipPremiumByKind(
         supabase,
         relationshipReportId,
@@ -926,6 +1027,7 @@ export async function POST(req: Request) {
         });
       }
 
+      await consumeRelationshipCredit(supabase, generationRequestId);
       generationSucceeded = true;
       return NextResponse.json({
         relationship_kind: kind,
@@ -940,15 +1042,25 @@ export async function POST(req: Request) {
       { status: 400 },
     );
     } finally {
-      // Refund the rate-limit slot for any exit that isn't a genuine
-      // success (thrown exception, or an explicit failure return above) —
-      // mirrors analyze/basic/route.ts's refund-on-failure discipline.
-      // Lock release always runs, success or failure, so the next request
-      // for this (relationship, kind, locale) is never blocked by this one.
+      // Refund the rate-limit slot and the credit reservation for any exit
+      // that isn't a genuine success (thrown exception, an explicit failure
+      // return above, or this request having lost the lock to a steal —
+      // stillOwnsLock() already returned false in that case, so
+      // generationSucceeded stays false and this correctly releases too;
+      // it's a safe no-op if the stealer's own acquire already released it).
+      // Mirrors analyze/basic/route.ts's refund-on-failure discipline.
+      // Lock release always runs, success or failure, and only actually
+      // deletes the row if we still own it (id + current_request_id both
+      // match) — never removes a newer owner's lock.
       if (!generationSucceeded) {
+        await releaseRelationshipCredit(supabase, generationRequestId);
         await releaseRateLimitSlot("relationship_premium", userId);
       }
-      await releaseRelationshipPremiumGenerationLock(supabase, generationLockId);
+      await releaseRelationshipPremiumGenerationLock(
+        supabase,
+        generationLockId,
+        generationRequestId,
+      );
     }
   } catch (e) {
     logServerError("relationship/analyze/premium:", e, "internal_error");

@@ -419,6 +419,7 @@ export const messagesEnUS = {
     relationshipSaveFailed: "We couldn't save the analysis. Please try again in a moment.",
     relationshipAnalysisFailed: "The deep relationship analysis failed. Please try again in a moment.",
     generationInProgress: "This analysis is already being generated. Please try again in a moment.",
+    insufficientCredit: "You're out of credits. Please top up and try again.",
     relationshipIdsRequired: "A relationship report ID and viewer report ID are required.",
     personCoreLoadFailed: "We couldn't load this person's core profile.",
     relationshipDataMissing: "We couldn't load both people's report details.",
@@ -1950,6 +1951,7 @@ export type MessageCatalog = {
     relationshipSaveFailed: string;
     relationshipAnalysisFailed: string;
     generationInProgress: string;
+    insufficientCredit: string;
     relationshipIdsRequired: string;
     personCoreLoadFailed: string;
     relationshipDataMissing: string;

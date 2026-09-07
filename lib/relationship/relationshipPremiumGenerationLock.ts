@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Locale } from "@/lib/i18n/locale";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
+import { releaseRelationshipCredit } from "@/lib/credits/creditEngine";
 
 /**
  * Abandoned-lock cutoff — comfortably past the premium route's own
@@ -27,6 +28,22 @@ export type AcquireLockResult =
  * of the canonical "cohabitation" (see relationshipKind.ts's
  * MARRIAGE_PRODUCT_KIND comment) — enforced again at the DB layer by this
  * table's own CHECK constraints as defense in depth.
+ *
+ * `generationRequestId` is a fresh, immutable id the CALLER generates once
+ * per HTTP request attempt (e.g. crypto.randomUUID()), independent of the
+ * lock row's own id. The lock row's `current_request_id` always reflects
+ * whichever request currently holds it — updated both on a clean acquire
+ * and on a steal. This is deliberately NOT the same value as the lock row
+ * id: a stale-lock steal reuses the same lock row (UPDATE, not
+ * delete+insert), so keying anything off the lock row's id would let a dead
+ * request's id collide with the new owner's. See
+ * relationship-premium-generation-lock.test.mjs for the regression this
+ * guards against.
+ *
+ * On a successful steal, any credit reservation still held by the PREVIOUS
+ * request (crashed/timed out before it could consume or release) is
+ * released here, best-effort — this is what keeps an abandoned reservation
+ * from permanently holding a user's credit.
  */
 export async function acquireRelationshipPremiumGenerationLock(
   supabase: SupabaseClient,
@@ -35,9 +52,11 @@ export async function acquireRelationshipPremiumGenerationLock(
     kind: RelationshipKind;
     locale: Locale;
     requestedByReportId: string;
+    generationRequestId: string;
   },
 ): Promise<AcquireLockResult> {
-  const { relationshipReportId, kind, locale, requestedByReportId } = params;
+  const { relationshipReportId, kind, locale, requestedByReportId, generationRequestId } =
+    params;
 
   const first = await supabase
     .from("relationship_premium_generation_locks")
@@ -46,6 +65,7 @@ export async function acquireRelationshipPremiumGenerationLock(
       kind,
       locale,
       requested_by_report_id: requestedByReportId,
+      current_request_id: generationRequestId,
     })
     .select("id")
     .maybeSingle();
@@ -61,11 +81,27 @@ export async function acquireRelationshipPremiumGenerationLock(
   // Postgres row locking, so two concurrent steal attempts can't both win.
   if (first.error?.code === "23505") {
     const staleCutoff = new Date(Date.now() - STALE_LOCK_MS).toISOString();
+
+    // Best-effort read of who held it before we steal, so we can clean up
+    // their credit reservation afterward. A race here (someone else steals
+    // between this SELECT and our UPDATE) is harmless: our UPDATE below is
+    // the real atomicity guard, and releasing a credit reservation twice
+    // (or for an id that's already been cleaned up) is a no-op by design.
+    const previous = await supabase
+      .from("relationship_premium_generation_locks")
+      .select("current_request_id")
+      .eq("relationship_report_id", relationshipReportId)
+      .eq("kind", kind)
+      .eq("locale", locale)
+      .maybeSingle();
+    const previousRequestId = previous.data?.current_request_id as string | undefined;
+
     const stolen = await supabase
       .from("relationship_premium_generation_locks")
       .update({
         started_at: new Date().toISOString(),
         requested_by_report_id: requestedByReportId,
+        current_request_id: generationRequestId,
       })
       .eq("relationship_report_id", relationshipReportId)
       .eq("kind", kind)
@@ -75,6 +111,11 @@ export async function acquireRelationshipPremiumGenerationLock(
       .maybeSingle();
 
     if (!stolen.error && stolen.data?.id) {
+      if (previousRequestId && previousRequestId !== generationRequestId) {
+        // Best-effort; release_relationship_credit is idempotent, so a
+        // failure or a no-op here (already released/consumed) is fine.
+        await releaseRelationshipCredit(supabase, previousRequestId).catch(() => {});
+      }
       return { ok: true, lockId: stolen.data.id as string };
     }
     if (stolen.error) {
@@ -91,13 +132,42 @@ export async function acquireRelationshipPremiumGenerationLock(
   return { ok: false, reason: "error" };
 }
 
-/** Releases by lock id (never by key) so a stolen-and-reacquired lock is never deleted by its original holder. */
+/**
+ * Releases by lock id AND current_request_id together — never by id alone.
+ * If this lock has since been stolen (current_request_id now belongs to a
+ * newer request), this deletes 0 rows and does nothing, so a slow/zombie
+ * request can never destroy the new owner's lock.
+ */
 export async function releaseRelationshipPremiumGenerationLock(
   supabase: SupabaseClient,
   lockId: string,
+  generationRequestId: string,
 ): Promise<void> {
   await supabase
     .from("relationship_premium_generation_locks")
     .delete()
-    .eq("id", lockId);
+    .eq("id", lockId)
+    .eq("current_request_id", generationRequestId);
+}
+
+/**
+ * Fencing check — call this right before the CAS merge that persists the
+ * LLM result, after the (possibly long) model call has completed. If some
+ * other request has since stolen this lock (this one ran past the stale
+ * cutoff without finishing), `current_request_id` will no longer match, and
+ * the caller must discard its result instead of saving it or consuming the
+ * credit — the new owner is now the only one allowed to write.
+ */
+export async function stillOwnsRelationshipPremiumGenerationLock(
+  supabase: SupabaseClient,
+  lockId: string,
+  generationRequestId: string,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("relationship_premium_generation_locks")
+    .select("current_request_id")
+    .eq("id", lockId)
+    .maybeSingle();
+  if (error || !data) return false;
+  return data.current_request_id === generationRequestId;
 }
