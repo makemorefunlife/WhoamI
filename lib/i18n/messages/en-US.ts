@@ -1580,6 +1580,13 @@ export const messagesEnUS = {
     pendingSectionTitle: "Connection requests",
     acceptCta: "Accept",
     declineCta: "Decline",
+    connectedJoinerTitle: (name: string) => `You're now connected with ${name}!`,
+    connectedJoinerBody: "Ready to start your analysis?",
+    connectedJoinerCta: "Start analysis",
+    connectedSharerTitle: (name: string) => `You're now connected with ${name}!`,
+    connectedSharerBody: "They've been added to your Relationship Map — check it out now?",
+    connectedSharerPrimaryCta: "View map",
+    connectedSharerSecondaryCta: "Later",
   },
   signupName: {
     title: "Your name",
@@ -2967,6 +2974,13 @@ export type MessageCatalog = {
     pendingSectionTitle: string;
     acceptCta: string;
     declineCta: string;
+    connectedJoinerTitle: (name: string) => string;
+    connectedJoinerBody: string;
+    connectedJoinerCta: string;
+    connectedSharerTitle: (name: string) => string;
+    connectedSharerBody: string;
+    connectedSharerPrimaryCta: string;
+    connectedSharerSecondaryCta: string;
   };
   signupName: {
     title: string;

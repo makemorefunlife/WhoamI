@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { useClerk } from "@clerk/nextjs";
@@ -20,6 +20,7 @@ import RemoveFriendDialog from "@/components/relationship/hub/RemoveFriendDialog
 import StitchKindPickerSheet from "@/components/relationship/hub/StitchKindPickerSheet";
 import AddFriendSheet from "@/components/relationship/hub/AddFriendSheet";
 import ConnectionRequestsPanel from "@/components/relationship/hub/ConnectionRequestsPanel";
+import ConnectionSuccessModal from "@/components/relationship/ConnectionSuccessModal";
 import SentRequestsSheet from "@/components/relationship/hub/SentRequestsSheet";
 import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
@@ -81,6 +82,8 @@ export default function RelationHubDashboard() {
   const [deleteBusyId, setDeleteBusyId] = useState<string | null>(null);
   const [freshInviteToken, setFreshInviteToken] = useState<string | null>(null);
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
+  const [connectedFriendName, setConnectedFriendName] = useState<string | null>(null);
+  const mapSectionRef = useRef<HTMLDivElement | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [favoriteBusyId, setFavoriteBusyId] = useState<string | null>(null);
   const [bannerVisible, setBannerVisible] = useState(false);
@@ -645,7 +648,7 @@ export default function RelationHubDashboard() {
         </header>
 
         {hubReportId ? (
-          <div className="mb-8 space-y-4">
+          <div ref={mapSectionRef} className="mb-8 space-y-4">
             <HubSectionHeading
               title={messages.relationshipMap.title}
               subtitle={messages.relationshipMap.subtitle}
@@ -734,6 +737,7 @@ export default function RelationHubDashboard() {
                       <ConnectionRequestsPanel
                         reportId={hubReportId}
                         onResponded={() => setMapRefreshKey((k) => k + 1)}
+                        onAccepted={(name) => setConnectedFriendName(name)}
                       />
                     ) : null}
                     <FriendStoryRow
@@ -832,6 +836,19 @@ export default function RelationHubDashboard() {
           setRemoveError(null);
         }}
         onConfirm={() => void handleRemoveConfirm()}
+      />
+
+      <ConnectionSuccessModal
+        open={connectedFriendName != null}
+        title={messages.connect.connectedSharerTitle(connectedFriendName ?? "")}
+        body={messages.connect.connectedSharerBody}
+        primaryLabel={messages.connect.connectedSharerPrimaryCta}
+        onPrimary={() => {
+          setConnectedFriendName(null);
+          mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+        secondaryLabel={messages.connect.connectedSharerSecondaryCta}
+        onSecondary={() => setConnectedFriendName(null)}
       />
 
       <StitchKindPickerSheet

@@ -12,6 +12,7 @@ import {
   shouldPromptForDisplayName,
 } from "@/lib/clerk/displayNameSync";
 import DisplayNameSetupModal from "@/components/home/DisplayNameSetupModal";
+import ConnectionSuccessModal from "@/components/relationship/ConnectionSuccessModal";
 import { AnimatePresence, motion } from "framer-motion";
 import type { RelCounts, ResumeState } from "@/lib/home/homeEntryTypes";
 import {
@@ -179,6 +180,11 @@ export default function HomeContent() {
     [router, localize],
   );
 
+  const [connectedModal, setConnectedModal] = useState<{
+    sharerName: string;
+    onConfirm: () => void;
+  } | null>(null);
+
   /** 초대 링크 수락: 초대자와 내 리포트를 연결. 성공/이미완료 시 로컬 토큰 제거. */
   const completeInvite = useCallback(
     async (reportId: string, inviteToken: string) => {
@@ -191,10 +197,13 @@ export default function HomeContent() {
         if (res.ok || res.status === 404) {
           localStorage.removeItem("inviteToken");
         }
-        return res.ok;
+        const body = (await res.json().catch(() => ({}))) as {
+          sharer_name?: string | null;
+        };
+        return { ok: res.ok, sharerName: body.sharer_name ?? null };
       } catch (e) {
         console.error("[home] invite_complete_error");
-        return false;
+        return { ok: false, sharerName: null };
       }
     },
     [],
@@ -215,10 +224,13 @@ export default function HomeContent() {
         if (res.ok || res.status === 404) {
           localStorage.removeItem("connectToken");
         }
-        return res.ok;
+        const body = (await res.json().catch(() => ({}))) as {
+          sharer_name?: string | null;
+        };
+        return { ok: res.ok, sharerName: body.sharer_name ?? null };
       } catch (e) {
         console.error("[home] connect_complete_error");
-        return false;
+        return { ok: false, sharerName: null };
       }
     },
     [],
@@ -271,16 +283,29 @@ export default function HomeContent() {
       surveyCompleted: false,
       birthDate: null,
     });
+    let sharerName: string | null = null;
     if (inviteToken) {
       localStorage.setItem("inviteToken", inviteToken);
-      await completeInvite(data.id, inviteToken);
+      const result = await completeInvite(data.id, inviteToken);
+      sharerName = result.sharerName;
     }
     const connectToken = localStorage.getItem("connectToken") || "";
     if (connectToken) {
-      await completeConnect(data.id, connectToken);
+      const result = await completeConnect(data.id, connectToken);
+      sharerName = result.sharerName;
     }
 
     setCreatingReport(false);
+
+    // A connection was actually made (invite or connect) — show the
+    // "connected with X!" confirmation before continuing, instead of
+    // silently dropping the joiner straight into the survey with zero
+    // acknowledgment that a relationship was formed. No connection (plain
+    // first-time signup) skips straight to the survey as before.
+    if (sharerName) {
+      setConnectedModal({ sharerName, onConfirm: () => goToSurvey(data.id) });
+      return;
+    }
     goToSurvey(data.id);
   }, [goToSurvey, messages, completeInvite, completeConnect]);
 
@@ -370,15 +395,26 @@ export default function HomeContent() {
     inviteAutoRanRef.current = true;
 
     if (resume.surveyCompleted && resume.reportId) {
-      void completeInvite(resume.reportId, inviteToken).then(() => {
-        router.push(localize(relationHubPath(resume.reportId ?? undefined)));
+      const reportId = resume.reportId;
+      void completeInvite(reportId, inviteToken).then(({ sharerName }) => {
+        const goToHub = () => router.push(localize(relationHubPath(reportId)));
+        if (sharerName) {
+          setConnectedModal({ sharerName, onConfirm: goToHub });
+          return;
+        }
+        goToHub();
       });
       return;
     }
 
     if (resume.hasReport && resume.reportId) {
-      void completeInvite(resume.reportId, inviteToken).then(() => {
-        goToSurvey(resume.reportId as string);
+      const reportId = resume.reportId;
+      void completeInvite(reportId, inviteToken).then(({ sharerName }) => {
+        if (sharerName) {
+          setConnectedModal({ sharerName, onConfirm: () => goToSurvey(reportId) });
+          return;
+        }
+        goToSurvey(reportId);
       });
       return;
     }
@@ -420,17 +456,28 @@ export default function HomeContent() {
     // looked identical to success: the user reached the dashboard with
     // nothing actually connected and no indication anything went wrong.
     if (resume.surveyCompleted && resume.reportId) {
-      void completeConnect(resume.reportId, connectToken).then((ok) => {
+      const reportId = resume.reportId;
+      void completeConnect(reportId, connectToken).then(({ ok, sharerName }) => {
         if (!ok) alert(messages.connect.invalidBody);
-        router.push(localize(relationHubPath(resume.reportId ?? undefined)));
+        const goToHub = () => router.push(localize(relationHubPath(reportId)));
+        if (ok && sharerName) {
+          setConnectedModal({ sharerName, onConfirm: goToHub });
+          return;
+        }
+        goToHub();
       });
       return;
     }
 
     if (resume.hasReport && resume.reportId) {
-      void completeConnect(resume.reportId, connectToken).then((ok) => {
+      const reportId = resume.reportId;
+      void completeConnect(reportId, connectToken).then(({ ok, sharerName }) => {
         if (!ok) alert(messages.connect.invalidBody);
-        goToSurvey(resume.reportId as string);
+        if (ok && sharerName) {
+          setConnectedModal({ sharerName, onConfirm: () => goToSurvey(reportId) });
+          return;
+        }
+        goToSurvey(reportId);
       });
       return;
     }
@@ -586,6 +633,19 @@ export default function HomeContent() {
         open={nameSetupOpen}
         busy={creatingReport}
         onSubmit={(name) => void handleNameSetupSubmit(name)}
+      />
+
+      <ConnectionSuccessModal
+        open={connectedModal != null}
+        title={messages.connect.connectedJoinerTitle(connectedModal?.sharerName ?? "")}
+        body={messages.connect.connectedJoinerBody}
+        primaryLabel={messages.connect.connectedJoinerCta}
+        onPrimary={() => {
+          if (!connectedModal) return;
+          const { onConfirm } = connectedModal;
+          setConnectedModal(null);
+          onConfirm();
+        }}
       />
 
       <AnimatePresence>

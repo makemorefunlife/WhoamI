@@ -8,6 +8,8 @@ import { invalidateRelationshipMapCache } from "@/lib/relationship/map/computeRe
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { logServerError } from "@/lib/security/safeLog";
+import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 
 export const runtime = "nodejs";
 
@@ -131,7 +133,32 @@ export async function POST(req: Request) {
     invalidateRelationshipMapCache(ownerReportId);
     invalidateRelationshipMapCache(joinerReportId);
 
-    return NextResponse.json({ ok: true, relationshipReportId });
+    // Best-effort — the joiner-side "connected!" modal falls back to a
+    // generic label if this can't be resolved, so a failure here must
+    // never fail connect completion itself.
+    let sharer_name: string | null = null;
+    try {
+      const { data: ownerReport } = await supabase
+        .from("reports")
+        .select("name, clerk_user_id")
+        .eq("id", ownerReportId)
+        .maybeSingle();
+      const ownerClerkNameById = await resolveClerkDisplayNamesByUserId([
+        ownerReport?.clerk_user_id ?? null,
+      ]);
+      sharer_name = resolvePartnerDisplayName(
+        ownerReport?.name,
+        ownerReport?.clerk_user_id
+          ? ownerClerkNameById[ownerReport.clerk_user_id]
+          : undefined,
+        undefined,
+        messages.report.partnerFallbackLabel,
+      );
+    } catch (nameErr) {
+      logServerError("connect/complete.name", nameErr, "internal_error");
+    }
+
+    return NextResponse.json({ ok: true, relationshipReportId, sharer_name });
   } catch (e) {
     logServerError("connect/complete", e, "internal_error");
     return NextResponse.json({ error: messages.errors.generic }, { status: 500 });

@@ -19,9 +19,12 @@ type PendingRequest = {
 export default function ConnectionRequestsPanel({
   reportId,
   onResponded,
+  onAccepted,
 }: {
   reportId: string;
   onResponded: () => void;
+  /** Fired only for a successful "accept" (never "decline"), with the newly-connected friend's display name. */
+  onAccepted?: (name: string) => void;
 }) {
   const { messages } = useLocale();
   const [requests, setRequests] = useState<PendingRequest[] | null>(null);
@@ -63,6 +66,7 @@ export default function ConnectionRequestsPanel({
           (prev ?? []).filter((r) => r.relationshipReportId !== req.relationshipReportId),
         );
         onResponded();
+        if (action === "accept") onAccepted?.(req.name);
       }
     } finally {
       setBusyId(null);

@@ -1525,6 +1525,13 @@ export const messagesKoKR: MessageCatalog = {
     pendingSectionTitle: "연결 요청",
     acceptCta: "수락",
     declineCta: "거절",
+    connectedJoinerTitle: (name: string) => `${name}님과 친구가 되었어요!`,
+    connectedJoinerBody: "지금 바로 분석을 시작해볼까요?",
+    connectedJoinerCta: "분석 시작하기",
+    connectedSharerTitle: (name: string) => `${name}님과 연결에 성공했어요!`,
+    connectedSharerBody: "친구가 관계 지도(맵)에 새로 등록됐어요. 지금 확인해볼까요?",
+    connectedSharerPrimaryCta: "맵에서 보기",
+    connectedSharerSecondaryCta: "나중에",
   },
   signupName: {
     title: "이름",

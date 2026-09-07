@@ -18,6 +18,8 @@ import { isAcceptableInviteToken } from "@/lib/security/inviteToken";
 import { logServerError } from "@/lib/security/safeLog";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
+import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 
 export const runtime = "nodejs";
 
@@ -97,6 +99,7 @@ export async function POST(req: Request) {
     }
 
     let relationship_report_id: string | null = null;
+    let sharer_name: string | null = null;
     if (
       data.from_report_id &&
       idCheck.value &&
@@ -119,12 +122,32 @@ export async function POST(req: Request) {
         if (linkErr) {
           logServerError("invite/complete.link", linkErr);
         }
+
+        // Best-effort — the joiner-side "connected!" modal falls back to a
+        // generic label if this can't be resolved, so a failure here must
+        // never fail the invite completion itself.
+        const { data: sharerReport } = await supabase
+          .from("reports")
+          .select("name, clerk_user_id")
+          .eq("id", data.from_report_id)
+          .maybeSingle();
+        const sharerClerkNameById = await resolveClerkDisplayNamesByUserId([
+          sharerReport?.clerk_user_id ?? null,
+        ]);
+        sharer_name = resolvePartnerDisplayName(
+          sharerReport?.name,
+          sharerReport?.clerk_user_id
+            ? sharerClerkNameById[sharerReport.clerk_user_id]
+            : undefined,
+          undefined,
+          messages.report.partnerFallbackLabel,
+        );
       } catch (relErr) {
         logServerError("invite/complete.rel", relErr);
       }
     }
 
-    return NextResponse.json({ ok: true, relationship_report_id });
+    return NextResponse.json({ ok: true, relationship_report_id, sharer_name });
   } catch (e) {
     logServerError("invite/complete", e);
     return NextResponse.json(
