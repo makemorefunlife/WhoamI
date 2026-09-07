@@ -77,6 +77,8 @@ export const messagesEnUS = {
     inviteCancelFailed: "We couldn't cancel that.",
     inviteLinkCopied: "Invite link copied.",
     inviteLinkCopyFailed: "Couldn't copy the link.",
+    inviteShareTitle: "Friend invite",
+    inviteShareMessage: "Let's get relationship tips together.",
     relationshipCreateFailed: "We couldn't create the relationship.",
     relationshipCreateNetworkError:
       "A network error kept us from creating the relationship.",
@@ -374,8 +376,13 @@ export const messagesEnUS = {
     premiumResultMissingGeneric: "We didn't receive the deep analysis result.",
     requestTimeout: "The request took too long and was stopped. Please try again.",
     premiumNetworkError: "A network issue kept the deep analysis from completing.",
-    regenerateConfirm: (label: string) =>
-      `Recreate the existing ${label} deep analysis with a fresh prompt?\n(This can take 1–2 minutes. The previous result stays in your analysis history.)`,
+    regenerateModalTitle: "You already have a saved analysis. Create a new one?",
+    regenerateModalBody: "Creating a new analysis uses 1 relationship analysis.",
+    regenerateModalViewSaved: "View saved analysis",
+    regenerateModalCreateNew: "Create new analysis",
+    regenerateModalFooterNotice:
+      "If generation fails, your usage is automatically restored.",
+    regenerateModalRefundLink: "Refund policy",
   },
   onboarding: {
     birthTitle: "Birth details",
@@ -828,6 +835,8 @@ export const messagesEnUS = {
     lastUpdatedPrefix: "Last updated · ",
   },
   invite: {
+    metaTitle: "Aha! it's me · Let's explore our relationship",
+    metaDescription: "Accept the invitation and discover how you connect.",
     invalidToken: "This invite link isn't valid.",
     inviteMessage: "A friend invited you to get relationship tips together.",
     missingTokenAlert: "No invite token was found.",
@@ -1664,6 +1673,8 @@ export type MessageCatalog = {
     inviteCancelFailed: string;
     inviteLinkCopied: string;
     inviteLinkCopyFailed: string;
+    inviteShareTitle: string;
+    inviteShareMessage: string;
     relationshipCreateFailed: string;
     relationshipCreateNetworkError: string;
     ownBirthDateCollisionWarning: string;
@@ -1910,7 +1921,12 @@ export type MessageCatalog = {
     premiumResultMissingGeneric: string;
     requestTimeout: string;
     premiumNetworkError: string;
-    regenerateConfirm: (label: string) => string;
+    regenerateModalTitle: string;
+    regenerateModalBody: string;
+    regenerateModalViewSaved: string;
+    regenerateModalCreateNew: string;
+    regenerateModalFooterNotice: string;
+    regenerateModalRefundLink: string;
   };
   onboarding: {
     birthTitle: string;
@@ -2269,6 +2285,8 @@ export type MessageCatalog = {
     lastUpdatedPrefix: string;
   };
   invite: {
+    metaTitle: string;
+    metaDescription: string;
     invalidToken: string;
     inviteMessage: string;
     missingTokenAlert: string;

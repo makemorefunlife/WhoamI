@@ -37,12 +37,6 @@ import {
   fetchRelationshipReportByIdSafe,
   mergeRelationshipPremiumByKind,
 } from "@/lib/relationship/relationshipReportQuery";
-import {
-  isStaleWorkReportBlock,
-  isStaleCohabitationReportBlock,
-  isStaleFamilyReportBlock,
-  isStaleFriendReportBlock,
-} from "@/lib/relationship/reportStalenessGuard";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
   UNKNOWN_BIRTH_FALLBACK,
@@ -65,8 +59,6 @@ import { buildRomanticV4PrototypePayload } from "@/lib/relationship/romantic/pro
 import { applyRomanticV4FinalNarrativeArchitecture } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/applyRomanticV4FinalNarrativeArchitecture";
 import {
   attachRomanticV4Block,
-  readRomanticV4Block,
-  isStaleRomanticV4Block,
   ROMANTIC_REPORT_SCHEMA_VERSION,
   ROMANTIC_ANALYSIS_ENGINE_VERSION,
   type RomanticV4PersistedBlock,
@@ -235,50 +227,43 @@ export async function POST(req: Request) {
       (body as { force_regenerate?: unknown }).force_regenerate === true;
     const language = toLegacyShortLocale(locale) as RomanticSajuDeepLocale;
 
+    // Cache-first, always: a saved result for this kind+locale is returned
+    // as-is whenever it exists — staleness/version-mismatch is never a
+    // reason to silently regenerate. The ONLY way to trigger a real LLM
+    // call when a cache already exists is an explicit force_regenerate:true
+    // from the user-confirmed "새로 분석하기" flow (see
+    // useRelationshipDetail.ts's regenerate confirm modal). This is what
+    // keeps autostart/revisit/refresh from ever burning a credit or an LLM
+    // call on their own.
     if (!forceRegenerate && hasPremiumCacheForKindLocale(byKind, kind, locale)) {
       const cached = getPremiumPayloadForKindLocale(byKind, kind, locale);
-      const isStale =
-        kind === "work"
-          ? isStaleWorkReportBlock(cached)
-          : kind === "cohabitation"
-            ? isStaleCohabitationReportBlock(cached)
-            : kind === "family"
-              ? isStaleFamilyReportBlock(cached)
-              : kind === "romantic"
-                ? (isRomanticV4ReportEnabled() && isStaleRomanticV4Block(readRomanticV4Block(byKind as unknown as Record<string, unknown>, locale)))
-                : kind === "friendship"
-                  ? isStaleFriendReportBlock(cached)
-                  : false;
-
-      if (!isStale) {
-        const forClient =
-          kind === "family"
-            ? stripFamilyContextOutputForClient(
+      const forClient =
+        kind === "family"
+          ? stripFamilyContextOutputForClient(
+              cached as { report?: Record<string, unknown> },
+            )
+          : kind === "work"
+            ? stripWorkContextOutputForClient(
                 cached as { report?: Record<string, unknown> },
               )
-            : kind === "work"
-              ? stripWorkContextOutputForClient(
+            : kind === "friendship"
+              ? stripFriendContextOutputForClient(
                   cached as { report?: Record<string, unknown> },
                 )
-              : kind === "friendship"
-                ? stripFriendContextOutputForClient(
+              : kind === "cohabitation"
+                ? stripMarriageContextOutputForClient(
                     cached as { report?: Record<string, unknown> },
                   )
-                : kind === "cohabitation"
-                  ? stripMarriageContextOutputForClient(
+                : kind === "romantic"
+                  ? stripRomanticContextInputForClient(
                       cached as { report?: Record<string, unknown> },
                     )
-                  : kind === "romantic"
-                    ? stripRomanticContextInputForClient(
-                        cached as { report?: Record<string, unknown> },
-                      )
-                    : cached;
-        return NextResponse.json({
-          relationship_kind: kind,
-          locale,
-          result_premium: forClient,
-        });
-      }
+                  : cached;
+      return NextResponse.json({
+        relationship_kind: kind,
+        locale,
+        result_premium: forClient,
+      });
     }
 
     const [fetchA, fetchB, clerkUser] = await Promise.all([

@@ -23,12 +23,6 @@ import { getResultBasicLocale } from "@/lib/relationship/resultBasicLocale";
 import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelationshipPerspectives";
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
-import {
-  isStaleWorkReportBlock,
-  isStaleCohabitationReportBlock,
-  isStaleFamilyReportBlock,
-  isStaleFriendReportBlock,
-} from "@/lib/relationship/reportStalenessGuard";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
@@ -171,37 +165,38 @@ export async function GET(req: Request) {
       activeKind === "work"
         ? getWorkColleagueDeepReport(byKind, locale)
         : null;
-    const workColleagueDeepReport =
-      workColleagueDeepRaw && !isStaleWorkReportBlock(workColleagueDeepRaw)
-        ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
-        : null;
+    // A saved result is always shown as-is once it exists — staleness/version
+    // mismatch is never a reason to hide it (that would either blank the
+    // page on revisit or, combined with autostart, silently trigger a real
+    // regenerate with no confirmation). Only the explicit "새로 분석하기"
+    // confirm flow (force_regenerate:true on the analyze route) replaces it.
+    const workColleagueDeepReport = workColleagueDeepRaw
+      ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
+      : null;
 
     const cohabitationDeepRaw =
       activeKind === "cohabitation"
         ? getCohabitationDeepReport(byKind, locale)
         : null;
-    const cohabitationDeepReport =
-      cohabitationDeepRaw && !isStaleCohabitationReportBlock(cohabitationDeepRaw)
-        ? omitMarriageContextOutputFromReport(cohabitationDeepRaw)
-        : null;
+    const cohabitationDeepReport = cohabitationDeepRaw
+      ? omitMarriageContextOutputFromReport(cohabitationDeepRaw)
+      : null;
 
     const familyDeepRaw =
       activeKind === "family"
         ? getFamilyParentDeepReport(byKind, locale)
         : null;
-    const familyDeepReport =
-      familyDeepRaw && !isStaleFamilyReportBlock(familyDeepRaw)
-        ? omitFamilyContextOutputFromReport(familyDeepRaw)
-        : null;
+    const familyDeepReport = familyDeepRaw
+      ? omitFamilyContextOutputFromReport(familyDeepRaw)
+      : null;
 
     const friendshipDeepRaw =
       activeKind === "friendship"
         ? getFriendSocialDeepReport(byKind, locale)
         : null;
-    const friendshipDeepReport =
-      friendshipDeepRaw && !isStaleFriendReportBlock(friendshipDeepRaw)
-        ? omitFriendContextOutputFromReport(friendshipDeepRaw)
-        : null;
+    const friendshipDeepReport = friendshipDeepRaw
+      ? omitFriendContextOutputFromReport(friendshipDeepRaw)
+      : null;
 
     const favorited = await isRelationshipFavorite(
       supabase,

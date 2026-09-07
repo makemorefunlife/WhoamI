@@ -77,6 +77,8 @@ export const messagesKoKR: MessageCatalog = {
     inviteCancelFailed: "취소하지 못했어요.",
     inviteLinkCopied: "초대 링크를 복사했어요.",
     inviteLinkCopyFailed: "복사에 실패했어요.",
+    inviteShareTitle: "친구 초대",
+    inviteShareMessage: "함께 관계 분석을 받아보자.",
     relationshipCreateFailed: "관계를 만들지 못했어요.",
     relationshipCreateNetworkError: "네트워크 오류로 관계를 만들지 못했어요.",
     ownBirthDateCollisionWarning:
@@ -352,8 +354,12 @@ export const messagesKoKR: MessageCatalog = {
     premiumResultMissingGeneric: "심화 분석 결과를 받지 못했어요.",
     requestTimeout: "요청 시간이 길어져 중단됐어요. 다시 시도해 주세요.",
     premiumNetworkError: "네트워크 문제로 심화 분석에 실패했어요.",
-    regenerateConfirm: (label: string) =>
-      `기존 ${label} 심화 분석을 새 프롬프트로 다시 만들까요?\n(1~2분 걸릴 수 있어요. 이전 결과는 분석 기록에 남아 있어요.)`,
+    regenerateModalTitle: "이미 저장된 분석이 있어요. 새로 분석할까요?",
+    regenerateModalBody: "새로 분석하면 관계 분석 1회가 차감됩니다.",
+    regenerateModalViewSaved: "기존 분석 보기",
+    regenerateModalCreateNew: "새로 분석하기",
+    regenerateModalFooterNotice: "생성에 실패하면 사용 횟수는 자동으로 복구됩니다.",
+    regenerateModalRefundLink: "환불 정책",
   },
   onboarding: {
     birthTitle: "출생 정보",
@@ -790,6 +796,8 @@ export const messagesKoKR: MessageCatalog = {
     lastUpdatedPrefix: "최종 업데이트 · ",
   },
   invite: {
+    metaTitle: "Aha! it's me · 함께 관계를 알아봐요",
+    metaDescription: "초대를 수락하고, 우리 관계를 함께 알아보세요.",
     invalidToken: "초대 링크가 올바르지 않아요.",
     inviteMessage: "친구가 너와의 관계 팁을 받아보자고 초대했어.",
     missingTokenAlert: "초대 토큰이 없습니다.",

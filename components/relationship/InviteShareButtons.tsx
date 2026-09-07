@@ -40,7 +40,11 @@ export default function InviteShareButtons({
   }
 
   async function onNative() {
-    const ok = await nativeShareInvite(url);
+    const ok = await nativeShareInvite(
+      url,
+      messages.hub.inviteShareTitle,
+      messages.hub.inviteShareMessage,
+    );
     if (!ok) {
       alert(messages.hub.nativeShareUnavailable);
     }
@@ -78,21 +82,21 @@ export default function InviteShareButtons({
           <button
             type="button"
             className={shareOptionBtn}
-            onClick={() => openWhatsAppShare(url)}
+            onClick={() => openWhatsAppShare(url, messages.hub.inviteShareMessage)}
           >
             WhatsApp
           </button>
           <button
             type="button"
             className={shareOptionBtn}
-            onClick={() => openSmsShare(url)}
+            onClick={() => openSmsShare(url, messages.hub.inviteShareMessage)}
           >
             {messages.hub.shareViaSms}
           </button>
           <button
             type="button"
             className={shareOptionBtn}
-            onClick={() => openGoogleChatShare(url)}
+            onClick={() => openGoogleChatShare(url, messages.hub.inviteShareMessage)}
           >
             Google Chat
           </button>

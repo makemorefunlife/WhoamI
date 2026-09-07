@@ -7,6 +7,7 @@ import RelationshipBasicCards from "@/components/relationship/RelationshipBasicC
 import RelationshipAnalysisHistory from "@/components/relationship/RelationshipAnalysisHistory";
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
+import RegenerateConfirmDialog from "@/components/relationship/detail/RegenerateConfirmDialog";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
 import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
@@ -74,6 +75,9 @@ export default function RelationshipView({
     setFamilyChildIsViewer,
     runPremium,
     regeneratePremium,
+    showRegenerateConfirm,
+    cancelRegeneratePremium,
+    confirmRegeneratePremium,
   } = detail;
 
   const viewingBasicSurface = analysisSurface === "basic";
@@ -296,6 +300,12 @@ export default function RelationshipView({
               onReportReadyRef={reportAnchorRef}
             />
           ) : null}
+
+          <RegenerateConfirmDialog
+            open={showRegenerateConfirm}
+            onViewSaved={cancelRegeneratePremium}
+            onCreateNew={confirmRegeneratePremium}
+          />
 
           {!viewingBasicSurface && premiumReady && !showGeneratingPanel ? (
             <>

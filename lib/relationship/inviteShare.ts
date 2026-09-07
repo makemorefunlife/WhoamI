@@ -1,7 +1,5 @@
 import { localeToPathPrefix, type Locale } from "@/lib/i18n/locale";
 
-const DEFAULT_MESSAGE = "함께 관계 분석을 받아보자.";
-
 /**
  * `locale` must be the SHARER's own current locale — the link should open
  * on whichever site (en-US or ko-KR) the person sharing it is using, not
@@ -22,8 +20,13 @@ export function buildConnectUrl(token: string, locale: Locale, origin?: string):
   return `${base}${localeToPathPrefix(locale)}/connect?token=${encodeURIComponent(token)}`;
 }
 
-export function inviteShareText(url: string): string {
-  return `${DEFAULT_MESSAGE}\n${url}`;
+/**
+ * `message` must be the sharer's own locale's copy (messages.hub.inviteShareMessage)
+ * — this module has no i18n of its own on purpose, so a caller can never
+ * forget which locale's text belongs on which locale's link.
+ */
+export function inviteShareText(url: string, message: string): string {
+  return `${message}\n${url}`;
 }
 
 export async function copyInviteLink(url: string): Promise<boolean> {
@@ -35,19 +38,19 @@ export async function copyInviteLink(url: string): Promise<boolean> {
   }
 }
 
-export function openWhatsAppShare(url: string) {
-  const text = encodeURIComponent(inviteShareText(url));
+export function openWhatsAppShare(url: string, message: string) {
+  const text = encodeURIComponent(inviteShareText(url, message));
   window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
 }
 
 /** iMessage / SMS */
-export function openSmsShare(url: string) {
-  const body = encodeURIComponent(inviteShareText(url));
+export function openSmsShare(url: string, message: string) {
+  const body = encodeURIComponent(inviteShareText(url, message));
   window.location.href = `sms:?&body=${body}`;
 }
 
-export function openGoogleChatShare(url: string) {
-  const text = encodeURIComponent(inviteShareText(url));
+export function openGoogleChatShare(url: string, message: string) {
+  const text = encodeURIComponent(inviteShareText(url, message));
   window.open(
     `https://mail.google.com/chat/u/0/#chat/new?message=${text}`,
     "_blank",
@@ -55,12 +58,16 @@ export function openGoogleChatShare(url: string) {
   );
 }
 
-export async function nativeShareInvite(url: string): Promise<boolean> {
+export async function nativeShareInvite(
+  url: string,
+  title: string,
+  message: string,
+): Promise<boolean> {
   if (!navigator.share) return false;
   try {
     await navigator.share({
-      title: "친구 초대",
-      text: DEFAULT_MESSAGE,
+      title,
+      text: message,
       url,
     });
     return true;

@@ -112,6 +112,9 @@ export type UseRelationshipDetailReturn = {
     options?: { forceRegenerate?: boolean },
   ) => Promise<boolean>;
   regeneratePremium: () => void;
+  showRegenerateConfirm: boolean;
+  cancelRegeneratePremium: () => void;
+  confirmRegeneratePremium: () => void;
 };
 
 export function useRelationshipDetail({
@@ -697,13 +700,29 @@ export function useRelationshipDetail({
     ],
   );
 
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
+  /**
+   * Opens the confirm-before-regenerate modal — never calls the API
+   * directly. Real generation only happens if the user explicitly picks
+   * "새로 분석하기" in that modal (see confirmRegeneratePremium below), which
+   * is what keeps a saved analysis from ever being replaced (and a credit
+   * from ever being spent) without an explicit, informed click.
+   */
   const regeneratePremium = useCallback(() => {
-    const label = messages.report.relationshipKindNames[premiumKind];
-    if (!window.confirm(messages.report.regenerateConfirm(label))) {
-      return;
-    }
+    setShowRegenerateConfirm(true);
+  }, []);
+
+  /** "기존 분석 보기" — closes the modal only. No API/LLM/credit usage. */
+  const cancelRegeneratePremium = useCallback(() => {
+    setShowRegenerateConfirm(false);
+  }, []);
+
+  /** "새로 분석하기" — the ONLY path that sends force_regenerate:true. */
+  const confirmRegeneratePremium = useCallback(() => {
+    setShowRegenerateConfirm(false);
     void runPremium(premiumKind, { forceRegenerate: true });
-  }, [premiumKind, runPremium, messages]);
+  }, [premiumKind, runPremium]);
 
   const onAnalysisSurfaceChange = useCallback(
     (surface: AnalysisSurface) => {
@@ -899,5 +918,8 @@ export function useRelationshipDetail({
     setFamilyChildIsViewer,
     runPremium,
     regeneratePremium,
+    showRegenerateConfirm,
+    cancelRegeneratePremium,
+    confirmRegeneratePremium,
   };
 }
