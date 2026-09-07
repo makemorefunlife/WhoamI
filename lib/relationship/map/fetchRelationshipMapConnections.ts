@@ -5,6 +5,7 @@ import {
   partnerNameFromLogSnapshot,
   resolvePartnerDisplayName,
 } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import {
   compareStringTieBreakDesc,
   sortByIsoTimestampDesc,
@@ -63,8 +64,18 @@ export async function fetchRelationshipMapConnections(
   const [{ data: names }, { data: logRows }, { data: membershipRows }, { data: linkUseRows }] =
     await Promise.all([
       uniquePartners.length > 0
-        ? supabase.from("reports").select("id, name, report_type").in("id", uniquePartners)
-        : Promise.resolve({ data: [] as { id: string; name: string | null; report_type: string | null }[] }),
+        ? supabase
+            .from("reports")
+            .select("id, name, report_type, clerk_user_id")
+            .in("id", uniquePartners)
+        : Promise.resolve({
+            data: [] as {
+              id: string;
+              name: string | null;
+              report_type: string | null;
+              clerk_user_id: string | null;
+            }[],
+          }),
       rrIds.length > 0
         ? supabase
             .from("relationship_analysis_logs")
@@ -103,6 +114,18 @@ export async function fetchRelationshipMapConnections(
   const typeById = Object.fromEntries(
     (names ?? []).map((n) => [n.id, n.report_type ?? ""]),
   );
+  // reports.name is only ever populated for partner_manual contacts; a real
+  // connected partner's canonical name lives on their own Clerk account —
+  // see resolveClerkDisplayNames.ts.
+  const clerkNameByClerkUserId = await resolveClerkDisplayNamesByUserId(
+    (names ?? []).map((n) => n.clerk_user_id),
+  );
+  const clerkNameByReportId = Object.fromEntries(
+    (names ?? []).map((n) => [
+      n.id,
+      n.clerk_user_id ? (clerkNameByClerkUserId[n.clerk_user_id] ?? "") : "",
+    ]),
+  );
 
   const logNameByRrId = new Map<string, string>();
   for (const log of logRows ?? []) {
@@ -124,6 +147,7 @@ export async function fetchRelationshipMapConnections(
     const partnerId = r.report_id_a === viewerReportId ? r.report_id_b : r.report_id_a;
     const partnerName = resolvePartnerDisplayName(
       nameById[partnerId],
+      clerkNameByReportId[partnerId],
       logNameByRrId.get(r.id),
       typeById[partnerId] === "partner_manual" ? "친구" : "탐사자",
     );

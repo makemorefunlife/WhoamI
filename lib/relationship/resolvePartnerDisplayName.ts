@@ -63,11 +63,24 @@ export function partnerNameFromLogSnapshot(
   return null;
 }
 
+/**
+ * `clerkDisplayName` (the partner's own Clerk publicMetadata.displayName —
+ * see resolveClerkDisplayNamesByUserId) is checked FIRST: it's the
+ * canonical name source for any real connected account, whereas
+ * `reports.name` is only ever populated for `partner_manual` contacts
+ * (manually-typed people with no Clerk account) and is otherwise always
+ * null. Without this, every OAuth-onboarded friend permanently showed the
+ * generic fallback — reports.name never gets filled in for a self-report,
+ * so there was nothing later to "catch up" to.
+ */
 export function resolvePartnerDisplayName(
   reportName: string | null | undefined,
+  clerkDisplayName: string | null | undefined,
   logName: string | null | undefined,
   fallback = "친구",
 ): string {
+  const fromClerk = clerkDisplayName?.trim();
+  if (fromClerk && !isGenericPartnerName(fromClerk)) return fromClerk;
   const fromReport = partnerNameFromReportRow(reportName);
   if (fromReport) return fromReport;
   const fromLog = logName?.trim();

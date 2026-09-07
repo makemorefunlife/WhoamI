@@ -331,6 +331,7 @@ export function useRelationshipDetail({
         const resolvedPartner = resolvePartnerDisplayName(
           data.partner_name ?? data.display_partner_name,
           undefined,
+          undefined,
           messages.report.partnerFallbackLabel,
         );
         setPartnerName(resolvedPartner);

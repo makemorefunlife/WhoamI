@@ -24,6 +24,7 @@ import { getViewerPerspectiveSlice } from "@/lib/relationship/normalizeRelations
 import { fetchRelationshipReportByIdSafe } from "@/lib/relationship/relationshipReportQuery";
 import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
@@ -91,12 +92,12 @@ export async function GET(req: Request) {
     const [{ data: repA }, { data: repB }] = await Promise.all([
       supabase
         .from("reports")
-        .select("name,birth_time,birth_place")
+        .select("name,birth_time,birth_place,clerk_user_id")
         .eq("id", rr.report_id_a)
         .maybeSingle(),
       supabase
         .from("reports")
-        .select("name,birth_time,birth_place")
+        .select("name,birth_time,birth_place,clerk_user_id")
         .eq("id", rr.report_id_b)
         .maybeSingle(),
     ]);
@@ -211,8 +212,15 @@ export async function GET(req: Request) {
       clerkFirstName: clerkUser?.firstName,
       clerkFullName: clerkUser?.fullName,
     });
+    // reports.name is only ever populated for partner_manual contacts; a
+    // real connected partner's canonical name lives on their own Clerk
+    // account instead — see resolveClerkDisplayNames.ts.
+    const partnerClerkNameById = await resolveClerkDisplayNamesByUserId([
+      partner?.clerk_user_id,
+    ]);
     const partnerName = resolvePartnerDisplayName(
       partner?.name,
+      partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,
       undefined,
       "친구",
     );

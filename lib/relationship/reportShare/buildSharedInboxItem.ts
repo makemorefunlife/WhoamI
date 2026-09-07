@@ -38,10 +38,12 @@ export function buildSharedInboxItem(
     sharedAnalysisTitle: (kindLabel: string) => string;
     sharedAnalysisSubtitle: (partnerName: string) => string;
   },
+  ownerClerkDisplayName: string | null = null,
 ): SharedInboxItem {
   const kind = parseRelationshipKind(row.kind);
   const partnerName = resolvePartnerDisplayName(
     ownerReportName,
+    ownerClerkDisplayName,
     null,
     copy.partnerFallbackLabel,
   );

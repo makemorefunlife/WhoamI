@@ -48,6 +48,7 @@ export function resolveAxisPartnerNickname(
   return resolvePartnerDisplayName(
     storedNickname,
     undefined,
+    undefined,
     partnerDisplayName.trim() || "상대",
   );
 }

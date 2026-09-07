@@ -6,6 +6,7 @@ import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { logServerError } from "@/lib/security/safeLog";
 import { buildSharedInboxItem } from "@/lib/relationship/reportShare/buildSharedInboxItem";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 
 export const runtime = "nodejs";
 
@@ -60,10 +61,22 @@ export async function GET(req: Request) {
     const ownerIds = Array.from(new Set(rows.map((r) => r.owner_report_id as string)));
     const { data: owners } = await supabase
       .from("reports")
-      .select("id, name")
+      .select("id, name, clerk_user_id")
       .in("id", ownerIds);
     const ownerNameById = new Map(
       (owners ?? []).map((o) => [o.id as string, o.name as string | null]),
+    );
+    // reports.name is only ever populated for partner_manual contacts; the
+    // sharer's canonical name lives on their own Clerk account instead —
+    // see resolveClerkDisplayNames.ts.
+    const ownerClerkNameByClerkUserId = await resolveClerkDisplayNamesByUserId(
+      (owners ?? []).map((o) => o.clerk_user_id as string | null),
+    );
+    const ownerClerkNameById = new Map(
+      (owners ?? []).map((o) => [
+        o.id as string,
+        o.clerk_user_id ? (ownerClerkNameByClerkUserId[o.clerk_user_id as string] ?? null) : null,
+      ]),
     );
 
     const items = rows.map((row) =>
@@ -82,6 +95,7 @@ export async function GET(req: Request) {
           sharedAnalysisTitle: messages.hub.sharedAnalysisTitle,
           sharedAnalysisSubtitle: messages.hub.sharedAnalysisSubtitle,
         },
+        ownerClerkNameById.get(row.owner_report_id as string) ?? null,
       ),
     );
 

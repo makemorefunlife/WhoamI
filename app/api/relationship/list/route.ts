@@ -13,6 +13,7 @@ import {
   partnerNameFromLogSnapshot,
   resolvePartnerDisplayName,
 } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
@@ -141,15 +142,34 @@ export async function GET(req: Request) {
       uniquePartners.length > 0
         ? await supabase
             .from("reports")
-            .select("id, name, report_type")
+            .select("id, name, report_type, clerk_user_id")
             .in("id", uniquePartners)
-        : { data: [] as { id: string; name: string | null; report_type: string | null }[] };
+        : {
+            data: [] as {
+              id: string;
+              name: string | null;
+              report_type: string | null;
+              clerk_user_id: string | null;
+            }[],
+          };
 
     const nameById = Object.fromEntries(
       (names ?? []).map((n) => [n.id, n.name?.trim() ?? ""]),
     );
     const typeById = Object.fromEntries(
       (names ?? []).map((n) => [n.id, n.report_type ?? ""]),
+    );
+    // reports.name is only ever populated for partner_manual contacts (no
+    // Clerk account); a real connected friend's canonical name lives on
+    // their own Clerk account instead — see resolveClerkDisplayNames.ts.
+    const clerkNameByClerkUserId = await resolveClerkDisplayNamesByUserId(
+      (names ?? []).map((n) => n.clerk_user_id),
+    );
+    const clerkNameByReportId = Object.fromEntries(
+      (names ?? []).map((n) => [
+        n.id,
+        n.clerk_user_id ? (clerkNameByClerkUserId[n.clerk_user_id] ?? "") : "",
+      ]),
     );
 
     const logNameByRrId = new Map<string, string>();
@@ -217,6 +237,7 @@ export async function GET(req: Request) {
         r.report_id_a === reportId ? r.report_id_b : r.report_id_a;
       const partnerName = resolvePartnerDisplayName(
         nameById[partnerId],
+        clerkNameByReportId[partnerId],
         logNameByRrId.get(r.id),
         typeById[partnerId] === "partner_manual" ? "친구" : "탐사자",
       );
