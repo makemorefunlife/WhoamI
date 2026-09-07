@@ -44,25 +44,25 @@ function DnaCard({ profile, accent }: { profile: HomeLifeDnaProfile; accent: str
       </p>
       <ul className="mt-4 space-y-3">
         <li>
-          <RelationshipReportLabel>{t.dnaValuesLabel}</RelationshipReportLabel>
+          <RelationshipReportLabel>▫ {t.dnaValuesLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.life_values}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>{t.dnaPrivateSelfLabel}</RelationshipReportLabel>
+          <RelationshipReportLabel>▫ {t.dnaPrivateSelfLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.private_home_self}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>{t.dnaEnergyLabel}</RelationshipReportLabel>
+          <RelationshipReportLabel>▫ {t.dnaEnergyLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.energy_battery}
           </RelationshipReportParagraph>
         </li>
         <li>
-          <RelationshipReportLabel>{t.dnaFamilyIdentityLabel}</RelationshipReportLabel>
+          <RelationshipReportLabel>▫ {t.dnaFamilyIdentityLabel}</RelationshipReportLabel>
           <RelationshipReportParagraph className="mt-1.5">
             {profile.family_identity}
           </RelationshipReportParagraph>

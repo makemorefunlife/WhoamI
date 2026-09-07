@@ -48,7 +48,7 @@ export function RelationshipReportLabel({
 }) {
   return (
     <p className={`font-rel-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8c827a] ${className}`}>
-      {children}
+      ▫ {children}
     </p>
   );
 }
@@ -106,7 +106,7 @@ export default function RelationshipReportCard({
       {cleanTitle ? (
         <div className="flex items-center gap-2 pt-1">
           {showMarker && (
-            <span className="text-[13px] leading-none text-[#1b3b2b] shrink-0" aria-hidden>
+            <span className="text-[13px] leading-none text-[#8c7c72] shrink-0" aria-hidden>
               ◤
             </span>
           )}

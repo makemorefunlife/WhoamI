@@ -27,16 +27,16 @@ import { pick, LEGACY_FALLBACK_LOCALE } from "./marriageCopy";
 export type DailyLifeMirrorFact = { label: string; description: string };
 
 const DAY_STEM_CHARM_KO: Record<string, DailyLifeMirrorFact> = {
-  gap: { label: "존재감", description: "당당하고 반듯해서 믿고 따라가게 만드는 매력" },
-  eul: { label: "은근함", description: "부드러운데 묘하게 사람을 끌어당기는 매력" },
-  byeong: { label: "화려함", description: "가만히 있어도 시선이 먼저 가는 스타성" },
-  jeong: { label: "분위기", description: "볼수록 빠져드는 따뜻하고 은근한 색기" },
-  mu: { label: "안정감", description: "옆에 있으면 이상하게 믿음이 생기는 듬직함" },
-  gi: { label: "편안함", description: "처음 만나도 오래 알던 사람처럼 만드는 친근함" },
-  gyeong: { label: "카리스마", description: "차갑고 단단한 분위기에서 나오는 강한 끌림" },
-  sin: { label: "세련미", description: "깔끔하고 고급스러운 분위기로 시선을 잡는 타입" },
-  im: { label: "자유로움", description: "어디로 튈지 몰라 자꾸 궁금해지는 매력" },
-  gye: { label: "신비로움", description: "속을 다 보여주지 않아 계속 알고 싶어지는 타입" },
+  gap: { label: "당당한 중심", description: "반듯한 태도와 당당함이 믿음을 주고 자연스럽게 사람을 이끌어요." },
+  eul: { label: "잔잔한 끌림", description: "부드럽게 스며들어 어느새 마음을 끌어당기는 힘이 있어요." },
+  byeong: { label: "빛나는 존재감", description: "애써 돋보이려 하지 않아도 자연스럽게 시선의 중심이 돼요." },
+  jeong: { label: "은근한 설렘", description: "따뜻한 분위기에 은은한 관능미가 더해져 알아갈수록 더 끌려요." },
+  mu: { label: "묵직한 신뢰", description: "곁에 있다는 것만으로도 마음이 놓이는 든든함이 있어요." },
+  gi: { label: "익숙한 온기", description: "처음 마주한 사이에도 오래 알고 지낸 듯한 편안함을 건네요." },
+  gyeong: { label: "서늘한 카리스마", description: "서늘하고 단단한 분위기에 시선이 붙들리는 강렬한 매력이 있어요." },
+  sin: { label: "정돈된 세련미", description: "군더더기 없이 깔끔한 분위기에서 고급스러움이 느껴져 눈길이 가요." },
+  im: { label: "자유로운 반전", description: "틀에 머물지 않는 자유로움이 있어 다음 모습이 자꾸 궁금해져요." },
+  gye: { label: "신비로운 여백", description: "한 번에 다 읽히지 않는 분위기가 더 가까이 알고 싶게 만들어요." },
 };
 
 const DAY_STEM_CHARM_EN: Record<string, DailyLifeMirrorFact> = {
@@ -53,18 +53,18 @@ const DAY_STEM_CHARM_EN: Record<string, DailyLifeMirrorFact> = {
 };
 
 const DAY_BRANCH_SPOUSE_TRAIT_KO: Record<string, DailyLifeMirrorFact> = {
-  ja: { label: "동안·영리한 인상", description: "눈치가 빠르고 돈 굴리는 감각이 좋아요." },
-  chuk: { label: "듬직한 체형", description: "과묵하고 성실하며, 안정적인 직업을 선호해요." },
-  in: { label: "선 굵은 인상", description: "추진력이 강하고 자기 분야에서 자리를 잡는 타입이에요." },
-  myo: { label: "깔끔한 외모", description: "섬세하고 다정하며, 센스와 인간관계가 좋아요." },
-  jin: { label: "존재감 강한 외모", description: "야망이 있고 사회적 성취욕이 강해요." },
-  sa: { label: "묘하게 끌리는 외모", description: "머리 회전이 빠르고 일머리가 좋아요." },
-  o: { label: "화려하고 밝은 인상", description: "표현이 적극적이고 승부욕·추진력이 강해요." },
-  mi: { label: "부드러운 인상", description: "배려심이 많고 가정과 현실을 둘 다 잘 챙겨요." },
-  sin: { label: "세련되고 날렵한 인상", description: "영리하고, 전문성·능력으로 인정받는 타입이에요." },
-  yu: { label: "이목구비 또렷", description: "깔끔하고 예민하며, 자기관리·경제관념이 철저해요." },
-  sul: { label: "믿음직한 인상", description: "의리와 책임감이 강하고, 한 자리를 오래 지키는 타입이에요." },
-  hae: { label: "순하고 편안한 인상", description: "감수성·공감력이 좋고, 사람 복이 따르는 타입이에요." },
+  ja: { label: "앳되고 총명한 인상", description: "눈치 있게 상황을 읽고 움직여요. 돈을 다루고 불리는 감각도 있어요." },
+  chuk: { label: "든든한 체격", description: "말수는 적어도 맡은 일은 성실하게 해내요. 직업에서도 안정성을 중요하게 봐요." },
+  in: { label: "힘 있는 얼굴선", description: "결심한 일은 힘 있게 밀고 나가요. 자기 분야에서 입지를 다져가는 편이에요." },
+  myo: { label: "단정한 생김새", description: "세심하고 다정하게 사람을 대해요. 센스가 있어 주변과도 잘 어울려요." },
+  jin: { label: "시선을 잡는 외모", description: "이루고 싶은 목표가 커요. 사회적으로 성과를 내고 인정받으려는 마음도 강해요." },
+  sa: { label: "자꾸 보게 되는 외모", description: "상황을 빠르게 이해하고 핵심을 짚어요. 일을 풀어가는 요령도 좋은 편이에요." },
+  o: { label: "밝고 화사한 인상", description: "생각과 마음을 적극적으로 드러내요. 이기고 싶은 마음과 밀고 나가는 힘이 함께 있어요." },
+  mi: { label: "온화한 인상", description: "다른 사람의 사정을 헤아리는 배려가 있어요. 가족과 현실적인 생활도 두루 챙겨요." },
+  sin: { label: "날렵한 세련미", description: "영리한 감각으로 자기 능력을 보여줘요. 전문성과 실력을 바탕으로 인정받는 편이에요." },
+  yu: { label: "선명한 이목구비", description: "깔끔함을 중시하고 작은 차이에도 민감해요. 자기관리와 돈 관리도 꼼꼼하게 해요." },
+  sul: { label: "신뢰가 가는 인상", description: "인연을 소중히 여기고 맡은 일에 책임을 다해요. 쉽게 떠나기보다 오래 자리를 지켜요." },
+  hae: { label: "순하고 편안한 얼굴", description: "사람의 마음을 섬세하게 느끼고 공감해요. 곁에 좋은 인연이 모여드는 편이에요." },
 };
 
 const DAY_BRANCH_SPOUSE_TRAIT_EN: Record<string, DailyLifeMirrorFact> = {
@@ -83,18 +83,18 @@ const DAY_BRANCH_SPOUSE_TRAIT_EN: Record<string, DailyLifeMirrorFact> = {
 };
 
 const DAY_BRANCH_AUTHORITY_KO: Record<string, DailyLifeMirrorFact> = {
-  ja: { label: "은근 실세형", description: "겉으로 맞춰주는 척하면서 중요한 결정은 결국 원하는 방향으로 가요." },
-  chuk: { label: "버티기 승리형", description: "말싸움은 안 해도 한번 정한 건 안 바꿔서, 결국 상대가 따라오게 돼요." },
-  in: { label: "대장형", description: "집·돈·여행까지 먼저 결정하고 배우자를 끌고 가는 편이에요." },
-  myo: { label: "부드러운 조종형", description: "강요는 안 하는데, 말과 분위기로 자연스럽게 상대를 움직여요." },
-  jin: { label: "최종결정형", description: "평소엔 맡겨도 큰돈·집·가족 문제에서는 결정권을 잡아요." },
-  sa: { label: "두뇌 실세형", description: "배우자 의견도 듣지만, 결국 계산 끝내고 답을 정해놓는 편이에요." },
-  o: { label: "직진 주도형", description: "하고 싶은 게 분명해서 배우자가 따라오는 경우가 많아요." },
-  mi: { label: "맞춰주는 실세형", description: "평소엔 져주지만, 생활·가정 문제에서는 은근 자기 방식대로 해요." },
-  sin: { label: "협상형", description: "무조건 밀어붙이기보다 조건을 따져서 유리한 합의점을 만들어요." },
-  yu: { label: "관리자형", description: "돈·생활·집안 규칙까지 기준이 확실해서 자연스럽게 주도권을 잡아요." },
-  sul: { label: "책임자형", description: "결정한 만큼 책임도 지려 해서, 중요한 순간에 중심을 잡아요." },
-  hae: { label: "자유방임형", description: "사소한 건 서로 알아서 하되, 내 자유를 건드리면 절대 물러나지 않아요." },
+  ja: { label: "조용한 주도형", description: "겉으로는 상대에게 맞춰도 원하는 방향은 놓치지 않아요. 중요한 선택에는 은근히 내 뜻을 실어요." },
+  chuk: { label: "묵묵한 버팀형", description: "말로 다투기보다 한번 정한 입장을 지켜요. 결국 상대가 그 뜻에 맞추는 경우가 많아요." },
+  in: { label: "앞장서는 리더형", description: "집이나 돈 문제부터 여행 계획까지 먼저 방향을 정해요. 배우자가 그 흐름에 함께하도록 이끄는 편이에요." },
+  myo: { label: "분위기 주도형", description: "강하게 요구하기보다 말과 분위기를 활용해요. 상대의 선택을 자연스럽게 내가 바라는 쪽으로 이끌어요." },
+  jin: { label: "큰 선택 주도형", description: "평소에는 상대에게 맡겨두기도 해요. 큰돈이나 집 문제처럼 가족의 중요한 선택에서는 직접 결정권을 잡아요." },
+  sa: { label: "계산하는 실세형", description: "배우자의 의견은 들어보되 머릿속에서는 이미 계산을 마친 편이에요. 내 나름의 답을 정해두고 이야기를 나눠요." },
+  o: { label: "마음 따라 직진형", description: "하고 싶은 게 뚜렷해서 먼저 움직여요. 배우자가 그 방향을 따라오는 경우가 많아요." },
+  mi: { label: "생활 속 실세형", description: "평소에는 양보해도 생활과 가정의 일은 은근히 내 방식대로 돌아가게 하는 편이에요." },
+  sin: { label: "실속 있는 협상형", description: "무작정 내 뜻을 밀기보다 조건을 하나씩 따져봐요. 그 안에서 나에게 유리한 합의점을 찾아요." },
+  yu: { label: "기준 세우는 관리형", description: "돈과 생활에 분명한 기준을 세워요. 집안의 규칙을 정하면서 자연스럽게 흐름을 주도해요." },
+  sul: { label: "책임지는 중심형", description: "결정만 내리기보다 그 결과까지 책임지려 해요. 중요한 순간에 중심을 맡는 편이에요." },
+  hae: { label: "자유 지키는 독립형", description: "사소한 일은 각자에게 맡겨요. 다만 내 자유를 제한하려 하면 그때는 단호하게 선을 그어요." },
 };
 
 const DAY_BRANCH_AUTHORITY_EN: Record<string, DailyLifeMirrorFact> = {

@@ -100,7 +100,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
       {/* 02. 올해 우리 관계에서 무엇이 중요해질까? */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 02.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 02.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "What will matter most in your relationship this year?" : "올해 우리 관계에서 무엇이 중요해질까?"}
           </h3>
@@ -125,7 +125,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
       {/* 03. 앞으로 3년, 우리 관계의 흐름 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 03.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 03.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "The next 3 years: how your relationship flows" : "앞으로 3년, 우리 관계의 흐름"}
           </h3>
@@ -178,7 +178,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
       {section04TurningPoint ? (
         <div className="space-y-3">
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-base font-bold text-[#1b3b2b]">◤ 04.</span>
+            <span className="text-base font-bold text-[#8c7c72]">◤ 04.</span>
             <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
               {isEn
                 ? `The most important turning point ahead (${section04TurningPoint.year})`
@@ -222,7 +222,7 @@ export function MarriageChapter08View({ ch08, canonicalNames, isEn }: Props) {
       {/* 05. 이 흐름을 우리 편으로 만드는 법 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-base font-bold text-[#1b3b2b]">◤ 05.</span>
+          <span className="text-base font-bold text-[#8c7c72]">◤ 05.</span>
           <h3 className="text-base sm:text-lg font-bold text-[#2c2b29]">
             {isEn ? "How to make this flow work for you" : "이 흐름을 우리 편으로 만드는 법"}
           </h3>
