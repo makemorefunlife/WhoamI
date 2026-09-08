@@ -358,7 +358,10 @@ export async function POST(req: Request) {
     });
     if (!lockAcquire.ok) {
       return NextResponse.json(
-        { error: getMessages(locale).errors.generationInProgress },
+        {
+          error: getMessages(locale).errors.generationInProgress,
+          in_progress: lockAcquire.reason === "in_progress",
+        },
         { status: lockAcquire.reason === "in_progress" ? 409 : 503 },
       );
     }

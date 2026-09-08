@@ -268,6 +268,10 @@ export const messagesKoKR: MessageCatalog = {
     analysisHistoryTitle: "분석 기록",
     loadingReportTitle: "리포트를 불러오는 중이에요",
     generatingReportTitle: "리포트를 생성중입니다",
+    relationshipGeneratingTitle: "관계 분석을 생성하고 있어요",
+    relationshipGeneratingBody: "두 사람의 데이터를 바탕으로 리포트를 만들고 있어요. 잠시만 기다려주세요.",
+    relationshipAlreadyGeneratingTitle: "이미 이 관계의 분석을 생성하고 있어요",
+    relationshipAlreadyGeneratingBody: "완료되면 저장된 결과를 확인할 수 있어요.",
     generatingSubtitle: (partnerName: string, kindLabel: string) =>
       `${partnerName}님과의 ${kindLabel} 분석을 준비하고 있어요. 1~2분 걸릴 수 있어요.`,
     axisLabels: {
@@ -1474,6 +1478,10 @@ export const messagesKoKR: MessageCatalog = {
     backToDashboard: "대시보드로 돌아가기",
     editBirthInfo: "출생 정보 수정하기 (계정)",
     generatingReportNotice: "리포트 생성 중… 보통 1~2분 걸려요.",
+    generatingPersonalTitle: "개인 분석을 생성하고 있어요",
+    generatingPersonalSubtitle: "나만의 리포트를 만들고 있어요. 잠시만 기다려주세요.",
+    alreadyGeneratingTitle: "이미 분석을 생성하고 있어요",
+    alreadyGeneratingSubtitle: "잠시 후 결과가 표시됩니다.",
     dontCloseWindow: "창을 닫지 마세요.",
     regeneratingOverlay: "다시 생성 중…",
     structuredDesignFallbackTitle: "구조화 리포트 디자인을 불러오지 못했어요",

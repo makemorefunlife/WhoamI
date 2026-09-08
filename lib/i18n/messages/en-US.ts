@@ -280,6 +280,10 @@ export const messagesEnUS = {
     analysisHistoryTitle: "Analysis history",
     loadingReportTitle: "Loading your report",
     generatingReportTitle: "Generating your report",
+    relationshipGeneratingTitle: "Generating your Relationship Analysis",
+    relationshipGeneratingBody: "We're creating your report from both profiles. Please wait a moment.",
+    relationshipAlreadyGeneratingTitle: "This Relationship Analysis is already being generated",
+    relationshipAlreadyGeneratingBody: "You'll be able to view the saved result once it's ready.",
     generatingSubtitle: (partnerName: string, kindLabel: string) =>
       `Preparing your ${kindLabel} analysis with ${partnerName}. It may take 1–2 minutes.`,
     axisLabels: {
@@ -1528,7 +1532,11 @@ export const messagesEnUS = {
     backToDashboard: "Back to dashboard",
     editBirthInfo: "Edit birth info (Account)",
     generatingReportNotice: "Generating your report… this usually takes 1–2 minutes.",
-    dontCloseWindow: "Please don't close this window.",
+    generatingPersonalTitle: "Generating your Personal Analysis",
+    generatingPersonalSubtitle: "Creating your custom report. Please wait a moment.",
+    alreadyGeneratingTitle: "Analysis generation already in progress",
+    alreadyGeneratingSubtitle: "Your results will be displayed shortly.",
+    dontCloseWindow: "Please do not close this window.",
     regeneratingOverlay: "Regenerating…",
     structuredDesignFallbackTitle: "Couldn't load the structured report design",
     structuredDesignFallbackBody:
@@ -1896,6 +1904,10 @@ export type MessageCatalog = {
     analysisHistoryTitle: string;
     loadingReportTitle: string;
     generatingReportTitle: string;
+    relationshipGeneratingTitle: string;
+    relationshipGeneratingBody: string;
+    relationshipAlreadyGeneratingTitle: string;
+    relationshipAlreadyGeneratingBody: string;
     generatingSubtitle: (partnerName: string, kindLabel: string) => string;
     axisLabels: {
       emotional_sensitivity: string;
@@ -2966,6 +2978,10 @@ export type MessageCatalog = {
     backToDashboard: string;
     editBirthInfo: string;
     generatingReportNotice: string;
+    generatingPersonalTitle: string;
+    generatingPersonalSubtitle: string;
+    alreadyGeneratingTitle: string;
+    alreadyGeneratingSubtitle: string;
     dontCloseWindow: string;
     regeneratingOverlay: string;
     structuredDesignFallbackTitle: string;

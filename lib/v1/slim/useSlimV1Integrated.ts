@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { clearBlueprintAnalysisCaches } from "@/lib/v1/slim/clearBlueprintCaches";
 import {
   readSlimIntegratedCache,
@@ -21,11 +21,30 @@ export function useSlimV1Integrated(
   const { locale, messages } = useLocale();
   const [data, setData] = useState<EssenceDeepPreviewResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [inProgress, setInProgress] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isFetchingRef = useRef(false);
+  const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearPollTimer = () => {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => clearPollTimer();
+  }, []);
+
   const fetchReport = useCallback(
-    async (opts?: { clearCaches?: boolean }) => {
+    async (opts?: { clearCaches?: boolean; isPolling?: boolean }) => {
       if (!reportId) return;
+      if (isFetchingRef.current && !opts?.isPolling) return;
+
+      clearPollTimer();
+
       if (opts?.clearCaches) {
         clearBlueprintAnalysisCaches(reportId);
       }
@@ -35,6 +54,7 @@ export function useSlimV1Integrated(
         setData(null);
         setError(messages.errors.birthMissing);
         setLoading(false);
+        setInProgress(false);
         return;
       }
 
@@ -43,6 +63,8 @@ export function useSlimV1Integrated(
         if (cached) {
           setData(cached);
           setError(null);
+          setLoading(false);
+          setInProgress(false);
           return;
         }
       } else {
@@ -51,8 +73,12 @@ export function useSlimV1Integrated(
 
       const survey = readSurveyV2Session(reportId);
 
+      isFetchingRef.current = true;
       setLoading(true);
-      setError(null);
+      if (!opts?.isPolling) {
+        setError(null);
+      }
+
       try {
         const res = await fetch("/api/v2/deep/essence", {
           method: "POST",
@@ -73,20 +99,37 @@ export function useSlimV1Integrated(
             forceRegenerate: opts?.clearCaches === true,
           }),
         });
+
         const json = (await res.json()) as EssenceDeepPreviewResponse & {
           error?: string;
+          in_progress?: boolean;
         };
+
+        if (res.status === 409 || json.in_progress === true) {
+          setInProgress(true);
+          setError(null);
+          pollTimerRef.current = setTimeout(() => {
+            void fetchReport({ isPolling: true });
+          }, 2500);
+          return;
+        }
+
         if (!res.ok || !json.slim_v1?.report) {
           throw new Error(json.error ?? messages.errors.analysisFailed);
         }
+
         const payload = { ok: true as const, slim_v1: json.slim_v1 };
         writeSlimIntegratedCache(reportId, payload, locale);
         setData(payload);
+        setInProgress(false);
+        setError(null);
       } catch (e) {
+        setInProgress(false);
         setError(
           e instanceof Error ? e.message : messages.errors.analysisFailed,
         );
       } finally {
+        isFetchingRef.current = false;
         setLoading(false);
       }
     },
@@ -102,5 +145,5 @@ export function useSlimV1Integrated(
     void fetchReport();
   }, [enabled, reportId, fetchReport]);
 
-  return { data, loading, error, retry: fetchReport, regenerateFresh };
+  return { data, loading, inProgress, error, retry: fetchReport, regenerateFresh };
 }

@@ -99,6 +99,7 @@ export type UseRelationshipDetailReturn = {
   displayFamilyDeep: FamilyParentReportBody | null;
   displayFriendshipDeep: FriendReportBody | null;
   premiumReady: boolean;
+  premiumInProgress: boolean;
   toggleFavorite: () => Promise<void>;
   retryAnalysis: () => void;
   onAnalysisSurfaceChange: (surface: AnalysisSurface) => void;
@@ -217,6 +218,7 @@ export function useRelationshipDetail({
   const [logsLoading, setLogsLoading] = useState(false);
   const [autostartActive, setAutostartActive] = useState(false);
   const [serverPremiumReady, setServerPremiumReady] = useState(false);
+  const [premiumInProgress, setPremiumInProgress] = useState(false);
   const autostartTriggered = useRef(false);
   const loadSeqRef = useRef(0);
   const premiumSeqRef = useRef(0);
@@ -608,6 +610,11 @@ export function useRelationshipDetail({
           return false;
         }
         if (!res.ok) {
+          if (res.status === 409 || data?.in_progress === true) {
+            setPremiumInProgress(true);
+            setErr(null);
+            return true;
+          }
           setErr(data?.error ?? messages.report.premiumAnalysisFailedGeneric);
           return false;
         }
@@ -806,6 +813,20 @@ export function useRelationshipDetail({
   // Server hasPremiumCacheForKind (deep-only) + local body checks — same rule for all kinds.
   const premiumReady = serverPremiumReady || localPremiumReady;
 
+  useEffect(() => {
+    if (!premiumInProgress) return;
+    const timer = setInterval(() => {
+      void load(premiumKind, { silent: true });
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [premiumInProgress, premiumKind, load]);
+
+  useEffect(() => {
+    if (premiumInProgress && premiumReady) {
+      setPremiumInProgress(false);
+    }
+  }, [premiumInProgress, premiumReady]);
+
   const clearSnapshotView = useCallback(() => {
     setSnapshotView(null);
   }, []);
@@ -909,6 +930,7 @@ export function useRelationshipDetail({
     displayFamilyDeep,
     displayFriendshipDeep,
     premiumReady,
+    premiumInProgress,
     toggleFavorite,
     retryAnalysis,
     onAnalysisSurfaceChange,

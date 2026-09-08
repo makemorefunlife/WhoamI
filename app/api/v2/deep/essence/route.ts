@@ -20,6 +20,11 @@ import type {
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { reservePersonalCredit, consumeCredit, releaseCredit } from "@/lib/credits/creditEngine";
+import {
+  acquirePersonalPremiumGenerationLock,
+  releasePersonalPremiumGenerationLock,
+  stillOwnsPersonalPremiumGenerationLock,
+} from "@/lib/report/personalPremiumGenerationLock";
 
 export const runtime = "nodejs";
 // Two sequential gpt-4o-mini calls (Part A -> Part B) run in parallel with
@@ -125,44 +130,54 @@ export async function POST(req: Request) {
       }
     }
 
-    // Beta credit gate — only reached when no valid cache exists or the
-    // caller explicitly requested regeneration; a cache hit above already
-    // returned without ever touching credit. generationRequestId is the
-    // sole idempotency key for consume/release, independent of reportId
-    // (mirrors the relationship premium route's fencing pattern).
-    //
-    // userId can be null here in local development only — see
-    // assertOwnedReportAccess's own NODE_ENV !== "development" bypass above,
-    // which this deliberately mirrors rather than tightens: a null clerk
-    // user has nothing to attribute a credit charge to, so that pre-existing
-    // dev-only bypass path also skips credit gating instead of crashing on a
-    // null clerk_user_id write.
+    // DB-backed atomic lock — one in-flight slot per (reportId, locale).
+    // Fails fast (409 Conflict) before credit reservation if another request is active.
     const generationRequestId = crypto.randomUUID();
-    let creditReserved = false;
-    if (userId) {
-      const reserve = await reservePersonalCredit(supabase, {
-        clerkUserId: userId,
-        reportId,
-        locale,
-        generationRequestId,
-      });
-      if (!reserve.ok) {
-        if (reserve.reason === "insufficient_balance") {
-          return NextResponse.json(
-            { error: messages.errors.insufficientCredit },
-            { status: 402 },
-          );
-        }
+    const lock = await acquirePersonalPremiumGenerationLock(supabase, {
+      reportId,
+      locale,
+      generationRequestId,
+    });
+
+    if (!lock.ok) {
+      if (lock.reason === "in_progress") {
         return NextResponse.json(
-          { error: messages.errors.analysisFailed },
-          { status: 500 },
+          { error: messages.errors.analysisFailed, in_progress: true },
+          { status: 409 },
         );
       }
-      creditReserved = true;
+      return NextResponse.json(
+        { error: messages.errors.analysisFailed },
+        { status: 500 },
+      );
     }
 
+    let creditReserved = false;
     let generationSucceeded = false;
+
     try {
+      if (userId) {
+        const reserve = await reservePersonalCredit(supabase, {
+          clerkUserId: userId,
+          reportId,
+          locale,
+          generationRequestId,
+        });
+        if (!reserve.ok) {
+          if (reserve.reason === "insufficient_balance") {
+            return NextResponse.json(
+              { error: messages.errors.insufficientCredit },
+              { status: 402 },
+            );
+          }
+          return NextResponse.json(
+            { error: messages.errors.analysisFailed },
+            { status: 500 },
+          );
+        }
+        creditReserved = true;
+      }
+
       const slim_v1 = await runSlimIntegratedReport({
         birthDate,
         birthTime: body.birthTime ?? null,
@@ -172,6 +187,23 @@ export async function POST(req: Request) {
         currentSelfProfile: body.currentSelfProfile ?? null,
         locale,
       });
+
+      const stillOwns = await stillOwnsPersonalPremiumGenerationLock(
+        supabase,
+        lock.lockId,
+        generationRequestId,
+      );
+      if (!stillOwns) {
+        logServerError(
+          "v2/deep/essence:",
+          new Error("Lock ownership lost during generation"),
+          "lock_lost",
+        );
+        return NextResponse.json(
+          { error: messages.errors.analysisFailed },
+          { status: 500 },
+        );
+      }
 
       await writePersistedDeepEssenceAnalysis(
         supabase,
@@ -189,6 +221,11 @@ export async function POST(req: Request) {
       if (!generationSucceeded && creditReserved) {
         await releaseCredit(supabase, generationRequestId);
       }
+      await releasePersonalPremiumGenerationLock(
+        supabase,
+        lock.lockId,
+        generationRequestId,
+      ).catch(() => {});
     }
   } catch (e) {
     logServerError("v2/deep/essence:", e, "internal_error");

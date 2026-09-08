@@ -18,25 +18,35 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 export default function StitchDeepEssenceView({
   data,
   loading,
+  inProgress = false,
   error,
   onRetry,
   onRegenerateFresh,
 }: {
   data: EssenceDeepPreviewResponse | null;
   loading: boolean;
+  inProgress?: boolean;
   error: string | null;
   onRetry?: () => void;
   onRegenerateFresh?: () => void;
 }) {
   const { locale, messages } = useLocale();
 
-  if (loading && !data) {
+  if ((loading || inProgress) && !data) {
     return (
-      <div className="stitch-hero-panel rounded-extra-large px-6 py-12 text-center">
-        <p className="text-sm text-on-surface-variant">
-          {messages.blueprint.generatingReportNotice}
+      <div className="stitch-hero-panel rounded-extra-large px-6 py-12 text-center space-y-2">
+        <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <h3 className="text-base font-bold text-primary">
+          {inProgress
+            ? messages.blueprint.alreadyGeneratingTitle
+            : messages.blueprint.generatingPersonalTitle}
+        </h3>
+        <p className="text-sm text-on-surface-variant leading-relaxed">
+          {inProgress
+            ? messages.blueprint.alreadyGeneratingSubtitle
+            : messages.blueprint.generatingPersonalSubtitle}
         </p>
-        <p className="mt-1 text-xs text-on-surface-variant/80">
+        <p className="mt-2 text-xs text-on-surface-variant/70">
           {messages.blueprint.dontCloseWindow}
         </p>
       </div>
@@ -74,10 +84,18 @@ export default function StitchDeepEssenceView({
 
   return (
     <div className="relative">
-      {loading ? (
-        <div className="absolute inset-0 z-10 flex items-start justify-center rounded-extra-large bg-[#faf7f0]/80 pt-16 backdrop-blur-[2px]">
-          <p className="text-sm text-on-surface-variant">
-            {messages.blueprint.regeneratingOverlay}
+      {loading || inProgress ? (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-extra-large bg-[#faf7f0]/85 p-6 text-center backdrop-blur-[2px] space-y-2">
+          <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm font-bold text-primary">
+            {inProgress
+              ? messages.blueprint.alreadyGeneratingTitle
+              : messages.blueprint.generatingPersonalTitle}
+          </p>
+          <p className="text-xs text-on-surface-variant/80">
+            {inProgress
+              ? messages.blueprint.alreadyGeneratingSubtitle
+              : messages.blueprint.generatingPersonalSubtitle}
           </p>
         </div>
       ) : null}

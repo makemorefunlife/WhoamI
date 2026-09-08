@@ -9,22 +9,30 @@ type Props = {
   partnerName: string;
   kindLabel: string;
   phase?: "loading" | "generating";
+  inProgress?: boolean;
 };
 
 export default function RelationshipGeneratingPanel({
   partnerName,
   kindLabel,
   phase = "generating",
+  inProgress = false,
 }: Props) {
   const { messages, href: localize } = useLocale();
-  const title =
-    phase === "loading"
-      ? messages.report.loadingReportTitle
-      : messages.report.generatingReportTitle;
-  const subtitle =
-    phase === "loading"
-      ? messages.report.analyzingHint
-      : messages.report.generatingSubtitle(partnerName, kindLabel);
+
+  let title = messages.report.generatingReportTitle;
+  let subtitle = messages.report.generatingSubtitle(partnerName, kindLabel);
+
+  if (inProgress) {
+    title = messages.report.relationshipAlreadyGeneratingTitle;
+    subtitle = messages.report.relationshipAlreadyGeneratingBody;
+  } else if (phase === "loading") {
+    title = messages.report.loadingReportTitle;
+    subtitle = messages.report.analyzingHint;
+  } else if (messages.report.relationshipGeneratingTitle) {
+    title = messages.report.relationshipGeneratingTitle;
+    subtitle = messages.report.relationshipGeneratingBody;
+  }
 
   return (
     <motion.div

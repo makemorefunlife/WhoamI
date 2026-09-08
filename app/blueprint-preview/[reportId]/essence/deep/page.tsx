@@ -51,7 +51,7 @@ function EssenceDeepContent() {
   const canGenerate =
     ready && !booting && Boolean(bundle?.birth && hasMinimalBirth(bundle.birth));
 
-  const { data, loading, error, retry, regenerateFresh } = useSlimV1Integrated(
+  const { data, loading, inProgress, error, retry, regenerateFresh } = useSlimV1Integrated(
     reportId,
     canGenerate,
     bundle?.birth ?? null,
@@ -120,6 +120,7 @@ function EssenceDeepContent() {
         <StitchDeepEssenceView
           data={data}
           loading={loading}
+          inProgress={inProgress}
           error={error}
           onRetry={() => retry()}
           onRegenerateFresh={() => regenerateFresh()}
@@ -137,9 +138,9 @@ function EssenceDeepContent() {
             type="button"
             className="stitch-cta-secondary w-full disabled:opacity-60"
             onClick={() => regenerateFresh()}
-            disabled={loading}
+            disabled={loading || inProgress}
           >
-            {loading ? messages.blueprint.regenerating : messages.blueprint.regenerate}
+            {loading || inProgress ? messages.blueprint.regenerating : messages.blueprint.regenerate}
           </button>
           {error ? (
             <button

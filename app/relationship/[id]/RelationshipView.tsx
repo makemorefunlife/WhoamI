@@ -66,6 +66,7 @@ export default function RelationshipView({
     displayFamilyDeep,
     displayFriendshipDeep,
     premiumReady,
+    premiumInProgress,
     retryAnalysis,
     onAnalysisSurfaceChange,
     viewAnalysisLog,
@@ -81,7 +82,7 @@ export default function RelationshipView({
   } = detail;
 
   const viewingBasicSurface = analysisSurface === "basic";
-  const generating = busy || autostartActive;
+  const generating = busy || autostartActive || premiumInProgress;
   const usedBirthFallback =
     viewerBirthTimeUnknown || partnerBirthTimeUnknown;
   /** 실제로 생성 요청 중일 때만 — autostart 쿼리만으로 영원히 잠기지 않음 */
@@ -218,6 +219,7 @@ export default function RelationshipView({
           partnerName={partnerName}
           kindLabel={messages.report.relationshipKindNames[premiumKind]}
           phase="generating"
+          inProgress={premiumInProgress}
         />
       ) : null}
 
