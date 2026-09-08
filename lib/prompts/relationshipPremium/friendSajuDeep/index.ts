@@ -100,6 +100,7 @@ export function buildFriendSajuDeepPromptBundle(params: {
       friendDigestBlock: digest,
       userCustomMyName: params.userCustomMyName,
       userCustomTargetName: params.userCustomTargetName,
+      locale: params.locale ?? "ko",
     }),
   };
 }

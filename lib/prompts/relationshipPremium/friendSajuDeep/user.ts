@@ -8,7 +8,66 @@ import {
   buildEssenceActionSelfDedupChecklist,
 } from "./essenceActionWritingRules";
 
-const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
+/**
+ * The "repair language" list, the section_5 evidence-bridge instruction,
+ * and the 문체(tone) block below used to be hardcoded Korean regardless of
+ * which locale this user prompt was built for — a direct contributor to
+ * Korean leaking into English Friend Premium narrative (gap-signal /
+ * advice-action sections). Now branches on locale; the en-US branch drops
+ * the Korean tone block entirely (ENGLISH_TONE_LAW in the system prompt
+ * already owns English tone) rather than mistranslating grammar rules that
+ * don't apply to English.
+ */
+const buildFinalOutputRules = (
+  nicknameA: string,
+  nicknameB: string,
+  locale: "ko" | "en" = "ko",
+) => {
+  if (locale === "en") {
+    return `
+# Final output rules (Friend / Social · Round 1)
+
+## Domain
+- Write for **friends / social peers**: contact rhythm, tikitaka/chemistry, comfortable distance, upset signals, hangout planning, low-pressure ease.
+- Ban dating thrills, marriage CFO/chore, family parenting, business P&L/handoff.
+
+## Epistemics
+- Canonical server values (compare bands band_a/band_b, confidence/align) are authoritative.
+- Narrative may explain and soften wording; must never contradict.
+- \`confidence=low\` or \`align=caution\` → tentative markers.
+- High confidence may stay direct.
+
+## Soft-wash ban (friend)
+- When friend bands disagree (mismatch):
+  1. First sentence must name the rhythm/distance/upset gap.
+  2. Entire body stays gap-consistent — may describe what each needs / currently does / how to translate.
+  3. Must not claim friendship duty cancels the gap ("you're friends, so you just have to understand no matter what", "real friends don't mind").
+  4. Repair language = conditional/future: "this can be worked out together", "worth checking in on", "agreeing on distance and tempo out loud can help".
+
+## section_5 advice — Evidence bridge (hard, anti-drift)
+- Write tips tip1 → tip2 → tip3 for A, then B.
+- **Before every tip** (including tip2 and tip3):
+  1. Pick exactly one unused friend digest fact.
+  2. Sentence 1 of \`saju_reason\` = user-facing evidence bridge (natural English; never print Saju/Mingli technical terms or internal keys).
+  3. Then concrete action + benefit.
+- Tip3 is not exempt.
+- Forbidden generic: "communicate with mutual respect", "you're friends so just understand each other".
+
+## Names & speaker binding
+- Write **${nicknameA}** / **${nicknameB}** exactly. Never invent an honorific or an awkward possessive form.
+- A 1st-person: "I" = **${nicknameA}**; other = **${nicknameB}** (or "your friend" if needed).
+- B 1st-person: "I" = **${nicknameB}**; other = **${nicknameA}** (or "your friend" if A's name is literally "I").
+- Forbid using one's own display name as the other party.
+- Both-readers dignity (V9): no "problem friend" framing or ranking jokes.
+
+## Mingli
+- Zero user-facing Saju jargon. Digest → natural, jargon-free language only.
+
+${ENGLISH_TONE_REMINDER}
+`.trim();
+  }
+
+  return `
 # Final output rules (Friend / Social · Round 1)
 
 ## Domain
@@ -55,6 +114,22 @@ const buildFinalOutputRules = (nicknameA: string, nicknameB: string) => `
 - 딱딱한 보고서체 대신, 감각 있는 에디터가 다정하게 설명하듯 생생하고 공감 가는 표현을 쓴다.
 - 셀 예시: ❌ "다정한 편 — 갈등 시 침묵으로 후퇴" → ✅ "대체로 다정한 편이지만, 갈등이 생기면 잠시 침묵으로 물러나는 편이에요."
 `.trim();
+};
+
+/**
+ * Short EN tone reminder for the user prompt — deliberately redundant with
+ * ENGLISH_TONE_LAW in the system prompt (lib/i18n/llmLocale.ts). The Korean
+ * side gets this same kind of tone guidance twice too (once in system.ts's
+ * output-language block, once in the 문체 block above); a smaller model
+ * (gpt-4o-mini) leaking language under a prompt this dense in Korean
+ * structural content is exactly the failure mode this investigation found,
+ * so this stays close to the actual generation instructions rather than
+ * relying solely on the system prompt.
+ */
+const ENGLISH_TONE_REMINDER = `## Tone — English output
+- Write ALL of section_4_friend_frames and section_5_action in natural North American English.
+- Sound like a warm, direct friend — not a translated Korean report.
+- Do not mix in Korean words or phrases anywhere in these two sections.`;
 
 export function buildFriendSajuDeepUserPrompt(params: {
   nicknameA: string;
@@ -62,6 +137,7 @@ export function buildFriendSajuDeepUserPrompt(params: {
   friendDigestBlock: string;
   userCustomMyName?: string;
   userCustomTargetName?: string;
+  locale?: "ko" | "en";
 }): string {
   const {
     nicknameA,
@@ -69,6 +145,7 @@ export function buildFriendSajuDeepUserPrompt(params: {
     friendDigestBlock,
     userCustomMyName,
     userCustomTargetName,
+    locale = "ko",
   } = params;
   const nameA = (userCustomMyName || nicknameA).trim() || nicknameA;
   const nameB = (userCustomTargetName || nicknameB).trim() || nicknameB;
@@ -87,14 +164,15 @@ Do not re-classify bands. Do not invent Romantic/Marriage/Family/Business axes.
 ## Input data (canonical — explain only)
 ${friendDigestBlock}
 
-${buildFinalOutputRules(nicknameA, nicknameB)}
+${buildFinalOutputRules(nicknameA, nicknameB, locale)}
 
 ${buildEssenceActionFewShotExample({
   nicknameA: nameA,
   nicknameB: nameB,
+  locale,
 })}
 
-${buildEssenceActionSelfDedupChecklist(nicknameA, nicknameB)}
+${buildEssenceActionSelfDedupChecklist(nicknameA, nicknameB, locale)}
 
 Emit one JSON object only with this shape:
 \`\`\`json
@@ -163,7 +241,7 @@ export function buildFriendDigestScaffold(params: {
     lines.push("- (rows empty — tests may inject)");
   }
   lines.push(
-    "Never print internal keys in user-facing prose; translate to natural Korean evidence bridges.",
+    "Never print internal keys in user-facing prose; translate to natural, jargon-free evidence bridges in the output language.",
     "Do not invent Romantic, Marriage, Family, or Business axes.",
   );
   return lines.join("\n");

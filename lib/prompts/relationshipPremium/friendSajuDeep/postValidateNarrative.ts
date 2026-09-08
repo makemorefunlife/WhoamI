@@ -34,11 +34,29 @@ const TENTATIVE_MARKER =
 const EVIDENCE_BRIDGE =
   /일상\s*공유|연락\s*템포|서운함|호감|표현\s*언어|배터리|회복|만남|약속\s*계획|티키타카|소통\s*리듬|편한\s*거리|케미|유머|잡히기\s*때문에|잡히므로|보이기\s*때문에|어긋날\s*수\s*있어서|같은\s*결|기울기가?\s*다르|다르게\s*잡히/;
 
+/**
+ * Phase 2 English remediation (Friend): mirrors the EN evidence-bridge regex
+ * already shipped for Married (marriedSajuDeep/postValidateNarrative.ts).
+ * Without this, adviceHasLeadingEvidenceBridge always tested English text
+ * against a Korean-only regex and always failed — which unconditionally
+ * triggered the (until now, also Korean-only) fallback-bridge injection
+ * below on every single English advice tip. That's the direct cause of
+ * Korean text appearing in EN Friend Premium's advice/action section.
+ */
+const EVIDENCE_BRIDGE_EN =
+  /contact tempo|daily share|upset|affection|recharge|battery|hangout|plan(?:ning)?|rhythm|back-and-forth|distance|chemistry|humor|because (?:your|you (?:two|each))|reads? differently|shows? up differently|lean(?:s)? differently|tend(?:s)? to|line up|align/i;
+
 const GENERIC_ONLY_ADVICE =
   /서로\s*존중하며\s*소통하세요|친구니까\s*무조건|감정을\s*솔직히\s*표현하세요|무조건\s*사랑하|설레는\s*연애|절교각|특별한\s*에너지/;
 
+const GENERIC_ONLY_ADVICE_EN =
+  /communicate with (?:mutual )?respect|you'?re friends,? so|express your feelings (?:honestly|openly)|you just have to (?:understand|love)|swoony romance|special energy/i;
+
 const FEWSHOT_TOGETHER_BLEED =
   /가장\s*아름다운\s*조각|따뜻한\s*차\s*한\s*잔을\s*사이에\s*두고|설레는\s*데이트|친구니까\s*무조건|서로\s*믿으면\s*된다/;
+
+const FEWSHOT_TOGETHER_BLEED_EN =
+  /most beautiful (?:moment|piece)|over a warm cup of tea|romantic dates?|you'?re friends,? so|just trust (?:each other|one another)/i;
 
 const ASPECT_BRIDGE_LABEL: Record<string, string> = {
   daily_share_tempo: "일상 공유·연락 템포",
@@ -47,6 +65,15 @@ const ASPECT_BRIDGE_LABEL: Record<string, string> = {
   battery_recharge: "배터리·회복",
   hangout_planning: "만남·약속 계획",
   communication_rhythm: "티키타카·소통 리듬",
+};
+
+const ASPECT_BRIDGE_LABEL_EN: Record<string, string> = {
+  daily_share_tempo: "daily-share / contact tempo",
+  upset_expression: "how you show being upset",
+  affection_language: "affection-expression language",
+  battery_recharge: "social battery / recharge",
+  hangout_planning: "hangout planning",
+  communication_rhythm: "back-and-forth rhythm",
 };
 
 type LeanRow = {
@@ -225,10 +252,13 @@ function ensureLowConfTentative(cell: string): { text: string; fixed: boolean } 
   };
 }
 
-export function adviceHasLeadingEvidenceBridge(reason: string): boolean {
+export function adviceHasLeadingEvidenceBridge(
+  reason: string,
+  isEn = false,
+): boolean {
   const first = reason.split(/(?<=[.。])\s+/)[0] || reason;
   const head = first.length >= 12 ? first : reason.slice(0, 100);
-  return EVIDENCE_BRIDGE.test(head);
+  return isEn ? EVIDENCE_BRIDGE_EN.test(head) : EVIDENCE_BRIDGE.test(head);
 }
 
 function scrubFriendSoftWash(body: string): string {
@@ -284,7 +314,9 @@ function softWashBody(body: string, isEn: boolean): string {
 function buildAdviceBridgePool(params: {
   mismatchRoles?: boolean;
   comparisonLeans?: Partial<Record<string, LeanRow>>;
+  isEn?: boolean;
 }): string[] {
+  const isEn = params.isEn ?? false;
   const pool: string[] = [];
   const seen = new Set<string>();
   const push = (s: string) => {
@@ -294,7 +326,11 @@ function buildAdviceBridgePool(params: {
   };
 
   if (params.mismatchRoles) {
-    push("친구 사이 연락·거리 기대가 어긋날 수 있어서");
+    push(
+      isEn
+        ? "Because contact and distance expectations between you two may not line up"
+        : "친구 사이 연락·거리 기대가 어긋날 수 있어서",
+    );
   }
 
   const leans = params.comparisonLeans ?? {};
@@ -312,27 +348,65 @@ function buildAdviceBridgePool(params: {
     const a = row?.band_a ?? row?.lean_a ?? null;
     const b = row?.band_b ?? row?.lean_b ?? null;
     if (!a || !b) continue;
-    const label = ASPECT_BRIDGE_LABEL[key] ?? key;
+    const label = isEn
+      ? (ASPECT_BRIDGE_LABEL_EN[key] ?? key)
+      : (ASPECT_BRIDGE_LABEL[key] ?? key);
     if (a === b) {
-      push(`양쪽 모두 ${label}에서 같은 결을 공유하는 편으로 잡히기 때문에`);
+      push(
+        isEn
+          ? `Because you both share a similar lean on ${label}`
+          : `양쪽 모두 ${label}에서 같은 결을 공유하는 편으로 잡히기 때문에`,
+      );
     } else if (key === "daily_share_tempo") {
-      push("일상 공유·연락 템포가 다르게 잡히기 때문에");
+      push(
+        isEn
+          ? "Because your daily-share and contact tempo tend to land differently"
+          : "일상 공유·연락 템포가 다르게 잡히기 때문에",
+      );
     } else if (key === "upset_expression") {
-      push("서운함을 드러내는 방식이 다르게 보이기 때문에");
+      push(
+        isEn
+          ? "Because you each show being upset in a different way"
+          : "서운함을 드러내는 방식이 다르게 보이기 때문에",
+      );
     } else if (key === "affection_language") {
-      push("호감을 표현하는 언어 채널이 다르게 잡히므로");
+      push(
+        isEn
+          ? "Because the way you each express affection runs on a different channel"
+          : "호감을 표현하는 언어 채널이 다르게 잡히므로",
+      );
     } else if (key === "battery_recharge") {
-      push("배터리·회복 방식이 다르게 보이기 때문에");
+      push(
+        isEn
+          ? "Because your social battery and recharge styles differ"
+          : "배터리·회복 방식이 다르게 보이기 때문에",
+      );
     } else if (key === "hangout_planning") {
-      push("만남·약속 계획 결이 다르게 잡히기 때문에");
+      push(
+        isEn
+          ? "Because how you plan hangouts tends to fall into different patterns"
+          : "만남·약속 계획 결이 다르게 잡히기 때문에",
+      );
     } else if (key === "communication_rhythm") {
-      push("티키타카·소통 리듬이 다르게 보이기 때문에");
+      push(
+        isEn
+          ? "Because your back-and-forth rhythm syncs differently"
+          : "티키타카·소통 리듬이 다르게 보이기 때문에",
+      );
     } else {
-      push(`${label} 결이 다르게 잡히기 때문에`);
+      push(
+        isEn
+          ? `Because your ${label} reads differently`
+          : `${label} 결이 다르게 잡히기 때문에`,
+      );
     }
   }
 
-  push("친구 사이에서 잡힌 연락·거리·리듬 결이 달라 보일 수 있어서");
+  push(
+    isEn
+      ? "Because the contact/distance/rhythm patterns in this friendship may look different"
+      : "친구 사이에서 잡힌 연락·거리·리듬 결이 달라 보일 수 있어서",
+  );
   return pool;
 }
 
@@ -340,9 +414,12 @@ function pickAdviceBridge(
   pool: string[],
   tipIndex: number,
   used: Set<string>,
+  isEn = false,
 ): string {
   if (pool.length === 0) {
-    return "친구 사이에서 잡힌 연락·거리·리듬 결이 달라 보일 수 있어서";
+    return isEn
+      ? "Because the contact/distance/rhythm patterns in this friendship may look different"
+      : "친구 사이에서 잡힌 연락·거리·리듬 결이 달라 보일 수 있어서";
   }
   for (let i = 0; i < pool.length; i++) {
     const candidate = pool[(tipIndex + i) % pool.length]!;
@@ -359,14 +436,18 @@ function pickAdviceBridge(
 function ensureAdviceEvidenceBridge(
   reason: string,
   bridgeClause: string,
+  isEn = false,
 ): { text: string; fixed: boolean } {
   const raw = reason.trim();
   if (!raw) return { text: reason, fixed: false };
-  if (adviceHasLeadingEvidenceBridge(raw)) {
+  if (adviceHasLeadingEvidenceBridge(raw, isEn)) {
     return { text: raw, fixed: false };
   }
   const clause = bridgeClause.replace(/[,，.\s]+$/u, "");
-  return { text: `${clause}, ${raw}`, fixed: true };
+  return {
+    text: isEn ? `${clause}. ${raw}` : `${clause}, ${raw}`,
+    fixed: true,
+  };
 }
 
 function patchStringField(
@@ -557,6 +638,7 @@ export function postValidateFriendNarrative(
     const bridgePool = buildAdviceBridgePool({
       mismatchRoles: mismatch,
       comparisonLeans: leans,
+      isEn,
     });
     for (const listKey of ["advice_for_a", "advice_for_b"] as const) {
       const list = Array.isArray(action[listKey])
@@ -576,19 +658,20 @@ export function postValidateFriendNarrative(
           fixes.push(`strip_source_tag:${listKey}`);
         }
         let finalReason = asStr(tip.saju_reason);
-        if (finalReason && adviceHasLeadingEvidenceBridge(finalReason)) {
+        if (finalReason && adviceHasLeadingEvidenceBridge(finalReason, isEn)) {
           const head = (
             finalReason.split(/(?<=[.。])\s+/)[0] || finalReason
           ).slice(0, 48);
           usedBridges.add(head);
         } else if (
           finalReason &&
-          !adviceHasLeadingEvidenceBridge(finalReason)
+          !adviceHasLeadingEvidenceBridge(finalReason, isEn)
         ) {
-          const bridge = pickAdviceBridge(bridgePool, tipIndex, usedBridges);
+          const bridge = pickAdviceBridge(bridgePool, tipIndex, usedBridges, isEn);
           const { text, fixed } = ensureAdviceEvidenceBridge(
             finalReason,
             bridge,
+            isEn,
           );
           if (fixed) {
             tip.saju_reason = text;
@@ -599,9 +682,10 @@ export function postValidateFriendNarrative(
             fixes.push(`advice_missing_evidence_bridge:${listKey}`);
           }
         }
+        const genericOnly = isEn ? GENERIC_ONLY_ADVICE_EN : GENERIC_ONLY_ADVICE;
         if (
-          GENERIC_ONLY_ADVICE.test(finalReason) ||
-          GENERIC_ONLY_ADVICE.test(asStr(tip.action_title))
+          genericOnly.test(finalReason) ||
+          genericOnly.test(asStr(tip.action_title))
         ) {
           fixes.push(`advice_generic_only:${listKey}`);
         }
@@ -610,8 +694,13 @@ export function postValidateFriendNarrative(
     }
 
     const together = asStr(action.together);
-    if (together && FEWSHOT_TOGETHER_BLEED.test(together)) {
-      action.together = mismatch
+    const fewshotBleed = isEn ? FEWSHOT_TOGETHER_BLEED_EN : FEWSHOT_TOGETHER_BLEED;
+    if (together && fewshotBleed.test(together)) {
+      action.together = isEn
+        ? mismatch
+          ? "Note one real difference in contact, distance, or hurt feelings that's showing up in this friendship this week. Rather than erase it, agree on the tempo you're both actually comfortable with. Do a quick check-in this weekend."
+          : "Write down one thing about this friendship's contact rhythm and distance this week. The same situation can land differently for each of you. Set aside a short check-in this weekend."
+        : mismatch
         ? "연락·거리·서운함처럼 이 우정에서 잡힌 차이를 이번 주 한 가지만 짧게 적어 보자. 없애려 하기보다 템포를 말로 합의하는 편이 도움이 된다. 주말에 가벼운 한 줄 체크인을 해보자."
         : "친구 사이에서 잡힌 연락·리듬 결을 이번 주 한 가지만 짚어 기록해 보자. 같은 상황에도 기대가 다를 수 있다. 주말에 짧은 점검을 잡아 보자.";
       fixes.push("together_fewshot_rewrite");
