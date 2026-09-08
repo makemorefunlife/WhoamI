@@ -9,6 +9,8 @@
  *   CHAPTER NUMBER → TITLE → USER QUESTION / SHORT LEAD.
  */
 import { MessageCircle } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
 import type { Locale } from "@/lib/i18n/locale";
 import { pick } from "@/lib/relationship/friend/friendCopy";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
@@ -281,6 +283,7 @@ export function Chapter02WhyUs({ vm, locale }: Ctx) {
 /* ------------------- CHAPTER 2: 서로에게 어떤 친구인가 ------------------- */
 
 export function Chapter03Roles({ vm, locale }: Ctx) {
+  const { user } = useUser();
   const social = findSection(vm, "social_dna") as SocialDnaSectionVM | undefined;
   const deepRead = findSection(vm, "deep_read") as DeepReadSectionVM | undefined;
   const isKo = locale !== "en-US";
@@ -290,9 +293,17 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
   const partner = social.dna.partner;
   const pairSynth = (me as { pair_synthesis?: { label: string; lineAtoB?: string; lineBtoA?: string; description: string } }).pair_synthesis;
 
+  // Resolve actual user display name (Primary: me.nickname if non-generic -> Clerk name -> empty if unresolved)
+  const actualUserName = resolveViewerDisplayName({
+    reportName: me.nickname,
+    clerkFirstName: user?.firstName,
+    clerkFullName: user?.fullName,
+    fallback: "",
+  });
+
   const people = [
     { key: "a" as const, person: me, partnerName: partner.nickname, voice: deepRead?.vm.meNature },
-    { key: "b" as const, person: partner, partnerName: me.nickname, voice: deepRead?.vm.partnerNature },
+    { key: "b" as const, person: partner, partnerName: actualUserName || (isKo ? "나" : "You"), voice: deepRead?.vm.partnerNature },
   ];
 
   return (
@@ -313,6 +324,17 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
           const oneOnOne = profile?.oneOnOneSlot;
           const support = profile?.supportSlot;
           const directional = person.guardian_character;
+
+          let directionalHeader = "";
+          if (key === "a") {
+            directionalHeader = isKo ? `▫ ${partnerName}에게 나는` : `For ${partnerName}`;
+          } else {
+            if (actualUserName) {
+              directionalHeader = isKo ? `▫ ${actualUserName}에게 ${person.nickname}은` : `For ${actualUserName}`;
+            } else {
+              directionalHeader = isKo ? `▫ 나에게 ${person.nickname}은` : `For You`;
+            }
+          }
 
           return (
             <Reveal key={key} delay={i * 90}>
@@ -365,7 +387,7 @@ export function Chapter03Roles({ vm, locale }: Ctx) {
                   {directional ? (
                     <div className="rounded-xl border border-rel-line/70 bg-rel-bg/50 p-3.5">
                       <dt className="font-rel-sans text-[11px] font-semibold tracking-wide text-rel-accent">
-                        {isKo ? `▫ ${partnerName}에게 나는` : `For ${partnerName}`}
+                        {directionalHeader}
                       </dt>
                       <dd className="mt-1 font-rel-serif text-[14.5px] font-semibold leading-[1.4] text-rel-ink">
                         {directional.label}

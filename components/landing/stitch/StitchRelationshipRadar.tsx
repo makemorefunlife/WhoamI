@@ -1,14 +1,19 @@
 "use client";
 
 import Image from "next/image";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Props = {
   sampleBadgeText?: string;
 };
 
 export default function StitchRelationshipRadar({
-  sampleBadgeText = "예시 샘플 데이터",
+  sampleBadgeText,
 }: Props) {
+  const { messages } = useLocale();
+  const badge = sampleBadgeText || messages.landing.relBridgeSampleBadge;
+  const note = messages.landing.relBridgeSampleNote;
+
   return (
     <div className="relative w-full max-w-[460px] text-left rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
@@ -16,7 +21,7 @@ export default function StitchRelationshipRadar({
           11-Axis Relationship Radar
         </span>
         <span className="rounded-full bg-secondary-container/80 px-2.5 py-0.5 text-[10px] font-medium text-primary">
-          {sampleBadgeText}
+          {badge}
         </span>
       </div>
 
@@ -32,7 +37,7 @@ export default function StitchRelationshipRadar({
       </div>
 
       <p className="mt-4 text-[11px] text-on-surface-variant/70 leading-relaxed border-t border-outline-variant/20 pt-3">
-        * 행동 기반 설문으로 측정한 참고 자료입니다. 편안한 마음으로 확인해 보세요.
+        {note}
       </p>
     </div>
   );

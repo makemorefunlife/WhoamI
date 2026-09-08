@@ -50,9 +50,9 @@ export default function StitchAppFooter() {
   ];
 
   return (
-    <footer className="mt-auto border-t border-outline-variant/30 bg-surface-container-low/35 px-5 py-8 sm:px-6">
+    <footer className="mt-auto border-t border-outline-variant/30 bg-primary px-5 py-8 text-on-primary sm:px-6">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
-        <p className="text-sm font-semibold text-primary">
+        <p className="text-sm font-semibold text-on-primary">
           <LocaleLink href="/" className="transition hover:opacity-80">
             Aha It&apos;s me!
           </LocaleLink>
@@ -61,7 +61,7 @@ export default function StitchAppFooter() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {footerGroups.map((group) => (
             <div key={group.id}>
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant/60">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-accent-emerald-soft/90">
                 {group.label}
               </p>
               <ul className="space-y-1.5">
@@ -69,7 +69,7 @@ export default function StitchAppFooter() {
                   <li key={link.href}>
                     <LocaleLink
                       href={link.href}
-                      className="text-[12px] font-normal text-on-surface-variant transition hover:text-primary"
+                      className="text-[12px] font-normal text-on-primary/80 transition hover:text-accent-rose-soft"
                     >
                       {link.label}
                     </LocaleLink>
@@ -81,7 +81,7 @@ export default function StitchAppFooter() {
         </div>
 
         {locale === "ko-KR" ? (
-          <div className="border-t border-outline-variant/25 pt-5 text-[11px] leading-relaxed text-on-surface-variant">
+          <div className="border-t border-on-primary/15 pt-5 text-[11px] leading-relaxed text-on-primary/60">
             <p>
               {biz.companyLabel}: {biz.companyName}
             </p>
@@ -102,14 +102,14 @@ export default function StitchAppFooter() {
             </p>
             <p>
               {biz.emailLabel}:{" "}
-              <a href={`mailto:${biz.email}`} className="underline underline-offset-2">
+              <a href={`mailto:${biz.email}`} className="underline underline-offset-2 hover:text-on-primary">
                 {biz.email}
               </a>
             </p>
           </div>
         ) : null}
 
-        <p className="border-t border-outline-variant/25 pt-5 text-[11px] text-on-surface-variant">
+        <p className="border-t border-on-primary/15 pt-5 text-[11px] text-on-primary/60">
           © {new Date().getFullYear()} Aha It&apos;s me!
         </p>
       </div>

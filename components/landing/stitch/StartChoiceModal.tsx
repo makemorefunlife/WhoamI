@@ -57,7 +57,7 @@ export default function StartChoiceModal({
       >
         <div className="flex items-center justify-between mb-3">
           <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-bold text-secondary uppercase tracking-wider">
-            시작하기
+            {messages.startChoiceModal.tag}
           </span>
           <button
             type="button"
@@ -69,10 +69,10 @@ export default function StartChoiceModal({
         </div>
 
         <h2 id="start-choice-title" className="stitch-headline text-2xl font-bold text-primary">
-          어디로 이동할까요?
+          {messages.startChoiceModal.title}
         </h2>
         <p className="mt-1 text-xs sm:text-sm leading-relaxed text-on-surface-variant/80">
-          원하는 분석 및 서비스 메뉴를 선택해 보세요.
+          {messages.startChoiceModal.subtitle}
         </p>
 
         <div className="mt-6 flex flex-col gap-3">
@@ -85,10 +85,10 @@ export default function StartChoiceModal({
           >
             <div className="flex flex-col">
               <span className="text-base font-bold text-on-primary">
-                개인분석 (추천)
+                {messages.startChoiceModal.personalTitle}
               </span>
               <span className="text-xs text-on-primary/80 font-normal mt-0.5">
-                타고난 고유 설계도 & 현재 상태 진단
+                {messages.startChoiceModal.personalDesc}
               </span>
             </div>
             <span className="text-lg group-hover:translate-x-1 transition-transform" aria-hidden>
@@ -105,10 +105,10 @@ export default function StartChoiceModal({
           >
             <div className="flex flex-col">
               <span className="text-base font-bold text-primary">
-                관계분석
+                {messages.startChoiceModal.relationshipTitle}
               </span>
               <span className="text-xs text-on-surface-variant/80 font-normal mt-0.5">
-                상대와의 차이 & 맞춤 소통 가이드
+                {messages.startChoiceModal.relationshipDesc}
               </span>
             </div>
             <span className="text-lg group-hover:translate-x-1 transition-transform text-primary" aria-hidden>
@@ -125,10 +125,10 @@ export default function StartChoiceModal({
           >
             <div className="flex flex-col">
               <span className="text-base font-bold text-primary">
-                결정일기
+                {messages.startChoiceModal.decisionTitle}
               </span>
               <span className="text-xs text-on-surface-variant/80 font-normal mt-0.5">
-                선택과 회고를 통한 나와의 연결
+                {messages.startChoiceModal.decisionDesc}
               </span>
             </div>
             <span className="text-lg group-hover:translate-x-1 transition-transform text-primary" aria-hidden>
@@ -144,7 +144,7 @@ export default function StartChoiceModal({
               onClick={onLogin}
               className="text-xs text-on-surface-variant/70 underline underline-offset-4 hover:text-primary transition font-medium"
             >
-              기존 계정으로 로그인하기
+              {messages.startChoiceModal.loginLink}
             </button>
           </div>
         ) : null}

@@ -213,6 +213,9 @@ export const messagesKoKR: MessageCatalog = {
     dashboardTitleDefault: "나의 블루프린트",
     surveyCompleteBadge: "설문 완료",
     behavioralBlueprintEyebrow: "행동 블루프린트",
+    actualResultBadge: "내 실제 분석 결과",
+    chartInfoPopover:
+      "이 차트는 내 실제 분석 결과예요.\nCurrent State는 현재 행동 설문을, Essence Potential은 나의 타고난 성향 데이터를 바탕으로 보여줘요.",
     currentVsEssenceTitle: "지금의 나 vs. 본연의 나",
     aboutChartAria: "차트 설명",
     aboutChartTitle: "설문 기반 패턴(지금의 나)과 사주 기반 특성(본연의 나)을 겹쳐 봅니다",
@@ -801,6 +804,7 @@ export const messagesKoKR: MessageCatalog = {
     metaDescription: "초대를 수락하고, 우리 관계를 함께 알아보세요.",
     invalidToken: "초대 링크가 올바르지 않아요.",
     inviteMessage: "친구가 너와의 관계 팁을 받아보자고 초대했어.",
+    inviteMessageWithInviter: (name: string) => `${name}님이 친구로 초대했어요.`,
     missingTokenAlert: "초대 토큰이 없습니다.",
     title: "친구 초대",
     startBody: "여기서 시작하면 네 정보로 새 리포트를 만들고, 친구와의 관계 분석으로 연결돼.",
@@ -872,6 +876,8 @@ export const messagesKoKR: MessageCatalog = {
     philosophyBridge:
       "먼저, 내가 어떤 사람인지 정확히 알아야 합니다.\n본래 편한 방식과 지금 익숙하게 사용하는 방식을 나란히 보면,\n왜 어떤 일은 자연스럽고 어떤 순간에는 유난히 힘이 드는지 보이기 시작합니다.",
     personalEyebrow: "PERSONAL ANALYSIS",
+    personalExampleEyebrow: "예시 · 개인 분석",
+    personalExampleNotice: "개인 분석을 완료하면 나의 실제 결과로 이 프로필을 확인할 수 있어요.",
     personalHeadline: "나와 내가 싸우고 있진 않았나요?",
     personalInnateEyebrow: "INNATE",
     personalInnateTitle: "본래의 나",
@@ -907,6 +913,7 @@ export const messagesKoKR: MessageCatalog = {
     relBridgePersonA: "나의 방식",
     relBridgePersonB: "상대의 방식",
     relBridgeSampleBadge: "예시 샘플 데이터",
+    relBridgeSampleNote: "* 행동 기반 설문으로 측정한 참고 자료입니다. 편안한 마음으로 확인해 보세요.",
     relBridgeStatement: "상대를 아는 만큼 관계의 시야가 넓어집니다.",
     relBridgeStatementSupporting:
       "누가 맞고 틀린지의 소모전 대신, 서로의 강점을 살리는 최적의 대화법을 선택하세요.",
@@ -1006,7 +1013,7 @@ export const messagesKoKR: MessageCatalog = {
       phoneLabel: "전화번호",
       phone: "02-1234-5678",
       emailLabel: "이메일",
-      email: "hong@ahaitsme.com",
+      email: "contact@ahaitsme.com",
     },
   },
   legalConsent: {
@@ -1553,5 +1560,26 @@ export const messagesKoKR: MessageCatalog = {
     iosInstructionsBody:
       "Safari 하단의 공유 버튼을 누른 뒤 '홈 화면에 추가'를 선택해 주세요.",
     iosInstructionsClose: "확인",
+  },
+  startChoiceModal: {
+    tag: "시작하기",
+    title: "어디로 이동할까요?",
+    subtitle: "원하는 분석 및 서비스 메뉴를 선택해 보세요.",
+    personalTitle: "개인분석 (추천)",
+    personalDesc: "타고난 고유 설계도 & 현재 상태 진단",
+    relationshipTitle: "관계분석",
+    relationshipDesc: "상대와의 차이 & 맞춤 소통 가이드",
+    decisionTitle: "결정일기",
+    decisionDesc: "선택과 회고를 통한 나와의 연결",
+    loginLink: "기존 계정으로 로그인하기",
+  },
+  decisionSample: {
+    dateBadge: "2026. 03. 14 · 일상 기록",
+    todayDecisionLabel: "[오늘의 결정]",
+    todayDecisionContext: "오늘 중요한 회의에서 상대가 거세게 밀어붙일 때, 감정대로 바로 받아치지 않고 한 박자 쉬어가며 질문을 먼저 던졌다.",
+    feelingsLabel: "[그때의 마음]",
+    feelingsText: "처음엔 조급하고 답답했지만, 결과적으로 대화의 주도권을 지킴.",
+    patternReflectionLabel: "[나의 선택 패턴 회고]",
+    patternReflectionNote: "내 본질 성향을 기억하고 즉각적인 반응을 늦춘 선택이 맞았다. 앞으로도 갈등 상황에서는 먼저 감정을 정리한 뒤 핵심만 3줄로 전달해야겠다.",
   },
 };

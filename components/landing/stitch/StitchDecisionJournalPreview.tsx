@@ -19,6 +19,13 @@ const AUTHENTIC_ENTRY: DecisionEntry = {
 
 export default function StitchDecisionJournalPreview() {
   const { messages } = useLocale();
+  const sample = messages.decisionSample;
+
+  const entry: DecisionEntry = {
+    ...AUTHENTIC_ENTRY,
+    context: sample.todayDecisionContext,
+    note: sample.patternReflectionNote,
+  };
 
   const steps = [
     { num: "01", label: messages.decision.onboardingLogLabel, desc: messages.decision.onboardingLogDesc },
@@ -59,9 +66,9 @@ export default function StitchDecisionJournalPreview() {
       <div className="rounded-2xl border border-[#e2dad0] bg-[#fcfbfa] p-5 sm:p-6 space-y-4 shadow-xs">
         <div className="flex items-center justify-between gap-3 border-b border-[#ece5dd] pb-3">
           <div className="flex items-center gap-2.5">
-            <DecisionStatusDot entry={AUTHENTIC_ENTRY} />
+            <DecisionStatusDot entry={entry} />
             <span className="text-xs font-semibold text-accent-emerald tracking-wider uppercase">
-              2026. 03. 14 · 일상 기록
+              {sample.dateBadge}
             </span>
           </div>
           <StarRatingDisplay rating={5} />
@@ -70,28 +77,28 @@ export default function StitchDecisionJournalPreview() {
         <div className="space-y-3.5 text-sm">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-primary/70 block mb-1">
-              [오늘의 결정]
+              {sample.todayDecisionLabel}
             </span>
             <p className="font-medium text-primary leading-relaxed text-base">
-              &quot;{AUTHENTIC_ENTRY.context}&quot;
+              &quot;{sample.todayDecisionContext}&quot;
             </p>
           </div>
 
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 block mb-1">
-              [그때의 마음]
+              {sample.feelingsLabel}
             </span>
             <p className="text-on-surface-variant leading-relaxed">
-              처음엔 조급하고 답답했지만, 결과적으로 대화의 주도권을 지킴.
+              {sample.feelingsText}
             </p>
           </div>
 
           <div className="mt-4 rounded-xl bg-secondary-container/50 p-4 border border-accent-emerald/25">
             <span className="text-[11px] font-bold uppercase tracking-wider text-accent-emerald block mb-1.5">
-              [나의 선택 패턴 회고]
+              {sample.patternReflectionLabel}
             </span>
             <p className="text-xs sm:text-sm text-primary/95 leading-relaxed font-normal">
-              {AUTHENTIC_ENTRY.note}
+              {sample.patternReflectionNote}
             </p>
           </div>
         </div>

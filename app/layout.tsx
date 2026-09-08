@@ -113,11 +113,11 @@ const ORGANIZATION_JSON_LD = {
   name: SITE_NAME,
   url: "https://www.ahaitsme.com",
   logo: "https://www.ahaitsme.com/brand/apple-touch-icon.png",
-  sameAs: ["https://www.instagram.com/ahaitsme"],
+  sameAs: ["https://www.instagram.com/aha_itsme_/"],
   contactPoint: [
     {
       "@type": "ContactPoint",
-      email: "hong@ahaitsme.com",
+      email: "contact@ahaitsme.com",
       contactType: "customer support",
     },
   ],

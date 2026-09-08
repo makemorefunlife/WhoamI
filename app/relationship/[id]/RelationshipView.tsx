@@ -163,7 +163,7 @@ export default function RelationshipView({
         </p>
         <h1 className="stitch-headline text-2xl text-primary sm:text-3xl">
           {viewingBasicSurface
-            ? "무료 관계분석"
+            ? messages.hub.kindPickerBasicFree
             : `${messages.report.relationshipKindNames[premiumKind]} ${messages.report.relationshipAnalysisTitleSuffix}`}
         </h1>
         <p className="text-sm text-on-surface-variant">

@@ -33,17 +33,25 @@ function polygon(key: "innate" | "realized") {
 
 type Props = {
   labels?: RadarLabels;
+  sampleBadgeText?: string;
 };
 
 /** Hero용 정적 데모 레이더 — Innate(본래의 나) vs Current(지금의 나) */
-export default function StitchPersonalRadar({ labels }: Props) {
+export default function StitchPersonalRadar({ labels, sampleBadgeText }: Props) {
   const axes = AXES_DATA.map((item) => ({
     ...item,
     label: labels ? labels[item.key as keyof RadarLabels] : item.defaultLabel,
   }));
 
   return (
-    <figure className="w-full">
+    <figure className="relative w-full">
+      {sampleBadgeText ? (
+        <div className="mb-2 flex justify-center">
+          <span className="rounded-full bg-secondary-container/80 px-2.5 py-0.5 text-[10px] font-medium text-primary">
+            {sampleBadgeText}
+          </span>
+        </div>
+      ) : null}
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         role="img"

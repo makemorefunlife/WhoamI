@@ -5,6 +5,7 @@ import {
   ANALYSIS_LEVEL_BADGE_STYLES,
   relationshipKindBadgeClassName,
   relationshipKindForBadge,
+  relationshipKindBadgeLabel,
   RELATIONSHIP_KIND_BADGE_BASE_CLASS,
 } from "@/lib/relationship/relationshipKindBadge";
 import type { RelationshipKind } from "@/lib/relationship/relationshipKind";
@@ -22,15 +23,7 @@ function localizedKindBadgeLabel(
   kind: RelationshipKind | "unspecified",
   messages: MessageCatalog,
 ): string {
-  if (kind === "unspecified") return messages.hub.badgeOtherRelationship;
-  const map: Record<RelationshipKind, string> = {
-    romantic: messages.hub.kindBadgeRomantic,
-    work: messages.hub.kindBadgeWork,
-    cohabitation: messages.hub.kindBadgeCohabitation,
-    friendship: messages.hub.kindBadgeFriendship,
-    family: messages.hub.kindBadgeFamily,
-  };
-  return map[kind];
+  return relationshipKindBadgeLabel(kind, messages);
 }
 
 export function RelationshipKindBadge({
@@ -86,10 +79,11 @@ export function RelationshipAnalysisBadgeGroup({
   level,
   className = "",
 }: RelationshipAnalysisBadgeGroupProps) {
+  const messages = useMessages();
   if (level === "basic") {
     return (
       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 ${className}`.trim()}>
-        무료 관계분석
+        {messages.hub.kindPickerBasicFree}
       </span>
     );
   }

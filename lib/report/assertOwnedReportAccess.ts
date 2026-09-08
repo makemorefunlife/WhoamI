@@ -68,7 +68,7 @@ export async function assertOwnedReportAccess(
   }
 
   const ownerId = (report as ReportOwnerRow).clerk_user_id;
-  if (process.env.NODE_ENV === "development" || ownerId == null || ownerId === userId) {
+  if (process.env.NODE_ENV === "development" || ownerId === userId) {
     return { report: report as ReportOwnerRow };
   }
   return {

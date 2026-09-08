@@ -20,6 +20,8 @@ import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
+import { initialMembershipsForInviteAccept } from "@/lib/relationship/map/directionalMembership";
+import { invalidateRelationshipMapCache } from "@/lib/relationship/map/computeRelationshipMap";
 
 export const runtime = "nodejs";
 
@@ -122,6 +124,45 @@ export async function POST(req: Request) {
         if (linkErr) {
           logServerError("invite/complete.link", linkErr);
         }
+
+        const { inviterSeesInvitee, inviteeSeesInviter } =
+          initialMembershipsForInviteAccept();
+        const nowIso = new Date().toISOString();
+
+        const { error: inviterMemErr } = await supabase
+          .from("relationship_map_memberships")
+          .upsert(
+            {
+              relationship_report_id: relationshipReportId,
+              viewer_report_id: data.from_report_id,
+              other_report_id: idCheck.value,
+              status: inviterSeesInvitee,
+              responded_at: nowIso,
+            },
+            { onConflict: "relationship_report_id,viewer_report_id" },
+          );
+        if (inviterMemErr) {
+          logServerError("invite/complete.inviterMembership", inviterMemErr);
+        }
+
+        const { error: inviteeMemErr } = await supabase
+          .from("relationship_map_memberships")
+          .upsert(
+            {
+              relationship_report_id: relationshipReportId,
+              viewer_report_id: idCheck.value,
+              other_report_id: data.from_report_id,
+              status: inviteeSeesInviter,
+              responded_at: nowIso,
+            },
+            { onConflict: "relationship_report_id,viewer_report_id" },
+          );
+        if (inviteeMemErr) {
+          logServerError("invite/complete.inviteeMembership", inviteeMemErr);
+        }
+
+        invalidateRelationshipMapCache(data.from_report_id);
+        invalidateRelationshipMapCache(idCheck.value);
 
         // Best-effort — the joiner-side "connected!" modal falls back to a
         // generic label if this can't be resolved, so a failure here must

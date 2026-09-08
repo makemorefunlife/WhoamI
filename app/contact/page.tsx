@@ -42,10 +42,10 @@ export default async function ContactPage() {
               </dt>
               <dd>
                 <a
-                  href="mailto:hong@ahaitsme.com"
+                  href="mailto:contact@ahaitsme.com"
                   className="text-sm font-medium text-[var(--space-text)] underline underline-offset-2"
                 >
-                  hong@ahaitsme.com
+                  contact@ahaitsme.com
                 </a>
               </dd>
             </div>
@@ -55,12 +55,12 @@ export default async function ContactPage() {
               </dt>
               <dd>
                 <a
-                  href="https://www.instagram.com/ahaitsme"
+                  href="https://www.instagram.com/aha_itsme_/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-medium text-[var(--space-text)] underline underline-offset-2"
                 >
-                  @ahaitsme
+                  @aha_itsme_
                 </a>
               </dd>
             </div>

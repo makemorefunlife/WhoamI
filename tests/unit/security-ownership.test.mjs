@@ -10,7 +10,7 @@ import {
 } from "../../lib/security/rateLimit.ts";
 
 process.env.RATE_LIMIT_ALLOW_MEMORY = "true";
-process.env.NODE_ENV = "development";
+process.env.NODE_ENV = "production";
 
 function mockSupabase(reportRow) {
   return {

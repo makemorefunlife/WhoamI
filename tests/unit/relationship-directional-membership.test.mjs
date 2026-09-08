@@ -17,9 +17,19 @@ function ok(name) {
   console.log(`ok - ${name}`);
 }
 
-const { initialMembershipsForLinkJoin, isVisibleInMap, isVisibleInMapBatch } = await import(
+const { initialMembershipsForLinkJoin, initialMembershipsForInviteAccept, isVisibleInMap, isVisibleInMapBatch } = await import(
   "../../lib/relationship/map/directionalMembership.ts"
 );
+
+section("A sends invite link, B accepts -> BOTH A and B maps see each other immediately");
+{
+  const { inviterSeesInvitee, inviteeSeesInviter } = initialMembershipsForInviteAccept();
+  assert.equal(inviterSeesInvitee, "accepted");
+  assert.equal(inviteeSeesInviter, "accepted");
+  assert.ok(isVisibleInMap(inviterSeesInvitee, false), "A (inviter) must see B (invitee) in A's map right away");
+  assert.ok(isVisibleInMap(inviteeSeesInviter, false), "B (invitee) must see A (inviter) in B's map right away");
+  ok("invite acceptance sets both inviter and invitee memberships to accepted immediately (no 2nd approval)");
+}
 
 section("A sends personal link, B joins through it -> B's map sees A immediately");
 {

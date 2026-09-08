@@ -221,6 +221,9 @@ export const messagesEnUS = {
     dashboardTitleDefault: "Your blueprint",
     surveyCompleteBadge: "Survey complete",
     behavioralBlueprintEyebrow: "Behavioral blueprint",
+    actualResultBadge: "Your actual analysis",
+    chartInfoPopover:
+      "This chart uses your actual analysis results.\nCurrent State reflects your behavioral survey, while Essence Potential reflects your innate profile.",
     currentVsEssenceTitle: "Current state vs. Essence potential",
     aboutChartAria: "About this chart",
     aboutChartTitle: "Survey patterns (current) overlaid with birth-chart traits (Essence)",
@@ -841,6 +844,7 @@ export const messagesEnUS = {
     metaDescription: "Accept the invitation and discover how you connect.",
     invalidToken: "This invite link isn't valid.",
     inviteMessage: "A friend invited you to get relationship tips together.",
+    inviteMessageWithInviter: (name: string) => `${name} invited you to connect.`,
     missingTokenAlert: "No invite token was found.",
     title: "Friend invite",
     startBody:
@@ -914,6 +918,8 @@ export const messagesEnUS = {
     philosophyBridge:
       "First, you need to know exactly who you are.\nComparing your natural way with your current habits,\nyou begin to see why some things come naturally and others feel uniquely exhausting.",
     personalEyebrow: "PERSONAL ANALYSIS",
+    personalExampleEyebrow: "Example · Personal Analysis",
+    personalExampleNotice: "Complete your Personal Analysis to see this profile with your own results.",
     personalHeadline: "Have you been fighting with yourself?",
     personalInnateEyebrow: "INNATE",
     personalInnateTitle: "Innate Self",
@@ -949,6 +955,7 @@ export const messagesEnUS = {
     relBridgePersonA: "My Mode (ME)",
     relBridgePersonB: "Their Mode (YOU)",
     relBridgeSampleBadge: "Sample Demo Data",
+    relBridgeSampleNote: "* Reference material measured based on behavioral survey. Please review comfortably.",
     relBridgeStatement: "The more you understand the other person,\nthe more you see in your relationship.",
     relBridgeStatementSupporting:
       "When you know each other's strengths and friction points,\nyou don't have to force yourself to adapt—\nyou can find a better way that truly fits.",
@@ -1055,7 +1062,7 @@ export const messagesEnUS = {
       phoneLabel: "Phone",
       phone: "02-1234-5678",
       emailLabel: "Email",
-      email: "hong@ahaitsme.com",
+      email: "contact@ahaitsme.com",
     },
   },
   legalConsent: {
@@ -1610,6 +1617,27 @@ export const messagesEnUS = {
       "Tap the Share button at the bottom of Safari, then choose \"Add to Home Screen.\"",
     iosInstructionsClose: "Got it",
   },
+  startChoiceModal: {
+    tag: "GET STARTED",
+    title: "Where would you like to go?",
+    subtitle: "Select the analysis or service menu you want.",
+    personalTitle: "Personal Analysis (Recommended)",
+    personalDesc: "Innate Blueprint & Current State Diagnosis",
+    relationshipTitle: "Relationship Analysis",
+    relationshipDesc: "Differences & Tailored Communication Guide",
+    decisionTitle: "Decision Journal",
+    decisionDesc: "Connect with Yourself through Choices & Reflection",
+    loginLink: "Log in with an existing account",
+  },
+  decisionSample: {
+    dateBadge: "2026. 03. 14 · Daily Journal",
+    todayDecisionLabel: "[TODAY'S DECISION]",
+    todayDecisionContext: "During an important meeting today when the other party pushed hard, instead of responding emotionally, I paused and asked a question first.",
+    feelingsLabel: "[FEELINGS AT THE TIME]",
+    feelingsText: "Felt impatient and frustrated at first, but ultimately maintained control of the conversation.",
+    patternReflectionLabel: "[SELECTION PATTERN REFLECTION]",
+    patternReflectionNote: "Remembering my core profile and slowing down my immediate reaction was the right choice. In future conflicts, I should organize my feelings first and deliver key points in 3 sentences.",
+  },
 };
 
 /** Shape-only catalog (values are free strings per locale). */
@@ -1814,6 +1842,8 @@ export type MessageCatalog = {
     dashboardTitleDefault: string;
     surveyCompleteBadge: string;
     behavioralBlueprintEyebrow: string;
+    actualResultBadge: string;
+    chartInfoPopover: string;
     currentVsEssenceTitle: string;
     aboutChartAria: string;
     aboutChartTitle: string;
@@ -2309,6 +2339,7 @@ export type MessageCatalog = {
     metaDescription: string;
     invalidToken: string;
     inviteMessage: string;
+    inviteMessageWithInviter: (name: string) => string;
     missingTokenAlert: string;
     title: string;
     startBody: string;
@@ -2367,6 +2398,8 @@ export type MessageCatalog = {
     philosophyConclusion: string;
     philosophyBridge: string;
     personalEyebrow: string;
+    personalExampleEyebrow: string;
+    personalExampleNotice: string;
     personalHeadline: string;
     personalInnateEyebrow: string;
     personalInnateTitle: string;
@@ -2398,6 +2431,7 @@ export type MessageCatalog = {
     relBridgePersonA: string;
     relBridgePersonB: string;
     relBridgeSampleBadge: string;
+    relBridgeSampleNote: string;
     relBridgeStatement: string;
     relBridgeStatementSupporting: string;
     relBridgeHighlight: string;
@@ -3013,5 +3047,26 @@ export type MessageCatalog = {
     iosInstructionsTitle: string;
     iosInstructionsBody: string;
     iosInstructionsClose: string;
+  };
+  startChoiceModal: {
+    tag: string;
+    title: string;
+    subtitle: string;
+    personalTitle: string;
+    personalDesc: string;
+    relationshipTitle: string;
+    relationshipDesc: string;
+    decisionTitle: string;
+    decisionDesc: string;
+    loginLink: string;
+  };
+  decisionSample: {
+    dateBadge: string;
+    todayDecisionLabel: string;
+    todayDecisionContext: string;
+    feelingsLabel: string;
+    feelingsText: string;
+    patternReflectionLabel: string;
+    patternReflectionNote: string;
   };
 };

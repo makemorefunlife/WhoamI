@@ -43,9 +43,23 @@ export function relationshipKindForBadge(
   return parseRelationshipKind(kind);
 }
 
+import type { MessageCatalog } from "@/lib/i18n/messages";
+
 export function relationshipKindBadgeLabel(
   kind: RelationshipKind | "unspecified",
+  messages?: MessageCatalog,
 ): string {
+  if (messages) {
+    if (kind === "unspecified") return messages.hub.badgeOtherRelationship;
+    const map: Record<RelationshipKind, string> = {
+      romantic: messages.hub.kindBadgeRomantic,
+      work: messages.hub.kindBadgeWork,
+      cohabitation: messages.hub.kindBadgeCohabitation,
+      friendship: messages.hub.kindBadgeFriendship,
+      family: messages.hub.kindBadgeFamily,
+    };
+    return map[kind];
+  }
   if (kind === "unspecified") return "관계";
   return RELATIONSHIP_KIND_BADGE_LABELS[kind];
 }

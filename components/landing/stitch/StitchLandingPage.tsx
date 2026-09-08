@@ -236,13 +236,18 @@ export default function StitchLandingPage({
           data-stitch-reveal
           className="mt-stack-lg md:mt-section-gap text-left"
         >
-          <div className="mb-6 text-left">
-            <span className={EYEBROW_CLASS}>
-              {messages.landing.personalEyebrow || "PERSONAL ANALYSIS"}
-            </span>
-            <h2 className="stitch-headline whitespace-pre-line text-3xl font-bold leading-tight text-primary md:text-4xl text-left">
-              {messages.landing.personalHeadline}
-            </h2>
+          <div className="mb-6 flex flex-col items-start justify-between gap-3 text-left sm:flex-row sm:items-end">
+            <div>
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-accent-emerald/40 bg-accent-emerald-soft/60 px-3.5 py-1 text-xs font-semibold text-primary">
+                <span>{messages.landing.personalExampleEyebrow || "예시 · 개인 분석"}</span>
+              </div>
+              <h2 className="stitch-headline whitespace-pre-line text-3xl font-bold leading-tight text-primary md:text-4xl text-left">
+                {messages.landing.personalHeadline}
+              </h2>
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-on-surface-variant/80 sm:max-w-xs sm:text-right">
+              {messages.landing.personalExampleNotice}
+            </p>
           </div>
           <div className="rounded-extra-extra-large border border-outline-variant/30 bg-surface-container-lowest p-8 shadow-sm md:p-12 text-left">
             <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr]">
@@ -297,7 +302,10 @@ export default function StitchLandingPage({
                 </div>
               </div>
               <div className="order-1 flex items-center justify-center lg:order-2">
-                <StitchPersonalRadar labels={messages.landing.radarLabels} />
+                <StitchPersonalRadar
+                  labels={messages.landing.radarLabels}
+                  sampleBadgeText={messages.landing.personalExampleEyebrow}
+                />
               </div>
             </div>
             <div className="mt-10 flex justify-end">

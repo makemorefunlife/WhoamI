@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -12,10 +12,35 @@ export default function InviteContent() {
   const token =
     searchParams.get("token") || searchParams.get("invite") || "";
 
+  const [inviterName, setInviterName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+
+    fetch(`/api/invite/info?token=${encodeURIComponent(token)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data?.inviterName && typeof data.inviterName === "string") {
+          setInviterName(data.inviterName);
+        }
+      })
+      .catch(() => {
+        // Fallback to generic message on network/fetch error
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
   const message = useMemo(() => {
     if (!token) return messages.invite.invalidToken;
+    if (inviterName) {
+      return messages.invite.inviteMessageWithInviter(inviterName);
+    }
     return messages.invite.inviteMessage;
-  }, [token, messages]);
+  }, [token, inviterName, messages]);
 
   const handleStart = () => {
     if (!token) {

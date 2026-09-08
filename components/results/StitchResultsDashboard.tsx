@@ -86,6 +86,7 @@ export default function StitchResultsDashboard({
   const { locale, messages } = useLocale();
   const [activeTab, setActiveTab] = useState<LiteTab | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [showChartInfo, setShowChartInfo] = useState(false);
 
   const isGuest = isLoaded && !user;
 
@@ -161,21 +162,58 @@ export default function StitchResultsDashboard({
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
         <div className="mb-6 flex items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-accent-rose">
-              {messages.report.behavioralBlueprintEyebrow}
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-accent-rose">
+                {messages.report.behavioralBlueprintEyebrow}
+              </p>
+              <span className="rounded-full bg-accent-emerald-soft/80 px-2.5 py-0.5 text-[10px] font-semibold text-primary">
+                ✨ {messages.report.actualResultBadge}
+              </span>
+            </div>
             <h2 className="stitch-headline mt-1.5 text-xl leading-snug sm:text-2xl">
               {messages.report.currentVsEssenceTitle}
             </h2>
           </div>
-          <button
-            type="button"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-outline-variant/50 text-on-surface-variant"
-            aria-label={messages.report.aboutChartAria}
-            title={messages.report.aboutChartTitle}
-          >
-            <Info className="h-4 w-4" strokeWidth={2} />
-          </button>
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowChartInfo((prev) => !prev)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant/50 text-on-surface-variant transition hover:border-primary hover:text-primary"
+              aria-label={messages.report.aboutChartAria}
+              title={messages.report.aboutChartTitle}
+              aria-expanded={showChartInfo}
+            >
+              <Info className="h-4 w-4" strokeWidth={2} />
+            </button>
+            <AnimatePresence>
+              {showChartInfo ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 4, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-10 z-30 w-72 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-4 shadow-lg sm:w-80 text-left"
+                >
+                  <div className="flex items-center justify-between gap-2 border-b border-outline-variant/30 pb-2">
+                    <p className="text-xs font-semibold text-primary">
+                      ✨ {messages.report.actualResultBadge}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowChartInfo(false)}
+                      className="flex h-5 w-5 items-center justify-center rounded-full text-xs text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
+                      aria-label="Close"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <p className="mt-2.5 whitespace-pre-line text-xs leading-relaxed text-on-surface-variant">
+                    {messages.report.chartInfoPopover}
+                  </p>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
         </div>
 
         {usedBirthFallback ? (

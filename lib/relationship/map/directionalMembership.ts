@@ -27,6 +27,21 @@ export function initialMembershipsForLinkJoin(): {
 }
 
 /**
+ * The two independent membership rows created when an invite link is accepted.
+ * Unlike personal connect link joins where the owner hasn't accepted yet,
+ * explicit invites sent by an owner and accepted by an invitee mean BOTH
+ * parties have consented to connecting.
+ */
+export function initialMembershipsForInviteAccept(): {
+  /** Inviter sent the invite specifically for invitee -> accepted immediately */
+  inviterSeesInvitee: MembershipStatus;
+  /** Invitee accepted the invite -> accepted immediately */
+  inviteeSeesInviter: MembershipStatus;
+} {
+  return { inviterSeesInvitee: "accepted", inviteeSeesInviter: "accepted" };
+}
+
+/**
  * Whether `other` should render in `viewer`'s map right now.
  *
  * `membershipStatus` is the row for (relationship_report, viewer, other) if

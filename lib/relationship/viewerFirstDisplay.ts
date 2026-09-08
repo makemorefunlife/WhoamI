@@ -26,7 +26,7 @@ export function resolveViewerDisplayName(options: {
     options.clerkFullName?.trim()?.split(/\s+/)[0];
   if (fromClerk && !isGenericPartnerName(fromClerk)) return fromClerk;
 
-  return options.fallback?.trim() || "나";
+  return options.fallback !== undefined ? options.fallback.trim() : "나";
 }
 
 /** basic 축 카드 — DB my_nickname이 제네릭이면 viewer 표시명으로 */
