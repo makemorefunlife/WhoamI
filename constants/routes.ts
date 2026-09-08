@@ -28,6 +28,7 @@ export const ROUTES = {
   doNotSell: "/do-not-sell",
   legalConsent: "/onboarding/legal-consent",
   invite: "/invite",
+  connect: "/connect",
 } as const;
 
 /** Prefix path for a locale (`/kr/...` or unprefixed). */

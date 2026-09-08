@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createRouteSupabaseClient, supabaseConfigErrorResponse } from "@/lib/supabase/serverClient";
-import { partnerNameFromReportRow } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveConnectLinkOwnerName } from "@/lib/relationship/personalConnect/personalConnectLinks";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { logServerError } from "@/lib/security/safeLog";
@@ -30,28 +30,12 @@ export async function GET(req: Request) {
     const supabase = createRouteSupabaseClient();
     if (!supabase) return supabaseConfigErrorResponse();
 
-    const { data: link, error } = await supabase
-      .from("personal_connect_links")
-      .select("report_id")
-      .eq("token", token)
-      .maybeSingle();
-
-    if (error) {
-      logServerError("connect/resolve", error, "db_select_failed");
-      return NextResponse.json({ valid: false });
-    }
-    if (!link) {
+    const ownerName = await resolveConnectLinkOwnerName(supabase, token);
+    if (ownerName === undefined) {
       return NextResponse.json({ valid: false });
     }
 
-    const { data: report } = await supabase
-      .from("reports")
-      .select("name")
-      .eq("id", link.report_id)
-      .maybeSingle();
-
-    const ownerName = partnerNameFromReportRow(report?.name) ?? messages.connect.someoneFallbackName;
-    return NextResponse.json({ valid: true, ownerName });
+    return NextResponse.json({ valid: true, ownerName: ownerName ?? messages.connect.someoneFallbackName });
   } catch (e) {
     logServerError("connect/resolve", e, "internal_error");
     return NextResponse.json({ valid: false });

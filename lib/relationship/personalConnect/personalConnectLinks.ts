@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createInviteToken } from "@/lib/security/inviteToken";
+import { partnerNameFromReportRow } from "@/lib/relationship/resolvePartnerDisplayName";
 
 /**
  * Get-or-create the current user's one persistent, reusable connect link.
@@ -61,4 +62,37 @@ export async function resetPersonalConnectLink(
 
   if (error) throw error;
   return { token: data.token };
+}
+
+/**
+ * Resolve a connect link token to its owner's display name — shared by
+ * /api/connect/resolve (client-side landing page copy) and
+ * app/connect/page.tsx's generateMetadata (server-side OG/share preview),
+ * so both surfaces agree on exactly what a token resolves to.
+ *
+ * Returns `undefined` for an unknown/reset token (callers must not
+ * distinguish that from "never existed" — see /api/connect/resolve's doc
+ * comment on not leaking which tokens are real) vs `null` for a *valid*
+ * token whose owner has only a generic/empty name — these are not the same
+ * thing: a valid token with no real name is still a valid connect link, just
+ * one that needs the caller's own fallback ("a friend").
+ */
+export async function resolveConnectLinkOwnerName(
+  supabase: SupabaseClient,
+  token: string,
+): Promise<string | null | undefined> {
+  const { data: link } = await supabase
+    .from("personal_connect_links")
+    .select("report_id")
+    .eq("token", token)
+    .maybeSingle();
+  if (!link) return undefined;
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("name")
+    .eq("id", link.report_id)
+    .maybeSingle();
+
+  return partnerNameFromReportRow(report?.name);
 }
