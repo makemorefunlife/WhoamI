@@ -3,31 +3,39 @@
 import { useState } from "react";
 import GlowButton from "@/components/space/GlowButton";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
-
-type PlanId = "plus" | "pro";
+import { useBetaCheckout } from "@/lib/payment/useBetaCheckout";
+import type { BetaPlanId } from "@/lib/payment/betaPaddlePricing";
 
 type Props = {
-  planId: PlanId;
+  planId: BetaPlanId;
   ctaLabel: string;
   highlighted?: boolean;
+  /** Fired after a successful (verified, credited) Beta sandbox purchase. */
+  onPurchased?: (planId: BetaPlanId) => void;
 };
 
 /**
- * 결제 직전 환불 불가 필수 동의.
- * 체크하지 않으면 onPay(토스/Paddle)가 실행되지 않습니다.
+ * 결제 직전 환불 불가 필수 동의 + Paddle SANDBOX checkout.
  *
- * 실제 SDK 연동 시 startCheckout 안의 TODO만 채우면 됩니다.
+ * Both locales go through Paddle sandbox (the earlier Toss-for-ko-KR
+ * branch was dropped — no Toss sandbox credentials exist in this app, and
+ * running two payment providers for a 1-week Beta was unnecessary scope).
+ * See useBetaCheckout.ts: the actual grant only happens after the server
+ * re-verifies the transaction against Paddle's own Sandbox API — this
+ * component never grants anything itself, it only reports the outcome.
  */
 export default function CheckoutWithRefundConsent({
   planId,
   ctaLabel,
   highlighted,
+  onPurchased,
 }: Props) {
   const { locale, messages } = useLocale();
   const copy = messages.paymentRefund;
+  const { busy, openCheckout } = useBetaCheckout();
   const [agreed, setAgreed] = useState(false);
   const [hint, setHint] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<"success" | "error" | null>(null);
 
   async function startCheckout() {
     if (!agreed) {
@@ -35,23 +43,15 @@ export default function CheckoutWithRefundConsent({
       return;
     }
     setHint(false);
-    setBusy(true);
-    try {
-      if (locale === "ko-KR") {
-        // TODO: 토스페이먼츠 결제창 호출
-        // await openTossCheckout({ planId });
-        window.alert(
-          `[Toss Payments stub]\nplan=${planId}\n환불 동의 확인됨. SDK 연동 시 이 위치가 결제 시작점입니다.`,
-        );
-      } else {
-        // TODO: Paddle checkout 호출
-        // await openPaddleCheckout({ planId });
-        window.alert(
-          `[Paddle stub]\nplan=${planId}\nRefund consent confirmed. Wire the Paddle SDK here.`,
-        );
-      }
-    } finally {
-      setBusy(false);
+    setResult(null);
+    const outcome = await openCheckout(planId, locale);
+    if (outcome === "success" || outcome === "already_processed") {
+      setResult("success");
+      onPurchased?.(planId);
+    } else if (outcome === "cancelled") {
+      // User closed the Paddle overlay without paying — no message needed.
+    } else {
+      setResult("error");
     }
   }
 
@@ -72,6 +72,12 @@ export default function CheckoutWithRefundConsent({
 
       {hint ? (
         <p className="text-[11px] text-amber-200/95">{copy.requiredHint}</p>
+      ) : null}
+
+      {result === "success" ? (
+        <p className="text-[12px] font-medium text-emerald-300/95">{copy.betaSandboxSuccess}</p>
+      ) : result === "error" ? (
+        <p className="text-[12px] font-medium text-rose-300/95">{copy.betaSandboxError}</p>
       ) : null}
 
       <GlowButton

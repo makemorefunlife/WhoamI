@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: https:",
               "font-src 'self' data:",
               "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.supabase.co https://api.openai.com https://vitals.vercel-insights.com",
-              "frame-src https://*.clerk.accounts.dev https://buy.paddle.com https://checkout.paddle.com",
+              "frame-src https://*.clerk.accounts.dev https://buy.paddle.com https://checkout.paddle.com https://sandbox-buy.paddle.com https://sandbox-checkout.paddle.com",
               "object-src 'none'",
               "base-uri 'self'",
             ].join("; "),

@@ -19,8 +19,11 @@ function ok(name) {
 
 const {
   reserveRelationshipCredit,
+  reservePersonalCredit,
   consumeRelationshipCredit,
   releaseRelationshipCredit,
+  consumeCredit,
+  releaseCredit,
   grantCredits,
 } = await import("../../lib/credits/creditEngine.ts");
 
@@ -148,6 +151,40 @@ section("F. grantCredits — routes source through to the RPC unchanged");
   });
   assert.deepEqual(result, { ok: true, balanceAfter: 5 });
   ok("grant passes source/amount straight through — one shared entry point for membership/purchase/promo/admin");
+}
+
+section("G. reservePersonalCredit — same RPC, personal credit_type, no relationship-only fields");
+{
+  process.env.CREDIT_ENFORCEMENT = "true";
+  const supabase = makeMockSupabase((fnName, args) => {
+    assert.equal(fnName, "reserve_credit");
+    return { data: [{ reservation_id: "res-personal-1", ok: true, balance_after: 0 }], error: null };
+  });
+  const result = await reservePersonalCredit(supabase, {
+    clerkUserId: "user_1",
+    reportId: "report-1",
+    locale: "ko-KR",
+    generationRequestId: "req-personal-1",
+  });
+  assert.deepEqual(result, {
+    ok: true,
+    reservationId: "res-personal-1",
+    balanceAfter: 0,
+    enforced: true,
+  });
+  assert.equal(supabase.calls[0].args.p_credit_type, "personal");
+  assert.equal(supabase.calls[0].args.p_relationship_report_id, null);
+  assert.equal(supabase.calls[0].args.p_kind, null);
+  assert.equal(supabase.calls[0].args.p_generation_lock_id, null, "personal has no generation-lock table");
+  ok("reservePersonalCredit reserves credit_type=personal with relationship-only fields left null");
+  restoreEnforcement();
+}
+
+section("H. consumeCredit/releaseCredit are the same generic functions relationship aliases point at");
+{
+  assert.equal(consumeCredit, consumeRelationshipCredit);
+  assert.equal(releaseCredit, releaseRelationshipCredit);
+  ok("consumeRelationshipCredit/releaseRelationshipCredit are aliases of the generic consumeCredit/releaseCredit — one implementation, reused by personal too");
 }
 
 console.log("\nAll credit engine wrapper tests passed.");

@@ -70,8 +70,60 @@ export async function reserveRelationshipCredit(
   };
 }
 
-/** Idempotent — safe to call even if the reservation was already released or consumed. */
-export async function consumeRelationshipCredit(
+/**
+ * Reserve one PERSONAL credit for a single in-flight generation attempt.
+ * Mirrors reserveRelationshipCredit exactly, minus the relationship-only
+ * fields (relationshipReportId/kind/generationLockId) — the credit_reservations
+ * schema already carries those as nullable columns for exactly this reuse.
+ * There is no personal generation-lock table (personal reports are
+ * single-owner, so the narrow concurrent-double-click race this would guard
+ * against is accepted as out of scope for the Beta — see Beta RC design).
+ */
+export async function reservePersonalCredit(
+  supabase: SupabaseClient,
+  params: {
+    clerkUserId: string;
+    reportId: string;
+    locale: Locale;
+    generationRequestId: string;
+  },
+): Promise<ReserveCreditResult> {
+  const enforced = isCreditEnforcementEnabled();
+  const { data, error } = await supabase.rpc("reserve_credit", {
+    p_clerk_user_id: params.clerkUserId,
+    p_credit_type: "personal" satisfies CreditType,
+    p_relationship_report_id: null,
+    p_kind: null,
+    p_locale: params.locale,
+    p_generation_lock_id: null,
+    p_generation_request_id: params.generationRequestId,
+    p_enforced: enforced,
+  });
+
+  if (error) return { ok: false, reason: "error" };
+
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { reservation_id: string | null; ok: boolean; balance_after: number | null }
+    | undefined;
+
+  if (!row?.ok) return { ok: false, reason: "insufficient_balance" };
+
+  return {
+    ok: true,
+    reservationId: row.reservation_id as string,
+    balanceAfter: row.balance_after ?? 0,
+    enforced,
+  };
+}
+
+/**
+ * Idempotent — safe to call even if the reservation was already released or
+ * consumed. Type-agnostic (keyed only by generation_request_id): works for
+ * both relationship and personal reservations. consumeRelationshipCredit
+ * below is kept as an alias so existing relationship call sites are
+ * untouched.
+ */
+export async function consumeCredit(
   supabase: SupabaseClient,
   generationRequestId: string,
 ): Promise<void> {
@@ -82,13 +134,17 @@ export async function consumeRelationshipCredit(
  * Idempotent — safe to call even if the reservation was already consumed or
  * released (e.g. by a stale-lock steal cleaning up a dead request's
  * leftover reservation before this request's own finally block runs).
+ * Type-agnostic — see consumeCredit's doc comment.
  */
-export async function releaseRelationshipCredit(
+export async function releaseCredit(
   supabase: SupabaseClient,
   generationRequestId: string,
 ): Promise<void> {
   await supabase.rpc("release_credit", { p_generation_request_id: generationRequestId });
 }
+
+export const consumeRelationshipCredit = consumeCredit;
+export const releaseRelationshipCredit = releaseCredit;
 
 /**
  * Adds credits from any grant source (future Paddle/Toss webhooks, an admin

@@ -550,53 +550,55 @@ export const messagesEnUS = {
   },
   pricing: {
     title: "Pricing",
-    shellNote: "Plans and checkout will be available soon.",
+    shellNote: "During the Beta, checkout is Sandbox-only test checkout.",
     metaTitle: "Pricing | Aha It's me!",
-    metaDescription: "Me · Relationships · Decisions — Human Framework pricing",
-    heroTitleLine1: "Me · Relationships · Decisions",
-    heroTitleLine2: "Pick only what you need",
+    metaDescription: "Personal · Relationship · Membership — 1-week Beta pricing",
+    heroTitleLine1: "Me · Relationships · Membership",
+    heroTitleLine2: "Try it out during the Beta",
     heroBody:
-      "Start for free — relationship deep dives and Decision AI open up as they become ready. Until checkout is live, you can preview the UI only.",
+      "This is the real product lineup and real pricing. The checkout flow itself is part of the Beta test.",
     popularBadge: "Popular",
+    betaNotice:
+      "This is a Beta test. No real charge happens — every button below opens a Sandbox test checkout. Nothing bills automatically after the Beta ends.",
     plans: {
-      free: {
-        name: "Starter",
-        price: "Free",
-        period: "",
-        tagline: "Your first step to understanding yourself",
-        features: [
-          "v2 survey (10 questions) · Blueprint",
-          "6-axis Lite analysis",
-          "Basic relationship snapshot",
-          "Decision helper trial",
-        ],
-        cta: "Get started now",
+      personal_premium: {
+        name: "Personal Premium",
+        price: "$4.99",
+        period: "/ one-time",
+        tagline: "A deep report connecting your innate nature and current self",
+        features: ["1 Personal deep analysis generation", "View it again anytime after it's generated"],
+        cta: "Try the checkout",
       },
-      plus: {
-        name: "Explorer",
-        price: "₩9,900",
-        period: "/mo",
-        tagline: "Go deeper into your relationships",
-        features: [
-          "Everything in Starter",
-          "Deep reports across all 5 relationship tabs",
-          "Extended AI story for the romantic tab",
-          "Priority analysis queue",
-        ],
-        cta: "Coming soon",
+      relationship_premium: {
+        name: "Relationship Premium",
+        price: "$21.99",
+        period: "/ one-time",
+        tagline: "A deep dive into one specific relationship",
+        features: ["1 Relationship deep analysis generation", "View it again anytime after it's generated"],
+        cta: "Try the checkout",
       },
-      pro: {
-        name: "Navigator",
-        price: "₩19,900",
-        period: "/mo",
-        tagline: "Let AI walk through decisions with you",
+      membership_beta: {
+        name: "Membership · Limited Beta",
+        price: "$17.99",
+        period: "/ month",
+        tagline: "1 Personal + 2 Relationship analyses every month",
         features: [
-          "Everything in Explorer",
-          "Unlimited Decision AI",
-          "In-depth personal essay",
-          "Team/family bundle discount",
+          "1 Personal Premium / month",
+          "2 Relationship Premium / month",
+          "Unlimited Decision Journal recording (live AI analysis coming soon)",
+          "Early access to new analyses & features",
+          "Buy an additional Relationship analysis for $7.99",
+          "Personal Insight Report · Coming Soon",
         ],
-        cta: "Coming soon",
+        cta: "Try the checkout",
+      },
+      additional_relationship: {
+        name: "Member additional Relationship",
+        price: "$7.99",
+        period: "/ one-time",
+        tagline: "For members who want one more Relationship analysis",
+        features: [],
+        cta: "Buy one more",
       },
     },
   },
@@ -627,9 +629,9 @@ export const messagesEnUS = {
           "Yes, once. Your birth date can be corrected a single time from your account settings; after that, further changes require contacting support.",
       },
       {
-        question: "Is the Starter plan really free?",
+        question: "Will I actually be charged if I check out during the Beta?",
         answer:
-          "Yes. The Starter plan — the 10-question survey, a 6-axis Lite Blueprint, a basic relationship snapshot, and a Decision helper trial — is free to use right now. The Explorer and Navigator plans shown on our Pricing page are coming soon.",
+          "No. Every checkout button on the Pricing page opens a Sandbox test checkout during the Beta — no real card charge or billing happens, and nothing bills automatically once the Beta ends.",
       },
       {
         question: "What data do you collect, and is it safe?",
@@ -1099,6 +1101,8 @@ export const messagesEnUS = {
       "I agree that due to the nature of digital goods (AI Saju results), refunds are not available after results have been generated. (required)",
     requiredHint: "Please check the refund notice before continuing to payment.",
     processing: "Starting checkout…",
+    betaSandboxSuccess: "Sandbox checkout complete — that item is unlocked now.",
+    betaSandboxError: "Something went wrong processing the test checkout. Please try again.",
   },
   birthForm: {
     heading: "Birth date, time & place",
@@ -2086,8 +2090,9 @@ export type MessageCatalog = {
     heroTitleLine2: string;
     heroBody: string;
     popularBadge: string;
+    betaNotice: string;
     plans: {
-      free: {
+      personal_premium: {
         name: string;
         price: string;
         period: string;
@@ -2095,7 +2100,7 @@ export type MessageCatalog = {
         features: string[];
         cta: string;
       };
-      plus: {
+      relationship_premium: {
         name: string;
         price: string;
         period: string;
@@ -2103,7 +2108,15 @@ export type MessageCatalog = {
         features: string[];
         cta: string;
       };
-      pro: {
+      membership_beta: {
+        name: string;
+        price: string;
+        period: string;
+        tagline: string;
+        features: string[];
+        cta: string;
+      };
+      additional_relationship: {
         name: string;
         price: string;
         period: string;
@@ -2523,6 +2536,8 @@ export type MessageCatalog = {
     checkboxLabel: string;
     requiredHint: string;
     processing: string;
+    betaSandboxSuccess: string;
+    betaSandboxError: string;
   };
   birthForm: {
     heading: string;
