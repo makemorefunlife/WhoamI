@@ -23,12 +23,19 @@ import {
 const SCROLL_DOWN_THRESHOLD = 10;
 const TOP_HIDE_Y = 24;
 
-const dockItemClass = (active: boolean) =>
-  `flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1 transition-colors ${
-    active
-      ? "text-accent-emerald"
-      : "text-on-surface-variant hover:text-accent-emerald"
-  }`;
+/**
+ * Icon/label color is the same --color-accent-emerald token for both
+ * active and inactive — previously inactive used --color-on-surface-variant
+ * (#4a5c52, a muted gray-green) while active used --color-accent-emerald
+ * (#3a8f6e, a clearly saturated green). Since only one tab is ever active
+ * at a time, any page where the current route doesn't match one of the
+ * dock's own links (e.g. /refund) rendered all four items in the muted
+ * gray-ish token, which read as "gray/charcoal" — not a per-page override,
+ * just this one shared inactive-state class applying everywhere. `active`
+ * still drives the mint circle background below, unchanged.
+ */
+const dockItemClass = () =>
+  "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1 text-accent-emerald transition-colors";
 
 function DockLink({
   label,
@@ -42,7 +49,7 @@ function DockLink({
   children: ReactNode;
 }) {
   return (
-    <LocaleLink href={href} prefetch className={dockItemClass(Boolean(active))}>
+    <LocaleLink href={href} prefetch className={dockItemClass()}>
       <span
         className={`flex h-9 w-9 items-center justify-center rounded-full ${
           active ? "bg-accent-emerald-soft" : ""
@@ -72,7 +79,7 @@ function DockButton({
     <button
       type="button"
       onClick={onClick}
-      className={dockItemClass(Boolean(active))}
+      className={dockItemClass()}
     >
       <span
         className={`flex h-9 w-9 items-center justify-center rounded-full ${
