@@ -49,7 +49,7 @@ const ROMANTIC_CONFIG: TriScoreKindConfig = {
   labels: {
     activation: { short: "🔥 호감" },
     benefit: { short: "🧩 케미" },
-    risk: { short: "⚡ 예민" },
+    risk: { short: "⚡ 마찰" },
   },
   legendItems: [
     {
@@ -67,7 +67,7 @@ const ROMANTIC_CONFIG: TriScoreKindConfig = {
         "함께 있을 때 편하고, 잘 맞고, 서로에게 도움이 되는 정도 (에너지가 맞는 느낌에 가깝게 보시면 돼요)",
     },
     {
-      label: "예민",
+      label: "마찰",
       emoji: "⚡",
       glance: "마찰·스트레스 · 높을수록 주의",
       meaning: "예민해지고, 스트레스·마찰·부딪힘이 커지는 정도",
@@ -286,7 +286,7 @@ const ROMANTIC_CONFIG_EN: TriScoreKindConfig = {
   labels: {
     activation: { short: "🔥 Attraction" },
     benefit: { short: "🧩 Chemistry" },
-    risk: { short: "⚡ Sensitivity" },
+    risk: { short: "⚡ Friction" },
   },
   legendItems: [
     {
@@ -302,7 +302,7 @@ const ROMANTIC_CONFIG_EN: TriScoreKindConfig = {
       meaning: "How comfortable, well-matched, and mutually supportive being together feels (close to an energy fit).",
     },
     {
-      label: "Sensitivity",
+      label: "Friction",
       emoji: "⚡",
       glance: "Friction · stress · higher = caution",
       meaning: "How much you get sensitive, stressed, or friction/clashes grow.",

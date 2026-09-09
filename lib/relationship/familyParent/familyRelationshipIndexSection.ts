@@ -118,7 +118,7 @@ export function buildFamilyRelationshipIndexSection(params: {
   const headline = sanitizeFamilyParentText(
     childIsViewer
       ? pick(locale, "Communication Mismatch Diagnosis", "소통 엇박자 진단")
-      : pick(locale, "Discipline Friction Index", "훈육 마찰 지수"),
+      : pick(locale, "Parenting Friction", "훈육 마찰"),
   );
 
   const noteVariant = SAFE_DISTANCE_NOTE[locale][band];

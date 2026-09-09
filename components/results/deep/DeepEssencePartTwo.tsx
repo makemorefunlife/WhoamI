@@ -34,10 +34,20 @@ export function DeepEssencePartTwo({
   return (
     <div className="space-y-12">
       <div className="grid gap-6 sm:grid-cols-[220px_1fr] sm:items-center">
+        {/*
+          energy.balance_pct is SSOT'd to bars[1] ("energy returning to
+          you" — see coerceDeepEssenceStructured.ts), so the gauge's own
+          big number IS the "Energy Back to You" value — relationalSpendLabel
+          (the caption directly under that number) must describe that, not
+          "Energy You Give". Previously both this and selfReturnLabel were
+          bound to the same string, so "Energy You Give" never appeared
+          anywhere on screen; selfReturnLabel now carries it instead, as the
+          other end of the give/return spectrum shown below the gauge.
+        */}
         <DeepEssenceEnergyGauge
           pct={energy.balance_pct}
           relationalSpendLabel={t.part2.selfReturn}
-          selfReturnLabel={t.part2.selfReturn}
+          selfReturnLabel={t.part2.relationalSpend}
           othersLabel={t.part2.others}
         />
         <p className="text-[19px] leading-[1.45] text-on-surface" style={serifStyle}>

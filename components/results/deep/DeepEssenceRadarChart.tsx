@@ -65,7 +65,7 @@ export function DeepEssenceRadarChart({
         viewBox="-38 -16 396 352"
         className="h-auto w-full max-w-[340px]"
         role="img"
-        aria-label={isKo ? "현재 상태 대비 본질적 잠재력 레이더 차트" : "Current state versus essence potential radar chart"}
+        aria-label={isKo ? "현재 행동 성향 대비 타고난 성향 레이더 차트" : "Current patterns versus natural tendencies radar chart"}
       >
         {rings.map((pts, i) => (
           <polygon

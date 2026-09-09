@@ -1,5 +1,5 @@
 /**
- * Part1 "관계 입체 진단" — 훈육 마찰 지수(Track A) / 소통 엇박자 진단(Track B)
+ * Part1 "관계 입체 진단" — 훈육 마찰(Track A) / 소통 엇박자 진단(Track B)
  * 회귀 테스트. 신규 계산 없음 — PairFamilySignals(이미 계산됨)와
  * masterScores.risk 폴백을 재사용, 11축 decision_style만 처음 소비.
  * Run: npx tsx tests/unit/family-relationship-index.test.mjs
@@ -67,7 +67,7 @@ const trackB = buildFamilyRelationshipIndexSection({
   childIsViewer: true,
   locale: "ko-KR",
 });
-assert.equal(trackA.headline, "훈육 마찰 지수");
+assert.equal(trackA.headline, "훈육 마찰");
 assert.equal(trackB.headline, "소통 엇박자 진단");
 assert.notEqual(trackA.safe_distance_note, trackB.safe_distance_note);
 ok("동일 band(high)에서도 트랙별 headline/safe_distance_note가 다름");
