@@ -73,7 +73,11 @@ function EssenceDetailContent() {
 
   return (
     <SpaceBackground showProbe={false}>
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-5 px-5 py-16">
+      {/* No min-h-screen: SpaceBackground/StitchAppChrome already own the
+          "at least one screen" guarantee — a third layer here was the most
+          direct cause of the long empty scroll on this specific page (short
+          real content: a radar chart + a few lines + buttons). */}
+      <main className="mx-auto flex max-w-lg flex-col gap-5 px-5 py-16">
         <div className="text-center">
           <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-primary">
             Essence Profile

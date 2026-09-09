@@ -157,10 +157,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(0.92) opacity(0.75);
 }
 
-/* --- Space shell: single wrapper, CSS-only atmosphere --- */
+/* --- Space shell: single wrapper, CSS-only atmosphere ---
+   No min-height here: this class is only ever used by SpaceBackground.tsx,
+   which is always rendered inside ConditionalAppChrome/StitchAppChrome's own
+   `min-h-dvh` wrapper. Forcing a second, independent min-height on this
+   nested element (stacked with the inner wrapper div's own min-h-screen,
+   also removed) pushed StitchAppFooter a full extra viewport below short
+   page content — the mobile Safari "long empty scroll" bug. */
 .space-shell {
   position: relative;
-  min-height: 100dvh;
   overflow: hidden;
   background: inherit;
 }
