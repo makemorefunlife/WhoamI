@@ -39,10 +39,10 @@ To host, secure, and operate our Service, your personal data is transferred to a
 Where required under applicable data protection laws (such as GDPR), these international transfers are conducted based on Standard Contractual Clauses (SCCs) and robust technical safeguards.
 
 ## 5. Your Rights
-Regardless of your location, you have the right to request access, correction, deletion, or restriction of the processing of your personal information. You may exercise these rights at any time by contacting us at **hong@ahaitsme.com**.
+Regardless of your location, you have the right to request access, correction, deletion, or restriction of the processing of your personal information. You may exercise these rights at any time by contacting us at **contact@ahaitsme.com**.
 
 ## 6. California Residents
-We do not sell or share your personal information with third parties for cross-context behavioral advertising. California residents have specific rights under the CCPA (and CalOPPA) to request details about the personal data collected, request deletion, and opt-out of potential sales. To exercise these rights, please contact **hong@ahaitsme.com**.
+We do not sell or share your personal information with third parties for cross-context behavioral advertising. California residents have specific rights under the CCPA (and CalOPPA) to request details about the personal data collected, request deletion, and opt-out of potential sales. To exercise these rights, please contact **contact@ahaitsme.com**.
 
 ## 7. Children's Privacy
 The Service is not intended for children under 13, and we do not knowingly collect personal information from children under 13. If we learn we have collected such info, we will delete it immediately.
@@ -53,4 +53,4 @@ We retain your personal data for as long as your account is active. Upon account
 ## 9. Contact
 * **Company Name:** Aha It's me
 * **Address:** Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea
-* **Email:** hong@ahaitsme.com
+* **Email:** contact@ahaitsme.com

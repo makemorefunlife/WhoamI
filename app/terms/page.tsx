@@ -10,11 +10,12 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: "/terms",
     title: "Terms of Service | Aha It's me!",
-    description: termsOfService.description,
+    description: termsOfService[locale].description,
     robots: { index: true, follow: true },
   });
 }
 
-export default function TermsPage() {
-  return <PolicyDocumentView document={termsOfService} />;
+export default async function TermsPage() {
+  const locale = await getRequestLocale();
+  return <PolicyDocumentView document={termsOfService[locale]} />;
 }

@@ -10,11 +10,12 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: "/refund",
     title: "Refund Policy | Aha It's me!",
-    description: refundPolicy.description,
+    description: refundPolicy[locale].description,
     robots: { index: true, follow: true },
   });
 }
 
-export default function RefundPage() {
-  return <PolicyDocumentView document={refundPolicy} />;
+export default async function RefundPage() {
+  const locale = await getRequestLocale();
+  return <PolicyDocumentView document={refundPolicy[locale]} />;
 }

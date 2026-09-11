@@ -10,11 +10,12 @@ export async function generateMetadata(): Promise<Metadata> {
     locale,
     path: "/privacy",
     title: "Privacy Policy | Aha It's me!",
-    description: privacyPolicy.description,
+    description: privacyPolicy[locale].description,
     robots: { index: true, follow: true },
   });
 }
 
-export default function PrivacyPage() {
-  return <PolicyDocumentView document={privacyPolicy} />;
+export default async function PrivacyPage() {
+  const locale = await getRequestLocale();
+  return <PolicyDocumentView document={privacyPolicy[locale]} />;
 }

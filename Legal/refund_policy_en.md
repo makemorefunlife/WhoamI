@@ -14,7 +14,7 @@ Thank you for using Aha It's me. Because our Service provides digital, AI-genera
 
 ## 3. How to Request a Refund
 Since Paddle.com is the Merchant of Record for our global orders, all billing inquiries, disputes, and refund requests are processed through Paddle. 
-* You can submit your refund request directly to Paddle support via your email receipt, or contact us at **hong@ahaitsme.com** with your transaction ID, and we will assist in escalating the request to Paddle.
+* You can submit your refund request directly to Paddle support via your email receipt, or contact us at **contact@ahaitsme.com** with your transaction ID, and we will assist in escalating the request to Paddle.
 
 ## 4. Processing Time
 Once approved, refunds are processed by Paddle and will automatically be applied to your original method of payment. Please note that it may take 5 to 10 business days for the credit to appear on your statement, depending on your financial institution.
