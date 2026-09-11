@@ -66,7 +66,18 @@ section("1. Instagram Link Unification");
     "Layout must not contain old instagram URL",
   );
 
-  ok("Official Instagram URL is unified to https://www.instagram.com/aha_itsme_/ across About, Contact, and Layout");
+  const koMessagesForHandle = getMessages("ko-KR");
+  const enMessagesForHandle = getMessages("en-US");
+  assert.ok(
+    koMessagesForHandle.about.socialFollowCta.includes("aha_itsme_"),
+    "ko-KR about.socialFollowCta must show the new @aha_itsme_ handle, not the old @ahaitsme label",
+  );
+  assert.ok(
+    enMessagesForHandle.about.socialFollowCta.includes("aha_itsme_"),
+    "en-US about.socialFollowCta must show the new @aha_itsme_ handle, not the old @ahaitsme label",
+  );
+
+  ok("Official Instagram URL is unified to https://www.instagram.com/aha_itsme_/ across About, Contact, and Layout (link href AND visible handle text)");
 }
 
 section("2. Official Contact Email Unification");

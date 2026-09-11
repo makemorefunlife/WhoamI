@@ -625,7 +625,7 @@ export const messagesKoKR: MessageCatalog = {
       {
         question: "문의하거나 개인정보 삭제를 요청하려면 어떻게 하나요?",
         answer:
-          "hong@ahaitsme.com으로 이메일 주세요. 캘리포니아 거주자는 '개인정보 판매 거부' 페이지에서도 요청하실 수 있어요.",
+          "contact@ahaitsme.com으로 이메일 주세요. 캘리포니아 거주자는 '개인정보 판매 거부' 페이지에서도 요청하실 수 있어요.",
       },
     ],
   },
@@ -704,7 +704,7 @@ export const messagesKoKR: MessageCatalog = {
     socialEyebrow: "Social",
     socialTitle: "인스타그램에서 만나요",
     socialBody: "업데이트 소식, 관계 인사이트, 나다움에 관한 이야기를 공유해요.",
-    socialFollowCta: "@ahaitsme 팔로우",
+    socialFollowCta: "@aha_itsme_ 팔로우",
     feedComingSoon: "피드 준비 중",
     closingQuoteLine1: "먼저,",
     closingQuoteLine2: "나부터 이해해보세요",

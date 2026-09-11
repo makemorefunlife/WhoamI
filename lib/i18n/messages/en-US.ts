@@ -653,7 +653,7 @@ export const messagesEnUS = {
       {
         question: "How do I get in touch, or request something like data deletion?",
         answer:
-          "Email us at hong@ahaitsme.com. California residents can also submit a “Do Not Sell My Personal Information” request from our Do Not Sell page.",
+          "Email us at contact@ahaitsme.com. California residents can also submit a “Do Not Sell My Personal Information” request from our Do Not Sell page.",
       },
     ],
   },
@@ -739,7 +739,7 @@ export const messagesEnUS = {
     socialTitle: "Find us on Instagram",
     socialBody:
       "We share updates, relationship insights, and stories about how you tick.",
-    socialFollowCta: "Follow @ahaitsme",
+    socialFollowCta: "Follow @aha_itsme_",
     feedComingSoon: "Feed coming soon",
     closingQuoteLine1: "First,",
     closingQuoteLine2: "start by understanding yourself",
