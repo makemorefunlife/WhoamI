@@ -5,12 +5,17 @@
  * Paddle.js Checkout.open() call), so these live as plain constants rather
  * than env vars — one file to read to see the whole Beta catalog.
  *
- * All 4 Paddle products already existed in the sandbox account
- * (deepself / relationship_single / subscribe / addtional relationship);
- * this Beta adds a fresh ONE-TIME price per product per currency (the
- * existing "subscribe" product's old price was a real monthly recurring
- * price, which the Beta must never use — see BetaPlanId "membership_beta"
- * below, which points at the new one-time price instead).
+ * Each plan has exactly ONE Paddle price: a base USD price with a South
+ * Korea (KRW) local price override configured in the Paddle dashboard.
+ * Paddle Checkout applies the KRW override automatically based on the
+ * buyer's detected country — the app never chooses a currency/price by
+ * locale itself. This replaced an earlier per-locale (KR/US) pair of
+ * prices per plan; see git history on this file for that structure.
+ *
+ * All 4 prices live on the same sandbox product
+ * (pro_01khxfkb62qe04p5byd4jmnstq). Membership Beta's price is a fresh
+ * ONE-TIME price — the product's old price was a real monthly recurring
+ * price, which the Beta must never use (see BetaPlanId "membership_beta").
  */
 
 export type BetaPlanId =
@@ -25,7 +30,7 @@ export type BetaCreditGrant =
 type BetaPlan = {
   planId: BetaPlanId;
   paddleProductId: string;
-  priceId: { "ko-KR": string; "en-US": string };
+  priceId: string;
   /**
    * DOCUMENTATION ONLY — describes what this plan is supposed to grant.
    * The actual granting logic lives in the process_beta_purchase Postgres
@@ -42,29 +47,20 @@ type BetaPlan = {
 export const BETA_PLANS: Record<BetaPlanId, BetaPlan> = {
   personal_premium: {
     planId: "personal_premium",
-    paddleProductId: "pro_01kxk2zw67458tnkcnfgt0whv0", // "deepself"
-    priceId: {
-      "ko-KR": "pri_01m1xm9wj8ay9f2g7af9sbff1w", // ₩4,900
-      "en-US": "pri_01m1xm9wvkbshger1xywdsd4rc", // $4.99
-    },
+    paddleProductId: "pro_01khxfkb62qe04p5byd4jmnstq",
+    priceId: "pri_01m24ybdvr53kc9fvf91y9s6bt", // USD $4.99, KR override ₩4,900
     grants: [{ creditType: "personal", amount: 1 }],
   },
   relationship_premium: {
     planId: "relationship_premium",
-    paddleProductId: "pro_01kxk34w89pyjs6w1mk9kz1kp9", // "relationship_single"
-    priceId: {
-      "ko-KR": "pri_01m1xm9xpsw0mafh2gcxqtafm7", // ₩20,000
-      "en-US": "pri_01m1xm9xyg6yw4bcxz5nq36trt", // $21.99
-    },
+    paddleProductId: "pro_01khxfkb62qe04p5byd4jmnstq",
+    priceId: "pri_01m24ycpwf5cq713z463tqf1he", // USD $21.99, KR override ₩20,000
     grants: [{ creditType: "relationship", amount: 1 }],
   },
   membership_beta: {
     planId: "membership_beta",
-    paddleProductId: "pro_01kxk37hpcxdmr9vry88edtckf", // "subscribe" (existing product; NEW one-time price, not the old recurring one)
-    priceId: {
-      "ko-KR": "pri_01m1xm9y5h0v5chcr0b3bhb78j", // ₩17,900
-      "en-US": "pri_01m1xm9ycep8n9b5w01dkrh4pz", // $17.99
-    },
+    paddleProductId: "pro_01khxfkb62qe04p5byd4jmnstq", // one-time price, not the old recurring "subscribe" price
+    priceId: "pri_01m24yejnkaf61jw42jek47ejb", // USD $17.99, KR override ₩17,900
     grants: [
       { creditType: "personal", amount: 1 },
       { creditType: "relationship", amount: 2 },
@@ -72,11 +68,8 @@ export const BETA_PLANS: Record<BetaPlanId, BetaPlan> = {
   },
   additional_relationship: {
     planId: "additional_relationship",
-    paddleProductId: "pro_01kxk3dx6tq9rtzbkt24f2h01w", // "addtional relationship"
-    priceId: {
-      "ko-KR": "pri_01m1xm9yk9y5heefdpt0y7ggtz", // ₩7,900
-      "en-US": "pri_01m1xm9yt7z8p6jyn2t7zavr5n", // $7.99
-    },
+    paddleProductId: "pro_01khxfkb62qe04p5byd4jmnstq",
+    priceId: "pri_01m24yfrgt87dph6caewbjajky", // USD $7.99, KR override ₩7,900
     grants: [{ creditType: "relationship", amount: 1 }],
   },
 };
@@ -85,7 +78,7 @@ export function resolveBetaPlan(planId: string): BetaPlan | null {
   return (BETA_PLANS as Record<string, BetaPlan>)[planId] ?? null;
 }
 
-/** True if `priceId` is one of this plan's two locale prices (KR or US) — the transaction's currency tells us which one was actually charged, not the request locale. */
+/** True if `priceId` is this plan's single Paddle price id. */
 export function planHasPriceId(plan: BetaPlan, priceId: string): boolean {
-  return plan.priceId["ko-KR"] === priceId || plan.priceId["en-US"] === priceId;
+  return plan.priceId === priceId;
 }

@@ -80,7 +80,7 @@ export function useBetaCheckout() {
       setBusy(true);
       try {
         await loadAndInitPaddle(clientToken);
-        const priceId = plan.priceId[locale];
+        const priceId = plan.priceId;
 
         return await new Promise<BetaCheckoutOutcome>((resolve) => {
           currentEventListener = (event) => {
