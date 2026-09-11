@@ -1,13 +1,15 @@
 /**
  * Directional map-membership rules (spec section 9) — wired into
  * app/api/connect/complete/route.ts (link join) and
- * app/api/connect/respond/route.ts (reciprocal accept/decline).
+ * app/api/connect/respond/route.ts (reciprocal accept/decline, still used
+ * to resolve pre-existing pending rows created before auto-connect).
  *
- * The map answers "who is in MY map", and that need not be symmetric:
- * when B joins through A's personal link, B explicitly consented to
- * connecting with A — so A appears in B's map immediately. A did not
- * consent to anything about B yet, so B does NOT appear in A's map until
- * A explicitly accepts a reciprocal request.
+ * The map answers "who is in MY map". Personal-link joins are now fully
+ * reciprocal and immediate: sharing your personal link IS the consent —
+ * anyone who completes onboarding through it appears in both maps right
+ * away, no separate accept step. (Previously the owner's side started
+ * "pending" and required an explicit reciprocal accept; that gate was
+ * removed by product decision — see git history on this file.)
  */
 
 export type MembershipStatus = "pending" | "accepted" | "declined";
@@ -16,14 +18,15 @@ export type MembershipStatus = "pending" | "accepted" | "declined";
  * The two independent membership rows created the moment someone joins
  * through a personal connect link. `owner` = whoever's personal link was
  * used; `joiner` = the person who just completed onboarding through it.
+ * Both sides are accepted immediately — sharing the link is the consent.
  */
 export function initialMembershipsForLinkJoin(): {
   /** joiner's map -> owner: joiner explicitly opted into this by using the link. */
   joinerSeesOwner: MembershipStatus;
-  /** owner's map -> joiner: owner has not agreed to anything about the joiner yet. */
+  /** owner's map -> joiner: owner shared the link, which is itself consent to whoever joins through it. */
   ownerSeesJoiner: MembershipStatus;
 } {
-  return { joinerSeesOwner: "accepted", ownerSeesJoiner: "pending" };
+  return { joinerSeesOwner: "accepted", ownerSeesJoiner: "accepted" };
 }
 
 /**

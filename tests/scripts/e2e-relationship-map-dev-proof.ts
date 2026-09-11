@@ -154,24 +154,12 @@ async function main() {
     "joiner's map must show the owner immediately (joinerSeesOwner = accepted)",
   );
 
-  console.log("\n=== 8. OWNER (viewer) side BEFORE accepting: must NOT yet see the joiner (starts pending) ===");
+  console.log("\n=== 8. OWNER (viewer) side: must see the joiner immediately too — auto-connect, no reciprocal approval step ===");
   const viewerConnectionsBefore = await fetchRelationshipMapConnections(supabase, viewerId);
   assert.ok(
-    !viewerConnectionsBefore.find((c) => c.partnerReportId === otherId),
-    "owner's map must NOT show the joiner until the owner explicitly accepts (ownerSeesJoiner = pending)",
+    viewerConnectionsBefore.find((c) => c.partnerReportId === otherId),
+    "owner's map must show the joiner right away (ownerSeesJoiner = accepted, same as joinerSeesOwner)",
   );
-
-  console.log("\n=== 9. owner explicitly accepts the reciprocal request (same effect as /api/connect/respond) ===");
-  const { data: acceptedRow, error: acceptErr } = await supabase
-    .from("relationship_map_memberships")
-    .update({ status: "accepted", responded_at: new Date().toISOString() })
-    .eq("relationship_report_id", rrId1)
-    .eq("viewer_report_id", viewerId)
-    .eq("status", "pending")
-    .select("relationship_report_id")
-    .maybeSingle();
-  if (acceptErr) throw acceptErr;
-  assert.ok(acceptedRow, "owner's pending row must exist and flip to accepted exactly once");
 
   console.log("\n=== 10. computeRelationshipMap (owner's map): other person must now appear under the EXACT expected role ===");
   const mapResult = await computeRelationshipMap(supabase, viewerId);

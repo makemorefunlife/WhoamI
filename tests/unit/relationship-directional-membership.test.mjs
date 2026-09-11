@@ -39,18 +39,18 @@ section("A sends personal link, B joins through it -> B's map sees A immediately
   ok("joiner's map -> owner is accepted immediately (the joiner explicitly consented by using the link)");
 }
 
-section("A does NOT automatically see B merely because B used A's link");
+section("A automatically sees B the moment B uses A's link — no separate approval step");
 {
   const { ownerSeesJoiner } = initialMembershipsForLinkJoin();
-  assert.equal(ownerSeesJoiner, "pending");
-  assert.ok(!isVisibleInMap(ownerSeesJoiner, false), "A (owner) must NOT see B (joiner) until A explicitly accepts");
-  ok("owner's map -> joiner starts pending, not visible, until a reciprocal accept");
+  assert.equal(ownerSeesJoiner, "accepted");
+  assert.ok(isVisibleInMap(ownerSeesJoiner, false), "A (owner) must see B (joiner) immediately, sharing the link IS the consent");
+  ok("owner's map -> joiner is accepted immediately, same as joiner's map -> owner (full auto-connect, no reciprocal approval gate)");
 }
 
-section("reciprocal request: A accepts -> B becomes visible in A's map");
+section("leftover legacy pending rows (created before auto-connect) can still be resolved via accept/decline");
 {
-  assert.ok(isVisibleInMap("accepted", false), "after A accepts B's reciprocal request, B must appear in A's map");
-  ok("owner's map -> joiner becomes visible once status flips to accepted");
+  assert.ok(isVisibleInMap("accepted", false), "an old pending row that gets accepted must still become visible");
+  ok("connect/respond's accept/decline path still works for any pre-existing pending rows, even though new joins no longer create pending rows");
 }
 
 section("reciprocal request: A declines -> B never appears in A's map");
