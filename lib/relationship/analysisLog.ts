@@ -212,18 +212,60 @@ export async function listRelationshipAnalysisLogs(
     return [];
   }
 
-  return (data ?? []).map((row) => {
-    const snap = (row.result_snapshot ?? {}) as Record<string, unknown>;
-    const summary = buildLogSummary(row.result_format, snap);
-    return {
-      ...(row as AnalysisLogRow),
-      relationship_kind: isRelationshipKind(row.relationship_kind)
-        ? row.relationship_kind
-        : "unspecified",
-      summary_title: summary.title,
-      summary_subtitle: summary.subtitle,
-    };
-  });
+  return (data ?? []).map(mapAnalysisLogRow);
+}
+
+function mapAnalysisLogRow(
+  row: AnalysisLogRow,
+): AnalysisLogRow & { summary_title: string; summary_subtitle: string } {
+  const snap = (row.result_snapshot ?? {}) as Record<string, unknown>;
+  const summary = buildLogSummary(row.result_format, snap);
+  return {
+    ...row,
+    relationship_kind: isRelationshipKind(row.relationship_kind)
+      ? row.relationship_kind
+      : "unspecified",
+    summary_title: summary.title,
+    summary_subtitle: summary.subtitle,
+  };
+}
+
+/**
+ * Batched counterpart to listRelationshipAnalysisLogs — one query for the
+ * viewer's N most recent logs across MANY relationships, instead of the
+ * hub feed firing one /api/relationship/logs request per relationship
+ * (that fan-out was directly felt as load latency once someone had more
+ * than a few connections). Globally sorted by created_at, so this also
+ * fixes a latent correctness gap the per-relationship version had: fetching
+ * each relationship's own top-K then merging could under-represent a
+ * relationship with many very recent logs once maxTargets capped how many
+ * relationships got queried at all.
+ */
+export async function listRelationshipAnalysisLogsBatch(
+  supabase: SupabaseClient,
+  relationshipReportIds: string[],
+  viewerReportId: string,
+  limit = 5,
+): Promise<(AnalysisLogRow & { summary_title: string; summary_subtitle: string })[]> {
+  if (relationshipReportIds.length === 0) return [];
+  const safeLimit = Math.max(1, Math.min(100, limit));
+
+  const { data, error } = await supabase
+    .from("relationship_analysis_logs")
+    .select(
+      "id, relationship_report_id, viewer_report_id, relationship_kind, analysis_level, result_format, result_snapshot, created_at",
+    )
+    .eq("viewer_report_id", viewerReportId)
+    .in("relationship_report_id", relationshipReportIds)
+    .order("created_at", { ascending: false })
+    .limit(safeLimit);
+
+  if (error) {
+    logServerError("analysisLog.listBatch", error, "db_select_failed");
+    return [];
+  }
+
+  return (data ?? []).map((row) => mapAnalysisLogRow(row as AnalysisLogRow));
 }
 
 export async function fetchFavoriteRelationshipIds(

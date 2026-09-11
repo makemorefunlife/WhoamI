@@ -12,6 +12,12 @@ type FeedPage = {
   hasMore: boolean;
 };
 
+/**
+ * One batched call for the hub's "recent analyses" feed, instead of one
+ * GET /api/relationship/logs request per relationship — with more than a
+ * handful of connections, that per-relationship fan-out was directly felt
+ * as load latency on the relationship hub.
+ */
 export async function fetchHubAnalysisFeed(
   viewerReportId: string,
   relationships: RelationshipListItem[],
@@ -20,41 +26,35 @@ export async function fetchHubAnalysisFeed(
 ): Promise<FeedPage> {
   const withId = relationships.filter((r) => r.relationship_report_id);
   const targets = withId.slice(0, Math.max(1, maxTargets));
-  const perRelationshipLimit = Math.max(3, Math.min(limit + 1, 20));
-  const results = await Promise.all(
-    targets.map(async (rel) => {
-      const rrId = rel.relationship_report_id!;
-      try {
-        const res = await fetch(
-          `/api/relationship/logs?relationshipReportId=${encodeURIComponent(rrId)}&viewerReportId=${encodeURIComponent(viewerReportId)}&limit=${perRelationshipLimit}&offset=0`,
-        );
-        const data = await res.json();
-        if (!res.ok) return { items: [], hasMore: false } as FeedPage;
-        const logs = (data.logs ?? []) as AnalysisLogListItem[];
-        return {
-          items: logs.map((log) => ({
-          ...log,
-          partner_name: rel.partner_name,
-          relationship_report_id: rrId,
-          })),
-          hasMore: data.hasMore === true,
-        } as FeedPage;
-      } catch {
-        return { items: [], hasMore: false } as FeedPage;
-      }
-    }),
-  );
-  const merged = results
-    .flatMap((result) => result.items)
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
-  const hasMore = merged.length > limit || results.some((result) => result.hasMore);
-  return {
-    items: merged.slice(0, limit),
-    hasMore,
-  };
+  if (targets.length === 0) return { items: [], hasMore: false };
+
+  const partnerNameByRrId = new Map(targets.map((rel) => [rel.relationship_report_id!, rel.partner_name]));
+
+  try {
+    const res = await fetch("/api/relationship/logs/batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        viewerReportId,
+        relationshipReportIds: targets.map((rel) => rel.relationship_report_id),
+        limit: limit + 1,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { items: [], hasMore: false };
+    const logs = (data.logs ?? []) as (AnalysisLogListItem & { relationship_report_id: string })[];
+    const items = logs.map((log) => ({
+      ...log,
+      partner_name: partnerNameByRrId.get(log.relationship_report_id) ?? "",
+      relationship_report_id: log.relationship_report_id,
+    }));
+    return {
+      items: items.slice(0, limit),
+      hasMore: items.length > limit,
+    };
+  } catch {
+    return { items: [], hasMore: false };
+  }
 }
 
 export function formatHubAnalysisDate(iso: string): string {
