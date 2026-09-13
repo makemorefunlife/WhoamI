@@ -846,8 +846,9 @@ export const messagesEnUS = {
     lastUpdatedPrefix: "Last updated · ",
   },
   invite: {
-    metaTitle: "Aha! it's me · Let's explore our relationship",
-    metaDescription: "Accept the invitation and discover how you connect.",
+    metaTitle: "Who are you to me?",
+    metaDescription:
+      "Accept my invite and discover the role we play in each other's lives.",
     invalidToken: "This invite link isn't valid.",
     inviteMessage: "A friend invited you to get relationship tips together.",
     inviteMessageWithInviter: (name: string) => `${name} invited you to connect.`,

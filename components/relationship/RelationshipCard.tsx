@@ -135,8 +135,9 @@ export default function RelationshipCard({
       if (isKo) {
         const ok = await shareKakaoInvite(
           url,
-          messages.hub.shareInviteTitle,
-          messages.hub.shareInviteText,
+          messages.invite.metaTitle,
+          messages.invite.metaDescription,
+          "https://www.ahaitsme.com/social/invite/invite-friend-ko.png",
         );
         if (ok) return;
       }

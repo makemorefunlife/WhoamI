@@ -806,8 +806,8 @@ export const messagesKoKR: MessageCatalog = {
     lastUpdatedPrefix: "최종 업데이트 · ",
   },
   invite: {
-    metaTitle: "Aha! it's me · 함께 관계를 알아봐요",
-    metaDescription: "초대를 수락하고, 우리 관계를 함께 알아보세요.",
+    metaTitle: "너는 나에게 어떤 친구일까?",
+    metaDescription: "초대를 수락하고 우리 관계를 알아봐.",
     invalidToken: "초대 링크가 올바르지 않아요.",
     inviteMessage: "친구가 너와의 관계 팁을 받아보자고 초대했어.",
     inviteMessageWithInviter: (name: string) => `${name}님이 친구로 초대했어요.`,

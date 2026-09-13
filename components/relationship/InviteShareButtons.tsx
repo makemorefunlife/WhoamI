@@ -56,8 +56,9 @@ export default function InviteShareButtons({
   async function onKakao() {
     const ok = await shareKakaoInvite(
       url,
-      messages.hub.inviteShareTitle,
-      messages.hub.inviteShareMessage,
+      messages.invite.metaTitle,
+      messages.invite.metaDescription,
+      "https://www.ahaitsme.com/social/invite/invite-friend-ko.png",
     );
     if (!ok) {
       const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;

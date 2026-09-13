@@ -10,12 +10,15 @@ export function buildPageMetadata(params: {
   path: string;
   title: string;
   description: string;
+  imageUrl?: string;
   robots?: Metadata["robots"];
 }): Metadata {
-  const { locale, path, title, description, robots } = params;
+  const { locale, path, title, description, imageUrl, robots } = params;
   const enPath = path === "/" ? "/" : path;
   const koPath = path === "/" ? "/kr" : `/kr${path}`;
   const canonical = locale === "ko-KR" ? koPath : enPath;
+
+  const images = imageUrl ? [imageUrl] : undefined;
 
   return {
     title,
@@ -31,10 +34,13 @@ export function buildPageMetadata(params: {
       title,
       description,
       url: canonical,
+      ...(images ? { images } : {}),
     },
     twitter: {
+      card: images ? "summary_large_image" : undefined,
       title,
       description,
+      ...(images ? { images } : {}),
     },
     ...(robots ? { robots } : {}),
   };

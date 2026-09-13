@@ -70,8 +70,9 @@ declare global {
  */
 export async function shareKakaoInvite(
   url: string,
-  title: string,
-  message: string,
+  title: string = "너는 나에게 어떤 친구일까?",
+  message: string = "초대를 수락하고 우리 관계를 알아봐.",
+  imageUrl: string = "https://www.ahaitsme.com/social/invite/invite-friend-ko.png",
 ): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
@@ -102,13 +103,12 @@ export async function shareKakaoInvite(
         window.Kakao.init(kakaoKey);
       }
       if (window.Kakao.Share) {
-        const origin = window.location.origin;
         window.Kakao.Share.sendDefault({
           objectType: "feed",
           content: {
             title: title,
             description: message,
-            imageUrl: `${origin}/brand/logo.png`,
+            imageUrl: imageUrl,
             link: {
               mobileWebUrl: url,
               webUrl: url,

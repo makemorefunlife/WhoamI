@@ -18,11 +18,16 @@ import { ROUTES } from "@/constants/routes";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
   const messages = getMessages(locale);
+  const imageUrl =
+    locale === "ko-KR"
+      ? "https://www.ahaitsme.com/social/invite/invite-friend-ko.png"
+      : "https://www.ahaitsme.com/social/invite/invite-friend-en.png";
   return buildPageMetadata({
     locale,
     path: ROUTES.invite,
     title: messages.invite.metaTitle,
     description: messages.invite.metaDescription,
+    imageUrl,
   });
 }
 
