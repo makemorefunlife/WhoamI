@@ -33,30 +33,20 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const tokenParam = sp.token;
   const token = typeof tokenParam === "string" ? tokenParam.trim() : "";
 
-  let ownerName: string | null | undefined;
-  if (token) {
-    const supabase = createRouteSupabaseClient();
-    if (supabase) {
-      ownerName = await resolveConnectLinkOwnerName(supabase, token);
-    }
-  }
+  const title = messages.invite.metaTitle;
+  const description = messages.invite.metaDescription;
+  const imageUrl =
+    locale === "ko-KR"
+      ? "https://www.ahaitsme.com/social/invite/invite-friend-ko.png"
+      : "https://www.ahaitsme.com/social/invite/invite-friend-en.png";
 
-  const title =
-    ownerName !== undefined
-      ? messages.connect.invitedByTitle(ownerName ?? messages.connect.someoneFallbackName)
-      : messages.connect.invalidTitle;
-  const description = ownerName !== undefined ? messages.connect.invitedByBody : messages.connect.invalidBody;
-
-  const base = buildPageMetadata({ locale, path: ROUTES.connect, title, description });
-
-  if (ownerName === undefined) return base;
-
-  const ogImageUrl = `/api/og/connect?token=${encodeURIComponent(token)}&locale=${locale}`;
-  return {
-    ...base,
-    openGraph: { ...base.openGraph, images: [{ url: ogImageUrl, width: 1200, height: 630 }] },
-    twitter: { ...base.twitter, card: "summary_large_image", images: [ogImageUrl] },
-  };
+  return buildPageMetadata({
+    locale,
+    path: ROUTES.connect,
+    title,
+    description,
+    imageUrl,
+  });
 }
 
 export default async function ConnectPage() {

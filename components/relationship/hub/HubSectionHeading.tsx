@@ -15,7 +15,7 @@ export default function HubSectionHeading({
   return (
     <div className="space-y-1">
       <h2 className="stitch-headline flex items-baseline gap-2 text-lg text-primary">
-        <span className="text-[13px] leading-none text-secondary" aria-hidden="true">
+        <span className="text-[13px] leading-none text-[#8c7c72]" aria-hidden="true">
           ◤
         </span>
         <span>{title}</span>
