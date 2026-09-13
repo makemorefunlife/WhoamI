@@ -32,6 +32,7 @@ export type RelationshipListItem = {
   outbound_invite_id?: string | null;
   relationship_report_id: string | null;
   partner_name: string;
+  partner_avatar_url?: string | null;
   partner_report_id: string | null;
   analysis_type: "basic" | "premium" | null;
   status: "completed" | "pending";

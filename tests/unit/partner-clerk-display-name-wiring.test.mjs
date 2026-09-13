@@ -29,7 +29,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { resolvePartnerDisplayName } from "../../lib/relationship/resolvePartnerDisplayName.ts";
-import { resolveClerkDisplayNamesByUserId } from "../../lib/relationship/resolveClerkDisplayNames.ts";
+import {
+  resolveClerkDisplayNamesByUserId,
+  resolveClerkProfilesByUserId,
+} from "../../lib/relationship/resolveClerkDisplayNames.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "../..");
@@ -87,8 +90,9 @@ section("D. every affected aggregation point selects clerk_user_id and resolves 
   for (const [file, label] of checks) {
     const src = readSrc(file);
     assert.ok(
-      /clerk_user_id/.test(src) && src.includes("resolveClerkDisplayNamesByUserId"),
-      `${label} (${file}) must select clerk_user_id and call resolveClerkDisplayNamesByUserId`,
+      /clerk_user_id/.test(src) &&
+        (src.includes("resolveClerkDisplayNamesByUserId") || src.includes("resolveClerkProfilesByUserId")),
+      `${label} (${file}) must select clerk_user_id and call resolveClerkDisplayNamesByUserId or resolveClerkProfilesByUserId`,
     );
   }
   ok("all 4 name-resolution call sites (hub, detail, map, shared inbox) now resolve the partner's Clerk name");
@@ -125,6 +129,31 @@ section("F. a partner_manual contact's clerk_user_id (the OWNER's own id, not th
     );
   }
   ok("hub list, detail page, and map all skip Clerk-name resolution for partner_manual contacts");
+}
+
+section("G. Friend avatars (Google/Clerk profile photo) reuse the same batched call as the name — no extra API round trip");
+{
+  assert.deepEqual(await resolveClerkProfilesByUserId([]), {});
+  assert.deepEqual(await resolveClerkProfilesByUserId([null, undefined]), {});
+  ok("resolveClerkProfilesByUserId has the same empty-input fast path as resolveClerkDisplayNamesByUserId");
+
+  const listSrc = readSrc("app/api/relationship/list/route.ts");
+  assert.ok(
+    listSrc.includes("resolveClerkProfilesByUserId"),
+    "hub friend list must fetch name + avatar together via resolveClerkProfilesByUserId, not a second separate Clerk call",
+  );
+  assert.ok(
+    listSrc.includes("partner_avatar_url"),
+    "hub friend list response must carry partner_avatar_url for the avatar circle to render",
+  );
+
+  const circleSrc = readSrc("components/relationship/hub/FriendAvatarCircle.tsx");
+  assert.ok(circleSrc.includes("avatarUrl"), "FriendAvatarCircle must accept an avatarUrl prop");
+  assert.ok(
+    circleSrc.includes("friendInitials(name)"),
+    "FriendAvatarCircle must still fall back to initials (no avatar, or the image failed to load)",
+  );
+  ok("hub list wires one combined Clerk call to partner_avatar_url, and the avatar circle falls back to initials");
 }
 
 console.log(`\n${passed} passed`);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Plus, MoreHorizontal } from "lucide-react";
 import { friendInitials } from "@/lib/relationship/hubDisplayName";
 
@@ -12,26 +13,44 @@ const AVATAR_INNER_CLASS =
 
 type FriendAvatarCircleProps = {
   name: string;
+  avatarUrl?: string | null;
   selected?: boolean;
   isFavorite?: boolean;
 };
 
 export function FriendAvatarCircle({
   name,
+  avatarUrl,
   selected = false,
   isFavorite = false,
 }: FriendAvatarCircleProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(avatarUrl) && !imageFailed;
+
   return (
     <span className={AVATAR_OUTER_CLASS}>
       <span
         className={[
           AVATAR_INNER_CLASS,
+          "overflow-hidden",
           selected
             ? "bg-gradient-to-br from-accent-emerald-soft to-surface-container-high text-primary ring-[3px] ring-secondary ring-offset-2 ring-offset-[#faf7f0]"
             : "bg-gradient-to-br from-accent-emerald-soft to-surface-container-high text-primary ring-2 ring-outline-variant/40",
         ].join(" ")}
       >
-        <span className="leading-none">{friendInitials(name)}</span>
+        {showImage ? (
+          // eslint-disable-next-line @next/next/no-img-element -- external Clerk/Google-hosted URL, not a local asset
+          <img
+            src={avatarUrl ?? undefined}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <span className="leading-none">{friendInitials(name)}</span>
+        )}
       </span>
       {isFavorite ? (
         <span

@@ -13,7 +13,7 @@ import {
   partnerNameFromLogSnapshot,
   resolvePartnerDisplayName,
 } from "@/lib/relationship/resolvePartnerDisplayName";
-import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
+import { resolveClerkProfilesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import { assertOwnedReportAccess } from "@/lib/report/assertOwnedReportAccess";
 import { resolveRequestLocale } from "@/lib/i18n/llmLocale";
 import { getMessages } from "@/lib/i18n/messages";
@@ -160,14 +160,14 @@ export async function GET(req: Request) {
       (names ?? []).map((n) => [n.id, n.report_type ?? ""]),
     );
     // reports.name is only ever populated for partner_manual contacts (no
-    // Clerk account); a real connected friend's canonical name lives on
-    // their own Clerk account instead — see resolveClerkDisplayNames.ts.
+    // Clerk account); a real connected friend's canonical name (and photo)
+    // live on their own Clerk account instead — see resolveClerkDisplayNames.ts.
     // BUT a partner_manual report's clerk_user_id is the OWNER's own Clerk id
     // (used for ownership checks, e.g. partner-name/route.ts), never the
-    // manual contact's own identity — resolving a Clerk name for it leaked
-    // the owner's own display name onto every manually-added friend whenever
-    // the owner set/changed their own name. Skip the lookup for those rows.
-    const clerkNameByClerkUserId = await resolveClerkDisplayNamesByUserId(
+    // manual contact's own identity — resolving a Clerk name/photo for it
+    // would leak the owner's own display name/photo onto every manually-added
+    // friend. Skip the lookup for those rows.
+    const clerkProfileByClerkUserId = await resolveClerkProfilesByUserId(
       (names ?? [])
         .filter((n) => n.report_type !== "partner_manual")
         .map((n) => n.clerk_user_id),
@@ -176,8 +176,16 @@ export async function GET(req: Request) {
       (names ?? []).map((n) => [
         n.id,
         n.clerk_user_id && n.report_type !== "partner_manual"
-          ? (clerkNameByClerkUserId[n.clerk_user_id] ?? "")
+          ? (clerkProfileByClerkUserId[n.clerk_user_id]?.displayName ?? "")
           : "",
+      ]),
+    );
+    const avatarUrlByReportId = Object.fromEntries(
+      (names ?? []).map((n) => [
+        n.id,
+        n.clerk_user_id && n.report_type !== "partner_manual"
+          ? (clerkProfileByClerkUserId[n.clerk_user_id]?.avatarUrl ?? null)
+          : null,
       ]),
     );
 
@@ -206,6 +214,7 @@ export async function GET(req: Request) {
       pipeline_title: string;
       relationship_report_id: string | null;
       partner_name: string;
+      partner_avatar_url: string | null;
       partner_report_id: string | null;
       analysis_type: "basic" | "premium" | null;
       status: "completed" | "pending";
@@ -227,6 +236,7 @@ export async function GET(req: Request) {
           pipeline_title: "상대방 정보 요청 전송됨",
           relationship_report_id: null,
           partner_name: "상대방",
+          partner_avatar_url: null,
           partner_report_id: null,
           analysis_type: null,
           status: "pending",
@@ -305,6 +315,7 @@ export async function GET(req: Request) {
         pipeline_title,
         relationship_report_id: r.id,
         partner_name: partnerName,
+        partner_avatar_url: avatarUrlByReportId[partnerId] ?? null,
         partner_report_id: partnerId,
         analysis_type: analysisType,
         status: completed ? "completed" : "pending",

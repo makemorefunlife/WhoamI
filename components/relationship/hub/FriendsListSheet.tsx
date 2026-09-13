@@ -84,7 +84,7 @@ export default function FriendsListSheet({
                         : "bg-surface-container-low/50 hover:bg-surface-container-low"
                     }`}
                   >
-                    <FriendAvatarCircle name={name} />
+                    <FriendAvatarCircle name={name} avatarUrl={item.partner_avatar_url} />
                     <span className="min-w-0 flex-1 font-medium text-on-surface">
                       {name}
                     </span>

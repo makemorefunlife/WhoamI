@@ -19,13 +19,22 @@ const MAX_BATCH = 100;
  * throwing, so a partner name always still falls back to
  * resolvePartnerDisplayName's existing report/log/generic chain.
  */
-export async function resolveClerkDisplayNamesByUserId(
+type ClerkProfile = { displayName: string | null; avatarUrl: string | null };
+
+/**
+ * Single batched Clerk API call per chunk, reused by both
+ * resolveClerkDisplayNamesByUserId and resolveClerkProfilesByUserId — a
+ * caller that wants both the name AND the avatar (list/route.ts) gets them
+ * from the SAME getUserList round trip, not two.
+ */
+async function fetchClerkProfilesByUserId(
   clerkUserIds: (string | null | undefined)[],
-): Promise<Record<string, string>> {
+  logContext: string,
+): Promise<Record<string, ClerkProfile>> {
   const unique = [...new Set(clerkUserIds.filter((id): id is string => Boolean(id)))];
   if (unique.length === 0) return {};
 
-  const result: Record<string, string> = {};
+  const result: Record<string, ClerkProfile> = {};
   try {
     const client = await clerkClient();
     for (let i = 0; i < unique.length; i += MAX_BATCH) {
@@ -35,15 +44,48 @@ export async function resolveClerkDisplayNamesByUserId(
         limit: batch.length,
       });
       for (const user of data) {
-        const name = sanitizeDisplayNameInput(
+        const displayName = sanitizeDisplayNameInput(
           (user.publicMetadata as Record<string, unknown> | null)?.displayName,
         );
-        if (name) result[user.id] = name;
+        // hasImage gates this: Clerk always returns SOME imageUrl (a
+        // generated placeholder for accounts with no real photo), and
+        // showing that generated placeholder would be worse than this
+        // app's own initials circle — so no real photo means no avatarUrl,
+        // and callers fall back to initials exactly as before.
+        const avatarUrl = user.hasImage && user.imageUrl ? user.imageUrl : null;
+        result[user.id] = { displayName: displayName || null, avatarUrl };
       }
     }
   } catch (e) {
-    logServerError("resolveClerkDisplayNamesByUserId", e, "internal_error");
+    logServerError(logContext, e, "internal_error");
     return {};
   }
   return result;
+}
+
+export async function resolveClerkDisplayNamesByUserId(
+  clerkUserIds: (string | null | undefined)[],
+): Promise<Record<string, string>> {
+  const profiles = await fetchClerkProfilesByUserId(clerkUserIds, "resolveClerkDisplayNamesByUserId");
+  const result: Record<string, string> = {};
+  for (const [id, p] of Object.entries(profiles)) {
+    if (p.displayName) result[id] = p.displayName;
+  }
+  return result;
+}
+
+/**
+ * Batch-resolve BOTH the display name and a real profile photo URL (e.g.
+ * the Google avatar for a Google-OAuth account) for a set of
+ * clerk_user_ids, in one Clerk API call.
+ *
+ * IMPORTANT: never call this with a partner_manual report's clerk_user_id —
+ * that id belongs to the OWNER (see this file's other doc comment and the
+ * Sep 2026 name-leak fix), not the manual contact, so resolving it here
+ * would show the owner's own name/photo on their friend's card.
+ */
+export async function resolveClerkProfilesByUserId(
+  clerkUserIds: (string | null | undefined)[],
+): Promise<Record<string, ClerkProfile>> {
+  return fetchClerkProfilesByUserId(clerkUserIds, "resolveClerkProfilesByUserId");
 }

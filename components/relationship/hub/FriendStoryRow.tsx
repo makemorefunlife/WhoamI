@@ -128,6 +128,7 @@ export default function FriendStoryRow({
               >
                 <FriendAvatarCircle
                   name={name}
+                  avatarUrl={item.partner_avatar_url}
                   selected={isSelected}
                   isFavorite={item.is_favorite}
                 />
