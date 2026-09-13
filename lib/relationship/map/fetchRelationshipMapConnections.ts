@@ -117,13 +117,22 @@ export async function fetchRelationshipMapConnections(
   // reports.name is only ever populated for partner_manual contacts; a real
   // connected partner's canonical name lives on their own Clerk account —
   // see resolveClerkDisplayNames.ts.
+  // BUT a partner_manual report's clerk_user_id is the OWNER's own Clerk id
+  // (used for ownership checks, e.g. partner-name/route.ts), never the
+  // manual contact's own identity — resolving a Clerk name for it leaked the
+  // owner's own display name onto every manually-added friend whenever the
+  // owner set/changed their name. Skip the lookup entirely for those rows.
   const clerkNameByClerkUserId = await resolveClerkDisplayNamesByUserId(
-    (names ?? []).map((n) => n.clerk_user_id),
+    (names ?? [])
+      .filter((n) => n.report_type !== "partner_manual")
+      .map((n) => n.clerk_user_id),
   );
   const clerkNameByReportId = Object.fromEntries(
     (names ?? []).map((n) => [
       n.id,
-      n.clerk_user_id ? (clerkNameByClerkUserId[n.clerk_user_id] ?? "") : "",
+      n.clerk_user_id && n.report_type !== "partner_manual"
+        ? (clerkNameByClerkUserId[n.clerk_user_id] ?? "")
+        : "",
     ]),
   );
 

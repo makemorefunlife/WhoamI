@@ -92,12 +92,12 @@ export async function GET(req: Request) {
     const [{ data: repA }, { data: repB }] = await Promise.all([
       supabase
         .from("reports")
-        .select("name,birth_time,birth_place,clerk_user_id")
+        .select("name,birth_time,birth_place,clerk_user_id,report_type")
         .eq("id", rr.report_id_a)
         .maybeSingle(),
       supabase
         .from("reports")
-        .select("name,birth_time,birth_place,clerk_user_id")
+        .select("name,birth_time,birth_place,clerk_user_id,report_type")
         .eq("id", rr.report_id_b)
         .maybeSingle(),
     ]);
@@ -215,9 +215,15 @@ export async function GET(req: Request) {
     // reports.name is only ever populated for partner_manual contacts; a
     // real connected partner's canonical name lives on their own Clerk
     // account instead — see resolveClerkDisplayNames.ts.
-    const partnerClerkNameById = await resolveClerkDisplayNamesByUserId([
-      partner?.clerk_user_id,
-    ]);
+    // BUT a partner_manual report's clerk_user_id is the OWNER's own Clerk
+    // id (used for ownership checks — see partner-name/route.ts), never the
+    // manual contact's own identity, so it must never be used as a name
+    // source here — doing so leaked the owner's own display name onto
+    // every manually-added friend whenever the owner set/changed their name.
+    const partnerIsManual = partner?.report_type === "partner_manual";
+    const partnerClerkNameById = partnerIsManual
+      ? {}
+      : await resolveClerkDisplayNamesByUserId([partner?.clerk_user_id]);
     const partnerName = resolvePartnerDisplayName(
       partner?.name,
       partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,

@@ -101,4 +101,30 @@ section("E. buildSharedInboxItem accepts and prioritizes the owner's Clerk name"
   ok("buildSharedInboxItem threads ownerClerkDisplayName through to resolvePartnerDisplayName");
 }
 
+section("F. a partner_manual contact's clerk_user_id (the OWNER's own id, not the contact's) must never be resolved as a name");
+{
+  // Regression for: renaming yourself (Clerk publicMetadata.displayName)
+  // made every manually-added friend's name change to YOUR new name too.
+  // Root cause: app/api/relationship/manual/route.ts stores the creating
+  // user's own clerk_user_id on a partner_manual report (needed for the
+  // ownership check in partner-name/route.ts's PATCH), but every aggregation
+  // point below was treating that same clerk_user_id as if it were the
+  // manual contact's own identity and looking up ITS Clerk displayName —
+  // which resolves to the owner's own name, since it's the owner's own id.
+  const checks = [
+    ["app/api/relationship/list/route.ts", "hub friend list"],
+    ["app/api/relationship/detail/route.ts", "relationship detail page"],
+    ["lib/relationship/map/fetchRelationshipMapConnections.ts", "relationship map"],
+  ];
+  const guardPattern = /report_type\s*(!==|===)\s*"partner_manual"/;
+  for (const [file, label] of checks) {
+    const src = readSrc(file);
+    assert.ok(
+      guardPattern.test(src),
+      `${label} (${file}) must guard the Clerk-name lookup/usage against partner_manual rows`,
+    );
+  }
+  ok("hub list, detail page, and map all skip Clerk-name resolution for partner_manual contacts");
+}
+
 console.log(`\n${passed} passed`);
