@@ -14,6 +14,7 @@ import ReportContinuationCtas from "@/components/relationship/detail/ReportConti
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { useDockOverlayLock } from "@/lib/hooks/useDockOverlayLock";
 import { useRelationshipDetail } from "./useRelationshipDetail";
 
 export default function RelationshipView({
@@ -80,6 +81,8 @@ export default function RelationshipView({
     cancelRegeneratePremium,
     confirmRegeneratePremium,
   } = detail;
+
+  useDockOverlayLock(showRegenerateConfirm);
 
   const viewingBasicSurface = analysisSurface === "basic";
   const generating = busy || autostartActive || premiumInProgress;

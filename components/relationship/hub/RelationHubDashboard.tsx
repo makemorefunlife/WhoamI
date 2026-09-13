@@ -32,6 +32,7 @@ import {
   RelationHubActionSkeleton,
 } from "@/components/ui/stitch/StitchSkeleton";
 import { useClientReportId } from "@/lib/hooks/useClientReportId";
+import { useDockOverlayLock } from "@/lib/hooks/useDockOverlayLock";
 import { relationshipHubRoute } from "@/constants/routes";
 import { clearLegacyHubDisplayNames } from "@/lib/relationship/hubDisplayName";
 import {
@@ -117,6 +118,21 @@ export default function RelationHubDashboard() {
   const [sharedWithMe, setSharedWithMe] = useState<HubAnalysisFeedItem[]>([]);
   const [navOverlayPartner, setNavOverlayPartner] = useState<string | null>(
     null,
+  );
+
+  // Bottom sheets/dialogs anchor to the same screen region the floating
+  // dock does — the dock must hide outright while any of these are open,
+  // never just sit dimmed underneath (see dockOverlayLock.ts).
+  useDockOverlayLock(
+    renameTarget != null ||
+      removeTarget != null ||
+      kindPickerTarget != null ||
+      addFriendOpen ||
+      sentRequestsOpen ||
+      friendsListOpen ||
+      allAnalysisOpen ||
+      connectedFriendName != null ||
+      navOverlayPartner != null,
   );
 
   const loadWaiting = useCallback(async (reportIdOverride?: string) => {

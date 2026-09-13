@@ -19,6 +19,7 @@ import {
   RELATION_HUB_DOCK_LOCK_MESSAGE,
   subscribeRelationHubDockLock,
 } from "@/lib/stitch/relationHubDockLock";
+import { subscribeDockOverlayLock } from "@/lib/stitch/dockOverlayLock";
 
 const SCROLL_DOWN_THRESHOLD = 10;
 const TOP_HIDE_Y = 24;
@@ -109,6 +110,7 @@ export default function StitchScrollDock({
   const [visible, setVisible] = useState(false);
   const [storedReportId, setStoredReportId] = useState("");
   const [hubDockLocked, setHubDockLocked] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
   const [lockToastVisible, setLockToastVisible] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
@@ -117,11 +119,15 @@ export default function StitchScrollDock({
   const active = stitchDockActivePath(pathname);
   const onRelationHub =
     pathname === "/relationships" || pathname?.startsWith("/relationships/");
-  const dockShown = visible || (hubDockLocked && onRelationHub);
+  const dockShown = !overlayOpen && (visible || (hubDockLocked && onRelationHub));
   const dockLockedOnPage = hubDockLocked && onRelationHub;
 
   useEffect(() => {
     return subscribeRelationHubDockLock(setHubDockLocked);
+  }, []);
+
+  useEffect(() => {
+    return subscribeDockOverlayLock(setOverlayOpen);
   }, []);
 
   useEffect(() => {
