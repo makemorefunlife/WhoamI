@@ -192,8 +192,10 @@ export const messagesEnUS = {
     nativeShareUnavailable:
       "System sharing isn't available on this device. Please use one of the options above.",
     shareToggleCta: "Share",
+    shareViaKakao: "KakaoTalk",
     shareViaSms: "Message",
-    shareViaOtherApp: "Other app…",
+    shareViaOtherApp: "Other App…",
+    kakaoKeyMissing: "NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY is not configured.",
     kindBadgeRomantic: "Romantic",
     kindBadgeWork: "Colleague",
     kindBadgeCohabitation: "Married",
@@ -1822,8 +1824,10 @@ export type MessageCatalog = {
     shareFailedNotice: string;
     nativeShareUnavailable: string;
     shareToggleCta: string;
+    shareViaKakao: string;
     shareViaSms: string;
     shareViaOtherApp: string;
+    kakaoKeyMissing: string;
     kindBadgeRomantic: string;
     kindBadgeWork: string;
     kindBadgeCohabitation: string;

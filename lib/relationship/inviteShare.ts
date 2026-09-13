@@ -58,6 +58,82 @@ export function openGoogleChatShare(url: string, message: string) {
   );
 }
 
+declare global {
+  interface Window {
+    Kakao?: any;
+  }
+}
+
+/**
+ * Kakao JavaScript SDK Share function
+ * Uses Kakao.Share.sendDefault to open KakaoTalk share dialog directly.
+ */
+export async function shareKakaoInvite(
+  url: string,
+  title: string,
+  message: string,
+): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+
+  const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
+  if (!kakaoKey) {
+    console.warn("NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY is not defined.");
+    return false;
+  }
+
+  if (!window.Kakao) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load Kakao SDK"));
+        document.head.appendChild(script);
+      });
+    } catch {
+      return false;
+    }
+  }
+
+  if (window.Kakao) {
+    try {
+      if (!window.Kakao.isInitialized()) {
+        window.Kakao.init(kakaoKey);
+      }
+      if (window.Kakao.Share) {
+        const origin = window.location.origin;
+        window.Kakao.Share.sendDefault({
+          objectType: "feed",
+          content: {
+            title: title,
+            description: message,
+            imageUrl: `${origin}/brand/logo.png`,
+            link: {
+              mobileWebUrl: url,
+              webUrl: url,
+            },
+          },
+          buttons: [
+            {
+              title: title,
+              link: {
+                mobileWebUrl: url,
+                webUrl: url,
+              },
+            },
+          ],
+        });
+        return true;
+      }
+    } catch (e) {
+      console.error("Kakao share error:", e);
+      return false;
+    }
+  }
+  return false;
+}
+
 export async function nativeShareInvite(
   url: string,
   title: string,
@@ -75,3 +151,4 @@ export async function nativeShareInvite(
     return false;
   }
 }
+

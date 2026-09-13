@@ -14,8 +14,10 @@ import {
 import {
   buildInviteUrl,
   copyInviteLink,
+  shareKakaoInvite,
 } from "@/lib/relationship/inviteShare";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { normalizeLocale } from "@/lib/i18n/locale";
 import type { MessageCatalog } from "@/lib/i18n/messages";
 
 export type HubRowKind =
@@ -127,8 +129,18 @@ export default function RelationshipCard({
   }
 
   async function shareInvite(token: string) {
-    const url = `${window.location.origin}/invite?token=${encodeURIComponent(token)}`;
+    const url = buildInviteUrl(token, locale);
+    const isKo = normalizeLocale(locale) === "ko-KR";
     try {
+      if (isKo) {
+        const ok = await shareKakaoInvite(
+          url,
+          messages.hub.shareInviteTitle,
+          messages.hub.shareInviteText,
+        );
+        if (ok) return;
+      }
+
       if (navigator.share) {
         await navigator.share({
           title: messages.hub.shareInviteTitle,
@@ -136,13 +148,13 @@ export default function RelationshipCard({
           url,
         });
       } else {
-        await navigator.clipboard.writeText(url);
-        alert(messages.hub.shareCopiedNotice);
+        const ok = await copyInviteLink(url);
+        alert(ok ? messages.hub.shareCopiedNotice : messages.hub.shareFailedNotice);
       }
     } catch {
       try {
-        await navigator.clipboard.writeText(url);
-        alert(messages.hub.shareCopiedNotice);
+        const ok = await copyInviteLink(url);
+        alert(ok ? messages.hub.shareCopiedNotice : messages.hub.shareFailedNotice);
       } catch {
         alert(messages.hub.shareFailedNotice);
       }
