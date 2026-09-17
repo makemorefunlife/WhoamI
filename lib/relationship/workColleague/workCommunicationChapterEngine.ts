@@ -137,22 +137,26 @@ function buildIndividualCommunicationProfile(params: {
   const geokgukCategory = workSignals?.month_geokguk?.month_stem_category ?? "self";
 
   // Saju-boosted score calculation (Saju dominates when psych is neutral 50)
-  const extEnergyVal = (axes?.external_energy ?? 50) + (isYangInnate ? 10 : -10) + (geokgukCategory === "food" || geokgukCategory === "wealth" ? 10 : 0);
-  const thinkingStyleVal = (axes?.thinking_style ?? 50) + (isYangInnate ? 10 : 0);
-  const deliberateVal = (axes?.deliberate_decision ?? 50) + (geokgukCategory === "officer" || geokgukCategory === "seal" ? 10 : -5);
-  const structureVal = (axes?.structure ?? 50) + (geokgukCategory === "officer" || geokgukCategory === "seal" ? 10 : 0);
+  const isOfficerOrSeal = geokgukCategory === "officer" || geokgukCategory === "seal";
+  const isFoodOrWealth = geokgukCategory === "food" || geokgukCategory === "wealth";
+
+  const extEnergyVal = (axes?.external_energy ?? 50) + (isYangInnate ? 12 : -12) + (isFoodOrWealth ? 12 : 0) + (geokgukCategory === "self" && isYangInnate ? 8 : 0);
+  const thinkingStyleVal = (axes?.thinking_style ?? 50) + (isYangInnate ? 10 : -5) + (geokgukCategory === "food" ? 10 : 0);
+  const deliberateVal = (axes?.deliberate_decision ?? 50) + (isOfficerOrSeal ? 14 : -8) + (isYangInnate ? -6 : 6);
+  const structureVal = (axes?.structure ?? 50) + (isOfficerOrSeal ? 14 : -6) + (geokgukCategory === "officer" ? 8 : 0);
+  const practicalityVal = (axes?.practicality ?? 50) + (geokgukCategory === "wealth" ? 14 : 0) + (isYangInnate ? 6 : -4);
 
   // Derive Think Mode
   let shortThinkLabel = "";
   let thinkMeaning = "";
-  if (extEnergyVal >= 60 || thinkingStyleVal >= 60) {
+  if (extEnergyVal >= 58 || thinkingStyleVal >= 58) {
     shortThinkLabel = pick(locale, "Talks it out to narrow down the answer", "말하면서 답을 좁히는 편");
     thinkMeaning = pick(
       locale,
       "Refines ideas and sharpens their thinking through back-and-forth conversation.",
       "대화 안에서 소통을 주고받으며 아이디어를 다듬고 생각을 구체화합니다.",
     );
-  } else if (deliberateVal <= 40 || structureVal >= 60 || !isYangInnate) {
+  } else if (deliberateVal >= 54 || structureVal >= 55 || !isYangInnate) {
     shortThinkLabel = pick(locale, "Organizes their thoughts before speaking up", "정리한 뒤 의견을 꺼내는 편");
     thinkMeaning = pick(
       locale,
@@ -171,7 +175,7 @@ function buildIndividualCommunicationProfile(params: {
   // Innate vs Current reconciliation
   let thinkStatus: InnateVsCurrentCommunicationStatus = "aligned";
   let innateThinkLabel = pick(locale, isYangInnate ? "An intuitive, lead-with-instinct temperament" : "A receptive, converging temperament", isYangInnate ? "직관 추진형 기질" : "수용 수렴형 기질");
-  let currentThinkLabel = pick(locale, extEnergyVal >= 60 ? "Outward, conversation-driven communication" : "Inward, reflective communication", extEnergyVal >= 60 ? "외향 대화 소통" : "내향 사색 소통");
+  let currentThinkLabel = pick(locale, extEnergyVal >= 58 ? "Outward, conversation-driven communication" : "Inward, reflective communication", extEnergyVal >= 58 ? "외향 대화 소통" : "내향 사색 소통");
   let thinkSynthesisSentence = "";
 
   if (isYangInnate && extEnergyVal < 40) {
@@ -181,7 +185,7 @@ function buildIndividualCommunicationProfile(params: {
       `${name} is naturally quick to sense things and speak up, but has adapted to reviewing things carefully before weighing in.`,
       `${name}님은 본래 직관과 표현이 빠른 기질이나, 현재는 신중하게 안건을 검토한 후 의견을 꺼내는 적응형 패턴을 보입니다.`,
     );
-  } else if (!isYangInnate && extEnergyVal >= 60) {
+  } else if (!isYangInnate && extEnergyVal >= 58) {
     thinkStatus = "adapted";
     thinkSynthesisSentence = pick(
       locale,
@@ -226,7 +230,7 @@ function buildIndividualCommunicationProfile(params: {
       "실행에 앞서 빠진 조항이나 위험 요소, 필요 조건이 완비되었는지 정밀히 점검합니다.",
     );
     primaryRole = "condition_checker";
-  } else if (extEnergyVal >= 58 || geokgukCategory === "food" || geokgukCategory === "wealth") {
+  } else if (extEnergyVal >= 56 || geokgukCategory === "food" || geokgukCategory === "wealth") {
     shortMeetingLabel = pick(locale, "Throws out a range of options", "다양한 대안을 제안하는 편");
     meetingDesc = pick(
       locale,
@@ -245,10 +249,9 @@ function buildIndividualCommunicationProfile(params: {
   }
 
   // 3. Reporting & Information Sharing Style
-  const practicalityVal = axes?.practicality ?? 50;
   const reportingDimensions: Array<{ label: string; pattern: string }> = [];
-  const leadsWithConclusion = deliberateVal <= 45 || practicalityVal >= 60;
-  const includesDetail = structureVal >= 60;
+  const leadsWithConclusion = deliberateVal <= 45 || practicalityVal >= 56 || isYangInnate;
+  const includesDetail = structureVal >= 55 || isOfficerOrSeal;
 
   reportingDimensions.push({
     label: pick(locale, "Delivery order", "전달 순서"),
@@ -279,7 +282,7 @@ function buildIndividualCommunicationProfile(params: {
   let hardConditionTitle = "";
   let hardConditionExplanation = "";
 
-  if (structureVal >= 60 || deliberateVal >= 60) {
+  if (structureVal >= 55 || deliberateVal >= 55 || isOfficerOrSeal) {
     easyConditionTitle = pick(locale, "When there's clear evidence and a clear reason for the change", "객관적 근거와 개선 이유가 명확할 때");
     easyConditionExplanation = pick(
       locale,
@@ -292,7 +295,7 @@ function buildIndividualCommunicationProfile(params: {
       `Struggles to accept feedback that's just pressure or "should" statements with no real reasoning behind it.`,
       "근거 없이 당위성이나 조급함만 강요받으면 받아들이기 힘들어합니다.",
     );
-  } else if (empathyVal >= 60 || recognitionVal >= 60) {
+  } else if (empathyVal >= 55 || recognitionVal >= 55 || geokgukCategory === "self") {
     easyConditionTitle = pick(locale, "When the effort is acknowledged and the ask is framed clearly", "노고에 대한 인정과 기대 역할이 전달될 때");
     easyConditionExplanation = pick(
       locale,
@@ -323,7 +326,7 @@ function buildIndividualCommunicationProfile(params: {
   // 5. Decision Criteria
   const decisionCriteria: Array<{ title: string; question: string }> = [];
 
-  if (deliberateVal <= 45) {
+  if (deliberateVal <= 48 || isYangInnate || isFoodOrWealth) {
     decisionCriteria.push({
       title: pick(locale, "Speed", "실행 속도"),
       question: pick(locale, "Can we start now and seize the opportunity?", "지금 즉시 착수하여 기회를 잡을 수 있는가?"),
@@ -335,7 +338,7 @@ function buildIndividualCommunicationProfile(params: {
     });
   }
 
-  if (practicalityVal >= 55) {
+  if (practicalityVal >= 52 || isFoodOrWealth) {
     decisionCriteria.push({
       title: pick(locale, "Real, practical results", "실질적 결과물"),
       question: pick(locale, "Is the payoff clearly worth what we're putting in?", "투입 대비 실질적인 성과와 효율이 확실한가?"),
@@ -489,15 +492,22 @@ export function buildWorkCommunicationChapterBundle(params: {
   };
 
   // Section 5 Decision Tension
+  const isDecisionIdentical = personA.decisionCriteria[0]?.title === personB.decisionCriteria[0]?.title;
   const fallbackCriterionEn = pick(locale, "speed of execution", "실행력");
   const fallbackCriterionBEn = pick(locale, "a clear review standard", "검토 기준");
   const decisionTension = {
     title: pick(locale, "So when you disagree", "그래서 의견이 갈리면"),
-    summary: pick(
-      locale,
-      `When opinions clash, ${nameA} tends to prioritize ${personA.decisionCriteria[0]?.title || fallbackCriterionEn}, while ${nameB} wants to check ${personB.decisionCriteria[0]?.title || fallbackCriterionBEn} first. The most effective approach is to let the urgency and stakes of the actual issue decide which standard takes priority.`,
-      `의견이 마찰할 때 ${nameA}님은 ${personA.decisionCriteria[0]?.title || "실행력"}을 우선시하고, ${nameB}님은 ${personB.decisionCriteria[0]?.title || "검토 기준"}을 확인하려 합니다. 두 기준 중 안건의 시급성과 중요도에 따라 우선순위를 결정하는 것이 효과적입니다.`,
-    ),
+    summary: isDecisionIdentical
+      ? pick(
+          locale,
+          `When opinions clash, both ${nameA} and ${nameB} prioritize ${personA.decisionCriteria[0]?.title || fallbackCriterionEn}, sharing a common baseline. It's best to balance speed with review depth based on how urgent the issue is.`,
+          `의견이 마찰할 때 두 사람 모두 ${personA.decisionCriteria[0]?.title || "검토 기준"}을(를) 최우선 기준으로 삼아 신중하게 접점을 모아갑니다. 안건의 시급성에 맞춰 추진 속도와 검토 깊이의 밸런스를 상호 조율하는 것이 좋습니다.`,
+        )
+      : pick(
+          locale,
+          `When opinions clash, ${nameA} tends to prioritize ${personA.decisionCriteria[0]?.title || fallbackCriterionEn}, while ${nameB} wants to check ${personB.decisionCriteria[0]?.title || fallbackCriterionBEn} first. The most effective approach is to let the urgency and stakes of the actual issue decide which standard takes priority.`,
+          `의견이 마찰할 때 ${nameA}님은 ${personA.decisionCriteria[0]?.title || "실행력"}을 우선시하고, ${nameB}님은 ${personB.decisionCriteria[0]?.title || "검토 기준"}을 확인하려 합니다. 두 기준 중 안건의 시급성과 중요도에 따라 우선순위를 결정하는 것이 효과적입니다.`,
+        ),
   };
 
   // Section 6 Decision Flow (Consumes Canonical Chapter 03 R&R!)

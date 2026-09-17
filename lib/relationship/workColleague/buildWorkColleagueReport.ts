@@ -73,7 +73,7 @@ export const WORK_REPORT_SCHEMA_VERSION = 1;
  * classification algorithm changes materially, even if the persisted shape
  * doesn't. isStaleWorkReportBlock is the read side of this contract.
  */
-export const WORK_ANALYSIS_ENGINE_VERSION = 1;
+export const WORK_ANALYSIS_ENGINE_VERSION = 2;
 
 export type WorkColleagueReportBody = {
   headline: string;

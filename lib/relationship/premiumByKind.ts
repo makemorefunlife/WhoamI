@@ -101,6 +101,13 @@ function deepReportValid(format: string, report: unknown): boolean {
   return false;
 }
 
+import {
+  isStaleWorkReportBlock,
+  isStaleCohabitationReportBlock,
+  isStaleFamilyReportBlock,
+  isStaleFriendReportBlock,
+} from "./reportStalenessGuard";
+
 function kindPayloadHasCache(
   payload: PremiumKindPayload | undefined,
   kind: RelationshipKind,
@@ -113,7 +120,8 @@ function kindPayloadHasCache(
       isWorkColleagueDeepReport({
         format: payload.format,
         report: payload.report,
-      })
+      }) &&
+      !isStaleWorkReportBlock(payload)
     );
   }
   if (kind === "cohabitation") {
@@ -122,7 +130,8 @@ function kindPayloadHasCache(
       isCohabitationDeepReport({
         format: payload.format,
         report: payload.report,
-      })
+      }) &&
+      !isStaleCohabitationReportBlock(payload)
     );
   }
   if (kind === "family") {
@@ -131,7 +140,8 @@ function kindPayloadHasCache(
       isFamilyParentChildDeepReport({
         format: payload.format,
         report: payload.report,
-      })
+      }) &&
+      !isStaleFamilyReportBlock(payload)
     );
   }
   if (kind === "friendship") {
@@ -140,7 +150,8 @@ function kindPayloadHasCache(
       isFriendSocialDeepReport({
         format: payload.format,
         report: payload.report,
-      })
+      }) &&
+      !isStaleFriendReportBlock(payload)
     );
   }
 

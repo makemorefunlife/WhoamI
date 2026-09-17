@@ -84,7 +84,7 @@ export const FRIEND_REPORT_SCHEMA_VERSION = 1;
  * classification algorithm changes materially. isStaleFriendReportBlock is
  * the read side of this contract.
  */
-export const FRIEND_ANALYSIS_ENGINE_VERSION = 1;
+export const FRIEND_ANALYSIS_ENGINE_VERSION = 2;
 
 export type FriendReportBody = {
   headline: string;
