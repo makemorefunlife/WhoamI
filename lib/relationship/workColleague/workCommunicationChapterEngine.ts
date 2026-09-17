@@ -436,18 +436,21 @@ export function buildWorkCommunicationChapterBundle(params: {
 
   // Section 2 Pair Meeting Manifestation
   const isMeetingIdentical = personA.meetingStyle.shortLabel === personB.meetingStyle.shortLabel;
+  const cleanMeetingA = personA.meetingStyle.shortLabel.replace(/편$/, "").trim();
+  const cleanMeetingB = personB.meetingStyle.shortLabel.replace(/편$/, "").trim();
+
   const meetingStylePairManifestation = {
     title: pick(locale, "In an actual meeting", "실제 회의에서는"),
     summary: isMeetingIdentical
       ? pick(
           locale,
           `In a meeting, both ${nameA} and ${nameB} share a focus on ${personA.meetingStyle.shortLabel.toLowerCase()}, establishing a unified standard and consistent quality across discussions.`,
-          `회의 중 ${nameA}님과 ${nameB}님 모두 ${personA.meetingStyle.shortLabel} 성향을 공유하여, 깊이 있는 검토와 일관된 완성도를 함께 유지합니다.`,
+          `회의 중 ${nameA}님과 ${nameB}님 모두 ${cleanMeetingA} 성향을 공유하여, 깊이 있는 검토와 일관된 완성도를 함께 유지합니다.`,
         )
       : pick(
           locale,
-          `In a meeting, ${nameA} tends to be the one who ${personA.meetingStyle.shortLabel.toLowerCase()}, while ${nameB} tends to be the one who ${personB.meetingStyle.shortLabel.toLowerCase()}. When one of you pushes the pace, the other holds the line on conditions and quality — together that balances speed with follow-through.`,
-          `회의 중 ${nameA}님이 ${personA.meetingStyle.shortLabel} 역할을 할 때, ${nameB}님은 ${personB.meetingStyle.shortLabel} 역할을 수행하게 됩니다. 한쪽이 추진 속도를 내면 다른 한쪽이 조건과 품질을 챙겨 속도와 완성도의 균형을 맞춥니다.`,
+          `In a meeting, ${nameA} tends to focus on ${cleanMeetingA}, while ${nameB} focuses on ${cleanMeetingB}. When one of you pushes creative options or pace, the other holds the line on conditions and quality — together that balances speed with follow-through.`,
+          `회의 중 ${nameA}님이 ${cleanMeetingA} 역할을 맡을 때, ${nameB}님은 ${cleanMeetingB} 역할을 수행하게 됩니다. 한쪽이 아이디어와 속도를 내면 다른 한쪽이 조건과 품질을 챙겨 속도와 완성도의 균형을 맞춥니다.`,
         ),
   };
 
