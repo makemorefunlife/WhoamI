@@ -35,6 +35,21 @@ import { omitMarriageContextOutputFromReport } from "@/lib/relationship/marriage
 import { omitRomanticContextInputFromReport } from "@/lib/relationship/romantic/stripRomanticContextInputForClient";
 import { isRomanticV4ReportEnabled } from "@/lib/relationship/romantic/prototypeV4/romanticV4ReportFlag";
 import { resolveRomanticV4ForResponse } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
+import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
+import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
+import { extractDomainSajuSignals } from "@/lib/personCore/sajuSignals/extractDomainSajuSignals";
+import { mapPsychMasterJson } from "@/lib/personCore/mappers/mapPsychMasterJson";
+import {
+  buildWorkColleagueReportEnriched,
+  isStaleWorkReportBlock,
+  WORK_COLLEAGUE_DEEP_FORMAT,
+} from "@/lib/relationship/workColleague/buildWorkColleagueReport";
+import {
+  buildFriendReportEnriched,
+  isStaleFriendReportBlock,
+  FRIEND_SOCIAL_DEEP_FORMAT,
+} from "@/lib/relationship/friend/buildFriendReport";
+import type { Locale } from "@/lib/i18n/locale";
 
 export const runtime = "nodejs";
 
@@ -132,6 +147,32 @@ export async function GET(req: Request) {
       { partnerReportName: partner?.name },
     );
 
+    const favorited = await isRelationshipFavorite(
+      supabase,
+      viewerReportId,
+      relationshipReportId,
+    );
+
+    const clerkUser = userId ? await currentUser() : null;
+    const viewerIsReportA = viewerReportId === rr.report_id_a;
+    const viewerName = resolveViewerDisplayName({
+      reportName: viewer?.name,
+      clerkFirstName: clerkUser?.firstName,
+      clerkFullName: clerkUser?.fullName,
+    });
+    const partnerIsManual = partner?.report_type === "partner_manual";
+    const partnerClerkNameById = partnerIsManual
+      ? {}
+      : await resolveClerkDisplayNamesByUserId([partner?.clerk_user_id]);
+    const partnerName = resolvePartnerDisplayName(
+      partner?.name,
+      partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,
+      undefined,
+      "상대",
+    );
+    const personAName = repA?.name?.trim() || (viewerIsReportA ? viewerName : partnerName) || "Person A";
+    const personBName = repB?.name?.trim() || (!viewerIsReportA ? viewerName : partnerName) || "Person B";
+
     const romanticDeepRaw =
       activeKind === "romantic"
         ? getRomanticSajuDeepReport(byKind, locale)
@@ -173,19 +214,19 @@ export async function GET(req: Request) {
           const workSignalsA = extractDomainSajuSignals(bundleA, "work").work;
           const workSignalsB = extractDomainSajuSignals(bundleB, "work").work;
           const psychMasterA = mapPsychMasterJson({
-            displayName: repA.name || "A",
+            displayName: personAName,
             bundle: bundleA,
             surveyAnswers: (repA.survey_answers as any) ?? {},
           });
           const psychMasterB = mapPsychMasterJson({
-            displayName: repB.name || "B",
+            displayName: personBName,
             bundle: bundleB,
             surveyAnswers: (repB.survey_answers as any) ?? {},
           });
 
           workColleagueDeepRaw = buildWorkColleagueReportEnriched({
-            nicknameA: repA.name || "Person A",
-            nicknameB: repB.name || "Person B",
+            nicknameA: personAName,
+            nicknameB: personBName,
             sajuJsonA,
             sajuJsonB,
             birthPlaceA: repA.birth_place,
@@ -258,19 +299,19 @@ export async function GET(req: Request) {
           const friendshipSignalsA = extractDomainSajuSignals(bundleA, "friendship").friendship;
           const friendshipSignalsB = extractDomainSajuSignals(bundleB, "friendship").friendship;
           const psychMasterA = mapPsychMasterJson({
-            displayName: repA.name || "A",
+            displayName: personAName,
             bundle: bundleA,
             surveyAnswers: (repA.survey_answers as any) ?? {},
           });
           const psychMasterB = mapPsychMasterJson({
-            displayName: repB.name || "B",
+            displayName: personBName,
             bundle: bundleB,
             surveyAnswers: (repB.survey_answers as any) ?? {},
           });
 
           friendshipDeepRaw = buildFriendReportEnriched({
-            nicknameA: repA.name || "Person A",
-            nicknameB: repB.name || "Person B",
+            nicknameA: personAName,
+            nicknameB: personBName,
             sajuJsonA,
             sajuJsonB,
             birthPlaceA: repA.birth_place,
@@ -305,40 +346,6 @@ export async function GET(req: Request) {
     const friendshipDeepReport = friendshipDeepRaw
       ? omitFriendContextOutputFromReport(friendshipDeepRaw)
       : null;
-
-    const favorited = await isRelationshipFavorite(
-      supabase,
-      viewerReportId,
-      relationshipReportId,
-    );
-
-    const clerkUser = userId ? await currentUser() : null;
-    const viewerIsReportA = viewerReportId === rr.report_id_a;
-    const viewerName = resolveViewerDisplayName({
-      reportName: viewer?.name,
-      clerkFirstName: clerkUser?.firstName,
-      clerkFullName: clerkUser?.fullName,
-    });
-    // reports.name is only ever populated for partner_manual contacts; a
-    // real connected partner's canonical name lives on their own Clerk
-    // account instead — see resolveClerkDisplayNames.ts.
-    // BUT a partner_manual report's clerk_user_id is the OWNER's own Clerk
-    // id (used for ownership checks — see partner-name/route.ts), never the
-    // manual contact's own identity, so it must never be used as a name
-    // source here — doing so leaked the owner's own display name onto
-    // every manually-added friend whenever the owner set/changed their name.
-    const partnerIsManual = partner?.report_type === "partner_manual";
-    const partnerClerkNameById = partnerIsManual
-      ? {}
-      : await resolveClerkDisplayNamesByUserId([partner?.clerk_user_id]);
-    const partnerName = resolvePartnerDisplayName(
-      partner?.name,
-      partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,
-      undefined,
-      "친구",
-    );
-    const personAName = repA?.name?.trim() || "";
-    const personBName = repB?.name?.trim() || "";
 
     const activeKindReportReady =
       activeKind === "cohabitation"
