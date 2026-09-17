@@ -81,6 +81,7 @@ export function NameChip({
   side: "a" | "b";
   icon?: string;
 }) {
+  const label = name?.trim() || (side === "a" ? "나" : "상대");
   const cls =
     side === "a"
       ? "border-v4-a/35 bg-v4-a-soft text-v4-a"
@@ -90,7 +91,7 @@ export function NameChip({
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-rel-sans text-[11px] font-semibold tracking-[0.06em] ${cls}`}
     >
       {icon && <span aria-hidden>{icon}</span>}
-      {name}
+      {label}
     </span>
   );
 }
@@ -105,6 +106,7 @@ export function PersonTag({
   side: "a" | "b";
   invert?: boolean;
 }) {
+  const label = name?.trim() || (side === "a" ? "나" : "상대");
   const cls =
     side === "a"
       ? "border-v4-a/40 text-v4-a bg-v4-a-soft"
@@ -115,7 +117,7 @@ export function PersonTag({
         invert ? "border-white/25 bg-white/10 text-white" : cls
       }`}
     >
-      {name}
+      {label}
     </span>
   );
 }

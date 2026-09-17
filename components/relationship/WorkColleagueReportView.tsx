@@ -111,9 +111,11 @@ export default function WorkColleagueReportView({
         viewerIsReportA,
       )
     : null;
-  const myName = myNameProp ?? dnaPair?.me.nickname ?? messages.report.meFallbackLabel;
-  const partnerName =
-    partnerNameProp ?? dnaPair?.partner.nickname ?? messages.report.partnerFallbackLabel;
+  const rawMyName = myNameProp?.trim() || dnaPair?.me.nickname?.trim() || messages.report.meFallbackLabel;
+  const myName = rawMyName?.trim() || "나";
+  const rawPartnerName =
+    partnerNameProp?.trim() || dnaPair?.partner.nickname?.trim() || messages.report.partnerFallbackLabel;
+  const partnerName = rawPartnerName?.trim() || "상대";
 
   const snap = office?.section_snapshot ?? {
     fit_pct: report.meta?.fit_pct ?? 0,

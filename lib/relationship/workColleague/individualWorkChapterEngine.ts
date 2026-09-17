@@ -424,8 +424,8 @@ export function buildIndividualWorkChapterBundle(
 ): IndividualWorkChapterBundle {
   const { nameA, nameB, psychA, psychB, sajuChartA, sajuChartB, officeReport, locale = LEGACY_FALLBACK_LOCALE } = params;
 
-  const aName = nameA || pick(locale, "Person A", "A님");
-  const bName = nameB || pick(locale, "Person B", "B님");
+  const aName = nameA?.trim() || pick(locale, "Person A", "나");
+  const bName = nameB?.trim() || pick(locale, "Person B", "상대");
 
   const dummySajuData = { birthYear: 1990, birthMonth: 1, birthDay: 1, birthHour: 12 };
   const roleMap = buildCanonicalWorkRoleMap({
