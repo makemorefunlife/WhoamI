@@ -95,12 +95,14 @@ function buildOpening(
   locale: Locale = "ko-KR",
 ): OpeningBlock {
   const isEn = locale === "en-US";
+  const nameA = names[0]?.trim() || (isEn ? "Me" : "나");
+  const nameB = names[1]?.trim() || (isEn ? "Partner" : "상대");
   return {
-    headline: isEn ? `${names[0]} × ${names[1]} Work Partnership Analysis` : `${names[0]} × ${names[1]} 업무 파트너십 분석`,
+    headline: isEn ? `${nameA} × ${nameB} Work Partnership Analysis` : `${nameA} × ${nameB} 업무 파트너십 분석`,
     subtitle: "",
     grade: "",
     gradeReason: "",
-    names,
+    names: [nameA, nameB],
   };
 }
 
@@ -454,7 +456,9 @@ export function buildWorkReportViewModel(
   report: WorkColleagueReportBody,
   params: BuildWorkReportViewModelParams,
 ): WorkReportViewModel {
-  const { viewerIsReportA, myName, partnerName, locale } = params;
+  const { viewerIsReportA, myName: rawMyName, partnerName: rawPartnerName, locale } = params;
+  const myName = rawMyName?.trim() || (locale === "en-US" ? "Me" : "나");
+  const partnerName = rawPartnerName?.trim() || (locale === "en-US" ? "Partner" : "상대");
   const names: [string, string] = [myName, partnerName];
   const titles = SECTION_TITLES[locale ?? "ko-KR"];
 

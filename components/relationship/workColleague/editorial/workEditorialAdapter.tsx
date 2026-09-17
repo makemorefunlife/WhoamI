@@ -140,7 +140,12 @@ export function WorkEditorialHero({
   gradeLabel?: string;
   eyebrow?: string;
 }) {
-  const [nameA, nameB] = names;
+  const nameA = names?.[0]?.trim() || "나";
+  const nameB = names?.[1]?.trim() || "상대";
+  const cleanHeadline = headline?.trim().startsWith("×")
+    ? `${nameA} ${headline.trim()}`
+    : headline;
+
   return (
     <header className="relative overflow-hidden">
       <div className="mx-auto w-full max-w-[880px] px-5 pb-14 pt-16 sm:px-8 sm:pb-20 sm:pt-24">
@@ -155,7 +160,7 @@ export function WorkEditorialHero({
           <NameChip name={nameB} side="b" />
         </div>
         <h1 className="mt-6 max-w-[24ch] font-rel-serif text-[32px] leading-[1.22] tracking-[-0.02em] text-rel-ink sm:text-[46px]">
-          {headline}
+          {cleanHeadline}
         </h1>
         {subtitle ? (
           <p className="mt-5 max-w-[62ch] font-rel-sans text-[15px] leading-[1.85] text-rel-ink-soft">{subtitle}</p>
