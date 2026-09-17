@@ -25,7 +25,7 @@ import SentRequestsSheet from "@/components/relationship/hub/SentRequestsSheet";
 import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
 import RelationAnalyzeNavOverlay from "@/components/relationship/hub/RelationAnalyzeNavOverlay";
-import FadeInContent from "@/components/ui/stitch/FadeInContent";
+import NoticeDialog from "@/components/common/NoticeDialog";
 import {
   FriendStoryRowSkeleton,
   HubAnalysisListSkeleton,
@@ -119,6 +119,7 @@ export default function RelationHubDashboard() {
   const [navOverlayPartner, setNavOverlayPartner] = useState<string | null>(
     null,
   );
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   // Bottom sheets/dialogs anchor to the same screen region the floating
   // dock does — the dock must hide outright while any of these are open,
@@ -466,7 +467,7 @@ export default function RelationHubDashboard() {
     const token = item.invite_token;
     if (token) {
       const ok = await copyInviteLink(buildInviteUrl(token, locale));
-      alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
+      setNoticeMessage(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
       return;
     }
     await startNewInvite();
@@ -930,6 +931,12 @@ export default function RelationHubDashboard() {
         onLoadMore={() => void loadMoreAnalysis()}
         onClose={() => setAllAnalysisOpen(false)}
         onOpenLog={openAnalysisLog}
+      />
+
+      <NoticeDialog
+        open={Boolean(noticeMessage)}
+        message={noticeMessage}
+        onClose={() => setNoticeMessage(null)}
       />
     </StitchSurveyShell>
   );

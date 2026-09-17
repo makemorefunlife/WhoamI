@@ -5,6 +5,8 @@ import { hubPanelClass, hubTouchBtn } from "@/components/relationship/hub/relati
 import { copyInviteLink } from "@/lib/relationship/inviteShare";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+import NoticeDialog from "@/components/common/NoticeDialog";
+
 type ShareState = "loading" | "private" | "shared";
 
 /**
@@ -29,6 +31,7 @@ export default function ReportShareSection({
   const [state, setState] = useState<ShareState>("loading");
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!relationshipReportId || !viewerReportId || !kind) return;
@@ -66,7 +69,7 @@ export default function ReportShareSection({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.shareToken) {
-        alert(data?.error ?? copy.createFailed);
+        setNoticeMessage(data?.error ?? copy.createFailed);
         return;
       }
       setShareToken(data.shareToken);
@@ -80,7 +83,7 @@ export default function ReportShareSection({
     if (!shareToken || typeof window === "undefined") return;
     const url = `${window.location.origin}/relationship/share/${shareToken}`;
     const ok = await copyInviteLink(url);
-    alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
+    setNoticeMessage(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
   }
 
   async function handleStopSharing() {
@@ -95,7 +98,7 @@ export default function ReportShareSection({
       if (res.ok) {
         setState("private");
         setShareToken(null);
-        alert(copy.stopSharingDone);
+        setNoticeMessage(copy.stopSharingDone);
       }
     } finally {
       setBusy(false);
@@ -135,6 +138,11 @@ export default function ReportShareSection({
           </div>
         </>
       )}
+      <NoticeDialog
+        open={Boolean(noticeMessage)}
+        message={noticeMessage}
+        onClose={() => setNoticeMessage(null)}
+      />
     </div>
   );
 }

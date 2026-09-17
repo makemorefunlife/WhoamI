@@ -13,6 +13,8 @@ import {
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { normalizeLocale } from "@/lib/i18n/locale";
 
+import NoticeDialog from "@/components/common/NoticeDialog";
+
 // Both current callers (AddFriendSheet, SentRequestsSheet) render this inside
 // the light "stitch" theme sheet — these were still the dark "space" theme's
 // near-white-on-white-ish tokens, which read as invisible text there.
@@ -34,12 +36,13 @@ export default function InviteShareButtons({
 }) {
   const { messages, locale } = useLocale();
   const [shareOpen, setShareOpen] = useState(false);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
   const url = urlOverride ?? buildInviteUrl(inviteToken, locale);
   const isKo = normalizeLocale(locale) === "ko-KR";
 
   async function onCopy() {
     const ok = await copyInviteLink(url);
-    alert(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
+    setNoticeMessage(ok ? messages.hub.inviteLinkCopied : messages.hub.inviteLinkCopyFailed);
   }
 
   async function onNative() {
@@ -49,7 +52,7 @@ export default function InviteShareButtons({
       messages.hub.inviteShareMessage,
     );
     if (!ok) {
-      alert(messages.hub.nativeShareUnavailable);
+      setNoticeMessage(messages.hub.nativeShareUnavailable);
     }
   }
 
@@ -63,9 +66,9 @@ export default function InviteShareButtons({
     if (!ok) {
       const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
       if (!kakaoKey) {
-        alert(messages.hub.kakaoKeyMissing);
+        setNoticeMessage(messages.hub.kakaoKeyMissing);
       } else {
-        alert(messages.hub.shareFailedNotice);
+        setNoticeMessage(messages.hub.shareFailedNotice);
       }
     }
   }
@@ -180,6 +183,11 @@ export default function InviteShareButtons({
           </button>
         </div>
       ) : null}
+      <NoticeDialog
+        open={Boolean(noticeMessage)}
+        message={noticeMessage}
+        onClose={() => setNoticeMessage(null)}
+      />
     </div>
   );
 }

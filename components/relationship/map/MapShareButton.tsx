@@ -9,6 +9,8 @@ import { buildAnonymousMapShare, type MapShareSummaryInput } from "@/lib/relatio
 import { buildAnonymousMapShareText } from "@/lib/relationship/map/anonymousMapShareText";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+import NoticeDialog from "@/components/common/NoticeDialog";
+
 /**
  * "Share my Relationship Map" — spec gap-closure sections 7-9. The preview
  * is built purely from {roleId, count} (the same name-free shape the map's
@@ -18,6 +20,7 @@ import { useLocale } from "@/lib/i18n/LocaleProvider";
 export default function MapShareButton({ summary }: { summary: MapShareSummaryInput }) {
   const { locale, messages } = useLocale();
   const [open, setOpen] = useState(false);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   const share = buildAnonymousMapShare(summary, locale);
   const text = buildAnonymousMapShareText(
@@ -28,7 +31,7 @@ export default function MapShareButton({ summary }: { summary: MapShareSummaryIn
 
   async function handleCopy() {
     const ok = await copyInviteLink(text);
-    alert(ok ? messages.relationshipMap.mapShare.copied : messages.relationshipMap.mapShare.copyFailed);
+    setNoticeMessage(ok ? messages.relationshipMap.mapShare.copied : messages.relationshipMap.mapShare.copyFailed);
   }
 
   async function handleNativeShare() {
@@ -92,6 +95,11 @@ export default function MapShareButton({ summary }: { summary: MapShareSummaryIn
           </div>
         </motion.div>
       ) : null}
+      <NoticeDialog
+        open={Boolean(noticeMessage)}
+        message={noticeMessage}
+        onClose={() => setNoticeMessage(null)}
+      />
     </div>
   );
 }
