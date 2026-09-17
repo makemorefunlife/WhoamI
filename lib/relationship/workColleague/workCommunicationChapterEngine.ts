@@ -11,7 +11,7 @@ import type { Locale } from "@/lib/i18n/locale";
 import type { PsychMasterJson } from "@/lib/personCore/types/psychMaster";
 import type { WorkSajuSignals } from "@/lib/personCore/sajuSignals/types";
 import type { SajuDataForIntegrated } from "@/lib/report/formatEssenceAnalysisForIntegrated";
-import type { WorkColleagueReportBody } from "./viewModel/workReportSectionTypes";
+import type { WorkColleagueReportBody } from "./buildWorkColleagueReport";
 import { buildCanonicalWorkRoleMap, resolveWorkRoleOwnerName } from "./workCanonicalRoleModel";
 import { analyzeWorkInnateVsCurrentDiscrepancy } from "./workPsychSajuDiscrepancy";
 import { pick, LEGACY_FALLBACK_LOCALE } from "./workColleagueCopy";
@@ -140,9 +140,10 @@ function buildIndividualCommunicationProfile(params: {
   const isOfficerOrSeal = geokgukCategory === "officer" || geokgukCategory === "seal";
   const isFoodOrWealth = geokgukCategory === "food" || geokgukCategory === "wealth";
 
-  const extEnergyVal = (axes?.external_energy ?? 50) + (isYangInnate ? 12 : -12) + (isFoodOrWealth ? 12 : 0) + (geokgukCategory === "self" && isYangInnate ? 8 : 0);
+  const rawAxes = axes as (Record<string, number> | undefined);
+  const extEnergyVal = (rawAxes?.energy_style ?? rawAxes?.external_energy ?? 50) + (isYangInnate ? 12 : -12) + (isFoodOrWealth ? 12 : 0) + (geokgukCategory === "self" && isYangInnate ? 8 : 0);
   const thinkingStyleVal = (axes?.thinking_style ?? 50) + (isYangInnate ? 10 : -5) + (geokgukCategory === "food" ? 10 : 0);
-  const deliberateVal = (axes?.deliberate_decision ?? 50) + (isOfficerOrSeal ? 14 : -8) + (isYangInnate ? -6 : 6);
+  const deliberateVal = (rawAxes?.decision_style ?? rawAxes?.deliberate_decision ?? 50) + (isOfficerOrSeal ? 14 : -8) + (isYangInnate ? -6 : 6);
   const structureVal = (axes?.structure ?? 50) + (isOfficerOrSeal ? 14 : -6) + (geokgukCategory === "officer" ? 8 : 0);
   const practicalityVal = (axes?.practicality ?? 50) + (geokgukCategory === "wealth" ? 14 : 0) + (isYangInnate ? 6 : -4);
 

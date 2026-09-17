@@ -92,12 +92,12 @@ export async function GET(req: Request) {
     const [{ data: repA }, { data: repB }] = await Promise.all([
       supabase
         .from("reports")
-        .select("name,birth_time,birth_place,clerk_user_id,report_type")
+        .select("id,name,birth_date,birth_time,birth_place,clerk_user_id,report_type,survey_answers")
         .eq("id", rr.report_id_a)
         .maybeSingle(),
       supabase
         .from("reports")
-        .select("name,birth_time,birth_place,clerk_user_id,report_type")
+        .select("id,name,birth_date,birth_time,birth_place,clerk_user_id,report_type,survey_answers")
         .eq("id", rr.report_id_b)
         .maybeSingle(),
     ]);
@@ -142,35 +142,81 @@ export async function GET(req: Request) {
         )
       : null;
 
-    // Romantic V4: response-presence is the flag signal for the client (see
-    // romanticV4ReportFlag.ts) — the field is only included when the server
-    // flag is on AND a persisted V4 block exists AND is either current or
-    // was successfully upgraded in place. A stale block that cannot be
-    // safely upgraded resolves to null here (see resolveRomanticV4ForResponse's
-    // own doc comment) — it is never served to the client under this field.
-    //
-    // romanticV4Enabled (separate from field-presence) tells the client
-    // *why* the field might be absent: if the flag is on, an absent V4
-    // block means this specific report needs a current-version regenerate
-    // (see RelationshipPremiumSection.tsx's Romantic branch — Phase 2
-    // current-version lock), not "fall through to V2/legacy". Only when the
-    // flag itself is off (an intentional per-environment rollback) does
-    // falling through to V2/legacy remain the correct, expected behavior.
     const romanticV4Enabled = isRomanticV4ReportEnabled();
     const romanticDeepReportV4 =
       activeKind === "romantic" && romanticV4Enabled
         ? resolveRomanticV4ForResponse(byKind as unknown as Record<string, unknown>, locale)
         : null;
 
-    const workColleagueDeepRaw =
+    let workColleagueDeepRaw =
       activeKind === "work"
         ? getWorkColleagueDeepReport(byKind, locale)
         : null;
-    // A saved result is always shown as-is once it exists — staleness/version
-    // mismatch is never a reason to hide it (that would either blank the
-    // page on revisit or, combined with autostart, silently trigger a real
-    // regenerate with no confirmation). Only the explicit "새로 분석하기"
-    // confirm flow (force_regenerate:true on the analyze route) replaces it.
+
+    // Phase 3B Auto-Upgrade: if cached Work report is stale (e.g. missing saju_chart_a
+    // or generated under old analysis_engine_version), re-hydrate it on the fly
+    // deterministically (0 LLM credits, ~10ms execution) so the user gets fresh,
+    // fully-wired Saju report data immediately on read.
+    if (activeKind === "work" && (!workColleagueDeepRaw || isStaleWorkReportBlock(workColleagueDeepRaw))) {
+      if (repA?.birth_date && repB?.birth_date) {
+        try {
+          const bundleA = calculateSajuBundle({
+            birthDate: repA.birth_date,
+            birthTime: repA.birth_time || "12:00",
+          });
+          const bundleB = calculateSajuBundle({
+            birthDate: repB.birth_date,
+            birthTime: repB.birth_time || "12:00",
+          });
+          const sajuJsonA = toV1SajuApiPayload(bundleA) as any;
+          const sajuJsonB = toV1SajuApiPayload(bundleB) as any;
+          const workSignalsA = extractDomainSajuSignals(bundleA, "work").work;
+          const workSignalsB = extractDomainSajuSignals(bundleB, "work").work;
+          const psychMasterA = mapPsychMasterJson({
+            displayName: repA.name || "A",
+            bundle: bundleA,
+            surveyAnswers: (repA.survey_answers as any) ?? {},
+          });
+          const psychMasterB = mapPsychMasterJson({
+            displayName: repB.name || "B",
+            bundle: bundleB,
+            surveyAnswers: (repB.survey_answers as any) ?? {},
+          });
+
+          workColleagueDeepRaw = buildWorkColleagueReportEnriched({
+            nicknameA: repA.name || "Person A",
+            nicknameB: repB.name || "Person B",
+            sajuJsonA,
+            sajuJsonB,
+            birthPlaceA: repA.birth_place,
+            birthPlaceB: repB.birth_place,
+            psychMasterA,
+            psychMasterB,
+            workSignalsA,
+            workSignalsB,
+            personCoreMeta: {
+              reportIdA: rr.report_id_a,
+              reportIdB: rr.report_id_b,
+              inputFingerprintA: `fp_${rr.report_id_a}`,
+              inputFingerprintB: `fp_${rr.report_id_b}`,
+            },
+            locale,
+          });
+
+          const updatedByKind = mergeRelationshipPremiumByKind(byKind, "work", {
+            format: WORK_COLLEAGUE_DEEP_FORMAT,
+            report: workColleagueDeepRaw,
+          }, locale as Locale);
+          void supabase
+            .from("relationship_reports")
+            .update({ result_premium_by_kind: updatedByKind })
+            .eq("id", relationshipReportId);
+        } catch (e) {
+          logServerError("Auto-upgrade work report failed", e);
+        }
+      }
+    }
+
     const workColleagueDeepReport = workColleagueDeepRaw
       ? omitWorkContextOutputFromReport(workColleagueDeepRaw)
       : null;
@@ -191,10 +237,71 @@ export async function GET(req: Request) {
       ? omitFamilyContextOutputFromReport(familyDeepRaw)
       : null;
 
-    const friendshipDeepRaw =
+    let friendshipDeepRaw =
       activeKind === "friendship"
         ? getFriendSocialDeepReport(byKind, locale)
         : null;
+
+    if (activeKind === "friendship" && (!friendshipDeepRaw || isStaleFriendReportBlock(friendshipDeepRaw))) {
+      if (repA?.birth_date && repB?.birth_date) {
+        try {
+          const bundleA = calculateSajuBundle({
+            birthDate: repA.birth_date,
+            birthTime: repA.birth_time || "12:00",
+          });
+          const bundleB = calculateSajuBundle({
+            birthDate: repB.birth_date,
+            birthTime: repB.birth_time || "12:00",
+          });
+          const sajuJsonA = toV1SajuApiPayload(bundleA) as any;
+          const sajuJsonB = toV1SajuApiPayload(bundleB) as any;
+          const friendshipSignalsA = extractDomainSajuSignals(bundleA, "friendship").friendship;
+          const friendshipSignalsB = extractDomainSajuSignals(bundleB, "friendship").friendship;
+          const psychMasterA = mapPsychMasterJson({
+            displayName: repA.name || "A",
+            bundle: bundleA,
+            surveyAnswers: (repA.survey_answers as any) ?? {},
+          });
+          const psychMasterB = mapPsychMasterJson({
+            displayName: repB.name || "B",
+            bundle: bundleB,
+            surveyAnswers: (repB.survey_answers as any) ?? {},
+          });
+
+          friendshipDeepRaw = buildFriendReportEnriched({
+            nicknameA: repA.name || "Person A",
+            nicknameB: repB.name || "Person B",
+            sajuJsonA,
+            sajuJsonB,
+            birthPlaceA: repA.birth_place,
+            birthPlaceB: repB.birth_place,
+            psychMasterA,
+            psychMasterB,
+            friendshipSignalsA,
+            friendshipSignalsB,
+            personCoreMeta: {
+              reportIdA: rr.report_id_a,
+              reportIdB: rr.report_id_b,
+              inputFingerprintA: `fp_${rr.report_id_a}`,
+              inputFingerprintB: `fp_${rr.report_id_b}`,
+            },
+            locale,
+          });
+
+          const updatedByKind = mergeRelationshipPremiumByKind(byKind, "friendship", {
+            format: FRIEND_SOCIAL_DEEP_FORMAT,
+            report: friendshipDeepRaw,
+          }, locale as Locale);
+          void supabase
+            .from("relationship_reports")
+            .update({ result_premium_by_kind: updatedByKind })
+            .eq("id", relationshipReportId);
+        } catch (e) {
+          logServerError("Auto-upgrade friend report failed", e);
+        }
+      }
+    }
+
     const friendshipDeepReport = friendshipDeepRaw
       ? omitFriendContextOutputFromReport(friendshipDeepRaw)
       : null;
