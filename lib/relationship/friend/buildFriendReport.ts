@@ -273,7 +273,13 @@ export function buildFriendReport(params: {
     },
   );
 
-  const personCoreMeta = buildPersonCoreRelationMeta(params);
+  const personCoreMeta = buildPersonCoreRelationMeta({
+    ...params,
+    sajuJsonA: params.sajuJsonA,
+    sajuJsonB: params.sajuJsonB,
+    friendSignalsA: (ctx as any).friendSignalsA,
+    friendSignalsB: (ctx as any).friendSignalsB,
+  });
   const psychBundle = buildFriendPsychMatchBundle(
     params.psychMasterA,
     params.psychMasterB,

@@ -302,7 +302,16 @@ export function buildWorkColleagueReport(params: {
     },
   );
 
-  const personCoreMeta = buildPersonCoreRelationMeta(params);
+  const workSignalsA = params.workSignalsA ?? ctx.workSignalsA;
+  const workSignalsB = params.workSignalsB ?? ctx.workSignalsB;
+
+  const personCoreMeta = buildPersonCoreRelationMeta({
+    ...params,
+    sajuJsonA: params.sajuJsonA,
+    sajuJsonB: params.sajuJsonB,
+    workSignalsA,
+    workSignalsB,
+  });
   const psychBundle = buildWorkPsychMatchBundle(
     params.psychMasterA,
     params.psychMasterB,

@@ -128,17 +128,19 @@ function buildIndividualCommunicationProfile(params: {
   psych?: PsychMasterJson | null;
   locale?: Locale;
 }): IndividualCommunicationProfile {
-  const { name, sajuChart, psych, locale = LEGACY_FALLBACK_LOCALE } = params;
+  const { name, sajuChart, workSignals, psych, locale = LEGACY_FALLBACK_LOCALE } = params;
   const axes = psych?.secondary_axes;
 
   // 1. Thinking Mode (11-axis thinking_style, external_energy, deliberate_decision + Saju CE)
   const dayStem = sajuChart?.saju?.dayPillar?.[0] ?? "";
   const isYangInnate = ["갑", "병", "무", "경", "임"].includes(dayStem);
+  const geokgukCategory = workSignals?.month_geokguk?.month_stem_category ?? "self";
 
-  const thinkingStyleVal = axes?.thinking_style ?? 50;
-  const extEnergyVal = axes?.external_energy ?? 50;
-  const deliberateVal = axes?.deliberate_decision ?? 50;
-  const structureVal = axes?.structure ?? 50;
+  // Saju-boosted score calculation (Saju dominates when psych is neutral 50)
+  const extEnergyVal = (axes?.external_energy ?? 50) + (isYangInnate ? 10 : -10) + (geokgukCategory === "food" || geokgukCategory === "wealth" ? 10 : 0);
+  const thinkingStyleVal = (axes?.thinking_style ?? 50) + (isYangInnate ? 10 : 0);
+  const deliberateVal = (axes?.deliberate_decision ?? 50) + (geokgukCategory === "officer" || geokgukCategory === "seal" ? 10 : -5);
+  const structureVal = (axes?.structure ?? 50) + (geokgukCategory === "officer" || geokgukCategory === "seal" ? 10 : 0);
 
   // Derive Think Mode
   let shortThinkLabel = "";
@@ -150,7 +152,7 @@ function buildIndividualCommunicationProfile(params: {
       "Refines ideas and sharpens their thinking through back-and-forth conversation.",
       "대화 안에서 소통을 주고받으며 아이디어를 다듬고 생각을 구체화합니다.",
     );
-  } else if (deliberateVal <= 40 || structureVal >= 60) {
+  } else if (deliberateVal <= 40 || structureVal >= 60 || !isYangInnate) {
     shortThinkLabel = pick(locale, "Organizes their thoughts before speaking up", "정리한 뒤 의견을 꺼내는 편");
     thinkMeaning = pick(
       locale,
@@ -208,7 +210,7 @@ function buildIndividualCommunicationProfile(params: {
   let meetingDesc = "";
   let primaryRole: "conclusion_puller" | "condition_checker" | "possibility_expander" | "assumption_challenger" = "conclusion_puller";
 
-  if (deliberateVal <= 40 && conflictVal <= 45) {
+  if (deliberateVal <= 42 && conflictVal <= 48) {
     shortMeetingLabel = pick(locale, "Pulls the conversation toward a conclusion", "결론을 앞으로 끌어내는 편");
     meetingDesc = pick(
       locale,
@@ -216,7 +218,7 @@ function buildIndividualCommunicationProfile(params: {
       "논의가 길어질 때 핵심 목표로 대화를 수렴시키고 마감과 방향을 명확히 제시합니다.",
     );
     primaryRole = "conclusion_puller";
-  } else if (structureVal >= 60 || deliberateVal >= 60) {
+  } else if (structureVal >= 55 || geokgukCategory === "officer") {
     shortMeetingLabel = pick(locale, "Checks for what's missing", "빠진 조건을 확인하는 편");
     meetingDesc = pick(
       locale,
@@ -224,7 +226,7 @@ function buildIndividualCommunicationProfile(params: {
       "실행에 앞서 빠진 조항이나 위험 요소, 필요 조건이 완비되었는지 정밀히 점검합니다.",
     );
     primaryRole = "condition_checker";
-  } else if (extEnergyVal >= 60) {
+  } else if (extEnergyVal >= 58 || geokgukCategory === "food" || geokgukCategory === "wealth") {
     shortMeetingLabel = pick(locale, "Throws out a range of options", "다양한 대안을 제안하는 편");
     meetingDesc = pick(
       locale,
@@ -412,43 +414,78 @@ export function buildWorkCommunicationChapterBundle(params: {
   });
 
   // Section 1 Pair Think Mode Synthesis
+  const isThinkIdentical = personA.thinkMode.shortLabel === personB.thinkMode.shortLabel;
   const thinkModePairSynthesis = {
     title: pick(locale, "When you two get on the same page", "둘이 생각을 맞출 때"),
-    summary: pick(
-      locale,
-      `${nameA}, who ${personA.thinkMode.shortLabel.toLowerCase()}, and ${nameB}, who ${personB.thinkMode.shortLabel.toLowerCase()}, need to find a shared pace for conversation. It helps to share the agenda ahead of time, so one of you can float ideas while the other has room to think it through.`,
-      `${nameA}님의 ${personA.thinkMode.shortLabel}와 ${nameB}님의 ${personB.thinkMode.shortLabel}가 만나 대화의 템포 조율이 필요합니다. 한쪽의 발상 제안 후 다른 한쪽이 정리할 수 있는 사전 안건 공유 시간이 도움이 됩니다.`,
-    ),
+    summary: isThinkIdentical
+      ? pick(
+          locale,
+          `Both ${nameA} and ${nameB} share the approach of ${personA.thinkMode.shortLabel.toLowerCase()}, creating a natural, comfortable conversational rhythm when exploring new topics.`,
+          `두 사람 모두 ${personA.thinkMode.shortLabel} 방식을 공유하여, 안건을 논의할 때 편안하고 조화로운 생각 정리 템포를 이룹니다.`,
+        )
+      : pick(
+          locale,
+          `${nameA}, who ${personA.thinkMode.shortLabel.toLowerCase()}, and ${nameB}, who ${personB.thinkMode.shortLabel.toLowerCase()}, need to find a shared pace for conversation. It helps to share the agenda ahead of time, so one of you can float ideas while the other has room to think it through.`,
+          `${nameA}님의 ${personA.thinkMode.shortLabel}와 ${nameB}님의 ${personB.thinkMode.shortLabel}가 만나 대화의 템포 조율이 필요합니다. 한쪽의 발상 제안 후 다른 한쪽이 정리할 수 있는 사전 안건 공유 시간이 도움이 됩니다.`,
+        ),
   };
 
   // Section 2 Pair Meeting Manifestation
+  const isMeetingIdentical = personA.meetingStyle.shortLabel === personB.meetingStyle.shortLabel;
   const meetingStylePairManifestation = {
     title: pick(locale, "In an actual meeting", "실제 회의에서는"),
-    summary: pick(
-      locale,
-      `In a meeting, ${nameA} tends to be the one who ${personA.meetingStyle.shortLabel.toLowerCase()}, while ${nameB} tends to be the one who ${personB.meetingStyle.shortLabel.toLowerCase()}. When one of you pushes the pace, the other holds the line on conditions and quality — together that balances speed with follow-through.`,
-      `회의 중 ${nameA}님이 ${personA.meetingStyle.shortLabel} 역할을 할 때, ${nameB}님은 ${personB.meetingStyle.shortLabel} 역할을 수행하게 됩니다. 한쪽이 추진 속도를 내면 다른 한쪽이 조건과 품질을 챙겨 속도와 완성도의 균형을 맞춥니다.`,
-    ),
+    summary: isMeetingIdentical
+      ? pick(
+          locale,
+          `In a meeting, both ${nameA} and ${nameB} share a focus on ${personA.meetingStyle.shortLabel.toLowerCase()}, establishing a unified standard and consistent quality across discussions.`,
+          `회의 중 ${nameA}님과 ${nameB}님 모두 ${personA.meetingStyle.shortLabel} 성향을 공유하여, 깊이 있는 검토와 일관된 완성도를 함께 유지합니다.`,
+        )
+      : pick(
+          locale,
+          `In a meeting, ${nameA} tends to be the one who ${personA.meetingStyle.shortLabel.toLowerCase()}, while ${nameB} tends to be the one who ${personB.meetingStyle.shortLabel.toLowerCase()}. When one of you pushes the pace, the other holds the line on conditions and quality — together that balances speed with follow-through.`,
+          `회의 중 ${nameA}님이 ${personA.meetingStyle.shortLabel} 역할을 할 때, ${nameB}님은 ${personB.meetingStyle.shortLabel} 역할을 수행하게 됩니다. 한쪽이 추진 속도를 내면 다른 한쪽이 조건과 품질을 챙겨 속도와 완성도의 균형을 맞춥니다.`,
+        ),
   };
 
   // Section 3 Reporting Mismatch Note
+  const isReportingIdentical =
+    personA.reportingStyle.dimensions[0]?.pattern === personB.reportingStyle.dimensions[0]?.pattern &&
+    personA.reportingStyle.dimensions[1]?.pattern === personB.reportingStyle.dimensions[1]?.pattern;
+
   const reportingMismatchNote = {
-    title: pick(locale, "What's easy to miss between you two", "둘 사이에서 놓치기 쉬운 것"),
-    summary: pick(
-      locale,
-      `One of you may feel like the key point's already been shared once the conclusion's out, while the other feels like the background and the details behind it are still missing.`,
-      `한쪽은 결론 위주로 이미 핵심을 공유했다고 판단하지만, 다른 쪽은 공유된 정보의 배경 근거나 세부 과정이 빠졌다고 느낄 수 있습니다.`,
-    ),
+    title: isReportingIdentical
+      ? pick(locale, "Shared Information Rhythm", "둘의 조화로운 보고 리듬")
+      : pick(locale, "What's easy to miss between you two", "둘 사이에서 놓치기 쉬운 것"),
+    summary: isReportingIdentical
+      ? pick(
+          locale,
+          `Both of you prefer starting with ${personA.reportingStyle.dimensions[0]?.pattern.toLowerCase()} and keeping to ${personA.reportingStyle.dimensions[1]?.pattern.toLowerCase()}, making updates seamless and predictable.`,
+          `두 사람 모두 ${personA.reportingStyle.dimensions[0]?.pattern} 및 ${personA.reportingStyle.dimensions[1]?.pattern} 방식을 선호하여, 정보 공유 과정에서 오해 없는 예측 가능한 리듬을 형성합니다.`,
+        )
+      : pick(
+          locale,
+          `One of you may feel like the key point's already been shared once the conclusion's out, while the other feels like the background and the details behind it are still missing.`,
+          `한쪽은 결론 위주로 이미 핵심을 공유했다고 판단하지만, 다른 쪽은 공유된 정보의 배경 근거나 세부 과정이 빠졌다고 느낄 수 있습니다.`,
+        ),
   };
 
   // Section 4 Feedback Pair Insight
+  const isFeedbackIdentical =
+    personA.feedbackStyle.easyConditionTitle === personB.feedbackStyle.easyConditionTitle;
+
   const feedbackPairInsight = {
     title: pick(locale, "Where feedback can get lost in translation between you", "서로 피드백할 때 생길 수 있는 오해"),
-    summary: pick(
-      locale,
-      `${nameA} takes feedback best ${personA.feedbackStyle.easyConditionTitle.toLowerCase()}, while for ${nameB} what matters most is ${personB.feedbackStyle.easyConditionTitle.toLowerCase()}. Shaping how you deliver feedback around what actually lands for the other person cuts down on unintended friction.`,
-      `${nameA}님은 ${personA.feedbackStyle.easyConditionTitle}를 바라는 반면, ${nameB}님은 ${personB.feedbackStyle.easyConditionTitle}가 중요합니다. 상대의 수용 기준을 고려하여 전달 형식을 다듬으면 의도치 않은 오해를 줄일 수 있습니다.`,
-    ),
+    summary: isFeedbackIdentical
+      ? pick(
+          locale,
+          `Both ${nameA} and ${nameB} appreciate feedback most ${personA.feedbackStyle.easyConditionTitle.toLowerCase()}, allowing you to exchange constructive critiques smoothly.`,
+          `두 사람 모두 ${personA.feedbackStyle.easyConditionTitle} 형태의 피드백을 원하므로, 수용 기준을 맞춰 솔직하고 건설적인 피드백을 신뢰 속에 나눌 수 있습니다.`,
+        )
+      : pick(
+          locale,
+          `${nameA} takes feedback best ${personA.feedbackStyle.easyConditionTitle.toLowerCase()}, while for ${nameB} what matters most is ${personB.feedbackStyle.easyConditionTitle.toLowerCase()}. Shaping how you deliver feedback around what actually lands for the other person cuts down on unintended friction.`,
+          `${nameA}님은 ${personA.feedbackStyle.easyConditionTitle}를 바라는 반면, ${nameB}님은 ${personB.feedbackStyle.easyConditionTitle}가 중요합니다. 상대의 수용 기준을 고려하여 전달 형식을 다듬으면 의도치 않은 오해를 줄일 수 있습니다.`,
+        ),
   };
 
   // Section 5 Decision Tension

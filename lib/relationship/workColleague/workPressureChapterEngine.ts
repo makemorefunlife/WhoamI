@@ -98,13 +98,14 @@ function buildIndividualPressureProfile(params: {
   name: string;
   partnerName: string;
   isPersonA: boolean;
+  forceExecutionProfile?: boolean;
   individualWorkBundle?: IndividualWorkChapterBundle | null;
   sajuChart?: SajuDataForIntegrated | null;
   workSignals?: WorkSajuSignals | null;
   psych?: PsychMasterJson | null;
   locale?: Locale;
 }): IndividualPressureProfile {
-  const { name, isPersonA, individualWorkBundle, sajuChart, workSignals, psych, locale = LEGACY_FALLBACK_LOCALE } = params;
+  const { name, isPersonA, forceExecutionProfile, individualWorkBundle, sajuChart, workSignals, psych, locale = LEGACY_FALLBACK_LOCALE } = params;
 
   // 1. Consume Chapter 02 Baseline Work Profile (Fixes ROOT CAUSE 3: BASELINE CONTRACT DISCONNECT)
   const ch02Person = isPersonA ? individualWorkBundle?.personA : individualWorkBundle?.personB;
@@ -162,16 +163,17 @@ function buildIndividualPressureProfile(params: {
     suitableRole.includes("검토");
 
   // Primary Pressure Archetype differentiation
-  let isExecutionProfile = false;
-  if (isExecutionDriven && !isQADriven) {
-    isExecutionProfile = true;
-  } else if (!isExecutionDriven && isQADriven) {
-    isExecutionProfile = false;
-  } else if (isExecutionDriven && isQADriven) {
-    isExecutionProfile = isPersonA;
-  } else {
-    // Missing / neutral fallback: Person A defaults to Execution Lead, Person B to QA Lead
-    isExecutionProfile = isPersonA;
+  let isExecutionProfile = forceExecutionProfile ?? false;
+  if (forceExecutionProfile === undefined) {
+    if (isExecutionDriven && !isQADriven) {
+      isExecutionProfile = true;
+    } else if (!isExecutionDriven && isQADriven) {
+      isExecutionProfile = false;
+    } else if (isExecutionDriven && isQADriven) {
+      isExecutionProfile = isPersonA;
+    } else {
+      isExecutionProfile = isPersonA;
+    }
   }
 
   // 5. Baseline -> Pressure Delta
@@ -396,10 +398,47 @@ export function buildWorkPressureChapterBundle(params: {
     locale = LEGACY_FALLBACK_LOCALE,
   } = params;
 
+  // Section 5 Pair Stress Interaction (Consumes Chapter 03 Canonical R&R Map)
+  const canonicalRoles = buildCanonicalWorkRoleMap({
+    nameA,
+    nameB,
+    sajuJsonA: sajuChartA ?? ({} as any),
+    sajuJsonB: sajuChartB ?? ({} as any),
+    workSignalsA: workSignalsA ?? undefined,
+    workSignalsB: workSignalsB ?? undefined,
+    psychA: psychA ?? undefined,
+    psychB: psychB ?? undefined,
+  });
+
+  const execOwner = canonicalRoles.executionOwner;
+  const qaOwner = canonicalRoles.qaRiskOwner;
+
+  let forceExecA: boolean;
+  let forceExecB: boolean;
+
+  if (execOwner === "A") {
+    forceExecA = true;
+    forceExecB = false;
+  } else if (execOwner === "B") {
+    forceExecA = false;
+    forceExecB = true;
+  } else if (qaOwner === "B") {
+    forceExecA = true;
+    forceExecB = false;
+  } else if (qaOwner === "A") {
+    forceExecA = false;
+    forceExecB = true;
+  } else {
+    // Default fallback: A takes Execution Lead, B takes QA Risk Lead
+    forceExecA = true;
+    forceExecB = false;
+  }
+
   const personA = buildIndividualPressureProfile({
     name: nameA,
     partnerName: nameB,
     isPersonA: true,
+    forceExecutionProfile: forceExecA,
     individualWorkBundle,
     sajuChart: sajuChartA,
     workSignals: workSignalsA,
@@ -411,23 +450,12 @@ export function buildWorkPressureChapterBundle(params: {
     name: nameB,
     partnerName: nameA,
     isPersonA: false,
+    forceExecutionProfile: forceExecB,
     individualWorkBundle,
     sajuChart: sajuChartB,
     workSignals: workSignalsB,
     psych: psychB,
     locale,
-  });
-
-  // Section 5 Pair Stress Interaction (Consumes Chapter 03 Canonical R&R Map)
-  const canonicalRoles = buildCanonicalWorkRoleMap({
-    nameA,
-    nameB,
-    sajuJsonA: sajuChartA ?? ({} as any),
-    sajuJsonB: sajuChartB ?? ({} as any),
-    workSignalsA: workSignalsA ?? undefined,
-    workSignalsB: workSignalsB ?? undefined,
-    psychA: psychA ?? undefined,
-    psychB: psychB ?? undefined,
   });
 
   // canonicalRoles.*Owner can be "SHARED" (scores within 15 points — not

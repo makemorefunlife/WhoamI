@@ -769,15 +769,16 @@ export function buildUpsetResponseGuide(
   locale: Locale = LEGACY_FALLBACK_LOCALE,
   workSignals?: WorkSajuSignals,
 ): OfficeUpsetGuide {
+  const category = resolveWorkCategory(tenGodCounts, workSignals);
+  const base = UPSET_RESPONSE_BY_CATEGORY[locale][category] || UPSET_RESPONSE_BY_CATEGORY[locale]["비겁"];
+
   if (!sajuJson || !sajuJson.saju || !(sajuJson.saju as any).yearPillar) {
-    const category = resolveWorkCategory(tenGodCounts, workSignals);
-    const base = UPSET_RESPONSE_BY_CATEGORY[locale][category] || UPSET_RESPONSE_BY_CATEGORY[locale]["비겁"];
     return {
       nickname,
       upset_signals: pick(
         locale,
-        `When emotions run high, ${nickname} tends to avoid it or go quiet and sort it out internally. ${base.signals}`,
-        `${topicParticle(nickname)} 감정이 올라오면 회피하거나 침묵하며 속으로 정리하려 해요. ${base.signals}`,
+        `${nickname} tends to show these signals when stressed: ${base.signals}`,
+        `${topicParticle(nickname)} 감정이 서서히 드러나는 신호 — ${base.signals}`,
       ),
       do_list: base.doList.map((item) => sanitizeOfficeText(item)),
       avoid_list: base.avoidList.map((item) => sanitizeOfficeText(item)),
@@ -788,24 +789,100 @@ export function buildUpsetResponseGuide(
     sajuJson.saju as Required<NonNullable<typeof sajuJson.saju>>,
   );
   const chart = buildChartContext(pillars);
-  const category = resolveWorkCategory(tenGodCounts, workSignals);
-  const base = UPSET_RESPONSE_BY_CATEGORY[locale][category];
   const branchNuance = BRANCH_UPSET_NUANCE[locale][chart.dayBranchCode] ?? "";
+
+  // Dynamic Saju Element & 10-God Subtype tailored guidance
+  const dayStem = chart.dayStemCode;
+  const isWoodFire = ["갑", "을", "병", "정", "甲", "乙", "丙", "丁"].includes(dayStem);
+  const isMetalWater = ["경", "신", "임", "계", "庚", "辛", "壬", "癸"].includes(dayStem);
+
+  const foodCount = tenGodCounts.food ?? 0;
+  const officerCount = tenGodCounts.officer ?? 0;
+  const sealCount = tenGodCounts.seal ?? 0;
+  const wealthCount = tenGodCounts.wealth ?? 0;
+
+  const personalizedDo: string[] = [];
+  const personalizedAvoid: string[] = [];
+
+  // Tailor based on category + sub-type nuances
+  if (category === "재성") {
+    if (foodCount >= 1 || isWoodFire) {
+      personalizedDo.push(pick(locale, `Propose a clear, actionable execution plan to ${nickname}`, `${nickname}님에게 즉각 실행 가능한 구체적 보완안을 먼저 제시하기`));
+      personalizedDo.push(pick(locale, `Focus on practical outcomes and mutual goals with ${nickname}`, `${nickname}님과 실질적인 기대 성과와 공통 목표에 집중하기`));
+    } else {
+      personalizedDo.push(pick(locale, `Re-verify cost, timeline, and boundary conditions with ${nickname}`, `${nickname}님과 기준 조건 및 자원·타임라인을 투명하게 재검증하기`));
+      personalizedDo.push(pick(locale, `Give ${nickname} a clear roadmap for how issues will be resolved`, `${nickname}님에게 사안 해결에 대한 정밀한 로드맵 제시하기`));
+    }
+    personalizedDo.push(pick(locale, `Ease the atmospheric tension with light, friendly gestures for ${nickname}`, `${nickname}님의 부담을 줄여주는 가벼운 휴식 및 소통 유도하기`));
+
+    if (officerCount >= 1 || isMetalWater) {
+      personalizedAvoid.push(pick(locale, `Changing agreed risk criteria or guidelines without consulting ${nickname}`, `${nickname}님과의 약속이나 위험 가이드라인을 기습적으로 변경하기`));
+    } else {
+      personalizedAvoid.push(pick(locale, `Trying to resolve contract or performance issues through vague emotion with ${nickname}`, `${nickname}님과 업무적 손실 문제를 감정적 설득만으로 어물쩍 넘어가기`));
+    }
+    personalizedAvoid.push(pick(locale, `Pointing out errors or financial loss in front of the wider team`, `공개 자리에서 ${nickname}님의 판단 실수나 손실을 지적하기`));
+  } else if (category === "관성") {
+    personalizedDo.push(pick(locale, `State core points politely and directly to ${nickname}`, `${nickname}님에게 예의 바르고 명확하게 핵심 사안 전달하기`));
+    personalizedDo.push(pick(locale, `Re-document responsibility boundaries clearly for ${nickname}`, `${nickname}님과 역할과 책임의 경계를 문서화하여 공유하기`));
+    personalizedDo.push(pick(locale, `Acknowledge ${nickname}'s domain expertise and authority first`, `${nickname}님의 전문성과 결정 권한을 사전에 충분히 인정하기`));
+
+    personalizedAvoid.push(pick(locale, `Being vague or shifting directions without proper process`, `명확한 프로세스 없이 ${nickname}님에게 방향성을 모호하게 전달하기`));
+    personalizedAvoid.push(pick(locale, `Bypassing ${nickname}'s approval or domain jurisdiction`, `${nickname}님의 최종 승인이나 결제 라인을 무단으로 우회하기`));
+  } else if (category === "식상") {
+    personalizedDo.push(pick(locale, `Discuss ideas with ${nickname} over casual coffee or lunch`, `${nickname}님과 편안한 자리에서 자유롭게 아이디어 다듬기`));
+    personalizedDo.push(pick(locale, `Acknowledge ${nickname}'s creative proposal and build on it`, `${nickname}님의 발안 중 강점을 인정하고 보완점 나누기`));
+    personalizedDo.push(pick(locale, `Maintain an open, encouraging atmosphere for ${nickname}`, `${nickname}님이 생각을 발산할 수 있는 분위기 조성하기`));
+
+    personalizedAvoid.push(pick(locale, `Forcing a rigid conclusion without listening to ${nickname}`, `${nickname}님의 의견을 듣지 않고 즉석에서 결론 강요하기`));
+    personalizedAvoid.push(pick(locale, `Dismissing ${nickname}'s ideas with 'that won't work'`, `${nickname}님의 제안을 대안 없이 '안 된다'고 잘라 말하기`));
+  } else if (category === "인성") {
+    personalizedDo.push(pick(locale, `Give ${nickname} quiet time to review before expecting answers`, `${nickname}님이 충분히 서면으로 검토할 여유 시간 제공하기`));
+    personalizedDo.push(pick(locale, `Share background context and data in written notes with ${nickname}`, `${nickname}님에게 판단 근거와 배경 데이터를 서면으로 공유하기`));
+    personalizedDo.push(pick(locale, `Reassure ${nickname} that quality and stability are top priorities`, `${nickname}님에게 안정성과 정확성이 최우선임을 안심시키기`));
+
+    personalizedAvoid.push(pick(locale, `Demanding an instant on-the-spot decision from ${nickname}`, `${nickname}님에게 즉각적인 현장 확답이나 빠른 결단 독촉하기`));
+    personalizedAvoid.push(pick(locale, `Repeatedly tagging ${nickname} in high-pressure public channels`, `공개 채널에서 ${nickname}님을 반복 호출하며 압박하기`));
+  } else {
+    personalizedDo.push(pick(locale, `Acknowledge ${nickname}'s key contributions to the team publicly`, `${nickname}님의 팀 내 기여와 역할을 존중하고 먼저 인정하기`));
+    personalizedDo.push(pick(locale, `Set up a respectful, confidential 1:1 sync with ${nickname}`, `${nickname}님과 존중하는 태도로 조용한 1:1 대화 자리 마련하기`));
+    personalizedDo.push(pick(locale, `Align on shared peer ownership with ${nickname}`, `${nickname}님과 대등한 동료로서의 파트너십 강조하기`));
+
+    personalizedAvoid.push(pick(locale, `Dismissing ${nickname}'s standing or autonomy in front of others`, `타인 앞에서 ${nickname}님의 자율성이나 존재감을 낮추는 언행하기`));
+    personalizedAvoid.push(pick(locale, `Prioritizing speed while overriding ${nickname}'s feelings`, `${nickname}님의 감정을 무시한 채 속도만 일방적으로 밀어붙이기`));
+  }
+
+  // Branch nuance addition to ensure complete uniqueness
+  let extraDo = "";
+  let extraAvoid = "";
+  if (["자", "오", "묘", "유", "子", "午", "卯", "酉"].includes(chart.dayBranchCode)) {
+    extraDo = pick(locale, `Respect ${nickname}'s distinct personal boundaries during 1:1 check-ins`, `1:1 대화 시 ${nickname}님의 명확한 개인 영역을 존중하기`);
+    extraAvoid = pick(locale, `Forcing ${nickname} into an un-agreed compromise in front of others`, `${nickname}님에게 타인 앞에서의 일방적 양보 강요하기`);
+  } else if (["인", "신", "사", "해", "寅", "申", "巳", "亥"].includes(chart.dayBranchCode)) {
+    extraDo = pick(locale, `Propose a fresh alternative or new direction together with ${nickname}`, `${nickname}님에게 새로운 대안과 추진 방향성 함께 제시하기`);
+    extraAvoid = pick(locale, `Fixating on past mistakes with ${nickname}`, `${nickname}님과의 지나간 이력을 반복 언급하며 성급히 해명 요구하기`);
+  } else {
+    extraDo = pick(locale, `Allow ${nickname} sufficient quiet time to process privately`, `${nickname}님이 충분히 속으로 정리할 수 있는 여유 시간 보장하기`);
+    extraAvoid = pick(locale, `Demanding an immediate answer from ${nickname} on the spot`, `${nickname}님에게 당장 현장에서의 즉각적인 결론 독촉하기`);
+  }
+
+  if (extraDo && !personalizedDo.includes(extraDo)) {
+    personalizedDo.push(extraDo);
+  }
+  if (extraAvoid && !personalizedAvoid.includes(extraAvoid)) {
+    personalizedAvoid.push(extraAvoid);
+  }
 
   return {
     nickname,
-    // Named lead-in so two people who share a work category never render a
-    // byte-identical signals sentence — branchNuance already differs per
-    // person, but the base category line alone did not.
     upset_signals: sanitizeOfficeText(
       pick(
         locale,
-        `${nickname} tends to show it like this: ${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
-        `${topicParticle(nickname)} 이런 신호를 보여요 — ${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
+        `${nickname} tends to show these signals under stress: ${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
+        `${topicParticle(nickname)} 감정이 서서히 드러나는 신호 — ${base.signals}${branchNuance ? ` ${branchNuance}` : ""}`,
       ),
     ),
-    do_list: base.doList.map((item) => sanitizeOfficeText(item)),
-    avoid_list: base.avoidList.map((item) => sanitizeOfficeText(item)),
+    do_list: personalizedDo,
+    avoid_list: personalizedAvoid,
   };
 }
 
