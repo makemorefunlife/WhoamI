@@ -4,7 +4,8 @@ import Image from "next/image";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useStitchScrollReveal } from "@/lib/hooks/useStitchScrollReveal";
 import StitchHomeCta from "@/components/landing/stitch/StitchHomeCta";
 import StitchPersonalRadar from "@/components/landing/stitch/StitchPersonalRadar";
 import Logo from "@/components/brand/Logo";
@@ -30,36 +31,6 @@ type Props = {
   creatingReport: boolean;
   onOpenStartChoice: () => void;
 };
-
-function useScrollReveal() {
-  const mainRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const root = mainRef.current;
-    if (!root) return;
-
-    const sections = root.querySelectorAll<HTMLElement>("[data-stitch-reveal]");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("stitch-reveal-visible");
-          }
-        }
-      },
-      { threshold: 0.08 },
-    );
-
-    for (const el of sections) {
-      el.classList.add("stitch-reveal");
-      observer.observe(el);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  return mainRef;
-}
 
 function renderFormattedText(text?: string, highlightSubstr?: string) {
   if (!text) return null;
@@ -102,7 +73,7 @@ export default function StitchLandingPage({
   onOpenStartChoice,
 }: Props) {
   const router = useRouter();
-  const mainRef = useScrollReveal();
+  const mainRef = useStitchScrollReveal();
   const { locale, messages, href: localize } = useLocale();
   const { reportId: sessionReportId } = useAppSession({ hydrate: false });
   const hydrated = useHydrated();
@@ -653,10 +624,14 @@ export default function StitchLandingPage({
                   {messages.footer.business.bizNumberLabel}:{" "}
                   {messages.footer.business.bizNumber}
                 </p>
-                <p>
-                  {messages.footer.business.mailOrderLabel}:{" "}
-                  {messages.footer.business.mailOrderNumber}
-                </p>
+                {/* 확정 전에는 값이 비어 있어 렌더링 자체를 건너뜀 — placeholder 문자열이
+                    production에 그대로 노출되는 것을 막기 위함(StitchAppFooter.tsx와 동일 규칙). */}
+                {messages.footer.business.mailOrderNumber ? (
+                  <p>
+                    {messages.footer.business.mailOrderLabel}:{" "}
+                    {messages.footer.business.mailOrderNumber}
+                  </p>
+                ) : null}
                 <p>
                   {messages.footer.business.addressLabel}:{" "}
                   {messages.footer.business.address}
@@ -664,6 +639,9 @@ export default function StitchLandingPage({
                 <p>
                   {messages.footer.business.phoneLabel}:{" "}
                   {messages.footer.business.phone}
+                </p>
+                <p className="text-on-primary/40">
+                  {messages.footer.business.phoneNote}
                 </p>
                 <p>
                   {messages.footer.business.emailLabel}:{" "}
@@ -674,8 +652,31 @@ export default function StitchLandingPage({
                     {messages.footer.business.email}
                   </a>
                 </p>
+                <p>
+                  <a
+                    href={`https://www.ftc.go.kr/bizCommPop.do?wrkr_no=${messages.footer.business.bizNumber.replace(/[^0-9]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-on-primary"
+                  >
+                    {messages.footer.business.bizVerifyLabel}
+                  </a>
+                </p>
               </div>
-            ) : null}
+            ) : (
+              // en-US: KR 사업자정보는 의도적으로 생략, 실제 운영 contact 이메일만 노출.
+              <div className="max-w-xl space-y-0.5 text-[11px] leading-relaxed text-on-primary/55">
+                <p>
+                  {messages.footer.business.emailLabel}:{" "}
+                  <a
+                    href={`mailto:${messages.footer.business.email}`}
+                    className="underline underline-offset-2 hover:text-on-primary"
+                  >
+                    {messages.footer.business.email}
+                  </a>
+                </p>
+              </div>
+            )}
           </div>
           <nav
             className="flex flex-wrap gap-x-4 gap-y-1 text-on-primary/55"

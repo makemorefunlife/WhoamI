@@ -672,81 +672,117 @@ export const messagesEnUS = {
   about: {
     metaTitle: "About | Aha It's me!",
     metaDescription:
-      "Why Aha It's me! exists — a journey to understand yourself, your relationships, and your decisions.",
-    heroEyebrow: "About",
-    heroTitleLine1: "Why do we",
-    heroTitleLine2: "keep running into the same kinds of problems?",
-    heroBodyLine1: "We don't think it's because people are different —",
-    heroBodyLine2:
-      "it's because we keep meeting without really knowing each other.",
-    heroBodyLine3: "So",
-    heroBodyLine4: "we built this service.",
-    pillarsEyebrow: "Three Pillars",
-    pillarsTitle: "Me · Relationships · Decisions",
-    pillarsBody:
-      "Built around your 6 Core Tendencies, this is a journey that starts with understanding yourself, then extends into relationships and choices.",
+      "A service that helps you understand people a little sooner, so relationships waste less energy — the philosophy behind Aha It's me!",
+
+    // 1. HERO
+    heroEyebrow: "ABOUT AHA! IT'S ME",
+    heroHeadline1: "Does it really have to take",
+    heroHeadline2: "years to understand someone?",
+    heroBody1:
+      "We usually figure people out long after we meet them.\n\"Oh — this is just how they think.\"\n\"So that's why we kept clashing here.\"",
+    heroBody2:
+      "If we'd known a little sooner,\nsome of that misunderstanding and wasted effort might never have happened.",
+    heroMission:
+      "Aha! it's me is a service\nthat helps you understand people sooner,\nso relationships waste less energy.",
+    heroCtaPrimary: "Start with me",
+    heroCtaSecondary: "Explore a relationship",
+
+    // 2. WHY
+    whyHeadline1: "Clash less,",
+    whyHeadline2: "get along better",
+    whyBody1:
+      "We don't think a good relationship\nmeans always being perfectly matched.\nEven when you're different,\nknowing how the other person thinks,\nhow to say things so they land,\nand where they tend to wear out\ncan make things a lot easier.",
+    whyStatement: "People don't have to change\nfor a relationship to change.",
+    whyBody2:
+      "What we want to reduce\nisn't the difference between people —\nit's the unnecessary friction\nthat comes from not knowing it's there.",
+
+    // 3. UNDERSTAND EARLIER
+    earlyLabel: "UNDERSTAND EARLIER",
+    earlyHeadline1: "Before you know it all,",
+    earlyHeadline2: "understand a little sooner",
+    earlyBody1:
+      "Meeting someone new,\nworking together,\nstarting to date —\nmost of the time, we learn\nabout each other by bumping into things.",
+    earlyBody2:
+      "Aha! it's me wanted to cut down\non some of that trial and error.\nStart with just a birth date\nto see basic tendencies and relationship patterns,\nthen add a survey if you want to reflect\nwho you actually are.",
+    earlyStep1: "Birth date",
+    earlyStep2: "Survey",
+    earlyStep3: "Lived experience",
+    earlyStatement: "Saju is a starting point —\nyour life fills in the rest.",
+    earlyBody3:
+      "This isn't about judging someone in advance.\nIt's about understanding them a little sooner,\nso you can treat them a little better.",
+
+    // 4. THREE PILLARS
+    pillarsHeadline: "Me · Relationships · Decisions",
+    pillarsSubcopy: "In the end, these are the three things\nwe want to understand.",
     pillarMeTitle: "Me",
-    pillarMeSubtitle: "Blueprint",
-    pillarMeDesc:
-      "Read your own patterns through a 10-question survey and a 6-axis Blueprint.",
+    pillarMeBody: "Why I think and react the way I do.\nWe look at the patterns\nin my emotions, energy, and behavior.",
     pillarRelTitle: "Relationships",
-    pillarRelSubtitle: "5 tabs",
-    pillarRelDesc:
-      "See the rhythm between two people through context-specific reports — romantic, colleague, family, friend, and more.",
+    pillarRelBody:
+      "Why this person feels easy,\nand why that one keeps feeling off.\nWe look not just at the difference between two people,\nbut at the relationship they create together.",
     pillarDecisionTitle: "Decisions",
-    pillarDecisionSubtitle: "Decision AI",
-    pillarDecisionDesc:
-      "A conversational coach for decision paralysis — coming soon, connected to your Blueprint.",
-    helpQuoteLine1: "This helps you",
-    helpQuoteLine2: "understand each other in your relationships.",
-    helpQuoteLine3: "You don't have to force yourself to match —",
-    helpQuoteLine4: "once you understand why,",
-    helpQuoteLine5: "things get a lot easier.",
-    understandTitle: "Here's how we understand you",
-    structureOuterTitle: "Surface",
-    structureOuterDesc: "The behavior that shows on the outside",
-    structureInnerTitle: "Inner self",
-    structureInnerDesc: "The reason behind that behavior",
-    structureRelTitle: "Relationships",
-    structureRelDesc: "How things flow when you meet someone",
-    structureAdviceTitle: "One piece of advice",
-    structureAdviceDesc: "A direction that makes things a little easier",
-    availableNowTitle: "What you can use right now",
-    availableNowBodyLine1: "Right now,",
-    availableNowBodyLine2:
-      "you can understand yourself and take a light look at your relationships",
-    availableNowBodyLine3: "And this journey",
-    availableNowBodyLine4: "doesn't end here",
-    availableNowBodyLine5: "Personal analysis will go deeper,",
-    availableNowBodyLine6: "and relationship analysis will keep expanding",
-    featureFreeTitle: "Free personal analysis",
-    featureFreePoint1: "Surface",
-    featureFreePoint2: "Inner self",
-    featureFreePoint3: "Relationships",
-    featureFreePoint4: "Advice",
-    featureDeepTitle: "Deep personal analysis",
-    featureDeepPoint1: "Emotional flow",
-    featureDeepPoint2: "Energy",
-    featureDeepPoint3: "Patterns",
-    featureRelTitle: "Basic relationship analysis",
-    featureRelPoint1: "Two-person comparison structure",
-    featureRelPoint2: "Simple text UI",
-    continuousQuoteLine1: "This isn't a one-and-done analysis.",
-    continuousQuoteLine2: "It's an ongoing process of building understanding.",
-    roadmapRelDeep: "Deep relationship analysis",
-    roadmapMultiAngle: "Multi-angle personal analysis",
-    roadmapTeam: "Team relationship analysis",
-    roadmapMore: "And expansion into even more relationship contexts",
-    socialEyebrow: "Social",
-    socialTitle: "Find us on Instagram",
-    socialBody:
-      "We share updates, relationship insights, and stories about how you tick.",
-    socialFollowCta: "Follow @aha_itsme_",
-    feedComingSoon: "Feed coming soon",
-    closingQuoteLine1: "First,",
-    closingQuoteLine2: "start by understanding yourself",
-    closingSubtitle: "Every change starts with understanding yourself.",
-    closingCta: "Start free analysis →",
+    pillarDecisionBody:
+      "Why I tend to make similar choices\nin similar situations.\nBy stacking up situation, feeling, decision, and outcome,\nwe uncover your own decision pattern.",
+
+    // 5. RELATIONSHIP PHILOSOPHY
+    fitHeadline1: "More than compatibility —",
+    fitHeadline2: "how to use a relationship",
+    fitIntro: "This isn't the kind of result we wanted to give you.",
+    fitQuoteLine1: "You're a good match.",
+    fitQuoteLine2: "You're not a good match.",
+    fitQuoteLine3: "Your compatibility is 82 points.",
+    fitLeadIn: "What we were more curious about was this.",
+    fitQuestion1: "How should I talk to this person so it actually lands?",
+    fitQuestion2: "When we work together,\nwho's better suited for what?",
+    fitQuestion3: "Why do we keep talking past each other\nabout the same thing?",
+    fitQuestion4: "Where does each of us\nlose the most energy?",
+    fitStatement:
+      "Because knowing how to use a relationship\nmatters more\nthan scoring it.",
+
+    // 6. LOW FRICTION
+    frictionHeadline: "You don't have to start with a survey",
+    frictionBody1:
+      "When people are curious about something,\nthey want to see an answer first.\nThat's why Aha! it's me\ndoesn't ask for a long survey up front.",
+    frictionStatement1: "Just your birthday is enough to start.",
+    frictionBody2:
+      "Look at the relationship first,\ngo deeper if you're curious,\nand add your real tendencies\nwhen you want it to be more precise.",
+    frictionStatement2:
+      "A survey isn't an entry ticket —\nit's a tool that sharpens the analysis.",
+
+    // 7. PRINCIPLE
+    principleHeadline1: "We don't turn people",
+    principleHeadline2: "into a final answer",
+    principleBody1:
+      "Saju, surveys, AI —\nnone of them can fully explain a person.\nSo Aha! it's me's analysis\nnever ends with\n\"this is who you are.\"",
+    principleQuote: "\"What if you looked at it this way?\"",
+    principleBody2:
+      "We'd rather build a language for understanding\nthan hand you a verdict.",
+
+    // 8. WHAT WE WANT TO BUILD
+    buildHeadline: "What we ultimately want to build",
+    buildStatement: "Relationships that take less out of you,\nand work better together.",
+    buildBody1:
+      "With friends,\nwith partners,\nwith family,\nwith the people you work with.\nRather than trying to change the other person,\nfinding the way that fits each other\na little sooner.",
+    buildLine1: "Fewer misunderstandings.",
+    buildLine2: "Better communication.",
+    buildLine3: "Better collaboration.",
+    buildLine4: "And relationships that are a little more enjoyable.",
+    buildBody2: "That's the change\nAha! it's me wants to make.",
+
+    // 9. WHY WE BUILT THIS
+    originHeadline1: "We watched the friction",
+    originHeadline2: "between people for a long time",
+    originBody1:
+      "Across different organizations and startups —\nmanaging people, building teams,\nsolving problems together —\nwe saw that most conflict didn't come from a lack of skill.\nIt came from realizing, far too late,\nthat people simply work differently.",
+    originBody2: "Aha! it's me started from that experience.",
+    originStatement:
+      "If we could understand each other\na little sooner,\ncouldn't we build\nbetter teams, and better relationships too?",
+
+    // 10. CLOSING CTA
+    closingBrand: "Aha! it's me",
+    closingHeadline:
+      "Understand people a little sooner,\nand relationships can get a little easier.",
+    closingCtaPrimary: "Start for free →",
+    closingCtaSecondary: "See a relationship analysis",
   },
   decision: {
     categories: {
@@ -778,6 +814,8 @@ export const messagesEnUS = {
     archiveTitle: "Archive a Decision",
     archiveSubtitle: "Record the situation, the choice you made, and how you felt at the time.",
     categoryLabel: "Category",
+    sensitiveInfoNotice:
+      "Please avoid entering sensitive information (health, political views, sexual life, etc.) or personal details that could identify someone else.",
     situationLabel: "What was the situation?",
     situationPlaceholder:
       "e.g. I was offered a new position at work — better pay, but a longer commute.",
@@ -1055,6 +1093,11 @@ export const messagesEnUS = {
     privacy: "Privacy Policy",
     refund: "Refund Policy",
     copyrightSuffix: "All rights reserved.",
+    // NOTE: This KR business block is not rendered for en-US — StitchAppFooter
+    // only shows the business address block when locale === "ko-KR" (US/EN
+    // footer intentionally omits KR business registration no./mail-order no./
+    // address/phone). Kept here only so the shared MessageCatalog type stays
+    // satisfied for both locales.
     business: {
       companyLabel: "Company",
       companyName: "Ahaitsme",
@@ -1063,23 +1106,38 @@ export const messagesEnUS = {
       bizNumberLabel: "Business registration no.",
       bizNumber: "387-06-03769",
       mailOrderLabel: "Mail-order registration no.",
-      mailOrderNumber: "[통신판매업 번호]",
+      mailOrderNumber: "",
       addressLabel: "Address",
-      address: "Yongsan-gu, Seoul (detailed address TBD)",
+      address: "Seoul, South Korea",
       phoneLabel: "Phone",
-      phone: "02-1234-5678",
+      phone: "+1 626-381-8420",
+      phoneNote: "We don't offer phone support. Please contact us by email.",
       emailLabel: "Email",
       email: "contact@ahaitsme.com",
+      bizVerifyLabel: "Verify Business Registration",
     },
   },
   legalConsent: {
     ageLabel: "I confirm that I am at least 13 years of age (required)",
-    termsPrefix: "I agree to the ",
     termsLink: "Terms of Service",
-    termsMiddle: " and ",
     privacyLink: "Privacy Policy",
-    termsSuffix: " (required)",
-    gateHint: "Please check both boxes above to continue with sign-up.",
+    termsCheckboxLabel: "I agree to the Terms of Service (required)",
+    privacyCheckboxLabel:
+      "I agree to the collection and use of my personal information (required)",
+    privacyDetailToggle: "View collection details",
+    privacyDetailPurposeLabel: "Purpose of collection/use",
+    privacyDetailPurpose:
+      "Account creation and management, providing the Service, generating/storing/viewing your personalized analysis reports, and handling customer inquiries and disputes.",
+    privacyDetailItemsLabel: "Items collected",
+    privacyDetailItems:
+      "Email address (login identifier), birth date/time/place and other inputs needed for the Service, and survey responses.",
+    privacyDetailRetentionLabel: "Retention period",
+    privacyDetailRetention:
+      "Retained until account deletion or until the processing purpose is fulfilled. Transaction records required to be kept under applicable law are stored separately for the legally required period.",
+    privacyDetailRefusalLabel: "Right to refuse and consequences",
+    privacyDetailRefusal:
+      "You may decline to consent, but declining the required items above may limit sign-up and use of the Service.",
+    gateHint: "Please check all required boxes above to continue with sign-up.",
     pageTitle: "Age & terms confirmation",
     pageSubtitle:
       "Before using Aha It's me, please confirm your age and accept our terms.",
@@ -1112,8 +1170,9 @@ export const messagesEnUS = {
   },
   paymentRefund: {
     checkboxLabel:
-      "I agree that due to the nature of digital goods (AI Saju results), refunds are not available after results have been generated. (required)",
-    requiredHint: "Please check the refund notice before continuing to payment.",
+      "I understand that personalized digital content generation begins immediately upon payment, and that once generation has begun, withdrawal for a simple change of mind may be limited. (required)",
+    refundPolicyLinkLabel: "View refund policy",
+    requiredHint: "Please check the notice above before continuing to payment.",
     processing: "Starting checkout…",
     betaSandboxSuccess: "Sandbox checkout complete — that item is unlocked now.",
     betaSandboxError: "Something went wrong processing the test checkout. Please try again.",
@@ -2194,72 +2253,75 @@ export type MessageCatalog = {
     metaTitle: string;
     metaDescription: string;
     heroEyebrow: string;
-    heroTitleLine1: string;
-    heroTitleLine2: string;
-    heroBodyLine1: string;
-    heroBodyLine2: string;
-    heroBodyLine3: string;
-    heroBodyLine4: string;
-    pillarsEyebrow: string;
-    pillarsTitle: string;
-    pillarsBody: string;
+    heroHeadline1: string;
+    heroHeadline2: string;
+    heroBody1: string;
+    heroBody2: string;
+    heroMission: string;
+    heroCtaPrimary: string;
+    heroCtaSecondary: string;
+    whyHeadline1: string;
+    whyHeadline2: string;
+    whyBody1: string;
+    whyStatement: string;
+    whyBody2: string;
+    earlyLabel: string;
+    earlyHeadline1: string;
+    earlyHeadline2: string;
+    earlyBody1: string;
+    earlyBody2: string;
+    earlyStep1: string;
+    earlyStep2: string;
+    earlyStep3: string;
+    earlyStatement: string;
+    earlyBody3: string;
+    pillarsHeadline: string;
+    pillarsSubcopy: string;
     pillarMeTitle: string;
-    pillarMeSubtitle: string;
-    pillarMeDesc: string;
+    pillarMeBody: string;
     pillarRelTitle: string;
-    pillarRelSubtitle: string;
-    pillarRelDesc: string;
+    pillarRelBody: string;
     pillarDecisionTitle: string;
-    pillarDecisionSubtitle: string;
-    pillarDecisionDesc: string;
-    helpQuoteLine1: string;
-    helpQuoteLine2: string;
-    helpQuoteLine3: string;
-    helpQuoteLine4: string;
-    helpQuoteLine5: string;
-    understandTitle: string;
-    structureOuterTitle: string;
-    structureOuterDesc: string;
-    structureInnerTitle: string;
-    structureInnerDesc: string;
-    structureRelTitle: string;
-    structureRelDesc: string;
-    structureAdviceTitle: string;
-    structureAdviceDesc: string;
-    availableNowTitle: string;
-    availableNowBodyLine1: string;
-    availableNowBodyLine2: string;
-    availableNowBodyLine3: string;
-    availableNowBodyLine4: string;
-    availableNowBodyLine5: string;
-    availableNowBodyLine6: string;
-    featureFreeTitle: string;
-    featureFreePoint1: string;
-    featureFreePoint2: string;
-    featureFreePoint3: string;
-    featureFreePoint4: string;
-    featureDeepTitle: string;
-    featureDeepPoint1: string;
-    featureDeepPoint2: string;
-    featureDeepPoint3: string;
-    featureRelTitle: string;
-    featureRelPoint1: string;
-    featureRelPoint2: string;
-    continuousQuoteLine1: string;
-    continuousQuoteLine2: string;
-    roadmapRelDeep: string;
-    roadmapMultiAngle: string;
-    roadmapTeam: string;
-    roadmapMore: string;
-    socialEyebrow: string;
-    socialTitle: string;
-    socialBody: string;
-    socialFollowCta: string;
-    feedComingSoon: string;
-    closingQuoteLine1: string;
-    closingQuoteLine2: string;
-    closingSubtitle: string;
-    closingCta: string;
+    pillarDecisionBody: string;
+    fitHeadline1: string;
+    fitHeadline2: string;
+    fitIntro: string;
+    fitQuoteLine1: string;
+    fitQuoteLine2: string;
+    fitQuoteLine3: string;
+    fitLeadIn: string;
+    fitQuestion1: string;
+    fitQuestion2: string;
+    fitQuestion3: string;
+    fitQuestion4: string;
+    fitStatement: string;
+    frictionHeadline: string;
+    frictionBody1: string;
+    frictionStatement1: string;
+    frictionBody2: string;
+    frictionStatement2: string;
+    principleHeadline1: string;
+    principleHeadline2: string;
+    principleBody1: string;
+    principleQuote: string;
+    principleBody2: string;
+    buildHeadline: string;
+    buildStatement: string;
+    buildBody1: string;
+    buildLine1: string;
+    buildLine2: string;
+    buildLine3: string;
+    buildLine4: string;
+    buildBody2: string;
+    originHeadline1: string;
+    originHeadline2: string;
+    originBody1: string;
+    originBody2: string;
+    originStatement: string;
+    closingBrand: string;
+    closingHeadline: string;
+    closingCtaPrimary: string;
+    closingCtaSecondary: string;
   };
   decision: {
     categories: {
@@ -2290,6 +2352,7 @@ export type MessageCatalog = {
     archiveTitle: string;
     archiveSubtitle: string;
     categoryLabel: string;
+    sensitiveInfoNotice: string;
     situationLabel: string;
     situationPlaceholder: string;
     decisionFieldLabel: string;
@@ -2544,17 +2607,27 @@ export type MessageCatalog = {
       address: string;
       phoneLabel: string;
       phone: string;
+      phoneNote: string;
       emailLabel: string;
       email: string;
+      bizVerifyLabel: string;
     };
   };
   legalConsent: {
     ageLabel: string;
-    termsPrefix: string;
     termsLink: string;
-    termsMiddle: string;
     privacyLink: string;
-    termsSuffix: string;
+    termsCheckboxLabel: string;
+    privacyCheckboxLabel: string;
+    privacyDetailToggle: string;
+    privacyDetailPurposeLabel: string;
+    privacyDetailPurpose: string;
+    privacyDetailItemsLabel: string;
+    privacyDetailItems: string;
+    privacyDetailRetentionLabel: string;
+    privacyDetailRetention: string;
+    privacyDetailRefusalLabel: string;
+    privacyDetailRefusal: string;
     gateHint: string;
     pageTitle: string;
     pageSubtitle: string;
@@ -2585,6 +2658,7 @@ export type MessageCatalog = {
   };
   paymentRefund: {
     checkboxLabel: string;
+    refundPolicyLinkLabel: string;
     requiredHint: string;
     processing: string;
     betaSandboxSuccess: string;

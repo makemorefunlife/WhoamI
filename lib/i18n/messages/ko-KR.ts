@@ -642,76 +642,116 @@ export const messagesKoKR: MessageCatalog = {
     faqLinkLabel: "자주 묻는 질문 보기",
   },
   about: {
-    metaTitle: "소개 | Aha It's me!",
-    metaDescription: "Aha It's me!가 왜 만들어졌는지 — 나, 관계, 결정을 이해하는 여정.",
-    heroEyebrow: "About",
-    heroTitleLine1: "왜 우리는",
-    heroTitleLine2: "비슷한 문제로 계속 부딪힐까",
-    heroBodyLine1: "사람이 달라서가 아니라",
-    heroBodyLine2: "서로를 모른 채 계속 만나기 때문이라고 생각했어요",
-    heroBodyLine3: "그래서",
-    heroBodyLine4: "이 서비스를 만들었어요",
-    pillarsEyebrow: "Three Pillars",
-    pillarsTitle: "나 · 관계 · 결정",
-    pillarsBody:
-      "6가지 핵심 성향을 중심으로, 한 사람의 이해에서 관계, 그리고 선택까지 이어지는 여정을 설계했어요.",
+    metaTitle: "About | Aha It's me!",
+    metaDescription:
+      "사람을 조금 더 빨리 이해해서, 관계에서 낭비되는 에너지를 줄이는 서비스 — Aha It's me!의 철학.",
+
+    // 1. HERO
+    heroEyebrow: "ABOUT AHA! IT'S ME",
+    heroHeadline1: "사람을 이해하는 데,",
+    heroHeadline2: "꼭 몇 년이 걸려야 할까요?",
+    heroBody1:
+      "우리는 사람을 만나고 한참이 지나서야 알게 됩니다.\n“아, 이 사람은 원래 이렇게 생각하는 사람이었구나.”\n“그래서 우리가 계속 여기서 부딪혔구나.”",
+    heroBody2:
+      "조금만 먼저 알 수 있었다면\n하지 않아도 됐을 오해와 소모가 있었을지도 모릅니다.",
+    heroMission:
+      "Aha! it's me는\n사람을 더 빨리 이해해서\n관계에서 낭비되는 에너지를 줄이는 서비스입니다.",
+    heroCtaPrimary: "나부터 알아보기",
+    heroCtaSecondary: "관계 알아보기",
+
+    // 2. WHY
+    whyHeadline1: "덜 부딪히고,",
+    whyHeadline2: "더 잘 함께할 수 있다면",
+    whyBody1:
+      "좋은 관계는\n항상 잘 맞는 관계가 아니라고 생각합니다.\n서로 다르더라도\n어떻게 생각하는지,\n어떻게 말해야 잘 전달되는지,\n어디에서 쉽게 지치는지\n조금만 알면 관계는 훨씬 편해질 수 있습니다.",
+    whyStatement: "사람을 바꾸지 않아도,\n관계는 달라질 수 있으니까요.",
+    whyBody2:
+      "우리가 줄이고 싶은 건\n사람 사이의 차이가 아니라\n그 차이를 몰라서 생기는\n불필요한 소모입니다.",
+
+    // 3. UNDERSTAND EARLIER
+    earlyLabel: "UNDERSTAND EARLIER",
+    earlyHeadline1: "다 알기 전에,",
+    earlyHeadline2: "조금 먼저 이해하기",
+    earlyBody1:
+      "새로운 사람을 만날 때도,\n함께 일할 때도,\n연애를 시작할 때도\n우리는 대부분 상대방을\n부딪혀가며 배웁니다.",
+    earlyBody2:
+      "Aha! it's me는\n그 시행착오를 조금 줄이고 싶었습니다.\n생년월일만으로 먼저\n기본적인 성향과 관계 패턴을 살펴보고,\n더 알고 싶다면 설문을 추가해\n실제 성향을 반영할 수 있습니다.",
+    earlyStep1: "생년월일",
+    earlyStep2: "설문",
+    earlyStep3: "실제 경험",
+    earlyStatement: "사주는 시작점이고,\n당신의 삶이 답을 완성합니다.",
+    earlyBody3:
+      "사람을 미리 판단하려는 것이 아닙니다.\n조금 먼저 이해해서,\n더 좋은 방식으로 대하기 위해서입니다.",
+
+    // 4. THREE PILLARS
+    pillarsHeadline: "나 · 관계 · 결정",
+    pillarsSubcopy: "우리가 이해하고 싶은 것은\n결국 이 세 가지입니다.",
     pillarMeTitle: "나",
-    pillarMeSubtitle: "Blueprint",
-    pillarMeDesc: "10문항 설문과 6축 블루프린트로 나의 패턴을 읽어요.",
+    pillarMeBody: "내가 왜 이렇게 생각하고 반응하는지.\n나의 감정, 에너지,\n행동의 패턴을 이해합니다.",
     pillarRelTitle: "관계",
-    pillarRelSubtitle: "5대 탭",
-    pillarRelDesc: "연인·동료·가족·친구 등 맥락별 리포트로 두 사람의 리듬을 봐요.",
+    pillarRelBody:
+      "왜 이 사람과는 편하고,\n왜 저 사람과는 자꾸 엇갈리는지.\n두 사람의 차이뿐 아니라\n둘 사이에서 만들어지는 관계를 봅니다.",
     pillarDecisionTitle: "결정",
-    pillarDecisionSubtitle: "Decision AI",
-    pillarDecisionDesc: "선택장애를 위한 대화형 코치 — 곧 블루프린트와 연결됩니다.",
-    helpQuoteLine1: "이건 관계에서",
-    helpQuoteLine2: "서로를 이해할 수 있게 도와줘요.",
-    helpQuoteLine3: "굳이 맞추려고 애쓰지 않아도",
-    helpQuoteLine4: "왜 그런지 알게 되면",
-    helpQuoteLine5: "훨씬 편해지니까요",
-    understandTitle: "우리는 이렇게 이해해요",
-    structureOuterTitle: "겉모습",
-    structureOuterDesc: "밖으로 드러나는 행동",
-    structureInnerTitle: "내면",
-    structureInnerDesc: "그 행동이 나오는 이유",
-    structureRelTitle: "관계",
-    structureRelDesc: "사람을 만날 때의 흐름",
-    structureAdviceTitle: "조언 한마디",
-    structureAdviceDesc: "덜 힘들어지는 방향",
-    availableNowTitle: "지금 이용할 수 있는 것들",
-    availableNowBodyLine1: "지금은",
-    availableNowBodyLine2: "나를 이해하고, 관계를 가볍게 들여다볼 수 있어요",
-    availableNowBodyLine3: "그리고 이 흐름은",
-    availableNowBodyLine4: "여기서 끝나지 않아요",
-    availableNowBodyLine5: "개인 분석도 더 깊어지고,",
-    availableNowBodyLine6: "관계 분석도 점점 확장될 예정이에요",
-    featureFreeTitle: "무료 개인 분석",
-    featureFreePoint1: "겉모습",
-    featureFreePoint2: "내면",
-    featureFreePoint3: "관계",
-    featureFreePoint4: "조언",
-    featureDeepTitle: "개인 심화 분석",
-    featureDeepPoint1: "감정 흐름",
-    featureDeepPoint2: "에너지",
-    featureDeepPoint3: "패턴",
-    featureRelTitle: "관계 기본 분석",
-    featureRelPoint1: "두 사람 비교 구조",
-    featureRelPoint2: "간단 텍스트 UI",
-    continuousQuoteLine1: "이건 한 번 보고 끝나는 분석이 아니에요",
-    continuousQuoteLine2: "계속해서 이해를 쌓아가는 과정이에요",
-    roadmapRelDeep: "관계 심화 분석",
-    roadmapMultiAngle: "다각도 개인분석",
-    roadmapTeam: "팀 관계 분석",
-    roadmapMore: "그리고 더 다양한 관계 맥락 확장",
-    socialEyebrow: "Social",
-    socialTitle: "인스타그램에서 만나요",
-    socialBody: "업데이트 소식, 관계 인사이트, 나다움에 관한 이야기를 공유해요.",
-    socialFollowCta: "@aha_itsme_ 팔로우",
-    feedComingSoon: "피드 준비 중",
-    closingQuoteLine1: "먼저,",
-    closingQuoteLine2: "나부터 이해해보세요",
-    closingSubtitle: "나를 이해하는 데서 모든 변화가 시작돼요.",
-    closingCta: "무료 분석 시작하기 →",
+    pillarDecisionBody:
+      "나는 왜 비슷한 상황에서\n비슷한 선택을 할까.\n상황과 마음, 결정과 결과를 쌓으며\n나만의 선택 패턴을 발견합니다.",
+
+    // 5. RELATIONSHIP PHILOSOPHY
+    fitHeadline1: "궁합보다,",
+    fitHeadline2: "관계의 사용법",
+    fitIntro: "우리는 이런 결과를 만들고 싶지 않았습니다.",
+    fitQuoteLine1: "잘 맞아요.",
+    fitQuoteLine2: "안 맞아요.",
+    fitQuoteLine3: "궁합은 82점입니다.",
+    fitLeadIn: "그것보다 이런 것이 더 궁금했습니다.",
+    fitQuestion1: "이 사람에게는 어떻게 말해야 잘 전달될까?",
+    fitQuestion2: "둘이 같이 일할 때\n누가 무엇을 맡으면 편할까?",
+    fitQuestion3: "왜 같은 이야기를 하는데\n계속 엇갈릴까?",
+    fitQuestion4: "어디에서 서로의 에너지가\n가장 많이 소모될까?",
+    fitStatement: "관계를 평가하는 것보다,\n관계를 잘 사용하는 방법이\n더 중요하니까요.",
+
+    // 6. LOW FRICTION
+    frictionHeadline: "설문부터 하지 않아도 괜찮아요",
+    frictionBody1:
+      "사람들은 궁금한 게 생겼을 때\n먼저 답을 보고 싶어 합니다.\n그래서 Aha! it's me는\n처음부터 긴 설문을 요구하지 않습니다.",
+    frictionStatement1: "생일만 알아도 시작할 수 있어요.",
+    frictionBody2:
+      "먼저 관계를 보고,\n더 궁금해지면 깊게 보고,\n더 정확하게 알고 싶을 때\n실제 성향을 추가하면 됩니다.",
+    frictionStatement2:
+      "설문은 입장권이 아니라,\n분석의 초점을 맞추는 도구입니다.",
+
+    // 7. PRINCIPLE
+    principleHeadline1: "우리는 사람을",
+    principleHeadline2: "정답으로 만들지 않습니다",
+    principleBody1:
+      "사주도, 설문도, AI도\n한 사람을 완벽하게 설명할 수는 없습니다.\n그래서 Aha! it's me의 분석은\n“당신은 이런 사람입니다.”\n라고 끝내지 않습니다.",
+    principleQuote: "“이렇게 이해해보면 어떨까요?”",
+    principleBody2: "우리는 정답보다\n이해할 수 있는 언어를 만들고 싶습니다.",
+
+    // 8. WHAT WE WANT TO BUILD
+    buildHeadline: "결국 우리가 만들고 싶은 것",
+    buildStatement: "힘을 덜 빼고도,\n더 잘 함께하는 관계.",
+    buildBody1:
+      "친구와도,\n연인과도,\n가족과도,\n함께 일하는 사람과도.\n상대를 바꾸기 위해 애쓰기보다\n서로에게 맞는 방식을\n조금 더 빨리 찾는 것.",
+    buildLine1: "더 적은 오해.",
+    buildLine2: "더 나은 소통.",
+    buildLine3: "더 좋은 협업.",
+    buildLine4: "그리고 조금 더 즐거운 관계.",
+    buildBody2: "그게 Aha! it's me가\n만들고 싶은 변화입니다.",
+
+    // 9. WHY WE BUILT THIS
+    originHeadline1: "사람 사이의 문제를",
+    originHeadline2: "오래 지켜봤습니다",
+    originBody1:
+      "여러 조직과 스타트업 환경에서\n사람을 관리하고, 팀을 만들고,\n함께 문제를 해결하면서\n많은 갈등이 능력의 문제가 아니라\n서로의 방식이 다르다는 것을\n너무 늦게 알게 되는 데서 시작한다는 것을 봤습니다.",
+    originBody2: "Aha! it's me는\n그 경험에서 시작했습니다.",
+    originStatement:
+      "서로를 조금 더 빨리 이해할 수 있다면\n더 좋은 팀도,\n더 좋은 관계도\n만들 수 있지 않을까.",
+
+    // 10. CLOSING CTA
+    closingBrand: "Aha! it's me",
+    closingHeadline: "사람을 조금 더 빨리 이해하면\n관계는 조금 덜 어려워질 수 있습니다.",
+    closingCtaPrimary: "무료로 시작하기 →",
+    closingCtaSecondary: "관계 분석 보기",
   },
   decision: {
     categories: {
@@ -742,6 +782,8 @@ export const messagesKoKR: MessageCatalog = {
     archiveTitle: "결정 기록하기",
     archiveSubtitle: "결정 당시의 상황과 선택, 그때의 마음을 기록해 두세요.",
     categoryLabel: "카테고리",
+    sensitiveInfoNotice:
+      "건강, 정치 성향, 성생활 등 민감정보나 다른 사람을 특정할 수 있는 개인정보는 적지 말아 주세요.",
     situationLabel: "어떤 상황이었나요?",
     situationPlaceholder:
       "예: 회사에서 새로운 포지션을 제안받았는데, 연봉은 오르지만 출퇴근 시간이 길어져요.",
@@ -1013,23 +1055,42 @@ export const messagesKoKR: MessageCatalog = {
       bizNumberLabel: "사업자등록번호",
       bizNumber: "387-06-03769",
       mailOrderLabel: "통신판매업 신고번호",
-      mailOrderNumber: "[통신판매업 번호]",
+      // TODO(legal): 통신판매업 신고번호 확정 전. 값이 비어 있으면 Footer가 이 줄
+      // 자체를 렌더링하지 않으므로(placeholder 노출 방지), 번호가 나오면 여기만 채우면 됨.
+      mailOrderNumber: "",
       addressLabel: "사업장 주소",
-      address: "서울시 용산구 (상세주소는 추후 업데이트 예정)",
+      // NOTE: 사업자등록 주소 변경(대사관로31길 7-3, 2층 11호)이 공식 완료되기 전에는
+      // 이 값을 production에 배포하지 마세요 — 2026-09-19 요청 시점 기준 실제 주소로
+      // 갱신해 두었으니, 등록 변경 완료를 확인한 뒤 배포해 주세요.
+      address: "서울특별시 용산구 대사관로31길 7-3, 2층 11호",
       phoneLabel: "전화번호",
-      phone: "02-1234-5678",
+      phone: "+1 626-381-8420",
+      phoneNote: "전화 상담은 제공하지 않습니다. 문의는 이메일을 이용해주세요.",
       emailLabel: "이메일",
       email: "contact@ahaitsme.com",
+      bizVerifyLabel: "사업자정보 확인",
     },
   },
   legalConsent: {
     ageLabel: "본인은 만 14세 이상입니다(필수)",
-    termsPrefix: "",
     termsLink: "이용약관",
-    termsMiddle: " 및 ",
     privacyLink: "개인정보처리방침",
-    termsSuffix: "에 동의합니다(필수)",
-    gateHint: "위 두 항목에 모두 동의한 뒤 가입을 진행해 주세요.",
+    termsCheckboxLabel: "이용약관에 동의합니다(필수)",
+    privacyCheckboxLabel: "개인정보 수집·이용에 동의합니다(필수)",
+    privacyDetailToggle: "수집 항목 자세히 보기",
+    privacyDetailPurposeLabel: "수집·이용 목적",
+    privacyDetailPurpose:
+      "회원가입 및 계정 관리, 서비스 제공, 개인화 분석 보고서 생성·저장·열람, 고객문의 및 분쟁 대응",
+    privacyDetailItemsLabel: "수집 항목",
+    privacyDetailItems:
+      "이메일 주소(로그인 식별자), 서비스 이용에 필요한 생년월일시·출생지 등 입력값, 설문 응답 등",
+    privacyDetailRetentionLabel: "보유·이용 기간",
+    privacyDetailRetention:
+      "회원 탈퇴 또는 처리 목적 달성 시까지 보유합니다. 다만 관계 법령에 따라 보존이 필요한 거래기록은 해당 법령이 정한 기간 동안 별도로 분리 보관합니다.",
+    privacyDetailRefusalLabel: "동의 거부권 및 불이익",
+    privacyDetailRefusal:
+      "동의를 거부하실 수 있으나, 위 필수 항목에 동의하지 않으시면 회원가입 및 서비스 제공이 제한될 수 있습니다.",
+    gateHint: "위 필수 항목에 모두 동의한 뒤 가입을 진행해 주세요.",
     pageTitle: "연령 및 약관 동의",
     pageSubtitle:
       "Aha It's me를 이용하기 전에 연령 확인과 약관 동의가 필요합니다.",
@@ -1060,9 +1121,16 @@ export const messagesKoKR: MessageCatalog = {
     metaDescription: "CCPA에 따라 개인정보 판매·공유 거부를 요청할 수 있습니다.",
   },
   paymentRefund: {
+    /**
+     * 2026-09-18 법률 자문 메모: "생성 후 환불 불가"로 단정하면 안 되고,
+     * 청약철회가 "제한될 수 있다"는 고지 + 환불정책 링크가 필요하다고 명시.
+     * 기존 문구는 refundPolicy.ts가 인정하는 "명백한 기술적 결함" 환불
+     * 예외와 자체 모순이었음 -- 최종 문구는 변호사 확인 권장.
+     */
     checkboxLabel:
-      "디지털 상품(AI 사주 결과)의 특성상, 결과가 생성된 이후에는 환불이 불가능함에 동의합니다. (필수)",
-    requiredHint: "결제 전에 환불 불가 고지에 동의해 주세요.",
+      "결제와 동시에 개인화된 디지털 콘텐츠 생성이 시작되며, 생성이 시작된 후에는 단순 변심에 따른 청약철회가 제한될 수 있음을 확인합니다. (필수)",
+    refundPolicyLinkLabel: "환불정책 보기",
+    requiredHint: "결제 전에 위 고지에 동의해 주세요.",
     processing: "결제 준비 중…",
     betaSandboxSuccess: "테스트 결제가 완료됐어요. 해당 상품이 바로 열렸습니다.",
     betaSandboxError: "테스트 결제 처리 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요.",
