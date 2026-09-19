@@ -9,6 +9,7 @@ export const ROUTES = {
   surveyV2: "/survey-v2",
   surveyV2Complete: "/survey-v2/complete",
   onboardingBirth: "/onboarding/birth",
+  inviteBirth: "/invite-birth",
   blueprint: "/blueprint-preview",
   relationships: "/relationships",
   relationship: "/relationship",

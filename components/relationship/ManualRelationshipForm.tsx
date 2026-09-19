@@ -82,6 +82,7 @@ function useManualRelationshipFormState({
   const [birthPlace, setBirthPlace] = useState("");
   const [birthPlaceUnknown, setBirthPlaceUnknown] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [surveySkipped, setSurveySkipped] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [hintPulse, setHintPulse] = useState(0);
@@ -112,13 +113,19 @@ function useManualRelationshipFormState({
   const currentQuestion = surveyQuestions[currentQuestionIndex];
 
   const surveyOk = answeredCount === surveyQuestions.length;
+  // Birth-data-first free relationship result: survey is optional here.
+  // Checking "surveySkipped" satisfies the same gate surveyOk normally
+  // would -- see app/api/relationship/manual/route.ts, which already
+  // supports surveySkipped server-side and falls back to a neutral,
+  // internal-only psych profile (never shown to the user as a real read).
+  const surveyGateOk = surveyOk || surveySkipped;
 
   const nameOk = partnerName.trim().length >= 1;
   const dateOk = birthDate.length === 10;
   const timeOk = birthTimeUnknown || birthTime != null;
   const placeOk = birthPlaceUnknown || birthPlace.trim().length >= 1;
 
-  const canSubmit = nameOk && dateOk && timeOk && placeOk && surveyOk;
+  const canSubmit = nameOk && dateOk && timeOk && placeOk && surveyGateOk;
 
   const submitBlockers = useMemo(() => {
     const blockers: string[] = [];
@@ -126,9 +133,9 @@ function useManualRelationshipFormState({
     if (!dateOk) blockers.push("birth_date");
     if (!timeOk) blockers.push("birth_time");
     if (!placeOk) blockers.push("birth_place");
-    if (!surveyOk) blockers.push("survey");
+    if (!surveyGateOk) blockers.push("survey");
     return blockers;
-  }, [nameOk, dateOk, timeOk, placeOk, surveyOk]);
+  }, [nameOk, dateOk, timeOk, placeOk, surveyGateOk]);
 
   const submitHint = useMemo(() => {
     if (canSubmit) return null;
@@ -136,7 +143,7 @@ function useManualRelationshipFormState({
     if (!dateOk) return messages.relationshipForm.birthDateRequired;
     if (!timeOk) return messages.relationshipForm.birthTimeRequired;
     if (!placeOk) return messages.relationshipForm.birthPlaceRequired;
-    if (!surveyOk) {
+    if (!surveyGateOk) {
       return messages.relationshipForm.surveyIncomplete(
         answeredCount,
         surveyQuestions.length,
@@ -149,7 +156,7 @@ function useManualRelationshipFormState({
     dateOk,
     timeOk,
     placeOk,
-    surveyOk,
+    surveyGateOk,
     answeredCount,
     surveyQuestions.length,
     messages,
@@ -191,8 +198,8 @@ function useManualRelationshipFormState({
       birthTimeUnknown,
       birthPlace: birthPlaceUnknown ? null : birthPlace.trim(),
       birthPlaceUnknown,
-      surveySkipped: false,
-      surveyAnswers: answers as SurveyAnswersInput,
+      surveySkipped: surveySkipped && !surveyOk,
+      surveyAnswers: surveySkipped && !surveyOk ? null : (answers as SurveyAnswersInput),
     });
   }
 
@@ -224,6 +231,7 @@ function useManualRelationshipFormState({
     answers, currentQuestionIndex, advancing, hintPulse, attemptedSubmit,
     nameRef, birthBlockRef, placeRef, surveyRef,
     surveyQuestions, currentQuestion, answeredCount,
+    surveySkipped, setSurveySkipped, surveyOk,
     canSubmit, submitBlockers, submitHint,
     pickAnswer, goPrevQuestion, handleCreateClick,
   };
@@ -242,7 +250,7 @@ export function ManualRelationshipFormFields({
   theme?: "space" | "stitch";
 }) {
   const s = useFormStyles(theme);
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
 
   return (
     <div className="space-y-4">
@@ -310,15 +318,42 @@ export function ManualRelationshipFormFields({
       <div ref={form.surveyRef} className={s.surveyBox}>
         <div className="flex items-baseline justify-between gap-2">
           <p className={s.surveyTitle}>{messages.relationshipForm.surveyTitle}</p>
-          <span className={s.hint}>
-            {messages.relationshipForm.responses(
-              form.answeredCount,
-              form.surveyQuestions.length,
-            )}
-          </span>
+          {!form.surveySkipped ? (
+            <span className={s.hint}>
+              {messages.relationshipForm.responses(
+                form.answeredCount,
+                form.surveyQuestions.length,
+              )}
+            </span>
+          ) : null}
         </div>
 
-        {form.currentQuestion ? (
+        {/*
+          Birth-data-first free relationship result: survey stays fully
+          optional here. Checking this skips straight to a birth-only free
+          result (see app/api/relationship/manual/route.ts's existing
+          surveySkipped + buildNeutralV2Profile() path) -- the survey can
+          always be added later from that result screen for a more precise,
+          survey-calibrated read.
+        */}
+        {!form.surveyOk ? (
+          <label className={`flex items-start gap-2 ${s.check}`}>
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={form.surveySkipped}
+              onChange={(e) => form.setSurveySkipped(e.target.checked)}
+              disabled={busy}
+            />
+            <span>
+              {locale === "ko-KR"
+                ? "설문 없이 바로 무료 관계 결과 보기 (나중에 설문을 추가하면 더 정교해져요)"
+                : "Skip the survey and see a free result now (add it later for a sharper read)"}
+            </span>
+          </label>
+        ) : null}
+
+        {!form.surveySkipped && form.currentQuestion ? (
           <fieldset key={form.currentQuestion.id} className="space-y-2.5">
             <legend className={`text-[13px] leading-relaxed break-keep ${theme === "stitch" ? "text-on-surface" : "text-white/75"}`}>
               {form.currentQuestion.prompt.split("\n")[0]}

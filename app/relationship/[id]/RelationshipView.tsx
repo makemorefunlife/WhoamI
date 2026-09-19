@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
+import FreeRelationshipPreviewCard from "@/components/relationship/map/FreeRelationshipPreviewCard";
 import RelationshipAnalysisHistory from "@/components/relationship/RelationshipAnalysisHistory";
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
@@ -267,10 +268,24 @@ export default function RelationshipView({
           !err &&
           !snapshotView &&
           !showGeneratingPanel ? (
-            <div className="mt-4">
+            <div className="mt-4 space-y-4">
+              {/*
+                Birth-data-only free result (separate surface from
+                RelationshipBasicCards, which is untouched and reserved for
+                the survey-calibrated 4-axis view). Replaces the old
+                survey-required dead end: a viewer with no completed survey
+                yet still gets a real, deterministic result here instead of
+                a blocked retry button.
+              */}
+              {resolvedRelationshipId && viewerReportId ? (
+                <FreeRelationshipPreviewCard
+                  relationshipReportId={resolvedRelationshipId}
+                  viewerReportId={viewerReportId}
+                />
+              ) : null}
               <button
                 type="button"
-                className="stitch-cta-primary w-full !min-w-0 disabled:opacity-50"
+                className="stitch-cta-secondary w-full !min-w-0 disabled:opacity-50"
                 disabled={generating}
                 onClick={() => retryAnalysis()}
               >

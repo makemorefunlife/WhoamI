@@ -171,10 +171,19 @@ export default function HomeContent() {
     (reportId: string) => {
       const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
       const connectToken = localStorage.getItem("connectToken")?.trim() ?? "";
+      // Birth-data-first free relationship result: invite/connect-originated
+      // signups skip the survey gate and go straight to birth entry, then a
+      // free 10-role relationship result. Survey stays fully optional,
+      // offered later from that result screen. This is the ONLY branch
+      // point for that -- plain signup (no token) falls through unchanged
+      // to the exact survey-first path this app always had.
+      if (inviteToken || connectToken) {
+        const params = new URLSearchParams({ reportId });
+        router.push(localize(`${ROUTES.inviteBirth}?${params.toString()}`));
+        return;
+      }
       const params = new URLSearchParams();
-      if (inviteToken) params.set("token", inviteToken);
-      else if (connectToken) params.set("connectToken", connectToken);
-      else params.set("reportId", reportId);
+      params.set("reportId", reportId);
       router.push(localize(`${ROUTES.surveyV2}?${params.toString()}`));
     },
     [router, localize],
@@ -199,7 +208,11 @@ export default function HomeContent() {
         }
         const body = (await res.json().catch(() => ({}))) as {
           sharer_name?: string | null;
+          relationship_report_id?: string | null;
         };
+        if (body.relationship_report_id) {
+          localStorage.setItem("pendingRelationshipReportId", body.relationship_report_id);
+        }
         return { ok: res.ok, sharerName: body.sharer_name ?? null };
       } catch (e) {
         console.error("[home] invite_complete_error");
@@ -226,7 +239,11 @@ export default function HomeContent() {
         }
         const body = (await res.json().catch(() => ({}))) as {
           sharer_name?: string | null;
+          relationshipReportId?: string | null;
         };
+        if (body.relationshipReportId) {
+          localStorage.setItem("pendingRelationshipReportId", body.relationshipReportId);
+        }
         return { ok: res.ok, sharerName: body.sharer_name ?? null };
       } catch (e) {
         console.error("[home] connect_complete_error");
