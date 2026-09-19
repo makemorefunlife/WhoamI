@@ -39,16 +39,12 @@ import { calculateSajuBundle } from "@/lib/v2/saju/calculateSajuBundle";
 import { toV1SajuApiPayload } from "@/lib/saju/toApiPayload";
 import { extractDomainSajuSignals } from "@/lib/personCore/sajuSignals/extractDomainSajuSignals";
 import { mapPsychMasterJson } from "@/lib/personCore/mappers/mapPsychMasterJson";
-import {
-  buildWorkColleagueReportEnriched,
-  isStaleWorkReportBlock,
-  WORK_COLLEAGUE_DEEP_FORMAT,
-} from "@/lib/relationship/workColleague/buildWorkColleagueReport";
-import {
-  buildFriendReportEnriched,
-  isStaleFriendReportBlock,
-  FRIEND_SOCIAL_DEEP_FORMAT,
-} from "@/lib/relationship/friend/buildFriendReport";
+import { buildWorkColleagueReportEnriched } from "@/lib/relationship/enrichment/buildWorkColleagueReportEnriched";
+import { buildFriendReportEnriched } from "@/lib/relationship/enrichment/buildFriendReportEnriched";
+import { isStaleWorkReportBlock, isStaleFriendReportBlock } from "@/lib/relationship/reportStalenessGuard";
+import { WORK_COLLEAGUE_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/workColleague";
+import { FRIEND_SOCIAL_DEEP_FORMAT } from "@/lib/prompts/relationshipPremium/friendSocial";
+import { mergePremiumKindLocale } from "@/lib/relationship/premiumByKind";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const runtime = "nodejs";
@@ -244,10 +240,10 @@ export async function GET(req: Request) {
             locale,
           });
 
-          const updatedByKind = mergeRelationshipPremiumByKind(byKind, "work", {
+          const updatedByKind = mergePremiumKindLocale(byKind, "work", locale as Locale, {
             format: WORK_COLLEAGUE_DEEP_FORMAT,
             report: workColleagueDeepRaw,
-          }, locale as Locale);
+          });
           void supabase
             .from("relationship_reports")
             .update({ result_premium_by_kind: updatedByKind })
@@ -329,10 +325,10 @@ export async function GET(req: Request) {
             locale,
           });
 
-          const updatedByKind = mergeRelationshipPremiumByKind(byKind, "friendship", {
+          const updatedByKind = mergePremiumKindLocale(byKind, "friendship", locale as Locale, {
             format: FRIEND_SOCIAL_DEEP_FORMAT,
             report: friendshipDeepRaw,
-          }, locale as Locale);
+          });
           void supabase
             .from("relationship_reports")
             .update({ result_premium_by_kind: updatedByKind })
