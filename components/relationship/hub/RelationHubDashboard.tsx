@@ -26,6 +26,7 @@ import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
 import AllAnalysisSheet from "@/components/relationship/hub/AllAnalysisSheet";
 import RelationAnalyzeNavOverlay from "@/components/relationship/hub/RelationAnalyzeNavOverlay";
 import NoticeDialog from "@/components/common/NoticeDialog";
+import FadeInContent from "@/components/ui/stitch/FadeInContent";
 import {
   FriendStoryRowSkeleton,
   HubAnalysisListSkeleton,
