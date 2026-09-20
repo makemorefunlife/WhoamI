@@ -44,21 +44,51 @@ export default function RelationshipMapSection({
   onInvite,
   onExploreRelationship,
   refreshKey = 0,
+  focusRelationshipReportId = null,
+  onFreeAnalysis,
 }: {
   viewerReportId: string;
   onInvite: () => void;
   onExploreRelationship: (relationshipReportId: string, partnerName: string) => void;
   /** Bump to force a refetch (e.g. after accepting a reciprocal connection request). */
   refreshKey?: number;
+  /**
+   * Relationship Discovery Flow V1: when set, the map auto-selects this
+   * person's role planet and opens their PersonPreviewPanel on load,
+   * instead of waiting for a manual planet click -- used when arriving
+   * from "우리 관계 발견하기" (just-connected) or a discovery banner's
+   * "확인하기". Applied once per id (re-clicking another planet afterward
+   * is not overridden back to this one).
+   */
+  focusRelationshipReportId?: string | null;
+  /**
+   * Relationship Discovery Flow V1: renders the free-analysis follow-up
+   * ("그런데 나는 상대에게 어떤 사람일까?") in PersonPreviewPanel, shown only
+   * for the focused person -- ordinary map browsing (any other planet/
+   * person) keeps its existing single "이 사람과 관계 분석하기" CTA
+   * unchanged.
+   */
+  onFreeAnalysis?: (relationshipReportId: string, partnerName: string) => void;
 }) {
   const { locale, messages } = useLocale();
   const [roles, setRoles] = useState<RoleSummary[] | null>(null);
   const [totalPeople, setTotalPeople] = useState(0);
   const [selectedRoleId, setSelectedRoleId] = useState<RelationshipRoleId | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<RoleDetailPerson | null>(null);
+  // Relationship Discovery Flow — the focused person's reverse-direction
+  // role ("what am I, to them"), from the map API's focusPerson.
+  // reciprocalRoleId. Only ever set alongside a focus-effect selection
+  // (see below), never by the ordinary role-planet-click path, so
+  // PersonPreviewPanel's dual-direction discovery layout stays scoped to
+  // the focus/discovery entry point only -- ordinary map browsing keeps
+  // its existing single-direction UX untouched.
+  const [focusReciprocalRoleId, setFocusReciprocalRoleId] = useState<RelationshipRoleId | null>(
+    null,
+  );
   const [rolePeople, setRolePeople] = useState<RoleDetailPerson[] | null>(null);
   const [rolePeopleTotal, setRolePeopleTotal] = useState(0);
   const roleEpochRef = useRef(0);
+  const focusAppliedRef = useRef<string | null>(null);
 
   const mapLoading = roles === null;
 
@@ -102,6 +132,45 @@ export default function RelationshipMapSection({
       cancelled = true;
     };
   }, [viewerReportId, refreshKey]);
+
+  useEffect(() => {
+    const focusId = focusRelationshipReportId?.trim();
+    if (!focusId || !viewerReportId) return;
+    if (focusAppliedRef.current === focusId) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/relationship/map?reportId=${encodeURIComponent(viewerReportId)}&focusRelationshipReportId=${encodeURIComponent(focusId)}`,
+        );
+        const data = await res.json().catch(() => null);
+        if (cancelled || !res.ok || !data?.focusPerson) return;
+        const person = data.focusPerson as {
+          roleId: RelationshipRoleId;
+          key: string;
+          name: string;
+          relationshipReportId: string;
+          partnerReportId: string;
+          reciprocalRoleId?: RelationshipRoleId;
+        };
+        focusAppliedRef.current = focusId;
+        setSelectedRoleId(person.roleId);
+        setSelectedPerson({
+          key: person.key,
+          name: person.name,
+          relationshipReportId: person.relationshipReportId,
+          partnerReportId: person.partnerReportId,
+        });
+        setFocusReciprocalRoleId(person.reciprocalRoleId ?? null);
+      } catch {
+        // Best-effort — a failed focus lookup just leaves the map in its
+        // normal browsable state instead of forcing a selection.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [viewerReportId, focusRelationshipReportId]);
 
   const countByRole = new Map<RelationshipRoleId, number>(
     (roles ?? RELATIONSHIP_ROLES.map((r) => ({ roleId: r.roleId, tenGod: r.tenGod, count: 0 }))).map(
@@ -212,18 +281,32 @@ export default function RelationshipMapSection({
           />
         ) : null}
 
-        {selectedRole && selectedPerson ? (
-          <PersonPreviewPanel
-            key={`person-${selectedPerson.key}`}
-            personName={selectedPerson.name}
-            role={selectedRole}
-            visual={PLANET_VISUALS[selectedRole.roleId]}
-            onBack={() => setSelectedPerson(null)}
-            onExplore={() =>
-              onExploreRelationship(selectedPerson.relationshipReportId, selectedPerson.name)
-            }
-          />
-        ) : null}
+        {selectedRole && selectedPerson ? (() => {
+          const isFocused = selectedPerson.relationshipReportId === focusRelationshipReportId;
+          const reciprocalRole =
+            isFocused && focusReciprocalRoleId
+              ? getRelationshipRoleById(focusReciprocalRoleId)
+              : undefined;
+          return (
+            <PersonPreviewPanel
+              key={`person-${selectedPerson.key}`}
+              personName={selectedPerson.name}
+              role={selectedRole}
+              visual={PLANET_VISUALS[selectedRole.roleId]}
+              onBack={() => setSelectedPerson(null)}
+              onExplore={() =>
+                onExploreRelationship(selectedPerson.relationshipReportId, selectedPerson.name)
+              }
+              onExploreFree={
+                onFreeAnalysis && isFocused
+                  ? () => onFreeAnalysis(selectedPerson.relationshipReportId, selectedPerson.name)
+                  : undefined
+              }
+              reciprocalRole={reciprocalRole}
+              reciprocalVisual={reciprocalRole ? PLANET_VISUALS[reciprocalRole.roleId] : undefined}
+            />
+          );
+        })() : null}
       </AnimatePresence>
     </section>
   );

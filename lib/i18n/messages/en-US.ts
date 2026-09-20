@@ -1632,6 +1632,24 @@ export const messagesEnUS = {
     dayMasterDisclaimer: "Based on Day Masters",
     forMeLabel: "For me:",
     exploreRelationshipCta: "Explore this relationship",
+    // Relationship Discovery Flow V1 — shown only for the person the map
+    // was opened to focus on (PersonPreviewPanel's onExploreFree), never
+    // for ordinary map browsing. No role name is hardcoded here on
+    // purpose: a role can change if birth info is later corrected, so the
+    // prompt stays generic and the actual role is always read live from
+    // the map at view time.
+    discoveryFreeAnalysisPrompt: (partnerName: string) =>
+      `So what am I to ${partnerName}?`,
+    discoveryFreeAnalysisCta: "See our relationship for free",
+    // Relationship Discovery Flow — dual-direction role reveal at the
+    // discovery step. Only used for the focused person -- both directions
+    // shown together, never held back behind a click. Not used for
+    // ordinary (non-focused) map browsing.
+    discoveryBothRolesTitle: "What are you to each other?",
+    discoveryOtherRoleSentence: (partnerName: string, roleLabel: string) =>
+      `${partnerName} is your ${roleLabel}.`,
+    discoveryViewerRoleSentence: (partnerName: string, roleLabel: string) =>
+      `You are ${partnerName}'s ${roleLabel}.`,
     peopleMoreCount: (n: number) => `+${n} more`,
     ariaRolePlanet: (roleLabel: string, countLabel: string) =>
       `${roleLabel}, ${countLabel}`,
@@ -1691,6 +1709,13 @@ export const messagesEnUS = {
     connectedJoinerPersonalAnalysisCta: "My free personal analysis",
     alreadyConnectedTitle: (name: string) => `You're already friends with ${name}`,
     alreadyConnectedBody: "You two are already connected. Check out your relationship or your own analysis.",
+    // Relationship Discovery Flow V1
+    discoveryReadyTitle: (name: string) => `You came in through ${name}'s invite.`,
+    discoveryReadyBody: "Discover what the two of you are to each other.",
+    discoverRelationshipCta: "Discover our relationship",
+    discoveryTitle: "You've discovered a new relationship.",
+    discoveryBody: (name: string) => `Check out your relationship with ${name}.`,
+    discoveryConfirmCta: "Check it out",
   },
   signupName: {
     title: "Your name",
@@ -3118,6 +3143,11 @@ export type MessageCatalog = {
     dayMasterDisclaimer: string;
     forMeLabel: string;
     exploreRelationshipCta: string;
+    discoveryFreeAnalysisPrompt: (partnerName: string) => string;
+    discoveryFreeAnalysisCta: string;
+    discoveryBothRolesTitle: string;
+    discoveryOtherRoleSentence: (partnerName: string, roleLabel: string) => string;
+    discoveryViewerRoleSentence: (partnerName: string, roleLabel: string) => string;
     peopleMoreCount: (n: number) => string;
     ariaRolePlanet: (roleLabel: string, countLabel: string) => string;
     personCount: (n: number) => string;
@@ -3171,6 +3201,12 @@ export type MessageCatalog = {
     connectedJoinerPersonalAnalysisCta: string;
     alreadyConnectedTitle: (name: string) => string;
     alreadyConnectedBody: string;
+    discoveryReadyTitle: (name: string) => string;
+    discoveryReadyBody: string;
+    discoverRelationshipCta: string;
+    discoveryTitle: string;
+    discoveryBody: (name: string) => string;
+    discoveryConfirmCta: string;
   };
   signupName: {
     title: string;

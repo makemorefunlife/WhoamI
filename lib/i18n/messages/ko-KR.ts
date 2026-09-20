@@ -12,7 +12,7 @@ export const messagesKoKR: MessageCatalog = {
     home: "홈",
     dashboard: "대시보드",
     relationLab: "관계 연구소",
-    blueprint: "블루프린트",
+    blueprint: "나를 읽다",
     decision: "결정",
     account: "계정",
     pricing: "요금",
@@ -205,7 +205,7 @@ export const messagesKoKR: MessageCatalog = {
       error: "리포트를 불러오지 못했습니다.",
       retry: "다시 시도",
     },
-    analyzing: "분석 중이에요…",
+    analyzing: "나에 관해 분석 중이에요…",
     analyzingHint: "잠시만 기다려 주세요",
     unknownBirthNotice:
       "태어난 시간과 장소를 입력하지 않으시면 낮 12시(한국, 서울)를 기준으로 기본 분석됩니다.",
@@ -1589,6 +1589,21 @@ export const messagesKoKR: MessageCatalog = {
     dayMasterDisclaimer: "일간 기준",
     forMeLabel: "나에게는",
     exploreRelationshipCta: "이 사람과 관계 분석하기",
+    // Relationship Discovery Flow V1 — 맵 진입 시 포커스된(방금 연결된) 사람의
+    // PersonPreviewPanel에서만 노출. 역할명은 하드코딩하지 않음 — 생년월일
+    // 수정 등으로 역할이 바뀔 수 있어서, 실제 역할은 항상 맵을 볼 때 그
+    // 시점 계산 결과를 그대로 보여준다.
+    discoveryFreeAnalysisPrompt: (partnerName: string) =>
+      `그런데 ${partnerName}님에게 나는 어떤 사람일까요?`,
+    discoveryFreeAnalysisCta: "우리 관계 무료로 보기",
+    // Relationship Discovery Flow — 발견 단계 양방향 role 표시. focus된
+    // 사람에 한해 두 방향을 한 화면에서 동시에 보여준다 (반대 방향을 다음
+    // 클릭까지 숨기지 않음). 일반 맵 탐색(포커스 아님)에는 쓰이지 않는다.
+    discoveryBothRolesTitle: "두 사람은 서로에게 어떤 사람일까요?",
+    discoveryOtherRoleSentence: (partnerName: string, roleLabel: string) =>
+      `${partnerName}님은 당신에게 ${roleLabel} 같은 사람이에요.`,
+    discoveryViewerRoleSentence: (partnerName: string, roleLabel: string) =>
+      `당신은 ${partnerName}님에게 ${roleLabel} 같은 사람이에요.`,
     peopleMoreCount: (n: number) => `+${n} 더 보기`,
     ariaRolePlanet: (roleLabel: string, countLabel: string) =>
       `${roleLabel}, ${countLabel}`,
@@ -1645,6 +1660,13 @@ export const messagesKoKR: MessageCatalog = {
     connectedJoinerPersonalAnalysisCta: "개인분석 무료분석",
     alreadyConnectedTitle: (name: string) => `이미 ${name}님과 친구예요`,
     alreadyConnectedBody: "두 분은 이미 연결되어 있어요. 관계를 보거나 내 분석을 확인해보세요.",
+    // Relationship Discovery Flow V1
+    discoveryReadyTitle: (name: string) => `${name}님의 초대로 들어왔어요.`,
+    discoveryReadyBody: "두 사람의 관계를 발견해보세요.",
+    discoverRelationshipCta: "우리 관계 발견하기",
+    discoveryTitle: "새로운 관계가 발견됐어요.",
+    discoveryBody: (name: string) => `${name}님과의 관계를 확인해보세요.`,
+    discoveryConfirmCta: "확인하기",
   },
   signupName: {
     title: "이름",

@@ -19,6 +19,8 @@ type FreePreviewApiState =
   | {
       status: "ready";
       viewerSurveyCompleted: boolean;
+      otherSurveyCompleted: boolean;
+      otherName: string;
       preview: FreeRelationshipPreviewResult;
     };
 
@@ -43,6 +45,11 @@ export default function FreeRelationshipPreviewCard({
 }) {
   const { locale, messages, href: localize } = useLocale();
   const [state, setState] = useState<FreePreviewApiState>({ status: "loading" });
+  // The survey choice below is dismissible once shown -- picking "free
+  // result is enough" just hides the prompt locally, no navigation, no
+  // server write (nothing to persist: this is a same-session UI choice,
+  // not a completion state).
+  const [surveyChoiceDismissed, setSurveyChoiceDismissed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +71,8 @@ export default function FreeRelationshipPreviewCard({
         setState({
           status: "ready",
           viewerSurveyCompleted: Boolean(data.viewerSurveyCompleted),
+          otherSurveyCompleted: Boolean(data.otherSurveyCompleted),
+          otherName: typeof data.otherName === "string" ? data.otherName : "",
           preview: data.preview as FreeRelationshipPreviewResult,
         });
       } catch {
@@ -97,7 +106,7 @@ export default function FreeRelationshipPreviewCard({
     return null;
   }
 
-  const { preview, viewerSurveyCompleted } = state;
+  const { preview, viewerSurveyCompleted, otherSurveyCompleted, otherName } = state;
 
   return (
     <div className="space-y-4">
@@ -201,13 +210,44 @@ export default function FreeRelationshipPreviewCard({
         </a>
       </div>
 
-      {!viewerSurveyCompleted ? (
-        <a
-          href={localize(`${ROUTES.surveyV2}?reportId=${encodeURIComponent(viewerReportId)}`)}
-          className="stitch-cta-secondary w-full !min-w-0 text-center"
-        >
-          {locale === "ko-KR" ? "설문 추가하고 더 정교하게 보기" : "Add the survey for a sharper read"}
-        </a>
+      {!viewerSurveyCompleted && !surveyChoiceDismissed ? (
+        <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>
+          <div className="space-y-0.5">
+            <p className="text-sm font-semibold text-primary">
+              {otherSurveyCompleted && otherName
+                ? locale === "ko-KR"
+                  ? `${otherName}님은 이미 설문까지 마쳤어요`
+                  : `${otherName} already added their survey`
+                : locale === "ko-KR"
+                  ? "설문까지 하면 더 깊이 볼 수 있어요"
+                  : "Add the survey to go deeper"}
+            </p>
+            <p className="text-xs leading-relaxed text-on-surface-variant">
+              {otherSurveyCompleted && otherName
+                ? locale === "ko-KR"
+                  ? "당신도 설문하면, 성향까지 반영한 더 깊은 관계 분석을 무료로 볼 수 있어요."
+                  : "Add yours too, and see a deeper relationship analysis -- personality included, still free."
+                : locale === "ko-KR"
+                  ? "지금 결과는 생년월일만으로 본 거예요. 설문을 더하면 성향까지 반영해 더 정교하게 볼 수 있어요."
+                  : "This result is from birth data alone. Add the survey and it factors in your personality too, for a sharper read."}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <a
+              href={localize(`${ROUTES.surveyV2}?reportId=${encodeURIComponent(viewerReportId)}`)}
+              className="stitch-cta-primary w-full !min-w-0 text-center"
+            >
+              {locale === "ko-KR" ? "설문하고 심화 분석 보기" : "Take the survey for a deeper read"}
+            </a>
+            <button
+              type="button"
+              onClick={() => setSurveyChoiceDismissed(true)}
+              className="stitch-cta-secondary w-full !min-w-0 text-center"
+            >
+              {locale === "ko-KR" ? "무료 결과로 볼게요" : "This free result is enough"}
+            </button>
+          </div>
+        </div>
       ) : null}
     </div>
   );

@@ -33,7 +33,7 @@ import {
   blueprintPath,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
-import { ROUTES, relationshipDetailRoute } from "@/constants/routes";
+import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const HomeAuthSignInPanel = dynamic(
@@ -166,9 +166,14 @@ export default function HomeContent() {
 
   const inviteAutoRanRef = useRef(false);
   const connectAutoRanRef = useRef(false);
+  // Birth-first invite/connect entry: guards the redirect to
+  // /invite-birth's draft mode so it only fires once per mount, not on
+  // every dependency change while still signed out.
+  const inviteDraftRedirectRanRef = useRef(false);
+  const connectDraftRedirectRanRef = useRef(false);
 
   const goToSurvey = useCallback(
-    (reportId: string) => {
+    (reportId: string, opts?: { skipSurvey?: boolean }) => {
       const inviteToken = localStorage.getItem("inviteToken")?.trim() ?? "";
       const connectToken = localStorage.getItem("connectToken")?.trim() ?? "";
       // Birth-data-first free relationship result: invite/connect-originated
@@ -177,7 +182,18 @@ export default function HomeContent() {
       // offered later from that result screen. This is the ONLY branch
       // point for that -- plain signup (no token) falls through unchanged
       // to the exact survey-first path this app always had.
-      if (inviteToken || connectToken) {
+      //
+      // opts.skipSurvey lets a caller that already knows this is an
+      // invite/connect flow say so explicitly, instead of this function
+      // re-deriving it from localStorage: completeInvite/completeConnect
+      // remove inviteToken/connectToken the moment they succeed, so by the
+      // time most callers reach this function the token is already gone
+      // and a localStorage-only check would silently fall through to the
+      // survey path even for a real invite/connect joiner. Callers that
+      // don't know (or aren't invite/connect-related) omit opts and keep
+      // the old localStorage-derived behavior.
+      const skipSurvey = opts?.skipSurvey ?? Boolean(inviteToken || connectToken);
+      if (skipSurvey) {
         const params = new URLSearchParams({ reportId });
         router.push(localize(`${ROUTES.inviteBirth}?${params.toString()}`));
         return;
@@ -203,11 +219,14 @@ export default function HomeContent() {
    * Once a friend connection is actually usable (the joiner has their own
    * birth data on file — i.e. right when they log back in with a completed
    * report, or right after invite-birth saves it), give them a real choice
-   * instead of dropping them straight into one destination: see the free
-   * relationship result with this friend, or their own free personal
-   * analysis. relationshipDetailRoute needs the specific relationship (not
-   * just the hub list) so "친구와 무료 관계보기" lands on this friend, not a
-   * generic list.
+   * instead of dropping them straight into one destination: see the
+   * connection they just formed, or their own free personal analysis.
+   *
+   * Relationship Discovery Flow V1: the primary CTA lands on the
+   * Relation Map (relationHubPath's `focus` param), not directly on the
+   * relationship detail/analysis page — "우리 관계 발견하기" is the map
+   * reveal (role + description), with the actual free analysis one more
+   * explicit tap away from there (PersonPreviewPanel's own CTA).
    */
   const buildReadyModalActions = useCallback(
     (reportId: string) => {
@@ -217,18 +236,9 @@ export default function HomeContent() {
       localStorage.removeItem("pendingConnectionSharerName");
       localStorage.removeItem("pendingConnectionAlreadyConnected");
       const onConfirm = () => {
-        if (pendingRelationshipReportId) {
-          router.push(
-            localize(
-              relationshipDetailRoute({
-                relationshipReportId: pendingRelationshipReportId,
-                viewerReportId: reportId,
-              }),
-            ),
-          );
-          return;
-        }
-        router.push(localize(relationHubPath(reportId)));
+        router.push(
+          localize(relationHubPath(reportId, pendingRelationshipReportId || undefined)),
+        );
       };
       const onSecondary = () => router.push(localize(blueprintPath(reportId)));
       return { onConfirm, onSecondary };
@@ -385,6 +395,12 @@ export default function HomeContent() {
       sharerName = result.sharerName;
     }
 
+    // Captured from the local inviteToken/connectToken values (not a fresh
+    // localStorage read) -- completeInvite/completeConnect above already
+    // cleared those keys on success, so re-reading them here would always
+    // come back empty. See goToSurvey's opts.skipSurvey comment.
+    const cameFromInviteOrConnect = Boolean(inviteToken || connectToken);
+
     setCreatingReport(false);
 
     // A connection was actually made (invite or connect) — show the
@@ -393,10 +409,13 @@ export default function HomeContent() {
     // acknowledgment that a relationship was formed. No connection (plain
     // first-time signup) skips straight to the survey as before.
     if (sharerName) {
-      setConnectedModal({ sharerName, onConfirm: () => goToSurvey(data.id) });
+      setConnectedModal({
+        sharerName,
+        onConfirm: () => goToSurvey(data.id, { skipSurvey: cameFromInviteOrConnect }),
+      });
       return;
     }
-    goToSurvey(data.id);
+    goToSurvey(data.id, { skipSurvey: cameFromInviteOrConnect });
   }, [goToSurvey, messages, completeInvite, completeConnect]);
 
   /**
@@ -467,7 +486,9 @@ export default function HomeContent() {
 
   /**
    * 초대 링크로 진입 시 랜딩 히어로를 보여주지 않고 바로 이어서 진행.
-   * - 로그인 안 됨 → 로그인 모달 자동 오픈
+   * - 로그인 안 됨 → 생년월일시+장소부터 입력받고(app/invite-birth 드래프트
+   *   모드), 로그인/가입은 "제출" 시점에만 요구 -- 그 페이지가 로그인 완료
+   *   후 리포트 생성+초대 연결+출생정보 저장까지 알아서 이어간다
    * - 완료된 리포트 있음 → 즉시 연결 후 관계 허브로
    * - 진행 중/미완료 리포트 있음 → 그 리포트로 연결 후 설문 이어하기
    * - 리포트 없음 → 새로 생성 후 설문 (완료 후 자동 연결)
@@ -478,7 +499,10 @@ export default function HomeContent() {
     if (!inviteToken) return;
 
     if (!isSignedIn) {
-      setAuthModalOpen(true);
+      if (!inviteDraftRedirectRanRef.current) {
+        inviteDraftRedirectRanRef.current = true;
+        router.push(localize(ROUTES.inviteBirth));
+      }
       return;
     }
 
@@ -495,11 +519,11 @@ export default function HomeContent() {
             onConfirm,
             title: alreadyConnected
               ? messages.connect.alreadyConnectedTitle(sharerName)
-              : messages.connect.connectedReadyTitle(sharerName),
+              : messages.connect.discoveryReadyTitle(sharerName),
             body: alreadyConnected
               ? messages.connect.alreadyConnectedBody
-              : messages.connect.connectedReadyBody,
-            primaryLabel: messages.connect.connectedJoinerViewRelationshipCta,
+              : messages.connect.discoveryReadyBody,
+            primaryLabel: messages.connect.discoverRelationshipCta,
             secondaryLabel: messages.connect.connectedJoinerPersonalAnalysisCta,
             onSecondary,
           });
@@ -516,7 +540,7 @@ export default function HomeContent() {
         if (sharerName) {
           setConnectedModal({
             sharerName,
-            onConfirm: () => goToSurvey(reportId),
+            onConfirm: () => goToSurvey(reportId, { skipSurvey: true }),
             title: alreadyConnected
               ? messages.connect.alreadyConnectedTitle(sharerName)
               : undefined,
@@ -524,7 +548,7 @@ export default function HomeContent() {
           });
           return;
         }
-        goToSurvey(reportId);
+        goToSurvey(reportId, { skipSurvey: true });
       });
       return;
     }
@@ -555,7 +579,10 @@ export default function HomeContent() {
     if (!connectToken) return;
 
     if (!isSignedIn) {
-      setAuthModalOpen(true);
+      if (!connectDraftRedirectRanRef.current) {
+        connectDraftRedirectRanRef.current = true;
+        router.push(localize(ROUTES.inviteBirth));
+      }
       return;
     }
 
@@ -579,11 +606,11 @@ export default function HomeContent() {
             onConfirm,
             title: alreadyConnected
               ? messages.connect.alreadyConnectedTitle(sharerName)
-              : messages.connect.connectedReadyTitle(sharerName),
+              : messages.connect.discoveryReadyTitle(sharerName),
             body: alreadyConnected
               ? messages.connect.alreadyConnectedBody
-              : messages.connect.connectedReadyBody,
-            primaryLabel: messages.connect.connectedJoinerViewRelationshipCta,
+              : messages.connect.discoveryReadyBody,
+            primaryLabel: messages.connect.discoverRelationshipCta,
             secondaryLabel: messages.connect.connectedJoinerPersonalAnalysisCta,
             onSecondary,
           });
@@ -601,7 +628,7 @@ export default function HomeContent() {
         if (ok && sharerName) {
           setConnectedModal({
             sharerName,
-            onConfirm: () => goToSurvey(reportId),
+            onConfirm: () => goToSurvey(reportId, { skipSurvey: true }),
             title: alreadyConnected
               ? messages.connect.alreadyConnectedTitle(sharerName)
               : undefined,
@@ -609,7 +636,7 @@ export default function HomeContent() {
           });
           return;
         }
-        goToSurvey(reportId);
+        goToSurvey(reportId, { skipSurvey: true });
       });
       return;
     }

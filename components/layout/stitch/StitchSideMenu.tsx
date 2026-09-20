@@ -97,7 +97,7 @@ export default function StitchSideMenu({
       href: "/blueprint-preview",
       title: messages.nav.blueprint,
       subtitle:
-        locale === "ko-KR" ? "진짜 설계를 발견하세요" : "Uncover Your True Design",
+        locale === "ko-KR" ? "내가 몰랐던 나를 발견하세요" : "Uncover Your True Design",
     },
     {
       href: "/relationships",

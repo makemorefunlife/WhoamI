@@ -236,9 +236,16 @@ export async function POST(req: Request) {
           : !blockA
             ? `${labelA} 쪽`
             : `${labelB} 쪽`;
+      // code is purely additive -- the human-readable `error` message is
+      // unchanged for any existing caller that only reads that field. It
+      // lets a caller (useRelationshipDetail's auto-generation effect)
+      // distinguish "no survey data yet, nothing to generate" from a real
+      // failure, without guessing from the error string. No LLM call is
+      // made on this path either way.
       return NextResponse.json(
         {
           error: `${missing} 설문 데이터를 찾지 못했어요. 각자 이 리포트로 설문을 마쳤는지 확인해 주세요.`,
+          code: "survey_incomplete",
         },
         { status: 400 },
       );

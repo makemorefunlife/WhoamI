@@ -469,7 +469,18 @@ export function useRelationshipDetail({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        // Do not auto-retry on failure (prevents rate-limit storms).
+        // "survey_incomplete" is not a failure to surface as a blocking
+        // error banner -- it just means there is nothing (yet) for this
+        // auto-generation attempt to produce, most commonly a birth-data-
+        // first invite/connect joiner who hasn't taken the survey. Leaving
+        // `err` unset here (instead of setErr(...)) lets RelationshipView's
+        // existing `!displayBasic && !err` branch render the free
+        // (birth-data-only) preview normally, instead of showing a dead-
+        // end error message ahead of it. Any other failure still sets err
+        // and does not auto-retry (prevents rate-limit storms).
+        if (data?.code === "survey_incomplete") {
+          return;
+        }
         setErr(
           typeof data?.error === "string"
             ? data.error
