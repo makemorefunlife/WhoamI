@@ -102,18 +102,20 @@ export async function POST(req: Request) {
 
     let relationship_report_id: string | null = null;
     let sharer_name: string | null = null;
+    let alreadyConnected = false;
     if (
       data.from_report_id &&
       idCheck.value &&
       data.from_report_id !== idCheck.value
     ) {
       try {
-        const { relationshipReportId } = await ensureRelationshipReport(
+        const { relationshipReportId, created } = await ensureRelationshipReport(
           supabase,
           data.from_report_id,
           idCheck.value,
         );
         relationship_report_id = relationshipReportId;
+        alreadyConnected = !created;
         const { error: linkErr } = await supabase
           .from("invites")
           .update({
@@ -188,7 +190,12 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true, relationship_report_id, sharer_name });
+    return NextResponse.json({
+      ok: true,
+      relationship_report_id,
+      sharer_name,
+      alreadyConnected,
+    });
   } catch (e) {
     logServerError("invite/complete", e);
     return NextResponse.json(

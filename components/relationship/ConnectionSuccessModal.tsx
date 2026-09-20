@@ -8,6 +8,12 @@ type Props = {
   body: string;
   primaryLabel: string;
   onPrimary: () => void;
+  /**
+   * Optional second action, rendered as a full CTA button (not a dismiss
+   * link) directly under the primary one. Used when the moment has two
+   * genuinely parallel next steps (e.g. "view our relationship" vs "view
+   * my personal analysis") rather than a single confirm + optional skip.
+   */
   secondaryLabel?: string;
   onSecondary?: () => void;
 };
@@ -18,8 +24,8 @@ type Props = {
  * the sharer they connected with), or to the sharer once they accept a
  * pending connect request (name = the friend who joined). Deliberately
  * generic/reusable across both call sites rather than two bespoke modals,
- * since the shape (title/body/one primary action, optional dismiss) is
- * identical — only the copy and the action differ.
+ * since the shape (title/body/one or two actions) is identical — only the
+ * copy and the actions differ.
  */
 export default function ConnectionSuccessModal({
   open,
@@ -36,7 +42,7 @@ export default function ConnectionSuccessModal({
     <div className="fixed inset-0 z-[9999] flex items-end justify-center p-4 sm:items-center">
       <div
         className="absolute inset-0 bg-primary/40 backdrop-blur-sm"
-        onClick={onSecondary}
+        onClick={onSecondary ?? undefined}
       />
       <motion.div
         role="dialog"
@@ -67,7 +73,7 @@ export default function ConnectionSuccessModal({
           <button
             type="button"
             onClick={onSecondary}
-            className="mt-3 w-full text-sm text-on-surface-variant underline underline-offset-2"
+            className="stitch-cta-secondary mt-3 w-full"
           >
             {secondaryLabel}
           </button>

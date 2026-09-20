@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.connect.selfLinkError }, { status: 400 });
     }
 
-    const { relationshipReportId } = await ensureRelationshipReport(
+    const { relationshipReportId, created } = await ensureRelationshipReport(
       supabase,
       ownerReportId,
       joinerReportId,
@@ -158,7 +158,12 @@ export async function POST(req: Request) {
       logServerError("connect/complete.name", nameErr, "internal_error");
     }
 
-    return NextResponse.json({ ok: true, relationshipReportId, sharer_name });
+    return NextResponse.json({
+      ok: true,
+      relationshipReportId,
+      sharer_name,
+      alreadyConnected: !created,
+    });
   } catch (e) {
     logServerError("connect/complete", e, "internal_error");
     return NextResponse.json({ error: messages.errors.generic }, { status: 500 });

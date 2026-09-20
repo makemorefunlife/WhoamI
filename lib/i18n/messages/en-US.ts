@@ -1684,6 +1684,13 @@ export const messagesEnUS = {
     connectedSharerBody: "They've been added to your Relationship Map — check it out now?",
     connectedSharerPrimaryCta: "View map",
     connectedSharerSecondaryCta: "Later",
+    connectedReadyTitle: (name: string) => `You are connected with ${name}!`,
+    connectedReadyBody:
+      "You can now view your relationship with them and your own personal analysis, both free.",
+    connectedJoinerViewRelationshipCta: "View our free relationship",
+    connectedJoinerPersonalAnalysisCta: "My free personal analysis",
+    alreadyConnectedTitle: (name: string) => `You're already friends with ${name}`,
+    alreadyConnectedBody: "You two are already connected. Check out your relationship or your own analysis.",
   },
   signupName: {
     title: "Your name",
@@ -3158,6 +3165,12 @@ export type MessageCatalog = {
     connectedSharerBody: string;
     connectedSharerPrimaryCta: string;
     connectedSharerSecondaryCta: string;
+    connectedReadyTitle: (name: string) => string;
+    connectedReadyBody: string;
+    connectedJoinerViewRelationshipCta: string;
+    connectedJoinerPersonalAnalysisCta: string;
+    alreadyConnectedTitle: (name: string) => string;
+    alreadyConnectedBody: string;
   };
   signupName: {
     title: string;

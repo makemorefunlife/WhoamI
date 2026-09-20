@@ -33,7 +33,7 @@ import {
   blueprintPath,
   relationHubPath,
 } from "@/lib/stitch/hubPaths";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, relationshipDetailRoute } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const HomeAuthSignInPanel = dynamic(
@@ -192,7 +192,49 @@ export default function HomeContent() {
   const [connectedModal, setConnectedModal] = useState<{
     sharerName: string;
     onConfirm: () => void;
+    title?: string;
+    body?: string;
+    primaryLabel?: string;
+    secondaryLabel?: string;
+    onSecondary?: () => void;
   } | null>(null);
+
+  /**
+   * Once a friend connection is actually usable (the joiner has their own
+   * birth data on file — i.e. right when they log back in with a completed
+   * report, or right after invite-birth saves it), give them a real choice
+   * instead of dropping them straight into one destination: see the free
+   * relationship result with this friend, or their own free personal
+   * analysis. relationshipDetailRoute needs the specific relationship (not
+   * just the hub list) so "친구와 무료 관계보기" lands on this friend, not a
+   * generic list.
+   */
+  const buildReadyModalActions = useCallback(
+    (reportId: string) => {
+      const pendingRelationshipReportId =
+        localStorage.getItem("pendingRelationshipReportId")?.trim() ?? "";
+      localStorage.removeItem("pendingRelationshipReportId");
+      localStorage.removeItem("pendingConnectionSharerName");
+      localStorage.removeItem("pendingConnectionAlreadyConnected");
+      const onConfirm = () => {
+        if (pendingRelationshipReportId) {
+          router.push(
+            localize(
+              relationshipDetailRoute({
+                relationshipReportId: pendingRelationshipReportId,
+                viewerReportId: reportId,
+              }),
+            ),
+          );
+          return;
+        }
+        router.push(localize(relationHubPath(reportId)));
+      };
+      const onSecondary = () => router.push(localize(blueprintPath(reportId)));
+      return { onConfirm, onSecondary };
+    },
+    [router, localize],
+  );
 
   /** 초대 링크 수락: 초대자와 내 리포트를 연결. 성공/이미완료 시 로컬 토큰 제거. */
   const completeInvite = useCallback(
@@ -209,14 +251,26 @@ export default function HomeContent() {
         const body = (await res.json().catch(() => ({}))) as {
           sharer_name?: string | null;
           relationship_report_id?: string | null;
+          alreadyConnected?: boolean | null;
         };
         if (body.relationship_report_id) {
           localStorage.setItem("pendingRelationshipReportId", body.relationship_report_id);
         }
-        return { ok: res.ok, sharerName: body.sharer_name ?? null };
+        if (body.sharer_name) {
+          localStorage.setItem("pendingConnectionSharerName", body.sharer_name);
+          localStorage.setItem(
+            "pendingConnectionAlreadyConnected",
+            body.alreadyConnected ? "1" : "0",
+          );
+        }
+        return {
+          ok: res.ok,
+          sharerName: body.sharer_name ?? null,
+          alreadyConnected: body.alreadyConnected ?? false,
+        };
       } catch (e) {
         console.error("[home] invite_complete_error");
-        return { ok: false, sharerName: null };
+        return { ok: false, sharerName: null, alreadyConnected: false };
       }
     },
     [],
@@ -240,14 +294,26 @@ export default function HomeContent() {
         const body = (await res.json().catch(() => ({}))) as {
           sharer_name?: string | null;
           relationshipReportId?: string | null;
+          alreadyConnected?: boolean | null;
         };
         if (body.relationshipReportId) {
           localStorage.setItem("pendingRelationshipReportId", body.relationshipReportId);
         }
-        return { ok: res.ok, sharerName: body.sharer_name ?? null };
+        if (body.sharer_name) {
+          localStorage.setItem("pendingConnectionSharerName", body.sharer_name);
+          localStorage.setItem(
+            "pendingConnectionAlreadyConnected",
+            body.alreadyConnected ? "1" : "0",
+          );
+        }
+        return {
+          ok: res.ok,
+          sharerName: body.sharer_name ?? null,
+          alreadyConnected: body.alreadyConnected ?? false,
+        };
       } catch (e) {
         console.error("[home] connect_complete_error");
-        return { ok: false, sharerName: null };
+        return { ok: false, sharerName: null, alreadyConnected: false };
       }
     },
     [],
@@ -413,10 +479,23 @@ export default function HomeContent() {
 
     if (resume.surveyCompleted && resume.reportId) {
       const reportId = resume.reportId;
-      void completeInvite(reportId, inviteToken).then(({ sharerName }) => {
+      void completeInvite(reportId, inviteToken).then(({ sharerName, alreadyConnected }) => {
         const goToHub = () => router.push(localize(relationHubPath(reportId)));
         if (sharerName) {
-          setConnectedModal({ sharerName, onConfirm: goToHub });
+          const { onConfirm, onSecondary } = buildReadyModalActions(reportId);
+          setConnectedModal({
+            sharerName,
+            onConfirm,
+            title: alreadyConnected
+              ? messages.connect.alreadyConnectedTitle(sharerName)
+              : messages.connect.connectedReadyTitle(sharerName),
+            body: alreadyConnected
+              ? messages.connect.alreadyConnectedBody
+              : messages.connect.connectedReadyBody,
+            primaryLabel: messages.connect.connectedJoinerViewRelationshipCta,
+            secondaryLabel: messages.connect.connectedJoinerPersonalAnalysisCta,
+            onSecondary,
+          });
           return;
         }
         goToHub();
@@ -426,9 +505,16 @@ export default function HomeContent() {
 
     if (resume.hasReport && resume.reportId) {
       const reportId = resume.reportId;
-      void completeInvite(reportId, inviteToken).then(({ sharerName }) => {
+      void completeInvite(reportId, inviteToken).then(({ sharerName, alreadyConnected }) => {
         if (sharerName) {
-          setConnectedModal({ sharerName, onConfirm: () => goToSurvey(reportId) });
+          setConnectedModal({
+            sharerName,
+            onConfirm: () => goToSurvey(reportId),
+            title: alreadyConnected
+              ? messages.connect.alreadyConnectedTitle(sharerName)
+              : undefined,
+            body: alreadyConnected ? messages.connect.alreadyConnectedBody : undefined,
+          });
           return;
         }
         goToSurvey(reportId);
@@ -446,6 +532,8 @@ export default function HomeContent() {
     goToSurvey,
     router,
     localize,
+    messages,
+    buildReadyModalActions,
   ]);
 
   /**
@@ -474,11 +562,24 @@ export default function HomeContent() {
     // nothing actually connected and no indication anything went wrong.
     if (resume.surveyCompleted && resume.reportId) {
       const reportId = resume.reportId;
-      void completeConnect(reportId, connectToken).then(({ ok, sharerName }) => {
+      void completeConnect(reportId, connectToken).then(({ ok, sharerName, alreadyConnected }) => {
         if (!ok) alert(messages.connect.invalidBody);
         const goToHub = () => router.push(localize(relationHubPath(reportId)));
         if (ok && sharerName) {
-          setConnectedModal({ sharerName, onConfirm: goToHub });
+          const { onConfirm, onSecondary } = buildReadyModalActions(reportId);
+          setConnectedModal({
+            sharerName,
+            onConfirm,
+            title: alreadyConnected
+              ? messages.connect.alreadyConnectedTitle(sharerName)
+              : messages.connect.connectedReadyTitle(sharerName),
+            body: alreadyConnected
+              ? messages.connect.alreadyConnectedBody
+              : messages.connect.connectedReadyBody,
+            primaryLabel: messages.connect.connectedJoinerViewRelationshipCta,
+            secondaryLabel: messages.connect.connectedJoinerPersonalAnalysisCta,
+            onSecondary,
+          });
           return;
         }
         goToHub();
@@ -488,10 +589,17 @@ export default function HomeContent() {
 
     if (resume.hasReport && resume.reportId) {
       const reportId = resume.reportId;
-      void completeConnect(reportId, connectToken).then(({ ok, sharerName }) => {
+      void completeConnect(reportId, connectToken).then(({ ok, sharerName, alreadyConnected }) => {
         if (!ok) alert(messages.connect.invalidBody);
         if (ok && sharerName) {
-          setConnectedModal({ sharerName, onConfirm: () => goToSurvey(reportId) });
+          setConnectedModal({
+            sharerName,
+            onConfirm: () => goToSurvey(reportId),
+            title: alreadyConnected
+              ? messages.connect.alreadyConnectedTitle(sharerName)
+              : undefined,
+            body: alreadyConnected ? messages.connect.alreadyConnectedBody : undefined,
+          });
           return;
         }
         goToSurvey(reportId);
@@ -510,6 +618,7 @@ export default function HomeContent() {
     router,
     localize,
     messages,
+    buildReadyModalActions,
   ]);
 
   const startFreeSurvey = useCallback(async () => {
@@ -654,15 +763,29 @@ export default function HomeContent() {
 
       <ConnectionSuccessModal
         open={connectedModal != null}
-        title={messages.connect.connectedJoinerTitle(connectedModal?.sharerName ?? "")}
-        body={messages.connect.connectedJoinerBody}
-        primaryLabel={messages.connect.connectedJoinerCta}
+        title={
+          connectedModal?.title ??
+          messages.connect.connectedJoinerTitle(connectedModal?.sharerName ?? "")
+        }
+        body={connectedModal?.body ?? messages.connect.connectedJoinerBody}
+        primaryLabel={connectedModal?.primaryLabel ?? messages.connect.connectedJoinerCta}
         onPrimary={() => {
           if (!connectedModal) return;
           const { onConfirm } = connectedModal;
           setConnectedModal(null);
           onConfirm();
         }}
+        secondaryLabel={connectedModal?.secondaryLabel}
+        onSecondary={
+          connectedModal?.onSecondary
+            ? () => {
+                if (!connectedModal?.onSecondary) return;
+                const { onSecondary } = connectedModal;
+                setConnectedModal(null);
+                onSecondary();
+              }
+            : undefined
+        }
       />
 
       <AnimatePresence>

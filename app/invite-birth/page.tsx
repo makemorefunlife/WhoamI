@@ -8,8 +8,9 @@ import StitchBirthInputForm, {
   type StitchBirthFormState,
 } from "@/components/onboarding/StitchBirthInputForm";
 import { getUnknownBirthFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
-import { relationshipDetailRoute, relationshipHubRoute } from "@/constants/routes";
+import { blueprintRoute, relationshipDetailRoute, relationshipHubRoute } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import ConnectionSuccessModal from "@/components/relationship/ConnectionSuccessModal";
 
 /**
  * Birth-data-first entry for the INVITE / CONNECT flow only. Deliberately a
@@ -32,6 +33,12 @@ function InviteBirthContent() {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [birthForm, setBirthForm] = useState<StitchBirthFormState | null>(null);
+  const [readyModal, setReadyModal] = useState<{
+    sharerName: string;
+    alreadyConnected: boolean;
+    onConfirm: () => void;
+    onSecondary: () => void;
+  } | null>(null);
 
   useEffect(() => {
     if (!reportId) {
@@ -104,19 +111,51 @@ function InviteBirthContent() {
 
     const pendingRelationshipReportId =
       localStorage.getItem("pendingRelationshipReportId")?.trim() ?? "";
-    if (pendingRelationshipReportId) {
+    const pendingConnectionSharerName =
+      localStorage.getItem("pendingConnectionSharerName")?.trim() ?? "";
+    const pendingConnectionAlreadyConnected =
+      localStorage.getItem("pendingConnectionAlreadyConnected")?.trim() === "1";
+
+    const goToRelationship = () => {
+      if (pendingRelationshipReportId) {
+        router.push(
+          localize(
+            relationshipDetailRoute({
+              relationshipReportId: pendingRelationshipReportId,
+              viewerReportId: reportId,
+            }),
+          ),
+        );
+        return;
+      }
+      router.push(localize(relationshipHubRoute(reportId)));
+    };
+
+    setBusy(false);
+
+    // A real friend connection was made (invite/connect flow, which is the
+    // only way to land on this page) — surface who it was and let the
+    // joiner actually choose what to look at first, instead of silently
+    // dropping them into the relationship dashboard with zero
+    // acknowledgment that anything happened (they already saw the birth
+    // form promise both of these are free, right above).
+    if (pendingConnectionSharerName) {
       localStorage.removeItem("pendingRelationshipReportId");
-      router.push(
-        localize(
-          relationshipDetailRoute({
-            relationshipReportId: pendingRelationshipReportId,
-            viewerReportId: reportId,
-          }),
-        ),
-      );
+      localStorage.removeItem("pendingConnectionSharerName");
+      localStorage.removeItem("pendingConnectionAlreadyConnected");
+      setReadyModal({
+        sharerName: pendingConnectionSharerName,
+        alreadyConnected: pendingConnectionAlreadyConnected,
+        onConfirm: goToRelationship,
+        onSecondary: () => router.push(localize(blueprintRoute(reportId))),
+      });
       return;
     }
-    router.push(localize(relationshipHubRoute(reportId)));
+
+    if (pendingRelationshipReportId) {
+      localStorage.removeItem("pendingRelationshipReportId");
+    }
+    goToRelationship();
   }, [birthForm, busy, canSubmit, locale, localize, messages, reportId, router]);
 
   if (!ready) {
@@ -192,6 +231,34 @@ function InviteBirthContent() {
           </button>
         </div>
       </main>
+
+      <ConnectionSuccessModal
+        open={readyModal != null}
+        title={
+          readyModal?.alreadyConnected
+            ? messages.connect.alreadyConnectedTitle(readyModal?.sharerName ?? "")
+            : messages.connect.connectedReadyTitle(readyModal?.sharerName ?? "")
+        }
+        body={
+          readyModal?.alreadyConnected
+            ? messages.connect.alreadyConnectedBody
+            : messages.connect.connectedReadyBody
+        }
+        primaryLabel={messages.connect.connectedJoinerViewRelationshipCta}
+        onPrimary={() => {
+          if (!readyModal) return;
+          const { onConfirm } = readyModal;
+          setReadyModal(null);
+          onConfirm();
+        }}
+        secondaryLabel={messages.connect.connectedJoinerPersonalAnalysisCta}
+        onSecondary={() => {
+          if (!readyModal) return;
+          const { onSecondary } = readyModal;
+          setReadyModal(null);
+          onSecondary();
+        }}
+      />
     </StitchSurveyShell>
   );
 }

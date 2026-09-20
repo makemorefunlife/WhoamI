@@ -1639,6 +1639,12 @@ export const messagesKoKR: MessageCatalog = {
     connectedSharerBody: "친구가 관계 지도(맵)에 새로 등록됐어요. 지금 확인해볼까요?",
     connectedSharerPrimaryCta: "맵에서 보기",
     connectedSharerSecondaryCta: "나중에",
+    connectedReadyTitle: (name: string) => `${name}님과 연결됐어요!`,
+    connectedReadyBody: "이제 서로의 관계도, 나에 대한 분석도 무료로 확인해보세요.",
+    connectedJoinerViewRelationshipCta: "친구와 무료 관계보기",
+    connectedJoinerPersonalAnalysisCta: "개인분석 무료분석",
+    alreadyConnectedTitle: (name: string) => `이미 ${name}님과 친구예요`,
+    alreadyConnectedBody: "두 분은 이미 연결되어 있어요. 관계를 보거나 내 분석을 확인해보세요.",
   },
   signupName: {
     title: "이름",
