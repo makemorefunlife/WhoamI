@@ -137,7 +137,7 @@ export default function RelationshipCard({
           url,
           messages.invite.metaTitle,
           messages.invite.metaDescription,
-          "https://www.ahaitsme.com/social/invite/invite-friend-ko-v2.png",
+          "https://www.ahaitsme.com/social/invite/invite-friend-ko-v3.png",
         );
         if (ok) return;
       }

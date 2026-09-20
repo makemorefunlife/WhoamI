@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const messages = getMessages(locale);
   const imageUrl =
     locale === "ko-KR"
-      ? "https://www.ahaitsme.com/social/invite/invite-friend-ko-v2.png"
+      ? "https://www.ahaitsme.com/social/invite/invite-friend-ko-v3.png"
       : "https://www.ahaitsme.com/social/invite/invite-friend-en-v2.png";
   return buildPageMetadata({
     locale,
