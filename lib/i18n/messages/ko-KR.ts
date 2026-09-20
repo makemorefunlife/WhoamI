@@ -642,115 +642,134 @@ export const messagesKoKR: MessageCatalog = {
     faqLinkLabel: "자주 묻는 질문 보기",
   },
   about: {
-    metaTitle: "About | Aha It's me!",
+    metaTitle: "About — Aha! it's me",
     metaDescription:
-      "사람을 조금 더 빨리 이해해서, 관계에서 낭비되는 에너지를 줄이는 서비스 — Aha It's me!의 철학.",
+      "사람을 이해하는 데 꼭 몇 년이 걸려야 할까요? Aha! it's me는 사람을 더 빨리 이해해 관계에서 낭비되는 에너지를 줄이는 서비스입니다.",
 
     // 1. HERO
     heroEyebrow: "ABOUT AHA! IT'S ME",
     heroHeadline1: "사람을 이해하는 데,",
     heroHeadline2: "꼭 몇 년이 걸려야 할까요?",
-    heroBody1:
-      "우리는 사람을 만나고 한참이 지나서야 알게 됩니다.\n“아, 이 사람은 원래 이렇게 생각하는 사람이었구나.”\n“그래서 우리가 계속 여기서 부딪혔구나.”",
+    heroBody1: "우리는 사람을 만나고 한참이 지나서야 알게 됩니다.",
+    heroQuote:
+      "\"아, 이 사람은 원래 이렇게 생각하는 사람이었구나.\"\n\"그래서 우리가 계속 여기서 부딪혔구나.\"",
     heroBody2:
-      "조금만 먼저 알 수 있었다면\n하지 않아도 됐을 오해와 소모가 있었을지도 모릅니다.",
+      "조금만 먼저 알 수 있었다면, 하지 않아도 됐을 오해와 소모가 있었을지도 모릅니다.",
     heroMission:
-      "Aha! it's me는\n사람을 더 빨리 이해해서\n관계에서 낭비되는 에너지를 줄이는 서비스입니다.",
+      "Aha! it's me는 사람을 더 빨리 이해해서 관계에서 낭비되는 에너지를 줄이는 서비스입니다.",
     heroCtaPrimary: "나부터 알아보기",
     heroCtaSecondary: "관계 알아보기",
 
     // 2. WHY
+    whyLabel: "WHY",
     whyHeadline1: "덜 부딪히고,",
     whyHeadline2: "더 잘 함께할 수 있다면",
-    whyBody1:
-      "좋은 관계는\n항상 잘 맞는 관계가 아니라고 생각합니다.\n서로 다르더라도\n어떻게 생각하는지,\n어떻게 말해야 잘 전달되는지,\n어디에서 쉽게 지치는지\n조금만 알면 관계는 훨씬 편해질 수 있습니다.",
-    whyStatement: "사람을 바꾸지 않아도,\n관계는 달라질 수 있으니까요.",
+    whyBody1: "좋은 관계는 항상 잘 맞는 관계가 아니라고 생각합니다.",
     whyBody2:
-      "우리가 줄이고 싶은 건\n사람 사이의 차이가 아니라\n그 차이를 몰라서 생기는\n불필요한 소모입니다.",
+      "서로 다르더라도 어떻게 생각하는지, 어떻게 말해야 잘 전달되는지, 어디에서 쉽게 지치는지 조금만 알면 관계는 훨씬 편해질 수 있습니다.",
+    whyStatement: "사람을 바꾸지 않아도,\n관계는 달라질 수 있으니까요.",
+    whyClosingPrefix:
+      "우리가 줄이고 싶은 건 사람 사이의 차이가 아니라, 그 차이를 몰라서 생기는 ",
+    whyClosingHighlight: "불필요한 소모",
+    whyClosingSuffix: "입니다.",
 
     // 3. UNDERSTAND EARLIER
     earlyLabel: "UNDERSTAND EARLIER",
     earlyHeadline1: "다 알기 전에,",
     earlyHeadline2: "조금 먼저 이해하기",
     earlyBody1:
-      "새로운 사람을 만날 때도,\n함께 일할 때도,\n연애를 시작할 때도\n우리는 대부분 상대방을\n부딪혀가며 배웁니다.",
-    earlyBody2:
-      "Aha! it's me는\n그 시행착오를 조금 줄이고 싶었습니다.\n생년월일만으로 먼저\n기본적인 성향과 관계 패턴을 살펴보고,\n더 알고 싶다면 설문을 추가해\n실제 성향을 반영할 수 있습니다.",
-    earlyStep1: "생년월일",
-    earlyStep2: "설문",
-    earlyStep3: "실제 경험",
+      "새로운 사람을 만날 때도, 함께 일할 때도, 연애를 시작할 때도 우리는 대부분 상대방을 부딪혀가며 배웁니다.",
+    earlyBody2: "Aha! it's me는 그 시행착오를 조금 줄이고 싶었습니다.",
+    earlyStep1Number: "01",
+    earlyStep1Title: "생년월일",
+    earlyStep1Body: "기본적인 성향과 관계 패턴에서 시작합니다.",
+    earlyStep2Number: "02",
+    earlyStep2Title: "선택 설문",
+    earlyStep2Body: "원한다면 지금의 실제 성향을 더합니다.",
+    earlyStep3Number: "03",
+    earlyStep3Title: "삶의 경험",
+    earlyStep3Body: "당신의 맥락이 분석의 답을 완성합니다.",
     earlyStatement: "사주는 시작점이고,\n당신의 삶이 답을 완성합니다.",
     earlyBody3:
-      "사람을 미리 판단하려는 것이 아닙니다.\n조금 먼저 이해해서,\n더 좋은 방식으로 대하기 위해서입니다.",
+      "사람을 미리 판단하려는 것이 아닙니다.\n조금 먼저 이해해서, 더 좋은 방식으로 대하기 위해서입니다.",
 
     // 4. THREE PILLARS
+    pillarsLabel: "THREE PILLARS",
     pillarsHeadline: "나 · 관계 · 결정",
-    pillarsSubcopy: "우리가 이해하고 싶은 것은\n결국 이 세 가지입니다.",
+    pillarsSubcopy: "우리가 이해하고 싶은 것은 결국 이 세 가지입니다.",
     pillarMeTitle: "나",
-    pillarMeBody: "내가 왜 이렇게 생각하고 반응하는지.\n나의 감정, 에너지,\n행동의 패턴을 이해합니다.",
+    pillarMeBody:
+      "내가 왜 이렇게 생각하고 반응하는지.\n나의 감정, 에너지, 행동의 패턴을 이해합니다.",
     pillarRelTitle: "관계",
     pillarRelBody:
-      "왜 이 사람과는 편하고,\n왜 저 사람과는 자꾸 엇갈리는지.\n두 사람의 차이뿐 아니라\n둘 사이에서 만들어지는 관계를 봅니다.",
+      "왜 누구와는 편하고, 누구와는 자꾸 엇갈리는지.\n두 사람 사이에서 만들어지는 관계를 봅니다.",
     pillarDecisionTitle: "결정",
     pillarDecisionBody:
-      "나는 왜 비슷한 상황에서\n비슷한 선택을 할까.\n상황과 마음, 결정과 결과를 쌓으며\n나만의 선택 패턴을 발견합니다.",
+      "나는 왜 비슷한 상황에서 비슷한 선택을 할까.\n나만의 선택 패턴을 발견합니다.",
 
     // 5. RELATIONSHIP PHILOSOPHY
+    fitLabel: "RELATIONSHIP PHILOSOPHY",
     fitHeadline1: "궁합보다,",
     fitHeadline2: "관계의 사용법",
-    fitIntro: "우리는 이런 결과를 만들고 싶지 않았습니다.",
+    fitIntro: "우리는 결과를 한 줄의 점수로 끝내고 싶지 않았습니다.",
     fitQuoteLine1: "잘 맞아요.",
     fitQuoteLine2: "안 맞아요.",
     fitQuoteLine3: "궁합은 82점입니다.",
-    fitLeadIn: "그것보다 이런 것이 더 궁금했습니다.",
     fitQuestion1: "이 사람에게는 어떻게 말해야 잘 전달될까?",
     fitQuestion2: "둘이 같이 일할 때\n누가 무엇을 맡으면 편할까?",
     fitQuestion3: "왜 같은 이야기를 하는데\n계속 엇갈릴까?",
     fitQuestion4: "어디에서 서로의 에너지가\n가장 많이 소모될까?",
-    fitStatement: "관계를 평가하는 것보다,\n관계를 잘 사용하는 방법이\n더 중요하니까요.",
+    fitStatement:
+      "관계를 평가하는 것보다,\n관계를 잘 사용하는 방법이 더 중요하니까요.",
 
-    // 6. LOW FRICTION
-    frictionHeadline: "설문부터 하지 않아도 괜찮아요",
+    // 6. LOW FRICTION / START LIGHT
+    frictionLabel: "START LIGHT",
+    frictionHeadline1: "설문부터 하지 않아도",
+    frictionHeadline2: "괜찮아요",
     frictionBody1:
-      "사람들은 궁금한 게 생겼을 때\n먼저 답을 보고 싶어 합니다.\n그래서 Aha! it's me는\n처음부터 긴 설문을 요구하지 않습니다.",
-    frictionStatement1: "생일만 알아도 시작할 수 있어요.",
-    frictionBody2:
-      "먼저 관계를 보고,\n더 궁금해지면 깊게 보고,\n더 정확하게 알고 싶을 때\n실제 성향을 추가하면 됩니다.",
+      "사람들은 궁금한 게 생겼을 때 먼저 답을 보고 싶어 합니다. 그래서 처음부터 긴 설문을 요구하지 않습니다.",
+    frictionStatement1: "생일만 알아도\n시작할 수 있어요.",
     frictionStatement2:
       "설문은 입장권이 아니라,\n분석의 초점을 맞추는 도구입니다.",
 
     // 7. PRINCIPLE
+    principleLabel: "OUR PRINCIPLE",
     principleHeadline1: "우리는 사람을",
     principleHeadline2: "정답으로 만들지 않습니다",
-    principleBody1:
-      "사주도, 설문도, AI도\n한 사람을 완벽하게 설명할 수는 없습니다.\n그래서 Aha! it's me의 분석은\n“당신은 이런 사람입니다.”\n라고 끝내지 않습니다.",
-    principleQuote: "“이렇게 이해해보면 어떨까요?”",
-    principleBody2: "우리는 정답보다\n이해할 수 있는 언어를 만들고 싶습니다.",
+    principleBody:
+      "사주도, 설문도, AI도 한 사람을 완벽하게 설명할 수는 없습니다. 그래서 우리의 분석은 \"당신은 이런 사람입니다.\"라고 끝내지 않습니다.",
+    principleQuote: "\"이렇게 이해해보면\n어떨까요?\"",
+    principleClosing: "우리는 정답보다 이해할 수 있는 언어를 만들고 싶습니다.",
 
     // 8. WHAT WE WANT TO BUILD
+    buildLabel: "WHAT WE WANT TO BUILD",
     buildHeadline: "결국 우리가 만들고 싶은 것",
     buildStatement: "힘을 덜 빼고도,\n더 잘 함께하는 관계.",
-    buildBody1:
-      "친구와도,\n연인과도,\n가족과도,\n함께 일하는 사람과도.\n상대를 바꾸기 위해 애쓰기보다\n서로에게 맞는 방식을\n조금 더 빨리 찾는 것.",
+    buildBody:
+      "친구와도, 연인과도, 가족과도, 함께 일하는 사람과도.\n상대를 바꾸기 위해 애쓰기보다 서로에게 맞는 방식을 조금 더 빨리 찾는 것.",
     buildLine1: "더 적은 오해.",
     buildLine2: "더 나은 소통.",
     buildLine3: "더 좋은 협업.",
     buildLine4: "그리고 조금 더 즐거운 관계.",
-    buildBody2: "그게 Aha! it's me가\n만들고 싶은 변화입니다.",
+    buildClosing: "그게 Aha! it's me가 만들고 싶은 변화입니다.",
 
     // 9. WHY WE BUILT THIS
+    originLabel: "WHY WE BUILT THIS",
     originHeadline1: "사람 사이의 문제를",
     originHeadline2: "오래 지켜봤습니다",
     originBody1:
-      "여러 조직과 스타트업 환경에서\n사람을 관리하고, 팀을 만들고,\n함께 문제를 해결하면서\n많은 갈등이 능력의 문제가 아니라\n서로의 방식이 다르다는 것을\n너무 늦게 알게 되는 데서 시작한다는 것을 봤습니다.",
-    originBody2: "Aha! it's me는\n그 경험에서 시작했습니다.",
+      "여러 조직과 스타트업 환경에서 사람을 관리하고, 팀을 만들고, 함께 문제를 해결하면서 많은 갈등을 보았습니다.",
+    originBody2:
+      "능력의 문제가 아니라 서로의 방식이 다르다는 것을 너무 늦게 알게 되는 데서 시작하는 갈등이 많았습니다.",
+    originBody3: "Aha! it's me는 그 경험에서 시작했습니다.",
     originStatement:
-      "서로를 조금 더 빨리 이해할 수 있다면\n더 좋은 팀도,\n더 좋은 관계도\n만들 수 있지 않을까.",
+      "서로를 조금 더 빨리 이해할 수 있다면\n더 좋은 팀도, 더 좋은 관계도\n만들 수 있지 않을까.",
 
     // 10. CLOSING CTA
     closingBrand: "Aha! it's me",
-    closingHeadline: "사람을 조금 더 빨리 이해하면\n관계는 조금 덜 어려워질 수 있습니다.",
-    closingCtaPrimary: "무료로 시작하기 →",
+    closingHeadline:
+      "사람을 조금 더 빨리 이해하면\n관계는 조금 덜 어려워질 수 있습니다.",
+    closingCtaPrimary: "무료로 시작하기",
     closingCtaSecondary: "관계 분석 보기",
   },
   decision: {

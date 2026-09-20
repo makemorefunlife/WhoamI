@@ -670,119 +670,135 @@ export const messagesEnUS = {
     faqLinkLabel: "Check our FAQ",
   },
   about: {
-    metaTitle: "About | Aha It's me!",
+    metaTitle: "About — Aha It's me!",
     metaDescription:
-      "A service that helps you understand people a little sooner, so relationships waste less energy — the philosophy behind Aha It's me!",
+      "Why should understanding a person take years? Aha It's me! helps you understand people sooner, so less energy gets wasted in your relationships.",
 
     // 1. HERO
     heroEyebrow: "ABOUT AHA! IT'S ME",
-    heroHeadline1: "Does it really have to take",
-    heroHeadline2: "years to understand someone?",
-    heroBody1:
-      "We usually figure people out long after we meet them.\n\"Oh — this is just how they think.\"\n\"So that's why we kept clashing here.\"",
+    heroHeadline1: "Why should understanding someone",
+    heroHeadline2: "take years?",
+    heroBody1: "We usually only understand people long after we meet them.",
+    heroQuote:
+      "\"Oh — this is just how they've always thought.\"\n\"That's why we kept clashing over this.\"",
     heroBody2:
-      "If we'd known a little sooner,\nsome of that misunderstanding and wasted effort might never have happened.",
+      "If we'd known a little sooner, some of that misunderstanding and wasted effort might never have happened.",
     heroMission:
-      "Aha! it's me is a service\nthat helps you understand people sooner,\nso relationships waste less energy.",
-    heroCtaPrimary: "Start with me",
+      "Aha! it's me helps you understand people sooner, so less energy gets wasted in your relationships.",
+    heroCtaPrimary: "Start with yourself",
     heroCtaSecondary: "Explore a relationship",
 
     // 2. WHY
-    whyHeadline1: "Clash less,",
-    whyHeadline2: "get along better",
-    whyBody1:
-      "We don't think a good relationship\nmeans always being perfectly matched.\nEven when you're different,\nknowing how the other person thinks,\nhow to say things so they land,\nand where they tend to wear out\ncan make things a lot easier.",
-    whyStatement: "People don't have to change\nfor a relationship to change.",
+    whyLabel: "WHY",
+    whyHeadline1: "Less friction,",
+    whyHeadline2: "more that actually works",
+    whyBody1: "We don't think a good relationship means a perfectly matched one.",
     whyBody2:
-      "What we want to reduce\nisn't the difference between people —\nit's the unnecessary friction\nthat comes from not knowing it's there.",
+      "Even when two people are different, knowing a little about how they think, how to reach them, and where they wear thin can make things much easier.",
+    whyStatement: "You don't have to change someone\nfor the relationship to change.",
+    whyClosingPrefix:
+      "What we want to reduce isn't the difference between people — it's the ",
+    whyClosingHighlight: "unnecessary wear and tear",
+    whyClosingSuffix: " that comes from not knowing about it.",
 
     // 3. UNDERSTAND EARLIER
     earlyLabel: "UNDERSTAND EARLIER",
     earlyHeadline1: "Before you know it all,",
     earlyHeadline2: "understand a little sooner",
     earlyBody1:
-      "Meeting someone new,\nworking together,\nstarting to date —\nmost of the time, we learn\nabout each other by bumping into things.",
-    earlyBody2:
-      "Aha! it's me wanted to cut down\non some of that trial and error.\nStart with just a birth date\nto see basic tendencies and relationship patterns,\nthen add a survey if you want to reflect\nwho you actually are.",
-    earlyStep1: "Birth date",
-    earlyStep2: "Survey",
-    earlyStep3: "Lived experience",
-    earlyStatement: "Saju is a starting point —\nyour life fills in the rest.",
+      "With someone new, at work, or at the start of a relationship, we mostly learn about people by bumping into them.",
+    earlyBody2: "Aha! it's me exists to shorten that trial and error, even a little.",
+    earlyStep1Number: "01",
+    earlyStep1Title: "Birth date",
+    earlyStep1Body: "Start from a baseline temperament and relationship pattern.",
+    earlyStep2Number: "02",
+    earlyStep2Title: "Optional survey",
+    earlyStep2Body: "Add your actual, present-day tendencies if you want to.",
+    earlyStep3Number: "03",
+    earlyStep3Title: "Lived experience",
+    earlyStep3Body: "Your own context completes the answer.",
+    earlyStatement: "The chart is a starting point —\nyour life completes the answer.",
     earlyBody3:
-      "This isn't about judging someone in advance.\nIt's about understanding them a little sooner,\nso you can treat them a little better.",
+      "This isn't about judging someone in advance.\nIt's about understanding them a little sooner, so we can treat them better.",
 
     // 4. THREE PILLARS
-    pillarsHeadline: "Me · Relationships · Decisions",
-    pillarsSubcopy: "In the end, these are the three things\nwe want to understand.",
-    pillarMeTitle: "Me",
-    pillarMeBody: "Why I think and react the way I do.\nWe look at the patterns\nin my emotions, energy, and behavior.",
-    pillarRelTitle: "Relationships",
+    pillarsLabel: "THREE PILLARS",
+    pillarsHeadline: "Self · Relationship · Decisions",
+    pillarsSubcopy: "In the end, these are the three things we want to understand.",
+    pillarMeTitle: "Self",
+    pillarMeBody:
+      "Why I think and react the way I do.\nUnderstanding my own emotions, energy, and behavior patterns.",
+    pillarRelTitle: "Relationship",
     pillarRelBody:
-      "Why this person feels easy,\nand why that one keeps feeling off.\nWe look not just at the difference between two people,\nbut at the relationship they create together.",
+      "Why some people are easy, and others keep missing each other.\nLooking at what forms between two people, not just their differences.",
     pillarDecisionTitle: "Decisions",
     pillarDecisionBody:
-      "Why I tend to make similar choices\nin similar situations.\nBy stacking up situation, feeling, decision, and outcome,\nwe uncover your own decision pattern.",
+      "Why I make similar choices in similar situations.\nDiscovering my own pattern of decisions.",
 
     // 5. RELATIONSHIP PHILOSOPHY
+    fitLabel: "RELATIONSHIP PHILOSOPHY",
     fitHeadline1: "More than compatibility —",
     fitHeadline2: "how to use a relationship",
-    fitIntro: "This isn't the kind of result we wanted to give you.",
+    fitIntro: "We didn't want to end things with a single compatibility score.",
     fitQuoteLine1: "You're a good match.",
     fitQuoteLine2: "You're not a good match.",
-    fitQuoteLine3: "Your compatibility is 82 points.",
-    fitLeadIn: "What we were more curious about was this.",
-    fitQuestion1: "How should I talk to this person so it actually lands?",
-    fitQuestion2: "When we work together,\nwho's better suited for what?",
-    fitQuestion3: "Why do we keep talking past each other\nabout the same thing?",
-    fitQuestion4: "Where does each of us\nlose the most energy?",
+    fitQuoteLine3: "Your compatibility is 82%.",
+    fitQuestion1: "How should I say this so it actually lands with them?",
+    fitQuestion2: "When we work together,\nwho should take what?",
+    fitQuestion3: "Why do we keep missing each other\non the same conversation?",
+    fitQuestion4: "Where does our energy\nrun out the fastest?",
     fitStatement:
-      "Because knowing how to use a relationship\nmatters more\nthan scoring it.",
+      "Because how well you use a relationship\nmatters more than how you'd score it.",
 
-    // 6. LOW FRICTION
-    frictionHeadline: "You don't have to start with a survey",
+    // 6. LOW FRICTION / START LIGHT
+    frictionLabel: "START LIGHT",
+    frictionHeadline1: "You don't need to start",
+    frictionHeadline2: "with a survey",
     frictionBody1:
-      "When people are curious about something,\nthey want to see an answer first.\nThat's why Aha! it's me\ndoesn't ask for a long survey up front.",
-    frictionStatement1: "Just your birthday is enough to start.",
-    frictionBody2:
-      "Look at the relationship first,\ngo deeper if you're curious,\nand add your real tendencies\nwhen you want it to be more precise.",
+      "When people get curious, they want to see an answer first. So we don't ask for a long survey up front.",
+    frictionStatement1: "Your birthday is\nenough to start.",
     frictionStatement2:
-      "A survey isn't an entry ticket —\nit's a tool that sharpens the analysis.",
+      "A survey isn't an entry fee —\nit's a way to sharpen the analysis.",
 
     // 7. PRINCIPLE
+    principleLabel: "OUR PRINCIPLE",
     principleHeadline1: "We don't turn people",
-    principleHeadline2: "into a final answer",
-    principleBody1:
-      "Saju, surveys, AI —\nnone of them can fully explain a person.\nSo Aha! it's me's analysis\nnever ends with\n\"this is who you are.\"",
-    principleQuote: "\"What if you looked at it this way?\"",
-    principleBody2:
-      "We'd rather build a language for understanding\nthan hand you a verdict.",
+    principleHeadline2: "into a fixed answer",
+    principleBody:
+      "No chart, survey, or AI can fully explain a person. So our analysis never ends with \"this is who you are.\"",
+    principleQuote: "\"What if we understood it\nthis way instead?\"",
+    principleClosing: "We'd rather build a language for understanding than a verdict.",
 
     // 8. WHAT WE WANT TO BUILD
+    buildLabel: "WHAT WE WANT TO BUILD",
     buildHeadline: "What we ultimately want to build",
-    buildStatement: "Relationships that take less out of you,\nand work better together.",
-    buildBody1:
-      "With friends,\nwith partners,\nwith family,\nwith the people you work with.\nRather than trying to change the other person,\nfinding the way that fits each other\na little sooner.",
+    buildStatement: "Relationships that work better,\nwith less effort spent.",
+    buildBody:
+      "With friends, partners, family, and people you work with.\nRather than trying to change the other person, finding what fits a little faster.",
     buildLine1: "Fewer misunderstandings.",
     buildLine2: "Better communication.",
     buildLine3: "Better collaboration.",
     buildLine4: "And relationships that are a little more enjoyable.",
-    buildBody2: "That's the change\nAha! it's me wants to make.",
+    buildClosing: "That's the change Aha! it's me wants to make.",
 
     // 9. WHY WE BUILT THIS
-    originHeadline1: "We watched the friction",
+    originLabel: "WHY WE BUILT THIS",
+    originHeadline1: "We've watched problems",
     originHeadline2: "between people for a long time",
     originBody1:
-      "Across different organizations and startups —\nmanaging people, building teams,\nsolving problems together —\nwe saw that most conflict didn't come from a lack of skill.\nIt came from realizing, far too late,\nthat people simply work differently.",
-    originBody2: "Aha! it's me started from that experience.",
+      "Managing people, building teams, and solving problems together across several organizations and startups, we saw a lot of conflict.",
+    originBody2:
+      "Much of it didn't come from a lack of ability — it came from realizing too late that people simply worked differently.",
+    originBody3: "Aha! it's me started from that experience.",
     originStatement:
-      "If we could understand each other\na little sooner,\ncouldn't we build\nbetter teams, and better relationships too?",
+      "If we could understand each other a little sooner,\ncouldn't we build better teams\nand better relationships?",
 
     // 10. CLOSING CTA
     closingBrand: "Aha! it's me",
     closingHeadline:
       "Understand people a little sooner,\nand relationships can get a little easier.",
-    closingCtaPrimary: "Start for free →",
-    closingCtaSecondary: "See a relationship analysis",
+    closingCtaPrimary: "Start for free",
+    closingCtaSecondary: "See relationship analysis",
   },
   decision: {
     categories: {
@@ -2256,25 +2272,37 @@ export type MessageCatalog = {
     heroHeadline1: string;
     heroHeadline2: string;
     heroBody1: string;
+    heroQuote: string;
     heroBody2: string;
     heroMission: string;
     heroCtaPrimary: string;
     heroCtaSecondary: string;
+    whyLabel: string;
     whyHeadline1: string;
     whyHeadline2: string;
     whyBody1: string;
-    whyStatement: string;
     whyBody2: string;
+    whyStatement: string;
+    whyClosingPrefix: string;
+    whyClosingHighlight: string;
+    whyClosingSuffix: string;
     earlyLabel: string;
     earlyHeadline1: string;
     earlyHeadline2: string;
     earlyBody1: string;
     earlyBody2: string;
-    earlyStep1: string;
-    earlyStep2: string;
-    earlyStep3: string;
+    earlyStep1Number: string;
+    earlyStep1Title: string;
+    earlyStep1Body: string;
+    earlyStep2Number: string;
+    earlyStep2Title: string;
+    earlyStep2Body: string;
+    earlyStep3Number: string;
+    earlyStep3Title: string;
+    earlyStep3Body: string;
     earlyStatement: string;
     earlyBody3: string;
+    pillarsLabel: string;
     pillarsHeadline: string;
     pillarsSubcopy: string;
     pillarMeTitle: string;
@@ -2283,40 +2311,45 @@ export type MessageCatalog = {
     pillarRelBody: string;
     pillarDecisionTitle: string;
     pillarDecisionBody: string;
+    fitLabel: string;
     fitHeadline1: string;
     fitHeadline2: string;
     fitIntro: string;
     fitQuoteLine1: string;
     fitQuoteLine2: string;
     fitQuoteLine3: string;
-    fitLeadIn: string;
     fitQuestion1: string;
     fitQuestion2: string;
     fitQuestion3: string;
     fitQuestion4: string;
     fitStatement: string;
-    frictionHeadline: string;
+    frictionLabel: string;
+    frictionHeadline1: string;
+    frictionHeadline2: string;
     frictionBody1: string;
     frictionStatement1: string;
-    frictionBody2: string;
     frictionStatement2: string;
+    principleLabel: string;
     principleHeadline1: string;
     principleHeadline2: string;
-    principleBody1: string;
+    principleBody: string;
     principleQuote: string;
-    principleBody2: string;
+    principleClosing: string;
+    buildLabel: string;
     buildHeadline: string;
     buildStatement: string;
-    buildBody1: string;
+    buildBody: string;
     buildLine1: string;
     buildLine2: string;
     buildLine3: string;
     buildLine4: string;
-    buildBody2: string;
+    buildClosing: string;
+    originLabel: string;
     originHeadline1: string;
     originHeadline2: string;
     originBody1: string;
     originBody2: string;
+    originBody3: string;
     originStatement: string;
     closingBrand: string;
     closingHeadline: string;

@@ -1,0 +1,147 @@
+/*
+ * About page — ported from the "Inner Compass Reports" Lovable prototype.
+ * Warm off-white background, deep forest green accent, muted sage/blush
+ * section tints, editorial serif headlines. Every rule here is scoped
+ * under .about-page (or a plain className helper used only within it) so
+ * nothing here touches globals.css / stitch-theme.css or any other page.
+ */
+
+.about-page {
+  --about-bg: #f9f8f3;
+  --about-surface: #ffffff;
+  --about-ink: #222222;
+  --about-ink-soft: rgba(34, 34, 34, 0.72);
+  --about-ink-mute: rgba(34, 34, 34, 0.5);
+  --about-line: rgba(34, 34, 34, 0.12);
+  --about-deep: #1b3b2b;
+  --about-deep-soft: rgba(27, 59, 43, 0.1);
+  --about-deep-text: rgba(255, 255, 255, 0.9);
+  --about-sage-soft: rgba(47, 107, 79, 0.09);
+  --about-blush: #b86b6b;
+  --about-blush-soft: rgba(184, 107, 107, 0.1);
+
+  --about-font-serif: var(--font-noto-serif-kr), Georgia, "Times New Roman", serif;
+  --about-font-sans: var(--font-noto-sans-kr), ui-sans-serif, system-ui, sans-serif;
+
+  background: var(--about-bg);
+  color: var(--about-ink);
+  font-family: var(--about-font-sans);
+}
+
+.about-serif {
+  font-family: var(--about-font-serif);
+}
+
+.about-sans {
+  font-family: var(--about-font-sans);
+}
+
+/* Section backgrounds / text / borders — plain classes, not Tailwind theme
+   tokens, so they never register as global utilities. */
+.about-bg-surface {
+  background: var(--about-surface);
+}
+.about-bg-sage {
+  background: var(--about-sage-soft);
+}
+.about-bg-blush {
+  background: var(--about-blush-soft);
+}
+.about-bg-deep {
+  background: var(--about-deep);
+}
+.about-text-deep {
+  color: var(--about-deep);
+}
+.about-text-deep-text {
+  color: var(--about-deep-text);
+}
+.about-text-deep-text-soft {
+  color: rgba(255, 255, 255, 0.7);
+}
+.about-text-ink {
+  color: var(--about-ink);
+}
+.about-text-ink-soft {
+  color: var(--about-ink-soft);
+}
+.about-text-ink-mute {
+  color: var(--about-ink-mute);
+}
+.about-text-blush {
+  color: var(--about-blush);
+}
+.about-border-line {
+  border-color: var(--about-line);
+}
+.about-border-deep {
+  border-color: var(--about-deep);
+}
+.about-border-blush {
+  border-color: var(--about-blush);
+}
+.about-divider {
+  height: 1px;
+  width: 2.25rem;
+  background: color-mix(in srgb, var(--about-deep) 30%, transparent);
+}
+
+/* Small uppercase eyebrow label ("SECTION LABEL" style). */
+.about-eyebrow {
+  font-family: var(--about-font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--about-deep);
+}
+.about-eyebrow--invert {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Square-corner buttons — deliberately not the site's pill-shaped
+   stitch-cta-* classes, per the editorial/magazine direction for this page. */
+.about-cta-primary,
+.about-cta-secondary,
+.about-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: 0;
+  font-family: var(--about-font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+.about-cta-primary {
+  background: var(--about-deep);
+  color: var(--about-deep-text);
+}
+.about-cta-primary:hover {
+  background: color-mix(in srgb, var(--about-deep) 88%, black);
+}
+.about-cta-secondary {
+  background: transparent;
+  color: var(--about-deep);
+  border: 1px solid var(--about-deep);
+}
+.about-cta-secondary:hover {
+  background: var(--about-deep-soft);
+}
+.about-cta-ghost {
+  background: transparent;
+  color: var(--about-deep);
+}
+.about-cta-ghost:hover {
+  background: var(--about-deep-soft);
+}
+.about-cta-ghost--invert {
+  color: var(--about-deep-text);
+}
+.about-cta-ghost--invert:hover {
+  background: rgba(255, 255, 255, 0.12);
+}

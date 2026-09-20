@@ -18,6 +18,7 @@ import { localeToHtmlLang } from "@/lib/i18n/locale";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import "./globals.css";
 import "./stitch-theme.css";
+import "./about-theme.css";
 
 export const runtime = "nodejs";
 
