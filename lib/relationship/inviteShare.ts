@@ -73,14 +73,15 @@ export async function shareKakaoInvite(
   title: string = "너는 나에게 어떤 친구일까?",
   message: string = "초대를 수락하고 우리 관계를 알아봐.",
   imageUrl: string = "https://www.ahaitsme.com/social/invite/invite-friend-ko.png",
-  // Actual pixel size of invite-friend-ko.png (also the size of
-  // invite-friend-en.png's own crop-safe area -- both are designed to the
-  // same 1655x950 canvas). Without these, KakaoTalk's Feed template doesn't
-  // know the image's real aspect ratio and falls back to a much narrower
-  // center-crop, chopping the headline text off on both sides in the chat
-  // bubble preview even though the source PNG has correct margins.
+  // Actual pixel size of invite-friend-ko.png. It is now a square canvas
+  // (original 1655x950 design padded top/bottom to 1655x1655) because
+  // passing the true non-square ratio here did NOT stop KakaoTalk's Feed
+  // template from applying its own fixed-ish center-crop in the chat
+  // bubble preview -- the crop chopped the headline text off on both
+  // sides regardless of these hints. Making the source image itself
+  // square means that crop has nothing left to cut.
   imageWidth: number = 1655,
-  imageHeight: number = 950,
+  imageHeight: number = 1655,
 ): Promise<boolean> {
   if (typeof window === "undefined") return false;
 
