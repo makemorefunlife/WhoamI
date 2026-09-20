@@ -72,8 +72,8 @@ export async function shareKakaoInvite(
   url: string,
   title: string = "너는 나에게 어떤 친구일까?",
   message: string = "초대를 수락하고 우리 관계를 알아봐.",
-  imageUrl: string = "https://www.ahaitsme.com/social/invite/invite-friend-ko.png",
-  // Actual pixel size of invite-friend-ko.png. It is now a square canvas
+  imageUrl: string = "https://www.ahaitsme.com/social/invite/invite-friend-ko-v2.png",
+  // Actual pixel size of invite-friend-ko-v2.png. It is now a square canvas
   // (original 1655x950 design padded top/bottom to 1655x1655) because
   // passing the true non-square ratio here did NOT stop KakaoTalk's Feed
   // template from applying its own fixed-ish center-crop in the chat

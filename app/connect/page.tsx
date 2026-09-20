@@ -37,8 +37,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const description = messages.invite.metaDescription;
   const imageUrl =
     locale === "ko-KR"
-      ? "https://www.ahaitsme.com/social/invite/invite-friend-ko.png"
-      : "https://www.ahaitsme.com/social/invite/invite-friend-en.png";
+      ? "https://www.ahaitsme.com/social/invite/invite-friend-ko-v2.png"
+      : "https://www.ahaitsme.com/social/invite/invite-friend-en-v2.png";
 
   return buildPageMetadata({
     locale,

@@ -61,7 +61,7 @@ export default function InviteShareButtons({
       url,
       messages.invite.metaTitle,
       messages.invite.metaDescription,
-      "https://www.ahaitsme.com/social/invite/invite-friend-ko.png",
+      "https://www.ahaitsme.com/social/invite/invite-friend-ko-v2.png",
     );
     if (!ok) {
       const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY;
