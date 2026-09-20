@@ -295,6 +295,7 @@ export default function HomeContent() {
           sharer_name?: string | null;
           relationshipReportId?: string | null;
           alreadyConnected?: boolean | null;
+          error?: string | null;
         };
         if (body.relationshipReportId) {
           localStorage.setItem("pendingRelationshipReportId", body.relationshipReportId);
@@ -310,10 +311,16 @@ export default function HomeContent() {
           ok: res.ok,
           sharerName: body.sharer_name ?? null,
           alreadyConnected: body.alreadyConnected ?? false,
+          // The API already distinguishes "expired/invalid" (404) from e.g.
+          // "that's your own link" (400 selfLinkError) and localizes the
+          // right copy for each -- the caller used to discard this and
+          // always show the generic invalid-link message, so a self-link
+          // click showed "link expired" instead of the accurate reason.
+          errorMessage: body.error ?? null,
         };
       } catch (e) {
         console.error("[home] connect_complete_error");
-        return { ok: false, sharerName: null, alreadyConnected: false };
+        return { ok: false, sharerName: null, alreadyConnected: false, errorMessage: null };
       }
     },
     [],
@@ -562,8 +569,8 @@ export default function HomeContent() {
     // nothing actually connected and no indication anything went wrong.
     if (resume.surveyCompleted && resume.reportId) {
       const reportId = resume.reportId;
-      void completeConnect(reportId, connectToken).then(({ ok, sharerName, alreadyConnected }) => {
-        if (!ok) alert(messages.connect.invalidBody);
+      void completeConnect(reportId, connectToken).then(({ ok, sharerName, alreadyConnected, errorMessage }) => {
+        if (!ok) alert(errorMessage ?? messages.connect.invalidBody);
         const goToHub = () => router.push(localize(relationHubPath(reportId)));
         if (ok && sharerName) {
           const { onConfirm, onSecondary } = buildReadyModalActions(reportId);
@@ -589,8 +596,8 @@ export default function HomeContent() {
 
     if (resume.hasReport && resume.reportId) {
       const reportId = resume.reportId;
-      void completeConnect(reportId, connectToken).then(({ ok, sharerName, alreadyConnected }) => {
-        if (!ok) alert(messages.connect.invalidBody);
+      void completeConnect(reportId, connectToken).then(({ ok, sharerName, alreadyConnected, errorMessage }) => {
+        if (!ok) alert(errorMessage ?? messages.connect.invalidBody);
         if (ok && sharerName) {
           setConnectedModal({
             sharerName,
