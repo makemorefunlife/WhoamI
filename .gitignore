@@ -46,4 +46,4 @@ next-env.d.ts
 Claude outputs/
 supabase/.temp/
 .claude/settings.local.json
-Legal/
+/Legal/
