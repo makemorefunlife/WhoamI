@@ -48,10 +48,23 @@ export function blueprintRoute(reportId?: string | null): string {
   return withReportId(ROUTES.blueprint, reportId);
 }
 
-export function relationshipHubRoute(reportId?: string | null): string {
+export function relationshipHubRoute(
+  reportId?: string | null,
+  /**
+   * Relationship Discovery Flow V1: a relationship_report_id to focus
+   * (auto-select the role planet + open the person preview) once the
+   * Relation Map loads -- see RelationshipMapSection's
+   * `focusRelationshipReportId` prop. Optional and purely additive; every
+   * existing call site that only passes `reportId` is unaffected.
+   */
+  focusRelationshipReportId?: string | null,
+): string {
   const id = reportId?.trim();
-  if (!id) return ROUTES.relationships;
-  const q = new URLSearchParams({ myReportId: id });
+  const focus = focusRelationshipReportId?.trim();
+  if (!id && !focus) return ROUTES.relationships;
+  const q = new URLSearchParams();
+  if (id) q.set("myReportId", id);
+  if (focus) q.set("focus", focus);
   return `${ROUTES.relationships}?${q.toString()}`;
 }
 

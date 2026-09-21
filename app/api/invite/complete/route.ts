@@ -131,6 +131,18 @@ export async function POST(req: Request) {
           initialMembershipsForInviteAccept();
         const nowIso = new Date().toISOString();
 
+        // Inviter (owner-analog) row: discovered_seen_at intentionally
+        // omitted from the payload. On first insert it defaults to NULL
+        // ("not yet discovered" -- see
+        // supabase/migrations/20260920120000_relationship_discovery_seen_at.sql).
+        // A one-time invite token can only ever reach this block once
+        // (status flips open -> complete atomically, see the update above),
+        // so there is no repeat-completion path that could reset an
+        // already-seen discovery here -- but a *different* invite between
+        // the same two reports later would upsert this same row again, so
+        // leaving the field out of the payload (rather than explicitly
+        // NULL) is what keeps a prior seen/unseen value from being
+        // clobbered on conflict.
         const { error: inviterMemErr } = await supabase
           .from("relationship_map_memberships")
           .upsert(
@@ -147,6 +159,11 @@ export async function POST(req: Request) {
           logServerError("invite/complete.inviterMembership", inviterMemErr);
         }
 
+        // Invitee (joiner-analog) row: they are the one actually present
+        // right now (they just accepted the invite), so there is nothing
+        // for them to "discover" later -- mark their own side seen
+        // immediately, same as the personal-connect-link joiner side in
+        // /api/connect/complete.
         const { error: inviteeMemErr } = await supabase
           .from("relationship_map_memberships")
           .upsert(
@@ -156,6 +173,7 @@ export async function POST(req: Request) {
               other_report_id: data.from_report_id,
               status: inviteeSeesInviter,
               responded_at: nowIso,
+              discovered_seen_at: nowIso,
             },
             { onConflict: "relationship_report_id,viewer_report_id" },
           );

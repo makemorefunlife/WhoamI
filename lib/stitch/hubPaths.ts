@@ -12,8 +12,11 @@ export function blueprintPath(reportId?: string): string {
   return blueprintRoute(reportId ?? readStoredReportId());
 }
 
-export function relationHubPath(reportId?: string): string {
-  return relationshipHubRoute(reportId ?? readStoredReportId());
+export function relationHubPath(
+  reportId?: string,
+  focusRelationshipReportId?: string | null,
+): string {
+  return relationshipHubRoute(reportId ?? readStoredReportId(), focusRelationshipReportId);
 }
 
 /**

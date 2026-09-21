@@ -20,6 +20,9 @@ import RemoveFriendDialog from "@/components/relationship/hub/RemoveFriendDialog
 import StitchKindPickerSheet from "@/components/relationship/hub/StitchKindPickerSheet";
 import AddFriendSheet from "@/components/relationship/hub/AddFriendSheet";
 import ConnectionRequestsPanel from "@/components/relationship/hub/ConnectionRequestsPanel";
+import RelationshipDiscoveryCard, {
+  type DiscoveryItem,
+} from "@/components/relationship/hub/RelationshipDiscoveryCard";
 import ConnectionSuccessModal from "@/components/relationship/ConnectionSuccessModal";
 import SentRequestsSheet from "@/components/relationship/hub/SentRequestsSheet";
 import FriendsListSheet from "@/components/relationship/hub/FriendsListSheet";
@@ -34,7 +37,7 @@ import {
 } from "@/components/ui/stitch/StitchSkeleton";
 import { useClientReportId } from "@/lib/hooks/useClientReportId";
 import { useDockOverlayLock } from "@/lib/hooks/useDockOverlayLock";
-import { relationshipHubRoute } from "@/constants/routes";
+import { relationshipHubRoute, relationshipDetailRoute } from "@/constants/routes";
 import { clearLegacyHubDisplayNames } from "@/lib/relationship/hubDisplayName";
 import {
   fetchHubAnalysisFeed,
@@ -66,6 +69,13 @@ export default function RelationHubDashboard() {
     searchParams.get("reportId")?.trim() ||
     "";
   const hubSection = searchParams.get("section")?.trim() ?? "";
+  // Relationship Discovery Flow V1: a relationship_report_id to focus in
+  // the Relation Map on load -- arrives via the "우리 관계 발견하기" CTA
+  // (ConnectionSuccessModal, right after A's own signup completes). A
+  // discovery card's own "확인하기" click (below) sets
+  // discoveryFocusOverride instead of navigating, since the user is
+  // already on this page.
+  const urlFocusRelationshipReportId = searchParams.get("focus")?.trim() || "";
   const {
     reportId: hubReportId,
     ready: reportIdReady,
@@ -86,6 +96,12 @@ export default function RelationHubDashboard() {
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const [connectedFriendName, setConnectedFriendName] = useState<string | null>(null);
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
+  // Relationship Discovery Flow V1
+  const [discoveries, setDiscoveries] = useState<DiscoveryItem[]>([]);
+  const [discoveryBusyId, setDiscoveryBusyId] = useState<string | null>(null);
+  const [discoveryFocusOverride, setDiscoveryFocusOverride] = useState<string | null>(null);
+  const focusRelationshipReportId =
+    discoveryFocusOverride ?? (urlFocusRelationshipReportId || null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [favoriteBusyId, setFavoriteBusyId] = useState<string | null>(null);
   const [bannerVisible, setBannerVisible] = useState(false);
@@ -526,6 +542,50 @@ export default function RelationHubDashboard() {
     }
   }
 
+  // Relationship Discovery Flow V1: this viewer's own unseen connections
+  // (DB is the source of truth -- no realtime/push, just a fetch on
+  // mount, same as ConnectionRequestsPanel below). Works identically
+  // whether the other person connected 5 minutes ago or 5 days ago.
+  useEffect(() => {
+    if (!hubReportId) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/connect/discoveries?reportId=${encodeURIComponent(hubReportId)}`,
+        );
+        const data = await res.json().catch(() => null);
+        if (cancelled) return;
+        setDiscoveries(res.ok && Array.isArray(data?.discoveries) ? data.discoveries : []);
+      } catch {
+        if (!cancelled) setDiscoveries([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hubReportId]);
+
+  function confirmDiscovery(item: DiscoveryItem) {
+    if (discoveryBusyId) return;
+    setDiscoveryBusyId(item.relationshipReportId);
+    void fetch("/api/connect/discoveries/seen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        reportId: hubReportId,
+        relationshipReportId: item.relationshipReportId,
+      }),
+    }).finally(() => {
+      setDiscoveries((prev) =>
+        prev.filter((d) => d.relationshipReportId !== item.relationshipReportId),
+      );
+      setDiscoveryBusyId(null);
+      setDiscoveryFocusOverride(item.relationshipReportId);
+      mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   function openKindPicker(item: RelationshipListItem) {
     if (!item.relationship_report_id) {
       alert(messages.hub.pendingFriendCannotAnalyze);
@@ -674,6 +734,7 @@ export default function RelationHubDashboard() {
             <RelationshipMapSection
               viewerReportId={hubReportId}
               refreshKey={mapRefreshKey}
+              focusRelationshipReportId={focusRelationshipReportId}
               onInvite={() => {
                 setAddFriendOpen(true);
                 setAddFriendTab("invite");
@@ -689,7 +750,24 @@ export default function RelationHubDashboard() {
                   invite_token: null,
                 })
               }
+              onFreeAnalysis={(relationshipReportId) =>
+                router.push(
+                  localize(
+                    relationshipDetailRoute({
+                      relationshipReportId,
+                      viewerReportId: hubReportId,
+                    }),
+                  ),
+                )
+              }
             />
+            {discoveries[0] ? (
+              <RelationshipDiscoveryCard
+                discovery={discoveries[0]}
+                busy={discoveryBusyId === discoveries[0].relationshipReportId}
+                onConfirm={() => confirmDiscovery(discoveries[0])}
+              />
+            ) : null}
           </div>
         ) : null}
 

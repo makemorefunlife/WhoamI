@@ -96,6 +96,14 @@ export async function POST(req: Request) {
     // Joiner's map -> owner: always (re-)confirmed accepted on every
     // successful completion — the joiner is re-consenting each time they
     // complete via this link.
+    //
+    // discovered_seen_at is set here every time (not just on first
+    // insert): the joiner is always present at the moment this call runs
+    // (they just completed their own signup/connect action), so there is
+    // never a "discover this later" moment for their own side of the
+    // connection — this keeps the joiner from ever seeing their own new
+    // connection show up again in GET /api/connect/discoveries.
+    const nowIso = new Date().toISOString();
     const { error: joinerMembershipErr } = await supabase
       .from("relationship_map_memberships")
       .upsert(
@@ -104,7 +112,8 @@ export async function POST(req: Request) {
           viewer_report_id: joinerReportId,
           other_report_id: ownerReportId,
           status: joinerSeesOwner,
-          responded_at: new Date().toISOString(),
+          responded_at: nowIso,
+          discovered_seen_at: nowIso,
         },
         { onConflict: "relationship_report_id,viewer_report_id" },
       );
@@ -115,6 +124,13 @@ export async function POST(req: Request) {
     // Owner's map -> joiner: only created if the owner has no existing
     // decision for this pair yet. Must NOT clobber a prior accept/decline
     // if the joiner re-uses the link later.
+    //
+    // discovered_seen_at is deliberately left unset here: on first insert
+    // it defaults to NULL ("owner hasn't discovered this connection yet" —
+    // see supabase/migrations/20260920120000_relationship_discovery_seen_at.sql),
+    // and ignoreDuplicates means a repeat completion never touches an
+    // existing row at all, so an owner who already saw/confirmed this
+    // discovery never has it reset back to unseen.
     const { error: ownerMembershipErr } = await supabase
       .from("relationship_map_memberships")
       .upsert(

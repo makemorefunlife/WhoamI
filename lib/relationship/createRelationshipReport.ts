@@ -34,7 +34,27 @@ export async function ensureRelationshipReport(
     .select("id")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    // Lost a race with a concurrent ensureRelationshipReport call for the
+    // same pair (e.g. A and B completing each other's personal connect
+    // link within the same instant) -- relationship_reports_pair_unique
+    // rejected our insert with 23505. The winning request already has (or
+    // is about to have) the row; read it back instead of failing the
+    // whole request, mirroring the same race-loser fallback
+    // getOrCreatePersonalConnectLink already uses for personal_connect_links.
+    if (error.code === "23505") {
+      const { data: winner } = await supabase
+        .from("relationship_reports")
+        .select("id")
+        .eq("report_id_a", report_id_a)
+        .eq("report_id_b", report_id_b)
+        .maybeSingle();
+      if (winner?.id) {
+        return { relationshipReportId: winner.id, created: false };
+      }
+    }
+    throw error;
+  }
   if (!inserted?.id) {
     throw new Error("relationship_reports insert returned no id");
   }
