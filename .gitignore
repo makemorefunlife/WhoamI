@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local tools / personal editor config (Stage 4 cleanup 2026-09-21)
+.obsidian/
+Claude outputs/
+supabase/.temp/
+.claude/settings.local.json
+Legal/
