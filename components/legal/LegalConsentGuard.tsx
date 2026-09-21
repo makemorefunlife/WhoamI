@@ -57,7 +57,7 @@ export default function LegalConsentGuard() {
     // 동기화할 내용이 없으면: KR만 동의 페이지로
     if (!draft && !needsKrLegal && !marketingUnset) return;
 
-    if (needsKrLegal && !(draft?.age && draft?.terms)) {
+    if (needsKrLegal && !(draft?.age && draft?.terms && draft?.privacy)) {
       router.replace(href(ROUTES.legalConsent));
       return;
     }
@@ -70,7 +70,7 @@ export default function LegalConsentGuard() {
     saving.current = true;
     const nextMeta: Record<string, unknown> = { ...meta };
 
-    if (needsKrLegal && draft?.age && draft?.terms) {
+    if (needsKrLegal && draft?.age && draft?.terms && draft?.privacy) {
       nextMeta[LEGAL_CONSENT_META_KEY] = buildLegalConsentRecord("ko-KR");
     }
 

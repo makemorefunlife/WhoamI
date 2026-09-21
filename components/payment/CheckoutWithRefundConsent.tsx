@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import GlowButton from "@/components/space/GlowButton";
+import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useBetaCheckout } from "@/lib/payment/useBetaCheckout";
 import type { BetaPlanId } from "@/lib/payment/betaPaddlePricing";
+import { ROUTES } from "@/constants/routes";
 
 type Props = {
   planId: BetaPlanId;
@@ -15,7 +17,13 @@ type Props = {
 };
 
 /**
- * 결제 직전 환불 불가 필수 동의 + Paddle SANDBOX checkout.
+ * 결제 직전 "생성 개시 후 청약철회 제한 가능" 필수 동의 + Paddle SANDBOX checkout.
+ *
+ * Wording deliberately avoids an unconditional "no refunds after
+ * generation" claim (that contradicted refundPolicy.ts's own carve-out for
+ * confirmed system defects, and the 2026-09-18 legal consultation memo
+ * flagged exactly this as a risk) — it now states withdrawal "may be
+ * limited" and links out to the actual refund policy.
  *
  * Both locales go through Paddle sandbox (the earlier Toss-for-ko-KR
  * branch was dropped — no Toss sandbox credentials exist in this app, and
@@ -67,7 +75,16 @@ export default function CheckoutWithRefundConsent({
             if (e.target.checked) setHint(false);
           }}
         />
-        <span>{copy.checkboxLabel}</span>
+        <span>
+          {copy.checkboxLabel}{" "}
+          <LocaleLink
+            href={ROUTES.refund}
+            className="underline decoration-white/40 underline-offset-2 hover:text-white"
+            target="_blank"
+          >
+            {copy.refundPolicyLinkLabel}
+          </LocaleLink>
+        </span>
       </label>
 
       {hint ? (

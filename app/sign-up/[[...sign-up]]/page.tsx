@@ -23,9 +23,10 @@ export default function SignUpPage() {
 
   const [ageChecked, setAgeChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [privacyChecked, setPrivacyChecked] = useState(false);
   const [marketingChecked, setMarketingChecked] = useState(false);
 
-  const krReady = ageChecked && termsChecked;
+  const krReady = ageChecked && termsChecked && privacyChecked;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#1a1c2b] to-[#2a2d3e] px-4 py-12">
@@ -34,9 +35,11 @@ export default function SignUpPage() {
           <SignUpConsentFields
             ageChecked={ageChecked}
             termsChecked={termsChecked}
+            privacyChecked={privacyChecked}
             marketingChecked={marketingChecked}
             onAgeChange={setAgeChecked}
             onTermsChange={setTermsChecked}
+            onPrivacyChange={setPrivacyChecked}
             onMarketingChange={setMarketingChecked}
           />
           {krReady ? (

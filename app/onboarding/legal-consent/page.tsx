@@ -15,8 +15,12 @@ import {
 } from "@/lib/legal/consent";
 
 /**
- * 한국 전용 — 필수 연령·약관(+선택 마케팅) 동의.
+ * 한국 전용 -- 필수 연령·이용약관·개인정보 수집·이용(+선택 마케팅) 동의.
  * 미국은 가입 화면 Terms 안내로 충분하므로 여기로 보내지 않습니다.
+ *
+ * 이용약관과 개인정보 수집·이용은 별도 체크박스로 분리했다 (2026-09-18 법률
+ * 자문 메모 -- PIPA상 두 동의의 근거가 다르고, 처리방침은 동의 대상이 아니라
+ * 공개·열람 대상 문서이기 때문).
  */
 export default function LegalConsentPage() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -27,6 +31,7 @@ export default function LegalConsentPage() {
 
   const [ageChecked, setAgeChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [privacyChecked, setPrivacyChecked] = useState(false);
   const [marketingChecked, setMarketingChecked] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -67,7 +72,7 @@ export default function LegalConsentPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!ageChecked || !termsChecked) {
+    if (!ageChecked || !termsChecked || !privacyChecked) {
       setError(copy.gateHint);
       return;
     }
@@ -123,7 +128,7 @@ export default function LegalConsentPage() {
             required
           />
           <span>
-            {copy.termsPrefix}
+            {copy.termsCheckboxLabel}{" "}
             <LocaleLink
               href={ROUTES.terms}
               className="underline decoration-white/40 underline-offset-2 hover:text-white"
@@ -131,17 +136,53 @@ export default function LegalConsentPage() {
             >
               {copy.termsLink}
             </LocaleLink>
-            {copy.termsMiddle}
-            <LocaleLink
-              href={ROUTES.privacy}
-              className="underline decoration-white/40 underline-offset-2 hover:text-white"
-              target="_blank"
-            >
-              {copy.privacyLink}
-            </LocaleLink>
-            {copy.termsSuffix}
           </span>
         </label>
+
+        <div className="space-y-1.5">
+          <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-snug text-slate-200">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0"
+              checked={privacyChecked}
+              onChange={(e) => setPrivacyChecked(e.target.checked)}
+              required
+            />
+            <span>
+              {copy.privacyCheckboxLabel}{" "}
+              <LocaleLink
+                href={ROUTES.privacy}
+                className="underline decoration-white/40 underline-offset-2 hover:text-white"
+                target="_blank"
+              >
+                {copy.privacyLink}
+              </LocaleLink>
+            </span>
+          </label>
+          <details className="ml-6 text-xs leading-relaxed text-slate-400">
+            <summary className="cursor-pointer select-none text-slate-400 underline decoration-white/30 underline-offset-2 hover:text-slate-200">
+              {copy.privacyDetailToggle}
+            </summary>
+            <dl className="mt-2 space-y-1.5 border-l border-white/10 pl-3">
+              <div>
+                <dt className="font-medium text-slate-300">{copy.privacyDetailPurposeLabel}</dt>
+                <dd>{copy.privacyDetailPurpose}</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-300">{copy.privacyDetailItemsLabel}</dt>
+                <dd>{copy.privacyDetailItems}</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-300">{copy.privacyDetailRetentionLabel}</dt>
+                <dd>{copy.privacyDetailRetention}</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-300">{copy.privacyDetailRefusalLabel}</dt>
+                <dd>{copy.privacyDetailRefusal}</dd>
+              </div>
+            </dl>
+          </details>
+        </div>
 
         <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-snug text-slate-400">
           <input
@@ -157,7 +198,7 @@ export default function LegalConsentPage() {
 
         <button
           type="submit"
-          disabled={saving || !ageChecked || !termsChecked}
+          disabled={saving || !ageChecked || !termsChecked || !privacyChecked}
           className="w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving ? copy.saving : copy.submit}

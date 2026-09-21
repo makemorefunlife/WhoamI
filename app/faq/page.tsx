@@ -37,7 +37,17 @@ export default async function FaqPage() {
   };
 
   return (
-    <div className="stitch-legal relative min-h-dvh text-on-surface">
+    /* No min-h-dvh here: this is always rendered inside
+        ConditionalAppChrome/StitchAppChrome's own `flex min-h-dvh flex-col`
+        wrapper (children + a `mt-auto` StitchAppFooter). A SECOND, independent
+        min-h-dvh here forced this div to be at least one full viewport tall
+        regardless of actual content, pushing the footer's legal links a whole
+        extra screen below short pages (Terms/Privacy/Refund/FAQ/Contact/Do Not
+        Sell) — the same nested-min-height bug already fixed once for
+        SpaceBackground.tsx and StitchSurveyShell.tsx, and the reason the footer
+        looked like it was missing on mobile Safari (dvh recalculates as the
+        toolbar collapses/expands) while desktop looked fine. */
+    <div className="stitch-legal relative text-on-surface">
       <main id="main" className="relative z-[1] mx-auto w-full max-w-3xl px-5 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
         <script
           type="application/ld+json"
