@@ -10,6 +10,7 @@
     "test:security-ownership": "npx tsx tests/unit/security-ownership.test.mjs",
     "test:security-flow": "npx tsx tests/unit/security-flow.test.mjs",
     "test:relationship-map-direction": "npx tsx tests/unit/relationship-map-direction.test.mjs",
+    "test:relationship-discovery-flow": "npx tsx tests/unit/relationship-discovery-flow.test.mjs",
     "test:free-relationship-preview": "npx tsx tests/unit/free-relationship-preview.test.mjs",
     "test:verify-premium": "node tests/scripts/verify-premium-pipeline.mjs",
     "test:verify-premium-matrix": "node tests/scripts/verify-premium-failure-matrix.mjs",

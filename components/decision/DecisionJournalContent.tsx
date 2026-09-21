@@ -240,6 +240,10 @@ export default function DecisionJournalContent() {
               </select>
             </div>
 
+            <p className="rounded-lg bg-surface-container-lowest/70 px-3 py-2 text-xs leading-relaxed text-on-surface-variant/80 ring-1 ring-outline-variant/30">
+              {messages.decision.sensitiveInfoNotice}
+            </p>
+
             <div>
               <label
                 htmlFor="decision-situation"
