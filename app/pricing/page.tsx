@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import SpaceBackground from "@/components/space/SpaceBackground";
 import PricingCards, { PricingHero } from "@/components/pricing/PricingCards";
+import RegionalPricingCards from "@/components/pricing/RegionalPricingCards";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { buildPageMetadata } from "@/lib/seo/pageMetadata";
@@ -18,17 +18,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function PricingPage() {
   return (
-    <SpaceBackground showProbe={false}>
+    <div className="stitch-landing relative min-h-screen w-full bg-[#FAF7F0]">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(139,156,255,0.12),transparent_50%)]"
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_85%_12%,rgba(58,143,110,0.08)_0%,transparent_45%),radial-gradient(circle_at_8%_88%,rgba(196,154,156,0.14)_0%,transparent_40%)]"
       />
       <main id="main" className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-24 pt-14 sm:px-6 sm:pt-20">
         <PricingHero />
         <div className="mt-10 sm:mt-12">
           <PricingCards />
         </div>
+        <div className="mt-16 sm:mt-20">
+          <RegionalPricingCards />
+        </div>
       </main>
-    </SpaceBackground>
+    </div>
   );
 }

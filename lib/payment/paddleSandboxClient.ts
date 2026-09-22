@@ -8,6 +8,13 @@ export type PaddleTransaction = {
   currency_code: string;
   custom_data: Record<string, unknown> | null;
   items: { price?: { id?: string } | null; price_id?: string }[];
+  /**
+   * Present when this transaction belongs to a subscription (e.g. the US
+   * Annual membership's initial purchase or a later renewal transaction) --
+   * read from Paddle's own re-fetched transaction record, never trusted
+   * from the client. Used to link memberships.paddle_subscription_id.
+   */
+  subscription_id?: string | null;
 };
 
 /**

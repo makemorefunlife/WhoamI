@@ -32,6 +32,15 @@ export const messagesEnUS = {
     cancel: "Cancel",
     learnMore: "Learn more",
   },
+  thankYou: {
+    metaTitle: "Payment Complete — Aha! it's me",
+    metaDescription: "Your purchase is complete. Access your report and relationship analysis.",
+    title: "Payment Complete!",
+    subtitle: "Thank you for your purchase. We are preparing your analysis report.",
+    redirectingIn: (seconds: number) => `Automatically redirecting in ${seconds} seconds...`,
+    goToAnalysis: "Go to Analysis",
+    manualRedirectHint: "If you are not redirected automatically, please click the button above.",
+  },
   survey: {
     title: "Self survey",
     next: "Next",
@@ -608,6 +617,97 @@ export const messagesEnUS = {
         tagline: "For members who want one more Relationship analysis",
         features: [],
         cta: "Buy one more",
+      },
+    },
+    regionalPlans: {
+      us_personal_premium: {
+        name: "Personal",
+        price: "$11.99",
+        period: "/ one-time",
+        tagline: "A deep report connecting your innate nature and current self",
+        features: ["1 Personal deep analysis generation", "View it again anytime after it's generated"],
+        cta: "Get Personal",
+      },
+      us_relationship_premium: {
+        name: "Relationship",
+        price: "$18.99",
+        period: "/ one-time",
+        tagline: "A deep dive into one specific relationship",
+        features: ["1 Relationship deep analysis generation", "View it again anytime after it's generated"],
+        cta: "Get Relationship",
+      },
+      us_insight_pass_30d: {
+        name: "30-Day Insight Pass",
+        price: "$28",
+        period: "/ one-time",
+        tagline: "Everything you need for a full month, in one pass",
+        features: [
+          "1 Personal deep analysis",
+          "1 Relationship deep analysis",
+          "Unlimited Decision Journal for 30 days",
+          "No auto-renewal",
+        ],
+        cta: "Get the 30-Day Pass",
+      },
+      us_annual_membership: {
+        name: "Annual Membership",
+        price: "$280",
+        period: "/ year",
+        tagline: "Our best value for ongoing self and relationship insight",
+        features: [
+          "1 Personal deep analysis per year",
+          "2 Relationship deep analyses every month (no rollover)",
+          "2 Gift Personal coupons to share, once at signup",
+          "Unlimited Decision Journal all year",
+          "Early access to new features",
+          "Extra Relationship analyses at $9.99 each after your monthly 2",
+        ],
+        cta: "Become a Member",
+      },
+      us_additional_relationship: {
+        name: "Additional Relationship",
+        price: "$9.99",
+        period: "/ one-time",
+        tagline: "For members who've used this cycle's 2 included Relationship analyses",
+        features: [],
+        cta: "Buy one more",
+      },
+      kr_personal_premium: {
+        name: "Personal",
+        price: "₩7,900",
+        period: "/ one-time",
+        tagline: "A deep report connecting your innate nature and current self",
+        features: ["1 Personal deep analysis generation", "View it again anytime after it's generated"],
+        cta: "Get Personal",
+      },
+      kr_relationship_premium: {
+        name: "Relationship",
+        price: "₩14,900",
+        period: "/ one-time",
+        tagline: "A deep dive into one specific relationship",
+        features: ["1 Relationship deep analysis generation", "View it again anytime after it's generated"],
+        cta: "Get Relationship",
+      },
+      kr_insight_pass_30d: {
+        name: "30-Day Insight Pass",
+        price: "₩20,000",
+        period: "/ one-time",
+        tagline: "Everything you need for a full month, in one pass",
+        features: [
+          "1 Personal deep analysis",
+          "1 Relationship deep analysis",
+          "Unlimited Decision Journal for 30 days",
+          "No auto-renewal",
+        ],
+        cta: "Get the 30-Day Pass",
+      },
+      kr_relationship_triple: {
+        name: "Relationship Triple",
+        price: "₩33,000",
+        period: "/ one-time",
+        tagline: "3 Relationship deep analyses in one pack",
+        features: ["3 Relationship deep analysis generations", "View them again anytime after they're generated"],
+        cta: "Get the Triple Pack",
       },
     },
   },
@@ -2278,6 +2378,17 @@ export type MessageCatalog = {
         features: string[];
         cta: string;
       };
+    };
+    regionalPlans: {
+      us_personal_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      us_relationship_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      us_insight_pass_30d: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      us_annual_membership: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      us_additional_relationship: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      kr_personal_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      kr_relationship_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      kr_insight_pass_30d: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      kr_relationship_triple: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
     };
   };
   faq: {
