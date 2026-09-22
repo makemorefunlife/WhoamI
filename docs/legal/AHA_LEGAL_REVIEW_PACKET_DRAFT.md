@@ -148,7 +148,7 @@ Both `en-US` and `ko-KR` terms explicitly identify **Paddle.com** as the exclusi
 > *"All payments and subscription transactions for our global service are processed exclusively by Paddle.com, which acts as our online reseller and the Merchant of Record (MoR)."* ([`lib/legal/termsOfService.ts:L59`](file:///C:/dev/WhoamI/lib/legal/termsOfService.ts#L59))
 
 #### B. Company Details & Address
-- Listed Company Address: *Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea*.
+- Listed Company Address: *5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea*.
 - Legal Entity Status: Currently operated by sole proprietor / preparing corporate incorporation.
 
 ### 5.3 Audit Findings per Component

@@ -3,7 +3,7 @@
 **Last updated: July 15, 2026**
 
 ## 1. About the Service
-Aha It's me ("we," "us," or "the Company"), located at Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea, provides an online service offering personality and relationship analysis based on astrology, behavioral psychology, and related frameworks, including AI-generated reports and decision-support tools (the "Service").
+Aha It's me ("we," "us," or "the Company"), located at 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea, provides an online service offering personality and relationship analysis based on astrology, behavioral psychology, and related frameworks, including AI-generated reports and decision-support tools (the "Service").
 
 ## 2. Eligibility
 You must be at least 13 years old to use the Service. If you are under 18, you represent that you have your parent or guardian's permission to use the Service.

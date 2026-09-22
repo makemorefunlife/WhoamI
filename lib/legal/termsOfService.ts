@@ -24,7 +24,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "about",
         title: "1. About the Service",
         paragraphs: [
-          'Aha It\'s me ("we," "us," or "the Company"), located at Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea, provides an online service offering personality and relationship analysis based on astrology, behavioral psychology, and related frameworks, including AI-generated reports and decision-support tools (the "Service").',
+          'Aha It\'s me ("we," "us," or "the Company"), located at 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea, provides an online service offering personality and relationship analysis based on astrology, behavioral psychology, and related frameworks, including AI-generated reports and decision-support tools (the "Service").',
         ],
       },
       {

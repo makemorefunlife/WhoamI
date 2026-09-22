@@ -52,5 +52,5 @@ We retain your personal data for as long as your account is active. Upon account
 
 ## 9. Contact
 * **Company Name:** Aha It's me
-* **Address:** Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea
+* **Address:** 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea
 * **Email:** contact@ahaitsme.com

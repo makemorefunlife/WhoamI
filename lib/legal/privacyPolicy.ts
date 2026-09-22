@@ -163,7 +163,7 @@ export const privacyPolicy: Record<Locale, PolicyDocument> = {
         title: "12. Contact",
         paragraphs: [
           "Company Name: Aha It's me",
-          "Address: Hangangro-dong, Yongsan-gu, Seoul, Republic of Korea",
+          "Address: 5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea",
           "Email: contact@ahaitsme.com",
         ],
       },
