@@ -15,14 +15,30 @@ import { logServerError } from "@/lib/security/safeLog";
  * `pdl_ntfset_...`), a DIFFERENT secret from PADDLE_SANDBOX_API_SECRET_KEY,
  * supplied here as PADDLE_SANDBOX_WEBHOOK_SECRET.
  *
- * MAX_SIGNATURE_AGE_SECONDS is a generous clock-skew/retry-delay
- * tolerance, not the primary replay defense -- paddle_webhook_events
- * (claim_paddle_webhook_event) is what actually makes redelivery safe.
- * This check only rejects a payload too old to plausibly be a live
- * delivery. FLAG FOR REVIEW: double-check Paddle's own currently
- * documented recommendation for this tolerance before Live/production use.
+ * MAX_SIGNATURE_AGE_SECONDS matches Paddle's own documented SDK default
+ * exactly: "Our SDKs have a default tolerance of five seconds between the
+ * timestamp and the current time" (developer.paddle.com/webhooks/about/
+ * signature-verification, confirmed 2026-09-23). This is replay/staleness
+ * protection at the transport layer; paddle_webhook_events
+ * (claim_paddle_webhook_event) is the separate, independent idempotency
+ * layer that makes an actual redelivery of a legitimate event safe to
+ * re-receive.
+ *
+ * On using Paddle's own Node SDK (@paddle/paddle-node-sdk) instead of this
+ * hand-rolled HMAC check: considered and deliberately NOT adopted here.
+ * The SDK's webhooks.unmarshal() is only reachable through a fully
+ * constructed `new Paddle(apiKey)` client -- it has no standalone verify
+ * function -- and it returns its own typed event/entity classes, which
+ * would mean rewriting every handler in app/api/webhooks/paddle/route.ts
+ * against a different data shape for a signature-verification change
+ * that doesn't need it. The algorithm this file implements (HMAC-SHA256
+ * of `${ts}:${rawBody}`, timing-safe compare) is exactly what Paddle's
+ * own docs specify step-by-step for a manual implementation, so there is
+ * no correctness gap being traded away -- only a dependency. Worth
+ * revisiting if this app ever adopts the SDK for other reasons (e.g. a
+ * typed API client), but not as a fix bundled into this pass.
  */
-const MAX_SIGNATURE_AGE_SECONDS = 5 * 60;
+const MAX_SIGNATURE_AGE_SECONDS = 5;
 
 function parseSignatureHeader(header: string): { ts: string; h1: string } | null {
   const out: Record<string, string> = {};

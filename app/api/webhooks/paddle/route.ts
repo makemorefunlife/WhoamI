@@ -5,6 +5,7 @@ import {
 } from "@/lib/supabase/serverClient";
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 import { verifyPaddleWebhookSignature } from "@/lib/payment/paddleWebhookVerify";
+import { processWebhookEventOnce } from "@/lib/payment/paddleWebhookState";
 import { grantUsAnnualRenewal, grantUsPurchase } from "@/lib/payment/grantUsPurchase";
 import { grantKrPurchase } from "@/lib/payment/grantKrPurchase";
 import { resolveRegionalPlan, regionalPlanHasPriceId } from "@/lib/payment/resolveRegionalPlan";
@@ -24,24 +25,27 @@ const MAX_WEBHOOK_BODY_BYTES = 512 * 1024;
  * Every request goes through, in order:
  *   1. Raw-body signature verification (verifyPaddleWebhookSignature) --
  *      BEFORE any JSON.parse, using the exact bytes Paddle sent.
- *   2. Idempotency claim (claim_paddle_webhook_event) keyed on Paddle's
- *      own event_id -- a repeat delivery (Paddle retries on anything but
- *      a 2xx, and does not guarantee exactly-once even on success) short-
- *      circuits to 200 without reprocessing. This is independent of, and
- *      in addition to, the paddle_transaction_id unique constraints on
- *      the purchase-grant tables that grantUsPurchase/grantKrPurchase/
- *      grantUsAnnualRenewal already rely on.
- *   3. A switch on event_type. Every branch either performs its action or
- *      deliberately no-ops, then falls through to
- *      mark_paddle_webhook_event_processed and a 200. Unknown event types
- *      are logged and 200'd -- Paddle should never see us fail-closed on
- *      an event type we simply don't act on.
+ *   2. processWebhookEventOnce (lib/payment/paddleWebhookState.ts) --
+ *      atomically claims the event by Paddle's own event_id and runs
+ *      handleEvent AT MOST ONCE per successful claim. See that module's
+ *      doc comment and supabase/migrations/
+ *      20260923000000_paddle_webhook_idempotency_and_ordering.sql for the
+ *      full received-vs-processed-vs-in-flight state machine -- this is
+ *      independent of, and in addition to, the paddle_transaction_id
+ *      unique constraints the purchase-grant tables already enforce.
  *
  * Response codes are chosen so Paddle's own retry behavior does the right
- * thing: 400 only for a bad/missing signature (retrying won't help --
- * Paddle should treat this as a config problem, not resend); 500 for a
- * genuine internal error (retry may help, e.g. a transient DB hiccup);
- * 200 for anything successfully handled OR deliberately skipped.
+ * thing:
+ *   - 400: bad/missing signature, malformed envelope, oversized body --
+ *     retrying will never help, this is a delivery/config problem.
+ *   - 409: another delivery of this same event is currently inside its
+ *     processing lease (see claim_paddle_webhook_event) -- ask Paddle to
+ *     retry later rather than silently trusting the in-flight attempt to
+ *     finish.
+ *   - 500: the claim RPC itself failed, or the handler threw -- Paddle
+ *     should retry (mark_paddle_webhook_event_failed has already cleared
+ *     the lease, so a fast retry can reclaim immediately).
+ *   - 200: already processed (no-op) or successfully processed just now.
  */
 export async function POST(req: Request) {
   const rawBody = await req.text();
@@ -65,9 +69,10 @@ export async function POST(req: Request) {
 
   const eventId = typeof payload.event_id === "string" ? payload.event_id : "";
   const eventType = typeof payload.event_type === "string" ? payload.event_type : "";
+  const occurredAt = typeof payload.occurred_at === "string" ? payload.occurred_at : "";
   const data = asRecord(payload.data);
 
-  if (!eventId || !eventType || !data) {
+  if (!eventId || !eventType || !occurredAt || !data) {
     logServerError("webhooks.paddle", null, "malformed_event_envelope");
     return NextResponse.json({ error: "malformed_event" }, { status: 400 });
   }
@@ -75,45 +80,27 @@ export async function POST(req: Request) {
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
 
-  const { data: claimed, error: claimError } = await supabase.rpc(
-    "claim_paddle_webhook_event",
-    { p_paddle_event_id: eventId, p_event_type: eventType },
+  const result = await processWebhookEventOnce(
+    supabase,
+    { eventId, eventType, occurredAt },
+    () => handleEvent(supabase, eventType, occurredAt, data),
   );
 
-  if (claimError) {
-    logServerError("webhooks.paddle.claim", claimError, "claim_rpc_failed");
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  switch (result.status) {
+    case "processed":
+      return NextResponse.json({ ok: true });
+    case "already_processed":
+      logServerEvent("webhooks.paddle", "duplicate_event_skipped");
+      return NextResponse.json({ ok: true, duplicate: true });
+    case "in_progress":
+      logServerEvent("webhooks.paddle", "event_in_progress_elsewhere");
+      return NextResponse.json({ error: "in_progress" }, { status: 409 });
+    case "claim_error":
+      return NextResponse.json({ error: "internal_error" }, { status: 500 });
+    case "handler_failed":
+      logServerError("webhooks.paddle.handle", result.error, `handler_failed_${eventType}`);
+      return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
-
-  if (claimed !== true) {
-    // Already seen (and already processed, or currently in flight from a
-    // near-simultaneous redelivery) -- 200 without reprocessing.
-    logServerEvent("webhooks.paddle", "duplicate_event_skipped");
-    return NextResponse.json({ ok: true, duplicate: true });
-  }
-
-  try {
-    await handleEvent(supabase, eventType, data);
-  } catch (e) {
-    logServerError("webhooks.paddle.handle", e, `handler_failed_${eventType}`);
-    // Leave processed_at null -- claim_paddle_webhook_event already has
-    // this event_id recorded, so a Paddle retry after this 500 will be
-    // seen as a duplicate above and never actually re-run handleEvent.
-    // That's an acceptable, explicit trade-off (never double-grant) --
-    // see the idempotency note in the final report for how this is
-    // meant to be operationally monitored (received_at with a null
-    // processed_at older than a few minutes = needs manual look).
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
-  }
-
-  const { error: markError } = await supabase.rpc("mark_paddle_webhook_event_processed", {
-    p_paddle_event_id: eventId,
-  });
-  if (markError) {
-    logServerError("webhooks.paddle.mark", markError, "mark_processed_failed");
-  }
-
-  return NextResponse.json({ ok: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -125,6 +112,7 @@ type SupabaseLike = ReturnType<typeof createRouteSupabaseClient>;
 async function handleEvent(
   supabase: NonNullable<SupabaseLike>,
   eventType: string,
+  occurredAt: string,
   data: Record<string, unknown>,
 ): Promise<void> {
   switch (eventType) {
@@ -146,6 +134,7 @@ async function handleEvent(
       await supabase.rpc("set_membership_cancel_schedule", {
         p_paddle_subscription_id: subscriptionId,
         p_cancel_at_period_end: isScheduledToCancel,
+        p_event_occurred_at: occurredAt,
       });
       return;
     }
@@ -155,6 +144,7 @@ async function handleEvent(
       if (!subscriptionId) return;
       await supabase.rpc("mark_membership_canceled", {
         p_paddle_subscription_id: subscriptionId,
+        p_event_occurred_at: occurredAt,
       });
       return;
     }
@@ -174,7 +164,7 @@ async function handleEvent(
 
     case "adjustment.created":
     case "adjustment.updated": {
-      await handleAdjustment(supabase, data);
+      await handleAdjustment(supabase, occurredAt, data);
       return;
     }
 
@@ -300,6 +290,7 @@ async function handleTransactionCompleted(
 
 async function handleAdjustment(
   supabase: NonNullable<SupabaseLike>,
+  occurredAt: string,
   data: Record<string, unknown>,
 ): Promise<void> {
   const action = asString(data.action);
@@ -330,6 +321,7 @@ async function handleAdjustment(
   if (subscriptionId) {
     await supabase.rpc("mark_membership_refunded", {
       p_paddle_subscription_id: subscriptionId,
+      p_event_occurred_at: occurredAt,
     });
     return;
   }
