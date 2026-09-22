@@ -4,6 +4,7 @@ import {
   type BirthV2Session,
 } from "@/lib/v2/onboarding/birthSession";
 import { fetchReportBirthFromApi } from "@/lib/v2/onboarding/fetchReportBirthClient";
+import type { ReportBirthRow } from "@/lib/v2/onboarding/resolveReportBirth";
 import {
   birthConflicts,
   resolveReportBirth,
@@ -22,6 +23,13 @@ type SyncBirthResult = {
   birth: BirthV2Session | null;
   source: ResolvedReportBirth["source"] | null;
   sessionCorrected: boolean;
+  /**
+   * The `reports` DB row this call already fetched to resolve `birth`.
+   * Exposed so callers that separately need the raw DB row (e.g. a
+   * backfill check) can reuse it instead of issuing a second identical
+   * GET /api/report/birth request for the same reportId.
+   */
+  dbRow: ReportBirthRow | null;
 };
 
 /**
@@ -32,7 +40,7 @@ export async function syncBirthSessionFromDb(
   reportId: string,
 ): Promise<SyncBirthResult> {
   if (!reportId.trim()) {
-    return { birth: null, source: null, sessionCorrected: false };
+    return { birth: null, source: null, sessionCorrected: false, dbRow: null };
   }
 
   const dbRow = await fetchReportBirthFromApi(reportId);
@@ -46,6 +54,7 @@ export async function syncBirthSessionFromDb(
         sessionBefore && hasMinimalBirth(sessionBefore) ? sessionBefore : null,
       source: null,
       sessionCorrected: false,
+      dbRow,
     };
   }
 
@@ -58,7 +67,7 @@ export async function syncBirthSessionFromDb(
     });
   }
 
-  return { birth, source, sessionCorrected: hadConflict };
+  return { birth, source, sessionCorrected: hadConflict, dbRow };
 }
 
 /** DB에서 출생 session 복구 (항상 DB 우선) */

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchReportBirthFromApi } from "@/lib/v2/onboarding/fetchReportBirthClient";
 import {
   canBackfillBirthFromSession,
   resolveReportBirth,
@@ -64,7 +63,10 @@ export function useBlueprintBundle(reportId: string, enabled: boolean) {
         return;
       }
 
-      const dbRow = await fetchReportBirthFromApi(reportId);
+      // `synced` (from syncBirthSessionFromDb above) already fetched this
+      // same reportId's DB row -- reuse it instead of a second identical
+      // GET /api/report/birth round trip.
+      const dbRow = synced.dbRow;
       const sessionBirth = readBirthV2Session(reportId);
       if (canBackfillBirthFromSession({ db: dbRow, session: sessionBirth })) {
         const resolved = resolveReportBirth({ db: dbRow, session: sessionBirth });
