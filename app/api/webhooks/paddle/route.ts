@@ -6,6 +6,7 @@ import {
 import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 import { verifyPaddleWebhookSignature } from "@/lib/payment/paddleWebhookVerify";
 import { processWebhookEventOnce } from "@/lib/payment/paddleWebhookState";
+import { processPaddleAdjustmentOnce } from "@/lib/payment/paddleAdjustmentClaim";
 import { grantUsAnnualRenewal, grantUsPurchase } from "@/lib/payment/grantUsPurchase";
 import { grantKrPurchase } from "@/lib/payment/grantKrPurchase";
 import { resolveRegionalPlan, regionalPlanHasPriceId } from "@/lib/payment/resolveRegionalPlan";
@@ -293,6 +294,7 @@ async function handleAdjustment(
   occurredAt: string,
   data: Record<string, unknown>,
 ): Promise<void> {
+  const adjustmentId = asString(data.id);
   const action = asString(data.action);
   const status = asString(data.status);
   const type = asString(data.type);
@@ -303,7 +305,10 @@ async function handleAdjustment(
     // Chargebacks, credits, pending/rejected refunds: logged only. A
     // pending_approval refund has not actually moved money yet, so
     // nothing should be revoked until it lands as "approved" (Paddle
-    // will send a follow-up adjustment.updated when it does).
+    // will send a follow-up adjustment.updated when it does). Nothing
+    // is claimed at the adjustment-id level for these -- only an
+    // actually-actionable (refund, approved, full) event ever reaches
+    // the claim below.
     logServerEvent("webhooks.paddle", `adjustment_noop_${action ?? "unknown"}_${status ?? "unknown"}`);
     return;
   }
@@ -318,26 +323,60 @@ async function handleAdjustment(
     return;
   }
 
-  if (subscriptionId) {
-    await supabase.rpc("mark_membership_refunded", {
-      p_paddle_subscription_id: subscriptionId,
-      p_event_occurred_at: occurredAt,
-    });
+  if (!adjustmentId) {
+    logServerError("webhooks.paddle.adjustment", null, "adjustment_missing_id");
     return;
   }
 
-  if (!transactionId) {
-    logServerError("webhooks.paddle.adjustment", null, "refund_missing_ids");
+  // A single real-world refund can arrive as adjustment.created AND one
+  // or more adjustment.updated -- each its own legitimate, independently
+  // event-id-claimed webhook delivery, but all pointing at this SAME
+  // adjustment.id. The outer event-id claim (processWebhookEventOnce)
+  // does nothing to stop two of THOSE from both reaching this point
+  // concurrently, so the actual clawback is claimed a second time here,
+  // keyed on adjustment_id (see lib/payment/paddleAdjustmentClaim.ts and
+  // supabase/migrations/20260923010000_paddle_adjustment_idempotency.sql).
+  const claim = await processPaddleAdjustmentOnce(
+    supabase,
+    { adjustmentId, action, status, transactionId, subscriptionId },
+    async () => {
+      if (subscriptionId) {
+        await supabase.rpc("mark_membership_refunded", {
+          p_paddle_subscription_id: subscriptionId,
+          p_event_occurred_at: occurredAt,
+        });
+        return;
+      }
+
+      if (!transactionId) {
+        throw new Error("refund_missing_ids");
+      }
+
+      const grantRow = await findPurchaseGrantByTransactionId(supabase, transactionId);
+      if (!grantRow) {
+        throw new Error("refund_grant_not_found");
+      }
+
+      await supabase.rpc("revoke_remaining_credit_for_grant", { p_grant_id: grantRow.id });
+    },
+  );
+
+  if (claim.status === "processed" || claim.status === "already_processed") {
     return;
   }
 
-  const grantRow = await findPurchaseGrantByTransactionId(supabase, transactionId);
-  if (!grantRow) {
-    logServerError("webhooks.paddle.adjustment", null, "refund_grant_not_found");
-    return;
+  // "in_progress" (a concurrent delivery for this same adjustment_id is
+  // currently clawing it back), "claim_error", and "handler_failed" all
+  // become a thrown error here, which processWebhookEventOnce (the OUTER,
+  // event-id-level state machine) turns into a 500 -- Paddle retries the
+  // whole event later, by which point the adjustment-level claim will
+  // have resolved to either "processed" (clean no-op next time) or be
+  // reclaimable again (its own lease/failure handling, same as the
+  // event-level one).
+  if (claim.status === "handler_failed") {
+    throw claim.error instanceof Error ? claim.error : new Error(String(claim.error));
   }
-
-  await supabase.rpc("revoke_remaining_credit_for_grant", { p_grant_id: grantRow.id });
+  throw new Error(`adjustment_claim_${claim.status}`);
 }
 
 async function findPurchaseGrantByTransactionId(
