@@ -45,6 +45,12 @@ export default function DoNotSellContent() {
 
         <article className="mt-10 space-y-3.5 sm:space-y-4">
           <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
+            {copy.futureChanges}
+          </p>
+          <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
+            {copy.questionsIntro}
+          </p>
+          <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
             {copy.emailLabel}:{" "}
             <a
               href="mailto:contact@ahaitsme.com"
@@ -54,11 +60,17 @@ export default function DoNotSellContent() {
             </a>
           </p>
           <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
+            {copy.officerLabel}: {copy.officerName}
+          </p>
+          <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
+            {copy.phoneLabel}: {copy.phone}
+          </p>
+          <p className="text-[15px] leading-[1.8] text-on-surface-variant sm:text-[15.5px] sm:leading-[1.85]">
             <LocaleLink
               href={ROUTES.privacy}
               className="font-medium text-secondary underline decoration-secondary/35 underline-offset-2 transition hover:text-accent-emerald hover:decoration-accent-emerald/50"
             >
-              {messages.footer.privacy}
+              {copy.privacyPolicyLinkLabel}
             </LocaleLink>
           </p>
         </article>

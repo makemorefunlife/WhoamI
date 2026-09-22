@@ -1234,7 +1234,7 @@ export const messagesEnUS = {
       mailOrderLabel: "Mail-order registration no.",
       mailOrderNumber: "",
       addressLabel: "Address",
-      address: "Seoul, South Korea",
+      address: "5F, 18 Eonju-ro 134-gil, Gangnam-gu, Seoul, Republic of Korea",
       phoneLabel: "Phone",
       phone: "+1 626-381-8420",
       phoneNote: "We don't offer phone support. Please contact us by email.",
@@ -1284,15 +1284,25 @@ export const messagesEnUS = {
     message: "We use cookies to provide a smooth service experience.",
     accept: "Accept",
     reject: "Decline",
-    doNotSell: "Do Not Sell My Personal Information",
+    doNotSell: "Do Not Sell or Share My Personal Information",
   },
   doNotSellPage: {
-    title: "Do Not Sell My Personal Information",
-    body: "Under the California Consumer Privacy Act (CCPA), you may request that we do not sell or share your personal information. Email us with the subject “Do Not Sell” and we will process your request.",
-    emailLabel: "Contact",
-    metaTitle: "Do Not Sell My Personal Information | Aha It's me!",
+    title: "Do Not Sell or Share My Personal Information",
+    body:
+      "Aha It's me does not currently sell your personal information for monetary consideration or knowingly share your personal information with third parties for cross-context behavioral advertising.",
+    futureChanges:
+      "If our practices change in a way that creates an applicable right to opt out under the California Consumer Privacy Act (CCPA), we will update this page and provide the required opt-out mechanism.",
+    questionsIntro:
+      "If you have questions about how your personal information is used, or would like to submit a privacy request, please contact us.",
+    emailLabel: "Email",
+    officerLabel: "Privacy Officer",
+    officerName: "Sunghyun Hong",
+    phoneLabel: "Phone",
+    phone: "+1 626-381-8420",
+    privacyPolicyLinkLabel: "Read our Privacy Policy",
+    metaTitle: "Do Not Sell or Share My Personal Information | Aha It's me!",
     metaDescription:
-      "Submit a CCPA request to opt out of the sale or sharing of your personal information.",
+      "Aha It's me does not currently sell or share your personal information for cross-context behavioral advertising. Learn how to reach us with privacy questions or requests.",
   },
   paymentRefund: {
     checkboxLabel:
@@ -2846,7 +2856,14 @@ export type MessageCatalog = {
   doNotSellPage: {
     title: string;
     body: string;
+    futureChanges: string;
+    questionsIntro: string;
     emailLabel: string;
+    officerLabel: string;
+    officerName: string;
+    phoneLabel: string;
+    phone: string;
+    privacyPolicyLinkLabel: string;
     metaTitle: string;
     metaDescription: string;
   };

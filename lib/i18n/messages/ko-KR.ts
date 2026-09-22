@@ -1240,14 +1240,25 @@ export const messagesKoKR: MessageCatalog = {
     message: "원활한 서비스 제공을 위해 쿠키를 사용합니다.",
     accept: "동의",
     reject: "거절",
-    doNotSell: "Do Not Sell My Personal Information",
+    doNotSell: "Do Not Sell or Share My Personal Information",
   },
   doNotSellPage: {
-    title: "Do Not Sell My Personal Information",
-    body: "캘리포니아 소비자 개인정보 보호법(CCPA)에 따라 개인정보 판매·공유 거부를 요청하실 수 있습니다. 제목에 “Do Not Sell”을 넣어 이메일로 요청해 주세요.",
-    emailLabel: "문의",
-    metaTitle: "개인정보 판매 거부 | Aha It's me!",
-    metaDescription: "CCPA에 따라 개인정보 판매·공유 거부를 요청할 수 있습니다.",
+    title: "개인정보 판매 또는 공유 거부(Do Not Sell or Share My Personal Information)",
+    body:
+      "Aha It's me는 현재 금전적 대가를 받고 이용자의 개인정보를 판매하지 않으며, 교차 맥락 행동 광고(cross-context behavioral advertising) 목적으로 제3자와 개인정보를 공유하지도 않습니다.",
+    futureChanges:
+      "향후 캘리포니아 소비자 개인정보 보호법(CCPA)상 옵트아웃 권리가 적용되는 방식으로 당사의 관행이 변경될 경우, 본 페이지를 업데이트하고 필요한 옵트아웃 수단을 제공하겠습니다.",
+    questionsIntro:
+      "개인정보 이용 방식에 대해 궁금한 점이 있으시거나 개인정보 관련 요청을 접수하고 싶으신 경우, 아래로 문의해 주세요.",
+    emailLabel: "이메일",
+    officerLabel: "개인정보 보호책임자",
+    officerName: "홍성현 (Sunghyun Hong)",
+    phoneLabel: "전화",
+    phone: "+1 626-381-8420",
+    privacyPolicyLinkLabel: "개인정보처리방침 보기",
+    metaTitle: "개인정보 판매 또는 공유 거부 | Aha It's me!",
+    metaDescription:
+      "Aha It's me는 현재 개인정보를 판매하거나 교차 맥락 행동 광고 목적으로 공유하지 않습니다. 개인정보 관련 문의 및 요청 방법을 안내합니다.",
   },
   paymentRefund: {
     /**

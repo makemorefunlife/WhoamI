@@ -69,6 +69,21 @@ const notoSerifKr = Noto_Serif_KR({
   display: "swap",
 });
 
+/**
+ * GTM container GTM-M8ZQ6BJD -- as of the 2026-09-22 privacy audit, this
+ * container is configured for GA4 analytics ONLY (confirmed with the
+ * account owner): no Google Ads, no remarketing/audience tag, no Meta
+ * Pixel, and therefore no cross-context-behavioral-advertising tag.
+ * lib/legal/privacyPolicy.ts Sections 3/5/6/10 and
+ * lib/i18n/messages/*.ts's `doNotSellPage` copy are written against that
+ * fact. INTERNAL COMPLIANCE NOTE: if Meta Pixel, Google Ads remarketing,
+ * or any other advertising/audience-sharing tag is EVER added to this GTM
+ * container, update the Privacy Policy and the Do Not Sell or Share page
+ * FIRST, and revisit components/legal/CookieBanner.tsx's actual opt-out
+ * behavior (it currently only records a localStorage preference -- it
+ * does not gate this script from loading at all) before shipping the new
+ * tag. Do not add such a tag without doing this.
+ */
 const GTM_ID = "GTM-M8ZQ6BJD";
 
 const SITE_NAME = "Aha It's me!";
