@@ -17,9 +17,15 @@ export async function grantKrPurchase(
   params: {
     clerkUserId: string;
     planId: string;
-    paddleTransactionId: string;
-    paddlePriceId: string;
+    providerTransactionId: string;
+    providerPriceId: string;
     currencyCode: string;
+    /** Which processor handled this purchase. Paddle Sandbox only today --
+     * KR may switch to Toss Payments later based on operational data, and
+     * this is the one field that would change; nothing else in this
+     * function or in process_kr_purchase has any Paddle-specific
+     * dependency. */
+    paymentProvider?: string;
   },
 ): Promise<GrantKrPurchaseResult> {
   const plan = resolveKrPlan(params.planId);
@@ -28,9 +34,10 @@ export async function grantKrPurchase(
   const { data, error } = await supabase.rpc("process_kr_purchase", {
     p_clerk_user_id: params.clerkUserId,
     p_plan_id: params.planId,
-    p_paddle_transaction_id: params.paddleTransactionId,
-    p_paddle_price_id: params.paddlePriceId,
+    p_provider_transaction_id: params.providerTransactionId,
+    p_provider_price_id: params.providerPriceId,
     p_currency_code: params.currencyCode,
+    p_payment_provider: params.paymentProvider ?? "paddle",
   });
 
   if (error) {

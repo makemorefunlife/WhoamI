@@ -54,7 +54,7 @@ export default function RegionalPricingCards() {
     const outcome = await openCheckout(planId, locale);
     if (outcome === "success" || outcome === "already_processed") {
       setResult((prev) => ({ ...prev, [planId]: "success" }));
-    } else if (outcome === "error") {
+    } else if (outcome === "error" || outcome === "ineligible") {
       setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
   }
@@ -82,6 +82,16 @@ export default function RegionalPricingCards() {
                 ) : null}
               </div>
               <p className="mt-2 text-sm leading-relaxed text-[#4A5C52]">{plan.tagline}</p>
+
+              {planId === "us_insight_pass_30d" || planId === "kr_insight_pass_30d" ? (
+                <span className="mt-3 inline-block w-fit rounded-full bg-[#3A8F6E]/10 px-2.5 py-1 text-[11px] font-semibold text-[#3A8F6E]">
+                  {messages.pricing.regionalOneTimeBadge}
+                </span>
+              ) : planId === "us_annual_membership" ? (
+                <span className="mt-3 inline-block w-fit rounded-full bg-[#C49A9C]/15 px-2.5 py-1 text-[11px] font-semibold text-[#8C5F61]">
+                  {messages.pricing.regionalAutoRenewBadge}
+                </span>
+              ) : null}
 
               <ul className="mt-6 flex-1 space-y-3">
                 {plan.features.map((feature: string) => (

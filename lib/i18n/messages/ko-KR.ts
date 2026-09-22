@@ -550,6 +550,16 @@ export const messagesKoKR: MessageCatalog = {
     popularBadge: "인기",
     betaNotice:
       "이건 Beta 테스트예요. 실제 결제는 발생하지 않고, 아래 버튼은 Sandbox 테스트 결제로 연결돼요. 베타 종료 후 자동으로 청구되는 금액은 전혀 없습니다.",
+    regionalMetaTitle: "요금제 안내 | Aha It's me!",
+    regionalMetaDescription: "Personal · Relationship · 30일 이용권 · 연간 멤버십 요금제 안내",
+    regionalHeroTitleLine1: "실제 요금제, 실제 상품",
+    regionalHeroTitleLine2: "내 사용 방식에 맞는 플랜을 골라보세요",
+    regionalHeroBody:
+      "일회성 리포트부터 30일 이용권, 연간 멤버십까지 — 아래 모든 플랜은 실제 상품과 실제 가격입니다.",
+    regionalSandboxNotice:
+      "결제는 현재 결제 심사가 진행되는 동안 Paddle Sandbox 테스트 모드로 작동합니다. 실제 결제는 아직 발생하지 않으며, 여기서 구매하셔도 카드가 청구되지 않습니다.",
+    regionalOneTimeBadge: "1회성 구매 · 자동갱신 없음",
+    regionalAutoRenewBadge: "연 1회 자동갱신 (해지 전까지)",
     plans: {
       personal_premium: {
         name: "Personal Premium",

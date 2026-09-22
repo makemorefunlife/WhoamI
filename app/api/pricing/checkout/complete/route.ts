@@ -124,9 +124,10 @@ export async function POST(req: Request) {
     const result = await grantKrPurchase(supabase, {
       clerkUserId: userId,
       planId,
-      paddleTransactionId: transactionId,
-      paddlePriceId: matchedPriceId,
+      providerTransactionId: transactionId,
+      providerPriceId: matchedPriceId,
       currencyCode: txn.currency_code,
+      paymentProvider: "paddle",
     });
 
     if (!result.ok) {

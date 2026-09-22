@@ -187,15 +187,15 @@ async function main() {
       const t = txn();
       const { data } = await supabase.rpc("process_kr_purchase", {
         p_clerk_user_id: TEST_USER, p_plan_id: "kr_relationship_triple",
-        p_paddle_transaction_id: t, p_paddle_price_id: "pri_01m346qtbw408b5nnqgw9bmbj8",
-        p_currency_code: "KRW",
+        p_provider_transaction_id: t, p_provider_price_id: "pri_01m346qtbw408b5nnqgw9bmbj8",
+        p_currency_code: "KRW", p_payment_provider: "paddle",
       });
       step("kr_relationship_triple grants ok", data?.[0]?.ok === true);
 
       const { data: replay } = await supabase.rpc("process_kr_purchase", {
         p_clerk_user_id: TEST_USER, p_plan_id: "kr_relationship_triple",
-        p_paddle_transaction_id: t, p_paddle_price_id: "pri_01m346qtbw408b5nnqgw9bmbj8",
-        p_currency_code: "KRW",
+        p_provider_transaction_id: t, p_provider_price_id: "pri_01m346qtbw408b5nnqgw9bmbj8",
+        p_currency_code: "KRW", p_payment_provider: "paddle",
       });
       step("replaying a KR transaction is also idempotent", replay?.[0]?.already_processed === true);
     }

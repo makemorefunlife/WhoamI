@@ -52,7 +52,12 @@ function loadAndInitPaddle(clientToken: string): Promise<void> {
   return paddleReadyPromise;
 }
 
-export type RegionalCheckoutOutcome = "success" | "already_processed" | "cancelled" | "error";
+export type RegionalCheckoutOutcome =
+  | "success"
+  | "already_processed"
+  | "cancelled"
+  | "error"
+  | "ineligible";
 
 /**
  * Opens a Paddle SANDBOX checkout for one US or KR regional-catalog plan.
@@ -74,6 +79,20 @@ export function useRegionalCheckout() {
 
       setBusy(true);
       try {
+        // Checkout-CREATION-time server-side re-validation: re-resolves
+        // plan/locale/eligibility right before Paddle opens, so a stale
+        // client or a client that raced past its own eligibility gate can
+        // never reach a real checkout window. Never trust the client-side
+        // `match` above for anything but the price id to pass Paddle.
+        const prepareRes = await fetch("/api/pricing/checkout/prepare", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-aha-locale": locale },
+          body: JSON.stringify({ planId }),
+        });
+        if (!prepareRes.ok) {
+          return prepareRes.status === 403 ? "ineligible" : "error";
+        }
+
         await loadAndInitPaddle(clientToken);
         const priceId = match.priceId;
 

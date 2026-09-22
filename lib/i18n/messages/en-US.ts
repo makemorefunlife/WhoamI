@@ -578,6 +578,16 @@ export const messagesEnUS = {
     popularBadge: "Popular",
     betaNotice:
       "This is a Beta test. No real charge happens — every button below opens a Sandbox test checkout. Nothing bills automatically after the Beta ends.",
+    regionalMetaTitle: "Pricing | Aha It's me!",
+    regionalMetaDescription: "Personal · Relationship · 30-Day Pass · Annual Membership pricing for Aha It's me!",
+    regionalHeroTitleLine1: "Real pricing, real product",
+    regionalHeroTitleLine2: "Pick what fits how you use Aha It's me!",
+    regionalHeroBody:
+      "One-time reports, a 30-day pass, or an annual membership — every plan below is the actual product and the actual price.",
+    regionalSandboxNotice:
+      "Checkout is currently running in Paddle Sandbox test mode while payment processing is under review. No real charge happens yet — nothing you buy here will bill your card.",
+    regionalOneTimeBadge: "One-time purchase · no auto-renewal",
+    regionalAutoRenewBadge: "Auto-renews annually until cancelled",
     plans: {
       personal_premium: {
         name: "Personal Premium",
@@ -2345,6 +2355,14 @@ export type MessageCatalog = {
     heroBody: string;
     popularBadge: string;
     betaNotice: string;
+    regionalMetaTitle: string;
+    regionalMetaDescription: string;
+    regionalHeroTitleLine1: string;
+    regionalHeroTitleLine2: string;
+    regionalHeroBody: string;
+    regionalSandboxNotice: string;
+    regionalOneTimeBadge: string;
+    regionalAutoRenewBadge: string;
     plans: {
       personal_premium: {
         name: string;
