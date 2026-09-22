@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     if (access.error) return access.error;
 
     // Race-safe: only open → complete.
-    const { data, error } = await supabase
+    const { data: updated, error } = await supabase
       .from("invites")
       .update({
         accepted_report_id: idCheck.value,
@@ -93,11 +93,41 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.errors.inviteCompleteFailed }, { status: 500 });
     }
 
+    let data = updated;
+
     if (!data) {
-      return NextResponse.json(
-        { error: messages.errors.inviteUnavailable },
-        { status: 404 },
-      );
+      // The atomic open -> complete transition above only ever succeeds
+      // once. A second completion attempt by the SAME accepter (a
+      // re-click of the same chat link, a page bounce mid-signup that
+      // re-runs the auto-complete effect, etc.) is not an error -- they
+      // already have this connection. Look the token up without the
+      // status filter to tell that case apart from a genuinely
+      // unusable invite (already used by someone else, or cancelled),
+      // and re-affirm the existing connection instead of dead-ending
+      // with a bare "unavailable" and no relationship info -- mirrors
+      // /api/connect/complete's idempotent re-completion.
+      const { data: existing, error: existingErr } = await supabase
+        .from("invites")
+        .select("id, status, from_report_id, accepted_report_id")
+        .eq("invite_token", inviteToken)
+        .maybeSingle();
+
+      if (existingErr) {
+        logServerError("invite/complete.lookup", existingErr);
+      }
+
+      if (
+        existing &&
+        existing.status === "complete" &&
+        existing.accepted_report_id === idCheck.value
+      ) {
+        data = { id: existing.id, from_report_id: existing.from_report_id };
+      } else {
+        return NextResponse.json(
+          { error: messages.errors.inviteUnavailable },
+          { status: 404 },
+        );
+      }
     }
 
     let relationship_report_id: string | null = null;
