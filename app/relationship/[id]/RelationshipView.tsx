@@ -17,6 +17,7 @@ import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useDockOverlayLock } from "@/lib/hooks/useDockOverlayLock";
 import { useRelationshipDetail } from "./useRelationshipDetail";
+import { PwaReportActionCard } from "@/components/account/InstallAppButton";
 
 export default function RelationshipView({
   relationshipReportId,
@@ -369,6 +370,8 @@ export default function RelationshipView({
               variant="stitch"
             />
           </div>
+
+          <PwaReportActionCard />
 
           <button
             type="button"

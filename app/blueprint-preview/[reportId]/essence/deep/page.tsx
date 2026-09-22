@@ -15,6 +15,7 @@ import { hydrateSurveySession } from "@/lib/v2/survey/surveyClient";
 import { resultsDashboardPath } from "@/lib/v2/results/canShowResultsDashboard";
 import { ROUTES, withReportId } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { PwaReportActionCard } from "@/components/account/InstallAppButton";
 
 function EssenceDeepContent() {
   const router = useRouter();
@@ -125,6 +126,8 @@ function EssenceDeepContent() {
           onRetry={() => retry()}
           onRegenerateFresh={() => regenerateFresh()}
         />
+
+        <PwaReportActionCard />
 
         <div className="flex flex-col gap-3">
           <button

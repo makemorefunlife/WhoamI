@@ -30,6 +30,7 @@ export const ROUTES = {
   legalConsent: "/onboarding/legal-consent",
   invite: "/invite",
   connect: "/connect",
+  thankYou: "/thank-you",
 } as const;
 
 /** Prefix path for a locale (`/kr/...` or unprefixed). */

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import StitchAppFooter from "@/components/layout/stitch/StitchAppFooter";
 import StitchFixedHeader from "@/components/layout/stitch/StitchFixedHeader";
 import StitchScrollDock from "@/components/layout/stitch/StitchScrollDock";
+import { PwaFloatingBanner } from "@/components/account/InstallAppButton";
 
 export default function StitchAppChrome({
   children,
@@ -26,6 +27,7 @@ export default function StitchAppChrome({
         <StitchAppFooter />
       </div>
       <StitchScrollDock onOpenAuth={onOpenAuth} />
+      <PwaFloatingBanner />
     </>
   );
 }

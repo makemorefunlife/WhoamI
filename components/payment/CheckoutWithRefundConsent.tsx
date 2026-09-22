@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import GlowButton from "@/components/space/GlowButton";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useBetaCheckout } from "@/lib/payment/useBetaCheckout";
@@ -16,22 +15,6 @@ type Props = {
   onPurchased?: (planId: BetaPlanId) => void;
 };
 
-/**
- * 결제 직전 "생성 개시 후 청약철회 제한 가능" 필수 동의 + Paddle SANDBOX checkout.
- *
- * Wording deliberately avoids an unconditional "no refunds after
- * generation" claim (that contradicted refundPolicy.ts's own carve-out for
- * confirmed system defects, and the 2026-09-18 legal consultation memo
- * flagged exactly this as a risk) — it now states withdrawal "may be
- * limited" and links out to the actual refund policy.
- *
- * Both locales go through Paddle sandbox (the earlier Toss-for-ko-KR
- * branch was dropped — no Toss sandbox credentials exist in this app, and
- * running two payment providers for a 1-week Beta was unnecessary scope).
- * See useBetaCheckout.ts: the actual grant only happens after the server
- * re-verifies the transaction against Paddle's own Sandbox API — this
- * component never grants anything itself, it only reports the outcome.
- */
 export default function CheckoutWithRefundConsent({
   planId,
   ctaLabel,
@@ -57,7 +40,7 @@ export default function CheckoutWithRefundConsent({
       setResult("success");
       onPurchased?.(planId);
     } else if (outcome === "cancelled") {
-      // User closed the Paddle overlay without paying — no message needed.
+      // User closed the Paddle overlay without paying
     } else {
       setResult("error");
     }
@@ -65,10 +48,10 @@ export default function CheckoutWithRefundConsent({
 
   return (
     <div className="mt-8 space-y-3">
-      <label className="flex cursor-pointer items-start gap-2.5 text-left text-[12px] leading-snug text-white/70">
+      <label className="flex cursor-pointer items-start gap-2.5 text-left text-[12px] leading-snug text-[#4A5C52]">
         <input
           type="checkbox"
-          className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/30"
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#D4CFC4] text-[#1A3328] focus:ring-[#1A3328]"
           checked={agreed}
           onChange={(e) => {
             setAgreed(e.target.checked);
@@ -79,7 +62,7 @@ export default function CheckoutWithRefundConsent({
           {copy.checkboxLabel}{" "}
           <LocaleLink
             href={ROUTES.refund}
-            className="underline decoration-white/40 underline-offset-2 hover:text-white"
+            className="underline decoration-[#1A3328]/40 underline-offset-2 hover:text-[#1A3328]"
             target="_blank"
           >
             {copy.refundPolicyLinkLabel}
@@ -88,24 +71,29 @@ export default function CheckoutWithRefundConsent({
       </label>
 
       {hint ? (
-        <p className="text-[11px] text-amber-200/95">{copy.requiredHint}</p>
+        <p className="text-[11px] font-medium text-amber-700">{copy.requiredHint}</p>
       ) : null}
 
       {result === "success" ? (
-        <p className="text-[12px] font-medium text-emerald-300/95">{copy.betaSandboxSuccess}</p>
+        <p className="text-[12px] font-medium text-emerald-700">{copy.betaSandboxSuccess}</p>
       ) : result === "error" ? (
-        <p className="text-[12px] font-medium text-rose-300/95">{copy.betaSandboxError}</p>
+        <p className="text-[12px] font-medium text-rose-700">{copy.betaSandboxError}</p>
       ) : null}
 
-      <GlowButton
+      <button
         type="button"
-        variant={highlighted ? "primary" : "secondary"}
-        className="w-full text-sm font-semibold"
         disabled={busy}
         onClick={() => void startCheckout()}
+        className={[
+          "w-full cursor-pointer rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98]",
+          highlighted
+            ? "bg-gradient-to-b from-[#234A38] to-[#1A3328] text-[#FFFDF8] shadow-[0_10px_24px_rgba(26,51,40,0.22)] hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(26,51,40,0.28)]"
+            : "border border-[#1A3328]/30 bg-[#FFFDF8] text-[#1A3328] shadow-sm hover:bg-[#F5F0E8]",
+          busy ? "cursor-not-allowed opacity-60" : "",
+        ].join(" ")}
       >
         {busy ? copy.processing : ctaLabel}
-      </GlowButton>
+      </button>
     </div>
   );
 }

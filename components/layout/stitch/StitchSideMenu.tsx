@@ -15,6 +15,7 @@ import {
 } from "@/lib/stitch/hubPaths";
 import { useAppSession } from "@/lib/routing/useAppSession";
 import { useHydrated } from "@/lib/hooks/useHydrated";
+import { PwaMenuButton } from "@/components/account/InstallAppButton";
 
 function resolveNavHref(href: string, reportId: string): string {
   if (href === "/blueprint-preview") return blueprintPath(reportId);
@@ -200,6 +201,10 @@ export default function StitchSideMenu({
                 onNavigate={onClose}
               />
             ))}
+          </div>
+
+          <div className="mt-4 px-1">
+            <PwaMenuButton onCloseMenu={onClose} />
           </div>
 
           <div className="mt-10 space-y-3.5 border-t border-outline-variant/30 px-1 pt-5">
