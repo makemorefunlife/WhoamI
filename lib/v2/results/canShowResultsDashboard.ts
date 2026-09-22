@@ -5,10 +5,14 @@ export function hasResultsDashboardPrerequisites(
   reportId: string,
   surveyCompleted?: boolean,
   birthDate?: string | null,
+  /** US/KR onboarding split (see lib/i18n/localePolicy.ts). Default true = unchanged behavior. */
+  surveyRequired = true,
 ): boolean {
   if (!reportId.trim()) return false;
   const surveyOk =
-    surveyCompleted === true || hasSurveyV2Session(reportId);
+    !surveyRequired ||
+    surveyCompleted === true ||
+    hasSurveyV2Session(reportId);
   if (!surveyOk) return false;
 
   if (birthDate?.trim()) return true;

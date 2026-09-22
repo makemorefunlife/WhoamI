@@ -27,11 +27,19 @@ export function resolveEntryDestination(params: {
   isSignedIn: boolean;
   reportIdHint?: string | null;
   viewerHint?: string | null;
+  /**
+   * US/KR onboarding split (see lib/i18n/localePolicy.ts). Defaults to
+   * true so every existing caller keeps the original survey-first
+   * contract unless it explicitly opts out (KR).
+   */
+  surveyRequired?: boolean;
 }): string | null {
   const hint = params.reportIdHint?.trim() ?? "";
   const reportId = params.session?.reportId?.trim() || hint;
+  const surveyRequired = params.surveyRequired ?? true;
   const surveyDone =
-    params.session?.surveyCompleted === true && Boolean(reportId);
+    !surveyRequired ||
+    (params.session?.surveyCompleted === true && Boolean(reportId));
   const hasBirth = Boolean(params.session?.birthDate?.trim());
 
   const hubRoute = hubRouteForIntent(params.intent, reportId || hint);
@@ -57,6 +65,7 @@ export function resolveEntryDestination(params: {
 
   if (params.intent === "birth") {
     if (!surveyDone) return withReportId(ROUTES.surveyV2, reportId);
+
     if (hasBirth) return blueprintRoute(reportId);
     return null;
   }

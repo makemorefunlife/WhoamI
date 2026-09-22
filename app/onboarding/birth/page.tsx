@@ -25,10 +25,11 @@ import { clearLiteReports } from "@/lib/v2/lite/session";
 import { clearSlimIntegratedCache } from "@/lib/v1/slim/slimIntegratedCache";
 import { invalidateReportSession } from "@/lib/home/reportSession";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 
 function BirthOnboardingContent() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
   const searchParams = useSearchParams();
   const reportIdParam = searchParams.get("reportId")?.trim() ?? "";
   const wantReset = searchParams.get("reset") === "1";
@@ -61,7 +62,10 @@ function BirthOnboardingContent() {
         return;
       }
 
-      if (!hasSurveyV2Session(canonicalId)) {
+      // US/KR onboarding split (lib/i18n/localePolicy.ts): en-US keeps the
+      // original mandatory survey-first gate; ko-KR lets Saju birth data
+      // stand alone -- the survey stays available, just not blocking.
+      if (isPsychSurveyRequired(locale) && !hasSurveyV2Session(canonicalId)) {
         router.replace(
           localize(`/survey-v2?reportId=${encodeURIComponent(canonicalId)}`),
         );

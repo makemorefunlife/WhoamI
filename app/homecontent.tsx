@@ -35,6 +35,7 @@ import {
 } from "@/lib/stitch/hubPaths";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { isPsychSurveyRequired } from "@/lib/i18n/localePolicy";
 
 const HomeAuthSignInPanel = dynamic(
   () => import("@/components/home/HomeAuthSignInPanel"),
@@ -63,7 +64,7 @@ const emptyResume = (): ResumeState => ({
  */
 export default function HomeContent() {
   const router = useRouter();
-  const { messages, href: localize } = useLocale();
+  const { messages, href: localize, locale } = useLocale();
   const searchParams = useSearchParams();
   const { isLoaded, isSignedIn, userId } = useClerkReady();
   const { user } = useUser();
@@ -198,11 +199,23 @@ export default function HomeContent() {
         router.push(localize(`${ROUTES.inviteBirth}?${params.toString()}`));
         return;
       }
+      // US/KR onboarding split (lib/i18n/localePolicy.ts): a plain KR
+      // signup (no invite/connect token) skips the mandatory 10-question
+      // survey and goes straight to birth entry -- Saju data alone is
+      // enough for a KR base analysis. US keeps the original
+      // survey-first path unchanged. app/onboarding/birth itself still
+      // double-checks this (isPsychSurveyRequired) so a stray/shared link
+      // can't bypass the US gate.
+      if (!isPsychSurveyRequired(locale)) {
+        const params = new URLSearchParams({ reportId });
+        router.push(localize(`${ROUTES.onboardingBirth}?${params.toString()}`));
+        return;
+      }
       const params = new URLSearchParams();
       params.set("reportId", reportId);
       router.push(localize(`${ROUTES.surveyV2}?${params.toString()}`));
     },
-    [router, localize],
+    [router, localize, locale],
   );
 
   const [connectedModal, setConnectedModal] = useState<{
@@ -716,6 +729,7 @@ export default function HomeContent() {
         session: null,
         isSignedIn: isSignedIn ?? false,
         reportIdHint,
+        surveyRequired: isPsychSurveyRequired(locale),
       });
       if (hubDestination) {
         router.push(localize(hubDestination));
@@ -743,12 +757,14 @@ export default function HomeContent() {
             : null,
         isSignedIn: isSignedIn ?? false,
         reportIdHint,
+        surveyRequired: isPsychSurveyRequired(locale),
       });
       if (destination) router.push(localize(destination));
     },
     [
       createReportAndSurvey,
       isSignedIn,
+      locale,
       relCounts,
       resume.birthDate,
       resume.hasReport,
