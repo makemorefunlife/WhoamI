@@ -506,7 +506,7 @@ function InviteBirthContent() {
         */}
         <ul className="w-full space-y-2.5 rounded-2xl border border-secondary/25 bg-secondary/8 px-4 py-4">
           <li className="flex items-start gap-2.5 text-sm text-on-surface">
-            <span aria-hidden>🔮</span>
+            <span aria-hidden className="text-secondary font-bold select-none">▪</span>
             <span>
               {locale === "ko-KR"
                 ? "친구와 나의 관계 — 10가지 관계 유형 중 무엇인지 바로 확인"
@@ -514,7 +514,7 @@ function InviteBirthContent() {
             </span>
           </li>
           <li className="flex items-start gap-2.5 text-sm text-on-surface">
-            <span aria-hidden>✨</span>
+            <span aria-hidden className="text-secondary font-bold select-none">▪</span>
             <span>
               {locale === "ko-KR"
                 ? "나에 대한 무료 개인분석도 함께 볼 수 있어요"

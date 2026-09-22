@@ -128,6 +128,11 @@ function toPreviewRole(def: RelationshipRoleDefinition): FreeRelationshipPreview
  * the same input `resolveDayMasterRelationshipRole` already takes. This
  * function does not read survey/psych data at all.
  */
+function formatNim(name: string, fallback: string): string {
+  const clean = name?.trim() || fallback;
+  return clean.endsWith("님") ? clean : `${clean}님`;
+}
+
 export function composeFreeRelationshipPreview(params: {
   viewerDayMaster: string;
   otherDayMaster: string;
@@ -150,21 +155,24 @@ export function composeFreeRelationshipPreview(params: {
 
   const sameRole = otherRoleForViewer.roleId === viewerRoleForOther.roleId;
 
+  const vNim = formatNim(viewerName, "나");
+  const oNim = formatNim(otherName, "상대");
+
   const summaryKo = sameRole
-    ? `${viewerName}님과 ${otherName}님은 서로에게 '${otherRoleForViewer.labelKo}' 같은 사이예요.`
-    : `${viewerName}님에게 ${otherName}님은 '${otherRoleForViewer.labelKo}', ${otherName}님에게 ${viewerName}님은 '${viewerRoleForOther.labelKo}'에 가까운 사이예요.`;
+    ? `${vNim}과 ${oNim}은 서로에게 '${otherRoleForViewer.labelKo}' 같은 사이예요.`
+    : `${vNim}에게 ${oNim}은 '${otherRoleForViewer.labelKo}', ${oNim}에게 ${vNim}은 '${viewerRoleForOther.labelKo}'에 가까운 사이예요.`;
   const summaryEn = sameRole
     ? `${viewerName} and ${otherName} are each other's "${otherRoleForViewer.labelEn}."`
     : `${otherName} tends to feel like ${viewerName}'s "${otherRoleForViewer.labelEn}," while ${viewerName} tends to feel like ${otherName}'s "${viewerRoleForOther.labelEn}."`;
 
-  const fitPoint1Ko = `${otherName}님은 ${otherRoleForViewer.descriptionKo}`;
+  const fitPoint1Ko = `${oNim}은 ${otherRoleForViewer.descriptionKo}`;
   const fitPoint1En = otherRoleForViewer.descriptionEn;
-  const fitPoint2Ko = `${viewerName}님은 ${otherName}님에게 ${viewerRoleForOther.descriptionKo}`;
+  const fitPoint2Ko = `${vNim}은 ${oNim}에게 ${viewerRoleForOther.descriptionKo}`;
   const fitPoint2En = viewerRoleForOther.descriptionEn;
 
   const frictionKo = sameRole
     ? `둘 다 서로를 '${otherRoleForViewer.labelKo}'로 느끼는 비슷한 결의 사이예요. 편한 만큼, 기대고 싶은 마음이 양쪽 다 커질 수 있으니 균형을 챙겨보세요.`
-    : `${viewerName}님에게 ${otherName}님은 '${otherRoleForViewer.labelKo}'로 느껴지지만, ${otherName}님에게 ${viewerName}님은 '${viewerRoleForOther.labelKo}'로 느껴질 수 있어요. 서로 기대하는 지점이 다를 수 있다는 걸 알아두면 덜 엇갈려요.`;
+    : `${vNim}에게 ${oNim}은 '${otherRoleForViewer.labelKo}'로 느껴지지만, ${oNim}에게 ${vNim}은 '${viewerRoleForOther.labelKo}'로 느껴질 수 있어요. 서로 기대하는 지점이 다를 수 있다는 걸 알아두면 덜 엇갈려요.`;
   const frictionEn = sameRole
     ? `You're both leaning on a similar role for each other ("${otherRoleForViewer.labelEn}") -- since it's comfortable on both sides, keep an eye on balance so neither of you over-relies on it.`
     : `${otherName} may feel like your "${otherRoleForViewer.labelEn}," while you may feel like ${otherName}'s "${viewerRoleForOther.labelEn}." Knowing you're each expecting something a little different helps avoid crossed wires.`;

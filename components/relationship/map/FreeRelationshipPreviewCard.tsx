@@ -20,6 +20,7 @@ type FreePreviewApiState =
       status: "ready";
       viewerSurveyCompleted: boolean;
       otherSurveyCompleted: boolean;
+      viewerName: string;
       otherName: string;
       preview: FreeRelationshipPreviewResult;
     };
@@ -72,6 +73,7 @@ export default function FreeRelationshipPreviewCard({
           status: "ready",
           viewerSurveyCompleted: Boolean(data.viewerSurveyCompleted),
           otherSurveyCompleted: Boolean(data.otherSurveyCompleted),
+          viewerName: typeof data.viewerName === "string" ? data.viewerName : "",
           otherName: typeof data.otherName === "string" ? data.otherName : "",
           preview: data.preview as FreeRelationshipPreviewResult,
         });
@@ -106,14 +108,15 @@ export default function FreeRelationshipPreviewCard({
     return null;
   }
 
-  const { preview, viewerSurveyCompleted, otherSurveyCompleted, otherName } = state;
+  const { preview, viewerSurveyCompleted, otherSurveyCompleted, viewerName, otherName } = state;
+  const oNim = otherName.endsWith("님") ? otherName : `${otherName || (locale === "ko-KR" ? "상대" : "Partner")}님`;
 
   return (
     <div className="space-y-4">
       <div className={`${hubPanelClass()} space-y-5 p-4 sm:p-5`}>
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center rounded-full border border-secondary/40 bg-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-secondary">
-            {locale === "ko-KR" ? "🔮 사주 기반 무료 미리보기" : "🔮 Free birth-chart preview"}
+            {locale === "ko-KR" ? "사주 기반 무료 미리보기" : "Free birth-chart preview"}
           </span>
           {!viewerSurveyCompleted ? (
             <span className="text-[11px] text-on-surface-variant">
@@ -124,12 +127,20 @@ export default function FreeRelationshipPreviewCard({
 
         <div className="grid grid-cols-2 gap-3">
           <RolePreviewTile
-            heading={locale === "ko-KR" ? "나에게 상대는" : "They are, to me"}
+            heading={
+              locale === "ko-KR"
+                ? `나에게 ${oNim}은`
+                : `${otherName || "They"} to me`
+            }
             role={preview.otherRoleForViewer}
             locale={locale}
           />
           <RolePreviewTile
-            heading={locale === "ko-KR" ? "상대에게 나는" : "I am, to them"}
+            heading={
+              locale === "ko-KR"
+                ? `${oNim}에게 나는`
+                : `Me to ${otherName || "them"}`
+            }
             role={preview.viewerRoleForOther}
             locale={locale}
           />
@@ -186,8 +197,8 @@ export default function FreeRelationshipPreviewCard({
       */}
       <div className={`${hubPanelClass()} space-y-3 p-4 sm:p-5`}>
         <div className="flex items-start gap-3">
-          <span className="text-2xl" aria-hidden>
-            ✨
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-secondary/15 text-xs font-bold text-secondary select-none" aria-hidden>
+            ▪
           </span>
           <div className="space-y-0.5">
             <p className="text-sm font-semibold text-primary">

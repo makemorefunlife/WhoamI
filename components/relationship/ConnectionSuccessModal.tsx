@@ -39,7 +39,7 @@ export default function ConnectionSuccessModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-end justify-center p-4 sm:items-center">
+    <div className="fixed inset-0 z-[9999] flex items-end justify-center p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:items-center sm:pb-4">
       <div
         className="absolute inset-0 bg-primary/40 backdrop-blur-sm"
         onClick={onSecondary ?? undefined}
