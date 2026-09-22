@@ -189,3 +189,83 @@ export async function getCreditBalance(
     .maybeSingle();
   return (data?.balance as number | undefined) ?? 0;
 }
+
+// ---------------------------------------------------------------------------
+// US Annual Membership entitlements -- shared engine extensions. These all
+// call RPCs added in supabase/migrations/20260922040300_us_membership_functions.sql.
+// Nothing here is US-only at the schema/engine level (the RPCs are generic
+// "memberships" concepts); only lib/payment/usPricing.ts's plan ids are US-specific.
+// ---------------------------------------------------------------------------
+
+export type EnsureMonthlyGrantResult = {
+  cycleIndex: number | null;
+  granted: boolean;
+  lotId: string | null;
+};
+
+/**
+ * Lazily grants the current membership-anchored month's 2 relationship
+ * credits if this cycle hasn't been granted yet, and is a no-op otherwise
+ * (see ensure_monthly_relationship_grant's own doc comment for the
+ * atomicity/idempotency guarantee). Call this anywhere a membership's
+ * current entitlement needs to be up to date before reading it -- e.g.
+ * before showing a relationship-credit balance, or before checking
+ * Additional Relationship eligibility.
+ */
+export async function ensureMonthlyRelationshipGrant(
+  supabase: SupabaseClient,
+  membershipId: string,
+): Promise<EnsureMonthlyGrantResult | null> {
+  const { data, error } = await supabase.rpc("ensure_monthly_relationship_grant", {
+    p_membership_id: membershipId,
+  });
+  if (error) return null;
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { cycle_index: number | null; granted: boolean; lot_id: string | null }
+    | undefined;
+  if (!row) return null;
+  return { cycleIndex: row.cycle_index, granted: row.granted, lotId: row.lot_id };
+}
+
+/**
+ * Additional Relationship ($9.99) add-on eligibility: true only when the
+ * user has an active Annual membership AND this cycle's 2 included
+ * relationship credits are already fully used -- not "total relationship
+ * balance is zero" (see additional_relationship_eligible's doc comment).
+ */
+export async function isAdditionalRelationshipEligible(
+  supabase: SupabaseClient,
+  clerkUserId: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("additional_relationship_eligible", {
+    p_clerk_user_id: clerkUserId,
+  });
+  if (error) return false;
+  return data === true;
+}
+
+export type RedeemGiftCouponResult =
+  | { ok: true }
+  | { ok: false; reason: "not_found" | "already_redeemed_or_revoked" | "error" };
+
+/** Redeems a Gift Personal coupon code, granting a permanent personal credit to the redeemer. */
+export async function redeemGiftPersonalCoupon(
+  supabase: SupabaseClient,
+  params: { code: string; redeemedByClerkUserId: string },
+): Promise<RedeemGiftCouponResult> {
+  const { data, error } = await supabase.rpc("redeem_gift_personal_coupon", {
+    p_code: params.code,
+    p_redeemed_by_clerk_user_id: params.redeemedByClerkUserId,
+  });
+  if (error) return { ok: false, reason: "error" };
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { ok: boolean; reason: string | null }
+    | undefined;
+  if (!row?.ok) {
+    return {
+      ok: false,
+      reason: row?.reason === "not_found" ? "not_found" : "already_redeemed_or_revoked",
+    };
+  }
+  return { ok: true };
+}
