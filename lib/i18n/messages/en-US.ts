@@ -473,6 +473,26 @@ export const messagesEnUS = {
     billingSubtitle: "Check your payment/subscription history.",
     loading: "Loading…",
     billingComingSoon: "The billing history screen is coming soon.",
+    billingPlanLabel: "Current plan",
+    billingPlanNameAnnual: "Annual Membership",
+    billingPriceAnnual: "$280 / year",
+    billingStatusActive: "Active",
+    billingStatusCancelScheduled: "Cancels at term end",
+    billingNextRenewalLabel: "Next renewal date",
+    billingAccessUntilLabel: "You'll keep access until",
+    billingCancelButton: "Cancel membership",
+    billingCancelConfirmTitle: "Cancel your Annual Membership?",
+    billingCancelConfirmBody:
+      "You'll keep full access to your Annual Membership benefits until your current term ends, with no partial refund for the remaining days. After that date your subscription will not renew.",
+    billingCancelConfirmAction: "Yes, cancel",
+    billingCancelConfirmDismiss: "Keep membership",
+    billingCancelling: "Cancelling…",
+    billingCancelScheduledNotice: (date: string) =>
+      `Your membership will not renew after ${date}. You'll keep full access until then.`,
+    billingCancelError: "We couldn't cancel your membership. Please try again in a moment.",
+    billingNoActiveMembership: "You don't have an active Annual Membership right now.",
+    billingLoadError: "We couldn't load your billing info. Please try again.",
+    billingRenewsOnNotice: (date: string) => `Renews automatically on ${date}.`,
     backToProfile: "Back to personal info",
     settingsTitle: "Account settings",
     settingsSubtitle:
@@ -2279,6 +2299,24 @@ export type MessageCatalog = {
     billingSubtitle: string;
     loading: string;
     billingComingSoon: string;
+    billingPlanLabel: string;
+    billingPlanNameAnnual: string;
+    billingPriceAnnual: string;
+    billingStatusActive: string;
+    billingStatusCancelScheduled: string;
+    billingNextRenewalLabel: string;
+    billingAccessUntilLabel: string;
+    billingCancelButton: string;
+    billingCancelConfirmTitle: string;
+    billingCancelConfirmBody: string;
+    billingCancelConfirmAction: string;
+    billingCancelConfirmDismiss: string;
+    billingCancelling: string;
+    billingCancelScheduledNotice: (date: string) => string;
+    billingCancelError: string;
+    billingNoActiveMembership: string;
+    billingLoadError: string;
+    billingRenewsOnNotice: (date: string) => string;
     backToProfile: string;
     settingsTitle: string;
     settingsSubtitle: string;

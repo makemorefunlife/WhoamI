@@ -4,11 +4,22 @@ import {
   createRouteSupabaseClient,
   supabaseConfigErrorResponse,
 } from "@/lib/supabase/serverClient";
+import { logServerError } from "@/lib/security/safeLog";
+import { cancelPaddleSandboxSubscription } from "@/lib/payment/paddleSandboxClient";
 
 export const runtime = "nodejs";
 
 /**
  * Self-serve account deletion:
+ * 0) If this user has an ACTIVE membership with a live Paddle subscription,
+ *    cancel it at Paddle FIRST (effective_from: "immediately" -- there is
+ *    no account left afterwards to use any remaining paid term, so this
+ *    stops future billing right away rather than leaving a subscription
+ *    that keeps charging a deleted account). Deletion only proceeds once
+ *    that cancellation is confirmed; if it fails, the whole request is
+ *    aborted here and NOTHING is deleted -- this route must never report
+ *    account deletion as successful while a live Paddle subscription is
+ *    still running.
  * 1) Delete user's owned DB data (reports row delete + FK cascade -- this
  *    covers reports, survey_responses, report_analyses,
  *    relationship_reports, person_core_blueprints; all have
@@ -16,18 +27,11 @@ export const runtime = "nodejs";
  * 2) Delete/anonymize entitlement + purchase-history state
  *    (cleanup_account_entitlement_data -- see
  *    supabase/migrations/20260922070000_account_deletion_entitlement_cleanup.sql
- *    for the full retain/delete/anonymize classification). This is
- *    intentionally separate from step 1: none of these tables carry a
- *    foreign key to `reports`, so they are NEVER touched by the cascade
- *    above and would otherwise survive account deletion untouched.
+ *    for the full retain/delete/anonymize classification). This also
+ *    deletes the memberships row itself (cascading to its term/monthly
+ *    grants), so no local cancel/sync call is needed after step 0 --
+ *    the row is gone a moment later regardless.
  * 3) Delete Clerk user account
- *
- * NOTE: this does not cancel an active Paddle subscription
- * (memberships.paddle_subscription_id). If the user has a live US Annual
- * membership at deletion time, Paddle will still bill its next renewal on
- * schedule even though the local membership row is gone -- there is no
- * Paddle-side subscription-cancellation call wired up yet. Flagged as a
- * follow-up, not solved here.
  */
 export async function POST() {
   const { userId } = await auth();
@@ -37,6 +41,40 @@ export async function POST() {
 
   const supabase = createRouteSupabaseClient();
   if (!supabase) return supabaseConfigErrorResponse();
+
+  const { data: activeMembership, error: membershipLookupError } = await supabase
+    .from("memberships")
+    .select("paddle_subscription_id")
+    .eq("clerk_user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (membershipLookupError) {
+    logServerError("account.delete", membershipLookupError, "membership_lookup_failed");
+    return NextResponse.json(
+      { error: "계정 삭제 준비 중 오류가 발생했어요. 다시 시도해 주세요." },
+      { status: 500 },
+    );
+  }
+
+  const subscriptionId = activeMembership?.paddle_subscription_id as string | null | undefined;
+  if (subscriptionId) {
+    const cancelResult = await cancelPaddleSandboxSubscription(subscriptionId, "immediately");
+    if (!cancelResult) {
+      logServerError("account.delete", null, "subscription_cancel_failed");
+      // Do NOT proceed with any deletion -- report a clear failure so the
+      // caller knows the account (and the subscription) are both still
+      // intact, never a partial "account half-deleted, subscription still
+      // running" state.
+      return NextResponse.json(
+        {
+          error:
+            "구독 해지에 실패해 계정을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요.",
+        },
+        { status: 502 },
+      );
+    }
+  }
 
   const { error: deleteReportsError } = await supabase
     .from("reports")

@@ -50,3 +50,64 @@ export function transactionPriceIds(txn: PaddleTransaction): string[] {
     .map((item) => item.price?.id ?? item.price_id)
     .filter((id): id is string => Boolean(id));
 }
+
+export type PaddleSubscription = {
+  id: string;
+  status: string;
+  canceled_at?: string | null;
+  scheduled_change?: { action: string; effective_at: string; resume_at: string | null } | null;
+  current_billing_period?: { starts_at: string; ends_at: string } | null;
+};
+
+/**
+ * Cancels a Paddle Sandbox subscription server-side. Two distinct calling
+ * contexts use this with two different `effectiveFrom` values:
+ *  - The member-initiated cancel API (app/api/account/membership/cancel)
+ *    uses "next_billing_period" -- the member keeps access through the
+ *    term they already paid for, matching refundPolicy.ts's existing,
+ *    unchanged promise ("you will retain access ... until the end of your
+ *    current billing cycle").
+ *  - Account deletion (app/api/account/delete) uses "immediately" --
+ *    there is no account left to use any remaining term, so the
+ *    subscription is stopped from billing again right away rather than
+ *    left to cancel itself out at a term end nobody will ever see.
+ *
+ * Never called from the client -- PADDLE_SANDBOX_API_SECRET_KEY never
+ * leaves the server, same trust boundary as fetchPaddleSandboxTransaction.
+ */
+export async function cancelPaddleSandboxSubscription(
+  subscriptionId: string,
+  effectiveFrom: "next_billing_period" | "immediately",
+): Promise<PaddleSubscription | null> {
+  const key = process.env.PADDLE_SANDBOX_API_SECRET_KEY;
+  if (!key) {
+    logServerError("paddleSandboxClient.cancelSubscription", null, "missing_api_key");
+    return null;
+  }
+  try {
+    const res = await fetch(
+      `${PADDLE_SANDBOX_BASE}/subscriptions/${encodeURIComponent(subscriptionId)}/cancel`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ effective_from: effectiveFrom }),
+      },
+    );
+    if (!res.ok) {
+      logServerError(
+        "paddleSandboxClient.cancelSubscription",
+        null,
+        `paddle_api_error_${res.status}`,
+      );
+      return null;
+    }
+    const body = (await res.json()) as { data?: PaddleSubscription };
+    return body.data ?? null;
+  } catch (e) {
+    logServerError("paddleSandboxClient.cancelSubscription", e, "network_error");
+    return null;
+  }
+}
