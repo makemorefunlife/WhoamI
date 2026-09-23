@@ -8,8 +8,9 @@
  * OTHER participant's Clerk displayName, so every real connected friend
  * (invite or connect flow, Google OAuth or any other sign-in method)
  * permanently rendered as the generic "탐사자"/"친구" placeholder in the
- * hub friend list, the relationship detail page, the relationship map, and
- * the shared-analysis inbox — not a transient/caching issue, since nothing
+ * hub friend list, the relationship detail page, the relationship map, the
+ * shared-analysis inbox, and (missed in the original pass, fixed after
+ * live QA turned it up) the free relationship preview card — not a transient/caching issue, since nothing
  * ever populated the value being waited on.
  *
  * Fix: resolveClerkDisplayNamesByUserId batch-resolves the OTHER
@@ -86,6 +87,7 @@ section("D. every affected aggregation point selects clerk_user_id and resolves 
     ["app/api/relationship/detail/route.ts", "relationship detail page"],
     ["lib/relationship/map/fetchRelationshipMapConnections.ts", "relationship map"],
     ["app/api/relationship/share/inbox/route.ts", "shared-analysis inbox"],
+    ["app/api/relationship/map/free-preview/route.ts", "free relationship preview"],
   ];
   for (const [file, label] of checks) {
     const src = readSrc(file);
@@ -95,7 +97,7 @@ section("D. every affected aggregation point selects clerk_user_id and resolves 
       `${label} (${file}) must select clerk_user_id and call resolveClerkDisplayNamesByUserId or resolveClerkProfilesByUserId`,
     );
   }
-  ok("all 4 name-resolution call sites (hub, detail, map, shared inbox) now resolve the partner's Clerk name");
+  ok("all 5 name-resolution call sites (hub, detail, map, shared inbox, free preview) now resolve the partner's Clerk name");
 }
 
 section("E. buildSharedInboxItem accepts and prioritizes the owner's Clerk name");
@@ -119,6 +121,7 @@ section("F. a partner_manual contact's clerk_user_id (the OWNER's own id, not th
     ["app/api/relationship/list/route.ts", "hub friend list"],
     ["app/api/relationship/detail/route.ts", "relationship detail page"],
     ["lib/relationship/map/fetchRelationshipMapConnections.ts", "relationship map"],
+    ["app/api/relationship/map/free-preview/route.ts", "free relationship preview"],
   ];
   const guardPattern = /report_type\s*(!==|===)\s*"partner_manual"/;
   for (const [file, label] of checks) {
@@ -128,7 +131,7 @@ section("F. a partner_manual contact's clerk_user_id (the OWNER's own id, not th
       `${label} (${file}) must guard the Clerk-name lookup/usage against partner_manual rows`,
     );
   }
-  ok("hub list, detail page, and map all skip Clerk-name resolution for partner_manual contacts");
+  ok("hub list, detail page, map, and free preview all skip Clerk-name resolution for partner_manual contacts");
 }
 
 section("G. Friend avatars (Google/Clerk profile photo) reuse the same batched call as the name — no extra API round trip");
