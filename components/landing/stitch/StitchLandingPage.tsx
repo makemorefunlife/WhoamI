@@ -610,48 +610,43 @@ export default function StitchLandingPage({
               © {new Date().getFullYear()} Aha It&apos;s me!{" "}
               {messages.footer.copyrightSuffix}
             </p>
-            {locale === "ko-KR" ? (
-              <div className="max-w-xl space-y-0.5 text-[11px] leading-relaxed text-on-primary/55">
+            <div className="max-w-xl space-y-0.5 text-[11px] leading-relaxed text-on-primary/55">
+              <p>
+                {messages.footer.business.companyLabel}:{" "}
+                {messages.footer.business.companyName} ({messages.footer.business.ceoLabel}:{" "}
+                {messages.footer.business.ceoName})
+              </p>
+              <p>
+                {messages.footer.business.bizNumberLabel}:{" "}
+                {messages.footer.business.bizNumber}
+              </p>
+              {messages.footer.business.mailOrderNumber ? (
                 <p>
-                  {messages.footer.business.companyLabel}:{" "}
-                  {messages.footer.business.companyName}
+                  {messages.footer.business.mailOrderLabel}:{" "}
+                  {messages.footer.business.mailOrderNumber}
                 </p>
-                <p>
-                  {messages.footer.business.ceoLabel}:{" "}
-                  {messages.footer.business.ceoName}
-                </p>
-                <p>
-                  {messages.footer.business.bizNumberLabel}:{" "}
-                  {messages.footer.business.bizNumber}
-                </p>
-                {/* 확정 전에는 값이 비어 있어 렌더링 자체를 건너뜀 — placeholder 문자열이
-                    production에 그대로 노출되는 것을 막기 위함(StitchAppFooter.tsx와 동일 규칙). */}
-                {messages.footer.business.mailOrderNumber ? (
-                  <p>
-                    {messages.footer.business.mailOrderLabel}:{" "}
-                    {messages.footer.business.mailOrderNumber}
-                  </p>
-                ) : null}
-                <p>
-                  {messages.footer.business.addressLabel}:{" "}
-                  {messages.footer.business.address}
-                </p>
-                <p>
-                  {messages.footer.business.phoneLabel}:{" "}
-                  {messages.footer.business.phone}
-                </p>
-                <p className="text-on-primary/40">
-                  {messages.footer.business.phoneNote}
-                </p>
-                <p>
-                  {messages.footer.business.emailLabel}:{" "}
-                  <a
-                    href={`mailto:${messages.footer.business.email}`}
-                    className="underline underline-offset-2 hover:text-on-primary"
-                  >
-                    {messages.footer.business.email}
-                  </a>
-                </p>
+              ) : null}
+              <p>
+                {messages.footer.business.addressLabel}:{" "}
+                {messages.footer.business.address}
+              </p>
+              <p>
+                {messages.footer.business.phoneLabel}:{" "}
+                {messages.footer.business.phone}
+              </p>
+              <p className="text-on-primary/40">
+                {messages.footer.business.phoneNote}
+              </p>
+              <p>
+                {messages.footer.business.emailLabel}:{" "}
+                <a
+                  href={`mailto:${messages.footer.business.email}`}
+                  className="underline underline-offset-2 hover:text-on-primary"
+                >
+                  {messages.footer.business.email}
+                </a>
+              </p>
+              {locale === "ko-KR" ? (
                 <p>
                   <a
                     href={`https://www.ftc.go.kr/bizCommPop.do?wrkr_no=${messages.footer.business.bizNumber.replace(/[^0-9]/g, "")}`}
@@ -662,21 +657,8 @@ export default function StitchLandingPage({
                     {messages.footer.business.bizVerifyLabel}
                   </a>
                 </p>
-              </div>
-            ) : (
-              // en-US: KR 사업자정보는 의도적으로 생략, 실제 운영 contact 이메일만 노출.
-              <div className="max-w-xl space-y-0.5 text-[11px] leading-relaxed text-on-primary/55">
-                <p>
-                  {messages.footer.business.emailLabel}:{" "}
-                  <a
-                    href={`mailto:${messages.footer.business.email}`}
-                    className="underline underline-offset-2 hover:text-on-primary"
-                  >
-                    {messages.footer.business.email}
-                  </a>
-                </p>
-              </div>
-            )}
+              ) : null}
+            </div>
           </div>
           <nav
             className="flex flex-wrap gap-x-4 gap-y-1 text-on-primary/55"

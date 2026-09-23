@@ -1300,6 +1300,7 @@ export const messagesKoKR: MessageCatalog = {
     refundPolicyLinkLabel: "환불정책 보기",
     requiredHint: "결제 전에 위 고지에 동의해 주세요.",
     processing: "결제 준비 중…",
+    paddleNotice: "결제는 Merchant of Record인 Paddle을 통해 처리됩니다.",
     betaSandboxSuccess: "테스트 결제가 완료됐어요. 해당 상품이 바로 열렸습니다.",
     betaSandboxError: "테스트 결제 처리 중 문제가 발생했어요. 잠시 후 다시 시도해 주세요.",
   },

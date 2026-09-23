@@ -235,6 +235,10 @@ export default function PurchaseSelectorContent({
           </div>
         </article>
       ) : null}
+
+      <p className="pt-2 text-center text-[11px] text-[#4A5C52]/75">
+        {messages.paymentRefund.paddleNotice}
+      </p>
     </div>
   );
 }

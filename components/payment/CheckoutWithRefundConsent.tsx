@@ -94,6 +94,10 @@ export default function CheckoutWithRefundConsent({
       >
         {busy ? copy.processing : ctaLabel}
       </button>
+
+      <p className="text-center text-[11px] leading-tight text-[#4A5C52]/75">
+        {copy.paddleNotice}
+      </p>
     </div>
   );
 }

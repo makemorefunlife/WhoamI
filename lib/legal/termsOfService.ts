@@ -56,7 +56,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. Payments, Subscriptions & Refunds",
         paragraphs: [
-          "1. All payments and subscription transactions for our global service are processed exclusively by Paddle.com, which acts as our online reseller and the Merchant of Record (MoR). By making a purchase, you agree to Paddle’s Terms of Use and Privacy Policy.",
+          "1. Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record (MoR) for all our orders. Paddle handles payment-related customer service inquiries and returns. Charges on your billing statement will typically appear under a descriptor format such as PADDLE.NET* AHAITSME (or a similar Paddle merchant descriptor depending on your payment method and card issuer). By placing an order, you agree to Paddle’s Terms of Use and Privacy Policy.",
           "2. Subscriptions renew automatically unless cancelled through your account settings or Paddle support at least 24 hours before the renewal date.",
           "3. All refund requests are handled in accordance with our standalone Refund Policy and Paddle’s reseller terms.",
         ],
@@ -126,7 +126,7 @@ export const termsOfService: Record<Locale, PolicyDocument> = {
         id: "payments",
         title: "5. 결제, 구독 및 환불",
         paragraphs: [
-          "1. 모든 결제 및 구독 거래는 회사의 결제 대행사(Merchant of Record)인 Paddle.com을 통해 처리됩니다. 결제를 진행함으로써 이용자는 Paddle의 이용약관 및 개인정보처리방침에도 동의하게 됩니다.",
+          "1. 당사의 주문 처리 및 결제는 온라인 리셀러인 Paddle.com에서 수행되며, Paddle.com은 모든 주문에 대한 판매 대행자(Merchant of Record)입니다. Paddle은 결제 관련 고객 지원 문의 및 반품/환불 처리를 담당합니다. 결제 관련 카드 및 은행 명세서에는 결제 수단 및 카드사에 따라 PADDLE.NET* AHAITSME 형태 또는 유사한 Paddle 가맹점 식별 문구(descriptor)로 표시됩니다. 결제를 진행함으로써 이용자는 Paddle의 이용약관 및 개인정보처리방침에 동의하게 됩니다.",
           "2. 구독 서비스는 이용자가 계정 설정 또는 Paddle 고객지원을 통해 다음 결제일 최소 24시간 전까지 해지하지 않는 한 자동으로 갱신됩니다.",
           "3. 모든 환불 요청은 별도의 환불 정책 및 Paddle의 결제대행 약관에 따라 처리됩니다.",
         ],

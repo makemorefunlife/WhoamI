@@ -1339,6 +1339,7 @@ export const messagesEnUS = {
     refundPolicyLinkLabel: "View refund policy",
     requiredHint: "Please check the notice above before continuing to payment.",
     processing: "Starting checkout…",
+    paddleNotice: "Payments are processed by Paddle, our Merchant of Record.",
     betaSandboxSuccess: "Sandbox checkout complete — that item is unlocked now.",
     betaSandboxError: "Something went wrong processing the test checkout. Please try again.",
   },
