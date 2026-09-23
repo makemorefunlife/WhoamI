@@ -21,7 +21,7 @@ export default function RegionalPricingCards() {
   const { isSignedIn } = useUser();
   const messages = useMessages();
   const copy = messages.pricing.regionalPlans;
-  const { busy, openCheckout } = useRegionalCheckout();
+  const { busy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
   const [result, setResult] = useState<Record<string, "success" | "error">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
 
@@ -50,6 +50,9 @@ export default function RegionalPricingCards() {
   }, [isUs, isSignedIn]);
 
   async function handleCheckout(planId: string) {
+    // Clerk not finished loading yet -- ignore the click instead of
+    // surfacing "Something went wrong" for what's really just a race.
+    if (!authLoaded) return;
     setResult((prev) => ({ ...prev, [planId]: undefined as unknown as "success" }));
     const outcome = await openCheckout(planId, locale);
     if (outcome === "success" || outcome === "already_processed") {
@@ -117,7 +120,7 @@ export default function RegionalPricingCards() {
 
               <button
                 type="button"
-                disabled={busy}
+                disabled={busy || !authLoaded}
                 onClick={() => void handleCheckout(planId)}
                 className={[
                   "mt-6 w-full cursor-pointer rounded-full border border-[#1A3328]/30 bg-[#FFFDF8] px-5 py-3 text-sm font-semibold text-[#1A3328] shadow-sm transition-all duration-200 hover:bg-[#F5F0E8] active:scale-[0.98]",
@@ -145,7 +148,7 @@ export default function RegionalPricingCards() {
             </span>
             <button
               type="button"
-              disabled={busy}
+              disabled={busy || !authLoaded}
               onClick={() => void handleCheckout("us_additional_relationship")}
               className={[
                 "cursor-pointer rounded-full border border-[#1A3328]/30 bg-[#FFFDF8] px-5 py-2.5 text-sm font-semibold text-[#1A3328] shadow-sm transition-all duration-200 hover:bg-[#F5F0E8] active:scale-[0.98]",

@@ -358,6 +358,8 @@ export const messagesKoKR: MessageCatalog = {
     premiumRegenerateHint:
       "새 프롬프트로 다시 생성해요. 이전 결과는 아래 분석 기록에서 볼 수 있어요.",
     premiumGenerateFailed: "생성 요청이 완료되지 않았어요. 잠시 후 다시 시도해 주세요.",
+    premiumCreditExhausted: "지금 사용할 수 있는 Relationship 크레딧을 모두 사용했어요.",
+    premiumBuyCta: "추가로 구매하기",
     premiumEyebrow: "Premium · 관계 심화",
     premiumEmptyGeneric: "아직 심화 관계 분석이 없어요.",
     viewerQueryRequired: "viewer 쿼리(내 리포트 id)가 필요합니다.",
@@ -466,6 +468,7 @@ export const messagesKoKR: MessageCatalog = {
       `${date} 이후에는 갱신되지 않아요. 그때까지는 계속 이용하실 수 있어요.`,
     billingCancelError: "멤버십 해지에 실패했어요. 잠시 후 다시 시도해 주세요.",
     billingNoActiveMembership: "현재 이용 중인 연간 멤버십이 없어요.",
+    billingStartCta: "플랜 선택하기",
     billingLoadError: "결제 정보를 불러오지 못했어요. 다시 시도해 주세요.",
     billingRenewsOnNotice: (date: string) => `${date}에 자동으로 갱신돼요.`,
     backToProfile: "개인정보로 돌아가기",
@@ -580,6 +583,11 @@ export const messagesKoKR: MessageCatalog = {
       "결제는 현재 결제 심사가 진행되는 동안 Paddle Sandbox 테스트 모드로 작동합니다. 실제 결제는 아직 발생하지 않으며, 여기서 구매하셔도 카드가 청구되지 않습니다.",
     regionalOneTimeBadge: "1회성 구매 · 자동갱신 없음",
     regionalAutoRenewBadge: "연 1회 자동갱신 (해지 전까지)",
+    selectorTitlePersonal: "심화 분석 잠금 해제하기",
+    selectorTitleRelationship: "이 관계의 심화 분석 잠금 해제하기",
+    selectorTitleAccount: "플랜 선택하기",
+    selectorPrimaryBadge: "지금 추천 플랜",
+    selectorAlternativesHeading: "다른 옵션",
     plans: {
       personal_premium: {
         name: "Personal Premium",

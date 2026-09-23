@@ -57,7 +57,8 @@ export type RegionalCheckoutOutcome =
   | "already_processed"
   | "cancelled"
   | "error"
-  | "ineligible";
+  | "ineligible"
+  | "not_ready";
 
 /**
  * Opens a Paddle SANDBOX checkout for one US or KR regional-catalog plan.
@@ -68,11 +69,19 @@ export type RegionalCheckoutOutcome =
  * Language-style header (i18n error copy), not for price selection.
  */
 export function useRegionalCheckout() {
-  const { user } = useUser();
+  // isLoaded gates on Clerk having resolved auth state at all -- without
+  // this, a click that lands before Clerk finishes its first load sees
+  // `user` as undefined (indistinguishable from "signed out") and the
+  // guard below used to return the generic "error" outcome for what is
+  // really just "ask again in a moment." Callers should disable their
+  // buy button while `isLoaded` is false rather than let the click
+  // through to `openCheckout` at all.
+  const { user, isLoaded } = useUser();
   const [busy, setBusy] = useState(false);
 
   const openCheckout = useCallback(
     async (planId: string, locale: Locale): Promise<RegionalCheckoutOutcome> => {
+      if (!isLoaded) return "not_ready";
       const match = resolveRegionalPlan(planId);
       const clientToken = process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN;
       if (!match || !user?.id || !clientToken) return "error";
@@ -141,8 +150,8 @@ export function useRegionalCheckout() {
         setBusy(false);
       }
     },
-    [user?.id],
+    [user?.id, isLoaded],
   );
 
-  return { busy, openCheckout };
+  return { busy, openCheckout, isLoaded };
 }

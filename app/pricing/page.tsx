@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import RegionalPricingCards from "@/components/pricing/RegionalPricingCards";
+import PurchaseSelectorPage from "@/components/payment/PurchaseSelectorPage";
 import { getRequestLocale } from "@/lib/i18n/serverLocale";
 import { getMessages } from "@/lib/i18n/messages";
 import { buildPageMetadata } from "@/lib/seo/pageMetadata";
@@ -41,7 +41,7 @@ export default async function PricingPage() {
         </div>
 
         <div className="mt-10 sm:mt-12">
-          <RegionalPricingCards />
+          <PurchaseSelectorPage context="personal" />
         </div>
       </main>
     </div>

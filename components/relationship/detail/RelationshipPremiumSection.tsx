@@ -46,6 +46,10 @@ type RelationshipPremiumSectionProps = {
   onRegeneratePremium: () => void;
   forceVisible?: boolean;
   onReportReadyRef?: RefObject<HTMLDivElement | null>;
+  /** True right after a generation attempt failed specifically for lack of a relationship credit (see useRelationshipDetail's premiumCreditExhausted). */
+  creditExhausted?: boolean;
+  /** Opens the purchase selector (context="relationship") -- only used when creditExhausted is true. */
+  onOpenPurchase?: () => void;
 };
 
 export default function RelationshipPremiumSection({
@@ -71,6 +75,8 @@ export default function RelationshipPremiumSection({
   onRegeneratePremium,
   forceVisible = false,
   onReportReadyRef,
+  creditExhausted = false,
+  onOpenPurchase,
 }: RelationshipPremiumSectionProps) {
   const { messages } = useLocale();
   const [requesting, setRequesting] = useState(false);
@@ -131,7 +137,7 @@ export default function RelationshipPremiumSection({
           </p>
         </div>
       ) : null}
-      {localError ? (
+      {localError && !creditExhausted ? (
         <p className="mb-3 rounded-xl border border-red-300/50 bg-red-50/80 px-3 py-2 text-center text-sm text-red-800">
           {localError}
         </p>
@@ -243,7 +249,16 @@ export default function RelationshipPremiumSection({
       {premiumReady || hasSnapshotView ? (
         <AiAnalysisDisclaimer className="mt-6 px-1" />
       ) : null}
-      {!premiumReady && !hasSnapshotView ? (
+      {!premiumReady && !hasSnapshotView && creditExhausted && onOpenPurchase ? (
+        <div className="mt-4 space-y-2 text-center">
+          <p className="text-sm text-[var(--space-text-muted)]">
+            {messages.report.premiumCreditExhausted}
+          </p>
+          <GlowButton type="button" className="w-full" onClick={onOpenPurchase}>
+            {messages.report.premiumBuyCta}
+          </GlowButton>
+        </div>
+      ) : !premiumReady && !hasSnapshotView ? (
         <div className="mt-4 space-y-2 text-center">
           <GlowButton
             type="button"

@@ -100,6 +100,7 @@ export type UseRelationshipDetailReturn = {
   displayFriendshipDeep: FriendReportBody | null;
   premiumReady: boolean;
   premiumInProgress: boolean;
+  premiumCreditExhausted: boolean;
   toggleFavorite: () => Promise<void>;
   retryAnalysis: () => void;
   onAnalysisSurfaceChange: (surface: AnalysisSurface) => void;
@@ -155,6 +156,15 @@ export function useRelationshipDetail({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  /**
+   * True right after a premium-generation attempt fails specifically
+   * because the relationship credit reservation was rejected (HTTP 402
+   * from /api/relationship/analyze/premium -- see reserveRelationshipCredit
+   * in that route). Distinct from `err` so the UI can offer a "buy
+   * another analysis" purchase CTA instead of (or alongside) the generic
+   * failure message, without guessing at the reason from message text.
+   */
+  const [premiumCreditExhausted, setPremiumCreditExhausted] = useState(false);
   const [detailOk, setDetailOk] = useState(false);
   const [partnerName, setPartnerName] = useState(messages.report.partnerFallbackLabel);
   const [viewerName, setViewerName] = useState("");
@@ -587,6 +597,7 @@ export function useRelationshipDetail({
       }
       setBusy(true);
       setErr(null);
+      setPremiumCreditExhausted(false);
       try {
         const requestBody = {
           relationship_report_id: resolvedRelationshipId,
@@ -625,6 +636,9 @@ export function useRelationshipDetail({
             setPremiumInProgress(true);
             setErr(null);
             return true;
+          }
+          if (res.status === 402) {
+            setPremiumCreditExhausted(true);
           }
           setErr(data?.error ?? messages.report.premiumAnalysisFailedGeneric);
           return false;
@@ -942,6 +956,7 @@ export function useRelationshipDetail({
     displayFriendshipDeep,
     premiumReady,
     premiumInProgress,
+    premiumCreditExhausted,
     toggleFavorite,
     retryAnalysis,
     onAnalysisSurfaceChange,

@@ -7,6 +7,7 @@ import LocaleLink from "@/lib/i18n/LocaleLink";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { formatDecisionDate } from "@/lib/decision/format";
+import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 
 type MembershipInfo = {
   planId: string;
@@ -30,6 +31,7 @@ export default function AccountBillingPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -98,6 +100,21 @@ export default function AccountBillingPage() {
     return <RedirectToSignIn redirectUrl={href(ROUTES.accountBilling)} />;
   }
 
+  async function handlePurchaseSuccess() {
+    setPurchaseOpen(false);
+    try {
+      const res = await fetch("/api/account/membership");
+      const body = (await res.json().catch(() => ({}))) as {
+        membership?: MembershipInfo | null;
+      };
+      if (res.ok) setMembership(body.membership ?? null);
+    } catch {
+      // Best-effort refresh -- the purchase itself already succeeded;
+      // worst case the user sees the old "no active membership" state
+      // until their next visit or manual reload.
+    }
+  }
+
   return (
     <AccountPageShell
       activeTab="billing"
@@ -110,9 +127,18 @@ export default function AccountBillingPage() {
         ) : loadState === "error" ? (
           <p className="text-sm text-on-surface-variant">{copy.billingLoadError}</p>
         ) : !membership ? (
-          <p className="text-sm leading-relaxed text-on-surface-variant">
-            {copy.billingNoActiveMembership}
-          </p>
+          <div className="space-y-4">
+            <p className="text-sm leading-relaxed text-on-surface-variant">
+              {copy.billingNoActiveMembership}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPurchaseOpen(true)}
+              className="stitch-cta-primary w-full sm:w-auto"
+            >
+              {copy.billingStartCta}
+            </button>
+          </div>
         ) : (
           <div className="space-y-5">
             <div>
@@ -198,6 +224,13 @@ export default function AccountBillingPage() {
           </div>
         </div>
       ) : null}
+
+      <PurchaseSelectorModal
+        open={purchaseOpen}
+        context="account"
+        onClose={() => setPurchaseOpen(false)}
+        onSuccess={handlePurchaseSuccess}
+      />
     </AccountPageShell>
   );
 }

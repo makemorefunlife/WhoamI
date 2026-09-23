@@ -375,6 +375,9 @@ export const messagesEnUS = {
       "This generates a fresh prompt. You can find the previous result in the analysis history below.",
     premiumGenerateFailed:
       "The request didn't complete. Please try again in a moment.",
+    premiumCreditExhausted:
+      "You've used your available Relationship credits for now.",
+    premiumBuyCta: "Buy another analysis",
     premiumEyebrow: "Premium · Deep relationship",
     premiumEmptyGeneric: "You don't have a deep analysis yet.",
     viewerQueryRequired: "A viewer query (my report id) is required.",
@@ -491,6 +494,7 @@ export const messagesEnUS = {
       `Your membership will not renew after ${date}. You'll keep full access until then.`,
     billingCancelError: "We couldn't cancel your membership. Please try again in a moment.",
     billingNoActiveMembership: "You don't have an active Annual Membership right now.",
+    billingStartCta: "Choose a plan",
     billingLoadError: "We couldn't load your billing info. Please try again.",
     billingRenewsOnNotice: (date: string) => `Renews automatically on ${date}.`,
     backToProfile: "Back to personal info",
@@ -608,6 +612,11 @@ export const messagesEnUS = {
       "Checkout is currently running in Paddle Sandbox test mode while payment processing is under review. No real charge happens yet — nothing you buy here will bill your card.",
     regionalOneTimeBadge: "One-time purchase · no auto-renewal",
     regionalAutoRenewBadge: "Auto-renews annually until cancelled",
+    selectorTitlePersonal: "Unlock your deep analysis",
+    selectorTitleRelationship: "Unlock this relationship's deep analysis",
+    selectorTitleAccount: "Choose your plan",
+    selectorPrimaryBadge: "Recommended for you",
+    selectorAlternativesHeading: "Other options",
     plans: {
       personal_premium: {
         name: "Personal Premium",
@@ -2212,6 +2221,8 @@ export type MessageCatalog = {
     premiumRegenerating: string;
     premiumRegenerateHint: string;
     premiumGenerateFailed: string;
+    premiumCreditExhausted: string;
+    premiumBuyCta: string;
     premiumEyebrow: string;
     premiumEmptyGeneric: string;
     viewerQueryRequired: string;
@@ -2315,6 +2326,7 @@ export type MessageCatalog = {
     billingCancelScheduledNotice: (date: string) => string;
     billingCancelError: string;
     billingNoActiveMembership: string;
+    billingStartCta: string;
     billingLoadError: string;
     billingRenewsOnNotice: (date: string) => string;
     backToProfile: string;
@@ -2411,6 +2423,11 @@ export type MessageCatalog = {
     regionalSandboxNotice: string;
     regionalOneTimeBadge: string;
     regionalAutoRenewBadge: string;
+    selectorTitlePersonal: string;
+    selectorTitleRelationship: string;
+    selectorTitleAccount: string;
+    selectorPrimaryBadge: string;
+    selectorAlternativesHeading: string;
     plans: {
       personal_premium: {
         name: string;

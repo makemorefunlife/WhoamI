@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import RelationshipBasicCards from "@/components/relationship/RelationshipBasicCards";
@@ -8,6 +8,7 @@ import FreeRelationshipPreviewCard from "@/components/relationship/map/FreeRelat
 import RelationshipAnalysisHistory from "@/components/relationship/RelationshipAnalysisHistory";
 import RelationshipKindTabs from "@/components/relationship/RelationshipKindTabs";
 import RelationshipPremiumSection from "@/components/relationship/detail/RelationshipPremiumSection";
+import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 import RegenerateConfirmDialog from "@/components/relationship/detail/RegenerateConfirmDialog";
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
@@ -70,6 +71,7 @@ export default function RelationshipView({
     displayFriendshipDeep,
     premiumReady,
     premiumInProgress,
+    premiumCreditExhausted,
     retryAnalysis,
     onAnalysisSurfaceChange,
     viewAnalysisLog,
@@ -85,6 +87,16 @@ export default function RelationshipView({
   } = detail;
 
   useDockOverlayLock(showRegenerateConfirm);
+
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
+  function handlePurchaseSuccess() {
+    setPurchaseOpen(false);
+    // Entitlement is granted server-side by the checkout complete route
+    // before this fires -- re-running the same generation call the
+    // credit-exhausted CTA replaced now succeeds against the fresh credit,
+    // so the report appears immediately with no second click.
+    void runPremium(premiumKind);
+  }
 
   const viewingBasicSurface = analysisSurface === "basic";
   const generating = busy || autostartActive || premiumInProgress;
@@ -319,6 +331,8 @@ export default function RelationshipView({
               onRegeneratePremium={regeneratePremium}
               forceVisible={urlAutostart || generating}
               onReportReadyRef={reportAnchorRef}
+              creditExhausted={premiumCreditExhausted}
+              onOpenPurchase={() => setPurchaseOpen(true)}
             />
           ) : null}
 
@@ -326,6 +340,13 @@ export default function RelationshipView({
             open={showRegenerateConfirm}
             onViewSaved={cancelRegeneratePremium}
             onCreateNew={confirmRegeneratePremium}
+          />
+
+          <PurchaseSelectorModal
+            open={purchaseOpen}
+            context="relationship"
+            onClose={() => setPurchaseOpen(false)}
+            onSuccess={handlePurchaseSuccess}
           />
 
           {!viewingBasicSurface && premiumReady && !showGeneratingPanel ? (

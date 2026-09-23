@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 
 export default function StitchPremiumCard({
   reportId,
@@ -12,17 +14,32 @@ export default function StitchPremiumCard({
   onGuestClick?: () => void;
 }) {
   const router = useRouter();
-  const { locale, href: localize } = useLocale();
+  const { locale, messages, href: localize } = useLocale();
   const isKo = locale === "ko-KR";
   const href = localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`);
+  const [selectorOpen, setSelectorOpen] = useState(false);
+
+  // Pricing/name/tagline below come from the same regional catalog copy
+  // /pricing uses (messages.pricing.regionalPlans) rather than being typed
+  // here a second time -- this card used to show a hard-coded "$12.99 /
+  // 9,900원" that matched neither the current US catalog ($11.99) nor the
+  // old Beta catalog ($4.99), because nothing kept it in sync. The
+  // catalog is now the single source of truth for what this button says.
+  const planId = isKo ? "kr_personal_premium" : "us_personal_premium";
+  const plan = messages.pricing.regionalPlans[planId];
 
   const handleClick = () => {
     if (onGuestClick) {
       onGuestClick();
       return;
     }
-    router.push(href);
+    setSelectorOpen(true);
   };
+
+  function handlePurchaseSuccess() {
+    setSelectorOpen(false);
+    router.push(href);
+  }
 
   return (
     <div className="group relative w-full overflow-hidden rounded-extra-large border border-[#c49a6c]/40 bg-gradient-to-br from-[#fffdf8] via-[#fbf7f0] to-[#f4ece0] p-6 text-left shadow-[0_16px_40px_rgba(26,51,40,0.08)] transition hover:border-[#c49a6c]/60 hover:shadow-[0_20px_48px_rgba(26,51,40,0.12)] sm:p-8">
@@ -72,10 +89,10 @@ export default function StitchPremiumCard({
       <div className="mt-8 flex flex-col gap-4 border-t border-[#c49a6c]/25 pt-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-baseline gap-2.5">
           <span className="stitch-headline text-3xl font-extrabold text-primary sm:text-4xl">
-            {isKo ? "9,900원" : "$12.99"}
+            {plan.price}
           </span>
           <span className="text-xs font-medium text-on-surface-variant/80">
-            {isKo ? "1회 결제 · 평생 소장" : "One-time · Lifetime access"}
+            {plan.period}
           </span>
         </div>
 
@@ -88,6 +105,13 @@ export default function StitchPremiumCard({
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </button>
       </div>
+
+      <PurchaseSelectorModal
+        open={selectorOpen}
+        context="personal"
+        onClose={() => setSelectorOpen(false)}
+        onSuccess={handlePurchaseSuccess}
+      />
     </div>
   );
 }
