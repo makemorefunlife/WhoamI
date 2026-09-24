@@ -1257,7 +1257,7 @@ export const messagesEnUS = {
       companyLabel: "Company",
       companyName: "Ahaitsme",
       ceoLabel: "CEO",
-      ceoName: "Hong Seonghyeon",
+      ceoName: "Hong Sunghyun",
       bizNumberLabel: "Business registration no.",
       bizNumber: "387-06-03769",
       mailOrderLabel: "Mail-order registration no.",
