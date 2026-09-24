@@ -24,6 +24,17 @@ export type PaddleTransaction = {
  * client. Sandbox-only by design for this Beta (no live/production Paddle
  * key exists in this app yet).
  */
+// Paddle's transaction-status API can briefly lag behind the client-side
+// checkout.completed event (eventual consistency). These control how many
+// times -- and how long we wait between tries -- we re-check before giving
+// up on a transaction that fetched successfully but isn't "completed" yet.
+const TRANSACTION_STATUS_RETRY_ATTEMPTS = 3;
+const TRANSACTION_STATUS_RETRY_DELAY_MS = 900;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function fetchPaddleSandboxTransaction(
   transactionId: string,
 ): Promise<PaddleTransaction | null> {
@@ -33,23 +44,38 @@ export async function fetchPaddleSandboxTransaction(
     return null;
   }
   try {
-    const res = await fetch(`${PADDLE_SANDBOX_BASE}/transactions/${encodeURIComponent(transactionId)}`, {
-      headers: { Authorization: `Bearer ${key}` },
-    });
-    if (!res.ok) {
-      // Diagnostic-only addition: previously this branch failed silently,
-      // making it indistinguishable in logs from missing_api_key or
-      // network_error. Mirrors the existing paddle_api_error_${status}
-      // pattern already used below in cancelPaddleSandboxSubscription.
-      logServerError(
-        "paddleSandboxClient.fetchTransaction",
-        null,
-        `paddle_api_error_${res.status}`,
-      );
-      return null;
+    let txn: PaddleTransaction | null = null;
+    for (let attempt = 1; attempt <= TRANSACTION_STATUS_RETRY_ATTEMPTS; attempt++) {
+      const res = await fetch(`${PADDLE_SANDBOX_BASE}/transactions/${encodeURIComponent(transactionId)}`, {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      if (!res.ok) {
+        // Diagnostic-only addition: previously this branch failed silently,
+        // making it indistinguishable in logs from missing_api_key or
+        // network_error. Mirrors the existing paddle_api_error_${status}
+        // pattern already used below in cancelPaddleSandboxSubscription.
+        // Not retried -- an API/auth error won't resolve itself on a retry.
+        logServerError(
+          "paddleSandboxClient.fetchTransaction",
+          null,
+          `paddle_api_error_${res.status}`,
+        );
+        return null;
+      }
+      const body = (await res.json()) as { data?: PaddleTransaction };
+      txn = body.data ?? null;
+      // Only retry the "fetched fine but not completed yet" case -- the
+      // caller's own completed-status check (and everything else about the
+      // purchase-approval logic) is unchanged, we're just more patient
+      // before handing back the final answer.
+      if (txn && txn.status === "completed") {
+        return txn;
+      }
+      if (attempt < TRANSACTION_STATUS_RETRY_ATTEMPTS) {
+        await delay(TRANSACTION_STATUS_RETRY_DELAY_MS);
+      }
     }
-    const body = (await res.json()) as { data?: PaddleTransaction };
-    return body.data ?? null;
+    return txn;
   } catch (e) {
     logServerError("paddleSandboxClient.fetchTransaction", e, "network_error");
     return null;
