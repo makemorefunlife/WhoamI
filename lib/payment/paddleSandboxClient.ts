@@ -36,7 +36,18 @@ export async function fetchPaddleSandboxTransaction(
     const res = await fetch(`${PADDLE_SANDBOX_BASE}/transactions/${encodeURIComponent(transactionId)}`, {
       headers: { Authorization: `Bearer ${key}` },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Diagnostic-only addition: previously this branch failed silently,
+      // making it indistinguishable in logs from missing_api_key or
+      // network_error. Mirrors the existing paddle_api_error_${status}
+      // pattern already used below in cancelPaddleSandboxSubscription.
+      logServerError(
+        "paddleSandboxClient.fetchTransaction",
+        null,
+        `paddle_api_error_${res.status}`,
+      );
+      return null;
+    }
     const body = (await res.json()) as { data?: PaddleTransaction };
     return body.data ?? null;
   } catch (e) {
