@@ -1,4 +1,4 @@
-import { logServerError } from "@/lib/security/safeLog";
+import { logServerError, logServerEvent } from "@/lib/security/safeLog";
 
 const PADDLE_SANDBOX_BASE = "https://sandbox-api.paddle.com";
 
@@ -64,6 +64,15 @@ export async function fetchPaddleSandboxTransaction(
       }
       const body = (await res.json()) as { data?: PaddleTransaction };
       txn = body.data ?? null;
+      // Temporary diagnostic-only addition: logs each retry attempt's
+      // outcome so we can see, from Vercel logs alone, whether the retry
+      // loop is actually iterating and what status Paddle is returning at
+      // each step. No effect on control flow -- remove once the 409
+      // eventual-consistency question is settled.
+      logServerEvent("paddleSandboxClient.fetchTransaction", "retry_attempt", {
+        attempt,
+        status: txn?.status ?? "no_data",
+      });
       // Only retry the "fetched fine but not completed yet" case -- the
       // caller's own completed-status check (and everything else about the
       // purchase-approval logic) is unchanged, we're just more patient
