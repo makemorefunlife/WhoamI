@@ -106,7 +106,7 @@ export function PersonTag({
   side: "a" | "b";
   invert?: boolean;
 }) {
-  const label = name?.trim() || (side === "a" ? "나" : "상대");
+  const label = name?.trim() ? name.trim() : (side === "a" ? "나" : "상대");
   const cls =
     side === "a"
       ? "border-v4-a/40 text-v4-a bg-v4-a-soft"

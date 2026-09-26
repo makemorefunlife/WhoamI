@@ -12,14 +12,30 @@ import { CanonicalReportView } from "./CanonicalReportView";
 
 export type RomanticV4ReportViewProps = {
   payload: RomanticV4PrototypePayload;
+  myName?: string;
+  partnerName?: string;
+  viewerIsReportA?: boolean;
   debug?: boolean;
 };
 
-export default function RomanticV4ReportView({ payload, debug = false }: RomanticV4ReportViewProps) {
+export default function RomanticV4ReportView({
+  payload,
+  myName,
+  partnerName,
+  viewerIsReportA = true,
+  debug = false,
+}: RomanticV4ReportViewProps) {
   if (!payload.canonicalReport) return null;
   return (
     <div data-romantic-experience="v4" data-test-romantic="VISIBLE-V4">
-      <CanonicalReportView report={payload.canonicalReport} payload={payload} debug={debug} />
+      <CanonicalReportView
+        report={payload.canonicalReport}
+        payload={payload}
+        myName={myName}
+        partnerName={partnerName}
+        viewerIsReportA={viewerIsReportA}
+        debug={debug}
+      />
     </div>
   );
 }

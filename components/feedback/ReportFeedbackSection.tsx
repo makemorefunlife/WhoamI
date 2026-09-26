@@ -152,32 +152,32 @@ export default function ReportFeedbackSection({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={() => handleSelectRating("great")}
-              className="flex items-center gap-3 rounded-2xl border border-outline-variant/40 bg-surface p-4 text-left font-medium text-on-surface transition hover:border-primary/60 hover:bg-surface-container-low active:scale-[0.99]"
+              className="flex w-full items-center gap-3.5 rounded-2xl border border-outline-variant/40 bg-surface p-4 text-left font-medium text-on-surface transition hover:border-primary/60 hover:bg-surface-container-low active:scale-[0.99]"
             >
-              <span className="text-sm text-primary">▪</span>
-              <span className="text-sm">소름돋게 잘 맞아요</span>
+              <span className="text-2xl">😊</span>
+              <span className="text-sm sm:text-base font-semibold text-on-surface">소름돋게 잘 맞아요</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleSelectRating("good")}
-              className="flex items-center gap-3 rounded-2xl border border-outline-variant/40 bg-surface p-4 text-left font-medium text-on-surface transition hover:border-primary/60 hover:bg-surface-container-low active:scale-[0.99]"
+              className="flex w-full items-center gap-3.5 rounded-2xl border border-outline-variant/40 bg-surface p-4 text-left font-medium text-on-surface transition hover:border-primary/60 hover:bg-surface-container-low active:scale-[0.99]"
             >
-              <span className="text-sm text-primary">▪</span>
-              <span className="text-sm">꽤 흥미롭고 공감돼요</span>
+              <span className="text-2xl">🙂</span>
+              <span className="text-sm sm:text-base font-semibold text-on-surface">꽤 흥미롭고 공감돼요</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleSelectRating("needs_improvement")}
-              className="flex items-center gap-3 rounded-2xl border border-outline-variant/40 bg-surface p-4 text-left font-medium text-on-surface transition hover:border-primary/60 hover:bg-surface-container-low active:scale-[0.99]"
+              className="flex w-full items-center gap-3.5 rounded-2xl border border-outline-variant/40 bg-surface p-4 text-left font-medium text-on-surface transition hover:border-primary/60 hover:bg-surface-container-low active:scale-[0.99]"
             >
-              <span className="text-sm text-primary">▪</span>
-              <span className="text-sm">아쉬운 점이나 오류가 있어요</span>
+              <span className="text-2xl">😅</span>
+              <span className="text-sm sm:text-base font-semibold text-on-surface">아쉬운 점이나 오류가 있어요</span>
             </button>
           </div>
         </div>
@@ -187,7 +187,11 @@ export default function ReportFeedbackSection({
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-primary">▪</span>
+              <span className="text-lg">
+                {rating === "great" && "😊"}
+                {rating === "good" && "🙂"}
+                {rating === "needs_improvement" && "😅"}
+              </span>
               <span className="text-sm font-semibold text-primary">
                 {rating === "great" && "소름돋게 잘 맞아요"}
                 {rating === "good" && "꽤 흥미롭고 공감돼요"}

@@ -24,6 +24,9 @@ import React from "react";
 type Props = {
   report: CanonicalRomanticV4Report;
   payload: RomanticV4PrototypePayload;
+  myName?: string;
+  partnerName?: string;
+  viewerIsReportA?: boolean;
   debug?: boolean;
 };
 
@@ -136,7 +139,14 @@ function computeChapterNumbers(
   return numbers;
 }
 
-export function CanonicalReportView({ report, payload: rawPayload, debug = false }: Props) {
+export function CanonicalReportView({
+  report,
+  payload: rawPayload,
+  myName,
+  partnerName,
+  viewerIsReportA = true,
+  debug = false,
+}: Props) {
   const axisOverview =
     rawPayload?.axisOverview && rawPayload.axisOverview.length > 0
       ? rawPayload.axisOverview
@@ -162,7 +172,20 @@ export function CanonicalReportView({ report, payload: rawPayload, debug = false
   const visible = reorderForDisplay(report.sections.filter((s) => s.visible), payload);
   const chapterNumbers = computeChapterNumbers(visible);
   const dailyLifeSection = report.sections.find((s) => s.chapterId === "c9_daily_life");
-  const { a, b } = report.names;
+
+  let a = report.names?.a || "나";
+  let b = report.names?.b || "상대";
+
+  if (a === "나" && myName?.trim()) a = myName.trim();
+  if (b === "상대" && partnerName?.trim()) b = partnerName.trim();
+  if (myName?.trim() && myName !== "나") {
+    if (viewerIsReportA === false) b = myName.trim();
+    else a = myName.trim();
+  }
+  if (partnerName?.trim() && partnerName !== "상대") {
+    if (viewerIsReportA === false) a = partnerName.trim();
+    else b = partnerName.trim();
+  }
 
   const sectionProps = (s: CanonicalSection) => ({
     section: s,

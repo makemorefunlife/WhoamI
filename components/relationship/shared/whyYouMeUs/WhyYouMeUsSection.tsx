@@ -12,6 +12,7 @@
  * this chapter (per product decision, not a technical limitation).
  */
 import type { WhyYouMeUsData } from "@/lib/relationship/shared/whyYouMeUs/whyYouMeUsTypes";
+import { subjectP } from "@/lib/relationship/romantic/prototypeV4/narrativeLocale";
 import {
   ArrowRight,
   Bridge,
@@ -48,6 +49,26 @@ export function WhyYouMeUsSection({
   const dirs = [data.whyYou, data.whyMe];
   const hasHeader = Boolean(n || (eyebrow && eyebrow.trim() !== "") || (title && title.trim() !== ""));
 
+  const getDisplayTitle = (rawTitle: string, fromSide: "a" | "b") => {
+    const personName = names[fromSide]?.trim();
+    if (!personName || personName === "나" || personName === "상대") return rawTitle;
+    const isEn = locale === "en-US";
+    if (
+      rawTitle === "내가 끌리는 지점" ||
+      rawTitle === "나의 끌리는 지점" ||
+      rawTitle.includes("내가 끌리는")
+    ) {
+      return isEn ? `What Draws ${personName} In` : `${subjectP(personName, locale)} 끌리는 지점`;
+    }
+    if (
+      rawTitle === "상대가 끌리는 지점" ||
+      rawTitle.includes("상대가 끌리는")
+    ) {
+      return isEn ? `What Draws ${personName} In` : `${subjectP(personName, locale)} 끌리는 지점`;
+    }
+    return rawTitle;
+  };
+
   const content = (
     <>
       <div className="mt-2 grid gap-6 md:grid-cols-2">
@@ -64,7 +85,7 @@ export function WhyYouMeUsSection({
                 <PersonTag name={names[d.to]} side={d.to} />
               </div>
               <h3 className="mt-4 font-rel-serif text-[20px] leading-[1.35] tracking-[-0.01em] text-rel-ink">
-                {d.title}
+                {getDisplayTitle(d.title, d.from)}
               </h3>
               <p className="mt-3 font-rel-sans text-[14.5px] leading-[1.85] text-rel-ink-soft">{d.body}</p>
               {d.scene && (

@@ -145,7 +145,12 @@ export default function RelationshipPremiumSection({
       ) : null}
       {premiumKind === "romantic" && romanticRenderMode === "v4" && displayRomanticDeepV4 ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
-          <RomanticV4ReportView payload={displayRomanticDeepV4} />
+          <RomanticV4ReportView
+            payload={displayRomanticDeepV4}
+            myName={viewerName}
+            partnerName={partnerName}
+            viewerIsReportA={viewerIsReportA}
+          />
         </div>
       ) : premiumKind === "romantic" && romanticRenderMode === "legacy" && displayRomanticDeep ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
