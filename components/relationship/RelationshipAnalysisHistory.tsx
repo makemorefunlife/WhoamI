@@ -60,6 +60,34 @@ function historyStyles(variant: HistoryVariant) {
   };
 }
 
+function localizeLogTitle(title: string, locale: string): string {
+  if (locale !== "en-US") return title;
+  switch (title) {
+    case "무료 관계분석":
+      return "Basic Relationship Analysis";
+    case "연인 사주 심화":
+      return "Romantic Saju Deep";
+    case "동료 심화 분석":
+      return "Work Colleague Deep";
+    case "동거·결혼 심화 분석":
+      return "Marriage & Cohabitation Deep";
+    case "친구 Social DNA 분석":
+      return "Friend Social DNA Analysis";
+    case "가족 Child DNA 분석":
+      return "Family Child DNA Analysis";
+    default:
+      return title;
+  }
+}
+
+function localizeLogSubtitle(subtitle: string, locale: string): string {
+  if (locale !== "en-US") return subtitle;
+  if (subtitle === "네 가지 관점으로 정리한 결과") {
+    return "Results summarized across 4 perspectives";
+  }
+  return subtitle;
+}
+
 export default function RelationshipAnalysisHistory({
   logs,
   loading,
@@ -89,6 +117,8 @@ export default function RelationshipAnalysisHistory({
       {logs.map((log) => {
         const selected = selectedLogId === log.id;
         const clickable = Boolean(onSelectLog);
+        const title = localizeLogTitle(log.summary_title, locale);
+        const rawSubtitle = localizeLogSubtitle(log.summary_subtitle, locale);
         return (
           <li key={log.id}>
             <button
@@ -110,10 +140,10 @@ export default function RelationshipAnalysisHistory({
                   {formatWhen(log.created_at, locale)}
                 </span>
               </div>
-              <p className={`mt-1 ${styles.title}`}>{log.summary_title}</p>
-              {log.summary_subtitle ? (
+              <p className={`mt-1 ${styles.title}`}>{title}</p>
+              {rawSubtitle ? (
                 <p className={`mt-0.5 ${styles.subtitle}`}>
-                  {log.summary_subtitle.replace(/🔥/g, "▫").replace(/🧩/g, "▫").replace(/⚡/g, "▫")}
+                  {rawSubtitle.replace(/🔥/g, "▫").replace(/🧩/g, "▫").replace(/⚡/g, "▫")}
                 </p>
               ) : null}
               {clickable ? (
