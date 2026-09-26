@@ -94,3 +94,37 @@ export function jsonSafeError(
 ): Response {
   return Response.json({ error: fallback }, { status });
 }
+
+/**
+ * TEMPORARY diagnostic-only helper -- deliberately bypasses
+ * redactLogValue's normal message/details/hint stripping so we can see a
+ * real Postgres/PostgREST error's own classification fields while
+ * diagnosing the PROD payment-migration rollout (process_us_purchase
+ * failures). Only ever pass a PostgrestError-shaped object here -- never
+ * add transaction id, clerk user id, or any secret/token alongside it;
+ * those are not part of the Postgres error object anyway. Each field is
+ * length-capped as a basic guard against a pathological message. Remove
+ * this once the underlying RPC failure is diagnosed and fixed.
+ */
+export function logServerRpcError(
+  context: string,
+  error:
+    | { code?: string | null; message?: string | null; details?: string | null; hint?: string | null }
+    | null
+    | undefined,
+): void {
+  const cap = (v: unknown, max = 300): string | null =>
+    typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
+
+  if (!error) {
+    console.error(`[${context}]`, "rpc_error_object_missing");
+    return;
+  }
+
+  console.error(`[${context}]`, {
+    code: cap(error.code, 64),
+    message: cap(error.message),
+    details: cap(error.details),
+    hint: cap(error.hint),
+  });
+}

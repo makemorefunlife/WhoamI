@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { resolveUsPlan } from "@/lib/payment/usPricing";
-import { logServerError } from "@/lib/security/safeLog";
+import { logServerError, logServerRpcError } from "@/lib/security/safeLog";
 
 export type GrantUsPurchaseResult =
   | { ok: true; alreadyProcessed: boolean }
@@ -50,6 +50,14 @@ export async function grantUsPurchase(
 
   if (error) {
     logServerError("grantUsPurchase.rpc", error, "process_us_purchase_failed");
+    // Temporary diagnostic-only addition: see the actual Postgres/PostgREST
+    // error (code/message/details/hint only -- no transaction id, user id,
+    // or secrets) while diagnosing the PROD migration rollout. This also
+    // covers the webhook's "us_purchase_grant_failed" log, since
+    // app/api/webhooks/paddle/route.ts's handleTransactionCompleted calls
+    // this same grantUsPurchase() -- no separate change needed there.
+    // Remove once the root cause is confirmed and fixed.
+    logServerRpcError("grantUsPurchase.rpc", error);
     return { ok: false, reason: "grant_failed" };
   }
 
