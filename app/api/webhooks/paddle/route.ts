@@ -223,6 +223,12 @@ async function handleTransactionCompleted(
 
     if (!result.ok) {
       logServerError("webhooks.paddle.transaction", null, "renewal_grant_failed");
+      // Throw (not return) so processWebhookEventOnce marks this event
+      // failed/retryable instead of silently treating the grant as done --
+      // Paddle then retries this delivery on its own schedule. Safe to
+      // retry: grantUsAnnualRenewal/process_us_annual_renewal is
+      // idempotent on paddle_transaction_id.
+      throw new Error("renewal_grant_failed");
     }
     return;
   }
@@ -272,6 +278,10 @@ async function handleTransactionCompleted(
     });
     if (!result.ok) {
       logServerError("webhooks.paddle.transaction", null, "us_purchase_grant_failed");
+      // See the renewal branch above: throw so this event is marked
+      // failed/retryable rather than silently treated as done. Safe to
+      // retry: process_us_purchase is idempotent on paddle_transaction_id.
+      throw new Error("us_purchase_grant_failed");
     }
     return;
   }
@@ -286,6 +296,10 @@ async function handleTransactionCompleted(
   });
   if (!result.ok) {
     logServerError("webhooks.paddle.transaction", null, "kr_purchase_grant_failed");
+    // See the US-purchase branch above: throw so this event is marked
+    // failed/retryable. Safe to retry: process_kr_purchase (via
+    // grantKrPurchase) is idempotent on the provider transaction id.
+    throw new Error("kr_purchase_grant_failed");
   }
 }
 

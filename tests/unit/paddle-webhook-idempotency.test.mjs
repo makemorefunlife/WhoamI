@@ -270,4 +270,27 @@ section("C. Static source checks -- occurred_at wiring and stale-event guard");
   ok("claim_paddle_webhook_event's SQL implements the received/processed/in-flight state machine, not a bare existence check");
 }
 
+section("D. Entitlement-grant failures must stay retryable, not be marked processed");
+{
+  const routeSrc = readSrc("app/api/webhooks/paddle/route.ts");
+  for (const failureLog of [
+    "renewal_grant_failed",
+    "us_purchase_grant_failed",
+    "kr_purchase_grant_failed",
+  ]) {
+    const logCallIndex = routeSrc.indexOf(`"${failureLog}"`);
+    assert.ok(logCallIndex !== -1, `${failureLog} log call must still exist`);
+    const nearby = routeSrc.slice(logCallIndex, logCallIndex + 500);
+    assert.ok(
+      nearby.includes(`throw new Error("${failureLog}")`),
+      `${failureLog} must be followed by a throw -- if grantUsPurchase/` +
+        `grantUsAnnualRenewal/grantKrPurchase fails, handleTransactionCompleted ` +
+        `must not swallow it and return normally, or processWebhookEventOnce ` +
+        `will mark the event processed and Paddle will never redeliver it ` +
+        `(see section B2 above for the retry contract this depends on).`,
+    );
+  }
+  ok("every entitlement-grant failure branch throws so the event stays failed/retryable instead of being marked processed");
+}
+
 console.log(`\n${passed} passed`);
