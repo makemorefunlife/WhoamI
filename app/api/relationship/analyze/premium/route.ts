@@ -36,6 +36,7 @@ import { relationshipKindUsesDeepPipeline } from "@/lib/relationship/relationshi
 import {
   fetchRelationshipReportByIdSafe,
   mergeRelationshipPremiumByKind,
+  updateRelationshipReportSafe,
 } from "@/lib/relationship/relationshipReportQuery";
 import { resolveBirthTimeForCharts } from "@/lib/v2/onboarding/resolveBirthChartInput";
 import {
@@ -65,11 +66,9 @@ import {
 } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 import { applyHourEvidenceCapToComparisonTable } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4HourEvidence";
 import {
-  assertRelationshipPremiumLlmAccess,
   getRelationshipPremiumAnalysisFailedMessage,
   getRelationshipPremiumSaveFailedMessage,
 } from "@/lib/relationship/relationshipPremiumGuard";
-import { ensureRelationshipPremiumSlot } from "@/lib/relationship/ensureRelationshipPremiumSlot";
 import { persistRomanticPremiumResult } from "@/lib/relationship/persistRomanticPremiumResult";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import {
@@ -212,11 +211,18 @@ export async function POST(req: Request) {
     );
     if (accessGuard) return accessGuard;
 
-    const slotGuard = await ensureRelationshipPremiumSlot(
-      supabase,
-      relationshipReportId,
-    );
-    if (slotGuard) return slotGuard;
+    // Entitlement gate: the credit reservation below (reserveRelationshipCredit)
+    // is now the sole real gate on premium generation -- it's already
+    // lot-aware and enforces a real balance once CREDIT_ENFORCEMENT is on.
+    // (ensureRelationshipPremiumSlot / assertRelationshipPremiumLlmAccess used
+    // to gate on relationship_reports.analysis_type via a separate
+    // PREMIUM_PAYWALL flag that nothing ever set from a real purchase --
+    // see /api/relationship/upgrade, which has zero callers -- so removing
+    // both call sites here fixes the "viewable without entitlement" bug
+    // without inventing a second, parallel entitlement system. analysis_type
+    // is now set to "premium" as a side effect of a successful reservation
+    // below, purely so the UI's status badge and this cache-first check
+    // above reflect real paid state.)
 
     const byKind = (rr.result_premium_by_kind ?? {}) as ResultPremiumByKind;
     const kind = parseRelationshipKind(
@@ -331,12 +337,6 @@ export async function POST(req: Request) {
     const userCustomTargetName =
       viewerReportId === rr.report_id_a ? labelB : labelA;
 
-    const llmAccessGuard = await assertRelationshipPremiumLlmAccess(
-      supabase,
-      relationshipReportId,
-    );
-    if (llmAccessGuard) return llmAccessGuard;
-
     // Fresh per-attempt id — NOT the lock row's own id, which a stale-lock
     // steal reuses for a new owner (see relationshipPremiumGenerationLock.ts).
     // This is the sole idempotency key for the credit reservation below, and
@@ -392,6 +392,28 @@ export async function POST(req: Request) {
         { error: getMessages(locale).errors.insufficientCredit },
         { status: 402 },
       );
+    }
+
+    // Credit reservation above just confirmed a real, paid entitlement
+    // (once CREDIT_ENFORCEMENT is on) for this relationship report --
+    // record that on the row so the UI's premium badge/status reflects
+    // reality and a concurrent second request's cache-first check sees it
+    // immediately. Best-effort: this must never block a paying user's own
+    // generation -- the real entitlement gate is the reservation above,
+    // not this status flag.
+    if (rr.analysis_type !== "premium") {
+      const { error: markPremiumErr } = await updateRelationshipReportSafe(
+        supabase,
+        relationshipReportId,
+        { analysis_type: "premium", updated_at: new Date().toISOString() },
+      );
+      if (markPremiumErr) {
+        logServerError(
+          "relationship/analyze/premium mark_premium:",
+          markPremiumErr,
+          "internal_error",
+        );
+      }
     }
 
     // Consumed only once we're actually about to call the model — mirrors

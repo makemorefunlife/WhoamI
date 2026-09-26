@@ -1716,6 +1716,7 @@ export const messagesKoKR: MessageCatalog = {
     regenerate: "다시 생성",
     backToDashboard: "대시보드로 돌아가기",
     editBirthInfo: "출생 정보 수정하기 (계정)",
+    creditNeededCta: "구매하기",
     generatingReportNotice: "리포트 생성 중… 보통 1~2분 걸려요.",
     generatingPersonalTitle: "개인 분석을 생성하고 있어요",
     generatingPersonalSubtitle: "나만의 리포트를 만들고 있어요. 잠시만 기다려주세요.",

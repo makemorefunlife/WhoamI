@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import StitchSurveyShell from "@/components/survey/StitchSurveyShell";
 import StitchDeepEssenceView from "@/components/results/StitchDeepEssenceView";
+import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 import { useBlueprintBundle } from "@/lib/v2/blueprint/useBlueprintBundle";
 import { useSlimV1Integrated } from "@/lib/v1/slim/useSlimV1Integrated";
 import {
@@ -52,11 +53,22 @@ function EssenceDeepContent() {
   const canGenerate =
     ready && !booting && Boolean(bundle?.birth && hasMinimalBirth(bundle.birth));
 
-  const { data, loading, inProgress, error, retry, regenerateFresh } = useSlimV1Integrated(
-    reportId,
-    canGenerate,
-    bundle?.birth ?? null,
+  const { data, loading, inProgress, error, creditExhausted, retry, regenerateFresh } =
+    useSlimV1Integrated(reportId, canGenerate, bundle?.birth ?? null);
+
+  // Personal entitlement recovery: mirrors useRelationshipDetail.ts's
+  // premiumCreditExhausted -> PurchaseSelectorModal pattern (already live
+  // for Relationship). successRedirectPath points back at this same page
+  // so Paddle's own successUrl redirect lands here even if it wins the
+  // race against onSuccess -- see useRegionalCheckout.ts.
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const deepHref = localize(
+    `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`,
   );
+  function handlePurchaseSuccess() {
+    setPurchaseOpen(false);
+    void retry();
+  }
 
   useEffect(() => {
     if (!ready || booting || bundleLoading) return;
@@ -127,6 +139,29 @@ function EssenceDeepContent() {
           onRegenerateFresh={() => regenerateFresh()}
         />
 
+        {creditExhausted ? (
+          <div className="stitch-hero-panel rounded-extra-large px-6 py-8 text-center space-y-3">
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              {messages.errors.insufficientCredit}
+            </p>
+            <button
+              type="button"
+              className="stitch-cta-primary w-full"
+              onClick={() => setPurchaseOpen(true)}
+            >
+              {messages.blueprint.creditNeededCta}
+            </button>
+          </div>
+        ) : null}
+
+        <PurchaseSelectorModal
+          open={purchaseOpen}
+          context="personal"
+          onClose={() => setPurchaseOpen(false)}
+          onSuccess={handlePurchaseSuccess}
+          successRedirectPath={deepHref}
+        />
+
         <PwaReportActionCard />
 
         <div className="flex flex-col gap-3">
@@ -141,7 +176,7 @@ function EssenceDeepContent() {
             type="button"
             className="stitch-cta-secondary w-full disabled:opacity-60"
             onClick={() => regenerateFresh()}
-            disabled={loading || inProgress}
+            disabled={loading || inProgress || creditExhausted}
           >
             {loading || inProgress ? messages.blueprint.regenerating : messages.blueprint.regenerate}
           </button>

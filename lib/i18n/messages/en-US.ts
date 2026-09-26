@@ -1759,6 +1759,7 @@ export const messagesEnUS = {
     regenerate: "Regenerate",
     backToDashboard: "Back to dashboard",
     editBirthInfo: "Edit birth info (Account)",
+    creditNeededCta: "Purchase",
     generatingReportNotice: "Generating your report… this usually takes 1–2 minutes.",
     generatingPersonalTitle: "Generating your Personal Analysis",
     generatingPersonalSubtitle: "Creating your custom report. Please wait a moment.",
@@ -3323,6 +3324,7 @@ export type MessageCatalog = {
     regenerate: string;
     backToDashboard: string;
     editBirthInfo: string;
+    creditNeededCta: string;
     generatingReportNotice: string;
     generatingPersonalTitle: string;
     generatingPersonalSubtitle: string;

@@ -23,6 +23,13 @@ export function useSlimV1Integrated(
   const [loading, setLoading] = useState(false);
   const [inProgress, setInProgress] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set on a 402 from /api/v2/deep/essence (reservePersonalCredit rejected
+  // for insufficient balance -- see creditEnforcementPolicy.ts). Mirrors
+  // useRelationshipDetail.ts's premiumCreditExhausted: the page shows a
+  // Purchase Selector instead of the generic error state, and a retry()
+  // after a successful purchase re-attempts generation against the fresh
+  // credit with no further user action needed.
+  const [creditExhausted, setCreditExhausted] = useState(false);
 
   const isFetchingRef = useRef(false);
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -77,6 +84,7 @@ export function useSlimV1Integrated(
       setLoading(true);
       if (!opts?.isPolling) {
         setError(null);
+        setCreditExhausted(false);
       }
 
       try {
@@ -114,6 +122,12 @@ export function useSlimV1Integrated(
           return;
         }
 
+        if (res.status === 402) {
+          setCreditExhausted(true);
+          setError(null);
+          return;
+        }
+
         if (!res.ok || !json.slim_v1?.report) {
           throw new Error(json.error ?? messages.errors.analysisFailed);
         }
@@ -145,5 +159,13 @@ export function useSlimV1Integrated(
     void fetchReport();
   }, [enabled, reportId, fetchReport]);
 
-  return { data, loading, inProgress, error, retry: fetchReport, regenerateFresh };
+  return {
+    data,
+    loading,
+    inProgress,
+    error,
+    creditExhausted,
+    retry: fetchReport,
+    regenerateFresh,
+  };
 }
