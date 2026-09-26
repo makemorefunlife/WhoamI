@@ -3,7 +3,8 @@
 import { useCallback, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { resolveRegionalPlan } from "@/lib/payment/resolveRegionalPlan";
-import type { Locale } from "@/lib/i18n/locale";
+import { localizedPath, type Locale } from "@/lib/i18n/locale";
+import { ROUTES } from "@/constants/routes";
 
 type PaddleEvent = { name: string; data?: Record<string, unknown> };
 
@@ -139,9 +140,23 @@ export function useRegionalCheckout() {
             }
           };
 
+          const thankYouTarget = localizedPath(ROUTES.thankYou, locale);
+          const windowSearch = typeof window !== "undefined" ? window.location.search : "";
+          const fullThankYouPath = windowSearch
+            ? `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${windowSearch.slice(1)}`
+            : thankYouTarget;
+
+          const successUrl = typeof window !== "undefined"
+            ? `${window.location.origin}${fullThankYouPath}`
+            : fullThankYouPath;
+
           window.Paddle?.Checkout.open({
             items: [{ priceId, quantity: 1 }],
             customData: { clerkUserId: user.id, planId },
+            settings: {
+              locale: locale === "ko-KR" ? "ko" : "en",
+              successUrl,
+            },
           });
         });
       } catch {
