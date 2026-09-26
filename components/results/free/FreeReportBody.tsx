@@ -3,6 +3,7 @@
 import { FreeMiniIndicator } from "@/components/results/free/FreeMiniIndicator";
 import { FreeUpsellCard } from "@/components/results/free/FreeUpsellCard";
 import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
+import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import type { FreeReportUiStrings } from "@/components/results/free/freeReportUiStrings";
 import type { LiteSection } from "@/lib/v2/lite/types";
 import type { PrimaryAxesScores } from "@/lib/v2/survey/types";
@@ -118,6 +119,7 @@ export function FreeReportBody({
 
       <div className="mt-10 border-t border-outline-variant/30 pt-6">
         <AiAnalysisDisclaimer />
+        <ReportFeedbackSection />
       </div>
 
       {showUpsell ? (

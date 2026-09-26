@@ -6,6 +6,7 @@ import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
 import type { EssenceDeepPreviewResponse } from "@/lib/v1/slim/types";
 import { isDeepEssenceStructuredReport } from "@/lib/report/deepEssenceStructuredSchema";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 
 /**
  * essence/deep 페이지 본문. 로버블(Lovable) "Inner Compass" 디자인 이식 — Phase 3.
@@ -135,6 +136,7 @@ export default function StitchDeepEssenceView({
             </div>
           )}
           <AiAnalysisDisclaimer className="mt-8 border-t border-outline-variant/20 pt-4" />
+          <ReportFeedbackSection />
         </div>
       </div>
     </div>

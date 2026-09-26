@@ -13,6 +13,7 @@ import RegenerateConfirmDialog from "@/components/relationship/detail/Regenerate
 import RelationshipGeneratingPanel from "@/components/relationship/detail/RelationshipGeneratingPanel";
 import ReportShareSection from "@/components/relationship/detail/ReportShareSection";
 import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
+import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -378,6 +379,8 @@ export default function RelationshipView({
               {messages.report.chooseKindHint}
             </p>
           ) : null}
+
+          <ReportFeedbackSection displayName={viewerName} />
 
           <div className={`${hubPanelClass()} mt-10 space-y-3 p-5`}>
             <h2 className="text-sm font-semibold text-secondary">

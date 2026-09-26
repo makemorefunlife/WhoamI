@@ -1,6 +1,6 @@
 "use client";
 
-import { RedirectToSignIn, UserProfile, useAuth } from "@clerk/nextjs";
+import { RedirectToSignIn, UserProfile, useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AccountBirthEditor from "@/components/account/AccountBirthEditor";
@@ -13,12 +13,15 @@ import { useLocale, useMessages } from "@/lib/i18n/LocaleProvider";
 
 export default function AccountProfilePage() {
   const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
   const { href } = useLocale();
   const messages = useMessages();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const isFounder = Boolean(user?.publicMetadata?.is_founder);
 
   if (!isLoaded) {
     return (
@@ -65,6 +68,27 @@ export default function AccountProfilePage() {
       title={messages.account.profileLabel}
       subtitle={messages.account.profileSubtitle}
     >
+      {isFounder ? (
+        <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8 border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent">
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl">🏅</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="stitch-headline text-lg font-bold text-amber-950 dark:text-amber-100">
+                  Founders Club 1기 멤버
+                </h2>
+                <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                  [🏅 Founders]
+                </span>
+              </div>
+              <p className="mt-1 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                Aha! It&apos;s me의 파운더스 1기 멤버로 등록되어 계정에 골드 배지가 활성화되었습니다. 모든 신기능 우선 경험 혜택이 정상 적용됩니다.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <DisplayNameEditor />
       <AccountBirthEditor />
       <AccountSurveySection />

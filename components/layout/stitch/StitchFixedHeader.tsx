@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { usePathname } from "next/navigation";
-import { useClerk, UserButton } from "@clerk/nextjs";
+import { useClerk, useUser, UserButton } from "@clerk/nextjs";
 import { Menu, Settings, User } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useClerkReady } from "@/lib/clerk/useClerkReady";
@@ -21,7 +21,10 @@ export default function StitchFixedHeader({
   const pathname = usePathname();
   const { messages, href } = useLocale();
   const { openSignIn } = useClerk();
+  const { user } = useUser();
   const { isSignedIn, isLoaded, clerkUnavailable } = useClerkReady();
+
+  const isFounder = Boolean(user?.publicMetadata?.is_founder);
 
   const handleOpenAuth = useCallback(() => {
     if (pathname === "/" && onOpenAuth) {
@@ -89,7 +92,12 @@ export default function StitchFixedHeader({
             </LocaleLink>
           </div>
 
-          <div className="flex h-9 w-9 items-center justify-center">
+          <div className="flex h-9 items-center justify-end gap-2">
+            {isFounder ? (
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300 shadow-xs select-none">
+                🏅 Founders
+              </span>
+            ) : null}
             {!isLoaded ? (
               <span
                 className="block h-8 w-8 rounded-full bg-surface-container"

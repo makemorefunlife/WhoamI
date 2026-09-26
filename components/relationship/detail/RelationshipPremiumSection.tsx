@@ -21,6 +21,7 @@ import { shouldRenderRomanticExperienceV2 } from "@/lib/relationship/romantic/ex
 import { resolveRomanticRenderMode } from "@/lib/relationship/romantic/prototypeV4/productionAdapter/romanticV4Persistence";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import AiAnalysisDisclaimer from "@/components/legal/AiAnalysisDisclaimer";
+import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 
 type RelationshipPremiumSectionProps = {
   busy: boolean;
@@ -247,7 +248,10 @@ export default function RelationshipPremiumSection({
         />
       )}
       {premiumReady || hasSnapshotView ? (
-        <AiAnalysisDisclaimer className="mt-6 px-1" />
+        <>
+          <AiAnalysisDisclaimer className="mt-6 px-1" />
+          <ReportFeedbackSection displayName={viewerName} />
+        </>
       ) : null}
       {!premiumReady && !hasSnapshotView && creditExhausted && onOpenPurchase ? (
         <div className="mt-4 space-y-2 text-center">
