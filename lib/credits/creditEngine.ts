@@ -190,6 +190,48 @@ export async function getCreditBalance(
   return (data?.balance as number | undefined) ?? 0;
 }
 
+export type CreditLotSummary = {
+  /** Sum of `remaining` across every currently-valid (non-expired) lot. */
+  totalRemaining: number;
+  /**
+   * The soonest `expires_at` among valid lots that actually have one, or
+   * null when every valid lot is permanent (or there are none). A lot with
+   * no expiry is never "the soonest" here -- it would never actually run
+   * out on its own, so surfacing it as an expiration date would be
+   * misleading. reserve_credit already spends the soonest-expiring lot
+   * first (expires_at asc nulls last), so this is also the lot at real
+   * risk of expiring unused.
+   */
+  soonestExpiresAt: string | null;
+};
+
+/**
+ * Read-only summary for "My Access" / entitlement-summary UI and the
+ * Purchase Selector's overlapping-entitlement notice -- never used for
+ * gating a purchase or a generation attempt (reserve_credit/reserve_credit's
+ * RPC remains the sole real entitlement gate; see Phase 1).
+ */
+export async function getCreditLotSummary(
+  supabase: SupabaseClient,
+  clerkUserId: string,
+  creditType: CreditType,
+): Promise<CreditLotSummary> {
+  const nowIso = new Date().toISOString();
+  const { data } = await supabase
+    .from("credit_lots")
+    .select("remaining, expires_at")
+    .eq("clerk_user_id", clerkUserId)
+    .eq("credit_type", creditType)
+    .gt("remaining", 0)
+    .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
+    .order("expires_at", { ascending: true, nullsFirst: false });
+
+  const rows = (data ?? []) as { remaining: number; expires_at: string | null }[];
+  const totalRemaining = rows.reduce((sum, row) => sum + row.remaining, 0);
+  const soonestExpiresAt = rows.find((row) => row.expires_at !== null)?.expires_at ?? null;
+  return { totalRemaining, soonestExpiresAt };
+}
+
 // ---------------------------------------------------------------------------
 // US Annual Membership entitlements -- shared engine extensions. These all
 // call RPCs added in supabase/migrations/20260922040300_us_membership_functions.sql.

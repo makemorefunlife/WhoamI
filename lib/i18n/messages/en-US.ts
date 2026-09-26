@@ -589,6 +589,19 @@ export const messagesEnUS = {
     birthDisplayTimeUnknown: "Unknown (calculated using noon)",
     birthDisplayPlaceFallbackSuffix:
       " (default value — please update to your actual location)",
+    myAccessTitle: "My Access",
+    myAccessSubtitle: "Your current analysis credits and Decision Journal status.",
+    myAccessPersonalLabel: "Personal analysis",
+    myAccessRelationshipLabel: "Relationship analysis",
+    myAccessRemainingCount: (count: number) => `${count} remaining`,
+    myAccessNoneRemaining: "None remaining",
+    myAccessExpiresOn: (date: string) => `Expires ${date}`,
+    myAccessExpiringSoon: "Expiring soon",
+    myAccessNoExpiry: "No expiration",
+    myAccessJournalLabel: "Decision Journal",
+    myAccessJournalUnlimitedUntil: (date: string) => `Unlimited entries until ${date}`,
+    myAccessJournalNormalAllowance: "20 entries included",
+    myAccessLoadError: "We couldn't load your access info. Please try again.",
   },
   pricing: {
     title: "Pricing",
@@ -616,7 +629,13 @@ export const messagesEnUS = {
     selectorTitleRelationship: "Unlock this relationship's deep analysis",
     selectorTitleAccount: "Choose your plan",
     selectorPrimaryBadge: "Recommended for you",
+    selectorSelectedBadge: "Selected analysis",
+    selectorBestValueBadge: "Best value",
     selectorAlternativesHeading: "Other options",
+    selectorAlreadyHaveAccessPersonal:
+      "You already have a Personal analysis available. Use it anytime from My Access on your account page — no need to buy another right now.",
+    selectorAlreadyHaveAccessRelationship:
+      "You already have a Relationship analysis available. Use it anytime from My Access on your account page — no need to buy another right now.",
     plans: {
       personal_premium: {
         name: "Personal Premium",
@@ -680,6 +699,7 @@ export const messagesEnUS = {
         price: "$28",
         period: "/ one-time",
         tagline: "Everything you need for a full month, in one pass",
+        savingsNote: "Save $2.98 vs. buying separately",
         features: [
           "1 Personal deep analysis",
           "1 Relationship deep analysis",
@@ -698,7 +718,6 @@ export const messagesEnUS = {
           "2 Relationship deep analyses every month (no rollover)",
           "2 Gift Personal coupons to share, once at signup",
           "Unlimited Decision Journal all year",
-          "Early access to new features",
           "Extra Relationship analyses at $9.99 each after your monthly 2",
         ],
         cta: "Become a Member",
@@ -1032,6 +1051,9 @@ export const messagesEnUS = {
       "A conversation partner grounded in your blueprint — for when the choice in front of you feels bigger than a pros/cons list.",
     decideWithAiTagline: "Your next decision, decoded together",
     starRatingAria: (value: number, max: number) => `${value} out of ${max} stars`,
+    journalCapReachedNotice: (cap: number) =>
+      `You've reached your ${cap}-entry Decision Journal limit. Upgrade to a 30-Day Pass or Annual Membership for unlimited entries.`,
+    journalCapUpgradeCta: "See upgrade options",
   },
   legal: {
     backHome: "← Back home",
@@ -2406,6 +2428,19 @@ export type MessageCatalog = {
     birthDisplayNotEntered: string;
     birthDisplayTimeUnknown: string;
     birthDisplayPlaceFallbackSuffix: string;
+    myAccessTitle: string;
+    myAccessSubtitle: string;
+    myAccessPersonalLabel: string;
+    myAccessRelationshipLabel: string;
+    myAccessRemainingCount: (count: number) => string;
+    myAccessNoneRemaining: string;
+    myAccessExpiresOn: (date: string) => string;
+    myAccessExpiringSoon: string;
+    myAccessNoExpiry: string;
+    myAccessJournalLabel: string;
+    myAccessJournalUnlimitedUntil: (date: string) => string;
+    myAccessJournalNormalAllowance: string;
+    myAccessLoadError: string;
   };
   pricing: {
     title: string;
@@ -2429,7 +2464,11 @@ export type MessageCatalog = {
     selectorTitleRelationship: string;
     selectorTitleAccount: string;
     selectorPrimaryBadge: string;
+    selectorSelectedBadge: string;
+    selectorBestValueBadge: string;
     selectorAlternativesHeading: string;
+    selectorAlreadyHaveAccessPersonal: string;
+    selectorAlreadyHaveAccessRelationship: string;
     plans: {
       personal_premium: {
         name: string;
@@ -2467,12 +2506,12 @@ export type MessageCatalog = {
     regionalPlans: {
       us_personal_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
       us_relationship_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      us_insight_pass_30d: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      us_insight_pass_30d: { name: string; price: string; period: string; tagline: string; savingsNote?: string; features: string[]; cta: string };
       us_annual_membership: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
       us_additional_relationship: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
       kr_personal_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
       kr_relationship_premium: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
-      kr_insight_pass_30d: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
+      kr_insight_pass_30d: { name: string; price: string; period: string; tagline: string; savingsNote?: string; features: string[]; cta: string };
       kr_relationship_triple: { name: string; price: string; period: string; tagline: string; features: string[]; cta: string };
     };
   };
@@ -2669,6 +2708,8 @@ export type MessageCatalog = {
     decideWithAiBody: string;
     decideWithAiTagline: string;
     starRatingAria: (value: number, max: number) => string;
+    journalCapReachedNotice: (cap: number) => string;
+    journalCapUpgradeCta: string;
   };
   legal: {
     backHome: string;

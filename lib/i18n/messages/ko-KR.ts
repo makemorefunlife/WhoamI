@@ -561,6 +561,19 @@ export const messagesKoKR: MessageCatalog = {
     birthDisplayNotEntered: "미입력",
     birthDisplayTimeUnknown: "모름 (낮 12시 기준으로 계산)",
     birthDisplayPlaceFallbackSuffix: " (기본값 — 실제 지역으로 수정해 주세요)",
+    myAccessTitle: "마이 액세스",
+    myAccessSubtitle: "현재 보유한 분석 크레딧과 Decision Journal 상태예요.",
+    myAccessPersonalLabel: "Personal 분석",
+    myAccessRelationshipLabel: "Relationship 분석",
+    myAccessRemainingCount: (count: number) => `${count}회 남음`,
+    myAccessNoneRemaining: "남은 횟수 없음",
+    myAccessExpiresOn: (date: string) => `${date} 만료`,
+    myAccessExpiringSoon: "곧 만료",
+    myAccessNoExpiry: "만료 없음",
+    myAccessJournalLabel: "Decision Journal",
+    myAccessJournalUnlimitedUntil: (date: string) => `${date}까지 무제한 기록 가능`,
+    myAccessJournalNormalAllowance: "20개 항목 제공",
+    myAccessLoadError: "액세스 정보를 불러오지 못했어요. 다시 시도해 주세요.",
   },
   pricing: {
     title: "요금제",
@@ -587,7 +600,13 @@ export const messagesKoKR: MessageCatalog = {
     selectorTitleRelationship: "이 관계의 심화 분석 잠금 해제하기",
     selectorTitleAccount: "플랜 선택하기",
     selectorPrimaryBadge: "지금 추천 플랜",
+    selectorSelectedBadge: "선택한 분석",
+    selectorBestValueBadge: "추천 구성",
     selectorAlternativesHeading: "다른 옵션",
+    selectorAlreadyHaveAccessPersonal:
+      "이미 사용 가능한 Personal 분석이 있어요. 마이 액세스에서 언제든 이용하실 수 있어요 — 지금 또 구매하지 않으셔도 돼요.",
+    selectorAlreadyHaveAccessRelationship:
+      "이미 사용 가능한 Relationship 분석이 있어요. 마이 액세스에서 언제든 이용하실 수 있어요 — 지금 또 구매하지 않으셔도 돼요.",
     plans: {
       personal_premium: {
         name: "Personal Premium",
@@ -669,7 +688,6 @@ export const messagesKoKR: MessageCatalog = {
           "Relationship 심화 분석 매월 2회 (이월 불가)",
           "가입 시 1회, Gift Personal 쿠폰 2매 증정",
           "Decision Journal 1년 무제한",
-          "신규 기능 우선 체험",
           "월 2회 소진 후 추가 Relationship 분석 $9.99",
         ],
         cta: "멤버십 가입",
@@ -703,6 +721,7 @@ export const messagesKoKR: MessageCatalog = {
         price: "₩20,000",
         period: "/ 1회",
         tagline: "한 달 동안 필요한 모든 것을 한 번에",
+        savingsNote: "각각 따로 구매하는 것보다 2,800원 절약",
         features: [
           "Personal 심화 분석 1회",
           "Relationship 심화 분석 1회",
@@ -998,6 +1017,9 @@ export const messagesKoKR: MessageCatalog = {
       "당신의 블루프린트에 기반한 대화 상대예요 — 눈앞의 선택이 장단점 목록보다 더 크게 느껴질 때를 위한.",
     decideWithAiTagline: "다음 결정을, 함께 풀어봐요",
     starRatingAria: (value: number, max: number) => `${max}점 중 ${value}점`,
+    journalCapReachedNotice: (cap: number) =>
+      `Decision Journal ${cap}개 항목 한도에 도달했어요. 30일 이용권이나 연간 멤버십으로 업그레이드하면 무제한으로 기록할 수 있어요.`,
+    journalCapUpgradeCta: "업그레이드 옵션 보기",
   },
   legal: {
     backHome: "← 홈으로",

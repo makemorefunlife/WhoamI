@@ -21,6 +21,21 @@ type MembershipInfo = {
 
 type LoadState = "loading" | "loaded" | "error";
 
+type CreditSummary = { remaining: number; soonestExpiresAt: string | null };
+type JournalSummary = { unlimited: boolean; unlimitedUntil: string | null; unlimitedSource: string | null };
+type EntitlementsInfo = {
+  personal: CreditSummary;
+  relationship: CreditSummary;
+  journal: JournalSummary;
+};
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+function isExpiringSoon(iso: string | null): boolean {
+  if (!iso) return false;
+  const diffMs = new Date(iso).getTime() - Date.now();
+  return diffMs > 0 && diffMs <= SEVEN_DAYS_MS;
+}
+
 export default function AccountBillingPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { messages, href, locale } = useLocale();
@@ -32,6 +47,8 @@ export default function AccountBillingPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [purchaseOpen, setPurchaseOpen] = useState(false);
+  const [entitlementsState, setEntitlementsState] = useState<LoadState>("loading");
+  const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -51,6 +68,29 @@ export default function AccountBillingPage() {
         setLoadState("loaded");
       } catch {
         if (!cancelled) setLoadState("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn]);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/account/entitlements");
+        const body = (await res.json().catch(() => null)) as EntitlementsInfo | null;
+        if (cancelled) return;
+        if (!res.ok || !body) {
+          setEntitlementsState("error");
+          return;
+        }
+        setEntitlements(body);
+        setEntitlementsState("loaded");
+      } catch {
+        if (!cancelled) setEntitlementsState("error");
       }
     })();
     return () => {
@@ -113,6 +153,16 @@ export default function AccountBillingPage() {
       // worst case the user sees the old "no active membership" state
       // until their next visit or manual reload.
     }
+    try {
+      const res = await fetch("/api/account/entitlements");
+      const body = (await res.json().catch(() => null)) as EntitlementsInfo | null;
+      if (res.ok && body) {
+        setEntitlements(body);
+        setEntitlementsState("loaded");
+      }
+    } catch {
+      // Best-effort refresh, same reasoning as above.
+    }
   }
 
   return (
@@ -121,6 +171,67 @@ export default function AccountBillingPage() {
       title={copy.billingLabel}
       subtitle={copy.billingSubtitle}
     >
+      <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
+          {copy.myAccessTitle}
+        </p>
+        <p className="mt-1 text-sm text-on-surface-variant">{copy.myAccessSubtitle}</p>
+
+        {entitlementsState === "loading" ? (
+          <p className="mt-4 text-sm text-on-surface-variant">{copy.loading}</p>
+        ) : entitlementsState === "error" || !entitlements ? (
+          <p className="mt-4 text-sm text-on-surface-variant">{copy.myAccessLoadError}</p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {(
+              [
+                { label: copy.myAccessPersonalLabel, credit: entitlements.personal },
+                { label: copy.myAccessRelationshipLabel, credit: entitlements.relationship },
+              ] as const
+            ).map(({ label, credit }) => (
+              <div
+                key={label}
+                className="rounded-xl border border-outline-variant/25 bg-surface-container-lowest/70 p-4"
+              >
+                <p className="text-sm font-medium text-on-surface">{label}</p>
+                <p className="mt-1 text-sm text-on-surface-variant">
+                  {credit.remaining > 0
+                    ? copy.myAccessRemainingCount(credit.remaining)
+                    : copy.myAccessNoneRemaining}
+                </p>
+                {credit.remaining > 0 ? (
+                  <p className="mt-0.5 text-xs text-on-surface-variant">
+                    {credit.soonestExpiresAt ? (
+                      <>
+                        {copy.myAccessExpiresOn(formatDecisionDate(credit.soonestExpiresAt, locale))}
+                        {isExpiringSoon(credit.soonestExpiresAt) ? (
+                          <span className="ml-1 font-semibold text-amber-700">
+                            · {copy.myAccessExpiringSoon}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      copy.myAccessNoExpiry
+                    )}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+
+            <div className="rounded-xl border border-outline-variant/25 bg-surface-container-lowest/70 p-4">
+              <p className="text-sm font-medium text-on-surface">{copy.myAccessJournalLabel}</p>
+              <p className="mt-1 text-sm text-on-surface-variant">
+                {entitlements.journal.unlimited && entitlements.journal.unlimitedUntil
+                  ? copy.myAccessJournalUnlimitedUntil(
+                      formatDecisionDate(entitlements.journal.unlimitedUntil, locale),
+                    )
+                  : copy.myAccessJournalNormalAllowance}
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
       <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
         {loadState === "loading" ? (
           <p className="text-sm text-on-surface-variant">{copy.loading}</p>

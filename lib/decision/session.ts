@@ -94,6 +94,31 @@ export function clearDecisionJournal(reportId: string) {
   removeJsonStorage(storageKey(reportId), storageKey(reportId));
 }
 
+/**
+ * Total Decision Journal entries across ALL reports for this browser/user --
+ * the 20-entry cap (see lib/entitlements/decisionJournalAccess.ts for the
+ * separate "unlimited while a 30-Day Pass/Annual membership is active"
+ * override) is a whole-account entitlement, not a per-report one, so this
+ * sums every `ahaitsme_decisions_*` key rather than just the current
+ * report's. Client-counted by design (no server-side entry storage exists
+ * or is planned) -- only the unlimited-window flag comes from the server.
+ */
+export function countAllDecisionEntries(): number {
+  if (typeof window === "undefined") return 0;
+  let total = 0;
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(PREFIX)) continue;
+      const reportId = key.slice(PREFIX.length);
+      total += readDecisionJournal(reportId).length;
+    }
+  } catch {
+    return total;
+  }
+  return total;
+}
+
 export function addDecisionEntry(
   reportId: string,
   input: {

@@ -86,6 +86,12 @@ export default function RegionalPricingCards() {
               </div>
               <p className="mt-2 text-sm leading-relaxed text-[#4A5C52]">{plan.tagline}</p>
 
+              {(plan as { savingsNote?: string }).savingsNote ? (
+                <p className="mt-1 text-xs font-semibold text-[#3A8F6E]">
+                  {(plan as { savingsNote?: string }).savingsNote}
+                </p>
+              ) : null}
+
               {planId === "us_insight_pass_30d" || planId === "kr_insight_pass_30d" ? (
                 <span className="mt-3 inline-block w-fit rounded-full bg-[#3A8F6E]/10 px-2.5 py-1 text-[11px] font-semibold text-[#3A8F6E]">
                   {messages.pricing.regionalOneTimeBadge}

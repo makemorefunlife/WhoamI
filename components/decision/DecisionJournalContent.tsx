@@ -16,6 +16,7 @@ import { StitchSkeleton } from "@/components/ui/stitch/StitchSkeleton";
 import {
   addDecisionEntry,
   completeDecisionReview,
+  countAllDecisionEntries,
   readDecisionJournal,
   readDecisionReportId,
 } from "@/lib/decision/session";
@@ -23,6 +24,7 @@ import { sortDecisionsForReview } from "@/lib/decision/sort";
 import { DECISION_CATEGORIES, decisionCategorySelectLabel } from "@/lib/decision/categories";
 import { useMessages } from "@/lib/i18n/LocaleProvider";
 import type { MessageCatalog } from "@/lib/i18n/messages";
+import PurchaseSelectorModal from "@/components/payment/PurchaseSelectorModal";
 import {
   type DecisionCategory,
   type DecisionCategoryFilter,
@@ -30,6 +32,10 @@ import {
 } from "@/lib/decision/types";
 
 const REVIEW_PREVIEW_LIMIT = 3;
+// Normal allowance when there's no active 30-Day Pass/Annual membership --
+// see lib/entitlements/decisionJournalAccess.ts for the unlimited-window
+// override this is checked against.
+const DECISION_JOURNAL_FREE_CAP = 20;
 
 function onboardingSteps(messages: MessageCatalog) {
   return [
@@ -112,17 +118,46 @@ export default function DecisionJournalContent() {
   const [reviewCategoryFilter, setReviewCategoryFilter] =
     useState<DecisionCategoryFilter>("all");
   const [reviewEntry, setReviewEntry] = useState<DecisionEntry | null>(null);
+  // Client-counted total across ALL reports (see countAllDecisionEntries) --
+  // the 20-entry cap is a whole-account allowance, not per-report.
+  const [totalEntryCount, setTotalEntryCount] = useState(0);
+  // Server-derived override: true while a 30-Day Pass or Annual membership
+  // is active (see /api/account/entitlements -> getDecisionJournalAccess).
+  // Defaults to false (cap enforced) until the fetch resolves or if it
+  // fails -- a soft product cap, not a security gate, so failing closed
+  // here just means an eligible user might see the cap for a moment, never
+  // the reverse.
+  const [journalUnlimited, setJournalUnlimited] = useState(false);
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   const persist = useCallback((next: DecisionEntry[]) => {
     setEntries(next);
+    setTotalEntryCount(countAllDecisionEntries());
   }, []);
 
   useEffect(() => {
     const id = readDecisionReportId();
     setReportId(id);
     setEntries(readDecisionJournal(id));
+    setTotalEntryCount(countAllDecisionEntries());
     setJournalReady(true);
   }, []);
+
+  useEffect(() => {
+    if (isGuest) return;
+    let cancelled = false;
+    fetch("/api/account/entitlements")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: { journal?: { unlimited?: boolean } } | null) => {
+        if (!cancelled) setJournalUnlimited(body?.journal?.unlimited === true);
+      })
+      .catch(() => {
+        if (!cancelled) setJournalUnlimited(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isGuest]);
 
   const requireAuth = useCallback(() => {
     openSignIn?.({
@@ -131,7 +166,9 @@ export default function DecisionJournalContent() {
     });
   }, [openSignIn]);
 
-  const canSave = situation.trim().length > 0 && decisionText.trim().length > 0;
+  const capReached = !journalUnlimited && totalEntryCount >= DECISION_JOURNAL_FREE_CAP;
+  const canSave =
+    situation.trim().length > 0 && decisionText.trim().length > 0 && !capReached;
 
   const handleSave = () => {
     if (isGuest) {
@@ -318,6 +355,18 @@ export default function DecisionJournalContent() {
               />
             </div>
 
+            {capReached ? (
+              <div className="rounded-lg bg-secondary-container/40 px-3 py-2.5 text-xs leading-relaxed text-on-surface-variant">
+                <p>{messages.decision.journalCapReachedNotice(DECISION_JOURNAL_FREE_CAP)}</p>
+                <button
+                  type="button"
+                  onClick={() => setPurchaseOpen(true)}
+                  className="mt-1.5 font-semibold text-primary underline-offset-2 hover:underline"
+                >
+                  {messages.decision.journalCapUpgradeCta}
+                </button>
+              </div>
+            ) : null}
             <div className="flex justify-end pt-1">
               <button
                 type="button"
@@ -438,6 +487,27 @@ export default function DecisionJournalContent() {
         open={reviewEntry != null}
         onClose={() => setReviewEntry(null)}
         onSave={handleSaveReview}
+      />
+
+      <PurchaseSelectorModal
+        open={purchaseOpen}
+        context="account"
+        onClose={() => setPurchaseOpen(false)}
+        onSuccess={() => {
+          setPurchaseOpen(false);
+          // Re-check rather than assume: this modal's alternatives also
+          // include plain Personal/Relationship singles, which do NOT grant
+          // unlimited Journal -- only an active 30-Day Pass or Annual
+          // membership does (see getDecisionJournalAccess).
+          fetch("/api/account/entitlements")
+            .then((res) => (res.ok ? res.json() : null))
+            .then((body: { journal?: { unlimited?: boolean } } | null) => {
+              setJournalUnlimited(body?.journal?.unlimited === true);
+            })
+            .catch(() => {
+              /* keep current state -- best-effort refresh only */
+            });
+        }}
       />
     </StitchSurveyShell>
   );

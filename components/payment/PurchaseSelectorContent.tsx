@@ -12,6 +12,13 @@ export type PurchaseContext = "personal" | "relationship" | "account";
 
 type RegionalPlanId = UsPlanId | KrPlanId;
 
+const PASS_PLAN_IDS: readonly RegionalPlanId[] = ["us_insight_pass_30d", "kr_insight_pass_30d"];
+
+type EntitlementsSummary = {
+  personal: { remaining: number };
+  relationship: { remaining: number };
+};
+
 /**
  * Fixed per-region catalog exposure -- deliberately NOT "every key of
  * US_PLANS/KR_PLANS minus one exclusion". US and KR are two completely
@@ -92,6 +99,7 @@ export default function PurchaseSelectorContent({
   const { busy, openCheckout, isLoaded: authLoaded } = useRegionalCheckout();
   const [result, setResult] = useState<Record<string, "success" | "error">>({});
   const [additionalEligible, setAdditionalEligible] = useState(false);
+  const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
 
   const region: "us" | "kr" = locale === "en-US" ? "us" : "kr";
   const catalog = region === "us" ? US_CATALOG : KR_CATALOG;
@@ -114,6 +122,36 @@ export default function PurchaseSelectorContent({
       cancelled = true;
     };
   }, [region, isSignedIn]);
+
+  useEffect(() => {
+    // Informational only, non-blocking (see product rule: an overlapping
+    // stronger entitlement must never hard-block a purchase). Not fetched
+    // for "account" -- that context has no single matching analysis type to
+    // warn about.
+    if (context === "account" || !isSignedIn) {
+      setEntitlements(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/account/entitlements")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: EntitlementsSummary | null) => {
+        if (!cancelled) setEntitlements(body);
+      })
+      .catch(() => {
+        if (!cancelled) setEntitlements(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [context, isSignedIn]);
+
+  const alreadyHasAccessNotice =
+    context === "personal" && (entitlements?.personal.remaining ?? 0) > 0
+      ? messages.pricing.selectorAlreadyHaveAccessPersonal
+      : context === "relationship" && (entitlements?.relationship.remaining ?? 0) > 0
+        ? messages.pricing.selectorAlreadyHaveAccessRelationship
+        : null;
 
   const primaryPlanId = useMemo(
     () => primaryPlanFor(context, region, additionalEligible),
@@ -158,7 +196,13 @@ export default function PurchaseSelectorContent({
       >
         {primary ? (
           <span className="mb-2 inline-block w-fit rounded-full bg-[#3A8F6E] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white">
-            {messages.pricing.selectorPrimaryBadge}
+            {context === "personal" || context === "relationship"
+              ? messages.pricing.selectorSelectedBadge
+              : messages.pricing.selectorPrimaryBadge}
+          </span>
+        ) : PASS_PLAN_IDS.includes(planId) ? (
+          <span className="mb-2 inline-block w-fit rounded-full bg-[#C98A2C] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white">
+            {messages.pricing.selectorBestValueBadge}
           </span>
         ) : null}
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#3A8F6E]">{plan.name}</p>
@@ -167,6 +211,11 @@ export default function PurchaseSelectorContent({
           {plan.period ? <span className="text-sm font-medium text-[#4A5C52]">{plan.period}</span> : null}
         </div>
         <p className="mt-2 text-sm leading-relaxed text-[#4A5C52]">{plan.tagline}</p>
+        {(plan as { savingsNote?: string }).savingsNote ? (
+          <p className="mt-1 text-xs font-semibold text-[#3A8F6E]">
+            {(plan as { savingsNote?: string }).savingsNote}
+          </p>
+        ) : null}
         <ul className="mt-6 flex-1 space-y-3">
           {plan.features.map((feature: string) => (
             <li key={feature} className="flex items-start gap-2.5 text-sm leading-relaxed text-[#1A3328]">
@@ -205,6 +254,12 @@ export default function PurchaseSelectorContent({
   return (
     <div className="space-y-6">
       <h2 className="stitch-headline text-2xl font-bold text-[#1A3328]">{title}</h2>
+
+      {alreadyHasAccessNotice ? (
+        <p className="rounded-xl border border-[#D4CFC4] bg-[#F5F0E8] px-4 py-2.5 text-xs leading-relaxed text-[#4A5C52]">
+          {alreadyHasAccessNotice}
+        </p>
+      ) : null}
 
       <div className="grid gap-5 sm:grid-cols-2">{renderCard(primaryPlanId, true)}</div>
 
