@@ -58,6 +58,29 @@ function loadAndInitPaddle(clientToken: string): Promise<void> {
   return paddleReadyPromise;
 }
 
+/**
+ * Pure -- exported for tests (tests/unit/checkout-success-redirect.test.mjs).
+ * Identical to useRegionalCheckout.ts's own copy of this helper -- see its
+ * doc comment. Duplicated rather than imported to match this file's
+ * existing standalone-module style (see its own top-of-file comment on
+ * why currentEventListener is duplicated too).
+ */
+export function buildThankYouSuccessPath(
+  thankYouTarget: string,
+  currentSearch: string,
+  successRedirectPath?: string,
+): string {
+  if (successRedirectPath) {
+    const params = new URLSearchParams(currentSearch);
+    params.set("redirect", successRedirectPath);
+    const query = params.toString();
+    return `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${query}`;
+  }
+  return currentSearch
+    ? `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${currentSearch.slice(1)}`
+    : thankYouTarget;
+}
+
 export type BetaCheckoutOutcome = "success" | "already_processed" | "cancelled" | "error";
 
 /**
@@ -73,7 +96,19 @@ export function useBetaCheckout() {
   const [busy, setBusy] = useState(false);
 
   const openCheckout = useCallback(
-    async (planId: BetaPlanId, locale: Locale): Promise<BetaCheckoutOutcome> => {
+    async (
+      planId: BetaPlanId,
+      locale: Locale,
+      /**
+       * Optional explicit post-purchase destination -- see
+       * useRegionalCheckout.ts's identical opts.successRedirectPath doc
+       * comment. No current Beta caller passes this; added for parity so
+       * the two hooks (which share this successUrl-building logic) don't
+       * drift, and so a future Beta flow with a known "come back here"
+       * page can opt in the same way.
+       */
+      opts?: { successRedirectPath?: string },
+    ): Promise<BetaCheckoutOutcome> => {
       const plan = resolveBetaPlan(planId);
       const clientToken = process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN;
       if (!plan || !user?.id || !clientToken) return "error";
@@ -117,11 +152,16 @@ export function useBetaCheckout() {
             }
           };
 
+          // Fallback/parallel path only -- see buildThankYouSuccessPath's doc
+          // comment above (shared with useRegionalCheckout.ts, which this
+          // mirrors).
           const thankYouTarget = localizedPath(ROUTES.thankYou, locale);
           const windowSearch = typeof window !== "undefined" ? window.location.search : "";
-          const fullThankYouPath = windowSearch
-            ? `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${windowSearch.slice(1)}`
-            : thankYouTarget;
+          const fullThankYouPath = buildThankYouSuccessPath(
+            thankYouTarget,
+            windowSearch,
+            opts?.successRedirectPath,
+          );
 
           const successUrl = typeof window !== "undefined"
             ? `${window.location.origin}${fullThankYouPath}`

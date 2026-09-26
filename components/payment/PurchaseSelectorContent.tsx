@@ -71,10 +71,20 @@ function primaryPlanFor(
 export default function PurchaseSelectorContent({
   context,
   onSuccess,
+  successRedirectPath,
 }: {
   context: PurchaseContext;
   /** Called once per successful purchase (success or already_processed), before any close/navigate the caller wants to do. */
   onSuccess?: (planId: string) => void;
+  /**
+   * Optional explicit post-purchase destination, forwarded as-is to
+   * useRegionalCheckout's opts.successRedirectPath (see its doc comment).
+   * Fallback/parallel path only -- the onSuccess callback above is still
+   * the primary way a caller reacts to a successful purchase. Leave unset
+   * for contexts (relationship, account, generic /pricing) with no single
+   * specific "come back here" page.
+   */
+  successRedirectPath?: string;
 }) {
   const { locale, messages } = useLocale();
   const { isSignedIn } = useUser();
@@ -119,7 +129,7 @@ export default function PurchaseSelectorContent({
   async function handleCheckout(planId: string) {
     if (!authLoaded) return;
     setResult((prev) => ({ ...prev, [planId]: undefined as unknown as "success" }));
-    const outcome = await openCheckout(planId, locale);
+    const outcome = await openCheckout(planId, locale, { successRedirectPath });
     if (outcome === "success" || outcome === "already_processed") {
       setResult((prev) => ({ ...prev, [planId]: "success" }));
       onSuccess?.(planId);

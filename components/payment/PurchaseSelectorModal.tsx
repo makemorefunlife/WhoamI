@@ -13,6 +13,8 @@ type Props = {
   onClose: () => void;
   /** Called once per successful purchase; the caller decides what "entitlement now unlocked" means for its own flow (navigate, refetch, etc). */
   onSuccess?: (planId: string) => void;
+  /** Forwarded as-is to PurchaseSelectorContent -- see its own doc comment. */
+  successRedirectPath?: string;
 };
 
 /**
@@ -24,7 +26,7 @@ type Props = {
  * max-w-md) -- this needs to be "big modal / full-screen selector" per
  * spec, so it gets its own wider, centered shell instead.
  */
-export default function PurchaseSelectorModal({ open, context, onClose, onSuccess }: Props) {
+export default function PurchaseSelectorModal({ open, context, onClose, onSuccess, successRedirectPath }: Props) {
   const { messages } = useLocale();
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function PurchaseSelectorModal({ open, context, onClose, onSucces
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-2 sm:px-8 sm:pb-8">
-          <PurchaseSelectorContent context={context} onSuccess={handleSuccess} />
+          <PurchaseSelectorContent context={context} onSuccess={handleSuccess} successRedirectPath={successRedirectPath} />
         </div>
       </motion.div>
     </div>,

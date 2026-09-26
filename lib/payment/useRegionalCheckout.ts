@@ -53,6 +53,39 @@ function loadAndInitPaddle(clientToken: string): Promise<void> {
   return paddleReadyPromise;
 }
 
+/**
+ * Pure -- exported for tests (tests/unit/checkout-success-redirect.test.mjs).
+ * Builds the query suffix appended to Paddle's successUrl target
+ * (ROUTES.thankYou, already locale-prefixed by the caller).
+ *
+ * When successRedirectPath is omitted (every caller before this change,
+ * and every caller today except StitchPremiumCard's Personal Premium
+ * flow), this reproduces the exact prior behavior byte-for-byte: the
+ * current page's own query string (e.g. "?reportId=...") is carried over
+ * as-is, and ThankYouClient falls back to its generic reportId-based
+ * target. When successRedirectPath IS provided, it is added as an
+ * (automatically percent-encoded, via URLSearchParams) "redirect" param,
+ * which ThankYouClient already treats as its highest-priority target --
+ * so if Paddle's own redirect wins the race against this hook's own
+ * onSuccess -> router.push flow, the user still lands on the exact page
+ * the caller intended instead of the generic fallback.
+ */
+export function buildThankYouSuccessPath(
+  thankYouTarget: string,
+  currentSearch: string,
+  successRedirectPath?: string,
+): string {
+  if (successRedirectPath) {
+    const params = new URLSearchParams(currentSearch);
+    params.set("redirect", successRedirectPath);
+    const query = params.toString();
+    return `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${query}`;
+  }
+  return currentSearch
+    ? `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${currentSearch.slice(1)}`
+    : thankYouTarget;
+}
+
 export type RegionalCheckoutOutcome =
   | "success"
   | "already_processed"
@@ -81,7 +114,19 @@ export function useRegionalCheckout() {
   const [busy, setBusy] = useState(false);
 
   const openCheckout = useCallback(
-    async (planId: string, locale: Locale): Promise<RegionalCheckoutOutcome> => {
+    async (
+      planId: string,
+      locale: Locale,
+      /**
+       * Optional explicit post-purchase destination (an app path, already
+       * run through useLocale().href by the caller -- see
+       * StitchPremiumCard). Used only to fill in Paddle's own successUrl
+       * (see below); the primary checkout.completed -> onSuccess ->
+       * router.push flow this hook already drives is unaffected either
+       * way.
+       */
+      opts?: { successRedirectPath?: string },
+    ): Promise<RegionalCheckoutOutcome> => {
       if (!isLoaded) return "not_ready";
       const match = resolveRegionalPlan(planId);
       const clientToken = process.env.NEXT_PUBLIC_PADDLE_SANDBOX_CLIENT_TOKEN;
@@ -140,11 +185,20 @@ export function useRegionalCheckout() {
             }
           };
 
+          // Fallback/parallel path only -- see buildThankYouSuccessPath's doc
+          // comment above (and the opts.successRedirectPath one). Paddle's
+          // overlay redirects the browser to successUrl on its own as soon
+          // as it detects a successful payment, which can beat this hook's
+          // own checkout.completed -> /checkout/complete -> onSuccess ->
+          // router.push chain above to the punch (that chain is untouched
+          // and still wins whenever it completes first).
           const thankYouTarget = localizedPath(ROUTES.thankYou, locale);
           const windowSearch = typeof window !== "undefined" ? window.location.search : "";
-          const fullThankYouPath = windowSearch
-            ? `${thankYouTarget}${thankYouTarget.includes("?") ? "&" : "?"}${windowSearch.slice(1)}`
-            : thankYouTarget;
+          const fullThankYouPath = buildThankYouSuccessPath(
+            thankYouTarget,
+            windowSearch,
+            opts?.successRedirectPath,
+          );
 
           const successUrl = typeof window !== "undefined"
             ? `${window.location.origin}${fullThankYouPath}`

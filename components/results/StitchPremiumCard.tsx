@@ -111,6 +111,7 @@ export default function StitchPremiumCard({
         context="personal"
         onClose={() => setSelectorOpen(false)}
         onSuccess={handlePurchaseSuccess}
+        successRedirectPath={href}
       />
     </div>
   );
