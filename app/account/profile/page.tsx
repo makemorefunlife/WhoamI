@@ -15,7 +15,7 @@ export default function AccountProfilePage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const router = useRouter();
-  const { href } = useLocale();
+  const { href, locale } = useLocale();
   const messages = useMessages();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
