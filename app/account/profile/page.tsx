@@ -4,6 +4,7 @@ import { RedirectToSignIn, UserProfile, useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AccountBirthEditor from "@/components/account/AccountBirthEditor";
+import AccountCreditsSection from "@/components/account/AccountCreditsSection";
 import AccountPageShell from "@/components/account/AccountPageShell";
 import AccountSurveySection from "@/components/account/AccountSurveySection";
 import DisplayNameEditor from "@/components/account/DisplayNameEditor";
@@ -91,6 +92,8 @@ export default function AccountProfilePage() {
           </div>
         </section>
       ) : null}
+
+      <AccountCreditsSection />
 
       <DisplayNameEditor />
       <AccountBirthEditor />
