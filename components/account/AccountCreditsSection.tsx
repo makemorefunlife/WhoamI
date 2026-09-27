@@ -5,6 +5,7 @@ import { User, Users, ArrowRight } from "lucide-react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import GiftShareModal, { type PersonalGiftEntry } from "@/components/account/GiftShareModal";
 
 type CreditSummary = { remaining: number; soonestExpiresAt: string | null };
 type JournalSummary = { unlimited: boolean; unlimitedUntil: string | null; unlimitedSource: string | null };
@@ -12,6 +13,7 @@ type EntitlementsInfo = {
   personal: CreditSummary;
   relationship: CreditSummary;
   journal: JournalSummary;
+  personalGifts: PersonalGiftEntry[];
 };
 
 export default function AccountCreditsSection() {
@@ -21,6 +23,7 @@ export default function AccountCreditsSection() {
 
   const [loading, setLoading] = useState(true);
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
+  const [giftModalOpen, setGiftModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,6 +45,9 @@ export default function AccountCreditsSection() {
       cancelled = true;
     };
   }, []);
+
+  const availableGiftsCount =
+    entitlements?.personalGifts.filter((g) => g.status === "available").length ?? 0;
 
   return (
     <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8">
@@ -95,8 +101,41 @@ export default function AccountCreditsSection() {
                 : copy.myAccessNoneRemaining}
             </p>
           </div>
+
+          {entitlements.personalGifts.length > 0 ? (
+            <div className="col-span-2 rounded-2xl border border-amber-500/30 bg-amber-500/8 p-4 transition hover:border-amber-500/50">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-900 dark:text-amber-300">
+                <span aria-hidden="true">🎁</span>
+                <span>{copy.myAccessGiftsTileLabel}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-xl font-bold text-amber-950 dark:text-amber-100">
+                  {availableGiftsCount > 0
+                    ? copy.myAccessRemainingCount(availableGiftsCount)
+                    : copy.myAccessNoneRemaining}
+                </p>
+                {availableGiftsCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setGiftModalOpen(true)}
+                    className="shrink-0 rounded-full bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-500 active:scale-[0.98]"
+                  >
+                    {copy.myAccessGiftsSendCta}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
+
+      {entitlements ? (
+        <GiftShareModal
+          open={giftModalOpen}
+          onClose={() => setGiftModalOpen(false)}
+          gifts={entitlements.personalGifts}
+        />
+      ) : null}
     </section>
   );
 }

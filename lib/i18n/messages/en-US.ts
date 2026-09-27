@@ -609,10 +609,18 @@ export const messagesEnUS = {
     myAccessGiftStatusAvailable: "Available",
     myAccessGiftStatusClaimed: "Claimed",
     myAccessGiftStatusExpired: "Expired",
-    myAccessGiftCopyCode: "Copy code",
-    myAccessGiftCopyLink: "Copy link",
+    myAccessGiftCopyCode: "Copy gift code",
+    myAccessGiftCopyLink: "Copy gift link",
     myAccessGiftCopiedCode: "Code copied",
     myAccessGiftCopiedLink: "Link copied",
+    // My Credits tile (components/account/AccountCreditsSection.tsx) -- a
+    // third sibling of the Personal/Relationship tiles, sentence-case to
+    // match myAccessPersonalLabel/myAccessRelationshipLabel exactly.
+    myAccessGiftsTileLabel: "Personal analysis gifts",
+    myAccessGiftsSendCta: "Send a gift",
+    myAccessGiftsModalTitle: "Gift a Personal Analysis",
+    myAccessGiftsModalRemaining: (count: number) =>
+      count === 1 ? "You have 1 gift remaining." : `You have ${count} gifts remaining.`,
   },
   pricing: {
     title: "Pricing",
@@ -2484,6 +2492,10 @@ export type MessageCatalog = {
     myAccessGiftCopyLink: string;
     myAccessGiftCopiedCode: string;
     myAccessGiftCopiedLink: string;
+    myAccessGiftsTileLabel: string;
+    myAccessGiftsSendCta: string;
+    myAccessGiftsModalTitle: string;
+    myAccessGiftsModalRemaining: (count: number) => string;
   };
   pricing: {
     title: string;
