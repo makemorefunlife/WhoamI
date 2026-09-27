@@ -18,7 +18,12 @@ export default function EssenceDeepEntryButton({
 }) {
   const router = useRouter();
   const { messages, href: localize } = useLocale();
-  const href = `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`;
+  // ?autostart=1 marks this as an explicit "start Personal Deep analysis"
+  // click (mirrors useRelationshipDetail.ts's ?autostart=1 convention) so
+  // the deep page can auto-open the Purchase Selector on a credit-exhausted
+  // outcome instead of showing a manual "Buy" CTA -- see
+  // useSlimV1Integrated.ts.
+  const href = `/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep?autostart=1`;
 
   const label = (
     <span className="flex flex-col items-center gap-1 text-center">

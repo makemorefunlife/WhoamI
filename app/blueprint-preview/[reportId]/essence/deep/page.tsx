@@ -53,8 +53,17 @@ function EssenceDeepContent() {
   const canGenerate =
     ready && !booting && Boolean(bundle?.birth && hasMinimalBirth(bundle.birth));
 
-  const { data, loading, inProgress, error, creditExhausted, retry, regenerateFresh } =
-    useSlimV1Integrated(reportId, canGenerate, bundle?.birth ?? null);
+  const {
+    data,
+    loading,
+    inProgress,
+    error,
+    creditExhausted,
+    autostartPending,
+    autostartCreditExhausted,
+    retry,
+    regenerateFresh,
+  } = useSlimV1Integrated(reportId, canGenerate, bundle?.birth ?? null);
 
   // Personal entitlement recovery: mirrors useRelationshipDetail.ts's
   // premiumCreditExhausted -> PurchaseSelectorModal pattern (already live
@@ -69,6 +78,27 @@ function EssenceDeepContent() {
     setPurchaseOpen(false);
     void retry();
   }
+
+  // Explicit-intent autostart, mirroring useRelationshipDetail.ts's
+  // autostartCreditExhausted -> setPurchaseOpen(true) wiring: opens the
+  // Purchase Selector with no click only when the user just navigated here
+  // from a dedicated "start Personal Deep analysis" entry point
+  // (?autostart=1). A direct URL visit or a plain revisit never sets
+  // autostartCreditExhausted, so it keeps today's manual CTA below.
+  useEffect(() => {
+    if (autostartCreditExhausted) {
+      setPurchaseOpen(true);
+    }
+  }, [autostartCreditExhausted]);
+
+  // Suppresses the manual "credit needed" CTA panel during the brief
+  // window where an explicit-intent autostart attempt is still resolving
+  // (before the fetch has started, or right after a 402 and before the
+  // Purchase Selector effect above has opened the modal) -- otherwise that
+  // panel could flash for a frame before the modal covers it. Existing
+  // i18n copy only, no new keys.
+  const showAutostartPreparing =
+    autostartPending && !loading && !inProgress && !error;
 
   useEffect(() => {
     if (!ready || booting || bundleLoading) return;
@@ -139,7 +169,17 @@ function EssenceDeepContent() {
           onRegenerateFresh={() => regenerateFresh()}
         />
 
-        {creditExhausted ? (
+        {showAutostartPreparing ? (
+          <div className="stitch-hero-panel rounded-extra-large px-6 py-8 text-center space-y-2">
+            <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-sm font-semibold text-primary">
+              {messages.common.preparing}
+            </p>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              {messages.blueprint.generatingPersonalSubtitle}
+            </p>
+          </div>
+        ) : creditExhausted ? (
           <div className="stitch-hero-panel rounded-extra-large px-6 py-8 text-center space-y-3">
             <p className="text-sm text-on-surface-variant leading-relaxed">
               {messages.errors.insufficientCredit}

@@ -52,8 +52,12 @@ export default function StitchLiteResultPanel({
 
   if (!active) return null;
 
+  // ?autostart=1 marks this as an explicit "start Personal Deep analysis"
+  // click (see useSlimV1Integrated.ts / essence/deep/page.tsx) so a
+  // credit-exhausted outcome opens the Purchase Selector automatically
+  // instead of showing a manual "Buy" CTA.
   const goToDeepReport = () =>
-    router.push(localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`));
+    router.push(localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep?autostart=1`));
 
   const essenceSections = essenceReport
     ? [

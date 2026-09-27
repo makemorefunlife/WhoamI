@@ -250,23 +250,40 @@ section("G — Basic analysis remains free, independent, and untouched");
 }
 
 // ---------------------------------------------------------------------------
-section("H — Personal flow is untouched");
+section("H — Relationship's own autostart mechanics are unaffected by Personal later adopting the same pattern");
 // ---------------------------------------------------------------------------
 {
-  const personalFiles = [
-    "lib/v1/slim/useSlimV1Integrated.ts",
-    "app/blueprint-preview/[reportId]/essence/deep/page.tsx",
-  ];
-  for (const path of personalFiles) {
-    const src = fs.readFileSync(path, "utf8");
-    for (const token of ["autostartPending", "showAutostartPreparing", "autostartCreditExhausted"]) {
-      assert.ok(
-        !src.includes(token),
-        `Personal path file ${path} must not reference the new Relationship-only autostart signal "${token}"`,
-      );
-    }
-  }
-  ok("Personal's own generation/redirect files contain none of the new Relationship-only autostart signals");
+  // Personal's own Deep-analysis flow (essence/deep/page.tsx +
+  // useSlimV1Integrated.ts) later adopted this exact same ?autostart=1 /
+  // autostartCreditExhausted architecture on its own dedicated page (see
+  // tests/unit/personal-deep-autostart.test.mjs) -- by design, per the
+  // instruction to "reuse the same architectural pattern already
+  // implemented for Relationship... instead of creating a second
+  // unrelated mechanism." The two are independent hook-local
+  // implementations (Personal never imports from useRelationshipDetail.ts
+  // or vice versa), so sharing the signal names is expected and this
+  // section only needs to confirm Relationship's own file wasn't touched
+  // to make that happen.
+  const hookSrcNow = fs.readFileSync(
+    "app/relationship/[id]/useRelationshipDetail.ts",
+    "utf8",
+  );
+  assert.ok(
+    !/from\s+["'].*useSlimV1Integrated["']/.test(hookSrcNow) &&
+      !hookSrcNow.includes("essence/deep"),
+    "useRelationshipDetail.ts must not import from or navigate to Personal's essence/deep flow (a doc comment mentioning useSlimV1Integrated.ts by name is fine and pre-existing)",
+  );
+  const viewSrcNow = fs.readFileSync(
+    "app/relationship/[id]/RelationshipView.tsx",
+    "utf8",
+  );
+  assert.ok(
+    !/from\s+["'].*useSlimV1Integrated["']/.test(viewSrcNow) &&
+      !viewSrcNow.includes("`/blueprint-preview") &&
+      !viewSrcNow.includes('"/blueprint-preview'),
+    "RelationshipView.tsx must not import from or navigate to Personal's essence/deep flow (a doc comment naming essence/deep/page.tsx as the sibling pattern is fine and pre-existing)",
+  );
+  ok("Relationship's own autostart files remain fully independent of Personal's later, separately-implemented adoption of the same pattern");
 }
 
 console.log("\nAll relationship-deep-autostart assertions passed.\n");

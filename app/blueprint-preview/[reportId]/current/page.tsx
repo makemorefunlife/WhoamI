@@ -80,9 +80,13 @@ function CurrentDetailContent() {
               action: report.small_action,
             }}
             locale={locale}
+            // ?autostart=1 marks this as an explicit "start Personal Deep
+            // analysis" click (see useSlimV1Integrated.ts) so a
+            // credit-exhausted outcome opens the Purchase Selector
+            // automatically instead of a manual "Buy" CTA.
             onUpsellClick={() =>
               router.push(
-                localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep`),
+                localize(`/blueprint-preview/${encodeURIComponent(reportId)}/essence/deep?autostart=1`),
               )
             }
           />

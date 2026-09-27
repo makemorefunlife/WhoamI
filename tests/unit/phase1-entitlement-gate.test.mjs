@@ -164,7 +164,11 @@ section("C. Personal: useSlimV1Integrated exposes creditExhausted on a 402, matc
   ok("useSlimV1Integrated declares creditExhausted state");
 
   assert.ok(
-    /if\s*\(res\.status === 402\)\s*\{\s*setCreditExhausted\(true\);\s*setError\(null\);\s*return;\s*\}/.test(
+    // The Personal Deep autostart fix added an isAutostartAttempt branch
+    // (setting autostartCreditExhausted) between setError(null) and return
+    // -- this only requires creditExhausted to still be set and error still
+    // cleared, in the same order, not a byte-exact 3-statement block.
+    /if\s*\(res\.status === 402\)\s*\{\s*setCreditExhausted\(true\);\s*setError\(null\);[\s\S]*?return;\s*\}/.test(
       src,
     ),
     "a 402 response must set creditExhausted and must NOT also set the generic error state (so the page shows the purchase prompt, not a generic error)",
@@ -178,7 +182,12 @@ section("C. Personal: useSlimV1Integrated exposes creditExhausted on a 402, matc
   ok("creditExhausted resets on a fresh fetch attempt");
 
   assert.ok(
-    /return\s*\{\s*data,\s*loading,\s*inProgress,\s*error,\s*creditExhausted,\s*retry:\s*fetchReport,\s*regenerateFresh,\s*\}/.test(
+    // The Personal Deep autostart fix (mirroring useRelationshipDetail.ts)
+    // added autostartPending/autostartCreditExhausted between
+    // creditExhausted and the retry/regenerateFresh tail -- this only
+    // requires creditExhausted to still be part of the returned object in
+    // the same relative position, not a byte-exact shape.
+    /return\s*\{\s*data,\s*loading,\s*inProgress,\s*error,\s*creditExhausted,[\s\S]*?retry:\s*fetchReport,\s*regenerateFresh,\s*\}/.test(
       src,
     ),
     "creditExhausted must actually be returned from the hook for callers to use",
