@@ -402,8 +402,9 @@ export default function ReportFeedbackSection({
                   <span className="text-sm font-bold text-amber-900 dark:text-amber-200">
                     {isEn ? "Founders Club Registered" : "파운더스 클럽 1기 등록 완료"}
                   </span>
-                  <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
-                    [🏅 Founders]
+                  <span className="inline-flex shrink-0 items-center justify-center gap-1 rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-900 dark:text-amber-300 whitespace-nowrap">
+                    <span>🏅</span>
+                    <span>Founders</span>
                   </span>
                 </div>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
