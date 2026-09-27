@@ -489,8 +489,15 @@ export function buildMarriageChapter04Intelligence(params: {
       senderNaturalExpression: getChannelLabel(topExpA, isEn),
       receiverReceptionNeed: getChannelLabel(topRecB, isEn),
       matchType: matchAtoB,
-      matchNarrative:
-        matchAtoB === "DIRECT_MATCH"
+      matchNarrative: isEn
+        ? matchAtoB === "DIRECT_MATCH"
+          ? `${nameA}'s natural expression of affection directly aligns with what ${nameB} feels as love, allowing feelings to land clearly.`
+          : matchAtoB === "ADAPTIVE_EXPRESSION"
+          ? `${nameA} thoughtfully adapts their expression into a language that ${nameB} can easily register, showing tender consideration.`
+          : matchAtoB === "MISSED_SIGNAL"
+          ? `${nameA} expresses genuine love, but because it differs from ${nameB}'s expected reception channel, the signal may be misread.`
+          : `Some of ${nameA}'s expressions land well, but checking ${nameB}'s primary reception channel will help deepen connection.`
+        : matchAtoB === "DIRECT_MATCH"
           ? `${nameA}님이 애정을 전하는 방식과 ${nameB}님이 사랑이라고 느끼는 수신 채널이 정확히 맞물려, 마음이 그대로 전달됩니다.`
           : matchAtoB === "ADAPTIVE_EXPRESSION"
           ? `${nameA}님이 원래 본인에게 가장 편한 방식 대신, ${nameB}님이 알아듣기 쉬운 언어로 맞춰 전하려 애쓰는 다정함이 발달해 있습니다.`
@@ -507,8 +514,15 @@ export function buildMarriageChapter04Intelligence(params: {
       senderNaturalExpression: getChannelLabel(topExpB, isEn),
       receiverReceptionNeed: getChannelLabel(topRecA, isEn),
       matchType: matchBtoA,
-      matchNarrative:
-        matchBtoA === "DIRECT_MATCH"
+      matchNarrative: isEn
+        ? matchBtoA === "DIRECT_MATCH"
+          ? `${nameB}'s warm signals land fully in ${nameA}'s heart, creating a deep emotional sanctuary.`
+          : matchBtoA === "ADAPTIVE_EXPRESSION"
+          ? `${nameB} makes careful efforts to express affection attuned to ${nameA}'s receptive style.`
+          : matchBtoA === "MISSED_SIGNAL"
+          ? `Aligning transmission channels helps ensure ${nameB}'s subtle care isn't taken for granted or misinterpreted by ${nameA}.`
+          : `A subtle difference may exist between ${nameB}'s expression language and ${nameA}'s expected reception language.`
+        : matchBtoA === "DIRECT_MATCH"
           ? `${nameB}님의 다정한 신호가 ${nameA}님의 마음에 온전히 안착하여 깊은 감정적 안식처가 되어줍니다.`
           : matchBtoA === "ADAPTIVE_EXPRESSION"
           ? `${nameB}님이 ${nameA}님의 마음을 배려하여 세심한 노력을 기울여 사랑을 표현하고 있는 흐름입니다.`
@@ -525,26 +539,56 @@ export function buildMarriageChapter04Intelligence(params: {
   const attractionLevel: AttractionLevel = (sigA.hasNakedFire || sigB.hasNakedFire || matchAtoB === "DIRECT_MATCH" || matchBtoA === "DIRECT_MATCH" || sigA.noveltyScore >= 1.5 || sigB.noveltyScore >= 1.5) ? "HIGH_PULL" : "STEADY_BOND";
   const safetyLevel: SafetyLevel = (sigA.isRooted && sigB.isRooted) ? "HIGH_SAFETY" : "MODERATE_SAFETY";
 
-  let heroHeadline = "편안해질수록 더 깊게 끌리는 두 사람";
-  let pairSynthesis = `${nameA}님과 ${nameB}님은 서두르거나 강한 자극으로 서로를 밀어붙이기보다, 서로에게 마음을 놓을수록 자연스럽게 가까워지는 조합입니다. 둘 사이에 쌓이는 안도감과 신뢰가 친밀감을 한층 더 깊고 단단하게 만드는 힘이 됩니다.`;
-  let attractionNarrative = "불꽃처럼 확 탔다가 식기보다, 함께하는 시간이 누적될수록 서로의 온기가 은근하게 깊어지는 끌림이 강점입니다.";
-  let comfortNarrative = "둘만 있을 때 긴장과 경계를 편안히 내려놓을 수 있어, 마음의 안도가 몸과 마음의 거리를 다정하게 좁혀줍니다.";
+  let heroHeadline = isEn ? "Deepening attraction as mutual ease grows" : "편안해질수록 더 깊게 끌리는 두 사람";
+  let pairSynthesis = isEn
+    ? `${nameA} and ${nameB} build genuine closeness by relaxing together rather than rushing. The trust and emotional security they share form the foundation of their deep connection.`
+    : `${nameA}님과 ${nameB}님은 서두르거나 강한 자극으로 서로를 밀어붙이기보다, 서로에게 마음을 놓을수록 자연스럽게 가까워지는 조합입니다. 둘 사이에 쌓이는 안도감과 신뢰가 친밀감을 한층 더 깊고 단단하게 만드는 힘이 됩니다.`;
+  let attractionNarrative = isEn
+    ? "A steady, enduring warmth that deepens with time rather than burning out quickly."
+    : "불꽃처럼 확 탔다가 식기보다, 함께하는 시간이 누적될수록 서로의 온기가 은근하게 깊어지는 끌림이 강점입니다.";
+  let comfortNarrative = isEn
+    ? "Dropping guard when alone together allows emotional security to gently bridge physical and heart closeness."
+    : "둘만 있을 때 긴장과 경계를 편안히 내려놓을 수 있어, 마음의 안도가 몸과 마음의 거리를 다정하게 좁혀줍니다.";
 
   if (attractionLevel === "HIGH_PULL" && safetyLevel !== "HIGH_SAFETY") {
-    heroHeadline = "끌림의 불꽃은 분명하지만 마음을 놓는 속도에는 조율이 필요한 두 사람";
-    pairSynthesis = `${nameA}님과 ${nameB}님 사이에는 서로를 당기는 호기심과 스파크가 분명하지만, 둘만 있을 때 정서적 안도감을 완성하고 마음을 풀기까지는 서두르지 않는 조율이 도움이 됩니다.`;
-    attractionNarrative = "서로의 기운과 분위기가 매력적인 자극으로 작용하여, 둘이 있을 때 친밀한 온도를 단숨에 올라오게 만드는 인력이 뚜렷합니다.";
-    comfortNarrative = "끌림의 속도에 맞춰 완벽한 안도감이 형성되도록, 서로의 마음 상태와 템포를 다정하게 살피는 조율이 피곤함을 줄여줍니다.";
+    heroHeadline = isEn
+      ? "Clear spark of attraction, with pace adjustments needed for complete ease"
+      : "끌림의 불꽃은 분명하지만 마음을 놓는 속도에는 조율이 필요한 두 사람";
+    pairSynthesis = isEn
+      ? `There is clear attraction and curiosity between ${nameA} and ${nameB}, but taking time to build complete emotional safety will allow their bond to blossom without fatigue.`
+      : `${nameA}님과 ${nameB}님 사이에는 서로를 당기는 호기심과 스파크가 분명하지만, 둘만 있을 때 정서적 안도감을 완성하고 마음을 풀기까지는 서두르지 않는 조율이 도움이 됩니다.`;
+    attractionNarrative = isEn
+      ? "A strong magnetic pull where mutual presence quickly raises intimate warmth."
+      : "서로의 기운과 분위기가 매력적인 자극으로 작용하여, 둘이 있을 때 친밀한 온도를 단숨에 올라오게 만드는 인력이 뚜렷합니다.";
+    comfortNarrative = isEn
+      ? "Attuning to each other's emotional pace reduces fatigue and builds lasting ease."
+      : "끌림의 속도에 맞춰 완벽한 안도감이 형성되도록, 서로의 마음 상태와 템포를 다정하게 살피는 조율이 피곤함을 줄여줍니다.";
   } else if (attractionLevel !== "HIGH_PULL" && safetyLevel === "HIGH_SAFETY") {
-    heroHeadline = "화려한 자극보다 깊은 안도감에서 사랑이 자라는 두 사람";
-    pairSynthesis = `${nameA}님과 ${nameB}님은 과도한 서두름이나 격정적 자극 없이도, 서로의 곁에서 마음이 가장 편안해질 때 비로소 깊은 친밀감이 싹트는 아늑하고 따뜻한 조합입니다.`;
-    attractionNarrative = "갑작스럽게 타오르는 자극보다는, 서로를 다정하게 챙기는 일상 속에서 오랫동안 식지 않는 은은한 인력이 중심을 잡습니다.";
-    comfortNarrative = "둘만 있는 공간에 들어서는 순간 마음의 안도가 형성되어, 깊은 정서적 교감과 친밀한 스킨십을 편안하게 나눕니다.";
+    heroHeadline = isEn
+      ? "Love growing from deep emotional safety rather than intense stimulation"
+      : "화려한 자극보다 깊은 안도감에서 사랑이 자라는 두 사람";
+    pairSynthesis = isEn
+      ? `${nameA} and ${nameB} form a cozy and warm pairing where intimacy deepens most naturally when feeling completely safe and comfortable together.`
+      : `${nameA}님과 ${nameB}님은 과도한 서두름이나 격정적 자극 없이도, 서로의 곁에서 마음이 가장 편안해질 때 비로소 깊은 친밀감이 싹트는 아늑하고 따뜻한 조합입니다.`;
+    attractionNarrative = isEn
+      ? "A gentle, lasting attraction centered on everyday care and mutual affection."
+      : "갑작스럽게 타오르는 자극보다는, 서로를 다정하게 챙기는 일상 속에서 오랫동안 식지 않는 은은한 인력이 중심을 잡습니다.";
+    comfortNarrative = isEn
+      ? "Feeling immediate ease in shared private space opens the door to deep emotional and physical connection."
+      : "둘만 있는 공간에 들어서는 순간 마음의 안도가 형성되어, 깊은 정서적 교감과 친밀한 스킨십을 편안하게 나춥니다.";
   } else if (attractionLevel !== "HIGH_PULL" && safetyLevel !== "HIGH_SAFETY") {
-    heroHeadline = "천천히 온도를 높여가며 오랫동안 온기를 나누는 두 사람";
-    pairSynthesis = `${nameA}님과 ${nameB}님은 조급해하지 않고 서로의 영역과 분위기에 서서히 적응하며 친밀감의 템포를 차분히 조율해나가는 신중한 속궁합입니다.`;
-    attractionNarrative = "일상의 소소한 배려와 다정함이 누적될수록 서로의 존재감이 커지며, 은근하게 친밀감의 깊이가 더해집니다.";
-    comfortNarrative = "서로에게 속도를 강요하지 않고, 각자가 편안함을 느끼는 취침 환경과 마음의 여백을 존중해줄 때 부드럽게 마음이 열립니다.";
+    heroHeadline = isEn
+      ? "Warmth building steadily at a gentle, thoughtful pace"
+      : "천천히 온도를 높여가며 오랫동안 온기를 나누는 두 사람";
+    pairSynthesis = isEn
+      ? `${nameA} and ${nameB} carefully tune their intimate rhythm, gradually adapting to each other's pace and personal boundaries.`
+      : `${nameA}님과 ${nameB}님은 조급해하지 않고 서로의 영역과 분위기에 서서히 적응하며 친밀감의 템포를 차분히 조율해나가는 신중한 속궁합입니다.`;
+    attractionNarrative = isEn
+      ? "As daily care and consideration accumulate, mutual presence grows steadily warmer."
+      : "일상의 소소한 배려와 다정함이 누적될수록 서로의 존재감이 커지며, 은근하게 친밀감의 깊이가 더해집니다.";
+    comfortNarrative = isEn
+      ? "Respecting each other's rest needs and personal space allows hearts to open smoothly."
+      : "서로에게 속도를 강요하지 않고, 각자가 편안함을 느끼는 취침 환경과 마음의 여백을 존중해줄 때 부드럽게 마음이 열립니다.";
   }
 
   const pairChemistry: PairIntimacyChemistry = {
@@ -567,52 +611,65 @@ export function buildMarriageChapter04Intelligence(params: {
   else if (isNoveltyA && !isNoveltyB) novClass = "NOVELTY_GAP_A";
   else if (!isNoveltyA && isNoveltyB) novClass = "NOVELTY_GAP_B";
 
-  // The headline/classification above is driven by `noveltyScore`, a
-  // weighted sum of THREE Saju terms (sanggwanCount, hasNakedFire, hasGuimun)
-  // and ONE Psych term (secondary_axes.stimulation, +1.5 if >60 / -1.5 if
-  // <40). The "innate"/"current" evidence shown under the headline must
-  // actually be that same evidence, split cleanly along the Saju/Psych
-  // seam — not a different, disconnected pair of checks. Two prior bugs
-  // made that impossible: (1) personACurrent read `psychA?.ocean_traits`,
-  // a field that does not exist anywhere on PsychMasterJson, so it always
-  // fell to the same default text for every person on the platform; (2)
-  // even fixed, "does any one factor exist" is a lower bar than "does the
-  // Saju side alone cross the classification threshold" — a person with
-  // only hasGuimun (0.8) would show "innate: novelty-sensitive" wording
-  // despite that alone never being enough to move noveltyScore past 1.5.
   const sajuNoveltyA = (sigA.sanggwanCount >= 1 ? 1.5 : 0) + (sigA.hasNakedFire ? 1.0 : 0) + (sigA.hasGuimun ? 0.8 : 0);
   const sajuNoveltyB = (sigB.sanggwanCount >= 1 ? 1.5 : 0) + (sigB.hasNakedFire ? 1.0 : 0) + (sigB.hasGuimun ? 0.8 : 0);
   const stimA = psychA?.secondary_axes?.stimulation ?? 50;
   const stimB = psychB?.secondary_axes?.stimulation ?? 50;
 
   const describeInnateNovelty = (sajuNovelty: number) =>
-    sajuNovelty >= 1.5 ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결";
+    isEn
+      ? (sajuNovelty >= 1.5 ? "Innately sensitive to subtle shifts in mood" : "Innately prefers a calm and steady environment")
+      : (sajuNovelty >= 1.5 ? "명식상 은근한 분위기 변화에 민감한 결" : "명식상 차분하고 안정적인 환경을 선호하는 결");
   const describeCurrentNovelty = (stim: number) =>
-    stim > 60
-      ? "현재 새로운 자극과 경험에 열려 있는 상태"
-      : stim < 40
-      ? "현재 낯선 자극보다 예측 가능한 흐름을 뚜렷하게 선호하는 상태"
-      : "현재 특별히 자극을 좇거나 피하지 않는 무난한 상태";
+    isEn
+      ? (stim > 60
+          ? "Currently open to new stimulation and novel experiences"
+          : stim < 40
+          ? "Currently prefers a predictable, steady rhythm"
+          : "Currently balanced with no strong push for or against novelty")
+      : (stim > 60
+          ? "현재 새로운 자극과 경험에 열려 있는 상태"
+          : stim < 40
+          ? "현재 낯선 자극보다 예측 가능한 흐름을 뚜렷하게 선호하는 상태"
+          : "현재 특별히 자극을 좇거나 피하지 않는 무난한 상태");
 
   const stabilityVsNovelty: StabilityVsNoveltySection = {
     title: isEn ? "Stability vs. Novelty Balance" : "익숙한 밤 vs 새로운 공기",
     classification: novClass,
-    headline: novClass === "NOVELTY_MATCH"
-      ? "익숙한 루틴보다는 주 1회 작은 분위기 변화에서 설렘이 깨어나는 타입"
-      : novClass === "NOVELTY_GAP_A"
-      ? `${nameA}님은 소소한 분위기 변화에서 설렘을 얻고, ${nameB}님은 아늑한 안정을 최우선으로 하는 타입`
-      : novClass === "NOVELTY_GAP_B"
-      ? `${nameB}님은 새로운 분위기의 스파크를 즐기고, ${nameA}님은 익숙한 편안함에서 마음이 열리는 타입`
-      : novClass === "STABILITY_MATCH"
-      ? "과감한 변화보다 안전하고 아늑한 둘만의 베이스캠프에서 가장 편안히 마음이 열리는 타입"
-      : "안정적인 편안함과 가끔의 소소한 변주가 균형 있게 조화를 이루는 타입",
-    description: novClass === "NOVELTY_GAP_A"
-      ? `${nameA}님은 일상의 틀을 깨는 작은 변주나 장소의 변화에서 친밀감의 불꽃이 다시 피어나는 반면, ${nameB}님은 예견 가능하고 안전한 둘만의 공간에서 가장 편안함을 느낍니다.`
-      : novClass === "NOVELTY_GAP_B"
-      ? `${nameB}님은 색다른 분위기의 자극에 민감하게 반응하는 반면, ${nameA}님은 익숙하고 아늑한 둘만의 환경에서 깊은 친밀감이 형성됩니다.`
-      : novClass === "NOVELTY_MATCH"
-      ? "두 사람 모두 늘 반복되는 루틴보다 가끔은 조도, 음악, 장소 등의 작은 분위기 변화를 줄 때 친밀감의 온도가 배로 올라옵니다."
-      : "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다.",
+    headline: isEn
+      ? (novClass === "NOVELTY_MATCH"
+          ? "A pair whose excitement awakens with small weekly shifts in atmosphere rather than strict routine"
+          : novClass === "NOVELTY_GAP_A"
+          ? `${nameA} finds spark in subtle novelty, while ${nameB} prioritizes cozy stability`
+          : novClass === "NOVELTY_GAP_B"
+          ? `${nameB} enjoys fresh atmosphere, while ${nameA} opens up in cozy familiarity`
+          : novClass === "STABILITY_MATCH"
+          ? "A pair whose intimacy thrives best in a safe, cozy basecamp rather than bold experiments"
+          : "A balanced mix of steady comfort and occasional fresh variations")
+      : (novClass === "NOVELTY_MATCH"
+          ? "익숙한 루틴보다는 주 1회 작은 분위기 변화에서 설렘이 깨어나는 타입"
+          : novClass === "NOVELTY_GAP_A"
+          ? `${nameA}님은 소소한 분위기 변화에서 설렘을 얻고, ${nameB}님은 아늑한 안정을 최우선으로 하는 타입`
+          : novClass === "NOVELTY_GAP_B"
+          ? `${nameB}님은 새로운 분위기의 스파크를 즐기고, ${nameA}님은 익숙한 편안함에서 마음이 열리는 타입`
+          : novClass === "STABILITY_MATCH"
+          ? "과감한 변화보다 안전하고 아늑한 둘만의 베이스캠프에서 가장 편안히 마음이 열리는 타입"
+          : "안정적인 편안함과 가끔의 소소한 변주가 균형 있게 조화를 이루는 타입"),
+    description: isEn
+      ? (novClass === "NOVELTY_GAP_A"
+          ? `${nameA} feels intimacy rekindle through small changes in scenery or routine, whereas ${nameB} feels most relaxed in a safe, predictable shared space.`
+          : novClass === "NOVELTY_GAP_B"
+          ? `${nameB} responds keenly to fresh atmospheric cues, whereas ${nameA} builds deep intimacy in familiar, cozy surroundings.`
+          : novClass === "NOVELTY_MATCH"
+          ? "Both partners feel their intimate warmth multiply when introducing small changes like lighting, music, or setting rather than repeating fixed routines."
+          : "Rather than risky novelties, establishing firm mutual trust and a quiet, cozy space unlocks deep closeness.")
+      : (novClass === "NOVELTY_GAP_A"
+          ? `${nameA}님은 일상의 틀을 깨는 작은 변주나 장소의 변화에서 친밀감의 불꽃이 다시 피어나는 반면, ${nameB}님은 예견 가능하고 안전한 둘만의 공간에서 가장 편안함을 느낍니다.`
+          : novClass === "NOVELTY_GAP_B"
+          ? `${nameB}님은 색다른 분위기의 자극에 민감하게 반응하는 반면, ${nameA}님은 익숙하고 아늑한 둘만의 환경에서 깊은 친밀감이 형성됩니다.`
+          : novClass === "NOVELTY_MATCH"
+          ? "두 사람 모두 늘 반복되는 루틴보다 가끔은 조도, 음악, 장소 등의 작은 분위기 변화를 줄 때 친밀감의 온도가 배로 올라옵니다."
+          : "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다."),
     personAInnate: describeInnateNovelty(sajuNoveltyA),
     personACurrent: describeCurrentNovelty(stimA),
     personBInnate: describeInnateNovelty(sajuNoveltyB),
@@ -620,10 +677,6 @@ export function buildMarriageChapter04Intelligence(params: {
   };
 
   // SECTION 04: Activation & Rhythm (Dynamic Multi-Evidence Classification)
-  // `adaptability` is a PRIMARY axis, not a key on secondary_axes — the same
-  // dead-field bug already fixed in CH05/CH06 (see marriageEvidenceResolution.ts)
-  // was still live here, so this branch's Psych term always fell to the same
-  // `?? 50` default for every person and RESPONSIVE never legitimately fired.
   const adaptPrimaryA = resolvePrimaryAxisValue(psychA, "adaptability");
   const adaptPrimaryB = resolvePrimaryAxisValue(psychB, "adaptability");
 
@@ -638,11 +691,11 @@ export function buildMarriageChapter04Intelligence(params: {
     : "CONTEXT_SENSITIVE";
 
   const modeTitles: Record<ActivationMode, string> = {
-    EMOTIONAL_FIRST: "정서적 연결 우선형",
-    RESPONSIVE: "반응적 수용 & 환경 편안함 우선형",
-    DESIRE_FIRST: "직관적 몰입 우선형",
-    CONTEXT_SENSITIVE: "일상 스트레스 해소 우선형",
-    FLEXIBLE: "유연한 템포 맞춤형",
+    EMOTIONAL_FIRST: isEn ? "Emotional Connection First" : "정서적 연결 우선형",
+    RESPONSIVE: isEn ? "Responsive Acceptance & Comfort First" : "반응적 수용 & 환경 편안함 우선형",
+    DESIRE_FIRST: isEn ? "Intuitive Immersion First" : "직관적 몰입 우선형",
+    CONTEXT_SENSITIVE: isEn ? "Stress Relief & Ease First" : "일상 스트레스 해소 우선형",
+    FLEXIBLE: isEn ? "Flexible Pace Tuning" : "유연한 템포 맞춤형",
   };
 
   let rhythmClass: IntimacyRhythmClass = "MATCHED_RHYTHM";
@@ -657,28 +710,50 @@ export function buildMarriageChapter04Intelligence(params: {
       personName: nameA,
       modeTitle: modeTitles[modeA],
       description: modeA === "EMOTIONAL_FIRST"
-        ? `${nameA}님은 마음의 앙금이 풀리고 정서적으로 따뜻하게 연결되었다고 느낄 때 신체적 친밀감으로 자연스럽게 넘어가는 타입입니다.`
-        : `${nameA}님은 무거운 압박이 없고 둘만의 분위기가 편안하게 형성될 때 서서히 친밀감이 고조되는 타입입니다.`,
+        ? (isEn
+            ? `${nameA} naturally transitions to physical intimacy after resolving emotional distance and feeling warmly connected.`
+            : `${nameA}님은 마음의 앙금이 풀리고 정서적으로 따뜻하게 연결되었다고 느낄 때 신체적 친밀감으로 자연스럽게 넘어가는 타입입니다.`)
+        : (isEn
+            ? `${nameA} warms up gradually when there is no heavy pressure and the atmosphere feels relaxed.`
+            : `${nameA}님은 무거운 압박이 없고 둘만의 분위기가 편안하게 형성될 때 서서히 친밀감이 고조되는 타입입니다.`),
     },
     personBMode: {
       personName: nameB,
       modeTitle: modeTitles[modeB],
       description: modeB === "RESPONSIVE"
-        ? `${nameB}님은 사전에 무거운 압박이 없고 집안 분위기가 편안하며 상대가 다정하게 신호를 줄 때 마음과 몸이 서서히 열리는 타입입니다.`
-        : `${nameB}님은 정서적인 대화와 안도감이 충분히 충전될 때 신체적 온도가 따라오는 타입입니다.`,
+        ? (isEn
+            ? `${nameB} opens up smoothly when the home environment is relaxed and affection is offered with gentle consideration.`
+            : `${nameB}님은 사전에 무거운 압박이 없고 집안 분위기가 편안하며 상대가 다정하게 신호를 줄 때 마음과 몸이 서서히 열리는 타입입니다.`)
+        : (isEn
+            ? `${nameB} naturally builds physical warmth once emotional conversations and safety are fully nurtured.`
+            : `${nameB}님은 정서적인 대화와 안도감이 충분히 충전될 때 신체적 온도가 따라오는 타입입니다.`),
     },
     rhythmFitClassification: rhythmClass,
     headline: rhythmClass === "A_FAST_B_SLOW"
-      ? `${nameA}님이 무드로 진입하는 속도가 빠른 편이며, ${nameB}님은 마음의 조도가 서서히 올라오는 리듬`
+      ? (isEn
+          ? `${nameA} enters intimate mood quickly, while ${nameB}'s emotional warmth builds at a gradual pace`
+          : `${nameA}님이 무드로 진입하는 속도가 빠른 편이며, ${nameB}님은 마음의 조도가 서서히 올라오는 리듬`)
       : rhythmClass === "B_FAST_A_SLOW"
-      ? `${nameB}님의 반응과 입전 속도가 빠른 편이며, ${nameA}님은 정서적 안도감이 충전되어야 서서히 열리는 리듬`
-      : "친밀한 무드로 들어가는 템포와 속도가 비교적 자연스럽게 맞아떨어지는 커플",
+      ? (isEn
+          ? `${nameB} responds and engages quickly, while ${nameA} opens gradually as emotional safety builds`
+          : `${nameB}님의 반응과 입전 속도가 빠른 편이며, ${nameA}님은 정서적 안도감이 충전되어야 서서히 열리는 리듬`)
+      : (isEn
+          ? "A pair whose pace and tempo for entering intimate moments align naturally"
+          : "친밀한 무드로 들어가는 템포와 속도가 비교적 자연스럽게 맞아떨어지는 커플"),
     rhythmDescription: rhythmClass === "A_FAST_B_SLOW"
-      ? `${nameA}님이 다가오는 신호에 대해 ${nameB}님이 서두르지 않고 차분히 호응해줄 때 두 사람의 친밀감이 탈진 없이 안정적으로 유지됩니다.`
+      ? (isEn
+          ? `When ${nameB} responds warmly without feeling rushed to ${nameA}'s signals, intimacy stays steady and unexhausted.`
+          : `${nameA}님이 다가오는 신호에 대해 ${nameB}님이 서두르지 않고 차분히 호응해줄 때 두 사람의 친밀감이 탈진 없이 안정적으로 유지됩니다.`)
       : rhythmClass === "B_FAST_A_SLOW"
-      ? `${nameB}님이 다가오는 속도에 ${nameA}님이 부담을 느끼지 않도록 다정한 정서적 징검다리를 놓아주는 것이 좋습니다.`
-      : "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
-    activationNarrative: "두 사람의 침실 온도는 속도의 차이일 뿐 애정의 크기 차이가 아닙니다. 서로가 마음을 여는 사전 조건이 다름을 인정할 때 친밀감이 단단해집니다.",
+      ? (isEn
+          ? `Building gentle emotional stepping stones helps ${nameA} feel comfortable with ${nameB}'s approaching pace.`
+          : `${nameB}님이 다가오는 속도에 ${nameA}님이 부담을 느끼지 않도록 다정한 정서적 징검다리를 놓아주는 것이 좋습니다.`)
+      : (isEn
+          ? "The pace of entering an intimate atmosphere flows smoothly between both partners without one rushing or the other feeling left behind."
+          : "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다."),
+    activationNarrative: isEn
+      ? "Differences in warming pace reflect different preconditions for opening up, not a difference in love. Honoring each other's switches builds lasting intimacy."
+      : "두 사람의 침실 온도는 속도의 차이일 뿐 애정의 크기 차이가 아닙니다. 서로가 마음을 여는 사전 조건이 다름을 인정할 때 친밀감이 단단해집니다.",
   };
 
   // SECTION 05: Initiation, Lead & Response (Dynamic Multi-Evidence Classification)
@@ -694,21 +769,49 @@ export function buildMarriageChapter04Intelligence(params: {
     title: isEn ? "Initiation & Receptive Engagement" : "누가 먼저 불을 켤까?",
     classification: leadClass,
     headline: leadClass === "A_INITIATES_B_RESPONDS"
-      ? `${nameA}님이 다정한 신호를 자연스럽게 이끌고, ${nameB}님이 이를 편안히 받아들이는 리듬`
+      ? (isEn
+          ? `${nameA} naturally leads gentle signals, while ${nameB} receives them with ease`
+          : `${nameA}님이 다정한 신호를 자연스럽게 이끌고, ${nameB}님이 이를 편안히 받아들이는 리듬`)
       : leadClass === "B_INITIATES_A_RESPONDS"
-      ? `${nameB}님이 다가가는 계기를 만들고, ${nameA}님이 이에 다정하게 응하는 리듬`
+      ? (isEn
+          ? `${nameB} creates opportunities to draw close, while ${nameA} responds with warmth`
+          : `${nameB}님이 다가가는 계기를 만들고, ${nameA}님이 이에 다정하게 응하는 리듬`)
       : leadClass === "MUTUAL_WAITING"
-      ? "둘 다 먼저 조심스레 다가가기보다 상대의 확신 있는 신호를 은근히 기다리는 커플"
+      ? (isEn
+          ? "Both quietly wait for the other's reassuring signal rather than initiating directly"
+          : "둘 다 먼저 조심스레 다가가기보다 상대의 확신 있는 신호를 은근히 기다리는 커플")
       : leadClass === "MUTUAL_INITIATION"
-      ? "두 사람 모두 어색함 없이 자연스럽게 애정을 먼저 표현하고 다가가는 쌍방 직진형"
-      : "그날의 분위기와 피로도에 따라 주도하는 사람이 자연스럽게 교대되는 스위치형",
+      ? (isEn
+          ? "Both partners directly and naturally express affection and draw close without hesitation"
+          : "두 사람 모두 어색함 없이 자연스럽게 애정을 먼저 표현하고 다가가는 쌍방 직진형")
+      : (isEn
+          ? "Leadership alternates smoothly depending on the day's mood and energy levels"
+          : "그날의 분위기와 피로도에 따라 주도하는 사람이 자연스럽게 교대되는 스위치형"),
     description: leadClass === "A_INITIATES_B_RESPONDS"
-      ? `${nameA}님이 다정한 분위기나 스킨십 신호를 먼저 건네면, ${nameB}님이 그 신호를 부담 없이 다정히 받아들이며 마음을 여는 조화로운 흐름입니다.`
+      ? (isEn
+          ? `When ${nameA} offers gentle mood or touch signals, ${nameB} welcomes them comfortably, creating a harmonious flow.`
+          : `${nameA}님이 다정한 분위기나 스킨십 신호를 먼저 건네면, ${nameB}님이 그 신호를 부담 없이 다정히 받아들이며 마음을 여는 조화로운 흐름입니다.`)
       : leadClass === "MUTUAL_WAITING"
-      ? "두 사람 모두 상대를 배려하느라 먼저 다가가는 신호를 아끼다가 조용한 침묵이 길어질 수 있으므로, 가벼운 말 한마디나 작은 스킨십으로 물꼬를 터주는 것이 좋습니다."
-      : "상황과 컨디션에 따라 한 사람이 다정하게 이끌고 다른 사람이 편안하게 맞추어주는 유연한 조율이 잘 이루어집니다.",
-    personAAgency: sigA.initiationScore >= 2.0 ? `${nameA}님은 마음이 서면 애정 신호를 주저 없이 다정하게 꺼내놓는 타입입니다.` : `${nameA}님은 상대가 마음 편히 올 수 있도록 자리를 터주는 은은한 수용력이 좋습니다.`,
-    personBAgency: sigB.initiationScore >= 2.0 ? `${nameB}님은 기회가 생기면 확신 있게 끌어안아 주는 든든함이 있습니다.` : `${nameB}님은 사전에 무거운 부담이 없을 때 상대의 신호에 가장 유연하게 호응합니다.`,
+      ? (isEn
+          ? "Because both hold back signals out of consideration, quiet silences can lengthen. A warm word or light touch easily breaks the ice."
+          : "두 사람 모두 상대를 배려하느라 먼저 다가가는 신호를 아끼다가 조용한 침묵이 길어질 수 있으므로, 가벼운 말 한마디나 작은 스킨십으로 물꼬를 터주는 것이 좋습니다.")
+      : (isEn
+          ? "Depending on energy and context, one partner leads warmly while the other adapts smoothly."
+          : "상황과 컨디션에 따라 한 사람이 다정하게 이끌고 다른 사람이 편안하게 맞추어주는 유연한 조율이 잘 이루어집니다."),
+    personAAgency: sigA.initiationScore >= 2.0
+      ? (isEn
+          ? `${nameA} directly and warmly shares affection signals once ready.`
+          : `${nameA}님은 마음이 서면 애정 신호를 주저 없이 다정하게 꺼내놓는 타입입니다.`)
+      : (isEn
+          ? `${nameA} excels at creating a gentle, welcoming atmosphere for their partner to approach.`
+          : `${nameA}님은 상대가 마음 편히 올 수 있도록 자리를 터주는 은은한 수용력이 좋습니다.`),
+    personBAgency: sigB.initiationScore >= 2.0
+      ? (isEn
+          ? `${nameB} offers reassuring, firm closeness whenever opportunity arises.`
+          : `${nameB}님은 기회가 생기면 확신 있게 끌어안아 주는 든든함이 있습니다.`)
+      : (isEn
+          ? `${nameB} responds with high flexibility when there is no pressure.`
+          : `${nameB}님은 사전에 무거운 부담이 없을 때 상대의 신호에 가장 유연하게 호응합니다.`),
   };
 
   // SECTION 06: Intimate Attunement
@@ -726,12 +829,12 @@ export function buildMarriageChapter04Intelligence(params: {
   const attB = getAttunementStyle("b", psychB);
 
   const styleTitles: Record<AttunementStyle, string> = {
-    clear_expression: "확신을 보여주는 직진형 배려",
-    reaction_reading: "상대 반응을 먼저 읽는 리액션형 배려",
-    verbal_checking: "말로 확인해야 마음 놓이는 체크인형 배려",
-    pacing_adjustment: "상대 템포에 맞춰 천천히 기다려주는 페이스메이커형 배려",
-    emotional_reassurance: "정서적 안심을 최우선으로 건네는 보듬음형 배려",
-    autonomy_respect: "상대의 개인 영역과 템포를 지켜주는 존중형 배려",
+    clear_expression: isEn ? "Direct Consideration with Confidence" : "확신을 보여주는 직진형 배려",
+    reaction_reading: isEn ? "Attuned Consideration Reading Reactions First" : "상대 반응을 먼저 읽는 리액션형 배려",
+    verbal_checking: isEn ? "Check-in Consideration Reassured by Words" : "말로 확인해야 마음 놓이는 체크인형 배려",
+    pacing_adjustment: isEn ? "Pacemaker Consideration Patiently Matching Tempo" : "상대 템포에 맞춰 천천히 기다려주는 페이스메이커형 배려",
+    emotional_reassurance: isEn ? "Nurturing Consideration Prioritizing Emotional Ease" : "정서적 안심을 최우선으로 건네는 보듬음형 배려",
+    autonomy_respect: isEn ? "Respectful Consideration Honoring Personal Boundaries" : "상대의 개인 영역과 템포를 지켜주는 존중형 배려",
   };
 
   const intimateAttunement: IntimateAttunementSection = {
@@ -740,15 +843,21 @@ export function buildMarriageChapter04Intelligence(params: {
       personName: nameA,
       styleKey: attA,
       styleTitle: styleTitles[attA],
-      description: `${nameA}님은 친밀한 순간에도 상대의 표정과 반응을 미세하게 살피며 서운함이 없도록 다정하게 조율하는 성향입니다.`,
+      description: isEn
+        ? `${nameA} subtly reads the partner's expressions and reactions during intimate moments, ensuring thoughtful tuning.`
+        : `${nameA}님은 친밀한 순간에도 상대의 표정과 반응을 미세하게 살피며 서운함이 없도록 다정하게 조율하는 성향입니다.`,
     },
     personBAttunement: {
       personName: nameB,
       styleKey: attB,
       styleTitle: styleTitles[attB],
-      description: `${nameB}님은 상대가 무리하지 않도록 편안한 환경을 만들어주고, 내 요구보다 상대의 안도감을 먼저 챙기려 노력합니다.`,
+      description: isEn
+        ? `${nameB} creates a comfortable setting so the partner feels at ease, prioritizing mutual security over personal demands.`
+        : `${nameB}님은 상대가 무리하지 않도록 편안한 환경을 만들어주고, 내 요구보다 상대의 안도감을 먼저 챙기려 노력합니다.`,
     },
-    attunementInsight: "두 사람 모두 상대를 해치거나 서운하게 하지 않으려는 선의의 배려가 깊어, 침실에서의 대화가 부드럽고 다정하게 이어집니다.",
+    attunementInsight: isEn
+      ? "Both partners share deep consideration to avoid overwhelming the other, fostering warm and gentle communication."
+      : "두 사람 모두 상대를 해치거나 서운하게 하지 않으려는 선의의 배려가 깊어, 침실에서의 대화가 부드럽고 다정하게 이어집니다.",
   };
 
   // SECTION 07: Desire Mismatch & Rejection Handling
@@ -759,19 +868,33 @@ export function buildMarriageChapter04Intelligence(params: {
   const desireMismatchAndRejection: DesireMismatchAndRejection = {
     personARejection: {
       personName: nameA,
-      interpretation: `${nameB}님이 피곤하거나 상황이 안 맞을 때 거절하면, 혹시 관계의 거리감이 생긴 것은 아닌지 정서적으로 민감하게 받아들일 수 있습니다.`,
-      expressionStyle: "거절해야 할 상황에서는 상대가 서운하지 않도록 사유를 다정하게 설명하며 미안함을 표하는 편입니다.",
-      reconnectionNeed: "다음에 먼저 다정하게 가벼운 스킨십이나 안부를 건네주면 안도감을 되찾습니다.",
+      interpretation: isEn
+        ? `If ${nameB} declines due to fatigue, ${nameA} may feel sensitive about potential emotional distance.`
+        : `${nameB}님이 피곤하거나 상황이 안 맞을 때 거절하면, 혹시 관계의 거리감이 생긴 것은 아닌지 정서적으로 민감하게 받아들일 수 있습니다.`,
+      expressionStyle: isEn
+        ? "When needing to decline, explains reasons warmly and expresses regret to keep the partner reassured."
+        : "거절해야 할 상황에서는 상대가 서운하지 않도록 사유를 다정하게 설명하며 미안함을 표하는 편입니다.",
+      reconnectionNeed: isEn
+        ? "Feels reassured when the partner later initiates light touch or gentle check-ins."
+        : "다음에 먼저 다정하게 가벼운 스킨십이나 안부를 건네주면 안도감을 되찾습니다.",
     },
     personBRejection: {
       personName: nameB,
-      interpretation: `${nameA}님의 거절을 개인적 상처보다는 당일의 피로나 몸 컨디션 문제로 비교적 담담히 수용하는 편입니다.`,
-      expressionStyle: "지치거나 피곤할 때는 솔직하게 현재 컨디션을 밝히고 쉴 시간이 필요함을 조용히 전달합니다.",
-      reconnectionNeed: "충분히 쉴 시간을 보장받고 난 뒤 따뜻한 대화로 다가올 때 마음이 다시 열립니다.",
+      interpretation: isEn
+        ? `Accepts ${nameA}'s decline calmly, treating it as daily fatigue rather than personal rejection.`
+        : `${nameA}님의 거절을 개인적 상처보다는 당일의 피로나 몸 컨디션 문제로 비교적 담담히 수용하는 편입니다.`,
+      expressionStyle: isEn
+        ? "When tired, honestly communicates physical condition and quiet need for rest."
+        : "지치거나 피곤할 때는 솔직하게 현재 컨디션을 밝히고 쉴 시간이 필요함을 조용히 전달합니다.",
+      reconnectionNeed: isEn
+        ? "Opens back up smoothly after having time to rest and receiving warm conversation."
+        : "충분히 쉴 시간을 보장받고 난 뒤 따뜻한 대화로 다가올 때 마음이 다시 열립니다.",
     },
     isSharedPattern: isRejectionShared,
     sharedPatternSummary: isRejectionShared
-      ? "두 사람 모두 상대의 거절을 애정의 변함이 아닌 일상의 피로로 이해할 수 있는 정서적 공감력을 갖추고 있어, 불필요한 서운함으로 번지지 않습니다."
+      ? (isEn
+          ? "Both partners possess emotional empathy to view declines as physical fatigue rather than loss of love, preventing needless disappointment."
+          : "두 사람 모두 상대의 거절을 애정의 변함이 아닌 일상의 피로로 이해할 수 있는 정서적 공감력을 갖추고 있어, 불필요한 서운함으로 번지지 않습니다.")
       : undefined,
     mismatchAdvice: isEn
       ? "Clear, warm communication when saying no preserves mutual trust."
@@ -789,19 +912,37 @@ export function buildMarriageChapter04Intelligence(params: {
   const pairIntimacyParadox: PairIntimacyParadoxSection = {
     paradoxType,
     headline: paradoxType === "SAFETY_VS_NOVELTY"
-      ? "편안함이 너무 깊어져 설렘의 스파크가 잠드는 역설"
+      ? (isEn
+          ? "The paradox where deep comfort lulls the spark of novel excitement to sleep"
+          : "편안함이 너무 깊어져 설렘의 스파크가 잠드는 역설")
       : paradoxType === "INITIATION_WAITING"
-      ? "서로를 깊이 원하면서도 조심스레 상대의 먼저 다가옴을 기다리는 역설"
+      ? (isEn
+          ? "The paradox of deeply desiring each other while waiting for the other to initiate"
+          : "서로를 깊이 원하면서도 조심스레 상대의 먼저 다가옴을 기다리는 역설")
       : paradoxType === "EMOTIONAL_VS_PHYSICAL_ORDER"
-      ? "마음이 먼저 열려야 몸이 따르는 사람과, 몸의 다정함에서 마음이 풀어지는 사람의 역설"
+      ? (isEn
+          ? "The paradox between needing heart connection first versus physical touch unlocking the heart"
+          : "마음이 먼저 열려야 몸이 따르는 사람과, 몸의 다정함에서 마음이 풀어지는 사람의 역설")
       : paradoxType === "OVER_ATTUNEMENT"
-      ? "서로를 너무 배려하느라 정작 솔직한 내 욕구를 먼저 말하지 못하는 역설"
-      : "서로에게 끌리는 인력은 강한데 마음의 무드가 완벽히 맞춰지는 템포의 역설",
+      ? (isEn
+          ? "The paradox of extreme consideration preventing clear expression of personal desire"
+          : "서로를 너무 배려하느라 정작 솔직한 내 욕구를 먼저 말하지 못하는 역설")
+      : (isEn
+          ? "The paradox of strong mutual attraction paired with misaligned warming speeds"
+          : "서로에게 끌리는 인력은 강한데 마음의 무드가 완벽히 맞춰지는 템포의 역설"),
     explanation: paradoxType === "SAFETY_VS_NOVELTY"
-      ? "둘만의 공간이 너무나 안전하고 편안하다 보니, 역설적으로 관계를 처음 불태우던 소소한 변주나 설렘의 노력을 생략하게 될 수 있습니다."
-      : "상대를 거부하거나 서운하게 만들까 봐 둘 다 다정한 신호를 아끼다가, 마음속 끌림에 비해 침실의 온도가 조용해질 위험이 있습니다.",
-    whenThriving: "이 역설을 이해하고 작은 이벤트나 다정한 말 한마디로 먼저 신호를 줄 때, 두 사람의 친밀감은 그 어느 때보다 깊고 단단해집니다.",
-    whenFriction: "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
+      ? (isEn
+          ? "Because the private space is so safe and cozy, small efforts toward fresh atmosphere might be omitted."
+          : "둘만의 공간이 너무나 안전하고 편안하다 보니, 역설적으로 관계를 처음 불태우던 소소한 변주나 설렘의 노력을 생략하게 될 수 있습니다.")
+      : (isEn
+          ? "Holding back signals out of care may cause the bedroom atmosphere to quiet down despite strong inner pull."
+          : "상대를 거부하거나 서운하게 만들까 봐 둘 다 다정한 신호를 아끼다가, 마음속 끌림에 비해 침실의 온도가 조용해질 위험이 있습니다."),
+    whenThriving: isEn
+      ? "Recognizing this paradox and taking the lead with small gestures makes intimacy deeper and stronger than ever."
+      : "이 역설을 이해하고 작은 이벤트나 다정한 말 한마디로 먼저 신호를 줄 때, 두 사람의 친밀감은 그 어느 때보다 깊고 단단해집니다.",
+    whenFriction: isEn
+      ? "If silence lingers while waiting for the other to move first on tired days, unnecessary distance may form."
+      : "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
   };
 
   // BONUS SECTION 09: Sleep Compatibility (Single Sentence Pair Interpretation, CONFIDENCE GATE OMIT)
@@ -819,21 +960,35 @@ export function buildMarriageChapter04Intelligence(params: {
   let singleSentenceInterpretation = "";
 
   if (sensA === "high" && sensB === "low") {
-    singleSentenceInterpretation = `${nameA}님은 잠자리 환경을 조금 더 타는 편이고 ${nameB}님은 비교적 무던한 편이라, 같은 공간에서도 두 사람이 불편함을 느끼는 정도에는 차이가 있을 수 있습니다.`;
+    singleSentenceInterpretation = isEn
+      ? `${nameA} is sensitive to sleep environment while ${nameB} is easygoing, so perception of discomfort in the same bedroom may differ.`
+      : `${nameA}님은 잠자리 환경을 조금 더 타는 편이고 ${nameB}님은 비교적 무던한 편이라, 같은 공간에서도 두 사람이 불편함을 느끼는 정도에는 차이가 있을 수 있습니다.`;
   } else if (sensB === "high" && sensA === "low") {
-    singleSentenceInterpretation = `${nameB}님은 잠자리 환경의 자극을 조금 더 민감하게 느끼는 반면 ${nameA}님은 무던한 편이라, 같은 침실에서도 한쪽만 불편함을 더 크게 체감하는 순간이 생기기 쉬운 조합입니다.`;
+    singleSentenceInterpretation = isEn
+      ? `${nameB} is sensitive to sleep environment while ${nameA} is easygoing, so one partner may feel bedroom discomfort more acutely.`
+      : `${nameB}님은 잠자리 환경의 자극을 조금 더 민감하게 느끼는 반면 ${nameA}님은 무던한 편이라, 같은 침실에서도 한쪽만 불편함을 더 크게 체감하는 순간이 생기기 쉬운 조합입니다.`;
   } else if (sensA === "high" && sensB === "high") {
     if (sigA.hasGuimun && sigB.hasGuimun) {
-      singleSentenceInterpretation = "둘 다 잠자리 환경을 섬세하게 느끼는 편이라, 취침 공간의 정서와 환경을 비슷하게 체감하는 조합입니다.";
+      singleSentenceInterpretation = isEn
+        ? "Both partners are sensitive to sleep atmosphere, experiencing the shared environment in similar detail."
+        : "둘 다 잠자리 환경을 섬세하게 느끼는 편이라, 취침 공간의 정서와 환경을 비슷하게 체감하는 조합입니다.";
     } else {
-      singleSentenceInterpretation = "둘 다 잠자리 환경의 결을 섬세하게 느끼는 편이지만 편안함을 느끼는 조건이 달라, 같은 침실에서도 서로 불편함을 느끼는 포인트가 다를 수 있는 조합입니다.";
+      singleSentenceInterpretation = isEn
+        ? "Both partners are sensitive to sleep environment but have different triggers, so discomfort points may differ."
+        : "둘 다 잠자리 환경의 결을 섬세하게 느끼는 편이지만 편안함을 느끼는 조건이 달라, 같은 침실에서도 서로 불편함을 느끼는 포인트가 다를 수 있는 조합입니다.";
     }
   } else if (sensA === "moderate" && sensB === "high") {
-    singleSentenceInterpretation = `${nameB}님이 취침 공간의 자극을 조금 더 섬세하게 느끼는 편이며, ${nameA}님은 비교적 무던히 맞춰주는 흐름을 보입니다.`;
+    singleSentenceInterpretation = isEn
+      ? `${nameB} is sensitive to sleep environment, while ${nameA} adapts with easygoing flexibility.`
+      : `${nameB}님이 취침 공간의 자극을 조금 더 섬세하게 느끼는 편이며, ${nameA}님은 비교적 무던히 맞춰주는 흐름을 보입니다.`;
   } else if (sensA === "high" && sensB === "moderate") {
-    singleSentenceInterpretation = `${nameA}님이 잠자리 환경을 조금 더 민감하게 느끼는 편이고, ${nameB}님은 수용하는 무던함이 있는 조합입니다.`;
+    singleSentenceInterpretation = isEn
+      ? `${nameA} is sensitive to sleep environment, while ${nameB} accommodates with easygoing ease.`
+      : `${nameA}님이 잠자리 환경을 조금 더 민감하게 느끼는 편이고, ${nameB}님은 수용하는 무던함이 있는 조합입니다.`;
   } else {
-    singleSentenceInterpretation = "둘 다 잠자리 환경을 크게 타지 않는 편이라, 함께 잘 때 서로의 수면을 방해할 만한 차이가 크지 않은 조합입니다.";
+    singleSentenceInterpretation = isEn
+      ? "Neither partner is overly sensitive to sleep environment, so sleeping together causes little to no friction."
+      : "둘 다 잠자리 환경을 크게 타지 않는 편이라, 함께 잘 때 서로의 수면을 방해할 만한 차이가 크지 않은 조합입니다.";
   }
 
   const sleepCompatibility: SleepCompatibilitySection = {
@@ -899,10 +1054,16 @@ export function createDefaultMarriageChapter04Intelligence(
       },
     ],
     pairChemistry: {
-      heroIdentity: "편안해질수록 더 깊게 끌리는 두 사람",
-      synthesisNarrative: `${nameA}님과 ${nameB}님은 서두르거나 강한 자극으로 서로를 밀어붙이기보다, 서로에게 마음을 놓을수록 자연스럽게 가까워지는 조합입니다. 둘 사이에 쌓이는 안도감과 신뢰가 친밀감을 한층 더 깊고 단단하게 만드는 힘이 됩니다.`,
-      attractionNarrative: "불꽃처럼 확 탔다가 식기보다, 함께하는 시간이 누적될수록 서로의 온기가 은근하게 깊어지는 끌림이 강점입니다.",
-      comfortNarrative: "둘만 있을 때 긴장과 경계를 편안히 내려놓을 수 있어, 마음의 안도가 몸과 마음의 거리를 다정하게 좁혀줍니다.",
+      heroIdentity: isEn ? "Deepening attraction as mutual ease grows" : "편안해질수록 더 깊게 끌리는 두 사람",
+      synthesisNarrative: isEn
+        ? `${nameA} and ${nameB} build genuine closeness by relaxing together rather than rushing. The trust and emotional security they share form the foundation of their deep connection.`
+        : `${nameA}님과 ${nameB}님은 서두르거나 강한 자극으로 서로를 밀어붙이기보다, 서로에게 마음을 놓을수록 자연스럽게 가까워지는 조합입니다. 둘 사이에 쌓이는 안도감과 신뢰가 친밀감을 한층 더 깊고 단단하게 만드는 힘이 됩니다.`,
+      attractionNarrative: isEn
+        ? "A steady, enduring warmth that deepens with time rather than burning out quickly."
+        : "불꽃처럼 확 탔다가 식기보다, 함께하는 시간이 누적될수록 서로의 온기가 은근하게 깊어지는 끌림이 강점입니다.",
+      comfortNarrative: isEn
+        ? "Dropping guard when alone together allows emotional security to gently bridge physical and heart closeness."
+        : "둘만 있을 때 긴장과 경계를 편안히 내려놓을 수 있어, 마음의 안도가 몸과 마음의 거리를 다정하게 좁혀줍니다.",
       attractionLevel: "HIGH_PULL",
       safetyLevel: "HIGH_SAFETY",
       confidence: "HIGH",
@@ -910,79 +1071,115 @@ export function createDefaultMarriageChapter04Intelligence(
     stabilityVsNovelty: {
       title: isEn ? "Stability vs. Novelty Balance" : "익숙한 밤 vs 새로운 공기",
       classification: "STABILITY_MATCH",
-      headline: "과감한 변화보다 안전하고 아늑한 둘만의 베이스캠프에서 가장 편안히 마음이 열리는 타입",
-      description: "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다.",
-      personAInnate: "차분하고 안정적인 환경을 선호하는 결",
-      personACurrent: "아늑한 안정과 예측 가능성을 바라는 상태",
-      personBInnate: "차분하고 안정적인 환경을 선호하는 결",
-      personBCurrent: "아늑한 안정과 예측 가능성을 바라는 상태",
+      headline: isEn
+        ? "A pair whose intimacy thrives best in a safe, cozy basecamp rather than bold experiments"
+        : "과감한 변화보다 안전하고 아늑한 둘만의 베이스캠프에서 가장 편안히 마음이 열리는 타입",
+      description: isEn
+        ? "Rather than risky novelties, establishing firm mutual trust and a quiet, cozy space unlocks deep closeness."
+        : "두 사람은 불안정한 시도보다는, 서로에 대한 단단한 신뢰와 조용하고 아늑한 공간이 확보될 때 깊은 신체적 친밀감을 형성합니다.",
+      personAInnate: isEn ? "Innately prefers a calm and steady environment" : "차분하고 안정적인 환경을 선호하는 결",
+      personACurrent: isEn ? "Currently prefers a predictable, steady rhythm" : "아늑한 안정과 예측 가능성을 바라는 상태",
+      personBInnate: isEn ? "Innately prefers a calm and steady environment" : "차분하고 안정적인 환경을 선호하는 결",
+      personBCurrent: isEn ? "Currently prefers a predictable, steady rhythm" : "아늑한 안정과 예측 가능성을 바라는 상태",
     },
     activationAndRhythm: {
       personAMode: {
         personName: nameA,
-        modeTitle: "정서적 연결 우선형",
-        description: `${nameA}님은 대화와 정서적 교감이 충분히 채워질 때 마음과 몸이 깊이 열리는 편입니다.`,
+        modeTitle: isEn ? "Emotional Connection First" : "정서적 연결 우선형",
+        description: isEn
+          ? `${nameA} naturally transitions to physical intimacy after resolving emotional distance and feeling warmly connected.`
+          : `${nameA}님은 대화와 정서적 교감이 충분히 채워질 때 마음과 몸이 깊이 열리는 편입니다.`,
       },
       personBMode: {
         personName: nameB,
-        modeTitle: "반응적 수용 & 환경 편안함 우선형",
-        description: `${nameB}님은 일상의 스트레스가 줄어들고 분위기가 아늑할 때 서서히 친밀감이 고조됩니다.`,
+        modeTitle: isEn ? "Responsive Acceptance & Comfort First" : "반응적 수용 & 환경 편안함 우선형",
+        description: isEn
+          ? `${nameB} opens up smoothly when home environment is relaxed and affection is offered with gentle consideration.`
+          : `${nameB}님은 일상의 스트레스가 줄어들고 분위기가 아늑할 때 서서히 친밀감이 고조됩니다.`,
       },
       rhythmFitClassification: "MATCHED_RHYTHM",
-      headline: "친밀한 무드로 들어가는 템포와 속도가 비교적 자연스럽게 맞아떨어지는 커플",
-      rhythmDescription: "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
-      activationNarrative: "온도가 올라오는 속도의 차이는 애정의 크기가 아니라 일상 피로와 마음을 여는 스위치의 차이입니다.",
+      headline: isEn ? "A pair whose pace and tempo for entering intimate moments align naturally" : "친밀한 무드로 들어가는 템포와 속도가 비교적 자연스럽게 맞아떨어지는 커플",
+      rhythmDescription: isEn
+        ? "The pace of entering an intimate atmosphere flows smoothly between both partners without one rushing or the other feeling left behind."
+        : "둘이 친밀한 분위기로 들어가는 속도가 비교적 자연스럽게 맞아떨어집니다. 한 사람이 조급해하거나 다른 사람이 겉돌지 않는 안정적인 템포입니다.",
+      activationNarrative: isEn
+        ? "Differences in warming pace reflect different preconditions for opening up, not a difference in love."
+        : "온도가 올라오는 속도의 차이는 애정의 크기가 아니라 일상 피로와 마음을 여는 스위치의 차이입니다.",
     },
     initiationLeadResponse: {
       title: isEn ? "Initiation & Receptive Engagement" : "누가 먼저 불을 켤까?",
       classification: "A_INITIATES_B_RESPONDS",
-      headline: `${nameA}님이 다정한 신호를 자연스럽게 이끌고, ${nameB}님이 이를 편안히 받아들이는 리듬`,
-      description: `${nameA}님이 다정한 분위기나 스킨십 신호를 먼저 건네면, ${nameB}님이 그 신호를 부담 없이 다정히 받아들이며 마음을 여는 조화로운 흐름입니다.`,
-      personAAgency: `${nameA}님은 마음이 서면 애정 신호를 주저 없이 다정하게 꺼내놓는 타입입니다.`,
-      personBAgency: `${nameB}님은 사전에 무거운 부담이 없을 때 상대의 신호에 가장 유연하게 호응합니다.`,
+      headline: isEn
+        ? `${nameA} naturally leads gentle signals, while ${nameB} receives them with ease`
+        : `${nameA}님이 다정한 신호를 자연스럽게 이끌고, ${nameB}님이 이를 편안히 받아들이는 리듬`,
+      description: isEn
+        ? `When ${nameA} offers gentle mood or touch signals, ${nameB} welcomes them comfortably, creating a harmonious flow.`
+        : `${nameA}님이 다정한 분위기나 스킨십 신호를 먼저 건네면, ${nameB}님이 그 신호를 부담 없이 다정히 받아들이며 마음을 여는 조화로운 흐름입니다.`,
+      personAAgency: isEn
+        ? `${nameA} directly and warmly shares affection signals once ready.`
+        : `${nameA}님은 마음이 서면 애정 신호를 주저 없이 다정하게 꺼내놓는 타입입니다.`,
+      personBAgency: isEn
+        ? `${nameB} responds with high flexibility when there is no pressure.`
+        : `${nameB}님은 사전에 무거운 부담이 없을 때 상대의 신호에 가장 유연하게 호응합니다.`,
     },
     intimateAttunement: {
       title: isEn ? "Intimate Attunement & Mutual Care" : "침실에서 우리는 상대를 어떻게 살필까?",
       personAAttunement: {
         personName: nameA,
         styleKey: "reaction_reading",
-        styleTitle: "상대 반응을 먼저 읽는 리액션형 배려",
-        description: `${nameA}님은 친밀한 순간에도 상대의 표정과 반응을 미세하게 살피며 서운함이 없도록 다정하게 조율하는 성향입니다.`,
+        styleTitle: isEn ? "Attuned Consideration Reading Reactions First" : "상대 반응을 먼저 읽는 리액션형 배려",
+        description: isEn
+          ? `${nameA} subtly reads the partner's expressions and reactions during intimate moments, ensuring thoughtful tuning.`
+          : `${nameA}님은 친밀한 순간에도 상대의 표정과 반응을 미세하게 살피며 서운함이 없도록 다정하게 조율하는 성향입니다.`,
       },
       personBAttunement: {
         personName: nameB,
         styleKey: "pacing_adjustment",
-        styleTitle: "상대 템포에 맞춰 천천히 기다려주는 페이스메이커형 배려",
-        description: `${nameB}님은 상대가 무리하지 않도록 편안한 환경을 만들어주고, 내 요구보다 상대의 안도감을 먼저 챙기려 노력합니다.`,
+        styleTitle: isEn ? "Pacemaker Consideration Patiently Matching Tempo" : "상대 템포에 맞춰 천천히 기다려주는 페이스메이커형 배려",
+        description: isEn
+          ? `${nameB} creates a comfortable setting so the partner feels at ease, prioritizing mutual security over personal demands.`
+          : `${nameB}님은 상대가 무리하지 않도록 편안한 환경을 만들어주고, 내 요구보다 상대의 안도감을 먼저 챙기려 노력합니다.`,
       },
-      attunementInsight: "두 사람 모두 상대를 해치거나 서운하게 하지 않으려는 선의의 배려가 깊어, 침실에서의 대화가 부드럽고 다정하게 이어집니다.",
+      attunementInsight: isEn
+        ? "Both partners share deep consideration to avoid overwhelming the other, fostering warm and gentle communication."
+        : "두 사람 모두 상대를 해치거나 서운하게 하지 않으려는 선의의 배려가 깊어, 침실에서의 대화가 부드럽고 다정하게 이어집니다.",
     },
     desireMismatchAndRejection: {
       personARejection: {
         personName: nameA,
-        interpretation: "거절당했을 때 혹시 나에게 서운한 점이 있는지 정서적으로 들여다보려는 경향이 있습니다.",
-        expressionStyle: "상대가 서운하지 않도록 사유를 다정히 설명하며 거절하는 편입니다.",
-        reconnectionNeed: "다음에 먼저 다가와 가벼운 스킨십이나 안부를 건네줄 때 마음이 편안해집니다.",
+        interpretation: isEn ? "Tends to reflect sensitively on whether there is any emotional distance when declined." : "거절당했을 때 혹시 나에게 서운한 점이 있는지 정서적으로 들여다보려는 경향이 있습니다.",
+        expressionStyle: isEn ? "When declining, explains reasons warmly so the partner does not feel disappointed." : "상대가 서운하지 않도록 사유를 다정히 설명하며 거절하는 편입니다.",
+        reconnectionNeed: isEn ? "Feels comfortable when the partner reaches out first with light touch or gentle check-ins." : "다음에 먼저 다가와 가벼운 스킨십이나 안부를 건네줄 때 마음이 편안해집니다.",
       },
       personBRejection: {
         personName: nameB,
-        interpretation: "거절을 개인적인 반감이 아닌 상대의 체력이나 피로 문제로 비교적 담담히 받아들입니다.",
-        expressionStyle: "피곤할 때는 현재 컨디션을 솔직히 밝히고 휴식이 필요하다고 전달합니다.",
-        reconnectionNeed: "충분히 쉴 시간을 얻은 후 편안한 무드로 다가올 때 다정함이 회복됩니다.",
+        interpretation: isEn ? "Accepts decline calmly as physical fatigue rather than personal rejection." : "거절을 개인적인 반감이 아닌 상대의 체력이나 피로 문제로 비교적 담담히 받아들입니다.",
+        expressionStyle: isEn ? "When tired, honestly shares current energy and need for rest." : "피곤할 때는 현재 컨디션을 솔직히 밝히고 휴식이 필요하다고 전달합니다.",
+        reconnectionNeed: isEn ? "Restores warmth after having time to rest and relaxing back into a comfortable mood." : "충분히 쉴 시간을 얻은 후 편안한 무드로 다가올 때 다정함이 회복됩니다.",
       },
       isSharedPattern: false,
-      mismatchAdvice: "원치 않는 날에는 거절보다 '사랑하지만 오늘은 몸이 피곤하다'는 다정한 안심을 건네는 것이 제일 중요합니다.",
+      mismatchAdvice: isEn
+        ? "Clear, warm communication when saying no preserves mutual trust."
+        : "원치 않는 날에는 거절보다 '사랑하지만 오늘은 몸이 피곤하다'는 다정한 안심을 건네는 것이 제일 중요합니다.",
     },
     pairIntimacyParadox: {
       paradoxType: "SAFETY_VS_NOVELTY",
-      headline: "편안함이 너무 깊어져 설렘의 스파크가 잠드는 역설",
-      explanation: "둘만의 공간이 너무나 안전하고 편안하다 보니, 역설적으로 관계를 처음 불태우던 소소한 변주나 설렘의 노력을 생략하게 될 수 있습니다.",
-      whenThriving: "이 역설을 이해하고 작은 이벤트나 다정한 말 한마디로 먼저 신호를 줄 때, 두 사람의 친밀감은 그 어느 때보다 깊고 단단해집니다.",
-      whenFriction: "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
+      headline: isEn ? "The paradox where deep comfort lulls the spark of novel excitement to sleep" : "편안함이 너무 깊어져 설렘의 스파크가 잠드는 역설",
+      explanation: isEn
+        ? "Because the private space is so safe and cozy, small efforts toward fresh atmosphere might be omitted."
+        : "둘만의 공간이 너무나 안전하고 편안하다 보니, 역설적으로 관계를 처음 불태우던 소소한 변주나 설렘의 노력을 생략하게 될 수 있습니다.",
+      whenThriving: isEn
+        ? "Recognizing this paradox and taking the lead with small gestures makes intimacy deeper and stronger than ever."
+        : "이 역설을 이해하고 작은 이벤트나 다정한 말 한마디로 먼저 신호를 줄 때, 두 사람의 친밀감은 그 어느 때보다 깊고 단단해집니다.",
+      whenFriction: isEn
+        ? "If silence lingers while waiting for the other to move first on tired days, unnecessary distance may form."
+        : "피로가 쌓인 날 서로가 먼저 움직이길 바라는 침묵이 이어지면 불필요한 거리감이 생길 수 있습니다.",
     },
     sleepCompatibility: {
       title: isEn ? "Bonus: Sleep Compatibility" : "BONUS. 같이 자는 밤도 궁합이 있을까?",
-      pairInterpretation: "둘 다 잠자리 환경을 크게 타지 않는 편이라, 함께 잘 때 서로의 수면을 방해할 만한 차이가 크지 않은 조합입니다.",
+      pairInterpretation: isEn
+        ? "Neither partner is overly sensitive to sleep environment, so sleeping together causes little to no friction."
+        : "둘 다 잠자리 환경을 크게 타지 않는 편이라, 함께 잘 때 서로의 수면을 방해할 만한 차이가 크지 않은 조합입니다.",
       personASensitivity: "moderate",
       personBSensitivity: "low",
       confidence: "HIGH",
