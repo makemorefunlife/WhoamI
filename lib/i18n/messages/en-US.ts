@@ -602,6 +602,17 @@ export const messagesEnUS = {
     myAccessJournalUnlimitedUntil: (date: string) => `Unlimited entries until ${date}`,
     myAccessJournalNormalAllowance: "20 entries included",
     myAccessLoadError: "We couldn't load your access info. Please try again.",
+    myAccessGiftsTitle: "Personal Analysis Gifts",
+    myAccessGiftsSubtitle:
+      "Share these with friends -- each unlocks one Personal Analysis for them.",
+    myAccessGiftsCountAvailable: (count: number) => `${count} available`,
+    myAccessGiftStatusAvailable: "Available",
+    myAccessGiftStatusClaimed: "Claimed",
+    myAccessGiftStatusExpired: "Expired",
+    myAccessGiftCopyCode: "Copy code",
+    myAccessGiftCopyLink: "Copy link",
+    myAccessGiftCopiedCode: "Code copied",
+    myAccessGiftCopiedLink: "Link copied",
   },
   pricing: {
     title: "Pricing",
@@ -1929,6 +1940,28 @@ export const messagesEnUS = {
     patternReflectionLabel: "[SELECTION PATTERN REFLECTION]",
     patternReflectionNote: "Remembering my core profile and slowing down my immediate reaction was the right choice. In future conflicts, I should organize my feelings first and deliver key points in 3 sentences.",
   },
+  redeem: {
+    metaTitle: "Redeem a code | Aha It's me!",
+    pageTitle: "Redeem a code",
+    pageSubtitle: "Enter a gift or tester code to unlock an analysis.",
+    codeInputLabel: "Code",
+    codeInputPlaceholder: "e.g. GIFT-XXXXXXXXXX",
+    submitCta: "Redeem",
+    submitting: "Redeeming…",
+    signInPrompt: "Sign in to redeem this code.",
+    successTitle: "Personal Analysis unlocked",
+    successSubtitle: "You now have 1 Personal Analysis available.",
+    successCta: "Start Personal Analysis",
+    errorMissingCode: "Enter a code to redeem.",
+    errorNotFound: "We couldn't find that code. Double-check it and try again.",
+    errorInactive: "This code is no longer active.",
+    errorExpired: "This code has expired.",
+    errorExhausted: "This code has already been fully redeemed.",
+    errorAlreadyRedeemed: "This code has already been redeemed on your account.",
+    errorAlreadyRedeemedOrRevoked: "This code has already been used or is no longer valid.",
+    errorCannotClaimOwnGift: "You can't redeem a gift code you created yourself.",
+    errorGeneric: "We couldn't redeem this code. Please try again.",
+  },
 };
 
 /** Shape-only catalog (values are free strings per locale). */
@@ -2441,6 +2474,16 @@ export type MessageCatalog = {
     myAccessJournalUnlimitedUntil: (date: string) => string;
     myAccessJournalNormalAllowance: string;
     myAccessLoadError: string;
+    myAccessGiftsTitle: string;
+    myAccessGiftsSubtitle: string;
+    myAccessGiftsCountAvailable: (count: number) => string;
+    myAccessGiftStatusAvailable: string;
+    myAccessGiftStatusClaimed: string;
+    myAccessGiftStatusExpired: string;
+    myAccessGiftCopyCode: string;
+    myAccessGiftCopyLink: string;
+    myAccessGiftCopiedCode: string;
+    myAccessGiftCopiedLink: string;
   };
   pricing: {
     title: string;
@@ -3490,5 +3533,27 @@ export type MessageCatalog = {
     feelingsText: string;
     patternReflectionLabel: string;
     patternReflectionNote: string;
+  };
+  redeem: {
+    metaTitle: string;
+    pageTitle: string;
+    pageSubtitle: string;
+    codeInputLabel: string;
+    codeInputPlaceholder: string;
+    submitCta: string;
+    submitting: string;
+    signInPrompt: string;
+    successTitle: string;
+    successSubtitle: string;
+    successCta: string;
+    errorMissingCode: string;
+    errorNotFound: string;
+    errorInactive: string;
+    errorExpired: string;
+    errorExhausted: string;
+    errorAlreadyRedeemed: string;
+    errorAlreadyRedeemedOrRevoked: string;
+    errorCannotClaimOwnGift: string;
+    errorGeneric: string;
   };
 };

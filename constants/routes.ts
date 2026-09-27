@@ -31,6 +31,7 @@ export const ROUTES = {
   invite: "/invite",
   connect: "/connect",
   thankYou: "/thank-you",
+  redeem: "/redeem",
 } as const;
 
 /** Prefix path for a locale (`/kr/...` or unprefixed). */

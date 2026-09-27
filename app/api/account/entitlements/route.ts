@@ -7,6 +7,7 @@ import {
 import { logServerError } from "@/lib/security/safeLog";
 import { getCreditLotSummary } from "@/lib/credits/creditEngine";
 import { getDecisionJournalAccess } from "@/lib/entitlements/decisionJournalAccess";
+import { listOwnPersonalGifts } from "@/lib/credits/personalGifts";
 
 export const runtime = "nodejs";
 
@@ -37,10 +38,11 @@ export async function GET() {
   if (!supabase) return supabaseConfigErrorResponse();
 
   try {
-    const [personal, relationship, journal] = await Promise.all([
+    const [personal, relationship, journal, personalGifts] = await Promise.all([
       getCreditLotSummary(supabase, userId, "personal"),
       getCreditLotSummary(supabase, userId, "relationship"),
       getDecisionJournalAccess(supabase, userId),
+      listOwnPersonalGifts(supabase, userId),
     ]);
 
     return NextResponse.json({
@@ -55,6 +57,15 @@ export async function GET() {
       journal: journal.hasAccess
         ? { unlimited: true, unlimitedUntil: journal.expiresAt, unlimitedSource: journal.source }
         : { unlimited: false, unlimitedUntil: null, unlimitedSource: null },
+      // Annual-membership "gift" inventory the caller can share -- kept
+      // fully separate from `personal` above per the product rule: a gift
+      // belongs to this inventory until claimed, and only then does the
+      // recipient (a different clerk_user_id) receive an ordinary Personal
+      // credit lot. Empty for non-Annual members (no rows issued to them).
+      personalGifts: personalGifts.map((g) => ({
+        code: g.code,
+        status: g.status,
+      })),
     });
   } catch (error) {
     logServerError("account.entitlements.get", error, "query_failed");

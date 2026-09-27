@@ -23,10 +23,12 @@ type LoadState = "loading" | "loaded" | "error";
 
 type CreditSummary = { remaining: number; soonestExpiresAt: string | null };
 type JournalSummary = { unlimited: boolean; unlimitedUntil: string | null; unlimitedSource: string | null };
+type PersonalGiftEntry = { code: string; status: "available" | "claimed" | "expired" };
 type EntitlementsInfo = {
   personal: CreditSummary;
   relationship: CreditSummary;
   journal: JournalSummary;
+  personalGifts: PersonalGiftEntry[];
 };
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -49,6 +51,11 @@ export default function AccountBillingPage() {
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [entitlementsState, setEntitlementsState] = useState<LoadState>("loading");
   const [entitlements, setEntitlements] = useState<EntitlementsInfo | null>(null);
+  // Transient "Copied!" feedback for a gift's code/link button -- cleared by
+  // its own timeout, never persisted; unrelated to entitlementsState.
+  const [copiedGift, setCopiedGift] = useState<{ code: string; kind: "code" | "link" } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -125,6 +132,35 @@ export default function AccountBillingPage() {
       setCancelError(copy.billingCancelError);
     } finally {
       setCancelling(false);
+    }
+  }
+
+  function flashCopiedGift(code: string, kind: "code" | "link") {
+    setCopiedGift({ code, kind });
+    setTimeout(() => {
+      setCopiedGift((prev) => (prev?.code === code && prev.kind === kind ? null : prev));
+    }, 2000);
+  }
+
+  async function handleCopyGiftCode(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+      flashCopiedGift(code, "code");
+    } catch {
+      // Clipboard permission can be denied silently -- no feedback beyond
+      // simply not flashing "Copied", matching other best-effort copy UX
+      // in this codebase (nothing to recover into here).
+    }
+  }
+
+  async function handleCopyGiftLink(code: string) {
+    try {
+      const path = href(`${ROUTES.redeem}?code=${encodeURIComponent(code)}`);
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      await navigator.clipboard.writeText(`${origin}${path}`);
+      flashCopiedGift(code, "link");
+    } catch {
+      // Same best-effort reasoning as handleCopyGiftCode.
     }
   }
 
@@ -228,6 +264,68 @@ export default function AccountBillingPage() {
                   : copy.myAccessJournalNormalAllowance}
               </p>
             </div>
+
+            {membership && entitlements.personalGifts.length > 0 ? (
+              <div className="rounded-xl border border-outline-variant/25 bg-surface-container-lowest/70 p-4">
+                <p className="text-sm font-medium text-on-surface">{copy.myAccessGiftsTitle}</p>
+                <p className="mt-1 text-xs text-on-surface-variant">{copy.myAccessGiftsSubtitle}</p>
+                <p className="mt-2 text-xs font-semibold text-secondary">
+                  {copy.myAccessGiftsCountAvailable(
+                    entitlements.personalGifts.filter((g) => g.status === "available").length,
+                  )}
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {entitlements.personalGifts.map((gift) => (
+                    <li
+                      key={gift.code}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-outline-variant/20 bg-surface-container-lowest px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs text-on-surface">{gift.code}</span>
+                        <span
+                          className={
+                            gift.status === "available"
+                              ? "rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"
+                              : gift.status === "claimed"
+                                ? "rounded-full bg-slate-500/10 px-2 py-0.5 text-[11px] font-semibold text-slate-600"
+                                : "rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-600"
+                          }
+                        >
+                          {gift.status === "available"
+                            ? copy.myAccessGiftStatusAvailable
+                            : gift.status === "claimed"
+                              ? copy.myAccessGiftStatusClaimed
+                              : copy.myAccessGiftStatusExpired}
+                        </span>
+                      </div>
+                      {gift.status === "available" ? (
+                        <div className="flex items-center gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => void handleCopyGiftCode(gift.code)}
+                            className="font-semibold text-primary underline-offset-2 hover:underline"
+                          >
+                            {copiedGift?.code === gift.code && copiedGift.kind === "code"
+                              ? copy.myAccessGiftCopiedCode
+                              : copy.myAccessGiftCopyCode}
+                          </button>
+                          <span className="text-on-surface-variant">&middot;</span>
+                          <button
+                            type="button"
+                            onClick={() => void handleCopyGiftLink(gift.code)}
+                            className="font-semibold text-primary underline-offset-2 hover:underline"
+                          >
+                            {copiedGift?.code === gift.code && copiedGift.kind === "link"
+                              ? copy.myAccessGiftCopiedLink
+                              : copy.myAccessGiftCopyLink}
+                          </button>
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         )}
       </section>

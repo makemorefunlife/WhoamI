@@ -286,11 +286,32 @@ export async function isAdditionalRelationshipEligible(
   return data === true;
 }
 
+export type RedeemGiftCouponReason =
+  | "not_found"
+  | "already_redeemed_or_revoked"
+  | "cannot_claim_own_gift"
+  | "expired"
+  | "error";
+
 export type RedeemGiftCouponResult =
   | { ok: true }
-  | { ok: false; reason: "not_found" | "already_redeemed_or_revoked" | "error" };
+  | { ok: false; reason: RedeemGiftCouponReason };
 
-/** Redeems a Gift Personal coupon code, granting a permanent personal credit to the redeemer. */
+const REDEEM_GIFT_COUPON_REASONS: readonly RedeemGiftCouponReason[] = [
+  "not_found",
+  "already_redeemed_or_revoked",
+  "cannot_claim_own_gift",
+  "expired",
+  "error",
+];
+
+function toRedeemGiftCouponReason(reason: string | null | undefined): RedeemGiftCouponReason {
+  return (REDEEM_GIFT_COUPON_REASONS as readonly string[]).includes(reason ?? "")
+    ? (reason as RedeemGiftCouponReason)
+    : "already_redeemed_or_revoked";
+}
+
+/** Redeems a Gift Personal coupon code, granting a 1-year personal credit to the redeemer. */
 export async function redeemGiftPersonalCoupon(
   supabase: SupabaseClient,
   params: { code: string; redeemedByClerkUserId: string },
@@ -304,10 +325,53 @@ export async function redeemGiftPersonalCoupon(
     | { ok: boolean; reason: string | null }
     | undefined;
   if (!row?.ok) {
-    return {
-      ok: false,
-      reason: row?.reason === "not_found" ? "not_found" : "already_redeemed_or_revoked",
-    };
+    return { ok: false, reason: toRedeemGiftCouponReason(row?.reason) };
   }
   return { ok: true };
+}
+
+export type RedeemTesterCodeReason =
+  | "not_found"
+  | "inactive"
+  | "expired"
+  | "exhausted"
+  | "already_redeemed"
+  | "error";
+
+export type RedeemTesterCodeResult =
+  | { ok: true; lotId: string | null }
+  | { ok: false; reason: RedeemTesterCodeReason };
+
+const REDEEM_TESTER_CODE_REASONS: readonly RedeemTesterCodeReason[] = [
+  "not_found",
+  "inactive",
+  "expired",
+  "exhausted",
+  "already_redeemed",
+  "error",
+];
+
+function toRedeemTesterCodeReason(reason: string | null | undefined): RedeemTesterCodeReason {
+  return (REDEEM_TESTER_CODE_REASONS as readonly string[]).includes(reason ?? "")
+    ? (reason as RedeemTesterCodeReason)
+    : "error";
+}
+
+/** Redeems a tester/beta Personal code, granting a 1-year personal credit to the redeemer. */
+export async function redeemTesterPersonalCode(
+  supabase: SupabaseClient,
+  params: { code: string; redeemedByClerkUserId: string },
+): Promise<RedeemTesterCodeResult> {
+  const { data, error } = await supabase.rpc("redeem_tester_personal_code", {
+    p_code: params.code,
+    p_redeemed_by_clerk_user_id: params.redeemedByClerkUserId,
+  });
+  if (error) return { ok: false, reason: "error" };
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { ok: boolean; reason: string | null; lot_id: string | null }
+    | undefined;
+  if (!row?.ok) {
+    return { ok: false, reason: toRedeemTesterCodeReason(row?.reason) };
+  }
+  return { ok: true, lotId: row.lot_id ?? null };
 }
