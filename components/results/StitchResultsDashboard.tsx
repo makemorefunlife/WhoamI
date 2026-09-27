@@ -32,36 +32,30 @@ function FreeAnalysisButton({
   onClick,
   title,
   subtitle,
-  accent,
 }: {
   active: boolean;
   onClick: () => void;
   title: string;
   subtitle: string;
-  accent: "current" | "essence";
 }) {
-  const border =
-    accent === "current"
-      ? active
-        ? "border-primary bg-primary/8 shadow-sm"
-        : "border-outline-variant/55 bg-surface hover:border-primary/35"
-      : active
-        ? "border-[#c49a6c] bg-[#c49a6c]/10 shadow-sm"
-        : "border-outline-variant/55 bg-surface hover:border-[#c49a6c]/45";
-
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition ${border}`}
+      className={[
+        "group relative flex min-h-[5rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-4 py-4 text-center transition-all duration-200 cursor-pointer",
+        active
+          ? "border-primary bg-accent-emerald-soft/50 shadow-md ring-2 ring-primary/20 scale-[1.01]"
+          : "border-primary/25 bg-surface-container-lowest hover:border-primary hover:bg-accent-emerald-soft/30 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]",
+      ].join(" ")}
     >
       <span className="inline-flex flex-wrap items-center justify-center gap-2">
-        <StitchFreeSticker />
-        <span className="text-sm font-semibold leading-tight text-primary">
+        <StitchFreeSticker active={active} />
+        <span className="text-sm font-bold leading-tight text-primary transition-colors">
           {title}
         </span>
       </span>
-      <span className="text-[11px] leading-snug text-on-surface-variant">
+      <span className="text-[11px] font-medium leading-snug text-on-surface-variant transition-colors group-hover:text-primary/90">
         {subtitle}
       </span>
     </button>
@@ -257,14 +251,12 @@ export default function StitchResultsDashboard({
             onClick={() => toggleTab("current")}
             title={messages.report.currentStateLabel}
             subtitle={messages.report.currentStateSubtitle}
-            accent="current"
           />
           <FreeAnalysisButton
             active={activeTab === "essence"}
             onClick={() => toggleTab("essence")}
             title={messages.report.essenceBlueprintTitle}
             subtitle={messages.report.essenceBlueprintSubtitle}
-            accent="essence"
           />
         </div>
 
