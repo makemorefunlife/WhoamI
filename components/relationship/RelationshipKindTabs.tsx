@@ -68,7 +68,7 @@ export default function RelationshipKindTabs({
                 : "opacity-75 hover:opacity-100",
             ].join(" ")}
           >
-            {relationshipKindBadgeLabel(resolved)}
+            {relationshipKindBadgeLabel(resolved, messages)}
           </button>
         );
       })}

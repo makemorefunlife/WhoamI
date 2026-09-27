@@ -638,7 +638,14 @@ export function useRelationshipDetail({
             return true;
           }
           if (res.status === 402) {
+            // Mirrors the Personal pattern (useSlimV1Integrated.ts): clear
+            // the generic `err` so RelationshipView's top-level error
+            // banner (wired to retryAnalysis/ensureBasic -- the wrong
+            // action here) never masks RelationshipPremiumSection's own
+            // creditExhausted -> Purchase Selector CTA below.
             setPremiumCreditExhausted(true);
+            setErr(null);
+            return false;
           }
           setErr(data?.error ?? messages.report.premiumAnalysisFailedGeneric);
           return false;

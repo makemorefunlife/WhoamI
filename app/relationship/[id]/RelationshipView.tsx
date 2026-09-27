@@ -94,11 +94,19 @@ export default function RelationshipView({
   // successRedirectPath below so that if Paddle's own successUrl redirect
   // wins the race against onSuccess, the user still lands back on this
   // same relationship report + kind tab instead of a generic fallback.
+  // autostart: true is the extra piece Personal doesn't need (its own
+  // canGenerate effect auto-fetches once entitled) -- Relationship has no
+  // equivalent, so without this flag a redirect-race landing would show
+  // the right report/kind but require a second manual click to actually
+  // resume generation. This reuses the existing ?autostart=1 -> 
+  // runAutostartPremium() -> runPremium(premiumKind) wiring already used
+  // by the survey-to-report handoff (see useRelationshipDetail.ts).
   const href = localize(
     relationshipDetailRoute({
       relationshipReportId,
       viewerReportId,
       kind: premiumKind,
+      autostart: true,
     }),
   );
 

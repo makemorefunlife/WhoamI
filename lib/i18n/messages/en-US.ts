@@ -207,7 +207,7 @@ export const messagesEnUS = {
     kakaoKeyMissing: "NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY is not configured.",
     kindBadgeRomantic: "Romantic",
     kindBadgeWork: "Colleague",
-    kindBadgeCohabitation: "Married",
+    kindBadgeCohabitation: "Marriage",
     kindBadgeFriendship: "Friend",
     kindBadgeFamily: "Family",
     analysisLevelBasic: "Basic",
