@@ -70,18 +70,19 @@ export default function AccountProfilePage() {
     >
       {isFounder ? (
         <section className="stitch-hero-panel rounded-extra-large p-6 sm:p-8 border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">🏅</span>
-            <div>
-              <div className="flex items-center gap-2">
+          <div className="flex items-start sm:items-center gap-3">
+            <span className="text-2xl shrink-0 pt-0.5 sm:pt-0">🏅</span>
+            <div className="w-full min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="stitch-headline text-lg font-bold text-amber-950 dark:text-amber-100">
                   {locale === "ko-KR" ? "Founders Club 1기 멤버" : "Founders Club 1st Gen Member"}
                 </h2>
-                <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:text-amber-300">
-                  [🏅 Founders]
+                <span className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 px-3 py-1 text-xs font-bold text-amber-900 dark:text-amber-300 shadow-xs whitespace-nowrap">
+                  <span>🏅</span>
+                  <span>Founders</span>
                 </span>
               </div>
-              <p className="mt-1 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              <p className="mt-1.5 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
                 {locale === "ko-KR"
                   ? "Aha! It's me의 파운더스 1기 멤버로 등록되어 계정에 골드 배지가 활성화되었습니다. 모든 신기능 우선 경험 혜택이 정상 적용됩니다."
                   : "You are registered as an Aha! It's me Founders Club 1st Gen member. A gold badge is active on your account with early access to all new features."}
