@@ -49,7 +49,7 @@ import type {
 } from "./types";
 import { selectAxisRelationshipInsights } from "./axisRelationshipInsights";
 
-const COMPARE_QUESTION: Record<RomanticCompareRowKey, string> = {
+const COMPARE_QUESTION_KO: Record<RomanticCompareRowKey, string> = {
   conflict: "서로 부딪힐 때 우리는 무엇을 먼저 하나요?",
   affection: "사랑을 확인받고 전하는 방식은 어떻게 다른가요?",
   stress: "압박을 받을 때 어떤 패턴이 나오나요?",
@@ -57,6 +57,24 @@ const COMPARE_QUESTION: Record<RomanticCompareRowKey, string> = {
   decision: "중요한 결정을 내릴 때 어떤 기준을 쓰나요?",
   communication: "말을 고르고 해석하는 방식은 어떻게 다른가요?",
 };
+
+// Previously missing entirely: COMPARE_QUESTION had no English variant, so
+// every locale (including en-US) rendered these Korean questions verbatim
+// in the Chapter "Side by side" comparison table (see comparisonRowsFromFusion
+// / buildComparisonTable below, neither of which branched on locale for this
+// field even though they do for the lean labels and prose).
+const COMPARE_QUESTION_EN: Record<RomanticCompareRowKey, string> = {
+  conflict: "When we clash, what do we each reach for first?",
+  affection: "How do we each prefer to give and receive affection?",
+  stress: "What pattern shows up when we're under pressure?",
+  expression: "How fast and how fully do we each put feelings into words?",
+  decision: "What do we each weigh most when making a big decision?",
+  communication: "How differently do we choose and read each other's words?",
+};
+
+export function compareQuestionFor(rowKey: RomanticCompareRowKey, locale: PrototypeLocale): string {
+  return locale === "en-US" ? COMPARE_QUESTION_EN[rowKey] : COMPARE_QUESTION_KO[rowKey];
+}
 
 function fixtureOf(variant: PrototypeVariant) {
   if (variant === "minimal") return romanticExperienceMinimalFixture;
@@ -128,7 +146,7 @@ function buildComparisonTable(params: {
                 : "혼자 정해도 되는 것과 함께 확인해야 하는 것의 경계를 미리 정해두면, 결정할 때마다 지치는 일이 줄어듭니다.";
     return {
       rowId: `compare.${rowKey}`,
-      relationshipQuestion: COMPARE_QUESTION[rowKey],
+      relationshipQuestion: compareQuestionFor(rowKey, params.locale),
       personA,
       personB,
       relationshipManifestation: manifestation,
@@ -272,7 +290,7 @@ function comparisonRowsFromFusion(params: {
     });
     return {
       rowId: `compare.${rowKey}`,
-      relationshipQuestion: COMPARE_QUESTION[rowKey],
+      relationshipQuestion: compareQuestionFor(rowKey, params.locale),
       personA,
       personB,
       relationshipManifestation: prose.manifestation,

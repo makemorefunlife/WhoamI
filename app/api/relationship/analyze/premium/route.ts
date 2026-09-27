@@ -43,6 +43,8 @@ import {
   UNKNOWN_BIRTH_FALLBACK,
 } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
+import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import {
   getOrBuildPersonCorePair,
   bundlePersonCorePairForPremium,
@@ -144,6 +146,14 @@ function reportBirthTime(report: Record<string, unknown>): string | null {
 
 function reportName(report: Record<string, unknown>): string | null {
   return typeof report.name === "string" ? report.name : null;
+}
+
+function reportClerkUserId(report: Record<string, unknown>): string | null {
+  return typeof report.clerk_user_id === "string" ? report.clerk_user_id : null;
+}
+
+function reportType(report: Record<string, unknown>): string | null {
+  return typeof report.report_type === "string" ? report.report_type : null;
 }
 
 export async function POST(req: Request) {
@@ -273,8 +283,8 @@ export async function POST(req: Request) {
     }
 
     const [fetchA, fetchB, clerkUser] = await Promise.all([
-      fetchReportWithBirthCoords(supabase, rr.report_id_a),
-      fetchReportWithBirthCoords(supabase, rr.report_id_b),
+      fetchReportWithBirthCoords(supabase, rr.report_id_a, "clerk_user_id, report_type"),
+      fetchReportWithBirthCoords(supabase, rr.report_id_b, "clerk_user_id, report_type"),
       userId ? currentUser() : Promise.resolve(null),
     ]);
 
@@ -316,22 +326,57 @@ export async function POST(req: Request) {
       );
     }
 
-    const labelA = resolveViewerDisplayName({
-      reportName: reportName(repA),
-      clerkFirstName:
-        viewerReportId === rr.report_id_a ? clerkUser?.firstName : undefined,
-      clerkFullName:
-        viewerReportId === rr.report_id_a ? clerkUser?.fullName : undefined,
-      fallback: "나",
-    });
-    const labelB = resolveViewerDisplayName({
-      reportName: reportName(repB),
-      clerkFirstName:
-        viewerReportId === rr.report_id_b ? clerkUser?.firstName : undefined,
-      clerkFullName:
-        viewerReportId === rr.report_id_b ? clerkUser?.fullName : undefined,
-      fallback: "상대",
-    });
+    const messages = getMessages(locale);
+    const meFallback = messages.report.meFallbackLabel;
+    const partnerFallback = messages.report.partnerFallbackLabel;
+
+    // The non-viewer side never has a live Clerk session to read from, so its
+    // display name must come from a batched publicMetadata.displayName lookup
+    // (the canonical source for any real connected account — see
+    // resolveClerkDisplayNamesByUserId's doc comment) rather than being left
+    // to fall straight through to a generic placeholder, which is what
+    // previously baked "나"/"상대" permanently into generated prose whenever
+    // the partner had no manually-set reports.name.
+    const partnerReport = viewerReportId === rr.report_id_a ? repB : repA;
+    const partnerIsManual = reportType(partnerReport) === "partner_manual";
+    const partnerClerkNameById = partnerIsManual
+      ? {}
+      : await resolveClerkDisplayNamesByUserId([reportClerkUserId(partnerReport)]);
+
+    const labelA =
+      viewerReportId === rr.report_id_a
+        ? resolveViewerDisplayName({
+            reportName: reportName(repA),
+            clerkFirstName: clerkUser?.firstName,
+            clerkFullName: clerkUser?.fullName,
+            fallback: meFallback,
+          })
+        : resolvePartnerDisplayName(
+            reportName(repA),
+            (() => {
+              const id = reportClerkUserId(repA);
+              return id ? partnerClerkNameById[id] : undefined;
+            })(),
+            undefined,
+            partnerFallback,
+          );
+    const labelB =
+      viewerReportId === rr.report_id_b
+        ? resolveViewerDisplayName({
+            reportName: reportName(repB),
+            clerkFirstName: clerkUser?.firstName,
+            clerkFullName: clerkUser?.fullName,
+            fallback: meFallback,
+          })
+        : resolvePartnerDisplayName(
+            reportName(repB),
+            (() => {
+              const id = reportClerkUserId(repB);
+              return id ? partnerClerkNameById[id] : undefined;
+            })(),
+            undefined,
+            partnerFallback,
+          );
     const userCustomMyName =
       viewerReportId === rr.report_id_a ? labelA : labelB;
     const userCustomTargetName =
