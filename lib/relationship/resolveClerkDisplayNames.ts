@@ -44,9 +44,25 @@ async function fetchClerkProfilesByUserId(
         limit: batch.length,
       });
       for (const user of data) {
-        const displayName = sanitizeDisplayNameInput(
+        const explicitDisplayName = sanitizeDisplayNameInput(
           (user.publicMetadata as Record<string, unknown> | null)?.displayName,
         );
+        // Most accounts never explicitly set publicMetadata.displayName --
+        // that only happens via Google auto-seed, the legacy-user backfill,
+        // or the email/password setup modal (see displayNameSync.ts) -- so
+        // without a further fallback here, any partner who hasn't hit one
+        // of those flows yet permanently showed the generic "Partner"/"상대"
+        // placeholder even though Clerk already has their real name right
+        // here on the same User object. Mirrors resolveClerkDisplayName's
+        // own fullName -> firstName cascade (lib/clerk/displayName.ts),
+        // which already does exactly this for the CURRENT user's own
+        // display -- this just applies the same cascade server-side when
+        // resolving someone else's (the partner's) name.
+        const displayName =
+          explicitDisplayName ||
+          user.fullName?.trim() ||
+          user.firstName?.trim() ||
+          null;
         // hasImage gates this: Clerk always returns SOME imageUrl (a
         // generated placeholder for accounts with no real photo), and
         // showing that generated placeholder would be worse than this

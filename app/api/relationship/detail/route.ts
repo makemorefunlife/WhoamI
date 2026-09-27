@@ -26,6 +26,7 @@ import { isBirthPlaceFallback } from "@/lib/v2/onboarding/birthFallbackPolicy";
 import { resolvePartnerDisplayName } from "@/lib/relationship/resolvePartnerDisplayName";
 import { resolveClerkDisplayNamesByUserId } from "@/lib/relationship/resolveClerkDisplayNames";
 import { resolveViewerDisplayName } from "@/lib/relationship/viewerFirstDisplay";
+import { getMessages } from "@/lib/i18n/messages";
 import { parseRomanticDeepViewModel } from "@/lib/relationship/detail/parseRomanticDeepViewModel";
 import { assertOwnedViewerParticipantAccess } from "@/lib/report/assertOwnedReportAccess";
 import { omitWorkContextOutputFromReport } from "@/lib/relationship/workColleague/stripWorkContextOutputForClient";
@@ -151,10 +152,17 @@ export async function GET(req: Request) {
 
     const clerkUser = userId ? await currentUser() : null;
     const viewerIsReportA = viewerReportId === rr.report_id_a;
+    // Locale-aware fallbacks (mirrors analyze/premium/route.ts's labelA/labelB
+    // resolution) -- without an explicit `fallback`, resolveViewerDisplayName
+    // and resolvePartnerDisplayName default to the hardcoded Korean "나"/
+    // "상대", which would leak into an English-locale report whenever neither
+    // a real name nor a Clerk name is available.
+    const fallbackMessages = getMessages(locale);
     const viewerName = resolveViewerDisplayName({
       reportName: viewer?.name,
       clerkFirstName: clerkUser?.firstName,
       clerkFullName: clerkUser?.fullName,
+      fallback: fallbackMessages.report.meFallbackLabel,
     });
     const partnerIsManual = partner?.report_type === "partner_manual";
     const partnerClerkNameById = partnerIsManual
@@ -164,7 +172,7 @@ export async function GET(req: Request) {
       partner?.name,
       partner?.clerk_user_id ? partnerClerkNameById[partner.clerk_user_id] : undefined,
       undefined,
-      "상대",
+      fallbackMessages.report.partnerFallbackLabel,
     );
     const personAName = repA?.name?.trim() || (viewerIsReportA ? viewerName : partnerName) || "Person A";
     const personBName = repB?.name?.trim() || (!viewerIsReportA ? viewerName : partnerName) || "Person B";
