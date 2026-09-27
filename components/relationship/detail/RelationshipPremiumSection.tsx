@@ -51,6 +51,18 @@ type RelationshipPremiumSectionProps = {
   creditExhausted?: boolean;
   /** Opens the purchase selector (context="relationship") -- only used when creditExhausted is true. */
   onOpenPurchase?: () => void;
+  /**
+   * True while an explicit-intent autostart attempt (the user just picked
+   * this Deep kind -- see ?autostart=1 in useRelationshipDetail.ts) is
+   * resolving and there is no ready/cached content to show yet. Suppresses
+   * this section's own empty-state placeholder and "Generate analysis" /
+   * "buy credit" CTA in favor of a single "Preparing your analysis..."
+   * message, so the explicit-selection flow never shows an extra manual
+   * step. Left false (default) for every other surface -- direct URL
+   * visits, revisits, recovery states -- which keep today's empty-state +
+   * CTA fallback unchanged.
+   */
+  autostartPending?: boolean;
 };
 
 export default function RelationshipPremiumSection({
@@ -78,6 +90,7 @@ export default function RelationshipPremiumSection({
   onReportReadyRef,
   creditExhausted = false,
   onOpenPurchase,
+  autostartPending = false,
 }: RelationshipPremiumSectionProps) {
   const { messages } = useLocale();
   const [requesting, setRequesting] = useState(false);
@@ -120,6 +133,12 @@ export default function RelationshipPremiumSection({
       displayPremium,
   );
 
+  // An explicit Deep-kind selection with nothing to show yet: replace the
+  // per-kind empty-state placeholder and Generate/Buy CTA below with one
+  // "Preparing your analysis..." message instead of stacking them
+  // underneath RelationshipView's own RelationshipGeneratingPanel.
+  const showAutostartPreparing = autostartPending && !hasDeepContent;
+
   return (
     <ReportSurfaceProvider
       surface={
@@ -137,7 +156,16 @@ export default function RelationshipPremiumSection({
         ref={onReportReadyRef}
         className="mt-10 scroll-mt-24"
       >
-      {submitting ? (
+      {showAutostartPreparing ? (
+        <div className="mb-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-center">
+          <p className="text-sm font-semibold text-secondary">
+            {messages.common.preparing}
+          </p>
+          <p className="mt-1 text-xs text-on-surface-variant">
+            {messages.report.generatingSubtitle(partnerName, kindLabel)}
+          </p>
+        </div>
+      ) : submitting ? (
         <div className="mb-4 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-center">
           <p className="text-sm font-semibold text-secondary">
             {messages.report.generatingReportTitle}
@@ -152,7 +180,8 @@ export default function RelationshipPremiumSection({
           {localError}
         </p>
       ) : null}
-      {premiumKind === "romantic" && romanticRenderMode === "v4" && displayRomanticDeepV4 ? (
+      {!showAutostartPreparing && (
+      premiumKind === "romantic" && romanticRenderMode === "v4" && displayRomanticDeepV4 ? (
         <div className="stitch-hero-panel rounded-extra-large border border-outline-variant/30 p-2 sm:p-4">
           <RomanticV4ReportView
             payload={displayRomanticDeepV4}
@@ -260,14 +289,15 @@ export default function RelationshipPremiumSection({
           partnerName={partnerName}
           viewerName={viewerName}
         />
-      )}
+      ))}
       {hasDeepContent && (premiumReady || hasSnapshotView) && !submitting ? (
         <>
           <AiAnalysisDisclaimer className="mt-6 px-1" />
           <ReportFeedbackSection displayName={viewerName} />
         </>
       ) : null}
-      {!premiumReady && !hasSnapshotView && creditExhausted && onOpenPurchase ? (
+      {!showAutostartPreparing && (
+      !premiumReady && !hasSnapshotView && creditExhausted && onOpenPurchase ? (
         <div className="mt-4 space-y-2 text-center">
           <p className="text-sm text-[var(--space-text-muted)]">
             {messages.report.premiumCreditExhausted}
@@ -305,7 +335,8 @@ export default function RelationshipPremiumSection({
             {messages.report.premiumRegenerateHint}
           </p>
         </div>
-      ) : null}
+      ) : null
+      )}
       </div>
     </ReportSurfaceProvider>
   );

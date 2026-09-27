@@ -101,6 +101,15 @@ export type UseRelationshipDetailReturn = {
   premiumReady: boolean;
   premiumInProgress: boolean;
   premiumCreditExhausted: boolean;
+  /**
+   * True right after an explicit-intent autostart attempt (the user just
+   * picked a Deep kind -- see ?autostart=1 / runAutostartPremium) failed
+   * specifically for lack of credit. Distinct from premiumCreditExhausted
+   * alone so the Purchase Selector can be opened automatically only for
+   * that explicit-intent path, never for a manual "Generate" click on a
+   * revisit/recovery surface (see RelationshipView.tsx's effect).
+   */
+  autostartCreditExhausted: boolean;
   toggleFavorite: () => Promise<void>;
   retryAnalysis: () => void;
   onAnalysisSurfaceChange: (surface: AnalysisSurface) => void;
@@ -165,6 +174,12 @@ export function useRelationshipDetail({
    * failure message, without guessing at the reason from message text.
    */
   const [premiumCreditExhausted, setPremiumCreditExhausted] = useState(false);
+  const [autostartCreditExhausted, setAutostartCreditExhausted] = useState(false);
+  /** Mirrors the 402 branch inside runPremium synchronously (no stale-closure
+   *  risk from reading React state right after an await) so
+   *  runAutostartPremium can tell "credit exhausted" apart from any other
+   *  failure reason once its own runPremium(...) call resolves. */
+  const creditExhaustedThisRunRef = useRef(false);
   const [detailOk, setDetailOk] = useState(false);
   const [partnerName, setPartnerName] = useState(messages.report.partnerFallbackLabel);
   const [viewerName, setViewerName] = useState("");
@@ -598,6 +613,7 @@ export function useRelationshipDetail({
       setBusy(true);
       setErr(null);
       setPremiumCreditExhausted(false);
+      creditExhaustedThisRunRef.current = false;
       try {
         const requestBody = {
           relationship_report_id: resolvedRelationshipId,
@@ -632,6 +648,13 @@ export function useRelationshipDetail({
           return false;
         }
         if (!res.ok) {
+          // Mirrors this same 402 check below so the autostart-only ref can
+          // be set without touching the pre-existing 402 branch's exact
+          // shape (kept byte-for-byte for the purchase-recovery regression
+          // test's regex).
+          if (res.status === 402) {
+            creditExhaustedThisRunRef.current = true;
+          }
           if (res.status === 409 || data?.in_progress === true) {
             setPremiumInProgress(true);
             setErr(null);
@@ -879,9 +902,16 @@ export function useRelationshipDetail({
   const runAutostartPremium = useCallback(async () => {
     if (!resolvedRelationshipId || !effectiveViewerReportId) return;
     setAutostartActive(true);
+    setAutostartCreditExhausted(false);
     setErr(null);
     try {
       await runPremium(premiumKind);
+      // Checked via the ref (set synchronously inside runPremium's own 402
+      // branch), not the premiumCreditExhausted STATE, which would still
+      // read stale/false here from this closure's own render.
+      if (creditExhaustedThisRunRef.current) {
+        setAutostartCreditExhausted(true);
+      }
     } finally {
       setAutostartActive(false);
       clearAutostartParam();
@@ -894,12 +924,18 @@ export function useRelationshipDetail({
     clearAutostartParam,
   ]);
 
+  // Deliberately does NOT require the free Basic analysis (`basic`) to
+  // already exist before autostarting a Deep kind: a Deep kind picked
+  // directly (StitchKindPickerSheet -> navigateAnalyze) is a first-time
+  // explicit selection for this pair, Basic is a separate independent
+  // optional surface (see buildRelationshipAnalyzeUrl's own comment), and
+  // the premium generation endpoint never reads `basic` either -- requiring
+  // it here only ever blocked autostart for the pairs that most need it.
   useEffect(() => {
     if (!urlAutostart || autostartTriggered.current) return;
     if (analysisSurface === "basic") return;
     if (loading || !detailOk || !effectiveViewerReportId || !resolvedRelationshipId)
       return;
-    if (!basic || Object.keys(basic).length === 0) return;
     if (premiumReady) {
       autostartTriggered.current = true;
       return;
@@ -914,7 +950,6 @@ export function useRelationshipDetail({
     detailOk,
     effectiveViewerReportId,
     resolvedRelationshipId,
-    basic,
     premiumReady,
     busy,
     autostartActive,
@@ -964,6 +999,7 @@ export function useRelationshipDetail({
     premiumReady,
     premiumInProgress,
     premiumCreditExhausted,
+    autostartCreditExhausted,
     toggleFavorite,
     retryAnalysis,
     onAnalysisSurfaceChange,

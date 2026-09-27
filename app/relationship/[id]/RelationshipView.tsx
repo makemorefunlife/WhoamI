@@ -73,6 +73,7 @@ export default function RelationshipView({
     premiumReady,
     premiumInProgress,
     premiumCreditExhausted,
+    autostartCreditExhausted,
     retryAnalysis,
     onAnalysisSurfaceChange,
     viewAnalysisLog,
@@ -136,6 +137,17 @@ export default function RelationshipView({
         snapshotView.friendshipDeep ||
         snapshotView.premium),
   );
+  // True from the very first render through the whole autostart attempt
+  // (URL-derived, so it covers the brief pre-effect window too, not just
+  // the busy/autostartActive window) -- lets RelationshipPremiumSection
+  // show one "Preparing your analysis..." state instead of its own
+  // empty-state placeholder + "Generate analysis" button while an
+  // explicit Deep-kind selection is resolving. Clears itself once the
+  // attempt concludes and ?autostart=1 is stripped from the URL (see
+  // clearAutostartParam in useRelationshipDetail.ts), at which point the
+  // normal recovery UI (error+retry, or credit-exhausted+Buy) takes over
+  // for revisits/fallback cases -- exactly as before this change.
+  const autostartPending = urlAutostart && !premiumReady && !viewingPremiumSnapshot;
 
   useEffect(() => {
     if (!premiumReady || !urlAutostart) return;
@@ -147,6 +159,12 @@ export default function RelationshipView({
     }, 200);
     return () => window.clearTimeout(t);
   }, [premiumReady, urlAutostart]);
+
+  useEffect(() => {
+    if (autostartCreditExhausted) {
+      setPurchaseOpen(true);
+    }
+  }, [autostartCreditExhausted]);
 
   const shell = (children: ReactNode) => (
     <StitchSurveyShell className="stitch-survey stitch-results">
@@ -363,6 +381,7 @@ export default function RelationshipView({
               onReportReadyRef={reportAnchorRef}
               creditExhausted={premiumCreditExhausted}
               onOpenPurchase={() => setPurchaseOpen(true)}
+              autostartPending={autostartPending}
             />
           ) : null}
 
