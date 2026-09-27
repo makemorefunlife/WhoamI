@@ -15,7 +15,7 @@ import ReportShareSection from "@/components/relationship/detail/ReportShareSect
 import ReportContinuationCtas from "@/components/relationship/detail/ReportContinuationCtas";
 import ReportFeedbackSection from "@/components/feedback/ReportFeedbackSection";
 import { hubPanelClass } from "@/components/relationship/hub/relationHubStyles";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, relationshipDetailRoute } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useDockOverlayLock } from "@/lib/hooks/useDockOverlayLock";
 import { useRelationshipDetail } from "./useRelationshipDetail";
@@ -88,6 +88,19 @@ export default function RelationshipView({
   } = detail;
 
   useDockOverlayLock(showRegenerateConfirm);
+
+  // Mirrors the Personal pattern (StitchPremiumCard.tsx / essence/deep/page.tsx):
+  // a local href pointing at this exact report is passed as
+  // successRedirectPath below so that if Paddle's own successUrl redirect
+  // wins the race against onSuccess, the user still lands back on this
+  // same relationship report + kind tab instead of a generic fallback.
+  const href = localize(
+    relationshipDetailRoute({
+      relationshipReportId,
+      viewerReportId,
+      kind: premiumKind,
+    }),
+  );
 
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   function handlePurchaseSuccess() {
@@ -348,6 +361,7 @@ export default function RelationshipView({
             context="relationship"
             onClose={() => setPurchaseOpen(false)}
             onSuccess={handlePurchaseSuccess}
+            successRedirectPath={href}
           />
 
           {!viewingBasicSurface && premiumReady && !showGeneratingPanel ? (

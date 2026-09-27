@@ -159,10 +159,25 @@ section("D. Static wiring checks -- StitchPremiumCard and both hooks are actuall
     ok(`${label}: openCheckout's opts.successRedirectPath is optional and wired to buildThankYouSuccessPath`);
   }
 
+  // RelationshipView DOES have a single specific destination (this exact
+  // relationship report + kind tab), so it must wire successRedirectPath
+  // the same way StitchPremiumCard does -- mirrors the assertion above.
+  {
+    const relationshipSrc = readSrc("app/relationship/[id]/RelationshipView.tsx");
+    assert.ok(
+      relationshipSrc.includes("relationshipDetailRoute("),
+      "RelationshipView must build its redirect href from relationshipDetailRoute, not a generic path",
+    );
+    assert.ok(
+      relationshipSrc.includes("successRedirectPath={href}"),
+      "RelationshipView must pass its own report-specific href as successRedirectPath",
+    );
+    ok("RelationshipView passes a report-specific href (via relationshipDetailRoute) as successRedirectPath");
+  }
+
   // Existing callers that must NOT need any change (optional-prop audit).
   for (const [label, relPath] of [
     ["account/billing", "app/account/billing/page.tsx"],
-    ["RelationshipView", "app/relationship/[id]/RelationshipView.tsx"],
     ["pricing (PurchaseSelectorPage)", "components/payment/PurchaseSelectorPage.tsx"],
   ]) {
     const src = readSrc(relPath);

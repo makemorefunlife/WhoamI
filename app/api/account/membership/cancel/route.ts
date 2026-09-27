@@ -89,6 +89,7 @@ export async function POST() {
   const { error: scheduleError } = await supabase.rpc("set_membership_cancel_schedule", {
     p_paddle_subscription_id: subscriptionId,
     p_cancel_at_period_end: true,
+    p_event_occurred_at: new Date().toISOString(),
   });
 
   if (scheduleError) {
