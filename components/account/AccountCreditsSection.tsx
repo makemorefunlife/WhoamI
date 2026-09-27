@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Users, ArrowRight } from "lucide-react";
+import { User, Users, ArrowRight } from "lucide-react";
 import LocaleLink from "@/lib/i18n/LocaleLink";
 import { ROUTES } from "@/constants/routes";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
@@ -74,7 +74,7 @@ export default function AccountCreditsSection() {
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/8 p-4 transition hover:border-emerald-500/50">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900 dark:text-emerald-300">
-              <Sparkles className="h-4 w-4 text-emerald-600" />
+              <User className="h-4 w-4 text-emerald-600" />
               <span>{copy.myAccessPersonalLabel}</span>
             </div>
             <p className="mt-2 text-xl font-bold text-emerald-950 dark:text-emerald-100">
