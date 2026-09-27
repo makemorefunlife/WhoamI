@@ -32,6 +32,46 @@ type Props = {
   ) => void;
 };
 
+const PICKER_KIND_STYLES: Record<
+  RelationshipKind,
+  {
+    button: string;
+    text: string;
+    chevron: string;
+  }
+> = {
+  family: {
+    button:
+      "border-emerald-300/80 bg-emerald-50/80 hover:bg-emerald-100/90 hover:border-emerald-400 active:bg-emerald-100",
+    text: "text-emerald-900 font-semibold",
+    chevron: "text-emerald-700",
+  },
+  romantic: {
+    button:
+      "border-amber-300/80 bg-amber-50/80 hover:bg-amber-100/90 hover:border-amber-400 active:bg-amber-100",
+    text: "text-amber-900 font-semibold",
+    chevron: "text-amber-700",
+  },
+  friendship: {
+    button:
+      "border-yellow-300/90 bg-yellow-50/80 hover:bg-yellow-100/90 hover:border-yellow-400 active:bg-yellow-100",
+    text: "text-yellow-900 font-semibold",
+    chevron: "text-yellow-700",
+  },
+  work: {
+    button:
+      "border-sky-300/80 bg-sky-50/80 hover:bg-sky-100/90 hover:border-sky-400 active:bg-sky-100",
+    text: "text-sky-900 font-semibold",
+    chevron: "text-sky-700",
+  },
+  cohabitation: {
+    button:
+      "border-rose-300/80 bg-rose-50/80 hover:bg-rose-100/90 hover:border-rose-400 active:bg-rose-100",
+    text: "text-rose-900 font-semibold",
+    chevron: "text-rose-700",
+  },
+};
+
 function pickerKindLabel(
   kind: RelationshipKind,
   messages: ReturnType<typeof useMessages>,
@@ -123,7 +163,7 @@ export default function StitchKindPickerSheet({
             <button
               type="button"
               onClick={() => onSelect("basic")}
-              className="flex w-full items-center justify-center rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 px-4 py-4 text-sm font-semibold text-primary transition hover:border-secondary/35 active:scale-[0.99]"
+              className="flex w-full items-center justify-center rounded-2xl border border-slate-300/80 bg-slate-100/80 px-4 py-4 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-200/80 active:scale-[0.99]"
             >
               {messages.hub.kindPickerBasicFree}
             </button>
@@ -134,19 +174,20 @@ export default function StitchKindPickerSheet({
               {messages.hub.kindPickerSectionPremium}
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {PREMIUM_PICKER_KINDS.map(({ kind, hasFamily }) =>
-                hasFamily ? (
+              {PREMIUM_PICKER_KINDS.map(({ kind, hasFamily }) => {
+                const style = PICKER_KIND_STYLES[kind];
+                return hasFamily ? (
                   <div key={kind} className="col-span-2">
                     <button
                       type="button"
                       onClick={() => setFamilyOpen((v) => !v)}
-                      className="flex w-full items-center justify-between gap-2 rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 px-4 py-4 text-left transition hover:border-secondary/35 active:scale-[0.99]"
+                      className={`flex w-full items-center justify-between gap-2 rounded-2xl border px-4 py-4 text-left transition active:scale-[0.99] ${style.button}`}
                     >
-                      <span className="text-sm font-semibold text-primary">
+                      <span className={`text-sm ${style.text}`}>
                         {pickerKindLabel(kind, messages)}
                       </span>
                       <ChevronDown
-                        className={`h-5 w-5 transition ${familyOpen ? "rotate-180" : ""}`}
+                        className={`h-5 w-5 transition ${style.chevron} ${familyOpen ? "rotate-180" : ""}`}
                       />
                     </button>
                     <AnimatePresence>
@@ -157,8 +198,8 @@ export default function StitchKindPickerSheet({
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="mt-2 space-y-2 rounded-2xl border border-outline-variant/25 bg-surface-container-low/40 p-3">
-                            <p className="px-1 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+                          <div className="mt-2 space-y-2 rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-3">
+                            <p className="px-1 text-xs font-semibold uppercase tracking-wide text-emerald-900">
                               {messages.hub.perspectiveSelectLabel}
                             </p>
                             <button
@@ -169,10 +210,10 @@ export default function StitchKindPickerSheet({
                                   parentType,
                                 })
                               }
-                              className="w-full rounded-xl border border-outline-variant/35 bg-surface px-4 py-3.5 text-left text-sm font-medium text-primary transition hover:border-secondary/30 active:scale-[0.99]"
+                              className="w-full rounded-xl border border-emerald-200 bg-white/90 px-4 py-3.5 text-left text-sm font-medium text-emerald-950 transition hover:border-emerald-300 hover:bg-emerald-50/60 active:scale-[0.99]"
                             >
                               {messages.hub.parentPerspectiveTitle}
-                              <span className="mt-0.5 block text-xs font-normal text-on-surface-variant">
+                              <span className="mt-0.5 block text-xs font-normal text-emerald-800/80">
                                 {messages.hub.parentPerspectiveSubtitle}
                               </span>
                             </button>
@@ -184,10 +225,10 @@ export default function StitchKindPickerSheet({
                                   parentType,
                                 })
                               }
-                              className="w-full rounded-xl border border-outline-variant/35 bg-surface px-4 py-3.5 text-left text-sm font-medium text-primary transition hover:border-secondary/30 active:scale-[0.99]"
+                              className="w-full rounded-xl border border-emerald-200 bg-white/90 px-4 py-3.5 text-left text-sm font-medium text-emerald-950 transition hover:border-emerald-300 hover:bg-emerald-50/60 active:scale-[0.99]"
                             >
                               {messages.hub.childPerspectiveTitle}
-                              <span className="mt-0.5 block text-xs font-normal text-on-surface-variant">
+                              <span className="mt-0.5 block text-xs font-normal text-emerald-800/80">
                                 {messages.hub.childPerspectiveSubtitle}
                               </span>
                             </button>
@@ -199,8 +240,8 @@ export default function StitchKindPickerSheet({
                                   onClick={() => setParentType(role)}
                                   className={`flex-1 rounded-full py-2 text-xs font-semibold transition ${
                                     parentType === role
-                                      ? "bg-secondary text-on-primary"
-                                      : "bg-surface text-on-surface-variant"
+                                      ? "bg-emerald-600 text-white shadow-sm"
+                                      : "bg-white/80 text-emerald-800 border border-emerald-200/60 hover:bg-white"
                                   }`}
                                 >
                                   {role === "mother"
@@ -219,12 +260,14 @@ export default function StitchKindPickerSheet({
                     key={kind}
                     type="button"
                     onClick={() => onSelect(kind)}
-                    className="flex items-center justify-center rounded-2xl border border-outline-variant/40 bg-surface-container-low/60 px-4 py-4 text-sm font-semibold text-primary transition hover:border-secondary/35 active:scale-[0.98]"
+                    className={`flex items-center justify-center rounded-2xl border px-4 py-4 text-sm transition active:scale-[0.98] ${style.button}`}
                   >
-                    {pickerKindLabel(kind, messages)}
+                    <span className={style.text}>
+                      {pickerKindLabel(kind, messages)}
+                    </span>
                   </button>
-                ),
-              )}
+                );
+              })}
             </div>
           </section>
         </div>
