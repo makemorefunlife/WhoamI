@@ -290,12 +290,20 @@ export default function RelationshipView({
 
 
 
-          {viewingBasicSurface && !showGeneratingPanel ? (
-            <RelationshipBasicCards
-              perspective={displayBasic}
-              partnerName={partnerName}
-              viewerName={viewerName}
-            />
+          {viewingBasicSurface &&
+          displayBasic &&
+          Object.keys(displayBasic).length > 0 &&
+          !showGeneratingPanel &&
+          !showLoadingPanel &&
+          !err ? (
+            <>
+              <RelationshipBasicCards
+                perspective={displayBasic}
+                partnerName={partnerName}
+                viewerName={viewerName}
+              />
+              <ReportFeedbackSection displayName={viewerName} />
+            </>
           ) : null}
 
           {viewingBasicSurface &&
@@ -401,8 +409,6 @@ export default function RelationshipView({
               {messages.report.chooseKindHint}
             </p>
           ) : null}
-
-          <ReportFeedbackSection displayName={viewerName} />
 
           <div className={`${hubPanelClass()} mt-10 space-y-3 p-5`}>
             <h2 className="text-sm font-semibold text-secondary">

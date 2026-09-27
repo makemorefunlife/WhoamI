@@ -111,6 +111,15 @@ export default function RelationshipPremiumSection({
     }
   }
 
+  const hasDeepContent = Boolean(
+    (premiumKind === "romantic" && (displayRomanticDeepV4 || displayRomanticDeep)) ||
+      (premiumKind === "work" && displayWorkDeep) ||
+      (premiumKind === "cohabitation" && displayCohabitationDeep) ||
+      (premiumKind === "family" && displayFamilyDeep) ||
+      (premiumKind === "friendship" && displayFriendshipDeep) ||
+      displayPremium,
+  );
+
   return (
     <ReportSurfaceProvider
       surface={
@@ -252,7 +261,7 @@ export default function RelationshipPremiumSection({
           viewerName={viewerName}
         />
       )}
-      {premiumReady || hasSnapshotView ? (
+      {hasDeepContent && (premiumReady || hasSnapshotView) && !submitting ? (
         <>
           <AiAnalysisDisclaimer className="mt-6 px-1" />
           <ReportFeedbackSection displayName={viewerName} />
