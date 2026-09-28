@@ -6,42 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { ROUTES } from "@/constants/routes";
 import { resolveHubHrefForIntent } from "@/lib/stitch/hubPaths";
+import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 
 type RedeemState = "idle" | "submitting" | "success" | "error";
-
-/**
- * Every reason string either redeem RPC (redeem_gift_personal_coupon,
- * redeem_tester_personal_code) can surface, plus the two client-side-only
- * reasons (missing_code, error) -- see app/api/redeem/route.ts. Keeping this
- * as a plain lookup (not a switch with a default swallowing typos) means a
- * new reason added to either RPC without a matching copy key here fails
- * loudly in review rather than silently falling back to the generic error.
- */
-function reasonCopy(
-  reason: string | null,
-  copy: ReturnType<typeof useLocale>["messages"]["redeem"],
-): string {
-  switch (reason) {
-    case "missing_code":
-      return copy.errorMissingCode;
-    case "not_found":
-      return copy.errorNotFound;
-    case "inactive":
-      return copy.errorInactive;
-    case "expired":
-      return copy.errorExpired;
-    case "exhausted":
-      return copy.errorExhausted;
-    case "already_redeemed":
-      return copy.errorAlreadyRedeemed;
-    case "already_redeemed_or_revoked":
-      return copy.errorAlreadyRedeemedOrRevoked;
-    case "cannot_claim_own_gift":
-      return copy.errorCannotClaimOwnGift;
-    default:
-      return copy.errorGeneric;
-  }
-}
 
 function RedeemContent() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -178,7 +145,7 @@ function RedeemContent() {
               />
               {state === "error" ? (
                 <p role="alert" className="text-xs text-rose-700">
-                  {reasonCopy(errorReason, copy)}
+                  {redeemReasonCopy(errorReason, copy)}
                 </p>
               ) : null}
               <button

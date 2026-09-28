@@ -1969,6 +1969,17 @@ export const messagesEnUS = {
     errorAlreadyRedeemedOrRevoked: "This code has already been used or is no longer valid.",
     errorCannotClaimOwnGift: "You can't redeem a gift code you created yourself.",
     errorGeneric: "We couldn't redeem this code. Please try again.",
+    // Compact inline entry point inside PurchaseSelectorContent's "Have a
+    // gift or promo code?" disclosure -- a secondary, small-footprint
+    // alternative to the full /redeem page for the same backend. Reuses
+    // codeInputPlaceholder and every errorX key above verbatim (see
+    // lib/redeem/reasonCopy.ts); only the toggle/apply/applied-success
+    // copy below is new, since the fuller /redeem page has no equivalent
+    // (it has its own page-level title/subtitle instead).
+    haveCodeToggle: "Have a gift or promo code?",
+    enterCodeCta: "Enter code",
+    applyCta: "Apply",
+    appliedSuccessfully: "Your code was applied successfully.",
   },
 };
 
@@ -3567,5 +3578,9 @@ export type MessageCatalog = {
     errorAlreadyRedeemedOrRevoked: string;
     errorCannotClaimOwnGift: string;
     errorGeneric: string;
+    haveCodeToggle: string;
+    enterCodeCta: string;
+    applyCta: string;
+    appliedSuccessfully: string;
   };
 };

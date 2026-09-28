@@ -1915,5 +1915,9 @@ export const messagesKoKR: MessageCatalog = {
     errorAlreadyRedeemedOrRevoked: "이미 사용되었거나 더 이상 유효하지 않은 코드예요.",
     errorCannotClaimOwnGift: "본인이 만든 선물 코드는 사용할 수 없어요.",
     errorGeneric: "코드를 사용하지 못했어요. 다시 시도해 주세요.",
+    haveCodeToggle: "선물 또는 프로모션 코드가 있나요?",
+    enterCodeCta: "코드 입력",
+    applyCta: "적용하기",
+    appliedSuccessfully: "코드가 정상적으로 적용되었습니다.",
   },
 };

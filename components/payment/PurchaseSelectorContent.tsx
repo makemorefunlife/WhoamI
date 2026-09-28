@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Check } from "lucide-react";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useRegionalCheckout } from "@/lib/payment/useRegionalCheckout";
 import type { UsPlanId } from "@/lib/payment/usPricing";
 import type { KrPlanId } from "@/lib/payment/krPricing";
+import { redeemReasonCopy } from "@/lib/redeem/reasonCopy";
 
 export type PurchaseContext = "personal" | "relationship" | "account";
 
@@ -101,6 +102,16 @@ export default function PurchaseSelectorContent({
   const [additionalEligible, setAdditionalEligible] = useState(false);
   const [entitlements, setEntitlements] = useState<EntitlementsSummary | null>(null);
 
+  // "Have a gift or promo code?" -- Personal only (current gift/tester codes
+  // grant Personal x1 only; see /api/redeem). A compact, secondary entry
+  // point into the SAME /api/redeem backend the standalone /redeem page
+  // already uses -- never a second coupon system.
+  const [redeemOpen, setRedeemOpen] = useState(false);
+  const [redeemCode, setRedeemCode] = useState("");
+  const [redeemState, setRedeemState] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [redeemErrorReason, setRedeemErrorReason] = useState<string | null>(null);
+  const [redeemKind, setRedeemKind] = useState<"gift" | "tester" | null>(null);
+
   const region: "us" | "kr" = locale === "en-US" ? "us" : "kr";
   const catalog = region === "us" ? US_CATALOG : KR_CATALOG;
 
@@ -175,6 +186,67 @@ export default function PurchaseSelectorContent({
       setResult((prev) => ({ ...prev, [planId]: "error" }));
     }
   }
+
+  /**
+   * Same "unlock -> resume" contract as a successful purchase: whatever
+   * onSuccess already does for this context (essence/deep's handlePurchaseSuccess
+   * closes the modal and calls retry(), which re-fetches the SAME Deep
+   * report now that a Personal credit exists -- see useSlimV1Integrated.ts;
+   * StitchPremiumCard's handlePurchaseSuccess closes and navigates to the
+   * report, whose own mount-time fetch then picks up the new credit) fires
+   * unchanged here. This is deliberately the ONLY place a redeemed code
+   * hooks into the rest of the app -- no second "resume analysis" path.
+   */
+  async function submitRedeemCode(e: FormEvent) {
+    e.preventDefault();
+    if (redeemState === "submitting") return;
+    const trimmed = redeemCode.trim();
+    if (!trimmed) {
+      setRedeemState("error");
+      setRedeemErrorReason("missing_code");
+      return;
+    }
+    setRedeemState("submitting");
+    setRedeemErrorReason(null);
+    try {
+      const res = await fetch("/api/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: trimmed }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        reason?: string;
+        kind?: "gift" | "tester";
+      };
+      if (!res.ok || !body.ok) {
+        setRedeemState("error");
+        setRedeemErrorReason(body.reason ?? "error");
+        return;
+      }
+      setRedeemState("success");
+      setRedeemKind(body.kind ?? null);
+    } catch {
+      setRedeemState("error");
+      setRedeemErrorReason("error");
+    }
+  }
+
+  // Brief, un-clickable success flash ("short success state", per spec)
+  // before handing off to the caller's own onSuccess -- exactly the same
+  // hook a real purchase already uses. The delay is what makes the flash
+  // visible at all: onSuccess closes the modal (essence/deep,
+  // StitchPremiumCard) synchronously, so calling it immediately would
+  // never let the user see the confirmation. Cleared on unmount (modal
+  // closed manually mid-flash) so a redeem never fires onSuccess after the
+  // selector is already gone.
+  useEffect(() => {
+    if (redeemState !== "success") return;
+    const timer = setTimeout(() => {
+      onSuccess?.(redeemKind ? `redeem:${redeemKind}` : "redeem");
+    }, 1100);
+    return () => clearTimeout(timer);
+  }, [redeemState, redeemKind, onSuccess]);
 
   const title =
     context === "relationship"
@@ -299,6 +371,57 @@ export default function PurchaseSelectorContent({
             </button>
           </div>
         </article>
+      ) : null}
+
+      {context === "personal" && isSignedIn ? (
+        <div className="rounded-2xl border border-[#D4CFC4] bg-[#F5F0E8]/60 p-4">
+          {redeemState === "success" ? (
+            <div className="text-center">
+              <p className="text-sm font-semibold text-emerald-700">{messages.redeem.successTitle}</p>
+              <p className="mt-1 text-xs text-[#4A5C52]">{messages.redeem.appliedSuccessfully}</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-[#4A5C52]">{messages.redeem.haveCodeToggle}</p>
+                <button
+                  type="button"
+                  onClick={() => setRedeemOpen((v) => !v)}
+                  className="shrink-0 text-sm font-semibold text-[#3A8F6E] underline-offset-2 hover:underline"
+                >
+                  {messages.redeem.enterCodeCta}
+                </button>
+              </div>
+              {redeemOpen ? (
+                <form onSubmit={submitRedeemCode} className="mt-3 flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="text"
+                    value={redeemCode}
+                    onChange={(e) => setRedeemCode(e.target.value)}
+                    placeholder={messages.redeem.codeInputPlaceholder}
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    disabled={redeemState === "submitting"}
+                    className="flex-1 rounded-xl border border-[#D4CFC4] bg-[#FFFDF8] px-3 py-2 text-sm text-[#1A3328] disabled:opacity-60"
+                  />
+                  <button
+                    type="submit"
+                    disabled={redeemState === "submitting"}
+                    className="shrink-0 rounded-xl bg-[#3A8F6E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#33805f] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {redeemState === "submitting" ? messages.redeem.submitting : messages.redeem.applyCta}
+                  </button>
+                </form>
+              ) : null}
+              {redeemState === "error" ? (
+                <p role="alert" className="mt-2 text-xs text-rose-700">
+                  {redeemReasonCopy(redeemErrorReason, messages.redeem)}
+                </p>
+              ) : null}
+            </>
+          )}
+        </div>
       ) : null}
 
       <p className="pt-2 text-center text-[11px] text-[#4A5C52]/75">
